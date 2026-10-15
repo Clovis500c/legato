@@ -12,6 +12,7 @@ Maquette de référence : fichier Figma « Untitled », page « Music App » (é
 ## Structure
 - `crates/core` (`music-core`) : Rust pur, sans Tauri. `Track`, trait `Connector`, `SecretStore`, matching (ISRC puis titre+artiste+durée), `Library` (rusqlite), `sync`.
 - `crates/connectors` (`music-connectors`) : OAuth PKCE loopback partagé + un module par service. URLs injectables (`with_urls`) pour les tests mockito.
+- `crates/player` (`music-player`) : lecture locale native (rodio/symphonia), thread moteur, file gapless. Choix de lecture (YouTube, local, plan Spotify) : `docs/playback.md`.
 - `src-tauri` : shell fin. Commandes IPC (`lib.rs`), trousseau (`secrets.rs`). Toute la logique va dans `crates/`.
 - `ui/` : React 19 + Zustand + Tailwind v4, découpé par fonctionnalité :
   - `app/` (shell, store, navigation), `features/<nom>/` (library, sources, sidebar…), `shared/` (api typée, format, composants `ui/`).
