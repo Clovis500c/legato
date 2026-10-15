@@ -10,7 +10,7 @@
     "isolatedModules": true,
     "verbatimModuleSyntax": true,
     "lib": ["ES2023", "DOM", "DOM.Iterable"],
-    "types": ["node", "vite/client"]
+    "types": ["vite/client"]
   },
-  "include": ["src", "electron.vite.config.ts", "vitest.config.ts"]
+  "include": ["ui", "vite.config.ts", "vitest.config.ts"]
 }

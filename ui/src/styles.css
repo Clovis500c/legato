@@ -1,0 +1,48 @@
+@import 'tailwindcss';
+@import '@fontsource-variable/inter';
+
+/* Tokens from Figma mockup ("Music App" page). */
+@theme {
+  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+  --color-bg: #0a0a0f;
+  --color-panel: #0f0f15;
+  --color-surface: #16161e;
+  --color-raised: #1c1c26;
+  --color-line: #23232d;
+  --color-line-soft: #1e1e27;
+  --color-fg: #f4f4f5;
+  --color-muted: #9c9cab;
+  --color-dim: #8a8a99;
+  --color-accent: #a78bfa;
+  --color-accent-from: #8b5cf6;
+  --color-accent-to: #ec4899;
+  --color-spotify: #1db954;
+  --color-youtube: #ff3b5c;
+  --color-local: #f5a524;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  @apply bg-bg font-sans text-[13px] text-fg antialiased select-none;
+}
+
+input,
+code {
+  @apply select-text;
+}
+
+:focus-visible {
+  @apply outline-2 outline-offset-2 outline-accent;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-thumb {
+  @apply rounded-full border-2 border-transparent bg-line bg-clip-padding;
+}
