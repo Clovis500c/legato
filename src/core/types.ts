@@ -1,6 +1,6 @@
 export type Source = 'spotify' | 'youtube' | 'local'
 
-/** Morceau commun à tous les services. `ids` = identifiant du même morceau chez chaque source. */
+/** Common track model. `ids` = same track id per source. */
 export interface Track {
   title: string
   artist: string
@@ -15,7 +15,7 @@ export interface PlaylistRef {
   name: string
 }
 
-/** Un service musical. Chaque utilisateur connecte son propre compte. */
+/** Music service. Each user connects own account. */
 export interface Connector {
   readonly source: Source
   isConnected(): boolean
@@ -23,13 +23,13 @@ export interface Connector {
   listPlaylists(): Promise<PlaylistRef[]>
   getPlaylistTracks(playlistId: string): Promise<Track[]>
   search(query: string): Promise<Track[]>
-  /** Retrouve `track` sur ce service, ou null. */
+  /** Find `track` on this service, or null. */
   resolve(track: Track): Promise<Track | null>
-  /** Crée une playlist et renvoie son id. Les morceaux sans id pour ce service sont ignorés. */
+  /** Create playlist, return id. Tracks without id here skipped. */
   writePlaylist(name: string, tracks: Track[]): Promise<string>
 }
 
-/** Stockage clé/valeur des secrets (safeStorage dans Electron, Map dans les tests). */
+/** Secret key/value store. safeStorage in Electron, Map in tests. */
 export interface SecretStore {
   get<T>(key: string): T | undefined
   set(key: string, value: unknown): void

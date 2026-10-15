@@ -1,12 +1,12 @@
 import type { Track } from './types'
 
-/** Écart de durée toléré : un clip YouTube a souvent une intro/outro que l'audio n'a pas. */
+/** YouTube clip often has intro/outro audio lacks. Allow slack. */
 const DURATION_TOLERANCE_MS = 10_000
 
 const BRACKET_NOISE =
   /[([][^)\]]*\b(?:feat|ft|with|official|lyrics?|audio|video|remaster(?:ed)?|hd|hq|explicit|clean|visuali[sz]er|mv)\b[^)\]]*[)\]]/gi
 
-/** Forme comparable d'un titre ou d'un artiste : minuscules, sans accents, sans « (Official Video) », « feat. », ponctuation. */
+/** Comparable form: lowercase, no accents, no "(Official Video)", no "feat.", no punctuation. */
 export function normalize(s: string): string {
   return s
     .normalize('NFKD')
@@ -20,7 +20,7 @@ export function normalize(s: string): string {
     .trim()
 }
 
-/** Premier artiste crédité, normalisé (« A, B & C feat. D » → « a »). */
+/** First credited artist, normalized ("A, B & C feat. D" → "a"). */
 export function primaryArtist(artist: string): string {
   return normalize(artist.split(/,|&|;|\/|\s(?:feat|ft)\.?\s|\sx\s|\svs\.?\s/i)[0])
 }
@@ -36,7 +36,7 @@ function artistsOverlap(a: string, b: string): boolean {
   return ` ${normalize(a)} `.includes(` ${pb} `) || ` ${normalize(b)} `.includes(` ${pa} `)
 }
 
-/** Même enregistrement ? ISRC d'abord (deux ISRC différents = deux enregistrements), sinon titre + artiste + durée. */
+/** Same recording? ISRC first (different ISRC = different recording), else title + artist + duration. */
 export function sameTrack(a: Track, b: Track): boolean {
   for (const [source, id] of Object.entries(a.ids)) {
     if (id && b.ids[source as keyof Track['ids']] === id) return true
@@ -47,7 +47,7 @@ export function sameTrack(a: Track, b: Track): boolean {
   return Math.abs(a.durationMs - b.durationMs) <= DURATION_TOLERANCE_MS
 }
 
-/** Meilleur candidat pour `track` : correspondance ISRC exacte en priorité, puis repli flou. */
+/** Best candidate: exact ISRC first, then fuzzy. */
 export function bestMatch(track: Track, candidates: Track[]): Track | null {
   const isrc = track.isrc?.toUpperCase()
   return (
@@ -57,7 +57,7 @@ export function bestMatch(track: Track, candidates: Track[]): Track | null {
   )
 }
 
-/** Fusionne deux vues du même morceau ; `a` est prioritaire pour les champs déjà remplis. */
+/** Merge two views of same track. `a` wins on filled fields. */
 export function mergeTracks(a: Track, b: Track): Track {
   return {
     title: a.title,

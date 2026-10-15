@@ -38,13 +38,13 @@ describe('Library', () => {
   })
 
   it('fusionne deux lignes existantes quand un matching les relie', () => {
-    // Un clip à l'intro longue : trop loin en durée pour le repli flou, il reste à part…
+    // Long-intro clip: duration too far for fuzzy match, stays separate…
     const clip = { ...youtube, durationMs: 300_000 }
     lib.upsertTrack(spotify)
     lib.upsertTrack(clip)
     expect(lib.tracks()).toHaveLength(2)
     const pid = lib.savePlaylist('youtube', 'PL1', 'Mix', [clip])
-    // …jusqu'à ce que le matching YouTube → Spotify renvoie les deux ids ensemble.
+    // …until YouTube → Spotify match links both ids.
     lib.upsertTrack({ ...clip, isrc: spotify.isrc, ids: { youtube: '5NV6Rdv1a3I', spotify: spotify.ids.spotify } })
     const [only] = lib.tracks()
     expect(lib.tracks()).toHaveLength(1)

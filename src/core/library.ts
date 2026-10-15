@@ -70,7 +70,7 @@ function toTrack(r: TrackRow): LibraryTrack {
   }
 }
 
-/** Bibliothèque unifiée locale. Un morceau = une ligne, quel que soit le nombre de services où il existe. */
+/** Local unified library. One track = one row, whatever number of sources. */
 export class Library {
   private db: DatabaseSync
 
@@ -83,7 +83,7 @@ export class Library {
     this.db.close()
   }
 
-  /** Insère ou fusionne un morceau (par id de source, puis ISRC, puis titre+artiste+durée). Renvoie son id. */
+  /** Insert or merge track (source id, then ISRC, then title+artist+duration). Return row id. */
   upsertTrack(t: Track): number {
     return this.tx(() => {
       const found = new Set<number>()
@@ -111,7 +111,7 @@ export class Library {
             .lastInsertRowid,
         )
       } else {
-        // Le morceau peut être déjà présent en plusieurs lignes (ex. vu sur YouTube puis sur Spotify) : on les fusionne.
+        // Track may already sit in several rows (seen on YouTube, then Spotify). Merge them.
         const [keep, ...dupes] = [...found].sort((a, b) => a - b)
         id = keep
         for (const d of dupes) {
@@ -130,7 +130,7 @@ export class Library {
     })
   }
 
-  /** Remplace le contenu d'une playlist importée d'un service. */
+  /** Replace imported playlist content. */
   savePlaylist(source: Source, sourceId: string, name: string, tracks: Track[]): number {
     return this.tx(() => {
       const { id } = this.db
@@ -185,7 +185,7 @@ export class Library {
       .run(album, durationMs, isrc, id)
   }
 
-  // Savepoints : transactions imbriquables (savePlaylist appelle upsertTrack).
+  // Savepoints = nestable tx (savePlaylist calls upsertTrack).
   private tx<T>(fn: () => T): T {
     this.db.exec('SAVEPOINT tx')
     try {

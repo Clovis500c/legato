@@ -22,6 +22,7 @@ App desktop (Electron + React + TS) qui unifie les bibliothèques Spotify / YouT
 - `pnpm build`
 
 ## Conventions
+- Commentaires de code : en anglais, style caveman (fragments courts, pas d'articles ni de remplissage). Ex. `// Feb 2026: own playlists only.`
 - Tests à côté du code (`foo.test.ts`). Pas de réseau réel dans les tests : fausse `fetch`.
 - Petits commits, une étape testée à la fois.
 - Vérifier les quotas et endpoints des API avant de les figer (ils changent ; Spotify a renommé `/tracks` en `/items` en février 2026).
