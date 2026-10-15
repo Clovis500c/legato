@@ -42,6 +42,21 @@ export interface Credentials {
   youtubeClientSecret?: string
 }
 
+/** crates/player Command. */
+export type PlayerCommand =
+  | { type: 'play'; paths: string[]; start: number }
+  | { type: 'toggle' | 'next' | 'prev' | 'stop' }
+  | { type: 'seek'; ms: number }
+  | { type: 'volume'; value: number }
+
+export interface PlayerStatus {
+  path: string | null
+  positionMs: number
+  durationMs: number | null
+  paused: boolean
+  error: string | null
+}
+
 /** Typed wrappers over Tauri commands (src-tauri/src/lib.rs). Rejections = error string. */
 export const api = {
   sourcesStatus: async () =>
@@ -51,4 +66,6 @@ export const api = {
   sync: () => invoke<SyncReport>('sync_all'),
   library: () => invoke<{ tracks: LibraryTrack[]; playlists: LibraryPlaylist[] }>('library'),
   playlistTracks: (id: number) => invoke<LibraryTrack[]>('playlist_tracks', { id }),
+  player: (cmd: PlayerCommand) => invoke<void>('player', { cmd }),
+  playerStatus: () => invoke<PlayerStatus>('player_status'),
 }

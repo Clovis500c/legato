@@ -1,0 +1,42 @@
+// Official embed driven by same postMessage protocol iframe_api uses.
+// No YouTube script in our origin: remote code never gets IPC access.
+export const YT_ORIGIN = 'https://www.youtube.com'
+
+export const embedUrl = (videoId: string, origin: string) =>
+  `${YT_ORIGIN}/embed/${encodeURIComponent(videoId)}?enablejsapi=1&autoplay=1&playsinline=1&origin=${encodeURIComponent(origin)}`
+
+export function ytPost(frame: HTMLIFrameElement | null, event: 'listening' | 'command', func?: string, args: unknown[] = []) {
+  frame?.contentWindow?.postMessage(JSON.stringify({ event, func, args, id: 1, channel: 'widget' }), YT_ORIGIN)
+}
+
+/** state: -1 unstarted, 0 ended, 1 playing, 2 paused, 3 buffering, 5 cued. error: 153 = no Referer. */
+export interface YtUpdate {
+  state?: number
+  time?: number
+  duration?: number
+  error?: number
+}
+
+/** Embed message → update. Undefined if not from YouTube or not relevant. */
+export function parseYt(origin: string, data: unknown): YtUpdate | undefined {
+  if (origin !== YT_ORIGIN || typeof data !== 'string') return
+  let msg: { event?: string; info?: unknown }
+  try {
+    msg = JSON.parse(data)
+  } catch {
+    return
+  }
+  const info = msg.info as Record<string, unknown> | number | null
+  switch (msg.event) {
+    case 'initialDelivery':
+    case 'infoDelivery': {
+      if (!info || typeof info !== 'object') return
+      const num = (v: unknown) => (typeof v === 'number' ? v : undefined)
+      return { state: num(info.playerState), time: num(info.currentTime), duration: num(info.duration) }
+    }
+    case 'onStateChange':
+      return typeof info === 'number' ? { state: info } : undefined
+    case 'onError':
+      return typeof info === 'number' ? { error: info } : undefined
+  }
+}

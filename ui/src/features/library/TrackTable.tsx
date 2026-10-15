@@ -1,7 +1,8 @@
 import { useVirtualizer } from '@tanstack/react-virtual'
-import { Clock3 } from 'lucide-react'
+import { Clock3, Play } from 'lucide-react'
 import { useRef } from 'react'
 import type { LibraryTrack, Source } from '../../shared/api'
+import { usePlayer } from '../player/store'
 import { coverGradient, formatDuration } from '../../shared/format'
 import { SourceIcon } from '../../shared/ui/SourceIcon'
 
@@ -12,6 +13,7 @@ const order: Source[] = ['spotify', 'youtube', 'local']
 /** Virtualized: only visible rows hit the DOM, so 50k tracks stay smooth. */
 export function TrackTable({ tracks, empty }: { tracks: LibraryTrack[]; empty: React.ReactNode }) {
   const scroller = useRef<HTMLDivElement>(null)
+  const play = usePlayer((s) => s.playTracks)
   const virtual = useVirtualizer({ count: tracks.length, getScrollElement: () => scroller.current, estimateSize: () => ROW, overscan: 12 })
 
   return (
@@ -36,10 +38,18 @@ export function TrackTable({ tracks, empty }: { tracks: LibraryTrack[]; empty: R
                 <div
                   key={t.id}
                   role="row"
-                  className={`${cols} absolute inset-x-0 rounded-lg hover:bg-surface`}
+                  onDoubleClick={() => play(tracks, v.index)}
+                  className={`${cols} group absolute inset-x-0 rounded-lg hover:bg-surface`}
                   style={{ height: ROW, transform: `translateY(${v.start}px)` }}
                 >
-                  <span className="text-center text-dim tabular-nums">{v.index + 1}</span>
+                  {t.ids.youtube ? (
+                    <button aria-label={`Lire ${t.title}`} onClick={() => play(tracks, v.index)} className="grid place-items-center text-dim tabular-nums hover:text-fg">
+                      <span className="group-hover:hidden">{v.index + 1}</span>
+                      <Play size={14} className="hidden group-hover:block" />
+                    </button>
+                  ) : (
+                    <span className="text-center text-dim tabular-nums">{v.index + 1}</span>
+                  )}
                   <span className="flex min-w-0 items-center gap-3">
                     <span className="size-10 shrink-0 rounded-md" style={{ background: coverGradient(t.album ?? t.title) }} />
                     <span className="min-w-0">

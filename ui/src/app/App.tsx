@@ -1,6 +1,7 @@
 import { CircleCheck, RefreshCw, Search, Settings, TriangleAlert, X } from 'lucide-react'
 import { useEffect, useRef } from 'react'
 import { LibraryView, PlaylistView } from '../features/library/LibraryView'
+import { PlayerBar } from '../features/player/PlayerBar'
 import { ConnectWizard } from '../features/sources/ConnectWizard'
 import { SourcesView } from '../features/sources/SourcesView'
 import { Sidebar } from '../features/sidebar/Sidebar'
@@ -97,16 +98,19 @@ export function App() {
   useEffect(() => void refresh(), [refresh])
 
   return (
-    <div className="flex h-full">
-      <Sidebar />
-      <main className="flex min-w-0 flex-1 flex-col gap-5.5 overflow-hidden px-7 pt-5 pb-3">
-        <TopBar />
-        <SyncErrors />
-        {view.name === 'library' && <LibraryView />}
-        {view.name === 'playlist' && <PlaylistView id={view.id} />}
-        {view.name === 'sources' && <SourcesView wizard={view.wizard} onSelect={(s) => go({ name: 'sources', wizard: s })} />}
-      </main>
-      {view.name === 'sources' && view.wizard && <ConnectWizard key={view.wizard} service={view.wizard} onClose={() => go({ name: 'sources' })} />}
+    <div className="flex h-full flex-col">
+      <div className="flex min-h-0 flex-1">
+        <Sidebar />
+        <main className="flex min-w-0 flex-1 flex-col gap-5.5 overflow-hidden px-7 pt-5 pb-3">
+          <TopBar />
+          <SyncErrors />
+          {view.name === 'library' && <LibraryView />}
+          {view.name === 'playlist' && <PlaylistView id={view.id} />}
+          {view.name === 'sources' && <SourcesView wizard={view.wizard} onSelect={(s) => go({ name: 'sources', wizard: s })} />}
+        </main>
+        {view.name === 'sources' && view.wizard && <ConnectWizard key={view.wizard} service={view.wizard} onClose={() => go({ name: 'sources' })} />}
+      </div>
+      <PlayerBar />
     </div>
   )
 }

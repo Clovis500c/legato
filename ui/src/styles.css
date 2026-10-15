@@ -40,6 +40,21 @@ code {
   @apply outline-2 outline-offset-2 outline-accent;
 }
 
+/* Player range bars: track painted inline, thumb on hover/focus only. */
+.bar {
+  @apply cursor-pointer appearance-none rounded-sm;
+}
+.bar:disabled {
+  @apply cursor-default;
+}
+.bar::-webkit-slider-thumb {
+  @apply size-3 appearance-none rounded-full bg-fg opacity-0;
+}
+.bar:hover::-webkit-slider-thumb,
+.bar:focus-visible::-webkit-slider-thumb {
+  @apply opacity-100;
+}
+
 ::-webkit-scrollbar {
   width: 10px;
 }
