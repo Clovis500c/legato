@@ -6,6 +6,7 @@ use music_connectors::youtube::YouTube;
 use music_core::library::{Library, LibraryPlaylist, LibraryTrack};
 use music_core::model::{Connector, SecretStore, Source};
 use music_core::sync::{SyncReport, sync};
+use music_player::{Command, Player, Status};
 use serde::{Deserialize, Serialize};
 use std::sync::{Arc, Mutex};
 use tauri::{Manager, State};
@@ -42,6 +43,7 @@ struct AppState {
     lib: Mutex<Library>,
     store: Arc<dyn SecretStore>,
     open: Opener,
+    player: Player,
 }
 
 impl AppState {
@@ -125,6 +127,16 @@ fn playlist_tracks(state: State<AppState>, id: i64) -> CmdResult<Vec<LibraryTrac
     state.lib.lock().unwrap().playlist_tracks(id).map_err(err)
 }
 
+#[tauri::command]
+fn player(state: State<AppState>, cmd: Command) {
+    state.player.send(cmd)
+}
+
+#[tauri::command]
+fn player_status(state: State<AppState>) -> Status {
+    state.player.status()
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -138,10 +150,11 @@ pub fn run() {
                 lib: Mutex::new(Library::open(dir.join("library.db"))?),
                 store: Arc::new(secrets::KeyringStore::new(&app.config().identifier)),
                 open,
+                player: Player::spawn(),
             });
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks])
+        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

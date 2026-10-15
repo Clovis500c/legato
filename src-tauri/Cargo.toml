@@ -12,6 +12,7 @@ anyhow = "1.0.104"
 keyring = "4.2.0"
 music-connectors = { version = "0.1.0", path = "../crates/connectors" }
 music-core = { version = "0.1.0", path = "../crates/core" }
+music-player = { version = "0.1.0", path = "../crates/player" }
 serde = { version = "1.0.229", features = ["derive"] }
 serde_json = "1.0.154"
 tauri = { version = "2.12.4", features = [] }

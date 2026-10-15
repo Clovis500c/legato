@@ -1,0 +1,9 @@
+[package]
+name = "music-player"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+anyhow = "1.0.104"
+rodio = { version = "0.23.0", default-features = false, features = ["playback", "flac", "mp3", "mp4", "vorbis", "wav"] }
+serde = { version = "1.0.229", features = ["derive"] }
