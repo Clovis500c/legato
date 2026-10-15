@@ -1,0 +1,97 @@
+use anyhow::Result;
+use async_trait::async_trait;
+use serde::{Deserialize, Serialize, de::DeserializeOwned};
+use std::collections::{BTreeMap, HashMap};
+use std::sync::Mutex;
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum Source {
+    Spotify,
+    Youtube,
+    Local,
+}
+
+impl Source {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Source::Spotify => "spotify",
+            Source::Youtube => "youtube",
+            Source::Local => "local",
+        }
+    }
+}
+
+/// Common track model. `ids` = same track id per source.
+#[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Track {
+    pub title: String,
+    pub artist: String,
+    pub album: Option<String>,
+    pub duration_ms: Option<u32>,
+    pub isrc: Option<String>,
+    pub ids: BTreeMap<Source, String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct PlaylistRef {
+    pub id: String,
+    pub name: String,
+}
+
+/// Music service. Each user connects own account.
+#[async_trait]
+pub trait Connector: Send + Sync {
+    fn source(&self) -> Source;
+    fn is_connected(&self) -> bool;
+    async fn connect(&self) -> Result<()>;
+    fn disconnect(&self) -> Result<()>;
+    async fn list_playlists(&self) -> Result<Vec<PlaylistRef>>;
+    async fn playlist_tracks(&self, playlist_id: &str) -> Result<Vec<Track>>;
+    async fn search(&self, query: &str) -> Result<Vec<Track>>;
+    /// Find `track` on this service, or None.
+    async fn resolve(&self, track: &Track) -> Result<Option<Track>>;
+    /// Create playlist, return id. Tracks without id here skipped.
+    async fn write_playlist(&self, name: &str, tracks: &[Track]) -> Result<String>;
+}
+
+/// Secret JSON store. OS keychain in app, memory in tests.
+pub trait SecretStore: Send + Sync {
+    fn get(&self, key: &str) -> Option<serde_json::Value>;
+    fn set(&self, key: &str, value: Option<serde_json::Value>) -> Result<()>;
+}
+
+impl dyn SecretStore {
+    pub fn load<T: DeserializeOwned>(&self, key: &str) -> Option<T> {
+        self.get(key).and_then(|v| serde_json::from_value(v).ok())
+    }
+
+    pub fn save<T: Serialize>(&self, key: &str, value: &T) -> Result<()> {
+        self.set(key, Some(serde_json::to_value(value)?))
+    }
+}
+
+#[derive(Default)]
+pub struct MemoryStore(Mutex<HashMap<String, serde_json::Value>>);
+
+impl MemoryStore {
+    pub fn with(key: &str, value: serde_json::Value) -> Self {
+        Self(Mutex::new(HashMap::from([(key.to_string(), value)])))
+    }
+}
+
+impl SecretStore for MemoryStore {
+    fn get(&self, key: &str) -> Option<serde_json::Value> {
+        self.0.lock().unwrap().get(key).cloned()
+    }
+
+    fn set(&self, key: &str, value: Option<serde_json::Value>) -> Result<()> {
+        let mut map = self.0.lock().unwrap();
+        match value {
+            Some(v) => map.insert(key.to_string(), v),
+            None => map.remove(key),
+        };
+        Ok(())
+    }
+}
