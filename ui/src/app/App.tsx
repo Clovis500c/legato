@@ -1,4 +1,4 @@
-import { ArrowsClockwise, CaretLeft, CaretRight, Minus, Square, Warning, X } from '@phosphor-icons/react'
+import { ArrowsClockwise, CaretLeft, CaretRight, CheckCircle, Minus, Square, Warning, X } from '@phosphor-icons/react'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { useEffect } from 'react'
 import { AlbumsView, AlbumView, ArtistsView, ArtistView, PlaylistView, SongsView } from '../features/library/LibraryView'
@@ -51,10 +51,16 @@ function TitleBar() {
 }
 
 function Alerts() {
-  const { lastSync, error, dismissError, view } = useStore()
+  const { lastSync, error, dismissError, view, notice } = useStore()
   const errors = lastSync?.report.errors ?? []
   // Wizard shows its own error.
   const shown = view.name === 'settings' && view.wizard ? undefined : error
+  if (notice && !shown)
+    return (
+      <p role="status" className="mx-10 mb-3 flex items-center gap-2.5 rounded-lg border border-line bg-recess px-3.5 py-3 text-xs">
+        <CheckCircle size={15} className="text-ink-2" /> {notice}
+      </p>
+    )
   if (!shown && !errors.length) return null
   return (
     <div role="alert" className="mx-10 mb-3 flex items-start gap-2.5 rounded-lg border border-line bg-recess px-3.5 py-3 text-xs">
@@ -90,6 +96,18 @@ export function App() {
     void useSettings.getState().load()
     void refresh()
   }, [refresh])
+
+  // Ctrl+V outside text fields: YouTube link → library.
+  useEffect(() => {
+    const onPaste = (e: ClipboardEvent) => {
+      // Target may be document itself (nothing focused): not an Element.
+      if (e.target instanceof Element && e.target.closest('input, textarea, [contenteditable]')) return
+      const text = e.clipboardData?.getData('text').trim() ?? ''
+      if (/youtu\.?be/i.test(text)) void useStore.getState().addLink(text)
+    }
+    document.addEventListener('paste', onPaste)
+    return () => document.removeEventListener('paste', onPaste)
+  }, [])
 
   return (
     <div className="flex h-full flex-col">

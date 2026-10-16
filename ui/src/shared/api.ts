@@ -81,6 +81,8 @@ export const api = {
   playlistTracks: (id: number) => invoke<LibraryTrack[]>('playlist_tracks', { id }),
   /** New playlist id for create / duplicate. */
   editPlaylist: (edit: PlaylistEdit) => invoke<number | null>('edit_playlist', { edit }),
+  /** Pasted YouTube link → library. Returns "Artist – Title". */
+  addLink: (url: string) => invoke<string>('add_link', { url }),
   localFolders: () => invoke<string[]>('local_folders'),
   /** Saves folders, rescans. Returns local file count. */
   setLocalFolders: (folders: string[]) => invoke<number>('set_local_folders', { folders }),

@@ -27,6 +27,8 @@ interface State {
   sort: Sort
   busy: boolean
   error?: string
+  /** Short success message, auto-cleared. */
+  notice?: string
   lastSync?: { at: number; report: SyncReport }
   go: (view: View) => void
   goBack: () => void
@@ -41,6 +43,7 @@ interface State {
   disconnect: (source: Service) => Promise<void>
   /** Returns new playlist id for create / duplicate. */
   editPlaylist: (edit: PlaylistEdit) => Promise<number | null>
+  addLink: (url: string) => Promise<void>
 }
 
 const offline: SourceStatus = { configured: false, connected: false }
@@ -108,6 +111,13 @@ export const useStore = create<State>((set, get) => {
     sync: () => run(async () => set({ lastSync: { at: Date.now(), report: await api.sync() } })).then(() => {}),
     connect: (source, credentials) => run(() => api.connect(source, credentials)),
     disconnect: (source) => run(() => api.disconnect(source)).then(() => {}),
+    async addLink(url) {
+      let added = ''
+      if (await run(async () => (added = await api.addLink(url)))) {
+        set({ notice: `Ajouté : ${added}` })
+        setTimeout(() => set({ notice: undefined }), 4000)
+      }
+    },
     async editPlaylist(edit) {
       let id: number | null = null
       const ok = await run(async () => (id = await api.editPlaylist(edit)))

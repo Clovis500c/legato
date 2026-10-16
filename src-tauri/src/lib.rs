@@ -163,6 +163,18 @@ async fn rescan_local(state: State<'_, AppState>) -> CmdResult<usize> {
     rescan(&state, dirs).await
 }
 
+/// Pasted link → library track. Returns "Artist – Title" for the notice.
+#[tauri::command]
+async fn add_link(state: State<'_, AppState>, url: String) -> CmdResult<String> {
+    // Trust boundary: clipboard text.
+    if url.len() > 2048 {
+        return Err("Lien trop long".into());
+    }
+    let t = music_connectors::youtube::track_from_link(url.trim(), music_connectors::youtube::OEMBED).await.map_err(err)?;
+    state.lib.lock().unwrap().upsert_track(&t).map_err(err)?;
+    Ok(format!("{} – {}", t.artist, t.title))
+}
+
 #[tauri::command]
 fn edit_playlist(state: State<AppState>, edit: PlaylistEdit) -> CmdResult<Option<i64>> {
     state.lib.lock().unwrap().edit_playlist(edit).map_err(err)
@@ -254,7 +266,7 @@ pub fn run() {
             app.manage(AppState { lib: Mutex::new(lib), store: Arc::new(secrets::KeyringStore::new(&app.config().identifier)), open, player: Player::spawn(), shield });
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status, edit_playlist, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, restart_app])
+        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status, edit_playlist, add_link, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, restart_app])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

@@ -1,6 +1,6 @@
 # Music App v2 : plan proposé (à valider)
 
-Statut : **proposition, 2e version**. Complète, raye ou commente directement ce fichier, ou réponds dans le chat.
+Statut : **phases 1 et 2 livrées** (16/10/2026) : refonte Hi-Fi, thèmes, bouclier anti-pub, playlists perso, dossiers locaux, ajout par lien YouTube. Complète, raye ou commente directement ce fichier, ou réponds dans le chat.
 Maquettes : Figma, fichier « Bow Game / Music App », page **« Music App v3 — Hi-Fi »**. La page v2 « Apple » est abandonnée.
 
 ## 0. Tes décisions (à remplir)

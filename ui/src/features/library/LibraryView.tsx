@@ -99,7 +99,7 @@ export function SongsView() {
           tracks.length === 0 ? (
             <div className="flex flex-col items-center gap-3">
               <p className="text-base text-ink">Ta bibliothèque est vide</p>
-              <p>Connecte un service puis synchronise, ou glisse des fichiers audio sur la fenêtre.</p>
+              <p>Connecte un service puis synchronise, ajoute un dossier de musique, ou colle un lien YouTube (Ctrl+V).</p>
               <Button onClick={() => go({ name: 'settings', section: 'sources' })}>Connecter une source</Button>
             </div>
           ) : (
