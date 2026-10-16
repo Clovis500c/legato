@@ -136,6 +136,66 @@ impl YouTube {
     }
 }
 
+/// Outcome of adding videos to a playlist. Quota stop = run again tomorrow, already added ones are skipped.
+#[derive(Debug, Default, PartialEq)]
+pub struct AddReport {
+    pub added: usize,
+    /// Deleted videos YouTube refused.
+    pub unavailable: usize,
+    /// Daily quota ran out before the end.
+    pub quota_hit: bool,
+}
+
+impl YouTube {
+    /// Private playlist, 50 units.
+    pub async fn create_playlist(&self, name: &str) -> Result<String> {
+        #[derive(Deserialize)]
+        struct Created {
+            id: String,
+        }
+        let body = json!({ "snippet": { "title": name, "description": "Exported from Music App" }, "status": { "privacyStatus": "private" } });
+        let created: Created = self.oauth.json(Method::POST, &format!("{}/playlists?part=snippet,status", self.api), Some(&body)).await?;
+        Ok(created.id)
+    }
+
+    /// Video ids already in a playlist (1 unit per 50). None = playlist gone (deleted on YouTube).
+    pub async fn playlist_videos(&self, playlist_id: &str) -> Result<Option<Vec<String>>> {
+        #[derive(Deserialize)]
+        #[serde(rename_all = "camelCase")]
+        struct Item {
+            content_details: Details,
+        }
+        #[derive(Deserialize)]
+        #[serde(rename_all = "camelCase")]
+        struct Details {
+            video_id: String,
+        }
+        match self.all::<Item>("playlistItems", &[("part", "contentDetails"), ("playlistId", playlist_id)]).await {
+            Ok(items) => Ok(Some(items.into_iter().map(|i| i.content_details.video_id).collect())),
+            Err(e) if e.to_string().contains("playlistNotFound") => Ok(None),
+            Err(e) => Err(e),
+        }
+    }
+
+    /// Append in order, 50 units each (~190 a day on the free quota). Stops cleanly when the quota runs out.
+    pub async fn add_videos(&self, playlist_id: &str, video_ids: &[String]) -> Result<AddReport> {
+        let mut r = AddReport::default();
+        for video_id in video_ids {
+            let item = json!({ "snippet": { "playlistId": playlist_id, "resourceId": { "kind": "youtube#video", "videoId": video_id } } });
+            match self.oauth.json::<serde_json::Value>(Method::POST, &format!("{}/playlistItems?part=snippet", self.api), Some(&item)).await {
+                Ok(_) => r.added += 1,
+                Err(e) if e.to_string().contains("quotaExceeded") => {
+                    r.quota_hit = true;
+                    break;
+                }
+                Err(e) if e.to_string().contains("videoNotFound") => r.unavailable += 1,
+                Err(e) => return Err(e),
+            }
+        }
+        Ok(r)
+    }
+}
+
 fn video_track(title: &str, channel: &str, video_id: String, duration_ms: Option<u32>) -> Track {
     let (artist, title) = parse_video(title, channel);
     Track { title, artist, duration_ms, ids: BTreeMap::from([(Source::Youtube, video_id)]), ..Default::default() }
@@ -233,17 +293,9 @@ impl Connector for YouTube {
 
     /// 50 units per insert: ~190 tracks/day max.
     async fn write_playlist(&self, name: &str, tracks: &[Track]) -> Result<String> {
-        #[derive(Deserialize)]
-        struct Created {
-            id: String,
-        }
-        let body = json!({ "snippet": { "title": name }, "status": { "privacyStatus": "private" } });
-        let created: Created = self.oauth.json(Method::POST, &format!("{}/playlists?part=snippet,status", self.api), Some(&body)).await?;
-        for video_id in tracks.iter().filter_map(|t| t.ids.get(&Source::Youtube)) {
-            let item = json!({ "snippet": { "playlistId": created.id, "resourceId": { "kind": "youtube#video", "videoId": video_id } } });
-            let _: serde_json::Value = self.oauth.json(Method::POST, &format!("{}/playlistItems?part=snippet", self.api), Some(&item)).await?;
-        }
-        Ok(created.id)
+        let id = self.create_playlist(name).await?;
+        self.add_videos(&id, &tracks.iter().filter_map(|t| t.ids.get(&Source::Youtube).cloned()).collect::<Vec<_>>()).await?;
+        Ok(id)
     }
 }
 
@@ -255,6 +307,28 @@ mod tests {
 
     fn yt(s: &Server) -> YouTube {
         YouTube::with_urls("CID", "SECRET", valid_store("youtube"), no_open(), &s.url(), &s.url(), &s.url())
+    }
+
+    #[tokio::test]
+    async fn adds_videos_until_quota_runs_out() {
+        let mut s = Server::new_async().await;
+        let item = |v: &str| Matcher::PartialJson(json!({ "snippet": { "resourceId": { "videoId": v } } }));
+        s.mock("POST", "/playlistItems").match_query(Matcher::Any).match_body(item("ok1")).with_body("{}").create_async().await;
+        s.mock("POST", "/playlistItems").match_query(Matcher::Any).match_body(item("gone")).with_status(404).with_body(r#"{"error":{"errors":[{"reason":"videoNotFound"}]}}"#).create_async().await;
+        s.mock("POST", "/playlistItems").match_query(Matcher::Any).match_body(item("ok2")).with_status(403).with_body(r#"{"error":{"errors":[{"reason":"quotaExceeded"}]}}"#).create_async().await;
+        let never = s.mock("POST", "/playlistItems").match_query(Matcher::Any).match_body(item("ok3")).with_body("{}").expect(0).create_async().await;
+        let ids: Vec<String> = ["ok1", "gone", "ok2", "ok3"].map(String::from).to_vec();
+        assert_eq!(yt(&s).add_videos("PL", &ids).await.unwrap(), AddReport { added: 1, unavailable: 1, quota_hit: true });
+        never.assert_async().await;
+    }
+
+    #[tokio::test]
+    async fn lists_playlist_videos_or_none_when_deleted() {
+        let mut s = Server::new_async().await;
+        s.mock("GET", "/playlistItems").match_query(Matcher::UrlEncoded("playlistId".into(), "PL1".into())).with_body(r#"{"items":[{"contentDetails":{"videoId":"a"}},{"contentDetails":{"videoId":"b"}}]}"#).create_async().await;
+        s.mock("GET", "/playlistItems").match_query(Matcher::UrlEncoded("playlistId".into(), "GONE".into())).with_status(404).with_body(r#"{"error":{"errors":[{"reason":"playlistNotFound"}]}}"#).create_async().await;
+        assert_eq!(yt(&s).playlist_videos("PL1").await.unwrap(), Some(vec!["a".to_string(), "b".to_string()]));
+        assert_eq!(yt(&s).playlist_videos("GONE").await.unwrap(), None);
     }
 
     #[test]
