@@ -286,6 +286,19 @@ impl YouTubeMusic {
         }
         Ok(())
     }
+
+    /// Like videos: what "add to Liked Music" means on YouTube Music.
+    pub async fn like(&self, video_ids: &[String]) -> Result<()> {
+        for v in video_ids {
+            self.call("like/like", json!({ "target": { "videoId": v } })).await?;
+        }
+        Ok(())
+    }
+
+    /// Account this client acts as ("0" = signed-in default), as in Liked Music ids (`LM~key`).
+    pub fn account_key(&self) -> String {
+        self.account.as_ref().map_or_else(|| "0".into(), Account::key)
+    }
 }
 
 #[async_trait]
@@ -418,6 +431,16 @@ mod tests {
         yt.add_videos("PL", &["a".into()]).await.unwrap();
         assert!(yt.add_videos("PL", &["b".into()]).await.unwrap_err().to_string().contains("STATUS_FAILED"));
         ok.assert_async().await;
+    }
+
+    #[tokio::test]
+    async fn like_sends_each_video() {
+        let mut s = Server::new_async().await;
+        let m = s.mock("POST", "/like/like").match_query(Matcher::Any).match_body(Matcher::PartialJson(json!({ "target": { "videoId": "a" } }))).with_body("{}").create_async().await;
+        let yt = YouTubeMusic::with_api(&s.url(), COOKIE).unwrap();
+        yt.like(&["a".into()]).await.unwrap();
+        m.assert_async().await;
+        assert_eq!(yt.account_key(), "0");
     }
 
     #[test]

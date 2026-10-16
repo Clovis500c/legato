@@ -21,6 +21,9 @@ export interface LibraryTrack extends Track {
   id: number
 }
 
+/** Stable identity of a playlist: service + its id there (survives re-imports); own playlists by row id. */
+export const playlistKey = (p: Pick<LibraryPlaylist, 'id' | 'source' | 'sourceId' | 'custom'>) => (p.custom ? `custom:${p.id}` : `${p.source}:${p.sourceId}`)
+
 export interface LibraryPlaylist {
   id: number
   source: Source
@@ -228,6 +231,8 @@ export const api = {
   /** Windows accent (light / dark theme variants); null off Windows. */
   systemAccent: () => invoke<SystemAccent | null>('system_accent'),
   restartApp: () => invoke<void>('restart_app'),
+  /** Imported YouTube Music playlist: added on YouTube (Liked Music = like), then locally. */
+  addToYoutube: (id: number, trackIds: number[]) => invoke<{ added: number; noYoutube: number }>('add_to_youtube', { id, trackIds }),
   /** Raw JSON; validated by features/player/session. */
   loadSession: () => invoke<unknown>('load_session'),
   saveSession: (session: object) => invoke<void>('save_session', { session }),

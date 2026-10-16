@@ -325,6 +325,11 @@ impl Library {
         })
     }
 
+    /// Imported playlist mirror after the service accepted new tracks (custom ones: `edit_playlist`).
+    pub fn append_to_imported(&self, id: i64, track_ids: &[i64]) -> Result<()> {
+        self.tx(|| self.rewrite(id, |ids| ids.extend(track_ids)))
+    }
+
     fn new_custom(&self, name: &str) -> Result<i64> {
         let name = clean_name(name)?;
         let n: i64 = self.db.query_row("SELECT coalesce(max(id), 0) + 1 FROM playlists", [], |r| r.get(0))?;
@@ -486,6 +491,17 @@ mod tests {
         assert_eq!(all[0].track.isrc.as_deref(), Some("USQX91300108"));
         assert_eq!(all[0].track.album.as_deref(), Some("Random Access Memories"));
         assert_eq!(lib.playlist_tracks(pid)?.iter().map(|t| t.id).collect::<Vec<_>>(), vec![all[0].id]);
+        Ok(())
+    }
+
+    #[test]
+    fn imported_mirror_takes_tracks_custom_edit_still_refuses() -> Result<()> {
+        let lib = Library::in_memory()?;
+        let pid = lib.save_playlist(Source::Youtube, "PL1", "Mix", &[youtube()])?;
+        let other = lib.upsert_track(&spotify())?;
+        lib.append_to_imported(pid, &[other])?;
+        assert_eq!(lib.playlist_tracks(pid)?.len(), 2);
+        assert!(lib.edit_playlist(PlaylistEdit::Add { id: pid, track_ids: vec![other] }).is_err());
         Ok(())
     }
 

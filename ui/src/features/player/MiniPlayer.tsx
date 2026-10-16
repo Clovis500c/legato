@@ -1,5 +1,5 @@
 import { ArrowsOutSimple } from '@phosphor-icons/react'
-import { useCallback, useRef, useState, useSyncExternalStore } from 'react'
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { useSettings } from '../../app/settings'
 import { useStore } from '../../app/store'
 import { trackArt } from '../../shared/art'
@@ -48,20 +48,25 @@ export function MiniPlayer() {
     observer.current.observe(el)
   }, [])
 
-  const video = now?.via === 'youtube'
-  if (!now || full || !(video || on)) return null
-
   const w = width ?? miniWidth
   const size = { w, h: height }
   const rest = spotPosition(spot, win, size, INSETS)
+  const timer = useRef<ReturnType<typeof setTimeout>>(undefined)
+  const settle = useCallback(() => {
+    setSettling(true)
+    clearTimeout(timer.current)
+    timer.current = setTimeout(() => setSettling(false), SNAP_MS + 50)
+  }, [])
+  // Resting spot moved (window maximized / resized, card height changed): the card glides there, the video follows it
+  // frame by frame (a resize event alone only sees where the glide starts).
+  useEffect(() => settle(), [rest.x, rest.y, settle])
+
+  const video = now?.via === 'youtube'
+  if (!now || full || !(video || on)) return null
+
   const pos = drag ?? rest
   const grip = gripCorner(spot)
   const live = !!drag || width !== null || settling
-
-  const settle = () => {
-    setSettling(true)
-    setTimeout(() => setSettling(false), SNAP_MS + 50)
-  }
   const down = (e: React.PointerEvent) => {
     if (e.button !== 0 || (e.target instanceof Element && e.target.closest('button'))) return
     e.currentTarget.setPointerCapture(e.pointerId)

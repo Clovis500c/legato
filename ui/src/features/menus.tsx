@@ -8,6 +8,8 @@ import {
   ArrowSquareOut,
   Copy,
   Disc,
+  Eye,
+  EyeSlash,
   FolderOpen,
   Gear,
   Link,
@@ -37,8 +39,9 @@ import {
 import { openUrl, revealItemInDir } from '@tauri-apps/plugin-opener'
 import { useSettings } from '../app/settings'
 import { useStore } from '../app/store'
-import { api, type LibraryPlaylist, type LibraryTrack, type SearchHit } from '../shared/api'
+import { api, playlistKey, type LibraryPlaylist, type LibraryTrack, type SearchHit } from '../shared/api'
 import type { MenuEntry } from '../shared/ui/ContextMenu'
+import { SourceIcon } from '../shared/ui/SourceIcon'
 import { primaryArtist } from './library/filter'
 import { isFull, viaLabel, vias } from './player/sources'
 import { usePlayer } from './player/store'
@@ -67,7 +70,13 @@ function shufflePlay(tracks: LibraryTrack[]) {
   player().playTracks(tracks, Math.floor(Math.random() * tracks.length))
 }
 
-/** "Add to playlist ›": custom playlists, then a new one. */
+const hidden = () => new Set(useSettings.getState().settings.hiddenPlaylists)
+const setHidden = (key: string, hide: boolean) => {
+  const keys = useSettings.getState().settings.hiddenPlaylists.filter((k) => k !== key)
+  useSettings.getState().update({ hiddenPlaylists: hide ? [...keys, key] : keys })
+}
+
+/** "Add to playlist ›": a new one, your playlists, then your YouTube Music ones (added there too). Hidden ones left out. */
 function addTo(tracks: () => LibraryTrack[] | Promise<LibraryTrack[]>): MenuEntry {
   const add = async (id: number) => {
     const ids = (await tracks()).map((t) => t.id)
@@ -76,6 +85,20 @@ function addTo(tracks: () => LibraryTrack[] | Promise<LibraryTrack[]>): MenuEntr
     // editPlaylist reports its own errors.
     if (!app().error) app().notify(`Added to ${app().playlists.find((p) => p.id === id)?.name}`)
   }
+  const addYoutube = async (p: LibraryPlaylist) => {
+    const ids = (await tracks()).map((t) => t.id)
+    if (!ids.length) return
+    try {
+      const r = await api.addToYoutube(p.id, ids)
+      await app().refresh()
+      app().notify(r.noYoutube ? `Added to ${p.name}: ${r.added} · ${r.noYoutube} with no YouTube version` : `Added to ${p.name} (on YouTube Music too)`)
+    } catch (e) {
+      fail(e)
+    }
+  }
+  const off = hidden()
+  const shown = app().playlists.filter((p) => !off.has(playlistKey(p)))
+  const youtube = app().status.youtube.connected ? shown.filter((p) => p.source === 'youtube' && !p.custom) : []
   return {
     label: 'Add to playlist',
     icon: <ListPlus size={16} />,
@@ -91,11 +114,38 @@ function addTo(tracks: () => LibraryTrack[] | Promise<LibraryTrack[]>): MenuEntr
         },
       },
       '-',
-      ...app()
-        .playlists.filter((p) => p.custom)
-        .map((p) => ({ label: p.name, icon: <Playlist size={16} />, onSelect: () => void add(p.id) })),
+      ...shown.filter((p) => p.custom).map((p) => ({ label: p.name, icon: <Playlist size={16} />, onSelect: () => void add(p.id) })),
+      youtube.length > 0 && '-',
+      ...youtube.map((p) => ({ label: p.name, icon: <SourceIcon source="youtube" size={14} />, onSelect: () => void addYoutube(p) })),
     ],
   }
+}
+
+/** Playlists title in the sidebar: new playlist, hidden ones back. */
+export function playlistsMenu(): MenuEntry[] {
+  const off = hidden()
+  const gone = app().playlists.filter((p) => off.has(playlistKey(p)))
+  return [
+    {
+      label: 'New playlist',
+      icon: <Plus size={16} />,
+      onSelect: async () => {
+        const id = await app().editPlaylist({ type: 'create', name: 'New playlist' })
+        if (id !== null) app().go({ name: 'playlist', id })
+      },
+    },
+    '-',
+    {
+      label: `Hidden playlists${gone.length ? ` · ${gone.length}` : ''}`,
+      icon: <EyeSlash size={16} />,
+      disabled: !gone.length,
+      items: [
+        ...gone.map((p) => ({ label: p.name, icon: p.custom ? <Playlist size={16} /> : <SourceIcon source={p.source} size={14} />, onSelect: () => setHidden(playlistKey(p), false) })),
+        gone.length > 1 && '-',
+        gone.length > 1 && { label: 'Show all', icon: <Eye size={16} />, onSelect: () => useSettings.getState().update({ hiddenPlaylists: [] }) },
+      ],
+    },
+  ]
 }
 
 function playVia(t: LibraryTrack, list: LibraryTrack[], index: number): MenuEntry {
@@ -221,6 +271,7 @@ export function playlistMenu(p: LibraryPlaylist): MenuEntry[] {
     remote && { label: 'Copy link', icon: <Link size={16} />, onSelect: () => copy(remote, 'Link') },
     remote && { label: 'Open in YouTube Music', icon: <ArrowSquareOut size={16} />, onSelect: () => openUrl(remote).catch(fail) },
     '-',
+    { label: 'Hide playlist', icon: <EyeSlash size={16} />, onSelect: () => (setHidden(playlistKey(p), true), app().notify(`${p.name} hidden · right-click Playlists to show it again`)) },
     p.custom && {
       label: 'Delete…',
       icon: <Trash size={16} />,
