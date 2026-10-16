@@ -72,6 +72,24 @@ export interface DiscordSettings {
 /** Bumped when defaults change for everyone (saved settings get the new ones once). */
 const DEFAULTS_VERSION = 3
 
+/** Fade shapes, as audio editors name them. */
+export const FADE_CURVES = ['scurve', 'linear', 'equal', 'exp', 'log'] as const
+export type FadeCurve = (typeof FADE_CURVES)[number]
+
+/** Advanced fade (Settings › Advanced). Off: the simple "Fade between songs" seconds, S-curve both ways. */
+export interface FadeSettings {
+  advanced: boolean
+  /** Seconds, 0–12. */
+  out: number
+  in: number
+  outCurve: FadeCurve
+  inCurve: FadeCurve
+  /** Songs you pick yourself fade in too. */
+  skip: boolean
+  /** Fade on pause and play, ms (0 = off). */
+  pause: number
+}
+
 export interface Settings {
   /** Preset id, custom theme id, or 'system' (Modern / Modern Dark, following Windows). */
   theme: string
@@ -118,6 +136,7 @@ export interface Settings {
   miniWidth: number
   /** Fade between songs, seconds (0 = off). */
   crossfade: number
+  fade: FadeSettings
   /** YouTube subtitles (off: hidden even when the Google account turns them on). */
   subtitles: boolean
   /** Playlists left out of the sidebar and menus (playlistKey), still in the library. */
@@ -165,6 +184,7 @@ export const DEFAULTS: Settings = {
   miniSpot: 'br',
   miniWidth: 356,
   crossfade: 5,
+  fade: { advanced: false, out: 5, in: 5, outCurve: 'scurve', inCurve: 'scurve', skip: false, pause: 0 },
   subtitles: false,
   hiddenPlaylists: [],
   playlistCovers: {},
@@ -235,6 +255,7 @@ export function sanitize(raw: unknown): Settings {
     miniSpot: pick(r.miniSpot, SPOTS, DEFAULTS.miniSpot),
     miniWidth: typeof r.miniWidth === 'number' && Number.isFinite(r.miniWidth) ? Math.min(960, Math.max(356, Math.round(r.miniWidth))) : DEFAULTS.miniWidth,
     crossfade: typeof r.crossfade === 'number' && Number.isFinite(r.crossfade) ? Math.min(12, Math.max(0, Math.round(r.crossfade))) : DEFAULTS.crossfade,
+    fade: sanitizeFade(r.fade),
     subtitles: typeof r.subtitles === 'boolean' ? r.subtitles : DEFAULTS.subtitles,
     hiddenPlaylists: Array.isArray(r.hiddenPlaylists) ? [...new Set(r.hiddenPlaylists.filter((k): k is string => typeof k === 'string' && k.length <= 200))].slice(0, 500) : [],
     playlistCovers: sanitizeCovers(r.playlistCovers),
@@ -247,6 +268,24 @@ export function sanitize(raw: unknown): Settings {
     // Saved before the defaults changed: take the new ones once.
     ...(saved < 2 ? V2 : {}),
     ...(saved < 3 ? V3 : {}),
+  }
+}
+
+function sanitizeFade(raw: unknown): FadeSettings {
+  const d = DEFAULTS.fade
+  if (!raw || typeof raw !== 'object') return d
+  const r = raw as Record<string, unknown>
+  // Half seconds: the curve editor snaps to them.
+  const secs = (v: unknown, def: number) => (typeof v === 'number' && Number.isFinite(v) ? Math.min(12, Math.max(0, Math.round(v * 2) / 2)) : def)
+  const curve = (v: unknown, def: FadeCurve) => (FADE_CURVES.includes(v as FadeCurve) ? (v as FadeCurve) : def)
+  return {
+    advanced: r.advanced === true,
+    out: secs(r.out, d.out),
+    in: secs(r.in, d.in),
+    outCurve: curve(r.outCurve, d.outCurve),
+    inCurve: curve(r.inCurve, d.inCurve),
+    skip: r.skip === true,
+    pause: typeof r.pause === 'number' && Number.isFinite(r.pause) ? Math.min(2000, Math.max(0, Math.round(r.pause))) : d.pause,
   }
 }
 

@@ -13,23 +13,6 @@ export function playOrder(n: number, current: number, shuffle: boolean, rand = M
   return current >= 0 && current < n ? [current, ...rest] : rest
 }
 
-const ease = (x: number) => {
-  const c = Math.min(1, Math.max(0, x))
-  return c * c * (3 - 2 * c)
-}
-
-/**
- * Volume factor for fades between songs (seconds = 0: off). fadeIn = track started on its own after the previous one
- * (a manual pick starts at full volume). Tracks shorter than two fades never fade out.
- */
-export function fadeGain(positionMs: number, durationMs: number | null, seconds: number, fadeIn: boolean): number {
-  if (seconds <= 0) return 1
-  const span = seconds * 1000
-  const up = fadeIn ? ease(positionMs / span) : 1
-  const down = durationMs && durationMs > 2 * span ? ease((durationMs - positionMs) / span) : 1
-  return Math.min(up, down)
-}
-
 /** Order with `added` list indexes after the current track (play next) or at the end. */
 export function queued(order: number[], index: number, added: number[], next: boolean): number[] {
   const at = next ? order.indexOf(index) + 1 : order.length

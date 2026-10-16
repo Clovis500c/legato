@@ -160,7 +160,7 @@ session can resume here. Phase 6 comes after all of them.
 - [x] Toasts: "Added to <playlist>" / "Removed from <playlist>" (and already-there / failure).
 - [x] List covers: video frames cropped to the real art and centered (same bar detection as the big cover).
 - [x] Discord: own buttons are hidden by Discord on your own profile (friends see them). Explain, no fix.
-- [ ] Fade: simple setting by default; Advanced › advanced fade with a curve editor (shape of fade out / in, overlap,
+- [x] Fade: simple setting by default; Advanced › advanced fade with a curve editor (shape of fade out / in, overlap,
       graph of both volumes over time).
 - [ ] Interactive preview for visual settings (background blur, dimming, motion, …): small live sample of the effect.
 - [ ] Artists and Albums: filter and sort, like songs in playlists.

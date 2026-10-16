@@ -9,7 +9,9 @@ import { ACCENTS, COLUMNS, contrastReport, DEFAULTS, PALETTE_KEYS, PRESETS, sani
 import { Button } from '../../shared/ui/Button'
 import { Led, RoundButton, Segmented, Toggle } from '../../shared/ui/controls'
 import { PageHeader } from '../../shared/ui/PageHeader'
+import { curveLabels } from '../player/fade'
 import { SourcesView } from '../sources/SourcesView'
+import { FadeEditor } from './FadeEditor'
 import { searchSettings, type SettingEntry } from './search'
 
 const sections: { id: SettingsSection; label: string; icon: ReactNode }[] = [
@@ -132,9 +134,10 @@ const fonts: { value: Settings['font']; label: string }[] = [
 
 function Appearance() {
   const { settings: s, update, current } = useSettings()
+  const go = useStore((st) => st.go)
   const col = (c: Column) => (s.columns.includes(c) ? s.columns.filter((x) => x !== c) : COLUMNS.filter((x) => x === c || s.columns.includes(x)))
   const labels: Record<Column, string> = { album: 'Album', sources: 'Sources', duration: 'Duration' }
-  const reset: Partial<Settings> = { accent: DEFAULTS.accent, covers: DEFAULTS.covers, density: DEFAULTS.density, zoom: DEFAULTS.zoom, readout: DEFAULTS.readout, volume: DEFAULTS.volume, tuner: DEFAULTS.tuner, columns: DEFAULTS.columns, tint: DEFAULTS.tint, immersive: DEFAULTS.immersive, miniPlayer: DEFAULTS.miniPlayer, font: DEFAULTS.font, motion: DEFAULTS.motion, sidebarCounts: DEFAULTS.sidebarCounts, listCovers: DEFAULTS.listCovers, clickToPlay: DEFAULTS.clickToPlay, crossfade: DEFAULTS.crossfade, youtubeControls: DEFAULTS.youtubeControls, stage: DEFAULTS.stage, miniSpot: DEFAULTS.miniSpot }
+  const reset: Partial<Settings> = { accent: DEFAULTS.accent, covers: DEFAULTS.covers, density: DEFAULTS.density, zoom: DEFAULTS.zoom, readout: DEFAULTS.readout, volume: DEFAULTS.volume, tuner: DEFAULTS.tuner, columns: DEFAULTS.columns, tint: DEFAULTS.tint, immersive: DEFAULTS.immersive, miniPlayer: DEFAULTS.miniPlayer, font: DEFAULTS.font, motion: DEFAULTS.motion, sidebarCounts: DEFAULTS.sidebarCounts, listCovers: DEFAULTS.listCovers, clickToPlay: DEFAULTS.clickToPlay, crossfade: DEFAULTS.crossfade, fade: DEFAULTS.fade, youtubeControls: DEFAULTS.youtubeControls, stage: DEFAULTS.stage, miniSpot: DEFAULTS.miniSpot }
   return (
     <div className="flex flex-col gap-7">
       <div className="flex justify-end">
@@ -183,8 +186,14 @@ function Appearance() {
           <Row label="Volume control">
             <Segmented label="Volume control" value={s.volume} onChange={(volume) => update({ volume })} options={[{ value: 'knob', label: 'Knob' }, { value: 'bar', label: 'Bar' }]} />
           </Row>
-          <Row label="Fade between songs" sub={s.crossfade ? `${s.crossfade} s fade out, then in, when a song ends on its own` : 'Off'}>
-            <input type="range" aria-label="Fade between songs" min={0} max={12} step={1} value={s.crossfade} onChange={(e) => update({ crossfade: +e.target.value })} className="bar w-40" style={{ background: `linear-gradient(to right, var(--ink) ${(s.crossfade / 12) * 100}%, var(--line) 0)` }} />
+          <Row label="Fade between songs" sub={s.fade.advanced ? `Advanced: ${s.fade.out} s out (${curveLabels[s.fade.outCurve]}), ${s.fade.in} s in (${curveLabels[s.fade.inCurve]})` : s.crossfade ? `${s.crossfade} s fade out, then in, when a song ends on its own` : 'Off'}>
+            {s.fade.advanced ? (
+              <Button variant="ghost" onClick={() => go({ name: 'settings', section: 'advanced', focus: 'Advanced fade' })}>
+                Edit curves
+              </Button>
+            ) : (
+              <input type="range" aria-label="Fade between songs" min={0} max={12} step={1} value={s.crossfade} onChange={(e) => update({ crossfade: +e.target.value })} className="bar w-40" style={{ background: `linear-gradient(to right, var(--ink) ${(s.crossfade / 12) * 100}%, var(--line) 0)` }} />
+            )}
           </Row>
           <Row label="Tuner scale" sub="Tuner-style progress bar in full screen">
             <Toggle label="Tuner scale" checked={s.tuner} onChange={(tuner) => update({ tuner })} />
@@ -453,6 +462,14 @@ function AdvancedSection() {
   const { settings: s, update } = useSettings()
   return (
     <div className="flex max-w-190 flex-col gap-6">
+      <Group title="Fade between songs">
+        <div className="rounded-xl border border-line bg-raised">
+          <Row label="Advanced fade" sub={s.fade.advanced ? 'Your own lengths and shapes, below' : `Off: ${s.crossfade ? `${s.crossfade} s each way, S-curve` : 'no fade'} (Appearance › Player)`}>
+            <Toggle label="Advanced fade" checked={s.fade.advanced} onChange={(advanced) => update({ fade: { ...s.fade, advanced } })} />
+          </Row>
+        </div>
+        {s.fade.advanced && <FadeEditor />}
+      </Group>
       <Group title="Immersive player">
         <div className="rounded-xl border border-line bg-raised">
           <Row label="Background blur" sub={s.backdropBlur ? `${s.backdropBlur} px` : 'Sharp'}>

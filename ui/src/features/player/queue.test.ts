@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { fadeGain, nextIndex, playOrder, queued } from './queue'
+import { nextIndex, playOrder, queued } from './queue'
 
 describe('playOrder', () => {
   it('keeps list order, or shuffles with the current track first', () => {
@@ -17,27 +17,6 @@ describe('queued', () => {
   it('inserts after the current track or at the end', () => {
     expect(queued([2, 0, 1], 0, [3, 4], true)).toEqual([2, 0, 3, 4, 1])
     expect(queued([2, 0, 1], 0, [3], false)).toEqual([2, 0, 1, 3])
-  })
-})
-
-describe('fadeGain', () => {
-  const dur = 200_000
-  it('off at 0 seconds, full volume mid-track', () => {
-    expect(fadeGain(199_000, dur, 0, true)).toBe(1)
-    expect(fadeGain(100_000, dur, 5, true)).toBe(1)
-  })
-
-  it('fades in only after an automatic change, fades out at the end', () => {
-    expect(fadeGain(0, dur, 5, true)).toBe(0)
-    expect(fadeGain(0, dur, 5, false)).toBe(1)
-    expect(fadeGain(2500, dur, 5, true)).toBeCloseTo(0.5)
-    expect(fadeGain(dur - 2500, dur, 5, false)).toBeCloseTo(0.5)
-    expect(fadeGain(dur, dur, 5, false)).toBe(0)
-  })
-
-  it('short or unknown-length tracks never fade out', () => {
-    expect(fadeGain(9000, 9500, 5, false)).toBe(1)
-    expect(fadeGain(9000, null, 5, false)).toBe(1)
   })
 })
 

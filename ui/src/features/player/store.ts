@@ -3,7 +3,8 @@ import { useStore } from '../../app/store'
 import { api, type LibraryTrack, type PlayerCommand, type PlayerStatus, type SpotifyCommand, type SpotifyPlayback } from '../../shared/api'
 import { region } from '../../shared/format'
 import { endListen, progress, startListen } from './listens'
-import { fadeGain, nextIndex, playOrder, queued, type Repeat } from './queue'
+import { demoGain, demoLength, fadeGain, NO_FADE, type Fade } from './fade'
+import { nextIndex, playOrder, queued, type Repeat } from './queue'
 import { vias, type Via } from './sources'
 import { ytPost, type YtUpdate } from './youtube'
 
@@ -35,9 +36,9 @@ interface PlayerState {
   order: number[]
   shuffle: boolean
   repeat: Repeat
-  /** Fade between songs, seconds (Settings › Player). */
-  crossfade: number
-  /** Current track started on its own after the previous one: fades in. */
+  /** Fades between songs and on pause (Settings › Player, Advanced). */
+  fade: Fade
+  /** Current track started on its own after the previous one (or a skip, if asked): fades in. */
   fadeIn: boolean
   /** Where the current item started (resume), ms. */
   startAt: number
@@ -59,6 +60,8 @@ interface PlayerState {
   playAt: (index: number, via?: Via, opts?: { auto?: boolean; from?: number }) => Promise<void>
   /** Last session's queue, picked up where it stopped. */
   resume: (s: { list: LibraryTrack[]; index: number; order: number[]; shuffle: boolean; repeat: Repeat; positionMs: number; via?: Via }) => void
+  /** Plays a song change on the current song: fade out, silence, fade in (curve editor's Try it). */
+  previewFade: () => void
   /** Sends volume × fade to whatever plays. force = even if unchanged. */
   applyVolume: (force?: boolean) => void
   playFiles: (paths: string[]) => void
@@ -98,6 +101,26 @@ let volumeTimer: ReturnType<typeof setTimeout> | undefined
 // Last volume sent to the playing source (fades send many).
 let sent = -1
 
+// Extra volume factor over time (pause fades, fade preview), stepped at 30 Hz. A new ramp replaces the running one.
+let gainNow = 1
+let rampTimer: ReturnType<typeof setInterval> | undefined
+function ramp(gain: (t: number) => number, ms: number, done?: () => void) {
+  clearInterval(rampTimer)
+  const start = performance.now()
+  const tick = () => {
+    const t = Math.min(1, (performance.now() - start) / ms)
+    gainNow = gain(t)
+    usePlayer.getState().applyVolume()
+    if (t < 1) return
+    clearInterval(rampTimer)
+    gainNow = 1
+    done?.()
+    usePlayer.getState().applyVolume(true)
+  }
+  rampTimer = setInterval(tick, 33)
+  tick()
+}
+
 // Blocked videos this session, and the other uploads still to try for the current track.
 const blocked = new Set<string>()
 let others: { trackId: number; ids: string[] } | null = null
@@ -132,7 +155,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
   order: [],
   shuffle: false,
   repeat: 'off',
-  crossfade: 0,
+  fade: NO_FADE,
   fadeIn: false,
   startAt: 0,
   upcoming: [],
@@ -186,7 +209,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     const base: NowPlaying = { title: t.title, artist: t.artist, trackId: t.id, via: how }
     // Preview: 30 s from Apple, no resume point.
     const start = how === 'preview' ? 0 : from
-    set({ index, playing: true, positionMs: start, startAt: start, durationMs: t.durationMs, upcoming: [], fadeIn: auto && get().crossfade > 0 })
+    set({ index, playing: true, positionMs: start, startAt: start, durationMs: t.durationMs, upcoming: [], fadeIn: (auto || get().fade.skip) && get().fade.in > 0 })
     sent = -1
 
     if (how === 'youtube') {
@@ -257,12 +280,26 @@ export const usePlayer = create<PlayerState>((set, get) => ({
   },
 
   toggle() {
-    const { now, playing } = get()
+    const { now, playing, fade } = get()
     if (!now) return
-    if (now.via === 'youtube') yt(playing ? 'pauseVideo' : 'playVideo')
-    else if (now.via === 'spotify') void spotify({ type: playing ? 'pause' : 'resume' })
-    else send({ type: 'toggle' })
+    const pause = () => {
+      if (now.via === 'youtube') yt(playing ? 'pauseVideo' : 'playVideo')
+      else if (now.via === 'spotify') void spotify({ type: playing ? 'pause' : 'resume' })
+      else send({ type: 'toggle' })
+    }
     set({ playing: !playing })
+    // Fade on pause: down, then pause. On play: play silent, then up. Spotify: no volume control fast enough.
+    if (!fade.pause || now.via === 'spotify') return pause()
+    if (playing) return ramp((t) => 1 - t, fade.pause, pause)
+    gainNow = 0
+    get().applyVolume(true)
+    pause()
+    ramp((t) => t, fade.pause)
+  },
+
+  previewFade() {
+    const f = get().fade
+    ramp((t) => demoGain(t * demoLength(f), f), demoLength(f) * 1000)
   },
 
   seek(ms) {
@@ -287,7 +324,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
   },
 
   applyVolume(force = false) {
-    const { now, volume, positionMs, durationMs, crossfade, fadeIn } = get()
+    const { now, volume, positionMs, durationMs, fade, fadeIn } = get()
     const via = now?.via
     if (via === 'spotify') {
       // Spotify Connect: rate-limited API, no fades.
@@ -295,7 +332,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
       if (force) volumeTimer = setTimeout(() => void spotify({ type: 'volume', percent: Math.round(volume * 100) }), 300)
       return
     }
-    const value = Math.round(volume * fadeGain(positionMs, durationMs, crossfade, fadeIn) * 100) / 100
+    const value = Math.round(volume * fadeGain(positionMs, durationMs, fade, fadeIn) * gainNow * 100) / 100
     if (!force && value === sent) return
     sent = value
     if (via === 'youtube') yt('setVolume', Math.round(value * 100))
@@ -352,7 +389,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
       positionMs: s.positionMs,
       upcoming: now?.trackId ? [] : s.upcoming,
       ...(s.durationMs && { durationMs: s.durationMs }),
-      ...(i > index && { index: i, fadeIn: get().crossfade > 0, now: { title: list[i].title, artist: list[i].artist, trackId: list[i].id, via: 'local', path: s.path! } }),
+      ...(i > index && { index: i, fadeIn: get().fade.in > 0, now: { title: list[i].title, artist: list[i].artist, trackId: list[i].id, via: 'local', path: s.path! } }),
       ...(s.path && !now?.trackId && { now: { title: fileTitle(s.path), artist: 'Local file', path: s.path, via: 'local' } }),
     })
     if (s.path) get().applyVolume()
