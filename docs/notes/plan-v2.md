@@ -149,6 +149,29 @@ Original plan:
 - Older open items: playlist trackCount vs rows (Workout Mix), "Music App export test" playlist on YouTube Music (ask
   before deleting), add-another-Google-account and sign-out untested live, Figma mockups still in French.
 
+**User requests 2026-10-17 (third session)** — in progress. Work top to bottom, tick each line when committed, so a new
+session can resume here. Phase 6 comes after all of them.
+- [x] Adding to a YouTube Music playlist fails with `STATUS_FAILED` (seen from an album page): find why (duplicate?
+      wrong id?), fix, and show the real reason instead of "only playlists you own".
+- [x] YouTube's own overlay (title, share, "More videos", logo) sometimes shows when a song starts and never leaves: never
+      show it.
+- [x] Source pill in the deck ("● YOUTUBE"): icon only.
+- [x] Reopen in Now Playing when the app was closed there (save it with the last screen).
+- [x] Toasts: "Added to <playlist>" / "Removed from <playlist>" (and already-there / failure).
+- [x] List covers: video frames cropped to the real art and centered (same bar detection as the big cover).
+- [x] Discord: own buttons are hidden by Discord on your own profile (friends see them). Explain, no fix.
+- [ ] Fade: simple setting by default; Advanced › advanced fade with a curve editor (shape of fade out / in, overlap,
+      graph of both volumes over time).
+- [ ] Interactive preview for visual settings (background blur, dimming, motion, …): small live sample of the effect.
+- [ ] Artists and Albums: filter and sort, like songs in playlists.
+- [ ] Mixes: better algorithm, more mixes; covers as a 2×2 grid like playlists, setting in Advanced: grid / single
+      cover / current template.
+- [ ] Smart cache in Rust for most of the app (memory + disk, invalidated on change).
+- [ ] Home: quick access to every section + recommendations (local mixes, then the connected services' own
+      recommendations: YouTube Music home feed, Spotify if possible).
+- [ ] Phase 6: auto-updates in the background, never cutting playback, install and relaunch at once (resume where it
+      was); Settings › About: version, last update, update status.
+
 **Phase 6: polish** (M) — started 2026-10-16
 - Done: keyboard shortcuts (Settings › Shortcuts), media keys and the Windows media panel (title, artist, album, cover),
   written on the `windows` crate (SMTC) instead of `souvlaki` (would add an older `windows` version). Checked live: panel

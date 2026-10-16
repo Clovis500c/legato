@@ -7,7 +7,7 @@ export interface Fit {
   height: number
 }
 
-// Per image: measured once, small copy (bars only need a coarse look).
+// Per image: measured once, small copy (bars only need a coarse look). List rows measure too: room for a long scroll.
 export const fits = new Map<string, Fit>()
 const SAMPLE = 160
 
@@ -34,7 +34,7 @@ export function measure(img: HTMLImageElement, src: string): Fit {
     }
   }
   const fit = { box, width, height, ratio: clampRatio((box.w * width) / (box.h * height) || 1) }
-  if (fits.size > 200) fits.delete(fits.keys().next().value!)
+  if (fits.size > 3000) fits.delete(fits.keys().next().value!)
   fits.set(src, fit)
   return fit
 }

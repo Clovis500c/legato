@@ -1,18 +1,21 @@
 import { useEffect, useState } from 'react'
 import { isLetterboxed } from '../art'
-import { cropStyle, cropTo } from '../artbox'
+import { cropStyle, cropTo, mayHaveBars } from '../artbox'
 import { fits, measure } from '../artfit'
 
 /**
  * Artwork with a typographic fallback tile (initials). art = image candidates, best first (shared/art); each failed one falls to the next. eager = big, on screen right away.
- * fit = big cover: black bars of video frames cut off, real shape reported (the parent sizes the frame to it).
+ * Video frames: black bars cut off, art centered in the square. fit = big cover: real shape reported instead (the
+ * parent sizes the frame to it).
  */
 export function Cover({ title, art = [], size = 38, className = '', eager = false, fit }: { title: string; art?: string[]; size?: number; className?: string; eager?: boolean; fit?: (ratio: number) => void }) {
   // Failed URLs, not an index: virtualized rows reuse this component for other tracks.
   const [failed, setFailed] = useState<string[]>([])
   const src = art.find((s) => !failed.includes(s))
   const [, setMeasured] = useState(0)
-  const known = fit && src ? fits.get(src) : undefined
+  // Measured once per image (cached): video frames everywhere, any image for the big cover.
+  const measured = !!src && (!!fit || mayHaveBars(src))
+  const known = measured ? fits.get(src) : undefined
   useEffect(() => {
     if (known) fit?.(known.ratio)
   }, [known, fit])
@@ -37,11 +40,11 @@ export function Cover({ title, art = [], size = 38, className = '', eager = fals
           draggable={false}
           onError={() => setFailed((f) => [...f, src])}
           onLoad={(e) => {
-            if (!fit || fits.has(src)) return
+            if (!measured || fits.has(src)) return
             measure(e.currentTarget, src)
             setMeasured((n) => n + 1)
           }}
-          style={known ? cropStyle(cropTo(known.box, known.width, known.height, known.ratio)) : undefined}
+          style={known ? cropStyle(cropTo(known.box, known.width, known.height, fit ? known.ratio : 1)) : undefined}
           className={known ? 'absolute' : `absolute inset-0 size-full object-cover ${isLetterboxed(src) ? 'scale-[1.34]' : ''}`}
         />
       )}
