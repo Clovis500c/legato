@@ -153,6 +153,8 @@ export interface Mix {
   title: string
   reason: string
   trackIds: number[]
+  /** Section on the Mixes page. */
+  kind: 'daily' | 'moment' | 'favorites' | 'explore'
 }
 
 /** crates/connectors spotify::PlayerCommand (Spotify Connect). */

@@ -41,6 +41,7 @@ export const SETTINGS_INDEX: SettingEntry[] = [
   { section: 'advanced', label: 'Background blur', keywords: 'immersive blurry flou sharp' },
   { section: 'advanced', label: 'Background dimming', keywords: 'immersive dark veil brightness' },
   { section: 'advanced', label: 'Background motion', keywords: 'immersive animation drift' },
+  { section: 'advanced', label: 'Mix covers', keywords: 'mixes artwork grid daily template image' },
   { section: 'advanced', label: 'Reopen where you left off', keywords: 'restore state screen last session launch' },
   { section: 'advanced', label: 'Resume playback on launch', keywords: 'restore continue reopen last track start' },
   { section: 'advanced', label: 'Subtitles on videos', keywords: 'captions cc closed' },

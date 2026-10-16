@@ -261,3 +261,23 @@ export function VolumeScene({ volume }: Pick<Settings, 'volume'>) {
     </Frame>
   )
 }
+
+/** Mix cover: four song covers, the first one, or the numbered tile. */
+export function MixCoverScene({ mixCovers }: Pick<Settings, 'mixCovers'>) {
+  return (
+    <div role="img" aria-label="Mix cover preview" className="relative size-16 shrink-0 overflow-hidden rounded-md border border-line bg-recess">
+      {mixCovers === 'grid' && (
+        <span className="grid size-full grid-cols-2">
+          {[0, 90, 180, 270].map((h) => (
+            <span key={h} style={{ filter: `hue-rotate(${h}deg)` }}>
+              <SampleArt className="size-full" />
+            </span>
+          ))}
+        </span>
+      )}
+      {mixCovers === 'single' && <SampleArt className="size-full" />}
+      {mixCovers === 'template' && <span className="grid size-full place-items-center font-mono text-lg font-semibold text-ink-2">01</span>}
+      <span className="absolute top-1 left-1 rounded-full bg-black/60 px-1 font-mono text-[6px] tracking-[0.08em] text-white uppercase">Daily</span>
+    </div>
+  )
+}

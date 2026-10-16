@@ -164,7 +164,7 @@ session can resume here. Phase 6 comes after all of them.
       graph of both volumes over time).
 - [x] Interactive preview for visual settings (background blur, dimming, motion, …): small live sample of the effect.
 - [x] Artists and Albums: filter and sort, like songs in playlists.
-- [ ] Mixes: better algorithm, more mixes; covers as a 2×2 grid like playlists, setting in Advanced: grid / single
+- [x] Mixes: better algorithm, more mixes; covers as a 2×2 grid like playlists, setting in Advanced: grid / single
       cover / current template.
 - [ ] Smart cache in Rust for most of the app (memory + disk, invalidated on change).
 - [ ] Home: quick access to every section + recommendations (local mixes, then the connected services' own

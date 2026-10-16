@@ -13,7 +13,7 @@ import { curveLabels } from '../player/fade'
 import { usePlayer } from '../player/store'
 import { SourcesView } from '../sources/SourcesView'
 import { FadeEditor } from './FadeEditor'
-import { CountsScene, CoverShapes, DensityScene, FadeScene, ListCoversScene, MiniPlayerScene, MotionScene, NowPlayingScene, SourceIconScene, TunerScene, VolumeScene } from './previews'
+import { CountsScene, CoverShapes, DensityScene, FadeScene, ListCoversScene, MiniPlayerScene, MixCoverScene, MotionScene, NowPlayingScene, SourceIconScene, TunerScene, VolumeScene } from './previews'
 import { searchSettings, type SettingEntry } from './search'
 
 const sections: { id: SettingsSection; label: string; icon: ReactNode }[] = [
@@ -498,6 +498,22 @@ function AdvancedSection() {
           </Row>
           <Row label="Background motion" sub="The cover drifts slowly behind the player">
             <Toggle label="Background motion" checked={s.backdropMotion} onChange={(backdropMotion) => update({ backdropMotion })} />
+          </Row>
+        </div>
+      </Group>
+      <Group title="Mixes">
+        <div className="rounded-xl border border-line bg-raised">
+          <Row label="Mix covers" sub="Four of the mix's song covers like playlists, the first one, or the plain numbered tile" preview={<MixCoverScene mixCovers={s.mixCovers} />}>
+            <Segmented
+              label="Mix covers"
+              value={s.mixCovers}
+              onChange={(mixCovers) => update({ mixCovers })}
+              options={[
+                { value: 'grid', label: 'Grid of 4' },
+                { value: 'single', label: 'Single' },
+                { value: 'template', label: 'Template' },
+              ]}
+            />
           </Row>
         </div>
       </Group>

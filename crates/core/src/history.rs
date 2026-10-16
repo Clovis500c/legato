@@ -94,9 +94,18 @@ impl Library {
 
     /// Track ids of each custom playlist (taste signal: you picked them).
     pub fn custom_playlists(&self) -> Result<Vec<Vec<i64>>> {
-        let mut stmt = self.db.prepare_cached("SELECT pt.playlist_id, pt.track_id FROM playlist_tracks pt JOIN playlists p ON p.id = pt.playlist_id WHERE p.custom = 1 ORDER BY pt.playlist_id, pt.position")?;
+        self.playlist_lists(true)
+    }
+
+    /// Track ids of each imported playlist (YouTube Music, Spotify): your saves there, a weaker signal.
+    pub fn saved_playlists(&self) -> Result<Vec<Vec<i64>>> {
+        self.playlist_lists(false)
+    }
+
+    fn playlist_lists(&self, custom: bool) -> Result<Vec<Vec<i64>>> {
+        let mut stmt = self.db.prepare_cached("SELECT pt.playlist_id, pt.track_id FROM playlist_tracks pt JOIN playlists p ON p.id = pt.playlist_id WHERE p.custom = ?1 ORDER BY pt.playlist_id, pt.position")?;
         let mut out: Vec<(i64, Vec<i64>)> = Vec::new();
-        for row in stmt.query_map([], |r| Ok((r.get::<_, i64>(0)?, r.get::<_, i64>(1)?)))? {
+        for row in stmt.query_map([custom], |r| Ok((r.get::<_, i64>(0)?, r.get::<_, i64>(1)?)))? {
             let (pid, tid) = row?;
             match out.last_mut() {
                 Some((p, ids)) if *p == pid => ids.push(tid),

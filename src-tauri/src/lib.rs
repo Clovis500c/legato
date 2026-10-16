@@ -600,10 +600,10 @@ fn record_play(state: State<AppState>, play: Play) -> CmdResult<()> {
 #[tauri::command]
 fn mixes(state: State<AppState>, utc_offset: i64) -> CmdResult<Vec<Mix>> {
     let lib = state.lib.lock().unwrap();
-    let (tracks, plays, playlists, prefs) = (lib.tracks().map_err(err)?, lib.plays().map_err(err)?, lib.custom_playlists().map_err(err)?, lib.prefs().map_err(err)?);
+    let (tracks, plays, playlists, saved, prefs) = (lib.tracks().map_err(err)?, lib.plays().map_err(err)?, lib.custom_playlists().map_err(err)?, lib.saved_playlists().map_err(err)?, lib.prefs().map_err(err)?);
     drop(lib);
     let now = unix_now();
-    let input = music_core::mixes::Input { tracks: &tracks, plays: &plays, playlists: &playlists, prefs: &prefs, now, utc_offset: utc_offset.clamp(-14 * 3600, 14 * 3600), seed: today() };
+    let input = music_core::mixes::Input { tracks: &tracks, plays: &plays, playlists: &playlists, saved: &saved, prefs: &prefs, now, utc_offset: utc_offset.clamp(-14 * 3600, 14 * 3600), seed: today() };
     Ok(music_core::mixes::mixes(&input))
 }
 
