@@ -29,8 +29,9 @@ pub struct Presence {
     pub album: Option<String>,
     /// https cover (Discord fetches it itself).
     pub art: Option<String>,
-    /// Button to the track's page: (label, https url).
-    pub link: Option<(String, String)>,
+    /// Buttons (label, https url): the song's page, the app's. Discord takes 2.
+    #[serde(default)]
+    pub buttons: Vec<(String, String)>,
     pub playing: bool,
     pub position_ms: u64,
     pub duration_ms: Option<u64>,
@@ -65,8 +66,15 @@ pub fn activity(p: &Presence, now_ms: u64) -> Value {
     if let Some(art) = p.art.as_deref().filter(|u| u.starts_with("https://") && u.len() <= 256) {
         a["assets"] = json!({ "large_image": art, "large_text": field(p.album.as_deref().unwrap_or(&p.title)) });
     }
-    if let Some((label, url)) = p.link.as_ref().filter(|(l, u)| !l.is_empty() && u.starts_with("https://") && u.len() <= 512) {
-        a["buttons"] = json!([{ "label": label.chars().take(32).collect::<String>(), "url": url }]);
+    let buttons: Vec<Value> = p
+        .buttons
+        .iter()
+        .filter(|(l, u)| !l.trim().is_empty() && u.starts_with("https://") && u.len() <= 512)
+        .take(2)
+        .map(|(l, u)| json!({ "label": l.trim().chars().take(32).collect::<String>(), "url": u }))
+        .collect();
+    if !buttons.is_empty() {
+        a["buttons"] = Value::Array(buttons);
     }
     a
 }
@@ -209,7 +217,11 @@ mod tests {
             artist: "lexycat".into(),
             album: None,
             art: Some("https://i.ytimg.com/vi/abc/hqdefault.jpg".into()),
-            link: Some(("Listen on YouTube".into(), "https://www.youtube.com/watch?v=abc".into())),
+            buttons: vec![
+                ("Listen on YouTube".into(), "https://www.youtube.com/watch?v=abc".into()),
+                ("Get App On GitHub".into(), "https://github.com/Clovis500c/music-app".into()),
+                ("Third one".into(), "https://example.com".into()),
+            ],
             playing: true,
             position_ms: 30_000,
             duration_ms: Some(197_000),
@@ -250,11 +262,13 @@ mod tests {
         assert_eq!(a["assets"]["large_image"], "https://i.ytimg.com/vi/abc/hqdefault.jpg");
         assert_eq!(a["assets"]["large_text"], "jinx");
         assert_eq!(a["buttons"][0]["url"], "https://www.youtube.com/watch?v=abc");
+        assert_eq!(a["buttons"][1]["label"], "Get App On GitHub");
+        assert_eq!(a["buttons"].as_array().unwrap().len(), 2);
     }
 
     #[test]
     fn paused_short_long_and_unsafe_fields() {
-        let p = Presence { title: "x".into(), artist: "a".repeat(300), art: Some("http://x/y.jpg".into()), link: None, playing: false, status: StatusShows::Artist, ..song() };
+        let p = Presence { title: "x".into(), artist: "a".repeat(300), art: Some("http://x/y.jpg".into()), buttons: vec![("Bad".into(), "http://x".into()), (" ".into(), "https://x".into())], playing: false, status: StatusShows::Artist, ..song() };
         let a = activity(&p, 1_000_000);
         assert!(a.get("timestamps").is_none());
         assert!(a.get("assets").is_none());

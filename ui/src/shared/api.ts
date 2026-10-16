@@ -27,13 +27,13 @@ export interface LibraryTrack extends Track {
 /** Stable identity of a playlist: service + its id there (survives re-imports); own playlists by row id. */
 export const playlistKey = (p: Pick<LibraryPlaylist, 'id' | 'source' | 'sourceId' | 'custom'>) => (p.custom ? `custom:${p.id}` : `${p.source}:${p.sourceId}`)
 
-/** connectors discord::Presence. link = [button label, https url]. */
+/** connectors discord::Presence. buttons = [label, https url], 2 at most. */
 export interface Presence {
   title: string
   artist: string
   album: string | null
   art: string | null
-  link: [string, string] | null
+  buttons: [string, string][]
   playing: boolean
   positionMs: number
   durationMs: number | null

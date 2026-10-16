@@ -2,13 +2,19 @@ import { ArrowSquareOut, CaretDown, Gear, Info, MagnifyingGlass, SealCheck, Tag,
 import { openUrl } from '@tauri-apps/plugin-opener'
 import { useEffect, useState, type ReactNode } from 'react'
 import { useSettings } from '../../app/settings'
+import { useStore } from '../../app/store'
 import { api } from '../../shared/api'
-import type { DiscordSettings } from '../../shared/theme/theme'
+import { trackArt } from '../../shared/art'
+import { formatDuration } from '../../shared/format'
+import { DISCORD_APP, type DiscordSettings } from '../../shared/theme/theme'
 import { onMenu, openMenu, type MenuEntry } from '../../shared/ui/ContextMenu'
 import { Led, RoundButton, Segmented, Toggle } from '../../shared/ui/controls'
+import { Cover } from '../../shared/ui/Cover'
 import { Dialog } from '../../shared/ui/Dialog'
 import { PageHeader } from '../../shared/ui/PageHeader'
 import { addonMenu } from '../menus'
+import { usePlayer } from '../player/store'
+import { presenceFor } from './presence'
 import { ADDONS, allTags, DISCORD, filterAddons, type Addon, type Author, type Show } from './registry'
 import { setAddon } from './state'
 
@@ -56,17 +62,10 @@ function Card({ a, on, onOpen }: { a: Addon; on: boolean; onOpen: () => void }) 
         <RoundButton label={a.settings ? `${a.name} settings` : `About ${a.name}`} kind="plain" size="xs" onClick={onOpen}>
           {a.settings ? <Gear size={16} /> : <Info size={16} />}
         </RoundButton>
-        <Toggle
-          label={`Turn on ${a.name}`}
-          checked={on}
-          onChange={(v) => {
-            setAddon(a.id, v)
-            // Needs setup first: straight to its settings.
-            if (v && a.id === DISCORD && !useSettings.getState().settings.discord.appId) onOpen()
-          }}
-        />
+        <Toggle label={`Turn on ${a.name}`} checked={on} onChange={(v) => setAddon(a.id, v)} />
       </div>
       <p className="text-xs leading-relaxed text-ink-2">{a.description}</p>
+      {a.id === DISCORD && <DiscordCardStatus />}
       <footer className="mt-auto flex items-center gap-2 border-t border-line-soft pt-2.5 text-[11px]">
         <AuthorBadge author={a.author} />
         <span className="flex-1" />
@@ -92,49 +91,145 @@ function Row({ label, sub, children }: { label: string; sub?: ReactNode; childre
   )
 }
 
-function DiscordPanel() {
-  const d = useSettings((s) => s.settings.discord)
+type Live = 'off' | 'connecting' | 'waiting' | 'connected' | 'error'
+
+// Fixed colors, whatever the theme: a status light reads the same everywhere.
+const LIVE: Record<Live, { color: string; label: string; pulse?: boolean }> = {
+  off: { color: '#80848E', label: 'Turned off' },
+  connecting: { color: '#F0B232', label: 'Connecting to Discord…', pulse: true },
+  waiting: { color: '#F0B232', label: 'Discord isn’t open · retrying every 15 s', pulse: true },
+  connected: { color: '#23A55A', label: 'Connected to Discord', pulse: true },
+  error: { color: '#F23F43', label: 'Discord refused' },
+}
+
+/** Add-on state from Rust, polled while on. */
+function useDiscordLive(): { live: Live; label: string } {
   const on = useSettings((s) => s.settings.addons[DISCORD] === true)
-  const update = useSettings((s) => s.update)
-  const set = (patch: Partial<DiscordSettings>) => update({ discord: { ...useSettings.getState().settings.discord, ...patch } })
-  const [id, setId] = useState(d.appId)
-  const [status, setStatus] = useState<{ connected: boolean; error: string | null }>()
+  const appId = useSettings((s) => s.settings.discord.appId)
+  const [status, setStatus] = useState<{ connected: boolean; error: string | null; for: string }>()
   useEffect(() => {
-    if (!on || !d.appId) return
+    if (!on) return
     let live = true
-    const tick = () => void api.discordStatus().then((s) => live && setStatus(s), () => {})
-    tick()
+    const tick = () => void api.discordStatus().then((s) => live && setStatus({ ...s, for: appId }), () => {})
+    const first = setTimeout(tick, 300)
     const t = setInterval(tick, 2000)
     return () => {
       live = false
+      clearTimeout(first)
       clearInterval(t)
     }
-  }, [on, d.appId])
-  const state = !on ? 'Turned off' : !d.appId ? 'Add your Discord application ID below' : status?.connected ? 'Connected to Discord' : (status?.error ?? 'Connecting…')
-  const saveId = () => id !== d.appId && set({ appId: id })
+  }, [on, appId])
+  // Status of another application id (just changed): not known yet.
+  const s = status?.for === appId ? status : undefined
+  const live: Live = !on ? 'off' : s?.connected ? 'connected' : !s?.error ? 'connecting' : /isn't open/.test(s.error) ? 'waiting' : 'error'
+  return { live, label: live === 'error' ? s!.error! : LIVE[live].label }
+}
+
+function StatusPill({ live, label }: { live: Live; label: string }) {
+  const { color, pulse } = LIVE[live]
+  return (
+    <span role="status" className="flex w-fit items-center gap-2 rounded-full border px-2.5 py-1 text-[11px] font-medium transition-colors" style={{ color, borderColor: `color-mix(in srgb, ${color} 40%, transparent)`, background: `color-mix(in srgb, ${color} 12%, transparent)` }}>
+      <span className="relative flex size-2">
+        {pulse && <span className="absolute inset-0 animate-ping rounded-full opacity-60" style={{ background: color }} />}
+        <span className="relative size-2 rounded-full" style={{ background: color, boxShadow: `0 0 6px ${color}` }} />
+      </span>
+      {label}
+    </span>
+  )
+}
+
+/** What friends see, live with the player. Discord's own dark look, not the theme's. */
+function Preview({ d }: { d: DiscordSettings }) {
+  const { now, playing, positionMs, durationMs } = usePlayer()
+  const track = useStore((s) => s.tracks.find((t) => t.id === now?.trackId))
+  const p = presenceFor(now, track, playing, positionMs, durationMs, d)
+  const shell = 'flex flex-col gap-2.5 rounded-xl bg-[#232428] p-3.5 text-[#DBDEE1] shadow-[0_8px_24px_rgba(0,0,0,.25)]'
+  if (!p) return <div className={`${shell} items-center py-6 text-xs text-[#949BA4]`}>{now ? 'Paused: nothing shows on Discord' : 'Play a song to see the preview'}</div>
+  const pct = p.playing && p.durationMs ? Math.min(100, (p.positionMs / p.durationMs) * 100) : 0
+  return (
+    <div aria-label="Discord preview" className={shell}>
+      <p className="truncate text-[11px] font-bold tracking-wide text-[#B5BAC1] uppercase">Listening to {d.status === 'song' ? p.title : d.status === 'artist' ? p.artist : 'Music App'}</p>
+      <div className="flex items-center gap-3">
+        <Cover title={p.title} art={track ? trackArt(track) : []} size={64} className="rounded-lg! border-0!" />
+        <div className="flex min-w-0 flex-1 flex-col gap-0.5 text-[13px]">
+          <p className="truncate font-semibold text-white">{p.title}</p>
+          <p className="truncate text-[#B5BAC1]">{p.artist}</p>
+          {p.album && <p className="truncate text-xs text-[#949BA4]">{p.album}</p>}
+        </div>
+      </div>
+      {p.playing && p.durationMs ? (
+        <div className="flex items-center gap-2 font-mono text-[10px] text-[#B5BAC1]">
+          <span>{formatDuration(p.positionMs) || '0:00'}</span>
+          <span className="h-1 flex-1 overflow-hidden rounded-full bg-[#4E5058]">
+            <span className="block h-full rounded-full bg-white transition-[width] duration-500" style={{ width: `${pct}%` }} />
+          </span>
+          <span>{formatDuration(p.durationMs)}</span>
+        </div>
+      ) : (
+        !p.playing && <p className="text-[11px] text-[#949BA4]">Paused</p>
+      )}
+      {p.buttons.map(([label]) => (
+        <span key={label} className="rounded-[3px] bg-[#4E5058] py-1.5 text-center text-[13px] font-medium text-white">
+          {label}
+        </span>
+      ))}
+    </div>
+  )
+}
+
+function DiscordPanel() {
+  const d = useSettings((s) => s.settings.discord)
+  const update = useSettings((s) => s.update)
+  const set = (patch: Partial<DiscordSettings>) => update({ discord: { ...useSettings.getState().settings.discord, ...patch } })
+  const { live, label } = useDiscordLive()
+  const [id, setId] = useState(d.appId)
+  const saveId = () => {
+    const next = id || DISCORD_APP
+    setId(next)
+    if (next !== d.appId) set({ appId: next })
+  }
   return (
     <div className="flex flex-col gap-4">
-      <p className="flex items-center gap-2 rounded-lg border border-line-soft bg-recess px-3 py-2 text-xs">
-        <Led on={on && !!d.appId && !!status?.connected} /> {state}
-        {on && status?.error && d.appId && <span className="text-ink-3">· retrying every 15 s</span>}
-      </p>
-      <div className="rounded-xl border border-line bg-raised">
+      <div className="flex items-center justify-between gap-3">
+        <StatusPill live={live} label={label} />
+        <Toggle label="Turn on Discord Rich Presence" checked={live !== 'off'} onChange={(v) => setAddon(DISCORD, v)} />
+      </div>
+      <Preview d={d} />
+      <div className={`rounded-xl border border-line bg-raised transition-opacity ${live === 'off' ? 'opacity-60' : ''}`}>
+        <Row label="After “Listening to”" sub="In the member list. Your profile shows everything.">
+          <Segmented label="Status shows" value={d.status} onChange={(status) => set({ status })} options={[{ value: 'name', label: 'App name' }, { value: 'artist', label: 'Artist' }, { value: 'song', label: 'Song' }]} />
+        </Row>
+        <Row label="Button to the song" sub="Listen on YouTube, Spotify or Apple Music">
+          <Toggle label="Button to the song" checked={d.buttons} onChange={(buttons) => set({ buttons })} />
+        </Row>
+        <Row label="Get App On GitHub" sub="Button to the app’s page, for friends who want it">
+          <Toggle label="Get App On GitHub button" checked={d.github} onChange={(github) => set({ github })} />
+        </Row>
+        <Row label="Show while paused" sub="Off: nothing shows on Discord while paused">
+          <Toggle label="Show while paused" checked={d.paused} onChange={(paused) => set({ paused })} />
+        </Row>
         <Row
-          label="Discord application ID"
+          label="Discord application"
           sub={
             <>
-              Its name shows after “Listening to”. On the Discord Developer Portal: New Application, name it (Music App), copy the Application ID.{' '}
+              {d.appId === DISCORD_APP ? 'Music App’s own. ' : 'Your own. '}Use yours to change the name after “Listening to”.{' '}
               <button onClick={() => void openUrl('https://discord.com/developers/applications')} className="inline-flex items-center gap-1 font-medium text-ink underline-offset-2 hover:underline">
-                Open the portal <ArrowSquareOut size={11} />
+                Developer Portal <ArrowSquareOut size={11} />
               </button>
             </>
           }
-        />
-        <div className="border-b border-line-soft px-4 pb-3">
+        >
+          {d.appId !== DISCORD_APP && (
+            <button onClick={() => (setId(DISCORD_APP), set({ appId: DISCORD_APP }))} className="text-xs font-medium text-ink-2 hover:text-ink">
+              Use default
+            </button>
+          )}
+        </Row>
+        <div className="px-4 pb-3">
           <input
             value={id}
             inputMode="numeric"
-            placeholder="123456789012345678"
+            placeholder={DISCORD_APP}
             aria-label="Discord application ID"
             onChange={(e) => setId(e.target.value.replace(/\D/g, '').slice(0, 32))}
             onBlur={saveId}
@@ -142,19 +237,16 @@ function DiscordPanel() {
             className="h-8 w-full rounded-md border border-line bg-bg px-2.5 font-mono text-[12px] outline-none placeholder:text-ink-3 focus:border-ink-3"
           />
         </div>
-        <Row label="After “Listening to”" sub="In the member list. Your profile shows everything.">
-          <Segmented label="Status shows" value={d.status} onChange={(status) => set({ status })} options={[{ value: 'name', label: 'App name' }, { value: 'artist', label: 'Artist' }, { value: 'song', label: 'Song' }]} />
-        </Row>
-        <Row label="Button to the song" sub="Listen on YouTube, Spotify or Apple Music">
-          <Toggle label="Button to the song" checked={d.buttons} onChange={(buttons) => set({ buttons })} />
-        </Row>
-        <Row label="Show while paused" sub="Off: nothing shows on Discord while paused">
-          <Toggle label="Show while paused" checked={d.paused} onChange={(paused) => set({ paused })} />
-        </Row>
       </div>
-      <p className="text-[11px] text-ink-3">Talks to the Discord app on this PC only. Song, artist, cover link and song link go to Discord while this is on.</p>
+      <p className="text-[11px] text-ink-3">Talks to the Discord app on this PC only. Song, artist, cover link and song link go to Discord while this is on. Discord hides your own buttons from you; friends see them.</p>
     </div>
   )
+}
+
+/** Live state on the card (on only). */
+function DiscordCardStatus() {
+  const { live, label } = useDiscordLive()
+  return live === 'off' ? null : <StatusPill live={live} label={label} />
 }
 
 function About({ a }: { a: Addon }) {

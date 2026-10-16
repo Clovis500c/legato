@@ -53,7 +53,10 @@ export interface PlaylistCover {
 export const SPOTS = ['tl', 't', 'tr', 'l', 'r', 'bl', 'b', 'br'] as const
 export type Spot = (typeof SPOTS)[number]
 
-/** Discord Rich Presence add-on. appId = the user's own Discord application (its name shows as "Listening to …"). */
+/** The app's own Discord application (public id, not a secret): its name shows after "Listening to". */
+export const DISCORD_APP = '1560758371064221839'
+
+/** Discord Rich Presence add-on. appId = the app's Discord application, or the user's own. */
 export interface DiscordSettings {
   appId: string
   /** After "Listening to" in the member list: the application's name, the artist or the song. */
@@ -62,6 +65,8 @@ export interface DiscordSettings {
   buttons: boolean
   /** Keep the song up while paused (no progress bar). */
   paused: boolean
+  /** "Get App On GitHub" button. */
+  github: boolean
 }
 
 /** Bumped when defaults change for everyone (saved settings get the new ones once). */
@@ -167,7 +172,7 @@ export const DEFAULTS: Settings = {
   resume: true,
   reopen: true,
   addons: {},
-  discord: { appId: '', status: 'song', buttons: true, paused: false },
+  discord: { appId: DISCORD_APP, status: 'song', buttons: true, paused: false, github: true },
   defaultsVersion: DEFAULTS_VERSION,
 }
 
@@ -253,6 +258,7 @@ function sanitizeDiscord(raw: unknown): DiscordSettings {
     status: pick(d.status, ['name', 'artist', 'song'] as const, def.status),
     buttons: typeof d.buttons === 'boolean' ? d.buttons : def.buttons,
     paused: typeof d.paused === 'boolean' ? d.paused : def.paused,
+    github: typeof d.github === 'boolean' ? d.github : def.github,
   }
 }
 
