@@ -1,6 +1,6 @@
 # Music App — starting brief
 
-> Historical brief. The stack later moved from Electron to Tauri 2 + Rust (see `CLAUDE.md`).
+> Historical brief (first session). The stack later moved from Electron to Tauri 2 + Rust; see `../architecture.md`.
 
 ## Vision
 Desktop app (Electron + React + TypeScript) that lets anyone connect their own music accounts

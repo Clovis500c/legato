@@ -22,7 +22,7 @@ Mockups: Figma, file "Bow Game / Music App", page **"Music App v3 — Hi-Fi"**. 
 |---|---|---|---|
 | **YouTube** | Search with a free API key (about 100 searches a day). Pasted link: oEmbed, no key | **Yes**: official embedded player (proven in the app) | Import playlists and "Likes", export playlists |
 | **Apple Music** | Search the public iTunes catalog, **no key** (about 20 requests/min). Pasted link: lookup by id | 30 s preview, then automatic YouTube fallback | Full playback: MusicKit + Apple Developer + subscription + DRM. High risk in WebView2 |
-| **Spotify** | **Pasted link only** (oEmbed). Without Premium, the whole Spotify API refuses dev-mode requests, search included (February 2026 rule) | Preview through the official Spotify player, then YouTube fallback | Premium: drive the Spotify app (Spotify Connect, see `playback.md`) |
+| **Spotify** | **Pasted link only** (oEmbed). Without Premium, the whole Spotify API refuses dev-mode requests, search included (February 2026 rule) | Preview through the official Spotify player, then YouTube fallback | Premium: drive the Spotify app (Spotify Connect, see `../playback.md`) |
 | **Local files** | Watched folders, drag and drop | Yes (gapless Rust engine) | — |
 
 Playback rule: for each track, play the best available source. **Local file, then YouTube (full), then connected service, then 30 s preview.**
@@ -74,7 +74,7 @@ Playback rule: for each track, play the best available source. **Local file, the
     - cover tint;
     - AA contrast checked live, with a warning when a text becomes unreadable;
   - duplicate, export or import as `.theme`.
-- Screens fixed after the user review (`docs/ui-review.md`):
+- Screens fixed after the user review (`ui-review.md`):
   - actions visible on hover;
   - dockable right panel (queue, info, local lyrics);
   - big cover;
@@ -109,7 +109,7 @@ Playback rule: for each track, play the best available source. **Local file, the
 - YouTube export: any playlist (not YouTube imports) → private YouTube playlist. Export again = same playlist, only missing
   videos added; stops cleanly at the daily quota and resumes next time (remote id saved before adding). Removals and
   reordering are not mirrored. Tested with mocks; not run on a real account (YouTube not connected on the dev machine).
-- Spotify Connect: player API, IPC and "SP" input built and mock-tested (see `playback.md`); needs Premium to try for real.
+- Spotify Connect: player API, IPC and "SP" input built and mock-tested (see `../playback.md`); needs Premium to try for real.
 - MusicKit: not started (needs an Apple Developer account).
 - Update 2026-10-16 (user's choice): YouTube keys removed. Google sign-in in an app window + YouTube Music's web API
   (`crates/connectors/src/ytmusic.rs`): library sync for several accounts, search with no daily limit, export with no quota.
@@ -131,7 +131,7 @@ Original plan:
 - More options: font, covers in lists, one-click play, sidebar counts, start screen, animations; interface size on Apply.
 - Real Google profile pictures in Settings › Accounts; Inputs box removed from the sidebar.
 - Spotify without keys: public playlists and albums by link (embed page, first 100 tracks), played through their
-  YouTube versions; Spotify's own web player in a window (preview). See `playback.md`.
+  YouTube versions; Spotify's own web player in a window (preview). See `../playback.md`.
 
 **To do next (2026-10-16, session stopped on the usage limit)**
 - Spotify without keys (user chose link import, 2026-10-16), still open:

@@ -1,82 +1,47 @@
+<div align="center">
+
 # Music App
 
-**All your music in one place: YouTube, Spotify, Apple Music and your local files, in a single library.**
-A fast, lightweight desktop app (Tauri 2 + Rust), serverless: your data stays on your computer.
+**One library for YouTube Music, Spotify, Apple Music and your own files.**
 
-![Library, Paper theme](docs/images/songs.png)
+A fast, private desktop music player for Windows, built with Tauri 2 and Rust.
+
+![Platform](https://img.shields.io/badge/platform-Windows%2010%20%7C%2011-0078D4)
+![Tauri](https://img.shields.io/badge/Tauri-2-24C8DB)
+![Rust](https://img.shields.io/badge/Rust-2024-B7410E)
+![License](https://img.shields.io/badge/license-source--available-lightgrey)
+
+![Music App library](docs/images/songs.png)
+
+</div>
 
 ## Features
 
-- **Unified library**:
-  - the same track on several services is recognized and merged (by ISRC, or by title, artist and duration);
-  - Songs, Albums, Artists and Playlists views;
-  - real cover art everywhere (YouTube Music, YouTube, Apple Music, Spotify, covers embedded in local files);
-  - instant search (Ctrl K).
-- **Right-click menus everywhere**: tracks, playlists, albums, artists, mixes, search results and the player
-  (play next, add to queue, play via, add to playlist, go to album or artist, copy link, copy video URL at the current time…).
-- **Playback**:
-  - one queue for every source: each track plays through its best source;
-  - local files played natively and gapless (Rust engine, rodio/symphonia);
-  - YouTube through the official embedded player;
-  - Apple Music 30-second previews, with a link to the store;
-  - "Play via" switches the current track to another of its sources;
-  - "Find full versions" looks up a YouTube version for tracks that only preview;
-  - one player design for every source: shuffle, repeat (queue or track), Now Playing tinted by the cover,
-    mini player (the YouTube video always stays visible, with our controls below it).
-- **Add music**:
-  - search the Apple Music catalog (no account) and YouTube;
-  - add a track by pasting a YouTube link (Ctrl+V);
-  - scanned music folders (tags read with lofty).
-- **Custom playlists**: create, rename, reorder, duplicate. A playlist imported from a service can be duplicated to edit it.
-- **Your YouTube Music library**: sign in with Google (no keys), even several accounts or channels; their playlists and Liked Music come in. Spotify playlists with your own Spotify app key (Premium required in developer mode).
-- **Export to YouTube Music**: any playlist becomes a private YouTube Music playlist; exporting again only adds what is missing.
-- **Share playlists between Music Apps, serverless**:
-  - compact code (about 9 bytes per track) as a `musicapp://` link or a QR code, read back from a screenshot;
-  - nearby: a 6-digit code on the same network (mDNS discovery, SPAKE2 key exchange, encrypted transfer);
-  - import shows what's already in your library and looks up the rest on YouTube and Apple Music.
-- **Mixes, computed on your PC**: Daily Mixes from the artists you hear together, a time-of-day mix and Rediscover, built from your listening history and playlists. Steer them with "Less like this" and "Never in mixes"; nothing leaves your computer.
-- **Customization**:
-  - follows Windows by default: light or dark, and the Windows accent color, with a YouTube-style look (Roboto, YouTube's palettes);
-  - 8 themes and a theme editor (13 colors, contrast checked live, export and import);
-  - accent, font, cover shape, density, interface size, columns, covers in lists, one-click play, sidebar counts,
-    start screen, animations, player options (readout, volume knob, tuner, cover tint, mini player).
-- **Shield**: ad and tracker blocking with Brave's engine (adblock-rust, EasyList and EasyPrivacy lists).
-- **Now Playing**: video, cover or Auto (picks the cover for still-image uploads), immersive blurred background,
-  YouTube-like bar and volume, fades between songs, Up next panel; the mini player can be dragged to 8 spots and resized.
-- **Picks up where you left off**: same song, position, queue and screen when the app opens again.
-- **Library tools**: one-click play, YouTube-style sort (date added, most played, A–Z…), hidden playlists, playlist
-  covers (logo, first song, 4-song grid, your image), add songs to your YouTube Music playlists.
-- **Add-ons** (sidebar, above Settings): extra features, off until you turn them on, each with its author and a
-  verified mark. First one: **Discord Rich Presence** (song, artist, cover, time left and a button to the song on
-  your Discord profile, plus an optional "Get App On GitHub" button, through the Discord app on your PC; live status
-  and preview in its settings).
-- **Keyboard and media keys**: Space, Ctrl+arrows, Shift+arrows and more (Settings › Shortcuts); media keys and the
-  Windows media panel (volume flyout, lock screen) show the current track with its cover and control playback.
-- **Now Playing screen**: video or cover sized to the window, readout, tuner scale, input selector, volume knob, queue in play order.
+- **Unified library.** The same song on several services becomes one track (matched by ISRC, or title, artist and
+  duration). Songs, Albums, Artists and Playlists views, instant search, YouTube-style sorting.
+- **One player for every source.** Local files (native, gapless), YouTube (official embedded player), Apple Music
+  previews and Spotify Connect share one queue, with crossfade, an immersive Now Playing screen and a mini player.
+- **Playlists.** Import from YouTube Music and Spotify, create your own, export to YouTube Music, and share them by
+  link, QR code or a 6-digit code on your local network.
+- **Mixes made on your PC.** Daily Mixes, a time-of-day mix and Rediscover, built from your own listening history.
+- **Windows integration.** Media keys, the Windows media panel, tray icon, keyboard shortcuts, system light/dark mode
+  and accent color.
+- **Customization.** Themes with a built-in editor, layout and player options.
+- **Add-ons.** Optional extras, off by default. First available: Discord Rich Presence.
+- **Ad and tracker blocking**, built in.
 
-| Graphite theme | Theme editor | Add music |
-|---|---|---|
-| ![Graphite](docs/images/graphite.png) | ![Themes](docs/images/themes.png) | ![Add](docs/images/add.png) |
+## Privacy and playback
 
-## Principles
-
-- **Serverless**:
-  - no backend: the library is a local SQLite database;
-  - keys and tokens live in the Windows credential vault (`keyring` crate).
-- **Sign in, no keys**: YouTube Music with your Google account, on Google's own page (like Pear Desktop); the app never sees your password. Spotify still needs your own app key (it has no keyless sign-in).
-- **Official playback**:
-  - official players, local files, Apple previews held in memory, Spotify Connect (remote control of your own Spotify app, Premium);
-  - no audio extraction, nothing written to disk.
-- **Original code**: everything is written from scratch.
+- **No server, no account of ours.** Your library is a local SQLite database; tokens stay in the Windows Credential
+  Manager.
+- **Official playback only.** Music plays through each service's own player or from your files. Nothing is downloaded
+  or extracted.
+- **One gateway to the network.** All requests go through the Rust core; the interface never calls the network itself.
 
 ## Getting started
 
-Requirements:
-
-- Windows 10 or 11 with WebView2;
-- [Rust](https://rustup.rs) stable;
-- Node.js 22 or later;
-- [pnpm](https://pnpm.io).
+Requirements: Windows 10 or 11 (WebView2), [Rust](https://rustup.rs) stable, Node.js 22 or later and
+[pnpm](https://pnpm.io).
 
 ```bash
 pnpm install
@@ -86,65 +51,38 @@ pnpm install
 pnpm dev
 ```
 
-| Command | What it does |
+Then connect your services in **Settings › Accounts**:
+
+| Service | How it connects |
 |---|---|
-| `pnpm dev` | Runs the app in development (Vite + Tauri) |
-| `pnpm check` | Typecheck, lint, Vitest, clippy and `cargo test`. Must pass before every commit |
-| `pnpm test` | Interface tests |
-| `cargo test --workspace` | Rust tests |
-| `pnpm build` | Windows installer |
+| YouTube Music | Sign in with Google, on Google's own page. Several accounts supported. |
+| Spotify | Your own app from the Spotify Developer Dashboard (Premium needed in development mode), or paste public playlist links. |
+| Apple Music | Catalog search and 30-second previews, no account needed. |
+| Local files | Add your music folders. |
 
-### Connect your services
+## Development
 
-In the app, open **Settings › Accounts**:
-
-- **YouTube Music**: "Sign in with Google". Add more Google accounts and pick which ones to sync. Uses YouTube Music's own web access (unofficial, may break if YouTube changes it).
-- **Spotify**: an app on the Spotify Developer Dashboard (developer mode: the owner needs Premium, 5 users max).
-  No keys: paste a public Spotify playlist or album link anywhere (Ctrl+V) to import it (first 100 tracks); songs play
-  through their YouTube versions. "Spotify web player" opens Spotify's own player in a window (preview).
-- **Local files**: add one or more music folders.
-
-## Architecture
+| Command | Description |
+|---|---|
+| `pnpm dev` | Run the app with hot reload |
+| `pnpm check` | Type check, lint, tests (Vitest and cargo) and Clippy. Must pass before every commit |
+| `pnpm build` | Build the Windows installer |
 
 ```
-crates/
-  core/        model, track matching, SQLite library, sync, local scan, share codes (MA1, QR), history and mixes
-  connectors/  OAuth PKCE (loopback), YouTube, Spotify, iTunes catalog and previews, nearby share
-  player/      local audio engine (dedicated thread, gapless queue, in-memory previews)
-  shield/      ad blocker (adblock-rust) and YouTube player script
-src-tauri/     Tauri shell: IPC commands, keychain, WebView2 hook
-ui/            React 19 + Zustand + Tailwind v4, organized by feature
-docs/          playback choices (playback.md), plan (plan-v2.md), UI review (ui-review.md)
+crates/core         Library model, track matching, SQLite, sync, mixes, sharing
+crates/connectors   YouTube Music, Spotify, Apple Music catalog, Discord, nearby sharing
+crates/player       Native audio engine (rodio, symphonia) with a gapless queue
+crates/shield       Ad and tracker blocker
+src-tauri           Desktop shell: IPC commands, keychain, Windows integration
+ui                  React 19 interface (Zustand, Tailwind CSS 4), organized by feature
 ```
 
-Rules:
-
-- all logic lives in `crates/`;
-- `ui/src/shared/api.ts` is the only place that calls IPC;
-- the interface never touches the network: everything goes through Rust;
-- long lists are virtualized.
-
-## Roadmap
-
-Details in [docs/plan-v2.md](docs/plan-v2.md). Main steps:
-
-- **Done**:
-  - Hi-Fi redesign and themes;
-  - ad shield;
-  - custom playlists;
-  - local folders;
-  - catalog search;
-  - smart playback (one queue for every source, previews, find versions);
-  - playlist sharing (link, QR, nearby code);
-  - personalized mixes;
-  - YouTube export and Spotify Connect;
-  - Windows theme and accent, cover art, one player for every source, right-click menus.
-  - keyboard shortcuts, media keys and the Windows media panel.
-- **Next**:
-  - polish (tray icon, auto-updates, installer, performance).
+More in [docs/](docs/README.md) and [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
-Source-available, not open source. You may use the app; copying or reusing the code or any part of the app needs the
-author's written permission, and any permitted reuse must credit the author and link to this repository. See [LICENSE](LICENSE).
-Spotify, YouTube and Apple Music are trademarks of their owners. Logos come from [Simple Icons](https://simpleicons.org) (CC0).
+Source-available, not open source. You may use the app for free; copying or reusing any part of it requires the
+author's written permission. See [LICENSE](LICENSE).
+
+Spotify, YouTube, Apple Music and Discord are trademarks of their respective owners. Service logos come from
+[Simple Icons](https://simpleicons.org) (CC0).

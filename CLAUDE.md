@@ -1,6 +1,7 @@
 # Music App
 
-Desktop app (Tauri 2 + Rust + React/TS) that unifies Spotify / YouTube / Apple Music / local libraries. Brief: `PROMPT.md`.
+Desktop app (Tauri 2 + Rust + React/TS) that unifies Spotify / YouTube / Apple Music / local libraries. Overview: `docs/architecture.md`; original brief: `docs/notes/brief.md`; plan and history: `docs/notes/plan-v2.md`.
+Repo docs: `README.md` (short, user-facing), `CONTRIBUTING.md`, `docs/`. Keep README brief: details go in `docs/`.
 Reference mockups: Figma file "Bow Game / Music App", page "Music App v3 — Hi-Fi".
 
 ## Non-negotiable rules
