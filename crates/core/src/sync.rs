@@ -20,7 +20,7 @@ pub async fn sync(lib: &Mutex<Library>, connectors: &[&dyn Connector], target: O
         let playlists = match c.list_playlists().await {
             Ok(p) => p,
             Err(e) => {
-                report.errors.push(format!("{} : {e:#}", source.as_str()));
+                report.errors.push(format!("{}: {e:#}", source.as_str()));
                 continue;
             }
         };
@@ -31,7 +31,7 @@ pub async fn sync(lib: &Mutex<Library>, connectors: &[&dyn Connector], target: O
             };
             match saved {
                 Ok(_) => report.playlists += 1,
-                Err(e) => report.errors.push(format!("{} « {} » : {e:#}", source.as_str(), p.name)),
+                Err(e) => report.errors.push(format!("{} \"{}\": {e:#}", source.as_str(), p.name)),
             }
         }
     }
@@ -40,7 +40,7 @@ pub async fn sync(lib: &Mutex<Library>, connectors: &[&dyn Connector], target: O
     let pending = match lib.lock().unwrap().tracks() {
         Ok(all) => all.into_iter().filter(|t| !t.track.ids.contains_key(&target.source())).collect::<Vec<_>>(),
         Err(e) => {
-            report.errors.push(format!("library : {e:#}"));
+            report.errors.push(format!("library: {e:#}"));
             return report;
         }
     };
@@ -49,10 +49,10 @@ pub async fn sync(lib: &Mutex<Library>, connectors: &[&dyn Connector], target: O
         match target.resolve(&t.track).await {
             Ok(Some(hit)) => match lib.lock().unwrap().upsert_track(&merge_tracks(&t.track, &hit)) {
                 Ok(_) => report.matched += 1,
-                Err(e) => report.errors.push(format!("match « {} » : {e:#}", t.track.title)),
+                Err(e) => report.errors.push(format!("match \"{}\": {e:#}", t.track.title)),
             },
             Ok(None) => {}
-            Err(e) => report.errors.push(format!("match « {} » : {e:#}", t.track.title)),
+            Err(e) => report.errors.push(format!("match \"{}\": {e:#}", t.track.title)),
         }
     }
     report
@@ -142,7 +142,7 @@ mod tests {
         let report = sync(&lib, &[&spotify, &youtube], Some(&spotify)).await;
 
         assert_eq!(report.playlists, 2);
-        assert_eq!(report.errors, vec!["youtube « youtube broken » : 403"]);
+        assert_eq!(report.errors, vec!["youtube \"youtube broken\": 403"]);
         assert_eq!(report.matched, 1);
         let by_title: BTreeMap<_, _> = lib.lock().unwrap().tracks().unwrap().into_iter().map(|t| (t.track.title, t.track.ids.len())).collect();
         assert_eq!(by_title, BTreeMap::from([("Get Lucky".into(), 2), ("Hello".into(), 2), ("Unknown Demo".into(), 1)]));

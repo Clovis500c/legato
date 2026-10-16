@@ -17,46 +17,46 @@ export interface Guide {
 /** "Bring your key" walkthroughs. Checked against provider docs 2026-10; re-check when providers change UI. */
 export const guides: Record<Service, Guide> = {
   spotify: {
-    pitch: 'Importe tes playlists et relie-les aux autres services. Ta propre clé, 2 minutes.',
-    callout: 'Spotify exige que le propriétaire de la clé ait Premium, et limite chaque clé à 5 comptes.',
+    pitch: 'Import your playlists and link them to other services. Your own key, 2 minutes.',
+    callout: 'Spotify requires the key owner to have Premium, and limits each key to 5 accounts.',
     steps: [
       {
-        title: 'Crée une app Spotify',
-        text: 'Dashboard développeur → Create app. Nom et description libres, coche « Web API ».',
-        link: { label: 'Ouvrir le dashboard Spotify', url: 'https://developer.spotify.com/dashboard' },
+        title: 'Create a Spotify app',
+        text: 'Developer dashboard → Create app. Any name and description, tick “Web API”.',
+        link: { label: 'Open the Spotify dashboard', url: 'https://developer.spotify.com/dashboard' },
       },
       {
-        title: 'Ajoute l’adresse de retour',
-        text: 'Dans « Redirect URIs », colle exactement cette adresse (sans port), clique Add puis Save :',
+        title: 'Add the redirect address',
+        text: 'Under “Redirect URIs”, paste exactly this address (no port), click Add, then Save:',
         copy: 'http://127.0.0.1/callback',
       },
-      { title: 'Colle ton Client ID', text: 'Settings de ton app → Client ID. Le Client secret n’est pas nécessaire.' },
+      { title: 'Paste your Client ID', text: 'Your app’s Settings → Client ID. The Client secret is not needed.' },
     ],
-    fields: [{ key: 'spotifyClientId', label: 'Client ID', placeholder: 'ex. 3f9a…7c21e' }],
+    fields: [{ key: 'spotifyClientId', label: 'Client ID', placeholder: 'e.g. 3f9a…7c21e' }],
   },
   youtube: {
-    pitch: 'Playlists via l’API officielle YouTube. Ta propre clé Google, gratuite.',
-    callout: 'Quota gratuit : 10 000 unités par jour, largement assez pour importer tes playlists.',
+    pitch: 'Playlists through the official YouTube API. Your own Google key, free.',
+    callout: 'Free quota: 10,000 units a day, plenty to import your playlists.',
     steps: [
       {
-        title: 'Crée un projet Google Cloud',
-        text: 'Un projet gratuit suffit, aucune carte bancaire requise.',
-        link: { label: 'Créer un projet', url: 'https://console.cloud.google.com/projectcreate' },
+        title: 'Create a Google Cloud project',
+        text: 'A free project is enough, no credit card needed.',
+        link: { label: 'Create a project', url: 'https://console.cloud.google.com/projectcreate' },
       },
       {
-        title: 'Active YouTube Data API v3',
-        text: 'Dans la bibliothèque d’API, ouvre « YouTube Data API v3 » et clique Activer.',
-        link: { label: 'Ouvrir l’API', url: 'https://console.cloud.google.com/apis/library/youtube.googleapis.com' },
+        title: 'Enable YouTube Data API v3',
+        text: 'In the API library, open “YouTube Data API v3” and click Enable.',
+        link: { label: 'Open the API', url: 'https://console.cloud.google.com/apis/library/youtube.googleapis.com' },
       },
       {
-        title: 'Configure l’écran de consentement',
-        text: 'Type « Externe », laisse l’app en mode Test et ajoute ton adresse Gmail comme utilisateur test.',
-        link: { label: 'Écran de consentement', url: 'https://console.cloud.google.com/auth/overview' },
+        title: 'Set up the consent screen',
+        text: 'Type “External”, keep the app in Testing and add your Gmail address as a test user.',
+        link: { label: 'Consent screen', url: 'https://console.cloud.google.com/auth/overview' },
       },
       {
-        title: 'Crée un identifiant OAuth',
-        text: 'Identifiants → Créer → ID client OAuth → type « Application de bureau ». Copie l’ID et le secret.',
-        link: { label: 'Ouvrir les identifiants', url: 'https://console.cloud.google.com/apis/credentials' },
+        title: 'Create an OAuth client',
+        text: 'Credentials → Create credentials → OAuth client ID → type “Desktop app”. Copy the ID and the secret.',
+        link: { label: 'Open credentials', url: 'https://console.cloud.google.com/apis/credentials' },
       },
     ],
     fields: [

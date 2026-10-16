@@ -4,7 +4,7 @@ import type { Source } from '../api'
 
 const brands = { spotify: siSpotify, youtube: siYoutube, apple: siApplemusic }
 
-export const sourceLabel: Record<Source, string> = { spotify: 'Spotify', youtube: 'YouTube', local: 'Fichiers locaux', apple: 'Apple Music' }
+export const sourceLabel: Record<Source, string> = { spotify: 'Spotify', youtube: 'YouTube', local: 'Local files', apple: 'Apple Music' }
 
 /** Monochrome brand logo (simple-icons, CC0) or drive icon for local. Color = currentColor. */
 export function SourceIcon({ source, size = 14 }: { source: Source; size?: number }) {

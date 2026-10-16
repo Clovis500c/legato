@@ -70,19 +70,19 @@ export function Sidebar() {
             setQuery(e.target.value)
             if (!['songs', 'playlist', 'album', 'artist'].includes(view.name)) go({ name: 'songs' })
           }}
-          placeholder="Rechercher"
-          aria-label="Rechercher"
+          placeholder="Search"
+          aria-label="Search"
           className="min-w-0 flex-1 bg-transparent outline-none placeholder:text-ink-3"
         />
         <kbd className="font-mono text-[9px] tracking-[0.06em] text-ink-3">CTRL K</kbd>
       </label>
 
-      <NavItem on={is('add')} icon={<PlusCircle size={16} />} label="Ajouter de la musique" onClick={() => go({ name: 'add' })} />
+      <NavItem on={is('add')} icon={<PlusCircle size={16} />} label="Add music" onClick={() => go({ name: 'add' })} />
 
-      <Section title="Bibliothèque">
-        <NavItem on={is('songs')} icon={<MusicNotes size={16} />} label="Morceaux" count={tracks.length} onClick={() => go({ name: 'songs' })} />
+      <Section title="Library">
+        <NavItem on={is('songs')} icon={<MusicNotes size={16} />} label="Songs" count={tracks.length} onClick={() => go({ name: 'songs' })} />
         <NavItem on={is('albums') || is('album')} icon={<VinylRecord size={16} />} label="Albums" count={counts.albums} onClick={() => go({ name: 'albums' })} />
-        <NavItem on={is('artists') || is('artist')} icon={<MicrophoneStage size={16} />} label="Artistes" count={counts.artists} onClick={() => go({ name: 'artists' })} />
+        <NavItem on={is('artists') || is('artist')} icon={<MicrophoneStage size={16} />} label="Artists" count={counts.artists} onClick={() => go({ name: 'artists' })} />
       </Section>
 
       <Section title="Playlists">
@@ -92,9 +92,9 @@ export function Sidebar() {
         <NavItem
           on={false}
           icon={<Plus size={14} />}
-          label="Nouvelle playlist"
+          label="New playlist"
           onClick={async () => {
-            const id = await editPlaylist({ type: 'create', name: 'Nouvelle playlist' })
+            const id = await editPlaylist({ type: 'create', name: 'New playlist' })
             if (id !== null) go({ name: 'playlist', id })
           }}
         />
@@ -102,8 +102,8 @@ export function Sidebar() {
 
       <div className="flex-1" />
 
-      <button onClick={() => go({ name: 'settings', section: 'sources' })} className="flex flex-col gap-2 rounded-lg border border-line px-4.5 py-2.5 text-left hover:bg-raised" aria-label="Entrées : état des sources">
-        <span className="kicker">Entrées</span>
+      <button onClick={() => go({ name: 'settings', section: 'sources' })} className="flex flex-col gap-2 rounded-lg border border-line px-4.5 py-2.5 text-left hover:bg-raised" aria-label="Inputs: source status">
+        <span className="kicker">Inputs</span>
         <span className="flex gap-3">
           {inputs.map((i) => (
             <span key={i.code} className={`flex items-center gap-1.5 font-mono text-[9px] tracking-[0.08em] ${i.on ? 'text-ink-2' : 'text-ink-3'}`}>
@@ -112,7 +112,7 @@ export function Sidebar() {
           ))}
         </span>
       </button>
-      <NavItem on={is('settings')} icon={<Gear size={16} />} label="Réglages" onClick={() => go({ name: 'settings', section: 'appearance' })} />
+      <NavItem on={is('settings')} icon={<Gear size={16} />} label="Settings" onClick={() => go({ name: 'settings', section: 'appearance' })} />
     </aside>
   )
 }

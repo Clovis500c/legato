@@ -5,6 +5,7 @@ describe('sanitize', () => {
   it('falls back to defaults on junk', () => {
     expect(sanitize(null)).toEqual(DEFAULTS)
     expect(sanitize({ theme: 'nope', covers: 'hexagon', zoom: 'big', columns: ['album', 'evil', 'album'] })).toEqual({ ...DEFAULTS, columns: ['album'] })
+    expect(sanitize({ theme: 'papier' }).theme).toBe('paper')
   })
 
   it('clamps zoom and keeps valid values', () => {
@@ -13,10 +14,10 @@ describe('sanitize', () => {
   })
 
   it('keeps custom themes only with full palette', () => {
-    const good = { ...PRESETS[1], id: 'custom-nuit', name: 'Nuit jaune', accent: '#F2B705' }
-    const s = sanitize({ theme: 'custom-nuit', customThemes: [good, { ...good, bg: 'red' }] })
+    const good = { ...PRESETS[1], id: 'custom-night', name: 'Yellow night', accent: '#F2B705' }
+    const s = sanitize({ theme: 'custom-night', customThemes: [good, { ...good, bg: 'red' }] })
     expect(s.customThemes).toHaveLength(1)
-    expect(s.theme).toBe('custom-nuit')
+    expect(s.theme).toBe('custom-night')
     expect(sanitizeTheme({ ...good, id: '../etc' })?.id).toMatch(/^custom-/)
   })
 })

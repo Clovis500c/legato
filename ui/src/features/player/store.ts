@@ -48,7 +48,7 @@ export const fileTitle = (path: string) => path.split(/[\\/]/).pop()!.replace(/\
 /** Library metadata for a playing file when known, file name otherwise. */
 const localNow = (list: LibraryTrack[], path: string): NowPlaying => {
   const t = list.find((x) => x.ids.local === path)
-  return t ? { title: t.title, artist: t.artist, path, trackId: t.id } : { title: fileTitle(path), artist: 'Fichier local', path }
+  return t ? { title: t.title, artist: t.artist, path, trackId: t.id } : { title: fileTitle(path), artist: 'Local file', path }
 }
 
 export const usePlayer = create<PlayerState>((set, get) => ({
@@ -79,7 +79,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     send({ type: 'play', paths, start: 0 })
     send({ type: 'volume', value: get().volume })
     // Clearing youtubeId unmounts embed.
-    set({ now: { title: fileTitle(paths[0]), artist: 'Fichier local', path: paths[0] }, playing: true, positionMs: 0, durationMs: null })
+    set({ now: { title: fileTitle(paths[0]), artist: 'Local file', path: paths[0] }, playing: true, positionMs: 0, durationMs: null })
   },
 
   toggle() {
@@ -112,7 +112,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
 
   onYoutube(u) {
     if (u.error !== undefined) {
-      useStore.setState({ error: `Lecture YouTube impossible (erreur ${u.error}).` })
+      useStore.setState({ error: `YouTube playback failed (error ${u.error}).` })
       return set({ playing: false })
     }
     set({

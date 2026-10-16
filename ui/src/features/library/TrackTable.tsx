@@ -15,7 +15,7 @@ import { AddToPlaylist } from './AddToPlaylist'
 const ROW = { compact: 40, comfort: 52, airy: 64 }
 const order: Source[] = ['spotify', 'youtube', 'apple', 'local']
 const width: Record<Column, string> = { album: 'minmax(0,220px)', sources: '76px', duration: '52px' }
-const head: Record<Column, string> = { album: 'Album', sources: 'Sources', duration: 'Durée' }
+const head: Record<Column, string> = { album: 'Album', sources: 'Sources', duration: 'Duration' }
 
 /** Virtualized: only visible rows hit the DOM, so 50k tracks stay smooth. editId = custom playlist shown unfiltered (positions = indexes). */
 export function TrackTable({ tracks, empty, editId }: { tracks: LibraryTrack[]; empty: React.ReactNode; editId?: number }) {
@@ -32,8 +32,8 @@ export function TrackTable({ tracks, empty, editId }: { tracks: LibraryTrack[]; 
   return (
     <div role="table" aria-rowcount={tracks.length} className="flex min-h-0 flex-1 flex-col">
       <div role="row" className="grid h-7.5 shrink-0 items-center gap-4 border-b border-line px-2" style={grid}>
-        <span role="columnheader" className="kicker text-right">N°</span>
-        <span role="columnheader" className="kicker">Titre</span>
+        <span role="columnheader" className="kicker text-right">#</span>
+        <span role="columnheader" className="kicker">Title</span>
         <span />
         {columns.map((c) => (
           <span key={c} role="columnheader" className={`kicker ${c === 'duration' ? 'text-right' : ''}`}>
@@ -70,20 +70,20 @@ export function TrackTable({ tracks, empty, editId }: { tracks: LibraryTrack[]; 
                   <span className="flex justify-end gap-0.5 opacity-0 group-hover:opacity-100 focus-within:opacity-100">
                     {editId !== undefined && (
                       <>
-                        <RoundButton label="Monter" kind="plain" size="xs" disabled={v.index === 0} onClick={() => editPlaylist({ type: 'move', id: editId, from: v.index, to: v.index - 1 })}>
+                        <RoundButton label="Move up" kind="plain" size="xs" disabled={v.index === 0} onClick={() => editPlaylist({ type: 'move', id: editId, from: v.index, to: v.index - 1 })}>
                           <ArrowUp size={13} />
                         </RoundButton>
-                        <RoundButton label="Descendre" kind="plain" size="xs" disabled={v.index === tracks.length - 1} onClick={() => editPlaylist({ type: 'move', id: editId, from: v.index, to: v.index + 1 })}>
+                        <RoundButton label="Move down" kind="plain" size="xs" disabled={v.index === tracks.length - 1} onClick={() => editPlaylist({ type: 'move', id: editId, from: v.index, to: v.index + 1 })}>
                           <ArrowDown size={13} />
                         </RoundButton>
-                        <RoundButton label="Retirer de la playlist" kind="plain" size="xs" onClick={() => editPlaylist({ type: 'remove', id: editId, position: v.index })}>
+                        <RoundButton label="Remove from playlist" kind="plain" size="xs" onClick={() => editPlaylist({ type: 'remove', id: editId, position: v.index })}>
                           <X size={13} />
                         </RoundButton>
                       </>
                     )}
-                    <AddToPlaylist trackIds={[t.id]} label={`Ajouter ${t.title} à une playlist`} />
+                    <AddToPlaylist trackIds={[t.id]} label={`Add ${t.title} to a playlist`} />
                     {playable && (
-                      <RoundButton label={`Lire ${t.title}`} kind="soft" size="xs" onClick={() => play(tracks, v.index)}>
+                      <RoundButton label={`Play ${t.title}`} kind="soft" size="xs" onClick={() => play(tracks, v.index)}>
                         <Play weight="fill" size={11} />
                       </RoundButton>
                     )}

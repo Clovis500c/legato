@@ -24,26 +24,26 @@ function TitleBar() {
   return (
     <div data-tauri-drag-region className="flex h-13 shrink-0 items-center justify-between gap-4 pr-2 pl-10">
       <div className="flex gap-1.5">
-        <RoundButton label="Page précédente" size="xs" disabled={!back.length} onClick={goBack}>
+        <RoundButton label="Back" size="xs" disabled={!back.length} onClick={goBack}>
           <CaretLeft size={13} />
         </RoundButton>
-        <RoundButton label="Page suivante" size="xs" disabled={!fwd.length} onClick={goForward}>
+        <RoundButton label="Forward" size="xs" disabled={!fwd.length} onClick={goForward}>
           <CaretRight size={13} />
         </RoundButton>
       </div>
       <div className="flex items-center gap-2">
-        {lastSync && <span className="kicker">Synchro {timeAgo(lastSync.at)}</span>}
-        <RoundButton label={busy ? 'Synchronisation…' : anyConnected ? 'Synchroniser' : 'Connecte d’abord une source'} size="xs" disabled={busy || !anyConnected} onClick={sync}>
+        {lastSync && <span className="kicker">Synced {timeAgo(lastSync.at)}</span>}
+        <RoundButton label={busy ? 'Syncing…' : anyConnected ? 'Sync' : 'Connect a source first'} size="xs" disabled={busy || !anyConnected} onClick={sync}>
           <ArrowsClockwise size={13} className={busy ? 'animate-spin' : ''} />
         </RoundButton>
         <span className="mx-2 h-4 w-px bg-line" />
-        <button className={winBtn} aria-label="Réduire" onClick={() => win.minimize()}>
+        <button className={winBtn} aria-label="Minimize" onClick={() => win.minimize()}>
           <Minus size={14} />
         </button>
-        <button className={winBtn} aria-label="Agrandir" onClick={() => win.toggleMaximize()}>
+        <button className={winBtn} aria-label="Maximize" onClick={() => win.toggleMaximize()}>
           <Square size={12} />
         </button>
-        <button className={`${winBtn} hover:bg-danger! hover:text-white!`} aria-label="Fermer" onClick={() => win.close()}>
+        <button className={`${winBtn} hover:bg-danger! hover:text-white!`} aria-label="Close" onClick={() => win.close()}>
           <X size={14} />
         </button>
       </div>
@@ -71,7 +71,7 @@ function Alerts() {
         {errors.length > 0 && (
           <details>
             <summary className="cursor-pointer">
-              {errors.length} erreur{errors.length > 1 ? 's' : ''} pendant la synchronisation
+              {errors.length} error{errors.length > 1 ? 's' : ''} during sync
             </summary>
             <ul className="mt-1.5 list-disc pl-4 text-ink-2">
               {errors.map((e) => (
@@ -82,7 +82,7 @@ function Alerts() {
         )}
       </div>
       {shown && (
-        <button aria-label="Masquer" onClick={dismissError} className="text-ink-3 hover:text-ink">
+        <button aria-label="Dismiss" onClick={dismissError} className="text-ink-3 hover:text-ink">
           <X size={14} />
         </button>
       )}

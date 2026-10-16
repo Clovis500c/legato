@@ -36,7 +36,7 @@ pub fn read(path: &Path) -> Track {
     let text = |v: Option<std::borrow::Cow<str>>| v.map(|s| s.trim().to_string()).filter(|s| !s.is_empty());
     Track {
         title: text(tag.and_then(|t| t.title())).unwrap_or_else(|| path.file_stem().unwrap_or_default().to_string_lossy().into()),
-        artist: text(tag.and_then(|t| t.artist())).unwrap_or_else(|| "Artiste inconnu".into()),
+        artist: text(tag.and_then(|t| t.artist())).unwrap_or_else(|| "Unknown artist".into()),
         album: text(tag.and_then(|t| t.album())),
         duration_ms: file.as_ref().map(|f| f.properties().duration().as_millis() as u32).filter(|d| *d > 0),
         isrc: tag.and_then(|t| t.get_string(ItemKey::Isrc)).map(|s| s.trim().to_uppercase()).filter(|s| !s.is_empty()),
@@ -77,7 +77,7 @@ pub(crate) mod tests {
         let found = scan(&[dir.path().to_path_buf(), dir.path().join("missing")]);
         assert_eq!(found.len(), 1);
         let t = &found[0];
-        assert_eq!((t.title.as_str(), t.artist.as_str()), ("01 Intro", "Artiste inconnu"));
+        assert_eq!((t.title.as_str(), t.artist.as_str()), ("01 Intro", "Unknown artist"));
         assert_eq!(t.duration_ms, Some(1000));
         assert!(t.ids[&Source::Local].ends_with("01 Intro.WAV"));
     }

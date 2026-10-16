@@ -7,17 +7,17 @@ export function formatDuration(ms: number | null): string {
   return h ? `${h}:${mm.padStart(2, '0')}:${ss}` : `${mm}:${ss}`
 }
 
-const rtf = new Intl.RelativeTimeFormat('fr', { numeric: 'auto' })
+const rtf = new Intl.RelativeTimeFormat('en', { numeric: 'auto' })
 
 export function timeAgo(at: number, now = Date.now()): string {
   const min = Math.round((at - now) / 60_000)
-  if (min > -1) return 'à l’instant'
+  if (min > -1) return 'just now'
   if (min > -60) return rtf.format(min, 'minute')
   return rtf.format(Math.round(min / 60), 'hour')
 }
 
-/** French thousands: 1 674. */
-export const formatCount = (n: number) => n.toLocaleString('fr-FR')
+/** Thousands separator: 1,674. */
+export const formatCount = (n: number) => n.toLocaleString('en-US')
 
 /** Lowercase, no accents. For client-side search. */
 export const fold = (s: string) => s.normalize('NFKD').replace(/\p{M}/gu, '').toLowerCase()

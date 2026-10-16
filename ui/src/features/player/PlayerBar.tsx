@@ -30,7 +30,7 @@ function YouTubeFrame({ videoId }: { videoId: string }) {
     <iframe
       key={videoId}
       ref={bindFrame}
-      title="Lecteur YouTube"
+      title="YouTube player"
       src={embedUrl(videoId, location.origin)}
       allow="autoplay; encrypted-media; picture-in-picture"
       referrerPolicy="strict-origin-when-cross-origin"
@@ -79,20 +79,20 @@ export function PlayerBar() {
       <div className="flex w-85 min-w-0 items-center gap-3.5">
         <Cover title={now?.title ?? ''} size={56} />
         <div className="flex min-w-0 flex-col gap-1">
-          <span className="truncate text-sm font-semibold">{now?.title ?? 'Rien en lecture'}</span>
-          <span className="truncate text-xs text-ink-2">{now?.artist ?? 'Lance un titre YouTube ou glisse des fichiers audio ici'}</span>
+          <span className="truncate text-sm font-semibold">{now?.title ?? 'Nothing playing'}</span>
+          <span className="truncate text-xs text-ink-2">{now?.artist ?? 'Play a YouTube track or drop audio files here'}</span>
         </div>
       </div>
 
       <div className="flex w-140 min-w-0 flex-col items-center gap-2">
         <div className="flex items-center gap-3.5">
-          <RoundButton label="Précédent" disabled={!now} onClick={() => step(-1)}>
+          <RoundButton label="Previous" disabled={!now} onClick={() => step(-1)}>
             <SkipBack weight="fill" size={15} />
           </RoundButton>
-          <RoundButton label={playing ? 'Pause' : 'Lecture'} kind="primary" size="lg" disabled={!now} onClick={toggle}>
+          <RoundButton label={playing ? 'Pause' : 'Play'} kind="primary" size="lg" disabled={!now} onClick={toggle}>
             {playing ? <Pause weight="fill" size={20} /> : <Play weight="fill" size={20} />}
           </RoundButton>
-          <RoundButton label="Suivant" disabled={!now} onClick={() => step(1)}>
+          <RoundButton label="Next" disabled={!now} onClick={() => step(1)}>
             <SkipForward weight="fill" size={15} />
           </RoundButton>
         </div>
@@ -109,7 +109,7 @@ export function PlayerBar() {
           <SpeakerHigh size={15} />
           <VolumeControl />
         </span>
-        <RoundButton label="En lecture, plein écran" disabled={!now} onClick={() => setFull(true)}>
+        <RoundButton label="Now playing, full screen" disabled={!now} onClick={() => setFull(true)}>
           <ArrowsOutSimple size={15} />
         </RoundButton>
       </div>

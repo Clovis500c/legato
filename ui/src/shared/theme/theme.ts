@@ -16,12 +16,12 @@ const preset = (id: string, name: string, dark: boolean, p: Palette): Theme => (
 
 // ink3 values tuned for WCAG AA (4.5:1) on bg.
 export const PRESETS: Theme[] = [
-  preset('papier', 'Papier', false, { bg: '#F3F1EC', panel: '#EAE7E0', raised: '#FBFAF7', recess: '#E1DDD4', line: '#D6D1C6', lineSoft: '#E4E0D7', ink: '#171614', ink2: '#5C5852', ink3: '#6B665E', ink4: '#B2ACA1', accent: '#FF5A1F', onAccent: '#FFFFFF', ledOff: '#CDC7BB' }),
+  preset('paper', 'Paper', false, { bg: '#F3F1EC', panel: '#EAE7E0', raised: '#FBFAF7', recess: '#E1DDD4', line: '#D6D1C6', lineSoft: '#E4E0D7', ink: '#171614', ink2: '#5C5852', ink3: '#6B665E', ink4: '#B2ACA1', accent: '#FF5A1F', onAccent: '#FFFFFF', ledOff: '#CDC7BB' }),
   preset('graphite', 'Graphite', true, { bg: '#121211', panel: '#1A1A18', raised: '#24231F', recess: '#0B0B0A', line: '#302F2B', lineSoft: '#252421', ink: '#EDEAE4', ink2: '#A6A198', ink3: '#8A847B', ink4: '#55524C', accent: '#FF6A2E', onAccent: '#171614', ledOff: '#3A3935' }),
   preset('studio', 'Studio', true, { bg: '#000000', panel: '#0A0A0A', raised: '#161616', recess: '#000000', line: '#262626', lineSoft: '#1A1A1A', ink: '#FFFFFF', ink2: '#A3A3A3', ink3: '#7A7A7A', ink4: '#4D4D4D', accent: '#FF3B30', onAccent: '#FFFFFF', ledOff: '#333333' }),
-  preset('aluminium', 'Aluminium', false, { bg: '#ECEEF0', panel: '#E1E4E8', raised: '#F7F8F9', recess: '#D7DBE0', line: '#C9CED5', lineSoft: '#DADEE3', ink: '#14171A', ink2: '#4E5660', ink3: '#5D656F', ink4: '#A4ACB5', accent: '#2F6FEB', onAccent: '#FFFFFF', ledOff: '#BFC5CC' }),
-  preset('bakelite', 'Bakélite', true, { bg: '#1C1410', panel: '#241A14', raised: '#2E221A', recess: '#140E0B', line: '#3D2E24', lineSoft: '#2E231B', ink: '#F2E6D3', ink2: '#BFAE95', ink3: '#9E8E77', ink4: '#5E5244', accent: '#F2A900', onAccent: '#1C1410', ledOff: '#4A3B2F' }),
-  preset('sauge', 'Sauge', false, { bg: '#E7ECE6', panel: '#DCE3DA', raised: '#F4F7F3', recess: '#D1D9CF', line: '#C2CCBF', lineSoft: '#D5DDD2', ink: '#152019', ink2: '#4C5B50', ink3: '#5B6A5E', ink4: '#A0ADA2', accent: '#1F7A4D', onAccent: '#FFFFFF', ledOff: '#B8C3B6' }),
+  preset('aluminum', 'Aluminum', false, { bg: '#ECEEF0', panel: '#E1E4E8', raised: '#F7F8F9', recess: '#D7DBE0', line: '#C9CED5', lineSoft: '#DADEE3', ink: '#14171A', ink2: '#4E5660', ink3: '#5D656F', ink4: '#A4ACB5', accent: '#2F6FEB', onAccent: '#FFFFFF', ledOff: '#BFC5CC' }),
+  preset('bakelite', 'Bakelite', true, { bg: '#1C1410', panel: '#241A14', raised: '#2E221A', recess: '#140E0B', line: '#3D2E24', lineSoft: '#2E231B', ink: '#F2E6D3', ink2: '#BFAE95', ink3: '#9E8E77', ink4: '#5E5244', accent: '#F2A900', onAccent: '#1C1410', ledOff: '#4A3B2F' }),
+  preset('sage', 'Sage', false, { bg: '#E7ECE6', panel: '#DCE3DA', raised: '#F4F7F3', recess: '#D1D9CF', line: '#C2CCBF', lineSoft: '#D5DDD2', ink: '#152019', ink2: '#4C5B50', ink3: '#5B6A5E', ink4: '#A0ADA2', accent: '#1F7A4D', onAccent: '#FFFFFF', ledOff: '#B8C3B6' }),
 ]
 
 export const ACCENTS = ['#FF5A1F', '#E5383B', '#F2B705', '#2E8B57', '#2F6FEB', '#171614']
@@ -30,7 +30,7 @@ export const COLUMNS = ['album', 'sources', 'duration'] as const
 export type Column = (typeof COLUMNS)[number]
 
 export interface Settings {
-  /** Preset id, custom theme id, or 'system' (Papier / Graphite). */
+  /** Preset id, custom theme id, or 'system' (Paper / Graphite). */
   theme: string
   /** Overrides theme accent. */
   accent: string | null
@@ -48,7 +48,7 @@ export interface Settings {
 }
 
 export const DEFAULTS: Settings = {
-  theme: 'papier',
+  theme: 'paper',
   accent: null,
   customThemes: [],
   covers: 'net',
@@ -70,11 +70,14 @@ export function sanitizeTheme(raw: unknown): Theme | null {
   if (!raw || typeof raw !== 'object') return null
   const r = raw as Record<string, unknown>
   if (!PALETTE_KEYS.every((k) => isHex(r[k]))) return null
-  const name = typeof r.name === 'string' && r.name.trim() ? r.name.trim().slice(0, 40) : 'Mon thème'
+  const name = typeof r.name === 'string' && r.name.trim() ? r.name.trim().slice(0, 40) : 'My theme'
   const id = typeof r.id === 'string' && /^custom-[\w-]{1,40}$/.test(r.id) ? r.id : `custom-${Date.now().toString(36)}`
   const palette = Object.fromEntries(PALETTE_KEYS.map((k) => [k, (r[k] as string).toUpperCase()])) as Palette
   return { id, name, dark: luminance(palette.bg) < 0.2, font: pick(r.font, ['hifi', 'neutral'] as const, 'hifi'), glow: r.glow !== false, ...palette }
 }
+
+/** Preset ids before English rename. */
+const LEGACY_IDS: Record<string, string> = { papier: 'paper', aluminium: 'aluminum', sauge: 'sage' }
 
 export function sanitize(raw: unknown): Settings {
   const r = raw && typeof raw === 'object' ? (raw as Record<string, unknown>) : {}
@@ -82,7 +85,7 @@ export function sanitize(raw: unknown): Settings {
   const ids = ['system', ...PRESETS.map((t) => t.id), ...customThemes.map((t) => t.id)]
   const columns = Array.isArray(r.columns) ? [...new Set(r.columns.filter((c): c is Column => COLUMNS.includes(c as Column)))] : DEFAULTS.columns
   return {
-    theme: pick(r.theme, ids, DEFAULTS.theme),
+    theme: pick(LEGACY_IDS[r.theme as string] ?? r.theme, ids, DEFAULTS.theme),
     accent: isHex(r.accent) ? r.accent.toUpperCase() : null,
     customThemes,
     covers: pick(r.covers, ['net', 'rounded', 'vinyl'] as const, DEFAULTS.covers),
@@ -113,16 +116,16 @@ export function contrast(a: string, b: string): number {
 /** Pairs checked live in theme editor. AA: 4.5 for text, 3 for icons (accent only carries icons). */
 export function contrastReport(t: Palette) {
   return [
-    { label: 'Texte principal', ratio: contrast(t.ink, t.bg), min: 4.5 },
-    { label: 'Texte secondaire', ratio: contrast(t.ink2, t.bg), min: 4.5 },
-    { label: 'Texte discret', ratio: contrast(t.ink3, t.bg), min: 4.5 },
-    { label: 'Texte sur panneau', ratio: contrast(t.ink2, t.panel), min: 4.5 },
-    { label: 'Icône sur accent', ratio: contrast(t.onAccent, t.accent), min: 3 },
+    { label: 'Main text', ratio: contrast(t.ink, t.bg), min: 4.5 },
+    { label: 'Secondary text', ratio: contrast(t.ink2, t.bg), min: 4.5 },
+    { label: 'Muted text', ratio: contrast(t.ink3, t.bg), min: 4.5 },
+    { label: 'Text on panel', ratio: contrast(t.ink2, t.panel), min: 4.5 },
+    { label: 'Icon on accent', ratio: contrast(t.onAccent, t.accent), min: 3 },
   ].map((c) => ({ ...c, ok: c.ratio >= c.min }))
 }
 
 export function resolveTheme(s: Settings, systemDark: boolean): Theme {
-  const id = s.theme === 'system' ? (systemDark ? 'graphite' : 'papier') : s.theme
+  const id = s.theme === 'system' ? (systemDark ? 'graphite' : 'paper') : s.theme
   const t = [...PRESETS, ...s.customThemes].find((x) => x.id === id) ?? PRESETS[0]
   return s.accent ? { ...t, accent: s.accent, onAccent: contrast('#FFFFFF', s.accent) >= 3 ? '#FFFFFF' : '#171614' } : t
 }

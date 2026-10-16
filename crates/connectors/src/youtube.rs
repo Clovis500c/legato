@@ -45,7 +45,7 @@ struct OEmbed {
 
 /// Track from a pasted link, no key or login (oEmbed). oEmbed has no duration.
 pub async fn track_from_link(link: &str, oembed: &str) -> Result<Track> {
-    let id = video_id(link).ok_or_else(|| anyhow::anyhow!("Lien YouTube non reconnu"))?;
+    let id = video_id(link).ok_or_else(|| anyhow::anyhow!("YouTube link not recognized"))?;
     let watch = format!("https://www.youtube.com/watch?v={id}");
     let url = Url::parse_with_params(oembed, &[("url", watch.as_str()), ("format", "json")])?;
     let o: OEmbed = reqwest::get(url).await?.error_for_status()?.json().await?;

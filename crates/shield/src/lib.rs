@@ -88,7 +88,7 @@ pub async fn download_lists(dir: &Path) -> Result<String> {
     for (file, url) in LISTS {
         let text = http.get(url).send().await?.error_for_status()?.text().await?;
         // Trust boundary: an HTML error page is not a filter list.
-        anyhow::ensure!(text.starts_with('[') || text.starts_with('!'), "{url}: pas une liste de filtres");
+        anyhow::ensure!(text.starts_with('[') || text.starts_with('!'), "{url}: not a filter list");
         std::fs::write(dir.join(file), text)?;
     }
     Ok(cached_lists(dir))

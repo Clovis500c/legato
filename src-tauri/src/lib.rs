@@ -102,7 +102,7 @@ fn sources_status(state: State<AppState>) -> Vec<(Source, SourceStatus)> {
 async fn connect(state: State<'_, AppState>, source: Source, credentials: Credentials) -> CmdResult<()> {
     let merged = state.credentials().merged_with(credentials);
     state.store.save("credentials", &merged).map_err(err)?;
-    let c = state.connector(source).ok_or("Identifiants manquants")?;
+    let c = state.connector(source).ok_or("Missing credentials")?;
     c.connect().await.map_err(err)
 }
 
@@ -172,7 +172,7 @@ async fn rescan_local(state: State<'_, AppState>) -> CmdResult<usize> {
 async fn add_link(state: State<'_, AppState>, url: String) -> CmdResult<String> {
     // Trust boundary: clipboard text.
     if url.len() > 2048 {
-        return Err("Lien trop long".into());
+        return Err("Link too long".into());
     }
     let t = music_connectors::youtube::track_from_link(url.trim(), music_connectors::youtube::OEMBED).await.map_err(err)?;
     state.lib.lock().unwrap().upsert_track(&t).map_err(err)?;
@@ -238,7 +238,7 @@ async fn search_catalogs(state: State<'_, AppState>, query: String, country: Str
     // Trust boundary: free text from UI.
     let query = query.trim().to_string();
     if query.is_empty() || query.chars().count() > 200 {
-        return Err("Recherche : 1 à 200 caractères".into());
+        return Err("Search: 1 to 200 characters".into());
     }
     let country = if country.len() == 2 && country.chars().all(|c| c.is_ascii_alphabetic()) { country.to_uppercase() } else { "FR".into() };
     let apple = tauri::async_runtime::spawn({
@@ -249,7 +249,7 @@ async fn search_catalogs(state: State<'_, AppState>, query: String, country: Str
     let youtube = match yt_search(&state, &query).await {
         Some(Ok(found)) => found,
         Some(Err(e)) => {
-            errors.push(format!("YouTube : {e}"));
+            errors.push(format!("YouTube: {e}"));
             Vec::new()
         }
         None => Vec::new(),
@@ -257,7 +257,7 @@ async fn search_catalogs(state: State<'_, AppState>, query: String, country: Str
     let apple = match apple.await.map_err(err)? {
         Ok(found) => found,
         Err(e) => {
-            errors.push(format!("Apple Music : {}", err(e)));
+            errors.push(format!("Apple Music: {}", err(e)));
             Vec::new()
         }
     };
@@ -279,7 +279,7 @@ async fn add_track(state: State<'_, AppState>, track: Track) -> CmdResult<i64> {
     // Trust boundary: catalog ids only, bounded text.
     let ok_text = |s: &str| !s.trim().is_empty() && s.chars().count() <= 300;
     if !ok_text(&track.title) || !ok_text(&track.artist) || track.ids.is_empty() || track.ids.iter().any(|(s, id)| *s == Source::Local || id.is_empty() || id.len() > 64) {
-        return Err("Titre invalide".into());
+        return Err("Invalid title".into());
     }
     let mut track = track;
     if !track.ids.contains_key(&Source::Youtube)
@@ -305,7 +305,7 @@ fn load_settings(state: State<AppState>) -> CmdResult<Option<serde_json::Value>>
 fn save_settings(state: State<AppState>, settings: serde_json::Value) -> CmdResult<()> {
     // Trust boundary: object only, bounded size (custom themes included).
     if !settings.is_object() || settings.to_string().len() > 256 * 1024 {
-        return Err("Réglages invalides".into());
+        return Err("Invalid settings".into());
     }
     state.lib.lock().unwrap().set_setting("ui", &settings).map_err(err)
 }

@@ -23,13 +23,13 @@ function ServiceRow({ service }: { service: Service }) {
         <p className="text-[13px] font-semibold">{sourceLabel[service]}</p>
         <p className="text-xs text-ink-2">{guides[service].pitch}</p>
       </div>
-      <span className="kicker">{connected ? 'Connecté' : 'Non connecté'}</span>
+      <span className="kicker">{connected ? 'Connected' : 'Not connected'}</span>
       {connected ? (
         <Button variant="ghost" disabled={busy} onClick={() => disconnect(service)}>
-          Déconnecter
+          Disconnect
         </Button>
       ) : (
-        <Button onClick={() => go({ name: 'settings', section: 'sources', wizard: service })}>Connecter</Button>
+        <Button onClick={() => go({ name: 'settings', section: 'sources', wizard: service })}>Connect</Button>
       )}
     </div>
   )
@@ -56,7 +56,7 @@ function LocalFolders() {
     }
   }
   const add = async () => {
-    const dir = await open({ directory: true, title: 'Dossier de musique' })
+    const dir = await open({ directory: true, title: 'Music folder' })
     if (typeof dir === 'string' && !folders.includes(dir)) await run(() => api.setLocalFolders([...folders, dir]))
   }
 
@@ -68,17 +68,17 @@ function LocalFolders() {
           <HardDrives size={16} />
         </span>
         <div className="flex-1">
-          <p className="text-[13px] font-semibold">Fichiers locaux</p>
-          <p className="text-xs text-ink-2">MP3, FLAC, WAV, OGG, M4A. Reliés à tes titres YouTube et Spotify, et lus en priorité, sans blanc entre les titres.</p>
+          <p className="text-[13px] font-semibold">Local files</p>
+          <p className="text-xs text-ink-2">MP3, FLAC, WAV, OGG, M4A. Linked to your YouTube and Spotify tracks and played first, gapless.</p>
         </div>
-        <span className="kicker">{busy ? 'Analyse…' : `${formatCount(files)} fichiers`}</span>
+        <span className="kicker">{busy ? 'Scanning…' : `${formatCount(files)} files`}</span>
       </div>
       {folders.length > 0 && (
         <ul className="ml-13 flex flex-col rounded-lg border border-line-soft">
           {folders.map((f) => (
             <li key={f} className="flex items-center gap-2 border-b border-line-soft py-1 pr-1 pl-3 last:border-0">
               <span className="flex-1 truncate font-mono text-[11px]">{f}</span>
-              <RoundButton label={`Retirer ${f}`} kind="plain" size="xs" disabled={busy} onClick={() => run(() => api.setLocalFolders(folders.filter((x) => x !== f)))}>
+              <RoundButton label={`Remove ${f}`} kind="plain" size="xs" disabled={busy} onClick={() => run(() => api.setLocalFolders(folders.filter((x) => x !== f)))}>
                 <X size={12} />
               </RoundButton>
             </li>
@@ -87,11 +87,11 @@ function LocalFolders() {
       )}
       <div className="ml-13 flex gap-2">
         <Button disabled={busy} onClick={add}>
-          <FolderPlus size={14} /> Ajouter un dossier
+          <FolderPlus size={14} /> Add folder
         </Button>
         {folders.length > 0 && (
           <Button variant="ghost" disabled={busy} onClick={() => run(api.rescanLocal)}>
-            Rescanner
+            Rescan
           </Button>
         )}
       </div>
@@ -102,7 +102,7 @@ function LocalFolders() {
 export function SourcesView() {
   return (
     <div className="flex max-w-190 flex-col gap-6">
-      <p className="text-[13px] text-ink-2">Chaque service se branche avec tes propres clés. Rien ne passe par un serveur : tout reste sur ton ordinateur.</p>
+      <p className="text-[13px] text-ink-2">Each service connects with your own keys. Nothing goes through a server: everything stays on your computer.</p>
       <div className="rounded-xl border border-line bg-raised">
         {(['youtube', 'spotify'] as const).map((s) => (
           <ServiceRow key={s} service={s} />
@@ -110,7 +110,7 @@ export function SourcesView() {
         <LocalFolders />
       </div>
       <p className="flex w-fit items-center gap-2.5 text-xs text-ink-2">
-        <ShieldCheck size={16} /> Tes clés et jetons sont rangés dans le coffre de Windows et ne quittent jamais ce PC.
+        <ShieldCheck size={16} /> Your keys and tokens are kept in the Windows credential vault and never leave this PC.
       </p>
     </div>
   )

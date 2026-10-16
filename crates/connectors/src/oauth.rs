@@ -70,19 +70,19 @@ pub async fn loopback_authorize(
             let q: HashMap<String, String> = url.query_pairs().into_owned().collect();
             let code = q.get("code").filter(|_| q.get("state") == Some(&state));
             let (status, body) = match code {
-                Some(_) => ("200 OK", "<p>Compte connecté. Vous pouvez fermer cet onglet.</p>"),
-                None => ("400 Bad Request", "<p>Échec de la connexion.</p>"),
+                Some(_) => ("200 OK", "<p>Account connected. You can close this tab.</p>"),
+                None => ("400 Bad Request", "<p>Connection failed.</p>"),
             };
             let head = format!("HTTP/1.1 {status}\r\ncontent-type: text/html; charset=utf-8\r\ncontent-length: {}\r\nconnection: close\r\n\r\n", body.len());
             sock.write_all(format!("{head}{body}").as_bytes()).await?;
             return match code {
                 Some(c) => Ok((c.clone(), redirect)),
-                None => Err(anyhow!(q.get("error").cloned().unwrap_or_else(|| "Réponse OAuth invalide".into()))),
+                None => Err(anyhow!(q.get("error").cloned().unwrap_or_else(|| "Invalid OAuth response".into()))),
             };
         }
     })
     .await
-    .context("Connexion expirée")?
+    .context("Sign-in timed out")?
 }
 
 /// Shared OAuth 2 client (code + PKCE): connect, refresh, authed calls.
@@ -134,11 +134,11 @@ impl OAuthClient {
 
     pub async fn access_token(&self) -> Result<String> {
         let key = self.cfg.key;
-        let t: OAuthTokens = self.store.load(key).ok_or_else(|| anyhow!("Non connecté ({key})"))?;
+        let t: OAuthTokens = self.store.load(key).ok_or_else(|| anyhow!("Not connected ({key})"))?;
         if now_ms() < t.expires_at {
             return Ok(t.access_token);
         }
-        let refresh = t.refresh_token.clone().ok_or_else(|| anyhow!("Session expirée ({key}), reconnectez le compte"))?;
+        let refresh = t.refresh_token.clone().ok_or_else(|| anyhow!("Session expired ({key}), reconnect the account"))?;
         Ok(self.token_request(&[("grant_type", "refresh_token"), ("refresh_token", &refresh)], Some(&t)).await?.access_token)
     }
 
@@ -185,7 +185,7 @@ impl OAuthClient {
             .await?;
         let status = res.status();
         if !status.is_success() {
-            bail!("Échange de token refusé : {status} {}", res.text().await.unwrap_or_default());
+            bail!("Token exchange refused: {status} {}", res.text().await.unwrap_or_default());
         }
         #[derive(Deserialize)]
         struct Resp {

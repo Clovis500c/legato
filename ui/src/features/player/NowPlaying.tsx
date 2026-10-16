@@ -53,10 +53,10 @@ function Inputs({ youtube, local, spotify, playing }: { youtube: boolean; local:
   ]
   return (
     <div className="flex flex-col gap-2">
-      <span className="kicker">Entrée</span>
+      <span className="kicker">Input</span>
       <div className="flex gap-3">
         {items.map((i) => (
-          <div key={i.code} className="flex flex-col items-center gap-1.5" title={i.locked ? 'Spotify : Premium requis' : i.has ? 'Disponible' : 'Pas sur cette source'}>
+          <div key={i.code} className="flex flex-col items-center gap-1.5" title={i.locked ? 'Spotify: Premium required' : i.has ? 'Available' : 'Not on this source'}>
             <Led on={i.on} />
             <span className={`grid size-10 place-items-center rounded-full border ${i.on ? 'border-ink-3 bg-raised text-ink' : 'border-line'} ${i.has ? 'text-ink-2' : 'text-ink-4'}`}>
               {i.locked ? <Lock size={14} /> : <SourceIcon source={i.source} size={14} />}
@@ -88,15 +88,15 @@ export function NowPlaying() {
   const next = local ? upcoming.map((p) => ({ key: p, title: fileTitle(p), artist: fileFormat(p) ?? '', onPlay: undefined })) : list.slice(index + 1).flatMap((t, i) => (t.ids.youtube ? [{ key: String(t.id), title: t.title, artist: t.artist, onPlay: () => playTracks(list, index + 1 + i) }] : []))
 
   return (
-    <div role="dialog" aria-label="En lecture" className="fixed inset-0 z-20 flex flex-col bg-bg px-10 pb-7">
+    <div role="dialog" aria-label="Now playing" className="fixed inset-0 z-20 flex flex-col bg-bg px-10 pb-7">
       <div data-tauri-drag-region className="flex h-14 shrink-0 items-center justify-between">
         <div className="flex w-60 items-center gap-2.5">
-          <RoundButton label="Réduire (Échap)" size="sm" onClick={() => setFull(false)}>
+          <RoundButton label="Collapse (Esc)" size="sm" onClick={() => setFull(false)}>
             <CaretDoubleDown size={14} />
           </RoundButton>
-          <span className="kicker">Réduire</span>
+          <span className="kicker">Collapse</span>
         </div>
-        <span className="kicker text-ink-2">En lecture · {local ? 'fichier local' : 'YouTube'}</span>
+        <span className="kicker text-ink-2">Now playing · {local ? 'local file' : 'YouTube'}</span>
         <span className="w-60" />
       </div>
 
@@ -123,13 +123,13 @@ export function NowPlaying() {
           <div className="flex items-center justify-between">
             <Inputs youtube={!!(track?.ids.youtube ?? now.youtubeId)} local={local || !!track?.ids.local} spotify={!!track?.ids.spotify} playing={local ? 'local' : 'youtube'} />
             <div className="flex items-center gap-4">
-              <RoundButton label="Précédent" kind="soft" size="lg" onClick={() => step(-1)}>
+              <RoundButton label="Previous" kind="soft" size="lg" onClick={() => step(-1)}>
                 <SkipBack weight="fill" size={18} />
               </RoundButton>
-              <RoundButton label={playing ? 'Pause' : 'Lecture'} kind="primary" size="xl" onClick={toggle}>
+              <RoundButton label={playing ? 'Pause' : 'Play'} kind="primary" size="xl" onClick={toggle}>
                 {playing ? <Pause weight="fill" size={28} /> : <Play weight="fill" size={28} />}
               </RoundButton>
-              <RoundButton label="Suivant" kind="soft" size="lg" onClick={() => step(1)}>
+              <RoundButton label="Next" kind="soft" size="lg" onClick={() => step(1)}>
                 <SkipForward weight="fill" size={18} />
               </RoundButton>
             </div>
@@ -142,11 +142,11 @@ export function NowPlaying() {
 
         <aside className="flex min-h-0 flex-col gap-3">
           <div className="flex items-center justify-between">
-            <span className="kicker text-ink">À suivre</span>
-            <span className="kicker">{next.length} titre{next.length > 1 ? 's' : ''}</span>
+            <span className="kicker text-ink">Up next</span>
+            <span className="kicker">{next.length} track{next.length > 1 ? 's' : ''}</span>
           </div>
           <ol className="flex min-h-0 flex-col overflow-y-auto">
-            {next.length === 0 && <li className="py-6 text-center text-ink-3">Rien après ce titre.</li>}
+            {next.length === 0 && <li className="py-6 text-center text-ink-3">Nothing after this track.</li>}
             {next.slice(0, 50).map((n) => (
               <li key={n.key}>
                 <button disabled={!n.onPlay} onClick={n.onPlay} className="flex w-full items-center gap-3 rounded-md px-2 py-2 text-left enabled:hover:bg-raised">

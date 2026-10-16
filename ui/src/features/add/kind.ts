@@ -11,7 +11,7 @@ export function videoKind(title: string): Kind {
   return null
 }
 
-export const kindLabel: Record<Exclude<Kind, null>, string> = { clip: 'CLIP', live: 'LIVE', cover: 'REPRISE', karaoke: 'KARAOKÉ', lyrics: 'PAROLES' }
+export const kindLabel: Record<Exclude<Kind, null>, string> = { clip: 'CLIP', live: 'LIVE', cover: 'COVER', karaoke: 'KARAOKE', lyrics: 'LYRICS' }
 
 /** Not the original recording. */
 export const unofficial = (k: Kind) => k === 'cover' || k === 'karaoke'

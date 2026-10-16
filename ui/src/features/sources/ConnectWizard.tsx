@@ -17,7 +17,7 @@ function CopyField({ value }: { value: string }) {
         className="flex items-center gap-1.5 rounded-md border border-line px-2 py-1 text-[11px] font-medium hover:bg-bg"
         onClick={() => navigator.clipboard.writeText(value).then(() => setDone(true))}
       >
-        {done ? <Check size={13} /> : <Copy size={13} />} {done ? 'Copié' : 'Copier'}
+        {done ? <Check size={13} /> : <Copy size={13} />} {done ? 'Copied' : 'Copy'}
       </button>
     </div>
   )
@@ -46,13 +46,13 @@ export function ConnectWizard({ service, onClose }: { service: Service; onClose:
             <SourceIcon source={service} size={20} />
           </span>
           <div>
-            <h2 className="text-lg font-bold">Connecter {sourceLabel[service]}</h2>
+            <h2 className="text-lg font-bold">Connect {sourceLabel[service]}</h2>
             <p className="kicker">
-              Étape {step + 1} sur {guide.steps.length}
+              Step {step + 1} of {guide.steps.length}
             </p>
           </div>
         </div>
-        <button type="button" aria-label="Fermer" className="text-ink-3 hover:text-ink" onClick={onClose}>
+        <button type="button" aria-label="Close" className="text-ink-3 hover:text-ink" onClick={onClose}>
           <X size={18} />
         </button>
       </header>
@@ -117,15 +117,15 @@ export function ConnectWizard({ service, onClose }: { service: Service; onClose:
 
       <footer className="mt-auto flex items-center justify-between">
         <Button variant="ghost" className="border-0 text-ink-2" disabled={step === 0} onClick={() => setStep(step - 1)}>
-          Retour
+          Back
         </Button>
         {step < last ? (
           <Button type="submit">
-            C’est fait, continuer <ArrowRight size={15} />
+            Done, continue <ArrowRight size={15} />
           </Button>
         ) : (
           <Button type="submit" disabled={!ready || busy}>
-            {busy ? 'En attente du navigateur…' : 'Connecter (ouvre le navigateur)'} <ArrowRight size={15} />
+            {busy ? 'Waiting for the browser…' : 'Connect (opens the browser)'} <ArrowRight size={15} />
           </Button>
         )}
       </footer>

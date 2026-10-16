@@ -318,8 +318,8 @@ impl Library {
 
     fn ensure_custom(&self, id: i64) -> Result<()> {
         let custom: Option<bool> = self.db.query_row("SELECT custom FROM playlists WHERE id = ?1", [id], |r| r.get(0)).optional()?;
-        anyhow::ensure!(custom.is_some(), "Playlist introuvable");
-        anyhow::ensure!(custom == Some(true), "Playlist importée : modifie-la dans son service, ou duplique-la");
+        anyhow::ensure!(custom.is_some(), "Playlist not found");
+        anyhow::ensure!(custom == Some(true), "Imported playlist: edit it in its service, or duplicate it");
         Ok(())
     }
 
@@ -381,7 +381,7 @@ impl Library {
 /// Trust boundary: names from UI.
 fn clean_name(name: &str) -> Result<String> {
     let name = name.trim();
-    anyhow::ensure!(!name.is_empty() && name.chars().count() <= 100, "Nom de playlist : 1 à 100 caractères");
+    anyhow::ensure!(!name.is_empty() && name.chars().count() <= 100, "Playlist name: 1 to 100 characters");
     Ok(name.to_string())
 }
 
@@ -549,7 +549,7 @@ mod tests {
     fn settings_roundtrip_and_overwrite() -> Result<()> {
         let lib = Library::in_memory()?;
         assert_eq!(lib.setting("ui")?, None);
-        lib.set_setting("ui", &serde_json::json!({ "theme": "papier" }))?;
+        lib.set_setting("ui", &serde_json::json!({ "theme": "paper" }))?;
         lib.set_setting("ui", &serde_json::json!({ "theme": "graphite" }))?;
         assert_eq!(lib.setting("ui")?, Some(serde_json::json!({ "theme": "graphite" })));
         Ok(())

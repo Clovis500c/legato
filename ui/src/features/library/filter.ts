@@ -17,7 +17,7 @@ export function filterTracks(tracks: LibraryTrack[], query: string, filter: Filt
   })
 }
 
-const coll = new Intl.Collator('fr', { sensitivity: 'base', numeric: true })
+const coll = new Intl.Collator('en', { sensitivity: 'base', numeric: true })
 
 /** Library arrives sorted by artist; other orders client-side. recent = highest row id first. */
 export function sortTracks(tracks: LibraryTrack[], sort: Sort): LibraryTrack[] {

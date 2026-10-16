@@ -11,10 +11,10 @@ import { PageHeader } from '../../shared/ui/PageHeader'
 import { SourcesView } from '../sources/SourcesView'
 
 const sections: { id: SettingsSection; label: string; icon: ReactNode }[] = [
-  { id: 'appearance', label: 'Apparence', icon: <PaintBrush size={15} /> },
-  { id: 'themes', label: 'Thèmes', icon: <PaletteIcon size={15} /> },
-  { id: 'sources', label: 'Sources et comptes', icon: <Plugs size={15} /> },
-  { id: 'shield', label: 'Bouclier', icon: <ShieldCheck size={15} /> },
+  { id: 'appearance', label: 'Appearance', icon: <PaintBrush size={15} /> },
+  { id: 'themes', label: 'Themes', icon: <PaletteIcon size={15} /> },
+  { id: 'sources', label: 'Sources & accounts', icon: <Plugs size={15} /> },
+  { id: 'shield', label: 'Shield', icon: <ShieldCheck size={15} /> },
 ]
 
 function Group({ title, hint, children }: { title: string; hint?: string; children: ReactNode }) {
@@ -70,7 +70,7 @@ function ThemeCard({ t, on, onClick, badge }: { t: Palette; on: boolean; onClick
         <ThemeThumb t={t} />
       </span>
       <span className="flex items-center gap-1.5 text-xs font-medium">
-        {on && <Led on />} <span className="flex-1 truncate">{'name' in t ? (t as Theme).name : 'Système'}</span>
+        {on && <Led on />} <span className="flex-1 truncate">{'name' in t ? (t as Theme).name : 'System'}</span>
         <span className="font-mono text-[9px] text-ink-3">{badge ?? t.accent}</span>
       </span>
     </button>
@@ -79,7 +79,7 @@ function ThemeCard({ t, on, onClick, badge }: { t: Palette; on: boolean; onClick
 
 function ThemeGallery({ onEdit }: { onEdit?: (id: string) => void }) {
   const { settings, update } = useSettings()
-  const system = { ...PRESETS[0], name: 'Système' }
+  const system = { ...PRESETS[0], name: 'System' }
   return (
     <div className="grid grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-4">
       {PRESETS.map((t) => (
@@ -87,7 +87,7 @@ function ThemeGallery({ onEdit }: { onEdit?: (id: string) => void }) {
       ))}
       <ThemeCard t={system} on={settings.theme === 'system'} onClick={() => update({ theme: 'system' })} badge="AUTO" />
       {settings.customThemes.map((t) => (
-        <ThemeCard key={t.id} t={t} on={settings.theme === t.id} badge="PERSO" onClick={() => (onEdit ? onEdit(t.id) : update({ theme: t.id }))} />
+        <ThemeCard key={t.id} t={t} on={settings.theme === t.id} badge="CUSTOM" onClick={() => (onEdit ? onEdit(t.id) : update({ theme: t.id }))} />
       ))}
     </div>
   )
@@ -96,59 +96,59 @@ function ThemeGallery({ onEdit }: { onEdit?: (id: string) => void }) {
 function Appearance() {
   const { settings: s, update } = useSettings()
   const col = (c: Column) => (s.columns.includes(c) ? s.columns.filter((x) => x !== c) : COLUMNS.filter((x) => x === c || s.columns.includes(x)))
-  const labels: Record<Column, string> = { album: 'Album', sources: 'Sources', duration: 'Durée' }
+  const labels: Record<Column, string> = { album: 'Album', sources: 'Sources', duration: 'Duration' }
   const reset: Partial<Settings> = { accent: DEFAULTS.accent, covers: DEFAULTS.covers, density: DEFAULTS.density, zoom: DEFAULTS.zoom, readout: DEFAULTS.readout, volume: DEFAULTS.volume, tuner: DEFAULTS.tuner, columns: DEFAULTS.columns }
   return (
     <div className="flex flex-col gap-7">
       <div className="flex justify-end">
         <Button variant="ghost" onClick={() => update(reset)}>
-          <ArrowCounterClockwise size={14} /> Réinitialiser l’apparence
+          <ArrowCounterClockwise size={14} /> Reset appearance
         </Button>
       </div>
-      <Group title="Thème">
+      <Group title="Theme">
         <ThemeGallery />
       </Group>
-      <Group title="Couleur d’accent" hint={s.accent ?? 'celle du thème'}>
+      <Group title="Accent color" hint={s.accent ?? 'from theme'}>
         <div className="flex flex-wrap items-center gap-2">
           <button onClick={() => update({ accent: null })} aria-pressed={!s.accent} className={`rounded-full px-3 py-1.5 text-xs font-medium ${!s.accent ? 'bg-ink text-bg' : 'border border-line'}`}>
-            Thème
+            Theme
           </button>
           {ACCENTS.map((c) => (
             <button key={c} aria-label={`Accent ${c}`} aria-pressed={s.accent === c} onClick={() => update({ accent: c })} className={`grid size-8.5 place-items-center rounded-full ${s.accent === c ? 'border-2 border-ink' : ''}`}>
               <span className="size-6 rounded-full" style={{ background: c }} />
             </button>
           ))}
-          <label className="grid size-8.5 cursor-pointer place-items-center rounded-full border border-dashed border-ink-3" title="Couleur libre">
+          <label className="grid size-8.5 cursor-pointer place-items-center rounded-full border border-dashed border-ink-3" title="Any color">
             <Plus size={12} />
             <input type="color" className="sr-only" value={s.accent ?? '#FF5A1F'} onChange={(e) => update({ accent: e.target.value })} />
           </label>
         </div>
       </Group>
       <div className="grid grid-cols-2 gap-6">
-        <Group title="Pochettes">
-          <Segmented label="Forme des pochettes" value={s.covers} onChange={(covers) => update({ covers })} options={[{ value: 'net', label: 'Nettes' }, { value: 'rounded', label: 'Arrondies' }, { value: 'vinyl', label: 'Vinyle' }]} />
+        <Group title="Covers">
+          <Segmented label="Cover shape" value={s.covers} onChange={(covers) => update({ covers })} options={[{ value: 'net', label: 'Sharp' }, { value: 'rounded', label: 'Rounded' }, { value: 'vinyl', label: 'Vinyl' }]} />
         </Group>
-        <Group title="Densité des listes">
-          <Segmented label="Densité" value={s.density} onChange={(density) => update({ density })} options={[{ value: 'compact', label: 'Compacte' }, { value: 'comfort', label: 'Confort' }, { value: 'airy', label: 'Aérée' }]} />
+        <Group title="List density">
+          <Segmented label="Density" value={s.density} onChange={(density) => update({ density })} options={[{ value: 'compact', label: 'Compact' }, { value: 'comfort', label: 'Comfortable' }, { value: 'airy', label: 'Airy' }]} />
         </Group>
       </div>
-      <Group title="Taille de l’interface" hint={`${s.zoom} %`}>
-        <input type="range" aria-label="Taille de l’interface" min={90} max={125} step={5} value={s.zoom} onChange={(e) => update({ zoom: +e.target.value })} className="bar w-60" style={{ background: `linear-gradient(to right, var(--ink) ${((s.zoom - 90) / 35) * 100}%, var(--line) 0)` }} />
+      <Group title="Interface size" hint={`${s.zoom}%`}>
+        <input type="range" aria-label="Interface size" min={90} max={125} step={5} value={s.zoom} onChange={(e) => update({ zoom: +e.target.value })} className="bar w-60" style={{ background: `linear-gradient(to right, var(--ink) ${((s.zoom - 90) / 35) * 100}%, var(--line) 0)` }} />
       </Group>
-      <Group title="Lecteur">
+      <Group title="Player">
         <div className="rounded-xl border border-line bg-raised">
-          <Row label="Afficheur" sub="Source et format à côté du volume">
-            <Toggle label="Afficheur" checked={s.readout} onChange={(readout) => update({ readout })} />
+          <Row label="Readout" sub="Source and format next to the volume">
+            <Toggle label="Readout" checked={s.readout} onChange={(readout) => update({ readout })} />
           </Row>
-          <Row label="Réglage du volume">
-            <Segmented label="Réglage du volume" value={s.volume} onChange={(volume) => update({ volume })} options={[{ value: 'knob', label: 'Molette' }, { value: 'bar', label: 'Barre' }]} />
+          <Row label="Volume control">
+            <Segmented label="Volume control" value={s.volume} onChange={(volume) => update({ volume })} options={[{ value: 'knob', label: 'Knob' }, { value: 'bar', label: 'Bar' }]} />
           </Row>
-          <Row label="Échelle graduée" sub="Barre de progression façon tuner, en plein écran">
-            <Toggle label="Échelle graduée" checked={s.tuner} onChange={(tuner) => update({ tuner })} />
+          <Row label="Tuner scale" sub="Tuner-style progress bar in full screen">
+            <Toggle label="Tuner scale" checked={s.tuner} onChange={(tuner) => update({ tuner })} />
           </Row>
         </div>
       </Group>
-      <Group title="Colonnes de la liste">
+      <Group title="List columns">
         <div className="flex flex-wrap gap-1.5">
           {COLUMNS.map((c) => {
             const on = s.columns.includes(c)
@@ -164,7 +164,7 @@ function Appearance() {
   )
 }
 
-const slotLabels: Record<PaletteKey, string> = { bg: 'Fond', panel: 'Panneau', raised: 'Surface', recess: 'Creux (afficheurs)', line: 'Lignes', lineSoft: 'Lignes douces', ink: 'Texte', ink2: 'Texte secondaire', ink3: 'Texte discret', ink4: 'Décor', accent: 'Accent', onAccent: 'Icône sur accent', ledOff: 'Voyant éteint' }
+const slotLabels: Record<PaletteKey, string> = { bg: 'Background', panel: 'Panel', raised: 'Surface', recess: 'Recess (readouts)', line: 'Lines', lineSoft: 'Soft lines', ink: 'Text', ink2: 'Secondary text', ink3: 'Muted text', ink4: 'Decor', accent: 'Accent', onAccent: 'Icon on accent', ledOff: 'LED off' }
 
 function ColorSlot({ k, value, onChange }: { k: PaletteKey; value: string; onChange: (v: string) => void }) {
   const [draft, setDraft] = useState(value)
@@ -176,7 +176,7 @@ function ColorSlot({ k, value, onChange }: { k: PaletteKey; value: string; onCha
       <span className="flex-1 text-xs">{slotLabels[k]}</span>
       <input
         value={draft}
-        aria-label={`${slotLabels[k]}, code hex`}
+        aria-label={`${slotLabels[k]}, hex code`}
         onChange={(e) => {
           setDraft(e.target.value)
           if (/^#[0-9a-f]{6}$/i.test(e.target.value)) onChange(e.target.value.toUpperCase())
@@ -198,8 +198,8 @@ function ThemeEditor({ id, onClose }: { id: string; onClose: () => void }) {
     <aside className="flex w-96 shrink-0 flex-col gap-4 self-start rounded-xl border border-line bg-raised p-4.5 shadow-[0_8px_24px_var(--shadow)]">
       <div className="flex items-center gap-3">
         <span className="size-6.5 rounded-full border-[5px]" style={{ background: t.accent, borderColor: t.bg }} />
-        <input value={t.name} aria-label="Nom du thème" maxLength={40} onChange={(e) => save({ name: e.target.value })} className="min-w-0 flex-1 bg-transparent text-lg font-bold tracking-tight outline-none" />
-        <RoundButton label="Fermer l’éditeur" kind="plain" size="xs" onClick={onClose}>
+        <input value={t.name} aria-label="Theme name" maxLength={40} onChange={(e) => save({ name: e.target.value })} className="min-w-0 flex-1 bg-transparent text-lg font-bold tracking-tight outline-none" />
+        <RoundButton label="Close editor" kind="plain" size="xs" onClick={onClose}>
           ×
         </RoundButton>
       </div>
@@ -209,31 +209,31 @@ function ThemeEditor({ id, onClose }: { id: string; onClose: () => void }) {
         ))}
       </div>
       <div className="flex items-center justify-between">
-        <span className="kicker">Police</span>
-        <Segmented label="Police" value={t.font} onChange={(font) => save({ font })} options={[{ value: 'hifi', label: 'Hi-Fi' }, { value: 'neutral', label: 'Neutre' }]} />
+        <span className="kicker">Font</span>
+        <Segmented label="Font" value={t.font} onChange={(font) => save({ font })} options={[{ value: 'hifi', label: 'Hi-Fi' }, { value: 'neutral', label: 'Neutral' }]} />
       </div>
       <div className="flex items-center justify-between">
-        <span className="text-xs font-medium">Lueur des voyants</span>
-        <Toggle label="Lueur des voyants" checked={t.glow} onChange={(glow) => save({ glow })} />
+        <span className="text-xs font-medium">LED glow</span>
+        <Toggle label="LED glow" checked={t.glow} onChange={(glow) => save({ glow })} />
       </div>
       <div className="flex flex-col gap-1.5 rounded-lg bg-recess p-3">
-        <span className="kicker">Contraste · vérifié en direct</span>
+        <span className="kicker">Contrast · checked live</span>
         {report.map((c) => (
           <span key={c.label} className="flex items-center gap-2 text-xs">
             {c.ok ? <CheckCircle size={14} className="text-ink-2" /> : <WarningCircle size={14} className="text-danger" />}
             <span className="flex-1">{c.label}</span>
             <span className={`font-mono text-[10px] ${c.ok ? 'text-ink-2' : 'text-danger'}`}>
-              {c.ratio.toFixed(1).replace('.', ',')}:1 {c.ok ? 'AA' : `< ${c.min}`}
+              {c.ratio.toFixed(1)}:1 {c.ok ? 'AA' : `< ${c.min}`}
             </span>
           </span>
         ))}
       </div>
       <div className="flex items-center gap-2">
         <Button className="flex-1" onClick={() => update({ theme: t.id })} disabled={settings.theme === t.id}>
-          {settings.theme === t.id ? 'Appliqué' : 'Appliquer'}
+          {settings.theme === t.id ? 'Applied' : 'Apply'}
         </Button>
         <RoundButton
-          label={copied ? 'Copié dans le presse-papiers' : 'Exporter (copie le .theme)'}
+          label={copied ? 'Copied to clipboard' : 'Export (copies the .theme)'}
           onClick={() =>
             navigator.clipboard.writeText(JSON.stringify(t, null, 2)).then(() => {
               setCopied(true)
@@ -244,9 +244,9 @@ function ThemeEditor({ id, onClose }: { id: string; onClose: () => void }) {
           {copied ? <Check size={15} /> : <Copy size={15} />}
         </RoundButton>
         <RoundButton
-          label="Supprimer le thème"
+          label="Delete theme"
           onClick={() => {
-            update({ customThemes: settings.customThemes.filter((x) => x.id !== id), ...(settings.theme === id ? { theme: 'papier' } : {}) })
+            update({ customThemes: settings.customThemes.filter((x) => x.id !== id), ...(settings.theme === id ? { theme: 'paper' } : {}) })
             onClose()
           }}
         >
@@ -270,21 +270,21 @@ function Themes() {
   return (
     <div className="flex gap-8">
       <div className="flex min-w-0 flex-1 flex-col gap-6">
-        <p className="text-[13px] text-ink-2">Clique un thème pour l’appliquer. Un thème perso s’ouvre dans l’éditeur : chaque couleur se règle, le contraste est vérifié en direct.</p>
-        <Group title={`Thèmes · ${PRESETS.length + 1 + settings.customThemes.length}`} hint={`Appliqué : ${current().name}`}>
+        <p className="text-[13px] text-ink-2">Click a theme to apply it. A custom theme opens in the editor: tune every color, contrast is checked live.</p>
+        <Group title={`Themes · ${PRESETS.length + 1 + settings.customThemes.length}`} hint={`Applied: ${current().name}`}>
           <ThemeGallery onEdit={setEditing} />
         </Group>
         <div className="flex flex-wrap gap-2">
-          <Button onClick={() => add({ ...current(), id: `custom-${Date.now().toString(36)}`, name: `${current().name} perso` })}>
-            <Plus size={14} /> Nouveau thème (copie de l’actuel)
+          <Button onClick={() => add({ ...current(), id: `custom-${Date.now().toString(36)}`, name: `${current().name} custom` })}>
+            <Plus size={14} /> New theme (copy of current)
           </Button>
           <Button variant="ghost" onClick={() => setImporting(!importing)}>
-            <ClipboardText size={14} /> Importer un .theme
+            <ClipboardText size={14} /> Import a .theme
           </Button>
         </div>
         {importing && (
           <div className="flex flex-col gap-2">
-            <textarea value={paste} onChange={(e) => (setPaste(e.target.value), setBad(false))} rows={5} placeholder="Colle ici le contenu d’un fichier .theme" className="rounded-lg border border-line bg-raised p-3 font-mono text-[11px]" />
+            <textarea value={paste} onChange={(e) => (setPaste(e.target.value), setBad(false))} rows={5} placeholder="Paste the contents of a .theme file here" className="rounded-lg border border-line bg-raised p-3 font-mono text-[11px]" />
             <div className="flex items-center gap-3">
               <Button
                 disabled={!paste.trim()}
@@ -301,9 +301,9 @@ function Themes() {
                   setImporting(false)
                 }}
               >
-                Ajouter
+                Add
               </Button>
-              {bad && <span className="text-xs text-danger">Thème invalide : il faut les 13 couleurs au format #RRGGBB.</span>}
+              {bad && <span className="text-xs text-danger">Invalid theme: all 13 colors are needed, as #RRGGBB.</span>}
             </div>
           </div>
         )}
@@ -325,11 +325,11 @@ function ShieldSection() {
   }, [])
   return (
     <div className="flex max-w-190 flex-col gap-6">
-      <p className="text-[13px] text-ink-2">Bloque pubs et traqueurs avec le moteur de Brave (adblock-rust) et les listes EasyList et EasyPrivacy, mises à jour tous les 4 jours. Dans le lecteur YouTube, les emplacements de pub sont retirés avant la lecture.</p>
+      <p className="text-[13px] text-ink-2">Blocks ads and trackers with Brave’s engine (adblock-rust) and the EasyList and EasyPrivacy lists, updated every 4 days. In the YouTube player, ad slots are removed before playback.</p>
       <div className="rounded-xl border border-line bg-raised">
-        <Row label="Bloquer pubs et traqueurs" sub="Réseau : tout de suite. Lecteur YouTube : au prochain lancement.">
+        <Row label="Block ads and trackers" sub="Network: right away. YouTube player: on next launch.">
           <Toggle
-            label="Bloquer pubs et traqueurs"
+            label="Block ads and trackers"
             checked={settings.shield}
             onChange={(shield) => {
               update({ shield })
@@ -338,22 +338,22 @@ function ShieldSection() {
             }}
           />
         </Row>
-        <Row label="Requêtes bloquées" sub="Depuis le lancement de l’app">
+        <Row label="Blocked requests" sub="Since app launch">
           <span className="font-mono text-2xl tabular-nums">{formatCount(blocked)}</span>
         </Row>
-        <Row label="Listes" sub="EasyList · EasyPrivacy · règles intégrées (hors ligne)">
+        <Row label="Lists" sub="EasyList · EasyPrivacy · built-in rules (offline)">
           <span className="flex items-center gap-2 kicker">
-            <Led on={settings.shield} /> {settings.shield ? 'Actif' : 'Coupé'}
+            <Led on={settings.shield} /> {settings.shield ? 'On' : 'Off'}
           </span>
         </Row>
       </div>
       {changed && (
         <div className="flex items-center gap-4 rounded-lg border border-line bg-recess px-4 py-3">
-          <p className="flex-1 text-xs">Redémarre l’app pour appliquer le changement au lecteur YouTube.</p>
-          <Button onClick={() => void api.restartApp()}>Redémarrer</Button>
+          <p className="flex-1 text-xs">Restart the app to apply the change to the YouTube player.</p>
+          <Button onClick={() => void api.restartApp()}>Restart</Button>
         </div>
       )}
-      <p className="text-xs text-ink-2">À savoir : les règles de YouTube interdisent de bloquer les pubs de son lecteur. Risques : ta clé API révoquée, ou une lecture qui casse si YouTube change son lecteur. YouTube Premium retire les pubs sans ce risque.</p>
+      <p className="text-xs text-ink-2">Note: YouTube’s terms forbid blocking ads in its player. Risks: your API key gets revoked, or playback breaks when YouTube changes its player. YouTube Premium removes ads without this risk.</p>
     </div>
   )
 }
@@ -362,7 +362,7 @@ export function SettingsView({ section }: { section: SettingsSection }) {
   const go = useStore((s) => s.go)
   return (
     <>
-      <PageHeader kicker="Réglages" title={sections.find((s) => s.id === section)!.label} />
+      <PageHeader kicker="Settings" title={sections.find((s) => s.id === section)!.label} />
       <div className="flex min-h-0 flex-1 gap-9">
         <nav className="flex w-52 shrink-0 flex-col gap-px">
           {sections.map((s) => (

@@ -115,7 +115,7 @@ export const useStore = create<State>((set, get) => {
     async addLink(url) {
       let added = ''
       if (await run(async () => (added = await api.addLink(url)))) {
-        set({ notice: `Ajouté : ${added}` })
+        set({ notice: `Added: ${added}` })
         setTimeout(() => set({ notice: undefined }), 4000)
       }
     },
