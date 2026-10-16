@@ -1,0 +1,335 @@
+import { ArrowCounterClockwise, Check, CheckCircle, ClipboardText, Copy, PaintBrush, Palette as PaletteIcon, Plugs, Plus, Trash, WarningCircle } from '@phosphor-icons/react'
+import { useState, type ReactNode } from 'react'
+import { useSettings } from '../../app/settings'
+import { useStore, type SettingsSection } from '../../app/store'
+import { ACCENTS, COLUMNS, contrastReport, DEFAULTS, PALETTE_KEYS, PRESETS, sanitizeTheme, type Column, type Palette, type PaletteKey, type Settings, type Theme } from '../../shared/theme/theme'
+import { Button } from '../../shared/ui/Button'
+import { Led, RoundButton, Segmented, Toggle } from '../../shared/ui/controls'
+import { PageHeader } from '../../shared/ui/PageHeader'
+import { SourcesView } from '../sources/SourcesView'
+
+const sections: { id: SettingsSection; label: string; icon: ReactNode }[] = [
+  { id: 'appearance', label: 'Apparence', icon: <PaintBrush size={15} /> },
+  { id: 'themes', label: 'Thèmes', icon: <PaletteIcon size={15} /> },
+  { id: 'sources', label: 'Sources et comptes', icon: <Plugs size={15} /> },
+]
+
+function Group({ title, hint, children }: { title: string; hint?: string; children: ReactNode }) {
+  return (
+    <section className="flex flex-col gap-2.5">
+      <div className="flex items-center justify-between">
+        <h2 className="kicker">{title}</h2>
+        {hint && <span className="kicker">{hint}</span>}
+      </div>
+      {children}
+    </section>
+  )
+}
+
+function Row({ label, sub, children }: { label: string; sub?: string; children: ReactNode }) {
+  return (
+    <div className="flex items-center gap-4 border-b border-line-soft px-4 py-3 last:border-0">
+      <div className="flex-1">
+        <p className="text-[13px] font-medium">{label}</p>
+        {sub && <p className="text-xs text-ink-2">{sub}</p>}
+      </div>
+      {children}
+    </div>
+  )
+}
+
+/** Mini window drawn in the theme's own colors. */
+function ThemeThumb({ t }: { t: Palette }) {
+  return (
+    <span className="relative block h-23 w-full overflow-hidden" style={{ background: t.bg }}>
+      <span className="absolute inset-y-0 left-0 w-[24%]" style={{ background: t.panel }} />
+      <span className="absolute top-3 left-[5%] size-1.5 rounded-full" style={{ background: t.accent }} />
+      {[0, 1, 2].map((i) => (
+        <span key={i} className="absolute left-[5%] h-[3px] w-[13%] rounded-full" style={{ top: 12 + i * 8, marginLeft: i ? 0 : 9, background: i ? t.ink4 : t.ink }} />
+      ))}
+      <span className="absolute top-3 left-[30%] h-1.5 w-[32%] rounded-full" style={{ background: t.ink }} />
+      {[0, 1, 2].map((i) => (
+        <span key={i} className="absolute left-[30%] flex w-[64%] items-center gap-1.5" style={{ top: 25 + i * 13 }}>
+          <span className="size-2.5 shrink-0 rounded-[2px]" style={{ background: t.recess }} />
+          <span className="h-[3px] rounded-full" style={{ width: `${55 - i * 12}%`, background: i === 1 ? t.accent : t.ink2 }} />
+        </span>
+      ))}
+      <span className="absolute inset-x-0 bottom-0 h-5" style={{ background: t.panel, borderTop: `1px solid ${t.line}` }} />
+      <span className="absolute bottom-1 left-1/2 size-3 -translate-x-1/2 rounded-full" style={{ background: t.accent }} />
+    </span>
+  )
+}
+
+function ThemeCard({ t, on, onClick, badge }: { t: Palette; on: boolean; onClick: () => void; badge?: string }) {
+  return (
+    <button onClick={onClick} aria-pressed={on} className="flex flex-col gap-2 text-left">
+      <span className={`block overflow-hidden rounded-lg border-2 ${on ? 'border-ink' : 'border-transparent outline outline-1 outline-line'}`}>
+        <ThemeThumb t={t} />
+      </span>
+      <span className="flex items-center gap-1.5 text-xs font-medium">
+        {on && <Led on />} <span className="flex-1 truncate">{'name' in t ? (t as Theme).name : 'Système'}</span>
+        <span className="font-mono text-[9px] text-ink-3">{badge ?? t.accent}</span>
+      </span>
+    </button>
+  )
+}
+
+function ThemeGallery({ onEdit }: { onEdit?: (id: string) => void }) {
+  const { settings, update } = useSettings()
+  const system = { ...PRESETS[0], name: 'Système' }
+  return (
+    <div className="grid grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-4">
+      {PRESETS.map((t) => (
+        <ThemeCard key={t.id} t={t} on={settings.theme === t.id} onClick={() => update({ theme: t.id })} />
+      ))}
+      <ThemeCard t={system} on={settings.theme === 'system'} onClick={() => update({ theme: 'system' })} badge="AUTO" />
+      {settings.customThemes.map((t) => (
+        <ThemeCard key={t.id} t={t} on={settings.theme === t.id} badge="PERSO" onClick={() => (onEdit ? onEdit(t.id) : update({ theme: t.id }))} />
+      ))}
+    </div>
+  )
+}
+
+function Appearance() {
+  const { settings: s, update } = useSettings()
+  const col = (c: Column) => (s.columns.includes(c) ? s.columns.filter((x) => x !== c) : COLUMNS.filter((x) => x === c || s.columns.includes(x)))
+  const labels: Record<Column, string> = { album: 'Album', sources: 'Sources', duration: 'Durée' }
+  const reset: Partial<Settings> = { accent: DEFAULTS.accent, covers: DEFAULTS.covers, density: DEFAULTS.density, zoom: DEFAULTS.zoom, readout: DEFAULTS.readout, volume: DEFAULTS.volume, tuner: DEFAULTS.tuner, columns: DEFAULTS.columns }
+  return (
+    <div className="flex flex-col gap-7">
+      <div className="flex justify-end">
+        <Button variant="ghost" onClick={() => update(reset)}>
+          <ArrowCounterClockwise size={14} /> Réinitialiser l’apparence
+        </Button>
+      </div>
+      <Group title="Thème">
+        <ThemeGallery />
+      </Group>
+      <Group title="Couleur d’accent" hint={s.accent ?? 'celle du thème'}>
+        <div className="flex flex-wrap items-center gap-2">
+          <button onClick={() => update({ accent: null })} aria-pressed={!s.accent} className={`rounded-full px-3 py-1.5 text-xs font-medium ${!s.accent ? 'bg-ink text-bg' : 'border border-line'}`}>
+            Thème
+          </button>
+          {ACCENTS.map((c) => (
+            <button key={c} aria-label={`Accent ${c}`} aria-pressed={s.accent === c} onClick={() => update({ accent: c })} className={`grid size-8.5 place-items-center rounded-full ${s.accent === c ? 'border-2 border-ink' : ''}`}>
+              <span className="size-6 rounded-full" style={{ background: c }} />
+            </button>
+          ))}
+          <label className="grid size-8.5 cursor-pointer place-items-center rounded-full border border-dashed border-ink-3" title="Couleur libre">
+            <Plus size={12} />
+            <input type="color" className="sr-only" value={s.accent ?? '#FF5A1F'} onChange={(e) => update({ accent: e.target.value })} />
+          </label>
+        </div>
+      </Group>
+      <div className="grid grid-cols-2 gap-6">
+        <Group title="Pochettes">
+          <Segmented label="Forme des pochettes" value={s.covers} onChange={(covers) => update({ covers })} options={[{ value: 'net', label: 'Nettes' }, { value: 'rounded', label: 'Arrondies' }, { value: 'vinyl', label: 'Vinyle' }]} />
+        </Group>
+        <Group title="Densité des listes">
+          <Segmented label="Densité" value={s.density} onChange={(density) => update({ density })} options={[{ value: 'compact', label: 'Compacte' }, { value: 'comfort', label: 'Confort' }, { value: 'airy', label: 'Aérée' }]} />
+        </Group>
+      </div>
+      <Group title="Taille de l’interface" hint={`${s.zoom} %`}>
+        <input type="range" aria-label="Taille de l’interface" min={90} max={125} step={5} value={s.zoom} onChange={(e) => update({ zoom: +e.target.value })} className="bar w-60" style={{ background: `linear-gradient(to right, var(--ink) ${((s.zoom - 90) / 35) * 100}%, var(--line) 0)` }} />
+      </Group>
+      <Group title="Lecteur">
+        <div className="rounded-xl border border-line bg-raised">
+          <Row label="Afficheur" sub="Source et format à côté du volume">
+            <Toggle label="Afficheur" checked={s.readout} onChange={(readout) => update({ readout })} />
+          </Row>
+          <Row label="Réglage du volume">
+            <Segmented label="Réglage du volume" value={s.volume} onChange={(volume) => update({ volume })} options={[{ value: 'knob', label: 'Molette' }, { value: 'bar', label: 'Barre' }]} />
+          </Row>
+          <Row label="Échelle graduée" sub="Barre de progression façon tuner, en plein écran">
+            <Toggle label="Échelle graduée" checked={s.tuner} onChange={(tuner) => update({ tuner })} />
+          </Row>
+        </div>
+      </Group>
+      <Group title="Colonnes de la liste">
+        <div className="flex flex-wrap gap-1.5">
+          {COLUMNS.map((c) => {
+            const on = s.columns.includes(c)
+            return (
+              <button key={c} aria-pressed={on} onClick={() => update({ columns: col(c) })} className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium ${on ? 'bg-ink text-bg' : 'border border-line text-ink-2'}`}>
+                {on ? <Check size={11} /> : <Plus size={11} />} {labels[c]}
+              </button>
+            )
+          })}
+        </div>
+      </Group>
+    </div>
+  )
+}
+
+const slotLabels: Record<PaletteKey, string> = { bg: 'Fond', panel: 'Panneau', raised: 'Surface', recess: 'Creux (afficheurs)', line: 'Lignes', lineSoft: 'Lignes douces', ink: 'Texte', ink2: 'Texte secondaire', ink3: 'Texte discret', ink4: 'Décor', accent: 'Accent', onAccent: 'Icône sur accent', ledOff: 'Voyant éteint' }
+
+function ColorSlot({ k, value, onChange }: { k: PaletteKey; value: string; onChange: (v: string) => void }) {
+  const [draft, setDraft] = useState(value)
+  return (
+    <label className="flex items-center gap-3 px-1 py-1.5">
+      <span className="relative size-6 shrink-0 cursor-pointer overflow-hidden rounded-md border border-line" style={{ background: value }}>
+        <input type="color" aria-label={slotLabels[k]} value={value} onChange={(e) => (onChange(e.target.value.toUpperCase()), setDraft(e.target.value.toUpperCase()))} className="absolute inset-0 cursor-pointer opacity-0" />
+      </span>
+      <span className="flex-1 text-xs">{slotLabels[k]}</span>
+      <input
+        value={draft}
+        aria-label={`${slotLabels[k]}, code hex`}
+        onChange={(e) => {
+          setDraft(e.target.value)
+          if (/^#[0-9a-f]{6}$/i.test(e.target.value)) onChange(e.target.value.toUpperCase())
+        }}
+        className="w-20 rounded border border-line-soft bg-transparent px-1.5 py-0.5 font-mono text-[10px] uppercase"
+      />
+    </label>
+  )
+}
+
+function ThemeEditor({ id, onClose }: { id: string; onClose: () => void }) {
+  const { settings, update } = useSettings()
+  const [copied, setCopied] = useState(false)
+  const t = settings.customThemes.find((x) => x.id === id)
+  if (!t) return null
+  const save = (patch: Partial<Theme>) => update({ customThemes: settings.customThemes.map((x) => (x.id === id ? { ...x, ...patch } : x)) })
+  const report = contrastReport(t)
+  return (
+    <aside className="flex w-96 shrink-0 flex-col gap-4 self-start rounded-xl border border-line bg-raised p-4.5 shadow-[0_8px_24px_var(--shadow)]">
+      <div className="flex items-center gap-3">
+        <span className="size-6.5 rounded-full border-[5px]" style={{ background: t.accent, borderColor: t.bg }} />
+        <input value={t.name} aria-label="Nom du thème" maxLength={40} onChange={(e) => save({ name: e.target.value })} className="min-w-0 flex-1 bg-transparent text-lg font-bold tracking-tight outline-none" />
+        <RoundButton label="Fermer l’éditeur" kind="plain" size="xs" onClick={onClose}>
+          ×
+        </RoundButton>
+      </div>
+      <div className="grid grid-cols-1 divide-y divide-line-soft">
+        {PALETTE_KEYS.map((k) => (
+          <ColorSlot key={k} k={k} value={t[k]} onChange={(v) => save({ [k]: v })} />
+        ))}
+      </div>
+      <div className="flex items-center justify-between">
+        <span className="kicker">Police</span>
+        <Segmented label="Police" value={t.font} onChange={(font) => save({ font })} options={[{ value: 'hifi', label: 'Hi-Fi' }, { value: 'neutral', label: 'Neutre' }]} />
+      </div>
+      <div className="flex items-center justify-between">
+        <span className="text-xs font-medium">Lueur des voyants</span>
+        <Toggle label="Lueur des voyants" checked={t.glow} onChange={(glow) => save({ glow })} />
+      </div>
+      <div className="flex flex-col gap-1.5 rounded-lg bg-recess p-3">
+        <span className="kicker">Contraste · vérifié en direct</span>
+        {report.map((c) => (
+          <span key={c.label} className="flex items-center gap-2 text-xs">
+            {c.ok ? <CheckCircle size={14} className="text-ink-2" /> : <WarningCircle size={14} className="text-danger" />}
+            <span className="flex-1">{c.label}</span>
+            <span className={`font-mono text-[10px] ${c.ok ? 'text-ink-2' : 'text-danger'}`}>
+              {c.ratio.toFixed(1).replace('.', ',')}:1 {c.ok ? 'AA' : `< ${c.min}`}
+            </span>
+          </span>
+        ))}
+      </div>
+      <div className="flex items-center gap-2">
+        <Button className="flex-1" onClick={() => update({ theme: t.id })} disabled={settings.theme === t.id}>
+          {settings.theme === t.id ? 'Appliqué' : 'Appliquer'}
+        </Button>
+        <RoundButton
+          label={copied ? 'Copié dans le presse-papiers' : 'Exporter (copie le .theme)'}
+          onClick={() =>
+            navigator.clipboard.writeText(JSON.stringify(t, null, 2)).then(() => {
+              setCopied(true)
+              setTimeout(() => setCopied(false), 1500)
+            })
+          }
+        >
+          {copied ? <Check size={15} /> : <Copy size={15} />}
+        </RoundButton>
+        <RoundButton
+          label="Supprimer le thème"
+          onClick={() => {
+            update({ customThemes: settings.customThemes.filter((x) => x.id !== id), ...(settings.theme === id ? { theme: 'papier' } : {}) })
+            onClose()
+          }}
+        >
+          <Trash size={15} />
+        </RoundButton>
+      </div>
+    </aside>
+  )
+}
+
+function Themes() {
+  const { settings, update, current } = useSettings()
+  const [editing, setEditing] = useState<string>()
+  const [importing, setImporting] = useState(false)
+  const [paste, setPaste] = useState('')
+  const [bad, setBad] = useState(false)
+  const add = (t: Theme) => {
+    update({ customThemes: [...settings.customThemes, t] })
+    setEditing(t.id)
+  }
+  return (
+    <div className="flex gap-8">
+      <div className="flex min-w-0 flex-1 flex-col gap-6">
+        <p className="text-[13px] text-ink-2">Clique un thème pour l’appliquer. Un thème perso s’ouvre dans l’éditeur : chaque couleur se règle, le contraste est vérifié en direct.</p>
+        <Group title={`Thèmes · ${PRESETS.length + 1 + settings.customThemes.length}`} hint={`Appliqué : ${current().name}`}>
+          <ThemeGallery onEdit={setEditing} />
+        </Group>
+        <div className="flex flex-wrap gap-2">
+          <Button onClick={() => add({ ...current(), id: `custom-${Date.now().toString(36)}`, name: `${current().name} perso` })}>
+            <Plus size={14} /> Nouveau thème (copie de l’actuel)
+          </Button>
+          <Button variant="ghost" onClick={() => setImporting(!importing)}>
+            <ClipboardText size={14} /> Importer un .theme
+          </Button>
+        </div>
+        {importing && (
+          <div className="flex flex-col gap-2">
+            <textarea value={paste} onChange={(e) => (setPaste(e.target.value), setBad(false))} rows={5} placeholder="Colle ici le contenu d’un fichier .theme" className="rounded-lg border border-line bg-raised p-3 font-mono text-[11px]" />
+            <div className="flex items-center gap-3">
+              <Button
+                disabled={!paste.trim()}
+                onClick={() => {
+                  let theme: Theme | null = null
+                  try {
+                    theme = sanitizeTheme({ ...JSON.parse(paste), id: undefined })
+                  } catch {
+                    theme = null
+                  }
+                  if (!theme) return setBad(true)
+                  add(theme)
+                  setPaste('')
+                  setImporting(false)
+                }}
+              >
+                Ajouter
+              </Button>
+              {bad && <span className="text-xs text-danger">Thème invalide : il faut les 13 couleurs au format #RRGGBB.</span>}
+            </div>
+          </div>
+        )}
+      </div>
+      {editing && <ThemeEditor key={editing} id={editing} onClose={() => setEditing(undefined)} />}
+    </div>
+  )
+}
+
+export function SettingsView({ section }: { section: SettingsSection }) {
+  const go = useStore((s) => s.go)
+  return (
+    <>
+      <PageHeader kicker="Réglages" title={sections.find((s) => s.id === section)!.label} />
+      <div className="flex min-h-0 flex-1 gap-9">
+        <nav className="flex w-52 shrink-0 flex-col gap-px">
+          {sections.map((s) => (
+            <button key={s.id} aria-current={s.id === section ? 'page' : undefined} onClick={() => go({ name: 'settings', section: s.id })} className={`flex items-center gap-2.5 rounded-md py-2 pr-2.5 pl-1 text-left ${s.id === section ? 'bg-raised font-semibold' : 'text-ink-2 hover:text-ink'}`}>
+              <span className="w-1.5">{s.id === section && <Led on />}</span>
+              {s.icon} {s.label}
+            </button>
+          ))}
+        </nav>
+        <div className="-mx-2 min-h-0 flex-1 overflow-y-auto px-2 pb-8">
+          {section === 'appearance' && <Appearance />}
+          {section === 'themes' && <Themes />}
+          {section === 'sources' && <SourcesView />}
+        </div>
+      </div>
+    </>
+  )
+}

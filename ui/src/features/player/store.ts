@@ -8,6 +8,10 @@ export interface NowPlaying {
   title: string
   artist: string
   youtubeId?: string
+  /** Library row, to highlight it in lists. */
+  trackId?: number
+  /** Local file path (format shown in readout). */
+  path?: string
 }
 
 interface PlayerState {
@@ -19,6 +23,11 @@ interface PlayerState {
   /** List a YouTube track was started from: next/prev walk it. */
   list: LibraryTrack[]
   index: number
+  /** Local engine queue after current file. */
+  upcoming: string[]
+  /** Full-screen Now Playing. */
+  full: boolean
+  setFull: (full: boolean) => void
   playTracks: (list: LibraryTrack[], index: number) => void
   playFiles: (paths: string[]) => void
   toggle: () => void
@@ -44,19 +53,22 @@ export const usePlayer = create<PlayerState>((set, get) => ({
   volume: 1,
   list: [],
   index: 0,
+  upcoming: [],
+  full: false,
+  setFull: (full) => set({ full }),
 
   playTracks(list, index) {
     const t = list[index]
     if (!t?.ids.youtube) return
     if (get().now && !get().now?.youtubeId) send({ type: 'stop' })
-    set({ now: { title: t.title, artist: t.artist, youtubeId: t.ids.youtube }, list, index, playing: true, positionMs: 0, durationMs: t.durationMs })
+    set({ now: { title: t.title, artist: t.artist, youtubeId: t.ids.youtube, trackId: t.id }, list, index, playing: true, positionMs: 0, durationMs: t.durationMs })
   },
 
   playFiles(paths) {
     send({ type: 'play', paths, start: 0 })
     send({ type: 'volume', value: get().volume })
     // Clearing youtubeId unmounts embed.
-    set({ now: { title: fileTitle(paths[0]), artist: 'Fichier local' }, playing: true, positionMs: 0, durationMs: null })
+    set({ now: { title: fileTitle(paths[0]), artist: 'Fichier local', path: paths[0] }, playing: true, positionMs: 0, durationMs: null })
   },
 
   toggle() {
@@ -106,7 +118,11 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     set({
       playing: !!s.path && !s.paused,
       positionMs: s.positionMs,
-      ...(s.path && { now: { title: fileTitle(s.path), artist: 'Fichier local' }, durationMs: s.durationMs }),
+      upcoming: s.upcoming,
+      ...(s.path && { now: { title: fileTitle(s.path), artist: 'Fichier local', path: s.path }, durationMs: s.durationMs }),
     })
   },
 }))
+
+/** Where the YouTube iframe should sit. Null = mini player. Moving the iframe in DOM would reload it. */
+export const useVideoSlot = create<{ rect: DOMRect | null; set: (rect: DOMRect | null) => void }>((set) => ({ rect: null, set: (rect) => set({ rect }) }))

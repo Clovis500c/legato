@@ -54,6 +54,7 @@ export interface PlayerStatus {
   positionMs: number
   durationMs: number | null
   paused: boolean
+  upcoming: string[]
   error: string | null
 }
 
@@ -68,4 +69,7 @@ export const api = {
   playlistTracks: (id: number) => invoke<LibraryTrack[]>('playlist_tracks', { id }),
   player: (cmd: PlayerCommand) => invoke<void>('player', { cmd }),
   playerStatus: () => invoke<PlayerStatus>('player_status'),
+  /** Raw JSON; validated by shared/theme/settings.sanitize. */
+  loadSettings: () => invoke<unknown>('load_settings'),
+  saveSettings: (settings: object) => invoke<void>('save_settings', { settings }),
 }

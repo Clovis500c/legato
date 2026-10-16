@@ -21,11 +21,3 @@ export const formatCount = (n: number) => n.toLocaleString('fr-FR')
 
 /** Lowercase, no accents. For client-side search. */
 export const fold = (s: string) => s.normalize('NFKD').replace(/\p{M}/gu, '').toLowerCase()
-
-/** Stable cover gradient per album: no network, no copyrighted art. */
-export function coverGradient(seed: string): string {
-  let h = 0
-  for (const c of seed) h = (h * 31 + c.charCodeAt(0)) >>> 0
-  const hue = h % 360
-  return `linear-gradient(135deg, hsl(${hue} 80% 60%), hsl(${(hue + 40) % 360} 70% 40%))`
-}

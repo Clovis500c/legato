@@ -1,75 +1,59 @@
-import { ArrowRight, HardDrive, Server, ShieldCheck } from 'lucide-react'
+import { HardDrives, ShieldCheck } from '@phosphor-icons/react'
 import { useStore } from '../../app/store'
 import type { Service } from '../../shared/api'
-import { Button, Chip } from '../../shared/ui/Button'
+import { Button } from '../../shared/ui/Button'
+import { Led } from '../../shared/ui/controls'
 import { SourceIcon, sourceLabel } from '../../shared/ui/SourceIcon'
 import { guides } from './guides'
 
-const card = 'flex flex-col gap-3.5 rounded-[14px] border p-5'
-
-function ServiceCard({ service, selected, onSelect }: { service: Service; selected: boolean; onSelect: () => void }) {
-  const { status, disconnect, busy } = useStore()
+function ServiceRow({ service }: { service: Service }) {
+  const { status, disconnect, busy, go, view } = useStore()
   const { connected } = status[service]
+  const selected = view.name === 'settings' && view.wizard === service
   return (
-    <article className={`${card} ${selected ? 'border-accent-from bg-[#14111f]' : 'border-line-soft bg-[#111118]'}`}>
-      <div className="flex items-center justify-between">
-        <span className="grid size-11 place-items-center rounded-xl bg-surface">
-          <SourceIcon source={service} size={22} />
-        </span>
-        <Chip className={connected ? 'bg-[#0f2a1a] font-medium text-[#4ade80]' : 'bg-raised font-medium text-muted'}>
-          <span className={`size-1.5 rounded-full ${connected ? 'bg-[#22c55e]' : 'bg-muted'}`} /> {connected ? 'Connecté' : 'Non connecté'}
-        </Chip>
+    <div className={`flex items-center gap-4 border-b border-line-soft px-4 py-3.5 last:border-0 ${selected ? 'bg-bg' : ''}`}>
+      <Led on={connected} />
+      <span className="grid size-9 place-items-center rounded-full border border-line text-ink-2">
+        <SourceIcon source={service} size={16} />
+      </span>
+      <div className="flex-1">
+        <p className="text-[13px] font-semibold">{sourceLabel[service]}</p>
+        <p className="text-xs text-ink-2">{guides[service].pitch}</p>
       </div>
-      <div className="flex flex-col gap-1.5">
-        <h2 className="text-base font-semibold">{sourceLabel[service]}</h2>
-        <p className="leading-relaxed text-muted">{guides[service].pitch}</p>
-      </div>
+      <span className="kicker">{connected ? 'Connecté' : 'Non connecté'}</span>
       {connected ? (
-        <Button variant="ghost" className="w-fit" disabled={busy} onClick={() => disconnect(service)}>
+        <Button variant="ghost" disabled={busy} onClick={() => disconnect(service)}>
           Déconnecter
         </Button>
       ) : (
-        <Button className="w-fit" onClick={onSelect}>
-          Connecter <ArrowRight size={14} />
-        </Button>
+        <Button onClick={() => go({ name: 'settings', section: 'sources', wizard: service })}>Connecter</Button>
       )}
-    </article>
+    </div>
   )
 }
 
-function SoonCard({ icon, title, text }: { icon: React.ReactNode; title: string; text: string }) {
+export function SourcesView() {
   return (
-    <article className={`${card} border-dashed border-[#2a2a35] bg-[#0d0d12]`}>
-      <div className="flex items-center justify-between">
-        <span className="grid size-11 place-items-center rounded-xl bg-raised text-muted">{icon}</span>
-        <Chip className="bg-raised font-medium text-muted">Bientôt</Chip>
-      </div>
-      <div className="flex flex-col gap-1.5">
-        <h2 className="text-base font-semibold text-[#c4c4cf]">{title}</h2>
-        <p className="leading-relaxed text-dim">{text}</p>
-      </div>
-    </article>
-  )
-}
-
-export function SourcesView({ wizard, onSelect }: { wizard?: Service; onSelect: (s: Service) => void }) {
-  return (
-    <div className="-mx-2 flex min-h-0 flex-1 flex-col gap-8 overflow-y-auto px-2 pb-6">
-      <header className="flex flex-col gap-2">
-        <h1 className="text-[34px] leading-tight font-bold tracking-tight">Tes sources</h1>
-        <p className="max-w-155 text-sm leading-relaxed text-muted">
-          Tout reste sur ton ordinateur : pas de serveur, pas de compte Music App. Chaque service se connecte avec ton propre compte.
-        </p>
-      </header>
-      <div className="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-4">
-        {(['spotify', 'youtube'] as const).map((s) => (
-          <ServiceCard key={s} service={s} selected={wizard === s} onSelect={() => onSelect(s)} />
+    <div className="flex max-w-190 flex-col gap-6">
+      <p className="text-[13px] text-ink-2">Chaque service se branche avec tes propres clés. Rien ne passe par un serveur : tout reste sur ton ordinateur.</p>
+      <div className="rounded-xl border border-line bg-raised">
+        {(['youtube', 'spotify'] as const).map((s) => (
+          <ServiceRow key={s} service={s} />
         ))}
-        <SoonCard icon={<HardDrive size={22} className="text-local" />} title="Fichiers locaux" text="FLAC, MP3, OGG, M4A, lus en natif." />
-        <SoonCard icon={<Server size={22} />} title="Navidrome / Jellyfin" text="Ton serveur musical perso, via l’API Subsonic." />
+        <div className="flex items-center gap-4 px-4 py-3.5">
+          <Led on />
+          <span className="grid size-9 place-items-center rounded-full border border-line text-ink-2">
+            <HardDrives size={16} />
+          </span>
+          <div className="flex-1">
+            <p className="text-[13px] font-semibold">Fichiers locaux</p>
+            <p className="text-xs text-ink-2">Glisse des fichiers audio sur la fenêtre : MP3, FLAC, WAV, OGG, M4A, lus sans blanc entre les titres.</p>
+          </div>
+          <span className="kicker">Toujours actif</span>
+        </div>
       </div>
-      <p className="flex w-fit items-center gap-2.5 rounded-[10px] bg-[#111118] px-4 py-3 text-xs text-muted">
-        <ShieldCheck size={16} className="text-accent" /> Tes clés et jetons sont rangés dans le coffre de ton système et ne quittent jamais ce PC.
+      <p className="flex w-fit items-center gap-2.5 text-xs text-ink-2">
+        <ShieldCheck size={16} /> Tes clés et jetons sont rangés dans le coffre de Windows et ne quittent jamais ce PC.
       </p>
     </div>
   )

@@ -1,74 +1,64 @@
-import { CircleCheck, RefreshCw, Search, Settings, TriangleAlert, X } from 'lucide-react'
-import { useEffect, useRef } from 'react'
-import { LibraryView, PlaylistView } from '../features/library/LibraryView'
+import { ArrowsClockwise, CaretLeft, CaretRight, Minus, Square, Warning, X } from '@phosphor-icons/react'
+import { getCurrentWindow } from '@tauri-apps/api/window'
+import { useEffect } from 'react'
+import { AlbumsView, AlbumView, ArtistsView, ArtistView, PlaylistView, SongsView } from '../features/library/LibraryView'
+import { NowPlaying } from '../features/player/NowPlaying'
 import { PlayerBar } from '../features/player/PlayerBar'
+import { usePlayer } from '../features/player/store'
+import { SettingsView } from '../features/settings/SettingsView'
 import { ConnectWizard } from '../features/sources/ConnectWizard'
-import { SourcesView } from '../features/sources/SourcesView'
 import { Sidebar } from '../features/sidebar/Sidebar'
 import { timeAgo } from '../shared/format'
-import { Button } from '../shared/ui/Button'
+import { RoundButton } from '../shared/ui/controls'
+import { useSettings } from './settings'
 import { useStore } from './store'
 
-function TopBar() {
-  const { query, setQuery, sync, busy, status, lastSync, go, view } = useStore()
-  const input = useRef<HTMLInputElement>(null)
+const win = getCurrentWindow()
+const winBtn = 'grid h-8 w-10 place-items-center rounded-md text-ink-3 transition hover:bg-raised hover:text-ink'
+
+/** Replaces OS title bar (decorations: false). Empty areas drag the window. */
+function TitleBar() {
+  const { back, fwd, goBack, goForward, sync, busy, status, lastSync } = useStore()
   const anyConnected = status.spotify.connected || status.youtube.connected
-
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
-        e.preventDefault()
-        input.current?.focus()
-      }
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [])
-
   return (
-    <div className="flex items-center justify-between gap-4">
-      <label className="flex h-10 max-w-110 min-w-40 flex-1 items-center gap-2.5 rounded-[10px] border border-line bg-surface px-3 focus-within:border-accent-from">
-        <Search size={16} className="text-dim" />
-        <input
-          ref={input}
-          value={query}
-          onChange={(e) => {
-            setQuery(e.target.value)
-            if (view.name === 'sources') go({ name: 'library' })
-          }}
-          placeholder="Rechercher dans toutes tes sources"
-          aria-label="Rechercher"
-          className="min-w-0 flex-1 bg-transparent outline-none placeholder:text-dim"
-        />
-        <kbd className="rounded-[5px] font-sans border border-[#2e2e3a] px-1.5 py-0.5 text-[11px] font-medium text-muted">Ctrl K</kbd>
-      </label>
-      <div className="flex shrink-0 items-center gap-3">
-        {lastSync && (
-          <span className="flex items-center gap-1.5 text-xs whitespace-nowrap text-muted max-xl:hidden">
-            {lastSync.report.errors.length ? <TriangleAlert size={14} className="text-local" /> : <CircleCheck size={14} className="text-[#22c55e]" />}
-            Synchronisé {timeAgo(lastSync.at)}
-          </span>
-        )}
-        <Button onClick={sync} disabled={busy || !anyConnected} title={anyConnected ? undefined : 'Connecte d’abord une source'}>
-          <RefreshCw size={15} className={busy ? 'animate-spin' : ''} /> {busy ? 'Synchronisation…' : 'Synchroniser'}
-        </Button>
-        <Button variant="subtle" className="size-9.5 px-0!" aria-label="Sources et réglages" onClick={() => go({ name: 'sources' })}>
-          <Settings size={17} />
-        </Button>
+    <div data-tauri-drag-region className="flex h-13 shrink-0 items-center justify-between gap-4 pr-2 pl-10">
+      <div className="flex gap-1.5">
+        <RoundButton label="Page précédente" size="xs" disabled={!back.length} onClick={goBack}>
+          <CaretLeft size={13} />
+        </RoundButton>
+        <RoundButton label="Page suivante" size="xs" disabled={!fwd.length} onClick={goForward}>
+          <CaretRight size={13} />
+        </RoundButton>
+      </div>
+      <div className="flex items-center gap-2">
+        {lastSync && <span className="kicker">Synchro {timeAgo(lastSync.at)}</span>}
+        <RoundButton label={busy ? 'Synchronisation…' : anyConnected ? 'Synchroniser' : 'Connecte d’abord une source'} size="xs" disabled={busy || !anyConnected} onClick={sync}>
+          <ArrowsClockwise size={13} className={busy ? 'animate-spin' : ''} />
+        </RoundButton>
+        <span className="mx-2 h-4 w-px bg-line" />
+        <button className={winBtn} aria-label="Réduire" onClick={() => win.minimize()}>
+          <Minus size={14} />
+        </button>
+        <button className={winBtn} aria-label="Agrandir" onClick={() => win.toggleMaximize()}>
+          <Square size={12} />
+        </button>
+        <button className={`${winBtn} hover:bg-danger! hover:text-white!`} aria-label="Fermer" onClick={() => win.close()}>
+          <X size={14} />
+        </button>
       </div>
     </div>
   )
 }
 
-function SyncErrors() {
+function Alerts() {
   const { lastSync, error, dismissError, view } = useStore()
   const errors = lastSync?.report.errors ?? []
   // Wizard shows its own error.
-  const shown = view.name === 'sources' && view.wizard ? undefined : error
+  const shown = view.name === 'settings' && view.wizard ? undefined : error
   if (!shown && !errors.length) return null
   return (
-    <div role="alert" className="flex items-start gap-2.5 rounded-[10px] bg-[#2a0f14] px-3.5 py-3 text-xs text-[#fda4af]">
-      <TriangleAlert size={15} className="mt-px shrink-0" />
+    <div role="alert" className="mx-10 mb-3 flex items-start gap-2.5 rounded-lg border border-line bg-recess px-3.5 py-3 text-xs">
+      <Warning size={15} className="mt-px shrink-0 text-danger" />
       <div className="flex-1">
         {shown && <p>{shown}</p>}
         {errors.length > 0 && (
@@ -76,7 +66,7 @@ function SyncErrors() {
             <summary className="cursor-pointer">
               {errors.length} erreur{errors.length > 1 ? 's' : ''} pendant la synchronisation
             </summary>
-            <ul className="mt-1.5 list-disc pl-4">
+            <ul className="mt-1.5 list-disc pl-4 text-ink-2">
               {errors.map((e) => (
                 <li key={e}>{e}</li>
               ))}
@@ -85,7 +75,7 @@ function SyncErrors() {
         )}
       </div>
       {shown && (
-        <button aria-label="Masquer" onClick={dismissError}>
+        <button aria-label="Masquer" onClick={dismissError} className="text-ink-3 hover:text-ink">
           <X size={14} />
         </button>
       )}
@@ -95,22 +85,33 @@ function SyncErrors() {
 
 export function App() {
   const { view, go, refresh } = useStore()
-  useEffect(() => void refresh(), [refresh])
+  const full = usePlayer((s) => s.full)
+  useEffect(() => {
+    void useSettings.getState().load()
+    void refresh()
+  }, [refresh])
 
   return (
     <div className="flex h-full flex-col">
       <div className="flex min-h-0 flex-1">
         <Sidebar />
-        <main className="flex min-w-0 flex-1 flex-col gap-5.5 overflow-hidden px-7 pt-5 pb-3">
-          <TopBar />
-          <SyncErrors />
-          {view.name === 'library' && <LibraryView />}
-          {view.name === 'playlist' && <PlaylistView id={view.id} />}
-          {view.name === 'sources' && <SourcesView wizard={view.wizard} onSelect={(s) => go({ name: 'sources', wizard: s })} />}
+        <main className="flex min-w-0 flex-1 flex-col">
+          <TitleBar />
+          <Alerts />
+          <div className="flex min-h-0 flex-1 flex-col px-10">
+            {view.name === 'songs' && <SongsView />}
+            {view.name === 'albums' && <AlbumsView />}
+            {view.name === 'album' && <AlbumView album={view.album} artist={view.artist} />}
+            {view.name === 'artists' && <ArtistsView />}
+            {view.name === 'artist' && <ArtistView artist={view.artist} />}
+            {view.name === 'playlist' && <PlaylistView id={view.id} />}
+            {view.name === 'settings' && <SettingsView section={view.section} />}
+          </div>
         </main>
-        {view.name === 'sources' && view.wizard && <ConnectWizard key={view.wizard} service={view.wizard} onClose={() => go({ name: 'sources' })} />}
+        {view.name === 'settings' && view.wizard && <ConnectWizard key={view.wizard} service={view.wizard} onClose={() => go({ name: 'settings', section: 'sources' })} />}
       </div>
       <PlayerBar />
+      {full && <NowPlaying />}
     </div>
   )
 }

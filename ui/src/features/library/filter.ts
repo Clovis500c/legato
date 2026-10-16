@@ -2,6 +2,7 @@ import type { LibraryTrack, Source } from '../../shared/api'
 import { fold } from '../../shared/format'
 
 export type Filter = 'all' | Source | 'unlinked'
+export type Sort = 'artist' | 'title' | 'album' | 'recent' | 'duration'
 
 const sourceCount = (t: LibraryTrack) => Object.keys(t.ids).length
 
@@ -14,6 +15,52 @@ export function filterTracks(tracks: LibraryTrack[], query: string, filter: Filt
     const hay = fold(`${t.title} ${t.artist} ${t.album ?? ''}`)
     return words.every((w) => hay.includes(w))
   })
+}
+
+const coll = new Intl.Collator('fr', { sensitivity: 'base', numeric: true })
+
+/** Library arrives sorted by artist; other orders client-side. recent = highest row id first. */
+export function sortTracks(tracks: LibraryTrack[], sort: Sort): LibraryTrack[] {
+  const by = {
+    artist: (a: LibraryTrack, b: LibraryTrack) => coll.compare(a.artist, b.artist) || coll.compare(a.title, b.title),
+    title: (a: LibraryTrack, b: LibraryTrack) => coll.compare(a.title, b.title),
+    album: (a: LibraryTrack, b: LibraryTrack) => coll.compare(a.album ?? '￿', b.album ?? '￿') || coll.compare(a.title, b.title),
+    recent: (a: LibraryTrack, b: LibraryTrack) => b.id - a.id,
+    duration: (a: LibraryTrack, b: LibraryTrack) => (b.durationMs ?? 0) - (a.durationMs ?? 0),
+  }[sort]
+  return [...tracks].sort(by)
+}
+
+/** First credited artist: "Daft Punk, Pharrell Williams" → "Daft Punk". "&" kept: duo names (Polo & Pan). */
+export const primaryArtist = (artist: string) => artist.split(/\s*(?:,|\bfeat\.?|\bft\.?)\s+/i)[0].trim() || artist
+
+export interface AlbumGroup {
+  album: string
+  artist: string
+  tracks: LibraryTrack[]
+}
+
+export function groupAlbums(tracks: LibraryTrack[]): AlbumGroup[] {
+  const map = new Map<string, AlbumGroup>()
+  for (const t of tracks) {
+    if (!t.album) continue
+    const artist = primaryArtist(t.artist)
+    const key = fold(`${t.album}\u0000${artist}`)
+    const g = map.get(key) ?? map.set(key, { album: t.album, artist, tracks: [] }).get(key)!
+    g.tracks.push(t)
+  }
+  return [...map.values()].sort((a, b) => coll.compare(a.album, b.album))
+}
+
+export function groupArtists(tracks: LibraryTrack[]): { artist: string; count: number; albums: number }[] {
+  const map = new Map<string, { artist: string; count: number; albums: Set<string> }>()
+  for (const t of tracks) {
+    const artist = primaryArtist(t.artist)
+    const g = map.get(fold(artist)) ?? map.set(fold(artist), { artist, count: 0, albums: new Set() }).get(fold(artist))!
+    g.count++
+    if (t.album) g.albums.add(fold(t.album))
+  }
+  return [...map.values()].map((g) => ({ artist: g.artist, count: g.count, albums: g.albums.size })).sort((a, b) => coll.compare(a.artist, b.artist))
 }
 
 export function libraryStats(tracks: LibraryTrack[]) {

@@ -1,36 +1,22 @@
+import { ArrowsOutSimple, Pause, Play, SkipBack, SkipForward, SpeakerHigh } from '@phosphor-icons/react'
 import { getCurrentWebview } from '@tauri-apps/api/webview'
-import { Pause, Play, SkipBack, SkipForward, Volume2 } from 'lucide-react'
 import { useEffect } from 'react'
+import { useSettings } from '../../app/settings'
 import { api } from '../../shared/api'
-import { coverGradient, formatDuration } from '../../shared/format'
-import { bindFrame, usePlayer } from './store'
+import { formatDuration } from '../../shared/format'
+import { Bar, Knob, Readout, RoundButton } from '../../shared/ui/controls'
+import { Cover } from '../../shared/ui/Cover'
+import { bindFrame, usePlayer, useVideoSlot } from './store'
 import { embedUrl, parseYt, ytPost } from './youtube'
 
 const AUDIO = /\.(mp3|flac|wav|ogg|m4a|aac)$/i
-const time = (ms: number | null) => formatDuration(ms) || '0:00'
+export const clock = (ms: number | null) => formatDuration(ms) || '0:00'
+export const fileFormat = (path?: string) => path?.split('.').pop()?.toUpperCase()
 
-/** Range input styled as Figma bar: filled part = `fill` background. */
-function Bar({ label, value, max, onChange, fill, className = '' }: { label: string; value: number; max: number; onChange: (v: number) => void; fill: string; className?: string }) {
-  const pct = max ? Math.min(100, (value / max) * 100) : 0
-  return (
-    <input
-      type="range"
-      aria-label={label}
-      min={0}
-      max={max || 1}
-      step="any"
-      value={Math.min(value, max)}
-      disabled={!max}
-      onChange={(e) => onChange(+e.target.value)}
-      className={`bar h-1 ${className}`}
-      style={{ background: `${fill} 0 / ${pct}% 100% no-repeat, #2a2a35` }}
-    />
-  )
-}
-
-/** YouTube rules: player stays visible, min 200×200 viewport. */
+/** YouTube rules: player stays visible, min 200×200. Follows the Now Playing slot when open. */
 function YouTubeFrame({ videoId }: { videoId: string }) {
   const onYoutube = usePlayer((s) => s.onYoutube)
+  const rect = useVideoSlot((s) => s.rect)
   useEffect(() => {
     const onMessage = (e: MessageEvent) => {
       const u = parseYt(e.origin, e.data)
@@ -52,13 +38,21 @@ function YouTubeFrame({ videoId }: { videoId: string }) {
         ytPost(e.currentTarget, 'listening')
         usePlayer.getState().setVolume(usePlayer.getState().volume)
       }}
-      className="fixed right-5 bottom-25 z-10 h-50 w-89 rounded-xl border border-line bg-black shadow-2xl"
+      style={rect ? { left: rect.left, top: rect.top, width: rect.width, height: rect.height } : undefined}
+      className={`fixed z-30 rounded-lg border border-line bg-black ${rect ? '' : 'right-6 bottom-[104px] h-50 w-89 shadow-[0_12px_32px_var(--shadow)]'}`}
     />
   )
 }
 
+export function VolumeControl({ big }: { big?: boolean }) {
+  const { volume, setVolume } = usePlayer()
+  const mode = useSettings((s) => s.settings.volume)
+  return mode === 'knob' ? <Knob value={volume} onChange={setVolume} size={big ? 50 : 30} ticks={big} /> : <Bar label="Volume" value={volume} max={1} onChange={setVolume} className={big ? 'w-36' : 'w-24'} />
+}
+
 export function PlayerBar() {
-  const { now, playing, positionMs, durationMs, volume, playFiles, toggle, seek, step, setVolume, onLocal } = usePlayer()
+  const { now, playing, positionMs, durationMs, playFiles, toggle, seek, step, onLocal, setFull } = usePlayer()
+  const readout = useSettings((s) => s.settings.readout)
   const local = now && !now.youtubeId
 
   // Drop audio files on window = play them as a queue.
@@ -79,44 +73,45 @@ export function PlayerBar() {
   }, [local, onLocal])
 
   return (
-    <footer className="flex h-22 shrink-0 items-center justify-between gap-6 border-t border-line-soft bg-panel px-5">
+    <footer className="flex h-23 shrink-0 items-center justify-between gap-6 border-t border-line bg-panel px-6">
       {now?.youtubeId && <YouTubeFrame videoId={now.youtubeId} />}
 
-      <div className="flex w-80 min-w-0 items-center gap-3">
-        <span className="size-13 shrink-0 rounded-lg" style={{ background: now ? coverGradient(now.title) : 'var(--color-surface)' }} />
-        <div className="flex min-w-0 flex-col gap-0.5">
+      <div className="flex w-85 min-w-0 items-center gap-3.5">
+        <Cover title={now?.title ?? ''} size={56} />
+        <div className="flex min-w-0 flex-col gap-1">
           <span className="truncate text-sm font-semibold">{now?.title ?? 'Rien en lecture'}</span>
-          <span className="truncate text-xs text-muted">{now?.artist ?? 'Lance un titre YouTube ou glisse des fichiers audio ici'}</span>
+          <span className="truncate text-xs text-ink-2">{now?.artist ?? 'Lance un titre YouTube ou glisse des fichiers audio ici'}</span>
         </div>
       </div>
 
-      <div className="flex w-145 min-w-0 flex-col items-center gap-2">
-        <div className="flex items-center gap-5.5">
-          <button aria-label="Précédent" disabled={!now} onClick={() => step(-1)} className="disabled:opacity-40">
-            <SkipBack size={20} strokeWidth={1.67} />
-          </button>
-          <button
-            aria-label={playing ? 'Pause' : 'Lecture'}
-            disabled={!now}
-            onClick={toggle}
-            className="grid size-10 place-items-center rounded-full bg-fg text-bg transition hover:scale-105 disabled:opacity-40"
-          >
-            {playing ? <Pause size={18} strokeWidth={1.5} /> : <Play size={18} strokeWidth={1.5} />}
-          </button>
-          <button aria-label="Suivant" disabled={!now} onClick={() => step(1)} className="disabled:opacity-40">
-            <SkipForward size={20} strokeWidth={1.67} />
-          </button>
+      <div className="flex w-140 min-w-0 flex-col items-center gap-2">
+        <div className="flex items-center gap-3.5">
+          <RoundButton label="Précédent" disabled={!now} onClick={() => step(-1)}>
+            <SkipBack weight="fill" size={15} />
+          </RoundButton>
+          <RoundButton label={playing ? 'Pause' : 'Lecture'} kind="primary" size="lg" disabled={!now} onClick={toggle}>
+            {playing ? <Pause weight="fill" size={20} /> : <Play weight="fill" size={20} />}
+          </RoundButton>
+          <RoundButton label="Suivant" disabled={!now} onClick={() => step(1)}>
+            <SkipForward weight="fill" size={15} />
+          </RoundButton>
         </div>
-        <div className="flex w-full items-center gap-2.5 text-[11px] text-muted tabular-nums">
-          <span>{time(positionMs)}</span>
-          <Bar label="Position" value={positionMs} max={durationMs ?? 0} onChange={seek} fill="linear-gradient(90deg, var(--color-accent-from), var(--color-accent-to))" className="flex-1" />
-          <span>{time(durationMs)}</span>
+        <div className="flex w-full items-center gap-3 font-mono text-[10px] text-ink-3 tabular-nums">
+          <span>{clock(positionMs)}</span>
+          <Bar label="Position" value={positionMs} max={durationMs ?? 0} onChange={seek} className="flex-1" />
+          <span>-{clock(Math.max(0, (durationMs ?? 0) - positionMs))}</span>
         </div>
       </div>
 
-      <div className="flex w-80 items-center justify-end gap-2 text-muted">
-        <Volume2 size={17} strokeWidth={1.42} />
-        <Bar label="Volume" value={volume} max={1} onChange={setVolume} fill="linear-gradient(var(--color-fg), var(--color-fg))" className="w-25" />
+      <div className="flex w-85 items-center justify-end gap-3.5">
+        {readout && now && <Readout detail={local ? fileFormat(now.path) : undefined}>{local ? 'Local' : 'YouTube'}</Readout>}
+        <span className="flex items-center gap-1.5 text-ink-3">
+          <SpeakerHigh size={15} />
+          <VolumeControl />
+        </span>
+        <RoundButton label="En lecture, plein écran" disabled={!now} onClick={() => setFull(true)}>
+          <ArrowsOutSimple size={15} />
+        </RoundButton>
       </div>
     </footer>
   )

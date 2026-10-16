@@ -1,24 +1,50 @@
 @import 'tailwindcss';
-@import '@fontsource-variable/inter';
+@import '@fontsource-variable/schibsted-grotesk';
+@import '@fontsource-variable/geist-mono';
 
-/* Tokens from Figma mockup ("Music App" page). */
-@theme {
-  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
-  --color-bg: #0a0a0f;
-  --color-panel: #0f0f15;
-  --color-surface: #16161e;
-  --color-raised: #1c1c26;
-  --color-line: #23232d;
-  --color-line-soft: #1e1e27;
-  --color-fg: #f4f4f5;
-  --color-muted: #9c9cab;
-  --color-dim: #8a8a99;
-  --color-accent: #a78bfa;
-  --color-accent-from: #8b5cf6;
-  --color-accent-to: #ec4899;
-  --color-spotify: #1db954;
-  --color-youtube: #ff3b5c;
-  --color-local: #f5a524;
+/* Colors come from CSS variables set by app/settings.ts (shared/theme). Defaults = Papier, for first paint. */
+@theme inline {
+  --font-sans: var(--font-ui);
+  --font-mono: 'Geist Mono Variable', ui-monospace, monospace;
+  --color-bg: var(--bg);
+  --color-panel: var(--panel);
+  --color-raised: var(--raised);
+  --color-recess: var(--recess);
+  --color-line: var(--line);
+  --color-line-soft: var(--line-soft);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-ink-4: var(--ink-4);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-on-accent: var(--on-accent);
+  --color-led-off: var(--led-off);
+  --color-danger: #d93a2b;
+  --radius-cover: var(--cover-radius);
+  --spacing-row: var(--row-h);
+}
+
+:root {
+  --bg: #f3f1ec;
+  --panel: #eae7e0;
+  --raised: #fbfaf7;
+  --recess: #e1ddd4;
+  --line: #d6d1c6;
+  --line-soft: #e4e0d7;
+  --ink: #171614;
+  --ink-2: #5c5852;
+  --ink-3: #6b665e;
+  --ink-4: #b2aca1;
+  --accent: #ff5a1f;
+  --accent-soft: #ff5a1f1f;
+  --on-accent: #ffffff;
+  --led-off: #cdc7bb;
+  --shadow: #17161424;
+  --led-glow: 0 0 6px #ff5a1faa;
+  --font-ui: 'Schibsted Grotesk Variable', ui-sans-serif, system-ui, sans-serif;
+  --cover-radius: 3px;
+  --row-h: 52px;
 }
 
 html,
@@ -28,27 +54,42 @@ body,
 }
 
 body {
-  @apply bg-bg font-sans text-[13px] text-fg antialiased select-none;
+  @apply bg-bg font-sans text-[13px] text-ink antialiased select-none;
 }
 
 input,
+textarea,
 code {
   @apply select-text;
 }
 
 :focus-visible {
-  @apply outline-2 outline-offset-2 outline-accent;
+  @apply outline-2 outline-offset-2 outline-ink;
 }
 
-/* Player range bars: track painted inline, thumb on hover/focus only. */
+/* Mono kicker label: BIBLIOTHÈQUE · 4 SOURCES */
+.kicker {
+  @apply font-mono text-[10px] font-medium tracking-[0.09em] text-ink-3 uppercase;
+}
+
+/* Indicator light. data-on = lit. */
+.led {
+  @apply inline-block size-1.5 shrink-0 rounded-full bg-led-off;
+}
+.led[data-on='true'] {
+  @apply bg-accent;
+  box-shadow: var(--led-glow);
+}
+
+/* Range bars: track painted inline (see shared/ui/Bar). */
 .bar {
-  @apply cursor-pointer appearance-none rounded-sm;
+  @apply h-[3px] cursor-pointer appearance-none rounded-full;
 }
 .bar:disabled {
   @apply cursor-default;
 }
 .bar::-webkit-slider-thumb {
-  @apply size-3 appearance-none rounded-full bg-fg opacity-0;
+  @apply size-3 appearance-none rounded-full bg-ink opacity-0;
 }
 .bar:hover::-webkit-slider-thumb,
 .bar:focus-visible::-webkit-slider-thumb {

@@ -1,69 +1,93 @@
+import { Play, Waveform } from '@phosphor-icons/react'
 import { useVirtualizer } from '@tanstack/react-virtual'
-import { Clock3, Play } from 'lucide-react'
 import { useRef } from 'react'
+import { useSettings } from '../../app/settings'
 import type { LibraryTrack, Source } from '../../shared/api'
-import { usePlayer } from '../player/store'
-import { coverGradient, formatDuration } from '../../shared/format'
+import { formatDuration } from '../../shared/format'
+import type { Column } from '../../shared/theme/theme'
+import { RoundButton } from '../../shared/ui/controls'
+import { Cover } from '../../shared/ui/Cover'
 import { SourceIcon } from '../../shared/ui/SourceIcon'
+import { usePlayer } from '../player/store'
 
-const ROW = 56
-const cols = 'grid grid-cols-[24px_minmax(0,1fr)_minmax(0,220px)_96px_48px] items-center gap-4 px-3'
+const ROW = { compact: 40, comfort: 52, airy: 64 }
 const order: Source[] = ['spotify', 'youtube', 'local']
+const width: Record<Column, string> = { album: 'minmax(0,220px)', sources: '76px', duration: '52px' }
+const head: Record<Column, string> = { album: 'Album', sources: 'Sources', duration: 'Durée' }
 
 /** Virtualized: only visible rows hit the DOM, so 50k tracks stay smooth. */
 export function TrackTable({ tracks, empty }: { tracks: LibraryTrack[]; empty: React.ReactNode }) {
   const scroller = useRef<HTMLDivElement>(null)
+  const { density, columns } = useSettings((s) => s.settings)
   const play = usePlayer((s) => s.playTracks)
-  const virtual = useVirtualizer({ count: tracks.length, getScrollElement: () => scroller.current, estimateSize: () => ROW, overscan: 12 })
+  const playingId = usePlayer((s) => s.now?.trackId)
+  const row = ROW[density]
+  const virtual = useVirtualizer({ count: tracks.length, getScrollElement: () => scroller.current, estimateSize: () => row, overscan: 12 })
+  const grid = { gridTemplateColumns: ['32px', 'minmax(0,1fr)', '36px', ...columns.map((c) => width[c])].join(' ') }
+  const cover = density === 'compact' ? 28 : density === 'comfort' ? 36 : 46
 
   return (
     <div role="table" aria-rowcount={tracks.length} className="flex min-h-0 flex-1 flex-col">
-      <div role="row" className={`${cols} h-8 shrink-0 border-b border-line-soft text-[11px] tracking-[0.06em] text-dim uppercase`}>
-        <span role="columnheader" className="text-center">#</span>
-        <span role="columnheader">Titre</span>
-        <span role="columnheader">Album</span>
-        <span role="columnheader">Sources</span>
-        <span role="columnheader" className="flex justify-end" aria-label="Durée">
-          <Clock3 size={13} />
-        </span>
+      <div role="row" className="grid h-7.5 shrink-0 items-center gap-4 border-b border-line px-2" style={grid}>
+        <span role="columnheader" className="kicker text-right">N°</span>
+        <span role="columnheader" className="kicker">Titre</span>
+        <span />
+        {columns.map((c) => (
+          <span key={c} role="columnheader" className={`kicker ${c === 'duration' ? 'text-right' : ''}`}>
+            {head[c]}
+          </span>
+        ))}
       </div>
       {tracks.length === 0 ? (
-        <div className="grid flex-1 place-items-center p-10 text-center text-muted">{empty}</div>
+        <div className="grid flex-1 place-items-center p-10 text-center text-ink-2">{empty}</div>
       ) : (
-        <div ref={scroller} className="min-h-0 flex-1 overflow-y-auto pt-1">
+        <div ref={scroller} className="min-h-0 flex-1 overflow-y-auto">
           <div className="relative" style={{ height: virtual.getTotalSize() }}>
             {virtual.getVirtualItems().map((v) => {
               const t = tracks[v.index]
+              const on = t.id === playingId
+              const playable = !!t.ids.youtube
               return (
                 <div
                   key={t.id}
                   role="row"
-                  onDoubleClick={() => play(tracks, v.index)}
-                  className={`${cols} group absolute inset-x-0 rounded-lg hover:bg-surface`}
-                  style={{ height: ROW, transform: `translateY(${v.start}px)` }}
+                  onDoubleClick={() => playable && play(tracks, v.index)}
+                  className={`group absolute inset-x-0 grid items-center gap-4 border-b border-line-soft px-2 ${on ? 'bg-accent-soft' : 'hover:bg-raised'}`}
+                  style={{ ...grid, height: row, transform: `translateY(${v.start}px)` }}
                 >
-                  {t.ids.youtube ? (
-                    <button aria-label={`Lire ${t.title}`} onClick={() => play(tracks, v.index)} className="grid place-items-center text-dim tabular-nums hover:text-fg">
-                      <span className="group-hover:hidden">{v.index + 1}</span>
-                      <Play size={14} className="hidden group-hover:block" />
-                    </button>
-                  ) : (
-                    <span className="text-center text-dim tabular-nums">{v.index + 1}</span>
-                  )}
+                  <span className="flex justify-end font-mono text-[11px] text-ink-3 tabular-nums">{on ? <Waveform size={14} className="text-accent" /> : String(v.index + 1).padStart(2, '0')}</span>
                   <span className="flex min-w-0 items-center gap-3">
-                    <span className="size-10 shrink-0 rounded-md" style={{ background: coverGradient(t.album ?? t.title) }} />
+                    <Cover title={t.album ?? t.title} size={cover} />
                     <span className="min-w-0">
-                      <span className="block truncate text-sm font-medium">{t.title}</span>
-                      <span className="block truncate text-xs text-muted">{t.artist}</span>
+                      <span className={`block truncate text-[13px] font-semibold ${on ? 'text-accent' : ''}`}>{t.title}</span>
+                      {density !== 'compact' && <span className="block truncate text-xs text-ink-2">{t.artist}</span>}
                     </span>
+                    {density === 'compact' && <span className="truncate text-xs text-ink-2">{t.artist}</span>}
                   </span>
-                  <span className="truncate text-muted">{t.album}</span>
-                  <span className="flex items-center gap-2">
-                    {order.filter((s) => t.ids[s]).map((s) => (
-                      <SourceIcon key={s} source={s} size={15} />
-                    ))}
+                  <span className="flex justify-end">
+                    {playable && (
+                      <RoundButton label={`Lire ${t.title}`} kind="soft" size="xs" className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100" onClick={() => play(tracks, v.index)}>
+                        <Play weight="fill" size={11} />
+                      </RoundButton>
+                    )}
                   </span>
-                  <span className="text-right text-muted tabular-nums">{formatDuration(t.durationMs)}</span>
+                  {columns.map((c) =>
+                    c === 'album' ? (
+                      <span key={c} className="truncate text-[13px] text-ink-2">
+                        {t.album}
+                      </span>
+                    ) : c === 'sources' ? (
+                      <span key={c} className="flex items-center gap-2 text-ink-3">
+                        {order.filter((s) => t.ids[s]).map((s) => (
+                          <SourceIcon key={s} source={s} size={13} />
+                        ))}
+                      </span>
+                    ) : (
+                      <span key={c} className="text-right font-mono text-[11px] text-ink-3 tabular-nums">
+                        {formatDuration(t.durationMs)}
+                      </span>
+                    ),
+                  )}
                 </div>
               )
             })}
