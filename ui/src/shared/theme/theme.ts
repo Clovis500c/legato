@@ -54,7 +54,7 @@ export const SPOTS = ['tl', 't', 'tr', 'l', 'r', 'bl', 'b', 'br'] as const
 export type Spot = (typeof SPOTS)[number]
 
 /** Bumped when defaults change for everyone (saved settings get the new ones once). */
-const DEFAULTS_VERSION = 2
+const DEFAULTS_VERSION = 3
 
 export interface Settings {
   /** Preset id, custom theme id, or 'system' (Modern / Modern Dark, following Windows). */
@@ -91,8 +91,8 @@ export interface Settings {
   startView: (typeof START_VIEWS)[number]
   /** YouTube's own buttons and title on the video (applies from the next track). */
   youtubeControls: boolean
-  /** Now Playing with YouTube: big video, or big cover with the video kept small (still visible). */
-  stage: 'video' | 'cover'
+  /** Now Playing with YouTube: video, cover (video transparent), or auto: cover when the video is a still image. */
+  stage: 'auto' | 'video' | 'cover'
   miniSpot: Spot
   /** Mini player width, px (video 16:9 below it, 200 px tall at least). */
   miniWidth: number
@@ -133,7 +133,7 @@ export const DEFAULTS: Settings = {
   clickToPlay: 'single',
   startView: 'songs',
   youtubeControls: false,
-  stage: 'video',
+  stage: 'auto',
   miniSpot: 'br',
   miniWidth: 356,
   crossfade: 5,
@@ -147,6 +147,8 @@ export const DEFAULTS: Settings = {
 
 /** Defaults changed in version 2 (user's request 2026-10-16): YouTube-like bar and volume, one-click play. */
 const V2: Partial<Settings> = { volume: 'bar', tuner: false, clickToPlay: 'single' }
+/** Version 3: Now Playing picks video or cover by itself. */
+const V3: Partial<Settings> = { stage: 'auto' }
 
 const HEX = /^#[0-9a-f]{6}$/i
 const isHex = (v: unknown): v is string => typeof v === 'string' && HEX.test(v)
@@ -170,6 +172,7 @@ export function sanitize(raw: unknown): Settings {
   const r = raw && typeof raw === 'object' ? (raw as Record<string, unknown>) : {}
   const customThemes = (Array.isArray(r.customThemes) ? r.customThemes : []).slice(0, 24).map(sanitizeTheme).filter((t): t is Theme => !!t)
   const ids = ['system', ...PRESETS.map((t) => t.id), ...customThemes.map((t) => t.id)]
+  const saved = typeof r.defaultsVersion === 'number' ? r.defaultsVersion : 0
   const columns = Array.isArray(r.columns) ? [...new Set(r.columns.filter((c): c is Column => COLUMNS.includes(c as Column)))] : DEFAULTS.columns
   return {
     theme: pick(LEGACY_IDS[r.theme as string] ?? r.theme, ids, DEFAULTS.theme),
@@ -193,7 +196,7 @@ export function sanitize(raw: unknown): Settings {
     clickToPlay: pick(r.clickToPlay, ['single', 'double'] as const, DEFAULTS.clickToPlay),
     startView: pick(r.startView, START_VIEWS, DEFAULTS.startView),
     youtubeControls: typeof r.youtubeControls === 'boolean' ? r.youtubeControls : DEFAULTS.youtubeControls,
-    stage: pick(r.stage, ['video', 'cover'] as const, DEFAULTS.stage),
+    stage: pick(r.stage, ['auto', 'video', 'cover'] as const, DEFAULTS.stage),
     miniSpot: pick(r.miniSpot, SPOTS, DEFAULTS.miniSpot),
     miniWidth: typeof r.miniWidth === 'number' && Number.isFinite(r.miniWidth) ? Math.min(960, Math.max(356, Math.round(r.miniWidth))) : DEFAULTS.miniWidth,
     crossfade: typeof r.crossfade === 'number' && Number.isFinite(r.crossfade) ? Math.min(12, Math.max(0, Math.round(r.crossfade))) : DEFAULTS.crossfade,
@@ -204,7 +207,8 @@ export function sanitize(raw: unknown): Settings {
     resume: typeof r.resume === 'boolean' ? r.resume : DEFAULTS.resume,
     defaultsVersion: DEFAULTS_VERSION,
     // Saved before the defaults changed: take the new ones once.
-    ...(!(typeof r.defaultsVersion === 'number' && r.defaultsVersion >= DEFAULTS_VERSION) ? V2 : {}),
+    ...(saved < 2 ? V2 : {}),
+    ...(saved < 3 ? V3 : {}),
   }
 }
 

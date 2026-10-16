@@ -15,6 +15,7 @@ import { onMenu } from '../../shared/ui/ContextMenu'
 import { playerMenu, trackMenu } from '../menus'
 import { useAmbient } from './ambient'
 import { useBackdrop } from './immersive'
+import { useStill } from './still'
 import { fileFormat, VolumeControl } from './PlayerBar'
 import { viaLabel, vias, type Via } from './sources'
 import { fileTitle, usePlayer, useVideoSlot } from './store'
@@ -141,6 +142,8 @@ export function NowPlaying() {
   const track = useStore((s) => s.tracks.find((t) => t.id === now?.trackId))
   const sp = useStore((s) => s.status.spotify.connected)
   const ambient = useAmbient(tint && !immersive && track ? trackArt(track)[0] : undefined, theme)
+  // Auto: a still-image upload shows as a cover.
+  const still = useStill(now?.via === 'youtube' ? now.youtubeId : undefined)
   const backdrop = useBackdrop(immersive && track ? trackArt(track)[0] : undefined)
 
   useEffect(() => {
@@ -209,8 +212,8 @@ export function NowPlaying() {
 
       <div className={`grid min-h-0 flex-1 gap-10 ${upNext ? 'grid-cols-[minmax(0,1fr)_360px]' : 'grid-cols-1'}`}>
         <section className="flex min-h-0 min-w-0 flex-col items-center gap-4">
-          {video ? <Segmented label="Show" value={stage} onChange={(s) => update({ stage: s })} options={[{ value: 'video', label: 'Video' }, { value: 'cover', label: 'Cover' }]} /> : <span className="kicker text-ink-2">Now playing · {viaLabel[now.via]}</span>}
-          <Stage video={video} cover={stage === 'cover'} track={track} title={now.title} />
+          {video ? <Segmented label="Show" value={stage} onChange={(s) => update({ stage: s })} options={[{ value: 'auto', label: still === undefined || stage !== 'auto' ? 'Auto' : still ? 'Auto · cover' : 'Auto · video' }, { value: 'video', label: 'Video' }, { value: 'cover', label: 'Cover' }]} /> : <span className="kicker text-ink-2">Now playing · {viaLabel[now.via]}</span>}
+          <Stage video={video} cover={stage === 'cover' || (stage === 'auto' && still === true)} track={track} title={now.title} />
           {now.via === 'spotify' && <span className="kicker text-center">Playing in your Spotify app</span>}
           {now.via === 'preview' && (
             <div className="flex items-center justify-center gap-4">

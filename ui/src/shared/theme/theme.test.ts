@@ -77,13 +77,15 @@ describe('resolveTheme', () => {
   it('sanitizes the new options', () => {
     expect(sanitize({ font: 'comic', clickToPlay: 'triple', startView: 'settings', motion: 'no' })).toMatchObject({ font: 'theme', clickToPlay: 'single', startView: 'songs', motion: true })
     expect(sanitize({ font: 'neutral', clickToPlay: 'double', startView: 'mixes', listCovers: false, defaultsVersion: 2 })).toMatchObject({ font: 'neutral', clickToPlay: 'double', startView: 'mixes', listCovers: false })
-    expect(sanitize({ stage: 'cover', miniSpot: 'tl', crossfade: 40, resume: false, youtubeControls: true })).toMatchObject({ stage: 'cover', miniSpot: 'tl', crossfade: 12, resume: false, youtubeControls: true })
-    expect(sanitize({ stage: 'radio', miniSpot: 'center', crossfade: -3 })).toMatchObject({ stage: 'video', miniSpot: 'br', crossfade: 0 })
+    expect(sanitize({ stage: 'cover', miniSpot: 'tl', crossfade: 40, resume: false, youtubeControls: true, defaultsVersion: 3 })).toMatchObject({ stage: 'cover', miniSpot: 'tl', crossfade: 12, resume: false, youtubeControls: true })
+    expect(sanitize({ stage: 'radio', miniSpot: 'center', crossfade: -3, defaultsVersion: 3 })).toMatchObject({ stage: 'auto', miniSpot: 'br', crossfade: 0 })
   })
 
   it('settings saved before v2 get the new defaults once, later choices stay', () => {
     const old = sanitize({ volume: 'knob', tuner: true, clickToPlay: 'double', zoom: 110 })
-    expect(old).toMatchObject({ volume: 'bar', tuner: false, clickToPlay: 'single', zoom: 110, defaultsVersion: 2 })
+    expect(old).toMatchObject({ volume: 'bar', tuner: false, clickToPlay: 'single', stage: 'auto', zoom: 110, defaultsVersion: 3 })
+    // Saved at v2: only v3's change applies.
+    expect(sanitize({ volume: 'knob', stage: 'video', defaultsVersion: 2 })).toMatchObject({ volume: 'knob', stage: 'auto' })
     // Chosen again after migration: kept.
     expect(sanitize({ ...old, volume: 'knob', clickToPlay: 'double' })).toMatchObject({ volume: 'knob', clickToPlay: 'double' })
   })
