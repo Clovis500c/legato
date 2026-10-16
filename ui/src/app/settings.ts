@@ -8,7 +8,27 @@ import { useStore } from './store'
 const systemDark = window.matchMedia('(prefers-color-scheme: dark)')
 let systemAccent: SystemAccent | null = null
 
+// Last applied settings, read back before first render: no flash of default theme while IPC loads.
+const CACHE = 'settings'
+
+/** Before first render: last session's look. Settings load (IPC) confirms it. */
+export function applyCached() {
+  try {
+    const c = JSON.parse(localStorage.getItem(CACHE) ?? 'null')
+    if (!c) return
+    systemAccent = c.systemAccent ?? null
+    apply(sanitize(c.settings))
+  } catch {
+    // No cache or bad JSON: defaults until load.
+  }
+}
+
 function apply(s: Settings) {
+  try {
+    localStorage.setItem(CACHE, JSON.stringify({ settings: s, systemAccent }))
+  } catch {
+    // Storage off: no first-paint cache.
+  }
   document.documentElement.classList.toggle('still', !s.motion)
   const root = document.documentElement.style
   for (const [k, v] of Object.entries(cssVars(resolveTheme(s, systemDark.matches, systemAccent), s))) root.setProperty(k, v)

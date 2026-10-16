@@ -3,6 +3,7 @@ mod secrets;
 #[cfg(windows)]
 mod shield;
 mod spotify_web;
+mod window_bg;
 mod ytm;
 
 use music_connectors::oauth::Opener;
@@ -838,11 +839,15 @@ pub fn run() {
             let handle = app.handle().clone();
             let open: Opener = Arc::new(move |url: &str| handle.opener().open_url(url, None::<&str>).map_err(Into::into));
             let lib = Library::open(dir.join("library.db"))?;
-            let shield_on = lib.setting("ui").ok().flatten().and_then(|s| s.get("shield")?.as_bool()).unwrap_or(true);
+            let ui = lib.setting("ui").ok().flatten();
+            let shield_on = ui.as_ref().and_then(|s| s.get("shield")?.as_bool()).unwrap_or(true);
             // Starts with built-in rules; cached / fresh lists swapped in below without blocking startup.
             let shield = Arc::new(Shield::new("", shield_on));
 
             let mut window = tauri::WebviewWindowBuilder::from_config(app.handle(), &app.config().app.windows[0])?;
+            if let Some((r, g, b)) = window_bg::parse(&window_bg::resolve(ui.as_ref(), window_bg::system_dark())) {
+                window = window.background_color(tauri::window::Color(r, g, b, 255));
+            }
             if shield_on {
                 window = window.initialization_script_for_all_frames(music_shield::YOUTUBE_SCRIPT);
             }

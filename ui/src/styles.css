@@ -3,7 +3,7 @@
 @import '@fontsource-variable/geist-mono';
 @import '@fontsource-variable/roboto';
 
-/* Colors come from CSS variables set by app/settings.ts (shared/theme). Defaults = Papier, for first paint. */
+/* Colors come from CSS variables set by app/settings.ts (shared/theme). Defaults = System (Modern / Modern Dark), for first paint. */
 @theme inline {
   --font-sans: var(--font-ui);
   --font-mono: 'Geist Mono Variable', ui-monospace, monospace;
@@ -27,25 +27,44 @@
 }
 
 :root {
-  --bg: #f3f1ec;
-  --panel: #eae7e0;
-  --raised: #fbfaf7;
-  --recess: #e1ddd4;
-  --line: #d6d1c6;
-  --line-soft: #e4e0d7;
-  --ink: #171614;
-  --ink-2: #5c5852;
-  --ink-3: #6b665e;
-  --ink-4: #b2aca1;
-  --accent: #ff5a1f;
-  --accent-soft: #ff5a1f1f;
+  --bg: #ffffff;
+  --panel: #f9f9f9;
+  --raised: #f2f2f2;
+  --recess: #f2f2f2;
+  --line: #e5e5e5;
+  --line-soft: #efefef;
+  --ink: #0f0f0f;
+  --ink-2: #606060;
+  --ink-3: #606060;
+  --ink-4: #cccccc;
+  --accent: #ff0033;
+  --accent-soft: #ff00331f;
   --on-accent: #ffffff;
-  --led-off: #cdc7bb;
+  --led-off: #d9d9d9;
   --shadow: #17161424;
-  --led-glow: 0 0 6px #ff5a1faa;
-  --font-ui: 'Schibsted Grotesk Variable', ui-sans-serif, system-ui, sans-serif;
-  --cover-radius: 3px;
+  --led-glow: none;
+  --font-ui: 'Roboto Variable', Roboto, 'Segoe UI', system-ui, sans-serif;
+  --cover-radius: 10px;
   --row-h: 52px;
+}
+
+/* First launch, Windows dark: Modern Dark. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f0f0f;
+    --panel: #181818;
+    --raised: #272727;
+    --recess: #090909;
+    --line: #3f3f3f;
+    --line-soft: #272727;
+    --ink: #f1f1f1;
+    --ink-2: #aaaaaa;
+    --ink-3: #909090;
+    --ink-4: #4d4d4d;
+    --led-off: #3f3f3f;
+    --shadow: #00000099;
+    color-scheme: dark;
+  }
 }
 
 /* Settings › Animations off. */
