@@ -10,14 +10,19 @@ A fast, lightweight desktop app (Tauri 2 + Rust), serverless: your data stays on
 - **Unified library**:
   - the same track on several services is recognized and merged (by ISRC, or by title, artist and duration);
   - Songs, Albums, Artists and Playlists views;
+  - real cover art everywhere (YouTube Music, YouTube, Apple Music, Spotify, covers embedded in local files);
   - instant search (Ctrl K).
+- **Right-click menus everywhere**: tracks, playlists, albums, artists, mixes, search results and the player
+  (play next, add to queue, play via, add to playlist, go to album or artist, copy link, copy video URL at the current time…).
 - **Playback**:
   - one queue for every source: each track plays through its best source;
   - local files played natively and gapless (Rust engine, rodio/symphonia);
   - YouTube through the official embedded player;
   - Apple Music 30-second previews, with a link to the store;
   - "Play via" switches the current track to another of its sources;
-  - "Find full versions" looks up a YouTube version for tracks that only preview.
+  - "Find full versions" looks up a YouTube version for tracks that only preview;
+  - one player design for every source: shuffle, repeat (queue or track), Now Playing tinted by the cover,
+    mini player (the YouTube video always stays visible, with our controls below it).
 - **Add music**:
   - search the Apple Music catalog (no account) and YouTube;
   - add a track by pasting a YouTube link (Ctrl+V);
@@ -31,10 +36,12 @@ A fast, lightweight desktop app (Tauri 2 + Rust), serverless: your data stays on
   - import shows what's already in your library and looks up the rest on YouTube and Apple Music.
 - **Mixes, computed on your PC**: Daily Mixes from the artists you hear together, a time-of-day mix and Rediscover, built from your listening history and playlists. Steer them with "Less like this" and "Never in mixes"; nothing leaves your computer.
 - **Customization**:
-  - 6 themes and a theme editor (13 colors, contrast checked live, export and import);
-  - accent, cover shape, density, interface size, columns, player options.
+  - follows Windows by default: light or dark, and the Windows accent color, with a YouTube-style look (Roboto, YouTube's palettes);
+  - 8 themes and a theme editor (13 colors, contrast checked live, export and import);
+  - accent, font, cover shape, density, interface size, columns, covers in lists, one-click play, sidebar counts,
+    start screen, animations, player options (readout, volume knob, tuner, cover tint, mini player).
 - **Shield**: ad and tracker blocking with Brave's engine (adblock-rust, EasyList and EasyPrivacy lists).
-- **Now Playing screen**: readout, tuner scale, input selector, volume knob, queue.
+- **Now Playing screen**: video or cover sized to the window, readout, tuner scale, input selector, volume knob, queue in play order.
 
 | Graphite theme | Theme editor | Add music |
 |---|---|---|
@@ -82,6 +89,7 @@ In the app, open **Settings › Accounts**:
 
 - **YouTube Music**: "Sign in with Google". Add more Google accounts and pick which ones to sync. Uses YouTube Music's own web access (unofficial, may break if YouTube changes it).
 - **Spotify**: an app on the Spotify Developer Dashboard (developer mode: the owner needs Premium, 5 users max).
+  Preview: "Spotify web player" opens Spotify's own player in a window, signed in on Spotify's page, no keys (no import yet).
 - **Local files**: add one or more music folders.
 
 ## Architecture
@@ -117,7 +125,8 @@ Details in [docs/plan-v2.md](docs/plan-v2.md). Main steps:
   - smart playback (one queue for every source, previews, find versions);
   - playlist sharing (link, QR, nearby code);
   - personalized mixes;
-  - YouTube export and Spotify Connect.
+  - YouTube export and Spotify Connect;
+  - Windows theme and accent, cover art, one player for every source, right-click menus.
 - **Next**:
   - polish (media keys, auto-updates).
 

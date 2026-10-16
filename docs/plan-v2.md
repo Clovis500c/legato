@@ -119,8 +119,21 @@ Original plan:
 - YouTube: import (already there), export a custom playlist (quota: about 190 tracks a day).
 - Spotify Connect if Premium one day (plan written). MusicKit prototype if Apple Developer account.
 
+**Update 2026-10-16 (user's requests)** — done:
+- Theme: System follows Windows light/dark and the Windows accent (WinRT `UISettings`, AccentDark1 on light themes,
+  AccentLight2 on dark, re-read on focus) with new Modern / Modern Dark presets (YouTube's palettes and Roboto). Text on
+  any accent keeps AA 4.5.
+- Cover art: `tracks.art` (schema v3), filled by YouTube Music (544 px), YouTube frames, iTunes (600 px), Spotify and
+  local tags. Images go through the `art` URI scheme (Rust, host allowlist, 300 MB LRU disk cache); CSP img-src has no https.
+- One player for every source: shared transport with shuffle and repeat (off / queue / track), Now Playing fitted to the
+  window (controls never cut off), flat cover tint, mini player.
+- Right-click menus everywhere; play next / add to queue.
+- More options: font, covers in lists, one-click play, sidebar counts, start screen, animations; interface size on Apply.
+- Real Google profile pictures in Settings › Accounts; Inputs box removed from the sidebar.
+- Spotify without keys: prototype only (see `playback.md`), waiting for the user's decision on library import.
+
 **Phase 6: polish** (M)
-- Keyboard shortcuts, media keys and the Windows media panel (`souvlaki` crate), mini player, tray icon.
+- Keyboard shortcuts, media keys and the Windows media panel (`souvlaki` crate), tray icon. (Mini player: done.)
 - Auto-updates (`tauri-plugin-updater`, requires signing the app), installer, performance (50,000 tracks), accessibility (AA contrast, keyboard navigation).
 
 **Phase 7: share a playlist from one Music App to another, serverless** (L) — done, with these changes to the plan below:

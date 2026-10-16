@@ -13,6 +13,25 @@ Status on 2026-10-16. YouTube, local files and Apple Music previews: done and te
 - "Find full versions" (`find_versions`): for tracks that only preview (or don't play), one YouTube search each, within the daily
   budget of 100, cached for the session. Matching = ISRC, then title + artist + duration.
 
+## One player for every source (2026-10-16)
+
+- `Transport.tsx` (shuffle, previous, play, next, repeat) is the same in the bar, Now Playing and the mini player.
+- Play order lives in the store (`order`, `queue.ts`): shuffle = current track first, the rest Fisher–Yates; repeat one
+  replays on a natural end only (a manual Next still moves on). Gapless local runs are kept in list order without repeat one.
+- Now Playing sizes the video (16:9) or cover (square) to the space left with container query units, so the controls stay on
+  screen at any window size. The background takes a flat tint from the cover (`ambient.ts`: canvas average weighted to
+  colorful pixels; the tint is pushed darker or lighter until the theme's muted text keeps AA 4.5).
+- Mini player: a card above the bar. For YouTube it is always shown (the video must stay visible): the iframe sits in the
+  card's video slot, our controls below it, never on top. For other sources it's optional (Settings › Player).
+
+## Cover art
+
+- `tracks.art` holds an https URL; local files' covers are read from their tags on demand (`local::picture`).
+- The UI loads `http://art.localhost/<encoded URL>` or `/local/<track id>` (Tauri `art` URI scheme, `src-tauri/src/art.rs`).
+  Rust fetches only from i.ytimg.com, yt3.ggpht.com, *.googleusercontent.com, *.mzstatic.com and i.scdn.co (redirects too),
+  keeps images in `art/` in the app data folder (300 MB, least recently used out first) and sends
+  `Access-Control-Allow-Origin` so the cover tint can read pixels.
+
 ## Apple Music previews
 
 - `itunes::preview` calls the public lookup API (`https://itunes.apple.com/lookup?id=…&country=…`) for `previewUrl` and `trackViewUrl`.
@@ -107,6 +126,18 @@ via the Web API Player endpoints. Audio comes out of the Spotify app; we only se
 - Fallback without Premium: if the track also has a YouTube id (ISRC or title+artist matching), play it in the YouTube player.
   That's already the case today for any linked track.
 - Real validation impossible without a Premium account: mockito tests first, then a try on a Premium account.
+
+## Spotify without keys: prototype (2026-10-16)
+
+- (a) Sign-in: Settings › Accounts › "Spotify web player" opens open.spotify.com in an app window; the user signs in on
+  Spotify's page. Signed in = `sp_dc` cookie in the shared WebView2 profile (`src-tauri/src/spotify_web.rs`). No IPC for
+  that window, and no ad blocking there (the shield only hooks the main window).
+- (c) Playback in Spotify's official web player: WebView2 (Edge 155) reports both Widevine (`com.widevine.alpha`) and
+  PlayReady through `requestMediaKeySystemAccess`. Real playback still needs the user's sign-in to confirm.
+- (b) Reading playlists and Liked Songs with the web session: **not built**. The web player's access token now comes from
+  `/api/token` with a TOTP whose secret is hidden in the player's code; getting it means rebuilding that scheme (defeating a
+  technical protection) or capturing the token the official player fetches. Both need the user's go-ahead first.
+- Clean fallback (no account): import public playlists by link from the official embed page, play through YouTube matches.
 
 ## Ad shield (`crates/shield`) — user's choice, 2026-10-16
 

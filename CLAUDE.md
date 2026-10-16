@@ -32,5 +32,8 @@ Reference mockups: Figma file "Bow Game / Music App", page "Music App v3 — Hi-
 - Rust tests in the module (`#[cfg(test)]`), front-end tests next to the code (`*.test.ts`). Never real network in tests.
 - No fake buttons: an unwired feature is absent or marked "Coming soon".
 - Long lists: virtualized (`@tanstack/react-virtual`). No network access from the front end: everything goes through Rust.
+  Images too: `shared/art.ts` → `art` URI scheme (`src-tauri/src/art.rs`, host allowlist + disk cache). CSP img-src has no https.
+- Right-click: every surface gets a menu from `features/menus.tsx` (`onMenu(() => …)`); text fields keep the native one.
+- Default look: theme `system` = Modern / Modern Dark (YouTube-style, Roboto) following Windows light/dark, accent `system` = Windows accent.
 - Small commits, one tested step at a time.
 - Check API quotas and endpoints before freezing them (they change; Spotify renamed `/tracks` to `/items` in February 2026).
