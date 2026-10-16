@@ -81,6 +81,8 @@ export interface Settings {
   /** Now Playing with YouTube: big video, or big cover with the video kept small (still visible). */
   stage: 'video' | 'cover'
   miniSpot: Spot
+  /** Mini player width, px (video 16:9 below it, 200 px tall at least). */
+  miniWidth: number
   /** Fade between songs, seconds (0 = off). */
   crossfade: number
   /** Pick up the last track where it stopped when the app opens. */
@@ -111,6 +113,7 @@ export const DEFAULTS: Settings = {
   youtubeControls: false,
   stage: 'video',
   miniSpot: 'br',
+  miniWidth: 356,
   crossfade: 5,
   resume: true,
   defaultsVersion: DEFAULTS_VERSION,
@@ -165,6 +168,7 @@ export function sanitize(raw: unknown): Settings {
     youtubeControls: typeof r.youtubeControls === 'boolean' ? r.youtubeControls : DEFAULTS.youtubeControls,
     stage: pick(r.stage, ['video', 'cover'] as const, DEFAULTS.stage),
     miniSpot: pick(r.miniSpot, SPOTS, DEFAULTS.miniSpot),
+    miniWidth: typeof r.miniWidth === 'number' && Number.isFinite(r.miniWidth) ? Math.min(960, Math.max(356, Math.round(r.miniWidth))) : DEFAULTS.miniWidth,
     crossfade: typeof r.crossfade === 'number' && Number.isFinite(r.crossfade) ? Math.min(12, Math.max(0, Math.round(r.crossfade))) : DEFAULTS.crossfade,
     resume: typeof r.resume === 'boolean' ? r.resume : DEFAULTS.resume,
     defaultsVersion: DEFAULTS_VERSION,
