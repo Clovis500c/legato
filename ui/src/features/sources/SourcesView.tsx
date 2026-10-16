@@ -6,6 +6,7 @@ import { accountKey, api, type YtmAccount } from '../../shared/api'
 import { formatCount } from '../../shared/format'
 import { Button } from '../../shared/ui/Button'
 import { Led, RoundButton, Toggle } from '../../shared/ui/controls'
+import { remoteArt } from '../../shared/art'
 import { Cover } from '../../shared/ui/Cover'
 import { SourceIcon, sourceLabel } from '../../shared/ui/SourceIcon'
 import { guides } from './guides'
@@ -113,7 +114,7 @@ function GoogleAccounts() {
               const first = data.picked[0] === accountKey(a)
               return (
                 <li key={accountKey(a)} className="flex items-center gap-3 border-b border-line-soft px-3 py-2 last:border-0">
-                  <Cover title={a.name} size={30} className="rounded-full!" />
+                  <Cover title={a.name} art={a.photo ? [remoteArt(a.photo)] : []} size={30} className="rounded-full!" />
                   <div className="min-w-0 flex-1">
                     <p className="flex items-center gap-2 truncate text-[13px] font-medium">
                       {a.name} {first && on && <span className="kicker">Exports here</span>}
