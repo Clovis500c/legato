@@ -89,7 +89,8 @@ In the app, open **Settings › Accounts**:
 
 - **YouTube Music**: "Sign in with Google". Add more Google accounts and pick which ones to sync. Uses YouTube Music's own web access (unofficial, may break if YouTube changes it).
 - **Spotify**: an app on the Spotify Developer Dashboard (developer mode: the owner needs Premium, 5 users max).
-  Preview: "Spotify web player" opens Spotify's own player in a window, signed in on Spotify's page, no keys (no import yet).
+  No keys: paste a public Spotify playlist or album link anywhere (Ctrl+V) to import it (first 100 tracks); songs play
+  through their YouTube versions. "Spotify web player" opens Spotify's own player in a window (preview).
 - **Local files**: add one or more music folders.
 
 ## Architecture

@@ -137,7 +137,11 @@ via the Web API Player endpoints. Audio comes out of the Spotify app; we only se
 - (b) Reading playlists and Liked Songs with the web session: **not built**. The web player's access token now comes from
   `/api/token` with a TOTP whose secret is hidden in the player's code; getting it means rebuilding that scheme (defeating a
   technical protection) or capturing the token the official player fetches. Both need the user's go-ahead first.
-- Clean fallback (no account): import public playlists by link from the official embed page, play through YouTube matches.
+- Chosen by the user (2026-10-16): no web-session import. **Public playlists and albums by link**, no account
+  (`crates/connectors/src/spotify_embed.rs`): the official embed page (`open.spotify.com/embed/<kind>/<id>`) carries the
+  list in its `__NEXT_DATA__` JSON (first 100 tracks). Each track is matched to YouTube Music (6 searches at a time,
+  signed-in Google session) and plays through the YouTube embed. Saved as an imported Spotify playlist; importing again
+  refreshes it. Paste the link anywhere (Ctrl+V) or in Add music.
 
 ## Ad shield (`crates/shield`) — user's choice, 2026-10-16
 

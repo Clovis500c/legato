@@ -130,12 +130,13 @@ Original plan:
 - Right-click menus everywhere; play next / add to queue.
 - More options: font, covers in lists, one-click play, sidebar counts, start screen, animations; interface size on Apply.
 - Real Google profile pictures in Settings › Accounts; Inputs box removed from the sidebar.
-- Spotify without keys: prototype only (see `playback.md`), waiting for the user's decision on library import.
+- Spotify without keys: public playlists and albums by link (embed page, first 100 tracks), played through their
+  YouTube versions; Spotify's own web player in a window (preview). See `playback.md`.
 
 **To do next (2026-10-16, session stopped on the usage limit)**
-- Spotify without keys, decisions for the user:
-  - library import with the web session: capture the token the official web player fetches, or rebuild its TOTP scheme
-    (defeats a protection): both need an explicit OK; clean alternative: import public playlists by link (embed page);
+- Spotify without keys (user chose link import, 2026-10-16), still open:
+  - private playlists and Liked Songs need the web session (token capture or TOTP): not planned unless the user asks;
+  - playlists over 100 tracks: only the first 100 come in (embed limit);
   - keep or remove the Spotify app-key path (Settings › Accounts);
   - Spotify ad blocking: only after the ToS / account risk is confirmed in chat;
   - user signs in to the web player window, then check real playback (Widevine / PlayReady are available).
