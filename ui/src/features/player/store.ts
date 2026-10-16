@@ -3,6 +3,7 @@ import { useStore } from '../../app/store'
 import { api, type LibraryTrack, type PlayerCommand, type PlayerStatus, type SpotifyCommand, type SpotifyPlayback } from '../../shared/api'
 import { region } from '../../shared/format'
 import { endListen, progress, startListen } from './listens'
+import { nextIndex, playOrder, type Repeat } from './queue'
 import { vias, type Via } from './sources'
 import { ytPost, type YtUpdate } from './youtube'
 
@@ -30,6 +31,13 @@ interface PlayerState {
   /** One queue for every source: next/prev walk it, each track through its best source. */
   list: LibraryTrack[]
   index: number
+  /** List indexes in play order (shuffled or not). */
+  order: number[]
+  shuffle: boolean
+  repeat: Repeat
+  toggleShuffle: () => void
+  /** off → all → one → off. */
+  cycleRepeat: () => void
   /** Dropped files (not in library): engine queue after current file. */
   upcoming: string[]
   /** Full-screen Now Playing. */
@@ -41,7 +49,8 @@ interface PlayerState {
   playFiles: (paths: string[]) => void
   toggle: () => void
   seek: (ms: number) => void
-  step: (delta: 1 | -1) => void
+  /** auto = track ended by itself (repeat one replays it). */
+  step: (delta: 1 | -1, auto?: boolean) => void
   setVolume: (volume: number) => void
   onYoutube: (u: YtUpdate) => void
   onLocal: (s: PlayerStatus) => void
@@ -74,6 +83,9 @@ export const usePlayer = create<PlayerState>((set, get) => ({
   volume: 1,
   list: [],
   index: 0,
+  order: [],
+  shuffle: false,
+  repeat: 'off',
   upcoming: [],
   full: false,
   setFull: (full) => set({ full }),
@@ -81,9 +93,17 @@ export const usePlayer = create<PlayerState>((set, get) => ({
   playTracks(list, index) {
     const i = list.findIndex((t, j) => j >= index && vias(t, spotifyOn()).length > 0)
     if (i < 0) return
-    set({ list })
+    set({ list, order: playOrder(list.length, i, get().shuffle) })
     void get().playAt(i)
   },
+
+  toggleShuffle() {
+    const { shuffle, list, index } = get()
+    // shortcut: a gapless local run already queued in the engine finishes in list order.
+    set({ shuffle: !shuffle, order: playOrder(list.length, index, !shuffle) })
+  },
+
+  cycleRepeat: () => set({ repeat: ({ off: 'all', all: 'one', one: 'off' } as const)[get().repeat] }),
 
   async playAt(index, via) {
     const { list, volume } = get()
@@ -102,12 +122,17 @@ export const usePlayer = create<PlayerState>((set, get) => ({
       expect = null
       // Unconditional: engine may hold a paused item the store forgot (reload).
       send({ type: 'stop' })
+      // Same video (repeat one): the embed stays mounted, so rewind it.
+      if (get().now?.youtubeId === t.ids.youtube) {
+        yt('seekTo', 0, true)
+        yt('playVideo')
+      }
       return set({ now: { ...base, youtubeId: t.ids.youtube } })
     }
     if (how === 'local') {
-      // Consecutive local tracks go to the engine as one run: gapless between them.
+      // Consecutive local tracks go to the engine as one run: gapless between them. List order only.
       let end = index + 1
-      while (end < list.length && vias(list[end])[0] === 'local') end++
+      while (!get().shuffle && get().repeat !== 'one' && end < list.length && vias(list[end])[0] === 'local') end++
       const paths = list.slice(index, end).map((x) => x.ids.local!)
       expect = paths
       send({ type: 'play', paths, start: 0 })
@@ -153,7 +178,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     send({ type: 'play', paths, start: 0 })
     send({ type: 'volume', value: get().volume })
     // Clearing youtubeId unmounts embed.
-    set({ now: { title: fileTitle(paths[0]), artist: 'Local file', path: paths[0], via: 'local' }, list: [], index: 0, playing: true, positionMs: 0, durationMs: null })
+    set({ now: { title: fileTitle(paths[0]), artist: 'Local file', path: paths[0], via: 'local' }, list: [], order: [], index: 0, playing: true, positionMs: 0, durationMs: null })
   },
 
   toggle() {
@@ -173,12 +198,11 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     set({ positionMs: ms })
   },
 
-  step(delta) {
-    const { now, list, index } = get()
+  step(delta, auto = false) {
+    const { now, list, index, order, repeat } = get()
     if (now && !now.trackId) return void send({ type: delta > 0 ? 'next' : 'prev' })
-    for (let i = index + delta; i >= 0 && i < list.length; i += delta) {
-      if (vias(list[i], spotifyOn()).length) return void get().playAt(i)
-    }
+    const i = nextIndex(order, index, delta, repeat, auto, (j) => !vias(list[j], spotifyOn()).length)
+    if (i !== null) return void get().playAt(i)
     if (delta > 0) set({ playing: false })
   },
 
@@ -205,7 +229,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     if (u.time !== undefined) progress(u.time * 1000, u.duration && u.duration * 1000)
     if (u.state === 0) {
       endListen(true)
-      get().step(1)
+      get().step(1, true)
     }
   },
 
@@ -221,7 +245,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     if (s.ended) {
       expect = []
       endListen(true)
-      return get().step(1)
+      return get().step(1, true)
     }
     const { list, index, now } = get()
     // Gapless run moved on: follow it in the queue.
@@ -249,7 +273,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     const ended = (!ours || (!p.playing && p.positionMs === 0)) && !!durationMs && positionMs > durationMs - 4000
     if (ended) {
       endListen(true)
-      return get().step(1)
+      return get().step(1, true)
     }
     if (!p || !ours) return set({ playing: false })
     progress(p.positionMs, p.durationMs)

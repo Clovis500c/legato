@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 import { AddView } from '../features/add/AddView'
 import { MixesView, MixView } from '../features/mixes/MixesView'
 import { AlbumsView, AlbumView, ArtistsView, ArtistView, PlaylistView, SongsView } from '../features/library/LibraryView'
+import { MiniPlayer } from '../features/player/MiniPlayer'
 import { NowPlaying } from '../features/player/NowPlaying'
 import { PlayerBar } from '../features/player/PlayerBar'
 import { usePlayer } from '../features/player/store'
@@ -140,6 +141,7 @@ export function App() {
         {view.name === 'settings' && view.wizard && <ConnectWizard key={view.wizard} service={view.wizard} onClose={() => go({ name: 'settings', section: 'sources' })} />}
       </div>
       <PlayerBar />
+      <MiniPlayer />
       {full && <NowPlaying />}
       {incoming && <ImportDialog key={incoming} code={incoming} />}
     </div>

@@ -45,6 +45,10 @@ export interface Settings {
   columns: Column[]
   /** Ad/tracker blocker (read by Rust at launch). */
   shield: boolean
+  /** Floating mini player for every source (YouTube always shows one: its video must stay visible). */
+  miniPlayer: boolean
+  /** Now Playing takes a flat tint from the cover. */
+  tint: boolean
 }
 
 export const DEFAULTS: Settings = {
@@ -59,6 +63,8 @@ export const DEFAULTS: Settings = {
   tuner: true,
   columns: [...COLUMNS],
   shield: true,
+  miniPlayer: false,
+  tint: true,
 }
 
 const HEX = /^#[0-9a-f]{6}$/i
@@ -96,6 +102,8 @@ export function sanitize(raw: unknown): Settings {
     tuner: typeof r.tuner === 'boolean' ? r.tuner : DEFAULTS.tuner,
     columns,
     shield: typeof r.shield === 'boolean' ? r.shield : DEFAULTS.shield,
+    miniPlayer: typeof r.miniPlayer === 'boolean' ? r.miniPlayer : DEFAULTS.miniPlayer,
+    tint: typeof r.tint === 'boolean' ? r.tint : DEFAULTS.tint,
   }
 }
 
