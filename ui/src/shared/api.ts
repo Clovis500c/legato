@@ -264,7 +264,7 @@ export const api = {
   discordOff: () => invoke<void>('discord_off'),
   discordStatus: () => invoke<{ connected: boolean; error: string | null }>('discord_status'),
   /** Imported YouTube Music playlist: added on YouTube (Liked Music = like), then locally. */
-  addToYoutube: (id: number, trackIds: number[]) => invoke<{ added: number; noYoutube: number }>('add_to_youtube', { id, trackIds }),
+  addToYoutube: (id: number, trackIds: number[]) => invoke<{ added: number; already: number; noYoutube: number; refused: string | null }>('add_to_youtube', { id, trackIds }),
   /** Raw JSON; validated by features/player/session. */
   loadSession: () => invoke<unknown>('load_session'),
   saveSession: (session: object) => invoke<void>('save_session', { session }),

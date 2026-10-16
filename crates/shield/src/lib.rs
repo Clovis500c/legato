@@ -15,6 +15,8 @@ pub const LISTS: [(&str, &str); 2] = [
 ];
 /// Prunes ad slots in YouTube player data. Inject into all frames.
 pub const YOUTUBE_SCRIPT: &str = include_str!("youtube.js");
+/// Hides YouTube's overlays in bare embeds (controls=0). Inject into all frames, shield or not.
+pub const BARE_SCRIPT: &str = include_str!("bare.js");
 const MAX_AGE: Duration = Duration::from_secs(4 * 24 * 3600);
 
 /// Own rules so first offline launch still blocks YouTube / Google ad calls.

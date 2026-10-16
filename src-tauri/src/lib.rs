@@ -666,15 +666,19 @@ async fn export_youtube(state: State<'_, AppState>, id: i64) -> CmdResult<Export
 #[serde(rename_all = "camelCase")]
 struct AddReport {
     added: usize,
+    /// Already in the playlist (YouTube refuses duplicates).
+    already: usize,
     /// No YouTube version: can't go into a YouTube playlist.
     no_youtube: usize,
+    /// YouTube's reason for the ones it refused, when others went in.
+    refused: Option<String>,
 }
 
 /// Add to an imported YouTube Music playlist: on YouTube first (owner account accepts, others refuse), then the mirror.
 /// Liked Music = like the songs with that account.
 #[tauri::command]
 async fn add_to_youtube(state: State<'_, AppState>, id: i64, track_ids: Vec<i64>) -> CmdResult<AddReport> {
-    let (playlist, videos) = {
+    let (playlist, videos, there) = {
         let lib = state.lib.lock().unwrap();
         let p = lib.playlists().map_err(err)?.into_iter().find(|p| p.id == id).ok_or("Playlist not found")?;
         if p.source != Source::Youtube || p.custom {
@@ -682,42 +686,54 @@ async fn add_to_youtube(state: State<'_, AppState>, id: i64, track_ids: Vec<i64>
         }
         let tracks = lib.tracks().map_err(err)?;
         let videos: Vec<(i64, String)> = track_ids.iter().filter_map(|t| tracks.iter().find(|x| x.id == *t).and_then(|x| x.track.ids.get(&Source::Youtube).map(|v| (*t, v.clone())))).collect();
-        (p, videos)
+        let there: HashSet<String> = lib.playlist_tracks(id).map_err(err)?.into_iter().filter_map(|t| t.track.ids.get(&Source::Youtube).cloned()).collect();
+        (p, videos, there)
     };
     let no_youtube = track_ids.len() - videos.len();
+    // Already in the mirror: YouTube would refuse them anyway.
+    let mut seen = HashSet::new();
+    let (videos, dup): (Vec<_>, Vec<_>) = videos.into_iter().filter(|(_, v)| seen.insert(v.clone())).partition(|(_, v)| !there.contains(v));
+    let mut report = AddReport { added: 0, already: dup.len(), no_youtube, refused: None };
     if videos.is_empty() {
-        return Ok(AddReport { added: 0, no_youtube });
+        return Ok(report);
     }
     let ids: Vec<String> = videos.iter().map(|(_, v)| v.clone()).collect();
     let accounts = state.ytm_all();
     if accounts.is_empty() {
         return Err("Sign in to YouTube Music first (Settings › Accounts)".into());
     }
-    let mut last = String::from("YouTube Music refused");
-    let mut done = false;
-    if let Some(key) = playlist.source_id.strip_prefix("LM") {
+    let taken: HashSet<String> = if let Some(key) = playlist.source_id.strip_prefix("LM") {
         let key = key.strip_prefix('~').unwrap_or("0");
         let yt = accounts.into_iter().find(|y| y.account_key() == key).ok_or("That Google account isn't synced any more")?;
         yt.like(&ids).await.map_err(err)?;
-        done = true;
+        ids.iter().cloned().collect()
     } else {
+        // Playlist id carries no account: try each, the owner takes it.
         let remote = playlist.source_id.split('~').next().unwrap_or(&playlist.source_id).to_string();
+        let mut last = None;
+        let mut done = None;
         for yt in accounts {
             match yt.add_videos(&remote, &ids).await {
-                Ok(()) => {
-                    done = true;
+                Ok(r) => {
+                    done = Some(r);
                     break;
                 }
-                Err(e) => last = err(e),
+                Err(e) => last = Some(err(e)),
             }
         }
-    }
-    if !done {
-        return Err(format!("{last}. Only playlists you own on YouTube Music can take new songs."));
-    }
-    let added: Vec<i64> = videos.iter().map(|(t, _)| *t).collect();
+        let Some(r) = done else {
+            let why = last.unwrap_or_else(|| "YouTube Music refused".into());
+            // YouTube said why: show that. Bare status: likely not the user's playlist.
+            return Err(if why.starts_with("YouTube Music: ") { why } else { format!("{why}. Only playlists you own on YouTube Music can take new songs.") });
+        };
+        report.already += r.already.len();
+        report.refused = r.refused;
+        r.added.into_iter().collect()
+    };
+    let added: Vec<i64> = videos.iter().filter(|(_, v)| taken.contains(v)).map(|(t, _)| *t).collect();
     state.lib.lock().unwrap().append_to_imported(id, &added).map_err(err)?;
-    Ok(AddReport { added: added.len(), no_youtube })
+    report.added = added.len();
+    Ok(report)
 }
 
 fn spotify_on(state: &AppState) -> CmdResult<Spotify> {
@@ -1057,6 +1073,7 @@ pub fn run() {
             if shield_on {
                 window = window.initialization_script_for_all_frames(music_shield::YOUTUBE_SCRIPT);
             }
+            window = window.initialization_script_for_all_frames(music_shield::BARE_SCRIPT);
             let window = window.build()?;
             #[cfg(windows)]
             shield::install(&window, shield.clone())?;

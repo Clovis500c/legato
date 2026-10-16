@@ -118,6 +118,34 @@ fn all<'a>(v: &'a Value, key: &str) -> Vec<&'a Value> {
     out
 }
 
+/// Result of adding videos to a playlist.
+#[derive(Debug, Default, PartialEq)]
+pub struct Added {
+    pub added: Vec<String>,
+    /// Already in the playlist: YouTube refuses duplicates.
+    pub already: Vec<String>,
+    /// Why some videos were refused, when others went in.
+    pub refused: Option<String>,
+}
+
+enum Edit {
+    Done,
+    Duplicate,
+    Refused(String),
+}
+
+/// Duplicate refusal: STATUS_FAILED + "add anyway?" dialog whose button re-sends with DEDUPE_OPTION_SKIP.
+fn is_duplicate(v: &Value) -> bool {
+    !all(v, "dedupeOption").is_empty() || all(v, "dialogMessages").iter().filter_map(|m| m.as_array()).flatten().filter_map(text).any(|t| t.to_lowercase().contains("already"))
+}
+
+/// Message YouTube shows with a refusal (dialog or toast).
+fn refusal(v: &Value) -> Option<String> {
+    let dialog = all(v, "dialogMessages").into_iter().filter_map(Value::as_array).flatten().filter_map(text);
+    let toast = ["responseText", "successResponseText"].into_iter().flat_map(|k| all(v, k)).filter_map(text);
+    dialog.chain(toast).map(|t| t.trim().to_string()).find(|t| !t.is_empty()).map(|t| format!("YouTube Music: {t}"))
+}
+
 fn page_type(run: &Value) -> &str {
     run.pointer("/navigationEndpoint/browseEndpoint/browseEndpointContextSupportedConfigs/browseEndpointContextMusicConfig/pageType").and_then(Value::as_str).unwrap_or("")
 }
@@ -282,16 +310,42 @@ impl YouTubeMusic {
     }
 
     /// Append videos. No dedupeOption: "DEDUPE_OPTION_SKIP" would skip YouTube's duplicate check (= allow duplicates).
-    pub async fn add_videos(&self, playlist_id: &str, video_ids: &[String]) -> Result<()> {
+    /// One duplicate or bad video refuses the whole batch: batch retried one by one, so the rest still goes in.
+    pub async fn add_videos(&self, playlist_id: &str, video_ids: &[String]) -> Result<Added> {
+        let mut out = Added::default();
+        let mut reason = None;
         for chunk in video_ids.chunks(100) {
-            let actions: Vec<Value> = chunk.iter().map(|v| json!({ "action": "ACTION_ADD_VIDEO", "addedVideoId": v })).collect();
-            let v = self.call("browse/edit_playlist", json!({ "playlistId": playlist_id, "actions": actions })).await?;
-            // HTTP 200 can still carry a refusal.
-            if let Some(status) = v.get("status").and_then(Value::as_str).filter(|s| *s != "STATUS_SUCCEEDED") {
-                bail!("YouTube Music refused to add the tracks ({status})");
+            match self.edit_add(playlist_id, chunk).await? {
+                Edit::Done => out.added.extend_from_slice(chunk),
+                Edit::Duplicate if chunk.len() == 1 => out.already.extend_from_slice(chunk),
+                Edit::Refused(r) if chunk.len() == 1 => reason = Some(r),
+                _ => {
+                    for v in chunk {
+                        match self.edit_add(playlist_id, std::slice::from_ref(v)).await? {
+                            Edit::Done => out.added.push(v.clone()),
+                            Edit::Duplicate => out.already.push(v.clone()),
+                            Edit::Refused(r) => reason = Some(r),
+                        }
+                    }
+                }
             }
         }
-        Ok(())
+        // Nothing taken: owner refused (not their playlist, closed, …).
+        match reason {
+            Some(r) if out.added.is_empty() && out.already.is_empty() => bail!(r),
+            r => Ok(Added { refused: r, ..out }),
+        }
+    }
+
+    async fn edit_add(&self, playlist_id: &str, video_ids: &[String]) -> Result<Edit> {
+        let actions: Vec<Value> = video_ids.iter().map(|v| json!({ "action": "ACTION_ADD_VIDEO", "addedVideoId": v })).collect();
+        let v = self.call("browse/edit_playlist", json!({ "playlistId": playlist_id, "actions": actions })).await?;
+        // HTTP 200 can still carry a refusal.
+        Ok(match v.get("status").and_then(Value::as_str) {
+            None | Some("STATUS_SUCCEEDED") => Edit::Done,
+            Some(_) if is_duplicate(&v) => Edit::Duplicate,
+            Some(status) => Edit::Refused(refusal(&v).unwrap_or_else(|| format!("YouTube Music refused to add the tracks ({status})"))),
+        })
     }
 
     /// Like videos: what "add to Liked Music" means on YouTube Music.
@@ -435,9 +489,38 @@ mod tests {
         let ok = s.mock("POST", "/browse/edit_playlist").match_query(Matcher::Any).match_body(Matcher::PartialJson(json!({ "actions": [{ "addedVideoId": "a" }] }))).with_body(r#"{"status":"STATUS_SUCCEEDED"}"#).create_async().await;
         s.mock("POST", "/browse/edit_playlist").match_query(Matcher::Any).match_body(Matcher::PartialJson(json!({ "actions": [{ "addedVideoId": "b" }] }))).with_body(r#"{"status":"STATUS_FAILED"}"#).create_async().await;
         let yt = YouTubeMusic::with_api(&s.url(), COOKIE).unwrap();
-        yt.add_videos("PL", &["a".into()]).await.unwrap();
+        assert_eq!(yt.add_videos("PL", &["a".into()]).await.unwrap().added, ["a"]);
         assert!(yt.add_videos("PL", &["b".into()]).await.unwrap_err().to_string().contains("STATUS_FAILED"));
         ok.assert_async().await;
+    }
+
+    #[tokio::test]
+    async fn add_splits_out_duplicates() {
+        let mut s = Server::new_async().await;
+        let dup = r#"{"status":"STATUS_FAILED","actions":[{"confirmDialogEndpoint":{"content":{"confirmDialogRenderer":{"dialogMessages":[{"runs":[{"text":"This song is already in the playlist"}]}],"confirmButton":{"buttonRenderer":{"serviceEndpoint":{"playlistEditEndpoint":{"actions":[{"addedVideoId":"d","dedupeOption":"DEDUPE_OPTION_SKIP"}]}}}}}}}}]}"#;
+        // Any batch holding "d" refused whole: batch, then n alone, then d alone.
+        let m = s
+            .mock("POST", "/browse/edit_playlist")
+            .match_query(Matcher::Any)
+            .with_body_from_request(move |req| {
+                let body = req.utf8_lossy_body().unwrap_or_default();
+                if body.contains(r#""addedVideoId":"d""#) { dup.into() } else { br#"{"status":"STATUS_SUCCEEDED"}"#.to_vec() }
+            })
+            .expect(3)
+            .create_async()
+            .await;
+        let yt = YouTubeMusic::with_api(&s.url(), COOKIE).unwrap();
+        let r = yt.add_videos("PL", &["n".into(), "d".into()]).await.unwrap();
+        assert_eq!((r.added, r.already, r.refused), (vec!["n".to_string()], vec!["d".to_string()], None));
+        m.assert_async().await;
+    }
+
+    #[test]
+    fn refusal_reads_youtubes_message() {
+        let v = json!({ "status": "STATUS_FAILED", "actions": [{ "addToToastAction": { "item": { "notificationActionRenderer": { "responseText": { "runs": [{ "text": "Playlist is full" }] } } } } }] });
+        assert_eq!(refusal(&v).as_deref(), Some("YouTube Music: Playlist is full"));
+        assert!(!is_duplicate(&v));
+        assert_eq!(refusal(&json!({ "status": "STATUS_FAILED" })), None);
     }
 
     #[tokio::test]
