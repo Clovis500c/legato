@@ -33,16 +33,10 @@ function Logo() {
 }
 
 export function Sidebar() {
-  const { view, go, tracks, playlists, status, query, setQuery, editPlaylist } = useStore()
+  const { view, go, tracks, playlists, query, setQuery, editPlaylist } = useStore()
   const counts = useMemo(() => ({ albums: groupAlbums(tracks).length, artists: groupArtists(tracks).length }), [tracks])
   const input = useRef<HTMLInputElement>(null)
   const is = (name: View['name']) => view.name === name
-  const inputs = [
-    { code: 'YT', on: status.youtube.connected },
-    { code: 'SP', on: status.spotify.connected },
-    { code: 'AM', on: true },
-    { code: 'LOC', on: true },
-  ]
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -106,16 +100,6 @@ export function Sidebar() {
 
       <div className="flex-1" />
 
-      <button onClick={() => go({ name: 'settings', section: 'sources' })} className="flex flex-col gap-2 rounded-lg border border-line px-4.5 py-2.5 text-left hover:bg-raised" aria-label="Inputs: source status">
-        <span className="kicker">Inputs</span>
-        <span className="flex gap-3">
-          {inputs.map((i) => (
-            <span key={i.code} className={`flex items-center gap-1.5 font-mono text-[9px] tracking-[0.08em] ${i.on ? 'text-ink-2' : 'text-ink-3'}`}>
-              <Led on={i.on} /> {i.code}
-            </span>
-          ))}
-        </span>
-      </button>
       <NavItem on={is('settings')} icon={<Gear size={16} />} label="Settings" onClick={() => go({ name: 'settings', section: 'appearance' })} />
     </aside>
   )
