@@ -94,7 +94,7 @@ function ThemeGallery({ onEdit }: { onEdit?: (id: string) => void }) {
 }
 
 function Appearance() {
-  const { settings: s, update } = useSettings()
+  const { settings: s, update, current } = useSettings()
   const col = (c: Column) => (s.columns.includes(c) ? s.columns.filter((x) => x !== c) : COLUMNS.filter((x) => x === c || s.columns.includes(x)))
   const labels: Record<Column, string> = { album: 'Album', sources: 'Sources', duration: 'Duration' }
   const reset: Partial<Settings> = { accent: DEFAULTS.accent, covers: DEFAULTS.covers, density: DEFAULTS.density, zoom: DEFAULTS.zoom, readout: DEFAULTS.readout, volume: DEFAULTS.volume, tuner: DEFAULTS.tuner, columns: DEFAULTS.columns }
@@ -108,11 +108,13 @@ function Appearance() {
       <Group title="Theme">
         <ThemeGallery />
       </Group>
-      <Group title="Accent color" hint={s.accent ?? 'from theme'}>
+      <Group title="Accent color" hint={s.accent === 'system' ? 'from Windows' : (s.accent ?? 'from theme')}>
         <div className="flex flex-wrap items-center gap-2">
-          <button onClick={() => update({ accent: null })} aria-pressed={!s.accent} className={`rounded-full px-3 py-1.5 text-xs font-medium ${!s.accent ? 'bg-ink text-bg' : 'border border-line'}`}>
-            Theme
-          </button>
+          {([['system', 'Windows'], [null, 'Theme']] as const).map(([value, label]) => (
+            <button key={label} onClick={() => update({ accent: value })} aria-pressed={s.accent === value} className={`rounded-full px-3 py-1.5 text-xs font-medium ${s.accent === value ? 'bg-ink text-bg' : 'border border-line'}`}>
+              {label}
+            </button>
+          ))}
           {ACCENTS.map((c) => (
             <button key={c} aria-label={`Accent ${c}`} aria-pressed={s.accent === c} onClick={() => update({ accent: c })} className={`grid size-8.5 place-items-center rounded-full ${s.accent === c ? 'border-2 border-ink' : ''}`}>
               <span className="size-6 rounded-full" style={{ background: c }} />
@@ -120,7 +122,7 @@ function Appearance() {
           ))}
           <label className="grid size-8.5 cursor-pointer place-items-center rounded-full border border-dashed border-ink-3" title="Any color">
             <Plus size={12} />
-            <input type="color" className="sr-only" value={s.accent ?? '#FF5A1F'} onChange={(e) => update({ accent: e.target.value })} />
+            <input type="color" className="sr-only" value={current().accent.toLowerCase()} onChange={(e) => update({ accent: e.target.value })} />
           </label>
         </div>
       </Group>

@@ -1,11 +1,18 @@
 import { describe, expect, it } from 'vitest'
-import { contrast, contrastReport, cssVars, DEFAULTS, PRESETS, resolveTheme, sanitize, sanitizeTheme } from './theme'
+import { contrast, contrastReport, cssVars, DEFAULTS, onAccentFor, PRESETS, resolveTheme, sanitize, sanitizeTheme } from './theme'
 
 describe('sanitize', () => {
   it('falls back to defaults on junk', () => {
     expect(sanitize(null)).toEqual(DEFAULTS)
     expect(sanitize({ theme: 'nope', covers: 'hexagon', zoom: 'big', columns: ['album', 'evil', 'album'] })).toEqual({ ...DEFAULTS, columns: ['album'] })
     expect(sanitize({ theme: 'papier' }).theme).toBe('paper')
+  })
+
+  it('defaults to Windows theme and accent, keeps an explicit theme accent', () => {
+    expect(DEFAULTS).toMatchObject({ theme: 'system', accent: 'system' })
+    expect(sanitize({ accent: null }).accent).toBeNull()
+    expect(sanitize({ accent: 'system' }).accent).toBe('system')
+    expect(sanitize({ accent: 'red' }).accent).toBe('system')
   })
 
   it('clamps zoom and keeps valid values', () => {
@@ -38,6 +45,24 @@ describe('resolveTheme', () => {
     expect(resolveTheme({ ...DEFAULTS, theme: 'system' }, true).id).toBe('graphite')
     const t = resolveTheme({ ...DEFAULTS, accent: '#F2B705' }, false)
     expect([t.accent, t.onAccent]).toEqual(['#F2B705', '#171614'])
+  })
+
+  it('uses the Windows accent variant matching theme brightness', () => {
+    const win = { light: '#005fb8', dark: '#60CDFF' }
+    const light = resolveTheme(DEFAULTS, false, win)
+    const dark = resolveTheme(DEFAULTS, true, win)
+    expect([light.id, light.accent, light.onAccent]).toEqual(['paper', '#005FB8', '#FFFFFF'])
+    expect([dark.id, dark.accent, dark.onAccent]).toEqual(['graphite', '#60CDFF', '#171614'])
+    // No Windows accent (other OS, error): theme's own.
+    expect(resolveTheme(DEFAULTS, true, null).accent).toBe(PRESETS[1].accent)
+    expect(resolveTheme({ ...DEFAULTS, accent: null }, false, win).accent).toBe(PRESETS[0].accent)
+  })
+
+  it('text on any accent reaches AA 4.5', () => {
+    for (let v = 0; v < 0x1000; v += 7) {
+      const hex = '#' + [8, 4, 0].map((s) => ((v >> s) & 15).toString(16).repeat(2)).join('')
+      expect(contrast(onAccentFor(hex), hex), hex).toBeGreaterThanOrEqual(4.5)
+    }
   })
 
   it('maps layout settings to CSS variables', () => {

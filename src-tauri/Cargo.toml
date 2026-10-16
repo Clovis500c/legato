@@ -22,7 +22,7 @@ tauri-plugin-dialog = "=2.8.0"
 
 [target.'cfg(windows)'.dependencies]
 webview2-com = "0.39.1"
-windows = "0.62.2"
+windows = { version = "0.62.2", features = ["UI_ViewManagement"] }
 
 [build-dependencies]
 tauri-build = { version = "2.7.3", features = [] }

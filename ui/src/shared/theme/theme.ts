@@ -32,7 +32,7 @@ export type Column = (typeof COLUMNS)[number]
 export interface Settings {
   /** Preset id, custom theme id, or 'system' (Paper / Graphite). */
   theme: string
-  /** Overrides theme accent. */
+  /** Hex overrides theme accent; 'system' = Windows accent; null = theme's own. */
   accent: string | null
   customThemes: Theme[]
   covers: 'net' | 'rounded' | 'vinyl'
@@ -48,8 +48,8 @@ export interface Settings {
 }
 
 export const DEFAULTS: Settings = {
-  theme: 'paper',
-  accent: null,
+  theme: 'system',
+  accent: 'system',
   customThemes: [],
   covers: 'net',
   density: 'comfort',
@@ -86,7 +86,7 @@ export function sanitize(raw: unknown): Settings {
   const columns = Array.isArray(r.columns) ? [...new Set(r.columns.filter((c): c is Column => COLUMNS.includes(c as Column)))] : DEFAULTS.columns
   return {
     theme: pick(LEGACY_IDS[r.theme as string] ?? r.theme, ids, DEFAULTS.theme),
-    accent: isHex(r.accent) ? r.accent.toUpperCase() : null,
+    accent: isHex(r.accent) ? r.accent.toUpperCase() : r.accent === null ? null : DEFAULTS.accent,
     customThemes,
     covers: pick(r.covers, ['net', 'rounded', 'vinyl'] as const, DEFAULTS.covers),
     density: pick(r.density, ['compact', 'comfort', 'airy'] as const, DEFAULTS.density),
@@ -124,10 +124,21 @@ export function contrastReport(t: Palette) {
   ].map((c) => ({ ...c, ok: c.ratio >= c.min }))
 }
 
-export function resolveTheme(s: Settings, systemDark: boolean): Theme {
+/** Text / icon color on an accent: first of white, ink, black reaching AA 4.5 (black always does). */
+export const onAccentFor = (accent: string) => ['#FFFFFF', '#171614'].find((c) => contrast(c, accent) >= 4.5) ?? '#000000'
+
+/** src-tauri system_accent: Windows accent tuned per theme brightness. */
+export interface SystemAccent {
+  light: string
+  dark: string
+}
+
+export function resolveTheme(s: Settings, systemDark: boolean, system: SystemAccent | null = null): Theme {
   const id = s.theme === 'system' ? (systemDark ? 'graphite' : 'paper') : s.theme
   const t = [...PRESETS, ...s.customThemes].find((x) => x.id === id) ?? PRESETS[0]
-  return s.accent ? { ...t, accent: s.accent, onAccent: contrast('#FFFFFF', s.accent) >= 3 ? '#FFFFFF' : '#171614' } : t
+  const sys = system && [system.light, system.dark].every(isHex) ? (t.dark ? system.dark : system.light).toUpperCase() : null
+  const accent = s.accent === 'system' ? sys : s.accent
+  return accent ? { ...t, accent, onAccent: onAccentFor(accent) } : t
 }
 
 const kebab = (k: string) => k.replace(/[A-Z0-9]/g, (c) => `-${c.toLowerCase()}`)

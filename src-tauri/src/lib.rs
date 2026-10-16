@@ -702,6 +702,28 @@ fn set_shield(state: State<AppState>, enabled: bool) {
     state.shield.enabled.store(enabled, Ordering::Relaxed)
 }
 
+#[derive(Serialize)]
+struct SystemAccent {
+    /// For light themes (Windows AccentDark1, as WinUI uses it).
+    light: String,
+    /// For dark themes (AccentLight2).
+    dark: String,
+}
+
+/// Windows accent color. None off Windows or on error (theme accent used).
+#[tauri::command]
+fn system_accent() -> Option<SystemAccent> {
+    #[cfg(windows)]
+    {
+        use windows::UI::ViewManagement::{UIColorType, UISettings};
+        let ui = UISettings::new().ok()?;
+        let hex = |t| ui.GetColorValue(t).ok().map(|c| format!("#{:02X}{:02X}{:02X}", c.R, c.G, c.B));
+        Some(SystemAccent { light: hex(UIColorType::AccentDark1)?, dark: hex(UIColorType::AccentLight2)? })
+    }
+    #[cfg(not(windows))]
+    None
+}
+
 #[tauri::command]
 fn restart_app(app: tauri::AppHandle) {
     app.restart()
@@ -757,7 +779,7 @@ pub fn run() {
             app.manage(AppState { app: app.handle().clone(), lib: Mutex::new(lib), store: Arc::new(secrets::KeyringStore::new(&app.config().identifier)), open, player: Player::spawn(), shield, yt_cache: Mutex::default(), nearby: Arc::new(Mutex::new(NearbyState::Idle)), nearby_task: Mutex::default() });
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, add_track, find_versions, play_preview, share_playlist, share_preview, share_read_image, share_import, nearby_send, nearby_status, nearby_stop, nearby_receive, record_play, mixes, set_track_pref, clear_history, export_youtube, spotify_player, spotify_playback, ytm_sign_in, ytm_sign_out, ytm_accounts, set_ytm_accounts, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, restart_app])
+        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, add_track, find_versions, play_preview, share_playlist, share_preview, share_read_image, share_import, nearby_send, nearby_status, nearby_stop, nearby_receive, record_play, mixes, set_track_pref, clear_history, export_youtube, spotify_player, spotify_playback, ytm_sign_in, ytm_sign_out, ytm_accounts, set_ytm_accounts, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, system_accent, restart_app])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

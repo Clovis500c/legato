@@ -1,4 +1,5 @@
 import { invoke } from '@tauri-apps/api/core'
+import type { SystemAccent } from './theme/theme'
 
 export type Source = 'spotify' | 'youtube' | 'local' | 'apple'
 /** Services with an account to connect. */
@@ -212,5 +213,7 @@ export const api = {
   saveSettings: (settings: object) => invoke<void>('save_settings', { settings }),
   shieldStatus: () => invoke<{ enabled: boolean; blocked: number }>('shield_status'),
   setShield: (enabled: boolean) => invoke<void>('set_shield', { enabled }),
+  /** Windows accent (light / dark theme variants); null off Windows. */
+  systemAccent: () => invoke<SystemAccent | null>('system_accent'),
   restartApp: () => invoke<void>('restart_app'),
 }
