@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { api, type Credentials, type LibraryPlaylist, type LibraryTrack, type Service, type SourceStatus, type SyncReport } from '../shared/api'
+import { api, type Credentials, type LibraryPlaylist, type LibraryTrack, type PlaylistEdit, type Service, type SourceStatus, type SyncReport } from '../shared/api'
 import type { Filter, Sort } from '../features/library/filter'
 
 export type SettingsSection = 'appearance' | 'themes' | 'sources' | 'shield'
@@ -39,6 +39,8 @@ interface State {
   sync: () => Promise<void>
   connect: (source: Service, credentials: Credentials) => Promise<boolean>
   disconnect: (source: Service) => Promise<void>
+  /** Returns new playlist id for create / duplicate. */
+  editPlaylist: (edit: PlaylistEdit) => Promise<number | null>
 }
 
 const offline: SourceStatus = { configured: false, connected: false }
@@ -106,5 +108,12 @@ export const useStore = create<State>((set, get) => {
     sync: () => run(async () => set({ lastSync: { at: Date.now(), report: await api.sync() } })).then(() => {}),
     connect: (source, credentials) => run(() => api.connect(source, credentials)),
     disconnect: (source) => run(() => api.disconnect(source)).then(() => {}),
+    async editPlaylist(edit) {
+      let id: number | null = null
+      const ok = await run(async () => (id = await api.editPlaylist(edit)))
+      const v = get().view
+      if (ok && v.name === 'playlist') set({ playlistTracks: await api.playlistTracks(v.id) })
+      return id
+    },
   }
 })

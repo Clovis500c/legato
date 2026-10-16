@@ -23,7 +23,19 @@ export interface LibraryPlaylist {
   sourceId: string
   name: string
   trackCount: number
+  /** Made in the app: editable. */
+  custom: boolean
 }
+
+/** crates/core PlaylistEdit. */
+export type PlaylistEdit =
+  | { type: 'create'; name: string }
+  | { type: 'rename'; id: number; name: string }
+  | { type: 'delete'; id: number }
+  | { type: 'add'; id: number; trackIds: number[] }
+  | { type: 'remove'; id: number; position: number }
+  | { type: 'move'; id: number; from: number; to: number }
+  | { type: 'duplicate'; id: number; name: string }
 
 export interface SyncReport {
   playlists: number
@@ -67,6 +79,8 @@ export const api = {
   sync: () => invoke<SyncReport>('sync_all'),
   library: () => invoke<{ tracks: LibraryTrack[]; playlists: LibraryPlaylist[] }>('library'),
   playlistTracks: (id: number) => invoke<LibraryTrack[]>('playlist_tracks', { id }),
+  /** New playlist id for create / duplicate. */
+  editPlaylist: (edit: PlaylistEdit) => invoke<number | null>('edit_playlist', { edit }),
   player: (cmd: PlayerCommand) => invoke<void>('player', { cmd }),
   playerStatus: () => invoke<PlayerStatus>('player_status'),
   /** Raw JSON; validated by shared/theme/settings.sanitize. */

@@ -2,7 +2,7 @@ use crate::matching::{match_key, same_track};
 use crate::model::{Source, Track};
 use anyhow::Result;
 use rusqlite::{Connection, OptionalExtension, Row, params};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::Path;
 
@@ -62,6 +62,21 @@ pub struct LibraryPlaylist {
     pub source_id: String,
     pub name: String,
     pub track_count: i64,
+    /// Made in the app (editable). Imported ones mirror their service.
+    pub custom: bool,
+}
+
+/// Edits on custom playlists. Duplicate also works on imported ones.
+#[derive(Debug, Deserialize)]
+#[serde(tag = "type", rename_all = "camelCase", rename_all_fields = "camelCase")]
+pub enum PlaylistEdit {
+    Create { name: String },
+    Rename { id: i64, name: String },
+    Delete { id: i64 },
+    Add { id: i64, track_ids: Vec<i64> },
+    Remove { id: i64, position: usize },
+    Move { id: i64, from: usize, to: usize },
+    Duplicate { id: i64, name: String },
 }
 
 /// Row → track. Column 6 = ids JSON object (optional).
@@ -96,6 +111,10 @@ impl Library {
 
     fn init(db: Connection) -> Result<Self> {
         db.execute_batch(SCHEMA)?;
+        // Migrations, keyed on user_version.
+        if db.query_row("PRAGMA user_version", [], |r| r.get::<_, i64>(0))? < 1 {
+            db.execute_batch("ALTER TABLE playlists ADD COLUMN custom INTEGER NOT NULL DEFAULT 0; PRAGMA user_version = 1;")?;
+        }
         Ok(Self { db })
     }
 
@@ -184,7 +203,7 @@ impl Library {
 
     pub fn playlists(&self) -> Result<Vec<LibraryPlaylist>> {
         let mut stmt = self.db.prepare_cached(
-            "SELECT p.id, p.source, p.source_id, p.name, COUNT(pt.track_id)
+            "SELECT p.id, p.source, p.source_id, p.name, COUNT(pt.track_id), p.custom
              FROM playlists p LEFT JOIN playlist_tracks pt ON pt.playlist_id = p.id
              GROUP BY p.id ORDER BY p.name COLLATE NOCASE",
         )?;
@@ -196,6 +215,7 @@ impl Library {
                 source_id: r.get(2)?,
                 name: r.get(3)?,
                 track_count: r.get(4)?,
+                custom: r.get(5)?,
             })
         })?;
         Ok(rows.collect::<rusqlite::Result<_>>()?)
@@ -208,6 +228,86 @@ impl Library {
              WHERE pt.playlist_id = ?1 ORDER BY pt.position"
         ))?;
         Ok(stmt.query_map([playlist_id], to_track)?.collect::<rusqlite::Result<_>>()?)
+    }
+
+    /// Apply edit; returns new playlist id for Create / Duplicate.
+    pub fn edit_playlist(&self, edit: PlaylistEdit) -> Result<Option<i64>> {
+        self.tx(|| {
+            Ok(match edit {
+                PlaylistEdit::Create { name } => Some(self.new_custom(&name)?),
+                PlaylistEdit::Rename { id, name } => {
+                    self.ensure_custom(id)?;
+                    self.db.execute("UPDATE playlists SET name = ?1 WHERE id = ?2", params![clean_name(&name)?, id])?;
+                    None
+                }
+                PlaylistEdit::Delete { id } => {
+                    self.ensure_custom(id)?;
+                    self.db.execute("DELETE FROM playlists WHERE id = ?1", [id])?;
+                    None
+                }
+                PlaylistEdit::Add { id, track_ids } => {
+                    self.ensure_custom(id)?;
+                    self.rewrite(id, |ids| ids.extend(track_ids))?;
+                    None
+                }
+                PlaylistEdit::Remove { id, position } => {
+                    self.ensure_custom(id)?;
+                    self.rewrite(id, |ids| {
+                        if position < ids.len() {
+                            ids.remove(position);
+                        }
+                    })?;
+                    None
+                }
+                PlaylistEdit::Move { id, from, to } => {
+                    self.ensure_custom(id)?;
+                    self.rewrite(id, |ids| {
+                        if from < ids.len() && to < ids.len() {
+                            let t = ids.remove(from);
+                            ids.insert(to, t);
+                        }
+                    })?;
+                    None
+                }
+                PlaylistEdit::Duplicate { id, name } => {
+                    let ids = self.playlist_track_ids(id)?;
+                    let copy = self.new_custom(&name)?;
+                    self.rewrite(copy, |v| *v = ids)?;
+                    Some(copy)
+                }
+            })
+        })
+    }
+
+    fn new_custom(&self, name: &str) -> Result<i64> {
+        let name = clean_name(name)?;
+        let n: i64 = self.db.query_row("SELECT coalesce(max(id), 0) + 1 FROM playlists", [], |r| r.get(0))?;
+        self.db.execute("INSERT INTO playlists (source, source_id, name, custom) VALUES ('local', ?1, ?2, 1)", params![format!("custom-{n}"), name])?;
+        Ok(self.db.last_insert_rowid())
+    }
+
+    fn ensure_custom(&self, id: i64) -> Result<()> {
+        let custom: Option<bool> = self.db.query_row("SELECT custom FROM playlists WHERE id = ?1", [id], |r| r.get(0)).optional()?;
+        anyhow::ensure!(custom.is_some(), "Playlist introuvable");
+        anyhow::ensure!(custom == Some(true), "Playlist importée : modifie-la dans son service, ou duplique-la");
+        Ok(())
+    }
+
+    fn playlist_track_ids(&self, id: i64) -> Result<Vec<i64>> {
+        let mut stmt = self.db.prepare_cached("SELECT track_id FROM playlist_tracks WHERE playlist_id = ?1 ORDER BY position")?;
+        Ok(stmt.query_map([id], |r| r.get(0))?.collect::<rusqlite::Result<_>>()?)
+    }
+
+    /// Read order, mutate, write back. Small lists: simpler than shifting positions under the PK.
+    fn rewrite(&self, id: i64, f: impl FnOnce(&mut Vec<i64>)) -> Result<()> {
+        let mut ids = self.playlist_track_ids(id)?;
+        f(&mut ids);
+        self.db.execute("DELETE FROM playlist_tracks WHERE playlist_id = ?1", [id])?;
+        let mut ins = self.db.prepare_cached("INSERT INTO playlist_tracks (playlist_id, position, track_id) VALUES (?1, ?2, ?3)")?;
+        for (pos, t) in ids.iter().enumerate() {
+            ins.execute(params![id, pos as i64, t])?;
+        }
+        Ok(())
     }
 
     /// JSON setting blob. Front owns schema and validates on load.
@@ -246,6 +346,13 @@ impl Library {
             }
         }
     }
+}
+
+/// Trust boundary: names from UI.
+fn clean_name(name: &str) -> Result<String> {
+    let name = name.trim();
+    anyhow::ensure!(!name.is_empty() && name.chars().count() <= 100, "Nom de playlist : 1 à 100 caractères");
+    Ok(name.to_string())
 }
 
 #[cfg(test)]
@@ -336,8 +443,41 @@ mod tests {
         let id = lib.save_playlist(Source::Spotify, "p1", "New", &[spotify()])?;
         assert_eq!(
             lib.playlists()?,
-            vec![LibraryPlaylist { id, source: Source::Spotify, source_id: "p1".into(), name: "New".into(), track_count: 1 }]
+            vec![LibraryPlaylist { id, source: Source::Spotify, source_id: "p1".into(), name: "New".into(), track_count: 1, custom: false }]
         );
+        Ok(())
+    }
+
+    #[test]
+    fn custom_playlist_lifecycle() -> Result<()> {
+        let lib = Library::in_memory()?;
+        let a = lib.upsert_track(&spotify())?;
+        let b = lib.upsert_track(&Track { title: "Nightcall".into(), artist: "Kavinsky".into(), ..youtube() })?;
+        let id = lib.edit_playlist(PlaylistEdit::Create { name: "  Road trip ".into() })?.unwrap();
+        lib.edit_playlist(PlaylistEdit::Add { id, track_ids: vec![a, b, a] })?;
+        lib.edit_playlist(PlaylistEdit::Move { id, from: 2, to: 0 })?;
+        lib.edit_playlist(PlaylistEdit::Remove { id, position: 1 })?;
+        assert_eq!(lib.playlist_tracks(id)?.iter().map(|t| t.id).collect::<Vec<_>>(), vec![a, b]);
+        lib.edit_playlist(PlaylistEdit::Rename { id, name: "Route".into() })?;
+        let p = lib.playlists()?.into_iter().find(|p| p.id == id).unwrap();
+        assert_eq!((p.name.as_str(), p.track_count, p.custom), ("Route", 2, true));
+        lib.edit_playlist(PlaylistEdit::Delete { id })?;
+        assert!(lib.playlists()?.is_empty());
+        Ok(())
+    }
+
+    #[test]
+    fn imported_playlists_are_read_only_but_duplicable() -> Result<()> {
+        let lib = Library::in_memory()?;
+        let id = lib.save_playlist(Source::Spotify, "p1", "Likes", &[spotify(), youtube()])?;
+        assert!(lib.edit_playlist(PlaylistEdit::Rename { id, name: "X".into() }).is_err());
+        assert!(lib.edit_playlist(PlaylistEdit::Delete { id }).is_err());
+        assert!(lib.edit_playlist(PlaylistEdit::Create { name: " ".into() }).is_err());
+        let copy = lib.edit_playlist(PlaylistEdit::Duplicate { id, name: "Likes perso".into() })?.unwrap();
+        assert_eq!(lib.playlist_tracks(copy)?.len(), lib.playlist_tracks(id)?.len());
+        // Re-sync replaces import, copy stays.
+        lib.save_playlist(Source::Spotify, "p1", "Likes", &[])?;
+        assert_eq!(lib.playlist_tracks(copy)?.len(), 2);
         Ok(())
     }
 

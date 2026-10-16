@@ -5,7 +5,7 @@ mod shield;
 use music_connectors::oauth::Opener;
 use music_connectors::spotify::Spotify;
 use music_connectors::youtube::YouTube;
-use music_core::library::{Library, LibraryPlaylist, LibraryTrack};
+use music_core::library::{Library, LibraryPlaylist, LibraryTrack, PlaylistEdit};
 use music_core::model::{Connector, SecretStore, Source};
 use music_core::sync::{SyncReport, sync};
 use music_player::{Command, Player, Status};
@@ -133,6 +133,11 @@ fn playlist_tracks(state: State<AppState>, id: i64) -> CmdResult<Vec<LibraryTrac
 }
 
 #[tauri::command]
+fn edit_playlist(state: State<AppState>, edit: PlaylistEdit) -> CmdResult<Option<i64>> {
+    state.lib.lock().unwrap().edit_playlist(edit).map_err(err)
+}
+
+#[tauri::command]
 fn load_settings(state: State<AppState>) -> CmdResult<Option<serde_json::Value>> {
     state.lib.lock().unwrap().setting("ui").map_err(err)
 }
@@ -217,7 +222,7 @@ pub fn run() {
             app.manage(AppState { lib: Mutex::new(lib), store: Arc::new(secrets::KeyringStore::new(&app.config().identifier)), open, player: Player::spawn(), shield });
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status, load_settings, save_settings, shield_status, set_shield, restart_app])
+        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status, edit_playlist, load_settings, save_settings, shield_status, set_shield, restart_app])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

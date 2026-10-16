@@ -1,4 +1,4 @@
-import { Play, Waveform } from '@phosphor-icons/react'
+import { ArrowDown, ArrowUp, Play, Waveform, X } from '@phosphor-icons/react'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { useRef } from 'react'
 import { useSettings } from '../../app/settings'
@@ -8,22 +8,25 @@ import type { Column } from '../../shared/theme/theme'
 import { RoundButton } from '../../shared/ui/controls'
 import { Cover } from '../../shared/ui/Cover'
 import { SourceIcon } from '../../shared/ui/SourceIcon'
+import { useStore } from '../../app/store'
 import { usePlayer } from '../player/store'
+import { AddToPlaylist } from './AddToPlaylist'
 
 const ROW = { compact: 40, comfort: 52, airy: 64 }
 const order: Source[] = ['spotify', 'youtube', 'local']
 const width: Record<Column, string> = { album: 'minmax(0,220px)', sources: '76px', duration: '52px' }
 const head: Record<Column, string> = { album: 'Album', sources: 'Sources', duration: 'Durée' }
 
-/** Virtualized: only visible rows hit the DOM, so 50k tracks stay smooth. */
-export function TrackTable({ tracks, empty }: { tracks: LibraryTrack[]; empty: React.ReactNode }) {
+/** Virtualized: only visible rows hit the DOM, so 50k tracks stay smooth. editId = custom playlist shown unfiltered (positions = indexes). */
+export function TrackTable({ tracks, empty, editId }: { tracks: LibraryTrack[]; empty: React.ReactNode; editId?: number }) {
   const scroller = useRef<HTMLDivElement>(null)
   const { density, columns } = useSettings((s) => s.settings)
   const play = usePlayer((s) => s.playTracks)
+  const editPlaylist = useStore((s) => s.editPlaylist)
   const playingId = usePlayer((s) => s.now?.trackId)
   const row = ROW[density]
   const virtual = useVirtualizer({ count: tracks.length, getScrollElement: () => scroller.current, estimateSize: () => row, overscan: 12 })
-  const grid = { gridTemplateColumns: ['32px', 'minmax(0,1fr)', '36px', ...columns.map((c) => width[c])].join(' ') }
+  const grid = { gridTemplateColumns: ['32px', 'minmax(0,1fr)', editId ? '156px' : '68px', ...columns.map((c) => width[c])].join(' ') }
   const cover = density === 'compact' ? 28 : density === 'comfort' ? 36 : 46
 
   return (
@@ -64,9 +67,23 @@ export function TrackTable({ tracks, empty }: { tracks: LibraryTrack[]; empty: R
                     </span>
                     {density === 'compact' && <span className="truncate text-xs text-ink-2">{t.artist}</span>}
                   </span>
-                  <span className="flex justify-end">
+                  <span className="flex justify-end gap-0.5 opacity-0 group-hover:opacity-100 focus-within:opacity-100">
+                    {editId !== undefined && (
+                      <>
+                        <RoundButton label="Monter" kind="plain" size="xs" disabled={v.index === 0} onClick={() => editPlaylist({ type: 'move', id: editId, from: v.index, to: v.index - 1 })}>
+                          <ArrowUp size={13} />
+                        </RoundButton>
+                        <RoundButton label="Descendre" kind="plain" size="xs" disabled={v.index === tracks.length - 1} onClick={() => editPlaylist({ type: 'move', id: editId, from: v.index, to: v.index + 1 })}>
+                          <ArrowDown size={13} />
+                        </RoundButton>
+                        <RoundButton label="Retirer de la playlist" kind="plain" size="xs" onClick={() => editPlaylist({ type: 'remove', id: editId, position: v.index })}>
+                          <X size={13} />
+                        </RoundButton>
+                      </>
+                    )}
+                    <AddToPlaylist trackIds={[t.id]} label={`Ajouter ${t.title} à une playlist`} />
                     {playable && (
-                      <RoundButton label={`Lire ${t.title}`} kind="soft" size="xs" className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100" onClick={() => play(tracks, v.index)}>
+                      <RoundButton label={`Lire ${t.title}`} kind="soft" size="xs" onClick={() => play(tracks, v.index)}>
                         <Play weight="fill" size={11} />
                       </RoundButton>
                     )}

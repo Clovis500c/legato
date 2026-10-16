@@ -1,5 +1,5 @@
-import { Play } from '@phosphor-icons/react'
-import { useMemo } from 'react'
+import { Copy, Play, Trash } from '@phosphor-icons/react'
+import { useMemo, useState } from 'react'
 import { useStore } from '../../app/store'
 import type { LibraryTrack } from '../../shared/api'
 import { fold, formatCount } from '../../shared/format'
@@ -111,22 +111,62 @@ export function SongsView() {
   )
 }
 
+/** Click to rename (custom playlists). Saves on Enter / blur, Escape cancels. */
+function EditableTitle({ id, name }: { id: number; name: string }) {
+  const editPlaylist = useStore((s) => s.editPlaylist)
+  const [draft, setDraft] = useState<string | null>(null)
+  if (draft === null)
+    return (
+      <button onClick={() => setDraft(name)} title="Renommer" className="truncate text-left hover:underline hover:decoration-line">
+        {name}
+      </button>
+    )
+  const save = () => {
+    if (draft.trim() && draft.trim() !== name) void editPlaylist({ type: 'rename', id, name: draft })
+    setDraft(null)
+  }
+  return <input autoFocus value={draft} maxLength={100} aria-label="Nom de la playlist" onChange={(e) => setDraft(e.target.value)} onBlur={save} onKeyDown={(e) => (e.key === 'Enter' ? save() : e.key === 'Escape' && setDraft(null))} className="w-full bg-transparent outline-none" />
+}
+
 export function PlaylistView({ id }: { id: number }) {
-  const { playlists, playlistTracks, query } = useStore()
+  const { playlists, playlistTracks, query, editPlaylist, go } = useStore()
   const playlist = playlists.find((p) => p.id === id)
   const shown = useMemo(() => filterTracks(playlistTracks, query, 'all'), [playlistTracks, query])
   if (!playlist) return null
+  const duplicate = async () => {
+    const copy = await editPlaylist({ type: 'duplicate', id, name: `${playlist.name} (copie)` })
+    if (copy !== null) go({ name: 'playlist', id: copy })
+  }
   return (
     <>
       <PageHeader
         art={<Cover title={playlist.name} size={150} />}
-        kicker={`Playlist · ${sourceLabel[playlist.source]}`}
-        title={playlist.name}
+        kicker={playlist.custom ? 'Playlist perso' : `Playlist · ${sourceLabel[playlist.source]} · importée`}
+        title={playlist.custom ? <EditableTitle key={playlist.name} id={id} name={playlist.name} /> : playlist.name}
         sub={<span className="font-mono text-[11px] tracking-[0.06em] uppercase">{formatCount(playlist.trackCount)} titres · {totalTime(playlistTracks)}</span>}
-        actions={<PlayAll tracks={shown} />}
+        actions={
+          <>
+            <PlayAll tracks={shown} />
+            <RoundButton label={playlist.custom ? 'Dupliquer' : 'Dupliquer en playlist perso'} onClick={duplicate}>
+              <Copy size={16} />
+            </RoundButton>
+            {playlist.custom && (
+              <RoundButton
+                label="Supprimer la playlist"
+                onClick={async () => {
+                  if (!confirm(`Supprimer « ${playlist.name} » ? Les morceaux restent dans ta bibliothèque.`)) return
+                  await editPlaylist({ type: 'delete', id })
+                  go({ name: 'songs' })
+                }}
+              >
+                <Trash size={16} />
+              </RoundButton>
+            )}
+          </>
+        }
       />
       <Playability tracks={playlistTracks} />
-      <TrackTable tracks={shown} empty="Aucun morceau." />
+      <TrackTable tracks={shown} empty={playlist.custom ? 'Playlist vide : ajoute des morceaux depuis Morceaux, avec le bouton « Ajouter à une playlist ».' : 'Aucun morceau.'} editId={playlist.custom && !query ? id : undefined} />
     </>
   )
 }

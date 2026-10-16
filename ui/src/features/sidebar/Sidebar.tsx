@@ -1,4 +1,4 @@
-import { Gear, MagnifyingGlass, MicrophoneStage, MusicNotes, VinylRecord } from '@phosphor-icons/react'
+import { Gear, MagnifyingGlass, MicrophoneStage, MusicNotes, Playlist, Plus, VinylRecord } from '@phosphor-icons/react'
 import { useEffect, useMemo, useRef, type ReactNode } from 'react'
 import { useStore, type View } from '../../app/store'
 import { formatCount } from '../../shared/format'
@@ -33,7 +33,7 @@ function Logo() {
 }
 
 export function Sidebar() {
-  const { view, go, tracks, playlists, status, query, setQuery } = useStore()
+  const { view, go, tracks, playlists, status, query, setQuery, editPlaylist } = useStore()
   const counts = useMemo(() => ({ albums: groupAlbums(tracks).length, artists: groupArtists(tracks).length }), [tracks])
   const input = useRef<HTMLInputElement>(null)
   const is = (name: View['name']) => view.name === name
@@ -83,13 +83,20 @@ export function Sidebar() {
         <NavItem on={is('artists') || is('artist')} icon={<MicrophoneStage size={16} />} label="Artistes" count={counts.artists} onClick={() => go({ name: 'artists' })} />
       </Section>
 
-      {playlists.length > 0 && (
-        <Section title="Playlists">
-          {playlists.map((p) => (
-            <NavItem key={p.id} on={view.name === 'playlist' && view.id === p.id} icon={<SourceIcon source={p.source} size={14} />} label={p.name} count={p.trackCount} onClick={() => go({ name: 'playlist', id: p.id })} />
-          ))}
-        </Section>
-      )}
+      <Section title="Playlists">
+        {playlists.map((p) => (
+          <NavItem key={p.id} on={view.name === 'playlist' && view.id === p.id} icon={p.custom ? <Playlist size={15} /> : <SourceIcon source={p.source} size={14} />} label={p.name} count={p.trackCount} onClick={() => go({ name: 'playlist', id: p.id })} />
+        ))}
+        <NavItem
+          on={false}
+          icon={<Plus size={14} />}
+          label="Nouvelle playlist"
+          onClick={async () => {
+            const id = await editPlaylist({ type: 'create', name: 'Nouvelle playlist' })
+            if (id !== null) go({ name: 'playlist', id })
+          }}
+        />
+      </Section>
 
       <div className="flex-1" />
 
