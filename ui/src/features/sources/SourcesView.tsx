@@ -37,6 +37,33 @@ function ServiceRow({ service }: { service: 'spotify' }) {
   )
 }
 
+/** Prototype: Spotify's official web player in a window, signed in on Spotify's page (no keys). Library import: not yet. */
+function SpotifyWeb() {
+  const [on, setOn] = useState<boolean>()
+  useEffect(() => {
+    const check = () => void api.spotifyWebStatus().then(setOn, () => setOn(false))
+    check()
+    window.addEventListener('focus', check)
+    return () => window.removeEventListener('focus', check)
+  }, [])
+  return (
+    <div className="flex items-center gap-4 border-b border-line-soft px-4 py-3.5">
+      <Led on={!!on} />
+      <span className="grid size-9 place-items-center rounded-full border border-line text-ink-2">
+        <SourceIcon source="spotify" size={16} />
+      </span>
+      <div className="flex-1">
+        <p className="text-[13px] font-semibold">Spotify web player <span className="kicker">Preview</span></p>
+        <p className="text-xs text-ink-2">Spotify's own player in a window. Sign in on Spotify's page: no keys. Importing playlists this way isn't done yet.</p>
+      </div>
+      <span className="kicker">{on ? 'Signed in' : 'Not signed in'}</span>
+      <Button variant={on ? 'ghost' : undefined} onClick={() => api.spotifyWebOpen().catch((e) => useStore.setState({ error: String(e) }))}>
+        Open
+      </Button>
+    </div>
+  )
+}
+
 /** YouTube Music through a normal Google sign-in (like Pear Desktop): no keys. Several Google accounts / channels, pick which to sync. */
 function GoogleAccounts() {
   const refresh = useStore((s) => s.refresh)
@@ -212,6 +239,7 @@ export function SourcesView() {
       <p className="text-[13px] text-ink-2">Which account is connected to which service. Nothing goes through a server of ours: everything stays on your computer.</p>
       <div className="rounded-xl border border-line bg-raised">
         <GoogleAccounts />
+        <SpotifyWeb />
         <ServiceRow service="spotify" />
         <LocalFolders />
       </div>

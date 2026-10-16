@@ -2,6 +2,7 @@ mod art;
 mod secrets;
 #[cfg(windows)]
 mod shield;
+mod spotify_web;
 mod ytm;
 
 use music_connectors::oauth::Opener;
@@ -650,6 +651,17 @@ async fn ytm_sign_in(app: tauri::AppHandle, add: bool) -> CmdResult<()> {
     ytm::open(&app, add).map_err(err)
 }
 
+/// Spotify's official web player in an app window (prototype, no keys).
+#[tauri::command]
+async fn spotify_web_open(app: tauri::AppHandle) -> CmdResult<()> {
+    spotify_web::open(&app).map_err(err)
+}
+
+#[tauri::command]
+async fn spotify_web_status(app: tauri::AppHandle) -> bool {
+    spotify_web::signed_in(&app)
+}
+
 /// Signs every Google account out of the app; library kept.
 #[tauri::command]
 async fn ytm_sign_out(state: State<'_, AppState>) -> CmdResult<()> {
@@ -806,7 +818,7 @@ pub fn run() {
             app.manage(AppState { app: app.handle().clone(), lib: Mutex::new(lib), store: Arc::new(secrets::KeyringStore::new(&app.config().identifier)), open, player: Player::spawn(), shield, art: music_connectors::art::ArtCache::new(dir.join("art"), 300 << 20), yt_cache: Mutex::default(), nearby: Arc::new(Mutex::new(NearbyState::Idle)), nearby_task: Mutex::default() });
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, add_track, backfill_art, find_versions, play_preview, share_playlist, share_preview, share_read_image, share_import, nearby_send, nearby_status, nearby_stop, nearby_receive, record_play, mixes, set_track_pref, clear_history, export_youtube, spotify_player, spotify_playback, ytm_sign_in, ytm_sign_out, ytm_accounts, set_ytm_accounts, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, system_accent, restart_app])
+        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, add_track, backfill_art, find_versions, play_preview, share_playlist, share_preview, share_read_image, share_import, nearby_send, nearby_status, nearby_stop, nearby_receive, record_play, mixes, set_track_pref, clear_history, export_youtube, spotify_player, spotify_playback, ytm_sign_in, ytm_sign_out, spotify_web_open, spotify_web_status, ytm_accounts, set_ytm_accounts, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, system_accent, restart_app])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

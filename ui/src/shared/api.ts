@@ -204,6 +204,10 @@ export const api = {
   /** Opens music.youtube.com to sign in (no keys). */
   ytmSignIn: (add = false) => invoke<void>('ytm_sign_in', { add }),
   ytmSignOut: () => invoke<void>('ytm_sign_out'),
+  /** Spotify's own web player in an app window (prototype). */
+  spotifyWebOpen: () => invoke<void>('spotify_web_open'),
+  /** Signed in to the Spotify web player. */
+  spotifyWebStatus: () => invoke<boolean>('spotify_web_status'),
   /** Every account in the Google session + keys of those synced. */
   ytmAccounts: () => invoke<{ signedIn: boolean; accounts: YtmAccount[]; picked: string[] }>('ytm_accounts'),
   /** Synced accounts, in order (first = exports). */
