@@ -39,6 +39,10 @@ CREATE TABLE IF NOT EXISTS playlist_tracks (
   track_id INTEGER NOT NULL REFERENCES tracks(id),
   PRIMARY KEY (playlist_id, position)
 );
+CREATE TABLE IF NOT EXISTS settings (
+  key TEXT PRIMARY KEY,
+  value TEXT NOT NULL
+);
 ";
 
 const TRACK_COLS: &str = "t.id, t.title, t.artist, t.album, t.duration_ms, t.isrc";
@@ -206,6 +210,20 @@ impl Library {
         Ok(stmt.query_map([playlist_id], to_track)?.collect::<rusqlite::Result<_>>()?)
     }
 
+    /// JSON setting blob. Front owns schema and validates on load.
+    pub fn setting(&self, key: &str) -> Result<Option<serde_json::Value>> {
+        let raw: Option<String> = self.db.query_row("SELECT value FROM settings WHERE key = ?1", [key], |r| r.get(0)).optional()?;
+        Ok(raw.and_then(|s| serde_json::from_str(&s).ok()))
+    }
+
+    pub fn set_setting(&self, key: &str, value: &serde_json::Value) -> Result<()> {
+        self.db.execute(
+            "INSERT INTO settings (key, value) VALUES (?1, ?2) ON CONFLICT (key) DO UPDATE SET value = excluded.value",
+            params![key, value.to_string()],
+        )?;
+        Ok(())
+    }
+
     fn fill(&self, id: i64, album: Option<String>, duration_ms: Option<u32>, isrc: Option<String>) -> Result<()> {
         self.db.execute(
             "UPDATE tracks SET album = coalesce(album, ?1), duration_ms = coalesce(duration_ms, ?2), isrc = coalesce(isrc, ?3) WHERE id = ?4",
@@ -320,6 +338,16 @@ mod tests {
             lib.playlists()?,
             vec![LibraryPlaylist { id, source: Source::Spotify, source_id: "p1".into(), name: "New".into(), track_count: 1 }]
         );
+        Ok(())
+    }
+
+    #[test]
+    fn settings_roundtrip_and_overwrite() -> Result<()> {
+        let lib = Library::in_memory()?;
+        assert_eq!(lib.setting("ui")?, None);
+        lib.set_setting("ui", &serde_json::json!({ "theme": "papier" }))?;
+        lib.set_setting("ui", &serde_json::json!({ "theme": "graphite" }))?;
+        assert_eq!(lib.setting("ui")?, Some(serde_json::json!({ "theme": "graphite" })));
         Ok(())
     }
 

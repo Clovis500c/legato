@@ -33,6 +33,8 @@ pub struct Status {
     pub position_ms: u64,
     pub duration_ms: Option<u64>,
     pub paused: bool,
+    /// Next files in queue (max 50).
+    pub upcoming: Vec<PathBuf>,
     /// Last error, cleared once read.
     pub error: Option<String>,
 }
@@ -180,6 +182,7 @@ impl Engine {
             position_ms: self.player.as_ref().map_or(0, |p| p.get_pos().as_millis() as u64),
             duration_ms: path.as_ref().and(self.durations.front().copied().flatten()),
             paused: self.player.as_ref().is_none_or(|p| p.is_paused()),
+            upcoming: if path.is_some() { self.queue.upcoming().iter().take(50).cloned().collect() } else { Vec::new() },
             path,
             error: None,
         }

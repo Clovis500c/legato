@@ -18,6 +18,11 @@ impl Queue {
         self.items.get(self.pos)
     }
 
+    /// Items after current, for queue display.
+    pub fn upcoming(&self) -> &[PathBuf] {
+        self.items.get(self.pos + 1..).unwrap_or(&[])
+    }
+
     /// Items to append now: current on fresh start, next one as gapless preload.
     pub fn to_load(&mut self) -> Vec<PathBuf> {
         // Invariant: loaded <= want (sync shrinks loaded when pos moves).
@@ -87,6 +92,17 @@ mod tests {
         assert!(q.to_load().is_empty(), "last track: nothing to preload");
         assert_eq!(q.sync(0), 1);
         assert_eq!(q.current(), None);
+    }
+
+    #[test]
+    fn upcoming_follows_position() {
+        let mut q = q(3, 0);
+        assert_eq!(names(q.upcoming().to_vec()), ["1", "2"]);
+        q.jump(2);
+        assert!(q.upcoming().is_empty());
+        q.to_load();
+        q.sync(0);
+        assert!(q.upcoming().is_empty(), "past end: no panic");
     }
 
     #[test]

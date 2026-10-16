@@ -128,6 +128,20 @@ fn playlist_tracks(state: State<AppState>, id: i64) -> CmdResult<Vec<LibraryTrac
 }
 
 #[tauri::command]
+fn load_settings(state: State<AppState>) -> CmdResult<Option<serde_json::Value>> {
+    state.lib.lock().unwrap().setting("ui").map_err(err)
+}
+
+#[tauri::command]
+fn save_settings(state: State<AppState>, settings: serde_json::Value) -> CmdResult<()> {
+    // Trust boundary: object only, bounded size (custom themes included).
+    if !settings.is_object() || settings.to_string().len() > 256 * 1024 {
+        return Err("Réglages invalides".into());
+    }
+    state.lib.lock().unwrap().set_setting("ui", &settings).map_err(err)
+}
+
+#[tauri::command]
 fn player(state: State<AppState>, cmd: Command) {
     state.player.send(cmd)
 }
@@ -154,7 +168,7 @@ pub fn run() {
             });
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status])
+        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status, load_settings, save_settings])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
