@@ -41,6 +41,8 @@ A fast, lightweight desktop app (Tauri 2 + Rust), serverless: your data stays on
   - accent, font, cover shape, density, interface size, columns, covers in lists, one-click play, sidebar counts,
     start screen, animations, player options (readout, volume knob, tuner, cover tint, mini player).
 - **Shield**: ad and tracker blocking with Brave's engine (adblock-rust, EasyList and EasyPrivacy lists).
+- **Keyboard and media keys**: Space, Ctrl+arrows, Shift+arrows and more (Settings › Shortcuts); media keys and the
+  Windows media panel (volume flyout, lock screen) show the current track with its cover and control playback.
 - **Now Playing screen**: video or cover sized to the window, readout, tuner scale, input selector, volume knob, queue in play order.
 
 | Graphite theme | Theme editor | Add music |
@@ -128,8 +130,9 @@ Details in [docs/plan-v2.md](docs/plan-v2.md). Main steps:
   - personalized mixes;
   - YouTube export and Spotify Connect;
   - Windows theme and accent, cover art, one player for every source, right-click menus.
+  - keyboard shortcuts, media keys and the Windows media panel.
 - **Next**:
-  - polish (media keys, auto-updates).
+  - polish (tray icon, auto-updates, installer, performance).
 
 ## License
 

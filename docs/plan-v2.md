@@ -1,6 +1,6 @@
 # Music App v2: plan
 
-Status: **phases 1 to 5, 7 and 8 delivered** (2026-10-16): Hi-Fi redesign, themes, ad shield, custom playlists, local folders, add by YouTube link, Apple Music and YouTube search, one queue for every source with Apple previews, playlist sharing (link, QR, nearby code), local personalized mixes. Next: 6 (polish). Edit, strike or comment this file directly, or answer in the chat.
+Status: **phases 1 to 5, 7 and 8 delivered** (2026-10-16): Hi-Fi redesign, themes, ad shield, custom playlists, local folders, add by YouTube link, Apple Music and YouTube search, one queue for every source with Apple previews, playlist sharing (link, QR, nearby code), local personalized mixes. Phase 6 (polish) under way: shortcuts and media keys done. Edit, strike or comment this file directly, or answer in the chat.
 Mockups: Figma, file "Bow Game / Music App", page **"Music App v3 — Hi-Fi"**. The v2 "Apple" page is abandoned.
 
 ## 0. Your decisions (to fill in)
@@ -143,13 +143,17 @@ Original plan:
 - Check live (built and unit-tested, not driven in the real app yet): repeat one / repeat all at a track's end, play next
   and add to queue, menu actions that write (rename, delete, export, remove from playlist), one-click play, start screen,
   local file covers (no music folder on the dev PC), Apple cover backfill (no Apple tracks), Spotify covers.
-- Small fixes: window background color is Paper (light flash before a dark theme loads); a gapless local run already
-  queued keeps list order when shuffle is turned on mid-run; 1,731 YouTube videos keep a video frame as cover.
+- Small fixes: 1,731 YouTube videos keep a video frame as cover. Done 2026-10-16 (second session): no light flash
+  before a dark theme (window background from the saved theme, theme cached for the first paint); shuffle or repeat one
+  turned on mid gapless run takes effect at once (engine `truncate`).
 - Older open items: playlist trackCount vs rows (Workout Mix), "Music App export test" playlist on YouTube Music (ask
   before deleting), add-another-Google-account and sign-out untested live, Figma mockups still in French.
 
-**Phase 6: polish** (M)
-- Keyboard shortcuts, media keys and the Windows media panel (`souvlaki` crate), tray icon. (Mini player: done.)
+**Phase 6: polish** (M) — started 2026-10-16
+- Done: keyboard shortcuts (Settings › Shortcuts), media keys and the Windows media panel (title, artist, album, cover),
+  written on the `windows` crate (SMTC) instead of `souvlaki` (would add an older `windows` version). Checked live: panel
+  metadata and cover, play from the Windows session, Space, Ctrl+,, Alt+←. Mini player: done.
+- Not done: tray icon, position / seek bar in the Windows panel (timeline), media panel off Windows.
 - Auto-updates (`tauri-plugin-updater`, requires signing the app), installer, performance (50,000 tracks), accessibility (AA contrast, keyboard navigation).
 
 **Phase 7: share a playlist from one Music App to another, serverless** (L) — done, with these changes to the plan below:

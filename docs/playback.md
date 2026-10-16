@@ -26,6 +26,17 @@ Status on 2026-10-16. YouTube, local files and Apple Music previews: done and te
 - Mini player: a card above the bar. For YouTube it is always shown (the video must stay visible): the iframe sits in the
   card's video slot, our controls below it, never on top. For other sources it's optional (Settings › Player).
 
+## Media keys and the Windows media panel (2026-10-16)
+
+- `src-tauri/src/media.rs`: SystemMediaTransportControls of the main window (`ISystemMediaTransportControlsInterop`),
+  written on the `windows` crate already in use. One session for every source (YouTube, local, previews, Spotify).
+- UI → `media_update` (`features/player/media.ts`, on track or play state change): title, artist, album, cover. Same
+  track again = play state only. Cover bytes come from the art cache or the local file's tags, handed to Windows as an
+  in-memory stream (Windows fetches nothing).
+- Buttons and media keys → `media-key` event → store (`play` / `pause` only act if they change something; `stop` pauses).
+- Checked live with a preview: Windows' session list shows title, artist, album and cover; play from the session
+  resumes the app. Not done: timeline (position) in the panel.
+
 ## Cover art
 
 - `tracks.art` holds an https URL; local files' covers are read from their tags on demand (`local::picture`).
