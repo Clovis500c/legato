@@ -113,7 +113,7 @@ function Stage({ video, cover, track, title }: { video: boolean; cover: boolean;
 }
 
 /** Blurred cover layers: each new one fades in over the last, which goes once covered. Veil in the theme's color keeps text readable. */
-function Backdrop({ url }: { url?: string }) {
+function Backdrop({ url, dim, motion }: { url?: string; dim: number; motion: boolean }) {
   const [layers, setLayers] = useState<string[]>([])
   useEffect(() => {
     if (!url) return
@@ -125,9 +125,9 @@ function Backdrop({ url }: { url?: string }) {
   return (
     <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
       {layers.map((u) => (
-        <div key={u} className="backdrop-layer absolute -inset-[10%] bg-cover bg-center" style={{ backgroundImage: `url(${u})` }} />
+        <div key={u} className={`backdrop-layer absolute -inset-[10%] bg-cover bg-center ${motion ? '' : '[animation-name:fade-in]!'}`} style={{ backgroundImage: `url(${u})` }} />
       ))}
-      <div className="absolute inset-0 bg-[color-mix(in_srgb,var(--bg)_58%,transparent)]" />
+      <div className="absolute inset-0" style={{ background: `color-mix(in srgb, var(--bg) ${dim}%, transparent)` }} />
       <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-[color-mix(in_srgb,var(--bg)_70%,transparent)] to-transparent" />
     </div>
   )
@@ -135,7 +135,7 @@ function Backdrop({ url }: { url?: string }) {
 
 export function NowPlaying() {
   const { now, positionMs, durationMs, seek, setFull, list, index, order, upcoming, playAt } = usePlayer()
-  const { tuner, tint, immersive, stage, upNext, volume: volumeMode } = useSettings((s) => s.settings)
+  const { tuner, tint, immersive, backdropBlur, backdropDim, backdropMotion, stage, upNext, volume: volumeMode } = useSettings((s) => s.settings)
   const update = useSettings((s) => s.update)
   // Re-rendered by the settings subscription above.
   const theme = useSettings.getState().current()
@@ -144,7 +144,7 @@ export function NowPlaying() {
   const ambient = useAmbient(tint && !immersive && track ? trackArt(track)[0] : undefined, theme)
   // Auto: a still-image upload shows as a cover.
   const still = useStill(now?.via === 'youtube' ? now.youtubeId : undefined)
-  const backdrop = useBackdrop(immersive && track ? trackArt(track)[0] : undefined)
+  const backdrop = useBackdrop(immersive && track ? trackArt(track)[0] : undefined, backdropBlur)
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setFull(false)
@@ -203,7 +203,7 @@ export function NowPlaying() {
   return (
     // Below the app's title bar: navigation, window buttons and "Close player" stay reachable.
     <div role="dialog" aria-label="Now playing" onContextMenu={onMenu(playerMenu)} className="fixed inset-x-0 top-13 bottom-0 z-20 isolate flex flex-col overflow-hidden border-t border-line-soft bg-bg px-10 pt-4 pb-7 text-ink transition-colors duration-500" style={ambient}>
-      {immersive && <Backdrop url={backdrop} />}
+      {immersive && <Backdrop url={backdrop} dim={backdropDim} motion={backdropMotion} />}
       {!upNext && (
         <Button variant="ghost" className="absolute top-4 right-10 z-10" onClick={() => update({ upNext: true })}>
           <CaretLeft size={13} /> Up next · {next.length}

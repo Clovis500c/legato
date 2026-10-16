@@ -78,6 +78,10 @@ export interface Settings {
   tint: boolean
   /** Now Playing over the song's cover, big and blurred (tint used when off). */
   immersive: boolean
+  /** Immersive background: blur in screen px (0–80), veil strength % (0–80), slow drift. */
+  backdropBlur: number
+  backdropDim: number
+  backdropMotion: boolean
   /** 'theme' = the theme's own font. */
   font: 'theme' | Font
   /** Transitions and animations. */
@@ -108,6 +112,8 @@ export interface Settings {
   upNext: boolean
   /** Pick up the last track where it stopped when the app opens. */
   resume: boolean
+  /** Open on the screen the app was closed on, Now Playing included (startView when off). */
+  reopen: boolean
   defaultsVersion: number
 }
 
@@ -126,6 +132,9 @@ export const DEFAULTS: Settings = {
   miniPlayer: false,
   tint: true,
   immersive: true,
+  backdropBlur: 24,
+  backdropDim: 40,
+  backdropMotion: true,
   font: 'theme',
   motion: true,
   sidebarCounts: true,
@@ -142,6 +151,7 @@ export const DEFAULTS: Settings = {
   playlistCovers: {},
   upNext: true,
   resume: true,
+  reopen: true,
   defaultsVersion: DEFAULTS_VERSION,
 }
 
@@ -152,6 +162,7 @@ const V3: Partial<Settings> = { stage: 'auto' }
 
 const HEX = /^#[0-9a-f]{6}$/i
 const isHex = (v: unknown): v is string => typeof v === 'string' && HEX.test(v)
+const num = (v: unknown, min: number, max: number, fallback: number) => (typeof v === 'number' && Number.isFinite(v) ? Math.min(max, Math.max(min, Math.round(v))) : fallback)
 const pick = <T,>(v: unknown, allowed: readonly T[], fallback: T): T => (allowed.includes(v as T) ? (v as T) : fallback)
 
 /** Trust boundary (file import, stored JSON): full palette or nothing. */
@@ -189,6 +200,9 @@ export function sanitize(raw: unknown): Settings {
     miniPlayer: typeof r.miniPlayer === 'boolean' ? r.miniPlayer : DEFAULTS.miniPlayer,
     tint: typeof r.tint === 'boolean' ? r.tint : DEFAULTS.tint,
     immersive: typeof r.immersive === 'boolean' ? r.immersive : DEFAULTS.immersive,
+    backdropBlur: num(r.backdropBlur, 0, 80, DEFAULTS.backdropBlur),
+    backdropDim: num(r.backdropDim, 0, 80, DEFAULTS.backdropDim),
+    backdropMotion: typeof r.backdropMotion === 'boolean' ? r.backdropMotion : DEFAULTS.backdropMotion,
     font: pick(r.font, ['theme', ...FONTS] as const, DEFAULTS.font),
     motion: typeof r.motion === 'boolean' ? r.motion : DEFAULTS.motion,
     sidebarCounts: typeof r.sidebarCounts === 'boolean' ? r.sidebarCounts : DEFAULTS.sidebarCounts,
@@ -205,6 +219,7 @@ export function sanitize(raw: unknown): Settings {
     playlistCovers: sanitizeCovers(r.playlistCovers),
     upNext: typeof r.upNext === 'boolean' ? r.upNext : DEFAULTS.upNext,
     resume: typeof r.resume === 'boolean' ? r.resume : DEFAULTS.resume,
+    reopen: typeof r.reopen === 'boolean' ? r.reopen : DEFAULTS.reopen,
     defaultsVersion: DEFAULTS_VERSION,
     // Saved before the defaults changed: take the new ones once.
     ...(saved < 2 ? V2 : {}),

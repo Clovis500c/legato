@@ -856,6 +856,12 @@ fn save_settings(state: State<AppState>, settings: serde_json::Value) -> CmdResu
     state.lib.lock().unwrap().set_setting("ui", &settings).map_err(err)
 }
 
+/// Track id → [listens, last start (unix s)]: Most played / Recently played sorts.
+#[tauri::command]
+fn play_stats(state: State<AppState>) -> CmdResult<HashMap<i64, (u32, i64)>> {
+    state.lib.lock().unwrap().play_stats().map_err(err)
+}
+
 /// Track ids of every playlist in order: covers (first song, grid of 4) are picked from them.
 #[tauri::command]
 fn playlist_orders(state: State<AppState>) -> CmdResult<HashMap<i64, Vec<i64>>> {
@@ -1043,7 +1049,7 @@ pub fn run() {
             app.manage(AppState { app: app.handle().clone(), lib: Mutex::new(lib), store: Arc::new(secrets::KeyringStore::new(&app.config().identifier)), open, player: Player::spawn(), shield, art: music_connectors::art::ArtCache::new(dir.join("art"), 300 << 20), yt_cache: Mutex::default(), nearby: Arc::new(Mutex::new(NearbyState::Idle)), nearby_task: Mutex::default(), media, media_last: Mutex::default(), tray });
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, add_track, backfill_art, find_versions, play_preview, share_playlist, share_preview, share_read_image, share_import, nearby_send, nearby_status, nearby_stop, nearby_receive, record_play, mixes, set_track_pref, clear_history, export_youtube, spotify_player, spotify_playback, ytm_sign_in, ytm_sign_out, spotify_web_open, spotify_web_status, import_spotify_link, ytm_accounts, set_ytm_accounts, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, system_accent, restart_app, media_update, load_session, save_session, add_to_youtube, playlist_orders, save_cover, alternative_videos])
+        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, add_track, backfill_art, find_versions, play_preview, share_playlist, share_preview, share_read_image, share_import, nearby_send, nearby_status, nearby_stop, nearby_receive, record_play, mixes, set_track_pref, clear_history, export_youtube, spotify_player, spotify_playback, ytm_sign_in, ytm_sign_out, spotify_web_open, spotify_web_status, import_spotify_link, ytm_accounts, set_ytm_accounts, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, system_accent, restart_app, media_update, load_session, save_session, add_to_youtube, playlist_orders, save_cover, alternative_videos, play_stats])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

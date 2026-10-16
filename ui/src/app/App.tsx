@@ -20,6 +20,7 @@ import { region, spotifyList, timeAgo } from '../shared/format'
 import { ContextMenuHost } from '../shared/ui/ContextMenu'
 import { RoundButton } from '../shared/ui/controls'
 import { useSettings } from './settings'
+import { restoreScreen, startScreenSaving } from './screen'
 import { startShortcuts } from './shortcuts'
 import { useStore } from './store'
 
@@ -115,6 +116,7 @@ export function App() {
     // Settings and library both needed: resume flag, and the saved queue's tracks.
     void Promise.all([settings, library])
       .then(() => resumeSession(useSettings.getState().settings.resume))
+      .then(() => useSettings.getState().settings.reopen && restoreScreen())
       .catch(() => {})
     void library
       .then(() => api.backfillArt(region()))
@@ -122,6 +124,7 @@ export function App() {
       .catch(() => {})
   }, [refresh])
   useEffect(() => startSessionSaving(), [])
+  useEffect(() => startScreenSaving(), [])
   useEffect(() => startMedia(), [])
   useEffect(() => startShortcuts(), [])
 

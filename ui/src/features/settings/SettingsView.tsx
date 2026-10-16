@@ -211,7 +211,7 @@ function Appearance() {
           <Row label="Counts in the sidebar" sub="Number of songs next to each entry">
             <Toggle label="Counts in the sidebar" checked={s.sidebarCounts} onChange={(sidebarCounts) => update({ sidebarCounts })} />
           </Row>
-          <Row label="Open on" sub="Screen shown when the app starts">
+          <Row label="Open on" sub={s.reopen ? 'Used when “Reopen where you left off” is off (Advanced)' : 'Screen shown when the app starts'}>
             <Segmented label="Open on" value={s.startView} onChange={(startView) => update({ startView })} options={[{ value: 'songs', label: 'Songs' }, { value: 'mixes', label: 'Mixes' }, { value: 'albums', label: 'Albums' }, { value: 'artists', label: 'Artists' }]} />
           </Row>
           <Row label="Animations" sub="Transitions and fades">
@@ -444,11 +444,32 @@ function ShortcutsSection() {
   )
 }
 
+/** Plain 0..max slider in the settings style. */
+function Slider({ label, value, max, onChange }: { label: string; value: number; max: number; onChange: (v: number) => void }) {
+  return <input type="range" aria-label={label} min={0} max={max} step={1} value={value} onChange={(e) => onChange(+e.target.value)} className="bar w-40" style={{ backgroundImage: `linear-gradient(to right, var(--ink) ${(value / max) * 100}%, var(--line) 0)` }} />
+}
+
 function AdvancedSection() {
   const { settings: s, update } = useSettings()
   return (
     <div className="flex max-w-190 flex-col gap-6">
+      <Group title="Immersive player">
+        <div className="rounded-xl border border-line bg-raised">
+          <Row label="Background blur" sub={s.backdropBlur ? `${s.backdropBlur} px` : 'Sharp'}>
+            <Slider label="Background blur" value={s.backdropBlur} max={80} onChange={(backdropBlur) => update({ backdropBlur })} />
+          </Row>
+          <Row label="Background dimming" sub={`${s.backdropDim} %: veil in the theme's color, keeps text readable`}>
+            <Slider label="Background dimming" value={s.backdropDim} max={80} onChange={(backdropDim) => update({ backdropDim })} />
+          </Row>
+          <Row label="Background motion" sub="The cover drifts slowly behind the player">
+            <Toggle label="Background motion" checked={s.backdropMotion} onChange={(backdropMotion) => update({ backdropMotion })} />
+          </Row>
+        </div>
+      </Group>
       <div className="rounded-xl border border-line bg-raised">
+        <Row label="Reopen where you left off" sub="Same screen as when the app closed, Now Playing open if it was">
+          <Toggle label="Reopen where you left off" checked={s.reopen} onChange={(reopen) => update({ reopen })} />
+        </Row>
         <Row label="Resume playback on launch" sub="The last song picks up where it stopped, with its queue, when the app opens">
           <Toggle label="Resume playback on launch" checked={s.resume} onChange={(resume) => update({ resume })} />
         </Row>
