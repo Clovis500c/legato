@@ -3,9 +3,10 @@ import { getCurrentWebview } from '@tauri-apps/api/webview'
 import { useEffect, useRef, useState } from 'react'
 import { useSettings } from '../../app/settings'
 import { useStore } from '../../app/store'
-import { api } from '../../shared/api'
+import { api, type Source } from '../../shared/api'
 import { formatDuration } from '../../shared/format'
-import { Bar, Knob, Readout, RoundButton } from '../../shared/ui/controls'
+import { Bar, Knob, RoundButton } from '../../shared/ui/controls'
+import { SourceIcon } from '../../shared/ui/SourceIcon'
 import { SeekBar, TimeText } from './Progress'
 import { Transport } from './Transport'
 import { onMenu } from '../../shared/ui/ContextMenu'
@@ -18,6 +19,14 @@ import { embedUrl, parseYt, ytPost } from './youtube'
 const AUDIO = /\.(mp3|flac|wav|ogg|m4a|aac)$/i
 export const clock = (ms: number | null) => formatDuration(ms) || '0:00'
 export const fileFormat = (path?: string) => path?.split('.').pop()?.toUpperCase()
+
+// Source of what plays: icon only, details in its tooltip. Previews come from Apple Music.
+const viaSource: Record<string, Source> = { local: 'local', youtube: 'youtube', spotify: 'spotify', preview: 'apple' }
+function viaTitle(via: string, path?: string) {
+  if (via === 'local') return `Playing a local file${path ? ` · ${fileFormat(path)}` : ''}`
+  if (via === 'preview') return 'Playing a 30-second Apple Music preview'
+  return `Playing from ${via === 'youtube' ? 'YouTube' : 'Spotify'}`
+}
 
 /**
  * YouTube rules: player stays visible, min 200×200. Follows the Now Playing slot when open. One embed for a whole run
@@ -177,7 +186,11 @@ export function PlayerBar() {
       </div>
 
       <div className="flex w-85 items-center justify-end gap-3.5">
-        {readout && now && <Readout detail={now.via === 'local' ? fileFormat(now.path) : now.via === 'preview' ? '30 S' : undefined}>{{ local: 'Local', youtube: 'YouTube', spotify: 'Spotify', preview: 'Preview' }[now.via]}</Readout>}
+        {readout && now && (
+          <span title={viaTitle(now.via, now.path)} className="grid size-8 shrink-0 place-items-center text-ink-2">
+            <SourceIcon source={viaSource[now.via]} size={17} />
+          </span>
+        )}
         <VolumeControl />
         <RoundButton label="Now playing, full screen" disabled={!now} onClick={() => setFull(true)}>
           <ArrowsOutSimple size={15} />

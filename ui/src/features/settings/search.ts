@@ -15,7 +15,7 @@ export const SETTINGS_INDEX: SettingEntry[] = [
   { section: 'appearance', label: 'Covers', keywords: 'cover shape round vinyl sharp artwork' },
   { section: 'appearance', label: 'List density', keywords: 'compact rows spacing' },
   { section: 'appearance', label: 'Interface size', keywords: 'zoom scale bigger smaller' },
-  { section: 'appearance', label: 'Readout', keywords: 'source format display' },
+  { section: 'appearance', label: 'Source icon', keywords: 'readout source format youtube local display' },
   { section: 'appearance', label: 'Volume control', keywords: 'knob bar slider sound' },
   { section: 'appearance', label: 'Fade between songs', keywords: 'crossfade transition fade out in' },
   { section: 'appearance', label: 'Tuner scale', keywords: 'progress bar seek' },

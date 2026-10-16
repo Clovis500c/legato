@@ -177,8 +177,8 @@ function Appearance() {
       <InterfaceSize />
       <Group title="Player">
         <div className="rounded-xl border border-line bg-raised">
-          <Row label="Readout" sub="Source and format next to the volume">
-            <Toggle label="Readout" checked={s.readout} onChange={(readout) => update({ readout })} />
+          <Row label="Source icon" sub="Where the song plays from, next to the volume">
+            <Toggle label="Source icon" checked={s.readout} onChange={(readout) => update({ readout })} />
           </Row>
           <Row label="Volume control">
             <Segmented label="Volume control" value={s.volume} onChange={(volume) => update({ volume })} options={[{ value: 'knob', label: 'Knob' }, { value: 'bar', label: 'Bar' }]} />

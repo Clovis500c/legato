@@ -8,6 +8,15 @@ interface Screen {
 }
 
 const KEY = 'screen'
+
+// Read once at import, before anything saves: the start screen applied on settings load used to overwrite it.
+const atLaunch: unknown = (() => {
+  try {
+    return JSON.parse(localStorage.getItem(KEY) ?? 'null')
+  } catch {
+    return null
+  }
+})()
 const VIEWS = ['add', 'addons', 'mixes', 'mix', 'songs', 'albums', 'album', 'artists', 'artist', 'playlist', 'settings'] as const
 
 /** Stored screen → view still valid today (playlist deleted since: no). */
@@ -27,12 +36,7 @@ export function validScreen(raw: unknown, playlistIds: number[]): Screen | null 
 
 /** After launch (settings, library and resume done): same screen, Now Playing open if it was. */
 export function restoreScreen() {
-  let saved: Screen | null = null
-  try {
-    saved = validScreen(JSON.parse(localStorage.getItem(KEY) ?? 'null'), useStore.getState().playlists.map((p) => p.id))
-  } catch {
-    return
-  }
+  const saved = validScreen(atLaunch, useStore.getState().playlists.map((p) => p.id))
   if (!saved) return
   useStore.getState().go(saved.view)
   useStore.setState({ back: [] })
