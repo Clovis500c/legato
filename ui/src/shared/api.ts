@@ -106,6 +106,22 @@ export interface SharePreview {
   known: number
 }
 
+/** crates/core history::Play. startedAt = unix seconds. */
+export interface Play {
+  trackId: number
+  startedAt: number
+  listenedMs: number
+  completed: boolean
+}
+
+/** crates/core mixes::Mix. */
+export interface Mix {
+  id: string
+  title: string
+  reason: string
+  trackIds: number[]
+}
+
 /** src-tauri NearbyState. */
 export type NearbyState = { state: 'idle' } | { state: 'waiting'; code: string } | { state: 'sent' } | { state: 'failed'; error: string }
 
@@ -141,6 +157,12 @@ export const api = {
   nearbyStop: () => invoke<void>('nearby_stop'),
   /** Finds the sender on the network; returns a share link for the import dialog. */
   nearbyReceive: (code: string) => invoke<string>('nearby_receive', { code }),
+  recordPlay: (play: Play) => invoke<void>('record_play', { play }),
+  /** Today's mixes, from local history and custom playlists. */
+  mixes: () => invoke<Mix[]>('mixes', { utcOffset: -new Date().getTimezoneOffset() * 60 }),
+  /** less = ranked lower in mixes, never = left out, null = back to normal. */
+  setTrackPref: (trackId: number, pref: 'less' | 'never' | null) => invoke<void>('set_track_pref', { trackId, pref }),
+  clearHistory: () => invoke<void>('clear_history'),
   localFolders: () => invoke<string[]>('local_folders'),
   /** Saves folders, rescans. Returns local file count. */
   setLocalFolders: (folders: string[]) => invoke<number>('set_local_folders', { folders }),

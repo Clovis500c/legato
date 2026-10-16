@@ -2,6 +2,7 @@ import { ArrowsClockwise, CaretLeft, CaretRight, CheckCircle, Minus, Square, War
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { useEffect } from 'react'
 import { AddView } from '../features/add/AddView'
+import { MixesView, MixView } from '../features/mixes/MixesView'
 import { AlbumsView, AlbumView, ArtistsView, ArtistView, PlaylistView, SongsView } from '../features/library/LibraryView'
 import { NowPlaying } from '../features/player/NowPlaying'
 import { PlayerBar } from '../features/player/PlayerBar'
@@ -121,6 +122,8 @@ export function App() {
           <Alerts />
           <div className="flex min-h-0 flex-1 flex-col px-10">
             {view.name === 'add' && <AddView />}
+            {view.name === 'mixes' && <MixesView />}
+            {view.name === 'mix' && <MixView id={view.id} />}
             {view.name === 'songs' && <SongsView />}
             {view.name === 'albums' && <AlbumsView />}
             {view.name === 'album' && <AlbumView album={view.album} artist={view.artist} />}

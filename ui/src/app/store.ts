@@ -6,6 +6,8 @@ export type SettingsSection = 'appearance' | 'themes' | 'sources' | 'shield'
 
 export type View =
   | { name: 'add' }
+  | { name: 'mixes' }
+  | { name: 'mix'; id: string }
   | { name: 'songs' }
   | { name: 'albums' }
   | { name: 'album'; album: string; artist: string }

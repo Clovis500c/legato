@@ -1,4 +1,4 @@
-import { Gear, MagnifyingGlass, MicrophoneStage, MusicNotes, Playlist, Plus, PlusCircle, VinylRecord } from '@phosphor-icons/react'
+import { Disc, Gear, MagnifyingGlass, MicrophoneStage, MusicNotes, Playlist, Plus, PlusCircle, VinylRecord } from '@phosphor-icons/react'
 import { useEffect, useMemo, useRef, type ReactNode } from 'react'
 import { useStore, type View } from '../../app/store'
 import { formatCount } from '../../shared/format'
@@ -78,7 +78,10 @@ export function Sidebar() {
         <kbd className="font-mono text-[9px] tracking-[0.06em] text-ink-3">CTRL K</kbd>
       </label>
 
-      <NavItem on={is('add')} icon={<PlusCircle size={16} />} label="Add music" onClick={() => go({ name: 'add' })} />
+      <div className="flex flex-col gap-px">
+        <NavItem on={is('mixes') || is('mix')} icon={<Disc size={16} />} label="Mixes" onClick={() => go({ name: 'mixes' })} />
+        <NavItem on={is('add')} icon={<PlusCircle size={16} />} label="Add music" onClick={() => go({ name: 'add' })} />
+      </div>
 
       <Section title="Library">
         <NavItem on={is('songs')} icon={<MusicNotes size={16} />} label="Songs" count={tracks.length} onClick={() => go({ name: 'songs' })} />

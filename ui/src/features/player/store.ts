@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { useStore } from '../../app/store'
 import { api, type LibraryTrack, type PlayerCommand, type PlayerStatus } from '../../shared/api'
 import { region } from '../../shared/format'
+import { endListen, progress, startListen } from './listens'
 import { vias, type Via } from './sources'
 import { ytPost, type YtUpdate } from './youtube'
 
@@ -84,6 +85,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     const how = via ?? (t && vias(t)[0])
     if (!t || !how || !vias(t).includes(how)) return
     const mine = ++seq
+    startListen(t.id, t.durationMs)
     const base: NowPlaying = { title: t.title, artist: t.artist, trackId: t.id, via: how }
     set({ index, playing: true, positionMs: 0, durationMs: t.durationMs, upcoming: [] })
 
@@ -124,6 +126,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
 
   playFiles(paths) {
     seq++
+    startListen(undefined, null)
     expect = paths
     send({ type: 'play', paths, start: 0 })
     send({ type: 'volume', value: get().volume })
@@ -170,7 +173,11 @@ export const usePlayer = create<PlayerState>((set, get) => ({
       ...(u.time !== undefined && { positionMs: u.time * 1000 }),
       ...(u.duration && { durationMs: u.duration * 1000 }),
     })
-    if (u.state === 0) get().step(1)
+    if (u.time !== undefined) progress(u.time * 1000, u.duration && u.duration * 1000)
+    if (u.state === 0) {
+      endListen(true)
+      get().step(1)
+    }
   },
 
   onLocal(s) {
@@ -183,11 +190,17 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     }
     if (s.ended) {
       expect = []
+      endListen(true)
       return get().step(1)
     }
     const { list, index, now } = get()
     // Gapless run moved on: follow it in the queue.
     const i = s.path && now?.trackId ? list.findIndex((t, j) => j >= index && t.ids.local === s.path) : -1
+    if (i > index) {
+      endListen(true)
+      startListen(list[i].id, s.durationMs)
+    }
+    if (s.path) progress(s.positionMs, s.durationMs)
     set({
       playing: !!s.path && !s.paused,
       positionMs: s.positionMs,

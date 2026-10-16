@@ -5,7 +5,9 @@ mod shield;
 use music_connectors::oauth::Opener;
 use music_connectors::spotify::Spotify;
 use music_connectors::youtube::YouTube;
+use music_core::history::{Play, Pref};
 use music_core::library::{Library, LibraryPlaylist, LibraryTrack, PlaylistEdit};
+use music_core::mixes::Mix;
 use music_core::matching::{merge_tracks, same_track};
 use music_core::model::{Connector, SecretStore, Source, Track};
 use music_core::share::{self, Item, Shared};
@@ -526,6 +528,42 @@ async fn share_import(state: State<'_, AppState>, code: String, country: String)
     Ok(ImportReport { playlist_id, added: found.len(), missing: ids.len() - found.len() })
 }
 
+fn unix_now() -> i64 {
+    std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map_or(0, |d| d.as_secs() as i64)
+}
+
+#[tauri::command]
+fn record_play(state: State<AppState>, play: Play) -> CmdResult<()> {
+    // Trust boundary: plausible times only (no future plays skewing scores).
+    let now = unix_now();
+    if !(0..=now + 60).contains(&play.started_at) || play.listened_ms > 24 * 3600 * 1000 {
+        return Err("Invalid play".into());
+    }
+    state.lib.lock().unwrap().record_play(&play).map_err(err)
+}
+
+/// Mixes for today. `utc_offset` = local minus UTC, seconds (from the UI clock).
+#[tauri::command]
+fn mixes(state: State<AppState>, utc_offset: i64) -> CmdResult<Vec<Mix>> {
+    let lib = state.lib.lock().unwrap();
+    let (tracks, plays, playlists, prefs) = (lib.tracks().map_err(err)?, lib.plays().map_err(err)?, lib.custom_playlists().map_err(err)?, lib.prefs().map_err(err)?);
+    drop(lib);
+    let now = unix_now();
+    let input = music_core::mixes::Input { tracks: &tracks, plays: &plays, playlists: &playlists, prefs: &prefs, now, utc_offset: utc_offset.clamp(-14 * 3600, 14 * 3600), seed: today() };
+    Ok(music_core::mixes::mixes(&input))
+}
+
+/// None clears it.
+#[tauri::command]
+fn set_track_pref(state: State<AppState>, track_id: i64, pref: Option<Pref>) -> CmdResult<()> {
+    state.lib.lock().unwrap().set_pref(track_id, pref).map_err(err)
+}
+
+#[tauri::command]
+fn clear_history(state: State<AppState>) -> CmdResult<()> {
+    state.lib.lock().unwrap().clear_history().map_err(err)
+}
+
 #[tauri::command]
 fn edit_playlist(state: State<AppState>, edit: PlaylistEdit) -> CmdResult<Option<i64>> {
     state.lib.lock().unwrap().edit_playlist(edit).map_err(err)
@@ -617,7 +655,7 @@ pub fn run() {
             app.manage(AppState { lib: Mutex::new(lib), store: Arc::new(secrets::KeyringStore::new(&app.config().identifier)), open, player: Player::spawn(), shield, yt_cache: Mutex::default(), nearby: Arc::new(Mutex::new(NearbyState::Idle)), nearby_task: Mutex::default() });
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, add_track, find_versions, play_preview, share_playlist, share_preview, share_read_image, share_import, nearby_send, nearby_status, nearby_stop, nearby_receive, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, restart_app])
+        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, add_track, find_versions, play_preview, share_playlist, share_preview, share_read_image, share_import, nearby_send, nearby_status, nearby_stop, nearby_receive, record_play, mixes, set_track_pref, clear_history, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, restart_app])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

@@ -18,8 +18,8 @@ const order: Source[] = ['spotify', 'youtube', 'apple', 'local']
 const width: Record<Column, string> = { album: 'minmax(0,220px)', sources: '76px', duration: '52px' }
 const head: Record<Column, string> = { album: 'Album', sources: 'Sources', duration: 'Duration' }
 
-/** Virtualized: only visible rows hit the DOM, so 50k tracks stay smooth. editId = custom playlist shown unfiltered (positions = indexes). */
-export function TrackTable({ tracks, empty, editId }: { tracks: LibraryTrack[]; empty: React.ReactNode; editId?: number }) {
+/** Virtualized: only visible rows hit the DOM, so 50k tracks stay smooth. editId = custom playlist shown unfiltered (positions = indexes). rowActions = extra hover buttons. */
+export function TrackTable({ tracks, empty, editId, rowActions }: { tracks: LibraryTrack[]; empty: React.ReactNode; editId?: number; rowActions?: (t: LibraryTrack) => React.ReactNode }) {
   const scroller = useRef<HTMLDivElement>(null)
   const { density, columns } = useSettings((s) => s.settings)
   const play = usePlayer((s) => s.playTracks)
@@ -27,7 +27,7 @@ export function TrackTable({ tracks, empty, editId }: { tracks: LibraryTrack[]; 
   const playingId = usePlayer((s) => s.now?.trackId)
   const row = ROW[density]
   const virtual = useVirtualizer({ count: tracks.length, getScrollElement: () => scroller.current, estimateSize: () => row, overscan: 12 })
-  const grid = { gridTemplateColumns: ['32px', 'minmax(0,1fr)', editId ? '156px' : '68px', ...columns.map((c) => width[c])].join(' ') }
+  const grid = { gridTemplateColumns: ['32px', 'minmax(0,1fr)', editId ? '156px' : rowActions ? '124px' : '68px', ...columns.map((c) => width[c])].join(' ') }
   const cover = density === 'compact' ? 28 : density === 'comfort' ? 36 : 46
 
   return (
@@ -89,6 +89,7 @@ export function TrackTable({ tracks, empty, editId }: { tracks: LibraryTrack[]; 
                         </RoundButton>
                       </>
                     )}
+                    {rowActions?.(t)}
                     <AddToPlaylist trackIds={[t.id]} label={`Add ${t.title} to a playlist`} />
                     {playable && (
                       <RoundButton label={`Play ${t.title}`} kind="soft" size="xs" onClick={() => play(tracks, v.index)}>
