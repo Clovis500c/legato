@@ -10,8 +10,10 @@ import { Button } from '../../shared/ui/Button'
 import { Led, RoundButton, Segmented, Toggle } from '../../shared/ui/controls'
 import { PageHeader } from '../../shared/ui/PageHeader'
 import { curveLabels } from '../player/fade'
+import { usePlayer } from '../player/store'
 import { SourcesView } from '../sources/SourcesView'
 import { FadeEditor } from './FadeEditor'
+import { CountsScene, CoverShapes, DensityScene, FadeScene, ListCoversScene, MiniPlayerScene, MotionScene, NowPlayingScene, SourceIconScene, TunerScene, VolumeScene } from './previews'
 import { searchSettings, type SettingEntry } from './search'
 
 const sections: { id: SettingsSection; label: string; icon: ReactNode }[] = [
@@ -35,13 +37,15 @@ function Group({ title, hint, children }: { title: string; hint?: string; childr
   )
 }
 
-function Row({ label, sub, children }: { label: string; sub?: string; children: ReactNode }) {
+/** preview = live picture of what the setting changes, redrawn with its value. */
+function Row({ label, sub, children, preview }: { label: string; sub?: string; children: ReactNode; preview?: ReactNode }) {
   return (
     <div data-setting={label} className="flex items-center gap-4 border-b border-line-soft px-4 py-3 last:border-0">
       <div className="flex-1">
         <p className="text-[13px] font-medium">{label}</p>
         {sub && <p className="text-xs text-ink-2">{sub}</p>}
       </div>
+      {preview}
       {children}
     </div>
   )
@@ -171,22 +175,28 @@ function Appearance() {
       </Group>
       <div className="grid grid-cols-2 gap-6">
         <Group title="Covers">
-          <Segmented label="Cover shape" value={s.covers} onChange={(covers) => update({ covers })} options={[{ value: 'net', label: 'Sharp' }, { value: 'rounded', label: 'Rounded' }, { value: 'vinyl', label: 'Vinyl' }]} />
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <Segmented label="Cover shape" value={s.covers} onChange={(covers) => update({ covers })} options={[{ value: 'net', label: 'Sharp' }, { value: 'rounded', label: 'Rounded' }, { value: 'vinyl', label: 'Vinyl' }]} />
+            <CoverShapes covers={s.covers} />
+          </div>
         </Group>
         <Group title="List density">
-          <Segmented label="Density" value={s.density} onChange={(density) => update({ density })} options={[{ value: 'compact', label: 'Compact' }, { value: 'comfort', label: 'Comfortable' }, { value: 'airy', label: 'Airy' }]} />
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <Segmented label="Density" value={s.density} onChange={(density) => update({ density })} options={[{ value: 'compact', label: 'Compact' }, { value: 'comfort', label: 'Comfortable' }, { value: 'airy', label: 'Airy' }]} />
+            <DensityScene density={s.density} />
+          </div>
         </Group>
       </div>
       <InterfaceSize />
       <Group title="Player">
         <div className="rounded-xl border border-line bg-raised">
-          <Row label="Source icon" sub="Where the song plays from, next to the volume">
+          <Row label="Source icon" sub="Where the song plays from, next to the volume" preview={<SourceIconScene readout={s.readout} />}>
             <Toggle label="Source icon" checked={s.readout} onChange={(readout) => update({ readout })} />
           </Row>
-          <Row label="Volume control">
+          <Row label="Volume control" preview={<VolumeScene volume={s.volume} />}>
             <Segmented label="Volume control" value={s.volume} onChange={(volume) => update({ volume })} options={[{ value: 'knob', label: 'Knob' }, { value: 'bar', label: 'Bar' }]} />
           </Row>
-          <Row label="Fade between songs" sub={s.fade.advanced ? `Advanced: ${s.fade.out} s out (${curveLabels[s.fade.outCurve]}), ${s.fade.in} s in (${curveLabels[s.fade.inCurve]})` : s.crossfade ? `${s.crossfade} s fade out, then in, when a song ends on its own` : 'Off'}>
+          <Row label="Fade between songs" preview={!s.fade.advanced && <FadeScene crossfade={s.crossfade} />} sub={s.fade.advanced ? `Advanced: ${s.fade.out} s out (${curveLabels[s.fade.outCurve]}), ${s.fade.in} s in (${curveLabels[s.fade.inCurve]})` : s.crossfade ? `${s.crossfade} s fade out, then in, when a song ends on its own` : 'Off'}>
             {s.fade.advanced ? (
               <Button variant="ghost" onClick={() => go({ name: 'settings', section: 'advanced', focus: 'Advanced fade' })}>
                 Edit curves
@@ -195,35 +205,35 @@ function Appearance() {
               <input type="range" aria-label="Fade between songs" min={0} max={12} step={1} value={s.crossfade} onChange={(e) => update({ crossfade: +e.target.value })} className="bar w-40" style={{ background: `linear-gradient(to right, var(--ink) ${(s.crossfade / 12) * 100}%, var(--line) 0)` }} />
             )}
           </Row>
-          <Row label="Tuner scale" sub="Tuner-style progress bar in full screen">
+          <Row label="Tuner scale" sub="Tuner-style progress bar in full screen" preview={<TunerScene tuner={s.tuner} />}>
             <Toggle label="Tuner scale" checked={s.tuner} onChange={(tuner) => update({ tuner })} />
           </Row>
-          <Row label="Immersive player" sub="Now Playing over the song's cover, big and blurred">
+          <Row label="Immersive player" sub="Now Playing over the song's cover, big and blurred" preview={<NowPlayingScene s={s} />}>
             <Toggle label="Immersive player" checked={s.immersive} onChange={(immersive) => update({ immersive })} />
           </Row>
-          <Row label="Cover tint" sub="Now Playing takes a flat color from the cover (when immersive is off)">
+          <Row label="Cover tint" sub="Now Playing takes a flat color from the cover (when immersive is off)" preview={<NowPlayingScene s={{ ...s, immersive: false }} />}>
             <Toggle label="Cover tint" checked={s.tint} onChange={(tint) => update({ tint })} />
           </Row>
-          <Row label="Mini player" sub="Floating player for every source. YouTube always shows one: its video must stay visible.">
+          <Row label="Mini player" sub="Floating player for every source. YouTube always shows one: its video must stay visible." preview={<MiniPlayerScene miniPlayer={s.miniPlayer} />}>
             <Toggle label="Mini player" checked={s.miniPlayer} onChange={(miniPlayer) => update({ miniPlayer })} />
           </Row>
         </div>
       </Group>
       <Group title="Lists and navigation">
         <div className="rounded-xl border border-line bg-raised">
-          <Row label="Covers in lists">
+          <Row label="Covers in lists" preview={<ListCoversScene listCovers={s.listCovers} />}>
             <Toggle label="Covers in lists" checked={s.listCovers} onChange={(listCovers) => update({ listCovers })} />
           </Row>
           <Row label="Play with" sub="On a track row">
             <Segmented label="Play with" value={s.clickToPlay} onChange={(clickToPlay) => update({ clickToPlay })} options={[{ value: 'single', label: 'One click' }, { value: 'double', label: 'Double-click' }]} />
           </Row>
-          <Row label="Counts in the sidebar" sub="Number of songs next to each entry">
+          <Row label="Counts in the sidebar" sub="Number of songs next to each entry" preview={<CountsScene sidebarCounts={s.sidebarCounts} />}>
             <Toggle label="Counts in the sidebar" checked={s.sidebarCounts} onChange={(sidebarCounts) => update({ sidebarCounts })} />
           </Row>
           <Row label="Open on" sub={s.reopen ? 'Used when “Reopen where you left off” is off (Advanced)' : 'Screen shown when the app starts'}>
             <Segmented label="Open on" value={s.startView} onChange={(startView) => update({ startView })} options={[{ value: 'songs', label: 'Songs' }, { value: 'mixes', label: 'Mixes' }, { value: 'albums', label: 'Albums' }, { value: 'artists', label: 'Artists' }]} />
           </Row>
-          <Row label="Animations" sub="Transitions and fades">
+          <Row label="Animations" sub="Transitions and fades" preview={<MotionScene motion={s.motion} />}>
             <Toggle label="Animations" checked={s.motion} onChange={(motion) => update({ motion })} />
           </Row>
         </div>
@@ -460,6 +470,7 @@ function Slider({ label, value, max, onChange }: { label: string; value: number;
 
 function AdvancedSection() {
   const { settings: s, update } = useSettings()
+  const playing = usePlayer((p) => !!p.now)
   return (
     <div className="flex max-w-190 flex-col gap-6">
       <Group title="Fade between songs">
@@ -472,6 +483,13 @@ function AdvancedSection() {
       </Group>
       <Group title="Immersive player">
         <div className="rounded-xl border border-line bg-raised">
+          <div className="flex items-center gap-5 border-b border-line-soft p-4">
+            <NowPlayingScene s={{ ...s, immersive: true }} big />
+            <p className="max-w-48 text-xs text-ink-2">
+              {s.immersive ? 'Live preview: move the sliders and watch the background change.' : 'Immersive player is off (Appearance › Player): this is how it would look.'}
+              {playing ? '' : ' Play a song to see it with its own cover.'}
+            </p>
+          </div>
           <Row label="Background blur" sub={s.backdropBlur ? `${s.backdropBlur} px` : 'Sharp'}>
             <Slider label="Background blur" value={s.backdropBlur} max={80} onChange={(backdropBlur) => update({ backdropBlur })} />
           </Row>
