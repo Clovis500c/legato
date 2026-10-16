@@ -1,9 +1,9 @@
-import { FolderPlus, GoogleLogo, HardDrives, ShieldCheck, SignOut, UserPlus, X } from '@phosphor-icons/react'
+import { ArrowsClockwise, FolderPlus, GoogleLogo, HardDrives, ShieldCheck, SignOut, UserPlus, X } from '@phosphor-icons/react'
 import { open } from '@tauri-apps/plugin-dialog'
 import { useCallback, useEffect, useState } from 'react'
 import { useStore } from '../../app/store'
 import { accountKey, api, type YtmAccount } from '../../shared/api'
-import { formatCount } from '../../shared/format'
+import { formatCount, timeAgo } from '../../shared/format'
 import { Button } from '../../shared/ui/Button'
 import { Led, RoundButton, Toggle } from '../../shared/ui/controls'
 import { remoteArt } from '../../shared/art'
@@ -66,7 +66,7 @@ function SpotifyWeb() {
 
 /** YouTube Music through a normal Google sign-in (like Pear Desktop): no keys. Several Google accounts / channels, pick which to sync. */
 function GoogleAccounts() {
-  const refresh = useStore((s) => s.refresh)
+  const { refresh, sync, busy, lastSync } = useStore()
   const [data, setData] = useState<{ signedIn: boolean; accounts: YtmAccount[]; picked: string[] }>()
   const [waiting, setWaiting] = useState(false)
   const load = useCallback(
@@ -92,11 +92,12 @@ function GoogleAccounts() {
       const d = await load()
       if (d?.signedIn && d.accounts.length > before) {
         setWaiting(false)
-        void refresh()
+        // Signed in: playlists come in right away, no extra step.
+        void sync()
       }
     }, 2000)
     return () => clearInterval(id)
-  }, [waiting, load, refresh, data?.accounts.length])
+  }, [waiting, load, sync, data?.accounts.length])
 
   const signIn = (add: boolean) => {
     setWaiting(true)
@@ -124,7 +125,7 @@ function GoogleAccounts() {
         </span>
         <div className="flex-1">
           <p className="text-[13px] font-semibold">YouTube Music</p>
-          <p className="text-xs text-ink-2">Sign in with Google: your library, playlists, search and export. No keys, no daily limit.</p>
+          <p className="text-xs text-ink-2">{data?.signedIn ? 'Your playlists, search and export. No keys, no daily limit.' : 'Sign in with Google to import your YouTube Music playlists and Liked Music. No keys.'}</p>
         </div>
         <span className="kicker">{data?.signedIn ? `${data.accounts.length} account${data.accounts.length > 1 ? 's' : ''}` : waiting ? 'Waiting for Google…' : 'Not signed in'}</span>
         {!data?.signedIn && (
@@ -154,6 +155,15 @@ function GoogleAccounts() {
               )
             })}
           </ul>
+          <div className="ml-13 flex items-center gap-3 rounded-lg bg-recess px-3 py-2.5">
+            <div className="flex-1">
+              <p className="text-[13px] font-medium">Playlists and Liked Music</p>
+              <p className="text-xs text-ink-2">{busy ? 'Importing…' : lastSync ? `Last import ${timeAgo(lastSync.at)}: ${lastSync.report.playlists} playlists` : 'Imported when you sign in. Import again any time to pick up changes.'}</p>
+            </div>
+            <Button disabled={busy || !data.picked.length} onClick={() => void sync()}>
+              <ArrowsClockwise size={14} className={busy ? 'animate-spin' : ''} /> Import playlists now
+            </Button>
+          </div>
           <div className="ml-13 flex gap-2">
             <Button variant="ghost" onClick={() => signIn(true)}>
               <UserPlus size={14} /> {waiting ? 'Waiting for Google…' : 'Add another Google account'}

@@ -120,7 +120,14 @@ export const useStore = create<State>((set, get) => {
       set({ status, ...lib })
     },
 
-    sync: () => run(async () => set({ lastSync: { at: Date.now(), report: await api.sync() } })).then(() => {}),
+    async sync() {
+      let report: SyncReport | undefined
+      await run(async () => {
+        report = await api.sync()
+        set({ lastSync: { at: Date.now(), report } })
+      })
+      if (report && !report.errors.length) get().notify(`Playlists imported: ${report.playlists}`)
+    },
     connect: (source, credentials) => run(() => api.connect(source, credentials)),
     disconnect: (source) => run(() => api.disconnect(source)).then(() => {}),
     async addLink(url) {

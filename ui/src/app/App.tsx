@@ -41,7 +41,7 @@ function TitleBar() {
       </div>
       <div className="flex items-center gap-2">
         {lastSync && <span className="kicker">Synced {timeAgo(lastSync.at)}</span>}
-        <RoundButton label={busy ? 'Syncing…' : anyConnected ? 'Sync' : 'Connect a source first'} size="xs" disabled={busy || !anyConnected} onClick={sync}>
+        <RoundButton label={busy ? 'Importing…' : anyConnected ? 'Import playlists again (sync)' : 'Sign in with Google in Settings › Accounts first'} size="xs" disabled={busy || !anyConnected} onClick={sync}>
           <ArrowsClockwise size={13} className={busy ? 'animate-spin' : ''} />
         </RoundButton>
         <span className="mx-2 h-4 w-px bg-line" />

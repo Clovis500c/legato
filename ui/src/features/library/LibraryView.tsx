@@ -141,8 +141,9 @@ export function SongsView() {
           tracks.length === 0 ? (
             <div className="flex flex-col items-center gap-3">
               <p className="text-base text-ink">Your library is empty</p>
-              <p>Connect a service and sync, add a music folder, or paste a YouTube link (Ctrl+V).</p>
-              <Button onClick={() => go({ name: 'settings', section: 'sources' })}>Connect a source</Button>
+              <p>Import your YouTube Music playlists: sign in with Google in Accounts, they come in on their own.</p>
+              <Button onClick={() => go({ name: 'settings', section: 'sources' })}>Import from YouTube Music</Button>
+              <p className="text-xs">Or add a music folder in Accounts, paste a YouTube or Spotify playlist link (Ctrl+V), or search in Add music.</p>
             </div>
           ) : (
             'No matching songs.'
