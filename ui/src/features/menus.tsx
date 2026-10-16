@@ -11,6 +11,7 @@ import {
   Eye,
   EyeSlash,
   FolderOpen,
+  ImageSquare,
   Gear,
   Link,
   ListPlus,
@@ -36,10 +37,12 @@ import {
   Trash,
   UploadSimple,
 } from '@phosphor-icons/react'
+import { open } from '@tauri-apps/plugin-dialog'
 import { openUrl, revealItemInDir } from '@tauri-apps/plugin-opener'
 import { useSettings } from '../app/settings'
 import { useStore } from '../app/store'
 import { api, playlistKey, type LibraryPlaylist, type LibraryTrack, type SearchHit } from '../shared/api'
+import { COVER_ORDERS, type PlaylistCover } from '../shared/theme/theme'
 import type { MenuEntry } from '../shared/ui/ContextMenu'
 import { SourceIcon } from '../shared/ui/SourceIcon'
 import { primaryArtist } from './library/filter'
@@ -117,6 +120,39 @@ function addTo(tracks: () => LibraryTrack[] | Promise<LibraryTrack[]>): MenuEntr
       ...shown.filter((p) => p.custom).map((p) => ({ label: p.name, icon: <Playlist size={16} />, onSelect: () => void add(p.id) })),
       youtube.length > 0 && '-',
       ...youtube.map((p) => ({ label: p.name, icon: <SourceIcon source="youtube" size={14} />, onSelect: () => void addYoutube(p) })),
+    ],
+  }
+}
+
+const orderLabels: Record<PlaylistCover['order'], string> = { playlist: 'Playlist order', recent: 'Recently added', title: 'Title', artist: 'Artist', album: 'Album', duration: 'Longest first' }
+
+/** "Cover ›": service logo, first song, grid of 4, picked image; songs taken in which order. */
+function coverMenu(p: LibraryPlaylist): MenuEntry {
+  const key = playlistKey(p)
+  const cur = useSettings.getState().settings.playlistCovers[key] ?? { mode: 'source', order: 'playlist' }
+  const set = (patch: Partial<PlaylistCover>) => {
+    const all = useSettings.getState().settings.playlistCovers
+    useSettings.getState().update({ playlistCovers: { ...all, [key]: { ...cur, ...patch } } })
+  }
+  const mode = (m: PlaylistCover['mode'], label: string) => ({ label, checked: cur.mode === m, onSelect: () => set({ mode: m }) })
+  return {
+    label: 'Cover',
+    icon: <ImageSquare size={16} />,
+    items: [
+      mode('source', p.custom ? 'Playlist icon' : 'Service logo'),
+      mode('first', 'First song'),
+      mode('grid', 'Grid of 4 songs'),
+      {
+        label: cur.image ? 'Custom image (change…)' : 'Custom image…',
+        checked: cur.mode === 'image',
+        onSelect: async () => {
+          const path = await open({ title: 'Playlist cover', filters: [{ name: 'Images', extensions: ['png', 'jpg', 'jpeg', 'webp', 'gif'] }] })
+          if (typeof path !== 'string') return
+          api.saveCover(p.id, path).then((image) => set({ mode: 'image', image }), fail)
+        },
+      },
+      '-',
+      { label: 'Songs taken in', disabled: cur.mode === 'source' || cur.mode === 'image', items: COVER_ORDERS.map((o) => ({ label: orderLabels[o], checked: cur.order === o, onSelect: () => set({ order: o }) })) },
     ],
   }
 }
@@ -257,6 +293,7 @@ export function playlistMenu(p: LibraryPlaylist): MenuEntry[] {
         if (id !== null) go({ name: 'playlist', id })
       },
     },
+    coverMenu(p),
     { label: 'Share…', icon: <ShareNetwork size={16} />, disabled: !p.trackCount, onSelect: () => (go({ name: 'playlist', id: p.id }), useStore.setState({ sharing: p.id })) },
     !ytImport && {
       label: 'Export to YouTube Music',

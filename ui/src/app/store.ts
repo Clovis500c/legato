@@ -34,6 +34,8 @@ interface State {
   /** Short success message, auto-cleared. */
   notice?: string
   lastSync?: { at: number; report: SyncReport }
+  /** Playlist id → its track ids in order (covers). */
+  orders: Record<number, number[]>
   /** Share code waiting for the import dialog. */
   incoming?: string
   /** Playlist whose share panel is open. */
@@ -89,6 +91,7 @@ export const useStore = create<State>((set, get) => {
     tracks: [],
     playlists: [],
     playlistTracks: [],
+    orders: {},
     query: '',
     filter: 'all',
     sort: 'artist',
@@ -117,8 +120,8 @@ export const useStore = create<State>((set, get) => {
     dismissError: () => set({ error: undefined }),
 
     async refresh() {
-      const [status, lib] = await Promise.all([api.sourcesStatus(), api.library()])
-      set({ status, ...lib })
+      const [status, lib, orders] = await Promise.all([api.sourcesStatus(), api.library(), api.playlistOrders().catch(() => ({}))])
+      set({ status, ...lib, orders })
     },
 
     async sync() {

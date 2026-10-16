@@ -39,6 +39,17 @@ export type Column = (typeof COLUMNS)[number]
 export const START_VIEWS = ['songs', 'mixes', 'albums', 'artists'] as const
 
 /** Mini player resting spots: corners and edge middles (t = top, b = bottom, l = left, r = right). */
+/** Playlist icon: service logo, first song's cover, grid of the first 4, or a picked image. */
+export const COVER_MODES = ['source', 'first', 'grid', 'image'] as const
+/** Order the cover songs are taken in: the playlist's own, or a library sort. */
+export const COVER_ORDERS = ['playlist', 'recent', 'title', 'artist', 'album', 'duration'] as const
+export interface PlaylistCover {
+  mode: (typeof COVER_MODES)[number]
+  order: (typeof COVER_ORDERS)[number]
+  /** covers/ file name (mode image). */
+  image?: string
+}
+
 export const SPOTS = ['tl', 't', 'tr', 'l', 'r', 'bl', 'b', 'br'] as const
 export type Spot = (typeof SPOTS)[number]
 
@@ -89,6 +100,8 @@ export interface Settings {
   subtitles: boolean
   /** Playlists left out of the sidebar and menus (playlistKey), still in the library. */
   hiddenPlaylists: string[]
+  /** Per playlist (playlistKey). Missing = service logo in the sidebar, first cover on its page. */
+  playlistCovers: Record<string, PlaylistCover>
   /** Now Playing: Up next panel open. */
   upNext: boolean
   /** Pick up the last track where it stopped when the app opens. */
@@ -123,6 +136,7 @@ export const DEFAULTS: Settings = {
   crossfade: 5,
   subtitles: false,
   hiddenPlaylists: [],
+  playlistCovers: {},
   upNext: true,
   resume: true,
   defaultsVersion: DEFAULTS_VERSION,
@@ -181,12 +195,26 @@ export function sanitize(raw: unknown): Settings {
     crossfade: typeof r.crossfade === 'number' && Number.isFinite(r.crossfade) ? Math.min(12, Math.max(0, Math.round(r.crossfade))) : DEFAULTS.crossfade,
     subtitles: typeof r.subtitles === 'boolean' ? r.subtitles : DEFAULTS.subtitles,
     hiddenPlaylists: Array.isArray(r.hiddenPlaylists) ? [...new Set(r.hiddenPlaylists.filter((k): k is string => typeof k === 'string' && k.length <= 200))].slice(0, 500) : [],
+    playlistCovers: sanitizeCovers(r.playlistCovers),
     upNext: typeof r.upNext === 'boolean' ? r.upNext : DEFAULTS.upNext,
     resume: typeof r.resume === 'boolean' ? r.resume : DEFAULTS.resume,
     defaultsVersion: DEFAULTS_VERSION,
     // Saved before the defaults changed: take the new ones once.
     ...(!(typeof r.defaultsVersion === 'number' && r.defaultsVersion >= DEFAULTS_VERSION) ? V2 : {}),
   }
+}
+
+function sanitizeCovers(raw: unknown): Record<string, PlaylistCover> {
+  if (!raw || typeof raw !== 'object') return {}
+  const out: Record<string, PlaylistCover> = {}
+  for (const [k, v] of Object.entries(raw as Record<string, unknown>).slice(0, 500)) {
+    if (!v || typeof v !== 'object' || k.length > 200) continue
+    const c = v as Record<string, unknown>
+    const image = typeof c.image === 'string' && /^[\w-]{1,80}\.(png|jpg|webp|gif)$/.test(c.image) ? c.image : undefined
+    const mode = pick(c.mode, COVER_MODES, 'source')
+    out[k] = { mode: mode === 'image' && !image ? 'source' : mode, order: pick(c.order, COVER_ORDERS, 'playlist'), ...(image && { image }) }
+  }
+  return out
 }
 
 export function luminance(hex: string): number {

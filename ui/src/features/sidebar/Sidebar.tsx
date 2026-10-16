@@ -1,4 +1,4 @@
-import { Disc, Gear, MagnifyingGlass, MicrophoneStage, MusicNotes, Playlist, Plus, PlusCircle, VinylRecord } from '@phosphor-icons/react'
+import { Disc, Gear, MagnifyingGlass, MicrophoneStage, MusicNotes, Plus, PlusCircle, VinylRecord } from '@phosphor-icons/react'
 import { useEffect, useMemo, useRef, type ReactNode } from 'react'
 import { useSettings } from '../../app/settings'
 import { useStore, type View } from '../../app/store'
@@ -6,7 +6,7 @@ import { playlistKey } from '../../shared/api'
 import { formatCount } from '../../shared/format'
 import { Led } from '../../shared/ui/controls'
 import { onMenu } from '../../shared/ui/ContextMenu'
-import { SourceIcon } from '../../shared/ui/SourceIcon'
+import { PlaylistCover } from '../library/PlaylistCover'
 import { playlistMenu, playlistsMenu } from '../menus'
 import { groupAlbums, groupArtists } from '../library/filter'
 
@@ -96,7 +96,7 @@ export function Sidebar() {
         {playlists
           .filter((p) => !hiddenKeys.has(playlistKey(p)))
           .map((p) => (
-          <NavItem key={p.id} on={view.name === 'playlist' && view.id === p.id} icon={p.custom ? <Playlist size={15} /> : <SourceIcon source={p.source} size={14} />} label={p.name} count={p.trackCount} onClick={() => go({ name: 'playlist', id: p.id })} onContextMenu={onMenu(() => playlistMenu(p))} />
+          <NavItem key={p.id} on={view.name === 'playlist' && view.id === p.id} icon={<PlaylistCover p={p} size={18} />} label={p.name} count={p.trackCount} onClick={() => go({ name: 'playlist', id: p.id })} onContextMenu={onMenu(() => playlistMenu(p))} />
         ))}
         <NavItem
           on={false}

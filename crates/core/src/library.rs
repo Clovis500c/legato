@@ -325,6 +325,17 @@ impl Library {
         })
     }
 
+    /// Every playlist's track ids in playlist order (covers picked client-side from the library rows).
+    pub fn playlist_orders(&self) -> Result<std::collections::HashMap<i64, Vec<i64>>> {
+        let mut stmt = self.db.prepare_cached("SELECT playlist_id, track_id FROM playlist_tracks ORDER BY playlist_id, position")?;
+        let mut out: std::collections::HashMap<i64, Vec<i64>> = std::collections::HashMap::new();
+        for row in stmt.query_map([], |r| Ok((r.get::<_, i64>(0)?, r.get::<_, i64>(1)?)))? {
+            let (p, t) = row?;
+            out.entry(p).or_default().push(t);
+        }
+        Ok(out)
+    }
+
     /// Imported playlist mirror after the service accepted new tracks (custom ones: `edit_playlist`).
     pub fn append_to_imported(&self, id: i64, track_ids: &[i64]) -> Result<()> {
         self.tx(|| self.rewrite(id, |ids| ids.extend(track_ids)))
@@ -502,6 +513,7 @@ mod tests {
         lib.append_to_imported(pid, &[other])?;
         assert_eq!(lib.playlist_tracks(pid)?.len(), 2);
         assert!(lib.edit_playlist(PlaylistEdit::Add { id: pid, track_ids: vec![other] }).is_err());
+        assert_eq!(lib.playlist_orders()?[&pid].last(), Some(&other));
         Ok(())
     }
 

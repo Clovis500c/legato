@@ -15,6 +15,7 @@ import { isFull, vias } from '../player/sources'
 import { usePlayer } from '../player/store'
 import { SharePanel } from '../share/SharePanel'
 import { ExportYoutube } from './ExportYoutube'
+import { PlaylistCover } from './PlaylistCover'
 import { filterTracks, groupAlbums, groupArtists, libraryStats, primaryArtist, sortTracks, type Filter, type Sort } from './filter'
 import { TrackTable } from './TrackTable'
 
@@ -186,7 +187,7 @@ export function PlaylistView({ id }: { id: number }) {
     <>
       <PageHeader
         onContextMenu={onMenu(() => playlistMenu(playlist))}
-        art={<Cover title={playlist.name} art={firstArt(playlistTracks)} size={150} />}
+        art={<PlaylistCover p={playlist} size={150} big />}
         kicker={playlist.custom ? 'Custom playlist' : `Playlist · ${sourceLabel[playlist.source]} · imported`}
         title={playlist.custom ? <EditableTitle key={playlist.name} id={id} name={playlist.name} /> : playlist.name}
         sub={<span className="font-mono text-[11px] tracking-[0.06em] uppercase">{formatCount(playlist.trackCount)} tracks · {totalTime(playlistTracks)}</span>}

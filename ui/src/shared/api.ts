@@ -231,6 +231,10 @@ export const api = {
   /** Windows accent (light / dark theme variants); null off Windows. */
   systemAccent: () => invoke<SystemAccent | null>('system_accent'),
   restartApp: () => invoke<void>('restart_app'),
+  /** Track ids of every playlist, in order (covers). */
+  playlistOrders: () => invoke<Record<number, number[]>>('playlist_orders'),
+  /** Picked image copied into the app; returns its name for the art scheme (cover/<name>). */
+  saveCover: (playlistId: number, path: string) => invoke<string>('save_cover', { playlistId, path }),
   /** Imported YouTube Music playlist: added on YouTube (Liked Music = like), then locally. */
   addToYoutube: (id: number, trackIds: number[]) => invoke<{ added: number; noYoutube: number }>('add_to_youtube', { id, trackIds }),
   /** Raw JSON; validated by features/player/session. */
