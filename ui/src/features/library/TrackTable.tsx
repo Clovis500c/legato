@@ -18,6 +18,7 @@ import { AddToPlaylist } from './AddToPlaylist'
 
 const ROW = { compact: 40, comfort: 52, airy: 64 }
 const order: Source[] = ['spotify', 'youtube', 'apple', 'local']
+const onControl = (e: React.MouseEvent) => e.target instanceof Element && !!e.target.closest('button, a, input, [role="menu"]')
 const width: Record<Column, string> = { album: 'minmax(0,220px)', sources: '76px', duration: '52px' }
 const head: Record<Column, string> = { album: 'Album', sources: 'Sources', duration: 'Duration' }
 
@@ -59,10 +60,11 @@ export function TrackTable({ tracks, empty, editId, rowActions }: { tracks: Libr
                 <div
                   key={v.key}
                   role="row"
-                  onClick={() => clickToPlay === 'single' && playable && play(tracks, v.index)}
-                  onDoubleClick={() => clickToPlay === 'double' && playable && play(tracks, v.index)}
+                  // Row buttons (add to playlist, move…) act on their own, they don't also play.
+                  onClick={(e) => clickToPlay === 'single' && playable && !onControl(e) && play(tracks, v.index)}
+                  onDoubleClick={(e) => clickToPlay === 'double' && playable && !onControl(e) && play(tracks, v.index)}
                   onContextMenu={onMenu(() => trackMenu(t, { list: tracks, index: v.index, playlistId: editId, position: v.index }))}
-                  className={`group absolute inset-x-0 grid items-center gap-4 border-b border-line-soft px-2 ${on ? 'bg-accent-soft' : 'hover:bg-raised'}`}
+                  className={`group absolute inset-x-0 grid items-center gap-4 border-b border-line-soft px-2 ${playable && clickToPlay === 'single' ? 'cursor-pointer' : ''} ${on ? 'bg-accent-soft' : 'hover:bg-raised'}`}
                   style={{ ...grid, height: row, transform: `translateY(${v.start}px)` }}
                 >
                   <span className="flex justify-end font-mono text-[11px] text-ink-3 tabular-nums">{on ? <Waveform size={14} className="text-accent" /> : String(v.index + 1).padStart(2, '0')}</span>

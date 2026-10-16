@@ -123,6 +123,13 @@ code {
 .bar:focus-visible::-webkit-slider-thumb {
   @apply opacity-100;
 }
+/* Progress bar, YouTube-like: thicker and accent knob on hover. */
+.bar.seek {
+  @apply h-1 transition-[height] duration-100 hover:h-1.5;
+}
+.bar.seek::-webkit-slider-thumb {
+  @apply size-3.5 bg-accent;
+}
 
 ::-webkit-scrollbar {
   width: 10px;

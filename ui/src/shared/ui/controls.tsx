@@ -109,9 +109,10 @@ export function Knob({ value, onChange, size = 32, ticks = false, label = 'Volum
   )
 }
 
-/** Thin range bar; fill painted with a hard stop (no gradient look). */
-export function Bar({ label, value, max, onChange, className = '' }: { label: string; value: number; max: number; onChange: (v: number) => void; className?: string }) {
+/** Thin range bar; fill painted with a hard stop (no gradient look). seek = YouTube-like: accent fill, grows on hover. */
+export function Bar({ label, value, max, onChange, className = '', seek = false }: { label: string; value: number; max: number; onChange: (v: number) => void; className?: string; seek?: boolean }) {
   const pct = max ? Math.min(100, (value / max) * 100) : 0
+  const fill = seek ? 'var(--accent)' : 'var(--ink)'
   return (
     <input
       type="range"
@@ -122,8 +123,8 @@ export function Bar({ label, value, max, onChange, className = '' }: { label: st
       value={Math.min(value, max)}
       disabled={!max}
       onChange={(e) => onChange(+e.target.value)}
-      className={`bar ${className}`}
-      style={{ background: `linear-gradient(to right, var(--ink) ${pct}%, var(--line) ${pct}%)` }}
+      className={`bar ${seek ? 'seek' : ''} ${className}`}
+      style={{ background: `linear-gradient(to right, ${fill} ${pct}%, var(--line) ${pct}%)` }}
     />
   )
 }

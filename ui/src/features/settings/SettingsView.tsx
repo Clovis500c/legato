@@ -132,7 +132,7 @@ function Appearance() {
   const { settings: s, update, current } = useSettings()
   const col = (c: Column) => (s.columns.includes(c) ? s.columns.filter((x) => x !== c) : COLUMNS.filter((x) => x === c || s.columns.includes(x)))
   const labels: Record<Column, string> = { album: 'Album', sources: 'Sources', duration: 'Duration' }
-  const reset: Partial<Settings> = { accent: DEFAULTS.accent, covers: DEFAULTS.covers, density: DEFAULTS.density, zoom: DEFAULTS.zoom, readout: DEFAULTS.readout, volume: DEFAULTS.volume, tuner: DEFAULTS.tuner, columns: DEFAULTS.columns, tint: DEFAULTS.tint, miniPlayer: DEFAULTS.miniPlayer, font: DEFAULTS.font, motion: DEFAULTS.motion, sidebarCounts: DEFAULTS.sidebarCounts, listCovers: DEFAULTS.listCovers, clickToPlay: DEFAULTS.clickToPlay }
+  const reset: Partial<Settings> = { accent: DEFAULTS.accent, covers: DEFAULTS.covers, density: DEFAULTS.density, zoom: DEFAULTS.zoom, readout: DEFAULTS.readout, volume: DEFAULTS.volume, tuner: DEFAULTS.tuner, columns: DEFAULTS.columns, tint: DEFAULTS.tint, miniPlayer: DEFAULTS.miniPlayer, font: DEFAULTS.font, motion: DEFAULTS.motion, sidebarCounts: DEFAULTS.sidebarCounts, listCovers: DEFAULTS.listCovers, clickToPlay: DEFAULTS.clickToPlay, crossfade: DEFAULTS.crossfade, youtubeControls: DEFAULTS.youtubeControls, stage: DEFAULTS.stage, miniSpot: DEFAULTS.miniSpot }
   return (
     <div className="flex flex-col gap-7">
       <div className="flex justify-end">
@@ -180,6 +180,12 @@ function Appearance() {
           </Row>
           <Row label="Volume control">
             <Segmented label="Volume control" value={s.volume} onChange={(volume) => update({ volume })} options={[{ value: 'knob', label: 'Knob' }, { value: 'bar', label: 'Bar' }]} />
+          </Row>
+          <Row label="Fade between songs" sub={s.crossfade ? `${s.crossfade} s fade out, then in, when a song ends on its own` : 'Off'}>
+            <input type="range" aria-label="Fade between songs" min={0} max={12} step={1} value={s.crossfade} onChange={(e) => update({ crossfade: +e.target.value })} className="bar w-40" style={{ background: `linear-gradient(to right, var(--ink) ${(s.crossfade / 12) * 100}%, var(--line) 0)` }} />
+          </Row>
+          <Row label="YouTube controls on the video" sub="YouTube's own title, buttons and hover menu. From the next track.">
+            <Toggle label="YouTube controls on the video" checked={s.youtubeControls} onChange={(youtubeControls) => update({ youtubeControls })} />
           </Row>
           <Row label="Tuner scale" sub="Tuner-style progress bar in full screen">
             <Toggle label="Tuner scale" checked={s.tuner} onChange={(tuner) => update({ tuner })} />

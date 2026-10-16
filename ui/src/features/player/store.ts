@@ -3,7 +3,7 @@ import { useStore } from '../../app/store'
 import { api, type LibraryTrack, type PlayerCommand, type PlayerStatus, type SpotifyCommand, type SpotifyPlayback } from '../../shared/api'
 import { region } from '../../shared/format'
 import { endListen, progress, startListen } from './listens'
-import { nextIndex, playOrder, queued, type Repeat } from './queue'
+import { fadeGain, nextIndex, playOrder, queued, type Repeat } from './queue'
 import { vias, type Via } from './sources'
 import { ytPost, type YtUpdate } from './youtube'
 
@@ -35,6 +35,12 @@ interface PlayerState {
   order: number[]
   shuffle: boolean
   repeat: Repeat
+  /** Fade between songs, seconds (Settings › Player). */
+  crossfade: number
+  /** Current track started on its own after the previous one: fades in. */
+  fadeIn: boolean
+  /** Where the current item started (resume), ms. */
+  startAt: number
   toggleShuffle: () => void
   /** off → all → one → off. */
   cycleRepeat: () => void
@@ -49,8 +55,12 @@ interface PlayerState {
   enqueue: (tracks: LibraryTrack[], next: boolean) => void
   /** Drops list index `i` from the play order. */
   dequeue: (i: number) => void
-  /** Queue item `index` through `via` (default: best source). */
-  playAt: (index: number, via?: Via) => Promise<void>
+  /** Queue item `index` through `via` (default: best source). auto = previous one ended; from = start position, ms. */
+  playAt: (index: number, via?: Via, opts?: { auto?: boolean; from?: number }) => Promise<void>
+  /** Last session's queue, picked up where it stopped. */
+  resume: (s: { list: LibraryTrack[]; index: number; order: number[]; shuffle: boolean; repeat: Repeat; positionMs: number; via?: Via }) => void
+  /** Sends volume × fade to whatever plays. force = even if unchanged. */
+  applyVolume: (force?: boolean) => void
   playFiles: (paths: string[]) => void
   toggle: () => void
   seek: (ms: number) => void
@@ -85,6 +95,8 @@ const endRun = () => {
 }
 // Knob drags fire many changes: one Spotify call per pause.
 let volumeTimer: ReturnType<typeof setTimeout> | undefined
+// Last volume sent to the playing source (fades send many).
+let sent = -1
 
 export const usePlayer = create<PlayerState>((set, get) => ({
   playing: false,
@@ -96,6 +108,9 @@ export const usePlayer = create<PlayerState>((set, get) => ({
   order: [],
   shuffle: false,
   repeat: 'off',
+  crossfade: 0,
+  fadeIn: false,
+  startAt: 0,
   upcoming: [],
   full: false,
   setFull: (full) => set({ full }),
@@ -128,8 +143,14 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     set({ repeat })
   },
 
-  async playAt(index, via) {
-    const { list, volume } = get()
+  resume({ list, index, order, shuffle, repeat, positionMs, via }) {
+    const valid = order.length === list.length && order.includes(index)
+    set({ list, shuffle, repeat, order: valid ? order : playOrder(list.length, index, shuffle) })
+    void get().playAt(index, via, { from: positionMs })
+  },
+
+  async playAt(index, via, { auto = false, from = 0 } = {}) {
+    const { list } = get()
     // Fresh row: sources may have changed since the queue was built (Find versions).
     const t = useStore.getState().tracks.find((x) => x.id === list[index]?.id) ?? list[index]
     const how = via ?? (t && vias(t, spotifyOn())[0])
@@ -139,7 +160,10 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     if (get().now?.via === 'spotify' && how !== 'spotify') void spotify({ type: 'pause' })
     startListen(t.id, t.durationMs)
     const base: NowPlaying = { title: t.title, artist: t.artist, trackId: t.id, via: how }
-    set({ index, playing: true, positionMs: 0, durationMs: t.durationMs, upcoming: [] })
+    // Preview: 30 s from Apple, no resume point.
+    const start = how === 'preview' ? 0 : from
+    set({ index, playing: true, positionMs: start, startAt: start, durationMs: t.durationMs, upcoming: [], fadeIn: auto && get().crossfade > 0 })
+    sent = -1
 
     if (how === 'youtube') {
       expect = null
@@ -147,7 +171,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
       send({ type: 'stop' })
       // Same video (repeat one): the embed stays mounted, so rewind it.
       if (get().now?.youtubeId === t.ids.youtube) {
-        yt('seekTo', 0, true)
+        yt('seekTo', start / 1000, true)
         yt('playVideo')
       }
       return set({ now: { ...base, youtubeId: t.ids.youtube } })
@@ -159,8 +183,9 @@ export const usePlayer = create<PlayerState>((set, get) => ({
       const paths = list.slice(index, end).map((x) => x.ids.local!)
       expect = paths
       send({ type: 'play', paths, start: 0 })
-      send({ type: 'volume', value: volume })
-      return set({ now: { ...base, path: t.ids.local } })
+      if (start) send({ type: 'seek', ms: start })
+      set({ now: { ...base, path: t.ids.local } })
+      return get().applyVolume(true)
     }
     if (how === 'spotify') {
       expect = []
@@ -168,6 +193,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
       set({ now: { ...base, spotifyId: t.ids.spotify } })
       try {
         await api.spotifyPlayer({ type: 'play', trackId: t.ids.spotify! })
+        if (start) void spotify({ type: 'seek', ms: Math.round(start) })
       } catch (e) {
         if (mine !== seq) return
         useStore.setState({ error: String(e) })
@@ -201,7 +227,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     send({ type: 'play', paths, start: 0 })
     send({ type: 'volume', value: get().volume })
     // Clearing youtubeId unmounts embed.
-    set({ now: { title: fileTitle(paths[0]), artist: 'Local file', path: paths[0], via: 'local' }, list: [], order: [], index: 0, playing: true, positionMs: 0, durationMs: null })
+    set({ now: { title: fileTitle(paths[0]), artist: 'Local file', path: paths[0], via: 'local' }, list: [], order: [], index: 0, playing: true, positionMs: 0, durationMs: null, fadeIn: false, startAt: 0 })
   },
 
   toggle() {
@@ -225,18 +251,29 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     const { now, list, index, order, repeat } = get()
     if (now && !now.trackId) return void send({ type: delta > 0 ? 'next' : 'prev' })
     const i = nextIndex(order, index, delta, repeat, auto, (j) => !vias(list[j], spotifyOn()).length)
-    if (i !== null) return void get().playAt(i)
+    if (i !== null) return void get().playAt(i, undefined, { auto })
     if (delta > 0) set({ playing: false })
   },
 
   setVolume(volume) {
-    const via = get().now?.via
-    if (via === 'youtube') yt('setVolume', Math.round(volume * 100))
-    else if (via === 'spotify') {
-      clearTimeout(volumeTimer)
-      volumeTimer = setTimeout(() => void spotify({ type: 'volume', percent: Math.round(volume * 100) }), 300)
-    } else send({ type: 'volume', value: volume })
     set({ volume })
+    get().applyVolume(true)
+  },
+
+  applyVolume(force = false) {
+    const { now, volume, positionMs, durationMs, crossfade, fadeIn } = get()
+    const via = now?.via
+    if (via === 'spotify') {
+      // Spotify Connect: rate-limited API, no fades.
+      clearTimeout(volumeTimer)
+      if (force) volumeTimer = setTimeout(() => void spotify({ type: 'volume', percent: Math.round(volume * 100) }), 300)
+      return
+    }
+    const value = Math.round(volume * fadeGain(positionMs, durationMs, crossfade, fadeIn) * 100) / 100
+    if (!force && value === sent) return
+    sent = value
+    if (via === 'youtube') yt('setVolume', Math.round(value * 100))
+    else send({ type: 'volume', value })
   },
 
   onYoutube(u) {
@@ -249,7 +286,10 @@ export const usePlayer = create<PlayerState>((set, get) => ({
       ...(u.time !== undefined && { positionMs: u.time * 1000 }),
       ...(u.duration && { durationMs: u.duration * 1000 }),
     })
-    if (u.time !== undefined) progress(u.time * 1000, u.duration && u.duration * 1000)
+    if (u.time !== undefined) {
+      progress(u.time * 1000, u.duration && u.duration * 1000)
+      get().applyVolume()
+    }
     if (u.state === 0) {
       endListen(true)
       get().step(1, true)
@@ -283,9 +323,10 @@ export const usePlayer = create<PlayerState>((set, get) => ({
       positionMs: s.positionMs,
       upcoming: now?.trackId ? [] : s.upcoming,
       ...(s.durationMs && { durationMs: s.durationMs }),
-      ...(i > index && { index: i, now: { title: list[i].title, artist: list[i].artist, trackId: list[i].id, via: 'local', path: s.path! } }),
+      ...(i > index && { index: i, fadeIn: get().crossfade > 0, now: { title: list[i].title, artist: list[i].artist, trackId: list[i].id, via: 'local', path: s.path! } }),
       ...(s.path && !now?.trackId && { now: { title: fileTitle(s.path), artist: 'Local file', path: s.path, via: 'local' } }),
     })
+    if (s.path) get().applyVolume()
   },
 
   onSpotify(p) {
@@ -305,4 +346,14 @@ export const usePlayer = create<PlayerState>((set, get) => ({
 }))
 
 /** Where the YouTube iframe should sit. Null = mini player. Moving the iframe in DOM would reload it. */
-export const useVideoSlot = create<{ rect: DOMRect | null; set: (rect: DOMRect | null) => void }>((set) => ({ rect: null, set: (rect) => set({ rect }) }))
+export const useVideoSlot = create<{ rect: DOMRect | null; hidden: boolean; set: (rect: DOMRect | null) => void }>((set, get) => ({
+  rect: null,
+  // Now Playing in cover mode: video transparent (user's choice).
+  hidden: false,
+  set: (rect) => {
+    const r = get().rect
+    // Same box: skip (live slots report every frame).
+    if (rect && r && rect.x === r.x && rect.y === r.y && rect.width === r.width && rect.height === r.height) return
+    set({ rect })
+  },
+}))

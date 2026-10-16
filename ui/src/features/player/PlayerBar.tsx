@@ -1,6 +1,6 @@
-import { ArrowsOutSimple, SpeakerHigh } from '@phosphor-icons/react'
+import { ArrowsOutSimple, SpeakerHigh, SpeakerLow, SpeakerSlash } from '@phosphor-icons/react'
 import { getCurrentWebview } from '@tauri-apps/api/webview'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useSettings } from '../../app/settings'
 import { useStore } from '../../app/store'
 import { api } from '../../shared/api'
@@ -22,6 +22,12 @@ export const fileFormat = (path?: string) => path?.split('.').pop()?.toUpperCase
 function YouTubeFrame({ videoId }: { videoId: string }) {
   const onYoutube = usePlayer((s) => s.onYoutube)
   const rect = useVideoSlot((s) => s.rect)
+  const hidden = useVideoSlot((s) => s.hidden)
+  // Per video (key): changing the setting mid-track would reload the embed.
+  const [src] = useState(() => {
+    const p = usePlayer.getState()
+    return { controls: useSettings.getState().settings.youtubeControls, start: p.startAt / 1000 }
+  })
   useEffect(() => {
     const onMessage = (e: MessageEvent) => {
       const u = parseYt(e.origin, e.data)
@@ -36,23 +42,47 @@ function YouTubeFrame({ videoId }: { videoId: string }) {
       key={videoId}
       ref={bindFrame}
       title="YouTube player"
-      src={embedUrl(videoId, location.origin)}
+      src={embedUrl(videoId, location.origin, src)}
       allow="autoplay; encrypted-media; picture-in-picture"
       referrerPolicy="strict-origin-when-cross-origin"
       onLoad={(e) => {
         ytPost(e.currentTarget, 'listening')
-        usePlayer.getState().setVolume(usePlayer.getState().volume)
+        usePlayer.getState().applyVolume()
       }}
       style={rect ? { left: rect.left, top: rect.top, width: rect.width, height: rect.height } : undefined}
-      className={`fixed z-30 rounded-lg border border-line bg-black ${rect ? '' : 'right-6 bottom-[104px] h-50 w-89 shadow-[0_12px_32px_var(--shadow)]'}`}
+      // Bare video: no pointer on it, so YouTube's hover overlay never shows; our controls drive it.
+      className={`fixed z-30 rounded-lg border border-line bg-black ${src.controls && !hidden ? '' : 'pointer-events-none'} ${hidden ? 'opacity-0' : ''} ${rect ? '' : 'right-6 bottom-[104px] h-50 w-89 shadow-[0_12px_32px_var(--shadow)]'}`}
     />
   )
 }
 
+// Volume before mute, restored by unmute.
+let unmuted = 1
+
+/** Knob, or YouTube-like speaker (click = mute) and bar. */
 export function VolumeControl({ big }: { big?: boolean }) {
   const { volume, setVolume } = usePlayer()
   const mode = useSettings((s) => s.settings.volume)
-  return mode === 'knob' ? <Knob value={volume} onChange={setVolume} size={big ? 50 : 30} ticks={big} /> : <Bar label="Volume" value={volume} max={1} onChange={setVolume} className={big ? 'w-36' : 'w-24'} />
+  if (mode === 'knob')
+    return (
+      <span className="flex items-center gap-1.5 text-ink-3">
+        {!big && <SpeakerHigh size={15} />}
+        <Knob value={volume} onChange={setVolume} size={big ? 50 : 30} ticks={big} />
+      </span>
+    )
+  const Icon = volume === 0 ? SpeakerSlash : volume < 0.5 ? SpeakerLow : SpeakerHigh
+  const mute = () => {
+    if (volume > 0) unmuted = volume
+    setVolume(volume > 0 ? 0 : unmuted || 1)
+  }
+  return (
+    <span className="flex items-center gap-1">
+      <RoundButton label={volume > 0 ? 'Mute' : 'Unmute'} kind="plain" size={big ? 'md' : 'sm'} onClick={mute}>
+        <Icon size={big ? 20 : 16} />
+      </RoundButton>
+      <Bar label="Volume" value={volume} max={1} onChange={setVolume} className={big ? 'w-32' : 'w-24'} />
+    </span>
+  )
 }
 
 export function PlayerBar() {
@@ -115,17 +145,14 @@ export function PlayerBar() {
         <Transport />
         <div className="flex w-full items-center gap-3 font-mono text-[10px] text-ink-3 tabular-nums">
           <span>{clock(positionMs)}</span>
-          <Bar label="Position" value={positionMs} max={durationMs ?? 0} onChange={seek} className="flex-1" />
+          <Bar label="Position" seek value={positionMs} max={durationMs ?? 0} onChange={seek} className="flex-1" />
           <span>-{clock(Math.max(0, (durationMs ?? 0) - positionMs))}</span>
         </div>
       </div>
 
       <div className="flex w-85 items-center justify-end gap-3.5">
         {readout && now && <Readout detail={now.via === 'local' ? fileFormat(now.path) : now.via === 'preview' ? '30 S' : undefined}>{{ local: 'Local', youtube: 'YouTube', spotify: 'Spotify', preview: 'Preview' }[now.via]}</Readout>}
-        <span className="flex items-center gap-1.5 text-ink-3">
-          <SpeakerHigh size={15} />
-          <VolumeControl />
-        </span>
+        <VolumeControl />
         <RoundButton label="Now playing, full screen" disabled={!now} onClick={() => setFull(true)}>
           <ArrowsOutSimple size={15} />
         </RoundButton>

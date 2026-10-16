@@ -38,6 +38,13 @@ export type Column = (typeof COLUMNS)[number]
 
 export const START_VIEWS = ['songs', 'mixes', 'albums', 'artists'] as const
 
+/** Mini player resting spots: corners and edge middles (t = top, b = bottom, l = left, r = right). */
+export const SPOTS = ['tl', 't', 'tr', 'l', 'r', 'bl', 'b', 'br'] as const
+export type Spot = (typeof SPOTS)[number]
+
+/** Bumped when defaults change for everyone (saved settings get the new ones once). */
+const DEFAULTS_VERSION = 2
+
 export interface Settings {
   /** Preset id, custom theme id, or 'system' (Modern / Modern Dark, following Windows). */
   theme: string
@@ -69,6 +76,16 @@ export interface Settings {
   /** A single click on a track row plays it, or a double-click does. */
   clickToPlay: 'single' | 'double'
   startView: (typeof START_VIEWS)[number]
+  /** YouTube's own buttons and title on the video (applies from the next track). */
+  youtubeControls: boolean
+  /** Now Playing with YouTube: big video, or big cover with the video kept small (still visible). */
+  stage: 'video' | 'cover'
+  miniSpot: Spot
+  /** Fade between songs, seconds (0 = off). */
+  crossfade: number
+  /** Pick up the last track where it stopped when the app opens. */
+  resume: boolean
+  defaultsVersion: number
 }
 
 export const DEFAULTS: Settings = {
@@ -79,8 +96,8 @@ export const DEFAULTS: Settings = {
   density: 'comfort',
   zoom: 100,
   readout: true,
-  volume: 'knob',
-  tuner: true,
+  volume: 'bar',
+  tuner: false,
   columns: [...COLUMNS],
   shield: true,
   miniPlayer: false,
@@ -89,9 +106,18 @@ export const DEFAULTS: Settings = {
   motion: true,
   sidebarCounts: true,
   listCovers: true,
-  clickToPlay: 'double',
+  clickToPlay: 'single',
   startView: 'songs',
+  youtubeControls: false,
+  stage: 'video',
+  miniSpot: 'br',
+  crossfade: 5,
+  resume: true,
+  defaultsVersion: DEFAULTS_VERSION,
 }
+
+/** Defaults changed in version 2 (user's request 2026-10-16): YouTube-like bar and volume, one-click play. */
+const V2: Partial<Settings> = { volume: 'bar', tuner: false, clickToPlay: 'single' }
 
 const HEX = /^#[0-9a-f]{6}$/i
 const isHex = (v: unknown): v is string => typeof v === 'string' && HEX.test(v)
@@ -136,6 +162,14 @@ export function sanitize(raw: unknown): Settings {
     listCovers: typeof r.listCovers === 'boolean' ? r.listCovers : DEFAULTS.listCovers,
     clickToPlay: pick(r.clickToPlay, ['single', 'double'] as const, DEFAULTS.clickToPlay),
     startView: pick(r.startView, START_VIEWS, DEFAULTS.startView),
+    youtubeControls: typeof r.youtubeControls === 'boolean' ? r.youtubeControls : DEFAULTS.youtubeControls,
+    stage: pick(r.stage, ['video', 'cover'] as const, DEFAULTS.stage),
+    miniSpot: pick(r.miniSpot, SPOTS, DEFAULTS.miniSpot),
+    crossfade: typeof r.crossfade === 'number' && Number.isFinite(r.crossfade) ? Math.min(12, Math.max(0, Math.round(r.crossfade))) : DEFAULTS.crossfade,
+    resume: typeof r.resume === 'boolean' ? r.resume : DEFAULTS.resume,
+    defaultsVersion: DEFAULTS_VERSION,
+    // Saved before the defaults changed: take the new ones once.
+    ...(!(typeof r.defaultsVersion === 'number' && r.defaultsVersion >= DEFAULTS_VERSION) ? V2 : {}),
   }
 }
 

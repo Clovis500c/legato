@@ -1,4 +1,4 @@
-import { ArrowSquareOut, CaretDoubleDown, Lock, Waveform } from '@phosphor-icons/react'
+import { ArrowSquareOut, CaretDoubleDown, Waveform } from '@phosphor-icons/react'
 import { openUrl } from '@tauri-apps/plugin-opener'
 import { useEffect, useLayoutEffect, useRef } from 'react'
 import { useSettings } from '../../app/settings'
@@ -6,7 +6,7 @@ import { useStore } from '../../app/store'
 import type { LibraryTrack, Source } from '../../shared/api'
 import { trackArt } from '../../shared/art'
 import { Button } from '../../shared/ui/Button'
-import { Bar, Led, RoundButton } from '../../shared/ui/controls'
+import { Bar, RoundButton, Segmented } from '../../shared/ui/controls'
 import { Cover } from '../../shared/ui/Cover'
 import { SourceIcon } from '../../shared/ui/SourceIcon'
 import { AddToPlaylist } from '../library/AddToPlaylist'
@@ -19,9 +19,24 @@ import { fileTitle, usePlayer, useVideoSlot } from './store'
 import { Transport } from './Transport'
 
 /** Publishes its rect so the single YouTube iframe sits here. YouTube rules: at least 200×200, nothing on top. */
-export function VideoSlot({ className = '', style }: { className?: string; style?: React.CSSProperties }) {
+export function VideoSlot({ className = '', style, hidden = false, live = false }: { className?: string; style?: React.CSSProperties; hidden?: boolean; live?: boolean }) {
   const ref = useRef<HTMLDivElement>(null)
   const set = useVideoSlot((s) => s.set)
+  useLayoutEffect(() => {
+    useVideoSlot.setState({ hidden })
+    return () => useVideoSlot.setState({ hidden: false })
+  }, [hidden])
+  // live: slot moves without resizing (mini player drag, snap animation): follow it every frame.
+  useLayoutEffect(() => {
+    if (!live) return
+    let id = 0
+    const tick = () => {
+      set(ref.current!.getBoundingClientRect())
+      id = requestAnimationFrame(tick)
+    }
+    tick()
+    return () => cancelAnimationFrame(id)
+  }, [live, set])
   useLayoutEffect(() => {
     const el = ref.current!
     const update = () => set(el.getBoundingClientRect())
@@ -57,53 +72,35 @@ function TunerScale({ value, max, onChange }: { value: number; max: number; onCh
   )
 }
 
-/** "Play via": one round input per source of this track. Lit = playing. Spotify locked until connected (Premium). */
-function Inputs({ track }: { track?: LibraryTrack }) {
-  const { now, index, playAt } = usePlayer()
-  const sp = useStore((s) => s.status.spotify.connected)
-  const has = track ? vias(track, sp) : []
-  const items: { code: string; source: Source; via: Via }[] = [
-    { code: 'LOC', source: 'local', via: 'local' },
-    { code: 'YT', source: 'youtube', via: 'youtube' },
-    { code: 'SP', source: 'spotify', via: 'spotify' },
-    { code: 'AM', source: 'apple', via: 'preview' },
-  ]
+const viaSource: Record<Via, Source> = { local: 'local', youtube: 'youtube', spotify: 'spotify', preview: 'apple' }
+
+/** Where the sound comes from: one small icon. Switching source: right-click › Play via. */
+function SourceBadge({ via }: { via: Via }) {
+  const hint = `Playing from ${viaLabel[via]} · right-click to switch source`
   return (
-    <div className="flex flex-col gap-2">
-      <span className="kicker">Play via</span>
-      <div className="flex gap-3">
-        {items.map((i) => {
-          const on = now?.via === i.via
-          const can = has.includes(i.via)
-          const locked = i.via === 'spotify' && !sp
-          const hint = locked ? 'Spotify: connect a Premium account (Settings › Sources)' : on ? `Playing: ${viaLabel[i.via]}` : can ? `Switch to ${viaLabel[i.via]}` : 'Not on this source'
-          return (
-            <button key={i.code} disabled={!can || on} onClick={() => playAt(index, i.via)} title={hint} aria-label={hint} aria-pressed={on} className="group flex flex-col items-center gap-1.5">
-              <Led on={on} />
-              <span className={`grid size-10 place-items-center rounded-full border transition ${on ? 'border-ink-3 bg-raised text-ink' : can ? 'border-line text-ink-2 group-hover:bg-raised group-hover:text-ink' : 'border-line text-ink-4'}`}>
-                {locked ? <Lock size={14} /> : <SourceIcon source={i.source} size={14} />}
-              </span>
-              <span className={`font-mono text-[9px] tracking-[0.08em] ${on ? 'text-ink' : 'text-ink-3'}`}>{i.code}</span>
-            </button>
-          )
-        })}
-      </div>
-    </div>
+    <span title={hint} aria-label={hint} className="grid size-7 place-items-center text-ink-3">
+      <SourceIcon source={viaSource[via]} size={15} />
+    </span>
   )
 }
 
-/** Video or cover, as big as the space allows without pushing the controls off screen. */
-function Stage({ video, track, title }: { video: boolean; track?: LibraryTrack; title: string }) {
-  const ratio = video ? 16 / 9 : 1
+/**
+ * Video or cover, as big as the space allows without pushing the controls off screen. YouTube in cover mode (user's
+ * choice 2026-10-16, against YouTube's terms like the shield): the embed keeps playing over the cover, fully transparent.
+ */
+function Stage({ video, cover, track, title }: { video: boolean; cover: boolean; track?: LibraryTrack; title: string }) {
+  const big = video && !cover
+  const ratio = big ? 16 / 9 : 1
   // Container query units: fit inside both width and height, keep the ratio.
   const fit = { width: `min(100cqw, 100cqh * ${ratio})`, aspectRatio: String(ratio) }
   return (
     <div className="grid min-h-50 flex-1 place-items-center" style={{ containerType: 'size' }}>
-      {video ? (
+      {big ? (
         <VideoSlot className="min-h-50 min-w-89" style={fit} />
       ) : (
-        <span style={fit} className="block">
+        <span style={fit} className="relative block">
           <Cover title={track?.album ?? title} art={track && trackArt(track)} size={200} className="size-full! text-[56px]! shadow-[0_12px_40px_var(--shadow)]" />
+          {video && <VideoSlot hidden className="absolute inset-0 bg-transparent" />}
         </span>
       )}
     </div>
@@ -112,7 +109,8 @@ function Stage({ video, track, title }: { video: boolean; track?: LibraryTrack; 
 
 export function NowPlaying() {
   const { now, positionMs, durationMs, seek, setFull, list, index, order, upcoming, playAt } = usePlayer()
-  const { tuner, tint } = useSettings((s) => s.settings)
+  const { tuner, tint, stage, volume: volumeMode } = useSettings((s) => s.settings)
+  const update = useSettings((s) => s.update)
   // Re-rendered by the settings subscription above.
   const theme = useSettings.getState().current()
   const track = useStore((s) => s.tracks.find((t) => t.id === now?.trackId))
@@ -145,13 +143,13 @@ export function NowPlaying() {
           </RoundButton>
           <span className="kicker">Collapse</span>
         </div>
-        <span className="kicker text-ink-2">Now playing · {viaLabel[now.via]}</span>
+        {video ? <Segmented label="Show" value={stage} onChange={(s) => update({ stage: s })} options={[{ value: 'video', label: 'Video' }, { value: 'cover', label: 'Cover' }]} /> : <span className="kicker text-ink-2">Now playing · {viaLabel[now.via]}</span>}
         <span className="w-60" />
       </div>
 
       <div className="grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_360px] gap-10 pt-2">
         <section className="flex min-h-0 min-w-0 flex-col gap-5">
-          <Stage video={video} track={track} title={now.title} />
+          <Stage video={video} cover={stage === 'cover'} track={track} title={now.title} />
           {now.via === 'spotify' && <span className="kicker text-center">Playing in your Spotify app</span>}
           {now.via === 'preview' && (
             <div className="flex items-center justify-center gap-4">
@@ -168,21 +166,22 @@ export function NowPlaying() {
               <h2 className="truncate text-[32px] leading-tight font-bold tracking-[-0.03em]">{now.title}</h2>
               <p className="truncate text-sm text-ink-2">{track?.album ? `${now.artist} — ${track.album}` : now.artist}</p>
             </div>
-            <div className="flex shrink-0 items-end gap-4">
-              {track && <AddToPlaylist trackIds={[track.id]} label={`Add ${track.title} to a playlist`} />}
-              <div className="flex items-end gap-2 rounded-md border border-line-soft bg-recess px-3.5 py-2 font-mono tabular-nums">
-                <span className="text-[30px] leading-none">{clock(positionMs)}</span>
-                <span className="text-xs text-ink-3">/ {clock(durationMs)}</span>
-              </div>
-            </div>
+            <div className="flex shrink-0 items-end gap-4">{track && <AddToPlaylist trackIds={[track.id]} label={`Add ${track.title} to a playlist`} />}</div>
           </div>
-          <div className="shrink-0">{tuner ? <TunerScale value={positionMs} max={durationMs ?? 0} onChange={seek} /> : <Bar label="Position" value={positionMs} max={durationMs ?? 0} onChange={seek} className="w-full" />}</div>
+          <div className="flex shrink-0 flex-col gap-2">
+            {tuner ? <TunerScale value={positionMs} max={durationMs ?? 0} onChange={seek} /> : <Bar label="Position" seek value={positionMs} max={durationMs ?? 0} onChange={seek} className="w-full" />}
+            <span className="text-[13px] text-ink-2 tabular-nums">
+              {clock(positionMs)} / {clock(durationMs)}
+            </span>
+          </div>
           <div className="flex shrink-0 items-center justify-between">
-            <Inputs track={track} />
+            <span className="flex w-44">
+              <SourceBadge via={now.via} />
+            </span>
             <Transport size="lg" />
-            <div className="flex w-28 flex-col items-center gap-1">
+            <div className="flex w-44 flex-col items-end gap-1">
               <VolumeControl big />
-              <span className="kicker">Volume</span>
+              {volumeMode === 'knob' && <span className="kicker">Volume</span>}
             </div>
           </div>
         </section>

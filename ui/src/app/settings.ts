@@ -3,6 +3,7 @@ import { getCurrentWindow } from '@tauri-apps/api/window'
 import { create } from 'zustand'
 import { api } from '../shared/api'
 import { cssVars, DEFAULTS, resolveTheme, sanitize, type Settings, type SystemAccent, type Theme } from '../shared/theme/theme'
+import { usePlayer } from '../features/player/store'
 import { useStore } from './store'
 
 const systemDark = window.matchMedia('(prefers-color-scheme: dark)')
@@ -30,6 +31,7 @@ function apply(s: Settings) {
     // Storage off: no first-paint cache.
   }
   document.documentElement.classList.toggle('still', !s.motion)
+  usePlayer.setState({ crossfade: s.crossfade })
   const root = document.documentElement.style
   for (const [k, v] of Object.entries(cssVars(resolveTheme(s, systemDark.matches, systemAccent), s))) root.setProperty(k, v)
   getCurrentWebview()
