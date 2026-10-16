@@ -20,8 +20,8 @@ interface SettingsState {
   settings: Settings
   load: () => Promise<void>
   update: (patch: Partial<Settings>) => void
-  /** Theme currently on screen (resolved from preset, custom or system). */
-  current: () => Theme
+  /** Theme currently on screen (resolved from preset, custom or system), or the one `theme` would give. */
+  current: (theme?: string) => Theme
 }
 
 let saveTimer: ReturnType<typeof setTimeout> | undefined
@@ -45,7 +45,7 @@ export const useSettings = create<SettingsState>((set, get) => ({
     saveTimer = setTimeout(() => api.saveSettings(s).catch((e) => useStore.setState({ error: String(e) })), 400)
   },
 
-  current: () => resolveTheme(get().settings, systemDark.matches, systemAccent),
+  current: (theme = get().settings.theme) => resolveTheme({ ...get().settings, theme }, systemDark.matches, systemAccent),
 }))
 
 systemDark.addEventListener('change', () => apply(useSettings.getState().settings))

@@ -78,8 +78,8 @@ function ThemeCard({ t, on, onClick, badge }: { t: Palette; on: boolean; onClick
 }
 
 function ThemeGallery({ onEdit }: { onEdit?: (id: string) => void }) {
-  const { settings, update } = useSettings()
-  const system = { ...PRESETS[0], name: 'System' }
+  const { settings, update, current } = useSettings()
+  const system = { ...current('system'), name: 'System' }
   return (
     <div className="grid grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-4">
       {PRESETS.map((t) => (
