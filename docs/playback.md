@@ -1,101 +1,120 @@
-# Lecture audio : prototypes et plan
+# Audio playback: prototypes and plan
 
-État au 15/10/2026. YouTube et fichiers locaux : faits et testés sous Windows (WebView2). Spotify : plan seulement.
+Status on 2026-10-16. YouTube, local files and Apple Music previews: done and tested on Windows (WebView2). Spotify: plan only.
 
-## YouTube : lecteur officiel embarqué
+## One queue for every source (phase 4)
 
-**Montage retenu**
-- iframe `https://www.youtube.com/embed/<id>?enablejsapi=1&autoplay=1&playsinline=1&origin=<origine de l'app>`
-  avec `referrerpolicy="strict-origin-when-cross-origin"` (`ui/src/features/player/youtube.ts`, `PlayerBar.tsx`).
-- Piloté par `postMessage`, le protocole qu'utilise `iframe_api` en interne (`listening`, `command`, `infoDelivery`, `onError`).
-  On ne charge pas `iframe_api` : un script distant dans l'origine de l'app aurait accès à l'IPC Tauri.
-- CSP : seul ajout, `frame-src https://www.youtube.com`.
-- Règles YouTube : le lecteur reste visible (356×200, minimum 200×200), ses contrôles aussi. On n'extrait aucun audio
-  et on ne lit rien en arrière-plan caché.
+- The queue lives in the UI player store (`ui/src/features/player/store.ts`): the list a track was started from, walked by next/prev.
+- Each track plays through its best source (`sources.ts`): **local file, then full YouTube, then Apple Music 30 s preview**.
+  Tracks with none of these are skipped.
+- "Play via" in Now Playing switches the current track to another of its sources.
+- Consecutive local files go to the engine as one run, so they stay gapless. When the run ends (`Status.ended`), the store moves on.
+- Engine status lags commands: the store ignores statuses until the engine reports one of the paths it was just given.
+- "Find full versions" (`find_versions`): for tracks that only preview (or don't play), one YouTube search each, within the daily
+  budget of 100, cached for the session. Matching = ISRC, then title + artist + duration.
 
-**Erreur 153 (pas de `Referer`) : mesure réelle**
-Build debug (`pnpm tauri build --debug --no-bundle`), origine `http://tauri.localhost`, CSP de l'app, pilotage par le protocole DevTools de WebView2 :
+## Apple Music previews
 
-| `referrerpolicy` de l'iframe | Résultat |
+- `itunes::preview` calls the public lookup API (`https://itunes.apple.com/lookup?id=…&country=…`) for `previewUrl` and `trackViewUrl`.
+- Both URLs must be HTTPS on `*.apple.com` or `*.mzstatic.com` (`apple_url`), checked in Rust.
+- The preview (AAC, about 1 MB) is downloaded by Rust and kept **in memory only** (`Command::PlayMemory`, decoded from a `Cursor`).
+  Nothing is written to disk. The front end never touches the network.
+- Apple's terms tie previews to promoting the store: Now Playing shows "Listen on Apple Music" (the `trackViewUrl`) next to every preview.
+- Full Apple Music playback needs MusicKit, an Apple Developer account and DRM: not planned.
+
+## YouTube: official embedded player
+
+**Chosen setup**
+- iframe `https://www.youtube.com/embed/<id>?enablejsapi=1&autoplay=1&playsinline=1&origin=<app origin>`
+  with `referrerpolicy="strict-origin-when-cross-origin"` (`ui/src/features/player/youtube.ts`, `PlayerBar.tsx`).
+- Driven by `postMessage`, the protocol `iframe_api` uses internally (`listening`, `command`, `infoDelivery`, `onError`).
+  We don't load `iframe_api`: a remote script in the app's origin would get access to Tauri IPC.
+- CSP: only addition, `frame-src https://www.youtube.com`.
+- YouTube rules: the player stays visible (356×200, minimum 200×200), with its controls. No audio is extracted
+  and nothing plays hidden in the background.
+
+**Error 153 (no `Referer`): real measurement**
+Debug build (`pnpm tauri build --debug --no-bundle`), origin `http://tauri.localhost`, app CSP, driven through the WebView2 DevTools protocol:
+
+| iframe `referrerpolicy` | Result |
 |---|---|
-| `strict-origin-when-cross-origin` (retenu, aussi la valeur par défaut de Chromium) | lecture OK : état 1, temps qui avance, pause, seek, fin → titre suivant |
+| `strict-origin-when-cross-origin` (chosen, also Chromium's default) | plays: state 1, time moving, pause, seek, end → next track |
 | `no-referrer` | `onError 153` |
 
-C'est donc le `Referer: http://tauri.localhost/` qui débloque la lecture. Sous Windows, aucun réglage Tauri ni plugin n'est nécessaire.
-On fixe quand même la politique sur l'iframe : une balise meta ou un en-tête ajouté plus tard ne peut plus la casser sans qu'on le voie.
+So the `Referer: http://tauri.localhost/` is what unlocks playback. On Windows, no Tauri setting or plugin is needed.
+We still pin the policy on the iframe: a meta tag or header added later can't break it without us noticing.
 
-**Options écartées (si YouTube durcit)**
+**Options set aside (if YouTube gets stricter)**
 
-| Option | Effet | Coût |
+| Option | Effect | Cost |
 |---|---|---|
-| `useHttpsScheme: true` (fenêtre) | origine `https://tauri.localhost` | l'origine change, donc le localStorage, l'IndexedDB et les cookies de la webview sont perdus pour les installations existantes (rien chez nous aujourd'hui) ; Windows et Android seulement |
-| `Referer` forcé via `WebResourceRequested` de WebView2 (`https://dev.musicapp.desktop`) | suit à la lettre la règle YouTube pour les apps desktop (en-tête `Referer` = identifiant d'app en HTTPS) | code propre à Windows (`webview2-com`), à refaire pour chaque plateforme |
-| `tauri-plugin-localhost` | toute l'UI servie sur `http://localhost:PORT` | serveur ouvert à tous les processus locaux, IPC exposé à une origine http ordinaire ; déconseillé par Tauri |
-| Page relais sur `127.0.0.1` | `Referer` loopback pour la seule iframe | petit serveur loopback, double iframe, messages à relayer |
+| `useHttpsScheme: true` (window) | origin `https://tauri.localhost` | origin changes, so the webview's localStorage, IndexedDB and cookies are lost for existing installs (we keep nothing there today); Windows and Android only |
+| `Referer` forced through WebView2 `WebResourceRequested` (`https://dev.musicapp.desktop`) | follows YouTube's rule for desktop apps to the letter (`Referer` header = app id over HTTPS) | Windows-only code (`webview2-com`), to redo per platform |
+| `tauri-plugin-localhost` | whole UI served on `http://localhost:PORT` | server open to every local process, IPC exposed to a plain http origin; discouraged by Tauri |
+| Relay page on `127.0.0.1` | loopback `Referer` for the iframe only | small loopback server, double iframe, messages to relay |
 
-**Risques ouverts**
-- macOS et Linux (non testés) : l'origine `tauri://localhost` n'enverra probablement aucun `Referer`, donc 153 probable.
-  Piste : la page relais loopback, qui laisse la fenêtre principale sur l'origine Tauri.
-- Le protocole `postMessage` n'est pas documenté, mais il est stable depuis des années et des lecteurs comme vidstack s'en servent.
-  S'il casse : charger `iframe_api` dans une iframe isolée, sans accès à l'IPC.
-- Une vidéo non intégrable renvoie l'erreur 101 ou 150, affichée dans l'alerte de l'app.
+**Open risks**
+- macOS and Linux (untested): the `tauri://localhost` origin probably sends no `Referer`, so 153 is likely.
+  Lead: the loopback relay page, which keeps the main window on the Tauri origin.
+- The `postMessage` protocol is undocumented, but it has been stable for years and players like vidstack rely on it.
+  If it breaks: load `iframe_api` in an isolated iframe with no IPC access.
+- A video that can't be embedded returns error 101 or 150, shown in the app's alert.
 
-## Fichiers locaux : `crates/player`
+## Local files: `crates/player`
 
-- rodio 0.23 (décodage symphonia) : mp3, flac, wav, ogg/vorbis, m4a/aac.
-- Le moteur tourne sur un thread dédié qui possède la sortie audio (le flux cpal n'est pas `Send` sur toutes les plateformes).
-  Il reçoit les commandes par canal et vérifie les fins de morceau toutes les 100 ms.
-- Gapless : dès qu'un morceau démarre, le suivant est ajouté au `Player` rodio, qui enchaîne les sources sans trou.
-  Le décodeur retire le remplissage de l'encodeur (option gapless active par défaut). La logique de file (`Queue`) a ses tests unitaires.
-- Un fichier illisible est sauté et l'erreur s'affiche.
-- IPC : `player` (`play`, `toggle`, `seek`, `next`, `prev`, `volume`, `stop`) et `player_status`, interrogé 4 fois par seconde par la PlayerBar.
-- Entrée : on glisse des fichiers audio sur la fenêtre, triés par nom. Pas encore d'import de dossier dans la bibliothèque.
-- Testé dans l'app compilée : lecture, pause, seek, enchaînement automatique, précédent, volume.
-- Limites : pas d'opus ; titre = nom de fichier (tags non lus) ; position obtenue par interrogation périodique, pas par événements.
+- rodio 0.23 (symphonia decoding): mp3, flac, wav, ogg/vorbis, m4a/aac.
+- The engine runs on a dedicated thread that owns the audio output (the cpal stream isn't `Send` on every platform).
+  It receives commands over a channel and checks for track ends every 100 ms.
+- Gapless: as soon as a track starts, the next one is appended to the rodio `Player`, which chains sources with no gap.
+  The decoder strips encoder padding (gapless option on by default). The queue logic (`Queue`) has unit tests.
+- An unreadable file is skipped and the error is shown.
+- IPC: `player` (`play`, `toggle`, `seek`, `next`, `prev`, `volume`, `stop`) and `player_status`, polled 4 times a second by the PlayerBar.
+- Input: music folders (Settings › Sources), or audio files dropped on the window.
+- Limits: no opus; position obtained by polling, not events.
 
-## Spotify : plan (rien d'implémenté)
+## Spotify: plan (nothing implemented)
 
-Le Web Playback SDK dans l'app est exclu. On pilote l'app Spotify officielle (desktop, mobile ou enceinte) par **Spotify Connect**,
-via les endpoints Player de la Web API. L'audio sort de l'app Spotify ; nous n'envoyons que des commandes.
+The Web Playback SDK inside the app is ruled out. We drive the official Spotify app (desktop, mobile or speaker) through **Spotify Connect**,
+via the Web API Player endpoints. Audio comes out of the Spotify app; we only send commands.
 
-**Prérequis**
-- Premium côté utilisateur : la doc de `PUT /me/player/play` indique « This API only works for users who have Spotify Premium ».
-- Premium côté propriétaire du Client ID : obligatoire en mode dev depuis février 2026. Le guide de migration de février 2026 ne touche à aucun endpoint Player.
-- Nouveaux scopes `user-read-playback-state` et `user-modify-playback-state`, donc une reconnexion au premier usage.
+**Prerequisites**
+- Premium for the user: the `PUT /me/player/play` docs say "This API only works for users who have Spotify Premium".
+- Premium for the Client ID owner: mandatory in dev mode since February 2026. The February 2026 migration guide touches no Player endpoint.
+- New scopes `user-read-playback-state` and `user-modify-playback-state`, so a reconnect on first use.
 
 **Endpoints**
 
-| Besoin | Appel |
+| Need | Call |
 |---|---|
-| Choisir l'appareil | `GET /me/player/devices` |
-| Transférer la lecture | `PUT /me/player` `{ device_ids: [id], play: false }` |
-| Lire un titre ou une playlist | `PUT /me/player/play?device_id=…` `{ uris: ["spotify:track:…"] }` ou `{ context_uri, offset: { position } }` |
+| Pick the device | `GET /me/player/devices` |
+| Transfer playback | `PUT /me/player` `{ device_ids: [id], play: false }` |
+| Play a track or playlist | `PUT /me/player/play?device_id=…` `{ uris: ["spotify:track:…"] }` or `{ context_uri, offset: { position } }` |
 | Transport | `PUT /me/player/pause`, `POST /me/player/next`, `POST /me/player/previous`, `PUT /me/player/seek?position_ms=`, `PUT /me/player/volume?volume_percent=` |
-| État pour la barre | `GET /me/player` (`is_playing`, `progress_ms`, `item`) |
-| File d'attente | `POST /me/player/queue?uri=` |
+| State for the bar | `GET /me/player` (`is_playing`, `progress_ms`, `item`) |
+| Queue | `POST /me/player/queue?uri=` |
 
-**Intégration**
-- `crates/connectors/src/spotify.rs` : méthodes Player sur `Spotify`, testées avec mockito comme le reste du connecteur.
-- `src-tauri` : une commande `spotify_player(cmd)` sur le modèle de `player`.
-- UI : `NowPlaying` gagne `spotifyUri` et le store route les commandes vers Spotify. On interroge `GET /me/player` toutes les 1 à 2 s
-  et on interpole la position entre deux appels, pour ménager le quota.
-- Aucun appareil actif : ouvrir `spotify:` avec l'opener, interroger `/devices` quelques secondes, sinon afficher « Ouvre Spotify sur un appareil ».
-- Erreurs : `403` (Premium requis) donne un message clair et un bouton désactivé ; `404` (pas d'appareil) relance la procédure ci-dessus ;
-  `429` respecte `Retry-After`.
-- Repli sans Premium : si le titre a aussi un id YouTube (matching ISRC ou titre+artiste), le lire dans le lecteur YouTube.
-  C'est déjà le cas aujourd'hui pour tout titre relié.
-- Validation réelle impossible sans compte Premium : tests mockito d'abord, puis essai sur un compte Premium.
+**Integration**
+- `crates/connectors/src/spotify.rs`: Player methods on `Spotify`, tested with mockito like the rest of the connector.
+- `src-tauri`: a `spotify_player(cmd)` command modeled on `player`.
+- UI: a `spotify` `Via` in the store routes commands to Spotify. Poll `GET /me/player` every 1 to 2 s
+  and interpolate the position in between, to spare the quota.
+- No active device: open `spotify:` with the opener, poll `/devices` for a few seconds, else show "Open Spotify on a device".
+- Errors: `403` (Premium required) gives a clear message and a disabled button; `404` (no device) restarts the steps above;
+  `429` honors `Retry-After`.
+- Fallback without Premium: if the track also has a YouTube id (ISRC or title+artist matching), play it in the YouTube player.
+  That's already the case today for any linked track.
+- Real validation impossible without a Premium account: mockito tests first, then a try on a Premium account.
 
-## Bouclier anti-pub (`crates/shield`) — choix de l'utilisateur, 16/10/2026
+## Ad shield (`crates/shield`) — user's choice, 2026-10-16
 
-- Moteur de Brave (`adblock` 0.13, licence MPL-2.0) sur EasyList et EasyPrivacy. Les listes sont téléchargées par Rust, gardées en cache
-  4 jours dans le dossier de données de l'app, et jamais embarquées dans le binaire. Des règles intégrées (régies Google et YouTube)
-  couvrent le premier lancement hors ligne.
-- WebView2 : un `WebResourceRequested` sur `*`, toutes sources confondues (`ICoreWebView2_22`, iframes comprises). Une requête bloquée
-  reçoit une réponse 403 vide.
-- Lecteur YouTube : `crates/shield/src/youtube.js` est injecté dans toutes les frames (seules les frames YouTube agissent). Il retire
-  `adPlacements`, `adSlots`, `playerAds` et `adBreakHeartbeatParams` des données du lecteur (approche « json-prune », code écrit de zéro).
-- Vérifié dans l'app compilée : 4 requêtes bloquées pendant une vidéo intégrée, la lecture continue, et le script est actif dans l'iframe
-  YouTube.
-- **Risque accepté par l'utilisateur** : les règles des API YouTube interdisent de bloquer les pubs du lecteur intégré. On s'expose à
-  une clé API révoquée, et la lecture peut casser si YouTube change son lecteur. Le réglage Réglages › Bouclier coupe le blocage.
+- Brave's engine (`adblock` 0.13, MPL-2.0 licence) on EasyList and EasyPrivacy. Lists are downloaded by Rust, cached
+  4 days in the app data folder, and never bundled in the binary. Built-in rules (Google and YouTube ad servers)
+  cover the first offline launch.
+- WebView2: one `WebResourceRequested` on `*`, every source kind (`ICoreWebView2_22`, iframes included). A blocked request
+  gets an empty 403 response.
+- YouTube player: `crates/shield/src/youtube.js` is injected in every frame (only YouTube frames act). It removes
+  `adPlacements`, `adSlots`, `playerAds` and `adBreakHeartbeatParams` from the player data ("json-prune" approach, written from scratch).
+- Checked in the built app: 4 requests blocked during an embedded video, playback continues, and the script is active in the YouTube
+  iframe.
+- **Risk accepted by the user**: YouTube API terms forbid blocking ads in the embedded player. We risk
+  a revoked API key, and playback may break if YouTube changes its player. Settings › Shield turns blocking off.

@@ -1,204 +1,207 @@
-# Music App v2 : plan proposé (à valider)
+# Music App v2: plan
 
-Statut : **phases 1 à 3 livrées** (16/10/2026) : refonte Hi-Fi, thèmes, bouclier anti-pub, playlists perso, dossiers locaux, ajout par lien YouTube, recherche Apple Music et YouTube. Prochaines : 4 (lecture intelligente), 7 (partage par code ou QR), 8 (mixes). Complète, raye ou commente directement ce fichier, ou réponds dans le chat.
-Maquettes : Figma, fichier « Bow Game / Music App », page **« Music App v3 — Hi-Fi »**. La page v2 « Apple » est abandonnée.
+Status: **phases 1 to 4 delivered** (2026-10-16): Hi-Fi redesign, themes, ad shield, custom playlists, local folders, add by YouTube link, Apple Music and YouTube search, one queue for every source with Apple previews. Next: 7 (share by code or QR), 8 (mixes), 5 and 6. Edit, strike or comment this file directly, or answer in the chat.
+Mockups: Figma, file "Bow Game / Music App", page **"Music App v3 — Hi-Fi"**. The v2 "Apple" page is abandoned.
 
-## 0. Tes décisions (à remplir)
+## 0. Your decisions (to fill in)
 
-| # | Question | Ma proposition | Ta réponse |
+| # | Question | My proposal | Your answer |
 |---|---|---|---|
-| 1 | Direction visuelle | **Hi-Fi** : appareils Braun de Dieter Rams. Papier chaud et encre, un seul accent, voyants, boutons ronds, afficheurs en mono | |
-| 2 | Accent par défaut | Orange signal `#FF5A1F`. 6 accents au choix + couleur perso, jamais de dégradé | |
-| 3 | Thèmes | Papier par défaut. 6 thèmes prêts à l'emploi (Papier, Graphite, Studio, Aluminium, Bakélite, Sauge) + Système + **éditeur de thème** | |
-| 4 | Lecteur | Deck pleine largeur en bas (position réglable : bas, haut ou flottant) + plein écran | |
-| 5 | Clé API YouTube (gratuite, sans connexion) pour la recherche | Oui | |
-| 6 | Apple Developer (99 $/an) pour tenter la lecture Apple Music complète | Non pour l'instant : aperçus et bascule YouTube | |
-| 7 | Spotify Premium | Pas maintenant : liens, aperçus et bascule YouTube | |
-| 8 | Nom de l'app | « Music App » provisoire | |
+| 1 | Visual direction | **Hi-Fi**: Dieter Rams' Braun devices. Warm paper and ink, one accent, LEDs, round buttons, mono readouts | |
+| 2 | Default accent | Signal orange `#FF5A1F`. 6 accents to choose from + custom color, never a gradient | |
+| 3 | Themes | Paper by default. 6 ready-made themes (Paper, Graphite, Studio, Aluminum, Bakelite, Sage) + System + **theme editor** | |
+| 4 | Player | Full-width deck at the bottom (position adjustable: bottom, top or floating) + full screen | |
+| 5 | YouTube API key (free, no sign-in) for search | Yes | |
+| 6 | Apple Developer ($99/year) to try full Apple Music playback | Not for now: previews and YouTube fallback | |
+| 7 | Spotify Premium | Not now: links, previews and YouTube fallback | |
+| 8 | App name | "Music App" for now | |
 
-## 1. Ce qui marche sans être connecté (vérifié le 15/10/2026)
+## 1. What works without signing in (checked 2026-10-15)
 
-| Service | Ajouter un titre | Lecture complète | Avec un compte en plus |
+| Service | Add a track | Full playback | With an account on top |
 |---|---|---|---|
-| **YouTube** | Recherche avec une clé API gratuite (environ 100 recherches par jour). Lien collé : oEmbed, sans clé | **Oui** : lecteur officiel embarqué (prouvé dans l'app) | Import des playlists et des « J'aime », export de playlists |
-| **Apple Music** | Recherche dans le catalogue public iTunes, **sans clé** (environ 20 requêtes/min). Lien collé : recherche par id | Aperçu 30 s, puis bascule automatique sur YouTube | Lecture complète : MusicKit + Apple Developer + abonnement + DRM. Risque élevé dans WebView2 |
-| **Spotify** | **Lien collé seulement** (oEmbed). Sans Premium, toute l'API Spotify refuse les requêtes en mode dev, recherche comprise (règle de février 2026) | Aperçu par le lecteur Spotify officiel, puis bascule YouTube | Premium : pilotage de l'app Spotify (Spotify Connect, cf. `playback.md`) |
-| **Fichiers locaux** | Dossiers surveillés, glisser-déposer | Oui (moteur Rust sans blanc entre titres) | — |
+| **YouTube** | Search with a free API key (about 100 searches a day). Pasted link: oEmbed, no key | **Yes**: official embedded player (proven in the app) | Import playlists and "Likes", export playlists |
+| **Apple Music** | Search the public iTunes catalog, **no key** (about 20 requests/min). Pasted link: lookup by id | 30 s preview, then automatic YouTube fallback | Full playback: MusicKit + Apple Developer + subscription + DRM. High risk in WebView2 |
+| **Spotify** | **Pasted link only** (oEmbed). Without Premium, the whole Spotify API refuses dev-mode requests, search included (February 2026 rule) | Preview through the official Spotify player, then YouTube fallback | Premium: drive the Spotify app (Spotify Connect, see `playback.md`) |
+| **Local files** | Watched folders, drag and drop | Yes (gapless Rust engine) | — |
 
-Règle de lecture : pour chaque titre, on joue la meilleure source disponible. **Fichier local, puis YouTube (complet), puis service connecté, puis aperçu 30 s.**
-« Trouver les versions » relie les titres entre services (ISRC, ou titre + artiste + durée) et utilise le quota YouTube avec un cache.
+Playback rule: for each track, play the best available source. **Local file, then YouTube (full), then connected service, then 30 s preview.**
+"Find versions" links tracks across services (ISRC, or title + artist + duration) and uses the YouTube quota with a cache.
 
-## 2. Données (crates/core)
+## 2. Data (crates/core)
 
-- `tracks` reste la fiche commune (titre, artiste, album, durée, ISRC).
-- **Nouveau** `track_sources(track_id, source, source_id, url, playable: full|preview|none, preview_url)`, qui remplace `Track.ids`.
-- **Nouveau** `library(track_id, added_at, origin)` : on peut ajouter un titre sans qu'il soit dans une playlist.
-- Playlists : `kind = perso | importée(source)`, `playlist_items(position, track_id, added_at)`.
-  Une playlist importée est un miroir en lecture seule, avec un bouton « Dupliquer en playlist perso ».
-- Migrations SQLite versionnées (`user_version`). Export et import de sauvegarde en JSON.
+- `tracks` stays the shared record (title, artist, album, duration, ISRC).
+- **New** `track_sources(track_id, source, source_id, url, playable: full|preview|none, preview_url)`, replacing `Track.ids`.
+- **New** `library(track_id, added_at, origin)`: a track can be added without being in a playlist.
+- Playlists: `kind = custom | imported(source)`, `playlist_items(position, track_id, added_at)`.
+  An imported playlist is a read-only mirror, with a "Duplicate as custom playlist" button.
+- Versioned SQLite migrations (`user_version`). Backup export and import as JSON.
 
-## 3. Phases (une étape testée = un petit commit)
+## 3. Phases (one tested step = one small commit)
 
-**Phase 1 : refonte visuelle « Hi-Fi » et moteur de personnalisation** (L)
-- Design system :
-  - jetons par thème (Papier, Graphite, Studio), accent variable, aucun dégradé ;
-  - polices Schibsted Grotesk (texte, titres) et Geist Mono (afficheurs, étiquettes), toutes deux sous licence libre OFL et embarquées ;
-  - icônes Phosphor ;
-  - composants : bouton rond (principal, encre, contour, relief), filtre à voyant, afficheur, molette de volume, échelle graduée,
-    interrupteur, contrôle segmenté rond, liste de titres, deck, groupe de réglages.
-- Barre de titre personnalisée (`decorations: false`, zone de déplacement, boutons Windows).
-- Écrans : Accueil, Morceaux, Albums, Artistes, Récemment ajoutés, Playlist, Ajouter, En lecture plein écran, Réglages.
-- Moteur de réglages : un seul schéma typé (Rust + TS), enregistré en local, appliqué en direct par des variables CSS.
+**Phase 1: "Hi-Fi" redesign and customization engine** (L) — done
+- Design system:
+  - tokens per theme (Paper, Graphite, Studio), variable accent, no gradient;
+  - fonts Schibsted Grotesk (text, titles) and Geist Mono (readouts, labels), both under the free OFL licence and bundled;
+  - Phosphor icons;
+  - components: round button (primary, ink, outline, raised), LED filter, readout, volume knob, tuner scale,
+    switch, round segmented control, track list, deck, settings group.
+- Custom title bar (`decorations: false`, drag area, Windows buttons).
+- Screens: Home, Songs, Albums, Artists, Recently added, Playlist, Add, full-screen Now Playing, Settings.
+- Settings engine: one typed schema (Rust + TS), saved locally, applied live through CSS variables.
 
-**Personnalisation (au cœur du projet, sans devenir incompréhensible)**
-- Apparence :
-  - thème ;
-  - accent ;
-  - forme des pochettes (net, arrondi, vinyle) ;
-  - densité des listes ;
-  - taille du texte ;
-  - position du lecteur ;
-  - afficheur numérique ;
-  - molette ou barre de volume ;
-  - échelle graduée ;
-  - colonnes de la liste (choisir et ordonner).
-- Accueil en sections : afficher, masquer, réordonner (Reprendre, Ta semaine, Récemment ajoutés, Tes playlists, À redécouvrir…), avec des options par section.
-- Barre latérale : réordonner et masquer les entrées, épingler des playlists.
-- Thèmes :
-  - 6 thèmes prêts à l'emploi + Système ;
-  - **éditeur** :
-    - 8 couleurs avec leur code hex ;
-    - police : Hi-Fi, Neutre ou Éditorial ;
-    - arrondis de 0 à 16 px ;
-    - lueur des voyants ;
-    - teinte de la pochette ;
-    - contraste AA vérifié en direct, avec un avertissement si un texte devient illisible ;
-  - dupliquer, exporter ou importer en `.theme`.
-- Écrans corrigés d'après la revue utilisateurs (`docs/ui-review.md`) :
-  - actions visibles au survol ;
-  - panneau droit ancrable (file, infos, paroles locales) ;
-  - grande pochette ;
-  - file avec sélection multiple ;
-  - aléatoire vrai ;
-  - dossiers de playlists ;
-  - badges CLIP / LIVE ;
-  - teinte de la pochette.
-- Pour rester lisible :
-  - recherche dans les réglages ;
-  - aperçu en direct ;
-  - « Réinitialiser » partout ;
-  - réglages avancés masqués par défaut ;
-  - réglages classés par écran (Apparence, Lecture, Bibliothèque, Sources, Raccourcis, Notifications, Avancé).
+**Customization (core of the project, without becoming confusing)**
+- Appearance:
+  - theme;
+  - accent;
+  - cover shape (sharp, rounded, vinyl);
+  - list density;
+  - text size;
+  - player position;
+  - digital readout;
+  - volume knob or bar;
+  - tuner scale;
+  - list columns (choose and order).
+- Home in sections: show, hide, reorder (Resume, Your week, Recently added, Your playlists, Rediscover…), with options per section.
+- Sidebar: reorder and hide entries, pin playlists.
+- Themes:
+  - 6 ready-made themes + System;
+  - **editor**:
+    - colors with their hex code;
+    - font: Hi-Fi or Neutral;
+    - radii from 0 to 16 px;
+    - LED glow;
+    - cover tint;
+    - AA contrast checked live, with a warning when a text becomes unreadable;
+  - duplicate, export or import as `.theme`.
+- Screens fixed after the user review (`docs/ui-review.md`):
+  - actions visible on hover;
+  - dockable right panel (queue, info, local lyrics);
+  - big cover;
+  - queue with multi-select;
+  - true shuffle;
+  - playlist folders;
+  - CLIP / LIVE badges;
+  - cover tint.
+- To stay readable:
+  - search in settings;
+  - live preview;
+  - "Reset" everywhere;
+  - advanced settings hidden by default;
+  - settings grouped by screen (Appearance, Playback, Library, Sources, Shortcuts, Notifications, Advanced).
 
-**Phase 2 : bibliothèque universelle et playlists perso** (L)
-- Migration du schéma ; ajout depuis une recherche ou un lien (Ctrl+V n'importe où = lien détecté).
-- Playlists perso : créer, renommer, réordonner par glisser-déposer, dupliquer, supprimer, sélection multiple, menu « Ajouter à… ».
-- Dossiers locaux : scan et tags (crate `lofty`), surveillance des changements (crate `notify`).
+**Phase 2: universal library and custom playlists** (L) — done
+- Schema migration; add from a search or a link (Ctrl+V anywhere = link detected).
+- Custom playlists: create, rename, reorder, duplicate, delete, multi-select, "Add to…" menu.
+- Local folders: scan and tags (`lofty` crate), change watching (`notify` crate, not yet).
 
-**Phase 3 : recherche multi-catalogues** (M)
-- Catalogue iTunes (sans clé), YouTube (clé, compteur de quota affiché), fichiers locaux ; doublons fusionnés par `match_key` ; cache.
-- Spotify : liens seulement (titre et pochette par oEmbed, artiste complété par recherche ; à prototyper).
+**Phase 3: multi-catalog search** (M) — done
+- iTunes catalog (no key), YouTube (key, quota counter shown), local files; duplicates merged by `match_key`; cache.
+- Spotify: links only (title and cover through oEmbed, artist completed by a search; to prototype).
 
-**Phase 4 : lecture intelligente** (L)
-- File d'attente unique pour toutes les sources (fichier local, YouTube, aperçu).
-- Aperçus Apple lus par le moteur Rust (téléchargés côté Rust, pas depuis l'interface), avec un lien « Écouter sur Apple Music ».
-- Badges « Aperçu 30 s » ; bandeau « Trouver les versions » ; choix « Écouter via » dans l'écran En lecture.
+**Phase 4: smart playback** (L) — done
+- One queue for every source (local file, YouTube, preview); local runs stay gapless.
+- Apple previews played by the Rust engine (downloaded by Rust into memory, never from the UI, never to disk), with a "Listen on Apple Music" link.
+- "PREVIEW" badges; playability line (full / preview / no source) with "Find full versions"; "Play via" inputs in Now Playing.
+- Not done: preview straight from search results (before adding), Spotify previews.
 
-**Phase 5 : comptes (optionnels)** (M)
-- YouTube : import (existe déjà), export d'une playlist perso (quota : environ 190 titres par jour).
-- Spotify Connect si Premium un jour (plan écrit). Prototype MusicKit si compte Apple Developer.
+**Phase 5: accounts (optional)** (M)
+- YouTube: import (already there), export a custom playlist (quota: about 190 tracks a day).
+- Spotify Connect if Premium one day (plan written). MusicKit prototype if Apple Developer account.
 
-**Phase 6 : finitions** (M)
-- Raccourcis clavier, touches multimédia et panneau média de Windows (crate `souvlaki`), mini-lecteur, icône de zone de notification.
-- Mises à jour automatiques (`tauri-plugin-updater`, demande de signer l'app), installeur, performance (50 000 titres), accessibilité (contraste AA, navigation clavier).
+**Phase 6: polish** (M)
+- Keyboard shortcuts, media keys and the Windows media panel (`souvlaki` crate), mini player, tray icon.
+- Auto-updates (`tauri-plugin-updater`, requires signing the app), installer, performance (50,000 tracks), accessibility (AA contrast, keyboard navigation).
 
-**Phase 7 : partager une playlist d'une Music App à une autre, sans serveur** (L)
-- **Format `MA1` compact et binaire** : en-tête (version, nom), puis pour chaque titre le meilleur identifiant disponible.
+**Phase 7: share a playlist from one Music App to another, serverless** (L)
+- **Compact binary `MA1` format**: header (version, name), then for each track the best available identifier.
 
-  | Identifiant | Taille |
+  | Identifier | Size |
   |---|---|
-  | YouTube (11 caractères en base64) | 9 octets |
-  | ISRC | 8 octets |
-  | Apple Music (varint) | 5 octets |
-  | Spotify (22 caractères en base62) | 17 octets |
-  | Fichier local seul | titre + artiste en UTF-8 |
+  | YouTube (11 base64 characters) | 9 bytes |
+  | ISRC | 8 bytes |
+  | Apple Music (varint) | 5 bytes |
+  | Spotify (22 base62 characters) | 17 bytes |
+  | Local file only | title + artist in UTF-8 |
 
-  Le tout est compressé (deflate), avec une somme de contrôle. Cible : 100 titres YouTube en moins de 1,2 Ko, vérifiée par un test.
-- **Trois façons de partager** :
-  1. **QR code** : encodage base45, qui est le mode alphanumérique du QR, le plus dense. Affiché dans l'app, et lu en glissant une
-     capture ou un fichier image (décodage Rust, crate `rqrr`). La lecture par webcam viendra plus tard.
-  2. **Code court « grand-mère »** :
-     - sur le même réseau : code à 6 chiffres façon LocalSend (annonce mDNS, transfert direct chiffré par PAKE avec le code comme
-       mot de passe) ;
-     - à distance : mots à dicter façon magic-wormhole (`7-guitare-tempête`), chiffré de bout en bout. Ça passe par le relais public de
-       magic-wormhole, un serveur qui n'est pas le nôtre : **à valider**.
-  3. **Lien ou texte** `musicapp://…` à coller n'importe où (Ctrl+V, réutilise la détection de liens) pour les messageries.
-- **Import** :
-  - aperçu : N titres, X déjà reconnus, Y à chercher ;
-  - rapprochement par identifiant, ISRC ou titre + artiste + durée ;
-  - les manquants sont cherchés dans les catalogues (réutilise `add_track`, dans le budget YouTube) ;
-  - on obtient une playlist perso modifiable.
-- **Tests** :
-  - encodage puis décodage identiques ;
-  - budget de taille ;
-  - QR généré puis relu ;
-  - code faux ou altéré refusé.
+  Everything is compressed (deflate), with a checksum. Target: 100 YouTube tracks in under 1.2 KB, checked by a test.
+- **Three ways to share**:
+  1. **QR code**: base45 encoding, which is QR's alphanumeric mode, the densest. Shown in the app, and read by dropping
+     a screenshot or image file (Rust decoding, `rqrr` crate). Webcam reading will come later.
+  2. **"Grandma" short code**:
+     - on the same network: 6-digit code à la LocalSend (mDNS announce, direct transfer encrypted by PAKE with the code as
+       password);
+     - remote: words to read out à la magic-wormhole (`7-guitar-storm`), end-to-end encrypted. It goes through the public
+       magic-wormhole relay, a server that isn't ours: **to validate**.
+  3. **Link or text** `musicapp://…` to paste anywhere (Ctrl+V, reuses link detection) for messaging apps.
+- **Import**:
+  - preview: N tracks, X already known, Y to look up;
+  - matching by identifier, ISRC or title + artist + duration;
+  - missing ones are looked up in the catalogs (reuses `add_track`, within the YouTube budget);
+  - you get an editable custom playlist.
+- **Tests**:
+  - encode then decode gives the same;
+  - size budget;
+  - QR generated then read back;
+  - wrong or altered code refused.
 
-**Phase 8 : mixes personnalisés, calculés en local** (L)
-- **Prérequis** : un historique d'écoute. Table `plays` : titre, début, durée écoutée, écoute complète ou passée. Il alimente aussi
-  l'Accueil (Reprendre, Ta semaine).
-- **Signaux** :
-  - écoutes et écoutes complètes (positif) ;
-  - titres passés en moins de 30 s (négatif) ;
-  - fraîcheur, avec une demi-vie de 30 jours ;
-  - présence dans tes playlists perso (signal fort) ;
-  - écoutes dans la même session et playlists communes, qui donnent une similarité entre titres ;
-  - affinité par artiste, moment de la journée et jour de la semaine ;
-  - tags des fichiers (genre, année).
-- **Mixes générés** :
-  - « Mix du jour 1 à 6 » : on regroupe le graphe de tes goûts (artistes qui reviennent ensemble, regroupement par propagation
-    d'étiquettes). Chaque groupe donne un mix, classé par affinité × fraîcheur, avec de la diversité (MMR, pas deux titres du même
-    artiste à la suite) ;
-  - « À redécouvrir » : forte affinité passée, plus écoutés depuis 60 jours ;
-  - « Ambiance du moment » : selon l'heure ;
-  - « Découvertes » (optionnel) : artistes proches via Last.fm (ta clé) puis catalogues, avec la version YouTube trouvée automatiquement.
-- **Contrôle** :
-  - une explication par mix (« parce que tu écoutes X ») ;
-  - « moins de ce titre », exclusion d'un titre, remise à zéro de l'historique ;
-  - tout reste local.
-- **Tests** : graine fixe donc résultats reproductibles, poids des signaux, contraintes de diversité, aucun titre exclu dans un mix.
+**Phase 8: personalized mixes, computed locally** (L)
+- **Prerequisite**: a listening history. `plays` table: track, start, time listened, full listen or skipped. It also feeds
+  Home (Resume, Your week).
+- **Signals**:
+  - plays and full plays (positive);
+  - tracks skipped in under 30 s (negative);
+  - freshness, with a 30-day half-life;
+  - presence in your custom playlists (strong signal);
+  - plays in the same session and shared playlists, which give a similarity between tracks;
+  - affinity per artist, time of day and day of week;
+  - file tags (genre, year).
+- **Generated mixes**:
+  - "Daily Mix 1 to 6": cluster your taste graph (artists that come back together, label propagation
+    clustering). Each cluster gives a mix, ranked by affinity × freshness, with diversity (MMR, never two tracks by the same
+    artist in a row);
+  - "Rediscover": strong past affinity, not played for 60 days;
+  - "Right now": by time of day;
+  - "Discoveries" (optional): related artists via Last.fm (your key) then catalogs, with the YouTube version found automatically.
+- **Control**:
+  - one explanation per mix ("because you listen to X");
+  - "less of this track", track exclusion, history reset;
+  - everything stays local.
+- **Tests**: fixed seed so reproducible results, signal weights, diversity constraints, no excluded track in a mix.
 
-**Bonus « au max » (choisis)** : playlists intelligentes (règles), statistiques d'écoute, détecteur de doublons,
-radio de titres proches (clé Last.fm), scrobbling Last.fm, minuteur de sommeil, fondu enchaîné et égaliseur (fichiers locaux).
-Écarté : les paroles (droits d'auteur).
+**"Go all out" bonus (pick)**: smart playlists (rules), listening stats, duplicate finder,
+related-tracks radio (Last.fm key), Last.fm scrobbling, sleep timer, crossfade and equalizer (local files).
+Set aside: lyrics (copyright).
 
-## 4. Limites fixes
+## 4. Fixed limits
 
-- Jamais de téléchargement ni d'extraction d'audio YouTube ou Spotify, jamais de lecteur caché (la vidéo YouTube reste visible, minimum 200×200).
-- Pas de contournement de Premium ni des DRM. Quotas respectés, aucun serveur à nous.
+- Never download or extract YouTube or Spotify audio, never a hidden player (the YouTube video stays visible, minimum 200×200).
+- No circumventing Premium or DRM. Quotas respected, no server of ours.
 
-## 5. Risques à prototyper en premier
+## 5. Risks to prototype first
 
-1. DRM dans WebView2 : lecture complète Spotify et Apple dans leurs lecteurs officiels. Probablement bloquée (Widevine non garanti) ;
-   le plan B (aperçus + YouTube) est déjà prévu.
-2. Quota YouTube de recherche (100 par jour) : cache, regroupement des recherches, ta propre clé.
-3. Métadonnées des liens Spotify sans API (oEmbed ne donne que le titre et la pochette).
-4. Pochettes : affichées depuis les API des services (YouTube, iTunes), mises en cache en local.
+1. DRM in WebView2: full Spotify and Apple playback in their official players. Probably blocked (Widevine not guaranteed);
+   plan B (previews + YouTube) is in place.
+2. YouTube search quota (100 a day): cache, batched searches, your own key.
+3. Spotify link metadata without the API (oEmbed only gives title and cover).
+4. Covers: shown from the services' APIs (YouTube, iTunes), cached locally.
 
-## 6. Maquettes livrées (page Figma « Music App v3 — Hi-Fi »)
+## 6. Delivered mockups (Figma page "Music App v3 — Hi-Fi")
 
-1. `v3 / Accueil — Papier` : sections Reprendre, Ta semaine, Récemment ajoutés, Tes playlists ; panneau « Personnaliser l'accueil » ouvert.
-2. `v3 / Morceaux — Papier` :
-   - filtres à voyant ;
-   - actions au survol ;
-   - **panneau droit** : grande pochette, file avec sélection multiple, « Aléatoire vrai » ;
-   - dossier de playlists ;
-   - deck avec afficheur et molette.
-3. `v3 / Playlist — Papier` : en-tête éditorial, boutons ronds, ligne d'état « 21 en entier · 3 en aperçu ».
-4. `v3 / Ajouter — Papier` : console de recherche (catalogues à voyant), lien collé, catalogues, zone de dépôt.
-5. `v3 / En lecture — Graphite` : vidéo YouTube visible, afficheur 01:12, échelle graduée, sélecteur d'entrée, molette, file d'attente.
-6. `v3 / Réglages Apparence — Papier` : thèmes, accents, pochettes, densité, lecteur, colonnes, aperçu en direct.
-7. `v3 / Morceaux — Graphite perso` : même écran avec un thème perso (Graphite, accent jaune, pochettes vinyle, compact, colonne Écoutes).
-8. `v3 / Thèmes — Papier` : galerie des 7 thèmes, tes thèmes, éditeur (couleurs, police, arrondis, voyants, teinte, contraste vérifié).
-9. `v3 / En lecture — Teinte pochette` : l'écran de lecture en aplat de la couleur d'*After Hours*.
-   L'écran **Ajouter** a aussi reçu les badges AUDIO OFFICIEL et CLIP et le filtre « Masquer les vidéos non officielles ».
+Mockups were drawn in French; the app itself is English by default.
+
+1. `v3 / Accueil — Papier` (Home, Paper): Resume, Your week, Recently added, Your playlists sections; "Customize home" panel open.
+2. `v3 / Morceaux — Papier` (Songs, Paper):
+   - LED filters;
+   - hover actions;
+   - **right panel**: big cover, queue with multi-select, "True shuffle";
+   - playlist folder;
+   - deck with readout and knob.
+3. `v3 / Playlist — Papier`: editorial header, round buttons, status line "21 in full · 3 as preview".
+4. `v3 / Ajouter — Papier` (Add, Paper): search console (LED catalogs), pasted link, catalogs, drop zone.
+5. `v3 / En lecture — Graphite` (Now Playing, Graphite): visible YouTube video, 01:12 readout, tuner scale, input selector, knob, queue.
+6. `v3 / Réglages Apparence — Papier` (Settings › Appearance): themes, accents, covers, density, player, columns, live preview.
+7. `v3 / Morceaux — Graphite perso` (Songs, custom Graphite): same screen with a custom theme (Graphite, yellow accent, vinyl covers, compact, Plays column).
+8. `v3 / Thèmes — Papier` (Themes): gallery of the 7 themes, your themes, editor (colors, font, radii, LEDs, tint, contrast check).
+9. `v3 / En lecture — Teinte pochette` (Now Playing, cover tint): the playback screen flat in the color of *After Hours*.
+   The **Add** screen also got the OFFICIAL AUDIO and CLIP badges and the "Hide unofficial videos" filter.

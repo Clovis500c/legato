@@ -1,91 +1,89 @@
-# Revue UI : ce que les utilisateurs aiment et détestent (octobre 2026)
+# UI review: what users love and hate (October 2026)
 
-Recherche faite le 16/10/2026 dans les forums officiels, les tests et les annonces (sources en bas).
-Les avis de forum sont anecdotiques : on retient les plaintes qui reviennent souvent.
+Research done on 2026-10-16 in official forums, reviews and announcements (sources at the bottom).
+Forum posts are anecdotal: we keep the complaints that come up often.
 
-## 1. Par plateforme
+## 1. By platform
 
-| Plateforme | Ce qui plaît | Ce qui énerve |
+| Platform | What people like | What annoys them |
 |---|---|---|
-| **Spotify** | Glisser-déposer un titre sur une playlist ; paroles bien placées sous la pochette, traduites, hors ligne | Bureau « pensé pour mobile » : peu dense, espace gâché ; panneaux qui ne tiennent pas ensemble (paroles, file, bibliothèque) ; pochette minuscule et non redimensionnable sur grand écran ; miniatures imposées dans la liste des playlists ; contrôle « répéter » caché dans un menu (remis après la grogne) ; aléatoire qui repasse les 30 mêmes titres ; ordre perso perdu dans les dossiers |
-| **Apple Music** | Interface propre quand on connaît ; métadonnées riches (classique : compositeur, chef, mouvements) ; continuité entre appareils | Trop de clics pour des actions autrefois visibles ; destinations cachées dans des menus ; recherche qui exige le terme exact ; refonte « Liquid Glass » qui divise |
-| **YouTube Music** | Catalogue immense (live, remix, faces B) ; recherche par paroles ou fredonnement ; file synchronisée entre appareils (2026) | File peu fiable (pas de suppression multiple, « lire ensuite » qui bugue) ; bibliothèque mal rangée (artiste = liste de titres, onglets séparés) ; vidéos et musique mélangées ; réglage « boucle » perdu d'une file à l'autre |
-| **Tidal** | Sobre, centré sur la musique, cohérent sur toutes les plateformes | Un peu complexe, peu personnalisable |
-| **Deezer** | Simple et familier ; **thèmes et palettes de couleurs** (nov. 2025) ; **accès rapide** épinglé en haut de l'accueil (suggestions + choix manuel) | Jugé basique, peu « fun » |
-| **Plexamp** | Écran de lecture qui prend les couleurs de la pochette (« UltraBlur »), une identité par album | — |
-| **foobar2000 / MusicBee** | Mise en page entièrement modulable, skins, l'app « à sa main » | Déroutant au début : trop d'options d'un coup, skins réservés aux bricoleurs |
+| **Spotify** | Drag a track onto a playlist; lyrics well placed under the cover, translated, offline | Desktop "designed for mobile": sparse, wasted space; panels that don't fit together (lyrics, queue, library); tiny, non-resizable cover on big screens; forced thumbnails in the playlist list; "repeat" hidden in a menu (brought back after the backlash); shuffle that replays the same 30 tracks; custom order lost inside folders |
+| **Apple Music** | Clean interface once you know it; rich metadata (classical: composer, conductor, movements); continuity across devices | Too many clicks for actions that used to be visible; destinations hidden in menus; search that needs the exact term; divisive "Liquid Glass" redesign |
+| **YouTube Music** | Huge catalog (live, remixes, B-sides); search by lyrics or humming; queue synced across devices (2026) | Unreliable queue (no multi-delete, buggy "play next"); messy library (artist = list of tracks, separate tabs); videos and music mixed; "loop" setting lost from one queue to the next |
+| **Tidal** | Sober, music-centric, consistent on every platform | A bit complex, not very customizable |
+| **Deezer** | Simple and familiar; **themes and color palettes** (Nov 2025); **quick access** pinned at the top of home (suggestions + manual picks) | Seen as basic, not much "fun" |
+| **Plexamp** | Now-playing screen takes the cover's colors ("UltraBlur"), one identity per album | — |
+| **foobar2000 / MusicBee** | Fully modular layout, skins, the app "your way" | Confusing at first: too many options at once, skins for tinkerers only |
 
-## 2. Les leçons
+## 2. Lessons
 
-1. **Un vrai logiciel de bureau** : dense, des colonnes, de la place utile. Pas une app de téléphone agrandie.
-2. **Rien de caché** : les actions courantes visibles (au survol) et au clic droit. Répéter et aléatoire toujours à l'écran.
-3. **Des panneaux qui cohabitent** : bibliothèque, file d'attente et infos ouverts ensemble, avec une largeur réglable.
-4. **Une pochette à la taille qu'on veut.**
-5. **Une file fiable** : sélection multiple, réordonner, retirer, « lire ensuite », vider.
-6. **Un aléatoire honnête** : vrai hasard sans répétition, au choix.
-7. **Une bibliothèque rangée** : tris, dossiers de playlists, ordre perso conservé.
-8. **Musique d'abord** : clips, lives et reprises signalés et filtrables.
-9. **Personnaliser sans se perdre** : thèmes prêts à l'emploi, éditeur guidé, aperçu, « Réinitialiser ».
-10. **Une identité par écran de lecture** : couleurs tirées de la pochette, en aplat (pas de dégradé).
+1. **A real desktop app**: dense, columns, useful space. Not a stretched phone app.
+2. **Nothing hidden**: common actions visible (on hover) and on right-click. Repeat and shuffle always on screen.
+3. **Panels that coexist**: library, queue and info open together, with adjustable width.
+4. **A cover at the size you want.**
+5. **A reliable queue**: multi-select, reorder, remove, "play next", clear.
+6. **Honest shuffle**: true random without repeats, as an option.
+7. **A tidy library**: sorting, playlist folders, custom order kept.
+8. **Music first**: clips, live versions and covers flagged and filterable.
+9. **Customize without getting lost**: ready-made themes, guided editor, preview, "Reset".
+10. **An identity per now-playing screen**: colors taken from the cover, flat (no gradient).
 
-## 3. Revue des maquettes v3
+## 3. Review of the v3 mockups
 
-| Leçon | v3 | Correction |
+| Lesson | v3 | Fix |
 |---|---|---|
-| 1. Dense | ✓ Liste à colonnes, densité réglable | Mode compact par défaut proposé aux grandes bibliothèques |
-| 2. Rien de caché | ✗ Aucune action sur les lignes de Morceaux et de Playlist | **Actions au survol** (lire, ajouter à une playlist, plus) + menu clic droit complet |
-| 3. Panneaux | ✗ La file n'existe qu'en plein écran | **Panneau droit ancrable** (file d'attente, infos et crédits), redimensionnable, ouvert en même temps que la liste |
-| 4. Pochette | ✗ Taille fixe | **Grande pochette dans le panneau droit** + réglage de taille |
-| 5. File fiable | ✗ Pas d'actions de file | Sélection multiple avec barre d'actions : lire ensuite, retirer, vider |
-| 6. Aléatoire | ✗ Non défini | Réglage « Aléatoire : vrai hasard / équilibré par artiste » |
-| 7. Rangement | ~ Tri présent, pas de dossiers | **Dossiers de playlists** dans la barre latérale ; option « miniatures des playlists » activable ou non |
-| 8. Musique d'abord | ✗ Résultats YouTube sans type | Badges **CLIP / LIVE / REPRISE** + filtre « Masquer les vidéos non officielles » |
-| 9. Personnaliser | ~ Apparence complète mais 4 thèmes fixes | **Galerie de 6 thèmes + éditeur de thème** (couleurs, police, arrondis, voyants, contraste vérifié, export `.theme`) |
-| 10. Identité | ✗ | Option **« Teinte de la pochette »** : fond du deck et de l'écran de lecture en aplat de la couleur dominante |
-| Lisibilité | ✗ Petits textes trop pâles (encre 4 sur papier) | Encre 4 réservée aux éléments décoratifs ; les textes passent en encre 3 |
+| 1. Dense | ✓ Column list, adjustable density | Compact mode suggested by default for big libraries |
+| 2. Nothing hidden | ✗ No actions on Songs and Playlist rows | **Hover actions** (play, add to playlist, more) + full right-click menu |
+| 3. Panels | ✗ Queue only exists in full screen | **Dockable right panel** (queue, info and credits), resizable, open alongside the list |
+| 4. Cover | ✗ Fixed size | **Big cover in the right panel** + size setting |
+| 5. Reliable queue | ✗ No queue actions | Multi-select with an action bar: play next, remove, clear |
+| 6. Shuffle | ✗ Undefined | "Shuffle: true random / balanced by artist" setting |
+| 7. Tidiness | ~ Sorting present, no folders | **Playlist folders** in the sidebar; "playlist thumbnails" option on or off |
+| 8. Music first | ✗ YouTube results without type | **CLIP / LIVE / COVER** badges + "Hide unofficial videos" filter |
+| 9. Customize | ~ Full appearance but 4 fixed themes | **Gallery of 6 themes + theme editor** (colors, font, radii, LEDs, contrast check, `.theme` export) |
+| 10. Identity | ✗ | **"Cover tint"** option: deck and now-playing background flat in the dominant color |
+| Readability | ✗ Small texts too pale (ink 4 on paper) | Ink 4 reserved for decoration; texts move to ink 3 |
 
-**Paroles** : très appréciées ailleurs, mais aucune source sous licence n'est accessible gratuitement.
-On les affiche seulement depuis les fichiers locaux (tags `USLT` ou fichiers `.lrc` à côté du fichier audio).
+**Lyrics**: much loved elsewhere, but no licensed source is freely available.
+We only show them from local files (`USLT` tags or `.lrc` files next to the audio file).
 
-## 4. Thèmes
+## 4. Themes
 
-- **Prêts à l'emploi** :
-  - Papier (clair chaud, orange) ;
-  - Graphite (sombre chaud, orange) ;
-  - Studio (noir pur OLED, rouge) ;
-  - Aluminium (clair froid, bleu) ;
-  - Bakélite (brun profond, ambre) ;
-  - Sauge (clair vert de gris, vert sapin) ;
-  - Système (suit Windows).
-- **Éditeur** :
-  - 8 couleurs (fond, panneau, surface, encre ×3, lignes, accent) avec code hex ;
-  - police : Hi-Fi, Neutre ou Éditorial ;
-  - arrondis de 0 à 16 px ;
-  - voyants : lueur oui ou non ;
-  - teinte de la pochette ;
-  - **contraste vérifié en direct** (AA), avec un avertissement si un texte devient illisible.
-- **Partage** : dupliquer, renommer, exporter et importer en fichier `.theme` (JSON).
+- **Ready-made**:
+  - Paper (warm light, orange);
+  - Graphite (warm dark, orange);
+  - Studio (pure OLED black, red);
+  - Aluminum (cool light, blue);
+  - Bakelite (deep brown, amber);
+  - Sage (grey-green light, fir green);
+  - System (follows Windows).
+- **Editor**:
+  - 13 colors (background, panel, surface, ink ×4, lines, accent…) with hex code;
+  - font: Hi-Fi or Neutral;
+  - LEDs: glow on or off;
+  - **contrast checked live** (AA), with a warning when a text becomes unreadable.
+- **Sharing**: duplicate, rename, export and import as a `.theme` file (JSON).
 
 ## Sources
 
-- Spotify :
-  - [nouvelle UI PC critiquée](https://community.spotify.com/t5/Desktop-Windows/UI-customisation-New-PC-UI-sucks/td-p/7388808) ;
-  - [« New Desktop UI is terrible »](https://community.spotify.com/t5/Your-Library/What-s-up-with-this-new-desktop-UI/m-p/5525644) ;
-  - [demande de retour à l'ancienne interface](https://community.spotify.com/forum/en/discussion/7446756/please-consider-restoring-the-previous-spotify-desktop-experience) ;
-  - [répéter remis après la grogne](https://www.phonearena.com/news/spotify-repeat-button-now-playing-screen-app-update_id114354) ;
-  - [ordre perso des dossiers](https://community.spotify.com/t5/Ongoing-Issues/Custom-Order-sorting-option-missing-inside-folders/idi-p/7403172/highlight/true) ;
-  - [plaintes sur l'aléatoire](https://www.bgr.com/2216137/most-common-customer-complaints-about-spotify/) ;
-  - [paroles améliorées](https://techcrunch.com/2026/02/04/spotify-upgrades-its-lyrics-feature-with-offline-access-more-translations).
-- Apple Music :
-  - [pourquoi les utilisateurs partent](https://www.bgr.com/2257028/why-users-ditch-apple-music/) ;
-  - [avis Trustpilot](https://ca.trustpilot.com/review/applemusic.com).
-- YouTube Music :
-  - [test 2026](https://www.lissen.com/blog/reviews/youtube-music-review-2026) ;
-  - [avis utilisateurs](https://justuseapp.com/en/app/1017492454/youtube-music/reviews) ;
-  - [file synchronisée](https://www.techradar.com/audio/audio-streaming/youtube-music-just-got-a-big-queue-upgrade-that-users-have-wanted-for-years-and-now-apple-music-fans-are-demanding-the-same).
-- Tidal et Deezer :
-  - [comparatif 2026](https://soundiiz.com/blog/deezer-vs-tidal-which-music-streaming-service-is-best-in-2026/) ;
-  - [test Deezer](https://www.techradar.com/reviews/deezer) ;
-  - [thèmes et accès rapide Deezer](https://newsroom-deezer.com/2025/11/deezer-now-lets-you-choose-look-and-layout-of-the-app/).
-- Plexamp : [UltraBlur](https://medium.com/@elanf/plexamp-v3-9af3b10063b4).
-- foobar2000 et MusicBee : [discussion Head-Fi](https://www.head-fi.org/threads/who-else-is-using-foobar2000-in-2025.978240/page-2), [comparatif](https://school-of-privacy.com/article/musicbee-vs-foobar2000/).
+- Spotify:
+  - [new PC UI criticized](https://community.spotify.com/t5/Desktop-Windows/UI-customisation-New-PC-UI-sucks/td-p/7388808);
+  - ["New Desktop UI is terrible"](https://community.spotify.com/t5/Your-Library/What-s-up-with-this-new-desktop-UI/m-p/5525644);
+  - [request to restore the old interface](https://community.spotify.com/forum/en/discussion/7446756/please-consider-restoring-the-previous-spotify-desktop-experience);
+  - [repeat brought back after the backlash](https://www.phonearena.com/news/spotify-repeat-button-now-playing-screen-app-update_id114354);
+  - [custom order in folders](https://community.spotify.com/t5/Ongoing-Issues/Custom-Order-sorting-option-missing-inside-folders/idi-p/7403172/highlight/true);
+  - [shuffle complaints](https://www.bgr.com/2216137/most-common-customer-complaints-about-spotify/);
+  - [improved lyrics](https://techcrunch.com/2026/02/04/spotify-upgrades-its-lyrics-feature-with-offline-access-more-translations).
+- Apple Music:
+  - [why users leave](https://www.bgr.com/2257028/why-users-ditch-apple-music/);
+  - [Trustpilot reviews](https://ca.trustpilot.com/review/applemusic.com).
+- YouTube Music:
+  - [2026 review](https://www.lissen.com/blog/reviews/youtube-music-review-2026);
+  - [user reviews](https://justuseapp.com/en/app/1017492454/youtube-music/reviews);
+  - [synced queue](https://www.techradar.com/audio/audio-streaming/youtube-music-just-got-a-big-queue-upgrade-that-users-have-wanted-for-years-and-now-apple-music-fans-are-demanding-the-same).
+- Tidal and Deezer:
+  - [2026 comparison](https://soundiiz.com/blog/deezer-vs-tidal-which-music-streaming-service-is-best-in-2026/);
+  - [Deezer review](https://www.techradar.com/reviews/deezer);
+  - [Deezer themes and quick access](https://newsroom-deezer.com/2025/11/deezer-now-lets-you-choose-look-and-layout-of-the-app/).
+- Plexamp: [UltraBlur](https://medium.com/@elanf/plexamp-v3-9af3b10063b4).
+- foobar2000 and MusicBee: [Head-Fi thread](https://www.head-fi.org/threads/who-else-is-using-foobar2000-in-2025.978240/page-2), [comparison](https://school-of-privacy.com/article/musicbee-vs-foobar2000/).

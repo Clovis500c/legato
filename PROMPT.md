@@ -1,40 +1,42 @@
-# Music App — brief de départ
+# Music App — starting brief
+
+> Historical brief. The stack later moved from Electron to Tauri 2 + Rust (see `CLAUDE.md`).
 
 ## Vision
-App desktop (Electron + React + TypeScript) qui permet à n'importe qui de connecter ses propres comptes
-musicaux (Spotify, YouTube Music, fichiers locaux, Navidrome/Jellyfin…) et d'avoir une bibliothèque
-unifiée, des playlists synchronisées entre services, des paroles synchronisées et une vraie
-expérience client. Inspiration : Liner (tryliner/desktop) et l'app communautaire YouTube Music —
-on veut faire mieux, sans dépendre d'un catalogue/backend privé.
+Desktop app (Electron + React + TypeScript) that lets anyone connect their own music accounts
+(Spotify, YouTube Music, local files, Navidrome/Jellyfin…) and get a unified library, playlists
+synced between services, synced lyrics and a real customer experience. Inspiration: Liner
+(tryliner/desktop) and the community YouTube Music app — we want to do better, without depending
+on a private catalog or backend.
 
-## Contraintes (décidées)
-- **Serverless** : aucun backend à nous. Tout vit chez l'utilisateur (tokens, bibliothèque SQLite locale).
-- **Chaque utilisateur connecte ses propres comptes**. Spotify : OAuth PKCE (pas de secret client).
-  YouTube : OAuth loopback (installed app). Option « apporte ta clé » (assistant guidé) car les quotas
-  sont liés à l'identifiant d'application (Spotify dev mode limité en nb d'utilisateurs, YouTube ~10k unités/jour).
-- **Architecture à plugins** : une interface `Connector` (auth, lire playlists, chercher, résoudre un morceau,
-  écrire une playlist). Un modèle de morceau commun : titre, artiste, album, durée, ISRC, ids par source.
-- **Dédoublonnage/matching par ISRC**, repli par titre+artiste+durée.
-- **Lecture audio légale uniquement** : lecteurs officiels (Spotify Web Playback SDK, lecteur YouTube embarqué),
-  fichiers locaux, serveurs perso. PAS d'extraction/contournement d'audio.
-- `ytmusicapi` (non officielle) = connecteur optionnel isolé, jamais la fondation.
-- Paroles : LRCLIB (gratuit), rendu synchronisé fait maison.
-- **Ne pas copier le code de Liner** : sa licence est source-available non commerciale et interdit forks
-  concurrents/réutilisation d'algorithmes. Tout est écrit de zéro. Les idées (UX, concept) sont libres.
+## Constraints (decided)
+- **Serverless**: no backend of ours. Everything lives with the user (tokens, local SQLite library).
+- **Every user connects their own accounts**. Spotify: OAuth PKCE (no client secret).
+  YouTube: OAuth loopback (installed app). "Bring your key" option (guided wizard) because quotas
+  are tied to the app identifier (Spotify dev mode limits user count, YouTube ~10k units/day).
+- **Plugin architecture**: a `Connector` interface (auth, read playlists, search, resolve a track,
+  write a playlist). One shared track model: title, artist, album, duration, ISRC, ids per source.
+- **Dedup/matching by ISRC**, fallback on title+artist+duration.
+- **Legal audio playback only**: official players (Spotify Web Playback SDK, embedded YouTube player),
+  local files, personal servers. NO audio extraction or circumvention.
+- `ytmusicapi` (unofficial) = optional isolated connector, never the foundation.
+- Lyrics: LRCLIB (free), home-made synced rendering.
+- **Do not copy Liner's code**: its licence is source-available non-commercial and forbids competing
+  forks / reuse of algorithms. Everything is written from scratch. Ideas (UX, concept) are free.
 
-## Pile
+## Stack
 Electron, React 19, TypeScript, Vite, Zustand, Tailwind, SQLite (better-sqlite3), Vitest. pnpm.
-Appels réseau depuis le processus principal Electron (pas de CORS). Tokens chiffrés (safeStorage).
+Network calls from the Electron main process (no CORS). Encrypted tokens (safeStorage).
 
-## Mission de cette session
-1. Lis ce fichier, propose une structure de dépôt et un `CLAUDE.md` court (conventions, commandes).
-2. Initialise le projet (git, pnpm, Electron + Vite + React + TS, lint, Vitest).
-3. Implémente le cœur : modèle de morceau, interface `Connector`, base SQLite, tests du matching ISRC.
-4. Premier connecteur : Spotify (PKCE, lecture des playlists). Valide-le sur un vrai compte avant d'aller plus loin.
-5. Deuxième connecteur : YouTube (import d'une playlist + matching vers Spotify).
-6. Écran minimal : connexion des comptes, liste de la bibliothèque unifiée, bouton de sync.
-Livre par petits commits. Ne passe à l'étape suivante que si la précédente est testée.
-Vérifie les quotas/règles actuels des API avant de les figer (ils changent).
+## Mission for this session
+1. Read this file, propose a repo structure and a short `CLAUDE.md` (conventions, commands).
+2. Initialize the project (git, pnpm, Electron + Vite + React + TS, lint, Vitest).
+3. Implement the core: track model, `Connector` interface, SQLite database, ISRC matching tests.
+4. First connector: Spotify (PKCE, reading playlists). Validate it on a real account before going further.
+5. Second connector: YouTube (playlist import + matching to Spotify).
+6. Minimal screen: account connection, unified library list, sync button.
+Ship in small commits. Only move to the next step once the previous one is tested.
+Check current API quotas/rules before freezing them (they change).
 
-## Hors périmètre pour l'instant
-Visuels WebGL, lecteur complet, mobile, backend de sync en arrière-plan, monétisation.
+## Out of scope for now
+WebGL visuals, full player, mobile, background sync backend, monetization.

@@ -1,34 +1,36 @@
 # Music App
 
-App desktop (Tauri 2 + Rust + React/TS) qui unifie les bibliothèques Spotify / YouTube / local. Brief : `PROMPT.md`.
-Maquette de référence : fichier Figma « Untitled », page « Music App » (écrans Library et Sources).
+Desktop app (Tauri 2 + Rust + React/TS) that unifies Spotify / YouTube / Apple Music / local libraries. Brief: `PROMPT.md`.
+Reference mockups: Figma file "Bow Game / Music App", page "Music App v3 — Hi-Fi".
 
-## Règles non négociables
-- Serverless : aucun backend à nous. Secrets dans le trousseau de l'OS (crate `keyring`), bibliothèque SQLite locale.
-- Lecture audio légale uniquement (Spotify Connect / SDK officiel, lecteur YouTube embarqué, fichiers locaux, serveurs perso). Aucune extraction d'audio.
-- Ne jamais copier de code de Liner (licence non commerciale, réutilisation interdite). Tout est écrit de zéro.
-- Chaque utilisateur apporte son propre client ID (Spotify : mode dev = propriétaire Premium, 5 utilisateurs max).
+## Non-negotiable rules
+- Serverless: no backend of ours. Secrets in the OS keychain (`keyring` crate), local SQLite library.
+- Legal audio playback only (Spotify Connect / official SDK, embedded YouTube player, local files, personal servers). No audio extraction.
+- Never copy code from Liner (non-commercial licence, reuse forbidden). Everything is written from scratch.
+- Every user brings their own client ID (Spotify: dev mode = Premium owner, 5 users max).
+- English by default: UI text, docs, comments, commit messages.
 
 ## Structure
-- `crates/core` (`music-core`) : Rust pur, sans Tauri. `Track`, trait `Connector`, `SecretStore`, matching (ISRC puis titre+artiste+durée), `Library` (rusqlite), `sync`.
-- `crates/connectors` (`music-connectors`) : OAuth PKCE loopback partagé + un module par service. URLs injectables (`with_urls`) pour les tests mockito.
-- `crates/player` (`music-player`) : lecture locale native (rodio/symphonia), thread moteur, file gapless. Choix de lecture (YouTube, local, plan Spotify) : `docs/playback.md`.
-- `src-tauri` : shell fin. Commandes IPC (`lib.rs`), trousseau (`secrets.rs`). Toute la logique va dans `crates/`.
-- `ui/` : React 19 + Zustand + Tailwind v4, découpé par fonctionnalité :
-  - `app/` (shell, store, navigation), `features/<nom>/` (library, sources, sidebar…), `shared/` (api typée, format, composants `ui/`).
-  - `shared/api.ts` = seul point d'appel à `invoke`. Types recopiés à la main depuis Rust : les garder synchronisés.
-- Jetons de design : `ui/src/styles.css` (`@theme`), repris de la maquette Figma.
+- `crates/core` (`music-core`): pure Rust, no Tauri. `Track`, `Connector` trait, `SecretStore`, matching (ISRC, then title+artist+duration), `Library` (rusqlite), `sync`, local file scan.
+- `crates/connectors` (`music-connectors`): shared OAuth PKCE loopback + one module per service (YouTube, Spotify, iTunes catalog). Injectable URLs (`with_urls`) for mockito tests.
+- `crates/player` (`music-player`): native local playback (rodio/symphonia), engine thread, gapless queue. Playback choices (YouTube, local, Spotify plan): `docs/playback.md`.
+- `crates/shield` (`music-shield`): ad/tracker blocker (Brave's adblock-rust) + YouTube player script.
+- `src-tauri`: thin shell. IPC commands (`lib.rs`), keychain (`secrets.rs`), WebView2 hook (`shield.rs`). All logic goes in `crates/`.
+- `ui/`: React 19 + Zustand + Tailwind v4, split by feature:
+  - `app/` (shell, store, navigation, settings), `features/<name>/` (library, sources, sidebar, player, add, settings…), `shared/` (typed api, format, theme, `ui/` components).
+  - `shared/api.ts` = the only place that calls `invoke`. Types copied by hand from Rust: keep them in sync.
+- Design tokens: `ui/src/styles.css` (`@theme`) fed by CSS variables from `shared/theme/theme.ts`.
 
-## Commandes
-- `pnpm dev` : lance l'app (Vite + Tauri)
-- `pnpm check` : typecheck + lint + Vitest + clippy + cargo test (tout doit passer avant un commit)
-- `pnpm test` / `cargo test --workspace` séparément
-- `pnpm build` : installeur
+## Commands
+- `pnpm dev`: run the app (Vite + Tauri)
+- `pnpm check`: typecheck + lint + Vitest + clippy + cargo test (everything must pass before a commit)
+- `pnpm test` / `cargo test --workspace` separately
+- `pnpm build`: installer
 
 ## Conventions
-- Commentaires de code : en anglais, style caveman (fragments courts, pas d'articles ni de remplissage). Ex. `// Feb 2026: own playlists only.`
-- Tests Rust dans le module (`#[cfg(test)]`), tests front à côté du code (`*.test.ts`). Jamais de réseau réel dans les tests.
-- Pas de faux boutons : une fonctionnalité non branchée est absente ou marquée « Bientôt ».
-- Listes longues : virtualisées (`@tanstack/react-virtual`). Pas d'accès réseau depuis le front : tout passe par Rust.
-- Petits commits, une étape testée à la fois.
-- Vérifier les quotas et endpoints des API avant de les figer (ils changent ; Spotify a renommé `/tracks` en `/items` en février 2026).
+- Code comments: English, caveman style (short fragments, no articles or filler). E.g. `// Feb 2026: own playlists only.`
+- Rust tests in the module (`#[cfg(test)]`), front-end tests next to the code (`*.test.ts`). Never real network in tests.
+- No fake buttons: an unwired feature is absent or marked "Coming soon".
+- Long lists: virtualized (`@tanstack/react-virtual`). No network access from the front end: everything goes through Rust.
+- Small commits, one tested step at a time.
+- Check API quotas and endpoints before freezing them (they change; Spotify renamed `/tracks` to `/items` in February 2026).

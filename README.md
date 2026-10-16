@@ -1,54 +1,57 @@
 # Music App
 
-**Toute ta musique au même endroit : YouTube, Spotify, Apple Music et tes fichiers locaux, dans une seule bibliothèque.**
-Application de bureau rapide et légère (Tauri 2 + Rust), sans serveur : tes données restent sur ton ordinateur.
+**All your music in one place: YouTube, Spotify, Apple Music and your local files, in a single library.**
+A fast, lightweight desktop app (Tauri 2 + Rust), serverless: your data stays on your computer.
 
-![Bibliothèque, thème Papier](docs/images/morceaux.png)
+![Library, Paper theme](docs/images/songs.png)
 
-## Fonctionnalités
+## Features
 
-- **Bibliothèque unifiée** :
-  - un même titre présent sur plusieurs services est reconnu et fusionné (par ISRC, ou par titre, artiste et durée) ;
-  - vues Morceaux, Albums, Artistes et Playlists ;
-  - recherche instantanée (Ctrl K).
-- **Lecture** :
-  - fichiers locaux en natif, sans blanc entre les titres (moteur Rust rodio/symphonia) ;
-  - YouTube via le lecteur officiel intégré ;
-  - le fichier local est toujours préféré quand il existe.
-- **Ajouter de la musique** :
-  - recherche dans le catalogue Apple Music (sans compte) et sur YouTube ;
-  - ajout d'un titre en collant un lien YouTube (Ctrl+V) ;
-  - dossiers de musique analysés (tags lus avec lofty).
-- **Playlists perso** : créer, renommer, réordonner, dupliquer. Une playlist importée d'un service peut être dupliquée pour être modifiée.
-- **Import** des playlists YouTube et Spotify avec ton propre compte (Spotify : Premium requis en mode développeur).
-- **Personnalisation** :
-  - 6 thèmes et un éditeur de thèmes (13 couleurs, contraste vérifié en direct, export et import) ;
-  - accent, forme des pochettes, densité, taille de l'interface, colonnes, options du lecteur.
-- **Bouclier** : blocage des pubs et des traqueurs avec le moteur de Brave (adblock-rust, listes EasyList et EasyPrivacy).
-- **Écran En lecture** : afficheur, échelle graduée, sélecteur d'entrée, molette de volume, file d'attente.
+- **Unified library**:
+  - the same track on several services is recognized and merged (by ISRC, or by title, artist and duration);
+  - Songs, Albums, Artists and Playlists views;
+  - instant search (Ctrl K).
+- **Playback**:
+  - one queue for every source: each track plays through its best source;
+  - local files played natively and gapless (Rust engine, rodio/symphonia);
+  - YouTube through the official embedded player;
+  - Apple Music 30-second previews, with a link to the store;
+  - "Play via" switches the current track to another of its sources;
+  - "Find full versions" looks up a YouTube version for tracks that only preview.
+- **Add music**:
+  - search the Apple Music catalog (no account) and YouTube;
+  - add a track by pasting a YouTube link (Ctrl+V);
+  - scanned music folders (tags read with lofty).
+- **Custom playlists**: create, rename, reorder, duplicate. A playlist imported from a service can be duplicated to edit it.
+- **Import** of YouTube and Spotify playlists with your own account (Spotify: Premium required in developer mode).
+- **Customization**:
+  - 6 themes and a theme editor (13 colors, contrast checked live, export and import);
+  - accent, cover shape, density, interface size, columns, player options.
+- **Shield**: ad and tracker blocking with Brave's engine (adblock-rust, EasyList and EasyPrivacy lists).
+- **Now Playing screen**: readout, tuner scale, input selector, volume knob, queue.
 
-| Thème Graphite | Éditeur de thèmes | Ajouter de la musique |
+| Graphite theme | Theme editor | Add music |
 |---|---|---|
-| ![Graphite](docs/images/graphite.png) | ![Thèmes](docs/images/themes.png) | ![Ajouter](docs/images/ajouter.png) |
+| ![Graphite](docs/images/graphite.png) | ![Themes](docs/images/themes.png) | ![Add](docs/images/add.png) |
 
-## Principes
+## Principles
 
-- **Sans serveur** :
-  - aucun backend : la bibliothèque est en SQLite locale ;
-  - les clés et jetons sont dans le trousseau de Windows (crate `keyring`).
-- **Tes propres clés** : chaque utilisateur branche ses propres identifiants Google et Spotify. L'app ne partage aucune clé.
-- **Lecture officielle** :
-  - lecteurs officiels, fichiers locaux, Spotify Connect (prévu) ;
-  - aucune extraction d'audio.
-- **Code original** : tout est écrit de zéro.
+- **Serverless**:
+  - no backend: the library is a local SQLite database;
+  - keys and tokens live in the Windows credential vault (`keyring` crate).
+- **Your own keys**: every user plugs in their own Google and Spotify credentials. The app shares no key.
+- **Official playback**:
+  - official players, local files, Apple previews held in memory, Spotify Connect (planned);
+  - no audio extraction, nothing written to disk.
+- **Original code**: everything is written from scratch.
 
-## Démarrer
+## Getting started
 
-Prérequis :
+Requirements:
 
-- Windows 10 ou 11 avec WebView2 ;
-- [Rust](https://rustup.rs) stable ;
-- Node.js 22 ou plus ;
+- Windows 10 or 11 with WebView2;
+- [Rust](https://rustup.rs) stable;
+- Node.js 22 or later;
 - [pnpm](https://pnpm.io).
 
 ```bash
@@ -59,60 +62,60 @@ pnpm install
 pnpm dev
 ```
 
-| Commande | Rôle |
+| Command | What it does |
 |---|---|
-| `pnpm dev` | Lance l'app en développement (Vite + Tauri) |
-| `pnpm check` | Typecheck, lint, tests Vitest, clippy et `cargo test`. Doit passer avant chaque commit |
-| `pnpm test` | Tests de l'interface |
-| `cargo test --workspace` | Tests Rust |
-| `pnpm build` | Installeur Windows |
+| `pnpm dev` | Runs the app in development (Vite + Tauri) |
+| `pnpm check` | Typecheck, lint, Vitest, clippy and `cargo test`. Must pass before every commit |
+| `pnpm test` | Interface tests |
+| `cargo test --workspace` | Rust tests |
+| `pnpm build` | Windows installer |
 
-### Brancher tes services
+### Connect your services
 
-Dans l'app, ouvre **Réglages › Sources et comptes** et suis l'assistant :
+In the app, open **Settings › Sources & accounts** and follow the wizard:
 
-- **YouTube** : un projet Google Cloud avec un client OAuth « Application de bureau ». Il sert à l'import des playlists et à la recherche (100 recherches par jour).
-- **Spotify** : une app sur le Spotify Developer Dashboard (mode développeur : le propriétaire doit être Premium, 5 utilisateurs au maximum).
-- **Fichiers locaux** : ajoute un ou plusieurs dossiers de musique.
+- **YouTube**: a Google Cloud project with a "Desktop app" OAuth client. Used for playlist import and search (100 searches a day).
+- **Spotify**: an app on the Spotify Developer Dashboard (developer mode: the owner needs Premium, 5 users max).
+- **Local files**: add one or more music folders.
 
 ## Architecture
 
 ```
 crates/
-  core/        modèle, rapprochement des titres, bibliothèque SQLite, synchronisation, scan local
-  connectors/  OAuth PKCE (port local), YouTube, Spotify, catalogue iTunes
-  player/      moteur audio local (thread dédié, file sans blanc entre les titres)
-  shield/      bloqueur de pubs (adblock-rust) et script du lecteur YouTube
-src-tauri/     coque Tauri : commandes IPC, trousseau, accroche WebView2
-ui/            React 19 + Zustand + Tailwind v4, organisé par fonctionnalité
-docs/          choix de lecture (playback.md), plan (plan-v2.md), revue UI (ui-review.md)
+  core/        model, track matching, SQLite library, sync, local scan
+  connectors/  OAuth PKCE (loopback), YouTube, Spotify, iTunes catalog and previews
+  player/      local audio engine (dedicated thread, gapless queue, in-memory previews)
+  shield/      ad blocker (adblock-rust) and YouTube player script
+src-tauri/     Tauri shell: IPC commands, keychain, WebView2 hook
+ui/            React 19 + Zustand + Tailwind v4, organized by feature
+docs/          playback choices (playback.md), plan (plan-v2.md), UI review (ui-review.md)
 ```
 
-Règles :
+Rules:
 
-- toute la logique vit dans `crates/` ;
-- `ui/src/shared/api.ts` est le seul point d'appel à l'IPC ;
-- l'interface n'accède jamais au réseau : tout passe par Rust ;
-- les listes longues sont virtualisées.
+- all logic lives in `crates/`;
+- `ui/src/shared/api.ts` is the only place that calls IPC;
+- the interface never touches the network: everything goes through Rust;
+- long lists are virtualized.
 
-## Feuille de route
+## Roadmap
 
-Le détail est dans [docs/plan-v2.md](docs/plan-v2.md). Les grandes étapes :
+Details in [docs/plan-v2.md](docs/plan-v2.md). Main steps:
 
-- **Fait** :
-  - refonte Hi-Fi et thèmes ;
-  - bouclier anti-pub ;
-  - playlists perso ;
-  - dossiers locaux ;
-  - recherche dans les catalogues.
-- **Suite** :
-  - lecture intelligente (une seule file pour toutes les sources, aperçus) ;
-  - comptes et export ;
-  - partage de playlists entre utilisateurs (code ou QR) ;
-  - mixes personnalisés ;
-  - finitions (touches multimédia, mises à jour automatiques).
+- **Done**:
+  - Hi-Fi redesign and themes;
+  - ad shield;
+  - custom playlists;
+  - local folders;
+  - catalog search;
+  - smart playback (one queue for every source, previews, find versions).
+- **Next**:
+  - share playlists between users (code or QR);
+  - personalized mixes;
+  - accounts and export;
+  - polish (media keys, auto-updates).
 
-## Licence
+## License
 
-Logiciel propriétaire, tous droits réservés. Voir [LICENSE](LICENSE).
-Les marques Spotify, YouTube et Apple Music appartiennent à leurs propriétaires. Les logos viennent de [Simple Icons](https://simpleicons.org) (CC0).
+Proprietary software, all rights reserved. See [LICENSE](LICENSE).
+Spotify, YouTube and Apple Music are trademarks of their owners. Logos come from [Simple Icons](https://simpleicons.org) (CC0).
