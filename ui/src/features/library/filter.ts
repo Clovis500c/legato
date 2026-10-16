@@ -2,7 +2,11 @@ import type { LibraryTrack, Source } from '../../shared/api'
 import { fold } from '../../shared/format'
 
 export type Filter = 'all' | Source | 'unlinked'
-export type Sort = 'artist' | 'title' | 'album' | 'recent' | 'duration'
+/** recent = added-new (playlist covers keep the old name). manual = playlist order. */
+export type Sort = 'manual' | 'added-new' | 'added-old' | 'most-played' | 'recently-played' | 'title' | 'title-desc' | 'artist' | 'album' | 'duration' | 'duration-short' | 'random' | 'recent'
+
+/** Track id → [listens, last start] (history), for the play sorts. */
+export type PlayStats = Record<number, [number, number]>
 
 const sourceCount = (t: LibraryTrack) => Object.keys(t.ids).length
 
@@ -19,16 +23,40 @@ export function filterTracks(tracks: LibraryTrack[], query: string, filter: Filt
 
 const coll = new Intl.Collator('en', { sensitivity: 'base', numeric: true })
 
-/** Library arrives sorted by artist; other orders client-side. recent = highest row id first. */
-export function sortTracks(tracks: LibraryTrack[], sort: Sort): LibraryTrack[] {
-  const by = {
-    artist: (a: LibraryTrack, b: LibraryTrack) => coll.compare(a.artist, b.artist) || coll.compare(a.title, b.title),
-    title: (a: LibraryTrack, b: LibraryTrack) => coll.compare(a.title, b.title),
-    album: (a: LibraryTrack, b: LibraryTrack) => coll.compare(a.album ?? '￿', b.album ?? '￿') || coll.compare(a.title, b.title),
-    recent: (a: LibraryTrack, b: LibraryTrack) => b.id - a.id,
-    duration: (a: LibraryTrack, b: LibraryTrack) => (b.durationMs ?? 0) - (a.durationMs ?? 0),
-  }[sort]
-  return [...tracks].sort(by)
+// Stable pseudo-random rank per track for one Random pick (new seed = new order).
+const rank = (id: number, seed: number) => {
+  let h = (id ^ seed) >>> 0
+  h = Math.imul(h ^ (h >>> 16), 0x45d9f3b)
+  h = Math.imul(h ^ (h >>> 16), 0x45d9f3b)
+  return (h ^ (h >>> 16)) >>> 0
+}
+
+/**
+ * Sorted copy. Library arrives sorted by artist. positional = a playlist: "date added" follows its order (appended =
+ * newest), library = row id. Unplayed tracks go last in the play sorts.
+ */
+export function sortTracks(tracks: LibraryTrack[], sort: Sort, { stats = {}, seed = 1, positional = false }: { stats?: PlayStats; seed?: number; positional?: boolean } = {}): LibraryTrack[] {
+  if (sort === 'manual' || (positional && sort === 'added-old')) return [...tracks]
+  if (positional && (sort === 'added-new' || sort === 'recent')) return [...tracks].reverse()
+  const plays = (t: LibraryTrack) => stats[t.id]?.[0] ?? 0
+  const last = (t: LibraryTrack) => stats[t.id]?.[1] ?? 0
+  type By = (a: LibraryTrack, b: LibraryTrack) => number
+  const title: By = (a, b) => coll.compare(a.title, b.title)
+  const by: Record<Exclude<Sort, 'manual'>, By> = {
+    'added-new': (a, b) => b.id - a.id,
+    recent: (a, b) => b.id - a.id,
+    'added-old': (a, b) => a.id - b.id,
+    'most-played': (a, b) => plays(b) - plays(a) || last(b) - last(a) || title(a, b),
+    'recently-played': (a, b) => last(b) - last(a),
+    title,
+    'title-desc': (a, b) => title(b, a),
+    artist: (a, b) => coll.compare(a.artist, b.artist) || title(a, b),
+    album: (a, b) => coll.compare(a.album ?? '￿', b.album ?? '￿') || title(a, b),
+    duration: (a, b) => (b.durationMs ?? 0) - (a.durationMs ?? 0),
+    'duration-short': (a, b) => (a.durationMs ?? Infinity) - (b.durationMs ?? Infinity),
+    random: (a, b) => rank(a.id, seed) - rank(b.id, seed),
+  }
+  return [...tracks].sort(by[sort])
 }
 
 /** First credited artist: "Daft Punk, Pharrell Williams" → "Daft Punk". "&" kept: duo names (Polo & Pan). */

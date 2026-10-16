@@ -1,4 +1,4 @@
-import { Copy, MagnifyingGlass, Play, ShareNetwork, Trash } from '@phosphor-icons/react'
+import { CaretDown, Copy, MagnifyingGlass, Play, ShareNetwork, SortAscending, Trash } from '@phosphor-icons/react'
 import { useCallback, useMemo, useState } from 'react'
 import { useStore } from '../../app/store'
 import { api, type LibraryTrack } from '../../shared/api'
@@ -6,7 +6,7 @@ import { fold, formatCount } from '../../shared/format'
 import { Button } from '../../shared/ui/Button'
 import { Led, LedChip, RoundButton } from '../../shared/ui/controls'
 import { firstArt, trackArt } from '../../shared/art'
-import { onMenu } from '../../shared/ui/ContextMenu'
+import { onMenu, openMenu, type MenuEntry } from '../../shared/ui/ContextMenu'
 import { Cover } from '../../shared/ui/Cover'
 import { playlistMenu, tracksMenu } from '../menus'
 import { PageHeader } from '../../shared/ui/PageHeader'
@@ -19,13 +19,30 @@ import { PlaylistCover } from './PlaylistCover'
 import { filterTracks, groupAlbums, groupArtists, libraryStats, primaryArtist, sortTracks, type Filter, type Sort } from './filter'
 import { TrackTable } from './TrackTable'
 
-const sorts: { id: Sort; label: string }[] = [
-  { id: 'artist', label: 'Artist' },
-  { id: 'title', label: 'Title' },
-  { id: 'album', label: 'Album' },
-  { id: 'recent', label: 'Recently added' },
-  { id: 'duration', label: 'Duration' },
+/** YouTube-like sort list, in groups. Manual only on playlists. */
+const sortGroups: { id: Sort; label: string }[][] = [
+  [{ id: 'manual', label: 'Manual' }],
+  [
+    { id: 'added-new', label: 'Date added (newest)' },
+    { id: 'added-old', label: 'Date added (oldest)' },
+  ],
+  [
+    { id: 'most-played', label: 'Most played' },
+    { id: 'recently-played', label: 'Recently played' },
+  ],
+  [
+    { id: 'title', label: 'Title (A–Z)' },
+    { id: 'title-desc', label: 'Title (Z–A)' },
+    { id: 'artist', label: 'Artist (A–Z)' },
+    { id: 'album', label: 'Album (A–Z)' },
+  ],
+  [
+    { id: 'duration', label: 'Longest first' },
+    { id: 'duration-short', label: 'Shortest first' },
+  ],
+  [{ id: 'random', label: 'Random' }],
 ]
+const sortLabel = (s: Sort) => sortGroups.flat().find((x) => x.id === s)?.label ?? 'Date added (newest)'
 
 const totalTime = (tracks: LibraryTrack[]) => {
   const min = Math.round(tracks.reduce((s, t) => s + (t.durationMs ?? 0), 0) / 60_000)
@@ -45,19 +62,24 @@ function PlayAll({ tracks }: { tracks: LibraryTrack[] }) {
   )
 }
 
-function SortMenu() {
-  const { sort, setSort } = useStore()
+/** Dropdown like YouTube's: current sort on the button, list opens under it. playlist = adds Manual. */
+function SortMenu({ playlist = false }: { playlist?: boolean }) {
+  const { sort, playlistSort, setSort, setPlaylistSort } = useStore()
+  const value = playlist ? playlistSort : sort
+  const pick = playlist ? setPlaylistSort : setSort
+  const items: MenuEntry[] = sortGroups
+    .filter((g) => playlist || g[0].id !== 'manual')
+    .flatMap((g, i) => [i > 0 && '-', ...g.map((s) => ({ label: s.label, checked: value === s.id, onSelect: () => pick(s.id) }))])
   return (
-    <label className="flex items-center gap-2">
-      <span className="kicker">Sort</span>
-      <select value={sort} onChange={(e) => setSort(e.target.value as Sort)} className="cursor-pointer bg-transparent text-xs font-medium outline-none">
-        {sorts.map((s) => (
-          <option key={s.id} value={s.id}>
-            {s.label}
-          </option>
-        ))}
-      </select>
-    </label>
+    <button
+      onClick={(e) => {
+        const r = e.currentTarget.getBoundingClientRect()
+        openMenu({ clientX: r.left, clientY: r.bottom + 6, target: e.currentTarget, preventDefault() {}, stopPropagation() {} } as unknown as MouseEvent, items)
+      }}
+      className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-[13px] font-medium hover:bg-raised"
+    >
+      <SortAscending size={15} className="text-ink-3" /> {sortLabel(value)} <CaretDown size={12} className="text-ink-3" />
+    </button>
   )
 }
 
@@ -115,9 +137,9 @@ function Playability({ tracks }: { tracks: LibraryTrack[] }) {
 }
 
 export function SongsView() {
-  const { tracks, query, filter, setFilter, sort, go } = useStore()
+  const { tracks, query, filter, setFilter, sort, go, stats: plays, seed } = useStore()
   const stats = useMemo(() => libraryStats(tracks), [tracks])
-  const shown = useMemo(() => sortTracks(filterTracks(tracks, query, filter), sort), [tracks, query, filter, sort])
+  const shown = useMemo(() => sortTracks(filterTracks(tracks, query, filter), sort, { stats: plays, seed }), [tracks, query, filter, sort, plays, seed])
   const chips: { id: Filter; label: string; count: number }[] = [
     { id: 'all', label: 'All', count: stats.total },
     ...(['youtube', 'spotify', 'apple', 'local'] as const).filter((s) => stats.perSource[s]).map((s) => ({ id: s, label: sourceLabel[s], count: stats.perSource[s] })),
@@ -173,9 +195,9 @@ function EditableTitle({ id, name }: { id: number; name: string }) {
 }
 
 export function PlaylistView({ id }: { id: number }) {
-  const { playlists, playlistTracks, query, editPlaylist, go } = useStore()
+  const { playlists, playlistTracks, query, editPlaylist, go, playlistSort, stats, seed } = useStore()
   const playlist = playlists.find((p) => p.id === id)
-  const shown = useMemo(() => filterTracks(playlistTracks, query, 'all'), [playlistTracks, query])
+  const shown = useMemo(() => sortTracks(filterTracks(playlistTracks, query, 'all'), playlistSort, { stats, seed, positional: true }), [playlistTracks, query, playlistSort, stats, seed])
   const sharing = useStore((s) => s.sharing === id)
   const closeShare = useCallback(() => useStore.setState({ sharing: null }), [])
   if (!playlist) return null
@@ -216,9 +238,12 @@ export function PlaylistView({ id }: { id: number }) {
           </>
         }
       />
+      <div className="flex shrink-0 justify-end pb-1">
+        <SortMenu playlist />
+      </div>
       <Playability tracks={playlistTracks} />
       {sharing && <SharePanel id={id} name={playlist.name} onClose={closeShare} />}
-      <TrackTable tracks={shown} empty={playlist.custom ? 'Empty playlist: add songs from Songs with the “Add to playlist” button.' : 'No songs.'} editId={playlist.custom && !query ? id : undefined} />
+      <TrackTable tracks={shown} empty={playlist.custom ? 'Empty playlist: add songs from Songs with the “Add to playlist” button.' : 'No songs.'} editId={playlist.custom && !query && playlistSort === 'manual' ? id : undefined} />
     </>
   )
 }

@@ -233,6 +233,8 @@ export const api = {
   restartApp: () => invoke<void>('restart_app'),
   /** Other uploads of the same song when the video refuses embedding (101 / 150), best first. */
   alternativeVideos: (trackId: number, exclude: string[]) => invoke<string[]>('alternative_videos', { trackId, exclude }),
+  /** Track id → [listens, last start]: Most played / Recently played. */
+  playStats: () => invoke<Record<number, [number, number]>>('play_stats'),
   /** Track ids of every playlist, in order (covers). */
   playlistOrders: () => invoke<Record<number, number[]>>('playlist_orders'),
   /** Picked image copied into the app; returns its name for the art scheme (cover/<name>). */

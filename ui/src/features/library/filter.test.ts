@@ -87,4 +87,21 @@ describe('albums and artists', () => {
     expect(sortTracks(lib, 'duration').map((x) => x.id)).toEqual([1, 2, 3, 4])
     expect(sortTracks(lib, 'title').map((x) => x.title)[0]).toBe('Get Lucky')
   })
+
+  it('YouTube-like sorts: added, plays, alphabet both ways, length, random', () => {
+    const ids = (s: Parameters<typeof sortTracks>[1], o?: Parameters<typeof sortTracks>[2]) => sortTracks(lib, s, o).map((x) => x.id)
+    expect(ids('added-old')).toEqual([1, 2, 3, 4])
+    // Playlist: date added = its own order.
+    expect(ids('added-new', { positional: true })).toEqual([...lib].reverse().map((x) => x.id))
+    expect(ids('manual')).toEqual(lib.map((x) => x.id))
+    const stats = { 3: [5, 100], 1: [5, 200], 2: [1, 900] } as Record<number, [number, number]>
+    expect(ids('most-played', { stats })).toEqual([1, 3, 2, 4])
+    expect(ids('recently-played', { stats })).toEqual([2, 1, 3, 4])
+    expect(sortTracks(lib, 'title-desc').map((x) => x.title)).toEqual(sortTracks(lib, 'title').map((x) => x.title).reverse())
+    // Unknown length last.
+    expect(ids('duration-short')).toEqual([3, 2, 1, 4])
+    const r = ids('random', { seed: 7 })
+    expect([...r].sort()).toEqual([1, 2, 3, 4])
+    expect(ids('random', { seed: 7 })).toEqual(r)
+  })
 })

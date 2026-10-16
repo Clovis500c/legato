@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { api, type Credentials, type LibraryPlaylist, type LibraryTrack, type PlaylistEdit, type Service, type SourceStatus, type SyncReport } from '../shared/api'
-import type { Filter, Sort } from '../features/library/filter'
+import type { Filter, PlayStats, Sort } from '../features/library/filter'
 
 export type SettingsSection = 'appearance' | 'themes' | 'sources' | 'shield' | 'shortcuts' | 'advanced'
 
@@ -29,6 +29,11 @@ interface State {
   query: string
   filter: Filter
   sort: Sort
+  /** Playlist pages: own sort, manual by default. */
+  playlistSort: Sort
+  /** Random sort order; new pick = new seed. */
+  seed: number
+  stats: PlayStats
   busy: boolean
   error?: string
   /** Short success message, auto-cleared. */
@@ -46,6 +51,7 @@ interface State {
   setQuery: (query: string) => void
   setFilter: (filter: Filter) => void
   setSort: (sort: Sort) => void
+  setPlaylistSort: (sort: Sort) => void
   dismissError: () => void
   refresh: () => Promise<void>
   sync: () => Promise<void>
@@ -95,6 +101,9 @@ export const useStore = create<State>((set, get) => {
     query: '',
     filter: 'all',
     sort: 'artist',
+    playlistSort: 'manual',
+    seed: 1,
+    stats: {},
     busy: false,
     sharing: null,
 
@@ -116,12 +125,13 @@ export const useStore = create<State>((set, get) => {
     },
     setQuery: (query) => set({ query }),
     setFilter: (filter) => set({ filter }),
-    setSort: (sort) => set({ sort }),
+    setSort: (sort) => set({ sort, ...(sort === 'random' && { seed: Date.now() }) }),
+    setPlaylistSort: (playlistSort) => set({ playlistSort, ...(playlistSort === 'random' && { seed: Date.now() }) }),
     dismissError: () => set({ error: undefined }),
 
     async refresh() {
-      const [status, lib, orders] = await Promise.all([api.sourcesStatus(), api.library(), api.playlistOrders().catch(() => ({}))])
-      set({ status, ...lib, orders })
+      const [status, lib, orders, stats] = await Promise.all([api.sourcesStatus(), api.library(), api.playlistOrders().catch(() => ({})), api.playStats().catch(() => ({}))])
+      set({ status, ...lib, orders, stats })
     },
 
     async sync() {
