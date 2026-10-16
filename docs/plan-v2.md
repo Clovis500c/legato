@@ -1,6 +1,6 @@
 # Music App v2 : plan proposé (à valider)
 
-Statut : **phases 1 et 2 livrées** (16/10/2026) : refonte Hi-Fi, thèmes, bouclier anti-pub, playlists perso, dossiers locaux, ajout par lien YouTube. Complète, raye ou commente directement ce fichier, ou réponds dans le chat.
+Statut : **phases 1 à 3 livrées** (16/10/2026) : refonte Hi-Fi, thèmes, bouclier anti-pub, playlists perso, dossiers locaux, ajout par lien YouTube, recherche Apple Music et YouTube. Prochaines : 4 (lecture intelligente), 7 (partage par code ou QR), 8 (mixes). Complète, raye ou commente directement ce fichier, ou réponds dans le chat.
 Maquettes : Figma, fichier « Bow Game / Music App », page **« Music App v3 — Hi-Fi »**. La page v2 « Apple » est abandonnée.
 
 ## 0. Tes décisions (à remplir)
@@ -111,6 +111,62 @@ Règle de lecture : pour chaque titre, on joue la meilleure source disponible. *
 **Phase 6 : finitions** (M)
 - Raccourcis clavier, touches multimédia et panneau média de Windows (crate `souvlaki`), mini-lecteur, icône de zone de notification.
 - Mises à jour automatiques (`tauri-plugin-updater`, demande de signer l'app), installeur, performance (50 000 titres), accessibilité (contraste AA, navigation clavier).
+
+**Phase 7 : partager une playlist d'une Music App à une autre, sans serveur** (L)
+- **Format `MA1` compact et binaire** : en-tête (version, nom), puis pour chaque titre le meilleur identifiant disponible.
+
+  | Identifiant | Taille |
+  |---|---|
+  | YouTube (11 caractères en base64) | 9 octets |
+  | ISRC | 8 octets |
+  | Apple Music (varint) | 5 octets |
+  | Spotify (22 caractères en base62) | 17 octets |
+  | Fichier local seul | titre + artiste en UTF-8 |
+
+  Le tout est compressé (deflate), avec une somme de contrôle. Cible : 100 titres YouTube en moins de 1,2 Ko, vérifiée par un test.
+- **Trois façons de partager** :
+  1. **QR code** : encodage base45, qui est le mode alphanumérique du QR, le plus dense. Affiché dans l'app, et lu en glissant une
+     capture ou un fichier image (décodage Rust, crate `rqrr`). La lecture par webcam viendra plus tard.
+  2. **Code court « grand-mère »** :
+     - sur le même réseau : code à 6 chiffres façon LocalSend (annonce mDNS, transfert direct chiffré par PAKE avec le code comme
+       mot de passe) ;
+     - à distance : mots à dicter façon magic-wormhole (`7-guitare-tempête`), chiffré de bout en bout. Ça passe par le relais public de
+       magic-wormhole, un serveur qui n'est pas le nôtre : **à valider**.
+  3. **Lien ou texte** `musicapp://…` à coller n'importe où (Ctrl+V, réutilise la détection de liens) pour les messageries.
+- **Import** :
+  - aperçu : N titres, X déjà reconnus, Y à chercher ;
+  - rapprochement par identifiant, ISRC ou titre + artiste + durée ;
+  - les manquants sont cherchés dans les catalogues (réutilise `add_track`, dans le budget YouTube) ;
+  - on obtient une playlist perso modifiable.
+- **Tests** :
+  - encodage puis décodage identiques ;
+  - budget de taille ;
+  - QR généré puis relu ;
+  - code faux ou altéré refusé.
+
+**Phase 8 : mixes personnalisés, calculés en local** (L)
+- **Prérequis** : un historique d'écoute. Table `plays` : titre, début, durée écoutée, écoute complète ou passée. Il alimente aussi
+  l'Accueil (Reprendre, Ta semaine).
+- **Signaux** :
+  - écoutes et écoutes complètes (positif) ;
+  - titres passés en moins de 30 s (négatif) ;
+  - fraîcheur, avec une demi-vie de 30 jours ;
+  - présence dans tes playlists perso (signal fort) ;
+  - écoutes dans la même session et playlists communes, qui donnent une similarité entre titres ;
+  - affinité par artiste, moment de la journée et jour de la semaine ;
+  - tags des fichiers (genre, année).
+- **Mixes générés** :
+  - « Mix du jour 1 à 6 » : on regroupe le graphe de tes goûts (artistes qui reviennent ensemble, regroupement par propagation
+    d'étiquettes). Chaque groupe donne un mix, classé par affinité × fraîcheur, avec de la diversité (MMR, pas deux titres du même
+    artiste à la suite) ;
+  - « À redécouvrir » : forte affinité passée, plus écoutés depuis 60 jours ;
+  - « Ambiance du moment » : selon l'heure ;
+  - « Découvertes » (optionnel) : artistes proches via Last.fm (ta clé) puis catalogues, avec la version YouTube trouvée automatiquement.
+- **Contrôle** :
+  - une explication par mix (« parce que tu écoutes X ») ;
+  - « moins de ce titre », exclusion d'un titre, remise à zéro de l'historique ;
+  - tout reste local.
+- **Tests** : graine fixe donc résultats reproductibles, poids des signaux, contraintes de diversité, aucun titre exclu dans un mix.
 
 **Bonus « au max » (choisis)** : playlists intelligentes (règles), statistiques d'écoute, détecteur de doublons,
 radio de titres proches (clé Last.fm), scrobbling Last.fm, minuteur de sommeil, fondu enchaîné et égaliseur (fichiers locaux).
