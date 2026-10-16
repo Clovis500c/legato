@@ -24,7 +24,7 @@ const head: Record<Column, string> = { album: 'Album', sources: 'Sources', durat
 /** Virtualized: only visible rows hit the DOM, so 50k tracks stay smooth. editId = custom playlist shown unfiltered (positions = indexes). rowActions = extra hover buttons. */
 export function TrackTable({ tracks, empty, editId, rowActions }: { tracks: LibraryTrack[]; empty: React.ReactNode; editId?: number; rowActions?: (t: LibraryTrack) => React.ReactNode }) {
   const scroller = useRef<HTMLDivElement>(null)
-  const { density, columns } = useSettings((s) => s.settings)
+  const { density, columns, listCovers, clickToPlay } = useSettings((s) => s.settings)
   const play = usePlayer((s) => s.playTracks)
   const editPlaylist = useStore((s) => s.editPlaylist)
   const playingId = usePlayer((s) => s.now?.trackId)
@@ -59,14 +59,15 @@ export function TrackTable({ tracks, empty, editId, rowActions }: { tracks: Libr
                 <div
                   key={v.key}
                   role="row"
-                  onDoubleClick={() => playable && play(tracks, v.index)}
+                  onClick={() => clickToPlay === 'single' && playable && play(tracks, v.index)}
+                  onDoubleClick={() => clickToPlay === 'double' && playable && play(tracks, v.index)}
                   onContextMenu={onMenu(() => trackMenu(t, { list: tracks, index: v.index, playlistId: editId, position: v.index }))}
                   className={`group absolute inset-x-0 grid items-center gap-4 border-b border-line-soft px-2 ${on ? 'bg-accent-soft' : 'hover:bg-raised'}`}
                   style={{ ...grid, height: row, transform: `translateY(${v.start}px)` }}
                 >
                   <span className="flex justify-end font-mono text-[11px] text-ink-3 tabular-nums">{on ? <Waveform size={14} className="text-accent" /> : String(v.index + 1).padStart(2, '0')}</span>
                   <span className="flex min-w-0 items-center gap-3">
-                    <Cover title={t.album ?? t.title} art={trackArt(t)} size={cover} />
+                    {listCovers && <Cover title={t.album ?? t.title} art={trackArt(t)} size={cover} />}
                     <span className="min-w-0">
                       <span className={`flex items-center gap-2 text-[13px] font-semibold ${on ? 'text-accent' : ''}`}>
                         <span className="truncate">{t.title}</span>

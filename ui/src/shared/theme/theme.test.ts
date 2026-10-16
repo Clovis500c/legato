@@ -42,7 +42,8 @@ describe('contrast', () => {
 
 describe('resolveTheme', () => {
   it('follows system and accent override', () => {
-    expect(resolveTheme({ ...DEFAULTS, theme: 'system' }, true).id).toBe('graphite')
+    expect(resolveTheme({ ...DEFAULTS, theme: 'system' }, true).id).toBe('modern-dark')
+    expect(resolveTheme({ ...DEFAULTS, theme: 'system' }, false).id).toBe('modern')
     const t = resolveTheme({ ...DEFAULTS, accent: '#F2B705' }, false)
     expect([t.accent, t.onAccent]).toEqual(['#F2B705', '#171614'])
   })
@@ -51,11 +52,11 @@ describe('resolveTheme', () => {
     const win = { light: '#005fb8', dark: '#60CDFF' }
     const light = resolveTheme(DEFAULTS, false, win)
     const dark = resolveTheme(DEFAULTS, true, win)
-    expect([light.id, light.accent, light.onAccent]).toEqual(['paper', '#005FB8', '#FFFFFF'])
-    expect([dark.id, dark.accent, dark.onAccent]).toEqual(['graphite', '#60CDFF', '#171614'])
+    expect([light.id, light.accent, light.onAccent]).toEqual(['modern', '#005FB8', '#FFFFFF'])
+    expect([dark.id, dark.accent, dark.onAccent]).toEqual(['modern-dark', '#60CDFF', '#171614'])
     // No Windows accent (other OS, error): theme's own.
-    expect(resolveTheme(DEFAULTS, true, null).accent).toBe(PRESETS[1].accent)
-    expect(resolveTheme({ ...DEFAULTS, accent: null }, false, win).accent).toBe(PRESETS[0].accent)
+    expect(resolveTheme(DEFAULTS, true, null).accent).toBe('#FF0033')
+    expect(resolveTheme({ ...DEFAULTS, accent: null }, false, win).accent).toBe('#FF0033')
   })
 
   it('text on any accent reaches AA 4.5', () => {
@@ -66,7 +67,15 @@ describe('resolveTheme', () => {
   })
 
   it('maps layout settings to CSS variables', () => {
-    const v = cssVars(PRESETS[0], { ...DEFAULTS, covers: 'vinyl', density: 'compact' })
+    const paper = PRESETS.find((t) => t.id === 'paper')!
+    const v = cssVars(paper, { ...DEFAULTS, covers: 'vinyl', density: 'compact' })
     expect(v).toMatchObject({ '--bg': '#F3F1EC', '--line-soft': '#E4E0D7', '--ink-2': '#5C5852', '--cover-radius': '999px', '--row-h': '40px' })
+    expect(v['--font-ui']).toContain('Schibsted')
+    expect(cssVars(paper, { ...DEFAULTS, font: 'modern' })['--font-ui']).toContain('Roboto')
+  })
+
+  it('sanitizes the new options', () => {
+    expect(sanitize({ font: 'comic', clickToPlay: 'triple', startView: 'settings', motion: 'no' })).toMatchObject({ font: 'theme', clickToPlay: 'double', startView: 'songs', motion: true })
+    expect(sanitize({ font: 'neutral', clickToPlay: 'single', startView: 'mixes', listCovers: false })).toMatchObject({ font: 'neutral', clickToPlay: 'single', startView: 'mixes', listCovers: false })
   })
 })

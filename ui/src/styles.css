@@ -1,6 +1,7 @@
 @import 'tailwindcss';
 @import '@fontsource-variable/schibsted-grotesk';
 @import '@fontsource-variable/geist-mono';
+@import '@fontsource-variable/roboto';
 
 /* Colors come from CSS variables set by app/settings.ts (shared/theme). Defaults = Papier, for first paint. */
 @theme inline {
@@ -45,6 +46,14 @@
   --font-ui: 'Schibsted Grotesk Variable', ui-sans-serif, system-ui, sans-serif;
   --cover-radius: 3px;
   --row-h: 52px;
+}
+
+/* Settings › Animations off. */
+.still *,
+.still *::before,
+.still *::after {
+  transition: none !important;
+  animation: none !important;
 }
 
 html,

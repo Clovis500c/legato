@@ -1,5 +1,6 @@
 import { Disc, Gear, MagnifyingGlass, MicrophoneStage, MusicNotes, Playlist, Plus, PlusCircle, VinylRecord } from '@phosphor-icons/react'
 import { useEffect, useMemo, useRef, type ReactNode } from 'react'
+import { useSettings } from '../../app/settings'
 import { useStore, type View } from '../../app/store'
 import { formatCount } from '../../shared/format'
 import { Led } from '../../shared/ui/controls'
@@ -9,12 +10,13 @@ import { playlistMenu } from '../menus'
 import { groupAlbums, groupArtists } from '../library/filter'
 
 function NavItem({ on, icon, label, count, onClick, onContextMenu }: { on: boolean; icon: ReactNode; label: string; count?: number; onClick: () => void; onContextMenu?: (e: React.MouseEvent) => void }) {
+  const counts = useSettings((s) => s.settings.sidebarCounts)
   return (
     <button aria-current={on ? 'page' : undefined} onClick={onClick} onContextMenu={onContextMenu} className={`flex w-full items-center gap-2.5 rounded-md py-1.5 pr-2.5 pl-1 text-left transition ${on ? 'bg-raised font-semibold text-ink' : 'text-ink-2 hover:text-ink'}`}>
       <span className="w-1.5">{on && <Led on />}</span>
       <span className={on ? 'text-ink' : 'text-ink-3'}>{icon}</span>
       <span className="min-w-0 flex-1 truncate">{label}</span>
-      {count !== undefined && <span className="font-mono text-[10px] text-ink-3">{formatCount(count)}</span>}
+      {count !== undefined && counts && <span className="font-mono text-[10px] text-ink-3">{formatCount(count)}</span>}
     </button>
   )
 }

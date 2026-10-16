@@ -9,6 +9,7 @@ const systemDark = window.matchMedia('(prefers-color-scheme: dark)')
 let systemAccent: SystemAccent | null = null
 
 function apply(s: Settings) {
+  document.documentElement.classList.toggle('still', !s.motion)
   const root = document.documentElement.style
   for (const [k, v] of Object.entries(cssVars(resolveTheme(s, systemDark.matches, systemAccent), s))) root.setProperty(k, v)
   getCurrentWebview()
@@ -34,6 +35,8 @@ export const useSettings = create<SettingsState>((set, get) => ({
     const s = sanitize(await api.loadSettings().catch(() => null))
     set({ settings: s })
     apply(s)
+    // Start screen: replaces the default one, no history entry.
+    if (useStore.getState().view.name === 'songs') useStore.setState({ view: { name: s.startView } })
   },
 
   // Applied at once, saved after a short pause (sliders fire many updates).

@@ -93,11 +93,44 @@ function ThemeGallery({ onEdit }: { onEdit?: (id: string) => void }) {
   )
 }
 
+/** Applied on "Apply" only: zooming while dragging moves the slider under the pointer. */
+function InterfaceSize() {
+  const { settings: s, update } = useSettings()
+  const [draft, setDraft] = useState<number | null>(null)
+  const v = draft ?? s.zoom
+  const apply = () => {
+    update({ zoom: v })
+    setDraft(null)
+  }
+  return (
+    <Group title="Interface size" hint={`${v}%`}>
+      <div className="flex h-8 items-center gap-3">
+        <input type="range" aria-label="Interface size" min={90} max={125} step={5} value={v} onChange={(e) => setDraft(+e.target.value)} onKeyDown={(e) => e.key === 'Enter' && apply()} className="bar w-60" style={{ background: `linear-gradient(to right, var(--ink) ${((v - 90) / 35) * 100}%, var(--line) 0)` }} />
+        {draft !== null && draft !== s.zoom && (
+          <>
+            <Button onClick={apply}>Apply {v}%</Button>
+            <Button variant="ghost" onClick={() => setDraft(null)}>
+              Cancel
+            </Button>
+          </>
+        )}
+      </div>
+    </Group>
+  )
+}
+
+const fonts: { value: Settings['font']; label: string }[] = [
+  { value: 'theme', label: 'Theme' },
+  { value: 'modern', label: 'Modern' },
+  { value: 'hifi', label: 'Hi-Fi' },
+  { value: 'neutral', label: 'Windows' },
+]
+
 function Appearance() {
   const { settings: s, update, current } = useSettings()
   const col = (c: Column) => (s.columns.includes(c) ? s.columns.filter((x) => x !== c) : COLUMNS.filter((x) => x === c || s.columns.includes(x)))
   const labels: Record<Column, string> = { album: 'Album', sources: 'Sources', duration: 'Duration' }
-  const reset: Partial<Settings> = { accent: DEFAULTS.accent, covers: DEFAULTS.covers, density: DEFAULTS.density, zoom: DEFAULTS.zoom, readout: DEFAULTS.readout, volume: DEFAULTS.volume, tuner: DEFAULTS.tuner, columns: DEFAULTS.columns, tint: DEFAULTS.tint, miniPlayer: DEFAULTS.miniPlayer }
+  const reset: Partial<Settings> = { accent: DEFAULTS.accent, covers: DEFAULTS.covers, density: DEFAULTS.density, zoom: DEFAULTS.zoom, readout: DEFAULTS.readout, volume: DEFAULTS.volume, tuner: DEFAULTS.tuner, columns: DEFAULTS.columns, tint: DEFAULTS.tint, miniPlayer: DEFAULTS.miniPlayer, font: DEFAULTS.font, motion: DEFAULTS.motion, sidebarCounts: DEFAULTS.sidebarCounts, listCovers: DEFAULTS.listCovers, clickToPlay: DEFAULTS.clickToPlay }
   return (
     <div className="flex flex-col gap-7">
       <div className="flex justify-end">
@@ -126,6 +159,9 @@ function Appearance() {
           </label>
         </div>
       </Group>
+      <Group title="Font" hint={s.font === 'theme' ? `theme: ${current().font}` : undefined}>
+        <Segmented label="Font" value={s.font} onChange={(font) => update({ font })} options={fonts} />
+      </Group>
       <div className="grid grid-cols-2 gap-6">
         <Group title="Covers">
           <Segmented label="Cover shape" value={s.covers} onChange={(covers) => update({ covers })} options={[{ value: 'net', label: 'Sharp' }, { value: 'rounded', label: 'Rounded' }, { value: 'vinyl', label: 'Vinyl' }]} />
@@ -134,9 +170,7 @@ function Appearance() {
           <Segmented label="Density" value={s.density} onChange={(density) => update({ density })} options={[{ value: 'compact', label: 'Compact' }, { value: 'comfort', label: 'Comfortable' }, { value: 'airy', label: 'Airy' }]} />
         </Group>
       </div>
-      <Group title="Interface size" hint={`${s.zoom}%`}>
-        <input type="range" aria-label="Interface size" min={90} max={125} step={5} value={s.zoom} onChange={(e) => update({ zoom: +e.target.value })} className="bar w-60" style={{ background: `linear-gradient(to right, var(--ink) ${((s.zoom - 90) / 35) * 100}%, var(--line) 0)` }} />
-      </Group>
+      <InterfaceSize />
       <Group title="Player">
         <div className="rounded-xl border border-line bg-raised">
           <Row label="Readout" sub="Source and format next to the volume">
@@ -153,6 +187,25 @@ function Appearance() {
           </Row>
           <Row label="Mini player" sub="Floating player for every source. YouTube always shows one: its video must stay visible.">
             <Toggle label="Mini player" checked={s.miniPlayer} onChange={(miniPlayer) => update({ miniPlayer })} />
+          </Row>
+        </div>
+      </Group>
+      <Group title="Lists and navigation">
+        <div className="rounded-xl border border-line bg-raised">
+          <Row label="Covers in lists">
+            <Toggle label="Covers in lists" checked={s.listCovers} onChange={(listCovers) => update({ listCovers })} />
+          </Row>
+          <Row label="Play with" sub="On a track row">
+            <Segmented label="Play with" value={s.clickToPlay} onChange={(clickToPlay) => update({ clickToPlay })} options={[{ value: 'single', label: 'One click' }, { value: 'double', label: 'Double-click' }]} />
+          </Row>
+          <Row label="Counts in the sidebar" sub="Number of songs next to each entry">
+            <Toggle label="Counts in the sidebar" checked={s.sidebarCounts} onChange={(sidebarCounts) => update({ sidebarCounts })} />
+          </Row>
+          <Row label="Open on" sub="Screen shown when the app starts">
+            <Segmented label="Open on" value={s.startView} onChange={(startView) => update({ startView })} options={[{ value: 'songs', label: 'Songs' }, { value: 'mixes', label: 'Mixes' }, { value: 'albums', label: 'Albums' }, { value: 'artists', label: 'Artists' }]} />
+          </Row>
+          <Row label="Animations" sub="Transitions and fades">
+            <Toggle label="Animations" checked={s.motion} onChange={(motion) => update({ motion })} />
           </Row>
         </div>
       </Group>
@@ -218,7 +271,7 @@ function ThemeEditor({ id, onClose }: { id: string; onClose: () => void }) {
       </div>
       <div className="flex items-center justify-between">
         <span className="kicker">Font</span>
-        <Segmented label="Font" value={t.font} onChange={(font) => save({ font })} options={[{ value: 'hifi', label: 'Hi-Fi' }, { value: 'neutral', label: 'Neutral' }]} />
+        <Segmented label="Font" value={t.font} onChange={(font) => save({ font })} options={[{ value: 'modern', label: 'Modern' }, { value: 'hifi', label: 'Hi-Fi' }, { value: 'neutral', label: 'Windows' }]} />
       </div>
       <div className="flex items-center justify-between">
         <span className="text-xs font-medium">LED glow</span>

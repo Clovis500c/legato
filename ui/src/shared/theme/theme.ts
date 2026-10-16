@@ -8,14 +8,21 @@ export interface Theme extends Palette {
   id: string
   name: string
   dark: boolean
-  font: 'hifi' | 'neutral'
+  font: Font
   glow: boolean
 }
 
-const preset = (id: string, name: string, dark: boolean, p: Palette): Theme => ({ id, name, dark, font: 'hifi', glow: true, ...p })
+/** modern = Roboto (YouTube's UI font), hifi = Schibsted Grotesk, neutral = Segoe UI. */
+export const FONTS = ['modern', 'hifi', 'neutral'] as const
+export type Font = (typeof FONTS)[number]
+
+const preset = (id: string, name: string, dark: boolean, p: Palette, font: Font = 'hifi', glow = true): Theme => ({ id, name, dark, font, glow, ...p })
 
 // ink3 values tuned for WCAG AA (4.5:1) on bg.
 export const PRESETS: Theme[] = [
+  // YouTube's own palettes and font: what System follows by default.
+  preset('modern', 'Modern', false, { bg: '#FFFFFF', panel: '#F9F9F9', raised: '#F2F2F2', recess: '#F2F2F2', line: '#E5E5E5', lineSoft: '#EFEFEF', ink: '#0F0F0F', ink2: '#606060', ink3: '#606060', ink4: '#CCCCCC', accent: '#FF0033', onAccent: '#FFFFFF', ledOff: '#D9D9D9' }, 'modern', false),
+  preset('modern-dark', 'Modern Dark', true, { bg: '#0F0F0F', panel: '#181818', raised: '#272727', recess: '#090909', line: '#3F3F3F', lineSoft: '#272727', ink: '#F1F1F1', ink2: '#AAAAAA', ink3: '#909090', ink4: '#4D4D4D', accent: '#FF0033', onAccent: '#FFFFFF', ledOff: '#3F3F3F' }, 'modern', false),
   preset('paper', 'Paper', false, { bg: '#F3F1EC', panel: '#EAE7E0', raised: '#FBFAF7', recess: '#E1DDD4', line: '#D6D1C6', lineSoft: '#E4E0D7', ink: '#171614', ink2: '#5C5852', ink3: '#6B665E', ink4: '#B2ACA1', accent: '#FF5A1F', onAccent: '#FFFFFF', ledOff: '#CDC7BB' }),
   preset('graphite', 'Graphite', true, { bg: '#121211', panel: '#1A1A18', raised: '#24231F', recess: '#0B0B0A', line: '#302F2B', lineSoft: '#252421', ink: '#EDEAE4', ink2: '#A6A198', ink3: '#8A847B', ink4: '#55524C', accent: '#FF6A2E', onAccent: '#171614', ledOff: '#3A3935' }),
   preset('studio', 'Studio', true, { bg: '#000000', panel: '#0A0A0A', raised: '#161616', recess: '#000000', line: '#262626', lineSoft: '#1A1A1A', ink: '#FFFFFF', ink2: '#A3A3A3', ink3: '#7A7A7A', ink4: '#4D4D4D', accent: '#FF3B30', onAccent: '#FFFFFF', ledOff: '#333333' }),
@@ -29,8 +36,10 @@ export const ACCENTS = ['#FF5A1F', '#E5383B', '#F2B705', '#2E8B57', '#2F6FEB', '
 export const COLUMNS = ['album', 'sources', 'duration'] as const
 export type Column = (typeof COLUMNS)[number]
 
+export const START_VIEWS = ['songs', 'mixes', 'albums', 'artists'] as const
+
 export interface Settings {
-  /** Preset id, custom theme id, or 'system' (Paper / Graphite). */
+  /** Preset id, custom theme id, or 'system' (Modern / Modern Dark, following Windows). */
   theme: string
   /** Hex overrides theme accent; 'system' = Windows accent; null = theme's own. */
   accent: string | null
@@ -49,13 +58,24 @@ export interface Settings {
   miniPlayer: boolean
   /** Now Playing takes a flat tint from the cover. */
   tint: boolean
+  /** 'theme' = the theme's own font. */
+  font: 'theme' | Font
+  /** Transitions and animations. */
+  motion: boolean
+  /** Track counts next to sidebar entries. */
+  sidebarCounts: boolean
+  /** Covers in track lists. */
+  listCovers: boolean
+  /** A single click on a track row plays it, or a double-click does. */
+  clickToPlay: 'single' | 'double'
+  startView: (typeof START_VIEWS)[number]
 }
 
 export const DEFAULTS: Settings = {
   theme: 'system',
   accent: 'system',
   customThemes: [],
-  covers: 'net',
+  covers: 'rounded',
   density: 'comfort',
   zoom: 100,
   readout: true,
@@ -65,6 +85,12 @@ export const DEFAULTS: Settings = {
   shield: true,
   miniPlayer: false,
   tint: true,
+  font: 'theme',
+  motion: true,
+  sidebarCounts: true,
+  listCovers: true,
+  clickToPlay: 'double',
+  startView: 'songs',
 }
 
 const HEX = /^#[0-9a-f]{6}$/i
@@ -79,7 +105,7 @@ export function sanitizeTheme(raw: unknown): Theme | null {
   const name = typeof r.name === 'string' && r.name.trim() ? r.name.trim().slice(0, 40) : 'My theme'
   const id = typeof r.id === 'string' && /^custom-[\w-]{1,40}$/.test(r.id) ? r.id : `custom-${Date.now().toString(36)}`
   const palette = Object.fromEntries(PALETTE_KEYS.map((k) => [k, (r[k] as string).toUpperCase()])) as Palette
-  return { id, name, dark: luminance(palette.bg) < 0.2, font: pick(r.font, ['hifi', 'neutral'] as const, 'hifi'), glow: r.glow !== false, ...palette }
+  return { id, name, dark: luminance(palette.bg) < 0.2, font: pick(r.font, FONTS, 'hifi'), glow: r.glow !== false, ...palette }
 }
 
 /** Preset ids before English rename. */
@@ -104,6 +130,12 @@ export function sanitize(raw: unknown): Settings {
     shield: typeof r.shield === 'boolean' ? r.shield : DEFAULTS.shield,
     miniPlayer: typeof r.miniPlayer === 'boolean' ? r.miniPlayer : DEFAULTS.miniPlayer,
     tint: typeof r.tint === 'boolean' ? r.tint : DEFAULTS.tint,
+    font: pick(r.font, ['theme', ...FONTS] as const, DEFAULTS.font),
+    motion: typeof r.motion === 'boolean' ? r.motion : DEFAULTS.motion,
+    sidebarCounts: typeof r.sidebarCounts === 'boolean' ? r.sidebarCounts : DEFAULTS.sidebarCounts,
+    listCovers: typeof r.listCovers === 'boolean' ? r.listCovers : DEFAULTS.listCovers,
+    clickToPlay: pick(r.clickToPlay, ['single', 'double'] as const, DEFAULTS.clickToPlay),
+    startView: pick(r.startView, START_VIEWS, DEFAULTS.startView),
   }
 }
 
@@ -142,11 +174,17 @@ export interface SystemAccent {
 }
 
 export function resolveTheme(s: Settings, systemDark: boolean, system: SystemAccent | null = null): Theme {
-  const id = s.theme === 'system' ? (systemDark ? 'graphite' : 'paper') : s.theme
+  const id = s.theme === 'system' ? (systemDark ? 'modern-dark' : 'modern') : s.theme
   const t = [...PRESETS, ...s.customThemes].find((x) => x.id === id) ?? PRESETS[0]
   const sys = system && [system.light, system.dark].every(isHex) ? (t.dark ? system.dark : system.light).toUpperCase() : null
   const accent = s.accent === 'system' ? sys : s.accent
   return accent ? { ...t, accent, onAccent: onAccentFor(accent) } : t
+}
+
+const FONT_STACKS: Record<Font, string> = {
+  modern: "'Roboto Variable', Roboto, 'Segoe UI', system-ui, sans-serif",
+  hifi: "'Schibsted Grotesk Variable', ui-sans-serif, system-ui, sans-serif",
+  neutral: "'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif",
 }
 
 const kebab = (k: string) => k.replace(/[A-Z0-9]/g, (c) => `-${c.toLowerCase()}`)
@@ -158,7 +196,7 @@ export function cssVars(t: Theme, s: Settings): Record<string, string> {
     '--accent-soft': `${t.accent}1F`,
     '--shadow': t.dark ? '#00000099' : '#17161424',
     '--led-glow': t.glow ? `0 0 6px ${t.accent}AA` : 'none',
-    '--font-ui': t.font === 'hifi' ? "'Schibsted Grotesk Variable', ui-sans-serif, system-ui, sans-serif" : "'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif",
+    '--font-ui': FONT_STACKS[s.font === 'theme' ? t.font : s.font],
     '--cover-radius': { net: '3px', rounded: '10px', vinyl: '999px' }[s.covers],
     '--row-h': { compact: '40px', comfort: '52px', airy: '64px' }[s.density],
     'color-scheme': t.dark ? 'dark' : 'light',
