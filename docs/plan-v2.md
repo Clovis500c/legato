@@ -1,16 +1,16 @@
 # Music App v2 : plan proposé (à valider)
 
-Statut : **proposition**. Complète, raye ou commente directement ce fichier, ou réponds dans le chat.
-Maquettes : Figma, fichier « Bow Game / Music App », page **« Music App v2 — Apple »**.
+Statut : **proposition, 2e version**. Complète, raye ou commente directement ce fichier, ou réponds dans le chat.
+Maquettes : Figma, fichier « Bow Game / Music App », page **« Music App v3 — Hi-Fi »**. La page v2 « Apple » est abandonnée.
 
 ## 0. Tes décisions (à remplir)
 
 | # | Question | Ma proposition | Ta réponse |
 |---|---|---|---|
-| 1 | Couleur d'accent | Indigo `#5856D6` (`#7D7AFF` en sombre), proche du violet actuel | |
-| 2 | Thème | Clair par défaut, sombre automatique (suit Windows) | |
-| 3 | Lecteur | Capsule flottante translucide en bas + plein écran | |
-| 4 | Fond translucide (Mica Windows 11) sur la barre latérale | Oui, avec un fond uni en repli | |
+| 1 | Direction visuelle | **Hi-Fi** : appareils Braun de Dieter Rams. Papier chaud et encre, un seul accent, voyants, boutons ronds, afficheurs en mono | |
+| 2 | Accent par défaut | Orange signal `#FF5A1F`. 6 accents au choix + couleur perso, jamais de dégradé | |
+| 3 | Thème par défaut | Papier (clair). Graphite, Studio (noir pur) ou Système au choix | |
+| 4 | Lecteur | Deck pleine largeur en bas (position réglable : bas, haut ou flottant) + plein écran | |
 | 5 | Clé API YouTube (gratuite, sans connexion) pour la recherche | Oui | |
 | 6 | Apple Developer (99 $/an) pour tenter la lecture Apple Music complète | Non pour l'instant : aperçus et bascule YouTube | |
 | 7 | Spotify Premium | Pas maintenant : liens, aperçus et bascule YouTube | |
@@ -39,11 +39,38 @@ Règle de lecture : pour chaque titre, on joue la meilleure source disponible. *
 
 ## 3. Phases (une étape testée = un petit commit)
 
-**Phase 1 : refonte visuelle « Apple clean »** (M)
-- Design system : jetons clair et sombre, Inter (SF Pro n'est pas autorisée hors des plateformes Apple), icônes fines, composants
-  (barre latérale, contrôle segmenté, bouton pilule, liste de titres, capsule de lecture, groupe de réglages, interrupteur).
-- Barre de titre personnalisée (`decorations: false`, zone de déplacement, boutons Windows) ; Mica sur Windows 11 (`windowEffects`, à vérifier).
-- Écrans : Morceaux, Albums, Artistes, Récemment ajoutés, Playlist, Ajouter, Sources et comptes, En lecture plein écran.
+**Phase 1 : refonte visuelle « Hi-Fi » et moteur de personnalisation** (L)
+- Design system :
+  - jetons par thème (Papier, Graphite, Studio), accent variable, aucun dégradé ;
+  - polices Schibsted Grotesk (texte, titres) et Geist Mono (afficheurs, étiquettes), toutes deux sous licence libre OFL et embarquées ;
+  - icônes Phosphor ;
+  - composants : bouton rond (principal, encre, contour, relief), filtre à voyant, afficheur, molette de volume, échelle graduée,
+    interrupteur, contrôle segmenté rond, liste de titres, deck, groupe de réglages.
+- Barre de titre personnalisée (`decorations: false`, zone de déplacement, boutons Windows).
+- Écrans : Accueil, Morceaux, Albums, Artistes, Récemment ajoutés, Playlist, Ajouter, En lecture plein écran, Réglages.
+- Moteur de réglages : un seul schéma typé (Rust + TS), enregistré en local, appliqué en direct par des variables CSS.
+
+**Personnalisation (au cœur du projet, sans devenir incompréhensible)**
+- Apparence :
+  - thème ;
+  - accent ;
+  - forme des pochettes (net, arrondi, vinyle) ;
+  - densité des listes ;
+  - taille du texte ;
+  - position du lecteur ;
+  - afficheur numérique ;
+  - molette ou barre de volume ;
+  - échelle graduée ;
+  - colonnes de la liste (choisir et ordonner).
+- Accueil en sections : afficher, masquer, réordonner (Reprendre, Ta semaine, Récemment ajoutés, Tes playlists, À redécouvrir…), avec des options par section.
+- Barre latérale : réordonner et masquer les entrées, épingler des playlists.
+- Thèmes enregistrables et partageables en fichier `.theme`.
+- Pour rester lisible :
+  - recherche dans les réglages ;
+  - aperçu en direct ;
+  - « Réinitialiser » partout ;
+  - réglages avancés masqués par défaut ;
+  - réglages classés par écran (Apparence, Lecture, Bibliothèque, Sources, Raccourcis, Notifications, Avancé).
 
 **Phase 2 : bibliothèque universelle et playlists perso** (L)
 - Migration du schéma ; ajout depuis une recherche ou un lien (Ctrl+V n'importe où = lien détecté).
@@ -82,13 +109,14 @@ radio de titres proches (clé Last.fm), scrobbling Last.fm, minuteur de sommeil,
    le plan B (aperçus + YouTube) est déjà prévu.
 2. Quota YouTube de recherche (100 par jour) : cache, regroupement des recherches, ta propre clé.
 3. Métadonnées des liens Spotify sans API (oEmbed ne donne que le titre et la pochette).
-4. Mica et fenêtre transparente sous Windows 10 : repli en fond uni.
+4. Pochettes : affichées depuis les API des services (YouTube, iTunes), mises en cache en local.
 
-## 6. Maquettes livrées (page Figma « Music App v2 — Apple »)
+## 6. Maquettes livrées (page Figma « Music App v3 — Hi-Fi »)
 
-1. `v2 / Morceaux — Clair` : bibliothèque unifiée, colonne « Disponible sur », badges « Aperçu 30 s », capsule de lecture.
-2. `v2 / Playlist perso — Clair` : playlist mixte, mosaïque, « Exporter vers… », bandeau de disponibilité.
-3. `v2 / Ajouter de la musique — Clair` : recherche multi-catalogues, lien collé, état des sources.
-4. `v2 / En lecture — Sombre` : vidéo YouTube visible, choix « Écouter via », file d'attente.
-5. `v2 / Sources et comptes — Clair` : réglages groupés façon Apple.
-6. `v2 / Morceaux — Sombre` : même écran en mode sombre.
+1. `v3 / Accueil — Papier` : sections Reprendre, Ta semaine, Récemment ajoutés, Tes playlists ; panneau « Personnaliser l'accueil » ouvert.
+2. `v3 / Morceaux — Papier` : filtres à voyant par source, liste avec badges APERÇU et FLAC, deck avec afficheur et molette.
+3. `v3 / Playlist — Papier` : en-tête éditorial, boutons ronds, ligne d'état « 21 en entier · 3 en aperçu ».
+4. `v3 / Ajouter — Papier` : console de recherche (catalogues à voyant), lien collé, catalogues, zone de dépôt.
+5. `v3 / En lecture — Graphite` : vidéo YouTube visible, afficheur 01:12, échelle graduée, sélecteur d'entrée, molette, file d'attente.
+6. `v3 / Réglages Apparence — Papier` : thèmes, accents, pochettes, densité, lecteur, colonnes, aperçu en direct.
+7. `v3 / Morceaux — Graphite perso` : même écran avec un thème perso (Graphite, accent jaune, pochettes vinyle, compact, colonne Écoutes).
