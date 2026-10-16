@@ -132,6 +132,21 @@ Original plan:
 - Real Google profile pictures in Settings › Accounts; Inputs box removed from the sidebar.
 - Spotify without keys: prototype only (see `playback.md`), waiting for the user's decision on library import.
 
+**To do next (2026-10-16, session stopped on the usage limit)**
+- Spotify without keys, decisions for the user:
+  - library import with the web session: capture the token the official web player fetches, or rebuild its TOTP scheme
+    (defeats a protection): both need an explicit OK; clean alternative: import public playlists by link (embed page);
+  - keep or remove the Spotify app-key path (Settings › Accounts);
+  - Spotify ad blocking: only after the ToS / account risk is confirmed in chat;
+  - user signs in to the web player window, then check real playback (Widevine / PlayReady are available).
+- Check live (built and unit-tested, not driven in the real app yet): repeat one / repeat all at a track's end, play next
+  and add to queue, menu actions that write (rename, delete, export, remove from playlist), one-click play, start screen,
+  local file covers (no music folder on the dev PC), Apple cover backfill (no Apple tracks), Spotify covers.
+- Small fixes: window background color is Paper (light flash before a dark theme loads); a gapless local run already
+  queued keeps list order when shuffle is turned on mid-run; 1,731 YouTube videos keep a video frame as cover.
+- Older open items: playlist trackCount vs rows (Workout Mix), "Music App export test" playlist on YouTube Music (ask
+  before deleting), add-another-Google-account and sign-out untested live, Figma mockups still in French.
+
 **Phase 6: polish** (M)
 - Keyboard shortcuts, media keys and the Windows media panel (`souvlaki` crate), tray icon. (Mini player: done.)
 - Auto-updates (`tauri-plugin-updater`, requires signing the app), installer, performance (50,000 tracks), accessibility (AA contrast, keyboard navigation).
