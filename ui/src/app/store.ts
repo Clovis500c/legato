@@ -18,6 +18,22 @@ export type View =
   /** focus = setting label to scroll to and highlight (settings search). */
   | { name: 'settings'; section: SettingsSection; wizard?: 'spotify'; focus?: string }
 
+/** Short message in the corner. kind picks the icon; action = one button (Undo, Open…). */
+export interface Toast {
+  id: number
+  text: string
+  kind: 'ok' | 'removed' | 'info' | 'error'
+  action?: { label: string; run: () => void }
+}
+
+export interface ToastOptions {
+  kind?: Toast['kind']
+  action?: Toast['action']
+}
+
+const MAX_TOASTS = 3
+let toastId = 0
+
 interface State {
   view: View
   /** Back / forward stacks for title bar arrows. */
@@ -37,8 +53,8 @@ interface State {
   stats: PlayStats
   busy: boolean
   error?: string
-  /** Short success message, auto-cleared. */
-  notice?: string
+  /** Newest last, auto-cleared. */
+  toasts: Toast[]
   lastSync?: { at: number; report: SyncReport }
   /** Playlist id → its track ids in order (covers). */
   orders: Record<number, number[]>
@@ -63,8 +79,9 @@ interface State {
   addLink: (url: string) => Promise<void>
   /** Public Spotify playlist / album link: import it and open it. */
   importSpotify: (url: string) => Promise<void>
-  /** Shows notice for 4 s. */
-  notify: (text: string) => void
+  /** Toast for 4 s (with a button 6 s, error 8 s). */
+  notify: (text: string, opts?: ToastOptions) => void
+  dismissToast: (id: number) => void
 }
 
 const offline: SourceStatus = { configured: false, connected: false }
@@ -107,6 +124,7 @@ export const useStore = create<State>((set, get) => {
     stats: {},
     busy: false,
     sharing: null,
+    toasts: [],
 
     go: (view) => {
       set({ back: [...get().back, get().view].slice(-50), fwd: [] })
@@ -157,10 +175,14 @@ export const useStore = create<State>((set, get) => {
       get().notify(`Imported “${r.name}”: ${r.tracks} songs${missing ? `, ${missing} without a YouTube version${get().status.youtube.connected ? '' : ' (sign in to YouTube Music to find them)'}` : ''}`)
       get().go({ name: 'playlist', id: r.playlistId })
     },
-    notify(notice) {
-      set({ notice })
-      setTimeout(() => set({ notice: undefined }), 4000)
+    notify(text, { kind = 'ok', action } = {}) {
+      const id = ++toastId
+      // Same text again: replace, don't stack.
+      const rest = get().toasts.filter((t) => t.text !== text)
+      set({ toasts: [...rest, { id, text, kind, action }].slice(-MAX_TOASTS) })
+      setTimeout(() => get().dismissToast(id), kind === 'error' ? 8000 : action ? 6000 : 4000)
     },
+    dismissToast: (id) => set({ toasts: get().toasts.filter((t) => t.id !== id) }),
     async editPlaylist(edit) {
       let id: number | null = null
       const ok = await run(async () => (id = await api.editPlaylist(edit)))

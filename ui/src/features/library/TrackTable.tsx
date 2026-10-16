@@ -15,6 +15,7 @@ import { useStore } from '../../app/store'
 import { isFull, vias } from '../player/sources'
 import { usePlayer } from '../player/store'
 import { AddToPlaylist } from './AddToPlaylist'
+import { removeFromPlaylist } from './edits'
 
 const ROW = { compact: 40, comfort: 52, airy: 64 }
 const order: Source[] = ['spotify', 'youtube', 'apple', 'local']
@@ -92,7 +93,7 @@ export function TrackTable({ tracks, empty, editId, rowActions }: { tracks: Libr
                         <RoundButton label="Move down" kind="plain" size="xs" disabled={v.index === tracks.length - 1} onClick={() => editPlaylist({ type: 'move', id: editId, from: v.index, to: v.index + 1 })}>
                           <ArrowDown size={13} />
                         </RoundButton>
-                        <RoundButton label="Remove from playlist" kind="plain" size="xs" onClick={() => editPlaylist({ type: 'remove', id: editId, position: v.index })}>
+                        <RoundButton label="Remove from playlist" kind="plain" size="xs" onClick={() => void removeFromPlaylist(editId, v.index)}>
                           <X size={13} />
                         </RoundButton>
                       </>

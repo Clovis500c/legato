@@ -2,6 +2,7 @@ import { ListPlus, Plus } from '@phosphor-icons/react'
 import { useState } from 'react'
 import { useStore } from '../../app/store'
 import { RoundButton } from '../../shared/ui/controls'
+import { addToPlaylist } from './edits'
 
 /** Row action: pick a custom playlist (or create one) for these tracks. Fixed menu so the list scroller can't clip it. */
 export function AddToPlaylist({ trackIds, label }: { trackIds: number[]; label: string }) {
@@ -11,7 +12,7 @@ export function AddToPlaylist({ trackIds, label }: { trackIds: number[]; label: 
   const add = async (id: number | null) => {
     setAt(null)
     const target = id ?? (await editPlaylist({ type: 'create', name: 'New playlist' }))
-    if (target !== null) await editPlaylist({ type: 'add', id: target, trackIds })
+    if (target !== null) await addToPlaylist(target, trackIds)
   }
   return (
     <>

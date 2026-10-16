@@ -53,13 +53,14 @@ import type { MenuEntry } from '../shared/ui/ContextMenu'
 import { SourceIcon } from '../shared/ui/SourceIcon'
 import type { Addon } from './addons/registry'
 import { isOn, setAddon } from './addons/state'
+import { addToPlaylist, removeFromPlaylist, songs } from './library/edits'
 import { primaryArtist } from './library/filter'
 import { isFull, viaLabel, vias } from './player/sources'
 import { usePlayer } from './player/store'
 
 const app = () => useStore.getState()
 const player = () => usePlayer.getState()
-const fail = (e: unknown) => useStore.setState({ error: String(e) })
+const fail = (e: unknown) => app().notify(String(e), { kind: 'error' })
 const sp = () => app().status.spotify.connected
 
 function copy(text: string, what: string) {
@@ -116,20 +117,18 @@ const setHidden = (key: string, hide: boolean) => {
 
 /** "Add to playlist ›": a new one, your playlists, then your YouTube Music ones (added there too). Hidden ones left out. */
 function addTo(tracks: () => LibraryTrack[] | Promise<LibraryTrack[]>): MenuEntry {
-  const add = async (id: number) => {
-    const ids = (await tracks()).map((t) => t.id)
-    if (!ids.length) return
-    await app().editPlaylist({ type: 'add', id, trackIds: ids })
-    // editPlaylist reports its own errors.
-    if (!app().error) app().notify(`Added to ${app().playlists.find((p) => p.id === id)?.name}`)
-  }
+  const add = async (id: number) => addToPlaylist(id, (await tracks()).map((t) => t.id))
   const addYoutube = async (p: LibraryPlaylist) => {
     const ids = (await tracks()).map((t) => t.id)
     if (!ids.length) return
     try {
       const r = await api.addToYoutube(p.id, ids)
       await app().refresh()
-      app().notify(r.noYoutube ? `Added to ${p.name}: ${r.added} · ${r.noYoutube} with no YouTube version` : `Added to ${p.name} (on YouTube Music too)`)
+      const also = [r.already > 0 && `${r.already} already there`, r.noYoutube > 0 && `${r.noYoutube} with no YouTube version`, r.refused].filter(Boolean).join(' · ')
+      const open = { label: 'Open', run: () => app().go({ name: 'playlist', id: p.id }) }
+      if (r.added) app().notify(`Added ${r.added === ids.length ? songs(ids) : `${r.added} songs`} to ${p.name} on YouTube Music${also ? ` · ${also}` : ''}`, { action: open })
+      else if (r.already) app().notify(`${ids.length === 1 ? 'Already' : 'All already'} in ${p.name}`, { kind: 'info', action: open })
+      else app().notify(`Nothing added to ${p.name}: no YouTube version`, { kind: 'info' })
     } catch (e) {
       fail(e)
     }
@@ -238,7 +237,7 @@ export function trackMenu(t: LibraryTrack, ctx: { list?: LibraryTrack[]; index?:
     playVia(t, list, index),
     '-',
     addTo(() => [t]),
-    ctx.playlistId !== undefined && { label: 'Remove from this playlist', icon: <MinusCircle size={16} />, onSelect: () => void app().editPlaylist({ type: 'remove', id: ctx.playlistId!, position: ctx.position! }) },
+    ctx.playlistId !== undefined && { label: 'Remove from this playlist', icon: <MinusCircle size={16} />, onSelect: () => void removeFromPlaylist(ctx.playlistId!, ctx.position!) },
     '-',
     t.album && { label: 'Go to album', icon: <Disc size={16} />, onSelect: () => go({ name: 'album', album: t.album!, artist: primaryArtist(t.artist) }) },
     { label: 'Go to artist', icon: <MicrophoneStage size={16} />, onSelect: () => go({ name: 'artist', artist: primaryArtist(t.artist) }) },

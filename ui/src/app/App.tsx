@@ -1,4 +1,4 @@
-import { ArrowsClockwise, CaretDown, CaretLeft, CaretRight, CheckCircle, Minus, Square, Warning, X } from '@phosphor-icons/react'
+import { ArrowsClockwise, CaretDown, CaretLeft, CaretRight, Minus, Square, Warning, X } from '@phosphor-icons/react'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { useEffect } from 'react'
 import { AddView } from '../features/add/AddView'
@@ -25,6 +25,7 @@ import { useSettings } from './settings'
 import { restoreScreen, startScreenSaving } from './screen'
 import { startShortcuts } from './shortcuts'
 import { useStore } from './store'
+import { Toasts } from './Toasts'
 
 const win = getCurrentWindow()
 const winBtn = 'grid h-8 w-10 place-items-center rounded-md text-ink-3 transition hover:bg-raised hover:text-ink'
@@ -71,16 +72,10 @@ function TitleBar() {
 }
 
 function Alerts() {
-  const { lastSync, error, dismissError, view, notice } = useStore()
+  const { lastSync, error, dismissError, view } = useStore()
   const errors = lastSync?.report.errors ?? []
   // Wizard shows its own error.
   const shown = view.name === 'settings' && view.wizard ? undefined : error
-  if (notice && !shown)
-    return (
-      <p role="status" className="mx-10 mb-3 flex items-center gap-2.5 rounded-lg border border-line bg-recess px-3.5 py-3 text-xs">
-        <CheckCircle size={15} className="text-ink-2" /> {notice}
-      </p>
-    )
   if (!shown && !errors.length) return null
   return (
     <div role="alert" className="mx-10 mb-3 flex items-start gap-2.5 rounded-lg border border-line bg-recess px-3.5 py-3 text-xs">
@@ -171,6 +166,7 @@ export function App() {
       <PlayerBar />
       <MiniPlayer />
       {full && <NowPlaying />}
+      <Toasts />
       <ContextMenuHost fallback={appMenu} />
       {incoming && <ImportDialog key={incoming} code={incoming} />}
     </div>
