@@ -4,7 +4,7 @@ import { useStore } from '../../app/store'
 import { api, type LibraryTrack } from '../../shared/api'
 import { fold, formatCount } from '../../shared/format'
 import { Button } from '../../shared/ui/Button'
-import { Led, LedChip, RoundButton } from '../../shared/ui/controls'
+import { Led, LedChip, RoundButton, Segmented } from '../../shared/ui/controls'
 import { firstArt, trackArt } from '../../shared/art'
 import { onMenu, openMenu, type MenuEntry } from '../../shared/ui/ContextMenu'
 import { Cover } from '../../shared/ui/Cover'
@@ -16,7 +16,7 @@ import { usePlayer } from '../player/store'
 import { SharePanel } from '../share/SharePanel'
 import { ExportYoutube } from './ExportYoutube'
 import { PlaylistCover } from './PlaylistCover'
-import { filterTracks, groupAlbums, groupArtists, libraryStats, primaryArtist, sortTracks, type Filter, type Sort } from './filter'
+import { filterTracks, groupAlbums, groupArtists, groupStats, libraryStats, primaryArtist, sortGroups as orderGroups, sortTracks, type Filter, type GroupSort, type Sort } from './filter'
 import { TrackTable } from './TrackTable'
 
 /** YouTube-like sort list, in groups. Manual only on playlists. */
@@ -42,7 +42,6 @@ const sortGroups: { id: Sort; label: string }[][] = [
   ],
   [{ id: 'random', label: 'Random' }],
 ]
-const sortLabel = (s: Sort) => sortGroups.flat().find((x) => x.id === s)?.label ?? 'Date added (newest)'
 
 const totalTime = (tracks: LibraryTrack[]) => {
   const min = Math.round(tracks.reduce((s, t) => s + (t.durationMs ?? 0), 0) / 60_000)
@@ -62,14 +61,9 @@ function PlayAll({ tracks }: { tracks: LibraryTrack[] }) {
   )
 }
 
-/** Dropdown like YouTube's: current sort on the button, list opens under it. playlist = adds Manual. */
-function SortMenu({ playlist = false }: { playlist?: boolean }) {
-  const { sort, playlistSort, setSort, setPlaylistSort } = useStore()
-  const value = playlist ? playlistSort : sort
-  const pick = playlist ? setPlaylistSort : setSort
-  const items: MenuEntry[] = sortGroups
-    .filter((g) => playlist || g[0].id !== 'manual')
-    .flatMap((g, i) => [i > 0 && '-', ...g.map((s) => ({ label: s.label, checked: value === s.id, onSelect: () => pick(s.id) }))])
+/** Dropdown like YouTube's: current sort on the button, list opens under it. */
+function SortButton<T extends string>({ groups, value, onPick }: { groups: { id: T; label: string }[][]; value: T; onPick: (v: T) => void }) {
+  const items: MenuEntry[] = groups.flatMap((g, i) => [i > 0 && '-', ...g.map((s) => ({ label: s.label, checked: value === s.id, onSelect: () => onPick(s.id) }))])
   return (
     <button
       onClick={(e) => {
@@ -78,8 +72,78 @@ function SortMenu({ playlist = false }: { playlist?: boolean }) {
       }}
       className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-[13px] font-medium hover:bg-raised"
     >
-      <SortAscending size={15} className="text-ink-3" /> {sortLabel(value)} <CaretDown size={12} className="text-ink-3" />
+      <SortAscending size={15} className="text-ink-3" /> {groups.flat().find((x) => x.id === value)?.label ?? groups[0][0].label} <CaretDown size={12} className="text-ink-3" />
     </button>
+  )
+}
+
+/** Songs sort. playlist = adds Manual. */
+function SortMenu({ playlist = false }: { playlist?: boolean }) {
+  const { sort, playlistSort, setSort, setPlaylistSort } = useStore()
+  return <SortButton groups={sortGroups.filter((g) => playlist || g[0].id !== 'manual')} value={playlist ? playlistSort : sort} onPick={playlist ? setPlaylistSort : setSort} />
+}
+
+const albumSorts: { id: GroupSort; label: string }[][] = [
+  [
+    { id: 'name', label: 'Name (A–Z)' },
+    { id: 'name-desc', label: 'Name (Z–A)' },
+    { id: 'artist', label: 'Artist (A–Z)' },
+  ],
+  [
+    { id: 'added-new', label: 'Date added (newest)' },
+    { id: 'added-old', label: 'Date added (oldest)' },
+  ],
+  [
+    { id: 'most-played', label: 'Most played' },
+    { id: 'recently-played', label: 'Recently played' },
+  ],
+  [
+    { id: 'songs', label: 'Most songs' },
+    { id: 'length', label: 'Longest' },
+  ],
+  [{ id: 'random', label: 'Random' }],
+]
+// Artists: no artist sort, Most albums next to Most songs.
+const artistSorts: { id: GroupSort; label: string }[][] = albumSorts.map((g) => g.filter((x) => x.id !== 'artist').flatMap((x) => (x.id === 'songs' ? [x, { id: 'albums' as const, label: 'Most albums' }] : [x])))
+
+/** Source chips with counts, for a list of songs. */
+function SourceChips({ tracks, value, onChange }: { tracks: LibraryTrack[]; value: Filter; onChange: (f: Filter) => void }) {
+  const stats = useMemo(() => libraryStats(tracks), [tracks])
+  const chips: { id: Filter; label: string; count: number }[] = [
+    { id: 'all', label: 'All', count: stats.total },
+    ...(['youtube', 'spotify', 'apple', 'local'] as const).filter((s) => stats.perSource[s]).map((s) => ({ id: s, label: sourceLabel[s], count: stats.perSource[s] })),
+    ...(stats.sources > 1 && stats.unlinked ? [{ id: 'unlinked' as const, label: 'Unlinked', count: stats.unlinked }] : []),
+  ]
+  return (
+    <div role="tablist" aria-label="Filter by source" className="flex flex-wrap gap-2">
+      {chips.map((c) => (
+        <LedChip key={c.id} on={value === c.id} label={c.label} count={formatCount(c.count)} onClick={() => onChange(c.id)} />
+      ))}
+    </div>
+  )
+}
+
+/** Albums / Artists bar: source chips, how many songs you have of it, sort. */
+function GroupBar({ page, tracks }: { page: 'albumView' | 'artistView'; tracks: LibraryTrack[] }) {
+  const v = useStore((s) => s[page])
+  const setGroupView = useStore((s) => s.setGroupView)
+  return (
+    <div className="flex shrink-0 flex-wrap items-center justify-between gap-x-4 gap-y-2 pb-3.5">
+      <SourceChips tracks={tracks} value={v.filter} onChange={(filter) => setGroupView(page, { filter })} />
+      <div className="flex items-center gap-2">
+        <Segmented
+          label="How many songs"
+          value={v.size}
+          onChange={(size) => setGroupView(page, { size })}
+          options={[
+            { value: 'all', label: 'All' },
+            { value: 'several', label: '2+ songs' },
+            { value: 'one', label: '1 song' },
+          ]}
+        />
+        <SortButton groups={page === 'albumView' ? albumSorts : artistSorts} value={v.sort} onPick={(sort) => setGroupView(page, { sort })} />
+      </div>
+    </div>
   )
 }
 
@@ -140,21 +204,12 @@ export function SongsView() {
   const { tracks, query, filter, setFilter, sort, go, stats: plays, seed } = useStore()
   const stats = useMemo(() => libraryStats(tracks), [tracks])
   const shown = useMemo(() => sortTracks(filterTracks(tracks, query, filter), sort, { stats: plays, seed }), [tracks, query, filter, sort, plays, seed])
-  const chips: { id: Filter; label: string; count: number }[] = [
-    { id: 'all', label: 'All', count: stats.total },
-    ...(['youtube', 'spotify', 'apple', 'local'] as const).filter((s) => stats.perSource[s]).map((s) => ({ id: s, label: sourceLabel[s], count: stats.perSource[s] })),
-    ...(stats.sources > 1 && stats.unlinked ? [{ id: 'unlinked' as const, label: 'Unlinked', count: stats.unlinked }] : []),
-  ]
 
   return (
     <>
       <PageHeader kicker={`Library · ${stats.sources} source${stats.sources > 1 ? 's' : ''}${stats.total ? ` · ${stats.linkedPct}% linked` : ''}`} title="Songs" actions={<PlayAll tracks={shown} />} />
       <div className="flex shrink-0 items-center justify-between gap-4 pb-3.5">
-        <div role="tablist" aria-label="Filter by source" className="flex flex-wrap gap-2">
-          {chips.map((c) => (
-            <LedChip key={c.id} on={filter === c.id} label={c.label} count={formatCount(c.count)} onClick={() => setFilter(c.id)} />
-          ))}
-        </div>
+        <SourceChips tracks={tracks} value={filter} onChange={setFilter} />
         <SortMenu />
       </div>
       <Playability tracks={shown} />
@@ -250,14 +305,16 @@ export function PlaylistView({ id }: { id: number }) {
 }
 
 export function AlbumsView() {
-  const { tracks, query, go } = useStore()
-  const albums = useMemo(() => groupAlbums(filterTracks(tracks, query, 'all')), [tracks, query])
+  const { tracks, query, go, albumView: v, stats, seed } = useStore()
+  const all = useMemo(() => tracks.filter((t) => t.album), [tracks])
+  const albums = useMemo(() => orderGroups(groupAlbums(filterTracks(all, query, v.filter)).map((g) => ({ ...g, name: g.album })), v.sort, { size: v.size, stats, seed }), [all, query, v, stats, seed])
   return (
     <>
       <PageHeader kicker="Library" title="Albums" sub={`${formatCount(albums.length)} albums`} />
+      <GroupBar page="albumView" tracks={all} />
       <div className="-mx-2 min-h-0 flex-1 overflow-y-auto px-2 pb-6">
         {albums.length === 0 ? (
-          <p className="py-10 text-center text-ink-2">No albums yet.</p>
+          <p className="py-10 text-center text-ink-2">{all.length ? 'No matching albums.' : 'No albums yet.'}</p>
         ) : (
           <ul className="grid grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-x-5 gap-y-6">
             {albums.map((a) => (
@@ -294,20 +351,23 @@ export function AlbumView({ album, artist }: { album: string; artist: string }) 
 }
 
 export function ArtistsView() {
-  const { tracks, query, go } = useStore()
-  const artists = useMemo(() => groupArtists(filterTracks(tracks, query, 'all')), [tracks, query])
+  const { tracks, query, go, artistView: v, stats, seed } = useStore()
+  const artists = useMemo(() => orderGroups(groupArtists(filterTracks(tracks, query, v.filter)).map((g) => ({ ...g, name: g.artist })), v.sort, { size: v.size, stats, seed }), [tracks, query, v, stats, seed])
   return (
     <>
       <PageHeader kicker="Library" title="Artists" sub={`${formatCount(artists.length)} artists`} />
+      <GroupBar page="artistView" tracks={tracks} />
       <ul className="-mx-2 min-h-0 flex-1 overflow-y-auto px-2 pb-6">
+        {artists.length === 0 && <p className="py-10 text-center text-ink-2">No matching artists.</p>}
         {artists.map((a, i) => (
-          <li key={a.artist} onContextMenu={onMenu(() => tracksMenu(tracks.filter((t) => fold(primaryArtist(t.artist)) === fold(a.artist))))}>
+          <li key={a.artist} onContextMenu={onMenu(() => tracksMenu(a.tracks))}>
             <button onClick={() => go({ name: 'artist', artist: a.artist })} className="flex w-full items-center gap-4 border-b border-line-soft px-2 py-2.5 text-left hover:bg-raised">
               <span className="w-8 text-right font-mono text-[11px] text-ink-3">{String(i + 1).padStart(2, '0')}</span>
               <Cover title={a.artist} art={trackArt(a.cover)} size={36} className="rounded-full!" />
               <span className="flex-1 truncate text-[13px] font-semibold">{a.artist}</span>
               <span className="font-mono text-[10px] tracking-[0.06em] text-ink-3 uppercase">
                 {a.count} track{a.count > 1 ? 's' : ''} · {a.albums} album{a.albums > 1 ? 's' : ''}
+                {v.sort === 'most-played' && ` · ${groupStats(a, stats).plays} plays`}
               </span>
             </button>
           </li>

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { LibraryTrack } from '../../shared/api'
 import { formatDuration, timeAgo } from '../../shared/format'
-import { filterTracks, groupAlbums, groupArtists, libraryStats, primaryArtist, sortTracks } from './filter'
+import { filterTracks, groupAlbums, groupArtists, libraryStats, primaryArtist, sortGroups, sortTracks } from './filter'
 
 const t = (id: number, title: string, artist: string, ids: LibraryTrack['ids']): LibraryTrack => ({
   id,
@@ -77,9 +77,9 @@ describe('albums and artists', () => {
   })
 
   it('counts tracks and albums per artist', () => {
-    expect(groupArtists(lib).map(({ cover, ...g }) => ({ ...g, cover: cover.id }))).toEqual([
-      { artist: 'Daft Punk', count: 3, albums: 1, cover: lib.find((x) => x.artist.startsWith('Daft Punk'))!.id },
-      { artist: 'The xx', count: 1, albums: 1, cover: lib.find((x) => x.artist === 'The xx')!.id },
+    expect(groupArtists(lib).map(({ cover, tracks, ...g }) => ({ ...g, cover: cover.id, songs: tracks.length }))).toEqual([
+      { artist: 'Daft Punk', count: 3, albums: 1, cover: lib.find((x) => x.artist.startsWith('Daft Punk'))!.id, songs: 3 },
+      { artist: 'The xx', count: 1, albums: 1, cover: lib.find((x) => x.artist === 'The xx')!.id, songs: 1 },
     ])
   })
 
@@ -110,5 +110,25 @@ describe('albums and artists', () => {
     const r = ids('random', { seed: 7 })
     expect([...r].sort()).toEqual([1, 2, 3, 4])
     expect(ids('random', { seed: 7 })).toEqual(r)
+  })
+
+  it('albums and artists sort and filter like songs', () => {
+    const albums = groupAlbums(lib).map((g) => ({ ...g, name: g.album }))
+    const names = (o: Parameters<typeof sortGroups>[1], opts?: Parameters<typeof sortGroups>[2]) => sortGroups(albums, o, opts).map((g) => g.name)
+    expect(names('name')).toEqual(['Random Access Memories', 'xx'])
+    expect(names('name-desc')).toEqual(['xx', 'Random Access Memories'])
+    expect(names('songs')).toEqual(['Random Access Memories', 'xx'])
+    // Newest song added decides: xx (3) after RAM (1, 2).
+    expect(names('added-new')).toEqual(['xx', 'Random Access Memories'])
+    expect(names('added-old')).toEqual(['Random Access Memories', 'xx'])
+    const stats = { 3: [9, 50], 1: [2, 500], 2: [2, 10] } as Record<number, [number, number]>
+    expect(names('most-played', { stats })).toEqual(['xx', 'Random Access Memories'])
+    expect(names('recently-played', { stats })).toEqual(['Random Access Memories', 'xx'])
+    expect(names('length')).toEqual(['Random Access Memories', 'xx'])
+    expect(names('name', { size: 'one' })).toEqual(['xx'])
+    expect(names('name', { size: 'several' })).toEqual(['Random Access Memories'])
+    const artists = groupArtists(lib).map((g) => ({ ...g, name: g.artist }))
+    expect(sortGroups(artists, 'albums').map((g) => g.name)).toEqual(['Daft Punk', 'The xx'])
+    expect(sortGroups(artists, 'random', { seed: 3 }).map((g) => g.name)).toEqual(sortGroups(artists, 'random', { seed: 3 }).map((g) => g.name))
   })
 })

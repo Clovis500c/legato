@@ -87,17 +87,83 @@ export function groupAlbums(tracks: LibraryTrack[]): AlbumGroup[] {
   return [...map.values()].sort((a, b) => coll.compare(a.album, b.album))
 }
 
-/** cover = a track of the artist to borrow art from (first one with art). */
-export function groupArtists(tracks: LibraryTrack[]): { artist: string; count: number; albums: number; cover: LibraryTrack }[] {
-  const map = new Map<string, { artist: string; count: number; albums: Set<string>; cover: LibraryTrack }>()
+export interface ArtistGroup {
+  artist: string
+  count: number
+  albums: number
+  /** A track to borrow art from (first one with art). */
+  cover: LibraryTrack
+  tracks: LibraryTrack[]
+}
+
+export function groupArtists(tracks: LibraryTrack[]): ArtistGroup[] {
+  const map = new Map<string, { artist: string; albums: Set<string>; cover: LibraryTrack; tracks: LibraryTrack[] }>()
   for (const t of tracks) {
     const artist = primaryArtist(t.artist)
-    const g = map.get(fold(artist)) ?? map.set(fold(artist), { artist, count: 0, albums: new Set(), cover: t }).get(fold(artist))!
-    g.count++
+    const g = map.get(fold(artist)) ?? map.set(fold(artist), { artist, albums: new Set(), cover: t, tracks: [] }).get(fold(artist))!
+    g.tracks.push(t)
     if (t.album) g.albums.add(fold(t.album))
     if (!g.cover.art && t.art) g.cover = t
   }
-  return [...map.values()].map((g) => ({ artist: g.artist, count: g.count, albums: g.albums.size, cover: g.cover })).sort((a, b) => coll.compare(a.artist, b.artist))
+  return [...map.values()].map((g) => ({ artist: g.artist, count: g.tracks.length, albums: g.albums.size, cover: g.cover, tracks: g.tracks })).sort((a, b) => coll.compare(a.artist, b.artist))
+}
+
+/** Albums and Artists pages: sorts over a group's songs. */
+export type GroupSort = 'name' | 'name-desc' | 'artist' | 'songs' | 'albums' | 'added-new' | 'added-old' | 'most-played' | 'recently-played' | 'length' | 'random'
+/** How many of its songs you have: several, or just one. */
+export type GroupSize = 'all' | 'several' | 'one'
+
+/** What the sorts read from a group. Album: name = album, artist set. Artist: name = artist, albums set. */
+export interface Grouped {
+  name: string
+  artist?: string
+  albums?: number
+  tracks: LibraryTrack[]
+}
+
+export interface GroupStats {
+  /** Newest and oldest added rank of its songs. */
+  newest: number
+  oldest: number
+  plays: number
+  /** Last start, ms (0 = never). */
+  last: number
+  lengthMs: number
+}
+
+export function groupStats(g: Grouped, stats: PlayStats = {}): GroupStats {
+  const out = { newest: 0, oldest: Infinity, plays: 0, last: 0, lengthMs: 0 }
+  for (const t of g.tracks) {
+    out.newest = Math.max(out.newest, t.added)
+    out.oldest = Math.min(out.oldest, t.added)
+    out.plays += stats[t.id]?.[0] ?? 0
+    out.last = Math.max(out.last, stats[t.id]?.[1] ?? 0)
+    out.lengthMs += t.durationMs ?? 0
+  }
+  return out
+}
+
+/** Size filter, then sorted copy. Ties fall back to the name. */
+export function sortGroups<G extends Grouped>(groups: G[], sort: GroupSort, { size = 'all', stats = {}, seed = 1 }: { size?: GroupSize; stats?: PlayStats; seed?: number } = {}): G[] {
+  const kept = size === 'all' ? groups : groups.filter((g) => (size === 'one' ? g.tracks.length === 1 : g.tracks.length > 1))
+  const m = new Map(kept.map((g) => [g, groupStats(g, stats)]))
+  const st = (g: G) => m.get(g)!
+  const name = (a: G, b: G) => coll.compare(a.name, b.name)
+  const hash = (s: string) => [...s].reduce((h, c) => Math.imul(h ^ c.charCodeAt(0), 16777619) >>> 0, 2166136261)
+  const by: Record<GroupSort, (a: G, b: G) => number> = {
+    name,
+    'name-desc': (a, b) => name(b, a),
+    artist: (a, b) => coll.compare(a.artist ?? a.name, b.artist ?? b.name) || name(a, b),
+    songs: (a, b) => b.tracks.length - a.tracks.length || name(a, b),
+    albums: (a, b) => (b.albums ?? 0) - (a.albums ?? 0) || b.tracks.length - a.tracks.length || name(a, b),
+    'added-new': (a, b) => st(b).newest - st(a).newest || name(a, b),
+    'added-old': (a, b) => st(a).oldest - st(b).oldest || name(a, b),
+    'most-played': (a, b) => st(b).plays - st(a).plays || st(b).last - st(a).last || name(a, b),
+    'recently-played': (a, b) => st(b).last - st(a).last || name(a, b),
+    length: (a, b) => st(b).lengthMs - st(a).lengthMs || name(a, b),
+    random: (a, b) => rank(hash(a.name + (a.artist ?? '')), seed) - rank(hash(b.name + (b.artist ?? '')), seed),
+  }
+  return [...kept].sort(by[sort])
 }
 
 export function libraryStats(tracks: LibraryTrack[]) {

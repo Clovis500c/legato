@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { api, type Credentials, type LibraryPlaylist, type LibraryTrack, type PlaylistEdit, type Service, type SourceStatus, type SyncReport } from '../shared/api'
-import type { Filter, PlayStats, Sort } from '../features/library/filter'
+import type { Filter, GroupSize, GroupSort, PlayStats, Sort } from '../features/library/filter'
 
 export type SettingsSection = 'appearance' | 'themes' | 'sources' | 'shield' | 'shortcuts' | 'advanced'
 
@@ -26,6 +26,13 @@ export interface Toast {
   action?: { label: string; run: () => void }
 }
 
+/** Albums / Artists page: source filter, size, sort. */
+export interface GroupView {
+  filter: Filter
+  size: GroupSize
+  sort: GroupSort
+}
+
 export interface ToastOptions {
   kind?: Toast['kind']
   action?: Toast['action']
@@ -48,6 +55,9 @@ interface State {
   sort: Sort
   /** Playlist pages: own sort, manual by default. */
   playlistSort: Sort
+  albumView: GroupView
+  artistView: GroupView
+  setGroupView: (page: 'albumView' | 'artistView', patch: Partial<GroupView>) => void
   /** Random sort order; new pick = new seed. */
   seed: number
   stats: PlayStats
@@ -120,6 +130,8 @@ export const useStore = create<State>((set, get) => {
     filter: 'all',
     sort: 'artist',
     playlistSort: 'manual',
+    albumView: { filter: 'all', size: 'all', sort: 'name' },
+    artistView: { filter: 'all', size: 'all', sort: 'name' },
     seed: 1,
     stats: {},
     busy: false,
@@ -145,6 +157,7 @@ export const useStore = create<State>((set, get) => {
     setQuery: (query) => set({ query }),
     setFilter: (filter) => set({ filter }),
     setSort: (sort) => set({ sort, ...(sort === 'random' && { seed: Date.now() }) }),
+    setGroupView: (page, patch) => set({ [page]: { ...get()[page], ...patch }, ...(patch.sort === 'random' && { seed: Date.now() }) }),
     setPlaylistSort: (playlistSort) => set({ playlistSort, ...(playlistSort === 'random' && { seed: Date.now() }) }),
     dismissError: () => set({ error: undefined }),
 
