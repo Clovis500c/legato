@@ -36,7 +36,7 @@ export const SHORTCUTS: Shortcut[] = [
   { keys: 'Ctrl R', label: 'Repeat: off, queue, track', match: (e) => only(e, 'ctrl') && e.key.toLowerCase() === 'r', run: () => player().cycleRepeat() },
   { keys: 'Ctrl K', label: 'Search', match: () => false },
   { keys: 'Ctrl ,', label: 'Settings', match: (e) => only(e, 'ctrl') && e.key === ',', run: () => useStore.getState().go({ name: 'settings', section: 'appearance' }) },
-  { keys: 'Alt ←', label: 'Back', match: (e) => only(e, 'alt') && e.key === 'ArrowLeft', run: () => useStore.getState().goBack() },
+  { keys: 'Alt ←', label: 'Back', match: (e) => only(e, 'alt') && e.key === 'ArrowLeft', run: () => (player().full ? player().setFull(false) : useStore.getState().goBack()) },
   { keys: 'Alt →', label: 'Forward', match: (e) => only(e, 'alt') && e.key === 'ArrowRight', run: () => useStore.getState().goForward() },
   { keys: 'Esc', label: 'Close Now Playing', match: () => false },
 ]

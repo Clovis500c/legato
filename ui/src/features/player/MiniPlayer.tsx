@@ -12,8 +12,8 @@ import { gripCorner, nearestSpot, resized, spotPosition, type Point, type Size }
 import { usePlayer } from './store'
 import { Transport } from './Transport'
 
-// Title bar (52) and player bar (92) stay clear, 12 px gap; 24 px from the sides.
-const INSETS = { top: 64, right: 24, bottom: 104, left: 24 }
+// Title bar (52) and player bar (100) stay clear, 12 px gap; 24 px from the sides.
+const INSETS = { top: 64, right: 24, bottom: 112, left: 24 }
 const SNAP_MS = 320
 
 const onResize = (cb: () => void) => {

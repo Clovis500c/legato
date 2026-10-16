@@ -1,4 +1,4 @@
-import { ArrowsClockwise, CaretLeft, CaretRight, CheckCircle, Minus, Square, Warning, X } from '@phosphor-icons/react'
+import { ArrowsClockwise, CaretDown, CaretLeft, CaretRight, CheckCircle, Minus, Square, Warning, X } from '@phosphor-icons/react'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { useEffect } from 'react'
 import { AddView } from '../features/add/AddView'
@@ -29,16 +29,23 @@ const winBtn = 'grid h-8 w-10 place-items-center rounded-md text-ink-3 transitio
 /** Replaces OS title bar (decorations: false). Empty areas drag the window. */
 function TitleBar() {
   const { back, fwd, goBack, goForward, sync, busy, status, lastSync } = useStore()
+  const { full, setFull } = usePlayer()
   const anyConnected = status.spotify.connected || status.youtube.connected
   return (
     <div data-tauri-drag-region className="flex h-13 shrink-0 items-center justify-between gap-4 pr-2 pl-10">
-      <div className="flex gap-1.5">
-        <RoundButton label="Back" size="xs" disabled={!back.length} onClick={goBack}>
+      <div className="flex items-center gap-1.5">
+        {/* Now Playing open: Back closes it first. */}
+        <RoundButton label={full ? 'Close Now Playing' : 'Back'} size="xs" disabled={!full && !back.length} onClick={() => (full ? setFull(false) : goBack())}>
           <CaretLeft size={13} />
         </RoundButton>
-        <RoundButton label="Forward" size="xs" disabled={!fwd.length} onClick={goForward}>
+        <RoundButton label="Forward" size="xs" disabled={full || !fwd.length} onClick={goForward}>
           <CaretRight size={13} />
         </RoundButton>
+        {full && (
+          <button onClick={() => setFull(false)} title="Close Now Playing (Esc)" className="ml-2 flex items-center gap-1.5 rounded-full border border-line px-3 py-1 text-xs font-medium text-ink-2 transition hover:bg-raised hover:text-ink">
+            <CaretDown size={12} weight="bold" /> Close player
+          </button>
+        )}
       </div>
       <div className="flex items-center gap-2">
         {lastSync && <span className="kicker">Synced {timeAgo(lastSync.at)}</span>}

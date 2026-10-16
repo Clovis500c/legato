@@ -77,7 +77,7 @@ function YouTubeFrame({ videoId }: { videoId: string }) {
       }}
       style={rect ? { left: rect.left, top: rect.top, width: rect.width, height: rect.height } : undefined}
       // Bare video: no pointer on it, so YouTube's hover overlay never shows; our controls drive it.
-      className={`fixed z-30 rounded-lg border border-line bg-black ${src.controls && !hidden ? '' : 'pointer-events-none'} ${hidden ? 'opacity-0' : ''} ${rect ? '' : 'right-6 bottom-[104px] h-50 w-89 shadow-[0_12px_32px_var(--shadow)]'}`}
+      className={`fixed z-30 rounded-lg border border-line bg-black ${src.controls && !hidden ? '' : 'pointer-events-none'} ${hidden ? 'opacity-0' : ''} ${rect ? '' : 'right-6 bottom-[112px] h-50 w-89 shadow-[0_12px_32px_var(--shadow)]'}`}
     />
   )
 }
@@ -156,7 +156,7 @@ export function PlayerBar() {
   }, [remote, onSpotify])
 
   return (
-    <footer onContextMenu={onMenu(playerMenu)} className="flex h-23 shrink-0 items-center justify-between gap-6 border-t border-line bg-panel px-6">
+    <footer onContextMenu={onMenu(playerMenu)} className="flex h-25 shrink-0 items-center justify-between gap-6 border-t border-line bg-panel px-6 py-2">
       {now?.youtubeId && <YouTubeFrame videoId={now.youtubeId} />}
 
       <button disabled={!now} onClick={() => setFull(true)} title={now ? 'Open Now Playing' : undefined} className="flex w-85 min-w-0 items-center gap-3.5 text-left">
@@ -167,7 +167,7 @@ export function PlayerBar() {
         </span>
       </button>
 
-      <div className="flex w-140 min-w-0 flex-col items-center gap-2">
+      <div className="flex w-140 min-w-0 flex-col items-center gap-2.5">
         <Transport />
         <div className="flex w-full items-center gap-3 font-mono text-[10px] text-ink-3">
           <TimeText part="elapsed" />

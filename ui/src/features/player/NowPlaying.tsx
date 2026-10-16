@@ -1,4 +1,4 @@
-import { ArrowSquareOut, CaretDoubleDown, CaretLeft, CaretRight, Waveform } from '@phosphor-icons/react'
+import { ArrowSquareOut, CaretLeft, CaretRight, Waveform } from '@phosphor-icons/react'
 import { openUrl } from '@tauri-apps/plugin-opener'
 import { useEffect, useLayoutEffect, useRef } from 'react'
 import { useSettings } from '../../app/settings'
@@ -175,20 +175,13 @@ export function NowPlaying() {
   )
 
   return (
-    <div role="dialog" aria-label="Now playing" onContextMenu={onMenu(playerMenu)} className="fixed inset-0 z-20 flex flex-col bg-bg px-10 pb-7 text-ink transition-colors duration-500" style={ambient}>
-      <div data-tauri-drag-region className="flex h-14 shrink-0 items-center justify-between">
-        <div className="flex items-center gap-2.5">
-          <RoundButton label="Collapse (Esc)" size="sm" onClick={() => setFull(false)}>
-            <CaretDoubleDown size={14} />
-          </RoundButton>
-          <span className="kicker">Collapse</span>
-        </div>
-        {!upNext && (
-          <Button variant="ghost" onClick={() => update({ upNext: true })}>
-            <CaretLeft size={13} /> Up next · {next.length}
-          </Button>
-        )}
-      </div>
+    // Below the app's title bar: navigation, window buttons and "Close player" stay reachable.
+    <div role="dialog" aria-label="Now playing" onContextMenu={onMenu(playerMenu)} className="fixed inset-x-0 top-13 bottom-0 z-20 flex flex-col border-t border-line-soft bg-bg px-10 pt-4 pb-7 text-ink transition-colors duration-500" style={ambient}>
+      {!upNext && (
+        <Button variant="ghost" className="absolute top-4 right-10 z-10" onClick={() => update({ upNext: true })}>
+          <CaretLeft size={13} /> Up next · {next.length}
+        </Button>
+      )}
 
       <div className={`grid min-h-0 flex-1 gap-10 ${upNext ? 'grid-cols-[minmax(0,1fr)_360px]' : 'grid-cols-1'}`}>
         <section className="flex min-h-0 min-w-0 flex-col items-center gap-4">
