@@ -868,6 +868,17 @@ fn playlist_orders(state: State<AppState>) -> CmdResult<HashMap<i64, Vec<i64>>> 
     state.lib.lock().unwrap().playlist_orders().map_err(err)
 }
 
+/// Cover saved where the user picked (save dialog). source = art scheme path (local/<id>, cover/<name> or a URL),
+/// crop = what the big cover shows (video bars cut). Returns the file written (extension may change, see cover::export).
+#[tauri::command]
+async fn export_cover(app: tauri::AppHandle, source: String, crop: Option<music_core::cover::Crop>, path: String) -> CmdResult<String> {
+    let path = std::path::PathBuf::from(path);
+    music_core::cover::wanted(&path).map_err(err)?;
+    let (bytes, _) = art::image(&app, &source).await.ok_or("Cover not available")?;
+    let out = tauri::async_runtime::spawn_blocking(move || music_core::cover::export(&bytes, crop, &path)).await.map_err(err)?.map_err(err)?;
+    Ok(out.to_string_lossy().into_owned())
+}
+
 /// Image picked for a playlist cover: copied into the app's covers folder. Returns its name (art scheme `cover/<name>`).
 #[tauri::command]
 fn save_cover(app: tauri::AppHandle, playlist_id: i64, path: String) -> CmdResult<String> {
@@ -1049,7 +1060,7 @@ pub fn run() {
             app.manage(AppState { app: app.handle().clone(), lib: Mutex::new(lib), store: Arc::new(secrets::KeyringStore::new(&app.config().identifier)), open, player: Player::spawn(), shield, art: music_connectors::art::ArtCache::new(dir.join("art"), 300 << 20), yt_cache: Mutex::default(), nearby: Arc::new(Mutex::new(NearbyState::Idle)), nearby_task: Mutex::default(), media, media_last: Mutex::default(), tray });
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, add_track, backfill_art, find_versions, play_preview, share_playlist, share_preview, share_read_image, share_import, nearby_send, nearby_status, nearby_stop, nearby_receive, record_play, mixes, set_track_pref, clear_history, export_youtube, spotify_player, spotify_playback, ytm_sign_in, ytm_sign_out, spotify_web_open, spotify_web_status, import_spotify_link, ytm_accounts, set_ytm_accounts, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, system_accent, restart_app, media_update, load_session, save_session, add_to_youtube, playlist_orders, save_cover, alternative_videos, play_stats])
+        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, add_track, backfill_art, find_versions, play_preview, share_playlist, share_preview, share_read_image, share_import, nearby_send, nearby_status, nearby_stop, nearby_receive, record_play, mixes, set_track_pref, clear_history, export_youtube, spotify_player, spotify_playback, ytm_sign_in, ytm_sign_out, spotify_web_open, spotify_web_status, import_spotify_link, ytm_accounts, set_ytm_accounts, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, system_accent, restart_app, media_update, load_session, save_session, add_to_youtube, playlist_orders, save_cover, export_cover, alternative_videos, play_stats])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

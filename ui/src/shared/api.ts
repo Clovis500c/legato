@@ -1,4 +1,5 @@
 import { invoke } from '@tauri-apps/api/core'
+import type { Box } from './artbox'
 import type { SystemAccent } from './theme/theme'
 
 export type Source = 'spotify' | 'youtube' | 'local' | 'apple'
@@ -243,6 +244,8 @@ export const api = {
   playlistOrders: () => invoke<Record<number, number[]>>('playlist_orders'),
   /** Picked image copied into the app; returns its name for the art scheme (cover/<name>). */
   saveCover: (playlistId: number, path: string) => invoke<string>('save_cover', { playlistId, path }),
+  /** Track cover to a file (png/jpg). source = art scheme path, crop = fractions (video bars cut). Returns the file written. */
+  exportCover: (source: string, crop: Box | null, path: string) => invoke<string>('export_cover', { source, crop, path }),
   /** Imported YouTube Music playlist: added on YouTube (Liked Music = like), then locally. */
   addToYoutube: (id: number, trackIds: number[]) => invoke<{ added: number; noYoutube: number }>('add_to_youtube', { id, trackIds }),
   /** Raw JSON; validated by features/player/session. */

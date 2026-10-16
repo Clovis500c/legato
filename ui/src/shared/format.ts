@@ -26,4 +26,13 @@ export const spotifyList = (text: string) => /(open\.spotify\.com\/(intl-[a-z-]+
 export const region = () => new Intl.Locale(navigator.language).maximize().region ?? 'US'
 
 /** Lowercase, no accents. For client-side search. */
+/** File name from a title: no characters Windows refuses, no trailing dot or space, short. */
+export const fileName = (s: string) =>
+  s
+    .replace(/[<>:"/\\|?*\p{Cc}]/gu, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 120)
+    .replace(/[. ]+$/, '') || 'cover'
+
 export const fold = (s: string) => s.normalize('NFKD').replace(/\p{M}/gu, '').toLowerCase()

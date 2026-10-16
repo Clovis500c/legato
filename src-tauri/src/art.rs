@@ -19,7 +19,8 @@ pub async fn respond(app: tauri::AppHandle, req: Request<Vec<u8>>) -> Response<C
     .expect("static response parts")
 }
 
-async fn image(app: &tauri::AppHandle, path: &str) -> Option<(Vec<u8>, String)> {
+/// Image for an art scheme path (percent-encoded, leading slash allowed).
+pub async fn image(app: &tauri::AppHandle, path: &str) -> Option<(Vec<u8>, String)> {
     let path = percent_encoding::percent_decode_str(path.trim_start_matches('/')).decode_utf8().ok()?.into_owned();
     if let Some(name) = path.strip_prefix("cover/") {
         return cover(app, name);

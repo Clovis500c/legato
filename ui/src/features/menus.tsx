@@ -8,6 +8,7 @@ import {
   ArrowSquareOut,
   Copy,
   Disc,
+  DownloadSimple,
   Eye,
   EyeSlash,
   FolderOpen,
@@ -37,11 +38,14 @@ import {
   Trash,
   UploadSimple,
 } from '@phosphor-icons/react'
-import { open } from '@tauri-apps/plugin-dialog'
+import { open, save } from '@tauri-apps/plugin-dialog'
 import { openUrl, revealItemInDir } from '@tauri-apps/plugin-opener'
 import { useSettings } from '../app/settings'
 import { useStore } from '../app/store'
 import { api, playlistKey, type LibraryPlaylist, type LibraryTrack, type SearchHit } from '../shared/api'
+import { bigTrackArt } from '../shared/art'
+import { loadFit } from '../shared/artfit'
+import { fileName } from '../shared/format'
 import { COVER_ORDERS, type PlaylistCover } from '../shared/theme/theme'
 import type { MenuEntry } from '../shared/ui/ContextMenu'
 import { SourceIcon } from '../shared/ui/SourceIcon'
@@ -57,6 +61,33 @@ const sp = () => app().status.spotify.connected
 function copy(text: string, what: string) {
   navigator.clipboard.writeText(text).then(() => app().notify(`${what} copied`), fail)
 }
+
+/** Biggest cover that loads, bars cut like the big cover, to a file the user picks. */
+async function saveCover(t: LibraryTrack) {
+  let found: { src: string; box: Awaited<ReturnType<typeof loadFit>>['box'] } | undefined
+  for (const src of bigTrackArt(t)) {
+    try {
+      found = { src, box: (await loadFit(src)).box }
+      break
+    } catch {
+      // Next size down.
+    }
+  }
+  if (!found) throw new Error('No cover for this song')
+  const path = await save({
+    title: 'Save cover',
+    defaultPath: `${fileName(`${t.artist} - ${t.title}`)}.jpg`,
+    filters: [
+      { name: 'JPEG image', extensions: ['jpg'] },
+      { name: 'PNG image', extensions: ['png'] },
+    ],
+  })
+  if (!path) return
+  const written = await api.exportCover(new URL(found.src).pathname, found.box, path)
+  app().notify(`Cover saved: ${written.split(/[\\/]/).pop()}`)
+}
+
+const saveCoverItem = (t: LibraryTrack) => bigTrackArt(t).length > 0 && { label: 'Save cover…', icon: <DownloadSimple size={16} />, onSelect: () => void saveCover(t).catch(fail) }
 
 /** Track page on its service, best first. */
 function pages(t: LibraryTrack): { label: string; url: string }[] {
@@ -233,6 +264,7 @@ export function trackMenu(t: LibraryTrack, ctx: { list?: LibraryTrack[]; index?:
     '-',
     pages(t).length > 0 && { label: 'Copy link', icon: <Link size={16} />, onSelect: () => copy(pages(t)[0].url, 'Link') },
     { label: 'Copy title and artist', icon: <Copy size={16} />, onSelect: () => copy(`${t.artist} – ${t.title}`, 'Title') },
+    saveCoverItem(t),
     ...pages(t).map((p) => ({ label: `Open in ${p.label}`, icon: <ArrowSquareOut size={16} />, onSelect: () => openUrl(p.url).catch(fail) })),
     t.ids.local && { label: 'Show in folder', icon: <FolderOpen size={16} />, onSelect: () => revealItemInDir(t.ids.local!).catch(fail) },
   ]
@@ -346,6 +378,7 @@ export function playerMenu(): MenuEntry[] {
     t && addTo(() => [t]),
     t?.album && { label: 'Go to album', icon: <Disc size={16} />, onSelect: () => (setFull(false), app().go({ name: 'album', album: t.album!, artist: primaryArtist(t.artist) })) },
     t && { label: 'Go to artist', icon: <MicrophoneStage size={16} />, onSelect: () => (setFull(false), app().go({ name: 'artist', artist: primaryArtist(t.artist) })) },
+    t && saveCoverItem(t),
     '-',
     video && { label: 'Copy video URL', icon: <Link size={16} />, onSelect: () => copy(`https://youtu.be/${video}`, 'Video URL') },
     video && { label: 'Copy video URL at current time', icon: <Link size={16} />, onSelect: () => copy(`https://youtu.be/${video}?t=${Math.floor(positionMs / 1000)}`, 'Video URL') },

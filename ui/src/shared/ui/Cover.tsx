@@ -1,44 +1,7 @@
 import { useEffect, useState } from 'react'
 import { isLetterboxed } from '../art'
-import { type Box, clampRatio, contentBox, cropStyle, cropTo, FULL, mayHaveBars } from '../artbox'
-
-interface Fit {
-  box: Box
-  ratio: number
-  width: number
-  height: number
-}
-
-// Per image: measured once, small copy (bars only need a coarse look).
-const fits = new Map<string, Fit>()
-const SAMPLE = 160
-
-function measure(img: HTMLImageElement, src: string): Fit {
-  const width = img.naturalWidth
-  const height = img.naturalHeight
-  let box = FULL
-  if (mayHaveBars(src)) {
-    try {
-      const scale = Math.min(1, SAMPLE / Math.max(width, height))
-      const w = Math.max(1, Math.round(width * scale))
-      const h = Math.max(1, Math.round(height * scale))
-      const c = document.createElement('canvas')
-      c.width = w
-      c.height = h
-      const ctx = c.getContext('2d', { willReadFrequently: true })
-      if (ctx) {
-        ctx.drawImage(img, 0, 0, w, h)
-        box = contentBox(ctx.getImageData(0, 0, w, h).data, w, h)
-      }
-    } catch {
-      // Pixels unreadable: whole image.
-    }
-  }
-  const fit = { box, width, height, ratio: clampRatio((box.w * width) / (box.h * height) || 1) }
-  if (fits.size > 200) fits.delete(fits.keys().next().value!)
-  fits.set(src, fit)
-  return fit
-}
+import { cropStyle, cropTo } from '../artbox'
+import { fits, measure } from '../artfit'
 
 /**
  * Artwork with a typographic fallback tile (initials). art = image candidates, best first (shared/art); each failed one falls to the next. eager = big, on screen right away.
