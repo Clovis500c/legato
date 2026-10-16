@@ -1,6 +1,6 @@
 import { ArrowSquareOut, CaretLeft, CaretRight, Waveform } from '@phosphor-icons/react'
 import { openUrl } from '@tauri-apps/plugin-opener'
-import { useEffect, useLayoutEffect, useRef } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useSettings } from '../../app/settings'
 import { useStore } from '../../app/store'
 import type { LibraryTrack, Source } from '../../shared/api'
@@ -14,6 +14,7 @@ import { AddToPlaylist } from '../library/AddToPlaylist'
 import { onMenu } from '../../shared/ui/ContextMenu'
 import { playerMenu, trackMenu } from '../menus'
 import { useAmbient } from './ambient'
+import { useBackdrop } from './immersive'
 import { fileFormat, VolumeControl } from './PlayerBar'
 import { viaLabel, vias, type Via } from './sources'
 import { fileTitle, usePlayer, useVideoSlot } from './store'
@@ -110,15 +111,37 @@ function Stage({ video, cover, track, title }: { video: boolean; cover: boolean;
   )
 }
 
+/** Blurred cover layers: each new one fades in over the last, which goes once covered. Veil in the theme's color keeps text readable. */
+function Backdrop({ url }: { url?: string }) {
+  const [layers, setLayers] = useState<string[]>([])
+  useEffect(() => {
+    if (!url) return
+    setLayers((l) => (l[l.length - 1] === url ? l : [...l, url].slice(-2)))
+    const id = setTimeout(() => setLayers((l) => l.slice(-1)), 1000)
+    return () => clearTimeout(id)
+  }, [url])
+  if (!url) return null
+  return (
+    <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+      {layers.map((u) => (
+        <div key={u} className="backdrop-layer absolute -inset-[10%] bg-cover bg-center" style={{ backgroundImage: `url(${u})` }} />
+      ))}
+      <div className="absolute inset-0 bg-[color-mix(in_srgb,var(--bg)_58%,transparent)]" />
+      <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-[color-mix(in_srgb,var(--bg)_70%,transparent)] to-transparent" />
+    </div>
+  )
+}
+
 export function NowPlaying() {
   const { now, positionMs, durationMs, seek, setFull, list, index, order, upcoming, playAt } = usePlayer()
-  const { tuner, tint, stage, upNext, volume: volumeMode } = useSettings((s) => s.settings)
+  const { tuner, tint, immersive, stage, upNext, volume: volumeMode } = useSettings((s) => s.settings)
   const update = useSettings((s) => s.update)
   // Re-rendered by the settings subscription above.
   const theme = useSettings.getState().current()
   const track = useStore((s) => s.tracks.find((t) => t.id === now?.trackId))
   const sp = useStore((s) => s.status.spotify.connected)
-  const ambient = useAmbient(tint && track ? trackArt(track)[0] : undefined, theme)
+  const ambient = useAmbient(tint && !immersive && track ? trackArt(track)[0] : undefined, theme)
+  const backdrop = useBackdrop(immersive && track ? trackArt(track)[0] : undefined)
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setFull(false)
@@ -176,7 +199,8 @@ export function NowPlaying() {
 
   return (
     // Below the app's title bar: navigation, window buttons and "Close player" stay reachable.
-    <div role="dialog" aria-label="Now playing" onContextMenu={onMenu(playerMenu)} className="fixed inset-x-0 top-13 bottom-0 z-20 flex flex-col border-t border-line-soft bg-bg px-10 pt-4 pb-7 text-ink transition-colors duration-500" style={ambient}>
+    <div role="dialog" aria-label="Now playing" onContextMenu={onMenu(playerMenu)} className="fixed inset-x-0 top-13 bottom-0 z-20 isolate flex flex-col overflow-hidden border-t border-line-soft bg-bg px-10 pt-4 pb-7 text-ink transition-colors duration-500" style={ambient}>
+      {immersive && <Backdrop url={backdrop} />}
       {!upNext && (
         <Button variant="ghost" className="absolute top-4 right-10 z-10" onClick={() => update({ upNext: true })}>
           <CaretLeft size={13} /> Up next · {next.length}

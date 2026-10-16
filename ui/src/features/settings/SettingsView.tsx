@@ -134,7 +134,7 @@ function Appearance() {
   const { settings: s, update, current } = useSettings()
   const col = (c: Column) => (s.columns.includes(c) ? s.columns.filter((x) => x !== c) : COLUMNS.filter((x) => x === c || s.columns.includes(x)))
   const labels: Record<Column, string> = { album: 'Album', sources: 'Sources', duration: 'Duration' }
-  const reset: Partial<Settings> = { accent: DEFAULTS.accent, covers: DEFAULTS.covers, density: DEFAULTS.density, zoom: DEFAULTS.zoom, readout: DEFAULTS.readout, volume: DEFAULTS.volume, tuner: DEFAULTS.tuner, columns: DEFAULTS.columns, tint: DEFAULTS.tint, miniPlayer: DEFAULTS.miniPlayer, font: DEFAULTS.font, motion: DEFAULTS.motion, sidebarCounts: DEFAULTS.sidebarCounts, listCovers: DEFAULTS.listCovers, clickToPlay: DEFAULTS.clickToPlay, crossfade: DEFAULTS.crossfade, youtubeControls: DEFAULTS.youtubeControls, stage: DEFAULTS.stage, miniSpot: DEFAULTS.miniSpot }
+  const reset: Partial<Settings> = { accent: DEFAULTS.accent, covers: DEFAULTS.covers, density: DEFAULTS.density, zoom: DEFAULTS.zoom, readout: DEFAULTS.readout, volume: DEFAULTS.volume, tuner: DEFAULTS.tuner, columns: DEFAULTS.columns, tint: DEFAULTS.tint, immersive: DEFAULTS.immersive, miniPlayer: DEFAULTS.miniPlayer, font: DEFAULTS.font, motion: DEFAULTS.motion, sidebarCounts: DEFAULTS.sidebarCounts, listCovers: DEFAULTS.listCovers, clickToPlay: DEFAULTS.clickToPlay, crossfade: DEFAULTS.crossfade, youtubeControls: DEFAULTS.youtubeControls, stage: DEFAULTS.stage, miniSpot: DEFAULTS.miniSpot }
   return (
     <div className="flex flex-col gap-7">
       <div className="flex justify-end">
@@ -189,7 +189,10 @@ function Appearance() {
           <Row label="Tuner scale" sub="Tuner-style progress bar in full screen">
             <Toggle label="Tuner scale" checked={s.tuner} onChange={(tuner) => update({ tuner })} />
           </Row>
-          <Row label="Cover tint" sub="Now Playing takes a flat color from the cover">
+          <Row label="Immersive player" sub="Now Playing over the song's cover, big and blurred">
+            <Toggle label="Immersive player" checked={s.immersive} onChange={(immersive) => update({ immersive })} />
+          </Row>
+          <Row label="Cover tint" sub="Now Playing takes a flat color from the cover (when immersive is off)">
             <Toggle label="Cover tint" checked={s.tint} onChange={(tint) => update({ tint })} />
           </Row>
           <Row label="Mini player" sub="Floating player for every source. YouTube always shows one: its video must stay visible.">

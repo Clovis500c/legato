@@ -76,6 +76,8 @@ export interface Settings {
   miniPlayer: boolean
   /** Now Playing takes a flat tint from the cover. */
   tint: boolean
+  /** Now Playing over the song's cover, big and blurred (tint used when off). */
+  immersive: boolean
   /** 'theme' = the theme's own font. */
   font: 'theme' | Font
   /** Transitions and animations. */
@@ -123,6 +125,7 @@ export const DEFAULTS: Settings = {
   shield: true,
   miniPlayer: false,
   tint: true,
+  immersive: true,
   font: 'theme',
   motion: true,
   sidebarCounts: true,
@@ -182,6 +185,7 @@ export function sanitize(raw: unknown): Settings {
     shield: typeof r.shield === 'boolean' ? r.shield : DEFAULTS.shield,
     miniPlayer: typeof r.miniPlayer === 'boolean' ? r.miniPlayer : DEFAULTS.miniPlayer,
     tint: typeof r.tint === 'boolean' ? r.tint : DEFAULTS.tint,
+    immersive: typeof r.immersive === 'boolean' ? r.immersive : DEFAULTS.immersive,
     font: pick(r.font, ['theme', ...FONTS] as const, DEFAULTS.font),
     motion: typeof r.motion === 'boolean' ? r.motion : DEFAULTS.motion,
     sidebarCounts: typeof r.sidebarCounts === 'boolean' ? r.sidebarCounts : DEFAULTS.sidebarCounts,

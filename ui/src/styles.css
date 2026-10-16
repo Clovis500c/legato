@@ -95,6 +95,27 @@ code {
   @apply outline-2 outline-offset-2 outline-ink;
 }
 
+/* Immersive player: pre-blurred cover drifting slowly (transform only: composited, no re-blur), new cover fades in. */
+@keyframes drift {
+  from {
+    transform: scale(1.2) translate3d(-3%, -2%, 0) rotate(0deg);
+  }
+  to {
+    transform: scale(1.35) translate3d(3%, 2%, 0) rotate(6deg);
+  }
+}
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+.backdrop-layer {
+  animation:
+    fade-in 0.9s ease-out,
+    drift 48s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
 /* Settings search: the setting just opened lights up once. */
 .flash {
   animation: flash 1.6s ease-out;

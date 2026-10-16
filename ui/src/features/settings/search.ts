@@ -19,6 +19,7 @@ export const SETTINGS_INDEX: SettingEntry[] = [
   { section: 'appearance', label: 'Volume control', keywords: 'knob bar slider sound' },
   { section: 'appearance', label: 'Fade between songs', keywords: 'crossfade transition fade out in' },
   { section: 'appearance', label: 'Tuner scale', keywords: 'progress bar seek' },
+  { section: 'appearance', label: 'Immersive player', keywords: 'blur blurred background cover now playing ambient' },
   { section: 'appearance', label: 'Cover tint', keywords: 'ambient background color now playing' },
   { section: 'appearance', label: 'Mini player', keywords: 'floating card video' },
   { section: 'appearance', label: 'Covers in lists', keywords: 'thumbnails artwork rows' },
