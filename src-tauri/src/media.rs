@@ -1,5 +1,5 @@
 //! Windows media panel and media keys (SystemMediaTransportControls of the main window).
-//! Buttons → `media-key` event to the UI ("play", "pause", "next", "previous", "stop").
+//! Buttons → `media-key` event to the UI ("play", "pause", "next", "previous", "stop"); seek bar → `media-seek` (ms).
 //! UI → `media_update`: what's playing, shown in the volume flyout / lock screen.
 
 use serde::Deserialize;
@@ -11,6 +11,19 @@ pub struct NowPlaying {
     pub artist: String,
     pub album: Option<String>,
     pub playing: bool,
+    pub position_ms: u64,
+    /// None = unknown yet: no seek bar.
+    pub duration_ms: Option<u64>,
+}
+
+/// ms → WinRT TimeSpan ticks (100 ns).
+pub fn ticks(ms: u64) -> i64 {
+    i64::try_from(ms).unwrap_or(i64::MAX / 10_000).saturating_mul(10_000)
+}
+
+/// WinRT ticks → ms, negative clamped to 0.
+pub fn millis(ticks: i64) -> u64 {
+    (ticks.max(0) / 10_000) as u64
 }
 
 #[cfg(windows)]
@@ -18,10 +31,10 @@ pub use imp::Media;
 
 #[cfg(windows)]
 mod imp {
-    use super::NowPlaying;
+    use super::{NowPlaying, millis, ticks};
     use tauri::{Emitter, Manager};
-    use windows::Foundation::TypedEventHandler;
-    use windows::Media::{MediaPlaybackStatus, MediaPlaybackType, SystemMediaTransportControls, SystemMediaTransportControlsButton, SystemMediaTransportControlsButtonPressedEventArgs};
+    use windows::Foundation::{TimeSpan, TypedEventHandler};
+    use windows::Media::{MediaPlaybackStatus, MediaPlaybackType, PlaybackPositionChangeRequestedEventArgs, SystemMediaTransportControls, SystemMediaTransportControlsButton, SystemMediaTransportControlsButtonPressedEventArgs, SystemMediaTransportControlsTimelineProperties};
     use windows::Storage::Streams::{DataWriter, InMemoryRandomAccessStream, RandomAccessStreamReference};
     use windows::Win32::System::WinRT::ISystemMediaTransportControlsInterop;
     use windows::core::{HSTRING, Result, factory};
@@ -56,6 +69,12 @@ mod imp {
                 let _ = app.emit_to("main", "media-key", key);
                 Ok(())
             }))?;
+            let app = window.app_handle().clone();
+            smtc.PlaybackPositionChangeRequested(&TypedEventHandler::<SystemMediaTransportControls, PlaybackPositionChangeRequestedEventArgs>::new(move |_, args| {
+                let at = args.ok()?.RequestedPlaybackPosition()?;
+                let _ = app.emit_to("main", "media-seek", millis(at.Duration));
+                Ok(())
+            }))?;
             Ok(Self { smtc })
         }
 
@@ -79,11 +98,20 @@ mod imp {
                 du.SetThumbnail(&thumbnail(bytes)?)?;
             }
             du.Update()?;
-            self.set_playing(now.playing)
+            self.set_state(now)
         }
 
-        pub fn set_playing(&self, playing: bool) -> Result<()> {
-            self.smtc.SetPlaybackStatus(if playing { MediaPlaybackStatus::Playing } else { MediaPlaybackStatus::Paused })
+        /// Play state and timeline (Windows moves the bar on its own while playing).
+        pub fn set_state(&self, now: &NowPlaying) -> Result<()> {
+            self.smtc.SetPlaybackStatus(if now.playing { MediaPlaybackStatus::Playing } else { MediaPlaybackStatus::Paused })?;
+            let end = now.duration_ms.unwrap_or(0);
+            let t = SystemMediaTransportControlsTimelineProperties::new()?;
+            t.SetStartTime(TimeSpan::default())?;
+            t.SetMinSeekTime(TimeSpan::default())?;
+            t.SetEndTime(TimeSpan { Duration: ticks(end) })?;
+            t.SetMaxSeekTime(TimeSpan { Duration: ticks(end) })?;
+            t.SetPosition(TimeSpan { Duration: ticks(now.position_ms.min(end)) })?;
+            self.smtc.UpdateTimelineProperties(&t)
         }
     }
 
@@ -112,7 +140,22 @@ impl Media {
     pub fn update(&self, _: Option<&NowPlaying>, _: Option<&[u8]>) -> anyhow::Result<()> {
         Ok(())
     }
-    pub fn set_playing(&self, _: bool) -> anyhow::Result<()> {
+    pub fn set_state(&self, _: &NowPlaying) -> anyhow::Result<()> {
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn timespan_conversions() {
+        assert_eq!(ticks(1), 10_000);
+        assert_eq!(ticks(90_000), 900_000_000);
+        assert_eq!(millis(ticks(123_456)), 123_456);
+        assert_eq!(millis(-5), 0);
+        // Huge values saturate instead of wrapping.
+        assert!(ticks(u64::MAX) > 0);
     }
 }

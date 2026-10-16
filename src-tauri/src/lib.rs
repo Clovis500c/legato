@@ -4,6 +4,7 @@ mod secrets;
 #[cfg(windows)]
 mod shield;
 mod spotify_web;
+mod tray;
 mod window_bg;
 mod ytm;
 
@@ -68,6 +69,8 @@ struct AppState {
     media: Option<media::Media>,
     /// Track last shown there (title, artist, id).
     media_last: Mutex<Option<String>>,
+    /// Notification area icon. None if it couldn't be created.
+    tray: Option<tray::Tray>,
 }
 
 impl AppState {
@@ -819,15 +822,18 @@ fn restart_app(app: tauri::AppHandle) {
     app.restart()
 }
 
-/// Windows media panel. Same track as last call: play state only (cover not fetched again).
+/// Tray and Windows media panel. Same track as last call: play state and timeline only (cover not fetched again).
 /// Cover: local file's own (track_id), else `art` URL through the cache.
 #[tauri::command]
 async fn media_update(state: State<'_, AppState>, now: Option<media::NowPlaying>, track_id: Option<i64>, art: Option<String>) -> CmdResult<()> {
+    if let Some(tray) = &state.tray {
+        tray.update(now.as_ref()).map_err(err)?;
+    }
     let Some(media) = &state.media else { return Ok(()) };
     let key = now.as_ref().map(|n| format!("{track_id:?}\n{}\n{}", n.title, n.artist));
     let same = { std::mem::replace(&mut *state.media_last.lock().unwrap(), key.clone()) == key };
     match &now {
-        Some(n) if same => media.set_playing(n.playing).map_err(err),
+        Some(n) if same => media.set_state(n).map_err(err),
         _ => {
             let mut cover = None;
             if now.is_some() {
@@ -890,6 +896,7 @@ pub fn run() {
             #[cfg(windows)]
             shield::install(&window, shield.clone())?;
             let media = media::Media::install(&window).ok();
+            let tray = tray::Tray::install(app.handle()).ok();
 
             let lists = dir.join("shield");
             let fresh = shield.clone();
@@ -905,7 +912,7 @@ pub fn run() {
                 }
             });
 
-            app.manage(AppState { app: app.handle().clone(), lib: Mutex::new(lib), store: Arc::new(secrets::KeyringStore::new(&app.config().identifier)), open, player: Player::spawn(), shield, art: music_connectors::art::ArtCache::new(dir.join("art"), 300 << 20), yt_cache: Mutex::default(), nearby: Arc::new(Mutex::new(NearbyState::Idle)), nearby_task: Mutex::default(), media, media_last: Mutex::default() });
+            app.manage(AppState { app: app.handle().clone(), lib: Mutex::new(lib), store: Arc::new(secrets::KeyringStore::new(&app.config().identifier)), open, player: Player::spawn(), shield, art: music_connectors::art::ArtCache::new(dir.join("art"), 300 << 20), yt_cache: Mutex::default(), nearby: Arc::new(Mutex::new(NearbyState::Idle)), nearby_task: Mutex::default(), media, media_last: Mutex::default(), tray });
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, add_track, backfill_art, find_versions, play_preview, share_playlist, share_preview, share_read_image, share_import, nearby_send, nearby_status, nearby_stop, nearby_receive, record_play, mixes, set_track_pref, clear_history, export_youtube, spotify_player, spotify_playback, ytm_sign_in, ytm_sign_out, spotify_web_open, spotify_web_status, import_spotify_link, ytm_accounts, set_ytm_accounts, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, system_accent, restart_app, media_update])

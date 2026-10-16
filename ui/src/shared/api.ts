@@ -238,4 +238,7 @@ export interface MediaNow {
   artist: string
   album: string | null
   playing: boolean
+  positionMs: number
+  /** Null = unknown yet: no seek bar. */
+  durationMs: number | null
 }
