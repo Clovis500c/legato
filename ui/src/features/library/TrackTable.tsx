@@ -9,6 +9,7 @@ import { RoundButton } from '../../shared/ui/controls'
 import { Cover } from '../../shared/ui/Cover'
 import { SourceIcon } from '../../shared/ui/SourceIcon'
 import { useStore } from '../../app/store'
+import { isFull, vias } from '../player/sources'
 import { usePlayer } from '../player/store'
 import { AddToPlaylist } from './AddToPlaylist'
 
@@ -49,7 +50,7 @@ export function TrackTable({ tracks, empty, editId }: { tracks: LibraryTrack[]; 
             {virtual.getVirtualItems().map((v) => {
               const t = tracks[v.index]
               const on = t.id === playingId
-              const playable = !!(t.ids.youtube || t.ids.local)
+              const playable = vias(t).length > 0
               return (
                 <div
                   key={t.id}
@@ -62,7 +63,14 @@ export function TrackTable({ tracks, empty, editId }: { tracks: LibraryTrack[]; 
                   <span className="flex min-w-0 items-center gap-3">
                     <Cover title={t.album ?? t.title} size={cover} />
                     <span className="min-w-0">
-                      <span className={`block truncate text-[13px] font-semibold ${on ? 'text-accent' : ''}`}>{t.title}</span>
+                      <span className={`flex items-center gap-2 text-[13px] font-semibold ${on ? 'text-accent' : ''}`}>
+                        <span className="truncate">{t.title}</span>
+                        {playable && !isFull(t) && (
+                          <span title="30-second preview" className="shrink-0 rounded-[3px] border border-line px-1 font-mono text-[9px] font-normal tracking-[0.08em] text-ink-3">
+                            PREVIEW
+                          </span>
+                        )}
+                      </span>
                       {density !== 'compact' && <span className="block truncate text-xs text-ink-2">{t.artist}</span>}
                     </span>
                     {density === 'compact' && <span className="truncate text-xs text-ink-2">{t.artist}</span>}

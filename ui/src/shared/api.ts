@@ -80,6 +80,15 @@ export interface PlayerStatus {
   paused: boolean
   upcoming: string[]
   error: string | null
+  /** Queue ran out on its own. */
+  ended: boolean
+}
+
+/** src-tauri find_versions. */
+export interface FindReport {
+  found: number
+  missing: number
+  youtubeSearchesLeft: number
 }
 
 /** Typed wrappers over Tauri commands (src-tauri/src/lib.rs). Rejections = error string. */
@@ -98,6 +107,10 @@ export const api = {
   searchCatalogs: (query: string, country: string) => invoke<SearchResults>('search_catalogs', { query, country }),
   /** Returns library row id. Finds a YouTube version when missing (1 search). */
   addTrack: (track: Track) => invoke<number>('add_track', { track }),
+  /** YouTube versions for tracks with no full source (1 search each, daily budget). */
+  findVersions: (ids: number[]) => invoke<FindReport>('find_versions', { ids }),
+  /** Apple 30 s preview into the local engine. Returns the Apple Music page. */
+  playPreview: (id: string, country: string) => invoke<string>('play_preview', { id, country }),
   localFolders: () => invoke<string[]>('local_folders'),
   /** Saves folders, rescans. Returns local file count. */
   setLocalFolders: (folders: string[]) => invoke<number>('set_local_folders', { folders }),

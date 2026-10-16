@@ -1,17 +1,22 @@
 import { create } from 'zustand'
 import { useStore } from '../../app/store'
 import { api, type LibraryTrack, type PlayerCommand, type PlayerStatus } from '../../shared/api'
+import { region } from '../../shared/format'
+import { vias, type Via } from './sources'
 import { ytPost, type YtUpdate } from './youtube'
 
-/** youtubeId set = embed plays it, else Rust engine plays local files. */
+/** via youtube = embed plays it, else Rust engine (local file, or Apple preview held in memory). */
 export interface NowPlaying {
   title: string
   artist: string
+  via: Via
   youtubeId?: string
-  /** Library row, to highlight it in lists. */
+  /** Library row, to highlight it in lists. None = dropped file. */
   trackId?: number
   /** Local file path (format shown in readout). */
   path?: string
+  /** Apple Music page of a preview (Apple terms: previews link to the store). */
+  page?: string
 }
 
 interface PlayerState {
@@ -20,15 +25,17 @@ interface PlayerState {
   positionMs: number
   durationMs: number | null
   volume: number
-  /** List a YouTube track was started from: next/prev walk it. */
+  /** One queue for every source: next/prev walk it, each track through its best source. */
   list: LibraryTrack[]
   index: number
-  /** Local engine queue after current file. */
+  /** Dropped files (not in library): engine queue after current file. */
   upcoming: string[]
   /** Full-screen Now Playing. */
   full: boolean
   setFull: (full: boolean) => void
   playTracks: (list: LibraryTrack[], index: number) => void
+  /** Queue item `index` through `via` (default: best source). */
+  playAt: (index: number, via?: Via) => Promise<void>
   playFiles: (paths: string[]) => void
   toggle: () => void
   seek: (ms: number) => void
@@ -42,14 +49,15 @@ interface PlayerState {
 let frame: HTMLIFrameElement | null = null
 export const bindFrame = (el: HTMLIFrameElement | null) => void (frame = el)
 
+// Engine status lags commands: until it reports one of these paths, statuses are stale. [] = ignore all.
+let expect: string[] | null = null
+// Bumped per playAt: a slow preview download must not override a later choice.
+let seq = 0
+
 const send = (cmd: PlayerCommand) => api.player(cmd).catch((e) => useStore.setState({ error: String(e) }))
 const yt = (func: string, ...args: unknown[]) => ytPost(frame, 'command', func, args)
 export const fileTitle = (path: string) => path.split(/[\\/]/).pop()!.replace(/\.[^.]+$/, '')
-/** Library metadata for a playing file when known, file name otherwise. */
-const localNow = (list: LibraryTrack[], path: string): NowPlaying => {
-  const t = list.find((x) => x.ids.local === path)
-  return t ? { title: t.title, artist: t.artist, path, trackId: t.id } : { title: fileTitle(path), artist: 'Local file', path }
-}
+const previewPath = (t: LibraryTrack) => `apple:${t.ids.apple}`
 
 export const usePlayer = create<PlayerState>((set, get) => ({
   playing: false,
@@ -63,49 +71,91 @@ export const usePlayer = create<PlayerState>((set, get) => ({
   setFull: (full) => set({ full }),
 
   playTracks(list, index) {
-    const t = list[index]
-    if (t?.ids.local) {
-      const queue = list.slice(index).filter((x) => x.ids.local)
-      send({ type: 'play', paths: queue.map((x) => x.ids.local!), start: 0 })
-      send({ type: 'volume', value: get().volume })
-      return set({ now: { title: t.title, artist: t.artist, path: t.ids.local, trackId: t.id }, list: queue, index: 0, playing: true, positionMs: 0, durationMs: t.durationMs })
+    const i = list.findIndex((t, j) => j >= index && vias(t).length > 0)
+    if (i < 0) return
+    set({ list })
+    void get().playAt(i)
+  },
+
+  async playAt(index, via) {
+    const { list, volume } = get()
+    // Fresh row: sources may have changed since the queue was built (Find versions).
+    const t = useStore.getState().tracks.find((x) => x.id === list[index]?.id) ?? list[index]
+    const how = via ?? (t && vias(t)[0])
+    if (!t || !how || !vias(t).includes(how)) return
+    const mine = ++seq
+    const base: NowPlaying = { title: t.title, artist: t.artist, trackId: t.id, via: how }
+    set({ index, playing: true, positionMs: 0, durationMs: t.durationMs, upcoming: [] })
+
+    if (how === 'youtube') {
+      expect = null
+      // Unconditional: engine may hold a paused item the store forgot (reload).
+      send({ type: 'stop' })
+      return set({ now: { ...base, youtubeId: t.ids.youtube } })
     }
-    if (!t?.ids.youtube) return
-    if (get().now && !get().now?.youtubeId) send({ type: 'stop' })
-    set({ now: { title: t.title, artist: t.artist, youtubeId: t.ids.youtube, trackId: t.id }, list, index, playing: true, positionMs: 0, durationMs: t.durationMs })
+    if (how === 'local') {
+      // Consecutive local tracks go to the engine as one run: gapless between them.
+      let end = index + 1
+      while (end < list.length && vias(list[end])[0] === 'local') end++
+      const paths = list.slice(index, end).map((x) => x.ids.local!)
+      expect = paths
+      send({ type: 'play', paths, start: 0 })
+      send({ type: 'volume', value: volume })
+      return set({ now: { ...base, path: t.ids.local } })
+    }
+    // Preview: silence while it downloads (Rust side, memory only).
+    expect = [previewPath(t)]
+    send({ type: 'stop' })
+    set({ now: base, durationMs: 30_000 })
+    try {
+      const page = await api.playPreview(t.ids.apple!, region())
+      if (mine === seq) return set({ now: { ...base, page } })
+      // User moved on meanwhile: our preview replaced their choice in the engine, so replay it.
+      const cur = get().now
+      if (cur?.via === 'youtube') send({ type: 'stop' })
+      else if (cur) void get().playAt(get().index, cur.via)
+    } catch (e) {
+      if (mine !== seq) return
+      expect = []
+      useStore.setState({ error: String(e) })
+      set({ playing: false })
+    }
   },
 
   playFiles(paths) {
+    seq++
+    expect = paths
     send({ type: 'play', paths, start: 0 })
     send({ type: 'volume', value: get().volume })
     // Clearing youtubeId unmounts embed.
-    set({ now: { title: fileTitle(paths[0]), artist: 'Local file', path: paths[0] }, playing: true, positionMs: 0, durationMs: null })
+    set({ now: { title: fileTitle(paths[0]), artist: 'Local file', path: paths[0], via: 'local' }, list: [], index: 0, playing: true, positionMs: 0, durationMs: null })
   },
 
   toggle() {
     const { now, playing } = get()
     if (!now) return
-    if (now.youtubeId) yt(playing ? 'pauseVideo' : 'playVideo')
+    if (now.via === 'youtube') yt(playing ? 'pauseVideo' : 'playVideo')
     else send({ type: 'toggle' })
     set({ playing: !playing })
   },
 
   seek(ms) {
-    if (get().now?.youtubeId) yt('seekTo', ms / 1000, true)
+    if (get().now?.via === 'youtube') yt('seekTo', ms / 1000, true)
     else send({ type: 'seek', ms })
     set({ positionMs: ms })
   },
 
   step(delta) {
-    const { now, list, index, playTracks } = get()
-    if (!now?.youtubeId) return void send({ type: delta > 0 ? 'next' : 'prev' })
+    const { now, list, index } = get()
+    if (now && !now.trackId) return void send({ type: delta > 0 ? 'next' : 'prev' })
     for (let i = index + delta; i >= 0 && i < list.length; i += delta) {
-      if (list[i].ids.youtube) return playTracks(list, i)
+      if (vias(list[i]).length) return void get().playAt(i)
     }
+    if (delta > 0) set({ playing: false })
   },
 
   setVolume(volume) {
-    if (get().now?.youtubeId) yt('setVolume', Math.round(volume * 100))
+    if (get().now?.via === 'youtube') yt('setVolume', Math.round(volume * 100))
     else send({ type: 'volume', value: volume })
     set({ volume })
   },
@@ -125,12 +175,26 @@ export const usePlayer = create<PlayerState>((set, get) => ({
 
   onLocal(s) {
     if (s.error) useStore.setState({ error: s.error })
-    // Path null = engine idle or command not processed yet: keep last title.
+    if (get().now?.via === 'youtube') return
+    if (expect) {
+      // Error = engine already tried our items (bad file skipped): status is ours.
+      if (!(s.path && expect.includes(s.path)) && !s.error) return
+      expect = null
+    }
+    if (s.ended) {
+      expect = []
+      return get().step(1)
+    }
+    const { list, index, now } = get()
+    // Gapless run moved on: follow it in the queue.
+    const i = s.path && now?.trackId ? list.findIndex((t, j) => j >= index && t.ids.local === s.path) : -1
     set({
       playing: !!s.path && !s.paused,
       positionMs: s.positionMs,
-      upcoming: s.upcoming,
-      ...(s.path && { now: localNow(get().list, s.path), durationMs: s.durationMs }),
+      upcoming: now?.trackId ? [] : s.upcoming,
+      ...(s.durationMs && { durationMs: s.durationMs }),
+      ...(i > index && { index: i, now: { title: list[i].title, artist: list[i].artist, trackId: list[i].id, via: 'local', path: s.path! } }),
+      ...(s.path && !now?.trackId && { now: { title: fileTitle(s.path), artist: 'Local file', path: s.path, via: 'local' } }),
     })
   },
 }))

@@ -1,11 +1,15 @@
-import { CaretDoubleDown, Lock, Pause, Play, SkipBack, SkipForward } from '@phosphor-icons/react'
+import { ArrowSquareOut, CaretDoubleDown, Lock, Pause, Play, SkipBack, SkipForward } from '@phosphor-icons/react'
+import { openUrl } from '@tauri-apps/plugin-opener'
 import { useEffect, useLayoutEffect, useRef } from 'react'
 import { useSettings } from '../../app/settings'
 import { useStore } from '../../app/store'
+import type { LibraryTrack, Source } from '../../shared/api'
+import { Button } from '../../shared/ui/Button'
 import { Bar, Led, RoundButton } from '../../shared/ui/controls'
 import { Cover } from '../../shared/ui/Cover'
 import { SourceIcon } from '../../shared/ui/SourceIcon'
 import { clock, fileFormat, VolumeControl } from './PlayerBar'
+import { viaLabel, vias, type Via } from './sources'
 import { fileTitle, usePlayer, useVideoSlot } from './store'
 
 /** Publishes its rect so the single YouTube iframe sits here. */
@@ -44,33 +48,41 @@ function TunerScale({ value, max, onChange }: { value: number; max: number; onCh
   )
 }
 
-/** Which inputs this track has, and which one plays. Indicators only: switching comes with phase 4. */
-function Inputs({ youtube, local, spotify, playing }: { youtube: boolean; local: boolean; spotify: boolean; playing: 'youtube' | 'local' }) {
-  const items = [
-    { code: 'YT', source: 'youtube' as const, has: youtube, on: playing === 'youtube' },
-    { code: 'LOC', source: 'local' as const, has: local, on: playing === 'local' },
-    { code: 'SP', source: 'spotify' as const, has: spotify, on: false, locked: true },
+/** "Play via": one round input per source of this track. Lit = playing. Spotify locked (Premium). */
+function Inputs({ track }: { track?: LibraryTrack }) {
+  const { now, index, playAt } = usePlayer()
+  const has = track ? vias(track) : []
+  const items: { code: string; source: Source; via?: Via }[] = [
+    { code: 'LOC', source: 'local', via: 'local' },
+    { code: 'YT', source: 'youtube', via: 'youtube' },
+    { code: 'AM', source: 'apple', via: 'preview' },
+    { code: 'SP', source: 'spotify' },
   ]
   return (
     <div className="flex flex-col gap-2">
-      <span className="kicker">Input</span>
+      <span className="kicker">Play via</span>
       <div className="flex gap-3">
-        {items.map((i) => (
-          <div key={i.code} className="flex flex-col items-center gap-1.5" title={i.locked ? 'Spotify: Premium required' : i.has ? 'Available' : 'Not on this source'}>
-            <Led on={i.on} />
-            <span className={`grid size-10 place-items-center rounded-full border ${i.on ? 'border-ink-3 bg-raised text-ink' : 'border-line'} ${i.has ? 'text-ink-2' : 'text-ink-4'}`}>
-              {i.locked ? <Lock size={14} /> : <SourceIcon source={i.source} size={14} />}
-            </span>
-            <span className={`font-mono text-[9px] tracking-[0.08em] ${i.on ? 'text-ink' : 'text-ink-3'}`}>{i.code}</span>
-          </div>
-        ))}
+        {items.map((i) => {
+          const on = !!i.via && now?.via === i.via
+          const can = !!i.via && has.includes(i.via)
+          const hint = !i.via ? 'Spotify: Premium required' : on ? `Playing: ${viaLabel[i.via]}` : can ? `Switch to ${viaLabel[i.via]}` : 'Not on this source'
+          return (
+            <button key={i.code} disabled={!can || on} onClick={() => playAt(index, i.via)} title={hint} aria-label={hint} aria-pressed={on} className="group flex flex-col items-center gap-1.5">
+              <Led on={on} />
+              <span className={`grid size-10 place-items-center rounded-full border transition ${on ? 'border-ink-3 bg-raised text-ink' : can ? 'border-line text-ink-2 group-hover:bg-raised group-hover:text-ink' : 'border-line text-ink-4'}`}>
+                {i.via ? <SourceIcon source={i.source} size={14} /> : <Lock size={14} />}
+              </span>
+              <span className={`font-mono text-[9px] tracking-[0.08em] ${on ? 'text-ink' : 'text-ink-3'}`}>{i.code}</span>
+            </button>
+          )
+        })}
       </div>
     </div>
   )
 }
 
 export function NowPlaying() {
-  const { now, playing, positionMs, durationMs, toggle, seek, step, setFull, list, index, upcoming, playTracks } = usePlayer()
+  const { now, playing, positionMs, durationMs, toggle, seek, step, setFull, list, index, upcoming, playAt } = usePlayer()
   const tuner = useSettings((s) => s.settings.tuner)
   const track = useStore((s) => s.tracks.find((t) => t.id === now?.trackId))
 
@@ -84,8 +96,10 @@ export function NowPlaying() {
   }, [now, setFull])
   if (!now) return null
 
-  const local = !now.youtubeId
-  const next = local ? upcoming.map((p) => ({ key: p, title: fileTitle(p), artist: fileFormat(p) ?? '', onPlay: undefined })) : list.slice(index + 1).flatMap((t, i) => (t.ids.youtube ? [{ key: String(t.id), title: t.title, artist: t.artist, onPlay: () => playTracks(list, index + 1 + i) }] : []))
+  const video = now.via === 'youtube'
+  const next = now.trackId
+    ? list.slice(index + 1).flatMap((t, i) => (vias(t).length ? [{ key: String(t.id), title: t.title, artist: t.artist, onPlay: () => playAt(index + 1 + i) }] : []))
+    : upcoming.map((p) => ({ key: p, title: fileTitle(p), artist: fileFormat(p) ?? '', onPlay: undefined }))
 
   return (
     <div role="dialog" aria-label="Now playing" className="fixed inset-0 z-20 flex flex-col bg-bg px-10 pb-7">
@@ -96,18 +110,28 @@ export function NowPlaying() {
           </RoundButton>
           <span className="kicker">Collapse</span>
         </div>
-        <span className="kicker text-ink-2">Now playing · {local ? 'local file' : 'YouTube'}</span>
+        <span className="kicker text-ink-2">Now playing · {viaLabel[now.via]}</span>
         <span className="w-60" />
       </div>
 
       <div className="grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_360px] gap-10 pt-2">
         <section className="flex min-w-0 flex-col gap-5">
-          {local ? (
-            <div className="grid aspect-video w-full place-items-center rounded-lg border border-line bg-recess">
-              <Cover title={now.title} size={180} />
-            </div>
-          ) : (
+          {video ? (
             <VideoSlot />
+          ) : (
+            <div className="flex aspect-video w-full flex-col items-center justify-center gap-4 rounded-lg border border-line bg-recess">
+              <Cover title={track?.album ?? now.title} size={180} />
+              {now.via === 'preview' && (
+                <div className="flex items-center gap-4">
+                  <span className="kicker">30-second preview</span>
+                  {now.page && (
+                    <Button variant="link" className="text-xs" onClick={() => openUrl(now.page!)}>
+                      Listen on Apple Music <ArrowSquareOut size={13} />
+                    </Button>
+                  )}
+                </div>
+              )}
+            </div>
           )}
           <div className="flex items-end justify-between gap-6">
             <div className="min-w-0">
@@ -121,7 +145,7 @@ export function NowPlaying() {
           </div>
           {tuner ? <TunerScale value={positionMs} max={durationMs ?? 0} onChange={seek} /> : <Bar label="Position" value={positionMs} max={durationMs ?? 0} onChange={seek} className="w-full" />}
           <div className="flex items-center justify-between">
-            <Inputs youtube={!!(track?.ids.youtube ?? now.youtubeId)} local={local || !!track?.ids.local} spotify={!!track?.ids.spotify} playing={local ? 'local' : 'youtube'} />
+            <Inputs track={track} />
             <div className="flex items-center gap-4">
               <RoundButton label="Previous" kind="soft" size="lg" onClick={() => step(-1)}>
                 <SkipBack weight="fill" size={18} />

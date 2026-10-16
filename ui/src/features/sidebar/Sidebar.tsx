@@ -40,6 +40,7 @@ export function Sidebar() {
   const inputs = [
     { code: 'YT', on: status.youtube.connected },
     { code: 'SP', on: status.spotify.connected },
+    { code: 'AM', on: true },
     { code: 'LOC', on: true },
   ]
 

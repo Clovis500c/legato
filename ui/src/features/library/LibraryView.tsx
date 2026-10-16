@@ -1,13 +1,14 @@
-import { Copy, Play, Trash } from '@phosphor-icons/react'
+import { Copy, MagnifyingGlass, Play, Trash } from '@phosphor-icons/react'
 import { useMemo, useState } from 'react'
 import { useStore } from '../../app/store'
-import type { LibraryTrack } from '../../shared/api'
+import { api, type LibraryTrack } from '../../shared/api'
 import { fold, formatCount } from '../../shared/format'
 import { Button } from '../../shared/ui/Button'
 import { Led, LedChip, RoundButton } from '../../shared/ui/controls'
 import { Cover } from '../../shared/ui/Cover'
 import { PageHeader } from '../../shared/ui/PageHeader'
 import { sourceLabel } from '../../shared/ui/SourceIcon'
+import { isFull, vias } from '../player/sources'
 import { usePlayer } from '../player/store'
 import { filterTracks, groupAlbums, groupArtists, libraryStats, primaryArtist, sortTracks, type Filter, type Sort } from './filter'
 import { TrackTable } from './TrackTable'
@@ -28,7 +29,7 @@ const totalTime = (tracks: LibraryTrack[]) => {
 /** Round play button: starts first playable track of the list. Absent if none. */
 function PlayAll({ tracks }: { tracks: LibraryTrack[] }) {
   const play = usePlayer((s) => s.playTracks)
-  const first = tracks.findIndex((t) => t.ids.youtube || t.ids.local)
+  const first = tracks.findIndex((t) => vias(t).length > 0)
   if (first < 0) return null
   return (
     <RoundButton label="Play all" kind="primary" size="lg" onClick={() => play(tracks, first)}>
@@ -53,21 +54,54 @@ function SortMenu() {
   )
 }
 
-/** Line telling what plays in full: YouTube today, Spotify needs Premium. */
+/** "Find versions": YouTube match for tracks that only preview or don't play. 1 search each. */
+function FindVersions({ tracks }: { tracks: LibraryTrack[] }) {
+  const { status, refresh, notify } = useStore()
+  const [busy, setBusy] = useState(false)
+  if (!tracks.length) return null
+  if (!status.youtube.connected) return <span className="font-sans text-xs tracking-normal text-ink-2 normal-case">Connect YouTube to find full versions.</span>
+  const run = async () => {
+    setBusy(true)
+    try {
+      const r = await api.findVersions(tracks.map((t) => t.id))
+      await refresh()
+      notify(`Full versions found: ${r.found} of ${r.found + r.missing} · ${r.youtubeSearchesLeft} YouTube searches left today`)
+    } catch (e) {
+      useStore.setState({ error: String(e) })
+    } finally {
+      setBusy(false)
+    }
+  }
+  return (
+    <Button variant="ghost" className="ml-auto py-1! font-sans text-xs tracking-normal normal-case" disabled={busy} onClick={run}>
+      <MagnifyingGlass size={13} /> {busy ? 'Searching…' : `Find full versions (${formatCount(Math.min(tracks.length, 100))})`}
+    </Button>
+  )
+}
+
+/** What plays in full, what only previews, what can't play. */
 function Playability({ tracks }: { tracks: LibraryTrack[] }) {
-  const full = tracks.filter((t) => t.ids.youtube || t.ids.local).length
+  const full = tracks.filter(isFull).length
+  const missing = tracks.filter((t) => !isFull(t))
+  const preview = missing.filter((t) => vias(t).length > 0).length
   if (!tracks.length) return null
   return (
     <p className="mb-3 flex shrink-0 flex-wrap items-center gap-x-5 gap-y-1 rounded-lg border border-line-soft bg-recess px-3.5 py-2.5 font-mono text-[10px] tracking-[0.08em] uppercase">
       <span className="flex items-center gap-2">
         <Led on /> {formatCount(full)} playable in full
       </span>
-      {tracks.length > full && (
+      {preview > 0 && (
         <span className="flex items-center gap-2 text-ink-2">
-          <Led on={false} /> {formatCount(tracks.length - full)} with no playable source
+          <Led on={false} /> {formatCount(preview)} as 30 s preview
         </span>
       )}
-      <span className="font-sans text-xs tracking-normal text-ink-2 normal-case">Local file first, else the official YouTube player. Spotify needs Premium (coming soon).</span>
+      {missing.length > preview && (
+        <span className="flex items-center gap-2 text-ink-2">
+          <Led on={false} /> {formatCount(missing.length - preview)} with no playable source
+        </span>
+      )}
+      {missing.length === 0 && <span className="font-sans text-xs tracking-normal text-ink-2 normal-case">Local file first, then the official YouTube player, then the Apple Music preview.</span>}
+      <FindVersions tracks={missing} />
     </p>
   )
 }
@@ -93,6 +127,7 @@ export function SongsView() {
         </div>
         <SortMenu />
       </div>
+      <Playability tracks={shown} />
       <TrackTable
         tracks={shown}
         empty={

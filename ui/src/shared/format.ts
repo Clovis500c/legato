@@ -19,5 +19,8 @@ export function timeAgo(at: number, now = Date.now()): string {
 /** Thousands separator: 1,674. */
 export const formatCount = (n: number) => n.toLocaleString('en-US')
 
+/** Store country for catalogs, from UI locale. */
+export const region = () => new Intl.Locale(navigator.language).maximize().region ?? 'US'
+
 /** Lowercase, no accents. For client-side search. */
 export const fold = (s: string) => s.normalize('NFKD').replace(/\p{M}/gu, '').toLowerCase()

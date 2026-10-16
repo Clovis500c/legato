@@ -53,7 +53,8 @@ export function VolumeControl({ big }: { big?: boolean }) {
 export function PlayerBar() {
   const { now, playing, positionMs, durationMs, playFiles, toggle, seek, step, onLocal, setFull } = usePlayer()
   const readout = useSettings((s) => s.settings.readout)
-  const local = now && !now.youtubeId
+  // Engine plays everything but YouTube: poll it.
+  const local = now && now.via !== 'youtube'
 
   // Drop audio files on window = play them as a queue.
   useEffect(() => {
@@ -104,7 +105,7 @@ export function PlayerBar() {
       </div>
 
       <div className="flex w-85 items-center justify-end gap-3.5">
-        {readout && now && <Readout detail={local ? fileFormat(now.path) : undefined}>{local ? 'Local' : 'YouTube'}</Readout>}
+        {readout && now && <Readout detail={now.via === 'local' ? fileFormat(now.path) : now.via === 'preview' ? '30 S' : undefined}>{{ local: 'Local', youtube: 'YouTube', preview: 'Preview' }[now.via]}</Readout>}
         <span className="flex items-center gap-1.5 text-ink-3">
           <SpeakerHigh size={15} />
           <VolumeControl />

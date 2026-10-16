@@ -2,7 +2,7 @@ import { Check, ClipboardText, FolderPlus, MagnifyingGlass, Plus } from '@phosph
 import { useMemo, useState } from 'react'
 import { useStore } from '../../app/store'
 import { api, type SearchHit, type SearchResults, type Source } from '../../shared/api'
-import { formatDuration } from '../../shared/format'
+import { formatDuration, region } from '../../shared/format'
 import { Led, LedChip, RoundButton, Toggle } from '../../shared/ui/controls'
 import { Cover } from '../../shared/ui/Cover'
 import { PageHeader } from '../../shared/ui/PageHeader'
@@ -11,7 +11,6 @@ import { filterTracks } from '../library/filter'
 import { usePlayer } from '../player/store'
 import { kindLabel, unofficial, videoKind } from './kind'
 
-const region = () => new Intl.Locale(navigator.language).maximize().region ?? 'US'
 const order: Source[] = ['youtube', 'apple', 'spotify', 'local']
 
 function Badge({ children }: { children: string }) {

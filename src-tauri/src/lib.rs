@@ -232,6 +232,11 @@ struct SearchResults {
     errors: Vec<String>,
 }
 
+/// Trust boundary: ISO 3166 store code from UI locale.
+fn store(country: &str) -> String {
+    if country.len() == 2 && country.chars().all(|c| c.is_ascii_alphabetic()) { country.to_uppercase() } else { "US".into() }
+}
+
 /// Apple catalog + YouTube, merged (same recording = one hit with both ids).
 #[tauri::command]
 async fn search_catalogs(state: State<'_, AppState>, query: String, country: String) -> CmdResult<SearchResults> {
@@ -240,7 +245,7 @@ async fn search_catalogs(state: State<'_, AppState>, query: String, country: Str
     if query.is_empty() || query.chars().count() > 200 {
         return Err("Search: 1 to 200 characters".into());
     }
-    let country = if country.len() == 2 && country.chars().all(|c| c.is_ascii_alphabetic()) { country.to_uppercase() } else { "FR".into() };
+    let country = store(&country);
     let apple = tauri::async_runtime::spawn({
         let q = query.clone();
         async move { music_connectors::itunes::search(music_connectors::itunes::API, &q, &country).await }
@@ -289,6 +294,46 @@ async fn add_track(state: State<'_, AppState>, track: Track) -> CmdResult<i64> {
         track = merge_tracks(&track, hit);
     }
     state.lib.lock().unwrap().upsert_track(&track).map_err(err)
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct FindReport {
+    /// Tracks that got a YouTube version.
+    found: usize,
+    /// Tracks still without full playback (budget spent or no match).
+    missing: usize,
+    youtube_searches_left: u32,
+}
+
+/// "Find versions": YouTube match for tracks with no full source (Apple / Spotify only). 1 search each, cached, daily budget.
+#[tauri::command]
+async fn find_versions(state: State<'_, AppState>, ids: Vec<i64>) -> CmdResult<FindReport> {
+    let todo: Vec<Track> = {
+        let lib = state.lib.lock().unwrap();
+        let tracks = lib.tracks().map_err(err)?;
+        tracks.into_iter().filter(|t| ids.contains(&t.id) && !t.track.ids.contains_key(&Source::Youtube) && !t.track.ids.contains_key(&Source::Local)).map(|t| t.track).collect()
+    };
+    let mut found = 0;
+    for t in &todo {
+        let Some(res) = yt_search(&state, &format!("{} {}", t.artist, t.title)).await else { break };
+        let candidates = res?;
+        if let Some(hit) = music_core::matching::best_match(t, &candidates) {
+            state.lib.lock().unwrap().upsert_track(&merge_tracks(t, hit)).map_err(err)?;
+            found += 1;
+        }
+    }
+    let left = YT_SEARCHES_PER_DAY.saturating_sub(yt_used(&state.lib.lock().unwrap()));
+    Ok(FindReport { found, missing: todo.len() - found, youtube_searches_left: left })
+}
+
+/// Apple 30 s preview into the local engine. Returns store page (shown as "Listen on Apple Music").
+#[tauri::command]
+async fn play_preview(state: State<'_, AppState>, id: String, country: String) -> CmdResult<String> {
+    let p = music_connectors::itunes::preview(music_connectors::itunes::LOOKUP, &id, &store(&country)).await.map_err(err)?;
+    let bytes = music_connectors::itunes::preview_audio(&p).await.map_err(err)?;
+    state.player.send(Command::PlayMemory { label: format!("apple:{id}").into(), bytes: bytes.into() });
+    Ok(p.page)
 }
 
 #[tauri::command]
@@ -382,7 +427,7 @@ pub fn run() {
             app.manage(AppState { lib: Mutex::new(lib), store: Arc::new(secrets::KeyringStore::new(&app.config().identifier)), open, player: Player::spawn(), shield, yt_cache: Mutex::default() });
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, add_track, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, restart_app])
+        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, add_track, find_versions, play_preview, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, restart_app])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

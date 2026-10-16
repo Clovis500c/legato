@@ -23,6 +23,47 @@ struct Page {
     results: Vec<Hit>,
 }
 
+pub const LOOKUP: &str = "https://itunes.apple.com/lookup";
+
+/// Official 30 s preview (AAC) + store page. Apple terms: previews promote the store, so page link shown next to them.
+#[derive(Debug, PartialEq)]
+pub struct Preview {
+    pub audio: String,
+    pub page: String,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct LookupHit {
+    preview_url: Option<String>,
+    track_view_url: Option<String>,
+}
+
+/// Apple hosts only: preview bytes and page links come from Apple, never from arbitrary URLs.
+pub fn apple_url(url: &str) -> bool {
+    Url::parse(url).is_ok_and(|u| u.scheme() == "https" && u.host_str().is_some_and(|h| [".apple.com", ".mzstatic.com"].iter().any(|d| h.ends_with(d))))
+}
+
+pub async fn preview(api: &str, id: &str, country: &str) -> Result<Preview> {
+    anyhow::ensure!(!id.is_empty() && id.len() <= 20 && id.bytes().all(|b| b.is_ascii_digit()), "Bad Apple Music id");
+    let url = Url::parse_with_params(api, &[("id", id), ("country", country)])?;
+    let page: serde_json::Value = reqwest::get(url).await?.error_for_status()?.json().await?;
+    let hit: LookupHit = serde_json::from_value(page["results"][0].clone()).unwrap_or(LookupHit { preview_url: None, track_view_url: None });
+    match (hit.preview_url, hit.track_view_url) {
+        (Some(audio), Some(page)) if apple_url(&audio) && apple_url(&page) => Ok(Preview { audio, page }),
+        _ => anyhow::bail!("No preview for this track in the {country} store"),
+    }
+}
+
+/// Preview bytes, kept in memory only (never written to disk).
+pub async fn preview_audio(p: &Preview) -> Result<Vec<u8>> {
+    const MAX: usize = 8 << 20;
+    anyhow::ensure!(apple_url(&p.audio), "Not an Apple preview URL");
+    let bytes = reqwest::get(&p.audio).await?.error_for_status()?.bytes().await?;
+    anyhow::ensure!(bytes.len() <= MAX, "Preview too large");
+    Ok(bytes.to_vec())
+}
+
 /// Songs for `term` in store `country` (ISO 3166, e.g. "FR"). Id = iTunes track id.
 pub async fn search(api: &str, term: &str, country: &str) -> Result<Vec<Track>> {
     let url = Url::parse_with_params(api, &[("term", term), ("entity", "song"), ("limit", "15"), ("country", country)])?;
@@ -61,5 +102,20 @@ mod tests {
         let t = &found[0];
         assert_eq!((t.title.as_str(), t.artist.as_str(), t.duration_ms), ("Get Lucky", "Daft Punk", Some(369_629)));
         assert_eq!(t.ids[&Source::Apple], "617154366");
+    }
+
+    #[tokio::test]
+    async fn preview_needs_apple_hosts() {
+        let mut s = Server::new_async().await;
+        let body = |audio: &str| format!(r#"{{"results":[{{"previewUrl":"{audio}","trackViewUrl":"https://music.apple.com/fr/album/x/1?i=617154366"}}]}}"#);
+        s.mock("GET", "/lookup").match_query(Matcher::UrlEncoded("id".into(), "1".into())).with_body(body("https://audio-ssl.itunes.apple.com/a.m4a")).create_async().await;
+        s.mock("GET", "/lookup").match_query(Matcher::UrlEncoded("id".into(), "2".into())).with_body(body("https://evil.example/a.m4a")).create_async().await;
+        s.mock("GET", "/lookup").match_query(Matcher::UrlEncoded("id".into(), "3".into())).with_body(r#"{"results":[]}"#).create_async().await;
+        let api = format!("{}/lookup", s.url());
+        assert_eq!(preview(&api, "1", "FR").await.unwrap().audio, "https://audio-ssl.itunes.apple.com/a.m4a");
+        assert!(preview(&api, "2", "FR").await.is_err());
+        assert!(preview(&api, "3", "FR").await.is_err());
+        assert!(preview(&api, "1&x=y", "FR").await.is_err());
+        assert!(!apple_url("http://music.apple.com/x") && !apple_url("https://apple.com.evil.example/x"));
     }
 }

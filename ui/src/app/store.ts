@@ -45,6 +45,8 @@ interface State {
   /** Returns new playlist id for create / duplicate. */
   editPlaylist: (edit: PlaylistEdit) => Promise<number | null>
   addLink: (url: string) => Promise<void>
+  /** Shows notice for 4 s. */
+  notify: (text: string) => void
 }
 
 const offline: SourceStatus = { configured: false, connected: false }
@@ -114,10 +116,11 @@ export const useStore = create<State>((set, get) => {
     disconnect: (source) => run(() => api.disconnect(source)).then(() => {}),
     async addLink(url) {
       let added = ''
-      if (await run(async () => (added = await api.addLink(url)))) {
-        set({ notice: `Added: ${added}` })
-        setTimeout(() => set({ notice: undefined }), 4000)
-      }
+      if (await run(async () => (added = await api.addLink(url)))) get().notify(`Added: ${added}`)
+    },
+    notify(notice) {
+      set({ notice })
+      setTimeout(() => set({ notice: undefined }), 4000)
     },
     async editPlaylist(edit) {
       let id: number | null = null

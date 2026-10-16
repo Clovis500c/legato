@@ -9,6 +9,7 @@ use rodio::{Decoder, DeviceSinkBuilder, MixerDeviceSink, Source};
 use serde::{Deserialize, Serialize};
 use std::collections::VecDeque;
 use std::fs::File;
+use std::io::Cursor;
 use std::path::PathBuf;
 use std::sync::mpsc::{self, RecvTimeoutError, Sender};
 use std::sync::{Arc, Mutex};
@@ -18,6 +19,9 @@ use std::time::Duration;
 #[serde(tag = "type", rename_all = "camelCase")]
 pub enum Command {
     Play { paths: Vec<PathBuf>, start: usize },
+    /// Rust-side only (preview bytes). `label` stands in for path in status.
+    #[serde(skip)]
+    PlayMemory { label: PathBuf, bytes: Arc<[u8]> },
     Toggle,
     Seek { ms: u64 },
     Next,
@@ -37,6 +41,8 @@ pub struct Status {
     pub upcoming: Vec<PathBuf>,
     /// Last error, cleared once read.
     pub error: Option<String>,
+    /// Queue ran out on its own (not stopped): caller moves on.
+    pub ended: bool,
 }
 
 /// Handle to engine thread. Thread exits when handle dropped.
@@ -95,13 +101,21 @@ struct Engine {
     durations: VecDeque<Option<u64>>,
     volume: f32,
     error: Option<String>,
+    /// In-memory item (preview), matched by label in queue.
+    memory: Option<(PathBuf, Arc<[u8]>)>,
 }
 
 impl Engine {
     fn handle(&mut self, cmd: Command) -> Result<()> {
         match cmd {
             Command::Play { paths, start } => {
+                self.memory = None;
                 self.queue = Queue::new(paths, start);
+                self.restart()?;
+            }
+            Command::PlayMemory { label, bytes } => {
+                self.memory = Some((label.clone(), bytes));
+                self.queue = Queue::new(vec![label], 0);
                 self.restart()?;
             }
             Command::Toggle => {
@@ -132,6 +146,7 @@ impl Engine {
             }
             Command::Stop => {
                 self.player = None;
+                self.memory = None;
                 self.queue = Queue::default();
                 self.durations.clear();
             }
@@ -155,15 +170,21 @@ impl Engine {
     /// Append what queue wants loaded. Bad file = nothing appended, queue skips it on sync.
     fn fill(&mut self) {
         let Some(p) = &self.player else { return };
+        fn append(p: &rodio::Player, src: impl Source + Send + 'static) -> Option<u64> {
+            let ms = src.total_duration().map(|d| d.as_millis() as u64);
+            p.append(src);
+            ms
+        }
         for path in self.queue.to_load() {
-            match File::open(&path).map_err(anyhow::Error::from).and_then(|f| Ok(Decoder::try_from(f)?)) {
-                Ok(src) => {
-                    self.durations.push_back(src.total_duration().map(|d| d.as_millis() as u64));
-                    p.append(src);
-                }
+            let added = match &self.memory {
+                Some((label, bytes)) if *label == path => Decoder::try_from(Cursor::new(bytes.clone())).map(|d| append(p, d)).map_err(anyhow::Error::from),
+                _ => File::open(&path).map_err(anyhow::Error::from).and_then(|f| Ok(append(p, Decoder::try_from(f)?))),
+            };
+            match added {
+                Ok(ms) => self.durations.push_back(ms),
                 Err(e) => {
                     self.durations.push_back(None);
-                    self.error = Some(format!("{} : {e:#}", path.display()));
+                    self.error = Some(format!("{}: {e:#}", path.display()));
                 }
             }
         }
@@ -183,6 +204,7 @@ impl Engine {
             duration_ms: path.as_ref().and(self.durations.front().copied().flatten()),
             paused: self.player.as_ref().is_none_or(|p| p.is_paused()),
             upcoming: if path.is_some() { self.queue.upcoming().iter().take(50).cloned().collect() } else { Vec::new() },
+            ended: self.player.is_some() && path.is_none(),
             path,
             error: None,
         }
