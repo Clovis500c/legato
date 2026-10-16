@@ -8,7 +8,7 @@ interface Screen {
 }
 
 const KEY = 'screen'
-const VIEWS = ['add', 'mixes', 'mix', 'songs', 'albums', 'album', 'artists', 'artist', 'playlist', 'settings'] as const
+const VIEWS = ['add', 'addons', 'mixes', 'mix', 'songs', 'albums', 'album', 'artists', 'artist', 'playlist', 'settings'] as const
 
 /** Stored screen → view still valid today (playlist deleted since: no). */
 export function validScreen(raw: unknown, playlistIds: number[]): Screen | null {

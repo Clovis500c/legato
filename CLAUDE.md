@@ -12,10 +12,11 @@ Reference mockups: Figma file "Bow Game / Music App", page "Music App v3 — Hi-
 
 ## Structure
 - `crates/core` (`music-core`): pure Rust, no Tauri. `Track`, `Connector` trait, `SecretStore`, matching (ISRC, then title+artist+duration), `Library` (rusqlite), `sync`, local file scan.
-- `crates/connectors` (`music-connectors`): shared OAuth PKCE loopback (Spotify) + one module per service: 'youtube' (links, oEmbed), 'ytmusic' (web session), 'spotify', 'itunes', 'nearby'. Injectable URLs (`with_urls`) for mockito tests.
+- `crates/connectors` (`music-connectors`): shared OAuth PKCE loopback (Spotify) + one module per service: 'youtube' (links, oEmbed), 'ytmusic' (web session), 'spotify', 'itunes', 'nearby', 'discord' (Rich Presence over the Discord app's local IPC). Injectable URLs (`with_urls`) for mockito tests.
 - `crates/player` (`music-player`): native local playback (rodio/symphonia), engine thread, gapless queue. Playback choices (YouTube, local, Spotify plan): `docs/playback.md`.
 - `crates/shield` (`music-shield`): ad/tracker blocker (Brave's adblock-rust) + YouTube player script.
 - `src-tauri`: thin shell. IPC commands (`lib.rs`), keychain (`secrets.rs`), WebView2 hook (`shield.rs`), Google sign-in window (`ytm.rs`), Windows media panel / media keys (`media.rs`), window background before first paint (`window_bg.rs`). All logic goes in `crates/`.
+- Add-ons: `features/addons/registry.ts` (list, author + verified), on/off in settings `addons`; each add-on's code in its own file there (`discord.ts` follows the player). Built in only: no third-party code is loaded.
 - Keyboard shortcuts: one table in `ui/src/app/shortcuts.ts` (handler + Settings › Shortcuts list). Settings search index: `features/settings/search.ts` (labels = `data-setting` on rows).
 - Player modules: `store.ts` (queue, fades, resume), `session.ts` (saved playback), `app/screen.ts` (last screen), `media.ts` (Windows panel), `still.ts` (Auto video/cover), `immersive.ts` (pre-blurred backdrop), `snap.ts` (mini player spots), `Progress.tsx` (60 fps bar).
 - Settings schema changes for everyone: bump `DEFAULTS_VERSION` in `theme.ts` with the changed defaults (applied once to saved settings).

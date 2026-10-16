@@ -27,6 +27,19 @@ export interface LibraryTrack extends Track {
 /** Stable identity of a playlist: service + its id there (survives re-imports); own playlists by row id. */
 export const playlistKey = (p: Pick<LibraryPlaylist, 'id' | 'source' | 'sourceId' | 'custom'>) => (p.custom ? `custom:${p.id}` : `${p.source}:${p.sourceId}`)
 
+/** connectors discord::Presence. link = [button label, https url]. */
+export interface Presence {
+  title: string
+  artist: string
+  album: string | null
+  art: string | null
+  link: [string, string] | null
+  playing: boolean
+  positionMs: number
+  durationMs: number | null
+  status: 'name' | 'artist' | 'song'
+}
+
 export interface LibraryPlaylist {
   id: number
   source: Source
@@ -246,6 +259,10 @@ export const api = {
   saveCover: (playlistId: number, path: string) => invoke<string>('save_cover', { playlistId, path }),
   /** Track cover to a file (png/jpg). source = art scheme path, crop = fractions (video bars cut). Returns the file written. */
   exportCover: (source: string, crop: Box | null, path: string) => invoke<string>('export_cover', { source, crop, path }),
+  /** Discord Rich Presence add-on: track shown under the user's Discord application (null = nothing). */
+  discordPresence: (clientId: string, presence: Presence | null) => invoke<void>('discord_presence', { clientId, presence }),
+  discordOff: () => invoke<void>('discord_off'),
+  discordStatus: () => invoke<{ connected: boolean; error: string | null }>('discord_status'),
   /** Imported YouTube Music playlist: added on YouTube (Liked Music = like), then locally. */
   addToYoutube: (id: number, trackIds: number[]) => invoke<{ added: number; noYoutube: number }>('add_to_youtube', { id, trackIds }),
   /** Raw JSON; validated by features/player/session. */

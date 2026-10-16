@@ -53,6 +53,17 @@ export interface PlaylistCover {
 export const SPOTS = ['tl', 't', 'tr', 'l', 'r', 'bl', 'b', 'br'] as const
 export type Spot = (typeof SPOTS)[number]
 
+/** Discord Rich Presence add-on. appId = the user's own Discord application (its name shows as "Listening to …"). */
+export interface DiscordSettings {
+  appId: string
+  /** After "Listening to" in the member list: the application's name, the artist or the song. */
+  status: 'name' | 'artist' | 'song'
+  /** Button to the song's page (YouTube, Spotify, Apple Music). */
+  buttons: boolean
+  /** Keep the song up while paused (no progress bar). */
+  paused: boolean
+}
+
 /** Bumped when defaults change for everyone (saved settings get the new ones once). */
 const DEFAULTS_VERSION = 3
 
@@ -114,6 +125,9 @@ export interface Settings {
   resume: boolean
   /** Open on the screen the app was closed on, Now Playing included (startView when off). */
   reopen: boolean
+  /** Add-ons turned on (id → on). All off until the user turns them on. */
+  addons: Record<string, boolean>
+  discord: DiscordSettings
   defaultsVersion: number
 }
 
@@ -152,6 +166,8 @@ export const DEFAULTS: Settings = {
   upNext: true,
   resume: true,
   reopen: true,
+  addons: {},
+  discord: { appId: '', status: 'song', buttons: true, paused: false },
   defaultsVersion: DEFAULTS_VERSION,
 }
 
@@ -220,10 +236,23 @@ export function sanitize(raw: unknown): Settings {
     upNext: typeof r.upNext === 'boolean' ? r.upNext : DEFAULTS.upNext,
     resume: typeof r.resume === 'boolean' ? r.resume : DEFAULTS.resume,
     reopen: typeof r.reopen === 'boolean' ? r.reopen : DEFAULTS.reopen,
+    addons: Object.fromEntries(Object.entries(r.addons && typeof r.addons === 'object' ? r.addons : {}).filter(([k, v]) => /^[a-z0-9-]{1,40}$/.test(k) && typeof v === 'boolean').slice(0, 100)),
+    discord: sanitizeDiscord(r.discord),
     defaultsVersion: DEFAULTS_VERSION,
     // Saved before the defaults changed: take the new ones once.
     ...(saved < 2 ? V2 : {}),
     ...(saved < 3 ? V3 : {}),
+  }
+}
+
+function sanitizeDiscord(raw: unknown): DiscordSettings {
+  const d = raw && typeof raw === 'object' ? (raw as Record<string, unknown>) : {}
+  const def = DEFAULTS.discord
+  return {
+    appId: typeof d.appId === 'string' && /^\d{1,32}$/.test(d.appId) ? d.appId : def.appId,
+    status: pick(d.status, ['name', 'artist', 'song'] as const, def.status),
+    buttons: typeof d.buttons === 'boolean' ? d.buttons : def.buttons,
+    paused: typeof d.paused === 'boolean' ? d.paused : def.paused,
   }
 }
 

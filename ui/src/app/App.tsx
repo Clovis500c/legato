@@ -5,6 +5,8 @@ import { AddView } from '../features/add/AddView'
 import { MixesView, MixView } from '../features/mixes/MixesView'
 import { AlbumsView, AlbumView, ArtistsView, ArtistView, PlaylistView, SongsView } from '../features/library/LibraryView'
 import { appMenu } from '../features/menus'
+import { AddonsView } from '../features/addons/AddonsView'
+import { startDiscord } from '../features/addons/discord'
 import { startMedia } from '../features/player/media'
 import { resumeSession, startSessionSaving } from '../features/player/session'
 import { MiniPlayer } from '../features/player/MiniPlayer'
@@ -127,6 +129,7 @@ export function App() {
   useEffect(() => startScreenSaving(), [])
   useEffect(() => startMedia(), [])
   useEffect(() => startShortcuts(), [])
+  useEffect(() => startDiscord(), [])
 
   // Ctrl+V outside text fields: share code → import, Spotify playlist / album → import, YouTube link → library.
   useEffect(() => {
@@ -160,6 +163,7 @@ export function App() {
             {view.name === 'artist' && <ArtistView artist={view.artist} />}
             {view.name === 'playlist' && <PlaylistView id={view.id} />}
             {view.name === 'settings' && <SettingsView section={view.section} />}
+            {view.name === 'addons' && <AddonsView />}
           </div>
         </main>
         {view.name === 'settings' && view.wizard && <ConnectWizard key={view.wizard} service={view.wizard} onClose={() => go({ name: 'settings', section: 'sources' })} />}

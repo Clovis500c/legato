@@ -5,6 +5,7 @@ describe('validScreen', () => {
   it('keeps a screen that still exists', () => {
     expect(validScreen({ view: { name: 'playlist', id: 4 }, full: true }, [4])).toEqual({ view: { name: 'playlist', id: 4 }, full: true })
     expect(validScreen({ view: { name: 'songs' } }, [])).toEqual({ view: { name: 'songs' }, full: false })
+    expect(validScreen({ view: { name: 'addons' } }, [])?.view).toEqual({ name: 'addons' })
   })
 
   it('drops deleted playlists and junk', () => {

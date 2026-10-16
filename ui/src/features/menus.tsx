@@ -12,6 +12,8 @@ import {
   Eye,
   EyeSlash,
   FolderOpen,
+  Info,
+  Power,
   ImageSquare,
   Gear,
   Link,
@@ -49,6 +51,8 @@ import { fileName } from '../shared/format'
 import { COVER_ORDERS, type PlaylistCover } from '../shared/theme/theme'
 import type { MenuEntry } from '../shared/ui/ContextMenu'
 import { SourceIcon } from '../shared/ui/SourceIcon'
+import type { Addon } from './addons/registry'
+import { isOn, setAddon } from './addons/state'
 import { primaryArtist } from './library/filter'
 import { isFull, viaLabel, vias } from './player/sources'
 import { usePlayer } from './player/store'
@@ -385,6 +389,15 @@ export function playerMenu(): MenuEntry[] {
     video && { label: 'Open on YouTube', icon: <ArrowSquareOut size={16} />, onSelect: () => openUrl(`https://www.youtube.com/watch?v=${video}&t=${Math.floor(positionMs / 1000)}s`).catch(fail) },
     now.page && { label: 'Listen on Apple Music', icon: <ArrowSquareOut size={16} />, onSelect: () => openUrl(now.page!).catch(fail) },
     now.path && { label: 'Show in folder', icon: <FolderOpen size={16} />, onSelect: () => revealItemInDir(now.path!).catch(fail) },
+  ]
+}
+
+/** Add-on card. */
+export function addonMenu(a: Addon, open: () => void): MenuEntry[] {
+  const on = isOn(a.id)
+  return [
+    { label: on ? 'Turn off' : 'Turn on', icon: <Power size={16} />, onSelect: () => setAddon(a.id, !on) },
+    { label: a.settings ? 'Settings…' : 'About…', icon: a.settings ? <Gear size={16} /> : <Info size={16} />, onSelect: open },
   ]
 }
 

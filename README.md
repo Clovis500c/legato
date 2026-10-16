@@ -46,6 +46,9 @@ A fast, lightweight desktop app (Tauri 2 + Rust), serverless: your data stays on
 - **Picks up where you left off**: same song, position, queue and screen when the app opens again.
 - **Library tools**: one-click play, YouTube-style sort (date added, most played, A–Z…), hidden playlists, playlist
   covers (logo, first song, 4-song grid, your image), add songs to your YouTube Music playlists.
+- **Add-ons** (sidebar, above Settings): extra features, off until you turn them on, each with its author and a
+  verified mark. First one: **Discord Rich Presence** (song, artist, cover, time left and a button to the song on
+  your Discord profile, through the Discord app on your PC; needs your own Discord application ID).
 - **Keyboard and media keys**: Space, Ctrl+arrows, Shift+arrows and more (Settings › Shortcuts); media keys and the
   Windows media panel (volume flyout, lock screen) show the current track with its cover and control playback.
 - **Now Playing screen**: video or cover sized to the window, readout, tuner scale, input selector, volume knob, queue in play order.

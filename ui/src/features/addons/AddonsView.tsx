@@ -1,0 +1,237 @@
+import { ArrowSquareOut, CaretDown, Gear, Info, MagnifyingGlass, SealCheck, Tag, WarningCircle } from '@phosphor-icons/react'
+import { openUrl } from '@tauri-apps/plugin-opener'
+import { useEffect, useState, type ReactNode } from 'react'
+import { useSettings } from '../../app/settings'
+import { api } from '../../shared/api'
+import type { DiscordSettings } from '../../shared/theme/theme'
+import { onMenu, openMenu, type MenuEntry } from '../../shared/ui/ContextMenu'
+import { Led, RoundButton, Segmented, Toggle } from '../../shared/ui/controls'
+import { Dialog } from '../../shared/ui/Dialog'
+import { PageHeader } from '../../shared/ui/PageHeader'
+import { addonMenu } from '../menus'
+import { ADDONS, allTags, DISCORD, filterAddons, type Addon, type Author, type Show } from './registry'
+import { setAddon } from './state'
+
+const SHOWS: { value: Show; label: string }[] = [
+  { value: 'all', label: 'Show all' },
+  { value: 'enabled', label: 'Turned on' },
+  { value: 'disabled', label: 'Turned off' },
+]
+
+/** Button opening a menu right under it (filters). */
+function Dropdown({ icon, label, items }: { icon: ReactNode; label: string; items: () => MenuEntry[] }) {
+  return (
+    <button
+      onClick={(e) => {
+        const r = e.currentTarget.getBoundingClientRect()
+        openMenu({ clientX: r.left, clientY: r.bottom + 6, target: e.currentTarget, preventDefault() {}, stopPropagation() {} } as unknown as MouseEvent, items())
+      }}
+      className="flex h-9 items-center gap-2 rounded-lg border border-line bg-raised px-3 text-[13px] hover:border-ink-3"
+    >
+      <span className="text-ink-3">{icon}</span>
+      <span className="min-w-0 flex-1 truncate text-left">{label}</span>
+      <CaretDown size={12} className="text-ink-3" />
+    </button>
+  )
+}
+
+/** Who made it, at the bottom of each card. Verified = checked by the app's developer. */
+function AuthorBadge({ author }: { author: Author }) {
+  return author.verified ? (
+    <span title="Verified" className="flex items-center gap-1 font-medium text-ink-2">
+      <SealCheck size={14} weight="fill" className="text-accent" /> {author.name}
+    </span>
+  ) : (
+    <span title="Not checked by the developer" className="flex items-center gap-1 text-ink-3">
+      <WarningCircle size={14} /> {author.name} · Not verified
+    </span>
+  )
+}
+
+function Card({ a, on, onOpen }: { a: Addon; on: boolean; onOpen: () => void }) {
+  return (
+    <article onContextMenu={onMenu(() => addonMenu(a, onOpen))} className="flex flex-col gap-2 rounded-xl border border-line bg-raised p-4">
+      <div className="flex items-center gap-2">
+        <h3 className="min-w-0 flex-1 truncate text-[14px] font-semibold">{a.name}</h3>
+        <RoundButton label={a.settings ? `${a.name} settings` : `About ${a.name}`} kind="plain" size="xs" onClick={onOpen}>
+          {a.settings ? <Gear size={16} /> : <Info size={16} />}
+        </RoundButton>
+        <Toggle
+          label={`Turn on ${a.name}`}
+          checked={on}
+          onChange={(v) => {
+            setAddon(a.id, v)
+            // Needs setup first: straight to its settings.
+            if (v && a.id === DISCORD && !useSettings.getState().settings.discord.appId) onOpen()
+          }}
+        />
+      </div>
+      <p className="text-xs leading-relaxed text-ink-2">{a.description}</p>
+      <footer className="mt-auto flex items-center gap-2 border-t border-line-soft pt-2.5 text-[11px]">
+        <AuthorBadge author={a.author} />
+        <span className="flex-1" />
+        {a.tags.map((t) => (
+          <span key={t} className="rounded-full border border-line-soft px-2 py-0.5 text-ink-3">
+            {t}
+          </span>
+        ))}
+      </footer>
+    </article>
+  )
+}
+
+function Row({ label, sub, children }: { label: string; sub?: ReactNode; children?: ReactNode }) {
+  return (
+    <div className="flex items-center gap-4 border-b border-line-soft px-4 py-3 last:border-0">
+      <div className="flex-1">
+        <p className="text-[13px] font-medium">{label}</p>
+        {sub && <div className="text-xs text-ink-2">{sub}</div>}
+      </div>
+      {children}
+    </div>
+  )
+}
+
+function DiscordPanel() {
+  const d = useSettings((s) => s.settings.discord)
+  const on = useSettings((s) => s.settings.addons[DISCORD] === true)
+  const update = useSettings((s) => s.update)
+  const set = (patch: Partial<DiscordSettings>) => update({ discord: { ...useSettings.getState().settings.discord, ...patch } })
+  const [id, setId] = useState(d.appId)
+  const [status, setStatus] = useState<{ connected: boolean; error: string | null }>()
+  useEffect(() => {
+    if (!on || !d.appId) return
+    let live = true
+    const tick = () => void api.discordStatus().then((s) => live && setStatus(s), () => {})
+    tick()
+    const t = setInterval(tick, 2000)
+    return () => {
+      live = false
+      clearInterval(t)
+    }
+  }, [on, d.appId])
+  const state = !on ? 'Turned off' : !d.appId ? 'Add your Discord application ID below' : status?.connected ? 'Connected to Discord' : (status?.error ?? 'Connecting…')
+  const saveId = () => id !== d.appId && set({ appId: id })
+  return (
+    <div className="flex flex-col gap-4">
+      <p className="flex items-center gap-2 rounded-lg border border-line-soft bg-recess px-3 py-2 text-xs">
+        <Led on={on && !!d.appId && !!status?.connected} /> {state}
+        {on && status?.error && d.appId && <span className="text-ink-3">· retrying every 15 s</span>}
+      </p>
+      <div className="rounded-xl border border-line bg-raised">
+        <Row
+          label="Discord application ID"
+          sub={
+            <>
+              Its name shows after “Listening to”. On the Discord Developer Portal: New Application, name it (Music App), copy the Application ID.{' '}
+              <button onClick={() => void openUrl('https://discord.com/developers/applications')} className="inline-flex items-center gap-1 font-medium text-ink underline-offset-2 hover:underline">
+                Open the portal <ArrowSquareOut size={11} />
+              </button>
+            </>
+          }
+        />
+        <div className="border-b border-line-soft px-4 pb-3">
+          <input
+            value={id}
+            inputMode="numeric"
+            placeholder="123456789012345678"
+            aria-label="Discord application ID"
+            onChange={(e) => setId(e.target.value.replace(/\D/g, '').slice(0, 32))}
+            onBlur={saveId}
+            onKeyDown={(e) => e.key === 'Enter' && saveId()}
+            className="h-8 w-full rounded-md border border-line bg-bg px-2.5 font-mono text-[12px] outline-none placeholder:text-ink-3 focus:border-ink-3"
+          />
+        </div>
+        <Row label="After “Listening to”" sub="In the member list. Your profile shows everything.">
+          <Segmented label="Status shows" value={d.status} onChange={(status) => set({ status })} options={[{ value: 'name', label: 'App name' }, { value: 'artist', label: 'Artist' }, { value: 'song', label: 'Song' }]} />
+        </Row>
+        <Row label="Button to the song" sub="Listen on YouTube, Spotify or Apple Music">
+          <Toggle label="Button to the song" checked={d.buttons} onChange={(buttons) => set({ buttons })} />
+        </Row>
+        <Row label="Show while paused" sub="Off: nothing shows on Discord while paused">
+          <Toggle label="Show while paused" checked={d.paused} onChange={(paused) => set({ paused })} />
+        </Row>
+      </div>
+      <p className="text-[11px] text-ink-3">Talks to the Discord app on this PC only. Song, artist, cover link and song link go to Discord while this is on.</p>
+    </div>
+  )
+}
+
+function About({ a }: { a: Addon }) {
+  return (
+    <div className="flex flex-col gap-3 text-[13px]">
+      <p className="text-ink-2">{a.description}</p>
+      <AuthorBadge author={a.author} />
+    </div>
+  )
+}
+
+export function AddonsView() {
+  const on = useSettings((s) => s.settings.addons)
+  const [query, setQuery] = useState('')
+  const [show, setShow] = useState<Show>('all')
+  const [tags, setTags] = useState<string[]>([])
+  const [open, setOpen] = useState<Addon | null>(null)
+  const shown = filterAddons(ADDONS, { query, show, tags, on })
+  const enabled = ADDONS.filter((a) => on[a.id]).length
+  const stats = [
+    { label: 'Turned on', value: enabled },
+    { label: 'Total', value: ADDONS.length },
+    { label: 'Verified', value: ADDONS.filter((a) => a.author.verified).length },
+  ]
+  return (
+    <>
+      <PageHeader kicker="Extras" title="Add-ons" sub="Extra features, off until you turn them on. The cog opens an add-on's settings." />
+      <div className="-mx-2 min-h-0 flex-1 overflow-y-auto px-2 pb-8">
+        <div className="flex flex-col gap-5">
+          <div className="grid grid-cols-3 divide-x divide-line-soft rounded-xl border border-line bg-raised py-3">
+            {stats.map((s) => (
+              <div key={s.label} className="flex flex-col items-center gap-0.5">
+                <span className="kicker">{s.label}</span>
+                <span className="font-mono text-2xl font-semibold tabular-nums">{s.value}</span>
+              </div>
+            ))}
+          </div>
+
+          <section className="flex flex-col gap-2.5">
+            <h2 className="kicker">Filters</h2>
+            <label className="flex h-9 items-center gap-2 rounded-lg border border-line bg-raised px-3 focus-within:border-ink-3">
+              <MagnifyingGlass size={14} className="text-ink-3" />
+              <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search for an add-on…" aria-label="Search add-ons" className="min-w-0 flex-1 bg-transparent text-[13px] outline-none placeholder:text-ink-3" />
+            </label>
+            <div className="grid grid-cols-2 gap-2.5">
+              <Dropdown icon={<Led on={show !== 'all'} />} label={SHOWS.find((s) => s.value === show)!.label} items={() => SHOWS.map((s) => ({ label: s.label, checked: s.value === show, onSelect: () => setShow(s.value) }))} />
+              <Dropdown
+                icon={<Tag size={14} />}
+                label={tags.length ? tags.join(', ') : 'Filter by tags'}
+                items={() => [
+                  ...allTags(ADDONS).map((t) => ({ label: t, checked: tags.includes(t), onSelect: () => setTags((x) => (x.includes(t) ? x.filter((y) => y !== t) : [...x, t])) })),
+                  '-' as const,
+                  { label: 'Any tag', disabled: !tags.length, onSelect: () => setTags([]) },
+                ]}
+              />
+            </div>
+          </section>
+
+          <section className="flex flex-col gap-2.5">
+            <h2 className="kicker">Add-ons</h2>
+            {shown.length ? (
+              <div className="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-3">
+                {shown.map((a) => (
+                  <Card key={a.id} a={a} on={on[a.id] === true} onOpen={() => setOpen(a)} />
+                ))}
+              </div>
+            ) : (
+              <p className="py-8 text-center text-[13px] text-ink-3">No add-on matches these filters.</p>
+            )}
+          </section>
+        </div>
+      </div>
+      {open && (
+        <Dialog title={open.name} kicker={open.settings ? 'Add-on settings' : 'Add-on'} onClose={() => setOpen(null)}>
+          {open.id === DISCORD ? <DiscordPanel /> : <About a={open} />}
+        </Dialog>
+      )}
+    </>
+  )
+}
