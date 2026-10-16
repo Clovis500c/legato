@@ -1,6 +1,6 @@
 # Music App v2: plan
 
-Status: **phases 1 to 5, 7 and 8 delivered** (2026-10-16): Hi-Fi redesign, themes, ad shield, custom playlists, local folders, add by YouTube link, Apple Music and YouTube search, one queue for every source with Apple previews, playlist sharing (link, QR, nearby code), local personalized mixes. Phase 6 (polish) under way: shortcuts and media keys done. Edit, strike or comment this file directly, or answer in the chat.
+Status: **phases 1 to 5, 7 and 8 delivered** (2026-10-16): Hi-Fi redesign, themes, ad shield, custom playlists, local folders, add by YouTube link, Apple Music and YouTube search, one queue for every source with Apple previews, playlist sharing (link, QR, nearby code), local personalized mixes. Phase 6 (polish) under way: shortcuts, media keys, tray done; big round of player and library requests done (see "User requests 2026-10-16 (second session)"). Edit, strike or comment this file directly, or answer in the chat.
 Mockups: Figma, file "Bow Game / Music App", page **"Music App v3 — Hi-Fi"**. The v2 "Apple" page is abandoned.
 
 ## 0. Your decisions (to fill in)
@@ -153,8 +153,27 @@ Original plan:
 - Done: keyboard shortcuts (Settings › Shortcuts), media keys and the Windows media panel (title, artist, album, cover),
   written on the `windows` crate (SMTC) instead of `souvlaki` (would add an older `windows` version). Checked live: panel
   metadata and cover, play from the Windows session, Space, Ctrl+,, Alt+←. Mini player: done.
-- Not done: tray icon, position / seek bar in the Windows panel (timeline), media panel off Windows.
+- Done after: tray icon (track, play/pause, next, previous, show, quit), seek bar in the Windows panel (checked live:
+  position and length read back from Windows' session list).
+- Not done: media panel off Windows.
 - Auto-updates (`tauri-plugin-updater`, requires signing the app), installer, performance (50,000 tracks), accessibility (AA contrast, keyboard navigation).
+
+**User requests 2026-10-16 (second session, user testing live)** — done, unit-tested, mostly seen in the running app:
+- Player: bare YouTube video (official `controls=0` & co, no hover; option in Advanced), subtitles off by default,
+  YouTube-like bar / time / volume, bigger shuffle and repeat with names, source as one small icon, one embed for a
+  run of YouTube tracks (`loadVideoById`, no reload between songs), fade out / in between songs (5 s, Settings ›
+  Player), blocked videos (100 / 101 / 150) play another upload of the same song or skip.
+- Now Playing: under the title bar (Close player there, Back / Esc), Video / Cover / Auto (YouTube's 3 frames compared:
+  still image = cover), sharper cover (1200 px, maxres), immersive blurred background (on by default; blur, dimming,
+  motion in Advanced), foldable Up next, smooth 60 fps bar that never shifts the layout.
+- Mini player: drag, snaps to 8 spots, resizable, video follows it (window maximize fixed).
+- Library: one-click play, YouTube-style sort menu (also per playlist), hide playlists (Playlists title › Hidden),
+  playlist covers (logo, first song, grid of 4, custom image), add to imported YouTube Music playlists (Liked = like).
+- App: clearer YouTube import (auto after sign-in, Import playlists now), resume playback and reopen the last screen on
+  launch, Advanced section, settings search, new defaults applied once (`defaultsVersion` 3).
+- User's choices with YouTube-terms risk (like the shield): Cover mode hides the video while YouTube plays.
+- To check live: tray menu actions, media keys on a real keyboard, add to a YouTube playlist the user owns, a
+  blocked video falling back, Auto on a real music video, resume after a real restart, sort Most played after listens.
 
 **Phase 7: share a playlist from one Music App to another, serverless** (L) — done, with these changes to the plan below:
 - One id per track: **YouTube (9 bytes) > Apple Music (varint) > artist + title**. ISRC and Spotify ids dropped: a receiver without
@@ -236,7 +255,8 @@ Set aside: lyrics (copyright).
 
 ## 4. Fixed limits
 
-- Never download or extract YouTube or Spotify audio, never a hidden player (the YouTube video stays visible, minimum 200×200).
+- Never download or extract YouTube or Spotify audio. Hidden player: only Now Playing's Cover mode, the user's choice
+  (2026-10-16) against YouTube's terms; everywhere else the video stays visible (minimum 200×200).
 - No circumventing Premium or DRM. Quotas respected, no server of ours.
 
 ## 5. Risks to prototype first

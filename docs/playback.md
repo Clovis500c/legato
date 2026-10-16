@@ -59,11 +59,21 @@ Status on 2026-10-16. YouTube, local files and Apple Music previews: done and te
 **Chosen setup**
 - iframe `https://www.youtube.com/embed/<id>?enablejsapi=1&autoplay=1&playsinline=1&origin=<app origin>`
   with `referrerpolicy="strict-origin-when-cross-origin"` (`ui/src/features/player/youtube.ts`, `PlayerBar.tsx`).
+- Bare by default: `controls=0&rel=0&iv_load_policy=3&fs=0&disablekb=1` and `pointer-events: none` on the iframe (no
+  hover overlay; our controls drive it). Settings › Advanced brings YouTube's controls back (next track). Subtitles:
+  `unloadModule` captions / cc once per video unless Advanced turns them on.
+- One embed per run of YouTube tracks: the next video goes into the running player (`loadVideoById`), no reload.
+- Error 100 / 101 / 150 (removed / owner turned embedding off): `alternative_videos` searches YouTube Music songs and
+  videos for the same song (same cleaned title and length, any channel), plays the first that works, else skips. The
+  block itself is not worked around (it would mean extracting the stream).
+- Now Playing Auto mode: frames `1.jpg` / `2.jpg` / `3.jpg` (25 / 50 / 75 %) compared at 32×24 (`still.ts`); nearly the
+  same = still image upload = cover. Cover mode keeps the embed playing, transparent (user's choice, see plan).
+- Fades between songs: volume × `fadeGain` (smoothstep), only on transitions that happen on their own; Spotify none.
 - Driven by `postMessage`, the protocol `iframe_api` uses internally (`listening`, `command`, `infoDelivery`, `onError`).
   We don't load `iframe_api`: a remote script in the app's origin would get access to Tauri IPC.
 - CSP: only addition, `frame-src https://www.youtube.com`.
-- YouTube rules: the player stays visible (356×200, minimum 200×200), with its controls. No audio is extracted
-  and nothing plays hidden in the background.
+- YouTube rules: the player stays visible (356×200, minimum 200×200) except in Now Playing's Cover mode (user's
+  choice, against the terms). No audio is extracted.
 
 **Error 153 (no `Referer`): real measurement**
 Debug build (`pnpm tauri build --debug --no-bundle`), origin `http://tauri.localhost`, app CSP, driven through the WebView2 DevTools protocol:

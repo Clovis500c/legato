@@ -16,7 +16,10 @@ Reference mockups: Figma file "Bow Game / Music App", page "Music App v3 — Hi-
 - `crates/player` (`music-player`): native local playback (rodio/symphonia), engine thread, gapless queue. Playback choices (YouTube, local, Spotify plan): `docs/playback.md`.
 - `crates/shield` (`music-shield`): ad/tracker blocker (Brave's adblock-rust) + YouTube player script.
 - `src-tauri`: thin shell. IPC commands (`lib.rs`), keychain (`secrets.rs`), WebView2 hook (`shield.rs`), Google sign-in window (`ytm.rs`), Windows media panel / media keys (`media.rs`), window background before first paint (`window_bg.rs`). All logic goes in `crates/`.
-- Keyboard shortcuts: one table in `ui/src/app/shortcuts.ts` (handler + Settings › Shortcuts list).
+- Keyboard shortcuts: one table in `ui/src/app/shortcuts.ts` (handler + Settings › Shortcuts list). Settings search index: `features/settings/search.ts` (labels = `data-setting` on rows).
+- Player modules: `store.ts` (queue, fades, resume), `session.ts` (saved playback), `app/screen.ts` (last screen), `media.ts` (Windows panel), `still.ts` (Auto video/cover), `immersive.ts` (pre-blurred backdrop), `snap.ts` (mini player spots), `Progress.tsx` (60 fps bar).
+- Settings schema changes for everyone: bump `DEFAULTS_VERSION` in `theme.ts` with the changed defaults (applied once to saved settings).
+- Modules imported by tests must not import `app/settings` (touches `window` at load): keep pure helpers in their own file.
 - `ui/`: React 19 + Zustand + Tailwind v4, split by feature:
   - `app/` (shell, store, navigation, settings), `features/<name>/` (library, sources, sidebar, player, add, settings…), `shared/` (typed api, format, theme, `ui/` components).
   - `shared/api.ts` = the only place that calls `invoke`. Types copied by hand from Rust: keep them in sync.

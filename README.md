@@ -41,6 +41,11 @@ A fast, lightweight desktop app (Tauri 2 + Rust), serverless: your data stays on
   - accent, font, cover shape, density, interface size, columns, covers in lists, one-click play, sidebar counts,
     start screen, animations, player options (readout, volume knob, tuner, cover tint, mini player).
 - **Shield**: ad and tracker blocking with Brave's engine (adblock-rust, EasyList and EasyPrivacy lists).
+- **Now Playing**: video, cover or Auto (picks the cover for still-image uploads), immersive blurred background,
+  YouTube-like bar and volume, fades between songs, Up next panel; the mini player can be dragged to 8 spots and resized.
+- **Picks up where you left off**: same song, position, queue and screen when the app opens again.
+- **Library tools**: one-click play, YouTube-style sort (date added, most played, A–Z…), hidden playlists, playlist
+  covers (logo, first song, 4-song grid, your image), add songs to your YouTube Music playlists.
 - **Keyboard and media keys**: Space, Ctrl+arrows, Shift+arrows and more (Settings › Shortcuts); media keys and the
   Windows media panel (volume flyout, lock screen) show the current track with its cover and control playback.
 - **Now Playing screen**: video or cover sized to the window, readout, tuner scale, input selector, volume knob, queue in play order.
