@@ -82,7 +82,7 @@ export const accountKey = (a: YtmAccount) => (a.pageId ? `${a.authuser}:${a.page
 /** crates/player Command. */
 export type PlayerCommand =
   | { type: 'play'; paths: string[]; start: number }
-  | { type: 'toggle' | 'next' | 'prev' | 'stop' }
+  | { type: 'toggle' | 'next' | 'prev' | 'stop' | 'truncate' }
   | { type: 'seek'; ms: number }
   | { type: 'volume'; value: number }
 

@@ -11,6 +11,7 @@ use std::collections::VecDeque;
 use std::fs::File;
 use std::io::Cursor;
 use std::path::PathBuf;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::mpsc::{self, RecvTimeoutError, Sender};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
@@ -27,6 +28,8 @@ pub enum Command {
     Next,
     Prev,
     Volume { value: f32 },
+    /// Keep current file, drop the rest (shuffle turned on mid-run). Current plays on, no gap.
+    Truncate,
     Stop,
 }
 
@@ -99,6 +102,8 @@ struct Engine {
     queue: Queue,
     /// Durations of loaded items, same order as queue's loaded window.
     durations: VecDeque<Option<u64>>,
+    /// Stop flag per loaded item (same order): set = source ends at once, sink moves past it.
+    stops: VecDeque<Arc<AtomicBool>>,
     volume: f32,
     error: Option<String>,
     /// In-memory item (preview), matched by label in queue.
@@ -144,11 +149,19 @@ impl Engine {
                     p.set_volume(self.volume);
                 }
             }
+            Command::Truncate => {
+                let n = self.queue.truncate().min(self.stops.len());
+                for stop in self.stops.drain(self.stops.len() - n..) {
+                    stop.store(true, Ordering::Relaxed);
+                }
+                self.durations.truncate(self.stops.len());
+            }
             Command::Stop => {
                 self.player = None;
                 self.memory = None;
                 self.queue = Queue::default();
                 self.durations.clear();
+                self.stops.clear();
             }
         }
         Ok(())
@@ -163,6 +176,7 @@ impl Engine {
         p.set_volume(self.volume);
         self.player = Some(p);
         self.durations.clear();
+        self.stops.clear();
         self.fill();
         Ok(())
     }
@@ -170,16 +184,24 @@ impl Engine {
     /// Append what queue wants loaded. Bad file = nothing appended, queue skips it on sync.
     fn fill(&mut self) {
         let Some(p) = &self.player else { return };
-        fn append(p: &rodio::Player, src: impl Source + Send + 'static) -> Option<u64> {
+        fn append(p: &rodio::Player, src: impl Source + Send + 'static, stop: Arc<AtomicBool>) -> Option<u64> {
             let ms = src.total_duration().map(|d| d.as_millis() as u64);
-            p.append(src);
+            // Checked from first sample on: a source dropped before it starts never plays.
+            p.append(src.stoppable().periodic_access(Duration::from_millis(20), move |s| {
+                if stop.load(Ordering::Relaxed) {
+                    s.stop()
+                }
+            }));
             ms
         }
         for path in self.queue.to_load() {
+            let stop = Arc::new(AtomicBool::new(false));
+            let flag = stop.clone();
             let added = match &self.memory {
-                Some((label, bytes)) if *label == path => Decoder::try_from(Cursor::new(bytes.clone())).map(|d| append(p, d)).map_err(anyhow::Error::from),
-                _ => File::open(&path).map_err(anyhow::Error::from).and_then(|f| Ok(append(p, Decoder::try_from(f)?))),
+                Some((label, bytes)) if *label == path => Decoder::try_from(Cursor::new(bytes.clone())).map(|d| append(p, d, flag)).map_err(anyhow::Error::from),
+                _ => File::open(&path).map_err(anyhow::Error::from).and_then(|f| Ok(append(p, Decoder::try_from(f)?, flag))),
             };
+            self.stops.push_back(stop);
             match added {
                 Ok(ms) => self.durations.push_back(ms),
                 Err(e) => {
@@ -194,6 +216,7 @@ impl Engine {
         let Some(p) = &self.player else { return };
         let done = self.queue.sync(p.len());
         self.durations.drain(..done);
+        self.stops.drain(..done);
         self.fill();
     }
 

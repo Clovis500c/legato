@@ -17,7 +17,9 @@ Status on 2026-10-16. YouTube, local files and Apple Music previews: done and te
 
 - `Transport.tsx` (shuffle, previous, play, next, repeat) is the same in the bar, Now Playing and the mini player.
 - Play order lives in the store (`order`, `queue.ts`): shuffle = current track first, the rest Fisher–Yates; repeat one
-  replays on a natural end only (a manual Next still moves on). Gapless local runs are kept in list order without repeat one.
+  replays on a natural end only (a manual Next still moves on). Gapless local runs are only built in list order without
+  repeat one; turning shuffle or repeat one on mid-run sends `truncate`: the engine keeps the current file and stops the
+  preloaded next one before its first sample (stop flag per source), then the store picks what's next.
 - Now Playing sizes the video (16:9) or cover (square) to the space left with container query units, so the controls stay on
   screen at any window size. The background takes a flat tint from the cover (`ambient.ts`: canvas average weighted to
   colorful pixels; the tint is pushed darker or lighter until the theme's muted text keeps AA 4.5).

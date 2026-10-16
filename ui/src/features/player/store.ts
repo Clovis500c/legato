@@ -78,6 +78,11 @@ export const fileTitle = (path: string) => path.split(/[\\/]/).pop()!.replace(/\
 const previewPath = (t: LibraryTrack) => `apple:${t.ids.apple}`
 const spotifyOn = () => useStore.getState().status.spotify.connected
 const spotify = (cmd: SpotifyCommand) => api.spotifyPlayer(cmd).catch((e) => useStore.setState({ error: String(e) }))
+// Library local run in engine: drop files queued after current (dropped files keep theirs).
+const endRun = () => {
+  const now = usePlayer.getState().now
+  if (now?.via === 'local' && now.trackId) void send({ type: 'truncate' })
+}
 // Knob drags fire many changes: one Spotify call per pause.
 let volumeTimer: ReturnType<typeof setTimeout> | undefined
 
@@ -112,11 +117,16 @@ export const usePlayer = create<PlayerState>((set, get) => ({
 
   toggleShuffle() {
     const { shuffle, list, index } = get()
-    // shortcut: a gapless local run already queued in the engine finishes in list order.
+    // Gapless local run queued in list order: engine keeps current only, store picks what's next.
+    if (!shuffle) endRun()
     set({ shuffle: !shuffle, order: playOrder(list.length, index, !shuffle) })
   },
 
-  cycleRepeat: () => set({ repeat: ({ off: 'all', all: 'one', one: 'off' } as const)[get().repeat] }),
+  cycleRepeat() {
+    const repeat = ({ off: 'all', all: 'one', one: 'off' } as const)[get().repeat]
+    if (repeat === 'one') endRun()
+    set({ repeat })
+  },
 
   async playAt(index, via) {
     const { list, volume } = get()

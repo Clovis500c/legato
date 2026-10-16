@@ -40,6 +40,14 @@ impl Queue {
         done
     }
 
+    /// Keep current only (play order changed elsewhere). Returns how many already loaded items to drop from sink.
+    pub fn truncate(&mut self) -> usize {
+        self.items.truncate(self.pos + 1);
+        let drop = self.loaded.saturating_sub(1);
+        self.loaded -= drop;
+        drop
+    }
+
     /// Move by `delta`. False if out of range. Caller resets sink.
     pub fn jump(&mut self, delta: isize) -> bool {
         match self.pos.checked_add_signed(delta) {
@@ -112,6 +120,22 @@ mod tests {
         q.to_load();
         assert_eq!(q.sync(1), 1);
         assert_eq!(q.current(), Some(&PathBuf::from("1")));
+    }
+
+    #[test]
+    fn truncate_keeps_current_and_drops_preload() {
+        let mut q = q(4, 0);
+        q.to_load();
+        assert_eq!(q.truncate(), 1, "preloaded next must leave sink");
+        assert!(q.upcoming().is_empty());
+        assert!(q.to_load().is_empty());
+        // Current ends: stopped preload drained too, sink empty.
+        assert_eq!(q.sync(0), 1);
+        assert_eq!(q.current(), None);
+        // Nothing loaded yet (fresh start): nothing to drop.
+        let mut fresh = super::Queue::new(vec![PathBuf::from("a"), PathBuf::from("b")], 0);
+        assert_eq!(fresh.truncate(), 0);
+        assert_eq!(names(fresh.to_load()), ["a"]);
     }
 
     #[test]
