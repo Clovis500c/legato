@@ -1,11 +1,53 @@
-import { Check, Copy } from '@phosphor-icons/react'
+import { Check, Copy, WifiHigh } from '@phosphor-icons/react'
 import { useEffect, useState } from 'react'
 import { useStore } from '../../app/store'
-import { api, type ShareCode } from '../../shared/api'
+import { api, type NearbyState, type ShareCode } from '../../shared/api'
 import { formatCount } from '../../shared/format'
 import { Button } from '../../shared/ui/Button'
 import { Dialog } from '../../shared/ui/Dialog'
 import { qrPath } from './qr'
+
+/** Same network: 6-digit code to read out ("grandma code"). Offer withdrawn when the panel closes. */
+function Nearby({ id }: { id: number }) {
+  const [code, setCode] = useState<string>()
+  const [status, setStatus] = useState<NearbyState>()
+  useEffect(() => () => void api.nearbyStop(), [])
+  useEffect(() => {
+    if (!code) return
+    const t = setInterval(() => api.nearbyStatus().then(setStatus), 1000)
+    return () => clearInterval(t)
+  }, [code])
+  const start = () => {
+    setStatus(undefined)
+    api
+      .nearbySend(id)
+      .then(setCode)
+      .catch((e) => useStore.setState({ error: String(e) }))
+  }
+
+  return (
+    <div className="flex flex-col gap-2.5 rounded-lg border border-line px-4 py-3">
+      <p className="flex items-center gap-2 text-xs font-semibold">
+        <WifiHigh size={16} className="text-ink-2" /> Send to a nearby Music App
+      </p>
+      {!code || status?.state === 'failed' ? (
+        <>
+          <p className="text-xs text-ink-2">{status?.state === 'failed' ? status.error : 'Same Wi-Fi or network, a 6-digit code to read out. Windows may ask to allow Music App on private networks.'}</p>
+          <Button variant="ghost" className="w-fit" onClick={start}>
+            {code ? 'New code' : 'Get a code'}
+          </Button>
+        </>
+      ) : (
+        <div className="flex items-center justify-between gap-4">
+          <span className="font-mono text-[34px] leading-none tracking-[0.12em] tabular-nums">
+            {code.slice(0, 3)} {code.slice(3)}
+          </span>
+          <span className="text-right text-xs text-ink-2">{status?.state === 'sent' ? 'Sent.' : 'On the other app: Add music › Import, type this code. Valid 10 min.'}</span>
+        </div>
+      )}
+    </div>
+  )
+}
 
 /** Share a playlist: QR code (scan or screenshot) and link (messages). */
 export function SharePanel({ id, name, onClose }: { id: number; name: string; onClose: () => void }) {
@@ -52,6 +94,7 @@ export function SharePanel({ id, name, onClose }: { id: number; name: string; on
               </Button>
             </div>
           </div>
+          <Nearby id={id} />
           <p className="text-xs text-ink-2">The code holds the track list only: YouTube and Apple Music ids, or artist and title. No account, no server.</p>
         </>
       )}

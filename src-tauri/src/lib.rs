@@ -55,6 +55,9 @@ struct AppState {
     shield: Arc<Shield>,
     /// YouTube search results this session: same query costs no quota twice.
     yt_cache: Mutex<HashMap<String, Vec<Track>>>,
+    /// Current nearby offer, polled by the UI.
+    nearby: Arc<Mutex<NearbyState>>,
+    nearby_task: Mutex<Option<tauri::async_runtime::JoinHandle<()>>>,
 }
 
 impl AppState {
@@ -353,14 +356,67 @@ struct ShareCode {
     bytes: usize,
 }
 
-#[tauri::command]
-fn share_playlist(state: State<AppState>, id: i64) -> CmdResult<ShareCode> {
-    let lib = state.lib.lock().unwrap();
+fn shared_playlist(lib: &Library, id: i64) -> CmdResult<Shared> {
     let name = lib.playlists().map_err(err)?.into_iter().find(|p| p.id == id).ok_or("Playlist not found")?.name;
     let items = lib.playlist_tracks(id).map_err(err)?.iter().map(|t| Item::from_track(&t.track)).collect();
-    let shared = Shared { name, items };
+    Ok(Shared { name, items })
+}
+
+#[tauri::command]
+fn share_playlist(state: State<AppState>, id: i64) -> CmdResult<ShareCode> {
+    let shared = shared_playlist(&state.lib.lock().unwrap(), id)?;
     let qr = share::qr_modules(&share::to_qr_text(&shared)).map(|(size, dark)| (size, dark.iter().map(|&d| if d { '1' } else { '0' }).collect()));
     Ok(ShareCode { link: share::to_link(&shared), qr, tracks: shared.items.len(), bytes: share::encode(&shared).len() })
+}
+
+#[derive(Clone, Serialize)]
+#[serde(tag = "state", rename_all = "camelCase")]
+enum NearbyState {
+    Idle,
+    Waiting { code: String },
+    Sent,
+    Failed { error: String },
+}
+
+/// Offer a playlist on the local network. Returns the 6-digit code to read out.
+#[tauri::command]
+fn nearby_send(state: State<AppState>, id: i64) -> CmdResult<String> {
+    let payload = share::encode(&shared_playlist(&state.lib.lock().unwrap(), id)?);
+    let code = music_connectors::nearby::new_code();
+    nearby_stop(state.clone());
+    *state.nearby.lock().unwrap() = NearbyState::Waiting { code: code.clone() };
+    let (status, c) = (state.nearby.clone(), code.clone());
+    let task = tauri::async_runtime::spawn(async move {
+        let done = music_connectors::nearby::serve(&c, &payload).await;
+        *status.lock().unwrap() = match done {
+            Ok(()) => NearbyState::Sent,
+            Err(e) => NearbyState::Failed { error: err(e) },
+        };
+    });
+    *state.nearby_task.lock().unwrap() = Some(task);
+    Ok(code)
+}
+
+#[tauri::command]
+fn nearby_status(state: State<AppState>) -> NearbyState {
+    state.nearby.lock().unwrap().clone()
+}
+
+/// Withdraws the offer (mDNS announce and listener dropped with the task).
+#[tauri::command]
+fn nearby_stop(state: State<AppState>) {
+    if let Some(task) = state.nearby_task.lock().unwrap().take() {
+        task.abort();
+    }
+    *state.nearby.lock().unwrap() = NearbyState::Idle;
+}
+
+/// 6-digit code → share link for the import dialog.
+#[tauri::command]
+async fn nearby_receive(code: String) -> CmdResult<String> {
+    let code: String = code.chars().filter(|c| !c.is_whitespace()).collect();
+    let bytes = music_connectors::nearby::receive(&code).await.map_err(err)?;
+    Ok(share::to_link(&share::decode(&bytes).map_err(err)?))
 }
 
 /// Library probe for a shared entry: by id, or by title + artist.
@@ -558,10 +614,10 @@ pub fn run() {
                 }
             });
 
-            app.manage(AppState { lib: Mutex::new(lib), store: Arc::new(secrets::KeyringStore::new(&app.config().identifier)), open, player: Player::spawn(), shield, yt_cache: Mutex::default() });
+            app.manage(AppState { lib: Mutex::new(lib), store: Arc::new(secrets::KeyringStore::new(&app.config().identifier)), open, player: Player::spawn(), shield, yt_cache: Mutex::default(), nearby: Arc::new(Mutex::new(NearbyState::Idle)), nearby_task: Mutex::default() });
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, add_track, find_versions, play_preview, share_playlist, share_preview, share_read_image, share_import, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, restart_app])
+        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, add_track, find_versions, play_preview, share_playlist, share_preview, share_read_image, share_import, nearby_send, nearby_status, nearby_stop, nearby_receive, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, restart_app])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

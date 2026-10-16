@@ -62,22 +62,33 @@ function HitRow({ hit, onAdded }: { hit: SearchHit; onAdded: (id: number) => voi
 /** Shared playlist: link or QR text typed / pasted here (Ctrl+V anywhere works too). */
 function ImportCode() {
   const [text, setText] = useState('')
+  const [busy, setBusy] = useState(false)
+  const digits = /^\d{3}\s?\d{3}$/.test(text.trim())
   return (
     <form
-      onSubmit={(e) => {
+      onSubmit={async (e) => {
         e.preventDefault()
-        if (text.trim()) useStore.setState({ incoming: text.trim() })
-        setText('')
+        if (!text.trim()) return
+        setBusy(true)
+        try {
+          // 6 digits = nearby sender; else link or QR text.
+          useStore.setState({ incoming: digits ? await api.nearbyReceive(text) : text.trim() })
+          setText('')
+        } catch (err) {
+          useStore.setState({ error: String(err) })
+        } finally {
+          setBusy(false)
+        }
       }}
       className="flex flex-col gap-2 rounded-xl border border-line px-4 py-3"
     >
       <p className="flex items-center gap-2 text-xs font-semibold">
         <QrCode size={16} className="text-ink-2" /> Import a shared playlist
       </p>
-      <p className="text-xs text-ink-2">Paste a musicapp:// link, or drop a screenshot of a QR code on the window.</p>
+      <p className="text-xs text-ink-2">{busy ? 'Looking for the sender on this network…' : 'Paste a musicapp:// link, type a 6-digit code from a nearby Music App, or drop a QR screenshot on the window.'}</p>
       <span className="flex gap-2">
-        <input value={text} onChange={(e) => setText(e.target.value)} placeholder="musicapp://playlist/…" aria-label="Share link" className="h-8 min-w-0 flex-1 rounded-md border border-line bg-raised px-2.5 font-mono text-[11px] placeholder:text-ink-3" />
-        <RoundButton label="Import" kind="ink" size="sm" type="submit" disabled={!text.trim()}>
+        <input value={text} onChange={(e) => setText(e.target.value)} placeholder="Link or 6-digit code" aria-label="Share link or code" className="h-8 min-w-0 flex-1 rounded-md border border-line bg-raised px-2.5 font-mono text-[11px] placeholder:text-ink-3" />
+        <RoundButton label="Import" kind="ink" size="sm" type="submit" disabled={!text.trim() || busy}>
           <ArrowRight size={14} />
         </RoundButton>
       </span>

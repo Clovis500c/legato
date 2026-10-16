@@ -106,6 +106,9 @@ export interface SharePreview {
   known: number
 }
 
+/** src-tauri NearbyState. */
+export type NearbyState = { state: 'idle' } | { state: 'waiting'; code: string } | { state: 'sent' } | { state: 'failed'; error: string }
+
 /** Typed wrappers over Tauri commands (src-tauri/src/lib.rs). Rejections = error string. */
 export const api = {
   sourcesStatus: async () =>
@@ -132,6 +135,12 @@ export const api = {
   /** QR text from a PNG / JPEG file. */
   shareReadImage: (path: string) => invoke<string>('share_read_image', { path }),
   shareImport: (code: string, country: string) => invoke<{ playlistId: number; added: number; missing: number }>('share_import', { code, country }),
+  /** Offers the playlist on the local network; returns the 6-digit code. */
+  nearbySend: (id: number) => invoke<string>('nearby_send', { id }),
+  nearbyStatus: () => invoke<NearbyState>('nearby_status'),
+  nearbyStop: () => invoke<void>('nearby_stop'),
+  /** Finds the sender on the network; returns a share link for the import dialog. */
+  nearbyReceive: (code: string) => invoke<string>('nearby_receive', { code }),
   localFolders: () => invoke<string[]>('local_folders'),
   /** Saves folders, rescans. Returns local file count. */
   setLocalFolders: (folders: string[]) => invoke<number>('set_local_folders', { folders }),
