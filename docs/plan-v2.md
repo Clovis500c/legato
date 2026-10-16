@@ -1,6 +1,6 @@
 # Music App v2: plan
 
-Status: **phases 1 to 4 and 7 delivered** (2026-10-16): Hi-Fi redesign, themes, ad shield, custom playlists, local folders, add by YouTube link, Apple Music and YouTube search, one queue for every source with Apple previews, playlist sharing (link, QR, nearby code). Next: 8 (mixes), 5 and 6. Edit, strike or comment this file directly, or answer in the chat.
+Status: **phases 1 to 4, 7 and 8 delivered** (2026-10-16): Hi-Fi redesign, themes, ad shield, custom playlists, local folders, add by YouTube link, Apple Music and YouTube search, one queue for every source with Apple previews, playlist sharing (link, QR, nearby code), local personalized mixes. Next: 5 (accounts) and 6 (polish). Edit, strike or comment this file directly, or answer in the chat.
 Mockups: Figma, file "Bow Game / Music App", page **"Music App v3 — Hi-Fi"**. The v2 "Apple" page is abandoned.
 
 ## 0. Your decisions (to fill in)
@@ -155,7 +155,15 @@ Original plan:
   - QR generated then read back;
   - wrong or altered code refused.
 
-**Phase 8: personalized mixes, computed locally** (L)
+**Phase 8: personalized mixes, computed locally** (L) — done (`crates/core/src/mixes.rs`, `history.rs`), with these changes:
+- History: `plays` (track, start, time actually heard, completed) and `track_prefs` (less / never), schema v2. Recorded by the player:
+  natural end or 90 % = full listen, under 30 s = skip, under 2 s = ignored; seeking ahead doesn't count as listening.
+- Shipped: Daily Mix 1–6 (label propagation on artists heard in the same session or picked into the same playlist), time-of-day
+  mix, Rediscover (2+ full listens' worth, silent for 60 days), per-artist cap and no artist twice in a row, daily seed,
+  "Less like this", "Never in mixes", history reset. Custom playlists count even with no history.
+- Not done: genre / year tags (not stored yet), day-of-week affinity, Last.fm "Discoveries", Home sections (Resume, Your week).
+
+Original plan:
 - **Prerequisite**: a listening history. `plays` table: track, start, time listened, full listen or skipped. It also feeds
   Home (Resume, Your week).
 - **Signals**:

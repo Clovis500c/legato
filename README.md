@@ -28,6 +28,7 @@ A fast, lightweight desktop app (Tauri 2 + Rust), serverless: your data stays on
   - compact code (about 9 bytes per track) as a `musicapp://` link or a QR code, read back from a screenshot;
   - nearby: a 6-digit code on the same network (mDNS discovery, SPAKE2 key exchange, encrypted transfer);
   - import shows what's already in your library and looks up the rest on YouTube and Apple Music.
+- **Mixes, computed on your PC**: Daily Mixes from the artists you hear together, a time-of-day mix and Rediscover, built from your listening history and playlists. Steer them with "Less like this" and "Never in mixes"; nothing leaves your computer.
 - **Customization**:
   - 6 themes and a theme editor (13 colors, contrast checked live, export and import);
   - accent, cover shape, density, interface size, columns, player options.
@@ -86,7 +87,7 @@ In the app, open **Settings › Sources & accounts** and follow the wizard:
 
 ```
 crates/
-  core/        model, track matching, SQLite library, sync, local scan, share codes (MA1, QR)
+  core/        model, track matching, SQLite library, sync, local scan, share codes (MA1, QR), history and mixes
   connectors/  OAuth PKCE (loopback), YouTube, Spotify, iTunes catalog and previews, nearby share
   player/      local audio engine (dedicated thread, gapless queue, in-memory previews)
   shield/      ad blocker (adblock-rust) and YouTube player script
@@ -113,9 +114,9 @@ Details in [docs/plan-v2.md](docs/plan-v2.md). Main steps:
   - local folders;
   - catalog search;
   - smart playback (one queue for every source, previews, find versions);
-  - playlist sharing (link, QR, nearby code).
+  - playlist sharing (link, QR, nearby code);
+  - personalized mixes.
 - **Next**:
-  - personalized mixes;
   - accounts and export;
   - polish (media keys, auto-updates).
 
