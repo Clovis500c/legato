@@ -36,7 +36,7 @@ export const ACCENTS = ['#FF5A1F', '#E5383B', '#F2B705', '#2E8B57', '#2F6FEB', '
 export const COLUMNS = ['album', 'sources', 'duration'] as const
 export type Column = (typeof COLUMNS)[number]
 
-export const START_VIEWS = ['songs', 'mixes', 'albums', 'artists'] as const
+export const START_VIEWS = ['home', 'songs', 'mixes', 'albums', 'artists'] as const
 
 /** Mini player resting spots: corners and edge middles (t = top, b = bottom, l = left, r = right). */
 /** Playlist icon: service logo, first song's cover, grid of the first 4, or a picked image. */
@@ -70,7 +70,7 @@ export interface DiscordSettings {
 }
 
 /** Bumped when defaults change for everyone (saved settings get the new ones once). */
-const DEFAULTS_VERSION = 3
+const DEFAULTS_VERSION = 4
 
 /** Fade shapes, as audio editors name them. */
 export const FADE_CURVES = ['scurve', 'linear', 'equal', 'exp', 'log'] as const
@@ -180,7 +180,7 @@ export const DEFAULTS: Settings = {
   sidebarCounts: true,
   listCovers: true,
   clickToPlay: 'single',
-  startView: 'songs',
+  startView: 'home',
   youtubeControls: false,
   stage: 'auto',
   miniSpot: 'br',
@@ -203,6 +203,9 @@ export const DEFAULTS: Settings = {
 const V2: Partial<Settings> = { volume: 'bar', tuner: false, clickToPlay: 'single' }
 /** Version 3: Now Playing picks video or cover by itself. */
 const V3: Partial<Settings> = { stage: 'auto' }
+
+/** Version 4 (2026-10-17): the new Home opens first. */
+const V4: Partial<Settings> = { startView: 'home' }
 
 const HEX = /^#[0-9a-f]{6}$/i
 const isHex = (v: unknown): v is string => typeof v === 'string' && HEX.test(v)
@@ -272,6 +275,7 @@ export function sanitize(raw: unknown): Settings {
     // Saved before the defaults changed: take the new ones once.
     ...(saved < 2 ? V2 : {}),
     ...(saved < 3 ? V3 : {}),
+    ...(saved < 4 ? V4 : {}),
   }
 }
 

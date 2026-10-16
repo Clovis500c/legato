@@ -231,7 +231,7 @@ function Appearance() {
             <Toggle label="Counts in the sidebar" checked={s.sidebarCounts} onChange={(sidebarCounts) => update({ sidebarCounts })} />
           </Row>
           <Row label="Open on" sub={s.reopen ? 'Used when “Reopen where you left off” is off (Advanced)' : 'Screen shown when the app starts'}>
-            <Segmented label="Open on" value={s.startView} onChange={(startView) => update({ startView })} options={[{ value: 'songs', label: 'Songs' }, { value: 'mixes', label: 'Mixes' }, { value: 'albums', label: 'Albums' }, { value: 'artists', label: 'Artists' }]} />
+            <Segmented label="Open on" value={s.startView} onChange={(startView) => update({ startView })} options={[{ value: 'home', label: 'Home' }, { value: 'songs', label: 'Songs' }, { value: 'mixes', label: 'Mixes' }, { value: 'albums', label: 'Albums' }, { value: 'artists', label: 'Artists' }]} />
           </Row>
           <Row label="Animations" sub="Transitions and fades" preview={<MotionScene motion={s.motion} />}>
             <Toggle label="Animations" checked={s.motion} onChange={(motion) => update({ motion })} />

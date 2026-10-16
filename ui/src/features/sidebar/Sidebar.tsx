@@ -1,4 +1,4 @@
-import { Disc, Gear, MagnifyingGlass, MicrophoneStage, MusicNotes, Plus, PlusCircle, PuzzlePiece, VinylRecord } from '@phosphor-icons/react'
+import { Disc, Gear, House, MagnifyingGlass, MicrophoneStage, MusicNotes, Plus, PlusCircle, PuzzlePiece, VinylRecord } from '@phosphor-icons/react'
 import { useEffect, useMemo, useRef, type ReactNode } from 'react'
 import { useSettings } from '../../app/settings'
 import { useStore, type View } from '../../app/store'
@@ -82,6 +82,7 @@ export function Sidebar() {
       </label>
 
       <div className="flex flex-col gap-px">
+        <NavItem on={is('home')} icon={<House size={16} />} label="Home" onClick={() => go({ name: 'home' })} />
         <NavItem on={is('mixes') || is('mix')} icon={<Disc size={16} />} label="Mixes" onClick={() => go({ name: 'mixes' })} />
         <NavItem on={is('add')} icon={<PlusCircle size={16} />} label="Add music" onClick={() => go({ name: 'add' })} />
       </div>

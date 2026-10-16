@@ -14,6 +14,9 @@ use std::collections::BTreeMap;
 use std::sync::LazyLock;
 use std::time::{SystemTime, UNIX_EPOCH};
 
+mod home;
+pub use home::{HomeItem, ListRef, Shelf};
+
 pub const API: &str = "https://music.youtube.com/youtubei/v1";
 const ORIGIN: &str = "https://music.youtube.com";
 const UA: &str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36";
@@ -158,6 +161,11 @@ fn parse_duration(s: &str) -> Option<u32> {
 
 /// One list row (song in search, playlist, library) → track. None for rows without a playable video.
 fn row_track(row: &Value) -> Option<Track> {
+    row_track_with(row, None)
+}
+
+/// Same; `fallback` = artist when the row names none (album pages: in the header).
+fn row_track_with(row: &Value, fallback: Option<&str>) -> Option<Track> {
     let video_id = row
         .pointer("/playlistItemData/videoId")
         .or_else(|| all(row, "watchEndpoint").into_iter().find_map(|w| w.get("videoId")))
@@ -172,7 +180,7 @@ fn row_track(row: &Value) -> Option<Track> {
     let duration_ms = runs.iter().filter_map(|r| r.get("text")?.as_str()).chain(fixed.iter().map(String::as_str)).find_map(parse_duration);
     // No linked artist (plain videos): first plain run that isn't a type label or separator.
     let artist = if artists.is_empty() {
-        runs.iter().filter_map(|r| r.get("text")?.as_str()).find(|t| !matches!(*t, "Song" | "Video" | "Episode" | " • " | " & " | ", ") && parse_duration(t).is_none())?.to_string()
+        runs.iter().filter_map(|r| r.get("text")?.as_str()).find(|t| !matches!(*t, "Song" | "Video" | "Episode" | " • " | " & " | ", ") && parse_duration(t).is_none()).or(fallback.filter(|f| !f.is_empty()))?.to_string()
     } else {
         artists.join(", ")
     };

@@ -52,6 +52,23 @@ export interface LibraryPlaylist {
   newestFirst: boolean
 }
 
+/** crates/connectors ytmusic::ListRef: a playlist / album page, or a radio. */
+export type ListRef = { type: 'browse'; id: string } | { type: 'radio'; videoId: string | null; playlistId: string }
+
+/** Card on YouTube Music's home: a song to play, or a list to open. */
+export interface HomeItem {
+  title: string
+  subtitle: string
+  art: string | null
+  track: Track | null
+  list: ListRef | null
+}
+
+export interface Shelf {
+  title: string
+  items: HomeItem[]
+}
+
 /** crates/core cache::Stats, per cache (Settings › About). */
 export interface CacheStat {
   hits: number
@@ -204,6 +221,8 @@ export const api = {
   searchCatalogs: (query: string, country: string) => invoke<SearchResults>('search_catalogs', { query, country }),
   /** Returns library row id. Finds a YouTube version when missing (1 search). */
   addTrack: (track: Track) => invoke<number>('add_track', { track }),
+  ytmHome: () => invoke<Shelf[]>('ytm_home'),
+  ytmList: (list: ListRef) => invoke<Track[]>('ytm_list', { list }),
   /** YouTube versions for tracks with no full source (1 search each, daily budget). */
   findVersions: (ids: number[]) => invoke<FindReport>('find_versions', { ids }),
   /** Real covers for Apple tracks (1 batched lookup). Returns tracks updated. */

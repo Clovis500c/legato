@@ -56,7 +56,7 @@ import { isOn, setAddon } from './addons/state'
 import { addToPlaylist, removeFromPlaylist, songs } from './library/edits'
 import { primaryArtist } from './library/filter'
 import { isFull, viaLabel, vias } from './player/sources'
-import { usePlayer } from './player/store'
+import { isRemote, nowTrack, usePlayer } from './player/store'
 
 const app = () => useStore.getState()
 const player = () => usePlayer.getState()
@@ -224,9 +224,37 @@ function playVia(t: LibraryTrack, list: LibraryTrack[], index: number): MenuEntr
 }
 
 /** ctx.list / index = where it sits (play from there). playlistId + position = custom playlist row. queueIndex = row of the Up next panel. */
+/** Recommendation → library (then it can go in playlists). */
+const addToLibraryItem = (t: LibraryTrack): MenuEntry => ({
+  label: 'Add to library',
+  icon: <Plus size={16} />,
+  onSelect: () =>
+    api
+      .addTrack(t)
+      .then(() => app().refresh())
+      .then(() => app().notify(`Added “${t.title}” to your library`))
+      .catch(fail),
+})
+
+/** Song from a recommendation (not in the library): play, queue, add, links. */
+function remoteMenu(t: LibraryTrack, list: LibraryTrack[], index: number): MenuEntry[] {
+  return [
+    { label: 'Play', icon: <Play size={16} />, onSelect: () => player().playTracks(list, index) },
+    { label: 'Play next', icon: <Queue size={16} />, onSelect: () => player().enqueue([t], true) },
+    { label: 'Add to queue', icon: <ListPlus size={16} />, onSelect: () => player().enqueue([t], false) },
+    '-',
+    addToLibraryItem(t),
+    '-',
+    pages(t).length > 0 && { label: 'Copy link', icon: <Link size={16} />, onSelect: () => copy(pages(t)[0].url, 'Link') },
+    { label: 'Copy title and artist', icon: <Copy size={16} />, onSelect: () => copy(`${t.artist} – ${t.title}`, 'Title') },
+    ...pages(t).map((p) => ({ label: `Open in ${p.label}`, icon: <ArrowSquareOut size={16} />, onSelect: () => openUrl(p.url).catch(fail) })),
+  ]
+}
+
 export function trackMenu(t: LibraryTrack, ctx: { list?: LibraryTrack[]; index?: number; playlistId?: number; position?: number; queueIndex?: number } = {}): MenuEntry[] {
   const list = ctx.list ?? [t]
   const index = ctx.index ?? 0
+  if (isRemote(t)) return remoteMenu(t, list, index)
   const playable = vias(t, sp()).length > 0
   const go = app().go
   return [
@@ -362,7 +390,9 @@ export function playlistMenu(p: LibraryPlaylist): MenuEntry[] {
 export function playerMenu(): MenuEntry[] {
   const { now, playing, shuffle, repeat, full, positionMs, list, index, toggle, step, toggleShuffle, setFull } = player()
   if (!now) return appMenu()
-  const t = app().tracks.find((x) => x.id === now.trackId)
+  const lib = nowTrack()
+  // Recommendation playing: not in the library, so no playlist or library actions.
+  const t = lib && !isRemote(lib) ? lib : undefined
   const video = now.youtubeId
   const mini = useSettings.getState().settings.miniPlayer
   const rep = (r: typeof repeat, label: string) => ({ label, checked: repeat === r, onSelect: () => usePlayer.setState({ repeat: r }) })
@@ -381,7 +411,8 @@ export function playerMenu(): MenuEntry[] {
     t && addTo(() => [t]),
     t?.album && { label: 'Go to album', icon: <Disc size={16} />, onSelect: () => (setFull(false), app().go({ name: 'album', album: t.album!, artist: primaryArtist(t.artist) })) },
     t && { label: 'Go to artist', icon: <MicrophoneStage size={16} />, onSelect: () => (setFull(false), app().go({ name: 'artist', artist: primaryArtist(t.artist) })) },
-    t && saveCoverItem(t),
+    lib && saveCoverItem(lib),
+    lib && isRemote(lib) && addToLibraryItem(lib),
     '-',
     video && { label: 'Copy video URL', icon: <Link size={16} />, onSelect: () => copy(`https://youtu.be/${video}`, 'Video URL') },
     video && { label: 'Copy video URL at current time', icon: <Link size={16} />, onSelect: () => copy(`https://youtu.be/${video}?t=${Math.floor(positionMs / 1000)}`, 'Video URL') },

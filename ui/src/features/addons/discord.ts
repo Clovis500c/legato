@@ -1,7 +1,6 @@
 import { useSettings } from '../../app/settings'
-import { useStore } from '../../app/store'
 import { api, type Presence } from '../../shared/api'
-import { usePlayer } from '../player/store'
+import { nowTrack, usePlayer } from '../player/store'
 import { presenceFor, samePresence } from './presence'
 import { DISCORD } from './registry'
 
@@ -16,7 +15,7 @@ export function startDiscord(): () => void {
       return
     }
     const { now, playing, positionMs, durationMs } = usePlayer.getState()
-    const track = now?.trackId === undefined ? undefined : useStore.getState().tracks.find((t) => t.id === now.trackId)
+    const track = nowTrack()
     const p = presenceFor(now, track, playing, positionMs, durationMs, discord)
     const at = Date.now()
     if (last && last.appId === discord.appId && samePresence(last.p, last.at, p, at)) return

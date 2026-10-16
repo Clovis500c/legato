@@ -13,7 +13,7 @@ import { onMenu } from '../../shared/ui/ContextMenu'
 import { playerMenu } from '../menus'
 import { trackArt } from '../../shared/art'
 import { Cover } from '../../shared/ui/Cover'
-import { bindFrame, usePlayer, useVideoSlot } from './store'
+import { bindFrame, useNowTrack, usePlayer, useVideoSlot } from './store'
 import { embedUrl, parseYt, ytPost } from './youtube'
 
 const AUDIO = /\.(mp3|flac|wav|ogg|m4a|aac)$/i
@@ -123,7 +123,7 @@ export function VolumeControl({ big }: { big?: boolean }) {
 export function PlayerBar() {
   const { now, playFiles, onLocal, onSpotify, setFull } = usePlayer()
   const readout = useSettings((s) => s.settings.readout)
-  const track = useStore((s) => s.tracks.find((t) => t.id === now?.trackId))
+  const track = useNowTrack()
   // Engine plays local files and previews: poll it. Spotify Connect: poll its API, slower (rate limits).
   const local = now && (now.via === 'local' || now.via === 'preview')
   const remote = now?.via === 'spotify'

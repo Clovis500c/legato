@@ -1,7 +1,6 @@
 import { listen } from '@tauri-apps/api/event'
-import { useStore } from '../../app/store'
 import { api, type LibraryTrack, type MediaNow } from '../../shared/api'
-import { usePlayer, type NowPlaying } from './store'
+import { nowTrack, type NowPlaying, usePlayer } from './store'
 
 /** Windows media panel / tray payload. Library row gives album and cover. */
 export function mediaNow(now: NowPlaying | undefined, playing: boolean, track?: LibraryTrack, positionMs = 0, durationMs: number | null = null): MediaNow | null {
@@ -46,7 +45,7 @@ export function startMedia(): () => void {
   let lastTrack: number | undefined
   const push = () => {
     const { now, playing, positionMs, durationMs } = usePlayer.getState()
-    const track = now?.trackId ? useStore.getState().tracks.find((t) => t.id === now.trackId) : undefined
+    const track = nowTrack()
     const info = mediaNow(now, playing, track, positionMs, durationMs)
     const at = Date.now()
     // New track: always (same title twice in a row is still a new item).

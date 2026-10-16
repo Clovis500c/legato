@@ -167,8 +167,9 @@ session can resume here. Phase 6 comes after all of them.
 - [x] Mixes: better algorithm, more mixes; covers as a 2×2 grid like playlists, setting in Advanced: grid / single
       cover / current template.
 - [x] Smart cache in Rust for most of the app (memory + disk, invalidated on change).
-- [ ] Home: quick access to every section + recommendations (local mixes, then the connected services' own
-      recommendations: YouTube Music home feed, Spotify if possible).
+- [x] Home: quick access to every section + recommendations (local mixes, then the connected services' own
+      recommendations: YouTube Music home feed, Spotify if possible). Spotify: its recommendations API is closed to new
+      apps since November 2024, so YouTube Music only.
 - [ ] Phase 6: auto-updates in the background, never cutting playback, install and relaunch at once (resume where it
       was); Settings › About: version, last update, update status.
 

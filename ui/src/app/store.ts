@@ -5,6 +5,7 @@ import type { Filter, GroupSize, GroupSort, PlayStats, Sort } from '../features/
 export type SettingsSection = 'appearance' | 'themes' | 'sources' | 'shield' | 'shortcuts' | 'advanced'
 
 export type View =
+  | { name: 'home' }
   | { name: 'add' }
   | { name: 'addons' }
   | { name: 'mixes' }

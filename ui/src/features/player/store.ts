@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { useStore } from '../../app/store'
-import { api, type LibraryTrack, type PlayerCommand, type PlayerStatus, type SpotifyCommand, type SpotifyPlayback } from '../../shared/api'
+import { api, type LibraryTrack, type PlayerCommand, type PlayerStatus, type SpotifyCommand, type SpotifyPlayback, type Track } from '../../shared/api'
 import { region } from '../../shared/format'
 import { endListen, progress, startListen } from './listens'
 import { demoGain, demoLength, fadeGain, NO_FADE, type Fade } from './fade'
@@ -74,6 +74,34 @@ interface PlayerState {
   onLocal: (s: PlayerStatus) => void
   /** Spotify Connect poll result. */
   onSpotify: (p: SpotifyPlayback | null) => void
+}
+
+// Songs from recommendations play without joining the library: negative ids, one per video for the session.
+const remoteIds = new Map<string, number>()
+
+/** Service track → queue item, not in the library (no history, no playlists). */
+export function remoteTrack(t: Track): LibraryTrack {
+  const key = t.ids.youtube ?? `${t.artist}\u0000${t.title}`
+  let id = remoteIds.get(key)
+  if (id === undefined) remoteIds.set(key, (id = -(remoteIds.size + 1)))
+  return { ...t, id, added: 0 }
+}
+
+export const isRemote = (t: { id: number }) => t.id < 0
+
+/** Library row of what plays, else its queue item (a recommendation). */
+export function nowTrack(): LibraryTrack | undefined {
+  const { now, list } = usePlayer.getState()
+  if (now?.trackId === undefined) return undefined
+  return useStore.getState().tracks.find((t) => t.id === now.trackId) ?? list.find((t) => t.id === now.trackId)
+}
+
+/** Same, as a hook. */
+export function useNowTrack(): LibraryTrack | undefined {
+  const id = usePlayer((s) => s.now?.trackId)
+  const lib = useStore((s) => (id === undefined ? undefined : s.tracks.find((t) => t.id === id)))
+  const queued = usePlayer((s) => (id === undefined ? undefined : s.list.find((t) => t.id === id)))
+  return lib ?? queued
 }
 
 // Embed iframe, bound by PlayerBar.
@@ -205,7 +233,8 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     const mine = ++seq
     // Leaving Spotify: pause the user's Spotify app.
     if (get().now?.via === 'spotify' && how !== 'spotify') void spotify({ type: 'pause' })
-    startListen(t.id, t.durationMs)
+    // Recommendations: no history (not in the library).
+    startListen(isRemote(t) ? undefined : t.id, t.durationMs)
     const base: NowPlaying = { title: t.title, artist: t.artist, trackId: t.id, via: how }
     // Preview: 30 s from Apple, no resume point.
     const start = how === 'preview' ? 0 : from

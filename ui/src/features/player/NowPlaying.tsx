@@ -18,7 +18,7 @@ import { useBackdrop } from './immersive'
 import { useStill } from './still'
 import { fileFormat, VolumeControl } from './PlayerBar'
 import { viaLabel, vias, type Via } from './sources'
-import { fileTitle, usePlayer, useVideoSlot } from './store'
+import { fileTitle, useNowTrack, usePlayer, useVideoSlot } from './store'
 import { SeekBar, TimeText } from './Progress'
 import { Transport } from './Transport'
 
@@ -141,7 +141,7 @@ export function NowPlaying() {
   const update = useSettings((s) => s.update)
   // Re-rendered by the settings subscription above.
   const theme = useSettings.getState().current()
-  const track = useStore((s) => s.tracks.find((t) => t.id === now?.trackId))
+  const track = useNowTrack()
   const sp = useStore((s) => s.status.spotify.connected)
   const ambient = useAmbient(tint && !immersive && track ? trackArt(track)[0] : undefined, theme)
   // Auto: a still-image upload shows as a cover.

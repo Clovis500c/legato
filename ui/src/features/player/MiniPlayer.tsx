@@ -1,7 +1,6 @@
 import { ArrowsOutSimple } from '@phosphor-icons/react'
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { useSettings } from '../../app/settings'
-import { useStore } from '../../app/store'
 import { trackArt } from '../../shared/art'
 import { RoundButton } from '../../shared/ui/controls'
 import { onMenu } from '../../shared/ui/ContextMenu'
@@ -9,7 +8,7 @@ import { Cover } from '../../shared/ui/Cover'
 import { playerMenu } from '../menus'
 import { VideoSlot } from './NowPlaying'
 import { gripCorner, nearestSpot, resized, spotPosition, type Point, type Size } from './snap'
-import { usePlayer } from './store'
+import { useNowTrack, usePlayer } from './store'
 import { Transport } from './Transport'
 
 // Title bar (52) and player bar (100) stay clear, 12 px gap; 24 px from the sides.
@@ -32,7 +31,7 @@ export function MiniPlayer() {
   const { now, full, setFull } = usePlayer()
   const { miniPlayer: on, miniSpot: spot, miniWidth } = useSettings((s) => s.settings)
   const update = useSettings((s) => s.update)
-  const track = useStore((s) => s.tracks.find((t) => t.id === now?.trackId))
+  const track = useNowTrack()
   const win = useSyncExternalStore(onResize, viewSize)
   const [height, setHeight] = useState(268)
   const [drag, setDrag] = useState<Point | null>(null)

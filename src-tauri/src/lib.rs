@@ -11,7 +11,7 @@ mod ytm;
 
 use music_connectors::oauth::Opener;
 use music_connectors::spotify::Spotify;
-use music_connectors::ytmusic::{Account, YouTubeMusic};
+use music_connectors::ytmusic::{Account, ListRef, Shelf, YouTubeMusic};
 use music_core::cache::{Memo, Stats, Ttl};
 use music_core::history::{Play, Pref};
 use music_core::library::{Library, LibraryPlaylist, LibraryTrack, PlaylistEdit};
@@ -129,6 +129,9 @@ struct Caches {
     apple: Ttl<Vec<Track>>,
     /// Sign-in state: keychain and WebView2 cookies, read on every refresh otherwise.
     status: Ttl<Vec<(Source, SourceStatus)>>,
+    /// YouTube Music home shelves, and the songs of the playlists / radios opened from them.
+    home: Ttl<Vec<Shelf>>,
+    lists: Ttl<Vec<Track>>,
 }
 
 impl Default for Caches {
@@ -142,6 +145,8 @@ impl Default for Caches {
             youtube: Ttl::new(Duration::from_secs(30 * 60), 300),
             apple: Ttl::new(Duration::from_secs(30 * 60), 100),
             status: Ttl::new(Duration::from_secs(30), 1),
+            home: Ttl::new(Duration::from_secs(15 * 60), 1),
+            lists: Ttl::new(Duration::from_secs(15 * 60), 30),
         }
     }
 }
@@ -875,11 +880,39 @@ async fn spotify_web_status(app: tauri::AppHandle) -> bool {
     spotify_web::signed_in(&app)
 }
 
+/// YouTube Music's home shelves (its recommendations for the first picked account). Empty when signed out.
+#[tauri::command]
+async fn ytm_home(state: State<'_, AppState>) -> CmdResult<Vec<Shelf>> {
+    if let Some(hit) = state.cache.home.get("") {
+        return Ok((*hit).clone());
+    }
+    let Some(yt) = state.ytm() else { return Ok(Vec::new()) };
+    let shelves = yt.home().await.map_err(err)?;
+    Ok((*state.cache.home.put("", shelves)).clone())
+}
+
+/// Songs of a home card's playlist, album or radio: played without importing it.
+#[tauri::command]
+async fn ytm_list(state: State<'_, AppState>, list: ListRef) -> CmdResult<Vec<Track>> {
+    // Trust boundary: ids go into YouTube requests.
+    if !list.valid() {
+        return Err("Invalid list".into());
+    }
+    let key = list.key();
+    if let Some(hit) = state.cache.lists.get(&key) {
+        return Ok((*hit).clone());
+    }
+    let yt = state.ytm().ok_or("Sign in to YouTube Music first (Settings › Accounts)")?;
+    let tracks = yt.list_tracks(&list).await.map_err(err)?;
+    Ok((*state.cache.lists.put(&key, tracks)).clone())
+}
+
 /// Signs every Google account out of the app; library kept.
 #[tauri::command]
 async fn ytm_sign_out(state: State<'_, AppState>) -> CmdResult<()> {
     ytm::sign_out(&state.app).map_err(err)?;
     state.cache.youtube.clear();
+    state.cache.home.clear();
     state.cache.status.clear();
     state.lib.lock().unwrap().set_setting("ytm_accounts", &serde_json::json!([])).map_err(err)
 }
@@ -912,6 +945,7 @@ fn set_ytm_accounts(state: State<AppState>, accounts: Vec<Account>) -> CmdResult
         return Err("Invalid accounts".into());
     }
     state.cache.youtube.clear();
+    state.cache.home.clear();
     state.lib.lock().unwrap().set_setting("ytm_accounts", &serde_json::json!(accounts)).map_err(err)
 }
 
@@ -1177,7 +1211,7 @@ pub fn run() {
             app.manage(AppState { app: app.handle().clone(), lib: Mutex::new(lib), store: Arc::new(secrets::KeyringStore::new(&app.config().identifier)), open, player: Player::spawn(), shield, art: music_connectors::art::ArtCache::new(dir.join("art"), 300 << 20), cache: Caches::default(), nearby: Arc::new(Mutex::new(NearbyState::Idle)), nearby_task: Mutex::default(), media, media_last: Mutex::default(), tray, discord: discord::Discord::spawn() });
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, add_track, backfill_art, find_versions, play_preview, share_playlist, share_preview, share_read_image, share_import, nearby_send, nearby_status, nearby_stop, nearby_receive, record_play, mixes, set_track_pref, clear_history, export_youtube, spotify_player, spotify_playback, ytm_sign_in, ytm_sign_out, spotify_web_open, spotify_web_status, import_spotify_link, ytm_accounts, set_ytm_accounts, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, system_accent, restart_app, media_update, load_session, save_session, add_to_youtube, playlist_orders, save_cover, export_cover, alternative_videos, play_stats, cache_stats, discord_presence, discord_off, discord_status])
+        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, add_track, backfill_art, find_versions, play_preview, share_playlist, share_preview, share_read_image, share_import, nearby_send, nearby_status, nearby_stop, nearby_receive, record_play, mixes, set_track_pref, clear_history, export_youtube, spotify_player, spotify_playback, ytm_sign_in, ytm_sign_out, spotify_web_open, spotify_web_status, import_spotify_link, ytm_accounts, set_ytm_accounts, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, system_accent, restart_app, media_update, load_session, save_session, add_to_youtube, playlist_orders, save_cover, export_cover, alternative_videos, play_stats, cache_stats, ytm_home, ytm_list, discord_presence, discord_off, discord_status])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
