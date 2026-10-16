@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import { api, type Credentials, type LibraryPlaylist, type LibraryTrack, type PlaylistEdit, type Service, type SourceStatus, type SyncReport } from '../shared/api'
 import type { Filter, Sort } from '../features/library/filter'
 
-export type SettingsSection = 'appearance' | 'themes' | 'sources' | 'shield' | 'shortcuts'
+export type SettingsSection = 'appearance' | 'themes' | 'sources' | 'shield' | 'shortcuts' | 'advanced'
 
 export type View =
   | { name: 'add' }
@@ -14,7 +14,8 @@ export type View =
   | { name: 'artists' }
   | { name: 'artist'; artist: string }
   | { name: 'playlist'; id: number }
-  | { name: 'settings'; section: SettingsSection; wizard?: 'spotify' }
+  /** focus = setting label to scroll to and highlight (settings search). */
+  | { name: 'settings'; section: SettingsSection; wizard?: 'spotify'; focus?: string }
 
 interface State {
   view: View

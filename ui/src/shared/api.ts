@@ -228,6 +228,9 @@ export const api = {
   /** Windows accent (light / dark theme variants); null off Windows. */
   systemAccent: () => invoke<SystemAccent | null>('system_accent'),
   restartApp: () => invoke<void>('restart_app'),
+  /** Raw JSON; validated by features/player/session. */
+  loadSession: () => invoke<unknown>('load_session'),
+  saveSession: (session: object) => invoke<void>('save_session', { session }),
   /** Windows media panel; null = nothing playing. Cover: local file's (trackId), else `art` URL. */
   mediaUpdate: (now: MediaNow | null, trackId: number | null, art: string | null) => invoke<void>('media_update', { now, trackId, art }),
 }

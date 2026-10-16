@@ -1,5 +1,5 @@
-import { ArrowCounterClockwise, Check, CheckCircle, ClipboardText, Copy, Keyboard, PaintBrush, Palette as PaletteIcon, Plugs, Plus, ShieldCheck, Trash, WarningCircle } from '@phosphor-icons/react'
-import { useEffect, useState, type ReactNode } from 'react'
+import { ArrowCounterClockwise, Check, CheckCircle, ClipboardText, Copy, Keyboard, MagnifyingGlass, PaintBrush, Palette as PaletteIcon, Plugs, Plus, ShieldCheck, Sliders, Trash, WarningCircle } from '@phosphor-icons/react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { useSettings } from '../../app/settings'
 import { SHORTCUTS } from '../../app/shortcuts'
 import { useStore, type SettingsSection } from '../../app/store'
@@ -10,6 +10,7 @@ import { Button } from '../../shared/ui/Button'
 import { Led, RoundButton, Segmented, Toggle } from '../../shared/ui/controls'
 import { PageHeader } from '../../shared/ui/PageHeader'
 import { SourcesView } from '../sources/SourcesView'
+import { searchSettings, type SettingEntry } from './search'
 
 const sections: { id: SettingsSection; label: string; icon: ReactNode }[] = [
   { id: 'appearance', label: 'Appearance', icon: <PaintBrush size={15} /> },
@@ -17,11 +18,12 @@ const sections: { id: SettingsSection; label: string; icon: ReactNode }[] = [
   { id: 'sources', label: 'Accounts', icon: <Plugs size={15} /> },
   { id: 'shield', label: 'Shield', icon: <ShieldCheck size={15} /> },
   { id: 'shortcuts', label: 'Shortcuts', icon: <Keyboard size={15} /> },
+  { id: 'advanced', label: 'Advanced', icon: <Sliders size={15} /> },
 ]
 
 function Group({ title, hint, children }: { title: string; hint?: string; children: ReactNode }) {
   return (
-    <section className="flex flex-col gap-2.5">
+    <section data-setting={title.split(' · ')[0]} className="flex flex-col gap-2.5 rounded-lg">
       <div className="flex items-center justify-between">
         <h2 className="kicker">{title}</h2>
         {hint && <span className="kicker">{hint}</span>}
@@ -33,7 +35,7 @@ function Group({ title, hint, children }: { title: string; hint?: string; childr
 
 function Row({ label, sub, children }: { label: string; sub?: string; children: ReactNode }) {
   return (
-    <div className="flex items-center gap-4 border-b border-line-soft px-4 py-3 last:border-0">
+    <div data-setting={label} className="flex items-center gap-4 border-b border-line-soft px-4 py-3 last:border-0">
       <div className="flex-1">
         <p className="text-[13px] font-medium">{label}</p>
         {sub && <p className="text-xs text-ink-2">{sub}</p>}
@@ -183,9 +185,6 @@ function Appearance() {
           </Row>
           <Row label="Fade between songs" sub={s.crossfade ? `${s.crossfade} s fade out, then in, when a song ends on its own` : 'Off'}>
             <input type="range" aria-label="Fade between songs" min={0} max={12} step={1} value={s.crossfade} onChange={(e) => update({ crossfade: +e.target.value })} className="bar w-40" style={{ background: `linear-gradient(to right, var(--ink) ${(s.crossfade / 12) * 100}%, var(--line) 0)` }} />
-          </Row>
-          <Row label="YouTube controls on the video" sub="YouTube's own title, buttons and hover menu. From the next track.">
-            <Toggle label="YouTube controls on the video" checked={s.youtubeControls} onChange={(youtubeControls) => update({ youtubeControls })} />
           </Row>
           <Row label="Tuner scale" sub="Tuner-style progress bar in full screen">
             <Toggle label="Tuner scale" checked={s.tuner} onChange={(tuner) => update({ tuner })} />
@@ -442,13 +441,71 @@ function ShortcutsSection() {
   )
 }
 
+function AdvancedSection() {
+  const { settings: s, update } = useSettings()
+  return (
+    <div className="flex max-w-190 flex-col gap-6">
+      <div className="rounded-xl border border-line bg-raised">
+        <Row label="Resume playback on launch" sub="The last song picks up where it stopped, with its queue, when the app opens">
+          <Toggle label="Resume playback on launch" checked={s.resume} onChange={(resume) => update({ resume })} />
+        </Row>
+        <Row label="YouTube controls on the video" sub="YouTube's own title, buttons and hover menu on the video. From the next track.">
+          <Toggle label="YouTube controls on the video" checked={s.youtubeControls} onChange={(youtubeControls) => update({ youtubeControls })} />
+        </Row>
+      </div>
+    </div>
+  )
+}
+
+/** Search box over the section list: results replace it while typing, Enter opens the first. */
+function SettingsSearch({ onPick }: { onPick: (e: SettingEntry) => void }) {
+  const [q, setQ] = useState('')
+  const hits = searchSettings(q).slice(0, 12)
+  const pick = (e: SettingEntry) => {
+    setQ('')
+    onPick(e)
+  }
+  return (
+    <>
+      <label className="mb-2 flex items-center gap-2 rounded-full border border-line px-3 py-1.5 text-ink-3 focus-within:border-ink-3">
+        <MagnifyingGlass size={14} />
+        <input value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => (e.key === 'Enter' && hits[0] ? pick(hits[0]) : e.key === 'Escape' && setQ(''))} placeholder="Search settings" aria-label="Search settings" className="min-w-0 flex-1 bg-transparent text-[13px] text-ink outline-none placeholder:text-ink-3" />
+      </label>
+      {q.trim() && (
+        <div className="flex flex-col gap-px">
+          {hits.length === 0 && <p className="px-2 py-2 text-xs text-ink-3">No setting matches.</p>}
+          {hits.map((e) => (
+            <button key={`${e.section}/${e.label}`} onClick={() => pick(e)} className="flex flex-col rounded-md px-2 py-1.5 text-left hover:bg-raised">
+              <span className="text-[13px]">{e.label}</span>
+              <span className="kicker">{sections.find((s) => s.id === e.section)!.label}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </>
+  )
+}
+
 export function SettingsView({ section }: { section: SettingsSection }) {
   const go = useStore((s) => s.go)
+  const focus = useStore((s) => (s.view.name === 'settings' ? s.view.focus : undefined))
+  const content = useRef<HTMLDivElement>(null)
+  // Search result opened: bring the setting into view and flash it.
+  useEffect(() => {
+    if (!focus) return
+    const el = [...(content.current?.querySelectorAll<HTMLElement>('[data-setting]') ?? [])].find((x) => x.dataset.setting === focus)
+    if (!el) return
+    el.scrollIntoView({ block: 'center', behavior: 'smooth' })
+    el.classList.remove('flash')
+    void el.offsetWidth
+    el.classList.add('flash')
+  }, [focus, section])
   return (
     <>
       <PageHeader kicker="Settings" title={sections.find((s) => s.id === section)!.label} />
       <div className="flex min-h-0 flex-1 gap-9">
         <nav className="flex w-52 shrink-0 flex-col gap-px">
+          <SettingsSearch onPick={(e) => go({ name: 'settings', section: e.section, focus: e.label })} />
           {sections.map((s) => (
             <button key={s.id} aria-current={s.id === section ? 'page' : undefined} onClick={() => go({ name: 'settings', section: s.id })} className={`flex items-center gap-2.5 rounded-md py-2 pr-2.5 pl-1 text-left ${s.id === section ? 'bg-raised font-semibold' : 'text-ink-2 hover:text-ink'}`}>
               <span className="w-1.5">{s.id === section && <Led on />}</span>
@@ -456,12 +513,13 @@ export function SettingsView({ section }: { section: SettingsSection }) {
             </button>
           ))}
         </nav>
-        <div className="-mx-2 min-h-0 flex-1 overflow-y-auto px-2 pb-8">
+        <div ref={content} className="-mx-2 min-h-0 flex-1 overflow-y-auto px-2 pb-8">
           {section === 'appearance' && <Appearance />}
           {section === 'themes' && <Themes />}
           {section === 'sources' && <SourcesView />}
           {section === 'shield' && <ShieldSection />}
           {section === 'shortcuts' && <ShortcutsSection />}
+          {section === 'advanced' && <AdvancedSection />}
         </div>
       </div>
     </>

@@ -95,6 +95,21 @@ code {
   @apply outline-2 outline-offset-2 outline-ink;
 }
 
+/* Settings search: the setting just opened lights up once. */
+.flash {
+  animation: flash 1.6s ease-out;
+}
+@keyframes flash {
+  0%,
+  40% {
+    box-shadow: 0 0 0 2px var(--accent);
+    background-color: var(--accent-soft);
+  }
+  100% {
+    box-shadow: 0 0 0 2px transparent;
+  }
+}
+
 /* Mono kicker label: BIBLIOTHÈQUE · 4 SOURCES */
 .kicker {
   @apply font-mono text-[10px] font-medium tracking-[0.09em] text-ink-3 uppercase;

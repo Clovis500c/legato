@@ -16,7 +16,7 @@ function ServiceRow({ service }: { service: 'spotify' }) {
   const { connected } = status[service]
   const selected = view.name === 'settings' && view.wizard === service
   return (
-    <div className={`flex items-center gap-4 border-b border-line-soft px-4 py-3.5 ${selected ? 'bg-bg' : ''}`}>
+    <div data-setting={sourceLabel[service]} className={`flex items-center gap-4 border-b border-line-soft px-4 py-3.5 ${selected ? 'bg-bg' : ''}`}>
       <Led on={connected} />
       <span className="grid size-9 place-items-center rounded-full border border-line text-ink-2">
         <SourceIcon source={service} size={16} />
@@ -47,7 +47,7 @@ function SpotifyWeb() {
     return () => window.removeEventListener('focus', check)
   }, [])
   return (
-    <div className="flex items-center gap-4 border-b border-line-soft px-4 py-3.5">
+    <div data-setting="Spotify web player" className="flex items-center gap-4 border-b border-line-soft px-4 py-3.5">
       <Led on={!!on} />
       <span className="grid size-9 place-items-center rounded-full border border-line text-ink-2">
         <SourceIcon source="spotify" size={16} />
@@ -117,7 +117,7 @@ function GoogleAccounts() {
   }
 
   return (
-    <div className="flex flex-col gap-3 border-b border-line-soft px-4 py-3.5">
+    <div data-setting="YouTube Music" className="flex flex-col gap-3 border-b border-line-soft px-4 py-3.5">
       <div className="flex items-center gap-4">
         <Led on={!!data?.signedIn} />
         <span className="grid size-9 place-items-center rounded-full border border-line text-ink-2">
@@ -205,7 +205,7 @@ function LocalFolders() {
   }
 
   return (
-    <div className="flex flex-col gap-3 px-4 py-3.5">
+    <div data-setting="Local files" className="flex flex-col gap-3 px-4 py-3.5">
       <div className="flex items-center gap-4">
         <Led on={folders.length > 0} />
         <span className="grid size-9 place-items-center rounded-full border border-line text-ink-2">

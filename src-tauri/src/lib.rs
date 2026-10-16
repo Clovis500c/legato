@@ -778,6 +778,21 @@ fn save_settings(state: State<AppState>, settings: serde_json::Value) -> CmdResu
     state.lib.lock().unwrap().set_setting("ui", &settings).map_err(err)
 }
 
+/// Last playback (queue as track ids, position): picked up at launch if Settings › Advanced says so.
+#[tauri::command]
+fn load_session(state: State<AppState>) -> CmdResult<Option<serde_json::Value>> {
+    state.lib.lock().unwrap().setting("session").map_err(err)
+}
+
+#[tauri::command]
+fn save_session(state: State<AppState>, session: serde_json::Value) -> CmdResult<()> {
+    // Trust boundary: object only, bounded (10,000 ids fit).
+    if !session.is_object() || session.to_string().len() > 512 * 1024 {
+        return Err("Invalid session".into());
+    }
+    state.lib.lock().unwrap().set_setting("session", &session).map_err(err)
+}
+
 #[derive(Serialize)]
 struct ShieldStatus {
     enabled: bool,
@@ -915,7 +930,7 @@ pub fn run() {
             app.manage(AppState { app: app.handle().clone(), lib: Mutex::new(lib), store: Arc::new(secrets::KeyringStore::new(&app.config().identifier)), open, player: Player::spawn(), shield, art: music_connectors::art::ArtCache::new(dir.join("art"), 300 << 20), yt_cache: Mutex::default(), nearby: Arc::new(Mutex::new(NearbyState::Idle)), nearby_task: Mutex::default(), media, media_last: Mutex::default(), tray });
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, add_track, backfill_art, find_versions, play_preview, share_playlist, share_preview, share_read_image, share_import, nearby_send, nearby_status, nearby_stop, nearby_receive, record_play, mixes, set_track_pref, clear_history, export_youtube, spotify_player, spotify_playback, ytm_sign_in, ytm_sign_out, spotify_web_open, spotify_web_status, import_spotify_link, ytm_accounts, set_ytm_accounts, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, system_accent, restart_app, media_update])
+        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, add_track, backfill_art, find_versions, play_preview, share_playlist, share_preview, share_read_image, share_import, nearby_send, nearby_status, nearby_stop, nearby_receive, record_play, mixes, set_track_pref, clear_history, export_youtube, spotify_player, spotify_playback, ytm_sign_in, ytm_sign_out, spotify_web_open, spotify_web_status, import_spotify_link, ytm_accounts, set_ytm_accounts, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, system_accent, restart_app, media_update, load_session, save_session])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

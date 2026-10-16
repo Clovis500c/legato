@@ -6,6 +6,7 @@ import { MixesView, MixView } from '../features/mixes/MixesView'
 import { AlbumsView, AlbumView, ArtistsView, ArtistView, PlaylistView, SongsView } from '../features/library/LibraryView'
 import { appMenu } from '../features/menus'
 import { startMedia } from '../features/player/media'
+import { resumeSession, startSessionSaving } from '../features/player/session'
 import { MiniPlayer } from '../features/player/MiniPlayer'
 import { NowPlaying } from '../features/player/NowPlaying'
 import { PlayerBar } from '../features/player/PlayerBar'
@@ -102,12 +103,18 @@ export function App() {
   const { view, go, refresh, incoming } = useStore()
   const full = usePlayer((s) => s.full)
   useEffect(() => {
-    void useSettings.getState().load()
-    void refresh()
+    const settings = useSettings.getState().load()
+    const library = refresh()
+    // Settings and library both needed: resume flag, and the saved queue's tracks.
+    void Promise.all([settings, library])
+      .then(() => resumeSession(useSettings.getState().settings.resume))
+      .catch(() => {})
+    void library
       .then(() => api.backfillArt(region()))
       .then((n) => (n ? refresh() : undefined))
       .catch(() => {})
   }, [refresh])
+  useEffect(() => startSessionSaving(), [])
   useEffect(() => startMedia(), [])
   useEffect(() => startShortcuts(), [])
 
