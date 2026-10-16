@@ -27,9 +27,14 @@ pub fn normalize(s: &str) -> String {
     s.split(|c: char| !c.is_alphanumeric()).filter(|w| !w.is_empty()).collect::<Vec<_>>().join(" ")
 }
 
+/// First credited artist as written ("A, B & C feat. D" → "A").
+pub fn first_artist(artist: &str) -> &str {
+    ARTIST_SPLIT.split(artist).next().unwrap_or("").trim()
+}
+
 /// First credited artist, normalized ("A, B & C feat. D" → "a").
 pub fn primary_artist(artist: &str) -> String {
-    normalize(ARTIST_SPLIT.split(artist).next().unwrap_or(""))
+    normalize(first_artist(artist))
 }
 
 pub fn match_key(title: &str, artist: &str) -> String {

@@ -97,7 +97,7 @@ fn to_track(r: &Row) -> rusqlite::Result<LibraryTrack> {
 
 /// Local unified library. One track = one row, whatever number of sources.
 pub struct Library {
-    db: Connection,
+    pub(crate) db: Connection,
 }
 
 impl Library {
@@ -114,6 +114,9 @@ impl Library {
         // Migrations, keyed on user_version.
         if db.query_row("PRAGMA user_version", [], |r| r.get::<_, i64>(0))? < 1 {
             db.execute_batch("ALTER TABLE playlists ADD COLUMN custom INTEGER NOT NULL DEFAULT 0; PRAGMA user_version = 1;")?;
+        }
+        if db.query_row("PRAGMA user_version", [], |r| r.get::<_, i64>(0))? < 2 {
+            db.execute_batch(crate::history::SCHEMA_V2)?;
         }
         Ok(Self { db })
     }
@@ -168,6 +171,8 @@ impl Library {
                         )?;
                         self.db.execute("UPDATE track_ids SET track_id = ?1 WHERE track_id = ?2", [keep, dupe])?;
                         self.db.execute("UPDATE playlist_tracks SET track_id = ?1 WHERE track_id = ?2", [keep, dupe])?;
+                        self.db.execute("UPDATE plays SET track_id = ?1 WHERE track_id = ?2", [keep, dupe])?;
+                        self.db.execute("UPDATE OR IGNORE track_prefs SET track_id = ?1 WHERE track_id = ?2", [keep, dupe])?;
                         self.db.execute("DELETE FROM tracks WHERE id = ?1", [dupe])?;
                         self.fill(keep, album, dur, dupe_isrc)?;
                     }
