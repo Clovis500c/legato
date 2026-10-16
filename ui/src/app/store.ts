@@ -14,7 +14,7 @@ export type View =
   | { name: 'artists' }
   | { name: 'artist'; artist: string }
   | { name: 'playlist'; id: number }
-  | { name: 'settings'; section: SettingsSection; wizard?: Service }
+  | { name: 'settings'; section: SettingsSection; wizard?: 'spotify' }
 
 interface State {
   view: View

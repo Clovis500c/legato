@@ -104,7 +104,7 @@ export function AddView() {
   const [busy, setBusy] = useState(false)
   const [only, setOnly] = useState<'all' | 'youtube' | 'apple'>('all')
   const [hideCovers, setHideCovers] = useState(true)
-  const ytOn = status.youtube.connected && (!res || res.youtubeSearchesLeft > 0)
+  const ytOn = status.youtube.connected
   const local = useMemo(() => (q.trim() ? filterTracks(tracks, q, 'all').slice(0, 4) : []), [tracks, q])
   const hits = (res?.hits ?? []).filter((h) => (only === 'all' || h.ids[only]) && !(hideCovers && h.ids.youtube && !h.ids.apple && unofficial(videoKind(h.title))))
   const markAdded = (i: number, libraryId: number) => setRes((r) => r && { ...r, hits: r.hits.map((h, j) => (j === i ? { ...h, libraryId } : h)) })
@@ -198,7 +198,7 @@ export function AddView() {
             <h2 className="kicker py-1.5">Search sources</h2>
             {[
               { code: 'Apple Music', note: 'Public catalog, no account', on: true },
-              { code: 'YouTube', note: !status.youtube.connected ? 'Connect your account (Sources)' : res ? `${res.youtubeSearchesLeft} searches left today` : '100 searches a day', on: ytOn },
+              { code: 'YouTube Music', note: ytOn ? 'Your Google account' : 'Sign in with Google (Accounts)', on: ytOn },
               { code: 'Spotify', note: 'Search closed without Premium', on: false },
             ].map((s) => (
               <p key={s.code} className="flex items-center gap-2.5 border-t border-line-soft py-2.5 text-[13px] first-of-type:border-0">

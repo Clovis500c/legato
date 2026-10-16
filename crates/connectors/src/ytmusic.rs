@@ -1,0 +1,451 @@
+//! YouTube Music through its own web API ("InnerTube", what music.youtube.com calls), with the user's web session
+//! (Google sign-in in the app window, like Pear Desktop / ytmusicapi). No keys, no Data API quota.
+//! Unofficial: response shapes change, so parsing walks the JSON for known renderers instead of fixed paths.
+
+use anyhow::{Context, Result, bail};
+use async_trait::async_trait;
+use music_core::matching::best_match;
+use music_core::model::{Connector, PlaylistRef, Source, Track};
+use regex::Regex;
+use serde::{Deserialize, Serialize};
+use serde_json::{Value, json};
+use sha1::{Digest, Sha1};
+use std::collections::BTreeMap;
+use std::sync::LazyLock;
+use std::time::{SystemTime, UNIX_EPOCH};
+
+pub const API: &str = "https://music.youtube.com/youtubei/v1";
+const ORIGIN: &str = "https://music.youtube.com";
+const UA: &str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36";
+/// Search filter "Songs" (protobuf params the site sends).
+const SONGS: &str = "EgWKAQIIAWoMEA4QChADEAQQCRAF";
+const MAX_PAGES: usize = 60;
+
+static DURATION: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"^(?:(\d+):)?(\d{1,2}):(\d{2})$").unwrap());
+static AUTHUSER: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"authuser=(\d+)").unwrap());
+
+/// One identity in the session: a Google account (authuser) or one of its brand channels (page id).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Account {
+    pub name: String,
+    pub handle: Option<String>,
+    /// Google account the identity belongs to.
+    pub email: Option<String>,
+    pub authuser: u32,
+    pub page_id: Option<String>,
+}
+
+impl Account {
+    /// Stable key for settings ("1" or "1:pageid").
+    pub fn key(&self) -> String {
+        match &self.page_id {
+            Some(p) => format!("{}:{p}", self.authuser),
+            None => self.authuser.to_string(),
+        }
+    }
+}
+
+pub struct YouTubeMusic {
+    api: String,
+    cookie: String,
+    sapisid: String,
+    authuser: u32,
+    page_id: Option<String>,
+    /// Set for extra accounts: their Liked Music gets its own id and name.
+    account: Option<Account>,
+    http: reqwest::Client,
+}
+
+fn cookie_value<'a>(cookie: &'a str, name: &str) -> Option<&'a str> {
+    cookie.split("; ").find_map(|kv| kv.strip_prefix(name)?.strip_prefix('='))
+}
+
+/// "1.YYYYMMDD.01.00" like the site; today's date keeps it plausible.
+fn client_version() -> String {
+    let days = SystemTime::now().duration_since(UNIX_EPOCH).map_or(0, |d| d.as_secs() / 86_400) as i64;
+    // Civil date from days since epoch (Howard Hinnant).
+    let z = days + 719_468;
+    let era = z.div_euclid(146_097);
+    let doe = z - era * 146_097;
+    let yoe = (doe - doe / 1460 + doe / 36_524 - doe / 146_096) / 365;
+    let doy = doe - (365 * yoe + yoe / 4 - yoe / 100);
+    let mp = (5 * doy + 2) / 153;
+    let d = doy - (153 * mp + 2) / 5 + 1;
+    let m = if mp < 10 { mp + 3 } else { mp - 9 };
+    let y = yoe + era * 400 + i64::from(m <= 2);
+    format!("1.{y:04}{m:02}{d:02}.01.00")
+}
+
+/// `SAPISIDHASH <ts>_<sha1("<ts> <SAPISID> <origin>")>`: proof of the session, as the site computes it.
+pub fn sapisid_hash(sapisid: &str, ts: u64) -> String {
+    let digest = Sha1::digest(format!("{ts} {sapisid} {ORIGIN}").as_bytes());
+    format!("SAPISIDHASH {ts}_{}", digest.iter().map(|b| format!("{b:02x}")).collect::<String>())
+}
+
+fn text(v: &Value) -> Option<String> {
+    v.get("simpleText").and_then(Value::as_str).map(String::from).or_else(|| {
+        let runs = v.get("runs")?.as_array()?;
+        Some(runs.iter().filter_map(|r| r.get("text")?.as_str()).collect())
+    })
+}
+
+/// Every object under `key`, depth-first, whatever the layout.
+fn find<'a>(v: &'a Value, key: &str, out: &mut Vec<&'a Value>) {
+    match v {
+        Value::Object(m) => {
+            for (k, child) in m {
+                if k == key {
+                    out.push(child);
+                }
+                find(child, key, out);
+            }
+        }
+        Value::Array(a) => a.iter().for_each(|c| find(c, key, out)),
+        _ => {}
+    }
+}
+
+fn all<'a>(v: &'a Value, key: &str) -> Vec<&'a Value> {
+    let mut out = Vec::new();
+    find(v, key, &mut out);
+    out
+}
+
+fn page_type(run: &Value) -> &str {
+    run.pointer("/navigationEndpoint/browseEndpoint/browseEndpointContextSupportedConfigs/browseEndpointContextMusicConfig/pageType").and_then(Value::as_str).unwrap_or("")
+}
+
+fn parse_duration(s: &str) -> Option<u32> {
+    let c = DURATION.captures(s.trim())?;
+    let n = |i| c.get(i).map_or(0, |m| m.as_str().parse::<u32>().unwrap_or(0));
+    Some(((n(1) * 60 + n(2)) * 60 + n(3)) * 1000)
+}
+
+/// One list row (song in search, playlist, library) → track. None for rows without a playable video.
+fn row_track(row: &Value) -> Option<Track> {
+    let video_id = row
+        .pointer("/playlistItemData/videoId")
+        .or_else(|| all(row, "watchEndpoint").into_iter().find_map(|w| w.get("videoId")))
+        .and_then(Value::as_str)?
+        .to_string();
+    let cols: Vec<&Value> = row.get("flexColumns")?.as_array()?.iter().filter_map(|c| c.pointer("/musicResponsiveListItemFlexColumnRenderer/text")).collect();
+    let title = text(cols.first()?)?;
+    let runs: Vec<&Value> = cols.iter().skip(1).filter_map(|c| c.get("runs")?.as_array()).flatten().collect();
+    let artists: Vec<String> = runs.iter().filter(|r| page_type(r) == "MUSIC_PAGE_TYPE_ARTIST" || page_type(r) == "MUSIC_PAGE_TYPE_USER_CHANNEL").filter_map(|r| r.get("text")?.as_str().map(String::from)).collect();
+    let album = runs.iter().find(|r| page_type(r) == "MUSIC_PAGE_TYPE_ALBUM").and_then(|r| r.get("text")?.as_str().map(String::from));
+    let fixed = row.get("fixedColumns").map(|f| all(f, "text").into_iter().filter_map(text).collect::<Vec<_>>()).unwrap_or_default();
+    let duration_ms = runs.iter().filter_map(|r| r.get("text")?.as_str()).chain(fixed.iter().map(String::as_str)).find_map(parse_duration);
+    // No linked artist (plain videos): first plain run that isn't a type label or separator.
+    let artist = if artists.is_empty() {
+        runs.iter().filter_map(|r| r.get("text")?.as_str()).find(|t| !matches!(*t, "Song" | "Video" | "Episode" | " • " | " & " | ", ") && parse_duration(t).is_none())?.to_string()
+    } else {
+        artists.join(", ")
+    };
+    Some(Track { title, artist, album, duration_ms, isrc: None, ids: BTreeMap::from([(Source::Youtube, video_id)]) })
+}
+
+fn rows(v: &Value) -> Vec<Track> {
+    all(v, "musicResponsiveListItemRenderer").into_iter().filter_map(row_track).collect()
+}
+
+/// Playlist pages also carry a "Suggestions" shelf: keep the playlist shelf (rows + its continuation) only.
+fn playlist_rows(page: &Value) -> (Vec<Track>, Option<String>) {
+    let shelf = all(page, "musicPlaylistShelfRenderer").into_iter().next().unwrap_or(page);
+    (rows(shelf), continuation(shelf))
+}
+
+fn continuation(v: &Value) -> Option<String> {
+    all(v, "continuationCommand").into_iter().chain(all(v, "nextContinuationData")).find_map(|c| c.get("token").or_else(|| c.get("continuation"))?.as_str().map(String::from))
+}
+
+/// Identities from the account switcher response.
+fn parse_accounts(v: &Value) -> Vec<Account> {
+    let mut out = Vec::new();
+    for section in all(v, "accountSectionListRenderer") {
+        let email = all(section, "accountItemSectionHeaderRenderer").first().and_then(|h| text(h.get("title")?));
+        for item in all(section, "accountItem") {
+            let tokens = all(item, "supportedTokens").into_iter().filter_map(Value::as_array).flatten().collect::<Vec<_>>();
+            let authuser = tokens.iter().filter_map(|t| t.pointer("/accountSigninToken/signinUrl")?.as_str()).find_map(|u| AUTHUSER.captures(u)?[1].parse().ok()).unwrap_or(0);
+            let page_id = tokens.iter().find_map(|t| t.pointer("/pageIdToken/pageId")?.as_str().map(String::from));
+            let Some(name) = item.get("accountName").and_then(text) else { continue };
+            out.push(Account { name, handle: item.get("channelHandle").and_then(text), email: email.clone(), authuser, page_id });
+        }
+    }
+    out
+}
+
+impl YouTubeMusic {
+    /// `cookie` = Cookie header of music.youtube.com from the sign-in window.
+    pub fn new(cookie: &str) -> Result<Self> {
+        Self::with_api(API, cookie)
+    }
+
+    pub fn with_api(api: &str, cookie: &str) -> Result<Self> {
+        let sapisid = cookie_value(cookie, "SAPISID").or_else(|| cookie_value(cookie, "__Secure-3PAPISID")).context("Not signed in to YouTube Music")?.to_string();
+        Ok(Self { api: api.into(), cookie: cookie.into(), sapisid, authuser: 0, page_id: None, account: None, http: reqwest::Client::new() })
+    }
+
+    /// Same session, acting as `account`.
+    pub fn as_account(mut self, account: &Account) -> Self {
+        self.authuser = account.authuser;
+        self.page_id = account.page_id.clone();
+        self.account = (account.key() != "0").then(|| account.clone());
+        self
+    }
+
+    async fn call(&self, endpoint: &str, mut body: Value) -> Result<Value> {
+        let version = client_version();
+        body["context"] = json!({ "client": { "clientName": "WEB_REMIX", "clientVersion": version, "hl": "en" }, "user": {} });
+        let ts = SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs();
+        let mut req = self
+            .http
+            .post(format!("{}/{endpoint}?prettyPrint=false", self.api))
+            .header("cookie", &self.cookie)
+            .header("authorization", sapisid_hash(&self.sapisid, ts))
+            .header("x-goog-authuser", self.authuser.to_string())
+            .header("x-origin", ORIGIN)
+            .header("origin", ORIGIN)
+            .header("user-agent", UA)
+            .header("x-youtube-client-name", "67")
+            .header("x-youtube-client-version", &version)
+            .json(&body);
+        if let Some(p) = &self.page_id {
+            req = req.header("x-goog-pageid", p);
+        }
+        let mut res = req.try_clone().context("request not retryable")?.send().await?;
+        // Unofficial backend: brief 5xx blips happen. One retry.
+        if res.status().is_server_error() {
+            tokio::time::sleep(std::time::Duration::from_secs(1)).await;
+            res = req.send().await?;
+        }
+        let status = res.status();
+        if !status.is_success() {
+            bail!("YouTube Music {endpoint} → {status} {}", res.text().await.unwrap_or_default().chars().take(300).collect::<String>());
+        }
+        Ok(res.json().await?)
+    }
+
+    /// Google accounts and channels signed in to this session.
+    pub async fn accounts(&self) -> Result<Vec<Account>> {
+        Ok(parse_accounts(&self.call("account/accounts_list", json!({})).await?))
+    }
+
+    pub async fn search_songs(&self, query: &str) -> Result<Vec<Track>> {
+        Ok(rows(&self.call("search", json!({ "query": query, "params": SONGS })).await?))
+    }
+
+    /// Playlist page + continuations, playlist rows only.
+    async fn browse_rows(&self, browse_id: &str) -> Result<Vec<Track>> {
+        let page = self.call("browse", json!({ "browseId": browse_id })).await?;
+        let (mut out, mut token) = playlist_rows(&page);
+        for _ in 0..MAX_PAGES {
+            let Some(t) = token else { break };
+            let next = self.call("browse", json!({ "continuation": t })).await?;
+            let more = rows(&next);
+            if more.is_empty() {
+                break;
+            }
+            out.extend(more);
+            token = continuation(&next);
+        }
+        Ok(out)
+    }
+
+    /// Video ids of a playlist (export resume).
+    pub async fn playlist_videos(&self, playlist_id: &str) -> Result<Vec<String>> {
+        Ok(self.browse_rows(&format!("VL{playlist_id}")).await?.into_iter().filter_map(|t| t.ids.get(&Source::Youtube).cloned()).collect())
+    }
+
+    /// Private playlist with these videos. Returns its id.
+    pub async fn create_playlist(&self, title: &str, video_ids: &[String]) -> Result<String> {
+        let v = self.call("playlist/create", json!({ "title": title, "description": "Exported from Music App", "privacyStatus": "PRIVATE", "videoIds": video_ids })).await?;
+        v.get("playlistId").and_then(Value::as_str).map(String::from).context("YouTube Music didn't return the playlist")
+    }
+
+    /// Append videos. No dedupeOption: "DEDUPE_OPTION_SKIP" would skip YouTube's duplicate check (= allow duplicates).
+    pub async fn add_videos(&self, playlist_id: &str, video_ids: &[String]) -> Result<()> {
+        for chunk in video_ids.chunks(100) {
+            let actions: Vec<Value> = chunk.iter().map(|v| json!({ "action": "ACTION_ADD_VIDEO", "addedVideoId": v })).collect();
+            let v = self.call("browse/edit_playlist", json!({ "playlistId": playlist_id, "actions": actions })).await?;
+            // HTTP 200 can still carry a refusal.
+            if let Some(status) = v.get("status").and_then(Value::as_str).filter(|s| *s != "STATUS_SUCCEEDED") {
+                bail!("YouTube Music refused to add the tracks ({status})");
+            }
+        }
+        Ok(())
+    }
+}
+
+#[async_trait]
+impl Connector for YouTubeMusic {
+    fn source(&self) -> Source {
+        Source::Youtube
+    }
+
+    /// Built from a live session only.
+    fn is_connected(&self) -> bool {
+        true
+    }
+
+    async fn connect(&self) -> Result<()> {
+        bail!("Sign in from Settings › Accounts")
+    }
+
+    fn disconnect(&self) -> Result<()> {
+        Ok(())
+    }
+
+    /// Library playlists + Liked music.
+    async fn list_playlists(&self) -> Result<Vec<PlaylistRef>> {
+        let page = self.call("browse", json!({ "browseId": "FEmusic_liked_playlists" })).await?;
+        let mut out = Vec::new();
+        for item in all(&page, "musicTwoRowItemRenderer") {
+            let Some(id) = item.pointer("/navigationEndpoint/browseEndpoint/browseId").and_then(Value::as_str).and_then(|b| b.strip_prefix("VL")) else { continue };
+            // SE = Episodes for Later (podcasts, not music).
+            if id == "SE" {
+                continue;
+            }
+            let mut name = item.get("title").and_then(text).unwrap_or_else(|| id.to_string());
+            // Every account's Liked Music is "LM": keep them apart in the library.
+            let id = match (&self.account, id) {
+                (Some(a), "LM") => {
+                    name = format!("{name} · {}", a.name);
+                    format!("LM~{}", a.key())
+                }
+                _ => id.to_string(),
+            };
+            if !out.iter().any(|p: &PlaylistRef| p.id == id) {
+                out.push(PlaylistRef { id, name });
+            }
+        }
+        Ok(out)
+    }
+
+    async fn playlist_tracks(&self, playlist_id: &str) -> Result<Vec<Track>> {
+        self.browse_rows(&format!("VL{}", playlist_id.split('~').next().unwrap_or(playlist_id))).await
+    }
+
+    async fn search(&self, query: &str) -> Result<Vec<Track>> {
+        self.search_songs(query).await
+    }
+
+    async fn resolve(&self, track: &Track) -> Result<Option<Track>> {
+        let found = self.search_songs(&format!("{} {}", track.artist, track.title)).await?;
+        Ok(best_match(track, &found).cloned())
+    }
+
+    async fn write_playlist(&self, name: &str, tracks: &[Track]) -> Result<String> {
+        self.create_playlist(name, &tracks.iter().filter_map(|t| t.ids.get(&Source::Youtube).cloned()).collect::<Vec<_>>()).await
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use mockito::{Matcher, Server};
+
+    const COOKIE: &str = "YSC=x; SAPISID=abc/def; __Secure-3PAPISID=abc/def";
+
+    fn run(t: &str, artist: Option<(&str, &str)>) -> Value {
+        match artist {
+            Some((page, id)) => json!({ "text": t, "navigationEndpoint": { "browseEndpoint": { "browseId": id, "browseEndpointContextSupportedConfigs": { "browseEndpointContextMusicConfig": { "pageType": page } } } } }),
+            None => json!({ "text": t }),
+        }
+    }
+
+    fn row(video: &str, title: &str, second: Vec<Value>, fixed: Option<&str>) -> Value {
+        let mut r = json!({ "musicResponsiveListItemRenderer": {
+            "playlistItemData": { "videoId": video },
+            "flexColumns": [
+                { "musicResponsiveListItemFlexColumnRenderer": { "text": { "runs": [{ "text": title }] } } },
+                { "musicResponsiveListItemFlexColumnRenderer": { "text": { "runs": second } } }
+            ]
+        } });
+        if let Some(d) = fixed {
+            r["musicResponsiveListItemRenderer"]["fixedColumns"] = json!([{ "musicResponsiveListItemFixedColumnRenderer": { "text": { "runs": [{ "text": d }] } } }]);
+        }
+        r
+    }
+
+    #[test]
+    fn hashes_session_like_the_site() {
+        // sha1("1700000000 abc/def https://music.youtube.com")
+        let h = sapisid_hash("abc/def", 1_700_000_000);
+        assert!(h.starts_with("SAPISIDHASH 1700000000_") && h.len() == "SAPISIDHASH 1700000000_".len() + 40, "{h}");
+        assert_eq!(cookie_value(COOKIE, "SAPISID"), Some("abc/def"));
+        assert!(YouTubeMusic::new("YSC=x").is_err());
+        assert!(client_version().starts_with("1.20") && client_version().len() == 16, "{}", client_version());
+    }
+
+    #[test]
+    fn parses_rows_from_any_layout() {
+        let page = json!({ "contents": { "deep": [
+            row("v1", "Get Lucky", vec![run("Song", None), run(" • ", None), run("Daft Punk", Some(("MUSIC_PAGE_TYPE_ARTIST", "UC1"))), run(", ", None), run("Pharrell Williams", Some(("MUSIC_PAGE_TYPE_ARTIST", "UC2"))), run(" • ", None), run("Random Access Memories", Some(("MUSIC_PAGE_TYPE_ALBUM", "MPRE1"))), run(" • ", None), run("6:09", None)], None),
+            row("v2", "Some upload", vec![run("Video", None), run(" • ", None), run("A Channel", None)], Some("1:02:03")),
+            { "musicResponsiveListItemRenderer": { "flexColumns": [] } }
+        ] } });
+        let t = rows(&page);
+        assert_eq!(t.len(), 2);
+        assert_eq!((t[0].title.as_str(), t[0].artist.as_str(), t[0].album.as_deref(), t[0].duration_ms), ("Get Lucky", "Daft Punk, Pharrell Williams", Some("Random Access Memories"), Some(369_000)));
+        assert_eq!((t[1].artist.as_str(), t[1].duration_ms, t[1].ids[&Source::Youtube].as_str()), ("A Channel", Some(3_723_000), "v2"));
+    }
+
+    #[tokio::test]
+    async fn add_reports_refusals() {
+        let mut s = Server::new_async().await;
+        let ok = s.mock("POST", "/browse/edit_playlist").match_query(Matcher::Any).match_body(Matcher::PartialJson(json!({ "actions": [{ "addedVideoId": "a" }] }))).with_body(r#"{"status":"STATUS_SUCCEEDED"}"#).create_async().await;
+        s.mock("POST", "/browse/edit_playlist").match_query(Matcher::Any).match_body(Matcher::PartialJson(json!({ "actions": [{ "addedVideoId": "b" }] }))).with_body(r#"{"status":"STATUS_FAILED"}"#).create_async().await;
+        let yt = YouTubeMusic::with_api(&s.url(), COOKIE).unwrap();
+        yt.add_videos("PL", &["a".into()]).await.unwrap();
+        assert!(yt.add_videos("PL", &["b".into()]).await.unwrap_err().to_string().contains("STATUS_FAILED"));
+        ok.assert_async().await;
+    }
+
+    #[test]
+    fn playlist_rows_skip_suggestions() {
+        let page = json!({ "contents": [
+            { "musicPlaylistShelfRenderer": { "contents": [row("v1", "Mine", vec![run("X", None)], None), { "continuationItemRenderer": { "continuationEndpoint": { "continuationCommand": { "token": "P2" } } } }] } },
+            { "musicShelfRenderer": { "title": { "runs": [{ "text": "Suggestions" }] }, "contents": [row("v9", "Suggested", vec![run("Y", None)], None)], "continuations": [{ "reloadContinuationData": { "continuation": "S" } }] } }
+        ] });
+        let (t, token) = playlist_rows(&page);
+        assert_eq!((t.iter().map(|t| t.title.as_str()).collect::<Vec<_>>(), token.as_deref()), (vec!["Mine"], Some("P2")));
+    }
+
+    #[test]
+    fn parses_account_switcher() {
+        let item = |name: &str, authuser: u32, page: Option<&str>| {
+            let mut tokens = vec![json!({ "accountSigninToken": { "signinUrl": format!("/signin?action_handle_signin=true&authuser={authuser}") } })];
+            if let Some(p) = page {
+                tokens.push(json!({ "pageIdToken": { "pageId": p } }));
+            }
+            json!({ "accountItem": { "accountName": { "simpleText": name }, "channelHandle": { "simpleText": format!("@{name}") }, "serviceEndpoint": { "selectActiveIdentityEndpoint": { "supportedTokens": tokens } } } })
+        };
+        let v = json!({ "actions": [{ "sections": [
+            { "accountSectionListRenderer": { "header": { "accountItemSectionHeaderRenderer": { "title": { "runs": [{ "text": "me@example.com" }] } } }, "contents": [{ "accountItemSectionRenderer": { "contents": [item("Me", 0, None), item("Brand", 0, Some("123"))] } }] } },
+            { "accountSectionListRenderer": { "header": { "accountItemSectionHeaderRenderer": { "title": { "runs": [{ "text": "work@example.com" }] } } }, "contents": [{ "accountItemSectionRenderer": { "contents": [item("Work", 1, None)] } }] } }
+        ] }] });
+        let a = parse_accounts(&v);
+        assert_eq!(a.iter().map(|a| (a.name.as_str(), a.authuser, a.key(), a.email.as_deref())).collect::<Vec<_>>(), [("Me", 0, "0".to_string(), Some("me@example.com")), ("Brand", 0, "0:123".to_string(), Some("me@example.com")), ("Work", 1, "1".to_string(), Some("work@example.com"))]);
+    }
+
+    #[tokio::test]
+    async fn sends_session_headers_and_follows_continuations() {
+        let mut s = Server::new_async().await;
+        let first = s
+            .mock("POST", "/browse")
+            .match_query(Matcher::Any)
+            .match_header("x-goog-authuser", "1")
+            .match_header("x-goog-pageid", "123")
+            .match_header("authorization", Matcher::Regex("^SAPISIDHASH \\d+_[0-9a-f]{40}$".into()))
+            .match_body(Matcher::PartialJson(json!({ "browseId": "VLPL1", "context": { "client": { "clientName": "WEB_REMIX" } } })))
+            .with_body(json!({ "contents": [row("v1", "A", vec![run("X", None)], None)], "continuations": [{ "nextContinuationData": { "continuation": "T2" } }] }).to_string())
+            .create_async()
+            .await;
+        s.mock("POST", "/browse").match_query(Matcher::Any).match_body(Matcher::PartialJson(json!({ "continuation": "T2" }))).with_body(json!({ "items": [row("v2", "B", vec![run("Y", None)], None)] }).to_string()).create_async().await;
+        let acct = Account { name: "Brand".into(), handle: None, email: None, authuser: 1, page_id: Some("123".into()) };
+        let yt = YouTubeMusic::with_api(&s.url(), COOKIE).unwrap().as_account(&acct);
+        assert_eq!(yt.playlist_videos("PL1").await.unwrap(), ["v1", "v2"]);
+        first.assert_async().await;
+    }
+}

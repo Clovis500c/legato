@@ -62,13 +62,13 @@ function FindVersions({ tracks }: { tracks: LibraryTrack[] }) {
   const { status, refresh, notify } = useStore()
   const [busy, setBusy] = useState(false)
   if (!tracks.length) return null
-  if (!status.youtube.connected) return <span className="font-sans text-xs tracking-normal text-ink-2 normal-case">Connect YouTube to find full versions.</span>
+  if (!status.youtube.connected) return <span className="font-sans text-xs tracking-normal text-ink-2 normal-case">Sign in to YouTube Music (Settings › Accounts) to find full versions.</span>
   const run = async () => {
     setBusy(true)
     try {
       const r = await api.findVersions(tracks.map((t) => t.id))
       await refresh()
-      notify(`Full versions found: ${r.found} of ${r.found + r.missing} · ${r.youtubeSearchesLeft} YouTube searches left today`)
+      notify(`Full versions found: ${r.found} of ${r.found + r.missing}`)
     } catch (e) {
       useStore.setState({ error: String(e) })
     } finally {
@@ -77,7 +77,7 @@ function FindVersions({ tracks }: { tracks: LibraryTrack[] }) {
   }
   return (
     <Button variant="ghost" className="ml-auto py-1! font-sans text-xs tracking-normal normal-case" disabled={busy} onClick={run}>
-      <MagnifyingGlass size={13} /> {busy ? 'Searching…' : `Find full versions (${formatCount(Math.min(tracks.length, 100))})`}
+      <MagnifyingGlass size={13} /> {busy ? 'Searching…' : `Find full versions (${formatCount(Math.min(tracks.length, 150))})`}
     </Button>
   )
 }

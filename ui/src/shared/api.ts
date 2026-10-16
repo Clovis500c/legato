@@ -51,7 +51,6 @@ export interface SearchHit extends Track {
 
 export interface SearchResults {
   hits: SearchHit[]
-  youtubeSearchesLeft: number
   errors: string[]
 }
 
@@ -62,9 +61,18 @@ export interface SourceStatus {
 
 export interface Credentials {
   spotifyClientId?: string
-  youtubeClientId?: string
-  youtubeClientSecret?: string
 }
+
+/** crates/connectors ytmusic::Account: a Google account (authuser) or one of its channels (pageId). */
+export interface YtmAccount {
+  name: string
+  handle: string | null
+  email: string | null
+  authuser: number
+  pageId: string | null
+}
+
+export const accountKey = (a: YtmAccount) => (a.pageId ? `${a.authuser}:${a.pageId}` : String(a.authuser))
 
 /** crates/player Command. */
 export type PlayerCommand =
@@ -88,7 +96,6 @@ export interface PlayerStatus {
 export interface FindReport {
   found: number
   missing: number
-  youtubeSearchesLeft: number
 }
 
 /** src-tauri share_playlist. qr = [size, row-major "0"/"1"], null when too big. */
@@ -139,9 +146,6 @@ export interface ExportReport {
   added: number
   already: number
   noYoutube: number
-  unavailable: number
-  /** Left for tomorrow (daily quota). */
-  remaining: number
 }
 
 /** src-tauri NearbyState. */
@@ -190,6 +194,13 @@ export const api = {
   spotifyPlayer: (cmd: SpotifyCommand) => invoke<void>('spotify_player', { cmd }),
   /** null = nothing playing on any Spotify device. */
   spotifyPlayback: () => invoke<SpotifyPlayback | null>('spotify_playback'),
+  /** Opens music.youtube.com to sign in (no keys). */
+  ytmSignIn: (add = false) => invoke<void>('ytm_sign_in', { add }),
+  ytmSignOut: () => invoke<void>('ytm_sign_out'),
+  /** Every account in the Google session + keys of those synced. */
+  ytmAccounts: () => invoke<{ signedIn: boolean; accounts: YtmAccount[]; picked: string[] }>('ytm_accounts'),
+  /** Synced accounts, in order (first = exports). */
+  setYtmAccounts: (accounts: YtmAccount[]) => invoke<void>('set_ytm_accounts', { accounts }),
   localFolders: () => invoke<string[]>('local_folders'),
   /** Saves folders, rescans. Returns local file count. */
   setLocalFolders: (folders: string[]) => invoke<number>('set_local_folders', { folders }),

@@ -1,10 +1,11 @@
 mod secrets;
 #[cfg(windows)]
 mod shield;
+mod ytm;
 
 use music_connectors::oauth::Opener;
 use music_connectors::spotify::Spotify;
-use music_connectors::youtube::YouTube;
+use music_connectors::ytmusic::{Account, YouTubeMusic};
 use music_core::history::{Play, Pref};
 use music_core::library::{Library, LibraryPlaylist, LibraryTrack, PlaylistEdit};
 use music_core::mixes::Mix;
@@ -29,13 +30,11 @@ fn err(e: impl Into<anyhow::Error>) -> String {
     format!("{:#}", e.into())
 }
 
-/// User-supplied app keys ("bring your own key"). Stored in OS keychain.
+/// Spotify app key (Spotify has no keyless sign-in). Stored in OS keychain.
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct Credentials {
     spotify_client_id: Option<String>,
-    youtube_client_id: Option<String>,
-    youtube_client_secret: Option<String>,
 }
 
 impl Credentials {
@@ -43,19 +42,18 @@ impl Credentials {
     fn merged_with(mut self, new: Credentials) -> Self {
         let clean = |v: Option<String>| v.map(|s| s.trim().to_string()).filter(|s| !s.is_empty());
         self.spotify_client_id = clean(new.spotify_client_id).or(self.spotify_client_id);
-        self.youtube_client_id = clean(new.youtube_client_id).or(self.youtube_client_id);
-        self.youtube_client_secret = clean(new.youtube_client_secret).or(self.youtube_client_secret);
         self
     }
 }
 
 struct AppState {
+    app: tauri::AppHandle,
     lib: Mutex<Library>,
     store: Arc<dyn SecretStore>,
     open: Opener,
     player: Player,
     shield: Arc<Shield>,
-    /// YouTube search results this session: same query costs no quota twice.
+    /// YouTube search results this session: same query asked once.
     yt_cache: Mutex<HashMap<String, Vec<Track>>>,
     /// Current nearby offer, polled by the UI.
     nearby: Arc<Mutex<NearbyState>>,
@@ -72,16 +70,30 @@ impl AppState {
         Some(Spotify::new(&id, self.store.clone(), self.open.clone()))
     }
 
-    fn youtube(&self) -> Option<YouTube> {
-        let c = self.credentials();
-        Some(YouTube::new(&c.youtube_client_id?, &c.youtube_client_secret?, self.store.clone(), self.open.clone()))
+    /// Accounts picked in Settings › Accounts (empty = main account only).
+    fn ytm_picked(&self) -> Vec<Account> {
+        self.lib.lock().unwrap().setting("ytm_accounts").ok().flatten().and_then(|v| serde_json::from_value(v).ok()).unwrap_or_default()
+    }
+
+    /// YouTube Music, one connector per picked account. Empty = signed out. Async callers only (WebView2 cookies).
+    fn ytm_all(&self) -> Vec<YouTubeMusic> {
+        let Some(cookie) = ytm::session(&self.app) else { return Vec::new() };
+        let picked = self.ytm_picked();
+        if picked.is_empty() {
+            return YouTubeMusic::new(&cookie).into_iter().collect();
+        }
+        picked.iter().filter_map(|a| YouTubeMusic::new(&cookie).ok().map(|y| y.as_account(a))).collect()
+    }
+
+    /// First picked account: search, export.
+    fn ytm(&self) -> Option<YouTubeMusic> {
+        self.ytm_all().into_iter().next()
     }
 
     fn connector(&self, source: Source) -> Option<Box<dyn Connector>> {
         match source {
             Source::Spotify => self.spotify().map(|c| Box::new(c) as _),
-            Source::Youtube => self.youtube().map(|c| Box::new(c) as _),
-            Source::Local | Source::Apple => None,
+            Source::Youtube | Source::Local | Source::Apple => None,
         }
     }
 }
@@ -94,14 +106,13 @@ struct SourceStatus {
 }
 
 #[tauri::command]
-fn sources_status(state: State<AppState>) -> Vec<(Source, SourceStatus)> {
-    [Source::Spotify, Source::Youtube]
-        .into_iter()
-        .map(|s| {
-            let c = state.connector(s);
-            (s, SourceStatus { configured: c.is_some(), connected: c.is_some_and(|c| c.is_connected()) })
-        })
-        .collect()
+async fn sources_status(state: State<'_, AppState>) -> CmdResult<Vec<(Source, SourceStatus)>> {
+    let spotify = state.spotify();
+    let youtube = ytm::session(&state.app).is_some();
+    Ok(vec![
+        (Source::Spotify, SourceStatus { configured: spotify.is_some(), connected: spotify.is_some_and(|c| c.is_connected()) }),
+        (Source::Youtube, SourceStatus { configured: youtube, connected: youtube }),
+    ])
 }
 
 #[tauri::command]
@@ -119,10 +130,10 @@ fn disconnect(state: State<AppState>, source: Source) -> CmdResult<()> {
 
 #[tauri::command]
 async fn sync_all(state: State<'_, AppState>) -> CmdResult<SyncReport> {
-    let (spotify, youtube) = (state.spotify(), state.youtube());
+    let (spotify, youtube) = (state.spotify(), state.ytm_all());
     let mut all: Vec<&dyn Connector> = Vec::new();
     all.extend(spotify.as_ref().map(|c| c as &dyn Connector));
-    all.extend(youtube.as_ref().map(|c| c as &dyn Connector));
+    all.extend(youtube.iter().map(|c| c as &dyn Connector));
     Ok(sync(&state.lib, &all, spotify.as_ref().map(|c| c as &dyn Connector)).await)
 }
 
@@ -185,32 +196,19 @@ async fn add_link(state: State<'_, AppState>, url: String) -> CmdResult<String> 
     Ok(format!("{} – {}", t.artist, t.title))
 }
 
-/// search.list has its own bucket: 100 calls per day.
-const YT_SEARCHES_PER_DAY: u32 = 100;
-
-// shortcut: UTC day; YouTube resets quotas at midnight Pacific. Fine for a guard.
+/// UTC day number (mix seed).
 fn today() -> u64 {
     std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map_or(0, |d| d.as_secs() / 86_400)
 }
 
-/// YouTube searches used today (persisted).
-fn yt_used(lib: &Library) -> u32 {
-    lib.setting("yt_search").ok().flatten().filter(|v| v["day"].as_u64() == Some(today())).and_then(|v| v["used"].as_u64()).unwrap_or(0) as u32
-}
-
-/// YouTube search with session cache and daily budget. None = not connected or budget spent.
+/// YouTube Music song search, cached for the session. None = signed out.
 async fn yt_search(state: &AppState, query: &str) -> Option<Result<Vec<Track>, String>> {
     let key = query.to_lowercase();
     if let Some(hit) = state.yt_cache.lock().unwrap().get(&key) {
         return Some(Ok(hit.clone()));
     }
-    let yt = state.youtube().filter(|y| y.is_connected())?;
-    let used = yt_used(&state.lib.lock().unwrap());
-    if used >= YT_SEARCHES_PER_DAY {
-        return None;
-    }
-    let res = yt.search(query).await.map_err(err);
-    state.lib.lock().unwrap().set_setting("yt_search", &serde_json::json!({ "day": today(), "used": used + 1 })).ok();
+    let yt = state.ytm()?;
+    let res = yt.search_songs(query).await.map_err(err);
     if let Ok(found) = &res {
         let mut cache = state.yt_cache.lock().unwrap();
         if cache.len() > 200 {
@@ -234,7 +232,6 @@ struct SearchHit {
 #[serde(rename_all = "camelCase")]
 struct SearchResults {
     hits: Vec<SearchHit>,
-    youtube_searches_left: u32,
     errors: Vec<String>,
 }
 
@@ -281,7 +278,7 @@ async fn search_catalogs(state: State<'_, AppState>, query: String, country: Str
     }
     let lib = state.lib.lock().unwrap();
     let hits = merged.into_iter().map(|track| SearchHit { library_id: lib.find(&track).ok().flatten(), track }).collect();
-    Ok(SearchResults { hits, youtube_searches_left: YT_SEARCHES_PER_DAY.saturating_sub(yt_used(&lib)), errors })
+    Ok(SearchResults { hits, errors })
 }
 
 /// No YouTube id yet: try to find one (1 search) so the track plays in full.
@@ -312,18 +309,20 @@ async fn add_track(state: State<'_, AppState>, track: Track) -> CmdResult<i64> {
 struct FindReport {
     /// Tracks that got a YouTube version.
     found: usize,
-    /// Tracks still without full playback (budget spent or no match).
+    /// Tracks still without full playback (no match).
     missing: usize,
-    youtube_searches_left: u32,
 }
 
-/// "Find versions": YouTube match for tracks with no full source (Apple / Spotify only). 1 search each, cached, daily budget.
+/// Searches per "Find versions" run: polite to YouTube Music.
+const FIND_MAX: usize = 150;
+
+/// "Find versions": YouTube match for tracks with no full source (Apple / Spotify only). 1 search each, cached.
 #[tauri::command]
 async fn find_versions(state: State<'_, AppState>, ids: Vec<i64>) -> CmdResult<FindReport> {
     let todo: Vec<Track> = {
         let lib = state.lib.lock().unwrap();
         let tracks = lib.tracks().map_err(err)?;
-        tracks.into_iter().filter(|t| ids.contains(&t.id) && !t.track.ids.contains_key(&Source::Youtube) && !t.track.ids.contains_key(&Source::Local)).map(|t| t.track).collect()
+        tracks.into_iter().filter(|t| ids.contains(&t.id) && !t.track.ids.contains_key(&Source::Youtube) && !t.track.ids.contains_key(&Source::Local)).map(|t| t.track).take(FIND_MAX).collect()
     };
     let mut found = 0;
     for t in &todo {
@@ -334,8 +333,7 @@ async fn find_versions(state: State<'_, AppState>, ids: Vec<i64>) -> CmdResult<F
             found += 1;
         }
     }
-    let left = YT_SEARCHES_PER_DAY.saturating_sub(yt_used(&state.lib.lock().unwrap()));
-    Ok(FindReport { found, missing: todo.len() - found, youtube_searches_left: left })
+    Ok(FindReport { found, missing: todo.len() - found })
 }
 
 /// Apple 30 s preview into the local engine. Returns store page (shown as "Listen on Apple Music").
@@ -573,17 +571,13 @@ struct ExportReport {
     already: usize,
     /// Tracks with no YouTube version (Find full versions can fix that).
     no_youtube: usize,
-    /// Deleted videos.
-    unavailable: usize,
-    /// Left for tomorrow: daily quota ran out.
-    remaining: usize,
 }
 
 /// Playlist → private YouTube playlist. Same playlist exported again = same YouTube playlist, only missing videos added.
 #[tauri::command]
 async fn export_youtube(state: State<'_, AppState>, id: i64) -> CmdResult<ExportReport> {
-    let yt = state.youtube().filter(|y| y.is_connected()).ok_or("Connect YouTube first (Settings › Sources)")?;
-    let key = format!("yt_export_{id}");
+    let yt = state.ytm().ok_or("Sign in to YouTube Music first (Settings › Accounts)")?;
+    let key = format!("ytm_export_{id}");
     let (name, videos, no_youtube, existing) = {
         let lib = state.lib.lock().unwrap();
         let p = lib.playlists().map_err(err)?.into_iter().find(|p| p.id == id).ok_or("Playlist not found")?;
@@ -596,23 +590,20 @@ async fn export_youtube(state: State<'_, AppState>, id: i64) -> CmdResult<Export
         let no_youtube = tracks.iter().filter(|t| !t.track.ids.contains_key(&Source::Youtube)).count();
         (p.name, videos, no_youtube, lib.setting(&key).ok().flatten().and_then(|v| v.as_str().map(String::from)))
     };
-    let mut target = None;
-    if let Some(remote) = existing {
-        target = yt.playlist_videos(&remote).await.map_err(err)?.map(|have| (remote, have));
-    }
-    let (remote, have) = match target {
-        Some(t) => t,
-        None => {
-            let remote = yt.create_playlist(&name).await.map_err(err)?;
-            // Saved before adding: a quota stop or crash resumes into the same playlist.
-            state.lib.lock().unwrap().set_setting(&key, &serde_json::json!(remote)).map_err(err)?;
-            (remote, Vec::new())
+    let url = |remote: &str| format!("https://music.youtube.com/playlist?list={remote}");
+    // Exported before: add what's missing. Playlist deleted on YouTube (or any error): make a new one.
+    if let Some(remote) = existing
+        && let Ok(have) = yt.playlist_videos(&remote).await
+    {
+        let have: HashSet<String> = have.into_iter().collect();
+        let todo: Vec<String> = videos.iter().filter(|v| !have.contains(*v)).cloned().collect();
+        if yt.add_videos(&remote, &todo).await.is_ok() {
+            return Ok(ExportReport { url: url(&remote), added: todo.len(), already: videos.len() - todo.len(), no_youtube });
         }
-    };
-    let have: HashSet<String> = have.into_iter().collect();
-    let todo: Vec<String> = videos.iter().filter(|v| !have.contains(*v)).cloned().collect();
-    let r = yt.add_videos(&remote, &todo).await.map_err(err)?;
-    Ok(ExportReport { url: format!("https://www.youtube.com/playlist?list={remote}"), added: r.added, already: videos.len() - todo.len(), no_youtube, unavailable: r.unavailable, remaining: todo.len() - r.added - r.unavailable })
+    }
+    let remote = yt.create_playlist(&name, &videos).await.map_err(err)?;
+    state.lib.lock().unwrap().set_setting(&key, &serde_json::json!(remote)).map_err(err)?;
+    Ok(ExportReport { url: url(&remote), added: videos.len(), already: 0, no_youtube })
 }
 
 fn spotify_on(state: &AppState) -> CmdResult<Spotify> {
@@ -628,6 +619,51 @@ async fn spotify_player(state: State<'_, AppState>, cmd: music_connectors::spoti
 #[tauri::command]
 async fn spotify_playback(state: State<'_, AppState>) -> CmdResult<Option<music_connectors::spotify::Playback>> {
     spotify_on(&state)?.playback().await.map_err(err)
+}
+
+/// Google sign-in window for YouTube Music (no keys). add = sign in one more Google account.
+#[tauri::command]
+async fn ytm_sign_in(app: tauri::AppHandle, add: bool) -> CmdResult<()> {
+    ytm::open(&app, add).map_err(err)
+}
+
+/// Signs every Google account out of the app; library kept.
+#[tauri::command]
+async fn ytm_sign_out(state: State<'_, AppState>) -> CmdResult<()> {
+    ytm::sign_out(&state.app).map_err(err)?;
+    state.yt_cache.lock().unwrap().clear();
+    state.lib.lock().unwrap().set_setting("ytm_accounts", &serde_json::json!([])).map_err(err)
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct YtmAccounts {
+    signed_in: bool,
+    /// Every Google account and channel in the session.
+    accounts: Vec<Account>,
+    /// Keys of accounts synced into the library.
+    picked: Vec<String>,
+}
+
+#[tauri::command]
+async fn ytm_accounts(state: State<'_, AppState>) -> CmdResult<YtmAccounts> {
+    let Some(cookie) = ytm::session(&state.app) else { return Ok(YtmAccounts { signed_in: false, accounts: Vec::new(), picked: Vec::new() }) };
+    let accounts = YouTubeMusic::new(&cookie).map_err(err)?.accounts().await.map_err(err)?;
+    let picked = state.ytm_picked();
+    let picked = if picked.is_empty() { vec!["0".to_string()] } else { picked.iter().map(Account::key).collect() };
+    Ok(YtmAccounts { signed_in: true, accounts, picked })
+}
+
+/// Accounts to sync (first one also gets exports).
+#[tauri::command]
+fn set_ytm_accounts(state: State<AppState>, accounts: Vec<Account>) -> CmdResult<()> {
+    // Trust boundary: values end up in request headers.
+    let ok = accounts.len() <= 20 && accounts.iter().all(|a| a.authuser < 10 && a.name.chars().count() <= 200 && a.page_id.as_ref().is_none_or(|p| p.len() <= 40 && p.bytes().all(|b| b.is_ascii_digit())));
+    if !ok {
+        return Err("Invalid accounts".into());
+    }
+    state.yt_cache.lock().unwrap().clear();
+    state.lib.lock().unwrap().set_setting("ytm_accounts", &serde_json::json!(accounts)).map_err(err)
 }
 
 #[tauri::command]
@@ -718,10 +754,10 @@ pub fn run() {
                 }
             });
 
-            app.manage(AppState { lib: Mutex::new(lib), store: Arc::new(secrets::KeyringStore::new(&app.config().identifier)), open, player: Player::spawn(), shield, yt_cache: Mutex::default(), nearby: Arc::new(Mutex::new(NearbyState::Idle)), nearby_task: Mutex::default() });
+            app.manage(AppState { app: app.handle().clone(), lib: Mutex::new(lib), store: Arc::new(secrets::KeyringStore::new(&app.config().identifier)), open, player: Player::spawn(), shield, yt_cache: Mutex::default(), nearby: Arc::new(Mutex::new(NearbyState::Idle)), nearby_task: Mutex::default() });
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, add_track, find_versions, play_preview, share_playlist, share_preview, share_read_image, share_import, nearby_send, nearby_status, nearby_stop, nearby_receive, record_play, mixes, set_track_pref, clear_history, export_youtube, spotify_player, spotify_playback, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, restart_app])
+        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, add_track, find_versions, play_preview, share_playlist, share_preview, share_read_image, share_import, nearby_send, nearby_status, nearby_stop, nearby_receive, record_play, mixes, set_track_pref, clear_history, export_youtube, spotify_player, spotify_playback, ytm_sign_in, ytm_sign_out, ytm_accounts, set_ytm_accounts, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, restart_app])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
@@ -732,9 +768,10 @@ mod tests {
 
     #[test]
     fn credentials_merge_trims_and_keeps_old_values() {
-        let old = Credentials { spotify_client_id: Some("OLD".into()), ..Default::default() };
-        let new = Credentials { spotify_client_id: Some("   ".into()), youtube_client_id: Some(" Y ".into()), ..Default::default() };
+        let old = Credentials { spotify_client_id: Some("OLD".into()) };
+        let new = Credentials { spotify_client_id: Some("   ".into()) };
         let m = old.merged_with(new);
-        assert_eq!((m.spotify_client_id.as_deref(), m.youtube_client_id.as_deref()), (Some("OLD"), Some("Y")));
+        assert_eq!(m.spotify_client_id.as_deref(), Some("OLD"));
+        assert_eq!(m.merged_with(Credentials { spotify_client_id: Some(" NEW ".into()) }).spotify_client_id.as_deref(), Some("NEW"));
     }
 }

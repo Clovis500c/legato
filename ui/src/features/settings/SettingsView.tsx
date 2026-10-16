@@ -13,7 +13,7 @@ import { SourcesView } from '../sources/SourcesView'
 const sections: { id: SettingsSection; label: string; icon: ReactNode }[] = [
   { id: 'appearance', label: 'Appearance', icon: <PaintBrush size={15} /> },
   { id: 'themes', label: 'Themes', icon: <PaletteIcon size={15} /> },
-  { id: 'sources', label: 'Sources & accounts', icon: <Plugs size={15} /> },
+  { id: 'sources', label: 'Accounts', icon: <Plugs size={15} /> },
   { id: 'shield', label: 'Shield', icon: <ShieldCheck size={15} /> },
 ]
 

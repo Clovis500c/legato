@@ -2,7 +2,7 @@ import { openUrl } from '@tauri-apps/plugin-opener'
 import { ArrowRight, ArrowSquareOut, Check, Copy, Info, X } from '@phosphor-icons/react'
 import { useState } from 'react'
 import { useStore } from '../../app/store'
-import type { Credentials, Service } from '../../shared/api'
+import type { Credentials } from '../../shared/api'
 import { Button } from '../../shared/ui/Button'
 import { SourceIcon, sourceLabel } from '../../shared/ui/SourceIcon'
 import { guides } from './guides'
@@ -23,7 +23,7 @@ function CopyField({ value }: { value: string }) {
   )
 }
 
-export function ConnectWizard({ service, onClose }: { service: Service; onClose: () => void }) {
+export function ConnectWizard({ service, onClose }: { service: 'spotify'; onClose: () => void }) {
   const { connect, busy, error } = useStore()
   const guide = guides[service]
   const last = guide.steps.length - 1
