@@ -52,15 +52,17 @@ export function groupAlbums(tracks: LibraryTrack[]): AlbumGroup[] {
   return [...map.values()].sort((a, b) => coll.compare(a.album, b.album))
 }
 
-export function groupArtists(tracks: LibraryTrack[]): { artist: string; count: number; albums: number }[] {
-  const map = new Map<string, { artist: string; count: number; albums: Set<string> }>()
+/** cover = a track of the artist to borrow art from (first one with art). */
+export function groupArtists(tracks: LibraryTrack[]): { artist: string; count: number; albums: number; cover: LibraryTrack }[] {
+  const map = new Map<string, { artist: string; count: number; albums: Set<string>; cover: LibraryTrack }>()
   for (const t of tracks) {
     const artist = primaryArtist(t.artist)
-    const g = map.get(fold(artist)) ?? map.set(fold(artist), { artist, count: 0, albums: new Set() }).get(fold(artist))!
+    const g = map.get(fold(artist)) ?? map.set(fold(artist), { artist, count: 0, albums: new Set(), cover: t }).get(fold(artist))!
     g.count++
     if (t.album) g.albums.add(fold(t.album))
+    if (!g.cover.art && t.art) g.cover = t
   }
-  return [...map.values()].map((g) => ({ artist: g.artist, count: g.count, albums: g.albums.size })).sort((a, b) => coll.compare(a.artist, b.artist))
+  return [...map.values()].map((g) => ({ artist: g.artist, count: g.count, albums: g.albums.size, cover: g.cover })).sort((a, b) => coll.compare(a.artist, b.artist))
 }
 
 export function libraryStats(tracks: LibraryTrack[]) {

@@ -6,6 +6,7 @@ import type { LibraryTrack, Source } from '../../shared/api'
 import { formatDuration } from '../../shared/format'
 import type { Column } from '../../shared/theme/theme'
 import { RoundButton } from '../../shared/ui/controls'
+import { trackArt } from '../../shared/art'
 import { Cover } from '../../shared/ui/Cover'
 import { SourceIcon } from '../../shared/ui/SourceIcon'
 import { useStore } from '../../app/store'
@@ -62,7 +63,7 @@ export function TrackTable({ tracks, empty, editId, rowActions }: { tracks: Libr
                 >
                   <span className="flex justify-end font-mono text-[11px] text-ink-3 tabular-nums">{on ? <Waveform size={14} className="text-accent" /> : String(v.index + 1).padStart(2, '0')}</span>
                   <span className="flex min-w-0 items-center gap-3">
-                    <Cover title={t.album ?? t.title} size={cover} />
+                    <Cover title={t.album ?? t.title} art={trackArt(t)} size={cover} />
                     <span className="min-w-0">
                       <span className={`flex items-center gap-2 text-[13px] font-semibold ${on ? 'text-accent' : ''}`}>
                         <span className="truncate">{t.title}</span>

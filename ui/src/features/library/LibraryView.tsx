@@ -5,6 +5,7 @@ import { api, type LibraryTrack } from '../../shared/api'
 import { fold, formatCount } from '../../shared/format'
 import { Button } from '../../shared/ui/Button'
 import { Led, LedChip, RoundButton } from '../../shared/ui/controls'
+import { firstArt, trackArt } from '../../shared/art'
 import { Cover } from '../../shared/ui/Cover'
 import { PageHeader } from '../../shared/ui/PageHeader'
 import { sourceLabel } from '../../shared/ui/SourceIcon'
@@ -181,7 +182,7 @@ export function PlaylistView({ id }: { id: number }) {
   return (
     <>
       <PageHeader
-        art={<Cover title={playlist.name} size={150} />}
+        art={<Cover title={playlist.name} art={firstArt(playlistTracks)} size={150} />}
         kicker={playlist.custom ? 'Custom playlist' : `Playlist · ${sourceLabel[playlist.source]} · imported`}
         title={playlist.custom ? <EditableTitle key={playlist.name} id={id} name={playlist.name} /> : playlist.name}
         sub={<span className="font-mono text-[11px] tracking-[0.06em] uppercase">{formatCount(playlist.trackCount)} tracks · {totalTime(playlistTracks)}</span>}
@@ -232,7 +233,7 @@ export function AlbumsView() {
               <li key={`${a.album}-${a.artist}`}>
                 <button onClick={() => go({ name: 'album', album: a.album, artist: a.artist })} className="group flex w-full flex-col gap-2 text-left">
                   <span className="relative aspect-square w-full">
-                    <Cover title={a.album} size={150} className="size-full! text-[28px]!" />
+                    <Cover title={a.album} art={firstArt(a.tracks)} size={150} className="size-full! text-[28px]!" />
                   </span>
                   <span className="min-w-0">
                     <span className="block truncate text-[13px] font-semibold group-hover:underline">{a.album}</span>
@@ -255,7 +256,7 @@ export function AlbumView({ album, artist }: { album: string; artist: string }) 
   const shown = useMemo(() => tracks.filter((t) => t.album && fold(t.album) === fold(album) && fold(primaryArtist(t.artist)) === fold(artist)), [tracks, album, artist])
   return (
     <>
-      <PageHeader art={<Cover title={album} size={150} />} kicker={`Album · ${artist}`} title={album} sub={<span className="font-mono text-[11px] tracking-[0.06em] uppercase">{shown.length} tracks · {totalTime(shown)}</span>} actions={<PlayAll tracks={shown} />} />
+      <PageHeader art={<Cover title={album} art={firstArt(shown)} size={150} />} kicker={`Album · ${artist}`} title={album} sub={<span className="font-mono text-[11px] tracking-[0.06em] uppercase">{shown.length} tracks · {totalTime(shown)}</span>} actions={<PlayAll tracks={shown} />} />
       <TrackTable tracks={shown} empty="No songs." />
     </>
   )
@@ -272,7 +273,7 @@ export function ArtistsView() {
           <li key={a.artist}>
             <button onClick={() => go({ name: 'artist', artist: a.artist })} className="flex w-full items-center gap-4 border-b border-line-soft px-2 py-2.5 text-left hover:bg-raised">
               <span className="w-8 text-right font-mono text-[11px] text-ink-3">{String(i + 1).padStart(2, '0')}</span>
-              <Cover title={a.artist} size={36} className="rounded-full!" />
+              <Cover title={a.artist} art={trackArt(a.cover)} size={36} className="rounded-full!" />
               <span className="flex-1 truncate text-[13px] font-semibold">{a.artist}</span>
               <span className="font-mono text-[10px] tracking-[0.06em] text-ink-3 uppercase">
                 {a.count} track{a.count > 1 ? 's' : ''} · {a.albums} album{a.albums > 1 ? 's' : ''}
@@ -290,7 +291,7 @@ export function ArtistView({ artist }: { artist: string }) {
   const shown = useMemo(() => tracks.filter((t) => fold(primaryArtist(t.artist)) === fold(artist)), [tracks, artist])
   return (
     <>
-      <PageHeader art={<Cover title={artist} size={120} className="rounded-full!" />} kicker="Artist" title={artist} sub={<span className="font-mono text-[11px] tracking-[0.06em] uppercase">{shown.length} tracks · {totalTime(shown)}</span>} actions={<PlayAll tracks={shown} />} />
+      <PageHeader art={<Cover title={artist} art={firstArt(shown)} size={120} className="rounded-full!" />} kicker="Artist" title={artist} sub={<span className="font-mono text-[11px] tracking-[0.06em] uppercase">{shown.length} tracks · {totalTime(shown)}</span>} actions={<PlayAll tracks={shown} />} />
       <TrackTable tracks={shown} empty="No songs." />
     </>
   )

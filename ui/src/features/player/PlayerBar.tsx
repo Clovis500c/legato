@@ -6,6 +6,7 @@ import { useStore } from '../../app/store'
 import { api } from '../../shared/api'
 import { formatDuration } from '../../shared/format'
 import { Bar, Knob, Readout, RoundButton } from '../../shared/ui/controls'
+import { trackArt } from '../../shared/art'
 import { Cover } from '../../shared/ui/Cover'
 import { bindFrame, usePlayer, useVideoSlot } from './store'
 import { embedUrl, parseYt, ytPost } from './youtube'
@@ -54,6 +55,7 @@ export function VolumeControl({ big }: { big?: boolean }) {
 export function PlayerBar() {
   const { now, playing, positionMs, durationMs, playFiles, toggle, seek, step, onLocal, onSpotify, setFull } = usePlayer()
   const readout = useSettings((s) => s.settings.readout)
+  const track = useStore((s) => s.tracks.find((t) => t.id === now?.trackId))
   // Engine plays local files and previews: poll it. Spotify Connect: poll its API, slower (rate limits).
   const local = now && (now.via === 'local' || now.via === 'preview')
   const remote = now?.via === 'spotify'
@@ -99,7 +101,7 @@ export function PlayerBar() {
       {now?.youtubeId && <YouTubeFrame videoId={now.youtubeId} />}
 
       <div className="flex w-85 min-w-0 items-center gap-3.5">
-        <Cover title={now?.title ?? ''} size={56} />
+        <Cover title={now?.title ?? ''} art={track && trackArt(track)} size={56} />
         <div className="flex min-w-0 flex-col gap-1">
           <span className="truncate text-sm font-semibold">{now?.title ?? 'Nothing playing'}</span>
           <span className="truncate text-xs text-ink-2">{now?.artist ?? 'Play a YouTube track or drop audio files here'}</span>

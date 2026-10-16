@@ -2843,6 +2843,7 @@ dependencies = [
  "music-core",
  "music-player",
  "music-shield",
+ "percent-encoding",
  "serde",
  "serde_json",
  "tauri",
@@ -2872,6 +2873,7 @@ dependencies = [
  "sha1",
  "sha2 0.11.1",
  "spake2",
+ "tempfile",
  "tokio",
  "url",
 ]

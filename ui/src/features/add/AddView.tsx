@@ -4,6 +4,7 @@ import { useStore } from '../../app/store'
 import { api, type SearchHit, type SearchResults, type Source } from '../../shared/api'
 import { formatDuration, region } from '../../shared/format'
 import { Led, LedChip, RoundButton, Toggle } from '../../shared/ui/controls'
+import { trackArt } from '../../shared/art'
 import { Cover } from '../../shared/ui/Cover'
 import { PageHeader } from '../../shared/ui/PageHeader'
 import { SourceIcon } from '../../shared/ui/SourceIcon'
@@ -33,7 +34,7 @@ function HitRow({ hit, onAdded }: { hit: SearchHit; onAdded: (id: number) => voi
   }
   return (
     <li className="flex items-center gap-3.5 border-b border-line-soft px-2 py-2.5">
-      <Cover title={hit.album ?? hit.title} size={42} />
+      <Cover title={hit.album ?? hit.title} art={trackArt({ ...hit, id: hit.libraryId ?? undefined })} size={42} />
       <div className="min-w-0 flex-1">
         <p className="flex items-center gap-2 truncate text-[13px] font-semibold">
           {hit.title} {kind && <Badge>{kindLabel[kind]}</Badge>}
@@ -165,7 +166,7 @@ export function AddView() {
                 {local.map((t, i) => (
                   <li key={t.id}>
                     <button onDoubleClick={() => play(local, i)} onClick={() => play(local, i)} className="flex w-full items-center gap-3.5 border-b border-line-soft px-2 py-2 text-left hover:bg-raised">
-                      <Cover title={t.album ?? t.title} size={34} />
+                      <Cover title={t.album ?? t.title} art={trackArt(t)} size={34} />
                       <span className="min-w-0 flex-1 truncate text-[13px] font-semibold">{t.title}</span>
                       <span className="truncate text-xs text-ink-2">{t.artist}</span>
                     </button>

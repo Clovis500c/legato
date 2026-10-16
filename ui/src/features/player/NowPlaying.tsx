@@ -6,6 +6,7 @@ import { useStore } from '../../app/store'
 import type { LibraryTrack, Source } from '../../shared/api'
 import { Button } from '../../shared/ui/Button'
 import { Bar, Led, RoundButton } from '../../shared/ui/controls'
+import { trackArt } from '../../shared/art'
 import { Cover } from '../../shared/ui/Cover'
 import { SourceIcon } from '../../shared/ui/SourceIcon'
 import { clock, fileFormat, VolumeControl } from './PlayerBar'
@@ -101,8 +102,8 @@ export function NowPlaying() {
 
   const video = now.via === 'youtube'
   const next = now.trackId
-    ? list.slice(index + 1).flatMap((t, i) => (vias(t, sp).length ? [{ key: String(t.id), title: t.title, artist: t.artist, onPlay: () => playAt(index + 1 + i) }] : []))
-    : upcoming.map((p) => ({ key: p, title: fileTitle(p), artist: fileFormat(p) ?? '', onPlay: undefined }))
+    ? list.slice(index + 1).flatMap((t, i) => (vias(t, sp).length ? [{ key: `${index + 1 + i}`, title: t.title, artist: t.artist, art: trackArt(t), onPlay: () => playAt(index + 1 + i) }] : []))
+    : upcoming.map((p) => ({ key: p, title: fileTitle(p), artist: fileFormat(p) ?? '', art: [], onPlay: undefined }))
 
   return (
     <div role="dialog" aria-label="Now playing" className="fixed inset-0 z-20 flex flex-col bg-bg px-10 pb-7">
@@ -123,7 +124,7 @@ export function NowPlaying() {
             <VideoSlot />
           ) : (
             <div className="flex aspect-video w-full flex-col items-center justify-center gap-4 rounded-lg border border-line bg-recess">
-              <Cover title={track?.album ?? now.title} size={180} />
+              <Cover title={track?.album ?? now.title} art={track && trackArt(track)} size={180} />
               {now.via === 'spotify' && <span className="kicker">Playing in your Spotify app</span>}
               {now.via === 'preview' && (
                 <div className="flex items-center gap-4">
@@ -178,7 +179,7 @@ export function NowPlaying() {
             {next.slice(0, 50).map((n) => (
               <li key={n.key}>
                 <button disabled={!n.onPlay} onClick={n.onPlay} className="flex w-full items-center gap-3 rounded-md px-2 py-2 text-left enabled:hover:bg-raised">
-                  <Cover title={n.title} size={36} />
+                  <Cover title={n.title} art={n.art} size={36} />
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-[13px] font-semibold">{n.title}</span>
                     <span className="block truncate text-xs text-ink-2">{n.artist}</span>

@@ -1,3 +1,4 @@
+pub mod art;
 pub mod itunes;
 pub mod nearby;
 pub mod oauth;

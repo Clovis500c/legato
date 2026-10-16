@@ -76,9 +76,9 @@ describe('albums and artists', () => {
   })
 
   it('counts tracks and albums per artist', () => {
-    expect(groupArtists(lib)).toEqual([
-      { artist: 'Daft Punk', count: 3, albums: 1 },
-      { artist: 'The xx', count: 1, albums: 1 },
+    expect(groupArtists(lib).map(({ cover, ...g }) => ({ ...g, cover: cover.id }))).toEqual([
+      { artist: 'Daft Punk', count: 3, albums: 1, cover: lib.find((x) => x.artist.startsWith('Daft Punk'))!.id },
+      { artist: 'The xx', count: 1, albums: 1, cover: lib.find((x) => x.artist === 'The xx')!.id },
     ])
   })
 

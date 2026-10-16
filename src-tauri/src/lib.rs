@@ -1,3 +1,4 @@
+mod art;
 mod secrets;
 #[cfg(windows)]
 mod shield;
@@ -53,6 +54,8 @@ struct AppState {
     open: Opener,
     player: Player,
     shield: Arc<Shield>,
+    /// Cover art / avatar cache behind the `art` URI scheme.
+    art: music_connectors::art::ArtCache,
     /// YouTube search results this session: same query asked once.
     yt_cache: Mutex<HashMap<String, Vec<Track>>>,
     /// Current nearby offer, polled by the UI.
@@ -764,6 +767,10 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
+        .register_asynchronous_uri_scheme_protocol("art", |ctx, req, responder| {
+            let app = ctx.app_handle().clone();
+            tauri::async_runtime::spawn(async move { responder.respond(art::respond(app, req).await) });
+        })
         .setup(|app| {
             let dir = app.path().app_data_dir()?;
             std::fs::create_dir_all(&dir)?;
@@ -796,7 +803,7 @@ pub fn run() {
                 }
             });
 
-            app.manage(AppState { app: app.handle().clone(), lib: Mutex::new(lib), store: Arc::new(secrets::KeyringStore::new(&app.config().identifier)), open, player: Player::spawn(), shield, yt_cache: Mutex::default(), nearby: Arc::new(Mutex::new(NearbyState::Idle)), nearby_task: Mutex::default() });
+            app.manage(AppState { app: app.handle().clone(), lib: Mutex::new(lib), store: Arc::new(secrets::KeyringStore::new(&app.config().identifier)), open, player: Player::spawn(), shield, art: music_connectors::art::ArtCache::new(dir.join("art"), 300 << 20), yt_cache: Mutex::default(), nearby: Arc::new(Mutex::new(NearbyState::Idle)), nearby_task: Mutex::default() });
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, add_track, backfill_art, find_versions, play_preview, share_playlist, share_preview, share_read_image, share_import, nearby_send, nearby_status, nearby_stop, nearby_receive, record_play, mixes, set_track_pref, clear_history, export_youtube, spotify_player, spotify_playback, ytm_sign_in, ytm_sign_out, ytm_accounts, set_ytm_accounts, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, system_accent, restart_app])
