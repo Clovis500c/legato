@@ -1,6 +1,6 @@
 # Audio playback: prototypes and plan
 
-Status on 2026-10-16. YouTube, local files and Apple Music previews: done and tested on Windows (WebView2). Spotify: plan only.
+Status on 2026-10-16. YouTube, local files and Apple Music previews: done and tested on Windows (WebView2). Spotify Connect: built and tested with mocks, not yet tried on a real Premium account.
 
 ## One queue for every source (phase 4)
 
@@ -72,7 +72,7 @@ We still pin the policy on the iframe: a meta tag or header added later can't br
 - Input: music folders (Settings › Sources), or audio files dropped on the window.
 - Limits: no opus; position obtained by polling, not events.
 
-## Spotify: plan (nothing implemented)
+## Spotify Connect (built, untested on a real Premium account)
 
 The Web Playback SDK inside the app is ruled out. We drive the official Spotify app (desktop, mobile or speaker) through **Spotify Connect**,
 via the Web API Player endpoints. Audio comes out of the Spotify app; we only send commands.
@@ -93,7 +93,10 @@ via the Web API Player endpoints. Audio comes out of the Spotify app; we only se
 | State for the bar | `GET /me/player` (`is_playing`, `progress_ms`, `item`) |
 | Queue | `POST /me/player/queue?uri=` |
 
-**Integration**
+**Integration (done)**
+- Done: `Spotify::{devices, playback, command}` (mockito tests), IPC `spotify_player` / `spotify_playback`, a `spotify` `Via` after YouTube,
+  "SP" in Play via (locked until Spotify is connected), polling every 1.5 s, end of track detected when Spotify moves on,
+  volume debounced. Not done: position interpolation between polls, queue (`/me/player/queue`). Original notes:
 - `crates/connectors/src/spotify.rs`: Player methods on `Spotify`, tested with mockito like the rest of the connector.
 - `src-tauri`: a `spotify_player(cmd)` command modeled on `player`.
 - UI: a `spotify` `Via` in the store routes commands to Spotify. Poll `GET /me/player` every 1 to 2 s

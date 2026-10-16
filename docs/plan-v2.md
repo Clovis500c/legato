@@ -1,6 +1,6 @@
 # Music App v2: plan
 
-Status: **phases 1 to 4, 7 and 8 delivered** (2026-10-16): Hi-Fi redesign, themes, ad shield, custom playlists, local folders, add by YouTube link, Apple Music and YouTube search, one queue for every source with Apple previews, playlist sharing (link, QR, nearby code), local personalized mixes. Next: 5 (accounts) and 6 (polish). Edit, strike or comment this file directly, or answer in the chat.
+Status: **phases 1 to 5, 7 and 8 delivered** (2026-10-16): Hi-Fi redesign, themes, ad shield, custom playlists, local folders, add by YouTube link, Apple Music and YouTube search, one queue for every source with Apple previews, playlist sharing (link, QR, nearby code), local personalized mixes. Next: 6 (polish). Edit, strike or comment this file directly, or answer in the chat.
 Mockups: Figma, file "Bow Game / Music App", page **"Music App v3 — Hi-Fi"**. The v2 "Apple" page is abandoned.
 
 ## 0. Your decisions (to fill in)
@@ -105,7 +105,14 @@ Playback rule: for each track, play the best available source. **Local file, the
 - "PREVIEW" badges; playability line (full / preview / no source) with "Find full versions"; "Play via" inputs in Now Playing.
 - Not done: preview straight from search results (before adding), Spotify previews.
 
-**Phase 5: accounts (optional)** (M)
+**Phase 5: accounts (optional)** (M) — done, except a real-account check:
+- YouTube export: any playlist (not YouTube imports) → private YouTube playlist. Export again = same playlist, only missing
+  videos added; stops cleanly at the daily quota and resumes next time (remote id saved before adding). Removals and
+  reordering are not mirrored. Tested with mocks; not run on a real account (YouTube not connected on the dev machine).
+- Spotify Connect: player API, IPC and "SP" input built and mock-tested (see `playback.md`); needs Premium to try for real.
+- MusicKit: not started (needs an Apple Developer account).
+
+Original plan:
 - YouTube: import (already there), export a custom playlist (quota: about 190 tracks a day).
 - Spotify Connect if Premium one day (plan written). MusicKit prototype if Apple Developer account.
 

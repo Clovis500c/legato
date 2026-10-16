@@ -24,6 +24,7 @@ A fast, lightweight desktop app (Tauri 2 + Rust), serverless: your data stays on
   - scanned music folders (tags read with lofty).
 - **Custom playlists**: create, rename, reorder, duplicate. A playlist imported from a service can be duplicated to edit it.
 - **Import** of YouTube and Spotify playlists with your own account (Spotify: Premium required in developer mode).
+- **Export to YouTube**: any playlist becomes a private YouTube playlist; exporting again only adds what is missing, within the daily quota.
 - **Share playlists between Music Apps, serverless**:
   - compact code (about 9 bytes per track) as a `musicapp://` link or a QR code, read back from a screenshot;
   - nearby: a 6-digit code on the same network (mDNS discovery, SPAKE2 key exchange, encrypted transfer);
@@ -46,7 +47,7 @@ A fast, lightweight desktop app (Tauri 2 + Rust), serverless: your data stays on
   - keys and tokens live in the Windows credential vault (`keyring` crate).
 - **Your own keys**: every user plugs in their own Google and Spotify credentials. The app shares no key.
 - **Official playback**:
-  - official players, local files, Apple previews held in memory, Spotify Connect (planned);
+  - official players, local files, Apple previews held in memory, Spotify Connect (remote control of your own Spotify app, Premium);
   - no audio extraction, nothing written to disk.
 - **Original code**: everything is written from scratch.
 
@@ -115,9 +116,9 @@ Details in [docs/plan-v2.md](docs/plan-v2.md). Main steps:
   - catalog search;
   - smart playback (one queue for every source, previews, find versions);
   - playlist sharing (link, QR, nearby code);
-  - personalized mixes.
+  - personalized mixes;
+  - YouTube export and Spotify Connect.
 - **Next**:
-  - accounts and export;
   - polish (media keys, auto-updates).
 
 ## License
