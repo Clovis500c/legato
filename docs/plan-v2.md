@@ -1,6 +1,6 @@
 # Music App v2: plan
 
-Status: **phases 1 to 4 delivered** (2026-10-16): Hi-Fi redesign, themes, ad shield, custom playlists, local folders, add by YouTube link, Apple Music and YouTube search, one queue for every source with Apple previews. Next: 7 (share by code or QR), 8 (mixes), 5 and 6. Edit, strike or comment this file directly, or answer in the chat.
+Status: **phases 1 to 4 and 7 delivered** (2026-10-16): Hi-Fi redesign, themes, ad shield, custom playlists, local folders, add by YouTube link, Apple Music and YouTube search, one queue for every source with Apple previews, playlist sharing (link, QR, nearby code). Next: 8 (mixes), 5 and 6. Edit, strike or comment this file directly, or answer in the chat.
 Mockups: Figma, file "Bow Game / Music App", page **"Music App v3 — Hi-Fi"**. The v2 "Apple" page is abandoned.
 
 ## 0. Your decisions (to fill in)
@@ -113,7 +113,17 @@ Playback rule: for each track, play the best available source. **Local file, the
 - Keyboard shortcuts, media keys and the Windows media panel (`souvlaki` crate), mini player, tray icon.
 - Auto-updates (`tauri-plugin-updater`, requires signing the app), installer, performance (50,000 tracks), accessibility (AA contrast, keyboard navigation).
 
-**Phase 7: share a playlist from one Music App to another, serverless** (L)
+**Phase 7: share a playlist from one Music App to another, serverless** (L) — done, with these changes to the plan below:
+- One id per track: **YouTube (9 bytes) > Apple Music (varint) > artist + title**. ISRC and Spotify ids dropped: a receiver without
+  Premium or an Apple developer key can't resolve them, while text can be searched in the catalogs.
+- Checksum = zlib's Adler-32 (deflate stream). Measured: 4 tracks = 57 bytes; 100 random YouTube ids < 1.2 KB (test).
+- Shipped: QR (base45, read back from a dropped screenshot), `musicapp://playlist/…` link (Ctrl+V or typed in Add music),
+  nearby 6-digit code (mDNS + SPAKE2 + ChaCha20-Poly1305, 5 tries, 10 min). Import: preview, then YouTube oEmbed, batched Apple
+  lookup, catalog search; no YouTube quota used except for artist + title entries missing from Apple.
+- Not done: remote wormhole words (needs your OK on the public relay), webcam scanning, clicking a `musicapp://` link in a browser
+  (needs deep-link registration).
+
+Original plan:
 - **Compact binary `MA1` format**: header (version, name), then for each track the best available identifier.
 
   | Identifier | Size |

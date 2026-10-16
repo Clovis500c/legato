@@ -24,6 +24,10 @@ A fast, lightweight desktop app (Tauri 2 + Rust), serverless: your data stays on
   - scanned music folders (tags read with lofty).
 - **Custom playlists**: create, rename, reorder, duplicate. A playlist imported from a service can be duplicated to edit it.
 - **Import** of YouTube and Spotify playlists with your own account (Spotify: Premium required in developer mode).
+- **Share playlists between Music Apps, serverless**:
+  - compact code (about 9 bytes per track) as a `musicapp://` link or a QR code, read back from a screenshot;
+  - nearby: a 6-digit code on the same network (mDNS discovery, SPAKE2 key exchange, encrypted transfer);
+  - import shows what's already in your library and looks up the rest on YouTube and Apple Music.
 - **Customization**:
   - 6 themes and a theme editor (13 colors, contrast checked live, export and import);
   - accent, cover shape, density, interface size, columns, player options.
@@ -82,8 +86,8 @@ In the app, open **Settings › Sources & accounts** and follow the wizard:
 
 ```
 crates/
-  core/        model, track matching, SQLite library, sync, local scan
-  connectors/  OAuth PKCE (loopback), YouTube, Spotify, iTunes catalog and previews
+  core/        model, track matching, SQLite library, sync, local scan, share codes (MA1, QR)
+  connectors/  OAuth PKCE (loopback), YouTube, Spotify, iTunes catalog and previews, nearby share
   player/      local audio engine (dedicated thread, gapless queue, in-memory previews)
   shield/      ad blocker (adblock-rust) and YouTube player script
 src-tauri/     Tauri shell: IPC commands, keychain, WebView2 hook
@@ -108,9 +112,9 @@ Details in [docs/plan-v2.md](docs/plan-v2.md). Main steps:
   - custom playlists;
   - local folders;
   - catalog search;
-  - smart playback (one queue for every source, previews, find versions).
+  - smart playback (one queue for every source, previews, find versions);
+  - playlist sharing (link, QR, nearby code).
 - **Next**:
-  - share playlists between users (code or QR);
   - personalized mixes;
   - accounts and export;
   - polish (media keys, auto-updates).
