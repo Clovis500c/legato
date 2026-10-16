@@ -8,6 +8,7 @@ use music_connectors::youtube::YouTube;
 use music_core::library::{Library, LibraryPlaylist, LibraryTrack, PlaylistEdit};
 use music_core::matching::{merge_tracks, same_track};
 use music_core::model::{Connector, SecretStore, Source, Track};
+use music_core::share::{self, Item, Shared};
 use music_core::sync::{SyncReport, sync};
 use music_player::{Command, Player, Status};
 use music_shield::Shield;
@@ -278,7 +279,18 @@ async fn search_catalogs(state: State<'_, AppState>, query: String, country: Str
     Ok(SearchResults { hits, youtube_searches_left: YT_SEARCHES_PER_DAY.saturating_sub(yt_used(&lib)), errors })
 }
 
-/// Add search hit. No YouTube id yet: try to find one (1 search) so it becomes playable.
+/// No YouTube id yet: try to find one (1 search) so the track plays in full.
+async fn with_youtube(state: &AppState, track: Track) -> Track {
+    if !track.ids.contains_key(&Source::Youtube)
+        && let Some(Ok(found)) = yt_search(state, &format!("{} {}", track.artist, track.title)).await
+        && let Some(hit) = music_core::matching::best_match(&track, &found)
+    {
+        return merge_tracks(&track, hit);
+    }
+    track
+}
+
+/// Add search hit, with its YouTube version when one exists.
 #[tauri::command]
 async fn add_track(state: State<'_, AppState>, track: Track) -> CmdResult<i64> {
     // Trust boundary: catalog ids only, bounded text.
@@ -286,13 +298,7 @@ async fn add_track(state: State<'_, AppState>, track: Track) -> CmdResult<i64> {
     if !ok_text(&track.title) || !ok_text(&track.artist) || track.ids.is_empty() || track.ids.iter().any(|(s, id)| *s == Source::Local || id.is_empty() || id.len() > 64) {
         return Err("Invalid title".into());
     }
-    let mut track = track;
-    if !track.ids.contains_key(&Source::Youtube)
-        && let Some(Ok(found)) = yt_search(&state, &format!("{} {}", track.artist, track.title)).await
-        && let Some(hit) = music_core::matching::best_match(&track, &found)
-    {
-        track = merge_tracks(&track, hit);
-    }
+    let track = with_youtube(&state, track).await;
     state.lib.lock().unwrap().upsert_track(&track).map_err(err)
 }
 
@@ -334,6 +340,134 @@ async fn play_preview(state: State<'_, AppState>, id: String, country: String) -
     let bytes = music_connectors::itunes::preview_audio(&p).await.map_err(err)?;
     state.player.send(Command::PlayMemory { label: format!("apple:{id}").into(), bytes: bytes.into() });
     Ok(p.page)
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct ShareCode {
+    /// `musicapp://playlist/…`, for messages.
+    link: String,
+    /// QR modules: size, row-major "0"/"1". None = too big for a QR code.
+    qr: Option<(usize, String)>,
+    tracks: usize,
+    bytes: usize,
+}
+
+#[tauri::command]
+fn share_playlist(state: State<AppState>, id: i64) -> CmdResult<ShareCode> {
+    let lib = state.lib.lock().unwrap();
+    let name = lib.playlists().map_err(err)?.into_iter().find(|p| p.id == id).ok_or("Playlist not found")?.name;
+    let items = lib.playlist_tracks(id).map_err(err)?.iter().map(|t| Item::from_track(&t.track)).collect();
+    let shared = Shared { name, items };
+    let qr = share::qr_modules(&share::to_qr_text(&shared)).map(|(size, dark)| (size, dark.iter().map(|&d| if d { '1' } else { '0' }).collect()));
+    Ok(ShareCode { link: share::to_link(&shared), qr, tracks: shared.items.len(), bytes: share::encode(&shared).len() })
+}
+
+/// Library probe for a shared entry: by id, or by title + artist.
+fn probe(item: &Item) -> Track {
+    match item {
+        Item::Youtube(id) => Track { ids: [(Source::Youtube, id.clone())].into(), ..Default::default() },
+        Item::Apple(n) => Track { ids: [(Source::Apple, n.to_string())].into(), ..Default::default() },
+        Item::Text { artist, title } => Track { artist: artist.clone(), title: title.clone(), ..Default::default() },
+    }
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct SharePreview {
+    name: String,
+    tracks: usize,
+    /// Already in this library.
+    known: usize,
+}
+
+#[tauri::command]
+fn share_preview(state: State<AppState>, code: String) -> CmdResult<SharePreview> {
+    let shared = share::parse(&code).map_err(err)?;
+    let lib = state.lib.lock().unwrap();
+    let known = shared.items.iter().map(|i| lib.find(&probe(i))).collect::<anyhow::Result<Vec<_>>>().map_err(err)?.iter().flatten().count();
+    Ok(SharePreview { name: shared.name, tracks: shared.items.len(), known })
+}
+
+/// QR code from a dropped screenshot or photo → share text.
+#[tauri::command]
+async fn share_read_image(path: String) -> CmdResult<String> {
+    // Trust boundary: absolute PNG / JPEG path from drop event.
+    let p = PathBuf::from(&path);
+    let ok = p.is_absolute() && p.extension().and_then(|e| e.to_str()).is_some_and(|e| ["png", "jpg", "jpeg"].contains(&e.to_lowercase().as_str()));
+    if !ok {
+        return Err("PNG or JPEG image expected".into());
+    }
+    tauri::async_runtime::spawn_blocking(move || share::read_qr(&p)).await.map_err(err)?.map_err(err)
+}
+
+/// Artist + title only (Spotify / local on sender side): Apple catalog, then YouTube within budget.
+async fn resolve_text(state: &AppState, artist: &str, title: &str, country: &str) -> Option<Track> {
+    let want = Track { artist: artist.into(), title: title.into(), ..Default::default() };
+    let query = format!("{artist} {title}");
+    if let Ok(hits) = music_connectors::itunes::search(music_connectors::itunes::API, &query, country).await
+        && let Some(t) = music_core::matching::best_match(&want, &hits)
+    {
+        return Some(t.clone());
+    }
+    let hits = yt_search(state, &query).await?.ok()?;
+    music_core::matching::best_match(&want, &hits).cloned()
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct ImportReport {
+    playlist_id: i64,
+    added: usize,
+    missing: usize,
+}
+
+/// Shared playlist → new custom playlist. Known tracks reused, others looked up (YouTube oEmbed, Apple lookup, catalog search).
+#[tauri::command]
+async fn share_import(state: State<'_, AppState>, code: String, country: String) -> CmdResult<ImportReport> {
+    use music_connectors::{itunes, youtube};
+    let shared = share::parse(&code).map_err(err)?;
+    let country = store(&country);
+    let mut ids: Vec<Option<i64>> = {
+        let lib = state.lib.lock().unwrap();
+        shared.items.iter().map(|i| lib.find(&probe(i))).collect::<anyhow::Result<_>>().map_err(err)?
+    };
+
+    // Apple: one batched lookup.
+    let apple: Vec<u64> = shared.items.iter().zip(&ids).filter_map(|(item, id)| if let (Item::Apple(n), None) = (item, id) { Some(*n) } else { None }).collect();
+    let apple_found = if apple.is_empty() { Vec::new() } else { itunes::lookup(itunes::LOOKUP, &apple, &country).await.unwrap_or_default() };
+    // YouTube: keyless oEmbed per video, 8 at a time.
+    let yt: Vec<(usize, String)> = shared.items.iter().zip(&ids).enumerate().filter_map(|(i, (item, id))| if let (Item::Youtube(v), None) = (item, id) { Some((i, v.clone())) } else { None }).collect();
+    let mut yt_found: HashMap<usize, Track> = HashMap::new();
+    for chunk in yt.chunks(8) {
+        let jobs: Vec<_> = chunk.iter().cloned().map(|(i, v)| tauri::async_runtime::spawn(async move { (i, youtube::track_from_link(&format!("https://youtu.be/{v}"), youtube::OEMBED).await) })).collect();
+        for job in jobs {
+            if let Ok((i, Ok(t))) = job.await {
+                yt_found.insert(i, t);
+            }
+        }
+    }
+
+    for (i, item) in shared.items.iter().enumerate() {
+        if ids[i].is_some() {
+            continue;
+        }
+        let track = match item {
+            Item::Youtube(_) => yt_found.remove(&i),
+            Item::Apple(n) => apple_found.iter().find(|t| t.ids.get(&Source::Apple) == Some(&n.to_string())).cloned(),
+            Item::Text { artist, title } => resolve_text(&state, artist, title, &country).await,
+        };
+        if let Some(t) = track {
+            ids[i] = Some(state.lib.lock().unwrap().upsert_track(&t).map_err(err)?);
+        }
+    }
+
+    let found: Vec<i64> = ids.iter().flatten().copied().collect();
+    let name = if shared.name.trim().is_empty() { "Shared playlist".to_string() } else { shared.name };
+    let lib = state.lib.lock().unwrap();
+    let playlist_id = lib.edit_playlist(PlaylistEdit::Create { name }).map_err(err)?.ok_or("Playlist not created")?;
+    lib.edit_playlist(PlaylistEdit::Add { id: playlist_id, track_ids: found.clone() }).map_err(err)?;
+    Ok(ImportReport { playlist_id, added: found.len(), missing: ids.len() - found.len() })
 }
 
 #[tauri::command]
@@ -427,7 +561,7 @@ pub fn run() {
             app.manage(AppState { lib: Mutex::new(lib), store: Arc::new(secrets::KeyringStore::new(&app.config().identifier)), open, player: Player::spawn(), shield, yt_cache: Mutex::default() });
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, add_track, find_versions, play_preview, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, restart_app])
+        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, add_track, find_versions, play_preview, share_playlist, share_preview, share_read_image, share_import, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, restart_app])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

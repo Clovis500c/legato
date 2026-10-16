@@ -10,6 +10,7 @@ use flate2::Compression;
 use flate2::read::ZlibDecoder;
 use flate2::write::ZlibEncoder;
 use std::io::{Read, Write};
+use std::path::Path;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Item {
@@ -202,6 +203,20 @@ pub fn to_qr_text(s: &Shared) -> String {
     format!("{QR}{}", base45(&encode(s)))
 }
 
+/// QR modules (row-major, true = dark). None = too big for a QR code (share the link instead).
+pub fn qr_modules(text: &str) -> Option<(usize, Vec<bool>)> {
+    // Low EC: shown on a clean screen, densest code.
+    let code = qrcode::QrCode::with_error_correction_level(text, qrcode::EcLevel::L).ok()?;
+    Some((code.width(), code.to_colors().into_iter().map(|c| c == qrcode::Color::Dark).collect()))
+}
+
+/// QR text from a screenshot or photo (PNG / JPEG).
+pub fn read_qr(path: &Path) -> Result<String> {
+    let img = image::open(path).context("Can't open this image")?.to_luma8();
+    let mut prepared = rqrr::PreparedImage::prepare_from_greyscale(img.width() as usize, img.height() as usize, |x, y| img.get_pixel(x as u32, y as u32).0[0]);
+    prepared.detect_grids().into_iter().find_map(|g| g.decode().ok().map(|(_, text)| text)).context("No QR code found in this image")
+}
+
 /// Link or QR text. Whitespace inside links tolerated (chat apps wrap lines).
 pub fn parse(text: &str) -> Result<Shared> {
     let text = text.trim();
@@ -274,6 +289,25 @@ mod tests {
         let mut z = ZlibEncoder::new(Vec::new(), Compression::fast());
         z.write_all(&[2, 0, 0]).unwrap();
         assert!(decode(&z.finish().unwrap()).unwrap_err().to_string().contains("newer"));
+    }
+
+    #[test]
+    fn qr_code_reads_back_from_png() -> Result<()> {
+        let text = to_qr_text(&sample());
+        let (w, dark) = qr_modules(&text).unwrap();
+        // 4 px per module, 4-module quiet zone, like a screenshot.
+        let side = ((w + 8) * 4) as u32;
+        let img = image::GrayImage::from_fn(side, side, |x, y| {
+            let (mx, my) = ((x / 4) as usize, (y / 4) as usize);
+            let on = (4..w + 4).contains(&mx) && (4..w + 4).contains(&my) && dark[(my - 4) * w + mx - 4];
+            image::Luma([if on { 0 } else { 255 }])
+        });
+        let dir = tempfile::tempdir()?;
+        let path = dir.path().join("qr.png");
+        img.save(&path)?;
+        assert_eq!(parse(&read_qr(&path)?)?, sample());
+        assert!(qr_modules(&"A".repeat(5000)).is_none());
+        Ok(())
     }
 
     #[test]

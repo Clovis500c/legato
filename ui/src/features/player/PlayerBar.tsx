@@ -2,6 +2,7 @@ import { ArrowsOutSimple, Pause, Play, SkipBack, SkipForward, SpeakerHigh } from
 import { getCurrentWebview } from '@tauri-apps/api/webview'
 import { useEffect } from 'react'
 import { useSettings } from '../../app/settings'
+import { useStore } from '../../app/store'
 import { api } from '../../shared/api'
 import { formatDuration } from '../../shared/format'
 import { Bar, Knob, Readout, RoundButton } from '../../shared/ui/controls'
@@ -56,12 +57,18 @@ export function PlayerBar() {
   // Engine plays everything but YouTube: poll it.
   const local = now && now.via !== 'youtube'
 
-  // Drop audio files on window = play them as a queue.
+  // Drop audio files on window = play them as a queue. Drop an image = read a shared playlist QR code.
   useEffect(() => {
     const off = getCurrentWebview().onDragDropEvent((e) => {
       if (e.payload.type !== 'drop') return
       const files = e.payload.paths.filter((p) => AUDIO.test(p)).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))
+      const image = e.payload.paths.find((p) => /\.(png|jpe?g)$/i.test(p))
       if (files.length) playFiles(files)
+      else if (image)
+        api
+          .shareReadImage(image)
+          .then((incoming) => useStore.setState({ incoming }))
+          .catch((err) => useStore.setState({ error: String(err) }))
     })
     return () => void off.then((f) => f())
   }, [playFiles])

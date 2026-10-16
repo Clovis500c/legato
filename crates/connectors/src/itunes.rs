@@ -67,6 +67,10 @@ pub async fn preview_audio(p: &Preview) -> Result<Vec<u8>> {
 /// Songs for `term` in store `country` (ISO 3166, e.g. "FR"). Id = iTunes track id.
 pub async fn search(api: &str, term: &str, country: &str) -> Result<Vec<Track>> {
     let url = Url::parse_with_params(api, &[("term", term), ("entity", "song"), ("limit", "15"), ("country", country)])?;
+    songs(url).await
+}
+
+async fn songs(url: Url) -> Result<Vec<Track>> {
     let page: Page = reqwest::get(url).await?.error_for_status()?.json().await?;
     Ok(page
         .results
@@ -82,6 +86,16 @@ pub async fn search(api: &str, term: &str, country: &str) -> Result<Vec<Track>> 
             })
         })
         .collect())
+}
+
+/// Songs by iTunes id, batched (lookup takes a comma list). Ids missing from the store are just absent.
+pub async fn lookup(api: &str, ids: &[u64], country: &str) -> Result<Vec<Track>> {
+    let mut out = Vec::new();
+    for chunk in ids.chunks(150) {
+        let list = chunk.iter().map(u64::to_string).collect::<Vec<_>>().join(",");
+        out.extend(songs(Url::parse_with_params(api, &[("id", list.as_str()), ("country", country)])?).await?);
+    }
+    Ok(out)
 }
 
 #[cfg(test)]
@@ -102,6 +116,19 @@ mod tests {
         let t = &found[0];
         assert_eq!((t.title.as_str(), t.artist.as_str(), t.duration_ms), ("Get Lucky", "Daft Punk", Some(369_629)));
         assert_eq!(t.ids[&Source::Apple], "617154366");
+    }
+
+    #[tokio::test]
+    async fn looks_up_ids_in_one_call() {
+        let mut s = Server::new_async().await;
+        s.mock("GET", "/lookup")
+            .match_query(Matcher::UrlEncoded("id".into(), "617154366,1".into()))
+            .with_body(r#"{"results":[{"trackId":617154366,"trackName":"Get Lucky","artistName":"Daft Punk"}]}"#)
+            .expect(1)
+            .create_async()
+            .await;
+        let found = lookup(&format!("{}/lookup", s.url()), &[617_154_366, 1], "US").await.unwrap();
+        assert_eq!(found.iter().map(|t| t.ids[&Source::Apple].as_str()).collect::<Vec<_>>(), ["617154366"]);
     }
 
     #[tokio::test]

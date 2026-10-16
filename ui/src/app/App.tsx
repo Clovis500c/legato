@@ -7,6 +7,7 @@ import { NowPlaying } from '../features/player/NowPlaying'
 import { PlayerBar } from '../features/player/PlayerBar'
 import { usePlayer } from '../features/player/store'
 import { SettingsView } from '../features/settings/SettingsView'
+import { ImportDialog } from '../features/share/ImportDialog'
 import { ConnectWizard } from '../features/sources/ConnectWizard'
 import { Sidebar } from '../features/sidebar/Sidebar'
 import { timeAgo } from '../shared/format'
@@ -91,20 +92,21 @@ function Alerts() {
 }
 
 export function App() {
-  const { view, go, refresh } = useStore()
+  const { view, go, refresh, incoming } = useStore()
   const full = usePlayer((s) => s.full)
   useEffect(() => {
     void useSettings.getState().load()
     void refresh()
   }, [refresh])
 
-  // Ctrl+V outside text fields: YouTube link → library.
+  // Ctrl+V outside text fields: share code → import, YouTube link → library.
   useEffect(() => {
     const onPaste = (e: ClipboardEvent) => {
       // Target may be document itself (nothing focused): not an Element.
       if (e.target instanceof Element && e.target.closest('input, textarea, [contenteditable]')) return
       const text = e.clipboardData?.getData('text').trim() ?? ''
-      if (/youtu\.?be/i.test(text)) void useStore.getState().addLink(text)
+      if (/^(musicapp:\/\/|MA1:)/i.test(text)) useStore.setState({ incoming: text })
+      else if (/youtu\.?be/i.test(text)) void useStore.getState().addLink(text)
     }
     document.addEventListener('paste', onPaste)
     return () => document.removeEventListener('paste', onPaste)
@@ -132,6 +134,7 @@ export function App() {
       </div>
       <PlayerBar />
       {full && <NowPlaying />}
+      {incoming && <ImportDialog key={incoming} code={incoming} />}
     </div>
   )
 }

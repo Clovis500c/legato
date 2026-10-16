@@ -91,6 +91,21 @@ export interface FindReport {
   youtubeSearchesLeft: number
 }
 
+/** src-tauri share_playlist. qr = [size, row-major "0"/"1"], null when too big. */
+export interface ShareCode {
+  link: string
+  qr: [number, string] | null
+  tracks: number
+  bytes: number
+}
+
+export interface SharePreview {
+  name: string
+  tracks: number
+  /** Already in this library. */
+  known: number
+}
+
 /** Typed wrappers over Tauri commands (src-tauri/src/lib.rs). Rejections = error string. */
 export const api = {
   sourcesStatus: async () =>
@@ -111,6 +126,12 @@ export const api = {
   findVersions: (ids: number[]) => invoke<FindReport>('find_versions', { ids }),
   /** Apple 30 s preview into the local engine. Returns the Apple Music page. */
   playPreview: (id: string, country: string) => invoke<string>('play_preview', { id, country }),
+  sharePlaylist: (id: number) => invoke<ShareCode>('share_playlist', { id }),
+  /** Parses a link or QR text; counts tracks already in the library. */
+  sharePreview: (code: string) => invoke<SharePreview>('share_preview', { code }),
+  /** QR text from a PNG / JPEG file. */
+  shareReadImage: (path: string) => invoke<string>('share_read_image', { path }),
+  shareImport: (code: string, country: string) => invoke<{ playlistId: number; added: number; missing: number }>('share_import', { code, country }),
   localFolders: () => invoke<string[]>('local_folders'),
   /** Saves folders, rescans. Returns local file count. */
   setLocalFolders: (folders: string[]) => invoke<number>('set_local_folders', { folders }),

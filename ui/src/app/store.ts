@@ -31,6 +31,8 @@ interface State {
   /** Short success message, auto-cleared. */
   notice?: string
   lastSync?: { at: number; report: SyncReport }
+  /** Share code waiting for the import dialog. */
+  incoming?: string
   go: (view: View) => void
   goBack: () => void
   goForward: () => void

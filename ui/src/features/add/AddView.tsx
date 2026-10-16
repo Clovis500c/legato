@@ -1,4 +1,4 @@
-import { Check, ClipboardText, FolderPlus, MagnifyingGlass, Plus } from '@phosphor-icons/react'
+import { ArrowRight, Check, ClipboardText, FolderPlus, MagnifyingGlass, Plus, QrCode } from '@phosphor-icons/react'
 import { useMemo, useState } from 'react'
 import { useStore } from '../../app/store'
 import { api, type SearchHit, type SearchResults, type Source } from '../../shared/api'
@@ -56,6 +56,32 @@ function HitRow({ hit, onAdded }: { hit: SearchHit; onAdded: (id: number) => voi
         </RoundButton>
       )}
     </li>
+  )
+}
+
+/** Shared playlist: link or QR text typed / pasted here (Ctrl+V anywhere works too). */
+function ImportCode() {
+  const [text, setText] = useState('')
+  return (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault()
+        if (text.trim()) useStore.setState({ incoming: text.trim() })
+        setText('')
+      }}
+      className="flex flex-col gap-2 rounded-xl border border-line px-4 py-3"
+    >
+      <p className="flex items-center gap-2 text-xs font-semibold">
+        <QrCode size={16} className="text-ink-2" /> Import a shared playlist
+      </p>
+      <p className="text-xs text-ink-2">Paste a musicapp:// link, or drop a screenshot of a QR code on the window.</p>
+      <span className="flex gap-2">
+        <input value={text} onChange={(e) => setText(e.target.value)} placeholder="musicapp://playlist/…" aria-label="Share link" className="h-8 min-w-0 flex-1 rounded-md border border-line bg-raised px-2.5 font-mono text-[11px] placeholder:text-ink-3" />
+        <RoundButton label="Import" kind="ink" size="sm" type="submit" disabled={!text.trim()}>
+          <ArrowRight size={14} />
+        </RoundButton>
+      </span>
+    </form>
   )
 }
 
@@ -176,6 +202,7 @@ export function AddView() {
               <span className="font-semibold text-ink">Paste a YouTube link</span> anywhere (Ctrl+V): the track is added right away.
             </p>
           </div>
+          <ImportCode />
           <button onClick={() => go({ name: 'settings', section: 'sources' })} className="flex items-start gap-3 rounded-xl border border-dashed border-ink-4 px-4 py-3 text-left hover:bg-raised">
             <FolderPlus size={18} className="mt-0.5 shrink-0 text-ink-2" />
             <span className="text-xs text-ink-2">

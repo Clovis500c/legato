@@ -1,5 +1,5 @@
-import { Copy, MagnifyingGlass, Play, Trash } from '@phosphor-icons/react'
-import { useMemo, useState } from 'react'
+import { Copy, MagnifyingGlass, Play, ShareNetwork, Trash } from '@phosphor-icons/react'
+import { useCallback, useMemo, useState } from 'react'
 import { useStore } from '../../app/store'
 import { api, type LibraryTrack } from '../../shared/api'
 import { fold, formatCount } from '../../shared/format'
@@ -10,6 +10,7 @@ import { PageHeader } from '../../shared/ui/PageHeader'
 import { sourceLabel } from '../../shared/ui/SourceIcon'
 import { isFull, vias } from '../player/sources'
 import { usePlayer } from '../player/store'
+import { SharePanel } from '../share/SharePanel'
 import { filterTracks, groupAlbums, groupArtists, libraryStats, primaryArtist, sortTracks, type Filter, type Sort } from './filter'
 import { TrackTable } from './TrackTable'
 
@@ -167,6 +168,8 @@ export function PlaylistView({ id }: { id: number }) {
   const { playlists, playlistTracks, query, editPlaylist, go } = useStore()
   const playlist = playlists.find((p) => p.id === id)
   const shown = useMemo(() => filterTracks(playlistTracks, query, 'all'), [playlistTracks, query])
+  const [sharing, setSharing] = useState(false)
+  const closeShare = useCallback(() => setSharing(false), [])
   if (!playlist) return null
   const duplicate = async () => {
     const copy = await editPlaylist({ type: 'duplicate', id, name: `${playlist.name} (copy)` })
@@ -182,6 +185,9 @@ export function PlaylistView({ id }: { id: number }) {
         actions={
           <>
             <PlayAll tracks={shown} />
+            <RoundButton label="Share playlist" onClick={() => setSharing(true)} disabled={!playlistTracks.length}>
+              <ShareNetwork size={16} />
+            </RoundButton>
             <RoundButton label={playlist.custom ? 'Duplicate' : 'Duplicate as custom playlist'} onClick={duplicate}>
               <Copy size={16} />
             </RoundButton>
@@ -201,6 +207,7 @@ export function PlaylistView({ id }: { id: number }) {
         }
       />
       <Playability tracks={playlistTracks} />
+      {sharing && <SharePanel id={id} name={playlist.name} onClose={closeShare} />}
       <TrackTable tracks={shown} empty={playlist.custom ? 'Empty playlist: add songs from Songs with the “Add to playlist” button.' : 'No songs.'} editId={playlist.custom && !query ? id : undefined} />
     </>
   )
