@@ -230,6 +230,26 @@ impl Library {
         Ok(stmt.query_map([playlist_id], to_track)?.collect::<rusqlite::Result<_>>()?)
     }
 
+    /// Local files mirror a fresh scan: upsert all (links to known tracks), drop vanished paths and orphan rows.
+    pub fn replace_local(&self, tracks: &[Track]) -> Result<usize> {
+        self.tx(|| {
+            let keep: BTreeSet<&str> = tracks.iter().filter_map(|t| t.ids.get(&Source::Local).map(String::as_str)).collect();
+            for t in tracks {
+                self.upsert_track(t)?;
+            }
+            let old: Vec<String> = {
+                let mut stmt = self.db.prepare("SELECT source_id FROM track_ids WHERE source = 'local'")?;
+                stmt.query_map([], |r| r.get(0))?.collect::<rusqlite::Result<_>>()?
+            };
+            for p in old.iter().filter(|p| !keep.contains(p.as_str())) {
+                self.db.execute("DELETE FROM track_ids WHERE source = 'local' AND source_id = ?1", [p])?;
+            }
+            // Rows still in a playlist stay (FK), hidden from library until a source returns.
+            self.db.execute("DELETE FROM tracks WHERE id NOT IN (SELECT track_id FROM track_ids) AND id NOT IN (SELECT track_id FROM playlist_tracks)", [])?;
+            Ok(keep.len())
+        })
+    }
+
     /// Apply edit; returns new playlist id for Create / Duplicate.
     pub fn edit_playlist(&self, edit: PlaylistEdit) -> Result<Option<i64>> {
         self.tx(|| {
@@ -445,6 +465,30 @@ mod tests {
             lib.playlists()?,
             vec![LibraryPlaylist { id, source: Source::Spotify, source_id: "p1".into(), name: "New".into(), track_count: 1, custom: false }]
         );
+        Ok(())
+    }
+
+    #[test]
+    fn local_scan_links_known_tracks_and_prunes_vanished_files() -> Result<()> {
+        let lib = Library::in_memory()?;
+        lib.upsert_track(&spotify())?;
+        let file = |p: &str, title: &str, isrc: Option<&str>| Track {
+            title: title.into(),
+            artist: "Daft Punk".into(),
+            duration_ms: Some(248_500),
+            isrc: isrc.map(Into::into),
+            ids: BTreeMap::from([(Source::Local, p.into())]),
+            ..Default::default()
+        };
+        let lucky = file("C:/m/a.flac", "Get Lucky", Some("USQX91300108"));
+        assert_eq!(lib.replace_local(&[lucky.clone(), file("C:/m/b.flac", "Contact", None)])?, 2);
+        let all = lib.tracks()?;
+        assert_eq!(all.len(), 2);
+        assert!(all.iter().any(|t| t.track.ids.len() == 2), "file linked to Spotify track");
+        lib.replace_local(std::slice::from_ref(&lucky))?;
+        let all = lib.tracks()?;
+        assert_eq!(all.len(), 1, "vanished file's orphan row removed");
+        assert_eq!(all[0].track.ids.len(), 2);
         Ok(())
     }
 

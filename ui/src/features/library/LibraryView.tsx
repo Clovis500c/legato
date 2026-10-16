@@ -28,7 +28,7 @@ const totalTime = (tracks: LibraryTrack[]) => {
 /** Round play button: starts first playable track of the list. Absent if none. */
 function PlayAll({ tracks }: { tracks: LibraryTrack[] }) {
   const play = usePlayer((s) => s.playTracks)
-  const first = tracks.findIndex((t) => t.ids.youtube)
+  const first = tracks.findIndex((t) => t.ids.youtube || t.ids.local)
   if (first < 0) return null
   return (
     <RoundButton label="Tout lire" kind="primary" size="lg" onClick={() => play(tracks, first)}>
@@ -55,7 +55,7 @@ function SortMenu() {
 
 /** Line telling what plays in full: YouTube today, Spotify needs Premium. */
 function Playability({ tracks }: { tracks: LibraryTrack[] }) {
-  const full = tracks.filter((t) => t.ids.youtube).length
+  const full = tracks.filter((t) => t.ids.youtube || t.ids.local).length
   if (!tracks.length) return null
   return (
     <p className="mb-3 flex shrink-0 flex-wrap items-center gap-x-5 gap-y-1 rounded-lg border border-line-soft bg-recess px-3.5 py-2.5 font-mono text-[10px] tracking-[0.08em] uppercase">
@@ -67,7 +67,7 @@ function Playability({ tracks }: { tracks: LibraryTrack[] }) {
           <Led on={false} /> {formatCount(tracks.length - full)} sans source lisible
         </span>
       )}
-      <span className="font-sans text-xs tracking-normal text-ink-2 normal-case">Lecture via le lecteur YouTube officiel. Spotify demande Premium (bientôt).</span>
+      <span className="font-sans text-xs tracking-normal text-ink-2 normal-case">Fichier local d’abord, sinon lecteur YouTube officiel. Spotify demande Premium (bientôt).</span>
     </p>
   )
 }

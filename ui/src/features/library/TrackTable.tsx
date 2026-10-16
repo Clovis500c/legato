@@ -49,7 +49,7 @@ export function TrackTable({ tracks, empty, editId }: { tracks: LibraryTrack[]; 
             {virtual.getVirtualItems().map((v) => {
               const t = tracks[v.index]
               const on = t.id === playingId
-              const playable = !!t.ids.youtube
+              const playable = !!(t.ids.youtube || t.ids.local)
               return (
                 <div
                   key={t.id}

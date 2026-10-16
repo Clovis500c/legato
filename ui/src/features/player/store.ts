@@ -45,6 +45,11 @@ export const bindFrame = (el: HTMLIFrameElement | null) => void (frame = el)
 const send = (cmd: PlayerCommand) => api.player(cmd).catch((e) => useStore.setState({ error: String(e) }))
 const yt = (func: string, ...args: unknown[]) => ytPost(frame, 'command', func, args)
 export const fileTitle = (path: string) => path.split(/[\\/]/).pop()!.replace(/\.[^.]+$/, '')
+/** Library metadata for a playing file when known, file name otherwise. */
+const localNow = (list: LibraryTrack[], path: string): NowPlaying => {
+  const t = list.find((x) => x.ids.local === path)
+  return t ? { title: t.title, artist: t.artist, path, trackId: t.id } : { title: fileTitle(path), artist: 'Fichier local', path }
+}
 
 export const usePlayer = create<PlayerState>((set, get) => ({
   playing: false,
@@ -59,6 +64,12 @@ export const usePlayer = create<PlayerState>((set, get) => ({
 
   playTracks(list, index) {
     const t = list[index]
+    if (t?.ids.local) {
+      const queue = list.slice(index).filter((x) => x.ids.local)
+      send({ type: 'play', paths: queue.map((x) => x.ids.local!), start: 0 })
+      send({ type: 'volume', value: get().volume })
+      return set({ now: { title: t.title, artist: t.artist, path: t.ids.local, trackId: t.id }, list: queue, index: 0, playing: true, positionMs: 0, durationMs: t.durationMs })
+    }
     if (!t?.ids.youtube) return
     if (get().now && !get().now?.youtubeId) send({ type: 'stop' })
     set({ now: { title: t.title, artist: t.artist, youtubeId: t.ids.youtube, trackId: t.id }, list, index, playing: true, positionMs: 0, durationMs: t.durationMs })
@@ -119,7 +130,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
       playing: !!s.path && !s.paused,
       positionMs: s.positionMs,
       upcoming: s.upcoming,
-      ...(s.path && { now: { title: fileTitle(s.path), artist: 'Fichier local', path: s.path }, durationMs: s.durationMs }),
+      ...(s.path && { now: localNow(get().list, s.path), durationMs: s.durationMs }),
     })
   },
 }))

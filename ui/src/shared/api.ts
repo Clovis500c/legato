@@ -81,6 +81,10 @@ export const api = {
   playlistTracks: (id: number) => invoke<LibraryTrack[]>('playlist_tracks', { id }),
   /** New playlist id for create / duplicate. */
   editPlaylist: (edit: PlaylistEdit) => invoke<number | null>('edit_playlist', { edit }),
+  localFolders: () => invoke<string[]>('local_folders'),
+  /** Saves folders, rescans. Returns local file count. */
+  setLocalFolders: (folders: string[]) => invoke<number>('set_local_folders', { folders }),
+  rescanLocal: () => invoke<number>('rescan_local'),
   player: (cmd: PlayerCommand) => invoke<void>('player', { cmd }),
   playerStatus: () => invoke<PlayerStatus>('player_status'),
   /** Raw JSON; validated by shared/theme/settings.sanitize. */

@@ -11,6 +11,7 @@ use music_core::sync::{SyncReport, sync};
 use music_player::{Command, Player, Status};
 use music_shield::Shield;
 use serde::{Deserialize, Serialize};
+use std::path::{Path, PathBuf};
 use std::sync::atomic::Ordering;
 use std::sync::{Arc, Mutex};
 use tauri::{Manager, State};
@@ -132,6 +133,36 @@ fn playlist_tracks(state: State<AppState>, id: i64) -> CmdResult<Vec<LibraryTrac
     state.lib.lock().unwrap().playlist_tracks(id).map_err(err)
 }
 
+fn folders(lib: &Library) -> Vec<String> {
+    lib.setting("folders").ok().flatten().and_then(|v| serde_json::from_value(v).ok()).unwrap_or_default()
+}
+
+/// Scan off the IPC thread, then mirror into library. Returns local file count.
+async fn rescan(state: &AppState, dirs: Vec<String>) -> CmdResult<usize> {
+    let paths: Vec<PathBuf> = dirs.iter().map(PathBuf::from).collect();
+    let tracks = tauri::async_runtime::spawn_blocking(move || music_core::local::scan(&paths)).await.map_err(err)?;
+    state.lib.lock().unwrap().replace_local(&tracks).map_err(err)
+}
+
+#[tauri::command]
+fn local_folders(state: State<AppState>) -> Vec<String> {
+    folders(&state.lib.lock().unwrap())
+}
+
+#[tauri::command]
+async fn set_local_folders(state: State<'_, AppState>, folders: Vec<String>) -> CmdResult<usize> {
+    // Trust boundary: existing absolute folders only.
+    let clean: Vec<String> = folders.into_iter().map(|f| f.trim().to_string()).filter(|f| Path::new(f).is_absolute() && Path::new(f).is_dir()).take(50).collect();
+    state.lib.lock().unwrap().set_setting("folders", &serde_json::json!(clean)).map_err(err)?;
+    rescan(&state, clean).await
+}
+
+#[tauri::command]
+async fn rescan_local(state: State<'_, AppState>) -> CmdResult<usize> {
+    let dirs = folders(&state.lib.lock().unwrap());
+    rescan(&state, dirs).await
+}
+
 #[tauri::command]
 fn edit_playlist(state: State<AppState>, edit: PlaylistEdit) -> CmdResult<Option<i64>> {
     state.lib.lock().unwrap().edit_playlist(edit).map_err(err)
@@ -187,6 +218,7 @@ fn player_status(state: State<AppState>) -> Status {
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_dialog::init())
         .setup(|app| {
             let dir = app.path().app_data_dir()?;
             std::fs::create_dir_all(&dir)?;
@@ -222,7 +254,7 @@ pub fn run() {
             app.manage(AppState { lib: Mutex::new(lib), store: Arc::new(secrets::KeyringStore::new(&app.config().identifier)), open, player: Player::spawn(), shield });
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status, edit_playlist, load_settings, save_settings, shield_status, set_shield, restart_app])
+        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status, edit_playlist, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, restart_app])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
