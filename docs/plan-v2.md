@@ -111,6 +111,9 @@ Playback rule: for each track, play the best available source. **Local file, the
   reordering are not mirrored. Tested with mocks; not run on a real account (YouTube not connected on the dev machine).
 - Spotify Connect: player API, IPC and "SP" input built and mock-tested (see `playback.md`); needs Premium to try for real.
 - MusicKit: not started (needs an Apple Developer account).
+- Update 2026-10-16 (user's choice): YouTube keys removed. Google sign-in in an app window + YouTube Music's web API
+  (`crates/connectors/src/ytmusic.rs`): library sync for several accounts, search with no daily limit, export with no quota.
+  Checked on the real account: 12 playlists / 2,587 tracks synced, search, Find full versions, export + resume.
 
 Original plan:
 - YouTube: import (already there), export a custom playlist (quota: about 190 tracks a day).

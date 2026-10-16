@@ -23,8 +23,8 @@ A fast, lightweight desktop app (Tauri 2 + Rust), serverless: your data stays on
   - add a track by pasting a YouTube link (Ctrl+V);
   - scanned music folders (tags read with lofty).
 - **Custom playlists**: create, rename, reorder, duplicate. A playlist imported from a service can be duplicated to edit it.
-- **Import** of YouTube and Spotify playlists with your own account (Spotify: Premium required in developer mode).
-- **Export to YouTube**: any playlist becomes a private YouTube playlist; exporting again only adds what is missing, within the daily quota.
+- **Your YouTube Music library**: sign in with Google (no keys), even several accounts or channels; their playlists and Liked Music come in. Spotify playlists with your own Spotify app key (Premium required in developer mode).
+- **Export to YouTube Music**: any playlist becomes a private YouTube Music playlist; exporting again only adds what is missing.
 - **Share playlists between Music Apps, serverless**:
   - compact code (about 9 bytes per track) as a `musicapp://` link or a QR code, read back from a screenshot;
   - nearby: a 6-digit code on the same network (mDNS discovery, SPAKE2 key exchange, encrypted transfer);
@@ -45,7 +45,7 @@ A fast, lightweight desktop app (Tauri 2 + Rust), serverless: your data stays on
 - **Serverless**:
   - no backend: the library is a local SQLite database;
   - keys and tokens live in the Windows credential vault (`keyring` crate).
-- **Your own keys**: every user plugs in their own Google and Spotify credentials. The app shares no key.
+- **Sign in, no keys**: YouTube Music with your Google account, on Google's own page (like Pear Desktop); the app never sees your password. Spotify still needs your own app key (it has no keyless sign-in).
 - **Official playback**:
   - official players, local files, Apple previews held in memory, Spotify Connect (remote control of your own Spotify app, Premium);
   - no audio extraction, nothing written to disk.
@@ -78,9 +78,9 @@ pnpm dev
 
 ### Connect your services
 
-In the app, open **Settings › Sources & accounts** and follow the wizard:
+In the app, open **Settings › Accounts**:
 
-- **YouTube**: a Google Cloud project with a "Desktop app" OAuth client. Used for playlist import and search (100 searches a day).
+- **YouTube Music**: "Sign in with Google". Add more Google accounts and pick which ones to sync. Uses YouTube Music's own web access (unofficial, may break if YouTube changes it).
 - **Spotify**: an app on the Spotify Developer Dashboard (developer mode: the owner needs Premium, 5 users max).
 - **Local files**: add one or more music folders.
 
