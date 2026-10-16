@@ -7,6 +7,8 @@ import { api } from '../../shared/api'
 import { formatDuration } from '../../shared/format'
 import { Bar, Knob, Readout, RoundButton } from '../../shared/ui/controls'
 import { Transport } from './Transport'
+import { onMenu } from '../../shared/ui/ContextMenu'
+import { playerMenu } from '../menus'
 import { trackArt } from '../../shared/art'
 import { Cover } from '../../shared/ui/Cover'
 import { bindFrame, usePlayer, useVideoSlot } from './store'
@@ -98,7 +100,7 @@ export function PlayerBar() {
   }, [remote, onSpotify])
 
   return (
-    <footer className="flex h-23 shrink-0 items-center justify-between gap-6 border-t border-line bg-panel px-6">
+    <footer onContextMenu={onMenu(playerMenu)} className="flex h-23 shrink-0 items-center justify-between gap-6 border-t border-line bg-panel px-6">
       {now?.youtubeId && <YouTubeFrame videoId={now.youtubeId} />}
 
       <button disabled={!now} onClick={() => setFull(true)} title={now ? 'Open Now Playing' : undefined} className="flex w-85 min-w-0 items-center gap-3.5 text-left">

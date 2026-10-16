@@ -13,6 +13,12 @@ export function playOrder(n: number, current: number, shuffle: boolean, rand = M
   return current >= 0 && current < n ? [current, ...rest] : rest
 }
 
+/** Order with `added` list indexes after the current track (play next) or at the end. */
+export function queued(order: number[], index: number, added: number[], next: boolean): number[] {
+  const at = next ? order.indexOf(index) + 1 : order.length
+  return [...order.slice(0, at), ...added, ...order.slice(at)]
+}
+
 /**
  * Next list index to try from `index` in `order`, or null at the end. auto = track ended by itself
  * (repeat one replays it; a manual skip still moves on). skip(i) = not playable here.

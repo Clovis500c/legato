@@ -6,7 +6,9 @@ import { fold, formatCount } from '../../shared/format'
 import { Button } from '../../shared/ui/Button'
 import { Led, LedChip, RoundButton } from '../../shared/ui/controls'
 import { firstArt, trackArt } from '../../shared/art'
+import { onMenu } from '../../shared/ui/ContextMenu'
 import { Cover } from '../../shared/ui/Cover'
+import { playlistMenu, tracksMenu } from '../menus'
 import { PageHeader } from '../../shared/ui/PageHeader'
 import { sourceLabel } from '../../shared/ui/SourceIcon'
 import { isFull, vias } from '../player/sources'
@@ -172,8 +174,8 @@ export function PlaylistView({ id }: { id: number }) {
   const { playlists, playlistTracks, query, editPlaylist, go } = useStore()
   const playlist = playlists.find((p) => p.id === id)
   const shown = useMemo(() => filterTracks(playlistTracks, query, 'all'), [playlistTracks, query])
-  const [sharing, setSharing] = useState(false)
-  const closeShare = useCallback(() => setSharing(false), [])
+  const sharing = useStore((s) => s.sharing === id)
+  const closeShare = useCallback(() => useStore.setState({ sharing: null }), [])
   if (!playlist) return null
   const duplicate = async () => {
     const copy = await editPlaylist({ type: 'duplicate', id, name: `${playlist.name} (copy)` })
@@ -182,6 +184,7 @@ export function PlaylistView({ id }: { id: number }) {
   return (
     <>
       <PageHeader
+        onContextMenu={onMenu(() => playlistMenu(playlist))}
         art={<Cover title={playlist.name} art={firstArt(playlistTracks)} size={150} />}
         kicker={playlist.custom ? 'Custom playlist' : `Playlist · ${sourceLabel[playlist.source]} · imported`}
         title={playlist.custom ? <EditableTitle key={playlist.name} id={id} name={playlist.name} /> : playlist.name}
@@ -189,7 +192,7 @@ export function PlaylistView({ id }: { id: number }) {
         actions={
           <>
             <PlayAll tracks={shown} />
-            <RoundButton label="Share playlist" onClick={() => setSharing(true)} disabled={!playlistTracks.length}>
+            <RoundButton label="Share playlist" onClick={() => useStore.setState({ sharing: id })} disabled={!playlistTracks.length}>
               <ShareNetwork size={16} />
             </RoundButton>
             {!(playlist.source === 'youtube' && !playlist.custom) && playlistTracks.length > 0 && <ExportYoutube id={id} />}
@@ -230,7 +233,7 @@ export function AlbumsView() {
         ) : (
           <ul className="grid grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-x-5 gap-y-6">
             {albums.map((a) => (
-              <li key={`${a.album}-${a.artist}`}>
+              <li key={`${a.album}-${a.artist}`} onContextMenu={onMenu(() => tracksMenu(a.tracks, ['-', { label: 'Go to artist', onSelect: () => go({ name: 'artist', artist: a.artist }) }]))}>
                 <button onClick={() => go({ name: 'album', album: a.album, artist: a.artist })} className="group flex w-full flex-col gap-2 text-left">
                   <span className="relative aspect-square w-full">
                     <Cover title={a.album} art={firstArt(a.tracks)} size={150} className="size-full! text-[28px]!" />
@@ -256,7 +259,7 @@ export function AlbumView({ album, artist }: { album: string; artist: string }) 
   const shown = useMemo(() => tracks.filter((t) => t.album && fold(t.album) === fold(album) && fold(primaryArtist(t.artist)) === fold(artist)), [tracks, album, artist])
   return (
     <>
-      <PageHeader art={<Cover title={album} art={firstArt(shown)} size={150} />} kicker={`Album · ${artist}`} title={album} sub={<span className="font-mono text-[11px] tracking-[0.06em] uppercase">{shown.length} tracks · {totalTime(shown)}</span>} actions={<PlayAll tracks={shown} />} />
+      <PageHeader onContextMenu={onMenu(() => tracksMenu(shown, ['-', { label: 'Go to artist', onSelect: () => useStore.getState().go({ name: 'artist', artist }) }]))} art={<Cover title={album} art={firstArt(shown)} size={150} />} kicker={`Album · ${artist}`} title={album} sub={<span className="font-mono text-[11px] tracking-[0.06em] uppercase">{shown.length} tracks · {totalTime(shown)}</span>} actions={<PlayAll tracks={shown} />} />
       <TrackTable tracks={shown} empty="No songs." />
     </>
   )
@@ -270,7 +273,7 @@ export function ArtistsView() {
       <PageHeader kicker="Library" title="Artists" sub={`${formatCount(artists.length)} artists`} />
       <ul className="-mx-2 min-h-0 flex-1 overflow-y-auto px-2 pb-6">
         {artists.map((a, i) => (
-          <li key={a.artist}>
+          <li key={a.artist} onContextMenu={onMenu(() => tracksMenu(tracks.filter((t) => fold(primaryArtist(t.artist)) === fold(a.artist))))}>
             <button onClick={() => go({ name: 'artist', artist: a.artist })} className="flex w-full items-center gap-4 border-b border-line-soft px-2 py-2.5 text-left hover:bg-raised">
               <span className="w-8 text-right font-mono text-[11px] text-ink-3">{String(i + 1).padStart(2, '0')}</span>
               <Cover title={a.artist} art={trackArt(a.cover)} size={36} className="rounded-full!" />
@@ -291,7 +294,7 @@ export function ArtistView({ artist }: { artist: string }) {
   const shown = useMemo(() => tracks.filter((t) => fold(primaryArtist(t.artist)) === fold(artist)), [tracks, artist])
   return (
     <>
-      <PageHeader art={<Cover title={artist} art={firstArt(shown)} size={120} className="rounded-full!" />} kicker="Artist" title={artist} sub={<span className="font-mono text-[11px] tracking-[0.06em] uppercase">{shown.length} tracks · {totalTime(shown)}</span>} actions={<PlayAll tracks={shown} />} />
+      <PageHeader onContextMenu={onMenu(() => tracksMenu(shown))} art={<Cover title={artist} art={firstArt(shown)} size={120} className="rounded-full!" />} kicker="Artist" title={artist} sub={<span className="font-mono text-[11px] tracking-[0.06em] uppercase">{shown.length} tracks · {totalTime(shown)}</span>} actions={<PlayAll tracks={shown} />} />
       <TrackTable tracks={shown} empty="No songs." />
     </>
   )

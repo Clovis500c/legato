@@ -7,6 +7,8 @@ import { formatDuration } from '../../shared/format'
 import type { Column } from '../../shared/theme/theme'
 import { RoundButton } from '../../shared/ui/controls'
 import { trackArt } from '../../shared/art'
+import { onMenu } from '../../shared/ui/ContextMenu'
+import { trackMenu } from '../menus'
 import { Cover } from '../../shared/ui/Cover'
 import { SourceIcon } from '../../shared/ui/SourceIcon'
 import { useStore } from '../../app/store'
@@ -58,6 +60,7 @@ export function TrackTable({ tracks, empty, editId, rowActions }: { tracks: Libr
                   key={v.key}
                   role="row"
                   onDoubleClick={() => playable && play(tracks, v.index)}
+                  onContextMenu={onMenu(() => trackMenu(t, { list: tracks, index: v.index, playlistId: editId, position: v.index }))}
                   className={`group absolute inset-x-0 grid items-center gap-4 border-b border-line-soft px-2 ${on ? 'bg-accent-soft' : 'hover:bg-raised'}`}
                   style={{ ...grid, height: row, transform: `translateY(${v.start}px)` }}
                 >

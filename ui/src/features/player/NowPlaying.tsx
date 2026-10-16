@@ -10,6 +10,8 @@ import { Bar, Led, RoundButton } from '../../shared/ui/controls'
 import { Cover } from '../../shared/ui/Cover'
 import { SourceIcon } from '../../shared/ui/SourceIcon'
 import { AddToPlaylist } from '../library/AddToPlaylist'
+import { onMenu } from '../../shared/ui/ContextMenu'
+import { playerMenu, trackMenu } from '../menus'
 import { useAmbient } from './ambient'
 import { clock, fileFormat, VolumeControl } from './PlayerBar'
 import { viaLabel, vias, type Via } from './sources'
@@ -131,11 +133,11 @@ export function NowPlaying() {
   // Play order (shuffle aware), after the current track.
   const at = order.indexOf(index)
   const next = now.trackId
-    ? order.slice(at + 1).flatMap((i) => (list[i] && vias(list[i], sp).length ? [{ key: `${i}`, title: list[i].title, artist: list[i].artist, art: trackArt(list[i]), onPlay: () => playAt(i) }] : []))
-    : upcoming.map((p) => ({ key: p, title: fileTitle(p), artist: fileFormat(p) ?? '', art: [], onPlay: undefined }))
+    ? order.slice(at + 1).flatMap((i) => (list[i] && vias(list[i], sp).length ? [{ key: `${i}`, title: list[i].title, artist: list[i].artist, art: trackArt(list[i]), onPlay: () => playAt(i), menu: onMenu(() => trackMenu(list[i], { list, index: i, queueIndex: i })) }] : []))
+    : upcoming.map((p) => ({ key: p, title: fileTitle(p), artist: fileFormat(p) ?? '', art: [], onPlay: undefined, menu: undefined }))
 
   return (
-    <div role="dialog" aria-label="Now playing" className="fixed inset-0 z-20 flex flex-col bg-bg px-10 pb-7 text-ink transition-colors duration-500" style={ambient}>
+    <div role="dialog" aria-label="Now playing" onContextMenu={onMenu(playerMenu)} className="fixed inset-0 z-20 flex flex-col bg-bg px-10 pb-7 text-ink transition-colors duration-500" style={ambient}>
       <div data-tauri-drag-region className="flex h-14 shrink-0 items-center justify-between">
         <div className="flex w-60 items-center gap-2.5">
           <RoundButton label="Collapse (Esc)" size="sm" onClick={() => setFull(false)}>
@@ -203,7 +205,7 @@ export function NowPlaying() {
             </li>
             {next.length === 0 && <li className="py-6 text-center text-ink-3">Nothing after this track.</li>}
             {next.slice(0, 100).map((n) => (
-              <li key={n.key}>
+              <li key={n.key} onContextMenu={n.menu}>
                 <button disabled={!n.onPlay} onClick={n.onPlay} className="flex w-full items-center gap-3 rounded-md px-2 py-2 text-left enabled:hover:bg-raised">
                   <Cover title={n.title} art={n.art} size={40} />
                   <span className="min-w-0 flex-1">

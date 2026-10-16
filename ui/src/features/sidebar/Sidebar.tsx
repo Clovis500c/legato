@@ -3,12 +3,14 @@ import { useEffect, useMemo, useRef, type ReactNode } from 'react'
 import { useStore, type View } from '../../app/store'
 import { formatCount } from '../../shared/format'
 import { Led } from '../../shared/ui/controls'
+import { onMenu } from '../../shared/ui/ContextMenu'
 import { SourceIcon } from '../../shared/ui/SourceIcon'
+import { playlistMenu } from '../menus'
 import { groupAlbums, groupArtists } from '../library/filter'
 
-function NavItem({ on, icon, label, count, onClick }: { on: boolean; icon: ReactNode; label: string; count?: number; onClick: () => void }) {
+function NavItem({ on, icon, label, count, onClick, onContextMenu }: { on: boolean; icon: ReactNode; label: string; count?: number; onClick: () => void; onContextMenu?: (e: React.MouseEvent) => void }) {
   return (
-    <button aria-current={on ? 'page' : undefined} onClick={onClick} className={`flex w-full items-center gap-2.5 rounded-md py-1.5 pr-2.5 pl-1 text-left transition ${on ? 'bg-raised font-semibold text-ink' : 'text-ink-2 hover:text-ink'}`}>
+    <button aria-current={on ? 'page' : undefined} onClick={onClick} onContextMenu={onContextMenu} className={`flex w-full items-center gap-2.5 rounded-md py-1.5 pr-2.5 pl-1 text-left transition ${on ? 'bg-raised font-semibold text-ink' : 'text-ink-2 hover:text-ink'}`}>
       <span className="w-1.5">{on && <Led on />}</span>
       <span className={on ? 'text-ink' : 'text-ink-3'}>{icon}</span>
       <span className="min-w-0 flex-1 truncate">{label}</span>
@@ -85,7 +87,7 @@ export function Sidebar() {
 
       <Section title="Playlists">
         {playlists.map((p) => (
-          <NavItem key={p.id} on={view.name === 'playlist' && view.id === p.id} icon={p.custom ? <Playlist size={15} /> : <SourceIcon source={p.source} size={14} />} label={p.name} count={p.trackCount} onClick={() => go({ name: 'playlist', id: p.id })} />
+          <NavItem key={p.id} on={view.name === 'playlist' && view.id === p.id} icon={p.custom ? <Playlist size={15} /> : <SourceIcon source={p.source} size={14} />} label={p.name} count={p.trackCount} onClick={() => go({ name: 'playlist', id: p.id })} onContextMenu={onMenu(() => playlistMenu(p))} />
         ))}
         <NavItem
           on={false}

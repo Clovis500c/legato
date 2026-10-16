@@ -14,7 +14,8 @@ export function Transport({ size = 'md', compact = false }: { size?: 'sm' | 'md'
   const { now, playing, toggle, step, shuffle, repeat, toggleShuffle, cycleRepeat } = usePlayer()
   const queue = !!now?.trackId
   const s = sizes[size]
-  const mode = (on: boolean) => (on ? 'text-accent' : '')
+  // Lit like an amp switch: readable even with a gray system accent.
+  const mode = (on: boolean) => (on ? 'relative bg-raised text-ink after:absolute after:bottom-0.5 after:size-1 after:rounded-full after:bg-accent' : '')
   return (
     <div className="flex items-center gap-3">
       {!compact && (

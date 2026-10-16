@@ -5,7 +5,9 @@ import { api, type SearchHit, type SearchResults, type Source } from '../../shar
 import { formatDuration, region } from '../../shared/format'
 import { Led, LedChip, RoundButton, Toggle } from '../../shared/ui/controls'
 import { trackArt } from '../../shared/art'
+import { onMenu } from '../../shared/ui/ContextMenu'
 import { Cover } from '../../shared/ui/Cover'
+import { hitMenu, trackMenu } from '../menus'
 import { PageHeader } from '../../shared/ui/PageHeader'
 import { SourceIcon } from '../../shared/ui/SourceIcon'
 import { filterTracks } from '../library/filter'
@@ -24,7 +26,7 @@ function HitRow({ hit, onAdded }: { hit: SearchHit; onAdded: (id: number) => voi
   const add = async () => {
     setBusy(true)
     try {
-      onAdded(await api.addTrack({ title: hit.title, artist: hit.artist, album: hit.album, durationMs: hit.durationMs, isrc: hit.isrc, ids: hit.ids }))
+      onAdded(await api.addTrack({ title: hit.title, artist: hit.artist, album: hit.album, durationMs: hit.durationMs, isrc: hit.isrc, ids: hit.ids, art: hit.art }))
       await useStore.getState().refresh()
     } catch (e) {
       useStore.setState({ error: String(e) })
@@ -33,7 +35,7 @@ function HitRow({ hit, onAdded }: { hit: SearchHit; onAdded: (id: number) => voi
     }
   }
   return (
-    <li className="flex items-center gap-3.5 border-b border-line-soft px-2 py-2.5">
+    <li onContextMenu={onMenu(() => hitMenu(hit, add, busy))} className="flex items-center gap-3.5 border-b border-line-soft px-2 py-2.5">
       <Cover title={hit.album ?? hit.title} art={trackArt({ ...hit, id: hit.libraryId ?? undefined })} size={42} />
       <div className="min-w-0 flex-1">
         <p className="flex items-center gap-2 truncate text-[13px] font-semibold">
@@ -164,7 +166,7 @@ export function AddView() {
               <h2 className="kicker pb-1.5">In your library</h2>
               <ul>
                 {local.map((t, i) => (
-                  <li key={t.id}>
+                  <li key={t.id} onContextMenu={onMenu(() => trackMenu(t, { list: local, index: i }))}>
                     <button onDoubleClick={() => play(local, i)} onClick={() => play(local, i)} className="flex w-full items-center gap-3.5 border-b border-line-soft px-2 py-2 text-left hover:bg-raised">
                       <Cover title={t.album ?? t.title} art={trackArt(t)} size={34} />
                       <span className="min-w-0 flex-1 truncate text-[13px] font-semibold">{t.title}</span>

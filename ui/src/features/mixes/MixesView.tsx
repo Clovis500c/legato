@@ -4,8 +4,10 @@ import { useStore } from '../../app/store'
 import { api, type LibraryTrack, type Mix } from '../../shared/api'
 import { Button } from '../../shared/ui/Button'
 import { Led, RoundButton } from '../../shared/ui/controls'
+import { onMenu } from '../../shared/ui/ContextMenu'
 import { PageHeader } from '../../shared/ui/PageHeader'
 import { TrackTable } from '../library/TrackTable'
+import { tracksMenu } from '../menus'
 import { usePlayer } from '../player/store'
 
 /** Today's mixes; reload after a pref change or reset. */
@@ -51,7 +53,7 @@ function MixCard({ mix }: { mix: Mix }) {
   const play = usePlayer((s) => s.playTracks)
   const tracks = useMixTracks(mix)
   return (
-    <li className="group relative flex flex-col gap-2">
+    <li onContextMenu={onMenu(() => tracksMenu(tracks, ['-', { label: 'Open', onSelect: () => go({ name: 'mix', id: mix.id }) }]))} className="group relative flex flex-col gap-2">
       <button onClick={() => go({ name: 'mix', id: mix.id })} className="flex flex-col gap-2 text-left">
         <MixTile mix={mix} size={180} />
         <span className="block text-[13px] font-semibold group-hover:underline">{mix.title}</span>

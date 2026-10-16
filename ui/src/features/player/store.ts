@@ -3,7 +3,7 @@ import { useStore } from '../../app/store'
 import { api, type LibraryTrack, type PlayerCommand, type PlayerStatus, type SpotifyCommand, type SpotifyPlayback } from '../../shared/api'
 import { region } from '../../shared/format'
 import { endListen, progress, startListen } from './listens'
-import { nextIndex, playOrder, type Repeat } from './queue'
+import { nextIndex, playOrder, queued, type Repeat } from './queue'
 import { vias, type Via } from './sources'
 import { ytPost, type YtUpdate } from './youtube'
 
@@ -43,7 +43,12 @@ interface PlayerState {
   /** Full-screen Now Playing. */
   full: boolean
   setFull: (full: boolean) => void
-  playTracks: (list: LibraryTrack[], index: number) => void
+  /** via = force a source for the first track (context menu "Play via"). */
+  playTracks: (list: LibraryTrack[], index: number, via?: Via) => void
+  /** next = right after the current track, else at the end. Nothing playing: plays them. */
+  enqueue: (tracks: LibraryTrack[], next: boolean) => void
+  /** Drops list index `i` from the play order. */
+  dequeue: (i: number) => void
   /** Queue item `index` through `via` (default: best source). */
   playAt: (index: number, via?: Via) => Promise<void>
   playFiles: (paths: string[]) => void
@@ -90,12 +95,20 @@ export const usePlayer = create<PlayerState>((set, get) => ({
   full: false,
   setFull: (full) => set({ full }),
 
-  playTracks(list, index) {
+  playTracks(list, index, via) {
     const i = list.findIndex((t, j) => j >= index && vias(t, spotifyOn()).length > 0)
     if (i < 0) return
     set({ list, order: playOrder(list.length, i, get().shuffle) })
-    void get().playAt(i)
+    void get().playAt(i, i === index ? via : undefined)
   },
+
+  enqueue(tracks, next) {
+    const { list, order, index, now } = get()
+    if (!now?.trackId) return get().playTracks(tracks, 0)
+    set({ list: [...list, ...tracks], order: queued(order, index, tracks.map((_, k) => list.length + k), next) })
+  },
+
+  dequeue: (i) => set({ order: get().order.filter((x) => x !== i || x === get().index) }),
 
   toggleShuffle() {
     const { shuffle, list, index } = get()

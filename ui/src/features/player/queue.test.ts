@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { nextIndex, playOrder } from './queue'
+import { nextIndex, playOrder, queued } from './queue'
 
 describe('playOrder', () => {
   it('keeps list order, or shuffles with the current track first', () => {
@@ -10,6 +10,13 @@ describe('playOrder', () => {
     expect(o[0]).toBe(7)
     expect([...o].sort((a, b) => a - b)).toEqual(playOrder(50, 0, false))
     expect(o).not.toEqual(playOrder(50, 7, false))
+  })
+})
+
+describe('queued', () => {
+  it('inserts after the current track or at the end', () => {
+    expect(queued([2, 0, 1], 0, [3, 4], true)).toEqual([2, 0, 3, 4, 1])
+    expect(queued([2, 0, 1], 0, [3], false)).toEqual([2, 0, 1, 3])
   })
 })
 

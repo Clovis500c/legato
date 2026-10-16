@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 import { AddView } from '../features/add/AddView'
 import { MixesView, MixView } from '../features/mixes/MixesView'
 import { AlbumsView, AlbumView, ArtistsView, ArtistView, PlaylistView, SongsView } from '../features/library/LibraryView'
+import { appMenu } from '../features/menus'
 import { MiniPlayer } from '../features/player/MiniPlayer'
 import { NowPlaying } from '../features/player/NowPlaying'
 import { PlayerBar } from '../features/player/PlayerBar'
@@ -14,6 +15,7 @@ import { ConnectWizard } from '../features/sources/ConnectWizard'
 import { Sidebar } from '../features/sidebar/Sidebar'
 import { api } from '../shared/api'
 import { region, timeAgo } from '../shared/format'
+import { ContextMenuHost } from '../shared/ui/ContextMenu'
 import { RoundButton } from '../shared/ui/controls'
 import { useSettings } from './settings'
 import { useStore } from './store'
@@ -143,6 +145,7 @@ export function App() {
       <PlayerBar />
       <MiniPlayer />
       {full && <NowPlaying />}
+      <ContextMenuHost fallback={appMenu} />
       {incoming && <ImportDialog key={incoming} code={incoming} />}
     </div>
   )

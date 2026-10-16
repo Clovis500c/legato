@@ -35,6 +35,8 @@ interface State {
   lastSync?: { at: number; report: SyncReport }
   /** Share code waiting for the import dialog. */
   incoming?: string
+  /** Playlist whose share panel is open. */
+  sharing: number | null
   go: (view: View) => void
   goBack: () => void
   goForward: () => void
@@ -88,6 +90,7 @@ export const useStore = create<State>((set, get) => {
     filter: 'all',
     sort: 'artist',
     busy: false,
+    sharing: null,
 
     go: (view) => {
       set({ back: [...get().back, get().view].slice(-50), fwd: [] })
