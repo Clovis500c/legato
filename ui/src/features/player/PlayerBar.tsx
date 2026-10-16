@@ -1,6 +1,6 @@
 import { ArrowsOutSimple, SpeakerHigh, SpeakerLow, SpeakerSlash } from '@phosphor-icons/react'
 import { getCurrentWebview } from '@tauri-apps/api/webview'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useSettings } from '../../app/settings'
 import { useStore } from '../../app/store'
 import { api } from '../../shared/api'
@@ -18,16 +18,20 @@ const AUDIO = /\.(mp3|flac|wav|ogg|m4a|aac)$/i
 export const clock = (ms: number | null) => formatDuration(ms) || '0:00'
 export const fileFormat = (path?: string) => path?.split('.').pop()?.toUpperCase()
 
-/** YouTube rules: player stays visible, min 200×200. Follows the Now Playing slot when open. */
+/**
+ * YouTube rules: player stays visible, min 200×200. Follows the Now Playing slot when open. One embed for a whole run
+ * of YouTube tracks: the next video is loaded into the player already running (loadVideoById), no page reload, so
+ * songs follow each other without the embed's loading time.
+ */
 function YouTubeFrame({ videoId }: { videoId: string }) {
   const onYoutube = usePlayer((s) => s.onYoutube)
   const rect = useVideoSlot((s) => s.rect)
   const hidden = useVideoSlot((s) => s.hidden)
-  // Per video (key): changing the setting mid-track would reload the embed.
-  const [src] = useState(() => {
-    const p = usePlayer.getState()
-    return { controls: useSettings.getState().settings.youtubeControls, start: p.startAt / 1000 }
-  })
+  const frame = useRef<HTMLIFrameElement | null>(null)
+  const ready = useRef(false)
+  // First video and options at mount: changing src later would reload the embed.
+  const [src] = useState(() => ({ first: videoId, controls: useSettings.getState().settings.youtubeControls, start: usePlayer.getState().startAt / 1000 }))
+  const shown = useRef(videoId)
   useEffect(() => {
     const onMessage = (e: MessageEvent) => {
       const u = parseYt(e.origin, e.data)
@@ -36,18 +40,32 @@ function YouTubeFrame({ videoId }: { videoId: string }) {
     window.addEventListener('message', onMessage)
     return () => window.removeEventListener('message', onMessage)
   }, [onYoutube])
+  // Next video: into the running player. Not loaded yet: onLoad sends it.
+  useEffect(() => {
+    if (shown.current === videoId || !ready.current) return
+    shown.current = videoId
+    ytPost(frame.current, 'command', 'loadVideoById', [videoId, usePlayer.getState().startAt / 1000])
+  }, [videoId])
 
   return (
     <iframe
-      key={videoId}
-      ref={bindFrame}
+      ref={(el) => {
+        frame.current = el
+        bindFrame(el)
+      }}
       title="YouTube player"
-      src={embedUrl(videoId, location.origin, src)}
+      src={embedUrl(src.first, location.origin, src)}
       allow="autoplay; encrypted-media; picture-in-picture"
       referrerPolicy="strict-origin-when-cross-origin"
       onLoad={(e) => {
+        ready.current = true
         ytPost(e.currentTarget, 'listening')
-        usePlayer.getState().applyVolume()
+        // Skipped ahead while the embed loaded: catch up.
+        if (shown.current !== videoId) {
+          shown.current = videoId
+          ytPost(e.currentTarget, 'command', 'loadVideoById', [videoId, usePlayer.getState().startAt / 1000])
+        }
+        usePlayer.getState().applyVolume(true)
       }}
       style={rect ? { left: rect.left, top: rect.top, width: rect.width, height: rect.height } : undefined}
       // Bare video: no pointer on it, so YouTube's hover overlay never shows; our controls drive it.
