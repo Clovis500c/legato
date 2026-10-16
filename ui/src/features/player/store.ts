@@ -98,6 +98,30 @@ let volumeTimer: ReturnType<typeof setTimeout> | undefined
 // Last volume sent to the playing source (fades send many).
 let sent = -1
 
+// Blocked videos this session, and the other uploads still to try for the current track.
+const blocked = new Set<string>()
+let others: { trackId: number; ids: string[] } | null = null
+
+async function tryOtherUpload(trackId: number, failed: string) {
+  blocked.add(failed)
+  const mine = seq
+  if (others?.trackId !== trackId) {
+    const ids = await api.alternativeVideos(trackId, [...blocked]).catch(() => [])
+    if (mine !== seq) return
+    others = { trackId, ids }
+  }
+  const next = others.ids.find((v) => !blocked.has(v))
+  const { notify } = useStore.getState()
+  if (next) {
+    notify('This video can’t play in apps: playing another upload of the song')
+    // Same embed: the frame loads the new id (loadVideoById).
+    return usePlayer.setState((s) => (s.now ? { now: { ...s.now, youtubeId: next }, positionMs: 0, playing: true } : {}))
+  }
+  notify('This video can’t play in apps and no other upload was found: skipped')
+  // Manual step: repeat one would replay the blocked video forever.
+  usePlayer.getState().step(1)
+}
+
 export const usePlayer = create<PlayerState>((set, get) => ({
   playing: false,
   positionMs: 0,
@@ -169,12 +193,14 @@ export const usePlayer = create<PlayerState>((set, get) => ({
       expect = null
       // Unconditional: engine may hold a paused item the store forgot (reload).
       send({ type: 'stop' })
+      // Blocked earlier this session: straight to the upload that worked.
+      const video = blocked.has(t.ids.youtube!) && others?.trackId === t.id ? (others.ids.find((v) => !blocked.has(v)) ?? t.ids.youtube) : t.ids.youtube
       // Same video (repeat one): the embed stays mounted, so rewind it.
-      if (get().now?.youtubeId === t.ids.youtube) {
+      if (get().now?.youtubeId === video) {
         yt('seekTo', start / 1000, true)
         yt('playVideo')
       }
-      return set({ now: { ...base, youtubeId: t.ids.youtube } })
+      return set({ now: { ...base, youtubeId: video } })
     }
     if (how === 'local') {
       // Consecutive local tracks go to the engine as one run: gapless between them. List order only.
@@ -278,6 +304,9 @@ export const usePlayer = create<PlayerState>((set, get) => ({
 
   onYoutube(u) {
     if (u.error !== undefined) {
+      const { now } = get()
+      // 100 removed, 101 / 150 owner turned embedding off: another upload of the same song, else the next song.
+      if (now?.trackId && now.youtubeId && [100, 101, 150].includes(u.error)) return void tryOtherUpload(now.trackId, now.youtubeId)
       useStore.setState({ error: `YouTube playback failed (error ${u.error}).` })
       return set({ playing: false })
     }

@@ -19,6 +19,8 @@ const ORIGIN: &str = "https://music.youtube.com";
 const UA: &str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36";
 /// Search filter "Songs" (protobuf params the site sends).
 const SONGS: &str = "EgWKAQIIAWoMEA4QChADEAQQCRAF";
+/// Filter "Videos": same message, field II → IQ.
+const VIDEOS: &str = "EgWKAQIQAWoMEA4QChADEAQQCRAF";
 const MAX_PAGES: usize = 60;
 
 static DURATION: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"^(?:(\d+):)?(\d{1,2}):(\d{2})$").unwrap());
@@ -240,6 +242,11 @@ impl YouTubeMusic {
     /// Google accounts and channels signed in to this session.
     pub async fn accounts(&self) -> Result<Vec<Account>> {
         Ok(parse_accounts(&self.call("account/accounts_list", json!({})).await?))
+    }
+
+    /// Uploads (other channels' copies of a song included).
+    pub async fn search_videos(&self, query: &str) -> Result<Vec<Track>> {
+        Ok(rows(&self.call("search", json!({ "query": query, "params": VIDEOS })).await?))
     }
 
     pub async fn search_songs(&self, query: &str) -> Result<Vec<Track>> {

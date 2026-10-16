@@ -369,6 +369,26 @@ async fn find_versions(state: State<'_, AppState>, ids: Vec<i64>) -> CmdResult<F
     Ok(FindReport { found, missing: todo.len() - found })
 }
 
+/// Video whose owner turned embedding off (error 101 / 150): other uploads of the same song, best first, at most 5.
+/// Never the blocked ones (`exclude`). Empty = nothing else plays it.
+#[tauri::command]
+async fn alternative_videos(state: State<'_, AppState>, track_id: i64, exclude: Vec<String>) -> CmdResult<Vec<String>> {
+    let t = state.lib.lock().unwrap().tracks().map_err(err)?.into_iter().find(|t| t.id == track_id).ok_or("Track not found")?.track;
+    let yt = state.ytm().ok_or("Sign in to YouTube Music first (Settings › Accounts)")?;
+    let mut out: Vec<String> = Vec::new();
+    // Official song first, then uploads of it.
+    let songs = yt.search_songs(&format!("{} {}", t.artist, t.title)).await.unwrap_or_default();
+    let videos = yt.search_videos(&t.title).await.unwrap_or_default();
+    for c in songs.iter().chain(&videos) {
+        let Some(v) = c.ids.get(&Source::Youtube) else { continue };
+        if !exclude.contains(v) && !out.contains(v) && music_core::matching::same_song_upload(&t, c) {
+            out.push(v.clone());
+        }
+    }
+    out.truncate(5);
+    Ok(out)
+}
+
 /// Apple 30 s preview into the local engine. Returns store page (shown as "Listen on Apple Music").
 #[tauri::command]
 async fn play_preview(state: State<'_, AppState>, id: String, country: String) -> CmdResult<String> {
@@ -1023,7 +1043,7 @@ pub fn run() {
             app.manage(AppState { app: app.handle().clone(), lib: Mutex::new(lib), store: Arc::new(secrets::KeyringStore::new(&app.config().identifier)), open, player: Player::spawn(), shield, art: music_connectors::art::ArtCache::new(dir.join("art"), 300 << 20), yt_cache: Mutex::default(), nearby: Arc::new(Mutex::new(NearbyState::Idle)), nearby_task: Mutex::default(), media, media_last: Mutex::default(), tray });
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, add_track, backfill_art, find_versions, play_preview, share_playlist, share_preview, share_read_image, share_import, nearby_send, nearby_status, nearby_stop, nearby_receive, record_play, mixes, set_track_pref, clear_history, export_youtube, spotify_player, spotify_playback, ytm_sign_in, ytm_sign_out, spotify_web_open, spotify_web_status, import_spotify_link, ytm_accounts, set_ytm_accounts, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, system_accent, restart_app, media_update, load_session, save_session, add_to_youtube, playlist_orders, save_cover])
+        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, add_track, backfill_art, find_versions, play_preview, share_playlist, share_preview, share_read_image, share_import, nearby_send, nearby_status, nearby_stop, nearby_receive, record_play, mixes, set_track_pref, clear_history, export_youtube, spotify_player, spotify_playback, ytm_sign_in, ytm_sign_out, spotify_web_open, spotify_web_status, import_spotify_link, ytm_accounts, set_ytm_accounts, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, system_accent, restart_app, media_update, load_session, save_session, add_to_youtube, playlist_orders, save_cover, alternative_videos])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

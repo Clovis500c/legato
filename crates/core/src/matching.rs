@@ -66,6 +66,15 @@ pub fn same_track(a: &Track, b: &Track) -> bool {
     }
 }
 
+/// Another upload of the same song (any channel): same title once cleaned, same length. For videos whose owner
+/// blocks embedding: the uploader often differs, so artists aren't compared.
+pub fn same_song_upload(a: &Track, b: &Track) -> bool {
+    if same_track(a, b) {
+        return true;
+    }
+    normalize(&a.title) == normalize(&b.title) && a.duration_ms.zip(b.duration_ms).is_none_or(|(x, y)| x.abs_diff(y) <= DURATION_TOLERANCE_MS)
+}
+
 /// Best candidate: exact ISRC first, then fuzzy.
 pub fn best_match<'a>(track: &Track, candidates: &'a [Track]) -> Option<&'a Track> {
     track
@@ -97,6 +106,16 @@ mod tests {
 
     fn t(title: &str, artist: &str) -> Track {
         Track { title: title.into(), artist: artist.into(), ..Default::default() }
+    }
+
+    #[test]
+    fn other_upload_same_title_and_length_any_channel() {
+        let blocked = Track { duration_ms: Some(200_000), ..t("DO4LOVE (Slowed + Reverbed)", "Capt. Slowed") };
+        let copy = Track { duration_ms: Some(201_000), ..t("DO4LOVE (Slowed + Reverbed)", "slowed vibes") };
+        let longer = Track { duration_ms: Some(260_000), ..t("DO4LOVE (Slowed + Reverbed)", "slowed vibes") };
+        assert!(same_song_upload(&blocked, &copy));
+        assert!(!same_song_upload(&blocked, &longer));
+        assert!(!same_song_upload(&blocked, &t("GREEDY", "Capt. Slowed")));
     }
 
     #[test]

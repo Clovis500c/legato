@@ -231,6 +231,8 @@ export const api = {
   /** Windows accent (light / dark theme variants); null off Windows. */
   systemAccent: () => invoke<SystemAccent | null>('system_accent'),
   restartApp: () => invoke<void>('restart_app'),
+  /** Other uploads of the same song when the video refuses embedding (101 / 150), best first. */
+  alternativeVideos: (trackId: number, exclude: string[]) => invoke<string[]>('alternative_videos', { trackId, exclude }),
   /** Track ids of every playlist, in order (covers). */
   playlistOrders: () => invoke<Record<number, number[]>>('playlist_orders'),
   /** Picked image copied into the app; returns its name for the art scheme (cover/<name>). */
