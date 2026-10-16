@@ -46,7 +46,7 @@ pub async fn track_from_link(link: &str, oembed: &str) -> Result<Track> {
     let url = Url::parse_with_params(oembed, &[("url", watch.as_str()), ("format", "json")])?;
     let o: OEmbed = reqwest::get(url).await?.error_for_status()?.json().await?;
     let (artist, title) = parse_video(&o.title, &o.author_name);
-    Ok(Track { title, artist, ids: BTreeMap::from([(Source::Youtube, id)]), ..Default::default() })
+    Ok(Track { title, artist, art: Some(music_core::model::youtube_art(&id)), ids: BTreeMap::from([(Source::Youtube, id)]), ..Default::default() })
 }
 
 #[cfg(test)]
@@ -85,6 +85,7 @@ mod tests {
             .await;
         let t = track_from_link("https://youtu.be/5NV6Rdv1a3I", &format!("{}/oembed", s.url())).await.unwrap();
         assert_eq!((t.artist.as_str(), t.title.as_str(), t.ids[&Source::Youtube].as_str()), ("Daft Punk", "Get Lucky (Official Audio)", "5NV6Rdv1a3I"));
+        assert_eq!(t.art.as_deref(), Some("https://i.ytimg.com/vi/5NV6Rdv1a3I/hqdefault.jpg"));
         assert!(track_from_link("https://example.com", &s.url()).await.is_err());
     }
 }

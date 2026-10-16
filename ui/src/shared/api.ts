@@ -13,6 +13,8 @@ export interface Track {
   durationMs: number | null
   isrc: string | null
   ids: Partial<Record<Source, string>>
+  /** Cover art URL; shown through the app's image cache (shared/art). */
+  art?: string | null
 }
 
 export interface LibraryTrack extends Track {
@@ -71,6 +73,8 @@ export interface YtmAccount {
   email: string | null
   authuser: number
   pageId: string | null
+  /** Profile picture URL (still or animated). */
+  photo?: string | null
 }
 
 export const accountKey = (a: YtmAccount) => (a.pageId ? `${a.authuser}:${a.pageId}` : String(a.authuser))
@@ -170,6 +174,8 @@ export const api = {
   addTrack: (track: Track) => invoke<number>('add_track', { track }),
   /** YouTube versions for tracks with no full source (1 search each, daily budget). */
   findVersions: (ids: number[]) => invoke<FindReport>('find_versions', { ids }),
+  /** Real covers for Apple tracks (1 batched lookup). Returns tracks updated. */
+  backfillArt: (country: string) => invoke<number>('backfill_art', { country }),
   /** Apple 30 s preview into the local engine. Returns the Apple Music page. */
   playPreview: (id: string, country: string) => invoke<string>('play_preview', { id, country }),
   sharePlaylist: (id: number) => invoke<ShareCode>('share_playlist', { id }),

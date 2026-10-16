@@ -1,6 +1,7 @@
 //! Local music folders: find audio files, read tags (lofty) into Tracks. Track id = file path.
 
 use crate::model::{Source, Track};
+use lofty::picture::PictureType;
 use lofty::prelude::*;
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
@@ -41,7 +42,16 @@ pub fn read(path: &Path) -> Track {
         duration_ms: file.as_ref().map(|f| f.properties().duration().as_millis() as u32).filter(|d| *d > 0),
         isrc: tag.and_then(|t| t.get_string(ItemKey::Isrc)).map(|s| s.trim().to_uppercase()).filter(|s| !s.is_empty()),
         ids: BTreeMap::from([(Source::Local, path.to_string_lossy().into_owned())]),
+        art: None,
     }
+}
+
+/// Embedded cover (front cover first, else any picture): bytes + MIME type.
+pub fn picture(path: &Path) -> Option<(Vec<u8>, String)> {
+    let file = lofty::read_from_path(path).ok()?;
+    let pics: Vec<_> = file.tags().iter().flat_map(|t| t.pictures()).collect();
+    let pic = pics.iter().find(|p| p.pic_type() == PictureType::CoverFront).or(pics.first())?;
+    Some((pic.data().to_vec(), pic.mime_type().map_or("image/jpeg", |m| m.as_str()).to_string()))
 }
 
 #[cfg(test)]
@@ -80,5 +90,19 @@ pub(crate) mod tests {
         assert_eq!((t.title.as_str(), t.artist.as_str()), ("01 Intro", "Unknown artist"));
         assert_eq!(t.duration_ms, Some(1000));
         assert!(t.ids[&Source::Local].ends_with("01 Intro.WAV"));
+    }
+
+    #[test]
+    fn reads_embedded_cover() {
+        use lofty::picture::{MimeType, Picture};
+        let dir = tempfile::tempdir().unwrap();
+        let p = dir.path().join("a.wav");
+        wav(&p);
+        assert_eq!(picture(&p), None);
+        let mut tag = lofty::tag::Tag::new(lofty::tag::TagType::Id3v2);
+        tag.push_picture(Picture::unchecked(b"back".to_vec()).pic_type(PictureType::CoverBack).mime_type(MimeType::Jpeg).build());
+        tag.push_picture(Picture::unchecked(b"front".to_vec()).pic_type(PictureType::CoverFront).mime_type(MimeType::Png).build());
+        tag.save_to_path(&p, lofty::config::WriteOptions::default()).unwrap();
+        assert_eq!(picture(&p), Some((b"front".to_vec(), "image/png".into())));
     }
 }

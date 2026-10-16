@@ -300,8 +300,28 @@ async fn add_track(state: State<'_, AppState>, track: Track) -> CmdResult<i64> {
     if !ok_text(&track.title) || !ok_text(&track.artist) || track.ids.is_empty() || track.ids.iter().any(|(s, id)| *s == Source::Local || id.is_empty() || id.len() > 64) {
         return Err("Invalid title".into());
     }
+    let track = Track { art: track.art.filter(|a| a.len() <= 500 && a.starts_with("https://")), ..track };
     let track = with_youtube(&state, track).await;
     state.lib.lock().unwrap().upsert_track(&track).map_err(err)
+}
+
+/// Apple tracks with no real cover: one batched lookup. Returns tracks given a cover.
+#[tauri::command]
+async fn backfill_art(state: State<'_, AppState>, country: String) -> CmdResult<usize> {
+    use music_connectors::itunes;
+    let ids: Vec<u64> = {
+        let tracks = state.lib.lock().unwrap().tracks().map_err(err)?;
+        tracks.into_iter().filter(|t| t.track.art.as_deref().is_none_or(music_core::model::video_frame)).filter_map(|t| t.track.ids.get(&Source::Apple)?.parse().ok()).collect()
+    };
+    if ids.is_empty() {
+        return Ok(0);
+    }
+    let found: Vec<Track> = itunes::lookup(itunes::LOOKUP, &ids, &store(&country)).await.map_err(err)?.into_iter().filter(|t| t.art.is_some()).collect();
+    let lib = state.lib.lock().unwrap();
+    for t in &found {
+        lib.upsert_track(t).map_err(err)?;
+    }
+    Ok(found.len())
 }
 
 #[derive(Serialize)]
@@ -658,7 +678,7 @@ async fn ytm_accounts(state: State<'_, AppState>) -> CmdResult<YtmAccounts> {
 #[tauri::command]
 fn set_ytm_accounts(state: State<AppState>, accounts: Vec<Account>) -> CmdResult<()> {
     // Trust boundary: values end up in request headers.
-    let ok = accounts.len() <= 20 && accounts.iter().all(|a| a.authuser < 10 && a.name.chars().count() <= 200 && a.page_id.as_ref().is_none_or(|p| p.len() <= 40 && p.bytes().all(|b| b.is_ascii_digit())));
+    let ok = accounts.len() <= 20 && accounts.iter().all(|a| a.authuser < 10 && a.name.chars().count() <= 200 && a.page_id.as_ref().is_none_or(|p| p.len() <= 40 && p.bytes().all(|b| b.is_ascii_digit())) && a.photo.as_ref().is_none_or(|p| p.len() <= 500));
     if !ok {
         return Err("Invalid accounts".into());
     }
@@ -779,7 +799,7 @@ pub fn run() {
             app.manage(AppState { app: app.handle().clone(), lib: Mutex::new(lib), store: Arc::new(secrets::KeyringStore::new(&app.config().identifier)), open, player: Player::spawn(), shield, yt_cache: Mutex::default(), nearby: Arc::new(Mutex::new(NearbyState::Idle)), nearby_task: Mutex::default() });
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, add_track, find_versions, play_preview, share_playlist, share_preview, share_read_image, share_import, nearby_send, nearby_status, nearby_stop, nearby_receive, record_play, mixes, set_track_pref, clear_history, export_youtube, spotify_player, spotify_playback, ytm_sign_in, ytm_sign_out, ytm_accounts, set_ytm_accounts, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, system_accent, restart_app])
+        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, add_track, backfill_art, find_versions, play_preview, share_playlist, share_preview, share_read_image, share_import, nearby_send, nearby_status, nearby_stop, nearby_receive, record_play, mixes, set_track_pref, clear_history, export_youtube, spotify_player, spotify_playback, ytm_sign_in, ytm_sign_out, ytm_accounts, set_ytm_accounts, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, system_accent, restart_app])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

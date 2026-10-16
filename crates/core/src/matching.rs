@@ -86,6 +86,7 @@ pub fn merge_tracks(a: &Track, b: &Track) -> Track {
         duration_ms: a.duration_ms.or(b.duration_ms),
         isrc: a.isrc.clone().or_else(|| b.isrc.clone()),
         ids,
+        art: crate::model::pick_art(a.art.clone(), b.art.clone()),
     }
 }
 

@@ -35,6 +35,28 @@ pub struct Track {
     pub duration_ms: Option<u32>,
     pub isrc: Option<String>,
     pub ids: BTreeMap<Source, String>,
+    /// Cover art URL (https, served to the UI through the app's image cache).
+    #[serde(default)]
+    pub art: Option<String>,
+}
+
+/// YouTube video frame: last resort art, any real cover wins over it.
+pub fn video_frame(url: &str) -> bool {
+    url.starts_with("https://i.ytimg.com/")
+}
+
+/// Keep `a` unless it's missing, or a video frame while `b` is a real cover.
+pub fn pick_art(a: Option<String>, b: Option<String>) -> Option<String> {
+    match (&a, &b) {
+        (None, _) => b,
+        (Some(x), Some(y)) if video_frame(x) && !video_frame(y) => b,
+        _ => a,
+    }
+}
+
+/// Art for a bare YouTube video (no network).
+pub fn youtube_art(video_id: &str) -> String {
+    format!("https://i.ytimg.com/vi/{video_id}/hqdefault.jpg")
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

@@ -20,6 +20,18 @@ struct Named {
 }
 
 #[derive(Deserialize)]
+struct Image {
+    url: String,
+}
+
+#[derive(Deserialize)]
+struct Album {
+    name: String,
+    #[serde(default)]
+    images: Vec<Image>,
+}
+
+#[derive(Deserialize)]
 struct SpotifyTrack {
     id: Option<String>,
     #[serde(rename = "type", default)]
@@ -28,7 +40,7 @@ struct SpotifyTrack {
     // Episodes lack these. Default so whole page still parses.
     #[serde(default)]
     artists: Vec<Named>,
-    album: Option<Named>,
+    album: Option<Album>,
     #[serde(default)]
     duration_ms: u32,
     external_ids: Option<BTreeMap<String, String>>,
@@ -39,10 +51,13 @@ struct SpotifyTrack {
 impl SpotifyTrack {
     fn into_track(self) -> Option<Track> {
         let id = self.id.filter(|_| self.kind != "episode" && !self.is_local)?;
+        // Largest image first.
+        let art = self.album.as_ref().and_then(|a| a.images.first()).map(|i| i.url.clone());
         Some(Track {
             title: self.name,
             artist: self.artists.into_iter().map(|a| a.name).collect::<Vec<_>>().join(", "),
             album: self.album.map(|a| a.name),
+            art,
             duration_ms: Some(self.duration_ms),
             isrc: self.external_ids.and_then(|mut e| e.remove("isrc")).map(|s| s.to_uppercase()),
             ids: BTreeMap::from([(Source::Spotify, id)]),
@@ -305,7 +320,7 @@ mod tests {
     use mockito::{Matcher, Server};
 
     fn track_json(id: &str, name: &str, artist: &str, isrc: Option<&str>) -> serde_json::Value {
-        json!({ "id": id, "type": "track", "name": name, "artists": [{ "name": artist }], "album": { "name": "Album" },
+        json!({ "id": id, "type": "track", "name": name, "artists": [{ "name": artist }], "album": { "name": "Album", "images": [{ "url": format!("https://i.scdn.co/image/{id}") }] },
                 "duration_ms": 200_000, "external_ids": isrc.map(|i| json!({ "isrc": i })).unwrap_or(json!({})) })
     }
 
@@ -403,6 +418,7 @@ mod tests {
         let tracks = spotify(&s).playlist_tracks("p1").await.unwrap();
         assert_eq!(tracks.len(), 2);
         assert_eq!(tracks[0].isrc.as_deref(), Some("USABC1234567"));
+        assert_eq!(tracks[0].art.as_deref(), Some("https://i.scdn.co/image/1"));
         assert_eq!(tracks[1].ids[&Source::Spotify], "2");
     }
 

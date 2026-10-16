@@ -45,7 +45,14 @@ CREATE TABLE IF NOT EXISTS settings (
 );
 ";
 
-const TRACK_COLS: &str = "t.id, t.title, t.artist, t.album, t.duration_ms, t.isrc";
+const TRACK_COLS: &str = "t.id, t.title, t.artist, t.album, t.duration_ms, t.isrc, t.art";
+
+/// v3: cover art per track. Bare YouTube videos get their frame now (no network); syncs and lookups bring real covers later.
+const SCHEMA_V3: &str = "
+ALTER TABLE tracks ADD COLUMN art TEXT;
+UPDATE tracks SET art = (SELECT 'https://i.ytimg.com/vi/' || source_id || '/hqdefault.jpg' FROM track_ids WHERE track_id = tracks.id AND source = 'youtube' LIMIT 1);
+PRAGMA user_version = 3;
+";
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct LibraryTrack {
@@ -79,9 +86,9 @@ pub enum PlaylistEdit {
     Duplicate { id: i64, name: String },
 }
 
-/// Row → track. Column 6 = ids JSON object (optional).
+/// Row → track. Column 7 = ids JSON object (optional).
 fn to_track(r: &Row) -> rusqlite::Result<LibraryTrack> {
-    let ids: Option<String> = r.get(6).ok();
+    let ids: Option<String> = r.get(7).ok();
     Ok(LibraryTrack {
         id: r.get(0)?,
         track: Track {
@@ -91,6 +98,7 @@ fn to_track(r: &Row) -> rusqlite::Result<LibraryTrack> {
             duration_ms: r.get(4)?,
             isrc: r.get(5)?,
             ids: ids.and_then(|j| serde_json::from_str::<BTreeMap<Source, String>>(&j).ok()).unwrap_or_default(),
+            art: r.get(6)?,
         },
     })
 }
@@ -117,6 +125,9 @@ impl Library {
         }
         if db.query_row("PRAGMA user_version", [], |r| r.get::<_, i64>(0))? < 2 {
             db.execute_batch(crate::history::SCHEMA_V2)?;
+        }
+        if db.query_row("PRAGMA user_version", [], |r| r.get::<_, i64>(0))? < 3 {
+            db.execute_batch(&format!("BEGIN; {SCHEMA_V3} COMMIT;"))?;
         }
         Ok(Self { db })
     }
@@ -156,27 +167,27 @@ impl Library {
             let id = match found.pop_first() {
                 None => {
                     self.db.execute(
-                        "INSERT INTO tracks (title, artist, album, duration_ms, isrc, match_key) VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
-                        params![t.title, t.artist, t.album, t.duration_ms, isrc, match_key(&t.title, &t.artist)],
+                        "INSERT INTO tracks (title, artist, album, duration_ms, isrc, match_key, art) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)",
+                        params![t.title, t.artist, t.album, t.duration_ms, isrc, match_key(&t.title, &t.artist), t.art],
                     )?;
                     self.db.last_insert_rowid()
                 }
                 Some(keep) => {
                     // Track may sit in several rows (seen on YouTube, then Spotify). Merge into lowest id.
                     for dupe in found {
-                        let (album, dur, dupe_isrc) = self.db.query_row(
-                            "SELECT album, duration_ms, isrc FROM tracks WHERE id = ?1",
+                        let (album, dur, dupe_isrc, art) = self.db.query_row(
+                            "SELECT album, duration_ms, isrc, art FROM tracks WHERE id = ?1",
                             [dupe],
-                            |r| Ok((r.get::<_, Option<String>>(0)?, r.get::<_, Option<u32>>(1)?, r.get::<_, Option<String>>(2)?)),
+                            |r| Ok((r.get::<_, Option<String>>(0)?, r.get::<_, Option<u32>>(1)?, r.get::<_, Option<String>>(2)?, r.get::<_, Option<String>>(3)?)),
                         )?;
                         self.db.execute("UPDATE track_ids SET track_id = ?1 WHERE track_id = ?2", [keep, dupe])?;
                         self.db.execute("UPDATE playlist_tracks SET track_id = ?1 WHERE track_id = ?2", [keep, dupe])?;
                         self.db.execute("UPDATE plays SET track_id = ?1 WHERE track_id = ?2", [keep, dupe])?;
                         self.db.execute("UPDATE OR IGNORE track_prefs SET track_id = ?1 WHERE track_id = ?2", [keep, dupe])?;
                         self.db.execute("DELETE FROM tracks WHERE id = ?1", [dupe])?;
-                        self.fill(keep, album, dur, dupe_isrc)?;
+                        self.fill(keep, album, dur, dupe_isrc, art)?;
                     }
-                    self.fill(keep, t.album.clone(), t.duration_ms, isrc)?;
+                    self.fill(keep, t.album.clone(), t.duration_ms, isrc, t.art.clone())?;
                     keep
                 }
             };
@@ -359,12 +370,18 @@ impl Library {
         Ok(())
     }
 
-    fn fill(&self, id: i64, album: Option<String>, duration_ms: Option<u32>, isrc: Option<String>) -> Result<()> {
+    fn fill(&self, id: i64, album: Option<String>, duration_ms: Option<u32>, isrc: Option<String>, art: Option<String>) -> Result<()> {
+        let old: Option<String> = self.db.query_row("SELECT art FROM tracks WHERE id = ?1", [id], |r| r.get(0))?;
         self.db.execute(
-            "UPDATE tracks SET album = coalesce(album, ?1), duration_ms = coalesce(duration_ms, ?2), isrc = coalesce(isrc, ?3) WHERE id = ?4",
-            params![album, duration_ms, isrc, id],
+            "UPDATE tracks SET album = coalesce(album, ?1), duration_ms = coalesce(duration_ms, ?2), isrc = coalesce(isrc, ?3), art = ?4 WHERE id = ?5",
+            params![album, duration_ms, isrc, crate::model::pick_art(old, art), id],
         )?;
         Ok(())
+    }
+
+    /// File path of a track's local source (cover served from its tags).
+    pub fn local_path(&self, track_id: i64) -> Result<Option<String>> {
+        Ok(self.db.query_row("SELECT source_id FROM track_ids WHERE source = 'local' AND track_id = ?1", [track_id], |r| r.get(0)).optional()?)
     }
 
     // Savepoints = nestable tx (save_playlist calls upsert_track).
@@ -402,6 +419,7 @@ mod tests {
             duration_ms: Some(248_000),
             isrc: Some("USQX91300108".into()),
             ids: BTreeMap::from([(Source::Spotify, "2Foc5Q5nqNiosCNqttzHof".into())]),
+            art: Some("https://i.scdn.co/image/ram".into()),
         }
     }
 
@@ -557,6 +575,26 @@ mod tests {
         lib.set_setting("ui", &serde_json::json!({ "theme": "paper" }))?;
         lib.set_setting("ui", &serde_json::json!({ "theme": "graphite" }))?;
         assert_eq!(lib.setting("ui")?, Some(serde_json::json!({ "theme": "graphite" })));
+        Ok(())
+    }
+
+    #[test]
+    fn v3_backfills_youtube_frames_then_real_covers_win() -> Result<()> {
+        // v2 database: no art column yet.
+        let db = Connection::open_in_memory()?;
+        db.execute_batch(SCHEMA)?;
+        db.execute_batch("ALTER TABLE playlists ADD COLUMN custom INTEGER NOT NULL DEFAULT 0;")?;
+        db.execute_batch(crate::history::SCHEMA_V2)?;
+        let yt = youtube();
+        db.execute("INSERT INTO tracks (id, title, artist, duration_ms, match_key) VALUES (1, ?1, ?2, ?3, ?4)", params![yt.title, yt.artist, yt.duration_ms, match_key(&yt.title, &yt.artist)])?;
+        db.execute_batch("INSERT INTO track_ids VALUES ('youtube', '5NV6Rdv1a3I', 1);")?;
+        let lib = Library::init(db)?;
+        let art = || -> Result<Option<String>> { Ok(lib.tracks()?[0].track.art.clone()) };
+        assert_eq!(art()?, Some(crate::model::youtube_art("5NV6Rdv1a3I")));
+        lib.upsert_track(&spotify())?;
+        assert_eq!(art()?, spotify().art, "real cover replaces video frame");
+        lib.upsert_track(&Track { art: Some(crate::model::youtube_art("other")), ..youtube() })?;
+        assert_eq!(art()?, spotify().art, "frame never replaces a cover");
         Ok(())
     }
 

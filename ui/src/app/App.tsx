@@ -11,7 +11,8 @@ import { SettingsView } from '../features/settings/SettingsView'
 import { ImportDialog } from '../features/share/ImportDialog'
 import { ConnectWizard } from '../features/sources/ConnectWizard'
 import { Sidebar } from '../features/sidebar/Sidebar'
-import { timeAgo } from '../shared/format'
+import { api } from '../shared/api'
+import { region, timeAgo } from '../shared/format'
 import { RoundButton } from '../shared/ui/controls'
 import { useSettings } from './settings'
 import { useStore } from './store'
@@ -98,6 +99,9 @@ export function App() {
   useEffect(() => {
     void useSettings.getState().load()
     void refresh()
+      .then(() => api.backfillArt(region()))
+      .then((n) => (n ? refresh() : undefined))
+      .catch(() => {})
   }, [refresh])
 
   // Ctrl+V outside text fields: share code → import, YouTube link → library.

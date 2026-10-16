@@ -22,6 +22,7 @@ const SONGS: &str = "EgWKAQIIAWoMEA4QChADEAQQCRAF";
 const MAX_PAGES: usize = 60;
 
 static DURATION: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"^(?:(\d+):)?(\d{1,2}):(\d{2})$").unwrap());
+static THUMB_SIZE: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"=w\d+-h\d+").unwrap());
 static AUTHUSER: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"authuser=(\d+)").unwrap());
 
 /// One identity in the session: a Google account (authuser) or one of its brand channels (page id).
@@ -34,6 +35,9 @@ pub struct Account {
     pub email: Option<String>,
     pub authuser: u32,
     pub page_id: Option<String>,
+    /// Profile picture (still or animated).
+    #[serde(default)]
+    pub photo: Option<String>,
 }
 
 impl Account {
@@ -142,7 +146,13 @@ fn row_track(row: &Value) -> Option<Track> {
     } else {
         artists.join(", ")
     };
-    Some(Track { title, artist, album, duration_ms, isrc: None, ids: BTreeMap::from([(Source::Youtube, video_id)]) })
+    let art = row.pointer("/thumbnail/musicThumbnailRenderer/thumbnail/thumbnails").and_then(Value::as_array).and_then(|t| t.last()?.get("url")?.as_str()).map(big_thumb);
+    Some(Track { title, artist, album, duration_ms, isrc: None, ids: BTreeMap::from([(Source::Youtube, video_id)]), art })
+}
+
+/// googleusercontent thumbs are sized in the URL ("=w60-h60-l90-rj"): ask for 544 px.
+fn big_thumb(url: &str) -> String {
+    THUMB_SIZE.replace(url, "=w544-h544").into_owned()
 }
 
 fn rows(v: &Value) -> Vec<Track> {
@@ -169,7 +179,8 @@ fn parse_accounts(v: &Value) -> Vec<Account> {
             let authuser = tokens.iter().filter_map(|t| t.pointer("/accountSigninToken/signinUrl")?.as_str()).find_map(|u| AUTHUSER.captures(u)?[1].parse().ok()).unwrap_or(0);
             let page_id = tokens.iter().find_map(|t| t.pointer("/pageIdToken/pageId")?.as_str().map(String::from));
             let Some(name) = item.get("accountName").and_then(text) else { continue };
-            out.push(Account { name, handle: item.get("channelHandle").and_then(text), email: email.clone(), authuser, page_id });
+            let photo = item.pointer("/accountPhoto/thumbnails").and_then(Value::as_array).and_then(|t| t.last()?.get("url")?.as_str()).map(String::from);
+            out.push(Account { name, handle: item.get("channelHandle").and_then(text), email: email.clone(), authuser, page_id, photo });
         }
     }
     out
@@ -368,6 +379,11 @@ mod tests {
         r
     }
 
+    fn with_thumb(mut r: Value) -> Value {
+        r["musicResponsiveListItemRenderer"]["thumbnail"] = json!({ "musicThumbnailRenderer": { "thumbnail": { "thumbnails": [{ "url": "https://lh3.googleusercontent.com/abc=w60-h60-l90-rj" }, { "url": "https://lh3.googleusercontent.com/abc=w120-h120-l90-rj" }] } } });
+        r
+    }
+
     #[test]
     fn hashes_session_like_the_site() {
         // sha1("1700000000 abc/def https://music.youtube.com")
@@ -381,12 +397,14 @@ mod tests {
     #[test]
     fn parses_rows_from_any_layout() {
         let page = json!({ "contents": { "deep": [
-            row("v1", "Get Lucky", vec![run("Song", None), run(" • ", None), run("Daft Punk", Some(("MUSIC_PAGE_TYPE_ARTIST", "UC1"))), run(", ", None), run("Pharrell Williams", Some(("MUSIC_PAGE_TYPE_ARTIST", "UC2"))), run(" • ", None), run("Random Access Memories", Some(("MUSIC_PAGE_TYPE_ALBUM", "MPRE1"))), run(" • ", None), run("6:09", None)], None),
+            with_thumb(row("v1", "Get Lucky", vec![run("Song", None), run(" • ", None), run("Daft Punk", Some(("MUSIC_PAGE_TYPE_ARTIST", "UC1"))), run(", ", None), run("Pharrell Williams", Some(("MUSIC_PAGE_TYPE_ARTIST", "UC2"))), run(" • ", None), run("Random Access Memories", Some(("MUSIC_PAGE_TYPE_ALBUM", "MPRE1"))), run(" • ", None), run("6:09", None)], None)),
             row("v2", "Some upload", vec![run("Video", None), run(" • ", None), run("A Channel", None)], Some("1:02:03")),
             { "musicResponsiveListItemRenderer": { "flexColumns": [] } }
         ] } });
         let t = rows(&page);
         assert_eq!(t.len(), 2);
+        assert_eq!(t[0].art.as_deref(), Some("https://lh3.googleusercontent.com/abc=w544-h544-l90-rj"));
+        assert_eq!(t[1].art, None);
         assert_eq!((t[0].title.as_str(), t[0].artist.as_str(), t[0].album.as_deref(), t[0].duration_ms), ("Get Lucky", "Daft Punk, Pharrell Williams", Some("Random Access Memories"), Some(369_000)));
         assert_eq!((t[1].artist.as_str(), t[1].duration_ms, t[1].ids[&Source::Youtube].as_str()), ("A Channel", Some(3_723_000), "v2"));
     }
@@ -419,7 +437,7 @@ mod tests {
             if let Some(p) = page {
                 tokens.push(json!({ "pageIdToken": { "pageId": p } }));
             }
-            json!({ "accountItem": { "accountName": { "simpleText": name }, "channelHandle": { "simpleText": format!("@{name}") }, "serviceEndpoint": { "selectActiveIdentityEndpoint": { "supportedTokens": tokens } } } })
+            json!({ "accountItem": { "accountName": { "simpleText": name }, "accountPhoto": { "thumbnails": [{ "url": format!("https://yt3.ggpht.com/{name}=s88") }] }, "channelHandle": { "simpleText": format!("@{name}") }, "serviceEndpoint": { "selectActiveIdentityEndpoint": { "supportedTokens": tokens } } } })
         };
         let v = json!({ "actions": [{ "sections": [
             { "accountSectionListRenderer": { "header": { "accountItemSectionHeaderRenderer": { "title": { "runs": [{ "text": "me@example.com" }] } } }, "contents": [{ "accountItemSectionRenderer": { "contents": [item("Me", 0, None), item("Brand", 0, Some("123"))] } }] } },
@@ -427,6 +445,7 @@ mod tests {
         ] }] });
         let a = parse_accounts(&v);
         assert_eq!(a.iter().map(|a| (a.name.as_str(), a.authuser, a.key(), a.email.as_deref())).collect::<Vec<_>>(), [("Me", 0, "0".to_string(), Some("me@example.com")), ("Brand", 0, "0:123".to_string(), Some("me@example.com")), ("Work", 1, "1".to_string(), Some("work@example.com"))]);
+        assert_eq!(a[2].photo.as_deref(), Some("https://yt3.ggpht.com/Work=s88"));
     }
 
     #[tokio::test]
@@ -443,7 +462,7 @@ mod tests {
             .create_async()
             .await;
         s.mock("POST", "/browse").match_query(Matcher::Any).match_body(Matcher::PartialJson(json!({ "continuation": "T2" }))).with_body(json!({ "items": [row("v2", "B", vec![run("Y", None)], None)] }).to_string()).create_async().await;
-        let acct = Account { name: "Brand".into(), handle: None, email: None, authuser: 1, page_id: Some("123".into()) };
+        let acct = Account { name: "Brand".into(), handle: None, email: None, authuser: 1, page_id: Some("123".into()), photo: None };
         let yt = YouTubeMusic::with_api(&s.url(), COOKIE).unwrap().as_account(&acct);
         assert_eq!(yt.playlist_videos("PL1").await.unwrap(), ["v1", "v2"]);
         first.assert_async().await;

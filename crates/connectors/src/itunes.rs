@@ -16,6 +16,7 @@ struct Hit {
     artist_name: Option<String>,
     collection_name: Option<String>,
     track_time_millis: Option<u32>,
+    artwork_url100: Option<String>,
 }
 
 #[derive(Deserialize)]
@@ -83,6 +84,8 @@ async fn songs(url: Url) -> Result<Vec<Track>> {
                 duration_ms: h.track_time_millis,
                 isrc: None,
                 ids: BTreeMap::from([(Source::Apple, h.track_id?.to_string())]),
+                // 100 px by default; the CDN serves any size.
+                art: h.artwork_url100.filter(|u| apple_url(u)).map(|u| u.replace("100x100bb", "600x600bb")),
             })
         })
         .collect())
@@ -108,7 +111,7 @@ mod tests {
         let mut s = Server::new_async().await;
         s.mock("GET", "/search")
             .match_query(Matcher::AllOf(vec![Matcher::UrlEncoded("term".into(), "get lucky".into()), Matcher::UrlEncoded("country".into(), "FR".into())]))
-            .with_body(r#"{"resultCount":2,"results":[{"trackId":617154366,"trackName":"Get Lucky","artistName":"Daft Punk","collectionName":"Random Access Memories","trackTimeMillis":369629},{"trackName":"No id"}]}"#)
+            .with_body(r#"{"resultCount":2,"results":[{"trackId":617154366,"trackName":"Get Lucky","artistName":"Daft Punk","collectionName":"Random Access Memories","trackTimeMillis":369629,"artworkUrl100":"https://is1-ssl.mzstatic.com/image/thumb/a/100x100bb.jpg"},{"trackName":"No id"}]}"#)
             .create_async()
             .await;
         let found = search(&format!("{}/search", s.url()), "get lucky", "FR").await.unwrap();
@@ -116,6 +119,7 @@ mod tests {
         let t = &found[0];
         assert_eq!((t.title.as_str(), t.artist.as_str(), t.duration_ms), ("Get Lucky", "Daft Punk", Some(369_629)));
         assert_eq!(t.ids[&Source::Apple], "617154366");
+        assert_eq!(t.art.as_deref(), Some("https://is1-ssl.mzstatic.com/image/thumb/a/600x600bb.jpg"));
     }
 
     #[tokio::test]
