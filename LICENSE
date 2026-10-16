@@ -1,6 +1,32 @@
-Copyright (c) 2026 Clovis500c. All rights reserved.
+Music App License
 
-This software and its source code are the exclusive property of their author.
-No license is granted. Copying, modifying, distributing, publishing or using
-it, in whole or in part, is prohibited without the author's prior written
-permission.
+Copyright (c) 2026 Clovis500c. All rights reserved.
+Repository: https://github.com/Clovis500c/music-app
+
+The source code is published so people can read it. It is not open source.
+
+1. Using the software
+   You may download, install and use Music App, free of charge, for your own
+   use.
+
+2. Reusing the code or any part of the app
+   The source code, and any part of the app (code, user interface, design,
+   texts, images), may not be copied, modified, published, distributed or
+   reused, in whole or in part, without the author's prior written permission.
+
+3. Credit
+   When the author gives permission, the reuse must credit the author and link
+   to the repository above, in a place where users of the reuse can see it.
+
+4. Anything else
+   Any copy or reuse without the author's written permission, or without the
+   credit required in section 3, infringes the author's copyright.
+
+5. Third-party components
+   Libraries, fonts and icons bundled with the app keep their own licenses.
+
+6. No warranty
+   The software is provided "as is", without warranty of any kind. The author
+   is not liable for any damage arising from its use.
+
+To ask for permission, open an issue on the repository.

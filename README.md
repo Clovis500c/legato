@@ -123,5 +123,6 @@ Details in [docs/plan-v2.md](docs/plan-v2.md). Main steps:
 
 ## License
 
-Proprietary software, all rights reserved. See [LICENSE](LICENSE).
+Source-available, not open source. You may use the app; copying or reusing the code or any part of the app needs the
+author's written permission, and any permitted reuse must credit the author and link to this repository. See [LICENSE](LICENSE).
 Spotify, YouTube and Apple Music are trademarks of their owners. Logos come from [Simple Icons](https://simpleicons.org) (CC0).
