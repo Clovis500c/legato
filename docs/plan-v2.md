@@ -9,7 +9,7 @@ Maquettes : Figma, fichier « Bow Game / Music App », page **« Music App v3 �
 |---|---|---|---|
 | 1 | Direction visuelle | **Hi-Fi** : appareils Braun de Dieter Rams. Papier chaud et encre, un seul accent, voyants, boutons ronds, afficheurs en mono | |
 | 2 | Accent par défaut | Orange signal `#FF5A1F`. 6 accents au choix + couleur perso, jamais de dégradé | |
-| 3 | Thème par défaut | Papier (clair). Graphite, Studio (noir pur) ou Système au choix | |
+| 3 | Thèmes | Papier par défaut. 6 thèmes prêts à l'emploi (Papier, Graphite, Studio, Aluminium, Bakélite, Sauge) + Système + **éditeur de thème** | |
 | 4 | Lecteur | Deck pleine largeur en bas (position réglable : bas, haut ou flottant) + plein écran | |
 | 5 | Clé API YouTube (gratuite, sans connexion) pour la recherche | Oui | |
 | 6 | Apple Developer (99 $/an) pour tenter la lecture Apple Music complète | Non pour l'instant : aperçus et bascule YouTube | |
@@ -64,7 +64,25 @@ Règle de lecture : pour chaque titre, on joue la meilleure source disponible. *
   - colonnes de la liste (choisir et ordonner).
 - Accueil en sections : afficher, masquer, réordonner (Reprendre, Ta semaine, Récemment ajoutés, Tes playlists, À redécouvrir…), avec des options par section.
 - Barre latérale : réordonner et masquer les entrées, épingler des playlists.
-- Thèmes enregistrables et partageables en fichier `.theme`.
+- Thèmes :
+  - 6 thèmes prêts à l'emploi + Système ;
+  - **éditeur** :
+    - 8 couleurs avec leur code hex ;
+    - police : Hi-Fi, Neutre ou Éditorial ;
+    - arrondis de 0 à 16 px ;
+    - lueur des voyants ;
+    - teinte de la pochette ;
+    - contraste AA vérifié en direct, avec un avertissement si un texte devient illisible ;
+  - dupliquer, exporter ou importer en `.theme`.
+- Écrans corrigés d'après la revue utilisateurs (`docs/ui-review.md`) :
+  - actions visibles au survol ;
+  - panneau droit ancrable (file, infos, paroles locales) ;
+  - grande pochette ;
+  - file avec sélection multiple ;
+  - aléatoire vrai ;
+  - dossiers de playlists ;
+  - badges CLIP / LIVE ;
+  - teinte de la pochette.
 - Pour rester lisible :
   - recherche dans les réglages ;
   - aperçu en direct ;
@@ -114,9 +132,17 @@ radio de titres proches (clé Last.fm), scrobbling Last.fm, minuteur de sommeil,
 ## 6. Maquettes livrées (page Figma « Music App v3 — Hi-Fi »)
 
 1. `v3 / Accueil — Papier` : sections Reprendre, Ta semaine, Récemment ajoutés, Tes playlists ; panneau « Personnaliser l'accueil » ouvert.
-2. `v3 / Morceaux — Papier` : filtres à voyant par source, liste avec badges APERÇU et FLAC, deck avec afficheur et molette.
+2. `v3 / Morceaux — Papier` :
+   - filtres à voyant ;
+   - actions au survol ;
+   - **panneau droit** : grande pochette, file avec sélection multiple, « Aléatoire vrai » ;
+   - dossier de playlists ;
+   - deck avec afficheur et molette.
 3. `v3 / Playlist — Papier` : en-tête éditorial, boutons ronds, ligne d'état « 21 en entier · 3 en aperçu ».
 4. `v3 / Ajouter — Papier` : console de recherche (catalogues à voyant), lien collé, catalogues, zone de dépôt.
 5. `v3 / En lecture — Graphite` : vidéo YouTube visible, afficheur 01:12, échelle graduée, sélecteur d'entrée, molette, file d'attente.
 6. `v3 / Réglages Apparence — Papier` : thèmes, accents, pochettes, densité, lecteur, colonnes, aperçu en direct.
 7. `v3 / Morceaux — Graphite perso` : même écran avec un thème perso (Graphite, accent jaune, pochettes vinyle, compact, colonne Écoutes).
+8. `v3 / Thèmes — Papier` : galerie des 7 thèmes, tes thèmes, éditeur (couleurs, police, arrondis, voyants, teinte, contraste vérifié).
+9. `v3 / En lecture — Teinte pochette` : l'écran de lecture en aplat de la couleur d'*After Hours*.
+   L'écran **Ajouter** a aussi reçu les badges AUDIO OFFICIEL et CLIP et le filtre « Masquer les vidéos non officielles ».
