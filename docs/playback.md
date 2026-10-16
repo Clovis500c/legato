@@ -85,3 +85,17 @@ via les endpoints Player de la Web API. L'audio sort de l'app Spotify ; nous n'e
 - Repli sans Premium : si le titre a aussi un id YouTube (matching ISRC ou titre+artiste), le lire dans le lecteur YouTube.
   C'est déjà le cas aujourd'hui pour tout titre relié.
 - Validation réelle impossible sans compte Premium : tests mockito d'abord, puis essai sur un compte Premium.
+
+## Bouclier anti-pub (`crates/shield`) — choix de l'utilisateur, 16/10/2026
+
+- Moteur de Brave (`adblock` 0.13, licence MPL-2.0) sur EasyList et EasyPrivacy. Les listes sont téléchargées par Rust, gardées en cache
+  4 jours dans le dossier de données de l'app, et jamais embarquées dans le binaire. Des règles intégrées (régies Google et YouTube)
+  couvrent le premier lancement hors ligne.
+- WebView2 : un `WebResourceRequested` sur `*`, toutes sources confondues (`ICoreWebView2_22`, iframes comprises). Une requête bloquée
+  reçoit une réponse 403 vide.
+- Lecteur YouTube : `crates/shield/src/youtube.js` est injecté dans toutes les frames (seules les frames YouTube agissent). Il retire
+  `adPlacements`, `adSlots`, `playerAds` et `adBreakHeartbeatParams` des données du lecteur (approche « json-prune », code écrit de zéro).
+- Vérifié dans l'app compilée : 4 requêtes bloquées pendant une vidéo intégrée, la lecture continue, et le script est actif dans l'iframe
+  YouTube.
+- **Risque accepté par l'utilisateur** : les règles des API YouTube interdisent de bloquer les pubs du lecteur intégré. On s'expose à
+  une clé API révoquée, et la lecture peut casser si YouTube change son lecteur. Le réglage Réglages › Bouclier coupe le blocage.

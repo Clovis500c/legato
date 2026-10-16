@@ -1,4 +1,6 @@
 mod secrets;
+#[cfg(windows)]
+mod shield;
 
 use music_connectors::oauth::Opener;
 use music_connectors::spotify::Spotify;
@@ -7,7 +9,9 @@ use music_core::library::{Library, LibraryPlaylist, LibraryTrack};
 use music_core::model::{Connector, SecretStore, Source};
 use music_core::sync::{SyncReport, sync};
 use music_player::{Command, Player, Status};
+use music_shield::Shield;
 use serde::{Deserialize, Serialize};
+use std::sync::atomic::Ordering;
 use std::sync::{Arc, Mutex};
 use tauri::{Manager, State};
 use tauri_plugin_opener::OpenerExt;
@@ -44,6 +48,7 @@ struct AppState {
     store: Arc<dyn SecretStore>,
     open: Opener,
     player: Player,
+    shield: Arc<Shield>,
 }
 
 impl AppState {
@@ -141,6 +146,28 @@ fn save_settings(state: State<AppState>, settings: serde_json::Value) -> CmdResu
     state.lib.lock().unwrap().set_setting("ui", &settings).map_err(err)
 }
 
+#[derive(Serialize)]
+struct ShieldStatus {
+    enabled: bool,
+    blocked: u64,
+}
+
+#[tauri::command]
+fn shield_status(state: State<AppState>) -> ShieldStatus {
+    ShieldStatus { enabled: state.shield.enabled.load(Ordering::Relaxed), blocked: state.shield.blocked() }
+}
+
+/// Network part switches live; player script part on next launch.
+#[tauri::command]
+fn set_shield(state: State<AppState>, enabled: bool) {
+    state.shield.enabled.store(enabled, Ordering::Relaxed)
+}
+
+#[tauri::command]
+fn restart_app(app: tauri::AppHandle) {
+    app.restart()
+}
+
 #[tauri::command]
 fn player(state: State<AppState>, cmd: Command) {
     state.player.send(cmd)
@@ -160,15 +187,37 @@ pub fn run() {
             std::fs::create_dir_all(&dir)?;
             let handle = app.handle().clone();
             let open: Opener = Arc::new(move |url: &str| handle.opener().open_url(url, None::<&str>).map_err(Into::into));
-            app.manage(AppState {
-                lib: Mutex::new(Library::open(dir.join("library.db"))?),
-                store: Arc::new(secrets::KeyringStore::new(&app.config().identifier)),
-                open,
-                player: Player::spawn(),
+            let lib = Library::open(dir.join("library.db"))?;
+            let shield_on = lib.setting("ui").ok().flatten().and_then(|s| s.get("shield")?.as_bool()).unwrap_or(true);
+            // Starts with built-in rules; cached / fresh lists swapped in below without blocking startup.
+            let shield = Arc::new(Shield::new("", shield_on));
+
+            let mut window = tauri::WebviewWindowBuilder::from_config(app.handle(), &app.config().app.windows[0])?;
+            if shield_on {
+                window = window.initialization_script_for_all_frames(music_shield::YOUTUBE_SCRIPT);
+            }
+            let _window = window.build()?;
+            #[cfg(windows)]
+            shield::install(&_window, shield.clone())?;
+
+            let lists = dir.join("shield");
+            let fresh = shield.clone();
+            tauri::async_runtime::spawn(async move {
+                let cached = music_shield::cached_lists(&lists);
+                if !cached.is_empty() {
+                    fresh.reload(&cached);
+                }
+                if music_shield::lists_stale(&lists)
+                    && let Ok(text) = music_shield::download_lists(&lists).await
+                {
+                    fresh.reload(&text);
+                }
             });
+
+            app.manage(AppState { lib: Mutex::new(lib), store: Arc::new(secrets::KeyringStore::new(&app.config().identifier)), open, player: Player::spawn(), shield });
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status, load_settings, save_settings])
+        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status, load_settings, save_settings, shield_status, set_shield, restart_app])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

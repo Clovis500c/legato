@@ -1,7 +1,9 @@
-import { ArrowCounterClockwise, Check, CheckCircle, ClipboardText, Copy, PaintBrush, Palette as PaletteIcon, Plugs, Plus, Trash, WarningCircle } from '@phosphor-icons/react'
-import { useState, type ReactNode } from 'react'
+import { ArrowCounterClockwise, Check, CheckCircle, ClipboardText, Copy, PaintBrush, Palette as PaletteIcon, Plugs, Plus, ShieldCheck, Trash, WarningCircle } from '@phosphor-icons/react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { useSettings } from '../../app/settings'
 import { useStore, type SettingsSection } from '../../app/store'
+import { api } from '../../shared/api'
+import { formatCount } from '../../shared/format'
 import { ACCENTS, COLUMNS, contrastReport, DEFAULTS, PALETTE_KEYS, PRESETS, sanitizeTheme, type Column, type Palette, type PaletteKey, type Settings, type Theme } from '../../shared/theme/theme'
 import { Button } from '../../shared/ui/Button'
 import { Led, RoundButton, Segmented, Toggle } from '../../shared/ui/controls'
@@ -12,6 +14,7 @@ const sections: { id: SettingsSection; label: string; icon: ReactNode }[] = [
   { id: 'appearance', label: 'Apparence', icon: <PaintBrush size={15} /> },
   { id: 'themes', label: 'Thèmes', icon: <PaletteIcon size={15} /> },
   { id: 'sources', label: 'Sources et comptes', icon: <Plugs size={15} /> },
+  { id: 'shield', label: 'Bouclier', icon: <ShieldCheck size={15} /> },
 ]
 
 function Group({ title, hint, children }: { title: string; hint?: string; children: ReactNode }) {
@@ -310,6 +313,51 @@ function Themes() {
   )
 }
 
+function ShieldSection() {
+  const { settings, update } = useSettings()
+  const [blocked, setBlocked] = useState(0)
+  const [changed, setChanged] = useState(false)
+  useEffect(() => {
+    const tick = () => api.shieldStatus().then((s) => setBlocked(s.blocked))
+    void tick()
+    const id = setInterval(tick, 2000)
+    return () => clearInterval(id)
+  }, [])
+  return (
+    <div className="flex max-w-190 flex-col gap-6">
+      <p className="text-[13px] text-ink-2">Bloque pubs et traqueurs avec le moteur de Brave (adblock-rust) et les listes EasyList et EasyPrivacy, mises à jour tous les 4 jours. Dans le lecteur YouTube, les emplacements de pub sont retirés avant la lecture.</p>
+      <div className="rounded-xl border border-line bg-raised">
+        <Row label="Bloquer pubs et traqueurs" sub="Réseau : tout de suite. Lecteur YouTube : au prochain lancement.">
+          <Toggle
+            label="Bloquer pubs et traqueurs"
+            checked={settings.shield}
+            onChange={(shield) => {
+              update({ shield })
+              void api.setShield(shield)
+              setChanged(true)
+            }}
+          />
+        </Row>
+        <Row label="Requêtes bloquées" sub="Depuis le lancement de l’app">
+          <span className="font-mono text-2xl tabular-nums">{formatCount(blocked)}</span>
+        </Row>
+        <Row label="Listes" sub="EasyList · EasyPrivacy · règles intégrées (hors ligne)">
+          <span className="flex items-center gap-2 kicker">
+            <Led on={settings.shield} /> {settings.shield ? 'Actif' : 'Coupé'}
+          </span>
+        </Row>
+      </div>
+      {changed && (
+        <div className="flex items-center gap-4 rounded-lg border border-line bg-recess px-4 py-3">
+          <p className="flex-1 text-xs">Redémarre l’app pour appliquer le changement au lecteur YouTube.</p>
+          <Button onClick={() => void api.restartApp()}>Redémarrer</Button>
+        </div>
+      )}
+      <p className="text-xs text-ink-2">À savoir : les règles de YouTube interdisent de bloquer les pubs de son lecteur. Risques : ta clé API révoquée, ou une lecture qui casse si YouTube change son lecteur. YouTube Premium retire les pubs sans ce risque.</p>
+    </div>
+  )
+}
+
 export function SettingsView({ section }: { section: SettingsSection }) {
   const go = useStore((s) => s.go)
   return (
@@ -328,6 +376,7 @@ export function SettingsView({ section }: { section: SettingsSection }) {
           {section === 'appearance' && <Appearance />}
           {section === 'themes' && <Themes />}
           {section === 'sources' && <SourcesView />}
+          {section === 'shield' && <ShieldSection />}
         </div>
       </div>
     </>

@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import { api, type Credentials, type LibraryPlaylist, type LibraryTrack, type Service, type SourceStatus, type SyncReport } from '../shared/api'
 import type { Filter, Sort } from '../features/library/filter'
 
-export type SettingsSection = 'appearance' | 'themes' | 'sources'
+export type SettingsSection = 'appearance' | 'themes' | 'sources' | 'shield'
 
 export type View =
   | { name: 'songs' }

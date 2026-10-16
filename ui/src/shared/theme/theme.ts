@@ -43,6 +43,8 @@ export interface Settings {
   volume: 'knob' | 'bar'
   tuner: boolean
   columns: Column[]
+  /** Ad/tracker blocker (read by Rust at launch). */
+  shield: boolean
 }
 
 export const DEFAULTS: Settings = {
@@ -56,6 +58,7 @@ export const DEFAULTS: Settings = {
   volume: 'knob',
   tuner: true,
   columns: [...COLUMNS],
+  shield: true,
 }
 
 const HEX = /^#[0-9a-f]{6}$/i
@@ -89,6 +92,7 @@ export function sanitize(raw: unknown): Settings {
     volume: pick(r.volume, ['knob', 'bar'] as const, DEFAULTS.volume),
     tuner: typeof r.tuner === 'boolean' ? r.tuner : DEFAULTS.tuner,
     columns,
+    shield: typeof r.shield === 'boolean' ? r.shield : DEFAULTS.shield,
   }
 }
 

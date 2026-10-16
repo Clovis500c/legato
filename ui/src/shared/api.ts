@@ -72,4 +72,7 @@ export const api = {
   /** Raw JSON; validated by shared/theme/settings.sanitize. */
   loadSettings: () => invoke<unknown>('load_settings'),
   saveSettings: (settings: object) => invoke<void>('save_settings', { settings }),
+  shieldStatus: () => invoke<{ enabled: boolean; blocked: number }>('shield_status'),
+  setShield: (enabled: boolean) => invoke<void>('set_shield', { enabled }),
+  restartApp: () => invoke<void>('restart_app'),
 }
