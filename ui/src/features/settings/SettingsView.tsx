@@ -1,6 +1,7 @@
-import { ArrowCounterClockwise, Check, CheckCircle, ClipboardText, Copy, PaintBrush, Palette as PaletteIcon, Plugs, Plus, ShieldCheck, Trash, WarningCircle } from '@phosphor-icons/react'
+import { ArrowCounterClockwise, Check, CheckCircle, ClipboardText, Copy, Keyboard, PaintBrush, Palette as PaletteIcon, Plugs, Plus, ShieldCheck, Trash, WarningCircle } from '@phosphor-icons/react'
 import { useEffect, useState, type ReactNode } from 'react'
 import { useSettings } from '../../app/settings'
+import { SHORTCUTS } from '../../app/shortcuts'
 import { useStore, type SettingsSection } from '../../app/store'
 import { api } from '../../shared/api'
 import { formatCount } from '../../shared/format'
@@ -15,6 +16,7 @@ const sections: { id: SettingsSection; label: string; icon: ReactNode }[] = [
   { id: 'themes', label: 'Themes', icon: <PaletteIcon size={15} /> },
   { id: 'sources', label: 'Accounts', icon: <Plugs size={15} /> },
   { id: 'shield', label: 'Shield', icon: <ShieldCheck size={15} /> },
+  { id: 'shortcuts', label: 'Shortcuts', icon: <Keyboard size={15} /> },
 ]
 
 function Group({ title, hint, children }: { title: string; hint?: string; children: ReactNode }) {
@@ -419,6 +421,21 @@ function ShieldSection() {
   )
 }
 
+function ShortcutsSection() {
+  return (
+    <div className="flex max-w-190 flex-col gap-6">
+      <p className="text-[13px] text-ink-2">Work anywhere in the app except while typing. Media keys and the Windows media panel (volume flyout, lock screen) control playback too.</p>
+      <div className="rounded-xl border border-line bg-raised">
+        {SHORTCUTS.map((s) => (
+          <Row key={s.keys} label={s.label}>
+            <kbd className="rounded-md border border-line bg-recess px-2 py-0.5 font-mono text-xs">{s.keys}</kbd>
+          </Row>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 export function SettingsView({ section }: { section: SettingsSection }) {
   const go = useStore((s) => s.go)
   return (
@@ -438,6 +455,7 @@ export function SettingsView({ section }: { section: SettingsSection }) {
           {section === 'themes' && <Themes />}
           {section === 'sources' && <SourcesView />}
           {section === 'shield' && <ShieldSection />}
+          {section === 'shortcuts' && <ShortcutsSection />}
         </div>
       </div>
     </>

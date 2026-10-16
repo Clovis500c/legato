@@ -5,6 +5,7 @@ import { AddView } from '../features/add/AddView'
 import { MixesView, MixView } from '../features/mixes/MixesView'
 import { AlbumsView, AlbumView, ArtistsView, ArtistView, PlaylistView, SongsView } from '../features/library/LibraryView'
 import { appMenu } from '../features/menus'
+import { startMedia } from '../features/player/media'
 import { MiniPlayer } from '../features/player/MiniPlayer'
 import { NowPlaying } from '../features/player/NowPlaying'
 import { PlayerBar } from '../features/player/PlayerBar'
@@ -18,6 +19,7 @@ import { region, spotifyList, timeAgo } from '../shared/format'
 import { ContextMenuHost } from '../shared/ui/ContextMenu'
 import { RoundButton } from '../shared/ui/controls'
 import { useSettings } from './settings'
+import { startShortcuts } from './shortcuts'
 import { useStore } from './store'
 
 const win = getCurrentWindow()
@@ -106,6 +108,8 @@ export function App() {
       .then((n) => (n ? refresh() : undefined))
       .catch(() => {})
   }, [refresh])
+  useEffect(() => startMedia(), [])
+  useEffect(() => startShortcuts(), [])
 
   // Ctrl+V outside text fields: share code → import, Spotify playlist / album → import, YouTube link → library.
   useEffect(() => {

@@ -21,11 +21,20 @@ pub async fn respond(app: tauri::AppHandle, req: Request<Vec<u8>>) -> Response<C
 
 async fn image(app: &tauri::AppHandle, path: &str) -> Option<(Vec<u8>, String)> {
     let path = percent_encoding::percent_decode_str(path.trim_start_matches('/')).decode_utf8().ok()?.into_owned();
-    let state = app.try_state::<AppState>()?;
-    if let Some(id) = path.strip_prefix("local/") {
-        let file = state.lib.lock().unwrap().local_path(id.parse().ok()?).ok()??;
-        return tauri::async_runtime::spawn_blocking(move || music_core::local::picture(std::path::Path::new(&file))).await.ok()?;
+    match path.strip_prefix("local/") {
+        Some(id) => local(app, id.parse().ok()?).await,
+        None => remote(app, &path).await,
     }
-    let (bytes, kind) = state.art.get(&path).await.ok()?;
+}
+
+/// Cover embedded in a library track's local file.
+pub async fn local(app: &tauri::AppHandle, track_id: i64) -> Option<(Vec<u8>, String)> {
+    let file = app.try_state::<AppState>()?.lib.lock().unwrap().local_path(track_id).ok()??;
+    tauri::async_runtime::spawn_blocking(move || music_core::local::picture(std::path::Path::new(&file))).await.ok()?
+}
+
+/// Remote image through the cache (allowlisted hosts only).
+pub async fn remote(app: &tauri::AppHandle, url: &str) -> Option<(Vec<u8>, String)> {
+    let (bytes, kind) = app.try_state::<AppState>()?.art.get(url).await.ok()?;
     Some((bytes, kind.to_string()))
 }

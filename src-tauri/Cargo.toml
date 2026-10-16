@@ -23,7 +23,7 @@ tauri-plugin-dialog = "=2.8.0"
 
 [target.'cfg(windows)'.dependencies]
 webview2-com = "0.39.1"
-windows = { version = "0.62.2", features = ["UI_ViewManagement"] }
+windows = { version = "0.62.2", features = ["UI_ViewManagement", "Media", "Storage_Streams", "Win32_System_WinRT", "Foundation"] }
 
 [build-dependencies]
 tauri-build = { version = "2.7.3", features = [] }
