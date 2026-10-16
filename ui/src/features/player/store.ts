@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { useStore } from '../../app/store'
-import { api, type LibraryTrack, type PlayerCommand, type PlayerStatus } from '../../shared/api'
+import { api, type LibraryTrack, type PlayerCommand, type PlayerStatus, type SpotifyCommand, type SpotifyPlayback } from '../../shared/api'
 import { region } from '../../shared/format'
 import { endListen, progress, startListen } from './listens'
 import { vias, type Via } from './sources'
@@ -18,6 +18,7 @@ export interface NowPlaying {
   path?: string
   /** Apple Music page of a preview (Apple terms: previews link to the store). */
   page?: string
+  spotifyId?: string
 }
 
 interface PlayerState {
@@ -44,6 +45,8 @@ interface PlayerState {
   setVolume: (volume: number) => void
   onYoutube: (u: YtUpdate) => void
   onLocal: (s: PlayerStatus) => void
+  /** Spotify Connect poll result. */
+  onSpotify: (p: SpotifyPlayback | null) => void
 }
 
 // Embed iframe, bound by PlayerBar.
@@ -59,6 +62,10 @@ const send = (cmd: PlayerCommand) => api.player(cmd).catch((e) => useStore.setSt
 const yt = (func: string, ...args: unknown[]) => ytPost(frame, 'command', func, args)
 export const fileTitle = (path: string) => path.split(/[\\/]/).pop()!.replace(/\.[^.]+$/, '')
 const previewPath = (t: LibraryTrack) => `apple:${t.ids.apple}`
+const spotifyOn = () => useStore.getState().status.spotify.connected
+const spotify = (cmd: SpotifyCommand) => api.spotifyPlayer(cmd).catch((e) => useStore.setState({ error: String(e) }))
+// Knob drags fire many changes: one Spotify call per pause.
+let volumeTimer: ReturnType<typeof setTimeout> | undefined
 
 export const usePlayer = create<PlayerState>((set, get) => ({
   playing: false,
@@ -72,7 +79,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
   setFull: (full) => set({ full }),
 
   playTracks(list, index) {
-    const i = list.findIndex((t, j) => j >= index && vias(t).length > 0)
+    const i = list.findIndex((t, j) => j >= index && vias(t, spotifyOn()).length > 0)
     if (i < 0) return
     set({ list })
     void get().playAt(i)
@@ -82,9 +89,11 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     const { list, volume } = get()
     // Fresh row: sources may have changed since the queue was built (Find versions).
     const t = useStore.getState().tracks.find((x) => x.id === list[index]?.id) ?? list[index]
-    const how = via ?? (t && vias(t)[0])
-    if (!t || !how || !vias(t).includes(how)) return
+    const how = via ?? (t && vias(t, spotifyOn())[0])
+    if (!t || !how || !vias(t, spotifyOn()).includes(how)) return
     const mine = ++seq
+    // Leaving Spotify: pause the user's Spotify app.
+    if (get().now?.via === 'spotify' && how !== 'spotify') void spotify({ type: 'pause' })
     startListen(t.id, t.durationMs)
     const base: NowPlaying = { title: t.title, artist: t.artist, trackId: t.id, via: how }
     set({ index, playing: true, positionMs: 0, durationMs: t.durationMs, upcoming: [] })
@@ -104,6 +113,19 @@ export const usePlayer = create<PlayerState>((set, get) => ({
       send({ type: 'play', paths, start: 0 })
       send({ type: 'volume', value: volume })
       return set({ now: { ...base, path: t.ids.local } })
+    }
+    if (how === 'spotify') {
+      expect = []
+      send({ type: 'stop' })
+      set({ now: { ...base, spotifyId: t.ids.spotify } })
+      try {
+        await api.spotifyPlayer({ type: 'play', trackId: t.ids.spotify! })
+      } catch (e) {
+        if (mine !== seq) return
+        useStore.setState({ error: String(e) })
+        set({ playing: false })
+      }
+      return
     }
     // Preview: silence while it downloads (Rust side, memory only).
     expect = [previewPath(t)]
@@ -138,12 +160,15 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     const { now, playing } = get()
     if (!now) return
     if (now.via === 'youtube') yt(playing ? 'pauseVideo' : 'playVideo')
+    else if (now.via === 'spotify') void spotify({ type: playing ? 'pause' : 'resume' })
     else send({ type: 'toggle' })
     set({ playing: !playing })
   },
 
   seek(ms) {
-    if (get().now?.via === 'youtube') yt('seekTo', ms / 1000, true)
+    const via = get().now?.via
+    if (via === 'youtube') yt('seekTo', ms / 1000, true)
+    else if (via === 'spotify') void spotify({ type: 'seek', ms: Math.round(ms) })
     else send({ type: 'seek', ms })
     set({ positionMs: ms })
   },
@@ -152,14 +177,18 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     const { now, list, index } = get()
     if (now && !now.trackId) return void send({ type: delta > 0 ? 'next' : 'prev' })
     for (let i = index + delta; i >= 0 && i < list.length; i += delta) {
-      if (vias(list[i]).length) return void get().playAt(i)
+      if (vias(list[i], spotifyOn()).length) return void get().playAt(i)
     }
     if (delta > 0) set({ playing: false })
   },
 
   setVolume(volume) {
-    if (get().now?.via === 'youtube') yt('setVolume', Math.round(volume * 100))
-    else send({ type: 'volume', value: volume })
+    const via = get().now?.via
+    if (via === 'youtube') yt('setVolume', Math.round(volume * 100))
+    else if (via === 'spotify') {
+      clearTimeout(volumeTimer)
+      volumeTimer = setTimeout(() => void spotify({ type: 'volume', percent: Math.round(volume * 100) }), 300)
+    } else send({ type: 'volume', value: volume })
     set({ volume })
   },
 
@@ -182,7 +211,8 @@ export const usePlayer = create<PlayerState>((set, get) => ({
 
   onLocal(s) {
     if (s.error) useStore.setState({ error: s.error })
-    if (get().now?.via === 'youtube') return
+    const via = get().now?.via
+    if (via === 'youtube' || via === 'spotify') return
     if (expect) {
       // Error = engine already tried our items (bad file skipped): status is ours.
       if (!(s.path && expect.includes(s.path)) && !s.error) return
@@ -209,6 +239,21 @@ export const usePlayer = create<PlayerState>((set, get) => ({
       ...(i > index && { index: i, now: { title: list[i].title, artist: list[i].artist, trackId: list[i].id, via: 'local', path: s.path! } }),
       ...(s.path && !now?.trackId && { now: { title: fileTitle(s.path), artist: 'Local file', path: s.path, via: 'local' } }),
     })
+  },
+
+  onSpotify(p) {
+    const { now, positionMs, durationMs } = get()
+    if (now?.via !== 'spotify') return
+    const ours = !!p && p.trackId === now.spotifyId
+    // Our track ran out: Spotify moved on (autoplay) or stopped at 0.
+    const ended = (!ours || (!p.playing && p.positionMs === 0)) && !!durationMs && positionMs > durationMs - 4000
+    if (ended) {
+      endListen(true)
+      return get().step(1)
+    }
+    if (!p || !ours) return set({ playing: false })
+    progress(p.positionMs, p.durationMs)
+    set({ playing: p.playing, positionMs: p.positionMs, ...(p.durationMs && { durationMs: p.durationMs }) })
   },
 }))
 

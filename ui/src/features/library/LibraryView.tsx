@@ -11,6 +11,7 @@ import { sourceLabel } from '../../shared/ui/SourceIcon'
 import { isFull, vias } from '../player/sources'
 import { usePlayer } from '../player/store'
 import { SharePanel } from '../share/SharePanel'
+import { ExportYoutube } from './ExportYoutube'
 import { filterTracks, groupAlbums, groupArtists, libraryStats, primaryArtist, sortTracks, type Filter, type Sort } from './filter'
 import { TrackTable } from './TrackTable'
 
@@ -30,7 +31,8 @@ const totalTime = (tracks: LibraryTrack[]) => {
 /** Round play button: starts first playable track of the list. Absent if none. */
 function PlayAll({ tracks }: { tracks: LibraryTrack[] }) {
   const play = usePlayer((s) => s.playTracks)
-  const first = tracks.findIndex((t) => vias(t).length > 0)
+  const sp = useStore((s) => s.status.spotify.connected)
+  const first = tracks.findIndex((t) => vias(t, sp).length > 0)
   if (first < 0) return null
   return (
     <RoundButton label="Play all" kind="primary" size="lg" onClick={() => play(tracks, first)}>
@@ -82,9 +84,10 @@ function FindVersions({ tracks }: { tracks: LibraryTrack[] }) {
 
 /** What plays in full, what only previews, what can't play. */
 function Playability({ tracks }: { tracks: LibraryTrack[] }) {
-  const full = tracks.filter(isFull).length
-  const missing = tracks.filter((t) => !isFull(t))
-  const preview = missing.filter((t) => vias(t).length > 0).length
+  const sp = useStore((s) => s.status.spotify.connected)
+  const full = tracks.filter((t) => isFull(t, sp)).length
+  const missing = tracks.filter((t) => !isFull(t, sp))
+  const preview = missing.filter((t) => vias(t, sp).length > 0).length
   if (!tracks.length) return null
   return (
     <p className="mb-3 flex shrink-0 flex-wrap items-center gap-x-5 gap-y-1 rounded-lg border border-line-soft bg-recess px-3.5 py-2.5 font-mono text-[10px] tracking-[0.08em] uppercase">
@@ -188,6 +191,7 @@ export function PlaylistView({ id }: { id: number }) {
             <RoundButton label="Share playlist" onClick={() => setSharing(true)} disabled={!playlistTracks.length}>
               <ShareNetwork size={16} />
             </RoundButton>
+            {!(playlist.source === 'youtube' && !playlist.custom) && playlistTracks.length > 0 && <ExportYoutube id={id} />}
             <RoundButton label={playlist.custom ? 'Duplicate' : 'Duplicate as custom playlist'} onClick={duplicate}>
               <Copy size={16} />
             </RoundButton>

@@ -1,12 +1,12 @@
 import type { Track } from '../../shared/api'
 
-/** How a track plays here. preview = Apple 30 s clip (Spotify needs Premium: not here yet). */
-export type Via = 'local' | 'youtube' | 'preview'
+/** How a track plays here. spotify = Spotify Connect (user's own app, Premium). preview = Apple 30 s clip. */
+export type Via = 'local' | 'youtube' | 'spotify' | 'preview'
 
-export const viaLabel: Record<Via, string> = { local: 'Local file', youtube: 'YouTube', preview: 'Apple Music preview' }
+export const viaLabel: Record<Via, string> = { local: 'Local file', youtube: 'YouTube', spotify: 'Spotify Connect', preview: 'Apple Music preview' }
 
-/** Ways this track can play, best first: local file, full YouTube, then preview. */
-export const vias = (t: Pick<Track, 'ids'>): Via[] => [t.ids.local && 'local', t.ids.youtube && 'youtube', t.ids.apple && 'preview'].filter((v): v is Via => !!v)
+/** Ways this track can play, best first: local file, YouTube (in app), Spotify (when connected), then preview. */
+export const vias = (t: Pick<Track, 'ids'>, spotify = false): Via[] => [t.ids.local && 'local', t.ids.youtube && 'youtube', spotify && t.ids.spotify && 'spotify', t.ids.apple && 'preview'].filter((v): v is Via => !!v)
 
 /** Plays in full (not just a preview). */
-export const isFull = (t: Pick<Track, 'ids'>) => !!(t.ids.local || t.ids.youtube)
+export const isFull = (t: Pick<Track, 'ids'>, spotify = false) => !!(t.ids.local || t.ids.youtube || (spotify && t.ids.spotify))

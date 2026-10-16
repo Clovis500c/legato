@@ -1,4 +1,5 @@
 import { useRef, type ButtonHTMLAttributes, type ReactNode } from 'react'
+import { formatCount } from '../format'
 
 const kinds = {
   primary: 'bg-accent text-on-accent shadow-[0_2px_10px_var(--accent-soft)] hover:brightness-110',
@@ -42,6 +43,16 @@ export function Segmented<T extends string>({ value, options, onChange, label }:
           {o.label}
         </button>
       ))}
+    </div>
+  )
+}
+
+/** Big mono number in a recessed box (dialog summaries). */
+export function Stat({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="flex flex-col gap-1 rounded-md border border-line-soft bg-recess px-3 py-2.5">
+      <span className="font-mono text-2xl tabular-nums">{formatCount(value)}</span>
+      <span className="kicker">{label}</span>
     </div>
   )
 }

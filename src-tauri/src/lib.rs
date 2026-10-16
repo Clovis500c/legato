@@ -15,7 +15,7 @@ use music_core::sync::{SyncReport, sync};
 use music_player::{Command, Player, Status};
 use music_shield::Shield;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::path::{Path, PathBuf};
 use std::sync::atomic::Ordering;
 use std::sync::{Arc, Mutex};
@@ -564,6 +564,72 @@ fn clear_history(state: State<AppState>) -> CmdResult<()> {
     state.lib.lock().unwrap().clear_history().map_err(err)
 }
 
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct ExportReport {
+    url: String,
+    added: usize,
+    /// Already in the YouTube playlist (earlier export).
+    already: usize,
+    /// Tracks with no YouTube version (Find full versions can fix that).
+    no_youtube: usize,
+    /// Deleted videos.
+    unavailable: usize,
+    /// Left for tomorrow: daily quota ran out.
+    remaining: usize,
+}
+
+/// Playlist → private YouTube playlist. Same playlist exported again = same YouTube playlist, only missing videos added.
+#[tauri::command]
+async fn export_youtube(state: State<'_, AppState>, id: i64) -> CmdResult<ExportReport> {
+    let yt = state.youtube().filter(|y| y.is_connected()).ok_or("Connect YouTube first (Settings › Sources)")?;
+    let key = format!("yt_export_{id}");
+    let (name, videos, no_youtube, existing) = {
+        let lib = state.lib.lock().unwrap();
+        let p = lib.playlists().map_err(err)?.into_iter().find(|p| p.id == id).ok_or("Playlist not found")?;
+        if p.source == Source::Youtube && !p.custom {
+            return Err("Already a YouTube playlist".into());
+        }
+        let tracks = lib.playlist_tracks(id).map_err(err)?;
+        let mut seen = HashSet::new();
+        let videos: Vec<String> = tracks.iter().filter_map(|t| t.track.ids.get(&Source::Youtube).cloned()).filter(|v| seen.insert(v.clone())).collect();
+        let no_youtube = tracks.iter().filter(|t| !t.track.ids.contains_key(&Source::Youtube)).count();
+        (p.name, videos, no_youtube, lib.setting(&key).ok().flatten().and_then(|v| v.as_str().map(String::from)))
+    };
+    let mut target = None;
+    if let Some(remote) = existing {
+        target = yt.playlist_videos(&remote).await.map_err(err)?.map(|have| (remote, have));
+    }
+    let (remote, have) = match target {
+        Some(t) => t,
+        None => {
+            let remote = yt.create_playlist(&name).await.map_err(err)?;
+            // Saved before adding: a quota stop or crash resumes into the same playlist.
+            state.lib.lock().unwrap().set_setting(&key, &serde_json::json!(remote)).map_err(err)?;
+            (remote, Vec::new())
+        }
+    };
+    let have: HashSet<String> = have.into_iter().collect();
+    let todo: Vec<String> = videos.iter().filter(|v| !have.contains(*v)).cloned().collect();
+    let r = yt.add_videos(&remote, &todo).await.map_err(err)?;
+    Ok(ExportReport { url: format!("https://www.youtube.com/playlist?list={remote}"), added: r.added, already: videos.len() - todo.len(), no_youtube, unavailable: r.unavailable, remaining: todo.len() - r.added - r.unavailable })
+}
+
+fn spotify_on(state: &AppState) -> CmdResult<Spotify> {
+    state.spotify().filter(|s| s.is_connected()).ok_or_else(|| "Connect Spotify first (Settings › Sources)".into())
+}
+
+/// Spotify Connect remote: the user's own Spotify app plays.
+#[tauri::command]
+async fn spotify_player(state: State<'_, AppState>, cmd: music_connectors::spotify::PlayerCommand) -> CmdResult<()> {
+    spotify_on(&state)?.command(cmd).await.map_err(err)
+}
+
+#[tauri::command]
+async fn spotify_playback(state: State<'_, AppState>) -> CmdResult<Option<music_connectors::spotify::Playback>> {
+    spotify_on(&state)?.playback().await.map_err(err)
+}
+
 #[tauri::command]
 fn edit_playlist(state: State<AppState>, edit: PlaylistEdit) -> CmdResult<Option<i64>> {
     state.lib.lock().unwrap().edit_playlist(edit).map_err(err)
@@ -655,7 +721,7 @@ pub fn run() {
             app.manage(AppState { lib: Mutex::new(lib), store: Arc::new(secrets::KeyringStore::new(&app.config().identifier)), open, player: Player::spawn(), shield, yt_cache: Mutex::default(), nearby: Arc::new(Mutex::new(NearbyState::Idle)), nearby_task: Mutex::default() });
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, add_track, find_versions, play_preview, share_playlist, share_preview, share_read_image, share_import, nearby_send, nearby_status, nearby_stop, nearby_receive, record_play, mixes, set_track_pref, clear_history, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, restart_app])
+        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, add_track, find_versions, play_preview, share_playlist, share_preview, share_read_image, share_import, nearby_send, nearby_status, nearby_stop, nearby_receive, record_play, mixes, set_track_pref, clear_history, export_youtube, spotify_player, spotify_playback, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, restart_app])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

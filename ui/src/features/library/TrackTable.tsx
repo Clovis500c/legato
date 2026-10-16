@@ -25,6 +25,7 @@ export function TrackTable({ tracks, empty, editId, rowActions }: { tracks: Libr
   const play = usePlayer((s) => s.playTracks)
   const editPlaylist = useStore((s) => s.editPlaylist)
   const playingId = usePlayer((s) => s.now?.trackId)
+  const sp = useStore((s) => s.status.spotify.connected)
   const row = ROW[density]
   const virtual = useVirtualizer({ count: tracks.length, getScrollElement: () => scroller.current, estimateSize: () => row, overscan: 12 })
   const grid = { gridTemplateColumns: ['32px', 'minmax(0,1fr)', editId ? '156px' : rowActions ? '124px' : '68px', ...columns.map((c) => width[c])].join(' ') }
@@ -50,7 +51,7 @@ export function TrackTable({ tracks, empty, editId, rowActions }: { tracks: Libr
             {virtual.getVirtualItems().map((v) => {
               const t = tracks[v.index]
               const on = t.id === playingId
-              const playable = vias(t).length > 0
+              const playable = vias(t, sp).length > 0
               return (
                 <div
                   key={t.id}
@@ -65,7 +66,7 @@ export function TrackTable({ tracks, empty, editId, rowActions }: { tracks: Libr
                     <span className="min-w-0">
                       <span className={`flex items-center gap-2 text-[13px] font-semibold ${on ? 'text-accent' : ''}`}>
                         <span className="truncate">{t.title}</span>
-                        {playable && !isFull(t) && (
+                        {playable && !isFull(t, sp) && (
                           <span title="30-second preview" className="shrink-0 rounded-[3px] border border-line px-1 font-mono text-[9px] font-normal tracking-[0.08em] text-ink-3">
                             PREVIEW
                           </span>

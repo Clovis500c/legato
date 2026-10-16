@@ -48,29 +48,31 @@ function TunerScale({ value, max, onChange }: { value: number; max: number; onCh
   )
 }
 
-/** "Play via": one round input per source of this track. Lit = playing. Spotify locked (Premium). */
+/** "Play via": one round input per source of this track. Lit = playing. Spotify locked until connected (Premium). */
 function Inputs({ track }: { track?: LibraryTrack }) {
   const { now, index, playAt } = usePlayer()
-  const has = track ? vias(track) : []
-  const items: { code: string; source: Source; via?: Via }[] = [
+  const sp = useStore((s) => s.status.spotify.connected)
+  const has = track ? vias(track, sp) : []
+  const items: { code: string; source: Source; via: Via }[] = [
     { code: 'LOC', source: 'local', via: 'local' },
     { code: 'YT', source: 'youtube', via: 'youtube' },
+    { code: 'SP', source: 'spotify', via: 'spotify' },
     { code: 'AM', source: 'apple', via: 'preview' },
-    { code: 'SP', source: 'spotify' },
   ]
   return (
     <div className="flex flex-col gap-2">
       <span className="kicker">Play via</span>
       <div className="flex gap-3">
         {items.map((i) => {
-          const on = !!i.via && now?.via === i.via
-          const can = !!i.via && has.includes(i.via)
-          const hint = !i.via ? 'Spotify: Premium required' : on ? `Playing: ${viaLabel[i.via]}` : can ? `Switch to ${viaLabel[i.via]}` : 'Not on this source'
+          const on = now?.via === i.via
+          const can = has.includes(i.via)
+          const locked = i.via === 'spotify' && !sp
+          const hint = locked ? 'Spotify: connect a Premium account (Settings › Sources)' : on ? `Playing: ${viaLabel[i.via]}` : can ? `Switch to ${viaLabel[i.via]}` : 'Not on this source'
           return (
             <button key={i.code} disabled={!can || on} onClick={() => playAt(index, i.via)} title={hint} aria-label={hint} aria-pressed={on} className="group flex flex-col items-center gap-1.5">
               <Led on={on} />
               <span className={`grid size-10 place-items-center rounded-full border transition ${on ? 'border-ink-3 bg-raised text-ink' : can ? 'border-line text-ink-2 group-hover:bg-raised group-hover:text-ink' : 'border-line text-ink-4'}`}>
-                {i.via ? <SourceIcon source={i.source} size={14} /> : <Lock size={14} />}
+                {locked ? <Lock size={14} /> : <SourceIcon source={i.source} size={14} />}
               </span>
               <span className={`font-mono text-[9px] tracking-[0.08em] ${on ? 'text-ink' : 'text-ink-3'}`}>{i.code}</span>
             </button>
@@ -85,6 +87,7 @@ export function NowPlaying() {
   const { now, playing, positionMs, durationMs, toggle, seek, step, setFull, list, index, upcoming, playAt } = usePlayer()
   const tuner = useSettings((s) => s.settings.tuner)
   const track = useStore((s) => s.tracks.find((t) => t.id === now?.trackId))
+  const sp = useStore((s) => s.status.spotify.connected)
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setFull(false)
@@ -98,7 +101,7 @@ export function NowPlaying() {
 
   const video = now.via === 'youtube'
   const next = now.trackId
-    ? list.slice(index + 1).flatMap((t, i) => (vias(t).length ? [{ key: String(t.id), title: t.title, artist: t.artist, onPlay: () => playAt(index + 1 + i) }] : []))
+    ? list.slice(index + 1).flatMap((t, i) => (vias(t, sp).length ? [{ key: String(t.id), title: t.title, artist: t.artist, onPlay: () => playAt(index + 1 + i) }] : []))
     : upcoming.map((p) => ({ key: p, title: fileTitle(p), artist: fileFormat(p) ?? '', onPlay: undefined }))
 
   return (
@@ -121,6 +124,7 @@ export function NowPlaying() {
           ) : (
             <div className="flex aspect-video w-full flex-col items-center justify-center gap-4 rounded-lg border border-line bg-recess">
               <Cover title={track?.album ?? now.title} size={180} />
+              {now.via === 'spotify' && <span className="kicker">Playing in your Spotify app</span>}
               {now.via === 'preview' && (
                 <div className="flex items-center gap-4">
                   <span className="kicker">30-second preview</span>

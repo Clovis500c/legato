@@ -122,6 +122,28 @@ export interface Mix {
   trackIds: number[]
 }
 
+/** crates/connectors spotify::PlayerCommand (Spotify Connect). */
+export type SpotifyCommand = { type: 'play'; trackId: string } | { type: 'pause' | 'resume' | 'next' | 'previous' } | { type: 'seek'; ms: number } | { type: 'volume'; percent: number }
+
+export interface SpotifyPlayback {
+  playing: boolean
+  positionMs: number
+  durationMs: number | null
+  trackId: string | null
+  device: string | null
+}
+
+/** src-tauri export_youtube. */
+export interface ExportReport {
+  url: string
+  added: number
+  already: number
+  noYoutube: number
+  unavailable: number
+  /** Left for tomorrow (daily quota). */
+  remaining: number
+}
+
 /** src-tauri NearbyState. */
 export type NearbyState = { state: 'idle' } | { state: 'waiting'; code: string } | { state: 'sent' } | { state: 'failed'; error: string }
 
@@ -163,6 +185,11 @@ export const api = {
   /** less = ranked lower in mixes, never = left out, null = back to normal. */
   setTrackPref: (trackId: number, pref: 'less' | 'never' | null) => invoke<void>('set_track_pref', { trackId, pref }),
   clearHistory: () => invoke<void>('clear_history'),
+  /** Private YouTube playlist; same one updated on later exports. */
+  exportYoutube: (id: number) => invoke<ExportReport>('export_youtube', { id }),
+  spotifyPlayer: (cmd: SpotifyCommand) => invoke<void>('spotify_player', { cmd }),
+  /** null = nothing playing on any Spotify device. */
+  spotifyPlayback: () => invoke<SpotifyPlayback | null>('spotify_playback'),
   localFolders: () => invoke<string[]>('local_folders'),
   /** Saves folders, rescans. Returns local file count. */
   setLocalFolders: (folders: string[]) => invoke<number>('set_local_folders', { folders }),

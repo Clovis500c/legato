@@ -52,10 +52,11 @@ export function VolumeControl({ big }: { big?: boolean }) {
 }
 
 export function PlayerBar() {
-  const { now, playing, positionMs, durationMs, playFiles, toggle, seek, step, onLocal, setFull } = usePlayer()
+  const { now, playing, positionMs, durationMs, playFiles, toggle, seek, step, onLocal, onSpotify, setFull } = usePlayer()
   const readout = useSettings((s) => s.settings.readout)
-  // Engine plays everything but YouTube: poll it.
-  const local = now && now.via !== 'youtube'
+  // Engine plays local files and previews: poll it. Spotify Connect: poll its API, slower (rate limits).
+  const local = now && (now.via === 'local' || now.via === 'preview')
+  const remote = now?.via === 'spotify'
 
   // Drop audio files on window = play them as a queue. Drop an image = read a shared playlist QR code.
   useEffect(() => {
@@ -79,6 +80,19 @@ export function PlayerBar() {
     const id = setInterval(() => api.playerStatus().then(onLocal), 250)
     return () => clearInterval(id)
   }, [local, onLocal])
+
+  useEffect(() => {
+    if (!remote) return
+    const id = setInterval(
+      () =>
+        api
+          .spotifyPlayback()
+          .then(onSpotify)
+          .catch((e) => useStore.setState({ error: String(e) })),
+      1500,
+    )
+    return () => clearInterval(id)
+  }, [remote, onSpotify])
 
   return (
     <footer className="flex h-23 shrink-0 items-center justify-between gap-6 border-t border-line bg-panel px-6">
@@ -112,7 +126,7 @@ export function PlayerBar() {
       </div>
 
       <div className="flex w-85 items-center justify-end gap-3.5">
-        {readout && now && <Readout detail={now.via === 'local' ? fileFormat(now.path) : now.via === 'preview' ? '30 S' : undefined}>{{ local: 'Local', youtube: 'YouTube', preview: 'Preview' }[now.via]}</Readout>}
+        {readout && now && <Readout detail={now.via === 'local' ? fileFormat(now.path) : now.via === 'preview' ? '30 S' : undefined}>{{ local: 'Local', youtube: 'YouTube', spotify: 'Spotify', preview: 'Preview' }[now.via]}</Readout>}
         <span className="flex items-center gap-1.5 text-ink-3">
           <SpeakerHigh size={15} />
           <VolumeControl />

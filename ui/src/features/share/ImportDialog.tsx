@@ -1,18 +1,10 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useStore } from '../../app/store'
 import { api, type SharePreview } from '../../shared/api'
-import { formatCount, region } from '../../shared/format'
+import { region } from '../../shared/format'
 import { Button } from '../../shared/ui/Button'
+import { Stat } from '../../shared/ui/controls'
 import { Dialog } from '../../shared/ui/Dialog'
-
-function Stat({ label, value }: { label: string; value: number }) {
-  return (
-    <div className="flex flex-col gap-1 rounded-md border border-line-soft bg-recess px-3 py-2.5">
-      <span className="font-mono text-2xl tabular-nums">{formatCount(value)}</span>
-      <span className="kicker">{label}</span>
-    </div>
-  )
-}
 
 /** Shared code (pasted, QR image, nearby) → preview → new custom playlist. */
 export function ImportDialog({ code }: { code: string }) {
