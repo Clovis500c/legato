@@ -12,9 +12,9 @@ mod ytm;
 use music_connectors::oauth::Opener;
 use music_connectors::spotify::Spotify;
 use music_connectors::ytmusic::{Account, YouTubeMusic};
+use music_core::cache::{Memo, Stats, Ttl};
 use music_core::history::{Play, Pref};
 use music_core::library::{Library, LibraryPlaylist, LibraryTrack, PlaylistEdit};
-use music_core::mixes::Mix;
 use music_core::matching::{merge_tracks, same_track};
 use music_core::model::{Connector, SecretStore, Source, Track};
 use music_core::share::{self, Item, Shared};
@@ -26,6 +26,8 @@ use std::collections::{HashMap, HashSet};
 use std::path::{Path, PathBuf};
 use std::sync::atomic::Ordering;
 use std::sync::{Arc, Mutex};
+use std::time::Duration;
+use tauri::ipc::Response;
 use tauri::{Manager, State};
 use tauri_plugin_opener::OpenerExt;
 
@@ -61,8 +63,8 @@ struct AppState {
     shield: Arc<Shield>,
     /// Cover art / avatar cache behind the `art` URI scheme.
     art: music_connectors::art::ArtCache,
-    /// YouTube search results this session: same query asked once.
-    yt_cache: Mutex<HashMap<String, Vec<Track>>>,
+    /// Answers kept until the data under them changes.
+    cache: Caches,
     /// Current nearby offer, polled by the UI.
     nearby: Arc<Mutex<NearbyState>>,
     nearby_task: Mutex<Option<tauri::async_runtime::JoinHandle<()>>>,
@@ -114,7 +116,42 @@ impl AppState {
     }
 }
 
-#[derive(Serialize)]
+/// Answers kept until the data under them changes (music_core::cache): library reads stamped with the library
+/// version, history reads with the history version, network answers for a while.
+struct Caches {
+    library: Memo<(), u64>,
+    playlist: Memo<i64, u64>,
+    orders: Memo<(), u64>,
+    stats: Memo<(), u64>,
+    /// Key: UTC offset. Stamp: library and history versions, day (seed), local hour (time-of-day mix).
+    mixes: Memo<i64, (u64, u64, u64, i64)>,
+    youtube: Ttl<Vec<Track>>,
+    apple: Ttl<Vec<Track>>,
+    /// Sign-in state: keychain and WebView2 cookies, read on every refresh otherwise.
+    status: Ttl<Vec<(Source, SourceStatus)>>,
+}
+
+impl Default for Caches {
+    fn default() -> Self {
+        Self {
+            library: Memo::new(1),
+            playlist: Memo::new(32),
+            orders: Memo::new(1),
+            stats: Memo::new(1),
+            mixes: Memo::new(4),
+            youtube: Ttl::new(Duration::from_secs(30 * 60), 300),
+            apple: Ttl::new(Duration::from_secs(30 * 60), 100),
+            status: Ttl::new(Duration::from_secs(30), 1),
+        }
+    }
+}
+
+/// Cached JSON straight to the UI: no second serialization.
+fn json(answer: Arc<str>) -> Response {
+    Response::new(answer.to_string())
+}
+
+#[derive(Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
 struct SourceStatus {
     configured: bool,
@@ -123,24 +160,30 @@ struct SourceStatus {
 
 #[tauri::command]
 async fn sources_status(state: State<'_, AppState>) -> CmdResult<Vec<(Source, SourceStatus)>> {
+    if let Some(known) = state.cache.status.get("") {
+        return Ok((*known).clone());
+    }
     let spotify = state.spotify();
     let youtube = ytm::session(&state.app).is_some();
-    Ok(vec![
+    let status = vec![
         (Source::Spotify, SourceStatus { configured: spotify.is_some(), connected: spotify.is_some_and(|c| c.is_connected()) }),
         (Source::Youtube, SourceStatus { configured: youtube, connected: youtube }),
-    ])
+    ];
+    Ok((*state.cache.status.put("", status)).clone())
 }
 
 #[tauri::command]
 async fn connect(state: State<'_, AppState>, source: Source, credentials: Credentials) -> CmdResult<()> {
     let merged = state.credentials().merged_with(credentials);
     state.store.save("credentials", &merged).map_err(err)?;
+    state.cache.status.clear();
     let c = state.connector(source).ok_or("Missing credentials")?;
     c.connect().await.map_err(err)
 }
 
 #[tauri::command]
 fn disconnect(state: State<AppState>, source: Source) -> CmdResult<()> {
+    state.cache.status.clear();
     state.connector(source).map_or(Ok(()), |c| c.disconnect()).map_err(err)
 }
 
@@ -160,14 +203,18 @@ struct LibraryData {
 }
 
 #[tauri::command]
-fn library(state: State<AppState>) -> CmdResult<LibraryData> {
+fn library(state: State<AppState>) -> CmdResult<Response> {
+    // Lock held while computing: no write can slip between the version read and the answer.
     let lib = state.lib.lock().unwrap();
-    Ok(LibraryData { tracks: lib.tracks().map_err(err)?, playlists: lib.playlists().map_err(err)? })
+    let answer = state.cache.library.get_or((), lib.versions.library(), || serde_json::to_string(&LibraryData { tracks: lib.tracks().map_err(err)?, playlists: lib.playlists().map_err(err)? }).map_err(err))?;
+    Ok(json(answer))
 }
 
 #[tauri::command]
-fn playlist_tracks(state: State<AppState>, id: i64) -> CmdResult<Vec<LibraryTrack>> {
-    state.lib.lock().unwrap().playlist_tracks(id).map_err(err)
+fn playlist_tracks(state: State<AppState>, id: i64) -> CmdResult<Response> {
+    let lib = state.lib.lock().unwrap();
+    let answer = state.cache.playlist.get_or(id, lib.versions.library(), || serde_json::to_string(&lib.playlist_tracks(id).map_err(err)?).map_err(err))?;
+    Ok(json(answer))
 }
 
 fn folders(lib: &Library) -> Vec<String> {
@@ -219,18 +266,14 @@ fn today() -> u64 {
 
 /// YouTube Music song search, cached for the session. None = signed out.
 async fn yt_search(state: &AppState, query: &str) -> Option<Result<Vec<Track>, String>> {
-    let key = query.to_lowercase();
-    if let Some(hit) = state.yt_cache.lock().unwrap().get(&key) {
-        return Some(Ok(hit.clone()));
+    let key = query.trim().to_lowercase();
+    if let Some(hit) = state.cache.youtube.get(&key) {
+        return Some(Ok((*hit).clone()));
     }
     let yt = state.ytm()?;
     let res = yt.search_songs(query).await.map_err(err);
     if let Ok(found) = &res {
-        let mut cache = state.yt_cache.lock().unwrap();
-        if cache.len() > 200 {
-            cache.clear();
-        }
-        cache.insert(key, found.clone());
+        state.cache.youtube.put(&key, found.clone());
     }
     Some(res)
 }
@@ -265,9 +308,16 @@ async fn search_catalogs(state: State<'_, AppState>, query: String, country: Str
         return Err("Search: 1 to 200 characters".into());
     }
     let country = store(&country);
+    let apple_key = format!("{country}:{}", query.to_lowercase());
+    let known = state.cache.apple.get(&apple_key);
     let apple = tauri::async_runtime::spawn({
         let q = query.clone();
-        async move { music_connectors::itunes::search(music_connectors::itunes::API, &q, &country).await }
+        async move {
+            match known {
+                Some(hit) => Ok((*hit).clone()),
+                None => music_connectors::itunes::search(music_connectors::itunes::API, &q, &country).await,
+            }
+        }
     });
     let mut errors = Vec::new();
     let youtube = match yt_search(&state, &query).await {
@@ -279,7 +329,10 @@ async fn search_catalogs(state: State<'_, AppState>, query: String, country: Str
         None => Vec::new(),
     };
     let apple = match apple.await.map_err(err)? {
-        Ok(found) => found,
+        Ok(found) => {
+            state.cache.apple.put(&apple_key, found.clone());
+            found
+        }
         Err(e) => {
             errors.push(format!("Apple Music: {}", err(e)));
             Vec::new()
@@ -598,13 +651,18 @@ fn record_play(state: State<AppState>, play: Play) -> CmdResult<()> {
 
 /// Mixes for today. `utc_offset` = local minus UTC, seconds (from the UI clock).
 #[tauri::command]
-fn mixes(state: State<AppState>, utc_offset: i64) -> CmdResult<Vec<Mix>> {
-    let lib = state.lib.lock().unwrap();
-    let (tracks, plays, playlists, saved, prefs) = (lib.tracks().map_err(err)?, lib.plays().map_err(err)?, lib.custom_playlists().map_err(err)?, lib.saved_playlists().map_err(err)?, lib.prefs().map_err(err)?);
-    drop(lib);
+fn mixes(state: State<AppState>, utc_offset: i64) -> CmdResult<Response> {
+    let utc_offset = utc_offset.clamp(-14 * 3600, 14 * 3600);
     let now = unix_now();
-    let input = music_core::mixes::Input { tracks: &tracks, plays: &plays, playlists: &playlists, saved: &saved, prefs: &prefs, now, utc_offset: utc_offset.clamp(-14 * 3600, 14 * 3600), seed: today() };
-    Ok(music_core::mixes::mixes(&input))
+    let lib = state.lib.lock().unwrap();
+    // Same data, same day, same hour: same mixes.
+    let stamp = (lib.versions.library(), lib.versions.history(), today(), (now + utc_offset).div_euclid(3600));
+    let answer = state.cache.mixes.get_or(utc_offset, stamp, || {
+        let (tracks, plays, playlists, saved, prefs) = (lib.tracks().map_err(err)?, lib.plays().map_err(err)?, lib.custom_playlists().map_err(err)?, lib.saved_playlists().map_err(err)?, lib.prefs().map_err(err)?);
+        let input = music_core::mixes::Input { tracks: &tracks, plays: &plays, playlists: &playlists, saved: &saved, prefs: &prefs, now, utc_offset, seed: today() };
+        serde_json::to_string(&music_core::mixes::mixes(&input)).map_err(err)
+    })?;
+    Ok(json(answer))
 }
 
 /// None clears it.
@@ -821,7 +879,8 @@ async fn spotify_web_status(app: tauri::AppHandle) -> bool {
 #[tauri::command]
 async fn ytm_sign_out(state: State<'_, AppState>) -> CmdResult<()> {
     ytm::sign_out(&state.app).map_err(err)?;
-    state.yt_cache.lock().unwrap().clear();
+    state.cache.youtube.clear();
+    state.cache.status.clear();
     state.lib.lock().unwrap().set_setting("ytm_accounts", &serde_json::json!([])).map_err(err)
 }
 
@@ -852,7 +911,7 @@ fn set_ytm_accounts(state: State<AppState>, accounts: Vec<Account>) -> CmdResult
     if !ok {
         return Err("Invalid accounts".into());
     }
-    state.yt_cache.lock().unwrap().clear();
+    state.cache.youtube.clear();
     state.lib.lock().unwrap().set_setting("ytm_accounts", &serde_json::json!(accounts)).map_err(err)
 }
 
@@ -877,14 +936,35 @@ fn save_settings(state: State<AppState>, settings: serde_json::Value) -> CmdResu
 
 /// Track id → [listens, last start (unix s)]: Most played / Recently played sorts.
 #[tauri::command]
-fn play_stats(state: State<AppState>) -> CmdResult<HashMap<i64, (u32, i64)>> {
-    state.lib.lock().unwrap().play_stats().map_err(err)
+fn play_stats(state: State<AppState>) -> CmdResult<Response> {
+    let lib = state.lib.lock().unwrap();
+    let answer = state.cache.stats.get_or((), lib.versions.history(), || serde_json::to_string(&lib.play_stats().map_err(err)?).map_err(err))?;
+    Ok(json(answer))
 }
 
 /// Track ids of every playlist in order: covers (first song, grid of 4) are picked from them.
 #[tauri::command]
-fn playlist_orders(state: State<AppState>) -> CmdResult<HashMap<i64, Vec<i64>>> {
-    state.lib.lock().unwrap().playlist_orders().map_err(err)
+fn playlist_orders(state: State<AppState>) -> CmdResult<Response> {
+    let lib = state.lib.lock().unwrap();
+    let answer = state.cache.orders.get_or((), lib.versions.library(), || serde_json::to_string(&lib.playlist_orders().map_err(err)?).map_err(err))?;
+    Ok(json(answer))
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct CacheStats {
+    library: Stats,
+    playlists: Stats,
+    mixes: Stats,
+    stats: Stats,
+    images: Stats,
+}
+
+/// Settings › About: how much the caches answer.
+#[tauri::command]
+fn cache_stats(state: State<AppState>) -> CacheStats {
+    let c = &state.cache;
+    CacheStats { library: c.library.stats(), playlists: c.playlist.stats(), mixes: c.mixes.stats(), stats: c.stats.stats(), images: state.art.stats() }
 }
 
 /// Cover saved where the user picked (save dialog). source = art scheme path (local/<id>, cover/<name> or a URL),
@@ -1094,10 +1174,10 @@ pub fn run() {
                 }
             });
 
-            app.manage(AppState { app: app.handle().clone(), lib: Mutex::new(lib), store: Arc::new(secrets::KeyringStore::new(&app.config().identifier)), open, player: Player::spawn(), shield, art: music_connectors::art::ArtCache::new(dir.join("art"), 300 << 20), yt_cache: Mutex::default(), nearby: Arc::new(Mutex::new(NearbyState::Idle)), nearby_task: Mutex::default(), media, media_last: Mutex::default(), tray, discord: discord::Discord::spawn() });
+            app.manage(AppState { app: app.handle().clone(), lib: Mutex::new(lib), store: Arc::new(secrets::KeyringStore::new(&app.config().identifier)), open, player: Player::spawn(), shield, art: music_connectors::art::ArtCache::new(dir.join("art"), 300 << 20), cache: Caches::default(), nearby: Arc::new(Mutex::new(NearbyState::Idle)), nearby_task: Mutex::default(), media, media_last: Mutex::default(), tray, discord: discord::Discord::spawn() });
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, add_track, backfill_art, find_versions, play_preview, share_playlist, share_preview, share_read_image, share_import, nearby_send, nearby_status, nearby_stop, nearby_receive, record_play, mixes, set_track_pref, clear_history, export_youtube, spotify_player, spotify_playback, ytm_sign_in, ytm_sign_out, spotify_web_open, spotify_web_status, import_spotify_link, ytm_accounts, set_ytm_accounts, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, system_accent, restart_app, media_update, load_session, save_session, add_to_youtube, playlist_orders, save_cover, export_cover, alternative_videos, play_stats, discord_presence, discord_off, discord_status])
+        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, add_track, backfill_art, find_versions, play_preview, share_playlist, share_preview, share_read_image, share_import, nearby_send, nearby_status, nearby_stop, nearby_receive, record_play, mixes, set_track_pref, clear_history, export_youtube, spotify_player, spotify_playback, ytm_sign_in, ytm_sign_out, spotify_web_open, spotify_web_status, import_spotify_link, ytm_accounts, set_ytm_accounts, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, system_accent, restart_app, media_update, load_session, save_session, add_to_youtube, playlist_orders, save_cover, export_cover, alternative_videos, play_stats, cache_stats, discord_presence, discord_off, discord_status])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

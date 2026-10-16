@@ -89,6 +89,8 @@ impl Library {
     /// Reset: plays and preferences gone, library untouched.
     pub fn clear_history(&self) -> Result<()> {
         self.db.execute_batch("DELETE FROM plays; DELETE FROM track_prefs;")?;
+        // Whole-table delete skips the update hook (SQLite's truncate optimization).
+        self.versions.touch("plays");
         Ok(())
     }
 

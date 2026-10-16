@@ -166,7 +166,7 @@ session can resume here. Phase 6 comes after all of them.
 - [x] Artists and Albums: filter and sort, like songs in playlists.
 - [x] Mixes: better algorithm, more mixes; covers as a 2×2 grid like playlists, setting in Advanced: grid / single
       cover / current template.
-- [ ] Smart cache in Rust for most of the app (memory + disk, invalidated on change).
+- [x] Smart cache in Rust for most of the app (memory + disk, invalidated on change).
 - [ ] Home: quick access to every section + recommendations (local mixes, then the connected services' own
       recommendations: YouTube Music home feed, Spotify if possible).
 - [ ] Phase 6: auto-updates in the background, never cutting playback, install and relaunch at once (resume where it

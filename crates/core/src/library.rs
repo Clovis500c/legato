@@ -142,6 +142,8 @@ fn to_track(r: &Row) -> rusqlite::Result<LibraryTrack> {
 /// Local unified library. One track = one row, whatever number of sources.
 pub struct Library {
     pub(crate) db: Connection,
+    /// Bumped on every row written (update hook): cached answers check it.
+    pub versions: std::sync::Arc<crate::cache::Versions>,
 }
 
 impl Library {
@@ -168,7 +170,10 @@ impl Library {
         if db.query_row("PRAGMA user_version", [], |r| r.get::<_, i64>(0))? < 4 {
             migrate_v4(&db)?;
         }
-        Ok(Self { db })
+        let versions = std::sync::Arc::new(crate::cache::Versions::default());
+        let v = versions.clone();
+        db.update_hook(Some(move |_: rusqlite::hooks::Action, _: &str, table: &str, _: i64| v.touch(table)))?;
+        Ok(Self { db, versions })
     }
 
     /// Insert or merge track (source id, then ISRC, then title+artist+duration). Return row id.
@@ -735,6 +740,22 @@ mod tests {
         assert!(lib.save_playlist(Source::Spotify, "p1", "X", &[spotify(), bad]).is_err());
         assert!(lib.playlists()?.is_empty());
         assert!(lib.tracks()?.is_empty());
+        Ok(())
+    }
+
+    #[test]
+    fn writes_bump_the_right_version() -> Result<()> {
+        let lib = Library::in_memory()?;
+        let (l, h) = (lib.versions.library(), lib.versions.history());
+        let id = lib.edit_playlist(PlaylistEdit::Create { name: "Mine".into() })?.unwrap();
+        assert!(lib.versions.library() > l);
+        assert_eq!(lib.versions.history(), h);
+        lib.set_setting("x", &serde_json::json!(1))?;
+        let l = lib.versions.library();
+        lib.edit_playlist(PlaylistEdit::Rename { id, name: "Ours".into() })?;
+        assert!(lib.versions.library() > l);
+        lib.clear_history()?;
+        assert!(lib.versions.history() > h);
         Ok(())
     }
 }

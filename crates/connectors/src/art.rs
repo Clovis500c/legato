@@ -2,9 +2,13 @@
 //! The UI never hits the network: it loads images through the app's `art` URI scheme (src-tauri/src/art.rs).
 
 use anyhow::{Context, Result, ensure};
+use music_core::cache::{Lru, Stats};
+use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::{Arc, Mutex};
 use std::time::SystemTime;
+use tokio::sync::OnceCell;
 use url::Url;
 
 /// One image at most (animated avatars included).
@@ -28,6 +32,13 @@ pub fn sniff(b: &[u8]) -> &'static str {
     }
 }
 
+/// Images kept in memory: a long list scrolls back without touching the disk.
+const HOT_BUDGET: usize = 64 << 20;
+
+type Image = (Vec<u8>, &'static str);
+/// One pending read or download, shared by every caller of the same URL.
+type Pending = Arc<OnceCell<Option<Arc<Image>>>>;
+
 /// FNV-1a: stable file name per URL.
 fn key(url: &str) -> String {
     format!("{:016x}", url.bytes().fold(0xcbf2_9ce4_8422_2325_u64, |h, b| (h ^ u64::from(b)).wrapping_mul(0x100_0000_01b3)))
@@ -38,6 +49,9 @@ pub struct ArtCache {
     cap: u64,
     used: AtomicU64,
     http: reqwest::Client,
+    hot: Lru<Image>,
+    /// Same image asked by many rows at once (an album's songs): one read or download, shared.
+    inflight: Mutex<HashMap<String, Pending>>,
 }
 
 impl ArtCache {
@@ -46,13 +60,32 @@ impl ArtCache {
         let used = std::fs::read_dir(&dir).map(|d| d.flatten().filter_map(|e| e.metadata().ok()).map(|m| m.len()).sum()).unwrap_or(0);
         // Redirects stay on image hosts too.
         let http = reqwest::Client::builder().redirect(reqwest::redirect::Policy::custom(|a| if allowed(a.url().as_str()) { a.follow() } else { a.stop() })).build().unwrap_or_default();
-        Self { dir, cap, used: used.into(), http }
+        Self { dir, cap, used: used.into(), http, hot: Lru::new(HOT_BUDGET), inflight: Mutex::default() }
     }
 
-    /// Image bytes + type: from disk, else downloaded (allowed hosts only) and kept.
+    /// Image bytes + type: from memory, from disk, else downloaded (allowed hosts only) and kept.
     pub async fn get(&self, url: &str) -> Result<(Vec<u8>, &'static str)> {
         ensure!(allowed(url), "Image host not allowed");
-        self.fetch(url).await
+        let image = self.shared(url).await.context("Image not available")?;
+        Ok((image.0.clone(), image.1))
+    }
+
+    /// Memory first; else one fetch per URL, whoever asks meanwhile waits for the same one.
+    async fn shared(&self, url: &str) -> Option<Arc<Image>> {
+        if let Some(hit) = self.hot.get(url) {
+            return Some(hit);
+        }
+        let cell = self.inflight.lock().unwrap().entry(url.to_string()).or_default().clone();
+        let image = cell.get_or_init(|| async { self.fetch(url).await.ok().map(Arc::new) }).await.clone();
+        self.inflight.lock().unwrap().remove(url);
+        if let Some(i) = &image {
+            self.hot.put(url, i.clone(), i.0.len());
+        }
+        image
+    }
+
+    pub fn stats(&self) -> Stats {
+        self.hot.stats()
     }
 
     async fn fetch(&self, url: &str) -> Result<(Vec<u8>, &'static str)> {
@@ -138,5 +171,26 @@ mod tests {
         cache.fetch(&url("3.png")).await.unwrap();
         let left: Vec<bool> = ["1.png", "2.png", "3.png"].iter().map(|n| dir.path().join(key(&url(n))).exists()).collect();
         assert_eq!(left, [true, false, true]);
+    }
+
+    #[tokio::test]
+    async fn same_image_at_once_is_one_read_then_memory() {
+        let mut s = Server::new_async().await;
+        let m = s.mock("GET", "/a.png").with_header("content-type", "image/png").with_body(vec![0x89, b'P', b'N', b'G', 1]).expect(1).create_async().await;
+        let dir = tempfile::tempdir().unwrap();
+        let cache = ArtCache::new(dir.path().to_path_buf(), 1 << 20);
+        let url = format!("{}/a.png", s.url());
+        let all = futures_join(&cache, &url).await;
+        assert!(all.iter().all(|i| i.as_ref().is_some_and(|i| i.0.len() == 5)));
+        // On disk, then gone from disk: memory still answers.
+        std::fs::remove_file(dir.path().join(key(&url))).unwrap();
+        assert!(cache.shared(&url).await.is_some());
+        assert!(cache.stats().hits >= 1);
+        m.assert_async().await;
+    }
+
+    async fn futures_join(cache: &ArtCache, url: &str) -> Vec<Option<Arc<Image>>> {
+        let (a, b, c) = tokio::join!(cache.shared(url), cache.shared(url), cache.shared(url));
+        vec![a, b, c]
     }
 }

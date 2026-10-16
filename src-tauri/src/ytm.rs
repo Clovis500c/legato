@@ -33,6 +33,9 @@ pub fn open(app: &AppHandle, add_account: bool) -> tauri::Result<()> {
             std::thread::sleep(Duration::from_secs(2));
             let back = w.url().is_ok_and(|u| u.host_str() == Some("music.youtube.com"));
             if back && session(&app).is_some() {
+                if let Some(s) = app.try_state::<crate::AppState>() {
+                    s.cache.status.clear();
+                }
                 let _ = w.close();
                 break;
             }

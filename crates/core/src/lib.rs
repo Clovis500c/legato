@@ -1,4 +1,5 @@
 pub mod library;
+pub mod cache;
 pub mod cover;
 pub mod local;
 pub mod history;

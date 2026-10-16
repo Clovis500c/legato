@@ -52,6 +52,15 @@ export interface LibraryPlaylist {
   newestFirst: boolean
 }
 
+/** crates/core cache::Stats, per cache (Settings › About). */
+export interface CacheStat {
+  hits: number
+  misses: number
+  entries: number
+  bytes: number
+}
+export type CacheStats = Record<'library' | 'playlists' | 'mixes' | 'stats' | 'images', CacheStat>
+
 /** crates/core PlaylistEdit. */
 export type PlaylistEdit =
   | { type: 'create'; name: string }
@@ -255,6 +264,7 @@ export const api = {
   alternativeVideos: (trackId: number, exclude: string[]) => invoke<string[]>('alternative_videos', { trackId, exclude }),
   /** Track id → [listens, last start]: Most played / Recently played. */
   playStats: () => invoke<Record<number, [number, number]>>('play_stats'),
+  cacheStats: () => invoke<CacheStats>('cache_stats'),
   /** Track ids of every playlist, in order (covers). */
   playlistOrders: () => invoke<Record<number, number[]>>('playlist_orders'),
   /** Picked image copied into the app; returns its name for the art scheme (cover/<name>). */

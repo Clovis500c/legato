@@ -37,6 +37,18 @@ src-tauri/              thin shell: commands, keychain, WebView2 hook, media pan
   everyone bumps `DEFAULTS_VERSION`.
 - **Database schema.** Migrations keyed on SQLite `user_version` (`crates/core/src/library.rs`).
 
+## Caching
+
+`crates/core/src/cache.rs`, all in memory and bounded:
+
+- SQLite's update hook bumps a library or history version on every row written. Library, playlist, play stats and
+  mixes answers are kept as ready-to-send JSON until their version changes (mixes also on a new day or hour), so no
+  write path can forget to invalidate.
+- Images: a 64 MB memory LRU in front of the 300 MB disk cache; the same image asked by many rows at once is read or
+  downloaded once.
+- Network answers (YouTube Music and Apple searches) for 30 minutes; sign-in state for 30 seconds, cleared on
+  sign-in, sign-out, connect and disconnect.
+
 ## Interface
 
 - `ui/src/app/`: shell, navigation store, settings, keyboard shortcuts, screen restore.
