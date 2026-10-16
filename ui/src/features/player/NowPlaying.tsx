@@ -94,7 +94,9 @@ function SourceBadge({ via }: { via: Via }) {
  */
 function Stage({ video, cover, track, title }: { video: boolean; cover: boolean; track?: LibraryTrack; title: string }) {
   const big = video && !cover
-  const ratio = big ? 16 / 9 : 1
+  // Cover frame takes the art's real shape (bars of video frames cut off, see Cover fit).
+  const [art, setArt] = useState(1)
+  const ratio = big ? 16 / 9 : art
   // Container query units: fit inside both width and height, keep the ratio.
   const fit = { width: `min(100cqw, 100cqh * ${ratio})`, aspectRatio: String(ratio) }
   return (
@@ -104,7 +106,7 @@ function Stage({ video, cover, track, title }: { video: boolean; cover: boolean;
         <VideoSlot className="min-h-50 min-w-89" style={fit} />
       ) : (
         <span style={fit} className="relative block">
-          <Cover title={track?.album ?? title} art={track && bigTrackArt(track)} size={200} eager className="size-full! text-[56px]! shadow-[0_12px_40px_var(--shadow)]" />
+          <Cover title={track?.album ?? title} art={track && bigTrackArt(track)} size={200} eager fit={setArt} className="size-full! text-[56px]! shadow-[0_12px_40px_var(--shadow)]" />
           {video && <VideoSlot hidden className="absolute inset-0 bg-transparent" />}
         </span>
       )}
