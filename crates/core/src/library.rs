@@ -119,26 +119,36 @@ impl Library {
     }
 
     /// Insert or merge track (source id, then ISRC, then title+artist+duration). Return row id.
+    /// Existing row for this track, without writing (search results: "already added").
+    pub fn find(&self, t: &Track) -> Result<Option<i64>> {
+        Ok(self.lookup(t)?.first().copied())
+    }
+
+    /// Rows matching by source id, then ISRC, then title+artist+duration.
+    fn lookup(&self, t: &Track) -> Result<BTreeSet<i64>> {
+        let mut found = BTreeSet::new();
+        let mut by_id = self.db.prepare_cached("SELECT track_id FROM track_ids WHERE source = ?1 AND source_id = ?2")?;
+        for (s, sid) in &t.ids {
+            if let Some(id) = by_id.query_row(params![s.as_str(), sid], |r| r.get::<_, i64>(0)).optional()? {
+                found.insert(id);
+            }
+        }
+        if let Some(isrc) = &t.isrc {
+            let id: Option<i64> = self.db.query_row("SELECT id FROM tracks WHERE isrc = ?1", [isrc], |r| r.get(0)).optional()?;
+            found.extend(id);
+        }
+        if found.is_empty() {
+            let mut stmt = self.db.prepare_cached(&format!("SELECT {TRACK_COLS} FROM tracks t WHERE match_key = ?1"))?;
+            let probe = Track { ids: BTreeMap::new(), ..t.clone() };
+            let hit = stmt.query_map([match_key(&t.title, &t.artist)], to_track)?.filter_map(Result::ok).find(|r| same_track(&r.track, &probe));
+            found.extend(hit.map(|h| h.id));
+        }
+        Ok(found)
+    }
+
     pub fn upsert_track(&self, t: &Track) -> Result<i64> {
         self.tx(|| {
-            let mut found = BTreeSet::new();
-            let mut by_id = self.db.prepare_cached("SELECT track_id FROM track_ids WHERE source = ?1 AND source_id = ?2")?;
-            for (s, sid) in &t.ids {
-                if let Some(id) = by_id.query_row(params![s.as_str(), sid], |r| r.get::<_, i64>(0)).optional()? {
-                    found.insert(id);
-                }
-            }
-            if let Some(isrc) = &t.isrc {
-                let id: Option<i64> = self.db.query_row("SELECT id FROM tracks WHERE isrc = ?1", [isrc], |r| r.get(0)).optional()?;
-                found.extend(id);
-            }
-            if found.is_empty() {
-                let mut stmt = self.db.prepare_cached(&format!("SELECT {TRACK_COLS} FROM tracks t WHERE match_key = ?1"))?;
-                let probe = Track { ids: BTreeMap::new(), ..t.clone() };
-                let hit = stmt.query_map([match_key(&t.title, &t.artist)], to_track)?.filter_map(Result::ok).find(|r| same_track(&r.track, &probe));
-                found.extend(hit.map(|h| h.id));
-            }
-
+            let mut found = self.lookup(t)?;
             let isrc = t.isrc.as_ref().map(|s| s.to_uppercase());
             let id = match found.pop_first() {
                 None => {
@@ -489,6 +499,16 @@ mod tests {
         let all = lib.tracks()?;
         assert_eq!(all.len(), 1, "vanished file's orphan row removed");
         assert_eq!(all[0].track.ids.len(), 2);
+        Ok(())
+    }
+
+    #[test]
+    fn find_does_not_write() -> Result<()> {
+        let lib = Library::in_memory()?;
+        let id = lib.upsert_track(&spotify())?;
+        assert_eq!(lib.find(&youtube())?, Some(id), "fuzzy match");
+        assert_eq!(lib.find(&Track { title: "Other".into(), ..youtube() })?, None);
+        assert_eq!(lib.tracks()?.len(), 1);
         Ok(())
     }
 

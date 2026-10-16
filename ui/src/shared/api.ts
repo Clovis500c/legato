@@ -1,7 +1,8 @@
 import { invoke } from '@tauri-apps/api/core'
 
-export type Source = 'spotify' | 'youtube' | 'local'
-export type Service = Exclude<Source, 'local'>
+export type Source = 'spotify' | 'youtube' | 'local' | 'apple'
+/** Services with an account to connect. */
+export type Service = 'spotify' | 'youtube'
 
 // shortcut: hand-mirrored from crates/core (model.rs, library.rs, sync.rs). Generate with ts-rs/specta when API grows.
 export interface Track {
@@ -40,6 +41,17 @@ export type PlaylistEdit =
 export interface SyncReport {
   playlists: number
   matched: number
+  errors: string[]
+}
+
+/** Merged catalog hit (src-tauri search_catalogs). */
+export interface SearchHit extends Track {
+  libraryId: number | null
+}
+
+export interface SearchResults {
+  hits: SearchHit[]
+  youtubeSearchesLeft: number
   errors: string[]
 }
 
@@ -83,6 +95,9 @@ export const api = {
   editPlaylist: (edit: PlaylistEdit) => invoke<number | null>('edit_playlist', { edit }),
   /** Pasted YouTube link → library. Returns "Artist – Title". */
   addLink: (url: string) => invoke<string>('add_link', { url }),
+  searchCatalogs: (query: string, country: string) => invoke<SearchResults>('search_catalogs', { query, country }),
+  /** Returns library row id. Finds a YouTube version when missing (1 search). */
+  addTrack: (track: Track) => invoke<number>('add_track', { track }),
   localFolders: () => invoke<string[]>('local_folders'),
   /** Saves folders, rescans. Returns local file count. */
   setLocalFolders: (folders: string[]) => invoke<number>('set_local_folders', { folders }),

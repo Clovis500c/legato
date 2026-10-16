@@ -1,6 +1,7 @@
 import { ArrowsClockwise, CaretLeft, CaretRight, CheckCircle, Minus, Square, Warning, X } from '@phosphor-icons/react'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { useEffect } from 'react'
+import { AddView } from '../features/add/AddView'
 import { AlbumsView, AlbumView, ArtistsView, ArtistView, PlaylistView, SongsView } from '../features/library/LibraryView'
 import { NowPlaying } from '../features/player/NowPlaying'
 import { PlayerBar } from '../features/player/PlayerBar'
@@ -117,6 +118,7 @@ export function App() {
           <TitleBar />
           <Alerts />
           <div className="flex min-h-0 flex-1 flex-col px-10">
+            {view.name === 'add' && <AddView />}
             {view.name === 'songs' && <SongsView />}
             {view.name === 'albums' && <AlbumsView />}
             {view.name === 'album' && <AlbumView album={view.album} artist={view.artist} />}

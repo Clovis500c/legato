@@ -64,7 +64,7 @@ export function groupArtists(tracks: LibraryTrack[]): { artist: string; count: n
 }
 
 export function libraryStats(tracks: LibraryTrack[]) {
-  const perSource: Record<Source, number> = { spotify: 0, youtube: 0, local: 0 }
+  const perSource: Record<Source, number> = { spotify: 0, youtube: 0, local: 0, apple: 0 }
   let linked = 0
   for (const t of tracks) {
     for (const s of Object.keys(t.ids) as Source[]) perSource[s]++

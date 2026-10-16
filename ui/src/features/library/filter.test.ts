@@ -33,7 +33,7 @@ describe('filterTracks', () => {
 it('libraryStats', () => {
   expect(libraryStats(tracks)).toEqual({
     total: 3,
-    perSource: { spotify: 2, youtube: 2, local: 0 },
+    perSource: { spotify: 2, youtube: 2, local: 0, apple: 0 },
     sources: 2,
     unlinked: 2,
     linkedPct: 33,

@@ -6,11 +6,13 @@ use music_connectors::oauth::Opener;
 use music_connectors::spotify::Spotify;
 use music_connectors::youtube::YouTube;
 use music_core::library::{Library, LibraryPlaylist, LibraryTrack, PlaylistEdit};
-use music_core::model::{Connector, SecretStore, Source};
+use music_core::matching::{merge_tracks, same_track};
+use music_core::model::{Connector, SecretStore, Source, Track};
 use music_core::sync::{SyncReport, sync};
 use music_player::{Command, Player, Status};
 use music_shield::Shield;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::Ordering;
 use std::sync::{Arc, Mutex};
@@ -50,6 +52,8 @@ struct AppState {
     open: Opener,
     player: Player,
     shield: Arc<Shield>,
+    /// YouTube search results this session: same query costs no quota twice.
+    yt_cache: Mutex<HashMap<String, Vec<Track>>>,
 }
 
 impl AppState {
@@ -71,7 +75,7 @@ impl AppState {
         match source {
             Source::Spotify => self.spotify().map(|c| Box::new(c) as _),
             Source::Youtube => self.youtube().map(|c| Box::new(c) as _),
-            Source::Local => None,
+            Source::Local | Source::Apple => None,
         }
     }
 }
@@ -175,6 +179,118 @@ async fn add_link(state: State<'_, AppState>, url: String) -> CmdResult<String> 
     Ok(format!("{} – {}", t.artist, t.title))
 }
 
+/// search.list has its own bucket: 100 calls per day.
+const YT_SEARCHES_PER_DAY: u32 = 100;
+
+// shortcut: UTC day; YouTube resets quotas at midnight Pacific. Fine for a guard.
+fn today() -> u64 {
+    std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map_or(0, |d| d.as_secs() / 86_400)
+}
+
+/// YouTube searches used today (persisted).
+fn yt_used(lib: &Library) -> u32 {
+    lib.setting("yt_search").ok().flatten().filter(|v| v["day"].as_u64() == Some(today())).and_then(|v| v["used"].as_u64()).unwrap_or(0) as u32
+}
+
+/// YouTube search with session cache and daily budget. None = not connected or budget spent.
+async fn yt_search(state: &AppState, query: &str) -> Option<Result<Vec<Track>, String>> {
+    let key = query.to_lowercase();
+    if let Some(hit) = state.yt_cache.lock().unwrap().get(&key) {
+        return Some(Ok(hit.clone()));
+    }
+    let yt = state.youtube().filter(|y| y.is_connected())?;
+    let used = yt_used(&state.lib.lock().unwrap());
+    if used >= YT_SEARCHES_PER_DAY {
+        return None;
+    }
+    let res = yt.search(query).await.map_err(err);
+    state.lib.lock().unwrap().set_setting("yt_search", &serde_json::json!({ "day": today(), "used": used + 1 })).ok();
+    if let Ok(found) = &res {
+        let mut cache = state.yt_cache.lock().unwrap();
+        if cache.len() > 200 {
+            cache.clear();
+        }
+        cache.insert(key, found.clone());
+    }
+    Some(res)
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct SearchHit {
+    #[serde(flatten)]
+    track: Track,
+    /// Library row when already added.
+    library_id: Option<i64>,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct SearchResults {
+    hits: Vec<SearchHit>,
+    youtube_searches_left: u32,
+    errors: Vec<String>,
+}
+
+/// Apple catalog + YouTube, merged (same recording = one hit with both ids).
+#[tauri::command]
+async fn search_catalogs(state: State<'_, AppState>, query: String, country: String) -> CmdResult<SearchResults> {
+    // Trust boundary: free text from UI.
+    let query = query.trim().to_string();
+    if query.is_empty() || query.chars().count() > 200 {
+        return Err("Recherche : 1 à 200 caractères".into());
+    }
+    let country = if country.len() == 2 && country.chars().all(|c| c.is_ascii_alphabetic()) { country.to_uppercase() } else { "FR".into() };
+    let apple = tauri::async_runtime::spawn({
+        let q = query.clone();
+        async move { music_connectors::itunes::search(music_connectors::itunes::API, &q, &country).await }
+    });
+    let mut errors = Vec::new();
+    let youtube = match yt_search(&state, &query).await {
+        Some(Ok(found)) => found,
+        Some(Err(e)) => {
+            errors.push(format!("YouTube : {e}"));
+            Vec::new()
+        }
+        None => Vec::new(),
+    };
+    let apple = match apple.await.map_err(err)? {
+        Ok(found) => found,
+        Err(e) => {
+            errors.push(format!("Apple Music : {}", err(e)));
+            Vec::new()
+        }
+    };
+    let mut merged: Vec<Track> = Vec::new();
+    for t in youtube.into_iter().chain(apple) {
+        match merged.iter_mut().find(|m| same_track(m, &t)) {
+            Some(m) => *m = merge_tracks(m, &t),
+            None => merged.push(t),
+        }
+    }
+    let lib = state.lib.lock().unwrap();
+    let hits = merged.into_iter().map(|track| SearchHit { library_id: lib.find(&track).ok().flatten(), track }).collect();
+    Ok(SearchResults { hits, youtube_searches_left: YT_SEARCHES_PER_DAY.saturating_sub(yt_used(&lib)), errors })
+}
+
+/// Add search hit. No YouTube id yet: try to find one (1 search) so it becomes playable.
+#[tauri::command]
+async fn add_track(state: State<'_, AppState>, track: Track) -> CmdResult<i64> {
+    // Trust boundary: catalog ids only, bounded text.
+    let ok_text = |s: &str| !s.trim().is_empty() && s.chars().count() <= 300;
+    if !ok_text(&track.title) || !ok_text(&track.artist) || track.ids.is_empty() || track.ids.iter().any(|(s, id)| *s == Source::Local || id.is_empty() || id.len() > 64) {
+        return Err("Titre invalide".into());
+    }
+    let mut track = track;
+    if !track.ids.contains_key(&Source::Youtube)
+        && let Some(Ok(found)) = yt_search(&state, &format!("{} {}", track.artist, track.title)).await
+        && let Some(hit) = music_core::matching::best_match(&track, &found)
+    {
+        track = merge_tracks(&track, hit);
+    }
+    state.lib.lock().unwrap().upsert_track(&track).map_err(err)
+}
+
 #[tauri::command]
 fn edit_playlist(state: State<AppState>, edit: PlaylistEdit) -> CmdResult<Option<i64>> {
     state.lib.lock().unwrap().edit_playlist(edit).map_err(err)
@@ -263,10 +379,10 @@ pub fn run() {
                 }
             });
 
-            app.manage(AppState { lib: Mutex::new(lib), store: Arc::new(secrets::KeyringStore::new(&app.config().identifier)), open, player: Player::spawn(), shield });
+            app.manage(AppState { lib: Mutex::new(lib), store: Arc::new(secrets::KeyringStore::new(&app.config().identifier)), open, player: Player::spawn(), shield, yt_cache: Mutex::default() });
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status, edit_playlist, add_link, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, restart_app])
+        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, add_track, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, restart_app])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

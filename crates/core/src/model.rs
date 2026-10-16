@@ -10,6 +10,8 @@ pub enum Source {
     Spotify,
     Youtube,
     Local,
+    /// Apple Music catalog (iTunes id). Metadata only for now.
+    Apple,
 }
 
 impl Source {
@@ -18,6 +20,7 @@ impl Source {
             Source::Spotify => "spotify",
             Source::Youtube => "youtube",
             Source::Local => "local",
+            Source::Apple => "apple",
         }
     }
 }

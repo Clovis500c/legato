@@ -5,6 +5,7 @@ import type { Filter, Sort } from '../features/library/filter'
 export type SettingsSection = 'appearance' | 'themes' | 'sources' | 'shield'
 
 export type View =
+  | { name: 'add' }
   | { name: 'songs' }
   | { name: 'albums' }
   | { name: 'album'; album: string; artist: string }

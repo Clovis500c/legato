@@ -1,4 +1,4 @@
-import { Gear, MagnifyingGlass, MicrophoneStage, MusicNotes, Playlist, Plus, VinylRecord } from '@phosphor-icons/react'
+import { Gear, MagnifyingGlass, MicrophoneStage, MusicNotes, Playlist, Plus, PlusCircle, VinylRecord } from '@phosphor-icons/react'
 import { useEffect, useMemo, useRef, type ReactNode } from 'react'
 import { useStore, type View } from '../../app/store'
 import { formatCount } from '../../shared/format'
@@ -76,6 +76,8 @@ export function Sidebar() {
         />
         <kbd className="font-mono text-[9px] tracking-[0.06em] text-ink-3">CTRL K</kbd>
       </label>
+
+      <NavItem on={is('add')} icon={<PlusCircle size={16} />} label="Ajouter de la musique" onClick={() => go({ name: 'add' })} />
 
       <Section title="Bibliothèque">
         <NavItem on={is('songs')} icon={<MusicNotes size={16} />} label="Morceaux" count={tracks.length} onClick={() => go({ name: 'songs' })} />

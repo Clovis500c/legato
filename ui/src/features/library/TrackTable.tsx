@@ -13,7 +13,7 @@ import { usePlayer } from '../player/store'
 import { AddToPlaylist } from './AddToPlaylist'
 
 const ROW = { compact: 40, comfort: 52, airy: 64 }
-const order: Source[] = ['spotify', 'youtube', 'local']
+const order: Source[] = ['spotify', 'youtube', 'apple', 'local']
 const width: Record<Column, string> = { album: 'minmax(0,220px)', sources: '76px', duration: '52px' }
 const head: Record<Column, string> = { album: 'Album', sources: 'Sources', duration: 'Durée' }
 
