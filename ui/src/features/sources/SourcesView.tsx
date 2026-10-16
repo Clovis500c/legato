@@ -54,7 +54,7 @@ function SpotifyWeb() {
       </span>
       <div className="flex-1">
         <p className="text-[13px] font-semibold">Spotify web player <span className="kicker">Preview</span></p>
-        <p className="text-xs text-ink-2">Spotify's own player in a window. Sign in on Spotify's page: no keys. Importing playlists this way isn't done yet.</p>
+        <p className="text-xs text-ink-2">Spotify's own player in a window, signed in on Spotify's page. To import a public playlist, paste its link anywhere (Ctrl+V).</p>
       </div>
       <span className="kicker">{on ? 'Signed in' : 'Not signed in'}</span>
       <Button variant={on ? 'ghost' : undefined} onClick={() => api.spotifyWebOpen().catch((e) => useStore.setState({ error: String(e) }))}>

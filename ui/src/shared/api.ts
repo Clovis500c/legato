@@ -204,6 +204,8 @@ export const api = {
   /** Opens music.youtube.com to sign in (no keys). */
   ytmSignIn: (add = false) => invoke<void>('ytm_sign_in', { add }),
   ytmSignOut: () => invoke<void>('ytm_sign_out'),
+  /** Public Spotify playlist / album link → imported playlist (no account); tracks get their YouTube version. */
+  importSpotifyLink: (url: string) => invoke<{ playlistId: number; name: string; tracks: number; playable: number }>('import_spotify_link', { url }),
   /** Spotify's own web player in an app window (prototype). */
   spotifyWebOpen: () => invoke<void>('spotify_web_open'),
   /** Signed in to the Spotify web player. */

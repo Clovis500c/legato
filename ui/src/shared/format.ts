@@ -19,6 +19,9 @@ export function timeAgo(at: number, now = Date.now()): string {
 /** Thousands separator: 1,674. */
 export const formatCount = (n: number) => n.toLocaleString('en-US')
 
+/** Spotify playlist or album link / URI (same rule as Rust spotify_embed::parse_link). */
+export const spotifyList = (text: string) => /(open\.spotify\.com\/(intl-[a-z-]+\/)?(embed\/)?|spotify:)(playlist|album)[/:][A-Za-z0-9]{22}/.test(text)
+
 /** Store country for catalogs, from UI locale. */
 export const region = () => new Intl.Locale(navigator.language).maximize().region ?? 'US'
 

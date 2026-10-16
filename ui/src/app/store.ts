@@ -51,6 +51,8 @@ interface State {
   /** Returns new playlist id for create / duplicate. */
   editPlaylist: (edit: PlaylistEdit) => Promise<number | null>
   addLink: (url: string) => Promise<void>
+  /** Public Spotify playlist / album link: import it and open it. */
+  importSpotify: (url: string) => Promise<void>
   /** Shows notice for 4 s. */
   notify: (text: string) => void
 }
@@ -124,6 +126,14 @@ export const useStore = create<State>((set, get) => {
     async addLink(url) {
       let added = ''
       if (await run(async () => (added = await api.addLink(url)))) get().notify(`Added: ${added}`)
+    },
+    async importSpotify(url) {
+      get().notify('Importing from Spotify… (finding each song on YouTube)')
+      let r: Awaited<ReturnType<typeof api.importSpotifyLink>> | undefined
+      if (!(await run(async () => (r = await api.importSpotifyLink(url)))) || !r) return
+      const missing = r.tracks - r.playable
+      get().notify(`Imported “${r.name}”: ${r.tracks} songs${missing ? `, ${missing} without a YouTube version${get().status.youtube.connected ? '' : ' (sign in to YouTube Music to find them)'}` : ''}`)
+      get().go({ name: 'playlist', id: r.playlistId })
     },
     notify(notice) {
       set({ notice })

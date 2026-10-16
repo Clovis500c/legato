@@ -651,6 +651,55 @@ async fn ytm_sign_in(app: tauri::AppHandle, add: bool) -> CmdResult<()> {
     ytm::open(&app, add).map_err(err)
 }
 
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct SpotifyImport {
+    playlist_id: i64,
+    name: String,
+    tracks: usize,
+    /// Tracks with a YouTube version (they play in full).
+    playable: usize,
+}
+
+/// Public Spotify playlist or album link → imported playlist, no account. Each track gets its YouTube version (playback).
+#[tauri::command]
+async fn import_spotify_link(state: State<'_, AppState>, url: String) -> CmdResult<SpotifyImport> {
+    use music_connectors::spotify_embed;
+    // Trust boundary: clipboard / typed text.
+    if url.len() > 2048 {
+        return Err("Link too long".into());
+    }
+    let list = spotify_embed::fetch(spotify_embed::EMBED, url.trim()).await.map_err(err)?;
+    // Signed out of YouTube Music: tracks come in without a playable version.
+    let yt = state.ytm().map(Arc::new);
+    let mut tracks = Vec::with_capacity(list.tracks.len());
+    // 6 searches at a time: quick, still polite.
+    for chunk in list.tracks.chunks(6) {
+        let jobs: Vec<_> = chunk
+            .iter()
+            .cloned()
+            .map(|t| {
+                let yt = yt.clone();
+                tauri::async_runtime::spawn(async move {
+                    let Some(yt) = yt else { return t };
+                    match yt.search_songs(&format!("{} {}", t.artist, t.title)).await {
+                        Ok(found) => music_core::matching::best_match(&t, &found).map_or_else(|| t.clone(), |hit| merge_tracks(&t, hit)),
+                        Err(_) => t,
+                    }
+                })
+            })
+            .collect();
+        for job in jobs {
+            tracks.push(job.await.map_err(err)?);
+        }
+    }
+    let playable = tracks.iter().filter(|t| t.ids.contains_key(&Source::Youtube)).count();
+    // Same id as a keyed Spotify sync, so both update one playlist. Albums get their own prefix.
+    let source_id = if list.kind == "album" { format!("album:{}", list.id) } else { list.id.clone() };
+    let playlist_id = state.lib.lock().unwrap().save_playlist(Source::Spotify, &source_id, &list.name, &tracks).map_err(err)?;
+    Ok(SpotifyImport { playlist_id, name: list.name, tracks: tracks.len(), playable })
+}
+
 /// Spotify's official web player in an app window (prototype, no keys).
 #[tauri::command]
 async fn spotify_web_open(app: tauri::AppHandle) -> CmdResult<()> {
@@ -818,7 +867,7 @@ pub fn run() {
             app.manage(AppState { app: app.handle().clone(), lib: Mutex::new(lib), store: Arc::new(secrets::KeyringStore::new(&app.config().identifier)), open, player: Player::spawn(), shield, art: music_connectors::art::ArtCache::new(dir.join("art"), 300 << 20), yt_cache: Mutex::default(), nearby: Arc::new(Mutex::new(NearbyState::Idle)), nearby_task: Mutex::default() });
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, add_track, backfill_art, find_versions, play_preview, share_playlist, share_preview, share_read_image, share_import, nearby_send, nearby_status, nearby_stop, nearby_receive, record_play, mixes, set_track_pref, clear_history, export_youtube, spotify_player, spotify_playback, ytm_sign_in, ytm_sign_out, spotify_web_open, spotify_web_status, ytm_accounts, set_ytm_accounts, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, system_accent, restart_app])
+        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, add_track, backfill_art, find_versions, play_preview, share_playlist, share_preview, share_read_image, share_import, nearby_send, nearby_status, nearby_stop, nearby_receive, record_play, mixes, set_track_pref, clear_history, export_youtube, spotify_player, spotify_playback, ytm_sign_in, ytm_sign_out, spotify_web_open, spotify_web_status, import_spotify_link, ytm_accounts, set_ytm_accounts, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, system_accent, restart_app])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

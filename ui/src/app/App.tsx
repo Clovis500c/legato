@@ -14,7 +14,7 @@ import { ImportDialog } from '../features/share/ImportDialog'
 import { ConnectWizard } from '../features/sources/ConnectWizard'
 import { Sidebar } from '../features/sidebar/Sidebar'
 import { api } from '../shared/api'
-import { region, timeAgo } from '../shared/format'
+import { region, spotifyList, timeAgo } from '../shared/format'
 import { ContextMenuHost } from '../shared/ui/ContextMenu'
 import { RoundButton } from '../shared/ui/controls'
 import { useSettings } from './settings'
@@ -107,13 +107,14 @@ export function App() {
       .catch(() => {})
   }, [refresh])
 
-  // Ctrl+V outside text fields: share code → import, YouTube link → library.
+  // Ctrl+V outside text fields: share code → import, Spotify playlist / album → import, YouTube link → library.
   useEffect(() => {
     const onPaste = (e: ClipboardEvent) => {
       // Target may be document itself (nothing focused): not an Element.
       if (e.target instanceof Element && e.target.closest('input, textarea, [contenteditable]')) return
       const text = e.clipboardData?.getData('text').trim() ?? ''
       if (/^(musicapp:\/\/|MA1:)/i.test(text)) useStore.setState({ incoming: text })
+      else if (spotifyList(text)) void useStore.getState().importSpotify(text)
       else if (/youtu\.?be/i.test(text)) void useStore.getState().addLink(text)
     }
     document.addEventListener('paste', onPaste)

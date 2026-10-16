@@ -2,7 +2,7 @@ import { ArrowRight, Check, ClipboardText, FolderPlus, MagnifyingGlass, Plus, Qr
 import { useMemo, useState } from 'react'
 import { useStore } from '../../app/store'
 import { api, type SearchHit, type SearchResults, type Source } from '../../shared/api'
-import { formatDuration, region } from '../../shared/format'
+import { formatDuration, region, spotifyList } from '../../shared/format'
 import { Led, LedChip, RoundButton, Toggle } from '../../shared/ui/controls'
 import { trackArt } from '../../shared/art'
 import { onMenu } from '../../shared/ui/ContextMenu'
@@ -115,6 +115,7 @@ export function AddView() {
   const search = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!q.trim()) return
+    if (spotifyList(q)) return void useStore.getState().importSpotify(q.trim())
     setBusy(true)
     try {
       setRes(await api.searchCatalogs(q, region()))
@@ -130,7 +131,7 @@ export function AddView() {
       <PageHeader kicker="Add · Apple Music, YouTube and your files" title="Add music" />
       <form onSubmit={search} className="flex h-14 shrink-0 items-center gap-3 rounded-xl border border-line bg-raised pr-2 pl-4.5 shadow-[0_1px_2px_var(--shadow)] focus-within:border-ink-3">
         <MagnifyingGlass size={19} className="text-ink-2" />
-        <input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder="Title, artist, album…" aria-label="Search catalogs" className="min-w-0 flex-1 bg-transparent text-base outline-none placeholder:text-ink-3" />
+        <input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder="Title, artist, album, or a Spotify playlist link…" aria-label="Search catalogs" className="min-w-0 flex-1 bg-transparent text-base outline-none placeholder:text-ink-3" />
         <span className="flex items-center gap-3 rounded-full bg-recess px-3 py-1.5 font-mono text-[9px] tracking-[0.08em] text-ink-2">
           SEARCHES
           <span className="flex items-center gap-1.5">
