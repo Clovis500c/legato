@@ -54,7 +54,7 @@ export function TrackTable({ tracks, empty, editId, rowActions }: { tracks: Libr
               const playable = vias(t, sp).length > 0
               return (
                 <div
-                  key={t.id}
+                  key={v.key}
                   role="row"
                   onDoubleClick={() => playable && play(tracks, v.index)}
                   className={`group absolute inset-x-0 grid items-center gap-4 border-b border-line-soft px-2 ${on ? 'bg-accent-soft' : 'hover:bg-raised'}`}
