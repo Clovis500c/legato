@@ -19,6 +19,8 @@ export interface Track {
 
 export interface LibraryTrack extends Track {
   id: number
+  /** "Date added" rank: order the app met the track (services give no dates). */
+  added: number
 }
 
 /** Stable identity of a playlist: service + its id there (survives re-imports); own playlists by row id. */
@@ -32,6 +34,8 @@ export interface LibraryPlaylist {
   trackCount: number
   /** Made in the app: editable. */
   custom: boolean
+  /** Service order = newest first (Liked Music). */
+  newestFirst: boolean
 }
 
 /** crates/core PlaylistEdit. */

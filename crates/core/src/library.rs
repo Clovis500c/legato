@@ -45,7 +45,38 @@ CREATE TABLE IF NOT EXISTS settings (
 );
 ";
 
-const TRACK_COLS: &str = "t.id, t.title, t.artist, t.album, t.duration_ms, t.isrc, t.art";
+const TRACK_COLS: &str = "t.id, t.title, t.artist, t.album, t.duration_ms, t.isrc, t.art, t.added";
+
+/// Lists the service shows newest first (Liked Music: last like on top). Others grow at the bottom.
+pub fn newest_first(source: Source, source_id: &str) -> bool {
+    source == Source::Youtube && (source_id == "LM" || source_id.starts_with("LM~"))
+}
+
+/// v4: "date added" rank. Row ids follow import order, but Liked Music came in newest first: flip its tracks
+/// inside the slots they hold. New rows take max + 1.
+fn migrate_v4(db: &Connection) -> Result<()> {
+    let tx = db.unchecked_transaction()?;
+    tx.execute_batch("ALTER TABLE tracks ADD COLUMN added INTEGER NOT NULL DEFAULT 0; UPDATE tracks SET added = id; CREATE INDEX tracks_added ON tracks(added);")?;
+    let lists: Vec<(i64, String, String)> =
+        tx.prepare("SELECT id, source, source_id FROM playlists ORDER BY id")?.query_map([], |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?)))?.collect::<rusqlite::Result<_>>()?;
+    let mut seen = std::collections::HashSet::new();
+    let mut liked: Vec<i64> = Vec::new();
+    for (id, source, source_id) in lists {
+        if source != Source::Youtube.as_str() || !newest_first(Source::Youtube, &source_id) {
+            continue;
+        }
+        let ids: Vec<i64> = tx.prepare("SELECT track_id FROM playlist_tracks WHERE playlist_id = ?1 ORDER BY position DESC")?.query_map([id], |r| r.get(0))?.collect::<rusqlite::Result<_>>()?;
+        liked.extend(ids.into_iter().filter(|t| seen.insert(*t)));
+    }
+    let mut slots = liked.clone();
+    slots.sort_unstable();
+    for (slot, t) in slots.iter().zip(&liked) {
+        tx.execute("UPDATE tracks SET added = ?1 WHERE id = ?2", [slot, t])?;
+    }
+    tx.execute_batch("PRAGMA user_version = 4;")?;
+    tx.commit()?;
+    Ok(())
+}
 
 /// v3: cover art per track. Bare YouTube videos get their frame now (no network); syncs and lookups bring real covers later.
 const SCHEMA_V3: &str = "
@@ -57,6 +88,8 @@ PRAGMA user_version = 3;
 #[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct LibraryTrack {
     pub id: i64,
+    /// "Date added" rank: order the app met the track (services give no dates).
+    pub added: i64,
     #[serde(flatten)]
     pub track: Track,
 }
@@ -71,6 +104,8 @@ pub struct LibraryPlaylist {
     pub track_count: i64,
     /// Made in the app (editable). Imported ones mirror their service.
     pub custom: bool,
+    /// Service order = newest first (Liked Music).
+    pub newest_first: bool,
 }
 
 /// Edits on custom playlists. Duplicate also works on imported ones.
@@ -88,9 +123,10 @@ pub enum PlaylistEdit {
 
 /// Row → track. Column 7 = ids JSON object (optional).
 fn to_track(r: &Row) -> rusqlite::Result<LibraryTrack> {
-    let ids: Option<String> = r.get(7).ok();
+    let ids: Option<String> = r.get(8).ok();
     Ok(LibraryTrack {
         id: r.get(0)?,
+        added: r.get(7)?,
         track: Track {
             title: r.get(1)?,
             artist: r.get(2)?,
@@ -128,6 +164,9 @@ impl Library {
         }
         if db.query_row("PRAGMA user_version", [], |r| r.get::<_, i64>(0))? < 3 {
             db.execute_batch(&format!("BEGIN; {SCHEMA_V3} COMMIT;"))?;
+        }
+        if db.query_row("PRAGMA user_version", [], |r| r.get::<_, i64>(0))? < 4 {
+            migrate_v4(&db)?;
         }
         Ok(Self { db })
     }
@@ -167,7 +206,8 @@ impl Library {
             let id = match found.pop_first() {
                 None => {
                     self.db.execute(
-                        "INSERT INTO tracks (title, artist, album, duration_ms, isrc, match_key, art) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)",
+                        "INSERT INTO tracks (title, artist, album, duration_ms, isrc, match_key, art, added)
+                         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, (SELECT coalesce(max(added), 0) + 1 FROM tracks))",
                         params![t.title, t.artist, t.album, t.duration_ms, isrc, match_key(&t.title, &t.artist), t.art],
                     )?;
                     self.db.last_insert_rowid()
@@ -184,6 +224,7 @@ impl Library {
                         self.db.execute("UPDATE playlist_tracks SET track_id = ?1 WHERE track_id = ?2", [keep, dupe])?;
                         self.db.execute("UPDATE plays SET track_id = ?1 WHERE track_id = ?2", [keep, dupe])?;
                         self.db.execute("UPDATE OR IGNORE track_prefs SET track_id = ?1 WHERE track_id = ?2", [keep, dupe])?;
+                        self.db.execute("UPDATE tracks SET added = min(added, (SELECT added FROM tracks WHERE id = ?2)) WHERE id = ?1", [keep, dupe])?;
                         self.db.execute("DELETE FROM tracks WHERE id = ?1", [dupe])?;
                         self.fill(keep, album, dur, dupe_isrc, art)?;
                     }
@@ -210,8 +251,14 @@ impl Library {
                 |r| r.get(0),
             )?;
             self.db.execute("DELETE FROM playlist_tracks WHERE playlist_id = ?1", [id])?;
-            for (pos, t) in tracks.iter().enumerate() {
-                let track_id = self.upsert_track(t)?;
+            // New rows created oldest first: "date added" holds for newest-first lists too.
+            let newest = newest_first(source, source_id);
+            let oldest_first: Vec<&Track> = if newest { tracks.iter().rev().collect() } else { tracks.iter().collect() };
+            let mut ids = oldest_first.into_iter().map(|t| self.upsert_track(t)).collect::<Result<Vec<_>>>()?;
+            if newest {
+                ids.reverse();
+            }
+            for (pos, track_id) in ids.into_iter().enumerate() {
                 self.db.execute("INSERT INTO playlist_tracks (playlist_id, position, track_id) VALUES (?1, ?2, ?3)", params![id, pos as i64, track_id])?;
             }
             Ok(id)
@@ -235,10 +282,13 @@ impl Library {
         )?;
         let rows = stmt.query_map([], |r| {
             let source: String = r.get(1)?;
+            let source: Source = serde_json::from_value(source.into()).map_err(|e| rusqlite::Error::ToSqlConversionFailure(e.into()))?;
+            let source_id: String = r.get(2)?;
             Ok(LibraryPlaylist {
                 id: r.get(0)?,
-                source: serde_json::from_value(source.into()).map_err(|e| rusqlite::Error::ToSqlConversionFailure(e.into()))?,
-                source_id: r.get(2)?,
+                source,
+                newest_first: newest_first(source, &source_id),
+                source_id,
                 name: r.get(3)?,
                 track_count: r.get(4)?,
                 custom: r.get(5)?,
@@ -338,7 +388,18 @@ impl Library {
 
     /// Imported playlist mirror after the service accepted new tracks (custom ones: `edit_playlist`).
     pub fn append_to_imported(&self, id: i64, track_ids: &[i64]) -> Result<()> {
-        self.tx(|| self.rewrite(id, |ids| ids.extend(track_ids)))
+        let (source, source_id): (String, String) = self.db.query_row("SELECT source, source_id FROM playlists WHERE id = ?1", [id], |r| Ok((r.get(0)?, r.get(1)?)))?;
+        // Liked Music: last like on top, like YouTube shows it.
+        let top = source == Source::Youtube.as_str() && newest_first(Source::Youtube, &source_id);
+        self.tx(|| {
+            self.rewrite(id, |ids| {
+                if top {
+                    ids.splice(0..0, track_ids.iter().rev().copied());
+                } else {
+                    ids.extend(track_ids)
+                }
+            })
+        })
     }
 
     fn new_custom(&self, name: &str) -> Result<i64> {
@@ -517,6 +578,46 @@ mod tests {
         Ok(())
     }
 
+    fn song(n: u32) -> Track {
+        Track { title: format!("Song {n}"), artist: format!("Artist {n}"), ids: BTreeMap::from([(Source::Youtube, format!("vid{n}"))]), ..Default::default() }
+    }
+
+    #[test]
+    fn liked_music_comes_newest_first_date_added_follows() -> Result<()> {
+        let lib = Library::in_memory()?;
+        let old = lib.upsert_track(&song(9))?;
+        let pid = lib.save_playlist(Source::Youtube, "LM", "Liked Music", &[song(1), song(2), song(3)])?;
+        let order: Vec<i64> = lib.playlist_tracks(pid)?.iter().map(|t| t.id).collect();
+        let added = |id: i64| lib.tracks().unwrap().into_iter().find(|t| t.id == id).unwrap().added;
+        // Playlist keeps service order; newest like = newest row.
+        assert!(added(order[0]) > added(order[1]) && added(order[1]) > added(order[2]) && added(order[2]) > added(old));
+        assert!(lib.playlists()?[0].newest_first);
+        // New like goes on top, like on YouTube.
+        lib.append_to_imported(pid, &[old])?;
+        assert_eq!(lib.playlist_orders()?[&pid][0], old);
+        Ok(())
+    }
+
+    #[test]
+    fn v4_flips_liked_music_inside_its_slots() -> Result<()> {
+        let db = Connection::open_in_memory()?;
+        db.execute_batch(SCHEMA)?;
+        db.execute_batch("ALTER TABLE playlists ADD COLUMN custom INTEGER NOT NULL DEFAULT 0;")?;
+        db.execute_batch(crate::history::SCHEMA_V2)?;
+        db.execute_batch(SCHEMA_V3)?;
+        for id in 1..=4 {
+            db.execute("INSERT INTO tracks (id, title, artist, match_key) VALUES (?1, 't', 'a', ?1)", [id])?;
+        }
+        db.execute_batch(
+            "INSERT INTO playlists (id, source, source_id, name) VALUES (1, 'youtube', 'LM', 'Liked'), (2, 'youtube', 'PL1', 'Mix');
+             INSERT INTO playlist_tracks VALUES (1, 0, 1), (1, 1, 2), (1, 2, 3), (2, 0, 4);",
+        )?;
+        let lib = Library::init(db)?;
+        let added: Vec<i64> = (1..=4).map(|id| lib.db.query_row("SELECT added FROM tracks WHERE id = ?1", [id], |r| r.get(0)).unwrap()).collect();
+        assert_eq!(added, vec![3, 2, 1, 4]);
+        Ok(())
+    }
+
     #[test]
     fn replaces_playlist_content() -> Result<()> {
         let lib = Library::in_memory()?;
@@ -524,7 +625,7 @@ mod tests {
         let id = lib.save_playlist(Source::Spotify, "p1", "New", &[spotify()])?;
         assert_eq!(
             lib.playlists()?,
-            vec![LibraryPlaylist { id, source: Source::Spotify, source_id: "p1".into(), name: "New".into(), track_count: 1, custom: false }]
+            vec![LibraryPlaylist { id, source: Source::Spotify, source_id: "p1".into(), name: "New".into(), track_count: 1, custom: false, newest_first: false }]
         );
         Ok(())
     }

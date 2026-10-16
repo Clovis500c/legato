@@ -26,7 +26,7 @@ describe('media panel info', () => {
   })
 
   it('takes album from the library row, rounds times', () => {
-    const track = { id: 1, title: 'Blinding Lights', artist: 'The Weeknd', album: 'After Hours', durationMs: null, isrc: null, ids: {} }
+    const track = { id: 1, added: 1, title: 'Blinding Lights', artist: 'The Weeknd', album: 'After Hours', durationMs: null, isrc: null, ids: {} }
     expect(mediaNow(now, true, track, 1234.6, 200_000.4)).toEqual({ title: 'Blinding Lights', artist: 'The Weeknd', album: 'After Hours', playing: true, positionMs: 1235, durationMs: 200_000 })
     expect(mediaNow(now, false)?.album).toBeNull()
     expect(mediaNow(now, false, undefined, -50)?.positionMs).toBe(0)

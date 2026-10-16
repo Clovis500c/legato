@@ -5,6 +5,7 @@ import { filterTracks, groupAlbums, groupArtists, libraryStats, primaryArtist, s
 
 const t = (id: number, title: string, artist: string, ids: LibraryTrack['ids']): LibraryTrack => ({
   id,
+  added: id,
   title,
   artist,
   album: null,
@@ -93,6 +94,12 @@ describe('albums and artists', () => {
     expect(ids('added-old')).toEqual([1, 2, 3, 4])
     // Playlist: date added = its own order.
     expect(ids('added-new', { positional: true })).toEqual([...lib].reverse().map((x) => x.id))
+    // Liked Music: service order already newest first.
+    expect(ids('added-new', { positional: true, newestFirst: true })).toEqual([1, 2, 3, 4])
+    expect(ids('added-old', { positional: true, newestFirst: true })).toEqual([4, 3, 2, 1])
+    // Library: added rank, not row id.
+    const ranked = lib.map((x) => ({ ...x, added: 10 - x.id }))
+    expect(sortTracks(ranked, 'added-new').map((x) => x.id)).toEqual([1, 2, 3, 4])
     expect(ids('manual')).toEqual(lib.map((x) => x.id))
     const stats = { 3: [5, 100], 1: [5, 200], 2: [1, 900] } as Record<number, [number, number]>
     expect(ids('most-played', { stats })).toEqual([1, 3, 2, 4])

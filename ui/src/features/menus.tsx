@@ -242,7 +242,7 @@ export function trackMenu(t: LibraryTrack, ctx: { list?: LibraryTrack[]; index?:
 export function hitMenu(hit: SearchHit, add: () => void, busy: boolean): MenuEntry[] {
   const t = app().tracks.find((x) => x.id === hit.libraryId)
   if (t) return trackMenu(t)
-  const links = pages({ ...hit, id: 0 })
+  const links = pages({ ...hit, id: 0, added: 0 })
   return [
     { label: 'Add to library', icon: <Plus size={16} />, disabled: busy, onSelect: add },
     '-',

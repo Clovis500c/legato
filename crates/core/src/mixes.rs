@@ -292,7 +292,7 @@ mod tests {
     const NOW: i64 = 1_800_000_000;
 
     fn t(id: i64, artist: &str) -> LibraryTrack {
-        LibraryTrack { id, track: Track { title: format!("Song {id}"), artist: artist.into(), ..Default::default() } }
+        LibraryTrack { id, added: id, track: Track { title: format!("Song {id}"), artist: artist.into(), ..Default::default() } }
     }
 
     fn play(id: i64, at: i64, completed: bool) -> Play {

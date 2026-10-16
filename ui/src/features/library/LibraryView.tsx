@@ -197,7 +197,8 @@ function EditableTitle({ id, name }: { id: number; name: string }) {
 export function PlaylistView({ id }: { id: number }) {
   const { playlists, playlistTracks, query, editPlaylist, go, playlistSort, stats, seed } = useStore()
   const playlist = playlists.find((p) => p.id === id)
-  const shown = useMemo(() => sortTracks(filterTracks(playlistTracks, query, 'all'), playlistSort, { stats, seed, positional: true }), [playlistTracks, query, playlistSort, stats, seed])
+  const newestFirst = playlist?.newestFirst ?? false
+  const shown = useMemo(() => sortTracks(filterTracks(playlistTracks, query, 'all'), playlistSort, { stats, seed, positional: true, newestFirst }), [playlistTracks, query, playlistSort, stats, seed, newestFirst])
   const sharing = useStore((s) => s.sharing === id)
   const closeShare = useCallback(() => useStore.setState({ sharing: null }), [])
   if (!playlist) return null

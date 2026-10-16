@@ -32,20 +32,27 @@ const rank = (id: number, seed: number) => {
 }
 
 /**
- * Sorted copy. Library arrives sorted by artist. positional = a playlist: "date added" follows its order (appended =
- * newest), library = row id. Unplayed tracks go last in the play sorts.
+ * Sorted copy. Library arrives sorted by artist. positional = a playlist: "date added" follows its order (grows at the
+ * bottom, or newestFirst: Liked Music), library = added rank. Unplayed tracks go last in the play sorts.
  */
-export function sortTracks(tracks: LibraryTrack[], sort: Sort, { stats = {}, seed = 1, positional = false }: { stats?: PlayStats; seed?: number; positional?: boolean } = {}): LibraryTrack[] {
-  if (sort === 'manual' || (positional && sort === 'added-old')) return [...tracks]
-  if (positional && (sort === 'added-new' || sort === 'recent')) return [...tracks].reverse()
+export function sortTracks(
+  tracks: LibraryTrack[],
+  sort: Sort,
+  { stats = {}, seed = 1, positional = false, newestFirst = false }: { stats?: PlayStats; seed?: number; positional?: boolean; newestFirst?: boolean } = {},
+): LibraryTrack[] {
+  if (sort === 'manual') return [...tracks]
+  if (positional && (sort === 'added-new' || sort === 'recent' || sort === 'added-old')) {
+    const asIs = (sort === 'added-old') !== newestFirst
+    return asIs ? [...tracks] : [...tracks].reverse()
+  }
   const plays = (t: LibraryTrack) => stats[t.id]?.[0] ?? 0
   const last = (t: LibraryTrack) => stats[t.id]?.[1] ?? 0
   type By = (a: LibraryTrack, b: LibraryTrack) => number
   const title: By = (a, b) => coll.compare(a.title, b.title)
   const by: Record<Exclude<Sort, 'manual'>, By> = {
-    'added-new': (a, b) => b.id - a.id,
-    recent: (a, b) => b.id - a.id,
-    'added-old': (a, b) => a.id - b.id,
+    'added-new': (a, b) => b.added - a.added,
+    recent: (a, b) => b.added - a.added,
+    'added-old': (a, b) => a.added - b.added,
     'most-played': (a, b) => plays(b) - plays(a) || last(b) - last(a) || title(a, b),
     'recently-played': (a, b) => last(b) - last(a),
     title,
