@@ -85,6 +85,10 @@ export interface Settings {
   miniWidth: number
   /** Fade between songs, seconds (0 = off). */
   crossfade: number
+  /** YouTube subtitles (off: hidden even when the Google account turns them on). */
+  subtitles: boolean
+  /** Now Playing: Up next panel open. */
+  upNext: boolean
   /** Pick up the last track where it stopped when the app opens. */
   resume: boolean
   defaultsVersion: number
@@ -115,6 +119,8 @@ export const DEFAULTS: Settings = {
   miniSpot: 'br',
   miniWidth: 356,
   crossfade: 5,
+  subtitles: false,
+  upNext: true,
   resume: true,
   defaultsVersion: DEFAULTS_VERSION,
 }
@@ -170,6 +176,8 @@ export function sanitize(raw: unknown): Settings {
     miniSpot: pick(r.miniSpot, SPOTS, DEFAULTS.miniSpot),
     miniWidth: typeof r.miniWidth === 'number' && Number.isFinite(r.miniWidth) ? Math.min(960, Math.max(356, Math.round(r.miniWidth))) : DEFAULTS.miniWidth,
     crossfade: typeof r.crossfade === 'number' && Number.isFinite(r.crossfade) ? Math.min(12, Math.max(0, Math.round(r.crossfade))) : DEFAULTS.crossfade,
+    subtitles: typeof r.subtitles === 'boolean' ? r.subtitles : DEFAULTS.subtitles,
+    upNext: typeof r.upNext === 'boolean' ? r.upNext : DEFAULTS.upNext,
     resume: typeof r.resume === 'boolean' ? r.resume : DEFAULTS.resume,
     defaultsVersion: DEFAULTS_VERSION,
     // Saved before the defaults changed: take the new ones once.

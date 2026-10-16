@@ -6,6 +6,7 @@ import { useStore } from '../../app/store'
 import { api } from '../../shared/api'
 import { formatDuration } from '../../shared/format'
 import { Bar, Knob, Readout, RoundButton } from '../../shared/ui/controls'
+import { SeekBar, TimeText } from './Progress'
 import { Transport } from './Transport'
 import { onMenu } from '../../shared/ui/ContextMenu'
 import { playerMenu } from '../menus'
@@ -32,10 +33,17 @@ function YouTubeFrame({ videoId }: { videoId: string }) {
   // First video and options at mount: changing src later would reload the embed.
   const [src] = useState(() => ({ first: videoId, controls: useSettings.getState().settings.youtubeControls, start: usePlayer.getState().startAt / 1000 }))
   const shown = useRef(videoId)
+  const captionsOff = useRef<string | null>(null)
   useEffect(() => {
     const onMessage = (e: MessageEvent) => {
       const u = parseYt(e.origin, e.data)
-      if (u) onYoutube(u)
+      if (!u) return
+      // Subtitles off (default): YouTube may turn them on from the Google account, unload them once per video.
+      if (u.state === 1 && captionsOff.current !== shown.current && !useSettings.getState().settings.subtitles) {
+        captionsOff.current = shown.current
+        for (const m of ['captions', 'cc']) ytPost(frame.current, 'command', 'unloadModule', [m])
+      }
+      onYoutube(u)
     }
     window.addEventListener('message', onMessage)
     return () => window.removeEventListener('message', onMessage)
@@ -104,7 +112,7 @@ export function VolumeControl({ big }: { big?: boolean }) {
 }
 
 export function PlayerBar() {
-  const { now, positionMs, durationMs, playFiles, seek, onLocal, onSpotify, setFull } = usePlayer()
+  const { now, playFiles, onLocal, onSpotify, setFull } = usePlayer()
   const readout = useSettings((s) => s.settings.readout)
   const track = useStore((s) => s.tracks.find((t) => t.id === now?.trackId))
   // Engine plays local files and previews: poll it. Spotify Connect: poll its API, slower (rate limits).
@@ -161,10 +169,10 @@ export function PlayerBar() {
 
       <div className="flex w-140 min-w-0 flex-col items-center gap-2">
         <Transport />
-        <div className="flex w-full items-center gap-3 font-mono text-[10px] text-ink-3 tabular-nums">
-          <span>{clock(positionMs)}</span>
-          <Bar label="Position" seek value={positionMs} max={durationMs ?? 0} onChange={seek} className="flex-1" />
-          <span>-{clock(Math.max(0, (durationMs ?? 0) - positionMs))}</span>
+        <div className="flex w-full items-center gap-3 font-mono text-[10px] text-ink-3">
+          <TimeText part="elapsed" />
+          <SeekBar className="flex-1" />
+          <TimeText part="remaining" />
         </div>
       </div>
 

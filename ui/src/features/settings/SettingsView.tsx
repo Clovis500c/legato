@@ -449,6 +449,9 @@ function AdvancedSection() {
         <Row label="Resume playback on launch" sub="The last song picks up where it stopped, with its queue, when the app opens">
           <Toggle label="Resume playback on launch" checked={s.resume} onChange={(resume) => update({ resume })} />
         </Row>
+        <Row label="Subtitles on videos" sub="Off: hidden even when your Google account shows them">
+          <Toggle label="Subtitles on videos" checked={s.subtitles} onChange={(subtitles) => update({ subtitles })} />
+        </Row>
         <Row label="YouTube controls on the video" sub="YouTube's own title, buttons and hover menu on the video. From the next track.">
           <Toggle label="YouTube controls on the video" checked={s.youtubeControls} onChange={(youtubeControls) => update({ youtubeControls })} />
         </Row>

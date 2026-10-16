@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { isLetterboxed } from '../art'
 
-/** Artwork with a typographic fallback tile (initials). art = image candidates, best first (shared/art); each failed one falls to the next. */
-export function Cover({ title, art = [], size = 38, className = '' }: { title: string; art?: string[]; size?: number; className?: string }) {
+/** Artwork with a typographic fallback tile (initials). art = image candidates, best first (shared/art); each failed one falls to the next. eager = big, on screen right away. */
+export function Cover({ title, art = [], size = 38, className = '', eager = false }: { title: string; art?: string[]; size?: number; className?: string; eager?: boolean }) {
   // Failed URLs, not an index: virtualized rows reuse this component for other tracks.
   const [failed, setFailed] = useState<string[]>([])
   const src = art.find((s) => !failed.includes(s))
@@ -21,7 +21,7 @@ export function Cover({ title, art = [], size = 38, className = '' }: { title: s
         <img
           src={src}
           alt=""
-          loading="lazy"
+          loading={eager ? 'eager' : 'lazy'}
           decoding="async"
           crossOrigin="anonymous"
           draggable={false}

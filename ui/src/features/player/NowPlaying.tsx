@@ -1,21 +1,23 @@
-import { ArrowSquareOut, CaretDoubleDown, Waveform } from '@phosphor-icons/react'
+import { ArrowSquareOut, CaretDoubleDown, CaretLeft, CaretRight, Waveform } from '@phosphor-icons/react'
 import { openUrl } from '@tauri-apps/plugin-opener'
 import { useEffect, useLayoutEffect, useRef } from 'react'
 import { useSettings } from '../../app/settings'
 import { useStore } from '../../app/store'
 import type { LibraryTrack, Source } from '../../shared/api'
-import { trackArt } from '../../shared/art'
+import { bigTrackArt, trackArt } from '../../shared/art'
+import { formatDuration } from '../../shared/format'
 import { Button } from '../../shared/ui/Button'
-import { Bar, RoundButton, Segmented } from '../../shared/ui/controls'
+import { RoundButton, Segmented } from '../../shared/ui/controls'
 import { Cover } from '../../shared/ui/Cover'
 import { SourceIcon } from '../../shared/ui/SourceIcon'
 import { AddToPlaylist } from '../library/AddToPlaylist'
 import { onMenu } from '../../shared/ui/ContextMenu'
 import { playerMenu, trackMenu } from '../menus'
 import { useAmbient } from './ambient'
-import { clock, fileFormat, VolumeControl } from './PlayerBar'
+import { fileFormat, VolumeControl } from './PlayerBar'
 import { viaLabel, vias, type Via } from './sources'
 import { fileTitle, usePlayer, useVideoSlot } from './store'
+import { SeekBar, TimeText } from './Progress'
 import { Transport } from './Transport'
 
 /** Publishes its rect so the single YouTube iframe sits here. YouTube rules: at least 200×200, nothing on top. */
@@ -94,12 +96,13 @@ function Stage({ video, cover, track, title }: { video: boolean; cover: boolean;
   // Container query units: fit inside both width and height, keep the ratio.
   const fit = { width: `min(100cqw, 100cqh * ${ratio})`, aspectRatio: String(ratio) }
   return (
-    <div className="grid min-h-50 flex-1 place-items-center" style={{ containerType: 'size' }}>
+    // w-full: parent centers its children; without it the box shrinks to nothing and cq units go to 0.
+    <div className="grid min-h-50 w-full flex-1 place-items-center" style={{ containerType: 'size' }}>
       {big ? (
         <VideoSlot className="min-h-50 min-w-89" style={fit} />
       ) : (
         <span style={fit} className="relative block">
-          <Cover title={track?.album ?? title} art={track && trackArt(track)} size={200} className="size-full! text-[56px]! shadow-[0_12px_40px_var(--shadow)]" />
+          <Cover title={track?.album ?? title} art={track && bigTrackArt(track)} size={200} eager className="size-full! text-[56px]! shadow-[0_12px_40px_var(--shadow)]" />
           {video && <VideoSlot hidden className="absolute inset-0 bg-transparent" />}
         </span>
       )}
@@ -109,7 +112,7 @@ function Stage({ video, cover, track, title }: { video: boolean; cover: boolean;
 
 export function NowPlaying() {
   const { now, positionMs, durationMs, seek, setFull, list, index, order, upcoming, playAt } = usePlayer()
-  const { tuner, tint, stage, volume: volumeMode } = useSettings((s) => s.settings)
+  const { tuner, tint, stage, upNext, volume: volumeMode } = useSettings((s) => s.settings)
   const update = useSettings((s) => s.update)
   // Re-rendered by the settings subscription above.
   const theme = useSettings.getState().current()
@@ -131,24 +134,65 @@ export function NowPlaying() {
   // Play order (shuffle aware), after the current track.
   const at = order.indexOf(index)
   const next = now.trackId
-    ? order.slice(at + 1).flatMap((i) => (list[i] && vias(list[i], sp).length ? [{ key: `${i}`, title: list[i].title, artist: list[i].artist, art: trackArt(list[i]), onPlay: () => playAt(i), menu: onMenu(() => trackMenu(list[i], { list, index: i, queueIndex: i })) }] : []))
-    : upcoming.map((p) => ({ key: p, title: fileTitle(p), artist: fileFormat(p) ?? '', art: [], onPlay: undefined, menu: undefined }))
+    ? order.slice(at + 1).flatMap((i) => (list[i] && vias(list[i], sp).length ? [{ key: `${i}`, title: list[i].title, artist: list[i].artist, art: trackArt(list[i]), duration: formatDuration(list[i].durationMs), onPlay: () => playAt(i), menu: onMenu(() => trackMenu(list[i], { list, index: i, queueIndex: i })) }] : []))
+    : upcoming.map((p) => ({ key: p, title: fileTitle(p), artist: fileFormat(p) ?? '', art: [], duration: '', onPlay: undefined, menu: undefined }))
+
+  const panel = (
+    <aside className="flex min-h-0 flex-col gap-2 rounded-2xl border border-line-soft bg-[color-mix(in_srgb,var(--panel)_55%,transparent)] p-3">
+      <div className="flex items-center gap-2 px-1">
+        <span className="text-[13px] font-semibold">Up next</span>
+        <span className="kicker flex-1">
+          {next.length} track{next.length === 1 ? '' : 's'}
+        </span>
+        <RoundButton label="Hide up next" kind="plain" size="sm" onClick={() => update({ upNext: false })}>
+          <CaretRight size={14} />
+        </RoundButton>
+      </div>
+      <ol className="flex min-h-0 flex-col overflow-y-auto">
+        <li className="flex items-center gap-3 rounded-lg bg-accent-soft px-2 py-2">
+          <Cover title={now.title} art={track && trackArt(track)} size={44} />
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-[13px] font-semibold text-accent">{now.title}</span>
+            <span className="block truncate text-xs text-ink-2">{now.artist}</span>
+          </span>
+          <Waveform size={14} className="shrink-0 text-accent" />
+        </li>
+        {next.length === 0 && <li className="py-6 text-center text-ink-3">Nothing after this track.</li>}
+        {next.slice(0, 100).map((n) => (
+          <li key={n.key} onContextMenu={n.menu}>
+            <button disabled={!n.onPlay} onClick={n.onPlay} className="flex w-full items-center gap-3 rounded-lg px-2 py-2 text-left enabled:hover:bg-raised">
+              <Cover title={n.title} art={n.art} size={44} />
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-[13px] font-semibold">{n.title}</span>
+                <span className="block truncate text-xs text-ink-2">{n.artist}</span>
+              </span>
+              {n.duration && <span className="shrink-0 text-xs text-ink-3 tabular-nums">{n.duration}</span>}
+            </button>
+          </li>
+        ))}
+      </ol>
+    </aside>
+  )
 
   return (
     <div role="dialog" aria-label="Now playing" onContextMenu={onMenu(playerMenu)} className="fixed inset-0 z-20 flex flex-col bg-bg px-10 pb-7 text-ink transition-colors duration-500" style={ambient}>
       <div data-tauri-drag-region className="flex h-14 shrink-0 items-center justify-between">
-        <div className="flex w-60 items-center gap-2.5">
+        <div className="flex items-center gap-2.5">
           <RoundButton label="Collapse (Esc)" size="sm" onClick={() => setFull(false)}>
             <CaretDoubleDown size={14} />
           </RoundButton>
           <span className="kicker">Collapse</span>
         </div>
-        {video ? <Segmented label="Show" value={stage} onChange={(s) => update({ stage: s })} options={[{ value: 'video', label: 'Video' }, { value: 'cover', label: 'Cover' }]} /> : <span className="kicker text-ink-2">Now playing · {viaLabel[now.via]}</span>}
-        <span className="w-60" />
+        {!upNext && (
+          <Button variant="ghost" onClick={() => update({ upNext: true })}>
+            <CaretLeft size={13} /> Up next · {next.length}
+          </Button>
+        )}
       </div>
 
-      <div className="grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_360px] gap-10 pt-2">
-        <section className="flex min-h-0 min-w-0 flex-col gap-5">
+      <div className={`grid min-h-0 flex-1 gap-10 ${upNext ? 'grid-cols-[minmax(0,1fr)_360px]' : 'grid-cols-1'}`}>
+        <section className="flex min-h-0 min-w-0 flex-col items-center gap-4">
+          {video ? <Segmented label="Show" value={stage} onChange={(s) => update({ stage: s })} options={[{ value: 'video', label: 'Video' }, { value: 'cover', label: 'Cover' }]} /> : <span className="kicker text-ink-2">Now playing · {viaLabel[now.via]}</span>}
           <Stage video={video} cover={stage === 'cover'} track={track} title={now.title} />
           {now.via === 'spotify' && <span className="kicker text-center">Playing in your Spotify app</span>}
           {now.via === 'preview' && (
@@ -161,61 +205,31 @@ export function NowPlaying() {
               )}
             </div>
           )}
-          <div className="flex shrink-0 items-end justify-between gap-6">
-            <div className="min-w-0">
-              <h2 className="truncate text-[32px] leading-tight font-bold tracking-[-0.03em]">{now.title}</h2>
-              <p className="truncate text-sm text-ink-2">{track?.album ? `${now.artist} — ${track.album}` : now.artist}</p>
+          {/* Controls in one centered column, not stretched across the window. */}
+          <div className="flex w-full max-w-[880px] shrink-0 flex-col gap-4">
+            <div className="flex items-end justify-between gap-6">
+              <div className="min-w-0">
+                <h2 className="truncate text-[28px] leading-tight font-bold tracking-[-0.02em]">{now.title}</h2>
+                <p className="truncate text-sm text-ink-2">{track?.album ? `${now.artist} — ${track.album}` : now.artist}</p>
+              </div>
+              {track && <AddToPlaylist trackIds={[track.id]} label={`Add ${track.title} to a playlist`} />}
             </div>
-            <div className="flex shrink-0 items-end gap-4">{track && <AddToPlaylist trackIds={[track.id]} label={`Add ${track.title} to a playlist`} />}</div>
-          </div>
-          <div className="flex shrink-0 flex-col gap-2">
-            {tuner ? <TunerScale value={positionMs} max={durationMs ?? 0} onChange={seek} /> : <Bar label="Position" seek value={positionMs} max={durationMs ?? 0} onChange={seek} className="w-full" />}
-            <span className="text-[13px] text-ink-2 tabular-nums">
-              {clock(positionMs)} / {clock(durationMs)}
-            </span>
-          </div>
-          <div className="flex shrink-0 items-center justify-between">
-            <span className="flex w-44">
+            <div className="flex flex-col gap-1.5">
+              {tuner ? <TunerScale value={positionMs} max={durationMs ?? 0} onChange={seek} /> : <SeekBar />}
+              <TimeText part="both" className="text-[13px] text-ink-2" />
+            </div>
+            <div className="grid grid-cols-[1fr_auto_1fr] items-center">
               <SourceBadge via={now.via} />
-            </span>
-            <Transport size="lg" />
-            <div className="flex w-44 flex-col items-end gap-1">
-              <VolumeControl big />
-              {volumeMode === 'knob' && <span className="kicker">Volume</span>}
+              <Transport size="lg" />
+              <div className="flex flex-col items-end gap-1">
+                <VolumeControl big />
+                {volumeMode === 'knob' && <span className="kicker">Volume</span>}
+              </div>
             </div>
           </div>
         </section>
 
-        <aside className="flex min-h-0 flex-col gap-3">
-          <div className="flex items-center justify-between">
-            <span className="kicker text-ink">Up next</span>
-            <span className="kicker">
-              {next.length} track{next.length === 1 ? '' : 's'}
-            </span>
-          </div>
-          <ol className="flex min-h-0 flex-col overflow-y-auto">
-            <li className="flex items-center gap-3 rounded-md bg-raised px-2 py-2">
-              <Cover title={now.title} art={track && trackArt(track)} size={40} />
-              <span className="min-w-0 flex-1">
-                <span className="block truncate text-[13px] font-semibold text-accent">{now.title}</span>
-                <span className="block truncate text-xs text-ink-2">{now.artist}</span>
-              </span>
-              <Waveform size={14} className="text-accent" />
-            </li>
-            {next.length === 0 && <li className="py-6 text-center text-ink-3">Nothing after this track.</li>}
-            {next.slice(0, 100).map((n) => (
-              <li key={n.key} onContextMenu={n.menu}>
-                <button disabled={!n.onPlay} onClick={n.onPlay} className="flex w-full items-center gap-3 rounded-md px-2 py-2 text-left enabled:hover:bg-raised">
-                  <Cover title={n.title} art={n.art} size={40} />
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate text-[13px] font-semibold">{n.title}</span>
-                    <span className="block truncate text-xs text-ink-2">{n.artist}</span>
-                  </span>
-                </button>
-              </li>
-            ))}
-          </ol>
-        </aside>
+        {upNext && panel}
       </div>
     </div>
   )

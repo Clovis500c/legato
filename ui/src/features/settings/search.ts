@@ -35,6 +35,7 @@ export const SETTINGS_INDEX: SettingEntry[] = [
   { section: 'shield', label: 'Block ads and trackers', keywords: 'adblock shield easylist privacy' },
   ...SHORTCUTS.map((s): SettingEntry => ({ section: 'shortcuts', label: s.label, keywords: `keyboard shortcut ${s.keys}` })),
   { section: 'advanced', label: 'Resume playback on launch', keywords: 'restore continue reopen last track start' },
+  { section: 'advanced', label: 'Subtitles on videos', keywords: 'captions cc closed' },
   { section: 'advanced', label: 'YouTube controls on the video', keywords: 'overlay title buttons hover embed' },
 ]
 
