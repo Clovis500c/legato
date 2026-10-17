@@ -40,7 +40,7 @@ and `perf` commit subjects since the previous release (the app's update card sho
 - **Version**: `MAJOR.MINOR` comes from `src-tauri/tauri.conf.json`, the patch number is the number of commits on
   `master` (`scripts/release.mjs`). The files say `0.1.0`; the release says `0.1.109`. For a bigger step, change
   `MAJOR.MINOR` in `tauri.conf.json` (and `package.json`, `Cargo.toml` to match).
-- **No release for a push**: put `[skip release]` in the commit message.
+- **No release for a push**: put `[skip release]` in the commit's first line.
 - **By hand**: Actions › release › Run workflow (releases `master` as it is).
 
 The workflow needs the repository secret `TAURI_SIGNING_PRIVATE_KEY`, the private key made with

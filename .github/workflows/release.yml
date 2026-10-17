@@ -3,7 +3,7 @@ name: release
 # Every push to master that passes `check` is released: signed Windows installer + latest.json on a GitHub release,
 # which the app's updater reads (src-tauri/tauri.conf.json › plugins.updater). Version = MAJOR.MINOR from
 # tauri.conf.json + patch = commits on master (scripts/release.mjs): 0.1.0 in the file, 0.1.109 released.
-# "[skip release]" in the commit message: no release for that push. Run by hand: Actions › release › Run workflow.
+# "[skip release]" in the commit's first line: no release for that push. Run by hand: Actions › release › Run workflow.
 on:
   workflow_run:
     workflows: [check]
@@ -24,11 +24,25 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  release:
+  # First line only: a body that explains the switch (2026-10-17's did) mustn't trip it.
+  gate:
     if: >-
       github.event_name == 'workflow_dispatch' ||
-      (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push' &&
-      !contains(github.event.workflow_run.head_commit.message, '[skip release]'))
+      (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
+    runs-on: ubuntu-latest
+    outputs:
+      go: ${{ steps.subject.outputs.go }}
+    steps:
+      - id: subject
+        env:
+          MESSAGE: ${{ github.event.workflow_run.head_commit.message }}
+        run: |
+          subject=$(printf '%s\n' "$MESSAGE" | head -n 1)
+          if [[ "$subject" == *"[skip release]"* ]]; then echo "go=false" >> "$GITHUB_OUTPUT"; else echo "go=true" >> "$GITHUB_OUTPUT"; fi
+
+  release:
+    needs: gate
+    if: needs.gate.outputs.go == 'true'
     runs-on: windows-latest
     timeout-minutes: 45
     env:
