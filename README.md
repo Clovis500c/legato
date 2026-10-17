@@ -66,7 +66,7 @@ Then connect your services in **Settings › Accounts**:
 |---|---|
 | `pnpm dev` | Run the app with hot reload |
 | `pnpm check` | Type check, lint, tests (Vitest and cargo) and Clippy. Must pass before every commit |
-| `pnpm build` | Build the Windows installer |
+| `pnpm build` | Build the Windows installer (needs cargo-about for its license notices, see [docs/licenses.md](docs/licenses.md)) |
 
 ```
 crates/core         Library model, track matching, SQLite, sync, mixes, sharing
