@@ -9,7 +9,7 @@
   "type": "module",
   "scripts": {
     "dev": "tauri dev",
-    "build": "tauri build",
+    "build": "pnpm notices && tauri build",
     "tauri": "tauri",
     "vite": "vite",
     "typecheck": "tsc --noEmit",
@@ -17,6 +17,7 @@
     "test": "vitest run",
     "test:rust": "cargo test --workspace",
     "check:licenses": "node scripts/licenses.mjs && cargo deny check licenses bans sources",
+    "notices": "node scripts/notices.mjs",
     "check": "pnpm typecheck && pnpm lint && pnpm test && cargo clippy --workspace --all-targets -- -D warnings && cargo test --workspace"
   },
   "dependencies": {

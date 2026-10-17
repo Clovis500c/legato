@@ -5,3 +5,4 @@ dist
 .env*
 /target
 /src-tauri/gen/schemas
+/src-tauri/third-party-licenses.html

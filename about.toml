@@ -1,0 +1,25 @@
+# cargo-about: Rust side of the installer's third-party notices (scripts/notices.mjs, docs/licenses.md).
+# Same licenses as deny.toml › licenses.allow: pnpm check:licenses fails if they differ.
+# Order = pick when a crate offers a choice: fewest duties first.
+accepted = [
+    "MIT-0",
+    "0BSD",
+    "Unlicense",
+    "CC0-1.0",
+    "MIT",
+    "ISC",
+    "Zlib",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "Apache-2.0",
+    "Apache-2.0 WITH LLVM-exception",
+    "Unicode-3.0",
+    "CDLA-Permissive-2.0",
+    "MPL-2.0",
+]
+
+# Dev deps never ship. Build deps kept: macros and build scripts put code in the binary.
+ignore-dev-dependencies = true
+
+# Own crates (publish = false): covered by LICENSE.
+private = { ignore = true }
