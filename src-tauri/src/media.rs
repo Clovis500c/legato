@@ -17,11 +17,13 @@ pub struct NowPlaying {
 }
 
 /// ms → WinRT TimeSpan ticks (100 ns).
+#[cfg(any(windows, test))]
 pub fn ticks(ms: u64) -> i64 {
     i64::try_from(ms).unwrap_or(i64::MAX / 10_000).saturating_mul(10_000)
 }
 
 /// WinRT ticks → ms, negative clamped to 0.
+#[cfg(any(windows, test))]
 pub fn millis(ticks: i64) -> u64 {
     (ticks.max(0) / 10_000) as u64
 }

@@ -17,11 +17,23 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
+  # Windows = the app's platform. Linux and macOS: must build and pass the same checks (app not driven there yet).
   check:
-    runs-on: windows-latest
-    timeout-minutes: 30
+    name: check (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
+
+      # Same list as docs/development.md › Tools.
+      - if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential pkg-config libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev libxdo-dev libssl-dev libasound2-dev libdbus-1-dev
 
       # No "packageManager" in package.json, so pin the major here (drop `version` if one is added).
       - uses: pnpm/action-setup@v4
