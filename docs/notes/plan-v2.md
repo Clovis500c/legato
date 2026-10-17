@@ -15,6 +15,15 @@ Everything still open, gathered from the sections below. Tick a line when it lan
 - [ ] Back up the signing key somewhere safe (lost key = installed copies never update again).
 - [ ] First release: same version in `package.json`, `Cargo.toml`, `tauri.conf.json` (0.1.0 now), push tag `vX.Y.Z`;
       check the release has the installer + `latest.json`, then update a real install from the previous version.
+- [ ] Before the first release: third-party notices in the installer, opened from Settings › About
+      (`docs/licenses.md` › "To do before the first release").
+
+**Repo quality** (2026-10-17, fourth session: user approved these four, in this order)
+- [x] Add to playlist menu: each playlist's sidebar icon (asked mid-batch).
+- [x] LICENSE-AUDIT: `docs/licenses.md`, `deny.toml`, `scripts/licenses.mjs`, `pnpm licenses`, CI job `licenses`.
+- [ ] DOC-OAUTH-ONBOARD: developer setup for Spotify OAuth, YouTube Music session and the keychain.
+- [ ] CI-MATRIX: `check` on Linux and macOS too.
+- [ ] CONNECTOR-TESTS: connector tests that cannot reach the network, plus missing error paths.
 
 **Check live in the real app** (built and unit-tested, never driven for real)
 - [ ] 2026-10-17: add to a YouTube Music playlist from an album page (cause of `STATUS_FAILED` assumed = duplicates);
