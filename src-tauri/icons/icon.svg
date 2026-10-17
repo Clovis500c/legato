@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <!-- Source of every app icon: pnpm tauri icon src-tauri/icons/icon.svg. Sidebar mark: Logo in features/sidebar/Sidebar.tsx. -->
+  <rect width="256" height="256" rx="58" fill="#161614"/>
+  <g fill="none" stroke-width="30" stroke-linecap="round" stroke-linejoin="round" transform="translate(0 -6)">
+    <path d="M84 84 L128 152 L172 84" stroke="#FF6A2E"/>
+    <path d="M58 190 V100 Q58 70 84 84 M172 84 Q198 70 198 100 V190" stroke="#EDEAE4"/>
+  </g>
+</svg>

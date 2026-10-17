@@ -28,6 +28,15 @@ Everything still open, gathered from the sections below. Tick a line when it lan
 - [x] Window comes back where it was closed: same screen, position, size, maximized / full screen (asked mid-batch). `window_place.rs` + tauri-plugin-window-state; driven live on a 3-screen setup (moved, maximized on screen 2, saved bigger than any screen, saved screen gone).
 - [x] Open at startup (asked mid-batch): Settings › Advanced, HKCU Run entry listed in Task Manager › Startup apps, Task Manager's switch respected (`autostart.rs`). Refused in dev builds.
 - [x] CONNECTOR-TESTS: CI runs `pnpm check` behind a dead proxy (no test can reach the network, checked with a probe); new tests: no session, 5xx retry then error, expired session, HTML instead of JSON, parsers on reshuffled answers, oEmbed refusals.
+- [x] Performance (asked after Task Manager showed WebView2 at ~1.3 GB / 23 % CPU in `pnpm dev`): one shared clock for
+      progress bars and times (was one 60 fps re-render loop each), hidden YouTube player at 200x200. Release build,
+      Home while playing: WebView2 CPU 11.3 % → 1.8 %, layouts 225/s → 20/s. Measured over CDP
+      (`WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS=--remote-debugging-port=…`) on a copy with its own identifier.
+- [ ] Performance, next if needed: immersive backdrop drift still restyles ~280 times a second with Now Playing open
+      (cheap, compositor); `pnpm dev` is much heavier than an installed build (React dev mode).
+- [x] Logo and app name (top left) go Home.
+- [x] New logo "Level M" (user's pick of 3): `src-tauri/icons/icon.svg` → every app icon (`pnpm tauri icon`), same M
+      in the sidebar.
 
 **Check live in the real app** (built and unit-tested, never driven for real)
 - [ ] 2026-10-17 (fourth session): Open at startup from an installed copy (Task Manager › Startup apps shows it, its
