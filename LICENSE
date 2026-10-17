@@ -9,23 +9,33 @@ The source code is published so people can read it. It is not open source.
    You may download, install and use Music App, free of charge, for your own
    use.
 
-2. Reusing the code or any part of the app
+2. Changing or reusing the code or any part of the app
    The source code, and any part of the app (code, user interface, design,
    texts, images), may not be copied, modified, published, distributed or
-   reused, in whole or in part, without the author's prior written permission.
+   reused in another project, in whole or in part, without the author's prior
+   written permission. Section 3 is the only exception.
 
-3. Credit
+3. Issues and pull requests
+   Issues and pull requests on the repository above are welcome. You may fork
+   the repository and change the code only to prepare a pull request to it.
+   This does not allow you to use, publish or distribute the changed code in
+   any other way, or to keep a modified version of the app. By opening a pull
+   request, you agree that the author may use, change and publish your
+   contribution as part of Music App under this license.
+
+4. Credit
    When the author gives permission, the reuse must credit the author and link
    to the repository above, in a place where users of the reuse can see it.
 
-4. Anything else
-   Any copy or reuse without the author's written permission, or without the
-   credit required in section 3, infringes the author's copyright.
+5. Anything else
+   Any change, copy or reuse without the author's written permission, outside
+   section 3, or without the credit required in section 4, infringes the
+   author's copyright.
 
-5. Third-party components
+6. Third-party components
    Libraries, fonts and icons bundled with the app keep their own licenses.
 
-6. No warranty
+7. No warranty
    The software is provided "as is", without warranty of any kind. The author
    is not liable for any damage arising from its use.
 

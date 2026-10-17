@@ -81,8 +81,9 @@ More in [docs/](docs/README.md) and [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
-Source-available, not open source. You may use the app for free; copying or reusing any part of it requires the
-author's written permission. See [LICENSE](LICENSE).
+Source-available, not open source. You may use the app for free. Issues and pull requests are welcome; changing the
+code for any other purpose, or reusing any part of it in another project, requires the author's written permission.
+See [LICENSE](LICENSE).
 
 Spotify, YouTube, Apple Music and Discord are trademarks of their respective owners. Service logos come from
 [Simple Icons](https://simpleicons.org) (CC0).
