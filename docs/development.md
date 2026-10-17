@@ -94,3 +94,13 @@ Full reset: delete both keychain entries, the data folder and the webview profil
 Tests use `MemoryStore` (`crates/core/src/model.rs`) instead of the keychain, and every connector takes its base URLs as
 parameters (`with_urls`) so tests point it at a local [mockito](https://docs.rs/mockito) server. No test may reach the
 real network.
+
+CI enforces it: `pnpm check` runs with every proxy variable pointing at a dead port, so a request to anything but
+`127.0.0.1` fails the test that made it. Same thing locally (bash):
+
+```bash
+HTTP_PROXY=http://127.0.0.1:9 HTTPS_PROXY=http://127.0.0.1:9 ALL_PROXY=http://127.0.0.1:9 NO_PROXY=127.0.0.1,localhost cargo test --workspace
+```
+
+The YouTube Music parsers also get reshuffled and broken answers (`parsers_survive_unknown_shapes`): when the unofficial
+API changes, the app shows nothing for that part rather than crashing.

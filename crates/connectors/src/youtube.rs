@@ -88,4 +88,18 @@ mod tests {
         assert_eq!(t.art.as_deref(), Some("https://i.ytimg.com/vi/5NV6Rdv1a3I/hqdefault.jpg"));
         assert!(track_from_link("https://example.com", &s.url()).await.is_err());
     }
+
+    #[tokio::test]
+    async fn refused_or_gone_videos_are_errors() {
+        let mut s = Server::new_async().await;
+        // oEmbed: 401 = private or embedding off, 404 = removed.
+        for (id, status) in [("aaaaaaaaaaa", 401), ("bbbbbbbbbbb", 404)] {
+            s.mock("GET", "/oembed").match_query(Matcher::UrlEncoded("url".into(), format!("https://www.youtube.com/watch?v={id}"))).with_status(status).create_async().await;
+        }
+        let oembed = format!("{}/oembed", s.url());
+        for id in ["aaaaaaaaaaa", "bbbbbbbbbbb"] {
+            let e = track_from_link(&format!("https://youtu.be/{id}"), &oembed).await.unwrap_err();
+            assert!(format!("{e:#}").contains(if id.starts_with('a') { "401" } else { "404" }), "{e:#}");
+        }
+    }
 }

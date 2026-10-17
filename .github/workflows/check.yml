@@ -56,7 +56,16 @@ jobs:
       # tauri::generate_context! needs the frontend build output (dist/) to exist.
       - run: pnpm vite build
 
+      - run: cargo fetch --locked
+
+      # No test may reach the network: anything but loopback goes to a dead proxy (mockito servers are on 127.0.0.1).
       - run: pnpm check
+        env:
+          CARGO_NET_OFFLINE: true
+          HTTP_PROXY: http://127.0.0.1:9
+          HTTPS_PROXY: http://127.0.0.1:9
+          ALL_PROXY: http://127.0.0.1:9
+          NO_PROXY: 127.0.0.1,localhost
 
   # Third-party licenses (docs/licenses.md): interface packages, then every Rust crate on every platform.
   licenses:

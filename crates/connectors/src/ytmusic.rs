@@ -588,4 +588,59 @@ mod tests {
         assert_eq!(yt.playlist_videos("PL1").await.unwrap(), ["v1", "v2"]);
         first.assert_async().await;
     }
+
+    #[test]
+    fn needs_a_signed_in_session() {
+        let Err(e) = YouTubeMusic::with_api("http://127.0.0.1:9", "YSC=x; PREF=f6=8") else { panic!("session without SAPISID") };
+        assert!(e.to_string().contains("Not signed in"), "{e}");
+        assert!(YouTubeMusic::with_api("http://127.0.0.1:9", "__Secure-3PAPISID=abc").is_ok());
+    }
+
+    #[tokio::test]
+    async fn retries_one_server_blip_then_gives_up() {
+        let mut s = Server::new_async().await;
+        // Mockito serves first unsatisfied match: 503 once, then the answer.
+        let blip = s.mock("POST", "/search").match_query(Matcher::Any).with_status(503).expect(1).create_async().await;
+        s.mock("POST", "/search").match_query(Matcher::Any).with_body(json!({ "contents": [row("v1", "A", vec![run("X", None)], None)] }).to_string()).create_async().await;
+        assert_eq!(YouTubeMusic::with_api(&s.url(), COOKIE).unwrap().search_videos("a").await.unwrap().len(), 1);
+        blip.assert_async().await;
+
+        let mut s = Server::new_async().await;
+        let down = s.mock("POST", "/search").match_query(Matcher::Any).with_status(500).with_body("backend down").expect(2).create_async().await;
+        let e = YouTubeMusic::with_api(&s.url(), COOKIE).unwrap().search_videos("a").await.unwrap_err().to_string();
+        assert!(e.contains("search") && e.contains("500") && e.contains("backend down"), "{e}");
+        down.assert_async().await;
+    }
+
+    #[tokio::test]
+    async fn expired_session_and_html_pages_are_errors() {
+        let mut s = Server::new_async().await;
+        s.mock("POST", "/browse").match_query(Matcher::Any).with_status(401).with_body(r#"{"error":{"status":"UNAUTHENTICATED"}}"#).create_async().await;
+        // Consent / sign-in page served as 200.
+        s.mock("POST", "/search").match_query(Matcher::Any).with_header("content-type", "text/html").with_body("<html>Before you continue to YouTube</html>").create_async().await;
+        let yt = YouTubeMusic::with_api(&s.url(), COOKIE).unwrap();
+        let e = yt.playlist_videos("PL1").await.unwrap_err().to_string();
+        assert!(e.contains("401") && e.contains("UNAUTHENTICATED"), "{e}");
+        assert!(yt.search_songs("a").await.is_err());
+    }
+
+    /// Unofficial API: a reshuffled answer gives nothing, never a panic.
+    #[test]
+    fn parsers_survive_unknown_shapes() {
+        let odd = [
+            json!(null),
+            json!({}),
+            json!([]),
+            json!(42),
+            json!({ "contents": { "musicResponsiveListItemRenderer": 5 } }),
+            json!({ "musicResponsiveListItemRenderer": { "flexColumns": "nope", "playlistItemData": { "videoId": 7 } } }),
+            json!({ "musicPlaylistShelfRenderer": [], "continuations": [{ "nextContinuationData": { "continuation": 9 } }] }),
+            json!({ "accountSectionListRenderer": { "contents": [{ "accountItem": { "accountName": 3 } }] } }),
+        ];
+        for v in &odd {
+            assert!(rows(v).is_empty(), "{v}");
+            assert_eq!(playlist_rows(v), (vec![], None), "{v}");
+            assert!(parse_accounts(v).is_empty(), "{v}");
+        }
+    }
 }

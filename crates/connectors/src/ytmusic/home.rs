@@ -270,4 +270,24 @@ mod tests {
         let json = serde_json::to_string(&ListRef::Radio { video_id: Some("v".into()), playlist_id: "RD".into() }).unwrap();
         assert_eq!(json, r#"{"type":"radio","videoId":"v","playlistId":"RD"}"#);
     }
+
+    /// Unofficial API: a reshuffled answer gives nothing, never a panic.
+    #[test]
+    fn parsers_survive_unknown_shapes() {
+        let odd = [
+            json!(null),
+            json!({}),
+            json!([1, "x"]),
+            json!({ "musicCarouselShelfRenderer": { "header": 3, "contents": "nope" } }),
+            json!({ "musicCarouselShelfRenderer": { "header": { "musicCarouselShelfBasicHeaderRenderer": { "title": { "runs": [{ "text": "Quick picks" }] } } }, "contents": [{ "musicTwoRowItemRenderer": [] }] } }),
+            json!({ "playlistPanelVideoRenderer": { "videoId": 5, "title": {} } }),
+            json!({ "sectionListRenderer": { "continuations": [{ "nextContinuationData": { "continuation": [] } }] } }),
+        ];
+        for v in &odd {
+            assert!(shelves(v).is_empty(), "{v}");
+            assert_eq!(more(v), None, "{v}");
+            assert!(panel_tracks(v).is_empty(), "{v}");
+            assert!(album_tracks(v).is_empty(), "{v}");
+        }
+    }
 }

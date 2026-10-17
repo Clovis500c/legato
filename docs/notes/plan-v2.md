@@ -25,7 +25,7 @@ Everything still open, gathered from the sections below. Tick a line when it lan
 - [x] CI-MATRIX: `check` job on windows, ubuntu and macos (`fail-fast: false`). Not run on Linux / macOS until pushed.
 - [x] Window comes back where it was closed: same screen, position, size, maximized / full screen (asked mid-batch). `window_place.rs` + tauri-plugin-window-state; driven live on a 3-screen setup (moved, maximized on screen 2, saved bigger than any screen, saved screen gone).
 - [x] Open at startup (asked mid-batch): Settings › Advanced, HKCU Run entry listed in Task Manager › Startup apps, Task Manager's switch respected (`autostart.rs`). Refused in dev builds.
-- [ ] CONNECTOR-TESTS: connector tests that cannot reach the network, plus missing error paths.
+- [x] CONNECTOR-TESTS: CI runs `pnpm check` behind a dead proxy (no test can reach the network, checked with a probe); new tests: no session, 5xx retry then error, expired session, HTML instead of JSON, parsers on reshuffled answers, oEmbed refusals.
 
 **Check live in the real app** (built and unit-tested, never driven for real)
 - [ ] 2026-10-17: add to a YouTube Music playlist from an album page (cause of `STATUS_FAILED` assumed = duplicates);
