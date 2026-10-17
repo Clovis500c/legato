@@ -1,13 +1,23 @@
 name: release
 
-# Tag vX.Y.Z (same version in package.json, Cargo.toml and tauri.conf.json): signed Windows installer and
-# latest.json on a GitHub release. The app's updater reads latest.json (src-tauri/tauri.conf.json › plugins.updater).
+# Every push to master that passes `check` is released: signed Windows installer + latest.json on a GitHub release,
+# which the app's updater reads (src-tauri/tauri.conf.json › plugins.updater). Version = MAJOR.MINOR from
+# tauri.conf.json + patch = commits on master (scripts/release.mjs): 0.1.0 in the file, 0.1.109 released.
+# "[skip release]" in the commit message: no release for that push. Run by hand: Actions › release › Run workflow.
 on:
-  push:
-    tags: ['v*']
+  workflow_run:
+    workflows: [check]
+    types: [completed]
+    branches: [master]
+  workflow_dispatch:
 
 permissions:
   contents: write
+
+# One at a time, in push order (a newer push replaces one still waiting).
+concurrency:
+  group: release
+  cancel-in-progress: false
 
 env:
   CARGO_INCREMENTAL: 0
@@ -15,10 +25,32 @@ env:
 
 jobs:
   release:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push' &&
+      !contains(github.event.workflow_run.head_commit.message, '[skip release]'))
     runs-on: windows-latest
     timeout-minutes: 45
+    env:
+      # The commit `check` passed on (not master's tip if another push landed since).
+      SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.SHA }}
+          # Patch number = commit count, notes = commits since the last tag: full history and tags.
+          fetch-depth: 0
+
+      # Signing key: repository secret (the private key never goes in the repo). Without it no updater artifacts.
+      - name: Check the signing key
+        shell: bash
+        env:
+          KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+        run: |
+          if [ -z "$KEY" ]; then
+            echo "::error::Repository secret TAURI_SIGNING_PRIVATE_KEY is missing: see CONTRIBUTING.md › Releasing"
+            exit 1
+          fi
 
       - uses: pnpm/action-setup@v4
         with:
@@ -35,6 +67,10 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      - name: Version and notes
+        id: release
+        run: node scripts/release.mjs
+
       # Third-party notices bundled in the installer (docs/licenses.md), from this commit's Cargo.lock and
       # pnpm-lock.yaml. The release build stops if they're missing.
       - uses: taiki-e/install-action@v2
@@ -43,16 +79,16 @@ jobs:
 
       - run: pnpm notices
 
-      # Signing key: repository secrets (the private key never goes in the repo).
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
-          tagName: ${{ github.ref_name }}
-          releaseName: Music App ${{ github.ref_name }}
-          releaseBody: What changed since the last release is in the commits.
+          tagName: v${{ steps.release.outputs.version }}
+          releaseName: Music App v${{ steps.release.outputs.version }}
+          releaseCommitish: ${{ env.SHA }}
+          releaseBody: ${{ steps.release.outputs.notes }}
           releaseDraft: false
           prerelease: false
           updaterJsonPreferNsis: true

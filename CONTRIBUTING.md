@@ -33,13 +33,24 @@ It runs the type check, ESLint, Vitest, Clippy (warnings are errors) and the Rus
 Updates reach users through the built-in updater (`src-tauri/src/update.rs`): it reads `latest.json` from the latest
 GitHub release, downloads in the background and installs once nothing plays.
 
-1. Bump the version in `package.json`, `src-tauri/Cargo.toml` and `src-tauri/tauri.conf.json`.
-2. Commit, then push a tag `vX.Y.Z`: `.github/workflows/release.yml` builds the signed installer and publishes the
-   release with `latest.json`.
+Every push to `master` that passes the `check` workflow becomes a release on its own
+(`.github/workflows/release.yml`): signed installer, `latest.json`, tag `vX.Y.Z`, and notes made of the `feat`, `fix`
+and `perf` commit subjects since the previous release (the app's update card shows them).
 
-The workflow needs two repository secrets: `TAURI_SIGNING_PRIVATE_KEY` (the private key made with
-`pnpm tauri signer generate`) and `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`. The public key is in `tauri.conf.json`. The
-updater downloads anonymously, so releases must be public.
+- **Version**: `MAJOR.MINOR` comes from `src-tauri/tauri.conf.json`, the patch number is the number of commits on
+  `master` (`scripts/release.mjs`). The files say `0.1.0`; the release says `0.1.109`. For a bigger step, change
+  `MAJOR.MINOR` in `tauri.conf.json` (and `package.json`, `Cargo.toml` to match).
+- **No release for a push**: put `[skip release]` in the commit message.
+- **By hand**: Actions › release › Run workflow (releases `master` as it is).
+
+The workflow needs the repository secret `TAURI_SIGNING_PRIVATE_KEY`, the private key made with
+`pnpm tauri signer generate` (`~/.tauri/music-app.key`), plus `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` if that key has a
+password. Without it the release stops at its first step. The public key is in `tauri.conf.json`. The updater downloads
+anonymously, so releases must be public.
+
+```bash
+gh secret set TAURI_SIGNING_PRIVATE_KEY < ~/.tauri/music-app.key
+```
 
 ## Conventions
 
