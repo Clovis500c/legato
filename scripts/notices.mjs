@@ -3,7 +3,8 @@
 // bundled by tauri.conf.json › bundle.resources, opened from Settings › About. Needs cargo-about.
 // Usage: node scripts/notices.mjs [target triple, default = this machine's]
 import { execFileSync, execSync } from 'node:child_process'
-import { readdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 
 const OUT = 'src-tauri/third-party-licenses.html'
@@ -11,13 +12,11 @@ const target = process.argv[2] ?? /^host: (.+)$/m.exec(execFileSync('rustc', ['-
 const { version } = JSON.parse(readFileSync('package.json', 'utf8'))
 
 // --fail: crate whose license can't be read = error, not a silent hole. --locked: must match Cargo.lock.
-const about = JSON.parse(
-  execFileSync('cargo', ['about', 'generate', '--format', 'json', '--locked', '--fail', '--target', target, '-m', 'src-tauri/Cargo.toml'], {
-    encoding: 'utf8',
-    maxBuffer: 1 << 28,
-    stdio: ['ignore', 'pipe', 'inherit'],
-  }),
-)
+// -o file, not stdout: cargo-about refuses a redirected stdout under PowerShell (GitHub's Windows shell).
+const json = join(mkdtempSync(join(tmpdir(), 'notices-')), 'about.json')
+execFileSync('cargo', ['about', 'generate', '--format', 'json', '--locked', '--fail', '--target', target, '-m', 'src-tauri/Cargo.toml', '-o', json], { stdio: ['ignore', 'inherit', 'inherit'] })
+const about = JSON.parse(readFileSync(json, 'utf8'))
+rmSync(dirname(json), { recursive: true })
 const npm = JSON.parse(execSync('pnpm licenses list --prod --json', { encoding: 'utf8', maxBuffer: 1 << 26 }))
 
 /** name@version → { name, version, kind, authors, source, repo, licenses: Set(id) } */
