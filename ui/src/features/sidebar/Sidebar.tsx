@@ -60,9 +60,12 @@ export function Sidebar() {
 
   return (
     <aside className="flex w-63 shrink-0 flex-col gap-5 overflow-y-auto border-r border-line bg-panel px-3 pt-4 pb-3.5">
-      <div data-tauri-drag-region className="flex items-center gap-2.5 px-2">
-        <Logo />
-        <span className="text-[15px] font-bold tracking-tight">Music App</span>
+      {/* Logo and name go Home; the rest of the row still drags the window. */}
+      <div data-tauri-drag-region className="flex items-center px-2">
+        <button onClick={() => go({ name: 'home' })} title="Home" className="flex items-center gap-2.5 rounded-md">
+          <Logo />
+          <span className="text-[15px] font-bold tracking-tight">Music App</span>
+        </button>
       </div>
 
       <label className="flex items-center gap-2 rounded-lg border border-line bg-raised px-2.5 py-1.5 focus-within:border-ink-3">
