@@ -6,7 +6,7 @@ there says third-party components keep their own licenses.
 ## Checks
 
 ```bash
-pnpm licenses
+pnpm check:licenses
 ```
 
 It runs `scripts/licenses.mjs` (the interface's production packages) and `cargo deny check licenses bans sources`

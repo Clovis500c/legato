@@ -16,7 +16,7 @@
     "lint": "eslint .",
     "test": "vitest run",
     "test:rust": "cargo test --workspace",
-    "licenses": "node scripts/licenses.mjs && cargo deny check licenses bans sources",
+    "check:licenses": "node scripts/licenses.mjs && cargo deny check licenses bans sources",
     "check": "pnpm typecheck && pnpm lint && pnpm test && cargo clippy --workspace --all-targets -- -D warnings && cargo test --workspace"
   },
   "dependencies": {
