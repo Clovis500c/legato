@@ -1,7 +1,60 @@
 # Music App v2: plan
 
-Status: **phases 1 to 5, 7 and 8 delivered** (2026-10-16): Hi-Fi redesign, themes, ad shield, custom playlists, local folders, add by YouTube link, Apple Music and YouTube search, one queue for every source with Apple previews, playlist sharing (link, QR, nearby code), local personalized mixes. Phase 6 (polish) under way: shortcuts, media keys, tray done; big round of player and library requests done (see "User requests 2026-10-16 (second session)"). Edit, strike or comment this file directly, or answer in the chat.
+Status: **phases 1 to 8 delivered** (2026-10-17; phase 6 leftovers and live checks in "Still to do" just below). Earlier (2026-10-16): Hi-Fi redesign, themes, ad shield, custom playlists, local folders, add by YouTube link, Apple Music and YouTube search, one queue for every source with Apple previews, playlist sharing (link, QR, nearby code), local personalized mixes. Phase 6 (polish) under way: shortcuts, media keys, tray done; big round of player and library requests done (see "User requests 2026-10-16 (second session)"). Edit, strike or comment this file directly, or answer in the chat.
 Mockups: Figma, file "Bow Game / Music App", page **"Music App v3 — Hi-Fi"**. The v2 "Apple" page is abandoned.
+
+## Still to do (one list, updated 2026-10-17)
+
+Everything still open, gathered from the sections below. Tick a line when it lands; details stay in their section.
+
+**Release and updates** (the updater can't work until these are done)
+- [ ] GitHub secrets `TAURI_SIGNING_PRIVATE_KEY` (contents of `~/.tauri/music-app.key`) and
+      `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` (empty).
+- [ ] Releases readable without sign-in: make the repo public, or publish releases to a separate public repo and change
+      `plugins.updater.endpoints` in `src-tauri/tauri.conf.json`. User's call.
+- [ ] Back up the signing key somewhere safe (lost key = installed copies never update again).
+- [ ] First release: same version in `package.json`, `Cargo.toml`, `tauri.conf.json` (0.1.0 now), push tag `vX.Y.Z`;
+      check the release has the installer + `latest.json`, then update a real install from the previous version.
+
+**Check live in the real app** (built and unit-tested, never driven for real)
+- [ ] 2026-10-17: add to a YouTube Music playlist from an album page (cause of `STATUS_FAILED` assumed = duplicates);
+      YouTube overlay never shows (restart `pnpm dev` first: init script); toasts + Undo / Add anyway; reopen in Now
+      Playing; advanced fade by ear (curves, fade on skip, fade on pause); Home's YouTube Music shelves on a real account
+      (unofficial API, parser may need fixes); Home items not in the library (play, add to library); new mixes after real
+      listening; cache rates in Settings › About; exact restore after an update.
+- [ ] 2026-10-16 (second session): tray menu actions, media keys on a real keyboard, add to a YouTube playlist the user
+      owns, blocked video falling back, Auto on a real music video, resume after a real restart, sort Most played.
+- [ ] 2026-10-16: repeat one / repeat all at a track's end, play next and add to queue, menu actions that write (rename,
+      delete, export, remove from playlist), one-click play, start screen, local file covers, Apple cover backfill,
+      Spotify covers, add another Google account, sign out.
+
+**Phase 6 leftovers**
+- [ ] Performance pass with 50,000 tracks.
+- [ ] Accessibility: AA contrast everywhere, full keyboard navigation.
+- [ ] Media panel off Windows.
+
+**Features not done yet**
+- [ ] Home: show / hide / reorder sections, "Your week" (Phase 1 plan).
+- [ ] Local folders: watch for changes (`notify` crate).
+- [ ] Preview straight from search results (before adding); Spotify previews.
+- [ ] Mixes: genre / year tags (not stored yet), Last.fm "Discoveries" (user's key).
+- [ ] Sharing: remote wormhole words (needs the user's OK on the public relay), webcam QR scanning, `musicapp://` links
+      clicked in a browser (deep-link registration).
+- [ ] Bonus list (pick): smart playlists, listening stats, duplicate finder, related-tracks radio, Last.fm scrobbling,
+      sleep timer, equalizer (local files).
+
+**Spotify** (no keys; user chose link import)
+- [ ] Playlists over 100 tracks (embed limit: only the first 100 come in).
+- [ ] Keep or remove the Spotify app-key path (Settings › Accounts). User's call.
+- [ ] Real playback in the web player window (user signs in first).
+- [ ] Only if the user asks: private playlists and Liked Songs (web session), ad blocking (ToS / account risk first).
+- [ ] Needs paid accounts: Spotify Connect for real (Premium), MusicKit (Apple Developer).
+
+**Housekeeping**
+- [ ] Playlist `trackCount` vs rows mismatch (Workout Mix).
+- [ ] "Music App export test" playlist on YouTube Music: ask before deleting.
+- [ ] Figma mockups still in French.
+- [ ] Local only: `ui/dev/` preview harness (excluded in `.git/info/exclude`), delete when no longer useful.
 
 ## 0. Your decisions (to fill in)
 
@@ -149,8 +202,7 @@ Original plan:
 - Older open items: playlist trackCount vs rows (Workout Mix), "Music App export test" playlist on YouTube Music (ask
   before deleting), add-another-Google-account and sign-out untested live, Figma mockups still in French.
 
-**User requests 2026-10-17 (third session)** — in progress. Work top to bottom, tick each line when committed, so a new
-session can resume here. Phase 6 comes after all of them.
+**User requests 2026-10-17 (third session)** — done (what's left to check live: "Still to do" at the top).
 - [x] Adding to a YouTube Music playlist fails with `STATUS_FAILED` (seen from an album page): find why (duplicate?
       wrong id?), fix, and show the real reason instead of "only playlists you own".
 - [x] YouTube's own overlay (title, share, "More videos", logo) sometimes shows when a song starts and never leaves: never
