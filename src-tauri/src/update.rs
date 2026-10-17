@@ -157,6 +157,8 @@ impl Updater {
         let current = self.status().current;
         save(app, &Saved { pending: Some(Installed { from: current, to: update.version.clone(), at: now() }), last: self.status().last_update });
         self.set(app, State::Installing { version: update.version.clone() });
+        // Windows installer ends the process: no exit event.
+        crate::window_place::save(app);
         if let Err(e) = update.install(&bytes) {
             let message = e.to_string();
             *self.ready.lock().unwrap() = Some((update, bytes));

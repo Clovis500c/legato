@@ -8,6 +8,7 @@ mod spotify_web;
 mod tray;
 mod update;
 mod window_bg;
+mod window_place;
 mod ytm;
 
 use music_connectors::oauth::Opener;
@@ -1116,6 +1117,7 @@ fn system_accent() -> Option<SystemAccent> {
 
 #[tauri::command]
 fn restart_app(app: tauri::AppHandle) {
+    window_place::save(&app);
     app.restart()
 }
 
@@ -1185,6 +1187,7 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
+        .plugin(window_place::plugin())
         .register_asynchronous_uri_scheme_protocol("art", |ctx, req, responder| {
             let app = ctx.app_handle().clone();
             tauri::async_runtime::spawn(async move { responder.respond(art::respond(app, req).await) });
@@ -1213,6 +1216,8 @@ pub fn run() {
             shield::install(&window, shield.clone())?;
             let media = media::Media::install(&window).ok();
             let tray = tray::Tray::install(app.handle()).ok();
+            // Created hidden: shown once back where it was closed.
+            window_place::restore(&window).or_else(|_| window.show())?;
 
             let lists = dir.join("shield");
             let fresh = shield.clone();

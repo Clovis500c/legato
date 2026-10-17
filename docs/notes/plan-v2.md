@@ -23,7 +23,7 @@ Everything still open, gathered from the sections below. Tick a line when it lan
 - [x] LICENSE-AUDIT: `docs/licenses.md`, `deny.toml`, `scripts/licenses.mjs`, `pnpm licenses`, CI job `licenses`.
 - [x] DOC-OAUTH-ONBOARD: `docs/development.md` (tools per system, YouTube Music and Spotify sign-in, keychain, data).
 - [x] CI-MATRIX: `check` job on windows, ubuntu and macos (`fail-fast: false`). Not run on Linux / macOS until pushed.
-- [ ] Window comes back where it was closed: same screen, position, size, maximized / full screen (asked mid-batch).
+- [x] Window comes back where it was closed: same screen, position, size, maximized / full screen (asked mid-batch). `window_place.rs` + tauri-plugin-window-state; driven live on a 3-screen setup (moved, maximized on screen 2, saved bigger than any screen, saved screen gone).
 - [ ] CONNECTOR-TESTS: connector tests that cannot reach the network, plus missing error paths.
 
 **Check live in the real app** (built and unit-tested, never driven for real)
