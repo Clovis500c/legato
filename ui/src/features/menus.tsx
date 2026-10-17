@@ -54,6 +54,7 @@ import { SourceIcon } from '../shared/ui/SourceIcon'
 import type { Addon } from './addons/registry'
 import { isOn, setAddon } from './addons/state'
 import { addToPlaylist, removeFromPlaylist, songs } from './library/edits'
+import { PlaylistCover as PlaylistIcon } from './library/PlaylistCover'
 import { primaryArtist } from './library/filter'
 import { isFull, viaLabel, vias } from './player/sources'
 import { isRemote, nowTrack, usePlayer } from './player/store'
@@ -115,7 +116,7 @@ const setHidden = (key: string, hide: boolean) => {
   useSettings.getState().update({ hiddenPlaylists: hide ? [...keys, key] : keys })
 }
 
-/** "Add to playlist ›": a new one, your playlists, then your YouTube Music ones (added there too). Hidden ones left out. */
+/** "Add to playlist ›": a new one, your playlists, then your YouTube Music ones (added there too), each with its sidebar icon. Hidden ones left out. */
 function addTo(tracks: () => LibraryTrack[] | Promise<LibraryTrack[]>): MenuEntry {
   const add = async (id: number) => addToPlaylist(id, (await tracks()).map((t) => t.id))
   const addYoutube = async (p: LibraryPlaylist) => {
@@ -151,9 +152,9 @@ function addTo(tracks: () => LibraryTrack[] | Promise<LibraryTrack[]>): MenuEntr
         },
       },
       '-',
-      ...shown.filter((p) => p.custom).map((p) => ({ label: p.name, icon: <Playlist size={16} />, onSelect: () => void add(p.id) })),
+      ...shown.filter((p) => p.custom).map((p) => ({ label: p.name, icon: <PlaylistIcon p={p} size={16} />, onSelect: () => void add(p.id) })),
       youtube.length > 0 && '-',
-      ...youtube.map((p) => ({ label: p.name, icon: <SourceIcon source="youtube" size={14} />, onSelect: () => void addYoutube(p) })),
+      ...youtube.map((p) => ({ label: p.name, icon: <PlaylistIcon p={p} size={16} />, onSelect: () => void addYoutube(p) })),
     ],
   }
 }
