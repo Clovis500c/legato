@@ -38,6 +38,7 @@ export const SETTINGS_INDEX: SettingEntry[] = [
   { section: 'about', label: 'Automatic updates', keywords: 'update version upgrade install new release' },
   { section: 'about', label: 'App status', keywords: 'stats cache memory songs playlists listens' },
   { section: 'about', label: 'About', keywords: 'version license github source privacy' },
+  { section: 'about', label: 'Third-party licenses', keywords: 'open source credits notices attribution copyright mit apache mpl fonts' },
   { section: 'advanced', label: 'Advanced fade', keywords: 'fade curve crossfade graph volume shape equal power exponential logarithmic s-curve dj' },
   { section: 'advanced', label: 'Fade in after a skip', keywords: 'fade manual next pick' },
   { section: 'advanced', label: 'Fade on pause and play', keywords: 'fade pause unpause smooth glide' },

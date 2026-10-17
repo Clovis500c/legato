@@ -9,6 +9,7 @@ describe('settings search', () => {
     expect(labels('crossfade')).toContain('Fade between songs')
     expect(labels('resume')).toEqual(['Resume playback on launch'])
     expect(labels('google playlists')).toEqual(['YouTube Music'])
+    expect(labels('credits')).toEqual(['Third-party licenses'])
     expect(labels('zzz')).toEqual([])
     expect(labels('  ')).toEqual([])
   })

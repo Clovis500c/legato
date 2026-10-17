@@ -71,7 +71,7 @@ function Stat({ value, name }: { value: string; name: string }) {
 export function AboutSection() {
   const { settings: s, update } = useSettings()
   const status = useUpdate((u) => u.status)
-  const { tracks, playlists, stats } = useStore()
+  const { tracks, playlists, stats, notify } = useStore()
   const [cache, setCache] = useState<CacheStats>()
   useEffect(() => {
     const load = () =>
@@ -155,6 +155,11 @@ export function AboutSection() {
           <Row label="Source code" sub="Source-available: free to use, not to copy. Built with Tauri 2, Rust and React.">
             <Button variant="ghost" onClick={() => void openUrl(REPO).catch(() => {})}>
               <ArrowSquareOut size={14} /> GitHub
+            </Button>
+          </Row>
+          <Row label="Third-party licenses" sub="The open-source components the app is built on: their licenses, copyright notices and source links.">
+            <Button variant="ghost" onClick={() => void api.openLicenses().catch(() => notify('Couldn’t open the licenses file', { kind: 'error' }))}>
+              <ArrowSquareOut size={14} /> Open
             </Button>
           </Row>
           <Row label="Privacy" sub="No server, no account of ours: your library, history and settings stay on this PC." />

@@ -299,6 +299,8 @@ export const api = {
   /** Track id → [listens, last start]: Most played / Recently played. */
   playStats: () => invoke<Record<number, [number, number]>>('play_stats'),
   cacheStats: () => invoke<CacheStats>('cache_stats'),
+  /** Third-party notices shipped with the app, in the default browser. */
+  openLicenses: () => invoke<void>('open_licenses'),
   updateStatus: () => invoke<UpdateStatus>('update_status'),
   updateCheck: () => invoke<void>('update_check'),
   updateInstall: () => invoke<void>('update_install'),
