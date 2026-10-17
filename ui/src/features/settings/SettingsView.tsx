@@ -470,6 +470,27 @@ function Slider({ label, value, max, onChange }: { label: string; value: number;
   return <input type="range" aria-label={label} min={0} max={max} step={1} value={value} onChange={(e) => onChange(+e.target.value)} className="bar w-40" style={{ backgroundImage: `linear-gradient(to right, var(--ink) ${(value / max) * 100}%, var(--line) 0)` }} />
 }
 
+/** Lives in Windows, not in settings: read on open, so a switch flipped in Task Manager shows here too. Hidden elsewhere. */
+function OpenAtStartup() {
+  const [on, setOn] = useState<boolean | null>(null)
+  useEffect(() => {
+    api.autostart().then(setOn, () => setOn(null))
+  }, [])
+  if (on === null) return null
+  const change = (v: boolean) => {
+    setOn(v)
+    api.setAutostart(v).catch((e) => {
+      setOn(!v)
+      useStore.getState().notify(String(e), { kind: 'error' })
+    })
+  }
+  return (
+    <Row label="Open at startup" sub="Opens when you sign in to Windows. Also in Task Manager › Startup apps">
+      <Toggle label="Open at startup" checked={on} onChange={change} />
+    </Row>
+  )
+}
+
 function AdvancedSection() {
   const { settings: s, update } = useSettings()
   const playing = usePlayer((p) => !!p.now)
@@ -520,6 +541,7 @@ function AdvancedSection() {
         </div>
       </Group>
       <div className="rounded-xl border border-line bg-raised">
+        <OpenAtStartup />
         <Row label="Reopen where you left off" sub="Same screen as when the app closed, Now Playing open if it was">
           <Toggle label="Reopen where you left off" checked={s.reopen} onChange={(reopen) => update({ reopen })} />
         </Row>

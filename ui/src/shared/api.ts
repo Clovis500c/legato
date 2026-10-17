@@ -291,6 +291,9 @@ export const api = {
   /** Windows accent (light / dark theme variants); null off Windows. */
   systemAccent: () => invoke<SystemAccent | null>('system_accent'),
   restartApp: () => invoke<void>('restart_app'),
+  /** Opens at sign-in: Windows' startup list (Task Manager › Startup apps), read live. null off Windows. */
+  autostart: () => invoke<boolean | null>('autostart'),
+  setAutostart: (on: boolean) => invoke<void>('set_autostart', { on }),
   /** Other uploads of the same song when the video refuses embedding (101 / 150), best first. */
   alternativeVideos: (trackId: number, exclude: string[]) => invoke<string[]>('alternative_videos', { trackId, exclude }),
   /** Track id → [listens, last start]: Most played / Recently played. */

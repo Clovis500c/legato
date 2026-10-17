@@ -1,4 +1,5 @@
 mod art;
+mod autostart;
 mod discord;
 mod media;
 mod secrets;
@@ -1121,6 +1122,17 @@ fn restart_app(app: tauri::AppHandle) {
     app.restart()
 }
 
+/// Opens at sign-in. None off Windows (setting hidden).
+#[tauri::command]
+fn autostart() -> Option<bool> {
+    autostart::get()
+}
+
+#[tauri::command]
+fn set_autostart(on: bool) -> CmdResult<()> {
+    autostart::set(on).map_err(err)
+}
+
 /// Discord Rich Presence add-on: track to show (None = nothing, e.g. paused), under the user's Discord application.
 #[tauri::command]
 fn discord_presence(state: State<'_, AppState>, client_id: String, presence: Option<music_connectors::discord::Presence>) {
@@ -1239,7 +1251,7 @@ pub fn run() {
             update::spawn(app.handle().clone());
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, add_track, backfill_art, find_versions, play_preview, share_playlist, share_preview, share_read_image, share_import, nearby_send, nearby_status, nearby_stop, nearby_receive, record_play, mixes, set_track_pref, clear_history, export_youtube, spotify_player, spotify_playback, ytm_sign_in, ytm_sign_out, spotify_web_open, spotify_web_status, import_spotify_link, ytm_accounts, set_ytm_accounts, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, system_accent, restart_app, media_update, load_session, save_session, add_to_youtube, playlist_orders, save_cover, export_cover, alternative_videos, play_stats, cache_stats, update_status, update_check, update_install, ytm_home, ytm_list, discord_presence, discord_off, discord_status])
+        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, add_track, backfill_art, find_versions, play_preview, share_playlist, share_preview, share_read_image, share_import, nearby_send, nearby_status, nearby_stop, nearby_receive, record_play, mixes, set_track_pref, clear_history, export_youtube, spotify_player, spotify_playback, ytm_sign_in, ytm_sign_out, spotify_web_open, spotify_web_status, import_spotify_link, ytm_accounts, set_ytm_accounts, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, system_accent, restart_app, autostart, set_autostart, media_update, load_session, save_session, add_to_youtube, playlist_orders, save_cover, export_cover, alternative_videos, play_stats, cache_stats, update_status, update_check, update_install, ytm_home, ytm_list, discord_presence, discord_off, discord_status])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

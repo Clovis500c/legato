@@ -23,6 +23,9 @@ the media panel, the ad shield's network hook and the system accent are Windows 
 `pnpm dev` runs with the same identifier as an installed copy (`dev.musicapp.desktop`), so it reads and writes the same
 library, the same keychain entries and the same Google session. Copy `library.db` before trying risky changes.
 
+Two things only an installed copy does: Settings › Advanced › Open at startup refuses to turn on (a dev build would
+start at sign-in without its dev server), and background update checks only run when asked (Settings › About).
+
 | What | Windows | macOS | Linux |
 |---|---|---|---|
 | Library (`library.db`), cover cache (`art/`), shield lists (`shield/`) | `%APPDATA%\dev.musicapp.desktop` | `~/Library/Application Support/dev.musicapp.desktop` | `~/.local/share/dev.musicapp.desktop` |

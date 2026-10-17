@@ -28,6 +28,7 @@ tauri-plugin-window-state = "2.5.0"
 [target.'cfg(windows)'.dependencies]
 webview2-com = "0.39.1"
 windows = { version = "0.62.2", features = ["UI_ViewManagement", "Media", "Storage_Streams", "Win32_Foundation", "Win32_System_WinRT", "Win32_UI_WindowsAndMessaging", "Foundation"] }
+windows-registry = "0.6.1"
 
 [build-dependencies]
 tauri-build = { version = "2.7.3", features = [] }
