@@ -8,6 +8,7 @@ import { AlbumsView, AlbumView, ArtistsView, ArtistView, PlaylistView, SongsView
 import { appMenu } from '../features/menus'
 import { AddonsView } from '../features/addons/AddonsView'
 import { startDiscord } from '../features/addons/discord'
+import { startUpdates } from '../features/update/updates'
 import { startMedia } from '../features/player/media'
 import { resumeSession, startSessionSaving } from '../features/player/session'
 import { MiniPlayer } from '../features/player/MiniPlayer'
@@ -111,10 +112,17 @@ export function App() {
   useEffect(() => {
     const settings = useSettings.getState().load()
     const library = refresh()
-    // Settings and library both needed: resume flag, and the saved queue's tracks.
-    void Promise.all([settings, library])
-      .then(() => resumeSession(useSettings.getState().settings.resume))
-      .then(() => useSettings.getState().settings.reopen && restoreScreen())
+    // Settings and library both needed: resume flag, and the saved queue's tracks. First launch after an update:
+    // everything back as it was (queue, paused or not, screen), whatever the resume settings.
+    const updated = api.updateStatus().catch(() => null)
+    void Promise.all([settings, library, updated])
+      .then(async ([, , u]) => {
+        const exact = !!u?.justUpdated
+        const s = useSettings.getState().settings
+        await resumeSession(s.resume, exact)
+        if (s.reopen || exact) restoreScreen()
+        if (exact && u?.lastUpdate) useStore.getState().notify(`Updated to ${u.lastUpdate.to}`, { action: { label: 'What’s new', run: () => useStore.getState().go({ name: 'settings', section: 'about' }) } })
+      })
       .catch(() => {})
     void library
       .then(() => api.backfillArt(region()))
@@ -126,6 +134,7 @@ export function App() {
   useEffect(() => startMedia(), [])
   useEffect(() => startShortcuts(), [])
   useEffect(() => startDiscord(), [])
+  useEffect(() => startUpdates(), [])
 
   // Ctrl+V outside text fields: share code → import, Spotify playlist / album → import, YouTube link → library.
   useEffect(() => {

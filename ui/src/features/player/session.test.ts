@@ -14,7 +14,13 @@ describe('session', () => {
 
   it('round trip gives the same queue, position and volume', () => {
     const s = JSON.parse(JSON.stringify(snapshot(player)))
-    expect(restore(s, lib)).toEqual({ volume: 0.4, queue: { list: lib, index: 2, order: [2, 0, 3, 1], shuffle: true, repeat: 'all', positionMs: 61_235, via: 'youtube' } })
+    expect(restore(s, lib)).toEqual({ volume: 0.4, queue: { list: lib, index: 2, order: [2, 0, 3, 1], shuffle: true, repeat: 'all', positionMs: 61_235, via: 'youtube', paused: false } })
+  })
+
+  it('remembers a pause (an update relaunch comes back paused)', () => {
+    const s = JSON.parse(JSON.stringify(snapshot({ ...player, playing: false })))
+    expect(restore(s, lib)?.queue?.paused).toBe(true)
+    expect(restore(snapshot({ ...player, playing: true }), lib)?.queue?.paused).toBe(false)
   })
 
   it('tracks deleted since are dropped, order rebuilt', () => {

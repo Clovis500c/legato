@@ -64,6 +64,14 @@ src-tauri/              thin shell: commands, keychain, WebView2 hook, media pan
 - YouTube plays in one persistent embedded player that switches videos instead of reloading.
 - Playback state is saved and restored on launch (`session.ts`), as is the last screen (`app/screen.ts`).
 
+## Updates
+
+`src-tauri/src/update.rs` with `tauri-plugin-updater`: checked 20 s after launch and every 6 hours (release builds),
+downloaded in the background, signature checked against the public key in `tauri.conf.json`. The interface
+(`features/update/updates.ts`) installs it at a quiet moment: nothing played for 15 s and no input for a minute. The
+installer runs silently and starts the app again, which reopens as it was (queue, position, paused or not, screen).
+Settings › About shows the version, the update state and the app's caches.
+
 ## Add-ons
 
 Optional built-in features, listed in `ui/src/features/addons/registry.ts` with their author and a verified mark, and

@@ -1,4 +1,4 @@
-import { ArrowCounterClockwise, Check, CheckCircle, ClipboardText, Copy, Keyboard, MagnifyingGlass, PaintBrush, Palette as PaletteIcon, Plugs, Plus, ShieldCheck, Sliders, Trash, WarningCircle } from '@phosphor-icons/react'
+import { ArrowCounterClockwise, Check, CheckCircle, Info, ClipboardText, Copy, Keyboard, MagnifyingGlass, PaintBrush, Palette as PaletteIcon, Plugs, Plus, ShieldCheck, Sliders, Trash, WarningCircle } from '@phosphor-icons/react'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { useSettings } from '../../app/settings'
 import { SHORTCUTS } from '../../app/shortcuts'
@@ -12,6 +12,7 @@ import { PageHeader } from '../../shared/ui/PageHeader'
 import { curveLabels } from '../player/fade'
 import { usePlayer } from '../player/store'
 import { SourcesView } from '../sources/SourcesView'
+import { AboutSection } from './AboutSection'
 import { FadeEditor } from './FadeEditor'
 import { CountsScene, CoverShapes, DensityScene, FadeScene, ListCoversScene, MiniPlayerScene, MixCoverScene, MotionScene, NowPlayingScene, SourceIconScene, TunerScene, VolumeScene } from './previews'
 import { searchSettings, type SettingEntry } from './search'
@@ -23,6 +24,7 @@ const sections: { id: SettingsSection; label: string; icon: ReactNode }[] = [
   { id: 'shield', label: 'Shield', icon: <ShieldCheck size={15} /> },
   { id: 'shortcuts', label: 'Shortcuts', icon: <Keyboard size={15} /> },
   { id: 'advanced', label: 'Advanced', icon: <Sliders size={15} /> },
+  { id: 'about', label: 'About', icon: <Info size={15} /> },
 ]
 
 function Group({ title, hint, children }: { title: string; hint?: string; children: ReactNode }) {
@@ -598,6 +600,7 @@ export function SettingsView({ section }: { section: SettingsSection }) {
           {section === 'shield' && <ShieldSection />}
           {section === 'shortcuts' && <ShortcutsSection />}
           {section === 'advanced' && <AdvancedSection />}
+          {section === 'about' && <AboutSection />}
         </div>
       </div>
     </>

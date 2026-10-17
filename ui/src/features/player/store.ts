@@ -42,6 +42,8 @@ interface PlayerState {
   fadeIn: boolean
   /** Where the current item started (resume), ms. */
   startAt: number
+  /** Restored paused (after an update): the first item loads without playing. */
+  hold: boolean
   toggleShuffle: () => void
   /** off → all → one → off. */
   cycleRepeat: () => void
@@ -57,9 +59,9 @@ interface PlayerState {
   /** Drops list index `i` from the play order. */
   dequeue: (i: number) => void
   /** Queue item `index` through `via` (default: best source). auto = previous one ended; from = start position, ms. */
-  playAt: (index: number, via?: Via, opts?: { auto?: boolean; from?: number }) => Promise<void>
+  playAt: (index: number, via?: Via, opts?: { auto?: boolean; from?: number; hold?: boolean }) => Promise<void>
   /** Last session's queue, picked up where it stopped. */
-  resume: (s: { list: LibraryTrack[]; index: number; order: number[]; shuffle: boolean; repeat: Repeat; positionMs: number; via?: Via }) => void
+  resume: (s: { list: LibraryTrack[]; index: number; order: number[]; shuffle: boolean; repeat: Repeat; positionMs: number; via?: Via; paused?: boolean }) => void
   /** Plays a song change on the current song: fade out, silence, fade in (curve editor's Try it). */
   previewFade: () => void
   /** Sends volume × fade to whatever plays. force = even if unchanged. */
@@ -186,6 +188,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
   fade: NO_FADE,
   fadeIn: false,
   startAt: 0,
+  hold: false,
   upcoming: [],
   full: false,
   setFull: (full) => set({ full }),
@@ -218,13 +221,13 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     set({ repeat })
   },
 
-  resume({ list, index, order, shuffle, repeat, positionMs, via }) {
+  resume({ list, index, order, shuffle, repeat, positionMs, via, paused = false }) {
     const valid = order.length === list.length && order.includes(index)
     set({ list, shuffle, repeat, order: valid ? order : playOrder(list.length, index, shuffle) })
-    void get().playAt(index, via, { from: positionMs })
+    void get().playAt(index, via, { from: positionMs, hold: paused })
   },
 
-  async playAt(index, via, { auto = false, from = 0 } = {}) {
+  async playAt(index, via, { auto = false, from = 0, hold = false } = {}) {
     const { list } = get()
     // Fresh row: sources may have changed since the queue was built (Find versions).
     const t = useStore.getState().tracks.find((x) => x.id === list[index]?.id) ?? list[index]
@@ -238,7 +241,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     const base: NowPlaying = { title: t.title, artist: t.artist, trackId: t.id, via: how }
     // Preview: 30 s from Apple, no resume point.
     const start = how === 'preview' ? 0 : from
-    set({ index, playing: true, positionMs: start, startAt: start, durationMs: t.durationMs, upcoming: [], fadeIn: (auto || get().fade.skip) && get().fade.in > 0 })
+    set({ index, playing: !hold, hold, positionMs: start, startAt: start, durationMs: t.durationMs, upcoming: [], fadeIn: (auto || get().fade.skip) && get().fade.in > 0 })
     sent = -1
 
     if (how === 'youtube') {
@@ -262,6 +265,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
       expect = paths
       send({ type: 'play', paths, start: 0 })
       if (start) send({ type: 'seek', ms: start })
+      if (hold) send({ type: 'toggle' })
       set({ now: { ...base, path: t.ids.local } })
       return get().applyVolume(true)
     }
@@ -269,6 +273,8 @@ export const usePlayer = create<PlayerState>((set, get) => ({
       expect = []
       send({ type: 'stop' })
       set({ now: { ...base, spotifyId: t.ids.spotify } })
+      // Held: shown, not started (Spotify plays on the user's own app).
+      if (hold) return
       try {
         await api.spotifyPlayer({ type: 'play', trackId: t.ids.spotify! })
         if (start) void spotify({ type: 'seek', ms: Math.round(start) })
@@ -311,6 +317,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
   toggle() {
     const { now, playing, fade } = get()
     if (!now) return
+    set({ hold: false })
     const pause = () => {
       if (now.via === 'youtube') yt(playing ? 'pauseVideo' : 'playVideo')
       else if (now.via === 'spotify') void spotify({ type: playing ? 'pause' : 'resume' })

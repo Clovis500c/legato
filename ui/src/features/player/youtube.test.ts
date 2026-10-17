@@ -37,6 +37,7 @@ describe('embedUrl', () => {
 
   it('starts at a whole second, never for less than one', () => {
     expect(embedUrl('x', origin, { start: 61.8 })).toContain('&start=61&')
+    expect(embedUrl('x', origin, { autoplay: false })).toContain('autoplay=0')
     expect(embedUrl('x', origin, { start: 0.4 })).not.toContain('start=')
   })
 })

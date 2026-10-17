@@ -170,7 +170,7 @@ session can resume here. Phase 6 comes after all of them.
 - [x] Home: quick access to every section + recommendations (local mixes, then the connected services' own
       recommendations: YouTube Music home feed, Spotify if possible). Spotify: its recommendations API is closed to new
       apps since November 2024, so YouTube Music only.
-- [ ] Phase 6: auto-updates in the background, never cutting playback, install and relaunch at once (resume where it
+- [x] Phase 6: auto-updates in the background, never cutting playback, install and relaunch at once (resume where it
       was); Settings › About: version, last update, update status.
 
 **Phase 6: polish** (M) — started 2026-10-16
@@ -180,7 +180,11 @@ session can resume here. Phase 6 comes after all of them.
 - Done after: tray icon (track, play/pause, next, previous, show, quit), seek bar in the Windows panel (checked live:
   position and length read back from Windows' session list).
 - Not done: media panel off Windows.
-- Auto-updates (`tauri-plugin-updater`, requires signing the app), installer, performance (50,000 tracks), accessibility (AA contrast, keyboard navigation).
+- Done 2026-10-17: auto-updates (`tauri-plugin-updater`, background download, silent install at a quiet moment, exact
+  restore), Settings › About (version, updates, app status, caches), release workflow on `v*` tags. Signing key made
+  on the dev PC (`~/.tauri/music-app.key`, not in the repo). To publish: add the two signing secrets on GitHub and make
+  releases public (the repo is private: the updater can't read private releases).
+- Not done: performance pass (50,000 tracks), accessibility (AA contrast, keyboard navigation).
 
 **User requests 2026-10-16 (second session, user testing live)** — done, unit-tested, mostly seen in the running app:
 - Player: bare YouTube video (official `controls=0` & co, no hover; option in Advanced), subtitles off by default,

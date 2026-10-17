@@ -6,6 +6,7 @@ mod secrets;
 mod shield;
 mod spotify_web;
 mod tray;
+mod update;
 mod window_bg;
 mod ytm;
 
@@ -984,6 +985,24 @@ fn playlist_orders(state: State<AppState>) -> CmdResult<Response> {
     Ok(json(answer))
 }
 
+/// Settings › About: version, last update, what the updater is doing.
+#[tauri::command]
+fn update_status(updater: State<update::Updater>) -> update::Status {
+    updater.status()
+}
+
+/// Check now (Settings › About). Runs in the background; progress comes as `update` events.
+#[tauri::command]
+fn update_check(app: tauri::AppHandle) {
+    tauri::async_runtime::spawn(async move { app.state::<update::Updater>().check(&app).await });
+}
+
+/// Install the downloaded update: the app closes and starts again (UI asks when nothing plays, or the user does).
+#[tauri::command]
+fn update_install(app: tauri::AppHandle, updater: State<update::Updater>) -> CmdResult<()> {
+    updater.install(&app)
+}
+
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 struct CacheStats {
@@ -1165,6 +1184,7 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .register_asynchronous_uri_scheme_protocol("art", |ctx, req, responder| {
             let app = ctx.app_handle().clone();
             tauri::async_runtime::spawn(async move { responder.respond(art::respond(app, req).await) });
@@ -1209,9 +1229,12 @@ pub fn run() {
             });
 
             app.manage(AppState { app: app.handle().clone(), lib: Mutex::new(lib), store: Arc::new(secrets::KeyringStore::new(&app.config().identifier)), open, player: Player::spawn(), shield, art: music_connectors::art::ArtCache::new(dir.join("art"), 300 << 20), cache: Caches::default(), nearby: Arc::new(Mutex::new(NearbyState::Idle)), nearby_task: Mutex::default(), media, media_last: Mutex::default(), tray, discord: discord::Discord::spawn() });
+            // Reads the library's settings: after AppState.
+            app.manage(update::Updater::new(app.handle()));
+            update::spawn(app.handle().clone());
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, add_track, backfill_art, find_versions, play_preview, share_playlist, share_preview, share_read_image, share_import, nearby_send, nearby_status, nearby_stop, nearby_receive, record_play, mixes, set_track_pref, clear_history, export_youtube, spotify_player, spotify_playback, ytm_sign_in, ytm_sign_out, spotify_web_open, spotify_web_status, import_spotify_link, ytm_accounts, set_ytm_accounts, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, system_accent, restart_app, media_update, load_session, save_session, add_to_youtube, playlist_orders, save_cover, export_cover, alternative_videos, play_stats, cache_stats, ytm_home, ytm_list, discord_presence, discord_off, discord_status])
+        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, add_track, backfill_art, find_versions, play_preview, share_playlist, share_preview, share_read_image, share_import, nearby_send, nearby_status, nearby_stop, nearby_receive, record_play, mixes, set_track_pref, clear_history, export_youtube, spotify_player, spotify_playback, ytm_sign_in, ytm_sign_out, spotify_web_open, spotify_web_status, import_spotify_link, ytm_accounts, set_ytm_accounts, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, system_accent, restart_app, media_update, load_session, save_session, add_to_youtube, playlist_orders, save_cover, export_cover, alternative_videos, play_stats, cache_stats, update_status, update_check, update_install, ytm_home, ytm_list, discord_presence, discord_off, discord_status])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

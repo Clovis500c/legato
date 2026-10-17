@@ -6,10 +6,10 @@ export const YT_ORIGIN = 'https://www.youtube.com'
  * controls false = YouTube's documented player parameters for a bare video: no control bar, no related videos from
  * other channels, no annotations, no fullscreen button, no player keyboard (our shortcuts do it). start = seconds.
  */
-export function embedUrl(videoId: string, origin: string, { controls = false, start = 0 }: { controls?: boolean; start?: number } = {}) {
+export function embedUrl(videoId: string, origin: string, { controls = false, start = 0, autoplay = true }: { controls?: boolean; start?: number; autoplay?: boolean } = {}) {
   const bare = controls ? '' : '&controls=0&rel=0&iv_load_policy=3&fs=0&disablekb=1'
   const at = start >= 1 ? `&start=${Math.floor(start)}` : ''
-  return `${YT_ORIGIN}/embed/${encodeURIComponent(videoId)}?enablejsapi=1&autoplay=1&playsinline=1${bare}${at}&origin=${encodeURIComponent(origin)}`
+  return `${YT_ORIGIN}/embed/${encodeURIComponent(videoId)}?enablejsapi=1&autoplay=${autoplay ? 1 : 0}&playsinline=1${bare}${at}&origin=${encodeURIComponent(origin)}`
 }
 
 export function ytPost(frame: HTMLIFrameElement | null, event: 'listening' | 'command', func?: string, args: unknown[] = []) {

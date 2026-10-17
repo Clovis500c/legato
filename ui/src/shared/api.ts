@@ -1,4 +1,5 @@
 import { invoke } from '@tauri-apps/api/core'
+import { listen } from '@tauri-apps/api/event'
 import type { Box } from './artbox'
 import type { SystemAccent } from './theme/theme'
 
@@ -67,6 +68,17 @@ export interface HomeItem {
 export interface Shelf {
   title: string
   items: HomeItem[]
+}
+
+/** src-tauri update::Status: what the background updater is doing. */
+export type UpdateState = { state: 'idle' | 'checking' | 'upToDate' } | { state: 'downloading'; version: string; percent: number } | { state: 'ready'; version: string; notes: string | null } | { state: 'installing'; version: string } | { state: 'error'; message: string }
+export type UpdateStatus = UpdateState & {
+  current: string
+  /** Unix seconds. */
+  lastCheck: number | null
+  lastUpdate: { from: string; to: string; at: number } | null
+  /** First launch after an update. */
+  justUpdated: boolean
 }
 
 /** crates/core cache::Stats, per cache (Settings › About). */
@@ -284,6 +296,10 @@ export const api = {
   /** Track id → [listens, last start]: Most played / Recently played. */
   playStats: () => invoke<Record<number, [number, number]>>('play_stats'),
   cacheStats: () => invoke<CacheStats>('cache_stats'),
+  updateStatus: () => invoke<UpdateStatus>('update_status'),
+  updateCheck: () => invoke<void>('update_check'),
+  updateInstall: () => invoke<void>('update_install'),
+  onUpdate: (cb: (s: UpdateStatus) => void) => listen<UpdateStatus>('update', (e) => cb(e.payload)),
   /** Track ids of every playlist, in order (covers). */
   playlistOrders: () => invoke<Record<number, number[]>>('playlist_orders'),
   /** Picked image copied into the app; returns its name for the art scheme (cover/<name>). */

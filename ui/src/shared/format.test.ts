@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { fileName, spotifyList } from './format'
+import { fileName, formatBytes, spotifyList, timeAgo } from './format'
 
 describe('spotifyList', () => {
   it('spots playlist and album links only', () => {
@@ -17,5 +17,14 @@ describe('fileName', () => {
     expect(fileName(String.raw`a\b|c*` + '\u0007 ...')).toBe('abc')
     expect(fileName('???')).toBe('cover')
     expect(fileName('x'.repeat(300))).toHaveLength(120)
+  })
+})
+
+describe('timeAgo and formatBytes', () => {
+  it('counts days past a day, bytes read as KB / MB', () => {
+    expect(timeAgo(0, 3 * 86_400_000)).toBe('3 days ago')
+    expect(formatBytes(512)).toBe('512 B')
+    expect(formatBytes(2048)).toBe('2 KB')
+    expect(formatBytes(5 * 1024 * 1024)).toBe('5.0 MB')
   })
 })

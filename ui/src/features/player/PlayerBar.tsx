@@ -40,7 +40,8 @@ function YouTubeFrame({ videoId }: { videoId: string }) {
   const frame = useRef<HTMLIFrameElement | null>(null)
   const ready = useRef(false)
   // First video and options at mount: changing src later would reload the embed.
-  const [src] = useState(() => ({ first: videoId, controls: useSettings.getState().settings.youtubeControls, start: usePlayer.getState().startAt / 1000 }))
+  // hold = restored paused (after an update): cued, not playing.
+  const [src] = useState(() => ({ first: videoId, controls: useSettings.getState().settings.youtubeControls, start: usePlayer.getState().startAt / 1000, autoplay: !usePlayer.getState().hold }))
   const shown = useRef(videoId)
   const captionsOff = useRef<string | null>(null)
   useEffect(() => {

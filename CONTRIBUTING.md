@@ -23,6 +23,19 @@ pnpm check
 
 It runs the type check, ESLint, Vitest, Clippy (warnings are errors) and the Rust tests. Everything must pass.
 
+## Releasing
+
+Updates reach users through the built-in updater (`src-tauri/src/update.rs`): it reads `latest.json` from the latest
+GitHub release, downloads in the background and installs once nothing plays.
+
+1. Bump the version in `package.json`, `src-tauri/Cargo.toml` and `src-tauri/tauri.conf.json`.
+2. Commit, then push a tag `vX.Y.Z`: `.github/workflows/release.yml` builds the signed installer and publishes the
+   release with `latest.json`.
+
+The workflow needs two repository secrets: `TAURI_SIGNING_PRIVATE_KEY` (the private key made with
+`pnpm tauri signer generate`) and `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`. The public key is in `tauri.conf.json`. The
+updater downloads anonymously, so releases must be public.
+
 ## Conventions
 
 - **Small commits**, one tested step at a time, with

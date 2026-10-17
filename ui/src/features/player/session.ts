@@ -14,18 +14,20 @@ export interface Session {
   positionMs: number
   via?: Via
   volume: number
+  /** Saved while paused: an update relaunch comes back paused. */
+  paused?: boolean
 }
 
 const MAX_IDS = 10_000
 
 /** What to save from the player, or null when nothing from the library plays. */
-export function snapshot(p: { now?: { trackId?: number; via: Via }; list: LibraryTrack[]; index: number; order: number[]; shuffle: boolean; repeat: Repeat; positionMs: number; volume: number }): Session | null {
+export function snapshot(p: { now?: { trackId?: number; via: Via }; list: LibraryTrack[]; index: number; order: number[]; shuffle: boolean; repeat: Repeat; positionMs: number; volume: number; playing?: boolean }): Session | null {
   if (!p.now?.trackId || !p.list.length) return null
   // Huge queues: keep a window around the current track.
   const from = Math.max(0, Math.min(p.index - MAX_IDS / 2, p.list.length - MAX_IDS))
   const list = p.list.slice(from, from + MAX_IDS)
   const order = from || list.length < p.list.length ? [] : p.order
-  return { ids: list.map((t) => t.id), index: p.index - from, order, shuffle: p.shuffle, repeat: p.repeat, positionMs: Math.round(p.positionMs), via: p.now.via, volume: p.volume }
+  return { ids: list.map((t) => t.id), index: p.index - from, order, shuffle: p.shuffle, repeat: p.repeat, positionMs: Math.round(p.positionMs), via: p.now.via, volume: p.volume, paused: p.playing === false }
 }
 
 const isInt = (v: unknown): v is number => Number.isInteger(v) && (v as number) >= 0
@@ -34,7 +36,7 @@ const isInt = (v: unknown): v is number => Number.isInteger(v) && (v as number) 
  * Stored session → queue on today's library. Tracks deleted since are dropped; the current one gone = nothing to
  * resume (volume still comes back).
  */
-export function restore(raw: unknown, tracks: LibraryTrack[]): { volume: number; queue: { list: LibraryTrack[]; index: number; order: number[]; shuffle: boolean; repeat: Repeat; positionMs: number; via?: Via } | null } | null {
+export function restore(raw: unknown, tracks: LibraryTrack[]): { volume: number; queue: { list: LibraryTrack[]; index: number; order: number[]; shuffle: boolean; repeat: Repeat; positionMs: number; via?: Via; paused: boolean } | null } | null {
   if (!raw || typeof raw !== 'object') return null
   const r = raw as Record<string, unknown>
   const volume = typeof r.volume === 'number' && r.volume >= 0 && r.volume <= 1 ? r.volume : 1
@@ -49,16 +51,26 @@ export function restore(raw: unknown, tracks: LibraryTrack[]): { volume: number;
   const via = (['local', 'youtube', 'spotify', 'preview'] as const).find((v) => v === r.via)
   return {
     volume,
-    queue: { list, index, order, shuffle: r.shuffle === true, repeat: r.repeat === 'all' || r.repeat === 'one' ? r.repeat : 'off', positionMs: isInt(r.positionMs) ? r.positionMs : 0, via },
+    queue: { list, index, order, shuffle: r.shuffle === true, repeat: r.repeat === 'all' || r.repeat === 'one' ? r.repeat : 'off', positionMs: isInt(r.positionMs) ? r.positionMs : 0, via, paused: r.paused === true },
   }
 }
 
-/** Launch: volume back, and (enabled: Settings › Advanced) the last queue playing again where it stopped. */
-export async function resumeSession(enabled: boolean) {
+/**
+ * Launch: volume back, and (enabled: Settings › Advanced) the last queue playing again where it stopped. exact = first
+ * launch after an update: back as it was even if resume is off, paused if it was.
+ */
+export async function resumeSession(enabled: boolean, exact = false) {
   const saved = restore(await api.loadSession().catch(() => null), useStore.getState().tracks)
   if (!saved) return
   usePlayer.setState({ volume: saved.volume })
-  if (saved.queue && enabled && !usePlayer.getState().now) usePlayer.getState().resume(saved.queue)
+  if (!saved.queue || (!enabled && !exact) || usePlayer.getState().now) return
+  usePlayer.getState().resume({ ...saved.queue, paused: exact && saved.queue.paused })
+}
+
+/** Right now (before an update closes the app). */
+export async function saveSessionNow() {
+  const s = snapshot(usePlayer.getState())
+  if (s) await api.saveSession(s).catch(() => {})
 }
 
 /** Saves the session as playback goes: right away on track or state change, every 5 s while playing. Returns cleanup. */

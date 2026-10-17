@@ -145,6 +145,8 @@ export interface Settings {
   playlistCovers: Record<string, PlaylistCover>
   /** Mixes page: 4 song covers, the first one, or the plain numbered tile. */
   mixCovers: 'grid' | 'single' | 'template'
+  /** Download updates in the background and install them when nothing plays. */
+  autoUpdate: boolean
   /** Now Playing: Up next panel open. */
   upNext: boolean
   /** Pick up the last track where it stopped when the app opens. */
@@ -191,6 +193,7 @@ export const DEFAULTS: Settings = {
   hiddenPlaylists: [],
   playlistCovers: {},
   mixCovers: 'grid',
+  autoUpdate: true,
   upNext: true,
   resume: true,
   reopen: true,
@@ -266,6 +269,7 @@ export function sanitize(raw: unknown): Settings {
     hiddenPlaylists: Array.isArray(r.hiddenPlaylists) ? [...new Set(r.hiddenPlaylists.filter((k): k is string => typeof k === 'string' && k.length <= 200))].slice(0, 500) : [],
     playlistCovers: sanitizeCovers(r.playlistCovers),
     mixCovers: pick(r.mixCovers, ['grid', 'single', 'template'] as const, DEFAULTS.mixCovers),
+    autoUpdate: typeof r.autoUpdate === 'boolean' ? r.autoUpdate : DEFAULTS.autoUpdate,
     upNext: typeof r.upNext === 'boolean' ? r.upNext : DEFAULTS.upNext,
     resume: typeof r.resume === 'boolean' ? r.resume : DEFAULTS.resume,
     reopen: typeof r.reopen === 'boolean' ? r.reopen : DEFAULTS.reopen,
