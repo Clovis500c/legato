@@ -2,6 +2,7 @@
 
 | Document | Contents |
 |---|---|
+| [development.md](development.md) | Developer setup: tools per system, YouTube Music and Spotify sign-in, keychain, where data lives |
 | [architecture.md](architecture.md) | How the app is built: crates, shell, interface, and the rules that hold them together |
 | [playback.md](playback.md) | How each source plays (YouTube, local files, Apple previews, Spotify) and why |
 | [licenses.md](licenses.md) | Third-party licenses: audit, what each one asks of us, the check that keeps it clean |

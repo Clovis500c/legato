@@ -21,7 +21,7 @@ Everything still open, gathered from the sections below. Tick a line when it lan
 **Repo quality** (2026-10-17, fourth session: user approved these four, in this order)
 - [x] Add to playlist menu: each playlist's sidebar icon (asked mid-batch).
 - [x] LICENSE-AUDIT: `docs/licenses.md`, `deny.toml`, `scripts/licenses.mjs`, `pnpm licenses`, CI job `licenses`.
-- [ ] DOC-OAUTH-ONBOARD: developer setup for Spotify OAuth, YouTube Music session and the keychain.
+- [x] DOC-OAUTH-ONBOARD: `docs/development.md` (tools per system, YouTube Music and Spotify sign-in, keychain, data).
 - [ ] CI-MATRIX: `check` on Linux and macOS too.
 - [ ] CONNECTOR-TESTS: connector tests that cannot reach the network, plus missing error paths.
 

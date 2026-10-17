@@ -8,7 +8,9 @@ under its license.
 
 ## Setup
 
-Windows 10 or 11, [Rust](https://rustup.rs) stable, Node.js 22 or later, [pnpm](https://pnpm.io).
+Windows 10 or 11, [Rust](https://rustup.rs) stable, Node.js 22 or later, [pnpm](https://pnpm.io). Linux and macOS
+packages, signing in to YouTube Music and Spotify while developing, and where secrets and data live:
+[docs/development.md](docs/development.md).
 
 ```bash
 pnpm install
