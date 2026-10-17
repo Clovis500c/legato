@@ -64,6 +64,9 @@ Everything still open, gathered from the sections below. Tick a line when it lan
 - [ ] Needs paid accounts: Spotify Connect for real (Premium), MusicKit (Apple Developer).
 
 **Housekeeping**
+- [ ] Dependabot alert #1, `glib` 0.18 (GHSA-wrw7-89jp-8q8g): Linux only, through Tauri's GTK3 stack (tao, muda,
+      tray-icon); the Windows app doesn't contain it, nothing calls `VariantStrIter`. Fixed `glib` 0.20 is GTK4: no
+      stable Tauri uses it (2.12.4 latest, 2026-10-17). Dismiss as "not used" on GitHub; re-check at each Tauri upgrade.
 - [ ] Playlist `trackCount` vs rows mismatch (Workout Mix).
 - [ ] "Music App export test" playlist on YouTube Music: ask before deleting.
 - [ ] Figma mockups still in French.
