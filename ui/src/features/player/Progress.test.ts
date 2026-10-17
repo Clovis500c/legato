@@ -1,5 +1,14 @@
 import { describe, expect, it } from 'vitest'
-import { extrapolate } from './Progress'
+import { extrapolate, quantize } from './Progress'
+
+describe('quantize', () => {
+  it('steps down to what the display shows', () => {
+    expect(quantize(54_999, 1000)).toBe(54_000)
+    expect(quantize(54_000, 1000)).toBe(54_000)
+    expect(quantize(10_130, 86)).toBe(10_062)
+    expect(quantize(1234.6, 1)).toBe(1235)
+  })
+})
 
 describe('extrapolate', () => {
   it('moves on with time while playing, stays put when paused', () => {

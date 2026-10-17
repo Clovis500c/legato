@@ -85,7 +85,8 @@ function YouTubeFrame({ videoId }: { videoId: string }) {
         }
         usePlayer.getState().applyVolume(true)
       }}
-      style={rect ? { left: rect.left, top: rect.top, width: rect.width, height: rect.height } : undefined}
+      // Hidden (cover shown instead): YouTube's minimum size, so it streams a low resolution nobody sees.
+      style={rect ? { left: rect.left, top: rect.top, width: hidden ? 200 : rect.width, height: hidden ? 200 : rect.height } : undefined}
       // Bare video: no pointer on it, so YouTube's hover overlay never shows; our controls drive it.
       className={`fixed z-30 rounded-lg border border-line bg-black ${src.controls && !hidden ? '' : 'pointer-events-none'} ${hidden ? 'opacity-0' : ''} ${rect ? '' : 'right-6 bottom-[112px] h-50 w-89 shadow-[0_12px_32px_var(--shadow)]'}`}
     />
