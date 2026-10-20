@@ -3,6 +3,120 @@
 Status: **phases 1 to 8 delivered** (2026-10-17; phase 6 leftovers and live checks in "Still to do" just below). Earlier (2026-10-16): Hi-Fi redesign, themes, ad shield, custom playlists, local folders, add by YouTube link, Apple Music and YouTube search, one queue for every source with Apple previews, playlist sharing (link, QR, nearby code), local personalized mixes. Phase 6 (polish) under way: shortcuts, media keys, tray done; big round of player and library requests done (see "User requests 2026-10-16 (second session)"). Edit, strike or comment this file directly, or answer in the chat.
 Mockups: Figma, file "Bow Game / Music App", page **"Music App v3 — Hi-Fi"**. The v2 "Apple" page is abandoned.
 
+## Big update (2026-10-20, branch `big-update`)
+
+The user's big request of 2026-10-20, copied task by task. Work happens on the `big-update` branch (every green push to
+`master` is a release: nothing goes to `master` without the user's OK). Phases run in this order; tick each line when
+it lands (tested, `pnpm check` green, committed). Technical plan, rule changes and feasibility notes:
+[big-update.md](big-update.md).
+
+**Method**
+- [x] Plan first: explore, then a detailed plan (order, approach per big task, rules changed, possible / impossible,
+      risks). Unclear points: pick the most reasonable option, note it for the final report.
+- [x] Dedicated branch `big-update`; nothing pushed to `master` without the user's explicit OK.
+- [x] Every task of the request copied here as a checkbox.
+- [ ] After each task or small group: `pnpm check` green, app starts, nothing broken, small clear commit, tests for new
+      logic (never real network).
+- [ ] Final report: done / not done / not tested / choices made for the user / every rule changed (old, new, why).
+
+**Phase 1: fixes**
+- [ ] Progress bar stuck: after a custom position set with our slider then a song change, the bar stops moving (setting
+      it back to 0 unblocks it). Root cause + a test that reproduces it.
+- [ ] YouTube overlay: must never be visible over the player (shield's YouTube player script).
+- [ ] Sidebar in a small window: a scrollbar shows at the top right of the sidebar in the player (screenshot 3). The
+      sidebar must not scroll there: cause + fix.
+- [ ] Cover auto-crop: black bars (and thin white edges) around video frames and covers (screenshot 4) detected and
+      cropped so the picture fills its box, for covers and videos. Report if the cause is elsewhere.
+- [ ] YouTube import order: "added oldest" and "added newest" are inverted. Check, fix, test.
+- [ ] Search: use normal YouTube instead of YouTube Music only (rule "no YouTube key" changed if needed, method and
+      risks in the plan). Hide videos that clearly aren't music, with "N videos hidden because they aren't music" (real
+      count) and a button to show them.
+- [ ] Videos that "can't be played outside YouTube" (errors 101 / 150): detect the error from the player API; only
+      then reload the video from its normal watch page in a webview with YouTube's interface around the player hidden
+      (consistent with the overlay fix); invisible switch, our controls (pause, seek, volume, next) keep working, the
+      next song follows normally; still unplayable (region, age…) → clean skip with a clear message. Official player
+      only, no stream extraction.
+
+**Phase 2: changes**
+- [ ] Up next: keep songs already played (don't remove them).
+- [ ] Optimization: memory, CPU, start time, smoothness of the app and the webview. Measure before / after, numbers in
+      the report.
+- [ ] Keyboard shortcuts: custom shortcuts (skip, stop, play…) applied everywhere, including when the app runs in the
+      background in the tray, with no conflict with Windows media keys. One table (`app/shortcuts.ts`), listed in
+      Settings › Shortcuts.
+- [ ] Background: closing the window keeps the app running in the tray (screenshot 2), in a low-resource mode like
+      Discord, back very fast; webview resources reduced while hidden, music never cut. "Quit" is the only real exit.
+- [ ] Auto-update: check at every launch; if an update is out, download in the background, restart automatically at a
+      moment that doesn't cut the music, and resume playback where it was (`session.ts`).
+- [ ] "Music App" button goes Home, even from the player.
+- [ ] Window top bar follows the player's background instead of staying grey.
+- [ ] Click on the cover or the video: pause / play, with our own handling (not YouTube's).
+- [ ] Top bar: remove the sync icon and the back / forward icons at the top left.
+- [ ] Right-click on a song of a playlist or of the library: remove it from the playlists that hold it, or from the
+      library (`features/menus.tsx`).
+- [ ] Music filter on YouTube import: leave out videos that aren't music, carefully (some real songs aren't tagged as
+      music: when in doubt, keep).
+- [ ] Add music: play a song even if it isn't in the library.
+
+**Phase 3: new features** (new default → bump `DEFAULTS_VERSION`, add to the settings search index)
+- [ ] Search bar like YouTube's in the navbar, always visible (screenshot 5): field + search button + mic button. Mic =
+      voice search (speech to text, then search) and a way to start the Music Detector from it (simplest clear UI to
+      pick one). If speech recognition can't be done cleanly in WebView2 without a server of ours: say so, propose an
+      alternative, or keep only the Music Detector on the mic.
+- [ ] Automatic translation: Windows language detected on first launch (supported → used, else English); language
+      picker in settings; at least English and French; structure that makes adding languages easy; settings search
+      works in every language.
+- [ ] Lyrics mode (Player mode): cover on the left, scrolling lyrics on the right, like Spotify. Client-side system or
+      an API through Rust (LRCLIB to check): pick the best and justify.
+- [ ] Music Detector: a section under "Add music" that recognizes a song from sound (like Shazam), then adds it to any
+      playlist. Pick a recognition service (user's key or free) and justify; clear microphone permission; no recording
+      stored.
+- [ ] Windows quick commands: Previous, Play / Pause, Next under the taskbar thumbnail (screenshot 1), ITaskbarList3
+      thumbnail toolbar; works on Windows 11, Play / Pause icon follows the state, follows the app's theme.
+- [ ] Cover animation: Advanced setting, cover grows and shrinks with the song's volume. Off by default. Uses live
+      audio processing.
+- [ ] Adaptive Sound: Advanced setting, measures loudness and adjusts it to the user's target volume; a bar under the
+      player's volume bar shows the adapted volume and its level. Uses live audio processing.
+
+**Live audio processing** (shared by the Live Editor, Adaptive Sound and the cover animation)
+- [ ] Local files: processing in the native engine (`crates/player`).
+- [ ] YouTube: official player keeps playing the video; study per-process capture of the app's audio (WebView2),
+      processing in the native engine, webview muted; feasibility, minimum Windows version, limits (latency, offset
+      with the picture, CPU, speed / pitch for slowed) in the plan.
+- [ ] Saved mixes hold parameters only (effects, values), never audio.
+- [ ] Spotify (protected playback) and Apple Music: what's possible or not, in the plan.
+- [ ] Can be turned off; if capture fails, back to normal playback with no error.
+- [ ] Same system for Adaptive Sound and the cover animation.
+
+**Phase 4: big projects** (one by one, with the most care)
+- [ ] 4.1 Live Editor: edit the playing song live (slowed, bass boost, reverb…); save changes per song in local SQLite
+      (`crates/core`), several mixes per song; several sections, one for 4D songs and where the sound comes from;
+      best architecture, most advanced version, Audacity's techniques as inspiration (no code copied); works on
+      YouTube songs (live processing); local files only: export a modified copy with the mix applied to a new file,
+      original never touched (no export for YouTube, Spotify, Apple Music).
+- [ ] 4.2 Sync Mode: OneDrive detected automatically, ask the user whether they use it with encrypted files; another
+      way to sync 2 PCs without a server of ours (nearby or an export file: propose, justify); everything synced
+      (connections, settings, imported and non-imported local playlists); secrets never synced in clear (password
+      encryption, or account list + sign in again); conflicts handled.
+- [ ] 4.3 Plugin system: real API for local third-party plugins that can change as much as possible and reach as many
+      parts of the app as possible; manifest with declared permissions, user approval at install, isolated execution,
+      no direct network or secrets (Rust gateway with permissions), API versioning; docs for plugin authors and an
+      example plugin.
+- [ ] 4.4 Theme creator: better editor (`theme.ts`, tokens in `styles.css`), "Themes" and "Appearance" merged; a theme
+      can change absolutely everything (except "Music App", its logo and legal notices): background images (adapt the
+      image system and its security policy if needed), parts of the UX, etc. Settings search index updated.
+
+**Phase 5: codebase health check**
+- [ ] Full check: well kept, professional, maintainable over time, easy to change; CLAUDE.md, README and docs up to
+      date and consistent with every changed rule; no dead code, no fake buttons; enough tests. Report with problems
+      found, then fix the important ones.
+
+**Phase 6: UI / UX / bug review by an agent**
+- [ ] When everything is done: one agent (Sonnet 5.5, high effort) with the most complete prompt to go through
+      EVERYTHING: rate UI / UX as a daily user and as someone who loves practical interfaces, criticize without
+      indulgence, performance report, overall report against the competition (Spotify, YouTube Music, Apple Music,
+      Liner), every page, menu, setting and edge case. Full report handed to the user.
+
 ## Still to do (one list, updated 2026-10-17)
 
 Everything still open, gathered from the sections below. Tick a line when it lands; details stay in their section.
