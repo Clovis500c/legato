@@ -1,21 +1,9 @@
+import { create } from 'zustand'
 import { usePlayer } from '../features/player/store'
+import { api } from '../shared/api'
+import { accelerator, ACTIONS, bindings, comboOf, type ActionId, type Combo } from './keys'
+import { useSettings } from './settings'
 import { useStore } from './store'
-
-/** Keys as KeyboardEvent gives them; only what matching needs. */
-export type Keys = Pick<KeyboardEvent, 'key' | 'ctrlKey' | 'metaKey' | 'shiftKey' | 'altKey'>
-
-export interface Shortcut {
-  /** Shown in Settings › Shortcuts. */
-  keys: string
-  label: string
-  match: (e: Keys) => boolean
-  /** None = handled elsewhere (listed only). */
-  run?: () => void
-}
-
-const ctrl = (e: Keys) => e.ctrlKey || e.metaKey
-const plain = (e: Keys) => !ctrl(e) && !e.shiftKey && !e.altKey
-const only = (e: Keys, mod: 'ctrl' | 'shift' | 'alt') => (mod === 'ctrl' ? ctrl(e) : !ctrl(e)) && e.shiftKey === (mod === 'shift') && e.altKey === (mod === 'alt')
 
 const player = () => usePlayer.getState()
 const seekBy = (ms: number) => {
@@ -23,50 +11,92 @@ const seekBy = (ms: number) => {
   if (now) seek(Math.max(0, Math.min(positionMs + ms, durationMs ?? Infinity)))
 }
 const volumeBy = (d: number) => player().setVolume(Math.round(Math.max(0, Math.min(1, player().volume + d)) * 100) / 100)
+// Volume before mute, restored by the next press.
+let unmuted = 1
 
-export const SHORTCUTS: Shortcut[] = [
-  { keys: 'Space', label: 'Play / pause', match: (e) => plain(e) && e.key === ' ', run: () => player().toggle() },
-  { keys: 'Ctrl →', label: 'Next track', match: (e) => only(e, 'ctrl') && e.key === 'ArrowRight', run: () => player().step(1) },
-  { keys: 'Ctrl ←', label: 'Previous track', match: (e) => only(e, 'ctrl') && e.key === 'ArrowLeft', run: () => player().step(-1) },
-  { keys: 'Shift →', label: 'Forward 10 seconds', match: (e) => only(e, 'shift') && e.key === 'ArrowRight', run: () => seekBy(10_000) },
-  { keys: 'Shift ←', label: 'Back 10 seconds', match: (e) => only(e, 'shift') && e.key === 'ArrowLeft', run: () => seekBy(-10_000) },
-  { keys: 'Ctrl ↑', label: 'Volume up', match: (e) => only(e, 'ctrl') && e.key === 'ArrowUp', run: () => volumeBy(0.1) },
-  { keys: 'Ctrl ↓', label: 'Volume down', match: (e) => only(e, 'ctrl') && e.key === 'ArrowDown', run: () => volumeBy(-0.1) },
-  { keys: 'Ctrl S', label: 'Shuffle on / off', match: (e) => only(e, 'ctrl') && e.key.toLowerCase() === 's', run: () => player().toggleShuffle() },
-  { keys: 'Ctrl R', label: 'Repeat: off, queue, track', match: (e) => only(e, 'ctrl') && e.key.toLowerCase() === 'r', run: () => player().cycleRepeat() },
-  { keys: 'Ctrl K', label: 'Search', match: () => false },
-  { keys: 'Ctrl ,', label: 'Settings', match: (e) => only(e, 'ctrl') && e.key === ',', run: () => useStore.getState().go({ name: 'settings', section: 'appearance' }) },
-  { keys: 'Alt ←', label: 'Back', match: (e) => only(e, 'alt') && e.key === 'ArrowLeft', run: () => (player().full ? player().setFull(false) : useStore.getState().goBack()) },
-  { keys: 'Alt →', label: 'Forward', match: (e) => only(e, 'alt') && e.key === 'ArrowRight', run: () => useStore.getState().goForward() },
-  { keys: 'Esc', label: 'Close Now Playing', match: () => false },
-]
-
-/** Shortcut for this key press, if any. */
-export const shortcutFor = (e: Keys) => SHORTCUTS.find((s) => s.run && s.match(e))
+/** What each action does. One table with keys.ts (labels, default keys): Settings › Shortcuts lists both. */
+export const RUN: Record<ActionId, () => void> = {
+  playPause: () => player().toggle(),
+  next: () => player().step(1),
+  previous: () => player().step(-1),
+  stop: () => {
+    if (player().playing) player().toggle()
+    player().seek(0)
+  },
+  forward: () => seekBy(10_000),
+  back10: () => seekBy(-10_000),
+  volumeUp: () => volumeBy(0.1),
+  volumeDown: () => volumeBy(-0.1),
+  mute: () => {
+    const v = player().volume
+    if (v > 0) unmuted = v
+    player().setVolume(v > 0 ? 0 : unmuted || 1)
+  },
+  shuffle: () => player().toggleShuffle(),
+  repeat: () => player().cycleRepeat(),
+  nowPlaying: () => player().now && player().setFull(!player().full),
+  search: () => document.querySelector<HTMLInputElement>('[data-search]')?.focus(),
+  settings: () => useStore.getState().go({ name: 'settings', section: 'shortcuts' }),
+  goBack: () => (player().full ? player().setFull(false) : useStore.getState().goBack()),
+  goForward: () => useStore.getState().goForward(),
+  // Rust shows the window itself (global only).
+  showApp: () => {},
+}
 
 // Fields where keys type text. Range inputs and checkboxes are not: they must not swallow the app's shortcuts.
 const TEXT = 'input:not([type=range]):not([type=checkbox]):not([type=radio]):not([type=color]):not([type=button]), textarea, select, [contenteditable]'
 const inText = (target: EventTarget | null) => target instanceof Element && !!target.closest(TEXT)
+// Sliders keep their arrows (no modifier); menus keep theirs.
+const ownsArrows = (target: EventTarget | null) => target instanceof Element && !!target.closest('input[type=range], [role="slider"], [role="menu"], [role="menuitem"]')
 
-/** Typing, or a control that uses this key itself (Space on a button, arrows on a slider). */
-export function ownsKeys(target: EventTarget | null, key: string) {
-  if (!(target instanceof Element)) return false
-  if (target.closest(TEXT)) return true
-  // Sliders keep their arrows; Space on them is play / pause.
-  if (target.closest('input[type=range], [role="slider"]')) return key !== ' '
-  return !!target.closest('button, a[href], [role="button"], [role="menuitem"]')
+/** Global shortcuts the OS refused (another app holds them), for Settings › Shortcuts. */
+export const useGlobalShortcuts = create<{ failed: ActionId[] }>(() => ({ failed: [] }))
+
+/** Registers the global bindings with the OS (Rust). Called at launch and whenever they change. */
+async function registerGlobals(custom: Parameters<typeof bindings>[0]) {
+  const b = bindings(custom)
+  const list = ACTIONS.flatMap((a) => (b[a.id].global ? [{ id: a.id, accelerator: accelerator(b[a.id].global!) }] : []))
+  const failed = await api.setGlobalShortcuts(list).catch(() => list.map((l) => l.id))
+  useGlobalShortcuts.setState({ failed: failed as ActionId[] })
 }
 
-/** Global key handler. Returns cleanup. */
+/**
+ * Keys in the app (window focused) and everywhere (global, Rust). Bindings come from settings over the defaults.
+ * Text fields keep their keys; Space plays / pauses from anywhere else (a focused button too: Enter still clicks it).
+ * Returns cleanup.
+ */
 export function startShortcuts(): () => void {
+  let map = new Map<Combo, ActionId>()
+  let custom = useSettings.getState().settings.shortcuts
+  const rebuild = () => {
+    const b = bindings(custom)
+    map = new Map(ACTIONS.flatMap((a) => (b[a.id].keys ? [[b[a.id].keys!, a.id] as const] : [])))
+  }
+  rebuild()
+  void registerGlobals(custom)
+  const offSettings = useSettings.subscribe((s) => {
+    if (s.settings.shortcuts === custom) return
+    custom = s.settings.shortcuts
+    rebuild()
+    void registerGlobals(custom)
+  })
   const onKey = (e: KeyboardEvent) => {
-    if (e.repeat && e.key === ' ') return
-    const s = shortcutFor(e)
-    // Modifier shortcuts work everywhere but in text fields; plain keys leave focused controls alone.
-    if (!s || (plain(e) ? ownsKeys(e.target, e.key) : inText(e.target))) return
+    // Settings › Shortcuts is recording a binding.
+    if (document.body.dataset.recording) return
+    const combo = comboOf(e)
+    const id = combo && map.get(combo)
+    if (!id || inText(e.target)) return
+    if (e.repeat && id === 'playPause') return
+    if (/^(Shift\+)?Arrow/.test(combo) && ownsArrows(e.target)) return
     e.preventDefault()
-    s.run!()
+    RUN[id]()
   }
   window.addEventListener('keydown', onKey)
-  return () => window.removeEventListener('keydown', onKey)
+  // Pressed anywhere (global): Rust sends the action.
+  const offGlobal = api.onShortcut((id) => RUN[id as ActionId]?.())
+  return () => {
+    window.removeEventListener('keydown', onKey)
+    offSettings()
+    void offGlobal.then((f) => f())
+  }
 }

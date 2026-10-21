@@ -1,4 +1,5 @@
 /** Hi-Fi themes: palettes, user settings schema, contrast check. Applied as CSS variables (styles.css @theme). */
+import { ACTIONS, validCombo, type Custom } from '../../app/keys'
 
 export const PALETTE_KEYS = ['bg', 'panel', 'raised', 'recess', 'line', 'lineSoft', 'ink', 'ink2', 'ink3', 'ink4', 'accent', 'onAccent', 'ledOff'] as const
 export type PaletteKey = (typeof PALETTE_KEYS)[number]
@@ -156,6 +157,8 @@ export interface Settings {
   /** Add-ons turned on (id → on). All off until the user turns them on. */
   addons: Record<string, boolean>
   discord: DiscordSettings
+  /** Keyboard shortcuts changed in Settings › Shortcuts (app/keys.ts): null = removed, absent = default. */
+  shortcuts: Custom
   defaultsVersion: number
 }
 
@@ -199,6 +202,7 @@ export const DEFAULTS: Settings = {
   reopen: true,
   addons: {},
   discord: { appId: DISCORD_APP, status: 'song', buttons: true, paused: false, github: true },
+  shortcuts: {},
   defaultsVersion: DEFAULTS_VERSION,
 }
 
@@ -228,6 +232,21 @@ export function sanitizeTheme(raw: unknown): Theme | null {
 
 /** Preset ids before English rename. */
 const LEGACY_IDS: Record<string, string> = { papier: 'paper', aluminium: 'aluminum', sauge: 'sage' }
+
+/** Saved shortcut changes: known actions, well-formed combos or null (removed). */
+function sanitizeShortcuts(raw: unknown): Custom {
+  if (!raw || typeof raw !== 'object') return {}
+  const out: Custom = {}
+  for (const a of ACTIONS) {
+    const v = (raw as Record<string, unknown>)[a.id]
+    if (!v || typeof v !== 'object') continue
+    const pick = (c: unknown) => (c === null ? null : validCombo(c) ? c : undefined)
+    const keys = pick((v as { keys?: unknown }).keys)
+    const global = pick((v as { global?: unknown }).global)
+    if (keys !== undefined || global !== undefined) out[a.id] = { ...(keys !== undefined && { keys }), ...(global !== undefined && { global }) }
+  }
+  return out
+}
 
 export function sanitize(raw: unknown): Settings {
   const r = raw && typeof raw === 'object' ? (raw as Record<string, unknown>) : {}
@@ -273,6 +292,7 @@ export function sanitize(raw: unknown): Settings {
     upNext: typeof r.upNext === 'boolean' ? r.upNext : DEFAULTS.upNext,
     resume: typeof r.resume === 'boolean' ? r.resume : DEFAULTS.resume,
     reopen: typeof r.reopen === 'boolean' ? r.reopen : DEFAULTS.reopen,
+    shortcuts: sanitizeShortcuts(r.shortcuts),
     addons: Object.fromEntries(Object.entries(r.addons && typeof r.addons === 'object' ? r.addons : {}).filter(([k, v]) => /^[a-z0-9-]{1,40}$/.test(k) && typeof v === 'boolean').slice(0, 100)),
     discord: sanitizeDiscord(r.discord),
     defaultsVersion: DEFAULTS_VERSION,

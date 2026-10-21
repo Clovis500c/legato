@@ -1,5 +1,5 @@
 import type { SettingsSection } from '../../app/store'
-import { SHORTCUTS } from '../../app/shortcuts'
+import { ACTIONS, comboLabel } from '../../app/keys'
 
 /** One searchable setting. label = Row / Group title on screen (data-setting), found and highlighted on open. */
 export interface SettingEntry {
@@ -34,7 +34,7 @@ export const SETTINGS_INDEX: SettingEntry[] = [
   { section: 'sources', label: 'Spotify web player', keywords: 'sign in' },
   { section: 'sources', label: 'Local files', keywords: 'music folder mp3 flac scan' },
   { section: 'shield', label: 'Block ads and trackers', keywords: 'adblock shield easylist privacy' },
-  ...SHORTCUTS.map((s): SettingEntry => ({ section: 'shortcuts', label: s.label, keywords: `keyboard shortcut ${s.keys}` })),
+  ...ACTIONS.map((a): SettingEntry => ({ section: 'shortcuts', label: a.label, keywords: `keyboard shortcut hotkey global background ${a.keys ? comboLabel(a.keys) : ''}` })),
   { section: 'about', label: 'Automatic updates', keywords: 'update version upgrade install new release' },
   { section: 'about', label: 'App status', keywords: 'stats cache memory songs playlists listens' },
   { section: 'about', label: 'About', keywords: 'version license github source privacy' },

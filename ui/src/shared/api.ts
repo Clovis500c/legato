@@ -346,6 +346,10 @@ export const api = {
   updateCheck: () => invoke<void>('update_check'),
   updateInstall: () => invoke<void>('update_install'),
   onUpdate: (cb: (s: UpdateStatus) => void) => listen<UpdateStatus>('update', (e) => cb(e.payload)),
+  /** Global shortcuts (Settings › Shortcuts, Everywhere). Returns the actions the OS refused. */
+  setGlobalShortcuts: (list: { id: string; accelerator: string }[]) => invoke<string[]>('set_global_shortcuts', { list }),
+  /** A global shortcut was pressed (app in the background too). */
+  onShortcut: (cb: (id: string) => void) => listen<string>('shortcut', (e) => cb(e.payload)),
   /** Blocked embed (101 / 150): the video plays from YouTube's watch page in a webview over the slot. Physical px. */
   ytwatchOpen: (video: string, start: number, rect: WatchRect | null) => invoke<void>('ytwatch_open', { video, start, rect }),
   /** null = hidden (cover mode), still playing. */

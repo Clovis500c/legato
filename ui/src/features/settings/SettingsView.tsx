@@ -1,7 +1,7 @@
+import { ShortcutsSection } from './ShortcutsSection'
 import { ArrowCounterClockwise, Check, CheckCircle, Info, ClipboardText, Copy, Keyboard, MagnifyingGlass, PaintBrush, Palette as PaletteIcon, Plugs, Plus, ShieldCheck, Sliders, Trash, WarningCircle } from '@phosphor-icons/react'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { useSettings } from '../../app/settings'
-import { SHORTCUTS } from '../../app/shortcuts'
 import { useStore, type SettingsSection } from '../../app/store'
 import { api } from '../../shared/api'
 import { formatCount } from '../../shared/format'
@@ -446,21 +446,6 @@ function ShieldSection() {
         </div>
       )}
       <p className="text-xs text-ink-2">Note: YouTube’s terms forbid blocking ads in its player. Risks: your API key gets revoked, or playback breaks when YouTube changes its player. YouTube Premium removes ads without this risk.</p>
-    </div>
-  )
-}
-
-function ShortcutsSection() {
-  return (
-    <div className="flex max-w-190 flex-col gap-6">
-      <p className="text-[13px] text-ink-2">Work anywhere in the app except while typing. Media keys and the Windows media panel (volume flyout, lock screen) control playback too.</p>
-      <div className="rounded-xl border border-line bg-raised">
-        {SHORTCUTS.map((s) => (
-          <Row key={s.keys} label={s.label}>
-            <kbd className="rounded-md border border-line bg-recess px-2 py-0.5 font-mono text-xs">{s.keys}</kbd>
-          </Row>
-        ))}
-      </div>
     </div>
   )
 }

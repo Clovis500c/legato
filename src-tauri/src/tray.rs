@@ -70,7 +70,7 @@ impl Tray {
 }
 
 /// Restore and focus the main window (minimized or behind others).
-fn show_main(app: &AppHandle) {
+pub fn show_main<R: tauri::Runtime>(app: &tauri::AppHandle<R>) {
     // Window, not "webview window": with the watch-page child (ytwatch.rs) there is none.
     if let Some(w) = app.get_window("main") {
         let _ = w.unminimize();

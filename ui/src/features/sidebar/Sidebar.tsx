@@ -1,5 +1,5 @@
 import { Disc, Gear, House, MagnifyingGlass, MicrophoneStage, MusicNotes, Plus, PlusCircle, PuzzlePiece, VinylRecord } from '@phosphor-icons/react'
-import { useEffect, useMemo, useRef, type ReactNode } from 'react'
+import { useMemo, type ReactNode } from 'react'
 import { useSettings } from '../../app/settings'
 import { useStore, type View } from '../../app/store'
 import { playlistKey } from '../../shared/api'
@@ -34,21 +34,9 @@ const Section = ({ title, children, onContextMenu }: { title: string; children: 
 export function Sidebar() {
   const { view, go, tracks, playlists, query, setQuery, editPlaylist } = useStore()
   const counts = useMemo(() => ({ albums: groupAlbums(tracks).length, artists: groupArtists(tracks).length }), [tracks])
-  const input = useRef<HTMLInputElement>(null)
   const is = (name: View['name']) => view.name === name
   const hidden = useSettings((s) => s.settings.hiddenPlaylists)
   const hiddenKeys = useMemo(() => new Set(hidden), [hidden])
-
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
-        e.preventDefault()
-        input.current?.focus()
-      }
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [])
 
   return (
     // Header and footer stay put; only the middle scrolls (a small window used to scroll the whole sidebar, logo included).
@@ -56,8 +44,9 @@ export function Sidebar() {
       <div className="flex shrink-0 flex-col gap-5 px-3 pt-3 pb-5">
         <label className="flex items-center gap-2 rounded-lg border border-line bg-raised px-2.5 py-1.5 focus-within:border-ink-3">
           <MagnifyingGlass size={14} className="text-ink-3" />
+          {/* Ctrl+K (app/shortcuts.ts) focuses it. */}
           <input
-            ref={input}
+            data-search
             value={query}
             onChange={(e) => {
               setQuery(e.target.value)

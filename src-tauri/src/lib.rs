@@ -1,6 +1,7 @@
 mod art;
 mod autostart;
 mod discord;
+mod hotkeys;
 mod media;
 mod secrets;
 #[cfg(windows)]
@@ -1295,6 +1296,12 @@ async fn media_update(state: State<'_, AppState>, now: Option<media::NowPlaying>
     }
 }
 
+/// Global shortcuts from Settings › Shortcuts. Returns the actions the OS refused.
+#[tauri::command]
+fn set_global_shortcuts(app: tauri::AppHandle, list: Vec<hotkeys::Entry>) -> Vec<String> {
+    hotkeys::set(&app, &list)
+}
+
 /// Blocked embed (101 / 150): the video from YouTube's watch page, over the video slot.
 #[tauri::command]
 async fn ytwatch_open(state: State<'_, AppState>, video: String, start: f64, rect: Option<ytwatch::Rect>) -> CmdResult<()> {
@@ -1334,6 +1341,7 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(window_place::plugin())
+        .plugin(hotkeys::plugin())
         .register_asynchronous_uri_scheme_protocol("art", |ctx, req, responder| {
             let app = ctx.app_handle().clone();
             tauri::async_runtime::spawn(async move { responder.respond(art::respond(app, req).await) });
@@ -1385,7 +1393,7 @@ pub fn run() {
             update::spawn(app.handle().clone());
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, add_track, backfill_art, find_versions, play_preview, share_playlist, share_preview, share_read_image, share_import, nearby_send, nearby_status, nearby_stop, nearby_receive, record_play, mixes, set_track_pref, clear_history, export_youtube, spotify_player, spotify_playback, ytm_sign_in, ytm_sign_out, spotify_web_open, spotify_web_status, import_spotify_link, ytm_accounts, set_ytm_accounts, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, system_accent, restart_app, autostart, set_autostart, media_update, load_session, save_session, add_to_youtube, playlist_orders, save_cover, export_cover, alternative_videos, play_stats, cache_stats, open_licenses, update_status, update_check, update_install, ytm_home, ytm_list, discord_presence, discord_off, discord_status, remove_from_playlist, remove_from_library, resolve_track, ytwatch_open, ytwatch_place, ytwatch_cmd, ytwatch_close])
+        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, add_track, backfill_art, find_versions, play_preview, share_playlist, share_preview, share_read_image, share_import, nearby_send, nearby_status, nearby_stop, nearby_receive, record_play, mixes, set_track_pref, clear_history, export_youtube, spotify_player, spotify_playback, ytm_sign_in, ytm_sign_out, spotify_web_open, spotify_web_status, import_spotify_link, ytm_accounts, set_ytm_accounts, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, system_accent, restart_app, autostart, set_autostart, media_update, load_session, save_session, add_to_youtube, playlist_orders, save_cover, export_cover, alternative_videos, play_stats, cache_stats, open_licenses, update_status, update_check, update_install, ytm_home, ytm_list, discord_presence, discord_off, discord_status, remove_from_playlist, remove_from_library, resolve_track, set_global_shortcuts, ytwatch_open, ytwatch_place, ytwatch_cmd, ytwatch_close])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
