@@ -308,4 +308,7 @@ The mic opens a small menu with two big choices: "Search by voice" and "Identify
 - Search checked live: "bohemian rhapsody" gives YouTube's own ranking (official audio, lyrics, live, covers), the
   official movie trailer is hidden as not music; "flashing lights noevdv" finds the song plus slowed / remix uploads
   YouTube Music doesn't list. Works signed out too (anonymous web client).
+- Import music filter, first real sync (2026-10-21): 2,526 music, 103 unsure (shown), 28 not music (hidden: mostly
+  Roblox Studio tutorials). Two songs first caught (a radio upload filed as a podcast, an NCS song tagged #asmr) led to
+  softer rules: podcast = strong hint only, music hashtags and "Artist - Title" count more.
 - "Still" answers cached before the fix (bars counted in) are asked again (cache key `still-videos-2`).

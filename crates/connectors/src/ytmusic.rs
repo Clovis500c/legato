@@ -6,6 +6,7 @@ use anyhow::{Context, Result, bail};
 use async_trait::async_trait;
 use music_core::matching::best_match;
 use music_core::model::{Connector, PlaylistRef, Source, Track};
+use music_core::musicness::{Clues, VideoType, classify};
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
@@ -194,7 +195,10 @@ fn row_track_with(row: &Value, fallback: Option<&str>) -> Option<Track> {
         artists.join(", ")
     };
     let art = row.pointer("/thumbnail/musicThumbnailRenderer/thumbnail/thumbnails").and_then(Value::as_array).and_then(|t| t.last()?.get("url")?.as_str()).map(big_thumb);
-    Some(Track { title, artist, album, duration_ms, isrc: None, ids: BTreeMap::from([(Source::Youtube, video_id)]), art })
+    // YouTube Music says what the video is (song, official video, anyone's upload, podcast): the classifier decides.
+    let video_type = all(row, "musicVideoType").into_iter().find_map(|v| VideoType::from_innertube(v.as_str()?));
+    let musicness = Some(classify(&Clues { title: &title, channel: &artist, duration_ms, artist_badge: false, video_type, live: false }));
+    Some(Track { title, artist, album, duration_ms, isrc: None, ids: BTreeMap::from([(Source::Youtube, video_id)]), art, musicness })
 }
 
 /// googleusercontent thumbs are sized in the URL ("=w60-h60-l90-rj"): ask for 544 px.

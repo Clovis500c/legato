@@ -1,5 +1,6 @@
 use crate::matching::{match_key, same_track};
 use crate::model::{Source, Track};
+use crate::musicness::Musicness;
 use anyhow::Result;
 use rusqlite::{Connection, OptionalExtension, Row, params};
 use serde::{Deserialize, Serialize};
@@ -45,7 +46,7 @@ CREATE TABLE IF NOT EXISTS settings (
 );
 ";
 
-const TRACK_COLS: &str = "t.id, t.title, t.artist, t.album, t.duration_ms, t.isrc, t.art, t.added";
+const TRACK_COLS: &str = "t.id, t.title, t.artist, t.album, t.duration_ms, t.isrc, t.art, t.added, t.musicness";
 
 /// Liked Music: last like on top, always.
 fn liked_music(source: Source, source_id: &str) -> bool {
@@ -179,7 +180,8 @@ pub enum PlaylistEdit {
 
 /// Row → track. Column 7 = ids JSON object (optional).
 fn to_track(r: &Row) -> rusqlite::Result<LibraryTrack> {
-    let ids: Option<String> = r.get(8).ok();
+    let ids: Option<String> = r.get(9).ok();
+    let musicness: Option<String> = r.get(8)?;
     Ok(LibraryTrack {
         id: r.get(0)?,
         added: r.get(7)?,
@@ -191,6 +193,7 @@ fn to_track(r: &Row) -> rusqlite::Result<LibraryTrack> {
             isrc: r.get(5)?,
             ids: ids.and_then(|j| serde_json::from_str::<BTreeMap<Source, String>>(&j).ok()).unwrap_or_default(),
             art: r.get(6)?,
+            musicness: musicness.as_deref().and_then(Musicness::parse),
         },
     })
 }
@@ -233,6 +236,10 @@ impl Library {
         if lib.db.query_row("PRAGMA user_version", [], |r| r.get::<_, i64>(0))? < 6 {
             lib.db.execute_batch(SCHEMA_V6)?;
         }
+        if lib.db.query_row("PRAGMA user_version", [], |r| r.get::<_, i64>(0))? < 7 {
+            // v7: music or not, per track (YouTube imports bring talks and games along). NULL = not looked at.
+            lib.db.execute_batch("BEGIN; ALTER TABLE tracks ADD COLUMN musicness TEXT; PRAGMA user_version = 7; COMMIT;")?;
+        }
         let v = lib.versions.clone();
         lib.db.update_hook(Some(move |_: rusqlite::hooks::Action, _: &str, table: &str, _: i64| v.touch(table)))?;
         Ok(lib)
@@ -273,19 +280,19 @@ impl Library {
             let id = match found.pop_first() {
                 None => {
                     self.db.execute(
-                        "INSERT INTO tracks (title, artist, album, duration_ms, isrc, match_key, art, added)
-                         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, (SELECT coalesce(max(added), 0) + 1 FROM tracks))",
-                        params![t.title, t.artist, t.album, t.duration_ms, isrc, match_key(&t.title, &t.artist), t.art],
+                        "INSERT INTO tracks (title, artist, album, duration_ms, isrc, match_key, art, musicness, added)
+                         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, (SELECT coalesce(max(added), 0) + 1 FROM tracks))",
+                        params![t.title, t.artist, t.album, t.duration_ms, isrc, match_key(&t.title, &t.artist), t.art, t.musicness.map(Musicness::as_str)],
                     )?;
                     self.db.last_insert_rowid()
                 }
                 Some(keep) => {
                     // Track may sit in several rows (seen on YouTube, then Spotify). Merge into lowest id.
                     for dupe in found {
-                        let (album, dur, dupe_isrc, art) = self.db.query_row(
-                            "SELECT album, duration_ms, isrc, art FROM tracks WHERE id = ?1",
+                        let (album, dur, dupe_isrc, art, music) = self.db.query_row(
+                            "SELECT album, duration_ms, isrc, art, musicness FROM tracks WHERE id = ?1",
                             [dupe],
-                            |r| Ok((r.get::<_, Option<String>>(0)?, r.get::<_, Option<u32>>(1)?, r.get::<_, Option<String>>(2)?, r.get::<_, Option<String>>(3)?)),
+                            |r| Ok((r.get::<_, Option<String>>(0)?, r.get::<_, Option<u32>>(1)?, r.get::<_, Option<String>>(2)?, r.get::<_, Option<String>>(3)?, r.get::<_, Option<String>>(4)?)),
                         )?;
                         self.db.execute("UPDATE track_ids SET track_id = ?1 WHERE track_id = ?2", [keep, dupe])?;
                         self.db.execute("UPDATE playlist_tracks SET track_id = ?1 WHERE track_id = ?2", [keep, dupe])?;
@@ -293,9 +300,9 @@ impl Library {
                         self.db.execute("UPDATE OR IGNORE track_prefs SET track_id = ?1 WHERE track_id = ?2", [keep, dupe])?;
                         self.db.execute("UPDATE tracks SET added = min(added, (SELECT added FROM tracks WHERE id = ?2)) WHERE id = ?1", [keep, dupe])?;
                         self.db.execute("DELETE FROM tracks WHERE id = ?1", [dupe])?;
-                        self.fill(keep, album, dur, dupe_isrc, art)?;
+                        self.fill(keep, album, dur, dupe_isrc, art, music.as_deref().and_then(Musicness::parse))?;
                     }
-                    self.fill(keep, t.album.clone(), t.duration_ms, isrc, t.art.clone())?;
+                    self.fill(keep, t.album.clone(), t.duration_ms, isrc, t.art.clone(), t.musicness)?;
                     keep
                 }
             };
@@ -624,11 +631,12 @@ impl Library {
         Ok(())
     }
 
-    fn fill(&self, id: i64, album: Option<String>, duration_ms: Option<u32>, isrc: Option<String>, art: Option<String>) -> Result<()> {
-        let old: Option<String> = self.db.query_row("SELECT art FROM tracks WHERE id = ?1", [id], |r| r.get(0))?;
+    fn fill(&self, id: i64, album: Option<String>, duration_ms: Option<u32>, isrc: Option<String>, art: Option<String>, music: Option<Musicness>) -> Result<()> {
+        let (old, old_music): (Option<String>, Option<String>) = self.db.query_row("SELECT art, musicness FROM tracks WHERE id = ?1", [id], |r| Ok((r.get(0)?, r.get(1)?)))?;
+        let music = Musicness::merge(old_music.as_deref().and_then(Musicness::parse), music);
         self.db.execute(
-            "UPDATE tracks SET album = coalesce(album, ?1), duration_ms = coalesce(duration_ms, ?2), isrc = coalesce(isrc, ?3), art = ?4 WHERE id = ?5",
-            params![album, duration_ms, isrc, crate::model::pick_art(old, art), id],
+            "UPDATE tracks SET album = coalesce(album, ?1), duration_ms = coalesce(duration_ms, ?2), isrc = coalesce(isrc, ?3), art = ?4, musicness = ?5 WHERE id = ?6",
+            params![album, duration_ms, isrc, crate::model::pick_art(old, art), music.map(Musicness::as_str), id],
         )?;
         Ok(())
     }
@@ -674,6 +682,7 @@ mod tests {
             isrc: Some("USQX91300108".into()),
             ids: BTreeMap::from([(Source::Spotify, "2Foc5Q5nqNiosCNqttzHof".into())]),
             art: Some("https://i.scdn.co/image/ram".into()),
+            musicness: None,
         }
     }
 
@@ -855,6 +864,23 @@ mod tests {
         lib.remove_from_imported(pid, a)?;
         assert_eq!(lib.playlist_orders()?[&pid], vec![b]);
         assert_eq!(lib.source_ids(a, Source::Youtube)?, ["vid1"]);
+        Ok(())
+    }
+
+    #[test]
+    fn music_or_not_is_kept_and_a_music_label_wins() -> Result<()> {
+        let lib = Library::in_memory()?;
+        let talk = Track { musicness: Some(Musicness::NotMusic), ..song(1) };
+        let id = lib.upsert_track(&talk)?;
+        let get = |id| lib.tracks().unwrap().into_iter().find(|t| t.id == id).unwrap().track.musicness;
+        assert_eq!(get(id), Some(Musicness::NotMusic));
+        // Seen again without a word: kept. Seen as a song somewhere: music.
+        lib.upsert_track(&song(1))?;
+        assert_eq!(get(id), Some(Musicness::NotMusic));
+        lib.upsert_track(&Track { musicness: Some(Musicness::Music), ..song(1) })?;
+        assert_eq!(get(id), Some(Musicness::Music));
+        lib.upsert_track(&Track { musicness: Some(Musicness::NotMusic), ..song(1) })?;
+        assert_eq!(get(id), Some(Musicness::Music));
         Ok(())
     }
 

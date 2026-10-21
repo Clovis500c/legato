@@ -54,7 +54,7 @@ pub fn parse_search(v: &Value) -> Vec<WebVideo> {
         let (artist, title) = parse_video(raw.trim(), &channel);
         let owner = r.get("ownerBadges").cloned().unwrap_or(Value::Null);
         let badges = r.get("badges").cloned().unwrap_or(Value::Null);
-        out.push(WebVideo {
+        let mut video = WebVideo {
             track: Track {
                 title,
                 artist,
@@ -63,12 +63,15 @@ pub fn parse_search(v: &Value) -> Vec<WebVideo> {
                 isrc: None,
                 ids: BTreeMap::from([(Source::Youtube, id.to_string())]),
                 art: Some(format!("https://i.ytimg.com/vi/{id}/hqdefault.jpg")),
+                musicness: None,
             },
             raw_title: raw,
             artist_badge: badge(&owner, "BADGE_STYLE_TYPE_VERIFIED_ARTIST"),
             live: badge(&badges, "BADGE_STYLE_TYPE_LIVE_NOW"),
             channel,
-        });
+        };
+        video.track.musicness = Some(video.musicness());
+        out.push(video);
     }
     out
 }

@@ -17,6 +17,8 @@ export interface Track {
   ids: Partial<Record<Source, string>>
   /** Cover art URL; shown through the app's image cache (shared/art). */
   art?: string | null
+  /** Music or not (YouTube imports bring talks and games along). Absent = not looked at. */
+  musicness?: Musicness
 }
 
 export interface LibraryTrack extends Track {

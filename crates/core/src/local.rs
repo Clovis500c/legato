@@ -43,6 +43,8 @@ pub fn read(path: &Path) -> Track {
         isrc: tag.and_then(|t| t.get_string(ItemKey::Isrc)).map(|s| s.trim().to_uppercase()).filter(|s| !s.is_empty()),
         ids: BTreeMap::from([(Source::Local, path.to_string_lossy().into_owned())]),
         art: None,
+        // Your own audio files.
+        musicness: Some(crate::musicness::Musicness::Music),
     }
 }
 

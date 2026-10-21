@@ -96,6 +96,7 @@ pub fn merge_tracks(a: &Track, b: &Track) -> Track {
         isrc: a.isrc.clone().or_else(|| b.isrc.clone()),
         ids,
         art: crate::model::pick_art(a.art.clone(), b.art.clone()),
+        musicness: crate::musicness::Musicness::merge(b.musicness, a.musicness),
     }
 }
 

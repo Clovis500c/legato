@@ -56,7 +56,7 @@ it lands (tested, `pnpm check` green, committed). Technical plan, rule changes a
 - [x] Top bar: remove the sync icon and the back / forward icons at the top left.
 - [x] Right-click on a song of a playlist or of the library: remove it from the playlists that hold it, or from the
       library (`features/menus.tsx`).
-- [ ] Music filter on YouTube import: leave out videos that aren't music, carefully (some real songs aren't tagged as
+- [x] Music filter on YouTube import: leave out videos that aren't music, carefully (some real songs aren't tagged as
       music: when in doubt, keep).
 - [x] Add music: play a song even if it isn't in the library.
 

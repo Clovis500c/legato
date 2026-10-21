@@ -16,7 +16,7 @@ import { usePlayer } from '../player/store'
 import { SharePanel } from '../share/SharePanel'
 import { ExportYoutube } from './ExportYoutube'
 import { PlaylistCover } from './PlaylistCover'
-import { filterTracks, groupAlbums, groupArtists, groupStats, libraryStats, primaryArtist, sortGroups as orderGroups, sortTracks, type Filter, type GroupSort, type Sort } from './filter'
+import { filterTracks, groupAlbums, groupArtists, groupStats, libraryStats, musicOnly, primaryArtist, sortGroups as orderGroups, sortTracks, type Filter, type GroupSort, type Sort } from './filter'
 import { TrackTable } from './TrackTable'
 
 /** YouTube-like sort list, in groups. Manual only on playlists. */
@@ -200,10 +200,25 @@ function Playability({ tracks }: { tracks: LibraryTrack[] }) {
   )
 }
 
+/** "N videos hidden because they aren't music · Show": imports bring talks and games along, set aside, never deleted. */
+function NotMusicNotice({ hidden }: { hidden: number }) {
+  const showing = useStore((s) => s.showNotMusic)
+  if (!hidden) return null
+  return (
+    <p className="mb-2 flex shrink-0 items-center justify-between gap-3 rounded-lg border border-line-soft px-3 py-2 text-xs text-ink-2">
+      {showing ? `Showing ${hidden} video${hidden === 1 ? '' : 's'} that don’t look like music` : `${hidden} video${hidden === 1 ? '' : 's'} hidden because they aren’t music`}
+      <button onClick={() => useStore.setState({ showNotMusic: !showing })} className="rounded-full border border-line px-3 py-1 font-medium text-ink hover:bg-raised">
+        {showing ? 'Hide them' : 'Show'}
+      </button>
+    </p>
+  )
+}
+
 export function SongsView() {
-  const { tracks, query, filter, setFilter, sort, go, stats: plays, seed } = useStore()
+  const { tracks, query, filter, setFilter, sort, go, stats: plays, seed, showNotMusic } = useStore()
   const stats = useMemo(() => libraryStats(tracks), [tracks])
-  const shown = useMemo(() => sortTracks(filterTracks(tracks, query, filter), sort, { stats: plays, seed }), [tracks, query, filter, sort, plays, seed])
+  const music = useMemo(() => musicOnly(tracks, showNotMusic), [tracks, showNotMusic])
+  const shown = useMemo(() => sortTracks(filterTracks(music.kept, query, filter), sort, { stats: plays, seed }), [music, query, filter, sort, plays, seed])
 
   return (
     <>
@@ -213,6 +228,7 @@ export function SongsView() {
         <SortMenu />
       </div>
       <Playability tracks={shown} />
+      <NotMusicNotice hidden={music.hidden} />
       <TrackTable
         tracks={shown}
         empty={
@@ -250,10 +266,12 @@ function EditableTitle({ id, name }: { id: number; name: string }) {
 }
 
 export function PlaylistView({ id }: { id: number }) {
-  const { playlists, playlistTracks, query, editPlaylist, go, playlistSort, stats, seed } = useStore()
+  const { playlists, playlistTracks, query, editPlaylist, go, playlistSort, stats, seed, showNotMusic } = useStore()
   const playlist = playlists.find((p) => p.id === id)
   const newestFirst = playlist?.newestFirst ?? false
-  const shown = useMemo(() => sortTracks(filterTracks(playlistTracks, query, 'all'), playlistSort, { stats, seed, positional: true, newestFirst }), [playlistTracks, query, playlistSort, stats, seed, newestFirst])
+  // Your own playlists show what you put in them; imports set non-music aside.
+  const music = useMemo(() => musicOnly(playlistTracks, showNotMusic || !!playlist?.custom), [playlistTracks, showNotMusic, playlist?.custom])
+  const shown = useMemo(() => sortTracks(filterTracks(music.kept, query, 'all'), playlistSort, { stats, seed, positional: true, newestFirst }), [music, query, playlistSort, stats, seed, newestFirst])
   const sharing = useStore((s) => s.sharing === id)
   const closeShare = useCallback(() => useStore.setState({ sharing: null }), [])
   if (!playlist) return null
@@ -298,6 +316,7 @@ export function PlaylistView({ id }: { id: number }) {
         <SortMenu playlist />
       </div>
       <Playability tracks={playlistTracks} />
+      {!playlist.custom && <NotMusicNotice hidden={music.hidden} />}
       {sharing && <SharePanel id={id} name={playlist.name} onClose={closeShare} />}
       <TrackTable tracks={shown} empty={playlist.custom ? 'Empty playlist: add songs from Songs with the “Add to playlist” button.' : 'No songs.'} editId={playlist.custom && !query && playlistSort === 'manual' ? id : undefined} />
     </>

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { LibraryTrack } from '../../shared/api'
 import { formatDuration, timeAgo } from '../../shared/format'
-import { filterTracks, groupAlbums, groupArtists, libraryStats, primaryArtist, sortGroups, sortTracks } from './filter'
+import { filterTracks, groupAlbums, groupArtists, libraryStats, musicOnly, primaryArtist, sortGroups, sortTracks } from './filter'
 
 const t = (id: number, title: string, artist: string, ids: LibraryTrack['ids']): LibraryTrack => ({
   id,
@@ -130,5 +130,14 @@ describe('albums and artists', () => {
     const artists = groupArtists(lib).map((g) => ({ ...g, name: g.artist }))
     expect(sortGroups(artists, 'albums').map((g) => g.name)).toEqual(['Daft Punk', 'The xx'])
     expect(sortGroups(artists, 'random', { seed: 3 }).map((g) => g.name)).toEqual(sortGroups(artists, 'random', { seed: 3 }).map((g) => g.name))
+  })
+})
+
+describe('musicOnly', () => {
+  const t = (id: number, musicness?: 'music' | 'unsure' | 'notMusic') => ({ id, musicness })
+  it('sets clear non-music aside, keeps doubts and unknowns', () => {
+    const list = [t(1, 'music'), t(2, 'notMusic'), t(3, 'unsure'), t(4)]
+    expect(musicOnly(list, false)).toEqual({ kept: [t(1, 'music'), t(3, 'unsure'), t(4)], hidden: 1 })
+    expect(musicOnly(list, true)).toEqual({ kept: list, hidden: 1 })
   })
 })

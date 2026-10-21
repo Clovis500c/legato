@@ -69,6 +69,8 @@ interface State {
   lastSync?: { at: number; report: SyncReport }
   /** Playlist id → its track ids in order (covers). */
   orders: Record<number, number[]>
+  /** Imported videos that aren't music shown anyway (Songs, imported playlists). Session only. */
+  showNotMusic: boolean
   /** Share code waiting for the import dialog. */
   incoming?: string
   /** Playlist whose share panel is open. */
@@ -146,6 +148,7 @@ export const useStore = create<State>((set, get) => {
     stats: {},
     busy: false,
     sharing: null,
+    showNotMusic: false,
     toasts: [],
 
     go: (view) => {

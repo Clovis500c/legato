@@ -38,6 +38,9 @@ pub struct Track {
     /// Cover art URL (https, served to the UI through the app's image cache).
     #[serde(default)]
     pub art: Option<String>,
+    /// Music or not (YouTube videos: talks, reactions, games come along with songs). None = not looked at.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub musicness: Option<crate::musicness::Musicness>,
 }
 
 /// YouTube video frame: last resort art, any real cover wins over it.
