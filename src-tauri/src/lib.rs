@@ -386,25 +386,44 @@ async fn search_catalogs(state: State<'_, AppState>, query: String, country: Str
 
 /// No YouTube id yet: try to find one (1 search) so the track plays in full.
 async fn with_youtube(state: &AppState, track: Track) -> Track {
-    if !track.ids.contains_key(&Source::Youtube)
-        && let Some(Ok(found)) = yt_search(state, &format!("{} {}", track.artist, track.title)).await
+    if track.ids.contains_key(&Source::Youtube) {
+        return track;
+    }
+    let query = format!("{} {}", track.artist, track.title);
+    // YouTube Music songs first (clean metadata), then normal YouTube (signed out too).
+    if let Some(Ok(found)) = yt_search(state, &query).await
         && let Some(hit) = music_core::matching::best_match(&track, &found)
     {
         return merge_tracks(&track, hit);
     }
+    if let Ok(found) = video_search(state, &query).await {
+        let videos: Vec<Track> = found.into_iter().filter(|(_, m)| *m != Musicness::NotMusic).map(|(t, _)| t).collect();
+        if let Some(hit) = music_core::matching::best_match(&track, &videos) {
+            return merge_tracks(&track, hit);
+        }
+    }
     track
+}
+
+/// Trust boundary: a search hit from the UI. Catalog ids only, bounded text, https art.
+fn checked_hit(track: Track) -> Result<Track, String> {
+    let ok_text = |s: &str| !s.trim().is_empty() && s.chars().count() <= 300;
+    if !ok_text(&track.title) || !ok_text(&track.artist) || track.ids.is_empty() || track.ids.iter().any(|(s, id)| *s == Source::Local || id.is_empty() || id.len() > 64) {
+        return Err("Invalid title".into());
+    }
+    Ok(Track { art: track.art.filter(|a| a.len() <= 500 && a.starts_with("https://")), ..track })
+}
+
+/// Search hit with its YouTube version when one exists, nothing written: plays in full without joining the library.
+#[tauri::command]
+async fn resolve_track(state: State<'_, AppState>, track: Track) -> CmdResult<Track> {
+    Ok(with_youtube(&state, checked_hit(track)?).await)
 }
 
 /// Add search hit, with its YouTube version when one exists.
 #[tauri::command]
 async fn add_track(state: State<'_, AppState>, track: Track) -> CmdResult<i64> {
-    // Trust boundary: catalog ids only, bounded text.
-    let ok_text = |s: &str| !s.trim().is_empty() && s.chars().count() <= 300;
-    if !ok_text(&track.title) || !ok_text(&track.artist) || track.ids.is_empty() || track.ids.iter().any(|(s, id)| *s == Source::Local || id.is_empty() || id.len() > 64) {
-        return Err("Invalid title".into());
-    }
-    let track = Track { art: track.art.filter(|a| a.len() <= 500 && a.starts_with("https://")), ..track };
-    let track = with_youtube(&state, track).await;
+    let track = with_youtube(&state, checked_hit(track)?).await;
     // Added by hand: a song removed earlier comes back.
     let lib = state.lib.lock().unwrap();
     lib.unremove(&track).map_err(err)?;
@@ -1278,7 +1297,7 @@ async fn media_update(state: State<'_, AppState>, now: Option<media::NowPlaying>
 
 /// Blocked embed (101 / 150): the video from YouTube's watch page, over the video slot.
 #[tauri::command]
-async fn ytwatch_open(state: State<'_, AppState>, video: String, start: f64, rect: ytwatch::Rect) -> CmdResult<()> {
+async fn ytwatch_open(state: State<'_, AppState>, video: String, start: f64, rect: Option<ytwatch::Rect>) -> CmdResult<()> {
     ytwatch::open(&state.app, &video, start, rect, state.shield.clone()).map_err(err)
 }
 
@@ -1366,7 +1385,7 @@ pub fn run() {
             update::spawn(app.handle().clone());
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, add_track, backfill_art, find_versions, play_preview, share_playlist, share_preview, share_read_image, share_import, nearby_send, nearby_status, nearby_stop, nearby_receive, record_play, mixes, set_track_pref, clear_history, export_youtube, spotify_player, spotify_playback, ytm_sign_in, ytm_sign_out, spotify_web_open, spotify_web_status, import_spotify_link, ytm_accounts, set_ytm_accounts, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, system_accent, restart_app, autostart, set_autostart, media_update, load_session, save_session, add_to_youtube, playlist_orders, save_cover, export_cover, alternative_videos, play_stats, cache_stats, open_licenses, update_status, update_check, update_install, ytm_home, ytm_list, discord_presence, discord_off, discord_status, remove_from_playlist, remove_from_library, ytwatch_open, ytwatch_place, ytwatch_cmd, ytwatch_close])
+        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, add_track, backfill_art, find_versions, play_preview, share_playlist, share_preview, share_read_image, share_import, nearby_send, nearby_status, nearby_stop, nearby_receive, record_play, mixes, set_track_pref, clear_history, export_youtube, spotify_player, spotify_playback, ytm_sign_in, ytm_sign_out, spotify_web_open, spotify_web_status, import_spotify_link, ytm_accounts, set_ytm_accounts, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, system_accent, restart_app, autostart, set_autostart, media_update, load_session, save_session, add_to_youtube, playlist_orders, save_cover, export_cover, alternative_videos, play_stats, cache_stats, open_licenses, update_status, update_check, update_install, ytm_home, ytm_list, discord_presence, discord_off, discord_status, remove_from_playlist, remove_from_library, resolve_track, ytwatch_open, ytwatch_place, ytwatch_cmd, ytwatch_close])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

@@ -173,7 +173,8 @@ function playOnWatchPage(video: string, startMs: number) {
   // The embed stops for good: no second player in the background.
   ytPost(frame, 'command', 'pauseVideo')
   if (!rect) return void tryOtherUpload(usePlayer.getState().now?.trackId ?? 0, video, 'This video can’t play in apps')
-  openWatch(video, startMs / 1000, rect).catch(() => tryOtherUpload(usePlayer.getState().now?.trackId ?? 0, video, 'This video can’t play in apps'))
+  // Cover mode: made hidden, it plays unseen.
+  openWatch(video, startMs / 1000, useVideoSlot.getState().hidden ? null : rect).catch(() => tryOtherUpload(usePlayer.getState().now?.trackId ?? 0, video, 'This video can’t play in apps'))
 }
 
 async function tryOtherUpload(trackId: number, failed: string, why: string) {

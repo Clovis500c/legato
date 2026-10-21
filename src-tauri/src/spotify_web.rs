@@ -10,7 +10,7 @@ const LABEL: &str = "spotify-web";
 /// Signed in to the web player (sp_dc = Spotify web session cookie). Profile shared with the main window.
 /// WebView2: call from async commands or threads only (sync = deadlock).
 pub fn signed_in(app: &AppHandle) -> bool {
-    let Some(main) = app.get_webview_window("main") else { return false };
+    let Some(main) = app.get_webview("main") else { return false };
     let Ok(url) = Url::parse(PLAYER) else { return false };
     main.cookies_for_url(url).is_ok_and(|c| c.iter().any(|c| c.name() == "sp_dc" && !c.value().is_empty()))
 }

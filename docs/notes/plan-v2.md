@@ -17,6 +17,8 @@ it lands (tested, `pnpm check` green, committed). Technical plan, rule changes a
 - [x] Every task of the request copied here as a checkbox.
 - [ ] After each task or small group: `pnpm check` green, app starts, nothing broken, small clear commit, tests for new
       logic (never real network).
+- [x] User report 2026-10-21 (mid-work): a watch-page song restarted in Cover mode showed its video over the cover. Fixed
+      (webview made hidden never started its media; placement asked before it existed was lost).
 - [ ] Final report: done / not done / not tested / choices made for the user / every rule changed (old, new, why).
 
 **Phase 1: fixes**
@@ -56,7 +58,7 @@ it lands (tested, `pnpm check` green, committed). Technical plan, rule changes a
       library (`features/menus.tsx`).
 - [ ] Music filter on YouTube import: leave out videos that aren't music, carefully (some real songs aren't tagged as
       music: when in doubt, keep).
-- [ ] Add music: play a song even if it isn't in the library.
+- [x] Add music: play a song even if it isn't in the library.
 
 **Phase 3: new features** (new default → bump `DEFAULTS_VERSION`, add to the settings search index)
 - [ ] Search bar like YouTube's in the navbar, always visible (screenshot 5): field + search button + mic button. Mic =

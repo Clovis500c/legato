@@ -58,7 +58,7 @@ import { addToPlaylist, removeFromPlaylist, removeTrackFromPlaylist, songs } fro
 import { PlaylistCover as PlaylistIcon } from './library/PlaylistCover'
 import { primaryArtist } from './library/filter'
 import { isFull, viaLabel, vias } from './player/sources'
-import { isRemote, nowTrack, usePlayer } from './player/store'
+import { isRemote, nowTrack, remoteTrack, usePlayer } from './player/store'
 
 const app = () => useStore.getState()
 const player = () => usePlayer.getState()
@@ -352,11 +352,16 @@ export function trackMenu(t: LibraryTrack, ctx: { list?: LibraryTrack[]; index?:
 }
 
 /** Catalog search result (Add music). */
-export function hitMenu(hit: SearchHit, add: () => void, busy: boolean): MenuEntry[] {
+export function hitMenu(hit: SearchHit, add: () => void, busy: boolean, play: () => void): MenuEntry[] {
   const t = app().tracks.find((x) => x.id === hit.libraryId)
   if (t) return trackMenu(t)
   const links = pages({ ...hit, id: 0, added: 0 })
+  const item = remoteTrack(hit)
   return [
+    { label: 'Play', icon: <Play size={16} />, onSelect: play },
+    { label: 'Play next', icon: <Queue size={16} />, onSelect: () => player().enqueue([item], true) },
+    { label: 'Add to queue', icon: <ListPlus size={16} />, onSelect: () => player().enqueue([item], false) },
+    '-',
     { label: 'Add to library', icon: <Plus size={16} />, disabled: busy, onSelect: add },
     '-',
     links.length > 0 && { label: 'Copy link', icon: <Link size={16} />, onSelect: () => copy(links[0].url, 'Link') },

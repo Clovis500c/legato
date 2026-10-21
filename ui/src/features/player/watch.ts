@@ -44,10 +44,10 @@ export function physical(r: Pick<DOMRect, 'left' | 'top' | 'width' | 'height'>, 
   return { x: r.left * ratio, y: r.top * ratio, width: r.width * ratio, height: r.height * ratio }
 }
 
-/** Opens `video` from `startS` over `rect` (CSS px). */
-export function openWatch(video: string, startS: number, rect: Pick<DOMRect, 'left' | 'top' | 'width' | 'height'>) {
+/** Opens `video` from `startS` over `rect` (CSS px), or hidden (null: cover mode). */
+export function openWatch(video: string, startS: number, rect: Pick<DOMRect, 'left' | 'top' | 'width' | 'height'> | null) {
   useWatch.setState({ video })
-  const r = physical(rect, devicePixelRatio)
+  const r = rect && physical(rect, devicePixelRatio)
   placed = JSON.stringify(r)
   return api.ytwatchOpen(video, startS, r)
 }

@@ -1,7 +1,7 @@
-import { ArrowRight, Check, ClipboardText, FolderPlus, MagnifyingGlass, Plus, QrCode } from '@phosphor-icons/react'
+import { ArrowRight, Check, ClipboardText, FolderPlus, MagnifyingGlass, Play, Plus, QrCode } from '@phosphor-icons/react'
 import { useMemo, useState } from 'react'
 import { useStore } from '../../app/store'
-import { api, type SearchHit, type SearchResults, type Source } from '../../shared/api'
+import { api, type SearchHit, type SearchResults, type Source, type Track } from '../../shared/api'
 import { formatDuration, region, spotifyList } from '../../shared/format'
 import { Led, LedChip, RoundButton, Toggle } from '../../shared/ui/controls'
 import { trackArt } from '../../shared/art'
@@ -11,7 +11,7 @@ import { hitMenu, trackMenu } from '../menus'
 import { PageHeader } from '../../shared/ui/PageHeader'
 import { SourceIcon } from '../../shared/ui/SourceIcon'
 import { filterTracks } from '../library/filter'
-import { usePlayer } from '../player/store'
+import { remoteTrack, usePlayer } from '../player/store'
 import { kindLabel, unofficial, videoKind } from './kind'
 
 const order: Source[] = ['youtube', 'apple', 'spotify', 'local']
@@ -20,13 +20,16 @@ function Badge({ children }: { children: string }) {
   return <span className="rounded-[3px] border border-line px-1.5 font-mono text-[9px] tracking-[0.08em] text-ink-3">{children}</span>
 }
 
-function HitRow({ hit, onAdded }: { hit: SearchHit; onAdded: (id: number) => void }) {
+/** The catalog track of a hit (no UI fields). */
+const trackOf = (h: SearchHit): Track => ({ title: h.title, artist: h.artist, album: h.album, durationMs: h.durationMs, isrc: h.isrc, ids: h.ids, art: h.art })
+
+function HitRow({ hit, onAdded, onPlay }: { hit: SearchHit; onAdded: (id: number) => void; onPlay: () => void }) {
   const [busy, setBusy] = useState(false)
   const kind = hit.ids.youtube && !hit.ids.apple ? videoKind(hit.title) : null
   const add = async () => {
     setBusy(true)
     try {
-      onAdded(await api.addTrack({ title: hit.title, artist: hit.artist, album: hit.album, durationMs: hit.durationMs, isrc: hit.isrc, ids: hit.ids, art: hit.art }))
+      onAdded(await api.addTrack(trackOf(hit)))
       await useStore.getState().refresh()
     } catch (e) {
       useStore.setState({ error: String(e) })
@@ -35,7 +38,11 @@ function HitRow({ hit, onAdded }: { hit: SearchHit; onAdded: (id: number) => voi
     }
   }
   return (
-    <li onContextMenu={onMenu(() => hitMenu(hit, add, busy))} className="flex items-center gap-3.5 border-b border-line-soft px-2 py-2.5">
+    // Double-click plays it, in the library or not.
+    <li onContextMenu={onMenu(() => hitMenu(hit, add, busy, onPlay))} onDoubleClick={onPlay} className="group flex items-center gap-3.5 border-b border-line-soft px-2 py-2.5">
+      <RoundButton label={`Play ${hit.title}`} kind="plain" size="sm" onClick={onPlay}>
+        <Play size={14} weight="fill" />
+      </RoundButton>
       <Cover title={hit.album ?? hit.title} art={trackArt({ ...hit, id: hit.libraryId ?? undefined })} size={42} />
       <div className="min-w-0 flex-1">
         <p className="flex items-center gap-2 truncate text-[13px] font-semibold">
@@ -115,6 +122,14 @@ export function AddView() {
   const matching = (res?.hits ?? []).filter((h) => (only === 'all' || h.ids[only]) && !(hideCovers && h.ids.youtube && !h.ids.apple && unofficial(videoKind(h.title))))
   const others = matching.filter((h) => h.musicness === 'notMusic').length
   const hits = showOthers ? matching : matching.filter((h) => h.musicness !== 'notMusic')
+  // Results play as a queue, added or not (session-only items, like Home's recommendations). A hit with no YouTube
+  // version gets one first (one search, nothing written) so it plays in full.
+  const playHit = async (h: SearchHit) => {
+    const queue = hits.map((x) => tracks.find((t) => t.id === x.libraryId) ?? remoteTrack(trackOf(x)))
+    const i = hits.indexOf(h)
+    if (!h.libraryId && !h.ids.youtube) queue[i] = remoteTrack(await api.resolveTrack(trackOf(h)).catch(() => trackOf(h)))
+    play(queue, i)
+  }
   const markAdded = (i: number, libraryId: number) => setRes((r) => r && { ...r, hits: r.hits.map((h, j) => (j === i ? { ...h, libraryId } : h)) })
 
   const search = async (e: React.FormEvent) => {
@@ -197,7 +212,7 @@ export function AddView() {
               ))}
               <ul>
                 {hits.map((h) => (
-                  <HitRow key={Object.values(h.ids).join('|')} hit={h} onAdded={(id) => markAdded(res.hits.indexOf(h), id)} />
+                  <HitRow key={Object.values(h.ids).join('|')} hit={h} onAdded={(id) => markAdded(res.hits.indexOf(h), id)} onPlay={() => void playHit(h)} />
                 ))}
               </ul>
               {others > 0 && (

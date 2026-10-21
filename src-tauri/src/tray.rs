@@ -71,7 +71,8 @@ impl Tray {
 
 /// Restore and focus the main window (minimized or behind others).
 fn show_main(app: &AppHandle) {
-    if let Some(w) = app.get_webview_window("main") {
+    // Window, not "webview window": with the watch-page child (ytwatch.rs) there is none.
+    if let Some(w) = app.get_window("main") {
         let _ = w.unminimize();
         let _ = w.show();
         let _ = w.set_focus();

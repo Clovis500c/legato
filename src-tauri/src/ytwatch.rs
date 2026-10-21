@@ -5,7 +5,7 @@
 //! scripts built from fixed names and numbers only.
 
 use serde::{Deserialize, Serialize};
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 use tauri::{AppHandle, Manager, PhysicalPosition, PhysicalSize, Url, WebviewBuilder, WebviewUrl};
 
 pub const LABEL: &str = "ytwatch";
@@ -110,12 +110,17 @@ fn allowed(url: &Url) -> bool {
     url.scheme() == "https" && url.host_str().is_some_and(|h| h == "youtube.com" || h.ends_with(".youtube.com"))
 }
 
-/// Loads `video` from `start_s` in the watch webview over `rect` (made on first use, reused after).
-pub fn open(app: &AppHandle, video: &str, start_s: f64, rect: Rect, shield: Arc<music_shield::Shield>) -> anyhow::Result<()> {
+/// Where the UI last asked the webview to be (None = hidden). Kept even before the webview exists: a hide sent while it
+/// is still being made (cover mode at launch, 2026-10-21 report: the video showed over the cover) applies once it is.
+static WANTED: Mutex<Option<Rect>> = Mutex::new(None);
+
+/// Loads `video` from `start_s` in the watch webview over `rect`, or hidden (made on first use, reused after).
+pub fn open(app: &AppHandle, video: &str, start_s: f64, rect: Option<Rect>, shield: Arc<music_shield::Shield>) -> anyhow::Result<()> {
     let url = watch_url(video, start_s).ok_or_else(|| anyhow::anyhow!("Invalid video id"))?;
+    *WANTED.lock().unwrap() = rect;
     if let Some(wv) = app.get_webview(LABEL) {
         wv.navigate(url)?;
-        place(app, Some(rect))?;
+        apply(&wv)?;
         return Ok(());
     }
     let window = app.get_window("main").ok_or_else(|| anyhow::anyhow!("No main window"))?;
@@ -123,25 +128,35 @@ pub fn open(app: &AppHandle, video: &str, start_s: f64, rect: Rect, shield: Arc<
     if shield.enabled.load(std::sync::atomic::Ordering::Relaxed) {
         builder = builder.initialization_script_for_all_frames(music_shield::YOUTUBE_SCRIPT);
     }
-    let wv = window.add_child(builder, rect.position(), rect.size())?;
+    let start = rect.unwrap_or(UNSEEN);
+    let wv = window.add_child(builder, start.position(), start.size())?;
     #[cfg(windows)]
     {
         crate::shield::install(&wv, shield)?;
         listen(&wv, app.clone())?;
     }
+    // Moves or hides asked while it was being made.
+    apply(&wv)?;
     Ok(())
+}
+
+/// Unseen = 1 px in the window's corner, still shown: Chromium never starts the media of a page that was never visible
+/// (a watch page made hidden stayed buffering at 0:00, 2026-10-21).
+const UNSEEN: Rect = Rect { x: 0.0, y: 0.0, width: 1.0, height: 1.0 };
+
+fn apply(wv: &tauri::Webview) -> tauri::Result<()> {
+    let r = WANTED.lock().unwrap().unwrap_or(UNSEEN);
+    wv.set_position(r.position())?;
+    wv.set_size(r.size())?;
+    wv.show()
 }
 
 /// Follows the video slot; None = hidden (cover mode): it keeps playing, unseen.
 pub fn place(app: &AppHandle, rect: Option<Rect>) -> tauri::Result<()> {
-    let Some(wv) = app.get_webview(LABEL) else { return Ok(()) };
-    match rect {
-        Some(r) => {
-            wv.set_position(r.position())?;
-            wv.set_size(r.size())?;
-            wv.show()
-        }
-        None => wv.hide(),
+    *WANTED.lock().unwrap() = rect;
+    match app.get_webview(LABEL) {
+        Some(wv) => apply(&wv),
+        None => Ok(()),
     }
 }
 

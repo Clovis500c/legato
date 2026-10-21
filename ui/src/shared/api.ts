@@ -270,6 +270,8 @@ export const api = {
   searchCatalogs: (query: string, country: string) => invoke<SearchResults>('search_catalogs', { query, country }),
   /** Returns library row id. Finds a YouTube version when missing (1 search). */
   addTrack: (track: Track) => invoke<number>('add_track', { track }),
+  /** Search hit with its YouTube version (one search if missing), nothing written: play without adding. */
+  resolveTrack: (track: Track) => invoke<Track>('resolve_track', { track }),
   ytmHome: () => invoke<Shelf[]>('ytm_home'),
   ytmList: (list: ListRef) => invoke<Track[]>('ytm_list', { list }),
   /** YouTube versions for tracks with no full source (1 search each, daily budget). */
@@ -343,7 +345,7 @@ export const api = {
   updateInstall: () => invoke<void>('update_install'),
   onUpdate: (cb: (s: UpdateStatus) => void) => listen<UpdateStatus>('update', (e) => cb(e.payload)),
   /** Blocked embed (101 / 150): the video plays from YouTube's watch page in a webview over the slot. Physical px. */
-  ytwatchOpen: (video: string, start: number, rect: WatchRect) => invoke<void>('ytwatch_open', { video, start, rect }),
+  ytwatchOpen: (video: string, start: number, rect: WatchRect | null) => invoke<void>('ytwatch_open', { video, start, rect }),
   /** null = hidden (cover mode), still playing. */
   ytwatchPlace: (rect: WatchRect | null) => invoke<void>('ytwatch_place', { rect }),
   ytwatchCmd: (cmd: WatchCmd) => invoke<void>('ytwatch_cmd', { cmd }),
