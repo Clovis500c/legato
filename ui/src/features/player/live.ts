@@ -1,10 +1,11 @@
 import { create } from 'zustand'
-import { api, type LiveLevels } from '../../shared/api'
+import { api, type Effects, type LiveLevels } from '../../shared/api'
+import { NEUTRAL } from './effects'
 import { useWatch, watching } from './watch'
 import { YT_ORIGIN } from './youtube'
 
 /**
- * Live processing of what plays (Adaptive Sound, the moving cover, later the Live Editor): settings to the native
+ * Live processing of what plays (Adaptive Sound, the moving cover, the Live Editor): settings to the native
  * engine (local files, previews) and to the YouTube player (embed or watch page, crates/shield live.js), levels back
  * from whichever plays. The YouTube side runs only when a feature needs it and "Process YouTube's sound" is on; when it
  * can't (blocked, capture gives nothing) the video plays as usual and `error` says why. Spotify plays in its own app:
@@ -17,6 +18,8 @@ export interface LiveWish {
   targetLufs: number
   /** YouTube's sound may be processed (Settings › Advanced). */
   youtube: boolean
+  /** Live Editor settings (neutral = untouched). */
+  effects: Effects
 }
 
 export const useLive = create<{ levels: LiveLevels | null; attached: boolean; error?: string }>(() => ({ levels: null, attached: false }))
@@ -49,21 +52,22 @@ export function parseLive(origin: string, data: unknown): Report | null {
   }
 }
 
-let wish: LiveWish = { on: false, adaptive: false, targetLufs: -14, youtube: true }
+let wish: LiveWish = { on: false, adaptive: false, targetLufs: -14, youtube: true, effects: NEUTRAL }
 let frame: HTMLIFrameElement | null = null
 
-const post = (settings: ReturnType<typeof frameSettings>) => frame?.contentWindow?.postMessage(JSON.stringify({ musicApp: 'live', settings }), YT_ORIGIN)
+const post = (settings: ReturnType<typeof frameSettings>, effects: Effects) => frame?.contentWindow?.postMessage(JSON.stringify({ musicApp: 'live', settings, effects }), YT_ORIGIN)
 
 /** Sends the current wish (or a new one) everywhere: engine always (cheap); YouTube where it plays, off elsewhere. */
 export function sendLive(next?: LiveWish) {
   if (next) wish = next
   void api.playerLive({ adaptive: wish.adaptive, targetLufs: wish.targetLufs }).catch(() => {})
+  void api.playerEffects(wish.effects).catch(() => {})
   const s = frameSettings(wish)
   if (watching()) {
-    void api.ytwatchCmd({ type: 'live', ...s }).catch(() => {})
+    void api.ytwatchCmd({ type: 'live', ...s, effects: wish.effects }).catch(() => {})
     // The embed stopped for the watch page: no second processing in the background.
-    post({ ...s, on: false })
-  } else post(s)
+    post({ ...s, on: false }, NEUTRAL)
+  } else post(s, wish.effects)
   if (!s.on) useLive.setState({ attached: false, error: undefined })
 }
 

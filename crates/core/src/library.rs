@@ -205,6 +205,17 @@ pub struct Library {
     pub versions: std::sync::Arc<crate::cache::Versions>,
 }
 
+/// Live Editor edit: a song's (or a preset), its effects as JSON (music_dsp::Effects).
+#[derive(Debug, Clone, PartialEq, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Edit {
+    pub id: i64,
+    pub song: Option<String>,
+    pub name: String,
+    pub effects: String,
+    pub active: bool,
+}
+
 impl Library {
     pub fn open(path: impl AsRef<Path>) -> Result<Self> {
         Self::init(Connection::open(path)?)
@@ -243,6 +254,17 @@ impl Library {
         if lib.db.query_row("PRAGMA user_version", [], |r| r.get::<_, i64>(0))? < 8 {
             // v8: lyrics looked up (lyrics.rs key), JSON or NULL = none found; spares the services, works offline.
             lib.db.execute_batch("BEGIN; CREATE TABLE IF NOT EXISTS lyrics (key TEXT PRIMARY KEY, body TEXT, fetched INTEGER NOT NULL); PRAGMA user_version = 8; COMMIT;")?;
+        }
+        if lib.db.query_row("PRAGMA user_version", [], |r| r.get::<_, i64>(0))? < 9 {
+            // v9: Live Editor edits. song = 't:<track>' / 'yt:<video>' / 'f:<path>', NULL = preset for any song.
+            // effects = JSON of numbers only (music_dsp::Effects), never audio.
+            lib.db.execute_batch(
+                "BEGIN;
+                 CREATE TABLE IF NOT EXISTS edits (id INTEGER PRIMARY KEY, song TEXT, name TEXT NOT NULL, effects TEXT NOT NULL, active INTEGER NOT NULL DEFAULT 0, updated INTEGER NOT NULL);
+                 CREATE INDEX IF NOT EXISTS edits_song ON edits (song);
+                 PRAGMA user_version = 9;
+                 COMMIT;",
+            )?;
         }
         let v = lib.versions.clone();
         lib.db.update_hook(Some(move |_: rusqlite::hooks::Action, _: &str, table: &str, _: i64| v.touch(table)))?;
@@ -631,6 +653,43 @@ impl Library {
             "INSERT INTO lyrics (key, body, fetched) VALUES (?1, ?2, ?3) ON CONFLICT (key) DO UPDATE SET body = excluded.body, fetched = excluded.fetched",
             params![key, body, fetched],
         )?;
+        Ok(())
+    }
+
+    /// A song's edits (`song` key) or the presets (None), newest first.
+    pub fn edits(&self, song: Option<&str>) -> Result<Vec<Edit>> {
+        let mut q = self.db.prepare("SELECT id, song, name, effects, active FROM edits WHERE song IS ?1 ORDER BY updated DESC, id DESC")?;
+        let rows = q.query_map([song], |r| Ok(Edit { id: r.get(0)?, song: r.get(1)?, name: r.get(2)?, effects: r.get(3)?, active: r.get::<_, i64>(4)? != 0 }))?;
+        Ok(rows.collect::<rusqlite::Result<_>>()?)
+    }
+
+    /// New edit (id None) or changed one. Returns its id.
+    pub fn save_edit(&self, id: Option<i64>, song: Option<&str>, name: &str, effects: &str, now: i64) -> Result<i64> {
+        match id {
+            Some(id) => {
+                self.db.execute("UPDATE edits SET name = ?2, effects = ?3, updated = ?4 WHERE id = ?1", params![id, name, effects, now])?;
+                Ok(id)
+            }
+            None => {
+                self.db.execute("INSERT INTO edits (song, name, effects, updated) VALUES (?1, ?2, ?3, ?4)", params![song, name, effects, now])?;
+                Ok(self.db.last_insert_rowid())
+            }
+        }
+    }
+
+    pub fn delete_edit(&self, id: i64) -> Result<()> {
+        self.db.execute("DELETE FROM edits WHERE id = ?1", [id])?;
+        Ok(())
+    }
+
+    /// The edit that plays with this song (None = the song as is).
+    pub fn activate_edit(&self, song: &str, id: Option<i64>) -> Result<()> {
+        let tx = self.db.unchecked_transaction()?;
+        tx.execute("UPDATE edits SET active = 0 WHERE song = ?1", [song])?;
+        if let Some(id) = id {
+            tx.execute("UPDATE edits SET active = 1 WHERE id = ?1 AND song = ?2", params![id, song])?;
+        }
+        tx.commit()?;
         Ok(())
     }
 
@@ -1040,6 +1099,28 @@ mod tests {
         lib.set_setting("ui", &serde_json::json!({ "theme": "paper" }))?;
         lib.set_setting("ui", &serde_json::json!({ "theme": "graphite" }))?;
         assert_eq!(lib.setting("ui")?, Some(serde_json::json!({ "theme": "graphite" })));
+        Ok(())
+    }
+
+    #[test]
+    fn edits_per_song_presets_and_one_active() -> Result<()> {
+        let lib = Library::in_memory()?;
+        let a = lib.save_edit(None, Some("t:1"), "Slowed", "{\"speed\":0.8}", 1)?;
+        let b = lib.save_edit(None, Some("t:1"), "8D", "{}", 2)?;
+        lib.save_edit(None, None, "My preset", "{}", 3)?;
+        assert_eq!(lib.edits(Some("t:1"))?.iter().map(|e| e.name.as_str()).collect::<Vec<_>>(), ["8D", "Slowed"]);
+        assert_eq!(lib.edits(None)?.len(), 1);
+        lib.activate_edit("t:1", Some(a))?;
+        lib.activate_edit("t:1", Some(b))?;
+        let active: Vec<i64> = lib.edits(Some("t:1"))?.into_iter().filter(|e| e.active).map(|e| e.id).collect();
+        assert_eq!(active, [b]);
+        // Another song's id can't be made active here.
+        lib.activate_edit("t:2", Some(b))?;
+        assert!(lib.edits(Some("t:1"))?.iter().any(|e| e.active));
+        lib.save_edit(Some(a), None, "Slowed more", "{\"speed\":0.7}", 4)?;
+        assert_eq!(lib.edits(Some("t:1"))?[0].name, "Slowed more");
+        lib.delete_edit(b)?;
+        assert_eq!(lib.edits(Some("t:1"))?.len(), 1);
         Ok(())
     }
 

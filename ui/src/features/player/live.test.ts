@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { NEUTRAL } from './effects'
 import { energy, frameSettings, parseLive, punch } from './live'
 import { follow } from './pulse'
 
@@ -16,7 +17,7 @@ describe('live processing', () => {
   })
 
   it('leaves YouTube alone unless a feature needs it and it is allowed', () => {
-    const wish = { on: true, adaptive: true, targetLufs: -14, youtube: true }
+    const wish = { on: true, adaptive: true, targetLufs: -14, youtube: true, effects: NEUTRAL }
     expect(frameSettings(wish)).toEqual({ on: true, adaptive: true, targetLufs: -14 })
     expect(frameSettings({ ...wish, youtube: false }).on).toBe(false)
     expect(frameSettings({ ...wish, on: false }).on).toBe(false)

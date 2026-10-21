@@ -1568,6 +1568,45 @@ fn player_live(state: State<AppState>, settings: music_player::LiveSettings) {
     state.player.set_live(settings);
 }
 
+/// Trust boundary: a song key the UI makes (features/player/effects.ts songKey).
+fn song_key_ok(song: &str) -> bool {
+    song.len() <= 1024 && (song.starts_with("t:") || song.starts_with("yt:") || song.starts_with("f:"))
+}
+
+/// Live Editor: a song's saved edits, or the presets (song None).
+#[tauri::command]
+fn edits(state: State<AppState>, song: Option<String>) -> CmdResult<Vec<music_core::library::Edit>> {
+    if song.as_deref().is_some_and(|s| !song_key_ok(s)) {
+        return Err("bad song key".into());
+    }
+    state.lib.lock().unwrap().edits(song.as_deref()).map_err(err)
+}
+
+/// New (id None) or changed edit; effects clamped, stored as numbers only. Returns its id.
+#[tauri::command]
+fn save_edit(state: State<AppState>, id: Option<i64>, song: Option<String>, name: String, effects: music_player::Effects) -> CmdResult<i64> {
+    let name: String = name.trim().chars().take(60).collect();
+    if name.is_empty() || song.as_deref().is_some_and(|s| !song_key_ok(s)) {
+        return Err("bad edit".into());
+    }
+    let json = serde_json::to_string(&effects.clamped()).map_err(err)?;
+    state.lib.lock().unwrap().save_edit(id, song.as_deref(), &name, &json, unix_now()).map_err(err)
+}
+
+#[tauri::command]
+fn delete_edit(state: State<AppState>, id: i64) -> CmdResult<()> {
+    state.lib.lock().unwrap().delete_edit(id).map_err(err)
+}
+
+/// The edit that plays with this song from now on (None = as is).
+#[tauri::command]
+fn activate_edit(state: State<AppState>, song: String, id: Option<i64>) -> CmdResult<()> {
+    if !song_key_ok(&song) {
+        return Err("bad song key".into());
+    }
+    state.lib.lock().unwrap().activate_edit(&song, id).map_err(err)
+}
+
 /// Live Editor settings for the native engine (local files, previews). Clamped on the way in.
 #[tauri::command]
 fn player_effects(state: State<AppState>, effects: music_player::Effects) {
@@ -1667,7 +1706,7 @@ pub fn run() {
             update::spawn(app.handle().clone());
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, add_track, backfill_art, find_versions, play_preview, share_playlist, share_preview, share_read_image, share_import, nearby_send, nearby_status, nearby_stop, nearby_receive, record_play, mixes, set_track_pref, clear_history, export_youtube, spotify_player, spotify_playback, ytm_sign_in, ytm_sign_out, spotify_web_open, spotify_web_status, import_spotify_link, ytm_accounts, set_ytm_accounts, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, system_accent, restart_app, autostart, set_autostart, media_update, load_session, save_session, add_to_youtube, playlist_orders, save_cover, export_cover, alternative_videos, play_stats, cache_stats, open_licenses, update_status, update_check, update_install, ytm_home, ytm_list, discord_presence, discord_off, discord_status, remove_from_playlist, remove_from_library, resolve_track, set_global_shortcuts, player_live, player_effects, player_levels, voice_listen, voice_stop, open_windows_settings, detector_status, set_detector_token, detect_song, detect_stop, lyrics, set_ui_language, ytwatch_open, ytwatch_place, ytwatch_cmd, ytwatch_close])
+        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, add_track, backfill_art, find_versions, play_preview, share_playlist, share_preview, share_read_image, share_import, nearby_send, nearby_status, nearby_stop, nearby_receive, record_play, mixes, set_track_pref, clear_history, export_youtube, spotify_player, spotify_playback, ytm_sign_in, ytm_sign_out, spotify_web_open, spotify_web_status, import_spotify_link, ytm_accounts, set_ytm_accounts, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, system_accent, restart_app, autostart, set_autostart, media_update, load_session, save_session, add_to_youtube, playlist_orders, save_cover, export_cover, alternative_videos, play_stats, cache_stats, open_licenses, update_status, update_check, update_install, ytm_home, ytm_list, discord_presence, discord_off, discord_status, remove_from_playlist, remove_from_library, resolve_track, set_global_shortcuts, player_live, player_effects, player_levels, edits, save_edit, delete_edit, activate_edit, voice_listen, voice_stop, open_windows_settings, detector_status, set_detector_token, detect_song, detect_stop, lyrics, set_ui_language, ytwatch_open, ytwatch_place, ytwatch_cmd, ytwatch_close])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

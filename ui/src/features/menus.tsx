@@ -33,6 +33,7 @@ import {
   Repeat,
   ShareNetwork,
   Shuffle,
+  SlidersHorizontal,
   SortAscending,
   SkipBack,
   SkipForward,
@@ -45,7 +46,7 @@ import { open, save } from '@tauri-apps/plugin-dialog'
 import { openUrl, revealItemInDir } from '@tauri-apps/plugin-opener'
 import { useSettings } from '../app/settings'
 import { useStore } from '../app/store'
-import { api, playlistKey, type LibraryPlaylist, type LibraryTrack, type SearchHit } from '../shared/api'
+import { api, playlistKey, type Edit, type LibraryPlaylist, type LibraryTrack, type SearchHit } from '../shared/api'
 import { bigTrackArt } from '../shared/art'
 import { loadFit } from '../shared/artfit'
 import { fileName } from '../shared/format'
@@ -58,6 +59,7 @@ import { addToPlaylist, removeFromPlaylist, removeTrackFromPlaylist, songs } fro
 import { PlaylistCover as PlaylistIcon } from './library/PlaylistCover'
 import { primaryArtist } from './library/filter'
 import { isFull, viaLabel, vias } from './player/sources'
+import { bypass, deletePreset, deleteVersion, playVersion, reset, useEditor } from './editor/editor'
 import { isRemote, nowTrack, remoteTrack, usePlayer } from './player/store'
 import { msg, tr, trn } from '../shared/i18n/i18n'
 
@@ -472,6 +474,7 @@ export function playerMenu(): MenuEntry[] {
     { label: tr('Repeat'), icon: <Repeat size={16} />, disabled: !now.trackId, items: [rep('off', tr('Off')), rep('all', tr('Whole queue')), rep('one', tr('This track'))] },
     '-',
     { label: full ? tr('Leave full screen') : tr('Full screen'), icon: <ArrowsOutSimple size={16} />, onSelect: () => setFull(!full) },
+    { label: tr('Live Editor'), icon: <SlidersHorizontal size={16} />, onSelect: () => (useSettings.getState().update({ editor: true }), setFull(true)) },
     { label: tr('Mini player'), icon: <PictureInPicture size={16} />, checked: mini || !!video, disabled: !!video, onSelect: () => useSettings.getState().update({ miniPlayer: !mini }) },
     '-',
     t && playVia(t, list, index),
@@ -487,6 +490,32 @@ export function playerMenu(): MenuEntry[] {
     now.page && { label: tr('Listen on Apple Music'), icon: <ArrowSquareOut size={16} />, onSelect: () => openUrl(now.page!).catch(fail) },
     now.path && { label: tr('Show in folder'), icon: <FolderOpen size={16} />, onSelect: () => revealItemInDir(now.path!).catch(fail) },
   ]
+}
+
+/** Live Editor panel. */
+export function editorMenu(hide: () => void): MenuEntry[] {
+  const { effects } = useEditor.getState()
+  return [
+    { label: tr('Hear the changes'), checked: effects.on, onSelect: () => bypass(!effects.on) },
+    { label: tr('Reset all'), icon: <ArrowCounterClockwise size={16} />, onSelect: reset },
+    '-',
+    { label: tr('Hide the Live Editor'), icon: <EyeSlash size={16} />, onSelect: hide },
+  ]
+}
+
+/** A saved version of the playing song. */
+export function editVersionMenu(v: Edit, rename: () => void): MenuEntry[] {
+  return [
+    { label: tr('Play with this song'), icon: <Play size={16} />, checked: v.active, onSelect: () => playVersion(v.id).catch(fail) },
+    { label: tr('Rename'), icon: <PencilSimple size={16} />, onSelect: rename },
+    '-',
+    { label: tr('Delete'), icon: <Trash size={16} />, danger: true, onSelect: () => deleteVersion(v.id).catch(fail) },
+  ]
+}
+
+/** A Live Editor preset: built in (no id) or saved. */
+export function editPresetMenu(name: string, apply: () => void, id?: number): MenuEntry[] {
+  return [{ label: tr('Apply “{name}”', { name }), icon: <SlidersHorizontal size={16} />, onSelect: apply }, id !== undefined && '-', id !== undefined && { label: tr('Delete'), icon: <Trash size={16} />, danger: true, onSelect: () => deletePreset(id).catch(fail) }]
 }
 
 /** Add-on card. */

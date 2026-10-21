@@ -127,13 +127,38 @@ export type WatchCmd =
   | { type: 'seek'; seconds: number }
   | { type: 'volume'; percent: number }
   | { type: 'crop'; x: number; y: number; w: number; h: number }
-  | { type: 'live'; on: boolean; adaptive: boolean; targetLufs: number }
+  | { type: 'live'; on: boolean; adaptive: boolean; targetLufs: number; effects?: Effects }
 
 /** crates/dsp control.rs: live processing settings of the native engine. */
 export interface LiveSettings {
   adaptive: boolean
   targetLufs: number
 }
+/** crates/dsp effects.rs: Live Editor settings (numbers only; clamped by Rust and live.js). */
+export interface Effects {
+  on: boolean
+  speed: number
+  tempo: number
+  pitch: number
+  bass: number
+  eq: [number, number, number, number, number]
+  reverb: { mix: number; size: number; damping: number; predelayMs: number }
+  echo: { mix: number; timeMs: number; feedback: number }
+  space: { on: boolean; azimuth: number; elevation: number; distance: number; rotate: boolean; periodS: number; room: number }
+  compress: number
+  width: number
+  balance: number
+}
+
+/** crates/core library.rs Edit: effects as JSON (parse with effects.ts cleanEffects). */
+export interface Edit {
+  id: number
+  song: string | null
+  name: string
+  effects: string
+  active: boolean
+}
+
 /** crates/dsp control.rs: what plays, as heard (LUFS, peak 0..1, Adaptive Sound gain in dB). */
 export interface LiveLevels {
   /** Last 50 ms (beats). */
@@ -370,6 +395,13 @@ export const api = {
   playerStatus: () => invoke<PlayerStatus>('player_status'),
   /** Live processing of local files (crates/dsp): applies from the next block, nothing restarts. */
   playerLive: (settings: LiveSettings) => invoke<void>('player_live', { settings }),
+  /** Live Editor: a song's saved edits (key from effects.ts songKey), or the presets (null). */
+  edits: (song: string | null) => invoke<Edit[]>('edits', { song }),
+  saveEdit: (id: number | null, song: string | null, name: string, effects: Effects) => invoke<number>('save_edit', { id, song, name, effects }),
+  deleteEdit: (id: number) => invoke<void>('delete_edit', { id }),
+  activateEdit: (song: string, id: number | null) => invoke<void>('activate_edit', { song, id }),
+  /** Live Editor settings for the native engine. */
+  playerEffects: (effects: Effects) => invoke<void>('player_effects', { effects }),
   /** What the native engine plays, as heard. */
   playerLevels: () => invoke<LiveLevels>('player_levels'),
   /** Voice search: one phrase through Windows' speech recognition. */

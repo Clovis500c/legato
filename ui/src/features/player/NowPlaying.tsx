@@ -1,4 +1,4 @@
-import { ArrowSquareOut, CaretLeft, Quotes } from '@phosphor-icons/react'
+import { ArrowSquareOut, CaretLeft, Quotes, SlidersHorizontal } from '@phosphor-icons/react'
 import { openUrl } from '@tauri-apps/plugin-opener'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
@@ -24,6 +24,7 @@ import { useNowTrack, usePlayer, useVideoSlot } from './store'
 import { Transport } from './Transport'
 import { UpNext, useNextCount } from './UpNext'
 import { LyricsPanel } from './LyricsPanel'
+import { EditorPanel } from '../editor/EditorPanel'
 import { useVideoBox } from './videoBox'
 import { usePulse } from './pulse'
 import { tr } from '../../shared/i18n/i18n'
@@ -176,7 +177,7 @@ function Backdrop({ url, dim, motion }: { url?: string; dim: number; motion: boo
 }
 
 /** Settings Now Playing reads. */
-const pick = ({ tuner, tint, immersive, backdropBlur, backdropDim, backdropMotion, stage, upNext, volume, coverPulse, motion, lyrics }: Settings) => ({ tuner, tint, immersive, backdropBlur, backdropDim, backdropMotion, stage, upNext, volume, coverPulse, motion, lyrics })
+const pick = ({ tuner, tint, immersive, backdropBlur, backdropDim, backdropMotion, stage, upNext, volume, coverPulse, motion, lyrics, editor }: Settings) => ({ tuner, tint, immersive, backdropBlur, backdropDim, backdropMotion, stage, upNext, volume, coverPulse, motion, lyrics, editor })
 
 /** Tuner dial on the smooth clock: Now Playing itself doesn't re-render on every position report. */
 function Tuner() {
@@ -189,7 +190,7 @@ function Tuner() {
 export function NowPlaying() {
   const now = usePlayer((s) => s.now)
   const setFull = usePlayer((s) => s.setFull)
-  const { tuner, tint, immersive, backdropBlur, backdropDim, backdropMotion, stage, upNext, volume: volumeMode, coverPulse, motion, lyrics } = useSettings(
+  const { tuner, tint, immersive, backdropBlur, backdropDim, backdropMotion, stage, upNext, volume: volumeMode, coverPulse, motion, lyrics, editor } = useSettings(
     useShallow((s) => ({ ...pick(s.settings), theme: s.settings.theme, accent: s.settings.accent, customThemes: s.settings.customThemes })),
   )
   const update = useSettings((s) => s.update)
@@ -218,13 +219,13 @@ export function NowPlaying() {
     // Whole window, under the see-through top bar (logo, Close player and window buttons stay on top, z-30).
     <div role="dialog" aria-label={tr('Now playing')} onContextMenu={onMenu(playerMenu)} className="fixed inset-0 z-20 isolate flex flex-col overflow-hidden bg-bg px-10 pt-17 pb-7 text-ink transition-colors duration-500" style={ambient}>
       {immersive && <Backdrop url={backdrop} dim={backdropDim} motion={backdropMotion} />}
-      {!upNext && !lyrics && (
+      {!upNext && !lyrics && !editor && (
         <Button variant="ghost" className="absolute top-17 right-10 z-10" onClick={() => update({ upNext: true })}>
           <CaretLeft size={13} /> {tr('Up next · {n}', { n: nextCount })}
         </Button>
       )}
 
-      <div className={`grid min-h-0 flex-1 gap-10 ${lyrics ? 'grid-cols-[minmax(0,1fr)_minmax(0,1fr)]' : upNext ? 'grid-cols-[minmax(0,1fr)_360px]' : 'grid-cols-1'}`}>
+      <div className={`grid min-h-0 flex-1 gap-10 ${editor ? 'grid-cols-[minmax(0,1fr)_400px]' : lyrics ? 'grid-cols-[minmax(0,1fr)_minmax(0,1fr)]' : upNext ? 'grid-cols-[minmax(0,1fr)_360px]' : 'grid-cols-1'}`}>
         <section className="flex min-h-0 min-w-0 flex-col items-center gap-4">
           {video ? <Segmented label={tr('Show')} value={stage} onChange={(s) => update({ stage: s })} options={[{ value: 'auto', label: still === undefined || stage !== 'auto' ? tr('Auto') : still ? tr('Auto · cover') : tr('Auto · video') }, { value: 'video', label: tr('Video') }, { value: 'cover', label: tr('Cover') }]} /> : <span className="kicker text-ink-2">{tr('Now playing · {source}', { source: tr(viaLabel[now.via]) })}</span>}
           <Stage video={video} cover={stage === 'cover' || (stage === 'auto' && still === true)} track={track} title={now.title} youtubeId={now.youtubeId} pulse={coverPulse && motion} />
@@ -255,8 +256,11 @@ export function NowPlaying() {
             <div className="grid grid-cols-[1fr_auto_1fr] items-center">
               <span className="flex items-center gap-1">
                 <SourceBadge via={now.via} />
-                <RoundButton label={lyrics ? tr('Hide lyrics') : tr('Lyrics')} aria-pressed={lyrics} kind="plain" size="sm" onClick={() => update({ lyrics: !lyrics })} className={lyrics ? 'text-accent!' : 'text-ink-3'}>
-                  <Quotes size={16} weight={lyrics ? 'fill' : 'regular'} />
+                <RoundButton label={lyrics && !editor ? tr('Hide lyrics') : tr('Lyrics')} aria-pressed={lyrics && !editor} kind="plain" size="sm" onClick={() => update({ lyrics: !lyrics || editor, editor: false })} className={lyrics && !editor ? 'text-accent!' : 'text-ink-3'}>
+                  <Quotes size={16} weight={lyrics && !editor ? 'fill' : 'regular'} />
+                </RoundButton>
+                <RoundButton label={editor ? tr('Hide the Live Editor') : tr('Live Editor')} aria-pressed={editor} kind="plain" size="sm" onClick={() => update({ editor: !editor })} className={editor ? 'text-accent!' : 'text-ink-3'}>
+                  <SlidersHorizontal size={16} weight={editor ? 'fill' : 'regular'} />
                 </RoundButton>
               </span>
               <Transport size="lg" />
@@ -268,7 +272,7 @@ export function NowPlaying() {
           </div>
         </section>
 
-        {lyrics ? <LyricsPanel onHide={() => update({ lyrics: false })} onUpNext={() => update({ lyrics: false, upNext: true })} /> : upNext && <UpNext onHide={() => update({ upNext: false })} />}
+        {editor ? <EditorPanel onHide={() => update({ editor: false })} /> : lyrics ? <LyricsPanel onHide={() => update({ lyrics: false })} onUpNext={() => update({ lyrics: false, upNext: true })} /> : upNext && <UpNext onHide={() => update({ upNext: false })} />}
       </div>
     </div>
   )

@@ -159,6 +159,8 @@ export interface Settings {
   upNext: boolean
   /** Now Playing: lyrics beside the cover (wins over Up next). */
   lyrics: boolean
+  /** Now Playing: Live Editor beside the cover (wins over lyrics and Up next). */
+  editor: boolean
   /** Pick up the last track where it stopped when the app opens. */
   resume: boolean
   /** Open on the screen the app was closed on, Now Playing included (startView when off). */
@@ -222,6 +224,7 @@ export const DEFAULTS: Settings = {
   autoUpdate: true,
   upNext: true,
   lyrics: false,
+  editor: false,
   resume: true,
   reopen: true,
   closeToTray: true,
@@ -323,6 +326,7 @@ export function sanitize(raw: unknown): Settings {
     autoUpdate: typeof r.autoUpdate === 'boolean' ? r.autoUpdate : DEFAULTS.autoUpdate,
     upNext: typeof r.upNext === 'boolean' ? r.upNext : DEFAULTS.upNext,
     lyrics: r.lyrics === true,
+    editor: r.editor === true,
     resume: typeof r.resume === 'boolean' ? r.resume : DEFAULTS.resume,
     reopen: typeof r.reopen === 'boolean' ? r.reopen : DEFAULTS.reopen,
     closeToTray: typeof r.closeToTray === 'boolean' ? r.closeToTray : DEFAULTS.closeToTray,
