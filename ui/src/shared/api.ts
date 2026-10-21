@@ -245,7 +245,7 @@ export type VoiceMiss = 'speechOff' | 'micBlocked' | 'noMic' | 'silence' | 'uncl
 export type Heard = { kind: 'text'; text: string } | { kind: 'miss'; miss: VoiceMiss }
 
 /** src-tauri detect_song: Music Detector outcome. */
-export type DetectMiss = 'noToken' | 'noMic' | 'micBlocked' | 'micBusy' | 'silent' | 'canceled' | 'badToken' | 'limit' | 'offline' | 'failed'
+export type DetectMiss = 'noToken' | 'noMic' | 'micBlocked' | 'micBusy' | 'noOutput' | 'silent' | 'unclear' | 'canceled' | 'badToken' | 'limit' | 'offline' | 'failed'
 export type Detection = { kind: 'found'; track: Track } | { kind: 'unknown' } | { kind: 'miss'; miss: DetectMiss; detail: string | null }
 
 /** crates/core lyrics.rs. Lines synced (ms); empty = plain only. */
@@ -530,7 +530,8 @@ export const api = {
   /** null forgets it. */
   setDetectorToken: (token: string | null) => invoke<void>('set_detector_token', { token }),
   /** Listens ~10 s through the microphone (memory only), AudD names the song. */
-  detectSong: (market: string) => invoke<Detection>('detect_song', { market }),
+  /** input: the microphone, or what this PC plays (pause the app's own playback first). */
+  detectSong: (market: string, input: 'mic' | 'pc') => invoke<Detection>('detect_song', { market, input }),
   detectStop: () => invoke<void>('detect_stop'),
   /** While listening: seconds so far, microphone level 0..1. */
   onDetect: (cb: (seconds: number, level: number) => void) => listen<[number, number]>('detect', (e) => cb(e.payload[0], e.payload[1])),

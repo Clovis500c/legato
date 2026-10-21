@@ -210,6 +210,10 @@ export interface Settings {
   voiceSearch: boolean
   /** Music Detector agreed to (microphone, 10 s clips sent to AudD to name the song). */
   detector: boolean
+  /** Music Detector source: the microphone, or what this PC plays. */
+  detectorInput: 'mic' | 'pc'
+  /** This PC's sound allowed for the Music Detector (asked once, apart from the microphone). */
+  detectorPc: boolean
   /** Add-ons turned on (id → on). All off until the user turns them on. */
   addons: Record<string, boolean>
   discord: DiscordSettings
@@ -266,6 +270,8 @@ export const DEFAULTS: Settings = {
   liveYoutube: true,
   voiceSearch: false,
   detector: false,
+  detectorInput: 'mic',
+  detectorPc: false,
   addons: {},
   discord: { appId: DISCORD_APP, status: 'song', buttons: true, paused: false, github: true },
   shortcuts: {},
@@ -399,6 +405,8 @@ export function sanitize(raw: unknown): Settings {
     liveYoutube: typeof r.liveYoutube === 'boolean' ? r.liveYoutube : DEFAULTS.liveYoutube,
     voiceSearch: r.voiceSearch === true,
     detector: r.detector === true,
+    detectorInput: pick(r.detectorInput, ['mic', 'pc'] as const, DEFAULTS.detectorInput),
+    detectorPc: r.detectorPc === true,
     shortcuts: sanitizeShortcuts(r.shortcuts),
     addons: Object.fromEntries(Object.entries(r.addons && typeof r.addons === 'object' ? r.addons : {}).filter(([k, v]) => /^[a-z0-9-]{1,40}$/.test(k) && typeof v === 'boolean').slice(0, 100)),
     discord: sanitizeDiscord(r.discord),

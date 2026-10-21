@@ -480,7 +480,6 @@ const fr: Record<string, string> = {
   // Music Detector
   'Add your AudD token first.': 'Ajoutez d’abord votre jeton AudD.',
   'Another app is using the microphone.': 'Une autre application utilise le microphone.',
-  'The microphone heard only silence. Is it muted?': 'Le microphone n’a entendu que du silence. Est-il coupé ?',
   'AudD refused your token. Check it on dashboard.audd.io.': 'AudD a refusé votre jeton. Vérifiez-le sur dashboard.audd.io.',
   'Your AudD token has no requests left: see your plan on dashboard.audd.io.': 'Votre jeton AudD n’a plus de requêtes : voyez votre forfait sur dashboard.audd.io.',
   'AudD can’t be reached. Check your internet connection.': 'AudD est injoignable. Vérifiez votre connexion Internet.',
@@ -1143,6 +1142,20 @@ const fr: Record<string, string> = {
   'Applied when you leave the field. {n} characters at most.': 'Appliqué quand vous quittez le champ. {n} caractères au maximum.',
   'Open a .theme file…': 'Ouvrir un fichier .theme…',
   'Paste a theme': 'Coller un thème',
+  // Music Detector sources
+  'No speakers or headphones found to listen to.': 'Aucun haut-parleur ni casque à écouter.',
+  'The microphone heard almost nothing. Is it muted? Turn the music up or move closer.': 'Le micro n’a presque rien entendu. Est-il coupé ? Montez le son ou rapprochez-vous.',
+  'The song couldn’t be made out: too quiet, too noisy or someone talking over it. Try again with the music louder.': 'Le titre n’a pas pu être reconnu : trop faible, trop de bruit ou quelqu’un parle par-dessus. Réessayez avec la musique plus forte.',
+  'No match. Try again on another part of the song.': 'Aucun résultat. Réessayez sur un autre passage du titre.',
+  'Nothing is playing on this PC (Music App pauses its own music while it listens).': 'Rien ne joue sur ce PC (Music App met sa propre musique en pause pendant l’écoute).',
+  'Listening to this PC… {n} s': 'Écoute du PC… {n} s',
+  'Sound level': 'Niveau sonore',
+  'Listen to': 'Écouter',
+  'Microphone': 'Micro',
+  'This PC': 'Ce PC',
+  'A song playing in another app or a video? Music App listens to this PC for {n} seconds and names it.': 'Un titre qui joue dans une autre app ou une vidéo ? Music App écoute ce PC pendant {n} secondes et le nomme.',
+  'Identify songs playing on this PC': 'Reconnaître les titres qui jouent sur ce PC',
+  'Music App listens to what this PC plays (every app) for {n} seconds. The sound stays in memory, goes once to AudD (audd.io) to name the song, then is dropped: nothing is saved. Music App’s own music pauses while it listens, so it’s never part of it.': 'Music App écoute ce que joue ce PC (toutes les apps) pendant {n} secondes. Le son reste en mémoire, part une fois chez AudD (audd.io) pour nommer le titre, puis est effacé : rien n’est enregistré. La musique de Music App est mise en pause pendant l’écoute, elle n’en fait donc jamais partie.',
 }
 
 export default fr

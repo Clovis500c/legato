@@ -1,6 +1,6 @@
 //! Music Detector: AudD (audd.io) recognizes a song from a short recording, with the user's own API token. Checked
 //! 2026-10-21: POST multipart to https://api.audd.io/ (`api_token`, `file`, `return`), 10 MB max; errors #900 (bad
-//! token) and #901 (no token / limit reached). Shazam has no public API; ACRCloud needs signed requests and 3 secrets.
+//! token), #901 (no token / limit reached) and #300 (no fingerprint: too quiet, noisy or too short). Shazam has no public API; ACRCloud needs signed requests and 3 secrets.
 
 use anyhow::Result;
 use music_core::model::{Source, Track};
@@ -18,6 +18,8 @@ pub enum Refused {
     BadToken,
     /// No requests left on the token's plan.
     Limit,
+    /// Sound it couldn't fingerprint (#300): too quiet, noisy, talking over it.
+    Unclear,
     Other(String),
 }
 
@@ -26,6 +28,7 @@ impl std::fmt::Display for Refused {
         match self {
             Self::BadToken => f.write_str("AudD refused the token"),
             Self::Limit => f.write_str("no AudD requests left on this token"),
+            Self::Unclear => f.write_str("AudD couldn't make out the sound"),
             Self::Other(m) => write!(f, "AudD: {m}"),
         }
     }
@@ -135,6 +138,7 @@ fn parse(reply: Reply) -> Result<Option<Track>> {
         return Err(match f.error_code {
             Some(900) => Refused::BadToken,
             Some(901) => Refused::Limit,
+            Some(300) => Refused::Unclear,
             _ => Refused::Other(f.error_message.unwrap_or_else(|| "unknown error".into())),
         }
         .into());
@@ -202,7 +206,8 @@ mod tests {
         let refused = |j: &str| r(j).unwrap_err().downcast::<Refused>().unwrap();
         assert_eq!(refused(r#"{"status":"error","error":{"error_code":900,"error_message":"Wrong API token"}}"#), Refused::BadToken);
         assert_eq!(refused(r#"{"status":"error","error":{"error_code":901,"error_message":"limit"}}"#), Refused::Limit);
-        assert_eq!(refused(r#"{"status":"error","error":{"error_code":300,"error_message":"Fingerprinting error"}}"#), Refused::Other("Fingerprinting error".into()));
+        assert_eq!(refused(r#"{"status":"error","error":{"error_code":300,"error_message":"Fingerprinting error"}}"#), Refused::Unclear);
+        assert_eq!(refused(r#"{"status":"error","error":{"error_code":500,"error_message":"Weird"}}"#), Refused::Other("Weird".into()));
         // Bare result: no store ids, still a song.
         let t = r(r#"{"status":"success","result":{"artist":"A","title":"B","album":""}}"#).unwrap().unwrap();
         assert_eq!((t.album, t.ids.len(), t.art), (None, 0, None));

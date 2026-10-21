@@ -1192,8 +1192,12 @@ enum DetectMiss {
     NoMic,
     MicBlocked,
     MicBusy,
-    /// Only silence came in (muted microphone).
+    /// No sound output to listen to (This PC).
+    NoOutput,
+    /// Too quiet to recognize: muted or far mic, nothing playing on the PC.
     Silent,
+    /// AudD heard it but couldn't make it out (#300).
+    Unclear,
     Canceled,
     BadToken,
     Limit,
@@ -1205,16 +1209,16 @@ fn missed(miss: DetectMiss) -> Detection {
     Detection::Miss { miss, detail: None }
 }
 
-/// Music Detector: listens through the default microphone (memory only, never written), AudD names the song.
-/// Progress: "detect" events [seconds, level 0..1].
+/// Music Detector: listens through the default microphone or to what the PC plays (memory only, never written; the
+/// interface pauses the app's own playback first), AudD names the song. Progress: "detect" events [seconds, level 0..1].
 #[tauri::command]
-async fn detect_song(app: tauri::AppHandle, state: State<'_, AppState>, market: String) -> CmdResult<Detection> {
+async fn detect_song(app: tauri::AppHandle, state: State<'_, AppState>, market: String, input: mic::Input) -> CmdResult<Detection> {
     let Some(token) = state.store.load::<String>(AUDD_TOKEN) else { return Ok(missed(DetectMiss::NoToken)) };
     // Trust boundary: a two-letter country.
     let market = if market.len() == 2 && market.chars().all(|c| c.is_ascii_alphabetic()) { market } else { "US".into() };
     DETECT_STOP.store(false, Ordering::Relaxed);
     let clip = tauri::async_runtime::spawn_blocking(move || {
-        mic::record(DETECT_SECONDS, &DETECT_STOP, |seconds, level| {
+        mic::record(input, DETECT_SECONDS, &DETECT_STOP, |seconds, level| {
             let _ = app.emit_to("main", "detect", (seconds, level));
         })
     })
@@ -1225,6 +1229,7 @@ async fn detect_song(app: tauri::AppHandle, state: State<'_, AppState>, market: 
         Err(e) => {
             return Ok(missed(match e {
                 MicError::NoMic => DetectMiss::NoMic,
+                MicError::NoOutput => DetectMiss::NoOutput,
                 MicError::Blocked => DetectMiss::MicBlocked,
                 MicError::Busy => DetectMiss::MicBusy,
                 MicError::Failed => DetectMiss::Failed,
@@ -1245,6 +1250,7 @@ async fn detect_song(app: tauri::AppHandle, state: State<'_, AppState>, market: 
         Err(e) => match e.downcast_ref::<Refused>() {
             Some(Refused::BadToken) => missed(DetectMiss::BadToken),
             Some(Refused::Limit) => missed(DetectMiss::Limit),
+            Some(Refused::Unclear) => missed(DetectMiss::Unclear),
             Some(Refused::Other(m)) => Detection::Miss { miss: DetectMiss::Failed, detail: Some(m.clone()) },
             None if e.is::<Offline>() => missed(DetectMiss::Offline),
             None => Detection::Miss { miss: DetectMiss::Failed, detail: Some(e.to_string()) },
