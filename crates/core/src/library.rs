@@ -46,6 +46,21 @@ CREATE TABLE IF NOT EXISTS settings (
 );
 ";
 
+/// Schema version this code writes (user_version after migrations).
+pub const SCHEMA_VERSION: i64 = 10;
+
+/// The library was made by a newer Music App.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct NewerLibrary(pub i64);
+
+impl std::fmt::Display for NewerLibrary {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "This library was made by a newer Music App (schema {}, this one knows {SCHEMA_VERSION}). Update the app.", self.0)
+    }
+}
+
+impl std::error::Error for NewerLibrary {}
+
 /// Wall clock, unix ms (Sync Mode change times).
 pub fn now_ms() -> i64 {
     std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_millis() as i64).unwrap_or(0)
@@ -231,6 +246,10 @@ impl Library {
     }
 
     fn init(db: Connection) -> Result<Self> {
+        // A library from a newer app: an older one must not write into it (it would mix two schemas). 2026-10-21:
+        // the installed app and a newer dev build shared one library and damaged it.
+        let found: i64 = db.query_row("PRAGMA user_version", [], |r| r.get(0))?;
+        anyhow::ensure!(found <= SCHEMA_VERSION, NewerLibrary(found));
         db.execute_batch(SCHEMA)?;
         // Migrations, keyed on user_version.
         if db.query_row("PRAGMA user_version", [], |r| r.get::<_, i64>(0))? < 1 {
@@ -1156,6 +1175,19 @@ mod tests {
         lib.set_setting("ui", &serde_json::json!({ "theme": "paper" }))?;
         lib.set_setting("ui", &serde_json::json!({ "theme": "graphite" }))?;
         assert_eq!(lib.setting("ui")?, Some(serde_json::json!({ "theme": "graphite" })));
+        Ok(())
+    }
+
+    #[test]
+    fn migrations_end_at_the_schema_version_and_newer_libraries_are_refused() -> Result<()> {
+        let lib = Library::in_memory()?;
+        assert_eq!(lib.db.query_row("PRAGMA user_version", [], |r| r.get::<_, i64>(0))?, SCHEMA_VERSION);
+        let dir = tempfile::tempdir()?;
+        let path = dir.path().join("library.db");
+        drop(Library::open(&path)?);
+        Connection::open(&path)?.execute_batch(&format!("PRAGMA user_version = {};", SCHEMA_VERSION + 1))?;
+        let e = Library::open(&path).err().expect("refused");
+        assert_eq!(e.downcast_ref::<NewerLibrary>(), Some(&NewerLibrary(SCHEMA_VERSION + 1)));
         Ok(())
     }
 
