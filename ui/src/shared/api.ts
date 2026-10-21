@@ -492,6 +492,14 @@ export const api = {
   /** Another PC's changes were merged here: reload. */
   onSync: (cb: (m: Merged) => void) => listen<Merged>('sync', (e) => cb(e.payload)),
   onSyncOffer: (cb: (r: { Ok?: Merged; Err?: string }) => void) => listen<{ Ok?: Merged; Err?: string }>('sync-offer', (e) => cb(e.payload)),
+  /** A picture for a theme's background, copied in by content. Returns its name (shared/art coverImage). */
+  saveBackground: (path: string) => invoke<string>('save_background', { path }),
+  /** A background no theme uses any more. */
+  forgetBackground: (name: string) => invoke<void>('forget_background', { name }),
+  /** A .theme file with the background picture inside. */
+  exportTheme: (path: string, theme: object) => invoke<void>('export_theme', { path, theme }),
+  /** A .theme file read: picture stored, theme JSON back (check it with sanitizeTheme). */
+  importTheme: (path: string) => invoke<unknown>('import_theme', { path }),
   /** Third-party plugins (src-tauri plugins.rs, crates/plugins). */
   plugins: () => invoke<PluginInfo[]>('plugins_list'),
   /** A folder before installing it: its manifest and the permissions it asks for. */

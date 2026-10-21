@@ -1413,6 +1413,58 @@ fn save_cover(app: tauri::AppHandle, playlist_id: i64, path: String) -> CmdResul
     Ok(name)
 }
 
+/// A theme's background picture, kept in the covers folder by content. Returns its name (art scheme `cover/<name>`).
+fn store_background(app: &tauri::AppHandle, bytes: &[u8]) -> CmdResult<String> {
+    let name = music_core::themefile::background_name(bytes).map_err(err)?;
+    let dir = art::covers_dir(app).ok_or("No app data folder")?;
+    std::fs::create_dir_all(&dir).map_err(err)?;
+    if !dir.join(&name).exists() {
+        std::fs::write(dir.join(&name), bytes).map_err(err)?;
+    }
+    Ok(name)
+}
+
+/// Picture picked for a theme's background (the original can move).
+#[tauri::command]
+fn save_background(app: tauri::AppHandle, path: String) -> CmdResult<String> {
+    if std::fs::metadata(&path).map_err(err)?.len() > music_core::themefile::MAX_IMAGE as u64 {
+        return Err("Picture too big (15 MB max)".into());
+    }
+    store_background(&app, &std::fs::read(&path).map_err(err)?)
+}
+
+/// A background no theme uses any more.
+#[tauri::command]
+fn forget_background(app: tauri::AppHandle, name: String) -> CmdResult<()> {
+    if name.starts_with("bg-") && art::valid_cover_name(&name) {
+        let _ = std::fs::remove_file(art::covers_dir(&app).ok_or("No app data folder")?.join(name));
+    }
+    Ok(())
+}
+
+/// A `.theme` file: the theme and its background picture in one.
+#[tauri::command]
+fn export_theme(app: tauri::AppHandle, path: String, theme: serde_json::Value) -> CmdResult<()> {
+    let picture = theme["background"]["image"].as_str().filter(|n| art::valid_cover_name(n)).and_then(|n| std::fs::read(art::covers_dir(&app)?.join(n)).ok());
+    std::fs::write(path, music_core::themefile::pack(&theme, picture.as_deref()).map_err(err)?).map_err(err)
+}
+
+/// A `.theme` file read back: its picture stored, the theme returned for the interface to check.
+#[tauri::command]
+fn import_theme(app: tauri::AppHandle, path: String) -> CmdResult<serde_json::Value> {
+    if std::fs::metadata(&path).map_err(err)?.len() > 25 << 20 {
+        return Err("File too big for a theme".into());
+    }
+    let (mut theme, picture) = music_core::themefile::unpack(&std::fs::read_to_string(&path).map_err(err)?).map_err(err)?;
+    if let Some(p) = picture {
+        let name = store_background(&app, &p)?;
+        if let Some(bg) = theme.get_mut("background").and_then(|b| b.as_object_mut()) {
+            bg.insert("image".into(), name.into());
+        }
+    }
+    Ok(theme)
+}
+
 /// Last playback (queue as track ids, position): picked up at launch if Settings › Advanced says so.
 #[tauri::command]
 fn load_session(state: State<AppState>) -> CmdResult<Option<serde_json::Value>> {
@@ -1662,6 +1714,17 @@ fn player_status(state: State<AppState>) -> Status {
     state.player.status()
 }
 
+/// Error box before any window exists (startup), then the app quits.
+fn stop_with(text: &str) -> ! {
+    use windows::Win32::UI::WindowsAndMessaging::{MB_ICONERROR, MB_OK, MessageBoxW};
+    use windows::core::HSTRING;
+    // SAFETY: plain modal box, no owner window, strings live through the call.
+    unsafe {
+        MessageBoxW(None, &HSTRING::from(text), &HSTRING::from("Music App"), MB_OK | MB_ICONERROR);
+    }
+    std::process::exit(1);
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -1681,7 +1744,12 @@ pub fn run() {
             std::fs::create_dir_all(&dir)?;
             let handle = app.handle().clone();
             let open: Opener = Arc::new(move |url: &str| handle.opener().open_url(url, None::<&str>).map_err(Into::into));
-            let lib = Library::open(dir.join("library.db"))?;
+            let lib = match Library::open(dir.join("library.db")) {
+                Ok(lib) => lib,
+                // Newer app's library: say so and stop, never write into it.
+                Err(e) if e.is::<music_core::library::NewerLibrary>() => stop_with(&e.to_string()),
+                Err(e) => return Err(e.into()),
+            };
             let ui = lib.setting("ui").ok().flatten();
             let shield_on = ui.as_ref().and_then(|s| s.get("shield")?.as_bool()).unwrap_or(true);
             // Starts with built-in rules; cached / fresh lists swapped in below without blocking startup.
@@ -1743,7 +1811,7 @@ pub fn run() {
             plugins::start_all(app.handle());
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, add_track, backfill_art, find_versions, play_preview, share_playlist, share_preview, share_read_image, share_import, nearby_send, nearby_status, nearby_stop, nearby_receive, record_play, mixes, set_track_pref, clear_history, export_youtube, spotify_player, spotify_playback, ytm_sign_in, ytm_sign_out, spotify_web_open, spotify_web_status, import_spotify_link, ytm_accounts, set_ytm_accounts, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, system_accent, restart_app, autostart, set_autostart, media_update, load_session, save_session, add_to_youtube, playlist_orders, save_cover, export_cover, alternative_videos, play_stats, cache_stats, open_licenses, update_status, update_check, update_install, ytm_home, ytm_list, discord_presence, discord_off, discord_status, remove_from_playlist, remove_from_library, resolve_track, set_global_shortcuts, player_live, player_effects, player_levels, export_edit, export_stop, edits, save_edit, delete_edit, activate_edit, voice_listen, voice_stop, open_windows_settings, detector_status, set_detector_token, detect_song, detect_stop, lyrics, set_ui_language, ytwatch_open, ytwatch_place, ytwatch_cmd, ytwatch_close, syncmode::sync_status, syncmode::sync_probe, syncmode::sync_setup, syncmode::sync_stop, syncmode::sync_now, syncmode::sync_dismiss, syncmode::sync_offer, syncmode::sync_offer_stop, syncmode::sync_join, plugins::plugins_list, plugins::plugin_inspect, plugins::plugin_install, plugins::plugin_set, plugins::plugin_uninstall, plugins::plugin_reply, plugins::plugin_event, plugins::plugin_input, plugins::plugin_log])
+        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, add_track, backfill_art, find_versions, play_preview, share_playlist, share_preview, share_read_image, share_import, nearby_send, nearby_status, nearby_stop, nearby_receive, record_play, mixes, set_track_pref, clear_history, export_youtube, spotify_player, spotify_playback, ytm_sign_in, ytm_sign_out, spotify_web_open, spotify_web_status, import_spotify_link, ytm_accounts, set_ytm_accounts, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, system_accent, restart_app, autostart, set_autostart, media_update, load_session, save_session, add_to_youtube, playlist_orders, save_cover, export_cover, alternative_videos, play_stats, cache_stats, open_licenses, update_status, update_check, update_install, ytm_home, ytm_list, discord_presence, discord_off, discord_status, remove_from_playlist, remove_from_library, resolve_track, set_global_shortcuts, player_live, player_effects, player_levels, export_edit, export_stop, edits, save_edit, delete_edit, activate_edit, voice_listen, voice_stop, open_windows_settings, detector_status, set_detector_token, detect_song, detect_stop, lyrics, set_ui_language, ytwatch_open, ytwatch_place, ytwatch_cmd, ytwatch_close, syncmode::sync_status, syncmode::sync_probe, syncmode::sync_setup, syncmode::sync_stop, syncmode::sync_now, syncmode::sync_dismiss, syncmode::sync_offer, syncmode::sync_offer_stop, syncmode::sync_join, plugins::plugins_list, plugins::plugin_inspect, plugins::plugin_install, plugins::plugin_set, plugins::plugin_uninstall, plugins::plugin_reply, plugins::plugin_event, plugins::plugin_input, plugins::plugin_log, save_background, forget_background, export_theme, import_theme])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

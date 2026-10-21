@@ -108,7 +108,7 @@ it lands (tested, `pnpm check` green, committed). Technical plan, rule changes a
       parts of the app as possible; manifest with declared permissions, user approval at install, isolated execution,
       no direct network or secrets (Rust gateway with permissions), API versioning; docs for plugin authors and an
       example plugin.
-- [ ] 4.4 Theme creator: better editor (`theme.ts`, tokens in `styles.css`), "Themes" and "Appearance" merged; a theme
+- [x] 4.4 Theme creator: better editor (`theme.ts`, tokens in `styles.css`), "Themes" and "Appearance" merged; a theme
       can change absolutely everything (except "Music App", its logo and legal notices): background images (adapt the
       image system and its security policy if needed), parts of the UX, etc. Settings search index updated.
 

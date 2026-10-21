@@ -153,7 +153,7 @@ export function AboutSection() {
         </div>
       </section>
 
-      <section data-setting="About" className="flex flex-col gap-2.5">
+      <section data-setting="About" data-brand className="flex flex-col gap-2.5">
         <h2 className="kicker">{tr('About')}</h2>
         <div className="rounded-xl border border-line bg-raised">
           <Row label={msg('Source code')} sub={tr('Source-available: free to use, not to copy. Built with Tauri 2, Rust and React.')}>

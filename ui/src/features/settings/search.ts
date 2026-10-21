@@ -16,7 +16,7 @@ export interface SettingEntry {
 
 export const SETTINGS_INDEX: SettingEntry[] = [
   { section: 'appearance', label: msg('Language'), keywords: msg('language translation translate english french interface') },
-  { section: 'appearance', label: msg('Theme'), keywords: msg('dark light mode windows color') },
+  { section: 'appearance', label: msg('Theme'), keywords: msg('dark light mode windows color themes editor custom colors import export palette contrast picture background image wallpaper corners css') },
   { section: 'appearance', label: msg('Accent color'), keywords: msg('colour highlight windows') },
   { section: 'appearance', label: msg('Font'), keywords: msg('typeface roboto text') },
   { section: 'appearance', label: msg('Covers'), keywords: msg('cover shape round vinyl sharp artwork') },
@@ -35,7 +35,6 @@ export const SETTINGS_INDEX: SettingEntry[] = [
   { section: 'appearance', label: msg('Open on'), keywords: msg('start screen launch home') },
   { section: 'appearance', label: msg('Animations'), keywords: msg('motion transitions reduce') },
   { section: 'appearance', label: msg('List columns'), keywords: msg('album sources duration') },
-  { section: 'themes', label: msg('Themes'), keywords: msg('editor custom colors import export palette contrast') },
   { section: 'sources', label: 'YouTube Music', keywords: msg('google sign in account import playlists sync liked') },
   { section: 'sources', label: 'Spotify', keywords: msg('client id key premium connect') },
   { section: 'sync', label: 'OneDrive', keywords: msg('sync other pc computer cloud password encrypted backup') },

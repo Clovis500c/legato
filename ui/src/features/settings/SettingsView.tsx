@@ -1,13 +1,13 @@
 import { ShortcutsSection } from './ShortcutsSection'
-import { ArrowCounterClockwise, ArrowsClockwise, Check, CheckCircle, Info, ClipboardText, Copy, Keyboard, MagnifyingGlass, PaintBrush, Palette as PaletteIcon, Plugs, Plus, ShieldCheck, Sliders, Trash, WarningCircle } from '@phosphor-icons/react'
+import { ArrowCounterClockwise, ArrowsClockwise, Check, Info, Keyboard, MagnifyingGlass, PaintBrush, Plugs, Plus, ShieldCheck, Sliders } from '@phosphor-icons/react'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { useSettings } from '../../app/settings'
 import { useStore, type SettingsSection } from '../../app/store'
 import { api } from '../../shared/api'
 import { formatCount } from '../../shared/format'
-import { ACCENTS, ADAPTIVE_LEVELS, COLUMNS, contrastReport, DEFAULTS, type AdaptiveLevel, PALETTE_KEYS, PRESETS, sanitizeTheme, type Column, type Palette, type PaletteKey, type Settings, type Theme } from '../../shared/theme/theme'
+import { ACCENTS, ADAPTIVE_LEVELS, COLUMNS, DEFAULTS, type AdaptiveLevel, type Column, type Settings } from '../../shared/theme/theme'
 import { Button } from '../../shared/ui/Button'
-import { Led, RoundButton, Segmented, Toggle } from '../../shared/ui/controls'
+import { Led, Segmented, Toggle } from '../../shared/ui/controls'
 import { PageHeader } from '../../shared/ui/PageHeader'
 import { curveLabels } from '../player/fade'
 import { usePlayer } from '../player/store'
@@ -15,6 +15,7 @@ import { useLive } from '../player/live'
 import { SourcesView } from '../sources/SourcesView'
 import { SyncSection } from '../syncmode/SyncSection'
 import { AboutSection } from './AboutSection'
+import { ThemeStudio } from './ThemeStudio'
 import { FadeEditor } from './FadeEditor'
 import { CountsScene, CoverShapes, DensityScene, FadeScene, ListCoversScene, MiniPlayerScene, MixCoverScene, MotionScene, NowPlayingScene, SourceIconScene, TunerScene, VolumeScene } from './previews'
 import { searchSettings, type SettingEntry } from './search'
@@ -22,7 +23,6 @@ import { LANGUAGES, msg, resolveLang, tr } from '../../shared/i18n/i18n'
 
 const sections: { id: SettingsSection; label: string; icon: ReactNode }[] = [
   { id: 'appearance', label: msg('Appearance'), icon: <PaintBrush size={15} /> },
-  { id: 'themes', label: msg('Themes'), icon: <PaletteIcon size={15} /> },
   { id: 'sources', label: msg('Accounts'), icon: <Plugs size={15} /> },
   { id: 'sync', label: msg('Sync Mode'), icon: <ArrowsClockwise size={15} /> },
   { id: 'shield', label: msg('Shield'), icon: <ShieldCheck size={15} /> },
@@ -57,58 +57,6 @@ function Row({ label, sub, children, preview }: { label: string; sub?: string; c
       </div>
       {preview}
       {children}
-    </div>
-  )
-}
-
-/** Mini window drawn in the theme's own colors. */
-function ThemeThumb({ t }: { t: Palette }) {
-  return (
-    <span className="relative block h-23 w-full overflow-hidden" style={{ background: t.bg }}>
-      <span className="absolute inset-y-0 left-0 w-[24%]" style={{ background: t.panel }} />
-      <span className="absolute top-3 left-[5%] size-1.5 rounded-full" style={{ background: t.accent }} />
-      {[0, 1, 2].map((i) => (
-        <span key={i} className="absolute left-[5%] h-[3px] w-[13%] rounded-full" style={{ top: 12 + i * 8, marginLeft: i ? 0 : 9, background: i ? t.ink4 : t.ink }} />
-      ))}
-      <span className="absolute top-3 left-[30%] h-1.5 w-[32%] rounded-full" style={{ background: t.ink }} />
-      {[0, 1, 2].map((i) => (
-        <span key={i} className="absolute left-[30%] flex w-[64%] items-center gap-1.5" style={{ top: 25 + i * 13 }}>
-          <span className="size-2.5 shrink-0 rounded-[2px]" style={{ background: t.recess }} />
-          <span className="h-[3px] rounded-full" style={{ width: `${55 - i * 12}%`, background: i === 1 ? t.accent : t.ink2 }} />
-        </span>
-      ))}
-      <span className="absolute inset-x-0 bottom-0 h-5" style={{ background: t.panel, borderTop: `1px solid ${t.line}` }} />
-      <span className="absolute bottom-1 left-1/2 size-3 -translate-x-1/2 rounded-full" style={{ background: t.accent }} />
-    </span>
-  )
-}
-
-function ThemeCard({ t, on, onClick, badge }: { t: Palette; on: boolean; onClick: () => void; badge?: string }) {
-  return (
-    <button onClick={onClick} aria-pressed={on} className="flex flex-col gap-2 text-left">
-      <span className={`block overflow-hidden rounded-lg border-2 ${on ? 'border-ink' : 'border-transparent outline outline-1 outline-line'}`}>
-        <ThemeThumb t={t} />
-      </span>
-      <span className="flex items-center gap-1.5 text-xs font-medium">
-        {on && <Led on />} <span className="flex-1 truncate">{'name' in t ? (t as Theme).name : tr('System')}</span>
-        <span className="font-mono text-[9px] text-ink-3">{badge ?? t.accent}</span>
-      </span>
-    </button>
-  )
-}
-
-function ThemeGallery({ onEdit }: { onEdit?: (id: string) => void }) {
-  const { settings, update, current } = useSettings()
-  const system = { ...current('system'), name: tr('System') }
-  return (
-    <div className="grid grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-4">
-      {PRESETS.map((t) => (
-        <ThemeCard key={t.id} t={t} on={settings.theme === t.id} onClick={() => update({ theme: t.id })} />
-      ))}
-      <ThemeCard t={system} on={settings.theme === 'system'} onClick={() => update({ theme: 'system' })} badge={tr('AUTO')} />
-      {settings.customThemes.map((t) => (
-        <ThemeCard key={t.id} t={t} on={settings.theme === t.id} badge={tr('CUSTOM')} onClick={() => (onEdit ? onEdit(t.id) : update({ theme: t.id }))} />
-      ))}
     </div>
   )
 }
@@ -167,9 +115,7 @@ function Appearance() {
           options={[{ value: 'system', label: tr('Windows ({language})', { language: LANGUAGES.find((l) => l.code === resolveLang('system', navigator.languages))!.name }) }, ...LANGUAGES.map((l) => ({ value: l.code, label: l.name }))]}
         />
       </Group>
-      <Group title={msg('Theme')}>
-        <ThemeGallery />
-      </Group>
+      <ThemeStudio />
       <Group title={msg('Accent color')} hint={s.accent === 'system' ? tr('from Windows') : (s.accent ?? tr('from theme'))}>
         <div className="flex flex-wrap items-center gap-2">
           {([['system', 'Windows'], [null, msg('Theme')]] as const).map(([value, label]) => (
@@ -268,155 +214,6 @@ function Appearance() {
           })}
         </div>
       </Group>
-    </div>
-  )
-}
-
-const slotLabels: Record<PaletteKey, string> = { bg: msg('Background'), panel: msg('Panel'), raised: msg('Surface'), recess: msg('Recess (readouts)'), line: msg('Lines'), lineSoft: msg('Soft lines'), ink: msg('Text'), ink2: msg('Secondary text'), ink3: msg('Muted text'), ink4: msg('Decor'), accent: msg('Accent'), onAccent: msg('Icon on accent'), ledOff: msg('LED off') }
-
-function ColorSlot({ k, value, onChange }: { k: PaletteKey; value: string; onChange: (v: string) => void }) {
-  const [draft, setDraft] = useState(value)
-  return (
-    <label className="flex items-center gap-3 px-1 py-1.5">
-      <span className="relative size-6 shrink-0 cursor-pointer overflow-hidden rounded-md border border-line" style={{ background: value }}>
-        <input type="color" aria-label={tr(slotLabels[k])} value={value} onChange={(e) => (onChange(e.target.value.toUpperCase()), setDraft(e.target.value.toUpperCase()))} className="absolute inset-0 cursor-pointer opacity-0" />
-      </span>
-      <span className="flex-1 text-xs">{tr(slotLabels[k])}</span>
-      <input
-        value={draft}
-        aria-label={tr('{name}, hex code', { name: tr(slotLabels[k]) })}
-        onChange={(e) => {
-          setDraft(e.target.value)
-          if (/^#[0-9a-f]{6}$/i.test(e.target.value)) onChange(e.target.value.toUpperCase())
-        }}
-        className="w-20 rounded border border-line-soft bg-transparent px-1.5 py-0.5 font-mono text-[10px] uppercase"
-      />
-    </label>
-  )
-}
-
-function ThemeEditor({ id, onClose }: { id: string; onClose: () => void }) {
-  const { settings, update } = useSettings()
-  const [copied, setCopied] = useState(false)
-  const t = settings.customThemes.find((x) => x.id === id)
-  if (!t) return null
-  const save = (patch: Partial<Theme>) => update({ customThemes: settings.customThemes.map((x) => (x.id === id ? { ...x, ...patch } : x)) })
-  const report = contrastReport(t)
-  return (
-    <aside className="flex w-96 shrink-0 flex-col gap-4 self-start rounded-xl border border-line bg-raised p-4.5 shadow-[0_8px_24px_var(--shadow)]">
-      <div className="flex items-center gap-3">
-        <span className="size-6.5 rounded-full border-[5px]" style={{ background: t.accent, borderColor: t.bg }} />
-        <input value={t.name} aria-label={tr('Theme name')} maxLength={40} onChange={(e) => save({ name: e.target.value })} className="min-w-0 flex-1 bg-transparent text-lg font-bold tracking-tight outline-none" />
-        <RoundButton label={tr('Close editor')} kind="plain" size="xs" onClick={onClose}>
-          ×
-        </RoundButton>
-      </div>
-      <div className="grid grid-cols-1 divide-y divide-line-soft">
-        {PALETTE_KEYS.map((k) => (
-          <ColorSlot key={k} k={k} value={t[k]} onChange={(v) => save({ [k]: v })} />
-        ))}
-      </div>
-      <div className="flex items-center justify-between">
-        <span className="kicker">{tr('Font')}</span>
-        <Segmented label={tr('Font')} value={t.font} onChange={(font) => save({ font })} options={[{ value: 'modern', label: tr('Modern') }, { value: 'hifi', label: tr('Hi-Fi') }, { value: 'neutral', label: tr('Windows') }]} />
-      </div>
-      <div className="flex items-center justify-between">
-        <span className="text-xs font-medium">{tr('LED glow')}</span>
-        <Toggle label={tr('LED glow')} checked={t.glow} onChange={(glow) => save({ glow })} />
-      </div>
-      <div className="flex flex-col gap-1.5 rounded-lg bg-recess p-3">
-        <span className="kicker">{tr('Contrast · checked live')}</span>
-        {report.map((c) => (
-          <span key={c.label} className="flex items-center gap-2 text-xs">
-            {c.ok ? <CheckCircle size={14} className="text-ink-2" /> : <WarningCircle size={14} className="text-danger" />}
-            <span className="flex-1">{tr(c.label)}</span>
-            <span className={`font-mono text-[10px] ${c.ok ? 'text-ink-2' : 'text-danger'}`}>
-              {c.ratio.toFixed(1)}:1 {c.ok ? 'AA' : `< ${c.min}`}
-            </span>
-          </span>
-        ))}
-      </div>
-      <div className="flex items-center gap-2">
-        <Button className="flex-1" onClick={() => update({ theme: t.id })} disabled={settings.theme === t.id}>
-          {settings.theme === t.id ? tr('Applied') : tr('Apply')}
-        </Button>
-        <RoundButton
-          label={copied ? tr('Copied to clipboard') : tr('Export (copies the .theme)')}
-          onClick={() =>
-            navigator.clipboard.writeText(JSON.stringify(t, null, 2)).then(() => {
-              setCopied(true)
-              setTimeout(() => setCopied(false), 1500)
-            })
-          }
-        >
-          {copied ? <Check size={15} /> : <Copy size={15} />}
-        </RoundButton>
-        <RoundButton
-          label={tr('Delete theme')}
-          onClick={() => {
-            update({ customThemes: settings.customThemes.filter((x) => x.id !== id), ...(settings.theme === id ? { theme: 'paper' } : {}) })
-            onClose()
-          }}
-        >
-          <Trash size={15} />
-        </RoundButton>
-      </div>
-    </aside>
-  )
-}
-
-function Themes() {
-  const { settings, update, current } = useSettings()
-  const [editing, setEditing] = useState<string>()
-  const [importing, setImporting] = useState(false)
-  const [paste, setPaste] = useState('')
-  const [bad, setBad] = useState(false)
-  const add = (t: Theme) => {
-    update({ customThemes: [...settings.customThemes, t] })
-    setEditing(t.id)
-  }
-  return (
-    <div className="flex gap-8">
-      <div className="flex min-w-0 flex-1 flex-col gap-6">
-        <p className="text-[13px] text-ink-2">{tr('Click a theme to apply it. A custom theme opens in the editor: tune every color, contrast is checked live.')}</p>
-        <Group title={msg('Themes')} count={PRESETS.length + 1 + settings.customThemes.length} hint={tr('Applied: {name}', { name: current().name })}>
-          <ThemeGallery onEdit={setEditing} />
-        </Group>
-        <div className="flex flex-wrap gap-2">
-          <Button onClick={() => add({ ...current(), id: `custom-${Date.now().toString(36)}`, name: tr('{name} custom', { name: current().name }) })}>
-            <Plus size={14} /> {tr('New theme (copy of current)')}
-          </Button>
-          <Button variant="ghost" onClick={() => setImporting(!importing)}>
-            <ClipboardText size={14} /> {tr('Import a .theme')}
-          </Button>
-        </div>
-        {importing && (
-          <div className="flex flex-col gap-2">
-            <textarea value={paste} onChange={(e) => (setPaste(e.target.value), setBad(false))} rows={5} placeholder={tr('Paste the contents of a .theme file here')} className="rounded-lg border border-line bg-raised p-3 font-mono text-[11px]" />
-            <div className="flex items-center gap-3">
-              <Button
-                disabled={!paste.trim()}
-                onClick={() => {
-                  let theme: Theme | null = null
-                  try {
-                    theme = sanitizeTheme({ ...JSON.parse(paste), id: undefined })
-                  } catch {
-                    theme = null
-                  }
-                  if (!theme) return setBad(true)
-                  add(theme)
-                  setPaste('')
-                  setImporting(false)
-                }}
-              >
-                {tr('Add')}
-              </Button>
-              {bad && <span className="text-xs text-danger">{tr('Invalid theme: all 13 colors are needed, as #RRGGBB.')}</span>}
-            </div>
-          </div>
-        )}
-      </div>
-      {editing && <ThemeEditor key={editing} id={editing} onClose={() => setEditing(undefined)} />}
     </div>
   )
 }
@@ -671,7 +468,6 @@ export function SettingsView({ section }: { section: SettingsSection }) {
         </nav>
         <div ref={content} className="-mx-2 min-h-0 flex-1 overflow-y-auto px-2 pb-8">
           {section === 'appearance' && <Appearance />}
-          {section === 'themes' && <Themes />}
           {section === 'sources' && <SourcesView />}
           {section === 'sync' && <SyncSection />}
           {section === 'shield' && <ShieldSection />}

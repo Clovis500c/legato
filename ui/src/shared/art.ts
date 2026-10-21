@@ -3,6 +3,8 @@ import type { Track } from './api'
 
 /** Remote image through the app's Rust cache (`art` scheme): the front end never hits the network. */
 export const remoteArt = (url: string) => convertFileSrc(url, 'art')
+/** Picture the user put in the app (covers/ folder: playlist images, theme backgrounds). */
+export const coverImage = (name: string) => convertFileSrc(`cover/${name}`, 'art')
 
 /** Image candidates for a track, best first: cover embedded in its local file, then its stored art. */
 export function trackArt(t: Pick<Track, 'ids' | 'art'> & { id?: number }): string[] {

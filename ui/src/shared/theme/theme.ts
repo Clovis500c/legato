@@ -1,6 +1,7 @@
 /** Hi-Fi themes: palettes, user settings schema, contrast check. Applied as CSS variables (styles.css @theme). */
 import { LANGUAGES, msg, tr } from '../i18n/i18n'
 import { ACTIONS, validCombo, type Custom } from '../../app/keys'
+import { cleanCss } from '../css'
 
 export const PALETTE_KEYS = ['bg', 'panel', 'raised', 'recess', 'line', 'lineSoft', 'ink', 'ink2', 'ink3', 'ink4', 'accent', 'onAccent', 'ledOff'] as const
 export type PaletteKey = (typeof PALETTE_KEYS)[number]
@@ -12,13 +13,44 @@ export interface Theme extends Palette {
   dark: boolean
   font: Font
   glow: boolean
+  /** Corner roundness of panels, buttons, cards. */
+  radius: Radius
+  /** Picture behind the whole window (covers/ file `bg-…`), surfaces see-through over it. */
+  background?: Background
+  /** Appearance choices the theme brings when picked (cover shape, density, player…). */
+  look?: Look
+  /** Advanced: the theme's own CSS (cleaned; Music App's name, logo and legal notices stay). */
+  css?: string
 }
+
+export const RADII = ['sharp', 'soft', 'round'] as const
+export type Radius = (typeof RADII)[number]
+
+export const FITS = ['cover', 'contain', 'tile'] as const
+export interface Background {
+  image: string
+  fit: (typeof FITS)[number]
+  /** Theme background color over the picture, 0..90 %. */
+  dim: number
+  /** Picture blur, px. */
+  blur: number
+  /** Surfaces' opacity over the picture, 40..100 %. */
+  panels: number
+}
+
+/** Settings a theme can bring along ("parts of the UX"). */
+export const LOOK_KEYS = ['covers', 'density', 'readout', 'volume', 'tuner', 'tint', 'immersive', 'backdropBlur', 'backdropDim', 'backdropMotion', 'motion', 'sidebarCounts', 'listCovers', 'columns'] as const
+export type LookKey = (typeof LOOK_KEYS)[number]
+export type Look = Partial<Pick<Settings, LookKey>>
+
+/** Theme CSS kept in settings (synced, size-bounded): 20 KB. */
+export const MAX_THEME_CSS = 20_000
 
 /** modern = Roboto (YouTube's UI font), hifi = Schibsted Grotesk, neutral = Segoe UI. */
 export const FONTS = ['modern', 'hifi', 'neutral'] as const
 export type Font = (typeof FONTS)[number]
 
-const preset = (id: string, name: string, dark: boolean, p: Palette, font: Font = 'hifi', glow = true): Theme => ({ id, name, dark, font, glow, ...p })
+const preset = (id: string, name: string, dark: boolean, p: Palette, font: Font = 'hifi', glow = true): Theme => ({ id, name, dark, font, glow, radius: 'soft', ...p })
 
 // ink3 values tuned for WCAG AA (4.5:1) on bg.
 export const PRESETS: Theme[] = [
@@ -249,6 +281,8 @@ const V3: Partial<Settings> = { stage: 'auto' }
 const V4: Partial<Settings> = { startView: 'home' }
 
 const HEX = /^#[0-9a-f]{6}$/i
+/** Background file names as `save_background` writes them. */
+const BG_NAME = /^bg-[0-9a-f]{16}\.(png|jpg|webp|gif)$/
 const isHex = (v: unknown): v is string => typeof v === 'string' && HEX.test(v)
 const num = (v: unknown, min: number, max: number, fallback: number) => (typeof v === 'number' && Number.isFinite(v) ? Math.min(max, Math.max(min, Math.round(v))) : fallback)
 const pick = <T,>(v: unknown, allowed: readonly T[], fallback: T): T => (allowed.includes(v as T) ? (v as T) : fallback)
@@ -261,8 +295,37 @@ export function sanitizeTheme(raw: unknown): Theme | null {
   const name = typeof r.name === 'string' && r.name.trim() ? r.name.trim().slice(0, 40) : tr('My theme')
   const id = typeof r.id === 'string' && /^custom-[\w-]{1,40}$/.test(r.id) ? r.id : `custom-${Date.now().toString(36)}`
   const palette = Object.fromEntries(PALETTE_KEYS.map((k) => [k, (r[k] as string).toUpperCase()])) as Palette
-  return { id, name, dark: luminance(palette.bg) < 0.2, font: pick(r.font, FONTS, 'hifi'), glow: r.glow !== false, ...palette }
+  const b = r.background && typeof r.background === 'object' ? (r.background as Record<string, unknown>) : null
+  const background: Background | undefined =
+    b && typeof b.image === 'string' && BG_NAME.test(b.image) ? { image: b.image, fit: pick(b.fit, FITS, 'cover'), dim: num(b.dim, 0, 90, 30), blur: num(b.blur, 0, 40, 0), panels: num(b.panels, 40, 100, 80) } : undefined
+  const look = sanitizeLook(r.look)
+  const css = cleanCss(r.css, MAX_THEME_CSS).trim()
+  return {
+    id,
+    name,
+    dark: luminance(palette.bg) < 0.2,
+    font: pick(r.font, FONTS, 'hifi'),
+    glow: r.glow !== false,
+    radius: pick(r.radius, RADII, 'soft'),
+    ...palette,
+    ...(background && { background }),
+    ...(look && { look }),
+    ...(css && { css }),
+  }
 }
+
+/** A theme's look: known keys only, each checked like a setting. */
+function sanitizeLook(raw: unknown): Look | undefined {
+  if (!raw || typeof raw !== 'object') return undefined
+  const given = LOOK_KEYS.filter((k) => k in (raw as object))
+  if (!given.length) return undefined
+  // Current defaults version: no defaults migration on a look.
+  const clean = sanitize({ ...(raw as object), defaultsVersion: DEFAULTS_VERSION })
+  return Object.fromEntries(given.map((k) => [k, clean[k]])) as Look
+}
+
+/** The look settings as they are now (to save into a theme). */
+export const lookOf = (s: Settings): Look => Object.fromEntries(LOOK_KEYS.map((k) => [k, s[k]])) as Look
 
 /** Preset ids before English rename. */
 const LEGACY_IDS: Record<string, string> = { papier: 'paper', aluminium: 'aluminum', sauge: 'sage' }
@@ -415,6 +478,42 @@ export function contrastReport(t: Palette) {
   ].map((c) => ({ ...c, ok: c.ratio >= c.min }))
 }
 
+const rgb = (h: string) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16))
+const hex = (c: number[]) => `#${c.map((v) => Math.round(Math.min(255, Math.max(0, v))).toString(16).padStart(2, '0')).join('')}`.toUpperCase()
+/** a → b by t (0..1), in sRGB. */
+export const mix = (a: string, b: string, t: number) => hex(rgb(a).map((v, i) => v + (rgb(b)[i] - v) * t))
+
+/** Moves `c` toward `toward` until it reaches `min` contrast on every one of `on`. */
+function readable(c: string, toward: string, on: string[], min: number): string {
+  for (let t = 0; t <= 1; t += 0.05) {
+    const x = mix(c, toward, t)
+    if (on.every((b) => contrast(x, b) >= min)) return x
+  }
+  return toward
+}
+
+/** A whole palette from one color: neutrals lightly tinted with it, text checked for AA contrast. */
+export function paletteFrom(accent: string, dark: boolean): Palette {
+  const bg = mix(dark ? '#111111' : '#F6F6F4', accent, dark ? 0.07 : 0.05)
+  const ink = mix(dark ? '#F2F2F2' : '#151515', accent, 0.04)
+  const panel = mix(bg, ink, dark ? 0.05 : 0.035)
+  return {
+    bg,
+    panel,
+    raised: dark ? mix(bg, ink, 0.1) : mix(bg, '#FFFFFF', 0.65),
+    recess: dark ? mix(bg, '#000000', 0.45) : mix(bg, ink, 0.07),
+    line: mix(bg, ink, 0.17),
+    lineSoft: mix(bg, ink, 0.1),
+    ink,
+    ink2: readable(mix(ink, bg, 0.4), ink, [bg, panel], 4.5),
+    ink3: readable(mix(ink, bg, 0.5), ink, [bg, panel], 4.5),
+    ink4: mix(ink, bg, 0.7),
+    accent: accent.toUpperCase(),
+    onAccent: onAccentFor(accent),
+    ledOff: mix(bg, ink, 0.22),
+  }
+}
+
 /** Text / icon color on an accent: first of white, ink, black reaching AA 4.5 (black always does). */
 export const onAccentFor = (accent: string) => ['#FFFFFF', '#171614'].find((c) => contrast(c, accent) >= 4.5) ?? '#000000'
 
@@ -440,10 +539,34 @@ const FONT_STACKS: Record<Font, string> = {
 
 const kebab = (k: string) => k.replace(/[A-Z0-9]/g, (c) => `-${c.toLowerCase()}`)
 
+/** Tailwind's radius scale per theme roundness (soft = Tailwind's own). */
+const RADIUS_SCALE: Record<Radius, [string, string, string, string, string]> = {
+  sharp: ['1px', '2px', '3px', '4px', '6px'],
+  soft: ['0.25rem', '0.375rem', '0.5rem', '0.75rem', '1rem'],
+  round: ['0.5rem', '0.75rem', '1rem', '1.25rem', '1.75rem'],
+}
+
 /** Theme + layout settings → CSS custom properties (consumed by styles.css). */
 export function cssVars(t: Theme, s: Settings): Record<string, string> {
+  const r = RADIUS_SCALE[t.radius ?? 'soft']
+  // A picture behind: main surfaces see-through over it.
+  const see = (k: 'bg' | 'panel' | 'raised', extra = 0) => (t.background ? `color-mix(in srgb, ${t[k]} ${Math.min(100, t.background.panels + extra)}%, transparent)` : t[k])
   return {
     ...Object.fromEntries(PALETTE_KEYS.map((k) => [`--${kebab(k)}`, t[k]])),
+    '--bg': see('bg'),
+    '--panel': see('panel'),
+    '--raised': see('raised', 10),
+    '--bg-solid': t.bg,
+    '--body-bg': t.background ? 'transparent' : t.bg,
+    '--theme-size': { cover: 'cover', contain: 'contain', tile: 'auto' }[t.background?.fit ?? 'cover'],
+    '--theme-repeat': t.background?.fit === 'tile' ? 'repeat' : 'no-repeat',
+    '--theme-blur': `${t.background?.blur ?? 0}px`,
+    '--theme-dim': t.background ? `color-mix(in srgb, ${t.bg} ${t.background.dim}%, transparent)` : 'transparent',
+    '--radius-sm': r[0],
+    '--radius-md': r[1],
+    '--radius-lg': r[2],
+    '--radius-xl': r[3],
+    '--radius-2xl': r[4],
     '--accent-soft': `${t.accent}1F`,
     '--shadow': t.dark ? '#00000099' : '#17161424',
     '--led-glow': t.glow ? `0 0 6px ${t.accent}AA` : 'none',

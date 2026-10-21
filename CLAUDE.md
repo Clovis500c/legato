@@ -28,10 +28,10 @@ Reference mockups: Figma file "Bow Game / Music App", page "Music App v3 — Hi-
 - `ui/`: React 19 + Zustand + Tailwind v4, split by feature:
   - `app/` (shell, store, navigation, settings), `features/<name>/` (library, sources, sidebar, player, add, settings…), `shared/` (typed api, format, theme, `ui/` components).
   - `shared/api.ts` = the only place that calls `invoke`. Types copied by hand from Rust: keep them in sync.
-- Design tokens: `ui/src/styles.css` (`@theme`) fed by CSS variables from `shared/theme/theme.ts`.
+- Design tokens: `ui/src/styles.css` (`@theme`) fed by CSS variables from `shared/theme/theme.ts`. Themes (Settings › Appearance, `features/settings/ThemeStudio.tsx`): palette, font, corners (Tailwind radius vars), glow, background picture (covers folder `bg-<hash>`, served by the `art` scheme, surfaces see-through over it), a look (appearance settings applied on pick), own CSS (`shared/css.ts` cleaned; `BRAND_GUARD` keeps elements marked `data-brand`: Music App's name, logo, legal notices). `.theme` files carry the picture (`music_core::themefile`).
 
 ## Commands
-- `pnpm dev`: run the app (Vite + Tauri)
+- `pnpm dev`: run the app (Vite + Tauri), with its own data folder (`tauri.dev.conf.json` identifier): never the installed app's library. Bump `library::SCHEMA_VERSION` with each migration.
 - `pnpm check`: typecheck + lint + Vitest + clippy + cargo test (everything must pass before a commit)
 - `pnpm test` / `cargo test --workspace` separately
 - `pnpm build`: installer

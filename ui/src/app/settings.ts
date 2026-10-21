@@ -2,6 +2,8 @@ import { getCurrentWebview } from '@tauri-apps/api/webview'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { create } from 'zustand'
 import { api } from '../shared/api'
+import { coverImage } from '../shared/art'
+import { BRAND_GUARD } from '../shared/css'
 import { cssVars, DEFAULTS, resolveTheme, sanitize, type Settings, type SystemAccent, type Theme } from '../shared/theme/theme'
 import { effectiveFade } from '../features/player/fade'
 import { usePlayer } from '../features/player/store'
@@ -26,6 +28,25 @@ export function applyCached() {
   }
 }
 
+/** The theme's own CSS, then the guard keeping Music App's name, logo and legal notices as they are. */
+function themeCss(css: string) {
+  const style = (id: string) => {
+    let el = document.getElementById(id) as HTMLStyleElement | null
+    if (!el) {
+      el = document.createElement('style')
+      el.id = id
+      document.head.appendChild(el)
+    }
+    return el
+  }
+  const own = style('theme-css')
+  if (own.textContent !== css) own.textContent = css
+  const guard = style('brand-guard')
+  if (!guard.textContent) guard.textContent = BRAND_GUARD
+  // Last in <head>: after the theme's CSS.
+  if (guard.nextElementSibling) document.head.appendChild(guard)
+}
+
 function apply(s: Settings) {
   try {
     localStorage.setItem(CACHE, JSON.stringify({ settings: s, systemAccent }))
@@ -42,7 +63,10 @@ function apply(s: Settings) {
   }
   usePlayer.setState({ fade: effectiveFade(s) })
   const root = document.documentElement.style
-  for (const [k, v] of Object.entries(cssVars(resolveTheme(s, systemDark.matches, systemAccent), s))) root.setProperty(k, v)
+  const theme = resolveTheme(s, systemDark.matches, systemAccent)
+  for (const [k, v] of Object.entries(cssVars(theme, s))) root.setProperty(k, v)
+  root.setProperty('--theme-image', theme.background ? `url("${coverImage(theme.background.image)}")` : 'none')
+  themeCss(theme.css ?? '')
   getCurrentWebview()
     .setZoom(s.zoom / 100)
     .catch(() => {})

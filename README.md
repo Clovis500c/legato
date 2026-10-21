@@ -31,7 +31,8 @@ A fast, private desktop music player for Windows, built with Tauri 2 and Rust.
 - **Sync Mode.** Your playlists, history, Live Editor versions and settings on all your PCs, through OneDrive (or
   any shared folder) or straight over your network with a 6-digit code.
 - **Your language.** English and French, following Windows or picked in Settings.
-- **Customization.** Themes with a built-in editor, layout and player options.
+- **Customization.** Themes that change everything: colors (or a whole palette from one color), a background
+  picture, corners, font, the look of lists and the player, even your own CSS; shared as `.theme` files.
 - **Add-ons and plugins.** Optional extras, off by default (first: Discord Rich Presence). Plugins made by others
   install from a folder after you approve what they may do, and run sealed off from the app
   ([writing one](docs/plugins.md)).

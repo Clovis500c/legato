@@ -81,8 +81,34 @@ body,
   height: 100%;
 }
 
+html {
+  background: var(--bg-solid, var(--bg));
+}
+
 body {
-  @apply bg-bg font-sans text-[13px] text-ink antialiased select-none;
+  @apply font-sans text-[13px] text-ink antialiased select-none;
+  background: var(--body-bg, var(--bg));
+}
+
+/* Theme picture behind the whole window (theme.ts Background), then the theme's color over it. Static: blurred once. */
+body::before,
+body::after {
+  content: '';
+  position: fixed;
+  z-index: -1;
+  pointer-events: none;
+}
+body::before {
+  inset: calc(var(--theme-blur, 0px) * -2);
+  background-image: var(--theme-image, none);
+  background-size: var(--theme-size, cover);
+  background-repeat: var(--theme-repeat, no-repeat);
+  background-position: center;
+  filter: blur(var(--theme-blur, 0px));
+}
+body::after {
+  inset: 0;
+  background: var(--theme-dim, transparent);
 }
 
 input,

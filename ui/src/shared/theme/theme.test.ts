@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { contrast, contrastReport, cssVars, DEFAULTS, onAccentFor, PRESETS, resolveTheme, sanitize, sanitizeTheme } from './theme'
+import { contrast, contrastReport, cssVars, DEFAULTS, lookOf, onAccentFor, paletteFrom, PRESETS, resolveTheme, sanitize, sanitizeTheme } from './theme'
 
 describe('sanitize', () => {
   it('falls back to defaults on junk', () => {
@@ -91,5 +91,46 @@ describe('resolveTheme', () => {
     expect(sanitize({ startView: 'albums', defaultsVersion: 4 }).startView).toBe('albums')
     // Chosen again after migration: kept.
     expect(sanitize({ ...old, volume: 'knob', clickToPlay: 'double' })).toMatchObject({ volume: 'knob', clickToPlay: 'double' })
+  })
+})
+
+describe('themes v2', () => {
+  const base = { ...PRESETS[1], id: 'custom-x', name: 'Mine' }
+
+  it('keeps a background, a look and CSS, drops bad ones', () => {
+    const t = sanitizeTheme({ ...base, radius: 'round', background: { image: 'bg-0123456789abcdef.jpg', fit: 'tile', dim: 500, blur: 10, panels: 10 }, look: { covers: 'vinyl', density: 'huge', zoom: 125 }, css: '.a{color:red} @import url(x.css);' })!
+    expect(t.radius).toBe('round')
+    expect(t.background).toEqual({ image: 'bg-0123456789abcdef.jpg', fit: 'tile', dim: 90, blur: 10, panels: 40 })
+    // Known look keys only; a bad value falls back to its default.
+    expect(t.look).toEqual({ covers: 'vinyl', density: DEFAULTS.density })
+    expect(t.css).toBe('.a{color:red}')
+    const bad = sanitizeTheme({ ...base, background: { image: '../library.db' }, look: 'x', css: 7, radius: 'blob' })!
+    expect([bad.background, bad.look, bad.css, bad.radius]).toEqual([undefined, undefined, undefined, 'soft'])
+    expect(sanitizeTheme({ ...base, css: 'x'.repeat(30_000) })!.css!.length).toBe(20_000)
+  })
+
+  it('a picture behind makes surfaces see-through; corners follow the theme', () => {
+    const plain = cssVars({ ...base, radius: 'sharp' }, DEFAULTS)
+    expect(plain['--bg']).toBe(base.bg)
+    expect(plain['--radius-lg']).toBe('3px')
+    const pic = cssVars({ ...base, background: { image: 'bg-0123456789abcdef.png', fit: 'cover', dim: 30, blur: 0, panels: 70 } }, DEFAULTS)
+    expect(pic['--bg']).toBe(`color-mix(in srgb, ${base.bg} 70%, transparent)`)
+    expect(pic['--raised']).toContain('80%')
+    expect(pic['--bg-solid']).toBe(base.bg)
+  })
+
+  it('a palette from one color passes the contrast checks', () => {
+    for (const accent of ['#FF5A1F', '#2F6FEB', '#F2B705', '#1F7A4D', '#9B5DE5', '#111111', '#FFFFFF'])
+      for (const dark of [false, true]) {
+        const p = paletteFrom(accent, dark)
+        expect(contrastReport(p).filter((c) => !c.ok && c.label !== 'Icon on accent'), `${accent} ${dark}`).toEqual([])
+        expect(contrast(p.onAccent, p.accent)).toBeGreaterThanOrEqual(4.5)
+      }
+  })
+
+  it('lookOf takes the look settings only', () => {
+    const look = lookOf({ ...DEFAULTS, covers: 'vinyl' })
+    expect(look.covers).toBe('vinyl')
+    expect('zoom' in look).toBe(false)
   })
 })

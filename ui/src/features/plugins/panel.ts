@@ -89,17 +89,5 @@ export function cleanCommand(raw: unknown): PluginCommand | null {
   return id(o.id) && str(o.title, 60).trim() ? { id: id(o.id), title: str(o.title, 60).trim(), where: where.length ? where : ['player'] } : null
 }
 
-const MAX_CSS = 100_000
-
-/**
- * A plugin's CSS: comments, @import, links (url(), except data: images), old script hooks and anything that could
- * close the <style> taken out. Set as text, never parsed as HTML.
- */
-export function cleanCss(raw: unknown): string {
-  return str(raw, MAX_CSS)
-    .replace(/\/\*[\s\S]*?\*\//g, '')
-    .replace(/@import[^;]*;?/gi, '')
-    .replace(/url\(\s*(['"]?)(?!data:image\/)[^)]*\)/gi, 'none')
-    .replace(/expression\s*\(|-moz-binding|behavior\s*:/gi, '')
-    .replace(/<\/?style/gi, '')
-}
+/** A plugin's CSS: see shared/css.ts. */
+export { cleanCss } from '../../shared/css'
