@@ -26,6 +26,7 @@ A fast, private desktop music player for Windows, built with Tauri 2 and Rust.
 - **Mixes made on your PC.** Daily Mixes, a time-of-day mix and Rediscover, built from your own listening history.
 - **Windows integration.** Media keys, the Windows media panel, tray icon, keyboard shortcuts, system light/dark mode
   and accent color.
+- **Your language.** English and French, following Windows or picked in Settings.
 - **Customization.** Themes with a built-in editor, layout and player options.
 - **Add-ons.** Optional extras, off by default. First available: Discord Rich Presence.
 - **Ad and tracker blocking**, built in.

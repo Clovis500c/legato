@@ -1,4 +1,5 @@
 /** Hi-Fi themes: palettes, user settings schema, contrast check. Applied as CSS variables (styles.css @theme). */
+import { LANGUAGES, msg, tr } from '../i18n/i18n'
 import { ACTIONS, validCombo, type Custom } from '../../app/keys'
 
 export const PALETTE_KEYS = ['bg', 'panel', 'raised', 'recess', 'line', 'lineSoft', 'ink', 'ink2', 'ink3', 'ink4', 'accent', 'onAccent', 'ledOff'] as const
@@ -96,6 +97,8 @@ export interface FadeSettings {
 }
 
 export interface Settings {
+  /** Interface language: 'system' (Windows', English if not offered) or a code from shared/i18n. */
+  language: string
   /** Preset id, custom theme id, or 'system' (Modern / Modern Dark, following Windows). */
   theme: string
   /** Hex overrides theme accent; 'system' = Windows accent; null = theme's own. */
@@ -182,6 +185,7 @@ export interface Settings {
 }
 
 export const DEFAULTS: Settings = {
+  language: 'system',
   theme: 'system',
   accent: 'system',
   customThemes: [],
@@ -251,7 +255,7 @@ export function sanitizeTheme(raw: unknown): Theme | null {
   if (!raw || typeof raw !== 'object') return null
   const r = raw as Record<string, unknown>
   if (!PALETTE_KEYS.every((k) => isHex(r[k]))) return null
-  const name = typeof r.name === 'string' && r.name.trim() ? r.name.trim().slice(0, 40) : 'My theme'
+  const name = typeof r.name === 'string' && r.name.trim() ? r.name.trim().slice(0, 40) : tr('My theme')
   const id = typeof r.id === 'string' && /^custom-[\w-]{1,40}$/.test(r.id) ? r.id : `custom-${Date.now().toString(36)}`
   const palette = Object.fromEntries(PALETTE_KEYS.map((k) => [k, (r[k] as string).toUpperCase()])) as Palette
   return { id, name, dark: luminance(palette.bg) < 0.2, font: pick(r.font, FONTS, 'hifi'), glow: r.glow !== false, ...palette }
@@ -282,6 +286,7 @@ export function sanitize(raw: unknown): Settings {
   const saved = typeof r.defaultsVersion === 'number' ? r.defaultsVersion : 0
   const columns = Array.isArray(r.columns) ? [...new Set(r.columns.filter((c): c is Column => COLUMNS.includes(c as Column)))] : DEFAULTS.columns
   return {
+    language: typeof r.language === 'string' && (r.language === 'system' || LANGUAGES.some((l) => l.code === r.language)) ? r.language : DEFAULTS.language,
     theme: pick(LEGACY_IDS[r.theme as string] ?? r.theme, ids, DEFAULTS.theme),
     accent: isHex(r.accent) ? r.accent.toUpperCase() : r.accent === null ? null : DEFAULTS.accent,
     customThemes,
@@ -398,11 +403,11 @@ export function contrast(a: string, b: string): number {
 /** Pairs checked live in theme editor. AA: 4.5 for text, 3 for icons (accent only carries icons). */
 export function contrastReport(t: Palette) {
   return [
-    { label: 'Main text', ratio: contrast(t.ink, t.bg), min: 4.5 },
-    { label: 'Secondary text', ratio: contrast(t.ink2, t.bg), min: 4.5 },
-    { label: 'Muted text', ratio: contrast(t.ink3, t.bg), min: 4.5 },
-    { label: 'Text on panel', ratio: contrast(t.ink2, t.panel), min: 4.5 },
-    { label: 'Icon on accent', ratio: contrast(t.onAccent, t.accent), min: 3 },
+    { label: msg('Main text'), ratio: contrast(t.ink, t.bg), min: 4.5 },
+    { label: msg('Secondary text'), ratio: contrast(t.ink2, t.bg), min: 4.5 },
+    { label: msg('Muted text'), ratio: contrast(t.ink3, t.bg), min: 4.5 },
+    { label: msg('Text on panel'), ratio: contrast(t.ink2, t.panel), min: 4.5 },
+    { label: msg('Icon on accent'), ratio: contrast(t.onAccent, t.accent), min: 3 },
   ].map((c) => ({ ...c, ok: c.ratio >= c.min }))
 }
 

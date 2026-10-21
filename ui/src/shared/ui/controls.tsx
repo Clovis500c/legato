@@ -1,5 +1,6 @@
 import { useRef, type ButtonHTMLAttributes, type ReactNode } from 'react'
 import { formatCount } from '../format'
+import { tr } from '../i18n/i18n'
 
 const kinds = {
   primary: 'bg-accent text-on-accent shadow-[0_2px_10px_var(--accent-soft)] hover:brightness-110',
@@ -72,7 +73,7 @@ export function Readout({ children, detail }: { children: ReactNode; detail?: st
 }
 
 /** Volume knob 0..1: drag up/down, wheel or arrows. Optional tick scale. */
-export function Knob({ value, onChange, size = 32, ticks = false, label = 'Volume' }: { value: number; onChange: (v: number) => void; size?: number; ticks?: boolean; label?: string }) {
+export function Knob({ value, onChange, size = 32, ticks = false, label = tr('Volume') }: { value: number; onChange: (v: number) => void; size?: number; ticks?: boolean; label?: string }) {
   const start = useRef<{ y: number; v: number } | null>(null)
   const set = (v: number) => onChange(Math.min(1, Math.max(0, Math.round(v * 100) / 100)))
   const box = size + (ticks ? 20 : 0)

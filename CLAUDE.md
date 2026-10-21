@@ -9,7 +9,7 @@ Reference mockups: Figma file "Bow Game / Music App", page "Music App v3 — Hi-
 - Legal audio playback only (Spotify Connect / official SDK, embedded YouTube player, local files, personal servers). No audio extraction: never download, record or export a platform's audio, never touch DRM. Live processing of what plays is allowed (user's choice 2026-10-20): native chain in `crates/dsp`, YouTube in its player (`crates/shield` `live.js`), see `docs/playback.md`.
 - Never copy code from Liner (non-commercial licence, reuse forbidden). Everything is written from scratch.
 - No keys for YouTube: Google sign-in in an app window (Google's own page), session kept in WebView2's cookie store, YouTube Music's and YouTube's own web APIs (InnerTube, unofficial: user's choices 2026-10-16 and 2026-10-20, may break). Search covers normal YouTube (anonymous when signed out), clear non-music hidden until asked (`music_core::musicness`). Spotify: user's own client ID (no keyless way; dev mode = Premium owner, 5 users max).
-- English by default: UI text, docs, comments, commit messages.
+- English for code, comments, docs and commit messages. The interface speaks the user's language (user's choice 2026-10-20): English source and fallback, French, Windows' language by default or picked in Settings › Appearance › Language. Every UI text goes through `shared/i18n` (`tr`, `trn` for counts, `msg` in tables); `fr.ts` holds French keyed by the English text; `i18n.test.ts` fails on any text without French. Setting ids (`data-setting`, search index labels) stay English.
 
 ## Structure
 - `crates/core` (`music-core`): pure Rust, no Tauri. `Track`, `Connector` trait, `SecretStore`, matching (ISRC, then title+artist+duration), `Library` (rusqlite), `sync`, local file scan.

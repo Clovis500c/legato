@@ -16,13 +16,14 @@ import { PlaylistCover } from '../library/PlaylistCover'
 import { trackMenu } from '../menus'
 import { MixCard, useMixes } from '../mixes/MixesView'
 import { remoteTrack, useNowTrack, usePlayer } from '../player/store'
+import { tr, trn } from '../../shared/i18n/i18n'
 
 const CARD = 156
 const ROW = 12
 
 const greeting = () => {
   const h = new Date().getHours()
-  return h < 5 ? 'Good night' : h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening'
+  return h < 5 ? tr('Good night') : h < 12 ? tr('Good morning') : h < 18 ? tr('Good afternoon') : tr('Good evening')
 }
 
 /** Titled row of cards, scrolled sideways. */
@@ -46,7 +47,7 @@ function SeeAll({ to, sort }: { to: View; sort?: Sort }) {
   const go = useStore((s) => s.go)
   return (
     <button onClick={() => (sort && useStore.getState().setSort(sort), go(to))} className="flex items-center gap-1 text-xs font-semibold text-ink-2 hover:text-ink">
-      See all <CaretRight size={11} weight="bold" />
+      {tr('See all')} <CaretRight size={11} weight="bold" />
     </button>
   )
 }
@@ -63,7 +64,7 @@ function Card({ title, sub, art, round, onOpen, onPlay, menu, busy }: { title: s
         <span className="-mt-1.5 line-clamp-2 text-xs text-ink-2">{sub}</span>
       </button>
       {onPlay && (
-        <RoundButton label={`Play ${title}`} kind="primary" size="md" className={`absolute right-2 ${busy ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 focus:opacity-100'}`} style={{ top: CARD - 48 }} onClick={onPlay}>
+        <RoundButton label={tr('Play {title}', { title })} kind="primary" size="md" className={`absolute right-2 ${busy ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 focus:opacity-100'}`} style={{ top: CARD - 48 }} onClick={onPlay}>
           {busy ? <SpinnerGap size={16} className="animate-spin" /> : <Play weight="fill" size={16} />}
         </RoundButton>
       )}
@@ -85,12 +86,12 @@ function QuickAccess() {
   const playing = usePlayer((s) => s.playing)
   const track = useNowTrack()
   const tiles: { icon: ReactNode; label: string; sub: string; onClick: () => void }[] = [
-    { icon: <MusicNotes size={20} />, label: 'Songs', sub: formatCount(tracks.length), onClick: () => go({ name: 'songs' }) },
-    { icon: <VinylRecord size={20} />, label: 'Albums', sub: formatCount(counts.albums), onClick: () => go({ name: 'albums' }) },
-    { icon: <MicrophoneStage size={20} />, label: 'Artists', sub: formatCount(counts.artists), onClick: () => go({ name: 'artists' }) },
-    { icon: <Disc size={20} />, label: 'Mixes', sub: 'Made for you', onClick: () => go({ name: 'mixes' }) },
-    { icon: <Playlist size={20} />, label: 'Playlists', sub: formatCount(playlists.length), onClick: () => playlists[0] && go({ name: 'playlist', id: playlists[0].id }) },
-    { icon: <PlusCircle size={20} />, label: 'Add music', sub: 'Search, links, files', onClick: () => go({ name: 'add' }) },
+    { icon: <MusicNotes size={20} />, label: tr('Songs'), sub: formatCount(tracks.length), onClick: () => go({ name: 'songs' }) },
+    { icon: <VinylRecord size={20} />, label: tr('Albums'), sub: formatCount(counts.albums), onClick: () => go({ name: 'albums' }) },
+    { icon: <MicrophoneStage size={20} />, label: tr('Artists'), sub: formatCount(counts.artists), onClick: () => go({ name: 'artists' }) },
+    { icon: <Disc size={20} />, label: tr('Mixes'), sub: tr('Made for you'), onClick: () => go({ name: 'mixes' }) },
+    { icon: <Playlist size={20} />, label: tr('Playlists'), sub: formatCount(playlists.length), onClick: () => playlists[0] && go({ name: 'playlist', id: playlists[0].id }) },
+    { icon: <PlusCircle size={20} />, label: tr('Add music'), sub: tr('Search, links, files'), onClick: () => go({ name: 'add' }) },
   ]
   return (
     <div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-2.5">
@@ -98,11 +99,11 @@ function QuickAccess() {
         <button onClick={() => usePlayer.getState().setFull(true)} className="col-span-full flex items-center gap-4 rounded-xl border border-line bg-raised p-2.5 pr-4 text-left transition hover:bg-bg sm:col-span-2">
           <Cover title={track?.album ?? now.title} art={track && trackArt(track)} size={56} />
           <span className="flex min-w-0 flex-1 flex-col">
-            <span className="kicker">{playing ? 'Now playing' : 'Pick up where you left off'}</span>
+            <span className="kicker">{playing ? tr('Now playing') : tr('Pick up where you left off')}</span>
             <span className="truncate text-[15px] font-semibold">{now.title}</span>
             <span className="truncate text-xs text-ink-2">{now.artist}</span>
           </span>
-          <RoundButton label={playing ? 'Pause' : 'Play'} kind="primary" size="md" onClick={(e) => (e.stopPropagation(), usePlayer.getState().toggle())}>
+          <RoundButton label={playing ? tr('Pause') : tr('Play')} kind="primary" size="md" onClick={(e) => (e.stopPropagation(), usePlayer.getState().toggle())}>
             <Play weight="fill" size={16} />
           </RoundButton>
         </button>
@@ -158,11 +159,11 @@ function YouTubeShelf({ shelf }: { shelf: Shelf }) {
     }
     const list = it.list!
     const menu = (): MenuEntry[] => [
-      { label: 'Play', icon: <Play size={16} />, onSelect: () => void playList(i, list) },
-      { label: 'Shuffle play', onSelect: () => void playList(i, list, true) },
-      { label: 'Add to queue', onSelect: () => void load(i, list).then((t) => t.length && enqueue(t, false)) },
+      { label: tr('Play'), icon: <Play size={16} />, onSelect: () => void playList(i, list) },
+      { label: tr('Shuffle play'), onSelect: () => void playList(i, list, true) },
+      { label: tr('Add to queue'), onSelect: () => void load(i, list).then((t) => t.length && enqueue(t, false)) },
       '-',
-      { label: 'Open in YouTube Music', icon: <SourceIcon source="youtube" size={14} />, onSelect: () => void openUrl(listUrl(list)).catch(() => {}) },
+      { label: tr('Open in YouTube Music'), icon: <SourceIcon source="youtube" size={14} />, onSelect: () => void openUrl(listUrl(list)).catch(() => {}) },
     ]
     return <Card key={i} title={it.title} sub={it.subtitle} art={art} busy={busy === i} onOpen={() => void playList(i, list)} onPlay={() => void playList(i, list)} menu={menu} />
   }
@@ -170,7 +171,7 @@ function YouTubeShelf({ shelf }: { shelf: Shelf }) {
     <Row
       kicker={
         <>
-          <SourceIcon source="youtube" size={10} /> From YouTube Music
+          <SourceIcon source="youtube" size={10} /> {tr('From YouTube Music')}
         </>
       }
       title={shelf.title}
@@ -201,13 +202,13 @@ function ServiceShelves() {
     return (
       <div className="flex items-center gap-4 rounded-xl border border-line bg-raised p-4">
         <SourceIcon source="youtube" size={22} />
-        <p className="flex-1 text-[13px] text-ink-2">Sign in to YouTube Music to see its recommendations here too.</p>
+        <p className="flex-1 text-[13px] text-ink-2">{tr('Sign in to YouTube Music to see its recommendations here too.')}</p>
         <button onClick={() => go({ name: 'settings', section: 'sources' })} className="rounded-full bg-ink px-3.5 py-1.5 text-xs font-semibold text-bg">
-          Sign in
+          {tr('Sign in')}
         </button>
       </div>
     )
-  if (error) return <p className="text-xs text-ink-3">YouTube Music recommendations unavailable: {error}</p>
+  if (error) return <p className="text-xs text-ink-3">{tr('YouTube Music recommendations unavailable: {error}', { error })}</p>
   if (!shelves)
     return (
       <div className="flex flex-col gap-3" aria-busy>
@@ -231,31 +232,31 @@ export function HomeView() {
   const shown = useMemo(() => playlists.filter((p) => !hidden.includes(playlistKey(p))).slice(0, ROW), [playlists, hidden])
   return (
     <>
-      <PageHeader kicker="Home" title={greeting()} />
+      <PageHeader kicker={tr('Home')} title={greeting()} />
       <div className="-mx-2 flex min-h-0 flex-1 flex-col gap-10 overflow-y-auto px-2 pb-8">
         <QuickAccess />
         {mixes && mixes.length > 0 && (
-          <Row kicker="Made on this PC" title="Made for you" action={<SeeAll to={{ name: 'mixes' }} />}>
+          <Row kicker={tr('Made on this PC')} title={tr('Made for you')} action={<SeeAll to={{ name: 'mixes' }} />}>
             {mixes.slice(0, ROW).map((m) => (
               <MixCard key={m.id} mix={m} />
             ))}
           </Row>
         )}
         {recent.length > 0 && (
-          <Row title="Recently played">
+          <Row title={tr('Recently played')}>
             <TrackCards tracks={recent} />
           </Row>
         )}
         {shown.length > 0 && (
-          <Row title="Your playlists">
+          <Row title={tr('Your playlists')}>
             {shown.map((p) => (
-              <Card key={p.id} title={p.name} sub={`${formatCount(p.trackCount)} songs`} art={<PlaylistCover p={p} size={CARD} big />} onOpen={() => go({ name: 'playlist', id: p.id })} onPlay={() => void api.playlistTracks(p.id).then((t) => usePlayer.getState().playTracks(t, 0))} />
+              <Card key={p.id} title={p.name} sub={trn(p.trackCount, '{n} song', '{n} songs')} art={<PlaylistCover p={p} size={CARD} big />} onOpen={() => go({ name: 'playlist', id: p.id })} onPlay={() => void api.playlistTracks(p.id).then((t) => usePlayer.getState().playTracks(t, 0))} />
             ))}
           </Row>
         )}
         <ServiceShelves />
         {added.length > 0 && (
-          <Row title="Recently added" action={<SeeAll to={{ name: 'songs' }} sort="added-new" />}>
+          <Row title={tr('Recently added')} action={<SeeAll to={{ name: 'songs' }} sort="added-new" />}>
             <TrackCards tracks={added} />
           </Row>
         )}

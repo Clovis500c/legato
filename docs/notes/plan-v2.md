@@ -68,7 +68,7 @@ it lands (tested, `pnpm check` green, committed). Technical plan, rule changes a
       pick one). If speech recognition can't be done cleanly in WebView2 without a server of ours: say so, propose an
       alternative, or keep only the Music Detector on the mic. Done: field, button, voice search (Windows' speech
       recognition, `speech.rs`), the mic's second choice opens the Music Detector.
-- [ ] Automatic translation: Windows language detected on first launch (supported → used, else English); language
+- [x] Automatic translation: Windows language detected on first launch (supported → used, else English); language
       picker in settings; at least English and French; structure that makes adding languages easy; settings search
       works in every language.
 - [x] Lyrics mode (Player mode): cover on the left, scrolling lyrics on the right, like Spotify. Client-side system or

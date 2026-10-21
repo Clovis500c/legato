@@ -5,6 +5,7 @@ import { region } from '../../shared/format'
 import { Button } from '../../shared/ui/Button'
 import { Stat } from '../../shared/ui/controls'
 import { Dialog } from '../../shared/ui/Dialog'
+import { tr, trn } from '../../shared/i18n/i18n'
 
 /** Shared code (pasted, QR image, nearby) → preview → new custom playlist. */
 export function ImportDialog({ code }: { code: string }) {
@@ -29,7 +30,7 @@ export function ImportDialog({ code }: { code: string }) {
       await refresh()
       close()
       go({ name: 'playlist', id: r.playlistId })
-      notify(r.missing ? `Imported ${r.added} tracks · ${r.missing} not found` : `Imported ${r.added} tracks`)
+      notify(trn(r.added, 'Imported {n} track', 'Imported {n} tracks') + (r.missing ? ` · ${trn(r.missing, '{n} not found', '{n} not found')}` : ''))
     } catch (e) {
       useStore.setState({ error: String(e) })
       setBusy(false)
@@ -37,21 +38,21 @@ export function ImportDialog({ code }: { code: string }) {
   }
 
   return (
-    <Dialog title={preview?.name || 'Shared playlist'} kicker="Import a shared playlist" onClose={close}>
+    <Dialog title={preview?.name || tr('Shared playlist')} kicker={tr('Import a shared playlist')} onClose={close}>
       {preview && (
         <>
           <div className="grid grid-cols-3 gap-2.5">
-            <Stat label="Tracks" value={preview.tracks} />
-            <Stat label="In your library" value={preview.known} />
-            <Stat label="To look up" value={preview.tracks - preview.known} />
+            <Stat label={tr('Tracks')} value={preview.tracks} />
+            <Stat label={tr('In your library')} value={preview.known} />
+            <Stat label={tr('To look up')} value={preview.tracks - preview.known} />
           </div>
-          <p className="text-xs text-ink-2">Missing tracks are looked up on YouTube and Apple Music. You get a custom playlist you can edit.</p>
+          <p className="text-xs text-ink-2">{tr('Missing tracks are looked up on YouTube and Apple Music. You get a custom playlist you can edit.')}</p>
           <div className="flex justify-end gap-2">
             <Button variant="ghost" onClick={close}>
-              Cancel
+              {tr('Cancel')}
             </Button>
             <Button disabled={busy} onClick={run}>
-              {busy ? 'Importing…' : 'Import'}
+              {busy ? tr('Importing…') : tr('Import')}
             </Button>
           </div>
         </>

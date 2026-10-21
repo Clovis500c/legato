@@ -13,6 +13,8 @@ import { coverTracks } from '../library/covers'
 import { TrackTable } from '../library/TrackTable'
 import { tracksMenu } from '../menus'
 import { usePlayer } from '../player/store'
+import { msg, tr, trn } from '../../shared/i18n/i18n'
+import { mixReason, mixTitle, weekdayName } from './words'
 
 /** Today's mixes; reload after a pref change or reset. */
 export function useMixes() {
@@ -40,18 +42,18 @@ function useMixTracks(mix?: Mix): LibraryTrack[] {
 /** Short label and big mark of a mix (template tile, badge on covers). */
 function mixMark(mix: Mix): { label: string; mark: string } {
   const n = mix.id.match(/^daily-(\d)/)?.[1]
-  if (n) return { label: 'Daily', mark: `0${n}` }
+  if (n) return { label: tr('Daily'), mark: `0${n}` }
   const a = mix.id.match(/^artist-(\d)/)?.[1]
-  if (a) return { label: 'Artist', mark: mix.title.replace(/ Mix$/, '').slice(0, 2).toUpperCase() }
+  if (a) return { label: tr('Artist'), mark: (mix.words?.name ?? mix.title.replace(/ Mix$/, '')).slice(0, 2).toUpperCase() }
   const marks: Record<string, { label: string; mark: string }> = {
-    now: { label: 'Now', mark: '◐' },
-    weekday: { label: 'Today', mark: mix.title.split(' ')[1]?.slice(0, 3).toUpperCase() ?? '◐' },
-    repeat: { label: 'Repeat', mark: '∞' },
-    fresh: { label: 'New', mark: '+' },
-    gems: { label: 'Gems', mark: '◇' },
-    rediscover: { label: 'Again', mark: '↺' },
+    now: { label: tr('Now'), mark: '◐' },
+    weekday: { label: tr('Today'), mark: mix.words?.day !== undefined ? weekdayName(mix.words.day, 'short').replace('.', '').slice(0, 3).toUpperCase() : '◐' },
+    repeat: { label: tr('Repeat'), mark: '∞' },
+    fresh: { label: tr('New'), mark: '+' },
+    gems: { label: tr('Gems'), mark: '◇' },
+    rediscover: { label: tr('Again'), mark: '↺' },
   }
-  return marks[mix.id] ?? { label: 'Mix', mark: '♪' }
+  return marks[mix.id] ?? { label: tr('Mix'), mark: '♪' }
 }
 
 /** Flat tile, mono label: no artwork needed, no gradient. */
@@ -85,7 +87,7 @@ function MixCover({ mix, tracks, size }: { mix: Mix; tracks: LibraryTrack[]; siz
           ))}
         </span>
       ) : (
-        <Cover title={mix.title} art={trackArt(songs[0])} size={size} className="rounded-none! border-0!" />
+        <Cover title={mixTitle(mix)} art={trackArt(songs[0])} size={size} className="rounded-none! border-0!" />
       )}
       {/* Badge on the art: fixed dark chip, readable over any cover. */}
       <span className="absolute top-2.5 left-2.5 flex items-center gap-1.5 rounded-full bg-black/60 px-2 py-0.5 font-mono text-[9px] tracking-[0.08em] text-white uppercase">
@@ -100,13 +102,13 @@ export function MixCard({ mix }: { mix: Mix }) {
   const play = usePlayer((s) => s.playTracks)
   const tracks = useMixTracks(mix)
   return (
-    <li onContextMenu={onMenu(() => tracksMenu(tracks, ['-', { label: 'Open', onSelect: () => go({ name: 'mix', id: mix.id }) }]))} className="group relative flex w-[180px] shrink-0 flex-col gap-2">
+    <li onContextMenu={onMenu(() => tracksMenu(tracks, ['-', { label: tr('Open'), onSelect: () => go({ name: 'mix', id: mix.id }) }]))} className="group relative flex w-[180px] shrink-0 flex-col gap-2">
       <button onClick={() => go({ name: 'mix', id: mix.id })} className="flex flex-col gap-2 text-left">
         <MixCover mix={mix} tracks={tracks} size={180} />
-        <span className="block text-[13px] font-semibold group-hover:underline">{mix.title}</span>
-        <span className="line-clamp-2 text-xs text-ink-2">{mix.reason}</span>
+        <span className="block text-[13px] font-semibold group-hover:underline">{mixTitle(mix)}</span>
+        <span className="line-clamp-2 text-xs text-ink-2">{mixReason(mix)}</span>
       </button>
-      <RoundButton label={`Play ${mix.title}`} kind="primary" size="md" className="absolute top-[130px] left-[130px] opacity-0 group-hover:opacity-100 focus:opacity-100" onClick={() => play(tracks, 0)}>
+      <RoundButton label={tr('Play {title}', { title: mixTitle(mix) })} kind="primary" size="md" className="absolute top-[130px] left-[130px] opacity-0 group-hover:opacity-100 focus:opacity-100" onClick={() => play(tracks, 0)}>
         <Play weight="fill" size={16} />
       </RoundButton>
     </li>
@@ -114,10 +116,10 @@ export function MixCard({ mix }: { mix: Mix }) {
 }
 
 const SECTIONS: { kind: Mix['kind']; title: string }[] = [
-  { kind: 'daily', title: 'Your daily mixes' },
-  { kind: 'moment', title: 'For right now' },
-  { kind: 'favorites', title: 'Your favorites' },
-  { kind: 'explore', title: 'Explore your library' },
+  { kind: 'daily', title: msg('Your daily mixes') },
+  { kind: 'moment', title: msg('For right now') },
+  { kind: 'favorites', title: msg('Your favorites') },
+  { kind: 'explore', title: msg('Explore your library') },
 ]
 
 function ResetHistory({ onDone }: { onDone: () => void }) {
@@ -125,12 +127,12 @@ function ResetHistory({ onDone }: { onDone: () => void }) {
     <Button
       variant="ghost"
       onClick={async () => {
-        if (!confirm('Forget your listening history and “less / never” choices? Your library stays as it is.')) return
+        if (!confirm(tr('Forget your listening history and “less / never” choices? Your library stays as it is.'))) return
         await api.clearHistory().catch((e) => useStore.setState({ error: String(e) }))
         onDone()
       }}
     >
-      <ArrowCounterClockwise size={14} /> Reset history
+      <ArrowCounterClockwise size={14} /> {tr('Reset history')}
     </Button>
   )
 }
@@ -139,12 +141,12 @@ export function MixesView() {
   const { mixes, reload } = useMixes()
   return (
     <>
-      <PageHeader kicker="For you · made on this PC from what you play" title="Mixes" actions={<ResetHistory onDone={reload} />} />
+      <PageHeader kicker={tr('For you · made on this PC from what you play')} title={tr('Mixes')} actions={<ResetHistory onDone={reload} />} />
       <div className="-mx-2 min-h-0 flex-1 overflow-y-auto px-2 pb-6">
         {mixes && mixes.length === 0 && (
           <div className="flex flex-col items-center gap-2 py-16 text-center text-ink-2">
-            <p className="text-base text-ink">No mixes yet</p>
-            <p>Play some music, or make a playlist: mixes appear after a few listens and change every day.</p>
+            <p className="text-base text-ink">{tr('No mixes yet')}</p>
+            <p>{tr('Play some music, or make a playlist: mixes appear after a few listens and change every day.')}</p>
           </div>
         )}
         <div className="flex flex-col gap-10">
@@ -153,7 +155,7 @@ export function MixesView() {
             if (!list.length) return null
             return (
               <section key={kind} className="flex flex-col gap-4">
-                <h2 className="kicker">{title}</h2>
+                <h2 className="kicker">{tr(title)}</h2>
                 <ul className="grid grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-x-6 gap-y-8">
                   {list.map((m) => (
                     <MixCard key={m.id} mix={m} />
@@ -163,7 +165,7 @@ export function MixesView() {
             )
           })}
         </div>
-        {mixes && mixes.length > 0 && <p className="mt-8 max-w-160 text-xs text-ink-2">Built from your plays (full listens count more, skips count against), your playlists, your saves on YouTube Music and Spotify, what you play back to back and the time of day. Nothing leaves this computer. On a mix, use “Less like this” or “Never in mixes” to steer it.</p>}
+        {mixes && mixes.length > 0 && <p className="mt-8 max-w-160 text-xs text-ink-2">{tr('Built from your plays (full listens count more, skips count against), your playlists, your saves on YouTube Music and Spotify, what you play back to back and the time of day. Nothing leaves this computer. On a mix, use “Less like this” or “Never in mixes” to steer it.')}</p>}
       </div>
     </>
   )
@@ -180,17 +182,17 @@ export function MixView({ id }: { id: string }) {
       .then(reload)
       .catch((e) => useStore.setState({ error: String(e) }))
   if (!mixes) return null
-  if (!mix) return <p className="py-10 text-center text-ink-2">This mix isn’t available today.</p>
+  if (!mix) return <p className="py-10 text-center text-ink-2">{tr('This mix isn’t available today.')}</p>
   return (
     <>
       <PageHeader
         art={<MixCover mix={mix} tracks={tracks} size={150} />}
-        kicker={`Mix · ${tracks.length} tracks`}
-        title={mix.title}
-        sub={mix.reason}
+        kicker={`${tr('Mix')} · ${trn(tracks.length, '{n} track', '{n} tracks')}`}
+        title={mixTitle(mix)}
+        sub={mixReason(mix)}
         actions={
           tracks.length > 0 && (
-            <RoundButton label="Play mix" kind="primary" size="lg" onClick={() => play(tracks, 0)}>
+            <RoundButton label={tr('Play mix')} kind="primary" size="lg" onClick={() => play(tracks, 0)}>
               <Play weight="fill" size={20} />
             </RoundButton>
           )
@@ -198,13 +200,13 @@ export function MixView({ id }: { id: string }) {
       />
       <TrackTable
         tracks={tracks}
-        empty="Nothing left in this mix."
+        empty={tr('Nothing left in this mix.')}
         rowActions={(t) => (
           <>
-            <RoundButton label={`Less like ${t.title}`} kind="plain" size="xs" onClick={() => steer(t, 'less')}>
+            <RoundButton label={tr('Less like {title}', { title: t.title })} kind="plain" size="xs" onClick={() => steer(t, 'less')}>
               <ThumbsDown size={13} />
             </RoundButton>
-            <RoundButton label={`Never put ${t.title} in mixes`} kind="plain" size="xs" onClick={() => steer(t, 'never')}>
+            <RoundButton label={tr('Never put {title} in mixes', { title: t.title })} kind="plain" size="xs" onClick={() => steer(t, 'never')}>
               <Prohibit size={13} />
             </RoundButton>
           </>

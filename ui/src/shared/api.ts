@@ -270,6 +270,8 @@ export interface Mix {
   trackIds: number[]
   /** Section on the Mixes page. */
   kind: 'daily' | 'moment' | 'favorites' | 'explore'
+  /** What title and reason are made of: the UI words them in its language (features/mixes/words.ts). */
+  words: { slot?: 'morning' | 'afternoon' | 'evening' | 'night'; day?: number; number?: number; name?: string; names?: string[] }
 }
 
 /** crates/connectors spotify::PlayerCommand (Spotify Connect). */
@@ -386,6 +388,8 @@ export const api = {
   onDetect: (cb: (seconds: number, level: number) => void) => listen<[number, number]>('detect', (e) => cb(e.payload[0], e.payload[1])),
   /** Lyrics of a song (LRCLIB, then YouTube Music's own when signed in), cached. null = none found. */
   lyrics: (ask: { title: string; artist: string; album: string | null; durationMs: number | null; youtube: string | null }) => invoke<Lyrics | null>('lyrics', { ask }),
+  /** Interface language, for what the shell shows itself (tray menu, taskbar buttons). */
+  setUiLanguage: (lang: string) => invoke<void>('set_ui_language', { lang }),
   /** Windows' own settings page that unblocks a feature. */
   openWindowsSettings: (page: 'speech' | 'microphone') => invoke<void>('open_windows_settings', { page }),
   /** Raw JSON; validated by shared/theme/settings.sanitize. */

@@ -1,4 +1,5 @@
 import type { FadeCurve, Settings } from '../../shared/theme/theme'
+import { msg } from '../../shared/i18n/i18n'
 
 /** Fade the player applies: seconds each way, shapes, skip and pause fades. */
 export interface Fade {
@@ -20,13 +21,13 @@ export function effectiveFade(s: Pick<Settings, 'crossfade' | 'fade'>): Fade {
   return { out, in: fin, outCurve, inCurve, skip, pause }
 }
 
-export const curveLabels: Record<FadeCurve, string> = { scurve: 'S-curve', linear: 'Linear', equal: 'Equal power', exp: 'Exponential', log: 'Logarithmic' }
+export const curveLabels: Record<FadeCurve, string> = { scurve: msg('S-curve'), linear: msg('Linear'), equal: msg('Equal power'), exp: msg('Exponential'), log: msg('Logarithmic') }
 export const curveHints: Record<FadeCurve, string> = {
-  scurve: 'Gentle at both ends',
-  linear: 'Straight line',
-  equal: 'Keeps loudness up, no dip',
-  exp: 'Sounds even to the ear, long soft tail',
-  log: 'Quick change, then settles',
+  scurve: msg('Gentle at both ends'),
+  linear: msg('Straight line'),
+  equal: msg('Keeps loudness up, no dip'),
+  exp: msg('Sounds even to the ear, long soft tail'),
+  log: msg('Quick change, then settles'),
 }
 
 /**

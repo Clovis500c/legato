@@ -1,3 +1,4 @@
+import { msg, tr } from '../../shared/i18n/i18n'
 /** Add-ons: extra features, all off until turned on. Built in for now; author + verified kept for later ones. */
 export interface Author {
   name: string
@@ -15,7 +16,7 @@ export interface Addon {
   settings: boolean
 }
 
-export const DEVELOPER: Author = { name: 'Developer', verified: true }
+export const DEVELOPER: Author = { name: msg('Developer'), verified: true }
 
 export const DISCORD = 'discord-presence'
 
@@ -23,8 +24,8 @@ export const ADDONS: Addon[] = [
   {
     id: DISCORD,
     name: 'Discord Rich Presence',
-    description: 'Shows what you listen to on your Discord profile: song, artist, cover, time left and a button to the song.',
-    tags: ['Social', 'Player'],
+    description: msg('Shows what you listen to on your Discord profile: song, artist, cover, time left and a button to the song.'),
+    tags: [msg('Social'), msg('Player')],
     author: DEVELOPER,
     settings: true,
   },
@@ -39,7 +40,8 @@ export function filterAddons(list: Addon[], { query = '', show = 'all', tags = [
     (a) =>
       (show === 'all' || (show === 'enabled') === (on[a.id] === true)) &&
       tags.every((t) => a.tags.includes(t)) &&
-      (!q || `${a.name} ${a.description} ${a.tags.join(' ')}`.toLowerCase().includes(q)),
+      // English and the interface's language both match.
+      (!q || `${a.name} ${a.description} ${a.tags.join(' ')} ${tr(a.description)} ${a.tags.map((t) => tr(t)).join(' ')}`.toLowerCase().includes(q)),
   )
 }
 

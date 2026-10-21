@@ -10,6 +10,7 @@ import { VideoSlot } from './NowPlaying'
 import { gripCorner, nearestSpot, resized, spotPosition, type Point, type Size } from './snap'
 import { useNowTrack, usePlayer } from './store'
 import { Transport } from './Transport'
+import { tr } from '../../shared/i18n/i18n'
 
 // Title bar (52) and player bar (100) stay clear, 12 px gap; 24 px from the sides.
 const INSETS = { top: 64, right: 24, bottom: 112, left: 24 }
@@ -122,7 +123,7 @@ export function MiniPlayer() {
     <div
       ref={measure}
       role="region"
-      aria-label="Mini player"
+      aria-label={tr('Mini player')}
       onContextMenu={onMenu(playerMenu)}
       onPointerDown={down}
       onPointerMove={move}
@@ -134,12 +135,12 @@ export function MiniPlayer() {
       {video && <VideoSlot live={live} className="aspect-video w-full rounded-none" />}
       <div className="flex items-center gap-3 p-3">
         {!video && <Cover title={now.title} art={track && trackArt(track)} size={44} />}
-        <button onClick={() => setFull(true)} className="min-w-0 flex-1 text-left" title="Open Now Playing">
+        <button onClick={() => setFull(true)} className="min-w-0 flex-1 text-left" title={tr('Open Now Playing')}>
           <span className="block truncate text-[13px] font-semibold">{now.title}</span>
           <span className="block truncate text-xs text-ink-2">{now.artist}</span>
         </button>
         <Transport size="sm" compact />
-        <RoundButton label="Now playing, full screen" kind="plain" size="sm" onClick={() => setFull(true)}>
+        <RoundButton label={tr('Now playing, full screen')} kind="plain" size="sm" onClick={() => setFull(true)}>
           <ArrowsOutSimple size={13} />
         </RoundButton>
       </div>
@@ -152,8 +153,8 @@ export function MiniPlayer() {
       {/* Resize grip: corner facing the middle of the window. Outside the card so it sits above the video (iframe z-30). */}
       <span
         role="separator"
-        aria-label="Resize mini player"
-        title="Drag to resize"
+        aria-label={tr('Resize mini player')}
+        title={tr('Drag to resize')}
         onPointerDown={gripDown}
         style={{ left: grip.left ? pos.x : pos.x + w - 18, top: grip.top ? pos.y : pos.y + height - 18 }}
         className={`group fixed z-40 size-[18px] touch-none ${grip.left === grip.top ? 'cursor-nwse-resize' : 'cursor-nesw-resize'} ${glide}`}

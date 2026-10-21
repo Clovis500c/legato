@@ -15,6 +15,7 @@ import { remoteTrack, usePlayer } from '../player/store'
 import { kindLabel, unofficial, videoKind } from './kind'
 import { Detector } from './Detector'
 import { AddToPlaylist } from '../library/AddToPlaylist'
+import { tr, trn } from '../../shared/i18n/i18n'
 
 const order: Source[] = ['youtube', 'apple', 'spotify', 'local']
 
@@ -42,14 +43,14 @@ function HitRow({ hit, onAdded, onPlay, extra }: { hit: SearchHit; onAdded: (id:
   return (
     // Double-click plays it, in the library or not.
     <li onContextMenu={onMenu(() => hitMenu(hit, add, busy, onPlay))} onDoubleClick={onPlay} className="group flex items-center gap-3.5 border-b border-line-soft px-2 py-2.5">
-      <RoundButton label={`Play ${hit.title}`} kind="plain" size="sm" onClick={onPlay}>
+      <RoundButton label={tr('Play {title}', { title: hit.title })} kind="plain" size="sm" onClick={onPlay}>
         <Play size={14} weight="fill" />
       </RoundButton>
       <Cover title={hit.album ?? hit.title} art={trackArt({ ...hit, id: hit.libraryId ?? undefined })} size={42} />
       <div className="min-w-0 flex-1">
         <p className="flex items-center gap-2 truncate text-[13px] font-semibold">
-          {hit.title} {kind && <Badge>{kindLabel[kind]}</Badge>}
-          {hit.musicness === 'notMusic' && <Badge>NOT MUSIC?</Badge>}
+          {hit.title} {kind && <Badge>{tr(kindLabel[kind])}</Badge>}
+          {hit.musicness === 'notMusic' && <Badge>{tr('NOT MUSIC?')}</Badge>}
         </p>
         <p className="truncate text-xs text-ink-2">{[hit.artist, hit.album].filter(Boolean).join(' · ')}</p>
       </div>
@@ -61,11 +62,11 @@ function HitRow({ hit, onAdded, onPlay, extra }: { hit: SearchHit; onAdded: (id:
       <span className="w-11 text-right font-mono text-[11px] text-ink-3">{formatDuration(hit.durationMs)}</span>
       {extra}
       {hit.libraryId ? (
-        <RoundButton label="Already in your library" kind="ink" size="sm" disabled>
+        <RoundButton label={tr('Already in your library')} kind="ink" size="sm" disabled>
           <Check size={14} />
         </RoundButton>
       ) : (
-        <RoundButton label={`Add ${hit.title}`} kind="soft" size="sm" disabled={busy} onClick={add}>
+        <RoundButton label={tr('Add {title}', { title: hit.title })} kind="soft" size="sm" disabled={busy} onClick={add}>
           <Plus size={14} />
         </RoundButton>
       )}
@@ -97,12 +98,12 @@ function ImportCode() {
       className="flex flex-col gap-2 rounded-xl border border-line px-4 py-3"
     >
       <p className="flex items-center gap-2 text-xs font-semibold">
-        <QrCode size={16} className="text-ink-2" /> Import a shared playlist
+        <QrCode size={16} className="text-ink-2" /> {tr('Import a shared playlist')}
       </p>
-      <p className="text-xs text-ink-2">{busy ? 'Looking for the sender on this network…' : 'Paste a musicapp:// link, type a 6-digit code from a nearby Music App, or drop a QR screenshot on the window.'}</p>
+      <p className="text-xs text-ink-2">{busy ? tr('Looking for the sender on this network…') : tr('Paste a musicapp:// link, type a 6-digit code from a nearby Music App, or drop a QR screenshot on the window.')}</p>
       <span className="flex gap-2">
-        <input value={text} onChange={(e) => setText(e.target.value)} placeholder="Link or 6-digit code" aria-label="Share link or code" className="h-8 min-w-0 flex-1 rounded-md border border-line bg-raised px-2.5 font-mono text-[11px] placeholder:text-ink-3" />
-        <RoundButton label="Import" kind="ink" size="sm" type="submit" disabled={!text.trim() || busy}>
+        <input value={text} onChange={(e) => setText(e.target.value)} placeholder={tr('Link or 6-digit code')} aria-label={tr('Share link or code')} className="h-8 min-w-0 flex-1 rounded-md border border-line bg-raised px-2.5 font-mono text-[11px] placeholder:text-ink-3" />
+        <RoundButton label={tr('Import')} kind="ink" size="sm" type="submit" disabled={!text.trim() || busy}>
           <ArrowRight size={14} />
         </RoundButton>
       </span>
@@ -192,12 +193,12 @@ export function AddView() {
 
   return (
     <>
-      <PageHeader kicker="Add · YouTube, YouTube Music, Apple Music and your files" title="Add music" />
+      <PageHeader kicker={tr('Add · YouTube, YouTube Music, Apple Music and your files')} title={tr('Add music')} />
       <form onSubmit={search} className="flex h-14 shrink-0 items-center gap-3 rounded-xl border border-line bg-raised pr-2 pl-4.5 shadow-[0_1px_2px_var(--shadow)] focus-within:border-ink-3">
         <MagnifyingGlass size={19} className="text-ink-2" />
-        <input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder="Title, artist, album, or a Spotify playlist link…" aria-label="Search catalogs" className="min-w-0 flex-1 bg-transparent text-base outline-none placeholder:text-ink-3" />
+        <input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder={tr('Title, artist, album, or a Spotify playlist link…')} aria-label={tr('Search catalogs')} className="min-w-0 flex-1 bg-transparent text-base outline-none placeholder:text-ink-3" />
         <span className="flex items-center gap-3 rounded-full bg-recess px-3 py-1.5 font-mono text-[9px] tracking-[0.08em] text-ink-2">
-          SEARCHES
+          {tr('SEARCHES')}
           <span className="flex items-center gap-1.5">
             <Led on /> AM
           </span>
@@ -208,22 +209,22 @@ export function AddView() {
             <Led on={ytOn} /> YTM
           </span>
           <span className="flex items-center gap-1.5">
-            <Led on /> LIB
+            <Led on /> {tr('LIB')}
           </span>
         </span>
-        <RoundButton label="Search" kind="ink" type="submit" disabled={busy || !q.trim()}>
+        <RoundButton label={tr('Search')} kind="ink" type="submit" disabled={busy || !q.trim()}>
           <MagnifyingGlass size={15} />
         </RoundButton>
       </form>
 
       <div className="flex shrink-0 items-center justify-between gap-4 py-3.5">
         <div role="tablist" className="flex gap-2">
-          <LedChip on={only === 'all'} label="All" count={res ? String(res.hits.length) : undefined} onClick={() => setOnly('all')} />
+          <LedChip on={only === 'all'} label={tr('All')} count={res ? String(res.hits.length) : undefined} onClick={() => setOnly('all')} />
           <LedChip on={only === 'youtube'} label="YouTube" onClick={() => setOnly('youtube')} />
           <LedChip on={only === 'apple'} label="Apple Music" onClick={() => setOnly('apple')} />
         </div>
         <label className="flex items-center gap-2 text-xs text-ink-2">
-          Hide covers and karaoke <Toggle label="Hide covers and karaoke" checked={hideCovers} onChange={setHideCovers} />
+          {tr('Hide covers and karaoke')} <Toggle label={tr('Hide covers and karaoke')} checked={hideCovers} onChange={setHideCovers} />
         </label>
       </div>
 
@@ -231,7 +232,7 @@ export function AddView() {
         <div className="-mx-2 min-h-0 flex-1 overflow-y-auto px-2 pb-6">
           {local.length > 0 && (
             <section className="mb-5">
-              <h2 className="kicker pb-1.5">In your library</h2>
+              <h2 className="kicker pb-1.5">{tr('In your library')}</h2>
               <ul>
                 {local.map((t, i) => (
                   <li key={t.id} onContextMenu={onMenu(() => trackMenu(t, { list: local, index: i }))}>
@@ -247,20 +248,20 @@ export function AddView() {
           )}
           {identified && (
             <section className="mb-5">
-              <h2 className="kicker pb-1.5">Identified by AudD</h2>
+              <h2 className="kicker pb-1.5">{tr('Identified by AudD')}</h2>
               <ul>
                 <HitRow
                   hit={identified}
                   onAdded={(id) => setFound((f) => f && { ...f, libraryId: id })}
                   onPlay={() => void playOne(identified)}
-                  extra={<AddToPlaylist trackIds={identifiedIds} label={`Add ${identified.title} to a playlist`} />}
+                  extra={<AddToPlaylist trackIds={identifiedIds} label={tr('Add {title} to a playlist', { title: identified.title })} />}
                 />
               </ul>
             </section>
           )}
           {res && (
             <section>
-              <h2 className="kicker pb-1.5">Catalogs · {hits.length} results</h2>
+              <h2 className="kicker pb-1.5">{tr('Catalogs')} · {trn(hits.length, '{n} result', '{n} results')}</h2>
               {res.errors.map((e) => (
                 <p key={e} className="mb-2 text-xs text-danger">
                   {e}
@@ -273,27 +274,27 @@ export function AddView() {
               </ul>
               {others > 0 && (
                 <p className="flex items-center justify-between gap-3 border-b border-line-soft px-2 py-3 text-xs text-ink-2">
-                  {showOthers ? `Showing ${others} video${others === 1 ? '' : 's'} that don’t look like music` : `${others} video${others === 1 ? '' : 's'} hidden because they aren’t music`}
+                  {showOthers ? trn(others, 'Showing {n} video that doesn’t look like music', 'Showing {n} videos that don’t look like music') : trn(others, '{n} video hidden because it isn’t music', '{n} videos hidden because they aren’t music')}
                   <button onClick={() => setShowOthers(!showOthers)} className="rounded-full border border-line px-3 py-1 font-medium text-ink hover:bg-raised">
-                    {showOthers ? 'Hide them' : 'Show'}
+                    {showOthers ? tr('Hide them') : tr('Show')}
                   </button>
                 </p>
               )}
-              {hits.length === 0 && !others && <p className="py-8 text-center text-ink-2">No results.</p>}
+              {hits.length === 0 && !others && <p className="py-8 text-center text-ink-2">{tr('No results.')}</p>}
             </section>
           )}
-          {!res && !local.length && <p className="py-10 text-center text-ink-2">Search for a track: it’s added to your library, with its YouTube version when one exists.</p>}
+          {!res && !local.length && <p className="py-10 text-center text-ink-2">{tr('Search for a track: it’s added to your library, with its YouTube version when one exists.')}</p>}
         </div>
 
         <aside className="scroll-quiet flex min-h-0 w-80 shrink-0 flex-col gap-4 overflow-y-auto pb-6">
           <Detector onFound={onFound} />
           <div className="rounded-xl border border-line px-4 py-2">
-            <h2 className="kicker py-1.5">Search sources</h2>
+            <h2 className="kicker py-1.5">{tr('Search sources')}</h2>
             {[
-              { code: 'YouTube', note: 'Every video, no account needed', on: true },
-              { code: 'YouTube Music', note: ytOn ? 'Songs, with your Google account' : 'Sign in with Google (Accounts)', on: ytOn },
-              { code: 'Apple Music', note: 'Public catalog, no account', on: true },
-              { code: 'Spotify', note: 'Search closed without Premium', on: false },
+              { code: 'YouTube', note: tr('Every video, no account needed'), on: true },
+              { code: 'YouTube Music', note: ytOn ? tr('Songs, with your Google account') : tr('Sign in with Google (Accounts)'), on: ytOn },
+              { code: 'Apple Music', note: tr('Public catalog, no account'), on: true },
+              { code: 'Spotify', note: tr('Search closed without Premium'), on: false },
             ].map((s) => (
               <p key={s.code} className="flex items-center gap-2.5 border-t border-line-soft py-2.5 text-[13px] first-of-type:border-0">
                 <Led on={s.on} /> <span className="flex-1 font-medium">{s.code}</span>
@@ -304,14 +305,15 @@ export function AddView() {
           <div className="flex items-start gap-3 rounded-xl border border-line px-4 py-3">
             <ClipboardText size={18} className="mt-0.5 shrink-0 text-ink-2" />
             <p className="text-xs text-ink-2">
-              <span className="font-semibold text-ink">Paste a YouTube link</span> anywhere (Ctrl+V): the track is added right away.
+              <span className="font-semibold text-ink">{tr('Paste a YouTube link')}</span> {tr('anywhere (Ctrl+V): the track is added right away.')}
             </p>
           </div>
           <ImportCode />
           <button onClick={() => go({ name: 'settings', section: 'sources' })} className="flex items-start gap-3 rounded-xl border border-dashed border-ink-4 px-4 py-3 text-left hover:bg-raised">
             <FolderPlus size={18} className="mt-0.5 shrink-0 text-ink-2" />
             <span className="text-xs text-ink-2">
-              <span className="font-semibold text-ink">Add a music folder</span>: your files play first.
+              <span className="font-semibold text-ink">{tr('Add a music folder')}</span>
+              {tr(': your files play first.')}
             </span>
           </button>
         </aside>

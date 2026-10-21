@@ -6,6 +6,7 @@ import type { Credentials } from '../../shared/api'
 import { Button } from '../../shared/ui/Button'
 import { SourceIcon, sourceLabel } from '../../shared/ui/SourceIcon'
 import { guides } from './guides'
+import { tr } from '../../shared/i18n/i18n'
 
 function CopyField({ value }: { value: string }) {
   const [done, setDone] = useState(false)
@@ -17,7 +18,7 @@ function CopyField({ value }: { value: string }) {
         className="flex items-center gap-1.5 rounded-md border border-line px-2 py-1 text-[11px] font-medium hover:bg-bg"
         onClick={() => navigator.clipboard.writeText(value).then(() => setDone(true))}
       >
-        {done ? <Check size={13} /> : <Copy size={13} />} {done ? 'Copied' : 'Copy'}
+        {done ? <Check size={13} /> : <Copy size={13} />} {done ? tr('Copied') : tr('Copy')}
       </button>
     </div>
   )
@@ -46,13 +47,13 @@ export function ConnectWizard({ service, onClose }: { service: 'spotify'; onClos
             <SourceIcon source={service} size={20} />
           </span>
           <div>
-            <h2 className="text-lg font-bold">Connect {sourceLabel[service]}</h2>
+            <h2 className="text-lg font-bold">{tr('Connect {service}', { service: sourceLabel[service] })}</h2>
             <p className="kicker">
-              Step {step + 1} of {guide.steps.length}
+              {tr('Step {n} of {total}', { n: step + 1, total: guide.steps.length })}
             </p>
           </div>
         </div>
-        <button type="button" aria-label="Close" className="text-ink-3 hover:text-ink" onClick={onClose}>
+        <button type="button" aria-label={tr('Close')} className="text-ink-3 hover:text-ink" onClick={onClose}>
           <X size={18} />
         </button>
       </header>
@@ -64,7 +65,7 @@ export function ConnectWizard({ service, onClose }: { service: 'spotify'; onClos
       </div>
 
       <p className="flex gap-2.5 rounded-lg border border-line bg-recess px-3.5 py-3 text-xs leading-relaxed">
-        <Info size={16} className="shrink-0 text-ink-2" /> {guide.callout}
+        <Info size={16} className="shrink-0 text-ink-2" /> {tr(guide.callout)}
       </p>
 
       <ol className="flex flex-col gap-5.5">
@@ -80,14 +81,14 @@ export function ConnectWizard({ service, onClose }: { service: 'spotify'; onClos
                 {state === 'done' ? <Check size={15} /> : i + 1}
               </span>
               <div className="flex min-w-0 flex-1 flex-col gap-2.5">
-                <h3 className={`text-sm font-semibold ${state === 'current' ? '' : 'text-ink-2'}`}>{s.title}</h3>
+                <h3 className={`text-sm font-semibold ${state === 'current' ? '' : 'text-ink-2'}`}>{tr(s.title)}</h3>
                 {state === 'current' && (
                   <>
-                    <p className="text-xs leading-relaxed text-ink-2">{s.text}</p>
+                    <p className="text-xs leading-relaxed text-ink-2">{tr(s.text)}</p>
                     {s.copy && <CopyField value={s.copy} />}
                     {s.link && (
                       <Button variant="link" className="w-fit text-xs" onClick={() => openUrl(s.link!.url)}>
-                        {s.link.label} <ArrowSquareOut size={13} />
+                        {tr(s.link.label)} <ArrowSquareOut size={13} />
                       </Button>
                     )}
                     {i === last &&
@@ -98,7 +99,7 @@ export function ConnectWizard({ service, onClose }: { service: 'spotify'; onClos
                             type={f.secret ? 'password' : 'text'}
                             autoComplete="off"
                             spellCheck={false}
-                            placeholder={f.placeholder}
+                            placeholder={tr(f.placeholder)}
                             value={values[f.key] ?? ''}
                             onChange={(e) => setValues({ ...values, [f.key]: e.target.value })}
                             className="h-10.5 rounded-lg border border-line bg-raised px-3 text-[13px] text-ink placeholder:text-ink-3"
@@ -117,15 +118,15 @@ export function ConnectWizard({ service, onClose }: { service: 'spotify'; onClos
 
       <footer className="mt-auto flex items-center justify-between">
         <Button variant="ghost" className="border-0 text-ink-2" disabled={step === 0} onClick={() => setStep(step - 1)}>
-          Back
+          {tr('Back')}
         </Button>
         {step < last ? (
           <Button type="submit">
-            Done, continue <ArrowRight size={15} />
+            {tr('Done, continue')} <ArrowRight size={15} />
           </Button>
         ) : (
           <Button type="submit" disabled={!ready || busy}>
-            {busy ? 'Waiting for the browser…' : 'Connect (opens the browser)'} <ArrowRight size={15} />
+            {busy ? tr('Waiting for the browser…') : tr('Connect (opens the browser)')} <ArrowRight size={15} />
           </Button>
         )}
       </footer>

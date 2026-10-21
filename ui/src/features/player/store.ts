@@ -9,6 +9,7 @@ import { nextIndex, playOrder, queued, type Repeat } from './queue'
 import { vias, type Via } from './sources'
 import { closeWatch, openWatch, sendWatch, watching } from './watch'
 import { ytPost, type YtUpdate } from './youtube'
+import { tr } from '../../shared/i18n/i18n'
 
 /** via youtube = embed plays it, else Rust engine (local file, or Apple preview held in memory). */
 export interface NowPlaying {
@@ -176,9 +177,9 @@ function playOnWatchPage(video: string, startMs: number) {
   const rect = videoRect()
   // The embed stops for good: no second player in the background.
   ytPost(frame, 'command', 'pauseVideo')
-  if (!rect) return void tryOtherUpload(usePlayer.getState().now?.trackId ?? 0, video, 'This video can’t play in apps')
+  if (!rect) return void tryOtherUpload(usePlayer.getState().now?.trackId ?? 0, video, tr('This video can’t play in apps'))
   // Cover mode: made hidden, it plays unseen.
-  openWatch(video, startMs / 1000, useVideoSlot.getState().hidden ? null : rect).catch(() => tryOtherUpload(usePlayer.getState().now?.trackId ?? 0, video, 'This video can’t play in apps'))
+  openWatch(video, startMs / 1000, useVideoSlot.getState().hidden ? null : rect).catch(() => tryOtherUpload(usePlayer.getState().now?.trackId ?? 0, video, tr('This video can’t play in apps')))
 }
 
 async function tryOtherUpload(trackId: number, failed: string, why: string) {
@@ -193,11 +194,11 @@ async function tryOtherUpload(trackId: number, failed: string, why: string) {
   const next = others.ids.find((v) => !unplayable.has(v))
   const { notify } = useStore.getState()
   if (next) {
-    notify(`${why}: playing another upload of the song`)
+    notify(tr('{why}: playing another upload of the song', { why }))
     // Same embed: the frame loads the new id (loadVideoById).
     return usePlayer.setState((s) => (s.now ? { now: { ...s.now, youtubeId: next }, playId: s.playId + 1, positionMs: 0, playing: true } : {}))
   }
-  notify(`${why}, and no other upload was found: skipped`, { kind: 'error' })
+  notify(tr('{why}, and no other upload was found: skipped', { why }), { kind: 'error' })
   // Manual step: repeat one would replay the blocked video forever.
   usePlayer.getState().step(1)
 }
@@ -346,7 +347,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     send({ type: 'play', paths, start: 0 })
     send({ type: 'volume', value: get().volume })
     // Clearing youtubeId unmounts embed.
-    set({ now: { title: fileTitle(paths[0]), artist: 'Local file', path: paths[0], via: 'local' }, playId: get().playId + 1, list: [], order: [], index: 0, playing: true, positionMs: 0, durationMs: null, fadeIn: false, startAt: 0 })
+    set({ now: { title: fileTitle(paths[0]), artist: tr('Local file'), path: paths[0], via: 'local' }, playId: get().playId + 1, list: [], order: [], index: 0, playing: true, positionMs: 0, durationMs: null, fadeIn: false, startAt: 0 })
   },
 
   toggle() {
@@ -415,8 +416,8 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     const { now } = get()
     // Watch page can't play it either (region, age, removed): another upload of the song, else the next song.
     if (u.unplayable !== undefined) {
-      if (now?.trackId && now.youtubeId) return void tryOtherUpload(now.trackId, now.youtubeId, `This video can’t play here (${u.unplayable})`)
-      useStore.getState().notify(`This video can’t play here (${u.unplayable}): skipped`, { kind: 'error' })
+      if (now?.trackId && now.youtubeId) return void tryOtherUpload(now.trackId, now.youtubeId, tr('This video can’t play here ({reason})', { reason: u.unplayable }))
+      useStore.getState().notify(tr('This video can’t play here ({reason}): skipped', { reason: u.unplayable }), { kind: 'error' })
       return get().step(1)
     }
     if (u.error !== undefined) {
@@ -426,8 +427,8 @@ export const usePlayer = create<PlayerState>((set, get) => ({
         return playOnWatchPage(now.youtubeId, get().positionMs)
       }
       // 100: removed. Another upload of the same song, else the next song.
-      if (now?.trackId && now.youtubeId && u.error === 100) return void tryOtherUpload(now.trackId, now.youtubeId, 'This video was removed')
-      useStore.setState({ error: `YouTube playback failed (error ${u.error}).` })
+      if (now?.trackId && now.youtubeId && u.error === 100) return void tryOtherUpload(now.trackId, now.youtubeId, tr('This video was removed'))
+      useStore.setState({ error: tr('YouTube playback failed (error {code}).', { code: u.error }) })
       return set({ playing: false })
     }
     set({
@@ -473,7 +474,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
       upcoming: now?.trackId ? [] : s.upcoming,
       ...(s.durationMs && { durationMs: s.durationMs }),
       ...(i > index && { index: i, playId: get().playId + 1, fadeIn: get().fade.in > 0, now: { title: list[i].title, artist: list[i].artist, trackId: list[i].id, via: 'local', path: s.path! } }),
-      ...(s.path && !now?.trackId && { now: { title: fileTitle(s.path), artist: 'Local file', path: s.path, via: 'local' }, ...(s.path !== now?.path && { playId: get().playId + 1 }) }),
+      ...(s.path && !now?.trackId && { now: { title: fileTitle(s.path), artist: tr('Local file'), path: s.path, via: 'local' }, ...(s.path !== now?.path && { playId: get().playId + 1 }) }),
     })
     if (s.path) get().applyVolume()
   },

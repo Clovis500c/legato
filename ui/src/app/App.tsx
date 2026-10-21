@@ -29,6 +29,7 @@ import { restoreScreen, startClosingPlayerOnNavigate, startScreenSaving } from '
 import { startShortcuts } from './shortcuts'
 import { useStore } from './store'
 import { Toasts } from './Toasts'
+import { tr, trn, useLang } from '../shared/i18n/i18n'
 
 // Opened now and then: loaded on first visit, not at launch.
 const SettingsView = lazy(() => import('../features/settings/SettingsView').then((m) => ({ default: m.SettingsView })))
@@ -55,13 +56,13 @@ function TopBar() {
   }, [])
   return (
     <header data-tauri-drag-region className={`relative z-30 flex h-13 shrink-0 items-center gap-3 pr-2 pl-5 ${full ? '' : 'bg-panel'}`}>
-      <button onClick={() => go({ name: 'home' })} title="Home" className="flex items-center gap-2.5 rounded-md px-2 py-1">
+      <button onClick={() => go({ name: 'home' })} title={tr('Home')} className="flex items-center gap-2.5 rounded-md px-2 py-1">
         <Logo />
         <span className="text-[15px] font-bold tracking-tight">Music App</span>
       </button>
       {full && (
-        <button onClick={() => setFull(false)} title="Close Now Playing (Esc)" className="flex items-center gap-1.5 rounded-full border border-line px-3 py-1 text-xs font-medium text-ink-2 transition hover:bg-raised hover:text-ink">
-          <CaretDown size={12} weight="bold" /> Close player
+        <button onClick={() => setFull(false)} title={tr('Close Now Playing (Esc)')} className="flex items-center gap-1.5 rounded-full border border-line px-3 py-1 text-xs font-medium text-ink-2 transition hover:bg-raised hover:text-ink">
+          <CaretDown size={12} weight="bold" /> {tr('Close player')}
         </button>
       )}
       <div data-tauri-drag-region className="flex h-full min-w-0 flex-1 items-center justify-center px-4">
@@ -69,13 +70,13 @@ function TopBar() {
           <VoiceSearch />
         </SearchBar>
       </div>
-      <button className={winBtn} aria-label="Minimize" onClick={() => win.minimize()}>
+      <button className={winBtn} aria-label={tr('Minimize')} onClick={() => win.minimize()}>
         <Minus size={14} />
       </button>
-      <button className={winBtn} aria-label={maximized ? 'Restore' : 'Maximize'} onClick={() => win.toggleMaximize()}>
+      <button className={winBtn} aria-label={maximized ? tr('Restore') : tr('Maximize')} onClick={() => win.toggleMaximize()}>
         {maximized ? <CopySimple size={13} /> : <Square size={12} />}
       </button>
-      <button className={`${winBtn} hover:bg-danger! hover:text-white!`} aria-label="Close" onClick={() => win.close()}>
+      <button className={`${winBtn} hover:bg-danger! hover:text-white!`} aria-label={tr('Close')} onClick={() => win.close()}>
         <X size={14} />
       </button>
     </header>
@@ -96,7 +97,7 @@ function Alerts() {
         {errors.length > 0 && (
           <details>
             <summary className="cursor-pointer">
-              {errors.length} error{errors.length > 1 ? 's' : ''} during sync
+              {trn(errors.length, '{n} error during sync', '{n} errors during sync')}
             </summary>
             <ul className="mt-1.5 list-disc pl-4 text-ink-2">
               {errors.map((e) => (
@@ -107,7 +108,7 @@ function Alerts() {
         )}
       </div>
       {shown && (
-        <button aria-label="Dismiss" onClick={dismissError} className="text-ink-3 hover:text-ink">
+        <button aria-label={tr('Dismiss')} onClick={dismissError} className="text-ink-3 hover:text-ink">
           <X size={14} />
         </button>
       )}
@@ -118,6 +119,8 @@ function Alerts() {
 export function App() {
   const { view, go, refresh, incoming } = useStore(useShallow((s) => ({ view: s.view, go: s.go, refresh: s.refresh, incoming: s.incoming })))
   const full = usePlayer((s) => s.full)
+  // Language changed: everything below renders again in it (nothing remounts: the player keeps playing).
+  useLang((s) => s.lang)
   useEffect(() => {
     const settings = useSettings.getState().load()
     const library = refresh()
@@ -130,7 +133,7 @@ export function App() {
         const s = useSettings.getState().settings
         await resumeSession(s.resume, exact)
         if (s.reopen || exact) restoreScreen()
-        if (exact && u?.lastUpdate) useStore.getState().notify(`Updated to ${u.lastUpdate.to}`, { action: { label: 'What’s new', run: () => useStore.getState().go({ name: 'settings', section: 'about' }) } })
+        if (exact && u?.lastUpdate) useStore.getState().notify(tr('Version {version} installed', { version: u.lastUpdate.to }), { action: { label: tr('What’s new'), run: () => useStore.getState().go({ name: 'settings', section: 'about' }) } })
       })
       .catch(() => {})
     void library

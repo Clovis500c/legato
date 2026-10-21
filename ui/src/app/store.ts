@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { api, type Credentials, type LibraryPlaylist, type LibraryTrack, type PlaylistEdit, type Service, type SourceStatus, type SyncReport } from '../shared/api'
 import type { Filter, GroupSize, GroupSort, PlayStats, Sort } from '../features/library/filter'
+import { tr, trn } from '../shared/i18n/i18n'
 
 export type SettingsSection = 'appearance' | 'themes' | 'sources' | 'shield' | 'shortcuts' | 'advanced' | 'about'
 
@@ -204,20 +205,22 @@ export const useStore = create<State>((set, get) => {
         report = await api.sync()
         set({ lastSync: { at: Date.now(), report } })
       })
-      if (report && !report.errors.length) get().notify(`Playlists imported: ${report.playlists}`)
+      if (report && !report.errors.length) get().notify(tr('Playlists imported: {n}', { n: report.playlists }))
     },
     connect: (source, credentials) => run(() => api.connect(source, credentials)),
     disconnect: (source) => run(() => api.disconnect(source)).then(() => {}),
     async addLink(url) {
       let added = ''
-      if (await run(async () => (added = await api.addLink(url)))) get().notify(`Added: ${added}`)
+      if (await run(async () => (added = await api.addLink(url)))) get().notify(tr('Added: {title}', { title: added }))
     },
     async importSpotify(url) {
-      get().notify('Importing from Spotify… (finding each song on YouTube)')
+      get().notify(tr('Importing from Spotify… (finding each song on YouTube)'))
       let r: Awaited<ReturnType<typeof api.importSpotifyLink>> | undefined
       if (!(await run(async () => (r = await api.importSpotifyLink(url)))) || !r) return
       const missing = r.tracks - r.playable
-      get().notify(`Imported “${r.name}”: ${r.tracks} songs${missing ? `, ${missing} without a YouTube version${get().status.youtube.connected ? '' : ' (sign in to YouTube Music to find them)'}` : ''}`)
+      const done = trn(r.tracks, 'Imported “{name}”: {n} song', 'Imported “{name}”: {n} songs', { name: r.name })
+      const lost = missing ? ` · ${trn(missing, '{n} without a YouTube version', '{n} without a YouTube version')}${get().status.youtube.connected ? '' : ` ${tr('(sign in to YouTube Music to find them)')}`}` : ''
+      get().notify(done + lost)
       get().go({ name: 'playlist', id: r.playlistId })
     },
     notify(text, { kind = 'ok', action } = {}) {

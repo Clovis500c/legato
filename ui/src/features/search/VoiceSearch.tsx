@@ -5,19 +5,20 @@ import { useStore } from '../../app/store'
 import { api, type VoiceMiss } from '../../shared/api'
 import { Button } from '../../shared/ui/Button'
 import { Dialog } from '../../shared/ui/Dialog'
+import { msg, tr } from '../../shared/i18n/i18n'
 
 type Step = { name: 'ask' } | { name: 'listening'; heard: string } | { name: 'miss'; miss: VoiceMiss }
 
 const MISSES: Record<VoiceMiss, string> = {
-  speechOff: 'Windows’ online speech recognition is off. Turn it on in Windows settings › Privacy & security › Speech, then try again.',
-  micBlocked: 'Windows keeps desktop apps away from the microphone. Allow them in Windows settings › Privacy & security › Microphone.',
-  noMic: 'No microphone found.',
-  silence: 'Nothing heard. Try again, a bit closer to the microphone.',
-  unclear: 'Didn’t catch that. Try again.',
-  offline: 'Voice search needs the internet.',
-  language: 'Windows’ speech language can’t do this. Pick another in Windows settings › Time & language › Speech.',
+  speechOff: msg('Windows’ online speech recognition is off. Turn it on in Windows settings › Privacy & security › Speech, then try again.'),
+  micBlocked: msg('Windows keeps desktop apps away from the microphone. Allow them in Windows settings › Privacy & security › Microphone.'),
+  noMic: msg('No microphone found.'),
+  silence: msg('Nothing heard. Try again, a bit closer to the microphone.'),
+  unclear: msg('Didn’t catch that. Try again.'),
+  offline: msg('Voice search needs the internet.'),
+  language: msg('Windows’ speech language can’t do this. Pick another in Windows settings › Time & language › Speech.'),
   canceled: '',
-  failed: 'Voice search didn’t work this time.',
+  failed: msg('Voice search didn’t work this time.'),
 }
 const FIX: Partial<Record<VoiceMiss, 'speech' | 'microphone'>> = { speechOff: 'speech', micBlocked: 'microphone' }
 
@@ -64,8 +65,8 @@ export function VoiceSearch() {
     <>
       <button
         type="button"
-        aria-label="Microphone: search by voice or identify a song"
-        title="Search by voice or identify a song"
+        aria-label={tr('Microphone: search by voice or identify a song')}
+        title={tr('Search by voice or identify a song')}
         aria-haspopup="menu"
         aria-expanded={!!menu}
         onClick={(e) => setMenu(e.currentTarget.getBoundingClientRect())}
@@ -78,13 +79,13 @@ export function VoiceSearch() {
           <div className="fixed inset-0 z-40" onClick={() => setMenu(null)} />
           <div role="menu" onKeyDown={(e) => e.key === 'Escape' && setMenu(null)} className="fixed z-50 flex w-64 flex-col gap-1 rounded-xl border border-line bg-raised p-1.5 shadow-[0_12px_32px_var(--shadow)]" style={{ top: menu.bottom + 6, left: Math.max(8, menu.right - 256) }}>
             {[
-              { icon: <Microphone size={18} />, label: 'Search by voice', note: 'Say a song, an artist…', run: () => (agreed ? void listen() : setStep({ name: 'ask' })) },
-              { icon: <Waveform size={18} />, label: 'Identify a song', note: 'Name the music playing around you', run: () => useStore.getState().identifySong() },
-            ].map((o) => (
+              { icon: <Microphone size={18} />, label: tr('Search by voice'), note: tr('Say a song, an artist…'), run: () => (agreed ? void listen() : setStep({ name: 'ask' })) },
+              { icon: <Waveform size={18} />, label: tr('Identify a song'), note: tr('Name the music playing around you'), run: () => useStore.getState().identifySong() },
+            ].map((o, i) => (
               <button
-                key={o.label}
+                key={i}
                 role="menuitem"
-                autoFocus={o.label === 'Search by voice'}
+                autoFocus={i === 0}
                 onClick={() => {
                   setMenu(null)
                   o.run()
@@ -102,15 +103,15 @@ export function VoiceSearch() {
         </>
       )}
       {step && (
-        <Dialog title="Search with your voice" onClose={close}>
+        <Dialog title={tr('Search with your voice')} onClose={close}>
           {step.name === 'ask' && (
             <>
               <p className="text-sm text-ink-2">
-                Voice search uses Windows’ own speech recognition: while the microphone listens, your voice goes to Microsoft’s speech service through Windows. Music App keeps nothing, and nothing goes to us.
+                {tr('Voice search uses Windows’ own speech recognition: while the microphone listens, your voice goes to Microsoft’s speech service through Windows. Music App keeps nothing, and nothing goes to us.')}
               </p>
               <div className="flex justify-end gap-2">
                 <Button variant="ghost" onClick={close}>
-                  Not now
+                  {tr('Not now')}
                 </Button>
                 <Button
                   onClick={() => {
@@ -118,7 +119,7 @@ export function VoiceSearch() {
                     void listen()
                   }}
                 >
-                  Turn on voice search
+                  {tr('Turn on voice search')}
                 </Button>
               </div>
             </>
@@ -126,7 +127,7 @@ export function VoiceSearch() {
           {step.name === 'listening' && (
             <div className="flex flex-col items-center gap-5 py-4">
               <p aria-live="polite" className="min-h-7 text-center text-lg font-semibold">
-                {step.heard || 'Listening…'}
+                {step.heard || tr('Listening…')}
               </p>
               <span className="relative grid size-18 place-items-center">
                 <span aria-hidden className="absolute inset-0 animate-ping rounded-full bg-accent opacity-30" />
@@ -135,20 +136,20 @@ export function VoiceSearch() {
                 </span>
               </span>
               <Button variant="ghost" onClick={close}>
-                Stop
+                {tr('Stop')}
               </Button>
             </div>
           )}
           {step.name === 'miss' && (
             <>
-              <p className="text-sm text-ink-2">{MISSES[step.miss]}</p>
+              <p className="text-sm text-ink-2">{tr(MISSES[step.miss])}</p>
               <div className="flex justify-end gap-2">
                 {fix && (
                   <Button variant="ghost" onClick={() => void api.openWindowsSettings(fix)}>
-                    Open Windows settings
+                    {tr('Open Windows settings')}
                   </Button>
                 )}
-                <Button onClick={() => void listen()}>Try again</Button>
+                <Button onClick={() => void listen()}>{tr('Try again')}</Button>
               </div>
             </>
           )}

@@ -6,6 +6,7 @@ import { cssVars, DEFAULTS, resolveTheme, sanitize, type Settings, type SystemAc
 import { effectiveFade } from '../features/player/fade'
 import { usePlayer } from '../features/player/store'
 import { useStore } from './store'
+import { resolveLang, useLang } from '../shared/i18n/i18n'
 
 const systemDark = window.matchMedia('(prefers-color-scheme: dark)')
 let systemAccent: SystemAccent | null = null
@@ -32,6 +33,13 @@ function apply(s: Settings) {
     // Storage off: no first-paint cache.
   }
   document.documentElement.classList.toggle('still', !s.motion)
+  const lang = resolveLang(s.language, navigator.languages)
+  if (useLang.getState().lang !== lang) {
+    useLang.setState({ lang })
+    document.documentElement.lang = lang
+    // Tray menu and taskbar buttons too.
+    void api.setUiLanguage(lang).catch(() => {})
+  }
   usePlayer.setState({ fade: effectiveFade(s) })
   const root = document.documentElement.style
   for (const [k, v] of Object.entries(cssVars(resolveTheme(s, systemDark.matches, systemAccent), s))) root.setProperty(k, v)

@@ -8,21 +8,22 @@ import { region } from '../../shared/format'
 import { Button } from '../../shared/ui/Button'
 import { Dialog } from '../../shared/ui/Dialog'
 import { usePlayer } from '../player/store'
+import { msg, tr } from '../../shared/i18n/i18n'
 
 const DASHBOARD = 'https://dashboard.audd.io/'
 const SECONDS = 10
 
 const MISSES: Record<DetectMiss, string> = {
-  noToken: 'Add your AudD token first.',
-  noMic: 'No microphone found.',
-  micBlocked: 'Windows keeps desktop apps away from the microphone. Allow them in Windows settings › Privacy & security › Microphone.',
-  micBusy: 'Another app is using the microphone.',
-  silent: 'The microphone heard only silence. Is it muted?',
+  noToken: msg('Add your AudD token first.'),
+  noMic: msg('No microphone found.'),
+  micBlocked: msg('Windows keeps desktop apps away from the microphone. Allow them in Windows settings › Privacy & security › Microphone.'),
+  micBusy: msg('Another app is using the microphone.'),
+  silent: msg('The microphone heard only silence. Is it muted?'),
   canceled: '',
-  badToken: 'AudD refused your token. Check it on dashboard.audd.io.',
-  limit: 'Your AudD token has no requests left: see your plan on dashboard.audd.io.',
-  offline: 'AudD can’t be reached. Check your internet connection.',
-  failed: 'Recognition didn’t work this time.',
+  badToken: msg('AudD refused your token. Check it on dashboard.audd.io.'),
+  limit: msg('Your AudD token has no requests left: see your plan on dashboard.audd.io.'),
+  offline: msg('AudD can’t be reached. Check your internet connection.'),
+  failed: msg('Recognition didn’t work this time.'),
 }
 
 type Phase = { name: 'idle' } | { name: 'consent' } | { name: 'listening'; seconds: number; level: number } | { name: 'note'; text: string; mic?: boolean }
@@ -45,9 +46,9 @@ function TokenForm({ onSaved, onCancel }: { onSaved: () => void; onCancel?: () =
       className="flex flex-col gap-2"
     >
       <p className="text-xs text-ink-2">
-        Uses AudD (audd.io) with your own API token: free to try, then AudD’s own plans. Music App has no AudD account and no server.{' '}
+        {tr('Uses AudD (audd.io) with your own API token: free to try, then AudD’s own plans. Music App has no AudD account and no server.')}{' '}
         <button type="button" onClick={() => void openUrl(DASHBOARD)} className="inline-flex items-center gap-1 font-medium text-ink underline-offset-2 hover:underline">
-          Get a token <ArrowSquareOut size={11} />
+          {tr('Get a token')} <ArrowSquareOut size={11} />
         </button>
       </p>
       <span className="flex gap-2">
@@ -56,18 +57,18 @@ function TokenForm({ onSaved, onCancel }: { onSaved: () => void; onCancel?: () =
           autoComplete="off"
           value={token}
           onChange={(e) => setToken(e.target.value)}
-          placeholder="AudD API token"
-          aria-label="AudD API token"
+          placeholder={tr('AudD API token')}
+          aria-label={tr('AudD API token')}
           className="h-8 min-w-0 flex-1 rounded-md border border-line bg-raised px-2.5 font-mono text-[11px] placeholder:text-ink-3"
         />
         <Button type="submit" disabled={!token.trim()} className="h-8 py-0!">
-          Save
+          {tr('Save')}
         </Button>
       </span>
       {error && <p className="text-xs text-danger">{error}</p>}
       {onCancel && (
         <button type="button" onClick={onCancel} className="self-start text-xs text-ink-2 hover:text-ink">
-          Keep the current token
+          {tr('Keep the current token')}
         </button>
       )}
     </form>
@@ -105,15 +106,15 @@ export function Detector({ onFound }: { onFound: (t: Track) => void }) {
       if (r.kind === 'found') {
         setPhase({ name: 'idle' })
         onFound(r.track)
-      } else if (r.kind === 'unknown') setPhase({ name: 'note', text: 'No match. Try again closer to the music.' })
+      } else if (r.kind === 'unknown') setPhase({ name: 'note', text: tr('No match. Try again closer to the music.') })
       else if (r.miss === 'canceled') setPhase({ name: 'idle' })
       else {
         if (r.miss === 'noToken') setToken(false)
         if (r.miss === 'badToken') setEditing(true)
-        setPhase({ name: 'note', text: MISSES[r.miss] + (r.detail ? ` (${r.detail})` : ''), mic: r.miss === 'micBlocked' })
+        setPhase({ name: 'note', text: tr(MISSES[r.miss]) + (r.detail ? ` (${r.detail})` : ''), mic: r.miss === 'micBlocked' })
       }
     } catch (e) {
-      setPhase({ name: 'note', text: `${MISSES.failed} (${String(e)})` })
+      setPhase({ name: 'note', text: `${tr(MISSES.failed)} (${String(e)})` })
     } finally {
       off()
       busy.current = false
@@ -134,7 +135,7 @@ export function Detector({ onFound }: { onFound: (t: Track) => void }) {
   return (
     <div className="flex flex-col gap-3 rounded-xl border border-line px-4 py-3">
       <p className="flex items-center gap-2 text-xs font-semibold">
-        <Waveform size={16} className="text-ink-2" /> Identify a song
+        <Waveform size={16} className="text-ink-2" /> {tr('Identify a song')}
       </p>
       {token === false || editing ? (
         <TokenForm
@@ -148,50 +149,50 @@ export function Detector({ onFound }: { onFound: (t: Track) => void }) {
       ) : listening ? (
         <div className="flex flex-col gap-2.5">
           <p aria-live="polite" className="text-xs text-ink-2">
-            Listening… {Math.max(0, Math.ceil(SECONDS - listening.seconds))} s
+            {tr('Listening… {n} s', { n: Math.max(0, Math.ceil(SECONDS - listening.seconds)) })}
           </p>
           <span className="h-1 overflow-hidden rounded-full bg-line">
             <span className="block h-full rounded-full bg-accent transition-[width] duration-100" style={{ width: `${Math.min(100, (listening.seconds / SECONDS) * 100)}%` }} />
           </span>
-          <span className="flex items-center gap-2 text-ink-3" title="Microphone level">
+          <span className="flex items-center gap-2 text-ink-3" title={tr('Microphone level')}>
             <Microphone size={13} />
             <span className="h-1 flex-1 overflow-hidden rounded-full bg-line">
               <span className="block h-full rounded-full bg-ink-2 transition-[width] duration-100" style={{ width: `${Math.round(listening.level * 100)}%` }} />
             </span>
           </span>
           <Button variant="ghost" onClick={() => void api.detectStop()} className="self-start">
-            Stop
+            {tr('Stop')}
           </Button>
         </div>
       ) : (
         <>
-          <p className="text-xs text-ink-2">A song playing around you? Music App listens for {SECONDS} seconds and names it.</p>
+          <p className="text-xs text-ink-2">{tr('A song playing around you? Music App listens for {n} seconds and names it.', { n: SECONDS })}</p>
           {phase.name === 'note' && (
             <p className="text-xs text-ink">
               {phase.text}{' '}
               {phase.mic && (
                 <button onClick={() => void api.openWindowsSettings('microphone')} className="font-medium underline-offset-2 hover:underline">
-                  Open Windows settings
+                  {tr('Open Windows settings')}
                 </button>
               )}
             </p>
           )}
           <Button onClick={() => void listen()} disabled={token === null} className="self-start">
-            <Microphone size={15} weight="fill" /> Listen
+            <Microphone size={15} weight="fill" /> {tr('Listen')}
           </Button>
           <button onClick={() => setEditing(true)} className="self-start text-[11px] text-ink-3 hover:text-ink">
-            AudD token · Change
+            {tr('AudD token · Change')}
           </button>
         </>
       )}
       {phase.name === 'consent' && (
-        <Dialog title="Identify songs with the microphone" onClose={() => setPhase({ name: 'idle' })}>
+        <Dialog title={tr('Identify songs with the microphone')} onClose={() => setPhase({ name: 'idle' })}>
           <p className="text-sm text-ink-2">
-            Music App listens through your microphone for {SECONDS} seconds. The sound stays in memory, goes once to AudD (audd.io) to name the song, then is dropped: nothing is saved. Your music pauses while it listens.
+            {tr('Music App listens through your microphone for {n} seconds. The sound stays in memory, goes once to AudD (audd.io) to name the song, then is dropped: nothing is saved. Your music pauses while it listens.', { n: SECONDS })}
           </p>
           <div className="flex justify-end gap-2">
             <Button variant="ghost" onClick={() => setPhase({ name: 'idle' })}>
-              Not now
+              {tr('Not now')}
             </Button>
             <Button
               onClick={() => {
@@ -200,7 +201,7 @@ export function Detector({ onFound }: { onFound: (t: Track) => void }) {
                 void listen()
               }}
             >
-              Allow and listen
+              {tr('Allow and listen')}
             </Button>
           </div>
         </Dialog>

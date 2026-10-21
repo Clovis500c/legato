@@ -58,6 +58,13 @@ src-tauri/              thin shell: commands, keychain, WebView2 hook, media pan
 - `ui/src/features/<name>/`: one folder per feature. Right-click menus are built in `features/menus.tsx`.
 - `ui/src/shared/`: typed API, formatting, themes, image helpers and the small component kit (`shared/ui/`).
 - Long lists are virtualized (`@tanstack/react-virtual`).
+- Languages: `ui/src/shared/i18n/` (no library). English text is the key: `tr('Play')`, `trn(n, '{n} song', '{n} songs')`
+  (the language's plural rules), `msg()` marks text kept in tables and translated where shown. `fr.ts` maps English
+  to French; a test scans the code and fails on a missing or stale translation. Language = Windows' (the webview's)
+  or the user's pick; changing it re-renders in place. The shell's own words (tray, taskbar buttons) follow through
+  `src-tauri/src/lang.rs`. Mix titles come from Rust as parts (`mixes::Words`) and are worded by the UI.
+  Not translated: messages from services and Rust errors, YouTube Music's own shelf titles (its parsing reads
+  English), Discord presence buttons (shown on Discord).
 
 ## Player
 

@@ -6,6 +6,7 @@ import { nextIndex } from '../player/queue'
 import { saveSessionAtNext, saveSessionNow } from '../player/session'
 import { vias } from '../player/sources'
 import { onSongEnd, usePlayer } from '../player/store'
+import { tr } from '../../shared/i18n/i18n'
 
 /** What the background updater is doing (Settings › About). */
 export const useUpdate = create<{ status: UpdateStatus | null }>(() => ({ status: null }))
@@ -19,7 +20,7 @@ const LOOK_EVERY = 5_000
 export async function installUpdate(next?: number) {
   const s = useUpdate.getState().status
   if (s?.state !== 'ready') return
-  useStore.getState().notify(`Updating to ${s.version}… back in a few seconds`, { kind: 'info' })
+  useStore.getState().notify(tr('Updating to {version}… back in a few seconds', { version: s.version }), { kind: 'info' })
   await (next === undefined ? saveSessionNow() : saveSessionAtNext(next))
   await api.updateInstall().catch((e) => useStore.getState().notify(String(e), { kind: 'error' }))
 }

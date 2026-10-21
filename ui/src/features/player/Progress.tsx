@@ -3,6 +3,7 @@ import { formatDuration } from '../../shared/format'
 import { Bar } from '../../shared/ui/controls'
 import { move, press, release, shown, type Drag } from './seekDrag'
 import { usePlayer } from './store'
+import { tr } from '../../shared/i18n/i18n'
 
 const clock = (ms: number | null) => formatDuration(ms) || '0:00'
 /** Seek bar resolution: under a pixel on a full-width bar. */
@@ -106,7 +107,7 @@ export function SeekBar({ className = '' }: { className?: string }) {
       }}
     >
       <Bar
-        label="Position"
+        label={tr('Position')}
         seek
         value={shown(drag, track, pos)}
         max={durationMs ?? 0}

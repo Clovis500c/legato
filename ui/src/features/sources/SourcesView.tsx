@@ -3,13 +3,14 @@ import { open } from '@tauri-apps/plugin-dialog'
 import { useCallback, useEffect, useState } from 'react'
 import { useStore } from '../../app/store'
 import { accountKey, api, type YtmAccount } from '../../shared/api'
-import { formatCount, timeAgo } from '../../shared/format'
+import { timeAgo } from '../../shared/format'
 import { Button } from '../../shared/ui/Button'
 import { Led, RoundButton, Toggle } from '../../shared/ui/controls'
 import { remoteArt } from '../../shared/art'
 import { Cover } from '../../shared/ui/Cover'
 import { SourceIcon, sourceLabel } from '../../shared/ui/SourceIcon'
 import { guides } from './guides'
+import { tr, trn } from '../../shared/i18n/i18n'
 
 function ServiceRow({ service }: { service: 'spotify' }) {
   const { status, disconnect, busy, go, view } = useStore()
@@ -23,15 +24,15 @@ function ServiceRow({ service }: { service: 'spotify' }) {
       </span>
       <div className="flex-1">
         <p className="text-[13px] font-semibold">{sourceLabel[service]}</p>
-        <p className="text-xs text-ink-2">{guides[service].pitch}</p>
+        <p className="text-xs text-ink-2">{tr(guides[service].pitch)}</p>
       </div>
-      <span className="kicker">{connected ? 'Connected' : 'Not connected'}</span>
+      <span className="kicker">{connected ? tr('Connected') : tr('Not connected')}</span>
       {connected ? (
         <Button variant="ghost" disabled={busy} onClick={() => disconnect(service)}>
-          Disconnect
+          {tr('Disconnect')}
         </Button>
       ) : (
-        <Button onClick={() => go({ name: 'settings', section: 'sources', wizard: service })}>Connect</Button>
+        <Button onClick={() => go({ name: 'settings', section: 'sources', wizard: service })}>{tr('Connect')}</Button>
       )}
     </div>
   )
@@ -53,12 +54,12 @@ function SpotifyWeb() {
         <SourceIcon source="spotify" size={16} />
       </span>
       <div className="flex-1">
-        <p className="text-[13px] font-semibold">Spotify web player <span className="kicker">Preview</span></p>
-        <p className="text-xs text-ink-2">Spotify's own player in a window, signed in on Spotify's page. To import a public playlist, paste its link anywhere (Ctrl+V).</p>
+        <p className="text-[13px] font-semibold">{tr('Spotify web player')} <span className="kicker">{tr('Preview')}</span></p>
+        <p className="text-xs text-ink-2">{tr('Spotify’s own player in a window, signed in on Spotify’s page. To import a public playlist, paste its link anywhere (Ctrl+V).')}</p>
       </div>
-      <span className="kicker">{on ? 'Signed in' : 'Not signed in'}</span>
+      <span className="kicker">{on ? tr('Signed in') : tr('Not signed in')}</span>
       <Button variant={on ? 'ghost' : undefined} onClick={() => api.spotifyWebOpen().catch((e) => useStore.setState({ error: String(e) }))}>
-        Open
+        {tr('Open')}
       </Button>
     </div>
   )
@@ -110,7 +111,7 @@ function GoogleAccounts() {
     await load()
   }
   const signOut = async () => {
-    if (!confirm('Sign every Google account out of Music App? Your library stays as it is.')) return
+    if (!confirm(tr('Sign every Google account out of Music App? Your library stays as it is.'))) return
     await api.ytmSignOut().catch((e) => useStore.setState({ error: String(e) }))
     await load()
     void refresh()
@@ -125,12 +126,12 @@ function GoogleAccounts() {
         </span>
         <div className="flex-1">
           <p className="text-[13px] font-semibold">YouTube Music</p>
-          <p className="text-xs text-ink-2">{data?.signedIn ? 'Your playlists, search and export. No keys, no daily limit.' : 'Sign in with Google to import your YouTube Music playlists and Liked Music. No keys.'}</p>
+          <p className="text-xs text-ink-2">{data?.signedIn ? tr('Your playlists, search and export. No keys, no daily limit.') : tr('Sign in with Google to import your YouTube Music playlists and Liked Music. No keys.')}</p>
         </div>
-        <span className="kicker">{data?.signedIn ? `${data.accounts.length} account${data.accounts.length > 1 ? 's' : ''}` : waiting ? 'Waiting for Google…' : 'Not signed in'}</span>
+        <span className="kicker">{data?.signedIn ? trn(data.accounts.length, '{n} account', '{n} accounts') : waiting ? tr('Waiting for Google…') : tr('Not signed in')}</span>
         {!data?.signedIn && (
           <Button onClick={() => signIn(false)}>
-            <GoogleLogo size={14} weight="bold" /> Sign in with Google
+            <GoogleLogo size={14} weight="bold" /> {tr('Sign in with Google')}
           </Button>
         )}
       </div>
@@ -145,34 +146,34 @@ function GoogleAccounts() {
                   <Cover title={a.name} art={a.photo ? [remoteArt(a.photo)] : []} size={30} className="rounded-full!" />
                   <div className="min-w-0 flex-1">
                     <p className="flex items-center gap-2 truncate text-[13px] font-medium">
-                      {a.name} {first && on && <span className="kicker">Exports here</span>}
+                      {a.name} {first && on && <span className="kicker">{tr('Exports here')}</span>}
                     </p>
-                    <p className="truncate text-xs text-ink-2">{[a.handle, a.email, a.pageId && 'channel'].filter(Boolean).join(' · ')}</p>
+                    <p className="truncate text-xs text-ink-2">{[a.handle, a.email, a.pageId && tr('channel')].filter(Boolean).join(' · ')}</p>
                   </div>
-                  <span className="text-xs text-ink-2">Sync</span>
-                  <Toggle label={`Sync ${a.name}`} checked={on} onChange={(v) => toggle(a, v)} />
+                  <span className="text-xs text-ink-2">{tr('Sync')}</span>
+                  <Toggle label={tr('Sync {name}', { name: a.name })} checked={on} onChange={(v) => toggle(a, v)} />
                 </li>
               )
             })}
           </ul>
           <div className="ml-13 flex items-center gap-3 rounded-lg bg-recess px-3 py-2.5">
             <div className="flex-1">
-              <p className="text-[13px] font-medium">Playlists and Liked Music</p>
-              <p className="text-xs text-ink-2">{busy ? 'Importing…' : lastSync ? `Last import ${timeAgo(lastSync.at)}: ${lastSync.report.playlists} playlists` : 'Imported when you sign in. Import again any time to pick up changes.'}</p>
+              <p className="text-[13px] font-medium">{tr('Playlists and Liked Music')}</p>
+              <p className="text-xs text-ink-2">{busy ? tr('Importing…') : lastSync ? tr('Last import {when}: {n} playlists', { when: timeAgo(lastSync.at), n: lastSync.report.playlists }) : tr('Imported when you sign in. Import again any time to pick up changes.')}</p>
             </div>
             <Button disabled={busy || !data.picked.length} onClick={() => void sync()}>
-              <ArrowsClockwise size={14} className={busy ? 'animate-spin' : ''} /> Import playlists now
+              <ArrowsClockwise size={14} className={busy ? 'animate-spin' : ''} /> {tr('Import playlists now')}
             </Button>
           </div>
           <div className="ml-13 flex gap-2">
             <Button variant="ghost" onClick={() => signIn(true)}>
-              <UserPlus size={14} /> {waiting ? 'Waiting for Google…' : 'Add another Google account'}
+              <UserPlus size={14} /> {waiting ? tr('Waiting for Google…') : tr('Add another Google account')}
             </Button>
             <Button variant="ghost" onClick={signOut}>
-              <SignOut size={14} /> Sign out
+              <SignOut size={14} /> {tr('Sign out')}
             </Button>
           </div>
-          <p className="ml-13 text-xs text-ink-2">Synced accounts bring their playlists and Liked Music into your library. YouTube Music doesn't offer an official way in without keys: this uses the site's own access, like Pear Desktop, and may break if YouTube changes it.</p>
+          <p className="ml-13 text-xs text-ink-2">{tr('Synced accounts bring their playlists and Liked Music into your library. YouTube Music doesn’t offer an official way in without keys: this uses the site’s own access, like Pear Desktop, and may break if YouTube changes it.')}</p>
         </>
       )}
     </div>
@@ -200,7 +201,7 @@ function LocalFolders() {
     }
   }
   const add = async () => {
-    const dir = await open({ directory: true, title: 'Music folder' })
+    const dir = await open({ directory: true, title: tr('Music folder') })
     if (typeof dir === 'string' && !folders.includes(dir)) await run(() => api.setLocalFolders([...folders, dir]))
   }
 
@@ -212,17 +213,17 @@ function LocalFolders() {
           <HardDrives size={16} />
         </span>
         <div className="flex-1">
-          <p className="text-[13px] font-semibold">Local files</p>
-          <p className="text-xs text-ink-2">MP3, FLAC, WAV, OGG, M4A. Linked to your YouTube and Spotify tracks and played first, gapless.</p>
+          <p className="text-[13px] font-semibold">{tr('Local files')}</p>
+          <p className="text-xs text-ink-2">{tr('MP3, FLAC, WAV, OGG, M4A. Linked to your YouTube and Spotify tracks and played first, gapless.')}</p>
         </div>
-        <span className="kicker">{busy ? 'Scanning…' : `${formatCount(files)} files`}</span>
+        <span className="kicker">{busy ? tr('Scanning…') : trn(files, '{n} file', '{n} files')}</span>
       </div>
       {folders.length > 0 && (
         <ul className="ml-13 flex flex-col rounded-lg border border-line-soft">
           {folders.map((f) => (
             <li key={f} className="flex items-center gap-2 border-b border-line-soft py-1 pr-1 pl-3 last:border-0">
               <span className="flex-1 truncate font-mono text-[11px]">{f}</span>
-              <RoundButton label={`Remove ${f}`} kind="plain" size="xs" disabled={busy} onClick={() => run(() => api.setLocalFolders(folders.filter((x) => x !== f)))}>
+              <RoundButton label={tr('Remove {folder}', { folder: f })} kind="plain" size="xs" disabled={busy} onClick={() => run(() => api.setLocalFolders(folders.filter((x) => x !== f)))}>
                 <X size={12} />
               </RoundButton>
             </li>
@@ -231,11 +232,11 @@ function LocalFolders() {
       )}
       <div className="ml-13 flex gap-2">
         <Button disabled={busy} onClick={add}>
-          <FolderPlus size={14} /> Add folder
+          <FolderPlus size={14} /> {tr('Add folder')}
         </Button>
         {folders.length > 0 && (
           <Button variant="ghost" disabled={busy} onClick={() => run(api.rescanLocal)}>
-            Rescan
+            {tr('Rescan')}
           </Button>
         )}
       </div>
@@ -246,7 +247,7 @@ function LocalFolders() {
 export function SourcesView() {
   return (
     <div className="flex max-w-190 flex-col gap-6">
-      <p className="text-[13px] text-ink-2">Which account is connected to which service. Nothing goes through a server of ours: everything stays on your computer.</p>
+      <p className="text-[13px] text-ink-2">{tr('Which account is connected to which service. Nothing goes through a server of ours: everything stays on your computer.')}</p>
       <div className="rounded-xl border border-line bg-raised">
         <GoogleAccounts />
         <SpotifyWeb />
@@ -254,7 +255,7 @@ export function SourcesView() {
         <LocalFolders />
       </div>
       <p className="flex w-fit items-center gap-2.5 text-xs text-ink-2">
-        <ShieldCheck size={16} /> You type your password on Google's own page, never in Music App. The session stays in the app's browser storage on this PC, like in a browser.
+        <ShieldCheck size={16} /> {tr('You type your password on Google’s own page, never in Music App. The session stays in the app’s browser storage on this PC, like in a browser.')}
       </p>
     </div>
   )

@@ -3,6 +3,7 @@ mod autostart;
 mod background;
 mod discord;
 mod hotkeys;
+mod lang;
 mod media;
 mod secrets;
 #[cfg(windows)]
@@ -1339,6 +1340,18 @@ fn detect_stop() {
     DETECT_STOP.store(true, Ordering::Relaxed);
 }
 
+/// Interface language (Settings › Language): the tray menu and taskbar buttons follow it.
+#[tauri::command]
+fn set_ui_language(state: State<AppState>, lang: String) -> CmdResult<()> {
+    if lang::set(&lang) {
+        if let Some(tray) = &state.tray {
+            tray.relabel().map_err(err)?;
+        }
+        thumbbar::refresh();
+    }
+    Ok(())
+}
+
 /// Windows settings pages the app points to when one of them blocks a feature. Fixed list.
 #[tauri::command]
 fn open_windows_settings(app: tauri::AppHandle, page: String) -> CmdResult<()> {
@@ -1648,7 +1661,7 @@ pub fn run() {
             update::spawn(app.handle().clone());
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, add_track, backfill_art, find_versions, play_preview, share_playlist, share_preview, share_read_image, share_import, nearby_send, nearby_status, nearby_stop, nearby_receive, record_play, mixes, set_track_pref, clear_history, export_youtube, spotify_player, spotify_playback, ytm_sign_in, ytm_sign_out, spotify_web_open, spotify_web_status, import_spotify_link, ytm_accounts, set_ytm_accounts, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, system_accent, restart_app, autostart, set_autostart, media_update, load_session, save_session, add_to_youtube, playlist_orders, save_cover, export_cover, alternative_videos, play_stats, cache_stats, open_licenses, update_status, update_check, update_install, ytm_home, ytm_list, discord_presence, discord_off, discord_status, remove_from_playlist, remove_from_library, resolve_track, set_global_shortcuts, player_live, player_levels, voice_listen, voice_stop, open_windows_settings, detector_status, set_detector_token, detect_song, detect_stop, lyrics, ytwatch_open, ytwatch_place, ytwatch_cmd, ytwatch_close])
+        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, add_track, backfill_art, find_versions, play_preview, share_playlist, share_preview, share_read_image, share_import, nearby_send, nearby_status, nearby_stop, nearby_receive, record_play, mixes, set_track_pref, clear_history, export_youtube, spotify_player, spotify_playback, ytm_sign_in, ytm_sign_out, spotify_web_open, spotify_web_status, import_spotify_link, ytm_accounts, set_ytm_accounts, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, system_accent, restart_app, autostart, set_autostart, media_update, load_session, save_session, add_to_youtube, playlist_orders, save_cover, export_cover, alternative_videos, play_stats, cache_stats, open_licenses, update_status, update_check, update_install, ytm_home, ytm_list, discord_presence, discord_off, discord_status, remove_from_playlist, remove_from_library, resolve_track, set_global_shortcuts, player_live, player_levels, voice_listen, voice_stop, open_windows_settings, detector_status, set_detector_token, detect_song, detect_stop, lyrics, set_ui_language, ytwatch_open, ytwatch_place, ytwatch_cmd, ytwatch_close])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

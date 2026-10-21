@@ -20,6 +20,7 @@ import { frameAround } from '../../shared/artbox'
 import { bindLiveFrame, sendLive } from './live'
 import { useLiveSync } from './liveSync'
 import { AdaptiveBar } from './AdaptiveBar'
+import { tr } from '../../shared/i18n/i18n'
 
 const AUDIO = /\.(mp3|flac|wav|ogg|m4a|aac)$/i
 export const clock = (ms: number | null) => formatDuration(ms) || '0:00'
@@ -28,9 +29,9 @@ export const fileFormat = (path?: string) => path?.split('.').pop()?.toUpperCase
 // Source of what plays: icon only, details in its tooltip. Previews come from Apple Music.
 const viaSource: Record<string, Source> = { local: 'local', youtube: 'youtube', spotify: 'spotify', preview: 'apple' }
 function viaTitle(via: string, path?: string) {
-  if (via === 'local') return `Playing a local file${path ? ` · ${fileFormat(path)}` : ''}`
-  if (via === 'preview') return 'Playing a 30-second Apple Music preview'
-  return `Playing from ${via === 'youtube' ? 'YouTube' : 'Spotify'}`
+  if (via === 'local') return tr('Playing a local file') + (path ? ` · ${fileFormat(path)}` : '')
+  if (via === 'preview') return tr('Playing a 30-second Apple Music preview')
+  return tr('Playing from {source}', { source: via === 'youtube' ? 'YouTube' : 'Spotify' })
 }
 
 /**
@@ -112,7 +113,7 @@ function YouTubeFrame({ videoId }: { videoId: string }) {
         bindFrame(el)
         bindLiveFrame(el)
       }}
-      title="YouTube player"
+      title={tr('YouTube player')}
       src={embedUrl(src.first, location.origin, src)}
       allow="autoplay; encrypted-media; picture-in-picture"
       referrerPolicy="strict-origin-when-cross-origin"
@@ -160,11 +161,11 @@ export function VolumeControl({ big }: { big?: boolean }) {
   }
   return (
     <span className="flex items-center gap-1">
-      <RoundButton label={volume > 0 ? 'Mute' : 'Unmute'} kind="plain" size={big ? 'md' : 'sm'} onClick={mute}>
+      <RoundButton label={volume > 0 ? tr('Mute') : tr('Unmute')} kind="plain" size={big ? 'md' : 'sm'} onClick={mute}>
         <Icon size={big ? 20 : 16} />
       </RoundButton>
       <span className="relative flex items-center">
-        <Bar label="Volume" value={volume} max={1} onChange={setVolume} className={big ? 'w-32' : 'w-24'} />
+        <Bar label={tr('Volume')} value={volume} max={1} onChange={setVolume} className={big ? 'w-32' : 'w-24'} />
         <AdaptiveBar className="absolute inset-x-0 -bottom-1.5" />
       </span>
     </span>
@@ -224,11 +225,11 @@ export function PlayerBar() {
     <footer onContextMenu={onMenu(playerMenu)} className="flex h-25 shrink-0 items-center justify-between gap-6 border-t border-line bg-panel px-6 py-2">
       {now?.youtubeId && <YouTubeFrame videoId={now.youtubeId} />}
 
-      <button disabled={!now} onClick={() => setFull(true)} title={now ? 'Open Now Playing' : undefined} className="flex w-85 min-w-0 items-center gap-3.5 text-left">
+      <button disabled={!now} onClick={() => setFull(true)} title={now ? tr('Open Now Playing') : undefined} className="flex w-85 min-w-0 items-center gap-3.5 text-left">
         <Cover title={now?.title ?? ''} art={track && trackArt(track)} size={56} />
         <span className="flex min-w-0 flex-col gap-1">
-          <span className="truncate text-sm font-semibold">{now?.title ?? 'Nothing playing'}</span>
-          <span className="truncate text-xs text-ink-2">{now?.artist ?? 'Play a YouTube track or drop audio files here'}</span>
+          <span className="truncate text-sm font-semibold">{now?.title ?? tr('Nothing playing')}</span>
+          <span className="truncate text-xs text-ink-2">{now?.artist ?? tr('Play a YouTube track or drop audio files here')}</span>
         </span>
       </button>
 
@@ -248,7 +249,7 @@ export function PlayerBar() {
           </span>
         )}
         <VolumeControl />
-        <RoundButton label="Now playing, full screen" disabled={!now} onClick={() => setFull(true)}>
+        <RoundButton label={tr('Now playing, full screen')} disabled={!now} onClick={() => setFull(true)}>
           <ArrowsOutSimple size={15} />
         </RoundButton>
       </div>

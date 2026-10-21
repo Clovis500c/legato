@@ -1,3 +1,4 @@
+import { msg, tr } from '../shared/i18n/i18n'
 /**
  * Keyboard shortcuts: one table of actions with their default keys, user bindings over it, combos read from physical
  * keys (any keyboard layout). Pure: no store, no window (tests and the settings search import it).
@@ -42,23 +43,23 @@ export interface ActionInfo {
  * (media.rs) already takes them, a hotkey would steal them from every other player.
  */
 export const ACTIONS: ActionInfo[] = [
-  { id: 'playPause', label: 'Play / pause', keys: 'Space', global: 'Ctrl+Alt+Space' },
-  { id: 'next', label: 'Next track', keys: 'Ctrl+ArrowRight', global: 'Ctrl+Alt+ArrowRight' },
-  { id: 'previous', label: 'Previous track', keys: 'Ctrl+ArrowLeft', global: 'Ctrl+Alt+ArrowLeft' },
-  { id: 'stop', label: 'Stop', keys: 'Ctrl+Shift+Space', global: null },
-  { id: 'forward', label: 'Forward 10 seconds', keys: 'Shift+ArrowRight', global: null },
-  { id: 'back10', label: 'Back 10 seconds', keys: 'Shift+ArrowLeft', global: null },
-  { id: 'volumeUp', label: 'Volume up', keys: 'Ctrl+ArrowUp', global: 'Ctrl+Alt+ArrowUp' },
-  { id: 'volumeDown', label: 'Volume down', keys: 'Ctrl+ArrowDown', global: 'Ctrl+Alt+ArrowDown' },
-  { id: 'mute', label: 'Mute / unmute', keys: 'Ctrl+KeyM', global: null },
-  { id: 'shuffle', label: 'Shuffle on / off', keys: 'Ctrl+KeyS', global: null },
-  { id: 'repeat', label: 'Repeat: off, queue, track', keys: 'Ctrl+KeyR', global: null },
-  { id: 'nowPlaying', label: 'Open / close Now Playing', keys: 'Ctrl+KeyP', global: null },
-  { id: 'search', label: 'Search', keys: 'Ctrl+KeyK', global: null },
-  { id: 'settings', label: 'Settings', keys: 'Ctrl+Comma', global: null },
-  { id: 'goBack', label: 'Back', keys: 'Alt+ArrowLeft', global: null },
-  { id: 'goForward', label: 'Forward', keys: 'Alt+ArrowRight', global: null },
-  { id: 'showApp', label: 'Show Music App', keys: null, global: 'Ctrl+Alt+KeyM', globalOnly: true },
+  { id: 'playPause', label: msg('Play / pause'), keys: 'Space', global: 'Ctrl+Alt+Space' },
+  { id: 'next', label: msg('Next track'), keys: 'Ctrl+ArrowRight', global: 'Ctrl+Alt+ArrowRight' },
+  { id: 'previous', label: msg('Previous track'), keys: 'Ctrl+ArrowLeft', global: 'Ctrl+Alt+ArrowLeft' },
+  { id: 'stop', label: msg('Stop'), keys: 'Ctrl+Shift+Space', global: null },
+  { id: 'forward', label: msg('Forward 10 seconds'), keys: 'Shift+ArrowRight', global: null },
+  { id: 'back10', label: msg('Back 10 seconds'), keys: 'Shift+ArrowLeft', global: null },
+  { id: 'volumeUp', label: msg('Volume up'), keys: 'Ctrl+ArrowUp', global: 'Ctrl+Alt+ArrowUp' },
+  { id: 'volumeDown', label: msg('Volume down'), keys: 'Ctrl+ArrowDown', global: 'Ctrl+Alt+ArrowDown' },
+  { id: 'mute', label: msg('Mute / unmute'), keys: 'Ctrl+KeyM', global: null },
+  { id: 'shuffle', label: msg('Shuffle on / off'), keys: 'Ctrl+KeyS', global: null },
+  { id: 'repeat', label: msg('Repeat: off, queue, track'), keys: 'Ctrl+KeyR', global: null },
+  { id: 'nowPlaying', label: msg('Open / close Now Playing'), keys: 'Ctrl+KeyP', global: null },
+  { id: 'search', label: msg('Search'), keys: 'Ctrl+KeyK', global: null },
+  { id: 'settings', label: msg('Settings'), keys: 'Ctrl+Comma', global: null },
+  { id: 'goBack', label: msg('Back'), keys: 'Alt+ArrowLeft', global: null },
+  { id: 'goForward', label: msg('Forward'), keys: 'Alt+ArrowRight', global: null },
+  { id: 'showApp', label: msg('Show Music App'), keys: null, global: 'Ctrl+Alt+KeyM', globalOnly: true },
 ]
 
 /** What the user changed (settings `shortcuts`): null = removed, absent = default. */
@@ -97,13 +98,13 @@ export function comboOf(e: Keys): Combo | null {
 /** Combo has a modifier (global ones need one: a bare key held system-wide would type nowhere else). */
 export const hasModifier = (c: Combo) => /^(Ctrl|Alt|Shift|Meta)\+/.test(c)
 
-const KEY_NAMES: Record<string, string> = { ArrowRight: '→', ArrowLeft: '←', ArrowUp: '↑', ArrowDown: '↓', Space: 'Space', Comma: ',', Period: '.', Slash: '/', Backslash: '\\', Minus: '-', Equal: '=', BracketLeft: '[', BracketRight: ']', Semicolon: ';', Quote: "'", Backquote: '`', Escape: 'Esc', Enter: 'Enter', Backspace: 'Backspace', Tab: 'Tab' }
+const KEY_NAMES: Record<string, string> = { ArrowRight: '→', ArrowLeft: '←', ArrowUp: '↑', ArrowDown: '↓', Space: msg('Space'), Comma: ',', Period: '.', Slash: '/', Backslash: '\\', Minus: '-', Equal: '=', BracketLeft: '[', BracketRight: ']', Semicolon: ';', Quote: "'", Backquote: '`', Escape: msg('Esc'), Enter: msg('Enter'), Backspace: msg('Backspace'), Tab: msg('Tab'), Shift: msg('Shift') }
 
-/** "Ctrl+Alt+ArrowRight" → "Ctrl Alt →", "Ctrl+KeyS" → "Ctrl S". */
+/** "Ctrl+Alt+ArrowRight" → "Ctrl Alt →", "Ctrl+KeyS" → "Ctrl S". Key words in the interface's language (Maj, Espace…). */
 export function comboLabel(c: Combo): string {
   return c
     .split('+')
-    .map((p) => KEY_NAMES[p] ?? p.replace(/^Key/, '').replace(/^Digit/, '').replace(/^Numpad/, 'Num '))
+    .map((p) => (KEY_NAMES[p] ? tr(KEY_NAMES[p]) : p.replace(/^Key/, '').replace(/^Digit/, '').replace(/^Numpad/, 'Num ')))
     .join(' ')
 }
 

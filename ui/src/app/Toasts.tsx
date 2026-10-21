@@ -1,5 +1,6 @@
 import { CheckCircle, Info, MinusCircle, Warning, X } from '@phosphor-icons/react'
 import { useStore, type Toast } from './store'
+import { tr } from '../shared/i18n/i18n'
 
 // Fixed colors: a success is green whatever the theme.
 const icons: Record<Toast['kind'], { Icon: typeof CheckCircle; color: string }> = {
@@ -33,7 +34,7 @@ export function Toasts() {
                 {t.action.label}
               </button>
             )}
-            <button aria-label="Dismiss" onClick={() => dismissToast(t.id)} className="grid size-7 shrink-0 place-items-center rounded-full text-ink-3 transition hover:bg-bg hover:text-ink">
+            <button aria-label={tr('Dismiss')} onClick={() => dismissToast(t.id)} className="grid size-7 shrink-0 place-items-center rounded-full text-ink-3 transition hover:bg-bg hover:text-ink">
               <X size={13} />
             </button>
           </div>

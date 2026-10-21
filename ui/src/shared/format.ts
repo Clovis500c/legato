@@ -1,3 +1,4 @@
+import { locale, tr } from './i18n/i18n'
 export function formatDuration(ms: number | null): string {
   if (!ms) return ''
   const s = Math.round(ms / 1000)
@@ -7,11 +8,10 @@ export function formatDuration(ms: number | null): string {
   return h ? `${h}:${mm.padStart(2, '0')}:${ss}` : `${mm}:${ss}`
 }
 
-const rtf = new Intl.RelativeTimeFormat('en', { numeric: 'auto' })
-
 export function timeAgo(at: number, now = Date.now()): string {
+  const rtf = new Intl.RelativeTimeFormat(locale(), { numeric: 'auto' })
   const min = Math.round((at - now) / 60_000)
-  if (min > -1) return 'just now'
+  if (min > -1) return tr('just now')
   if (min > -60) return rtf.format(min, 'minute')
   if (min > -60 * 24) return rtf.format(Math.round(min / 60), 'hour')
   return rtf.format(Math.round(min / 60 / 24), 'day')
@@ -19,13 +19,13 @@ export function timeAgo(at: number, now = Date.now()): string {
 
 /** 1.2 MB, 340 KB. */
 export function formatBytes(n: number): string {
-  if (n < 1024) return `${n} B`
-  if (n < 1024 * 1024) return `${Math.round(n / 1024)} KB`
-  return `${(n / 1024 / 1024).toFixed(1)} MB`
+  if (n < 1024) return tr('{n} B', { n })
+  if (n < 1024 * 1024) return tr('{n} KB', { n: Math.round(n / 1024) })
+  return tr('{n} MB', { n: (n / 1024 / 1024).toLocaleString(locale(), { maximumFractionDigits: 1, minimumFractionDigits: 1 }) })
 }
 
-/** Thousands separator: 1,674. */
-export const formatCount = (n: number) => n.toLocaleString('en-US')
+/** Thousands separator, the language's: 1,674 / 1 674. */
+export const formatCount = (n: number) => n.toLocaleString(locale())
 
 /** Spotify playlist or album link / URI (same rule as Rust spotify_embed::parse_link). */
 export const spotifyList = (text: string) => /(open\.spotify\.com\/(intl-[a-z-]+\/)?(embed\/)?|spotify:)(playlist|album)[/:][A-Za-z0-9]{22}/.test(text)

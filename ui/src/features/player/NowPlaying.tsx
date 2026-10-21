@@ -26,6 +26,7 @@ import { UpNext, useNextCount } from './UpNext'
 import { LyricsPanel } from './LyricsPanel'
 import { useVideoBox } from './videoBox'
 import { usePulse } from './pulse'
+import { tr } from '../../shared/i18n/i18n'
 
 /** Publishes its rect so the single YouTube iframe sits here. YouTube rules: at least 200×200, nothing on top. */
 export function VideoSlot({ className = '', style, hidden = false, live = false, onClick }: { className?: string; style?: React.CSSProperties; hidden?: boolean; live?: boolean; onClick?: () => void }) {
@@ -78,7 +79,7 @@ function TunerScale({ value, max, onChange }: { value: number; max: number; onCh
         <span key={i} className={`absolute bottom-0.5 w-px ${i % 5 ? 'h-1.5' : 'h-3'} ${i / 56 <= pct ? 'bg-ink-2' : 'bg-ink-4'}`} style={{ left: `${(i / 56) * 100}%` }} />
       ))}
       <span className="absolute bottom-0 h-6 w-0.5 -translate-x-1/2 rounded-full bg-accent" style={{ left: `${pct * 100}%` }} />
-      <input type="range" aria-label="Position" min={0} max={max || 1} step="any" value={Math.min(value, max)} disabled={!max} onChange={(e) => onChange(+e.target.value)} className="absolute inset-0 cursor-pointer opacity-0" />
+      <input type="range" aria-label={tr('Position')} min={0} max={max || 1} step="any" value={Math.min(value, max)} disabled={!max} onChange={(e) => onChange(+e.target.value)} className="absolute inset-0 cursor-pointer opacity-0" />
     </div>
   )
 }
@@ -87,7 +88,7 @@ const viaSource: Record<Via, Source> = { local: 'local', youtube: 'youtube', spo
 
 /** Where the sound comes from: one small icon. Switching source: right-click › Play via. */
 function SourceBadge({ via }: { via: Via }) {
-  const hint = `Playing from ${viaLabel[via]} · right-click to switch source`
+  const hint = tr('Playing from {source} · right-click to switch source', { source: tr(viaLabel[via]) })
   return (
     <span title={hint} aria-label={hint} className="grid size-7 place-items-center text-ink-3">
       <SourceIcon source={viaSource[via]} size={15} />
@@ -125,7 +126,7 @@ function Stage({ video, cover, track, title, youtubeId, pulse }: { video: boolea
         // Cropped: the iframe itself stays bigger than YouTube's 200×200 minimum, the slot can be any shape.
         <VideoSlot className={box ? 'min-h-50 min-w-50 bg-transparent!' : 'min-h-50 min-w-89'} style={fit} onClick={toggle} />
       ) : (
-        <span ref={coverEl} style={fit} onClick={toggle} title="Play / pause" className="relative block cursor-pointer">
+        <span ref={coverEl} style={fit} onClick={toggle} title={tr('Play / pause')} className="relative block cursor-pointer">
           <Cover title={track?.album ?? title} art={track && bigTrackArt(track)} size={200} eager fit={setArt} className="size-full! text-[56px]! shadow-[0_12px_40px_var(--shadow)]" />
           {video && <VideoSlot hidden className="absolute inset-0 bg-transparent" />}
         </span>
@@ -215,25 +216,25 @@ export function NowPlaying() {
 
   return (
     // Whole window, under the see-through top bar (logo, Close player and window buttons stay on top, z-30).
-    <div role="dialog" aria-label="Now playing" onContextMenu={onMenu(playerMenu)} className="fixed inset-0 z-20 isolate flex flex-col overflow-hidden bg-bg px-10 pt-17 pb-7 text-ink transition-colors duration-500" style={ambient}>
+    <div role="dialog" aria-label={tr('Now playing')} onContextMenu={onMenu(playerMenu)} className="fixed inset-0 z-20 isolate flex flex-col overflow-hidden bg-bg px-10 pt-17 pb-7 text-ink transition-colors duration-500" style={ambient}>
       {immersive && <Backdrop url={backdrop} dim={backdropDim} motion={backdropMotion} />}
       {!upNext && !lyrics && (
         <Button variant="ghost" className="absolute top-17 right-10 z-10" onClick={() => update({ upNext: true })}>
-          <CaretLeft size={13} /> Up next · {nextCount}
+          <CaretLeft size={13} /> {tr('Up next · {n}', { n: nextCount })}
         </Button>
       )}
 
       <div className={`grid min-h-0 flex-1 gap-10 ${lyrics ? 'grid-cols-[minmax(0,1fr)_minmax(0,1fr)]' : upNext ? 'grid-cols-[minmax(0,1fr)_360px]' : 'grid-cols-1'}`}>
         <section className="flex min-h-0 min-w-0 flex-col items-center gap-4">
-          {video ? <Segmented label="Show" value={stage} onChange={(s) => update({ stage: s })} options={[{ value: 'auto', label: still === undefined || stage !== 'auto' ? 'Auto' : still ? 'Auto · cover' : 'Auto · video' }, { value: 'video', label: 'Video' }, { value: 'cover', label: 'Cover' }]} /> : <span className="kicker text-ink-2">Now playing · {viaLabel[now.via]}</span>}
+          {video ? <Segmented label={tr('Show')} value={stage} onChange={(s) => update({ stage: s })} options={[{ value: 'auto', label: still === undefined || stage !== 'auto' ? tr('Auto') : still ? tr('Auto · cover') : tr('Auto · video') }, { value: 'video', label: tr('Video') }, { value: 'cover', label: tr('Cover') }]} /> : <span className="kicker text-ink-2">{tr('Now playing · {source}', { source: tr(viaLabel[now.via]) })}</span>}
           <Stage video={video} cover={stage === 'cover' || (stage === 'auto' && still === true)} track={track} title={now.title} youtubeId={now.youtubeId} pulse={coverPulse && motion} />
-          {now.via === 'spotify' && <span className="kicker text-center">Playing in your Spotify app</span>}
+          {now.via === 'spotify' && <span className="kicker text-center">{tr('Playing in your Spotify app')}</span>}
           {now.via === 'preview' && (
             <div className="flex items-center justify-center gap-4">
-              <span className="kicker">30-second preview</span>
+              <span className="kicker">{tr('30-second preview')}</span>
               {now.page && (
                 <Button variant="link" className="text-xs" onClick={() => openUrl(now.page!)}>
-                  Listen on Apple Music <ArrowSquareOut size={13} />
+                  {tr('Listen on Apple Music')} <ArrowSquareOut size={13} />
                 </Button>
               )}
             </div>
@@ -245,7 +246,7 @@ export function NowPlaying() {
                 <h2 className="truncate text-[28px] leading-tight font-bold tracking-[-0.02em]">{now.title}</h2>
                 <p className="truncate text-sm text-ink-2">{track?.album ? `${now.artist} — ${track.album}` : now.artist}</p>
               </div>
-              {track && <AddToPlaylist trackIds={[track.id]} label={`Add ${track.title} to a playlist`} />}
+              {track && <AddToPlaylist trackIds={[track.id]} label={tr('Add {title} to a playlist', { title: track.title })} />}
             </div>
             <div className="flex flex-col gap-1.5">
               {tuner ? <Tuner /> : <SeekBar />}
@@ -254,14 +255,14 @@ export function NowPlaying() {
             <div className="grid grid-cols-[1fr_auto_1fr] items-center">
               <span className="flex items-center gap-1">
                 <SourceBadge via={now.via} />
-                <RoundButton label={lyrics ? 'Hide lyrics' : 'Lyrics'} aria-pressed={lyrics} kind="plain" size="sm" onClick={() => update({ lyrics: !lyrics })} className={lyrics ? 'text-accent!' : 'text-ink-3'}>
+                <RoundButton label={lyrics ? tr('Hide lyrics') : tr('Lyrics')} aria-pressed={lyrics} kind="plain" size="sm" onClick={() => update({ lyrics: !lyrics })} className={lyrics ? 'text-accent!' : 'text-ink-3'}>
                   <Quotes size={16} weight={lyrics ? 'fill' : 'regular'} />
                 </RoundButton>
               </span>
               <Transport size="lg" />
               <div className="flex flex-col items-end gap-1">
                 <VolumeControl big />
-                {volumeMode === 'knob' && <span className="kicker">Volume</span>}
+                {volumeMode === 'knob' && <span className="kicker">{tr('Volume')}</span>}
               </div>
             </div>
           </div>

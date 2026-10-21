@@ -17,12 +17,13 @@ import { isFull, vias } from '../player/sources'
 import { usePlayer } from '../player/store'
 import { AddToPlaylist } from './AddToPlaylist'
 import { removeFromPlaylist } from './edits'
+import { msg, tr } from '../../shared/i18n/i18n'
 
 const ROW = { compact: 40, comfort: 52, airy: 64 }
 const order: Source[] = ['spotify', 'youtube', 'apple', 'local']
 const onControl = (e: React.MouseEvent) => e.target instanceof Element && !!e.target.closest('button, a, input, [role="menu"]')
 const width: Record<Column, string> = { album: 'minmax(0,220px)', sources: '76px', duration: '52px' }
-const head: Record<Column, string> = { album: 'Album', sources: 'Sources', duration: 'Duration' }
+const head: Record<Column, string> = { album: msg('Album'), sources: msg('Sources'), duration: msg('Duration') }
 
 /** Virtualized: only visible rows hit the DOM, so 50k tracks stay smooth. editId = custom playlist shown unfiltered (positions = indexes). rowActions = extra hover buttons. */
 export function TrackTable({ tracks, empty, editId, rowActions }: { tracks: LibraryTrack[]; empty: React.ReactNode; editId?: number; rowActions?: (t: LibraryTrack) => React.ReactNode }) {
@@ -41,11 +42,11 @@ export function TrackTable({ tracks, empty, editId, rowActions }: { tracks: Libr
     <div role="table" aria-rowcount={tracks.length} className="flex min-h-0 flex-1 flex-col">
       <div role="row" className="grid h-7.5 shrink-0 items-center gap-4 border-b border-line px-2" style={grid}>
         <span role="columnheader" className="kicker text-right">#</span>
-        <span role="columnheader" className="kicker">Title</span>
+        <span role="columnheader" className="kicker">{tr('Title')}</span>
         <span />
         {columns.map((c) => (
           <span key={c} role="columnheader" className={`kicker ${c === 'duration' ? 'text-right' : ''}`}>
-            {head[c]}
+            {tr(head[c])}
           </span>
         ))}
       </div>
@@ -76,8 +77,8 @@ export function TrackTable({ tracks, empty, editId, rowActions }: { tracks: Libr
                       <span className={`flex items-center gap-2 text-[13px] font-semibold ${on ? 'text-accent' : ''}`}>
                         <span className="truncate">{t.title}</span>
                         {playable && !isFull(t, sp) && (
-                          <span title="30-second preview" className="shrink-0 rounded-[3px] border border-line px-1 font-mono text-[9px] font-normal tracking-[0.08em] text-ink-3">
-                            PREVIEW
+                          <span title={tr('30-second preview')} className="shrink-0 rounded-[3px] border border-line px-1 font-mono text-[9px] font-normal tracking-[0.08em] text-ink-3">
+                            {tr('PREVIEW')}
                           </span>
                         )}
                       </span>
@@ -88,21 +89,21 @@ export function TrackTable({ tracks, empty, editId, rowActions }: { tracks: Libr
                   <span className="flex justify-end gap-0.5 opacity-0 group-hover:opacity-100 focus-within:opacity-100">
                     {editId !== undefined && (
                       <>
-                        <RoundButton label="Move up" kind="plain" size="xs" disabled={v.index === 0} onClick={() => editPlaylist({ type: 'move', id: editId, from: v.index, to: v.index - 1 })}>
+                        <RoundButton label={tr('Move up')} kind="plain" size="xs" disabled={v.index === 0} onClick={() => editPlaylist({ type: 'move', id: editId, from: v.index, to: v.index - 1 })}>
                           <ArrowUp size={13} />
                         </RoundButton>
-                        <RoundButton label="Move down" kind="plain" size="xs" disabled={v.index === tracks.length - 1} onClick={() => editPlaylist({ type: 'move', id: editId, from: v.index, to: v.index + 1 })}>
+                        <RoundButton label={tr('Move down')} kind="plain" size="xs" disabled={v.index === tracks.length - 1} onClick={() => editPlaylist({ type: 'move', id: editId, from: v.index, to: v.index + 1 })}>
                           <ArrowDown size={13} />
                         </RoundButton>
-                        <RoundButton label="Remove from playlist" kind="plain" size="xs" onClick={() => void removeFromPlaylist(editId, v.index)}>
+                        <RoundButton label={tr('Remove from playlist')} kind="plain" size="xs" onClick={() => void removeFromPlaylist(editId, v.index)}>
                           <X size={13} />
                         </RoundButton>
                       </>
                     )}
                     {rowActions?.(t)}
-                    <AddToPlaylist trackIds={[t.id]} label={`Add ${t.title} to a playlist`} />
+                    <AddToPlaylist trackIds={[t.id]} label={tr('Add {title} to a playlist', { title: t.title })} />
                     {playable && (
-                      <RoundButton label={`Play ${t.title}`} kind="soft" size="xs" onClick={() => play(tracks, v.index)}>
+                      <RoundButton label={tr('Play {title}', { title: t.title })} kind="soft" size="xs" onClick={() => play(tracks, v.index)}>
                         <Play weight="fill" size={11} />
                       </RoundButton>
                     )}

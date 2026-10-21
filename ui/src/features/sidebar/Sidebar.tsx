@@ -10,6 +10,7 @@ import { onMenu } from '../../shared/ui/ContextMenu'
 import { PlaylistCover } from '../library/PlaylistCover'
 import { playlistMenu, playlistsMenu } from '../menus'
 import { groupAlbums, groupArtists } from '../library/filter'
+import { tr } from '../../shared/i18n/i18n'
 
 function NavItem({ on, icon, label, count, onClick, onContextMenu }: { on: boolean; icon: ReactNode; label: string; count?: number; onClick: () => void; onContextMenu?: (e: React.MouseEvent) => void }) {
   const counts = useSettings((s) => s.settings.sidebarCounts)
@@ -46,18 +47,18 @@ export function Sidebar() {
     <aside className="flex w-63 shrink-0 flex-col border-r border-line bg-panel">
       <div className="scroll-quiet flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-3 pt-3 pb-3">
         <div className="flex flex-col gap-px">
-          <NavItem on={is('home')} icon={<House size={16} />} label="Home" onClick={() => go({ name: 'home' })} />
-          <NavItem on={is('mixes') || is('mix')} icon={<Disc size={16} />} label="Mixes" onClick={() => go({ name: 'mixes' })} />
-          <NavItem on={is('add')} icon={<PlusCircle size={16} />} label="Add music" onClick={() => go({ name: 'add' })} />
+          <NavItem on={is('home')} icon={<House size={16} />} label={tr('Home')} onClick={() => go({ name: 'home' })} />
+          <NavItem on={is('mixes') || is('mix')} icon={<Disc size={16} />} label={tr('Mixes')} onClick={() => go({ name: 'mixes' })} />
+          <NavItem on={is('add')} icon={<PlusCircle size={16} />} label={tr('Add music')} onClick={() => go({ name: 'add' })} />
         </div>
 
-        <Section title="Library">
-          <NavItem on={is('songs')} icon={<MusicNotes size={16} />} label="Songs" count={tracks.length} onClick={() => go({ name: 'songs' })} />
-          <NavItem on={is('albums') || is('album')} icon={<VinylRecord size={16} />} label="Albums" count={counts.albums} onClick={() => go({ name: 'albums' })} />
-          <NavItem on={is('artists') || is('artist')} icon={<MicrophoneStage size={16} />} label="Artists" count={counts.artists} onClick={() => go({ name: 'artists' })} />
+        <Section title={tr('Library')}>
+          <NavItem on={is('songs')} icon={<MusicNotes size={16} />} label={tr('Songs')} count={tracks.length} onClick={() => go({ name: 'songs' })} />
+          <NavItem on={is('albums') || is('album')} icon={<VinylRecord size={16} />} label={tr('Albums')} count={counts.albums} onClick={() => go({ name: 'albums' })} />
+          <NavItem on={is('artists') || is('artist')} icon={<MicrophoneStage size={16} />} label={tr('Artists')} count={counts.artists} onClick={() => go({ name: 'artists' })} />
         </Section>
 
-        <Section title="Playlists" onContextMenu={onMenu(playlistsMenu)}>
+        <Section title={tr('Playlists')} onContextMenu={onMenu(playlistsMenu)}>
           {playlists
             .filter((p) => !hiddenKeys.has(playlistKey(p)))
             .map((p) => (
@@ -66,9 +67,9 @@ export function Sidebar() {
           <NavItem
             on={false}
             icon={<Plus size={14} />}
-            label="New playlist"
+            label={tr('New playlist')}
             onClick={async () => {
-              const id = await editPlaylist({ type: 'create', name: 'New playlist' })
+              const id = await editPlaylist({ type: 'create', name: tr('New playlist') })
               if (id !== null) go({ name: 'playlist', id })
             }}
           />
@@ -76,8 +77,8 @@ export function Sidebar() {
       </div>
 
       <div className="flex shrink-0 flex-col gap-px border-t border-line-soft px-3 pt-2 pb-3.5">
-        <NavItem on={is('addons')} icon={<PuzzlePiece size={16} />} label="Add-ons" onClick={() => go({ name: 'addons' })} />
-        <NavItem on={is('settings')} icon={<Gear size={16} />} label="Settings" onClick={() => go({ name: 'settings', section: 'appearance' })} />
+        <NavItem on={is('addons')} icon={<PuzzlePiece size={16} />} label={tr('Add-ons')} onClick={() => go({ name: 'addons' })} />
+        <NavItem on={is('settings')} icon={<Gear size={16} />} label={tr('Settings')} onClick={() => go({ name: 'settings', section: 'appearance' })} />
       </div>
     </aside>
   )

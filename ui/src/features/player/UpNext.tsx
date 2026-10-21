@@ -12,6 +12,7 @@ import { fileFormat } from './PlayerBar'
 import { queueRows, type QueueRow } from './queue'
 import { vias } from './sources'
 import { fileTitle, useNowTrack, usePlayer } from './store'
+import { tr } from '../../shared/i18n/i18n'
 
 const ROW = 60
 
@@ -60,11 +61,12 @@ export function UpNext({ onHide }: { onHide: () => void }) {
   return (
     <aside className="flex min-h-0 flex-col gap-2 rounded-2xl border border-line-soft bg-[color-mix(in_srgb,var(--panel)_55%,transparent)] p-3">
       <div className="flex items-center gap-2 px-1">
-        <span className="text-[13px] font-semibold">Up next</span>
+        <span className="text-[13px] font-semibold">{tr('Up next')}</span>
         <span className="kicker flex-1">
-          {next} next{played ? ` · ${played} played` : ''}
+          {tr('{n} next', { n: next })}
+          {played ? ` · ${tr('{n} played', { n: played })}` : ''}
         </span>
-        <RoundButton label="Hide up next" kind="plain" size="sm" onClick={onHide}>
+        <RoundButton label={tr('Hide up next')} kind="plain" size="sm" onClick={onHide}>
           <CaretRight size={14} />
         </RoundButton>
       </div>
@@ -94,7 +96,7 @@ export function UpNext({ onHide }: { onHide: () => void }) {
             )
           })}
         </div>
-        {next === 0 && <li className="py-6 text-center text-ink-3">Nothing after this track.</li>}
+        {next === 0 && <li className="py-6 text-center text-ink-3">{tr('Nothing after this track.')}</li>}
       </ol>
     </aside>
   )

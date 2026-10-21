@@ -1,4 +1,5 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it } from 'vitest'
+import { useLang } from '../../shared/i18n/i18n'
 import { searchSettings, SETTINGS_INDEX } from './search'
 
 const labels = (q: string) => searchSettings(q).map((e) => e.label)
@@ -27,5 +28,17 @@ describe('settings search', () => {
   it('labels are unique per section (highlight target)', () => {
     const keys = SETTINGS_INDEX.map((e) => `${e.section}/${e.label}`)
     expect(new Set(keys).size).toBe(keys.length)
+  })
+
+  describe('in French', () => {
+    afterEach(() => useLang.setState({ lang: 'en' }))
+
+    it('finds French labels and keywords, English still works', () => {
+      useLang.setState({ lang: 'fr' })
+      expect(labels('fondu')[0]).toBe('Fade between songs')
+      expect(labels('langue')).toContain('Language')
+      expect(labels('micro')).toContain('Voice search')
+      expect(labels('fade')[0]).toBe('Fade between songs')
+    })
   })
 })

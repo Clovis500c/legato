@@ -6,6 +6,7 @@ import { RoundButton } from '../../shared/ui/controls'
 import { lineAt } from './lyricsAt'
 import { usePosition } from './Progress'
 import { useNowTrack, usePlayer } from './store'
+import { tr } from '../../shared/i18n/i18n'
 
 /** Lines light up this much early: a line shows as it's sung, not after. */
 const LEAD_MS = 200
@@ -81,29 +82,29 @@ export function LyricsPanel({ onHide, onUpNext }: { onHide: () => void; onUpNext
   const mine = got?.for === key ? got : undefined
   const l = mine?.lyrics
   return (
-    <aside aria-label="Lyrics" className="flex min-h-0 flex-col gap-2 rounded-2xl border border-line-soft bg-[color-mix(in_srgb,var(--panel)_55%,transparent)] p-3">
+    <aside aria-label={tr('Lyrics')} className="flex min-h-0 flex-col gap-2 rounded-2xl border border-line-soft bg-[color-mix(in_srgb,var(--panel)_55%,transparent)] p-3">
       <div className="flex items-center gap-2 px-1">
-        <span className="flex-1 text-[13px] font-semibold">Lyrics</span>
-        <RoundButton label="Show Up next instead" kind="plain" size="sm" onClick={onUpNext}>
+        <span className="flex-1 text-[13px] font-semibold">{tr('Lyrics')}</span>
+        <RoundButton label={tr('Show Up next instead')} kind="plain" size="sm" onClick={onUpNext}>
           <Queue size={14} />
         </RoundButton>
-        <RoundButton label="Hide lyrics" kind="plain" size="sm" onClick={onHide}>
+        <RoundButton label={tr('Hide lyrics')} kind="plain" size="sm" onClick={onHide}>
           <CaretRight size={14} />
         </RoundButton>
       </div>
       {!mine || (!('lyrics' in mine) && !mine.error) ? (
-        <p className="m-auto text-sm text-ink-2">Looking for lyrics…</p>
+        <p className="m-auto text-sm text-ink-2">{tr('Looking for lyrics…')}</p>
       ) : mine.error ? (
         <div className="m-auto flex flex-col items-center gap-3 text-sm text-ink-2">
-          Lyrics can’t be loaded right now.
+          {tr('Lyrics can’t be loaded right now.')}
           <button onClick={() => setRetry((n) => n + 1)} className="flex items-center gap-1.5 rounded-full border border-line px-3 py-1 font-medium text-ink hover:bg-raised">
-            <ArrowCounterClockwise size={13} /> Try again
+            <ArrowCounterClockwise size={13} /> {tr('Try again')}
           </button>
         </div>
       ) : !l ? (
-        <p className="m-auto max-w-64 text-center text-sm text-ink-2">No lyrics found for this song (searched LRCLIB{signedIn ? ' and YouTube Music' : ''}).</p>
+        <p className="m-auto max-w-64 text-center text-sm text-ink-2">{signedIn ? tr('No lyrics found for this song (searched LRCLIB and YouTube Music).') : tr('No lyrics found for this song (searched LRCLIB).')}</p>
       ) : l.instrumental && !l.lines.length && !l.plain ? (
-        <p className="m-auto text-lg font-semibold text-ink-2">♪ Instrumental</p>
+        <p className="m-auto text-lg font-semibold text-ink-2">♪ {tr('Instrumental')}</p>
       ) : l.lines.length ? (
         <Synced lines={l.lines} />
       ) : (
@@ -111,7 +112,7 @@ export function LyricsPanel({ onHide, onUpNext }: { onHide: () => void; onUpNext
           <p className="text-[20px] leading-relaxed font-semibold whitespace-pre-line text-ink">{l.plain}</p>
         </div>
       )}
-      {l && <p className="px-1 text-[11px] text-ink-3">Lyrics: {l.source}</p>}
+      {l && <p className="px-1 text-[11px] text-ink-3">{tr('Lyrics: {source}', { source: l.source })}</p>}
     </aside>
   )
 }

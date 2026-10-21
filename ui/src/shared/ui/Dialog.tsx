@@ -1,6 +1,7 @@
 import { X } from '@phosphor-icons/react'
 import { useEffect, type ReactNode } from 'react'
 import { RoundButton } from './controls'
+import { tr } from '../i18n/i18n'
 
 /** Modal panel: Escape or backdrop click closes. */
 export function Dialog({ title, kicker, onClose, children }: { title: string; kicker?: string; onClose: () => void; children: ReactNode }) {
@@ -17,7 +18,7 @@ export function Dialog({ title, kicker, onClose, children }: { title: string; ki
             {kicker && <p className="kicker">{kicker}</p>}
             <h2 className="text-xl font-bold tracking-tight">{title}</h2>
           </div>
-          <RoundButton label="Close" kind="plain" size="sm" onClick={onClose}>
+          <RoundButton label={tr('Close')} kind="plain" size="sm" onClick={onClose}>
             <X size={15} />
           </RoundButton>
         </header>

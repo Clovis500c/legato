@@ -115,9 +115,9 @@ mod imp {
                 Some(THUMBBUTTON { dwMask: THB_ICON | THB_TOOLTIP | THB_FLAGS, iId: id, iBitmap: 0, hIcon: icon(hwnd, kind)?, szTip: tip(label), dwFlags: THBF_ENABLED })
             };
             Some([
-                button(PREV, Glyph::Previous, "Previous")?,
-                if playing { button(PLAY, Glyph::Pause, "Pause")? } else { button(PLAY, Glyph::Play, "Play")? },
-                button(NEXT, Glyph::Next, "Next")?,
+                button(PREV, Glyph::Previous, crate::lang::tr("Previous"))?,
+                if playing { button(PLAY, Glyph::Pause, crate::lang::tr("Pause"))? } else { button(PLAY, Glyph::Play, crate::lang::tr("Play"))? },
+                button(NEXT, Glyph::Next, crate::lang::tr("Next"))?,
             ])
         }
     }
@@ -173,8 +173,14 @@ mod imp {
 
     /// Play / Pause icon follows the player (and the taskbar's light / dark theme).
     pub fn set_playing(playing: bool) {
-        let changed = PLAYING.swap(playing, Ordering::Relaxed) != playing;
-        if !changed || !READY.load(Ordering::Relaxed) {
+        if PLAYING.swap(playing, Ordering::Relaxed) != playing {
+            refresh();
+        }
+    }
+
+    /// Buttons drawn again (state, theme or language changed).
+    pub fn refresh() {
+        if !READY.load(Ordering::Relaxed) {
             return;
         }
         let Some(hwnd) = STATE.lock().unwrap().as_ref().map(|(h, _)| HWND(*h as *mut _)) else { return };
@@ -188,7 +194,7 @@ mod imp {
 }
 
 #[cfg(windows)]
-pub use imp::{install, set_playing};
+pub use imp::{install, refresh, set_playing};
 
 #[cfg(not(windows))]
 pub fn install(_: &tauri::WebviewWindow) -> anyhow::Result<()> {
@@ -197,6 +203,9 @@ pub fn install(_: &tauri::WebviewWindow) -> anyhow::Result<()> {
 
 #[cfg(not(windows))]
 pub fn set_playing(_: bool) {}
+
+#[cfg(not(windows))]
+pub fn refresh() {}
 
 #[cfg(test)]
 mod tests {
