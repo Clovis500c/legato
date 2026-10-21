@@ -6,11 +6,17 @@
 //! (`Control`); levels come back the same way.
 
 mod biquad;
+pub mod chain;
 mod control;
+pub mod effects;
 mod meter;
 mod processor;
+pub mod reverb;
+pub mod space;
 
 pub use biquad::Biquad;
+pub use chain::Chain;
+pub use effects::Effects;
 pub use control::{Control, Levels, Live};
 pub use meter::Meter;
 pub use processor::Processor;
