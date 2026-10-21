@@ -19,6 +19,8 @@ it lands (tested, `pnpm check` green, committed). Technical plan, rule changes a
       logic (never real network).
 - [x] User report 2026-10-21 (mid-work): a watch-page song restarted in Cover mode showed its video over the cover. Fixed
       (webview made hidden never started its media; placement asked before it existed was lost).
+- [x] User report 2026-10-21 (later): opening or closing Up next moved the video's slot but not the video (it only
+      recentered on a mode change). The slot now also watches its ancestors' size.
 - [ ] Final report: done / not done / not tested / choices made for the user / every rule changed (old, new, why).
 
 **Phase 1: fixes**

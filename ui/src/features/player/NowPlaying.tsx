@@ -48,7 +48,8 @@ export function VideoSlot({ className = '', style, hidden = false, live = false,
     const el = ref.current!
     const update = () => set(el.getBoundingClientRect())
     const ro = new ResizeObserver(update)
-    ro.observe(el)
+    // Ancestors too: the slot moves without resizing when its column narrows or widens (Up next opened / closed).
+    for (let n: Element | null = el; n && n !== document.body; n = n.parentElement) ro.observe(n)
     window.addEventListener('resize', update)
     // Capture: any scrolling ancestor moves the slot.
     window.addEventListener('scroll', update, true)
