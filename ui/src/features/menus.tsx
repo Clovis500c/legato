@@ -29,6 +29,7 @@ import {
   Plus,
   PlusCircle,
   Prohibit,
+  PuzzlePiece,
   Queue,
   Repeat,
   ShareNetwork,
@@ -46,7 +47,7 @@ import { open, save } from '@tauri-apps/plugin-dialog'
 import { openUrl, revealItemInDir } from '@tauri-apps/plugin-opener'
 import { useSettings } from '../app/settings'
 import { useStore } from '../app/store'
-import { api, playlistKey, type Edit, type LibraryPlaylist, type LibraryTrack, type SearchHit } from '../shared/api'
+import { api, playlistKey, type Edit, type LibraryPlaylist, type PluginInfo, type LibraryTrack, type SearchHit } from '../shared/api'
 import { bigTrackArt } from '../shared/art'
 import { loadFit } from '../shared/artfit'
 import { fileName } from '../shared/format'
@@ -60,6 +61,7 @@ import { PlaylistCover as PlaylistIcon } from './library/PlaylistCover'
 import { primaryArtist } from './library/filter'
 import { isFull, viaLabel, vias } from './player/sources'
 import { bypass, deletePreset, deleteVersion, playVersion, reset, useEditor } from './editor/editor'
+import { loadPlugins, pluginCommands, runCommand } from './plugins/host'
 import { isRemote, nowTrack, remoteTrack, usePlayer } from './player/store'
 import { msg, tr, trn } from '../shared/i18n/i18n'
 
@@ -352,6 +354,31 @@ export function trackMenu(t: LibraryTrack, ctx: { list?: LibraryTrack[]; index?:
     saveCoverItem(t),
     ...pages(t).map((p) => ({ label: tr('Open in {service}', { service: p.label }), icon: <ArrowSquareOut size={16} />, onSelect: () => openUrl(p.url).catch(fail) })),
     t.ids.local && { label: tr('Show in folder'), icon: <FolderOpen size={16} />, onSelect: () => revealItemInDir(t.ids.local!).catch(fail) },
+    ...pluginItems('track', { trackId: t.id, title: t.title, artist: t.artist }),
+  ]
+}
+
+/** Menu items plugins added for this place, after a separator. */
+function pluginItems(where: 'track' | 'playlist' | 'player', context: Record<string, unknown>): MenuEntry[] {
+  const items = pluginCommands(where)
+  if (!items.length) return []
+  return ['-', ...items.map(({ plugin, command }) => ({ label: command.title, icon: <PuzzlePiece size={16} />, onSelect: () => runCommand(plugin, command.id, context) }))]
+}
+
+/** A third-party plugin's card (Add-ons). */
+export function pluginMenu(p: PluginInfo, about: () => void): MenuEntry[] {
+  const name = p.manifest?.name ?? p.id
+  return [
+    { label: p.on ? tr('Turn off') : tr('Turn on'), icon: <Power size={16} />, onSelect: () => void api.pluginSet(p.id, !p.on).then(loadPlugins, fail) },
+    { label: tr('About…'), icon: <Info size={16} />, onSelect: about },
+    { label: tr('Show in folder'), icon: <FolderOpen size={16} />, onSelect: () => revealItemInDir(p.folder).catch(fail) },
+    '-',
+    {
+      label: tr('Uninstall {name}', { name }),
+      icon: <Trash size={16} />,
+      danger: true,
+      onSelect: () => void api.pluginUninstall(p.id).then(() => (loadPlugins(), app().notify(tr('{name} uninstalled', { name }), { kind: 'removed' })), fail),
+    },
   ]
 }
 
@@ -452,6 +479,7 @@ export function playlistMenu(p: LibraryPlaylist): MenuEntry[] {
         if (v.name === 'playlist' && v.id === p.id) go({ name: 'songs' })
       },
     },
+    ...pluginItems('playlist', { playlistId: p.id, name: p.name }),
   ]
 }
 
@@ -489,6 +517,7 @@ export function playerMenu(): MenuEntry[] {
     video && { label: tr('Open on YouTube'), icon: <ArrowSquareOut size={16} />, onSelect: () => openUrl(`https://www.youtube.com/watch?v=${video}&t=${Math.floor(positionMs / 1000)}s`).catch(fail) },
     now.page && { label: tr('Listen on Apple Music'), icon: <ArrowSquareOut size={16} />, onSelect: () => openUrl(now.page!).catch(fail) },
     now.path && { label: tr('Show in folder'), icon: <FolderOpen size={16} />, onSelect: () => revealItemInDir(now.path!).catch(fail) },
+    ...pluginItems('player', { trackId: t?.id ?? null, title: now.title, artist: now.artist }),
   ]
 }
 

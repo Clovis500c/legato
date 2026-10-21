@@ -32,7 +32,9 @@ A fast, private desktop music player for Windows, built with Tauri 2 and Rust.
   any shared folder) or straight over your network with a 6-digit code.
 - **Your language.** English and French, following Windows or picked in Settings.
 - **Customization.** Themes with a built-in editor, layout and player options.
-- **Add-ons.** Optional extras, off by default. First available: Discord Rich Presence.
+- **Add-ons and plugins.** Optional extras, off by default (first: Discord Rich Presence). Plugins made by others
+  install from a folder after you approve what they may do, and run sealed off from the app
+  ([writing one](docs/plugins.md)).
 - **Ad and tracker blocking**, built in.
 
 ## Privacy and playback

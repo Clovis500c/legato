@@ -16,6 +16,7 @@ import { useNowTrack, usePlayer } from '../player/store'
 import { presenceFor } from './presence'
 import { ADDONS, allTags, DISCORD, filterAddons, type Addon, type Author, type Show } from './registry'
 import { setAddon } from './state'
+import { PluginsSection } from '../plugins/PluginsSection'
 import { msg, tr } from '../../shared/i18n/i18n'
 
 const SHOWS: { value: Show; label: string }[] = [
@@ -317,6 +318,8 @@ export function AddonsView() {
               <p className="py-8 text-center text-[13px] text-ink-3">{tr('No add-on matches these filters.')}</p>
             )}
           </section>
+
+          <PluginsSection query={query} />
         </div>
       </div>
       {open && (

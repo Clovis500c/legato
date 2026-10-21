@@ -151,6 +151,44 @@ export interface Effects {
 }
 
 /** crates/core library.rs Edit: effects as JSON (parse with effects.ts cleanEffects). */
+export interface PluginManifest {
+  id: string
+  name: string
+  version: string
+  author: string
+  description: string
+  api: number
+  main: string
+  permissions: string[]
+  homepage?: string
+}
+
+export interface PluginInfo {
+  id: string
+  manifest: PluginManifest | null
+  on: boolean
+  running: boolean
+  granted: string[]
+  error: string | null
+  folder: string
+}
+
+export interface PluginInspect {
+  manifest: PluginManifest
+  installed: string | null
+  newPermissions: string[]
+  files: number
+  size: number
+}
+
+/** A plugin asks the interface for something (permission checked in Rust). */
+export interface PluginCall {
+  plugin: string
+  id: number
+  method: string
+  args: Record<string, unknown>
+}
+
 /** music_core::syncmode::Merged: what another PC's snapshot changed here. */
 export interface Merged {
   playlists: number
@@ -454,6 +492,22 @@ export const api = {
   /** Another PC's changes were merged here: reload. */
   onSync: (cb: (m: Merged) => void) => listen<Merged>('sync', (e) => cb(e.payload)),
   onSyncOffer: (cb: (r: { Ok?: Merged; Err?: string }) => void) => listen<{ Ok?: Merged; Err?: string }>('sync-offer', (e) => cb(e.payload)),
+  /** Third-party plugins (src-tauri plugins.rs, crates/plugins). */
+  plugins: () => invoke<PluginInfo[]>('plugins_list'),
+  /** A folder before installing it: its manifest and the permissions it asks for. */
+  pluginInspect: (folder: string) => invoke<PluginInspect>('plugin_inspect', { folder }),
+  /** Copies and turns on the plugin in `folder`, its permissions approved. Returns its id. */
+  pluginInstall: (folder: string) => invoke<string>('plugin_install', { folder }),
+  pluginSet: (id: string, on: boolean) => invoke<void>('plugin_set', { id, on }),
+  pluginUninstall: (id: string) => invoke<void>('plugin_uninstall', { id }),
+  pluginReply: (plugin: string, id: number, ok: boolean, value?: unknown, error?: string) => invoke<void>('plugin_reply', { plugin, id, ok, value: value ?? null, error: error ?? null }),
+  /** App events for plugins allowed to hear them: 'track', 'playing'. */
+  pluginEvent: (name: 'track' | 'playing', payload: unknown) => invoke<void>('plugin_event', { name, payload }),
+  /** A plugin's menu item ('command') or panel control ('panel') was used. */
+  pluginInput: (plugin: string, name: 'command' | 'panel', payload: unknown) => invoke<void>('plugin_input', { plugin, name, payload }),
+  pluginLog: (id: string) => invoke<string[]>('plugin_log', { id }),
+  onPluginCall: (cb: (c: PluginCall) => void) => listen<PluginCall>('plugin-call', (e) => cb(e.payload)),
+  onPluginState: (cb: (id: string) => void) => listen<string>('plugin-state', (e) => cb(e.payload)),
   /** Live Editor settings for the native engine. */
   playerEffects: (effects: Effects) => invoke<void>('player_effects', { effects }),
   /** What the native engine plays, as heard. */

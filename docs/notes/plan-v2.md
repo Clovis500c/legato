@@ -104,7 +104,7 @@ it lands (tested, `pnpm check` green, committed). Technical plan, rule changes a
       way to sync 2 PCs without a server of ours (nearby or an export file: propose, justify); everything synced
       (connections, settings, imported and non-imported local playlists); secrets never synced in clear (password
       encryption, or account list + sign in again); conflicts handled.
-- [ ] 4.3 Plugin system: real API for local third-party plugins that can change as much as possible and reach as many
+- [x] 4.3 Plugin system: real API for local third-party plugins that can change as much as possible and reach as many
       parts of the app as possible; manifest with declared permissions, user approval at install, isolated execution,
       no direct network or secrets (Rust gateway with permissions), API versioning; docs for plugin authors and an
       example plugin.
