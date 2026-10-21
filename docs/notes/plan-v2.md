@@ -38,7 +38,7 @@ it lands (tested, `pnpm check` green, committed). Technical plan, rule changes a
       only, no stream extraction.
 
 **Phase 2: changes**
-- [ ] Up next: keep songs already played (don't remove them).
+- [x] Up next: keep songs already played (don't remove them).
 - [ ] Optimization: memory, CPU, start time, smoothness of the app and the webview. Measure before / after, numbers in
       the report.
 - [ ] Keyboard shortcuts: custom shortcuts (skip, stop, play…) applied everywhere, including when the app runs in the

@@ -1,28 +1,29 @@
-import { ArrowSquareOut, CaretLeft, CaretRight, Waveform } from '@phosphor-icons/react'
+import { ArrowSquareOut, CaretLeft } from '@phosphor-icons/react'
 import { openUrl } from '@tauri-apps/plugin-opener'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useShallow } from 'zustand/react/shallow'
 import { useSettings } from '../../app/settings'
-import { useStore } from '../../app/store'
 import type { LibraryTrack, Source } from '../../shared/api'
 import { bigTrackArt, trackArt } from '../../shared/art'
-import { formatDuration } from '../../shared/format'
+import { clampRatio } from '../../shared/artbox'
+import type { Settings } from '../../shared/theme/theme'
 import { Button } from '../../shared/ui/Button'
-import { RoundButton, Segmented } from '../../shared/ui/controls'
+import { onMenu } from '../../shared/ui/ContextMenu'
+import { Segmented } from '../../shared/ui/controls'
 import { Cover } from '../../shared/ui/Cover'
 import { SourceIcon } from '../../shared/ui/SourceIcon'
 import { AddToPlaylist } from '../library/AddToPlaylist'
-import { onMenu } from '../../shared/ui/ContextMenu'
-import { playerMenu, trackMenu } from '../menus'
+import { playerMenu } from '../menus'
 import { useAmbient } from './ambient'
 import { useBackdrop } from './immersive'
+import { VolumeControl } from './PlayerBar'
+import { SeekBar, TimeText, usePosition } from './Progress'
+import { viaLabel, type Via } from './sources'
 import { useStill } from './still'
-import { useVideoBox } from './videoBox'
-import { clampRatio } from '../../shared/artbox'
-import { fileFormat, VolumeControl } from './PlayerBar'
-import { viaLabel, vias, type Via } from './sources'
-import { fileTitle, useNowTrack, usePlayer, useVideoSlot } from './store'
-import { SeekBar, TimeText } from './Progress'
+import { useNowTrack, usePlayer, useVideoSlot } from './store'
 import { Transport } from './Transport'
+import { UpNext, useNextCount } from './UpNext'
+import { useVideoBox } from './videoBox'
 
 /** Publishes its rect so the single YouTube iframe sits here. YouTube rules: at least 200×200, nothing on top. */
 export function VideoSlot({ className = '', style, hidden = false, live = false }: { className?: string; style?: React.CSSProperties; hidden?: boolean; live?: boolean }) {
@@ -145,14 +146,28 @@ function Backdrop({ url, dim, motion }: { url?: string; dim: number; motion: boo
   )
 }
 
+/** Settings Now Playing reads. */
+const pick = ({ tuner, tint, immersive, backdropBlur, backdropDim, backdropMotion, stage, upNext, volume }: Settings) => ({ tuner, tint, immersive, backdropBlur, backdropDim, backdropMotion, stage, upNext, volume })
+
+/** Tuner dial on the smooth clock: Now Playing itself doesn't re-render on every position report. */
+function Tuner() {
+  const durationMs = usePlayer((s) => s.durationMs)
+  const seek = usePlayer((s) => s.seek)
+  const pos = usePosition(durationMs ? durationMs / 400 : 1000)
+  return <TunerScale value={pos} max={durationMs ?? 0} onChange={seek} />
+}
+
 export function NowPlaying() {
-  const { now, positionMs, durationMs, seek, setFull, list, index, order, upcoming, playAt } = usePlayer()
-  const { tuner, tint, immersive, backdropBlur, backdropDim, backdropMotion, stage, upNext, volume: volumeMode } = useSettings((s) => s.settings)
+  const now = usePlayer((s) => s.now)
+  const setFull = usePlayer((s) => s.setFull)
+  const { tuner, tint, immersive, backdropBlur, backdropDim, backdropMotion, stage, upNext, volume: volumeMode } = useSettings(
+    useShallow((s) => ({ ...pick(s.settings), theme: s.settings.theme, accent: s.settings.accent, customThemes: s.settings.customThemes })),
+  )
   const update = useSettings((s) => s.update)
-  // Re-rendered by the settings subscription above.
+  // Re-rendered when the theme or accent change (selected above).
   const theme = useSettings.getState().current()
   const track = useNowTrack()
-  const sp = useStore((s) => s.status.spotify.connected)
+  const nextCount = useNextCount()
   const ambient = useAmbient(tint && !immersive && track ? trackArt(track)[0] : undefined, theme)
   // Auto: a still-image upload shows as a cover.
   const still = useStill(now?.via === 'youtube' ? now.youtubeId : undefined)
@@ -169,48 +184,6 @@ export function NowPlaying() {
   if (!now) return null
 
   const video = now.via === 'youtube'
-  // Play order (shuffle aware), after the current track.
-  const at = order.indexOf(index)
-  const next = now.trackId
-    ? order.slice(at + 1).flatMap((i) => (list[i] && vias(list[i], sp).length ? [{ key: `${i}`, title: list[i].title, artist: list[i].artist, art: trackArt(list[i]), duration: formatDuration(list[i].durationMs), onPlay: () => playAt(i), menu: onMenu(() => trackMenu(list[i], { list, index: i, queueIndex: i })) }] : []))
-    : upcoming.map((p) => ({ key: p, title: fileTitle(p), artist: fileFormat(p) ?? '', art: [], duration: '', onPlay: undefined, menu: undefined }))
-
-  const panel = (
-    <aside className="flex min-h-0 flex-col gap-2 rounded-2xl border border-line-soft bg-[color-mix(in_srgb,var(--panel)_55%,transparent)] p-3">
-      <div className="flex items-center gap-2 px-1">
-        <span className="text-[13px] font-semibold">Up next</span>
-        <span className="kicker flex-1">
-          {next.length} track{next.length === 1 ? '' : 's'}
-        </span>
-        <RoundButton label="Hide up next" kind="plain" size="sm" onClick={() => update({ upNext: false })}>
-          <CaretRight size={14} />
-        </RoundButton>
-      </div>
-      <ol className="flex min-h-0 flex-col overflow-y-auto">
-        <li className="flex items-center gap-3 rounded-lg bg-accent-soft px-2 py-2">
-          <Cover title={now.title} art={track && trackArt(track)} size={44} />
-          <span className="min-w-0 flex-1">
-            <span className="block truncate text-[13px] font-semibold text-accent">{now.title}</span>
-            <span className="block truncate text-xs text-ink-2">{now.artist}</span>
-          </span>
-          <Waveform size={14} className="shrink-0 text-accent" />
-        </li>
-        {next.length === 0 && <li className="py-6 text-center text-ink-3">Nothing after this track.</li>}
-        {next.slice(0, 100).map((n) => (
-          <li key={n.key} onContextMenu={n.menu}>
-            <button disabled={!n.onPlay} onClick={n.onPlay} className="flex w-full items-center gap-3 rounded-lg px-2 py-2 text-left enabled:hover:bg-raised">
-              <Cover title={n.title} art={n.art} size={44} />
-              <span className="min-w-0 flex-1">
-                <span className="block truncate text-[13px] font-semibold">{n.title}</span>
-                <span className="block truncate text-xs text-ink-2">{n.artist}</span>
-              </span>
-              {n.duration && <span className="shrink-0 text-xs text-ink-3 tabular-nums">{n.duration}</span>}
-            </button>
-          </li>
-        ))}
-      </ol>
-    </aside>
-  )
 
   return (
     // Below the app's title bar: navigation, window buttons and "Close player" stay reachable.
@@ -218,7 +191,7 @@ export function NowPlaying() {
       {immersive && <Backdrop url={backdrop} dim={backdropDim} motion={backdropMotion} />}
       {!upNext && (
         <Button variant="ghost" className="absolute top-4 right-10 z-10" onClick={() => update({ upNext: true })}>
-          <CaretLeft size={13} /> Up next · {next.length}
+          <CaretLeft size={13} /> Up next · {nextCount}
         </Button>
       )}
 
@@ -247,7 +220,7 @@ export function NowPlaying() {
               {track && <AddToPlaylist trackIds={[track.id]} label={`Add ${track.title} to a playlist`} />}
             </div>
             <div className="flex flex-col gap-1.5">
-              {tuner ? <TunerScale value={positionMs} max={durationMs ?? 0} onChange={seek} /> : <SeekBar />}
+              {tuner ? <Tuner /> : <SeekBar />}
               <TimeText part="both" className="text-[13px] text-ink-2" />
             </div>
             <div className="grid grid-cols-[1fr_auto_1fr] items-center">
@@ -261,7 +234,7 @@ export function NowPlaying() {
           </div>
         </section>
 
-        {upNext && panel}
+        {upNext && <UpNext onHide={() => update({ upNext: false })} />}
       </div>
     </div>
   )
