@@ -23,8 +23,9 @@ export function AdaptiveBar({ className = '' }: { className?: string }) {
       const gain = levels?.gain ?? 0
       const level = Math.min(1, usePlayer.getState().volume * 10 ** (gain / 20))
       fill.current?.style.setProperty('width', `${level * 100}%`)
-      const song = levels && levels.short > -70 ? ` · song at ${Math.round(levels.short)} LUFS` : ''
-      box.current?.setAttribute('title', `Adaptive Sound ${gain < 0 ? '−' : '+'}${Math.abs(gain).toFixed(1)} dB${song}`)
+      const minus = (v: number) => (v < 0 ? '−' : '')
+      const song = levels && levels.short > -70 ? ` · song at ${minus(levels.short)}${Math.abs(Math.round(levels.short))} LUFS` : ''
+      box.current?.setAttribute('title', `Adaptive Sound ${minus(gain) || '+'}${Math.abs(gain).toFixed(1)} dB${song}`)
     }
     paint()
     const offLevels = useLive.subscribe(paint)
