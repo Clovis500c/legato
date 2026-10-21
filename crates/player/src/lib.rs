@@ -4,7 +4,7 @@ mod live;
 pub mod mic;
 mod queue;
 
-pub use music_dsp::{Levels, Live as LiveSettings};
+pub use music_dsp::{Effects, Levels, Live as LiveSettings};
 pub use queue::Queue;
 
 use anyhow::Result;
@@ -92,6 +92,11 @@ impl Player {
     /// Live processing (Adaptive Sound…): applies to what plays now and next.
     pub fn set_live(&self, live: LiveSettings) {
         self.control.set(live);
+    }
+
+    /// Live Editor settings: apply to what plays now and next, from the next block.
+    pub fn set_effects(&self, effects: Effects) {
+        self.control.set_effects(effects);
     }
 
     /// What plays now, as heard (meters, cover animation).
@@ -193,6 +198,7 @@ impl Engine {
         }
         let p = rodio::Player::connect_new(self.device.as_ref().unwrap().mixer());
         p.set_volume(self.volume);
+        self.control.set_position_ms(0);
         self.player = Some(p);
         self.durations.clear();
         self.stops.clear();
@@ -243,7 +249,8 @@ impl Engine {
     fn status(&self) -> Status {
         let path = self.player.as_ref().and(self.queue.current().cloned());
         Status {
-            position_ms: self.player.as_ref().map_or(0, |p| p.get_pos().as_millis() as u64),
+            // Song time from the live chain: rodio counts samples played, wrong once the speed changes.
+            position_ms: if self.player.is_some() { self.control.position_ms() } else { 0 },
             duration_ms: path.as_ref().and(self.durations.front().copied().flatten()),
             paused: self.player.as_ref().is_none_or(|p| p.is_paused()),
             upcoming: if path.is_some() { self.queue.upcoming().iter().take(50).cloned().collect() } else { Vec::new() },

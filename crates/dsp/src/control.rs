@@ -49,6 +49,11 @@ pub struct Control {
     live: Mutex<Live>,
     version: AtomicU64,
     levels: Mutex<Levels>,
+    /// Live Editor settings, same handover as `live`.
+    effects: Mutex<crate::Effects>,
+    effects_version: AtomicU64,
+    /// Where the playing song is, ms of the song itself (not of what played: speed changes count).
+    position_ms: AtomicU64,
 }
 
 impl Control {
@@ -79,6 +84,33 @@ impl Control {
         if let Ok(mut l) = self.levels.try_lock() {
             *l = levels;
         }
+    }
+
+    /// Live Editor settings for what plays (and what follows, until changed).
+    pub fn set_effects(&self, effects: crate::Effects) {
+        *self.effects.lock().unwrap() = effects.clamped();
+        self.effects_version.fetch_add(1, Ordering::Release);
+    }
+
+    pub fn effects(&self) -> crate::Effects {
+        *self.effects.lock().unwrap()
+    }
+
+    /// Audio thread: effects newer than `seen`, if readable without waiting.
+    pub fn newer_effects(&self, seen: u64) -> Option<(u64, crate::Effects)> {
+        let v = self.effects_version.load(Ordering::Acquire);
+        if v == seen {
+            return None;
+        }
+        self.effects.try_lock().ok().map(|e| (v, *e))
+    }
+
+    pub fn set_position_ms(&self, ms: u64) {
+        self.position_ms.store(ms, Ordering::Relaxed);
+    }
+
+    pub fn position_ms(&self) -> u64 {
+        self.position_ms.load(Ordering::Relaxed)
     }
 
     /// Nothing plays: the meters fall to rest.
