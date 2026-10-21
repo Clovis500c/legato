@@ -42,6 +42,8 @@ interface PlayerState {
   fadeIn: boolean
   /** Where the current item started (resume), ms. */
   startAt: number
+  /** Bumped each time an item starts (song, other upload, gapless move): per-song UI state checks it. */
+  playId: number
   /** Restored paused (after an update): the first item loads without playing. */
   hold: boolean
   toggleShuffle: () => void
@@ -168,7 +170,7 @@ async function tryOtherUpload(trackId: number, failed: string) {
   if (next) {
     notify('This video can’t play in apps: playing another upload of the song')
     // Same embed: the frame loads the new id (loadVideoById).
-    return usePlayer.setState((s) => (s.now ? { now: { ...s.now, youtubeId: next }, positionMs: 0, playing: true } : {}))
+    return usePlayer.setState((s) => (s.now ? { now: { ...s.now, youtubeId: next }, playId: s.playId + 1, positionMs: 0, playing: true } : {}))
   }
   notify('This video can’t play in apps and no other upload was found: skipped')
   // Manual step: repeat one would replay the blocked video forever.
@@ -188,6 +190,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
   fade: NO_FADE,
   fadeIn: false,
   startAt: 0,
+  playId: 0,
   hold: false,
   upcoming: [],
   full: false,
@@ -241,7 +244,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     const base: NowPlaying = { title: t.title, artist: t.artist, trackId: t.id, via: how }
     // Preview: 30 s from Apple, no resume point.
     const start = how === 'preview' ? 0 : from
-    set({ index, playing: !hold, hold, positionMs: start, startAt: start, durationMs: t.durationMs, upcoming: [], fadeIn: (auto || get().fade.skip) && get().fade.in > 0 })
+    set({ index, playId: get().playId + 1, playing: !hold, hold, positionMs: start, startAt: start, durationMs: t.durationMs, upcoming: [], fadeIn: (auto || get().fade.skip) && get().fade.in > 0 })
     sent = -1
 
     if (how === 'youtube') {
@@ -311,7 +314,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     send({ type: 'play', paths, start: 0 })
     send({ type: 'volume', value: get().volume })
     // Clearing youtubeId unmounts embed.
-    set({ now: { title: fileTitle(paths[0]), artist: 'Local file', path: paths[0], via: 'local' }, list: [], order: [], index: 0, playing: true, positionMs: 0, durationMs: null, fadeIn: false, startAt: 0 })
+    set({ now: { title: fileTitle(paths[0]), artist: 'Local file', path: paths[0], via: 'local' }, playId: get().playId + 1, list: [], order: [], index: 0, playing: true, positionMs: 0, durationMs: null, fadeIn: false, startAt: 0 })
   },
 
   toggle() {
@@ -425,8 +428,8 @@ export const usePlayer = create<PlayerState>((set, get) => ({
       positionMs: s.positionMs,
       upcoming: now?.trackId ? [] : s.upcoming,
       ...(s.durationMs && { durationMs: s.durationMs }),
-      ...(i > index && { index: i, fadeIn: get().fade.in > 0, now: { title: list[i].title, artist: list[i].artist, trackId: list[i].id, via: 'local', path: s.path! } }),
-      ...(s.path && !now?.trackId && { now: { title: fileTitle(s.path), artist: 'Local file', path: s.path, via: 'local' } }),
+      ...(i > index && { index: i, playId: get().playId + 1, fadeIn: get().fade.in > 0, now: { title: list[i].title, artist: list[i].artist, trackId: list[i].id, via: 'local', path: s.path! } }),
+      ...(s.path && !now?.trackId && { now: { title: fileTitle(s.path), artist: 'Local file', path: s.path, via: 'local' }, ...(s.path !== now?.path && { playId: get().playId + 1 }) }),
     })
     if (s.path) get().applyVolume()
   },

@@ -20,7 +20,7 @@ it lands (tested, `pnpm check` green, committed). Technical plan, rule changes a
 - [ ] Final report: done / not done / not tested / choices made for the user / every rule changed (old, new, why).
 
 **Phase 1: fixes**
-- [ ] Progress bar stuck: after a custom position set with our slider then a song change, the bar stops moving (setting
+- [x] Progress bar stuck: after a custom position set with our slider then a song change, the bar stops moving (setting
       it back to 0 unblocks it). Root cause + a test that reproduces it.
 - [ ] YouTube overlay: must never be visible over the player (shield's YouTube player script).
 - [ ] Sidebar in a small window: a scrollbar shows at the top right of the sidebar in the player (screenshot 3). The

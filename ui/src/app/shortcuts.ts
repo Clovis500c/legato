@@ -44,9 +44,17 @@ export const SHORTCUTS: Shortcut[] = [
 /** Shortcut for this key press, if any. */
 export const shortcutFor = (e: Keys) => SHORTCUTS.find((s) => s.run && s.match(e))
 
-/** Typing, or a control that uses these keys itself (Space on a button, arrows on a slider). */
-function ownsKeys(target: EventTarget | null) {
-  return target instanceof Element && !!target.closest('input, textarea, select, button, a[href], [contenteditable], [role="slider"], [role="button"], [role="menuitem"]')
+// Fields where keys type text. Range inputs and checkboxes are not: they must not swallow the app's shortcuts.
+const TEXT = 'input:not([type=range]):not([type=checkbox]):not([type=radio]):not([type=color]):not([type=button]), textarea, select, [contenteditable]'
+const inText = (target: EventTarget | null) => target instanceof Element && !!target.closest(TEXT)
+
+/** Typing, or a control that uses this key itself (Space on a button, arrows on a slider). */
+export function ownsKeys(target: EventTarget | null, key: string) {
+  if (!(target instanceof Element)) return false
+  if (target.closest(TEXT)) return true
+  // Sliders keep their arrows; Space on them is play / pause.
+  if (target.closest('input[type=range], [role="slider"]')) return key !== ' '
+  return !!target.closest('button, a[href], [role="button"], [role="menuitem"]')
 }
 
 /** Global key handler. Returns cleanup. */
@@ -55,7 +63,7 @@ export function startShortcuts(): () => void {
     if (e.repeat && e.key === ' ') return
     const s = shortcutFor(e)
     // Modifier shortcuts work everywhere but in text fields; plain keys leave focused controls alone.
-    if (!s || (plain(e) ? ownsKeys(e.target) : e.target instanceof Element && !!e.target.closest('input, textarea, [contenteditable]'))) return
+    if (!s || (plain(e) ? ownsKeys(e.target, e.key) : inText(e.target))) return
     e.preventDefault()
     s.run!()
   }
