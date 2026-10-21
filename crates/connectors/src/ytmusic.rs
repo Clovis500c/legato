@@ -202,13 +202,29 @@ fn big_thumb(url: &str) -> String {
     THUMB_SIZE.replace(url, "=w544-h544").into_owned()
 }
 
+/// (video id, playlist item id) of each playlist row: one item id per occurrence, needed to remove it.
+fn item_ids(v: &Value) -> Vec<(String, String)> {
+    all(v, "musicResponsiveListItemRenderer")
+        .into_iter()
+        .filter_map(|row| {
+            let data = row.get("playlistItemData")?;
+            Some((data.get("videoId")?.as_str()?.to_string(), data.get("playlistSetVideoId")?.as_str()?.to_string()))
+        })
+        .collect()
+}
+
 fn rows(v: &Value) -> Vec<Track> {
     all(v, "musicResponsiveListItemRenderer").into_iter().filter_map(row_track).collect()
 }
 
 /// Playlist pages also carry a "Suggestions" shelf: keep the playlist shelf (rows + its continuation) only.
+fn playlist_shelf(page: &Value) -> &Value {
+    all(page, "musicPlaylistShelfRenderer").into_iter().next().unwrap_or(page)
+}
+
+#[cfg(test)]
 fn playlist_rows(page: &Value) -> (Vec<Track>, Option<String>) {
-    let shelf = all(page, "musicPlaylistShelfRenderer").into_iter().next().unwrap_or(page);
+    let shelf = playlist_shelf(page);
     (rows(shelf), continuation(shelf))
 }
 
@@ -298,21 +314,42 @@ impl YouTubeMusic {
         Ok(rows(&self.call("search", json!({ "query": query, "params": SONGS })).await?))
     }
 
-    /// Playlist page + continuations, playlist rows only.
-    async fn browse_rows(&self, browse_id: &str) -> Result<Vec<Track>> {
+    /// Playlist page + continuations: the playlist shelf of the first page (no suggestions), then each continuation.
+    async fn browse_pages(&self, browse_id: &str) -> Result<Vec<Value>> {
         let page = self.call("browse", json!({ "browseId": browse_id })).await?;
-        let (mut out, mut token) = playlist_rows(&page);
+        let shelf = playlist_shelf(&page).clone();
+        let mut token = continuation(&shelf);
+        let mut out = vec![shelf];
         for _ in 0..MAX_PAGES {
             let Some(t) = token else { break };
             let next = self.call("browse", json!({ "continuation": t })).await?;
-            let more = rows(&next);
-            if more.is_empty() {
+            if rows(&next).is_empty() {
                 break;
             }
-            out.extend(more);
             token = continuation(&next);
+            out.push(next);
         }
         Ok(out)
+    }
+
+    /// Playlist page + continuations, playlist rows only.
+    async fn browse_rows(&self, browse_id: &str) -> Result<Vec<Track>> {
+        Ok(self.browse_pages(browse_id).await?.iter().flat_map(rows).collect())
+    }
+
+    /// Every occurrence of these videos out of a playlist the account owns. Removing needs each row's own item id
+    /// ("setVideoId"), read fresh here (the library doesn't keep them). Returns how many rows went.
+    pub async fn remove_videos(&self, playlist_id: &str, video_ids: &[String]) -> Result<usize> {
+        let items: Vec<(String, String)> = self.browse_pages(&format!("VL{playlist_id}")).await?.iter().flat_map(item_ids).filter(|(v, _)| video_ids.contains(v)).collect();
+        if items.is_empty() {
+            return Ok(0);
+        }
+        let actions: Vec<Value> = items.iter().map(|(v, s)| json!({ "action": "ACTION_REMOVE_VIDEO", "removedVideoId": v, "setVideoId": s })).collect();
+        let v = self.call("browse/edit_playlist", json!({ "playlistId": playlist_id, "actions": actions })).await?;
+        match v.get("status").and_then(Value::as_str) {
+            None | Some("STATUS_SUCCEEDED") => Ok(items.len()),
+            Some(status) => bail!(refusal(&v).unwrap_or_else(|| format!("YouTube Music refused to remove the song ({status})"))),
+        }
     }
 
     /// Video ids of a playlist (export resume).
@@ -369,6 +406,14 @@ impl YouTubeMusic {
     pub async fn like(&self, video_ids: &[String]) -> Result<()> {
         for v in video_ids {
             self.call("like/like", json!({ "target": { "videoId": v } })).await?;
+        }
+        Ok(())
+    }
+
+    /// Takes the like back: what "remove from Liked Music" means on YouTube Music.
+    pub async fn unlike(&self, video_ids: &[String]) -> Result<()> {
+        for v in video_ids {
+            self.call("like/removelike", json!({ "target": { "videoId": v } })).await?;
         }
         Ok(())
     }
@@ -596,6 +641,45 @@ mod tests {
         let yt = YouTubeMusic::with_api(&s.url(), COOKIE).unwrap().as_account(&acct);
         assert_eq!(yt.playlist_videos("PL1").await.unwrap(), ["v1", "v2"]);
         first.assert_async().await;
+    }
+
+    #[tokio::test]
+    async fn removes_every_occurrence_by_item_id() {
+        let mut s = Server::new_async().await;
+        let item = |v: &str, set: &str| {
+            let mut r = row(v, v, vec![run("X", None)], None);
+            r["musicResponsiveListItemRenderer"]["playlistItemData"]["playlistSetVideoId"] = json!(set);
+            r
+        };
+        s.mock("POST", "/browse")
+            .match_query(Matcher::Any)
+            .match_body(Matcher::PartialJson(json!({ "browseId": "VLPL1" })))
+            .with_body(json!({ "contents": [{ "musicPlaylistShelfRenderer": { "contents": [item("v1", "s1"), item("v2", "s2"), item("v1", "s3")] } }] }).to_string())
+            .create_async()
+            .await;
+        let edit = s
+            .mock("POST", "/browse/edit_playlist")
+            .match_query(Matcher::Any)
+            .match_body(Matcher::PartialJson(json!({ "playlistId": "PL1", "actions": [{ "action": "ACTION_REMOVE_VIDEO", "removedVideoId": "v1", "setVideoId": "s1" }, { "action": "ACTION_REMOVE_VIDEO", "removedVideoId": "v1", "setVideoId": "s3" }] })))
+            .with_body(json!({ "status": "STATUS_SUCCEEDED" }).to_string())
+            .create_async()
+            .await;
+        let yt = YouTubeMusic::with_api(&s.url(), COOKIE).unwrap();
+        assert_eq!(yt.remove_videos("PL1", &["v1".into()]).await.unwrap(), 2);
+        edit.assert_async().await;
+        // Not there: nothing sent.
+        assert_eq!(yt.remove_videos("PL1", &["v9".into()]).await.unwrap(), 0);
+    }
+
+    #[tokio::test]
+    async fn remove_reports_refusals() {
+        let mut s = Server::new_async().await;
+        let mut r = row("v1", "A", vec![run("X", None)], None);
+        r["musicResponsiveListItemRenderer"]["playlistItemData"]["playlistSetVideoId"] = json!("s1");
+        s.mock("POST", "/browse").match_query(Matcher::Any).with_body(json!({ "contents": [r] }).to_string()).create_async().await;
+        s.mock("POST", "/browse/edit_playlist").match_query(Matcher::Any).with_body(json!({ "status": "STATUS_FAILED" }).to_string()).create_async().await;
+        let e = YouTubeMusic::with_api(&s.url(), COOKIE).unwrap().remove_videos("PL1", &["v1".into()]).await.unwrap_err().to_string();
+        assert!(e.contains("refused to remove"), "{e}");
     }
 
     #[test]

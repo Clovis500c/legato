@@ -99,6 +99,8 @@ export type PlaylistEdit =
   | { type: 'delete'; id: number }
   | { type: 'add'; id: number; trackIds: number[] }
   | { type: 'remove'; id: number; position: number }
+  /** Every occurrence of a song. */
+  | { type: 'removeTrack'; id: number; trackId: number }
   | { type: 'move'; id: number; from: number; to: number }
   | { type: 'duplicate'; id: number; name: string }
   /** Imported playlist: which end new songs land on. null = learned from syncs. */
@@ -259,6 +261,10 @@ export const api = {
   playlistTracks: (id: number) => invoke<LibraryTrack[]>('playlist_tracks', { id }),
   /** New playlist id for create / duplicate. */
   editPlaylist: (edit: PlaylistEdit) => invoke<number | null>('edit_playlist', { edit }),
+  /** Every occurrence out of a playlist: custom here, YouTube Music on the account (owner only; Liked = unlike). */
+  removeFromPlaylist: (id: number, trackId: number) => invoke<void>('remove_from_playlist', { id, trackId }),
+  /** Out of the library and every playlist here; syncs and folder scans leave it out. */
+  removeFromLibrary: (trackId: number) => invoke<void>('remove_from_library', { trackId }),
   /** Pasted YouTube link → library. Returns "Artist – Title". */
   addLink: (url: string) => invoke<string>('add_link', { url }),
   searchCatalogs: (query: string, country: string) => invoke<SearchResults>('search_catalogs', { query, country }),

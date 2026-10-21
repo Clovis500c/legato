@@ -115,6 +115,19 @@ fn migrate_v5(lib: &Library) -> Result<()> {
     Ok(())
 }
 
+/// v6: songs removed from the library by the user. A sync or a folder rescan must not bring them back; adding one again
+/// by hand (search, link) clears its mark.
+const SCHEMA_V6: &str = "
+BEGIN;
+CREATE TABLE IF NOT EXISTS removed (
+  source TEXT NOT NULL,
+  source_id TEXT NOT NULL,
+  PRIMARY KEY (source, source_id)
+);
+PRAGMA user_version = 6;
+COMMIT;
+";
+
 /// v3: cover art per track. Bare YouTube videos get their frame now (no network); syncs and lookups bring real covers later.
 const SCHEMA_V3: &str = "
 ALTER TABLE tracks ADD COLUMN art TEXT;
@@ -156,6 +169,8 @@ pub enum PlaylistEdit {
     Delete { id: i64 },
     Add { id: i64, track_ids: Vec<i64> },
     Remove { id: i64, position: usize },
+    /// Every occurrence of a song (right-click › Remove from).
+    RemoveTrack { id: i64, track_id: i64 },
     Move { id: i64, from: usize, to: usize },
     Duplicate { id: i64, name: String },
     /// Imported playlist: which end new songs land on ("date added" sorts). None = automatic (detected by syncs).
@@ -214,6 +229,9 @@ impl Library {
         let lib = Self { db, versions: std::sync::Arc::new(crate::cache::Versions::default()) };
         if lib.db.query_row("PRAGMA user_version", [], |r| r.get::<_, i64>(0))? < 5 {
             migrate_v5(&lib)?;
+        }
+        if lib.db.query_row("PRAGMA user_version", [], |r| r.get::<_, i64>(0))? < 6 {
+            lib.db.execute_batch(SCHEMA_V6)?;
         }
         let v = lib.versions.clone();
         lib.db.update_hook(Some(move |_: rusqlite::hooks::Action, _: &str, table: &str, _: i64| v.touch(table)))?;
@@ -311,6 +329,9 @@ impl Library {
                 }
             }
             self.db.execute("DELETE FROM playlist_tracks WHERE playlist_id = ?1", [id])?;
+            // Removed from the library by the user: stays out.
+            let kept: Vec<Track> = tracks.iter().filter(|t| !self.is_removed(t).unwrap_or(false)).cloned().collect();
+            let tracks = kept.as_slice();
             // New rows created oldest first: "date added" holds for newest-first lists too.
             let newest = self.order_of(id)?.0;
             let oldest_first: Vec<&Track> = if newest { tracks.iter().rev().collect() } else { tracks.iter().collect() };
@@ -406,8 +427,9 @@ impl Library {
     /// Local files mirror a fresh scan: upsert all (links to known tracks), drop vanished paths and orphan rows.
     pub fn replace_local(&self, tracks: &[Track]) -> Result<usize> {
         self.tx(|| {
+            let tracks: Vec<&Track> = tracks.iter().filter(|t| !self.is_removed(t).unwrap_or(false)).collect();
             let keep: BTreeSet<&str> = tracks.iter().filter_map(|t| t.ids.get(&Source::Local).map(String::as_str)).collect();
-            for t in tracks {
+            for t in &tracks {
                 self.upsert_track(t)?;
             }
             let old: Vec<String> = {
@@ -452,6 +474,11 @@ impl Library {
                     })?;
                     None
                 }
+                PlaylistEdit::RemoveTrack { id, track_id } => {
+                    self.ensure_custom(id)?;
+                    self.rewrite(id, |ids| ids.retain(|t| *t != track_id))?;
+                    None
+                }
                 PlaylistEdit::Move { id, from, to } => {
                     self.ensure_custom(id)?;
                     self.rewrite(id, |ids| {
@@ -478,6 +505,52 @@ impl Library {
                 }
             })
         })
+    }
+
+    /// A track's ids on one service (a song can have several uploads on YouTube).
+    pub fn source_ids(&self, track_id: i64, source: Source) -> Result<Vec<String>> {
+        let mut stmt = self.db.prepare_cached("SELECT source_id FROM track_ids WHERE track_id = ?1 AND source = ?2")?;
+        Ok(stmt.query_map(params![track_id, source.as_str()], |r| r.get(0))?.collect::<rusqlite::Result<_>>()?)
+    }
+
+    /// Imported playlist mirror after the service dropped a song (custom ones: `edit_playlist`).
+    pub fn remove_from_imported(&self, id: i64, track_id: i64) -> Result<()> {
+        self.tx(|| self.rewrite(id, |ids| ids.retain(|t| *t != track_id)))
+    }
+
+    /// Out of the library: out of every playlist here (custom ones, and imported mirrors: the services keep their own
+    /// copies), history and marks gone, and remembered as removed so syncs and folder rescans leave it out.
+    /// Files on disk are never touched.
+    pub fn remove_track(&self, track_id: i64) -> Result<()> {
+        self.tx(|| {
+            self.db.execute("INSERT OR IGNORE INTO removed (source, source_id) SELECT source, source_id FROM track_ids WHERE track_id = ?1", [track_id])?;
+            let lists: Vec<i64> = self.db.prepare("SELECT DISTINCT playlist_id FROM playlist_tracks WHERE track_id = ?1")?.query_map([track_id], |r| r.get(0))?.collect::<rusqlite::Result<_>>()?;
+            for id in lists {
+                self.rewrite(id, |ids| ids.retain(|t| *t != track_id))?;
+            }
+            self.db.execute("DELETE FROM tracks WHERE id = ?1", [track_id])?;
+            Ok(())
+        })
+    }
+
+    /// Removed by the user earlier (any of its ids).
+    fn is_removed(&self, t: &Track) -> Result<bool> {
+        let mut stmt = self.db.prepare_cached("SELECT 1 FROM removed WHERE source = ?1 AND source_id = ?2")?;
+        for (s, id) in &t.ids {
+            if stmt.exists(params![s.as_str(), id])? {
+                return Ok(true);
+            }
+        }
+        Ok(false)
+    }
+
+    /// Added again by hand (search, link): the removed mark goes.
+    pub fn unremove(&self, t: &Track) -> Result<()> {
+        let mut stmt = self.db.prepare_cached("DELETE FROM removed WHERE source = ?1 AND source_id = ?2")?;
+        for (s, id) in &t.ids {
+            stmt.execute(params![s.as_str(), id])?;
+        }
+        Ok(())
     }
 
     /// Every playlist's track ids in playlist order (covers picked client-side from the library rows).
@@ -744,6 +817,44 @@ mod tests {
         // Automatic again: next sync decides.
         lib.edit_playlist(PlaylistEdit::SetOrder { id: pid, newest_first: None })?;
         assert!(lib.playlists()?[0].newest_first);
+        Ok(())
+    }
+
+    #[test]
+    fn removed_songs_stay_out_of_syncs_until_added_again() -> Result<()> {
+        let lib = Library::in_memory()?;
+        let pid = lib.save_playlist(Source::Youtube, "PL1", "Mix", &[song(1), song(2)])?;
+        let custom = lib.edit_playlist(PlaylistEdit::Create { name: "Mine".into() })?.unwrap();
+        let gone = lib.playlist_tracks(pid)?.into_iter().find(|t| t.track.title == "Song 1").unwrap().id;
+        lib.edit_playlist(PlaylistEdit::Add { id: custom, track_ids: vec![gone, gone] })?;
+        lib.remove_track(gone)?;
+        assert!(lib.tracks()?.iter().all(|t| t.id != gone));
+        assert!(lib.playlist_tracks(custom)?.is_empty());
+        // Next sync: still in the service's playlist, still out of the app.
+        lib.save_playlist(Source::Youtube, "PL1", "Mix", &[song(1), song(2)])?;
+        assert_eq!(lib.playlist_tracks(pid)?.iter().map(|t| t.track.title.as_str()).collect::<Vec<_>>(), ["Song 2"]);
+        // Added again by hand: back on the next sync.
+        lib.unremove(&song(1))?;
+        lib.save_playlist(Source::Youtube, "PL1", "Mix", &[song(1), song(2)])?;
+        assert_eq!(lib.playlist_tracks(pid)?.len(), 2);
+        Ok(())
+    }
+
+    #[test]
+    fn remove_track_takes_every_occurrence() -> Result<()> {
+        let lib = Library::in_memory()?;
+        let a = lib.upsert_track(&song(1))?;
+        let b = lib.upsert_track(&song(2))?;
+        let id = lib.edit_playlist(PlaylistEdit::Create { name: "Mine".into() })?.unwrap();
+        lib.edit_playlist(PlaylistEdit::Add { id, track_ids: vec![a, b, a] })?;
+        lib.edit_playlist(PlaylistEdit::RemoveTrack { id, track_id: a })?;
+        assert_eq!(lib.playlist_orders()?[&id], vec![b]);
+        // Imported mirror: through its own call, once the service dropped it.
+        let pid = lib.save_playlist(Source::Youtube, "PL1", "Mix", &[song(1), song(2), song(1)])?;
+        assert!(lib.edit_playlist(PlaylistEdit::RemoveTrack { id: pid, track_id: a }).is_err());
+        lib.remove_from_imported(pid, a)?;
+        assert_eq!(lib.playlist_orders()?[&pid], vec![b]);
+        assert_eq!(lib.source_ids(a, Source::Youtube)?, ["vid1"]);
         Ok(())
     }
 

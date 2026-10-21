@@ -52,7 +52,7 @@ it lands (tested, `pnpm check` green, committed). Technical plan, rule changes a
 - [x] Window top bar follows the player's background instead of staying grey.
 - [x] Click on the cover or the video: pause / play, with our own handling (not YouTube's).
 - [x] Top bar: remove the sync icon and the back / forward icons at the top left.
-- [ ] Right-click on a song of a playlist or of the library: remove it from the playlists that hold it, or from the
+- [x] Right-click on a song of a playlist or of the library: remove it from the playlists that hold it, or from the
       library (`features/menus.tsx`).
 - [ ] Music filter on YouTube import: leave out videos that aren't music, carefully (some real songs aren't tagged as
       music: when in doubt, keep).

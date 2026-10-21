@@ -31,6 +31,21 @@ export async function addToPlaylist(id: number, trackIds: number[], force = fals
   app().notify(`Added ${songs(fresh)} to ${name}${skipped ? ` · ${skipped} already there` : ''}`, { action: { label: 'Open', run: () => app().go({ name: 'playlist', id }) } })
 }
 
+/** Every occurrence of a song out of one of your playlists; Undo puts each back where it was. */
+export async function removeTrackFromPlaylist(id: number, trackId: number) {
+  const positions = (app().orders[id] ?? []).flatMap((t, i) => (t === trackId ? [i] : []))
+  if (!(await edit({ type: 'removeTrack', id, trackId }))) return
+  const undo = async () => {
+    // Ascending: each one lands where it was.
+    for (const pos of positions) {
+      if (!(await edit({ type: 'add', id, trackIds: [trackId] }))) return
+      const last = (app().orders[id]?.length ?? 1) - 1
+      if (last !== pos) await edit({ type: 'move', id, from: last, to: pos })
+    }
+  }
+  app().notify(`Removed ${songs([trackId])} from ${nameOf(id)}`, { kind: 'removed', action: { label: 'Undo', run: () => void undo() } })
+}
+
 /** Remove the song at `position`; Undo puts it back in the same place. */
 export async function removeFromPlaylist(id: number, position: number) {
   const trackId = app().orders[id]?.[position]

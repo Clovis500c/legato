@@ -270,7 +270,12 @@ async fn add_link(state: State<'_, AppState>, url: String) -> CmdResult<String> 
         return Err("Link too long".into());
     }
     let t = music_connectors::youtube::track_from_link(url.trim(), music_connectors::youtube::OEMBED).await.map_err(err)?;
-    state.lib.lock().unwrap().upsert_track(&t).map_err(err)?;
+    {
+        // Added by hand: a song removed earlier comes back.
+        let lib = state.lib.lock().unwrap();
+        lib.unremove(&t).map_err(err)?;
+        lib.upsert_track(&t).map_err(err)?;
+    }
     Ok(format!("{} – {}", t.artist, t.title))
 }
 
@@ -400,7 +405,10 @@ async fn add_track(state: State<'_, AppState>, track: Track) -> CmdResult<i64> {
     }
     let track = Track { art: track.art.filter(|a| a.len() <= 500 && a.starts_with("https://")), ..track };
     let track = with_youtube(&state, track).await;
-    state.lib.lock().unwrap().upsert_track(&track).map_err(err)
+    // Added by hand: a song removed earlier comes back.
+    let lib = state.lib.lock().unwrap();
+    lib.unremove(&track).map_err(err)?;
+    lib.upsert_track(&track).map_err(err)
 }
 
 /// Apple tracks with no real cover: one batched lookup. Returns tracks given a cover.
@@ -759,6 +767,59 @@ struct AddReport {
     no_youtube: usize,
     /// YouTube's reason for the ones it refused, when others went in.
     refused: Option<String>,
+}
+
+/// Right-click › Remove from a playlist, every occurrence. Custom: here. YouTube Music: on the account first (the owner
+/// account accepts, others refuse; Liked Music = take the like back), then the mirror. Spotify imports are read-only.
+#[tauri::command]
+async fn remove_from_playlist(state: State<'_, AppState>, id: i64, track_id: i64) -> CmdResult<()> {
+    let (playlist, videos) = {
+        let lib = state.lib.lock().unwrap();
+        let p = lib.playlists().map_err(err)?.into_iter().find(|p| p.id == id).ok_or("Playlist not found")?;
+        if p.custom {
+            lib.edit_playlist(PlaylistEdit::RemoveTrack { id, track_id }).map_err(err)?;
+            return Ok(());
+        }
+        (p, lib.source_ids(track_id, Source::Youtube).map_err(err)?)
+    };
+    if playlist.source != Source::Youtube {
+        return Err("Imported Spotify playlists are read-only here: change them in Spotify.".into());
+    }
+    let accounts = state.ytm_all();
+    if accounts.is_empty() {
+        return Err("Sign in to YouTube Music first (Settings › Accounts)".into());
+    }
+    if let Some(key) = playlist.source_id.strip_prefix("LM") {
+        let key = key.strip_prefix('~').unwrap_or("0");
+        let yt = accounts.into_iter().find(|y| y.account_key() == key).ok_or("That Google account isn't synced any more")?;
+        yt.unlike(&videos).await.map_err(err)?;
+    } else {
+        // Playlist id carries no account: try each, the owner takes it.
+        let remote = playlist.source_id.split('~').next().unwrap_or(&playlist.source_id).to_string();
+        let mut last = None;
+        let mut done = false;
+        for yt in accounts {
+            match yt.remove_videos(&remote, &videos).await {
+                Ok(_) => {
+                    done = true;
+                    break;
+                }
+                Err(e) => last = Some(err(e)),
+            }
+        }
+        if !done {
+            let why = last.unwrap_or_else(|| "YouTube Music refused".into());
+            return Err(if why.starts_with("YouTube Music: ") { why } else { format!("{why}. Only playlists you own on YouTube Music can be changed.") });
+        }
+    }
+    state.lib.lock().unwrap().remove_from_imported(id, track_id).map_err(err)
+}
+
+/// Right-click › Remove from library: out of every playlist here and kept out of syncs and folder scans (the services'
+/// own playlists and the files on disk stay as they are).
+#[tauri::command]
+fn remove_from_library(state: State<'_, AppState>, track_id: i64) -> CmdResult<()> {
+    state.lib.lock().unwrap().remove_track(track_id).map_err(err)
 }
 
 /// Add to an imported YouTube Music playlist: on YouTube first (owner account accepts, others refuse), then the mirror.
@@ -1305,7 +1366,7 @@ pub fn run() {
             update::spawn(app.handle().clone());
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, add_track, backfill_art, find_versions, play_preview, share_playlist, share_preview, share_read_image, share_import, nearby_send, nearby_status, nearby_stop, nearby_receive, record_play, mixes, set_track_pref, clear_history, export_youtube, spotify_player, spotify_playback, ytm_sign_in, ytm_sign_out, spotify_web_open, spotify_web_status, import_spotify_link, ytm_accounts, set_ytm_accounts, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, system_accent, restart_app, autostart, set_autostart, media_update, load_session, save_session, add_to_youtube, playlist_orders, save_cover, export_cover, alternative_videos, play_stats, cache_stats, open_licenses, update_status, update_check, update_install, ytm_home, ytm_list, discord_presence, discord_off, discord_status, ytwatch_open, ytwatch_place, ytwatch_cmd, ytwatch_close])
+        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, add_track, backfill_art, find_versions, play_preview, share_playlist, share_preview, share_read_image, share_import, nearby_send, nearby_status, nearby_stop, nearby_receive, record_play, mixes, set_track_pref, clear_history, export_youtube, spotify_player, spotify_playback, ytm_sign_in, ytm_sign_out, spotify_web_open, spotify_web_status, import_spotify_link, ytm_accounts, set_ytm_accounts, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, system_accent, restart_app, autostart, set_autostart, media_update, load_session, save_session, add_to_youtube, playlist_orders, save_cover, export_cover, alternative_videos, play_stats, cache_stats, open_licenses, update_status, update_check, update_install, ytm_home, ytm_list, discord_presence, discord_off, discord_status, remove_from_playlist, remove_from_library, ytwatch_open, ytwatch_place, ytwatch_cmd, ytwatch_close])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

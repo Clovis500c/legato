@@ -54,7 +54,7 @@ import type { MenuEntry } from '../shared/ui/ContextMenu'
 import { SourceIcon } from '../shared/ui/SourceIcon'
 import type { Addon } from './addons/registry'
 import { isOn, setAddon } from './addons/state'
-import { addToPlaylist, removeFromPlaylist, songs } from './library/edits'
+import { addToPlaylist, removeFromPlaylist, removeTrackFromPlaylist, songs } from './library/edits'
 import { PlaylistCover as PlaylistIcon } from './library/PlaylistCover'
 import { primaryArtist } from './library/filter'
 import { isFull, viaLabel, vias } from './player/sources'
@@ -225,7 +225,6 @@ function playVia(t: LibraryTrack, list: LibraryTrack[], index: number): MenuEntr
   return ways.length > 1 && { label: 'Play via', icon: <SpeakerHigh size={16} />, items: ways.map((v) => ({ label: viaLabel[v], onSelect: () => player().playTracks(list, index, v) })) }
 }
 
-/** ctx.list / index = where it sits (play from there). playlistId + position = custom playlist row. queueIndex = row of the Up next panel. */
 /** Recommendation → library (then it can go in playlists). */
 const addToLibraryItem = (t: LibraryTrack): MenuEntry => ({
   label: 'Add to library',
@@ -253,6 +252,54 @@ function remoteMenu(t: LibraryTrack, list: LibraryTrack[], index: number): MenuE
   ]
 }
 
+/**
+ * "Remove from ›": every playlist holding the song (yours here, YouTube Music ones on the account, Liked Music = the
+ * like goes; Spotify imports are read-only), then the whole library.
+ */
+function removeFrom(t: LibraryTrack): MenuEntry {
+  const { playlists, orders, status } = app()
+  const holding = playlists.filter((p) => orders[p.id]?.includes(t.id))
+  const fromYoutube = async (p: LibraryPlaylist) => {
+    try {
+      await api.removeFromPlaylist(p.id, t.id)
+      await app().refresh()
+      const undo = () => void api.addToYoutube(p.id, [t.id]).then(() => app().refresh()).catch(fail)
+      app().notify(`Removed ${songs([t.id])} from ${p.name} on YouTube Music`, { kind: 'removed', action: { label: 'Undo', run: undo } })
+    } catch (e) {
+      fail(e)
+    }
+  }
+  const fromLibrary = async () => {
+    const ok = confirm(`Remove “${t.title}” from your library?\n\nIt also leaves every playlist in Music App. Your YouTube Music and Spotify playlists keep it, and syncs won’t bring it back here. Files on disk stay where they are.`)
+    if (!ok) return
+    try {
+      await api.removeFromLibrary(t.id)
+      await app().refresh()
+      app().notify(`Removed “${t.title}” from your library`, { kind: 'removed' })
+    } catch (e) {
+      fail(e)
+    }
+  }
+  return {
+    label: 'Remove from',
+    icon: <MinusCircle size={16} />,
+    items: [
+      ...holding.map((p) => {
+        const youtube = !p.custom && p.source === 'youtube'
+        return {
+          label: p.custom || youtube ? p.name : `${p.name} (read-only)`,
+          icon: <PlaylistIcon p={p} size={16} />,
+          disabled: !p.custom && (!youtube || !status.youtube.connected),
+          onSelect: () => void (p.custom ? removeTrackFromPlaylist(p.id, t.id) : fromYoutube(p)),
+        }
+      }),
+      holding.length > 0 && '-',
+      { label: 'Library…', icon: <Trash size={16} />, danger: true, onSelect: () => void fromLibrary() },
+    ],
+  }
+}
+
+/** ctx.list / index = where it sits (play from there). playlistId + position = custom playlist row. queueIndex = row of the Up next panel. */
 export function trackMenu(t: LibraryTrack, ctx: { list?: LibraryTrack[]; index?: number; playlistId?: number; position?: number; queueIndex?: number } = {}): MenuEntry[] {
   const list = ctx.list ?? [t]
   const index = ctx.index ?? 0
@@ -268,6 +315,7 @@ export function trackMenu(t: LibraryTrack, ctx: { list?: LibraryTrack[]; index?:
     '-',
     addTo(() => [t]),
     ctx.playlistId !== undefined && { label: 'Remove from this playlist', icon: <MinusCircle size={16} />, onSelect: () => void removeFromPlaylist(ctx.playlistId!, ctx.position!) },
+    removeFrom(t),
     '-',
     t.album && { label: 'Go to album', icon: <Disc size={16} />, onSelect: () => go({ name: 'album', album: t.album!, artist: primaryArtist(t.artist) }) },
     { label: 'Go to artist', icon: <MicrophoneStage size={16} />, onSelect: () => go({ name: 'artist', artist: primaryArtist(t.artist) }) },

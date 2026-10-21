@@ -113,9 +113,18 @@ export const useStore = create<State>((set, get) => {
     }
   }
 
+  // Latest playlist page asked: a slow answer for the previous one must not land on this one.
+  let shown = 0
+  function loadPlaylist(id: number) {
+    const mine = ++shown
+    api.playlistTracks(id).then((playlistTracks) => mine === shown && get().view.name === 'playlist' && set({ playlistTracks }), () => {})
+  }
+
   function show(view: View) {
+    // Another playlist: its rows, not the last one's, while they load.
+    if (view.name === 'playlist' && (get().view.name !== 'playlist' || (get().view as { id: number }).id !== view.id)) set({ playlistTracks: [] })
     set({ view })
-    if (view.name === 'playlist') api.playlistTracks(view.id).then((playlistTracks) => set({ playlistTracks }))
+    if (view.name === 'playlist') loadPlaylist(view.id)
   }
 
   return {
@@ -165,6 +174,9 @@ export const useStore = create<State>((set, get) => {
     async refresh() {
       const [status, lib, orders, stats] = await Promise.all([api.sourcesStatus(), api.library(), api.playlistOrders().catch(() => ({})), api.playStats().catch(() => ({}))])
       set({ status, ...lib, orders, stats })
+      // The open playlist follows (sync, Find versions, add to YouTube, removals).
+      const v = get().view
+      if (v.name === 'playlist') loadPlaylist(v.id)
     },
 
     async sync() {
