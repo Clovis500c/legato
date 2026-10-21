@@ -104,6 +104,7 @@ impl Chain {
         let echo_len = ((e.echo.time_ms / 1000.0 * self.rate) as usize).clamp(1, self.echo.len() - 1);
         self.reverb.set_predelay(e.reverb.predelay_ms);
         let (fb, damp) = (reverb::feedback(e.reverb.size), reverb::damp(e.reverb.damping));
+        let (dry, wet) = reverb::levels(e.reverb.mix, e.reverb.size);
         // Constant-power balance.
         let pan = (e.balance + 1.0) * std::f32::consts::FRAC_PI_4;
         let (bal_l, bal_r) = (pan.cos() * std::f32::consts::SQRT_2, pan.sin() * std::f32::consts::SQRT_2);
@@ -150,9 +151,8 @@ impl Chain {
             if e.reverb.mix > 0.0 {
                 let [wl, wr] = self.reverb.run(l, r, fb, damp);
                 // Equal-ish power: the dry side dips as the wet one rises.
-                let dry = 1.0 - 0.5 * e.reverb.mix;
-                l = l * dry + wl * e.reverb.mix * 3.0;
-                r = r * dry + wr * e.reverb.mix * 3.0;
+                l = l * dry + wl * wet;
+                r = r * dry + wr * wet;
             }
             if e.space.on {
                 let [sl, sr] = self.space.run(l, r, &e.space);
@@ -254,5 +254,28 @@ mod tests {
         c.process(&mut v, 2, &Effects { reverb: ReverbSettings { mix: 0.5, ..ReverbSettings::default() }, ..Effects::default() });
         // Still ringing half a second after the tone stopped.
         assert!(rms(&v[2 * 34_000..2 * 38_000]) > 0.001);
+    }
+
+    #[test]
+    fn reverb_and_echo_keep_the_level() {
+        let mut seed = 1u32;
+        let noise: Vec<f32> = (0..48_000 * 4).flat_map(|_| {
+            seed = seed.wrapping_mul(1_664_525).wrapping_add(1_013_904_223);
+            let x = (seed >> 8) as f32 / (1u32 << 24) as f32 * 0.4 - 0.2;
+            [x, x]
+        }).collect();
+        let change = |e: Effects| {
+            let mut v = noise.clone();
+            Chain::new(48_000).process(&mut v, 2, &e);
+            20.0 * (rms(&v[2 * 96_000..]) / rms(&noise[2 * 96_000..])).log10()
+        };
+        for mix in [0.2, 0.35, 0.5, 1.0] {
+            for size in [0.0, 0.5, 0.85, 1.0] {
+                let db = change(Effects { reverb: ReverbSettings { mix, size, ..ReverbSettings::default() }, ..Effects::default() });
+                assert!(db.abs() < 1.0, "reverb mix {mix} size {size}: {db:+.1} dB");
+            }
+        }
+        let db = change(Effects { echo: Echo { mix: 0.6, time_ms: 300.0, feedback: 0.6 }, ..Effects::default() });
+        assert!(db < 2.5, "echo: {db:+.1} dB");
     }
 }

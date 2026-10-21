@@ -35,6 +35,8 @@ pub struct Processor {
     fresh: bool,
     /// Limiter gain now, 0..1.
     limit: f32,
+    /// Live Editor effects run before: they may push peaks over, limiter always on.
+    edited: bool,
     release: f32,
     since_report: usize,
     report_every: usize,
@@ -53,6 +55,7 @@ impl Processor {
             glide_start: 1.0 - (-1.0 / (GLIDE_START_S * r)).exp(),
             fresh: true,
             limit: 1.0,
+            edited: false,
             release: 1.0 - (-1.0 / (RELEASE_S * r)).exp(),
             since_report: 0,
             report_every: (REPORT_S * r) as usize,
@@ -75,6 +78,11 @@ impl Processor {
         (self.live.target_lufs - self.meter.short_lufs()).clamp(MAX_CUT_DB, MAX_BOOST_DB)
     }
 
+    /// Effects before this stage (Live Editor): a bass boost can clip with no gain from here.
+    pub fn set_edited(&mut self, edited: bool) {
+        self.edited = edited;
+    }
+
     /// Processes `block` (whole interleaved frames) in place.
     pub fn process(&mut self, block: &mut [f32], control: &Control) {
         if let Some((v, live)) = control.newer(self.seen) {
@@ -90,8 +98,8 @@ impl Processor {
             self.gain_db += (self.wanted_db() - self.gain_db) * glide;
             let g = db_to_gain(self.gain_db);
             let peak = frame.iter().fold(0f32, |m, x| m.max((x * g).abs()));
-            // Limiter, only while boosting (a cut can't clip; untouched otherwise): down at once, back up slowly.
-            let need = if g > 1.0 && peak > CEILING { CEILING / peak } else { 1.0 };
+            // Limiter, only while boosting or edited (a cut can't clip; untouched otherwise): down at once, back up slowly.
+            let need = if (g > 1.0 || self.edited) && peak > CEILING { CEILING / peak } else { 1.0 };
             self.limit = if need < self.limit { need } else { self.limit + (1.0 - self.limit) * self.release };
             let total = g * self.limit;
             frame.iter_mut().for_each(|x| *x *= total);
@@ -136,6 +144,16 @@ mod tests {
         p.process(&mut out, &c);
         assert_eq!(out, src);
         assert!(c.levels().momentary > -10.0);
+    }
+
+    #[test]
+    fn edited_songs_never_clip() {
+        let c = Control::default();
+        let mut p = Processor::new(48_000, 2);
+        p.set_edited(true);
+        let mut out = tone(1.6, 1.0, 48_000);
+        p.process(&mut out, &c);
+        assert!(out.iter().all(|x| x.abs() <= CEILING + 1e-4));
     }
 
     #[test]

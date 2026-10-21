@@ -70,6 +70,7 @@ impl<S: Source> Live<S> {
     fn refill(&mut self) -> bool {
         if let Some((v, e)) = self.control.newer_effects(self.effects_seen) {
             self.effects_seen = v;
+            self.proc.set_edited(!e.neutral());
             self.effects = e;
         }
         let ch = self.proc.channels();

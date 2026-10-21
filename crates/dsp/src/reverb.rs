@@ -15,6 +15,12 @@ pub fn feedback(size: f32) -> f32 {
 pub fn damp(damping: f32) -> f32 {
     0.4 * damping.clamp(0.0, 1.0)
 }
+/// Dry and wet levels for a mix (0..1): the sum stays about as loud as the dry song, whatever the room. Measured on
+/// noise: the tail's level grows as (1 - feedback²)^-0.26 with room size; sqrt(mix) keeps small amounts audible.
+pub fn levels(mix: f32, size: f32) -> (f32, f32) {
+    let mix = mix.clamp(0.0, 1.0);
+    (1.0 - 0.5 * mix, 1.75 * mix.sqrt() * (1.0 - feedback(size).powi(2)).powf(0.26))
+}
 /// Input gain into the combs (keeps the sum of 8 under control).
 pub const INPUT: f32 = 0.015;
 pub const ALLPASS_GAIN: f32 = 0.5;
