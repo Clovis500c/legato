@@ -258,7 +258,7 @@ function ShieldSection() {
           <Button onClick={() => void api.restartApp()}>{tr('Restart')}</Button>
         </div>
       )}
-      <p className="text-xs text-ink-2">{tr('Note: YouTube’s terms forbid blocking ads in its player. Risks: your API key gets revoked, or playback breaks when YouTube changes its player. YouTube Premium removes ads without this risk.')}</p>
+      <p className="text-xs text-ink-2">{tr('Note: YouTube’s terms forbid blocking ads in its player. Risks: YouTube may restrict your account, and playback breaks when YouTube changes its player. YouTube Premium removes ads without this risk.')}</p>
     </div>
   )
 }

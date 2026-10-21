@@ -81,22 +81,32 @@ export async function saveSessionNow() {
   if (s) await api.saveSession(s).catch(() => {})
 }
 
-/** Saves the session as playback goes: right away on track or state change, every 5 s while playing. Returns cleanup. */
+/**
+ * Saves the session as playback goes: right away on track, play / pause or seek, 0.6 s after the volume, shuffle or
+ * repeat settle (a dragged volume bar is dozens of changes a second, each a whole queue), every 5 s while playing.
+ * Returns cleanup.
+ */
 export function startSessionSaving(): () => void {
   let at = 0
+  let later: ReturnType<typeof setTimeout> | undefined
   const save = () => {
+    clearTimeout(later)
     const s = snapshot(usePlayer.getState())
     if (!s) return
     at = Date.now()
     void api.saveSession(s).catch(() => {})
   }
   const unsub = usePlayer.subscribe((s, prev) => {
-    if (s.now !== prev.now || s.playing !== prev.playing || s.volume !== prev.volume || s.shuffle !== prev.shuffle || s.repeat !== prev.repeat || Math.abs(s.positionMs - prev.positionMs) > 3000) save()
-    else if (s.positionMs !== prev.positionMs && Date.now() - at > 5000) save()
+    if (s.now !== prev.now || s.playing !== prev.playing || Math.abs(s.positionMs - prev.positionMs) > 3000) save()
+    else if (s.volume !== prev.volume || s.shuffle !== prev.shuffle || s.repeat !== prev.repeat) {
+      clearTimeout(later)
+      later = setTimeout(save, 600)
+    } else if (s.positionMs !== prev.positionMs && Date.now() - at > 5000) save()
   })
   window.addEventListener('beforeunload', save)
   return () => {
     unsub()
+    clearTimeout(later)
     window.removeEventListener('beforeunload', save)
   }
 }

@@ -30,7 +30,11 @@ usePlayer.subscribe((s, prev) => {
 const ticks = new Set<() => void>()
 let frameAt = performance.now()
 let frame = 0
+// About 60-80 ticks a second at most: a 144 / 240 Hz screen would otherwise run (and repaint) every bar 2-4 times as
+// often for no visible gain (review 2026-10-22: 222 calls a second).
 const loop = (t: number) => {
+  frame = requestAnimationFrame(loop)
+  if (t - frameAt < 12) return
   frameAt = t
   // One failing listener must not stop every bar.
   for (const tick of ticks) {
@@ -40,7 +44,6 @@ const loop = (t: number) => {
       console.error(e)
     }
   }
-  frame = requestAnimationFrame(loop)
 }
 function onFrame(tick: () => void) {
   ticks.add(tick)

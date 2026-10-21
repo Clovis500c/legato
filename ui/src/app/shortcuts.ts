@@ -11,8 +11,6 @@ const seekBy = (ms: number) => {
   if (now) seek(Math.max(0, Math.min(positionMs + ms, durationMs ?? Infinity)))
 }
 const volumeBy = (d: number) => player().setVolume(Math.round(Math.max(0, Math.min(1, player().volume + d)) * 100) / 100)
-// Volume before mute, restored by the next press.
-let unmuted = 1
 
 /** What each action does. One table with keys.ts (labels, default keys): Settings › Shortcuts lists both. */
 export const RUN: Record<ActionId, () => void> = {
@@ -27,11 +25,7 @@ export const RUN: Record<ActionId, () => void> = {
   back10: () => seekBy(-10_000),
   volumeUp: () => volumeBy(0.1),
   volumeDown: () => volumeBy(-0.1),
-  mute: () => {
-    const v = player().volume
-    if (v > 0) unmuted = v
-    player().setVolume(v > 0 ? 0 : unmuted || 1)
-  },
+  mute: () => player().toggleMute(),
   shuffle: () => player().toggleShuffle(),
   repeat: () => player().cycleRepeat(),
   nowPlaying: () => player().now && player().setFull(!player().full),
@@ -49,6 +43,9 @@ const inText = (target: EventTarget | null) => target instanceof Element && !!ta
 // Sliders keep their arrows (no modifier); menus keep theirs.
 const ownsArrows = (target: EventTarget | null) => target instanceof Element && !!target.closest('input[type=range], [role="slider"], [role="menu"], [role="menuitem"]')
 
+/** Space presses a control reached by keyboard (:focus-visible), or anything in a dialog. */
+const ownsSpace = (target: EventTarget | null) => target instanceof HTMLElement && target !== document.body && (target.matches(':focus-visible') || !!target.closest('[role="dialog"]'))
+
 /** Global shortcuts the OS refused (another app holds them), for Settings › Shortcuts. */
 export const useGlobalShortcuts = create<{ failed: ActionId[] }>(() => ({ failed: [] }))
 
@@ -62,7 +59,8 @@ async function registerGlobals(custom: Parameters<typeof bindings>[0]) {
 
 /**
  * Keys in the app (window focused) and everywhere (global, Rust). Bindings come from settings over the defaults.
- * Text fields keep their keys; Space plays / pauses from anywhere else (a focused button too: Enter still clicks it).
+ * Text fields keep their keys; Space plays / pauses unless a control reached by keyboard has focus (a button left
+ * focused by a mouse click doesn't count: Space still plays / pauses there).
  * Returns cleanup.
  */
 export function startShortcuts(): () => void {
@@ -88,6 +86,7 @@ export function startShortcuts(): () => void {
     if (!id || inText(e.target)) return
     if (e.repeat && id === 'playPause') return
     if (/^(Shift\+)?Arrow/.test(combo) && ownsArrows(e.target)) return
+    if (combo === 'Space' && ownsSpace(e.target)) return
     e.preventDefault()
     RUN[id]()
   }

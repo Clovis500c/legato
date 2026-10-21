@@ -19,6 +19,7 @@ import { PlaylistCover } from './PlaylistCover'
 import { filterTracks, groupAlbums, groupArtists, groupStats, libraryStats, musicOnly, primaryArtist, sortGroups as orderGroups, sortTracks, type Filter, type GroupSort, type Sort } from './filter'
 import { TrackTable } from './TrackTable'
 import { msg, tr, trn } from '../../shared/i18n/i18n'
+import { ask } from '../../shared/ui/Ask'
 
 /** YouTube-like sort list, in groups. Manual only on playlists. */
 const sortGroups: { id: Sort; label: string }[][] = [
@@ -183,7 +184,7 @@ function Playability({ tracks }: { tracks: LibraryTrack[] }) {
   return (
     <p className="mb-3 flex shrink-0 flex-wrap items-center gap-x-5 gap-y-1 rounded-lg border border-line-soft bg-recess px-3.5 py-2.5 font-mono text-[10px] tracking-[0.08em] uppercase">
       <span className="flex items-center gap-2">
-        <Led on /> {trn(full, '{n} playable in full', '{n} playable in full')}
+        <Led on /> {trn(full, '{n} song playable in full', '{n} songs playable in full')}
       </span>
       {preview > 0 && (
         <span className="flex items-center gap-2 text-ink-2">
@@ -302,7 +303,7 @@ export function PlaylistView({ id }: { id: number }) {
               <RoundButton
                 label={tr('Delete playlist')}
                 onClick={async () => {
-                  if (!confirm(tr('Delete “{name}”? The songs stay in your library.', { name: playlist.name }))) return
+                  if (!(await ask({ title: tr('Delete “{name}”?', { name: playlist.name }), body: tr('The songs stay in your library.'), ok: tr('Delete') }))) return
                   await editPlaylist({ type: 'delete', id })
                   go({ name: 'songs' })
                 }}

@@ -64,6 +64,7 @@ import { bypass, deletePreset, deleteVersion, playVersion, reset, useEditor } fr
 import { loadPlugins, pluginCommands, runCommand } from './plugins/host'
 import { isRemote, nowTrack, remoteTrack, usePlayer } from './player/store'
 import { msg, tr, trn } from '../shared/i18n/i18n'
+import { ask, askText } from '../shared/ui/Ask'
 
 const app = () => useStore.getState()
 const player = () => usePlayer.getState()
@@ -152,7 +153,7 @@ function addTo(tracks: () => LibraryTrack[] | Promise<LibraryTrack[]>): MenuEntr
         label: tr('New playlist…'),
         icon: <Plus size={16} />,
         onSelect: async () => {
-          const name = prompt(tr('Name of the new playlist'), tr('New playlist'))?.trim()
+          const name = await askText({ title: tr('Name of the new playlist'), ok: tr('Create'), value: tr('New playlist') })
           if (!name) return
           const id = await app().editPlaylist({ type: 'create', name })
           if (id !== null) await add(id)
@@ -276,7 +277,7 @@ function removeFrom(t: LibraryTrack): MenuEntry {
     }
   }
   const fromLibrary = async () => {
-    const ok = confirm(tr('Remove “{title}” from your library?\n\nIt also leaves every playlist in Music App. Your YouTube Music and Spotify playlists keep it, and syncs won’t bring it back here. Files on disk stay where they are.', { title: t.title }))
+    const ok = await ask({ title: tr('Remove “{title}” from your library?', { title: t.title }), body: tr('It also leaves every playlist in Music App. Your YouTube Music and Spotify playlists keep it, and syncs won’t bring it back here. Files on disk stay where they are.'), ok: tr('Remove') })
     if (!ok) return
     try {
       await api.removeFromLibrary(t.id)
@@ -429,8 +430,8 @@ export function playlistMenu(p: LibraryPlaylist): MenuEntry[] {
     p.custom && {
       label: tr('Rename…'),
       icon: <PencilSimple size={16} />,
-      onSelect: () => {
-        const name = prompt(tr('Rename playlist'), p.name)?.trim()
+      onSelect: async () => {
+        const name = await askText({ title: tr('Rename playlist'), ok: tr('Rename'), value: p.name })
         if (name && name !== p.name) void editPlaylist({ type: 'rename', id: p.id, name })
       },
     },
@@ -473,7 +474,7 @@ export function playlistMenu(p: LibraryPlaylist): MenuEntry[] {
       icon: <Trash size={16} />,
       danger: true,
       onSelect: async () => {
-        if (!confirm(tr('Delete “{name}”? The songs stay in your library.', { name: p.name }))) return
+        if (!(await ask({ title: tr('Delete “{name}”?', { name: p.name }), body: tr('The songs stay in your library.'), ok: tr('Delete') }))) return
         await editPlaylist({ type: 'delete', id: p.id })
         const v = app().view
         if (v.name === 'playlist' && v.id === p.id) go({ name: 'songs' })

@@ -31,6 +31,7 @@ import { restoreScreen, startClosingPlayerOnNavigate, startScreenSaving } from '
 import { startShortcuts } from './shortcuts'
 import { useStore } from './store'
 import { Toasts } from './Toasts'
+import { Asker } from '../shared/ui/Ask'
 import { tr, trn, useLang } from '../shared/i18n/i18n'
 
 // Opened now and then: loaded on first visit, not at launch.
@@ -197,6 +198,7 @@ export function App() {
       <MiniPlayer />
       {full && <NowPlaying />}
       <Toasts />
+      <Asker />
       <ContextMenuHost fallback={appMenu} />
       {incoming && <ImportDialog key={incoming} code={incoming} />}
     </div>

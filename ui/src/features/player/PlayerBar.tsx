@@ -136,13 +136,11 @@ function YouTubeFrame({ videoId }: { videoId: string }) {
   )
 }
 
-// Volume before mute, restored by unmute.
-let unmuted = 1
-
 /** Knob, or YouTube-like speaker (click = mute) and bar. */
 export function VolumeControl({ big }: { big?: boolean }) {
   const volume = usePlayer((s) => s.volume)
   const setVolume = usePlayer((s) => s.setVolume)
+  const toggleMute = usePlayer((s) => s.toggleMute)
   const mode = useSettings((s) => s.settings.volume)
   if (mode === 'knob')
     return (
@@ -155,13 +153,9 @@ export function VolumeControl({ big }: { big?: boolean }) {
       </span>
     )
   const Icon = volume === 0 ? SpeakerSlash : volume < 0.5 ? SpeakerLow : SpeakerHigh
-  const mute = () => {
-    if (volume > 0) unmuted = volume
-    setVolume(volume > 0 ? 0 : unmuted || 1)
-  }
   return (
     <span className="flex items-center gap-1">
-      <RoundButton label={volume > 0 ? tr('Mute') : tr('Unmute')} kind="plain" size={big ? 'md' : 'sm'} onClick={mute}>
+      <RoundButton label={volume > 0 ? tr('Mute') : tr('Unmute')} kind="plain" size={big ? 'md' : 'sm'} onClick={toggleMute}>
         <Icon size={big ? 20 : 16} />
       </RoundButton>
       <span className="relative flex items-center">

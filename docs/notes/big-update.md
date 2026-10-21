@@ -291,6 +291,10 @@ The mic opens a small menu with two big choices: "Search by voice" and "Identify
 | English by default | English default and fallback; UI follows Windows' language or the user's pick | Translation |
 | No server of ours | unchanged; + writes to a user-picked folder (OneDrive…) and syncs on the local network | Sync Mode |
 | (none) | Microphone only on explicit request, permission explained, audio kept in memory | Music Detector, voice search |
+| Secrets never leave the keychain | They may travel between the user's own PCs, sealed only (password → Argon2id, or the 6-digit code → SPAKE2); otherwise sign in again | Sync Mode |
+| Nothing loaded from outside the app | + `.theme` files (palette, picture, own CSS cleaned, Music App's name / logo / legal notices kept by `BRAND_GUARD`) | Theme studio |
+| Detector hears the microphone only | Microphone or what this PC plays (WASAPI loopback), memory only, Music App's own playback paused first | Music Detector, user's request 2026-10-22 |
+| Dev builds share the installed app's data | Dev builds use their own identifier and data; a library newer than the app is refused (error box, nothing written) | Library damaged on 2026-10-21 |
 
 ## Not possible, or not done as asked
 

@@ -15,6 +15,7 @@ import { tracksMenu } from '../menus'
 import { usePlayer } from '../player/store'
 import { msg, tr, trn } from '../../shared/i18n/i18n'
 import { mixReason, mixTitle, weekdayName } from './words'
+import { ask } from '../../shared/ui/Ask'
 
 /** Today's mixes; reload after a pref change or reset. */
 export function useMixes() {
@@ -127,7 +128,7 @@ function ResetHistory({ onDone }: { onDone: () => void }) {
     <Button
       variant="ghost"
       onClick={async () => {
-        if (!confirm(tr('Forget your listening history and “less / never” choices? Your library stays as it is.'))) return
+        if (!(await ask({ title: tr('Forget your listening history?'), body: tr('Your plays and “less / never” choices go; mixes start over. Your library stays as it is.'), ok: tr('Forget') }))) return
         await api.clearHistory().catch((e) => useStore.setState({ error: String(e) }))
         onDone()
       }}

@@ -11,6 +11,7 @@ import { Cover } from '../../shared/ui/Cover'
 import { SourceIcon, sourceLabel } from '../../shared/ui/SourceIcon'
 import { guides } from './guides'
 import { tr, trn } from '../../shared/i18n/i18n'
+import { ask } from '../../shared/ui/Ask'
 
 function ServiceRow({ service }: { service: 'spotify' }) {
   const { status, disconnect, busy, go, view } = useStore()
@@ -111,7 +112,7 @@ function GoogleAccounts() {
     await load()
   }
   const signOut = async () => {
-    if (!confirm(tr('Sign every Google account out of Music App? Your library stays as it is.'))) return
+    if (!(await ask({ title: tr('Sign out of Google?'), body: tr('Every Google account leaves Music App. Your library stays as it is.'), ok: tr('Sign out') }))) return
     await api.ytmSignOut().catch((e) => useStore.setState({ error: String(e) }))
     await load()
     void refresh()

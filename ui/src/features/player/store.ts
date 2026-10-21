@@ -77,6 +77,8 @@ interface PlayerState {
   /** auto = track ended by itself (repeat one replays it). */
   step: (delta: 1 | -1, auto?: boolean) => void
   setVolume: (volume: number) => void
+  /** Mute, or back to the last audible volume (never a jump to full: half when none is known). */
+  toggleMute: () => void
   onYoutube: (u: YtUpdate) => void
   onLocal: (s: PlayerStatus) => void
   /** Spotify Connect poll result. */
@@ -143,6 +145,8 @@ let sent = -1
 
 // Extra volume factor over time (pause fades, fade preview), stepped at 30 Hz. A new ramp replaces the running one.
 let gainNow = 1
+// Last audible volume, for unmute.
+let audible = 0.5
 let rampTimer: ReturnType<typeof setInterval> | undefined
 function ramp(gain: (t: number) => number, ms: number, done?: () => void) {
   clearInterval(rampTimer)
@@ -392,8 +396,13 @@ export const usePlayer = create<PlayerState>((set, get) => ({
   },
 
   setVolume(volume) {
+    if (volume > 0.02) audible = volume
     set({ volume })
     get().applyVolume(true)
+  },
+
+  toggleMute() {
+    get().setVolume(get().volume > 0 ? 0 : audible)
   },
 
   applyVolume(force = false) {
