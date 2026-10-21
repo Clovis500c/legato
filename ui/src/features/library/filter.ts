@@ -33,7 +33,7 @@ const rank = (id: number, seed: number) => {
 
 /**
  * Sorted copy. Library arrives sorted by artist. positional = a playlist: "date added" follows its order (grows at the
- * bottom, or newestFirst: Liked Music), library = added rank. Unplayed tracks go last in the play sorts.
+ * bottom, or newestFirst: new songs on top), library = added rank. Unplayed tracks go last in the play sorts.
  */
 export function sortTracks(
   tracks: LibraryTrack[],

@@ -33,6 +33,7 @@ import {
   Repeat,
   ShareNetwork,
   Shuffle,
+  SortAscending,
   SkipBack,
   SkipForward,
   SpeakerHigh,
@@ -368,6 +369,16 @@ export function playlistMenu(p: LibraryPlaylist): MenuEntry[] {
           .exportYoutube(p.id)
           .then((r) => notify(`Exported to YouTube Music: ${r.added} added, ${r.already} already there`))
           .catch(fail),
+    },
+    // Services give no dates: "date added" sorts follow the end new songs land on.
+    !p.custom && {
+      label: 'Date added order',
+      icon: <SortAscending size={16} />,
+      items: [
+        { label: 'Learned from syncs', checked: !p.orderManual, onSelect: () => void editPlaylist({ type: 'setOrder', id: p.id, newestFirst: null }) },
+        { label: 'Newest songs at the top', checked: p.orderManual && p.newestFirst, onSelect: () => void editPlaylist({ type: 'setOrder', id: p.id, newestFirst: true }) },
+        { label: 'Newest songs at the bottom', checked: p.orderManual && !p.newestFirst, onSelect: () => void editPlaylist({ type: 'setOrder', id: p.id, newestFirst: false }) },
+      ],
     },
     remote && { label: 'Copy link', icon: <Link size={16} />, onSelect: () => copy(remote, 'Link') },
     remote && { label: 'Open in YouTube Music', icon: <ArrowSquareOut size={16} />, onSelect: () => openUrl(remote).catch(fail) },

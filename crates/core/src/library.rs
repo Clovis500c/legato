@@ -47,9 +47,27 @@ CREATE TABLE IF NOT EXISTS settings (
 
 const TRACK_COLS: &str = "t.id, t.title, t.artist, t.album, t.duration_ms, t.isrc, t.art, t.added";
 
-/// Lists the service shows newest first (Liked Music: last like on top). Others grow at the bottom.
-pub fn newest_first(source: Source, source_id: &str) -> bool {
+/// Liked Music: last like on top, always.
+fn liked_music(source: Source, source_id: &str) -> bool {
     source == Source::Youtube && (source_id == "LM" || source_id.starts_with("LM~"))
+}
+
+/// Order a playlist's service shows before a sync proves otherwise. 2026-10-20: the user checked their imported YouTube
+/// playlists come newest first too (new songs on top), so YouTube = newest first; other services grow at the bottom.
+pub fn default_newest_first(source: Source) -> bool {
+    source == Source::Youtube
+}
+
+/// New songs at the top (true) or the bottom (false) of a re-synced list, compared with the last mirror. None = can't
+/// tell (nothing new, everything new, or new songs on both ends).
+pub fn growth_side(was_there: &[bool]) -> Option<bool> {
+    let new = was_there.iter().filter(|w| !**w).count();
+    if new == 0 || new == was_there.len() {
+        return None;
+    }
+    let top = was_there[..new].iter().all(|w| !w);
+    let bottom = was_there[was_there.len() - new..].iter().all(|w| !w);
+    (top != bottom).then_some(top)
 }
 
 /// v4: "date added" rank. Row ids follow import order, but Liked Music came in newest first: flip its tracks
@@ -62,7 +80,7 @@ fn migrate_v4(db: &Connection) -> Result<()> {
     let mut seen = std::collections::HashSet::new();
     let mut liked: Vec<i64> = Vec::new();
     for (id, source, source_id) in lists {
-        if source != Source::Youtube.as_str() || !newest_first(Source::Youtube, &source_id) {
+        if source != Source::Youtube.as_str() || !liked_music(Source::Youtube, &source_id) {
             continue;
         }
         let ids: Vec<i64> = tx.prepare("SELECT track_id FROM playlist_tracks WHERE playlist_id = ?1 ORDER BY position DESC")?.query_map([id], |r| r.get(0))?.collect::<rusqlite::Result<_>>()?;
@@ -74,6 +92,25 @@ fn migrate_v4(db: &Connection) -> Result<()> {
         tx.execute("UPDATE tracks SET added = ?1 WHERE id = ?2", [slot, t])?;
     }
     tx.execute_batch("PRAGMA user_version = 4;")?;
+    tx.commit()?;
+    Ok(())
+}
+
+/// v5: "date added" order per playlist. `newest_first` NULL = the source's default, set by a sync that sees where new
+/// songs land, or by hand (`order_manual`). YouTube playlists now default to newest first: their ranks are flipped.
+fn migrate_v5(lib: &Library) -> Result<()> {
+    let tx = lib.db.unchecked_transaction()?;
+    tx.execute_batch("ALTER TABLE playlists ADD COLUMN newest_first INTEGER; ALTER TABLE playlists ADD COLUMN order_manual INTEGER NOT NULL DEFAULT 0;")?;
+    let flipped: Vec<i64> = {
+        let mut stmt = tx.prepare("SELECT id, source_id FROM playlists WHERE custom = 0 AND source = 'youtube'")?;
+        stmt.query_map([], |r| Ok((r.get::<_, i64>(0)?, r.get::<_, String>(1)?)))?
+            .filter_map(Result::ok)
+            .filter(|(_, sid)| !liked_music(Source::Youtube, sid))
+            .map(|(id, _)| id)
+            .collect()
+    };
+    lib.rerank(&flipped)?;
+    tx.execute_batch("PRAGMA user_version = 5;")?;
     tx.commit()?;
     Ok(())
 }
@@ -104,8 +141,10 @@ pub struct LibraryPlaylist {
     pub track_count: i64,
     /// Made in the app (editable). Imported ones mirror their service.
     pub custom: bool,
-    /// Service order = newest first (Liked Music).
+    /// Service order = newest first (new songs on top).
     pub newest_first: bool,
+    /// That order was set by hand (else learned from syncs).
+    pub order_manual: bool,
 }
 
 /// Edits on custom playlists. Duplicate also works on imported ones.
@@ -119,6 +158,8 @@ pub enum PlaylistEdit {
     Remove { id: i64, position: usize },
     Move { id: i64, from: usize, to: usize },
     Duplicate { id: i64, name: String },
+    /// Imported playlist: which end new songs land on ("date added" sorts). None = automatic (detected by syncs).
+    SetOrder { id: i64, newest_first: Option<bool> },
 }
 
 /// Row → track. Column 7 = ids JSON object (optional).
@@ -170,10 +211,13 @@ impl Library {
         if db.query_row("PRAGMA user_version", [], |r| r.get::<_, i64>(0))? < 4 {
             migrate_v4(&db)?;
         }
-        let versions = std::sync::Arc::new(crate::cache::Versions::default());
-        let v = versions.clone();
-        db.update_hook(Some(move |_: rusqlite::hooks::Action, _: &str, table: &str, _: i64| v.touch(table)))?;
-        Ok(Self { db, versions })
+        let lib = Self { db, versions: std::sync::Arc::new(crate::cache::Versions::default()) };
+        if lib.db.query_row("PRAGMA user_version", [], |r| r.get::<_, i64>(0))? < 5 {
+            migrate_v5(&lib)?;
+        }
+        let v = lib.versions.clone();
+        lib.db.update_hook(Some(move |_: rusqlite::hooks::Action, _: &str, table: &str, _: i64| v.touch(table)))?;
+        Ok(lib)
     }
 
     /// Insert or merge track (source id, then ISRC, then title+artist+duration). Return row id.
@@ -246,7 +290,8 @@ impl Library {
         })
     }
 
-    /// Replace imported playlist content.
+    /// Replace imported playlist content. A re-sync also learns which end new songs land on ("date added" order),
+    /// unless the user set it by hand.
     pub fn save_playlist(&self, source: Source, source_id: &str, name: &str, tracks: &[Track]) -> Result<i64> {
         self.tx(|| {
             let id: i64 = self.db.query_row(
@@ -255,9 +300,19 @@ impl Library {
                 params![source.as_str(), source_id, name],
                 |r| r.get(0),
             )?;
+            let old: BTreeSet<i64> = self.playlist_track_ids(id)?.into_iter().collect();
+            let mut flipped = false;
+            if !old.is_empty() && !liked_music(source, source_id) {
+                let was_there = tracks.iter().map(|t| Ok(self.find(t)?.is_some_and(|i| old.contains(&i)))).collect::<Result<Vec<_>>>()?;
+                let (current, manual) = self.order_of(id)?;
+                if let Some(seen) = growth_side(&was_there).filter(|s| !manual && *s != current) {
+                    self.db.execute("UPDATE playlists SET newest_first = ?1 WHERE id = ?2", params![seen, id])?;
+                    flipped = true;
+                }
+            }
             self.db.execute("DELETE FROM playlist_tracks WHERE playlist_id = ?1", [id])?;
             // New rows created oldest first: "date added" holds for newest-first lists too.
-            let newest = newest_first(source, source_id);
+            let newest = self.order_of(id)?.0;
             let oldest_first: Vec<&Track> = if newest { tracks.iter().rev().collect() } else { tracks.iter().collect() };
             let mut ids = oldest_first.into_iter().map(|t| self.upsert_track(t)).collect::<Result<Vec<_>>>()?;
             if newest {
@@ -266,8 +321,44 @@ impl Library {
             for (pos, track_id) in ids.into_iter().enumerate() {
                 self.db.execute("INSERT INTO playlist_tracks (playlist_id, position, track_id) VALUES (?1, ?2, ?3)", params![id, pos as i64, track_id])?;
             }
+            if flipped {
+                self.rerank(&[id])?;
+            }
             Ok(id)
         })
+    }
+
+    /// Imported playlist's "date added" order: (newest first, set by hand).
+    fn order_of(&self, id: i64) -> Result<(bool, bool)> {
+        let (source, set, manual): (String, Option<bool>, bool) =
+            self.db.query_row("SELECT source, newest_first, order_manual FROM playlists WHERE id = ?1", [id], |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?)))?;
+        let source: Source = serde_json::from_value(source.into())?;
+        Ok((set.unwrap_or_else(|| default_newest_first(source)), manual))
+    }
+
+    /// "Date added" ranks of the tracks a playlist brought in (first appearance, playlists in import order) follow its
+    /// current order: the same ranks, handed out again oldest first. Call after a playlist's order changed.
+    fn rerank(&self, playlists: &[i64]) -> Result<()> {
+        if playlists.is_empty() {
+            return Ok(());
+        }
+        let lists: Vec<i64> = self.db.prepare("SELECT id FROM playlists WHERE custom = 0 ORDER BY id")?.query_map([], |r| r.get(0))?.collect::<rusqlite::Result<_>>()?;
+        let mut seen = std::collections::HashSet::new();
+        for id in lists {
+            let mut mine: Vec<i64> = self.playlist_track_ids(id)?.into_iter().filter(|t| seen.insert(*t)).collect();
+            if !playlists.contains(&id) {
+                continue;
+            }
+            if self.order_of(id)?.0 {
+                mine.reverse();
+            }
+            let mut slots = mine.iter().map(|t| self.db.query_row("SELECT added FROM tracks WHERE id = ?1", [t], |r| r.get::<_, i64>(0))).collect::<rusqlite::Result<Vec<_>>>()?;
+            slots.sort_unstable();
+            for (slot, t) in slots.iter().zip(&mine) {
+                self.db.execute("UPDATE tracks SET added = ?1 WHERE id = ?2", [slot, t])?;
+            }
+        }
+        Ok(())
     }
 
     pub fn tracks(&self) -> Result<Vec<LibraryTrack>> {
@@ -281,7 +372,7 @@ impl Library {
 
     pub fn playlists(&self) -> Result<Vec<LibraryPlaylist>> {
         let mut stmt = self.db.prepare_cached(
-            "SELECT p.id, p.source, p.source_id, p.name, COUNT(pt.track_id), p.custom
+            "SELECT p.id, p.source, p.source_id, p.name, COUNT(pt.track_id), p.custom, p.newest_first, p.order_manual
              FROM playlists p LEFT JOIN playlist_tracks pt ON pt.playlist_id = p.id
              GROUP BY p.id ORDER BY p.name COLLATE NOCASE",
         )?;
@@ -292,7 +383,8 @@ impl Library {
             Ok(LibraryPlaylist {
                 id: r.get(0)?,
                 source,
-                newest_first: newest_first(source, &source_id),
+                newest_first: r.get::<_, Option<bool>>(6)?.unwrap_or_else(|| default_newest_first(source)),
+                order_manual: r.get(7)?,
                 source_id,
                 name: r.get(3)?,
                 track_count: r.get(4)?,
@@ -370,6 +462,14 @@ impl Library {
                     })?;
                     None
                 }
+                PlaylistEdit::SetOrder { id, newest_first } => {
+                    let before = self.order_of(id)?.0;
+                    self.db.execute("UPDATE playlists SET newest_first = ?1, order_manual = ?2 WHERE id = ?3", params![newest_first, newest_first.is_some(), id])?;
+                    if self.order_of(id)?.0 != before {
+                        self.rerank(&[id])?;
+                    }
+                    None
+                }
                 PlaylistEdit::Duplicate { id, name } => {
                     let ids = self.playlist_track_ids(id)?;
                     let copy = self.new_custom(&name)?;
@@ -393,9 +493,8 @@ impl Library {
 
     /// Imported playlist mirror after the service accepted new tracks (custom ones: `edit_playlist`).
     pub fn append_to_imported(&self, id: i64, track_ids: &[i64]) -> Result<()> {
-        let (source, source_id): (String, String) = self.db.query_row("SELECT source, source_id FROM playlists WHERE id = ?1", [id], |r| Ok((r.get(0)?, r.get(1)?)))?;
-        // Liked Music: last like on top, like YouTube shows it.
-        let top = source == Source::Youtube.as_str() && newest_first(Source::Youtube, &source_id);
+        // Newest-first lists (Liked Music, most YouTube playlists): on top, like the service shows it.
+        let top = self.order_of(id)?.0;
         self.tx(|| {
             self.rewrite(id, |ids| {
                 if top {
@@ -579,7 +678,8 @@ mod tests {
         lib.append_to_imported(pid, &[other])?;
         assert_eq!(lib.playlist_tracks(pid)?.len(), 2);
         assert!(lib.edit_playlist(PlaylistEdit::Add { id: pid, track_ids: vec![other] }).is_err());
-        assert_eq!(lib.playlist_orders()?[&pid].last(), Some(&other));
+        // YouTube playlist: newest on top.
+        assert_eq!(lib.playlist_orders()?[&pid][0], other);
         Ok(())
     }
 
@@ -600,6 +700,83 @@ mod tests {
         // New like goes on top, like on YouTube.
         lib.append_to_imported(pid, &[old])?;
         assert_eq!(lib.playlist_orders()?[&pid][0], old);
+        Ok(())
+    }
+
+    fn added_of(lib: &Library, pid: i64) -> Vec<i64> {
+        let all = lib.tracks().unwrap();
+        lib.playlist_tracks(pid).unwrap().iter().map(|t| all.iter().find(|a| a.id == t.id).unwrap().added).collect()
+    }
+
+    #[test]
+    fn youtube_playlists_come_newest_first() -> Result<()> {
+        let lib = Library::in_memory()?;
+        let pid = lib.save_playlist(Source::Youtube, "PL1", "Mix", &[song(1), song(2), song(3)])?;
+        // Top song = last added (2026-10-20 report: "added newest" showed the oldest).
+        assert_eq!(added_of(&lib, pid), vec![3, 2, 1]);
+        assert!(lib.playlists()?[0].newest_first);
+        Ok(())
+    }
+
+    #[test]
+    fn a_sync_learns_which_end_new_songs_land_on() -> Result<()> {
+        let lib = Library::in_memory()?;
+        let pid = lib.save_playlist(Source::Youtube, "PL1", "Mix", &[song(1), song(2), song(3)])?;
+        // New song at the bottom: this playlist grows at the bottom after all.
+        lib.save_playlist(Source::Youtube, "PL1", "Mix", &[song(1), song(2), song(3), song(4)])?;
+        assert!(!lib.playlists()?[0].newest_first);
+        assert_eq!(added_of(&lib, pid), vec![1, 2, 3, 4]);
+        // And back: new one on top.
+        lib.save_playlist(Source::Youtube, "PL1", "Mix", &[song(5), song(1), song(2), song(3), song(4)])?;
+        assert!(lib.playlists()?[0].newest_first);
+        assert_eq!(added_of(&lib, pid), vec![5, 4, 3, 2, 1]);
+        Ok(())
+    }
+
+    #[test]
+    fn order_set_by_hand_wins_over_syncs() -> Result<()> {
+        let lib = Library::in_memory()?;
+        let pid = lib.save_playlist(Source::Youtube, "PL1", "Mix", &[song(1), song(2)])?;
+        lib.edit_playlist(PlaylistEdit::SetOrder { id: pid, newest_first: Some(false) })?;
+        assert_eq!(added_of(&lib, pid), vec![1, 2]);
+        lib.save_playlist(Source::Youtube, "PL1", "Mix", &[song(3), song(1), song(2)])?;
+        assert!(!lib.playlists()?[0].newest_first);
+        // Automatic again: next sync decides.
+        lib.edit_playlist(PlaylistEdit::SetOrder { id: pid, newest_first: None })?;
+        assert!(lib.playlists()?[0].newest_first);
+        Ok(())
+    }
+
+    #[test]
+    fn growth_side_needs_new_songs_on_one_end() {
+        assert_eq!(growth_side(&[false, true, true]), Some(true));
+        assert_eq!(growth_side(&[true, true, false]), Some(false));
+        assert_eq!(growth_side(&[false, true, false]), None);
+        assert_eq!(growth_side(&[true, true]), None);
+        assert_eq!(growth_side(&[false, false]), None);
+        assert_eq!(growth_side(&[]), None);
+    }
+
+    #[test]
+    fn v5_flips_youtube_playlists_inside_their_slots() -> Result<()> {
+        let db = Connection::open_in_memory()?;
+        db.execute_batch(SCHEMA)?;
+        db.execute_batch("ALTER TABLE playlists ADD COLUMN custom INTEGER NOT NULL DEFAULT 0;")?;
+        db.execute_batch(crate::history::SCHEMA_V2)?;
+        db.execute_batch(SCHEMA_V3)?;
+        db.execute_batch("ALTER TABLE tracks ADD COLUMN added INTEGER NOT NULL DEFAULT 0; PRAGMA user_version = 4;")?;
+        for id in 1..=5 {
+            db.execute("INSERT INTO tracks (id, title, artist, match_key, added) VALUES (?1, 't', 'a', ?1, ?1)", [id])?;
+        }
+        // Spotify playlist first (keeps its order), then a YouTube one imported as if it grew at the bottom.
+        db.execute_batch(
+            "INSERT INTO playlists (id, source, source_id, name) VALUES (1, 'spotify', 'p1', 'S'), (2, 'youtube', 'PL1', 'Mix');
+             INSERT INTO playlist_tracks VALUES (1, 0, 1), (1, 1, 2), (2, 0, 3), (2, 1, 4), (2, 2, 5), (2, 3, 1);",
+        )?;
+        let lib = Library::init(db)?;
+        let added: Vec<i64> = (1..=5).map(|id| lib.db.query_row("SELECT added FROM tracks WHERE id = ?1", [id], |r| r.get(0)).unwrap()).collect();
+        // Track 1 belongs to the Spotify import (first seen there): untouched. 3, 4, 5 flipped in their slots.
+        assert_eq!(added, vec![1, 2, 5, 4, 3]);
         Ok(())
     }
 
@@ -630,7 +807,7 @@ mod tests {
         let id = lib.save_playlist(Source::Spotify, "p1", "New", &[spotify()])?;
         assert_eq!(
             lib.playlists()?,
-            vec![LibraryPlaylist { id, source: Source::Spotify, source_id: "p1".into(), name: "New".into(), track_count: 1, custom: false, newest_first: false }]
+            vec![LibraryPlaylist { id, source: Source::Spotify, source_id: "p1".into(), name: "New".into(), track_count: 1, custom: false, newest_first: false, order_manual: false }]
         );
         Ok(())
     }

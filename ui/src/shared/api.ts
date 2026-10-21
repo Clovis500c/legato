@@ -49,8 +49,10 @@ export interface LibraryPlaylist {
   trackCount: number
   /** Made in the app: editable. */
   custom: boolean
-  /** Service order = newest first (Liked Music). */
+  /** Service order = newest first (new songs on top: Liked Music, most YouTube playlists). */
   newestFirst: boolean
+  /** newestFirst set by hand (else learned from syncs). */
+  orderManual: boolean
 }
 
 /** crates/connectors ytmusic::ListRef: a playlist / album page, or a radio. */
@@ -99,6 +101,8 @@ export type PlaylistEdit =
   | { type: 'remove'; id: number; position: number }
   | { type: 'move'; id: number; from: number; to: number }
   | { type: 'duplicate'; id: number; name: string }
+  /** Imported playlist: which end new songs land on. null = learned from syncs. */
+  | { type: 'setOrder'; id: number; newestFirst: boolean | null }
 
 export interface SyncReport {
   playlists: number
