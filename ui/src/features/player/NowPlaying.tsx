@@ -186,11 +186,11 @@ export function NowPlaying() {
   const video = now.via === 'youtube'
 
   return (
-    // Below the app's title bar: navigation, window buttons and "Close player" stay reachable.
-    <div role="dialog" aria-label="Now playing" onContextMenu={onMenu(playerMenu)} className="fixed inset-x-0 top-13 bottom-0 z-20 isolate flex flex-col overflow-hidden border-t border-line-soft bg-bg px-10 pt-4 pb-7 text-ink transition-colors duration-500" style={ambient}>
+    // Whole window, under the see-through top bar (logo, Close player and window buttons stay on top, z-30).
+    <div role="dialog" aria-label="Now playing" onContextMenu={onMenu(playerMenu)} className="fixed inset-0 z-20 isolate flex flex-col overflow-hidden bg-bg px-10 pt-17 pb-7 text-ink transition-colors duration-500" style={ambient}>
       {immersive && <Backdrop url={backdrop} dim={backdropDim} motion={backdropMotion} />}
       {!upNext && (
-        <Button variant="ghost" className="absolute top-4 right-10 z-10" onClick={() => update({ upNext: true })}>
+        <Button variant="ghost" className="absolute top-17 right-10 z-10" onClick={() => update({ upNext: true })}>
           <CaretLeft size={13} /> Up next · {nextCount}
         </Button>
       )}

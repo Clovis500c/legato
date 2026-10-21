@@ -43,6 +43,13 @@ export function restoreScreen() {
   if (saved.full && usePlayer.getState().now) usePlayer.getState().setFull(true)
 }
 
+/** Any navigation closes Now Playing: logo, shortcuts, menus and toasts all just call go. Returns cleanup. */
+export function startClosingPlayerOnNavigate(): () => void {
+  return useStore.subscribe((s, p) => {
+    if (s.view !== p.view && usePlayer.getState().full) usePlayer.getState().setFull(false)
+  })
+}
+
 /** Keeps the stored screen current. Returns cleanup. */
 export function startScreenSaving(): () => void {
   const save = () => {

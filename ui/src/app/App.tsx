@@ -1,6 +1,6 @@
-import { ArrowsClockwise, CaretDown, CaretLeft, CaretRight, Minus, Square, Warning, X } from '@phosphor-icons/react'
+import { CaretDown, CopySimple, Minus, Square, Warning, X } from '@phosphor-icons/react'
 import { getCurrentWindow } from '@tauri-apps/api/window'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { AddView } from '../features/add/AddView'
 import { HomeView } from '../features/home/HomeView'
 import { MixesView, MixView } from '../features/mixes/MixesView'
@@ -20,11 +20,11 @@ import { ImportDialog } from '../features/share/ImportDialog'
 import { ConnectWizard } from '../features/sources/ConnectWizard'
 import { Sidebar } from '../features/sidebar/Sidebar'
 import { api } from '../shared/api'
-import { region, spotifyList, timeAgo } from '../shared/format'
+import { region, spotifyList } from '../shared/format'
 import { ContextMenuHost } from '../shared/ui/ContextMenu'
-import { RoundButton } from '../shared/ui/controls'
+import { Logo } from '../shared/ui/Logo'
 import { useSettings } from './settings'
-import { restoreScreen, startScreenSaving } from './screen'
+import { restoreScreen, startClosingPlayerOnNavigate, startScreenSaving } from './screen'
 import { startShortcuts } from './shortcuts'
 import { useStore } from './store'
 import { Toasts } from './Toasts'
@@ -32,44 +32,44 @@ import { Toasts } from './Toasts'
 const win = getCurrentWindow()
 const winBtn = 'grid h-8 w-10 place-items-center rounded-md text-ink-3 transition hover:bg-raised hover:text-ink'
 
-/** Replaces OS title bar (decorations: false). Empty areas drag the window. */
-function TitleBar() {
-  const { back, fwd, goBack, goForward, sync, busy, status, lastSync } = useStore()
-  const { full, setFull } = usePlayer()
-  const anyConnected = status.spotify.connected || status.youtube.connected
+/**
+ * Replaces the OS title bar (decorations: false), full width like YouTube's: logo and name (Home, from anywhere, the
+ * player included), window buttons. Empty areas drag the window. Over Now Playing it's see-through: the player's
+ * backdrop or tint runs under it, no grey band.
+ */
+function TopBar() {
+  const full = usePlayer((s) => s.full)
+  const setFull = usePlayer((s) => s.setFull)
+  const go = useStore((s) => s.go)
+  const [maximized, setMaximized] = useState(false)
+  useEffect(() => {
+    const check = () => void win.isMaximized().then(setMaximized, () => {})
+    check()
+    const off = win.onResized(check)
+    return () => void off.then((f) => f())
+  }, [])
   return (
-    <div data-tauri-drag-region className="flex h-13 shrink-0 items-center justify-between gap-4 pr-2 pl-10">
-      <div className="flex items-center gap-1.5">
-        {/* Now Playing open: Back closes it first. */}
-        <RoundButton label={full ? 'Close Now Playing' : 'Back'} size="xs" disabled={!full && !back.length} onClick={() => (full ? setFull(false) : goBack())}>
-          <CaretLeft size={13} />
-        </RoundButton>
-        <RoundButton label="Forward" size="xs" disabled={full || !fwd.length} onClick={goForward}>
-          <CaretRight size={13} />
-        </RoundButton>
-        {full && (
-          <button onClick={() => setFull(false)} title="Close Now Playing (Esc)" className="ml-2 flex items-center gap-1.5 rounded-full border border-line px-3 py-1 text-xs font-medium text-ink-2 transition hover:bg-raised hover:text-ink">
-            <CaretDown size={12} weight="bold" /> Close player
-          </button>
-        )}
-      </div>
-      <div className="flex items-center gap-2">
-        {lastSync && <span className="kicker">Synced {timeAgo(lastSync.at)}</span>}
-        <RoundButton label={busy ? 'Importing…' : anyConnected ? 'Import playlists again (sync)' : 'Sign in with Google in Settings › Accounts first'} size="xs" disabled={busy || !anyConnected} onClick={sync}>
-          <ArrowsClockwise size={13} className={busy ? 'animate-spin' : ''} />
-        </RoundButton>
-        <span className="mx-2 h-4 w-px bg-line" />
-        <button className={winBtn} aria-label="Minimize" onClick={() => win.minimize()}>
-          <Minus size={14} />
+    <header data-tauri-drag-region className={`relative z-30 flex h-13 shrink-0 items-center gap-3 pr-2 pl-5 ${full ? '' : 'bg-panel'}`}>
+      <button onClick={() => go({ name: 'home' })} title="Home" className="flex items-center gap-2.5 rounded-md px-2 py-1">
+        <Logo />
+        <span className="text-[15px] font-bold tracking-tight">Music App</span>
+      </button>
+      {full && (
+        <button onClick={() => setFull(false)} title="Close Now Playing (Esc)" className="flex items-center gap-1.5 rounded-full border border-line px-3 py-1 text-xs font-medium text-ink-2 transition hover:bg-raised hover:text-ink">
+          <CaretDown size={12} weight="bold" /> Close player
         </button>
-        <button className={winBtn} aria-label="Maximize" onClick={() => win.toggleMaximize()}>
-          <Square size={12} />
-        </button>
-        <button className={`${winBtn} hover:bg-danger! hover:text-white!`} aria-label="Close" onClick={() => win.close()}>
-          <X size={14} />
-        </button>
-      </div>
-    </div>
+      )}
+      <div data-tauri-drag-region className="h-full flex-1" />
+      <button className={winBtn} aria-label="Minimize" onClick={() => win.minimize()}>
+        <Minus size={14} />
+      </button>
+      <button className={winBtn} aria-label={maximized ? 'Restore' : 'Maximize'} onClick={() => win.toggleMaximize()}>
+        {maximized ? <CopySimple size={13} /> : <Square size={12} />}
+      </button>
+      <button className={`${winBtn} hover:bg-danger! hover:text-white!`} aria-label="Close" onClick={() => win.close()}>
+        <X size={14} />
+      </button>
+    </header>
   )
 }
 
@@ -131,6 +131,7 @@ export function App() {
   }, [refresh])
   useEffect(() => startSessionSaving(), [])
   useEffect(() => startScreenSaving(), [])
+  useEffect(() => startClosingPlayerOnNavigate(), [])
   useEffect(() => startMedia(), [])
   useEffect(() => startShortcuts(), [])
   useEffect(() => startDiscord(), [])
@@ -152,10 +153,10 @@ export function App() {
 
   return (
     <div className="flex h-full flex-col">
+      <TopBar />
       <div className="flex min-h-0 flex-1">
         <Sidebar />
-        <main className="flex min-w-0 flex-1 flex-col">
-          <TitleBar />
+        <main className="flex min-w-0 flex-1 flex-col pt-3">
           <Alerts />
           <div className="flex min-h-0 flex-1 flex-col px-10">
             {view.name === 'home' && <HomeView />}

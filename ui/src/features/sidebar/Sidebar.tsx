@@ -31,18 +31,6 @@ const Section = ({ title, children, onContextMenu }: { title: string; children: 
   </section>
 )
 
-/** The app icon's M (src-tauri/icons/icon.svg): legs in the text color, the dip in the icon's orange (not the accent:
- *  a grey Windows accent turned it grey). */
-function Logo() {
-  const line = { fill: 'none', strokeWidth: 30, strokeLinecap: 'round', strokeLinejoin: 'round' } as const
-  return (
-    <svg viewBox="40 54 176 148" className="size-5.5 shrink-0" aria-hidden>
-      <path d="M84 78 L128 146 L172 78" stroke="#FF6A2E" {...line} />
-      <path d="M58 184 V94 Q58 64 84 78 M172 78 Q198 64 198 94 V184" stroke="currentColor" {...line} />
-    </svg>
-  )
-}
-
 export function Sidebar() {
   const { view, go, tracks, playlists, query, setQuery, editPlaylist } = useStore()
   const counts = useMemo(() => ({ albums: groupAlbums(tracks).length, artists: groupArtists(tracks).length }), [tracks])
@@ -65,15 +53,7 @@ export function Sidebar() {
   return (
     // Header and footer stay put; only the middle scrolls (a small window used to scroll the whole sidebar, logo included).
     <aside className="flex w-63 shrink-0 flex-col border-r border-line bg-panel">
-      <div className="flex shrink-0 flex-col gap-5 px-3 pt-4 pb-5">
-        {/* Logo and name go Home; the rest of the row still drags the window. */}
-        <div data-tauri-drag-region className="flex items-center px-2">
-          <button onClick={() => go({ name: 'home' })} title="Home" className="flex items-center gap-2.5 rounded-md">
-            <Logo />
-            <span className="text-[15px] font-bold tracking-tight">Music App</span>
-          </button>
-        </div>
-
+      <div className="flex shrink-0 flex-col gap-5 px-3 pt-3 pb-5">
         <label className="flex items-center gap-2 rounded-lg border border-line bg-raised px-2.5 py-1.5 focus-within:border-ink-3">
           <MagnifyingGlass size={14} className="text-ink-3" />
           <input

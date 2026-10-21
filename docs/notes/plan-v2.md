@@ -48,10 +48,10 @@ it lands (tested, `pnpm check` green, committed). Technical plan, rule changes a
       Discord, back very fast; webview resources reduced while hidden, music never cut. "Quit" is the only real exit.
 - [ ] Auto-update: check at every launch; if an update is out, download in the background, restart automatically at a
       moment that doesn't cut the music, and resume playback where it was (`session.ts`).
-- [ ] "Music App" button goes Home, even from the player.
-- [ ] Window top bar follows the player's background instead of staying grey.
+- [x] "Music App" button goes Home, even from the player.
+- [x] Window top bar follows the player's background instead of staying grey.
 - [ ] Click on the cover or the video: pause / play, with our own handling (not YouTube's).
-- [ ] Top bar: remove the sync icon and the back / forward icons at the top left.
+- [x] Top bar: remove the sync icon and the back / forward icons at the top left.
 - [ ] Right-click on a song of a playlist or of the library: remove it from the playlists that hold it, or from the
       library (`features/menus.tsx`).
 - [ ] Music filter on YouTube import: leave out videos that aren't music, carefully (some real songs aren't tagged as
