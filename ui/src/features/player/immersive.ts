@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { boxOf, sourceRect } from '../../shared/artfit'
 
 // Canvas width; the window is ~6× wider, so 1 canvas px of blur ≈ 6 screen px.
 const SIZE = 320
@@ -25,7 +26,8 @@ export function blurredBackdrop(src: string, blur: number): Promise<string> {
       if (!ctx) return reject(new Error('No 2D canvas'))
       ctx.filter = `blur(${(blur * SIZE) / SCREEN}px) saturate(1.5)`
       const pad = blur ? SIZE * 0.12 : 0
-      ctx.drawImage(img, -pad, -pad, SIZE + 2 * pad, SIZE + 2 * pad)
+      // Video frames: the picture only, not its black bars.
+      ctx.drawImage(img, ...sourceRect(img, boxOf(img, src)), -pad, -pad, SIZE + 2 * pad, SIZE + 2 * pad)
       const url = c.toDataURL('image/jpeg', 0.92)
       if (cache.size > 40) cache.delete(cache.keys().next().value!)
       cache.set(key, url)

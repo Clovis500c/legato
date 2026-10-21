@@ -15,6 +15,7 @@ import { trackArt } from '../../shared/art'
 import { Cover } from '../../shared/ui/Cover'
 import { bindFrame, useNowTrack, usePlayer, useVideoSlot } from './store'
 import { embedUrl, parseYt, ytPost } from './youtube'
+import { frameAround } from '../../shared/artbox'
 
 const AUDIO = /\.(mp3|flac|wav|ogg|m4a|aac)$/i
 export const clock = (ms: number | null) => formatDuration(ms) || '0:00'
@@ -37,6 +38,9 @@ function YouTubeFrame({ videoId }: { videoId: string }) {
   const onYoutube = usePlayer((s) => s.onYoutube)
   const rect = useVideoSlot((s) => s.rect)
   const hidden = useVideoSlot((s) => s.hidden)
+  const box = useVideoSlot((s) => s.box)
+  // Bars baked into the video: frame enlarged, only the picture shows.
+  const crop = rect && box && !hidden ? frameAround(rect, box) : null
   const frame = useRef<HTMLIFrameElement | null>(null)
   const ready = useRef(false)
   // First video and options at mount: changing src later would reload the embed.
@@ -86,9 +90,9 @@ function YouTubeFrame({ videoId }: { videoId: string }) {
         usePlayer.getState().applyVolume(true)
       }}
       // Hidden (cover shown instead): YouTube's minimum size, so it streams a low resolution nobody sees.
-      style={rect ? { left: rect.left, top: rect.top, width: hidden ? 200 : rect.width, height: hidden ? 200 : rect.height } : undefined}
+      style={crop ?? (rect ? { left: rect.left, top: rect.top, width: hidden ? 200 : rect.width, height: hidden ? 200 : rect.height } : undefined)}
       // Bare video: no pointer on it, so YouTube's hover overlay never shows; our controls drive it.
-      className={`fixed z-30 rounded-lg border border-line bg-black ${src.controls && !hidden ? '' : 'pointer-events-none'} ${hidden ? 'opacity-0' : ''} ${rect ? '' : 'right-6 bottom-[112px] h-50 w-89 shadow-[0_12px_32px_var(--shadow)]'}`}
+      className={`fixed z-30 bg-black ${crop ? '' : 'rounded-lg border border-line'} ${src.controls && !hidden ? '' : 'pointer-events-none'} ${hidden ? 'opacity-0' : ''} ${rect ? '' : 'right-6 bottom-[112px] h-50 w-89 shadow-[0_12px_32px_var(--shadow)]'}`}
     />
   )
 }

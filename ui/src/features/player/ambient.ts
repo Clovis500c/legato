@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { boxOf, sourceRect } from '../../shared/artfit'
 import { contrast, type Theme } from '../../shared/theme/theme'
 import type { Palette } from '../../shared/theme/theme'
 
@@ -15,7 +16,8 @@ export function averageColor(src: string): Promise<Rgb | null> {
         const c = document.createElement('canvas')
         c.width = c.height = 12
         const ctx = c.getContext('2d')!
-        ctx.drawImage(img, 0, 0, 12, 12)
+        // Video frames: black bars would darken the tint.
+        ctx.drawImage(img, ...sourceRect(img, boxOf(img, src)), 0, 0, 12, 12)
         const d = ctx.getImageData(0, 0, 12, 12).data
         const sum = [0, 0, 0, 0]
         for (let i = 0; i < d.length; i += 4) {

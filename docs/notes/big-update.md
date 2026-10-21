@@ -302,4 +302,7 @@ The mic opens a small menu with two big choices: "Search by voice" and "Identify
 
 ## Decisions taken on the way
 
-(Filled in as the work goes.)
+- Cover crop, checked on the reported video (`K0BHzfTlma4`): its bars are 22.8 % and 28.5 % of the width, so the
+  old "bars must be even" rule refused them. New detection gives the picture box x 0.228, w 0.487 on maxres, hq720
+  and hqdefault alike; cover and video both show only the picture in the real app.
+- "Still" answers cached before the fix (bars counted in) are asked again (cache key `still-videos-2`).

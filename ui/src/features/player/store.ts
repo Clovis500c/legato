@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { useStore } from '../../app/store'
 import { api, type LibraryTrack, type PlayerCommand, type PlayerStatus, type SpotifyCommand, type SpotifyPlayback, type Track } from '../../shared/api'
+import type { Box } from '../../shared/artbox'
 import { region } from '../../shared/format'
 import { endListen, progress, startListen } from './listens'
 import { demoGain, demoLength, fadeGain, NO_FADE, type Fade } from './fade'
@@ -451,8 +452,10 @@ export const usePlayer = create<PlayerState>((set, get) => ({
 }))
 
 /** Where the YouTube iframe should sit. Null = mini player. Moving the iframe in DOM would reload it. */
-export const useVideoSlot = create<{ rect: DOMRect | null; hidden: boolean; set: (rect: DOMRect | null) => void }>((set, get) => ({
+export const useVideoSlot = create<{ rect: DOMRect | null; hidden: boolean; box: Box | null; set: (rect: DOMRect | null) => void }>((set, get) => ({
   rect: null,
+  // Picture inside the video's 16:9 frame (bars cut): the frame is enlarged and clipped to it. Now Playing only.
+  box: null,
   // Now Playing in cover mode: video transparent (user's choice).
   hidden: false,
   set: (rect) => {

@@ -16,6 +16,8 @@ import { playerMenu, trackMenu } from '../menus'
 import { useAmbient } from './ambient'
 import { useBackdrop } from './immersive'
 import { useStill } from './still'
+import { useVideoBox } from './videoBox'
+import { clampRatio } from '../../shared/artbox'
 import { fileFormat, VolumeControl } from './PlayerBar'
 import { viaLabel, vias, type Via } from './sources'
 import { fileTitle, useNowTrack, usePlayer, useVideoSlot } from './store'
@@ -92,18 +94,26 @@ function SourceBadge({ via }: { via: Via }) {
  * Video or cover, as big as the space allows without pushing the controls off screen. YouTube in cover mode (user's
  * choice 2026-10-16, against YouTube's terms like the shield): the embed keeps playing over the cover, fully transparent.
  */
-function Stage({ video, cover, track, title }: { video: boolean; cover: boolean; track?: LibraryTrack; title: string }) {
+function Stage({ video, cover, track, title, youtubeId }: { video: boolean; cover: boolean; track?: LibraryTrack; title: string; youtubeId?: string }) {
   const big = video && !cover
   // Cover frame takes the art's real shape (bars of video frames cut off, see Cover fit).
   const [art, setArt] = useState(1)
-  const ratio = big ? 16 / 9 : art
+  // Video: same, from its own frames; the player is then enlarged and clipped to the picture (PlayerBar).
+  const box = useVideoBox(big ? youtubeId : undefined)
+  useEffect(() => {
+    if (!big) return
+    useVideoSlot.setState({ box })
+    return () => useVideoSlot.setState({ box: null })
+  }, [big, box])
+  const ratio = big ? (box ? clampRatio((box.w * 16) / (box.h * 9)) : 16 / 9) : art
   // Container query units: fit inside both width and height, keep the ratio.
   const fit = { width: `min(100cqw, 100cqh * ${ratio})`, aspectRatio: String(ratio) }
   return (
     // w-full: parent centers its children; without it the box shrinks to nothing and cq units go to 0.
     <div className="grid min-h-50 w-full flex-1 place-items-center" style={{ containerType: 'size' }}>
       {big ? (
-        <VideoSlot className="min-h-50 min-w-89" style={fit} />
+        // Cropped: the iframe itself stays bigger than YouTube's 200×200 minimum, the slot can be any shape.
+        <VideoSlot className={box ? 'min-h-50 min-w-50 bg-transparent!' : 'min-h-50 min-w-89'} style={fit} />
       ) : (
         <span style={fit} className="relative block">
           <Cover title={track?.album ?? title} art={track && bigTrackArt(track)} size={200} eager fit={setArt} className="size-full! text-[56px]! shadow-[0_12px_40px_var(--shadow)]" />
@@ -215,7 +225,7 @@ export function NowPlaying() {
       <div className={`grid min-h-0 flex-1 gap-10 ${upNext ? 'grid-cols-[minmax(0,1fr)_360px]' : 'grid-cols-1'}`}>
         <section className="flex min-h-0 min-w-0 flex-col items-center gap-4">
           {video ? <Segmented label="Show" value={stage} onChange={(s) => update({ stage: s })} options={[{ value: 'auto', label: still === undefined || stage !== 'auto' ? 'Auto' : still ? 'Auto · cover' : 'Auto · video' }, { value: 'video', label: 'Video' }, { value: 'cover', label: 'Cover' }]} /> : <span className="kicker text-ink-2">Now playing · {viaLabel[now.via]}</span>}
-          <Stage video={video} cover={stage === 'cover' || (stage === 'auto' && still === true)} track={track} title={now.title} />
+          <Stage video={video} cover={stage === 'cover' || (stage === 'auto' && still === true)} track={track} title={now.title} youtubeId={now.youtubeId} />
           {now.via === 'spotify' && <span className="kicker text-center">Playing in your Spotify app</span>}
           {now.via === 'preview' && (
             <div className="flex items-center justify-center gap-4">
