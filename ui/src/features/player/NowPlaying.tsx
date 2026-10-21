@@ -1,4 +1,4 @@
-import { ArrowSquareOut, CaretLeft } from '@phosphor-icons/react'
+import { ArrowSquareOut, CaretLeft, Quotes } from '@phosphor-icons/react'
 import { openUrl } from '@tauri-apps/plugin-opener'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
@@ -9,7 +9,7 @@ import { clampRatio } from '../../shared/artbox'
 import type { Settings } from '../../shared/theme/theme'
 import { Button } from '../../shared/ui/Button'
 import { onMenu } from '../../shared/ui/ContextMenu'
-import { Segmented } from '../../shared/ui/controls'
+import { RoundButton, Segmented } from '../../shared/ui/controls'
 import { Cover } from '../../shared/ui/Cover'
 import { SourceIcon } from '../../shared/ui/SourceIcon'
 import { AddToPlaylist } from '../library/AddToPlaylist'
@@ -23,6 +23,7 @@ import { useStill } from './still'
 import { useNowTrack, usePlayer, useVideoSlot } from './store'
 import { Transport } from './Transport'
 import { UpNext, useNextCount } from './UpNext'
+import { LyricsPanel } from './LyricsPanel'
 import { useVideoBox } from './videoBox'
 import { usePulse } from './pulse'
 
@@ -174,7 +175,7 @@ function Backdrop({ url, dim, motion }: { url?: string; dim: number; motion: boo
 }
 
 /** Settings Now Playing reads. */
-const pick = ({ tuner, tint, immersive, backdropBlur, backdropDim, backdropMotion, stage, upNext, volume, coverPulse, motion }: Settings) => ({ tuner, tint, immersive, backdropBlur, backdropDim, backdropMotion, stage, upNext, volume, coverPulse, motion })
+const pick = ({ tuner, tint, immersive, backdropBlur, backdropDim, backdropMotion, stage, upNext, volume, coverPulse, motion, lyrics }: Settings) => ({ tuner, tint, immersive, backdropBlur, backdropDim, backdropMotion, stage, upNext, volume, coverPulse, motion, lyrics })
 
 /** Tuner dial on the smooth clock: Now Playing itself doesn't re-render on every position report. */
 function Tuner() {
@@ -187,7 +188,7 @@ function Tuner() {
 export function NowPlaying() {
   const now = usePlayer((s) => s.now)
   const setFull = usePlayer((s) => s.setFull)
-  const { tuner, tint, immersive, backdropBlur, backdropDim, backdropMotion, stage, upNext, volume: volumeMode, coverPulse, motion } = useSettings(
+  const { tuner, tint, immersive, backdropBlur, backdropDim, backdropMotion, stage, upNext, volume: volumeMode, coverPulse, motion, lyrics } = useSettings(
     useShallow((s) => ({ ...pick(s.settings), theme: s.settings.theme, accent: s.settings.accent, customThemes: s.settings.customThemes })),
   )
   const update = useSettings((s) => s.update)
@@ -216,13 +217,13 @@ export function NowPlaying() {
     // Whole window, under the see-through top bar (logo, Close player and window buttons stay on top, z-30).
     <div role="dialog" aria-label="Now playing" onContextMenu={onMenu(playerMenu)} className="fixed inset-0 z-20 isolate flex flex-col overflow-hidden bg-bg px-10 pt-17 pb-7 text-ink transition-colors duration-500" style={ambient}>
       {immersive && <Backdrop url={backdrop} dim={backdropDim} motion={backdropMotion} />}
-      {!upNext && (
+      {!upNext && !lyrics && (
         <Button variant="ghost" className="absolute top-17 right-10 z-10" onClick={() => update({ upNext: true })}>
           <CaretLeft size={13} /> Up next · {nextCount}
         </Button>
       )}
 
-      <div className={`grid min-h-0 flex-1 gap-10 ${upNext ? 'grid-cols-[minmax(0,1fr)_360px]' : 'grid-cols-1'}`}>
+      <div className={`grid min-h-0 flex-1 gap-10 ${lyrics ? 'grid-cols-[minmax(0,1fr)_minmax(0,1fr)]' : upNext ? 'grid-cols-[minmax(0,1fr)_360px]' : 'grid-cols-1'}`}>
         <section className="flex min-h-0 min-w-0 flex-col items-center gap-4">
           {video ? <Segmented label="Show" value={stage} onChange={(s) => update({ stage: s })} options={[{ value: 'auto', label: still === undefined || stage !== 'auto' ? 'Auto' : still ? 'Auto · cover' : 'Auto · video' }, { value: 'video', label: 'Video' }, { value: 'cover', label: 'Cover' }]} /> : <span className="kicker text-ink-2">Now playing · {viaLabel[now.via]}</span>}
           <Stage video={video} cover={stage === 'cover' || (stage === 'auto' && still === true)} track={track} title={now.title} youtubeId={now.youtubeId} pulse={coverPulse && motion} />
@@ -251,7 +252,12 @@ export function NowPlaying() {
               <TimeText part="both" className="text-[13px] text-ink-2" />
             </div>
             <div className="grid grid-cols-[1fr_auto_1fr] items-center">
-              <SourceBadge via={now.via} />
+              <span className="flex items-center gap-1">
+                <SourceBadge via={now.via} />
+                <RoundButton label={lyrics ? 'Hide lyrics' : 'Lyrics'} aria-pressed={lyrics} kind="plain" size="sm" onClick={() => update({ lyrics: !lyrics })} className={lyrics ? 'text-accent!' : 'text-ink-3'}>
+                  <Quotes size={16} weight={lyrics ? 'fill' : 'regular'} />
+                </RoundButton>
+              </span>
               <Transport size="lg" />
               <div className="flex flex-col items-end gap-1">
                 <VolumeControl big />
@@ -261,7 +267,7 @@ export function NowPlaying() {
           </div>
         </section>
 
-        {upNext && <UpNext onHide={() => update({ upNext: false })} />}
+        {lyrics ? <LyricsPanel onHide={() => update({ lyrics: false })} onUpNext={() => update({ lyrics: false, upNext: true })} /> : upNext && <UpNext onHide={() => update({ upNext: false })} />}
       </div>
     </div>
   )

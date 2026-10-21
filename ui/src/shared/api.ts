@@ -151,6 +151,14 @@ export type Heard = { kind: 'text'; text: string } | { kind: 'miss'; miss: Voice
 export type DetectMiss = 'noToken' | 'noMic' | 'micBlocked' | 'micBusy' | 'silent' | 'canceled' | 'badToken' | 'limit' | 'offline' | 'failed'
 export type Detection = { kind: 'found'; track: Track } | { kind: 'unknown' } | { kind: 'miss'; miss: DetectMiss; detail: string | null }
 
+/** crates/core lyrics.rs. Lines synced (ms); empty = plain only. */
+export interface Lyrics {
+  lines: { ms: number; text: string }[]
+  plain: string | null
+  instrumental: boolean
+  source: string
+}
+
 /** ytwatch.rs LiveReport (watch page). */
 export interface LiveReport {
   attached?: boolean
@@ -376,6 +384,8 @@ export const api = {
   detectStop: () => invoke<void>('detect_stop'),
   /** While listening: seconds so far, microphone level 0..1. */
   onDetect: (cb: (seconds: number, level: number) => void) => listen<[number, number]>('detect', (e) => cb(e.payload[0], e.payload[1])),
+  /** Lyrics of a song (LRCLIB, then YouTube Music's own when signed in), cached. null = none found. */
+  lyrics: (ask: { title: string; artist: string; album: string | null; durationMs: number | null; youtube: string | null }) => invoke<Lyrics | null>('lyrics', { ask }),
   /** Windows' own settings page that unblocks a feature. */
   openWindowsSettings: (page: 'speech' | 'microphone') => invoke<void>('open_windows_settings', { page }),
   /** Raw JSON; validated by shared/theme/settings.sanitize. */

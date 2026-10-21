@@ -240,6 +240,10 @@ impl Library {
             // v7: music or not, per track (YouTube imports bring talks and games along). NULL = not looked at.
             lib.db.execute_batch("BEGIN; ALTER TABLE tracks ADD COLUMN musicness TEXT; PRAGMA user_version = 7; COMMIT;")?;
         }
+        if lib.db.query_row("PRAGMA user_version", [], |r| r.get::<_, i64>(0))? < 8 {
+            // v8: lyrics looked up (lyrics.rs key), JSON or NULL = none found; spares the services, works offline.
+            lib.db.execute_batch("BEGIN; CREATE TABLE IF NOT EXISTS lyrics (key TEXT PRIMARY KEY, body TEXT, fetched INTEGER NOT NULL); PRAGMA user_version = 8; COMMIT;")?;
+        }
         let v = lib.versions.clone();
         lib.db.update_hook(Some(move |_: rusqlite::hooks::Action, _: &str, table: &str, _: i64| v.touch(table)))?;
         Ok(lib)
@@ -614,6 +618,19 @@ impl Library {
         for (pos, t) in ids.iter().enumerate() {
             ins.execute(params![id, pos as i64, t])?;
         }
+        Ok(())
+    }
+
+    /// Lyrics looked up before: Some((body, when)), body None = nothing found then.
+    pub fn cached_lyrics(&self, key: &str) -> Result<Option<(Option<String>, i64)>> {
+        Ok(self.db.query_row("SELECT body, fetched FROM lyrics WHERE key = ?1", [key], |r| Ok((r.get(0)?, r.get(1)?))).optional()?)
+    }
+
+    pub fn save_lyrics(&self, key: &str, body: Option<&str>, fetched: i64) -> Result<()> {
+        self.db.execute(
+            "INSERT INTO lyrics (key, body, fetched) VALUES (?1, ?2, ?3) ON CONFLICT (key) DO UPDATE SET body = excluded.body, fetched = excluded.fetched",
+            params![key, body, fetched],
+        )?;
         Ok(())
     }
 
@@ -1023,6 +1040,17 @@ mod tests {
         lib.set_setting("ui", &serde_json::json!({ "theme": "paper" }))?;
         lib.set_setting("ui", &serde_json::json!({ "theme": "graphite" }))?;
         assert_eq!(lib.setting("ui")?, Some(serde_json::json!({ "theme": "graphite" })));
+        Ok(())
+    }
+
+    #[test]
+    fn lyrics_cache_keeps_finds_and_misses() -> Result<()> {
+        let lib = Library::in_memory()?;
+        assert_eq!(lib.cached_lyrics("a|b|200")?, None);
+        lib.save_lyrics("a|b|200", None, 10)?;
+        assert_eq!(lib.cached_lyrics("a|b|200")?, Some((None, 10)));
+        lib.save_lyrics("a|b|200", Some("{}"), 20)?;
+        assert_eq!(lib.cached_lyrics("a|b|200")?, Some((Some("{}".into()), 20)));
         Ok(())
     }
 

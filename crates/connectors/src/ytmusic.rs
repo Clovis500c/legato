@@ -131,6 +131,14 @@ pub(crate) fn all<'a>(v: &'a Value, key: &str) -> Vec<&'a Value> {
     out
 }
 
+/// Lyrics page → (text, source).
+fn lyrics_of(page: &Value) -> Option<(String, String)> {
+    let shelf = all(page, "musicDescriptionShelfRenderer").into_iter().next()?;
+    let body = text(shelf.get("description")?)?;
+    let source = shelf.get("footer").and_then(text).unwrap_or_default();
+    (!body.trim().is_empty()).then_some((body, source))
+}
+
 /// Result of adding videos to a playlist.
 #[derive(Debug, Default, PartialEq)]
 pub struct Added {
@@ -407,6 +415,13 @@ impl YouTubeMusic {
     }
 
     /// Like videos: what "add to Liked Music" means on YouTube Music.
+    /// Lyrics YouTube Music shows for this video (its Lyrics tab: plain text) and their source line ("Source: …").
+    pub async fn lyrics(&self, video_id: &str) -> Result<Option<(String, String)>> {
+        let next = self.call("next", json!({ "videoId": video_id, "isAudioOnly": true })).await?;
+        let Some(id) = all(&next, "browseId").into_iter().filter_map(Value::as_str).find(|b| b.starts_with("MPLYt")) else { return Ok(None) };
+        Ok(lyrics_of(&self.call("browse", json!({ "browseId": id })).await?))
+    }
+
     pub async fn like(&self, video_ids: &[String]) -> Result<()> {
         for v in video_ids {
             self.call("like/like", json!({ "target": { "videoId": v } })).await?;
@@ -719,6 +734,21 @@ mod tests {
         let e = yt.playlist_videos("PL1").await.unwrap_err().to_string();
         assert!(e.contains("401") && e.contains("UNAUTHENTICATED"), "{e}");
         assert!(yt.search_songs("a").await.is_err());
+    }
+
+    #[tokio::test]
+    async fn lyrics_come_from_the_lyrics_tab() {
+        let mut s = Server::new_async().await;
+        let tabs = json!({ "contents": { "tabs": [{ "tabRenderer": { "endpoint": { "browseEndpoint": { "browseId": "MPADx" } } } }, { "tabRenderer": { "endpoint": { "browseEndpoint": { "browseId": "MPLYt_abc" } } } }] } });
+        s.mock("POST", "/next").match_query(Matcher::Any).match_body(Matcher::PartialJson(json!({ "videoId": "v1" }))).with_body(tabs.to_string()).create_async().await;
+        let page = json!({ "contents": { "sectionListRenderer": { "contents": [{ "musicDescriptionShelfRenderer": { "description": { "runs": [{ "text": "line one
+line two" }] }, "footer": { "runs": [{ "text": "Source: LyricFind" }] } } }] } } });
+        s.mock("POST", "/browse").match_query(Matcher::Any).match_body(Matcher::PartialJson(json!({ "browseId": "MPLYt_abc" }))).with_body(page.to_string()).create_async().await;
+        s.mock("POST", "/next").match_query(Matcher::Any).match_body(Matcher::PartialJson(json!({ "videoId": "v2" }))).with_body(json!({ "contents": {} }).to_string()).create_async().await;
+        let yt = YouTubeMusic::with_api(&s.url(), COOKIE).unwrap();
+        assert_eq!(yt.lyrics("v1").await.unwrap(), Some(("line one
+line two".into(), "Source: LyricFind".into())));
+        assert_eq!(yt.lyrics("v2").await.unwrap(), None);
     }
 
     /// Unofficial API: a reshuffled answer gives nothing, never a panic.

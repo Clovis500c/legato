@@ -71,7 +71,7 @@ it lands (tested, `pnpm check` green, committed). Technical plan, rule changes a
 - [ ] Automatic translation: Windows language detected on first launch (supported → used, else English); language
       picker in settings; at least English and French; structure that makes adding languages easy; settings search
       works in every language.
-- [ ] Lyrics mode (Player mode): cover on the left, scrolling lyrics on the right, like Spotify. Client-side system or
+- [x] Lyrics mode (Player mode): cover on the left, scrolling lyrics on the right, like Spotify. Client-side system or
       an API through Rust (LRCLIB to check): pick the best and justify.
 - [x] Music Detector: a section under "Add music" that recognizes a song from sound (like Shazam), then adds it to any
       playlist. Pick a recognition service (user's key or free) and justify; clear microphone permission; no recording

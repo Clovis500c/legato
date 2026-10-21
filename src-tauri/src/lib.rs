@@ -18,12 +18,14 @@ mod ytm;
 mod ytwatch;
 
 use music_connectors::audd::{AudD, Offline, Refused};
+use music_connectors::lrclib::Lrclib;
 use music_connectors::oauth::Opener;
 use music_connectors::spotify::Spotify;
 use music_connectors::ytmusic::{Account, ListRef, Shelf, YouTubeMusic};
 use music_connectors::ytweb::YouTubeWeb;
 use music_core::cache::{Memo, Stats, Ttl};
 use music_core::history::{Play, Pref};
+use music_core::lyrics::{self, Lyrics};
 use music_core::library::{Library, LibraryPlaylist, LibraryTrack, PlaylistEdit};
 use music_core::matching::merge_tracks;
 use music_core::musicness::Musicness;
@@ -1246,6 +1248,91 @@ async fn detect_song(app: tauri::AppHandle, state: State<'_, AppState>, market: 
     })
 }
 
+/// The song Now Playing wants lyrics for.
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct LyricsAsk {
+    title: String,
+    artist: String,
+    album: Option<String>,
+    duration_ms: Option<u32>,
+    /// Its YouTube video: YouTube Music's own lyrics when LRCLIB has none.
+    youtube: Option<String>,
+}
+
+/// Nothing found: asked again after a week (LRCLIB fills gaps over time).
+const LYRICS_RETRY_S: i64 = 7 * 86_400;
+
+/// Now Playing › Lyrics: cache, then LRCLIB (exact match, then search, timings fitted to slowed / sped up versions),
+/// then YouTube Music's own (plain) when signed in. Network failures are not cached.
+#[tauri::command]
+async fn lyrics(state: State<'_, AppState>, ask: LyricsAsk) -> CmdResult<Option<Lyrics>> {
+    // Trust boundary: text from the UI.
+    if ask.title.trim().is_empty() || ask.title.len() > 400 || ask.artist.len() > 400 {
+        return Ok(None);
+    }
+    let key = lyrics::key(&ask.artist, &ask.title, ask.duration_ms);
+    let now = unix_now();
+    let cached = state.lib.lock().unwrap().cached_lyrics(&key).map_err(err)?;
+    match cached {
+        Some((Some(body), _)) => return Ok(serde_json::from_str(&body).ok()),
+        Some((None, at)) if now - at < LYRICS_RETRY_S => return Ok(None),
+        _ => {}
+    }
+    let speed = lyrics::speed_changed(&ask.title);
+    let playing_s = ask.duration_ms.map(|d| d as f32 / 1000.0);
+    let lrclib = Lrclib::default();
+    let mut found = None;
+    let mut failed = None;
+    for (artist, title) in lyrics::queries(&ask.artist, &ask.title) {
+        // Exact first; another speed never matches its duration.
+        if !speed {
+            match lrclib.get(&title, &artist, ask.album.as_deref(), ask.duration_ms.map(|d| (d + 500) / 1000)).await {
+                Ok(Some(r)) => {
+                    found = Some(lyrics::build(r, Some(1.0), "LRCLIB"));
+                    break;
+                }
+                Ok(None) => {}
+                Err(e) => failed = Some(e),
+            }
+        }
+        match lrclib.search(&title, &artist).await {
+            Ok(records) => {
+                let records = records.into_iter().filter(|r| lyrics::same_title(&r.title, &title)).collect();
+                if let Some((r, fit)) = lyrics::pick(records, playing_s, speed) {
+                    found = Some(lyrics::build(r, fit, "LRCLIB"));
+                    break;
+                }
+            }
+            Err(e) => failed = Some(e),
+        }
+    }
+    if found.is_none()
+        && let Some(id) = ask.youtube.filter(|v| v.len() == 11 && v.chars().all(|c| c.is_ascii_alphanumeric() || c == '-' || c == '_'))
+        && let Some(yt) = state.ytm()
+    {
+        match yt.lyrics(&id).await {
+            Ok(Some((text, source))) => {
+                let source = if source.is_empty() { "YouTube Music".to_string() } else { format!("YouTube Music · {source}") };
+                found = Some(Lyrics { lines: Vec::new(), plain: Some(text), instrumental: false, source });
+            }
+            Ok(None) => {}
+            Err(e) => failed = Some(e),
+        }
+    }
+    match (found, failed) {
+        (Some(l), _) => {
+            state.lib.lock().unwrap().save_lyrics(&key, serde_json::to_string(&l).ok().as_deref(), now).map_err(err)?;
+            Ok(Some(l))
+        }
+        (None, Some(e)) => Err(err(e)),
+        (None, None) => {
+            state.lib.lock().unwrap().save_lyrics(&key, None, now).map_err(err)?;
+            Ok(None)
+        }
+    }
+}
+
 /// Stops listening: nothing is sent.
 #[tauri::command]
 fn detect_stop() {
@@ -1561,7 +1648,7 @@ pub fn run() {
             update::spawn(app.handle().clone());
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, add_track, backfill_art, find_versions, play_preview, share_playlist, share_preview, share_read_image, share_import, nearby_send, nearby_status, nearby_stop, nearby_receive, record_play, mixes, set_track_pref, clear_history, export_youtube, spotify_player, spotify_playback, ytm_sign_in, ytm_sign_out, spotify_web_open, spotify_web_status, import_spotify_link, ytm_accounts, set_ytm_accounts, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, system_accent, restart_app, autostart, set_autostart, media_update, load_session, save_session, add_to_youtube, playlist_orders, save_cover, export_cover, alternative_videos, play_stats, cache_stats, open_licenses, update_status, update_check, update_install, ytm_home, ytm_list, discord_presence, discord_off, discord_status, remove_from_playlist, remove_from_library, resolve_track, set_global_shortcuts, player_live, player_levels, voice_listen, voice_stop, open_windows_settings, detector_status, set_detector_token, detect_song, detect_stop, ytwatch_open, ytwatch_place, ytwatch_cmd, ytwatch_close])
+        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, add_track, backfill_art, find_versions, play_preview, share_playlist, share_preview, share_read_image, share_import, nearby_send, nearby_status, nearby_stop, nearby_receive, record_play, mixes, set_track_pref, clear_history, export_youtube, spotify_player, spotify_playback, ytm_sign_in, ytm_sign_out, spotify_web_open, spotify_web_status, import_spotify_link, ytm_accounts, set_ytm_accounts, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, system_accent, restart_app, autostart, set_autostart, media_update, load_session, save_session, add_to_youtube, playlist_orders, save_cover, export_cover, alternative_videos, play_stats, cache_stats, open_licenses, update_status, update_check, update_install, ytm_home, ytm_list, discord_presence, discord_off, discord_status, remove_from_playlist, remove_from_library, resolve_track, set_global_shortcuts, player_live, player_levels, voice_listen, voice_stop, open_windows_settings, detector_status, set_detector_token, detect_song, detect_stop, lyrics, ytwatch_open, ytwatch_place, ytwatch_cmd, ytwatch_close])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

@@ -13,7 +13,7 @@ Reference mockups: Figma file "Bow Game / Music App", page "Music App v3 — Hi-
 
 ## Structure
 - `crates/core` (`music-core`): pure Rust, no Tauri. `Track`, `Connector` trait, `SecretStore`, matching (ISRC, then title+artist+duration), `Library` (rusqlite), `sync`, local file scan.
-- `crates/connectors` (`music-connectors`): shared OAuth PKCE loopback (Spotify) + one module per service: 'youtube' (links, oEmbed), 'ytmusic' (web session), 'ytweb' (normal YouTube search), 'spotify', 'itunes', 'nearby', 'discord' (Rich Presence over the Discord app's local IPC), 'audd' (Music Detector, user's own token in the keychain). Injectable URLs (`with_urls`) for mockito tests.
+- `crates/connectors` (`music-connectors`): shared OAuth PKCE loopback (Spotify) + one module per service: 'youtube' (links, oEmbed), 'ytmusic' (web session), 'ytweb' (normal YouTube search), 'spotify', 'itunes', 'nearby', 'discord' (Rich Presence over the Discord app's local IPC), 'audd' (Music Detector, user's own token in the keychain), 'lrclib' (lyrics; `music_core::lyrics` cleans titles, picks, stretches timings for slowed versions; cached in SQLite). Injectable URLs (`with_urls`) for mockito tests.
 - `crates/player` (`music-player`): native local playback (rodio/symphonia), engine thread, gapless queue, microphone clips (`mic.rs`, memory only). Playback choices (YouTube, local, Spotify plan): `docs/playback.md`.
 - `crates/dsp` (`music-dsp`): live audio processing, pure Rust (meter, Adaptive Sound, limiter; later the Live Editor's effects). Its JS twin for YouTube: `crates/shield/src/live.js` (keep the formulas alike).
 - `crates/shield` (`music-shield`): ad/tracker blocker (Brave's adblock-rust) + YouTube player script.

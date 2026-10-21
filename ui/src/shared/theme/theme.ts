@@ -154,6 +154,8 @@ export interface Settings {
   autoUpdate: boolean
   /** Now Playing: Up next panel open. */
   upNext: boolean
+  /** Now Playing: lyrics beside the cover (wins over Up next). */
+  lyrics: boolean
   /** Pick up the last track where it stopped when the app opens. */
   resume: boolean
   /** Open on the screen the app was closed on, Now Playing included (startView when off). */
@@ -215,6 +217,7 @@ export const DEFAULTS: Settings = {
   mixCovers: 'grid',
   autoUpdate: true,
   upNext: true,
+  lyrics: false,
   resume: true,
   reopen: true,
   closeToTray: true,
@@ -314,6 +317,7 @@ export function sanitize(raw: unknown): Settings {
     mixCovers: pick(r.mixCovers, ['grid', 'single', 'template'] as const, DEFAULTS.mixCovers),
     autoUpdate: typeof r.autoUpdate === 'boolean' ? r.autoUpdate : DEFAULTS.autoUpdate,
     upNext: typeof r.upNext === 'boolean' ? r.upNext : DEFAULTS.upNext,
+    lyrics: r.lyrics === true,
     resume: typeof r.resume === 'boolean' ? r.resume : DEFAULTS.resume,
     reopen: typeof r.reopen === 'boolean' ? r.reopen : DEFAULTS.reopen,
     closeToTray: typeof r.closeToTray === 'boolean' ? r.closeToTray : DEFAULTS.closeToTray,
