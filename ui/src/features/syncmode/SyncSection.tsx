@@ -7,7 +7,7 @@ import { timeAgo } from '../../shared/format'
 import { tr } from '../../shared/i18n/i18n'
 import { Button } from '../../shared/ui/Button'
 import { Dialog } from '../../shared/ui/Dialog'
-import { mergedText } from './syncmode'
+import { mergedText } from './merged'
 
 const MIN_PASSWORD = 8
 

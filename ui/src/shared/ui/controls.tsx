@@ -1,4 +1,4 @@
-import { useRef, type ButtonHTMLAttributes, type ReactNode } from 'react'
+import { useRef, type ButtonHTMLAttributes } from 'react'
 import { formatCount } from '../format'
 import { tr } from '../i18n/i18n'
 
@@ -54,20 +54,6 @@ export function Stat({ label, value }: { label: string; value: number }) {
     <div className="flex flex-col gap-1 rounded-md border border-line-soft bg-recess px-3 py-2.5">
       <span className="font-mono text-2xl tabular-nums">{formatCount(value)}</span>
       <span className="kicker">{label}</span>
-    </div>
-  )
-}
-
-/** Recessed display: lit source + optional detail (FLAC 16/44). */
-export function Readout({ children, detail }: { children: ReactNode; detail?: string }) {
-  return (
-    <div className="flex items-center gap-2 rounded-md border border-line-soft bg-recess px-2.5 py-1.5 font-mono text-[10px] tracking-[0.08em] uppercase">
-      <Led on /> {children}
-      {detail && (
-        <>
-          <span className="h-2.5 w-px bg-line" /> <span className="text-ink-3">{detail}</span>
-        </>
-      )}
     </div>
   )
 }

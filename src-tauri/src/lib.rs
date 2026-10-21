@@ -1,7 +1,9 @@
 mod art;
 mod autostart;
 mod background;
+mod detector;
 mod discord;
+mod editor;
 mod hotkeys;
 mod lang;
 mod media;
@@ -13,6 +15,7 @@ mod speech;
 mod syncmode;
 mod spotify_web;
 mod thumbbar;
+mod themes;
 mod tray;
 mod update;
 mod window_bg;
@@ -20,7 +23,6 @@ mod window_place;
 mod ytm;
 mod ytwatch;
 
-use music_connectors::audd::{AudD, Offline, Refused};
 use music_connectors::lrclib::Lrclib;
 use music_connectors::oauth::Opener;
 use music_connectors::spotify::Spotify;
@@ -36,17 +38,16 @@ use music_core::search::{self, Hit};
 use music_core::model::{Connector, SecretStore, Source, Track};
 use music_core::share::{self, Item, Shared};
 use music_core::sync::{SyncReport, sync};
-use music_player::mic::{self, MicError};
 use music_player::{Command, Player, Status};
 use music_shield::Shield;
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 use std::path::{Path, PathBuf};
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::atomic::Ordering;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use tauri::ipc::Response;
-use tauri::{Emitter, Manager, State};
+use tauri::{Manager, State};
 use tauri_plugin_opener::OpenerExt;
 
 /// Errors cross IPC as plain strings (full anyhow chain).
@@ -1150,114 +1151,6 @@ fn voice_stop() {
     speech::stop()
 }
 
-/// Music Detector: the user's AudD token is set (keychain; never sent back to the UI).
-#[tauri::command]
-fn detector_status(state: State<AppState>) -> bool {
-    state.store.load::<String>(AUDD_TOKEN).is_some()
-}
-
-/// Trust boundary: an AudD token is letters and digits.
-fn audd_token_ok(t: &str) -> bool {
-    (8..=128).contains(&t.len()) && t.chars().all(|c| c.is_ascii_alphanumeric())
-}
-
-/// None = forget it.
-#[tauri::command]
-fn set_detector_token(state: State<AppState>, token: Option<String>) -> CmdResult<()> {
-    let token = token.map(|t| t.trim().to_string());
-    if token.as_deref().is_some_and(|t| !audd_token_ok(t)) {
-        return Err("That doesn't look like an AudD token (letters and digits, from dashboard.audd.io)".into());
-    }
-    state.store.set(AUDD_TOKEN, token.map(serde_json::Value::String)).map_err(err)
-}
-
-const AUDD_TOKEN: &str = "audd_token";
-/// Listening this long: enough for AudD, short to wait.
-const DETECT_SECONDS: f32 = 10.0;
-static DETECT_STOP: AtomicBool = AtomicBool::new(false);
-
-/// What the Music Detector got. `Miss`: why not, worded by the UI.
-#[derive(Debug, Serialize)]
-#[serde(tag = "kind", rename_all = "camelCase")]
-enum Detection {
-    Found { track: Track },
-    Unknown,
-    Miss { miss: DetectMiss, detail: Option<String> },
-}
-
-#[derive(Debug, Clone, Copy, Serialize)]
-#[serde(rename_all = "camelCase")]
-enum DetectMiss {
-    NoToken,
-    NoMic,
-    MicBlocked,
-    MicBusy,
-    /// No sound output to listen to (This PC).
-    NoOutput,
-    /// Too quiet to recognize: muted or far mic, nothing playing on the PC.
-    Silent,
-    /// AudD heard it but couldn't make it out (#300).
-    Unclear,
-    Canceled,
-    BadToken,
-    Limit,
-    Offline,
-    Failed,
-}
-
-fn missed(miss: DetectMiss) -> Detection {
-    Detection::Miss { miss, detail: None }
-}
-
-/// Music Detector: listens through the default microphone or to what the PC plays (memory only, never written; the
-/// interface pauses the app's own playback first), AudD names the song. Progress: "detect" events [seconds, level 0..1].
-#[tauri::command]
-async fn detect_song(app: tauri::AppHandle, state: State<'_, AppState>, market: String, input: mic::Input) -> CmdResult<Detection> {
-    let Some(token) = state.store.load::<String>(AUDD_TOKEN) else { return Ok(missed(DetectMiss::NoToken)) };
-    // Trust boundary: a two-letter country.
-    let market = if market.len() == 2 && market.chars().all(|c| c.is_ascii_alphabetic()) { market } else { "US".into() };
-    DETECT_STOP.store(false, Ordering::Relaxed);
-    let clip = tauri::async_runtime::spawn_blocking(move || {
-        mic::record(input, DETECT_SECONDS, &DETECT_STOP, |seconds, level| {
-            let _ = app.emit_to("main", "detect", (seconds, level));
-        })
-    })
-    .await
-    .map_err(err)?;
-    let clip = match clip {
-        Ok(c) => c,
-        Err(e) => {
-            return Ok(missed(match e {
-                MicError::NoMic => DetectMiss::NoMic,
-                MicError::NoOutput => DetectMiss::NoOutput,
-                MicError::Blocked => DetectMiss::MicBlocked,
-                MicError::Busy => DetectMiss::MicBusy,
-                MicError::Failed => DetectMiss::Failed,
-            }));
-        }
-    };
-    if DETECT_STOP.load(Ordering::Relaxed) {
-        return Ok(missed(DetectMiss::Canceled));
-    }
-    if clip.silent() {
-        return Ok(missed(DetectMiss::Silent));
-    }
-    let wav = clip.wav();
-    drop(clip);
-    Ok(match AudD::default().recognize(&token, wav, &market).await {
-        Ok(Some(track)) => Detection::Found { track },
-        Ok(None) => Detection::Unknown,
-        Err(e) => match e.downcast_ref::<Refused>() {
-            Some(Refused::BadToken) => missed(DetectMiss::BadToken),
-            Some(Refused::Limit) => missed(DetectMiss::Limit),
-            Some(Refused::Unclear) => missed(DetectMiss::Unclear),
-            Some(Refused::Other(m)) => Detection::Miss { miss: DetectMiss::Failed, detail: Some(m.clone()) },
-            None if e.is::<Offline>() => missed(DetectMiss::Offline),
-            None => Detection::Miss { miss: DetectMiss::Failed, detail: Some(e.to_string()) },
-        },
-    })
-}
-
 /// The song Now Playing wants lyrics for.
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -1343,12 +1236,6 @@ async fn lyrics(state: State<'_, AppState>, ask: LyricsAsk) -> CmdResult<Option<
     }
 }
 
-/// Stops listening: nothing is sent.
-#[tauri::command]
-fn detect_stop() {
-    DETECT_STOP.store(true, Ordering::Relaxed);
-}
-
 /// Interface language (Settings › Language): the tray menu and taskbar buttons follow it.
 #[tauri::command]
 fn set_ui_language(state: State<AppState>, lang: String) -> CmdResult<()> {
@@ -1417,58 +1304,6 @@ fn save_cover(app: tauri::AppHandle, playlist_id: i64, path: String) -> CmdResul
     let name = format!("{prefix}{stamp}.{ext}");
     std::fs::write(dir.join(&name), bytes).map_err(err)?;
     Ok(name)
-}
-
-/// A theme's background picture, kept in the covers folder by content. Returns its name (art scheme `cover/<name>`).
-fn store_background(app: &tauri::AppHandle, bytes: &[u8]) -> CmdResult<String> {
-    let name = music_core::themefile::background_name(bytes).map_err(err)?;
-    let dir = art::covers_dir(app).ok_or("No app data folder")?;
-    std::fs::create_dir_all(&dir).map_err(err)?;
-    if !dir.join(&name).exists() {
-        std::fs::write(dir.join(&name), bytes).map_err(err)?;
-    }
-    Ok(name)
-}
-
-/// Picture picked for a theme's background (the original can move).
-#[tauri::command]
-fn save_background(app: tauri::AppHandle, path: String) -> CmdResult<String> {
-    if std::fs::metadata(&path).map_err(err)?.len() > music_core::themefile::MAX_IMAGE as u64 {
-        return Err("Picture too big (15 MB max)".into());
-    }
-    store_background(&app, &std::fs::read(&path).map_err(err)?)
-}
-
-/// A background no theme uses any more.
-#[tauri::command]
-fn forget_background(app: tauri::AppHandle, name: String) -> CmdResult<()> {
-    if name.starts_with("bg-") && art::valid_cover_name(&name) {
-        let _ = std::fs::remove_file(art::covers_dir(&app).ok_or("No app data folder")?.join(name));
-    }
-    Ok(())
-}
-
-/// A `.theme` file: the theme and its background picture in one.
-#[tauri::command]
-fn export_theme(app: tauri::AppHandle, path: String, theme: serde_json::Value) -> CmdResult<()> {
-    let picture = theme["background"]["image"].as_str().filter(|n| art::valid_cover_name(n)).and_then(|n| std::fs::read(art::covers_dir(&app)?.join(n)).ok());
-    std::fs::write(path, music_core::themefile::pack(&theme, picture.as_deref()).map_err(err)?).map_err(err)
-}
-
-/// A `.theme` file read back: its picture stored, the theme returned for the interface to check.
-#[tauri::command]
-fn import_theme(app: tauri::AppHandle, path: String) -> CmdResult<serde_json::Value> {
-    if std::fs::metadata(&path).map_err(err)?.len() > 25 << 20 {
-        return Err("File too big for a theme".into());
-    }
-    let (mut theme, picture) = music_core::themefile::unpack(&std::fs::read_to_string(&path).map_err(err)?).map_err(err)?;
-    if let Some(p) = picture {
-        let name = store_background(&app, &p)?;
-        if let Some(bg) = theme.get_mut("background").and_then(|b| b.as_object_mut()) {
-            bg.insert("image".into(), name.into());
-        }
-    }
-    Ok(theme)
 }
 
 /// Last playback (queue as track ids, position): picked up at launch if Settings › Advanced says so.
@@ -1629,81 +1464,6 @@ fn player_live(state: State<AppState>, settings: music_player::LiveSettings) {
     state.player.set_live(settings);
 }
 
-/// Trust boundary: a song key the UI makes (features/player/effects.ts songKey).
-fn song_key_ok(song: &str) -> bool {
-    song.len() <= 1024 && (song.starts_with("t:") || song.starts_with("yt:") || song.starts_with("f:"))
-}
-
-/// Live Editor: a song's saved edits, or the presets (song None).
-#[tauri::command]
-fn edits(state: State<AppState>, song: Option<String>) -> CmdResult<Vec<music_core::library::Edit>> {
-    if song.as_deref().is_some_and(|s| !song_key_ok(s)) {
-        return Err("bad song key".into());
-    }
-    state.lib.lock().unwrap().edits(song.as_deref()).map_err(err)
-}
-
-/// New (id None) or changed edit; effects clamped, stored as numbers only. Returns its id.
-#[tauri::command]
-fn save_edit(state: State<AppState>, id: Option<i64>, song: Option<String>, name: String, effects: music_player::Effects) -> CmdResult<i64> {
-    let name: String = name.trim().chars().take(60).collect();
-    if name.is_empty() || song.as_deref().is_some_and(|s| !song_key_ok(s)) {
-        return Err("bad edit".into());
-    }
-    let json = serde_json::to_string(&effects.clamped()).map_err(err)?;
-    state.lib.lock().unwrap().save_edit(id, song.as_deref(), &name, &json, unix_now()).map_err(err)
-}
-
-#[tauri::command]
-fn delete_edit(state: State<AppState>, id: i64) -> CmdResult<()> {
-    state.lib.lock().unwrap().delete_edit(id).map_err(err)
-}
-
-/// The edit that plays with this song from now on (None = as is).
-#[tauri::command]
-fn activate_edit(state: State<AppState>, song: String, id: Option<i64>) -> CmdResult<()> {
-    if !song_key_ok(&song) {
-        return Err("bad song key".into());
-    }
-    state.lib.lock().unwrap().activate_edit(&song, id).map_err(err)
-}
-
-/// Live Editor settings for the native engine (local files, previews). Clamped on the way in.
-#[tauri::command]
-fn player_effects(state: State<AppState>, effects: music_player::Effects) {
-    state.player.set_effects(effects);
-}
-
-static EXPORT_BUSY: AtomicBool = AtomicBool::new(false);
-static EXPORT_STOP: AtomicBool = AtomicBool::new(false);
-
-/// Live Editor: a local file's copy with `effects` applied, as a new WAV (`output`, picked in the save dialog). Local
-/// files only: `input` is a path on disk, never a stream. Progress: "export" events (0..1, null = length unknown).
-#[tauri::command]
-async fn export_edit(app: tauri::AppHandle, input: String, output: String, effects: music_player::Effects) -> CmdResult<()> {
-    let (input, output) = (PathBuf::from(input), PathBuf::from(output));
-    if !input.is_absolute() || !input.is_file() || !output.is_absolute() {
-        return Err("not a local file".into());
-    }
-    if EXPORT_BUSY.swap(true, Ordering::AcqRel) {
-        return Err("an export is already running".into());
-    }
-    EXPORT_STOP.store(false, Ordering::Relaxed);
-    let done = tauri::async_runtime::spawn_blocking(move || {
-        music_player::export::export(&input, &output, effects, &EXPORT_STOP, |p| {
-            let _ = app.emit_to("main", "export", p);
-        })
-    })
-    .await;
-    EXPORT_BUSY.store(false, Ordering::Release);
-    done.map_err(err)?.map_err(|e| e.to_string())
-}
-
-#[tauri::command]
-fn export_stop() {
-    EXPORT_STOP.store(true, Ordering::Relaxed);
-}
-
 /// What the native engine plays, as heard (meters, cover animation).
 #[tauri::command]
 fn player_levels(state: State<AppState>) -> music_player::Levels {
@@ -1817,7 +1577,7 @@ pub fn run() {
             plugins::start_all(app.handle());
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, add_track, backfill_art, find_versions, play_preview, share_playlist, share_preview, share_read_image, share_import, nearby_send, nearby_status, nearby_stop, nearby_receive, record_play, mixes, set_track_pref, clear_history, export_youtube, spotify_player, spotify_playback, ytm_sign_in, ytm_sign_out, spotify_web_open, spotify_web_status, import_spotify_link, ytm_accounts, set_ytm_accounts, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, system_accent, restart_app, autostart, set_autostart, media_update, load_session, save_session, add_to_youtube, playlist_orders, save_cover, export_cover, alternative_videos, play_stats, cache_stats, open_licenses, update_status, update_check, update_install, ytm_home, ytm_list, discord_presence, discord_off, discord_status, remove_from_playlist, remove_from_library, resolve_track, set_global_shortcuts, player_live, player_effects, player_levels, export_edit, export_stop, edits, save_edit, delete_edit, activate_edit, voice_listen, voice_stop, open_windows_settings, detector_status, set_detector_token, detect_song, detect_stop, lyrics, set_ui_language, ytwatch_open, ytwatch_place, ytwatch_cmd, ytwatch_close, syncmode::sync_status, syncmode::sync_probe, syncmode::sync_setup, syncmode::sync_stop, syncmode::sync_now, syncmode::sync_dismiss, syncmode::sync_offer, syncmode::sync_offer_stop, syncmode::sync_join, plugins::plugins_list, plugins::plugin_inspect, plugins::plugin_install, plugins::plugin_set, plugins::plugin_uninstall, plugins::plugin_reply, plugins::plugin_event, plugins::plugin_input, plugins::plugin_log, save_background, forget_background, export_theme, import_theme])
+        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, add_track, backfill_art, find_versions, play_preview, share_playlist, share_preview, share_read_image, share_import, nearby_send, nearby_status, nearby_stop, nearby_receive, record_play, mixes, set_track_pref, clear_history, export_youtube, spotify_player, spotify_playback, ytm_sign_in, ytm_sign_out, spotify_web_open, spotify_web_status, import_spotify_link, ytm_accounts, set_ytm_accounts, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, system_accent, restart_app, autostart, set_autostart, media_update, load_session, save_session, add_to_youtube, playlist_orders, save_cover, export_cover, alternative_videos, play_stats, cache_stats, open_licenses, update_status, update_check, update_install, ytm_home, ytm_list, discord_presence, discord_off, discord_status, remove_from_playlist, remove_from_library, resolve_track, set_global_shortcuts, player_live, editor::player_effects, player_levels, editor::export_edit, editor::export_stop, editor::edits, editor::save_edit, editor::delete_edit, editor::activate_edit, voice_listen, voice_stop, open_windows_settings, detector::detector_status, detector::set_detector_token, detector::detect_song, detector::detect_stop, lyrics, set_ui_language, ytwatch_open, ytwatch_place, ytwatch_cmd, ytwatch_close, syncmode::sync_status, syncmode::sync_probe, syncmode::sync_setup, syncmode::sync_stop, syncmode::sync_now, syncmode::sync_dismiss, syncmode::sync_offer, syncmode::sync_offer_stop, syncmode::sync_join, plugins::plugins_list, plugins::plugin_inspect, plugins::plugin_install, plugins::plugin_set, plugins::plugin_uninstall, plugins::plugin_reply, plugins::plugin_event, plugins::plugin_input, plugins::plugin_log, themes::save_background, themes::forget_background, themes::export_theme, themes::import_theme])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
@@ -1825,14 +1585,6 @@ pub fn run() {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn audd_tokens_are_letters_and_digits() {
-        assert!(audd_token_ok("0123456789abcdef0123456789abcdef"));
-        assert!(!audd_token_ok("short"));
-        assert!(!audd_token_ok("abc def 12345"));
-        assert!(!audd_token_ok("abc\"; rm -rf; \"def"));
-    }
 
     #[test]
     fn credentials_merge_trims_and_keeps_old_values() {

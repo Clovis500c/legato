@@ -113,7 +113,7 @@ it lands (tested, `pnpm check` green, committed). Technical plan, rule changes a
       image system and its security policy if needed), parts of the UX, etc. Settings search index updated.
 
 **Phase 5: codebase health check**
-- [ ] Full check: well kept, professional, maintainable over time, easy to change; CLAUDE.md, README and docs up to
+- [x] Full check (report: `docs/notes/health-check-2026-10-22.md`): well kept, professional, maintainable over time, easy to change; CLAUDE.md, README and docs up to
       date and consistent with every changed rule; no dead code, no fake buttons; enough tests. Report with problems
       found, then fix the important ones.
 

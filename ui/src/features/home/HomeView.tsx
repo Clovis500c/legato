@@ -1,4 +1,4 @@
-import { CaretRight, Disc, MicrophoneStage, MusicNotes, Play, Playlist, PlusCircle, SpinnerGap, VinylRecord } from '@phosphor-icons/react'
+import { CaretRight, Disc, MicrophoneStage, MusicNotes, Pause, Play, Playlist, PlusCircle, SpinnerGap, VinylRecord } from '@phosphor-icons/react'
 import { openUrl } from '@tauri-apps/plugin-opener'
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useSettings } from '../../app/settings'
@@ -13,7 +13,7 @@ import { PageHeader } from '../../shared/ui/PageHeader'
 import { SourceIcon } from '../../shared/ui/SourceIcon'
 import { groupAlbums, groupArtists, type Sort } from '../library/filter'
 import { PlaylistCover } from '../library/PlaylistCover'
-import { trackMenu } from '../menus'
+import { playerMenu, trackMenu } from '../menus'
 import { MixCard, useMixes } from '../mixes/MixesView'
 import { remoteTrack, useNowTrack, usePlayer } from '../player/store'
 import { tr, trn } from '../../shared/i18n/i18n'
@@ -96,17 +96,20 @@ function QuickAccess() {
   return (
     <div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-2.5">
       {now && (
-        <button onClick={() => usePlayer.getState().setFull(true)} className="col-span-full flex items-center gap-4 rounded-xl border border-line bg-raised p-2.5 pr-4 text-left transition hover:bg-bg sm:col-span-2">
-          <Cover title={track?.album ?? now.title} art={track && trackArt(track)} size={56} />
-          <span className="flex min-w-0 flex-1 flex-col">
-            <span className="kicker">{playing ? tr('Now playing') : tr('Pick up where you left off')}</span>
-            <span className="truncate text-[15px] font-semibold">{now.title}</span>
-            <span className="truncate text-xs text-ink-2">{now.artist}</span>
-          </span>
-          <RoundButton label={playing ? tr('Pause') : tr('Play')} kind="primary" size="md" onClick={(e) => (e.stopPropagation(), usePlayer.getState().toggle())}>
-            <Play weight="fill" size={16} />
+        // Open and play / pause side by side: a button can't hold another.
+        <div onContextMenu={onMenu(playerMenu)} className="col-span-full flex items-center gap-4 rounded-xl border border-line bg-raised p-2.5 pr-4 transition hover:bg-bg sm:col-span-2">
+          <button onClick={() => usePlayer.getState().setFull(true)} className="flex min-w-0 flex-1 items-center gap-4 text-left">
+            <Cover title={track?.album ?? now.title} art={track && trackArt(track)} size={56} />
+            <span className="flex min-w-0 flex-1 flex-col">
+              <span className="kicker">{playing ? tr('Now playing') : tr('Pick up where you left off')}</span>
+              <span className="truncate text-[15px] font-semibold">{now.title}</span>
+              <span className="truncate text-xs text-ink-2">{now.artist}</span>
+            </span>
+          </button>
+          <RoundButton label={playing ? tr('Pause') : tr('Play')} kind="primary" size="md" onClick={() => usePlayer.getState().toggle()}>
+            {playing ? <Pause weight="fill" size={16} /> : <Play weight="fill" size={16} />}
           </RoundButton>
-        </button>
+        </div>
       )}
       {tiles.map((t) => (
         <button key={t.label} onClick={t.onClick} className="flex items-center gap-3 rounded-xl border border-line bg-raised px-3.5 py-3 text-left transition hover:bg-bg">

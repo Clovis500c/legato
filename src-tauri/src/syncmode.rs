@@ -2,7 +2,8 @@
 //! file key (OS keychain), the minute timer, and the local network exchange. Logic (snapshot, merge, sealing) lives in
 //! `music_core::syncmode`.
 
-use crate::{AUDD_TOKEN, AppState, CmdResult, Credentials, err, ytm};
+use crate::detector::AUDD_TOKEN;
+use crate::{AppState, CmdResult, Credentials, err, ytm};
 use music_connectors::nearby;
 use music_core::model::Connector;
 use music_core::library::now_ms;
