@@ -35,7 +35,8 @@ A fast, private desktop music player for Windows, built with Tauri 2 and Rust.
 - **No server, no account of ours.** Your library is a local SQLite database; tokens stay in the Windows Credential
   Manager.
 - **Official playback only.** Music plays through each service's own player or from your files. Nothing is downloaded
-  or extracted.
+  or extracted. Sound features (Adaptive Sound) process what plays as it plays, in memory: nothing is recorded or
+  saved, and Settings › Advanced can keep YouTube's sound untouched.
 - **One gateway to the network.** All requests go through the Rust core; the interface never calls the network itself.
 
 ## Getting started

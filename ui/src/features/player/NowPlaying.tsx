@@ -24,6 +24,7 @@ import { useNowTrack, usePlayer, useVideoSlot } from './store'
 import { Transport } from './Transport'
 import { UpNext, useNextCount } from './UpNext'
 import { useVideoBox } from './videoBox'
+import { usePulse } from './pulse'
 
 /** Publishes its rect so the single YouTube iframe sits here. YouTube rules: at least 200×200, nothing on top. */
 export function VideoSlot({ className = '', style, hidden = false, live = false, onClick }: { className?: string; style?: React.CSSProperties; hidden?: boolean; live?: boolean; onClick?: () => void }) {
@@ -97,8 +98,11 @@ function SourceBadge({ via }: { via: Via }) {
  * Video or cover, as big as the space allows without pushing the controls off screen. YouTube in cover mode (user's
  * choice 2026-10-16, against YouTube's terms like the shield): the embed keeps playing over the cover, fully transparent.
  */
-function Stage({ video, cover, track, title, youtubeId }: { video: boolean; cover: boolean; track?: LibraryTrack; title: string; youtubeId?: string }) {
+function Stage({ video, cover, track, title, youtubeId, pulse }: { video: boolean; cover: boolean; track?: LibraryTrack; title: string; youtubeId?: string; pulse: boolean }) {
   const big = video && !cover
+  // Cover moving with the music (Advanced, off by default).
+  const coverEl = useRef<HTMLSpanElement>(null)
+  usePulse(coverEl, pulse && !big)
   // Click on the picture: play / pause, our own (the embed never gets the pointer).
   const toggle = usePlayer((s) => s.toggle)
   // Cover frame takes the art's real shape (bars of video frames cut off, see Cover fit).
@@ -120,7 +124,7 @@ function Stage({ video, cover, track, title, youtubeId }: { video: boolean; cove
         // Cropped: the iframe itself stays bigger than YouTube's 200×200 minimum, the slot can be any shape.
         <VideoSlot className={box ? 'min-h-50 min-w-50 bg-transparent!' : 'min-h-50 min-w-89'} style={fit} onClick={toggle} />
       ) : (
-        <span style={fit} onClick={toggle} title="Play / pause" className="relative block cursor-pointer">
+        <span ref={coverEl} style={fit} onClick={toggle} title="Play / pause" className="relative block cursor-pointer">
           <Cover title={track?.album ?? title} art={track && bigTrackArt(track)} size={200} eager fit={setArt} className="size-full! text-[56px]! shadow-[0_12px_40px_var(--shadow)]" />
           {video && <VideoSlot hidden className="absolute inset-0 bg-transparent" />}
         </span>
@@ -170,7 +174,7 @@ function Backdrop({ url, dim, motion }: { url?: string; dim: number; motion: boo
 }
 
 /** Settings Now Playing reads. */
-const pick = ({ tuner, tint, immersive, backdropBlur, backdropDim, backdropMotion, stage, upNext, volume }: Settings) => ({ tuner, tint, immersive, backdropBlur, backdropDim, backdropMotion, stage, upNext, volume })
+const pick = ({ tuner, tint, immersive, backdropBlur, backdropDim, backdropMotion, stage, upNext, volume, coverPulse, motion }: Settings) => ({ tuner, tint, immersive, backdropBlur, backdropDim, backdropMotion, stage, upNext, volume, coverPulse, motion })
 
 /** Tuner dial on the smooth clock: Now Playing itself doesn't re-render on every position report. */
 function Tuner() {
@@ -183,7 +187,7 @@ function Tuner() {
 export function NowPlaying() {
   const now = usePlayer((s) => s.now)
   const setFull = usePlayer((s) => s.setFull)
-  const { tuner, tint, immersive, backdropBlur, backdropDim, backdropMotion, stage, upNext, volume: volumeMode } = useSettings(
+  const { tuner, tint, immersive, backdropBlur, backdropDim, backdropMotion, stage, upNext, volume: volumeMode, coverPulse, motion } = useSettings(
     useShallow((s) => ({ ...pick(s.settings), theme: s.settings.theme, accent: s.settings.accent, customThemes: s.settings.customThemes })),
   )
   const update = useSettings((s) => s.update)
@@ -221,7 +225,7 @@ export function NowPlaying() {
       <div className={`grid min-h-0 flex-1 gap-10 ${upNext ? 'grid-cols-[minmax(0,1fr)_360px]' : 'grid-cols-1'}`}>
         <section className="flex min-h-0 min-w-0 flex-col items-center gap-4">
           {video ? <Segmented label="Show" value={stage} onChange={(s) => update({ stage: s })} options={[{ value: 'auto', label: still === undefined || stage !== 'auto' ? 'Auto' : still ? 'Auto · cover' : 'Auto · video' }, { value: 'video', label: 'Video' }, { value: 'cover', label: 'Cover' }]} /> : <span className="kicker text-ink-2">Now playing · {viaLabel[now.via]}</span>}
-          <Stage video={video} cover={stage === 'cover' || (stage === 'auto' && still === true)} track={track} title={now.title} youtubeId={now.youtubeId} />
+          <Stage video={video} cover={stage === 'cover' || (stage === 'auto' && still === true)} track={track} title={now.title} youtubeId={now.youtubeId} pulse={coverPulse && motion} />
           {now.via === 'spotify' && <span className="kicker text-center">Playing in your Spotify app</span>}
           {now.via === 'preview' && (
             <div className="flex items-center justify-center gap-4">

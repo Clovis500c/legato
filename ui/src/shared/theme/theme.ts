@@ -73,6 +73,10 @@ export interface DiscordSettings {
 /** Bumped when defaults change for everyone (saved settings get the new ones once). */
 const DEFAULTS_VERSION = 4
 
+/** Adaptive Sound targets, LUFS: Quiet, Normal (streaming services' usual level), Loud. */
+export const ADAPTIVE_LEVELS = [-20, -14, -11] as const
+export type AdaptiveLevel = (typeof ADAPTIVE_LEVELS)[number]
+
 /** Fade shapes, as audio editors name them. */
 export const FADE_CURVES = ['scurve', 'linear', 'equal', 'exp', 'log'] as const
 export type FadeCurve = (typeof FADE_CURVES)[number]
@@ -156,6 +160,13 @@ export interface Settings {
   reopen: boolean
   /** Closing the window keeps the app in the notification area (Rust reads it, background.rs). Quit really quits. */
   closeToTray: boolean
+  /** Adaptive Sound: loud and quiet songs evened out as they play (crates/dsp, live.js). Target in LUFS. */
+  adaptiveSound: boolean
+  adaptiveLevel: AdaptiveLevel
+  /** Now Playing's cover moves with the music's loudness. */
+  coverPulse: boolean
+  /** YouTube's sound may go through the processing above (off: untouched, features work on local files only). */
+  liveYoutube: boolean
   /** Add-ons turned on (id → on). All off until the user turns them on. */
   addons: Record<string, boolean>
   discord: DiscordSettings
@@ -203,6 +214,10 @@ export const DEFAULTS: Settings = {
   resume: true,
   reopen: true,
   closeToTray: true,
+  adaptiveSound: false,
+  adaptiveLevel: -14,
+  coverPulse: false,
+  liveYoutube: true,
   addons: {},
   discord: { appId: DISCORD_APP, status: 'song', buttons: true, paused: false, github: true },
   shortcuts: {},
@@ -296,6 +311,10 @@ export function sanitize(raw: unknown): Settings {
     resume: typeof r.resume === 'boolean' ? r.resume : DEFAULTS.resume,
     reopen: typeof r.reopen === 'boolean' ? r.reopen : DEFAULTS.reopen,
     closeToTray: typeof r.closeToTray === 'boolean' ? r.closeToTray : DEFAULTS.closeToTray,
+    adaptiveSound: r.adaptiveSound === true,
+    adaptiveLevel: ADAPTIVE_LEVELS.includes(r.adaptiveLevel as AdaptiveLevel) ? (r.adaptiveLevel as AdaptiveLevel) : DEFAULTS.adaptiveLevel,
+    coverPulse: r.coverPulse === true,
+    liveYoutube: typeof r.liveYoutube === 'boolean' ? r.liveYoutube : DEFAULTS.liveYoutube,
     shortcuts: sanitizeShortcuts(r.shortcuts),
     addons: Object.fromEntries(Object.entries(r.addons && typeof r.addons === 'object' ? r.addons : {}).filter(([k, v]) => /^[a-z0-9-]{1,40}$/.test(k) && typeof v === 'boolean').slice(0, 100)),
     discord: sanitizeDiscord(r.discord),

@@ -20,7 +20,8 @@ src-tauri/              thin shell: commands, keychain, WebView2 hook, media pan
 |---|---|
 | `music-core` | Track model, matching (ISRC, then title + artist + duration), SQLite library with versioned migrations, sync, local file scan, listening history and mixes, share codes, search merging and the music / not music classifier. No Tauri, no network. |
 | `music-connectors` | One module per service. Shared OAuth PKCE loopback (Spotify), YouTube Music web session, normal YouTube search, iTunes catalog, Discord IPC, nearby sharing (mDNS + SPAKE2), image cache. Base URLs are injectable for tests. |
-| `music-player` | Native playback of local files and previews (rodio, symphonia) on its own thread, with a gapless queue. |
+| `music-player` | Native playback of local files and previews (rodio, symphonia) on its own thread, with a gapless queue, through the live processing chain. |
+| `music-dsp` | Live audio processing, pure Rust: biquads, BS.1770 loudness meter, Adaptive Sound gain, limiter, shared `Control`. |
 | `music-shield` | Ad and tracker blocking with Brave's adblock engine, plus the YouTube player script. |
 | `src-tauri` | IPC commands, OS keychain, WebView2 request hook, Windows media panel, tray icon, window background. No business logic. |
 
@@ -32,7 +33,9 @@ src-tauri/              thin shell: commands, keychain, WebView2 hook, media pan
 - **The interface never touches the network.** Images go through the `art` URI scheme (`src-tauri/src/art.rs`): host
   allowlist, disk cache.
 - **Secrets in the OS keychain** (`keyring`). Settings and the library are local (SQLite).
-- **Legal playback only.** Official players and the user's own files; no audio extraction. See [playback.md](playback.md).
+- **Legal playback only.** Official players and the user's own files; no audio extraction. Live processing of what
+  plays (Adaptive Sound…) is allowed; downloading, recording or exporting a platform's audio never is. See
+  [playback.md](playback.md).
 - **Settings schema.** One typed schema (`ui/src/shared/theme/theme.ts`), sanitized on load. Changing a default for
   everyone bumps `DEFAULTS_VERSION`.
 - **Database schema.** Migrations keyed on SQLite `user_version` (`crates/core/src/library.rs`).

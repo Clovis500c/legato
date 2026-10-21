@@ -72,6 +72,37 @@ pub fn parse_report(source: &str, message: &str) -> Option<Report> {
     ok.then_some(r)
 }
 
+/// Live processing news from the page (live.js): attached or not, levels.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LiveReport {
+    #[serde(default)]
+    pub attached: Option<bool>,
+    #[serde(default)]
+    pub error: Option<String>,
+    #[serde(default)]
+    pub levels: Option<LiveLevels>,
+}
+
+#[derive(Debug, Clone, Copy, Default, PartialEq, Serialize, Deserialize)]
+pub struct LiveLevels {
+    pub fast: f64,
+    pub momentary: f64,
+    pub short: f64,
+    pub peak: f64,
+    pub gain: f64,
+}
+
+/// Trust boundary, like `parse_report`: "musicapp-live:" + JSON, finite numbers in range, short error text.
+pub fn parse_live(source: &str, message: &str) -> Option<LiveReport> {
+    if !source.starts_with("https://www.youtube.com/") || message.len() > 2048 {
+        return None;
+    }
+    let r: LiveReport = serde_json::from_str(message.strip_prefix("musicapp-live:")?).ok()?;
+    let ok_levels = r.levels.is_none_or(|l| [l.fast, l.momentary, l.short, l.gain].iter().all(|v| v.is_finite() && (-200.0..=60.0).contains(v)) && l.peak.is_finite() && (0.0..=16.0).contains(&l.peak));
+    (ok_levels && r.error.as_ref().is_none_or(|e| e.chars().count() <= 200)).then_some(r)
+}
+
 /// Trust boundary: video id from the UI.
 pub fn watch_url(video: &str, start_s: f64) -> Option<Url> {
     let id_ok = video.len() == 11 && video.chars().all(|c| c.is_ascii_alphanumeric() || c == '-' || c == '_');
@@ -89,6 +120,9 @@ pub enum Cmd {
     Volume { percent: f64 },
     /// Show only this part of the video frame (black bars cut, fractions), like the embed's crop.
     Crop { x: f64, y: f64, w: f64, h: f64 },
+    /// Live processing settings (live.js), same shape as the embed's.
+    #[serde(rename_all = "camelCase")]
+    Live { on: bool, adaptive: bool, target_lufs: f64 },
 }
 
 pub fn script(cmd: Cmd) -> String {
@@ -98,6 +132,10 @@ pub fn script(cmd: Cmd) -> String {
         Cmd::Pause => call("pause", 0.0),
         Cmd::Seek { seconds } => call("seek", if seconds.is_finite() { seconds.max(0.0) } else { 0.0 }),
         Cmd::Volume { percent } => call("volume", if percent.is_finite() { percent.clamp(0.0, 100.0).round() } else { 100.0 }),
+        Cmd::Live { on, adaptive, target_lufs } => {
+            let t = if target_lufs.is_finite() { target_lufs.clamp(-30.0, -6.0) } else { -14.0 };
+            format!("window.__musicAppLive && window.__musicAppLive.set({{ on: {on}, adaptive: {adaptive}, targetLufs: {t} }})")
+        }
         Cmd::Crop { x, y, w, h } => {
             let f = |v: f64, lo: f64| if v.is_finite() { v.clamp(lo, 1.0) } else { lo };
             format!("window.__musicAppWatch && window.__musicAppWatch.cmd('crop', [{}, {}, {}, {}])", f(x, 0.0), f(y, 0.0), f(w, 0.05), f(h, 0.05))
@@ -124,7 +162,7 @@ pub fn open(app: &AppHandle, video: &str, start_s: f64, rect: Option<Rect>, shie
         return Ok(());
     }
     let window = app.get_window("main").ok_or_else(|| anyhow::anyhow!("No main window"))?;
-    let mut builder = WebviewBuilder::new(LABEL, WebviewUrl::External(url)).initialization_script(music_shield::WATCH_SCRIPT).on_navigation(allowed).background_color(tauri::window::Color(0, 0, 0, 255));
+    let mut builder = WebviewBuilder::new(LABEL, WebviewUrl::External(url)).initialization_script(music_shield::WATCH_SCRIPT).initialization_script(music_shield::LIVE_SCRIPT).on_navigation(allowed).background_color(tauri::window::Color(0, 0, 0, 255));
     if shield.enabled.load(std::sync::atomic::Ordering::Relaxed) {
         builder = builder.initialization_script_for_all_frames(music_shield::YOUTUBE_SCRIPT);
     }
@@ -191,8 +229,11 @@ fn listen(wv: &tauri::Webview, app: AppHandle) -> tauri::Result<()> {
             if args.TryGetWebMessageAsString(&mut message).is_err() {
                 return Ok(());
             }
-            if let Some(report) = parse_report(&take_pwstr(source), &take_pwstr(message)) {
+            let (source, message) = (take_pwstr(source), take_pwstr(message));
+            if let Some(report) = parse_report(&source, &message) {
                 let _ = app.emit_to("main", "ytwatch", report);
+            } else if let Some(live) = parse_live(&source, &message) {
+                let _ = app.emit_to("main", "live", live);
             }
             Ok(())
         }));
@@ -220,6 +261,20 @@ mod tests {
         assert!(parse_report(YT, r#"musicapp-ytwatch:{"time":-4}"#).is_none());
         assert!(parse_report(YT, &format!(r#"musicapp-ytwatch:{{"reason":"{}"}}"#, "x".repeat(400))).is_none());
         assert!(parse_report(YT, "musicapp-ytwatch:not json").is_none());
+    }
+
+    #[test]
+    fn live_reports_are_checked() {
+        let ok = parse_live(YT, r#"musicapp-live:{"levels":{"fast":-10,"momentary":-12.5,"short":-14,"peak":0.8,"gain":2}}"#).unwrap();
+        assert_eq!(ok.levels.unwrap().short, -14.0);
+        assert_eq!(parse_live(YT, r#"musicapp-live:{"attached":true}"#).unwrap().attached, Some(true));
+        assert!(parse_live(YT, r#"musicapp-live:{"levels":{"fast":0,"momentary":1e9,"short":0,"peak":0,"gain":0}}"#).is_none());
+        assert!(parse_live("https://x.example/", r#"musicapp-live:{"attached":true}"#).is_none());
+        assert!(parse_live(YT, r#"musicapp-ytwatch:{"state":1}"#).is_none());
+        assert_eq!(script(Cmd::Live { on: true, adaptive: false, target_lufs: -99.0 }), "window.__musicAppLive && window.__musicAppLive.set({ on: true, adaptive: false, targetLufs: -30 })");
+        // The UI's shape (api.ts WatchCmd).
+        let cmd: Cmd = serde_json::from_str(r#"{"type":"live","on":true,"adaptive":true,"targetLufs":-16}"#).unwrap();
+        assert!(matches!(cmd, Cmd::Live { on: true, adaptive: true, target_lufs } if target_lufs == -16.0));
     }
 
     #[test]

@@ -3008,10 +3008,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "music-dsp"
+version = "0.1.0"
+dependencies = [
+ "serde",
+]
+
+[[package]]
 name = "music-player"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "music-dsp",
  "rodio",
  "serde",
 ]

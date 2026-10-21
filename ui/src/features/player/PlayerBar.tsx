@@ -17,6 +17,9 @@ import { bindFrame, useNowTrack, usePlayer, useVideoSlot } from './store'
 import { embedUrl, parseYt, ytPost } from './youtube'
 import { closeWatch, cropWatch, placeWatch, useWatch, watchUpdate } from './watch'
 import { frameAround } from '../../shared/artbox'
+import { bindLiveFrame, sendLive } from './live'
+import { useLiveSync } from './liveSync'
+import { AdaptiveBar } from './AdaptiveBar'
 
 const AUDIO = /\.(mp3|flac|wav|ogg|m4a|aac)$/i
 export const clock = (ms: number | null) => formatDuration(ms) || '0:00'
@@ -69,7 +72,10 @@ function YouTubeFrame({ videoId }: { videoId: string }) {
       if (!v) return
       if (r.click) return usePlayer.getState().toggle()
       // Fresh page: commands sent while it loaded were lost. Volume (it stays muted until then) and crop again.
-      if (r.ready) usePlayer.getState().applyVolume(true)
+      if (r.ready) {
+        usePlayer.getState().applyVolume(true)
+        sendLive()
+      }
       const box = useVideoSlot.getState().box
       if (box && !r.cropped && !useVideoSlot.getState().hidden) cropWatch(box)
       const u = watchUpdate(r, v)
@@ -104,6 +110,7 @@ function YouTubeFrame({ videoId }: { videoId: string }) {
       ref={(el) => {
         frame.current = el
         bindFrame(el)
+        bindLiveFrame(el)
       }}
       title="YouTube player"
       src={embedUrl(src.first, location.origin, src)}
@@ -118,6 +125,7 @@ function YouTubeFrame({ videoId }: { videoId: string }) {
           ytPost(e.currentTarget, 'command', 'loadVideoById', [videoId, usePlayer.getState().startAt / 1000])
         }
         usePlayer.getState().applyVolume(true)
+        sendLive()
       }}
       // Hidden (cover shown instead): YouTube's minimum size, so it streams a low resolution nobody sees.
       style={crop ?? (rect ? { left: rect.left, top: rect.top, width: hidden ? 200 : rect.width, height: hidden ? 200 : rect.height } : undefined)}
@@ -139,7 +147,10 @@ export function VolumeControl({ big }: { big?: boolean }) {
     return (
       <span className="flex items-center gap-1.5 text-ink-3">
         {!big && <SpeakerHigh size={15} />}
-        <Knob value={volume} onChange={setVolume} size={big ? 50 : 30} ticks={big} />
+        <span className="flex flex-col items-center gap-1">
+          <Knob value={volume} onChange={setVolume} size={big ? 50 : 30} ticks={big} />
+          <AdaptiveBar className="w-full" />
+        </span>
       </span>
     )
   const Icon = volume === 0 ? SpeakerSlash : volume < 0.5 ? SpeakerLow : SpeakerHigh
@@ -152,7 +163,10 @@ export function VolumeControl({ big }: { big?: boolean }) {
       <RoundButton label={volume > 0 ? 'Mute' : 'Unmute'} kind="plain" size={big ? 'md' : 'sm'} onClick={mute}>
         <Icon size={big ? 20 : 16} />
       </RoundButton>
-      <Bar label="Volume" value={volume} max={1} onChange={setVolume} className={big ? 'w-32' : 'w-24'} />
+      <span className="relative flex items-center">
+        <Bar label="Volume" value={volume} max={1} onChange={setVolume} className={big ? 'w-32' : 'w-24'} />
+        <AdaptiveBar className="absolute inset-x-0 -bottom-1.5" />
+      </span>
     </span>
   )
 }
@@ -165,6 +179,7 @@ export function PlayerBar() {
   const setFull = usePlayer((s) => s.setFull)
   const readout = useSettings((s) => s.settings.readout)
   const track = useNowTrack()
+  useLiveSync()
   // Engine plays local files and previews: poll it. Spotify Connect: poll its API, slower (rate limits).
   const local = now && (now.via === 'local' || now.via === 'preview')
   const remote = now?.via === 'spotify'

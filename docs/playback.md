@@ -125,7 +125,33 @@ We still pin the policy on the iframe: a meta tag or header added later can't br
 - An unreadable file is skipped and the error is shown.
 - IPC: `player` (`play`, `toggle`, `seek`, `next`, `prev`, `volume`, `stop`) and `player_status`, polled 4 times a second by the PlayerBar.
 - Input: music folders (Settings › Sources), or audio files dropped on the window.
+- Live processing chain on every file: see Live processing below.
 - Limits: no opus; position obtained by polling, not events.
+
+## Live processing (Adaptive Sound, moving cover; 2026-10-21)
+
+Rule changed by the user (2026-10-20): the app may process **its own output, live**, for listening features. Still
+never: downloading, extracting, recording or exporting a platform's audio, or touching DRM.
+
+- **Local files and previews**: `crates/dsp` (`music-dsp`, pure Rust) in the native engine. `crates/player` `live.rs`
+  wraps every decoded file in a rodio `Source` that runs blocks of 256 frames through the `Processor`: BS.1770 meter
+  (K-weighting, momentary 400 ms, short-term 3 s, peak), Adaptive Sound gain, peak limiter. Settings and levels go
+  through one shared `Control` (mutex + version, `try_lock` on the audio thread: it never waits). IPC `player_live`,
+  `player_levels`.
+- **YouTube**: `crates/shield` `live.js`, injected into the embed and the watch page. The video's sound is taken with
+  `captureStream()`, the element is muted, and Chromium's own audio nodes play it: gain → limiter, plus a K-weighted
+  analysis branch. Same formulas as the native chain. The page keeps its own mute (an instance `muted` property),
+  the element's volume (the app's volume and fades) is applied in the gain. Any failure (sound blocked before a
+  click, nothing captured for 4 s while playing) unmutes the element: the video plays as before. Messages: embed
+  `postMessage` to the app's origin only; watch page `musicapp-live:` strings checked in Rust (`ytwatch.rs`).
+- **Spotify**: plays in Spotify's own app, out of reach. Shown as such under the volume.
+- **Adaptive Sound**: gain heads for `target − short-term loudness`, clamped −12..+9 dB, 2.5 s glide, held while the
+  momentary loudness is under −45 LUFS (silence, fade-outs). Limiter (ceiling 0.97) only while boosting: off, the
+  sound is bit-identical (test). Targets: Quiet −20, Normal −14, Loud −11 LUFS.
+- **Moving cover**: scale from the momentary loudness, up fast and down slow (`player/pulse.ts`), transform only,
+  none with reduced motion or Animations off.
+- UI: `player/live.ts` (settings out, levels in, only from what plays now), `liveSync.ts`, `AdaptiveBar.tsx`.
+  Settings › Advanced › Sound processing; "Process YouTube's sound" turns the YouTube side off.
 
 ## Spotify Connect (built, untested on a real Premium account)
 

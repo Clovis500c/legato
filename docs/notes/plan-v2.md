@@ -77,20 +77,21 @@ it lands (tested, `pnpm check` green, committed). Technical plan, rule changes a
       stored.
 - [x] Windows quick commands: Previous, Play / Pause, Next under the taskbar thumbnail (screenshot 1), ITaskbarList3
       thumbnail toolbar; works on Windows 11, Play / Pause icon follows the state, follows the app's theme.
-- [ ] Cover animation: Advanced setting, cover grows and shrinks with the song's volume. Off by default. Uses live
+- [x] Cover animation: Advanced setting, cover grows and shrinks with the song's volume. Off by default. Uses live
       audio processing.
-- [ ] Adaptive Sound: Advanced setting, measures loudness and adjusts it to the user's target volume; a bar under the
+- [x] Adaptive Sound: Advanced setting, measures loudness and adjusts it to the user's target volume; a bar under the
       player's volume bar shows the adapted volume and its level. Uses live audio processing.
 
 **Live audio processing** (shared by the Live Editor, Adaptive Sound and the cover animation)
-- [ ] Local files: processing in the native engine (`crates/player`).
-- [ ] YouTube: official player keeps playing the video; study per-process capture of the app's audio (WebView2),
+- [x] Local files: processing in the native engine (`crates/player`, chain in `crates/dsp`).
+- [x] YouTube: official player keeps playing the video; study per-process capture of the app's audio (WebView2),
       processing in the native engine, webview muted; feasibility, minimum Windows version, limits (latency, offset
-      with the picture, CPU, speed / pitch for slowed) in the plan.
+      with the picture, CPU, speed / pitch for slowed) in the plan. Study done (big-update.md): processing runs inside
+      the player instead (`captureStream` + Chromium's audio nodes, `crates/shield/src/live.js`).
 - [ ] Saved mixes hold parameters only (effects, values), never audio.
-- [ ] Spotify (protected playback) and Apple Music: what's possible or not, in the plan.
-- [ ] Can be turned off; if capture fails, back to normal playback with no error.
-- [ ] Same system for Adaptive Sound and the cover animation.
+- [x] Spotify (protected playback) and Apple Music: what's possible or not, in the plan.
+- [x] Can be turned off; if capture fails, back to normal playback with no error.
+- [x] Same system for Adaptive Sound and the cover animation.
 
 **Phase 4: big projects** (one by one, with the most care)
 - [ ] 4.1 Live Editor: edit the playing song live (slowed, bass boost, reverb…); save changes per song in local SQLite

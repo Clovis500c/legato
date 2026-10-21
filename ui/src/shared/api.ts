@@ -114,7 +114,6 @@ export interface SyncReport {
   errors: string[]
 }
 
-/** Merged catalog hit (src-tauri search_catalogs). */
 /** src-tauri ytwatch.rs. */
 export interface WatchRect {
   x: number
@@ -122,7 +121,34 @@ export interface WatchRect {
   width: number
   height: number
 }
-export type WatchCmd = { type: 'play' } | { type: 'pause' } | { type: 'seek'; seconds: number } | { type: 'volume'; percent: number } | { type: 'crop'; x: number; y: number; w: number; h: number }
+export type WatchCmd =
+  | { type: 'play' }
+  | { type: 'pause' }
+  | { type: 'seek'; seconds: number }
+  | { type: 'volume'; percent: number }
+  | { type: 'crop'; x: number; y: number; w: number; h: number }
+  | { type: 'live'; on: boolean; adaptive: boolean; targetLufs: number }
+
+/** crates/dsp control.rs: live processing settings of the native engine. */
+export interface LiveSettings {
+  adaptive: boolean
+  targetLufs: number
+}
+/** crates/dsp control.rs: what plays, as heard (LUFS, peak 0..1, Adaptive Sound gain in dB). */
+export interface LiveLevels {
+  /** Last 50 ms (beats). */
+  fast: number
+  momentary: number
+  short: number
+  peak: number
+  gain: number
+}
+/** ytwatch.rs LiveReport (watch page). */
+export interface LiveReport {
+  attached?: boolean
+  error?: string | null
+  levels?: LiveLevels | null
+}
 export interface WatchReport {
   state?: number
   time?: number
@@ -324,6 +350,10 @@ export const api = {
   rescanLocal: () => invoke<number>('rescan_local'),
   player: (cmd: PlayerCommand) => invoke<void>('player', { cmd }),
   playerStatus: () => invoke<PlayerStatus>('player_status'),
+  /** Live processing of local files (crates/dsp): applies from the next block, nothing restarts. */
+  playerLive: (settings: LiveSettings) => invoke<void>('player_live', { settings }),
+  /** What the native engine plays, as heard. */
+  playerLevels: () => invoke<LiveLevels>('player_levels'),
   /** Raw JSON; validated by shared/theme/settings.sanitize. */
   loadSettings: () => invoke<unknown>('load_settings'),
   saveSettings: (settings: object) => invoke<void>('save_settings', { settings }),
@@ -357,6 +387,8 @@ export const api = {
   ytwatchCmd: (cmd: WatchCmd) => invoke<void>('ytwatch_cmd', { cmd }),
   ytwatchClose: () => invoke<void>('ytwatch_close'),
   onYtWatch: (cb: (r: WatchReport) => void) => listen<WatchReport>('ytwatch', (e) => cb(e.payload)),
+  /** Live processing reports of the watch page (live.js). */
+  onLive: (cb: (r: LiveReport) => void) => listen<LiveReport>('live', (e) => cb(e.payload)),
   /** Track ids of every playlist, in order (covers). */
   playlistOrders: () => invoke<Record<number, number[]>>('playlist_orders'),
   /** Picked image copied into the app; returns its name for the art scheme (cover/<name>). */

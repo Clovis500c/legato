@@ -5,12 +5,13 @@ import { useSettings } from '../../app/settings'
 import { useStore, type SettingsSection } from '../../app/store'
 import { api } from '../../shared/api'
 import { formatCount } from '../../shared/format'
-import { ACCENTS, COLUMNS, contrastReport, DEFAULTS, PALETTE_KEYS, PRESETS, sanitizeTheme, type Column, type Palette, type PaletteKey, type Settings, type Theme } from '../../shared/theme/theme'
+import { ACCENTS, ADAPTIVE_LEVELS, COLUMNS, contrastReport, DEFAULTS, type AdaptiveLevel, PALETTE_KEYS, PRESETS, sanitizeTheme, type Column, type Palette, type PaletteKey, type Settings, type Theme } from '../../shared/theme/theme'
 import { Button } from '../../shared/ui/Button'
 import { Led, RoundButton, Segmented, Toggle } from '../../shared/ui/controls'
 import { PageHeader } from '../../shared/ui/PageHeader'
 import { curveLabels } from '../player/fade'
 import { usePlayer } from '../player/store'
+import { useLive } from '../player/live'
 import { SourcesView } from '../sources/SourcesView'
 import { AboutSection } from './AboutSection'
 import { FadeEditor } from './FadeEditor'
@@ -476,6 +477,49 @@ function OpenAtStartup() {
   )
 }
 
+const levelLabels: Record<AdaptiveLevel, string> = { [-20]: 'Quiet', [-14]: 'Normal', [-11]: 'Loud' }
+
+/** Live processing of what plays (player/live.ts): local files and previews in the app's engine, YouTube in its player. */
+function SoundGroup() {
+  const { settings: s, update } = useSettings()
+  const youtubeError = useLive((l) => l.error)
+  const used = s.adaptiveSound || s.coverPulse
+  return (
+    <Group title="Sound processing">
+      <div className="rounded-xl border border-line bg-raised">
+        <Row label="Adaptive Sound" sub="Loud and quiet songs end up alike, adjusted as they play. A thin line under the volume shows the result. Local files and YouTube; not Spotify (its own app plays it).">
+          <Toggle label="Adaptive Sound" checked={s.adaptiveSound} onChange={(adaptiveSound) => update({ adaptiveSound })} />
+        </Row>
+        {s.adaptiveSound && (
+          <Row label="Adaptive Sound level" sub={`Where songs are brought: ${s.adaptiveLevel} LUFS`}>
+            <Segmented
+              label="Adaptive Sound level"
+              value={String(s.adaptiveLevel)}
+              onChange={(v) => update({ adaptiveLevel: Number(v) as AdaptiveLevel })}
+              options={ADAPTIVE_LEVELS.map((l) => ({ value: String(l), label: levelLabels[l] }))}
+            />
+          </Row>
+        )}
+        <Row label="Moving cover" sub={s.motion ? 'In Now Playing, the cover swells and settles with the music' : 'Needs Animations on (Appearance)'}>
+          <Toggle label="Moving cover" checked={s.coverPulse} onChange={(coverPulse) => update({ coverPulse })} />
+        </Row>
+        <Row
+          label="Process YouTube's sound"
+          sub={
+            !s.liveYoutube
+              ? 'Off: YouTube plays untouched; the features above work on local files only'
+              : used && youtubeError
+                ? `Not on this video: ${youtubeError}. It plays as usual.`
+                : 'Used by the features above. Nothing is recorded or saved; the video plays as usual if this fails.'
+          }
+        >
+          <Toggle label="Process YouTube's sound" checked={s.liveYoutube} onChange={(liveYoutube) => update({ liveYoutube })} />
+        </Row>
+      </div>
+    </Group>
+  )
+}
+
 function AdvancedSection() {
   const { settings: s, update } = useSettings()
   const playing = usePlayer((p) => !!p.now)
@@ -489,6 +533,7 @@ function AdvancedSection() {
         </div>
         {s.fade.advanced && <FadeEditor />}
       </Group>
+      <SoundGroup />
       <Group title="Immersive player">
         <div className="rounded-xl border border-line bg-raised">
           <div className="flex items-center gap-5 border-b border-line-soft p-4">
