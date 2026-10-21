@@ -1,4 +1,5 @@
 import { ArrowDown, ArrowUp, Play, Waveform, X } from '@phosphor-icons/react'
+import { useShallow } from 'zustand/react/shallow'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { useRef } from 'react'
 import { useSettings } from '../../app/settings'
@@ -26,7 +27,7 @@ const head: Record<Column, string> = { album: 'Album', sources: 'Sources', durat
 /** Virtualized: only visible rows hit the DOM, so 50k tracks stay smooth. editId = custom playlist shown unfiltered (positions = indexes). rowActions = extra hover buttons. */
 export function TrackTable({ tracks, empty, editId, rowActions }: { tracks: LibraryTrack[]; empty: React.ReactNode; editId?: number; rowActions?: (t: LibraryTrack) => React.ReactNode }) {
   const scroller = useRef<HTMLDivElement>(null)
-  const { density, columns, listCovers, clickToPlay } = useSettings((s) => s.settings)
+  const { density, columns, listCovers, clickToPlay } = useSettings(useShallow((s) => ({ density: s.settings.density, columns: s.settings.columns, listCovers: s.settings.listCovers, clickToPlay: s.settings.clickToPlay })))
   const play = usePlayer((s) => s.playTracks)
   const editPlaylist = useStore((s) => s.editPlaylist)
   const playingId = usePlayer((s) => s.now?.trackId)

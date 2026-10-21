@@ -128,20 +128,39 @@ function Stage({ video, cover, track, title, youtubeId }: { video: boolean; cove
   )
 }
 
+/** Drift of the immersive backdrop at t seconds: there and back in 48 s, eased (scale 1.2 → 1.35, a little shift and turn). */
+export function driftTransform(t: number): string {
+  const phase = (t / 48) % 2
+  const x = phase < 1 ? phase : 2 - phase
+  const e = x * x * (3 - 2 * x)
+  const lerp = (a: number, b: number) => +(a + (b - a) * e).toFixed(4)
+  return `scale(${lerp(1.2, 1.35)}) translate3d(${lerp(-3, 3)}%, ${lerp(-2, 2)}%, 0) rotate(${lerp(0, 6)}deg)`
+}
+
 /** Blurred cover layers: each new one fades in over the last, which goes once covered. Veil in the theme's color keeps text readable. */
 function Backdrop({ url, dim, motion }: { url?: string; dim: number; motion: boolean }) {
   const [layers, setLayers] = useState<string[]>([])
+  const box = useRef<HTMLDivElement>(null)
   useEffect(() => {
     if (!url) return
     setLayers((l) => (l[l.length - 1] === url ? l : [...l, url].slice(-2)))
     const id = setTimeout(() => setLayers((l) => l.slice(-1)), 1000)
     return () => clearTimeout(id)
   }, [url])
+  // Slow drift at 15 updates a second: a CSS animation restyled the page every frame in WebView2 (~250 recalcs/s,
+  // 2026-10-21 profile); at this speed a step is under a pixel.
+  useEffect(() => {
+    const el = box.current
+    if (!motion || !el) return
+    const start = performance.now()
+    const id = setInterval(() => el.style.setProperty('--drift', driftTransform((performance.now() - start) / 1000)), 66)
+    return () => clearInterval(id)
+  }, [motion, !!url])
   if (!url) return null
   return (
-    <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+    <div ref={box} aria-hidden className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
       {layers.map((u) => (
-        <div key={u} className={`backdrop-layer absolute -inset-[10%] bg-cover bg-center ${motion ? '' : '[animation-name:fade-in]!'}`} style={{ backgroundImage: `url(${u})` }} />
+        <div key={u} className="backdrop-layer absolute -inset-[10%] bg-cover bg-center" style={{ backgroundImage: `url(${u})`, transform: motion ? 'var(--drift, scale(1.2))' : undefined }} />
       ))}
       <div className="absolute inset-0" style={{ background: `color-mix(in srgb, var(--bg) ${dim}%, transparent)` }} />
       <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-[color-mix(in_srgb,var(--bg)_70%,transparent)] to-transparent" />

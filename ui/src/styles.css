@@ -109,10 +109,9 @@ code {
     opacity: 0;
   }
 }
+/* Drift itself: NowPlaying sets --drift (15 updates a second, cheaper than a CSS animation here). */
 .backdrop-layer {
-  animation:
-    fade-in 0.9s ease-out,
-    drift 48s ease-in-out infinite alternate;
+  animation: fade-in 0.9s ease-out;
   will-change: transform;
 }
 

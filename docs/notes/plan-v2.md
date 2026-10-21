@@ -41,7 +41,7 @@ it lands (tested, `pnpm check` green, committed). Technical plan, rule changes a
 
 **Phase 2: changes**
 - [x] Up next: keep songs already played (don't remove them).
-- [ ] Optimization: memory, CPU, start time, smoothness of the app and the webview. Measure before / after, numbers in
+- [x] Optimization: memory, CPU, start time, smoothness of the app and the webview. Measure before / after, numbers in
       the report.
 - [x] Keyboard shortcuts: custom shortcuts (skip, stop, play…) applied everywhere, including when the app runs in the
       background in the tray, with no conflict with Windows media keys. One table (`app/shortcuts.ts`), listed in

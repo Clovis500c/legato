@@ -132,7 +132,8 @@ let unmuted = 1
 
 /** Knob, or YouTube-like speaker (click = mute) and bar. */
 export function VolumeControl({ big }: { big?: boolean }) {
-  const { volume, setVolume } = usePlayer()
+  const volume = usePlayer((s) => s.volume)
+  const setVolume = usePlayer((s) => s.setVolume)
   const mode = useSettings((s) => s.settings.volume)
   if (mode === 'knob')
     return (
@@ -157,7 +158,11 @@ export function VolumeControl({ big }: { big?: boolean }) {
 }
 
 export function PlayerBar() {
-  const { now, playFiles, onLocal, onSpotify, setFull } = usePlayer()
+  const now = usePlayer((s) => s.now)
+  const playFiles = usePlayer((s) => s.playFiles)
+  const onLocal = usePlayer((s) => s.onLocal)
+  const onSpotify = usePlayer((s) => s.onSpotify)
+  const setFull = usePlayer((s) => s.setFull)
   const readout = useSettings((s) => s.settings.readout)
   const track = useNowTrack()
   // Engine plays local files and previews: poll it. Spotify Connect: poll its API, slower (rate limits).

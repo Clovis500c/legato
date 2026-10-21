@@ -6,3 +6,9 @@ members = ["crates/*", "src-tauri"]
 version = "0.1.0"
 edition = "2024"
 publish = false
+
+# Installed app: smaller and faster (whole-program optimization), slower to build.
+[profile.release]
+lto = true
+codegen-units = 1
+strip = true

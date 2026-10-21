@@ -28,8 +28,12 @@ const viewSize = () => (view.w === window.innerWidth && view.h === window.innerH
  * corner facing the middle resizes it.
  */
 export function MiniPlayer() {
-  const { now, full, setFull } = usePlayer()
-  const { miniPlayer: on, miniSpot: spot, miniWidth } = useSettings((s) => s.settings)
+  const now = usePlayer((s) => s.now)
+  const full = usePlayer((s) => s.full)
+  const setFull = usePlayer((s) => s.setFull)
+  const on = useSettings((s) => s.settings.miniPlayer)
+  const spot = useSettings((s) => s.settings.miniSpot)
+  const miniWidth = useSettings((s) => s.settings.miniWidth)
   const update = useSettings((s) => s.update)
   const track = useNowTrack()
   const win = useSyncExternalStore(onResize, viewSize)

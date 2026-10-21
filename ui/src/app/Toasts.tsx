@@ -11,7 +11,8 @@ const icons: Record<Toast['kind'], { Icon: typeof CheckCircle; color: string }> 
 
 /** Bottom center, above the player bar and Now Playing. Newest at the bottom. */
 export function Toasts() {
-  const { toasts, dismissToast } = useStore()
+  const toasts = useStore((s) => s.toasts)
+  const dismissToast = useStore((s) => s.dismissToast)
   if (!toasts.length) return null
   return (
     <div aria-live="polite" className="pointer-events-none fixed inset-x-0 bottom-[116px] z-[60] flex flex-col items-center gap-2 px-4">

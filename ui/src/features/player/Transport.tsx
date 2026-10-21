@@ -1,5 +1,6 @@
 import { Pause, Play, Repeat, RepeatOnce, Shuffle, SkipBack, SkipForward } from '@phosphor-icons/react'
 import { RoundButton } from '../../shared/ui/controls'
+import { useShallow } from 'zustand/react/shallow'
 import { usePlayer } from './store'
 
 const repeatLabel = { off: 'Repeat: off', all: 'Repeat: whole queue', one: 'Repeat: this track' }
@@ -12,8 +13,10 @@ const sizes = {
 
 /** Same transport everywhere (bar, Now Playing, mini player). compact = no shuffle / repeat. Shuffle and repeat named underneath. */
 export function Transport({ size = 'md', compact = false }: { size?: 'sm' | 'md' | 'lg'; compact?: boolean }) {
-  const { now, playing, toggle, step, shuffle, repeat, toggleShuffle, cycleRepeat } = usePlayer()
-  const queue = !!now?.trackId
+  // Only what it draws: no re-render on every position report.
+  const { has, queue, playing, toggle, step, shuffle, repeat, toggleShuffle, cycleRepeat } = usePlayer(
+    useShallow((p) => ({ has: !!p.now, queue: !!p.now?.trackId, playing: p.playing, toggle: p.toggle, step: p.step, shuffle: p.shuffle, repeat: p.repeat, toggleShuffle: p.toggleShuffle, cycleRepeat: p.cycleRepeat })),
+  )
   const s = sizes[size]
   // Lit like an amp switch: readable even with a gray system accent.
   const mode = (on: boolean) => (on ? 'relative bg-raised text-ink after:absolute after:bottom-1 after:size-1 after:rounded-full after:bg-accent' : '')
@@ -24,13 +27,13 @@ export function Transport({ size = 'md', compact = false }: { size?: 'sm' | 'md'
         <Shuffle size={s.mode} weight={shuffle ? 'bold' : 'regular'} />
       </RoundButton>
     ),
-    <RoundButton key="prev" label="Previous" kind={size === 'lg' ? 'soft' : 'ghost'} size={s.skip} disabled={!now} onClick={() => step(-1)}>
+    <RoundButton key="prev" label="Previous" kind={size === 'lg' ? 'soft' : 'ghost'} size={s.skip} disabled={!has} onClick={() => step(-1)}>
       <SkipBack weight="fill" size={s.icon} />
     </RoundButton>,
-    <RoundButton key="play" label={playing ? 'Pause' : 'Play'} kind="primary" size={s.play} disabled={!now} onClick={toggle}>
+    <RoundButton key="play" label={playing ? 'Pause' : 'Play'} kind="primary" size={s.play} disabled={!has} onClick={toggle}>
       {playing ? <Pause weight="fill" size={s.big} /> : <Play weight="fill" size={s.big} />}
     </RoundButton>,
-    <RoundButton key="next" label="Next" kind={size === 'lg' ? 'soft' : 'ghost'} size={s.skip} disabled={!now} onClick={() => step(1)}>
+    <RoundButton key="next" label="Next" kind={size === 'lg' ? 'soft' : 'ghost'} size={s.skip} disabled={!has} onClick={() => step(1)}>
       <SkipForward weight="fill" size={s.icon} />
     </RoundButton>,
     !compact && (

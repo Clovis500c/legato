@@ -1,12 +1,12 @@
 import { CaretDown, CopySimple, Minus, Square, Warning, X } from '@phosphor-icons/react'
 import { getCurrentWindow } from '@tauri-apps/api/window'
-import { useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
+import { useShallow } from 'zustand/react/shallow'
 import { AddView } from '../features/add/AddView'
 import { HomeView } from '../features/home/HomeView'
 import { MixesView, MixView } from '../features/mixes/MixesView'
 import { AlbumsView, AlbumView, ArtistsView, ArtistView, PlaylistView, SongsView } from '../features/library/LibraryView'
 import { appMenu } from '../features/menus'
-import { AddonsView } from '../features/addons/AddonsView'
 import { startDiscord } from '../features/addons/discord'
 import { startUpdates } from '../features/update/updates'
 import { startMedia } from '../features/player/media'
@@ -15,7 +15,6 @@ import { MiniPlayer } from '../features/player/MiniPlayer'
 import { NowPlaying } from '../features/player/NowPlaying'
 import { PlayerBar } from '../features/player/PlayerBar'
 import { usePlayer } from '../features/player/store'
-import { SettingsView } from '../features/settings/SettingsView'
 import { ImportDialog } from '../features/share/ImportDialog'
 import { ConnectWizard } from '../features/sources/ConnectWizard'
 import { Sidebar } from '../features/sidebar/Sidebar'
@@ -28,6 +27,10 @@ import { restoreScreen, startClosingPlayerOnNavigate, startScreenSaving } from '
 import { startShortcuts } from './shortcuts'
 import { useStore } from './store'
 import { Toasts } from './Toasts'
+
+// Opened now and then: loaded on first visit, not at launch.
+const SettingsView = lazy(() => import('../features/settings/SettingsView').then((m) => ({ default: m.SettingsView })))
+const AddonsView = lazy(() => import('../features/addons/AddonsView').then((m) => ({ default: m.AddonsView })))
 
 const win = getCurrentWindow()
 const winBtn = 'grid h-8 w-10 place-items-center rounded-md text-ink-3 transition hover:bg-raised hover:text-ink'
@@ -74,7 +77,7 @@ function TopBar() {
 }
 
 function Alerts() {
-  const { lastSync, error, dismissError, view } = useStore()
+  const { lastSync, error, dismissError, view } = useStore(useShallow((s) => ({ lastSync: s.lastSync, error: s.error, dismissError: s.dismissError, view: s.view })))
   const errors = lastSync?.report.errors ?? []
   // Wizard shows its own error.
   const shown = view.name === 'settings' && view.wizard ? undefined : error
@@ -107,7 +110,7 @@ function Alerts() {
 }
 
 export function App() {
-  const { view, go, refresh, incoming } = useStore()
+  const { view, go, refresh, incoming } = useStore(useShallow((s) => ({ view: s.view, go: s.go, refresh: s.refresh, incoming: s.incoming })))
   const full = usePlayer((s) => s.full)
   useEffect(() => {
     const settings = useSettings.getState().load()
@@ -169,8 +172,10 @@ export function App() {
             {view.name === 'artists' && <ArtistsView />}
             {view.name === 'artist' && <ArtistView artist={view.artist} />}
             {view.name === 'playlist' && <PlaylistView id={view.id} />}
-            {view.name === 'settings' && <SettingsView section={view.section} />}
-            {view.name === 'addons' && <AddonsView />}
+            <Suspense>
+              {view.name === 'settings' && <SettingsView section={view.section} />}
+              {view.name === 'addons' && <AddonsView />}
+            </Suspense>
           </div>
         </main>
         {view.name === 'settings' && view.wizard && <ConnectWizard key={view.wizard} service={view.wizard} onClose={() => go({ name: 'settings', section: 'sources' })} />}

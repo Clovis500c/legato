@@ -312,3 +312,14 @@ The mic opens a small menu with two big choices: "Search by voice" and "Identify
   Roblox Studio tutorials). Two songs first caught (a radio upload filed as a podcast, an NCS song tagged #asmr) led to
   softer rules: podcast = strong hint only, music hashtags and "Artist - Title" count more.
 - "Still" answers cached before the fix (bars counted in) are asked again (cache key `still-videos-2`).
+- Optimization, measured 2026-10-21 (CDP Performance metrics, dev build, 15 s while a song plays):
+  - Now Playing: script 30.6 → 17.6 ms/s; Home: 28.2 → 14.6 ms/s. Causes: whole-store subscriptions
+    (`useStore()` / `usePlayer()` without a selector) re-rendered the player bar, mini player, sidebar and track
+    table on every position report; now selectors / `useShallow`.
+  - Immersive backdrop: its 48 s CSS drift restyled the page every frame in WebView2 (252 style recalcs/s, task time
+    238 ms/s). Now a `--drift` variable set 15 times a second (steps under a pixel): 33 recalcs/s, 124 ms/s.
+  - Settings and Add-ons screens load on first visit (`lazy`), not at launch.
+  - Release build: LTO, one codegen unit, stripped: exe 27.6 → 25.4 MB. Start (launch → interface built, user's
+    library of 2,642 songs, 3 runs each, master vs this branch): 1.75–3.40 s vs 2.07–3.21 s, the same within noise.
+    Memory while a video plays in the mini player: about 720 MB working set (9 processes, WebView2 included) for both.
+    CPU was too noisy to compare (another copy of the app played music meanwhile): 18–63 % of a core for both.

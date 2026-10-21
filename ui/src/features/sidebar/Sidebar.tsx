@@ -1,5 +1,6 @@
 import { Disc, Gear, House, MagnifyingGlass, MicrophoneStage, MusicNotes, Plus, PlusCircle, PuzzlePiece, VinylRecord } from '@phosphor-icons/react'
 import { useMemo, type ReactNode } from 'react'
+import { useShallow } from 'zustand/react/shallow'
 import { useSettings } from '../../app/settings'
 import { useStore, type View } from '../../app/store'
 import { playlistKey } from '../../shared/api'
@@ -32,7 +33,9 @@ const Section = ({ title, children, onContextMenu }: { title: string; children: 
 )
 
 export function Sidebar() {
-  const { view, go, tracks, playlists, query, setQuery, editPlaylist } = useStore()
+  const { view, go, tracks, playlists, query, setQuery, editPlaylist } = useStore(
+    useShallow((s) => ({ view: s.view, go: s.go, tracks: s.tracks, playlists: s.playlists, query: s.query, setQuery: s.setQuery, editPlaylist: s.editPlaylist })),
+  )
   const counts = useMemo(() => ({ albums: groupAlbums(tracks).length, artists: groupArtists(tracks).length }), [tracks])
   const is = (name: View['name']) => view.name === name
   const hidden = useSettings((s) => s.settings.hiddenPlaylists)
