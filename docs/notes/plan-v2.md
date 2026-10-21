@@ -89,13 +89,13 @@ it lands (tested, `pnpm check` green, committed). Technical plan, rule changes a
       processing in the native engine, webview muted; feasibility, minimum Windows version, limits (latency, offset
       with the picture, CPU, speed / pitch for slowed) in the plan. Study done (big-update.md): processing runs inside
       the player instead (`captureStream` + Chromium's audio nodes, `crates/shield/src/live.js`).
-- [ ] Saved mixes hold parameters only (effects, values), never audio.
+- [x] Saved mixes hold parameters only (effects, values), never audio.
 - [x] Spotify (protected playback) and Apple Music: what's possible or not, in the plan.
 - [x] Can be turned off; if capture fails, back to normal playback with no error.
 - [x] Same system for Adaptive Sound and the cover animation.
 
 **Phase 4: big projects** (one by one, with the most care)
-- [ ] 4.1 Live Editor: edit the playing song live (slowed, bass boost, reverb…); save changes per song in local SQLite
+- [x] 4.1 Live Editor: edit the playing song live (slowed, bass boost, reverb…); save changes per song in local SQLite
       (`crates/core`), several mixes per song; several sections, one for 4D songs and where the sound comes from;
       best architecture, most advanced version, Audacity's techniques as inspiration (no code copied); works on
       YouTube songs (live processing); local files only: export a modified copy with the mix applied to a new file,

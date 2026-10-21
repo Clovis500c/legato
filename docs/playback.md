@@ -153,6 +153,35 @@ never: downloading, extracting, recording or exporting a platform's audio, or to
 - UI: `player/live.ts` (settings out, levels in, only from what plays now), `liveSync.ts`, `AdaptiveBar.tsx`.
   Settings › Advanced › Sound processing; "Process YouTube's sound" turns the YouTube side off.
 
+## Live Editor (phase 4.1, 2026-10-21)
+
+Edit the playing song live; written from scratch, Audacity's ideas as inspiration only (no code read or copied).
+
+- **Order**: speed / tempo / pitch → EQ (bass shelf 100 Hz, 60 Hz shelf, 250 / 1k / 4k peaks, 12k shelf) →
+  compressor → stereo width (M/S) → echo → reverb → 3D → balance → Adaptive Sound → limiter. Native: `crates/dsp`
+  `chain.rs` + `stretch.rs`, run by `crates/player` `live.rs`. YouTube: the same graph in `live.js` from Chromium's
+  nodes.
+- **Speed** moves time and pitch together (slowed, nightcore), **tempo** only time, **pitch** only pitch.
+  Native: WSOLA time stretch (Hann windows, 50 % overlap, normalized cross-correlation search) then a Catmull-Rom
+  resampler; pitch alone = stretch by 1/p then resample by p. YouTube: `playbackRate` with `preservesPitch` for the
+  timeline (the picture follows the sound), plus a pitch shifter made of two swept delay lines (AudioWorklets are
+  blocked by YouTube's CSP). The song position published to the app is song time, not samples played.
+- **Reverb**: Freeverb layout (8 damped combs, 4 allpasses, right side +23 samples). Wet level follows the room size
+  so any mix stays within 1 dB of the dry song (test). **Echo**: feedback delay. **Compressor**: one amount (threshold
+  −6..−30 dB, ratio 1..8, make-up gain).
+- **3D sound**: Woodworth interaural delay, Brown–Duda head shadow, elevation tilt, distance (level and a small room).
+  Turning (period 2–30 s) makes an "8D" song. YouTube: Chromium's HRTF panner. For headphones.
+- **Limiter**: on whenever effects are on (a bass boost can clip with no gain from Adaptive Sound); untouched songs
+  still pass bit for bit.
+- **Saved**: numbers only (`edits` table, SQLite v9), never audio. Per song: `t:<track id>` (library), `yt:<video>`
+  (recommendations), `f:<path>` (files opened outside the library). Several versions per song, one active (plays
+  whenever the song does); presets have no song. The A / B switch keeps processing attached so it flips at once.
+- **Export**: local files only, `crates/player` `export.rs`: the same chain offline into a new 16-bit WAV (TPDF
+  dither), written as `.part` then renamed; refuses the original's path and anything but `.wav`; cancel removes the
+  partial file. Never for YouTube, Spotify or Apple Music (their audio is never saved). Reverb tails are cut where the
+  file ends.
+- **Spotify**: plays in its own app, out of reach; the panel says so (settings stay saved for the song).
+
 ## Spotify Connect (built, untested on a real Premium account)
 
 The Web Playback SDK inside the app is ruled out. We drive the official Spotify app (desktop, mobile or speaker) through **Spotify Connect**,

@@ -1613,6 +1613,36 @@ fn player_effects(state: State<AppState>, effects: music_player::Effects) {
     state.player.set_effects(effects);
 }
 
+static EXPORT_BUSY: AtomicBool = AtomicBool::new(false);
+static EXPORT_STOP: AtomicBool = AtomicBool::new(false);
+
+/// Live Editor: a local file's copy with `effects` applied, as a new WAV (`output`, picked in the save dialog). Local
+/// files only: `input` is a path on disk, never a stream. Progress: "export" events (0..1, null = length unknown).
+#[tauri::command]
+async fn export_edit(app: tauri::AppHandle, input: String, output: String, effects: music_player::Effects) -> CmdResult<()> {
+    let (input, output) = (PathBuf::from(input), PathBuf::from(output));
+    if !input.is_absolute() || !input.is_file() || !output.is_absolute() {
+        return Err("not a local file".into());
+    }
+    if EXPORT_BUSY.swap(true, Ordering::AcqRel) {
+        return Err("an export is already running".into());
+    }
+    EXPORT_STOP.store(false, Ordering::Relaxed);
+    let done = tauri::async_runtime::spawn_blocking(move || {
+        music_player::export::export(&input, &output, effects, &EXPORT_STOP, |p| {
+            let _ = app.emit_to("main", "export", p);
+        })
+    })
+    .await;
+    EXPORT_BUSY.store(false, Ordering::Release);
+    done.map_err(err)?.map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn export_stop() {
+    EXPORT_STOP.store(true, Ordering::Relaxed);
+}
+
 /// What the native engine plays, as heard (meters, cover animation).
 #[tauri::command]
 fn player_levels(state: State<AppState>) -> music_player::Levels {
@@ -1706,7 +1736,7 @@ pub fn run() {
             update::spawn(app.handle().clone());
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, add_track, backfill_art, find_versions, play_preview, share_playlist, share_preview, share_read_image, share_import, nearby_send, nearby_status, nearby_stop, nearby_receive, record_play, mixes, set_track_pref, clear_history, export_youtube, spotify_player, spotify_playback, ytm_sign_in, ytm_sign_out, spotify_web_open, spotify_web_status, import_spotify_link, ytm_accounts, set_ytm_accounts, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, system_accent, restart_app, autostart, set_autostart, media_update, load_session, save_session, add_to_youtube, playlist_orders, save_cover, export_cover, alternative_videos, play_stats, cache_stats, open_licenses, update_status, update_check, update_install, ytm_home, ytm_list, discord_presence, discord_off, discord_status, remove_from_playlist, remove_from_library, resolve_track, set_global_shortcuts, player_live, player_effects, player_levels, edits, save_edit, delete_edit, activate_edit, voice_listen, voice_stop, open_windows_settings, detector_status, set_detector_token, detect_song, detect_stop, lyrics, set_ui_language, ytwatch_open, ytwatch_place, ytwatch_cmd, ytwatch_close])
+        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, add_track, backfill_art, find_versions, play_preview, share_playlist, share_preview, share_read_image, share_import, nearby_send, nearby_status, nearby_stop, nearby_receive, record_play, mixes, set_track_pref, clear_history, export_youtube, spotify_player, spotify_playback, ytm_sign_in, ytm_sign_out, spotify_web_open, spotify_web_status, import_spotify_link, ytm_accounts, set_ytm_accounts, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, system_accent, restart_app, autostart, set_autostart, media_update, load_session, save_session, add_to_youtube, playlist_orders, save_cover, export_cover, alternative_videos, play_stats, cache_stats, open_licenses, update_status, update_check, update_install, ytm_home, ytm_list, discord_presence, discord_off, discord_status, remove_from_playlist, remove_from_library, resolve_track, set_global_shortcuts, player_live, player_effects, player_levels, export_edit, export_stop, edits, save_edit, delete_edit, activate_edit, voice_listen, voice_stop, open_windows_settings, detector_status, set_detector_token, detect_song, detect_stop, lyrics, set_ui_language, ytwatch_open, ytwatch_place, ytwatch_cmd, ytwatch_close])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

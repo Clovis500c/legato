@@ -1004,6 +1004,14 @@ const fr: Record<string, string> = {
   'Sped up': 'Sped up',
   '8D': '8D',
   'Concert hall': 'Salle de concert',
+  '(edited)': '(modifié)',
+  'Copy saved': 'Copie enregistrée',
+  'Export failed: {error}': 'Échec de l’export : {error}',
+  'Export': 'Exporter',
+  'A copy of this file with your changes, as WAV. The original stays as it is.': 'Une copie de ce fichier avec vos modifications, en WAV. L’original reste tel quel.',
+  'Nothing changed yet': 'Rien n’est encore modifié',
+  'Export a copy…': 'Exporter une copie…',
+  'Exporting': 'Export en cours',
 }
 
 export default fr

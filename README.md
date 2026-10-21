@@ -26,6 +26,8 @@ A fast, private desktop music player for Windows, built with Tauri 2 and Rust.
 - **Mixes made on your PC.** Daily Mixes, a time-of-day mix and Rediscover, built from your own listening history.
 - **Windows integration.** Media keys, the Windows media panel, tray icon, keyboard shortcuts, system light/dark mode
   and accent color.
+- **Live Editor.** Change the playing song as it plays: slowed, sped up, pitch, bass and EQ, reverb, echo, 3D / 8D
+  sound. Save versions per song; export a modified copy of your own files.
 - **Your language.** English and French, following Windows or picked in Settings.
 - **Customization.** Themes with a built-in editor, layout and player options.
 - **Add-ons.** Optional extras, off by default. First available: Discord Rich Presence.
@@ -36,8 +38,9 @@ A fast, private desktop music player for Windows, built with Tauri 2 and Rust.
 - **No server, no account of ours.** Your library is a local SQLite database; tokens stay in the Windows Credential
   Manager.
 - **Official playback only.** Music plays through each service's own player or from your files. Nothing is downloaded
-  or extracted. Sound features (Adaptive Sound) process what plays as it plays, in memory: nothing is recorded or
-  saved, and Settings › Advanced can keep YouTube's sound untouched.
+  or extracted. Sound features (Adaptive Sound, the Live Editor) process what plays as it plays, in memory: nothing is
+  recorded or saved (the Live Editor keeps its settings, never sound; only your own files can be exported), and
+  Settings › Advanced can keep YouTube's sound untouched.
 - **One gateway to the network.** All requests go through the Rust core; the interface never calls the network itself.
 - **Voice search (off until you allow it).** The mic uses Windows' own online speech recognition: while it listens,
   your voice goes to Microsoft's speech service through Windows. The app keeps nothing.

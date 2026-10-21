@@ -400,6 +400,11 @@ export const api = {
   saveEdit: (id: number | null, song: string | null, name: string, effects: Effects) => invoke<number>('save_edit', { id, song, name, effects }),
   deleteEdit: (id: number) => invoke<void>('delete_edit', { id }),
   activateEdit: (song: string, id: number | null) => invoke<void>('activate_edit', { song, id }),
+  /** Live Editor: a local file's copy with the effects applied, as a new WAV (the original is only read). */
+  exportEdit: (input: string, output: string, effects: Effects) => invoke<void>('export_edit', { input, output, effects }),
+  exportStop: () => invoke<void>('export_stop'),
+  /** Export progress, 0..1 (null: length unknown). */
+  onExport: (cb: (progress: number | null) => void) => listen<number | null>('export', (e) => cb(e.payload)),
   /** Live Editor settings for the native engine. */
   playerEffects: (effects: Effects) => invoke<void>('player_effects', { effects }),
   /** What the native engine plays, as heard. */

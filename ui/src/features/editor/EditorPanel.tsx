@@ -1,13 +1,15 @@
-import { ArrowCounterClockwise, CaretRight, FloppyDisk, Plus } from '@phosphor-icons/react'
+import { ArrowCounterClockwise, CaretRight, Export, FloppyDisk, Plus } from '@phosphor-icons/react'
+import { save } from '@tauri-apps/plugin-dialog'
+import { revealItemInDir } from '@tauri-apps/plugin-opener'
 import { useRef, useState, type ReactNode } from 'react'
 import { useSettings } from '../../app/settings'
 import { useStore } from '../../app/store'
-import type { Effects } from '../../shared/api'
+import { api, type Effects } from '../../shared/api'
 import { tr } from '../../shared/i18n/i18n'
 import { onMenu } from '../../shared/ui/ContextMenu'
 import { RoundButton, Toggle } from '../../shared/ui/controls'
 import { editPresetMenu, editVersionMenu, editorMenu } from '../menus'
-import { EQ_FREQS, NEUTRAL, PRESETS } from '../player/effects'
+import { EQ_FREQS, NEUTRAL, neutral, PRESETS } from '../player/effects'
 import { useLive } from '../player/live'
 import { usePlayer } from '../player/store'
 import { applyPreset, bypass, playVersion, presetEffects, renameVersion, reset, savePreset, saveVersion, setEffects, updateVersion, useEditor } from './editor'
@@ -146,6 +148,50 @@ function Reach() {
   return null
 }
 
+/** Local files only: a copy with the changes, as WAV, next to the original (never touched). */
+function ExportCopy({ path, effects }: { path: string; effects: Effects }) {
+  const notify = useStore((s) => s.notify)
+  // undefined = idle, null = running (length unknown), else 0..1.
+  const [progress, setProgress] = useState<number | null>()
+  const start = async () => {
+    const cut = path.lastIndexOf('.')
+    const base = cut > Math.max(path.lastIndexOf('\\'), path.lastIndexOf('/')) ? path.slice(0, cut) : path
+    const out = await save({ defaultPath: `${base} ${tr('(edited)')}.wav`, filters: [{ name: 'WAV', extensions: ['wav'] }] })
+    if (!out) return
+    setProgress(null)
+    const off = api.onExport(setProgress)
+    try {
+      await api.exportEdit(path, out, effects)
+      notify(tr('Copy saved'), { kind: 'ok', action: { label: tr('Show in folder'), run: () => void revealItemInDir(out) } })
+    } catch (e) {
+      if (String(e) !== 'canceled') notify(tr('Export failed: {error}', { error: String(e) }), { kind: 'error' })
+    } finally {
+      void off.then((f) => f())
+      setProgress(undefined)
+    }
+  }
+  const unchanged = neutral(effects)
+  return (
+    <Section title={tr('Export')} hint={tr('A copy of this file with your changes, as WAV. The original stays as it is.')}>
+      {progress === undefined ? (
+        <button disabled={unchanged} onClick={() => void start()} className="flex w-fit items-center gap-1.5 rounded-full border border-line px-3 py-1 text-xs font-medium text-ink hover:bg-raised disabled:opacity-40">
+          <Export size={13} /> {unchanged ? tr('Nothing changed yet') : tr('Export a copy…')}
+        </button>
+      ) : (
+        <div className="flex items-center gap-2 text-xs">
+          <div role="progressbar" aria-label={tr('Exporting')} aria-valuenow={progress === null ? undefined : Math.round(progress * 100)} className="h-1 flex-1 overflow-hidden rounded-full bg-line">
+            <div className={`h-full bg-ink transition-[width] ${progress === null ? 'w-1/3 animate-pulse' : ''}`} style={progress === null ? undefined : { width: `${progress * 100}%` }} />
+          </div>
+          <span className="w-9 text-right font-mono text-ink-2 tabular-nums">{progress === null ? '…' : pct(progress)}</span>
+          <button onClick={() => void api.exportStop()} className="text-ink-2 hover:text-ink">
+            {tr('Cancel')}
+          </button>
+        </div>
+      )}
+    </Section>
+  )
+}
+
 /**
  * Now Playing › Live Editor, beside the cover. Changes play at once (local files in the app's engine, YouTube in its
  * player); versions are saved per song and one of them plays whenever the song does. Only numbers are saved.
@@ -154,6 +200,7 @@ export function EditorPanel({ onHide }: { onHide: () => void }) {
   const { song, effects: e, versions, presets, versionId, dirty } = useEditor()
   const motion = useSettings((s) => s.settings.motion)
   const playing = usePlayer((s) => s.playing)
+  const local = usePlayer((s) => (s.now?.via === 'local' ? s.now.path : undefined))
   const [naming, setNaming] = useState<'version' | 'preset' | null>(null)
   const [renaming, setRenaming] = useState<number | null>(null)
   const current = versions.find((v) => v.id === versionId)
@@ -329,6 +376,7 @@ export function EditorPanel({ onHide }: { onHide: () => void }) {
           <Slider center label={tr('Width')} value={e.width} min={0} max={2} step={0.01} rest={1} show={(v) => (v === 0 ? tr('Mono') : pct(v))} onChange={(width) => setEffects({ width })} />
           <Slider center label={tr('Balance')} value={e.balance} min={-1} max={1} step={0.01} rest={0} show={(v) => (v === 0 ? tr('Center') : v < 0 ? tr('{n}% left', { n: Math.round(-v * 100) }) : tr('{n}% right', { n: Math.round(v * 100) }))} onChange={(balance) => setEffects({ balance })} />
         </Section>
+        {local && <ExportCopy path={local} effects={e} />}
         <p className="px-1 text-[11px] text-ink-3">{tr('Only these settings are saved, never the sound itself.')}</p>
       </div>
     </aside>
