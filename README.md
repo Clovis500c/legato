@@ -28,6 +28,8 @@ A fast, private desktop music player for Windows, built with Tauri 2 and Rust.
   and accent color.
 - **Live Editor.** Change the playing song as it plays: slowed, sped up, pitch, bass and EQ, reverb, echo, 3D / 8D
   sound. Save versions per song; export a modified copy of your own files.
+- **Sync Mode.** Your playlists, history, Live Editor versions and settings on all your PCs, through OneDrive (or
+  any shared folder) or straight over your network with a 6-digit code.
 - **Your language.** English and French, following Windows or picked in Settings.
 - **Customization.** Themes with a built-in editor, layout and player options.
 - **Add-ons.** Optional extras, off by default. First available: Discord Rich Presence.
@@ -37,6 +39,10 @@ A fast, private desktop music player for Windows, built with Tauri 2 and Rust.
 
 - **No server, no account of ours.** Your library is a local SQLite database; tokens stay in the Windows Credential
   Manager.
+- **Sync Mode (off until you set it up).** Each PC writes one file in a folder you pick (OneDrive by default): your
+  library, history and settings, sealed with your password if you choose one (then your Spotify app ID and Music
+  Detector token travel too); without a password, OneDrive can read them and you sign in again on each PC. Over your
+  network, a 6-digit code seals the exchange. Details: [docs/sync-mode.md](docs/sync-mode.md).
 - **Official playback only.** Music plays through each service's own player or from your files. Nothing is downloaded
   or extracted. Sound features (Adaptive Sound, the Live Editor) process what plays as it plays, in memory: nothing is
   recorded or saved (the Live Editor keeps its settings, never sound; only your own files can be exported), and

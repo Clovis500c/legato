@@ -38,6 +38,8 @@ export const SETTINGS_INDEX: SettingEntry[] = [
   { section: 'themes', label: msg('Themes'), keywords: msg('editor custom colors import export palette contrast') },
   { section: 'sources', label: 'YouTube Music', keywords: msg('google sign in account import playlists sync liked') },
   { section: 'sources', label: 'Spotify', keywords: msg('client id key premium connect') },
+  { section: 'sync', label: 'OneDrive', keywords: msg('sync other pc computer cloud password encrypted backup') },
+  { section: 'sync', label: msg('Sync over the network'), keywords: msg('code local wifi other pc computer') },
   { section: 'sources', label: msg('Spotify web player'), keywords: msg('sign in') },
   { section: 'sources', label: msg('Local files'), keywords: msg('music folder mp3 flac scan') },
   { section: 'shield', label: msg('Block ads and trackers'), keywords: msg('adblock shield easylist privacy') },

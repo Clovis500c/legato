@@ -51,6 +51,8 @@ function apply(s: Settings) {
 interface SettingsState {
   settings: Settings
   load: () => Promise<void>
+  /** Saved settings changed underneath (Sync Mode): read again, a pending save dropped (it held the old ones). */
+  reload: () => Promise<void>
   update: (patch: Partial<Settings>) => void
   /** Theme currently on screen (resolved from preset, custom or system), or the one `theme` would give. */
   current: (theme?: string) => Theme
@@ -68,6 +70,13 @@ export const useSettings = create<SettingsState>((set, get) => ({
     apply(s)
     // Start screen: replaces the default one, no history entry.
     if (useStore.getState().view.name === 'songs') useStore.setState({ view: { name: s.startView } })
+  },
+
+  async reload() {
+    clearTimeout(saveTimer)
+    const s = sanitize(await api.loadSettings().catch(() => null))
+    set({ settings: s })
+    apply(s)
   },
 
   // Applied at once, saved after a short pause (sliders fire many updates).

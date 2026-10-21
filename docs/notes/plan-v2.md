@@ -100,7 +100,7 @@ it lands (tested, `pnpm check` green, committed). Technical plan, rule changes a
       best architecture, most advanced version, Audacity's techniques as inspiration (no code copied); works on
       YouTube songs (live processing); local files only: export a modified copy with the mix applied to a new file,
       original never touched (no export for YouTube, Spotify, Apple Music).
-- [ ] 4.2 Sync Mode: OneDrive detected automatically, ask the user whether they use it with encrypted files; another
+- [x] 4.2 Sync Mode: OneDrive detected automatically, ask the user whether they use it with encrypted files; another
       way to sync 2 PCs without a server of ours (nearby or an export file: propose, justify); everything synced
       (connections, settings, imported and non-imported local playlists); secrets never synced in clear (password
       encryption, or account list + sign in again); conflicts handled.

@@ -3,7 +3,7 @@ import { api, type Credentials, type LibraryPlaylist, type LibraryTrack, type Pl
 import type { Filter, GroupSize, GroupSort, PlayStats, Sort } from '../features/library/filter'
 import { tr, trn } from '../shared/i18n/i18n'
 
-export type SettingsSection = 'appearance' | 'themes' | 'sources' | 'shield' | 'shortcuts' | 'advanced' | 'about'
+export type SettingsSection = 'appearance' | 'themes' | 'sources' | 'sync' | 'shield' | 'shortcuts' | 'advanced' | 'about'
 
 export type View =
   | { name: 'home' }

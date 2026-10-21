@@ -151,6 +151,40 @@ export interface Effects {
 }
 
 /** crates/core library.rs Edit: effects as JSON (parse with effects.ts cleanEffects). */
+/** music_core::syncmode::Merged: what another PC's snapshot changed here. */
+export interface Merged {
+  playlists: number
+  deleted: number
+  songs: number
+  removed: number
+  plays: number
+  edits: number
+  settings: number
+}
+
+export interface SyncDevice {
+  name: string
+  at: number
+  accounts: { spotify: boolean; youtube: boolean }
+}
+
+export interface SyncStatus {
+  onedrive: string[]
+  folder: string | null
+  protected: boolean
+  asked: boolean
+  deviceName: string
+  devices: SyncDevice[]
+  last: number | null
+  error: string | null
+}
+
+export interface SyncProbe {
+  exists: boolean
+  protected: boolean
+  devices: number
+}
+
 export interface Edit {
   id: number
   song: string | null
@@ -405,6 +439,21 @@ export const api = {
   exportStop: () => invoke<void>('export_stop'),
   /** Export progress, 0..1 (null: length unknown). */
   onExport: (cb: (progress: number | null) => void) => listen<number | null>('export', (e) => cb(e.payload)),
+  /** Sync Mode (syncmode.rs): this PC's state, folders found, PCs met. */
+  syncStatus: () => invoke<SyncStatus>('sync_status'),
+  /** Before setting up a folder: is another PC syncing there, with a password? */
+  syncProbe: (folder: string) => invoke<SyncProbe>('sync_probe', { folder }),
+  syncSetup: (folder: string, password: string | null) => invoke<Merged>('sync_setup', { folder, password }),
+  syncStop: () => invoke<void>('sync_stop'),
+  syncNow: () => invoke<Merged>('sync_now'),
+  syncDismiss: () => invoke<void>('sync_dismiss'),
+  /** Local network: a code for the other PC; the result comes as a "sync-offer" event. */
+  syncOffer: () => invoke<string>('sync_offer'),
+  syncOfferStop: () => invoke<void>('sync_offer_stop'),
+  syncJoin: (code: string) => invoke<Merged>('sync_join', { code }),
+  /** Another PC's changes were merged here: reload. */
+  onSync: (cb: (m: Merged) => void) => listen<Merged>('sync', (e) => cb(e.payload)),
+  onSyncOffer: (cb: (r: { Ok?: Merged; Err?: string }) => void) => listen<{ Ok?: Merged; Err?: string }>('sync-offer', (e) => cb(e.payload)),
   /** Live Editor settings for the native engine. */
   playerEffects: (effects: Effects) => invoke<void>('player_effects', { effects }),
   /** What the native engine plays, as heard. */

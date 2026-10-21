@@ -1,5 +1,5 @@
 import { ShortcutsSection } from './ShortcutsSection'
-import { ArrowCounterClockwise, Check, CheckCircle, Info, ClipboardText, Copy, Keyboard, MagnifyingGlass, PaintBrush, Palette as PaletteIcon, Plugs, Plus, ShieldCheck, Sliders, Trash, WarningCircle } from '@phosphor-icons/react'
+import { ArrowCounterClockwise, ArrowsClockwise, Check, CheckCircle, Info, ClipboardText, Copy, Keyboard, MagnifyingGlass, PaintBrush, Palette as PaletteIcon, Plugs, Plus, ShieldCheck, Sliders, Trash, WarningCircle } from '@phosphor-icons/react'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { useSettings } from '../../app/settings'
 import { useStore, type SettingsSection } from '../../app/store'
@@ -13,6 +13,7 @@ import { curveLabels } from '../player/fade'
 import { usePlayer } from '../player/store'
 import { useLive } from '../player/live'
 import { SourcesView } from '../sources/SourcesView'
+import { SyncSection } from '../syncmode/SyncSection'
 import { AboutSection } from './AboutSection'
 import { FadeEditor } from './FadeEditor'
 import { CountsScene, CoverShapes, DensityScene, FadeScene, ListCoversScene, MiniPlayerScene, MixCoverScene, MotionScene, NowPlayingScene, SourceIconScene, TunerScene, VolumeScene } from './previews'
@@ -23,6 +24,7 @@ const sections: { id: SettingsSection; label: string; icon: ReactNode }[] = [
   { id: 'appearance', label: msg('Appearance'), icon: <PaintBrush size={15} /> },
   { id: 'themes', label: msg('Themes'), icon: <PaletteIcon size={15} /> },
   { id: 'sources', label: msg('Accounts'), icon: <Plugs size={15} /> },
+  { id: 'sync', label: msg('Sync Mode'), icon: <ArrowsClockwise size={15} /> },
   { id: 'shield', label: msg('Shield'), icon: <ShieldCheck size={15} /> },
   { id: 'shortcuts', label: msg('Shortcuts'), icon: <Keyboard size={15} /> },
   { id: 'advanced', label: msg('Advanced'), icon: <Sliders size={15} /> },
@@ -671,6 +673,7 @@ export function SettingsView({ section }: { section: SettingsSection }) {
           {section === 'appearance' && <Appearance />}
           {section === 'themes' && <Themes />}
           {section === 'sources' && <SourcesView />}
+          {section === 'sync' && <SyncSection />}
           {section === 'shield' && <ShieldSection />}
           {section === 'shortcuts' && <ShortcutsSection />}
           {section === 'advanced' && <AdvancedSection />}

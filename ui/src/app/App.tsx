@@ -9,6 +9,7 @@ import { AlbumsView, AlbumView, ArtistsView, ArtistView, PlaylistView, SongsView
 import { appMenu } from '../features/menus'
 import { startDiscord } from '../features/addons/discord'
 import { startUpdates } from '../features/update/updates'
+import { startSyncMode } from '../features/syncmode/syncmode'
 import { startMedia } from '../features/player/media'
 import { resumeSession, startSessionSaving } from '../features/player/session'
 import { MiniPlayer } from '../features/player/MiniPlayer'
@@ -148,6 +149,7 @@ export function App() {
   useEffect(() => startShortcuts(), [])
   useEffect(() => startDiscord(), [])
   useEffect(() => startUpdates(), [])
+  useEffect(() => startSyncMode(), [])
 
   // Ctrl+V outside text fields: share code → import, Spotify playlist / album → import, YouTube link → library.
   useEffect(() => {

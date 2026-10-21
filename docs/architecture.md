@@ -18,8 +18,8 @@ src-tauri/              thin shell: commands, keychain, WebView2 hook, media pan
 
 | Crate | Role |
 |---|---|
-| `music-core` | Track model, matching (ISRC, then title + artist + duration), SQLite library with versioned migrations, sync, local file scan, listening history and mixes, share codes, search merging and the music / not music classifier. No Tauri, no network. |
-| `music-connectors` | One module per service. Shared OAuth PKCE loopback (Spotify), YouTube Music web session, normal YouTube search, iTunes catalog, LRCLIB lyrics, AudD song recognition (user's token), Discord IPC, nearby sharing (mDNS + SPAKE2), image cache. Base URLs are injectable for tests. |
+| `music-core` | Track model, matching (ISRC, then title + artist + duration), SQLite library with versioned migrations, sync, Sync Mode between PCs (snapshot, merge, sealing), local file scan, listening history and mixes, share codes, search merging and the music / not music classifier. No Tauri, no network. |
+| `music-connectors` | One module per service. Shared OAuth PKCE loopback (Spotify), YouTube Music web session, normal YouTube search, iTunes catalog, LRCLIB lyrics, AudD song recognition (user's token), Discord IPC, nearby sharing and Sync Mode's network swap (mDNS + SPAKE2), image cache. Base URLs are injectable for tests. |
 | `music-player` | Native playback of local files and previews (rodio, symphonia) on its own thread, with a gapless queue, through the live processing chain. Live Editor export of local files (WAV). Microphone clips for the Music Detector (memory only). |
 | `music-dsp` | Live audio processing, pure Rust: biquads, BS.1770 loudness meter, Adaptive Sound gain, limiter, the Live Editor's effects (EQ, compressor, width, echo, reverb, 3D) and speed / tempo / pitch (WSOLA), shared `Control`. |
 | `music-shield` | Ad and tracker blocking with Brave's adblock engine, plus the YouTube player script. |
