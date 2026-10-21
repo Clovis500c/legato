@@ -8,6 +8,7 @@ mod secrets;
 #[cfg(windows)]
 mod shield;
 mod spotify_web;
+mod thumbbar;
 mod tray;
 mod update;
 mod window_bg;
@@ -1268,7 +1269,9 @@ fn discord_status(state: State<'_, AppState>) -> discord::Status {
 /// Cover: local file's own (track_id), else `art` URL through the cache.
 #[tauri::command]
 async fn media_update(state: State<'_, AppState>, now: Option<media::NowPlaying>, track_id: Option<i64>, art: Option<String>) -> CmdResult<()> {
-    background::set_playing(now.as_ref().is_some_and(|n| n.playing));
+    let playing = now.as_ref().is_some_and(|n| n.playing);
+    background::set_playing(playing);
+    thumbbar::set_playing(playing);
     if let Some(tray) = &state.tray {
         tray.update(now.as_ref()).map_err(err)?;
     }
@@ -1386,6 +1389,8 @@ pub fn run() {
             #[cfg(windows)]
             shield::install(window.as_ref(), shield.clone())?;
             let media = media::Media::install(&window).ok();
+            // Previous / Play / Next under the taskbar thumbnail.
+            let _ = thumbbar::install(&window);
             let tray = tray::Tray::install(app.handle()).ok();
             // Created hidden: shown once back where it was closed.
             window_place::restore(&window).or_else(|_| window.show())?;

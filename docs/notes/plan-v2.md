@@ -73,7 +73,7 @@ it lands (tested, `pnpm check` green, committed). Technical plan, rule changes a
 - [ ] Music Detector: a section under "Add music" that recognizes a song from sound (like Shazam), then adds it to any
       playlist. Pick a recognition service (user's key or free) and justify; clear microphone permission; no recording
       stored.
-- [ ] Windows quick commands: Previous, Play / Pause, Next under the taskbar thumbnail (screenshot 1), ITaskbarList3
+- [x] Windows quick commands: Previous, Play / Pause, Next under the taskbar thumbnail (screenshot 1), ITaskbarList3
       thumbnail toolbar; works on Windows 11, Play / Pause icon follows the state, follows the app's theme.
 - [ ] Cover animation: Advanced setting, cover grows and shrinks with the song's volume. Off by default. Uses live
       audio processing.
