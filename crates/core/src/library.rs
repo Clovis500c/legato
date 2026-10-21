@@ -46,6 +46,11 @@ CREATE TABLE IF NOT EXISTS settings (
 );
 ";
 
+/// Wall clock, unix ms (Sync Mode change times).
+pub fn now_ms() -> i64 {
+    std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_millis() as i64).unwrap_or(0)
+}
+
 const TRACK_COLS: &str = "t.id, t.title, t.artist, t.album, t.duration_ms, t.isrc, t.art, t.added, t.musicness";
 
 /// Liked Music: last like on top, always.
@@ -266,6 +271,22 @@ impl Library {
                  COMMIT;",
             )?;
         }
+        if lib.db.query_row("PRAGMA user_version", [], |r| r.get::<_, i64>(0))? < 10 {
+            // v10: Sync Mode (syncmode.rs). When things changed (unix ms) and what was deleted, so two PCs can merge:
+            // the newest change wins. Playlists made here get ids no other PC can make (were custom-<row id>).
+            lib.db.execute_batch(
+                "BEGIN;
+                 ALTER TABLE playlists ADD COLUMN updated INTEGER NOT NULL DEFAULT 0;
+                 ALTER TABLE removed ADD COLUMN at INTEGER NOT NULL DEFAULT 0;
+                 ALTER TABLE track_prefs ADD COLUMN at INTEGER NOT NULL DEFAULT 0;
+                 ALTER TABLE edits ADD COLUMN uid TEXT;
+                 UPDATE edits SET uid = lower(hex(randomblob(8)));
+                 UPDATE playlists SET source_id = 'custom-' || lower(hex(randomblob(8))) WHERE custom = 1;
+                 CREATE TABLE IF NOT EXISTS sync_gone (kind TEXT NOT NULL, key TEXT NOT NULL, at INTEGER NOT NULL, PRIMARY KEY (kind, key));
+                 PRAGMA user_version = 10;
+                 COMMIT;",
+            )?;
+        }
         let v = lib.versions.clone();
         lib.db.update_hook(Some(move |_: rusqlite::hooks::Action, _: &str, table: &str, _: i64| v.touch(table)))?;
         Ok(lib)
@@ -345,13 +366,15 @@ impl Library {
     /// unless the user set it by hand.
     pub fn save_playlist(&self, source: Source, source_id: &str, name: &str, tracks: &[Track]) -> Result<i64> {
         self.tx(|| {
+            let before: Option<String> = self.db.query_row("SELECT name FROM playlists WHERE source = ?1 AND source_id = ?2", params![source.as_str(), source_id], |r| r.get(0)).optional()?;
             let id: i64 = self.db.query_row(
                 "INSERT INTO playlists (source, source_id, name) VALUES (?1, ?2, ?3)
                  ON CONFLICT (source, source_id) DO UPDATE SET name = excluded.name RETURNING id",
                 params![source.as_str(), source_id, name],
                 |r| r.get(0),
             )?;
-            let old: BTreeSet<i64> = self.playlist_track_ids(id)?.into_iter().collect();
+            let old_order = self.playlist_track_ids(id)?;
+            let old: BTreeSet<i64> = old_order.iter().copied().collect();
             let mut flipped = false;
             if !old.is_empty() && !liked_music(source, source_id) {
                 let was_there = tracks.iter().map(|t| Ok(self.find(t)?.is_some_and(|i| old.contains(&i)))).collect::<Result<Vec<_>>>()?;
@@ -371,6 +394,9 @@ impl Library {
             let mut ids = oldest_first.into_iter().map(|t| self.upsert_track(t)).collect::<Result<Vec<_>>>()?;
             if newest {
                 ids.reverse();
+            }
+            if before.as_deref() != Some(name) || ids != old_order || flipped {
+                self.touch(id)?;
             }
             for (pos, track_id) in ids.into_iter().enumerate() {
                 self.db.execute("INSERT INTO playlist_tracks (playlist_id, position, track_id) VALUES (?1, ?2, ?3)", params![id, pos as i64, track_id])?;
@@ -486,11 +512,14 @@ impl Library {
                 PlaylistEdit::Rename { id, name } => {
                     self.ensure_custom(id)?;
                     self.db.execute("UPDATE playlists SET name = ?1 WHERE id = ?2", params![clean_name(&name)?, id])?;
+                    self.touch(id)?;
                     None
                 }
                 PlaylistEdit::Delete { id } => {
                     self.ensure_custom(id)?;
+                    let key: String = self.db.query_row("SELECT source || ':' || source_id FROM playlists WHERE id = ?1", [id], |r| r.get(0))?;
                     self.db.execute("DELETE FROM playlists WHERE id = ?1", [id])?;
+                    self.gone("playlist", &key)?;
                     None
                 }
                 PlaylistEdit::Add { id, track_ids } => {
@@ -525,6 +554,7 @@ impl Library {
                 PlaylistEdit::SetOrder { id, newest_first } => {
                     let before = self.order_of(id)?.0;
                     self.db.execute("UPDATE playlists SET newest_first = ?1, order_manual = ?2 WHERE id = ?3", params![newest_first, newest_first.is_some(), id])?;
+                    self.touch(id)?;
                     if self.order_of(id)?.0 != before {
                         self.rerank(&[id])?;
                     }
@@ -556,7 +586,7 @@ impl Library {
     /// Files on disk are never touched.
     pub fn remove_track(&self, track_id: i64) -> Result<()> {
         self.tx(|| {
-            self.db.execute("INSERT OR IGNORE INTO removed (source, source_id) SELECT source, source_id FROM track_ids WHERE track_id = ?1", [track_id])?;
+            self.db.execute("INSERT OR IGNORE INTO removed (source, source_id, at) SELECT source, source_id, ?2 FROM track_ids WHERE track_id = ?1", params![track_id, now_ms()])?;
             let lists: Vec<i64> = self.db.prepare("SELECT DISTINCT playlist_id FROM playlist_tracks WHERE track_id = ?1")?.query_map([track_id], |r| r.get(0))?.collect::<rusqlite::Result<_>>()?;
             for id in lists {
                 self.rewrite(id, |ids| ids.retain(|t| *t != track_id))?;
@@ -567,7 +597,7 @@ impl Library {
     }
 
     /// Removed by the user earlier (any of its ids).
-    fn is_removed(&self, t: &Track) -> Result<bool> {
+    pub(crate) fn is_removed(&self, t: &Track) -> Result<bool> {
         let mut stmt = self.db.prepare_cached("SELECT 1 FROM removed WHERE source = ?1 AND source_id = ?2")?;
         for (s, id) in &t.ids {
             if stmt.exists(params![s.as_str(), id])? {
@@ -581,7 +611,9 @@ impl Library {
     pub fn unremove(&self, t: &Track) -> Result<()> {
         let mut stmt = self.db.prepare_cached("DELETE FROM removed WHERE source = ?1 AND source_id = ?2")?;
         for (s, id) in &t.ids {
-            stmt.execute(params![s.as_str(), id])?;
+            if stmt.execute(params![s.as_str(), id])? > 0 {
+                self.gone("removed", &format!("{}:{id}", s.as_str()))?;
+            }
         }
         Ok(())
     }
@@ -614,9 +646,24 @@ impl Library {
 
     fn new_custom(&self, name: &str) -> Result<i64> {
         let name = clean_name(name)?;
-        let n: i64 = self.db.query_row("SELECT coalesce(max(id), 0) + 1 FROM playlists", [], |r| r.get(0))?;
-        self.db.execute("INSERT INTO playlists (source, source_id, name, custom) VALUES ('local', ?1, ?2, 1)", params![format!("custom-{n}"), name])?;
+        // Random id: another PC's playlists (Sync Mode) never collide with this one's.
+        self.db.execute(
+            "INSERT INTO playlists (source, source_id, name, custom, updated) VALUES ('local', 'custom-' || lower(hex(randomblob(8))), ?1, 1, ?2)",
+            params![name, now_ms()],
+        )?;
         Ok(self.db.last_insert_rowid())
+    }
+
+    /// Changed now (Sync Mode: the newest change of a playlist wins).
+    pub(crate) fn touch(&self, playlist_id: i64) -> Result<()> {
+        self.db.execute("UPDATE playlists SET updated = ?2 WHERE id = ?1", params![playlist_id, now_ms()])?;
+        Ok(())
+    }
+
+    /// Deleted now: remembered so other PCs delete it too instead of bringing it back.
+    pub(crate) fn gone(&self, kind: &str, key: &str) -> Result<()> {
+        self.db.execute("INSERT OR REPLACE INTO sync_gone (kind, key, at) VALUES (?1, ?2, ?3)", params![kind, key, now_ms()])?;
+        Ok(())
     }
 
     fn ensure_custom(&self, id: i64) -> Result<()> {
@@ -633,8 +680,13 @@ impl Library {
 
     /// Read order, mutate, write back. Small lists: simpler than shifting positions under the PK.
     fn rewrite(&self, id: i64, f: impl FnOnce(&mut Vec<i64>)) -> Result<()> {
-        let mut ids = self.playlist_track_ids(id)?;
+        let old = self.playlist_track_ids(id)?;
+        let mut ids = old.clone();
         f(&mut ids);
+        if ids == old {
+            return Ok(());
+        }
+        self.touch(id)?;
         self.db.execute("DELETE FROM playlist_tracks WHERE playlist_id = ?1", [id])?;
         let mut ins = self.db.prepare_cached("INSERT INTO playlist_tracks (playlist_id, position, track_id) VALUES (?1, ?2, ?3)")?;
         for (pos, t) in ids.iter().enumerate() {
@@ -656,9 +708,9 @@ impl Library {
         Ok(())
     }
 
-    /// A song's edits (`song` key) or the presets (None), newest first.
+    /// A song's edits (`song` key) or the presets (None), oldest first (a stable list: playing one doesn't move it).
     pub fn edits(&self, song: Option<&str>) -> Result<Vec<Edit>> {
-        let mut q = self.db.prepare("SELECT id, song, name, effects, active FROM edits WHERE song IS ?1 ORDER BY updated DESC, id DESC")?;
+        let mut q = self.db.prepare("SELECT id, song, name, effects, active FROM edits WHERE song IS ?1 ORDER BY id")?;
         let rows = q.query_map([song], |r| Ok(Edit { id: r.get(0)?, song: r.get(1)?, name: r.get(2)?, effects: r.get(3)?, active: r.get::<_, i64>(4)? != 0 }))?;
         Ok(rows.collect::<rusqlite::Result<_>>()?)
     }
@@ -671,23 +723,28 @@ impl Library {
                 Ok(id)
             }
             None => {
-                self.db.execute("INSERT INTO edits (song, name, effects, updated) VALUES (?1, ?2, ?3, ?4)", params![song, name, effects, now])?;
+                self.db.execute("INSERT INTO edits (song, name, effects, updated, uid) VALUES (?1, ?2, ?3, ?4, lower(hex(randomblob(8))))", params![song, name, effects, now])?;
                 Ok(self.db.last_insert_rowid())
             }
         }
     }
 
     pub fn delete_edit(&self, id: i64) -> Result<()> {
+        let uid: Option<String> = self.db.query_row("SELECT uid FROM edits WHERE id = ?1", [id], |r| r.get(0)).optional()?.flatten();
         self.db.execute("DELETE FROM edits WHERE id = ?1", [id])?;
+        if let Some(uid) = uid {
+            self.gone("edit", &uid)?;
+        }
         Ok(())
     }
 
     /// The edit that plays with this song (None = the song as is).
     pub fn activate_edit(&self, song: &str, id: Option<i64>) -> Result<()> {
         let tx = self.db.unchecked_transaction()?;
-        tx.execute("UPDATE edits SET active = 0 WHERE song = ?1", [song])?;
+        let now = now_ms() / 1000;
+        tx.execute("UPDATE edits SET active = 0, updated = ?2 WHERE song = ?1 AND active = 1", params![song, now])?;
         if let Some(id) = id {
-            tx.execute("UPDATE edits SET active = 1 WHERE id = ?1 AND song = ?2", params![id, song])?;
+            tx.execute("UPDATE edits SET active = 1, updated = ?3 WHERE id = ?1 AND song = ?2", params![id, song, now])?;
         }
         tx.commit()?;
         Ok(())
@@ -723,7 +780,7 @@ impl Library {
     }
 
     // Savepoints = nestable tx (save_playlist calls upsert_track).
-    fn tx<T>(&self, f: impl FnOnce() -> Result<T>) -> Result<T> {
+    pub(crate) fn tx<T>(&self, f: impl FnOnce() -> Result<T>) -> Result<T> {
         self.db.execute_batch("SAVEPOINT tx")?;
         match f() {
             Ok(v) => {
@@ -1108,7 +1165,7 @@ mod tests {
         let a = lib.save_edit(None, Some("t:1"), "Slowed", "{\"speed\":0.8}", 1)?;
         let b = lib.save_edit(None, Some("t:1"), "8D", "{}", 2)?;
         lib.save_edit(None, None, "My preset", "{}", 3)?;
-        assert_eq!(lib.edits(Some("t:1"))?.iter().map(|e| e.name.as_str()).collect::<Vec<_>>(), ["8D", "Slowed"]);
+        assert_eq!(lib.edits(Some("t:1"))?.iter().map(|e| e.name.as_str()).collect::<Vec<_>>(), ["Slowed", "8D"]);
         assert_eq!(lib.edits(None)?.len(), 1);
         lib.activate_edit("t:1", Some(a))?;
         lib.activate_edit("t:1", Some(b))?;

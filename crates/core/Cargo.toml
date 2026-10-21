@@ -18,6 +18,9 @@ base64 = "0.23.1"
 qrcode = { version = "0.14.1", default-features = false }
 rqrr = { version = "0.11.0", default-features = false }
 image = { version = "0.25.10", default-features = false, features = ["png", "jpeg"] }
+argon2 = "0.6.0"
+chacha20poly1305 = "0.11.0"
+rand = "0.10.3"
 
 [dev-dependencies]
 tokio = { version = "1.53.3", features = ["macros", "rt"] }
