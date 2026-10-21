@@ -7,6 +7,7 @@ import { endListen, progress, startListen } from './listens'
 import { demoGain, demoLength, fadeGain, NO_FADE, type Fade } from './fade'
 import { nextIndex, playOrder, queued, type Repeat } from './queue'
 import { vias, type Via } from './sources'
+import { closeWatch, openWatch, sendWatch, watching } from './watch'
 import { ytPost, type YtUpdate } from './youtube'
 
 /** via youtube = embed plays it, else Rust engine (local file, or Apple preview held in memory). */
@@ -119,7 +120,8 @@ let expect: string[] | null = null
 let seq = 0
 
 const send = (cmd: PlayerCommand) => api.player(cmd).catch((e) => useStore.setState({ error: String(e) }))
-const yt = (func: string, ...args: unknown[]) => ytPost(frame, 'command', func, args)
+// Embed, or the watch page when the embed refused the video: same commands.
+const yt = (func: string, ...args: unknown[]) => (watching() ? sendWatch(func, args) : ytPost(frame, 'command', func, args))
 export const fileTitle = (path: string) => path.split(/[\\/]/).pop()!.replace(/\.[^.]+$/, '')
 const previewPath = (t: LibraryTrack) => `apple:${t.ids.apple}`
 const spotifyOn = () => useStore.getState().status.spotify.connected
@@ -154,26 +156,43 @@ function ramp(gain: (t: number) => number, ms: number, done?: () => void) {
   tick()
 }
 
-// Blocked videos this session, and the other uploads still to try for the current track.
+// Videos the embed refused this session (they play from their watch page), videos that can't play at all here, and the
+// other uploads still to try for the current track.
 const blocked = new Set<string>()
+const unplayable = new Set<string>()
 let others: { trackId: number; ids: string[] } | null = null
 
-async function tryOtherUpload(trackId: number, failed: string) {
-  blocked.add(failed)
+/** Where the video shows: the slot, or the embed's own default spot (iframe box). */
+function videoRect(): DOMRect | null {
+  return useVideoSlot.getState().rect ?? frame?.getBoundingClientRect() ?? null
+}
+
+/** Embed refused the video (owner turned embedding off): same video from YouTube's watch page, where it was. */
+function playOnWatchPage(video: string, startMs: number) {
+  const rect = videoRect()
+  // The embed stops for good: no second player in the background.
+  ytPost(frame, 'command', 'pauseVideo')
+  if (!rect) return void tryOtherUpload(usePlayer.getState().now?.trackId ?? 0, video, 'This video can’t play in apps')
+  openWatch(video, startMs / 1000, rect).catch(() => tryOtherUpload(usePlayer.getState().now?.trackId ?? 0, video, 'This video can’t play in apps'))
+}
+
+async function tryOtherUpload(trackId: number, failed: string, why: string) {
+  unplayable.add(failed)
+  closeWatch()
   const mine = seq
   if (others?.trackId !== trackId) {
     const ids = await api.alternativeVideos(trackId, [...blocked]).catch(() => [])
     if (mine !== seq) return
     others = { trackId, ids }
   }
-  const next = others.ids.find((v) => !blocked.has(v))
+  const next = others.ids.find((v) => !unplayable.has(v))
   const { notify } = useStore.getState()
   if (next) {
-    notify('This video can’t play in apps: playing another upload of the song')
+    notify(`${why}: playing another upload of the song`)
     // Same embed: the frame loads the new id (loadVideoById).
     return usePlayer.setState((s) => (s.now ? { now: { ...s.now, youtubeId: next }, playId: s.playId + 1, positionMs: 0, playing: true } : {}))
   }
-  notify('This video can’t play in apps and no other upload was found: skipped')
+  notify(`${why}, and no other upload was found: skipped`, { kind: 'error' })
   // Manual step: repeat one would replay the blocked video forever.
   usePlayer.getState().step(1)
 }
@@ -238,6 +257,8 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     const how = via ?? (t && vias(t, spotifyOn())[0])
     if (!t || !how || !vias(t, spotifyOn()).includes(how)) return
     const mine = ++seq
+    // Watch page belongs to one video: anything else plays elsewhere.
+    if (how !== 'youtube') closeWatch()
     // Leaving Spotify: pause the user's Spotify app.
     if (get().now?.via === 'spotify' && how !== 'spotify') void spotify({ type: 'pause' })
     // Recommendations: no history (not in the library).
@@ -252,14 +273,18 @@ export const usePlayer = create<PlayerState>((set, get) => ({
       expect = null
       // Unconditional: engine may hold a paused item the store forgot (reload).
       send({ type: 'stop' })
-      // Blocked earlier this session: straight to the upload that worked.
-      const video = blocked.has(t.ids.youtube!) && others?.trackId === t.id ? (others.ids.find((v) => !blocked.has(v)) ?? t.ids.youtube) : t.ids.youtube
+      // Can't play here at all (seen this session): straight to the upload that worked.
+      const video = unplayable.has(t.ids.youtube!) && others?.trackId === t.id ? (others.ids.find((v) => !unplayable.has(v)) ?? t.ids.youtube!) : t.ids.youtube!
+      if (watching() && !watching(video)) closeWatch()
       // Same video (repeat one): the embed stays mounted, so rewind it.
       if (get().now?.youtubeId === video) {
         yt('seekTo', start / 1000, true)
         yt('playVideo')
       }
-      return set({ now: { ...base, youtubeId: video } })
+      set({ now: { ...base, youtubeId: video } })
+      // Refused by the embed earlier this session: its watch page at once.
+      if (blocked.has(video) && !watching(video)) playOnWatchPage(video, start)
+      return
     }
     if (how === 'local') {
       // Consecutive local tracks go to the engine as one run: gapless between them. List order only.
@@ -310,6 +335,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
 
   playFiles(paths) {
     seq++
+    closeWatch()
     startListen(undefined, null)
     expect = paths
     send({ type: 'play', paths, start: 0 })
@@ -380,10 +406,21 @@ export const usePlayer = create<PlayerState>((set, get) => ({
   },
 
   onYoutube(u) {
+    const { now } = get()
+    // Watch page can't play it either (region, age, removed): another upload of the song, else the next song.
+    if (u.unplayable !== undefined) {
+      if (now?.trackId && now.youtubeId) return void tryOtherUpload(now.trackId, now.youtubeId, `This video can’t play here (${u.unplayable})`)
+      useStore.getState().notify(`This video can’t play here (${u.unplayable}): skipped`, { kind: 'error' })
+      return get().step(1)
+    }
     if (u.error !== undefined) {
-      const { now } = get()
-      // 100 removed, 101 / 150 owner turned embedding off: another upload of the same song, else the next song.
-      if (now?.trackId && now.youtubeId && [100, 101, 150].includes(u.error)) return void tryOtherUpload(now.trackId, now.youtubeId)
+      // 101 / 150: owner turned embedding off. Same video from its watch page, invisible switch.
+      if (now?.youtubeId && [101, 150].includes(u.error) && !watching(now.youtubeId)) {
+        blocked.add(now.youtubeId)
+        return playOnWatchPage(now.youtubeId, get().positionMs)
+      }
+      // 100: removed. Another upload of the same song, else the next song.
+      if (now?.trackId && now.youtubeId && u.error === 100) return void tryOtherUpload(now.trackId, now.youtubeId, 'This video was removed')
       useStore.setState({ error: `YouTube playback failed (error ${u.error}).` })
       return set({ playing: false })
     }

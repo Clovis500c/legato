@@ -31,7 +31,7 @@ it lands (tested, `pnpm check` green, committed). Technical plan, rule changes a
 - [x] Search: use normal YouTube instead of YouTube Music only (rule "no YouTube key" changed if needed, method and
       risks in the plan). Hide videos that clearly aren't music, with "N videos hidden because they aren't music" (real
       count) and a button to show them.
-- [ ] Videos that "can't be played outside YouTube" (errors 101 / 150): detect the error from the player API; only
+- [x] Videos that "can't be played outside YouTube" (errors 101 / 150): detect the error from the player API; only
       then reload the video from its normal watch page in a webview with YouTube's interface around the player hidden
       (consistent with the overlay fix); invisible switch, our controls (pause, seek, volume, next) keep working, the
       next song follows normally; still unplayable (region, age…) → clean skip with a clear message. Official player

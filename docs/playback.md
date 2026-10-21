@@ -65,9 +65,20 @@ Status on 2026-10-16. YouTube, local files and Apple Music previews: done and te
   the page drops them. Settings › Advanced brings YouTube's controls back (next track). Subtitles:
   `unloadModule` captions / cc once per video unless Advanced turns them on.
 - One embed per run of YouTube tracks: the next video goes into the running player (`loadVideoById`), no reload.
-- Error 100 / 101 / 150 (removed / owner turned embedding off): `alternative_videos` searches YouTube Music songs and
-  videos for the same song (same cleaned title and length, any channel), plays the first that works, else skips. The
-  block itself is not worked around (it would mean extracting the stream).
+- Error 101 / 150 (owner turned embedding off), 2026-10-20: the same video plays from YouTube's own watch page, in a
+  child webview of the main window placed exactly over the video slot (`src-tauri/src/ytwatch.rs`, Tauri multi-webview,
+  `unstable` feature; the watch page can't be framed). `crates/shield/src/watch.js` hides everything around
+  `#movie_player` and every overlay, fills the webview, stays muted until the app sends its volume, applies the app's
+  crop, and reports state / time / duration / clicks as `musicapp-ytwatch:<json>` strings on WebView2's message
+  channel (objects posted from that page never reach the host). Rust checks origin, shape and sizes, then emits
+  `ytwatch` to the UI; commands go back as scripts built from fixed names and numbers. The page gets no app command
+  (Tauri's IPC refuses it: no capability). Same store path as the embed (`watch.ts`): pause, seek, volume, fades,
+  next, cover mode (webview hidden, still playing) and click-to-pause all work. Checked live by forcing error 150:
+  switch at the same position, volume and crop applied, pause from the app and from a click.
+- Still unplayable on the watch page (region, age without a signed-in adult account, removed, private: playability
+  status), or error 100 (removed): `alternative_videos` searches YouTube Music songs and videos for the same song (same
+  cleaned title and length, any channel) and plays the first that works, else a clear message and the next song.
+  Nothing is extracted: both are YouTube's own players.
 - Now Playing Auto mode: frames `1.jpg` / `2.jpg` / `3.jpg` (25 / 50 / 75 %) compared at 32×24 (`still.ts`); nearly the
   same = still image upload = cover. Cover mode keeps the embed playing, transparent (user's choice, see plan).
 - Fades between songs: volume × `fadeGain` (smoothstep), only on transitions that happen on their own; Spotify none.

@@ -22,6 +22,8 @@ export interface YtUpdate {
   time?: number
   duration?: number
   error?: number
+  /** Watch page (blocked embeds): the video can't play at all here (region, age, removed). Why, in YouTube's words. */
+  unplayable?: string
 }
 
 /** Embed message → update. Undefined if not from YouTube or not relevant. */

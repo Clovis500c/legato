@@ -15,6 +15,7 @@ import { trackArt } from '../../shared/art'
 import { Cover } from '../../shared/ui/Cover'
 import { bindFrame, useNowTrack, usePlayer, useVideoSlot } from './store'
 import { embedUrl, parseYt, ytPost } from './youtube'
+import { closeWatch, cropWatch, placeWatch, useWatch, watchUpdate } from './watch'
 import { frameAround } from '../../shared/artbox'
 
 const AUDIO = /\.(mp3|flac|wav|ogg|m4a|aac)$/i
@@ -39,8 +40,10 @@ function YouTubeFrame({ videoId }: { videoId: string }) {
   const rect = useVideoSlot((s) => s.rect)
   const hidden = useVideoSlot((s) => s.hidden)
   const box = useVideoSlot((s) => s.box)
+  // Embed refused this video: YouTube's watch page plays it in a webview over the same place (watch.ts).
+  const watch = useWatch((s) => s.video)
   // Bars baked into the video: frame enlarged, only the picture shows.
-  const crop = rect && box && !hidden ? frameAround(rect, box) : null
+  const crop = rect && box && !hidden && !watch ? frameAround(rect, box) : null
   const frame = useRef<HTMLIFrameElement | null>(null)
   const ready = useRef(false)
   // First video and options at mount: changing src later would reload the embed.
@@ -60,8 +63,35 @@ function YouTubeFrame({ videoId }: { videoId: string }) {
       onYoutube(u)
     }
     window.addEventListener('message', onMessage)
-    return () => window.removeEventListener('message', onMessage)
+    // Watch page reports: same updates; a click on it is our play / pause.
+    const off = api.onYtWatch((r) => {
+      const v = useWatch.getState().video
+      if (!v) return
+      if (r.click) return usePlayer.getState().toggle()
+      // Fresh page: commands sent while it loaded were lost. Volume (it stays muted until then) and crop again.
+      if (r.ready) usePlayer.getState().applyVolume(true)
+      const box = useVideoSlot.getState().box
+      if (box && !r.cropped && !useVideoSlot.getState().hidden) cropWatch(box)
+      const u = watchUpdate(r, v)
+      if (u) onYoutube(u)
+    })
+    return () => {
+      window.removeEventListener('message', onMessage)
+      void off.then((f) => f())
+    }
   }, [onYoutube])
+  // Watch page follows the slot (or this frame's own spot), hidden in cover mode. Gone with the last YouTube track.
+  useEffect(() => {
+    if (!watch) return
+    const follow = () => placeWatch(hidden ? null : (rect ?? frame.current?.getBoundingClientRect() ?? null))
+    follow()
+    window.addEventListener('resize', follow)
+    return () => window.removeEventListener('resize', follow)
+  }, [watch, rect, hidden])
+  useEffect(() => {
+    if (watch && box) cropWatch(box)
+  }, [watch, box])
+  useEffect(() => () => closeWatch(), [])
   // Next video: into the running player. Not loaded yet: onLoad sends it.
   useEffect(() => {
     if (shown.current === videoId || !ready.current) return
@@ -92,7 +122,7 @@ function YouTubeFrame({ videoId }: { videoId: string }) {
       // Hidden (cover shown instead): YouTube's minimum size, so it streams a low resolution nobody sees.
       style={crop ?? (rect ? { left: rect.left, top: rect.top, width: hidden ? 200 : rect.width, height: hidden ? 200 : rect.height } : undefined)}
       // Bare video: no pointer on it, so YouTube's hover overlay never shows; our controls drive it.
-      className={`fixed z-30 bg-black ${crop ? '' : 'rounded-lg border border-line'} ${src.controls && !hidden ? '' : 'pointer-events-none'} ${hidden ? 'opacity-0' : ''} ${rect ? '' : 'right-6 bottom-[112px] h-50 w-89 shadow-[0_12px_32px_var(--shadow)]'}`}
+      className={`fixed z-30 bg-black ${crop ? '' : 'rounded-lg border border-line'} ${src.controls && !hidden && !watch ? '' : 'pointer-events-none'} ${hidden || watch ? 'opacity-0' : ''} ${rect ? '' : 'right-6 bottom-[112px] h-50 w-89 shadow-[0_12px_32px_var(--shadow)]'}`}
     />
   )
 }

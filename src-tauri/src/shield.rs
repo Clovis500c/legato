@@ -6,8 +6,8 @@ use webview2_com::Microsoft::Web::WebView2::Win32::*;
 use webview2_com::{WebResourceRequestedEventHandler, take_pwstr};
 use windows::core::{HSTRING, Interface, PWSTR};
 
-pub fn install(window: &tauri::WebviewWindow, shield: Arc<Shield>) -> tauri::Result<()> {
-    window.with_webview(move |wv| unsafe {
+pub fn install(webview: &tauri::Webview, shield: Arc<Shield>) -> tauri::Result<()> {
+    webview.with_webview(move |wv| unsafe {
         let Ok(core) = wv.controller().CoreWebView2() else { return };
         let Ok(env) = core.cast::<ICoreWebView2_2>().and_then(|c| c.Environment()) else { return };
         let all = HSTRING::from("*");

@@ -11,6 +11,7 @@ mod update;
 mod window_bg;
 mod window_place;
 mod ytm;
+mod ytwatch;
 
 use music_connectors::oauth::Opener;
 use music_connectors::spotify::Spotify;
@@ -1214,6 +1215,28 @@ async fn media_update(state: State<'_, AppState>, now: Option<media::NowPlaying>
     }
 }
 
+/// Blocked embed (101 / 150): the video from YouTube's watch page, over the video slot.
+#[tauri::command]
+async fn ytwatch_open(state: State<'_, AppState>, video: String, start: f64, rect: ytwatch::Rect) -> CmdResult<()> {
+    ytwatch::open(&state.app, &video, start, rect, state.shield.clone()).map_err(err)
+}
+
+/// None = hidden (cover mode), still playing.
+#[tauri::command]
+async fn ytwatch_place(state: State<'_, AppState>, rect: Option<ytwatch::Rect>) -> CmdResult<()> {
+    ytwatch::place(&state.app, rect).map_err(err)
+}
+
+#[tauri::command]
+async fn ytwatch_cmd(state: State<'_, AppState>, cmd: ytwatch::Cmd) -> CmdResult<()> {
+    ytwatch::command(&state.app, cmd).map_err(err)
+}
+
+#[tauri::command]
+async fn ytwatch_close(state: State<'_, AppState>) -> CmdResult<()> {
+    ytwatch::close(&state.app).map_err(err)
+}
+
 #[tauri::command]
 fn player(state: State<AppState>, cmd: Command) {
     state.player.send(cmd)
@@ -1256,7 +1279,7 @@ pub fn run() {
             window = window.initialization_script_for_all_frames(music_shield::BARE_SCRIPT);
             let window = window.build()?;
             #[cfg(windows)]
-            shield::install(&window, shield.clone())?;
+            shield::install(window.as_ref(), shield.clone())?;
             let media = media::Media::install(&window).ok();
             let tray = tray::Tray::install(app.handle()).ok();
             // Created hidden: shown once back where it was closed.
@@ -1282,7 +1305,7 @@ pub fn run() {
             update::spawn(app.handle().clone());
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, add_track, backfill_art, find_versions, play_preview, share_playlist, share_preview, share_read_image, share_import, nearby_send, nearby_status, nearby_stop, nearby_receive, record_play, mixes, set_track_pref, clear_history, export_youtube, spotify_player, spotify_playback, ytm_sign_in, ytm_sign_out, spotify_web_open, spotify_web_status, import_spotify_link, ytm_accounts, set_ytm_accounts, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, system_accent, restart_app, autostart, set_autostart, media_update, load_session, save_session, add_to_youtube, playlist_orders, save_cover, export_cover, alternative_videos, play_stats, cache_stats, open_licenses, update_status, update_check, update_install, ytm_home, ytm_list, discord_presence, discord_off, discord_status])
+        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, add_track, backfill_art, find_versions, play_preview, share_playlist, share_preview, share_read_image, share_import, nearby_send, nearby_status, nearby_stop, nearby_receive, record_play, mixes, set_track_pref, clear_history, export_youtube, spotify_player, spotify_playback, ytm_sign_in, ytm_sign_out, spotify_web_open, spotify_web_status, import_spotify_link, ytm_accounts, set_ytm_accounts, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, system_accent, restart_app, autostart, set_autostart, media_update, load_session, save_session, add_to_youtube, playlist_orders, save_cover, export_cover, alternative_videos, play_stats, cache_stats, open_licenses, update_status, update_check, update_install, ytm_home, ytm_list, discord_presence, discord_off, discord_status, ytwatch_open, ytwatch_place, ytwatch_cmd, ytwatch_close])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

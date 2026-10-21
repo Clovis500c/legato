@@ -111,6 +111,29 @@ export interface SyncReport {
 }
 
 /** Merged catalog hit (src-tauri search_catalogs). */
+/** src-tauri ytwatch.rs. */
+export interface WatchRect {
+  x: number
+  y: number
+  width: number
+  height: number
+}
+export type WatchCmd = { type: 'play' } | { type: 'pause' } | { type: 'seek'; seconds: number } | { type: 'volume'; percent: number } | { type: 'crop'; x: number; y: number; w: number; h: number }
+export interface WatchReport {
+  state?: number
+  time?: number
+  duration?: number
+  videoId?: string
+  /** Playability status when it can't play: UNPLAYABLE, LOGIN_REQUIRED, ERROR… */
+  error?: string
+  reason?: string
+  click: boolean
+  /** Muted, waiting for the app's volume. */
+  ready: boolean
+  /** The app's crop is applied. */
+  cropped: boolean
+}
+
 /** crates/core musicness: notMusic results are hidden until asked. */
 export type Musicness = 'music' | 'unsure' | 'notMusic'
 
@@ -313,6 +336,13 @@ export const api = {
   updateCheck: () => invoke<void>('update_check'),
   updateInstall: () => invoke<void>('update_install'),
   onUpdate: (cb: (s: UpdateStatus) => void) => listen<UpdateStatus>('update', (e) => cb(e.payload)),
+  /** Blocked embed (101 / 150): the video plays from YouTube's watch page in a webview over the slot. Physical px. */
+  ytwatchOpen: (video: string, start: number, rect: WatchRect) => invoke<void>('ytwatch_open', { video, start, rect }),
+  /** null = hidden (cover mode), still playing. */
+  ytwatchPlace: (rect: WatchRect | null) => invoke<void>('ytwatch_place', { rect }),
+  ytwatchCmd: (cmd: WatchCmd) => invoke<void>('ytwatch_cmd', { cmd }),
+  ytwatchClose: () => invoke<void>('ytwatch_close'),
+  onYtWatch: (cb: (r: WatchReport) => void) => listen<WatchReport>('ytwatch', (e) => cb(e.payload)),
   /** Track ids of every playlist, in order (covers). */
   playlistOrders: () => invoke<Record<number, number[]>>('playlist_orders'),
   /** Picked image copied into the app; returns its name for the art scheme (cover/<name>). */
