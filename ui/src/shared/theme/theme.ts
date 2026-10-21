@@ -167,6 +167,8 @@ export interface Settings {
   coverPulse: boolean
   /** YouTube's sound may go through the processing above (off: untouched, features work on local files only). */
   liveYoutube: boolean
+  /** Voice search agreed to (Windows' online speech recognition: the voice goes to Microsoft while the mic listens). */
+  voiceSearch: boolean
   /** Add-ons turned on (id → on). All off until the user turns them on. */
   addons: Record<string, boolean>
   discord: DiscordSettings
@@ -218,6 +220,7 @@ export const DEFAULTS: Settings = {
   adaptiveLevel: -14,
   coverPulse: false,
   liveYoutube: true,
+  voiceSearch: false,
   addons: {},
   discord: { appId: DISCORD_APP, status: 'song', buttons: true, paused: false, github: true },
   shortcuts: {},
@@ -315,6 +318,7 @@ export function sanitize(raw: unknown): Settings {
     adaptiveLevel: ADAPTIVE_LEVELS.includes(r.adaptiveLevel as AdaptiveLevel) ? (r.adaptiveLevel as AdaptiveLevel) : DEFAULTS.adaptiveLevel,
     coverPulse: r.coverPulse === true,
     liveYoutube: typeof r.liveYoutube === 'boolean' ? r.liveYoutube : DEFAULTS.liveYoutube,
+    voiceSearch: r.voiceSearch === true,
     shortcuts: sanitizeShortcuts(r.shortcuts),
     addons: Object.fromEntries(Object.entries(r.addons && typeof r.addons === 'object' ? r.addons : {}).filter(([k, v]) => /^[a-z0-9-]{1,40}$/.test(k) && typeof v === 'boolean').slice(0, 100)),
     discord: sanitizeDiscord(r.discord),

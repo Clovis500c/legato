@@ -143,6 +143,10 @@ export interface LiveLevels {
   peak: number
   gain: number
 }
+/** src-tauri speech.rs: why voice search heard nothing. */
+export type VoiceMiss = 'speechOff' | 'micBlocked' | 'noMic' | 'silence' | 'unclear' | 'offline' | 'language' | 'canceled' | 'failed'
+export type Heard = { kind: 'text'; text: string } | { kind: 'miss'; miss: VoiceMiss }
+
 /** ytwatch.rs LiveReport (watch page). */
 export interface LiveReport {
   attached?: boolean
@@ -354,6 +358,13 @@ export const api = {
   playerLive: (settings: LiveSettings) => invoke<void>('player_live', { settings }),
   /** What the native engine plays, as heard. */
   playerLevels: () => invoke<LiveLevels>('player_levels'),
+  /** Voice search: one phrase through Windows' speech recognition. */
+  voiceListen: () => invoke<Heard>('voice_listen'),
+  voiceStop: () => invoke<void>('voice_stop'),
+  /** Words heard so far. */
+  onSpeech: (cb: (text: string) => void) => listen<string>('speech', (e) => cb(e.payload)),
+  /** Windows' own settings page that unblocks a feature. */
+  openWindowsSettings: (page: 'speech' | 'microphone') => invoke<void>('open_windows_settings', { page }),
   /** Raw JSON; validated by shared/theme/settings.sanitize. */
   loadSettings: () => invoke<unknown>('load_settings'),
   saveSettings: (settings: object) => invoke<void>('save_settings', { settings }),

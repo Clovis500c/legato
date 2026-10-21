@@ -23,7 +23,7 @@ src-tauri/              thin shell: commands, keychain, WebView2 hook, media pan
 | `music-player` | Native playback of local files and previews (rodio, symphonia) on its own thread, with a gapless queue, through the live processing chain. |
 | `music-dsp` | Live audio processing, pure Rust: biquads, BS.1770 loudness meter, Adaptive Sound gain, limiter, shared `Control`. |
 | `music-shield` | Ad and tracker blocking with Brave's adblock engine, plus the YouTube player script. |
-| `src-tauri` | IPC commands, OS keychain, WebView2 request hook, Windows media panel, tray icon, window background. No business logic. |
+| `src-tauri` | IPC commands, OS keychain, WebView2 request hook, Windows media panel, tray icon, window background, voice search through Windows' speech recognition (`speech.rs`). No business logic. |
 
 ## Rules
 

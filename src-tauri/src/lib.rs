@@ -7,6 +7,7 @@ mod media;
 mod secrets;
 #[cfg(windows)]
 mod shield;
+mod speech;
 mod spotify_web;
 mod thumbbar;
 mod tray;
@@ -1130,6 +1131,28 @@ fn open_licenses(app: tauri::AppHandle) -> CmdResult<()> {
     app.opener().open_path(path.to_string_lossy(), None::<&str>).map_err(err)
 }
 
+/// Voice search: one phrase through Windows' speech recognition (speech.rs); words so far come as "speech" events.
+#[tauri::command]
+async fn voice_listen(app: tauri::AppHandle) -> CmdResult<speech::Heard> {
+    tauri::async_runtime::spawn_blocking(move || speech::listen(&app)).await.map_err(err)
+}
+
+#[tauri::command]
+fn voice_stop() {
+    speech::stop()
+}
+
+/// Windows settings pages the app points to when one of them blocks a feature. Fixed list.
+#[tauri::command]
+fn open_windows_settings(app: tauri::AppHandle, page: String) -> CmdResult<()> {
+    let uri = match page.as_str() {
+        "speech" => "ms-settings:privacy-speech",
+        "microphone" => "ms-settings:privacy-microphone",
+        _ => return Err(format!("unknown settings page {page}")),
+    };
+    app.opener().open_url(uri, None::<&str>).map_err(err)
+}
+
 /// Settings › About: how much the caches answer.
 #[tauri::command]
 fn cache_stats(state: State<AppState>) -> CacheStats {
@@ -1428,7 +1451,7 @@ pub fn run() {
             update::spawn(app.handle().clone());
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, add_track, backfill_art, find_versions, play_preview, share_playlist, share_preview, share_read_image, share_import, nearby_send, nearby_status, nearby_stop, nearby_receive, record_play, mixes, set_track_pref, clear_history, export_youtube, spotify_player, spotify_playback, ytm_sign_in, ytm_sign_out, spotify_web_open, spotify_web_status, import_spotify_link, ytm_accounts, set_ytm_accounts, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, system_accent, restart_app, autostart, set_autostart, media_update, load_session, save_session, add_to_youtube, playlist_orders, save_cover, export_cover, alternative_videos, play_stats, cache_stats, open_licenses, update_status, update_check, update_install, ytm_home, ytm_list, discord_presence, discord_off, discord_status, remove_from_playlist, remove_from_library, resolve_track, set_global_shortcuts, player_live, player_levels, ytwatch_open, ytwatch_place, ytwatch_cmd, ytwatch_close])
+        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, add_track, backfill_art, find_versions, play_preview, share_playlist, share_preview, share_read_image, share_import, nearby_send, nearby_status, nearby_stop, nearby_receive, record_play, mixes, set_track_pref, clear_history, export_youtube, spotify_player, spotify_playback, ytm_sign_in, ytm_sign_out, spotify_web_open, spotify_web_status, import_spotify_link, ytm_accounts, set_ytm_accounts, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, system_accent, restart_app, autostart, set_autostart, media_update, load_session, save_session, add_to_youtube, playlist_orders, save_cover, export_cover, alternative_videos, play_stats, cache_stats, open_licenses, update_status, update_check, update_install, ytm_home, ytm_list, discord_presence, discord_off, discord_status, remove_from_playlist, remove_from_library, resolve_track, set_global_shortcuts, player_live, player_levels, voice_listen, voice_stop, open_windows_settings, ytwatch_open, ytwatch_place, ytwatch_cmd, ytwatch_close])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

@@ -38,6 +38,8 @@ A fast, private desktop music player for Windows, built with Tauri 2 and Rust.
   or extracted. Sound features (Adaptive Sound) process what plays as it plays, in memory: nothing is recorded or
   saved, and Settings › Advanced can keep YouTube's sound untouched.
 - **One gateway to the network.** All requests go through the Rust core; the interface never calls the network itself.
+- **Voice search (off until you allow it).** The mic uses Windows' own online speech recognition: while it listens,
+  your voice goes to Microsoft's speech service through Windows. The app keeps nothing.
 
 ## Getting started
 

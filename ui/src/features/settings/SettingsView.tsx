@@ -581,6 +581,9 @@ function AdvancedSection() {
         <Row label="Resume playback on launch" sub="The last song picks up where it stopped, with its queue, when the app opens">
           <Toggle label="Resume playback on launch" checked={s.resume} onChange={(resume) => update({ resume })} />
         </Row>
+        <Row label="Voice search" sub="The mic beside the search bar. Windows’ online speech recognition: your voice goes to Microsoft’s service while the mic listens, nothing is kept">
+          <Toggle label="Voice search" checked={s.voiceSearch} onChange={(voiceSearch) => update({ voiceSearch })} />
+        </Row>
         <Row label="Subtitles on videos" sub="Off: hidden even when your Google account shows them">
           <Toggle label="Subtitles on videos" checked={s.subtitles} onChange={(subtitles) => update({ subtitles })} />
         </Row>

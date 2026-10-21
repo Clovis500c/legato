@@ -18,6 +18,7 @@ import { usePlayer } from '../features/player/store'
 import { ImportDialog } from '../features/share/ImportDialog'
 import { ConnectWizard } from '../features/sources/ConnectWizard'
 import { SearchBar } from '../features/search/SearchBar'
+import { VoiceSearch } from '../features/search/VoiceSearch'
 import { Sidebar } from '../features/sidebar/Sidebar'
 import { api } from '../shared/api'
 import { region, spotifyList } from '../shared/format'
@@ -64,7 +65,9 @@ function TopBar() {
         </button>
       )}
       <div data-tauri-drag-region className="flex h-full min-w-0 flex-1 items-center justify-center px-4">
-        <SearchBar />
+        <SearchBar>
+          <VoiceSearch />
+        </SearchBar>
       </div>
       <button className={winBtn} aria-label="Minimize" onClick={() => win.minimize()}>
         <Minus size={14} />
