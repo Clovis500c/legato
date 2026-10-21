@@ -8,12 +8,12 @@ Reference mockups: Figma file "Bow Game / Music App", page "Music App v3 — Hi-
 - Serverless: no backend of ours. Secrets in the OS keychain (`keyring` crate), local SQLite library.
 - Legal audio playback only (Spotify Connect / official SDK, embedded YouTube player, local files, personal servers). No audio extraction.
 - Never copy code from Liner (non-commercial licence, reuse forbidden). Everything is written from scratch.
-- No keys for YouTube: Google sign-in in an app window (Google's own page), session kept in WebView2's cookie store, YouTube Music's own web API (InnerTube, unofficial: user's choice 2026-10-16, may break). Spotify: user's own client ID (no keyless way; dev mode = Premium owner, 5 users max).
+- No keys for YouTube: Google sign-in in an app window (Google's own page), session kept in WebView2's cookie store, YouTube Music's and YouTube's own web APIs (InnerTube, unofficial: user's choices 2026-10-16 and 2026-10-20, may break). Search covers normal YouTube (anonymous when signed out), clear non-music hidden until asked (`music_core::musicness`). Spotify: user's own client ID (no keyless way; dev mode = Premium owner, 5 users max).
 - English by default: UI text, docs, comments, commit messages.
 
 ## Structure
 - `crates/core` (`music-core`): pure Rust, no Tauri. `Track`, `Connector` trait, `SecretStore`, matching (ISRC, then title+artist+duration), `Library` (rusqlite), `sync`, local file scan.
-- `crates/connectors` (`music-connectors`): shared OAuth PKCE loopback (Spotify) + one module per service: 'youtube' (links, oEmbed), 'ytmusic' (web session), 'spotify', 'itunes', 'nearby', 'discord' (Rich Presence over the Discord app's local IPC). Injectable URLs (`with_urls`) for mockito tests.
+- `crates/connectors` (`music-connectors`): shared OAuth PKCE loopback (Spotify) + one module per service: 'youtube' (links, oEmbed), 'ytmusic' (web session), 'ytweb' (normal YouTube search), 'spotify', 'itunes', 'nearby', 'discord' (Rich Presence over the Discord app's local IPC). Injectable URLs (`with_urls`) for mockito tests.
 - `crates/player` (`music-player`): native local playback (rodio/symphonia), engine thread, gapless queue. Playback choices (YouTube, local, Spotify plan): `docs/playback.md`.
 - `crates/shield` (`music-shield`): ad/tracker blocker (Brave's adblock-rust) + YouTube player script.
 - `src-tauri`: thin shell. IPC commands (`lib.rs`), keychain (`secrets.rs`), WebView2 hook (`shield.rs`), Google sign-in window (`ytm.rs`), Windows media panel / media keys (`media.rs`), window background before first paint (`window_bg.rs`), background updates (`update.rs`, installed at a quiet moment by `ui/src/features/update/updates.ts`; release = every green push to master, auto version, see CONTRIBUTING). All logic goes in `crates/`.

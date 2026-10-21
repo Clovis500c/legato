@@ -66,12 +66,16 @@ pub struct YouTubeMusic {
     http: reqwest::Client,
 }
 
-fn cookie_value<'a>(cookie: &'a str, name: &str) -> Option<&'a str> {
+pub(crate) fn cookie_value<'a>(cookie: &'a str, name: &str) -> Option<&'a str> {
     cookie.split("; ").find_map(|kv| kv.strip_prefix(name)?.strip_prefix('='))
 }
 
-/// "1.YYYYMMDD.01.00" like the site; today's date keeps it plausible.
 fn client_version() -> String {
+    site_version(1)
+}
+
+/// "<major>.YYYYMMDD.01.00" like the sites (YouTube Music 1, YouTube 2); today's date keeps it plausible.
+pub(crate) fn site_version(major: u32) -> String {
     let days = SystemTime::now().duration_since(UNIX_EPOCH).map_or(0, |d| d.as_secs() / 86_400) as i64;
     // Civil date from days since epoch (Howard Hinnant).
     let z = days + 719_468;
@@ -83,16 +87,21 @@ fn client_version() -> String {
     let d = doy - (153 * mp + 2) / 5 + 1;
     let m = if mp < 10 { mp + 3 } else { mp - 9 };
     let y = yoe + era * 400 + i64::from(m <= 2);
-    format!("1.{y:04}{m:02}{d:02}.01.00")
+    format!("{major}.{y:04}{m:02}{d:02}.01.00")
 }
 
 /// `SAPISIDHASH <ts>_<sha1("<ts> <SAPISID> <origin>")>`: proof of the session, as the site computes it.
 pub fn sapisid_hash(sapisid: &str, ts: u64) -> String {
-    let digest = Sha1::digest(format!("{ts} {sapisid} {ORIGIN}").as_bytes());
+    sapisid_hash_for(sapisid, ts, ORIGIN)
+}
+
+/// Same for another Google origin (www.youtube.com).
+pub(crate) fn sapisid_hash_for(sapisid: &str, ts: u64, origin: &str) -> String {
+    let digest = Sha1::digest(format!("{ts} {sapisid} {origin}").as_bytes());
     format!("SAPISIDHASH {ts}_{}", digest.iter().map(|b| format!("{b:02x}")).collect::<String>())
 }
 
-fn text(v: &Value) -> Option<String> {
+pub(crate) fn text(v: &Value) -> Option<String> {
     v.get("simpleText").and_then(Value::as_str).map(String::from).or_else(|| {
         let runs = v.get("runs")?.as_array()?;
         Some(runs.iter().filter_map(|r| r.get("text")?.as_str()).collect())
@@ -115,7 +124,7 @@ fn find<'a>(v: &'a Value, key: &str, out: &mut Vec<&'a Value>) {
     }
 }
 
-fn all<'a>(v: &'a Value, key: &str) -> Vec<&'a Value> {
+pub(crate) fn all<'a>(v: &'a Value, key: &str) -> Vec<&'a Value> {
     let mut out = Vec::new();
     find(v, key, &mut out);
     out
@@ -153,7 +162,7 @@ fn page_type(run: &Value) -> &str {
     run.pointer("/navigationEndpoint/browseEndpoint/browseEndpointContextSupportedConfigs/browseEndpointContextMusicConfig/pageType").and_then(Value::as_str).unwrap_or("")
 }
 
-fn parse_duration(s: &str) -> Option<u32> {
+pub(crate) fn parse_duration(s: &str) -> Option<u32> {
     let c = DURATION.captures(s.trim())?;
     let n = |i| c.get(i).map_or(0, |m| m.as_str().parse::<u32>().unwrap_or(0));
     Some(((n(1) * 60 + n(2)) * 60 + n(3)) * 1000)

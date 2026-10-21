@@ -18,8 +18,8 @@ src-tauri/              thin shell: commands, keychain, WebView2 hook, media pan
 
 | Crate | Role |
 |---|---|
-| `music-core` | Track model, matching (ISRC, then title + artist + duration), SQLite library with versioned migrations, sync, local file scan, listening history and mixes, share codes. No Tauri, no network. |
-| `music-connectors` | One module per service. Shared OAuth PKCE loopback (Spotify), YouTube Music web session, iTunes catalog, Discord IPC, nearby sharing (mDNS + SPAKE2), image cache. Base URLs are injectable for tests. |
+| `music-core` | Track model, matching (ISRC, then title + artist + duration), SQLite library with versioned migrations, sync, local file scan, listening history and mixes, share codes, search merging and the music / not music classifier. No Tauri, no network. |
+| `music-connectors` | One module per service. Shared OAuth PKCE loopback (Spotify), YouTube Music web session, normal YouTube search, iTunes catalog, Discord IPC, nearby sharing (mDNS + SPAKE2), image cache. Base URLs are injectable for tests. |
 | `music-player` | Native playback of local files and previews (rodio, symphonia) on its own thread, with a gapless queue. |
 | `music-shield` | Ad and tracker blocking with Brave's adblock engine, plus the YouTube player script. |
 | `src-tauri` | IPC commands, OS keychain, WebView2 request hook, Windows media panel, tray icon, window background. No business logic. |

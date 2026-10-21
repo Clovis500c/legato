@@ -111,8 +111,12 @@ export interface SyncReport {
 }
 
 /** Merged catalog hit (src-tauri search_catalogs). */
+/** crates/core musicness: notMusic results are hidden until asked. */
+export type Musicness = 'music' | 'unsure' | 'notMusic'
+
 export interface SearchHit extends Track {
   libraryId: number | null
+  musicness: Musicness
 }
 
 export interface SearchResults {

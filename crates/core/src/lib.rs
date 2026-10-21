@@ -5,6 +5,8 @@ pub mod local;
 pub mod history;
 pub mod matching;
 pub mod mixes;
+pub mod musicness;
 pub mod model;
+pub mod search;
 pub mod share;
 pub mod sync;

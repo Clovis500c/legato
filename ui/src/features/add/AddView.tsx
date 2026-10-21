@@ -40,6 +40,7 @@ function HitRow({ hit, onAdded }: { hit: SearchHit; onAdded: (id: number) => voi
       <div className="min-w-0 flex-1">
         <p className="flex items-center gap-2 truncate text-[13px] font-semibold">
           {hit.title} {kind && <Badge>{kindLabel[kind]}</Badge>}
+          {hit.musicness === 'notMusic' && <Badge>NOT MUSIC?</Badge>}
         </p>
         <p className="truncate text-xs text-ink-2">{[hit.artist, hit.album].filter(Boolean).join(' · ')}</p>
       </div>
@@ -107,9 +108,13 @@ export function AddView() {
   const [busy, setBusy] = useState(false)
   const [only, setOnly] = useState<'all' | 'youtube' | 'apple'>('all')
   const [hideCovers, setHideCovers] = useState(true)
+  // Videos that clearly aren't music (talks, reactions, games): hidden until asked, per search.
+  const [showOthers, setShowOthers] = useState(false)
   const ytOn = status.youtube.connected
   const local = useMemo(() => (q.trim() ? filterTracks(tracks, q, 'all').slice(0, 4) : []), [tracks, q])
-  const hits = (res?.hits ?? []).filter((h) => (only === 'all' || h.ids[only]) && !(hideCovers && h.ids.youtube && !h.ids.apple && unofficial(videoKind(h.title))))
+  const matching = (res?.hits ?? []).filter((h) => (only === 'all' || h.ids[only]) && !(hideCovers && h.ids.youtube && !h.ids.apple && unofficial(videoKind(h.title))))
+  const others = matching.filter((h) => h.musicness === 'notMusic').length
+  const hits = showOthers ? matching : matching.filter((h) => h.musicness !== 'notMusic')
   const markAdded = (i: number, libraryId: number) => setRes((r) => r && { ...r, hits: r.hits.map((h, j) => (j === i ? { ...h, libraryId } : h)) })
 
   const search = async (e: React.FormEvent) => {
@@ -119,6 +124,7 @@ export function AddView() {
     setBusy(true)
     try {
       setRes(await api.searchCatalogs(q, region()))
+      setShowOthers(false)
     } catch (err) {
       useStore.setState({ error: String(err) })
     } finally {
@@ -128,7 +134,7 @@ export function AddView() {
 
   return (
     <>
-      <PageHeader kicker="Add · Apple Music, YouTube and your files" title="Add music" />
+      <PageHeader kicker="Add · YouTube, YouTube Music, Apple Music and your files" title="Add music" />
       <form onSubmit={search} className="flex h-14 shrink-0 items-center gap-3 rounded-xl border border-line bg-raised pr-2 pl-4.5 shadow-[0_1px_2px_var(--shadow)] focus-within:border-ink-3">
         <MagnifyingGlass size={19} className="text-ink-2" />
         <input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder="Title, artist, album, or a Spotify playlist link…" aria-label="Search catalogs" className="min-w-0 flex-1 bg-transparent text-base outline-none placeholder:text-ink-3" />
@@ -138,7 +144,10 @@ export function AddView() {
             <Led on /> AM
           </span>
           <span className="flex items-center gap-1.5">
-            <Led on={ytOn} /> YT
+            <Led on /> YT
+          </span>
+          <span className="flex items-center gap-1.5">
+            <Led on={ytOn} /> YTM
           </span>
           <span className="flex items-center gap-1.5">
             <Led on /> LIB
@@ -191,7 +200,15 @@ export function AddView() {
                   <HitRow key={Object.values(h.ids).join('|')} hit={h} onAdded={(id) => markAdded(res.hits.indexOf(h), id)} />
                 ))}
               </ul>
-              {hits.length === 0 && <p className="py-8 text-center text-ink-2">No results.</p>}
+              {others > 0 && (
+                <p className="flex items-center justify-between gap-3 border-b border-line-soft px-2 py-3 text-xs text-ink-2">
+                  {showOthers ? `Showing ${others} video${others === 1 ? '' : 's'} that don’t look like music` : `${others} video${others === 1 ? '' : 's'} hidden because they aren’t music`}
+                  <button onClick={() => setShowOthers(!showOthers)} className="rounded-full border border-line px-3 py-1 font-medium text-ink hover:bg-raised">
+                    {showOthers ? 'Hide them' : 'Show'}
+                  </button>
+                </p>
+              )}
+              {hits.length === 0 && !others && <p className="py-8 text-center text-ink-2">No results.</p>}
             </section>
           )}
           {!res && !local.length && <p className="py-10 text-center text-ink-2">Search for a track: it’s added to your library, with its YouTube version when one exists.</p>}
@@ -201,8 +218,9 @@ export function AddView() {
           <div className="rounded-xl border border-line px-4 py-2">
             <h2 className="kicker py-1.5">Search sources</h2>
             {[
+              { code: 'YouTube', note: 'Every video, no account needed', on: true },
+              { code: 'YouTube Music', note: ytOn ? 'Songs, with your Google account' : 'Sign in with Google (Accounts)', on: ytOn },
               { code: 'Apple Music', note: 'Public catalog, no account', on: true },
-              { code: 'YouTube Music', note: ytOn ? 'Your Google account' : 'Sign in with Google (Accounts)', on: ytOn },
               { code: 'Spotify', note: 'Search closed without Premium', on: false },
             ].map((s) => (
               <p key={s.code} className="flex items-center gap-2.5 border-t border-line-soft py-2.5 text-[13px] first-of-type:border-0">

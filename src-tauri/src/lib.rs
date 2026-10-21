@@ -15,10 +15,13 @@ mod ytm;
 use music_connectors::oauth::Opener;
 use music_connectors::spotify::Spotify;
 use music_connectors::ytmusic::{Account, ListRef, Shelf, YouTubeMusic};
+use music_connectors::ytweb::YouTubeWeb;
 use music_core::cache::{Memo, Stats, Ttl};
 use music_core::history::{Play, Pref};
 use music_core::library::{Library, LibraryPlaylist, LibraryTrack, PlaylistEdit};
-use music_core::matching::{merge_tracks, same_track};
+use music_core::matching::merge_tracks;
+use music_core::musicness::Musicness;
+use music_core::search::{self, Hit};
 use music_core::model::{Connector, SecretStore, Source, Track};
 use music_core::share::{self, Item, Shared};
 use music_core::sync::{SyncReport, sync};
@@ -129,6 +132,8 @@ struct Caches {
     /// Key: UTC offset. Stamp: library and history versions, day (seed), local hour (time-of-day mix).
     mixes: Memo<i64, (u64, u64, u64, i64)>,
     youtube: Ttl<Vec<Track>>,
+    /// Normal YouTube searches: tracks with their music classification.
+    videos: Ttl<Vec<(Track, Musicness)>>,
     apple: Ttl<Vec<Track>>,
     /// Sign-in state: keychain and WebView2 cookies, read on every refresh otherwise.
     status: Ttl<Vec<(Source, SourceStatus)>>,
@@ -146,6 +151,7 @@ impl Default for Caches {
             stats: Memo::new(1),
             mixes: Memo::new(4),
             youtube: Ttl::new(Duration::from_secs(30 * 60), 300),
+            videos: Ttl::new(Duration::from_secs(30 * 60), 100),
             apple: Ttl::new(Duration::from_secs(30 * 60), 100),
             status: Ttl::new(Duration::from_secs(30), 1),
             home: Ttl::new(Duration::from_secs(15 * 60), 1),
@@ -290,9 +296,24 @@ async fn yt_search(state: &AppState, query: &str) -> Option<Result<Vec<Track>, S
 #[serde(rename_all = "camelCase")]
 struct SearchHit {
     #[serde(flatten)]
-    track: Track,
+    hit: Hit,
     /// Library row when already added.
     library_id: Option<i64>,
+}
+
+/// Normal YouTube search (session if signed in, anonymous otherwise), cached 30 min.
+async fn video_search(state: &AppState, query: &str) -> Result<Vec<(Track, Musicness)>, String> {
+    let key = query.trim().to_lowercase();
+    if let Some(hit) = state.cache.videos.get(&key) {
+        return Ok((*hit).clone());
+    }
+    let web = YouTubeWeb::new(ytm::session(&state.app).as_deref());
+    let found: Vec<(Track, Musicness)> = web.search(query).await.map_err(err)?.into_iter().map(|v| {
+        let m = v.musicness();
+        (v.track, m)
+    }).collect();
+    state.cache.videos.put(&key, found.clone());
+    Ok(found)
 }
 
 #[derive(Serialize)]
@@ -307,7 +328,8 @@ fn store(country: &str) -> String {
     if country.len() == 2 && country.chars().all(|c| c.is_ascii_alphabetic()) { country.to_uppercase() } else { "US".into() }
 }
 
-/// Apple catalog + YouTube, merged (same recording = one hit with both ids).
+/// Normal YouTube + YouTube Music songs + Apple catalog, merged (same recording = one hit with every id). Each hit says
+/// whether it looks like music; the UI hides the clear "not music" ones until asked.
 #[tauri::command]
 async fn search_catalogs(state: State<'_, AppState>, query: String, country: String) -> CmdResult<SearchResults> {
     // Trust boundary: free text from UI.
@@ -328,10 +350,15 @@ async fn search_catalogs(state: State<'_, AppState>, query: String, country: Str
         }
     });
     let mut errors = Vec::new();
-    let youtube = match yt_search(&state, &query).await {
+    let (videos, songs) = tokio::join!(video_search(&state, &query), yt_search(&state, &query));
+    let videos = videos.unwrap_or_else(|e| {
+        errors.push(format!("YouTube: {e}"));
+        Vec::new()
+    });
+    let songs = match songs {
         Some(Ok(found)) => found,
         Some(Err(e)) => {
-            errors.push(format!("YouTube: {e}"));
+            errors.push(format!("YouTube Music: {e}"));
             Vec::new()
         }
         None => Vec::new(),
@@ -346,15 +373,8 @@ async fn search_catalogs(state: State<'_, AppState>, query: String, country: Str
             Vec::new()
         }
     };
-    let mut merged: Vec<Track> = Vec::new();
-    for t in youtube.into_iter().chain(apple) {
-        match merged.iter_mut().find(|m| same_track(m, &t)) {
-            Some(m) => *m = merge_tracks(m, &t),
-            None => merged.push(t),
-        }
-    }
     let lib = state.lib.lock().unwrap();
-    let hits = merged.into_iter().map(|track| SearchHit { library_id: lib.find(&track).ok().flatten(), track }).collect();
+    let hits = search::merge(videos, songs, apple).into_iter().map(|hit| SearchHit { library_id: lib.find(&hit.track).ok().flatten(), hit }).collect();
     Ok(SearchResults { hits, errors })
 }
 

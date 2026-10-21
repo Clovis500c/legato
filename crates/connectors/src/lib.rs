@@ -7,3 +7,4 @@ pub mod spotify;
 pub mod spotify_embed;
 pub mod youtube;
 pub mod ytmusic;
+pub mod ytweb;
