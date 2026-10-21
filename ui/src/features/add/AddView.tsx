@@ -1,5 +1,5 @@
 import { ArrowRight, Check, ClipboardText, FolderPlus, MagnifyingGlass, Play, Plus, QrCode } from '@phosphor-icons/react'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useStore } from '../../app/store'
 import { api, type SearchHit, type SearchResults, type Source, type Track } from '../../shared/api'
 import { formatDuration, region, spotifyList } from '../../shared/format'
@@ -13,6 +13,8 @@ import { SourceIcon } from '../../shared/ui/SourceIcon'
 import { filterTracks } from '../library/filter'
 import { remoteTrack, usePlayer } from '../player/store'
 import { kindLabel, unofficial, videoKind } from './kind'
+import { Detector } from './Detector'
+import { AddToPlaylist } from '../library/AddToPlaylist'
 
 const order: Source[] = ['youtube', 'apple', 'spotify', 'local']
 
@@ -23,7 +25,7 @@ function Badge({ children }: { children: string }) {
 /** The catalog track of a hit (no UI fields). */
 const trackOf = (h: SearchHit): Track => ({ title: h.title, artist: h.artist, album: h.album, durationMs: h.durationMs, isrc: h.isrc, ids: h.ids, art: h.art })
 
-function HitRow({ hit, onAdded, onPlay }: { hit: SearchHit; onAdded: (id: number) => void; onPlay: () => void }) {
+function HitRow({ hit, onAdded, onPlay, extra }: { hit: SearchHit; onAdded: (id: number) => void; onPlay: () => void; extra?: ReactNode }) {
   const [busy, setBusy] = useState(false)
   const kind = hit.ids.youtube && !hit.ids.apple ? videoKind(hit.title) : null
   const add = async () => {
@@ -57,6 +59,7 @@ function HitRow({ hit, onAdded, onPlay }: { hit: SearchHit; onAdded: (id: number
         ))}
       </span>
       <span className="w-11 text-right font-mono text-[11px] text-ink-3">{formatDuration(hit.durationMs)}</span>
+      {extra}
       {hit.libraryId ? (
         <RoundButton label="Already in your library" kind="ink" size="sm" disabled>
           <Check size={14} />
@@ -132,6 +135,34 @@ export function AddView() {
   }
   const markAdded = (i: number, libraryId: number) => setRes((r) => r && { ...r, hits: r.hits.map((h, j) => (j === i ? { ...h, libraryId } : h)) })
 
+  // Music Detector's song: the matching catalog hit once the search for it is back (same ISRC or Apple id), else itself.
+  const [found, setFound] = useState<SearchHit | null>(null)
+  const identified = useMemo(() => {
+    if (!found) return null
+    const same = (h: SearchHit) => (found.isrc && h.isrc === found.isrc) || (found.ids.apple && h.ids.apple === found.ids.apple)
+    const hit = res?.hits.find(same)
+    return hit ? { ...hit, libraryId: hit.libraryId ?? found.libraryId } : found
+  }, [found, res])
+  const onFound = (t: Track) => {
+    const inLibrary = tracks.find((x) => (t.isrc && x.isrc === t.isrc) || (t.ids.apple && x.ids.apple === t.ids.apple))
+    setFound({ ...t, libraryId: inLibrary?.id ?? null, musicness: 'music' })
+    const text = `${t.artist} ${t.title}`
+    setQ(text)
+    void run(text)
+  }
+  const playOne = async (h: SearchHit) => {
+    const own = tracks.find((t) => t.id === h.libraryId)
+    play([own ?? remoteTrack(h.ids.youtube ? trackOf(h) : await api.resolveTrack(trackOf(h)).catch(() => trackOf(h)))], 0)
+  }
+  // Library id of the identified song, added on the way when needed (Add to playlist).
+  const identifiedIds = async () => {
+    if (identified?.libraryId) return [identified.libraryId]
+    const id = await api.addTrack(trackOf(identified!))
+    setFound((f) => f && { ...f, libraryId: id })
+    await useStore.getState().refresh()
+    return [id]
+  }
+
   const run = async (text: string) => {
     if (!text.trim()) return
     if (spotifyList(text)) return void useStore.getState().importSpotify(text.trim())
@@ -147,12 +178,14 @@ export function AddView() {
   }
   const search = (e: React.FormEvent) => {
     e.preventDefault()
+    setFound(null)
     void run(q)
   }
   // Top bar's "search everywhere" lands here.
   const request = useStore((s) => s.search)
   useEffect(() => {
     if (!request) return
+    setFound(null)
     setQ(request.q)
     void run(request.q)
   }, [request?.n]) // once per ask
@@ -212,6 +245,19 @@ export function AddView() {
               </ul>
             </section>
           )}
+          {identified && (
+            <section className="mb-5">
+              <h2 className="kicker pb-1.5">Identified by AudD</h2>
+              <ul>
+                <HitRow
+                  hit={identified}
+                  onAdded={(id) => setFound((f) => f && { ...f, libraryId: id })}
+                  onPlay={() => void playOne(identified)}
+                  extra={<AddToPlaylist trackIds={identifiedIds} label={`Add ${identified.title} to a playlist`} />}
+                />
+              </ul>
+            </section>
+          )}
           {res && (
             <section>
               <h2 className="kicker pb-1.5">Catalogs · {hits.length} results</h2>
@@ -239,7 +285,8 @@ export function AddView() {
           {!res && !local.length && <p className="py-10 text-center text-ink-2">Search for a track: it’s added to your library, with its YouTube version when one exists.</p>}
         </div>
 
-        <aside className="flex w-80 shrink-0 flex-col gap-4">
+        <aside className="scroll-quiet flex min-h-0 w-80 shrink-0 flex-col gap-4 overflow-y-auto pb-6">
+          <Detector onFound={onFound} />
           <div className="rounded-xl border border-line px-4 py-2">
             <h2 className="kicker py-1.5">Search sources</h2>
             {[

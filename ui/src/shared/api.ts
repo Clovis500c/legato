@@ -147,6 +147,10 @@ export interface LiveLevels {
 export type VoiceMiss = 'speechOff' | 'micBlocked' | 'noMic' | 'silence' | 'unclear' | 'offline' | 'language' | 'canceled' | 'failed'
 export type Heard = { kind: 'text'; text: string } | { kind: 'miss'; miss: VoiceMiss }
 
+/** src-tauri detect_song: Music Detector outcome. */
+export type DetectMiss = 'noToken' | 'noMic' | 'micBlocked' | 'micBusy' | 'silent' | 'canceled' | 'badToken' | 'limit' | 'offline' | 'failed'
+export type Detection = { kind: 'found'; track: Track } | { kind: 'unknown' } | { kind: 'miss'; miss: DetectMiss; detail: string | null }
+
 /** ytwatch.rs LiveReport (watch page). */
 export interface LiveReport {
   attached?: boolean
@@ -363,6 +367,15 @@ export const api = {
   voiceStop: () => invoke<void>('voice_stop'),
   /** Words heard so far. */
   onSpeech: (cb: (text: string) => void) => listen<string>('speech', (e) => cb(e.payload)),
+  /** Music Detector: an AudD token is saved (keychain). */
+  detectorStatus: () => invoke<boolean>('detector_status'),
+  /** null forgets it. */
+  setDetectorToken: (token: string | null) => invoke<void>('set_detector_token', { token }),
+  /** Listens ~10 s through the microphone (memory only), AudD names the song. */
+  detectSong: (market: string) => invoke<Detection>('detect_song', { market }),
+  detectStop: () => invoke<void>('detect_stop'),
+  /** While listening: seconds so far, microphone level 0..1. */
+  onDetect: (cb: (seconds: number, level: number) => void) => listen<[number, number]>('detect', (e) => cb(e.payload[0], e.payload[1])),
   /** Windows' own settings page that unblocks a feature. */
   openWindowsSettings: (page: 'speech' | 'microphone') => invoke<void>('open_windows_settings', { page }),
   /** Raw JSON; validated by shared/theme/settings.sanitize. */

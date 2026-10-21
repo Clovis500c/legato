@@ -63,17 +63,17 @@ it lands (tested, `pnpm check` green, committed). Technical plan, rule changes a
 - [x] Add music: play a song even if it isn't in the library.
 
 **Phase 3: new features** (new default → bump `DEFAULTS_VERSION`, add to the settings search index)
-- [ ] Search bar like YouTube's in the navbar, always visible (screenshot 5): field + search button + mic button. Mic =
+- [x] Search bar like YouTube's in the navbar, always visible (screenshot 5): field + search button + mic button. Mic =
       voice search (speech to text, then search) and a way to start the Music Detector from it (simplest clear UI to
       pick one). If speech recognition can't be done cleanly in WebView2 without a server of ours: say so, propose an
       alternative, or keep only the Music Detector on the mic. Done: field, button, voice search (Windows' speech
-      recognition, `speech.rs`). Left: the Music Detector choice on the mic.
+      recognition, `speech.rs`), the mic's second choice opens the Music Detector.
 - [ ] Automatic translation: Windows language detected on first launch (supported → used, else English); language
       picker in settings; at least English and French; structure that makes adding languages easy; settings search
       works in every language.
 - [ ] Lyrics mode (Player mode): cover on the left, scrolling lyrics on the right, like Spotify. Client-side system or
       an API through Rust (LRCLIB to check): pick the best and justify.
-- [ ] Music Detector: a section under "Add music" that recognizes a song from sound (like Shazam), then adds it to any
+- [x] Music Detector: a section under "Add music" that recognizes a song from sound (like Shazam), then adds it to any
       playlist. Pick a recognition service (user's key or free) and justify; clear microphone permission; no recording
       stored.
 - [x] Windows quick commands: Previous, Play / Pause, Next under the taskbar thumbnail (screenshot 1), ITaskbarList3

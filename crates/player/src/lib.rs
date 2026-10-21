@@ -1,6 +1,7 @@
 //! Local file playback. Engine thread owns audio device (cpal stream not Send everywhere).
 
 mod live;
+pub mod mic;
 mod queue;
 
 pub use music_dsp::{Levels, Live as LiveSettings};

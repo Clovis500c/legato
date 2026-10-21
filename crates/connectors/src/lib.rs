@@ -1,4 +1,5 @@
 pub mod art;
+pub mod audd;
 pub mod discord;
 pub mod itunes;
 pub mod nearby;

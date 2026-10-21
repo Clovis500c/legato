@@ -4,15 +4,18 @@ import { useStore } from '../../app/store'
 import { RoundButton } from '../../shared/ui/controls'
 import { addToPlaylist } from './edits'
 
-/** Row action: pick a custom playlist (or create one) for these tracks. Fixed menu so the list scroller can't clip it. */
-export function AddToPlaylist({ trackIds, label }: { trackIds: number[]; label: string }) {
+/**
+ * Row action: pick a custom playlist (or create one) for these tracks. Fixed menu so the list scroller can't clip it.
+ * `trackIds` may be a function: tracks not in the library yet get added once a playlist is picked.
+ */
+export function AddToPlaylist({ trackIds, label }: { trackIds: number[] | (() => Promise<number[]>); label: string }) {
   const { playlists, editPlaylist } = useStore()
   const [at, setAt] = useState<DOMRect | null>(null)
   const custom = playlists.filter((p) => p.custom)
   const add = async (id: number | null) => {
     setAt(null)
     const target = id ?? (await editPlaylist({ type: 'create', name: 'New playlist' }))
-    if (target !== null) await addToPlaylist(target, trackIds)
+    if (target !== null) await addToPlaylist(target, typeof trackIds === 'function' ? await trackIds() : trackIds)
   }
   return (
     <>

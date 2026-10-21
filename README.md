@@ -40,6 +40,9 @@ A fast, private desktop music player for Windows, built with Tauri 2 and Rust.
 - **One gateway to the network.** All requests go through the Rust core; the interface never calls the network itself.
 - **Voice search (off until you allow it).** The mic uses Windows' own online speech recognition: while it listens,
   your voice goes to Microsoft's speech service through Windows. The app keeps nothing.
+- **Music Detector (off until you allow it).** "Identify a song" listens to the microphone for 10 seconds, keeps the
+  sound in memory and sends it once to [AudD](https://audd.io) with your own API token to name the song. Nothing is
+  saved; the token stays in the Windows Credential Manager.
 
 ## Getting started
 

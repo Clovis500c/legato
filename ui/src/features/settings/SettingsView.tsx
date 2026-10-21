@@ -584,6 +584,9 @@ function AdvancedSection() {
         <Row label="Voice search" sub="The mic beside the search bar. Windows’ online speech recognition: your voice goes to Microsoft’s service while the mic listens, nothing is kept">
           <Toggle label="Voice search" checked={s.voiceSearch} onChange={(voiceSearch) => update({ voiceSearch })} />
         </Row>
+        <Row label="Music Detector" sub="Identify a song (Add music, or the mic): 10 seconds from the microphone, kept in memory, sent once to AudD with your token, nothing saved">
+          <Toggle label="Music Detector" checked={s.detector} onChange={(detector) => update({ detector })} />
+        </Row>
         <Row label="Subtitles on videos" sub="Off: hidden even when your Google account shows them">
           <Toggle label="Subtitles on videos" checked={s.subtitles} onChange={(subtitles) => update({ subtitles })} />
         </Row>

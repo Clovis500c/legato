@@ -55,6 +55,9 @@ interface State {
   /** Last "search everywhere" (top bar Enter): the Search page runs it. n changes on each ask, same text too. */
   search: { q: string; n: number } | null
   searchFor: (q: string) => void
+  /** Bumped by "Identify a song" (mic menu): the Music Detector on the Add music page starts listening. */
+  identify: number
+  identifySong: () => void
   filter: Filter
   sort: Sort
   /** Playlist pages: own sort, manual by default. */
@@ -143,6 +146,7 @@ export const useStore = create<State>((set, get) => {
     orders: {},
     query: '',
     search: null,
+    identify: 0,
     filter: 'all',
     sort: 'artist',
     playlistSort: 'manual',
@@ -174,6 +178,10 @@ export const useStore = create<State>((set, get) => {
     setQuery: (query) => set({ query }),
     searchFor: (q) => {
       set({ search: { q, n: (get().search?.n ?? 0) + 1 } })
+      if (get().view.name !== 'add') get().go({ name: 'add' })
+    },
+    identifySong: () => {
+      set({ identify: get().identify + 1 })
       if (get().view.name !== 'add') get().go({ name: 'add' })
     },
     setFilter: (filter) => set({ filter }),

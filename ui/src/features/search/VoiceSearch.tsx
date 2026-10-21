@@ -1,4 +1,4 @@
-import { Microphone } from '@phosphor-icons/react'
+import { Microphone, Waveform } from '@phosphor-icons/react'
 import { useEffect, useRef, useState } from 'react'
 import { useSettings } from '../../app/settings'
 import { useStore } from '../../app/store'
@@ -22,12 +22,14 @@ const MISSES: Record<VoiceMiss, string> = {
 const FIX: Partial<Record<VoiceMiss, 'speech' | 'microphone'>> = { speechOff: 'speech', micBlocked: 'microphone' }
 
 /**
- * Mic beside the search bar, like YouTube's: say it, it searches (src-tauri speech.rs, Windows' speech recognition).
- * Asked once before the first use: the voice goes to Microsoft's service through Windows while the mic listens.
+ * Mic beside the search bar, like YouTube's. Two choices: say it and it searches (src-tauri speech.rs, Windows' speech
+ * recognition; asked once before the first use: the voice goes to Microsoft's service through Windows while the mic
+ * listens), or name the song playing around you (Music Detector, Add music).
  */
 export function VoiceSearch() {
   const agreed = useSettings((s) => s.settings.voiceSearch)
   const [step, setStep] = useState<Step | null>(null)
+  const [menu, setMenu] = useState<DOMRect | null>(null)
   // Bumped per listen: a late answer from a stopped one is ignored.
   const run = useRef(0)
 
@@ -62,13 +64,43 @@ export function VoiceSearch() {
     <>
       <button
         type="button"
-        aria-label="Search with your voice"
-        title="Search with your voice"
-        onClick={() => (agreed ? void listen() : setStep({ name: 'ask' }))}
+        aria-label="Microphone: search by voice or identify a song"
+        title="Search by voice or identify a song"
+        aria-haspopup="menu"
+        aria-expanded={!!menu}
+        onClick={(e) => setMenu(e.currentTarget.getBoundingClientRect())}
         className="grid size-9 shrink-0 place-items-center rounded-full bg-raised text-ink-2 hover:text-ink"
       >
         <Microphone size={17} />
       </button>
+      {menu && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setMenu(null)} />
+          <div role="menu" onKeyDown={(e) => e.key === 'Escape' && setMenu(null)} className="fixed z-50 flex w-64 flex-col gap-1 rounded-xl border border-line bg-raised p-1.5 shadow-[0_12px_32px_var(--shadow)]" style={{ top: menu.bottom + 6, left: Math.max(8, menu.right - 256) }}>
+            {[
+              { icon: <Microphone size={18} />, label: 'Search by voice', note: 'Say a song, an artist…', run: () => (agreed ? void listen() : setStep({ name: 'ask' })) },
+              { icon: <Waveform size={18} />, label: 'Identify a song', note: 'Name the music playing around you', run: () => useStore.getState().identifySong() },
+            ].map((o) => (
+              <button
+                key={o.label}
+                role="menuitem"
+                autoFocus={o.label === 'Search by voice'}
+                onClick={() => {
+                  setMenu(null)
+                  o.run()
+                }}
+                className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-left hover:bg-bg focus-visible:bg-bg"
+              >
+                <span className="grid size-9 shrink-0 place-items-center rounded-full bg-bg text-ink-2">{o.icon}</span>
+                <span className="flex flex-col">
+                  <span className="text-[13px] font-semibold">{o.label}</span>
+                  <span className="text-[11px] text-ink-2">{o.note}</span>
+                </span>
+              </button>
+            ))}
+          </div>
+        </>
+      )}
       {step && (
         <Dialog title="Search with your voice" onClose={close}>
           {step.name === 'ask' && (

@@ -56,6 +56,7 @@ export const SETTINGS_INDEX: SettingEntry[] = [
   { section: 'advanced', label: 'Reopen where you left off', keywords: 'restore state screen last session launch' },
   { section: 'advanced', label: 'Resume playback on launch', keywords: 'restore continue reopen last track start' },
   { section: 'advanced', label: 'Voice search', keywords: 'mic microphone speech speak dictation privacy' },
+  { section: 'advanced', label: 'Music Detector', keywords: 'identify recognize song shazam microphone audd listen what song' },
   { section: 'advanced', label: 'Subtitles on videos', keywords: 'captions cc closed' },
   { section: 'advanced', label: 'YouTube controls on the video', keywords: 'overlay title buttons hover embed' },
 ]

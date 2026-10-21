@@ -17,6 +17,7 @@ mod window_place;
 mod ytm;
 mod ytwatch;
 
+use music_connectors::audd::{AudD, Offline, Refused};
 use music_connectors::oauth::Opener;
 use music_connectors::spotify::Spotify;
 use music_connectors::ytmusic::{Account, ListRef, Shelf, YouTubeMusic};
@@ -30,16 +31,17 @@ use music_core::search::{self, Hit};
 use music_core::model::{Connector, SecretStore, Source, Track};
 use music_core::share::{self, Item, Shared};
 use music_core::sync::{SyncReport, sync};
+use music_player::mic::{self, MicError};
 use music_player::{Command, Player, Status};
 use music_shield::Shield;
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 use std::path::{Path, PathBuf};
-use std::sync::atomic::Ordering;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use tauri::ipc::Response;
-use tauri::{Manager, State};
+use tauri::{Emitter, Manager, State};
 use tauri_plugin_opener::OpenerExt;
 
 /// Errors cross IPC as plain strings (full anyhow chain).
@@ -1142,6 +1144,114 @@ fn voice_stop() {
     speech::stop()
 }
 
+/// Music Detector: the user's AudD token is set (keychain; never sent back to the UI).
+#[tauri::command]
+fn detector_status(state: State<AppState>) -> bool {
+    state.store.load::<String>(AUDD_TOKEN).is_some()
+}
+
+/// Trust boundary: an AudD token is letters and digits.
+fn audd_token_ok(t: &str) -> bool {
+    (8..=128).contains(&t.len()) && t.chars().all(|c| c.is_ascii_alphanumeric())
+}
+
+/// None = forget it.
+#[tauri::command]
+fn set_detector_token(state: State<AppState>, token: Option<String>) -> CmdResult<()> {
+    let token = token.map(|t| t.trim().to_string());
+    if token.as_deref().is_some_and(|t| !audd_token_ok(t)) {
+        return Err("That doesn't look like an AudD token (letters and digits, from dashboard.audd.io)".into());
+    }
+    state.store.set(AUDD_TOKEN, token.map(serde_json::Value::String)).map_err(err)
+}
+
+const AUDD_TOKEN: &str = "audd_token";
+/// Listening this long: enough for AudD, short to wait.
+const DETECT_SECONDS: f32 = 10.0;
+static DETECT_STOP: AtomicBool = AtomicBool::new(false);
+
+/// What the Music Detector got. `Miss`: why not, worded by the UI.
+#[derive(Debug, Serialize)]
+#[serde(tag = "kind", rename_all = "camelCase")]
+enum Detection {
+    Found { track: Track },
+    Unknown,
+    Miss { miss: DetectMiss, detail: Option<String> },
+}
+
+#[derive(Debug, Clone, Copy, Serialize)]
+#[serde(rename_all = "camelCase")]
+enum DetectMiss {
+    NoToken,
+    NoMic,
+    MicBlocked,
+    MicBusy,
+    /// Only silence came in (muted microphone).
+    Silent,
+    Canceled,
+    BadToken,
+    Limit,
+    Offline,
+    Failed,
+}
+
+fn missed(miss: DetectMiss) -> Detection {
+    Detection::Miss { miss, detail: None }
+}
+
+/// Music Detector: listens through the default microphone (memory only, never written), AudD names the song.
+/// Progress: "detect" events [seconds, level 0..1].
+#[tauri::command]
+async fn detect_song(app: tauri::AppHandle, state: State<'_, AppState>, market: String) -> CmdResult<Detection> {
+    let Some(token) = state.store.load::<String>(AUDD_TOKEN) else { return Ok(missed(DetectMiss::NoToken)) };
+    // Trust boundary: a two-letter country.
+    let market = if market.len() == 2 && market.chars().all(|c| c.is_ascii_alphabetic()) { market } else { "US".into() };
+    DETECT_STOP.store(false, Ordering::Relaxed);
+    let clip = tauri::async_runtime::spawn_blocking(move || {
+        mic::record(DETECT_SECONDS, &DETECT_STOP, |seconds, level| {
+            let _ = app.emit_to("main", "detect", (seconds, level));
+        })
+    })
+    .await
+    .map_err(err)?;
+    let clip = match clip {
+        Ok(c) => c,
+        Err(e) => {
+            return Ok(missed(match e {
+                MicError::NoMic => DetectMiss::NoMic,
+                MicError::Blocked => DetectMiss::MicBlocked,
+                MicError::Busy => DetectMiss::MicBusy,
+                MicError::Failed => DetectMiss::Failed,
+            }));
+        }
+    };
+    if DETECT_STOP.load(Ordering::Relaxed) {
+        return Ok(missed(DetectMiss::Canceled));
+    }
+    if clip.silent() {
+        return Ok(missed(DetectMiss::Silent));
+    }
+    let wav = clip.wav();
+    drop(clip);
+    Ok(match AudD::default().recognize(&token, wav, &market).await {
+        Ok(Some(track)) => Detection::Found { track },
+        Ok(None) => Detection::Unknown,
+        Err(e) => match e.downcast_ref::<Refused>() {
+            Some(Refused::BadToken) => missed(DetectMiss::BadToken),
+            Some(Refused::Limit) => missed(DetectMiss::Limit),
+            Some(Refused::Other(m)) => Detection::Miss { miss: DetectMiss::Failed, detail: Some(m.clone()) },
+            None if e.is::<Offline>() => missed(DetectMiss::Offline),
+            None => Detection::Miss { miss: DetectMiss::Failed, detail: Some(e.to_string()) },
+        },
+    })
+}
+
+/// Stops listening: nothing is sent.
+#[tauri::command]
+fn detect_stop() {
+    DETECT_STOP.store(true, Ordering::Relaxed);
+}
+
 /// Windows settings pages the app points to when one of them blocks a feature. Fixed list.
 #[tauri::command]
 fn open_windows_settings(app: tauri::AppHandle, page: String) -> CmdResult<()> {
@@ -1451,7 +1561,7 @@ pub fn run() {
             update::spawn(app.handle().clone());
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, add_track, backfill_art, find_versions, play_preview, share_playlist, share_preview, share_read_image, share_import, nearby_send, nearby_status, nearby_stop, nearby_receive, record_play, mixes, set_track_pref, clear_history, export_youtube, spotify_player, spotify_playback, ytm_sign_in, ytm_sign_out, spotify_web_open, spotify_web_status, import_spotify_link, ytm_accounts, set_ytm_accounts, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, system_accent, restart_app, autostart, set_autostart, media_update, load_session, save_session, add_to_youtube, playlist_orders, save_cover, export_cover, alternative_videos, play_stats, cache_stats, open_licenses, update_status, update_check, update_install, ytm_home, ytm_list, discord_presence, discord_off, discord_status, remove_from_playlist, remove_from_library, resolve_track, set_global_shortcuts, player_live, player_levels, voice_listen, voice_stop, open_windows_settings, ytwatch_open, ytwatch_place, ytwatch_cmd, ytwatch_close])
+        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, add_track, backfill_art, find_versions, play_preview, share_playlist, share_preview, share_read_image, share_import, nearby_send, nearby_status, nearby_stop, nearby_receive, record_play, mixes, set_track_pref, clear_history, export_youtube, spotify_player, spotify_playback, ytm_sign_in, ytm_sign_out, spotify_web_open, spotify_web_status, import_spotify_link, ytm_accounts, set_ytm_accounts, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, system_accent, restart_app, autostart, set_autostart, media_update, load_session, save_session, add_to_youtube, playlist_orders, save_cover, export_cover, alternative_videos, play_stats, cache_stats, open_licenses, update_status, update_check, update_install, ytm_home, ytm_list, discord_presence, discord_off, discord_status, remove_from_playlist, remove_from_library, resolve_track, set_global_shortcuts, player_live, player_levels, voice_listen, voice_stop, open_windows_settings, detector_status, set_detector_token, detect_song, detect_stop, ytwatch_open, ytwatch_place, ytwatch_cmd, ytwatch_close])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
@@ -1459,6 +1569,14 @@ pub fn run() {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn audd_tokens_are_letters_and_digits() {
+        assert!(audd_token_ok("0123456789abcdef0123456789abcdef"));
+        assert!(!audd_token_ok("short"));
+        assert!(!audd_token_ok("abc def 12345"));
+        assert!(!audd_token_ok("abc\"; rm -rf; \"def"));
+    }
 
     #[test]
     fn credentials_merge_trims_and_keeps_old_values() {
