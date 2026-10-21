@@ -67,6 +67,14 @@ export async function resumeSession(enabled: boolean, exact = false) {
   usePlayer.getState().resume({ ...saved.queue, paused: exact && saved.queue.paused })
 }
 
+/** The next song, from its start, playing: an update installs between two songs and the app comes back on it. */
+export async function saveSessionAtNext(index: number) {
+  const p = usePlayer.getState()
+  const s = snapshot({ ...p, index, positionMs: 0, playing: true })
+  // Its own best source: the one that ended may not suit it.
+  if (s) await api.saveSession({ ...s, via: undefined }).catch(() => {})
+}
+
 /** Right now (before an update closes the app). */
 export async function saveSessionNow() {
   const s = snapshot(usePlayer.getState())

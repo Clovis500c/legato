@@ -66,11 +66,22 @@ src-tauri/              thin shell: commands, keychain, WebView2 hook, media pan
 
 ## Updates
 
-`src-tauri/src/update.rs` with `tauri-plugin-updater`: checked 20 s after launch and every 6 hours (release builds),
-downloaded in the background, signature checked against the public key in `tauri.conf.json`. The interface
-(`features/update/updates.ts`) installs it at a quiet moment: nothing played for 15 s and no input for a minute. The
-installer runs silently and starts the app again, which reopens as it was (queue, position, paused or not, screen).
-Settings › About shows the version, the update state and the app's caches.
+`src-tauri/src/update.rs` with `tauri-plugin-updater`: checked 5 s after every launch, when the window comes back from
+the tray after more than an hour, and every 6 hours (release builds). With Automatic updates on (Settings › About) it
+downloads in the background, else it only announces the version. Signature checked against the public key in
+`tauri.conf.json`. The interface (`features/update/updates.ts`) installs it without cutting a song: when a song ends on
+its own (nobody touched the app for a minute) the session is saved on the next song and the installer runs, or at a
+quiet moment (nothing played for 15 s, no input for a minute). The installer runs silently and starts the app again,
+which reopens as it was (queue, screen) and plays the next song. Settings › About shows the version, the update state
+and the app's caches.
+
+## Background (tray)
+
+`src-tauri/src/background.rs`: closing the window keeps the app in the notification area (Settings › Advanced, on by
+default), music playing. Hidden, the WebView2 controller is set invisible (no painting, page `hidden`) and its memory
+target low; after 5 minutes hidden with nothing playing it is suspended, and woken before the tray, a global shortcut,
+a media key or showing the window reach it. A second launch shows the running one (single instance). Quit in the tray
+menu is the only exit. Measured: WebView2 working set 867 MB shown → 96 MB hidden, music on.
 
 ## Add-ons
 

@@ -17,7 +17,7 @@ pub struct Entry {
     pub accelerator: String,
 }
 
-pub fn plugin<R: Runtime>() -> TauriPlugin<R> {
+pub fn plugin() -> TauriPlugin<tauri::Wry> {
     tauri_plugin_global_shortcut::Builder::new()
         .with_handler(|app, shortcut, event| {
             if event.state != ShortcutState::Pressed {
@@ -27,6 +27,7 @@ pub fn plugin<R: Runtime>() -> TauriPlugin<R> {
             match action.as_deref() {
                 Some("showApp") => crate::tray::show_main(app),
                 Some(id) => {
+                    crate::background::wake(app);
                     let _ = app.emit_to("main", "shortcut", id);
                 }
                 None => {}

@@ -4,7 +4,7 @@
 use crate::media::NowPlaying;
 use tauri::menu::{Menu, MenuItem, PredefinedMenuItem};
 use tauri::tray::{MouseButton, MouseButtonState, TrayIcon, TrayIconBuilder, TrayIconEvent};
-use tauri::{AppHandle, Emitter, Manager, Wry};
+use tauri::{AppHandle, Emitter, Wry};
 
 pub struct Tray {
     icon: TrayIcon,
@@ -43,8 +43,9 @@ impl Tray {
             .show_menu_on_left_click(false)
             .on_menu_event(|app, e| match e.id.as_ref() {
                 "show" => show_main(app),
-                "quit" => app.exit(0),
+                "quit" => crate::background::quit(app),
                 key @ ("toggle" | "next" | "previous") => {
+                    crate::background::wake(app);
                     let _ = app.emit_to("main", "media-key", key);
                 }
                 _ => {}
@@ -69,14 +70,9 @@ impl Tray {
     }
 }
 
-/// Restore and focus the main window (minimized or behind others).
-pub fn show_main<R: tauri::Runtime>(app: &tauri::AppHandle<R>) {
-    // Window, not "webview window": with the watch-page child (ytwatch.rs) there is none.
-    if let Some(w) = app.get_window("main") {
-        let _ = w.unminimize();
-        let _ = w.show();
-        let _ = w.set_focus();
-    }
+/// Restore and focus the main window (hidden in the tray, minimized or behind others).
+pub fn show_main(app: &AppHandle) {
+    crate::background::show(app);
 }
 
 #[cfg(test)]

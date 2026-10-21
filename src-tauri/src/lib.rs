@@ -1,5 +1,6 @@
 mod art;
 mod autostart;
+mod background;
 mod discord;
 mod hotkeys;
 mod media;
@@ -1098,7 +1099,7 @@ fn update_status(updater: State<update::Updater>) -> update::Status {
 /// Check now (Settings › About). Runs in the background; progress comes as `update` events.
 #[tauri::command]
 fn update_check(app: tauri::AppHandle) {
-    tauri::async_runtime::spawn(async move { app.state::<update::Updater>().check(&app).await });
+    tauri::async_runtime::spawn(async move { app.state::<update::Updater>().check(&app, true).await });
 }
 
 /// Install the downloaded update: the app closes and starts again (UI asks when nothing plays, or the user does).
@@ -1267,6 +1268,7 @@ fn discord_status(state: State<'_, AppState>) -> discord::Status {
 /// Cover: local file's own (track_id), else `art` URL through the cache.
 #[tauri::command]
 async fn media_update(state: State<'_, AppState>, now: Option<media::NowPlaying>, track_id: Option<i64>, art: Option<String>) -> CmdResult<()> {
+    background::set_playing(now.as_ref().is_some_and(|n| n.playing));
     if let Some(tray) = &state.tray {
         tray.update(now.as_ref()).map_err(err)?;
     }
@@ -1337,6 +1339,8 @@ fn player_status(state: State<AppState>) -> Status {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        // First: a second launch shows this one (from the tray too) instead of starting again.
+        .plugin(tauri_plugin_single_instance::init(|app, _, _| background::show(app)))
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
@@ -1366,6 +1370,19 @@ pub fn run() {
             }
             window = window.initialization_script_for_all_frames(music_shield::BARE_SCRIPT);
             let window = window.build()?;
+            // Close = back to the tray (setting closeToTray, on by default); Quit in the tray menu really quits.
+            let handle = app.handle().clone();
+            window.on_window_event(move |e| {
+                if let tauri::WindowEvent::CloseRequested { api, .. } = e {
+                    if background::quitting() {
+                        return;
+                    }
+                    api.prevent_close();
+                    let to_tray = handle.try_state::<AppState>().and_then(|s| s.lib.lock().unwrap().setting("ui").ok().flatten()).and_then(|u| u.get("closeToTray")?.as_bool()).unwrap_or(true);
+                    if to_tray { background::hide(&handle) } else { background::quit(&handle) }
+                }
+            });
+            background::spawn_sleeper(app.handle().clone());
             #[cfg(windows)]
             shield::install(window.as_ref(), shield.clone())?;
             let media = media::Media::install(&window).ok();

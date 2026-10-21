@@ -75,7 +75,7 @@ export interface Shelf {
 }
 
 /** src-tauri update::Status: what the background updater is doing. */
-export type UpdateState = { state: 'idle' | 'checking' | 'upToDate' } | { state: 'downloading'; version: string; percent: number } | { state: 'ready'; version: string; notes: string | null } | { state: 'installing'; version: string } | { state: 'error'; message: string }
+export type UpdateState = { state: 'idle' | 'checking' | 'upToDate' } | { state: 'available'; version: string; notes: string | null } | { state: 'downloading'; version: string; percent: number } | { state: 'ready'; version: string; notes: string | null } | { state: 'installing'; version: string } | { state: 'error'; message: string }
 export type UpdateStatus = UpdateState & {
   current: string
   /** Unix seconds. */

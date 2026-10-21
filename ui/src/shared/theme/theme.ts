@@ -154,6 +154,8 @@ export interface Settings {
   resume: boolean
   /** Open on the screen the app was closed on, Now Playing included (startView when off). */
   reopen: boolean
+  /** Closing the window keeps the app in the notification area (Rust reads it, background.rs). Quit really quits. */
+  closeToTray: boolean
   /** Add-ons turned on (id → on). All off until the user turns them on. */
   addons: Record<string, boolean>
   discord: DiscordSettings
@@ -200,6 +202,7 @@ export const DEFAULTS: Settings = {
   upNext: true,
   resume: true,
   reopen: true,
+  closeToTray: true,
   addons: {},
   discord: { appId: DISCORD_APP, status: 'song', buttons: true, paused: false, github: true },
   shortcuts: {},
@@ -292,6 +295,7 @@ export function sanitize(raw: unknown): Settings {
     upNext: typeof r.upNext === 'boolean' ? r.upNext : DEFAULTS.upNext,
     resume: typeof r.resume === 'boolean' ? r.resume : DEFAULTS.resume,
     reopen: typeof r.reopen === 'boolean' ? r.reopen : DEFAULTS.reopen,
+    closeToTray: typeof r.closeToTray === 'boolean' ? r.closeToTray : DEFAULTS.closeToTray,
     shortcuts: sanitizeShortcuts(r.shortcuts),
     addons: Object.fromEntries(Object.entries(r.addons && typeof r.addons === 'object' ? r.addons : {}).filter(([k, v]) => /^[a-z0-9-]{1,40}$/.test(k) && typeof v === 'boolean').slice(0, 100)),
     discord: sanitizeDiscord(r.discord),

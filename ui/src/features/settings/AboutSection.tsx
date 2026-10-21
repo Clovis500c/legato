@@ -18,6 +18,7 @@ const pill: Record<UpdateStatus['state'], { color: string; pulse?: boolean }> = 
   checking: { color: '#3B82F6', pulse: true },
   upToDate: { color: '#23A55A' },
   downloading: { color: '#3B82F6', pulse: true },
+  available: { color: '#3B82F6' },
   ready: { color: '#F0B232', pulse: true },
   installing: { color: '#F0B232', pulse: true },
   error: { color: '#F23F43' },
@@ -32,6 +33,8 @@ function label(s: UpdateStatus | null): string {
       return 'Up to date'
     case 'downloading':
       return `Downloading ${s.version} · ${s.percent} %`
+    case 'available':
+      return `${s.version} is out`
     case 'ready':
       return `${s.version} is ready`
     case 'installing':
@@ -108,7 +111,7 @@ export function AboutSection() {
           </Button>
         ) : (
           <Button variant="ghost" disabled={busy} onClick={() => void api.updateCheck()}>
-            <ArrowClockwise size={14} className={busy ? 'animate-spin' : ''} /> Check now
+            <ArrowClockwise size={14} className={busy ? 'animate-spin' : ''} /> {state === 'available' ? 'Download update' : 'Check now'}
           </Button>
         )}
       </div>
@@ -121,13 +124,13 @@ export function AboutSection() {
       <section data-setting="Updates" className="flex flex-col gap-2.5">
         <h2 className="kicker">Updates</h2>
         <div className="rounded-xl border border-line bg-raised">
-          <Row label="Automatic updates" sub="Downloads in the background and installs once nothing has played for a moment; the app opens again where it was, paused if it was">
+          <Row label="Automatic updates" sub="Checked at every launch. Downloads in the background and installs between two songs or once nothing plays, then the app picks up where it was">
             <Toggle label="Automatic updates" checked={s.autoUpdate} onChange={(autoUpdate) => update({ autoUpdate })} />
           </Row>
           <Row label="Last update" sub={status?.lastUpdate ? `${status.lastUpdate.from} → ${status.lastUpdate.to}, ${timeAgo(status.lastUpdate.at * 1000)}` : 'None installed yet'} />
           <Row label="Last check" sub={status?.lastCheck ? timeAgo(status.lastCheck * 1000) : 'Not this session'} />
           {status?.state === 'error' && <Row label="Error" sub={<span className="break-words">{status.message}</span>} />}
-          {status?.state === 'ready' && status.notes && (
+          {(status?.state === 'ready' || status?.state === 'available') && status.notes && (
             <Row label={`What’s new in ${status.version}`} sub={<span className="whitespace-pre-wrap">{status.notes}</span>} />
           )}
         </div>

@@ -527,6 +527,9 @@ function AdvancedSection() {
       </Group>
       <div className="rounded-xl border border-line bg-raised">
         <OpenAtStartup />
+        <Row label="Keep running in the notification area" sub={s.closeToTray ? 'Closing the window keeps the music going; Quit from the icon’s menu' : 'Closing the window quits the app'}>
+          <Toggle label="Keep running in the notification area" checked={s.closeToTray} onChange={(closeToTray) => update({ closeToTray })} />
+        </Row>
         <Row label="Reopen where you left off" sub="Same screen as when the app closed, Now Playing open if it was">
           <Toggle label="Reopen where you left off" checked={s.reopen} onChange={(reopen) => update({ reopen })} />
         </Row>

@@ -46,9 +46,9 @@ it lands (tested, `pnpm check` green, committed). Technical plan, rule changes a
 - [x] Keyboard shortcuts: custom shortcuts (skip, stop, play…) applied everywhere, including when the app runs in the
       background in the tray, with no conflict with Windows media keys. One table (`app/shortcuts.ts`), listed in
       Settings › Shortcuts.
-- [ ] Background: closing the window keeps the app running in the tray (screenshot 2), in a low-resource mode like
+- [x] Background: closing the window keeps the app running in the tray (screenshot 2), in a low-resource mode like
       Discord, back very fast; webview resources reduced while hidden, music never cut. "Quit" is the only real exit.
-- [ ] Auto-update: check at every launch; if an update is out, download in the background, restart automatically at a
+- [x] Auto-update: check at every launch; if an update is out, download in the background, restart automatically at a
       moment that doesn't cut the music, and resume playback where it was (`session.ts`).
 - [x] "Music App" button goes Home, even from the player.
 - [x] Window top bar follows the player's background instead of staying grey.

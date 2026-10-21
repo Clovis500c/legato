@@ -2,8 +2,10 @@ import { create } from 'zustand'
 import { useSettings } from '../../app/settings'
 import { useStore } from '../../app/store'
 import { api, type UpdateStatus } from '../../shared/api'
-import { saveSessionNow } from '../player/session'
-import { usePlayer } from '../player/store'
+import { nextIndex } from '../player/queue'
+import { saveSessionAtNext, saveSessionNow } from '../player/session'
+import { vias } from '../player/sources'
+import { onSongEnd, usePlayer } from '../player/store'
 
 /** What the background updater is doing (Settings › About). */
 export const useUpdate = create<{ status: UpdateStatus | null }>(() => ({ status: null }))
@@ -13,13 +15,18 @@ const SILENT_MS = 15_000
 const UNTOUCHED_MS = 60_000
 const LOOK_EVERY = 5_000
 
-/** Install the downloaded update: session saved first, the app closes and comes back as it was. */
-export async function installUpdate() {
+/** Install the downloaded update: session saved first (or the next song, between two), the app closes and comes back. */
+export async function installUpdate(next?: number) {
   const s = useUpdate.getState().status
   if (s?.state !== 'ready') return
   useStore.getState().notify(`Updating to ${s.version}… back in a few seconds`, { kind: 'info' })
-  await saveSessionNow()
+  await (next === undefined ? saveSessionNow() : saveSessionAtNext(next))
   await api.updateInstall().catch((e) => useStore.getState().notify(String(e), { kind: 'error' }))
+}
+
+/** Pure: may an update install between two songs? Not while someone is using the app. */
+export function betweenSongs(now: number, lastInput: number): boolean {
+  return now - lastInput >= UNTOUCHED_MS
 }
 
 /** Pure: may an update install now? */
@@ -37,6 +44,17 @@ export function startUpdates(): () => void {
   const unsub = usePlayer.subscribe((s) => {
     if (s.playing) lastSound = Date.now()
   })
+  // A song ended on its own: install there, the next song starts once the app is back (a few seconds of silence, never
+  // a cut in a song).
+  onSongEnd(() => {
+    const ready = useUpdate.getState().status?.state === 'ready'
+    if (!ready || !useSettings.getState().settings.autoUpdate || !betweenSongs(Date.now(), lastInput)) return false
+    const { order, index, repeat, list } = usePlayer.getState()
+    const next = nextIndex(order, index, 1, repeat, true, (j) => !list[j] || !vias(list[j]).length)
+    if (next === null) return false
+    void installUpdate(next)
+    return true
+  })
   const look = setInterval(() => {
     const ready = useUpdate.getState().status?.state === 'ready'
     if (!ready || !useSettings.getState().settings.autoUpdate) return
@@ -50,6 +68,7 @@ export function startUpdates(): () => void {
   const off = api.onUpdate(set)
   return () => {
     clearInterval(look)
+    onSongEnd(null)
     unsub()
     window.removeEventListener('pointerdown', touched)
     window.removeEventListener('keydown', touched)

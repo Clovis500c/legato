@@ -110,6 +110,10 @@ export function useNowTrack(): LibraryTrack | undefined {
   return lib ?? queued
 }
 
+/** Asked when a song ends on its own, before the next one starts: true = taken over (an update installs right there). */
+let beforeNext: (() => boolean) | null = null
+export const onSongEnd = (f: (() => boolean) | null) => void (beforeNext = f)
+
 // Embed iframe, bound by PlayerBar.
 let frame: HTMLIFrameElement | null = null
 export const bindFrame = (el: HTMLIFrameElement | null) => void (frame = el)
@@ -378,6 +382,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
   },
 
   step(delta, auto = false) {
+    if (auto && delta > 0 && beforeNext?.()) return
     const { now, list, index, order, repeat } = get()
     if (now && !now.trackId) return void send({ type: delta > 0 ? 'next' : 'prev' })
     const i = nextIndex(order, index, delta, repeat, auto, (j) => !vias(list[j], spotifyOn()).length)
