@@ -60,7 +60,9 @@ Status on 2026-10-16. YouTube, local files and Apple Music previews: done and te
 - iframe `https://www.youtube.com/embed/<id>?enablejsapi=1&autoplay=1&playsinline=1&origin=<app origin>`
   with `referrerpolicy="strict-origin-when-cross-origin"` (`ui/src/features/player/youtube.ts`, `PlayerBar.tsx`).
 - Bare by default: `controls=0&rel=0&iv_load_policy=3&fs=0&disablekb=1` and `pointer-events: none` on the iframe (no
-  hover overlay; our controls drive it). Settings › Advanced brings YouTube's controls back (next track). Subtitles:
+  hover overlay; our controls drive it). `crates/shield/src/bare.js` hides every overlay YouTube draws (title, cued
+  thumbnail, unmute, up next, end screen, error slate…) with an adopted sheet and a `<style>` element, both put back if
+  the page drops them. Settings › Advanced brings YouTube's controls back (next track). Subtitles:
   `unloadModule` captions / cc once per video unless Advanced turns them on.
 - One embed per run of YouTube tracks: the next video goes into the running player (`loadVideoById`), no reload.
 - Error 100 / 101 / 150 (removed / owner turned embedding off): `alternative_videos` searches YouTube Music songs and

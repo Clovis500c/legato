@@ -22,7 +22,7 @@ it lands (tested, `pnpm check` green, committed). Technical plan, rule changes a
 **Phase 1: fixes**
 - [x] Progress bar stuck: after a custom position set with our slider then a song change, the bar stops moving (setting
       it back to 0 unblocks it). Root cause + a test that reproduces it.
-- [ ] YouTube overlay: must never be visible over the player (shield's YouTube player script).
+- [x] YouTube overlay: must never be visible over the player (shield's YouTube player script).
 - [ ] Sidebar in a small window: a scrollbar shows at the top right of the sidebar in the player (screenshot 3). The
       sidebar must not scroll there: cause + fix.
 - [ ] Cover auto-crop: black bars (and thin white edges) around video frames and covers (screenshot 4) detected and
