@@ -211,3 +211,14 @@ code {
 ::-webkit-scrollbar-thumb {
   @apply rounded-full border-2 border-transparent bg-line bg-clip-padding;
 }
+
+/* Quiet scroller: thin, thumb only while the pointer is over it. */
+.scroll-quiet::-webkit-scrollbar {
+  width: 6px;
+}
+.scroll-quiet::-webkit-scrollbar-thumb {
+  @apply border-0 bg-transparent;
+}
+.scroll-quiet:hover::-webkit-scrollbar-thumb {
+  @apply bg-line;
+}

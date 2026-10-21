@@ -63,63 +63,66 @@ export function Sidebar() {
   }, [])
 
   return (
-    <aside className="flex w-63 shrink-0 flex-col gap-5 overflow-y-auto border-r border-line bg-panel px-3 pt-4 pb-3.5">
-      {/* Logo and name go Home; the rest of the row still drags the window. */}
-      <div data-tauri-drag-region className="flex items-center px-2">
-        <button onClick={() => go({ name: 'home' })} title="Home" className="flex items-center gap-2.5 rounded-md">
-          <Logo />
-          <span className="text-[15px] font-bold tracking-tight">Music App</span>
-        </button>
+    // Header and footer stay put; only the middle scrolls (a small window used to scroll the whole sidebar, logo included).
+    <aside className="flex w-63 shrink-0 flex-col border-r border-line bg-panel">
+      <div className="flex shrink-0 flex-col gap-5 px-3 pt-4 pb-5">
+        {/* Logo and name go Home; the rest of the row still drags the window. */}
+        <div data-tauri-drag-region className="flex items-center px-2">
+          <button onClick={() => go({ name: 'home' })} title="Home" className="flex items-center gap-2.5 rounded-md">
+            <Logo />
+            <span className="text-[15px] font-bold tracking-tight">Music App</span>
+          </button>
+        </div>
+
+        <label className="flex items-center gap-2 rounded-lg border border-line bg-raised px-2.5 py-1.5 focus-within:border-ink-3">
+          <MagnifyingGlass size={14} className="text-ink-3" />
+          <input
+            ref={input}
+            value={query}
+            onChange={(e) => {
+              setQuery(e.target.value)
+              if (!['songs', 'playlist', 'albums', 'artists'].includes(view.name)) go({ name: 'songs' })
+            }}
+            placeholder="Search"
+            aria-label="Search"
+            className="min-w-0 flex-1 bg-transparent outline-none placeholder:text-ink-3"
+          />
+          <kbd className="font-mono text-[9px] tracking-[0.06em] text-ink-3">CTRL K</kbd>
+        </label>
       </div>
 
-      <label className="flex items-center gap-2 rounded-lg border border-line bg-raised px-2.5 py-1.5 focus-within:border-ink-3">
-        <MagnifyingGlass size={14} className="text-ink-3" />
-        <input
-          ref={input}
-          value={query}
-          onChange={(e) => {
-            setQuery(e.target.value)
-            if (!['songs', 'playlist', 'album', 'artist'].includes(view.name)) go({ name: 'songs' })
-          }}
-          placeholder="Search"
-          aria-label="Search"
-          className="min-w-0 flex-1 bg-transparent outline-none placeholder:text-ink-3"
-        />
-        <kbd className="font-mono text-[9px] tracking-[0.06em] text-ink-3">CTRL K</kbd>
-      </label>
+      <div className="scroll-quiet flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-3 pb-3">
+        <div className="flex flex-col gap-px">
+          <NavItem on={is('home')} icon={<House size={16} />} label="Home" onClick={() => go({ name: 'home' })} />
+          <NavItem on={is('mixes') || is('mix')} icon={<Disc size={16} />} label="Mixes" onClick={() => go({ name: 'mixes' })} />
+          <NavItem on={is('add')} icon={<PlusCircle size={16} />} label="Add music" onClick={() => go({ name: 'add' })} />
+        </div>
 
-      <div className="flex flex-col gap-px">
-        <NavItem on={is('home')} icon={<House size={16} />} label="Home" onClick={() => go({ name: 'home' })} />
-        <NavItem on={is('mixes') || is('mix')} icon={<Disc size={16} />} label="Mixes" onClick={() => go({ name: 'mixes' })} />
-        <NavItem on={is('add')} icon={<PlusCircle size={16} />} label="Add music" onClick={() => go({ name: 'add' })} />
+        <Section title="Library">
+          <NavItem on={is('songs')} icon={<MusicNotes size={16} />} label="Songs" count={tracks.length} onClick={() => go({ name: 'songs' })} />
+          <NavItem on={is('albums') || is('album')} icon={<VinylRecord size={16} />} label="Albums" count={counts.albums} onClick={() => go({ name: 'albums' })} />
+          <NavItem on={is('artists') || is('artist')} icon={<MicrophoneStage size={16} />} label="Artists" count={counts.artists} onClick={() => go({ name: 'artists' })} />
+        </Section>
+
+        <Section title="Playlists" onContextMenu={onMenu(playlistsMenu)}>
+          {playlists
+            .filter((p) => !hiddenKeys.has(playlistKey(p)))
+            .map((p) => (
+            <NavItem key={p.id} on={view.name === 'playlist' && view.id === p.id} icon={<PlaylistCover p={p} size={18} />} label={p.name} count={p.trackCount} onClick={() => go({ name: 'playlist', id: p.id })} onContextMenu={onMenu(() => playlistMenu(p))} />
+          ))}
+          <NavItem
+            on={false}
+            icon={<Plus size={14} />}
+            label="New playlist"
+            onClick={async () => {
+              const id = await editPlaylist({ type: 'create', name: 'New playlist' })
+              if (id !== null) go({ name: 'playlist', id })
+            }}
+          />
+        </Section>
       </div>
 
-      <Section title="Library">
-        <NavItem on={is('songs')} icon={<MusicNotes size={16} />} label="Songs" count={tracks.length} onClick={() => go({ name: 'songs' })} />
-        <NavItem on={is('albums') || is('album')} icon={<VinylRecord size={16} />} label="Albums" count={counts.albums} onClick={() => go({ name: 'albums' })} />
-        <NavItem on={is('artists') || is('artist')} icon={<MicrophoneStage size={16} />} label="Artists" count={counts.artists} onClick={() => go({ name: 'artists' })} />
-      </Section>
-
-      <Section title="Playlists" onContextMenu={onMenu(playlistsMenu)}>
-        {playlists
-          .filter((p) => !hiddenKeys.has(playlistKey(p)))
-          .map((p) => (
-          <NavItem key={p.id} on={view.name === 'playlist' && view.id === p.id} icon={<PlaylistCover p={p} size={18} />} label={p.name} count={p.trackCount} onClick={() => go({ name: 'playlist', id: p.id })} onContextMenu={onMenu(() => playlistMenu(p))} />
-        ))}
-        <NavItem
-          on={false}
-          icon={<Plus size={14} />}
-          label="New playlist"
-          onClick={async () => {
-            const id = await editPlaylist({ type: 'create', name: 'New playlist' })
-            if (id !== null) go({ name: 'playlist', id })
-          }}
-        />
-      </Section>
-
-      <div className="flex-1" />
-
-      <div className="flex flex-col gap-px">
+      <div className="flex shrink-0 flex-col gap-px border-t border-line-soft px-3 pt-2 pb-3.5">
         <NavItem on={is('addons')} icon={<PuzzlePiece size={16} />} label="Add-ons" onClick={() => go({ name: 'addons' })} />
         <NavItem on={is('settings')} icon={<Gear size={16} />} label="Settings" onClick={() => go({ name: 'settings', section: 'appearance' })} />
       </div>
