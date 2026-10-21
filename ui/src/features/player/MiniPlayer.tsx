@@ -37,7 +37,7 @@ export function MiniPlayer() {
   const [drag, setDrag] = useState<Point | null>(null)
   const [width, setWidth] = useState<number | null>(null)
   const [settling, setSettling] = useState(false)
-  const gesture = useRef<{ start: Point; from: Point; last: Point; t: number; v: Point; moved: boolean } | null>(null)
+  const gesture = useRef<{ start: Point; from: Point; last: Point; t: number; v: Point; moved: boolean; onVideo: boolean } | null>(null)
   // Card height (video + controls) for the spot math, kept current while it mounts, resizes, unmounts.
   const observer = useRef<ResizeObserver | null>(null)
   const measure = useCallback((el: HTMLDivElement | null) => {
@@ -70,7 +70,7 @@ export function MiniPlayer() {
     if (e.button !== 0 || (e.target instanceof Element && e.target.closest('button'))) return
     e.currentTarget.setPointerCapture(e.pointerId)
     const p = { x: e.clientX, y: e.clientY }
-    gesture.current = { start: p, from: rest, last: p, t: e.timeStamp, v: { x: 0, y: 0 }, moved: false }
+    gesture.current = { start: p, from: rest, last: p, t: e.timeStamp, v: { x: 0, y: 0 }, moved: false, onVideo: e.target instanceof Element && !!e.target.closest('[data-video-slot]') }
   }
   const move = (e: React.PointerEvent) => {
     const g = gesture.current
@@ -87,6 +87,8 @@ export function MiniPlayer() {
   const up = () => {
     const g = gesture.current
     gesture.current = null
+    // A click on the video (no drag): play / pause.
+    if (g && !g.moved && g.onVideo) return usePlayer.getState().toggle()
     if (!g?.moved || !drag) return
     update({ miniSpot: nearestSpot(drag, g.v, win, size, INSETS) })
     setDrag(null)

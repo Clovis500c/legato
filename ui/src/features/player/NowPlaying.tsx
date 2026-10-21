@@ -26,7 +26,7 @@ import { UpNext, useNextCount } from './UpNext'
 import { useVideoBox } from './videoBox'
 
 /** Publishes its rect so the single YouTube iframe sits here. YouTube rules: at least 200×200, nothing on top. */
-export function VideoSlot({ className = '', style, hidden = false, live = false }: { className?: string; style?: React.CSSProperties; hidden?: boolean; live?: boolean }) {
+export function VideoSlot({ className = '', style, hidden = false, live = false, onClick }: { className?: string; style?: React.CSSProperties; hidden?: boolean; live?: boolean; onClick?: () => void }) {
   const ref = useRef<HTMLDivElement>(null)
   const set = useVideoSlot((s) => s.set)
   useLayoutEffect(() => {
@@ -60,7 +60,8 @@ export function VideoSlot({ className = '', style, hidden = false, live = false 
       set(null)
     }
   }, [set])
-  return <div ref={ref} className={`rounded-lg bg-black ${className}`} style={style} />
+  // The iframe takes no pointer: clicks land here (our own play / pause, not YouTube's).
+  return <div ref={ref} data-video-slot onClick={onClick} className={`rounded-lg bg-black ${onClick ? 'cursor-pointer' : ''} ${className}`} style={style} />
 }
 
 /** Seek bar drawn like a tuner dial: ticks, major every 5, accent needle. */
@@ -97,6 +98,8 @@ function SourceBadge({ via }: { via: Via }) {
  */
 function Stage({ video, cover, track, title, youtubeId }: { video: boolean; cover: boolean; track?: LibraryTrack; title: string; youtubeId?: string }) {
   const big = video && !cover
+  // Click on the picture: play / pause, our own (the embed never gets the pointer).
+  const toggle = usePlayer((s) => s.toggle)
   // Cover frame takes the art's real shape (bars of video frames cut off, see Cover fit).
   const [art, setArt] = useState(1)
   // Video: same, from its own frames; the player is then enlarged and clipped to the picture (PlayerBar).
@@ -114,9 +117,9 @@ function Stage({ video, cover, track, title, youtubeId }: { video: boolean; cove
     <div className="grid min-h-50 w-full flex-1 place-items-center" style={{ containerType: 'size' }}>
       {big ? (
         // Cropped: the iframe itself stays bigger than YouTube's 200×200 minimum, the slot can be any shape.
-        <VideoSlot className={box ? 'min-h-50 min-w-50 bg-transparent!' : 'min-h-50 min-w-89'} style={fit} />
+        <VideoSlot className={box ? 'min-h-50 min-w-50 bg-transparent!' : 'min-h-50 min-w-89'} style={fit} onClick={toggle} />
       ) : (
-        <span style={fit} className="relative block">
+        <span style={fit} onClick={toggle} title="Play / pause" className="relative block cursor-pointer">
           <Cover title={track?.album ?? title} art={track && bigTrackArt(track)} size={200} eager fit={setArt} className="size-full! text-[56px]! shadow-[0_12px_40px_var(--shadow)]" />
           {video && <VideoSlot hidden className="absolute inset-0 bg-transparent" />}
         </span>

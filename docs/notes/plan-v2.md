@@ -50,7 +50,7 @@ it lands (tested, `pnpm check` green, committed). Technical plan, rule changes a
       moment that doesn't cut the music, and resume playback where it was (`session.ts`).
 - [x] "Music App" button goes Home, even from the player.
 - [x] Window top bar follows the player's background instead of staying grey.
-- [ ] Click on the cover or the video: pause / play, with our own handling (not YouTube's).
+- [x] Click on the cover or the video: pause / play, with our own handling (not YouTube's).
 - [x] Top bar: remove the sync icon and the back / forward icons at the top left.
 - [ ] Right-click on a song of a playlist or of the library: remove it from the playlists that hold it, or from the
       library (`features/menus.tsx`).
