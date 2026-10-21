@@ -1,5 +1,5 @@
 import { ArrowRight, Check, ClipboardText, FolderPlus, MagnifyingGlass, Play, Plus, QrCode } from '@phosphor-icons/react'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useStore } from '../../app/store'
 import { api, type SearchHit, type SearchResults, type Source, type Track } from '../../shared/api'
 import { formatDuration, region, spotifyList } from '../../shared/format'
@@ -132,13 +132,12 @@ export function AddView() {
   }
   const markAdded = (i: number, libraryId: number) => setRes((r) => r && { ...r, hits: r.hits.map((h, j) => (j === i ? { ...h, libraryId } : h)) })
 
-  const search = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!q.trim()) return
-    if (spotifyList(q)) return void useStore.getState().importSpotify(q.trim())
+  const run = async (text: string) => {
+    if (!text.trim()) return
+    if (spotifyList(text)) return void useStore.getState().importSpotify(text.trim())
     setBusy(true)
     try {
-      setRes(await api.searchCatalogs(q, region()))
+      setRes(await api.searchCatalogs(text, region()))
       setShowOthers(false)
     } catch (err) {
       useStore.setState({ error: String(err) })
@@ -146,6 +145,17 @@ export function AddView() {
       setBusy(false)
     }
   }
+  const search = (e: React.FormEvent) => {
+    e.preventDefault()
+    void run(q)
+  }
+  // Top bar's "search everywhere" lands here.
+  const request = useStore((s) => s.search)
+  useEffect(() => {
+    if (!request) return
+    setQ(request.q)
+    void run(request.q)
+  }, [request?.n]) // once per ask
 
   return (
     <>

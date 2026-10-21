@@ -1,4 +1,4 @@
-import { Disc, Gear, House, MagnifyingGlass, MicrophoneStage, MusicNotes, Plus, PlusCircle, PuzzlePiece, VinylRecord } from '@phosphor-icons/react'
+import { Disc, Gear, House, MicrophoneStage, MusicNotes, Plus, PlusCircle, PuzzlePiece, VinylRecord } from '@phosphor-icons/react'
 import { useMemo, type ReactNode } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import { useSettings } from '../../app/settings'
@@ -33,8 +33,8 @@ const Section = ({ title, children, onContextMenu }: { title: string; children: 
 )
 
 export function Sidebar() {
-  const { view, go, tracks, playlists, query, setQuery, editPlaylist } = useStore(
-    useShallow((s) => ({ view: s.view, go: s.go, tracks: s.tracks, playlists: s.playlists, query: s.query, setQuery: s.setQuery, editPlaylist: s.editPlaylist })),
+  const { view, go, tracks, playlists, editPlaylist } = useStore(
+    useShallow((s) => ({ view: s.view, go: s.go, tracks: s.tracks, playlists: s.playlists, editPlaylist: s.editPlaylist })),
   )
   const counts = useMemo(() => ({ albums: groupAlbums(tracks).length, artists: groupArtists(tracks).length }), [tracks])
   const is = (name: View['name']) => view.name === name
@@ -42,28 +42,9 @@ export function Sidebar() {
   const hiddenKeys = useMemo(() => new Set(hidden), [hidden])
 
   return (
-    // Header and footer stay put; only the middle scrolls (a small window used to scroll the whole sidebar, logo included).
+    // Footer stays put; only the lists scroll (a small window used to scroll the whole sidebar). Search: top bar.
     <aside className="flex w-63 shrink-0 flex-col border-r border-line bg-panel">
-      <div className="flex shrink-0 flex-col gap-5 px-3 pt-3 pb-5">
-        <label className="flex items-center gap-2 rounded-lg border border-line bg-raised px-2.5 py-1.5 focus-within:border-ink-3">
-          <MagnifyingGlass size={14} className="text-ink-3" />
-          {/* Ctrl+K (app/shortcuts.ts) focuses it. */}
-          <input
-            data-search
-            value={query}
-            onChange={(e) => {
-              setQuery(e.target.value)
-              if (!['songs', 'playlist', 'albums', 'artists'].includes(view.name)) go({ name: 'songs' })
-            }}
-            placeholder="Search"
-            aria-label="Search"
-            className="min-w-0 flex-1 bg-transparent outline-none placeholder:text-ink-3"
-          />
-          <kbd className="font-mono text-[9px] tracking-[0.06em] text-ink-3">CTRL K</kbd>
-        </label>
-      </div>
-
-      <div className="scroll-quiet flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-3 pb-3">
+      <div className="scroll-quiet flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-3 pt-3 pb-3">
         <div className="flex flex-col gap-px">
           <NavItem on={is('home')} icon={<House size={16} />} label="Home" onClick={() => go({ name: 'home' })} />
           <NavItem on={is('mixes') || is('mix')} icon={<Disc size={16} />} label="Mixes" onClick={() => go({ name: 'mixes' })} />

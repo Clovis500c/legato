@@ -52,6 +52,9 @@ interface State {
   playlists: LibraryPlaylist[]
   playlistTracks: LibraryTrack[]
   query: string
+  /** Last "search everywhere" (top bar Enter): the Search page runs it. n changes on each ask, same text too. */
+  search: { q: string; n: number } | null
+  searchFor: (q: string) => void
   filter: Filter
   sort: Sort
   /** Playlist pages: own sort, manual by default. */
@@ -139,6 +142,7 @@ export const useStore = create<State>((set, get) => {
     playlistTracks: [],
     orders: {},
     query: '',
+    search: null,
     filter: 'all',
     sort: 'artist',
     playlistSort: 'manual',
@@ -168,6 +172,10 @@ export const useStore = create<State>((set, get) => {
       show(fwd[0])
     },
     setQuery: (query) => set({ query }),
+    searchFor: (q) => {
+      set({ search: { q, n: (get().search?.n ?? 0) + 1 } })
+      if (get().view.name !== 'add') get().go({ name: 'add' })
+    },
     setFilter: (filter) => set({ filter }),
     setSort: (sort) => set({ sort, ...(sort === 'random' && { seed: Date.now() }) }),
     setGroupView: (page, patch) => set({ [page]: { ...get()[page], ...patch }, ...(patch.sort === 'random' && { seed: Date.now() }) }),

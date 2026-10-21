@@ -17,6 +17,7 @@ import { PlayerBar } from '../features/player/PlayerBar'
 import { usePlayer } from '../features/player/store'
 import { ImportDialog } from '../features/share/ImportDialog'
 import { ConnectWizard } from '../features/sources/ConnectWizard'
+import { SearchBar } from '../features/search/SearchBar'
 import { Sidebar } from '../features/sidebar/Sidebar'
 import { api } from '../shared/api'
 import { region, spotifyList } from '../shared/format'
@@ -62,7 +63,9 @@ function TopBar() {
           <CaretDown size={12} weight="bold" /> Close player
         </button>
       )}
-      <div data-tauri-drag-region className="h-full flex-1" />
+      <div data-tauri-drag-region className="flex h-full min-w-0 flex-1 items-center justify-center px-4">
+        <SearchBar />
+      </div>
       <button className={winBtn} aria-label="Minimize" onClick={() => win.minimize()}>
         <Minus size={14} />
       </button>
