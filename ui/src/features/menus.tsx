@@ -576,6 +576,6 @@ export function appMenu(): MenuEntry[] {
     },
     '-',
     player().now && { label: tr('Now playing'), icon: <ArrowsOutSimple size={16} />, onSelect: () => player().setFull(true) },
-    { label: tr('Settings'), icon: <Gear size={16} />, onSelect: () => go({ name: 'settings', section: 'appearance' }) },
+    { label: tr('Settings'), icon: <Gear size={16} />, onSelect: () => go({ name: 'settings', section: 'general' }) },
   ]
 }

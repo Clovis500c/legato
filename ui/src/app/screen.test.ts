@@ -17,7 +17,9 @@ describe('validScreen', () => {
   })
 
   it('settings reopen on the section only', () => {
-    expect(validScreen({ view: { name: 'settings', section: 'advanced', focus: 'Theme', wizard: 'spotify' } }, [])?.view).toEqual({ name: 'settings', section: 'advanced' })
+    expect(validScreen({ view: { name: 'settings', section: 'shield', focus: 'Theme', wizard: 'spotify' } }, [])?.view).toEqual({ name: 'settings', section: 'shield' })
+    // Sections gone since: where their settings went.
+    expect(validScreen({ view: { name: 'settings', section: 'advanced' } }, [])?.view).toEqual({ name: 'settings', section: 'playback' })
   })
 })
 

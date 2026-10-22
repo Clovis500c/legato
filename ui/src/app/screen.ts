@@ -30,8 +30,9 @@ export function validScreen(raw: unknown, playlistIds: number[]): Screen | null 
   if ((v.name === 'album' || v.name === 'artist') && typeof v.artist !== 'string') return null
   if (v.name === 'settings' && typeof v.section !== 'string') return null
   // Search highlight and Spotify wizard: not worth reopening.
-  // Themes merged into Appearance (2026-10-21).
-  const view = (v.name === 'settings' ? { name: 'settings', section: v.section === 'themes' ? 'appearance' : v.section } : v) as View
+  // Themes merged into Appearance (2026-10-21); Advanced split into General and Playback (2026-10-22).
+  const moved: Record<string, string> = { themes: 'appearance', advanced: 'playback' }
+  const view = (v.name === 'settings' ? { name: 'settings', section: moved[v.section as string] ?? v.section } : v) as View
   return { view, full: r.full === true }
 }
 

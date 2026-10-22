@@ -137,7 +137,7 @@ needs it; 2 s fade by default.
 - [x] Mini player docked at the bottom of the sidebar (never over the content); floating stays a choice (Appearance).
 - [x] Text: Settings › Appearance › Text size (compact = before, normal ≈ 14 px body by default, large), rem sizes
       scaled by the root size, spacing and corners kept in px; 9 px labels raised to 10 px (11 at normal).
-- [ ] Settings: General / Playback / Appearance (playback settings out of Appearance, daily ones out of Advanced);
+- [x] Settings: General / Playback / Appearance (playback settings out of Appearance, daily ones out of Advanced);
       Hi-Fi leftovers dropped or tucked away.
 - [ ] Lists: keyboard (one tab stop, arrows, Enter, Shift / Ctrl selection), multi-select with actions, drag and drop
       to playlists and within custom playlists, reorderable Up next.

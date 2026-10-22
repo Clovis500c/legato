@@ -1,5 +1,5 @@
 import { ShortcutsSection } from './ShortcutsSection'
-import { ArrowCounterClockwise, ArrowsClockwise, Check, Info, Keyboard, MagnifyingGlass, PaintBrush, Plugs, Plus, ShieldCheck, Sliders } from '@phosphor-icons/react'
+import { ArrowCounterClockwise, ArrowsClockwise, Check, GearSix, Info, Keyboard, MagnifyingGlass, PaintBrush, Plugs, Plus, ShieldCheck, SpeakerHigh } from '@phosphor-icons/react'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { useSettings } from '../../app/settings'
 import { useStore, type SettingsSection } from '../../app/store'
@@ -23,12 +23,13 @@ import { LANGUAGES, msg, resolveLang, tr } from '../../shared/i18n/i18n'
 import { ask } from '../../shared/ui/Ask'
 
 const sections: { id: SettingsSection; label: string; icon: ReactNode }[] = [
+  { id: 'general', label: msg('General'), icon: <GearSix size={15} /> },
+  { id: 'playback', label: msg('Playback'), icon: <SpeakerHigh size={15} /> },
   { id: 'appearance', label: msg('Appearance'), icon: <PaintBrush size={15} /> },
   { id: 'sources', label: msg('Accounts'), icon: <Plugs size={15} /> },
   { id: 'sync', label: msg('Sync Mode'), icon: <ArrowsClockwise size={15} /> },
   { id: 'shield', label: msg('Shield'), icon: <ShieldCheck size={15} /> },
   { id: 'shortcuts', label: msg('Shortcuts'), icon: <Keyboard size={15} /> },
-  { id: 'advanced', label: msg('Advanced'), icon: <Sliders size={15} /> },
   { id: 'about', label: msg('About'), icon: <Info size={15} /> },
 ]
 
@@ -97,10 +98,10 @@ const fonts: { value: Settings['font']; label: string }[] = [
 
 function Appearance() {
   const { settings: s, update, current } = useSettings()
-  const go = useStore((st) => st.go)
+  const playing = usePlayer((p) => !!p.now)
   const col = (c: Column) => (s.columns.includes(c) ? s.columns.filter((x) => x !== c) : COLUMNS.filter((x) => x === c || s.columns.includes(x)))
   const labels: Record<Column, string> = { album: msg('Album'), sources: msg('Sources'), duration: msg('Duration') }
-  const reset: Partial<Settings> = { accent: DEFAULTS.accent, covers: DEFAULTS.covers, density: DEFAULTS.density, zoom: DEFAULTS.zoom, readout: DEFAULTS.readout, volume: DEFAULTS.volume, tuner: DEFAULTS.tuner, columns: DEFAULTS.columns, tint: DEFAULTS.tint, immersive: DEFAULTS.immersive, miniPlayer: DEFAULTS.miniPlayer, font: DEFAULTS.font, motion: DEFAULTS.motion, sidebarCounts: DEFAULTS.sidebarCounts, listCovers: DEFAULTS.listCovers, clickToPlay: DEFAULTS.clickToPlay, crossfade: DEFAULTS.crossfade, fade: DEFAULTS.fade, youtubeControls: DEFAULTS.youtubeControls, stage: DEFAULTS.stage, miniSpot: DEFAULTS.miniSpot, miniPlace: DEFAULTS.miniPlace, textSize: DEFAULTS.textSize }
+  const reset: Partial<Settings> = { accent: DEFAULTS.accent, covers: DEFAULTS.covers, density: DEFAULTS.density, zoom: DEFAULTS.zoom, readout: DEFAULTS.readout, volume: DEFAULTS.volume, tuner: DEFAULTS.tuner, columns: DEFAULTS.columns, tint: DEFAULTS.tint, immersive: DEFAULTS.immersive, miniPlayer: DEFAULTS.miniPlayer, font: DEFAULTS.font, motion: DEFAULTS.motion, sidebarCounts: DEFAULTS.sidebarCounts, listCovers: DEFAULTS.listCovers, stage: DEFAULTS.stage, miniSpot: DEFAULTS.miniSpot, miniPlace: DEFAULTS.miniPlace, textSize: DEFAULTS.textSize }
   return (
     <div className="flex flex-col gap-7">
       <div className="flex justify-end">
@@ -108,14 +109,6 @@ function Appearance() {
           <ArrowCounterClockwise size={14} /> {tr('Reset appearance')}
         </Button>
       </div>
-      <Group title={msg('Language')}>
-        <Segmented
-          label={tr('Language')}
-          value={s.language}
-          onChange={(language) => update({ language })}
-          options={[{ value: 'system', label: tr('Windows ({language})', { language: LANGUAGES.find((l) => l.code === resolveLang('system', navigator.languages))!.name }) }, ...LANGUAGES.map((l) => ({ value: l.code, label: l.name }))]}
-        />
-      </Group>
       <ThemeStudio />
       <Group title={msg('Accent color')} hint={s.accent === 'system' ? tr('from Windows') : (s.accent ?? tr('from theme'))}>
         <div className="flex flex-wrap items-center gap-2">
@@ -167,24 +160,6 @@ function Appearance() {
       <InterfaceSize />
       <Group title={msg('Player')}>
         <div className="rounded-xl border border-line bg-raised">
-          <Row label={msg('Source icon')} sub={tr('Where the song plays from, next to the volume')} preview={<SourceIconScene readout={s.readout} />}>
-            <Toggle label={tr('Source icon')} checked={s.readout} onChange={(readout) => update({ readout })} />
-          </Row>
-          <Row label={msg('Volume control')} preview={<VolumeScene volume={s.volume} />}>
-            <Segmented label={tr('Volume control')} value={s.volume} onChange={(volume) => update({ volume })} options={[{ value: 'knob', label: tr('Knob') }, { value: 'bar', label: tr('Bar') }]} />
-          </Row>
-          <Row label={msg('Fade between songs')} preview={!s.fade.advanced && <FadeScene crossfade={s.crossfade} />} sub={s.fade.advanced ? tr('Advanced: {out} s out ({outCurve}), {in} s in ({inCurve})', { out: s.fade.out, outCurve: tr(curveLabels[s.fade.outCurve]), in: s.fade.in, inCurve: tr(curveLabels[s.fade.inCurve]) }) : s.crossfade ? tr('{n} s fade out, then in, when a song ends on its own', { n: s.crossfade }) : tr('No fade')}>
-            {s.fade.advanced ? (
-              <Button variant="ghost" onClick={() => go({ name: 'settings', section: 'advanced', focus: 'Advanced fade' })}>
-                {tr('Edit curves')}
-              </Button>
-            ) : (
-              <input type="range" aria-label={tr('Fade between songs')} min={0} max={12} step={1} value={s.crossfade} onChange={(e) => update({ crossfade: +e.target.value })} className="bar w-40" style={{ backgroundImage: `linear-gradient(to right, var(--ink) ${(s.crossfade / 12) * 100}%, var(--line) 0)` }} />
-            )}
-          </Row>
-          <Row label={msg('Tuner scale')} sub={tr('Tuner-style progress bar in full screen')} preview={<TunerScene tuner={s.tuner} />}>
-            <Toggle label={tr('Tuner scale')} checked={s.tuner} onChange={(tuner) => update({ tuner })} />
-          </Row>
           <Row label={msg('Immersive player')} sub={tr("Now Playing over the song's cover, big and blurred")} preview={<NowPlayingScene s={s} />}>
             <Toggle label={tr('Immersive player')} checked={s.immersive} onChange={(immersive) => update({ immersive })} />
           </Row>
@@ -207,22 +182,66 @@ function Appearance() {
           </Row>
         </div>
       </Group>
+      <Group title={msg('Immersive player')}>
+        <div className="rounded-xl border border-line bg-raised">
+          <div className="flex items-center gap-5 border-b border-line-soft p-4">
+            <NowPlayingScene s={{ ...s, immersive: true }} big />
+            <p className="max-w-48 text-xs text-ink-2">
+              {s.immersive ? tr('Live preview: move the sliders and watch the background change.') : tr('Immersive player is off (Appearance › Player): this is how it would look.')}
+              {playing ? '' : ` ${tr('Play a song to see it with its own cover.')}`}
+            </p>
+          </div>
+          <Row label={msg('Background blur')} sub={s.backdropBlur ? `${s.backdropBlur} px` : tr('No blur')}>
+            <Slider label={tr('Background blur')} value={s.backdropBlur} max={80} onChange={(backdropBlur) => update({ backdropBlur })} />
+          </Row>
+          <Row label={msg('Background dimming')} sub={tr('{n} %: veil in the theme’s color, keeps text readable', { n: s.backdropDim })}>
+            <Slider label={tr('Background dimming')} value={s.backdropDim} max={80} onChange={(backdropDim) => update({ backdropDim })} />
+          </Row>
+          <Row label={msg('Background motion')} sub={tr('The cover drifts slowly behind the player')}>
+            <Toggle label={tr('Background motion')} checked={s.backdropMotion} onChange={(backdropMotion) => update({ backdropMotion })} />
+          </Row>
+        </div>
+      </Group>
+      <details className="group/hifi">
+        <summary className="kicker cursor-pointer list-none py-1 hover:text-ink">{tr('Hi-Fi extras')} ›</summary>
+        <div className="mt-3 rounded-xl border border-line bg-raised">
+          <Row label={msg('Source icon')} sub={tr('Where the song plays from, next to the volume')} preview={<SourceIconScene readout={s.readout} />}>
+            <Toggle label={tr('Source icon')} checked={s.readout} onChange={(readout) => update({ readout })} />
+          </Row>
+          <Row label={msg('Volume control')} preview={<VolumeScene volume={s.volume} />}>
+            <Segmented label={tr('Volume control')} value={s.volume} onChange={(volume) => update({ volume })} options={[{ value: 'knob', label: tr('Knob') }, { value: 'bar', label: tr('Bar') }]} />
+          </Row>
+          <Row label={msg('Tuner scale')} sub={tr('Tuner-style progress bar in full screen')} preview={<TunerScene tuner={s.tuner} />}>
+            <Toggle label={tr('Tuner scale')} checked={s.tuner} onChange={(tuner) => update({ tuner })} />
+          </Row>
+        </div>
+      </details>
       <Group title={msg('Lists and navigation')}>
         <div className="rounded-xl border border-line bg-raised">
           <Row label={msg('Covers in lists')} preview={<ListCoversScene listCovers={s.listCovers} />}>
             <Toggle label={tr('Covers in lists')} checked={s.listCovers} onChange={(listCovers) => update({ listCovers })} />
           </Row>
-          <Row label={msg('Play with')} sub={tr('On a track row')}>
-            <Segmented label={tr('Play with')} value={s.clickToPlay} onChange={(clickToPlay) => update({ clickToPlay })} options={[{ value: 'single', label: tr('One click') }, { value: 'double', label: tr('Double-click') }]} />
-          </Row>
           <Row label={msg('Counts in the sidebar')} sub={tr('Number of songs next to each entry')} preview={<CountsScene sidebarCounts={s.sidebarCounts} />}>
             <Toggle label={tr('Counts in the sidebar')} checked={s.sidebarCounts} onChange={(sidebarCounts) => update({ sidebarCounts })} />
           </Row>
-          <Row label={msg('Open on')} sub={s.reopen ? tr('Used when “Reopen where you left off” is off (Advanced)') : tr('Screen shown when the app starts')}>
-            <Segmented label={tr('Open on')} value={s.startView} onChange={(startView) => update({ startView })} options={[{ value: 'home', label: tr('Home') }, { value: 'songs', label: tr('Songs') }, { value: 'mixes', label: tr('Mixes') }, { value: 'albums', label: tr('Albums') }, { value: 'artists', label: tr('Artists') }]} />
-          </Row>
           <Row label={msg('Animations')} sub={tr('Transitions and fades')} preview={<MotionScene motion={s.motion} />}>
             <Toggle label={tr('Animations')} checked={s.motion} onChange={(motion) => update({ motion })} />
+          </Row>
+        </div>
+      </Group>
+      <Group title={msg('Mixes')}>
+        <div className="rounded-xl border border-line bg-raised">
+          <Row label={msg('Mix covers')} sub={tr("Four of the mix's song covers like playlists, the first one, or the plain numbered tile")} preview={<MixCoverScene mixCovers={s.mixCovers} />}>
+            <Segmented
+              label={tr('Mix covers')}
+              value={s.mixCovers}
+              onChange={(mixCovers) => update({ mixCovers })}
+              options={[
+                { value: 'grid', label: tr('Grid of 4') },
+                { value: 'single', label: tr('Single') },
+                { value: 'template', label: tr('Template') },
+              ]}
+            />
           </Row>
         </div>
       </Group>
@@ -356,80 +375,84 @@ function SoundGroup() {
   )
 }
 
-function AdvancedSection() {
+function GeneralSection() {
   const { settings: s, update } = useSettings()
-  const playing = usePlayer((p) => !!p.now)
   return (
     <div className="flex max-w-190 flex-col gap-6">
-      <Group title={msg('Fade between songs')}>
+      <Group title={msg('Language')}>
+        <Segmented
+          label={tr('Language')}
+          value={s.language}
+          onChange={(language) => update({ language })}
+          options={[{ value: 'system', label: tr('Windows ({language})', { language: LANGUAGES.find((l) => l.code === resolveLang('system', navigator.languages))!.name }) }, ...LANGUAGES.map((l) => ({ value: l.code, label: l.name }))]}
+        />
+      </Group>
+      <Group title={msg('Starting and closing')}>
         <div className="rounded-xl border border-line bg-raised">
-          <Row label={msg('Advanced fade')} sub={s.fade.advanced ? tr('Your own lengths and shapes, below') : tr('Off: {fade} (Appearance › Player)', { fade: s.crossfade ? tr('{n} s each way, S-curve', { n: s.crossfade }) : tr('no fade') })}>
+          <OpenAtStartup />
+          <Row label={msg('Keep running in the notification area')} sub={s.closeToTray ? tr('Closing the window keeps the music going; Quit from the icon’s menu') : tr('Closing the window quits the app')}>
+            <Toggle label={tr('Keep running in the notification area')} checked={s.closeToTray} onChange={(closeToTray) => update({ closeToTray })} />
+          </Row>
+          <Row label={msg('Reopen where you left off')} sub={tr('Same screen as when the app closed, Now Playing open if it was')}>
+            <Toggle label={tr('Reopen where you left off')} checked={s.reopen} onChange={(reopen) => update({ reopen })} />
+          </Row>
+          <Row label={msg('Resume playback on launch')} sub={tr('The last song picks up where it stopped, with its queue, when the app opens')}>
+            <Toggle label={tr('Resume playback on launch')} checked={s.resume} onChange={(resume) => update({ resume })} />
+          </Row>
+          <Row label={msg('Open on')} sub={s.reopen ? tr('Used when “Reopen where you left off” is off (above)') : tr('Screen shown when the app starts')}>
+            <Segmented label={tr('Open on')} value={s.startView} onChange={(startView) => update({ startView })} options={[{ value: 'home', label: tr('Home') }, { value: 'songs', label: tr('Songs') }, { value: 'mixes', label: tr('Mixes') }, { value: 'albums', label: tr('Albums') }, { value: 'artists', label: tr('Artists') }]} />
+          </Row>
+        </div>
+      </Group>
+      <Group title={msg('Voice and recognition')}>
+        <div className="rounded-xl border border-line bg-raised">
+          <Row label={msg('Voice search')} sub={tr('The mic beside the search bar. Windows’ online speech recognition: your voice goes to Microsoft’s service while the mic listens, nothing is kept')}>
+            <Toggle label={tr('Voice search')} checked={s.voiceSearch} onChange={(voiceSearch) => update({ voiceSearch })} />
+          </Row>
+          <Row label={msg('Music Detector')} sub={tr('Identify a song (Add music, or the mic): 10 seconds from the microphone or from what this PC plays, kept in memory, sent once to AudD with your token, nothing saved')}>
+            <Toggle label={tr('Music Detector')} checked={s.detector} onChange={(detector) => update({ detector })} />
+          </Row>
+        </div>
+      </Group>
+    </div>
+  )
+}
+
+function PlaybackSection() {
+  const { settings: s, update } = useSettings()
+  return (
+    <div className="flex max-w-190 flex-col gap-6">
+      <Group title={msg('Fades')}>
+        <div className="rounded-xl border border-line bg-raised">
+          <Row label={msg('Fade between songs')} preview={!s.fade.advanced && <FadeScene crossfade={s.crossfade} />} sub={s.fade.advanced ? tr('Advanced: {out} s out ({outCurve}), {in} s in ({inCurve})', { out: s.fade.out, outCurve: tr(curveLabels[s.fade.outCurve]), in: s.fade.in, inCurve: tr(curveLabels[s.fade.inCurve]) }) : s.crossfade ? tr('{n} s fade out, then in, when a song ends on its own', { n: s.crossfade }) : tr('No fade')}>
+            {!s.fade.advanced && (
+              <input type="range" aria-label={tr('Fade between songs')} min={0} max={12} step={1} value={s.crossfade} onChange={(e) => update({ crossfade: +e.target.value })} className="bar w-40" style={{ backgroundImage: `linear-gradient(to right, var(--ink) ${(s.crossfade / 12) * 100}%, var(--line) 0)` }} />
+            )}
+          </Row>
+          <Row label={msg('Advanced fade')} sub={s.fade.advanced ? tr('Your own lengths and shapes, below') : tr('Off: {fade}', { fade: s.crossfade ? tr('{n} s each way, S-curve', { n: s.crossfade }) : tr('no fade') })}>
             <Toggle label={tr('Advanced fade')} checked={s.fade.advanced} onChange={(advanced) => update({ fade: { ...s.fade, advanced } })} />
           </Row>
         </div>
         {s.fade.advanced && <FadeEditor />}
       </Group>
+      <Group title={msg('Clicks')}>
+        <div className="rounded-xl border border-line bg-raised">
+          <Row label={msg('Play with')} sub={tr('On a track row')}>
+            <Segmented label={tr('Play with')} value={s.clickToPlay} onChange={(clickToPlay) => update({ clickToPlay })} options={[{ value: 'single', label: tr('One click') }, { value: 'double', label: tr('Double-click') }]} />
+          </Row>
+        </div>
+      </Group>
       <SoundGroup />
-      <Group title={msg('Immersive player')}>
+      <Group title={msg('YouTube videos')}>
         <div className="rounded-xl border border-line bg-raised">
-          <div className="flex items-center gap-5 border-b border-line-soft p-4">
-            <NowPlayingScene s={{ ...s, immersive: true }} big />
-            <p className="max-w-48 text-xs text-ink-2">
-              {s.immersive ? tr('Live preview: move the sliders and watch the background change.') : tr('Immersive player is off (Appearance › Player): this is how it would look.')}
-              {playing ? '' : ` ${tr('Play a song to see it with its own cover.')}`}
-            </p>
-          </div>
-          <Row label={msg('Background blur')} sub={s.backdropBlur ? `${s.backdropBlur} px` : tr('No blur')}>
-            <Slider label={tr('Background blur')} value={s.backdropBlur} max={80} onChange={(backdropBlur) => update({ backdropBlur })} />
+          <Row label={msg('Subtitles on videos')} sub={tr('Off: hidden even when your Google account shows them')}>
+            <Toggle label={tr('Subtitles on videos')} checked={s.subtitles} onChange={(subtitles) => update({ subtitles })} />
           </Row>
-          <Row label={msg('Background dimming')} sub={tr('{n} %: veil in the theme’s color, keeps text readable', { n: s.backdropDim })}>
-            <Slider label={tr('Background dimming')} value={s.backdropDim} max={80} onChange={(backdropDim) => update({ backdropDim })} />
-          </Row>
-          <Row label={msg('Background motion')} sub={tr('The cover drifts slowly behind the player')}>
-            <Toggle label={tr('Background motion')} checked={s.backdropMotion} onChange={(backdropMotion) => update({ backdropMotion })} />
+          <Row label={msg('YouTube controls on the video')} sub={tr("YouTube's own title, buttons and hover menu on the video. From the next track.")}>
+            <Toggle label={tr('YouTube controls on the video')} checked={s.youtubeControls} onChange={(youtubeControls) => update({ youtubeControls })} />
           </Row>
         </div>
       </Group>
-      <Group title={msg('Mixes')}>
-        <div className="rounded-xl border border-line bg-raised">
-          <Row label={msg('Mix covers')} sub={tr("Four of the mix's song covers like playlists, the first one, or the plain numbered tile")} preview={<MixCoverScene mixCovers={s.mixCovers} />}>
-            <Segmented
-              label={tr('Mix covers')}
-              value={s.mixCovers}
-              onChange={(mixCovers) => update({ mixCovers })}
-              options={[
-                { value: 'grid', label: tr('Grid of 4') },
-                { value: 'single', label: tr('Single') },
-                { value: 'template', label: tr('Template') },
-              ]}
-            />
-          </Row>
-        </div>
-      </Group>
-      <div className="rounded-xl border border-line bg-raised">
-        <OpenAtStartup />
-        <Row label={msg('Keep running in the notification area')} sub={s.closeToTray ? tr('Closing the window keeps the music going; Quit from the icon’s menu') : tr('Closing the window quits the app')}>
-          <Toggle label={tr('Keep running in the notification area')} checked={s.closeToTray} onChange={(closeToTray) => update({ closeToTray })} />
-        </Row>
-        <Row label={msg('Reopen where you left off')} sub={tr('Same screen as when the app closed, Now Playing open if it was')}>
-          <Toggle label={tr('Reopen where you left off')} checked={s.reopen} onChange={(reopen) => update({ reopen })} />
-        </Row>
-        <Row label={msg('Resume playback on launch')} sub={tr('The last song picks up where it stopped, with its queue, when the app opens')}>
-          <Toggle label={tr('Resume playback on launch')} checked={s.resume} onChange={(resume) => update({ resume })} />
-        </Row>
-        <Row label={msg('Voice search')} sub={tr('The mic beside the search bar. Windows’ online speech recognition: your voice goes to Microsoft’s service while the mic listens, nothing is kept')}>
-          <Toggle label={tr('Voice search')} checked={s.voiceSearch} onChange={(voiceSearch) => update({ voiceSearch })} />
-        </Row>
-        <Row label={msg('Music Detector')} sub={tr('Identify a song (Add music, or the mic): 10 seconds from the microphone, kept in memory, sent once to AudD with your token, nothing saved')}>
-          <Toggle label={tr('Music Detector')} checked={s.detector} onChange={(detector) => update({ detector })} />
-        </Row>
-        <Row label={msg('Subtitles on videos')} sub={tr('Off: hidden even when your Google account shows them')}>
-          <Toggle label={tr('Subtitles on videos')} checked={s.subtitles} onChange={(subtitles) => update({ subtitles })} />
-        </Row>
-        <Row label={msg('YouTube controls on the video')} sub={tr("YouTube's own title, buttons and hover menu on the video. From the next track.")}>
-          <Toggle label={tr('YouTube controls on the video')} checked={s.youtubeControls} onChange={(youtubeControls) => update({ youtubeControls })} />
-        </Row>
-      </div>
     </div>
   )
 }
@@ -480,8 +503,10 @@ export function SettingsView({ section }: { section: SettingsSection }) {
   return (
     <>
       <PageHeader kicker={tr('Settings')} title={tr(sections.find((s) => s.id === section)!.label)} />
-      {/* Narrow (small window, or the connect wizard beside it): sections in rows above the page, not a squeezed column. */}
-      <div className="@container flex min-h-0 flex-1 flex-col gap-4 @2xl:flex-row @2xl:gap-9">
+      {/* Narrow (small window, or the connect wizard beside it): sections in rows above the page, not a squeezed column.
+          The container is a wrapper: an element can't query its own width. */}
+      <div className="@container flex min-h-0 flex-1 flex-col">
+      <div className="flex min-h-0 flex-1 flex-col gap-4 @2xl:flex-row @2xl:gap-9">
         <nav className="flex shrink-0 flex-wrap gap-px @2xl:w-52 @2xl:flex-col @2xl:flex-nowrap">
           <SettingsSearch onPick={(e) => go({ name: 'settings', section: e.section, focus: e.label })} />
           {sections.map((s) => (
@@ -492,14 +517,16 @@ export function SettingsView({ section }: { section: SettingsSection }) {
           ))}
         </nav>
         <div ref={content} className="-mx-2 min-h-0 flex-1 overflow-y-auto px-2 pb-8">
+          {section === 'general' && <GeneralSection />}
+          {section === 'playback' && <PlaybackSection />}
           {section === 'appearance' && <Appearance />}
           {section === 'sources' && <SourcesView />}
           {section === 'sync' && <SyncSection />}
           {section === 'shield' && <ShieldSection />}
           {section === 'shortcuts' && <ShortcutsSection />}
-          {section === 'advanced' && <AdvancedSection />}
           {section === 'about' && <AboutSection />}
         </div>
+      </div>
       </div>
     </>
   )

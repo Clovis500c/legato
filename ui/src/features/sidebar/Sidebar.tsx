@@ -80,7 +80,7 @@ export function Sidebar() {
       <SidebarPlayer />
       <div className="flex shrink-0 flex-col gap-px border-t border-line-soft px-3 pt-2 pb-3.5">
         <NavItem on={is('addons')} icon={<PuzzlePiece size={16} />} label={tr('Add-ons')} onClick={() => go({ name: 'addons' })} />
-        <NavItem on={is('settings')} icon={<Gear size={16} />} label={tr('Settings')} onClick={() => go({ name: 'settings', section: 'appearance' })} />
+        <NavItem on={is('settings')} icon={<Gear size={16} />} label={tr('Settings')} onClick={() => go({ name: 'settings', section: 'general' })} />
       </div>
     </aside>
   )
