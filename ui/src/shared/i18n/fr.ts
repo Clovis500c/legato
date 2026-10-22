@@ -476,7 +476,6 @@ const fr: Record<string, string> = {
   'Add a music folder': 'Ajoutez un dossier de musique',
   ': your files play first.': ' : vos fichiers sont lus en priorité.',
   // Music Detector
-  'Add your AudD token first.': 'Ajoutez d’abord votre jeton AudD.',
   'Another app is using the microphone.': 'Une autre application utilise le microphone.',
   'AudD refused your token. Check it on dashboard.audd.io.': 'AudD a refusé votre jeton. Vérifiez-le sur dashboard.audd.io.',
   'Your AudD token has no requests left: see your plan on dashboard.audd.io.': 'Votre jeton AudD n’a plus de requêtes : voyez votre forfait sur dashboard.audd.io.',
@@ -1195,6 +1194,9 @@ const fr: Record<string, string> = {
   'Remove {n} song from playlist': 'Retirer {n} titre de la playlist',
   'Remove {n} songs from playlist': 'Retirer {n} titres de la playlist',
   'Sort by {column}': 'Trier par {column}',
+  // Music Detector without a token
+  'The free recognitions are used up for now. Add your own AudD token (free to try) to keep going.': 'Les reconnaissances gratuites sont épuisées pour le moment. Ajoutez votre propre jeton AudD (essai gratuit) pour continuer.',
+  'A few free recognitions a day · Add your own AudD token': 'Quelques reconnaissances gratuites par jour · Ajouter votre jeton AudD',
 }
 
 export default fr

@@ -245,7 +245,7 @@ export type VoiceMiss = 'speechOff' | 'micBlocked' | 'noMic' | 'silence' | 'uncl
 export type Heard = { kind: 'text'; text: string } | { kind: 'miss'; miss: VoiceMiss }
 
 /** src-tauri detect_song: Music Detector outcome. */
-export type DetectMiss = 'noToken' | 'noMic' | 'micBlocked' | 'micBusy' | 'noOutput' | 'silent' | 'unclear' | 'canceled' | 'badToken' | 'limit' | 'offline' | 'failed'
+export type DetectMiss = 'noMic' | 'micBlocked' | 'micBusy' | 'noOutput' | 'silent' | 'unclear' | 'canceled' | 'badToken' | 'limit' | 'freeLimit' | 'offline' | 'failed'
 export type Detection = { kind: 'found'; track: Track } | { kind: 'unknown' } | { kind: 'miss'; miss: DetectMiss; detail: string | null }
 
 /** crates/core lyrics.rs. Lines synced (ms); empty = plain only. */

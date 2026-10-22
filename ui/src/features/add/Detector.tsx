@@ -15,7 +15,6 @@ const DASHBOARD = 'https://dashboard.audd.io/'
 const SECONDS = 10
 
 const MISSES: Record<DetectMiss, string> = {
-  noToken: msg('Add your AudD token first.'),
   noMic: msg('No microphone found.'),
   micBlocked: msg('Windows keeps desktop apps away from the microphone. Allow them in Windows settings › Privacy & security › Microphone.'),
   micBusy: msg('Another app is using the microphone.'),
@@ -25,6 +24,7 @@ const MISSES: Record<DetectMiss, string> = {
   canceled: '',
   badToken: msg('AudD refused your token. Check it on dashboard.audd.io.'),
   limit: msg('Your AudD token has no requests left: see your plan on dashboard.audd.io.'),
+  freeLimit: msg('The free recognitions are used up for now. Add your own AudD token (free to try) to keep going.'),
   offline: msg('AudD can’t be reached. Check your internet connection.'),
   failed: msg('Recognition didn’t work this time.'),
 }
@@ -36,7 +36,7 @@ type Phase = { name: 'idle' } | { name: 'consent'; input: Input } | { name: 'lis
 const allowed = (input: Input) => (input === 'mic' ? useSettings.getState().settings.detector : useSettings.getState().settings.detectorPc)
 
 /** AudD token: pasted once, kept in Windows' credential manager, never shown again. */
-function TokenForm({ onSaved, onCancel }: { onSaved: () => void; onCancel?: () => void }) {
+function TokenForm({ onSaved, onCancel, has }: { onSaved: () => void; onCancel?: () => void; has: boolean }) {
   const [token, setToken] = useState('')
   const [error, setError] = useState('')
   return (
@@ -75,7 +75,7 @@ function TokenForm({ onSaved, onCancel }: { onSaved: () => void; onCancel?: () =
       {error && <p className="text-xs text-danger">{error}</p>}
       {onCancel && (
         <button type="button" onClick={onCancel} className="self-start text-xs text-ink-2 hover:text-ink">
-          {tr('Keep the current token')}
+          {has ? tr('Keep the current token') : tr('Cancel')}
         </button>
       )}
     </form>
@@ -119,8 +119,7 @@ export function Detector({ onFound }: { onFound: (t: Track) => void }) {
       } else if (r.kind === 'unknown') setPhase({ name: 'note', text: from === 'mic' ? tr('No match. Try again closer to the music.') : tr('No match. Try again on another part of the song.') })
       else if (r.miss === 'canceled') setPhase({ name: 'idle' })
       else {
-        if (r.miss === 'noToken') setToken(false)
-        if (r.miss === 'badToken') setEditing(true)
+        if (r.miss === 'badToken' || r.miss === 'freeLimit') setEditing(true)
         const text = r.miss === 'silent' && from === 'pc' ? tr('Nothing is playing on this PC (Music App pauses its own music while it listens).') : tr(MISSES[r.miss])
         setPhase({ name: 'note', text: text + (r.detail ? ` (${r.detail})` : ''), mic: r.miss === 'micBlocked' })
       }
@@ -139,7 +138,7 @@ export function Detector({ onFound }: { onFound: (t: Track) => void }) {
   useEffect(() => {
     if (asked === seen.current || token === null) return
     seen.current = asked
-    if (token) void listen()
+    void listen()
   }, [asked, token]) // once per ask
 
   const listening = phase.name === 'listening' ? phase : null
@@ -148,14 +147,15 @@ export function Detector({ onFound }: { onFound: (t: Track) => void }) {
       <p className="flex items-center gap-2 text-xs font-semibold">
         <Waveform size={16} className="text-ink-2" /> {tr('Identify a song')}
       </p>
-      {token === false || editing ? (
+      {editing ? (
         <TokenForm
           onSaved={() => {
             setToken(true)
             setEditing(false)
             setPhase({ name: 'idle' })
           }}
-          onCancel={token ? () => setEditing(false) : undefined}
+          onCancel={() => setEditing(false)}
+          has={!!token}
         />
       ) : listening ? (
         <div className="flex flex-col gap-2.5">
@@ -201,7 +201,7 @@ export function Detector({ onFound }: { onFound: (t: Track) => void }) {
             {input === 'mic' ? <Microphone size={15} weight="fill" /> : <Desktop size={15} weight="fill" />} {tr('Listen')}
           </Button>
           <button onClick={() => setEditing(true)} className="self-start text-[0.6875rem] text-ink-3 hover:text-ink">
-            {tr('AudD token · Change')}
+            {token ? tr('AudD token · Change') : tr('A few free recognitions a day · Add your own AudD token')}
           </button>
         </>
       )}

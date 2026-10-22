@@ -1,4 +1,5 @@
-//! Music Detector: AudD (audd.io) recognizes a song from a short recording, with the user's own API token. Checked
+//! Music Detector: AudD (audd.io) recognizes a song from a short recording: a few a day without a token (#901 once
+//! they're used up), the user's own API token for more. Checked
 //! 2026-10-21: POST multipart to https://api.audd.io/ (`api_token`, `file`, `return`), 10 MB max; errors #900 (bad
 //! token), #901 (no token / limit reached) and #300 (no fingerprint: too quiet, noisy or too short). Shazam has no public API; ACRCloud needs signed requests and 3 secrets.
 
@@ -119,9 +120,12 @@ impl AudD {
     }
 
     /// The song in `wav`, None if AudD knows it not. `market`: storefront for the Apple Music / Spotify ids.
-    pub async fn recognize(&self, token: &str, wav: Vec<u8>, market: &str) -> Result<Option<Track>> {
-        let form = Form::new()
-            .text("api_token", token.to_string())
+    pub async fn recognize(&self, token: Option<&str>, wav: Vec<u8>, market: &str) -> Result<Option<Track>> {
+        let form = match token {
+            Some(t) => Form::new().text("api_token", t.to_string()),
+            None => Form::new(),
+        };
+        let form = form
             .text("return", "apple_music,spotify")
             .text("market", market.to_lowercase())
             .part("file", Part::bytes(wav).file_name("clip.wav").mime_str("audio/wav")?);
@@ -188,7 +192,7 @@ mod tests {
             .with_body(FOUND)
             .create_async()
             .await;
-        let t = AudD::with_urls(&format!("{}/", s.url())).recognize("TOKEN", b"RIFF....".to_vec(), "FR").await.unwrap().unwrap();
+        let t = AudD::with_urls(&format!("{}/", s.url())).recognize(Some("TOKEN"), b"RIFF....".to_vec(), "FR").await.unwrap().unwrap();
         m.assert_async().await;
         assert_eq!((t.title.as_str(), t.artist.as_str()), ("Warriors", "Imagine Dragons"));
         assert_eq!(t.album.as_deref(), Some("Smoke + Mirrors (Deluxe)"));

@@ -143,7 +143,8 @@ needs it; 2 s fade by default.
       to playlists and within custom playlists, reorderable Up next.
 - [x] Library: artists from YouTube channels cleaned ("- Topic", several artists), chips count what the page shows,
       sort by clicking column headers.
-- [ ] Music Detector without a personal token: check for any keyless option, else a clearer way in.
+- [x] Music Detector without a personal token: AudD takes a few requests a day without one (checked live with a
+      test tone 2026-10-22); a token of your own only once they are used up (#901).
 - [ ] Old points: Home sections show / hide / reorder; local folders watched; 50,000-track performance pass; AA
       contrast; playlists over 100 tracks; signing key backup (user's action).
 - [x] Live Editor (user, mid-work): changes not saved as a version survive the app closing (back as they were).

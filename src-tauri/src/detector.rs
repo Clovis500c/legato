@@ -49,7 +49,6 @@ pub enum Detection {
 #[derive(Debug, Clone, Copy, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub enum DetectMiss {
-    NoToken,
     NoMic,
     MicBlocked,
     MicBusy,
@@ -62,6 +61,8 @@ pub enum DetectMiss {
     Canceled,
     BadToken,
     Limit,
+    /// No token, and AudD's free recognitions are used up (#901): a token of one's own now.
+    FreeLimit,
     Offline,
     Failed,
 }
@@ -74,7 +75,8 @@ fn missed(miss: DetectMiss) -> Detection {
 /// interface pauses the app's own playback first), AudD names the song. Progress: "detect" events [seconds, level 0..1].
 #[tauri::command]
 pub async fn detect_song(app: tauri::AppHandle, state: State<'_, AppState>, market: String, input: mic::Input) -> CmdResult<Detection> {
-    let Some(token) = state.store.load::<String>(AUDD_TOKEN) else { return Ok(missed(DetectMiss::NoToken)) };
+    // No token: AudD's few free recognitions (user's request 2026-10-22: no account needed to try).
+    let token = state.store.load::<String>(AUDD_TOKEN);
     // Trust boundary: a two-letter country.
     let market = if market.len() == 2 && market.chars().all(|c| c.is_ascii_alphabetic()) { market } else { "US".into() };
     DETECT_STOP.store(false, Ordering::Relaxed);
@@ -105,11 +107,12 @@ pub async fn detect_song(app: tauri::AppHandle, state: State<'_, AppState>, mark
     }
     let wav = clip.wav();
     drop(clip);
-    Ok(match AudD::default().recognize(&token, wav, &market).await {
+    Ok(match AudD::default().recognize(token.as_deref(), wav, &market).await {
         Ok(Some(track)) => Detection::Found { track },
         Ok(None) => Detection::Unknown,
         Err(e) => match e.downcast_ref::<Refused>() {
             Some(Refused::BadToken) => missed(DetectMiss::BadToken),
+            Some(Refused::Limit) if token.is_none() => missed(DetectMiss::FreeLimit),
             Some(Refused::Limit) => missed(DetectMiss::Limit),
             Some(Refused::Unclear) => missed(DetectMiss::Unclear),
             Some(Refused::Other(m)) => Detection::Miss { miss: DetectMiss::Failed, detail: Some(m.clone()) },
