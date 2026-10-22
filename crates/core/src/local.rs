@@ -8,6 +8,11 @@ use std::path::{Path, PathBuf};
 
 const AUDIO: [&str; 6] = ["mp3", "flac", "wav", "ogg", "m4a", "aac"];
 
+/// An audio file the library takes, by its extension.
+pub fn is_audio(path: &Path) -> bool {
+    path.extension().and_then(|x| x.to_str()).is_some_and(|x| AUDIO.contains(&x.to_ascii_lowercase().as_str()))
+}
+
 /// All audio files under `dirs`, recursively. Symlinked dirs skipped (no loops).
 pub fn scan(dirs: &[PathBuf]) -> Vec<Track> {
     let mut out = Vec::new();
@@ -24,7 +29,7 @@ fn walk(dir: &Path, out: &mut Vec<Track>) {
         let path = e.path();
         if kind.is_dir() {
             walk(&path, out);
-        } else if kind.is_file() && path.extension().and_then(|x| x.to_str()).is_some_and(|x| AUDIO.contains(&x.to_ascii_lowercase().as_str())) {
+        } else if kind.is_file() && is_audio(&path) {
             out.push(read(&path));
         }
     }
@@ -59,6 +64,14 @@ pub fn picture(path: &Path) -> Option<(Vec<u8>, String)> {
 #[cfg(test)]
 pub(crate) mod tests {
     use super::*;
+
+    #[test]
+    fn audio_by_extension() {
+        assert!(is_audio(Path::new("C:/Music/a.MP3")));
+        assert!(is_audio(Path::new("b.flac")));
+        assert!(!is_audio(Path::new("cover.jpg")));
+        assert!(!is_audio(Path::new("folder")));
+    }
 
     /// 1 s silent 8 kHz mono WAV, no tags.
     pub fn wav(path: &Path) {

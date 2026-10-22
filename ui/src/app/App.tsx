@@ -152,6 +152,11 @@ export function App() {
   useEffect(() => startDiscord(), [])
   useEffect(() => startUpdates(), [])
   useEffect(() => startSyncMode(), [])
+  // Watched local folders changed: the library shows it.
+  useEffect(() => {
+    const off = api.onLocalChanged(() => void useStore.getState().refresh())
+    return () => void off.then((f) => f())
+  }, [])
   useEffect(() => startPlugins(), [])
 
   // Ctrl+V outside text fields: share code → import, Spotify playlist / album → import, YouTube link → library.

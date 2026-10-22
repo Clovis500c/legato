@@ -145,7 +145,7 @@ needs it; 2 s fade by default.
       sort by clicking column headers.
 - [x] Music Detector without a personal token: AudD takes a few requests a day without one (checked live with a
       test tone 2026-10-22); a token of your own only once they are used up (#901).
-- [ ] Old points: Home sections show / hide / reorder; local folders watched; 50,000-track performance pass; AA
+- [ ] Old points: [x] Home sections show / hide / reorder; [x] local folders watched; 50,000-track performance pass; AA
       contrast; playlists over 100 tracks; signing key backup (user's action).
 - [x] Live Editor (user, mid-work): changes not saved as a version survive the app closing (back as they were).
 - [x] Lyrics (user, mid-work): ♪ in the intro, instrumental parts and the outro; no big empty space above and below;
