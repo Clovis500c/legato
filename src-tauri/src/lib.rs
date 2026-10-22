@@ -1525,7 +1525,8 @@ pub fn run() {
                 Ok(lib) => lib,
                 // Newer app's library: say so and stop, never write into it.
                 Err(e) if e.is::<music_core::library::NewerLibrary>() => stop_with(&e.to_string()),
-                Err(e) => return Err(e.into()),
+                // Damaged file (the copy before a migration fails too): say where it is rather than vanish.
+                Err(e) => stop_with(&format!("Music App can't open its library ({e:#}).\n\nThe file is {}; copies made before updates and each day sit next to it (library-before-v*.db, library-daily.db).", dir.join("library.db").display())),
             };
             // Daily copy of the library, off the startup path (best effort: a full disk mustn't stop the app).
             let db_path = dir.join("library.db");
