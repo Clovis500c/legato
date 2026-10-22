@@ -1,4 +1,4 @@
-import type { LibraryTrack, Source } from '../../shared/api'
+import type { LibraryTrack, Source, Track } from '../../shared/api'
 import { fold } from '../../shared/format'
 
 export type Filter = 'all' | Source | 'unlinked'
@@ -33,7 +33,7 @@ const rank = (id: number, seed: number) => {
 
 /**
  * Sorted copy. Library arrives sorted by artist. positional = a playlist: "date added" follows its order (grows at the
- * bottom, or newestFirst: Liked Music), library = added rank. Unplayed tracks go last in the play sorts.
+ * bottom, or newestFirst: new songs on top), library = added rank. Unplayed tracks go last in the play sorts.
  */
 export function sortTracks(
   tracks: LibraryTrack[],
@@ -67,7 +67,14 @@ export function sortTracks(
 }
 
 /** First credited artist: "Daft Punk, Pharrell Williams" → "Daft Punk". "&" kept: duo names (Polo & Pan). */
-export const primaryArtist = (artist: string) => artist.split(/\s*(?:,|\bfeat\.?|\bft\.?)\s+/i)[0].trim() || artist
+/**
+ * First credited artist, as Albums and Artists group them: "A, B", "A feat. B", "A ft. B", "A x B" → A. YouTube's
+ * channel names lose what isn't the artist's name: "A - Topic" (auto-generated channels), "AVEVO".
+ */
+export const primaryArtist = (artist: string) => {
+  const first = artist.split(/\s*(?:,|\bfeat\.?|\bft\.?|\bfeaturing)\s+|\s+x\s+/i)[0].trim() || artist
+  return first.replace(/\s+-\s+Topic$/i, '').replace(/(?<=\S)VEVO$/, '').trim() || first
+}
 
 export interface AlbumGroup {
   album: string
@@ -180,4 +187,13 @@ export function libraryStats(tracks: LibraryTrack[]) {
     unlinked: tracks.length - linked,
     linkedPct: tracks.length ? Math.round((linked / tracks.length) * 100) : 0,
   }
+}
+
+/**
+ * Imported videos that clearly aren't music (talks, reactions, games: YouTube imports bring them along) set aside until
+ * asked; a doubt stays. Nothing is deleted.
+ */
+export function musicOnly<T extends Pick<Track, 'musicness'>>(tracks: T[], showAll: boolean): { kept: T[]; hidden: number } {
+  const hidden = tracks.filter((t) => t.musicness === 'notMusic').length
+  return { kept: showAll || !hidden ? tracks : tracks.filter((t) => t.musicness !== 'notMusic'), hidden }
 }

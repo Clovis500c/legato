@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import { remoteArt } from '../../shared/art'
+import { type Box, contentBox, FULL } from '../../shared/artbox'
+import { sourceRect } from '../../shared/artfit'
 
 /** Mean absolute difference between two RGBA frames of the same size, 0 (same) to 1. */
 export function frameDiff(a: Uint8ClampedArray, b: Uint8ClampedArray): number {
@@ -11,10 +13,12 @@ export function frameDiff(a: Uint8ClampedArray, b: Uint8ClampedArray): number {
 /** Frames from across the video nearly the same (JPEG noise only): a still image, like most music uploads. */
 export const isStill = (frames: Uint8ClampedArray[], threshold = 0.035) => frames.every((f, i) => i === 0 || frameDiff(frames[0], f) < threshold)
 
-const KEY = 'still-videos'
+// v2: decided on the picture only (bars excluded), older answers asked again.
+const KEY = 'still-videos-2'
 let known: Record<string, boolean> = {}
 try {
   known = JSON.parse(localStorage.getItem(KEY) ?? '{}')
+  localStorage.removeItem('still-videos')
 } catch {
   // No cache: checked again.
 }
@@ -33,33 +37,38 @@ function remember(id: string, still: boolean) {
 const W = 32
 const H = 24
 
-function pixels(src: string): Promise<Uint8ClampedArray> {
+function load(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const img = new Image()
     img.crossOrigin = 'anonymous'
-    img.onload = () => {
-      const c = document.createElement('canvas')
-      c.width = W
-      c.height = H
-      const ctx = c.getContext('2d', { willReadFrequently: true })
-      if (!ctx) return reject(new Error('No 2D canvas'))
-      ctx.drawImage(img, 0, 0, W, H)
-      resolve(ctx.getImageData(0, 0, W, H).data)
-    }
+    img.onload = () => resolve(img)
     img.onerror = () => reject(new Error('No frame'))
     img.src = src
   })
 }
 
+function pixels(img: HTMLImageElement, box: Box, w: number, h: number): Uint8ClampedArray {
+  const c = document.createElement('canvas')
+  c.width = w
+  c.height = h
+  const ctx = c.getContext('2d', { willReadFrequently: true })
+  if (!ctx) throw new Error('No 2D canvas')
+  ctx.drawImage(img, ...sourceRect(img, box), 0, 0, w, h)
+  return ctx.getImageData(0, 0, w, h).data
+}
+
 /**
  * Still image or real video? YouTube keeps 3 small frames taken at 25 %, 50 % and 75 % of every video (1.jpg, 2.jpg,
- * 3.jpg): compared, never the player itself. Cached per video. null = couldn't tell.
+ * 3.jpg): compared, never the player itself. Only the picture counts: static black bars made calm videos look still.
+ * Cached per video. null = couldn't tell.
  */
 export async function stillVideo(id: string): Promise<boolean | null> {
   if (id in known) return known[id]
   try {
-    const frames = await Promise.all([1, 2, 3].map((n) => pixels(remoteArt(`https://i.ytimg.com/vi/${id}/${n}.jpg`))))
-    const still = isStill(frames)
+    const imgs = await Promise.all([1, 2, 3].map((n) => load(remoteArt(`https://i.ytimg.com/vi/${id}/${n}.jpg`))))
+    const first = imgs[0]
+    const box = contentBox(pixels(first, FULL, first.naturalWidth, first.naturalHeight), first.naturalWidth, first.naturalHeight)
+    const still = isStill(imgs.map((img) => pixels(img, box, W, H)))
     remember(id, still)
     return still
   } catch {

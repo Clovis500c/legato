@@ -1,7 +1,7 @@
-import { ArrowRight, Check, ClipboardText, FolderPlus, MagnifyingGlass, Plus, QrCode } from '@phosphor-icons/react'
-import { useMemo, useState } from 'react'
+import { ArrowRight, Check, ClipboardText, FolderPlus, MagnifyingGlass, Play, Plus, QrCode } from '@phosphor-icons/react'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useStore } from '../../app/store'
-import { api, type SearchHit, type SearchResults, type Source } from '../../shared/api'
+import { api, type SearchHit, type SearchResults, type Source, type Track } from '../../shared/api'
 import { formatDuration, region, spotifyList } from '../../shared/format'
 import { Led, LedChip, RoundButton, Toggle } from '../../shared/ui/controls'
 import { trackArt } from '../../shared/art'
@@ -11,22 +11,28 @@ import { hitMenu, trackMenu } from '../menus'
 import { PageHeader } from '../../shared/ui/PageHeader'
 import { SourceIcon } from '../../shared/ui/SourceIcon'
 import { filterTracks } from '../library/filter'
-import { usePlayer } from '../player/store'
+import { remoteTrack, usePlayer } from '../player/store'
 import { kindLabel, unofficial, videoKind } from './kind'
+import { Detector } from './Detector'
+import { AddToPlaylist } from '../library/AddToPlaylist'
+import { tr, trn } from '../../shared/i18n/i18n'
 
 const order: Source[] = ['youtube', 'apple', 'spotify', 'local']
 
 function Badge({ children }: { children: string }) {
-  return <span className="rounded-[3px] border border-line px-1.5 font-mono text-[9px] tracking-[0.08em] text-ink-3">{children}</span>
+  return <span className="rounded-[3px] border border-line px-1.5 font-mono text-[0.625rem] tracking-[0.08em] text-ink-3">{children}</span>
 }
 
-function HitRow({ hit, onAdded }: { hit: SearchHit; onAdded: (id: number) => void }) {
+/** The catalog track of a hit (no UI fields). */
+const trackOf = (h: SearchHit): Track => ({ title: h.title, artist: h.artist, album: h.album, durationMs: h.durationMs, isrc: h.isrc, ids: h.ids, art: h.art })
+
+function HitRow({ hit, onAdded, onPlay, extra }: { hit: SearchHit; onAdded: (id: number) => void; onPlay: () => void; extra?: ReactNode }) {
   const [busy, setBusy] = useState(false)
   const kind = hit.ids.youtube && !hit.ids.apple ? videoKind(hit.title) : null
   const add = async () => {
     setBusy(true)
     try {
-      onAdded(await api.addTrack({ title: hit.title, artist: hit.artist, album: hit.album, durationMs: hit.durationMs, isrc: hit.isrc, ids: hit.ids, art: hit.art }))
+      onAdded(await api.addTrack(trackOf(hit)))
       await useStore.getState().refresh()
     } catch (e) {
       useStore.setState({ error: String(e) })
@@ -35,11 +41,16 @@ function HitRow({ hit, onAdded }: { hit: SearchHit; onAdded: (id: number) => voi
     }
   }
   return (
-    <li onContextMenu={onMenu(() => hitMenu(hit, add, busy))} className="flex items-center gap-3.5 border-b border-line-soft px-2 py-2.5">
+    // Double-click plays it, in the library or not.
+    <li onContextMenu={onMenu(() => hitMenu(hit, add, busy, onPlay))} onDoubleClick={onPlay} className="group flex items-center gap-3.5 border-b border-line-soft px-2 py-2.5">
+      <RoundButton label={tr('Play {title}', { title: hit.title })} kind="plain" size="sm" onClick={onPlay}>
+        <Play size={14} weight="fill" />
+      </RoundButton>
       <Cover title={hit.album ?? hit.title} art={trackArt({ ...hit, id: hit.libraryId ?? undefined })} size={42} />
       <div className="min-w-0 flex-1">
-        <p className="flex items-center gap-2 truncate text-[13px] font-semibold">
-          {hit.title} {kind && <Badge>{kindLabel[kind]}</Badge>}
+        <p className="flex items-center gap-2 truncate text-[0.8125rem] font-semibold">
+          {hit.title} {kind && <Badge>{tr(kindLabel[kind])}</Badge>}
+          {hit.musicness === 'notMusic' && <Badge>{tr('NOT MUSIC?')}</Badge>}
         </p>
         <p className="truncate text-xs text-ink-2">{[hit.artist, hit.album].filter(Boolean).join(' · ')}</p>
       </div>
@@ -48,13 +59,14 @@ function HitRow({ hit, onAdded }: { hit: SearchHit; onAdded: (id: number) => voi
           <SourceIcon key={s} source={s} size={13} />
         ))}
       </span>
-      <span className="w-11 text-right font-mono text-[11px] text-ink-3">{formatDuration(hit.durationMs)}</span>
+      <span className="w-11 text-right font-mono text-[0.6875rem] text-ink-3">{formatDuration(hit.durationMs)}</span>
+      {extra}
       {hit.libraryId ? (
-        <RoundButton label="Already in your library" kind="ink" size="sm" disabled>
+        <RoundButton label={tr('Already in your library')} kind="ink" size="sm" disabled>
           <Check size={14} />
         </RoundButton>
       ) : (
-        <RoundButton label={`Add ${hit.title}`} kind="soft" size="sm" disabled={busy} onClick={add}>
+        <RoundButton label={tr('Add {title}', { title: hit.title })} kind="soft" size="sm" disabled={busy} onClick={add}>
           <Plus size={14} />
         </RoundButton>
       )}
@@ -86,12 +98,12 @@ function ImportCode() {
       className="flex flex-col gap-2 rounded-xl border border-line px-4 py-3"
     >
       <p className="flex items-center gap-2 text-xs font-semibold">
-        <QrCode size={16} className="text-ink-2" /> Import a shared playlist
+        <QrCode size={16} className="text-ink-2" /> {tr('Import a shared playlist')}
       </p>
-      <p className="text-xs text-ink-2">{busy ? 'Looking for the sender on this network…' : 'Paste a musicapp:// link, type a 6-digit code from a nearby Music App, or drop a QR screenshot on the window.'}</p>
+      <p className="text-xs text-ink-2">{busy ? tr('Looking for the sender on this network…') : tr('Paste a musicapp:// link, type a 6-digit code from a nearby Music App, or drop a QR screenshot on the window.')}</p>
       <span className="flex gap-2">
-        <input value={text} onChange={(e) => setText(e.target.value)} placeholder="Link or 6-digit code" aria-label="Share link or code" className="h-8 min-w-0 flex-1 rounded-md border border-line bg-raised px-2.5 font-mono text-[11px] placeholder:text-ink-3" />
-        <RoundButton label="Import" kind="ink" size="sm" type="submit" disabled={!text.trim() || busy}>
+        <input value={text} onChange={(e) => setText(e.target.value)} placeholder={tr('Link or 6-digit code')} aria-label={tr('Share link or code')} className="h-8 min-w-0 flex-1 rounded-md border border-line bg-raised px-2.5 font-mono text-[0.6875rem] placeholder:text-ink-3" />
+        <RoundButton label={tr('Import')} kind="ink" size="sm" type="submit" disabled={!text.trim() || busy}>
           <ArrowRight size={14} />
         </RoundButton>
       </span>
@@ -107,56 +119,112 @@ export function AddView() {
   const [busy, setBusy] = useState(false)
   const [only, setOnly] = useState<'all' | 'youtube' | 'apple'>('all')
   const [hideCovers, setHideCovers] = useState(true)
+  // Videos that clearly aren't music (talks, reactions, games): hidden until asked, per search.
+  const [showOthers, setShowOthers] = useState(false)
   const ytOn = status.youtube.connected
   const local = useMemo(() => (q.trim() ? filterTracks(tracks, q, 'all').slice(0, 4) : []), [tracks, q])
-  const hits = (res?.hits ?? []).filter((h) => (only === 'all' || h.ids[only]) && !(hideCovers && h.ids.youtube && !h.ids.apple && unofficial(videoKind(h.title))))
+  const matching = (res?.hits ?? []).filter((h) => (only === 'all' || h.ids[only]) && !(hideCovers && h.ids.youtube && !h.ids.apple && unofficial(videoKind(h.title))))
+  const others = matching.filter((h) => h.musicness === 'notMusic').length
+  const hits = showOthers ? matching : matching.filter((h) => h.musicness !== 'notMusic')
+  // Results play as a queue, added or not (session-only items, like Home's recommendations). A hit with no YouTube
+  // version gets one first (one search, nothing written) so it plays in full.
+  const playHit = async (h: SearchHit) => {
+    const queue = hits.map((x) => tracks.find((t) => t.id === x.libraryId) ?? remoteTrack(trackOf(x)))
+    const i = hits.indexOf(h)
+    if (!h.libraryId && !h.ids.youtube) queue[i] = remoteTrack(await api.resolveTrack(trackOf(h)).catch(() => trackOf(h)))
+    play(queue, i)
+  }
   const markAdded = (i: number, libraryId: number) => setRes((r) => r && { ...r, hits: r.hits.map((h, j) => (j === i ? { ...h, libraryId } : h)) })
 
-  const search = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!q.trim()) return
-    if (spotifyList(q)) return void useStore.getState().importSpotify(q.trim())
+  // Music Detector's song: the matching catalog hit once the search for it is back (same ISRC or Apple id), else itself.
+  const [found, setFound] = useState<SearchHit | null>(null)
+  const identified = useMemo(() => {
+    if (!found) return null
+    const same = (h: SearchHit) => (found.isrc && h.isrc === found.isrc) || (found.ids.apple && h.ids.apple === found.ids.apple)
+    const hit = res?.hits.find(same)
+    return hit ? { ...hit, libraryId: hit.libraryId ?? found.libraryId } : found
+  }, [found, res])
+  const onFound = (t: Track) => {
+    const inLibrary = tracks.find((x) => (t.isrc && x.isrc === t.isrc) || (t.ids.apple && x.ids.apple === t.ids.apple))
+    setFound({ ...t, libraryId: inLibrary?.id ?? null, musicness: 'music' })
+    const text = `${t.artist} ${t.title}`
+    setQ(text)
+    void run(text)
+  }
+  const playOne = async (h: SearchHit) => {
+    const own = tracks.find((t) => t.id === h.libraryId)
+    play([own ?? remoteTrack(h.ids.youtube ? trackOf(h) : await api.resolveTrack(trackOf(h)).catch(() => trackOf(h)))], 0)
+  }
+  // Library id of the identified song, added on the way when needed (Add to playlist).
+  const identifiedIds = async () => {
+    if (identified?.libraryId) return [identified.libraryId]
+    const id = await api.addTrack(trackOf(identified!))
+    setFound((f) => f && { ...f, libraryId: id })
+    await useStore.getState().refresh()
+    return [id]
+  }
+
+  const run = async (text: string) => {
+    if (!text.trim()) return
+    if (spotifyList(text)) return void useStore.getState().importSpotify(text.trim())
     setBusy(true)
     try {
-      setRes(await api.searchCatalogs(q, region()))
+      setRes(await api.searchCatalogs(text, region()))
+      setShowOthers(false)
     } catch (err) {
       useStore.setState({ error: String(err) })
     } finally {
       setBusy(false)
     }
   }
+  const search = (e: React.FormEvent) => {
+    e.preventDefault()
+    setFound(null)
+    void run(q)
+  }
+  // Top bar's "search everywhere" lands here.
+  const request = useStore((s) => s.search)
+  useEffect(() => {
+    if (!request) return
+    setFound(null)
+    setQ(request.q)
+    void run(request.q)
+  }, [request?.n]) // once per ask
 
   return (
     <>
-      <PageHeader kicker="Add · Apple Music, YouTube and your files" title="Add music" />
+      <PageHeader kicker={tr('Add · YouTube, YouTube Music, Apple Music and your files')} title={tr('Add music')} />
       <form onSubmit={search} className="flex h-14 shrink-0 items-center gap-3 rounded-xl border border-line bg-raised pr-2 pl-4.5 shadow-[0_1px_2px_var(--shadow)] focus-within:border-ink-3">
         <MagnifyingGlass size={19} className="text-ink-2" />
-        <input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder="Title, artist, album, or a Spotify playlist link…" aria-label="Search catalogs" className="min-w-0 flex-1 bg-transparent text-base outline-none placeholder:text-ink-3" />
-        <span className="flex items-center gap-3 rounded-full bg-recess px-3 py-1.5 font-mono text-[9px] tracking-[0.08em] text-ink-2">
-          SEARCHES
+        <input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder={tr('Title, artist, album, or a Spotify playlist link…')} aria-label={tr('Search catalogs')} className="min-w-0 flex-1 bg-transparent text-base outline-none placeholder:text-ink-3" />
+        <span className="flex items-center gap-3 rounded-full bg-recess px-3 py-1.5 font-mono text-[0.625rem] tracking-[0.08em] text-ink-2">
+          {tr('SEARCHES')}
           <span className="flex items-center gap-1.5">
             <Led on /> AM
           </span>
           <span className="flex items-center gap-1.5">
-            <Led on={ytOn} /> YT
+            <Led on /> YT
           </span>
           <span className="flex items-center gap-1.5">
-            <Led on /> LIB
+            <Led on={ytOn} /> YTM
+          </span>
+          <span className="flex items-center gap-1.5">
+            <Led on /> {tr('LIB')}
           </span>
         </span>
-        <RoundButton label="Search" kind="ink" type="submit" disabled={busy || !q.trim()}>
+        <RoundButton label={tr('Search')} kind="ink" type="submit" disabled={busy || !q.trim()}>
           <MagnifyingGlass size={15} />
         </RoundButton>
       </form>
 
       <div className="flex shrink-0 items-center justify-between gap-4 py-3.5">
         <div role="tablist" className="flex gap-2">
-          <LedChip on={only === 'all'} label="All" count={res ? String(res.hits.length) : undefined} onClick={() => setOnly('all')} />
+          <LedChip on={only === 'all'} label={tr('All')} count={res ? String(res.hits.length) : undefined} onClick={() => setOnly('all')} />
           <LedChip on={only === 'youtube'} label="YouTube" onClick={() => setOnly('youtube')} />
           <LedChip on={only === 'apple'} label="Apple Music" onClick={() => setOnly('apple')} />
         </div>
         <label className="flex items-center gap-2 text-xs text-ink-2">
-          Hide covers and karaoke <Toggle label="Hide covers and karaoke" checked={hideCovers} onChange={setHideCovers} />
+          {tr('Hide covers and karaoke')} <Toggle label={tr('Hide covers and karaoke')} checked={hideCovers} onChange={setHideCovers} />
         </label>
       </div>
 
@@ -164,13 +232,13 @@ export function AddView() {
         <div className="-mx-2 min-h-0 flex-1 overflow-y-auto px-2 pb-6">
           {local.length > 0 && (
             <section className="mb-5">
-              <h2 className="kicker pb-1.5">In your library</h2>
+              <h2 className="kicker pb-1.5">{tr('In your library')}</h2>
               <ul>
                 {local.map((t, i) => (
                   <li key={t.id} onContextMenu={onMenu(() => trackMenu(t, { list: local, index: i }))}>
                     <button onDoubleClick={() => play(local, i)} onClick={() => play(local, i)} className="flex w-full items-center gap-3.5 border-b border-line-soft px-2 py-2 text-left hover:bg-raised">
                       <Cover title={t.album ?? t.title} art={trackArt(t)} size={34} />
-                      <span className="min-w-0 flex-1 truncate text-[13px] font-semibold">{t.title}</span>
+                      <span className="min-w-0 flex-1 truncate text-[0.8125rem] font-semibold">{t.title}</span>
                       <span className="truncate text-xs text-ink-2">{t.artist}</span>
                     </button>
                   </li>
@@ -178,9 +246,22 @@ export function AddView() {
               </ul>
             </section>
           )}
+          {identified && (
+            <section className="mb-5">
+              <h2 className="kicker pb-1.5">{tr('Identified by AudD')}</h2>
+              <ul>
+                <HitRow
+                  hit={identified}
+                  onAdded={(id) => setFound((f) => f && { ...f, libraryId: id })}
+                  onPlay={() => void playOne(identified)}
+                  extra={<AddToPlaylist trackIds={identifiedIds} label={tr('Add {title} to a playlist', { title: identified.title })} />}
+                />
+              </ul>
+            </section>
+          )}
           {res && (
             <section>
-              <h2 className="kicker pb-1.5">Catalogs · {hits.length} results</h2>
+              <h2 className="kicker pb-1.5">{tr('Catalogs')} · {trn(hits.length, '{n} result', '{n} results')}</h2>
               {res.errors.map((e) => (
                 <p key={e} className="mb-2 text-xs text-danger">
                   {e}
@@ -188,40 +269,51 @@ export function AddView() {
               ))}
               <ul>
                 {hits.map((h) => (
-                  <HitRow key={Object.values(h.ids).join('|')} hit={h} onAdded={(id) => markAdded(res.hits.indexOf(h), id)} />
+                  <HitRow key={Object.values(h.ids).join('|')} hit={h} onAdded={(id) => markAdded(res.hits.indexOf(h), id)} onPlay={() => void playHit(h)} />
                 ))}
               </ul>
-              {hits.length === 0 && <p className="py-8 text-center text-ink-2">No results.</p>}
+              {others > 0 && (
+                <p className="flex items-center justify-between gap-3 border-b border-line-soft px-2 py-3 text-xs text-ink-2">
+                  {showOthers ? trn(others, 'Showing {n} video that doesn’t look like music', 'Showing {n} videos that don’t look like music') : trn(others, '{n} video hidden because it isn’t music', '{n} videos hidden because they aren’t music')}
+                  <button onClick={() => setShowOthers(!showOthers)} className="rounded-full border border-line px-3 py-1 font-medium text-ink hover:bg-raised">
+                    {showOthers ? tr('Hide them') : tr('Show')}
+                  </button>
+                </p>
+              )}
+              {hits.length === 0 && !others && <p className="py-8 text-center text-ink-2">{tr('No results.')}</p>}
             </section>
           )}
-          {!res && !local.length && <p className="py-10 text-center text-ink-2">Search for a track: it’s added to your library, with its YouTube version when one exists.</p>}
+          {!res && !local.length && <p className="py-10 text-center text-ink-2">{tr('Search for a track: it’s added to your library, with its YouTube version when one exists.')}</p>}
         </div>
 
-        <aside className="flex w-80 shrink-0 flex-col gap-4">
+        <aside className="scroll-quiet flex min-h-0 w-80 shrink-0 flex-col gap-4 overflow-y-auto pb-6">
+          <Detector onFound={onFound} />
           <div className="rounded-xl border border-line px-4 py-2">
-            <h2 className="kicker py-1.5">Search sources</h2>
+            <h2 className="kicker py-1.5">{tr('Search sources')}</h2>
             {[
-              { code: 'Apple Music', note: 'Public catalog, no account', on: true },
-              { code: 'YouTube Music', note: ytOn ? 'Your Google account' : 'Sign in with Google (Accounts)', on: ytOn },
-              { code: 'Spotify', note: 'Search closed without Premium', on: false },
+              { code: 'YouTube', note: tr('Every video, no account needed'), on: true },
+              { code: 'YouTube Music', note: ytOn ? tr('Songs, with your Google account') : tr('Sign in with Google (Accounts)'), on: ytOn },
+              { code: 'Apple Music', note: tr('Public catalog, no account'), on: true },
+              { code: 'Spotify', note: tr('Search closed without Premium'), on: false },
             ].map((s) => (
-              <p key={s.code} className="flex items-center gap-2.5 border-t border-line-soft py-2.5 text-[13px] first-of-type:border-0">
+              <p key={s.code} className="flex items-center gap-2.5 border-t border-line-soft py-2.5 text-[0.8125rem] first-of-type:border-0">
                 <Led on={s.on} /> <span className="flex-1 font-medium">{s.code}</span>
-                <span className="text-right text-[11px] text-ink-2">{s.note}</span>
+                <span className="text-right text-[0.6875rem] text-ink-2">{s.note}</span>
               </p>
             ))}
           </div>
           <div className="flex items-start gap-3 rounded-xl border border-line px-4 py-3">
             <ClipboardText size={18} className="mt-0.5 shrink-0 text-ink-2" />
             <p className="text-xs text-ink-2">
-              <span className="font-semibold text-ink">Paste a YouTube link</span> anywhere (Ctrl+V): the track is added right away.
+              <span className="font-semibold text-ink">{tr('Paste a YouTube link')}</span> {tr('anywhere (Ctrl+V): the track is added right away.')}
             </p>
           </div>
           <ImportCode />
           <button onClick={() => go({ name: 'settings', section: 'sources' })} className="flex items-start gap-3 rounded-xl border border-dashed border-ink-4 px-4 py-3 text-left hover:bg-raised">
             <FolderPlus size={18} className="mt-0.5 shrink-0 text-ink-2" />
             <span className="text-xs text-ink-2">
-              <span className="font-semibold text-ink">Add a music folder</span>: your files play first.
+              <span className="font-semibold text-ink">{tr('Add a music folder')}</span>
+              {tr(': your files play first.')}
             </span>
           </button>
         </aside>

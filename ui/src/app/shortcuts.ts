@@ -1,21 +1,9 @@
+import { create } from 'zustand'
 import { usePlayer } from '../features/player/store'
+import { api } from '../shared/api'
+import { accelerator, ACTIONS, bindings, comboOf, type ActionId, type Combo } from './keys'
+import { useSettings } from './settings'
 import { useStore } from './store'
-
-/** Keys as KeyboardEvent gives them; only what matching needs. */
-export type Keys = Pick<KeyboardEvent, 'key' | 'ctrlKey' | 'metaKey' | 'shiftKey' | 'altKey'>
-
-export interface Shortcut {
-  /** Shown in Settings › Shortcuts. */
-  keys: string
-  label: string
-  match: (e: Keys) => boolean
-  /** None = handled elsewhere (listed only). */
-  run?: () => void
-}
-
-const ctrl = (e: Keys) => e.ctrlKey || e.metaKey
-const plain = (e: Keys) => !ctrl(e) && !e.shiftKey && !e.altKey
-const only = (e: Keys, mod: 'ctrl' | 'shift' | 'alt') => (mod === 'ctrl' ? ctrl(e) : !ctrl(e)) && e.shiftKey === (mod === 'shift') && e.altKey === (mod === 'alt')
 
 const player = () => usePlayer.getState()
 const seekBy = (ms: number) => {
@@ -24,41 +12,101 @@ const seekBy = (ms: number) => {
 }
 const volumeBy = (d: number) => player().setVolume(Math.round(Math.max(0, Math.min(1, player().volume + d)) * 100) / 100)
 
-export const SHORTCUTS: Shortcut[] = [
-  { keys: 'Space', label: 'Play / pause', match: (e) => plain(e) && e.key === ' ', run: () => player().toggle() },
-  { keys: 'Ctrl →', label: 'Next track', match: (e) => only(e, 'ctrl') && e.key === 'ArrowRight', run: () => player().step(1) },
-  { keys: 'Ctrl ←', label: 'Previous track', match: (e) => only(e, 'ctrl') && e.key === 'ArrowLeft', run: () => player().step(-1) },
-  { keys: 'Shift →', label: 'Forward 10 seconds', match: (e) => only(e, 'shift') && e.key === 'ArrowRight', run: () => seekBy(10_000) },
-  { keys: 'Shift ←', label: 'Back 10 seconds', match: (e) => only(e, 'shift') && e.key === 'ArrowLeft', run: () => seekBy(-10_000) },
-  { keys: 'Ctrl ↑', label: 'Volume up', match: (e) => only(e, 'ctrl') && e.key === 'ArrowUp', run: () => volumeBy(0.1) },
-  { keys: 'Ctrl ↓', label: 'Volume down', match: (e) => only(e, 'ctrl') && e.key === 'ArrowDown', run: () => volumeBy(-0.1) },
-  { keys: 'Ctrl S', label: 'Shuffle on / off', match: (e) => only(e, 'ctrl') && e.key.toLowerCase() === 's', run: () => player().toggleShuffle() },
-  { keys: 'Ctrl R', label: 'Repeat: off, queue, track', match: (e) => only(e, 'ctrl') && e.key.toLowerCase() === 'r', run: () => player().cycleRepeat() },
-  { keys: 'Ctrl K', label: 'Search', match: () => false },
-  { keys: 'Ctrl ,', label: 'Settings', match: (e) => only(e, 'ctrl') && e.key === ',', run: () => useStore.getState().go({ name: 'settings', section: 'appearance' }) },
-  { keys: 'Alt ←', label: 'Back', match: (e) => only(e, 'alt') && e.key === 'ArrowLeft', run: () => (player().full ? player().setFull(false) : useStore.getState().goBack()) },
-  { keys: 'Alt →', label: 'Forward', match: (e) => only(e, 'alt') && e.key === 'ArrowRight', run: () => useStore.getState().goForward() },
-  { keys: 'Esc', label: 'Close Now Playing', match: () => false },
-]
-
-/** Shortcut for this key press, if any. */
-export const shortcutFor = (e: Keys) => SHORTCUTS.find((s) => s.run && s.match(e))
-
-/** Typing, or a control that uses these keys itself (Space on a button, arrows on a slider). */
-function ownsKeys(target: EventTarget | null) {
-  return target instanceof Element && !!target.closest('input, textarea, select, button, a[href], [contenteditable], [role="slider"], [role="button"], [role="menuitem"]')
+/** What each action does. One table with keys.ts (labels, default keys): Settings › Shortcuts lists both. */
+export const RUN: Record<ActionId, () => void> = {
+  playPause: () => player().toggle(),
+  next: () => player().step(1),
+  previous: () => player().step(-1),
+  stop: () => {
+    if (player().playing) player().toggle()
+    player().seek(0)
+  },
+  forward: () => seekBy(10_000),
+  back10: () => seekBy(-10_000),
+  volumeUp: () => volumeBy(0.1),
+  volumeDown: () => volumeBy(-0.1),
+  mute: () => player().toggleMute(),
+  shuffle: () => player().toggleShuffle(),
+  repeat: () => player().cycleRepeat(),
+  nowPlaying: () => player().now && player().setFull(!player().full),
+  search: () => document.querySelector<HTMLInputElement>('[data-search]')?.focus(),
+  settings: () => useStore.getState().go({ name: 'settings', section: 'shortcuts' }),
+  goBack: () => (player().full ? player().setFull(false) : useStore.getState().goBack()),
+  goForward: () => useStore.getState().goForward(),
+  // Rust shows the window itself (global only).
+  showApp: () => {},
 }
 
-/** Global key handler. Returns cleanup. */
+// Fields where keys type text. Range inputs and checkboxes are not: they must not swallow the app's shortcuts.
+const TEXT = 'input:not([type=range]):not([type=checkbox]):not([type=radio]):not([type=color]):not([type=button]), textarea, select, [contenteditable]'
+const inText = (target: EventTarget | null) => target instanceof Element && !!target.closest(TEXT)
+// Sliders keep their arrows (no modifier); menus keep theirs.
+const ownsArrows = (target: EventTarget | null) => target instanceof Element && !!target.closest('input[type=range], [role="slider"], [role="menu"], [role="menuitem"]')
+
+/**
+ * Space presses a control reached by keyboard (:focus-visible), or anything in a dialog. Track lists ([data-list])
+ * leave it to play / pause.
+ */
+const ownsSpace = (target: EventTarget | null) => target instanceof HTMLElement && target !== document.body && !target.matches('[data-list]') && (target.matches(':focus-visible') || !!target.closest('[role="dialog"]'))
+
+/** Global shortcuts the OS refused (another app holds them), for Settings › Shortcuts. */
+export const useGlobalShortcuts = create<{ failed: ActionId[] }>(() => ({ failed: [] }))
+
+/** Registers the global bindings with the OS (Rust). Called at launch and whenever they change. */
+async function registerGlobals(custom: Parameters<typeof bindings>[0]) {
+  const b = bindings(custom)
+  const list = ACTIONS.flatMap((a) => (b[a.id].global ? [{ id: a.id, accelerator: accelerator(b[a.id].global!) }] : []))
+  const failed = await api.setGlobalShortcuts(list).catch(() => list.map((l) => l.id))
+  useGlobalShortcuts.setState({ failed: failed as ActionId[] })
+}
+
+/**
+ * Keys in the app (window focused) and everywhere (global, Rust). Bindings come from settings over the defaults.
+ * Text fields keep their keys; Space plays / pauses unless a control reached by keyboard has focus (a button left
+ * focused by a mouse click doesn't count: Space still plays / pauses there).
+ * Returns cleanup.
+ */
 export function startShortcuts(): () => void {
+  let map = new Map<Combo, ActionId>()
+  let custom = useSettings.getState().settings.shortcuts
+  const rebuild = () => {
+    const b = bindings(custom)
+    map = new Map(ACTIONS.flatMap((a) => (b[a.id].keys ? [[b[a.id].keys!, a.id] as const] : [])))
+  }
+  rebuild()
+  void registerGlobals(custom)
+  const offSettings = useSettings.subscribe((s) => {
+    if (s.settings.shortcuts === custom) return
+    custom = s.settings.shortcuts
+    rebuild()
+    void registerGlobals(custom)
+  })
   const onKey = (e: KeyboardEvent) => {
-    if (e.repeat && e.key === ' ') return
-    const s = shortcutFor(e)
-    // Modifier shortcuts work everywhere but in text fields; plain keys leave focused controls alone.
-    if (!s || (plain(e) ? ownsKeys(e.target) : e.target instanceof Element && !!e.target.closest('input, textarea, [contenteditable]'))) return
+    // Settings › Shortcuts is recording a binding.
+    if (document.body.dataset.recording) return
+    const combo = comboOf(e)
+    const id = combo && map.get(combo)
+    if (!id || inText(e.target)) return
+    if (e.repeat && id === 'playPause') return
+    if (/^(Shift\+)?Arrow/.test(combo) && ownsArrows(e.target)) return
+    if (combo === 'Space' && ownsSpace(e.target)) return
     e.preventDefault()
-    s.run!()
+    RUN[id]()
   }
   window.addEventListener('keydown', onKey)
-  return () => window.removeEventListener('keydown', onKey)
+  // Mouse side buttons: back / forward, like a browser.
+  const onMouse = (e: MouseEvent) => {
+    if (e.button !== 3 && e.button !== 4) return
+    e.preventDefault()
+    RUN[e.button === 3 ? 'goBack' : 'goForward']()
+  }
+  window.addEventListener('mouseup', onMouse)
+  // Pressed anywhere (global): Rust sends the action.
+  const offGlobal = api.onShortcut((id) => RUN[id as ActionId]?.())
+  return () => {
+    window.removeEventListener('keydown', onKey)
+    window.removeEventListener('mouseup', onMouse)
+    offSettings()
+    void offGlobal.then((f) => f())
+  }
 }

@@ -1,5 +1,6 @@
 //! Nearby share: same network, 6-digit code, no server. mDNS finds senders, SPAKE2 turns the code into a key,
 //! ChaCha20-Poly1305 seals the payload. Wrong code = receiver can't decrypt; sender gives up after a few tries.
+//! Two kinds: playlist share (one way) and Sync Mode (both PCs' snapshots swapped in one session).
 
 use anyhow::{Context, Result, anyhow, bail, ensure};
 use chacha20poly1305::aead::{Aead, KeyInit};
@@ -14,6 +15,11 @@ use tokio::time::timeout;
 
 pub const SERVICE: &str = "_musicapp._tcp.local.";
 const ID: &[u8] = b"musicapp-nearby-v1";
+/// Sync Mode: its own service and identity (a share receiver never spends a sync offer's tries), bigger payloads.
+pub const SYNC_SERVICE: &str = "_musicappsync._tcp.local.";
+const SYNC_ID: &[u8] = b"musicapp-sync-v1";
+const SYNC_MAX_FRAME: u32 = 64 << 20;
+const SYNC_STEP: Duration = Duration::from_secs(60);
 /// Online guesses allowed per offer: 5 in 1,000,000.
 const MAX_TRIES: usize = 5;
 const OFFER_TTL: Duration = Duration::from_secs(600);
@@ -31,8 +37,12 @@ async fn write_frame(s: &mut TcpStream, data: &[u8]) -> Result<()> {
 }
 
 async fn read_frame(s: &mut TcpStream) -> Result<Vec<u8>> {
+    read_frame_max(s, MAX_FRAME).await
+}
+
+async fn read_frame_max(s: &mut TcpStream, max: u32) -> Result<Vec<u8>> {
     let len = s.read_u32().await?;
-    ensure!(len <= MAX_FRAME, "Frame too big");
+    ensure!(len <= max, "Frame too big");
     let mut buf = vec![0; len as usize];
     s.read_exact(&mut buf).await?;
     Ok(buf)
@@ -40,7 +50,11 @@ async fn read_frame(s: &mut TcpStream) -> Result<Vec<u8>> {
 
 /// Both sides: exchange SPAKE2 messages, derive the session key.
 async fn handshake(s: &mut TcpStream, code: &str) -> Result<ChaCha20Poly1305> {
-    let (spake, msg) = Spake2::<Ed25519Group>::start_symmetric(&Password::new(code.as_bytes()), &Identity::new(ID));
+    handshake_as(s, code, ID).await
+}
+
+async fn handshake_as(s: &mut TcpStream, code: &str, id: &[u8]) -> Result<ChaCha20Poly1305> {
+    let (spake, msg) = Spake2::<Ed25519Group>::start_symmetric(&Password::new(code.as_bytes()), &Identity::new(id));
     write_frame(s, &msg).await?;
     let key = spake.finish(&read_frame(s).await?).map_err(|e| anyhow!("Handshake failed: {e:?}"))?;
     ChaCha20Poly1305::new_from_slice(&key).map_err(|_| anyhow!("Bad key"))
@@ -60,6 +74,71 @@ async fn receive_over(s: &mut TcpStream, code: &str) -> Result<Vec<u8>> {
     let data = cipher.decrypt(&Nonce::default(), read_frame(s).await?.as_slice()).map_err(|_| anyhow!("Wrong code"))?;
     s.write_u8(1).await?;
     Ok(data)
+}
+
+/// Sync, offering side: its snapshot out (nonce 0), the other's back (nonce 1), then an ack.
+async fn swap_serve(s: &mut TcpStream, code: &str, mine: &[u8]) -> Result<Vec<u8>> {
+    let cipher = handshake_as(s, code, SYNC_ID).await?;
+    write_frame(s, &cipher.encrypt(&nonce(0), mine).map_err(|_| anyhow!("Encrypt failed"))?).await?;
+    let theirs = cipher.decrypt(&nonce(1), read_frame_max(s, SYNC_MAX_FRAME).await?.as_slice()).map_err(|_| anyhow!("Wrong code"))?;
+    s.write_u8(1).await?;
+    Ok(theirs)
+}
+
+/// Sync, joining side (typed the code).
+async fn swap_join(s: &mut TcpStream, code: &str, mine: &[u8]) -> Result<Vec<u8>> {
+    let cipher = handshake_as(s, code, SYNC_ID).await?;
+    let theirs = cipher.decrypt(&nonce(0), read_frame_max(s, SYNC_MAX_FRAME).await?.as_slice()).map_err(|_| anyhow!("Wrong code"))?;
+    write_frame(s, &cipher.encrypt(&nonce(1), mine).map_err(|_| anyhow!("Encrypt failed"))?).await?;
+    ensure!(s.read_u8().await? == 1, "No ack");
+    Ok(theirs)
+}
+
+/// One key per session, two messages: one nonce each.
+fn nonce(n: u8) -> Nonce {
+    let mut b = [0u8; 12];
+    b[11] = n;
+    Nonce::from(b)
+}
+
+async fn sync_serve_on(listener: TcpListener, code: &str, mine: &[u8], ttl: Duration) -> Result<Vec<u8>> {
+    let deadline = tokio::time::Instant::now() + ttl;
+    for _ in 0..MAX_TRIES {
+        let (mut s, _) = tokio::time::timeout_at(deadline, listener.accept()).await.map_err(|_| anyhow!("Code expired: start again"))??;
+        if let Ok(Ok(theirs)) = timeout(SYNC_STEP, swap_serve(&mut s, code, mine)).await {
+            return Ok(theirs);
+        }
+    }
+    bail!("Too many wrong codes: start again")
+}
+
+/// Sync Mode: offer this PC's snapshot under `code`; returns the other PC's once it joined.
+pub async fn sync_serve(code: &str, mine: &[u8]) -> Result<Vec<u8>> {
+    let listener = TcpListener::bind("0.0.0.0:0").await?;
+    let port = listener.local_addr()?.port();
+    let mdns = Advert(ServiceDaemon::new()?);
+    let name = format!("music-app-sync-{}", rand::random_range(0..u32::MAX));
+    mdns.0.register(ServiceInfo::new(SYNC_SERVICE, &name, &format!("{name}.local."), "", port, None)?.enable_addr_auto())?;
+    sync_serve_on(listener, code, mine, OFFER_TTL).await
+}
+
+async fn sync_join_at(peers: &[SocketAddr], code: &str, mine: &[u8]) -> Result<Vec<u8>> {
+    for addr in peers {
+        if let Ok(Ok(mut s)) = timeout(STEP, TcpStream::connect(addr)).await
+            && let Ok(Ok(theirs)) = timeout(SYNC_STEP, swap_join(&mut s, code, mine)).await
+        {
+            return Ok(theirs);
+        }
+    }
+    bail!("Wrong code, or the other PC stopped waiting")
+}
+
+/// Sync Mode: join the PC showing `code`; both snapshots swapped.
+pub async fn sync_join(code: &str, mine: &[u8]) -> Result<Vec<u8>> {
+    ensure!(code.len() == 6 && code.bytes().all(|b| b.is_ascii_digit()), "The code has 6 digits");
+    let peers = browse(SYNC_SERVICE).await?;
+    ensure!(!peers.is_empty(), "No Music App is waiting to sync on this network");
+    sync_join_at(&peers, code, mine).await
 }
 
 /// Accept loop: done on first successful receiver, error after MAX_TRIES failures or TTL.
@@ -108,8 +187,15 @@ async fn receive_from(peers: &[SocketAddr], code: &str) -> Result<Vec<u8>> {
 /// Find senders on the network (3 s) and fetch the payload with `code`.
 pub async fn receive(code: &str) -> Result<Vec<u8>> {
     ensure!(code.len() == 6 && code.bytes().all(|b| b.is_ascii_digit()), "The code has 6 digits");
+    let peers = browse(SERVICE).await?;
+    ensure!(!peers.is_empty(), "No Music App is sharing on this network");
+    receive_from(&peers, code).await
+}
+
+/// Offers of one kind on the network (3 s of mDNS).
+async fn browse(service: &'static str) -> Result<Vec<SocketAddr>> {
     let mdns = Advert(ServiceDaemon::new()?);
-    let events = mdns.0.browse(SERVICE)?;
+    let events = mdns.0.browse(service)?;
     let peers = tokio::task::spawn_blocking(move || {
         let end = std::time::Instant::now() + Duration::from_secs(3);
         let mut peers = Vec::new();
@@ -125,8 +211,7 @@ pub async fn receive(code: &str) -> Result<Vec<u8>> {
     .await
     .context("mDNS browse failed")?;
     drop(mdns);
-    ensure!(!peers.is_empty(), "No Music App is sharing on this network");
-    receive_from(&peers, code).await
+    Ok(peers)
 }
 
 #[cfg(test)]
@@ -159,6 +244,16 @@ mod tests {
     async fn offer_expires() {
         let (_, server) = offer("123456", Duration::from_millis(50)).await;
         assert!(server.await.unwrap().unwrap_err().to_string().contains("expired"));
+    }
+
+    #[tokio::test]
+    async fn sync_swaps_both_snapshots_and_rejects_wrong_codes() {
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let addr = listener.local_addr().unwrap();
+        let server = tokio::spawn(async move { sync_serve_on(listener, "246810", b"server snapshot", OFFER_TTL).await });
+        assert!(sync_join_at(&[addr], "111111", b"intruder").await.is_err());
+        assert_eq!(sync_join_at(&[addr], "246810", b"client snapshot").await.unwrap(), b"server snapshot");
+        assert_eq!(server.await.unwrap().unwrap(), b"client snapshot");
     }
 
     #[test]

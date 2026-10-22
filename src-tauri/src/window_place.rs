@@ -51,8 +51,10 @@ fn settle_frame(window: &WebviewWindow) {
 #[cfg(not(windows))]
 fn settle_frame(_: &WebviewWindow) {}
 
-/// Save now. Restart and update install skip the exit event the plugin saves on.
+/// Save now. Restart and update install skip the exit event the plugin saves on. The plugin only sees windows holding a
+/// single webview: the watch-page child goes first (the app is leaving anyway).
 pub fn save(app: &AppHandle) {
+    let _ = crate::ytwatch::close(app);
     let _ = app.save_window_state(FLAGS);
 }
 

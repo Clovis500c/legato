@@ -1,0 +1,10 @@
+{
+  "id": "example.sleep-timer",
+  "name": "Sleep timer",
+  "version": "1.0.0",
+  "author": "Music App example",
+  "description": "Pauses the music after a while, fading out over the last 30 seconds.",
+  "api": 1,
+  "main": "main.js",
+  "permissions": ["player:read", "player:control", "ui"]
+}

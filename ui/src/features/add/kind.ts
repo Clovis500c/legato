@@ -1,3 +1,4 @@
+import { msg } from '../../shared/i18n/i18n'
 /** Video flavour from a YouTube title. Music first: covers / karaoke hidden by default. */
 export type Kind = 'clip' | 'live' | 'cover' | 'karaoke' | 'lyrics' | null
 
@@ -11,7 +12,7 @@ export function videoKind(title: string): Kind {
   return null
 }
 
-export const kindLabel: Record<Exclude<Kind, null>, string> = { clip: 'CLIP', live: 'LIVE', cover: 'COVER', karaoke: 'KARAOKE', lyrics: 'LYRICS' }
+export const kindLabel: Record<Exclude<Kind, null>, string> = { clip: msg('CLIP'), live: msg('LIVE'), cover: msg('COVER'), karaoke: msg('KARAOKE'), lyrics: msg('LYRICS') }
 
 /** Not the original recording. */
 export const unofficial = (k: Kind) => k === 'cover' || k === 'karaoke'

@@ -1,6 +1,7 @@
 //! Apple Music catalog via the public iTunes Search API: no key, about 20 calls/min.
 
 use anyhow::Result;
+use music_core::musicness::Musicness;
 use music_core::model::{Source, Track};
 use serde::Deserialize;
 use std::collections::BTreeMap;
@@ -86,6 +87,8 @@ async fn songs(url: Url) -> Result<Vec<Track>> {
                 ids: BTreeMap::from([(Source::Apple, h.track_id?.to_string())]),
                 // 100 px by default; the CDN serves any size.
                 art: h.artwork_url100.filter(|u| apple_url(u)).map(|u| u.replace("100x100bb", "600x600bb")),
+                // Music catalog.
+                musicness: Some(Musicness::Music),
             })
         })
         .collect())

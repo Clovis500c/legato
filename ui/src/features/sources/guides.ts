@@ -1,4 +1,5 @@
 import type { Credentials } from '../../shared/api'
+import { msg } from '../../shared/i18n/i18n'
 
 export interface Step {
   title: string
@@ -17,21 +18,21 @@ export interface Guide {
 /** Spotify "bring your key" walkthrough (Spotify has no keyless sign-in). Checked 2026-10; re-check when Spotify changes its dashboard. */
 export const guides: Record<'spotify', Guide> = {
   spotify: {
-    pitch: 'Import your playlists and link them to other services. Your own key, 2 minutes.',
-    callout: 'Spotify requires the key owner to have Premium, and limits each key to 5 accounts.',
+    pitch: msg('Import your playlists and link them to other services. Your own key, 2 minutes.'),
+    callout: msg('Spotify requires the key owner to have Premium, and limits each key to 5 accounts.'),
     steps: [
       {
-        title: 'Create a Spotify app',
-        text: 'Developer dashboard → Create app. Any name and description, tick “Web API”.',
-        link: { label: 'Open the Spotify dashboard', url: 'https://developer.spotify.com/dashboard' },
+        title: msg('Create a Spotify app'),
+        text: msg('Developer dashboard → Create app. Any name and description, tick “Web API”.'),
+        link: { label: msg('Open the Spotify dashboard'), url: 'https://developer.spotify.com/dashboard' },
       },
       {
-        title: 'Add the redirect address',
-        text: 'Under “Redirect URIs”, paste exactly this address (no port), click Add, then Save:',
+        title: msg('Add the redirect address'),
+        text: msg('Under “Redirect URIs”, paste exactly this address (no port), click Add, then Save:'),
         copy: 'http://127.0.0.1/callback',
       },
-      { title: 'Paste your Client ID', text: 'Your app’s Settings → Client ID. The Client secret is not needed.' },
+      { title: msg('Paste your Client ID'), text: msg('Your app’s Settings → Client ID. The Client secret is not needed.') },
     ],
-    fields: [{ key: 'spotifyClientId', label: 'Client ID', placeholder: 'e.g. 3f9a…7c21e' }],
+    fields: [{ key: 'spotifyClientId', label: 'Client ID', placeholder: msg('e.g. 3f9a…7c21e') }],
   },
 }

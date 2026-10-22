@@ -1,9 +1,12 @@
 pub mod art;
+pub mod audd;
 pub mod discord;
 pub mod itunes;
+pub mod lrclib;
 pub mod nearby;
 pub mod oauth;
 pub mod spotify;
 pub mod spotify_embed;
 pub mod youtube;
 pub mod ytmusic;
+pub mod ytweb;

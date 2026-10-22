@@ -3,6 +3,163 @@
 Status: **phases 1 to 8 delivered** (2026-10-17; phase 6 leftovers and live checks in "Still to do" just below). Earlier (2026-10-16): Hi-Fi redesign, themes, ad shield, custom playlists, local folders, add by YouTube link, Apple Music and YouTube search, one queue for every source with Apple previews, playlist sharing (link, QR, nearby code), local personalized mixes. Phase 6 (polish) under way: shortcuts, media keys, tray done; big round of player and library requests done (see "User requests 2026-10-16 (second session)"). Edit, strike or comment this file directly, or answer in the chat.
 Mockups: Figma, file "Bow Game / Music App", page **"Music App v3 — Hi-Fi"**. The v2 "Apple" page is abandoned.
 
+## Big update (2026-10-20, branch `big-update`)
+
+**Delivered 2026-10-22**: every phase below done; what the final review left open is in
+[review-2026-10-22.md](review-2026-10-22.md), the library incident in [health-check-2026-10-22.md](health-check-2026-10-22.md).
+
+The user's big request of 2026-10-20, copied task by task. Work happens on the `big-update` branch (every green push to
+`master` is a release: nothing goes to `master` without the user's OK). Phases run in this order; tick each line when
+it lands (tested, `pnpm check` green, committed). Technical plan, rule changes and feasibility notes:
+[big-update.md](big-update.md).
+
+**Method**
+- [x] Plan first: explore, then a detailed plan (order, approach per big task, rules changed, possible / impossible,
+      risks). Unclear points: pick the most reasonable option, note it for the final report.
+- [x] Dedicated branch `big-update`; nothing pushed to `master` without the user's explicit OK.
+- [x] Every task of the request copied here as a checkbox.
+- [x] After each task or small group: `pnpm check` green, app starts, nothing broken, small clear commit, tests for new
+      logic (never real network).
+- [x] User report 2026-10-21 (mid-work): a watch-page song restarted in Cover mode showed its video over the cover. Fixed
+      (webview made hidden never started its media; placement asked before it existed was lost).
+- [x] User report 2026-10-21 (later): opening or closing Up next moved the video's slot but not the video (it only
+      recentered on a mode change). The slot now also watches its ancestors' size.
+- [x] Final report: done / not done / not tested / choices made for the user / every rule changed (old, new, why).
+      Given in the chat on 2026-10-22; rules changed: [big-update.md](big-update.md#rules-changed-summary-each-lands-with-its-code-docs-updated-in-the-same-commit).
+
+**Phase 1: fixes**
+- [x] Progress bar stuck: after a custom position set with our slider then a song change, the bar stops moving (setting
+      it back to 0 unblocks it). Root cause + a test that reproduces it.
+- [x] YouTube overlay: must never be visible over the player (shield's YouTube player script).
+- [x] Sidebar in a small window: a scrollbar shows at the top right of the sidebar in the player (screenshot 3). The
+      sidebar must not scroll there: cause + fix.
+- [x] Cover auto-crop: black bars (and thin white edges) around video frames and covers (screenshot 4) detected and
+      cropped so the picture fills its box, for covers and videos. Report if the cause is elsewhere.
+- [x] YouTube import order: "added oldest" and "added newest" are inverted. Check, fix, test.
+- [x] Search: use normal YouTube instead of YouTube Music only (rule "no YouTube key" changed if needed, method and
+      risks in the plan). Hide videos that clearly aren't music, with "N videos hidden because they aren't music" (real
+      count) and a button to show them.
+- [x] Videos that "can't be played outside YouTube" (errors 101 / 150): detect the error from the player API; only
+      then reload the video from its normal watch page in a webview with YouTube's interface around the player hidden
+      (consistent with the overlay fix); invisible switch, our controls (pause, seek, volume, next) keep working, the
+      next song follows normally; still unplayable (region, age…) → clean skip with a clear message. Official player
+      only, no stream extraction.
+
+**Phase 2: changes**
+- [x] Up next: keep songs already played (don't remove them).
+- [x] Optimization: memory, CPU, start time, smoothness of the app and the webview. Measure before / after, numbers in
+      the report.
+- [x] Keyboard shortcuts: custom shortcuts (skip, stop, play…) applied everywhere, including when the app runs in the
+      background in the tray, with no conflict with Windows media keys. One table (`app/shortcuts.ts`), listed in
+      Settings › Shortcuts.
+- [x] Background: closing the window keeps the app running in the tray (screenshot 2), in a low-resource mode like
+      Discord, back very fast; webview resources reduced while hidden, music never cut. "Quit" is the only real exit.
+- [x] Auto-update: check at every launch; if an update is out, download in the background, restart automatically at a
+      moment that doesn't cut the music, and resume playback where it was (`session.ts`).
+- [x] "Music App" button goes Home, even from the player.
+- [x] Window top bar follows the player's background instead of staying grey.
+- [x] Click on the cover or the video: pause / play, with our own handling (not YouTube's).
+- [x] Top bar: remove the sync icon and the back / forward icons at the top left.
+- [x] Right-click on a song of a playlist or of the library: remove it from the playlists that hold it, or from the
+      library (`features/menus.tsx`).
+- [x] Music filter on YouTube import: leave out videos that aren't music, carefully (some real songs aren't tagged as
+      music: when in doubt, keep).
+- [x] Add music: play a song even if it isn't in the library.
+
+**Phase 3: new features** (new default → bump `DEFAULTS_VERSION`, add to the settings search index)
+- [x] Search bar like YouTube's in the navbar, always visible (screenshot 5): field + search button + mic button. Mic =
+      voice search (speech to text, then search) and a way to start the Music Detector from it (simplest clear UI to
+      pick one). If speech recognition can't be done cleanly in WebView2 without a server of ours: say so, propose an
+      alternative, or keep only the Music Detector on the mic. Done: field, button, voice search (Windows' speech
+      recognition, `speech.rs`), the mic's second choice opens the Music Detector.
+- [x] Automatic translation: Windows language detected on first launch (supported → used, else English); language
+      picker in settings; at least English and French; structure that makes adding languages easy; settings search
+      works in every language.
+- [x] Lyrics mode (Player mode): cover on the left, scrolling lyrics on the right, like Spotify. Client-side system or
+      an API through Rust (LRCLIB to check): pick the best and justify.
+- [x] Music Detector: a section under "Add music" that recognizes a song from sound (like Shazam), then adds it to any
+      playlist. Pick a recognition service (user's key or free) and justify; clear microphone permission; no recording
+      stored.
+- [x] Windows quick commands: Previous, Play / Pause, Next under the taskbar thumbnail (screenshot 1), ITaskbarList3
+      thumbnail toolbar; works on Windows 11, Play / Pause icon follows the state, follows the app's theme.
+- [x] Cover animation: Advanced setting, cover grows and shrinks with the song's volume. Off by default. Uses live
+      audio processing.
+- [x] Adaptive Sound: Advanced setting, measures loudness and adjusts it to the user's target volume; a bar under the
+      player's volume bar shows the adapted volume and its level. Uses live audio processing.
+
+**Live audio processing** (shared by the Live Editor, Adaptive Sound and the cover animation)
+- [x] Local files: processing in the native engine (`crates/player`, chain in `crates/dsp`).
+- [x] YouTube: official player keeps playing the video; study per-process capture of the app's audio (WebView2),
+      processing in the native engine, webview muted; feasibility, minimum Windows version, limits (latency, offset
+      with the picture, CPU, speed / pitch for slowed) in the plan. Study done (big-update.md): processing runs inside
+      the player instead (`captureStream` + Chromium's audio nodes, `crates/shield/src/live.js`).
+- [x] Saved mixes hold parameters only (effects, values), never audio.
+- [x] Spotify (protected playback) and Apple Music: what's possible or not, in the plan.
+- [x] Can be turned off; if capture fails, back to normal playback with no error.
+- [x] Same system for Adaptive Sound and the cover animation.
+
+**Phase 4: big projects** (one by one, with the most care)
+- [x] 4.1 Live Editor: edit the playing song live (slowed, bass boost, reverb…); save changes per song in local SQLite
+      (`crates/core`), several mixes per song; several sections, one for 4D songs and where the sound comes from;
+      best architecture, most advanced version, Audacity's techniques as inspiration (no code copied); works on
+      YouTube songs (live processing); local files only: export a modified copy with the mix applied to a new file,
+      original never touched (no export for YouTube, Spotify, Apple Music).
+- [x] 4.2 Sync Mode: OneDrive detected automatically, ask the user whether they use it with encrypted files; another
+      way to sync 2 PCs without a server of ours (nearby or an export file: propose, justify); everything synced
+      (connections, settings, imported and non-imported local playlists); secrets never synced in clear (password
+      encryption, or account list + sign in again); conflicts handled.
+- [x] 4.3 Plugin system: real API for local third-party plugins that can change as much as possible and reach as many
+      parts of the app as possible; manifest with declared permissions, user approval at install, isolated execution,
+      no direct network or secrets (Rust gateway with permissions), API versioning; docs for plugin authors and an
+      example plugin.
+- [x] 4.4 Theme creator: better editor (`theme.ts`, tokens in `styles.css`), "Themes" and "Appearance" merged; a theme
+      can change absolutely everything (except "Music App", its logo and legal notices): background images (adapt the
+      image system and its security policy if needed), parts of the UX, etc. Settings search index updated.
+
+**Phase 5: codebase health check**
+- [x] Full check (report: `docs/notes/health-check-2026-10-22.md`): well kept, professional, maintainable over time, easy to change; CLAUDE.md, README and docs up to
+      date and consistent with every changed rule; no dead code, no fake buttons; enough tests. Report with problems
+      found, then fix the important ones.
+
+**Phase 6: UI / UX / bug review by an agent**
+- [x] When everything is done: one agent (Sonnet 5.5, high effort) with the most complete prompt to go through
+      EVERYTHING: rate UI / UX as a daily user and as someone who loves practical interfaces, criticize without
+      indulgence, performance report, overall report against the competition (Spotify, YouTube Music, Apple Music,
+      Liner), every page, menu, setting and edge case. Full report handed to the user. Summary, fixes made after it
+      and what stays open: [review-2026-10-22.md](review-2026-10-22.md).
+
+**Phase 7: what the review left open, then the old points (user, 2026-10-22).** Then merge to `master` (user's OK given).
+User's picks: mini player docked in the sidebar; Ctrl+S / R / P kept; YouTube sound processing on only when something
+needs it; 2 s fade by default.
+- [x] Defaults: 2 s fade (once, for those who kept 5 s), YouTube's sound processed only when an effect, Adaptive Sound or
+      the moving cover needs it (already so: the setting is a permission; its text now says it).
+- [x] Sliders: bigger hit area (3 px today), handle visible in the Live Editor.
+- [x] Mini player docked at the bottom of the sidebar (never over the content); floating stays a choice (Appearance).
+- [x] Text: Settings › Appearance › Text size (compact = before, normal ≈ 14 px body by default, large), rem sizes
+      scaled by the root size, spacing and corners kept in px; 9 px labels raised to 10 px (11 at normal).
+- [x] Settings: General / Playback / Appearance (playback settings out of Appearance, daily ones out of Advanced);
+      Hi-Fi leftovers dropped or tucked away.
+- [x] Lists: keyboard (one tab stop, arrows, Enter, Shift / Ctrl selection), multi-select with actions, drag and drop
+      to playlists and within custom playlists, reorderable Up next.
+- [x] Library: artists from YouTube channels cleaned ("- Topic", several artists), chips count what the page shows,
+      sort by clicking column headers.
+- [x] Music Detector without a personal token: AudD takes a few requests a day without one (checked live with a
+      test tone 2026-10-22); a token of your own only once they are used up (#901).
+- [x] Old points: Home sections show / hide / reorder; local folders watched; 50,000-track performance pass (Albums
+      8 s → 0.4 s, Artists 2.3 s → 0.45 s, library load 157 ms); AA contrast (muted text on cards too); Spotify links
+      over 100 songs (whole playlist with your own key, else said). Left to the user: back up the signing key
+      (`~/.tauri/music-app.key`) somewhere safe.
+- [x] Live Editor (user, mid-work): changes not saved as a version survive the app closing (back as they were).
+- [x] Lyrics (user, mid-work): ♪ in the intro, instrumental parts and the outro; no big empty space above and below;
+      the line being sung fills word by word as the song goes (karaoke), past lines dimmed.
+- [x] Now Playing (user, mid-work): Auto / Video / Cover and Close player readable on any cover (theme background,
+      blurred, behind them).
+- [x] Lyrics of slowed / super slowed versions (user, mid-work, after the rest): timings too early; compare both
+      durations to stretch them (`music_core::lyrics` already stretches: find why it didn't here, e.g. a 6:20 super
+      slowed of a ~3 min song). Cause: stretch capped at 1.5× (super slowed is ~1.8×) and an unknown length trusted the
+      original timings; now 0.4× to 2.6×, a slowed title waits for its length, cached answers made before are asked again.
+- [ ] Fix what's found, `pnpm check`, CI green on the three systems, merge PR #1.
+
 ## Still to do (one list, updated 2026-10-17)
 
 Everything still open, gathered from the sections below. Tick a line when it lands; details stay in their section.

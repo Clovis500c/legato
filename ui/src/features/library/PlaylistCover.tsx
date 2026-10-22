@@ -1,15 +1,12 @@
 import { Playlist } from '@phosphor-icons/react'
-import { convertFileSrc } from '@tauri-apps/api/core'
 import { useMemo } from 'react'
 import { useSettings } from '../../app/settings'
 import { useStore } from '../../app/store'
 import { playlistKey, type LibraryPlaylist } from '../../shared/api'
-import { trackArt } from '../../shared/art'
+import { coverImage, trackArt } from '../../shared/art'
 import { Cover } from '../../shared/ui/Cover'
 import { SourceIcon } from '../../shared/ui/SourceIcon'
 import { coverTracks } from './covers'
-
-export const coverImage = (name: string) => convertFileSrc(`cover/${name}`, 'art')
 
 /**
  * Playlist icon as chosen (right-click › Cover): service logo, first song, grid of 4, or a picked image. big = page

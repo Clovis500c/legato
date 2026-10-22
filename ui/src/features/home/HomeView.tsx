@@ -1,28 +1,31 @@
-import { CaretRight, Disc, MicrophoneStage, MusicNotes, Play, Playlist, PlusCircle, SpinnerGap, VinylRecord } from '@phosphor-icons/react'
+import { ArrowDown, ArrowUp, CaretRight, Disc, MicrophoneStage, MusicNotes, Pause, Play, Playlist, PlusCircle, SlidersHorizontal, SpinnerGap, VinylRecord } from '@phosphor-icons/react'
 import { openUrl } from '@tauri-apps/plugin-opener'
-import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { Fragment, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useSettings } from '../../app/settings'
 import { useStore, type View } from '../../app/store'
 import { api, playlistKey, type HomeItem, type LibraryTrack, type ListRef, type Shelf } from '../../shared/api'
 import { remoteArt, trackArt } from '../../shared/art'
 import { formatCount } from '../../shared/format'
 import { onMenu, type MenuEntry } from '../../shared/ui/ContextMenu'
-import { RoundButton } from '../../shared/ui/controls'
+import { RoundButton, Toggle } from '../../shared/ui/controls'
+import { Dialog } from '../../shared/ui/Dialog'
+import { moveHome, type HomeSectionId } from '../../shared/theme/theme'
 import { Cover } from '../../shared/ui/Cover'
 import { PageHeader } from '../../shared/ui/PageHeader'
 import { SourceIcon } from '../../shared/ui/SourceIcon'
 import { groupAlbums, groupArtists, type Sort } from '../library/filter'
 import { PlaylistCover } from '../library/PlaylistCover'
-import { trackMenu } from '../menus'
+import { playerMenu, trackMenu } from '../menus'
 import { MixCard, useMixes } from '../mixes/MixesView'
 import { remoteTrack, useNowTrack, usePlayer } from '../player/store'
+import { msg, tr, trn } from '../../shared/i18n/i18n'
 
 const CARD = 156
 const ROW = 12
 
 const greeting = () => {
   const h = new Date().getHours()
-  return h < 5 ? 'Good night' : h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening'
+  return h < 5 ? tr('Good night') : h < 12 ? tr('Good morning') : h < 18 ? tr('Good afternoon') : tr('Good evening')
 }
 
 /** Titled row of cards, scrolled sideways. */
@@ -46,7 +49,7 @@ function SeeAll({ to, sort }: { to: View; sort?: Sort }) {
   const go = useStore((s) => s.go)
   return (
     <button onClick={() => (sort && useStore.getState().setSort(sort), go(to))} className="flex items-center gap-1 text-xs font-semibold text-ink-2 hover:text-ink">
-      See all <CaretRight size={11} weight="bold" />
+      {tr('See all')} <CaretRight size={11} weight="bold" />
     </button>
   )
 }
@@ -59,11 +62,11 @@ function Card({ title, sub, art, round, onOpen, onPlay, menu, busy }: { title: s
         <span className={`relative block overflow-hidden ${round ? 'rounded-full' : 'rounded-cover'}`} style={{ width: CARD, height: CARD }}>
           {art}
         </span>
-        <span className="block truncate text-[13px] font-semibold group-hover:underline">{title}</span>
+        <span className="block truncate text-[0.8125rem] font-semibold group-hover:underline">{title}</span>
         <span className="-mt-1.5 line-clamp-2 text-xs text-ink-2">{sub}</span>
       </button>
       {onPlay && (
-        <RoundButton label={`Play ${title}`} kind="primary" size="md" className={`absolute right-2 ${busy ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 focus:opacity-100'}`} style={{ top: CARD - 48 }} onClick={onPlay}>
+        <RoundButton label={tr('Play {title}', { title })} kind="primary" size="md" className={`absolute right-2 ${busy ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 focus:opacity-100'}`} style={{ top: CARD - 48 }} onClick={onPlay}>
           {busy ? <SpinnerGap size={16} className="animate-spin" /> : <Play weight="fill" size={16} />}
         </RoundButton>
       )}
@@ -85,34 +88,37 @@ function QuickAccess() {
   const playing = usePlayer((s) => s.playing)
   const track = useNowTrack()
   const tiles: { icon: ReactNode; label: string; sub: string; onClick: () => void }[] = [
-    { icon: <MusicNotes size={20} />, label: 'Songs', sub: formatCount(tracks.length), onClick: () => go({ name: 'songs' }) },
-    { icon: <VinylRecord size={20} />, label: 'Albums', sub: formatCount(counts.albums), onClick: () => go({ name: 'albums' }) },
-    { icon: <MicrophoneStage size={20} />, label: 'Artists', sub: formatCount(counts.artists), onClick: () => go({ name: 'artists' }) },
-    { icon: <Disc size={20} />, label: 'Mixes', sub: 'Made for you', onClick: () => go({ name: 'mixes' }) },
-    { icon: <Playlist size={20} />, label: 'Playlists', sub: formatCount(playlists.length), onClick: () => playlists[0] && go({ name: 'playlist', id: playlists[0].id }) },
-    { icon: <PlusCircle size={20} />, label: 'Add music', sub: 'Search, links, files', onClick: () => go({ name: 'add' }) },
+    { icon: <MusicNotes size={20} />, label: tr('Songs'), sub: formatCount(tracks.length), onClick: () => go({ name: 'songs' }) },
+    { icon: <VinylRecord size={20} />, label: tr('Albums'), sub: formatCount(counts.albums), onClick: () => go({ name: 'albums' }) },
+    { icon: <MicrophoneStage size={20} />, label: tr('Artists'), sub: formatCount(counts.artists), onClick: () => go({ name: 'artists' }) },
+    { icon: <Disc size={20} />, label: tr('Mixes'), sub: tr('Made for you'), onClick: () => go({ name: 'mixes' }) },
+    { icon: <Playlist size={20} />, label: tr('Playlists'), sub: formatCount(playlists.length), onClick: () => playlists[0] && go({ name: 'playlist', id: playlists[0].id }) },
+    { icon: <PlusCircle size={20} />, label: tr('Add music'), sub: tr('Search, links, files'), onClick: () => go({ name: 'add' }) },
   ]
   return (
     <div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-2.5">
       {now && (
-        <button onClick={() => usePlayer.getState().setFull(true)} className="col-span-full flex items-center gap-4 rounded-xl border border-line bg-raised p-2.5 pr-4 text-left transition hover:bg-bg sm:col-span-2">
-          <Cover title={track?.album ?? now.title} art={track && trackArt(track)} size={56} />
-          <span className="flex min-w-0 flex-1 flex-col">
-            <span className="kicker">{playing ? 'Now playing' : 'Pick up where you left off'}</span>
-            <span className="truncate text-[15px] font-semibold">{now.title}</span>
-            <span className="truncate text-xs text-ink-2">{now.artist}</span>
-          </span>
-          <RoundButton label={playing ? 'Pause' : 'Play'} kind="primary" size="md" onClick={(e) => (e.stopPropagation(), usePlayer.getState().toggle())}>
-            <Play weight="fill" size={16} />
+        // Open and play / pause side by side: a button can't hold another.
+        <div onContextMenu={onMenu(playerMenu)} className="col-span-full flex items-center gap-4 rounded-xl border border-line bg-raised p-2.5 pr-4 transition hover:bg-bg sm:col-span-2">
+          <button onClick={() => usePlayer.getState().setFull(true)} className="flex min-w-0 flex-1 items-center gap-4 text-left">
+            <Cover title={track?.album ?? now.title} art={track && trackArt(track)} size={56} />
+            <span className="flex min-w-0 flex-1 flex-col">
+              <span className="kicker">{playing ? tr('Now playing') : tr('Pick up where you left off')}</span>
+              <span className="truncate text-[0.9375rem] font-semibold">{now.title}</span>
+              <span className="truncate text-xs text-ink-2">{now.artist}</span>
+            </span>
+          </button>
+          <RoundButton label={playing ? tr('Pause') : tr('Play')} kind="primary" size="md" onClick={() => usePlayer.getState().toggle()}>
+            {playing ? <Pause weight="fill" size={16} /> : <Play weight="fill" size={16} />}
           </RoundButton>
-        </button>
+        </div>
       )}
       {tiles.map((t) => (
         <button key={t.label} onClick={t.onClick} className="flex items-center gap-3 rounded-xl border border-line bg-raised px-3.5 py-3 text-left transition hover:bg-bg">
           <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-bg text-ink-2">{t.icon}</span>
           <span className="flex min-w-0 flex-col">
-            <span className="text-[13px] font-semibold">{t.label}</span>
-            <span className="truncate font-mono text-[10px] tracking-[0.06em] text-ink-3 uppercase">{t.sub}</span>
+            <span className="text-[0.8125rem] font-semibold">{t.label}</span>
+            <span className="truncate font-mono text-[0.625rem] tracking-[0.06em] text-ink-3 uppercase">{t.sub}</span>
           </span>
         </button>
       ))}
@@ -158,11 +164,11 @@ function YouTubeShelf({ shelf }: { shelf: Shelf }) {
     }
     const list = it.list!
     const menu = (): MenuEntry[] => [
-      { label: 'Play', icon: <Play size={16} />, onSelect: () => void playList(i, list) },
-      { label: 'Shuffle play', onSelect: () => void playList(i, list, true) },
-      { label: 'Add to queue', onSelect: () => void load(i, list).then((t) => t.length && enqueue(t, false)) },
+      { label: tr('Play'), icon: <Play size={16} />, onSelect: () => void playList(i, list) },
+      { label: tr('Shuffle play'), onSelect: () => void playList(i, list, true) },
+      { label: tr('Add to queue'), onSelect: () => void load(i, list).then((t) => t.length && enqueue(t, false)) },
       '-',
-      { label: 'Open in YouTube Music', icon: <SourceIcon source="youtube" size={14} />, onSelect: () => void openUrl(listUrl(list)).catch(() => {}) },
+      { label: tr('Open in YouTube Music'), icon: <SourceIcon source="youtube" size={14} />, onSelect: () => void openUrl(listUrl(list)).catch(() => {}) },
     ]
     return <Card key={i} title={it.title} sub={it.subtitle} art={art} busy={busy === i} onOpen={() => void playList(i, list)} onPlay={() => void playList(i, list)} menu={menu} />
   }
@@ -170,7 +176,7 @@ function YouTubeShelf({ shelf }: { shelf: Shelf }) {
     <Row
       kicker={
         <>
-          <SourceIcon source="youtube" size={10} /> From YouTube Music
+          <SourceIcon source="youtube" size={10} /> {tr('From YouTube Music')}
         </>
       }
       title={shelf.title}
@@ -201,13 +207,13 @@ function ServiceShelves() {
     return (
       <div className="flex items-center gap-4 rounded-xl border border-line bg-raised p-4">
         <SourceIcon source="youtube" size={22} />
-        <p className="flex-1 text-[13px] text-ink-2">Sign in to YouTube Music to see its recommendations here too.</p>
+        <p className="flex-1 text-[0.8125rem] text-ink-2">{tr('Sign in to YouTube Music to see its recommendations here too.')}</p>
         <button onClick={() => go({ name: 'settings', section: 'sources' })} className="rounded-full bg-ink px-3.5 py-1.5 text-xs font-semibold text-bg">
-          Sign in
+          {tr('Sign in')}
         </button>
       </div>
     )
-  if (error) return <p className="text-xs text-ink-3">YouTube Music recommendations unavailable: {error}</p>
+  if (error) return <p className="text-xs text-ink-3">{tr('YouTube Music recommendations unavailable: {error}', { error })}</p>
   if (!shelves)
     return (
       <div className="flex flex-col gap-3" aria-busy>
@@ -222,44 +228,108 @@ function ServiceShelves() {
   return shelves.map((s) => <YouTubeShelf key={s.title} shelf={s} />)
 }
 
+const sectionLabels: Record<HomeSectionId, string> = {
+  quick: msg('Shortcuts'),
+  mixes: msg('Made for you'),
+  recent: msg('Recently played'),
+  playlists: msg('Your playlists'),
+  youtube: msg('YouTube Music recommendations'),
+  added: msg('Recently added'),
+}
+
+/** Which Home sections show, in what order (settings homeSections). */
+function CustomizeHome({ onClose }: { onClose: () => void }) {
+  const list = useSettings((s) => s.settings.homeSections)
+  const update = useSettings((s) => s.update)
+  return (
+    <Dialog title={tr('Customize Home')} onClose={onClose}>
+      <ul className="flex flex-col rounded-xl border border-line bg-raised">
+        {list.map((x, i) => (
+          <li key={x.id} className="flex items-center gap-2 border-b border-line-soft px-3 py-2 last:border-b-0">
+            <span className={`flex-1 text-[0.8125rem] ${x.on ? 'font-medium' : 'text-ink-3'}`}>{tr(sectionLabels[x.id])}</span>
+            <RoundButton label={tr('Move up')} kind="plain" size="xs" disabled={i === 0} onClick={() => update({ homeSections: moveHome(list, x.id, -1) })}>
+              <ArrowUp size={13} />
+            </RoundButton>
+            <RoundButton label={tr('Move down')} kind="plain" size="xs" disabled={i === list.length - 1} onClick={() => update({ homeSections: moveHome(list, x.id, 1) })}>
+              <ArrowDown size={13} />
+            </RoundButton>
+            <Toggle label={tr(sectionLabels[x.id])} checked={x.on} onChange={(on) => update({ homeSections: list.map((y) => (y.id === x.id ? { ...y, on } : y)) })} />
+          </li>
+        ))}
+      </ul>
+    </Dialog>
+  )
+}
+
 export function HomeView() {
   const { tracks, playlists, stats, go } = useStore()
   const hidden = useSettings((s) => s.settings.hiddenPlaylists)
+  const sections = useSettings((s) => s.settings.homeSections)
+  const [customizing, setCustomizing] = useState(false)
   const { mixes } = useMixes()
   const recent = useMemo(() => tracks.filter((t) => stats[t.id]?.[1]).sort((a, b) => stats[b.id][1] - stats[a.id][1]).slice(0, ROW), [tracks, stats])
   const added = useMemo(() => [...tracks].sort((a, b) => b.added - a.added).slice(0, ROW), [tracks])
   const shown = useMemo(() => playlists.filter((p) => !hidden.includes(playlistKey(p))).slice(0, ROW), [playlists, hidden])
   return (
     <>
-      <PageHeader kicker="Home" title={greeting()} />
+      <PageHeader
+        kicker={tr('Home')}
+        title={greeting()}
+        actions={
+          <RoundButton label={tr('Customize Home')} kind="plain" size="md" onClick={() => setCustomizing(true)}>
+            <SlidersHorizontal size={18} />
+          </RoundButton>
+        }
+      />
       <div className="-mx-2 flex min-h-0 flex-1 flex-col gap-10 overflow-y-auto px-2 pb-8">
-        <QuickAccess />
-        {mixes && mixes.length > 0 && (
-          <Row kicker="Made on this PC" title="Made for you" action={<SeeAll to={{ name: 'mixes' }} />}>
-            {mixes.slice(0, ROW).map((m) => (
-              <MixCard key={m.id} mix={m} />
-            ))}
-          </Row>
-        )}
-        {recent.length > 0 && (
-          <Row title="Recently played">
-            <TrackCards tracks={recent} />
-          </Row>
-        )}
-        {shown.length > 0 && (
-          <Row title="Your playlists">
-            {shown.map((p) => (
-              <Card key={p.id} title={p.name} sub={`${formatCount(p.trackCount)} songs`} art={<PlaylistCover p={p} size={CARD} big />} onOpen={() => go({ name: 'playlist', id: p.id })} onPlay={() => void api.playlistTracks(p.id).then((t) => usePlayer.getState().playTracks(t, 0))} />
-            ))}
-          </Row>
-        )}
-        <ServiceShelves />
-        {added.length > 0 && (
-          <Row title="Recently added" action={<SeeAll to={{ name: 'songs' }} sort="added-new" />}>
-            <TrackCards tracks={added} />
-          </Row>
+        {sections
+          .filter((x) => x.on)
+          .map((x) => {
+            const sec: Record<HomeSectionId, () => ReactNode> = {
+              quick: () => <QuickAccess />,
+              mixes: () =>
+                mixes &&
+                mixes.length > 0 && (
+                  <Row kicker={tr('Made on this PC')} title={tr('Made for you')} action={<SeeAll to={{ name: 'mixes' }} />}>
+                    {mixes.slice(0, ROW).map((m) => (
+                      <MixCard key={m.id} mix={m} />
+                    ))}
+                  </Row>
+                ),
+              recent: () =>
+                recent.length > 0 && (
+                  <Row title={tr('Recently played')}>
+                    <TrackCards tracks={recent} />
+                  </Row>
+                ),
+              playlists: () =>
+                shown.length > 0 && (
+                  <Row title={tr('Your playlists')}>
+                    {shown.map((p) => (
+                      <Card key={p.id} title={p.name} sub={trn(p.trackCount, '{n} song', '{n} songs')} art={<PlaylistCover p={p} size={CARD} big />} onOpen={() => go({ name: 'playlist', id: p.id })} onPlay={() => void api.playlistTracks(p.id).then((t) => usePlayer.getState().playTracks(t, 0))} />
+                    ))}
+                  </Row>
+                ),
+              youtube: () => <ServiceShelves />,
+              added: () =>
+                added.length > 0 && (
+                  <Row title={tr('Recently added')} action={<SeeAll to={{ name: 'songs' }} sort="added-new" />}>
+                    <TrackCards tracks={added} />
+                  </Row>
+                ),
+            }
+            return <Fragment key={x.id}>{sec[x.id]()}</Fragment>
+          })}
+        {sections.every((x) => !x.on) && (
+          <p className="m-auto text-center text-sm text-ink-2">
+            {tr('Every Home section is hidden.')}{' '}
+            <button onClick={() => setCustomizing(true)} className="font-semibold text-ink underline-offset-2 hover:underline">
+              {tr('Customize Home')}
+            </button>
+          </p>
         )}
       </div>
+      {customizing && <CustomizeHome onClose={() => setCustomizing(false)} />}
     </>
   )
 }

@@ -6,6 +6,7 @@ use anyhow::{Context, Result, bail};
 use async_trait::async_trait;
 use music_core::matching::best_match;
 use music_core::model::{Connector, PlaylistRef, Source, Track};
+use music_core::musicness::{Clues, VideoType, classify};
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
@@ -66,12 +67,16 @@ pub struct YouTubeMusic {
     http: reqwest::Client,
 }
 
-fn cookie_value<'a>(cookie: &'a str, name: &str) -> Option<&'a str> {
+pub(crate) fn cookie_value<'a>(cookie: &'a str, name: &str) -> Option<&'a str> {
     cookie.split("; ").find_map(|kv| kv.strip_prefix(name)?.strip_prefix('='))
 }
 
-/// "1.YYYYMMDD.01.00" like the site; today's date keeps it plausible.
 fn client_version() -> String {
+    site_version(1)
+}
+
+/// "<major>.YYYYMMDD.01.00" like the sites (YouTube Music 1, YouTube 2); today's date keeps it plausible.
+pub(crate) fn site_version(major: u32) -> String {
     let days = SystemTime::now().duration_since(UNIX_EPOCH).map_or(0, |d| d.as_secs() / 86_400) as i64;
     // Civil date from days since epoch (Howard Hinnant).
     let z = days + 719_468;
@@ -83,16 +88,21 @@ fn client_version() -> String {
     let d = doy - (153 * mp + 2) / 5 + 1;
     let m = if mp < 10 { mp + 3 } else { mp - 9 };
     let y = yoe + era * 400 + i64::from(m <= 2);
-    format!("1.{y:04}{m:02}{d:02}.01.00")
+    format!("{major}.{y:04}{m:02}{d:02}.01.00")
 }
 
 /// `SAPISIDHASH <ts>_<sha1("<ts> <SAPISID> <origin>")>`: proof of the session, as the site computes it.
 pub fn sapisid_hash(sapisid: &str, ts: u64) -> String {
-    let digest = Sha1::digest(format!("{ts} {sapisid} {ORIGIN}").as_bytes());
+    sapisid_hash_for(sapisid, ts, ORIGIN)
+}
+
+/// Same for another Google origin (www.youtube.com).
+pub(crate) fn sapisid_hash_for(sapisid: &str, ts: u64, origin: &str) -> String {
+    let digest = Sha1::digest(format!("{ts} {sapisid} {origin}").as_bytes());
     format!("SAPISIDHASH {ts}_{}", digest.iter().map(|b| format!("{b:02x}")).collect::<String>())
 }
 
-fn text(v: &Value) -> Option<String> {
+pub(crate) fn text(v: &Value) -> Option<String> {
     v.get("simpleText").and_then(Value::as_str).map(String::from).or_else(|| {
         let runs = v.get("runs")?.as_array()?;
         Some(runs.iter().filter_map(|r| r.get("text")?.as_str()).collect())
@@ -115,10 +125,18 @@ fn find<'a>(v: &'a Value, key: &str, out: &mut Vec<&'a Value>) {
     }
 }
 
-fn all<'a>(v: &'a Value, key: &str) -> Vec<&'a Value> {
+pub(crate) fn all<'a>(v: &'a Value, key: &str) -> Vec<&'a Value> {
     let mut out = Vec::new();
     find(v, key, &mut out);
     out
+}
+
+/// Lyrics page → (text, source).
+fn lyrics_of(page: &Value) -> Option<(String, String)> {
+    let shelf = all(page, "musicDescriptionShelfRenderer").into_iter().next()?;
+    let body = text(shelf.get("description")?)?;
+    let source = shelf.get("footer").and_then(text).unwrap_or_default();
+    (!body.trim().is_empty()).then_some((body, source))
 }
 
 /// Result of adding videos to a playlist.
@@ -153,7 +171,7 @@ fn page_type(run: &Value) -> &str {
     run.pointer("/navigationEndpoint/browseEndpoint/browseEndpointContextSupportedConfigs/browseEndpointContextMusicConfig/pageType").and_then(Value::as_str).unwrap_or("")
 }
 
-fn parse_duration(s: &str) -> Option<u32> {
+pub(crate) fn parse_duration(s: &str) -> Option<u32> {
     let c = DURATION.captures(s.trim())?;
     let n = |i| c.get(i).map_or(0, |m| m.as_str().parse::<u32>().unwrap_or(0));
     Some(((n(1) * 60 + n(2)) * 60 + n(3)) * 1000)
@@ -185,7 +203,10 @@ fn row_track_with(row: &Value, fallback: Option<&str>) -> Option<Track> {
         artists.join(", ")
     };
     let art = row.pointer("/thumbnail/musicThumbnailRenderer/thumbnail/thumbnails").and_then(Value::as_array).and_then(|t| t.last()?.get("url")?.as_str()).map(big_thumb);
-    Some(Track { title, artist, album, duration_ms, isrc: None, ids: BTreeMap::from([(Source::Youtube, video_id)]), art })
+    // YouTube Music says what the video is (song, official video, anyone's upload, podcast): the classifier decides.
+    let video_type = all(row, "musicVideoType").into_iter().find_map(|v| VideoType::from_innertube(v.as_str()?));
+    let musicness = Some(classify(&Clues { title: &title, channel: &artist, duration_ms, artist_badge: false, video_type, live: false }));
+    Some(Track { title, artist, album, duration_ms, isrc: None, ids: BTreeMap::from([(Source::Youtube, video_id)]), art, musicness })
 }
 
 /// googleusercontent thumbs are sized in the URL ("=w60-h60-l90-rj"): ask for 544 px.
@@ -193,13 +214,29 @@ fn big_thumb(url: &str) -> String {
     THUMB_SIZE.replace(url, "=w544-h544").into_owned()
 }
 
+/// (video id, playlist item id) of each playlist row: one item id per occurrence, needed to remove it.
+fn item_ids(v: &Value) -> Vec<(String, String)> {
+    all(v, "musicResponsiveListItemRenderer")
+        .into_iter()
+        .filter_map(|row| {
+            let data = row.get("playlistItemData")?;
+            Some((data.get("videoId")?.as_str()?.to_string(), data.get("playlistSetVideoId")?.as_str()?.to_string()))
+        })
+        .collect()
+}
+
 fn rows(v: &Value) -> Vec<Track> {
     all(v, "musicResponsiveListItemRenderer").into_iter().filter_map(row_track).collect()
 }
 
 /// Playlist pages also carry a "Suggestions" shelf: keep the playlist shelf (rows + its continuation) only.
+fn playlist_shelf(page: &Value) -> &Value {
+    all(page, "musicPlaylistShelfRenderer").into_iter().next().unwrap_or(page)
+}
+
+#[cfg(test)]
 fn playlist_rows(page: &Value) -> (Vec<Track>, Option<String>) {
-    let shelf = all(page, "musicPlaylistShelfRenderer").into_iter().next().unwrap_or(page);
+    let shelf = playlist_shelf(page);
     (rows(shelf), continuation(shelf))
 }
 
@@ -289,21 +326,42 @@ impl YouTubeMusic {
         Ok(rows(&self.call("search", json!({ "query": query, "params": SONGS })).await?))
     }
 
-    /// Playlist page + continuations, playlist rows only.
-    async fn browse_rows(&self, browse_id: &str) -> Result<Vec<Track>> {
+    /// Playlist page + continuations: the playlist shelf of the first page (no suggestions), then each continuation.
+    async fn browse_pages(&self, browse_id: &str) -> Result<Vec<Value>> {
         let page = self.call("browse", json!({ "browseId": browse_id })).await?;
-        let (mut out, mut token) = playlist_rows(&page);
+        let shelf = playlist_shelf(&page).clone();
+        let mut token = continuation(&shelf);
+        let mut out = vec![shelf];
         for _ in 0..MAX_PAGES {
             let Some(t) = token else { break };
             let next = self.call("browse", json!({ "continuation": t })).await?;
-            let more = rows(&next);
-            if more.is_empty() {
+            if rows(&next).is_empty() {
                 break;
             }
-            out.extend(more);
             token = continuation(&next);
+            out.push(next);
         }
         Ok(out)
+    }
+
+    /// Playlist page + continuations, playlist rows only.
+    async fn browse_rows(&self, browse_id: &str) -> Result<Vec<Track>> {
+        Ok(self.browse_pages(browse_id).await?.iter().flat_map(rows).collect())
+    }
+
+    /// Every occurrence of these videos out of a playlist the account owns. Removing needs each row's own item id
+    /// ("setVideoId"), read fresh here (the library doesn't keep them). Returns how many rows went.
+    pub async fn remove_videos(&self, playlist_id: &str, video_ids: &[String]) -> Result<usize> {
+        let items: Vec<(String, String)> = self.browse_pages(&format!("VL{playlist_id}")).await?.iter().flat_map(item_ids).filter(|(v, _)| video_ids.contains(v)).collect();
+        if items.is_empty() {
+            return Ok(0);
+        }
+        let actions: Vec<Value> = items.iter().map(|(v, s)| json!({ "action": "ACTION_REMOVE_VIDEO", "removedVideoId": v, "setVideoId": s })).collect();
+        let v = self.call("browse/edit_playlist", json!({ "playlistId": playlist_id, "actions": actions })).await?;
+        match v.get("status").and_then(Value::as_str) {
+            None | Some("STATUS_SUCCEEDED") => Ok(items.len()),
+            Some(status) => bail!(refusal(&v).unwrap_or_else(|| format!("YouTube Music refused to remove the song ({status})"))),
+        }
     }
 
     /// Video ids of a playlist (export resume).
@@ -357,9 +415,24 @@ impl YouTubeMusic {
     }
 
     /// Like videos: what "add to Liked Music" means on YouTube Music.
+    /// Lyrics YouTube Music shows for this video (its Lyrics tab: plain text) and their source line ("Source: …").
+    pub async fn lyrics(&self, video_id: &str) -> Result<Option<(String, String)>> {
+        let next = self.call("next", json!({ "videoId": video_id, "isAudioOnly": true })).await?;
+        let Some(id) = all(&next, "browseId").into_iter().filter_map(Value::as_str).find(|b| b.starts_with("MPLYt")) else { return Ok(None) };
+        Ok(lyrics_of(&self.call("browse", json!({ "browseId": id })).await?))
+    }
+
     pub async fn like(&self, video_ids: &[String]) -> Result<()> {
         for v in video_ids {
             self.call("like/like", json!({ "target": { "videoId": v } })).await?;
+        }
+        Ok(())
+    }
+
+    /// Takes the like back: what "remove from Liked Music" means on YouTube Music.
+    pub async fn unlike(&self, video_ids: &[String]) -> Result<()> {
+        for v in video_ids {
+            self.call("like/removelike", json!({ "target": { "videoId": v } })).await?;
         }
         Ok(())
     }
@@ -589,6 +662,45 @@ mod tests {
         first.assert_async().await;
     }
 
+    #[tokio::test]
+    async fn removes_every_occurrence_by_item_id() {
+        let mut s = Server::new_async().await;
+        let item = |v: &str, set: &str| {
+            let mut r = row(v, v, vec![run("X", None)], None);
+            r["musicResponsiveListItemRenderer"]["playlistItemData"]["playlistSetVideoId"] = json!(set);
+            r
+        };
+        s.mock("POST", "/browse")
+            .match_query(Matcher::Any)
+            .match_body(Matcher::PartialJson(json!({ "browseId": "VLPL1" })))
+            .with_body(json!({ "contents": [{ "musicPlaylistShelfRenderer": { "contents": [item("v1", "s1"), item("v2", "s2"), item("v1", "s3")] } }] }).to_string())
+            .create_async()
+            .await;
+        let edit = s
+            .mock("POST", "/browse/edit_playlist")
+            .match_query(Matcher::Any)
+            .match_body(Matcher::PartialJson(json!({ "playlistId": "PL1", "actions": [{ "action": "ACTION_REMOVE_VIDEO", "removedVideoId": "v1", "setVideoId": "s1" }, { "action": "ACTION_REMOVE_VIDEO", "removedVideoId": "v1", "setVideoId": "s3" }] })))
+            .with_body(json!({ "status": "STATUS_SUCCEEDED" }).to_string())
+            .create_async()
+            .await;
+        let yt = YouTubeMusic::with_api(&s.url(), COOKIE).unwrap();
+        assert_eq!(yt.remove_videos("PL1", &["v1".into()]).await.unwrap(), 2);
+        edit.assert_async().await;
+        // Not there: nothing sent.
+        assert_eq!(yt.remove_videos("PL1", &["v9".into()]).await.unwrap(), 0);
+    }
+
+    #[tokio::test]
+    async fn remove_reports_refusals() {
+        let mut s = Server::new_async().await;
+        let mut r = row("v1", "A", vec![run("X", None)], None);
+        r["musicResponsiveListItemRenderer"]["playlistItemData"]["playlistSetVideoId"] = json!("s1");
+        s.mock("POST", "/browse").match_query(Matcher::Any).with_body(json!({ "contents": [r] }).to_string()).create_async().await;
+        s.mock("POST", "/browse/edit_playlist").match_query(Matcher::Any).with_body(json!({ "status": "STATUS_FAILED" }).to_string()).create_async().await;
+        let e = YouTubeMusic::with_api(&s.url(), COOKIE).unwrap().remove_videos("PL1", &["v1".into()]).await.unwrap_err().to_string();
+        assert!(e.contains("refused to remove"), "{e}");
+    }
+
     #[test]
     fn needs_a_signed_in_session() {
         let Err(e) = YouTubeMusic::with_api("http://127.0.0.1:9", "YSC=x; PREF=f6=8") else { panic!("session without SAPISID") };
@@ -622,6 +734,21 @@ mod tests {
         let e = yt.playlist_videos("PL1").await.unwrap_err().to_string();
         assert!(e.contains("401") && e.contains("UNAUTHENTICATED"), "{e}");
         assert!(yt.search_songs("a").await.is_err());
+    }
+
+    #[tokio::test]
+    async fn lyrics_come_from_the_lyrics_tab() {
+        let mut s = Server::new_async().await;
+        let tabs = json!({ "contents": { "tabs": [{ "tabRenderer": { "endpoint": { "browseEndpoint": { "browseId": "MPADx" } } } }, { "tabRenderer": { "endpoint": { "browseEndpoint": { "browseId": "MPLYt_abc" } } } }] } });
+        s.mock("POST", "/next").match_query(Matcher::Any).match_body(Matcher::PartialJson(json!({ "videoId": "v1" }))).with_body(tabs.to_string()).create_async().await;
+        let page = json!({ "contents": { "sectionListRenderer": { "contents": [{ "musicDescriptionShelfRenderer": { "description": { "runs": [{ "text": "line one
+line two" }] }, "footer": { "runs": [{ "text": "Source: LyricFind" }] } } }] } } });
+        s.mock("POST", "/browse").match_query(Matcher::Any).match_body(Matcher::PartialJson(json!({ "browseId": "MPLYt_abc" }))).with_body(page.to_string()).create_async().await;
+        s.mock("POST", "/next").match_query(Matcher::Any).match_body(Matcher::PartialJson(json!({ "videoId": "v2" }))).with_body(json!({ "contents": {} }).to_string()).create_async().await;
+        let yt = YouTubeMusic::with_api(&s.url(), COOKIE).unwrap();
+        assert_eq!(yt.lyrics("v1").await.unwrap(), Some(("line one
+line two".into(), "Source: LyricFind".into())));
+        assert_eq!(yt.lyrics("v2").await.unwrap(), None);
     }
 
     /// Unofficial API: a reshuffled answer gives nothing, never a panic.

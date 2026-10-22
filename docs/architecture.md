@@ -18,11 +18,13 @@ src-tauri/              thin shell: commands, keychain, WebView2 hook, media pan
 
 | Crate | Role |
 |---|---|
-| `music-core` | Track model, matching (ISRC, then title + artist + duration), SQLite library with versioned migrations, sync, local file scan, listening history and mixes, share codes. No Tauri, no network. |
-| `music-connectors` | One module per service. Shared OAuth PKCE loopback (Spotify), YouTube Music web session, iTunes catalog, Discord IPC, nearby sharing (mDNS + SPAKE2), image cache. Base URLs are injectable for tests. |
-| `music-player` | Native playback of local files and previews (rodio, symphonia) on its own thread, with a gapless queue. |
+| `music-core` | Track model, matching (ISRC, then title + artist + duration), SQLite library with versioned migrations, sync, Sync Mode between PCs (snapshot, merge, sealing), local file scan, listening history and mixes, share codes, search merging and the music / not music classifier. No Tauri, no network. |
+| `music-connectors` | One module per service. Shared OAuth PKCE loopback (Spotify), YouTube Music web session, normal YouTube search, iTunes catalog, LRCLIB lyrics, AudD song recognition (user's token), Discord IPC, nearby sharing and Sync Mode's network swap (mDNS + SPAKE2), image cache. Base URLs are injectable for tests. |
+| `music-player` | Native playback of local files and previews (rodio, symphonia) on its own thread, with a gapless queue, through the live processing chain. Live Editor export of local files (WAV). Music Detector clips from the microphone or what the PC plays (WASAPI loopback), memory only. |
+| `music-dsp` | Live audio processing, pure Rust: biquads, BS.1770 loudness meter, Adaptive Sound gain, limiter, the Live Editor's effects (EQ, compressor, width, echo, reverb, 3D) and speed / tempo / pitch (WSOLA), shared `Control`. |
 | `music-shield` | Ad and tracker blocking with Brave's adblock engine, plus the YouTube player script. |
-| `src-tauri` | IPC commands, OS keychain, WebView2 request hook, Windows media panel, tray icon, window background. No business logic. |
+| `music-plugins` | Third-party plugins: one QuickJS runtime per plugin (64 MB, 1 s per run, no DOM, network or files), manifest and permissions checked in Rust, HTTPS gateway to approved public hosts. Author guide: `docs/plugins.md`. |
+| `src-tauri` | IPC commands (`lib.rs`, and per feature: `detector.rs`, `editor.rs`, `themes.rs`, `syncmode.rs`, `plugins.rs`), OS keychain, WebView2 request hook, Windows media panel, tray icon, window background, voice search through Windows' speech recognition (`speech.rs`). No business logic. |
 
 ## Rules
 
@@ -32,7 +34,9 @@ src-tauri/              thin shell: commands, keychain, WebView2 hook, media pan
 - **The interface never touches the network.** Images go through the `art` URI scheme (`src-tauri/src/art.rs`): host
   allowlist, disk cache.
 - **Secrets in the OS keychain** (`keyring`). Settings and the library are local (SQLite).
-- **Legal playback only.** Official players and the user's own files; no audio extraction. See [playback.md](playback.md).
+- **Legal playback only.** Official players and the user's own files; no audio extraction. Live processing of what
+  plays (Adaptive Sound…) is allowed; downloading, recording or exporting a platform's audio never is. See
+  [playback.md](playback.md).
 - **Settings schema.** One typed schema (`ui/src/shared/theme/theme.ts`), sanitized on load. Changing a default for
   everyone bumps `DEFAULTS_VERSION`.
 - **Database schema.** Migrations keyed on SQLite `user_version` (`crates/core/src/library.rs`).
@@ -55,6 +59,13 @@ src-tauri/              thin shell: commands, keychain, WebView2 hook, media pan
 - `ui/src/features/<name>/`: one folder per feature. Right-click menus are built in `features/menus.tsx`.
 - `ui/src/shared/`: typed API, formatting, themes, image helpers and the small component kit (`shared/ui/`).
 - Long lists are virtualized (`@tanstack/react-virtual`).
+- Languages: `ui/src/shared/i18n/` (no library). English text is the key: `tr('Play')`, `trn(n, '{n} song', '{n} songs')`
+  (the language's plural rules), `msg()` marks text kept in tables and translated where shown. `fr.ts` maps English
+  to French; a test scans the code and fails on a missing or stale translation. Language = Windows' (the webview's)
+  or the user's pick; changing it re-renders in place. The shell's own words (tray, taskbar buttons) follow through
+  `src-tauri/src/lang.rs`. Mix titles come from Rust as parts (`mixes::Words`) and are worded by the UI.
+  Not translated: messages from services and Rust errors, YouTube Music's own shelf titles (its parsing reads
+  English), Discord presence buttons (shown on Discord).
 
 ## Player
 
@@ -66,11 +77,22 @@ src-tauri/              thin shell: commands, keychain, WebView2 hook, media pan
 
 ## Updates
 
-`src-tauri/src/update.rs` with `tauri-plugin-updater`: checked 20 s after launch and every 6 hours (release builds),
-downloaded in the background, signature checked against the public key in `tauri.conf.json`. The interface
-(`features/update/updates.ts`) installs it at a quiet moment: nothing played for 15 s and no input for a minute. The
-installer runs silently and starts the app again, which reopens as it was (queue, position, paused or not, screen).
-Settings › About shows the version, the update state and the app's caches.
+`src-tauri/src/update.rs` with `tauri-plugin-updater`: checked 5 s after every launch, when the window comes back from
+the tray after more than an hour, and every 6 hours (release builds). With Automatic updates on (Settings › About) it
+downloads in the background, else it only announces the version. Signature checked against the public key in
+`tauri.conf.json`. The interface (`features/update/updates.ts`) installs it without cutting a song: when a song ends on
+its own (nobody touched the app for a minute) the session is saved on the next song and the installer runs, or at a
+quiet moment (nothing played for 15 s, no input for a minute). The installer runs silently and starts the app again,
+which reopens as it was (queue, screen) and plays the next song. Settings › About shows the version, the update state
+and the app's caches.
+
+## Background (tray)
+
+`src-tauri/src/background.rs`: closing the window keeps the app in the notification area (Settings › General, on by
+default), music playing. Hidden, the WebView2 controller is set invisible (no painting, page `hidden`) and its memory
+target low; after 5 minutes hidden with nothing playing it is suspended, and woken before the tray, a global shortcut,
+a media key or showing the window reach it. A second launch shows the running one (single instance). Quit in the tray
+menu is the only exit. Measured: WebView2 working set 867 MB shown → 96 MB hidden, music on.
 
 ## Add-ons
 

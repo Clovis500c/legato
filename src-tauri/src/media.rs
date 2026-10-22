@@ -68,12 +68,14 @@ mod imp {
                     SystemMediaTransportControlsButton::Stop => "stop",
                     _ => return Ok(()),
                 };
+                crate::background::wake(&app);
                 let _ = app.emit_to("main", "media-key", key);
                 Ok(())
             }))?;
             let app = window.app_handle().clone();
             smtc.PlaybackPositionChangeRequested(&TypedEventHandler::<SystemMediaTransportControls, PlaybackPositionChangeRequestedEventArgs>::new(move |_, args| {
                 let at = args.ok()?.RequestedPlaybackPosition()?;
+                crate::background::wake(&app);
                 let _ = app.emit_to("main", "media-seek", millis(at.Duration));
                 Ok(())
             }))?;

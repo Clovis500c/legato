@@ -1,4 +1,7 @@
 /** Hi-Fi themes: palettes, user settings schema, contrast check. Applied as CSS variables (styles.css @theme). */
+import { LANGUAGES, msg, tr } from '../i18n/i18n'
+import { ACTIONS, validCombo, type Custom } from '../../app/keys'
+import { cleanCss } from '../css'
 
 export const PALETTE_KEYS = ['bg', 'panel', 'raised', 'recess', 'line', 'lineSoft', 'ink', 'ink2', 'ink3', 'ink4', 'accent', 'onAccent', 'ledOff'] as const
 export type PaletteKey = (typeof PALETTE_KEYS)[number]
@@ -10,30 +13,92 @@ export interface Theme extends Palette {
   dark: boolean
   font: Font
   glow: boolean
+  /** Corner roundness of panels, buttons, cards. */
+  radius: Radius
+  /** Picture behind the whole window (covers/ file `bg-…`), surfaces see-through over it. */
+  background?: Background
+  /** Appearance choices the theme brings when picked (cover shape, density, player…). */
+  look?: Look
+  /** Advanced: the theme's own CSS (cleaned; Music App's name, logo and legal notices stay). */
+  css?: string
 }
+
+export const RADII = ['sharp', 'soft', 'round'] as const
+export type Radius = (typeof RADII)[number]
+
+export const FITS = ['cover', 'contain', 'tile'] as const
+export interface Background {
+  image: string
+  fit: (typeof FITS)[number]
+  /** Theme background color over the picture, 0..90 %. */
+  dim: number
+  /** Picture blur, px. */
+  blur: number
+  /** Surfaces' opacity over the picture, 40..100 %. */
+  panels: number
+}
+
+/** Settings a theme can bring along ("parts of the UX"). */
+export const LOOK_KEYS = ['covers', 'density', 'readout', 'volume', 'tuner', 'tint', 'immersive', 'backdropBlur', 'backdropDim', 'backdropMotion', 'motion', 'sidebarCounts', 'listCovers', 'columns'] as const
+export type LookKey = (typeof LOOK_KEYS)[number]
+export type Look = Partial<Pick<Settings, LookKey>>
+
+/** Theme CSS kept in settings (synced, size-bounded): 20 KB. */
+export const MAX_THEME_CSS = 20_000
 
 /** modern = Roboto (YouTube's UI font), hifi = Schibsted Grotesk, neutral = Segoe UI. */
 export const FONTS = ['modern', 'hifi', 'neutral'] as const
 export type Font = (typeof FONTS)[number]
 
-const preset = (id: string, name: string, dark: boolean, p: Palette, font: Font = 'hifi', glow = true): Theme => ({ id, name, dark, font, glow, ...p })
+const preset = (id: string, name: string, dark: boolean, p: Palette, font: Font = 'hifi', glow = true): Theme => ({ id, name, dark, font, glow, radius: 'soft', ...p })
 
-// ink3 values tuned for WCAG AA (4.5:1) on bg.
+// ink3 values tuned for WCAG AA (4.5:1) on bg, panels and cards (raised).
 export const PRESETS: Theme[] = [
   // YouTube's own palettes and font: what System follows by default.
   preset('modern', 'Modern', false, { bg: '#FFFFFF', panel: '#F9F9F9', raised: '#F2F2F2', recess: '#F2F2F2', line: '#E5E5E5', lineSoft: '#EFEFEF', ink: '#0F0F0F', ink2: '#606060', ink3: '#606060', ink4: '#CCCCCC', accent: '#FF0033', onAccent: '#FFFFFF', ledOff: '#D9D9D9' }, 'modern', false),
   preset('modern-dark', 'Modern Dark', true, { bg: '#0F0F0F', panel: '#181818', raised: '#272727', recess: '#090909', line: '#3F3F3F', lineSoft: '#272727', ink: '#F1F1F1', ink2: '#AAAAAA', ink3: '#909090', ink4: '#4D4D4D', accent: '#FF0033', onAccent: '#FFFFFF', ledOff: '#3F3F3F' }, 'modern', false),
   preset('paper', 'Paper', false, { bg: '#F3F1EC', panel: '#EAE7E0', raised: '#FBFAF7', recess: '#E1DDD4', line: '#D6D1C6', lineSoft: '#E4E0D7', ink: '#171614', ink2: '#5C5852', ink3: '#6B665E', ink4: '#B2ACA1', accent: '#FF5A1F', onAccent: '#FFFFFF', ledOff: '#CDC7BB' }),
-  preset('graphite', 'Graphite', true, { bg: '#121211', panel: '#1A1A18', raised: '#24231F', recess: '#0B0B0A', line: '#302F2B', lineSoft: '#252421', ink: '#EDEAE4', ink2: '#A6A198', ink3: '#8A847B', ink4: '#55524C', accent: '#FF6A2E', onAccent: '#171614', ledOff: '#3A3935' }),
-  preset('studio', 'Studio', true, { bg: '#000000', panel: '#0A0A0A', raised: '#161616', recess: '#000000', line: '#262626', lineSoft: '#1A1A1A', ink: '#FFFFFF', ink2: '#A3A3A3', ink3: '#7A7A7A', ink4: '#4D4D4D', accent: '#FF3B30', onAccent: '#FFFFFF', ledOff: '#333333' }),
+  preset('graphite', 'Graphite', true, { bg: '#121211', panel: '#1A1A18', raised: '#24231F', recess: '#0B0B0A', line: '#302F2B', lineSoft: '#252421', ink: '#EDEAE4', ink2: '#A6A198', ink3: '#948E85', ink4: '#55524C', accent: '#FF6A2E', onAccent: '#171614', ledOff: '#3A3935' }),
+  preset('studio', 'Studio', true, { bg: '#000000', panel: '#0A0A0A', raised: '#161616', recess: '#000000', line: '#262626', lineSoft: '#1A1A1A', ink: '#FFFFFF', ink2: '#A3A3A3', ink3: '#858585', ink4: '#4D4D4D', accent: '#FF3B30', onAccent: '#FFFFFF', ledOff: '#333333' }),
   preset('aluminum', 'Aluminum', false, { bg: '#ECEEF0', panel: '#E1E4E8', raised: '#F7F8F9', recess: '#D7DBE0', line: '#C9CED5', lineSoft: '#DADEE3', ink: '#14171A', ink2: '#4E5660', ink3: '#5D656F', ink4: '#A4ACB5', accent: '#2F6FEB', onAccent: '#FFFFFF', ledOff: '#BFC5CC' }),
   preset('bakelite', 'Bakelite', true, { bg: '#1C1410', panel: '#241A14', raised: '#2E221A', recess: '#140E0B', line: '#3D2E24', lineSoft: '#2E231B', ink: '#F2E6D3', ink2: '#BFAE95', ink3: '#9E8E77', ink4: '#5E5244', accent: '#F2A900', onAccent: '#1C1410', ledOff: '#4A3B2F' }),
-  preset('sage', 'Sage', false, { bg: '#E7ECE6', panel: '#DCE3DA', raised: '#F4F7F3', recess: '#D1D9CF', line: '#C2CCBF', lineSoft: '#D5DDD2', ink: '#152019', ink2: '#4C5B50', ink3: '#5B6A5E', ink4: '#A0ADA2', accent: '#1F7A4D', onAccent: '#FFFFFF', ledOff: '#B8C3B6' }),
+  preset('sage', 'Sage', false, { bg: '#E7ECE6', panel: '#DCE3DA', raised: '#F4F7F3', recess: '#D1D9CF', line: '#C2CCBF', lineSoft: '#D5DDD2', ink: '#152019', ink2: '#4C5B50', ink3: '#58675B', ink4: '#A0ADA2', accent: '#1F7A4D', onAccent: '#FFFFFF', ledOff: '#B8C3B6' }),
 ]
 
 export const ACCENTS = ['#FF5A1F', '#E5383B', '#F2B705', '#2E8B57', '#2F6FEB', '#171614']
 
 export const COLUMNS = ['album', 'sources', 'duration'] as const
+
+/** Home's sections, default order. */
+export const HOME_SECTIONS = ['quick', 'mixes', 'recent', 'playlists', 'youtube', 'added'] as const
+export type HomeSectionId = (typeof HOME_SECTIONS)[number]
+export interface HomeSection {
+  id: HomeSectionId
+  on: boolean
+}
+
+/** Saved Home layout → every known section once, in the saved order, ones added since at their default place. */
+export function sanitizeHome(raw: unknown): HomeSection[] {
+  const saved = (Array.isArray(raw) ? raw : []).filter((x): x is HomeSection => !!x && typeof x === 'object' && HOME_SECTIONS.includes((x as HomeSection).id))
+  const out: HomeSection[] = []
+  for (const x of saved) if (!out.some((y) => y.id === x.id)) out.push({ id: x.id, on: x.on !== false })
+  HOME_SECTIONS.forEach((id, i) => {
+    if (out.some((y) => y.id === id)) return
+    const before = HOME_SECTIONS.slice(0, i).findLast((b) => out.some((y) => y.id === b))
+    out.splice(before ? out.findIndex((y) => y.id === before) + 1 : 0, 0, { id, on: true })
+  })
+  return out
+}
+
+/** Home section `id` one place up (-1) or down (1). */
+export function moveHome(list: HomeSection[], id: HomeSectionId, d: 1 | -1): HomeSection[] {
+  const i = list.findIndex((x) => x.id === id)
+  const j = i + d
+  if (i < 0 || j < 0 || j >= list.length) return list
+  const out = [...list]
+  ;[out[i], out[j]] = [out[j], out[i]]
+  return out
+}
 export type Column = (typeof COLUMNS)[number]
 
 export const START_VIEWS = ['home', 'songs', 'mixes', 'albums', 'artists'] as const
@@ -51,6 +116,10 @@ export interface PlaylistCover {
 }
 
 export const SPOTS = ['tl', 't', 'tr', 'l', 'r', 'bl', 'b', 'br'] as const
+
+/** Text size → root font scale. Compact = the sizes before 2026-10-22 (13 px body); normal ≈ 14 px body. */
+export const TEXT_SCALES = { compact: 1, normal: 1.08, large: 1.17 } as const
+export type TextSize = keyof typeof TEXT_SCALES
 export type Spot = (typeof SPOTS)[number]
 
 /** The app's own Discord application (public id, not a secret): its name shows after "Listening to". */
@@ -70,7 +139,11 @@ export interface DiscordSettings {
 }
 
 /** Bumped when defaults change for everyone (saved settings get the new ones once). */
-const DEFAULTS_VERSION = 4
+const DEFAULTS_VERSION = 5
+
+/** Adaptive Sound targets, LUFS: Quiet, Normal (streaming services' usual level), Loud. */
+export const ADAPTIVE_LEVELS = [-20, -14, -11] as const
+export type AdaptiveLevel = (typeof ADAPTIVE_LEVELS)[number]
 
 /** Fade shapes, as audio editors name them. */
 export const FADE_CURVES = ['scurve', 'linear', 'equal', 'exp', 'log'] as const
@@ -91,6 +164,8 @@ export interface FadeSettings {
 }
 
 export interface Settings {
+  /** Interface language: 'system' (Windows', English if not offered) or a code from shared/i18n. */
+  language: string
   /** Preset id, custom theme id, or 'system' (Modern / Modern Dark, following Windows). */
   theme: string
   /** Hex overrides theme accent; 'system' = Windows accent; null = theme's own. */
@@ -98,6 +173,8 @@ export interface Settings {
   customThemes: Theme[]
   covers: 'net' | 'rounded' | 'vinyl'
   density: 'compact' | 'comfort' | 'airy'
+  /** Text only (rem sizes), apart from the interface zoom. */
+  textSize: TextSize
   /** Webview zoom, percent. */
   zoom: number
   readout: boolean
@@ -132,6 +209,8 @@ export interface Settings {
   /** Now Playing with YouTube: video, cover (video transparent), or auto: cover when the video is a still image. */
   stage: 'auto' | 'video' | 'cover'
   miniSpot: Spot
+  /** Where the mini player sits: docked at the bottom of the sidebar (never over the content) or floating. */
+  miniPlace: 'sidebar' | 'float'
   /** Mini player width, px (video 16:9 below it, 200 px tall at least). */
   miniWidth: number
   /** Fade between songs, seconds (0 = off). */
@@ -141,6 +220,8 @@ export interface Settings {
   subtitles: boolean
   /** Playlists left out of the sidebar and menus (playlistKey), still in the library. */
   hiddenPlaylists: string[]
+  /** Home: which sections show, in what order. */
+  homeSections: HomeSection[]
   /** Per playlist (playlistKey). Missing = service logo in the sidebar, first cover on its page. */
   playlistCovers: Record<string, PlaylistCover>
   /** Mixes page: 4 song covers, the first one, or the plain numbered tile. */
@@ -149,22 +230,47 @@ export interface Settings {
   autoUpdate: boolean
   /** Now Playing: Up next panel open. */
   upNext: boolean
+  /** Now Playing: lyrics beside the cover (wins over Up next). */
+  lyrics: boolean
+  /** Now Playing: Live Editor beside the cover (wins over lyrics and Up next). */
+  editor: boolean
   /** Pick up the last track where it stopped when the app opens. */
   resume: boolean
   /** Open on the screen the app was closed on, Now Playing included (startView when off). */
   reopen: boolean
+  /** Closing the window keeps the app in the notification area (Rust reads it, background.rs). Quit really quits. */
+  closeToTray: boolean
+  /** Adaptive Sound: loud and quiet songs evened out as they play (crates/dsp, live.js). Target in LUFS. */
+  adaptiveSound: boolean
+  adaptiveLevel: AdaptiveLevel
+  /** Now Playing's cover moves with the music's loudness. */
+  coverPulse: boolean
+  /** YouTube's sound may go through the processing above (off: untouched, features work on local files only). */
+  liveYoutube: boolean
+  /** Voice search agreed to (Windows' online speech recognition: the voice goes to Microsoft while the mic listens). */
+  voiceSearch: boolean
+  /** Music Detector agreed to (microphone, 10 s clips sent to AudD to name the song). */
+  detector: boolean
+  /** Music Detector source: the microphone, or what this PC plays. */
+  detectorInput: 'mic' | 'pc'
+  /** This PC's sound allowed for the Music Detector (asked once, apart from the microphone). */
+  detectorPc: boolean
   /** Add-ons turned on (id → on). All off until the user turns them on. */
   addons: Record<string, boolean>
   discord: DiscordSettings
+  /** Keyboard shortcuts changed in Settings › Shortcuts (app/keys.ts): null = removed, absent = default. */
+  shortcuts: Custom
   defaultsVersion: number
 }
 
 export const DEFAULTS: Settings = {
+  language: 'system',
   theme: 'system',
   accent: 'system',
   customThemes: [],
   covers: 'rounded',
   density: 'comfort',
+  textSize: 'normal',
   zoom: 100,
   readout: true,
   volume: 'bar',
@@ -186,19 +292,33 @@ export const DEFAULTS: Settings = {
   youtubeControls: false,
   stage: 'auto',
   miniSpot: 'br',
+  miniPlace: 'sidebar',
   miniWidth: 356,
-  crossfade: 5,
-  fade: { advanced: false, out: 5, in: 5, outCurve: 'scurve', inCurve: 'scurve', skip: false, pause: 0 },
+  crossfade: 2,
+  fade: { advanced: false, out: 2, in: 2, outCurve: 'scurve', inCurve: 'scurve', skip: false, pause: 0 },
   subtitles: false,
   hiddenPlaylists: [],
+  homeSections: HOME_SECTIONS.map((id) => ({ id, on: true })),
   playlistCovers: {},
   mixCovers: 'grid',
   autoUpdate: true,
   upNext: true,
+  lyrics: false,
+  editor: false,
   resume: true,
   reopen: true,
+  closeToTray: true,
+  adaptiveSound: false,
+  adaptiveLevel: -14,
+  coverPulse: false,
+  liveYoutube: true,
+  voiceSearch: false,
+  detector: false,
+  detectorInput: 'mic',
+  detectorPc: false,
   addons: {},
   discord: { appId: DISCORD_APP, status: 'song', buttons: true, paused: false, github: true },
+  shortcuts: {},
   defaultsVersion: DEFAULTS_VERSION,
 }
 
@@ -210,7 +330,17 @@ const V3: Partial<Settings> = { stage: 'auto' }
 /** Version 4 (2026-10-17): the new Home opens first. */
 const V4: Partial<Settings> = { startView: 'home' }
 
+/** Version 5 (user's picks 2026-10-22): mini player in the sidebar, bigger text; 2 s fades instead of 5 for those who
+ * never changed them. */
+function v5(r: Record<string, unknown>): Partial<Settings> {
+  const f = (r.fade ?? {}) as Record<string, unknown>
+  const untouched = (r.crossfade ?? 5) === 5 && (f.out ?? 5) === 5 && (f.in ?? 5) === 5 && f.advanced !== true
+  return { miniPlace: 'sidebar', textSize: 'normal', ...(untouched && { crossfade: 2, fade: { ...sanitizeFade(r.fade), out: 2, in: 2 } }) }
+}
+
 const HEX = /^#[0-9a-f]{6}$/i
+/** Background file names as `save_background` writes them. */
+const BG_NAME = /^bg-[0-9a-f]{16}\.(png|jpg|webp|gif)$/
 const isHex = (v: unknown): v is string => typeof v === 'string' && HEX.test(v)
 const num = (v: unknown, min: number, max: number, fallback: number) => (typeof v === 'number' && Number.isFinite(v) ? Math.min(max, Math.max(min, Math.round(v))) : fallback)
 const pick = <T,>(v: unknown, allowed: readonly T[], fallback: T): T => (allowed.includes(v as T) ? (v as T) : fallback)
@@ -220,14 +350,58 @@ export function sanitizeTheme(raw: unknown): Theme | null {
   if (!raw || typeof raw !== 'object') return null
   const r = raw as Record<string, unknown>
   if (!PALETTE_KEYS.every((k) => isHex(r[k]))) return null
-  const name = typeof r.name === 'string' && r.name.trim() ? r.name.trim().slice(0, 40) : 'My theme'
+  const name = typeof r.name === 'string' && r.name.trim() ? r.name.trim().slice(0, 40) : tr('My theme')
   const id = typeof r.id === 'string' && /^custom-[\w-]{1,40}$/.test(r.id) ? r.id : `custom-${Date.now().toString(36)}`
   const palette = Object.fromEntries(PALETTE_KEYS.map((k) => [k, (r[k] as string).toUpperCase()])) as Palette
-  return { id, name, dark: luminance(palette.bg) < 0.2, font: pick(r.font, FONTS, 'hifi'), glow: r.glow !== false, ...palette }
+  const b = r.background && typeof r.background === 'object' ? (r.background as Record<string, unknown>) : null
+  const background: Background | undefined =
+    b && typeof b.image === 'string' && BG_NAME.test(b.image) ? { image: b.image, fit: pick(b.fit, FITS, 'cover'), dim: num(b.dim, 0, 90, 30), blur: num(b.blur, 0, 40, 0), panels: num(b.panels, 40, 100, 80) } : undefined
+  const look = sanitizeLook(r.look)
+  const css = cleanCss(r.css, MAX_THEME_CSS).trim()
+  return {
+    id,
+    name,
+    dark: luminance(palette.bg) < 0.2,
+    font: pick(r.font, FONTS, 'hifi'),
+    glow: r.glow !== false,
+    radius: pick(r.radius, RADII, 'soft'),
+    ...palette,
+    ...(background && { background }),
+    ...(look && { look }),
+    ...(css && { css }),
+  }
 }
+
+/** A theme's look: known keys only, each checked like a setting. */
+function sanitizeLook(raw: unknown): Look | undefined {
+  if (!raw || typeof raw !== 'object') return undefined
+  const given = LOOK_KEYS.filter((k) => k in (raw as object))
+  if (!given.length) return undefined
+  // Current defaults version: no defaults migration on a look.
+  const clean = sanitize({ ...(raw as object), defaultsVersion: DEFAULTS_VERSION })
+  return Object.fromEntries(given.map((k) => [k, clean[k]])) as Look
+}
+
+/** The look settings as they are now (to save into a theme). */
+export const lookOf = (s: Settings): Look => Object.fromEntries(LOOK_KEYS.map((k) => [k, s[k]])) as Look
 
 /** Preset ids before English rename. */
 const LEGACY_IDS: Record<string, string> = { papier: 'paper', aluminium: 'aluminum', sauge: 'sage' }
+
+/** Saved shortcut changes: known actions, well-formed combos or null (removed). */
+function sanitizeShortcuts(raw: unknown): Custom {
+  if (!raw || typeof raw !== 'object') return {}
+  const out: Custom = {}
+  for (const a of ACTIONS) {
+    const v = (raw as Record<string, unknown>)[a.id]
+    if (!v || typeof v !== 'object') continue
+    const pick = (c: unknown) => (c === null ? null : validCombo(c) ? c : undefined)
+    const keys = pick((v as { keys?: unknown }).keys)
+    const global = pick((v as { global?: unknown }).global)
+    if (keys !== undefined || global !== undefined) out[a.id] = { ...(keys !== undefined && { keys }), ...(global !== undefined && { global }) }
+  }
+  return out
+}
 
 export function sanitize(raw: unknown): Settings {
   const r = raw && typeof raw === 'object' ? (raw as Record<string, unknown>) : {}
@@ -236,11 +410,13 @@ export function sanitize(raw: unknown): Settings {
   const saved = typeof r.defaultsVersion === 'number' ? r.defaultsVersion : 0
   const columns = Array.isArray(r.columns) ? [...new Set(r.columns.filter((c): c is Column => COLUMNS.includes(c as Column)))] : DEFAULTS.columns
   return {
+    language: typeof r.language === 'string' && (r.language === 'system' || LANGUAGES.some((l) => l.code === r.language)) ? r.language : DEFAULTS.language,
     theme: pick(LEGACY_IDS[r.theme as string] ?? r.theme, ids, DEFAULTS.theme),
     accent: isHex(r.accent) ? r.accent.toUpperCase() : r.accent === null ? null : DEFAULTS.accent,
     customThemes,
     covers: pick(r.covers, ['net', 'rounded', 'vinyl'] as const, DEFAULTS.covers),
     density: pick(r.density, ['compact', 'comfort', 'airy'] as const, DEFAULTS.density),
+    textSize: pick(r.textSize, Object.keys(TEXT_SCALES) as TextSize[], DEFAULTS.textSize),
     zoom: typeof r.zoom === 'number' && Number.isFinite(r.zoom) ? Math.min(125, Math.max(90, Math.round(r.zoom / 5) * 5)) : DEFAULTS.zoom,
     readout: typeof r.readout === 'boolean' ? r.readout : DEFAULTS.readout,
     volume: pick(r.volume, ['knob', 'bar'] as const, DEFAULTS.volume),
@@ -262,17 +438,31 @@ export function sanitize(raw: unknown): Settings {
     youtubeControls: typeof r.youtubeControls === 'boolean' ? r.youtubeControls : DEFAULTS.youtubeControls,
     stage: pick(r.stage, ['auto', 'video', 'cover'] as const, DEFAULTS.stage),
     miniSpot: pick(r.miniSpot, SPOTS, DEFAULTS.miniSpot),
+    miniPlace: pick(r.miniPlace, ['sidebar', 'float'] as const, DEFAULTS.miniPlace),
     miniWidth: typeof r.miniWidth === 'number' && Number.isFinite(r.miniWidth) ? Math.min(960, Math.max(356, Math.round(r.miniWidth))) : DEFAULTS.miniWidth,
     crossfade: typeof r.crossfade === 'number' && Number.isFinite(r.crossfade) ? Math.min(12, Math.max(0, Math.round(r.crossfade))) : DEFAULTS.crossfade,
     fade: sanitizeFade(r.fade),
     subtitles: typeof r.subtitles === 'boolean' ? r.subtitles : DEFAULTS.subtitles,
+    homeSections: sanitizeHome(r.homeSections),
     hiddenPlaylists: Array.isArray(r.hiddenPlaylists) ? [...new Set(r.hiddenPlaylists.filter((k): k is string => typeof k === 'string' && k.length <= 200))].slice(0, 500) : [],
     playlistCovers: sanitizeCovers(r.playlistCovers),
     mixCovers: pick(r.mixCovers, ['grid', 'single', 'template'] as const, DEFAULTS.mixCovers),
     autoUpdate: typeof r.autoUpdate === 'boolean' ? r.autoUpdate : DEFAULTS.autoUpdate,
     upNext: typeof r.upNext === 'boolean' ? r.upNext : DEFAULTS.upNext,
+    lyrics: r.lyrics === true,
+    editor: r.editor === true,
     resume: typeof r.resume === 'boolean' ? r.resume : DEFAULTS.resume,
     reopen: typeof r.reopen === 'boolean' ? r.reopen : DEFAULTS.reopen,
+    closeToTray: typeof r.closeToTray === 'boolean' ? r.closeToTray : DEFAULTS.closeToTray,
+    adaptiveSound: r.adaptiveSound === true,
+    adaptiveLevel: ADAPTIVE_LEVELS.includes(r.adaptiveLevel as AdaptiveLevel) ? (r.adaptiveLevel as AdaptiveLevel) : DEFAULTS.adaptiveLevel,
+    coverPulse: r.coverPulse === true,
+    liveYoutube: typeof r.liveYoutube === 'boolean' ? r.liveYoutube : DEFAULTS.liveYoutube,
+    voiceSearch: r.voiceSearch === true,
+    detector: r.detector === true,
+    detectorInput: pick(r.detectorInput, ['mic', 'pc'] as const, DEFAULTS.detectorInput),
+    detectorPc: r.detectorPc === true,
+    shortcuts: sanitizeShortcuts(r.shortcuts),
     addons: Object.fromEntries(Object.entries(r.addons && typeof r.addons === 'object' ? r.addons : {}).filter(([k, v]) => /^[a-z0-9-]{1,40}$/.test(k) && typeof v === 'boolean').slice(0, 100)),
     discord: sanitizeDiscord(r.discord),
     defaultsVersion: DEFAULTS_VERSION,
@@ -280,6 +470,7 @@ export function sanitize(raw: unknown): Settings {
     ...(saved < 2 ? V2 : {}),
     ...(saved < 3 ? V3 : {}),
     ...(saved < 4 ? V4 : {}),
+    ...(saved < 5 ? v5(r) : {}),
   }
 }
 
@@ -343,12 +534,50 @@ export function contrast(a: string, b: string): number {
 /** Pairs checked live in theme editor. AA: 4.5 for text, 3 for icons (accent only carries icons). */
 export function contrastReport(t: Palette) {
   return [
-    { label: 'Main text', ratio: contrast(t.ink, t.bg), min: 4.5 },
-    { label: 'Secondary text', ratio: contrast(t.ink2, t.bg), min: 4.5 },
-    { label: 'Muted text', ratio: contrast(t.ink3, t.bg), min: 4.5 },
-    { label: 'Text on panel', ratio: contrast(t.ink2, t.panel), min: 4.5 },
-    { label: 'Icon on accent', ratio: contrast(t.onAccent, t.accent), min: 3 },
+    { label: msg('Main text'), ratio: contrast(t.ink, t.bg), min: 4.5 },
+    { label: msg('Secondary text'), ratio: contrast(t.ink2, t.bg), min: 4.5 },
+    { label: msg('Muted text'), ratio: contrast(t.ink3, t.bg), min: 4.5 },
+    { label: msg('Text on panel'), ratio: contrast(t.ink2, t.panel), min: 4.5 },
+    { label: msg('Muted text on cards'), ratio: Math.min(contrast(t.ink3, t.panel), contrast(t.ink3, t.raised)), min: 4.5 },
+    { label: msg('Icon on accent'), ratio: contrast(t.onAccent, t.accent), min: 3 },
   ].map((c) => ({ ...c, ok: c.ratio >= c.min }))
+}
+
+const rgb = (h: string) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16))
+const hex = (c: number[]) => `#${c.map((v) => Math.round(Math.min(255, Math.max(0, v))).toString(16).padStart(2, '0')).join('')}`.toUpperCase()
+/** a → b by t (0..1), in sRGB. */
+export const mix = (a: string, b: string, t: number) => hex(rgb(a).map((v, i) => v + (rgb(b)[i] - v) * t))
+
+/** Moves `c` toward `toward` until it reaches `min` contrast on every one of `on`. */
+function readable(c: string, toward: string, on: string[], min: number): string {
+  for (let t = 0; t <= 1; t += 0.05) {
+    const x = mix(c, toward, t)
+    if (on.every((b) => contrast(x, b) >= min)) return x
+  }
+  return toward
+}
+
+/** A whole palette from one color: neutrals lightly tinted with it, text checked for AA contrast. */
+export function paletteFrom(accent: string, dark: boolean): Palette {
+  const bg = mix(dark ? '#111111' : '#F6F6F4', accent, dark ? 0.07 : 0.05)
+  const ink = mix(dark ? '#F2F2F2' : '#151515', accent, 0.04)
+  const panel = mix(bg, ink, dark ? 0.05 : 0.035)
+  const raised = dark ? mix(bg, ink, 0.1) : mix(bg, '#FFFFFF', 0.65)
+  return {
+    bg,
+    panel,
+    raised,
+    recess: dark ? mix(bg, '#000000', 0.45) : mix(bg, ink, 0.07),
+    line: mix(bg, ink, 0.17),
+    lineSoft: mix(bg, ink, 0.1),
+    ink,
+    ink2: readable(mix(ink, bg, 0.4), ink, [bg, panel], 4.5),
+    ink3: readable(mix(ink, bg, 0.5), ink, [bg, panel, raised], 4.5),
+    ink4: mix(ink, bg, 0.7),
+    accent: accent.toUpperCase(),
+    onAccent: onAccentFor(accent),
+    ledOff: mix(bg, ink, 0.22),
+  }
 }
 
 /** Text / icon color on an accent: first of white, ink, black reaching AA 4.5 (black always does). */
@@ -376,16 +605,41 @@ const FONT_STACKS: Record<Font, string> = {
 
 const kebab = (k: string) => k.replace(/[A-Z0-9]/g, (c) => `-${c.toLowerCase()}`)
 
+/** Tailwind's radius scale per theme roundness (soft = Tailwind's own). */
+const RADIUS_SCALE: Record<Radius, [string, string, string, string, string]> = {
+  sharp: ['1px', '2px', '3px', '4px', '6px'],
+  soft: ['4px', '6px', '8px', '12px', '16px'],
+  round: ['8px', '12px', '16px', '20px', '28px'],
+}
+
 /** Theme + layout settings → CSS custom properties (consumed by styles.css). */
 export function cssVars(t: Theme, s: Settings): Record<string, string> {
+  const r = RADIUS_SCALE[t.radius ?? 'soft']
+  // A picture behind: main surfaces see-through over it.
+  const see = (k: 'bg' | 'panel' | 'raised', extra = 0) => (t.background ? `color-mix(in srgb, ${t[k]} ${Math.min(100, t.background.panels + extra)}%, transparent)` : t[k])
   return {
     ...Object.fromEntries(PALETTE_KEYS.map((k) => [`--${kebab(k)}`, t[k]])),
+    '--bg': see('bg'),
+    '--panel': see('panel'),
+    '--raised': see('raised', 10),
+    '--bg-solid': t.bg,
+    '--body-bg': t.background ? 'transparent' : t.bg,
+    '--theme-size': { cover: 'cover', contain: 'contain', tile: 'auto' }[t.background?.fit ?? 'cover'],
+    '--theme-repeat': t.background?.fit === 'tile' ? 'repeat' : 'no-repeat',
+    '--theme-blur': `${t.background?.blur ?? 0}px`,
+    '--theme-dim': t.background ? `color-mix(in srgb, ${t.bg} ${t.background.dim}%, transparent)` : 'transparent',
+    '--radius-sm': r[0],
+    '--radius-md': r[1],
+    '--radius-lg': r[2],
+    '--radius-xl': r[3],
+    '--radius-2xl': r[4],
     '--accent-soft': `${t.accent}1F`,
     '--shadow': t.dark ? '#00000099' : '#17161424',
     '--led-glow': t.glow ? `0 0 6px ${t.accent}AA` : 'none',
     '--font-ui': FONT_STACKS[s.font === 'theme' ? t.font : s.font],
     '--cover-radius': { net: '3px', rounded: '10px', vinyl: '999px' }[s.covers],
     '--row-h': { compact: '40px', comfort: '52px', airy: '64px' }[s.density],
+    '--text-scale': String(TEXT_SCALES[s.textSize]),
     'color-scheme': t.dark ? 'dark' : 'light',
   }
 }

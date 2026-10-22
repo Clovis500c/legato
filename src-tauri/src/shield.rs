@@ -1,4 +1,5 @@
-//! WebView2 hook: every request from every frame (YouTube iframe included) goes through the shield.
+//! WebView2 hook: every request from every frame (YouTube iframe included) goes through the shield. Also turns the
+//! browser's own keys off in release builds.
 
 use music_shield::Shield;
 use std::sync::Arc;
@@ -6,8 +7,22 @@ use webview2_com::Microsoft::Web::WebView2::Win32::*;
 use webview2_com::{WebResourceRequestedEventHandler, take_pwstr};
 use windows::core::{HSTRING, Interface, PWSTR};
 
-pub fn install(window: &tauri::WebviewWindow, shield: Arc<Shield>) -> tauri::Result<()> {
-    window.with_webview(move |wv| unsafe {
+/// Release builds: F5 / Ctrl+R (reload, cuts the music), Ctrl+F, Ctrl+P, Ctrl+S, F12… are a browser's, not an app's.
+/// The page still gets the keys (shortcuts), and editing keys (copy, paste) keep working.
+pub fn browser_keys_off(webview: &tauri::Webview) -> tauri::Result<()> {
+    // Dev builds keep them (F5, F12).
+    if cfg!(debug_assertions) {
+        return Ok(());
+    }
+    webview.with_webview(|wv| unsafe {
+        if let Ok(settings) = wv.controller().CoreWebView2().and_then(|c| c.Settings()).and_then(|s| s.cast::<ICoreWebView2Settings3>()) {
+            let _ = settings.SetAreBrowserAcceleratorKeysEnabled(false);
+        }
+    })
+}
+
+pub fn install(webview: &tauri::Webview, shield: Arc<Shield>) -> tauri::Result<()> {
+    webview.with_webview(move |wv| unsafe {
         let Ok(core) = wv.controller().CoreWebView2() else { return };
         let Ok(env) = core.cast::<ICoreWebView2_2>().and_then(|c| c.Environment()) else { return };
         let all = HSTRING::from("*");

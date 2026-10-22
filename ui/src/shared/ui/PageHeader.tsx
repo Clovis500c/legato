@@ -8,8 +8,8 @@ export function PageHeader({ kicker, title, sub, actions, art, onContextMenu }: 
         {art}
         <div className="flex min-w-0 flex-col gap-1.5">
           <p className="kicker">{kicker}</p>
-          <h1 className="truncate text-[44px] leading-none font-bold tracking-[-0.03em]">{title}</h1>
-          {sub && <div className="text-[13px] text-ink-2">{sub}</div>}
+          <h1 className="truncate text-[2.75rem] leading-none font-bold tracking-[-0.03em]">{title}</h1>
+          {sub && <div className="text-[0.8125rem] text-ink-2">{sub}</div>}
         </div>
       </div>
       {actions && <div className="flex shrink-0 items-center gap-2.5">{actions}</div>}

@@ -30,7 +30,9 @@ export function validScreen(raw: unknown, playlistIds: number[]): Screen | null 
   if ((v.name === 'album' || v.name === 'artist') && typeof v.artist !== 'string') return null
   if (v.name === 'settings' && typeof v.section !== 'string') return null
   // Search highlight and Spotify wizard: not worth reopening.
-  const view = (v.name === 'settings' ? { name: 'settings', section: v.section } : v) as View
+  // Themes merged into Appearance (2026-10-21); Advanced split into General and Playback (2026-10-22).
+  const moved: Record<string, string> = { themes: 'appearance', advanced: 'playback' }
+  const view = (v.name === 'settings' ? { name: 'settings', section: moved[v.section as string] ?? v.section } : v) as View
   return { view, full: r.full === true }
 }
 
@@ -41,6 +43,13 @@ export function restoreScreen() {
   useStore.getState().go(saved.view)
   useStore.setState({ back: [] })
   if (saved.full && usePlayer.getState().now) usePlayer.getState().setFull(true)
+}
+
+/** Any navigation closes Now Playing: logo, shortcuts, menus and toasts all just call go. Returns cleanup. */
+export function startClosingPlayerOnNavigate(): () => void {
+  return useStore.subscribe((s, p) => {
+    if (s.view !== p.view && usePlayer.getState().full) usePlayer.getState().setFull(false)
+  })
 }
 
 /** Keeps the stored screen current. Returns cleanup. */

@@ -73,10 +73,12 @@ impl Library {
 
     /// None clears the preference.
     pub fn set_pref(&self, track_id: i64, pref: Option<Pref>) -> Result<()> {
-        match pref {
-            Some(p) => self.db.execute("INSERT INTO track_prefs (track_id, pref) VALUES (?1, ?2) ON CONFLICT (track_id) DO UPDATE SET pref = excluded.pref", params![track_id, p.as_str()])?,
-            None => self.db.execute("DELETE FROM track_prefs WHERE track_id = ?1", [track_id])?,
-        };
+        // Back to normal is kept as 'normal' (with its time): Sync Mode carries it to other PCs.
+        let pref = pref.map_or("normal", Pref::as_str);
+        self.db.execute(
+            "INSERT INTO track_prefs (track_id, pref, at) VALUES (?1, ?2, ?3) ON CONFLICT (track_id) DO UPDATE SET pref = excluded.pref, at = excluded.at",
+            params![track_id, pref, crate::library::now_ms()],
+        )?;
         Ok(())
     }
 
@@ -89,6 +91,7 @@ impl Library {
     /// Reset: plays and preferences gone, library untouched.
     pub fn clear_history(&self) -> Result<()> {
         self.db.execute_batch("DELETE FROM plays; DELETE FROM track_prefs;")?;
+        self.gone("history", "")?;
         // Whole-table delete skips the update hook (SQLite's truncate optimization).
         self.versions.touch("plays");
         Ok(())

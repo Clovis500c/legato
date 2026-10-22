@@ -14,7 +14,8 @@ const ADD_ACCOUNT: &str = "https://accounts.google.com/AddSession?service=youtub
 /// Cookie header for music.youtube.com; None = signed out.
 /// WebView2: call from async commands or threads only (sync = deadlock).
 pub fn session(app: &AppHandle) -> Option<String> {
-    let main = app.get_webview_window("main")?;
+    // The webview, not the "webview window": with the watch-page child (ytwatch.rs) there is none.
+    let main = app.get_webview("main")?;
     let cookies = main.cookies_for_url(Url::parse(SITE).ok()?).ok()?;
     // SAPISID = signed-in Google session on youtube.com.
     cookies.iter().any(|c| c.name() == "SAPISID" || c.name() == "__Secure-3PAPISID").then(|| cookies.iter().map(|c| format!("{}={}", c.name(), c.value())).collect::<Vec<_>>().join("; "))
@@ -46,5 +47,5 @@ pub fn open(app: &AppHandle, add_account: bool) -> tauri::Result<()> {
 
 /// Forgets every Google session (and other site data) in the app's webview profile.
 pub fn sign_out(app: &AppHandle) -> tauri::Result<()> {
-    app.get_webview_window("main").ok_or(tauri::Error::WebviewNotFound)?.clear_all_browsing_data()
+    app.get_webview("main").ok_or(tauri::Error::WebviewNotFound)?.clear_all_browsing_data()
 }

@@ -1,5 +1,6 @@
-import { useRef, type ButtonHTMLAttributes, type ReactNode } from 'react'
+import { useRef, type ButtonHTMLAttributes } from 'react'
 import { formatCount } from '../format'
+import { tr } from '../i18n/i18n'
 
 const kinds = {
   primary: 'bg-accent text-on-accent shadow-[0_2px_10px_var(--accent-soft)] hover:brightness-110',
@@ -22,7 +23,7 @@ export function LedChip({ on, label, count, onClick }: { on: boolean; label: str
   return (
     <button role="tab" aria-selected={on} onClick={onClick} className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition ${on ? 'bg-ink text-bg' : 'border border-line text-ink hover:bg-raised'}`}>
       <Led on={on} /> {label}
-      {count !== undefined && <span className={`font-mono text-[10px] ${on ? 'text-ink-4' : 'text-ink-3'}`}>{count}</span>}
+      {count !== undefined && <span className={`font-mono text-[0.625rem] ${on ? 'text-ink-4' : 'text-ink-3'}`}>{count}</span>}
     </button>
   )
 }
@@ -35,9 +36,9 @@ export function Toggle({ checked, onChange, label }: { checked: boolean; onChang
   )
 }
 
-export function Segmented<T extends string>({ value, options, onChange, label }: { value: T; options: { value: T; label: string }[]; onChange: (v: T) => void; label: string }) {
+export function Segmented<T extends string>({ value, options, onChange, label, className = '' }: { value: T; options: { value: T; label: string }[]; onChange: (v: T) => void; label: string; className?: string }) {
   return (
-    <div role="radiogroup" aria-label={label} className="flex w-fit gap-0.5 rounded-full border border-line p-[3px]">
+    <div role="radiogroup" aria-label={label} className={`flex w-fit gap-0.5 rounded-full border border-line p-[3px] ${className}`}>
       {options.map((o) => (
         <button key={o.value} role="radio" aria-checked={o.value === value} onClick={() => onChange(o.value)} className={`rounded-full px-3 py-1 text-xs font-medium transition ${o.value === value ? 'bg-ink text-bg' : 'text-ink-2 hover:text-ink'}`}>
           {o.label}
@@ -57,22 +58,8 @@ export function Stat({ label, value }: { label: string; value: number }) {
   )
 }
 
-/** Recessed display: lit source + optional detail (FLAC 16/44). */
-export function Readout({ children, detail }: { children: ReactNode; detail?: string }) {
-  return (
-    <div className="flex items-center gap-2 rounded-md border border-line-soft bg-recess px-2.5 py-1.5 font-mono text-[10px] tracking-[0.08em] uppercase">
-      <Led on /> {children}
-      {detail && (
-        <>
-          <span className="h-2.5 w-px bg-line" /> <span className="text-ink-3">{detail}</span>
-        </>
-      )}
-    </div>
-  )
-}
-
 /** Volume knob 0..1: drag up/down, wheel or arrows. Optional tick scale. */
-export function Knob({ value, onChange, size = 32, ticks = false, label = 'Volume' }: { value: number; onChange: (v: number) => void; size?: number; ticks?: boolean; label?: string }) {
+export function Knob({ value, onChange, size = 32, ticks = false, label = tr('Volume') }: { value: number; onChange: (v: number) => void; size?: number; ticks?: boolean; label?: string }) {
   const start = useRef<{ y: number; v: number } | null>(null)
   const set = (v: number) => onChange(Math.min(1, Math.max(0, Math.round(v * 100) / 100)))
   const box = size + (ticks ? 20 : 0)

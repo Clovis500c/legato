@@ -24,6 +24,8 @@
   --color-danger: #d93a2b;
   --radius-cover: var(--cover-radius);
   --spacing-row: var(--row-h);
+  /* Spacing in px: the root size is the text size (Settings › Appearance › Text size), boxes mustn't grow with it. */
+  --spacing: 4px;
 }
 
 :root {
@@ -81,8 +83,36 @@ body,
   height: 100%;
 }
 
+html {
+  background: var(--bg-solid, var(--bg));
+  /* Text sizes are rem: this scales them all (theme.ts TEXT_SCALES). */
+  font-size: calc(16px * var(--text-scale, 1));
+}
+
 body {
-  @apply bg-bg font-sans text-[13px] text-ink antialiased select-none;
+  @apply font-sans text-[0.8125rem] text-ink antialiased select-none;
+  background: var(--body-bg, var(--bg));
+}
+
+/* Theme picture behind the whole window (theme.ts Background), then the theme's color over it. Static: blurred once. */
+body::before,
+body::after {
+  content: '';
+  position: fixed;
+  z-index: -1;
+  pointer-events: none;
+}
+body::before {
+  inset: calc(var(--theme-blur, 0px) * -2);
+  background-image: var(--theme-image, none);
+  background-size: var(--theme-size, cover);
+  background-repeat: var(--theme-repeat, no-repeat);
+  background-position: center;
+  filter: blur(var(--theme-blur, 0px));
+}
+body::after {
+  inset: 0;
+  background: var(--theme-dim, transparent);
 }
 
 input,
@@ -109,10 +139,9 @@ code {
     opacity: 0;
   }
 }
+/* Drift itself: NowPlaying sets --drift (15 updates a second, cheaper than a CSS animation here). */
 .backdrop-layer {
-  animation:
-    fade-in 0.9s ease-out,
-    drift 48s ease-in-out infinite alternate;
+  animation: fade-in 0.9s ease-out;
   will-change: transform;
 }
 
@@ -162,7 +191,7 @@ code {
 
 /* Mono kicker label: BIBLIOTHÈQUE · 4 SOURCES */
 .kicker {
-  @apply font-mono text-[10px] font-medium tracking-[0.09em] text-ink-3 uppercase;
+  @apply font-mono text-[0.625rem] font-medium tracking-[0.09em] text-ink-3 uppercase;
 }
 
 /* Indicator light. data-on = lit. */
@@ -175,8 +204,17 @@ code {
 }
 
 /* Range bars: track painted inline (see shared/ui/Bar). */
+/* Sliders: a 16 px box to grab (review 2026-10-22: 3 px was too thin), only a 3 px track painted in its middle.
+   Fill = inline background-image; never the `background` shorthand (it would reset size and position). */
 .bar {
-  @apply h-[3px] cursor-pointer appearance-none rounded-full;
+  @apply h-4 cursor-pointer appearance-none bg-transparent;
+  background-size: 100% 3px;
+  background-position: center;
+  background-repeat: no-repeat;
+  transition: background-size 0.12s;
+}
+.bar:hover:not(:disabled) {
+  background-size: 100% 5px;
 }
 .bar:disabled {
   @apply cursor-default;
@@ -184,6 +222,8 @@ code {
 .bar::-webkit-slider-thumb {
   @apply size-3 appearance-none rounded-full bg-ink opacity-0;
 }
+/* .handle: thumb always shown (Live Editor: where each setting stands). */
+.bar.handle::-webkit-slider-thumb,
 .bar:hover::-webkit-slider-thumb,
 .bar:focus-visible::-webkit-slider-thumb {
   @apply opacity-100;
@@ -205,9 +245,52 @@ code {
   @apply size-3.5 bg-accent;
 }
 
+/* Controls over a picture (Now Playing's backdrop): the theme's own background behind them, blurred, so their text
+   reads on any cover, light or dark. */
+.glass {
+  background: color-mix(in srgb, var(--bg) 62%, transparent);
+  backdrop-filter: blur(14px) saturate(1.2);
+}
+
+/* Track list with the keyboard focus: the row the arrows are on. */
+[data-list]:focus-visible [data-cursor] {
+  box-shadow: inset 0 0 0 1.5px var(--ink-3);
+}
+
+/* Scrolls (wheel, keys) without a bar: synced lyrics follow the song by themselves. */
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Lyrics, karaoke: a word's lit part, animated (LyricsPanel Sung). Registered so the browser can tween it. */
+@property --fill {
+  syntax: '<percentage>';
+  inherits: false;
+  initial-value: 0%;
+}
+.sung {
+  background-image: linear-gradient(90deg, var(--ink) var(--fill), var(--ink-3) var(--fill));
+  background-clip: text;
+  color: transparent;
+}
+
 ::-webkit-scrollbar {
   width: 10px;
 }
 ::-webkit-scrollbar-thumb {
   @apply rounded-full border-2 border-transparent bg-line bg-clip-padding;
+}
+
+/* Quiet scroller: thin, thumb only while the pointer is over it. */
+.scroll-quiet::-webkit-scrollbar {
+  width: 6px;
+}
+.scroll-quiet::-webkit-scrollbar-thumb {
+  @apply border-0 bg-transparent;
+}
+.scroll-quiet:hover::-webkit-scrollbar-thumb {
+  @apply bg-line;
 }

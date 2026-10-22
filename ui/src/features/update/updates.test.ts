@@ -4,10 +4,10 @@ import { expect, it, vi } from 'vitest'
 vi.mock('../../app/settings', () => ({ useSettings: {} }))
 vi.mock('../../app/store', () => ({ useStore: {} }))
 vi.mock('../../shared/api', () => ({ api: {} }))
-vi.mock('../player/session', () => ({ saveSessionNow: () => {} }))
-vi.mock('../player/store', () => ({ usePlayer: {} }))
+vi.mock('../player/session', () => ({ saveSessionNow: () => {}, saveSessionAtNext: () => {} }))
+vi.mock('../player/store', () => ({ usePlayer: {}, onSongEnd: () => {} }))
 
-const { quietNow } = await import('./updates')
+const { betweenSongs, quietNow } = await import('./updates')
 
 it('installs only when nothing plays and nobody touched the app lately', () => {
   const now = 1_000_000
@@ -17,4 +17,10 @@ it('installs only when nothing plays and nobody touched the app lately', () => {
   expect(quietNow(now, { playing: false, lastSound: now - 3_000, lastInput: now - 90_000 })).toBe(false)
   // Someone is using the app.
   expect(quietNow(now, { playing: false, lastSound: now - 20_000, lastInput: now - 10_000 })).toBe(false)
+})
+
+it('installs between two songs only when nobody is using the app', () => {
+  const now = 1_000_000
+  expect(betweenSongs(now, now - 61_000)).toBe(true)
+  expect(betweenSongs(now, now - 5_000)).toBe(false)
 })

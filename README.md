@@ -20,23 +20,46 @@ A fast, private desktop music player for Windows, built with Tauri 2 and Rust.
 - **Unified library.** The same song on several services becomes one track (matched by ISRC, or title, artist and
   duration). Songs, Albums, Artists and Playlists views, instant search, YouTube-style sorting.
 - **One player for every source.** Local files (native, gapless), YouTube (official embedded player), Apple Music
-  previews and Spotify Connect share one queue, with crossfade, an immersive Now Playing screen and a mini player.
+  previews and Spotify Connect share one queue, with crossfade, an immersive Now Playing screen and a mini player (in the sidebar by default).
 - **Playlists.** Import from YouTube Music and Spotify, create your own, export to YouTube Music, and share them by
   link, QR code or a 6-digit code on your local network.
 - **Mixes made on your PC.** Daily Mixes, a time-of-day mix and Rediscover, built from your own listening history.
 - **Windows integration.** Media keys, the Windows media panel, tray icon, keyboard shortcuts, system light/dark mode
   and accent color.
-- **Customization.** Themes with a built-in editor, layout and player options.
-- **Add-ons.** Optional extras, off by default. First available: Discord Rich Presence.
+- **Live Editor.** Change the playing song as it plays: slowed, sped up, pitch, bass and EQ, reverb, echo, 3D / 8D
+  sound. Save versions per song; export a modified copy of your own files.
+- **Sync Mode.** Your playlists, history, Live Editor versions and settings on all your PCs, through OneDrive (or
+  any shared folder) or straight over your network with a 6-digit code.
+- **Your language.** English and French, following Windows or picked in Settings.
+- **Customization.** Themes that change everything: colors (or a whole palette from one color), a background
+  picture, corners, font, the look of lists and the player, even your own CSS; shared as `.theme` files.
+- **Add-ons and plugins.** Optional extras, off by default (first: Discord Rich Presence). Plugins made by others
+  install from a folder after you approve what they may do, and run sealed off from the app
+  ([writing one](docs/plugins.md)).
 - **Ad and tracker blocking**, built in.
 
 ## Privacy and playback
 
 - **No server, no account of ours.** Your library is a local SQLite database; tokens stay in the Windows Credential
   Manager.
+- **Sync Mode (off until you set it up).** Each PC writes one file in a folder you pick (OneDrive by default): your
+  library, history and settings, sealed with your password if you choose one (then your Spotify app ID and Music
+  Detector token travel too); without a password, OneDrive can read them and you sign in again on each PC. Over your
+  network, a 6-digit code seals the exchange. Details: [docs/sync-mode.md](docs/sync-mode.md).
 - **Official playback only.** Music plays through each service's own player or from your files. Nothing is downloaded
-  or extracted.
+  or extracted. Sound features (Adaptive Sound, the Live Editor) process what plays as it plays, in memory: nothing is
+  recorded or saved (the Live Editor keeps its settings, never sound; only your own files can be exported), and
+  Settings › Playback can keep YouTube's sound untouched.
 - **One gateway to the network.** All requests go through the Rust core; the interface never calls the network itself.
+- **Voice search (off until you allow it).** The mic uses Windows' own online speech recognition: while it listens,
+  your voice goes to Microsoft's speech service through Windows. The app keeps nothing.
+- **Lyrics.** Opening lyrics in Now Playing sends the song's title, artist, album and length to
+  [LRCLIB](https://lrclib.net) (free, open lyrics database), then to YouTube Music when you're signed in. Answers are
+  kept on your PC.
+- **Music Detector (off until you allow it).** "Identify a song" listens for 10 seconds to the microphone, or to what
+  this PC plays (asked separately; Music App pauses its own music meanwhile), keeps the sound in memory and sends it
+  once to [AudD](https://audd.io) to name the song: a few a day with no account, more with your own AudD token. Nothing
+  is saved; a token stays in the Windows Credential Manager.
 
 ## Getting started
 

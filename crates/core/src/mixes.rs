@@ -67,6 +67,28 @@ pub struct Mix {
     pub track_ids: Vec<i64>,
     /// Section on the Mixes page: daily, moment, favorites, explore.
     pub kind: &'static str,
+    /// What `title` and `reason` are made of, for the UI to word them in its language (they stay English).
+    pub words: Words,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Words {
+    /// morning, afternoon, evening, night.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub slot: Option<&'static str>,
+    /// 0 = Sunday.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub day: Option<usize>,
+    /// Daily Mix number.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub number: Option<usize>,
+    /// The artist an artist mix is about.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub name: Option<String>,
+    /// Artists named in the reason, best first.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub names: Vec<String>,
 }
 
 /// Full listen > partial > skip (negative).
@@ -334,11 +356,12 @@ pub fn mixes(input: &Input) -> Vec<Mix> {
 
     let score_of = |id: i64| taste.score.get(&id).copied().unwrap_or(0.0);
     let by_artists = |set: &HashSet<&str>, opts: Opts| -> Vec<i64> { taste.pick(input.tracks.iter().filter(|t| set.contains(taste.artist[&t.id].as_str())).map(|t| (t.id, score_of(t.id))), opts) };
-    let shown = |artists: &[&str], n: usize| -> String {
+    let shown = |artists: &[&str], n: usize| -> Vec<String> {
         let mut top: Vec<&str> = artists.to_vec();
         top.sort_by(|a, b| affinity.get(b).copied().unwrap_or(0.0).total_cmp(&affinity.get(a).copied().unwrap_or(0.0)));
-        names(&top.iter().take(n).map(|a| taste.display[*a].as_str()).collect::<Vec<_>>())
+        top.iter().take(n).map(|a| taste.display[*a].clone()).collect()
     };
+    let joined = |list: &[String]| names(&list.iter().map(String::as_str).collect::<Vec<_>>());
     let daily_opts = Opts { cooldown: true, favored: None };
 
     let mut out = Vec::new();
@@ -354,7 +377,8 @@ pub fn mixes(input: &Input) -> Vec<Mix> {
     let ids = taste.pick(in_slot.into_iter(), Opts::default());
     if ids.len() >= MIN_LEN {
         let when = if now_slot == "night" { "at night".to_string() } else { format!("in the {now_slot}") };
-        out.push(Mix { id: "now".into(), title: format!("Your {now_slot}s"), reason: format!("What you usually play {when}"), track_ids: ids, kind: "moment" });
+        let words = Words { slot: Some(now_slot), ..Words::default() };
+        out.push(Mix { id: "now".into(), title: format!("Your {now_slot}s"), reason: format!("What you usually play {when}"), track_ids: ids, kind: "moment", words });
     }
 
     let mut daily: Vec<(Vec<String>, Vec<i64>)> = Vec::new();
@@ -374,7 +398,9 @@ pub fn mixes(input: &Input) -> Vec<Mix> {
     }
     for (i, (g, ids)) in daily.into_iter().enumerate() {
         let g: Vec<&str> = g.iter().map(String::as_str).collect();
-        out.push(Mix { id: format!("daily-{}", i + 1), title: format!("Daily Mix {}", i + 1), reason: format!("Because you listen to {}", shown(&g, 3)), track_ids: ids, kind: "daily" });
+        let top = shown(&g, 3);
+        let reason = format!("Because you listen to {}", joined(&top));
+        out.push(Mix { id: format!("daily-{}", i + 1), title: format!("Daily Mix {}", i + 1), reason, track_ids: ids, kind: "daily", words: Words { number: Some(i + 1), names: top, ..Words::default() } });
     }
 
     // On Repeat: played again and again lately (two listens' worth in 30 days, last week counts most).
@@ -384,7 +410,7 @@ pub fn mixes(input: &Input) -> Vec<Mix> {
     }
     let ids = taste.pick(lately.into_iter().filter(|(_, s)| *s >= 1.2), Opts::default());
     if ids.len() >= MIN_LEN && new_enough(&out, &ids) {
-        out.push(Mix { id: "repeat".into(), title: "On Repeat".into(), reason: "The songs you keep coming back to lately".into(), track_ids: ids, kind: "favorites" });
+        out.push(Mix { id: "repeat".into(), title: "On Repeat".into(), reason: "The songs you keep coming back to lately".into(), track_ids: ids, kind: "favorites", words: Words::default() });
     }
 
     // Artist mixes: your top artists, with the artists you play next to them.
@@ -409,8 +435,10 @@ pub fn mixes(input: &Input) -> Vec<Mix> {
         made += 1;
         let name = &taste.display[*a];
         let with: Vec<&str> = friends.iter().map(|(f, _)| *f).collect();
-        let reason = if with.is_empty() { format!("All {name}, your way") } else { format!("{name}, with {}", shown(&with, 2)) };
-        out.push(Mix { id: format!("artist-{made}"), title: format!("{name} Mix"), reason, track_ids: ids, kind: "favorites" });
+        let others = shown(&with, 2);
+        let reason = if others.is_empty() { format!("All {name}, your way") } else { format!("{name}, with {}", joined(&others)) };
+        let words = Words { name: Some(name.clone()), names: others, ..Words::default() };
+        out.push(Mix { id: format!("artist-{made}"), title: format!("{name} Mix"), reason, track_ids: ids, kind: "favorites", words });
     }
 
     // This weekday: what you play on, say, Fridays (other Fridays, not today).
@@ -425,7 +453,7 @@ pub fn mixes(input: &Input) -> Vec<Mix> {
     let ids = taste.pick(on_day.into_iter(), Opts::default());
     if days.len() >= 2 && ids.len() >= MIN_LEN && new_enough(&out, &ids) {
         let d = WEEKDAYS[today];
-        out.push(Mix { id: "weekday".into(), title: format!("Your {d}s"), reason: format!("What you play on {d}s"), track_ids: ids, kind: "moment" });
+        out.push(Mix { id: "weekday".into(), title: format!("Your {d}s"), reason: format!("What you play on {d}s"), track_ids: ids, kind: "moment", words: Words { day: Some(today), ..Words::default() } });
     }
 
     // Fresh: newest songs in the library, heard once at most.
@@ -438,7 +466,7 @@ pub fn mixes(input: &Input) -> Vec<Mix> {
     let cands = newest.iter().take(NEW_TRACKS).enumerate().filter(|(_, t)| full.get(&t.id).copied().unwrap_or(0) <= 1).map(|(i, t)| (t.id, 1.0 - i as f64 / NEW_TRACKS as f64));
     let ids = taste.pick(cands, Opts::default());
     if ids.len() >= MIN_LEN && new_enough(&out, &ids) {
-        out.push(Mix { id: "fresh".into(), title: "Fresh in your library".into(), reason: "Just added, barely played yet".into(), track_ids: ids, kind: "explore" });
+        out.push(Mix { id: "fresh".into(), title: "Fresh in your library".into(), reason: "Just added, barely played yet".into(), track_ids: ids, kind: "explore", words: Words::default() });
     }
 
     // Hidden gems: in your library, never played here, by artists you like.
@@ -447,7 +475,7 @@ pub fn mixes(input: &Input) -> Vec<Mix> {
     let cands = input.tracks.iter().filter(|t| !played.contains(&t.id)).filter_map(|t| affinity.get(taste.artist[&t.id].as_str()).map(|a| (t.id, a / best + score_of(t.id) * 0.2)));
     let ids = taste.pick(cands, Opts::default());
     if ids.len() >= MIN_LEN && new_enough(&out, &ids) {
-        out.push(Mix { id: "gems".into(), title: "Hidden gems".into(), reason: "Saved but never played here, by artists you like".into(), track_ids: ids, kind: "explore" });
+        out.push(Mix { id: "gems".into(), title: "Hidden gems".into(), reason: "Saved but never played here, by artists you like".into(), track_ids: ids, kind: "explore", words: Words::default() });
     }
 
     // Rediscover: loved before (2+ full listens' worth), silent for 60 days.
@@ -459,7 +487,7 @@ pub fn mixes(input: &Input) -> Vec<Mix> {
     }
     let ids = taste.pick(past.into_iter().filter(|(id, s)| *s >= 2.0 && input.now - last_play[id] > REDISCOVER_AFTER), Opts::default());
     if ids.len() >= MIN_LEN {
-        out.push(Mix { id: "rediscover".into(), title: "Rediscover".into(), reason: "Tracks you loved, not played for two months".into(), track_ids: ids, kind: "explore" });
+        out.push(Mix { id: "rediscover".into(), title: "Rediscover".into(), reason: "Tracks you loved, not played for two months".into(), track_ids: ids, kind: "explore", words: Words::default() });
     }
     out
 }
@@ -573,6 +601,7 @@ mod tests {
         // Artist, fresh and gems mixes would repeat daily-1 in so small a library: dropped.
         assert_eq!(out.iter().map(|m| m.id.as_str()).collect::<Vec<_>>(), ["daily-1"]);
         assert_eq!(out[0].reason, "Because you listen to Even and Odd");
+        assert_eq!((out[0].words.number, out[0].words.names.clone()), (Some(1), vec!["Even".to_string(), "Odd".to_string()]));
     }
 
     fn library_of(n: i64, artists: &[&str]) -> Vec<LibraryTrack> {

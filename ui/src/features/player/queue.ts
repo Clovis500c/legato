@@ -36,3 +36,28 @@ export function nextIndex(order: number[], index: number, delta: 1 | -1, repeat:
   }
   return null
 }
+
+/** One row of the queue panel. i = list index (-1: dropped file, `path`). */
+export interface QueueRow {
+  key: string
+  i: number
+  played: boolean
+  current: boolean
+  path?: string
+}
+
+/** Queue panel rows in play order: played ones before the current, then what's next. Unplayable ones left out. */
+export function queueRows(order: number[], index: number, playable: (i: number) => boolean): QueueRow[] {
+  const at = order.indexOf(index)
+  return order.flatMap((i, k) => (k === at || playable(i) ? [{ key: String(i), i, played: at >= 0 && k < at, current: k === at }] : []))
+}
+
+/** Order with list index `i` moved to where `j` is (dragged in Up next): before it going up, after it going down. */
+export function moveInOrder(order: number[], i: number, j: number): number[] {
+  const from = order.indexOf(i)
+  const to = order.indexOf(j)
+  if (from < 0 || to < 0 || from === to) return order
+  const out = order.filter((x) => x !== i)
+  out.splice(to, 0, i)
+  return out
+}

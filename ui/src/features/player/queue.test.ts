@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { nextIndex, playOrder, queued } from './queue'
+import { moveInOrder, nextIndex, playOrder, queued, queueRows } from './queue'
 
 describe('playOrder', () => {
   it('keeps list order, or shuffles with the current track first', () => {
@@ -38,5 +38,30 @@ describe('nextIndex', () => {
   it('skips unplayable tracks, gives up when none plays', () => {
     expect(nextIndex(order, 2, 1, 'off', false, (i) => i === 0)).toBe(3)
     expect(nextIndex(order, 2, 1, 'all', false, () => true)).toBeNull()
+  })
+})
+
+describe('queue panel rows', () => {
+  it('keeps songs already played above the current one', () => {
+    const rows = queueRows([3, 0, 2, 1], 2, () => true)
+    expect(rows.map((r) => [r.i, r.played, r.current])).toEqual([
+      [3, true, false],
+      [0, true, false],
+      [2, false, true],
+      [1, false, false],
+    ])
+  })
+
+  it('leaves out what cannot play, never the current song', () => {
+    expect(queueRows([0, 1, 2], 1, (i) => i !== 1 && i !== 2).map((r) => r.i)).toEqual([0, 1])
+  })
+})
+
+describe('moveInOrder', () => {
+  it('moves a song to where another one is, up or down', () => {
+    expect(moveInOrder([5, 6, 7, 8], 8, 6)).toEqual([5, 8, 6, 7])
+    expect(moveInOrder([5, 6, 7, 8], 6, 8)).toEqual([5, 7, 8, 6])
+    expect(moveInOrder([5, 6, 7], 6, 6)).toEqual([5, 6, 7])
+    expect(moveInOrder([5, 6, 7], 9, 6)).toEqual([5, 6, 7])
   })
 })

@@ -17,6 +17,11 @@ pub const LISTS: [(&str, &str); 2] = [
 pub const YOUTUBE_SCRIPT: &str = include_str!("youtube.js");
 /// Hides YouTube's overlays in bare embeds (controls=0). Inject into all frames, shield or not.
 pub const BARE_SCRIPT: &str = include_str!("bare.js");
+/// YouTube's watch page as a bare player, for videos that can't be embedded. Its own webview only, main frame.
+pub const WATCH_SCRIPT: &str = include_str!("watch.js");
+/// Live processing of YouTube's sound (Adaptive Sound, cover animation, Live Editor). Embed and watch page; idle until
+/// the app asks.
+pub const LIVE_SCRIPT: &str = include_str!("live.js");
 const MAX_AGE: Duration = Duration::from_secs(4 * 24 * 3600);
 
 /// Own rules so first offline launch still blocks YouTube / Google ad calls.

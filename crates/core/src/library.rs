@@ -1,5 +1,6 @@
 use crate::matching::{match_key, same_track};
 use crate::model::{Source, Track};
+use crate::musicness::Musicness;
 use anyhow::Result;
 use rusqlite::{Connection, OptionalExtension, Row, params};
 use serde::{Deserialize, Serialize};
@@ -45,11 +46,49 @@ CREATE TABLE IF NOT EXISTS settings (
 );
 ";
 
-const TRACK_COLS: &str = "t.id, t.title, t.artist, t.album, t.duration_ms, t.isrc, t.art, t.added";
+/// Schema version this code writes (user_version after migrations).
+pub const SCHEMA_VERSION: i64 = 10;
 
-/// Lists the service shows newest first (Liked Music: last like on top). Others grow at the bottom.
-pub fn newest_first(source: Source, source_id: &str) -> bool {
+/// The library was made by a newer Music App.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct NewerLibrary(pub i64);
+
+impl std::fmt::Display for NewerLibrary {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "This library was made by a newer Music App (schema {}, this one knows {SCHEMA_VERSION}). Update the app.", self.0)
+    }
+}
+
+impl std::error::Error for NewerLibrary {}
+
+/// Wall clock, unix ms (Sync Mode change times).
+pub fn now_ms() -> i64 {
+    std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_millis() as i64).unwrap_or(0)
+}
+
+const TRACK_COLS: &str = "t.id, t.title, t.artist, t.album, t.duration_ms, t.isrc, t.art, t.added, t.musicness";
+
+/// Liked Music: last like on top, always.
+fn liked_music(source: Source, source_id: &str) -> bool {
     source == Source::Youtube && (source_id == "LM" || source_id.starts_with("LM~"))
+}
+
+/// Order a playlist's service shows before a sync proves otherwise. 2026-10-20: the user checked their imported YouTube
+/// playlists come newest first too (new songs on top), so YouTube = newest first; other services grow at the bottom.
+pub fn default_newest_first(source: Source) -> bool {
+    source == Source::Youtube
+}
+
+/// New songs at the top (true) or the bottom (false) of a re-synced list, compared with the last mirror. None = can't
+/// tell (nothing new, everything new, or new songs on both ends).
+pub fn growth_side(was_there: &[bool]) -> Option<bool> {
+    let new = was_there.iter().filter(|w| !**w).count();
+    if new == 0 || new == was_there.len() {
+        return None;
+    }
+    let top = was_there[..new].iter().all(|w| !w);
+    let bottom = was_there[was_there.len() - new..].iter().all(|w| !w);
+    (top != bottom).then_some(top)
 }
 
 /// v4: "date added" rank. Row ids follow import order, but Liked Music came in newest first: flip its tracks
@@ -62,7 +101,7 @@ fn migrate_v4(db: &Connection) -> Result<()> {
     let mut seen = std::collections::HashSet::new();
     let mut liked: Vec<i64> = Vec::new();
     for (id, source, source_id) in lists {
-        if source != Source::Youtube.as_str() || !newest_first(Source::Youtube, &source_id) {
+        if source != Source::Youtube.as_str() || !liked_music(Source::Youtube, &source_id) {
             continue;
         }
         let ids: Vec<i64> = tx.prepare("SELECT track_id FROM playlist_tracks WHERE playlist_id = ?1 ORDER BY position DESC")?.query_map([id], |r| r.get(0))?.collect::<rusqlite::Result<_>>()?;
@@ -77,6 +116,38 @@ fn migrate_v4(db: &Connection) -> Result<()> {
     tx.commit()?;
     Ok(())
 }
+
+/// v5: "date added" order per playlist. `newest_first` NULL = the source's default, set by a sync that sees where new
+/// songs land, or by hand (`order_manual`). YouTube playlists now default to newest first: their ranks are flipped.
+fn migrate_v5(lib: &Library) -> Result<()> {
+    let tx = lib.db.unchecked_transaction()?;
+    tx.execute_batch("ALTER TABLE playlists ADD COLUMN newest_first INTEGER; ALTER TABLE playlists ADD COLUMN order_manual INTEGER NOT NULL DEFAULT 0;")?;
+    let flipped: Vec<i64> = {
+        let mut stmt = tx.prepare("SELECT id, source_id FROM playlists WHERE custom = 0 AND source = 'youtube'")?;
+        stmt.query_map([], |r| Ok((r.get::<_, i64>(0)?, r.get::<_, String>(1)?)))?
+            .filter_map(Result::ok)
+            .filter(|(_, sid)| !liked_music(Source::Youtube, sid))
+            .map(|(id, _)| id)
+            .collect()
+    };
+    lib.rerank(&flipped)?;
+    tx.execute_batch("PRAGMA user_version = 5;")?;
+    tx.commit()?;
+    Ok(())
+}
+
+/// v6: songs removed from the library by the user. A sync or a folder rescan must not bring them back; adding one again
+/// by hand (search, link) clears its mark.
+const SCHEMA_V6: &str = "
+BEGIN;
+CREATE TABLE IF NOT EXISTS removed (
+  source TEXT NOT NULL,
+  source_id TEXT NOT NULL,
+  PRIMARY KEY (source, source_id)
+);
+PRAGMA user_version = 6;
+COMMIT;
+";
 
 /// v3: cover art per track. Bare YouTube videos get their frame now (no network); syncs and lookups bring real covers later.
 const SCHEMA_V3: &str = "
@@ -104,8 +175,10 @@ pub struct LibraryPlaylist {
     pub track_count: i64,
     /// Made in the app (editable). Imported ones mirror their service.
     pub custom: bool,
-    /// Service order = newest first (Liked Music).
+    /// Service order = newest first (new songs on top).
     pub newest_first: bool,
+    /// That order was set by hand (else learned from syncs).
+    pub order_manual: bool,
 }
 
 /// Edits on custom playlists. Duplicate also works on imported ones.
@@ -117,13 +190,18 @@ pub enum PlaylistEdit {
     Delete { id: i64 },
     Add { id: i64, track_ids: Vec<i64> },
     Remove { id: i64, position: usize },
+    /// Every occurrence of a song (right-click › Remove from).
+    RemoveTrack { id: i64, track_id: i64 },
     Move { id: i64, from: usize, to: usize },
     Duplicate { id: i64, name: String },
+    /// Imported playlist: which end new songs land on ("date added" sorts). None = automatic (detected by syncs).
+    SetOrder { id: i64, newest_first: Option<bool> },
 }
 
 /// Row → track. Column 7 = ids JSON object (optional).
 fn to_track(r: &Row) -> rusqlite::Result<LibraryTrack> {
-    let ids: Option<String> = r.get(8).ok();
+    let ids: Option<String> = r.get(9).ok();
+    let musicness: Option<String> = r.get(8)?;
     Ok(LibraryTrack {
         id: r.get(0)?,
         added: r.get(7)?,
@@ -135,6 +213,7 @@ fn to_track(r: &Row) -> rusqlite::Result<LibraryTrack> {
             isrc: r.get(5)?,
             ids: ids.and_then(|j| serde_json::from_str::<BTreeMap<Source, String>>(&j).ok()).unwrap_or_default(),
             art: r.get(6)?,
+            musicness: musicness.as_deref().and_then(Musicness::parse),
         },
     })
 }
@@ -146,9 +225,51 @@ pub struct Library {
     pub versions: std::sync::Arc<crate::cache::Versions>,
 }
 
+/// Live Editor edit: a song's (or a preset), its effects as JSON (music_dsp::Effects).
+#[derive(Debug, Clone, PartialEq, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Edit {
+    pub id: i64,
+    pub song: Option<String>,
+    pub name: String,
+    pub effects: String,
+    pub active: bool,
+}
+
+/// Whole consistent copy of an open library (`VACUUM INTO`), written aside then renamed: never a half file.
+fn copy_to(db: &Connection, to: &Path) -> Result<()> {
+    let part = to.with_extension("db.part");
+    let _ = std::fs::remove_file(&part);
+    db.execute("VACUUM INTO ?1", [part.to_string_lossy()])?;
+    std::fs::rename(&part, to)?;
+    Ok(())
+}
+
+/// Daily copy next to the library (`library-daily.db`), replaced when older than 20 h. Its own read connection: run it
+/// off the main thread. True when a copy was made.
+pub fn keep_daily_copy(path: &Path) -> Result<bool> {
+    let to = path.with_file_name("library-daily.db");
+    let fresh = std::fs::metadata(&to).and_then(|m| m.modified()).is_ok_and(|t| t.elapsed().is_ok_and(|age| age.as_secs() < 20 * 3600));
+    if fresh || !path.exists() {
+        return Ok(false);
+    }
+    copy_to(&Connection::open_with_flags(path, rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY)?, &to)?;
+    Ok(true)
+}
+
 impl Library {
+    /// Before migrating an existing library, keeps it as it was (`library-before-v<N>.db` next to it, the first one
+    /// kept): an update with a bad migration must never cost the library (2026-10-21 incident).
     pub fn open(path: impl AsRef<Path>) -> Result<Self> {
-        Self::init(Connection::open(path)?)
+        let path = path.as_ref();
+        let db = Connection::open(path)?;
+        let found: i64 = db.query_row("PRAGMA user_version", [], |r| r.get(0))?;
+        let tables: i64 = db.query_row("SELECT count(*) FROM sqlite_master WHERE type = 'table'", [], |r| r.get(0))?;
+        let copy = path.with_file_name(format!("library-before-v{SCHEMA_VERSION}.db"));
+        if found < SCHEMA_VERSION && tables > 0 && !copy.exists() {
+            copy_to(&db, &copy)?;
+        }
+        Self::init(db)
     }
 
     pub fn in_memory() -> Result<Self> {
@@ -156,6 +277,10 @@ impl Library {
     }
 
     fn init(db: Connection) -> Result<Self> {
+        // A library from a newer app: an older one must not write into it (it would mix two schemas). 2026-10-21:
+        // the installed app and a newer dev build shared one library and damaged it.
+        let found: i64 = db.query_row("PRAGMA user_version", [], |r| r.get(0))?;
+        anyhow::ensure!(found <= SCHEMA_VERSION, NewerLibrary(found));
         db.execute_batch(SCHEMA)?;
         // Migrations, keyed on user_version.
         if db.query_row("PRAGMA user_version", [], |r| r.get::<_, i64>(0))? < 1 {
@@ -170,10 +295,51 @@ impl Library {
         if db.query_row("PRAGMA user_version", [], |r| r.get::<_, i64>(0))? < 4 {
             migrate_v4(&db)?;
         }
-        let versions = std::sync::Arc::new(crate::cache::Versions::default());
-        let v = versions.clone();
-        db.update_hook(Some(move |_: rusqlite::hooks::Action, _: &str, table: &str, _: i64| v.touch(table)))?;
-        Ok(Self { db, versions })
+        let lib = Self { db, versions: std::sync::Arc::new(crate::cache::Versions::default()) };
+        if lib.db.query_row("PRAGMA user_version", [], |r| r.get::<_, i64>(0))? < 5 {
+            migrate_v5(&lib)?;
+        }
+        if lib.db.query_row("PRAGMA user_version", [], |r| r.get::<_, i64>(0))? < 6 {
+            lib.db.execute_batch(SCHEMA_V6)?;
+        }
+        if lib.db.query_row("PRAGMA user_version", [], |r| r.get::<_, i64>(0))? < 7 {
+            // v7: music or not, per track (YouTube imports bring talks and games along). NULL = not looked at.
+            lib.db.execute_batch("BEGIN; ALTER TABLE tracks ADD COLUMN musicness TEXT; PRAGMA user_version = 7; COMMIT;")?;
+        }
+        if lib.db.query_row("PRAGMA user_version", [], |r| r.get::<_, i64>(0))? < 8 {
+            // v8: lyrics looked up (lyrics.rs key), JSON or NULL = none found; spares the services, works offline.
+            lib.db.execute_batch("BEGIN; CREATE TABLE IF NOT EXISTS lyrics (key TEXT PRIMARY KEY, body TEXT, fetched INTEGER NOT NULL); PRAGMA user_version = 8; COMMIT;")?;
+        }
+        if lib.db.query_row("PRAGMA user_version", [], |r| r.get::<_, i64>(0))? < 9 {
+            // v9: Live Editor edits. song = 't:<track>' / 'yt:<video>' / 'f:<path>', NULL = preset for any song.
+            // effects = JSON of numbers only (music_dsp::Effects), never audio.
+            lib.db.execute_batch(
+                "BEGIN;
+                 CREATE TABLE IF NOT EXISTS edits (id INTEGER PRIMARY KEY, song TEXT, name TEXT NOT NULL, effects TEXT NOT NULL, active INTEGER NOT NULL DEFAULT 0, updated INTEGER NOT NULL);
+                 CREATE INDEX IF NOT EXISTS edits_song ON edits (song);
+                 PRAGMA user_version = 9;
+                 COMMIT;",
+            )?;
+        }
+        if lib.db.query_row("PRAGMA user_version", [], |r| r.get::<_, i64>(0))? < 10 {
+            // v10: Sync Mode (syncmode.rs). When things changed (unix ms) and what was deleted, so two PCs can merge:
+            // the newest change wins. Playlists made here get ids no other PC can make (were custom-<row id>).
+            lib.db.execute_batch(
+                "BEGIN;
+                 ALTER TABLE playlists ADD COLUMN updated INTEGER NOT NULL DEFAULT 0;
+                 ALTER TABLE removed ADD COLUMN at INTEGER NOT NULL DEFAULT 0;
+                 ALTER TABLE track_prefs ADD COLUMN at INTEGER NOT NULL DEFAULT 0;
+                 ALTER TABLE edits ADD COLUMN uid TEXT;
+                 UPDATE edits SET uid = lower(hex(randomblob(8)));
+                 UPDATE playlists SET source_id = 'custom-' || lower(hex(randomblob(8))) WHERE custom = 1;
+                 CREATE TABLE IF NOT EXISTS sync_gone (kind TEXT NOT NULL, key TEXT NOT NULL, at INTEGER NOT NULL, PRIMARY KEY (kind, key));
+                 PRAGMA user_version = 10;
+                 COMMIT;",
+            )?;
+        }
+        let v = lib.versions.clone();
+        lib.db.update_hook(Some(move |_: rusqlite::hooks::Action, _: &str, table: &str, _: i64| v.touch(table)))?;
+        Ok(lib)
     }
 
     /// Insert or merge track (source id, then ISRC, then title+artist+duration). Return row id.
@@ -211,19 +377,19 @@ impl Library {
             let id = match found.pop_first() {
                 None => {
                     self.db.execute(
-                        "INSERT INTO tracks (title, artist, album, duration_ms, isrc, match_key, art, added)
-                         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, (SELECT coalesce(max(added), 0) + 1 FROM tracks))",
-                        params![t.title, t.artist, t.album, t.duration_ms, isrc, match_key(&t.title, &t.artist), t.art],
+                        "INSERT INTO tracks (title, artist, album, duration_ms, isrc, match_key, art, musicness, added)
+                         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, (SELECT coalesce(max(added), 0) + 1 FROM tracks))",
+                        params![t.title, t.artist, t.album, t.duration_ms, isrc, match_key(&t.title, &t.artist), t.art, t.musicness.map(Musicness::as_str)],
                     )?;
                     self.db.last_insert_rowid()
                 }
                 Some(keep) => {
                     // Track may sit in several rows (seen on YouTube, then Spotify). Merge into lowest id.
                     for dupe in found {
-                        let (album, dur, dupe_isrc, art) = self.db.query_row(
-                            "SELECT album, duration_ms, isrc, art FROM tracks WHERE id = ?1",
+                        let (album, dur, dupe_isrc, art, music) = self.db.query_row(
+                            "SELECT album, duration_ms, isrc, art, musicness FROM tracks WHERE id = ?1",
                             [dupe],
-                            |r| Ok((r.get::<_, Option<String>>(0)?, r.get::<_, Option<u32>>(1)?, r.get::<_, Option<String>>(2)?, r.get::<_, Option<String>>(3)?)),
+                            |r| Ok((r.get::<_, Option<String>>(0)?, r.get::<_, Option<u32>>(1)?, r.get::<_, Option<String>>(2)?, r.get::<_, Option<String>>(3)?, r.get::<_, Option<String>>(4)?)),
                         )?;
                         self.db.execute("UPDATE track_ids SET track_id = ?1 WHERE track_id = ?2", [keep, dupe])?;
                         self.db.execute("UPDATE playlist_tracks SET track_id = ?1 WHERE track_id = ?2", [keep, dupe])?;
@@ -231,9 +397,9 @@ impl Library {
                         self.db.execute("UPDATE OR IGNORE track_prefs SET track_id = ?1 WHERE track_id = ?2", [keep, dupe])?;
                         self.db.execute("UPDATE tracks SET added = min(added, (SELECT added FROM tracks WHERE id = ?2)) WHERE id = ?1", [keep, dupe])?;
                         self.db.execute("DELETE FROM tracks WHERE id = ?1", [dupe])?;
-                        self.fill(keep, album, dur, dupe_isrc, art)?;
+                        self.fill(keep, album, dur, dupe_isrc, art, music.as_deref().and_then(Musicness::parse))?;
                     }
-                    self.fill(keep, t.album.clone(), t.duration_ms, isrc, t.art.clone())?;
+                    self.fill(keep, t.album.clone(), t.duration_ms, isrc, t.art.clone(), t.musicness)?;
                     keep
                 }
             };
@@ -246,28 +412,83 @@ impl Library {
         })
     }
 
-    /// Replace imported playlist content.
+    /// Replace imported playlist content. A re-sync also learns which end new songs land on ("date added" order),
+    /// unless the user set it by hand.
     pub fn save_playlist(&self, source: Source, source_id: &str, name: &str, tracks: &[Track]) -> Result<i64> {
         self.tx(|| {
+            let before: Option<String> = self.db.query_row("SELECT name FROM playlists WHERE source = ?1 AND source_id = ?2", params![source.as_str(), source_id], |r| r.get(0)).optional()?;
             let id: i64 = self.db.query_row(
                 "INSERT INTO playlists (source, source_id, name) VALUES (?1, ?2, ?3)
                  ON CONFLICT (source, source_id) DO UPDATE SET name = excluded.name RETURNING id",
                 params![source.as_str(), source_id, name],
                 |r| r.get(0),
             )?;
+            let old_order = self.playlist_track_ids(id)?;
+            let old: BTreeSet<i64> = old_order.iter().copied().collect();
+            let mut flipped = false;
+            if !old.is_empty() && !liked_music(source, source_id) {
+                let was_there = tracks.iter().map(|t| Ok(self.find(t)?.is_some_and(|i| old.contains(&i)))).collect::<Result<Vec<_>>>()?;
+                let (current, manual) = self.order_of(id)?;
+                if let Some(seen) = growth_side(&was_there).filter(|s| !manual && *s != current) {
+                    self.db.execute("UPDATE playlists SET newest_first = ?1 WHERE id = ?2", params![seen, id])?;
+                    flipped = true;
+                }
+            }
             self.db.execute("DELETE FROM playlist_tracks WHERE playlist_id = ?1", [id])?;
+            // Removed from the library by the user: stays out.
+            let kept: Vec<Track> = tracks.iter().filter(|t| !self.is_removed(t).unwrap_or(false)).cloned().collect();
+            let tracks = kept.as_slice();
             // New rows created oldest first: "date added" holds for newest-first lists too.
-            let newest = newest_first(source, source_id);
+            let newest = self.order_of(id)?.0;
             let oldest_first: Vec<&Track> = if newest { tracks.iter().rev().collect() } else { tracks.iter().collect() };
             let mut ids = oldest_first.into_iter().map(|t| self.upsert_track(t)).collect::<Result<Vec<_>>>()?;
             if newest {
                 ids.reverse();
             }
+            if before.as_deref() != Some(name) || ids != old_order || flipped {
+                self.touch(id)?;
+            }
             for (pos, track_id) in ids.into_iter().enumerate() {
                 self.db.execute("INSERT INTO playlist_tracks (playlist_id, position, track_id) VALUES (?1, ?2, ?3)", params![id, pos as i64, track_id])?;
             }
+            if flipped {
+                self.rerank(&[id])?;
+            }
             Ok(id)
         })
+    }
+
+    /// Imported playlist's "date added" order: (newest first, set by hand).
+    fn order_of(&self, id: i64) -> Result<(bool, bool)> {
+        let (source, set, manual): (String, Option<bool>, bool) =
+            self.db.query_row("SELECT source, newest_first, order_manual FROM playlists WHERE id = ?1", [id], |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?)))?;
+        let source: Source = serde_json::from_value(source.into())?;
+        Ok((set.unwrap_or_else(|| default_newest_first(source)), manual))
+    }
+
+    /// "Date added" ranks of the tracks a playlist brought in (first appearance, playlists in import order) follow its
+    /// current order: the same ranks, handed out again oldest first. Call after a playlist's order changed.
+    fn rerank(&self, playlists: &[i64]) -> Result<()> {
+        if playlists.is_empty() {
+            return Ok(());
+        }
+        let lists: Vec<i64> = self.db.prepare("SELECT id FROM playlists WHERE custom = 0 ORDER BY id")?.query_map([], |r| r.get(0))?.collect::<rusqlite::Result<_>>()?;
+        let mut seen = std::collections::HashSet::new();
+        for id in lists {
+            let mut mine: Vec<i64> = self.playlist_track_ids(id)?.into_iter().filter(|t| seen.insert(*t)).collect();
+            if !playlists.contains(&id) {
+                continue;
+            }
+            if self.order_of(id)?.0 {
+                mine.reverse();
+            }
+            let mut slots = mine.iter().map(|t| self.db.query_row("SELECT added FROM tracks WHERE id = ?1", [t], |r| r.get::<_, i64>(0))).collect::<rusqlite::Result<Vec<_>>>()?;
+            slots.sort_unstable();
+            for (slot, t) in slots.iter().zip(&mine) {
+                self.db.execute("UPDATE tracks SET added = ?1 WHERE id = ?2", [slot, t])?;
+            }
+        }
+        Ok(())
     }
 
     pub fn tracks(&self) -> Result<Vec<LibraryTrack>> {
@@ -281,7 +502,7 @@ impl Library {
 
     pub fn playlists(&self) -> Result<Vec<LibraryPlaylist>> {
         let mut stmt = self.db.prepare_cached(
-            "SELECT p.id, p.source, p.source_id, p.name, COUNT(pt.track_id), p.custom
+            "SELECT p.id, p.source, p.source_id, p.name, COUNT(pt.track_id), p.custom, p.newest_first, p.order_manual
              FROM playlists p LEFT JOIN playlist_tracks pt ON pt.playlist_id = p.id
              GROUP BY p.id ORDER BY p.name COLLATE NOCASE",
         )?;
@@ -292,7 +513,8 @@ impl Library {
             Ok(LibraryPlaylist {
                 id: r.get(0)?,
                 source,
-                newest_first: newest_first(source, &source_id),
+                newest_first: r.get::<_, Option<bool>>(6)?.unwrap_or_else(|| default_newest_first(source)),
+                order_manual: r.get(7)?,
                 source_id,
                 name: r.get(3)?,
                 track_count: r.get(4)?,
@@ -314,8 +536,9 @@ impl Library {
     /// Local files mirror a fresh scan: upsert all (links to known tracks), drop vanished paths and orphan rows.
     pub fn replace_local(&self, tracks: &[Track]) -> Result<usize> {
         self.tx(|| {
+            let tracks: Vec<&Track> = tracks.iter().filter(|t| !self.is_removed(t).unwrap_or(false)).collect();
             let keep: BTreeSet<&str> = tracks.iter().filter_map(|t| t.ids.get(&Source::Local).map(String::as_str)).collect();
-            for t in tracks {
+            for t in &tracks {
                 self.upsert_track(t)?;
             }
             let old: Vec<String> = {
@@ -339,11 +562,14 @@ impl Library {
                 PlaylistEdit::Rename { id, name } => {
                     self.ensure_custom(id)?;
                     self.db.execute("UPDATE playlists SET name = ?1 WHERE id = ?2", params![clean_name(&name)?, id])?;
+                    self.touch(id)?;
                     None
                 }
                 PlaylistEdit::Delete { id } => {
                     self.ensure_custom(id)?;
+                    let key: String = self.db.query_row("SELECT source || ':' || source_id FROM playlists WHERE id = ?1", [id], |r| r.get(0))?;
                     self.db.execute("DELETE FROM playlists WHERE id = ?1", [id])?;
+                    self.gone("playlist", &key)?;
                     None
                 }
                 PlaylistEdit::Add { id, track_ids } => {
@@ -360,6 +586,11 @@ impl Library {
                     })?;
                     None
                 }
+                PlaylistEdit::RemoveTrack { id, track_id } => {
+                    self.ensure_custom(id)?;
+                    self.rewrite(id, |ids| ids.retain(|t| *t != track_id))?;
+                    None
+                }
                 PlaylistEdit::Move { id, from, to } => {
                     self.ensure_custom(id)?;
                     self.rewrite(id, |ids| {
@@ -370,6 +601,15 @@ impl Library {
                     })?;
                     None
                 }
+                PlaylistEdit::SetOrder { id, newest_first } => {
+                    let before = self.order_of(id)?.0;
+                    self.db.execute("UPDATE playlists SET newest_first = ?1, order_manual = ?2 WHERE id = ?3", params![newest_first, newest_first.is_some(), id])?;
+                    self.touch(id)?;
+                    if self.order_of(id)?.0 != before {
+                        self.rerank(&[id])?;
+                    }
+                    None
+                }
                 PlaylistEdit::Duplicate { id, name } => {
                     let ids = self.playlist_track_ids(id)?;
                     let copy = self.new_custom(&name)?;
@@ -378,6 +618,54 @@ impl Library {
                 }
             })
         })
+    }
+
+    /// A track's ids on one service (a song can have several uploads on YouTube).
+    pub fn source_ids(&self, track_id: i64, source: Source) -> Result<Vec<String>> {
+        let mut stmt = self.db.prepare_cached("SELECT source_id FROM track_ids WHERE track_id = ?1 AND source = ?2")?;
+        Ok(stmt.query_map(params![track_id, source.as_str()], |r| r.get(0))?.collect::<rusqlite::Result<_>>()?)
+    }
+
+    /// Imported playlist mirror after the service dropped a song (custom ones: `edit_playlist`).
+    pub fn remove_from_imported(&self, id: i64, track_id: i64) -> Result<()> {
+        self.tx(|| self.rewrite(id, |ids| ids.retain(|t| *t != track_id)))
+    }
+
+    /// Out of the library: out of every playlist here (custom ones, and imported mirrors: the services keep their own
+    /// copies), history and marks gone, and remembered as removed so syncs and folder rescans leave it out.
+    /// Files on disk are never touched.
+    pub fn remove_track(&self, track_id: i64) -> Result<()> {
+        self.tx(|| {
+            self.db.execute("INSERT OR IGNORE INTO removed (source, source_id, at) SELECT source, source_id, ?2 FROM track_ids WHERE track_id = ?1", params![track_id, now_ms()])?;
+            let lists: Vec<i64> = self.db.prepare("SELECT DISTINCT playlist_id FROM playlist_tracks WHERE track_id = ?1")?.query_map([track_id], |r| r.get(0))?.collect::<rusqlite::Result<_>>()?;
+            for id in lists {
+                self.rewrite(id, |ids| ids.retain(|t| *t != track_id))?;
+            }
+            self.db.execute("DELETE FROM tracks WHERE id = ?1", [track_id])?;
+            Ok(())
+        })
+    }
+
+    /// Removed by the user earlier (any of its ids).
+    pub(crate) fn is_removed(&self, t: &Track) -> Result<bool> {
+        let mut stmt = self.db.prepare_cached("SELECT 1 FROM removed WHERE source = ?1 AND source_id = ?2")?;
+        for (s, id) in &t.ids {
+            if stmt.exists(params![s.as_str(), id])? {
+                return Ok(true);
+            }
+        }
+        Ok(false)
+    }
+
+    /// Added again by hand (search, link): the removed mark goes.
+    pub fn unremove(&self, t: &Track) -> Result<()> {
+        let mut stmt = self.db.prepare_cached("DELETE FROM removed WHERE source = ?1 AND source_id = ?2")?;
+        for (s, id) in &t.ids {
+            if stmt.execute(params![s.as_str(), id])? > 0 {
+                self.gone("removed", &format!("{}:{id}", s.as_str()))?;
+            }
+        }
+        Ok(())
     }
 
     /// Every playlist's track ids in playlist order (covers picked client-side from the library rows).
@@ -393,9 +681,8 @@ impl Library {
 
     /// Imported playlist mirror after the service accepted new tracks (custom ones: `edit_playlist`).
     pub fn append_to_imported(&self, id: i64, track_ids: &[i64]) -> Result<()> {
-        let (source, source_id): (String, String) = self.db.query_row("SELECT source, source_id FROM playlists WHERE id = ?1", [id], |r| Ok((r.get(0)?, r.get(1)?)))?;
-        // Liked Music: last like on top, like YouTube shows it.
-        let top = source == Source::Youtube.as_str() && newest_first(Source::Youtube, &source_id);
+        // Newest-first lists (Liked Music, most YouTube playlists): on top, like the service shows it.
+        let top = self.order_of(id)?.0;
         self.tx(|| {
             self.rewrite(id, |ids| {
                 if top {
@@ -409,9 +696,24 @@ impl Library {
 
     fn new_custom(&self, name: &str) -> Result<i64> {
         let name = clean_name(name)?;
-        let n: i64 = self.db.query_row("SELECT coalesce(max(id), 0) + 1 FROM playlists", [], |r| r.get(0))?;
-        self.db.execute("INSERT INTO playlists (source, source_id, name, custom) VALUES ('local', ?1, ?2, 1)", params![format!("custom-{n}"), name])?;
+        // Random id: another PC's playlists (Sync Mode) never collide with this one's.
+        self.db.execute(
+            "INSERT INTO playlists (source, source_id, name, custom, updated) VALUES ('local', 'custom-' || lower(hex(randomblob(8))), ?1, 1, ?2)",
+            params![name, now_ms()],
+        )?;
         Ok(self.db.last_insert_rowid())
+    }
+
+    /// Changed now (Sync Mode: the newest change of a playlist wins).
+    pub(crate) fn touch(&self, playlist_id: i64) -> Result<()> {
+        self.db.execute("UPDATE playlists SET updated = ?2 WHERE id = ?1", params![playlist_id, now_ms()])?;
+        Ok(())
+    }
+
+    /// Deleted now: remembered so other PCs delete it too instead of bringing it back.
+    pub(crate) fn gone(&self, kind: &str, key: &str) -> Result<()> {
+        self.db.execute("INSERT OR REPLACE INTO sync_gone (kind, key, at) VALUES (?1, ?2, ?3)", params![kind, key, now_ms()])?;
+        Ok(())
     }
 
     fn ensure_custom(&self, id: i64) -> Result<()> {
@@ -428,13 +730,73 @@ impl Library {
 
     /// Read order, mutate, write back. Small lists: simpler than shifting positions under the PK.
     fn rewrite(&self, id: i64, f: impl FnOnce(&mut Vec<i64>)) -> Result<()> {
-        let mut ids = self.playlist_track_ids(id)?;
+        let old = self.playlist_track_ids(id)?;
+        let mut ids = old.clone();
         f(&mut ids);
+        if ids == old {
+            return Ok(());
+        }
+        self.touch(id)?;
         self.db.execute("DELETE FROM playlist_tracks WHERE playlist_id = ?1", [id])?;
         let mut ins = self.db.prepare_cached("INSERT INTO playlist_tracks (playlist_id, position, track_id) VALUES (?1, ?2, ?3)")?;
         for (pos, t) in ids.iter().enumerate() {
             ins.execute(params![id, pos as i64, t])?;
         }
+        Ok(())
+    }
+
+    /// Lyrics looked up before: Some((body, when)), body None = nothing found then.
+    pub fn cached_lyrics(&self, key: &str) -> Result<Option<(Option<String>, i64)>> {
+        Ok(self.db.query_row("SELECT body, fetched FROM lyrics WHERE key = ?1", [key], |r| Ok((r.get(0)?, r.get(1)?))).optional()?)
+    }
+
+    pub fn save_lyrics(&self, key: &str, body: Option<&str>, fetched: i64) -> Result<()> {
+        self.db.execute(
+            "INSERT INTO lyrics (key, body, fetched) VALUES (?1, ?2, ?3) ON CONFLICT (key) DO UPDATE SET body = excluded.body, fetched = excluded.fetched",
+            params![key, body, fetched],
+        )?;
+        Ok(())
+    }
+
+    /// A song's edits (`song` key) or the presets (None), oldest first (a stable list: playing one doesn't move it).
+    pub fn edits(&self, song: Option<&str>) -> Result<Vec<Edit>> {
+        let mut q = self.db.prepare("SELECT id, song, name, effects, active FROM edits WHERE song IS ?1 ORDER BY id")?;
+        let rows = q.query_map([song], |r| Ok(Edit { id: r.get(0)?, song: r.get(1)?, name: r.get(2)?, effects: r.get(3)?, active: r.get::<_, i64>(4)? != 0 }))?;
+        Ok(rows.collect::<rusqlite::Result<_>>()?)
+    }
+
+    /// New edit (id None) or changed one. Returns its id.
+    pub fn save_edit(&self, id: Option<i64>, song: Option<&str>, name: &str, effects: &str, now: i64) -> Result<i64> {
+        match id {
+            Some(id) => {
+                self.db.execute("UPDATE edits SET name = ?2, effects = ?3, updated = ?4 WHERE id = ?1", params![id, name, effects, now])?;
+                Ok(id)
+            }
+            None => {
+                self.db.execute("INSERT INTO edits (song, name, effects, updated, uid) VALUES (?1, ?2, ?3, ?4, lower(hex(randomblob(8))))", params![song, name, effects, now])?;
+                Ok(self.db.last_insert_rowid())
+            }
+        }
+    }
+
+    pub fn delete_edit(&self, id: i64) -> Result<()> {
+        let uid: Option<String> = self.db.query_row("SELECT uid FROM edits WHERE id = ?1", [id], |r| r.get(0)).optional()?.flatten();
+        self.db.execute("DELETE FROM edits WHERE id = ?1", [id])?;
+        if let Some(uid) = uid {
+            self.gone("edit", &uid)?;
+        }
+        Ok(())
+    }
+
+    /// The edit that plays with this song (None = the song as is).
+    pub fn activate_edit(&self, song: &str, id: Option<i64>) -> Result<()> {
+        let tx = self.db.unchecked_transaction()?;
+        let now = now_ms() / 1000;
+        tx.execute("UPDATE edits SET active = 0, updated = ?2 WHERE song = ?1 AND active = 1", params![song, now])?;
+        if let Some(id) = id {
+            tx.execute("UPDATE edits SET active = 1, updated = ?3 WHERE id = ?1 AND song = ?2", params![id, song, now])?;
+        }
+        tx.commit()?;
         Ok(())
     }
 
@@ -452,11 +814,12 @@ impl Library {
         Ok(())
     }
 
-    fn fill(&self, id: i64, album: Option<String>, duration_ms: Option<u32>, isrc: Option<String>, art: Option<String>) -> Result<()> {
-        let old: Option<String> = self.db.query_row("SELECT art FROM tracks WHERE id = ?1", [id], |r| r.get(0))?;
+    fn fill(&self, id: i64, album: Option<String>, duration_ms: Option<u32>, isrc: Option<String>, art: Option<String>, music: Option<Musicness>) -> Result<()> {
+        let (old, old_music): (Option<String>, Option<String>) = self.db.query_row("SELECT art, musicness FROM tracks WHERE id = ?1", [id], |r| Ok((r.get(0)?, r.get(1)?)))?;
+        let music = Musicness::merge(old_music.as_deref().and_then(Musicness::parse), music);
         self.db.execute(
-            "UPDATE tracks SET album = coalesce(album, ?1), duration_ms = coalesce(duration_ms, ?2), isrc = coalesce(isrc, ?3), art = ?4 WHERE id = ?5",
-            params![album, duration_ms, isrc, crate::model::pick_art(old, art), id],
+            "UPDATE tracks SET album = coalesce(album, ?1), duration_ms = coalesce(duration_ms, ?2), isrc = coalesce(isrc, ?3), art = ?4, musicness = ?5 WHERE id = ?6",
+            params![album, duration_ms, isrc, crate::model::pick_art(old, art), music.map(Musicness::as_str), id],
         )?;
         Ok(())
     }
@@ -467,7 +830,7 @@ impl Library {
     }
 
     // Savepoints = nestable tx (save_playlist calls upsert_track).
-    fn tx<T>(&self, f: impl FnOnce() -> Result<T>) -> Result<T> {
+    pub(crate) fn tx<T>(&self, f: impl FnOnce() -> Result<T>) -> Result<T> {
         self.db.execute_batch("SAVEPOINT tx")?;
         match f() {
             Ok(v) => {
@@ -502,6 +865,7 @@ mod tests {
             isrc: Some("USQX91300108".into()),
             ids: BTreeMap::from([(Source::Spotify, "2Foc5Q5nqNiosCNqttzHof".into())]),
             art: Some("https://i.scdn.co/image/ram".into()),
+            musicness: None,
         }
     }
 
@@ -579,7 +943,8 @@ mod tests {
         lib.append_to_imported(pid, &[other])?;
         assert_eq!(lib.playlist_tracks(pid)?.len(), 2);
         assert!(lib.edit_playlist(PlaylistEdit::Add { id: pid, track_ids: vec![other] }).is_err());
-        assert_eq!(lib.playlist_orders()?[&pid].last(), Some(&other));
+        // YouTube playlist: newest on top.
+        assert_eq!(lib.playlist_orders()?[&pid][0], other);
         Ok(())
     }
 
@@ -600,6 +965,138 @@ mod tests {
         // New like goes on top, like on YouTube.
         lib.append_to_imported(pid, &[old])?;
         assert_eq!(lib.playlist_orders()?[&pid][0], old);
+        Ok(())
+    }
+
+    fn added_of(lib: &Library, pid: i64) -> Vec<i64> {
+        let all = lib.tracks().unwrap();
+        lib.playlist_tracks(pid).unwrap().iter().map(|t| all.iter().find(|a| a.id == t.id).unwrap().added).collect()
+    }
+
+    #[test]
+    fn youtube_playlists_come_newest_first() -> Result<()> {
+        let lib = Library::in_memory()?;
+        let pid = lib.save_playlist(Source::Youtube, "PL1", "Mix", &[song(1), song(2), song(3)])?;
+        // Top song = last added (2026-10-20 report: "added newest" showed the oldest).
+        assert_eq!(added_of(&lib, pid), vec![3, 2, 1]);
+        assert!(lib.playlists()?[0].newest_first);
+        Ok(())
+    }
+
+    #[test]
+    fn a_sync_learns_which_end_new_songs_land_on() -> Result<()> {
+        let lib = Library::in_memory()?;
+        let pid = lib.save_playlist(Source::Youtube, "PL1", "Mix", &[song(1), song(2), song(3)])?;
+        // New song at the bottom: this playlist grows at the bottom after all.
+        lib.save_playlist(Source::Youtube, "PL1", "Mix", &[song(1), song(2), song(3), song(4)])?;
+        assert!(!lib.playlists()?[0].newest_first);
+        assert_eq!(added_of(&lib, pid), vec![1, 2, 3, 4]);
+        // And back: new one on top.
+        lib.save_playlist(Source::Youtube, "PL1", "Mix", &[song(5), song(1), song(2), song(3), song(4)])?;
+        assert!(lib.playlists()?[0].newest_first);
+        assert_eq!(added_of(&lib, pid), vec![5, 4, 3, 2, 1]);
+        Ok(())
+    }
+
+    #[test]
+    fn order_set_by_hand_wins_over_syncs() -> Result<()> {
+        let lib = Library::in_memory()?;
+        let pid = lib.save_playlist(Source::Youtube, "PL1", "Mix", &[song(1), song(2)])?;
+        lib.edit_playlist(PlaylistEdit::SetOrder { id: pid, newest_first: Some(false) })?;
+        assert_eq!(added_of(&lib, pid), vec![1, 2]);
+        lib.save_playlist(Source::Youtube, "PL1", "Mix", &[song(3), song(1), song(2)])?;
+        assert!(!lib.playlists()?[0].newest_first);
+        // Automatic again: next sync decides.
+        lib.edit_playlist(PlaylistEdit::SetOrder { id: pid, newest_first: None })?;
+        assert!(lib.playlists()?[0].newest_first);
+        Ok(())
+    }
+
+    #[test]
+    fn removed_songs_stay_out_of_syncs_until_added_again() -> Result<()> {
+        let lib = Library::in_memory()?;
+        let pid = lib.save_playlist(Source::Youtube, "PL1", "Mix", &[song(1), song(2)])?;
+        let custom = lib.edit_playlist(PlaylistEdit::Create { name: "Mine".into() })?.unwrap();
+        let gone = lib.playlist_tracks(pid)?.into_iter().find(|t| t.track.title == "Song 1").unwrap().id;
+        lib.edit_playlist(PlaylistEdit::Add { id: custom, track_ids: vec![gone, gone] })?;
+        lib.remove_track(gone)?;
+        assert!(lib.tracks()?.iter().all(|t| t.id != gone));
+        assert!(lib.playlist_tracks(custom)?.is_empty());
+        // Next sync: still in the service's playlist, still out of the app.
+        lib.save_playlist(Source::Youtube, "PL1", "Mix", &[song(1), song(2)])?;
+        assert_eq!(lib.playlist_tracks(pid)?.iter().map(|t| t.track.title.as_str()).collect::<Vec<_>>(), ["Song 2"]);
+        // Added again by hand: back on the next sync.
+        lib.unremove(&song(1))?;
+        lib.save_playlist(Source::Youtube, "PL1", "Mix", &[song(1), song(2)])?;
+        assert_eq!(lib.playlist_tracks(pid)?.len(), 2);
+        Ok(())
+    }
+
+    #[test]
+    fn remove_track_takes_every_occurrence() -> Result<()> {
+        let lib = Library::in_memory()?;
+        let a = lib.upsert_track(&song(1))?;
+        let b = lib.upsert_track(&song(2))?;
+        let id = lib.edit_playlist(PlaylistEdit::Create { name: "Mine".into() })?.unwrap();
+        lib.edit_playlist(PlaylistEdit::Add { id, track_ids: vec![a, b, a] })?;
+        lib.edit_playlist(PlaylistEdit::RemoveTrack { id, track_id: a })?;
+        assert_eq!(lib.playlist_orders()?[&id], vec![b]);
+        // Imported mirror: through its own call, once the service dropped it.
+        let pid = lib.save_playlist(Source::Youtube, "PL1", "Mix", &[song(1), song(2), song(1)])?;
+        assert!(lib.edit_playlist(PlaylistEdit::RemoveTrack { id: pid, track_id: a }).is_err());
+        lib.remove_from_imported(pid, a)?;
+        assert_eq!(lib.playlist_orders()?[&pid], vec![b]);
+        assert_eq!(lib.source_ids(a, Source::Youtube)?, ["vid1"]);
+        Ok(())
+    }
+
+    #[test]
+    fn music_or_not_is_kept_and_a_music_label_wins() -> Result<()> {
+        let lib = Library::in_memory()?;
+        let talk = Track { musicness: Some(Musicness::NotMusic), ..song(1) };
+        let id = lib.upsert_track(&talk)?;
+        let get = |id| lib.tracks().unwrap().into_iter().find(|t| t.id == id).unwrap().track.musicness;
+        assert_eq!(get(id), Some(Musicness::NotMusic));
+        // Seen again without a word: kept. Seen as a song somewhere: music.
+        lib.upsert_track(&song(1))?;
+        assert_eq!(get(id), Some(Musicness::NotMusic));
+        lib.upsert_track(&Track { musicness: Some(Musicness::Music), ..song(1) })?;
+        assert_eq!(get(id), Some(Musicness::Music));
+        lib.upsert_track(&Track { musicness: Some(Musicness::NotMusic), ..song(1) })?;
+        assert_eq!(get(id), Some(Musicness::Music));
+        Ok(())
+    }
+
+    #[test]
+    fn growth_side_needs_new_songs_on_one_end() {
+        assert_eq!(growth_side(&[false, true, true]), Some(true));
+        assert_eq!(growth_side(&[true, true, false]), Some(false));
+        assert_eq!(growth_side(&[false, true, false]), None);
+        assert_eq!(growth_side(&[true, true]), None);
+        assert_eq!(growth_side(&[false, false]), None);
+        assert_eq!(growth_side(&[]), None);
+    }
+
+    #[test]
+    fn v5_flips_youtube_playlists_inside_their_slots() -> Result<()> {
+        let db = Connection::open_in_memory()?;
+        db.execute_batch(SCHEMA)?;
+        db.execute_batch("ALTER TABLE playlists ADD COLUMN custom INTEGER NOT NULL DEFAULT 0;")?;
+        db.execute_batch(crate::history::SCHEMA_V2)?;
+        db.execute_batch(SCHEMA_V3)?;
+        db.execute_batch("ALTER TABLE tracks ADD COLUMN added INTEGER NOT NULL DEFAULT 0; PRAGMA user_version = 4;")?;
+        for id in 1..=5 {
+            db.execute("INSERT INTO tracks (id, title, artist, match_key, added) VALUES (?1, 't', 'a', ?1, ?1)", [id])?;
+        }
+        // Spotify playlist first (keeps its order), then a YouTube one imported as if it grew at the bottom.
+        db.execute_batch(
+            "INSERT INTO playlists (id, source, source_id, name) VALUES (1, 'spotify', 'p1', 'S'), (2, 'youtube', 'PL1', 'Mix');
+             INSERT INTO playlist_tracks VALUES (1, 0, 1), (1, 1, 2), (2, 0, 3), (2, 1, 4), (2, 2, 5), (2, 3, 1);",
+        )?;
+        let lib = Library::init(db)?;
+        let added: Vec<i64> = (1..=5).map(|id| lib.db.query_row("SELECT added FROM tracks WHERE id = ?1", [id], |r| r.get(0)).unwrap()).collect();
+        // Track 1 belongs to the Spotify import (first seen there): untouched. 3, 4, 5 flipped in their slots.
+        assert_eq!(added, vec![1, 2, 5, 4, 3]);
         Ok(())
     }
 
@@ -630,7 +1127,7 @@ mod tests {
         let id = lib.save_playlist(Source::Spotify, "p1", "New", &[spotify()])?;
         assert_eq!(
             lib.playlists()?,
-            vec![LibraryPlaylist { id, source: Source::Spotify, source_id: "p1".into(), name: "New".into(), track_count: 1, custom: false, newest_first: false }]
+            vec![LibraryPlaylist { id, source: Source::Spotify, source_id: "p1".into(), name: "New".into(), track_count: 1, custom: false, newest_first: false, order_manual: false }]
         );
         Ok(())
     }
@@ -709,6 +1206,104 @@ mod tests {
         lib.set_setting("ui", &serde_json::json!({ "theme": "paper" }))?;
         lib.set_setting("ui", &serde_json::json!({ "theme": "graphite" }))?;
         assert_eq!(lib.setting("ui")?, Some(serde_json::json!({ "theme": "graphite" })));
+        Ok(())
+    }
+
+    #[test]
+    fn migrations_end_at_the_schema_version_and_newer_libraries_are_refused() -> Result<()> {
+        let lib = Library::in_memory()?;
+        assert_eq!(lib.db.query_row("PRAGMA user_version", [], |r| r.get::<_, i64>(0))?, SCHEMA_VERSION);
+        let dir = tempfile::tempdir()?;
+        let path = dir.path().join("library.db");
+        drop(Library::open(&path)?);
+        Connection::open(&path)?.execute_batch(&format!("PRAGMA user_version = {};", SCHEMA_VERSION + 1))?;
+        let e = Library::open(&path).err().expect("refused");
+        assert_eq!(e.downcast_ref::<NewerLibrary>(), Some(&NewerLibrary(SCHEMA_VERSION + 1)));
+        Ok(())
+    }
+
+    /// 50,000-song library (2026-10-22 pass): load time. `cargo test -p music-core --release -- --ignored fifty`.
+    #[test]
+    #[ignore]
+    fn fifty_thousand_songs_load_fast() -> Result<()> {
+        let lib = Library::in_memory()?;
+        let t0 = std::time::Instant::now();
+        lib.tx(|| {
+            for i in 0..50_000 {
+                let mut t = spotify();
+                t.title = format!("Song {i}");
+                t.artist = format!("Artist {}", i % 4000);
+                t.isrc = None;
+                t.ids = BTreeMap::from([(Source::Youtube, format!("v{i:010}"))]);
+                lib.upsert_track(&t)?;
+            }
+            Ok(())
+        })?;
+        let insert = t0.elapsed();
+        let t1 = std::time::Instant::now();
+        let all = lib.tracks()?;
+        let load = t1.elapsed();
+        eprintln!("50k: insert {insert:?}, load {load:?}");
+        assert_eq!(all.len(), 50_000);
+        assert!(load.as_millis() < 1500, "load took {load:?}");
+        Ok(())
+    }
+
+    #[test]
+    fn an_older_library_is_copied_before_migrating_a_new_one_is_not() -> Result<()> {
+        let dir = tempfile::tempdir()?;
+        let path = dir.path().join("library.db");
+        let copy = dir.path().join(format!("library-before-v{SCHEMA_VERSION}.db"));
+        let fresh = dir.path().join("fresh.db");
+        drop(Library::open(&fresh)?);
+        assert!(!dir.path().join(format!("library-before-v{SCHEMA_VERSION}.db")).exists(), "brand-new library: nothing to keep");
+        // An old library (schema 0) holding something.
+        Connection::open(&path)?.execute_batch("CREATE TABLE notes (x TEXT); INSERT INTO notes VALUES ('kept');")?;
+        let lib = Library::open(&path)?;
+        assert_eq!(lib.db.query_row("PRAGMA user_version", [], |r| r.get::<_, i64>(0))?, SCHEMA_VERSION);
+        let old = Connection::open(&copy)?;
+        assert_eq!(old.query_row("PRAGMA user_version", [], |r| r.get::<_, i64>(0))?, 0);
+        assert_eq!(old.query_row("SELECT x FROM notes", [], |r| r.get::<_, String>(0))?, "kept");
+        assert_eq!(old.query_row("SELECT count(*) FROM sqlite_master WHERE name = 'tracks'", [], |r| r.get::<_, i64>(0))?, 0);
+        assert!(!dir.path().join(format!("library-before-v{SCHEMA_VERSION}.db.part")).exists());
+        // Daily copy: made once, then fresh.
+        lib.upsert_track(&spotify())?;
+        assert!(keep_daily_copy(&path)?);
+        assert!(!keep_daily_copy(&path)?);
+        assert_eq!(Connection::open(dir.path().join("library-daily.db"))?.query_row("SELECT count(*) FROM tracks", [], |r| r.get::<_, i64>(0))?, 1);
+        Ok(())
+    }
+
+    #[test]
+    fn edits_per_song_presets_and_one_active() -> Result<()> {
+        let lib = Library::in_memory()?;
+        let a = lib.save_edit(None, Some("t:1"), "Slowed", "{\"speed\":0.8}", 1)?;
+        let b = lib.save_edit(None, Some("t:1"), "8D", "{}", 2)?;
+        lib.save_edit(None, None, "My preset", "{}", 3)?;
+        assert_eq!(lib.edits(Some("t:1"))?.iter().map(|e| e.name.as_str()).collect::<Vec<_>>(), ["Slowed", "8D"]);
+        assert_eq!(lib.edits(None)?.len(), 1);
+        lib.activate_edit("t:1", Some(a))?;
+        lib.activate_edit("t:1", Some(b))?;
+        let active: Vec<i64> = lib.edits(Some("t:1"))?.into_iter().filter(|e| e.active).map(|e| e.id).collect();
+        assert_eq!(active, [b]);
+        // Another song's id can't be made active here.
+        lib.activate_edit("t:2", Some(b))?;
+        assert!(lib.edits(Some("t:1"))?.iter().any(|e| e.active));
+        lib.save_edit(Some(a), None, "Slowed more", "{\"speed\":0.7}", 4)?;
+        assert_eq!(lib.edits(Some("t:1"))?[0].name, "Slowed more");
+        lib.delete_edit(b)?;
+        assert_eq!(lib.edits(Some("t:1"))?.len(), 1);
+        Ok(())
+    }
+
+    #[test]
+    fn lyrics_cache_keeps_finds_and_misses() -> Result<()> {
+        let lib = Library::in_memory()?;
+        assert_eq!(lib.cached_lyrics("a|b|200")?, None);
+        lib.save_lyrics("a|b|200", None, 10)?;
+        assert_eq!(lib.cached_lyrics("a|b|200")?, Some((None, 10)));
+        lib.save_lyrics("a|b|200", Some("{}"), 20)?;
+        assert_eq!(lib.cached_lyrics("a|b|200")?, Some((Some("{}".into()), 20)));
         Ok(())
     }
 

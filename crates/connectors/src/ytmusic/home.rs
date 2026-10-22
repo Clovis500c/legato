@@ -90,7 +90,7 @@ fn card(item: &Value) -> Option<HomeItem> {
             return Some(HomeItem { title, subtitle, art, track: None, list: Some(ListRef::Radio { video_id: video, playlist_id: pl.into() }) });
         }
         let artist = artist_of(item.get("subtitle"));
-        let track = Track { title: title.clone(), artist, album: album_of(item.get("subtitle")), duration_ms: None, isrc: None, ids: BTreeMap::from([(Source::Youtube, video?)]), art: art.clone() };
+        let track = Track { title: title.clone(), artist, album: album_of(item.get("subtitle")), duration_ms: None, isrc: None, ids: BTreeMap::from([(Source::Youtube, video?)]), art: art.clone(), musicness: None };
         return Some(HomeItem { title, subtitle, art, track: Some(track), list: None });
     }
     if let Some(pl) = nav.pointer("/watchPlaylistEndpoint/playlistId").and_then(Value::as_str) {
@@ -133,7 +133,7 @@ fn panel_tracks(v: &Value) -> Vec<Track> {
             let title = p.get("title").and_then(text)?;
             let byline = p.get("longBylineText").or_else(|| p.get("shortBylineText"));
             let duration_ms = p.get("lengthText").and_then(text).and_then(|t| parse_duration(&t));
-            Some(Track { title, artist: artist_of(byline), album: album_of(byline), duration_ms, isrc: None, ids: BTreeMap::from([(Source::Youtube, video)]), art: last_thumb(p.get("thumbnail")) })
+            Some(Track { title, artist: artist_of(byline), album: album_of(byline), duration_ms, isrc: None, ids: BTreeMap::from([(Source::Youtube, video)]), art: last_thumb(p.get("thumbnail")), musicness: None })
         })
         .filter(|t| seen.insert(t.ids[&Source::Youtube].clone()))
         .collect()

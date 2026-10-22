@@ -2,10 +2,13 @@ import { getCurrentWebview } from '@tauri-apps/api/webview'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { create } from 'zustand'
 import { api } from '../shared/api'
+import { coverImage } from '../shared/art'
+import { BRAND_GUARD } from '../shared/css'
 import { cssVars, DEFAULTS, resolveTheme, sanitize, type Settings, type SystemAccent, type Theme } from '../shared/theme/theme'
 import { effectiveFade } from '../features/player/fade'
 import { usePlayer } from '../features/player/store'
 import { useStore } from './store'
+import { resolveLang, useLang } from '../shared/i18n/i18n'
 
 const systemDark = window.matchMedia('(prefers-color-scheme: dark)')
 let systemAccent: SystemAccent | null = null
@@ -25,6 +28,25 @@ export function applyCached() {
   }
 }
 
+/** The theme's own CSS, then the guard keeping Music App's name, logo and legal notices as they are. */
+function themeCss(css: string) {
+  const style = (id: string) => {
+    let el = document.getElementById(id) as HTMLStyleElement | null
+    if (!el) {
+      el = document.createElement('style')
+      el.id = id
+      document.head.appendChild(el)
+    }
+    return el
+  }
+  const own = style('theme-css')
+  if (own.textContent !== css) own.textContent = css
+  const guard = style('brand-guard')
+  if (!guard.textContent) guard.textContent = BRAND_GUARD
+  // Last in <head>: after the theme's CSS.
+  if (guard.nextElementSibling) document.head.appendChild(guard)
+}
+
 function apply(s: Settings) {
   try {
     localStorage.setItem(CACHE, JSON.stringify({ settings: s, systemAccent }))
@@ -32,9 +54,19 @@ function apply(s: Settings) {
     // Storage off: no first-paint cache.
   }
   document.documentElement.classList.toggle('still', !s.motion)
+  const lang = resolveLang(s.language, navigator.languages)
+  if (useLang.getState().lang !== lang) {
+    useLang.setState({ lang })
+    document.documentElement.lang = lang
+    // Tray menu and taskbar buttons too.
+    void api.setUiLanguage(lang).catch(() => {})
+  }
   usePlayer.setState({ fade: effectiveFade(s) })
   const root = document.documentElement.style
-  for (const [k, v] of Object.entries(cssVars(resolveTheme(s, systemDark.matches, systemAccent), s))) root.setProperty(k, v)
+  const theme = resolveTheme(s, systemDark.matches, systemAccent)
+  for (const [k, v] of Object.entries(cssVars(theme, s))) root.setProperty(k, v)
+  root.setProperty('--theme-image', theme.background ? `url("${coverImage(theme.background.image)}")` : 'none')
+  themeCss(theme.css ?? '')
   getCurrentWebview()
     .setZoom(s.zoom / 100)
     .catch(() => {})
@@ -43,6 +75,8 @@ function apply(s: Settings) {
 interface SettingsState {
   settings: Settings
   load: () => Promise<void>
+  /** Saved settings changed underneath (Sync Mode): read again, a pending save dropped (it held the old ones). */
+  reload: () => Promise<void>
   update: (patch: Partial<Settings>) => void
   /** Theme currently on screen (resolved from preset, custom or system), or the one `theme` would give. */
   current: (theme?: string) => Theme
@@ -60,6 +94,13 @@ export const useSettings = create<SettingsState>((set, get) => ({
     apply(s)
     // Start screen: replaces the default one, no history entry.
     if (useStore.getState().view.name === 'songs') useStore.setState({ view: { name: s.startView } })
+  },
+
+  async reload() {
+    clearTimeout(saveTimer)
+    const s = sanitize(await api.loadSettings().catch(() => null))
+    set({ settings: s })
+    apply(s)
   },
 
   // Applied at once, saved after a short pause (sliders fire many updates).

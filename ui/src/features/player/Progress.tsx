@@ -1,7 +1,9 @@
-import { useState, useSyncExternalStore } from 'react'
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { formatDuration } from '../../shared/format'
 import { Bar } from '../../shared/ui/controls'
+import { move, press, release, shown, type Drag } from './seekDrag'
 import { usePlayer } from './store'
+import { tr } from '../../shared/i18n/i18n'
 
 const clock = (ms: number | null) => formatDuration(ms) || '0:00'
 /** Seek bar resolution: under a pixel on a full-width bar. */
@@ -28,10 +30,20 @@ usePlayer.subscribe((s, prev) => {
 const ticks = new Set<() => void>()
 let frameAt = performance.now()
 let frame = 0
+// About 60-80 ticks a second at most: a 144 / 240 Hz screen would otherwise run (and repaint) every bar 2-4 times as
+// often for no visible gain (review 2026-10-22: 222 calls a second).
 const loop = (t: number) => {
-  frameAt = t
-  for (const tick of ticks) tick()
   frame = requestAnimationFrame(loop)
+  if (t - frameAt < 12) return
+  frameAt = t
+  // One failing listener must not stop every bar.
+  for (const tick of ticks) {
+    try {
+      tick()
+    } catch (e) {
+      console.error(e)
+    }
+  }
 }
 function onFrame(tick: () => void) {
   ticks.add(tick)
@@ -55,22 +67,57 @@ export function usePosition(step = 1): number {
   return useSyncExternalStore(playing ? onFrame : still, () => quantize(extrapolate(base.ms, base.at, frameAt, playing, durationMs), step))
 }
 
-/** YouTube-like seek bar fed by the smooth position. While dragged it shows the pointer, not playback. */
+/**
+ * YouTube-like seek bar fed by the smooth position. While a pointer drags it, it shows the pointer and seeks on release;
+ * arrow keys seek at once. A drag never outlives its song (`seekDrag.ts`).
+ */
 export function SeekBar({ className = '' }: { className?: string }) {
   const durationMs = usePlayer((s) => s.durationMs)
   const seek = usePlayer((s) => s.seek)
+  const track = String(usePlayer((s) => s.playId))
   const pos = usePosition(durationMs ? durationMs / BAR_STEPS : 1000)
-  const [drag, setDrag] = useState<number | null>(null)
+  const [drag, setDrag] = useState<Drag>(null)
+  // Ref too: input events can arrive before React re-renders after pointerdown.
+  const live = useRef<Drag>(null)
+  const put = (d: Drag) => setDrag((live.current = d))
+  const end = useRef(() => {})
+
+  useEffect(() => () => end.current(), [])
+
   return (
-    <span className={`flex ${className}`} onPointerDown={() => setDrag(pos)} onPointerUp={() => setDrag(null)} onPointerCancel={() => setDrag(null)}>
+    <span
+      className={`flex ${className}`}
+      onPointerDown={(e) => {
+        if (e.button !== 0) return
+        put(press(String(usePlayer.getState().playId), pos))
+        // Released anywhere (outside the bar, outside the window) or focus lost: the drag ends.
+        const finish = () => {
+          end.current()
+          const r = release(live.current, String(usePlayer.getState().playId))
+          put(r.drag)
+          if (r.seek !== null) usePlayer.getState().seek(r.seek)
+        }
+        end.current()
+        window.addEventListener('pointerup', finish)
+        window.addEventListener('pointercancel', finish)
+        window.addEventListener('blur', finish)
+        end.current = () => {
+          window.removeEventListener('pointerup', finish)
+          window.removeEventListener('pointercancel', finish)
+          window.removeEventListener('blur', finish)
+          end.current = () => {}
+        }
+      }}
+    >
       <Bar
-        label="Position"
+        label={tr('Position')}
         seek
-        value={drag ?? pos}
+        value={shown(drag, track, pos)}
         max={durationMs ?? 0}
         onChange={(v) => {
-          setDrag(v)
-          seek(v)
+          const r = move(live.current, v)
+          put(r.drag)
+          if (r.seek !== null) seek(r.seek)
         }}
         className="w-full"
       />

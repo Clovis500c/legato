@@ -23,8 +23,10 @@ Status on 2026-10-16. YouTube, local files and Apple Music previews: done and te
 - Now Playing sizes the video (16:9) or cover (square) to the space left with container query units, so the controls stay on
   screen at any window size. The background takes a flat tint from the cover (`ambient.ts`: canvas average weighted to
   colorful pixels; the tint is pushed darker or lighter until the theme's muted text keeps AA 4.5).
-- Mini player: a card above the bar. For YouTube it is always shown (the video must stay visible): the iframe sits in the
-  card's video slot, our controls below it, never on top. For other sources it's optional (Settings › Player).
+- Mini player: docked at the bottom of the sidebar by default (`SidebarPlayer.tsx`, user's pick 2026-10-22: it never
+  covers the page), or a floating card above the bar (`MiniPlayer.tsx`, Settings › Appearance › Mini player place). For
+  YouTube it is always shown (the video must stay visible): in the sidebar the video fills a 200 px tall slot, YouTube's
+  minimum (the 16:9 frame is wider, its sides cut); our controls never sit on top. For other sources it's optional.
 
 ## Media keys and the Windows media panel (2026-10-16)
 
@@ -60,12 +62,26 @@ Status on 2026-10-16. YouTube, local files and Apple Music previews: done and te
 - iframe `https://www.youtube.com/embed/<id>?enablejsapi=1&autoplay=1&playsinline=1&origin=<app origin>`
   with `referrerpolicy="strict-origin-when-cross-origin"` (`ui/src/features/player/youtube.ts`, `PlayerBar.tsx`).
 - Bare by default: `controls=0&rel=0&iv_load_policy=3&fs=0&disablekb=1` and `pointer-events: none` on the iframe (no
-  hover overlay; our controls drive it). Settings › Advanced brings YouTube's controls back (next track). Subtitles:
-  `unloadModule` captions / cc once per video unless Advanced turns them on.
+  hover overlay; our controls drive it). `crates/shield/src/bare.js` hides every overlay YouTube draws (title, cued
+  thumbnail, unmute, up next, end screen, error slate…) with an adopted sheet and a `<style>` element, both put back if
+  the page drops them. Settings › Playback brings YouTube's controls back (next track). Subtitles:
+  `unloadModule` captions / cc once per video unless Settings › Playback turns them on. YouTube's new embed player (2026-10-22) draws its own
+  controls layer (`.ytPlayerControlsContainerHost`…): hidden the same way.
 - One embed per run of YouTube tracks: the next video goes into the running player (`loadVideoById`), no reload.
-- Error 100 / 101 / 150 (removed / owner turned embedding off): `alternative_videos` searches YouTube Music songs and
-  videos for the same song (same cleaned title and length, any channel), plays the first that works, else skips. The
-  block itself is not worked around (it would mean extracting the stream).
+- Error 101 / 150 (owner turned embedding off), 2026-10-20: the same video plays from YouTube's own watch page, in a
+  child webview of the main window placed exactly over the video slot (`src-tauri/src/ytwatch.rs`, Tauri multi-webview,
+  `unstable` feature; the watch page can't be framed). `crates/shield/src/watch.js` hides everything around
+  `#movie_player` and every overlay, fills the webview, stays muted until the app sends its volume, applies the app's
+  crop, and reports state / time / duration / clicks as `musicapp-ytwatch:<json>` strings on WebView2's message
+  channel (objects posted from that page never reach the host). Rust checks origin, shape and sizes, then emits
+  `ytwatch` to the UI; commands go back as scripts built from fixed names and numbers. The page gets no app command
+  (Tauri's IPC refuses it: no capability). Same store path as the embed (`watch.ts`): pause, seek, volume, fades,
+  next, cover mode (webview hidden, still playing) and click-to-pause all work. Checked live by forcing error 150:
+  switch at the same position, volume and crop applied, pause from the app and from a click.
+- Still unplayable on the watch page (region, age without a signed-in adult account, removed, private: playability
+  status), or error 100 (removed): `alternative_videos` searches YouTube Music songs and videos for the same song (same
+  cleaned title and length, any channel) and plays the first that works, else a clear message and the next song.
+  Nothing is extracted: both are YouTube's own players.
 - Now Playing Auto mode: frames `1.jpg` / `2.jpg` / `3.jpg` (25 / 50 / 75 %) compared at 32×24 (`still.ts`); nearly the
   same = still image upload = cover. Cover mode keeps the embed playing, transparent (user's choice, see plan).
 - Fades between songs: volume × `fadeGain` (smoothstep), only on transitions that happen on their own; Spotify none.
@@ -111,8 +127,64 @@ We still pin the policy on the iframe: a meta tag or header added later can't br
   The decoder strips encoder padding (gapless option on by default). The queue logic (`Queue`) has unit tests.
 - An unreadable file is skipped and the error is shown.
 - IPC: `player` (`play`, `toggle`, `seek`, `next`, `prev`, `volume`, `stop`) and `player_status`, polled 4 times a second by the PlayerBar.
-- Input: music folders (Settings › Sources), or audio files dropped on the window.
+- Input: music folders (Settings › Accounts › Local files, watched: `src-tauri/src/folders.rs`), or audio files dropped on
+  the window.
+- Live processing chain on every file: see Live processing below.
 - Limits: no opus; position obtained by polling, not events.
+
+## Live processing (Adaptive Sound, moving cover; 2026-10-21)
+
+Rule changed by the user (2026-10-20): the app may process **its own output, live**, for listening features. Still
+never: downloading, extracting, recording or exporting a platform's audio, or touching DRM.
+
+- **Local files and previews**: `crates/dsp` (`music-dsp`, pure Rust) in the native engine. `crates/player` `live.rs`
+  wraps every decoded file in a rodio `Source` that runs blocks of 256 frames through the `Processor`: BS.1770 meter
+  (K-weighting, momentary 400 ms, short-term 3 s, peak), Adaptive Sound gain, peak limiter. Settings and levels go
+  through one shared `Control` (mutex + version, `try_lock` on the audio thread: it never waits). IPC `player_live`,
+  `player_levels`.
+- **YouTube**: `crates/shield` `live.js`, injected into the embed and the watch page. The video's sound is taken with
+  `captureStream()`, the element is muted, and Chromium's own audio nodes play it: gain → limiter, plus a K-weighted
+  analysis branch. Same formulas as the native chain. The page keeps its own mute (an instance `muted` property),
+  the element's volume (the app's volume and fades) is applied in the gain. Any failure (sound blocked before a
+  click, nothing captured for 4 s while playing) unmutes the element: the video plays as before. Messages: embed
+  `postMessage` to the app's origin only; watch page `musicapp-live:` strings checked in Rust (`ytwatch.rs`).
+- **Spotify**: plays in Spotify's own app, out of reach. Shown as such under the volume.
+- **Adaptive Sound**: gain heads for `target − short-term loudness`, clamped −12..+9 dB, 2.5 s glide, held while the
+  momentary loudness is under −45 LUFS (silence, fade-outs). Limiter (ceiling 0.97) only while boosting: off, the
+  sound is bit-identical (test). Targets: Quiet −20, Normal −14, Loud −11 LUFS.
+- **Moving cover**: scale from the momentary loudness, up fast and down slow (`player/pulse.ts`), transform only,
+  none with reduced motion or Animations off.
+- UI: `player/live.ts` (settings out, levels in, only from what plays now), `liveSync.ts`, `AdaptiveBar.tsx`.
+  Settings › Playback › Sound processing; "Process YouTube's sound" turns the YouTube side off.
+
+## Live Editor (phase 4.1, 2026-10-21)
+
+Edit the playing song live; written from scratch, Audacity's ideas as inspiration only (no code read or copied).
+
+- **Order**: speed / tempo / pitch → EQ (bass shelf 100 Hz, 60 Hz shelf, 250 / 1k / 4k peaks, 12k shelf) →
+  compressor → stereo width (M/S) → echo → reverb → 3D → balance → Adaptive Sound → limiter. Native: `crates/dsp`
+  `chain.rs` + `stretch.rs`, run by `crates/player` `live.rs`. YouTube: the same graph in `live.js` from Chromium's
+  nodes.
+- **Speed** moves time and pitch together (slowed, nightcore), **tempo** only time, **pitch** only pitch.
+  Native: WSOLA time stretch (Hann windows, 50 % overlap, normalized cross-correlation search) then a Catmull-Rom
+  resampler; pitch alone = stretch by 1/p then resample by p. YouTube: `playbackRate` with `preservesPitch` for the
+  timeline (the picture follows the sound), plus a pitch shifter made of two swept delay lines (AudioWorklets are
+  blocked by YouTube's CSP). The song position published to the app is song time, not samples played.
+- **Reverb**: Freeverb layout (8 damped combs, 4 allpasses, right side +23 samples). Wet level follows the room size
+  so any mix stays within 1 dB of the dry song (test). **Echo**: feedback delay. **Compressor**: one amount (threshold
+  −6..−30 dB, ratio 1..8, make-up gain).
+- **3D sound**: Woodworth interaural delay, Brown–Duda head shadow, elevation tilt, distance (level and a small room).
+  Turning (period 2–30 s) makes an "8D" song. YouTube: Chromium's HRTF panner. For headphones.
+- **Limiter**: on whenever effects are on (a bass boost can clip with no gain from Adaptive Sound); untouched songs
+  still pass bit for bit.
+- **Saved**: numbers only (`edits` table, SQLite v9), never audio. Per song: `t:<track id>` (library), `yt:<video>`
+  (recommendations), `f:<path>` (files opened outside the library). Several versions per song, one active (plays
+  whenever the song does); presets have no song. The A / B switch keeps processing attached so it flips at once.
+- **Export**: local files only, `crates/player` `export.rs`: the same chain offline into a new 16-bit WAV (TPDF
+  dither), written as `.part` then renamed; refuses the original's path and anything but `.wav`; cancel removes the
+  partial file. Never for YouTube, Spotify or Apple Music (their audio is never saved). Reverb tails are cut where the
+  file ends.
+- **Spotify**: plays in its own app, out of reach; the panel says so (settings stay saved for the song).
 
 ## Spotify Connect (built, untested on a real Premium account)
 
@@ -178,4 +250,4 @@ via the Web API Player endpoints. Audio comes out of the Spotify app; we only se
 - Checked in the built app: 4 requests blocked during an embedded video, playback continues, and the script is active in the YouTube
   iframe.
 - **Risk accepted by the user**: YouTube API terms forbid blocking ads in the embedded player. We risk
-  a revoked API key, and playback may break if YouTube changes its player. Settings › Shield turns blocking off.
+  a restricted account, and playback may break if YouTube changes its player. Settings › Shield turns blocking off.

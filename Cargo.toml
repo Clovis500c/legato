@@ -6,3 +6,16 @@ members = ["crates/*", "src-tauri"]
 version = "0.1.0"
 edition = "2024"
 publish = false
+
+# Installed app: smaller and faster (whole-program optimization), slower to build.
+# Sync Mode's key derivation (64 MiB Argon2id) takes seconds unoptimized: dev builds and tests too.
+[profile.dev.package.argon2]
+opt-level = 3
+
+[profile.dev.package.blake2]
+opt-level = 3
+
+[profile.release]
+lto = true
+codegen-units = 1
+strip = true

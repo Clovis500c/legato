@@ -10,6 +10,7 @@ import { VideoSlot } from './NowPlaying'
 import { gripCorner, nearestSpot, resized, spotPosition, type Point, type Size } from './snap'
 import { useNowTrack, usePlayer } from './store'
 import { Transport } from './Transport'
+import { tr } from '../../shared/i18n/i18n'
 
 // Title bar (52) and player bar (100) stay clear, 12 px gap; 24 px from the sides.
 const INSETS = { top: 64, right: 24, bottom: 112, left: 24 }
@@ -28,8 +29,13 @@ const viewSize = () => (view.w === window.innerWidth && view.h === window.innerH
  * corner facing the middle resizes it.
  */
 export function MiniPlayer() {
-  const { now, full, setFull } = usePlayer()
-  const { miniPlayer: on, miniSpot: spot, miniWidth } = useSettings((s) => s.settings)
+  const now = usePlayer((s) => s.now)
+  const full = usePlayer((s) => s.full)
+  const setFull = usePlayer((s) => s.setFull)
+  const on = useSettings((s) => s.settings.miniPlayer)
+  const docked = useSettings((s) => s.settings.miniPlace === 'sidebar')
+  const spot = useSettings((s) => s.settings.miniSpot)
+  const miniWidth = useSettings((s) => s.settings.miniWidth)
   const update = useSettings((s) => s.update)
   const track = useNowTrack()
   const win = useSyncExternalStore(onResize, viewSize)
@@ -37,7 +43,7 @@ export function MiniPlayer() {
   const [drag, setDrag] = useState<Point | null>(null)
   const [width, setWidth] = useState<number | null>(null)
   const [settling, setSettling] = useState(false)
-  const gesture = useRef<{ start: Point; from: Point; last: Point; t: number; v: Point; moved: boolean } | null>(null)
+  const gesture = useRef<{ start: Point; from: Point; last: Point; t: number; v: Point; moved: boolean; onVideo: boolean } | null>(null)
   // Card height (video + controls) for the spot math, kept current while it mounts, resizes, unmounts.
   const observer = useRef<ResizeObserver | null>(null)
   const measure = useCallback((el: HTMLDivElement | null) => {
@@ -61,7 +67,7 @@ export function MiniPlayer() {
   useEffect(() => settle(), [rest.x, rest.y, settle])
 
   const video = now?.via === 'youtube'
-  if (!now || full || !(video || on)) return null
+  if (!now || full || docked || !(video || on)) return null
 
   const pos = drag ?? rest
   const grip = gripCorner(spot)
@@ -70,7 +76,7 @@ export function MiniPlayer() {
     if (e.button !== 0 || (e.target instanceof Element && e.target.closest('button'))) return
     e.currentTarget.setPointerCapture(e.pointerId)
     const p = { x: e.clientX, y: e.clientY }
-    gesture.current = { start: p, from: rest, last: p, t: e.timeStamp, v: { x: 0, y: 0 }, moved: false }
+    gesture.current = { start: p, from: rest, last: p, t: e.timeStamp, v: { x: 0, y: 0 }, moved: false, onVideo: e.target instanceof Element && !!e.target.closest('[data-video-slot]') }
   }
   const move = (e: React.PointerEvent) => {
     const g = gesture.current
@@ -87,6 +93,8 @@ export function MiniPlayer() {
   const up = () => {
     const g = gesture.current
     gesture.current = null
+    // A click on the video (no drag): play / pause.
+    if (g && !g.moved && g.onVideo) return usePlayer.getState().toggle()
     if (!g?.moved || !drag) return
     update({ miniSpot: nearestSpot(drag, g.v, win, size, INSETS) })
     setDrag(null)
@@ -116,7 +124,7 @@ export function MiniPlayer() {
     <div
       ref={measure}
       role="region"
-      aria-label="Mini player"
+      aria-label={tr('Mini player')}
       onContextMenu={onMenu(playerMenu)}
       onPointerDown={down}
       onPointerMove={move}
@@ -128,12 +136,12 @@ export function MiniPlayer() {
       {video && <VideoSlot live={live} className="aspect-video w-full rounded-none" />}
       <div className="flex items-center gap-3 p-3">
         {!video && <Cover title={now.title} art={track && trackArt(track)} size={44} />}
-        <button onClick={() => setFull(true)} className="min-w-0 flex-1 text-left" title="Open Now Playing">
-          <span className="block truncate text-[13px] font-semibold">{now.title}</span>
+        <button onClick={() => setFull(true)} className="min-w-0 flex-1 text-left" title={tr('Open Now Playing')}>
+          <span className="block truncate text-[0.8125rem] font-semibold">{now.title}</span>
           <span className="block truncate text-xs text-ink-2">{now.artist}</span>
         </button>
         <Transport size="sm" compact />
-        <RoundButton label="Now playing, full screen" kind="plain" size="sm" onClick={() => setFull(true)}>
+        <RoundButton label={tr('Now playing, full screen')} kind="plain" size="sm" onClick={() => setFull(true)}>
           <ArrowsOutSimple size={13} />
         </RoundButton>
       </div>
@@ -146,8 +154,8 @@ export function MiniPlayer() {
       {/* Resize grip: corner facing the middle of the window. Outside the card so it sits above the video (iframe z-30). */}
       <span
         role="separator"
-        aria-label="Resize mini player"
-        title="Drag to resize"
+        aria-label={tr('Resize mini player')}
+        title={tr('Drag to resize')}
         onPointerDown={gripDown}
         style={{ left: grip.left ? pos.x : pos.x + w - 18, top: grip.top ? pos.y : pos.y + height - 18 }}
         className={`group fixed z-40 size-[18px] touch-none ${grip.left === grip.top ? 'cursor-nwse-resize' : 'cursor-nesw-resize'} ${glide}`}

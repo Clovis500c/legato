@@ -1,7 +1,11 @@
 //! Local file playback. Engine thread owns audio device (cpal stream not Send everywhere).
 
+pub mod export;
+mod live;
+pub mod mic;
 mod queue;
 
+pub use music_dsp::{Effects, Levels, Live as LiveSettings};
 pub use queue::Queue;
 
 use anyhow::Result;
@@ -52,6 +56,8 @@ pub struct Status {
 pub struct Player {
     tx: Sender<Command>,
     status: Arc<Mutex<Status>>,
+    /// Live processing settings in, levels out (shared with every playing source).
+    control: Arc<music_dsp::Control>,
 }
 
 impl Player {
@@ -59,8 +65,10 @@ impl Player {
         let (tx, rx) = mpsc::channel();
         let status = Arc::new(Mutex::new(Status::default()));
         let shared = status.clone();
+        let control = Arc::new(music_dsp::Control::default());
+        let live = control.clone();
         std::thread::spawn(move || {
-            let mut e = Engine { volume: 1.0, ..Default::default() };
+            let mut e = Engine { volume: 1.0, control: live, ..Default::default() };
             loop {
                 // Timeout = tick: detect track ends, preload next.
                 match rx.recv_timeout(Duration::from_millis(100)) {
@@ -79,7 +87,22 @@ impl Player {
                 st.error = e.error.take().or(unread);
             }
         });
-        Self { tx, status }
+        Self { tx, status, control }
+    }
+
+    /// Live processing (Adaptive Sound…): applies to what plays now and next.
+    pub fn set_live(&self, live: LiveSettings) {
+        self.control.set(live);
+    }
+
+    /// Live Editor settings: apply to what plays now and next, from the next block.
+    pub fn set_effects(&self, effects: Effects) {
+        self.control.set_effects(effects);
+    }
+
+    /// What plays now, as heard (meters, cover animation).
+    pub fn levels(&self) -> Levels {
+        self.control.levels()
     }
 
     pub fn send(&self, cmd: Command) {
@@ -108,6 +131,7 @@ struct Engine {
     error: Option<String>,
     /// In-memory item (preview), matched by label in queue.
     memory: Option<(PathBuf, Arc<[u8]>)>,
+    control: Arc<music_dsp::Control>,
 }
 
 impl Engine {
@@ -157,6 +181,7 @@ impl Engine {
                 self.durations.truncate(self.stops.len());
             }
             Command::Stop => {
+                self.control.quiet();
                 self.player = None;
                 self.memory = None;
                 self.queue = Queue::default();
@@ -174,6 +199,7 @@ impl Engine {
         }
         let p = rodio::Player::connect_new(self.device.as_ref().unwrap().mixer());
         p.set_volume(self.volume);
+        self.control.set_position_ms(0);
         self.player = Some(p);
         self.durations.clear();
         self.stops.clear();
@@ -184,22 +210,23 @@ impl Engine {
     /// Append what queue wants loaded. Bad file = nothing appended, queue skips it on sync.
     fn fill(&mut self) {
         let Some(p) = &self.player else { return };
-        fn append(p: &rodio::Player, src: impl Source + Send + 'static, stop: Arc<AtomicBool>) -> Option<u64> {
+        let control = self.control.clone();
+        let append = |p: &rodio::Player, src: Box<dyn Source + Send>, stop: Arc<AtomicBool>| -> Option<u64> {
             let ms = src.total_duration().map(|d| d.as_millis() as u64);
-            // Checked from first sample on: a source dropped before it starts never plays.
-            p.append(src.stoppable().periodic_access(Duration::from_millis(20), move |s| {
+            // Through the live chain. Checked from first sample on: a source dropped before it starts never plays.
+            p.append(live::Live::new(src, control.clone()).stoppable().periodic_access(Duration::from_millis(20), move |s| {
                 if stop.load(Ordering::Relaxed) {
                     s.stop()
                 }
             }));
             ms
-        }
+        };
         for path in self.queue.to_load() {
             let stop = Arc::new(AtomicBool::new(false));
             let flag = stop.clone();
             let added = match &self.memory {
-                Some((label, bytes)) if *label == path => Decoder::try_from(Cursor::new(bytes.clone())).map(|d| append(p, d, flag)).map_err(anyhow::Error::from),
-                _ => File::open(&path).map_err(anyhow::Error::from).and_then(|f| Ok(append(p, Decoder::try_from(f)?, flag))),
+                Some((label, bytes)) if *label == path => Decoder::try_from(Cursor::new(bytes.clone())).map(|d| append(p, Box::new(d), flag)).map_err(anyhow::Error::from),
+                _ => File::open(&path).map_err(anyhow::Error::from).and_then(|f| Ok(append(p, Box::new(Decoder::try_from(f)?), flag))),
             };
             self.stops.push_back(stop);
             match added {
@@ -223,7 +250,8 @@ impl Engine {
     fn status(&self) -> Status {
         let path = self.player.as_ref().and(self.queue.current().cloned());
         Status {
-            position_ms: self.player.as_ref().map_or(0, |p| p.get_pos().as_millis() as u64),
+            // Song time from the live chain: rodio counts samples played, wrong once the speed changes.
+            position_ms: if self.player.is_some() { self.control.position_ms() } else { 0 },
             duration_ms: path.as_ref().and(self.durations.front().copied().flatten()),
             paused: self.player.as_ref().is_none_or(|p| p.is_paused()),
             upcoming: if path.is_some() { self.queue.upcoming().iter().take(50).cloned().collect() } else { Vec::new() },

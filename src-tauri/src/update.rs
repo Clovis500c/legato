@@ -1,5 +1,6 @@
-//! Updates in the background: checked after launch and every 6 hours, downloaded quietly, installed when the UI says
-//! nothing plays (or the user asks). The installer runs silently and starts the app again; the UI then reopens
+//! Updates in the background: checked a few seconds after every launch, when the window comes back from the tray after
+//! an hour, and every 6 hours; downloaded quietly when automatic updates are on (else only announced), installed when
+//! the UI says it won't cut the music: between two songs or when nothing plays (or the user asks). The installer runs silently and starts the app again; the UI then reopens
 //! where it was (session, screen, paused or not).
 
 use crate::AppState;
@@ -9,7 +10,9 @@ use std::time::Duration;
 use tauri::{AppHandle, Emitter, Manager};
 use tauri_plugin_updater::{Update, UpdaterExt};
 
-const FIRST_CHECK: Duration = Duration::from_secs(20);
+const FIRST_CHECK: Duration = Duration::from_secs(5);
+/// Back from the tray: checked again if the last check is older.
+const STALE: i64 = 3600;
 const EVERY: Duration = Duration::from_secs(6 * 3600);
 /// Settings key: the update being installed, then the last one installed.
 const KEY: &str = "update";
@@ -21,6 +24,8 @@ pub enum State {
     Idle,
     Checking,
     UpToDate,
+    /// Found, not downloaded: automatic updates are off.
+    Available { version: String, notes: Option<String> },
     Downloading { version: String, percent: u8 },
     /// Downloaded, waits for a quiet moment.
     Ready { version: String, notes: Option<String> },
@@ -67,12 +72,12 @@ fn now() -> i64 {
 }
 
 fn saved(app: &AppHandle) -> Saved {
-    app.try_state::<AppState>().and_then(|s| s.lib.lock().unwrap().setting(KEY).ok().flatten()).and_then(|v| serde_json::from_value(v).ok()).unwrap_or_default()
+    app.try_state::<AppState>().and_then(|s| s.lib().setting(KEY).ok().flatten()).and_then(|v| serde_json::from_value(v).ok()).unwrap_or_default()
 }
 
 fn save(app: &AppHandle, s: &Saved) {
     if let (Some(state), Ok(v)) = (app.try_state::<AppState>(), serde_json::to_value(s)) {
-        let _ = state.lib.lock().unwrap().set_setting(KEY, &v);
+        let _ = state.lib().set_setting(KEY, &v);
     }
 }
 
@@ -105,8 +110,8 @@ impl Updater {
         let _ = app.emit("update", status);
     }
 
-    /// Check, then download what's new. Busy or already downloaded: nothing.
-    pub async fn check(&self, app: &AppHandle) {
+    /// Check, then download what's new (download = false: only announce it). Busy or already downloaded: nothing.
+    pub async fn check(&self, app: &AppHandle, download: bool) {
         {
             let mut s = self.status.lock().unwrap();
             if matches!(s.state, State::Checking | State::Downloading { .. } | State::Ready { .. } | State::Installing { .. }) {
@@ -125,6 +130,9 @@ impl Updater {
             Err(e) => return self.set(app, State::Error { message: e.to_string() }),
         };
         let version = update.version.clone();
+        if !download {
+            return self.set(app, State::Available { version, notes: update.body.clone() });
+        }
         self.set(app, State::Downloading { version: version.clone(), percent: 0 });
         let (mut got, mut shown) = (0usize, 0u8);
         let bytes = update
@@ -170,6 +178,11 @@ impl Updater {
     }
 }
 
+/// Settings › About › Automatic updates (UI settings, on by default).
+fn automatic(app: &AppHandle) -> bool {
+    app.try_state::<AppState>().and_then(|s| s.lib().setting("ui").ok().flatten()).and_then(|u| u.get("autoUpdate")?.as_bool()).unwrap_or(true)
+}
+
 /// Background checks. Debug builds only check when asked (Settings › About).
 pub fn spawn(app: AppHandle) {
     if cfg!(debug_assertions) {
@@ -178,8 +191,18 @@ pub fn spawn(app: AppHandle) {
     tauri::async_runtime::spawn(async move {
         tokio::time::sleep(FIRST_CHECK).await;
         loop {
-            app.state::<Updater>().check(&app).await;
+            app.state::<Updater>().check(&app, automatic(&app)).await;
             tokio::time::sleep(EVERY).await;
         }
     });
+}
+
+/// Window back from the tray: "at every opening", without waiting for the 6-hour round.
+pub fn check_if_stale(app: &AppHandle) {
+    let Some(updater) = app.try_state::<Updater>() else { return };
+    if cfg!(debug_assertions) || updater.status().last_check.is_some_and(|t| now() - t < STALE) {
+        return;
+    }
+    let app = app.clone();
+    tauri::async_runtime::spawn(async move { app.state::<Updater>().check(&app, automatic(&app)).await });
 }
