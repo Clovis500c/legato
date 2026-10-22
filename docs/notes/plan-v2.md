@@ -141,7 +141,7 @@ needs it; 2 s fade by default.
       Hi-Fi leftovers dropped or tucked away.
 - [x] Lists: keyboard (one tab stop, arrows, Enter, Shift / Ctrl selection), multi-select with actions, drag and drop
       to playlists and within custom playlists, reorderable Up next.
-- [ ] Library: artists from YouTube channels cleaned ("- Topic", several artists), chips count what the page shows,
+- [x] Library: artists from YouTube channels cleaned ("- Topic", several artists), chips count what the page shows,
       sort by clicking column headers.
 - [ ] Music Detector without a personal token: check for any keyless option, else a clearer way in.
 - [ ] Old points: Home sections show / hide / reorder; local folders watched; 50,000-track performance pass; AA

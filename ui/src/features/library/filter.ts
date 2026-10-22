@@ -67,7 +67,14 @@ export function sortTracks(
 }
 
 /** First credited artist: "Daft Punk, Pharrell Williams" → "Daft Punk". "&" kept: duo names (Polo & Pan). */
-export const primaryArtist = (artist: string) => artist.split(/\s*(?:,|\bfeat\.?|\bft\.?)\s+/i)[0].trim() || artist
+/**
+ * First credited artist, as Albums and Artists group them: "A, B", "A feat. B", "A ft. B", "A x B" → A. YouTube's
+ * channel names lose what isn't the artist's name: "A - Topic" (auto-generated channels), "AVEVO".
+ */
+export const primaryArtist = (artist: string) => {
+  const first = artist.split(/\s*(?:,|\bfeat\.?|\bft\.?|\bfeaturing)\s+|\s+x\s+/i)[0].trim() || artist
+  return first.replace(/\s+-\s+Topic$/i, '').replace(/(?<=\S)VEVO$/, '').trim() || first
+}
 
 export interface AlbumGroup {
   album: string

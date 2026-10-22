@@ -67,6 +67,12 @@ describe('albums and artists', () => {
     expect(primaryArtist('Polo & Pan')).toBe('Polo & Pan')
     expect(primaryArtist('Daft Punk feat. Julian Casablancas')).toBe('Daft Punk')
     expect(primaryArtist('M83')).toBe('M83')
+    // YouTube channel names.
+    expect(primaryArtist('Kenshi Yonezu - Topic')).toBe('Kenshi Yonezu')
+    expect(primaryArtist('AdeleVEVO')).toBe('Adele')
+    expect(primaryArtist('Kuuls x BGX Reverb')).toBe('Kuuls')
+    expect(primaryArtist('Xavier')).toBe('Xavier')
+    expect(primaryArtist('VEVO')).toBe('VEVO')
   })
 
   it('groups by album + primary artist, skips tracks without album', () => {

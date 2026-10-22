@@ -1,4 +1,4 @@
-import { ArrowDown, ArrowUp, ListPlus, Play, Queue, Waveform, X } from '@phosphor-icons/react'
+import { ArrowDown, ArrowUp, CaretDown, CaretUp, ListPlus, Play, Queue, Waveform, X } from '@phosphor-icons/react'
 import { useShallow } from 'zustand/react/shallow'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { useRef, useState } from 'react'
@@ -6,6 +6,7 @@ import { useSettings } from '../../app/settings'
 import type { LibraryTrack, Source } from '../../shared/api'
 import { formatDuration } from '../../shared/format'
 import type { Column } from '../../shared/theme/theme'
+import type { Sort } from './filter'
 import { RoundButton } from '../../shared/ui/controls'
 import { trackArt } from '../../shared/art'
 import { onMenu } from '../../shared/ui/ContextMenu'
@@ -26,6 +27,8 @@ const order: Source[] = ['spotify', 'youtube', 'apple', 'local']
 const onControl = (e: React.MouseEvent) => e.target instanceof Element && !!e.target.closest('button, a, input, [role="menu"]')
 const width: Record<Column, string> = { album: 'minmax(0,220px)', sources: '76px', duration: '52px' }
 const head: Record<Column, string> = { album: msg('Album'), sources: msg('Sources'), duration: msg('Duration') }
+/** Header click sorts: first click → first sort, again → the second (reverse). Sources can't sort. */
+const headSorts: Partial<Record<Column | 'title', [Sort, Sort]>> = { title: ['title', 'title-desc'], album: ['album', 'album'], duration: ['duration', 'duration-short'] }
 
 /**
  * Virtualized: only visible rows hit the DOM, so 50k tracks stay smooth. editId = custom playlist shown unfiltered
@@ -34,7 +37,7 @@ const head: Record<Column, string> = { album: msg('Album'), sources: msg('Source
  * tab stop (↑ ↓ Home End Page↑ Page↓ move, Shift extends, Enter plays, Ctrl+A all, Esc clears, Delete removes from a
  * custom playlist). Songs drag to a playlist in the sidebar, or to another row of the custom playlist shown.
  */
-export function TrackTable({ tracks, empty, editId, rowActions }: { tracks: LibraryTrack[]; empty: React.ReactNode; editId?: number; rowActions?: (t: LibraryTrack) => React.ReactNode }) {
+export function TrackTable({ tracks, empty, editId, rowActions, sort, onSort }: { tracks: LibraryTrack[]; empty: React.ReactNode; editId?: number; rowActions?: (t: LibraryTrack) => React.ReactNode; sort?: Sort; onSort?: (s: Sort) => void }) {
   const scroller = useRef<HTMLDivElement>(null)
   const { density, columns, listCovers, clickToPlay } = useSettings(useShallow((s) => ({ density: s.settings.density, columns: s.settings.columns, listCovers: s.settings.listCovers, clickToPlay: s.settings.clickToPlay })))
   const play = usePlayer((s) => s.playTracks)
@@ -99,12 +102,10 @@ export function TrackTable({ tracks, empty, editId, rowActions }: { tracks: Libr
       )}
       <div role="row" className="grid h-7.5 shrink-0 items-center gap-4 border-b border-line px-2" style={grid}>
         <span role="columnheader" className="kicker text-right">#</span>
-        <span role="columnheader" className="kicker">{tr('Title')}</span>
+        <Head label={tr('Title')} sorts={headSorts.title} sort={sort} onSort={onSort} />
         <span />
         {columns.map((c) => (
-          <span key={c} role="columnheader" className={`kicker ${c === 'duration' ? 'text-right' : ''}`}>
-            {tr(head[c])}
-          </span>
+          <Head key={c} label={tr(head[c])} sorts={headSorts[c]} sort={sort} onSort={onSort} right={c === 'duration'} />
         ))}
       </div>
       {tracks.length === 0 ? (
@@ -233,5 +234,25 @@ export function TrackTable({ tracks, empty, editId, rowActions }: { tracks: Libr
         </div>
       )}
     </div>
+  )
+}
+
+/** Column header; a button that sorts the list when the page can sort (aria-sort says how it is). */
+function Head({ label, sorts, sort, onSort, right = false }: { label: string; sorts?: [Sort, Sort]; sort?: Sort; onSort?: (s: Sort) => void; right?: boolean }) {
+  const now = sorts && sort ? (sort === sorts[0] ? 0 : sort === sorts[1] && sorts[1] !== sorts[0] ? 1 : null) : null
+  if (!sorts || !onSort)
+    return (
+      <span role="columnheader" className={`kicker ${right ? 'text-right' : ''}`}>
+        {label}
+      </span>
+    )
+  return (
+    <span role="columnheader" aria-sort={now === 0 ? 'ascending' : now === 1 ? 'descending' : 'none'} className={right ? 'flex justify-end' : 'flex'}>
+      <button onClick={() => onSort(now === 0 ? sorts[1] : sorts[0])} title={tr('Sort by {column}', { column: label })} className={`kicker flex items-center gap-1 hover:text-ink ${now !== null ? 'text-ink' : ''}`}>
+        {label}
+        {now === 0 && <CaretUp size={9} weight="bold" />}
+        {now === 1 && <CaretDown size={9} weight="bold" />}
+      </button>
+    </span>
   )
 }

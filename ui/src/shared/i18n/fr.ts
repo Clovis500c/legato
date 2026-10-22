@@ -1194,6 +1194,7 @@ const fr: Record<string, string> = {
   'Clear selection': 'Désélectionner',
   'Remove {n} song from playlist': 'Retirer {n} titre de la playlist',
   'Remove {n} songs from playlist': 'Retirer {n} titres de la playlist',
+  'Sort by {column}': 'Trier par {column}',
 }
 
 export default fr

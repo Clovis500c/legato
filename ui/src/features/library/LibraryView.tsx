@@ -108,13 +108,14 @@ const albumSorts: { id: GroupSort; label: string }[][] = [
 // Artists: no artist sort, Most albums next to Most songs.
 const artistSorts: { id: GroupSort; label: string }[][] = albumSorts.map((g) => g.filter((x) => x.id !== 'artist').flatMap((x) => (x.id === 'songs' ? [x, { id: 'albums' as const, label: msg('Most albums') }] : [x])))
 
-/** Source chips with counts, for a list of songs. */
-function SourceChips({ tracks, value, onChange }: { tracks: LibraryTrack[]; value: Filter; onChange: (f: Filter) => void }) {
+/** Source chips with counts, for a list of songs. countOf: what the page counts (albums, artists), songs by default. */
+function SourceChips({ tracks, value, onChange, countOf }: { tracks: LibraryTrack[]; value: Filter; onChange: (f: Filter) => void; countOf?: (tracks: LibraryTrack[]) => number }) {
   const stats = useMemo(() => libraryStats(tracks), [tracks])
+  const count = useMemo(() => (f: Filter, songs: number) => (countOf ? countOf(filterTracks(tracks, '', f)) : songs), [tracks, countOf])
   const chips: { id: Filter; label: string; count: number }[] = [
-    { id: 'all', label: msg('All'), count: stats.total },
-    ...(['youtube', 'spotify', 'apple', 'local'] as const).filter((s) => stats.perSource[s]).map((s) => ({ id: s, label: sourceLabel[s], count: stats.perSource[s] })),
-    ...(stats.sources > 1 && stats.unlinked ? [{ id: 'unlinked' as const, label: msg('Unlinked'), count: stats.unlinked }] : []),
+    { id: 'all', label: msg('All'), count: count('all', stats.total) },
+    ...(['youtube', 'spotify', 'apple', 'local'] as const).filter((s) => stats.perSource[s]).map((s) => ({ id: s, label: sourceLabel[s], count: count(s, stats.perSource[s]) })),
+    ...(stats.sources > 1 && stats.unlinked ? [{ id: 'unlinked' as const, label: msg('Unlinked'), count: count('unlinked', stats.unlinked) }] : []),
   ]
   return (
     <div role="tablist" aria-label={tr('Filter by source')} className="flex flex-wrap gap-2">
@@ -125,13 +126,16 @@ function SourceChips({ tracks, value, onChange }: { tracks: LibraryTrack[]; valu
   )
 }
 
-/** Albums / Artists bar: source chips, how many songs you have of it, sort. */
+const countAlbums = (t: LibraryTrack[]) => groupAlbums(t).length
+const countArtists = (t: LibraryTrack[]) => groupArtists(t).length
+
+/** Albums / Artists bar: source chips (counting albums or artists), how many songs you have of it, sort. */
 function GroupBar({ page, tracks }: { page: 'albumView' | 'artistView'; tracks: LibraryTrack[] }) {
   const v = useStore((s) => s[page])
   const setGroupView = useStore((s) => s.setGroupView)
   return (
     <div className="flex shrink-0 flex-wrap items-center justify-between gap-x-4 gap-y-2 pb-3.5">
-      <SourceChips tracks={tracks} value={v.filter} onChange={(filter) => setGroupView(page, { filter })} />
+      <SourceChips tracks={tracks} value={v.filter} onChange={(filter) => setGroupView(page, { filter })} countOf={page === 'albumView' ? countAlbums : countArtists} />
       <div className="flex items-center gap-2">
         <Segmented
           label={tr('How many songs')}
@@ -217,7 +221,7 @@ function NotMusicNotice({ hidden }: { hidden: number }) {
 }
 
 export function SongsView() {
-  const { tracks, query, filter, setFilter, sort, go, stats: plays, seed, showNotMusic } = useStore()
+  const { tracks, query, filter, setFilter, sort, setSort, go, stats: plays, seed, showNotMusic } = useStore()
   const stats = useMemo(() => libraryStats(tracks), [tracks])
   const music = useMemo(() => musicOnly(tracks, showNotMusic), [tracks, showNotMusic])
   const shown = useMemo(() => sortTracks(filterTracks(music.kept, query, filter), sort, { stats: plays, seed }), [music, query, filter, sort, plays, seed])
@@ -233,6 +237,8 @@ export function SongsView() {
       <NotMusicNotice hidden={music.hidden} />
       <TrackTable
         tracks={shown}
+        sort={sort}
+        onSort={setSort}
         empty={
           tracks.length === 0 ? (
             <div className="flex flex-col items-center gap-3">
@@ -268,7 +274,7 @@ function EditableTitle({ id, name }: { id: number; name: string }) {
 }
 
 export function PlaylistView({ id }: { id: number }) {
-  const { playlists, playlistTracks, query, editPlaylist, go, playlistSort, stats, seed, showNotMusic } = useStore()
+  const { playlists, playlistTracks, query, editPlaylist, go, playlistSort, setPlaylistSort, stats, seed, showNotMusic } = useStore()
   const playlist = playlists.find((p) => p.id === id)
   const newestFirst = playlist?.newestFirst ?? false
   // Your own playlists show what you put in them; imports set non-music aside.
@@ -320,7 +326,7 @@ export function PlaylistView({ id }: { id: number }) {
       <Playability tracks={playlistTracks} />
       {!playlist.custom && <NotMusicNotice hidden={music.hidden} />}
       {sharing && <SharePanel id={id} name={playlist.name} onClose={closeShare} />}
-      <TrackTable tracks={shown} empty={playlist.custom ? tr('Empty playlist: add songs from Songs with the “Add to playlist” button.') : tr('No songs.')} editId={playlist.custom && !query && playlistSort === 'manual' ? id : undefined} />
+      <TrackTable tracks={shown} sort={playlistSort} onSort={setPlaylistSort} empty={playlist.custom ? tr('Empty playlist: add songs from Songs with the “Add to playlist” button.') : tr('No songs.')} editId={playlist.custom && !query && playlistSort === 'manual' ? id : undefined} />
     </>
   )
 }
