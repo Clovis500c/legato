@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { lineAt, lineEnd, withBreaks, wordFill } from './lyricsAt'
+import { lineAt, lineEnd, withBreaks, wordTimes } from './lyricsAt'
 
 describe('lineAt', () => {
   const lines = [{ ms: 1000 }, { ms: 2000 }, { ms: 2000 }, { ms: 5000 }]
@@ -42,11 +42,11 @@ describe('withBreaks', () => {
 
 describe('karaoke fill', () => {
   it('fills word by word over the line, by length', () => {
-    const at = (ms: number) => wordFill('aa bb', 0, 5000, ms).map((w) => [w.word, Math.round(w.fill * 100) / 100])
-    expect(at(0)).toEqual([['aa', 0], [' ', 0], ['bb', 0]])
-    expect(at(1000)).toEqual([['aa', 0.5], [' ', 0], ['bb', 0]])
-    expect(at(4000)).toEqual([['aa', 1], [' ', 1], ['bb', 0.5]])
-    expect(at(9000).every(([, f]) => f === 1)).toBe(true)
+    expect(wordTimes('aa bb', 0, 5000)).toEqual([
+      { word: 'aa', t0: 0, t1: 2000 },
+      { word: ' ', t0: 2000, t1: 3000 },
+      { word: 'bb', t0: 3000, t1: 5000 },
+    ])
   })
   it('a line ends where the next starts, or after a guess from its length', () => {
     const lines = [{ ms: 0, text: 'short' }, { ms: 2000, text: 'x'.repeat(50) }]

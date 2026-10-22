@@ -44,17 +44,16 @@ export function lineEnd(lines: { ms: number; text: string }[], i: number, durati
 }
 
 /**
- * Karaoke fill of a line being sung: how much of each word is lit (0..1) at `ms`. LRC has no word timings, so the
- * line's time is shared by length (a long word takes longer). Words = the text split on spaces, spaces kept.
+ * Karaoke timing of a line being sung: when each word fills. LRC has no word timings, so the line's time is shared by
+ * length (a long word takes longer). Words = the text split on spaces, spaces kept.
  */
-export function wordFill(text: string, start: number, end: number, ms: number): { word: string; fill: number }[] {
+export function wordTimes(text: string, start: number, end: number): { word: string; t0: number; t1: number }[] {
   const words = text.split(/(\s+)/).filter(Boolean)
   const total = Math.max(1, text.length)
   let at = 0
   return words.map((word) => {
     const t0 = start + ((end - start) * at) / total
     at += word.length
-    const t1 = start + ((end - start) * at) / total
-    return { word, fill: Math.min(1, Math.max(0, (ms - t0) / Math.max(1, t1 - t0))) }
+    return { word, t0, t1: start + ((end - start) * at) / total }
   })
 }

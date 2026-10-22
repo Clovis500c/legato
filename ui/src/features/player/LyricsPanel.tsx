@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useStore } from '../../app/store'
 import { api, type Lyrics } from '../../shared/api'
 import { RoundButton } from '../../shared/ui/controls'
-import { lineAt, lineEnd, withBreaks, wordFill } from './lyricsAt'
+import { lineAt, lineEnd, withBreaks, wordTimes } from './lyricsAt'
 import { usePosition } from './Progress'
 import { useNowTrack, usePlayer } from './store'
 import { tr } from '../../shared/i18n/i18n'
@@ -13,13 +13,39 @@ const LEAD_MS = 200
 /** A hand on the scroll wins for this long. */
 const HAND_MS = 4000
 
-/** The line being sung, filled word by word as the song goes (karaoke), softly glowing. Re-renders ~25 times a second. */
+/** Off by more than this from the song (seek, stall): the fill jumps to where the song is. */
+const RESYNC_MS = 250
+
+/**
+ * The line being sung, filled word by word as the song goes (karaoke), softly glowing. One animation per word on the
+ * compositor's clock (smooth every frame); position reports only correct it when it's really off, never every tick
+ * (that made it shake).
+ */
 function Sung({ text, start, end }: { text: string; start: number; end: number }) {
-  const pos = usePosition(40)
+  const pos = usePosition(250)
+  const playing = usePlayer((s) => s.playing)
+  const box = useRef<HTMLSpanElement>(null)
+  const anims = useRef<Animation[]>([])
+  const words = useMemo(() => wordTimes(text, start, end), [text, start, end])
+  useEffect(() => {
+    const spans = [...(box.current?.children ?? [])]
+    anims.current = spans.map((el, i) =>
+      el.animate([{ '--fill': '0%' }, { '--fill': '100%' }], { duration: Math.max(1, words[i].t1 - words[i].t0), delay: words[i].t0 - start, fill: 'both', easing: 'linear' }),
+    )
+    return () => anims.current.forEach((a) => a.cancel())
+  }, [words, start])
+  useEffect(() => {
+    const want = pos + LEAD_MS - start
+    for (const a of anims.current) {
+      if (Math.abs(Number(a.currentTime ?? 0) - want) > RESYNC_MS) a.currentTime = want
+      if (playing) a.play()
+      else a.pause()
+    }
+  }, [pos, playing, start])
   return (
-    <span className="drop-shadow-[0_0_14px_color-mix(in_srgb,var(--ink)_30%,transparent)]">
-      {wordFill(text, start, end, pos + LEAD_MS).map((w, i) => (
-        <span key={i} className="bg-clip-text text-transparent" style={{ backgroundImage: `linear-gradient(90deg, var(--ink) ${w.fill * 100}%, var(--ink-3) ${w.fill * 100}%)` }}>
+    <span ref={box} className="drop-shadow-[0_0_14px_color-mix(in_srgb,var(--ink)_30%,transparent)]">
+      {words.map((w, i) => (
+        <span key={i} className="sung">
           {w.word}
         </span>
       ))}
@@ -46,7 +72,7 @@ function Synced({ lines: sung, durationMs }: { lines: Lyrics['lines']; durationM
   }, [at])
   const touched = () => void (hand.current = performance.now())
   return (
-    <div ref={box} onWheel={touched} onPointerDown={touched} onKeyDown={touched} className="scroll-quiet relative min-h-0 flex-1 overflow-y-auto px-2 pt-2 pb-6">
+    <div ref={box} onWheel={touched} onPointerDown={touched} onKeyDown={touched} className="no-scrollbar relative min-h-0 flex-1 overflow-x-hidden overflow-y-auto px-2 pt-2 pb-6">
       {lines.map((l, i) => (
         <button
           key={i}
