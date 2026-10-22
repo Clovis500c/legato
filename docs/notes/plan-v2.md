@@ -240,6 +240,12 @@ Everything still open, gathered from the sections below. Tick a line when it lan
 **Features not done yet**
 - [x] Home: show / hide / reorder sections (big update phase 7, Customize Home cards in phase 8).
 - [ ] Home: "Your week" (Phase 1 plan).
+- [x] Search bar v4 (user's pick 2026-10-23, Figma page "Search & Home — v4 proposal", points 1-7): one pill with the
+      mic inside and the shortcut on keycaps; list under the field (library matches, YouTube suggestions, recent searches
+      kept on this PC, "Search everywhere"); "In Songs" scope token (Backspace = everywhere); own Search page (type tabs,
+      Everywhere / Your library, which services answered); Add music lost its second field.
+- [ ] Home v4 (same Figma page, points 8-12): remembered chips with moods, "Jump back in" grid instead of Shortcuts,
+      Quick picks as a list, Your week, a ⋮ menu per section.
 - [x] Local folders: watch for changes (`notify` crate, `src-tauri/src/folders.rs`, big update phase 7).
 - [x] Preview straight from search results (before adding): Add music plays a song not in the library (big update
       phase 2).

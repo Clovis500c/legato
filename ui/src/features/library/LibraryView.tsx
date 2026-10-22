@@ -1,6 +1,6 @@
 import { CaretDown, Copy, MagnifyingGlass, Play, ShareNetwork, SortAscending, Trash } from '@phosphor-icons/react'
 import { useCallback, useMemo, useState } from 'react'
-import { useStore } from '../../app/store'
+import { pageQuery, useStore } from '../../app/store'
 import { api, type LibraryTrack } from '../../shared/api'
 import { fold, formatCount } from '../../shared/format'
 import { Button } from '../../shared/ui/Button'
@@ -210,7 +210,8 @@ function Playability({ tracks }: { tracks: LibraryTrack[] }) {
 }
 
 export function SongsView() {
-  const { tracks, query, filter, setFilter, sort, setSort, go, stats: plays, seed } = useStore()
+  const { tracks, filter, setFilter, sort, setSort, go, stats: plays, seed } = useStore()
+  const query = useStore(pageQuery)
   const stats = useMemo(() => libraryStats(tracks), [tracks])
   const music = useMemo(() => musicOnly(tracks), [tracks])
   // The fold follows the search and the source chips too.
@@ -265,7 +266,8 @@ function EditableTitle({ id, name }: { id: number; name: string }) {
 }
 
 export function PlaylistView({ id }: { id: number }) {
-  const { playlists, playlistTracks, query, editPlaylist, go, playlistSort, setPlaylistSort, stats, seed } = useStore()
+  const { playlists, playlistTracks, editPlaylist, go, playlistSort, setPlaylistSort, stats, seed } = useStore()
+  const query = useStore(pageQuery)
   const playlist = playlists.find((p) => p.id === id)
   const newestFirst = playlist?.newestFirst ?? false
   // Your own playlists show what you put in them; imports set non-music aside.
@@ -324,7 +326,8 @@ export function PlaylistView({ id }: { id: number }) {
 }
 
 export function AlbumsView() {
-  const { tracks, query, go, albumView: v, stats, seed } = useStore()
+  const { tracks, go, albumView: v, stats, seed } = useStore()
+  const query = useStore(pageQuery)
   const all = useMemo(() => tracks.filter((t) => t.album), [tracks])
   const albums = useMemo(() => orderGroups(groupAlbums(filterTracks(all, query, v.filter)).map((g) => ({ ...g, name: g.album })), v.sort, { size: v.size, stats, seed }), [all, query, v, stats, seed])
   return (
@@ -369,7 +372,8 @@ export function AlbumView({ album, artist }: { album: string; artist: string }) 
 }
 
 export function ArtistsView() {
-  const { tracks, query, go, artistView: v, stats, seed } = useStore()
+  const { tracks, go, artistView: v, stats, seed } = useStore()
+  const query = useStore(pageQuery)
   const artists = useMemo(() => orderGroups(groupArtists(filterTracks(tracks, query, v.filter)).map((g) => ({ ...g, name: g.artist })), v.sort, { size: v.size, stats, seed }), [tracks, query, v, stats, seed])
   return (
     <>

@@ -3,6 +3,7 @@ import { getCurrentWindow } from '@tauri-apps/api/window'
 import { lazy, Suspense, useEffect, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import { AddView } from '../features/add/AddView'
+import { SearchView } from '../features/search/SearchView'
 import { HomeView } from '../features/home/HomeView'
 import { MixesView, MixView } from '../features/mixes/MixesView'
 import { AlbumsView, AlbumView, ArtistsView, ArtistView, PlaylistView, SongsView } from '../features/library/LibraryView'
@@ -183,6 +184,7 @@ export function App() {
           <div className="flex min-h-0 flex-1 flex-col px-10">
             {view.name === 'home' && <HomeView />}
             {view.name === 'add' && <AddView />}
+            {view.name === 'search' && <SearchView />}
             {view.name === 'mixes' && <MixesView />}
             {view.name === 'mix' && <MixView id={view.id} />}
             {view.name === 'songs' && <SongsView />}

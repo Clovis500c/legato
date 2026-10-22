@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { api, type Credentials, type LibraryPlaylist, type LibraryTrack, type PlaylistEdit, type Service, type SourceStatus, type SyncReport } from '../shared/api'
+import { api, type Credentials, type LibraryPlaylist, type LibraryTrack, type PlaylistEdit, type Service, type SourceStatus, type SyncReport, type Track } from '../shared/api'
 import type { Filter, GroupSize, GroupSort, PlayStats, Sort } from '../features/library/filter'
 import { tr, trn } from '../shared/i18n/i18n'
 
@@ -8,6 +8,7 @@ export type SettingsSection = 'general' | 'playback' | 'appearance' | 'sources' 
 export type View =
   | { name: 'home' }
   | { name: 'add' }
+  | { name: 'search' }
   | { name: 'addons' }
   | { name: 'mixes' }
   | { name: 'mix'; id: string }
@@ -52,10 +53,15 @@ interface State {
   tracks: LibraryTrack[]
   playlists: LibraryPlaylist[]
   playlistTracks: LibraryTrack[]
+  /** Top bar text. Library pages filter by it while scoped (see pageQuery). */
   query: string
-  /** Last "search everywhere" (top bar Enter): the Search page runs it. n changes on each ask, same text too. */
-  search: { q: string; n: number } | null
-  searchFor: (q: string) => void
+  /** Top bar's "In Songs" token: on, a library page filters as you type; off (Backspace), the bar searches everywhere. */
+  scoped: boolean
+  setScoped: (scoped: boolean) => void
+  /** Last "search everywhere" (top bar Enter): the Search page runs it. n changes on each ask, same text too. found = a
+   *  song the Music Detector named, shown above the results. */
+  search: { q: string; n: number; found?: Track } | null
+  searchFor: (q: string, found?: Track) => void
   /** Bumped by "Identify a song" (mic menu): the Music Detector on the Add music page starts listening. */
   identify: number
   identifySong: () => void
@@ -104,6 +110,9 @@ interface State {
 
 const offline: SourceStatus = { configured: false, connected: false }
 
+/** What a library page filters by: the top bar's text while its token is on. */
+export const pageQuery = (s: State) => (s.scoped ? s.query : '')
+
 export const useStore = create<State>((set, get) => {
   /** Run action: busy flag, error capture, reload. Returns success. */
   async function run(fn: () => Promise<unknown>): Promise<boolean> {
@@ -130,7 +139,11 @@ export const useStore = create<State>((set, get) => {
   function show(view: View) {
     // Another playlist: its rows, not the last one's, while they load.
     if (view.name === 'playlist' && (get().view.name !== 'playlist' || (get().view as { id: number }).id !== view.id)) set({ playlistTracks: [] })
-    set({ view })
+    // Leaving the Search page: its text must not filter the next list. Each page gets its token back.
+    if (get().view.name === 'search' && view.name !== 'search') set({ query: '' })
+    // Back to it: its text again.
+    if (view.name === 'search' && get().view.name !== 'search' && get().search) set({ query: get().search!.q })
+    set({ view, scoped: true })
     if (view.name === 'playlist') loadPlaylist(view.id)
   }
 
@@ -144,6 +157,7 @@ export const useStore = create<State>((set, get) => {
     playlistTracks: [],
     orders: {},
     query: '',
+    scoped: true,
     search: null,
     identify: 0,
     filter: 'all',
@@ -174,9 +188,10 @@ export const useStore = create<State>((set, get) => {
       show(fwd[0])
     },
     setQuery: (query) => set({ query }),
-    searchFor: (q) => {
-      set({ search: { q, n: (get().search?.n ?? 0) + 1 } })
-      if (get().view.name !== 'add') get().go({ name: 'add' })
+    setScoped: (scoped) => set({ scoped }),
+    searchFor: (q, found) => {
+      set({ search: { q, n: (get().search?.n ?? 0) + 1, found }, query: q })
+      if (get().view.name !== 'search') get().go({ name: 'search' })
     },
     identifySong: () => {
       set({ identify: get().identify + 1 })

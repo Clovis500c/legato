@@ -14,6 +14,7 @@ import { usePlayer } from '../player/store'
 import { useLive } from '../player/live'
 import { SourcesView } from '../sources/SourcesView'
 import { SyncSection } from '../syncmode/SyncSection'
+import { clearRecent } from '../search/recent'
 import { AboutSection } from './AboutSection'
 import { ThemeStudio } from './ThemeStudio'
 import { FadeEditor } from './FadeEditor'
@@ -404,9 +405,19 @@ function GeneralSection() {
           </Row>
         </div>
       </Group>
+      <Group title={msg('Search bar')}>
+        <div className="rounded-xl border border-line bg-raised">
+          <Row label={msg('Remember recent searches')} sub={tr('Listed when you click the search bar. Kept on this PC only, never synced')}>
+            <Toggle label={tr('Remember recent searches')} checked={s.rememberSearches} onChange={(rememberSearches) => (update({ rememberSearches }), rememberSearches || clearRecent())} />
+          </Row>
+          <Row label={msg('Search suggestions')} sub={tr('YouTube’s suggestions as you type: what you type goes to Google')}>
+            <Toggle label={tr('Search suggestions')} checked={s.searchSuggestions} onChange={(searchSuggestions) => update({ searchSuggestions })} />
+          </Row>
+        </div>
+      </Group>
       <Group title={msg('Voice and recognition')}>
         <div className="rounded-xl border border-line bg-raised">
-          <Row label={msg('Voice search')} sub={tr('The mic beside the search bar. Windows’ online speech recognition: your voice goes to Microsoft’s service while the mic listens, nothing is kept')}>
+          <Row label={msg('Voice search')} sub={tr('The mic in the search bar. Windows’ online speech recognition: your voice goes to Microsoft’s service while the mic listens, nothing is kept')}>
             <Toggle label={tr('Voice search')} checked={s.voiceSearch} onChange={(voiceSearch) => update({ voiceSearch })} />
           </Row>
           <Row label={msg('Music Detector')} sub={tr('Identify a song (Add music, or the mic): 10 seconds from the microphone or from what this PC plays, kept in memory, sent once to AudD with your token, nothing saved')}>

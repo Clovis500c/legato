@@ -259,6 +259,10 @@ export interface Settings {
   liveYoutube: boolean
   /** Voice search agreed to (Windows' online speech recognition: the voice goes to Microsoft while the mic listens). */
   voiceSearch: boolean
+  /** Top bar lists recent searches (kept on this PC only: localStorage, never synced). */
+  rememberSearches: boolean
+  /** Top bar asks YouTube's suggestions as you type (the text goes to Google). */
+  searchSuggestions: boolean
   /** Music Detector agreed to (microphone, 10 s clips sent to AudD to name the song). */
   detector: boolean
   /** Music Detector source: the microphone, or what this PC plays. */
@@ -323,6 +327,8 @@ export const DEFAULTS: Settings = {
   coverPulse: false,
   liveYoutube: true,
   voiceSearch: false,
+  rememberSearches: true,
+  searchSuggestions: true,
   detector: false,
   detectorInput: 'mic',
   detectorPc: false,
@@ -469,6 +475,8 @@ export function sanitize(raw: unknown): Settings {
     coverPulse: r.coverPulse === true,
     liveYoutube: typeof r.liveYoutube === 'boolean' ? r.liveYoutube : DEFAULTS.liveYoutube,
     voiceSearch: r.voiceSearch === true,
+    rememberSearches: r.rememberSearches !== false,
+    searchSuggestions: r.searchSuggestions !== false,
     detector: r.detector === true,
     detectorInput: pick(r.detectorInput, ['mic', 'pc'] as const, DEFAULTS.detectorInput),
     detectorPc: r.detectorPc === true,

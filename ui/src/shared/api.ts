@@ -280,9 +280,13 @@ export interface WatchReport {
 /** crates/core musicness: notMusic results are hidden until asked. */
 export type Musicness = 'music' | 'unsure' | 'notMusic'
 
+/** crates/core search::Origin: which search found a hit (YouTube videos, YouTube Music songs, Apple Music). */
+export type Origin = 'youtube' | 'ytmusic' | 'apple'
+
 export interface SearchHit extends Track {
   libraryId: number | null
   musicness: Musicness
+  from: Origin[]
 }
 
 export interface SearchResults {
@@ -411,6 +415,8 @@ export const api = {
   /** Pasted YouTube link → library. Returns "Artist – Title". */
   addLink: (url: string) => invoke<string>('add_link', { url }),
   searchCatalogs: (query: string, country: string) => invoke<SearchResults>('search_catalogs', { query, country }),
+  /** What YouTube's search box would suggest (lang = interface language). */
+  searchSuggestions: (query: string, lang: string, country: string) => invoke<string[]>('search_suggestions', { query, lang, country }),
   /** Returns library row id. Finds a YouTube version when missing (1 search). */
   addTrack: (track: Track) => invoke<number>('add_track', { track }),
   /** Search hit with its YouTube version (one search if missing), nothing written: play without adding. */
