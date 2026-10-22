@@ -145,8 +145,10 @@ needs it; 2 s fade by default.
       sort by clicking column headers.
 - [x] Music Detector without a personal token: AudD takes a few requests a day without one (checked live with a
       test tone 2026-10-22); a token of your own only once they are used up (#901).
-- [ ] Old points: [x] Home sections show / hide / reorder; [x] local folders watched; [x] 50,000-track performance pass (Albums 8 s → 0.4 s, Artists 2.3 s → 0.45 s, library load 157 ms); [x] AA
-      contrast; playlists over 100 tracks; signing key backup (user's action).
+- [x] Old points: Home sections show / hide / reorder; local folders watched; 50,000-track performance pass (Albums
+      8 s → 0.4 s, Artists 2.3 s → 0.45 s, library load 157 ms); AA contrast (muted text on cards too); Spotify links
+      over 100 songs (whole playlist with your own key, else said). Left to the user: back up the signing key
+      (`~/.tauri/music-app.key`) somewhere safe.
 - [x] Live Editor (user, mid-work): changes not saved as a version survive the app closing (back as they were).
 - [x] Lyrics (user, mid-work): ♪ in the intro, instrumental parts and the outro; no big empty space above and below;
       the line being sung fills word by word as the song goes (karaoke), past lines dimmed.

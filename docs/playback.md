@@ -23,8 +23,10 @@ Status on 2026-10-16. YouTube, local files and Apple Music previews: done and te
 - Now Playing sizes the video (16:9) or cover (square) to the space left with container query units, so the controls stay on
   screen at any window size. The background takes a flat tint from the cover (`ambient.ts`: canvas average weighted to
   colorful pixels; the tint is pushed darker or lighter until the theme's muted text keeps AA 4.5).
-- Mini player: a card above the bar. For YouTube it is always shown (the video must stay visible): the iframe sits in the
-  card's video slot, our controls below it, never on top. For other sources it's optional (Settings › Player).
+- Mini player: docked at the bottom of the sidebar by default (`SidebarPlayer.tsx`, user's pick 2026-10-22: it never
+  covers the page), or a floating card above the bar (`MiniPlayer.tsx`, Settings › Appearance › Mini player place). For
+  YouTube it is always shown (the video must stay visible): in the sidebar the video fills a 200 px tall slot, YouTube's
+  minimum (the 16:9 frame is wider, its sides cut); our controls never sit on top. For other sources it's optional.
 
 ## Media keys and the Windows media panel (2026-10-16)
 
@@ -62,8 +64,9 @@ Status on 2026-10-16. YouTube, local files and Apple Music previews: done and te
 - Bare by default: `controls=0&rel=0&iv_load_policy=3&fs=0&disablekb=1` and `pointer-events: none` on the iframe (no
   hover overlay; our controls drive it). `crates/shield/src/bare.js` hides every overlay YouTube draws (title, cued
   thumbnail, unmute, up next, end screen, error slate…) with an adopted sheet and a `<style>` element, both put back if
-  the page drops them. Settings › Advanced brings YouTube's controls back (next track). Subtitles:
-  `unloadModule` captions / cc once per video unless Advanced turns them on.
+  the page drops them. Settings › Playback brings YouTube's controls back (next track). Subtitles:
+  `unloadModule` captions / cc once per video unless Settings › Playback turns them on. YouTube's new embed player (2026-10-22) draws its own
+  controls layer (`.ytPlayerControlsContainerHost`…): hidden the same way.
 - One embed per run of YouTube tracks: the next video goes into the running player (`loadVideoById`), no reload.
 - Error 101 / 150 (owner turned embedding off), 2026-10-20: the same video plays from YouTube's own watch page, in a
   child webview of the main window placed exactly over the video slot (`src-tauri/src/ytwatch.rs`, Tauri multi-webview,
@@ -124,7 +127,8 @@ We still pin the policy on the iframe: a meta tag or header added later can't br
   The decoder strips encoder padding (gapless option on by default). The queue logic (`Queue`) has unit tests.
 - An unreadable file is skipped and the error is shown.
 - IPC: `player` (`play`, `toggle`, `seek`, `next`, `prev`, `volume`, `stop`) and `player_status`, polled 4 times a second by the PlayerBar.
-- Input: music folders (Settings › Sources), or audio files dropped on the window.
+- Input: music folders (Settings › Accounts › Local files, watched: `src-tauri/src/folders.rs`), or audio files dropped on
+  the window.
 - Live processing chain on every file: see Live processing below.
 - Limits: no opus; position obtained by polling, not events.
 
@@ -151,7 +155,7 @@ never: downloading, extracting, recording or exporting a platform's audio, or to
 - **Moving cover**: scale from the momentary loudness, up fast and down slow (`player/pulse.ts`), transform only,
   none with reduced motion or Animations off.
 - UI: `player/live.ts` (settings out, levels in, only from what plays now), `liveSync.ts`, `AdaptiveBar.tsx`.
-  Settings › Advanced › Sound processing; "Process YouTube's sound" turns the YouTube side off.
+  Settings › Playback › Sound processing; "Process YouTube's sound" turns the YouTube side off.
 
 ## Live Editor (phase 4.1, 2026-10-21)
 
@@ -246,4 +250,4 @@ via the Web API Player endpoints. Audio comes out of the Spotify app; we only se
 - Checked in the built app: 4 requests blocked during an embedded video, playback continues, and the script is active in the YouTube
   iframe.
 - **Risk accepted by the user**: YouTube API terms forbid blocking ads in the embedded player. We risk
-  a revoked API key, and playback may break if YouTube changes its player. Settings › Shield turns blocking off.
+  a restricted account, and playback may break if YouTube changes its player. Settings › Shield turns blocking off.

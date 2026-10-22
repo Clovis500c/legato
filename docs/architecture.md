@@ -88,7 +88,7 @@ and the app's caches.
 
 ## Background (tray)
 
-`src-tauri/src/background.rs`: closing the window keeps the app in the notification area (Settings › Advanced, on by
+`src-tauri/src/background.rs`: closing the window keeps the app in the notification area (Settings › General, on by
 default), music playing. Hidden, the WebView2 controller is set invisible (no painting, page `hidden`) and its memory
 target low; after 5 minutes hidden with nothing playing it is suspended, and woken before the tray, a global shortcut,
 a media key or showing the window reach it. A second launch shows the running one (single instance). Quit in the tray

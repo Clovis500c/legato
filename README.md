@@ -20,7 +20,7 @@ A fast, private desktop music player for Windows, built with Tauri 2 and Rust.
 - **Unified library.** The same song on several services becomes one track (matched by ISRC, or title, artist and
   duration). Songs, Albums, Artists and Playlists views, instant search, YouTube-style sorting.
 - **One player for every source.** Local files (native, gapless), YouTube (official embedded player), Apple Music
-  previews and Spotify Connect share one queue, with crossfade, an immersive Now Playing screen and a mini player.
+  previews and Spotify Connect share one queue, with crossfade, an immersive Now Playing screen and a mini player (in the sidebar by default).
 - **Playlists.** Import from YouTube Music and Spotify, create your own, export to YouTube Music, and share them by
   link, QR code or a 6-digit code on your local network.
 - **Mixes made on your PC.** Daily Mixes, a time-of-day mix and Rediscover, built from your own listening history.
@@ -49,7 +49,7 @@ A fast, private desktop music player for Windows, built with Tauri 2 and Rust.
 - **Official playback only.** Music plays through each service's own player or from your files. Nothing is downloaded
   or extracted. Sound features (Adaptive Sound, the Live Editor) process what plays as it plays, in memory: nothing is
   recorded or saved (the Live Editor keeps its settings, never sound; only your own files can be exported), and
-  Settings › Advanced can keep YouTube's sound untouched.
+  Settings › Playback can keep YouTube's sound untouched.
 - **One gateway to the network.** All requests go through the Rust core; the interface never calls the network itself.
 - **Voice search (off until you allow it).** The mic uses Windows' own online speech recognition: while it listens,
   your voice goes to Microsoft's speech service through Windows. The app keeps nothing.
@@ -58,8 +58,8 @@ A fast, private desktop music player for Windows, built with Tauri 2 and Rust.
   kept on your PC.
 - **Music Detector (off until you allow it).** "Identify a song" listens for 10 seconds to the microphone, or to what
   this PC plays (asked separately; Music App pauses its own music meanwhile), keeps the sound in memory and sends it
-  once to [AudD](https://audd.io) with your own API token to name the song. Nothing is saved; the token stays in the
-  Windows Credential Manager.
+  once to [AudD](https://audd.io) to name the song: a few a day with no account, more with your own AudD token. Nothing
+  is saved; a token stays in the Windows Credential Manager.
 
 ## Getting started
 
