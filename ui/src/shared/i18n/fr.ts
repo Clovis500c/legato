@@ -1201,6 +1201,7 @@ const fr: Record<string, string> = {
   'YouTube Music recommendations': 'Recommandations YouTube Music',
   'Customize Home': 'Personnaliser l’Accueil',
   'Every Home section is hidden.': 'Toutes les sections de l’Accueil sont masquées.',
+  'Muted text on cards': 'Texte discret sur les cartes',
 }
 
 export default fr

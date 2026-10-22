@@ -52,17 +52,17 @@ export type Font = (typeof FONTS)[number]
 
 const preset = (id: string, name: string, dark: boolean, p: Palette, font: Font = 'hifi', glow = true): Theme => ({ id, name, dark, font, glow, radius: 'soft', ...p })
 
-// ink3 values tuned for WCAG AA (4.5:1) on bg.
+// ink3 values tuned for WCAG AA (4.5:1) on bg, panels and cards (raised).
 export const PRESETS: Theme[] = [
   // YouTube's own palettes and font: what System follows by default.
   preset('modern', 'Modern', false, { bg: '#FFFFFF', panel: '#F9F9F9', raised: '#F2F2F2', recess: '#F2F2F2', line: '#E5E5E5', lineSoft: '#EFEFEF', ink: '#0F0F0F', ink2: '#606060', ink3: '#606060', ink4: '#CCCCCC', accent: '#FF0033', onAccent: '#FFFFFF', ledOff: '#D9D9D9' }, 'modern', false),
   preset('modern-dark', 'Modern Dark', true, { bg: '#0F0F0F', panel: '#181818', raised: '#272727', recess: '#090909', line: '#3F3F3F', lineSoft: '#272727', ink: '#F1F1F1', ink2: '#AAAAAA', ink3: '#909090', ink4: '#4D4D4D', accent: '#FF0033', onAccent: '#FFFFFF', ledOff: '#3F3F3F' }, 'modern', false),
   preset('paper', 'Paper', false, { bg: '#F3F1EC', panel: '#EAE7E0', raised: '#FBFAF7', recess: '#E1DDD4', line: '#D6D1C6', lineSoft: '#E4E0D7', ink: '#171614', ink2: '#5C5852', ink3: '#6B665E', ink4: '#B2ACA1', accent: '#FF5A1F', onAccent: '#FFFFFF', ledOff: '#CDC7BB' }),
-  preset('graphite', 'Graphite', true, { bg: '#121211', panel: '#1A1A18', raised: '#24231F', recess: '#0B0B0A', line: '#302F2B', lineSoft: '#252421', ink: '#EDEAE4', ink2: '#A6A198', ink3: '#8A847B', ink4: '#55524C', accent: '#FF6A2E', onAccent: '#171614', ledOff: '#3A3935' }),
-  preset('studio', 'Studio', true, { bg: '#000000', panel: '#0A0A0A', raised: '#161616', recess: '#000000', line: '#262626', lineSoft: '#1A1A1A', ink: '#FFFFFF', ink2: '#A3A3A3', ink3: '#7A7A7A', ink4: '#4D4D4D', accent: '#FF3B30', onAccent: '#FFFFFF', ledOff: '#333333' }),
+  preset('graphite', 'Graphite', true, { bg: '#121211', panel: '#1A1A18', raised: '#24231F', recess: '#0B0B0A', line: '#302F2B', lineSoft: '#252421', ink: '#EDEAE4', ink2: '#A6A198', ink3: '#948E85', ink4: '#55524C', accent: '#FF6A2E', onAccent: '#171614', ledOff: '#3A3935' }),
+  preset('studio', 'Studio', true, { bg: '#000000', panel: '#0A0A0A', raised: '#161616', recess: '#000000', line: '#262626', lineSoft: '#1A1A1A', ink: '#FFFFFF', ink2: '#A3A3A3', ink3: '#858585', ink4: '#4D4D4D', accent: '#FF3B30', onAccent: '#FFFFFF', ledOff: '#333333' }),
   preset('aluminum', 'Aluminum', false, { bg: '#ECEEF0', panel: '#E1E4E8', raised: '#F7F8F9', recess: '#D7DBE0', line: '#C9CED5', lineSoft: '#DADEE3', ink: '#14171A', ink2: '#4E5660', ink3: '#5D656F', ink4: '#A4ACB5', accent: '#2F6FEB', onAccent: '#FFFFFF', ledOff: '#BFC5CC' }),
   preset('bakelite', 'Bakelite', true, { bg: '#1C1410', panel: '#241A14', raised: '#2E221A', recess: '#140E0B', line: '#3D2E24', lineSoft: '#2E231B', ink: '#F2E6D3', ink2: '#BFAE95', ink3: '#9E8E77', ink4: '#5E5244', accent: '#F2A900', onAccent: '#1C1410', ledOff: '#4A3B2F' }),
-  preset('sage', 'Sage', false, { bg: '#E7ECE6', panel: '#DCE3DA', raised: '#F4F7F3', recess: '#D1D9CF', line: '#C2CCBF', lineSoft: '#D5DDD2', ink: '#152019', ink2: '#4C5B50', ink3: '#5B6A5E', ink4: '#A0ADA2', accent: '#1F7A4D', onAccent: '#FFFFFF', ledOff: '#B8C3B6' }),
+  preset('sage', 'Sage', false, { bg: '#E7ECE6', panel: '#DCE3DA', raised: '#F4F7F3', recess: '#D1D9CF', line: '#C2CCBF', lineSoft: '#D5DDD2', ink: '#152019', ink2: '#4C5B50', ink3: '#58675B', ink4: '#A0ADA2', accent: '#1F7A4D', onAccent: '#FFFFFF', ledOff: '#B8C3B6' }),
 ]
 
 export const ACCENTS = ['#FF5A1F', '#E5383B', '#F2B705', '#2E8B57', '#2F6FEB', '#171614']
@@ -538,6 +538,7 @@ export function contrastReport(t: Palette) {
     { label: msg('Secondary text'), ratio: contrast(t.ink2, t.bg), min: 4.5 },
     { label: msg('Muted text'), ratio: contrast(t.ink3, t.bg), min: 4.5 },
     { label: msg('Text on panel'), ratio: contrast(t.ink2, t.panel), min: 4.5 },
+    { label: msg('Muted text on cards'), ratio: Math.min(contrast(t.ink3, t.panel), contrast(t.ink3, t.raised)), min: 4.5 },
     { label: msg('Icon on accent'), ratio: contrast(t.onAccent, t.accent), min: 3 },
   ].map((c) => ({ ...c, ok: c.ratio >= c.min }))
 }
@@ -561,16 +562,17 @@ export function paletteFrom(accent: string, dark: boolean): Palette {
   const bg = mix(dark ? '#111111' : '#F6F6F4', accent, dark ? 0.07 : 0.05)
   const ink = mix(dark ? '#F2F2F2' : '#151515', accent, 0.04)
   const panel = mix(bg, ink, dark ? 0.05 : 0.035)
+  const raised = dark ? mix(bg, ink, 0.1) : mix(bg, '#FFFFFF', 0.65)
   return {
     bg,
     panel,
-    raised: dark ? mix(bg, ink, 0.1) : mix(bg, '#FFFFFF', 0.65),
+    raised,
     recess: dark ? mix(bg, '#000000', 0.45) : mix(bg, ink, 0.07),
     line: mix(bg, ink, 0.17),
     lineSoft: mix(bg, ink, 0.1),
     ink,
     ink2: readable(mix(ink, bg, 0.4), ink, [bg, panel], 4.5),
-    ink3: readable(mix(ink, bg, 0.5), ink, [bg, panel], 4.5),
+    ink3: readable(mix(ink, bg, 0.5), ink, [bg, panel, raised], 4.5),
     ink4: mix(ink, bg, 0.7),
     accent: accent.toUpperCase(),
     onAccent: onAccentFor(accent),
