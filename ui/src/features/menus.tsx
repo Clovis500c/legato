@@ -123,25 +123,36 @@ const setHidden = (key: string, hide: boolean) => {
   useSettings.getState().update({ hiddenPlaylists: hide ? [...keys, key] : keys })
 }
 
+/** Adds songs to one of your YouTube Music playlists (there too), with a toast saying what went in. */
+async function addToYoutubePlaylist(p: LibraryPlaylist, ids: number[]) {
+  if (!ids.length) return
+  try {
+    const r = await api.addToYoutube(p.id, ids)
+    await app().refresh()
+    const also = [r.already > 0 && trn(r.already, '{n} already there', '{n} already there'), r.noYoutube > 0 && trn(r.noYoutube, '{n} with no YouTube version', '{n} with no YouTube version'), r.refused].filter(Boolean).join(' · ')
+    const open = { label: tr('Open'), run: () => app().go({ name: 'playlist', id: p.id }) }
+    const added = tr('Added to {name} on YouTube Music: {songs}', { name: p.name, songs: r.added === ids.length ? songs(ids) : trn(r.added, '{n} song', '{n} songs') })
+    if (r.added) app().notify(added + (also ? ` · ${also}` : ''), { action: open })
+    else if (r.already) app().notify(ids.length === 1 ? tr('Already in {name}', { name: p.name }) : tr('All already in {name}', { name: p.name }), { kind: 'info', action: open })
+    else app().notify(tr('Nothing added to {name}: no YouTube version', { name: p.name }), { kind: 'info' })
+  } catch (e) {
+    fail(e)
+  }
+}
+
+/** Songs dropped on a playlist (sidebar): yours, or a YouTube Music one of yours when signed in. False = can't take them. */
+export function canDropOn(p: LibraryPlaylist): boolean {
+  return p.custom || (p.source === 'youtube' && app().status.youtube.connected)
+}
+export function dropOn(p: LibraryPlaylist, ids: number[]) {
+  if (p.custom) return void addToPlaylist(p.id, ids)
+  if (canDropOn(p)) void addToYoutubePlaylist(p, ids)
+}
+
 /** "Add to playlist ›": a new one, your playlists, then your YouTube Music ones (added there too), each with its sidebar icon. Hidden ones left out. */
 function addTo(tracks: () => LibraryTrack[] | Promise<LibraryTrack[]>): MenuEntry {
   const add = async (id: number) => addToPlaylist(id, (await tracks()).map((t) => t.id))
-  const addYoutube = async (p: LibraryPlaylist) => {
-    const ids = (await tracks()).map((t) => t.id)
-    if (!ids.length) return
-    try {
-      const r = await api.addToYoutube(p.id, ids)
-      await app().refresh()
-      const also = [r.already > 0 && trn(r.already, '{n} already there', '{n} already there'), r.noYoutube > 0 && trn(r.noYoutube, '{n} with no YouTube version', '{n} with no YouTube version'), r.refused].filter(Boolean).join(' · ')
-      const open = { label: tr('Open'), run: () => app().go({ name: 'playlist', id: p.id }) }
-      const added = tr('Added to {name} on YouTube Music: {songs}', { name: p.name, songs: r.added === ids.length ? songs(ids) : trn(r.added, '{n} song', '{n} songs') })
-      if (r.added) app().notify(added + (also ? ` · ${also}` : ''), { action: open })
-      else if (r.already) app().notify(ids.length === 1 ? tr('Already in {name}', { name: p.name }) : tr('All already in {name}', { name: p.name }), { kind: 'info', action: open })
-      else app().notify(tr('Nothing added to {name}: no YouTube version', { name: p.name }), { kind: 'info' })
-    } catch (e) {
-      fail(e)
-    }
-  }
+  const addYoutube = async (p: LibraryPlaylist) => addToYoutubePlaylist(p, (await tracks()).map((t) => t.id))
   const off = hidden()
   const shown = app().playlists.filter((p) => !off.has(playlistKey(p)))
   const youtube = app().status.youtube.connected ? shown.filter((p) => p.source === 'youtube' && !p.custom) : []

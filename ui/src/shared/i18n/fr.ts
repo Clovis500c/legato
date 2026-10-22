@@ -1187,6 +1187,13 @@ const fr: Record<string, string> = {
   'Clicks': 'Clics',
   'YouTube videos': 'Vidéos YouTube',
   'Drag to change the order (Alt+↑ / Alt+↓)': 'Glissez pour changer l’ordre (Alt+↑ / Alt+↓)',
+  // Track list selection
+  '{n} song selected': '{n} titre sélectionné',
+  '{n} songs selected': '{n} titres sélectionnés',
+  'Add {n} songs to a playlist': 'Ajouter {n} titres à une playlist',
+  'Clear selection': 'Désélectionner',
+  'Remove {n} song from playlist': 'Retirer {n} titre de la playlist',
+  'Remove {n} songs from playlist': 'Retirer {n} titres de la playlist',
 }
 
 export default fr

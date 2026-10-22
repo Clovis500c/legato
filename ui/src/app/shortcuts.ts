@@ -43,8 +43,11 @@ const inText = (target: EventTarget | null) => target instanceof Element && !!ta
 // Sliders keep their arrows (no modifier); menus keep theirs.
 const ownsArrows = (target: EventTarget | null) => target instanceof Element && !!target.closest('input[type=range], [role="slider"], [role="menu"], [role="menuitem"]')
 
-/** Space presses a control reached by keyboard (:focus-visible), or anything in a dialog. */
-const ownsSpace = (target: EventTarget | null) => target instanceof HTMLElement && target !== document.body && (target.matches(':focus-visible') || !!target.closest('[role="dialog"]'))
+/**
+ * Space presses a control reached by keyboard (:focus-visible), or anything in a dialog. Track lists ([data-list])
+ * leave it to play / pause.
+ */
+const ownsSpace = (target: EventTarget | null) => target instanceof HTMLElement && target !== document.body && !target.matches('[data-list]') && (target.matches(':focus-visible') || !!target.closest('[role="dialog"]'))
 
 /** Global shortcuts the OS refused (another app holds them), for Settings › Shortcuts. */
 export const useGlobalShortcuts = create<{ failed: ActionId[] }>(() => ({ failed: [] }))

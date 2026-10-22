@@ -139,7 +139,7 @@ needs it; 2 s fade by default.
       scaled by the root size, spacing and corners kept in px; 9 px labels raised to 10 px (11 at normal).
 - [x] Settings: General / Playback / Appearance (playback settings out of Appearance, daily ones out of Advanced);
       Hi-Fi leftovers dropped or tucked away.
-- [ ] Lists: keyboard (one tab stop, arrows, Enter, Shift / Ctrl selection), multi-select with actions, drag and drop
+- [x] Lists: keyboard (one tab stop, arrows, Enter, Shift / Ctrl selection), multi-select with actions, drag and drop
       to playlists and within custom playlists, reorderable Up next.
 - [ ] Library: artists from YouTube channels cleaned ("- Topic", several artists), chips count what the page shows,
       sort by clicking column headers.

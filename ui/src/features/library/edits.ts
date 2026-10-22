@@ -58,3 +58,19 @@ export async function removeFromPlaylist(id: number, position: number) {
   }
   app().notify(tr('Removed from {name}: {songs}', { name: nameOf(id), songs: trackId === undefined ? tr('a song') : songs([trackId]) }), { kind: 'removed', action: trackId === undefined ? undefined : { label: tr('Undo'), run: () => void undo() } })
 }
+
+/** Removes several songs (positions) at once: one toast, Undo puts each back in its place. */
+export async function removePositions(id: number, positions: number[]) {
+  const order = app().orders[id] ?? []
+  const gone = [...new Set(positions)].sort((a, b) => a - b).flatMap((p) => (order[p] === undefined ? [] : [[p, order[p]] as const]))
+  // From the end: earlier positions stay valid.
+  for (const [p] of [...gone].reverse()) if (!(await edit({ type: 'remove', id, position: p }))) return
+  const undo = async () => {
+    for (const [p, trackId] of gone) {
+      if (!(await edit({ type: 'add', id, trackIds: [trackId] }))) return
+      const last = (app().orders[id]?.length ?? 1) - 1
+      if (last !== p) await edit({ type: 'move', id, from: last, to: p })
+    }
+  }
+  if (gone.length) app().notify(tr('Removed from {name}: {songs}', { name: nameOf(id), songs: songs(gone.map(([, t]) => t)) }), { kind: 'removed', action: { label: tr('Undo'), run: () => void undo() } })
+}
