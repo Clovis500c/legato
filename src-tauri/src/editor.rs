@@ -17,7 +17,7 @@ pub fn edits(state: State<AppState>, song: Option<String>) -> CmdResult<Vec<musi
     if song.as_deref().is_some_and(|s| !song_key_ok(s)) {
         return Err("bad song key".into());
     }
-    state.lib.lock().unwrap().edits(song.as_deref()).map_err(err)
+    state.lib().edits(song.as_deref()).map_err(err)
 }
 
 /// New (id None) or changed edit; effects clamped, stored as numbers only. Returns its id.
@@ -28,12 +28,12 @@ pub fn save_edit(state: State<AppState>, id: Option<i64>, song: Option<String>, 
         return Err("bad edit".into());
     }
     let json = serde_json::to_string(&effects.clamped()).map_err(err)?;
-    state.lib.lock().unwrap().save_edit(id, song.as_deref(), &name, &json, unix_now()).map_err(err)
+    state.lib().save_edit(id, song.as_deref(), &name, &json, unix_now()).map_err(err)
 }
 
 #[tauri::command]
 pub fn delete_edit(state: State<AppState>, id: i64) -> CmdResult<()> {
-    state.lib.lock().unwrap().delete_edit(id).map_err(err)
+    state.lib().delete_edit(id).map_err(err)
 }
 
 /// The edit that plays with this song from now on (None = as is).
@@ -42,7 +42,7 @@ pub fn activate_edit(state: State<AppState>, song: String, id: Option<i64>) -> C
     if !song_key_ok(&song) {
         return Err("bad song key".into());
     }
-    state.lib.lock().unwrap().activate_edit(&song, id).map_err(err)
+    state.lib().activate_edit(&song, id).map_err(err)
 }
 
 /// Live Editor settings for the native engine (local files, previews). Clamped on the way in.

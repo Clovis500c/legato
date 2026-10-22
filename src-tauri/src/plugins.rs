@@ -69,11 +69,11 @@ fn dir(app: &AppHandle) -> CmdResult<PathBuf> {
 }
 
 fn registry(state: &AppState) -> HashMap<String, Entry> {
-    state.lib.lock().unwrap().setting(REGISTRY).ok().flatten().and_then(|v| serde_json::from_value(v).ok()).unwrap_or_default()
+    state.lib().setting(REGISTRY).ok().flatten().and_then(|v| serde_json::from_value(v).ok()).unwrap_or_default()
 }
 
 fn save_registry(state: &AppState, r: &HashMap<String, Entry>) -> CmdResult<()> {
-    state.lib.lock().unwrap().set_setting(REGISTRY, &json!(r)).map_err(err)
+    state.lib().set_setting(REGISTRY, &json!(r)).map_err(err)
 }
 
 fn read_manifest(folder: &Path) -> anyhow::Result<Manifest> {
@@ -152,7 +152,7 @@ async fn shell_call(app: &AppHandle, call: &Call) -> Result<Value, String> {
     let key = || a["key"].as_str().filter(|k| !k.is_empty() && k.len() <= 100).map(String::from).ok_or_else(|| "storage: key must be 1-100 characters".to_string());
     match call.method.as_str() {
         "storage.get" | "storage.set" | "storage.remove" | "storage.keys" => {
-            let lib = state.lib.lock().unwrap();
+            let lib = state.lib();
             let mut store = lib.setting(&storage_key(&call.plugin)).ok().flatten().and_then(|v| v.as_object().cloned()).unwrap_or_default();
             match call.method.as_str() {
                 "storage.get" => Ok(store.get(&key()?).cloned().unwrap_or(Value::Null)),
@@ -173,16 +173,16 @@ async fn shell_call(app: &AppHandle, call: &Call) -> Result<Value, String> {
             }
         }
         "library.tracks" => {
-            let tracks = state.lib.lock().unwrap().tracks().map_err(err)?;
+            let tracks = state.lib().tracks().map_err(err)?;
             Ok(json!(tracks.iter().map(track_json).collect::<Vec<_>>()))
         }
         "library.playlists" => {
-            let lists = state.lib.lock().unwrap().playlists().map_err(err)?;
+            let lists = state.lib().playlists().map_err(err)?;
             Ok(json!(lists.iter().map(|p| json!({ "id": p.id, "name": p.name, "custom": p.custom, "source": p.source, "trackCount": p.track_count })).collect::<Vec<_>>()))
         }
         "library.playlist" => {
             let id = a["id"].as_i64().ok_or("library.playlist: id")?;
-            let lib = state.lib.lock().unwrap();
+            let lib = state.lib();
             let p = lib.playlists().map_err(err)?.into_iter().find(|p| p.id == id).ok_or("No such playlist")?;
             let tracks = lib.playlist_tracks(id).map_err(err)?;
             Ok(json!({ "id": p.id, "name": p.name, "custom": p.custom, "tracks": tracks.iter().map(track_json).collect::<Vec<_>>() }))
@@ -319,7 +319,7 @@ pub fn plugin_uninstall(app: AppHandle, state: State<AppState>, plugins: State<P
     let mut reg = registry(&state);
     reg.remove(&id);
     save_registry(&state, &reg)?;
-    state.lib.lock().unwrap().set_setting(&storage_key(&id), &Value::Null).map_err(err)?;
+    state.lib().set_setting(&storage_key(&id), &Value::Null).map_err(err)?;
     plugins.logs.lock().unwrap().remove(&id);
     plugins.errors.lock().unwrap().remove(&id);
     let target = dir(&app)?.join(&id);

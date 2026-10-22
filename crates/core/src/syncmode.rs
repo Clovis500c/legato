@@ -619,10 +619,14 @@ pub fn unpack(bytes: &[u8]) -> Result<Snapshot> {
 /// 32-byte file key, derived from the user's password.
 pub type Key = [u8; 32];
 
-/// Argon2id (OWASP minimum: 19 MiB, 2 passes) over the password with the folder's salt.
+/// Argon2id over the password with the folder's salt: 64 MiB, 3 passes (above OWASP's 19 MiB / 2 minimum: a copied
+/// OneDrive file can be attacked offline for as long as anyone likes). About 0.2 s once per unlock.
 pub fn derive_key(password: &str, salt: &[u8]) -> Result<Key> {
     let mut key = [0u8; 32];
-    argon2::Argon2::default().hash_password_into(password.as_bytes(), salt, &mut key).map_err(|e| anyhow!("Key derivation failed: {e}"))?;
+    let params = argon2::Params::new(64 * 1024, 3, 1, Some(32)).map_err(|e| anyhow!("Key derivation failed: {e}"))?;
+    argon2::Argon2::new(argon2::Algorithm::Argon2id, argon2::Version::V0x13, params)
+        .hash_password_into(password.as_bytes(), salt, &mut key)
+        .map_err(|e| anyhow!("Key derivation failed: {e}"))?;
     Ok(key)
 }
 

@@ -24,7 +24,7 @@ playback session, lyrics cache, updater state, WebView2 cookies (YouTube sign-in
 The brief's two options are both used, by the user's choice:
 
 - **Protected folder** (password, recommended when asked): files sealed with ChaCha20-Poly1305 under an Argon2id key
-  (19 MiB, 2 passes) from the password and the folder's salt. The Spotify app ID and the Music Detector token travel
+  (64 MiB, 3 passes; passwords of 10 characters or more) from the password and the folder's salt. The Spotify app ID and the Music Detector token travel
   sealed and fill what's missing on the other PC (never replace). The key stays in each PC's keychain; the password is
   never stored. A check value in `sync.json` tells a wrong password at once.
 - **Plain folder**: no secrets in the files. Other PCs show the account list and the user signs in again.

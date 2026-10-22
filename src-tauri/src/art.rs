@@ -53,7 +53,7 @@ fn cover(app: &tauri::AppHandle, name: &str) -> Option<(Vec<u8>, String)> {
 
 /// Cover embedded in a library track's local file.
 pub async fn local(app: &tauri::AppHandle, track_id: i64) -> Option<(Vec<u8>, String)> {
-    let file = app.try_state::<AppState>()?.lib.lock().unwrap().local_path(track_id).ok()??;
+    let file = app.try_state::<AppState>()?.lib().local_path(track_id).ok()??;
     tauri::async_runtime::spawn_blocking(move || music_core::local::picture(std::path::Path::new(&file))).await.ok()?
 }
 

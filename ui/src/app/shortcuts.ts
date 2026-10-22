@@ -91,10 +91,18 @@ export function startShortcuts(): () => void {
     RUN[id]()
   }
   window.addEventListener('keydown', onKey)
+  // Mouse side buttons: back / forward, like a browser.
+  const onMouse = (e: MouseEvent) => {
+    if (e.button !== 3 && e.button !== 4) return
+    e.preventDefault()
+    RUN[e.button === 3 ? 'goBack' : 'goForward']()
+  }
+  window.addEventListener('mouseup', onMouse)
   // Pressed anywhere (global): Rust sends the action.
   const offGlobal = api.onShortcut((id) => RUN[id as ActionId]?.())
   return () => {
     window.removeEventListener('keydown', onKey)
+    window.removeEventListener('mouseup', onMouse)
     offSettings()
     void offGlobal.then((f) => f())
   }

@@ -98,6 +98,12 @@ struct AppState {
 }
 
 impl AppState {
+    /// The library. A command that panicked while holding it (poisoned lock) must not lock every later one out: its
+    /// transaction rolled back when dropped, the connection is still sound.
+    fn lib(&self) -> std::sync::MutexGuard<'_, Library> {
+        self.lib.lock().unwrap_or_else(std::sync::PoisonError::into_inner)
+    }
+
     fn credentials(&self) -> Credentials {
         self.store.load("credentials").unwrap_or_default()
     }
@@ -109,7 +115,7 @@ impl AppState {
 
     /// Accounts picked in Settings › Accounts (empty = main account only).
     fn ytm_picked(&self) -> Vec<Account> {
-        self.lib.lock().unwrap().setting("ytm_accounts").ok().flatten().and_then(|v| serde_json::from_value(v).ok()).unwrap_or_default()
+        self.lib().setting("ytm_accounts").ok().flatten().and_then(|v| serde_json::from_value(v).ok()).unwrap_or_default()
     }
 
     /// YouTube Music, one connector per picked account. Empty = signed out. Async callers only (WebView2 cookies).
@@ -232,14 +238,14 @@ struct LibraryData {
 #[tauri::command]
 fn library(state: State<AppState>) -> CmdResult<Response> {
     // Lock held while computing: no write can slip between the version read and the answer.
-    let lib = state.lib.lock().unwrap();
+    let lib = state.lib();
     let answer = state.cache.library.get_or((), lib.versions.library(), || serde_json::to_string(&LibraryData { tracks: lib.tracks().map_err(err)?, playlists: lib.playlists().map_err(err)? }).map_err(err))?;
     Ok(json(answer))
 }
 
 #[tauri::command]
 fn playlist_tracks(state: State<AppState>, id: i64) -> CmdResult<Response> {
-    let lib = state.lib.lock().unwrap();
+    let lib = state.lib();
     let answer = state.cache.playlist.get_or(id, lib.versions.library(), || serde_json::to_string(&lib.playlist_tracks(id).map_err(err)?).map_err(err))?;
     Ok(json(answer))
 }
@@ -252,25 +258,25 @@ fn folders(lib: &Library) -> Vec<String> {
 async fn rescan(state: &AppState, dirs: Vec<String>) -> CmdResult<usize> {
     let paths: Vec<PathBuf> = dirs.iter().map(PathBuf::from).collect();
     let tracks = tauri::async_runtime::spawn_blocking(move || music_core::local::scan(&paths)).await.map_err(err)?;
-    state.lib.lock().unwrap().replace_local(&tracks).map_err(err)
+    state.lib().replace_local(&tracks).map_err(err)
 }
 
 #[tauri::command]
 fn local_folders(state: State<AppState>) -> Vec<String> {
-    folders(&state.lib.lock().unwrap())
+    folders(&state.lib())
 }
 
 #[tauri::command]
 async fn set_local_folders(state: State<'_, AppState>, folders: Vec<String>) -> CmdResult<usize> {
     // Trust boundary: existing absolute folders only.
     let clean: Vec<String> = folders.into_iter().map(|f| f.trim().to_string()).filter(|f| Path::new(f).is_absolute() && Path::new(f).is_dir()).take(50).collect();
-    state.lib.lock().unwrap().set_setting("folders", &serde_json::json!(clean)).map_err(err)?;
+    state.lib().set_setting("folders", &serde_json::json!(clean)).map_err(err)?;
     rescan(&state, clean).await
 }
 
 #[tauri::command]
 async fn rescan_local(state: State<'_, AppState>) -> CmdResult<usize> {
-    let dirs = folders(&state.lib.lock().unwrap());
+    let dirs = folders(&state.lib());
     rescan(&state, dirs).await
 }
 
@@ -284,7 +290,7 @@ async fn add_link(state: State<'_, AppState>, url: String) -> CmdResult<String> 
     let t = music_connectors::youtube::track_from_link(url.trim(), music_connectors::youtube::OEMBED).await.map_err(err)?;
     {
         // Added by hand: a song removed earlier comes back.
-        let lib = state.lib.lock().unwrap();
+        let lib = state.lib();
         lib.unremove(&t).map_err(err)?;
         lib.upsert_track(&t).map_err(err)?;
     }
@@ -391,7 +397,7 @@ async fn search_catalogs(state: State<'_, AppState>, query: String, country: Str
             Vec::new()
         }
     };
-    let lib = state.lib.lock().unwrap();
+    let lib = state.lib();
     let hits = search::merge(videos, songs, apple).into_iter().map(|hit| SearchHit { library_id: lib.find(&hit.track).ok().flatten(), hit }).collect();
     Ok(SearchResults { hits, errors })
 }
@@ -437,7 +443,7 @@ async fn resolve_track(state: State<'_, AppState>, track: Track) -> CmdResult<Tr
 async fn add_track(state: State<'_, AppState>, track: Track) -> CmdResult<i64> {
     let track = with_youtube(&state, checked_hit(track)?).await;
     // Added by hand: a song removed earlier comes back.
-    let lib = state.lib.lock().unwrap();
+    let lib = state.lib();
     lib.unremove(&track).map_err(err)?;
     lib.upsert_track(&track).map_err(err)
 }
@@ -447,14 +453,14 @@ async fn add_track(state: State<'_, AppState>, track: Track) -> CmdResult<i64> {
 async fn backfill_art(state: State<'_, AppState>, country: String) -> CmdResult<usize> {
     use music_connectors::itunes;
     let ids: Vec<u64> = {
-        let tracks = state.lib.lock().unwrap().tracks().map_err(err)?;
+        let tracks = state.lib().tracks().map_err(err)?;
         tracks.into_iter().filter(|t| t.track.art.as_deref().is_none_or(music_core::model::video_frame)).filter_map(|t| t.track.ids.get(&Source::Apple)?.parse().ok()).collect()
     };
     if ids.is_empty() {
         return Ok(0);
     }
     let found: Vec<Track> = itunes::lookup(itunes::LOOKUP, &ids, &store(&country)).await.map_err(err)?.into_iter().filter(|t| t.art.is_some()).collect();
-    let lib = state.lib.lock().unwrap();
+    let lib = state.lib();
     for t in &found {
         lib.upsert_track(t).map_err(err)?;
     }
@@ -477,7 +483,7 @@ const FIND_MAX: usize = 150;
 #[tauri::command]
 async fn find_versions(state: State<'_, AppState>, ids: Vec<i64>) -> CmdResult<FindReport> {
     let todo: Vec<Track> = {
-        let lib = state.lib.lock().unwrap();
+        let lib = state.lib();
         let tracks = lib.tracks().map_err(err)?;
         tracks.into_iter().filter(|t| ids.contains(&t.id) && !t.track.ids.contains_key(&Source::Youtube) && !t.track.ids.contains_key(&Source::Local)).map(|t| t.track).take(FIND_MAX).collect()
     };
@@ -486,7 +492,7 @@ async fn find_versions(state: State<'_, AppState>, ids: Vec<i64>) -> CmdResult<F
         let Some(res) = yt_search(&state, &format!("{} {}", t.artist, t.title)).await else { break };
         let candidates = res?;
         if let Some(hit) = music_core::matching::best_match(t, &candidates) {
-            state.lib.lock().unwrap().upsert_track(&merge_tracks(t, hit)).map_err(err)?;
+            state.lib().upsert_track(&merge_tracks(t, hit)).map_err(err)?;
             found += 1;
         }
     }
@@ -497,7 +503,7 @@ async fn find_versions(state: State<'_, AppState>, ids: Vec<i64>) -> CmdResult<F
 /// Never the blocked ones (`exclude`). Empty = nothing else plays it.
 #[tauri::command]
 async fn alternative_videos(state: State<'_, AppState>, track_id: i64, exclude: Vec<String>) -> CmdResult<Vec<String>> {
-    let t = state.lib.lock().unwrap().tracks().map_err(err)?.into_iter().find(|t| t.id == track_id).ok_or("Track not found")?.track;
+    let t = state.lib().tracks().map_err(err)?.into_iter().find(|t| t.id == track_id).ok_or("Track not found")?.track;
     let yt = state.ytm().ok_or("Sign in to YouTube Music first (Settings › Accounts)")?;
     let mut out: Vec<String> = Vec::new();
     // Official song first, then uploads of it.
@@ -541,7 +547,7 @@ fn shared_playlist(lib: &Library, id: i64) -> CmdResult<Shared> {
 
 #[tauri::command]
 fn share_playlist(state: State<AppState>, id: i64) -> CmdResult<ShareCode> {
-    let shared = shared_playlist(&state.lib.lock().unwrap(), id)?;
+    let shared = shared_playlist(&state.lib(), id)?;
     let qr = share::qr_modules(&share::to_qr_text(&shared)).map(|(size, dark)| (size, dark.iter().map(|&d| if d { '1' } else { '0' }).collect()));
     Ok(ShareCode { link: share::to_link(&shared), qr, tracks: shared.items.len(), bytes: share::encode(&shared).len() })
 }
@@ -558,7 +564,7 @@ enum NearbyState {
 /// Offer a playlist on the local network. Returns the 6-digit code to read out.
 #[tauri::command]
 fn nearby_send(state: State<AppState>, id: i64) -> CmdResult<String> {
-    let payload = share::encode(&shared_playlist(&state.lib.lock().unwrap(), id)?);
+    let payload = share::encode(&shared_playlist(&state.lib(), id)?);
     let code = music_connectors::nearby::new_code();
     nearby_stop(state.clone());
     *state.nearby.lock().unwrap() = NearbyState::Waiting { code: code.clone() };
@@ -617,7 +623,7 @@ struct SharePreview {
 #[tauri::command]
 fn share_preview(state: State<AppState>, code: String) -> CmdResult<SharePreview> {
     let shared = share::parse(&code).map_err(err)?;
-    let lib = state.lib.lock().unwrap();
+    let lib = state.lib();
     let known = shared.items.iter().map(|i| lib.find(&probe(i))).collect::<anyhow::Result<Vec<_>>>().map_err(err)?.iter().flatten().count();
     Ok(SharePreview { name: shared.name, tracks: shared.items.len(), known })
 }
@@ -662,7 +668,7 @@ async fn share_import(state: State<'_, AppState>, code: String, country: String)
     let shared = share::parse(&code).map_err(err)?;
     let country = store(&country);
     let mut ids: Vec<Option<i64>> = {
-        let lib = state.lib.lock().unwrap();
+        let lib = state.lib();
         shared.items.iter().map(|i| lib.find(&probe(i))).collect::<anyhow::Result<_>>().map_err(err)?
     };
 
@@ -691,13 +697,13 @@ async fn share_import(state: State<'_, AppState>, code: String, country: String)
             Item::Text { artist, title } => resolve_text(&state, artist, title, &country).await,
         };
         if let Some(t) = track {
-            ids[i] = Some(state.lib.lock().unwrap().upsert_track(&t).map_err(err)?);
+            ids[i] = Some(state.lib().upsert_track(&t).map_err(err)?);
         }
     }
 
     let found: Vec<i64> = ids.iter().flatten().copied().collect();
     let name = if shared.name.trim().is_empty() { "Shared playlist".to_string() } else { shared.name };
-    let lib = state.lib.lock().unwrap();
+    let lib = state.lib();
     let playlist_id = lib.edit_playlist(PlaylistEdit::Create { name }).map_err(err)?.ok_or("Playlist not created")?;
     lib.edit_playlist(PlaylistEdit::Add { id: playlist_id, track_ids: found.clone() }).map_err(err)?;
     Ok(ImportReport { playlist_id, added: found.len(), missing: ids.len() - found.len() })
@@ -714,7 +720,7 @@ fn record_play(state: State<AppState>, play: Play) -> CmdResult<()> {
     if !(0..=now + 60).contains(&play.started_at) || play.listened_ms > 24 * 3600 * 1000 {
         return Err("Invalid play".into());
     }
-    state.lib.lock().unwrap().record_play(&play).map_err(err)
+    state.lib().record_play(&play).map_err(err)
 }
 
 /// Mixes for today. `utc_offset` = local minus UTC, seconds (from the UI clock).
@@ -722,7 +728,7 @@ fn record_play(state: State<AppState>, play: Play) -> CmdResult<()> {
 fn mixes(state: State<AppState>, utc_offset: i64) -> CmdResult<Response> {
     let utc_offset = utc_offset.clamp(-14 * 3600, 14 * 3600);
     let now = unix_now();
-    let lib = state.lib.lock().unwrap();
+    let lib = state.lib();
     // Same data, same day, same hour: same mixes.
     let stamp = (lib.versions.library(), lib.versions.history(), today(), (now + utc_offset).div_euclid(3600));
     let answer = state.cache.mixes.get_or(utc_offset, stamp, || {
@@ -736,12 +742,12 @@ fn mixes(state: State<AppState>, utc_offset: i64) -> CmdResult<Response> {
 /// None clears it.
 #[tauri::command]
 fn set_track_pref(state: State<AppState>, track_id: i64, pref: Option<Pref>) -> CmdResult<()> {
-    state.lib.lock().unwrap().set_pref(track_id, pref).map_err(err)
+    state.lib().set_pref(track_id, pref).map_err(err)
 }
 
 #[tauri::command]
 fn clear_history(state: State<AppState>) -> CmdResult<()> {
-    state.lib.lock().unwrap().clear_history().map_err(err)
+    state.lib().clear_history().map_err(err)
 }
 
 #[derive(Serialize)]
@@ -761,7 +767,7 @@ async fn export_youtube(state: State<'_, AppState>, id: i64) -> CmdResult<Export
     let yt = state.ytm().ok_or("Sign in to YouTube Music first (Settings › Accounts)")?;
     let key = format!("ytm_export_{id}");
     let (name, videos, no_youtube, existing) = {
-        let lib = state.lib.lock().unwrap();
+        let lib = state.lib();
         let p = lib.playlists().map_err(err)?.into_iter().find(|p| p.id == id).ok_or("Playlist not found")?;
         if p.source == Source::Youtube && !p.custom {
             return Err("Already a YouTube playlist".into());
@@ -784,7 +790,7 @@ async fn export_youtube(state: State<'_, AppState>, id: i64) -> CmdResult<Export
         }
     }
     let remote = yt.create_playlist(&name, &videos).await.map_err(err)?;
-    state.lib.lock().unwrap().set_setting(&key, &serde_json::json!(remote)).map_err(err)?;
+    state.lib().set_setting(&key, &serde_json::json!(remote)).map_err(err)?;
     Ok(ExportReport { url: url(&remote), added: videos.len(), already: 0, no_youtube })
 }
 
@@ -805,7 +811,7 @@ struct AddReport {
 #[tauri::command]
 async fn remove_from_playlist(state: State<'_, AppState>, id: i64, track_id: i64) -> CmdResult<()> {
     let (playlist, videos) = {
-        let lib = state.lib.lock().unwrap();
+        let lib = state.lib();
         let p = lib.playlists().map_err(err)?.into_iter().find(|p| p.id == id).ok_or("Playlist not found")?;
         if p.custom {
             lib.edit_playlist(PlaylistEdit::RemoveTrack { id, track_id }).map_err(err)?;
@@ -843,14 +849,14 @@ async fn remove_from_playlist(state: State<'_, AppState>, id: i64, track_id: i64
             return Err(if why.starts_with("YouTube Music: ") { why } else { format!("{why}. Only playlists you own on YouTube Music can be changed.") });
         }
     }
-    state.lib.lock().unwrap().remove_from_imported(id, track_id).map_err(err)
+    state.lib().remove_from_imported(id, track_id).map_err(err)
 }
 
 /// Right-click › Remove from library: out of every playlist here and kept out of syncs and folder scans (the services'
 /// own playlists and the files on disk stay as they are).
 #[tauri::command]
 fn remove_from_library(state: State<'_, AppState>, track_id: i64) -> CmdResult<()> {
-    state.lib.lock().unwrap().remove_track(track_id).map_err(err)
+    state.lib().remove_track(track_id).map_err(err)
 }
 
 /// Add to an imported YouTube Music playlist: on YouTube first (owner account accepts, others refuse), then the mirror.
@@ -858,7 +864,7 @@ fn remove_from_library(state: State<'_, AppState>, track_id: i64) -> CmdResult<(
 #[tauri::command]
 async fn add_to_youtube(state: State<'_, AppState>, id: i64, track_ids: Vec<i64>) -> CmdResult<AddReport> {
     let (playlist, videos, there) = {
-        let lib = state.lib.lock().unwrap();
+        let lib = state.lib();
         let p = lib.playlists().map_err(err)?.into_iter().find(|p| p.id == id).ok_or("Playlist not found")?;
         if p.source != Source::Youtube || p.custom {
             return Err("Not a YouTube Music playlist".into());
@@ -910,7 +916,7 @@ async fn add_to_youtube(state: State<'_, AppState>, id: i64, track_ids: Vec<i64>
         r.added.into_iter().collect()
     };
     let added: Vec<i64> = videos.iter().filter(|(_, v)| taken.contains(v)).map(|(t, _)| *t).collect();
-    state.lib.lock().unwrap().append_to_imported(id, &added).map_err(err)?;
+    state.lib().append_to_imported(id, &added).map_err(err)?;
     report.added = added.len();
     Ok(report)
 }
@@ -981,7 +987,7 @@ async fn import_spotify_link(state: State<'_, AppState>, url: String) -> CmdResu
     let playable = tracks.iter().filter(|t| t.ids.contains_key(&Source::Youtube)).count();
     // Same id as a keyed Spotify sync, so both update one playlist. Albums get their own prefix.
     let source_id = if list.kind == "album" { format!("album:{}", list.id) } else { list.id.clone() };
-    let playlist_id = state.lib.lock().unwrap().save_playlist(Source::Spotify, &source_id, &list.name, &tracks).map_err(err)?;
+    let playlist_id = state.lib().save_playlist(Source::Spotify, &source_id, &list.name, &tracks).map_err(err)?;
     Ok(SpotifyImport { playlist_id, name: list.name, tracks: tracks.len(), playable })
 }
 
@@ -1030,7 +1036,7 @@ async fn ytm_sign_out(state: State<'_, AppState>) -> CmdResult<()> {
     state.cache.youtube.clear();
     state.cache.home.clear();
     state.cache.status.clear();
-    state.lib.lock().unwrap().set_setting("ytm_accounts", &serde_json::json!([])).map_err(err)
+    state.lib().set_setting("ytm_accounts", &serde_json::json!([])).map_err(err)
 }
 
 #[derive(Serialize)]
@@ -1062,17 +1068,17 @@ fn set_ytm_accounts(state: State<AppState>, accounts: Vec<Account>) -> CmdResult
     }
     state.cache.youtube.clear();
     state.cache.home.clear();
-    state.lib.lock().unwrap().save_shared_setting("ytm_accounts", &serde_json::json!(accounts), music_core::library::now_ms()).map_err(err)
+    state.lib().save_shared_setting("ytm_accounts", &serde_json::json!(accounts), music_core::library::now_ms()).map_err(err)
 }
 
 #[tauri::command]
 fn edit_playlist(state: State<AppState>, edit: PlaylistEdit) -> CmdResult<Option<i64>> {
-    state.lib.lock().unwrap().edit_playlist(edit).map_err(err)
+    state.lib().edit_playlist(edit).map_err(err)
 }
 
 #[tauri::command]
 fn load_settings(state: State<AppState>) -> CmdResult<Option<serde_json::Value>> {
-    state.lib.lock().unwrap().setting("ui").map_err(err)
+    state.lib().setting("ui").map_err(err)
 }
 
 #[tauri::command]
@@ -1082,13 +1088,13 @@ fn save_settings(state: State<AppState>, settings: serde_json::Value) -> CmdResu
         return Err("Invalid settings".into());
     }
     // Stamped key by key: Sync Mode merges settings by their newest change.
-    state.lib.lock().unwrap().save_ui_settings(&settings, music_core::library::now_ms()).map_err(err)
+    state.lib().save_ui_settings(&settings, music_core::library::now_ms()).map_err(err)
 }
 
 /// Track id → [listens, last start (unix s)]: Most played / Recently played sorts.
 #[tauri::command]
 fn play_stats(state: State<AppState>) -> CmdResult<Response> {
-    let lib = state.lib.lock().unwrap();
+    let lib = state.lib();
     let answer = state.cache.stats.get_or((), lib.versions.history(), || serde_json::to_string(&lib.play_stats().map_err(err)?).map_err(err))?;
     Ok(json(answer))
 }
@@ -1096,7 +1102,7 @@ fn play_stats(state: State<AppState>) -> CmdResult<Response> {
 /// Track ids of every playlist in order: covers (first song, grid of 4) are picked from them.
 #[tauri::command]
 fn playlist_orders(state: State<AppState>) -> CmdResult<Response> {
-    let lib = state.lib.lock().unwrap();
+    let lib = state.lib();
     let answer = state.cache.orders.get_or((), lib.versions.library(), || serde_json::to_string(&lib.playlist_orders().map_err(err)?).map_err(err))?;
     Ok(json(answer))
 }
@@ -1176,7 +1182,7 @@ async fn lyrics(state: State<'_, AppState>, ask: LyricsAsk) -> CmdResult<Option<
     }
     let key = lyrics::key(&ask.artist, &ask.title, ask.duration_ms);
     let now = unix_now();
-    let cached = state.lib.lock().unwrap().cached_lyrics(&key).map_err(err)?;
+    let cached = state.lib().cached_lyrics(&key).map_err(err)?;
     match cached {
         Some((Some(body), _)) => return Ok(serde_json::from_str(&body).ok()),
         Some((None, at)) if now - at < LYRICS_RETRY_S => return Ok(None),
@@ -1225,12 +1231,12 @@ async fn lyrics(state: State<'_, AppState>, ask: LyricsAsk) -> CmdResult<Option<
     }
     match (found, failed) {
         (Some(l), _) => {
-            state.lib.lock().unwrap().save_lyrics(&key, serde_json::to_string(&l).ok().as_deref(), now).map_err(err)?;
+            state.lib().save_lyrics(&key, serde_json::to_string(&l).ok().as_deref(), now).map_err(err)?;
             Ok(Some(l))
         }
         (None, Some(e)) => Err(err(e)),
         (None, None) => {
-            state.lib.lock().unwrap().save_lyrics(&key, None, now).map_err(err)?;
+            state.lib().save_lyrics(&key, None, now).map_err(err)?;
             Ok(None)
         }
     }
@@ -1309,7 +1315,7 @@ fn save_cover(app: tauri::AppHandle, playlist_id: i64, path: String) -> CmdResul
 /// Last playback (queue as track ids, position): picked up at launch if Settings › Advanced says so.
 #[tauri::command]
 fn load_session(state: State<AppState>) -> CmdResult<Option<serde_json::Value>> {
-    state.lib.lock().unwrap().setting("session").map_err(err)
+    state.lib().setting("session").map_err(err)
 }
 
 #[tauri::command]
@@ -1318,7 +1324,7 @@ fn save_session(state: State<AppState>, session: serde_json::Value) -> CmdResult
     if !session.is_object() || session.to_string().len() > 512 * 1024 {
         return Err("Invalid session".into());
     }
-    state.lib.lock().unwrap().set_setting("session", &session).map_err(err)
+    state.lib().set_setting("session", &session).map_err(err)
 }
 
 #[derive(Serialize)]
@@ -1482,12 +1488,17 @@ fn player_status(state: State<AppState>) -> Status {
 
 /// Error box before any window exists (startup), then the app quits.
 fn stop_with(text: &str) -> ! {
-    use windows::Win32::UI::WindowsAndMessaging::{MB_ICONERROR, MB_OK, MessageBoxW};
-    use windows::core::HSTRING;
-    // SAFETY: plain modal box, no owner window, strings live through the call.
-    unsafe {
-        MessageBoxW(None, &HSTRING::from(text), &HSTRING::from("Music App"), MB_OK | MB_ICONERROR);
+    #[cfg(windows)]
+    {
+        use windows::Win32::UI::WindowsAndMessaging::{MB_ICONERROR, MB_OK, MessageBoxW};
+        use windows::core::HSTRING;
+        // SAFETY: plain modal box, no owner window, strings live through the call.
+        unsafe {
+            MessageBoxW(None, &HSTRING::from(text), &HSTRING::from("Music App"), MB_OK | MB_ICONERROR);
+        }
     }
+    #[cfg(not(windows))]
+    eprintln!("Music App: {text}");
     std::process::exit(1);
 }
 
@@ -1516,6 +1527,11 @@ pub fn run() {
                 Err(e) if e.is::<music_core::library::NewerLibrary>() => stop_with(&e.to_string()),
                 Err(e) => return Err(e.into()),
             };
+            // Daily copy of the library, off the startup path (best effort: a full disk mustn't stop the app).
+            let db_path = dir.join("library.db");
+            std::thread::spawn(move || {
+                let _ = music_core::library::keep_daily_copy(&db_path);
+            });
             let ui = lib.setting("ui").ok().flatten();
             let shield_on = ui.as_ref().and_then(|s| s.get("shield")?.as_bool()).unwrap_or(true);
             // Starts with built-in rules; cached / fresh lists swapped in below without blocking startup.
@@ -1539,13 +1555,15 @@ pub fn run() {
                         return;
                     }
                     api.prevent_close();
-                    let to_tray = handle.try_state::<AppState>().and_then(|s| s.lib.lock().unwrap().setting("ui").ok().flatten()).and_then(|u| u.get("closeToTray")?.as_bool()).unwrap_or(true);
+                    let to_tray = handle.try_state::<AppState>().and_then(|s| s.lib().setting("ui").ok().flatten()).and_then(|u| u.get("closeToTray")?.as_bool()).unwrap_or(true);
                     if to_tray { background::hide(&handle) } else { background::quit(&handle) }
                 }
             });
             background::spawn_sleeper(app.handle().clone());
             #[cfg(windows)]
             shield::install(window.as_ref(), shield.clone())?;
+            #[cfg(windows)]
+            shield::browser_keys_off(window.as_ref())?;
             let media = media::Media::install(&window).ok();
             // Previous / Play / Next under the taskbar thumbnail.
             let _ = thumbbar::install(&window);

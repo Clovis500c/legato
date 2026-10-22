@@ -9,7 +9,7 @@ import { Button } from '../../shared/ui/Button'
 import { Dialog } from '../../shared/ui/Dialog'
 import { mergedText } from './merged'
 
-const MIN_PASSWORD = 8
+const MIN_PASSWORD = 10
 
 function Card({ setting, title, icon, children }: { setting: string; title: string; icon: ReactNode; children: ReactNode }) {
   return (

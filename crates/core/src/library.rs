@@ -236,9 +236,40 @@ pub struct Edit {
     pub active: bool,
 }
 
+/// Whole consistent copy of an open library (`VACUUM INTO`), written aside then renamed: never a half file.
+fn copy_to(db: &Connection, to: &Path) -> Result<()> {
+    let part = to.with_extension("db.part");
+    let _ = std::fs::remove_file(&part);
+    db.execute("VACUUM INTO ?1", [part.to_string_lossy()])?;
+    std::fs::rename(&part, to)?;
+    Ok(())
+}
+
+/// Daily copy next to the library (`library-daily.db`), replaced when older than 20 h. Its own read connection: run it
+/// off the main thread. True when a copy was made.
+pub fn keep_daily_copy(path: &Path) -> Result<bool> {
+    let to = path.with_file_name("library-daily.db");
+    let fresh = std::fs::metadata(&to).and_then(|m| m.modified()).is_ok_and(|t| t.elapsed().is_ok_and(|age| age.as_secs() < 20 * 3600));
+    if fresh || !path.exists() {
+        return Ok(false);
+    }
+    copy_to(&Connection::open_with_flags(path, rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY)?, &to)?;
+    Ok(true)
+}
+
 impl Library {
+    /// Before migrating an existing library, keeps it as it was (`library-before-v<N>.db` next to it, the first one
+    /// kept): an update with a bad migration must never cost the library (2026-10-21 incident).
     pub fn open(path: impl AsRef<Path>) -> Result<Self> {
-        Self::init(Connection::open(path)?)
+        let path = path.as_ref();
+        let db = Connection::open(path)?;
+        let found: i64 = db.query_row("PRAGMA user_version", [], |r| r.get(0))?;
+        let tables: i64 = db.query_row("SELECT count(*) FROM sqlite_master WHERE type = 'table'", [], |r| r.get(0))?;
+        let copy = path.with_file_name(format!("library-before-v{SCHEMA_VERSION}.db"));
+        if found < SCHEMA_VERSION && tables > 0 && !copy.exists() {
+            copy_to(&db, &copy)?;
+        }
+        Self::init(db)
     }
 
     pub fn in_memory() -> Result<Self> {
@@ -1188,6 +1219,31 @@ mod tests {
         Connection::open(&path)?.execute_batch(&format!("PRAGMA user_version = {};", SCHEMA_VERSION + 1))?;
         let e = Library::open(&path).err().expect("refused");
         assert_eq!(e.downcast_ref::<NewerLibrary>(), Some(&NewerLibrary(SCHEMA_VERSION + 1)));
+        Ok(())
+    }
+
+    #[test]
+    fn an_older_library_is_copied_before_migrating_a_new_one_is_not() -> Result<()> {
+        let dir = tempfile::tempdir()?;
+        let path = dir.path().join("library.db");
+        let copy = dir.path().join(format!("library-before-v{SCHEMA_VERSION}.db"));
+        let fresh = dir.path().join("fresh.db");
+        drop(Library::open(&fresh)?);
+        assert!(!dir.path().join(format!("library-before-v{SCHEMA_VERSION}.db")).exists(), "brand-new library: nothing to keep");
+        // An old library (schema 0) holding something.
+        Connection::open(&path)?.execute_batch("CREATE TABLE notes (x TEXT); INSERT INTO notes VALUES ('kept');")?;
+        let lib = Library::open(&path)?;
+        assert_eq!(lib.db.query_row("PRAGMA user_version", [], |r| r.get::<_, i64>(0))?, SCHEMA_VERSION);
+        let old = Connection::open(&copy)?;
+        assert_eq!(old.query_row("PRAGMA user_version", [], |r| r.get::<_, i64>(0))?, 0);
+        assert_eq!(old.query_row("SELECT x FROM notes", [], |r| r.get::<_, String>(0))?, "kept");
+        assert_eq!(old.query_row("SELECT count(*) FROM sqlite_master WHERE name = 'tracks'", [], |r| r.get::<_, i64>(0))?, 0);
+        assert!(!dir.path().join(format!("library-before-v{SCHEMA_VERSION}.db.part")).exists());
+        // Daily copy: made once, then fresh.
+        lib.upsert_track(&spotify())?;
+        assert!(keep_daily_copy(&path)?);
+        assert!(!keep_daily_copy(&path)?);
+        assert_eq!(Connection::open(dir.path().join("library-daily.db"))?.query_row("SELECT count(*) FROM tracks", [], |r| r.get::<_, i64>(0))?, 1);
         Ok(())
     }
 

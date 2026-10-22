@@ -96,7 +96,7 @@ fn device_name() -> String {
 }
 
 fn config(state: &AppState) -> Config {
-    let lib = state.lib.lock().unwrap();
+    let lib = state.lib();
     let mut c: Config = lib.setting(CONFIG).ok().flatten().and_then(|v| serde_json::from_value(v).ok()).unwrap_or_default();
     if sm::device_file(&c.device).is_none() {
         c.device = sm::new_device_id();
@@ -106,7 +106,7 @@ fn config(state: &AppState) -> Config {
 }
 
 fn save_config(state: &AppState, c: &Config) -> CmdResult<()> {
-    state.lib.lock().unwrap().set_setting(CONFIG, &serde_json::json!(c)).map_err(err)
+    state.lib().set_setting(CONFIG, &serde_json::json!(c)).map_err(err)
 }
 
 fn read_manifest(dir: &Path) -> Option<Manifest> {
@@ -139,13 +139,13 @@ fn others(dir: &Path, me: &str) -> Vec<PathBuf> {
 fn snapshot(state: &AppState, device: &str, sealed: bool) -> anyhow::Result<Snapshot> {
     let accounts = Accounts { spotify: state.spotify().is_some_and(|s| s.is_connected()), youtube: ytm::session(&state.app).is_some() };
     let secrets = sealed.then(|| Secrets { spotify_client_id: state.credentials().spotify_client_id, audd_token: state.store.load(AUDD_TOKEN) });
-    state.lib.lock().unwrap().snapshot(device, &device_name(), accounts, secrets)
+    state.lib().snapshot(device, &device_name(), accounts, secrets)
 }
 
 /// What another PC brought: merged in, its secrets fill what's missing here (never replace), the UI reloads.
 fn take(app: &AppHandle, s: &Snapshot) -> anyhow::Result<Merged> {
     let state = app.state::<AppState>();
-    let merged = state.lib.lock().unwrap().merge(s)?;
+    let merged = state.lib().merge(s)?;
     if let Some(secrets) = &s.secrets {
         let mut creds = state.credentials();
         if creds.spotify_client_id.is_none()
@@ -299,7 +299,7 @@ pub async fn sync_setup(app: AppHandle, state: State<'_, AppState>, folder: Stri
     }
     // First PC: its settings are the reference. Joining PCs take the others'.
     if first {
-        state.lib.lock().unwrap().stamp_all_settings(now_ms()).map_err(err)?;
+        state.lib().stamp_all_settings(now_ms()).map_err(err)?;
     }
     let mut c = config(&state);
     c.folder = Some(folder);
@@ -347,7 +347,7 @@ pub fn sync_dismiss(state: State<AppState>) -> CmdResult<()> {
 pub async fn sync_offer(app: AppHandle, state: State<'_, AppState>, sync: State<'_, SyncMode>) -> CmdResult<String> {
     // The PC showing the code is the reference for settings never synced before.
     {
-        let lib = state.lib.lock().unwrap();
+        let lib = state.lib();
         if lib.settings_unstamped().map_err(err)? {
             lib.stamp_all_settings(now_ms()).map_err(err)?;
         }

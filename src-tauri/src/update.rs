@@ -72,12 +72,12 @@ fn now() -> i64 {
 }
 
 fn saved(app: &AppHandle) -> Saved {
-    app.try_state::<AppState>().and_then(|s| s.lib.lock().unwrap().setting(KEY).ok().flatten()).and_then(|v| serde_json::from_value(v).ok()).unwrap_or_default()
+    app.try_state::<AppState>().and_then(|s| s.lib().setting(KEY).ok().flatten()).and_then(|v| serde_json::from_value(v).ok()).unwrap_or_default()
 }
 
 fn save(app: &AppHandle, s: &Saved) {
     if let (Some(state), Ok(v)) = (app.try_state::<AppState>(), serde_json::to_value(s)) {
-        let _ = state.lib.lock().unwrap().set_setting(KEY, &v);
+        let _ = state.lib().set_setting(KEY, &v);
     }
 }
 
@@ -180,7 +180,7 @@ impl Updater {
 
 /// Settings › About › Automatic updates (UI settings, on by default).
 fn automatic(app: &AppHandle) -> bool {
-    app.try_state::<AppState>().and_then(|s| s.lib.lock().unwrap().setting("ui").ok().flatten()).and_then(|u| u.get("autoUpdate")?.as_bool()).unwrap_or(true)
+    app.try_state::<AppState>().and_then(|s| s.lib().setting("ui").ok().flatten()).and_then(|u| u.get("autoUpdate")?.as_bool()).unwrap_or(true)
 }
 
 /// Background checks. Debug builds only check when asked (Settings › About).
