@@ -154,12 +154,12 @@ export function VolumeControl({ big }: { big?: boolean }) {
     )
   const Icon = volume === 0 ? SpeakerSlash : volume < 0.5 ? SpeakerLow : SpeakerHigh
   return (
-    <span className="flex items-center gap-1">
+    <span className="flex max-w-full min-w-0 items-center gap-1">
       <RoundButton label={volume > 0 ? tr('Mute') : tr('Unmute')} kind="plain" size={big ? 'md' : 'sm'} onClick={toggleMute}>
         <Icon size={big ? 20 : 16} />
       </RoundButton>
-      <span className="relative flex items-center">
-        <Bar label={tr('Volume')} value={volume} max={1} onChange={setVolume} className={big ? 'w-32' : 'w-24'} />
+      <span className="relative flex min-w-0 items-center">
+        <Bar label={tr('Volume')} value={volume} max={1} onChange={setVolume} className={`min-w-10 shrink ${big ? 'w-32' : 'w-24'}`} />
         <AdaptiveBar className="absolute inset-x-0 -bottom-1.5" />
       </span>
     </span>

@@ -253,7 +253,8 @@ export function NowPlaying() {
               {tuner ? <Tuner /> : <SeekBar />}
               <TimeText part="both" className="text-[13px] text-ink-2" />
             </div>
-            <div className="grid grid-cols-[1fr_auto_1fr] items-center">
+            {/* Side columns may shrink (small window): the volume bar narrows instead of running under Up next. */}
+            <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center">
               <span className="flex items-center gap-1">
                 <SourceBadge via={now.via} />
                 <RoundButton label={lyrics && !editor ? tr('Hide lyrics') : tr('Lyrics')} aria-pressed={lyrics && !editor} kind="plain" size="sm" onClick={() => update({ lyrics: !lyrics || editor, editor: false })} className={lyrics && !editor ? 'text-accent!' : 'text-ink-3'}>
@@ -264,7 +265,7 @@ export function NowPlaying() {
                 </RoundButton>
               </span>
               <Transport size="lg" />
-              <div className="flex flex-col items-end gap-1">
+              <div className="flex min-w-0 flex-col items-end gap-1">
                 <VolumeControl big />
                 {volumeMode === 'knob' && <span className="kicker">{tr('Volume')}</span>}
               </div>

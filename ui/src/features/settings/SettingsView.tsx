@@ -420,7 +420,7 @@ function SettingsSearch({ onPick }: { onPick: (e: SettingEntry) => void }) {
   }
   return (
     <>
-      <label className="mb-2 flex items-center gap-2 rounded-full border border-line px-3 py-1.5 text-ink-3 focus-within:border-ink-3">
+      <label className="mb-2 flex w-full items-center gap-2 rounded-full border border-line px-3 py-1.5 text-ink-3 focus-within:border-ink-3">
         <MagnifyingGlass size={14} />
         <input value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => (e.key === 'Enter' && hits[0] ? pick(hits[0]) : e.key === 'Escape' && setQ(''))} placeholder={tr('Search settings')} aria-label={tr('Search settings')} className="min-w-0 flex-1 bg-transparent text-[13px] text-ink outline-none placeholder:text-ink-3" />
       </label>
@@ -456,8 +456,9 @@ export function SettingsView({ section }: { section: SettingsSection }) {
   return (
     <>
       <PageHeader kicker={tr('Settings')} title={tr(sections.find((s) => s.id === section)!.label)} />
-      <div className="flex min-h-0 flex-1 gap-9">
-        <nav className="flex w-52 shrink-0 flex-col gap-px">
+      {/* Narrow (small window, or the connect wizard beside it): sections in rows above the page, not a squeezed column. */}
+      <div className="@container flex min-h-0 flex-1 flex-col gap-4 @2xl:flex-row @2xl:gap-9">
+        <nav className="flex shrink-0 flex-wrap gap-px @2xl:w-52 @2xl:flex-col @2xl:flex-nowrap">
           <SettingsSearch onPick={(e) => go({ name: 'settings', section: e.section, focus: e.label })} />
           {sections.map((s) => (
             <button key={s.id} aria-current={s.id === section ? 'page' : undefined} onClick={() => go({ name: 'settings', section: s.id })} className={`flex items-center gap-2.5 rounded-md py-2 pr-2.5 pl-1 text-left ${s.id === section ? 'bg-raised font-semibold' : 'text-ink-2 hover:text-ink'}`}>
