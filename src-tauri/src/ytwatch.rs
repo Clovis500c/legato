@@ -4,6 +4,9 @@
 //! channel; it is checked here (origin, shape, sizes) before it reaches the UI as a `ytwatch` event. Commands go back as
 //! scripts built from fixed names and numbers only.
 
+// Windows only; the parsing and drawing below are tested on every system (CI), where nothing else calls them.
+#![cfg_attr(not(windows), allow(dead_code))]
+
 use serde::{Deserialize, Serialize};
 use std::sync::{Arc, Mutex};
 use tauri::{AppHandle, Manager, PhysicalPosition, PhysicalSize, Url, WebviewBuilder, WebviewUrl};

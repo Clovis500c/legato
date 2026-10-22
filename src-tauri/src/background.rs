@@ -102,6 +102,9 @@ fn set_visible(app: &AppHandle, visible: bool) {
 
 /// Checks once a minute: hidden and silent long enough = suspended.
 pub fn spawn_sleeper(app: AppHandle) {
+    // Suspending the webview is WebView2's: elsewhere the app is only checked on.
+    #[cfg(not(windows))]
+    let _ = app;
     std::thread::spawn(move || {
         loop {
             std::thread::sleep(Duration::from_secs(60));

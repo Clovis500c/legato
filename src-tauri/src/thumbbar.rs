@@ -3,6 +3,9 @@
 //! WM_COMMAND through a subclass of the window and reach the UI like media keys. Icons are drawn here at the window's
 //! DPI, white on a dark taskbar, black on a light one; Play / Pause follows the player.
 
+// Windows only; the parsing and drawing below are tested on every system (CI), where nothing else calls them.
+#![cfg_attr(not(windows), allow(dead_code))]
+
 /// RGBA icon of `size` px: a glyph made of filled shapes, 4×4 supersampled (smooth edges).
 pub fn glyph(kind: Glyph, size: u32, color: [u8; 3]) -> Vec<u8> {
     let s = size as f32;

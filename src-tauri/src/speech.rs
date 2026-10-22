@@ -2,6 +2,9 @@
 //! backend. Needs Windows' "Online speech recognition" (Settings › Privacy & security › Speech): the voice goes to
 //! Microsoft's service through Windows, never to us; the app keeps nothing. Words so far come as "speech" events.
 
+// Windows only; the parsing and drawing below are tested on every system (CI), where nothing else calls them.
+#![cfg_attr(not(windows), allow(dead_code))]
+
 use serde::Serialize;
 
 /// Why no text came back. The UI words it and links to the Windows setting that fixes it, when one does.
