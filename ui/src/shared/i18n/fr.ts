@@ -164,6 +164,8 @@ const fr: Record<string, string> = {
   'No lyrics found for this song (searched LRCLIB).': 'Aucune parole trouvée pour ce titre (recherche dans LRCLIB).',
   'Instrumental': 'Instrumental',
   'Lyrics: {source}': 'Paroles : {source}',
+  'Not synced': 'Non synchronisées',
+  'No timings for this song: the text follows the song roughly.': 'Pas de minutage pour ce titre : le texte suit la chanson à peu près.',
   // Player
   'This video can’t play in apps': 'Cette vidéo ne peut pas être lue dans les applications',
   '{why}: playing another upload of the song': '{why} : lecture d’une autre mise en ligne du titre',

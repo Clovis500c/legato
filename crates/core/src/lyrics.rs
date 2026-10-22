@@ -139,10 +139,24 @@ pub fn queries(artist: &str, title: &str) -> Vec<(String, String)> {
         }
     }
     if !clean.is_empty() && !artist.trim().is_empty() {
-        out.push((artist.trim().to_string(), clean));
+        out.push((artist.trim().to_string(), clean.clone()));
+        // "A, B & C": records often name the lead artist only.
+        let lead = main_artist(artist);
+        if lead != artist.trim() {
+            out.push((lead.to_string(), clean));
+        }
     }
     out.dedup();
     out
+}
+
+/// First artist of a credit list ("Princess Chelsea, Videoclub, Mattyeux" → "Princess Chelsea").
+pub fn main_artist(artist: &str) -> &str {
+    let a = artist.trim();
+    // ASCII lowercase keeps byte offsets.
+    let lower = a.to_ascii_lowercase();
+    let cut = [",", " & ", " x ", " feat", " ft.", " with "].iter().filter_map(|w| lower.find(w)).filter(|&i| i > 0).min();
+    cut.map(|i| a[..i].trim()).unwrap_or(a)
 }
 
 /// A search answer is about this title (letters and digits only, one holding the other): no other song's lyrics.
@@ -154,6 +168,9 @@ pub fn same_title(found: &str, wanted: &str) -> bool {
 
 /// Synced lines need durations this close; further, only a speed change explains it (stretched), or plain is used.
 const SAME_S: f32 = 3.0;
+/// Videos run a few seconds longer than the track (intro, outro, silence): timings still fit, closer records first.
+/// User's report 2026-10-22: a 3:33 video against 3:28 records showed plain, unmoving lyrics.
+const LOOSE_S: f32 = 10.0;
 
 /// How far a speed change goes: "super / ultra slowed" plays at about half speed (user's report 2026-10-22: a 6:20
 /// super slowed of a ~3:30 song), nightcore at about 1.4×.
@@ -167,6 +184,8 @@ pub fn stretch(record_s: Option<f32>, playing_s: Option<f32>, speed: bool) -> Op
                 Some(1.0)
             } else if speed && SPEEDS.contains(&(p / r)) {
                 Some(p / r)
+            } else if !speed && (r - p).abs() <= LOOSE_S {
+                Some(1.0)
             } else {
                 None
             }
@@ -207,8 +226,9 @@ pub fn build(record: Record, fit: Option<f32>, source: &str) -> Lyrics {
 /// Cache key: who, what, how long (a slowed version is its own entry).
 pub fn key(artist: &str, title: &str, duration_ms: Option<u32>) -> String {
     let norm = |s: &str| s.to_lowercase().split_whitespace().collect::<Vec<_>>().join(" ");
-    // v2 (2026-10-22): slowed versions cached before stretching covered them come again.
-    format!("v2|{}|{}|{}", norm(artist), norm(title), duration_ms.map(|d| d / 1000).unwrap_or(0))
+    // v2 (2026-10-22): slowed versions cached before stretching covered them come again. v3: plain-only results
+    // asked again (looser durations, lead artist).
+    format!("v3|{}|{}|{}", norm(artist), norm(title), duration_ms.map(|d| d / 1000).unwrap_or(0))
 }
 
 #[cfg(test)]
@@ -246,6 +266,9 @@ mod tests {
         assert_eq!(queries("Capt. Slowed", "Andronicus - Make U Whole (Slowed + Reverb)"), vec![("Andronicus".into(), "Make U Whole".into()), ("Capt. Slowed".into(), "Andronicus - Make U Whole".into())]);
         assert_eq!(queries("Imagine Dragons", "Warriors"), vec![("Imagine Dragons".into(), "Warriors".into())]);
         assert_eq!(queries("Daft Punk", "Daft Punk - One More Time (Official Video)")[0], ("Daft Punk".into(), "One More Time".into()));
+        assert_eq!(queries("Princess Chelsea, Videoclub, Mattyeux", "Sometimes")[1], ("Princess Chelsea".into(), "Sometimes".into()));
+        assert_eq!(main_artist("Mattyeux & Princess Chelsea"), "Mattyeux");
+        assert_eq!(main_artist("Xavier"), "Xavier");
     }
 
     fn rec(d: f32, synced: bool) -> Record {
@@ -257,6 +280,8 @@ mod tests {
         assert_eq!(stretch(Some(200.0), Some(201.5), false), Some(1.0));
         assert_eq!(stretch(Some(200.0), Some(250.0), true), Some(1.25));
         assert_eq!(stretch(Some(200.0), Some(250.0), false), None);
+        // Video a few seconds longer than the record: same timings.
+        assert_eq!(stretch(Some(208.0), Some(213.0), false), Some(1.0));
         assert_eq!(stretch(Some(200.0), Some(600.0), true), None);
         // Super slowed: 3:32 played as 6:20.
         assert_eq!(stretch(Some(212.0), Some(380.0), true).map(|k| (k * 100.0).round()), Some(179.0));
@@ -287,6 +312,6 @@ mod tests {
         // Synced beats plain-only at the same fit.
         let plain_only = Record { synced: None, ..rec(200.0, false) };
         assert!(pick(vec![plain_only, rec(201.0, true)], Some(200.0), false).unwrap().0.synced.is_some());
-        assert_eq!(key("Daft  Punk", "One More Time", Some(320_500)), "v2|daft punk|one more time|320");
+        assert_eq!(key("Daft  Punk", "One More Time", Some(320_500)), "v3|daft punk|one more time|320");
     }
 }

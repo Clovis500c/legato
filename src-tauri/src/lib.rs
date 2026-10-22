@@ -1206,30 +1206,43 @@ async fn lyrics(state: State<'_, AppState>, ask: LyricsAsk) -> CmdResult<Option<
     let playing_s = ask.duration_ms.map(|d| d as f32 / 1000.0);
     let lrclib = Lrclib::default();
     let mut found = None;
+    // Plain-only (or unfitting) answer: kept while other queries may still give synced lines (user's report
+    // 2026-10-22: lyrics that stay white).
+    let mut plain = None;
     let mut failed = None;
+    let take = |l: Lyrics, plain: &mut Option<Lyrics>| {
+        if !l.lines.is_empty() || l.instrumental {
+            return Some(l);
+        }
+        plain.get_or_insert(l);
+        None
+    };
     for (artist, title) in lyrics::queries(&ask.artist, &ask.title) {
         // Exact first; another speed never matches its duration.
         if !speed {
             match lrclib.get(&title, &artist, ask.album.as_deref(), ask.duration_ms.map(|d| (d + 500) / 1000)).await {
-                Ok(Some(r)) => {
-                    found = Some(lyrics::build(r, Some(1.0), "LRCLIB"));
-                    break;
-                }
+                Ok(Some(r)) => found = take(lyrics::build(r, Some(1.0), "LRCLIB"), &mut plain),
                 Ok(None) => {}
                 Err(e) => failed = Some(e),
+            }
+            if found.is_some() {
+                break;
             }
         }
         match lrclib.search(&title, &artist).await {
             Ok(records) => {
                 let records = records.into_iter().filter(|r| lyrics::same_title(&r.title, &title)).collect();
                 if let Some((r, fit)) = lyrics::pick(records, playing_s, speed) {
-                    found = Some(lyrics::build(r, fit, "LRCLIB"));
-                    break;
+                    found = take(lyrics::build(r, fit, "LRCLIB"), &mut plain);
                 }
             }
             Err(e) => failed = Some(e),
         }
+        if found.is_some() {
+            break;
+        }
     }
+    found = found.or(plain);
     if found.is_none()
         && let Some(id) = ask.youtube.filter(|v| v.len() == 11 && v.chars().all(|c| c.is_ascii_alphanumeric() || c == '-' || c == '_'))
         && let Some(yt) = state.ytm()
