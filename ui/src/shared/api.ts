@@ -440,6 +440,8 @@ export const api = {
   mixes: () => invoke<Mix[]>('mixes', { utcOffset: -new Date().getTimezoneOffset() * 60 }),
   /** less = ranked lower in mixes, never = left out, null = back to normal. */
   setTrackPref: (trackId: number, pref: 'less' | 'never' | null) => invoke<void>('set_track_pref', { trackId, pref }),
+  /** The user's word: music (true), not music (false), null = the app's guess again. */
+  setMusic: (trackIds: number[], music: boolean | null) => invoke<void>('set_music', { trackIds, music }),
   clearHistory: () => invoke<void>('clear_history'),
   /** Private YouTube playlist; same one updated on later exports. */
   exportYoutube: (id: number) => invoke<ExportReport>('export_youtube', { id }),

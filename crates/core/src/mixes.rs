@@ -6,6 +6,7 @@
 use crate::history::{Play, Pref};
 use crate::library::LibraryTrack;
 use crate::matching::{first_artist, primary_artist};
+use crate::musicness::Musicness;
 use serde::Serialize;
 use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 
@@ -265,6 +266,9 @@ fn new_enough(out: &[Mix], ids: &[i64]) -> bool {
 }
 
 pub fn mixes(input: &Input) -> Vec<Mix> {
+    // Talks, tutorials, gameplay: never in a mix (user's report 2026-10-22: Roblox scripting videos as Daily Mixes).
+    let music: Vec<LibraryTrack> = input.tracks.iter().filter(|t| t.track.musicness != Some(Musicness::NotMusic)).cloned().collect();
+    let input = &Input { tracks: &music, ..*input };
     let mut artist = HashMap::new();
     let mut display = HashMap::new();
     for t in input.tracks {
@@ -544,6 +548,17 @@ mod tests {
             let a: Vec<String> = m.track_ids.iter().map(|id| tracks[*id as usize - 1].track.artist.clone()).collect();
             assert!(a.windows(2).all(|w| w[0] != w[1]), "same artist twice in a row: {a:?}");
         }
+    }
+
+    #[test]
+    fn talks_never_make_a_mix() {
+        let (mut tracks, plays) = library();
+        // Charlie's songs turn out to be talks: Charlie and Delta's mix loses them, nobody is "because you listen to" them.
+        for t in tracks.iter_mut().filter(|t| t.track.artist == "Charlie") {
+            t.track.musicness = Some(Musicness::NotMusic);
+        }
+        let out = run(&tracks, &plays, &HashMap::new(), 7);
+        assert!(out.iter().all(|m| m.track_ids.iter().all(|id| !(7..=9).contains(id)) && !m.reason.contains("Charlie")), "{out:?}");
     }
 
     #[test]

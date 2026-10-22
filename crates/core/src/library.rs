@@ -4,7 +4,7 @@ use crate::musicness::Musicness;
 use anyhow::Result;
 use rusqlite::{Connection, OptionalExtension, Row, params};
 use serde::{Deserialize, Serialize};
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::{BTreeMap, BTreeSet, HashMap};
 use std::path::Path;
 
 const SCHEMA: &str = "
@@ -213,10 +213,13 @@ fn to_track(r: &Row) -> rusqlite::Result<LibraryTrack> {
             isrc: r.get(5)?,
             ids: ids.and_then(|j| serde_json::from_str::<BTreeMap<Source, String>>(&j).ok()).unwrap_or_default(),
             art: r.get(6)?,
-            musicness: musicness.as_deref().and_then(Musicness::parse),
+            musicness: musicness.as_deref().map(|m| m.strip_prefix(USER).unwrap_or(m)).and_then(Musicness::parse),
         },
     })
 }
+
+/// Musicness text the user chose ("It's music" / "Not music"): beats any guess, kept through re-imports.
+const USER: &str = "user:";
 
 /// Local unified library. One track = one row, whatever number of sources.
 pub struct Library {
@@ -497,7 +500,82 @@ impl Library {
              FROM tracks t JOIN track_ids i ON i.track_id = t.id
              GROUP BY t.id ORDER BY t.artist COLLATE NOCASE, t.title COLLATE NOCASE"
         ))?;
-        Ok(stmt.query_map([], to_track)?.collect::<rusqlite::Result<_>>()?)
+        let rows: Vec<LibraryTrack> = stmt.query_map([], to_track)?.collect::<rusqlite::Result<_>>()?;
+        self.judged(rows)
+    }
+
+    /// Music or not for every track, by today's rules (musicness.rs `judge`, talk channels), the user's choice first.
+    /// Stored words stay as imported: better rules apply to old imports without a migration. ~15 ms for 3,000 tracks.
+    pub fn music_words(&self) -> Result<HashMap<i64, Musicness>> {
+        let mut stmt = self.db.prepare_cached(
+            "SELECT t.id, t.title, t.artist, t.duration_ms, t.musicness,
+                    EXISTS (SELECT 1 FROM track_ids i WHERE i.track_id = t.id AND i.source != 'youtube')
+             FROM tracks t",
+        )?;
+        struct Seen {
+            id: i64,
+            title: String,
+            artist: String,
+            duration_ms: Option<u32>,
+            stored: Option<String>,
+            other_source: bool,
+        }
+        let rows: Vec<Seen> = stmt
+            .query_map([], |r| Ok(Seen { id: r.get(0)?, title: r.get(1)?, artist: r.get(2)?, duration_ms: r.get(3)?, stored: r.get(4)?, other_source: r.get(5)? }))?
+            .collect::<rusqlite::Result<_>>()?;
+        let mut out = HashMap::with_capacity(rows.len());
+        let mut doubts = Vec::new();
+        for t in &rows {
+            let word = match t.stored.as_deref() {
+                Some(m) if m.starts_with(USER) => Musicness::parse(&m[USER.len()..]),
+                // Local files, Spotify, Apple: songs.
+                m if t.other_source => m.and_then(Musicness::parse).or(Some(Musicness::Music)),
+                m => {
+                    let w = crate::musicness::judge(m.and_then(Musicness::parse), &crate::musicness::Clues { title: &t.title, channel: &t.artist, duration_ms: t.duration_ms, ..Default::default() });
+                    if w == Musicness::Unsure {
+                        doubts.push((t.id, t.artist.as_str()));
+                    }
+                    Some(w)
+                }
+            };
+            if let Some(w) = word {
+                out.insert(t.id, w);
+            }
+        }
+        let talk = crate::musicness::talk_channels(rows.iter().filter_map(|t| out.get(&t.id).map(|w| (t.artist.as_str(), *w))));
+        for (id, artist) in doubts {
+            if talk.contains(&artist.trim().to_lowercase()) {
+                out.insert(id, Musicness::NotMusic);
+            }
+        }
+        Ok(out)
+    }
+
+    /// Rows with today's musicness (`music_words`).
+    fn judged(&self, mut rows: Vec<LibraryTrack>) -> Result<Vec<LibraryTrack>> {
+        let words = self.music_words()?;
+        for t in &mut rows {
+            t.track.musicness = words.get(&t.id).copied().or(t.track.musicness);
+        }
+        Ok(rows)
+    }
+
+    /// The user says these are music (true) or not (false), above any guess. None = back to the guess.
+    pub fn set_music(&self, ids: &[i64], music: Option<bool>) -> Result<()> {
+        self.tx(|| {
+            for id in ids {
+                match music {
+                    Some(m) => {
+                        let word = if m { Musicness::Music } else { Musicness::NotMusic };
+                        self.db.execute("UPDATE tracks SET musicness = ?1 WHERE id = ?2", params![format!("{USER}{}", word.as_str()), id])?;
+                    }
+                    None => {
+                        self.db.execute("UPDATE tracks SET musicness = NULL WHERE id = ?1 AND musicness LIKE 'user:%'", [id])?;
+                    }
+                }
+            }
+            Ok(())
+        })
     }
 
     pub fn playlists(&self) -> Result<Vec<LibraryPlaylist>> {
@@ -530,7 +608,8 @@ impl Library {
              FROM playlist_tracks pt JOIN tracks t ON t.id = pt.track_id
              WHERE pt.playlist_id = ?1 ORDER BY pt.position"
         ))?;
-        Ok(stmt.query_map([playlist_id], to_track)?.collect::<rusqlite::Result<_>>()?)
+        let rows: Vec<LibraryTrack> = stmt.query_map([playlist_id], to_track)?.collect::<rusqlite::Result<_>>()?;
+        self.judged(rows)
     }
 
     /// Local files mirror a fresh scan: upsert all (links to known tracks), drop vanished paths and orphan rows.
@@ -816,10 +895,14 @@ impl Library {
 
     fn fill(&self, id: i64, album: Option<String>, duration_ms: Option<u32>, isrc: Option<String>, art: Option<String>, music: Option<Musicness>) -> Result<()> {
         let (old, old_music): (Option<String>, Option<String>) = self.db.query_row("SELECT art, musicness FROM tracks WHERE id = ?1", [id], |r| Ok((r.get(0)?, r.get(1)?)))?;
-        let music = Musicness::merge(old_music.as_deref().and_then(Musicness::parse), music);
+        // The user's own word stays.
+        let music = match old_music {
+            Some(m) if m.starts_with(USER) => Some(m),
+            m => Musicness::merge(m.as_deref().and_then(Musicness::parse), music).map(|m| m.as_str().to_string()),
+        };
         self.db.execute(
             "UPDATE tracks SET album = coalesce(album, ?1), duration_ms = coalesce(duration_ms, ?2), isrc = coalesce(isrc, ?3), art = ?4, musicness = ?5 WHERE id = ?6",
-            params![album, duration_ms, isrc, crate::model::pick_art(old, art), music.map(Musicness::as_str), id],
+            params![album, duration_ms, isrc, crate::model::pick_art(old, art), music, id],
         )?;
         Ok(())
     }
@@ -1064,6 +1147,31 @@ mod tests {
         assert_eq!(get(id), Some(Musicness::Music));
         lib.upsert_track(&Track { musicness: Some(Musicness::NotMusic), ..song(1) })?;
         assert_eq!(get(id), Some(Musicness::Music));
+        Ok(())
+    }
+
+    #[test]
+    fn old_imports_get_todays_rules_and_the_users_word_wins() -> Result<()> {
+        let lib = Library::in_memory()?;
+        let video = |n: u32, title: &str, channel: &str| Track { title: title.into(), artist: channel.into(), duration_ms: Some(500_000), ids: BTreeMap::from([(Source::Youtube, format!("v{n}"))]), ..Default::default() };
+        // Imported before musicness existed: no word stored.
+        let talk = lib.upsert_track(&video(1, "Is Roblox Development A Viable Career?", "SmartyRBX"))?;
+        let song = lib.upsert_track(&video(2, "how to sleep", "Deathbrain"))?;
+        // A talk channel's doubts are talk too.
+        lib.upsert_track(&video(3, "How To Make A Combat System In Roblox Studio", "Roblox Learn"))?;
+        lib.upsert_track(&video(4, "How to style your UI on Roblox", "Roblox Learn"))?;
+        let doubt = lib.upsert_track(&video(5, "Big day", "Roblox Learn"))?;
+        let words = lib.music_words()?;
+        assert_eq!((words[&talk], words[&doubt]), (Musicness::NotMusic, Musicness::NotMusic));
+        assert_ne!(words[&song], Musicness::NotMusic);
+        // The user's word beats the rules and survives a re-import.
+        lib.set_music(&[talk], Some(true))?;
+        lib.upsert_track(&Track { musicness: Some(Musicness::NotMusic), ..video(1, "Is Roblox Development A Viable Career?", "SmartyRBX") })?;
+        assert_eq!(lib.tracks()?.iter().find(|t| t.id == talk).unwrap().track.musicness, Some(Musicness::Music));
+        lib.set_music(&[song], Some(false))?;
+        assert_eq!(lib.music_words()?[&song], Musicness::NotMusic);
+        lib.set_music(&[song], None)?;
+        assert_ne!(lib.music_words()?[&song], Musicness::NotMusic);
         Ok(())
     }
 

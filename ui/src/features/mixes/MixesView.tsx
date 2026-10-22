@@ -10,6 +10,8 @@ import { onMenu } from '../../shared/ui/ContextMenu'
 import { Cover } from '../../shared/ui/Cover'
 import { PageHeader } from '../../shared/ui/PageHeader'
 import { coverTracks } from '../library/covers'
+import { musicOnly } from '../library/filter'
+import { HiddenVideos } from '../library/HiddenVideos'
 import { TrackTable } from '../library/TrackTable'
 import { tracksMenu } from '../menus'
 import { usePlayer } from '../player/store'
@@ -175,7 +177,9 @@ export function MixesView() {
 export function MixView({ id }: { id: string }) {
   const { mixes, reload } = useMixes()
   const mix = mixes?.find((m) => m.id === id)
-  const tracks = useMixTracks(mix)
+  // Mixes are built from music (crates/core mixes); one marked "not music" since waits in the fold.
+  const all = useMixTracks(mix)
+  const { kept: tracks, hidden } = useMemo(() => musicOnly(all), [all])
   const play = usePlayer((s) => s.playTracks)
   const steer = (t: LibraryTrack, pref: 'less' | 'never') =>
     api
@@ -199,6 +203,7 @@ export function MixView({ id }: { id: string }) {
           )
         }
       />
+      <HiddenVideos tracks={hidden} />
       <TrackTable
         tracks={tracks}
         empty={tr('Nothing left in this mix.')}

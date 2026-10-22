@@ -143,7 +143,7 @@ describe('musicOnly', () => {
   const t = (id: number, musicness?: 'music' | 'unsure' | 'notMusic') => ({ id, musicness })
   it('sets clear non-music aside, keeps doubts and unknowns', () => {
     const list = [t(1, 'music'), t(2, 'notMusic'), t(3, 'unsure'), t(4)]
-    expect(musicOnly(list, false)).toEqual({ kept: [t(1, 'music'), t(3, 'unsure'), t(4)], hidden: 1 })
-    expect(musicOnly(list, true)).toEqual({ kept: list, hidden: 1 })
+    expect(musicOnly(list)).toEqual({ kept: [t(1, 'music'), t(3, 'unsure'), t(4)], hidden: [t(2, 'notMusic')] })
+    expect(musicOnly([t(1)]).kept).toEqual([t(1)])
   })
 })

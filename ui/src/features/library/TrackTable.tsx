@@ -72,7 +72,7 @@ export function TrackTable({ tracks, empty, editId, rowActions, sort, onSort }: 
     if (e.key === 'Enter' && sel.cursor !== null && vias(tracks[sel.cursor], sp).length) return play(tracks, sel.cursor)
     if (e.key === 'Delete' && editId !== undefined && sel.ids.size) removeChosen()
   }
-  const grid = { gridTemplateColumns: ['32px', 'minmax(0,1fr)', editId ? '156px' : rowActions ? '124px' : '68px', ...columns.map((c) => width[c])].join(' ') }
+  const grid = { gridTemplateColumns: ['32px', 'minmax(0,1fr)', editId ? '156px' : rowActions ? 'max-content' : '68px', ...columns.map((c) => width[c])].join(' ') }
   const cover = density === 'compact' ? 28 : density === 'comfort' ? 36 : 46
 
   return (
