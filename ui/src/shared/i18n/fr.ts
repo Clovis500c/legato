@@ -1165,6 +1165,7 @@ const fr: Record<string, string> = {
   'Your plays and “less / never” choices go; mixes start over. Your library stays as it is.': 'Vos écoutes et vos choix « moins / jamais » sont effacés ; les mix repartent de zéro. Votre bibliothèque reste telle quelle.',
   'Sign out of Google?': 'Se déconnecter de Google ?',
   'Every Google account leaves Music App. Your library stays as it is.': 'Tous les comptes Google quittent Music App. Votre bibliothèque reste telle quelle.',
+  'YouTube is waiting for a cookie choice; signing in to YouTube Music (Settings › Accounts) usually clears it': 'YouTube attend un choix sur ses cookies ; se connecter à YouTube Music (Réglages › Comptes) règle généralement le problème',
 }
 
 export default fr

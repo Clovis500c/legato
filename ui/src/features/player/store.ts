@@ -186,6 +186,29 @@ function playOnWatchPage(video: string, startMs: number) {
   openWatch(video, startMs / 1000, useVideoSlot.getState().hidden ? null : rect).catch(() => tryOtherUpload(usePlayer.getState().now?.trackId ?? 0, video, tr('This video can’t play in apps')))
 }
 
+// Stuck embed (review 2026-10-22): some refused videos never send onError; the frame sits unstarted (-1) on YouTube's
+// own "Video unavailable" card. A video asked to play that hasn't started 10 s later (not buffering, not paused, not
+// loaded paused at launch) = refused.
+let ytState: number | undefined
+let stuckTimer: ReturnType<typeof setTimeout> | undefined
+function watchForStuck(playId: number) {
+  clearTimeout(stuckTimer)
+  ytState = undefined
+  const check = () => {
+    const p = usePlayer.getState()
+    const id = p.now?.via === 'youtube' ? p.now.youtubeId : undefined
+    if (p.playId !== playId || p.hold || !id || p.positionMs > p.startAt || ytState === 1 || ytState === 2) return
+    // Slow network: give it longer.
+    if (ytState === 3) return void (stuckTimer = setTimeout(check, 10_000))
+    if (!watching(id)) {
+      blocked.add(id)
+      return playOnWatchPage(id, 0)
+    }
+    void tryOtherUpload(p.now?.trackId ?? 0, id, tr('This video can’t play in apps'))
+  }
+  stuckTimer = setTimeout(check, 10_000)
+}
+
 async function tryOtherUpload(trackId: number, failed: string, why: string) {
   unplayable.add(failed)
   closeWatch()
@@ -440,6 +463,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
       useStore.setState({ error: tr('YouTube playback failed (error {code}).', { code: u.error }) })
       return set({ playing: false })
     }
+    if (u.state !== undefined) ytState = u.state
     set({
       ...(u.state !== undefined && u.state !== 3 && { playing: u.state === 1 }),
       ...(u.time !== undefined && { positionMs: u.time * 1000 }),
@@ -503,6 +527,10 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     set({ playing: p.playing, positionMs: p.positionMs, ...(p.durationMs && { durationMs: p.durationMs }) })
   },
 }))
+
+usePlayer.subscribe((s, prev) => {
+  if (s.playId !== prev.playId && s.now?.via === 'youtube') watchForStuck(s.playId)
+})
 
 /** Where the YouTube iframe should sit. Null = mini player. Moving the iframe in DOM would reload it. */
 export const useVideoSlot = create<{ rect: DOMRect | null; hidden: boolean; box: Box | null; set: (rect: DOMRect | null) => void }>((set, get) => ({

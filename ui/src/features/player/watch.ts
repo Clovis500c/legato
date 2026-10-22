@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { api, type WatchCmd, type WatchRect, type WatchReport } from '../../shared/api'
 import type { YtUpdate } from './youtube'
+import { tr } from '../../shared/i18n/i18n'
 
 /**
  * Videos whose owner turned embedding off (player errors 101 / 150) play from YouTube's own watch page, in a webview
@@ -34,6 +35,7 @@ export function watchCommand(func: string, args: unknown[]): WatchCmd | null {
 
 /** Watch page report → the embed's update. Reports for another video (late, from the page before) are dropped. */
 export function watchUpdate(r: WatchReport, video: string): YtUpdate | null {
+  if (r.error === 'CONSENT') return { unplayable: tr('YouTube is waiting for a cookie choice; signing in to YouTube Music (Settings › Accounts) usually clears it') }
   if (r.error) return { unplayable: r.reason || r.error }
   if (r.videoId && r.videoId !== video) return null
   return { state: r.state, time: r.time, duration: r.duration || undefined }

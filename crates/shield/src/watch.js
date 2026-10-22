@@ -45,6 +45,12 @@ ${AROUND}, ${OVERLAYS} { display: none !important; }
     const p = player()
     if (!p || failed) return
     if (!volumeSet && !p.isMuted()) p.mute()
+    // Cookie choice not made yet (new profile, EU): YouTube holds playback until it's answered, and its dialog is
+    // hidden here. The user answers it on YouTube themselves; never clicked for them.
+    if (document.querySelector('ytd-consent-bump-v2-lightbox tp-yt-paper-dialog')?.opened) {
+      failed = true
+      return post({ error: 'CONSENT' })
+    }
     const status = p.getPlayerResponse?.()?.playabilityStatus
     if (status?.status && status.status !== 'OK') {
       // Region, age, removed, private: the app says why and moves on.
