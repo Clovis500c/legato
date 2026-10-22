@@ -65,10 +65,12 @@ export function tintPalette(rgb: Rgb, theme: Pick<Theme, 'dark' | 'ink3'>): Part
   const [h, s] = hue(rgb)
   const sat = Math.min(s, theme.dark ? 0.45 : 0.35)
   const at = (l: number) => hex(h, sat, Math.min(1, Math.max(0, l)))
-  // Bright hues (green, yellow) read lighter: push bg away from text until muted text keeps AA.
+  // Bright hues (green, yellow) read lighter: push bg away from text until muted text keeps AA on it, its panels and
+  // its cards.
   const o = theme.dark ? 1 : -1
   let l = theme.dark ? 0.11 : 0.94
-  while (contrast(theme.ink3, at(l)) < 4.5 && l > 0.02 && l < 0.99) l -= 0.01 * o
+  const worst = (l: number) => Math.min(contrast(theme.ink3, at(l)), contrast(theme.ink3, at(l + 0.03 * o)), contrast(theme.ink3, at(l + 0.07 * o)))
+  while (worst(l) < 4.5 && l > 0.02 && l < 0.99) l -= 0.01 * o
   return { bg: at(l), panel: at(l + 0.03 * o), raised: at(l + 0.07 * o), recess: at(l - 0.03 * o), line: at(l + 0.12 * o), lineSoft: at(l + 0.06 * o), ledOff: at(l + 0.16 * o) }
 }
 

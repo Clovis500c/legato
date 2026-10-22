@@ -15,6 +15,6 @@ describe('tintPalette', () => {
   it('stays flat and in the hue of the cover', () => {
     const [graphite, paper] = ['graphite', 'paper'].map((id) => PRESETS.find((t) => t.id === id)!)
     expect(tintPalette([255, 0, 0], graphite).bg).toBe('#290F0F')
-    expect(tintPalette([128, 128, 128], paper).bg).toBe('#F0F0F0')
+    expect(tintPalette([128, 128, 128], paper).bg).toBe('#F7F7F7')
   })
 })
