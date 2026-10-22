@@ -302,3 +302,37 @@ body.dragging * {
   cursor: grabbing !important;
 }
 
+/*
+ * Sidebar mini player with vinyl covers (SidebarPlayer Record): grooves, a dead wax ring around the label, an edge.
+ * Grooves are round, so only the label shows the turn; the sheen above stays put like light on a real deck.
+ */
+.vinyl {
+  background:
+    radial-gradient(circle, transparent 0 31%, rgb(255 255 255 / 0.05) 31.5% 32.5%, transparent 33%),
+    repeating-radial-gradient(circle, #0d0d0f 0 1.2px, #1b1b1f 1.6px 2.6px),
+    #111113;
+  box-shadow:
+    0 10px 28px rgb(0 0 0 / 0.45),
+    inset 0 0 0 1.5px #050506,
+    inset 0 0 0 5px #19191c;
+}
+/* 33⅓ rpm: 1.8 s a turn. */
+.vinyl-spin {
+  animation: vinyl-turn 1.8s linear infinite;
+}
+@keyframes vinyl-turn {
+  to {
+    transform: rotate(1turn);
+  }
+}
+.vinyl-sheen {
+  background:
+    conic-gradient(from 20deg, transparent 0 9%, rgb(255 255 255 / 0.11) 13%, transparent 19% 59%, rgb(255 255 255 / 0.08) 63%, transparent 69%),
+    radial-gradient(circle at 30% 25%, rgb(255 255 255 / 0.06), transparent 55%);
+  mask: radial-gradient(circle, transparent 0 30%, #000 30.5%);
+}
+@media (prefers-reduced-motion: reduce) {
+  .vinyl-spin {
+    animation: none;
+  }
+}
