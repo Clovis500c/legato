@@ -221,6 +221,8 @@ export const useStore = create<State>((set, get) => {
       const done = trn(r.tracks, 'Imported “{name}”: {n} song', 'Imported “{name}”: {n} songs', { name: r.name })
       const lost = missing ? ` · ${trn(missing, '{n} without a YouTube version', '{n} without a YouTube version')}${get().status.youtube.connected ? '' : ` ${tr('(sign in to YouTube Music to find them)')}`}` : ''
       get().notify(done + lost)
+      // Spotify's embed shows 100 songs at most; its API (your own key) reads the rest.
+      if (r.truncated) get().notify(tr('Only the first 100 songs came in: connect Spotify in Accounts to import the whole playlist.'), { kind: 'info', action: { label: tr('Connect'), run: () => get().go({ name: 'settings', section: 'sources', wizard: 'spotify' }) } })
       get().go({ name: 'playlist', id: r.playlistId })
     },
     notify(text, { kind = 'ok', action } = {}) {

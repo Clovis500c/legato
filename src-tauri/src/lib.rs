@@ -952,6 +952,8 @@ struct SpotifyImport {
     tracks: usize,
     /// Tracks with a YouTube version (they play in full).
     playable: usize,
+    /// Only the embed's first 100 came in (a longer playlist, no Spotify key to read the rest).
+    truncated: bool,
 }
 
 /// Public Spotify playlist or album link → imported playlist, no account. Each track gets its YouTube version (playback).
@@ -962,7 +964,17 @@ async fn import_spotify_link(state: State<'_, AppState>, url: String) -> CmdResu
     if url.len() > 2048 {
         return Err("Link too long".into());
     }
-    let list = spotify_embed::fetch(spotify_embed::EMBED, url.trim()).await.map_err(err)?;
+    let mut list = spotify_embed::fetch(spotify_embed::EMBED, url.trim()).await.map_err(err)?;
+    // The embed stops at 100: with the user's own Spotify key, the whole playlist from the API (paged).
+    let mut truncated = list.kind == "playlist" && list.tracks.len() >= spotify_embed::EMBED_MAX;
+    if truncated
+        && let Some(sp) = state.spotify().filter(|s| s.is_connected())
+        && let Ok(all) = sp.playlist_tracks(&list.id).await
+        && all.len() > list.tracks.len()
+    {
+        list.tracks = all;
+        truncated = false;
+    }
     // Signed out of YouTube Music: tracks come in without a playable version.
     let yt = state.ytm().map(Arc::new);
     let mut tracks = Vec::with_capacity(list.tracks.len());
@@ -990,7 +1002,7 @@ async fn import_spotify_link(state: State<'_, AppState>, url: String) -> CmdResu
     // Same id as a keyed Spotify sync, so both update one playlist. Albums get their own prefix.
     let source_id = if list.kind == "album" { format!("album:{}", list.id) } else { list.id.clone() };
     let playlist_id = state.lib().save_playlist(Source::Spotify, &source_id, &list.name, &tracks).map_err(err)?;
-    Ok(SpotifyImport { playlist_id, name: list.name, tracks: tracks.len(), playable })
+    Ok(SpotifyImport { playlist_id, name: list.name, tracks: tracks.len(), playable, truncated })
 }
 
 /// Spotify's official web player in an app window (prototype, no keys).

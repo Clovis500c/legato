@@ -1202,6 +1202,7 @@ const fr: Record<string, string> = {
   'Customize Home': 'Personnaliser l’Accueil',
   'Every Home section is hidden.': 'Toutes les sections de l’Accueil sont masquées.',
   'Muted text on cards': 'Texte discret sur les cartes',
+  'Only the first 100 songs came in: connect Spotify in Accounts to import the whole playlist.': 'Seuls les 100 premiers titres sont arrivés : connectez Spotify dans Comptes pour importer toute la playlist.',
 }
 
 export default fr

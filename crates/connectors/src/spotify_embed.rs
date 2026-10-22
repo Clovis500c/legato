@@ -8,6 +8,9 @@ use serde_json::Value;
 use std::collections::BTreeMap;
 use std::sync::LazyLock;
 
+/// Tracks an embed page carries at most.
+pub const EMBED_MAX: usize = 100;
+
 pub const EMBED: &str = "https://open.spotify.com/embed";
 const UA: &str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36";
 
