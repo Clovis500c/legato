@@ -15,6 +15,8 @@ use std::time::{SystemTime, UNIX_EPOCH};
 pub const API: &str = "https://www.youtube.com/youtubei/v1";
 const ORIGIN: &str = "https://www.youtube.com";
 const UA: &str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36";
+/// Google's suggest service, what YouTube's search box asks as you type. Client "firefox" = plain JSON, no key.
+pub const SUGGEST: &str = "https://suggestqueries.google.com/complete/search";
 /// Search filter "Type: Video" (protobuf params the site sends): no channels, playlists or Shorts shelves.
 const VIDEOS_ONLY: &str = "EgIQAQ==";
 
@@ -129,6 +131,23 @@ impl YouTubeWeb {
     }
 }
 
+/// Searches YouTube would suggest for `query` (`hl` = interface language, `gl` = country), best first. Answer:
+/// `["query", ["suggestion", …], …]`.
+pub async fn suggestions(base: &str, query: &str, hl: &str, gl: &str) -> Result<Vec<String>> {
+    let params = [("client", "firefox"), ("ds", "yt"), ("ie", "utf-8"), ("oe", "utf-8"), ("hl", hl), ("gl", gl), ("q", query)];
+    let url = url::Url::parse_with_params(base, &params)?;
+    let res = reqwest::Client::new().get(url).header("user-agent", UA).send().await?;
+    let status = res.status();
+    if !status.is_success() {
+        bail!("YouTube suggestions → {status}");
+    }
+    Ok(parse_suggestions(&res.json().await?))
+}
+
+fn parse_suggestions(v: &Value) -> Vec<String> {
+    v.get(1).and_then(Value::as_array).map(|list| list.iter().filter_map(Value::as_str).map(String::from).collect()).unwrap_or_default()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -200,6 +219,22 @@ mod tests {
         s.mock("POST", "/search").match_query(Matcher::Any).with_status(429).with_body("slow down").expect(1).create_async().await;
         let e = YouTubeWeb::with_api(&s.url(), None).search("x").await.unwrap_err().to_string();
         assert!(e.contains("429") && e.contains("slow down"), "{e}");
+    }
+
+    #[tokio::test]
+    async fn suggests_what_youtube_would() {
+        let mut s = Server::new_async().await;
+        let m = s
+            .mock("GET", "/")
+            .match_query(Matcher::AllOf(vec![Matcher::UrlEncoded("q".into(), "télé".into()), Matcher::UrlEncoded("ds".into(), "yt".into()), Matcher::UrlEncoded("hl".into(), "fr".into()), Matcher::UrlEncoded("gl".into(), "FR".into())]))
+            .with_body(json!(["télé", ["télépopmusik", "télépopmusik breathe"], [], { "google:suggestsubtypes": [] }]).to_string())
+            .create_async()
+            .await;
+        assert_eq!(suggestions(&s.url(), "télé", "fr", "FR").await.unwrap(), ["télépopmusik", "télépopmusik breathe"]);
+        m.assert_async().await;
+        for v in [json!(null), json!(["x"]), json!(["x", "y"]), json!(["x", [1, "ok"]])] {
+            assert!(parse_suggestions(&v).len() <= 1, "{v}");
+        }
     }
 
     /// Unofficial API: a reshuffled answer gives nothing, never a panic.
