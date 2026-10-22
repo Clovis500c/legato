@@ -5,6 +5,7 @@ import { useStore } from '../../app/store'
 import { playlistKey, type LibraryPlaylist } from '../../shared/api'
 import { coverImage, trackArt } from '../../shared/art'
 import { Cover } from '../../shared/ui/Cover'
+import { CoverGrid } from '../../shared/ui/CoverGrid'
 import { SourceIcon } from '../../shared/ui/SourceIcon'
 import { coverTracks } from './covers'
 
@@ -24,13 +25,7 @@ export function PlaylistCover({ p, size, big = false }: { p: LibraryPlaylist; si
 
   if (mode === 'image' && pick?.image) return <Cover title={p.name} art={[coverImage(pick.image)]} size={size} eager={big} className={round} />
   if (mode === 'grid' && songs.length === 4)
-    return (
-      <span aria-hidden className={`grid shrink-0 grid-cols-2 overflow-hidden rounded-cover border border-line-soft bg-recess ${round}`} style={{ width: size, height: size }}>
-        {songs.map((t) => (
-          <img key={t.id} src={trackArt(t)[0]} alt="" draggable={false} loading="lazy" className="size-full object-cover" />
-        ))}
-      </span>
-    )
+    return <CoverGrid arts={songs.map(trackArt)} size={size} className={round} />
   if (songs.length) return <Cover title={p.name} art={trackArt(songs[0])} size={size} eager={big} className={round} />
   if (big) return <Cover title={p.name} size={size} />
   return p.custom ? <Playlist size={15} /> : <SourceIcon source={p.source} size={14} />

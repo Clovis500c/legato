@@ -62,16 +62,23 @@ fn words(pattern: &str) -> Regex {
 // Music words in titles, any language the user's library shows (en, fr, es, de, ja romaji…).
 static MUSIC: LazyLock<Regex> = LazyLock::new(|| {
     words(
-        r"official\s+(?:music\s+)?(?:video|audio|visuali[sz]er|lyric\s+video|mv)|music\s+video|lyrics?|lyric\s+video|paroles|letra|songtext|clip\s+officiel|audio\s+officiel|vid[ée]o\s+officielle|visuali[sz]er|remix|remaster(?:ed)?|acoustic|unplugged|cover|instrumental|karaoke|slowed|reverb|sped\s+up|nightcore|bass\s+boosted|8d\s+audio|ost|soundtrack|theme\s+song|song|songs|ncs|opening|ending|feat\.?|ft\.?|prod\.?|mv|amv|single|album|ep\b|live\s+(?:at|from|in|session)|session|version|edit|mashup|bootleg|freestyle|beat|type\s+beat|phonk|lofi|lo-fi",
+        r"official\s+(?:music\s+)?(?:video|audio|visuali[sz]er|lyric\s+video|mv)|music\s+video|lyrics?|lyric\s+video|paroles|letra|songtext|clip\s+officiel|audio\s+officiel|vid[ée]o\s+officielle|visuali[sz]er|remix|remaster(?:ed)?|acoustic|unplugged|cover|instrumental|karaoke|slowed|reverb|sped\s+up|nightcore|bass\s+boosted|8d\s+audio|ost|soundtrack|theme\s+song|song|songs|ncs|opening|ending|feat\.?|ft\.?|prod\.?|mv|amv|single|album|ep\b|live\s+(?:at|from|in|session)|session|version|edit|mashup|bootleg|freestyle|beat|type\s+beat|phonk|lofi|lo-fi|bops?|bangers?|tunes",
     )
 });
 // Not-music words. Strong ones say it alone; weak ones only with nothing musical around.
 static STRONG: LazyLock<Regex> = LazyLock::new(|| {
     words(
-        r"reaction|reacts?\s+to|reacting|first\s+time\s+(?:hearing|listening|reacting)|review|tutorial|how\s+to|lesson|podcast|interview|vlog|gameplay|walkthrough|let'?s\s+play|speedrun|unboxing|explained|analysis|breakdown|documentary|behind\s+the\s+scenes|making\s+of|tier\s+list|ranking|prank|challenge|news|trailer|teaser|full\s+movie|full\s+episode|full\s+match|highlights|q\s*&\s*a|stream\s+highlights|asmr|mukbang|haul|recipe|unpopular\s+opinion",
+        r"reaction|reacts?\s+to|reacting|first\s+time\s+(?:hearing|listening|reacting)|review|tutorial|how\s+to\s+(?:\w+ly\s+)?(?:make|create|add|use|get|play|install|fix|build|code|script|animate|set\s*up|learn|draw|find|style|work|sync|optimi[sz]e|edit|design|start|earn|win|beat\s+the)|lesson|podcast|interview|vlog|gameplay|walkthrough|let'?s\s+play|speedrun|unboxing|explained|analysis|breakdown|documentary|behind\s+the\s+scenes|making\s+of|tier\s+list|ranking|prank|challenge|news|trailer|teaser|full\s+movie|full\s+episode|full\s+match|highlights|q\s*&\s*a|stream\s+highlights|asmr|mukbang|haul|recipe|unpopular\s+opinion",
     )
 });
-static WEAK: LazyLock<Regex> = LazyLock::new(|| words(r"#shorts|shorts|episode|ep\.\s*\d+|part\s+\d+|funny|compilation|top\s+\d+|vs\.?|explain|guide|tips|update|live\s+stream|livestream|stream"));
+static WEAK: LazyLock<Regex> = LazyLock::new(|| words(r"#shorts|shorts|episode|ep\.\s*\d+|part\s+\d+|funny|compilation|top\s+\d+|vs\.?|explain|guide|tips|update|live\s+stream|livestream|stream|how\s+to"));
+// Talk and how-to vocabulary (dev, games, tech, money): each counts, with nothing musical around. User's report
+// 2026-10-22: Roblox scripting videos filled two Daily Mixes.
+static TALK: LazyLock<Regex> = LazyLock::new(|| {
+    words(
+        r"roblox|robux|studio|scripting|script|coding|programming|programmer|developers?|development|devlog|gamedev|game\s+dev|code|api|ui|ux|lua|luau|typescript|python|javascript|unity|unreal|godot|blender|after\s+effects|davinci|optimi[sz](?:e|ed|ing|ations?)|function|systems?|remote\s*events?|raycast\w*|hitbox|tweens?|npc|vfx|plugin|module|server|cross-server|exploit|bypass|bug|windows|microsoft|setup|career|job|money|business|compan(?:y|ies)|tips|tricks|beginners?|advanced|easiest|underrated|insane|satisfying|finally\s+possible|stop\s+(?:using|creating|doing)|is\s+(?:extremely|really)|voice\s+chat|text\s*chat|loading\s+screen|game|games",
+    )
+});
 // Long uploads that are still music.
 static LONG_MUSIC: LazyLock<Regex> = LazyLock::new(|| words(r"mix|playlist|full\s+album|album|compilation|hours?|\d+\s*h|loop|lofi|lo-fi|radio|dj\s+set|set|concert|live|megamix|medley|ost|soundtrack"));
 // Music hashtags (#ncsmusic, #phonk, #lofihiphop…).
@@ -112,6 +119,9 @@ pub fn score(c: &Clues) -> i32 {
     if WEAK.is_match(title) && musical == 0 {
         s -= 2;
     }
+    if musical == 0 {
+        s -= 2 * (TALK.find_iter(title).count() as i32).min(2);
+    }
     match c.duration_ms.map(|d| d / 1000) {
         Some(d) if d < 45 => s -= 2,
         Some(d) if (90..=480).contains(&d) => s += 1,
@@ -150,6 +160,34 @@ impl Musicness {
             (o, n) => n.or(o),
         }
     }
+}
+
+/// Stored word against today's rules (they get better; old imports carry none): a "not music" stays, a "music" goes only
+/// on clear talk, the rest is asked again. The user's own choice is applied by the caller, above all this.
+pub fn judge(stored: Option<Musicness>, c: &Clues) -> Musicness {
+    match stored {
+        Some(Musicness::NotMusic) => Musicness::NotMusic,
+        Some(Musicness::Music) if score(c) > CLEAR_TALK => Musicness::Music,
+        _ => classify(c),
+    }
+}
+
+/// Score this low: talk even if once filed as music (old rules, a guess).
+const CLEAR_TALK: i32 = -6;
+
+/// Channels that are mostly talk (two "not music" or more, at least as many as songs): their doubts are talk too.
+/// `items` = (channel, word) of the whole library; returns the channels.
+pub fn talk_channels<'a>(items: impl IntoIterator<Item = (&'a str, Musicness)>) -> std::collections::HashSet<String> {
+    let mut count: std::collections::HashMap<String, (u32, u32)> = std::collections::HashMap::new();
+    for (channel, m) in items {
+        let e = count.entry(channel.trim().to_lowercase()).or_default();
+        match m {
+            Musicness::NotMusic => e.0 += 1,
+            Musicness::Music => e.1 += 1,
+            Musicness::Unsure => {}
+        }
+    }
+    count.into_iter().filter(|(_, (talk, songs))| *talk >= 2 && talk >= songs).map(|(c, _)| c).collect()
 }
 
 pub fn classify(c: &Clues) -> Musicness {
@@ -214,6 +252,36 @@ mod tests {
         assert_eq!(classify(&c(VideoType::Podcast)), Musicness::NotMusic);
         assert_eq!(VideoType::from_innertube("MUSIC_VIDEO_TYPE_OMV"), Some(VideoType::Official));
         assert_eq!(VideoType::from_innertube("SOMETHING_NEW"), None);
+    }
+
+    #[test]
+    fn dev_talk_is_not_music() {
+        // 2026-10-22, the user's library: Roblox scripting channels in Daily Mixes.
+        assert_eq!(video("Is Roblox Development A Viable Career?", "SmartyRBX", 538), Musicness::NotMusic);
+        assert_eq!(video("Reliable vs Unreliable RemoteEvents on Roblox", "Roblox Learn", 556), Musicness::NotMusic);
+        assert_eq!(video("STOP USING LUA... Use ROBLOX TS instead!", "Cookie Tech", 1361), Musicness::NotMusic);
+        assert_eq!(video("Roblox RaycastHitbox Is Extremely Useful...", "Paul1Rb", 733), Musicness::NotMusic);
+        assert_eq!(video("How To EASILY Make Procedural Animations In Roblox", "Roox4", 406), Musicness::NotMusic);
+        // Songs with "how to" in the title stay.
+        assert_ne!(video("how to sleep", "Deathbrain", 203), Musicness::NotMusic);
+        assert_ne!(video("show me the sky. show me how to live", "AZALI", 104), Musicness::NotMusic);
+        assert_ne!(video("Roblox Bacon Dancing + Nostalgia Roblox Song But Low Quality", "GuestVIP", 1735), Musicness::NotMusic);
+        assert_ne!(video("MONTAGEM NIGHTMARE", "DJ DJN, DJ ZIRCON", 77), Musicness::NotMusic);
+        assert_ne!(video("MORE video game bops for locking in", "Denz1000", 3105), Musicness::NotMusic);
+    }
+
+    #[test]
+    fn stored_words_meet_new_rules() {
+        let talk = Clues { title: "Is Roblox Development A Viable Career?", channel: "SmartyRBX", duration_ms: Some(538_000), ..Default::default() };
+        let song = Clues { title: "Get Lucky", channel: "Daft Punk", duration_ms: Some(248_000), ..Default::default() };
+        assert_eq!(judge(None, &talk), Musicness::NotMusic);
+        assert_eq!(judge(Some(Musicness::Unsure), &talk), Musicness::NotMusic);
+        assert_eq!(judge(Some(Musicness::NotMusic), &song), Musicness::NotMusic);
+        assert_eq!(judge(Some(Musicness::Music), &song), Musicness::Music);
+        let tutorial = Clues { title: "How To Make A Combat System In Roblox Studio", channel: "x", duration_ms: Some(1_373_000), ..Default::default() };
+        assert_eq!(judge(Some(Musicness::Music), &tutorial), Musicness::NotMusic);
+        let channels = talk_channels([("Roblox Learn", Musicness::NotMusic), ("roblox learn", Musicness::NotMusic), ("Roblox Learn", Musicness::Unsure), ("Band", Musicness::NotMusic), ("Band", Musicness::Music), ("Band", Musicness::Music)]);
+        assert_eq!(channels.into_iter().collect::<Vec<_>>(), vec!["roblox learn".to_string()]);
     }
 
     #[test]

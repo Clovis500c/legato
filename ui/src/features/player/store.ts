@@ -5,7 +5,7 @@ import type { Box } from '../../shared/artbox'
 import { region } from '../../shared/format'
 import { endListen, progress, startListen } from './listens'
 import { demoGain, demoLength, fadeGain, NO_FADE, type Fade } from './fade'
-import { moveInOrder, nextIndex, playOrder, queued, type Repeat } from './queue'
+import { insertAt, moveInOrder, moveToSlot, nextIndex, playOrder, queued, type Repeat } from './queue'
 import { vias, type Via } from './sources'
 import { closeWatch, openWatch, sendWatch, watching } from './watch'
 import { ytPost, type YtUpdate } from './youtube'
@@ -65,6 +65,10 @@ interface PlayerState {
   dequeue: (i: number) => void
   /** Up next, dragged: list index `i` goes where `j` is in the play order. */
   move: (i: number, j: number) => void
+  /** Up next, dragged: list index `i` lands at play-order position `at`. */
+  moveTo: (i: number, at: number) => void
+  /** Songs dropped into Up next at play-order position `at`. Nothing playing: plays them. */
+  enqueueAt: (tracks: LibraryTrack[], at: number) => void
   /** Up next emptied: nothing after the current song. */
   clearNext: () => void
   /** Queue item `index` through `via` (default: best source). auto = previous one ended; from = start position, ms. */
@@ -272,6 +276,18 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     // Gapless local run queued in list order: engine keeps current only, store picks what's next.
     endRun()
     set({ order: moveInOrder(get().order, i, j) })
+  },
+
+  moveTo(i, at) {
+    endRun()
+    set({ order: moveToSlot(get().order, i, at) })
+  },
+
+  enqueueAt(tracks, at) {
+    const { list, order, now } = get()
+    if (!now?.trackId) return get().playTracks(tracks, 0)
+    endRun()
+    set({ list: [...list, ...tracks], order: insertAt(order, tracks.map((_, k) => list.length + k), at) })
   },
 
   clearNext() {

@@ -160,6 +160,26 @@ needs it; 2 s fade by default.
       original timings; now 0.4× to 2.6×, a slowed title waits for its length, cached answers made before are asked again.
 - [ ] Fix what's found, `pnpm check`, CI green on the three systems, merge PR #1.
 
+**Phase 8: user's list, 2026-10-22 (screenshots of the installed app).**
+- [x] Lyrics sometimes white and still: plain text was shown when the only synced records were a few seconds off the
+      video (3:33 video, 3:28 records), or when the exact match had no timings. Synced records within 10 s fit, the
+      lead artist is asked too ("A, B, C"), plain answers only when nothing synced exists; plain text follows the song
+      and says "Not synced". Cache key v3.
+- [x] Hidden videos: "Show" opens a fold listing them (play, drag, "It's music"), in Songs, imported playlists, mixes
+      and Add music's search; right-click "Not music: hide it" / "It's music" (the user's word beats the guess).
+- [x] Non-music left in Daily Mixes (Roblox scripting channels): old imports had no musicness stored, so today's rules
+      now judge every YouTube track when the library is read (`music_core::musicness::judge`), talk / dev words, "how
+      to" + a verb, channels mostly talk; mixes leave "not music" out.
+- [x] Cover mosaics (playlists, mixes): fixed square tiles (`CoverGrid`), wide thumbnails no longer take more room.
+- [x] Customize Home: cards dragged into place (Alt+↑ / Alt+↓ from the keyboard).
+- [x] Drag and drop in Up next and playlists did nothing: Tauri's window file drop takes OS drags on Windows, so
+      HTML5 drops never fired. Pointer drag instead (`shared/ui/drag.ts`): rows of custom playlists, Up next (also
+      takes songs from any list), sidebar playlists, Home cards.
+- [x] Sidebar mini player: a card tinted by the cover, progress line, play / pause; vinyl covers turn it into a record
+      spinning at 33⅓ rpm with its arm (not for YouTube: its video stays visible, see docs/playback.md).
+- [x] README: features.
+- [ ] README: new preview (`docs/images/songs.png`), from a demo library, not the user's own.
+
 ## Still to do (one list, updated 2026-10-17)
 
 Everything still open, gathered from the sections below. Tick a line when it lands; details stay in their section.

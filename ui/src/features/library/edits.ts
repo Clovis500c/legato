@@ -1,4 +1,5 @@
 import { useStore } from '../../app/store'
+import { api } from '../../shared/api'
 import { tr, trn } from '../../shared/i18n/i18n'
 
 // Playlist edits with a toast each: added (Open), already there (Add anyway), removed (Undo).
@@ -73,4 +74,19 @@ export async function removePositions(id: number, positions: number[]) {
     }
   }
   if (gone.length) app().notify(tr('Removed from {name}: {songs}', { name: nameOf(id), songs: songs(gone.map(([, t]) => t)) }), { kind: 'removed', action: { label: tr('Undo'), run: () => void undo() } })
+}
+
+/**
+ * The user's word on music or not, above the app's guess (null = the guess again); the lists follow. Hidden as not
+ * music: Undo in the toast.
+ */
+export async function markMusic(ids: number[], music: boolean | null) {
+  try {
+    await api.setMusic(ids, music)
+    await app().refresh()
+  } catch (e) {
+    return app().notify(String(e), { kind: 'error' })
+  }
+  if (music === false) app().notify(tr('{songs} hidden: not music', { songs: songs(ids) }), { action: { label: tr('Undo'), run: () => void markMusic(ids, null) } })
+  else if (music) app().notify(tr('{songs} back with your music', { songs: songs(ids) }))
 }

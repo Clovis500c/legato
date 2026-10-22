@@ -18,12 +18,16 @@ A fast, private desktop music player for Windows, built with Tauri 2 and Rust.
 ## Features
 
 - **Unified library.** The same song on several services becomes one track (matched by ISRC, or title, artist and
-  duration). Songs, Albums, Artists and Playlists views, instant search, YouTube-style sorting.
+  duration). Songs, Albums, Artists and Playlists views, instant search, YouTube-style sorting, drag and drop.
+- **Music only.** Talks, tutorials and gameplay that YouTube imports bring along are set aside in a fold you can open,
+  in your library, playlists, mixes and search. One click says "it's music" (or not).
 - **One player for every source.** Local files (native, gapless), YouTube (official embedded player), Apple Music
-  previews and Spotify Connect share one queue, with crossfade, an immersive Now Playing screen and a mini player (in the sidebar by default).
+  previews and Spotify Connect share one queue, with crossfade, an immersive Now Playing screen, synced lyrics and a
+  mini player in the sidebar (a spinning record with vinyl covers).
 - **Playlists.** Import from YouTube Music and Spotify, create your own, export to YouTube Music, and share them by
   link, QR code or a 6-digit code on your local network.
 - **Mixes made on your PC.** Daily Mixes, a time-of-day mix and Rediscover, built from your own listening history.
+  A Home page you arrange by dragging its sections.
 - **Windows integration.** Media keys, the Windows media panel, tray icon, keyboard shortcuts, system light/dark mode
   and accent color.
 - **Live Editor.** Change the playing song as it plays: slowed, sped up, pitch, bass and EQ, reverb, echo, 3D / 8D

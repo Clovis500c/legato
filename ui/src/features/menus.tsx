@@ -11,6 +11,7 @@ import {
   DownloadSimple,
   Eye,
   EyeSlash,
+  MusicNotesSimple,
   FolderOpen,
   Info,
   Power,
@@ -56,7 +57,7 @@ import type { MenuEntry } from '../shared/ui/ContextMenu'
 import { SourceIcon } from '../shared/ui/SourceIcon'
 import type { Addon } from './addons/registry'
 import { isOn, setAddon } from './addons/state'
-import { addToPlaylist, removeFromPlaylist, removeTrackFromPlaylist, songs } from './library/edits'
+import { addToPlaylist, markMusic, removeFromPlaylist, removeTrackFromPlaylist, songs } from './library/edits'
 import { PlaylistCover as PlaylistIcon } from './library/PlaylistCover'
 import { primaryArtist } from './library/filter'
 import { isFull, viaLabel, vias } from './player/sources'
@@ -360,6 +361,10 @@ export function trackMenu(t: LibraryTrack, ctx: { list?: LibraryTrack[]; index?:
         { label: tr('Back to normal'), icon: <ArrowCounterClockwise size={16} />, onSelect: () => api.setTrackPref(t.id, null).then(() => app().notify(tr('Mix preference reset')), fail) },
       ],
     },
+    // Music or not, the user's word over the app's guess (hidden videos fold).
+    t.musicness === 'notMusic'
+      ? { label: tr('It’s music'), icon: <MusicNotesSimple size={16} />, onSelect: () => void markMusic([t.id], true) }
+      : { label: tr('Not music: hide it'), icon: <EyeSlash size={16} />, onSelect: () => void markMusic([t.id], false) },
     '-',
     pages(t).length > 0 && { label: tr('Copy link'), icon: <Link size={16} />, onSelect: () => copy(pages(t)[0].url, tr('Link copied')) },
     { label: tr('Copy title and artist'), icon: <Copy size={16} />, onSelect: () => copy(`${t.artist} – ${t.title}`, tr('Title and artist copied')) },

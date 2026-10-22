@@ -18,7 +18,7 @@ import { isFull, vias } from '../player/sources'
 import { usePlayer } from '../player/store'
 import { AddToPlaylist } from './AddToPlaylist'
 import { removeFromPlaylist, removePositions } from './edits'
-import { dragged, endDrag, isTrackDrag, startDrag } from './drag'
+import { dragSource, landing, useDrag, useDropTarget } from '../../shared/ui/drag'
 import { all, NONE, pick, picked, pickedRows, step, type Selection } from './selection'
 import { msg, tr, trn } from '../../shared/i18n/i18n'
 
@@ -54,7 +54,23 @@ export function TrackTable({ tracks, empty, editId, rowActions, sort, onSort }: 
     if (next.cursor !== null) virtual.scrollToIndex(next.cursor, { align: 'auto' })
   }
   const chosen = sel.ids.size > 1 ? picked(sel, tracks) : []
-  const [dropAt, setDropAt] = useState<number | null>(null)
+  // Custom playlist: a song dragged onto another row of it moves there (pointer drag, shared/ui/drag.ts).
+  const dropId = `list-${editId ?? 'none'}`
+  useDropTarget(
+    dropId,
+    editId === undefined
+      ? null
+      : {
+          accepts: (d) => d.kind === 'tracks' && d.from?.playlist === editId,
+          drop: (d, slot) => {
+            if (d.kind !== 'tracks' || !d.from || slot === null) return
+            const to = landing(d.from.row, slot)
+            if (to !== d.from.row) void editPlaylist({ type: 'move', id: editId, from: d.from.row, to })
+          },
+        },
+  )
+  const dropAt = useDrag((s) => (s.target === dropId ? s.slot : null))
+  const draggedRow = useDrag((s) => (s.data?.kind === 'tracks' && s.data.from && s.data.from.playlist === editId ? s.data.from.row : null))
   const removeChosen = () => editId !== undefined && void removePositions(editId, pickedRows(sel, tracks)).then(() => choose(NONE))
   const onKey = (e: React.KeyboardEvent) => {
     const at = sel.cursor ?? -1
@@ -72,7 +88,7 @@ export function TrackTable({ tracks, empty, editId, rowActions, sort, onSort }: 
     if (e.key === 'Enter' && sel.cursor !== null && vias(tracks[sel.cursor], sp).length) return play(tracks, sel.cursor)
     if (e.key === 'Delete' && editId !== undefined && sel.ids.size) removeChosen()
   }
-  const grid = { gridTemplateColumns: ['32px', 'minmax(0,1fr)', editId ? '156px' : rowActions ? '124px' : '68px', ...columns.map((c) => width[c])].join(' ') }
+  const grid = { gridTemplateColumns: ['32px', 'minmax(0,1fr)', editId ? '156px' : rowActions ? 'max-content' : '68px', ...columns.map((c) => width[c])].join(' ') }
   const cover = density === 'compact' ? 28 : density === 'comfort' ? 36 : 46
 
   return (
@@ -119,6 +135,7 @@ export function TrackTable({ tracks, empty, editId, rowActions, sort, onSort }: 
           onKeyDown={onKey}
           onFocus={() => sel.cursor === null && tracks.length && choose({ ...NONE, cursor: 0 })}
           data-list
+          data-drop={dropId}
           className="min-h-0 flex-1 overflow-y-auto outline-none"
         >
           <div className="relative" style={{ height: virtual.getTotalSize() }}>
@@ -148,28 +165,12 @@ export function TrackTable({ tracks, empty, editId, rowActions, sort, onSort }: 
                       ? tracksMenu(chosen, editId !== undefined ? ['-', { label: trn(chosen.length, 'Remove {n} song from playlist', 'Remove {n} songs from playlist'), icon: <X size={16} />, danger: true, onSelect: removeChosen }] : [])
                       : trackMenu(t, { list: tracks, index: v.index, playlistId: editId, position: v.index }),
                   )}
-                  draggable
-                  onDragStart={(e) => startDrag(e, isPicked && chosen.length > 1 ? chosen.map((x) => x.id) : [t.id], t.title, editId !== undefined && !(isPicked && chosen.length > 1) ? { playlist: editId, row: v.index } : undefined)}
-                  onDragEnd={() => {
-                    endDrag()
-                    setDropAt(null)
-                  }}
-                  // Custom playlist: a song dropped on another row of it moves there.
-                  onDragOver={(e) => {
-                    const from = dragged()?.from
-                    if (editId === undefined || !isTrackDrag(e) || from?.playlist !== editId) return
-                    e.preventDefault()
-                    e.dataTransfer.dropEffect = 'move'
-                    setDropAt(v.index)
-                  }}
-                  onDrop={(e) => {
-                    const from = dragged()?.from
-                    setDropAt(null)
-                    if (editId === undefined || from?.playlist !== editId || from.row === v.index) return
-                    e.preventDefault()
-                    void editPlaylist({ type: 'move', id: editId, from: from.row, to: v.index })
-                  }}
-                  className={`group absolute inset-x-0 grid items-center gap-4 border-b border-line-soft px-2 ${playable && clickToPlay === 'single' ? 'cursor-pointer' : ''} ${on ? 'bg-accent-soft' : isPicked ? 'bg-[color-mix(in_srgb,var(--ink)_10%,transparent)] shadow-[inset_3px_0_0_var(--ink-2)]' : 'hover:bg-raised'} ${dropAt === v.index ? ((dragged()?.from?.row ?? 0) < v.index ? 'shadow-[inset_0_-2px_0_var(--accent)]' : 'shadow-[inset_0_2px_0_var(--accent)]') : ''}`}
+                  data-slot={v.index}
+                  onPointerDown={dragSource(
+                    () => ({ kind: 'tracks', ids: isPicked && chosen.length > 1 ? chosen.map((x) => x.id) : [t.id], from: editId !== undefined && !(isPicked && chosen.length > 1) ? { playlist: editId, row: v.index } : undefined }),
+                    () => (isPicked && chosen.length > 1 ? trn(chosen.length, '{n} song', '{n} songs') : t.title),
+                  )}
+                  className={`group absolute inset-x-0 grid items-center gap-4 border-b border-line-soft px-2 ${playable && clickToPlay === 'single' ? 'cursor-pointer' : ''} ${on ? 'bg-accent-soft' : isPicked ? 'bg-[color-mix(in_srgb,var(--ink)_10%,transparent)] shadow-[inset_3px_0_0_var(--ink-2)]' : 'hover:bg-raised'} ${dropAt === v.index ? 'shadow-[inset_0_2px_0_var(--accent)]' : dropAt === v.index + 1 && v.index === tracks.length - 1 ? 'shadow-[inset_0_-2px_0_var(--accent)]' : ''} ${draggedRow === v.index ? 'opacity-40' : ''}`}
                   style={{ ...grid, height: row, transform: `translateY(${v.start}px)` }}
                 >
                   <span role="gridcell" className="flex justify-end font-mono text-[0.6875rem] text-ink-3 tabular-nums">{on ? <Waveform size={14} className="text-accent" /> : String(v.index + 1).padStart(2, '0')}</span>

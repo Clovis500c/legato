@@ -741,6 +741,16 @@ fn mixes(state: State<AppState>, utc_offset: i64) -> CmdResult<Response> {
     Ok(json(answer))
 }
 
+/// "It's music" (true) / "Not music" (false) from the user, None = back to the app's guess.
+#[tauri::command]
+fn set_music(state: State<AppState>, track_ids: Vec<i64>, music: Option<bool>) -> CmdResult<()> {
+    // Trust boundary: a selection, not the whole world.
+    if track_ids.len() > 10_000 {
+        return Err("Too many tracks".into());
+    }
+    state.lib().set_music(&track_ids, music).map_err(err)
+}
+
 /// None clears it.
 #[tauri::command]
 fn set_track_pref(state: State<AppState>, track_id: i64, pref: Option<Pref>) -> CmdResult<()> {
@@ -1206,30 +1216,43 @@ async fn lyrics(state: State<'_, AppState>, ask: LyricsAsk) -> CmdResult<Option<
     let playing_s = ask.duration_ms.map(|d| d as f32 / 1000.0);
     let lrclib = Lrclib::default();
     let mut found = None;
+    // Plain-only (or unfitting) answer: kept while other queries may still give synced lines (user's report
+    // 2026-10-22: lyrics that stay white).
+    let mut plain = None;
     let mut failed = None;
+    let take = |l: Lyrics, plain: &mut Option<Lyrics>| {
+        if !l.lines.is_empty() || l.instrumental {
+            return Some(l);
+        }
+        plain.get_or_insert(l);
+        None
+    };
     for (artist, title) in lyrics::queries(&ask.artist, &ask.title) {
         // Exact first; another speed never matches its duration.
         if !speed {
             match lrclib.get(&title, &artist, ask.album.as_deref(), ask.duration_ms.map(|d| (d + 500) / 1000)).await {
-                Ok(Some(r)) => {
-                    found = Some(lyrics::build(r, Some(1.0), "LRCLIB"));
-                    break;
-                }
+                Ok(Some(r)) => found = take(lyrics::build(r, Some(1.0), "LRCLIB"), &mut plain),
                 Ok(None) => {}
                 Err(e) => failed = Some(e),
+            }
+            if found.is_some() {
+                break;
             }
         }
         match lrclib.search(&title, &artist).await {
             Ok(records) => {
                 let records = records.into_iter().filter(|r| lyrics::same_title(&r.title, &title)).collect();
                 if let Some((r, fit)) = lyrics::pick(records, playing_s, speed) {
-                    found = Some(lyrics::build(r, fit, "LRCLIB"));
-                    break;
+                    found = take(lyrics::build(r, fit, "LRCLIB"), &mut plain);
                 }
             }
             Err(e) => failed = Some(e),
         }
+        if found.is_some() {
+            break;
+        }
     }
+    found = found.or(plain);
     if found.is_none()
         && let Some(id) = ask.youtube.filter(|v| v.len() == 11 && v.chars().all(|c| c.is_ascii_alphanumeric() || c == '-' || c == '_'))
         && let Some(yt) = state.ytm()
@@ -1612,7 +1635,7 @@ pub fn run() {
             folders::watch(app.handle(), &dirs);
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, add_track, backfill_art, find_versions, play_preview, share_playlist, share_preview, share_read_image, share_import, nearby_send, nearby_status, nearby_stop, nearby_receive, record_play, mixes, set_track_pref, clear_history, export_youtube, spotify_player, spotify_playback, ytm_sign_in, ytm_sign_out, spotify_web_open, spotify_web_status, import_spotify_link, ytm_accounts, set_ytm_accounts, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, system_accent, restart_app, autostart, set_autostart, media_update, load_session, save_session, add_to_youtube, playlist_orders, save_cover, export_cover, alternative_videos, play_stats, cache_stats, open_licenses, update_status, update_check, update_install, ytm_home, ytm_list, discord_presence, discord_off, discord_status, remove_from_playlist, remove_from_library, resolve_track, set_global_shortcuts, player_live, editor::player_effects, player_levels, editor::export_edit, editor::export_stop, editor::edits, editor::save_edit, editor::delete_edit, editor::activate_edit, editor::edit_draft, editor::save_edit_draft, voice_listen, voice_stop, open_windows_settings, detector::detector_status, detector::set_detector_token, detector::detect_song, detector::detect_stop, lyrics, set_ui_language, ytwatch_open, ytwatch_place, ytwatch_cmd, ytwatch_close, syncmode::sync_status, syncmode::sync_probe, syncmode::sync_setup, syncmode::sync_stop, syncmode::sync_now, syncmode::sync_dismiss, syncmode::sync_offer, syncmode::sync_offer_stop, syncmode::sync_join, plugins::plugins_list, plugins::plugin_inspect, plugins::plugin_install, plugins::plugin_set, plugins::plugin_uninstall, plugins::plugin_reply, plugins::plugin_event, plugins::plugin_input, plugins::plugin_log, themes::save_background, themes::forget_background, themes::export_theme, themes::import_theme])
+        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, add_track, backfill_art, find_versions, play_preview, share_playlist, share_preview, share_read_image, share_import, nearby_send, nearby_status, nearby_stop, nearby_receive, record_play, mixes, set_track_pref, set_music, clear_history, export_youtube, spotify_player, spotify_playback, ytm_sign_in, ytm_sign_out, spotify_web_open, spotify_web_status, import_spotify_link, ytm_accounts, set_ytm_accounts, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, system_accent, restart_app, autostart, set_autostart, media_update, load_session, save_session, add_to_youtube, playlist_orders, save_cover, export_cover, alternative_videos, play_stats, cache_stats, open_licenses, update_status, update_check, update_install, ytm_home, ytm_list, discord_presence, discord_off, discord_status, remove_from_playlist, remove_from_library, resolve_track, set_global_shortcuts, player_live, editor::player_effects, player_levels, editor::export_edit, editor::export_stop, editor::edits, editor::save_edit, editor::delete_edit, editor::activate_edit, editor::edit_draft, editor::save_edit_draft, voice_listen, voice_stop, open_windows_settings, detector::detector_status, detector::set_detector_token, detector::detect_song, detector::detect_stop, lyrics, set_ui_language, ytwatch_open, ytwatch_place, ytwatch_cmd, ytwatch_close, syncmode::sync_status, syncmode::sync_probe, syncmode::sync_setup, syncmode::sync_stop, syncmode::sync_now, syncmode::sync_dismiss, syncmode::sync_offer, syncmode::sync_offer_stop, syncmode::sync_join, plugins::plugins_list, plugins::plugin_inspect, plugins::plugin_install, plugins::plugin_set, plugins::plugin_uninstall, plugins::plugin_reply, plugins::plugin_event, plugins::plugin_input, plugins::plugin_log, themes::save_background, themes::forget_background, themes::export_theme, themes::import_theme])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

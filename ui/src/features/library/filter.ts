@@ -190,10 +190,10 @@ export function libraryStats(tracks: LibraryTrack[]) {
 }
 
 /**
- * Imported videos that clearly aren't music (talks, reactions, games: YouTube imports bring them along) set aside until
- * asked; a doubt stays. Nothing is deleted.
+ * Imported videos that clearly aren't music (talks, reactions, games: YouTube imports bring them along) set aside in
+ * their own fold (HiddenVideos); a doubt stays. Nothing is deleted.
  */
-export function musicOnly<T extends Pick<Track, 'musicness'>>(tracks: T[], showAll: boolean): { kept: T[]; hidden: number } {
-  const hidden = tracks.filter((t) => t.musicness === 'notMusic').length
-  return { kept: showAll || !hidden ? tracks : tracks.filter((t) => t.musicness !== 'notMusic'), hidden }
+export function musicOnly<T extends Pick<Track, 'musicness'>>(tracks: T[]): { kept: T[]; hidden: T[] } {
+  const hidden = tracks.filter((t) => t.musicness === 'notMusic')
+  return { kept: hidden.length ? tracks.filter((t) => t.musicness !== 'notMusic') : tracks, hidden }
 }

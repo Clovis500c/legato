@@ -1,12 +1,13 @@
 import { CaretRight, DotsSixVertical, Waveform } from '@phosphor-icons/react'
 import { useVirtualizer } from '@tanstack/react-virtual'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { useStore } from '../../app/store'
 import { trackArt } from '../../shared/art'
 import { formatDuration } from '../../shared/format'
 import { onMenu } from '../../shared/ui/ContextMenu'
 import { RoundButton } from '../../shared/ui/controls'
 import { Cover } from '../../shared/ui/Cover'
+import { dragSource, useDrag, useDropTarget } from '../../shared/ui/drag'
 import { trackMenu } from '../menus'
 import { fileFormat } from './PlayerBar'
 import { queueRows, type QueueRow } from './queue'
@@ -48,9 +49,6 @@ export function UpNext({ onHide }: { onHide: () => void }) {
   const playAt = usePlayer((s) => s.playAt)
   const move = usePlayer((s) => s.move)
   const clearNext = usePlayer((s) => s.clearNext)
-  // List index dragged, and the one it's over.
-  const [drag, setDrag] = useState<number | null>(null)
-  const [over, setOver] = useState<number | null>(null)
   const nowTitle = usePlayer((s) => s.now?.title ?? '')
   const nowArtist = usePlayer((s) => s.now?.artist ?? '')
   const track = useNowTrack()
@@ -59,6 +57,28 @@ export function UpNext({ onHide }: { onHide: () => void }) {
   const current = rows.findIndex((r) => r.current)
   const played = current < 0 ? 0 : current
   const next = rows.length - played - (current < 0 ? 0 : 1)
+  // Pointer drag (shared/ui/drag.ts): what's next takes songs from here and from any list, never above the current one.
+  const queue = current >= 0 && rows[current].i >= 0
+  useDropTarget(
+    'queue',
+    queue
+      ? {
+          accepts: (d) => d.kind === 'queue' || d.kind === 'tracks',
+          clamp: (slot) => Math.max(current + 1, slot),
+          drop: (d, slot) => {
+            const { order, moveTo, enqueueAt } = usePlayer.getState()
+            const at = slot === null || slot >= rows.length ? order.length : order.indexOf(rows[slot].i)
+            if (d.kind === 'queue') moveTo(d.i, at)
+            else if (d.kind === 'tracks') {
+              const byId = new Map(useStore.getState().tracks.map((t) => [t.id, t]))
+              enqueueAt(d.ids.flatMap((id) => byId.get(id) ?? []), at)
+            }
+          },
+        }
+      : null,
+  )
+  const dropAt = useDrag((s) => (s.target === 'queue' ? s.slot : null))
+  const drag = useDrag((s) => (s.data?.kind === 'queue' ? s.data.i : null))
   // New song: bring it to the top, history above it within reach.
   useEffect(() => {
     if (current >= 0) v.scrollToIndex(current, { align: 'start' })
@@ -81,7 +101,7 @@ export function UpNext({ onHide }: { onHide: () => void }) {
           <CaretRight size={14} />
         </RoundButton>
       </div>
-      <ol ref={scroller} className="scroll-quiet relative min-h-0 flex-1 overflow-y-auto">
+      <ol ref={scroller} data-list data-drop={queue ? 'queue' : undefined} className="scroll-quiet relative min-h-0 flex-1 overflow-y-auto">
         <div style={{ height: v.getTotalSize() }} className="relative">
           {v.getVirtualItems().map((item) => {
             const r = rows[item.index]
@@ -95,32 +115,16 @@ export function UpNext({ onHide }: { onHide: () => void }) {
               const n = rows[item.index + d]
               return n && n.i >= 0 && !n.current && !n.played ? n.i : null
             }
-            const below = drag !== null && rows.findIndex((x) => x.i === drag) < item.index
+            const line = dropAt === item.index ? 'shadow-[inset_0_2px_0_var(--accent)]' : dropAt === item.index + 1 && item.index === rows.length - 1 ? 'shadow-[inset_0_-2px_0_var(--accent)]' : ''
             return (
               <li
                 key={r.key}
-                draggable={movable}
-                onDragStart={(e) => {
-                  e.dataTransfer.effectAllowed = 'move'
-                  e.dataTransfer.setData('text/plain', title)
-                  setDrag(r.i)
-                }}
-                onDragOver={(e) => {
-                  if (drag === null || !movable) return
-                  e.preventDefault()
-                  setOver(r.i)
-                }}
-                onDrop={(e) => {
-                  e.preventDefault()
-                  if (drag !== null && movable) move(drag, r.i)
-                  setDrag(null)
-                  setOver(null)
-                }}
-                onDragEnd={() => {
-                  setDrag(null)
-                  setOver(null)
-                }}
-                className={`group absolute inset-x-0 ${drag === r.i ? 'opacity-40' : ''} ${over === r.i && drag !== r.i ? (below ? 'shadow-[inset_0_-2px_0_var(--accent)]' : 'shadow-[inset_0_2px_0_var(--accent)]') : ''}`}
+                data-slot={item.index}
+                onPointerDown={dragSource(
+                  () => (movable ? { kind: 'queue', i: r.i } : null),
+                  () => title,
+                )}
+                className={`group absolute inset-x-0 ${drag === r.i ? 'opacity-40' : ''} ${line}`}
                 style={{ top: item.start, height: ROW }}
                 onContextMenu={t ? onMenu(() => trackMenu(t, { list, index: r.i, queueIndex: r.i })) : undefined}
               >

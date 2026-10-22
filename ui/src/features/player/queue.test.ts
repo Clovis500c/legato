@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { moveInOrder, nextIndex, playOrder, queued, queueRows } from './queue'
+import { insertAt, moveInOrder, moveToSlot, nextIndex, playOrder, queued, queueRows } from './queue'
 
 describe('playOrder', () => {
   it('keeps list order, or shuffles with the current track first', () => {
@@ -63,5 +63,19 @@ describe('moveInOrder', () => {
     expect(moveInOrder([5, 6, 7, 8], 6, 8)).toEqual([5, 7, 8, 6])
     expect(moveInOrder([5, 6, 7], 6, 6)).toEqual([5, 6, 7])
     expect(moveInOrder([5, 6, 7], 9, 6)).toEqual([5, 6, 7])
+  })
+})
+
+describe('Up next drops', () => {
+  it('puts a song at its slot, dropped songs slide in', () => {
+    // Order 0..4, song 1 dragged before 4 (slot 4): lands right before it.
+    expect(moveToSlot([0, 1, 2, 3, 4], 1, 4)).toEqual([0, 2, 3, 1, 4])
+    // Upward: before 1.
+    expect(moveToSlot([0, 1, 2, 3, 4], 3, 1)).toEqual([0, 3, 1, 2, 4])
+    // To the end, and not in the order: unchanged.
+    expect(moveToSlot([0, 1, 2], 0, 3)).toEqual([1, 2, 0])
+    expect(moveToSlot([0, 1, 2], 9, 1)).toEqual([0, 1, 2])
+    expect(insertAt([0, 1, 2], [5, 6], 1)).toEqual([0, 5, 6, 1, 2])
+    expect(insertAt([0, 1], [5], 99)).toEqual([0, 1, 5])
   })
 })

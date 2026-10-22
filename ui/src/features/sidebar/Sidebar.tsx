@@ -1,5 +1,5 @@
 import { Disc, Gear, House, MicrophoneStage, MusicNotes, Plus, PlusCircle, PuzzlePiece, VinylRecord } from '@phosphor-icons/react'
-import { useMemo, useState, type ReactNode } from 'react'
+import { useMemo, type ReactNode } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import { useSettings } from '../../app/settings'
 import { useStore, type View } from '../../app/store'
@@ -9,32 +9,31 @@ import { Led } from '../../shared/ui/controls'
 import { onMenu } from '../../shared/ui/ContextMenu'
 import { PlaylistCover } from '../library/PlaylistCover'
 import { canDropOn, dropOn, playlistMenu, playlistsMenu } from '../menus'
-import { dragged, isTrackDrag } from '../library/drag'
+import { useDrag, useDropTarget } from '../../shared/ui/drag'
+import { usePlayer } from '../player/store'
 import { groupAlbums, groupArtists } from '../library/filter'
 import { tr } from '../../shared/i18n/i18n'
 import { SidebarPlayer } from '../player/SidebarPlayer'
 
-/** onSongs: songs dragged from a list may be dropped here (a playlist). */
-function NavItem({ on, icon, label, count, onClick, onContextMenu, onSongs }: { on: boolean; icon: ReactNode; label: string; count?: number; onClick: () => void; onContextMenu?: (e: React.MouseEvent) => void; onSongs?: (ids: number[]) => void }) {
+/** onSongs: songs dragged from a list or Up next may be dropped here (a playlist), `dropId` names the target. */
+function NavItem({ on, icon, label, count, onClick, onContextMenu, onSongs, dropId }: { on: boolean; icon: ReactNode; label: string; count?: number; onClick: () => void; onContextMenu?: (e: React.MouseEvent) => void; onSongs?: (ids: number[]) => void; dropId?: string }) {
   const counts = useSettings((s) => s.settings.sidebarCounts)
-  const [over, setOver] = useState(false)
-  const drop = onSongs && {
-    onDragOver: (e: React.DragEvent) => {
-      if (!isTrackDrag(e)) return
-      e.preventDefault()
-      e.dataTransfer.dropEffect = 'copy'
-      setOver(true)
-    },
-    onDragLeave: () => setOver(false),
-    onDrop: (e: React.DragEvent) => {
-      e.preventDefault()
-      setOver(false)
-      const ids = dragged()?.ids
-      if (ids?.length) onSongs(ids)
-    },
-  }
+  const target = dropId ?? `nav-${label}`
+  useDropTarget(
+    target,
+    onSongs
+      ? {
+          accepts: (d) => d.kind === 'tracks' || d.kind === 'queue',
+          drop: (d) => {
+            const ids = d.kind === 'tracks' ? d.ids : d.kind === 'queue' ? [usePlayer.getState().list[d.i]?.id].filter((x) => x !== undefined) : []
+            if (ids.length) onSongs(ids)
+          },
+        }
+      : null,
+  )
+  const over = useDrag((s) => s.target === target)
   return (
-    <button aria-current={on ? 'page' : undefined} onClick={onClick} onContextMenu={onContextMenu} {...drop} className={`flex w-full items-center gap-2.5 rounded-md py-1.5 pr-2.5 pl-1 text-left transition ${on ? 'bg-raised font-semibold text-ink' : 'text-ink-2 hover:text-ink'} ${over ? 'bg-accent-soft text-ink ring-1 ring-accent' : ''}`}>
+    <button aria-current={on ? 'page' : undefined} onClick={onClick} onContextMenu={onContextMenu} data-drop={onSongs ? target : undefined} className={`flex w-full items-center gap-2.5 rounded-md py-1.5 pr-2.5 pl-1 text-left transition ${on ? 'bg-raised font-semibold text-ink' : 'text-ink-2 hover:text-ink'} ${over ? 'bg-accent-soft text-ink ring-1 ring-accent' : ''}`}>
       <span className="w-1.5">{on && <Led on />}</span>
       <span className={on ? 'text-ink' : 'text-ink-3'}>{icon}</span>
       <span className="min-w-0 flex-1 truncate">{label}</span>
@@ -81,7 +80,7 @@ export function Sidebar() {
           {playlists
             .filter((p) => !hiddenKeys.has(playlistKey(p)))
             .map((p) => (
-            <NavItem key={p.id} on={view.name === 'playlist' && view.id === p.id} icon={<PlaylistCover p={p} size={18} />} label={p.name} count={p.trackCount} onClick={() => go({ name: 'playlist', id: p.id })} onContextMenu={onMenu(() => playlistMenu(p))} onSongs={canDropOn(p) ? (ids) => dropOn(p, ids) : undefined} />
+            <NavItem key={p.id} on={view.name === 'playlist' && view.id === p.id} icon={<PlaylistCover p={p} size={18} />} label={p.name} count={p.trackCount} onClick={() => go({ name: 'playlist', id: p.id })} onContextMenu={onMenu(() => playlistMenu(p))} onSongs={canDropOn(p) ? (ids) => dropOn(p, ids) : undefined} dropId={`playlist-${p.id}`} />
           ))}
           <NavItem
             on={false}

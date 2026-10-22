@@ -95,6 +95,29 @@ function Synced({ lines: sung, durationMs }: { lines: Lyrics['lines']; durationM
 }
 
 /**
+ * Lyrics without timings: they glide along with the song (where it is in the song ≈ where it is in the text), a hand
+ * on the scroll wins for a while. Better than a still wall of text (user's report 2026-10-22).
+ */
+function Plain({ text, durationMs }: { text: string; durationMs: number | null }) {
+  const pos = usePosition(500)
+  const box = useRef<HTMLDivElement>(null)
+  const hand = useRef(0)
+  useEffect(() => {
+    const el = box.current
+    if (!el || !durationMs || performance.now() - hand.current < HAND_MS) return
+    // Half a screen of lead: the part being sung sits near the middle.
+    const room = el.scrollHeight - el.clientHeight
+    el.scrollTo({ top: Math.max(0, Math.min(room, (pos / durationMs) * el.scrollHeight - el.clientHeight / 2)), behavior: 'smooth' })
+  }, [pos, durationMs])
+  const touched = () => void (hand.current = performance.now())
+  return (
+    <div ref={box} onWheel={touched} onPointerDown={touched} onKeyDown={touched} className="scroll-quiet min-h-0 flex-1 overflow-y-auto px-2 py-4">
+      <p className="text-[1.25rem] leading-relaxed font-semibold whitespace-pre-line text-ink-2">{text}</p>
+    </div>
+  )
+}
+
+/**
  * Now Playing › Lyrics, beside the cover (Spotify-like). LRCLIB first (synced when it can be, stretched for slowed /
  * sped up versions), YouTube Music's own when signed in (src-tauri lyrics), cached on disk.
  */
@@ -161,11 +184,18 @@ export function LyricsPanel({ onHide, onUpNext }: { onHide: () => void; onUpNext
       ) : l.lines.length ? (
         <Synced lines={l.lines} durationMs={durationMs} />
       ) : (
-        <div className="scroll-quiet min-h-0 flex-1 overflow-y-auto px-2 py-4">
-          <p className="text-[1.25rem] leading-relaxed font-semibold whitespace-pre-line text-ink">{l.plain}</p>
-        </div>
+        <Plain text={l.plain ?? ''} durationMs={durationMs} />
       )}
-      {l && <p className="px-1 text-[0.6875rem] text-ink-3">{tr('Lyrics: {source}', { source: l.source })}</p>}
+      {l && (
+        <p className="flex items-center gap-2 px-1 text-[0.6875rem] text-ink-3">
+          {tr('Lyrics: {source}', { source: l.source })}
+          {!l.lines.length && l.plain && (
+            <span title={tr('No timings for this song: the text follows the song roughly.')} className="rounded-full border border-line px-1.5 py-px">
+              {tr('Not synced')}
+            </span>
+          )}
+        </p>
+      )}
     </aside>
   )
 }

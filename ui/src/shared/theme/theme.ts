@@ -99,6 +99,16 @@ export function moveHome(list: HomeSection[], id: HomeSectionId, d: 1 | -1): Hom
   ;[out[i], out[j]] = [out[j], out[i]]
   return out
 }
+
+/** Home section `id` dropped at slot `slot` (before the section there, list.length = last): Customize Home's drag. */
+export function placeHome(list: HomeSection[], id: HomeSectionId, slot: number): HomeSection[] {
+  const i = list.findIndex((x) => x.id === id)
+  const to = slot > i ? slot - 1 : slot
+  if (i < 0 || to === i || to < 0 || to >= list.length) return list
+  const out = list.filter((x) => x.id !== id)
+  out.splice(to, 0, list[i])
+  return out
+}
 export type Column = (typeof COLUMNS)[number]
 
 export const START_VIEWS = ['home', 'songs', 'mixes', 'albums', 'artists'] as const

@@ -15,6 +15,7 @@ import { remoteTrack, usePlayer } from '../player/store'
 import { kindLabel, unofficial, videoKind } from './kind'
 import { Detector } from './Detector'
 import { AddToPlaylist } from '../library/AddToPlaylist'
+import { HiddenFold } from '../library/HiddenVideos'
 import { tr, trn } from '../../shared/i18n/i18n'
 
 const order: Source[] = ['youtube', 'apple', 'spotify', 'local']
@@ -119,18 +120,19 @@ export function AddView() {
   const [busy, setBusy] = useState(false)
   const [only, setOnly] = useState<'all' | 'youtube' | 'apple'>('all')
   const [hideCovers, setHideCovers] = useState(true)
-  // Videos that clearly aren't music (talks, reactions, games): hidden until asked, per search.
-  const [showOthers, setShowOthers] = useState(false)
   const ytOn = status.youtube.connected
   const local = useMemo(() => (q.trim() ? filterTracks(tracks, q, 'all').slice(0, 4) : []), [tracks, q])
   const matching = (res?.hits ?? []).filter((h) => (only === 'all' || h.ids[only]) && !(hideCovers && h.ids.youtube && !h.ids.apple && unofficial(videoKind(h.title))))
-  const others = matching.filter((h) => h.musicness === 'notMusic').length
-  const hits = showOthers ? matching : matching.filter((h) => h.musicness !== 'notMusic')
+  // Videos that clearly aren't music (talks, reactions, games): in their own fold under the results, folded again on
+  // each search.
+  const [round, setRound] = useState(0)
+  const others = matching.filter((h) => h.musicness === 'notMusic')
+  const hits = matching.filter((h) => h.musicness !== 'notMusic')
   // Results play as a queue, added or not (session-only items, like Home's recommendations). A hit with no YouTube
   // version gets one first (one search, nothing written) so it plays in full.
-  const playHit = async (h: SearchHit) => {
-    const queue = hits.map((x) => tracks.find((t) => t.id === x.libraryId) ?? remoteTrack(trackOf(x)))
-    const i = hits.indexOf(h)
+  const playHit = async (h: SearchHit, list = hits) => {
+    const queue = list.map((x) => tracks.find((t) => t.id === x.libraryId) ?? remoteTrack(trackOf(x)))
+    const i = list.indexOf(h)
     if (!h.libraryId && !h.ids.youtube) queue[i] = remoteTrack(await api.resolveTrack(trackOf(h)).catch(() => trackOf(h)))
     play(queue, i)
   }
@@ -170,7 +172,7 @@ export function AddView() {
     setBusy(true)
     try {
       setRes(await api.searchCatalogs(text, region()))
-      setShowOthers(false)
+      setRound((n) => n + 1)
     } catch (err) {
       useStore.setState({ error: String(err) })
     } finally {
@@ -272,15 +274,14 @@ export function AddView() {
                   <HitRow key={Object.values(h.ids).join('|')} hit={h} onAdded={(id) => markAdded(res.hits.indexOf(h), id)} onPlay={() => void playHit(h)} />
                 ))}
               </ul>
-              {others > 0 && (
-                <p className="flex items-center justify-between gap-3 border-b border-line-soft px-2 py-3 text-xs text-ink-2">
-                  {showOthers ? trn(others, 'Showing {n} video that doesn’t look like music', 'Showing {n} videos that don’t look like music') : trn(others, '{n} video hidden because it isn’t music', '{n} videos hidden because they aren’t music')}
-                  <button onClick={() => setShowOthers(!showOthers)} className="rounded-full border border-line px-3 py-1 font-medium text-ink hover:bg-raised">
-                    {showOthers ? tr('Hide them') : tr('Show')}
-                  </button>
-                </p>
-              )}
-              {hits.length === 0 && !others && <p className="py-8 text-center text-ink-2">{tr('No results.')}</p>}
+              <HiddenFold key={round} count={others.length} className="mt-3">
+                <ul>
+                  {others.map((h) => (
+                    <HitRow key={Object.values(h.ids).join('|')} hit={h} onAdded={(id) => markAdded(res.hits.indexOf(h), id)} onPlay={() => void playHit(h, others)} />
+                  ))}
+                </ul>
+              </HiddenFold>
+              {hits.length === 0 && !others.length && <p className="py-8 text-center text-ink-2">{tr('No results.')}</p>}
             </section>
           )}
           {!res && !local.length && <p className="py-10 text-center text-ink-2">{tr('Search for a track: it’s added to your library, with its YouTube version when one exists.')}</p>}
