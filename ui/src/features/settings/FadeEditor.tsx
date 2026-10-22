@@ -89,7 +89,7 @@ export function FadeGraph({ fade, onChange, playhead }: { fade: Fade; onChange: 
       }}
       className="cursor-ew-resize outline-none [&:focus-visible>circle:last-child]:stroke-ink"
     >
-      <text x={x} y={y(1) - 12} textAnchor="middle" className="fill-ink font-mono text-[11px] font-semibold">
+      <text x={x} y={y(1) - 12} textAnchor="middle" className="fill-ink font-mono text-[0.6875rem] font-semibold">
         {value} s
       </text>
       <circle cx={x} cy={y(1)} r={14} fill="transparent" />
@@ -112,13 +112,13 @@ export function FadeGraph({ fade, onChange, playhead }: { fade: Fade; onChange: 
       {[0, 0.5, 1].map((g) => (
         <g key={g}>
           <line x1={L0} x2={W - 16} y1={y(g)} y2={y(g)} className="stroke-line-soft" strokeDasharray={g === 0 ? undefined : '3 4'} />
-          <text x={L0 - 8} y={y(g) + 3.5} textAnchor="end" className="fill-ink-3 font-mono text-[9px]">
+          <text x={L0 - 8} y={y(g) + 3.5} textAnchor="end" className="fill-ink-3 font-mono text-[0.625rem]">
             {g === 0 ? '0' : pct(g)}
           </text>
         </g>
       ))}
       {Array.from({ length: MAX / 2 + 1 }, (_, i) => i * 2).map((s) => (
-        <g key={s} className="fill-ink-3 font-mono text-[9px]">
+        <g key={s} className="fill-ink-3 font-mono text-[0.625rem]">
           <text x={xOut(-s)} y={BASE + 16} textAnchor="middle">
             {s ? `−${s}` : '0'}
           </text>
@@ -127,10 +127,10 @@ export function FadeGraph({ fade, onChange, playhead }: { fade: Fade; onChange: 
           </text>
         </g>
       ))}
-      <text x={L0} y={12} className="fill-ink-3 font-mono text-[9px] tracking-[0.09em]">
+      <text x={L0} y={12} className="fill-ink-3 font-mono text-[0.625rem] tracking-[0.09em]">
         {tr('SONG ENDS')}
       </text>
-      <text x={R0} y={12} className="fill-ink-3 font-mono text-[9px] tracking-[0.09em]">
+      <text x={R0} y={12} className="fill-ink-3 font-mono text-[0.625rem] tracking-[0.09em]">
         {tr('NEXT SONG')}
       </text>
       {/* Song change. */}
@@ -146,7 +146,7 @@ export function FadeGraph({ fade, onChange, playhead }: { fade: Fade; onChange: 
         <g pointerEvents="none">
           <line x1={hover.side === 'out' ? xOut(hover.t) : xIn(hover.t)} x2={hover.side === 'out' ? xOut(hover.t) : xIn(hover.t)} y1={TOP} y2={BASE} className="stroke-ink-3" strokeDasharray="2 3" />
           <circle cx={hover.side === 'out' ? xOut(hover.t) : xIn(hover.t)} cy={y(hover.g)} r={4} className={hover.side === 'out' ? 'fill-accent' : 'fill-ink'} />
-          <text x={(hover.side === 'out' ? xOut(hover.t) : xIn(hover.t)) + (hover.side === 'out' ? 8 : -8)} y={Math.max(TOP + 10, y(hover.g) - 8)} textAnchor={hover.side === 'out' ? 'start' : 'end'} className="fill-ink font-mono text-[10px]">
+          <text x={(hover.side === 'out' ? xOut(hover.t) : xIn(hover.t)) + (hover.side === 'out' ? 8 : -8)} y={Math.max(TOP + 10, y(hover.g) - 8)} textAnchor={hover.side === 'out' ? 'start' : 'end'} className="fill-ink font-mono text-[0.625rem]">
             {`${hover.t < 0 ? '−' : '+'}${Math.abs(hover.t).toFixed(1)} s · ${pct(hover.g)} · ${db(hover.g)}`}
           </text>
         </g>
@@ -174,7 +174,7 @@ function Side({ side, fade, set }: { side: 'out' | 'in'; fade: FadeSettings; set
   return (
     <div className="flex flex-col gap-3 rounded-xl border border-line bg-raised p-4">
       <div className="flex items-baseline justify-between">
-        <p className="flex items-center gap-2 text-[13px] font-medium">
+        <p className="flex items-center gap-2 text-[0.8125rem] font-medium">
           <span className={`size-2.5 rounded-full ${side === 'out' ? 'bg-accent' : 'bg-ink'}`} />
           {side === 'out' ? tr('Fade out') : tr('Fade in')}
         </p>
@@ -199,7 +199,7 @@ function Side({ side, fade, set }: { side: 'out' | 'in'; fade: FadeSettings; set
             aria-checked={c === curve}
             title={`${tr(curveLabels[c])} · ${tr(curveHints[c])}`}
             onClick={() => set(side === 'out' ? { outCurve: c } : { inCurve: c })}
-            className={`flex flex-col items-center gap-1 rounded-lg px-1 py-2 text-[10px] font-medium transition ${c === curve ? 'bg-ink text-bg' : 'text-ink-2 hover:bg-bg hover:text-ink'}`}
+            className={`flex flex-col items-center gap-1 rounded-lg px-1 py-2 text-[0.625rem] font-medium transition ${c === curve ? 'bg-ink text-bg' : 'text-ink-2 hover:bg-bg hover:text-ink'}`}
           >
             <CurveIcon curve={c} falling={side === 'out'} />
             <span className="leading-tight">{tr(curveLabels[c])}</span>
@@ -271,14 +271,14 @@ export function FadeEditor() {
       <div className="rounded-xl border border-line bg-raised">
         <div data-setting="Fade in after a skip" className="flex items-center gap-4 border-b border-line-soft px-4 py-3">
           <div className="flex-1">
-            <p className="text-[13px] font-medium">{tr('Fade in after a skip')}</p>
+            <p className="text-[0.8125rem] font-medium">{tr('Fade in after a skip')}</p>
             <p className="text-xs text-ink-2">{tr('Songs you pick yourself fade in too, not only the ones that follow on their own')}</p>
           </div>
           <Toggle label={tr('Fade in after a skip')} checked={f.skip} onChange={(skip) => set({ skip })} />
         </div>
         <div data-setting="Fade on pause and play" className="flex items-center gap-4 px-4 py-3">
           <div className="flex-1">
-            <p className="text-[13px] font-medium">{tr('Fade on pause and play')}</p>
+            <p className="text-[0.8125rem] font-medium">{tr('Fade on pause and play')}</p>
             <p className="text-xs text-ink-2">{tr('Volume glides down before a pause and back up after (not with Spotify)')}</p>
           </div>
           <Segmented

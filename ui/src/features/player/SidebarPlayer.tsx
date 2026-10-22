@@ -35,7 +35,7 @@ export function SidebarPlayer() {
       )}
       <div className="flex items-center gap-1">
         <button onClick={() => setFull(true)} className="min-w-0 flex-1 text-left" title={tr('Open Now Playing')}>
-          <span className="block truncate text-[13px] font-semibold">{now.title}</span>
+          <span className="block truncate text-[0.8125rem] font-semibold">{now.title}</span>
           <span className="block truncate text-xs text-ink-2">{now.artist}</span>
         </button>
         <RoundButton label={tr('Now playing, full screen')} kind="plain" size="sm" onClick={() => setFull(true)}>

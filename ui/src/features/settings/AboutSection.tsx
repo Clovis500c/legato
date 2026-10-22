@@ -51,7 +51,7 @@ function Row({ label: name, sub, children }: { label: string; sub?: ReactNode; c
   return (
     <div data-setting={name} className="flex items-center gap-4 border-b border-line-soft px-4 py-3 last:border-0">
       <div className="min-w-0 flex-1">
-        <p className="text-[13px] font-medium">{tr(name)}</p>
+        <p className="text-[0.8125rem] font-medium">{tr(name)}</p>
         {sub && <div className="text-xs text-ink-2">{sub}</div>}
       </div>
       {children}

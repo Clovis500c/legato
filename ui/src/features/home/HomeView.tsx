@@ -60,7 +60,7 @@ function Card({ title, sub, art, round, onOpen, onPlay, menu, busy }: { title: s
         <span className={`relative block overflow-hidden ${round ? 'rounded-full' : 'rounded-cover'}`} style={{ width: CARD, height: CARD }}>
           {art}
         </span>
-        <span className="block truncate text-[13px] font-semibold group-hover:underline">{title}</span>
+        <span className="block truncate text-[0.8125rem] font-semibold group-hover:underline">{title}</span>
         <span className="-mt-1.5 line-clamp-2 text-xs text-ink-2">{sub}</span>
       </button>
       {onPlay && (
@@ -102,7 +102,7 @@ function QuickAccess() {
             <Cover title={track?.album ?? now.title} art={track && trackArt(track)} size={56} />
             <span className="flex min-w-0 flex-1 flex-col">
               <span className="kicker">{playing ? tr('Now playing') : tr('Pick up where you left off')}</span>
-              <span className="truncate text-[15px] font-semibold">{now.title}</span>
+              <span className="truncate text-[0.9375rem] font-semibold">{now.title}</span>
               <span className="truncate text-xs text-ink-2">{now.artist}</span>
             </span>
           </button>
@@ -115,8 +115,8 @@ function QuickAccess() {
         <button key={t.label} onClick={t.onClick} className="flex items-center gap-3 rounded-xl border border-line bg-raised px-3.5 py-3 text-left transition hover:bg-bg">
           <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-bg text-ink-2">{t.icon}</span>
           <span className="flex min-w-0 flex-col">
-            <span className="text-[13px] font-semibold">{t.label}</span>
-            <span className="truncate font-mono text-[10px] tracking-[0.06em] text-ink-3 uppercase">{t.sub}</span>
+            <span className="text-[0.8125rem] font-semibold">{t.label}</span>
+            <span className="truncate font-mono text-[0.625rem] tracking-[0.06em] text-ink-3 uppercase">{t.sub}</span>
           </span>
         </button>
       ))}
@@ -205,7 +205,7 @@ function ServiceShelves() {
     return (
       <div className="flex items-center gap-4 rounded-xl border border-line bg-raised p-4">
         <SourceIcon source="youtube" size={22} />
-        <p className="flex-1 text-[13px] text-ink-2">{tr('Sign in to YouTube Music to see its recommendations here too.')}</p>
+        <p className="flex-1 text-[0.8125rem] text-ink-2">{tr('Sign in to YouTube Music to see its recommendations here too.')}</p>
         <button onClick={() => go({ name: 'settings', section: 'sources' })} className="rounded-full bg-ink px-3.5 py-1.5 text-xs font-semibold text-bg">
           {tr('Sign in')}
         </button>

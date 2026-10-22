@@ -66,7 +66,7 @@ function TokenForm({ onSaved, onCancel }: { onSaved: () => void; onCancel?: () =
           onChange={(e) => setToken(e.target.value)}
           placeholder={tr('AudD API token')}
           aria-label={tr('AudD API token')}
-          className="h-8 min-w-0 flex-1 rounded-md border border-line bg-raised px-2.5 font-mono text-[11px] placeholder:text-ink-3"
+          className="h-8 min-w-0 flex-1 rounded-md border border-line bg-raised px-2.5 font-mono text-[0.6875rem] placeholder:text-ink-3"
         />
         <Button type="submit" disabled={!token.trim()} className="h-8 py-0!">
           {tr('Save')}
@@ -200,7 +200,7 @@ export function Detector({ onFound }: { onFound: (t: Track) => void }) {
           <Button onClick={() => void listen()} disabled={token === null} className="self-start">
             {input === 'mic' ? <Microphone size={15} weight="fill" /> : <Desktop size={15} weight="fill" />} {tr('Listen')}
           </Button>
-          <button onClick={() => setEditing(true)} className="self-start text-[11px] text-ink-3 hover:text-ink">
+          <button onClick={() => setEditing(true)} className="self-start text-[0.6875rem] text-ink-3 hover:text-ink">
             {tr('AudD token · Change')}
           </button>
         </>

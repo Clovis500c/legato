@@ -14,7 +14,7 @@ const MIN_PASSWORD = 10
 function Card({ setting, title, icon, children }: { setting: string; title: string; icon: ReactNode; children: ReactNode }) {
   return (
     <section data-setting={setting} className="flex flex-col gap-3 rounded-xl border border-line bg-raised p-4">
-      <h2 className="flex items-center gap-2 text-[13px] font-semibold">
+      <h2 className="flex items-center gap-2 text-[0.8125rem] font-semibold">
         {icon} {title}
       </h2>
       {children}
@@ -65,7 +65,7 @@ function Setup({ folder, onClose, onDone }: { folder: string; onClose: () => voi
     <button role="radio" aria-checked={protect === on} onClick={() => setProtect(on)} className={`flex gap-3 rounded-lg border p-3 text-left transition ${protect === on ? 'border-ink bg-bg' : 'border-line hover:bg-bg'}`}>
       <span className="mt-0.5">{icon}</span>
       <span className="flex flex-col gap-0.5">
-        <span className="text-[13px] font-semibold">{title}</span>
+        <span className="text-[0.8125rem] font-semibold">{title}</span>
         <span className="text-xs text-ink-2">{sub}</span>
       </span>
     </button>
@@ -226,9 +226,9 @@ export function SyncSection() {
       <Card setting="OneDrive" title={s.folder && !s.onedrive.some((o) => s.folder!.toLowerCase().startsWith(o.toLowerCase())) ? tr('Shared folder') : 'OneDrive'} icon={<Cloud size={16} />}>
         {s.folder ? (
           <>
-            <p className="flex flex-wrap items-center gap-2 text-[13px]">
+            <p className="flex flex-wrap items-center gap-2 text-[0.8125rem]">
               <span className="font-medium">{tr('Syncing through {folder}', { folder: s.folder })}</span>
-              <span className="flex items-center gap-1 rounded-full border border-line px-2 py-0.5 text-[11px] text-ink-2">
+              <span className="flex items-center gap-1 rounded-full border border-line px-2 py-0.5 text-[0.6875rem] text-ink-2">
                 {s.protected ? <LockSimple size={11} /> : <LockSimpleOpen size={11} />} {s.protected ? tr('Password') : tr('No password')}
               </span>
             </p>
@@ -265,7 +265,7 @@ export function SyncSection() {
           {s.devices.map((d) => {
             const missing = [d.accounts.spotify && !status.spotify.connected && 'Spotify', d.accounts.youtube && !status.youtube.connected && 'YouTube Music'].filter(Boolean)
             return (
-              <div key={d.name + d.at} className="flex items-center gap-3 border-t border-line-soft pt-3 text-[13px] first-of-type:border-0 first-of-type:pt-0">
+              <div key={d.name + d.at} className="flex items-center gap-3 border-t border-line-soft pt-3 text-[0.8125rem] first-of-type:border-0 first-of-type:pt-0">
                 <span className="flex-1">
                   <span className="font-medium">{d.name}</span> <span className="text-xs text-ink-2">· {tr('changed {when}', { when: timeAgo(d.at) })}</span>
                   {missing.length > 0 && <span className="block text-xs text-ink-2">{tr('Signed in there, not here: {services}', { services: missing.join(', ') })}</span>}

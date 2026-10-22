@@ -53,7 +53,7 @@ function Row({ label, sub, children, preview }: { label: string; sub?: string; c
   return (
     <div data-setting={label} className="flex items-center gap-4 border-b border-line-soft px-4 py-3 last:border-0">
       <div className="flex-1">
-        <p className="text-[13px] font-medium">{tr(label)}</p>
+        <p className="text-[0.8125rem] font-medium">{tr(label)}</p>
         {sub && <p className="text-xs text-ink-2">{sub}</p>}
       </div>
       {preview}
@@ -100,7 +100,7 @@ function Appearance() {
   const go = useStore((st) => st.go)
   const col = (c: Column) => (s.columns.includes(c) ? s.columns.filter((x) => x !== c) : COLUMNS.filter((x) => x === c || s.columns.includes(x)))
   const labels: Record<Column, string> = { album: msg('Album'), sources: msg('Sources'), duration: msg('Duration') }
-  const reset: Partial<Settings> = { accent: DEFAULTS.accent, covers: DEFAULTS.covers, density: DEFAULTS.density, zoom: DEFAULTS.zoom, readout: DEFAULTS.readout, volume: DEFAULTS.volume, tuner: DEFAULTS.tuner, columns: DEFAULTS.columns, tint: DEFAULTS.tint, immersive: DEFAULTS.immersive, miniPlayer: DEFAULTS.miniPlayer, font: DEFAULTS.font, motion: DEFAULTS.motion, sidebarCounts: DEFAULTS.sidebarCounts, listCovers: DEFAULTS.listCovers, clickToPlay: DEFAULTS.clickToPlay, crossfade: DEFAULTS.crossfade, fade: DEFAULTS.fade, youtubeControls: DEFAULTS.youtubeControls, stage: DEFAULTS.stage, miniSpot: DEFAULTS.miniSpot, miniPlace: DEFAULTS.miniPlace }
+  const reset: Partial<Settings> = { accent: DEFAULTS.accent, covers: DEFAULTS.covers, density: DEFAULTS.density, zoom: DEFAULTS.zoom, readout: DEFAULTS.readout, volume: DEFAULTS.volume, tuner: DEFAULTS.tuner, columns: DEFAULTS.columns, tint: DEFAULTS.tint, immersive: DEFAULTS.immersive, miniPlayer: DEFAULTS.miniPlayer, font: DEFAULTS.font, motion: DEFAULTS.motion, sidebarCounts: DEFAULTS.sidebarCounts, listCovers: DEFAULTS.listCovers, clickToPlay: DEFAULTS.clickToPlay, crossfade: DEFAULTS.crossfade, fade: DEFAULTS.fade, youtubeControls: DEFAULTS.youtubeControls, stage: DEFAULTS.stage, miniSpot: DEFAULTS.miniSpot, miniPlace: DEFAULTS.miniPlace, textSize: DEFAULTS.textSize }
   return (
     <div className="flex flex-col gap-7">
       <div className="flex justify-end">
@@ -152,6 +152,18 @@ function Appearance() {
           </div>
         </Group>
       </div>
+      <Group title={msg('Text size')}>
+        <Segmented
+          label={tr('Text size')}
+          value={s.textSize}
+          onChange={(textSize) => update({ textSize })}
+          options={[
+            { value: 'compact', label: tr('Compact') },
+            { value: 'normal', label: tr('Normal') },
+            { value: 'large', label: tr('Large') },
+          ]}
+        />
+      </Group>
       <InterfaceSize />
       <Group title={msg('Player')}>
         <div className="rounded-xl border border-line bg-raised">
@@ -242,7 +254,7 @@ function ShieldSection() {
   }, [])
   return (
     <div className="flex max-w-190 flex-col gap-6">
-      <p className="text-[13px] text-ink-2">{tr('Blocks ads and trackers with Brave’s engine (adblock-rust) and the EasyList and EasyPrivacy lists, updated every 4 days. In the YouTube player, ad slots are removed before playback.')}</p>
+      <p className="text-[0.8125rem] text-ink-2">{tr('Blocks ads and trackers with Brave’s engine (adblock-rust) and the EasyList and EasyPrivacy lists, updated every 4 days. In the YouTube player, ad slots are removed before playback.')}</p>
       <div className="rounded-xl border border-line bg-raised">
         <Row label={msg('Block ads and trackers')} sub={tr('Network: right away. YouTube player: on next launch.')}>
           <Toggle
@@ -434,14 +446,14 @@ function SettingsSearch({ onPick }: { onPick: (e: SettingEntry) => void }) {
     <>
       <label className="mb-2 flex w-full items-center gap-2 rounded-full border border-line px-3 py-1.5 text-ink-3 focus-within:border-ink-3">
         <MagnifyingGlass size={14} />
-        <input value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => (e.key === 'Enter' && hits[0] ? pick(hits[0]) : e.key === 'Escape' && setQ(''))} placeholder={tr('Search settings')} aria-label={tr('Search settings')} className="min-w-0 flex-1 bg-transparent text-[13px] text-ink outline-none placeholder:text-ink-3" />
+        <input value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => (e.key === 'Enter' && hits[0] ? pick(hits[0]) : e.key === 'Escape' && setQ(''))} placeholder={tr('Search settings')} aria-label={tr('Search settings')} className="min-w-0 flex-1 bg-transparent text-[0.8125rem] text-ink outline-none placeholder:text-ink-3" />
       </label>
       {q.trim() && (
         <div className="flex flex-col gap-px">
           {hits.length === 0 && <p className="px-2 py-2 text-xs text-ink-3">{tr('No setting matches.')}</p>}
           {hits.map((e) => (
             <button key={`${e.section}/${e.label}`} onClick={() => pick(e)} className="flex flex-col rounded-md px-2 py-1.5 text-left hover:bg-raised">
-              <span className="text-[13px]">{tr(e.label)}</span>
+              <span className="text-[0.8125rem]">{tr(e.label)}</span>
               <span className="kicker">{tr(sections.find((s) => s.id === e.section)!.label)}</span>
             </button>
           ))}

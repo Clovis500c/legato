@@ -137,7 +137,7 @@ export function MiniPlayer() {
       <div className="flex items-center gap-3 p-3">
         {!video && <Cover title={now.title} art={track && trackArt(track)} size={44} />}
         <button onClick={() => setFull(true)} className="min-w-0 flex-1 text-left" title={tr('Open Now Playing')}>
-          <span className="block truncate text-[13px] font-semibold">{now.title}</span>
+          <span className="block truncate text-[0.8125rem] font-semibold">{now.title}</span>
           <span className="block truncate text-xs text-ink-2">{now.artist}</span>
         </button>
         <Transport size="sm" compact />

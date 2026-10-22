@@ -46,7 +46,7 @@ function ThemeCard({ t, on, onClick, badge }: { t: Theme; on: boolean; onClick: 
       </span>
       <span className="flex items-center gap-1.5 text-xs font-medium">
         {on && <Led on />} <span className="flex-1 truncate">{t.name}</span>
-        <span className="font-mono text-[9px] text-ink-3">{badge ?? t.accent}</span>
+        <span className="font-mono text-[0.625rem] text-ink-3">{badge ?? t.accent}</span>
       </span>
     </button>
   )
@@ -69,7 +69,7 @@ function ColorSlot({ k, value, onChange }: { k: PaletteKey; value: string; onCha
           setDraft(e.target.value)
           if (/^#[0-9a-f]{6}$/i.test(e.target.value)) onChange(e.target.value.toUpperCase())
         }}
-        className="w-20 rounded border border-line-soft bg-transparent px-1.5 py-0.5 font-mono text-[10px] uppercase"
+        className="w-20 rounded border border-line-soft bg-transparent px-1.5 py-0.5 font-mono text-[0.625rem] uppercase"
       />
     </label>
   )
@@ -196,7 +196,7 @@ function ThemeEditor({ id, onClose }: { id: string; onClose: () => void }) {
           <div className="flex flex-col gap-3">
             <div className="flex flex-col gap-2 rounded-lg bg-recess p-3">
               <span className="kicker">{tr('From one color')}</span>
-              <p className="text-[11px] text-ink-2">{tr('Every color made from the one you pick, readable text checked.')}</p>
+              <p className="text-[0.6875rem] text-ink-2">{tr('Every color made from the one you pick, readable text checked.')}</p>
               <div className="flex items-center gap-2">
                 <label className="relative size-7 shrink-0 cursor-pointer overflow-hidden rounded-md border border-line" style={{ background: seed ?? t.accent }}>
                   <input type="color" aria-label={tr('Base color')} value={(seed ?? t.accent).toLowerCase()} onChange={(e) => setSeed(e.target.value.toUpperCase())} className="absolute inset-0 cursor-pointer opacity-0" />
@@ -215,7 +215,7 @@ function ThemeEditor({ id, onClose }: { id: string; onClose: () => void }) {
                 <span key={c.label} className="flex items-center gap-2 text-xs">
                   {c.ok ? <CheckCircle size={14} className="text-ink-2" /> : <WarningCircle size={14} className="text-danger" />}
                   <span className="flex-1">{tr(c.label)}</span>
-                  <span className={`font-mono text-[10px] ${c.ok ? 'text-ink-2' : 'text-danger'}`}>
+                  <span className={`font-mono text-[0.625rem] ${c.ok ? 'text-ink-2' : 'text-danger'}`}>
                     {c.ratio.toFixed(1)}:1 {c.ok ? 'AA' : `< ${c.min}`}
                   </span>
                 </span>
@@ -243,7 +243,7 @@ function ThemeEditor({ id, onClose }: { id: string; onClose: () => void }) {
               <Range label={tr('Color over it')} value={t.background.dim} min={0} max={90} unit="%" onChange={(dim) => bg({ dim })} />
               <Range label={tr('Blur')} value={t.background.blur} min={0} max={40} unit="px" onChange={(blur) => bg({ blur })} />
               <Range label={tr('Panels')} value={t.background.panels} min={40} max={100} unit="%" onChange={(panels) => bg({ panels })} />
-              <p className="text-[11px] text-ink-3">{tr('The picture stays on this PC (copied into the app); a .theme file carries it along. Sync Mode carries the theme but not its picture.')}</p>
+              <p className="text-[0.6875rem] text-ink-3">{tr('The picture stays on this PC (copied into the app); a .theme file carries it along. Sync Mode carries the theme but not its picture.')}</p>
             </>
           ) : (
             <p className="text-xs text-ink-2">{tr('A picture behind the whole window; panels let it show through.')}</p>
@@ -281,7 +281,7 @@ function ThemeEditor({ id, onClose }: { id: string; onClose: () => void }) {
               </Button>
             )}
           </div>
-          {t.look && <p className="text-[11px] text-ink-3">{Object.keys(t.look).map((k) => tr(lookLabels[k as keyof typeof lookLabels])).join(' · ')}</p>}
+          {t.look && <p className="text-[0.6875rem] text-ink-3">{Object.keys(t.look).map((k) => tr(lookLabels[k as keyof typeof lookLabels])).join(' · ')}</p>}
         </div>
       )}
 
@@ -297,9 +297,9 @@ function ThemeEditor({ id, onClose }: { id: string; onClose: () => void }) {
             maxLength={MAX_THEME_CSS}
             placeholder=".kicker { letter-spacing: 0.2em; }"
             aria-label={tr('Theme CSS')}
-            className="rounded-lg border border-line bg-bg p-3 font-mono text-[11px]"
+            className="rounded-lg border border-line bg-bg p-3 font-mono text-[0.6875rem]"
           />
-          <p className="text-[11px] text-ink-3">{tr('Applied when you leave the field. {n} characters at most.', { n: MAX_THEME_CSS.toLocaleString() })}</p>
+          <p className="text-[0.6875rem] text-ink-3">{tr('Applied when you leave the field. {n} characters at most.', { n: MAX_THEME_CSS.toLocaleString() })}</p>
         </div>
       )}
     </section>
@@ -375,7 +375,7 @@ export function ThemeStudio() {
       </div>
       {pasting && (
         <div className="flex flex-col gap-2">
-          <textarea value={paste} onChange={(e) => (setPaste(e.target.value), setBad(false))} rows={5} placeholder={tr('Paste the contents of a .theme file here')} className="rounded-lg border border-line bg-raised p-3 font-mono text-[11px]" />
+          <textarea value={paste} onChange={(e) => (setPaste(e.target.value), setBad(false))} rows={5} placeholder={tr('Paste the contents of a .theme file here')} className="rounded-lg border border-line bg-raised p-3 font-mono text-[0.6875rem]" />
           <div className="flex items-center gap-3">
             <Button
               disabled={!paste.trim()}

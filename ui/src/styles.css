@@ -24,6 +24,8 @@
   --color-danger: #d93a2b;
   --radius-cover: var(--cover-radius);
   --spacing-row: var(--row-h);
+  /* Spacing in px: the root size is the text size (Settings › Appearance › Text size), boxes mustn't grow with it. */
+  --spacing: 4px;
 }
 
 :root {
@@ -83,10 +85,12 @@ body,
 
 html {
   background: var(--bg-solid, var(--bg));
+  /* Text sizes are rem: this scales them all (theme.ts TEXT_SCALES). */
+  font-size: calc(16px * var(--text-scale, 1));
 }
 
 body {
-  @apply font-sans text-[13px] text-ink antialiased select-none;
+  @apply font-sans text-[0.8125rem] text-ink antialiased select-none;
   background: var(--body-bg, var(--bg));
 }
 
@@ -187,7 +191,7 @@ code {
 
 /* Mono kicker label: BIBLIOTHÈQUE · 4 SOURCES */
 .kicker {
-  @apply font-mono text-[10px] font-medium tracking-[0.09em] text-ink-3 uppercase;
+  @apply font-mono text-[0.625rem] font-medium tracking-[0.09em] text-ink-3 uppercase;
 }
 
 /* Indicator light. data-on = lit. */

@@ -20,7 +20,7 @@ export function Toasts() {
       {toasts.map((t) => {
         const { Icon, color } = icons[t.kind]
         return (
-          <div key={t.id} role={t.kind === 'error' ? 'alert' : 'status'} className="toast pointer-events-auto flex max-w-[min(560px,100%)] items-center gap-3 rounded-xl border border-line bg-raised py-2 pr-2 pl-3.5 text-[13px] text-ink shadow-[0_12px_32px_var(--shadow)]">
+          <div key={t.id} role={t.kind === 'error' ? 'alert' : 'status'} className="toast pointer-events-auto flex max-w-[min(560px,100%)] items-center gap-3 rounded-xl border border-line bg-raised py-2 pr-2 pl-3.5 text-[0.8125rem] text-ink shadow-[0_12px_32px_var(--shadow)]">
             <Icon size={18} weight="fill" style={{ color }} className="shrink-0" />
             <span className="min-w-0 flex-1 py-0.5">{t.text}</span>
             {t.action && (

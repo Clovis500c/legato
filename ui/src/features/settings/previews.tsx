@@ -209,7 +209,7 @@ export function CountsScene({ sidebarCounts }: Pick<Settings, 'sidebarCounts'>) 
       {['w-10', 'w-8', 'w-12'].map((w, i) => (
         <div key={w} className="flex items-center justify-between">
           <span className={`h-[3px] rounded-full bg-ink-2 ${w}`} />
-          {sidebarCounts && <span className="font-mono text-[6px] leading-none text-ink-3">{[248, 31, 1204][i]}</span>}
+          {sidebarCounts && <span className="font-mono text-[0.375rem] leading-none text-ink-3">{[248, 31, 1204][i]}</span>}
         </div>
       ))}
     </Frame>
@@ -278,7 +278,7 @@ export function MixCoverScene({ mixCovers }: Pick<Settings, 'mixCovers'>) {
       )}
       {mixCovers === 'single' && <SampleArt className="size-full" />}
       {mixCovers === 'template' && <span className="grid size-full place-items-center font-mono text-lg font-semibold text-ink-2">01</span>}
-      <span className="absolute top-1 left-1 rounded-full bg-black/60 px-1 font-mono text-[6px] tracking-[0.08em] text-white uppercase">{tr('Daily')}</span>
+      <span className="absolute top-1 left-1 rounded-full bg-black/60 px-1 font-mono text-[0.375rem] tracking-[0.08em] text-white uppercase">{tr('Daily')}</span>
     </div>
   )
 }

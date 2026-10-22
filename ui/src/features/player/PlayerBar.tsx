@@ -230,7 +230,7 @@ export function PlayerBar() {
 
       <div className="flex w-140 min-w-0 flex-col items-center gap-2.5">
         <Transport />
-        <div className="flex w-full items-center gap-3 font-mono text-[10px] text-ink-3">
+        <div className="flex w-full items-center gap-3 font-mono text-[0.625rem] text-ink-3">
           <TimeText part="elapsed" />
           <SeekBar className="flex-1" />
           <TimeText part="remaining" />

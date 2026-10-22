@@ -21,7 +21,7 @@ export function Transport({ size = 'md', compact = false }: { size?: 'sm' | 'md'
   const s = sizes[size]
   // Lit like an amp switch: readable even with a gray system accent.
   const mode = (on: boolean) => (on ? 'relative bg-raised text-ink after:absolute after:bottom-1 after:size-1 after:rounded-full after:bg-accent' : '')
-  const name = (on: boolean, text: string) => <span className={`text-[10px] leading-none ${on ? 'text-ink' : 'text-ink-3'} ${queue ? '' : 'opacity-35'}`}>{text}</span>
+  const name = (on: boolean, text: string) => <span className={`text-[0.625rem] leading-none ${on ? 'text-ink' : 'text-ink-3'} ${queue ? '' : 'opacity-35'}`}>{text}</span>
   const buttons = [
     !compact && (
       <RoundButton key="shuffle" label={shuffle ? tr('Shuffle: on') : tr('Shuffle: off')} aria-pressed={shuffle} kind="plain" size={s.skip} disabled={!queue} onClick={toggleShuffle} className={mode(shuffle)}>

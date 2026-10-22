@@ -94,8 +94,8 @@ export function VoiceSearch() {
               >
                 <span className="grid size-9 shrink-0 place-items-center rounded-full bg-bg text-ink-2">{o.icon}</span>
                 <span className="flex flex-col">
-                  <span className="text-[13px] font-semibold">{o.label}</span>
-                  <span className="text-[11px] text-ink-2">{o.note}</span>
+                  <span className="text-[0.8125rem] font-semibold">{o.label}</span>
+                  <span className="text-[0.6875rem] text-ink-2">{o.note}</span>
                 </span>
               </button>
             ))}

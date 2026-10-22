@@ -23,7 +23,7 @@ export function LedChip({ on, label, count, onClick }: { on: boolean; label: str
   return (
     <button role="tab" aria-selected={on} onClick={onClick} className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition ${on ? 'bg-ink text-bg' : 'border border-line text-ink hover:bg-raised'}`}>
       <Led on={on} /> {label}
-      {count !== undefined && <span className={`font-mono text-[10px] ${on ? 'text-ink-4' : 'text-ink-3'}`}>{count}</span>}
+      {count !== undefined && <span className={`font-mono text-[0.625rem] ${on ? 'text-ink-4' : 'text-ink-3'}`}>{count}</span>}
     </button>
   )
 }

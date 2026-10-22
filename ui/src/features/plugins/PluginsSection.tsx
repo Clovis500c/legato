@@ -17,17 +17,17 @@ import { PluginPanel } from './PluginPanel'
 const fail = (e: unknown) => useStore.getState().notify(String(e), { kind: 'error' })
 
 function Permissions({ list, fresh }: { list: string[]; fresh?: string[] }) {
-  if (!list.length) return <p className="text-[13px] text-ink-2">{tr('Nothing beyond its own storage.')}</p>
+  if (!list.length) return <p className="text-[0.8125rem] text-ink-2">{tr('Nothing beyond its own storage.')}</p>
   return (
     <ul className="flex flex-col gap-1.5">
       {list.map((p) => {
         const { text, risky } = permissionText(p)
         return (
-          <li key={p} className="flex items-start gap-2 text-[13px]">
+          <li key={p} className="flex items-start gap-2 text-[0.8125rem]">
             {risky ? <Warning size={15} className="mt-0.5 shrink-0 text-[#F0B232]" /> : <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-ink-3" />}
             <span>
               {text}
-              {fresh?.includes(p) && <span className="ml-1.5 rounded-full border border-line px-1.5 text-[10px] text-ink-2">{tr('New')}</span>}
+              {fresh?.includes(p) && <span className="ml-1.5 rounded-full border border-line px-1.5 text-[0.625rem] text-ink-2">{tr('New')}</span>}
             </span>
           </li>
         )
@@ -66,12 +66,12 @@ function Approve({ folder, onClose }: { folder: string; onClose: () => void }) {
       {!info && !error && <p className="text-sm text-ink-2">{tr('Reading the plugin…')}</p>}
       {m && (
         <>
-          <p className="text-[13px] text-ink-2">{m.description || tr('No description.')}</p>
+          <p className="text-[0.8125rem] text-ink-2">{m.description || tr('No description.')}</p>
           <p className="flex items-center gap-1.5 text-xs text-ink-2">
             <WarningCircle size={14} /> {tr('By {author} · not checked by the app’s developer', { author: m.author })}
           </p>
           <section className="flex flex-col gap-2">
-            <h3 className="text-[13px] font-semibold">{tr('It will be able to:')}</h3>
+            <h3 className="text-[0.8125rem] font-semibold">{tr('It will be able to:')}</h3>
             <Permissions list={m.permissions} fresh={info.installed ? info.newPermissions : undefined} />
           </section>
           <p className="text-xs text-ink-3">{tr('It runs apart from the app: no access to your files, passwords or accounts, and no internet except the sites listed. {files} files, {size}.', { files: info.files, size: formatBytes(info.size) })}</p>
@@ -103,7 +103,7 @@ function About({ p, onClose }: { p: PluginInfo; onClose: () => void }) {
     <Dialog title={m?.name ?? p.id} kicker={tr('Plugin')} onClose={onClose}>
       {m && (
         <>
-          <p className="text-[13px] text-ink-2">{m.description}</p>
+          <p className="text-[0.8125rem] text-ink-2">{m.description}</p>
           <p className="text-xs text-ink-2">{tr('Version {version} · by {author} · plugin API {api}', { version: m.version, author: m.author, api: m.api })}</p>
           {m.homepage && (
             <Button variant="link" className="w-fit text-xs" onClick={() => void openUrl(m.homepage!).catch(fail)}>
@@ -111,17 +111,17 @@ function About({ p, onClose }: { p: PluginInfo; onClose: () => void }) {
             </Button>
           )}
           <section className="flex flex-col gap-2">
-            <h3 className="text-[13px] font-semibold">{tr('Allowed to:')}</h3>
+            <h3 className="text-[0.8125rem] font-semibold">{tr('Allowed to:')}</h3>
             <Permissions list={p.granted} />
           </section>
         </>
       )}
       {p.error && <p className="text-xs text-[#F23F43]">{p.error}</p>}
       <section className="flex flex-col gap-1.5">
-        <h3 className="text-[13px] font-semibold">{tr('Log')}</h3>
-        <pre className="max-h-48 overflow-auto rounded-md bg-recess p-2 font-mono text-[11px] whitespace-pre-wrap text-ink-2">{log.length ? log.join('\n') : tr('Nothing yet.')}</pre>
+        <h3 className="text-[0.8125rem] font-semibold">{tr('Log')}</h3>
+        <pre className="max-h-48 overflow-auto rounded-md bg-recess p-2 font-mono text-[0.6875rem] whitespace-pre-wrap text-ink-2">{log.length ? log.join('\n') : tr('Nothing yet.')}</pre>
       </section>
-      <p className="text-[11px] break-all text-ink-3">{p.folder}</p>
+      <p className="text-[0.6875rem] break-all text-ink-3">{p.folder}</p>
     </Dialog>
   )
 }
@@ -133,7 +133,7 @@ function Card({ p, onPanel, onAbout }: { p: PluginInfo; onPanel: () => void; onA
     <article onContextMenu={onMenu(() => pluginMenu(p, onAbout))} className="flex flex-col gap-2 rounded-xl border border-line bg-raised p-4">
       <div className="flex items-center gap-2">
         <PuzzlePiece size={16} className="text-ink-3" />
-        <h3 className="min-w-0 flex-1 truncate text-[14px] font-semibold">{name}</h3>
+        <h3 className="min-w-0 flex-1 truncate text-[0.875rem] font-semibold">{name}</h3>
         {hasPanel && (
           <RoundButton label={tr('{name} settings', { name })} kind="plain" size="xs" onClick={onPanel}>
             <Gear size={16} />
@@ -146,7 +146,7 @@ function Card({ p, onPanel, onAbout }: { p: PluginInfo; onPanel: () => void; onA
       </div>
       <p className="text-xs leading-relaxed text-ink-2">{p.manifest?.description}</p>
       {p.error && <p className="text-xs text-[#F23F43]">{p.error}</p>}
-      <footer className="mt-auto flex items-center gap-2 border-t border-line-soft pt-2.5 text-[11px] text-ink-3">
+      <footer className="mt-auto flex items-center gap-2 border-t border-line-soft pt-2.5 text-[0.6875rem] text-ink-3">
         <WarningCircle size={14} /> {p.manifest ? `${p.manifest.author} · ${tr('Not verified')}` : tr('Not verified')}
         <span className="flex-1" />
         {p.manifest && <span>v{p.manifest.version}</span>}
@@ -183,7 +183,7 @@ export function PluginsSection({ query }: { query: string }) {
           ))}
         </div>
       ) : (
-        <p className="rounded-xl border border-dashed border-line px-4 py-6 text-center text-[13px] text-ink-3">{list.length ? tr('No plugin matches.') : tr('Plugins made by others add features. Each asks before it can do anything, and runs apart from the app. How to write one: docs/plugins.md.')}</p>
+        <p className="rounded-xl border border-dashed border-line px-4 py-6 text-center text-[0.8125rem] text-ink-3">{list.length ? tr('No plugin matches.') : tr('Plugins made by others add features. Each asks before it can do anything, and runs apart from the app. How to write one: docs/plugins.md.')}</p>
       )}
       {installing && <Approve folder={installing} onClose={() => setInstalling(null)} />}
       {panel && (

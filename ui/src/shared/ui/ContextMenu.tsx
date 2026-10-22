@@ -114,7 +114,7 @@ function Panel({ items, x, y, anchor, focusFirst, onBack }: { items: MenuEntry[]
               closeMenu()
               it.onSelect?.()
             }}
-            className={`flex h-9 w-full shrink-0 items-center gap-3 rounded-lg px-2.5 text-left text-[13px] outline-none focus:bg-panel disabled:opacity-40 ${it.danger ? 'text-danger' : ''}`}
+            className={`flex h-9 w-full shrink-0 items-center gap-3 rounded-lg px-2.5 text-left text-[0.8125rem] outline-none focus:bg-panel disabled:opacity-40 ${it.danger ? 'text-danger' : ''}`}
           >
             <span className={`grid w-5 shrink-0 place-items-center ${it.danger ? '' : 'text-ink-2'}`}>{it.checked !== undefined ? it.checked && <Check size={15} weight="bold" /> : it.icon}</span>
             <span className="flex-1 truncate">{it.label}</span>

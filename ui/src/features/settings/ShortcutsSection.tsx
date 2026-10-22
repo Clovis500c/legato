@@ -53,7 +53,7 @@ function KeyButton({ combo, onChange, global, problem, label }: { combo: Combo |
       >
         {recording ? tr('Press keys…') : combo ? comboLabel(combo) : '—'}
       </button>
-      {(hint || problem) && <span className="text-[11px] text-danger">{hint || problem}</span>}
+      {(hint || problem) && <span className="text-[0.6875rem] text-danger">{hint || problem}</span>}
     </span>
   )
 }
@@ -79,7 +79,7 @@ export function ShortcutsSection() {
   }
   return (
     <div className="flex max-w-190 flex-col gap-4">
-      <p className="text-[13px] text-ink-2">
+      <p className="text-[0.8125rem] text-ink-2">
         <span className="font-medium text-ink">{tr('In the app')}</span>
         {tr(': anywhere but while typing.')} <span className="font-medium text-ink">{tr('Everywhere')}</span>
         {tr(': with the app in the background or in the tray too. Click a key to change it, Backspace removes it. Media keys and the Windows media panel always work.')}
@@ -95,7 +95,7 @@ export function ShortcutsSection() {
           const changed = !!custom[a.id] && Object.keys(custom[a.id]!).length > 0
           return (
             <div key={a.id} data-setting={a.label} className="flex items-center gap-4 border-b border-line-soft px-4 py-2.5 last:border-0">
-              <span className="flex-1 text-[13px] font-medium">{tr(a.label)}</span>
+              <span className="flex-1 text-[0.8125rem] font-medium">{tr(a.label)}</span>
               {a.globalOnly ? <span className="w-44 text-xs text-ink-3">—</span> : <KeyButton label={tr(a.label)} combo={b[a.id].keys} onChange={(c) => set(a.id, 'keys', c)} global={false} problem={problem(a.id, 'keys')} />}
               <KeyButton label={tr('{action}, everywhere', { action: tr(a.label) })} combo={b[a.id].global} onChange={(c) => set(a.id, 'global', c)} global problem={problem(a.id, 'global')} />
               <span className="w-7">

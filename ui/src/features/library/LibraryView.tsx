@@ -72,7 +72,7 @@ function SortButton<T extends string>({ groups, value, onPick }: { groups: { id:
         const r = e.currentTarget.getBoundingClientRect()
         openMenu({ clientX: r.left, clientY: r.bottom + 6, target: e.currentTarget, preventDefault() {}, stopPropagation() {} } as unknown as MouseEvent, items)
       }}
-      className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-[13px] font-medium hover:bg-raised"
+      className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-[0.8125rem] font-medium hover:bg-raised"
     >
       <SortAscending size={15} className="text-ink-3" /> {tr(groups.flat().find((x) => x.id === value)?.label ?? groups[0][0].label)} <CaretDown size={12} className="text-ink-3" />
     </button>
@@ -182,7 +182,7 @@ function Playability({ tracks }: { tracks: LibraryTrack[] }) {
   const preview = missing.filter((t) => vias(t, sp).length > 0).length
   if (!tracks.length) return null
   return (
-    <p className="mb-3 flex shrink-0 flex-wrap items-center gap-x-5 gap-y-1 rounded-lg border border-line-soft bg-recess px-3.5 py-2.5 font-mono text-[10px] tracking-[0.08em] uppercase">
+    <p className="mb-3 flex shrink-0 flex-wrap items-center gap-x-5 gap-y-1 rounded-lg border border-line-soft bg-recess px-3.5 py-2.5 font-mono text-[0.625rem] tracking-[0.08em] uppercase">
       <span className="flex items-center gap-2">
         <Led on /> {trn(full, '{n} song playable in full', '{n} songs playable in full')}
       </span>
@@ -288,7 +288,7 @@ export function PlaylistView({ id }: { id: number }) {
         art={<PlaylistCover p={playlist} size={150} big />}
         kicker={playlist.custom ? tr('Custom playlist') : tr('Playlist · {source} · imported', { source: tr(sourceLabel[playlist.source]) })}
         title={playlist.custom ? <EditableTitle key={playlist.name} id={id} name={playlist.name} /> : playlist.name}
-        sub={<span className="font-mono text-[11px] tracking-[0.06em] uppercase">{trn(playlist.trackCount, '{n} track', '{n} tracks')} · {totalTime(playlistTracks)}</span>}
+        sub={<span className="font-mono text-[0.6875rem] tracking-[0.06em] uppercase">{trn(playlist.trackCount, '{n} track', '{n} tracks')} · {totalTime(playlistTracks)}</span>}
         actions={
           <>
             <PlayAll tracks={shown} />
@@ -342,10 +342,10 @@ export function AlbumsView() {
               <li key={`${a.album}-${a.artist}`} onContextMenu={onMenu(() => tracksMenu(a.tracks, ['-', { label: tr('Go to artist'), onSelect: () => go({ name: 'artist', artist: a.artist }) }]))}>
                 <button onClick={() => go({ name: 'album', album: a.album, artist: a.artist })} className="group flex w-full flex-col gap-2 text-left">
                   <span className="relative aspect-square w-full">
-                    <Cover title={a.album} art={firstArt(a.tracks)} size={150} className="size-full! text-[28px]!" />
+                    <Cover title={a.album} art={firstArt(a.tracks)} size={150} className="size-full! text-[1.75rem]!" />
                   </span>
                   <span className="min-w-0">
-                    <span className="block truncate text-[13px] font-semibold group-hover:underline">{a.album}</span>
+                    <span className="block truncate text-[0.8125rem] font-semibold group-hover:underline">{a.album}</span>
                     <span className="block truncate text-xs text-ink-2">
                       {a.artist} · {trn(a.tracks.length, '{n} track', '{n} tracks')}
                     </span>
@@ -365,7 +365,7 @@ export function AlbumView({ album, artist }: { album: string; artist: string }) 
   const shown = useMemo(() => tracks.filter((t) => t.album && fold(t.album) === fold(album) && fold(primaryArtist(t.artist)) === fold(artist)), [tracks, album, artist])
   return (
     <>
-      <PageHeader onContextMenu={onMenu(() => tracksMenu(shown, ['-', { label: tr('Go to artist'), onSelect: () => useStore.getState().go({ name: 'artist', artist }) }]))} art={<Cover title={album} art={firstArt(shown)} size={150} />} kicker={tr('Album · {artist}', { artist })} title={album} sub={<span className="font-mono text-[11px] tracking-[0.06em] uppercase">{trn(shown.length, '{n} track', '{n} tracks')} · {totalTime(shown)}</span>} actions={<PlayAll tracks={shown} />} />
+      <PageHeader onContextMenu={onMenu(() => tracksMenu(shown, ['-', { label: tr('Go to artist'), onSelect: () => useStore.getState().go({ name: 'artist', artist }) }]))} art={<Cover title={album} art={firstArt(shown)} size={150} />} kicker={tr('Album · {artist}', { artist })} title={album} sub={<span className="font-mono text-[0.6875rem] tracking-[0.06em] uppercase">{trn(shown.length, '{n} track', '{n} tracks')} · {totalTime(shown)}</span>} actions={<PlayAll tracks={shown} />} />
       <TrackTable tracks={shown} empty={tr('No songs.')} />
     </>
   )
@@ -383,10 +383,10 @@ export function ArtistsView() {
         {artists.map((a, i) => (
           <li key={a.artist} onContextMenu={onMenu(() => tracksMenu(a.tracks))}>
             <button onClick={() => go({ name: 'artist', artist: a.artist })} className="flex w-full items-center gap-4 border-b border-line-soft px-2 py-2.5 text-left hover:bg-raised">
-              <span className="w-8 text-right font-mono text-[11px] text-ink-3">{String(i + 1).padStart(2, '0')}</span>
+              <span className="w-8 text-right font-mono text-[0.6875rem] text-ink-3">{String(i + 1).padStart(2, '0')}</span>
               <Cover title={a.artist} art={trackArt(a.cover)} size={36} className="rounded-full!" />
-              <span className="flex-1 truncate text-[13px] font-semibold">{a.artist}</span>
-              <span className="font-mono text-[10px] tracking-[0.06em] text-ink-3 uppercase">
+              <span className="flex-1 truncate text-[0.8125rem] font-semibold">{a.artist}</span>
+              <span className="font-mono text-[0.625rem] tracking-[0.06em] text-ink-3 uppercase">
                 {trn(a.count, '{n} track', '{n} tracks')} · {trn(a.albums, '{n} album', '{n} albums')}
                 {v.sort === 'most-played' && ` · ${trn(groupStats(a, stats).plays, '{n} play', '{n} plays')}`}
               </span>
@@ -403,7 +403,7 @@ export function ArtistView({ artist }: { artist: string }) {
   const shown = useMemo(() => tracks.filter((t) => fold(primaryArtist(t.artist)) === fold(artist)), [tracks, artist])
   return (
     <>
-      <PageHeader onContextMenu={onMenu(() => tracksMenu(shown))} art={<Cover title={artist} art={firstArt(shown)} size={120} className="rounded-full!" />} kicker={tr('Artist')} title={artist} sub={<span className="font-mono text-[11px] tracking-[0.06em] uppercase">{trn(shown.length, '{n} track', '{n} tracks')} · {totalTime(shown)}</span>} actions={<PlayAll tracks={shown} />} />
+      <PageHeader onContextMenu={onMenu(() => tracksMenu(shown))} art={<Cover title={artist} art={firstArt(shown)} size={120} className="rounded-full!" />} kicker={tr('Artist')} title={artist} sub={<span className="font-mono text-[0.6875rem] tracking-[0.06em] uppercase">{trn(shown.length, '{n} track', '{n} tracks')} · {totalTime(shown)}</span>} actions={<PlayAll tracks={shown} />} />
       <TrackTable tracks={shown} empty={tr('No songs.')} />
     </>
   )

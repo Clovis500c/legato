@@ -14,7 +14,7 @@ const send = (plugin: string, id: string, value: unknown) => void api.pluginInpu
 function Field({ plugin, node }: { plugin: string; node: Extract<PanelNode, { type: 'input' }> }) {
   const [v, setV] = useState(node.value)
   useEffect(() => setV(node.value), [node.value])
-  return <input aria-label={node.label} placeholder={node.label} value={v} onChange={(e) => setV(e.target.value)} onBlur={() => v !== node.value && send(plugin, node.id, v)} onKeyDown={(e) => e.key === 'Enter' && send(plugin, node.id, v)} className="min-w-0 flex-1 rounded-md border border-line bg-bg px-2.5 py-1.5 text-[13px] outline-none focus:border-ink-3" />
+  return <input aria-label={node.label} placeholder={node.label} value={v} onChange={(e) => setV(e.target.value)} onBlur={() => v !== node.value && send(plugin, node.id, v)} onKeyDown={(e) => e.key === 'Enter' && send(plugin, node.id, v)} className="min-w-0 flex-1 rounded-md border border-line bg-bg px-2.5 py-1.5 text-[0.8125rem] outline-none focus:border-ink-3" />
 }
 
 function Tracks({ ids }: { ids: number[] }) {
@@ -25,8 +25,8 @@ function Tracks({ ids }: { ids: number[] }) {
     <ol className="flex flex-col">
       {list.map((t, i) => (
         <li key={t.id}>
-          <button onClick={() => usePlayer.getState().playTracks(list, i)} className="flex w-full items-center gap-3 rounded-md px-2 py-1.5 text-left text-[13px] hover:bg-raised">
-            <span className="w-5 text-right font-mono text-[11px] text-ink-3">{i + 1}</span>
+          <button onClick={() => usePlayer.getState().playTracks(list, i)} className="flex w-full items-center gap-3 rounded-md px-2 py-1.5 text-left text-[0.8125rem] hover:bg-raised">
+            <span className="w-5 text-right font-mono text-[0.6875rem] text-ink-3">{i + 1}</span>
             <span className="min-w-0 flex-1 truncate">{t.title}</span>
             <span className="max-w-[40%] truncate text-xs text-ink-2">{t.artist}</span>
           </button>
@@ -39,9 +39,9 @@ function Tracks({ ids }: { ids: number[] }) {
 function Node({ plugin, node }: { plugin: string; node: PanelNode }) {
   switch (node.type) {
     case 'heading':
-      return <h3 className="text-[14px] font-semibold">{node.text}</h3>
+      return <h3 className="text-[0.875rem] font-semibold">{node.text}</h3>
     case 'text':
-      return <p className={`text-[13px] whitespace-pre-line ${node.muted ? 'text-ink-2' : ''}`}>{node.text}</p>
+      return <p className={`text-[0.8125rem] whitespace-pre-line ${node.muted ? 'text-ink-2' : ''}`}>{node.text}</p>
     case 'button':
       return (
         <Button variant={node.primary ? 'primary' : 'ghost'} onClick={() => send(plugin, node.id, null)}>
@@ -50,14 +50,14 @@ function Node({ plugin, node }: { plugin: string; node: PanelNode }) {
       )
     case 'toggle':
       return (
-        <label className="flex items-center justify-between gap-3 text-[13px]">
+        <label className="flex items-center justify-between gap-3 text-[0.8125rem]">
           {node.label}
           <Toggle label={node.label} checked={node.value} onChange={(v) => send(plugin, node.id, v)} />
         </label>
       )
     case 'slider':
       return (
-        <label className="flex items-center gap-3 text-[13px]">
+        <label className="flex items-center gap-3 text-[0.8125rem]">
           <span className="w-32 shrink-0 truncate text-ink-2">{node.label}</span>
           <input type="range" aria-label={node.label} min={node.min} max={node.max} step={node.step || 'any'} defaultValue={node.value} key={node.value} onChange={(e) => send(plugin, node.id, +e.target.value)} className="bar flex-1" style={{ backgroundImage: `linear-gradient(to right, var(--ink) ${((node.value - node.min) / (node.max - node.min || 1)) * 100}%, var(--line) 0)` }} />
           <span className="w-12 text-right font-mono text-xs tabular-nums">{node.value}</span>
@@ -65,16 +65,16 @@ function Node({ plugin, node }: { plugin: string; node: PanelNode }) {
       )
     case 'input':
       return (
-        <label className="flex items-center gap-3 text-[13px]">
+        <label className="flex items-center gap-3 text-[0.8125rem]">
           <span className="w-32 shrink-0 truncate text-ink-2">{node.label}</span>
           <Field plugin={plugin} node={node} />
         </label>
       )
     case 'select':
       return (
-        <label className="flex items-center gap-3 text-[13px]">
+        <label className="flex items-center gap-3 text-[0.8125rem]">
           <span className="w-32 shrink-0 truncate text-ink-2">{node.label}</span>
-          <select aria-label={node.label} value={node.value} onChange={(e) => send(plugin, node.id, e.target.value)} className="min-w-0 flex-1 rounded-md border border-line bg-bg px-2 py-1.5 text-[13px]">
+          <select aria-label={node.label} value={node.value} onChange={(e) => send(plugin, node.id, e.target.value)} className="min-w-0 flex-1 rounded-md border border-line bg-bg px-2 py-1.5 text-[0.8125rem]">
             {node.options.map((o) => (
               <option key={o.value} value={o.value}>
                 {o.label}

@@ -24,7 +24,7 @@ function ServiceRow({ service }: { service: 'spotify' }) {
         <SourceIcon source={service} size={16} />
       </span>
       <div className="flex-1">
-        <p className="text-[13px] font-semibold">{sourceLabel[service]}</p>
+        <p className="text-[0.8125rem] font-semibold">{sourceLabel[service]}</p>
         <p className="text-xs text-ink-2">{tr(guides[service].pitch)}</p>
       </div>
       <span className="kicker">{connected ? tr('Connected') : tr('Not connected')}</span>
@@ -55,7 +55,7 @@ function SpotifyWeb() {
         <SourceIcon source="spotify" size={16} />
       </span>
       <div className="flex-1">
-        <p className="text-[13px] font-semibold">{tr('Spotify web player')} <span className="kicker">{tr('Preview')}</span></p>
+        <p className="text-[0.8125rem] font-semibold">{tr('Spotify web player')} <span className="kicker">{tr('Preview')}</span></p>
         <p className="text-xs text-ink-2">{tr('Spotify’s own player in a window, signed in on Spotify’s page. To import a public playlist, paste its link anywhere (Ctrl+V).')}</p>
       </div>
       <span className="kicker">{on ? tr('Signed in') : tr('Not signed in')}</span>
@@ -126,7 +126,7 @@ function GoogleAccounts() {
           <SourceIcon source="youtube" size={16} />
         </span>
         <div className="flex-1">
-          <p className="text-[13px] font-semibold">YouTube Music</p>
+          <p className="text-[0.8125rem] font-semibold">YouTube Music</p>
           <p className="text-xs text-ink-2">{data?.signedIn ? tr('Your playlists, search and export. No keys, no daily limit.') : tr('Sign in with Google to import your YouTube Music playlists and Liked Music. No keys.')}</p>
         </div>
         <span className="kicker">{data?.signedIn ? trn(data.accounts.length, '{n} account', '{n} accounts') : waiting ? tr('Waiting for Google…') : tr('Not signed in')}</span>
@@ -146,7 +146,7 @@ function GoogleAccounts() {
                 <li key={accountKey(a)} className="flex items-center gap-3 border-b border-line-soft px-3 py-2 last:border-0">
                   <Cover title={a.name} art={a.photo ? [remoteArt(a.photo)] : []} size={30} className="rounded-full!" />
                   <div className="min-w-0 flex-1">
-                    <p className="flex items-center gap-2 truncate text-[13px] font-medium">
+                    <p className="flex items-center gap-2 truncate text-[0.8125rem] font-medium">
                       {a.name} {first && on && <span className="kicker">{tr('Exports here')}</span>}
                     </p>
                     <p className="truncate text-xs text-ink-2">{[a.handle, a.email, a.pageId && tr('channel')].filter(Boolean).join(' · ')}</p>
@@ -159,7 +159,7 @@ function GoogleAccounts() {
           </ul>
           <div className="ml-13 flex items-center gap-3 rounded-lg bg-recess px-3 py-2.5">
             <div className="flex-1">
-              <p className="text-[13px] font-medium">{tr('Playlists and Liked Music')}</p>
+              <p className="text-[0.8125rem] font-medium">{tr('Playlists and Liked Music')}</p>
               <p className="text-xs text-ink-2">{busy ? tr('Importing…') : lastSync ? tr('Last import {when}: {n} playlists', { when: timeAgo(lastSync.at), n: lastSync.report.playlists }) : tr('Imported when you sign in. Import again any time to pick up changes.')}</p>
             </div>
             <Button disabled={busy || !data.picked.length} onClick={() => void sync()}>
@@ -214,7 +214,7 @@ function LocalFolders() {
           <HardDrives size={16} />
         </span>
         <div className="flex-1">
-          <p className="text-[13px] font-semibold">{tr('Local files')}</p>
+          <p className="text-[0.8125rem] font-semibold">{tr('Local files')}</p>
           <p className="text-xs text-ink-2">{tr('MP3, FLAC, WAV, OGG, M4A. Linked to your YouTube and Spotify tracks and played first, gapless.')}</p>
         </div>
         <span className="kicker">{busy ? tr('Scanning…') : trn(files, '{n} file', '{n} files')}</span>
@@ -223,7 +223,7 @@ function LocalFolders() {
         <ul className="ml-13 flex flex-col rounded-lg border border-line-soft">
           {folders.map((f) => (
             <li key={f} className="flex items-center gap-2 border-b border-line-soft py-1 pr-1 pl-3 last:border-0">
-              <span className="flex-1 truncate font-mono text-[11px]">{f}</span>
+              <span className="flex-1 truncate font-mono text-[0.6875rem]">{f}</span>
               <RoundButton label={tr('Remove {folder}', { folder: f })} kind="plain" size="xs" disabled={busy} onClick={() => run(() => api.setLocalFolders(folders.filter((x) => x !== f)))}>
                 <X size={12} />
               </RoundButton>
@@ -248,7 +248,7 @@ function LocalFolders() {
 export function SourcesView() {
   return (
     <div className="flex max-w-190 flex-col gap-6">
-      <p className="text-[13px] text-ink-2">{tr('Which account is connected to which service. Nothing goes through a server of ours: everything stays on your computer.')}</p>
+      <p className="text-[0.8125rem] text-ink-2">{tr('Which account is connected to which service. Nothing goes through a server of ours: everything stays on your computer.')}</p>
       <div className="rounded-xl border border-line bg-raised">
         <GoogleAccounts />
         <SpotifyWeb />

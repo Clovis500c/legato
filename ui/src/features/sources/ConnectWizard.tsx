@@ -12,10 +12,10 @@ function CopyField({ value }: { value: string }) {
   const [done, setDone] = useState(false)
   return (
     <div className="flex h-10.5 items-center gap-2.5 rounded-[9px] border border-line bg-raised pr-1.5 pl-3">
-      <code className="flex-1 truncate font-mono text-[11px]">{value}</code>
+      <code className="flex-1 truncate font-mono text-[0.6875rem]">{value}</code>
       <button
         type="button"
-        className="flex items-center gap-1.5 rounded-md border border-line px-2 py-1 text-[11px] font-medium hover:bg-bg"
+        className="flex items-center gap-1.5 rounded-md border border-line px-2 py-1 text-[0.6875rem] font-medium hover:bg-bg"
         onClick={() => navigator.clipboard.writeText(value).then(() => setDone(true))}
       >
         {done ? <Check size={13} /> : <Copy size={13} />} {done ? tr('Copied') : tr('Copy')}
@@ -74,7 +74,7 @@ export function ConnectWizard({ service, onClose }: { service: 'spotify'; onClos
           return (
             <li key={s.title} className="flex gap-3.5" aria-current={state === 'current' ? 'step' : undefined}>
               <span
-                className={`grid size-6.5 shrink-0 place-items-center rounded-full text-[13px] font-bold ${
+                className={`grid size-6.5 shrink-0 place-items-center rounded-full text-[0.8125rem] font-bold ${
                   state === 'done' ? 'bg-ink text-bg' : state === 'current' ? 'bg-accent text-on-accent' : 'border border-line text-ink-3'
                 }`}
               >
@@ -102,7 +102,7 @@ export function ConnectWizard({ service, onClose }: { service: 'spotify'; onClos
                             placeholder={tr(f.placeholder)}
                             value={values[f.key] ?? ''}
                             onChange={(e) => setValues({ ...values, [f.key]: e.target.value })}
-                            className="h-10.5 rounded-lg border border-line bg-raised px-3 text-[13px] text-ink placeholder:text-ink-3"
+                            className="h-10.5 rounded-lg border border-line bg-raised px-3 text-[0.8125rem] text-ink placeholder:text-ink-3"
                           />
                         </label>
                       ))}

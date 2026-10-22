@@ -30,12 +30,12 @@ export function AddToPlaylist({ trackIds, label }: { trackIds: number[] | (() =>
             <p className="kicker px-2.5 py-1.5">{tr('Add to')}</p>
             <div className="max-h-48 overflow-y-auto">
               {custom.map((p) => (
-                <button key={p.id} role="menuitem" onClick={() => add(p.id)} className="w-full truncate rounded-md px-2.5 py-1.5 text-left text-[13px] hover:bg-bg">
+                <button key={p.id} role="menuitem" onClick={() => add(p.id)} className="w-full truncate rounded-md px-2.5 py-1.5 text-left text-[0.8125rem] hover:bg-bg">
                   {p.name}
                 </button>
               ))}
             </div>
-            <button role="menuitem" onClick={() => add(null)} className="flex items-center gap-2 rounded-md border-t border-line-soft px-2.5 py-1.5 text-left text-[13px] font-medium hover:bg-bg">
+            <button role="menuitem" onClick={() => add(null)} className="flex items-center gap-2 rounded-md border-t border-line-soft px-2.5 py-1.5 text-left text-[0.8125rem] font-medium hover:bg-bg">
               <Plus size={12} /> {tr('New playlist')}
             </button>
           </div>

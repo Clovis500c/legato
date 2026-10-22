@@ -20,7 +20,7 @@ function NavItem({ on, icon, label, count, onClick, onContextMenu }: { on: boole
       <span className="w-1.5">{on && <Led on />}</span>
       <span className={on ? 'text-ink' : 'text-ink-3'}>{icon}</span>
       <span className="min-w-0 flex-1 truncate">{label}</span>
-      {count !== undefined && counts && <span className="font-mono text-[10px] text-ink-3">{formatCount(count)}</span>}
+      {count !== undefined && counts && <span className="font-mono text-[0.625rem] text-ink-3">{formatCount(count)}</span>}
     </button>
   )
 }

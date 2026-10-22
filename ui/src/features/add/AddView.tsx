@@ -20,7 +20,7 @@ import { tr, trn } from '../../shared/i18n/i18n'
 const order: Source[] = ['youtube', 'apple', 'spotify', 'local']
 
 function Badge({ children }: { children: string }) {
-  return <span className="rounded-[3px] border border-line px-1.5 font-mono text-[9px] tracking-[0.08em] text-ink-3">{children}</span>
+  return <span className="rounded-[3px] border border-line px-1.5 font-mono text-[0.625rem] tracking-[0.08em] text-ink-3">{children}</span>
 }
 
 /** The catalog track of a hit (no UI fields). */
@@ -48,7 +48,7 @@ function HitRow({ hit, onAdded, onPlay, extra }: { hit: SearchHit; onAdded: (id:
       </RoundButton>
       <Cover title={hit.album ?? hit.title} art={trackArt({ ...hit, id: hit.libraryId ?? undefined })} size={42} />
       <div className="min-w-0 flex-1">
-        <p className="flex items-center gap-2 truncate text-[13px] font-semibold">
+        <p className="flex items-center gap-2 truncate text-[0.8125rem] font-semibold">
           {hit.title} {kind && <Badge>{tr(kindLabel[kind])}</Badge>}
           {hit.musicness === 'notMusic' && <Badge>{tr('NOT MUSIC?')}</Badge>}
         </p>
@@ -59,7 +59,7 @@ function HitRow({ hit, onAdded, onPlay, extra }: { hit: SearchHit; onAdded: (id:
           <SourceIcon key={s} source={s} size={13} />
         ))}
       </span>
-      <span className="w-11 text-right font-mono text-[11px] text-ink-3">{formatDuration(hit.durationMs)}</span>
+      <span className="w-11 text-right font-mono text-[0.6875rem] text-ink-3">{formatDuration(hit.durationMs)}</span>
       {extra}
       {hit.libraryId ? (
         <RoundButton label={tr('Already in your library')} kind="ink" size="sm" disabled>
@@ -102,7 +102,7 @@ function ImportCode() {
       </p>
       <p className="text-xs text-ink-2">{busy ? tr('Looking for the sender on this network…') : tr('Paste a musicapp:// link, type a 6-digit code from a nearby Music App, or drop a QR screenshot on the window.')}</p>
       <span className="flex gap-2">
-        <input value={text} onChange={(e) => setText(e.target.value)} placeholder={tr('Link or 6-digit code')} aria-label={tr('Share link or code')} className="h-8 min-w-0 flex-1 rounded-md border border-line bg-raised px-2.5 font-mono text-[11px] placeholder:text-ink-3" />
+        <input value={text} onChange={(e) => setText(e.target.value)} placeholder={tr('Link or 6-digit code')} aria-label={tr('Share link or code')} className="h-8 min-w-0 flex-1 rounded-md border border-line bg-raised px-2.5 font-mono text-[0.6875rem] placeholder:text-ink-3" />
         <RoundButton label={tr('Import')} kind="ink" size="sm" type="submit" disabled={!text.trim() || busy}>
           <ArrowRight size={14} />
         </RoundButton>
@@ -197,7 +197,7 @@ export function AddView() {
       <form onSubmit={search} className="flex h-14 shrink-0 items-center gap-3 rounded-xl border border-line bg-raised pr-2 pl-4.5 shadow-[0_1px_2px_var(--shadow)] focus-within:border-ink-3">
         <MagnifyingGlass size={19} className="text-ink-2" />
         <input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder={tr('Title, artist, album, or a Spotify playlist link…')} aria-label={tr('Search catalogs')} className="min-w-0 flex-1 bg-transparent text-base outline-none placeholder:text-ink-3" />
-        <span className="flex items-center gap-3 rounded-full bg-recess px-3 py-1.5 font-mono text-[9px] tracking-[0.08em] text-ink-2">
+        <span className="flex items-center gap-3 rounded-full bg-recess px-3 py-1.5 font-mono text-[0.625rem] tracking-[0.08em] text-ink-2">
           {tr('SEARCHES')}
           <span className="flex items-center gap-1.5">
             <Led on /> AM
@@ -238,7 +238,7 @@ export function AddView() {
                   <li key={t.id} onContextMenu={onMenu(() => trackMenu(t, { list: local, index: i }))}>
                     <button onDoubleClick={() => play(local, i)} onClick={() => play(local, i)} className="flex w-full items-center gap-3.5 border-b border-line-soft px-2 py-2 text-left hover:bg-raised">
                       <Cover title={t.album ?? t.title} art={trackArt(t)} size={34} />
-                      <span className="min-w-0 flex-1 truncate text-[13px] font-semibold">{t.title}</span>
+                      <span className="min-w-0 flex-1 truncate text-[0.8125rem] font-semibold">{t.title}</span>
                       <span className="truncate text-xs text-ink-2">{t.artist}</span>
                     </button>
                   </li>
@@ -296,9 +296,9 @@ export function AddView() {
               { code: 'Apple Music', note: tr('Public catalog, no account'), on: true },
               { code: 'Spotify', note: tr('Search closed without Premium'), on: false },
             ].map((s) => (
-              <p key={s.code} className="flex items-center gap-2.5 border-t border-line-soft py-2.5 text-[13px] first-of-type:border-0">
+              <p key={s.code} className="flex items-center gap-2.5 border-t border-line-soft py-2.5 text-[0.8125rem] first-of-type:border-0">
                 <Led on={s.on} /> <span className="flex-1 font-medium">{s.code}</span>
-                <span className="text-right text-[11px] text-ink-2">{s.note}</span>
+                <span className="text-right text-[0.6875rem] text-ink-2">{s.note}</span>
               </p>
             ))}
           </div>

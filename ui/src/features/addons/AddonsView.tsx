@@ -33,7 +33,7 @@ function Dropdown({ icon, label, items }: { icon: ReactNode; label: string; item
         const r = e.currentTarget.getBoundingClientRect()
         openMenu({ clientX: r.left, clientY: r.bottom + 6, target: e.currentTarget, preventDefault() {}, stopPropagation() {} } as unknown as MouseEvent, items())
       }}
-      className="flex h-9 items-center gap-2 rounded-lg border border-line bg-raised px-3 text-[13px] hover:border-ink-3"
+      className="flex h-9 items-center gap-2 rounded-lg border border-line bg-raised px-3 text-[0.8125rem] hover:border-ink-3"
     >
       <span className="text-ink-3">{icon}</span>
       <span className="min-w-0 flex-1 truncate text-left">{label}</span>
@@ -59,7 +59,7 @@ function Card({ a, on, onOpen }: { a: Addon; on: boolean; onOpen: () => void }) 
   return (
     <article onContextMenu={onMenu(() => addonMenu(a, onOpen))} className="flex flex-col gap-2 rounded-xl border border-line bg-raised p-4">
       <div className="flex items-center gap-2">
-        <h3 className="min-w-0 flex-1 truncate text-[14px] font-semibold">{a.name}</h3>
+        <h3 className="min-w-0 flex-1 truncate text-[0.875rem] font-semibold">{a.name}</h3>
         <RoundButton label={a.settings ? tr('{name} settings', { name: a.name }) : tr('About {name}', { name: a.name })} kind="plain" size="xs" onClick={onOpen}>
           {a.settings ? <Gear size={16} /> : <Info size={16} />}
         </RoundButton>
@@ -67,7 +67,7 @@ function Card({ a, on, onOpen }: { a: Addon; on: boolean; onOpen: () => void }) 
       </div>
       <p className="text-xs leading-relaxed text-ink-2">{tr(a.description)}</p>
       {a.id === DISCORD && <DiscordCardStatus />}
-      <footer className="mt-auto flex items-center gap-2 border-t border-line-soft pt-2.5 text-[11px]">
+      <footer className="mt-auto flex items-center gap-2 border-t border-line-soft pt-2.5 text-[0.6875rem]">
         <AuthorBadge author={a.author} />
         <span className="flex-1" />
         {a.tags.map((t) => (
@@ -84,7 +84,7 @@ function Row({ label, sub, children }: { label: string; sub?: ReactNode; childre
   return (
     <div className="flex items-center gap-4 border-b border-line-soft px-4 py-3 last:border-0">
       <div className="flex-1">
-        <p className="text-[13px] font-medium">{label}</p>
+        <p className="text-[0.8125rem] font-medium">{label}</p>
         {sub && <div className="text-xs text-ink-2">{sub}</div>}
       </div>
       {children}
@@ -129,7 +129,7 @@ function useDiscordLive(): { live: Live; label: string } {
 function StatusPill({ live, label }: { live: Live; label: string }) {
   const { color, pulse } = LIVE[live]
   return (
-    <span role="status" className="flex w-fit items-center gap-2 rounded-full border px-2.5 py-1 text-[11px] font-medium transition-colors" style={{ color, borderColor: `color-mix(in srgb, ${color} 40%, transparent)`, background: `color-mix(in srgb, ${color} 12%, transparent)` }}>
+    <span role="status" className="flex w-fit items-center gap-2 rounded-full border px-2.5 py-1 text-[0.6875rem] font-medium transition-colors" style={{ color, borderColor: `color-mix(in srgb, ${color} 40%, transparent)`, background: `color-mix(in srgb, ${color} 12%, transparent)` }}>
       <span className="relative flex size-2">
         {pulse && <span className="absolute inset-0 animate-ping rounded-full opacity-60" style={{ background: color }} />}
         <span className="relative size-2 rounded-full" style={{ background: color, boxShadow: `0 0 6px ${color}` }} />
@@ -149,17 +149,17 @@ function Preview({ d }: { d: DiscordSettings }) {
   const pct = p.playing && p.durationMs ? Math.min(100, (p.positionMs / p.durationMs) * 100) : 0
   return (
     <div aria-label={tr('Discord preview')} className={shell}>
-      <p className="truncate text-[11px] font-bold tracking-wide text-[#B5BAC1] uppercase">{tr('Listening to {name}', { name: d.status === 'song' ? p.title : d.status === 'artist' ? p.artist : 'Music App' })}</p>
+      <p className="truncate text-[0.6875rem] font-bold tracking-wide text-[#B5BAC1] uppercase">{tr('Listening to {name}', { name: d.status === 'song' ? p.title : d.status === 'artist' ? p.artist : 'Music App' })}</p>
       <div className="flex items-center gap-3">
         <Cover title={p.title} art={track ? trackArt(track) : []} size={64} className="rounded-lg! border-0!" />
-        <div className="flex min-w-0 flex-1 flex-col gap-0.5 text-[13px]">
+        <div className="flex min-w-0 flex-1 flex-col gap-0.5 text-[0.8125rem]">
           <p className="truncate font-semibold text-white">{p.title}</p>
           <p className="truncate text-[#B5BAC1]">{p.artist}</p>
           {p.album && <p className="truncate text-xs text-[#949BA4]">{p.album}</p>}
         </div>
       </div>
       {p.playing && p.durationMs ? (
-        <div className="flex items-center gap-2 font-mono text-[10px] text-[#B5BAC1]">
+        <div className="flex items-center gap-2 font-mono text-[0.625rem] text-[#B5BAC1]">
           <span>{formatDuration(p.positionMs) || '0:00'}</span>
           <span className="h-1 flex-1 overflow-hidden rounded-full bg-[#4E5058]">
             <span className="block h-full rounded-full bg-white transition-[width] duration-500" style={{ width: `${pct}%` }} />
@@ -167,10 +167,10 @@ function Preview({ d }: { d: DiscordSettings }) {
           <span>{formatDuration(p.durationMs)}</span>
         </div>
       ) : (
-        !p.playing && <p className="text-[11px] text-[#949BA4]">{tr('Paused')}</p>
+        !p.playing && <p className="text-[0.6875rem] text-[#949BA4]">{tr('Paused')}</p>
       )}
       {p.buttons.map(([label]) => (
-        <span key={label} className="rounded-[3px] bg-[#4E5058] py-1.5 text-center text-[13px] font-medium text-white">
+        <span key={label} className="rounded-[3px] bg-[#4E5058] py-1.5 text-center text-[0.8125rem] font-medium text-white">
           {label}
         </span>
       ))}
@@ -235,11 +235,11 @@ function DiscordPanel() {
             onChange={(e) => setId(e.target.value.replace(/\D/g, '').slice(0, 32))}
             onBlur={saveId}
             onKeyDown={(e) => e.key === 'Enter' && saveId()}
-            className="h-8 w-full rounded-md border border-line bg-bg px-2.5 font-mono text-[12px] outline-none placeholder:text-ink-3 focus:border-ink-3"
+            className="h-8 w-full rounded-md border border-line bg-bg px-2.5 font-mono text-[0.75rem] outline-none placeholder:text-ink-3 focus:border-ink-3"
           />
         </div>
       </div>
-      <p className="text-[11px] text-ink-3">{tr('Talks to the Discord app on this PC only. Song, artist, cover link and song link go to Discord while this is on. Discord hides your own buttons from you; friends see them.')}</p>
+      <p className="text-[0.6875rem] text-ink-3">{tr('Talks to the Discord app on this PC only. Song, artist, cover link and song link go to Discord while this is on. Discord hides your own buttons from you; friends see them.')}</p>
     </div>
   )
 }
@@ -252,7 +252,7 @@ function DiscordCardStatus() {
 
 function About({ a }: { a: Addon }) {
   return (
-    <div className="flex flex-col gap-3 text-[13px]">
+    <div className="flex flex-col gap-3 text-[0.8125rem]">
       <p className="text-ink-2">{tr(a.description)}</p>
       <AuthorBadge author={a.author} />
     </div>
@@ -290,7 +290,7 @@ export function AddonsView() {
             <h2 className="kicker">{tr('Filters')}</h2>
             <label className="flex h-9 items-center gap-2 rounded-lg border border-line bg-raised px-3 focus-within:border-ink-3">
               <MagnifyingGlass size={14} className="text-ink-3" />
-              <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={tr('Search for an add-on…')} aria-label={tr('Search add-ons')} className="min-w-0 flex-1 bg-transparent text-[13px] outline-none placeholder:text-ink-3" />
+              <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={tr('Search for an add-on…')} aria-label={tr('Search add-ons')} className="min-w-0 flex-1 bg-transparent text-[0.8125rem] outline-none placeholder:text-ink-3" />
             </label>
             <div className="grid grid-cols-2 gap-2.5">
               <Dropdown icon={<Led on={show !== 'all'} />} label={tr(SHOWS.find((s) => s.value === show)!.label)} items={() => SHOWS.map((s) => ({ label: tr(s.label), checked: s.value === show, onSelect: () => setShow(s.value) }))} />
@@ -315,7 +315,7 @@ export function AddonsView() {
                 ))}
               </div>
             ) : (
-              <p className="py-8 text-center text-[13px] text-ink-3">{tr('No add-on matches these filters.')}</p>
+              <p className="py-8 text-center text-[0.8125rem] text-ink-3">{tr('No add-on matches these filters.')}</p>
             )}
           </section>
 

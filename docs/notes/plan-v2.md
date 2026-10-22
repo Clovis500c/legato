@@ -135,7 +135,8 @@ needs it; 2 s fade by default.
       the moving cover needs it (already so: the setting is a permission; its text now says it).
 - [x] Sliders: bigger hit area (3 px today), handle visible in the Live Editor.
 - [x] Mini player docked at the bottom of the sidebar (never over the content); floating stays a choice (Appearance).
-- [ ] Text: bigger base size, nothing under 11 px, a text-size setting apart from zoom.
+- [x] Text: Settings › Appearance › Text size (compact = before, normal ≈ 14 px body by default, large), rem sizes
+      scaled by the root size, spacing and corners kept in px; 9 px labels raised to 10 px (11 at normal).
 - [ ] Settings: General / Playback / Appearance (playback settings out of Appearance, daily ones out of Advanced);
       Hi-Fi leftovers dropped or tucked away.
 - [ ] Lists: keyboard (one tab stop, arrows, Enter, Shift / Ctrl selection), multi-select with actions, drag and drop

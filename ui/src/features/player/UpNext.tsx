@@ -61,7 +61,7 @@ export function UpNext({ onHide }: { onHide: () => void }) {
   return (
     <aside className="flex min-h-0 flex-col gap-2 rounded-2xl border border-line-soft bg-[color-mix(in_srgb,var(--panel)_55%,transparent)] p-3">
       <div className="flex items-center gap-2 px-1">
-        <span className="text-[13px] font-semibold">{tr('Up next')}</span>
+        <span className="text-[0.8125rem] font-semibold">{tr('Up next')}</span>
         <span className="kicker flex-1">
           {tr('{n} next', { n: next })}
           {played ? ` · ${tr('{n} played', { n: played })}` : ''}
@@ -87,7 +87,7 @@ export function UpNext({ onHide }: { onHide: () => void }) {
                 >
                   <Cover title={title} art={art} size={44} />
                   <span className="min-w-0 flex-1">
-                    <span className={`block truncate text-[13px] font-semibold ${r.current ? 'text-accent' : ''}`}>{title}</span>
+                    <span className={`block truncate text-[0.8125rem] font-semibold ${r.current ? 'text-accent' : ''}`}>{title}</span>
                     <span className="block truncate text-xs text-ink-2">{artist}</span>
                   </span>
                   {r.current ? <Waveform size={14} className="shrink-0 text-accent" /> : t && <span className="shrink-0 text-xs text-ink-3 tabular-nums">{formatDuration(t.durationMs)}</span>}

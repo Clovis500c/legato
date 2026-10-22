@@ -1175,6 +1175,10 @@ const fr: Record<string, string> = {
   'In the sidebar': 'Dans la barre latérale',
   'Floating': 'Flottant',
   'sidebar docked floating video corner': 'barre latérale ancré flottant vidéo coin',
+  // Text size
+  'Text size': 'Taille du texte',
+  'font bigger smaller readable letters': 'police plus grand plus petit lisible lettres',
+  'Large': 'Grande',
 }
 
 export default fr

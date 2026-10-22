@@ -49,7 +49,7 @@ function Section({ title, hint, children, action }: { title: string; hint?: stri
         <h3 className="flex-1 text-xs font-semibold">{title}</h3>
         {action}
       </div>
-      {hint && <p className="-mt-1.5 text-[11px] text-ink-3">{hint}</p>}
+      {hint && <p className="-mt-1.5 text-[0.6875rem] text-ink-3">{hint}</p>}
       {children}
     </section>
   )
@@ -131,7 +131,7 @@ function Reach() {
   const error = useLive((s) => s.error)
   const update = useSettings((s) => s.update)
   const note = (text: string, action?: ReactNode) => (
-    <p className="flex items-center gap-2 rounded-lg bg-recess px-2.5 py-2 text-[11px] text-ink-2">
+    <p className="flex items-center gap-2 rounded-lg bg-recess px-2.5 py-2 text-[0.6875rem] text-ink-2">
       <span className="flex-1">{text}</span>
       {action}
     </p>
@@ -211,8 +211,8 @@ export function EditorPanel({ onHide }: { onHide: () => void }) {
   return (
     <aside aria-label={tr('Live Editor')} onContextMenu={onMenu(() => editorMenu(onHide))} className="flex min-h-0 flex-col gap-2 rounded-2xl border border-line-soft bg-[color-mix(in_srgb,var(--panel)_55%,transparent)] p-3">
       <div className="flex items-center gap-2 px-1">
-        <span className="flex-1 text-[13px] font-semibold">{tr('Live Editor')}</span>
-        <span className="text-[11px] text-ink-3">{e.on ? tr('Edited') : tr('Original sound')}</span>
+        <span className="flex-1 text-[0.8125rem] font-semibold">{tr('Live Editor')}</span>
+        <span className="text-[0.6875rem] text-ink-3">{e.on ? tr('Edited') : tr('Original sound')}</span>
         <Toggle label={tr('Hear the changes (off: the song as is)')} checked={e.on} onChange={bypass} />
         <RoundButton label={tr('Reset all')} kind="plain" size="sm" onClick={reset}>
           <ArrowCounterClockwise size={14} />
@@ -284,7 +284,7 @@ export function EditorPanel({ onHide }: { onHide: () => void }) {
           title={tr('Presets')}
           action={
             naming !== 'preset' && (
-              <button onClick={() => setNaming('preset')} className="text-[11px] font-medium text-ink-2 hover:text-ink">
+              <button onClick={() => setNaming('preset')} className="text-[0.6875rem] font-medium text-ink-2 hover:text-ink">
                 {tr('Save as preset')}
               </button>
             )
@@ -356,7 +356,7 @@ export function EditorPanel({ onHide }: { onHide: () => void }) {
                     <span className="text-ink-2">{tr('Turn around you')}</span>
                     <Toggle label={tr('Turn around you')} checked={e.space.rotate} onChange={(rotate) => sub('space', { rotate })} />
                   </label>
-                  <p className="text-[11px] text-ink-3">{tr('Drag the dot to move the sound.')}</p>
+                  <p className="text-[0.6875rem] text-ink-3">{tr('Drag the dot to move the sound.')}</p>
                 </div>
               </div>
               <Slider center label={tr('Direction')} value={e.space.azimuth} min={-180} max={180} step={1} rest={0} show={(v) => `${v}°`} onChange={(azimuth) => sub('space', { azimuth })} />
@@ -377,7 +377,7 @@ export function EditorPanel({ onHide }: { onHide: () => void }) {
           <Slider center label={tr('Balance')} value={e.balance} min={-1} max={1} step={0.01} rest={0} show={(v) => (v === 0 ? tr('Center') : v < 0 ? tr('{n}% left', { n: Math.round(-v * 100) }) : tr('{n}% right', { n: Math.round(v * 100) }))} onChange={(balance) => setEffects({ balance })} />
         </Section>
         {local && <ExportCopy path={local} effects={e} />}
-        <p className="px-1 text-[11px] text-ink-3">{tr('Only these settings are saved, never the sound itself.')}</p>
+        <p className="px-1 text-[0.6875rem] text-ink-3">{tr('Only these settings are saved, never the sound itself.')}</p>
       </div>
     </aside>
   )

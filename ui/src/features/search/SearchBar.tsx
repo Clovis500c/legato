@@ -27,14 +27,14 @@ export function SearchBar({ children }: { children?: React.ReactNode }) {
           onKeyDown={(e) => e.key === 'Escape' && (setQuery(''), e.currentTarget.blur())}
           placeholder={FILTERS.includes(view) ? tr('Search this list, or press Enter to search everywhere') : tr('Search songs, artists, videos')}
           aria-label={tr('Search')}
-          className="min-w-0 flex-1 bg-transparent text-[13px] outline-none placeholder:text-ink-3"
+          className="min-w-0 flex-1 bg-transparent text-[0.8125rem] outline-none placeholder:text-ink-3"
         />
         {query && (
           <button type="button" aria-label={tr('Clear search')} title={tr('Clear')} onClick={() => setQuery('')} className="grid size-7 place-items-center rounded-full text-ink-3 hover:bg-raised hover:text-ink">
             <X size={13} />
           </button>
         )}
-        <kbd className="mr-2 font-mono text-[9px] tracking-[0.06em] text-ink-3">CTRL K</kbd>
+        <kbd className="mr-2 font-mono text-[0.625rem] tracking-[0.06em] text-ink-3">CTRL K</kbd>
         <button type="submit" aria-label={tr('Search everywhere')} title={tr('Search everywhere')} className="-mr-1 grid h-9 w-14 place-items-center rounded-r-full border-l border-line bg-raised text-ink-2 hover:text-ink">
           <MagnifyingGlass size={16} />
         </button>

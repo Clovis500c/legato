@@ -85,6 +85,10 @@ export interface PlaylistCover {
 }
 
 export const SPOTS = ['tl', 't', 'tr', 'l', 'r', 'bl', 'b', 'br'] as const
+
+/** Text size → root font scale. Compact = the sizes before 2026-10-22 (13 px body); normal ≈ 14 px body. */
+export const TEXT_SCALES = { compact: 1, normal: 1.08, large: 1.17 } as const
+export type TextSize = keyof typeof TEXT_SCALES
 export type Spot = (typeof SPOTS)[number]
 
 /** The app's own Discord application (public id, not a secret): its name shows after "Listening to". */
@@ -138,6 +142,8 @@ export interface Settings {
   customThemes: Theme[]
   covers: 'net' | 'rounded' | 'vinyl'
   density: 'compact' | 'comfort' | 'airy'
+  /** Text only (rem sizes), apart from the interface zoom. */
+  textSize: TextSize
   /** Webview zoom, percent. */
   zoom: number
   readout: boolean
@@ -231,6 +237,7 @@ export const DEFAULTS: Settings = {
   customThemes: [],
   covers: 'rounded',
   density: 'comfort',
+  textSize: 'normal',
   zoom: 100,
   readout: true,
   volume: 'bar',
@@ -289,12 +296,12 @@ const V3: Partial<Settings> = { stage: 'auto' }
 /** Version 4 (2026-10-17): the new Home opens first. */
 const V4: Partial<Settings> = { startView: 'home' }
 
-/** Version 5 (user's picks 2026-10-22): mini player in the sidebar; 2 s fades instead of 5 for those who never
- * changed them. */
+/** Version 5 (user's picks 2026-10-22): mini player in the sidebar, bigger text; 2 s fades instead of 5 for those who
+ * never changed them. */
 function v5(r: Record<string, unknown>): Partial<Settings> {
   const f = (r.fade ?? {}) as Record<string, unknown>
   const untouched = (r.crossfade ?? 5) === 5 && (f.out ?? 5) === 5 && (f.in ?? 5) === 5 && f.advanced !== true
-  return { miniPlace: 'sidebar', ...(untouched && { crossfade: 2, fade: { ...sanitizeFade(r.fade), out: 2, in: 2 } }) }
+  return { miniPlace: 'sidebar', textSize: 'normal', ...(untouched && { crossfade: 2, fade: { ...sanitizeFade(r.fade), out: 2, in: 2 } }) }
 }
 
 const HEX = /^#[0-9a-f]{6}$/i
@@ -375,6 +382,7 @@ export function sanitize(raw: unknown): Settings {
     customThemes,
     covers: pick(r.covers, ['net', 'rounded', 'vinyl'] as const, DEFAULTS.covers),
     density: pick(r.density, ['compact', 'comfort', 'airy'] as const, DEFAULTS.density),
+    textSize: pick(r.textSize, Object.keys(TEXT_SCALES) as TextSize[], DEFAULTS.textSize),
     zoom: typeof r.zoom === 'number' && Number.isFinite(r.zoom) ? Math.min(125, Math.max(90, Math.round(r.zoom / 5) * 5)) : DEFAULTS.zoom,
     readout: typeof r.readout === 'boolean' ? r.readout : DEFAULTS.readout,
     volume: pick(r.volume, ['knob', 'bar'] as const, DEFAULTS.volume),
@@ -563,8 +571,8 @@ const kebab = (k: string) => k.replace(/[A-Z0-9]/g, (c) => `-${c.toLowerCase()}`
 /** Tailwind's radius scale per theme roundness (soft = Tailwind's own). */
 const RADIUS_SCALE: Record<Radius, [string, string, string, string, string]> = {
   sharp: ['1px', '2px', '3px', '4px', '6px'],
-  soft: ['0.25rem', '0.375rem', '0.5rem', '0.75rem', '1rem'],
-  round: ['0.5rem', '0.75rem', '1rem', '1.25rem', '1.75rem'],
+  soft: ['4px', '6px', '8px', '12px', '16px'],
+  round: ['8px', '12px', '16px', '20px', '28px'],
 }
 
 /** Theme + layout settings → CSS custom properties (consumed by styles.css). */
@@ -594,6 +602,7 @@ export function cssVars(t: Theme, s: Settings): Record<string, string> {
     '--font-ui': FONT_STACKS[s.font === 'theme' ? t.font : s.font],
     '--cover-radius': { net: '3px', rounded: '10px', vinyl: '999px' }[s.covers],
     '--row-h': { compact: '40px', comfort: '52px', airy: '64px' }[s.density],
+    '--text-scale': String(TEXT_SCALES[s.textSize]),
     'color-scheme': t.dark ? 'dark' : 'light',
   }
 }

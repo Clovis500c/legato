@@ -128,7 +128,7 @@ function Stage({ video, cover, track, title, youtubeId, pulse }: { video: boolea
         <VideoSlot className={box ? 'min-h-50 min-w-50 bg-transparent!' : 'min-h-50 min-w-89'} style={fit} onClick={toggle} />
       ) : (
         <span ref={coverEl} style={fit} onClick={toggle} title={tr('Play / pause')} className="relative block cursor-pointer">
-          <Cover title={track?.album ?? title} art={track && bigTrackArt(track)} size={200} eager fit={setArt} className="size-full! text-[56px]! shadow-[0_12px_40px_var(--shadow)]" />
+          <Cover title={track?.album ?? title} art={track && bigTrackArt(track)} size={200} eager fit={setArt} className="size-full! text-[3.5rem]! shadow-[0_12px_40px_var(--shadow)]" />
           {video && <VideoSlot hidden className="absolute inset-0 bg-transparent" />}
         </span>
       )}
@@ -244,14 +244,14 @@ export function NowPlaying() {
           <div className="flex w-full max-w-[880px] shrink-0 flex-col gap-4">
             <div className="flex items-end justify-between gap-6">
               <div className="min-w-0">
-                <h2 className="truncate text-[28px] leading-tight font-bold tracking-[-0.02em]">{now.title}</h2>
+                <h2 className="truncate text-[1.75rem] leading-tight font-bold tracking-[-0.02em]">{now.title}</h2>
                 <p className="truncate text-sm text-ink-2">{track?.album ? `${now.artist} — ${track.album}` : now.artist}</p>
               </div>
               {track && <AddToPlaylist trackIds={[track.id]} label={tr('Add {title} to a playlist', { title: track.title })} />}
             </div>
             <div className="flex flex-col gap-1.5">
               {tuner ? <Tuner /> : <SeekBar />}
-              <TimeText part="both" className="text-[13px] text-ink-2" />
+              <TimeText part="both" className="text-[0.8125rem] text-ink-2" />
             </div>
             {/* Side columns may shrink (small window): the volume bar narrows instead of running under Up next. */}
             <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center">

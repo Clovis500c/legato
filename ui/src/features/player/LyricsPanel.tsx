@@ -38,8 +38,9 @@ function Sung({ text, start, end }: { text: string; start: number; end: number }
     const want = pos + LEAD_MS - start
     for (const a of anims.current) {
       if (Math.abs(Number(a.currentTime ?? 0) - want) > RESYNC_MS) a.currentTime = want
-      if (playing) a.play()
-      else a.pause()
+      // play() on a finished word would start it over (two parts lit at once): only out of a pause.
+      if (playing && a.playState === 'paused') a.play()
+      else if (!playing && a.playState === 'running') a.pause()
     }
   }, [pos, playing, start])
   return (
@@ -78,7 +79,7 @@ function Synced({ lines: sung, durationMs }: { lines: Lyrics['lines']; durationM
           key={i}
           data-line={i}
           onClick={() => seek(l.ms)}
-          className={`block w-full origin-left py-1.5 text-left text-[26px] leading-snug font-bold tracking-[-0.01em] transition-[color,transform,opacity] duration-300 ${i === at ? 'scale-[1.03] text-ink' : i < at ? 'text-ink-2 opacity-70 hover:opacity-100' : 'text-ink-3 hover:text-ink-2'}`}
+          className={`block w-full origin-left py-1.5 text-left text-[1.625rem] leading-snug font-bold tracking-[-0.01em] transition-[color,transform,opacity] duration-300 ${i === at ? 'scale-[1.03] text-ink' : i < at ? 'text-ink-2 opacity-70 hover:opacity-100' : 'text-ink-3 hover:text-ink-2'}`}
         >
           {!l.text ? (
             <MusicNotesSimple size={26} weight="bold" aria-label={tr('Instrumental')} className={i === at ? 'animate-pulse' : ''} />
@@ -134,7 +135,7 @@ export function LyricsPanel({ onHide, onUpNext }: { onHide: () => void; onUpNext
   return (
     <aside aria-label={tr('Lyrics')} className="flex min-h-0 flex-col gap-2 rounded-2xl border border-line-soft bg-[color-mix(in_srgb,var(--panel)_55%,transparent)] p-3">
       <div className="flex items-center gap-2 px-1">
-        <span className="flex-1 text-[13px] font-semibold">{tr('Lyrics')}</span>
+        <span className="flex-1 text-[0.8125rem] font-semibold">{tr('Lyrics')}</span>
         <RoundButton label={tr('Show Up next instead')} kind="plain" size="sm" onClick={onUpNext}>
           <Queue size={14} />
         </RoundButton>
@@ -159,10 +160,10 @@ export function LyricsPanel({ onHide, onUpNext }: { onHide: () => void; onUpNext
         <Synced lines={l.lines} durationMs={durationMs} />
       ) : (
         <div className="scroll-quiet min-h-0 flex-1 overflow-y-auto px-2 py-4">
-          <p className="text-[20px] leading-relaxed font-semibold whitespace-pre-line text-ink">{l.plain}</p>
+          <p className="text-[1.25rem] leading-relaxed font-semibold whitespace-pre-line text-ink">{l.plain}</p>
         </div>
       )}
-      {l && <p className="px-1 text-[11px] text-ink-3">{tr('Lyrics: {source}', { source: l.source })}</p>}
+      {l && <p className="px-1 text-[0.6875rem] text-ink-3">{tr('Lyrics: {source}', { source: l.source })}</p>}
     </aside>
   )
 }

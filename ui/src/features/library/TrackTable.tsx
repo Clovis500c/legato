@@ -70,14 +70,14 @@ export function TrackTable({ tracks, empty, editId, rowActions }: { tracks: Libr
                   className={`group absolute inset-x-0 grid items-center gap-4 border-b border-line-soft px-2 ${playable && clickToPlay === 'single' ? 'cursor-pointer' : ''} ${on ? 'bg-accent-soft' : 'hover:bg-raised'}`}
                   style={{ ...grid, height: row, transform: `translateY(${v.start}px)` }}
                 >
-                  <span className="flex justify-end font-mono text-[11px] text-ink-3 tabular-nums">{on ? <Waveform size={14} className="text-accent" /> : String(v.index + 1).padStart(2, '0')}</span>
+                  <span className="flex justify-end font-mono text-[0.6875rem] text-ink-3 tabular-nums">{on ? <Waveform size={14} className="text-accent" /> : String(v.index + 1).padStart(2, '0')}</span>
                   <span className="flex min-w-0 items-center gap-3">
                     {listCovers && <Cover title={t.album ?? t.title} art={trackArt(t)} size={cover} />}
                     <span className="min-w-0">
-                      <span className={`flex items-center gap-2 text-[13px] font-semibold ${on ? 'text-accent' : ''}`}>
+                      <span className={`flex items-center gap-2 text-[0.8125rem] font-semibold ${on ? 'text-accent' : ''}`}>
                         <span className="truncate">{t.title}</span>
                         {playable && !isFull(t, sp) && (
-                          <span title={tr('30-second preview')} className="shrink-0 rounded-[3px] border border-line px-1 font-mono text-[9px] font-normal tracking-[0.08em] text-ink-3">
+                          <span title={tr('30-second preview')} className="shrink-0 rounded-[3px] border border-line px-1 font-mono text-[0.625rem] font-normal tracking-[0.08em] text-ink-3">
                             {tr('PREVIEW')}
                           </span>
                         )}
@@ -110,7 +110,7 @@ export function TrackTable({ tracks, empty, editId, rowActions }: { tracks: Libr
                   </span>
                   {columns.map((c) =>
                     c === 'album' ? (
-                      <span key={c} className="truncate text-[13px] text-ink-2">
+                      <span key={c} className="truncate text-[0.8125rem] text-ink-2">
                         {t.album}
                       </span>
                     ) : c === 'sources' ? (
@@ -120,7 +120,7 @@ export function TrackTable({ tracks, empty, editId, rowActions }: { tracks: Libr
                         ))}
                       </span>
                     ) : (
-                      <span key={c} className="text-right font-mono text-[11px] text-ink-3 tabular-nums">
+                      <span key={c} className="text-right font-mono text-[0.6875rem] text-ink-3 tabular-nums">
                         {formatDuration(t.durationMs)}
                       </span>
                     ),
