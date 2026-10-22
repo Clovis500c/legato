@@ -1,9 +1,9 @@
-import { ArrowCounterClockwise, CaretRight, Queue } from '@phosphor-icons/react'
-import { useEffect, useRef, useState } from 'react'
+import { ArrowCounterClockwise, CaretRight, MusicNotesSimple, Queue } from '@phosphor-icons/react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useStore } from '../../app/store'
 import { api, type Lyrics } from '../../shared/api'
 import { RoundButton } from '../../shared/ui/controls'
-import { lineAt } from './lyricsAt'
+import { lineAt, lineEnd, withBreaks, wordFill } from './lyricsAt'
 import { usePosition } from './Progress'
 import { useNowTrack, usePlayer } from './store'
 import { tr } from '../../shared/i18n/i18n'
@@ -13,8 +13,26 @@ const LEAD_MS = 200
 /** A hand on the scroll wins for this long. */
 const HAND_MS = 4000
 
-/** Synced lines: the current one lit and kept in the middle; click a line to go there. */
-function Synced({ lines }: { lines: Lyrics['lines'] }) {
+/** The line being sung, filled word by word as the song goes (karaoke), softly glowing. Re-renders ~25 times a second. */
+function Sung({ text, start, end }: { text: string; start: number; end: number }) {
+  const pos = usePosition(40)
+  return (
+    <span className="drop-shadow-[0_0_14px_color-mix(in_srgb,var(--ink)_30%,transparent)]">
+      {wordFill(text, start, end, pos + LEAD_MS).map((w, i) => (
+        <span key={i} className="bg-clip-text text-transparent" style={{ backgroundImage: `linear-gradient(90deg, var(--ink) ${w.fill * 100}%, var(--ink-3) ${w.fill * 100}%)` }}>
+          {w.word}
+        </span>
+      ))}
+    </span>
+  )
+}
+
+/**
+ * Synced lines: the current one filled as it's sung and kept in the middle; click a line to go there. ♪ where nothing
+ * is sung.
+ */
+function Synced({ lines: sung, durationMs }: { lines: Lyrics['lines']; durationMs: number | null }) {
+  const lines = useMemo(() => withBreaks(sung, durationMs), [sung, durationMs])
   const pos = usePosition(100)
   const seek = usePlayer((s) => s.seek)
   const at = lineAt(lines, pos + LEAD_MS)
@@ -28,15 +46,21 @@ function Synced({ lines }: { lines: Lyrics['lines'] }) {
   }, [at])
   const touched = () => void (hand.current = performance.now())
   return (
-    <div ref={box} onWheel={touched} onPointerDown={touched} onKeyDown={touched} className="scroll-quiet relative min-h-0 flex-1 overflow-y-auto px-2 py-[40%]">
+    <div ref={box} onWheel={touched} onPointerDown={touched} onKeyDown={touched} className="scroll-quiet relative min-h-0 flex-1 overflow-y-auto px-2 pt-2 pb-6">
       {lines.map((l, i) => (
         <button
           key={i}
           data-line={i}
           onClick={() => seek(l.ms)}
-          className={`block w-full py-1.5 text-left text-[26px] leading-snug font-bold tracking-[-0.01em] transition-colors duration-300 ${i === at ? 'text-ink' : 'text-ink-3 hover:text-ink-2'}`}
+          className={`block w-full origin-left py-1.5 text-left text-[26px] leading-snug font-bold tracking-[-0.01em] transition-[color,transform,opacity] duration-300 ${i === at ? 'scale-[1.03] text-ink' : i < at ? 'text-ink-2 opacity-70 hover:opacity-100' : 'text-ink-3 hover:text-ink-2'}`}
         >
-          {l.text || '♪'}
+          {!l.text ? (
+            <MusicNotesSimple size={26} weight="bold" aria-label={tr('Instrumental')} className={i === at ? 'animate-pulse' : ''} />
+          ) : i === at ? (
+            <Sung text={l.text} start={l.ms} end={lineEnd(lines, i, durationMs)} />
+          ) : (
+            l.text
+          )}
         </button>
       ))}
     </div>
@@ -106,7 +130,7 @@ export function LyricsPanel({ onHide, onUpNext }: { onHide: () => void; onUpNext
       ) : l.instrumental && !l.lines.length && !l.plain ? (
         <p className="m-auto text-lg font-semibold text-ink-2">♪ {tr('Instrumental')}</p>
       ) : l.lines.length ? (
-        <Synced lines={l.lines} />
+        <Synced lines={l.lines} durationMs={durationMs} />
       ) : (
         <div className="scroll-quiet min-h-0 flex-1 overflow-y-auto px-2 py-4">
           <p className="text-[20px] leading-relaxed font-semibold whitespace-pre-line text-ink">{l.plain}</p>

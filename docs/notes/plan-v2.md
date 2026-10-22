@@ -146,6 +146,8 @@ needs it; 2 s fade by default.
 - [ ] Old points: Home sections show / hide / reorder; local folders watched; 50,000-track performance pass; AA
       contrast; playlists over 100 tracks; signing key backup (user's action).
 - [x] Live Editor (user, mid-work): changes not saved as a version survive the app closing (back as they were).
+- [x] Lyrics (user, mid-work): ♪ in the intro, instrumental parts and the outro; no big empty space above and below;
+      the line being sung fills word by word as the song goes (karaoke), past lines dimmed.
 - [ ] Fix what's found, `pnpm check`, CI green on the three systems, merge PR #1.
 
 ## Still to do (one list, updated 2026-10-17)
