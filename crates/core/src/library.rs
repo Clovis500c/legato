@@ -1222,6 +1222,33 @@ mod tests {
         Ok(())
     }
 
+    /// 50,000-song library (2026-10-22 pass): load time. `cargo test -p music-core --release -- --ignored fifty`.
+    #[test]
+    #[ignore]
+    fn fifty_thousand_songs_load_fast() -> Result<()> {
+        let lib = Library::in_memory()?;
+        let t0 = std::time::Instant::now();
+        lib.tx(|| {
+            for i in 0..50_000 {
+                let mut t = spotify();
+                t.title = format!("Song {i}");
+                t.artist = format!("Artist {}", i % 4000);
+                t.isrc = None;
+                t.ids = BTreeMap::from([(Source::Youtube, format!("v{i:010}"))]);
+                lib.upsert_track(&t)?;
+            }
+            Ok(())
+        })?;
+        let insert = t0.elapsed();
+        let t1 = std::time::Instant::now();
+        let all = lib.tracks()?;
+        let load = t1.elapsed();
+        eprintln!("50k: insert {insert:?}, load {load:?}");
+        assert_eq!(all.len(), 50_000);
+        assert!(load.as_millis() < 1500, "load took {load:?}");
+        Ok(())
+    }
+
     #[test]
     fn an_older_library_is_copied_before_migrating_a_new_one_is_not() -> Result<()> {
         let dir = tempfile::tempdir()?;
