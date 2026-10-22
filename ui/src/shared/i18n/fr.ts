@@ -1197,6 +1197,10 @@ const fr: Record<string, string> = {
   // Music Detector without a token
   'The free recognitions are used up for now. Add your own AudD token (free to try) to keep going.': 'Les reconnaissances gratuites sont épuisées pour le moment. Ajoutez votre propre jeton AudD (essai gratuit) pour continuer.',
   'A few free recognitions a day · Add your own AudD token': 'Quelques reconnaissances gratuites par jour · Ajouter votre jeton AudD',
+  // Customize Home
+  'YouTube Music recommendations': 'Recommandations YouTube Music',
+  'Customize Home': 'Personnaliser l’Accueil',
+  'Every Home section is hidden.': 'Toutes les sections de l’Accueil sont masquées.',
 }
 
 export default fr

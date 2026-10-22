@@ -68,6 +68,37 @@ export const PRESETS: Theme[] = [
 export const ACCENTS = ['#FF5A1F', '#E5383B', '#F2B705', '#2E8B57', '#2F6FEB', '#171614']
 
 export const COLUMNS = ['album', 'sources', 'duration'] as const
+
+/** Home's sections, default order. */
+export const HOME_SECTIONS = ['quick', 'mixes', 'recent', 'playlists', 'youtube', 'added'] as const
+export type HomeSectionId = (typeof HOME_SECTIONS)[number]
+export interface HomeSection {
+  id: HomeSectionId
+  on: boolean
+}
+
+/** Saved Home layout → every known section once, in the saved order, ones added since at their default place. */
+export function sanitizeHome(raw: unknown): HomeSection[] {
+  const saved = (Array.isArray(raw) ? raw : []).filter((x): x is HomeSection => !!x && typeof x === 'object' && HOME_SECTIONS.includes((x as HomeSection).id))
+  const out: HomeSection[] = []
+  for (const x of saved) if (!out.some((y) => y.id === x.id)) out.push({ id: x.id, on: x.on !== false })
+  HOME_SECTIONS.forEach((id, i) => {
+    if (out.some((y) => y.id === id)) return
+    const before = HOME_SECTIONS.slice(0, i).findLast((b) => out.some((y) => y.id === b))
+    out.splice(before ? out.findIndex((y) => y.id === before) + 1 : 0, 0, { id, on: true })
+  })
+  return out
+}
+
+/** Home section `id` one place up (-1) or down (1). */
+export function moveHome(list: HomeSection[], id: HomeSectionId, d: 1 | -1): HomeSection[] {
+  const i = list.findIndex((x) => x.id === id)
+  const j = i + d
+  if (i < 0 || j < 0 || j >= list.length) return list
+  const out = [...list]
+  ;[out[i], out[j]] = [out[j], out[i]]
+  return out
+}
 export type Column = (typeof COLUMNS)[number]
 
 export const START_VIEWS = ['home', 'songs', 'mixes', 'albums', 'artists'] as const
@@ -189,6 +220,8 @@ export interface Settings {
   subtitles: boolean
   /** Playlists left out of the sidebar and menus (playlistKey), still in the library. */
   hiddenPlaylists: string[]
+  /** Home: which sections show, in what order. */
+  homeSections: HomeSection[]
   /** Per playlist (playlistKey). Missing = service logo in the sidebar, first cover on its page. */
   playlistCovers: Record<string, PlaylistCover>
   /** Mixes page: 4 song covers, the first one, or the plain numbered tile. */
@@ -265,6 +298,7 @@ export const DEFAULTS: Settings = {
   fade: { advanced: false, out: 2, in: 2, outCurve: 'scurve', inCurve: 'scurve', skip: false, pause: 0 },
   subtitles: false,
   hiddenPlaylists: [],
+  homeSections: HOME_SECTIONS.map((id) => ({ id, on: true })),
   playlistCovers: {},
   mixCovers: 'grid',
   autoUpdate: true,
@@ -409,6 +443,7 @@ export function sanitize(raw: unknown): Settings {
     crossfade: typeof r.crossfade === 'number' && Number.isFinite(r.crossfade) ? Math.min(12, Math.max(0, Math.round(r.crossfade))) : DEFAULTS.crossfade,
     fade: sanitizeFade(r.fade),
     subtitles: typeof r.subtitles === 'boolean' ? r.subtitles : DEFAULTS.subtitles,
+    homeSections: sanitizeHome(r.homeSections),
     hiddenPlaylists: Array.isArray(r.hiddenPlaylists) ? [...new Set(r.hiddenPlaylists.filter((k): k is string => typeof k === 'string' && k.length <= 200))].slice(0, 500) : [],
     playlistCovers: sanitizeCovers(r.playlistCovers),
     mixCovers: pick(r.mixCovers, ['grid', 'single', 'template'] as const, DEFAULTS.mixCovers),

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { contrast, contrastReport, cssVars, DEFAULTS, lookOf, onAccentFor, paletteFrom, PRESETS, resolveTheme, sanitize, sanitizeTheme } from './theme'
+import { contrast, contrastReport, cssVars, DEFAULTS, HOME_SECTIONS, lookOf, moveHome, onAccentFor, paletteFrom, PRESETS, resolveTheme, sanitize, sanitizeHome, sanitizeTheme } from './theme'
 
 describe('sanitize', () => {
   it('falls back to defaults on junk', () => {
@@ -136,5 +136,23 @@ describe('themes v2', () => {
     const look = lookOf({ ...DEFAULTS, covers: 'vinyl' })
     expect(look.covers).toBe('vinyl')
     expect('zoom' in look).toBe(false)
+  })
+})
+
+describe('Home sections', () => {
+  it('keeps the saved order, adds new sections where they belong, drops unknown and repeated ones', () => {
+    expect(sanitizeHome(undefined).map((x) => x.id)).toEqual([...HOME_SECTIONS])
+    const saved = [{ id: 'added', on: true }, { id: 'quick', on: false }, { id: 'nope', on: true }, { id: 'added', on: false }]
+    const got = sanitizeHome(saved)
+    expect(got.slice(0, 2)).toEqual([{ id: 'added', on: true }, { id: 'quick', on: false }])
+    expect(got.map((x) => x.id).sort()).toEqual([...HOME_SECTIONS].sort())
+    // mixes comes right after quick, its neighbor in the default order.
+    expect(got[2].id).toBe('mixes')
+  })
+  it('moves a section up or down, not past the ends', () => {
+    const l = sanitizeHome(undefined)
+    expect(moveHome(l, 'mixes', -1).map((x) => x.id).slice(0, 2)).toEqual(['mixes', 'quick'])
+    expect(moveHome(l, 'quick', -1)).toBe(l)
+    expect(moveHome(l, 'added', 1)).toBe(l)
   })
 })

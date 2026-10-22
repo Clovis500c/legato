@@ -1,13 +1,15 @@
-import { CaretRight, Disc, MicrophoneStage, MusicNotes, Pause, Play, Playlist, PlusCircle, SpinnerGap, VinylRecord } from '@phosphor-icons/react'
+import { ArrowDown, ArrowUp, CaretRight, Disc, MicrophoneStage, MusicNotes, Pause, Play, Playlist, PlusCircle, SlidersHorizontal, SpinnerGap, VinylRecord } from '@phosphor-icons/react'
 import { openUrl } from '@tauri-apps/plugin-opener'
-import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { Fragment, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useSettings } from '../../app/settings'
 import { useStore, type View } from '../../app/store'
 import { api, playlistKey, type HomeItem, type LibraryTrack, type ListRef, type Shelf } from '../../shared/api'
 import { remoteArt, trackArt } from '../../shared/art'
 import { formatCount } from '../../shared/format'
 import { onMenu, type MenuEntry } from '../../shared/ui/ContextMenu'
-import { RoundButton } from '../../shared/ui/controls'
+import { RoundButton, Toggle } from '../../shared/ui/controls'
+import { Dialog } from '../../shared/ui/Dialog'
+import { moveHome, type HomeSectionId } from '../../shared/theme/theme'
 import { Cover } from '../../shared/ui/Cover'
 import { PageHeader } from '../../shared/ui/PageHeader'
 import { SourceIcon } from '../../shared/ui/SourceIcon'
@@ -16,7 +18,7 @@ import { PlaylistCover } from '../library/PlaylistCover'
 import { playerMenu, trackMenu } from '../menus'
 import { MixCard, useMixes } from '../mixes/MixesView'
 import { remoteTrack, useNowTrack, usePlayer } from '../player/store'
-import { tr, trn } from '../../shared/i18n/i18n'
+import { msg, tr, trn } from '../../shared/i18n/i18n'
 
 const CARD = 156
 const ROW = 12
@@ -226,44 +228,108 @@ function ServiceShelves() {
   return shelves.map((s) => <YouTubeShelf key={s.title} shelf={s} />)
 }
 
+const sectionLabels: Record<HomeSectionId, string> = {
+  quick: msg('Shortcuts'),
+  mixes: msg('Made for you'),
+  recent: msg('Recently played'),
+  playlists: msg('Your playlists'),
+  youtube: msg('YouTube Music recommendations'),
+  added: msg('Recently added'),
+}
+
+/** Which Home sections show, in what order (settings homeSections). */
+function CustomizeHome({ onClose }: { onClose: () => void }) {
+  const list = useSettings((s) => s.settings.homeSections)
+  const update = useSettings((s) => s.update)
+  return (
+    <Dialog title={tr('Customize Home')} onClose={onClose}>
+      <ul className="flex flex-col rounded-xl border border-line bg-raised">
+        {list.map((x, i) => (
+          <li key={x.id} className="flex items-center gap-2 border-b border-line-soft px-3 py-2 last:border-b-0">
+            <span className={`flex-1 text-[0.8125rem] ${x.on ? 'font-medium' : 'text-ink-3'}`}>{tr(sectionLabels[x.id])}</span>
+            <RoundButton label={tr('Move up')} kind="plain" size="xs" disabled={i === 0} onClick={() => update({ homeSections: moveHome(list, x.id, -1) })}>
+              <ArrowUp size={13} />
+            </RoundButton>
+            <RoundButton label={tr('Move down')} kind="plain" size="xs" disabled={i === list.length - 1} onClick={() => update({ homeSections: moveHome(list, x.id, 1) })}>
+              <ArrowDown size={13} />
+            </RoundButton>
+            <Toggle label={tr(sectionLabels[x.id])} checked={x.on} onChange={(on) => update({ homeSections: list.map((y) => (y.id === x.id ? { ...y, on } : y)) })} />
+          </li>
+        ))}
+      </ul>
+    </Dialog>
+  )
+}
+
 export function HomeView() {
   const { tracks, playlists, stats, go } = useStore()
   const hidden = useSettings((s) => s.settings.hiddenPlaylists)
+  const sections = useSettings((s) => s.settings.homeSections)
+  const [customizing, setCustomizing] = useState(false)
   const { mixes } = useMixes()
   const recent = useMemo(() => tracks.filter((t) => stats[t.id]?.[1]).sort((a, b) => stats[b.id][1] - stats[a.id][1]).slice(0, ROW), [tracks, stats])
   const added = useMemo(() => [...tracks].sort((a, b) => b.added - a.added).slice(0, ROW), [tracks])
   const shown = useMemo(() => playlists.filter((p) => !hidden.includes(playlistKey(p))).slice(0, ROW), [playlists, hidden])
   return (
     <>
-      <PageHeader kicker={tr('Home')} title={greeting()} />
+      <PageHeader
+        kicker={tr('Home')}
+        title={greeting()}
+        actions={
+          <RoundButton label={tr('Customize Home')} kind="plain" size="md" onClick={() => setCustomizing(true)}>
+            <SlidersHorizontal size={18} />
+          </RoundButton>
+        }
+      />
       <div className="-mx-2 flex min-h-0 flex-1 flex-col gap-10 overflow-y-auto px-2 pb-8">
-        <QuickAccess />
-        {mixes && mixes.length > 0 && (
-          <Row kicker={tr('Made on this PC')} title={tr('Made for you')} action={<SeeAll to={{ name: 'mixes' }} />}>
-            {mixes.slice(0, ROW).map((m) => (
-              <MixCard key={m.id} mix={m} />
-            ))}
-          </Row>
-        )}
-        {recent.length > 0 && (
-          <Row title={tr('Recently played')}>
-            <TrackCards tracks={recent} />
-          </Row>
-        )}
-        {shown.length > 0 && (
-          <Row title={tr('Your playlists')}>
-            {shown.map((p) => (
-              <Card key={p.id} title={p.name} sub={trn(p.trackCount, '{n} song', '{n} songs')} art={<PlaylistCover p={p} size={CARD} big />} onOpen={() => go({ name: 'playlist', id: p.id })} onPlay={() => void api.playlistTracks(p.id).then((t) => usePlayer.getState().playTracks(t, 0))} />
-            ))}
-          </Row>
-        )}
-        <ServiceShelves />
-        {added.length > 0 && (
-          <Row title={tr('Recently added')} action={<SeeAll to={{ name: 'songs' }} sort="added-new" />}>
-            <TrackCards tracks={added} />
-          </Row>
+        {sections
+          .filter((x) => x.on)
+          .map((x) => {
+            const sec: Record<HomeSectionId, () => ReactNode> = {
+              quick: () => <QuickAccess />,
+              mixes: () =>
+                mixes &&
+                mixes.length > 0 && (
+                  <Row kicker={tr('Made on this PC')} title={tr('Made for you')} action={<SeeAll to={{ name: 'mixes' }} />}>
+                    {mixes.slice(0, ROW).map((m) => (
+                      <MixCard key={m.id} mix={m} />
+                    ))}
+                  </Row>
+                ),
+              recent: () =>
+                recent.length > 0 && (
+                  <Row title={tr('Recently played')}>
+                    <TrackCards tracks={recent} />
+                  </Row>
+                ),
+              playlists: () =>
+                shown.length > 0 && (
+                  <Row title={tr('Your playlists')}>
+                    {shown.map((p) => (
+                      <Card key={p.id} title={p.name} sub={trn(p.trackCount, '{n} song', '{n} songs')} art={<PlaylistCover p={p} size={CARD} big />} onOpen={() => go({ name: 'playlist', id: p.id })} onPlay={() => void api.playlistTracks(p.id).then((t) => usePlayer.getState().playTracks(t, 0))} />
+                    ))}
+                  </Row>
+                ),
+              youtube: () => <ServiceShelves />,
+              added: () =>
+                added.length > 0 && (
+                  <Row title={tr('Recently added')} action={<SeeAll to={{ name: 'songs' }} sort="added-new" />}>
+                    <TrackCards tracks={added} />
+                  </Row>
+                ),
+            }
+            return <Fragment key={x.id}>{sec[x.id]()}</Fragment>
+          })}
+        {sections.every((x) => !x.on) && (
+          <p className="m-auto text-center text-sm text-ink-2">
+            {tr('Every Home section is hidden.')}{' '}
+            <button onClick={() => setCustomizing(true)} className="font-semibold text-ink underline-offset-2 hover:underline">
+              {tr('Customize Home')}
+            </button>
+          </p>
         )}
       </div>
+      {customizing && <CustomizeHome onClose={() => setCustomizing(false)} />}
     </>
   )
 }
