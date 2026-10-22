@@ -8,6 +8,7 @@ import { Button } from '../../shared/ui/Button'
 import { Led, RoundButton } from '../../shared/ui/controls'
 import { onMenu } from '../../shared/ui/ContextMenu'
 import { Cover } from '../../shared/ui/Cover'
+import { CoverGrid } from '../../shared/ui/CoverGrid'
 import { PageHeader } from '../../shared/ui/PageHeader'
 import { coverTracks } from '../library/covers'
 import { musicOnly } from '../library/filter'
@@ -84,11 +85,7 @@ function MixCover({ mix, tracks, size }: { mix: Mix; tracks: LibraryTrack[]; siz
   return (
     <span className="relative shrink-0 overflow-hidden rounded-cover border border-line-soft bg-recess" style={{ width: size, height: size }}>
       {style === 'grid' && songs.length === 4 ? (
-        <span className="grid size-full grid-cols-2">
-          {songs.map((t) => (
-            <img key={t.id} src={trackArt(t)[0]} alt="" draggable={false} loading="lazy" className="size-full object-cover" />
-          ))}
-        </span>
+        <CoverGrid arts={songs.map(trackArt)} size={size - 2} framed={false} />
       ) : (
         <Cover title={mixTitle(mix)} art={trackArt(songs[0])} size={size} className="rounded-none! border-0!" />
       )}
