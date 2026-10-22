@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { api, type Credentials, type LibraryPlaylist, type LibraryTrack, type PlaylistEdit, type Service, type SourceStatus, type SyncReport, type Track } from '../shared/api'
 import type { Filter, GroupSize, GroupSort, PlayStats, Sort } from '../features/library/filter'
 import { tr, trn } from '../shared/i18n/i18n'
+import { noteList } from '../features/home/recentLists'
 
 export type SettingsSection = 'general' | 'playback' | 'appearance' | 'sources' | 'sync' | 'shield' | 'shortcuts' | 'about'
 
@@ -144,6 +145,8 @@ export const useStore = create<State>((set, get) => {
     // Back to it: its text again.
     if (view.name === 'search' && get().view.name !== 'search' && get().search) set({ query: get().search!.q })
     set({ view, scoped: true })
+    // A playlist, album, artist or mix opened: Home's Jump back in.
+    noteList(view)
     if (view.name === 'playlist') loadPlaylist(view.id)
   }
 

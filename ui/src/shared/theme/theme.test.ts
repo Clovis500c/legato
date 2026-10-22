@@ -83,7 +83,7 @@ describe('resolveTheme', () => {
 
   it('settings saved before v2 get the new defaults once, later choices stay', () => {
     const old = sanitize({ volume: 'knob', tuner: true, clickToPlay: 'double', zoom: 110 })
-    expect(old).toMatchObject({ volume: 'bar', tuner: false, clickToPlay: 'single', stage: 'auto', zoom: 110, startView: 'home', defaultsVersion: 5 })
+    expect(old).toMatchObject({ volume: 'bar', tuner: false, clickToPlay: 'single', stage: 'auto', zoom: 110, startView: 'home', defaultsVersion: 6 })
     // Saved at v2: only v3's change applies.
     expect(sanitize({ volume: 'knob', stage: 'video', defaultsVersion: 2 })).toMatchObject({ volume: 'knob', stage: 'auto' })
     // Home opens first once (v4), then the user's pick stays.
@@ -93,6 +93,10 @@ describe('resolveTheme', () => {
     expect(sanitize({ crossfade: 5, fade: { out: 5, in: 5 }, defaultsVersion: 4 })).toMatchObject({ crossfade: 2, fade: { out: 2, in: 2 } })
     expect(sanitize({ crossfade: 8, fade: { out: 8, in: 3 }, defaultsVersion: 4 })).toMatchObject({ crossfade: 8, fade: { out: 8, in: 3 } })
     expect(sanitize({ crossfade: 5, fade: { out: 5, in: 5 }, defaultsVersion: 5 })).toMatchObject({ crossfade: 5, fade: { out: 5, in: 5 } })
+    // Your playlists off once (v6), back on when the user turns it on again.
+    const off = (x: ReturnType<typeof sanitize>) => x.homeSections.find((h) => h.id === 'playlists')?.on
+    expect(off(sanitize({ homeSections: [{ id: 'playlists', on: true }], defaultsVersion: 5 }))).toBe(false)
+    expect(off(sanitize({ homeSections: [{ id: 'playlists', on: true }], defaultsVersion: 6 }))).toBe(true)
     // Chosen again after migration: kept.
     expect(sanitize({ ...old, volume: 'knob', clickToPlay: 'double' })).toMatchObject({ volume: 'knob', clickToPlay: 'double' })
   })
@@ -142,16 +146,17 @@ describe('themes v2', () => {
 describe('Home sections', () => {
   it('keeps the saved order, adds new sections where they belong, drops unknown and repeated ones', () => {
     expect(sanitizeHome(undefined).map((x) => x.id)).toEqual([...HOME_SECTIONS])
+    expect(sanitizeHome(undefined).find((x) => x.id === 'playlists')?.on).toBe(false)
     const saved = [{ id: 'added', on: true }, { id: 'quick', on: false }, { id: 'nope', on: true }, { id: 'added', on: false }]
     const got = sanitizeHome(saved)
     expect(got.slice(0, 2)).toEqual([{ id: 'added', on: true }, { id: 'quick', on: false }])
     expect(got.map((x) => x.id).sort()).toEqual([...HOME_SECTIONS].sort())
-    // mixes comes right after quick, its neighbor in the default order.
-    expect(got[2].id).toBe('mixes')
+    // week and mixes come right after quick, their neighbors in the default order.
+    expect(got.slice(2, 4).map((x) => x.id)).toEqual(['week', 'mixes'])
   })
   it('moves a section up or down, not past the ends', () => {
     const l = sanitizeHome(undefined)
-    expect(moveHome(l, 'mixes', -1).map((x) => x.id).slice(0, 2)).toEqual(['mixes', 'quick'])
+    expect(moveHome(l, 'week', -1).map((x) => x.id).slice(0, 2)).toEqual(['week', 'quick'])
     expect(moveHome(l, 'quick', -1)).toBe(l)
     // Dragged: dropped before the section at the slot, or last.
     expect(placeHome(l, 'quick', 3).map((x) => x.id).slice(0, 3)).toEqual([l[1].id, l[2].id, 'quick'])

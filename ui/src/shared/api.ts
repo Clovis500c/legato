@@ -69,6 +69,12 @@ export interface HomeItem {
   list: ListRef | null
 }
 
+/** crates/connectors ytmusic::Home: shelves, and the mood chips that filter them (params = the chip's ask). */
+export interface YtmHome {
+  shelves: Shelf[]
+  moods: { title: string; params: string }[]
+}
+
 export interface Shelf {
   title: string
   items: HomeItem[]
@@ -421,7 +427,8 @@ export const api = {
   addTrack: (track: Track) => invoke<number>('add_track', { track }),
   /** Search hit with its YouTube version (one search if missing), nothing written: play without adding. */
   resolveTrack: (track: Track) => invoke<Track>('resolve_track', { track }),
-  ytmHome: () => invoke<Shelf[]>('ytm_home'),
+  /** mood = a chip's params: the home filtered to it. */
+  ytmHome: (mood?: string) => invoke<YtmHome>('ytm_home', { mood: mood ?? null }),
   ytmList: (list: ListRef) => invoke<Track[]>('ytm_list', { list }),
   /** YouTube versions for tracks with no full source (1 search each, daily budget). */
   findVersions: (ids: number[]) => invoke<FindReport>('find_versions', { ids }),
@@ -569,6 +576,8 @@ export const api = {
   alternativeVideos: (trackId: number, exclude: string[]) => invoke<string[]>('alternative_videos', { trackId, exclude }),
   /** Track id → [listens, last start]: Most played / Recently played. */
   playStats: () => invoke<Record<number, [number, number]>>('play_stats'),
+  /** Plays since `since` (unix s, two weeks at most), oldest first. */
+  recentPlays: (since: number) => invoke<Play[]>('recent_plays', { since }),
   cacheStats: () => invoke<CacheStats>('cache_stats'),
   /** Third-party notices shipped with the app, in the default browser. */
   openLicenses: () => invoke<void>('open_licenses'),

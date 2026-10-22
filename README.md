@@ -29,7 +29,7 @@ A fast, private desktop music player for Windows, built with Tauri 2 and Rust.
 - **Playlists.** Import from YouTube Music and Spotify, create your own, export to YouTube Music, and share them by
   link, QR code or a 6-digit code on your local network.
 - **Mixes made on your PC.** Daily Mixes, a time-of-day mix and Rediscover, built from your own listening history.
-  A Home page you arrange by dragging its sections.
+  A Home page with Jump back in, Your week and YouTube Music's moods, arranged by dragging its sections.
 - **Windows integration.** Media keys, the Windows media panel, tray icon, keyboard shortcuts, system light/dark mode
   and accent color.
 - **Live Editor.** Change the playing song as it plays: slowed, sped up, pitch, bass and EQ, reverb, echo, 3D / 8D
