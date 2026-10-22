@@ -133,7 +133,7 @@ User's picks: mini player docked in the sidebar; Ctrl+S / R / P kept; YouTube so
 needs it; 2 s fade by default.
 - [x] Defaults: 2 s fade (once, for those who kept 5 s), YouTube's sound processed only when an effect, Adaptive Sound or
       the moving cover needs it (already so: the setting is a permission; its text now says it).
-- [ ] Sliders: bigger hit area (3 px today), handle visible in the Live Editor.
+- [x] Sliders: bigger hit area (3 px today), handle visible in the Live Editor.
 - [ ] Mini player docked at the bottom of the sidebar (never over the content).
 - [ ] Text: bigger base size, nothing under 11 px, a text-size setting apart from zoom.
 - [ ] Settings: General / Playback / Appearance (playback settings out of Appearance, daily ones out of Advanced);

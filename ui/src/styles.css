@@ -200,8 +200,17 @@ code {
 }
 
 /* Range bars: track painted inline (see shared/ui/Bar). */
+/* Sliders: a 16 px box to grab (review 2026-10-22: 3 px was too thin), only a 3 px track painted in its middle.
+   Fill = inline background-image; never the `background` shorthand (it would reset size and position). */
 .bar {
-  @apply h-[3px] cursor-pointer appearance-none rounded-full;
+  @apply h-4 cursor-pointer appearance-none bg-transparent;
+  background-size: 100% 3px;
+  background-position: center;
+  background-repeat: no-repeat;
+  transition: background-size 0.12s;
+}
+.bar:hover:not(:disabled) {
+  background-size: 100% 5px;
 }
 .bar:disabled {
   @apply cursor-default;
@@ -209,6 +218,8 @@ code {
 .bar::-webkit-slider-thumb {
   @apply size-3 appearance-none rounded-full bg-ink opacity-0;
 }
+/* .handle: thumb always shown (Live Editor: where each setting stands). */
+.bar.handle::-webkit-slider-thumb,
 .bar:hover::-webkit-slider-thumb,
 .bar:focus-visible::-webkit-slider-thumb {
   @apply opacity-100;

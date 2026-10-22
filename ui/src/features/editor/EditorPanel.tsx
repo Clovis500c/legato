@@ -34,7 +34,7 @@ function Slider({ label, value, min, max, step, rest, center = false, show, onCh
         value={value}
         onChange={(e) => onChange(+e.target.value)}
         onDoubleClick={() => onChange(rest)}
-        className="bar"
+        className="bar handle"
         style={{ backgroundImage: `linear-gradient(to right, var(--line) ${a}%, var(--ink) ${a}%, var(--ink) ${b}%, var(--line) ${b}%)` }}
       />
       <span className={`text-right font-mono tabular-nums ${value === rest ? 'text-ink-3' : 'text-ink'}`}>{show(value)}</span>

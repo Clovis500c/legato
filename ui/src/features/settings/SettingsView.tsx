@@ -74,7 +74,7 @@ function InterfaceSize() {
   return (
     <Group title={msg('Interface size')} hint={`${v}%`}>
       <div className="flex h-8 items-center gap-3">
-        <input type="range" aria-label={tr('Interface size')} min={90} max={125} step={5} value={v} onChange={(e) => setDraft(+e.target.value)} onKeyDown={(e) => e.key === 'Enter' && apply()} className="bar w-60" style={{ background: `linear-gradient(to right, var(--ink) ${((v - 90) / 35) * 100}%, var(--line) 0)` }} />
+        <input type="range" aria-label={tr('Interface size')} min={90} max={125} step={5} value={v} onChange={(e) => setDraft(+e.target.value)} onKeyDown={(e) => e.key === 'Enter' && apply()} className="bar w-60" style={{ backgroundImage: `linear-gradient(to right, var(--ink) ${((v - 90) / 35) * 100}%, var(--line) 0)` }} />
         {draft !== null && draft !== s.zoom && (
           <>
             <Button onClick={apply}>{tr('Apply {n}%', { n: v })}</Button>
@@ -167,7 +167,7 @@ function Appearance() {
                 {tr('Edit curves')}
               </Button>
             ) : (
-              <input type="range" aria-label={tr('Fade between songs')} min={0} max={12} step={1} value={s.crossfade} onChange={(e) => update({ crossfade: +e.target.value })} className="bar w-40" style={{ background: `linear-gradient(to right, var(--ink) ${(s.crossfade / 12) * 100}%, var(--line) 0)` }} />
+              <input type="range" aria-label={tr('Fade between songs')} min={0} max={12} step={1} value={s.crossfade} onChange={(e) => update({ crossfade: +e.target.value })} className="bar w-40" style={{ backgroundImage: `linear-gradient(to right, var(--ink) ${(s.crossfade / 12) * 100}%, var(--line) 0)` }} />
             )}
           </Row>
           <Row label={msg('Tuner scale')} sub={tr('Tuner-style progress bar in full screen')} preview={<TunerScene tuner={s.tuner} />}>

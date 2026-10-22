@@ -160,7 +160,7 @@ export function VolumeControl({ big }: { big?: boolean }) {
       </RoundButton>
       <span className="relative flex min-w-0 items-center">
         <Bar label={tr('Volume')} value={volume} max={1} onChange={setVolume} className={`min-w-10 shrink ${big ? 'w-32' : 'w-24'}`} />
-        <AdaptiveBar className="absolute inset-x-0 -bottom-1.5" />
+        <AdaptiveBar className="absolute inset-x-0 bottom-0" />
       </span>
     </span>
   )
