@@ -12,7 +12,6 @@ import { onMenu } from '../../shared/ui/ContextMenu'
 import { RoundButton, Segmented } from '../../shared/ui/controls'
 import { Cover } from '../../shared/ui/Cover'
 import { SourceIcon } from '../../shared/ui/SourceIcon'
-import { AddToPlaylist } from '../library/AddToPlaylist'
 import { playerMenu } from '../menus'
 import { useAmbient } from './ambient'
 import { useBackdrop } from './immersive'
@@ -247,7 +246,6 @@ export function NowPlaying() {
                 <h2 className="truncate text-[1.75rem] leading-tight font-bold tracking-[-0.02em]">{now.title}</h2>
                 <p className="truncate text-sm text-ink-2">{track?.album ? `${now.artist} — ${track.album}` : now.artist}</p>
               </div>
-              {track && <AddToPlaylist trackIds={[track.id]} label={tr('Add {title} to a playlist', { title: track.title })} />}
             </div>
             <div className="flex flex-col gap-1.5">
               {tuner ? <Tuner /> : <SeekBar />}
