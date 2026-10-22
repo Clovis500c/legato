@@ -128,6 +128,25 @@ it lands (tested, `pnpm check` green, committed). Technical plan, rule changes a
       Liner), every page, menu, setting and edge case. Full report handed to the user. Summary, fixes made after it
       and what stays open: [review-2026-10-22.md](review-2026-10-22.md).
 
+**Phase 7: what the review left open, then the old points (user, 2026-10-22).** Then merge to `master` (user's OK given).
+User's picks: mini player docked in the sidebar; Ctrl+S / R / P kept; YouTube sound processing on only when something
+needs it; 2 s fade by default.
+- [x] Defaults: 2 s fade (once, for those who kept 5 s), YouTube's sound processed only when an effect, Adaptive Sound or
+      the moving cover needs it (already so: the setting is a permission; its text now says it).
+- [ ] Sliders: bigger hit area (3 px today), handle visible in the Live Editor.
+- [ ] Mini player docked at the bottom of the sidebar (never over the content).
+- [ ] Text: bigger base size, nothing under 11 px, a text-size setting apart from zoom.
+- [ ] Settings: General / Playback / Appearance (playback settings out of Appearance, daily ones out of Advanced);
+      Hi-Fi leftovers dropped or tucked away.
+- [ ] Lists: keyboard (one tab stop, arrows, Enter, Shift / Ctrl selection), multi-select with actions, drag and drop
+      to playlists and within custom playlists, reorderable Up next.
+- [ ] Library: artists from YouTube channels cleaned ("- Topic", several artists), chips count what the page shows,
+      sort by clicking column headers.
+- [ ] Music Detector without a personal token: check for any keyless option, else a clearer way in.
+- [ ] Old points: Home sections show / hide / reorder; local folders watched; 50,000-track performance pass; AA
+      contrast; playlists over 100 tracks; signing key backup (user's action).
+- [ ] Fix what's found, `pnpm check`, CI green on the three systems, merge PR #1.
+
 ## Still to do (one list, updated 2026-10-17)
 
 Everything still open, gathered from the sections below. Tick a line when it lands; details stay in their section.

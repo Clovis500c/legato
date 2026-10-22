@@ -83,12 +83,16 @@ describe('resolveTheme', () => {
 
   it('settings saved before v2 get the new defaults once, later choices stay', () => {
     const old = sanitize({ volume: 'knob', tuner: true, clickToPlay: 'double', zoom: 110 })
-    expect(old).toMatchObject({ volume: 'bar', tuner: false, clickToPlay: 'single', stage: 'auto', zoom: 110, startView: 'home', defaultsVersion: 4 })
+    expect(old).toMatchObject({ volume: 'bar', tuner: false, clickToPlay: 'single', stage: 'auto', zoom: 110, startView: 'home', defaultsVersion: 5 })
     // Saved at v2: only v3's change applies.
     expect(sanitize({ volume: 'knob', stage: 'video', defaultsVersion: 2 })).toMatchObject({ volume: 'knob', stage: 'auto' })
     // Home opens first once (v4), then the user's pick stays.
     expect(sanitize({ startView: 'albums', defaultsVersion: 3 }).startView).toBe('home')
     expect(sanitize({ startView: 'albums', defaultsVersion: 4 }).startView).toBe('albums')
+    // 2 s fades once (v5), only where the old 5 s defaults were never changed.
+    expect(sanitize({ crossfade: 5, fade: { out: 5, in: 5 }, defaultsVersion: 4 })).toMatchObject({ crossfade: 2, fade: { out: 2, in: 2 } })
+    expect(sanitize({ crossfade: 8, fade: { out: 8, in: 3 }, defaultsVersion: 4 })).toMatchObject({ crossfade: 8, fade: { out: 8, in: 3 } })
+    expect(sanitize({ crossfade: 5, fade: { out: 5, in: 5 }, defaultsVersion: 5 })).toMatchObject({ crossfade: 5, fade: { out: 5, in: 5 } })
     // Chosen again after migration: kept.
     expect(sanitize({ ...old, volume: 'knob', clickToPlay: 'double' })).toMatchObject({ volume: 'knob', clickToPlay: 'double' })
   })

@@ -323,7 +323,7 @@ function SoundGroup() {
               ? tr('Off: YouTube plays untouched; the features above and the Live Editor work on local files only')
               : used && youtubeError
                 ? tr('Not on this video: {error}. It plays as usual.', { error: youtubeError })
-                : tr('Used by the features above and the Live Editor. Nothing is recorded or saved; the video plays as usual if this fails.')
+                : tr('Only while the features above or the Live Editor are in use; otherwise YouTube plays untouched. Nothing is recorded or saved, and the video plays as usual if this fails.')
           }
         >
           <Toggle label={tr("Process YouTube's sound")} checked={s.liveYoutube} onChange={(liveYoutube) => update({ liveYoutube })} />

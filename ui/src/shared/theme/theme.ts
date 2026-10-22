@@ -104,7 +104,7 @@ export interface DiscordSettings {
 }
 
 /** Bumped when defaults change for everyone (saved settings get the new ones once). */
-const DEFAULTS_VERSION = 4
+const DEFAULTS_VERSION = 5
 
 /** Adaptive Sound targets, LUFS: Quiet, Normal (streaming services' usual level), Loud. */
 export const ADAPTIVE_LEVELS = [-20, -14, -11] as const
@@ -251,8 +251,8 @@ export const DEFAULTS: Settings = {
   stage: 'auto',
   miniSpot: 'br',
   miniWidth: 356,
-  crossfade: 5,
-  fade: { advanced: false, out: 5, in: 5, outCurve: 'scurve', inCurve: 'scurve', skip: false, pause: 0 },
+  crossfade: 2,
+  fade: { advanced: false, out: 2, in: 2, outCurve: 'scurve', inCurve: 'scurve', skip: false, pause: 0 },
   subtitles: false,
   hiddenPlaylists: [],
   playlistCovers: {},
@@ -285,6 +285,13 @@ const V3: Partial<Settings> = { stage: 'auto' }
 
 /** Version 4 (2026-10-17): the new Home opens first. */
 const V4: Partial<Settings> = { startView: 'home' }
+
+/** Version 5 (user's pick 2026-10-22): 2 s fades instead of 5, for those who never changed them. */
+function v5(r: Record<string, unknown>): Partial<Settings> {
+  const f = (r.fade ?? {}) as Record<string, unknown>
+  const untouched = (r.crossfade ?? 5) === 5 && (f.out ?? 5) === 5 && (f.in ?? 5) === 5 && f.advanced !== true
+  return untouched ? { crossfade: 2, fade: { ...sanitizeFade(r.fade), out: 2, in: 2 } } : {}
+}
 
 const HEX = /^#[0-9a-f]{6}$/i
 /** Background file names as `save_background` writes them. */
@@ -415,6 +422,7 @@ export function sanitize(raw: unknown): Settings {
     ...(saved < 2 ? V2 : {}),
     ...(saved < 3 ? V3 : {}),
     ...(saved < 4 ? V4 : {}),
+    ...(saved < 5 ? v5(r) : {}),
   }
 }
 

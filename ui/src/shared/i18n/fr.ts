@@ -745,7 +745,7 @@ const fr: Record<string, string> = {
   "Process YouTube's sound": 'Traiter le son de YouTube',
   'Off: YouTube plays untouched; the features above and the Live Editor work on local files only': 'Désactivé : YouTube joue tel quel ; les fonctions ci-dessus et le Live Editor ne marchent que sur les fichiers locaux',
   'Not on this video: {error}. It plays as usual.': 'Pas sur cette vidéo : {error}. Elle joue normalement.',
-  'Used by the features above and the Live Editor. Nothing is recorded or saved; the video plays as usual if this fails.': 'Utilisé par les fonctions ci-dessus et le Live Editor. Rien n’est enregistré ni conservé ; la vidéo joue normalement en cas d’échec.',
+  'Only while the features above or the Live Editor are in use; otherwise YouTube plays untouched. Nothing is recorded or saved, and the video plays as usual if this fails.': 'Seulement pendant l’utilisation des fonctions ci-dessus ou du Live Editor ; sinon YouTube joue tel quel. Rien n’est enregistré ni sauvegardé, et la vidéo joue normalement en cas d’échec.',
   'Advanced fade': 'Fondu avancé',
   'Your own lengths and shapes, below': 'Vos propres durées et formes, ci-dessous',
   'Off: {fade} (Appearance › Player)': 'Désactivé : {fade} (Apparence › Lecteur)',
