@@ -81,3 +81,58 @@ pub async fn export_edit(app: tauri::AppHandle, input: String, output: String, e
 pub fn export_stop() {
     EXPORT_STOP.store(true, Ordering::Relaxed);
 }
+
+/// Live Editor settings not saved as a version yet, per song: they come back after a close or a crash. This PC only
+/// (library setting `edit_drafts`, not synced), the last 50 songs.
+#[derive(serde::Serialize, serde::Deserialize, Clone)]
+pub struct Draft {
+    pub effects: music_player::Effects,
+    /// Version they started from, if any.
+    pub version: Option<i64>,
+    #[serde(default)]
+    pub at: i64,
+}
+
+const DRAFTS: &str = "edit_drafts";
+const MAX_DRAFTS: usize = 50;
+
+fn drafts(state: &AppState) -> serde_json::Map<String, serde_json::Value> {
+    state.lib().setting(DRAFTS).ok().flatten().and_then(|v| v.as_object().cloned()).unwrap_or_default()
+}
+
+#[tauri::command]
+pub fn edit_draft(state: State<AppState>, song: String) -> CmdResult<Option<Draft>> {
+    if !song_key_ok(&song) {
+        return Err("bad song key".into());
+    }
+    Ok(drafts(&state).remove(&song).and_then(|v| serde_json::from_value(v).ok()))
+}
+
+/// Keeps (Some) or drops (None, saved or reset) this song's unsaved settings.
+#[tauri::command]
+pub fn save_edit_draft(state: State<AppState>, song: String, draft: Option<Draft>) -> CmdResult<()> {
+    if !song_key_ok(&song) {
+        return Err("bad song key".into());
+    }
+    let mut all = drafts(&state);
+    match draft {
+        Some(d) => {
+            let d = Draft { effects: d.effects.clamped(), version: d.version, at: unix_now() };
+            all.insert(song, serde_json::to_value(d).map_err(err)?);
+        }
+        None => {
+            if all.remove(&song).is_none() {
+                return Ok(());
+            }
+        }
+    }
+    // Oldest out first.
+    while all.len() > MAX_DRAFTS {
+        let oldest = all.iter().min_by_key(|(_, v)| v.get("at").and_then(|a| a.as_i64()).unwrap_or(0)).map(|(k, _)| k.clone());
+        match oldest {
+            Some(k) => all.remove(&k),
+            None => break,
+        };
+    }
+    state.lib().set_setting(DRAFTS, &serde_json::Value::Object(all)).map_err(err)
+}

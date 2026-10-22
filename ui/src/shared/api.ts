@@ -472,6 +472,9 @@ export const api = {
   saveEdit: (id: number | null, song: string | null, name: string, effects: Effects) => invoke<number>('save_edit', { id, song, name, effects }),
   deleteEdit: (id: number) => invoke<void>('delete_edit', { id }),
   activateEdit: (song: string, id: number | null) => invoke<void>('activate_edit', { song, id }),
+  /** Live Editor settings not saved as a version (kept through a close), per song. */
+  editDraft: (song: string) => invoke<{ effects: Effects; version: number | null } | null>('edit_draft', { song }),
+  saveEditDraft: (song: string, draft: { effects: Effects; version: number | null } | null) => invoke<void>('save_edit_draft', { song, draft }),
   /** Live Editor: a local file's copy with the effects applied, as a new WAV (the original is only read). */
   exportEdit: (input: string, output: string, effects: Effects) => invoke<void>('export_edit', { input, output, effects }),
   exportStop: () => invoke<void>('export_stop'),

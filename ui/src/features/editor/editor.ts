@@ -29,27 +29,70 @@ function safeJson(s: string): unknown {
   }
 }
 
-/** A song starts: its active version plays, else the song as is. */
+/**
+ * A song starts: its unsaved settings if the app closed on them (user's request 2026-10-22), else its active version,
+ * else the song as is.
+ */
 export async function loadSong(song: string | null) {
+  flushDraft()
   useEditor.setState({ song })
-  const [versions, presets] = await Promise.all([song ? api.edits(song).catch(() => []) : Promise.resolve([]), api.edits(null).catch(() => [])])
+  const [versions, presets, draft] = await Promise.all([
+    song ? api.edits(song).catch(() => []) : Promise.resolve([]),
+    api.edits(null).catch(() => []),
+    song ? api.editDraft(song).catch(() => null) : Promise.resolve(null),
+  ])
   // Another song came meanwhile.
   if (useEditor.getState().song !== song) return
   const active = versions.find((v) => v.active)
+  if (draft) {
+    const from = versions.some((v) => v.id === draft.version) ? draft.version : null
+    return useEditor.setState({ versions, presets, versionId: from, effects: cleanEffects(draft.effects), dirty: true })
+  }
   useEditor.setState({ versions, presets, versionId: active?.id ?? null, effects: active ? parse(active) : NEUTRAL, dirty: false })
+}
+
+// Unsaved settings go to the library a moment after the last change (and right away when the song changes or the
+// window closes): a crash loses a quarter of a second at most.
+let draftTimer: ReturnType<typeof setTimeout> | undefined
+let draftFor: string | null = null
+function flushDraft() {
+  if (draftTimer === undefined) return
+  clearTimeout(draftTimer)
+  draftTimer = undefined
+  const s = useEditor.getState()
+  if (draftFor && draftFor === s.song) void api.saveEditDraft(draftFor, s.dirty ? { effects: s.effects, version: s.versionId } : null).catch(() => {})
+}
+function keepDraft() {
+  draftFor = useEditor.getState().song
+  clearTimeout(draftTimer)
+  draftTimer = setTimeout(flushDraft, 250)
+}
+/** Saved, or back to a saved state: no draft left. */
+function dropDraft() {
+  clearTimeout(draftTimer)
+  draftTimer = undefined
+  const { song } = useEditor.getState()
+  if (song) void api.saveEditDraft(song, null).catch(() => {})
 }
 
 export function setEffects(patch: Partial<Effects>) {
   useEditor.setState((s) => ({ effects: { ...s.effects, ...patch }, dirty: true }))
+  keepDraft()
 }
 
 /** On / off without losing the settings: hear the song as is, then back (A / B). */
 export const bypass = (on: boolean) => useEditor.setState((s) => ({ effects: { ...s.effects, on } }))
 
-export const reset = () => useEditor.setState({ effects: NEUTRAL, versionId: null, dirty: true })
+export function reset() {
+  useEditor.setState({ effects: NEUTRAL, versionId: null, dirty: true })
+  keepDraft()
+}
 
 /** Settings from a built-in or saved preset, to tune and save as a version. */
-export const applyPreset = (effects: Effects) => useEditor.setState({ effects: { ...effects, on: true }, versionId: null, dirty: true })
+export function applyPreset(effects: Effects) {
+  useEditor.setState({ effects: { ...effects, on: true }, versionId: null, dirty: true })
+  keepDraft()
+}
 
 async function refresh() {
   const { song } = useEditor.getState()
@@ -64,6 +107,7 @@ export async function saveVersion(name: string) {
   const id = await api.saveEdit(null, song, name, effects)
   await api.activateEdit(song, id)
   useEditor.setState({ versionId: id, dirty: false })
+  dropDraft()
   await refresh()
 }
 
@@ -74,6 +118,7 @@ export async function updateVersion() {
   if (!song || !v) return
   await api.saveEdit(v.id, song, v.name, effects)
   useEditor.setState({ dirty: false })
+  dropDraft()
   await refresh()
 }
 
@@ -84,6 +129,7 @@ export async function playVersion(id: number | null) {
   await api.activateEdit(song, id)
   const v = versions.find((x) => x.id === id)
   useEditor.setState({ versionId: id, effects: v ? parse(v) : NEUTRAL, dirty: false })
+  dropDraft()
   await refresh()
 }
 
@@ -124,5 +170,11 @@ export function startEditor(): () => void {
     void loadSong(k)
   }
   check()
-  return usePlayer.subscribe(check)
+  const off = usePlayer.subscribe(check)
+  // Closing (or an update's restart): the last change goes in now.
+  window.addEventListener('beforeunload', flushDraft)
+  return () => {
+    off()
+    window.removeEventListener('beforeunload', flushDraft)
+  }
 }

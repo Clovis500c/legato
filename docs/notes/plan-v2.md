@@ -145,7 +145,7 @@ needs it; 2 s fade by default.
 - [ ] Music Detector without a personal token: check for any keyless option, else a clearer way in.
 - [ ] Old points: Home sections show / hide / reorder; local folders watched; 50,000-track performance pass; AA
       contrast; playlists over 100 tracks; signing key backup (user's action).
-- [ ] Live Editor (user, mid-work): changes not saved as a version survive the app closing (back as they were).
+- [x] Live Editor (user, mid-work): changes not saved as a version survive the app closing (back as they were).
 - [ ] Fix what's found, `pnpm check`, CI green on the three systems, merge PR #1.
 
 ## Still to do (one list, updated 2026-10-17)
