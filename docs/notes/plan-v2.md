@@ -151,6 +151,9 @@ needs it; 2 s fade by default.
       the line being sung fills word by word as the song goes (karaoke), past lines dimmed.
 - [x] Now Playing (user, mid-work): Auto / Video / Cover and Close player readable on any cover (theme background,
       blurred, behind them).
+- [ ] Lyrics of slowed / super slowed versions (user, mid-work, after the rest): timings too early; compare both
+      durations to stretch them (`music_core::lyrics` already stretches: find why it didn't here, e.g. a 6:20 super
+      slowed of a ~3 min song).
 - [ ] Fix what's found, `pnpm check`, CI green on the three systems, merge PR #1.
 
 ## Still to do (one list, updated 2026-10-17)

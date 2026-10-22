@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { nextIndex, playOrder, queued, queueRows } from './queue'
+import { moveInOrder, nextIndex, playOrder, queued, queueRows } from './queue'
 
 describe('playOrder', () => {
   it('keeps list order, or shuffles with the current track first', () => {
@@ -54,5 +54,14 @@ describe('queue panel rows', () => {
 
   it('leaves out what cannot play, never the current song', () => {
     expect(queueRows([0, 1, 2], 1, (i) => i !== 1 && i !== 2).map((r) => r.i)).toEqual([0, 1])
+  })
+})
+
+describe('moveInOrder', () => {
+  it('moves a song to where another one is, up or down', () => {
+    expect(moveInOrder([5, 6, 7, 8], 8, 6)).toEqual([5, 8, 6, 7])
+    expect(moveInOrder([5, 6, 7, 8], 6, 8)).toEqual([5, 7, 8, 6])
+    expect(moveInOrder([5, 6, 7], 6, 6)).toEqual([5, 6, 7])
+    expect(moveInOrder([5, 6, 7], 9, 6)).toEqual([5, 6, 7])
   })
 })

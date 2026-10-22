@@ -1186,6 +1186,7 @@ const fr: Record<string, string> = {
   'Off: {fade}': 'Désactivé : {fade}',
   'Clicks': 'Clics',
   'YouTube videos': 'Vidéos YouTube',
+  'Drag to change the order (Alt+↑ / Alt+↓)': 'Glissez pour changer l’ordre (Alt+↑ / Alt+↓)',
 }
 
 export default fr

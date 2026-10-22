@@ -51,3 +51,13 @@ export function queueRows(order: number[], index: number, playable: (i: number) 
   const at = order.indexOf(index)
   return order.flatMap((i, k) => (k === at || playable(i) ? [{ key: String(i), i, played: at >= 0 && k < at, current: k === at }] : []))
 }
+
+/** Order with list index `i` moved to where `j` is (dragged in Up next): before it going up, after it going down. */
+export function moveInOrder(order: number[], i: number, j: number): number[] {
+  const from = order.indexOf(i)
+  const to = order.indexOf(j)
+  if (from < 0 || to < 0 || from === to) return order
+  const out = order.filter((x) => x !== i)
+  out.splice(to, 0, i)
+  return out
+}

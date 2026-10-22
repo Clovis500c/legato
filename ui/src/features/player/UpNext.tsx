@@ -1,6 +1,6 @@
-import { CaretRight, Waveform } from '@phosphor-icons/react'
+import { CaretRight, DotsSixVertical, Waveform } from '@phosphor-icons/react'
 import { useVirtualizer } from '@tanstack/react-virtual'
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useStore } from '../../app/store'
 import { trackArt } from '../../shared/art'
 import { formatDuration } from '../../shared/format'
@@ -39,12 +39,18 @@ export function useNextCount(): number {
 
 /**
  * Queue in play order, shuffle aware: songs already played stay (dimmed, click to play again), then the current one,
- * then what's next. Opens on the current song; virtualized (queues reach thousands).
+ * then what's next. Opens on the current song; virtualized (queues reach thousands). What's next can be dragged into
+ * another order (or Alt+↑ / Alt+↓ on a song), and cleared.
  */
 export function UpNext({ onHide }: { onHide: () => void }) {
   const rows = useRows()
   const list = usePlayer((s) => s.list)
   const playAt = usePlayer((s) => s.playAt)
+  const move = usePlayer((s) => s.move)
+  const clearNext = usePlayer((s) => s.clearNext)
+  // List index dragged, and the one it's over.
+  const [drag, setDrag] = useState<number | null>(null)
+  const [over, setOver] = useState<number | null>(null)
   const nowTitle = usePlayer((s) => s.now?.title ?? '')
   const nowArtist = usePlayer((s) => s.now?.artist ?? '')
   const track = useNowTrack()
@@ -66,6 +72,11 @@ export function UpNext({ onHide }: { onHide: () => void }) {
           {tr('{n} next', { n: next })}
           {played ? ` · ${tr('{n} played', { n: played })}` : ''}
         </span>
+        {next > 0 && rows[current]?.i !== undefined && rows[current].i >= 0 && (
+          <button onClick={clearNext} className="rounded-full px-2 py-0.5 text-xs font-medium text-ink-2 hover:bg-raised hover:text-ink">
+            {tr('Clear')}
+          </button>
+        )}
         <RoundButton label={tr('Hide up next')} kind="plain" size="sm" onClick={onHide}>
           <CaretRight size={14} />
         </RoundButton>
@@ -78,13 +89,55 @@ export function UpNext({ onHide }: { onHide: () => void }) {
             const title = r.current ? nowTitle : (t?.title ?? fileTitle(r.path ?? ''))
             const artist = r.current ? nowArtist : (t?.artist ?? fileFormat(r.path) ?? '')
             const art = r.current && track ? trackArt(track) : t ? trackArt(t) : []
+            // Only what's next moves (history and the current song stay put).
+            const movable = !!t && !r.current && !r.played
+            const neighbor = (d: 1 | -1) => {
+              const n = rows[item.index + d]
+              return n && n.i >= 0 && !n.current && !n.played ? n.i : null
+            }
+            const below = drag !== null && rows.findIndex((x) => x.i === drag) < item.index
             return (
-              <li key={r.key} className="absolute inset-x-0" style={{ top: item.start, height: ROW }} onContextMenu={t ? onMenu(() => trackMenu(t, { list, index: r.i, queueIndex: r.i })) : undefined}>
+              <li
+                key={r.key}
+                draggable={movable}
+                onDragStart={(e) => {
+                  e.dataTransfer.effectAllowed = 'move'
+                  e.dataTransfer.setData('text/plain', title)
+                  setDrag(r.i)
+                }}
+                onDragOver={(e) => {
+                  if (drag === null || !movable) return
+                  e.preventDefault()
+                  setOver(r.i)
+                }}
+                onDrop={(e) => {
+                  e.preventDefault()
+                  if (drag !== null && movable) move(drag, r.i)
+                  setDrag(null)
+                  setOver(null)
+                }}
+                onDragEnd={() => {
+                  setDrag(null)
+                  setOver(null)
+                }}
+                className={`group absolute inset-x-0 ${drag === r.i ? 'opacity-40' : ''} ${over === r.i && drag !== r.i ? (below ? 'shadow-[inset_0_-2px_0_var(--accent)]' : 'shadow-[inset_0_2px_0_var(--accent)]') : ''}`}
+                style={{ top: item.start, height: ROW }}
+                onContextMenu={t ? onMenu(() => trackMenu(t, { list, index: r.i, queueIndex: r.i })) : undefined}
+              >
                 <button
                   disabled={!t || r.current}
                   onClick={() => void playAt(r.i)}
-                  className={`flex h-full w-full items-center gap-3 rounded-lg px-2 text-left ${r.current ? 'bg-accent-soft' : 'enabled:hover:bg-raised'} ${r.played ? 'opacity-55 hover:opacity-100' : ''}`}
+                  onKeyDown={(e) => {
+                    const d = e.altKey && e.key === 'ArrowUp' ? -1 : e.altKey && e.key === 'ArrowDown' ? 1 : 0
+                    const n = d && movable ? neighbor(d) : null
+                    if (n === null) return
+                    e.preventDefault()
+                    move(r.i, n)
+                  }}
+                  title={movable ? tr('Drag to change the order (Alt+↑ / Alt+↓)') : undefined}
+                  className={`flex h-full w-full items-center gap-3 rounded-lg px-2 text-left ${r.current ? 'bg-accent-soft' : 'enabled:hover:bg-raised'} ${r.played ? 'opacity-55 hover:opacity-100' : ''} ${movable ? 'cursor-grab active:cursor-grabbing' : ''}`}
                 >
+                  {movable && <DotsSixVertical size={12} className="-mr-2 -ml-1.5 shrink-0 text-ink-3 opacity-0 group-hover:opacity-100" />}
                   <Cover title={title} art={art} size={44} />
                   <span className="min-w-0 flex-1">
                     <span className={`block truncate text-[0.8125rem] font-semibold ${r.current ? 'text-accent' : ''}`}>{title}</span>
