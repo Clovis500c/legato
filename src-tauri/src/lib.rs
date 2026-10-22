@@ -27,7 +27,7 @@ mod ytwatch;
 use music_connectors::lrclib::Lrclib;
 use music_connectors::oauth::Opener;
 use music_connectors::spotify::Spotify;
-use music_connectors::ytmusic::{Account, ListRef, Shelf, YouTubeMusic};
+use music_connectors::ytmusic::{Account, Home, ListRef, YouTubeMusic, valid_mood};
 use music_connectors::ytweb::YouTubeWeb;
 use music_core::cache::{Memo, Stats, Ttl};
 use music_core::history::{Play, Pref};
@@ -158,7 +158,7 @@ struct Caches {
     /// Sign-in state: keychain and WebView2 cookies, read on every refresh otherwise.
     status: Ttl<Vec<(Source, SourceStatus)>>,
     /// YouTube Music home shelves, and the songs of the playlists / radios opened from them.
-    home: Ttl<Vec<Shelf>>,
+    home: Ttl<Home>,
     lists: Ttl<Vec<Track>>,
 }
 
@@ -174,7 +174,7 @@ impl Default for Caches {
             videos: Ttl::new(Duration::from_secs(30 * 60), 100),
             apple: Ttl::new(Duration::from_secs(30 * 60), 100),
             status: Ttl::new(Duration::from_secs(30), 1),
-            home: Ttl::new(Duration::from_secs(15 * 60), 1),
+            home: Ttl::new(Duration::from_secs(15 * 60), 12),
             lists: Ttl::new(Duration::from_secs(15 * 60), 30),
         }
     }
@@ -1038,15 +1038,21 @@ async fn spotify_web_status(app: tauri::AppHandle) -> bool {
     spotify_web::signed_in(&app)
 }
 
-/// YouTube Music's home shelves (its recommendations for the first picked account). Empty when signed out.
+/// YouTube Music's home shelves (its recommendations for the first picked account) and its mood chips; `mood` = a
+/// chip's params, the home filtered to it. Empty when signed out.
 #[tauri::command]
-async fn ytm_home(state: State<'_, AppState>) -> CmdResult<Vec<Shelf>> {
-    if let Some(hit) = state.cache.home.get("") {
+async fn ytm_home(state: State<'_, AppState>, mood: Option<String>) -> CmdResult<Home> {
+    // Trust boundary: params go into a YouTube request.
+    let key = mood.unwrap_or_default();
+    if !key.is_empty() && !valid_mood(&key) {
+        return Err("Invalid mood".into());
+    }
+    if let Some(hit) = state.cache.home.get(&key) {
         return Ok((*hit).clone());
     }
-    let Some(yt) = state.ytm() else { return Ok(Vec::new()) };
-    let shelves = yt.home().await.map_err(err)?;
-    Ok((*state.cache.home.put("", shelves)).clone())
+    let Some(yt) = state.ytm() else { return Ok(Home { shelves: Vec::new(), moods: Vec::new() }) };
+    let home = yt.home((!key.is_empty()).then_some(key.as_str())).await.map_err(err)?;
+    Ok((*state.cache.home.put(&key, home)).clone())
 }
 
 /// Songs of a home card's playlist, album or radio: played without importing it.
@@ -1125,6 +1131,12 @@ fn save_settings(state: State<AppState>, settings: serde_json::Value) -> CmdResu
     }
     // Stamped key by key: Sync Mode merges settings by their newest change.
     state.lib().save_ui_settings(&settings, music_core::library::now_ms()).map_err(err)
+}
+
+/// Plays of the last days (since = unix s, two weeks at most): Home's Your week.
+#[tauri::command]
+fn recent_plays(state: State<AppState>, since: i64) -> CmdResult<Vec<Play>> {
+    state.lib().plays_since(since.max(unix_now() - 15 * 86_400)).map_err(err)
 }
 
 /// Track id → [listens, last start (unix s)]: Most played / Recently played sorts.
@@ -1647,7 +1659,7 @@ pub fn run() {
             folders::watch(app.handle(), &dirs);
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, search_suggestions, add_track, backfill_art, find_versions, play_preview, share_playlist, share_preview, share_read_image, share_import, nearby_send, nearby_status, nearby_stop, nearby_receive, record_play, mixes, set_track_pref, set_music, clear_history, export_youtube, spotify_player, spotify_playback, ytm_sign_in, ytm_sign_out, spotify_web_open, spotify_web_status, import_spotify_link, ytm_accounts, set_ytm_accounts, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, system_accent, restart_app, autostart, set_autostart, media_update, load_session, save_session, add_to_youtube, playlist_orders, save_cover, export_cover, alternative_videos, play_stats, cache_stats, open_licenses, update_status, update_check, update_install, ytm_home, ytm_list, discord_presence, discord_off, discord_status, remove_from_playlist, remove_from_library, resolve_track, set_global_shortcuts, player_live, editor::player_effects, player_levels, editor::export_edit, editor::export_stop, editor::edits, editor::save_edit, editor::delete_edit, editor::activate_edit, editor::edit_draft, editor::save_edit_draft, voice_listen, voice_stop, open_windows_settings, detector::detector_status, detector::set_detector_token, detector::detect_song, detector::detect_stop, lyrics, set_ui_language, ytwatch_open, ytwatch_place, ytwatch_cmd, ytwatch_close, syncmode::sync_status, syncmode::sync_probe, syncmode::sync_setup, syncmode::sync_stop, syncmode::sync_now, syncmode::sync_dismiss, syncmode::sync_offer, syncmode::sync_offer_stop, syncmode::sync_join, plugins::plugins_list, plugins::plugin_inspect, plugins::plugin_install, plugins::plugin_set, plugins::plugin_uninstall, plugins::plugin_reply, plugins::plugin_event, plugins::plugin_input, plugins::plugin_log, themes::save_background, themes::forget_background, themes::export_theme, themes::import_theme])
+        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, search_suggestions, add_track, backfill_art, find_versions, play_preview, share_playlist, share_preview, share_read_image, share_import, nearby_send, nearby_status, nearby_stop, nearby_receive, record_play, recent_plays, mixes, set_track_pref, set_music, clear_history, export_youtube, spotify_player, spotify_playback, ytm_sign_in, ytm_sign_out, spotify_web_open, spotify_web_status, import_spotify_link, ytm_accounts, set_ytm_accounts, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, system_accent, restart_app, autostart, set_autostart, media_update, load_session, save_session, add_to_youtube, playlist_orders, save_cover, export_cover, alternative_videos, play_stats, cache_stats, open_licenses, update_status, update_check, update_install, ytm_home, ytm_list, discord_presence, discord_off, discord_status, remove_from_playlist, remove_from_library, resolve_track, set_global_shortcuts, player_live, editor::player_effects, player_levels, editor::export_edit, editor::export_stop, editor::edits, editor::save_edit, editor::delete_edit, editor::activate_edit, editor::edit_draft, editor::save_edit_draft, voice_listen, voice_stop, open_windows_settings, detector::detector_status, detector::set_detector_token, detector::detect_song, detector::detect_stop, lyrics, set_ui_language, ytwatch_open, ytwatch_place, ytwatch_cmd, ytwatch_close, syncmode::sync_status, syncmode::sync_probe, syncmode::sync_setup, syncmode::sync_stop, syncmode::sync_now, syncmode::sync_dismiss, syncmode::sync_offer, syncmode::sync_offer_stop, syncmode::sync_join, plugins::plugins_list, plugins::plugin_inspect, plugins::plugin_install, plugins::plugin_set, plugins::plugin_uninstall, plugins::plugin_reply, plugins::plugin_event, plugins::plugin_input, plugins::plugin_log, themes::save_background, themes::forget_background, themes::export_theme, themes::import_theme])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

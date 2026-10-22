@@ -65,6 +65,12 @@ impl Library {
         Ok(stmt.query_map([], |r| Ok(Play { track_id: r.get(0)?, started_at: r.get(1)?, listened_ms: r.get(2)?, completed: r.get(3)? }))?.collect::<rusqlite::Result<_>>()?)
     }
 
+    /// Plays started at or after `since` (unix s), oldest first. Home's Your week.
+    pub fn plays_since(&self, since: i64) -> Result<Vec<Play>> {
+        let mut stmt = self.db.prepare_cached("SELECT track_id, started_at, listened_ms, completed FROM plays WHERE started_at >= ?1 ORDER BY started_at, id")?;
+        Ok(stmt.query_map([since], |r| Ok(Play { track_id: r.get(0)?, started_at: r.get(1)?, listened_ms: r.get(2)?, completed: r.get(3)? }))?.collect::<rusqlite::Result<_>>()?)
+    }
+
     /// Per track: listens (full ones, or 30 s heard) and the last start. For "Most played" / "Recently played" sorts.
     pub fn play_stats(&self) -> Result<HashMap<i64, (u32, i64)>> {
         let mut stmt = self.db.prepare_cached("SELECT track_id, SUM(completed OR listened_ms >= 30000), MAX(started_at) FROM plays GROUP BY track_id")?;
@@ -139,6 +145,7 @@ mod tests {
         lib.record_play(&Play { track_id: a, started_at: 20, listened_ms: 1000, completed: false })?;
         lib.record_play(&Play { track_id: a, started_at: 10, listened_ms: 200_000, completed: true })?;
         assert_eq!(lib.plays()?.iter().map(|p| p.started_at).collect::<Vec<_>>(), [10, 20]);
+        assert_eq!(lib.plays_since(15)?.iter().map(|p| p.started_at).collect::<Vec<_>>(), [20]);
         // 1 s listen doesn't count, the full one does; last start is the latest.
         assert_eq!(lib.play_stats()?[&a], (1, 20));
         lib.set_pref(a, Some(Pref::Less))?;

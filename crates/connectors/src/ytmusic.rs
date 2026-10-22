@@ -16,7 +16,7 @@ use std::sync::LazyLock;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 mod home;
-pub use home::{HomeItem, ListRef, Shelf};
+pub use home::{Home, HomeItem, ListRef, Mood, Shelf, valid_mood};
 
 pub const API: &str = "https://music.youtube.com/youtubei/v1";
 const ORIGIN: &str = "https://music.youtube.com";
