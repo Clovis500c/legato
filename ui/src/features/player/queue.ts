@@ -52,6 +52,21 @@ export function queueRows(order: number[], index: number, playable: (i: number) 
   return order.flatMap((i, k) => (k === at || playable(i) ? [{ key: String(i), i, played: at >= 0 && k < at, current: k === at }] : []))
 }
 
+/** Order with list index `i` put at play-order position `at`, a drop slot in Up next (before what was there). */
+export function moveToSlot(order: number[], i: number, at: number): number[] {
+  const from = order.indexOf(i)
+  if (from < 0) return order
+  const out = order.filter((x) => x !== i)
+  out.splice(at > from ? at - 1 : at, 0, i)
+  return out
+}
+
+/** Order with `added` list indexes at play-order position `at` (songs dropped into Up next). */
+export function insertAt(order: number[], added: number[], at: number): number[] {
+  const k = Math.max(0, Math.min(order.length, at))
+  return [...order.slice(0, k), ...added, ...order.slice(k)]
+}
+
 /** Order with list index `i` moved to where `j` is (dragged in Up next): before it going up, after it going down. */
 export function moveInOrder(order: number[], i: number, j: number): number[] {
   const from = order.indexOf(i)

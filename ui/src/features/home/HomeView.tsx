@@ -1,4 +1,4 @@
-import { ArrowDown, ArrowUp, CaretRight, Disc, MicrophoneStage, MusicNotes, Pause, Play, Playlist, PlusCircle, SlidersHorizontal, SpinnerGap, VinylRecord } from '@phosphor-icons/react'
+import { CaretRight, ClockCounterClockwise, Disc, DotsSixVertical, Lightning, MicrophoneStage, MusicNotes, Pause, Play, Playlist, PlusCircle, SlidersHorizontal, Sparkle, SpinnerGap, VinylRecord, YoutubeLogo } from '@phosphor-icons/react'
 import { openUrl } from '@tauri-apps/plugin-opener'
 import { Fragment, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useSettings } from '../../app/settings'
@@ -9,7 +9,8 @@ import { formatCount } from '../../shared/format'
 import { onMenu, type MenuEntry } from '../../shared/ui/ContextMenu'
 import { RoundButton, Toggle } from '../../shared/ui/controls'
 import { Dialog } from '../../shared/ui/Dialog'
-import { moveHome, type HomeSectionId } from '../../shared/theme/theme'
+import { moveHome, placeHome, type HomeSectionId } from '../../shared/theme/theme'
+import { dragSource, useDrag, useDropTarget } from '../../shared/ui/drag'
 import { Cover } from '../../shared/ui/Cover'
 import { PageHeader } from '../../shared/ui/PageHeader'
 import { SourceIcon } from '../../shared/ui/SourceIcon'
@@ -237,23 +238,74 @@ const sectionLabels: Record<HomeSectionId, string> = {
   added: msg('Recently added'),
 }
 
-/** Which Home sections show, in what order (settings homeSections). */
+const sectionHints: Record<HomeSectionId, string> = {
+  quick: msg('Your most played lists, in a grid at the top'),
+  mixes: msg('Daily Mixes and mixes for right now'),
+  recent: msg('What you played lately'),
+  playlists: msg('Your own and imported playlists'),
+  youtube: msg('Shelves from YouTube Music, when signed in'),
+  added: msg('Newest songs in your library'),
+}
+
+const sectionIcons: Record<HomeSectionId, ReactNode> = {
+  quick: <Lightning size={18} />,
+  mixes: <Sparkle size={18} />,
+  recent: <ClockCounterClockwise size={18} />,
+  playlists: <Playlist size={18} />,
+  youtube: <YoutubeLogo size={18} />,
+  added: <PlusCircle size={18} />,
+}
+
+/**
+ * Which Home sections show, in what order (settings homeSections): cards dragged into place (user's request
+ * 2026-10-22), Alt+↑ / Alt+↓ from the keyboard.
+ */
 function CustomizeHome({ onClose }: { onClose: () => void }) {
   const list = useSettings((s) => s.settings.homeSections)
   const update = useSettings((s) => s.update)
+  useDropTarget('home-sections', {
+    accepts: (d) => d.kind === 'home',
+    drop: (d, slot) => d.kind === 'home' && slot !== null && update({ homeSections: placeHome(useSettings.getState().settings.homeSections, d.id as HomeSectionId, slot) }),
+  })
+  const dropAt = useDrag((s) => (s.target === 'home-sections' ? s.slot : null))
+  const dragging = useDrag((s) => (s.data?.kind === 'home' ? s.data.id : null))
   return (
     <Dialog title={tr('Customize Home')} onClose={onClose}>
-      <ul className="flex flex-col rounded-xl border border-line bg-raised">
+      <p className="-mt-1 mb-3 text-xs text-ink-2">{tr('Drag the cards to change the order. Turn off what you don’t need.')}</p>
+      <ul data-drop="home-sections" className="flex flex-col gap-2">
         {list.map((x, i) => (
-          <li key={x.id} className="flex items-center gap-2 border-b border-line-soft px-3 py-2 last:border-b-0">
-            <span className={`flex-1 text-[0.8125rem] ${x.on ? 'font-medium' : 'text-ink-3'}`}>{tr(sectionLabels[x.id])}</span>
-            <RoundButton label={tr('Move up')} kind="plain" size="xs" disabled={i === 0} onClick={() => update({ homeSections: moveHome(list, x.id, -1) })}>
-              <ArrowUp size={13} />
-            </RoundButton>
-            <RoundButton label={tr('Move down')} kind="plain" size="xs" disabled={i === list.length - 1} onClick={() => update({ homeSections: moveHome(list, x.id, 1) })}>
-              <ArrowDown size={13} />
-            </RoundButton>
-            <Toggle label={tr(sectionLabels[x.id])} checked={x.on} onChange={(on) => update({ homeSections: list.map((y) => (y.id === x.id ? { ...y, on } : y)) })} />
+          <li
+            key={x.id}
+            data-slot={i}
+            onPointerDown={dragSource(
+              () => ({ kind: 'home', id: x.id }),
+              () => tr(sectionLabels[x.id]),
+            )}
+            className={`relative flex cursor-grab items-center gap-3 rounded-xl border border-line bg-raised p-2.5 pr-3 transition-[opacity,box-shadow] hover:border-ink-3 active:cursor-grabbing ${dragging === x.id ? 'opacity-40' : ''}`}
+          >
+            {dropAt === i && <span aria-hidden className="absolute inset-x-2 -top-[5px] h-0.5 rounded-full bg-accent" />}
+            {dropAt === i + 1 && i === list.length - 1 && <span aria-hidden className="absolute inset-x-2 -bottom-[5px] h-0.5 rounded-full bg-accent" />}
+            <button
+              aria-label={tr('Move {section} (Alt+↑ / Alt+↓)', { section: tr(sectionLabels[x.id]) })}
+              title={tr('Drag to change the order (Alt+↑ / Alt+↓)')}
+              onKeyDown={(e) => {
+                const d = e.key === 'ArrowUp' ? -1 : e.key === 'ArrowDown' ? 1 : 0
+                if (!d || !e.altKey) return
+                e.preventDefault()
+                update({ homeSections: moveHome(list, x.id, d) })
+              }}
+              className="grid h-9 w-5 shrink-0 place-items-center rounded text-ink-3 hover:text-ink"
+            >
+              <DotsSixVertical size={16} weight="bold" />
+            </button>
+            <span className={`grid size-9 shrink-0 place-items-center rounded-lg bg-bg ${x.on ? 'text-accent' : 'text-ink-3'}`}>{sectionIcons[x.id]}</span>
+            <span className="min-w-0 flex-1">
+              <span className={`block truncate text-[0.8125rem] font-semibold ${x.on ? '' : 'text-ink-3'}`}>{tr(sectionLabels[x.id])}</span>
+              <span className="block truncate text-xs text-ink-3">{tr(sectionHints[x.id])}</span>
+            </span>
+            <span data-nodrag>
+              <Toggle label={tr(sectionLabels[x.id])} checked={x.on} onChange={(on) => update({ homeSections: list.map((y) => (y.id === x.id ? { ...y, on } : y)) })} />
+            </span>
           </li>
         ))}
       </ul>

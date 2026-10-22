@@ -172,6 +172,15 @@ const fr: Record<string, string> = {
   'Show it with your music from now on': 'L’afficher avec votre musique désormais',
   'It’s music': 'C’est de la musique',
   'Not music: hide it': 'Pas de la musique : masquer',
+  // Customize Home cards
+  'Your most played lists, in a grid at the top': 'Vos listes les plus écoutées, en grille tout en haut',
+  'Daily Mixes and mixes for right now': 'Mix quotidiens et mix du moment',
+  'What you played lately': 'Ce que vous avez écouté récemment',
+  'Your own and imported playlists': 'Vos playlists et celles importées',
+  'Shelves from YouTube Music, when signed in': 'Les rayons de YouTube Music, une fois connecté',
+  'Newest songs in your library': 'Les derniers titres de votre bibliothèque',
+  'Drag the cards to change the order. Turn off what you don’t need.': 'Faites glisser les cartes pour changer l’ordre. Désactivez ce dont vous n’avez pas besoin.',
+  'Move {section} (Alt+↑ / Alt+↓)': 'Déplacer {section} (Alt+↑ / Alt+↓)',
   'No timings for this song: the text follows the song roughly.': 'Pas de minutage pour ce titre : le texte suit la chanson à peu près.',
   // Player
   'This video can’t play in apps': 'Cette vidéo ne peut pas être lue dans les applications',

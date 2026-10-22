@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { contrast, contrastReport, cssVars, DEFAULTS, HOME_SECTIONS, lookOf, moveHome, onAccentFor, paletteFrom, PRESETS, resolveTheme, sanitize, sanitizeHome, sanitizeTheme } from './theme'
+import { contrast, contrastReport, cssVars, DEFAULTS, HOME_SECTIONS, lookOf, moveHome, placeHome, onAccentFor, paletteFrom, PRESETS, resolveTheme, sanitize, sanitizeHome, sanitizeTheme } from './theme'
 
 describe('sanitize', () => {
   it('falls back to defaults on junk', () => {
@@ -153,6 +153,11 @@ describe('Home sections', () => {
     const l = sanitizeHome(undefined)
     expect(moveHome(l, 'mixes', -1).map((x) => x.id).slice(0, 2)).toEqual(['mixes', 'quick'])
     expect(moveHome(l, 'quick', -1)).toBe(l)
+    // Dragged: dropped before the section at the slot, or last.
+    expect(placeHome(l, 'quick', 3).map((x) => x.id).slice(0, 3)).toEqual([l[1].id, l[2].id, 'quick'])
+    expect(placeHome(l, l[3].id, 0)[0].id).toBe(l[3].id)
+    expect(placeHome(l, 'quick', 1)).toBe(l)
+    expect(placeHome(l, 'quick', l.length).at(-1)?.id).toBe('quick')
     expect(moveHome(l, 'added', 1)).toBe(l)
   })
 })

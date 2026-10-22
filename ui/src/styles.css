@@ -294,3 +294,11 @@ code {
 .scroll-quiet:hover::-webkit-scrollbar-thumb {
   @apply bg-line;
 }
+
+/* Pointer drag in progress (shared/ui/drag.ts): no text selection, grabbing hand everywhere. */
+body.dragging,
+body.dragging * {
+  user-select: none;
+  cursor: grabbing !important;
+}
+
