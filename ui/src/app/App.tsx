@@ -64,7 +64,7 @@ function TopBar() {
         <span data-brand-name className="text-[0.9375rem] font-bold tracking-tight">Music App</span>
       </button>
       {full && (
-        <button onClick={() => setFull(false)} title={tr('Close Now Playing (Esc)')} className="flex items-center gap-1.5 rounded-full border border-line px-3 py-1 text-xs font-medium text-ink-2 transition hover:bg-raised hover:text-ink">
+        <button onClick={() => setFull(false)} title={tr('Close Now Playing (Esc)')} className="glass flex items-center gap-1.5 rounded-full border border-line px-3 py-1 text-xs font-medium text-ink-2 transition hover:bg-raised hover:text-ink">
           <CaretDown size={12} weight="bold" /> {tr('Close player')}
         </button>
       )}

@@ -149,6 +149,8 @@ needs it; 2 s fade by default.
 - [x] Live Editor (user, mid-work): changes not saved as a version survive the app closing (back as they were).
 - [x] Lyrics (user, mid-work): ♪ in the intro, instrumental parts and the outro; no big empty space above and below;
       the line being sung fills word by word as the song goes (karaoke), past lines dimmed.
+- [x] Now Playing (user, mid-work): Auto / Video / Cover and Close player readable on any cover (theme background,
+      blurred, behind them).
 - [ ] Fix what's found, `pnpm check`, CI green on the three systems, merge PR #1.
 
 ## Still to do (one list, updated 2026-10-17)

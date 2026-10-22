@@ -227,7 +227,7 @@ export function NowPlaying() {
 
       <div className={`grid min-h-0 flex-1 gap-10 ${editor ? 'grid-cols-[minmax(0,1fr)_400px]' : lyrics ? 'grid-cols-[minmax(0,1fr)_minmax(0,1fr)]' : upNext ? 'grid-cols-[minmax(0,1fr)_360px]' : 'grid-cols-1'}`}>
         <section className="flex min-h-0 min-w-0 flex-col items-center gap-4">
-          {video ? <Segmented label={tr('Show')} value={stage} onChange={(s) => update({ stage: s })} options={[{ value: 'auto', label: still === undefined || stage !== 'auto' ? tr('Auto') : still ? tr('Auto · cover') : tr('Auto · video') }, { value: 'video', label: tr('Video') }, { value: 'cover', label: tr('Cover') }]} /> : <span className="kicker text-ink-2">{tr('Now playing · {source}', { source: tr(viaLabel[now.via]) })}</span>}
+          {video ? <Segmented className="glass" label={tr('Show')} value={stage} onChange={(s) => update({ stage: s })} options={[{ value: 'auto', label: still === undefined || stage !== 'auto' ? tr('Auto') : still ? tr('Auto · cover') : tr('Auto · video') }, { value: 'video', label: tr('Video') }, { value: 'cover', label: tr('Cover') }]} /> : <span className="kicker text-ink-2">{tr('Now playing · {source}', { source: tr(viaLabel[now.via]) })}</span>}
           <Stage video={video} cover={stage === 'cover' || (stage === 'auto' && still === true)} track={track} title={now.title} youtubeId={now.youtubeId} pulse={coverPulse && motion} />
           {now.via === 'spotify' && <span className="kicker text-center">{tr('Playing in your Spotify app')}</span>}
           {now.via === 'preview' && (

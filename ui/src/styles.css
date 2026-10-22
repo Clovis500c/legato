@@ -245,6 +245,13 @@ code {
   @apply size-3.5 bg-accent;
 }
 
+/* Controls over a picture (Now Playing's backdrop): the theme's own background behind them, blurred, so their text
+   reads on any cover, light or dark. */
+.glass {
+  background: color-mix(in srgb, var(--bg) 62%, transparent);
+  backdrop-filter: blur(14px) saturate(1.2);
+}
+
 /* Scrolls (wheel, keys) without a bar: synced lyrics follow the song by themselves. */
 .no-scrollbar {
   scrollbar-width: none;
