@@ -20,6 +20,7 @@ import { FadeEditor } from './FadeEditor'
 import { CountsScene, CoverShapes, DensityScene, FadeScene, ListCoversScene, MiniPlayerScene, MixCoverScene, MotionScene, NowPlayingScene, SourceIconScene, TunerScene, VolumeScene } from './previews'
 import { searchSettings, type SettingEntry } from './search'
 import { LANGUAGES, msg, resolveLang, tr } from '../../shared/i18n/i18n'
+import { ask } from '../../shared/ui/Ask'
 
 const sections: { id: SettingsSection; label: string; icon: ReactNode }[] = [
   { id: 'appearance', label: msg('Appearance'), icon: <PaintBrush size={15} /> },
@@ -103,7 +104,7 @@ function Appearance() {
   return (
     <div className="flex flex-col gap-7">
       <div className="flex justify-end">
-        <Button variant="ghost" onClick={() => update(reset)}>
+        <Button variant="ghost" onClick={async () => (await ask({ title: tr('Reset appearance?'), body: tr('Every setting on this page goes back to its default, except the theme and the language.'), ok: tr('Reset') })) && update(reset)}>
           <ArrowCounterClockwise size={14} /> {tr('Reset appearance')}
         </Button>
       </div>

@@ -1166,6 +1166,9 @@ const fr: Record<string, string> = {
   'Sign out of Google?': 'Se déconnecter de Google ?',
   'Every Google account leaves Music App. Your library stays as it is.': 'Tous les comptes Google quittent Music App. Votre bibliothèque reste telle quelle.',
   'YouTube is waiting for a cookie choice; signing in to YouTube Music (Settings › Accounts) usually clears it': 'YouTube attend un choix sur ses cookies ; se connecter à YouTube Music (Réglages › Comptes) règle généralement le problème',
+  'Reset appearance?': 'Réinitialiser l’apparence ?',
+  'Every setting on this page goes back to its default, except the theme and the language.': 'Chaque réglage de cette page revient à sa valeur par défaut, sauf le thème et la langue.',
+  'Reset': 'Réinitialiser',
 }
 
 export default fr
