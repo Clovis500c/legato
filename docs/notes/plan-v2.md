@@ -5,6 +5,9 @@ Mockups: Figma, file "Bow Game / Music App", page **"Music App v3 — Hi-Fi"**. 
 
 ## Big update (2026-10-20, branch `big-update`)
 
+**Delivered 2026-10-22**: every phase below done; what the final review left open is in
+[review-2026-10-22.md](review-2026-10-22.md), the library incident in [health-check-2026-10-22.md](health-check-2026-10-22.md).
+
 The user's big request of 2026-10-20, copied task by task. Work happens on the `big-update` branch (every green push to
 `master` is a release: nothing goes to `master` without the user's OK). Phases run in this order; tick each line when
 it lands (tested, `pnpm check` green, committed). Technical plan, rule changes and feasibility notes:
@@ -15,13 +18,14 @@ it lands (tested, `pnpm check` green, committed). Technical plan, rule changes a
       risks). Unclear points: pick the most reasonable option, note it for the final report.
 - [x] Dedicated branch `big-update`; nothing pushed to `master` without the user's explicit OK.
 - [x] Every task of the request copied here as a checkbox.
-- [ ] After each task or small group: `pnpm check` green, app starts, nothing broken, small clear commit, tests for new
+- [x] After each task or small group: `pnpm check` green, app starts, nothing broken, small clear commit, tests for new
       logic (never real network).
 - [x] User report 2026-10-21 (mid-work): a watch-page song restarted in Cover mode showed its video over the cover. Fixed
       (webview made hidden never started its media; placement asked before it existed was lost).
 - [x] User report 2026-10-21 (later): opening or closing Up next moved the video's slot but not the video (it only
       recentered on a mode change). The slot now also watches its ancestors' size.
-- [ ] Final report: done / not done / not tested / choices made for the user / every rule changed (old, new, why).
+- [x] Final report: done / not done / not tested / choices made for the user / every rule changed (old, new, why).
+      Given in the chat on 2026-10-22; rules changed: [big-update.md](big-update.md#rules-changed-summary-each-lands-with-its-code-docs-updated-in-the-same-commit).
 
 **Phase 1: fixes**
 - [x] Progress bar stuck: after a custom position set with our slider then a song change, the bar stops moving (setting
@@ -118,10 +122,11 @@ it lands (tested, `pnpm check` green, committed). Technical plan, rule changes a
       found, then fix the important ones.
 
 **Phase 6: UI / UX / bug review by an agent**
-- [ ] When everything is done: one agent (Sonnet 5.5, high effort) with the most complete prompt to go through
+- [x] When everything is done: one agent (Sonnet 5.5, high effort) with the most complete prompt to go through
       EVERYTHING: rate UI / UX as a daily user and as someone who loves practical interfaces, criticize without
       indulgence, performance report, overall report against the competition (Spotify, YouTube Music, Apple Music,
-      Liner), every page, menu, setting and edge case. Full report handed to the user.
+      Liner), every page, menu, setting and edge case. Full report handed to the user. Summary, fixes made after it
+      and what stays open: [review-2026-10-22.md](review-2026-10-22.md).
 
 ## Still to do (one list, updated 2026-10-17)
 
