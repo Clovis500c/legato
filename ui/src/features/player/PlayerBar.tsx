@@ -44,10 +44,11 @@ function YouTubeFrame({ videoId }: { videoId: string }) {
   const rect = useVideoSlot((s) => s.rect)
   const hidden = useVideoSlot((s) => s.hidden)
   const box = useVideoSlot((s) => s.box)
+  const fill = useVideoSlot((s) => s.fill)
   // Embed refused this video: YouTube's watch page plays it in a webview over the same place (watch.ts).
   const watch = useWatch((s) => s.video)
   // Bars baked into the video: frame enlarged, only the picture shows.
-  const crop = rect && box && !hidden && !watch ? frameAround(rect, box) : null
+  const crop = rect && (box || fill) && !hidden && !watch ? frameAround(rect, box ?? { x: 0, y: 0, w: 1, h: 1 }) : null
   const frame = useRef<HTMLIFrameElement | null>(null)
   const ready = useRef(false)
   // First video and options at mount: changing src later would reload the embed.

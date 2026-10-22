@@ -172,6 +172,8 @@ export interface Settings {
   /** Now Playing with YouTube: video, cover (video transparent), or auto: cover when the video is a still image. */
   stage: 'auto' | 'video' | 'cover'
   miniSpot: Spot
+  /** Where the mini player sits: docked at the bottom of the sidebar (never over the content) or floating. */
+  miniPlace: 'sidebar' | 'float'
   /** Mini player width, px (video 16:9 below it, 200 px tall at least). */
   miniWidth: number
   /** Fade between songs, seconds (0 = off). */
@@ -250,6 +252,7 @@ export const DEFAULTS: Settings = {
   youtubeControls: false,
   stage: 'auto',
   miniSpot: 'br',
+  miniPlace: 'sidebar',
   miniWidth: 356,
   crossfade: 2,
   fade: { advanced: false, out: 2, in: 2, outCurve: 'scurve', inCurve: 'scurve', skip: false, pause: 0 },
@@ -286,11 +289,12 @@ const V3: Partial<Settings> = { stage: 'auto' }
 /** Version 4 (2026-10-17): the new Home opens first. */
 const V4: Partial<Settings> = { startView: 'home' }
 
-/** Version 5 (user's pick 2026-10-22): 2 s fades instead of 5, for those who never changed them. */
+/** Version 5 (user's picks 2026-10-22): mini player in the sidebar; 2 s fades instead of 5 for those who never
+ * changed them. */
 function v5(r: Record<string, unknown>): Partial<Settings> {
   const f = (r.fade ?? {}) as Record<string, unknown>
   const untouched = (r.crossfade ?? 5) === 5 && (f.out ?? 5) === 5 && (f.in ?? 5) === 5 && f.advanced !== true
-  return untouched ? { crossfade: 2, fade: { ...sanitizeFade(r.fade), out: 2, in: 2 } } : {}
+  return { miniPlace: 'sidebar', ...(untouched && { crossfade: 2, fade: { ...sanitizeFade(r.fade), out: 2, in: 2 } }) }
 }
 
 const HEX = /^#[0-9a-f]{6}$/i
@@ -392,6 +396,7 @@ export function sanitize(raw: unknown): Settings {
     youtubeControls: typeof r.youtubeControls === 'boolean' ? r.youtubeControls : DEFAULTS.youtubeControls,
     stage: pick(r.stage, ['auto', 'video', 'cover'] as const, DEFAULTS.stage),
     miniSpot: pick(r.miniSpot, SPOTS, DEFAULTS.miniSpot),
+    miniPlace: pick(r.miniPlace, ['sidebar', 'float'] as const, DEFAULTS.miniPlace),
     miniWidth: typeof r.miniWidth === 'number' && Number.isFinite(r.miniWidth) ? Math.min(960, Math.max(356, Math.round(r.miniWidth))) : DEFAULTS.miniWidth,
     crossfade: typeof r.crossfade === 'number' && Number.isFinite(r.crossfade) ? Math.min(12, Math.max(0, Math.round(r.crossfade))) : DEFAULTS.crossfade,
     fade: sanitizeFade(r.fade),

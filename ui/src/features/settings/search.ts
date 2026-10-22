@@ -29,6 +29,7 @@ export const SETTINGS_INDEX: SettingEntry[] = [
   { section: 'appearance', label: msg('Immersive player'), keywords: msg('blur blurred background cover now playing ambient') },
   { section: 'appearance', label: msg('Cover tint'), keywords: msg('ambient background color now playing') },
   { section: 'appearance', label: msg('Mini player'), keywords: msg('floating card video') },
+  { section: 'appearance', label: msg('Mini player place'), keywords: msg('sidebar docked floating video corner') },
   { section: 'appearance', label: msg('Covers in lists'), keywords: msg('thumbnails artwork rows') },
   { section: 'appearance', label: msg('Play with'), keywords: msg('single double click row') },
   { section: 'appearance', label: msg('Counts in the sidebar'), keywords: msg('numbers songs') },

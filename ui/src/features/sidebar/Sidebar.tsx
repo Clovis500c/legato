@@ -11,6 +11,7 @@ import { PlaylistCover } from '../library/PlaylistCover'
 import { playlistMenu, playlistsMenu } from '../menus'
 import { groupAlbums, groupArtists } from '../library/filter'
 import { tr } from '../../shared/i18n/i18n'
+import { SidebarPlayer } from '../player/SidebarPlayer'
 
 function NavItem({ on, icon, label, count, onClick, onContextMenu }: { on: boolean; icon: ReactNode; label: string; count?: number; onClick: () => void; onContextMenu?: (e: React.MouseEvent) => void }) {
   const counts = useSettings((s) => s.settings.sidebarCounts)
@@ -76,6 +77,7 @@ export function Sidebar() {
         </Section>
       </div>
 
+      <SidebarPlayer />
       <div className="flex shrink-0 flex-col gap-px border-t border-line-soft px-3 pt-2 pb-3.5">
         <NavItem on={is('addons')} icon={<PuzzlePiece size={16} />} label={tr('Add-ons')} onClick={() => go({ name: 'addons' })} />
         <NavItem on={is('settings')} icon={<Gear size={16} />} label={tr('Settings')} onClick={() => go({ name: 'settings', section: 'appearance' })} />

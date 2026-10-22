@@ -33,6 +33,7 @@ export function MiniPlayer() {
   const full = usePlayer((s) => s.full)
   const setFull = usePlayer((s) => s.setFull)
   const on = useSettings((s) => s.settings.miniPlayer)
+  const docked = useSettings((s) => s.settings.miniPlace === 'sidebar')
   const spot = useSettings((s) => s.settings.miniSpot)
   const miniWidth = useSettings((s) => s.settings.miniWidth)
   const update = useSettings((s) => s.update)
@@ -66,7 +67,7 @@ export function MiniPlayer() {
   useEffect(() => settle(), [rest.x, rest.y, settle])
 
   const video = now?.via === 'youtube'
-  if (!now || full || !(video || on)) return null
+  if (!now || full || docked || !(video || on)) return null
 
   const pos = drag ?? rest
   const grip = gripCorner(spot)

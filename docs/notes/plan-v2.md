@@ -134,7 +134,7 @@ needs it; 2 s fade by default.
 - [x] Defaults: 2 s fade (once, for those who kept 5 s), YouTube's sound processed only when an effect, Adaptive Sound or
       the moving cover needs it (already so: the setting is a permission; its text now says it).
 - [x] Sliders: bigger hit area (3 px today), handle visible in the Live Editor.
-- [ ] Mini player docked at the bottom of the sidebar (never over the content).
+- [x] Mini player docked at the bottom of the sidebar (never over the content); floating stays a choice (Appearance).
 - [ ] Text: bigger base size, nothing under 11 px, a text-size setting apart from zoom.
 - [ ] Settings: General / Playback / Appearance (playback settings out of Appearance, daily ones out of Advanced);
       Hi-Fi leftovers dropped or tucked away.
@@ -145,6 +145,7 @@ needs it; 2 s fade by default.
 - [ ] Music Detector without a personal token: check for any keyless option, else a clearer way in.
 - [ ] Old points: Home sections show / hide / reorder; local folders watched; 50,000-track performance pass; AA
       contrast; playlists over 100 tracks; signing key backup (user's action).
+- [ ] Live Editor (user, mid-work): changes not saved as a version survive the app closing (back as they were).
 - [ ] Fix what's found, `pnpm check`, CI green on the three systems, merge PR #1.
 
 ## Still to do (one list, updated 2026-10-17)

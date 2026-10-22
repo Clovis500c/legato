@@ -30,13 +30,13 @@ import { usePulse } from './pulse'
 import { tr } from '../../shared/i18n/i18n'
 
 /** Publishes its rect so the single YouTube iframe sits here. YouTube rules: at least 200×200, nothing on top. */
-export function VideoSlot({ className = '', style, hidden = false, live = false, onClick }: { className?: string; style?: React.CSSProperties; hidden?: boolean; live?: boolean; onClick?: () => void }) {
+export function VideoSlot({ className = '', style, hidden = false, fill = false, live = false, onClick }: { className?: string; style?: React.CSSProperties; hidden?: boolean; fill?: boolean; live?: boolean; onClick?: () => void }) {
   const ref = useRef<HTMLDivElement>(null)
   const set = useVideoSlot((s) => s.set)
   useLayoutEffect(() => {
-    useVideoSlot.setState({ hidden })
-    return () => useVideoSlot.setState({ hidden: false })
-  }, [hidden])
+    useVideoSlot.setState({ hidden, fill })
+    return () => useVideoSlot.setState({ hidden: false, fill: false })
+  }, [hidden, fill])
   // live: slot moves without resizing (mini player drag, snap animation): follow it every frame.
   useLayoutEffect(() => {
     if (!live) return

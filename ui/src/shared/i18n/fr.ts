@@ -678,7 +678,6 @@ const fr: Record<string, string> = {
   "Now Playing over the song's cover, big and blurred": 'Le lecteur sur la pochette du titre, en grand et floutée',
   'Cover tint': 'Teinte de la pochette',
   'Now Playing takes a flat color from the cover (when immersive is off)': 'Le lecteur prend une couleur unie de la pochette (quand l’immersif est désactivé)',
-  'Floating player for every source. YouTube always shows one: its video must stay visible.': 'Lecteur flottant pour toutes les sources. YouTube en affiche toujours un : sa vidéo doit rester visible.',
   'Lists and navigation': 'Listes et navigation',
   'Covers in lists': 'Pochettes dans les listes',
   'Play with': 'Lire avec',
@@ -1169,6 +1168,13 @@ const fr: Record<string, string> = {
   'Reset appearance?': 'Réinitialiser l’apparence ?',
   'Every setting on this page goes back to its default, except the theme and the language.': 'Chaque réglage de cette page revient à sa valeur par défaut, sauf le thème et la langue.',
   'Reset': 'Réinitialiser',
+  // Docked mini player
+  'For every source. YouTube always shows one: its video must stay visible.': 'Pour toutes les sources. YouTube en affiche toujours un : sa vidéo doit rester visible.',
+  'Mini player place': 'Place du mini player',
+  'In the sidebar it never covers the page; floating, drag it anywhere.': 'Dans la barre latérale, il ne cache jamais la page ; flottant, déplacez-le où vous voulez.',
+  'In the sidebar': 'Dans la barre latérale',
+  'Floating': 'Flottant',
+  'sidebar docked floating video corner': 'barre latérale ancré flottant vidéo coin',
 }
 
 export default fr

@@ -533,8 +533,10 @@ usePlayer.subscribe((s, prev) => {
 })
 
 /** Where the YouTube iframe should sit. Null = mini player. Moving the iframe in DOM would reload it. */
-export const useVideoSlot = create<{ rect: DOMRect | null; hidden: boolean; box: Box | null; set: (rect: DOMRect | null) => void }>((set, get) => ({
+export const useVideoSlot = create<{ rect: DOMRect | null; hidden: boolean; fill: boolean; box: Box | null; set: (rect: DOMRect | null) => void }>((set, get) => ({
   rect: null,
+  // Slot not 16:9 (sidebar): the video fills it, sides cut, like object-fit: cover.
+  fill: false,
   // Picture inside the video's 16:9 frame (bars cut): the frame is enlarged and clipped to it. Now Playing only.
   box: null,
   // Now Playing in cover mode: video transparent (user's choice).
