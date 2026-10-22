@@ -155,20 +155,24 @@ pub fn same_title(found: &str, wanted: &str) -> bool {
 /// Synced lines need durations this close; further, only a speed change explains it (stretched), or plain is used.
 const SAME_S: f32 = 3.0;
 
+/// How far a speed change goes: "super / ultra slowed" plays at about half speed (user's report 2026-10-22: a 6:20
+/// super slowed of a ~3:30 song), nightcore at about 1.4×.
+const SPEEDS: std::ops::RangeInclusive<f32> = 0.4..=2.6;
+
 /// Stretch for this record against what plays (None = timings unusable).
 pub fn stretch(record_s: Option<f32>, playing_s: Option<f32>, speed: bool) -> Option<f32> {
     match (record_s, playing_s) {
         (Some(r), Some(p)) if r > 0.0 => {
             if (r - p).abs() <= SAME_S {
                 Some(1.0)
-            } else if speed && (0.6..=1.5).contains(&(p / r)) {
+            } else if speed && SPEEDS.contains(&(p / r)) {
                 Some(p / r)
             } else {
                 None
             }
         }
-        // Duration unknown: trust it.
-        (_, None) => Some(1.0),
+        // Duration unknown: trust it, unless the title says another speed (the timings would run ahead or behind).
+        (_, None) => (!speed).then_some(1.0),
         _ => None,
     }
 }
@@ -203,7 +207,8 @@ pub fn build(record: Record, fit: Option<f32>, source: &str) -> Lyrics {
 /// Cache key: who, what, how long (a slowed version is its own entry).
 pub fn key(artist: &str, title: &str, duration_ms: Option<u32>) -> String {
     let norm = |s: &str| s.to_lowercase().split_whitespace().collect::<Vec<_>>().join(" ");
-    format!("{}|{}|{}", norm(artist), norm(title), duration_ms.map(|d| d / 1000).unwrap_or(0))
+    // v2 (2026-10-22): slowed versions cached before stretching covered them come again.
+    format!("v2|{}|{}|{}", norm(artist), norm(title), duration_ms.map(|d| d / 1000).unwrap_or(0))
 }
 
 #[cfg(test)]
@@ -252,7 +257,12 @@ mod tests {
         assert_eq!(stretch(Some(200.0), Some(201.5), false), Some(1.0));
         assert_eq!(stretch(Some(200.0), Some(250.0), true), Some(1.25));
         assert_eq!(stretch(Some(200.0), Some(250.0), false), None);
-        assert_eq!(stretch(Some(200.0), Some(500.0), true), None);
+        assert_eq!(stretch(Some(200.0), Some(600.0), true), None);
+        // Super slowed: 3:32 played as 6:20.
+        assert_eq!(stretch(Some(212.0), Some(380.0), true).map(|k| (k * 100.0).round()), Some(179.0));
+        // Unknown length: fine as is, not for a slowed version.
+        assert_eq!(stretch(Some(200.0), None, false), Some(1.0));
+        assert_eq!(stretch(Some(200.0), None, true), None);
         let (r, fit) = pick(vec![rec(180.0, true), rec(200.0, true)], Some(250.0), true).unwrap();
         assert_eq!((r.duration_s, fit), (Some(200.0), Some(1.25)));
         let l = build(r, fit, "LRCLIB");
@@ -277,6 +287,6 @@ mod tests {
         // Synced beats plain-only at the same fit.
         let plain_only = Record { synced: None, ..rec(200.0, false) };
         assert!(pick(vec![plain_only, rec(201.0, true)], Some(200.0), false).unwrap().0.synced.is_some());
-        assert_eq!(key("Daft  Punk", "One More Time", Some(320_500)), "daft punk|one more time|320");
+        assert_eq!(key("Daft  Punk", "One More Time", Some(320_500)), "v2|daft punk|one more time|320");
     }
 }

@@ -110,7 +110,9 @@ export function LyricsPanel({ onHide, onUpNext }: { onHide: () => void; onUpNext
   const [waited, setWaited] = useState(false)
   const [got, setGot] = useState<{ for: string; lyrics?: Lyrics | null; error?: string }>()
   const [retry, setRetry] = useState(0)
-  const key = `${artist}|${title}`
+  // Asked again when the length becomes known (slowed versions need it to fit the timings).
+  const seconds = durationMs ? Math.round(durationMs / 1000) : 0
+  const key = `${artist}|${title}|${seconds}`
   useEffect(() => {
     setWaited(false)
     const id = setTimeout(() => setWaited(true), 1500)
