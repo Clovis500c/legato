@@ -50,7 +50,7 @@ function inject(url: string) {
 it('hides YouTube overlays in bare embeds, twice over', () => {
   const { doc } = inject('https://www.youtube.com/embed/abc?enablejsapi=1&controls=0&rel=0')
   const [css] = doc.adoptedStyleSheets.map((s) => s.css)
-  for (const overlay of ['.ytp-chrome-top', '.ytp-pause-overlay', '.ytp-cued-thumbnail-overlay', '.ytp-unmute', '.ytp-upnext', '.ytp-error', '.ytp-title']) expect(css).toContain(overlay)
+  for (const overlay of ['.ytp-chrome-top', '.ytp-pause-overlay', '.ytp-cued-thumbnail-overlay', '.ytp-unmute', '.ytp-upnext', '.ytp-error', '.ytp-title', '.ytPlayerControlsContainerHost', '.ytmVideoCoverHost']) expect(css).toContain(overlay)
   expect(css).toMatch(/\{display:none!important\}$/)
   expect(doc.head!.children[0].textContent).toBe(css)
   delete g.document

@@ -1,6 +1,6 @@
 // Injected by the app into every frame; only bare YouTube embeds (controls=0) act.
 // Hides everything YouTube draws over the video: title bar, share, logo, cards, end screen, cued thumbnail, unmute,
-// up next, pause overlay, bezel, spinner, error slate. The app's controls drive the player and show errors.
+// up next, pause overlay, bezel, spinner, error slate; the new embed player's controls layer too. The app's controls drive the player and show errors.
 // Two layers: an adopted sheet (works before <head> exists) and a <style> element. The page can replace
 // document.adoptedStyleSheets (that dropped ours: overlay seen "sometimes"); both are put back if they go.
 ;(() => {
@@ -47,6 +47,15 @@
     '.iv-branding',
     '.branding-img',
     '.annotation',
+    // New embed player (seen 2026-10-22): its own controls layer, title, middle buttons, cover thumbnail, end-screen
+    // recommendations, "Watch on YouTube".
+    '.ytPlayerControlsContainerHost',
+    '.new-controls',
+    '.player-controls-content',
+    '.fullscreen-controls',
+    '.ytmVideoCoverHost',
+    '.ytFullscreenVideoRecommendationsHost',
+    '.watch-on-youtube-button-wrapper',
   ]
   const css = `${HIDE.join(',')}{display:none!important}`
   const sheet = new CSSStyleSheet()

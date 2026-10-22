@@ -5,6 +5,8 @@ import { api, type LibraryTrack } from '../../shared/api'
 import { fold, formatCount } from '../../shared/format'
 import { Button } from '../../shared/ui/Button'
 import { Led, LedChip, RoundButton, Segmented } from '../../shared/ui/controls'
+import { VirtualGrid } from '../../shared/ui/VirtualGrid'
+import { VirtualList } from '../../shared/ui/VirtualList'
 import { firstArt, trackArt } from '../../shared/art'
 import { onMenu, openMenu, type MenuEntry } from '../../shared/ui/ContextMenu'
 import { Cover } from '../../shared/ui/Cover'
@@ -339,29 +341,28 @@ export function AlbumsView() {
     <>
       <PageHeader kicker={tr('Library')} title={tr('Albums')} sub={trn(albums.length, '{n} album', '{n} albums')} />
       <GroupBar page="albumView" tracks={all} />
-      <div className="-mx-2 min-h-0 flex-1 overflow-y-auto px-2 pb-6">
-        {albums.length === 0 ? (
-          <p className="py-10 text-center text-ink-2">{all.length ? tr('No matching albums.') : tr('No albums yet.')}</p>
-        ) : (
-          <ul className="grid grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-x-5 gap-y-6">
-            {albums.map((a) => (
-              <li key={`${a.album}-${a.artist}`} onContextMenu={onMenu(() => tracksMenu(a.tracks, ['-', { label: tr('Go to artist'), onSelect: () => go({ name: 'artist', artist: a.artist }) }]))}>
-                <button onClick={() => go({ name: 'album', album: a.album, artist: a.artist })} className="group flex w-full flex-col gap-2 text-left">
-                  <span className="relative aspect-square w-full">
-                    <Cover title={a.album} art={firstArt(a.tracks)} size={150} className="size-full! text-[1.75rem]!" />
-                  </span>
-                  <span className="min-w-0">
-                    <span className="block truncate text-[0.8125rem] font-semibold group-hover:underline">{a.album}</span>
-                    <span className="block truncate text-xs text-ink-2">
-                      {a.artist} · {trn(a.tracks.length, '{n} track', '{n} tracks')}
-                    </span>
-                  </span>
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+      {albums.length === 0 ? (
+        <p className="py-10 text-center text-ink-2">{all.length ? tr('No matching albums.') : tr('No albums yet.')}</p>
+      ) : (
+        <VirtualGrid
+          items={albums}
+          itemKey={(a) => `${a.album}\u0000${a.artist}`}
+          className="-mx-2 px-2 pb-6"
+          render={(a) => (
+            <button onClick={() => go({ name: 'album', album: a.album, artist: a.artist })} onContextMenu={onMenu(() => tracksMenu(a.tracks, ['-', { label: tr('Go to artist'), onSelect: () => go({ name: 'artist', artist: a.artist }) }]))} className="group flex w-full flex-col gap-2 text-left">
+              <span className="relative aspect-square w-full">
+                <Cover title={a.album} art={firstArt(a.tracks)} size={150} className="size-full! text-[1.75rem]!" />
+              </span>
+              <span className="min-w-0">
+                <span className="block truncate text-[0.8125rem] font-semibold group-hover:underline">{a.album}</span>
+                <span className="block truncate text-xs text-ink-2">
+                  {a.artist} · {trn(a.tracks.length, '{n} track', '{n} tracks')}
+                </span>
+              </span>
+            </button>
+          )}
+        />
+      )}
     </>
   )
 }
@@ -384,11 +385,11 @@ export function ArtistsView() {
     <>
       <PageHeader kicker={tr('Library')} title={tr('Artists')} sub={trn(artists.length, '{n} artist', '{n} artists')} />
       <GroupBar page="artistView" tracks={tracks} />
-      <ul className="-mx-2 min-h-0 flex-1 overflow-y-auto px-2 pb-6">
-        {artists.length === 0 && <p className="py-10 text-center text-ink-2">{tr('No matching artists.')}</p>}
-        {artists.map((a, i) => (
-          <li key={a.artist} onContextMenu={onMenu(() => tracksMenu(a.tracks))}>
-            <button onClick={() => go({ name: 'artist', artist: a.artist })} className="flex w-full items-center gap-4 border-b border-line-soft px-2 py-2.5 text-left hover:bg-raised">
+      {artists.length === 0 && <p className="py-10 text-center text-ink-2">{tr('No matching artists.')}</p>}
+      <VirtualList items={artists} rowHeight={57} className="-mx-2 px-2 pb-6">
+        {(a, i) => (
+          <div role="listitem" key={a.artist} onContextMenu={onMenu(() => tracksMenu(a.tracks))} className="h-full">
+            <button onClick={() => go({ name: 'artist', artist: a.artist })} className="flex h-full w-full items-center gap-4 border-b border-line-soft px-2 text-left hover:bg-raised">
               <span className="w-8 text-right font-mono text-[0.6875rem] text-ink-3">{String(i + 1).padStart(2, '0')}</span>
               <Cover title={a.artist} art={trackArt(a.cover)} size={36} className="rounded-full!" />
               <span className="flex-1 truncate text-[0.8125rem] font-semibold">{a.artist}</span>
@@ -397,9 +398,9 @@ export function ArtistsView() {
                 {v.sort === 'most-played' && ` · ${trn(groupStats(a, stats).plays, '{n} play', '{n} plays')}`}
               </span>
             </button>
-          </li>
-        ))}
-      </ul>
+          </div>
+        )}
+      </VirtualList>
     </>
   )
 }
