@@ -17,7 +17,9 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  # Windows = the app's platform. Linux and macOS: must build and pass the same checks (app not driven there yet).
+  # Windows = the app's platform: everything. macOS: everything too (the app shell's non-Windows build). Linux: the
+  # Rust crates only (clippy + tests): the shell would need WebKitGTK, ~100 MB from Ubuntu mirrors that crawl some days
+  # (review 2026-10-23: 10+ min, then a timeout), and macOS already builds it.
   check:
     name: check (${{ matrix.os }})
     strategy:
@@ -29,21 +31,23 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Same list as docs/development.md › Tools.
-      # A slow Ubuntu mirror used to hang `apt-get update` for 20+ minutes: short timeouts, retries, a cap on the step.
+      # Crates only: ALSA headers for the player (OpenSSL and pkg-config come with the runner). A slow Ubuntu mirror
+      # used to hang `apt-get update` for 20+ minutes: short timeouts, retries, a cap on the step.
       - if: runner.os == 'Linux'
-        timeout-minutes: 10
+        timeout-minutes: 8
         run: |
           APT="-o Acquire::Retries=3 -o Acquire::http::Timeout=20 -o Acquire::https::Timeout=20"
           for i in 1 2 3; do sudo apt-get $APT update && break; sleep 5; done
-          sudo apt-get $APT install -y build-essential pkg-config libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev libxdo-dev libssl-dev libasound2-dev libdbus-1-dev
+          sudo apt-get $APT install -y --no-install-recommends pkg-config libssl-dev libasound2-dev
 
       # No "packageManager" in package.json, so pin the major here (drop `version` if one is added).
-      - uses: pnpm/action-setup@v4
+      - if: runner.os != 'Linux'
+        uses: pnpm/action-setup@v4
         with:
           version: 10
 
-      - uses: actions/setup-node@v4
+      - if: runner.os != 'Linux'
+        uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: pnpm
@@ -54,15 +58,29 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
 
-      - run: pnpm install --frozen-lockfile
+      - if: runner.os != 'Linux'
+        run: pnpm install --frozen-lockfile
 
       # tauri::generate_context! needs the frontend build output (dist/) to exist.
-      - run: pnpm vite build
+      - if: runner.os != 'Linux'
+        run: pnpm vite build
 
       - run: cargo fetch --locked
 
       # No test may reach the network: anything but loopback goes to a dead proxy (mockito servers are on 127.0.0.1).
-      - run: pnpm check
+      - if: runner.os != 'Linux'
+        run: pnpm check
+        env:
+          CARGO_NET_OFFLINE: true
+          HTTP_PROXY: http://127.0.0.1:9
+          HTTPS_PROXY: http://127.0.0.1:9
+          ALL_PROXY: http://127.0.0.1:9
+          NO_PROXY: 127.0.0.1,localhost
+
+      - if: runner.os == 'Linux'
+        run: |
+          cargo clippy --workspace --exclude music-app --all-targets -- -D warnings
+          cargo test --workspace --exclude music-app
         env:
           CARGO_NET_OFFLINE: true
           HTTP_PROXY: http://127.0.0.1:9

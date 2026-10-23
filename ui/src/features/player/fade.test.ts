@@ -50,7 +50,7 @@ describe('shape', () => {
 
 it('simple mode ignores the advanced fields', () => {
   const fade: FadeSettings = { advanced: false, out: 2, in: 9, outCurve: 'log', inCurve: 'exp', skip: true, pause: 400 }
-  expect(effectiveFade({ crossfade: 4, fade })).toEqual(simple(4))
+  expect(effectiveFade({ crossfade: 4, fade })).toEqual({ ...simple(4), skip: true })
   expect(effectiveFade({ crossfade: 4, fade: { ...fade, advanced: true } })).toEqual({ out: 2, in: 9, outCurve: 'log', inCurve: 'exp', skip: true, pause: 400 })
 })
 

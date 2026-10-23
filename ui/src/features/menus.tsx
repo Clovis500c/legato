@@ -6,7 +6,9 @@ import {
   ArrowsClockwise,
   ArrowsOutSimple,
   ArrowSquareOut,
+  ClipboardText,
   Copy,
+  CopySimple,
   Disc,
   DownloadSimple,
   Eye,
@@ -18,6 +20,7 @@ import {
   ImageSquare,
   Gear,
   Link,
+  ListBullets,
   ListPlus,
   MagnifyingGlass,
   MicrophoneStage,
@@ -49,7 +52,7 @@ import {
 import { open, save } from '@tauri-apps/plugin-dialog'
 import { openUrl, revealItemInDir } from '@tauri-apps/plugin-opener'
 import { useSettings } from '../app/settings'
-import { useStore } from '../app/store'
+import { useStore, type SettingsSection, type View } from '../app/store'
 import { api, playlistKey, type Edit, type LibraryPlaylist, type PluginInfo, type LibraryTrack, type SearchHit } from '../shared/api'
 import { bigTrackArt } from '../shared/art'
 import { loadFit } from '../shared/artfit'
@@ -59,7 +62,9 @@ import type { MenuEntry } from '../shared/ui/ContextMenu'
 import { SourceIcon } from '../shared/ui/SourceIcon'
 import type { Addon } from './addons/registry'
 import { isOn, setAddon } from './addons/state'
-import { addToPlaylist, markMusic, removeFromPlaylist, removeTrackFromPlaylist, songs } from './library/edits'
+import { addToPlaylist, markMusic, removeFromPlaylist, removePositions, removeTrackFromPlaylist, songs } from './library/edits'
+import { findDuplicates } from './library/DuplicatesDialog'
+import { repeatedRows } from './library/duplicates'
 import { PlaylistCover as PlaylistIcon } from './library/PlaylistCover'
 import { primaryArtist } from './library/filter'
 import { isFull, viaLabel, vias } from './player/sources'
@@ -114,6 +119,18 @@ function pages(t: LibraryTrack): { label: string; url: string }[] {
     t.ids.apple && { label: 'Apple Music', url: `https://music.apple.com/song/${t.ids.apple}` },
     t.ids.spotify && { label: 'Spotify', url: `https://open.spotify.com/track/${t.ids.spotify}` },
   ].filter((p): p is { label: string; url: string } => !!p)
+}
+
+/** "Artist – Title" lines, for pasting a list anywhere. */
+const copyList = (tracks: LibraryTrack[]) => copy(tracks.map((t) => `${t.artist} – ${t.title}`).join('\n'), trn(tracks.length, '{n} song copied', '{n} songs copied'))
+
+/** Finder and copy for any list of songs (user's request 2026-10-23: duplicate finder from every right-click). */
+function listTools(tracks: LibraryTrack[], scope: { name?: string; playlistId?: number } = {}): MenuEntry[] {
+  if (tracks.length < 2) return []
+  return [
+    { label: tr('Find duplicates'), icon: <CopySimple size={16} />, onSelect: () => findDuplicates({ ...scope, ids: tracks.map((t) => t.id) }) },
+    { label: tr('Copy song list'), icon: <ClipboardText size={16} />, onSelect: () => copyList(tracks) },
+  ]
 }
 
 export function shufflePlay(tracks: LibraryTrack[]) {
@@ -386,6 +403,15 @@ export function trackMenu(t: LibraryTrack, ctx: { list?: LibraryTrack[]; index?:
     saveCoverItem(t),
     ...pages(t).map((p) => ({ label: tr('Open in {service}', { service: p.label }), icon: <ArrowSquareOut size={16} />, onSelect: () => openUrl(p.url).catch(fail) })),
     t.ids.local && { label: tr('Show in folder'), icon: <FolderOpen size={16} />, onSelect: () => revealItemInDir(t.ids.local!).catch(fail) },
+    list.length > 1 && {
+      label: tr('This list'),
+      icon: <ListBullets size={16} />,
+      items: [
+        { label: tr('Play all'), icon: <Play size={16} />, onSelect: () => player().playTracks(list, 0) },
+        { label: tr('Shuffle play'), icon: <Shuffle size={16} />, onSelect: () => shufflePlay(list) },
+        ...listTools(list, { playlistId: ctx.playlistId, name: app().playlists.find((p) => p.id === ctx.playlistId)?.name }),
+      ],
+    },
     ...pluginItems('track', { trackId: t.id, title: t.title, artist: t.artist }),
   ]
 }
@@ -445,6 +471,8 @@ export function tracksMenu(tracks: LibraryTrack[], extra: MenuEntry[] = []): Men
     '-',
     addTo(() => tracks),
     ...extra,
+    '-',
+    ...listTools(tracks),
   ]
 }
 
@@ -456,9 +484,19 @@ export function playlistMenu(p: LibraryPlaylist): MenuEntry[] {
   return [
     { label: tr('Play'), icon: <Play size={16} />, disabled: !p.trackCount, onSelect: () => tracks().then((t) => player().playTracks(t, 0), fail) },
     { label: tr('Shuffle play'), icon: <Shuffle size={16} />, disabled: !p.trackCount, onSelect: () => tracks().then(shufflePlay, fail) },
+    { label: tr('Play next'), icon: <Queue size={16} />, disabled: !p.trackCount, onSelect: () => tracks().then((t) => player().enqueue(t, true), fail) },
     { label: tr('Add to queue'), icon: <ListPlus size={16} />, disabled: !p.trackCount, onSelect: () => tracks().then((t) => player().enqueue(t, false), fail) },
     '-',
     { label: tr('Open'), icon: <Playlist size={16} />, onSelect: () => go({ name: 'playlist', id: p.id }) },
+    { label: tr('Find duplicates'), icon: <CopySimple size={16} />, disabled: p.trackCount < 2, onSelect: () => tracks().then((t) => findDuplicates({ name: p.name, ids: t.map((x) => x.id), playlistId: p.id }), fail) },
+    p.custom &&
+      repeatedRows(app().orders[p.id] ?? []).length > 0 && {
+        label: tr('Remove repeated songs'),
+        icon: <MinusCircle size={16} />,
+        onSelect: () => void removePositions(p.id, repeatedRows(app().orders[p.id] ?? [])),
+      },
+    { label: tr('Copy song list'), icon: <ClipboardText size={16} />, disabled: !p.trackCount, onSelect: () => tracks().then(copyList, fail) },
+    { label: tr('Copy name'), icon: <Copy size={16} />, onSelect: () => copy(p.name, tr('Name copied')) },
     p.custom && {
       label: tr('Rename…'),
       icon: <PencilSimple size={16} />,
@@ -513,6 +551,31 @@ export function playlistMenu(p: LibraryPlaylist): MenuEntry[] {
       },
     },
     ...pluginItems('playlist', { playlistId: p.id, name: p.name }),
+  ]
+}
+
+const SECTIONS: [SettingsSection, string][] = [
+  ['general', msg('General')],
+  ['playback', msg('Playback')],
+  ['appearance', msg('Appearance')],
+  ['sources', msg('Accounts')],
+  ['sync', msg('Sync Mode')],
+  ['shield', msg('Shield')],
+  ['shortcuts', msg('Shortcuts')],
+  ['about', msg('About')],
+]
+
+/** Sidebar entries (Home, Songs, Settings…): open it; its songs when it has some; settings sections; counts on/off. */
+export function navMenu(to: View, tracks?: LibraryTrack[]): MenuEntry[] {
+  const { go } = app()
+  const { settings, update } = useSettings.getState()
+  return [
+    { label: tr('Open'), icon: <ArrowSquareOut size={16} />, onSelect: () => go(to) },
+    to.name === 'settings' && { label: tr('Go to'), icon: <Gear size={16} />, items: SECTIONS.map(([section, label]) => ({ label: tr(label), onSelect: () => go({ name: 'settings', section }) })) },
+    '-',
+    ...(tracks?.length ? tracksMenu(tracks) : []),
+    '-',
+    { label: tr('Counts in the sidebar'), checked: settings.sidebarCounts, onSelect: () => update({ sidebarCounts: !settings.sidebarCounts }) },
   ]
 }
 

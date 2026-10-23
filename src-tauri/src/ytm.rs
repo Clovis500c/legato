@@ -27,7 +27,7 @@ pub fn open(app: &AppHandle, add_account: bool) -> tauri::Result<()> {
         return w.set_focus();
     }
     let url = Url::parse(if add_account { ADD_ACCOUNT } else { SIGN_IN }).expect("valid url");
-    WebviewWindowBuilder::new(app, LABEL, WebviewUrl::External(url)).title("Sign in with Google · YouTube Music").inner_size(520.0, 720.0).build()?;
+    WebviewWindowBuilder::new(app, LABEL, WebviewUrl::External(url)).additional_browser_args(crate::background::BROWSER_ARGS).title("Sign in with Google · YouTube Music").inner_size(520.0, 720.0).build()?;
     let app = app.clone();
     std::thread::spawn(move || {
         while let Some(w) = app.get_webview_window(LABEL) {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { LibraryTrack } from '../../shared/api'
-import { bestCopy, duplicateGroups } from './duplicates'
+import { bestCopy, duplicateGroups, repeatedRows } from './duplicates'
 
 const t = (id: number, title: string, artist = 'Kavinsky', ids: LibraryTrack['ids'] = { youtube: `y${id}` }, album: string | null = null): LibraryTrack => ({ id, added: id, title, artist, album, durationMs: null, isrc: null, ids })
 
@@ -22,5 +22,12 @@ describe('duplicates', () => {
     const g = [t(1, 'a'), t(2, 'a', 'Kavinsky', { youtube: 'y', spotify: 's' }), t(3, 'a')]
     expect(bestCopy(g, {}).id).toBe(2)
     expect(bestCopy(g, { 3: [9, 0] }).id).toBe(3)
+  })
+})
+
+describe('repeatedRows', () => {
+  it('keeps the first of each song, lists the later rows', () => {
+    expect(repeatedRows([4, 7, 4, 9, 7, 4])).toEqual([2, 4, 5])
+    expect(repeatedRows([1, 2, 3])).toEqual([])
   })
 })

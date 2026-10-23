@@ -371,7 +371,7 @@ export const DEFAULTS: Settings = {
   miniPlace: 'sidebar',
   miniWidth: 356,
   crossfade: 2,
-  fade: { advanced: false, out: 2, in: 2, outCurve: 'scurve', inCurve: 'scurve', skip: false, pause: 0 },
+  fade: { advanced: false, out: 2, in: 2, outCurve: 'scurve', inCurve: 'scurve', skip: true, pause: 0 },
   subtitles: false,
   hiddenPlaylists: [],
   playlistOrder: 'custom',
@@ -587,7 +587,7 @@ function sanitizeFade(raw: unknown): FadeSettings {
     in: secs(r.in, d.in),
     outCurve: curve(r.outCurve, d.outCurve),
     inCurve: curve(r.inCurve, d.inCurve),
-    skip: r.skip === true,
+    skip: typeof r.skip === 'boolean' ? r.skip : d.skip,
     pause: typeof r.pause === 'number' && Number.isFinite(r.pause) ? Math.min(2000, Math.max(0, Math.round(r.pause))) : d.pause,
   }
 }

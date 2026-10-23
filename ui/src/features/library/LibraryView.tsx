@@ -1,6 +1,5 @@
-import { CaretDown, Columns, DotsThree, Info, MagnifyingGlass, Play, Plus, ShareNetwork, Shuffle, SortAscending } from '@phosphor-icons/react'
+import { CaretDown, DotsThree, Info, MagnifyingGlass, Play, Plus, ShareNetwork, Shuffle, SlidersHorizontal, SortAscending } from '@phosphor-icons/react'
 import { useCallback, useMemo, useState } from 'react'
-import { useSettings } from '../../app/settings'
 import { pageQuery, useStore } from '../../app/store'
 import { api, type LibraryTrack } from '../../shared/api'
 import { formatCount } from '../../shared/format'
@@ -19,11 +18,10 @@ import { usePlayer } from '../player/store'
 import { SharePanel } from '../share/SharePanel'
 import { FIT_FIELD, SongsThatFit } from './SongsThatFit'
 import { PlaylistCover } from './PlaylistCover'
-import { COLUMNS, type Column } from '../../shared/theme/theme'
 import { filterTracks, groupAlbums, groupArtists, groupStats, libraryStats, musicOnly, sortGroups as orderGroups, sortTracks, type Filter, type GroupSort, type Sort } from './filter'
 import { DuplicatesButton } from './DuplicatesDialog'
 import { HiddenVideos } from './HiddenVideos'
-import { TrackTable } from './TrackTable'
+import { columnsMenu, TrackTable } from './TrackTable'
 import { msg, tr, trn } from '../../shared/i18n/i18n'
 
 /** YouTube-like sort list, in groups. Manual only on playlists. */
@@ -83,15 +81,11 @@ export function ShuffleRound({ tracks }: { tracks: LibraryTrack[] }) {
   )
 }
 
-const columnLabels: Record<Column, string> = { album: msg('Album'), sources: msg('Sources'), plays: msg('Plays'), added: msg('Date added'), duration: msg('Duration') }
-
-/** Which list columns show (settings columns, also in Appearance). */
+/** How the list shows: columns, row size, covers (settings, also in Appearance). Sliders: the old columns icon read as pause. */
 function ColumnsButton() {
-  const columns = useSettings((s) => s.settings.columns)
-  const toggle = (c: Column) => useSettings.getState().update({ columns: columns.includes(c) ? columns.filter((x) => x !== c) : COLUMNS.filter((x) => x === c || columns.includes(x)) })
   return (
-    <RoundButton label={tr('Columns')} kind="plain" size="sm" onClick={(e) => openMenu(e, COLUMNS.map((c) => ({ label: tr(columnLabels[c]), checked: columns.includes(c), onSelect: () => toggle(c) })))}>
-      <Columns size={16} />
+    <RoundButton label={tr('Display options')} kind="plain" size="sm" onClick={(e) => openMenu(e, columnsMenu(), { place: 'below' })}>
+      <SlidersHorizontal size={16} />
     </RoundButton>
   )
 }

@@ -15,7 +15,8 @@ keeps secrets and data. Written 2026-10-17; re-check the Spotify part when Spoti
 sudo apt install build-essential pkg-config libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev libxdo-dev libssl-dev libasound2-dev libdbus-1-dev
 ```
 
-Windows is the app's platform. Linux and macOS build and pass the tests in CI, but the app has never been driven there:
+Windows is the app's platform. In CI, macOS builds the whole app and passes every check; Linux checks the Rust crates
+only (no WebKitGTK download from slow mirrors). The app has never been driven on either:
 the media panel, the ad shield's network hook and the system accent are Windows only.
 
 ## Your dev build uses your real data

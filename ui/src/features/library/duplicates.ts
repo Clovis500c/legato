@@ -40,3 +40,9 @@ export function bestCopy(group: LibraryTrack[], stats: Record<number, [number, n
     return 0
   })[0]
 }
+
+/** Later rows of a song already higher in the playlist. */
+export function repeatedRows(order: number[]): number[] {
+  const seen = new Set<number>()
+  return order.flatMap((id, i) => (seen.has(id) ? [i] : (seen.add(id), [])))
+}

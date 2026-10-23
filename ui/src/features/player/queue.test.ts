@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { insertAt, moveInOrder, moveToSlot, nextIndex, playOrder, queued, queueRows } from './queue'
+import { insertAt, moveInOrder, moveToSlot, nextIndex, playOrder, queued, queueRows, repeatsAhead } from './queue'
 
 describe('playOrder', () => {
   it('keeps list order, or shuffles with the current track first', () => {
@@ -77,5 +77,14 @@ describe('Up next drops', () => {
     expect(moveToSlot([0, 1, 2], 9, 1)).toEqual([0, 1, 2])
     expect(insertAt([0, 1, 2], [5, 6], 1)).toEqual([0, 5, 6, 1, 2])
     expect(insertAt([0, 1], [5], 99)).toEqual([0, 1, 5])
+  })
+})
+
+describe('repeatsAhead', () => {
+  it('lists songs to come already higher in the queue', () => {
+    const ids = [10, 11, 10, 12, 11]
+    // Order 0..4, playing index 1: list 2 (=10) and 4 (=11) repeat.
+    expect(repeatsAhead([0, 1, 2, 3, 4], 1, (i) => ids[i])).toEqual([2, 4])
+    expect(repeatsAhead([0, 1, 3], 0, (i) => ids[i])).toEqual([])
   })
 })

@@ -5,11 +5,11 @@ import { useRef, useState } from 'react'
 import { useSettings } from '../../app/settings'
 import type { LibraryTrack, Source } from '../../shared/api'
 import { formatCount, formatDuration } from '../../shared/format'
-import type { Column } from '../../shared/theme/theme'
+import { COLUMNS, type Column } from '../../shared/theme/theme'
 import type { Sort } from './filter'
 import { RoundButton } from '../../shared/ui/controls'
 import { trackArt } from '../../shared/art'
-import { onMenu, openMenu } from '../../shared/ui/ContextMenu'
+import { onMenu, openMenu, type MenuEntry } from '../../shared/ui/ContextMenu'
 import { trackMenu, tracksMenu } from '../menus'
 import { Cover } from '../../shared/ui/Cover'
 import { SourceIcon } from '../../shared/ui/SourceIcon'
@@ -33,6 +33,20 @@ const addedDate = (at?: number | null) => {
   if (!at) return ''
   const d = new Date(at * 1000)
   return d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: d.getFullYear() === new Date().getFullYear() ? undefined : 'numeric' })
+}
+/** Columns button and right-click on a list's header: columns, row size, covers. */
+export function columnsMenu(): MenuEntry[] {
+  const { settings: s, update } = useSettings.getState()
+  const toggle = (c: Column) => update({ columns: s.columns.includes(c) ? s.columns.filter((x) => x !== c) : COLUMNS.filter((x) => x === c || s.columns.includes(x)) })
+  return [
+    ...COLUMNS.map((c) => ({ label: tr(head[c]), checked: s.columns.includes(c), onSelect: () => toggle(c) })),
+    '-',
+    {
+      label: tr('Density'),
+      items: (['compact', 'comfort', 'airy'] as const).map((d) => ({ label: tr({ compact: 'Compact', comfort: 'Comfortable', airy: 'Airy' }[d]), checked: s.density === d, onSelect: () => update({ density: d }) })),
+    },
+    { label: tr('Covers in lists'), checked: s.listCovers, onSelect: () => update({ listCovers: !s.listCovers }) },
+  ]
 }
 const headSorts: Partial<Record<Column | 'title', [Sort, Sort]>> = { title: ['title', 'title-desc'], album: ['album', 'album'], plays: ['most-played', 'most-played'], added: ['added-new', 'added-old'], duration: ['duration', 'duration-short'] }
 
@@ -123,7 +137,7 @@ export function TrackTable({ tracks, empty, editId, rowActions, sort, onSort, fo
           </button>
         </div>
       )}
-      <div role="row" className="grid h-8 shrink-0 items-center gap-4 border-b border-line px-2" style={grid}>
+      <div role="row" onContextMenu={onMenu(columnsMenu)} className="grid h-8 shrink-0 items-center gap-4 border-b border-line px-2" style={grid}>
         <span role="columnheader" className="text-right text-xs text-ink-3">#</span>
         <Head label={tr('Title')} sorts={headSorts.title} sort={sort} onSort={onSort} />
         <span />

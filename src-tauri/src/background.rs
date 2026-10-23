@@ -8,6 +8,11 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::{Duration, Instant};
 use tauri::{AppHandle, Manager};
 
+/// WebView2 flags for every webview (one browser process: they must match). wry's defaults (no mini menu, no
+/// SmartScreen), plus: hidden page keeps full-speed timers and normal priority, so the next song starts at once from
+/// the tray (review 2026-10-23: switches took seconds in the background). Silent and hidden long = suspended anyway.
+pub const BROWSER_ARGS: &str = "--disable-features=msWebOOUI,msPdfOOUI,msSmartScreenProtection,IntensiveWakeUpThrottling --disable-background-timer-throttling --disable-renderer-backgrounding --disable-backgrounding-occluded-windows";
+
 /// Quit asked: the next close is real.
 static QUITTING: AtomicBool = AtomicBool::new(false);
 /// Something plays (media panel updates): never suspended then.

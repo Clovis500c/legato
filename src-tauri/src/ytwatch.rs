@@ -174,7 +174,7 @@ pub fn open(app: &AppHandle, video: &str, start_s: f64, rect: Option<Rect>, shie
         return Ok(());
     }
     let window = app.get_window("main").ok_or_else(|| anyhow::anyhow!("No main window"))?;
-    let mut builder = WebviewBuilder::new(LABEL, WebviewUrl::External(url)).initialization_script(music_shield::WATCH_SCRIPT).initialization_script(music_shield::LIVE_SCRIPT).on_navigation(allowed).background_color(tauri::window::Color(0, 0, 0, 255));
+    let mut builder = WebviewBuilder::new(LABEL, WebviewUrl::External(url)).additional_browser_args(crate::background::BROWSER_ARGS).initialization_script(music_shield::WATCH_SCRIPT).initialization_script(music_shield::LIVE_SCRIPT).on_navigation(allowed).background_color(tauri::window::Color(0, 0, 0, 255));
     if shield.enabled.load(std::sync::atomic::Ordering::Relaxed) {
         builder = builder.initialization_script_for_all_frames(music_shield::YOUTUBE_SCRIPT);
     }
