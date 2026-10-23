@@ -96,6 +96,11 @@ for (const [expression, pkgs] of Object.entries(npm)) {
   }
 }
 
+// Vendored assets: Noto Emoji's waving flags (ui/src/shared/flags, rendered to 72 px PNG), license file next to them.
+const flags = 'noto-emoji flags@2026-10-23'
+parts.set(flags, { name: 'noto-emoji flags', version: '2026-10-23', kind: 'js', authors: ['Google LLC'], source: 'https://github.com/googlefonts/noto-emoji/tree/main/third_party/region-flags', repo: 'https://github.com/googlefonts/noto-emoji', licenses: new Set() })
+addText('OFL-1.1', names.get('OFL-1.1'), readFileSync(new URL('../ui/src/shared/flags/LICENSE', import.meta.url), 'utf8'), flags)
+
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c])
 const link = (href, text) => (href ? `<a href="${esc(href)}">${esc(text)}</a>` : esc(text))
 const sorted = [...parts.values()].sort((a, b) => a.name.localeCompare(b.name) || a.version.localeCompare(b.version, undefined, { numeric: true }))
