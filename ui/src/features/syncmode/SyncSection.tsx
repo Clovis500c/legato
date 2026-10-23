@@ -8,6 +8,7 @@ import { tr } from '../../shared/i18n/i18n'
 import { Button } from '../../shared/ui/Button'
 import { Dialog } from '../../shared/ui/Dialog'
 import { mergedText } from './merged'
+import { strength, type Hint } from './strength'
 
 const MIN_PASSWORD = 10
 
@@ -19,6 +20,47 @@ function Card({ setting, title, icon, children }: { setting: string; title: stri
       </h2>
       {children}
     </section>
+  )
+}
+
+const LEVELS = [
+  { label: () => tr('Too short'), color: '#F23F43' },
+  { label: () => tr('Weak'), color: '#F23F43' },
+  { label: () => tr('Fair'), color: '#F0A020' },
+  { label: () => tr('Strong'), color: '#7CC24A' },
+  { label: () => tr('Very strong'), color: '#23A55A' },
+]
+const HINTS: Record<Hint, () => string> = {
+  longer: () => tr('add characters (16 or more)'),
+  lower: () => tr('add lowercase letters'),
+  upper: () => tr('add capital letters'),
+  digit: () => tr('add numbers'),
+  symbol: () => tr('add symbols (- ! ? # …)'),
+  repeats: () => tr('avoid repeated characters'),
+  common: () => tr('avoid common words and sequences (password, azerty, 1234…)'),
+}
+
+/** Strength bar + what to add. Tip: a few unrelated words joined by symbols beat short gibberish. */
+function Meter({ password }: { password: string }) {
+  const { level, hints } = strength(password, MIN_PASSWORD)
+  const { label, color } = LEVELS[level]
+  return (
+    <div className="flex flex-col gap-1.5" aria-live="polite">
+      <div className="flex gap-1" aria-hidden>
+        {[1, 2, 3, 4].map((i) => (
+          <span key={i} className="h-1 flex-1 rounded-full bg-line" style={i <= Math.max(level, 1) && password ? { background: color } : undefined} />
+        ))}
+      </div>
+      {password && (
+        <p className="text-xs">
+          <span className="font-medium" style={{ color }}>
+            {tr('Strength: {level}', { level: label() })}
+          </span>
+          {hints.length > 0 && <span className="text-ink-2"> · {tr('To improve: {hints}', { hints: hints.map((h) => HINTS[h]()).join(', ') })}</span>}
+        </p>
+      )}
+      {!password && <p className="text-xs text-ink-2">{tr('Tip: three or four unrelated words joined by symbols and numbers, like Velvet-7-Harbor!Lamp.')}</p>}
+    </div>
   )
 }
 
@@ -88,7 +130,9 @@ function Setup({ folder, onClose, onDone }: { folder: string; onClose: () => voi
       {probe && needs && (
         <div className="flex flex-col gap-2">
           {field(password, setPassword, tr('Password'))}
+          {!joining && <Meter password={password} />}
           {!joining && field(again, setAgain, tr('Same password again'))}
+          {!joining && again && again !== password && <p className="text-xs text-[#F23F43]">{tr('The two passwords don’t match.')}</p>}
           {!joining && <p className="text-xs text-ink-3">{tr('At least {n} characters. It can’t be recovered: without it, set up a new folder.', { n: MIN_PASSWORD })}</p>}
         </div>
       )}
