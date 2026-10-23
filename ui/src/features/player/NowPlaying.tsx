@@ -1,4 +1,4 @@
-import { ArrowSquareOut, CaretLeft, Quotes, SlidersHorizontal } from '@phosphor-icons/react'
+import { ArrowSquareOut } from '@phosphor-icons/react'
 import { openUrl } from '@tauri-apps/plugin-opener'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
@@ -9,7 +9,7 @@ import { clampRatio } from '../../shared/artbox'
 import type { Settings } from '../../shared/theme/theme'
 import { Button } from '../../shared/ui/Button'
 import { onMenu } from '../../shared/ui/ContextMenu'
-import { RoundButton, Segmented } from '../../shared/ui/controls'
+import { Segmented } from '../../shared/ui/controls'
 import { Cover } from '../../shared/ui/Cover'
 import { SourceIcon } from '../../shared/ui/SourceIcon'
 import { playerMenu } from '../menus'
@@ -186,6 +186,26 @@ function Tuner() {
   return <TunerScale value={pos} max={durationMs ?? 0} onChange={seek} />
 }
 
+/** Up next · Lyrics · Sound (the Live Editor): one click opens a panel beside the cover, again closes it. */
+function PanelTabs({ upNext, lyrics, editor, next, className = '' }: { upNext: boolean; lyrics: boolean; editor: boolean; next: number; className?: string }) {
+  const active = editor ? 'sound' : lyrics ? 'lyrics' : upNext ? 'upnext' : null
+  const pick = (t: 'upnext' | 'lyrics' | 'sound') => useSettings.getState().update(t === active ? { upNext: false, lyrics: false, editor: false } : { upNext: t === 'upnext', lyrics: t === 'lyrics', editor: t === 'sound' })
+  const tabs = [
+    { id: 'upnext' as const, label: next ? tr('Up next · {n}', { n: next }) : tr('Up next') },
+    { id: 'lyrics' as const, label: tr('Lyrics') },
+    { id: 'sound' as const, label: tr('Sound') },
+  ]
+  return (
+    <div role="tablist" aria-label={tr('Panels')} className={`glass flex w-fit gap-0.5 rounded-full border border-line p-[3px] ${className}`}>
+      {tabs.map((t) => (
+        <button key={t.id} role="tab" aria-selected={active === t.id} onClick={() => pick(t.id)} className={`rounded-full px-3.5 py-1 text-xs font-semibold transition ${active === t.id ? 'bg-ink text-bg' : 'text-ink-2 hover:text-ink'}`}>
+          {t.label}
+        </button>
+      ))}
+    </div>
+  )
+}
+
 export function NowPlaying() {
   const now = usePlayer((s) => s.now)
   const setFull = usePlayer((s) => s.setFull)
@@ -218,11 +238,7 @@ export function NowPlaying() {
     // Whole window, under the see-through top bar (logo, Close player and window buttons stay on top, z-30).
     <div role="dialog" aria-label={tr('Now playing')} onContextMenu={onMenu(playerMenu)} className="fixed inset-0 z-20 isolate flex flex-col overflow-hidden bg-bg px-10 pt-17 pb-7 text-ink transition-colors duration-500" style={ambient}>
       {immersive && <Backdrop url={backdrop} dim={backdropDim} motion={backdropMotion} />}
-      {!upNext && !lyrics && !editor && (
-        <Button variant="ghost" className="absolute top-17 right-10 z-10" onClick={() => update({ upNext: true })}>
-          <CaretLeft size={13} /> {tr('Up next · {n}', { n: nextCount })}
-        </Button>
-      )}
+      {!upNext && !lyrics && !editor && <PanelTabs className="absolute top-17 right-10 z-10" upNext={false} lyrics={false} editor={false} next={nextCount} />}
 
       <div className={`grid min-h-0 flex-1 gap-10 ${editor ? 'grid-cols-[minmax(0,1fr)_400px]' : lyrics ? 'grid-cols-[minmax(0,1fr)_minmax(0,1fr)]' : upNext ? 'grid-cols-[minmax(0,1fr)_360px]' : 'grid-cols-1'}`}>
         <section className="flex min-h-0 min-w-0 flex-col items-center gap-4">
@@ -255,12 +271,6 @@ export function NowPlaying() {
             <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center">
               <span className="flex items-center gap-1">
                 <SourceBadge via={now.via} />
-                <RoundButton label={lyrics && !editor ? tr('Hide lyrics') : tr('Lyrics')} aria-pressed={lyrics && !editor} kind="plain" size="sm" onClick={() => update({ lyrics: !lyrics || editor, editor: false })} className={lyrics && !editor ? 'text-accent!' : 'text-ink-3'}>
-                  <Quotes size={16} weight={lyrics && !editor ? 'fill' : 'regular'} />
-                </RoundButton>
-                <RoundButton label={editor ? tr('Hide the Live Editor') : tr('Live Editor')} aria-pressed={editor} kind="plain" size="sm" onClick={() => update({ editor: !editor })} className={editor ? 'text-accent!' : 'text-ink-3'}>
-                  <SlidersHorizontal size={16} weight={editor ? 'fill' : 'regular'} />
-                </RoundButton>
               </span>
               <Transport size="lg" />
               <div className="flex min-w-0 flex-col items-end gap-1">
@@ -271,7 +281,12 @@ export function NowPlaying() {
           </div>
         </section>
 
-        {editor ? <EditorPanel onHide={() => update({ editor: false })} /> : lyrics ? <LyricsPanel onHide={() => update({ lyrics: false })} onUpNext={() => update({ lyrics: false, upNext: true })} /> : upNext && <UpNext onHide={() => update({ upNext: false })} />}
+        {(editor || lyrics || upNext) && (
+          <div className="flex min-h-0 flex-col gap-2">
+            <PanelTabs className="self-end" upNext={upNext} lyrics={lyrics} editor={editor} next={nextCount} />
+            {editor ? <EditorPanel onHide={() => update({ editor: false })} /> : lyrics ? <LyricsPanel onHide={() => update({ lyrics: false })} onUpNext={() => update({ lyrics: false, upNext: true })} /> : <UpNext onHide={() => update({ upNext: false })} />}
+          </div>
+        )}
       </div>
     </div>
   )

@@ -1271,6 +1271,10 @@ const fr: Record<string, string> = {
   'All {n} songs': 'Les {n} titres',
   'Discography': 'Discographie',
   'Singles and EPs': 'Singles et EP',
+  'Sound': 'Son',
+  'Remove from Up next': 'Retirer de la file',
+  'Then, similar songs': 'Ensuite, des titres proches',
+  'When Up next runs out': 'Quand la file est finie',
 }
 
 export default fr

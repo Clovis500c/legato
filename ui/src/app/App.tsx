@@ -4,6 +4,8 @@ import { lazy, Suspense, useEffect, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import { AddView } from '../features/add/AddView'
 import { SearchView } from '../features/search/SearchView'
+// Up next running out: similar songs (registers itself with the player).
+import '../features/player/autoplay'
 import { HomeView } from '../features/home/HomeView'
 import { MixesView, MixView } from '../features/mixes/MixesView'
 import { AlbumView, ArtistView } from '../features/library/AlbumArtist'

@@ -278,6 +278,8 @@ export interface Settings {
   liveYoutube: boolean
   /** Voice search agreed to (Windows' online speech recognition: the voice goes to Microsoft while the mic listens). */
   voiceSearch: boolean
+  /** Up next ran out: similar songs follow (YouTube Music's radio, or your library). */
+  autoplay: boolean
   /** Top bar lists recent searches (kept on this PC only: localStorage, never synced). */
   rememberSearches: boolean
   /** Top bar asks YouTube's suggestions as you type (the text goes to Google). */
@@ -352,6 +354,7 @@ export const DEFAULTS: Settings = {
   coverPulse: false,
   liveYoutube: true,
   voiceSearch: false,
+  autoplay: true,
   rememberSearches: true,
   searchSuggestions: true,
   detector: false,
@@ -508,6 +511,7 @@ export function sanitize(raw: unknown): Settings {
     coverPulse: r.coverPulse === true,
     liveYoutube: typeof r.liveYoutube === 'boolean' ? r.liveYoutube : DEFAULTS.liveYoutube,
     voiceSearch: r.voiceSearch === true,
+    autoplay: r.autoplay !== false,
     rememberSearches: r.rememberSearches !== false,
     searchSuggestions: r.searchSuggestions !== false,
     detector: r.detector === true,
