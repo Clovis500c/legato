@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import type { LibraryPlaylist, LibraryTrack, SearchHit } from '../../shared/api'
 import { groupAlbums, groupArtists } from '../library/filter'
@@ -51,5 +52,14 @@ describe('remember', () => {
     expect(remember(['a'], '   ')).toEqual(['a'])
     const many = Array.from({ length: MAX_RECENT }, (_, i) => `q${i}`)
     expect(remember(many, 'new')).toEqual(['new', ...many.slice(0, MAX_RECENT - 1)])
+  })
+})
+
+describe('search bar', () => {
+  // Enter in the field "clicks" the form's first submit button: one in the list took the first suggestion (or cleared
+  // the recent searches) instead of searching everywhere.
+  it('has no submit button but the form itself', () => {
+    const code = readFileSync(new URL('./SearchBar.tsx', import.meta.url), 'utf8')
+    expect(code.match(/<button(?![^>]*type="button")[^>]*>/g) ?? []).toEqual([])
   })
 })

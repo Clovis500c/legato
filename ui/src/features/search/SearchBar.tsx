@@ -121,7 +121,7 @@ export function SearchBar({ children }: { children?: ReactNode }) {
         label: (
           <>
             {tr('Recent searches')}
-            <button onClick={clearRecent} className="font-sans text-xs font-semibold tracking-normal text-accent normal-case hover:underline">
+            <button type="button" onClick={clearRecent} className="font-sans text-xs font-semibold tracking-normal text-accent normal-case hover:underline">
               {tr('Clear all')}
             </button>
           </>
@@ -136,7 +136,7 @@ export function SearchBar({ children }: { children?: ReactNode }) {
             </>
           ),
           side: (
-            <button aria-label={tr('Remove “{q}” from recent searches', { q: r })} title={tr('Remove')} onClick={() => forgetRecent(r)} className="grid size-7 place-items-center rounded-full text-ink-3 hover:bg-line hover:text-ink">
+            <button type="button" aria-label={tr('Remove “{q}” from recent searches', { q: r })} title={tr('Remove')} onClick={() => forgetRecent(r)} className="grid size-7 place-items-center rounded-full text-ink-3 hover:bg-line hover:text-ink">
               <X size={13} />
             </button>
           ),
@@ -176,7 +176,7 @@ export function SearchBar({ children }: { children?: ReactNode }) {
             </>
           ),
           side: (
-            <button aria-label={tr('Put “{q}” in the search bar', { q: s })} title={tr('Put “{q}” in the search bar', { q: s })} onClick={() => (set(s), input.current?.focus())} className="grid size-7 place-items-center rounded-full text-ink-3 hover:bg-line hover:text-ink">
+            <button type="button" aria-label={tr('Put “{q}” in the search bar', { q: s })} title={tr('Put “{q}” in the search bar', { q: s })} onClick={() => (set(s), input.current?.focus())} className="grid size-7 place-items-center rounded-full text-ink-3 hover:bg-line hover:text-ink">
               <ArrowUpLeft size={14} />
             </button>
           ),
@@ -280,6 +280,7 @@ export function SearchBar({ children }: { children?: ReactNode }) {
         {children}
       </span>
 
+      {/* Every button in the list is type="button": a submit one would be what Enter "clicks". */}
       {shown && (
         <div id="search-list" role="listbox" aria-label={tr('Search')} onMouseDown={(e) => e.preventDefault()} className="absolute inset-x-0 top-[calc(100%+6px)] z-50 flex max-h-[min(70vh,560px)] flex-col overflow-y-auto rounded-xl border border-line bg-panel py-2 shadow-[0_12px_32px_var(--shadow)]">
           {sections.map((sec, si) => (
