@@ -28,7 +28,7 @@ check fails if the two lists differ.
 | Unicode-3.0 | ICU crates (`icu_*`, `zerovec`, `yoke`…) under `url` / `idna` | Same as MIT: ship the notice. |
 | MPL-2.0 | `symphonia` (local playback, through `rodio`), `adblock` (Brave's engine), `cssparser` / `selectors` / `dtoa-short` (Tauri's HTML tooling), `option-ext` (through `dirs`). `colored` too, at build time only | File-level copyleft. Unmodified use is fine in a closed app. We must tell users where the source of those files is (the notices file, below). If we ever change one of their files, that file must be published under MPL-2.0. |
 | CDLA-Permissive-2.0 | `webpki-root-certs` (root certificate data) | Ship the license text. |
-| OFL-1.1 | Fonts: Roboto, Geist Mono, Schibsted Grotesk (`@fontsource-variable/*`) | The license must travel with the fonts. Free to bundle; never sell the fonts on their own. |
+| OFL-1.1 | Fonts: Roboto, Geist Mono, Schibsted Grotesk (`@fontsource-variable/*`). Noto Emoji's waving flags (language picker, `ui/src/shared/flags`, 72 px PNG made from its `region-flags/waved-svg`; flag art public domain), license file next to them | The license must travel with the fonts. Free to bundle; never sell the fonts on their own. |
 | CC0-1.0 | `simple-icons` (Spotify, YouTube, Apple Music logos) | Nothing for the icons. The logos are still trademarks: README says so. |
 
 ### Not bundled, so nothing to ship

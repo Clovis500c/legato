@@ -1,21 +1,15 @@
 import { CaretDown, Check, Desktop, MagnifyingGlass } from '@phosphor-icons/react'
-import { BR, CN, DE, ES, FR, GB, ID, IN, IT, JP, KR, NL, PL, RU, SE, TR, UA, VN, type FlagComponent } from 'country-flag-icons/react/3x2'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { CATALOG, LANGUAGES, locale, resolveLang, tr } from '../../shared/i18n/i18n'
 
-// Drawn flags (country-flag-icons, MIT) styled like Apple's emoji: Windows draws flag emoji as two letters, Apple's can't ship.
-const FLAGS: Record<string, FlagComponent> = { BR, CN, DE, ES, FR, GB, ID, IN, IT, JP, KR, NL, PL, RU, SE, TR, UA, VN }
+// Noto Emoji's waving flags (Google, Apache-2.0; flag art public domain), 72 px: Windows draws flag emoji as two
+// letters and Apple's set can't ship. One file per catalogue country in shared/flags.
+const FLAGS = import.meta.glob<string>('../../shared/flags/*.png', { eager: true, import: 'default' })
 
-/** Apple-emoji look: rounded corners, top shine, soft edge. */
 export function Flag({ country, className = '' }: { country: string; className?: string }) {
-  const F = FLAGS[country]
-  return (
-    <span aria-hidden className={`relative inline-block h-4 w-6 shrink-0 overflow-hidden rounded-[3px] shadow-[0_1px_2px_rgb(0_0_0/0.25)] ${className}`}>
-      {F && <F className="block h-full w-full" />}
-      <span className="absolute inset-0 rounded-[3px] bg-[linear-gradient(180deg,rgb(255_255_255/0.4)_0%,rgb(255_255_255/0.08)_45%,rgb(0_0_0/0.14)_100%)] shadow-[inset_0_0_0_0.5px_rgb(0_0_0/0.22)]" />
-    </span>
-  )
+  const src = FLAGS[`../../shared/flags/${country}.png`]
+  return src ? <img src={src} alt="" aria-hidden draggable={false} className={`h-6 w-6 shrink-0 ${className}`} /> : <span className={`w-6 shrink-0 ${className}`} />
 }
 
 type Row = { value: string; name: string; sub?: string; country?: string; search: string }
@@ -65,7 +59,10 @@ export function LanguagePicker({ value, onChange }: { value: string; onChange: (
     window.addEventListener('pointerdown', away)
     return () => window.removeEventListener('pointerdown', away)
   }, [open])
-  useEffect(() => panel.current?.querySelector(`[data-i="${active}"]`)?.scrollIntoView({ block: 'nearest' }), [active])
+  // Braces: scrollIntoView returns a promise in recent WebView2, React would call it as a clean-up and crash.
+  useEffect(() => {
+    panel.current?.querySelector(`[data-i="${active}"]`)?.scrollIntoView({ block: 'nearest' })
+  }, [active])
 
   const keys = (e: React.KeyboardEvent) => {
     if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
