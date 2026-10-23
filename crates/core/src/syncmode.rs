@@ -799,6 +799,8 @@ mod tests {
         b.merge(&snap(&a))?;
         assert_eq!(b.tracks()?.len(), 2);
         assert_eq!(b.prefs()?.values().copied().collect::<Vec<_>>(), [Pref::Never]);
+        // Same millisecond = no newer change: wait, like the other tests.
+        std::thread::sleep(std::time::Duration::from_millis(5));
         a.remove_track(x)?;
         a.set_pref(z, None)?;
         b.merge(&snap(&a))?;
