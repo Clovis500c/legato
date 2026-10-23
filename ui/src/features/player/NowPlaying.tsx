@@ -233,6 +233,8 @@ export function NowPlaying() {
   if (!now) return null
 
   const video = now.via === 'youtube'
+  // A file, a preview: its YouTube version, if it has one, can show the video (Spotify plays in its own app).
+  const ytVersion = !video && now.via !== 'spotify' && !!track?.ids.youtube
 
   return (
     // Whole window, under the see-through top bar (logo, Close player and window buttons stay on top, z-30).
@@ -242,7 +244,17 @@ export function NowPlaying() {
 
       <div className={`grid min-h-0 flex-1 gap-10 ${editor ? 'grid-cols-[minmax(0,1fr)_400px]' : lyrics ? 'grid-cols-[minmax(0,1fr)_minmax(0,1fr)]' : upNext ? 'grid-cols-[minmax(0,1fr)_360px]' : 'grid-cols-1'}`}>
         <section className="flex min-h-0 min-w-0 flex-col items-center gap-4">
-          {video ? <Segmented className="glass" label={tr('Show')} value={stage} onChange={(s) => update({ stage: s })} options={[{ value: 'auto', label: still === undefined || stage !== 'auto' ? tr('Auto') : still ? tr('Auto · cover') : tr('Auto · video') }, { value: 'video', label: tr('Video') }, { value: 'cover', label: tr('Cover') }]} /> : <span className="kicker text-ink-2">{tr('Now playing · {source}', { source: tr(viaLabel[now.via]) })}</span>}
+          {/* Every song (user's pick 2026-10-23): Video on a file or a preview switches to its YouTube version, same spot. */}
+          <Segmented
+            className="glass"
+            label={tr('Show')}
+            value={video ? stage : stage === 'cover' ? 'cover' : 'auto'}
+            onChange={(s) => {
+              update({ stage: s })
+              if (s === 'video' && !video && ytVersion) void usePlayer.getState().playAt(usePlayer.getState().index, 'youtube', { from: usePlayer.getState().positionMs })
+            }}
+            options={[{ value: 'auto', label: video && stage === 'auto' && still !== undefined ? (still ? tr('Auto · cover') : tr('Auto · video')) : tr('Auto') }, ...(video || ytVersion ? [{ value: 'video' as const, label: tr('Video') }] : []), { value: 'cover', label: tr('Cover') }]}
+          />
           <Stage video={video} cover={stage === 'cover' || (stage === 'auto' && still === true)} track={track} title={now.title} youtubeId={now.youtubeId} pulse={coverPulse && motion} />
           {now.via === 'spotify' && <span className="kicker text-center">{tr('Playing in your Spotify app')}</span>}
           {now.via === 'preview' && (

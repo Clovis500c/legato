@@ -142,7 +142,6 @@ const fr: Record<string, string> = {
   'Auto · video': 'Auto · vidéo',
   'Video': 'Vidéo',
   'Cover': 'Pochette',
-  'Now playing · {source}': 'Lecture en cours · {source}',
   'Playing in your Spotify app': 'Lecture dans votre application Spotify',
   '30-second preview': 'Extrait de 30 secondes',
   'Listen on Apple Music': 'Écouter sur Apple Music',

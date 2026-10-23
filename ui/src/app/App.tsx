@@ -43,7 +43,8 @@ const SettingsView = lazy(() => import('../features/settings/SettingsView').then
 const AddonsView = lazy(() => import('../features/addons/AddonsView').then((m) => ({ default: m.AddonsView })))
 
 const win = getCurrentWindow()
-const winBtn = 'grid h-8 w-10 place-items-center rounded-md text-ink-3 transition hover:bg-raised hover:text-ink'
+// Full contrast: grey window buttons were hard to find (user, 2026-10-23).
+const winBtn = 'grid h-9 w-11 place-items-center rounded-md text-ink transition hover:bg-raised'
 
 /**
  * Replaces the OS title bar (decorations: false), full width like YouTube's: logo and name (Home, from anywhere, the
@@ -62,13 +63,14 @@ function TopBar() {
     return () => void off.then((f) => f())
   }, [])
   return (
-    <header data-tauri-drag-region className={`relative z-30 flex h-13 shrink-0 items-center gap-3 pr-2 pl-5 ${full ? '' : 'bg-panel'}`}>
+    // Over Now Playing: a veil from the top keeps logo, Close player and window buttons readable on any cover.
+    <header data-tauri-drag-region className={`relative z-30 flex h-13 shrink-0 items-center gap-3 pr-2 pl-5 ${full ? 'bg-[linear-gradient(to_bottom,color-mix(in_srgb,var(--bg)_80%,transparent),transparent)]' : 'bg-panel'}`}>
       <button data-brand onClick={() => go({ name: 'home' })} title={tr('Home')} className="flex items-center gap-2.5 rounded-md px-2 py-1">
         <Logo />
         <span data-brand-name className="text-[0.9375rem] font-bold tracking-tight">Music App</span>
       </button>
       {full && (
-        <button onClick={() => setFull(false)} title={tr('Close Now Playing (Esc)')} className="glass flex items-center gap-1.5 rounded-full border border-line px-3 py-1 text-xs font-medium text-ink-2 transition hover:bg-raised hover:text-ink">
+        <button onClick={() => setFull(false)} title={tr('Close Now Playing (Esc)')} className="glass flex items-center gap-1.5 rounded-full border border-line px-3 py-1 text-xs font-medium text-ink transition hover:bg-raised">
           <CaretDown size={12} weight="bold" /> {tr('Close player')}
         </button>
       )}
@@ -77,15 +79,17 @@ function TopBar() {
           <VoiceSearch />
         </SearchBar>
       </div>
-      <button className={winBtn} aria-label={tr('Minimize')} onClick={() => win.minimize()}>
-        <Minus size={14} />
-      </button>
-      <button className={winBtn} aria-label={maximized ? tr('Restore') : tr('Maximize')} onClick={() => win.toggleMaximize()}>
-        {maximized ? <CopySimple size={13} /> : <Square size={12} />}
-      </button>
-      <button className={`${winBtn} hover:bg-danger! hover:text-white!`} aria-label={tr('Close')} onClick={() => win.close()}>
-        <X size={14} />
-      </button>
+      <span className={`flex items-center ${full ? 'glass rounded-lg' : ''}`}>
+        <button className={winBtn} aria-label={tr('Minimize')} title={tr('Minimize')} onClick={() => win.minimize()}>
+          <Minus size={16} />
+        </button>
+        <button className={winBtn} aria-label={maximized ? tr('Restore') : tr('Maximize')} title={maximized ? tr('Restore') : tr('Maximize')} onClick={() => win.toggleMaximize()}>
+          {maximized ? <CopySimple size={15} /> : <Square size={14} />}
+        </button>
+        <button className={`${winBtn} hover:bg-danger! hover:text-white!`} aria-label={tr('Close')} title={tr('Close')} onClick={() => win.close()}>
+          <X size={16} />
+        </button>
+      </span>
     </header>
   )
 }
