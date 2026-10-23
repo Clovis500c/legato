@@ -73,6 +73,8 @@ export const COLUMNS = ['album', 'sources', 'duration'] as const
 export const HOME_SECTIONS = ['quick', 'week', 'mixes', 'recent', 'playlists', 'youtube', 'added'] as const
 /** Off until turned on: the sidebar lists your playlists already (user's pick 2026-10-23). */
 const HOME_OFF: readonly HomeSectionId[] = ['playlists']
+export const PLAYLIST_ORDERS = ['custom', 'name', 'songs', 'opened'] as const
+export type PlaylistOrder = (typeof PLAYLIST_ORDERS)[number]
 /** Home's chips: everything, your library only, YouTube Music only (remembered). */
 export const HOME_FILTERS = ['all', 'library', 'youtube'] as const
 export type HomeFilter = (typeof HOME_FILTERS)[number]
@@ -235,6 +237,8 @@ export interface Settings {
   subtitles: boolean
   /** Playlists left out of the sidebar and menus (playlistKey), still in the library. */
   hiddenPlaylists: string[]
+  /** Sidebar's playlist order: as imported / made, A–Z, most songs, opened lately (remembered). */
+  playlistOrder: PlaylistOrder
   /** Home: which sections show, in what order. */
   homeSections: HomeSection[]
   homeFilter: HomeFilter
@@ -318,6 +322,7 @@ export const DEFAULTS: Settings = {
   fade: { advanced: false, out: 2, in: 2, outCurve: 'scurve', inCurve: 'scurve', skip: false, pause: 0 },
   subtitles: false,
   hiddenPlaylists: [],
+  playlistOrder: 'custom',
   homeSections: HOME_SECTIONS.map((id) => ({ id, on: !HOME_OFF.includes(id) })),
   homeFilter: 'all',
   playlistCovers: {},
@@ -470,6 +475,7 @@ export function sanitize(raw: unknown): Settings {
     subtitles: typeof r.subtitles === 'boolean' ? r.subtitles : DEFAULTS.subtitles,
     homeSections: sanitizeHome(r.homeSections),
     homeFilter: pick(r.homeFilter, HOME_FILTERS, DEFAULTS.homeFilter),
+    playlistOrder: pick(r.playlistOrder, PLAYLIST_ORDERS, DEFAULTS.playlistOrder),
     hiddenPlaylists: Array.isArray(r.hiddenPlaylists) ? [...new Set(r.hiddenPlaylists.filter((k): k is string => typeof k === 'string' && k.length <= 200))].slice(0, 500) : [],
     playlistCovers: sanitizeCovers(r.playlistCovers),
     mixCovers: pick(r.mixCovers, ['grid', 'single', 'template'] as const, DEFAULTS.mixCovers),

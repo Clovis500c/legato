@@ -1266,6 +1266,9 @@ const fr: Record<string, string> = {
   'Time heard, top artist and song of the last 7 days': 'Temps d’écoute, artiste et titre phares des 7 derniers jours',
   'Hide this section': 'Masquer cette section',
   'Show on Home': 'Afficher sur l’accueil',
+  'As imported or made': 'Comme importées ou créées',
+  'Opened lately': 'Ouvertes récemment',
+  'Sort playlists': 'Trier les playlists',
 }
 
 export default fr

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { LibraryPlaylist, LibraryTrack, Play } from '../../shared/api'
-import { JUMP, jumpLists, listOf, MAX_LISTS, pushList, type OpenedList } from './recentLists'
+import { byOpened, JUMP, jumpLists, listOf, MAX_LISTS, pushList, type OpenedList } from './recentLists'
 import { weekOf } from './week'
 
 const t = (id: number, title: string, artist: string, album: string | null): LibraryTrack => ({ id, added: id, title, artist, album, durationMs: 200_000, isrc: null, ids: { youtube: `y${id}` } })
@@ -36,6 +36,14 @@ describe('opened lists', () => {
     expect(got.length).toBeLessThanOrEqual(JUMP)
     // Mixes still loading: an opened mix stays.
     expect(jumpLists([{ kind: 'mix', id: 'x' }], { tracks, stats: {}, playlists: [] })).toEqual([{ kind: 'mix', id: 'x' }])
+  })
+})
+
+describe('byOpened', () => {
+  it('puts playlists opened lately first, the rest in their own order', () => {
+    const list = [pl(1, 'A', 1, true), pl(2, 'B', 1, true), pl(3, 'C', 1, true), pl(4, 'D', 1, true)]
+    const opened: OpenedList[] = [{ kind: 'playlist', id: 3 }, { kind: 'album', album: 'x', artist: 'y' }, { kind: 'playlist', id: 2 }]
+    expect(byOpened(list, opened).map((p) => p.id)).toEqual([3, 2, 1, 4])
   })
 })
 

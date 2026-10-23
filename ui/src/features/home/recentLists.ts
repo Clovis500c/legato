@@ -46,6 +46,12 @@ function load(): OpenedList[] {
 
 export const useOpenedLists = create<{ list: OpenedList[] }>(() => ({ list: load() }))
 
+/** Sidebar order "Opened lately": playlists opened lately first, the rest after in their own order. */
+export function byOpened<T extends { id: number }>(playlists: T[], opened: OpenedList[]): T[] {
+  const rank = new Map(opened.flatMap((l, i) => (l.kind === 'playlist' ? [[l.id, i] as const] : [])))
+  return [...playlists].sort((a, b) => (rank.get(a.id) ?? MAX_LISTS) - (rank.get(b.id) ?? MAX_LISTS))
+}
+
 /** A page shown: remembered when it's a list. */
 export function noteList(v: View) {
   const l = listOf(v)
