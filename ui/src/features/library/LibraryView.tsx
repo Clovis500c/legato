@@ -1,4 +1,4 @@
-import { CaretDown, Columns, DotsThree, Info, MagnifyingGlass, Play, Plus, ShareNetwork, Shuffle, SortAscending } from '@phosphor-icons/react'
+import { CaretDown, DotsThree, Info, MagnifyingGlass, Play, Plus, ShareNetwork, Shuffle, SlidersHorizontal, SortAscending } from '@phosphor-icons/react'
 import { useCallback, useMemo, useState } from 'react'
 import { pageQuery, useStore } from '../../app/store'
 import { api, type LibraryTrack } from '../../shared/api'
@@ -81,11 +81,11 @@ export function ShuffleRound({ tracks }: { tracks: LibraryTrack[] }) {
   )
 }
 
-/** Which list columns show (settings columns, also in Appearance). */
+/** How the list shows: columns, row size, covers (settings, also in Appearance). Sliders: the old columns icon read as pause. */
 function ColumnsButton() {
   return (
-    <RoundButton label={tr('Columns')} kind="plain" size="sm" onClick={(e) => openMenu(e, columnsMenu())}>
-      <Columns size={16} />
+    <RoundButton label={tr('Display options')} kind="plain" size="sm" onClick={(e) => openMenu(e, columnsMenu(), { place: 'below' })}>
+      <SlidersHorizontal size={16} />
     </RoundButton>
   )
 }
