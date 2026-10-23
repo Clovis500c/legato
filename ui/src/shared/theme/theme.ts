@@ -89,6 +89,36 @@ export interface HomeSection {
 }
 
 /** Saved Home layout → every known section once, in the saved order, ones added since at their default place. */
+/** Smart playlist rule: a song field, a test, a value (numbers as text, like a form field). */
+export const SMART_FIELDS = ['artist', 'album', 'title', 'source', 'plays', 'played', 'added'] as const
+export type SmartField = (typeof SMART_FIELDS)[number]
+export interface SmartRule {
+  field: SmartField
+  /** artist / album / title: has, is, not · source: is, not · plays: atLeast, atMost · played: within, notWithin · added: last */
+  op: string
+  value: string
+}
+export const SMART_SORTS = ['plays', 'recent', 'added', 'title', 'artist', 'random'] as const
+/** A playlist that fills itself from rules (kept in settings: synced with Sync Mode, nothing in the library). */
+export interface SmartList {
+  id: string
+  name: string
+  match: 'all' | 'any'
+  rules: SmartRule[]
+  sort: (typeof SMART_SORTS)[number]
+  /** Songs at most; 0 = all. */
+  limit: number
+}
+
+export function sanitizeSmart(raw: unknown): SmartList[] {
+  const lists = Array.isArray(raw) ? raw : []
+  return lists.flatMap((l): SmartList[] => {
+    if (!l || typeof l !== 'object' || typeof l.id !== 'string' || typeof l.name !== 'string') return []
+    const rules = (Array.isArray(l.rules) ? l.rules : []).filter((r: SmartRule) => r && SMART_FIELDS.includes(r.field) && typeof r.op === 'string' && typeof r.value === 'string')
+    return [{ id: l.id, name: l.name.slice(0, 200), match: l.match === 'any' ? 'any' : 'all', rules, sort: SMART_SORTS.includes(l.sort) ? l.sort : 'plays', limit: Number.isInteger(l.limit) && l.limit > 0 ? Math.min(l.limit, 10_000) : 0 }]
+  })
+}
+
 export function sanitizeHome(raw: unknown): HomeSection[] {
   const saved = (Array.isArray(raw) ? raw : []).filter((x): x is HomeSection => !!x && typeof x === 'object' && HOME_SECTIONS.includes((x as HomeSection).id))
   const out: HomeSection[] = []
@@ -251,6 +281,7 @@ export interface Settings {
   /** Home: which sections show, in what order. */
   homeSections: HomeSection[]
   homeFilter: HomeFilter
+  smartLists: SmartList[]
   /** Per playlist (playlistKey). Missing = service logo in the sidebar, first cover on its page. */
   playlistCovers: Record<string, PlaylistCover>
   /** Mixes page: 4 song covers, the first one, or the plain numbered tile. */
@@ -341,6 +372,7 @@ export const DEFAULTS: Settings = {
   hiddenPlaylists: [],
   playlistOrder: 'custom',
   homeSections: HOME_SECTIONS.map((id) => ({ id, on: !HOME_OFF.includes(id) })),
+  smartLists: [],
   homeFilter: 'all',
   playlistCovers: {},
   mixCovers: 'grid',
@@ -497,6 +529,7 @@ export function sanitize(raw: unknown): Settings {
     fade: sanitizeFade(r.fade),
     subtitles: typeof r.subtitles === 'boolean' ? r.subtitles : DEFAULTS.subtitles,
     homeSections: sanitizeHome(r.homeSections),
+    smartLists: sanitizeSmart(r.smartLists),
     homeFilter: pick(r.homeFilter, HOME_FILTERS, DEFAULTS.homeFilter),
     playlistOrder: pick(r.playlistOrder, PLAYLIST_ORDERS, DEFAULTS.playlistOrder),
     hiddenPlaylists: Array.isArray(r.hiddenPlaylists) ? [...new Set(r.hiddenPlaylists.filter((k): k is string => typeof k === 'string' && k.length <= 200))].slice(0, 500) : [],

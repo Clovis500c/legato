@@ -1,4 +1,4 @@
-import { ChartBar, Disc, Gear, House, MicrophoneStage, MusicNotes, Plus, PlusCircle, PuzzlePiece, SortAscending, VinylRecord } from '@phosphor-icons/react'
+import { ChartBar, Disc, Lightning, Gear, House, MicrophoneStage, MusicNotes, Plus, PlusCircle, PuzzlePiece, SortAscending, VinylRecord } from '@phosphor-icons/react'
 import { useMemo, type ReactNode } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import { useSettings } from '../../app/settings'
@@ -16,6 +16,8 @@ import { usePlayer } from '../player/store'
 import { groupAlbums, groupArtists } from '../library/filter'
 import { msg, tr } from '../../shared/i18n/i18n'
 import { SidebarPlayer } from '../player/SidebarPlayer'
+import { newSmartList, smartTracks } from '../smart/rules'
+import { saveSmart, smartMenu } from '../smart/SmartView'
 
 /** onSongs: songs dragged from a list or Up next may be dropped here (a playlist), `dropId` names the target. */
 function NavItem({ on, icon, label, count, onClick, onContextMenu, onSongs, dropId }: { on: boolean; icon: ReactNode; label: string; count?: number; onClick: () => void; onContextMenu?: (e: React.MouseEvent) => void; onSongs?: (ids: number[]) => void; dropId?: string }) {
@@ -83,6 +85,14 @@ export function Sidebar() {
     const id = await editPlaylist({ type: 'create', name: tr('New playlist') })
     if (id !== null) go({ name: 'playlist', id })
   }
+  const createSmart = () => {
+    const list = newSmartList(tr('Smart playlist'))
+    saveSmart(list)
+    go({ name: 'smart', id: list.id })
+  }
+  const smart = useSettings((s) => s.settings.smartLists)
+  const stats = useStore((s) => s.stats)
+  const smartSongs = useMemo(() => new Map(smart.map((l) => [l.id, smartTracks(l, tracks, stats).map((t) => t.id)])), [smart, tracks, stats])
 
   return (
     // Footer stays put; only the lists scroll (a small window used to scroll the whole sidebar). Search: top bar.
@@ -109,7 +119,7 @@ export function Sidebar() {
               <RoundButton label={tr('Sort playlists')} kind="plain" size="xs" onClick={(e) => openMenu(e, ORDERS.map((o) => ({ label: tr(o.label), checked: order === o.id, onSelect: () => useSettings.getState().update({ playlistOrder: o.id }) })))}>
                 <SortAscending size={14} />
               </RoundButton>
-              <RoundButton label={tr('New playlist')} kind="plain" size="xs" onClick={() => void create()}>
+              <RoundButton label={tr('New playlist')} kind="plain" size="xs" onClick={(e) => openMenu(e, [{ label: tr('New playlist'), icon: <Plus size={16} />, onSelect: () => void create() }, { label: tr('New smart playlist'), icon: <Lightning size={16} />, onSelect: createSmart }])}>
                 <Plus size={14} />
               </RoundButton>
             </>
@@ -117,6 +127,9 @@ export function Sidebar() {
         >
           {shown.map((p) => (
             <NavItem key={p.id} on={view.name === 'playlist' && view.id === p.id} icon={<PlaylistCover p={p} size={18} />} label={p.name} count={p.trackCount} onClick={() => go({ name: 'playlist', id: p.id })} onContextMenu={onMenu(() => playlistMenu(p))} onSongs={canDropOn(p) ? (ids) => dropOn(p, ids) : undefined} dropId={`playlist-${p.id}`} />
+          ))}
+          {smart.map((l) => (
+            <NavItem key={l.id} on={view.name === 'smart' && view.id === l.id} icon={<Lightning size={16} weight="fill" className="text-accent" />} label={l.name || tr('Smart playlist')} count={smartSongs.get(l.id)?.length ?? 0} onClick={() => go({ name: 'smart', id: l.id })} onContextMenu={onMenu(() => smartMenu(l, smartSongs.get(l.id) ?? []))} />
           ))}
         </Section>
       </div>

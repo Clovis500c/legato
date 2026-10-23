@@ -13,6 +13,7 @@ export type View =
   | { name: 'addons' }
   | { name: 'mixes' }
   | { name: 'stats' }
+  | { name: 'smart'; id: string }
   | { name: 'mix'; id: string }
   | { name: 'songs' }
   | { name: 'albums' }

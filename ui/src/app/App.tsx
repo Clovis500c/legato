@@ -8,6 +8,7 @@ import { SearchView } from '../features/search/SearchView'
 import '../features/player/autoplay'
 import { HomeView } from '../features/home/HomeView'
 import { StatsView } from '../features/stats/StatsView'
+import { SmartView } from '../features/smart/SmartView'
 import { MixesView, MixView } from '../features/mixes/MixesView'
 import { AlbumView, ArtistView } from '../features/library/AlbumArtist'
 import { AlbumsView, ArtistsView, PlaylistView, SongsView } from '../features/library/LibraryView'
@@ -227,6 +228,7 @@ export function App() {
             {view.name === 'search' && <SearchView />}
             {view.name === 'mixes' && <MixesView />}
             {view.name === 'stats' && <StatsView />}
+            {view.name === 'smart' && <SmartView id={view.id} />}
             {view.name === 'mix' && <MixView id={view.id} />}
             {view.name === 'songs' && <SongsView />}
             {view.name === 'albums' && <AlbumsView />}
