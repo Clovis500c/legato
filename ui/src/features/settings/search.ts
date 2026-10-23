@@ -65,6 +65,8 @@ export const SETTINGS_INDEX: SettingEntry[] = [
   { section: 'general', label: msg('Keep running in the notification area'), keywords: msg('tray background close minimize system tray quit discord') },
   { section: 'general', label: msg('Reopen where you left off'), keywords: msg('restore state screen last session launch') },
   { section: 'general', label: msg('Resume playback on launch'), keywords: msg('restore continue reopen last track start') },
+  { section: 'general', label: msg('Remember recent searches'), keywords: msg('history recent forget clear privacy search bar') },
+  { section: 'general', label: msg('Search suggestions'), keywords: msg('autocomplete suggest typing google youtube privacy search bar') },
   { section: 'general', label: msg('Voice search'), keywords: msg('mic microphone speech speak dictation privacy') },
   { section: 'general', label: msg('Music Detector'), keywords: msg('identify recognize song shazam microphone audd listen what song') },
   { section: 'playback', label: msg('Subtitles on videos'), keywords: msg('captions cc closed') },

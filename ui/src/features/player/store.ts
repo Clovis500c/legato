@@ -97,6 +97,10 @@ interface PlayerState {
 const remoteIds = new Map<string, number>()
 
 /** Service track → queue item, not in the library (no history, no playlists). */
+let queueEnd: (() => Promise<boolean>) | null = null
+/** Called when Up next runs out by itself; true = songs were added, playback goes on. */
+export const onQueueEnd = (fn: () => Promise<boolean>) => void (queueEnd = fn)
+
 export function remoteTrack(t: Track): LibraryTrack {
   const key = t.ids.youtube ?? `${t.artist}\u0000${t.title}`
   let id = remoteIds.get(key)
@@ -447,7 +451,10 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     if (now && !now.trackId) return void send({ type: delta > 0 ? 'next' : 'prev' })
     const i = nextIndex(order, index, delta, repeat, auto, (j) => !vias(list[j], spotifyOn()).length)
     if (i !== null) return void get().playAt(i, undefined, { auto })
-    if (delta > 0) set({ playing: false })
+    if (delta <= 0) return
+    // Up next ran out: similar songs when the setting says so (autoplay.ts), else stop.
+    if (auto && queueEnd) return void queueEnd().then((added) => (added ? get().step(1, true) : set({ playing: false })), () => set({ playing: false }))
+    set({ playing: false })
   },
 
   setVolume(volume) {

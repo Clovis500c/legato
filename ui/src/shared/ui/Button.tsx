@@ -2,6 +2,7 @@ import type { ButtonHTMLAttributes } from 'react'
 
 const variants = {
   primary: 'bg-ink text-bg font-semibold hover:opacity-85',
+  accent: 'bg-accent text-on-accent font-semibold hover:brightness-110',
   ghost: 'border border-line text-ink hover:bg-raised',
   link: 'text-ink font-semibold underline-offset-4 hover:underline px-0! py-0!',
 }

@@ -18,6 +18,27 @@ pub struct Shelf {
     pub items: Vec<HomeItem>,
 }
 
+/// Home page: its shelves, and the mood chips above them (Relax, Energize, Focus…) that filter it.
+#[derive(Debug, Clone, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Home {
+    pub shelves: Vec<Shelf>,
+    pub moods: Vec<Mood>,
+}
+
+/// A chip over the home: `params` asks the home filtered to it.
+#[derive(Debug, Clone, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Mood {
+    pub title: String,
+    pub params: String,
+}
+
+/// Params from YouTube's own chips: base64 (URL-safe too), bounded.
+pub fn valid_mood(params: &str) -> bool {
+    !params.is_empty() && params.len() <= 400 && params.bytes().all(|b| b.is_ascii_alphanumeric() || b"-_=%+/".contains(&b))
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct HomeItem {
@@ -117,6 +138,19 @@ fn shelves(v: &Value) -> Vec<Shelf> {
         .collect()
 }
 
+/// Chips that reload the home with a filter.
+fn moods(v: &Value) -> Vec<Mood> {
+    all(v, "chipCloudChipRenderer")
+        .into_iter()
+        .filter_map(|c| {
+            let ep = c.pointer("/navigationEndpoint/browseEndpoint")?;
+            (ep.get("browseId")?.as_str()? == "FEmusic_home").then_some(())?;
+            let params = ep.get("params")?.as_str()?;
+            valid_mood(params).then(|| Some(Mood { title: c.get("text").and_then(text)?, params: params.into() }))?
+        })
+        .collect()
+}
+
 /// Next page of shelves: the section list's own continuation (not a shelf's).
 fn more(v: &Value) -> Option<String> {
     let list = all(v, "sectionListRenderer").into_iter().chain(all(v, "sectionListContinuation")).next()?;
@@ -157,9 +191,14 @@ fn album_tracks(page: &Value) -> Vec<Track> {
 }
 
 impl YouTubeMusic {
-    /// Home shelves, first page and a couple more.
-    pub async fn home(&self) -> Result<Vec<Shelf>> {
-        let first = self.call("browse", json!({ "browseId": "FEmusic_home" })).await?;
+    /// Home shelves, first page and a couple more; `mood` = a chip's params (the home filtered to it).
+    pub async fn home(&self, mood: Option<&str>) -> Result<Home> {
+        let mut body = json!({ "browseId": "FEmusic_home" });
+        if let Some(m) = mood {
+            body["params"] = json!(m);
+        }
+        let first = self.call("browse", body).await?;
+        let moods = moods(&first);
         let mut out = shelves(&first);
         let mut token = more(&first);
         for _ in 0..MORE_PAGES {
@@ -168,7 +207,7 @@ impl YouTubeMusic {
             out.extend(shelves(&next));
             token = more(&next);
         }
-        Ok(out)
+        Ok(Home { shelves: out, moods })
     }
 
     /// Songs of a home card's playlist, album or radio.
@@ -233,6 +272,16 @@ mod tests {
         assert_eq!(again[2].list, Some(ListRef::Radio { video_id: None, playlist_id: "RDTMAK1".into() }));
         assert_eq!(s[1].items[0].track.as_ref().unwrap().artist, "The xx");
         assert_eq!(more(&page).as_deref(), Some("NEXT"));
+    }
+
+    #[test]
+    fn reads_mood_chips() {
+        let chip = |t: &str, id: &str, params: &str| json!({ "chipCloudChipRenderer": { "text": { "runs": [{ "text": t }] }, "navigationEndpoint": { "browseEndpoint": { "browseId": id, "params": params } } } });
+        let page = json!({ "header": { "chipCloudRenderer": { "chips": [chip("Relax", "FEmusic_home", "ggNCSg=="), chip("Focus", "FEmusic_home", "gg-_Nx"), chip("Charts", "FEmusic_charts", "x"), chip("Bad", "FEmusic_home", "a b"), json!({ "chipCloudChipRenderer": { "text": { "runs": [{ "text": "No params" }] } } })] } } });
+        assert_eq!(moods(&page), [Mood { title: "Relax".into(), params: "ggNCSg==".into() }, Mood { title: "Focus".into(), params: "gg-_Nx".into() }]);
+        assert!(!valid_mood("") && !valid_mood(&"a".repeat(401)) && !valid_mood("x\"
+"));
+        assert!(moods(&json!({ "chipCloudChipRenderer": 3 })).is_empty());
     }
 
     #[test]

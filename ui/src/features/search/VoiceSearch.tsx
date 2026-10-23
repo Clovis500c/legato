@@ -23,7 +23,7 @@ const MISSES: Record<VoiceMiss, string> = {
 const FIX: Partial<Record<VoiceMiss, 'speech' | 'microphone'>> = { speechOff: 'speech', micBlocked: 'microphone' }
 
 /**
- * Mic beside the search bar, like YouTube's. Two choices: say it and it searches (src-tauri speech.rs, Windows' speech
+ * Mic inside the search bar's pill. Two choices: say it and it searches (src-tauri speech.rs, Windows' speech
  * recognition; asked once before the first use: the voice goes to Microsoft's service through Windows while the mic
  * listens), or name the song playing around you (Music Detector, Add music).
  */
@@ -70,7 +70,7 @@ export function VoiceSearch() {
         aria-haspopup="menu"
         aria-expanded={!!menu}
         onClick={(e) => setMenu(e.currentTarget.getBoundingClientRect())}
-        className="grid size-9 shrink-0 place-items-center rounded-full bg-raised text-ink-2 hover:text-ink"
+        className="grid size-8 shrink-0 place-items-center rounded-full text-ink-2 hover:bg-raised hover:text-ink"
       >
         <Microphone size={17} />
       </button>

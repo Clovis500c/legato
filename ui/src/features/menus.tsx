@@ -112,7 +112,7 @@ function pages(t: LibraryTrack): { label: string; url: string }[] {
   ].filter((p): p is { label: string; url: string } => !!p)
 }
 
-function shufflePlay(tracks: LibraryTrack[]) {
+export function shufflePlay(tracks: LibraryTrack[]) {
   if (!tracks.length) return
   usePlayer.setState({ shuffle: true })
   player().playTracks(tracks, Math.floor(Math.random() * tracks.length))

@@ -2,6 +2,7 @@
 import { LANGUAGES, msg, tr } from '../i18n/i18n'
 import { ACTIONS, validCombo, type Custom } from '../../app/keys'
 import { cleanCss } from '../css'
+import type { GroupSort, Sort } from '../../features/library/filter'
 
 export const PALETTE_KEYS = ['bg', 'panel', 'raised', 'recess', 'line', 'lineSoft', 'ink', 'ink2', 'ink3', 'ink4', 'accent', 'onAccent', 'ledOff'] as const
 export type PaletteKey = (typeof PALETTE_KEYS)[number]
@@ -67,10 +68,20 @@ export const PRESETS: Theme[] = [
 
 export const ACCENTS = ['#FF5A1F', '#E5383B', '#F2B705', '#2E8B57', '#2F6FEB', '#171614']
 
-export const COLUMNS = ['album', 'sources', 'duration'] as const
+export const COLUMNS = ['album', 'sources', 'plays', 'duration'] as const
+/** List sorts (features/library/filter): checked on load. */
+const SORTS: readonly Sort[] = ['manual', 'added-new', 'added-old', 'most-played', 'recently-played', 'title', 'title-desc', 'artist', 'album', 'duration', 'duration-short', 'random', 'recent']
+const GROUP_SORTS: readonly GroupSort[] = ['name', 'name-desc', 'artist', 'songs', 'albums', 'added-new', 'added-old', 'most-played', 'recently-played', 'length', 'random']
 
 /** Home's sections, default order. */
-export const HOME_SECTIONS = ['quick', 'mixes', 'recent', 'playlists', 'youtube', 'added'] as const
+export const HOME_SECTIONS = ['quick', 'week', 'mixes', 'recent', 'playlists', 'youtube', 'added'] as const
+/** Off until turned on: the sidebar lists your playlists already (user's pick 2026-10-23). */
+const HOME_OFF: readonly HomeSectionId[] = ['playlists']
+export const PLAYLIST_ORDERS = ['custom', 'name', 'songs', 'opened'] as const
+export type PlaylistOrder = (typeof PLAYLIST_ORDERS)[number]
+/** Home's chips: everything, your library only, YouTube Music only (remembered). */
+export const HOME_FILTERS = ['all', 'library', 'youtube'] as const
+export type HomeFilter = (typeof HOME_FILTERS)[number]
 export type HomeSectionId = (typeof HOME_SECTIONS)[number]
 export interface HomeSection {
   id: HomeSectionId
@@ -85,7 +96,7 @@ export function sanitizeHome(raw: unknown): HomeSection[] {
   HOME_SECTIONS.forEach((id, i) => {
     if (out.some((y) => y.id === id)) return
     const before = HOME_SECTIONS.slice(0, i).findLast((b) => out.some((y) => y.id === b))
-    out.splice(before ? out.findIndex((y) => y.id === before) + 1 : 0, 0, { id, on: true })
+    out.splice(before ? out.findIndex((y) => y.id === before) + 1 : 0, 0, { id, on: !HOME_OFF.includes(id) })
   })
   return out
 }
@@ -149,7 +160,7 @@ export interface DiscordSettings {
 }
 
 /** Bumped when defaults change for everyone (saved settings get the new ones once). */
-const DEFAULTS_VERSION = 5
+const DEFAULTS_VERSION = 7
 
 /** Adaptive Sound targets, LUFS: Quiet, Normal (streaming services' usual level), Loud. */
 export const ADAPTIVE_LEVELS = [-20, -14, -11] as const
@@ -191,6 +202,11 @@ export interface Settings {
   volume: 'knob' | 'bar'
   tuner: boolean
   columns: Column[]
+  /** Sorts picked on the list pages (remembered: Spotify's library kept going back to Recent). */
+  songSort: Sort
+  playlistSort: Sort
+  albumSort: GroupSort
+  artistSort: GroupSort
   /** Ad/tracker blocker (read by Rust at launch). */
   shield: boolean
   /** Floating mini player for every source (YouTube always shows one: its video must stay visible). */
@@ -230,8 +246,11 @@ export interface Settings {
   subtitles: boolean
   /** Playlists left out of the sidebar and menus (playlistKey), still in the library. */
   hiddenPlaylists: string[]
+  /** Sidebar's playlist order: as imported / made, A–Z, most songs, opened lately (remembered). */
+  playlistOrder: PlaylistOrder
   /** Home: which sections show, in what order. */
   homeSections: HomeSection[]
+  homeFilter: HomeFilter
   /** Per playlist (playlistKey). Missing = service logo in the sidebar, first cover on its page. */
   playlistCovers: Record<string, PlaylistCover>
   /** Mixes page: 4 song covers, the first one, or the plain numbered tile. */
@@ -259,6 +278,12 @@ export interface Settings {
   liveYoutube: boolean
   /** Voice search agreed to (Windows' online speech recognition: the voice goes to Microsoft while the mic listens). */
   voiceSearch: boolean
+  /** Up next ran out: similar songs follow (YouTube Music's radio, or your library). */
+  autoplay: boolean
+  /** Top bar lists recent searches (kept on this PC only: localStorage, never synced). */
+  rememberSearches: boolean
+  /** Top bar asks YouTube's suggestions as you type (the text goes to Google). */
+  searchSuggestions: boolean
   /** Music Detector agreed to (microphone, 10 s clips sent to AudD to name the song). */
   detector: boolean
   /** Music Detector source: the microphone, or what this PC plays. */
@@ -286,6 +311,10 @@ export const DEFAULTS: Settings = {
   volume: 'bar',
   tuner: false,
   columns: [...COLUMNS],
+  songSort: 'artist',
+  playlistSort: 'manual',
+  albumSort: 'name',
+  artistSort: 'name',
   shield: true,
   miniPlayer: false,
   tint: true,
@@ -308,7 +337,9 @@ export const DEFAULTS: Settings = {
   fade: { advanced: false, out: 2, in: 2, outCurve: 'scurve', inCurve: 'scurve', skip: false, pause: 0 },
   subtitles: false,
   hiddenPlaylists: [],
-  homeSections: HOME_SECTIONS.map((id) => ({ id, on: true })),
+  playlistOrder: 'custom',
+  homeSections: HOME_SECTIONS.map((id) => ({ id, on: !HOME_OFF.includes(id) })),
+  homeFilter: 'all',
   playlistCovers: {},
   mixCovers: 'grid',
   autoUpdate: true,
@@ -323,6 +354,9 @@ export const DEFAULTS: Settings = {
   coverPulse: false,
   liveYoutube: true,
   voiceSearch: false,
+  autoplay: true,
+  rememberSearches: true,
+  searchSuggestions: true,
   detector: false,
   detectorInput: 'mic',
   detectorPc: false,
@@ -339,6 +373,8 @@ const V3: Partial<Settings> = { stage: 'auto' }
 
 /** Version 4 (2026-10-17): the new Home opens first. */
 const V4: Partial<Settings> = { startView: 'home' }
+
+/** Version 6 (Home v4, 2026-10-23): Your playlists off (see HOME_OFF), applied below. */
 
 /** Version 5 (user's picks 2026-10-22): mini player in the sidebar, bigger text; 2 s fades instead of 5 for those who
  * never changed them. */
@@ -432,6 +468,10 @@ export function sanitize(raw: unknown): Settings {
     volume: pick(r.volume, ['knob', 'bar'] as const, DEFAULTS.volume),
     tuner: typeof r.tuner === 'boolean' ? r.tuner : DEFAULTS.tuner,
     columns,
+    songSort: pick(r.songSort, SORTS, DEFAULTS.songSort),
+    playlistSort: pick(r.playlistSort, SORTS, DEFAULTS.playlistSort),
+    albumSort: pick(r.albumSort, GROUP_SORTS, DEFAULTS.albumSort),
+    artistSort: pick(r.artistSort, GROUP_SORTS, DEFAULTS.artistSort),
     shield: typeof r.shield === 'boolean' ? r.shield : DEFAULTS.shield,
     miniPlayer: typeof r.miniPlayer === 'boolean' ? r.miniPlayer : DEFAULTS.miniPlayer,
     tint: typeof r.tint === 'boolean' ? r.tint : DEFAULTS.tint,
@@ -454,6 +494,8 @@ export function sanitize(raw: unknown): Settings {
     fade: sanitizeFade(r.fade),
     subtitles: typeof r.subtitles === 'boolean' ? r.subtitles : DEFAULTS.subtitles,
     homeSections: sanitizeHome(r.homeSections),
+    homeFilter: pick(r.homeFilter, HOME_FILTERS, DEFAULTS.homeFilter),
+    playlistOrder: pick(r.playlistOrder, PLAYLIST_ORDERS, DEFAULTS.playlistOrder),
     hiddenPlaylists: Array.isArray(r.hiddenPlaylists) ? [...new Set(r.hiddenPlaylists.filter((k): k is string => typeof k === 'string' && k.length <= 200))].slice(0, 500) : [],
     playlistCovers: sanitizeCovers(r.playlistCovers),
     mixCovers: pick(r.mixCovers, ['grid', 'single', 'template'] as const, DEFAULTS.mixCovers),
@@ -469,6 +511,9 @@ export function sanitize(raw: unknown): Settings {
     coverPulse: r.coverPulse === true,
     liveYoutube: typeof r.liveYoutube === 'boolean' ? r.liveYoutube : DEFAULTS.liveYoutube,
     voiceSearch: r.voiceSearch === true,
+    autoplay: r.autoplay !== false,
+    rememberSearches: r.rememberSearches !== false,
+    searchSuggestions: r.searchSuggestions !== false,
     detector: r.detector === true,
     detectorInput: pick(r.detectorInput, ['mic', 'pc'] as const, DEFAULTS.detectorInput),
     detectorPc: r.detectorPc === true,
@@ -481,6 +526,9 @@ export function sanitize(raw: unknown): Settings {
     ...(saved < 3 ? V3 : {}),
     ...(saved < 4 ? V4 : {}),
     ...(saved < 5 ? v5(r) : {}),
+    // v7 (app v4, 2026-10-23): a Plays column, for those who kept the old default columns.
+    ...(saved < 7 && Array.isArray(r.columns) && r.columns.join() === 'album,sources,duration' ? { columns: [...COLUMNS] } : {}),
+    ...(saved < 6 ? { homeSections: sanitizeHome(r.homeSections).map((x) => (HOME_OFF.includes(x.id) ? { ...x, on: false } : x)) } : {}),
   }
 }
 

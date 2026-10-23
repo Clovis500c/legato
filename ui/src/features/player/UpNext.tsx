@@ -1,11 +1,12 @@
-import { CaretRight, DotsSixVertical, Waveform } from '@phosphor-icons/react'
+import { CaretRight, DotsSixVertical, Waveform, X } from '@phosphor-icons/react'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { useEffect, useMemo, useRef } from 'react'
+import { useSettings } from '../../app/settings'
 import { useStore } from '../../app/store'
 import { trackArt } from '../../shared/art'
 import { formatDuration } from '../../shared/format'
 import { onMenu } from '../../shared/ui/ContextMenu'
-import { RoundButton } from '../../shared/ui/controls'
+import { RoundButton, Toggle } from '../../shared/ui/controls'
 import { Cover } from '../../shared/ui/Cover'
 import { dragSource, useDrag, useDropTarget } from '../../shared/ui/drag'
 import { trackMenu } from '../menus'
@@ -52,6 +53,7 @@ export function UpNext({ onHide }: { onHide: () => void }) {
   const nowTitle = usePlayer((s) => s.now?.title ?? '')
   const nowArtist = usePlayer((s) => s.now?.artist ?? '')
   const track = useNowTrack()
+  const autoplay = useSettings((s) => s.settings.autoplay)
   const scroller = useRef<HTMLOListElement>(null)
   const v = useVirtualizer({ count: rows.length, getScrollElement: () => scroller.current, estimateSize: () => ROW, overscan: 8 })
   const current = rows.findIndex((r) => r.current)
@@ -147,14 +149,26 @@ export function UpNext({ onHide }: { onHide: () => void }) {
                     <span className={`block truncate text-[0.8125rem] font-semibold ${r.current ? 'text-accent' : ''}`}>{title}</span>
                     <span className="block truncate text-xs text-ink-2">{artist}</span>
                   </span>
-                  {r.current ? <Waveform size={14} className="shrink-0 text-accent" /> : t && <span className="shrink-0 text-xs text-ink-3 tabular-nums">{formatDuration(t.durationMs)}</span>}
+                  {r.current ? <Waveform size={14} className="shrink-0 text-accent" /> : t && <span className={`shrink-0 text-xs text-ink-3 tabular-nums ${movable ? 'group-hover:invisible' : ''}`}>{formatDuration(t.durationMs)}</span>}
                 </button>
+                {movable && (
+                  <RoundButton label={tr('Remove from Up next')} kind="plain" size="xs" className="absolute top-1/2 right-1.5 -translate-y-1/2 opacity-0 group-hover:opacity-100 focus:opacity-100" onClick={() => usePlayer.getState().dequeue(r.i)}>
+                    <X size={13} />
+                  </RoundButton>
+                )}
               </li>
             )
           })}
         </div>
         {next === 0 && <li className="py-6 text-center text-ink-3">{tr('Nothing after this track.')}</li>}
       </ol>
+      <label className="flex items-center justify-between gap-3 border-t border-line-soft px-2 pt-2.5">
+        <span className="flex flex-col">
+          <span className="text-xs font-semibold">{tr('Then, similar songs')}</span>
+          <span className="text-[0.6875rem] text-ink-3">{tr('When Up next runs out')}</span>
+        </span>
+        <Toggle label={tr('Then, similar songs')} checked={autoplay} onChange={(on) => useSettings.getState().update({ autoplay: on })} />
+      </label>
     </aside>
   )
 }

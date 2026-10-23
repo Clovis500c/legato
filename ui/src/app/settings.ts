@@ -92,6 +92,7 @@ export const useSettings = create<SettingsState>((set, get) => ({
     const s = sanitize(await api.loadSettings().catch(() => null))
     set({ settings: s })
     apply(s)
+    sorts(s)
     // Start screen: replaces the default one, no history entry.
     if (useStore.getState().view.name === 'songs') useStore.setState({ view: { name: s.startView } })
   },
@@ -101,6 +102,7 @@ export const useSettings = create<SettingsState>((set, get) => ({
     const s = sanitize(await api.loadSettings().catch(() => null))
     set({ settings: s })
     apply(s)
+    sorts(s)
   },
 
   // Applied at once, saved after a short pause (sliders fire many updates).
@@ -114,6 +116,20 @@ export const useSettings = create<SettingsState>((set, get) => ({
 
   current: (theme = get().settings.theme) => resolveTheme({ ...get().settings, theme }, systemDark.matches, systemAccent),
 }))
+
+/** Saved sorts onto the list pages. */
+function sorts(s: Settings) {
+  const st = useStore.getState()
+  useStore.setState({ sort: s.songSort, playlistSort: s.playlistSort, albumView: { ...st.albumView, sort: s.albumSort }, artistView: { ...st.artistView, sort: s.artistSort } })
+}
+
+// A sort picked on a list page is saved (and comes back next launch).
+useStore.subscribe((st, prev) => {
+  if (st.sort === prev.sort && st.playlistSort === prev.playlistSort && st.albumView.sort === prev.albumView.sort && st.artistView.sort === prev.artistView.sort) return
+  const s = useSettings.getState().settings
+  const next = { songSort: st.sort, playlistSort: st.playlistSort, albumSort: st.albumView.sort, artistSort: st.artistView.sort }
+  if (Object.entries(next).some(([k, v]) => s[k as keyof typeof next] !== v)) useSettings.getState().update(next)
+})
 
 systemDark.addEventListener('change', () => apply(useSettings.getState().settings))
 

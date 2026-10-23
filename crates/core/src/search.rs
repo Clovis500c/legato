@@ -6,19 +6,37 @@ use crate::model::{Source, Track};
 use crate::musicness::Musicness;
 use serde::Serialize;
 
+/// Where a hit was found: YouTube's video search, YouTube Music's songs, Apple Music's catalog.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub enum Origin {
+    Youtube,
+    Ytmusic,
+    Apple,
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Hit {
     #[serde(flatten)]
     pub track: Track,
     pub musicness: Musicness,
+    /// Each search that found it, in that order (Search page: per-source counts, songs vs videos).
+    pub from: Vec<Origin>,
+}
+
+/// Two songs of one search can match the same hit: each origin once.
+fn found_by(from: &mut Vec<Origin>, o: Origin) {
+    if !from.contains(&o) {
+        from.push(o);
+    }
 }
 
 /// `videos` = YouTube results with their classification; `songs` = YouTube Music songs; `apple` = Apple Music tracks.
 /// A video matching a YouTube Music song keeps its video (what the user found) but takes the song's clean title,
 /// artist, album and cover, and counts as music.
 pub fn merge(videos: Vec<(Track, Musicness)>, songs: Vec<Track>, apple: Vec<Track>) -> Vec<Hit> {
-    let mut out: Vec<Hit> = videos.into_iter().map(|(track, musicness)| Hit { track, musicness }).collect();
+    let mut out: Vec<Hit> = videos.into_iter().map(|(track, musicness)| Hit { track, musicness, from: vec![Origin::Youtube] }).collect();
     for song in songs {
         match out.iter_mut().find(|h| same_track(&h.track, &song)) {
             Some(h) => {
@@ -28,14 +46,18 @@ pub fn merge(videos: Vec<(Track, Musicness)>, songs: Vec<Track>, apple: Vec<Trac
                     h.track.ids.insert(Source::Youtube, v);
                 }
                 h.musicness = Musicness::Music;
+                found_by(&mut h.from, Origin::Ytmusic);
             }
-            None => out.push(Hit { track: song, musicness: Musicness::Music }),
+            None => out.push(Hit { track: song, musicness: Musicness::Music, from: vec![Origin::Ytmusic] }),
         }
     }
     for t in apple {
         match out.iter_mut().find(|h| same_track(&h.track, &t)) {
-            Some(h) => h.track = merge_tracks(&h.track, &t),
-            None => out.push(Hit { track: t, musicness: Musicness::Music }),
+            Some(h) => {
+                h.track = merge_tracks(&h.track, &t);
+                found_by(&mut h.from, Origin::Apple);
+            }
+            None => out.push(Hit { track: t, musicness: Musicness::Music, from: vec![Origin::Apple] }),
         }
     }
     out
@@ -64,5 +86,9 @@ mod tests {
         assert_eq!(lucky.track.album.as_deref(), Some("Random Access Memories"));
         assert_eq!(lucky.musicness, Musicness::Music);
         assert_eq!(hits[1].musicness, Musicness::NotMusic);
+        assert_eq!(lucky.from, [Origin::Youtube, Origin::Ytmusic, Origin::Apple]);
+        assert_eq!(hits[1].from, [Origin::Youtube]);
+        assert_eq!(hits[2].from, [Origin::Ytmusic]);
+        assert_eq!(hits[3].from, [Origin::Apple]);
     }
 }

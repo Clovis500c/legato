@@ -1,8 +1,9 @@
-import { CaretDown, Copy, MagnifyingGlass, Play, ShareNetwork, SortAscending, Trash } from '@phosphor-icons/react'
+import { CaretDown, Columns, DotsThree, Info, MagnifyingGlass, Play, Plus, ShareNetwork, Shuffle, SortAscending } from '@phosphor-icons/react'
 import { useCallback, useMemo, useState } from 'react'
-import { useStore } from '../../app/store'
+import { useSettings } from '../../app/settings'
+import { pageQuery, useStore } from '../../app/store'
 import { api, type LibraryTrack } from '../../shared/api'
-import { fold, formatCount } from '../../shared/format'
+import { formatCount } from '../../shared/format'
 import { Button } from '../../shared/ui/Button'
 import { Led, LedChip, RoundButton, Segmented } from '../../shared/ui/controls'
 import { VirtualGrid } from '../../shared/ui/VirtualGrid'
@@ -10,23 +11,23 @@ import { VirtualList } from '../../shared/ui/VirtualList'
 import { firstArt, trackArt } from '../../shared/art'
 import { onMenu, openMenu, type MenuEntry } from '../../shared/ui/ContextMenu'
 import { Cover } from '../../shared/ui/Cover'
-import { playlistMenu, tracksMenu } from '../menus'
+import { playlistMenu, shufflePlay, tracksMenu } from '../menus'
 import { PageHeader } from '../../shared/ui/PageHeader'
 import { sourceLabel } from '../../shared/ui/SourceIcon'
 import { isFull, vias } from '../player/sources'
 import { usePlayer } from '../player/store'
 import { SharePanel } from '../share/SharePanel'
-import { ExportYoutube } from './ExportYoutube'
+import { FIT_FIELD, SongsThatFit } from './SongsThatFit'
 import { PlaylistCover } from './PlaylistCover'
-import { filterTracks, groupAlbums, groupArtists, groupStats, libraryStats, musicOnly, primaryArtist, sortGroups as orderGroups, sortTracks, type Filter, type GroupSort, type Sort } from './filter'
+import { COLUMNS, type Column } from '../../shared/theme/theme'
+import { filterTracks, groupAlbums, groupArtists, groupStats, libraryStats, musicOnly, sortGroups as orderGroups, sortTracks, type Filter, type GroupSort, type Sort } from './filter'
 import { HiddenVideos } from './HiddenVideos'
 import { TrackTable } from './TrackTable'
 import { msg, tr, trn } from '../../shared/i18n/i18n'
-import { ask } from '../../shared/ui/Ask'
 
 /** YouTube-like sort list, in groups. Manual only on playlists. */
 const sortGroups: { id: Sort; label: string }[][] = [
-  [{ id: 'manual', label: msg('Manual') }],
+  [{ id: 'manual', label: msg('Your order') }],
   [
     { id: 'added-new', label: msg('Date added (newest)') },
     { id: 'added-old', label: msg('Date added (oldest)') },
@@ -48,13 +49,54 @@ const sortGroups: { id: Sort; label: string }[][] = [
   [{ id: 'random', label: msg('Random') }],
 ]
 
-const totalTime = (tracks: LibraryTrack[]) => {
+export const totalTime = (tracks: LibraryTrack[]) => {
   const min = Math.round(tracks.reduce((s, t) => s + (t.durationMs ?? 0), 0) / 60_000)
   return min >= 60 ? tr('{h} hr {m} min', { h: Math.floor(min / 60), m: String(min % 60).padStart(2, '0') }) : tr('{m} min', { m: min })
 }
 
+/** Play and Shuffle in words (list pages): the first playable song, or any. Absent if none plays. */
+function PlayPills({ tracks }: { tracks: LibraryTrack[] }) {
+  const play = usePlayer((s) => s.playTracks)
+  const sp = useStore((s) => s.status.spotify.connected)
+  const first = tracks.findIndex((t) => vias(t, sp).length > 0)
+  if (first < 0) return null
+  return (
+    <>
+      <Button variant="accent" onClick={() => play(tracks, first)}>
+        <Play weight="fill" size={14} /> {tr('Play')}
+      </Button>
+      <Button variant="ghost" onClick={() => shufflePlay(tracks)}>
+        <Shuffle size={14} /> {tr('Shuffle')}
+      </Button>
+    </>
+  )
+}
+
+/** Shuffle next to a page's round Play (album, artist, playlist). */
+export function ShuffleRound({ tracks }: { tracks: LibraryTrack[] }) {
+  if (!tracks.length) return null
+  return (
+    <RoundButton label={tr('Shuffle play')} onClick={() => shufflePlay(tracks)}>
+      <Shuffle size={18} />
+    </RoundButton>
+  )
+}
+
+const columnLabels: Record<Column, string> = { album: msg('Album'), sources: msg('Sources'), plays: msg('Plays'), duration: msg('Duration') }
+
+/** Which list columns show (settings columns, also in Appearance). */
+function ColumnsButton() {
+  const columns = useSettings((s) => s.settings.columns)
+  const toggle = (c: Column) => useSettings.getState().update({ columns: columns.includes(c) ? columns.filter((x) => x !== c) : COLUMNS.filter((x) => x === c || columns.includes(x)) })
+  return (
+    <RoundButton label={tr('Columns')} kind="plain" size="sm" onClick={(e) => openMenu(e, COLUMNS.map((c) => ({ label: tr(columnLabels[c]), checked: columns.includes(c), onSelect: () => toggle(c) })))}>
+      <Columns size={16} />
+    </RoundButton>
+  )
+}
+
 /** Round play button: starts first playable track of the list. Absent if none. */
-function PlayAll({ tracks }: { tracks: LibraryTrack[] }) {
+export function PlayAll({ tracks }: { tracks: LibraryTrack[] }) {
   const play = usePlayer((s) => s.playTracks)
   const sp = useStore((s) => s.status.spotify.connected)
   const first = tracks.findIndex((t) => vias(t, sp).length > 0)
@@ -75,7 +117,7 @@ function SortButton<T extends string>({ groups, value, onPick }: { groups: { id:
         const r = e.currentTarget.getBoundingClientRect()
         openMenu({ clientX: r.left, clientY: r.bottom + 6, target: e.currentTarget, preventDefault() {}, stopPropagation() {} } as unknown as MouseEvent, items)
       }}
-      className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-[0.8125rem] font-medium hover:bg-raised"
+      className="flex items-center gap-2 rounded-full border border-line px-3 py-1.5 text-[0.8125rem] font-medium hover:bg-raised"
     >
       <SortAscending size={15} className="text-ink-3" /> {tr(groups.flat().find((x) => x.id === value)?.label ?? groups[0][0].label)} <CaretDown size={12} className="text-ink-3" />
     </button>
@@ -181,36 +223,43 @@ function FindVersions({ tracks }: { tracks: LibraryTrack[] }) {
   )
 }
 
-/** What plays in full, what only previews, what can't play. */
+/** What plays in full, what only previews, what can't play: a pill in the toolbar, the detail on click. */
 function Playability({ tracks }: { tracks: LibraryTrack[] }) {
   const sp = useStore((s) => s.status.spotify.connected)
+  const [open, setOpen] = useState(false)
   const full = tracks.filter((t) => isFull(t, sp)).length
   const missing = tracks.filter((t) => !isFull(t, sp))
   const preview = missing.filter((t) => vias(t, sp).length > 0).length
   if (!tracks.length) return null
+  const parts = [trn(full, '{n} song playable in full', '{n} songs playable in full'), preview > 0 && trn(preview, '{n} as 30 s preview', '{n} as 30 s preview'), missing.length > preview && trn(missing.length - preview, '{n} with no playable source', '{n} with no playable source')].filter((x): x is string => !!x)
   return (
-    <p className="mb-3 flex shrink-0 flex-wrap items-center gap-x-5 gap-y-1 rounded-lg border border-line-soft bg-recess px-3.5 py-2.5 font-mono text-[0.625rem] tracking-[0.08em] uppercase">
-      <span className="flex items-center gap-2">
-        <Led on /> {trn(full, '{n} song playable in full', '{n} songs playable in full')}
-      </span>
-      {preview > 0 && (
-        <span className="flex items-center gap-2 text-ink-2">
-          <Led on={false} /> {trn(preview, '{n} as 30 s preview', '{n} as 30 s preview')}
-        </span>
+    <span className="relative">
+      <button aria-expanded={open} onClick={() => setOpen(!open)} className="flex items-center gap-2 rounded-full bg-raised px-3 py-1.5 text-xs text-ink-2 hover:text-ink">
+        <Led on={missing.length === 0} /> {parts[0]}
+        {parts.length > 1 && ` · ${parts.length - 1 === 1 ? parts[1] : `+${formatCount(missing.length)}`}`}
+        <Info size={13} />
+      </button>
+      {open && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+          <div className="absolute top-[calc(100%+6px)] right-0 z-50 flex w-80 flex-col gap-2 rounded-xl border border-line bg-panel p-3.5 text-xs shadow-[0_12px_32px_var(--shadow)]">
+            {parts.map((p, i) => (
+              <span key={p} className="flex items-center gap-2">
+                <Led on={i === 0} /> {p}
+              </span>
+            ))}
+            <span className="text-ink-2">{tr('Local file first, then the official YouTube player, then the Apple Music preview.')}</span>
+            <FindVersions tracks={missing} />
+          </div>
+        </>
       )}
-      {missing.length > preview && (
-        <span className="flex items-center gap-2 text-ink-2">
-          <Led on={false} /> {trn(missing.length - preview, '{n} with no playable source', '{n} with no playable source')}
-        </span>
-      )}
-      {missing.length === 0 && <span className="font-sans text-xs tracking-normal text-ink-2 normal-case">{tr('Local file first, then the official YouTube player, then the Apple Music preview.')}</span>}
-      <FindVersions tracks={missing} />
-    </p>
+    </span>
   )
 }
 
 export function SongsView() {
-  const { tracks, query, filter, setFilter, sort, setSort, go, stats: plays, seed } = useStore()
+  const { tracks, filter, setFilter, sort, setSort, go, stats: plays, seed } = useStore()
+  const query = useStore(pageQuery)
   const stats = useMemo(() => libraryStats(tracks), [tracks])
   const music = useMemo(() => musicOnly(tracks), [tracks])
   // The fold follows the search and the source chips too.
@@ -219,12 +268,15 @@ export function SongsView() {
 
   return (
     <>
-      <PageHeader kicker={[tr('Library'), trn(stats.sources, '{n} source', '{n} sources'), stats.total && tr('{pct}% linked', { pct: stats.linkedPct })].filter(Boolean).join(' · ')} title={tr('Songs')} actions={<PlayAll tracks={shown} />} />
-      <div className="flex shrink-0 items-center justify-between gap-4 pb-3.5">
+      <PageHeader title={tr('Songs')} sub={`${trn(shown.length, '{n} song', '{n} songs')} · ${totalTime(shown)}${stats.sources > 1 ? ` · ${tr('{pct}% linked', { pct: stats.linkedPct })}` : ''}`} actions={<PlayPills tracks={shown} />} />
+      <div className="flex shrink-0 flex-wrap items-center justify-between gap-x-4 gap-y-2 pb-3">
         <SourceChips tracks={tracks} value={filter} onChange={setFilter} />
-        <SortMenu />
+        <div className="flex items-center gap-2">
+          <Playability tracks={shown} />
+          <SortMenu />
+          <ColumnsButton />
+        </div>
       </div>
-      <Playability tracks={shown} />
       <HiddenVideos tracks={hidden} />
       <TrackTable
         tracks={shown}
@@ -265,7 +317,8 @@ function EditableTitle({ id, name }: { id: number; name: string }) {
 }
 
 export function PlaylistView({ id }: { id: number }) {
-  const { playlists, playlistTracks, query, editPlaylist, go, playlistSort, setPlaylistSort, stats, seed } = useStore()
+  const { playlists, playlistTracks, playlistSort, setPlaylistSort, stats, seed } = useStore()
+  const query = useStore(pageQuery)
   const playlist = playlists.find((p) => p.id === id)
   const newestFirst = playlist?.newestFirst ?? false
   // Your own playlists show what you put in them; imports set non-music aside.
@@ -275,56 +328,54 @@ export function PlaylistView({ id }: { id: number }) {
   const sharing = useStore((s) => s.sharing === id)
   const closeShare = useCallback(() => useStore.setState({ sharing: null }), [])
   if (!playlist) return null
-  const duplicate = async () => {
-    const copy = await editPlaylist({ type: 'duplicate', id, name: tr('{name} (copy)', { name: playlist.name }) })
-    if (copy !== null) go({ name: 'playlist', id: copy })
+  // Add songs: to the panel under the list, its field ready.
+  const addSongs = () => {
+    const field = document.getElementById(FIT_FIELD)
+    field?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    field?.focus({ preventScroll: true })
   }
   return (
     <>
       <PageHeader
         onContextMenu={onMenu(() => playlistMenu(playlist))}
-        art={<PlaylistCover p={playlist} size={150} big />}
-        kicker={playlist.custom ? tr('Custom playlist') : tr('Playlist · {source} · imported', { source: tr(sourceLabel[playlist.source]) })}
+        art={<PlaylistCover p={playlist} size={184} big />}
+        kicker={playlist.custom ? tr('Your playlist') : tr('Playlist · {source} · imported', { source: tr(sourceLabel[playlist.source]) })}
         title={playlist.custom ? <EditableTitle key={playlist.name} id={id} name={playlist.name} /> : playlist.name}
-        sub={<span className="font-mono text-[0.6875rem] tracking-[0.06em] uppercase">{trn(playlist.trackCount, '{n} track', '{n} tracks')} · {totalTime(playlistTracks)}</span>}
+        sub={`${trn(playlist.trackCount, '{n} song', '{n} songs')} · ${totalTime(playlistTracks)}`}
         actions={
           <>
             <PlayAll tracks={shown} />
-            <RoundButton label={tr('Share playlist')} onClick={() => useStore.setState({ sharing: id })} disabled={!playlistTracks.length}>
-              <ShareNetwork size={16} />
-            </RoundButton>
-            {!(playlist.source === 'youtube' && !playlist.custom) && playlistTracks.length > 0 && <ExportYoutube id={id} />}
-            <RoundButton label={playlist.custom ? tr('Duplicate') : tr('Duplicate as custom playlist')} onClick={duplicate}>
-              <Copy size={16} />
-            </RoundButton>
+            <ShuffleRound tracks={shown} />
             {playlist.custom && (
-              <RoundButton
-                label={tr('Delete playlist')}
-                onClick={async () => {
-                  if (!(await ask({ title: tr('Delete “{name}”?', { name: playlist.name }), body: tr('The songs stay in your library.'), ok: tr('Delete') }))) return
-                  await editPlaylist({ type: 'delete', id })
-                  go({ name: 'songs' })
-                }}
-              >
-                <Trash size={16} />
-              </RoundButton>
+              <Button variant="ghost" onClick={addSongs}>
+                <Plus size={15} /> {tr('Add songs')}
+              </Button>
             )}
+            <RoundButton label={tr('Share playlist')} onClick={() => useStore.setState({ sharing: id })} disabled={!playlistTracks.length}>
+              <ShareNetwork size={17} />
+            </RoundButton>
+            {/* Export, duplicate, rename, delete: the playlist's own menu, as on a right-click. */}
+            <RoundButton label={tr('More')} kind="plain" onClick={(e) => openMenu(e, playlistMenu(playlist))}>
+              <DotsThree size={20} weight="bold" />
+            </RoundButton>
           </>
         }
       />
-      <div className="flex shrink-0 justify-end pb-1">
+      <div className="flex shrink-0 items-center justify-end gap-2 pb-3">
+        <Playability tracks={playlistTracks} />
         <SortMenu playlist />
+        <ColumnsButton />
       </div>
-      <Playability tracks={playlistTracks} />
       <HiddenVideos tracks={hidden} />
       {sharing && <SharePanel id={id} name={playlist.name} onClose={closeShare} />}
-      <TrackTable tracks={shown} sort={playlistSort} onSort={setPlaylistSort} empty={playlist.custom ? tr('Empty playlist: add songs from Songs with the “Add to playlist” button.') : tr('No songs.')} editId={playlist.custom && !query && playlistSort === 'manual' ? id : undefined} />
+      <TrackTable tracks={shown} sort={playlistSort} onSort={setPlaylistSort} empty={playlist.custom ? tr('Empty playlist: add songs below, or from Songs with the “Add to playlist” button.') : tr('No songs.')} editId={playlist.custom && !query && playlistSort === 'manual' ? id : undefined} footer={playlist.custom && <SongsThatFit id={id} songs={playlistTracks} />} />
     </>
   )
 }
 
 export function AlbumsView() {
-  const { tracks, query, go, albumView: v, stats, seed } = useStore()
+  const { tracks, go, albumView: v, stats, seed } = useStore()
+  const query = useStore(pageQuery)
   const all = useMemo(() => tracks.filter((t) => t.album), [tracks])
   const albums = useMemo(() => orderGroups(groupAlbums(filterTracks(all, query, v.filter)).map((g) => ({ ...g, name: g.album })), v.sort, { size: v.size, stats, seed }), [all, query, v, stats, seed])
   return (
@@ -357,19 +408,9 @@ export function AlbumsView() {
   )
 }
 
-export function AlbumView({ album, artist }: { album: string; artist: string }) {
-  const tracks = useStore((s) => s.tracks)
-  const shown = useMemo(() => tracks.filter((t) => t.album && fold(t.album) === fold(album) && fold(primaryArtist(t.artist)) === fold(artist)), [tracks, album, artist])
-  return (
-    <>
-      <PageHeader onContextMenu={onMenu(() => tracksMenu(shown, ['-', { label: tr('Go to artist'), onSelect: () => useStore.getState().go({ name: 'artist', artist }) }]))} art={<Cover title={album} art={firstArt(shown)} size={150} />} kicker={tr('Album · {artist}', { artist })} title={album} sub={<span className="font-mono text-[0.6875rem] tracking-[0.06em] uppercase">{trn(shown.length, '{n} track', '{n} tracks')} · {totalTime(shown)}</span>} actions={<PlayAll tracks={shown} />} />
-      <TrackTable tracks={shown} empty={tr('No songs.')} />
-    </>
-  )
-}
-
 export function ArtistsView() {
-  const { tracks, query, go, artistView: v, stats, seed } = useStore()
+  const { tracks, go, artistView: v, stats, seed } = useStore()
+  const query = useStore(pageQuery)
   const artists = useMemo(() => orderGroups(groupArtists(filterTracks(tracks, query, v.filter)).map((g) => ({ ...g, name: g.artist })), v.sort, { size: v.size, stats, seed }), [tracks, query, v, stats, seed])
   return (
     <>
@@ -391,17 +432,6 @@ export function ArtistsView() {
           </div>
         )}
       </VirtualList>
-    </>
-  )
-}
-
-export function ArtistView({ artist }: { artist: string }) {
-  const tracks = useStore((s) => s.tracks)
-  const shown = useMemo(() => tracks.filter((t) => fold(primaryArtist(t.artist)) === fold(artist)), [tracks, artist])
-  return (
-    <>
-      <PageHeader onContextMenu={onMenu(() => tracksMenu(shown))} art={<Cover title={artist} art={firstArt(shown)} size={120} className="rounded-full!" />} kicker={tr('Artist')} title={artist} sub={<span className="font-mono text-[0.6875rem] tracking-[0.06em] uppercase">{trn(shown.length, '{n} track', '{n} tracks')} · {totalTime(shown)}</span>} actions={<PlayAll tracks={shown} />} />
-      <TrackTable tracks={shown} empty={tr('No songs.')} />
     </>
   )
 }
