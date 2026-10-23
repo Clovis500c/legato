@@ -254,8 +254,10 @@ Everything still open, gathered from the sections below. Tick a line when it lan
       words, its menu for export / duplicate / delete, Songs that fit); Album (numbered, More by); Artist (most played,
       discography albums / singles, Radio); Now Playing (Up next · Lyrics · Sound tabs, remove from Up next, similar songs
       after the queue, setting autoplay); Settings (Reset off default, Accounts dot); sidebar playlist order + "+".
-- [ ] App v4 leftovers needing data: album years and track numbers, songs of an album missing from the library (from
-      YouTube Music's album page), "date added" as a real date (the library keeps a rank only).
+- [x] Album pages complete (2026-10-23): year, track numbers and discs, songs you don't have (dimmed, play, add),
+      your other songs of it after; from the Apple catalog (`itunes::album`, keyless, cached a day), matched by
+      `music_core::matching::album_slots`.
+- [ ] "Date added" as a real date (the library keeps a rank only).
 - [x] Local folders: watch for changes (`notify` crate, `src-tauri/src/folders.rs`, big update phase 7).
 - [x] Preview straight from search results (before adding): Add music plays a song not in the library (big update
       phase 2).

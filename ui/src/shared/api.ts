@@ -400,6 +400,20 @@ export interface ExportReport {
   noYoutube: number
 }
 
+/** src-tauri AlbumSlot: one catalog song of an album, and your copy when you have it. */
+export interface AlbumSlot {
+  disc: number
+  number: number
+  track: Track
+  libraryId: number | null
+}
+
+/** src-tauri AlbumInfo. */
+export interface AlbumInfo {
+  year: number | null
+  slots: AlbumSlot[]
+}
+
 /** src-tauri NearbyState. */
 export type NearbyState = { state: 'idle' } | { state: 'waiting'; code: string } | { state: 'sent' } | { state: 'failed'; error: string }
 
@@ -430,6 +444,8 @@ export const api = {
   /** mood = a chip's params: the home filtered to it. */
   ytmHome: (mood?: string) => invoke<YtmHome>('ytm_home', { mood: mood ?? null }),
   ytmList: (list: ListRef) => invoke<Track[]>('ytm_list', { list }),
+  /** Year and every song of an album from the Apple catalog, with which ones you have. Null = not in the store. */
+  albumInfo: (artist: string, album: string, trackIds: number[], country: string) => invoke<AlbumInfo | null>('album_info', { artist, album, trackIds, country }),
   /** YouTube versions for tracks with no full source (1 search each, daily budget). */
   findVersions: (ids: number[]) => invoke<FindReport>('find_versions', { ids }),
   /** Real covers for Apple tracks (1 batched lookup). Returns tracks updated. */
