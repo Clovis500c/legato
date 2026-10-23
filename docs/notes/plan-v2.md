@@ -179,7 +179,7 @@ needs it; 2 s fade by default.
 - [x] Sidebar mini player: a card tinted by the cover, progress line, play / pause; vinyl covers turn it into a record
       spinning at 33⅓ rpm with its arm (not for YouTube: its video stays visible, see docs/playback.md).
 - [x] README: features.
-- [ ] README: new preview (`docs/images/songs.png`), from a demo library, not the user's own.
+- [x] README: new preview (`docs/images/songs.png`), from a demo library, not the user's own (v4 Songs page).
 
 ## Still to do (one list, updated 2026-10-23)
 
