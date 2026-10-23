@@ -326,7 +326,6 @@ const fr: Record<string, string> = {
   'Use “Find full versions” on this playlist, then export again to add them.': 'Utilisez « Trouver les versions complètes » sur cette playlist, puis exportez à nouveau pour les ajouter.',
   'Open on YouTube Music': 'Ouvrir sur YouTube Music',
   // Library
-  'Manual': 'Manuel',
   'Date added (newest)': 'Date d’ajout (récents)',
   'Date added (oldest)': 'Date d’ajout (anciens)',
   'Most played': 'Les plus écoutés',
@@ -362,8 +361,6 @@ const fr: Record<string, string> = {
   'Local file first, then the official YouTube player, then the Apple Music preview.': 'Fichier local d’abord, puis le lecteur YouTube officiel, puis l’extrait Apple Music.',
   '{n} video hidden because it isn’t music': '{n} vidéo masquée car ce n’est pas de la musique',
   '{n} videos hidden because they aren’t music': '{n} vidéos masquées car ce n’est pas de la musique',
-  '{n} source': '{n} source',
-  '{n} sources': '{n} sources',
   '{pct}% linked': '{pct} % liés',
   'Your library is empty': 'Votre bibliothèque est vide',
   'Import your YouTube Music playlists: sign in with Google in Accounts, they come in on their own.': 'Importez vos playlists YouTube Music : connectez-vous avec Google dans Comptes, elles arrivent toutes seules.',
@@ -1269,6 +1266,10 @@ const fr: Record<string, string> = {
   'As imported or made': 'Comme importées ou créées',
   'Opened lately': 'Ouvertes récemment',
   'Sort playlists': 'Trier les playlists',
+  'Your order': 'Votre ordre',
+  'Plays': 'Écoutes',
+  'Columns': 'Colonnes',
+  'More': 'Plus',
 }
 
 export default fr

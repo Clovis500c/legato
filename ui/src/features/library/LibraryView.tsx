@@ -1,5 +1,6 @@
-import { CaretDown, Copy, MagnifyingGlass, Play, ShareNetwork, SortAscending, Trash } from '@phosphor-icons/react'
+import { CaretDown, Columns, Copy, Info, MagnifyingGlass, Play, ShareNetwork, Shuffle, SortAscending, Trash } from '@phosphor-icons/react'
 import { useCallback, useMemo, useState } from 'react'
+import { useSettings } from '../../app/settings'
 import { pageQuery, useStore } from '../../app/store'
 import { api, type LibraryTrack } from '../../shared/api'
 import { fold, formatCount } from '../../shared/format'
@@ -10,7 +11,7 @@ import { VirtualList } from '../../shared/ui/VirtualList'
 import { firstArt, trackArt } from '../../shared/art'
 import { onMenu, openMenu, type MenuEntry } from '../../shared/ui/ContextMenu'
 import { Cover } from '../../shared/ui/Cover'
-import { playlistMenu, tracksMenu } from '../menus'
+import { playlistMenu, shufflePlay, tracksMenu } from '../menus'
 import { PageHeader } from '../../shared/ui/PageHeader'
 import { sourceLabel } from '../../shared/ui/SourceIcon'
 import { isFull, vias } from '../player/sources'
@@ -18,6 +19,7 @@ import { usePlayer } from '../player/store'
 import { SharePanel } from '../share/SharePanel'
 import { ExportYoutube } from './ExportYoutube'
 import { PlaylistCover } from './PlaylistCover'
+import { COLUMNS, type Column } from '../../shared/theme/theme'
 import { filterTracks, groupAlbums, groupArtists, groupStats, libraryStats, musicOnly, primaryArtist, sortGroups as orderGroups, sortTracks, type Filter, type GroupSort, type Sort } from './filter'
 import { HiddenVideos } from './HiddenVideos'
 import { TrackTable } from './TrackTable'
@@ -26,7 +28,7 @@ import { ask } from '../../shared/ui/Ask'
 
 /** YouTube-like sort list, in groups. Manual only on playlists. */
 const sortGroups: { id: Sort; label: string }[][] = [
-  [{ id: 'manual', label: msg('Manual') }],
+  [{ id: 'manual', label: msg('Your order') }],
   [
     { id: 'added-new', label: msg('Date added (newest)') },
     { id: 'added-old', label: msg('Date added (oldest)') },
@@ -53,6 +55,47 @@ const totalTime = (tracks: LibraryTrack[]) => {
   return min >= 60 ? tr('{h} hr {m} min', { h: Math.floor(min / 60), m: String(min % 60).padStart(2, '0') }) : tr('{m} min', { m: min })
 }
 
+/** Play and Shuffle in words (list pages): the first playable song, or any. Absent if none plays. */
+function PlayPills({ tracks }: { tracks: LibraryTrack[] }) {
+  const play = usePlayer((s) => s.playTracks)
+  const sp = useStore((s) => s.status.spotify.connected)
+  const first = tracks.findIndex((t) => vias(t, sp).length > 0)
+  if (first < 0) return null
+  return (
+    <>
+      <Button variant="accent" onClick={() => play(tracks, first)}>
+        <Play weight="fill" size={14} /> {tr('Play')}
+      </Button>
+      <Button variant="ghost" onClick={() => shufflePlay(tracks)}>
+        <Shuffle size={14} /> {tr('Shuffle')}
+      </Button>
+    </>
+  )
+}
+
+/** Shuffle next to a page's round Play (album, artist, playlist). */
+function ShuffleRound({ tracks }: { tracks: LibraryTrack[] }) {
+  if (!tracks.length) return null
+  return (
+    <RoundButton label={tr('Shuffle play')} onClick={() => shufflePlay(tracks)}>
+      <Shuffle size={18} />
+    </RoundButton>
+  )
+}
+
+const columnLabels: Record<Column, string> = { album: msg('Album'), sources: msg('Sources'), plays: msg('Plays'), duration: msg('Duration') }
+
+/** Which list columns show (settings columns, also in Appearance). */
+function ColumnsButton() {
+  const columns = useSettings((s) => s.settings.columns)
+  const toggle = (c: Column) => useSettings.getState().update({ columns: columns.includes(c) ? columns.filter((x) => x !== c) : COLUMNS.filter((x) => x === c || columns.includes(x)) })
+  return (
+    <RoundButton label={tr('Columns')} kind="plain" size="sm" onClick={(e) => openMenu(e, COLUMNS.map((c) => ({ label: tr(columnLabels[c]), checked: columns.includes(c), onSelect: () => toggle(c) })))}>
+      <Columns size={16} />
+    </RoundButton>
+  )
+}
+
 /** Round play button: starts first playable track of the list. Absent if none. */
 function PlayAll({ tracks }: { tracks: LibraryTrack[] }) {
   const play = usePlayer((s) => s.playTracks)
@@ -75,7 +118,7 @@ function SortButton<T extends string>({ groups, value, onPick }: { groups: { id:
         const r = e.currentTarget.getBoundingClientRect()
         openMenu({ clientX: r.left, clientY: r.bottom + 6, target: e.currentTarget, preventDefault() {}, stopPropagation() {} } as unknown as MouseEvent, items)
       }}
-      className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-[0.8125rem] font-medium hover:bg-raised"
+      className="flex items-center gap-2 rounded-full border border-line px-3 py-1.5 text-[0.8125rem] font-medium hover:bg-raised"
     >
       <SortAscending size={15} className="text-ink-3" /> {tr(groups.flat().find((x) => x.id === value)?.label ?? groups[0][0].label)} <CaretDown size={12} className="text-ink-3" />
     </button>
@@ -181,31 +224,37 @@ function FindVersions({ tracks }: { tracks: LibraryTrack[] }) {
   )
 }
 
-/** What plays in full, what only previews, what can't play. */
+/** What plays in full, what only previews, what can't play: a pill in the toolbar, the detail on click. */
 function Playability({ tracks }: { tracks: LibraryTrack[] }) {
   const sp = useStore((s) => s.status.spotify.connected)
+  const [open, setOpen] = useState(false)
   const full = tracks.filter((t) => isFull(t, sp)).length
   const missing = tracks.filter((t) => !isFull(t, sp))
   const preview = missing.filter((t) => vias(t, sp).length > 0).length
   if (!tracks.length) return null
+  const parts = [trn(full, '{n} song playable in full', '{n} songs playable in full'), preview > 0 && trn(preview, '{n} as 30 s preview', '{n} as 30 s preview'), missing.length > preview && trn(missing.length - preview, '{n} with no playable source', '{n} with no playable source')].filter((x): x is string => !!x)
   return (
-    <p className="mb-3 flex shrink-0 flex-wrap items-center gap-x-5 gap-y-1 rounded-lg border border-line-soft bg-recess px-3.5 py-2.5 font-mono text-[0.625rem] tracking-[0.08em] uppercase">
-      <span className="flex items-center gap-2">
-        <Led on /> {trn(full, '{n} song playable in full', '{n} songs playable in full')}
-      </span>
-      {preview > 0 && (
-        <span className="flex items-center gap-2 text-ink-2">
-          <Led on={false} /> {trn(preview, '{n} as 30 s preview', '{n} as 30 s preview')}
-        </span>
+    <span className="relative">
+      <button aria-expanded={open} onClick={() => setOpen(!open)} className="flex items-center gap-2 rounded-full bg-raised px-3 py-1.5 text-xs text-ink-2 hover:text-ink">
+        <Led on={missing.length === 0} /> {parts[0]}
+        {parts.length > 1 && ` · ${parts.length - 1 === 1 ? parts[1] : `+${formatCount(missing.length)}`}`}
+        <Info size={13} />
+      </button>
+      {open && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+          <div className="absolute top-[calc(100%+6px)] right-0 z-50 flex w-80 flex-col gap-2 rounded-xl border border-line bg-panel p-3.5 text-xs shadow-[0_12px_32px_var(--shadow)]">
+            {parts.map((p, i) => (
+              <span key={p} className="flex items-center gap-2">
+                <Led on={i === 0} /> {p}
+              </span>
+            ))}
+            <span className="text-ink-2">{tr('Local file first, then the official YouTube player, then the Apple Music preview.')}</span>
+            <FindVersions tracks={missing} />
+          </div>
+        </>
       )}
-      {missing.length > preview && (
-        <span className="flex items-center gap-2 text-ink-2">
-          <Led on={false} /> {trn(missing.length - preview, '{n} with no playable source', '{n} with no playable source')}
-        </span>
-      )}
-      {missing.length === 0 && <span className="font-sans text-xs tracking-normal text-ink-2 normal-case">{tr('Local file first, then the official YouTube player, then the Apple Music preview.')}</span>}
-      <FindVersions tracks={missing} />
-    </p>
+    </span>
   )
 }
 
@@ -220,12 +269,15 @@ export function SongsView() {
 
   return (
     <>
-      <PageHeader kicker={[tr('Library'), trn(stats.sources, '{n} source', '{n} sources'), stats.total && tr('{pct}% linked', { pct: stats.linkedPct })].filter(Boolean).join(' · ')} title={tr('Songs')} actions={<PlayAll tracks={shown} />} />
-      <div className="flex shrink-0 items-center justify-between gap-4 pb-3.5">
+      <PageHeader title={tr('Songs')} sub={`${trn(shown.length, '{n} song', '{n} songs')} · ${totalTime(shown)}${stats.sources > 1 ? ` · ${tr('{pct}% linked', { pct: stats.linkedPct })}` : ''}`} actions={<PlayPills tracks={shown} />} />
+      <div className="flex shrink-0 flex-wrap items-center justify-between gap-x-4 gap-y-2 pb-3">
         <SourceChips tracks={tracks} value={filter} onChange={setFilter} />
-        <SortMenu />
+        <div className="flex items-center gap-2">
+          <Playability tracks={shown} />
+          <SortMenu />
+          <ColumnsButton />
+        </div>
       </div>
-      <Playability tracks={shown} />
       <HiddenVideos tracks={hidden} />
       <TrackTable
         tracks={shown}
@@ -365,7 +417,7 @@ export function AlbumView({ album, artist }: { album: string; artist: string }) 
   const shown = useMemo(() => tracks.filter((t) => t.album && fold(t.album) === fold(album) && fold(primaryArtist(t.artist)) === fold(artist)), [tracks, album, artist])
   return (
     <>
-      <PageHeader onContextMenu={onMenu(() => tracksMenu(shown, ['-', { label: tr('Go to artist'), onSelect: () => useStore.getState().go({ name: 'artist', artist }) }]))} art={<Cover title={album} art={firstArt(shown)} size={150} />} kicker={tr('Album · {artist}', { artist })} title={album} sub={<span className="font-mono text-[0.6875rem] tracking-[0.06em] uppercase">{trn(shown.length, '{n} track', '{n} tracks')} · {totalTime(shown)}</span>} actions={<PlayAll tracks={shown} />} />
+      <PageHeader onContextMenu={onMenu(() => tracksMenu(shown, ['-', { label: tr('Go to artist'), onSelect: () => useStore.getState().go({ name: 'artist', artist }) }]))} art={<Cover title={album} art={firstArt(shown)} size={150} />} kicker={tr('Album · {artist}', { artist })} title={album} sub={<span className="font-mono text-[0.6875rem] tracking-[0.06em] uppercase">{trn(shown.length, '{n} track', '{n} tracks')} · {totalTime(shown)}</span>} actions={<><PlayAll tracks={shown} /><ShuffleRound tracks={shown} /></>} />
       <TrackTable tracks={shown} empty={tr('No songs.')} />
     </>
   )

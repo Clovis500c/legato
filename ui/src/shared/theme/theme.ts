@@ -2,6 +2,7 @@
 import { LANGUAGES, msg, tr } from '../i18n/i18n'
 import { ACTIONS, validCombo, type Custom } from '../../app/keys'
 import { cleanCss } from '../css'
+import type { GroupSort, Sort } from '../../features/library/filter'
 
 export const PALETTE_KEYS = ['bg', 'panel', 'raised', 'recess', 'line', 'lineSoft', 'ink', 'ink2', 'ink3', 'ink4', 'accent', 'onAccent', 'ledOff'] as const
 export type PaletteKey = (typeof PALETTE_KEYS)[number]
@@ -67,7 +68,10 @@ export const PRESETS: Theme[] = [
 
 export const ACCENTS = ['#FF5A1F', '#E5383B', '#F2B705', '#2E8B57', '#2F6FEB', '#171614']
 
-export const COLUMNS = ['album', 'sources', 'duration'] as const
+export const COLUMNS = ['album', 'sources', 'plays', 'duration'] as const
+/** List sorts (features/library/filter): checked on load. */
+const SORTS: readonly Sort[] = ['manual', 'added-new', 'added-old', 'most-played', 'recently-played', 'title', 'title-desc', 'artist', 'album', 'duration', 'duration-short', 'random', 'recent']
+const GROUP_SORTS: readonly GroupSort[] = ['name', 'name-desc', 'artist', 'songs', 'albums', 'added-new', 'added-old', 'most-played', 'recently-played', 'length', 'random']
 
 /** Home's sections, default order. */
 export const HOME_SECTIONS = ['quick', 'week', 'mixes', 'recent', 'playlists', 'youtube', 'added'] as const
@@ -156,7 +160,7 @@ export interface DiscordSettings {
 }
 
 /** Bumped when defaults change for everyone (saved settings get the new ones once). */
-const DEFAULTS_VERSION = 6
+const DEFAULTS_VERSION = 7
 
 /** Adaptive Sound targets, LUFS: Quiet, Normal (streaming services' usual level), Loud. */
 export const ADAPTIVE_LEVELS = [-20, -14, -11] as const
@@ -198,6 +202,11 @@ export interface Settings {
   volume: 'knob' | 'bar'
   tuner: boolean
   columns: Column[]
+  /** Sorts picked on the list pages (remembered: Spotify's library kept going back to Recent). */
+  songSort: Sort
+  playlistSort: Sort
+  albumSort: GroupSort
+  artistSort: GroupSort
   /** Ad/tracker blocker (read by Rust at launch). */
   shield: boolean
   /** Floating mini player for every source (YouTube always shows one: its video must stay visible). */
@@ -300,6 +309,10 @@ export const DEFAULTS: Settings = {
   volume: 'bar',
   tuner: false,
   columns: [...COLUMNS],
+  songSort: 'artist',
+  playlistSort: 'manual',
+  albumSort: 'name',
+  artistSort: 'name',
   shield: true,
   miniPlayer: false,
   tint: true,
@@ -452,6 +465,10 @@ export function sanitize(raw: unknown): Settings {
     volume: pick(r.volume, ['knob', 'bar'] as const, DEFAULTS.volume),
     tuner: typeof r.tuner === 'boolean' ? r.tuner : DEFAULTS.tuner,
     columns,
+    songSort: pick(r.songSort, SORTS, DEFAULTS.songSort),
+    playlistSort: pick(r.playlistSort, SORTS, DEFAULTS.playlistSort),
+    albumSort: pick(r.albumSort, GROUP_SORTS, DEFAULTS.albumSort),
+    artistSort: pick(r.artistSort, GROUP_SORTS, DEFAULTS.artistSort),
     shield: typeof r.shield === 'boolean' ? r.shield : DEFAULTS.shield,
     miniPlayer: typeof r.miniPlayer === 'boolean' ? r.miniPlayer : DEFAULTS.miniPlayer,
     tint: typeof r.tint === 'boolean' ? r.tint : DEFAULTS.tint,
@@ -505,6 +522,8 @@ export function sanitize(raw: unknown): Settings {
     ...(saved < 3 ? V3 : {}),
     ...(saved < 4 ? V4 : {}),
     ...(saved < 5 ? v5(r) : {}),
+    // v7 (app v4, 2026-10-23): a Plays column, for those who kept the old default columns.
+    ...(saved < 7 && Array.isArray(r.columns) && r.columns.join() === 'album,sources,duration' ? { columns: [...COLUMNS] } : {}),
     ...(saved < 6 ? { homeSections: sanitizeHome(r.homeSections).map((x) => (HOME_OFF.includes(x.id) ? { ...x, on: false } : x)) } : {}),
   }
 }

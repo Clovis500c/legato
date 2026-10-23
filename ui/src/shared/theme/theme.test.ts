@@ -83,7 +83,7 @@ describe('resolveTheme', () => {
 
   it('settings saved before v2 get the new defaults once, later choices stay', () => {
     const old = sanitize({ volume: 'knob', tuner: true, clickToPlay: 'double', zoom: 110 })
-    expect(old).toMatchObject({ volume: 'bar', tuner: false, clickToPlay: 'single', stage: 'auto', zoom: 110, startView: 'home', defaultsVersion: 6 })
+    expect(old).toMatchObject({ volume: 'bar', tuner: false, clickToPlay: 'single', stage: 'auto', zoom: 110, startView: 'home', defaultsVersion: 7 })
     // Saved at v2: only v3's change applies.
     expect(sanitize({ volume: 'knob', stage: 'video', defaultsVersion: 2 })).toMatchObject({ volume: 'knob', stage: 'auto' })
     // Home opens first once (v4), then the user's pick stays.
@@ -97,6 +97,9 @@ describe('resolveTheme', () => {
     const off = (x: ReturnType<typeof sanitize>) => x.homeSections.find((h) => h.id === 'playlists')?.on
     expect(off(sanitize({ homeSections: [{ id: 'playlists', on: true }], defaultsVersion: 5 }))).toBe(false)
     expect(off(sanitize({ homeSections: [{ id: 'playlists', on: true }], defaultsVersion: 6 }))).toBe(true)
+    // Plays column once (v7), only for the old default columns.
+    expect(sanitize({ columns: ['album', 'sources', 'duration'], defaultsVersion: 6 }).columns).toEqual(['album', 'sources', 'plays', 'duration'])
+    expect(sanitize({ columns: ['album'], defaultsVersion: 6 }).columns).toEqual(['album'])
     // Chosen again after migration: kept.
     expect(sanitize({ ...old, volume: 'knob', clickToPlay: 'double' })).toMatchObject({ volume: 'knob', clickToPlay: 'double' })
   })

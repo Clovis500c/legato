@@ -1,15 +1,15 @@
-import { ArrowDown, ArrowUp, CaretDown, CaretUp, ListPlus, Play, Queue, Waveform, X } from '@phosphor-icons/react'
+import { ArrowDown, ArrowUp, CaretDown, CaretUp, Clock, DotsThreeVertical, ListPlus, Play, Queue, Waveform, X } from '@phosphor-icons/react'
 import { useShallow } from 'zustand/react/shallow'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { useRef, useState } from 'react'
 import { useSettings } from '../../app/settings'
 import type { LibraryTrack, Source } from '../../shared/api'
-import { formatDuration } from '../../shared/format'
+import { formatCount, formatDuration } from '../../shared/format'
 import type { Column } from '../../shared/theme/theme'
 import type { Sort } from './filter'
 import { RoundButton } from '../../shared/ui/controls'
 import { trackArt } from '../../shared/art'
-import { onMenu } from '../../shared/ui/ContextMenu'
+import { onMenu, openMenu } from '../../shared/ui/ContextMenu'
 import { trackMenu, tracksMenu } from '../menus'
 import { Cover } from '../../shared/ui/Cover'
 import { SourceIcon } from '../../shared/ui/SourceIcon'
@@ -25,10 +25,10 @@ import { msg, tr, trn } from '../../shared/i18n/i18n'
 const ROW = { compact: 40, comfort: 52, airy: 64 }
 const order: Source[] = ['spotify', 'youtube', 'apple', 'local']
 const onControl = (e: React.MouseEvent) => e.target instanceof Element && !!e.target.closest('button, a, input, [role="menu"]')
-const width: Record<Column, string> = { album: 'minmax(0,220px)', sources: '76px', duration: '52px' }
-const head: Record<Column, string> = { album: msg('Album'), sources: msg('Sources'), duration: msg('Duration') }
+const width: Record<Column, string> = { album: 'minmax(0,220px)', sources: '76px', plays: '52px', duration: '52px' }
+const head: Record<Column, string> = { album: msg('Album'), sources: msg('Sources'), plays: msg('Plays'), duration: msg('Duration') }
 /** Header click sorts: first click → first sort, again → the second (reverse). Sources can't sort. */
-const headSorts: Partial<Record<Column | 'title', [Sort, Sort]>> = { title: ['title', 'title-desc'], album: ['album', 'album'], duration: ['duration', 'duration-short'] }
+const headSorts: Partial<Record<Column | 'title', [Sort, Sort]>> = { title: ['title', 'title-desc'], album: ['album', 'album'], plays: ['most-played', 'most-played'], duration: ['duration', 'duration-short'] }
 
 /**
  * Virtualized: only visible rows hit the DOM, so 50k tracks stay smooth. editId = custom playlist shown unfiltered
@@ -44,6 +44,7 @@ export function TrackTable({ tracks, empty, editId, rowActions, sort, onSort }: 
   const editPlaylist = useStore((s) => s.editPlaylist)
   const playingId = usePlayer((s) => s.now?.trackId)
   const sp = useStore((s) => s.status.spotify.connected)
+  const stats = useStore((s) => s.stats)
   const row = ROW[density]
   const virtual = useVirtualizer({ count: tracks.length, getScrollElement: () => scroller.current, estimateSize: () => row, overscan: 12 })
   // Selection belongs to the list it was made in: a new list (filter, sort, other page) starts with none.
@@ -88,7 +89,7 @@ export function TrackTable({ tracks, empty, editId, rowActions, sort, onSort }: 
     if (e.key === 'Enter' && sel.cursor !== null && vias(tracks[sel.cursor], sp).length) return play(tracks, sel.cursor)
     if (e.key === 'Delete' && editId !== undefined && sel.ids.size) removeChosen()
   }
-  const grid = { gridTemplateColumns: ['32px', 'minmax(0,1fr)', editId ? '156px' : rowActions ? 'max-content' : '68px', ...columns.map((c) => width[c])].join(' ') }
+  const grid = { gridTemplateColumns: ['32px', 'minmax(0,1fr)', editId ? '156px' : rowActions ? 'max-content' : '64px', ...columns.map((c) => width[c])].join(' ') }
   const cover = density === 'compact' ? 28 : density === 'comfort' ? 36 : 46
 
   return (
@@ -116,12 +117,12 @@ export function TrackTable({ tracks, empty, editId, rowActions, sort, onSort }: 
           </button>
         </div>
       )}
-      <div role="row" className="grid h-7.5 shrink-0 items-center gap-4 border-b border-line px-2" style={grid}>
-        <span role="columnheader" className="kicker text-right">#</span>
+      <div role="row" className="grid h-8 shrink-0 items-center gap-4 border-b border-line px-2" style={grid}>
+        <span role="columnheader" className="text-right text-xs text-ink-3">#</span>
         <Head label={tr('Title')} sorts={headSorts.title} sort={sort} onSort={onSort} />
         <span />
         {columns.map((c) => (
-          <Head key={c} label={tr(head[c])} sorts={headSorts[c]} sort={sort} onSort={onSort} right={c === 'duration'} />
+          <Head key={c} label={tr(head[c])} icon={c === 'duration' ? <Clock size={14} /> : undefined} sorts={headSorts[c]} sort={sort} onSort={onSort} right={c === 'duration' || c === 'plays'} />
         ))}
       </div>
       {tracks.length === 0 ? (
@@ -170,10 +171,18 @@ export function TrackTable({ tracks, empty, editId, rowActions, sort, onSort }: 
                     () => ({ kind: 'tracks', ids: isPicked && chosen.length > 1 ? chosen.map((x) => x.id) : [t.id], from: editId !== undefined && !(isPicked && chosen.length > 1) ? { playlist: editId, row: v.index } : undefined }),
                     () => (isPicked && chosen.length > 1 ? trn(chosen.length, '{n} song', '{n} songs') : t.title),
                   )}
-                  className={`group absolute inset-x-0 grid items-center gap-4 border-b border-line-soft px-2 ${playable && clickToPlay === 'single' ? 'cursor-pointer' : ''} ${on ? 'bg-accent-soft' : isPicked ? 'bg-[color-mix(in_srgb,var(--ink)_10%,transparent)] shadow-[inset_3px_0_0_var(--ink-2)]' : 'hover:bg-raised'} ${dropAt === v.index ? 'shadow-[inset_0_2px_0_var(--accent)]' : dropAt === v.index + 1 && v.index === tracks.length - 1 ? 'shadow-[inset_0_-2px_0_var(--accent)]' : ''} ${draggedRow === v.index ? 'opacity-40' : ''}`}
+                  className={`group absolute inset-x-0 grid items-center gap-4 rounded-md px-2 ${playable && clickToPlay === 'single' ? 'cursor-pointer' : ''} ${isPicked ? 'bg-accent-soft shadow-[inset_3px_0_0_var(--accent)]' : 'hover:bg-raised'} ${dropAt === v.index ? 'shadow-[inset_0_2px_0_var(--accent)]' : dropAt === v.index + 1 && v.index === tracks.length - 1 ? 'shadow-[inset_0_-2px_0_var(--accent)]' : ''} ${draggedRow === v.index ? 'opacity-40' : ''}`}
                   style={{ ...grid, height: row, transform: `translateY(${v.start}px)` }}
                 >
-                  <span role="gridcell" className="flex justify-end font-mono text-[0.6875rem] text-ink-3 tabular-nums">{on ? <Waveform size={14} className="text-accent" /> : String(v.index + 1).padStart(2, '0')}</span>
+                  {/* Number, or the song playing; hovered: its play button. */}
+                  <span role="gridcell" className="flex justify-end text-xs text-ink-3 tabular-nums">
+                    <span className={playable ? 'group-focus-within:hidden group-hover:hidden' : ''}>{on ? <Waveform size={14} className="text-accent" /> : v.index + 1}</span>
+                    {playable && (
+                      <RoundButton label={tr('Play {title}', { title: t.title })} kind="plain" size="xs" className="-my-1 -mr-1.5 hidden text-ink! group-focus-within:grid group-hover:grid" onClick={() => play(tracks, v.index)}>
+                        <Play weight="fill" size={12} />
+                      </RoundButton>
+                    )}
+                  </span>
                   <span role="gridcell" className="flex min-w-0 items-center gap-3">
                     {listCovers && <Cover title={t.album ?? t.title} art={trackArt(t)} size={cover} />}
                     <span className="min-w-0">
@@ -205,16 +214,18 @@ export function TrackTable({ tracks, empty, editId, rowActions, sort, onSort }: 
                     )}
                     {rowActions?.(t)}
                     <AddToPlaylist trackIds={[t.id]} label={tr('Add {title} to a playlist', { title: t.title })} />
-                    {playable && (
-                      <RoundButton label={tr('Play {title}', { title: t.title })} kind="soft" size="xs" onClick={() => play(tracks, v.index)}>
-                        <Play weight="fill" size={11} />
-                      </RoundButton>
-                    )}
+                    <RoundButton label={tr('More')} kind="plain" size="xs" onClick={(e) => openMenu(e, trackMenu(t, { list: tracks, index: v.index, playlistId: editId, position: v.index }))}>
+                      <DotsThreeVertical size={14} weight="bold" />
+                    </RoundButton>
                   </span>
                   {columns.map((c) =>
                     c === 'album' ? (
                       <span key={c} role="gridcell" className="truncate text-[0.8125rem] text-ink-2">
                         {t.album}
+                      </span>
+                    ) : c === 'plays' ? (
+                      <span key={c} role="gridcell" className="text-right text-xs text-ink-3 tabular-nums">
+                        {stats[t.id]?.[0] ? formatCount(stats[t.id][0]) : ''}
                       </span>
                     ) : c === 'sources' ? (
                       <span key={c} role="gridcell" className="flex items-center gap-2 text-ink-3">
@@ -223,7 +234,7 @@ export function TrackTable({ tracks, empty, editId, rowActions, sort, onSort }: 
                         ))}
                       </span>
                     ) : (
-                      <span key={c} role="gridcell" className="text-right font-mono text-[0.6875rem] text-ink-3 tabular-nums">
+                      <span key={c} role="gridcell" className="text-right text-xs text-ink-3 tabular-nums">
                         {formatDuration(t.durationMs)}
                       </span>
                     ),
@@ -239,18 +250,18 @@ export function TrackTable({ tracks, empty, editId, rowActions, sort, onSort }: 
 }
 
 /** Column header; a button that sorts the list when the page can sort (aria-sort says how it is). */
-function Head({ label, sorts, sort, onSort, right = false }: { label: string; sorts?: [Sort, Sort]; sort?: Sort; onSort?: (s: Sort) => void; right?: boolean }) {
+function Head({ label, icon, sorts, sort, onSort, right = false }: { label: string; icon?: React.ReactNode; sorts?: [Sort, Sort]; sort?: Sort; onSort?: (s: Sort) => void; right?: boolean }) {
   const now = sorts && sort ? (sort === sorts[0] ? 0 : sort === sorts[1] && sorts[1] !== sorts[0] ? 1 : null) : null
   if (!sorts || !onSort)
     return (
-      <span role="columnheader" className={`kicker ${right ? 'text-right' : ''}`}>
-        {label}
+      <span role="columnheader" aria-label={label} className={`flex text-xs text-ink-3 ${right ? 'justify-end' : ''}`}>
+        {icon ?? label}
       </span>
     )
   return (
     <span role="columnheader" aria-sort={now === 0 ? 'ascending' : now === 1 ? 'descending' : 'none'} className={right ? 'flex justify-end' : 'flex'}>
-      <button onClick={() => onSort(now === 0 ? sorts[1] : sorts[0])} title={tr('Sort by {column}', { column: label })} className={`kicker flex items-center gap-1 hover:text-ink ${now !== null ? 'text-ink' : ''}`}>
-        {label}
+      <button onClick={() => onSort(now === 0 ? sorts[1] : sorts[0])} aria-label={label} title={tr('Sort by {column}', { column: label })} className={`flex items-center gap-1 text-xs text-ink-3 hover:text-ink ${now !== null ? 'font-semibold text-ink!' : ''}`}>
+        {icon ?? label}
         {now === 0 && <CaretUp size={9} weight="bold" />}
         {now === 1 && <CaretDown size={9} weight="bold" />}
       </button>
