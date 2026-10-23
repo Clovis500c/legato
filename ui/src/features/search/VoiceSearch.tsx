@@ -1,5 +1,6 @@
 import { Microphone, Waveform } from '@phosphor-icons/react'
 import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useSettings } from '../../app/settings'
 import { useStore } from '../../app/store'
 import { api, type VoiceMiss } from '../../shared/api'
@@ -74,34 +75,37 @@ export function VoiceSearch() {
       >
         <Microphone size={17} />
       </button>
-      {menu && (
-        <>
-          <div className="fixed inset-0 z-40" onClick={() => setMenu(null)} />
-          <div role="menu" onKeyDown={(e) => e.key === 'Escape' && setMenu(null)} className="fixed z-50 flex w-64 flex-col gap-1 rounded-xl border border-line bg-raised p-1.5 shadow-[0_12px_32px_var(--shadow)]" style={{ top: menu.bottom + 6, left: Math.max(8, menu.right - 256) }}>
-            {[
-              { icon: <Microphone size={18} />, label: tr('Search by voice'), note: tr('Say a song, an artist…'), run: () => (agreed ? void listen() : setStep({ name: 'ask' })) },
-              { icon: <Waveform size={18} />, label: tr('Identify a song'), note: tr('Name the music playing around you'), run: () => useStore.getState().identifySong() },
-            ].map((o, i) => (
-              <button
-                key={i}
-                role="menuitem"
-                autoFocus={i === 0}
-                onClick={() => {
-                  setMenu(null)
-                  o.run()
-                }}
-                className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-left hover:bg-bg focus-visible:bg-bg"
-              >
-                <span className="grid size-9 shrink-0 place-items-center rounded-full bg-bg text-ink-2">{o.icon}</span>
-                <span className="flex flex-col">
-                  <span className="text-[0.8125rem] font-semibold">{o.label}</span>
-                  <span className="text-[0.6875rem] text-ink-2">{o.note}</span>
-                </span>
-              </button>
-            ))}
-          </div>
-        </>
-      )}
+      {/* In body: the search pill moves with a transform (over the cover), which would carry a fixed menu off its button. */}
+      {menu &&
+        createPortal(
+          <>
+            <div className="fixed inset-0 z-40" onClick={() => setMenu(null)} />
+            <div role="menu" onKeyDown={(e) => e.key === 'Escape' && setMenu(null)} className="fixed z-50 flex w-64 flex-col gap-1 rounded-xl border border-line bg-raised p-1.5 shadow-[0_12px_32px_var(--shadow)]" style={{ top: menu.bottom + 6, left: Math.max(8, menu.right - 256) }}>
+              {[
+                { icon: <Microphone size={18} />, label: tr('Search by voice'), note: tr('Say a song, an artist…'), run: () => (agreed ? void listen() : setStep({ name: 'ask' })) },
+                { icon: <Waveform size={18} />, label: tr('Identify a song'), note: tr('Name the music playing around you'), run: () => useStore.getState().identifySong() },
+              ].map((o, i) => (
+                <button
+                  key={i}
+                  role="menuitem"
+                  autoFocus={i === 0}
+                  onClick={() => {
+                    setMenu(null)
+                    o.run()
+                  }}
+                  className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-left hover:bg-bg focus-visible:bg-bg"
+                >
+                  <span className="grid size-9 shrink-0 place-items-center rounded-full bg-bg text-ink-2">{o.icon}</span>
+                  <span className="flex flex-col">
+                    <span className="text-[0.8125rem] font-semibold">{o.label}</span>
+                    <span className="text-[0.6875rem] text-ink-2">{o.note}</span>
+                  </span>
+                </button>
+              ))}
+            </div>
+          </>,
+          document.body,
+        )}
       {step && (
         <Dialog title={tr('Search with your voice')} onClose={close}>
           {step.name === 'ask' && (

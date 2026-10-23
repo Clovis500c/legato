@@ -1,5 +1,6 @@
 import { CaretRight, Check } from '@phosphor-icons/react'
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 import { create } from 'zustand'
 
 export interface MenuItem {
@@ -16,12 +17,17 @@ export interface MenuItem {
 /** '-' = separator. Falsy entries are dropped (conditional items inline). */
 export type MenuEntry = MenuItem | '-' | false | '' | 0 | null | undefined
 
-const useMenu = create<{ at: { x: number; y: number } | null; items: MenuEntry[] }>(() => ({ at: null, items: [] }))
+const useMenu = create<{ at: { x: number; y: number; up?: boolean } | null; items: MenuEntry[] }>(() => ({ at: null, items: [] }))
 export const closeMenu = () => useMenu.setState({ at: null })
 
-export function openMenu(e: MouseEvent | React.MouseEvent, items: MenuEntry[]) {
+/** place: pinned to the clicked control instead of the pointer. 'above' for buttons at the window's foot (player bar), 'below' for dropdowns. */
+export function openMenu(e: MouseEvent | React.MouseEvent, items: MenuEntry[], { place }: { place?: 'above' | 'below' } = {}) {
   e.preventDefault()
   e.stopPropagation()
+  if (place && e.currentTarget instanceof Element) {
+    const r = e.currentTarget.getBoundingClientRect()
+    return useMenu.setState({ at: place === 'above' ? { x: r.left, y: r.top - 6, up: true } : { x: r.left, y: r.bottom + 6 }, items })
+  }
   let [x, y] = [e.clientX, e.clientY]
   // Menu key / Shift+F10: no pointer position, open under the focused element.
   if (!x && !y && e.target instanceof Element) {
@@ -47,7 +53,7 @@ export function tidy(items: MenuEntry[]): (MenuItem | '-')[] {
 
 const ITEM = ':scope > button[role=menuitem]:not(:disabled)'
 
-function Panel({ items, x, y, anchor, focusFirst, onBack }: { items: MenuEntry[]; x: number; y: number; anchor?: DOMRect; focusFirst: boolean; onBack?: () => void }) {
+function Panel({ items, x, y, up, anchor, focusFirst, onBack }: { items: MenuEntry[]; x: number; y: number; up?: boolean; anchor?: DOMRect; focusFirst: boolean; onBack?: () => void }) {
   const ref = useRef<HTMLDivElement>(null)
   const [sub, setSub] = useState<{ i: number; rect: DOMRect; keyboard: boolean } | null>(null)
   const list = tidy(items)
@@ -59,10 +65,10 @@ function Panel({ items, x, y, anchor, focusFirst, onBack }: { items: MenuEntry[]
     let left = anchor ? anchor.right - 4 : x
     if (left + r.width > innerWidth - 4) left = anchor ? anchor.left - r.width + 4 : innerWidth - r.width - 4
     el.style.left = `${Math.max(4, left)}px`
-    el.style.top = `${Math.max(4, Math.min(anchor ? anchor.top - 6 : y, innerHeight - r.height - 4))}px`
+    el.style.top = `${Math.max(4, Math.min(anchor ? anchor.top - 6 : up ? y - r.height : y, innerHeight - r.height - 4))}px`
     el.style.visibility = 'visible'
     if (focusFirst) el.querySelector<HTMLElement>(ITEM)?.focus()
-  }, [x, y, anchor, focusFirst])
+  }, [x, y, up, anchor, focusFirst])
 
   const move = (d: 1 | -1) => {
     const all = [...ref.current!.querySelectorAll<HTMLElement>(ITEM)]
@@ -85,7 +91,7 @@ function Panel({ items, x, y, anchor, focusFirst, onBack }: { items: MenuEntry[]
         e.preventDefault()
         e.stopPropagation()
       }}
-      className="pop-in fixed z-50 flex max-h-[80vh] min-w-56 flex-col overflow-y-auto rounded-xl border border-line bg-raised p-1.5 text-ink shadow-[0_12px_32px_var(--shadow)]"
+      className="pop-in fixed z-50 flex max-h-[80vh] min-w-56 flex-col overflow-x-hidden overflow-y-auto rounded-xl border border-line bg-raised p-1.5 text-ink shadow-[0_12px_32px_var(--shadow)]"
     >
       {list.map((it, i) =>
         it === '-' ? (
@@ -122,20 +128,25 @@ function Panel({ items, x, y, anchor, focusFirst, onBack }: { items: MenuEntry[]
           </button>
         ),
       )}
-      {sub && list[sub.i] !== '-' && (list[sub.i] as MenuItem).items && (
-        <Panel
-          key={sub.i}
-          items={(list[sub.i] as MenuItem).items!}
-          x={0}
-          y={0}
-          anchor={sub.rect}
-          focusFirst={sub.keyboard}
-          onBack={() => {
-            setSub(null)
-            ref.current?.querySelectorAll<HTMLElement>(':scope > button[role=menuitem]')[list.slice(0, sub.i).filter((x) => x !== '-').length]?.focus()
-          }}
-        />
-      )}
+      {/* Submenu in body: inside, the parent's pop-in transform makes it a child box (clipped, scrollbars). */}
+      {sub &&
+        list[sub.i] !== '-' &&
+        (list[sub.i] as MenuItem).items &&
+        createPortal(
+          <Panel
+            key={sub.i}
+            items={(list[sub.i] as MenuItem).items!}
+            x={0}
+            y={0}
+            anchor={sub.rect}
+            focusFirst={sub.keyboard}
+            onBack={() => {
+              setSub(null)
+              ref.current?.querySelectorAll<HTMLElement>(':scope > button[role=menuitem]')[list.slice(0, sub.i).filter((x) => x !== '-').length]?.focus()
+            }}
+          />,
+          document.body,
+        )}
     </div>
   )
 }
@@ -173,5 +184,5 @@ export function ContextMenuHost({ fallback }: { fallback: () => MenuEntry[] }) {
   }, [at])
 
   if (!at) return null
-  return <Panel key={`${at.x},${at.y}`} items={items} x={at.x} y={at.y} focusFirst />
+  return createPortal(<Panel key={`${at.x},${at.y}`} items={items} x={at.x} y={at.y} up={at.up} focusFirst />, document.body)
 }

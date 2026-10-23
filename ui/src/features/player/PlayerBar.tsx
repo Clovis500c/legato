@@ -152,7 +152,7 @@ function SleepButton() {
   }, [ends])
   const left = sleepLabel(ends)
   return (
-    <button type="button" title={tr('Sleep timer')} aria-label={left ? `${tr('Sleep timer')}: ${left}` : tr('Sleep timer')} onClick={(e) => openMenu(e, sleepMenu())} className={`flex h-8 items-center gap-1.5 rounded-full px-2 text-xs font-semibold transition hover:bg-raised ${left ? 'text-accent' : 'text-ink-3 hover:text-ink'}`}>
+    <button type="button" title={tr('Sleep timer')} aria-label={left ? `${tr('Sleep timer')}: ${left}` : tr('Sleep timer')} onClick={(e) => openMenu(e, sleepMenu(), { place: 'above' })} className={`flex h-8 items-center gap-1.5 rounded-full px-2 text-xs font-semibold transition hover:bg-raised ${left ? 'text-accent' : 'text-ink-3 hover:text-ink'}`}>
       <Moon size={16} weight={left ? 'fill' : 'regular'} />
       {left && <span className="tabular-nums">{left}</span>}
     </button>
