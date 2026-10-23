@@ -1,4 +1,4 @@
-import { CaretRight, DotsSixVertical, Waveform, X } from '@phosphor-icons/react'
+import { CaretRight, DotsSixVertical, FloppyDisk, Waveform, X } from '@phosphor-icons/react'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { useEffect, useMemo, useRef } from 'react'
 import { useSettings } from '../../app/settings'
@@ -13,8 +13,10 @@ import { trackMenu } from '../menus'
 import { fileFormat } from './PlayerBar'
 import { queueRows, type QueueRow } from './queue'
 import { vias } from './sources'
-import { fileTitle, useNowTrack, usePlayer } from './store'
+import { fileTitle, isRemote, useNowTrack, usePlayer } from './store'
 import { tr } from '../../shared/i18n/i18n'
+import { api } from '../../shared/api'
+import { askText } from '../../shared/ui/Ask'
 
 const ROW = 60
 
@@ -37,6 +39,28 @@ function useRows(): QueueRow[] {
 export function useNextCount(): number {
   const rows = useRows()
   return rows.filter((r) => !r.played && !r.current).length
+}
+
+/** The whole queue in play order as a new playlist (recommendations join the library on the way). */
+async function saveQueue() {
+  const { list, order } = usePlayer.getState()
+  const { refresh, notify, go } = useStore.getState()
+  const name = await askText({ title: tr('Save the queue as a playlist'), ok: tr('Save'), value: tr('Queue of {date}', { date: new Date().toLocaleDateString() }) })
+  if (!name) return
+  try {
+    const ids: number[] = []
+    for (const i of order) {
+      const t = list[i]
+      if (t) ids.push(isRemote(t) ? await api.addTrack(t) : t.id)
+    }
+    const id = await api.editPlaylist({ type: 'create', name })
+    if (id === null) return
+    await api.editPlaylist({ type: 'add', id, trackIds: ids })
+    await refresh()
+    notify(tr('Saved as the playlist “{name}”', { name }), { action: { label: tr('Open'), run: () => go({ name: 'playlist', id }) } })
+  } catch (e) {
+    notify(String(e), { kind: 'error' })
+  }
 }
 
 /**
@@ -98,6 +122,11 @@ export function UpNext({ onHide }: { onHide: () => void }) {
           <button onClick={clearNext} className="rounded-full px-2 py-0.5 text-xs font-medium text-ink-2 hover:bg-raised hover:text-ink">
             {tr('Clear')}
           </button>
+        )}
+        {queue && (
+          <RoundButton label={tr('Save the queue as a playlist')} kind="plain" size="sm" onClick={() => void saveQueue()}>
+            <FloppyDisk size={14} />
+          </RoundButton>
         )}
         <RoundButton label={tr('Hide up next')} kind="plain" size="sm" onClick={onHide}>
           <CaretRight size={14} />

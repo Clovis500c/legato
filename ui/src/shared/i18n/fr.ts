@@ -1357,6 +1357,8 @@ const fr: Record<string, string> = {
   'End of song': 'Fin du titre',
   'End of this song': 'À la fin de ce titre',
   'Turn off the sleep timer': 'Arrêter la minuterie',
+  'Save the queue as a playlist': 'Enregistrer la file comme playlist',
+  'Queue of {date}': 'File du {date}',
 }
 
 export default fr
