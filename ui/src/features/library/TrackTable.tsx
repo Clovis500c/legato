@@ -37,7 +37,7 @@ const headSorts: Partial<Record<Column | 'title', [Sort, Sort]>> = { title: ['ti
  * tab stop (↑ ↓ Home End Page↑ Page↓ move, Shift extends, Enter plays, Ctrl+A all, Esc clears, Delete removes from a
  * custom playlist). Songs drag to a playlist in the sidebar, or to another row of the custom playlist shown.
  */
-export function TrackTable({ tracks, empty, editId, rowActions, sort, onSort }: { tracks: LibraryTrack[]; empty: React.ReactNode; editId?: number; rowActions?: (t: LibraryTrack) => React.ReactNode; sort?: Sort; onSort?: (s: Sort) => void }) {
+export function TrackTable({ tracks, empty, editId, rowActions, sort, onSort, footer }: { tracks: LibraryTrack[]; empty: React.ReactNode; editId?: number; rowActions?: (t: LibraryTrack) => React.ReactNode; sort?: Sort; onSort?: (s: Sort) => void; footer?: React.ReactNode }) {
   const scroller = useRef<HTMLDivElement>(null)
   const { density, columns, listCovers, clickToPlay } = useSettings(useShallow((s) => ({ density: s.settings.density, columns: s.settings.columns, listCovers: s.settings.listCovers, clickToPlay: s.settings.clickToPlay })))
   const play = usePlayer((s) => s.playTracks)
@@ -126,7 +126,10 @@ export function TrackTable({ tracks, empty, editId, rowActions, sort, onSort }: 
         ))}
       </div>
       {tracks.length === 0 ? (
-        <div className="grid flex-1 place-items-center p-10 text-center text-ink-2">{empty}</div>
+        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
+          <div className="grid flex-1 place-items-center p-10 text-center text-ink-2">{empty}</div>
+          {footer}
+        </div>
       ) : (
         <div
           ref={scroller}
@@ -243,6 +246,8 @@ export function TrackTable({ tracks, empty, editId, rowActions, sort, onSort }: 
               )
             })}
           </div>
+          {/* After the last row, scrolling with them (Songs that fit, under a playlist). */}
+          {footer}
         </div>
       )}
     </div>

@@ -1,4 +1,4 @@
-import { CaretDown, Columns, Copy, Info, MagnifyingGlass, Play, ShareNetwork, Shuffle, SortAscending, Trash } from '@phosphor-icons/react'
+import { CaretDown, Columns, DotsThree, Info, MagnifyingGlass, Play, Plus, ShareNetwork, Shuffle, SortAscending } from '@phosphor-icons/react'
 import { useCallback, useMemo, useState } from 'react'
 import { useSettings } from '../../app/settings'
 import { pageQuery, useStore } from '../../app/store'
@@ -17,14 +17,13 @@ import { sourceLabel } from '../../shared/ui/SourceIcon'
 import { isFull, vias } from '../player/sources'
 import { usePlayer } from '../player/store'
 import { SharePanel } from '../share/SharePanel'
-import { ExportYoutube } from './ExportYoutube'
+import { FIT_FIELD, SongsThatFit } from './SongsThatFit'
 import { PlaylistCover } from './PlaylistCover'
 import { COLUMNS, type Column } from '../../shared/theme/theme'
 import { filterTracks, groupAlbums, groupArtists, groupStats, libraryStats, musicOnly, primaryArtist, sortGroups as orderGroups, sortTracks, type Filter, type GroupSort, type Sort } from './filter'
 import { HiddenVideos } from './HiddenVideos'
 import { TrackTable } from './TrackTable'
 import { msg, tr, trn } from '../../shared/i18n/i18n'
-import { ask } from '../../shared/ui/Ask'
 
 /** YouTube-like sort list, in groups. Manual only on playlists. */
 const sortGroups: { id: Sort; label: string }[][] = [
@@ -318,7 +317,7 @@ function EditableTitle({ id, name }: { id: number; name: string }) {
 }
 
 export function PlaylistView({ id }: { id: number }) {
-  const { playlists, playlistTracks, editPlaylist, go, playlistSort, setPlaylistSort, stats, seed } = useStore()
+  const { playlists, playlistTracks, playlistSort, setPlaylistSort, stats, seed } = useStore()
   const query = useStore(pageQuery)
   const playlist = playlists.find((p) => p.id === id)
   const newestFirst = playlist?.newestFirst ?? false
@@ -329,50 +328,47 @@ export function PlaylistView({ id }: { id: number }) {
   const sharing = useStore((s) => s.sharing === id)
   const closeShare = useCallback(() => useStore.setState({ sharing: null }), [])
   if (!playlist) return null
-  const duplicate = async () => {
-    const copy = await editPlaylist({ type: 'duplicate', id, name: tr('{name} (copy)', { name: playlist.name }) })
-    if (copy !== null) go({ name: 'playlist', id: copy })
+  // Add songs: to the panel under the list, its field ready.
+  const addSongs = () => {
+    const field = document.getElementById(FIT_FIELD)
+    field?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    field?.focus({ preventScroll: true })
   }
   return (
     <>
       <PageHeader
         onContextMenu={onMenu(() => playlistMenu(playlist))}
-        art={<PlaylistCover p={playlist} size={150} big />}
-        kicker={playlist.custom ? tr('Custom playlist') : tr('Playlist · {source} · imported', { source: tr(sourceLabel[playlist.source]) })}
+        art={<PlaylistCover p={playlist} size={184} big />}
+        kicker={playlist.custom ? tr('Your playlist') : tr('Playlist · {source} · imported', { source: tr(sourceLabel[playlist.source]) })}
         title={playlist.custom ? <EditableTitle key={playlist.name} id={id} name={playlist.name} /> : playlist.name}
-        sub={<span className="font-mono text-[0.6875rem] tracking-[0.06em] uppercase">{trn(playlist.trackCount, '{n} track', '{n} tracks')} · {totalTime(playlistTracks)}</span>}
+        sub={`${trn(playlist.trackCount, '{n} song', '{n} songs')} · ${totalTime(playlistTracks)}`}
         actions={
           <>
             <PlayAll tracks={shown} />
-            <RoundButton label={tr('Share playlist')} onClick={() => useStore.setState({ sharing: id })} disabled={!playlistTracks.length}>
-              <ShareNetwork size={16} />
-            </RoundButton>
-            {!(playlist.source === 'youtube' && !playlist.custom) && playlistTracks.length > 0 && <ExportYoutube id={id} />}
-            <RoundButton label={playlist.custom ? tr('Duplicate') : tr('Duplicate as custom playlist')} onClick={duplicate}>
-              <Copy size={16} />
-            </RoundButton>
+            <ShuffleRound tracks={shown} />
             {playlist.custom && (
-              <RoundButton
-                label={tr('Delete playlist')}
-                onClick={async () => {
-                  if (!(await ask({ title: tr('Delete “{name}”?', { name: playlist.name }), body: tr('The songs stay in your library.'), ok: tr('Delete') }))) return
-                  await editPlaylist({ type: 'delete', id })
-                  go({ name: 'songs' })
-                }}
-              >
-                <Trash size={16} />
-              </RoundButton>
+              <Button variant="ghost" onClick={addSongs}>
+                <Plus size={15} /> {tr('Add songs')}
+              </Button>
             )}
+            <RoundButton label={tr('Share playlist')} onClick={() => useStore.setState({ sharing: id })} disabled={!playlistTracks.length}>
+              <ShareNetwork size={17} />
+            </RoundButton>
+            {/* Export, duplicate, rename, delete: the playlist's own menu, as on a right-click. */}
+            <RoundButton label={tr('More')} kind="plain" onClick={(e) => openMenu(e, playlistMenu(playlist))}>
+              <DotsThree size={20} weight="bold" />
+            </RoundButton>
           </>
         }
       />
-      <div className="flex shrink-0 justify-end pb-1">
+      <div className="flex shrink-0 items-center justify-end gap-2 pb-3">
+        <Playability tracks={playlistTracks} />
         <SortMenu playlist />
+        <ColumnsButton />
       </div>
-      <Playability tracks={playlistTracks} />
       <HiddenVideos tracks={hidden} />
       {sharing && <SharePanel id={id} name={playlist.name} onClose={closeShare} />}
-      <TrackTable tracks={shown} sort={playlistSort} onSort={setPlaylistSort} empty={playlist.custom ? tr('Empty playlist: add songs from Songs with the “Add to playlist” button.') : tr('No songs.')} editId={playlist.custom && !query && playlistSort === 'manual' ? id : undefined} />
+      <TrackTable tracks={shown} sort={playlistSort} onSort={setPlaylistSort} empty={playlist.custom ? tr('Empty playlist: add songs below, or from Songs with the “Add to playlist” button.') : tr('No songs.')} editId={playlist.custom && !query && playlistSort === 'manual' ? id : undefined} footer={playlist.custom && <SongsThatFit id={id} songs={playlistTracks} />} />
     </>
   )
 }

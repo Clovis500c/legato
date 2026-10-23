@@ -315,16 +315,6 @@ const fr: Record<string, string> = {
   // Add to playlist
   'Add to': 'Ajouter à',
   // Export to YouTube Music
-  'Sign in to YouTube Music to export': 'Connectez-vous à YouTube Music pour exporter',
-  'Exporting to YouTube Music…': 'Export vers YouTube Music…',
-  'Exported to YouTube Music': 'Exporté vers YouTube Music',
-  'Private playlist on your account': 'Playlist privée sur votre compte',
-  'A few seconds.': 'Quelques secondes.',
-  'Added': 'Ajoutés',
-  'Already there': 'Déjà présents',
-  'No YouTube version': 'Sans version YouTube',
-  'Use “Find full versions” on this playlist, then export again to add them.': 'Utilisez « Trouver les versions complètes » sur cette playlist, puis exportez à nouveau pour les ajouter.',
-  'Open on YouTube Music': 'Ouvrir sur YouTube Music',
   // Library
   'Date added (newest)': 'Date d’ajout (récents)',
   'Date added (oldest)': 'Date d’ajout (anciens)',
@@ -369,13 +359,10 @@ const fr: Record<string, string> = {
   'No matching songs.': 'Aucun titre correspondant.',
   'Rename': 'Renommer',
   'Playlist name': 'Nom de la playlist',
-  'Custom playlist': 'Playlist personnelle',
   'Playlist · {source} · imported': 'Playlist · {source} · importée',
   '{n} track': '{n} titre',
   '{n} tracks': '{n} titres',
   'Share playlist': 'Partager la playlist',
-  'Delete playlist': 'Supprimer la playlist',
-  'Empty playlist: add songs from Songs with the “Add to playlist” button.': 'Playlist vide : ajoutez des titres depuis Titres avec le bouton « Ajouter à une playlist ».',
   'No songs.': 'Aucun titre.',
   '{n} album': '{n} album',
   '{n} albums': '{n} albums',
@@ -1270,6 +1257,15 @@ const fr: Record<string, string> = {
   'Plays': 'Écoutes',
   'Columns': 'Colonnes',
   'More': 'Plus',
+  'Your playlist': 'Votre playlist',
+  'Add songs': 'Ajouter des titres',
+  'Empty playlist: add songs below, or from Songs with the “Add to playlist” button.': 'Playlist vide : ajoutez des titres ci-dessous, ou depuis Titres avec le bouton « Ajouter à une playlist ».',
+  '{artist} · in {mix}': '{artist} · dans {mix}',
+  '{artist} · same artist': '{artist} · même artiste',
+  'Songs that fit': 'Titres qui vont bien',
+  'From your library: same artists and mixes as this playlist': 'De votre bibliothèque : mêmes artistes et mêmes mixes que cette playlist',
+  'Find songs to add': 'Chercher des titres à ajouter',
+  'Add a few songs: suggestions follow them.': 'Ajoutez quelques titres : les suggestions suivront.',
 }
 
 export default fr
