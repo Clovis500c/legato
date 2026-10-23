@@ -189,7 +189,7 @@ Everything still open, gathered from the sections below. Tick a line when it lan
 - [x] GitHub secret `TAURI_SIGNING_PRIVATE_KEY` (contents of `~/.tauri/music-app.key`), set 2026-10-17. The key has no
       password (checked by signing a test file) and matches the public key in `tauri.conf.json`.
 - [x] Releases readable without sign-in: the repo is public (checked 2026-10-17).
-- [ ] Back up the signing key somewhere safe (lost key = installed copies never update again).
+- [x] Back up the signing key somewhere safe (done by the user, 2026-10-23) (lost key = installed copies never update again).
 - [x] Automatic releases (2026-10-17): every push to master that passes `check` → `release.yml`, version
       MAJOR.MINOR (tauri.conf.json) + patch = commit count (`scripts/release.mjs`), notes = feat / fix / perf
       subjects, `[skip release]` to skip.
