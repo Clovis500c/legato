@@ -1353,6 +1353,10 @@ const fr: Record<string, string> = {
   '{n} duplicates': '{n} doublons',
   'Start radio': 'Lancer une radio',
   'No similar songs found': 'Aucun titre similaire trouvé',
+  'Sleep timer': 'Minuterie de sommeil',
+  'End of song': 'Fin du titre',
+  'End of this song': 'À la fin de ce titre',
+  'Turn off the sleep timer': 'Arrêter la minuterie',
 }
 
 export default fr

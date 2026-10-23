@@ -1,4 +1,4 @@
-import { ArrowsOutSimple, SpeakerHigh, SpeakerLow, SpeakerSlash } from '@phosphor-icons/react'
+import { ArrowsOutSimple, Moon, SpeakerHigh, SpeakerLow, SpeakerSlash } from '@phosphor-icons/react'
 import { getCurrentWebview } from '@tauri-apps/api/webview'
 import { useEffect, useRef, useState } from 'react'
 import { useSettings } from '../../app/settings'
@@ -9,7 +9,8 @@ import { Bar, Knob, RoundButton } from '../../shared/ui/controls'
 import { SourceIcon } from '../../shared/ui/SourceIcon'
 import { SeekBar, TimeText } from './Progress'
 import { Transport } from './Transport'
-import { onMenu } from '../../shared/ui/ContextMenu'
+import { onMenu, openMenu } from '../../shared/ui/ContextMenu'
+import { sleepLabel, sleepMenu, useSleep } from './sleep'
 import { playerMenu } from '../menus'
 import { trackArt } from '../../shared/art'
 import { Cover } from '../../shared/ui/Cover'
@@ -138,6 +139,24 @@ function YouTubeFrame({ videoId }: { videoId: string }) {
 }
 
 /** Knob, or YouTube-like speaker (click = mute) and bar. */
+/** Sleep timer: a moon; on, it shows the time left (minute steps). */
+function SleepButton() {
+  const ends = useSleep((s) => s.ends)
+  const [, tick] = useState(0)
+  useEffect(() => {
+    if (typeof ends !== 'number') return
+    const id = setInterval(() => tick((n) => n + 1), 15_000)
+    return () => clearInterval(id)
+  }, [ends])
+  const left = sleepLabel(ends)
+  return (
+    <button type="button" title={tr('Sleep timer')} aria-label={left ? `${tr('Sleep timer')}: ${left}` : tr('Sleep timer')} onClick={(e) => openMenu(e, sleepMenu())} className={`flex h-8 items-center gap-1.5 rounded-full px-2 text-xs font-semibold transition hover:bg-raised ${left ? 'text-accent' : 'text-ink-3 hover:text-ink'}`}>
+      <Moon size={16} weight={left ? 'fill' : 'regular'} />
+      {left && <span className="tabular-nums">{left}</span>}
+    </button>
+  )
+}
+
 export function VolumeControl({ big }: { big?: boolean }) {
   const volume = usePlayer((s) => s.volume)
   const setVolume = usePlayer((s) => s.setVolume)
@@ -244,6 +263,7 @@ export function PlayerBar() {
             <SourceIcon source={viaSource[now.via]} size={17} />
           </span>
         )}
+        <SleepButton />
         <VolumeControl />
         <RoundButton label={tr('Now playing, full screen')} disabled={!now} onClick={() => setFull(true)}>
           <ArrowsOutSimple size={15} />

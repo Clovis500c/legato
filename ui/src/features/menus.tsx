@@ -22,6 +22,7 @@ import {
   MagnifyingGlass,
   MicrophoneStage,
   MinusCircle,
+  Moon,
   Pause,
   PencilSimple,
   PictureInPicture,
@@ -66,6 +67,7 @@ import { bypass, deletePreset, deleteVersion, playVersion, reset, useEditor } fr
 import { loadPlugins, pluginCommands, runCommand } from './plugins/host'
 import { isRemote, nowTrack, remoteTrack, usePlayer } from './player/store'
 import { startRadio } from './player/radio'
+import { sleepMenu } from './player/sleep'
 import { msg, tr, trn } from '../shared/i18n/i18n'
 import { ask, askText } from '../shared/ui/Ask'
 
@@ -535,6 +537,7 @@ export function playerMenu(): MenuEntry[] {
     '-',
     { label: full ? tr('Leave full screen') : tr('Full screen'), icon: <ArrowsOutSimple size={16} />, onSelect: () => setFull(!full) },
     { label: tr('Live Editor'), icon: <SlidersHorizontal size={16} />, onSelect: () => (useSettings.getState().update({ editor: true }), setFull(true)) },
+    { label: tr('Sleep timer'), icon: <Moon size={16} />, items: sleepMenu() },
     { label: tr('Mini player'), icon: <PictureInPicture size={16} />, checked: mini || !!video, disabled: !!video, onSelect: () => useSettings.getState().update({ miniPlayer: !mini }) },
     '-',
     t && playVia(t, list, index),

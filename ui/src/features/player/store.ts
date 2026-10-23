@@ -81,6 +81,8 @@ interface PlayerState {
   applyVolume: (force?: boolean) => void
   playFiles: (paths: string[]) => void
   toggle: () => void
+  /** Sleep timer: volume down over `ms`, then pause (volume back for next time). */
+  sleep: (ms: number) => void
   seek: (ms: number) => void
   /** auto = track ended by itself (repeat one replays it). */
   step: (delta: 1 | -1, auto?: boolean) => void
@@ -128,6 +130,9 @@ export function useNowTrack(): LibraryTrack | undefined {
 /** Asked when a song ends on its own, before the next one starts: true = taken over (an update installs right there). */
 let beforeNext: (() => boolean) | null = null
 export const onSongEnd = (f: (() => boolean) | null) => void (beforeNext = f)
+// Sleep timer, "end of this song": the next one doesn't start; f runs instead.
+let stopAtEnd: (() => void) | null = null
+export const stopAfterSong = (f: (() => void) | null) => void (stopAtEnd = f)
 
 // Embed iframe, bound by PlayerBar.
 let frame: HTMLIFrameElement | null = null
@@ -432,6 +437,20 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     ramp((t) => t, fade.pause)
   },
 
+  sleep(ms) {
+    const { now, playing } = get()
+    if (!now || !playing) return
+    const pause = () => {
+      if (!get().playing) return
+      set({ playing: false })
+      if (now.via === 'youtube') yt('pauseVideo')
+      else if (now.via === 'spotify') void spotify({ type: 'pause' })
+      else send({ type: 'toggle' })
+    }
+    if (now.via === 'spotify') return pause()
+    ramp((t) => (1 - t) ** 2, ms, pause)
+  },
+
   previewFade() {
     const f = get().fade
     ramp((t) => demoGain(t * demoLength(f), f), demoLength(f) * 1000)
@@ -446,6 +465,12 @@ export const usePlayer = create<PlayerState>((set, get) => ({
   },
 
   step(delta, auto = false) {
+    if (auto && delta > 0 && stopAtEnd) {
+      const f = stopAtEnd
+      stopAtEnd = null
+      set({ playing: false })
+      return f()
+    }
     if (auto && delta > 0 && beforeNext?.()) return
     const { now, list, index, order, repeat } = get()
     if (now && !now.trackId) return void send({ type: delta > 0 ? 'next' : 'prev' })
