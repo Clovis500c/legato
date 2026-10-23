@@ -158,6 +158,9 @@ never: downloading, extracting, recording or exporting a platform's audio, or to
   click, nothing captured for 4 s while playing) unmutes the element: the video plays as before. Messages: embed
   `postMessage` to the app's origin only; watch page `musicapp-live:` strings checked in Rust (`ytwatch.rs`).
 - **Spotify**: plays in Spotify's own app, out of reach. Shown as such under the volume.
+- **Volume mixer** (2026-10-23): YouTube's sound plays in WebView2's own processes, so Windows listed it as "Microsoft
+  Edge WebView2". `src-tauri/src/mixer.rs` gives our WebView2 audio sessions (only processes this app started) Music
+  App's name, icon and grouping every 3 s. Label only: the sound is never taken out of the player (no extraction).
 - **Adaptive Sound**: gain heads for `target − short-term loudness`, clamped −12..+9 dB, 2.5 s glide, held while the
   momentary loudness is under −45 LUFS (silence, fade-outs). Limiter (ceiling 0.97) only while boosting: off, the
   sound is bit-identical (test). Targets: Quiet −20, Normal −14, Loud −11 LUFS.

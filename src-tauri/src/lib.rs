@@ -9,6 +9,7 @@ mod folders;
 mod hotkeys;
 mod lang;
 mod media;
+mod mixer;
 mod plugins;
 mod secrets;
 #[cfg(windows)]
@@ -1681,6 +1682,9 @@ pub fn run() {
                 }
             });
             background::spawn_sleeper(app.handle().clone());
+            // Volume mixer: YouTube's WebView2 sound listed as Music App.
+            #[cfg(windows)]
+            mixer::spawn();
             #[cfg(windows)]
             shield::install(window.as_ref(), shield.clone())?;
             #[cfg(windows)]
