@@ -40,7 +40,7 @@ export interface Background {
 }
 
 /** Settings a theme can bring along ("parts of the UX"). */
-export const LOOK_KEYS = ['covers', 'density', 'readout', 'volume', 'tuner', 'tint', 'immersive', 'backdropBlur', 'backdropDim', 'backdropMotion', 'motion', 'sidebarCounts', 'listCovers', 'columns'] as const
+export const LOOK_KEYS = ['covers', 'density', 'readout', 'volume', 'tuner', 'tint', 'appTint', 'immersive', 'backdropBlur', 'backdropDim', 'backdropMotion', 'motion', 'sidebarCounts', 'listCovers', 'columns'] as const
 export type LookKey = (typeof LOOK_KEYS)[number]
 export type Look = Partial<Pick<Settings, LookKey>>
 
@@ -243,6 +243,8 @@ export interface Settings {
   miniPlayer: boolean
   /** Now Playing takes a flat tint from the cover. */
   tint: boolean
+  /** The whole app takes that tint while a song plays. */
+  appTint: boolean
   /** Now Playing over the song's cover, big and blurred (tint used when off). */
   immersive: boolean
   /** Immersive background: blur in screen px (0–80), veil strength % (0–80), slow drift. */
@@ -352,6 +354,7 @@ export const DEFAULTS: Settings = {
   shield: true,
   miniPlayer: false,
   tint: true,
+  appTint: false,
   immersive: true,
   backdropBlur: 24,
   backdropDim: 40,
@@ -511,6 +514,7 @@ export function sanitize(raw: unknown): Settings {
     shield: typeof r.shield === 'boolean' ? r.shield : DEFAULTS.shield,
     miniPlayer: typeof r.miniPlayer === 'boolean' ? r.miniPlayer : DEFAULTS.miniPlayer,
     tint: typeof r.tint === 'boolean' ? r.tint : DEFAULTS.tint,
+    appTint: r.appTint === true,
     immersive: typeof r.immersive === 'boolean' ? r.immersive : DEFAULTS.immersive,
     backdropBlur: num(r.backdropBlur, 0, 80, DEFAULTS.backdropBlur),
     backdropDim: num(r.backdropDim, 0, 80, DEFAULTS.backdropDim),

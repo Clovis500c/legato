@@ -21,8 +21,10 @@ import { startMedia } from '../features/player/media'
 import { resumeSession, startSessionSaving } from '../features/player/session'
 import { MiniPlayer } from '../features/player/MiniPlayer'
 import { NowPlaying } from '../features/player/NowPlaying'
+import { useAmbient } from '../features/player/ambient'
+import { trackArt } from '../shared/art'
 import { PlayerBar } from '../features/player/PlayerBar'
-import { usePlayer } from '../features/player/store'
+import { useNowTrack, usePlayer } from '../features/player/store'
 import { ImportDialog } from '../features/share/ImportDialog'
 import { ConnectWizard } from '../features/sources/ConnectWizard'
 import { SearchBar } from '../features/search/SearchBar'
@@ -167,6 +169,12 @@ const pageKey = (v: View) => ('id' in v ? `${v.name}:${v.id}` : 'album' in v ? `
 export function App() {
   const { view, go, refresh, incoming } = useStore(useShallow((s) => ({ view: s.view, go: s.go, refresh: s.refresh, incoming: s.incoming })))
   const full = usePlayer((s) => s.full)
+  const tintOn = useSettings((s) => s.settings.appTint)
+  // Re-rendered when the theme or accent change (current() below).
+  useSettings((s) => s.settings.theme)
+  useSettings((s) => s.settings.accent)
+  const nowTrack = useNowTrack()
+  const appTint = useAmbient(tintOn && nowTrack ? trackArt(nowTrack)[0] : undefined, useSettings.getState().current())
   // Language changed: everything below renders again in it (nothing remounts: the player keeps playing).
   useLang((s) => s.lang)
   useEffect(() => {
@@ -219,7 +227,8 @@ export function App() {
   }, [])
 
   return (
-    <div className="flex h-full flex-col">
+    // Setting appTint: every surface takes the playing cover's color (text keeps AA, ambient.ts).
+    <div className="flex h-full flex-col bg-bg transition-colors duration-700" style={appTint}>
       <TopBar />
       <div className="flex min-h-0 flex-1">
         <Sidebar />

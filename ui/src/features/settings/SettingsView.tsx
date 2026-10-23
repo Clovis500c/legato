@@ -178,6 +178,9 @@ function Appearance() {
           <Row setting="tint" label={msg('Cover tint')} sub={tr('Now Playing takes a flat color from the cover (when immersive is off)')} preview={<NowPlayingScene s={{ ...s, immersive: false }} />}>
             <Toggle label={tr('Cover tint')} checked={s.tint} onChange={(tint) => update({ tint })} />
           </Row>
+          <Row setting="appTint" label={msg('Whole app in the cover’s color')} sub={tr('While a song plays, every page takes a soft color from its cover. Text stays readable')}>
+            <Toggle label={tr('Whole app in the cover’s color')} checked={s.appTint} onChange={(appTint) => update({ appTint })} />
+          </Row>
           <Row setting="miniPlayer" label={msg('Mini player')} sub={tr('For every source. YouTube always shows one: its video must stay visible.')} preview={<MiniPlayerScene miniPlayer={s.miniPlayer} />}>
             <Toggle label={tr('Mini player')} checked={s.miniPlayer} onChange={(miniPlayer) => update({ miniPlayer })} />
           </Row>

@@ -1360,6 +1360,9 @@ const fr: Record<string, string> = {
   'Save the queue as a playlist': 'Enregistrer la file comme playlist',
   'Queue of {date}': 'File du {date}',
   'Date added': 'Date d’ajout',
+  'Whole app in the cover’s color': 'Toute l’app aux couleurs de la pochette',
+  'While a song plays, every page takes a soft color from its cover. Text stays readable': 'Pendant la lecture, toutes les pages prennent une couleur douce tirée de la pochette. Le texte reste lisible',
+  'tint ambient background color theme cover everywhere': 'teinte ambiance fond couleur thème pochette partout',
 }
 
 export default fr

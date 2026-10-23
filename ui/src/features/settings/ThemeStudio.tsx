@@ -103,7 +103,7 @@ const lookLabels: Record<(typeof LOOK_KEYS)[number], string> = {
   readout: msg('Source icon'),
   volume: msg('Volume control'),
   tuner: msg('Tuner scale'),
-  tint: msg('Cover tint'),
+  tint: msg('Cover tint'), appTint: msg('Whole app in the cover’s color'),
   immersive: msg('Immersive player'),
   backdropBlur: msg('Backdrop blur'),
   backdropDim: msg('Backdrop dim'),
