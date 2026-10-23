@@ -1351,6 +1351,8 @@ const fr: Record<string, string> = {
   'No duplicates in your library.': 'Aucun doublon dans votre bibliothèque.',
   '{n} duplicate': '{n} doublon',
   '{n} duplicates': '{n} doublons',
+  'Start radio': 'Lancer une radio',
+  'No similar songs found': 'Aucun titre similaire trouvé',
 }
 
 export default fr
