@@ -73,7 +73,8 @@ Status on 2026-10-16. YouTube, local files and Apple Music previews: done and te
   `unloadModule` captions / cc once per video unless Settings › Playback turns them on. YouTube's new embed player (2026-10-22) draws its own
   controls layer (`.ytPlayerControlsContainerHost`…): hidden the same way.
 - One embed per run of YouTube tracks: the next video goes into the running player (`loadVideoById`), no reload.
-- Error 101 / 150 (owner turned embedding off), 2026-10-20: the same video plays from YouTube's own watch page, in a
+- Any embed error but 100 (101 / 150 owner turned embedding off, 152 / 153 player configuration, 5…; widened
+  2026-10-23, plus an embed that never starts), 2026-10-20: the same video plays from YouTube's own watch page, in a
   child webview of the main window placed exactly over the video slot (`src-tauri/src/ytwatch.rs`, Tauri multi-webview,
   `unstable` feature; the watch page can't be framed). `crates/shield/src/watch.js` hides everything around
   `#movie_player` and every overlay, fills the webview, stays muted until the app sends its volume, applies the app's
@@ -83,6 +84,9 @@ Status on 2026-10-16. YouTube, local files and Apple Music previews: done and te
   (Tauri's IPC refuses it: no capability). Same store path as the embed (`watch.ts`): pause, seek, volume, fades,
   next, cover mode (webview hidden, still playing) and click-to-pause all work. Checked live by forcing error 150:
   switch at the same position, volume and crop applied, pause from the app and from a click.
+- Watch page hardened (2026-10-23): it asks to play again while the app wants playing and YouTube leaves the video
+  cued (autoplay off on the account), finds the player by class if `#movie_player` moves, gets the app's pause state when
+  ready, and a page that hasn't started 15 s after opening counts as refused (cookie wall, sign-in page).
 - Still unplayable on the watch page (region, age without a signed-in adult account, removed, private: playability
   status), or error 100 (removed): `alternative_videos` searches YouTube Music songs and videos for the same song (same
   cleaned title and length, any channel) and plays the first that works, else a clear message and the next song.

@@ -21,10 +21,10 @@ describe('effects', () => {
   it('cleanEffects: missing, wrong or out-of-range fields become neutral or clamped', () => {
     expect(cleanEffects(null)).toEqual(NEUTRAL)
     expect(cleanEffects({})).toEqual(NEUTRAL)
-    const e = cleanEffects({ speed: 9, pitch: 'x', eq: [20, null], reverb: { mix: 0.5 }, space: { on: true, azimuth: 500 }, on: false })
-    expect(e.speed).toBe(1.5)
+    const e = cleanEffects({ speed: 9, pitch: 'x', eq: [30, null], reverb: { mix: 0.5 }, space: { on: true, azimuth: 500 }, on: false })
+    expect(e.speed).toBe(2.5)
     expect(e.pitch).toBe(0)
-    expect(e.eq).toEqual([12, 0, 0, 0, 0])
+    expect(e.eq).toEqual([24, 0, 0, 0, 0])
     expect(e.reverb).toEqual({ ...NEUTRAL.reverb, mix: 0.5 })
     expect(e.space.on).toBe(true)
     expect(e.space.azimuth).toBe(180)

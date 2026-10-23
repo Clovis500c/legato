@@ -32,6 +32,7 @@ export const SETTINGS_INDEX: SettingEntry[] = [
   { section: 'appearance', label: msg('Mini player'), keywords: msg('floating card video') },
   { section: 'appearance', label: msg('Mini player place'), keywords: msg('sidebar docked floating video corner') },
   { section: 'appearance', label: msg('Covers in lists'), keywords: msg('thumbnails artwork rows') },
+  { section: 'appearance', label: msg('Whole app in the cover’s color'), keywords: msg('tint ambient background color theme cover everywhere') },
   { section: 'playback', label: msg('Play with'), keywords: msg('single double click row') },
   { section: 'appearance', label: msg('Counts in the sidebar'), keywords: msg('numbers songs') },
   { section: 'general', label: msg('Open on'), keywords: msg('start screen launch home') },

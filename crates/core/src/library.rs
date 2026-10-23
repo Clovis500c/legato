@@ -47,7 +47,7 @@ CREATE TABLE IF NOT EXISTS settings (
 ";
 
 /// Schema version this code writes (user_version after migrations).
-pub const SCHEMA_VERSION: i64 = 10;
+pub const SCHEMA_VERSION: i64 = 11;
 
 /// The library was made by a newer Music App.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -66,7 +66,7 @@ pub fn now_ms() -> i64 {
     std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_millis() as i64).unwrap_or(0)
 }
 
-const TRACK_COLS: &str = "t.id, t.title, t.artist, t.album, t.duration_ms, t.isrc, t.art, t.added, t.musicness";
+const TRACK_COLS: &str = "t.id, t.title, t.artist, t.album, t.duration_ms, t.isrc, t.art, t.added, t.musicness, t.added_at";
 
 /// Liked Music: last like on top, always.
 fn liked_music(source: Source, source_id: &str) -> bool {
@@ -161,6 +161,9 @@ pub struct LibraryTrack {
     pub id: i64,
     /// "Date added" rank: order the app met the track (services give no dates).
     pub added: i64,
+    /// When this PC's library got it (unix s). None = before v11 (2026-10-23): unknown.
+    #[serde(rename = "addedAt")]
+    pub added_at: Option<i64>,
     #[serde(flatten)]
     pub track: Track,
 }
@@ -200,11 +203,12 @@ pub enum PlaylistEdit {
 
 /// Row → track. Column 7 = ids JSON object (optional).
 fn to_track(r: &Row) -> rusqlite::Result<LibraryTrack> {
-    let ids: Option<String> = r.get(9).ok();
+    let ids: Option<String> = r.get(10).ok();
     let musicness: Option<String> = r.get(8)?;
     Ok(LibraryTrack {
         id: r.get(0)?,
         added: r.get(7)?,
+        added_at: r.get(9)?,
         track: Track {
             title: r.get(1)?,
             artist: r.get(2)?,
@@ -340,6 +344,10 @@ impl Library {
                  COMMIT;",
             )?;
         }
+        if lib.db.query_row("PRAGMA user_version", [], |r| r.get::<_, i64>(0))? < 11 {
+            // v11: real "date added" (unix s) for songs from now on; older ones unknown (null), never guessed.
+            lib.db.execute_batch("BEGIN; ALTER TABLE tracks ADD COLUMN added_at INTEGER; PRAGMA user_version = 11; COMMIT;")?;
+        }
         let v = lib.versions.clone();
         lib.db.update_hook(Some(move |_: rusqlite::hooks::Action, _: &str, table: &str, _: i64| v.touch(table)))?;
         Ok(lib)
@@ -380,8 +388,8 @@ impl Library {
             let id = match found.pop_first() {
                 None => {
                     self.db.execute(
-                        "INSERT INTO tracks (title, artist, album, duration_ms, isrc, match_key, art, musicness, added)
-                         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, (SELECT coalesce(max(added), 0) + 1 FROM tracks))",
+                        "INSERT INTO tracks (title, artist, album, duration_ms, isrc, match_key, art, musicness, added, added_at)
+                         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, (SELECT coalesce(max(added), 0) + 1 FROM tracks), CAST(strftime('%s', 'now') AS INTEGER))",
                         params![t.title, t.artist, t.album, t.duration_ms, isrc, match_key(&t.title, &t.artist), t.art, t.musicness.map(Musicness::as_str)],
                     )?;
                     self.db.last_insert_rowid()
@@ -389,18 +397,7 @@ impl Library {
                 Some(keep) => {
                     // Track may sit in several rows (seen on YouTube, then Spotify). Merge into lowest id.
                     for dupe in found {
-                        let (album, dur, dupe_isrc, art, music) = self.db.query_row(
-                            "SELECT album, duration_ms, isrc, art, musicness FROM tracks WHERE id = ?1",
-                            [dupe],
-                            |r| Ok((r.get::<_, Option<String>>(0)?, r.get::<_, Option<u32>>(1)?, r.get::<_, Option<String>>(2)?, r.get::<_, Option<String>>(3)?, r.get::<_, Option<String>>(4)?)),
-                        )?;
-                        self.db.execute("UPDATE track_ids SET track_id = ?1 WHERE track_id = ?2", [keep, dupe])?;
-                        self.db.execute("UPDATE playlist_tracks SET track_id = ?1 WHERE track_id = ?2", [keep, dupe])?;
-                        self.db.execute("UPDATE plays SET track_id = ?1 WHERE track_id = ?2", [keep, dupe])?;
-                        self.db.execute("UPDATE OR IGNORE track_prefs SET track_id = ?1 WHERE track_id = ?2", [keep, dupe])?;
-                        self.db.execute("UPDATE tracks SET added = min(added, (SELECT added FROM tracks WHERE id = ?2)) WHERE id = ?1", [keep, dupe])?;
-                        self.db.execute("DELETE FROM tracks WHERE id = ?1", [dupe])?;
-                        self.fill(keep, album, dur, dupe_isrc, art, music.as_deref().and_then(Musicness::parse))?;
+                        self.absorb(keep, dupe)?;
                     }
                     self.fill(keep, t.album.clone(), t.duration_ms, isrc, t.art.clone(), t.musicness)?;
                     keep
@@ -412,6 +409,41 @@ impl Library {
                 link.execute(params![s.as_str(), sid, id])?;
             }
             Ok(id)
+        })
+    }
+
+    /// `dupe` folded into `keep`: its ids, playlist spots, plays and preference move over, its details fill gaps.
+    fn absorb(&self, keep: i64, dupe: i64) -> Result<()> {
+        let (album, dur, dupe_isrc, art, music) = self.db.query_row(
+            "SELECT album, duration_ms, isrc, art, musicness FROM tracks WHERE id = ?1",
+            [dupe],
+            |r| Ok((r.get::<_, Option<String>>(0)?, r.get::<_, Option<u32>>(1)?, r.get::<_, Option<String>>(2)?, r.get::<_, Option<String>>(3)?, r.get::<_, Option<String>>(4)?)),
+        )?;
+        self.db.execute("UPDATE track_ids SET track_id = ?1 WHERE track_id = ?2", [keep, dupe])?;
+        self.db.execute("UPDATE playlist_tracks SET track_id = ?1 WHERE track_id = ?2", [keep, dupe])?;
+        self.db.execute("UPDATE plays SET track_id = ?1 WHERE track_id = ?2", [keep, dupe])?;
+        self.db.execute("UPDATE OR IGNORE track_prefs SET track_id = ?1 WHERE track_id = ?2", [keep, dupe])?;
+        self.db.execute(
+            "UPDATE tracks SET added = min(added, (SELECT added FROM tracks WHERE id = ?2)),
+               added_at = coalesce(min(added_at, (SELECT added_at FROM tracks WHERE id = ?2)), added_at, (SELECT added_at FROM tracks WHERE id = ?2))
+             WHERE id = ?1",
+            [keep, dupe],
+        )?;
+        self.db.execute("DELETE FROM tracks WHERE id = ?1", [dupe])?;
+        self.fill(keep, album, dur, dupe_isrc, art, music.as_deref().and_then(Musicness::parse))
+    }
+
+    /// Duplicates finder: `others` become `keep` (one song with every source, playlist spot and play).
+    pub fn merge_tracks(&self, keep: i64, others: &[i64]) -> Result<()> {
+        self.tx(|| {
+            let exists = |id: i64| self.db.query_row("SELECT 1 FROM tracks WHERE id = ?1", [id], |_| Ok(())).optional().map(|r| r.is_some());
+            anyhow::ensure!(exists(keep)?, "Song not found");
+            for &dupe in others {
+                if dupe != keep && exists(dupe)? {
+                    self.absorb(keep, dupe)?;
+                }
+            }
+            Ok(())
         })
     }
 
@@ -960,6 +992,30 @@ mod tests {
             ids: BTreeMap::from([(Source::Youtube, "5NV6Rdv1a3I".into())]),
             ..Default::default()
         }
+    }
+
+    #[test]
+    fn merging_duplicates_keeps_everything_on_one_song() -> Result<()> {
+        let lib = Library::in_memory()?;
+        let mut video = Track { title: "Nightcall (Official Video)".into(), artist: "Kavinsky".into(), album: None, duration_ms: Some(300_000), isrc: None, ids: BTreeMap::from([(Source::Youtube, "v1".into())]), art: None, musicness: None };
+        let a = lib.upsert_track(&video)?;
+        video.title = "Nightcall".into();
+        video.duration_ms = Some(258_000);
+        video.album = Some("OutRun".into());
+        video.ids = BTreeMap::from([(Source::Spotify, "s1".into())]);
+        let b = lib.upsert_track(&video)?;
+        assert_ne!(a, b);
+        let pl = lib.edit_playlist(PlaylistEdit::Create { name: "Night".into() })?.unwrap();
+        lib.edit_playlist(PlaylistEdit::Add { id: pl, track_ids: vec![b] })?;
+        lib.merge_tracks(a, &[b])?;
+        let all = lib.tracks()?;
+        assert_eq!(all.len(), 1);
+        assert_eq!(all[0].track.ids.len(), 2);
+        assert_eq!(all[0].track.album.as_deref(), Some("OutRun"));
+        assert!(all[0].added_at.is_some_and(|t| t > 1_700_000_000), "new songs get a real date");
+        assert_eq!(lib.playlist_track_ids(pl)?, [a]);
+        assert!(lib.merge_tracks(999, &[a]).is_err());
+        Ok(())
     }
 
     #[test]

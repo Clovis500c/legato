@@ -100,7 +100,7 @@ function Card({ title, sub, art, onOpen, onPlay, menu, busy }: { title: string; 
   return (
     <li onContextMenu={menu && onMenu(menu)} className="group relative flex shrink-0 snap-start flex-col gap-2" style={{ width: CARD }}>
       <button onClick={onOpen} className="flex flex-col gap-2 text-left">
-        <span className="relative block overflow-hidden rounded-cover" style={{ width: CARD, height: CARD }}>
+        <span className="lift relative block overflow-hidden rounded-cover" style={{ width: CARD, height: CARD }}>
           {art}
         </span>
         <span className="block truncate text-[0.8125rem] font-semibold group-hover:underline">{title}</span>

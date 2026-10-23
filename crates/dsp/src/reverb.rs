@@ -96,11 +96,11 @@ pub struct Reverb {
 impl Reverb {
     pub fn new(rate: f32) -> Self {
         let scale = rate / 44_100.0;
-        Self { left: Side::new(scale, 0), right: Side::new(scale, SPREAD), pre: vec![[0.0; 2]; (rate * 0.1) as usize + 1], pre_i: 0, pre_len: 1, rate }
+        Self { left: Side::new(scale, 0), right: Side::new(scale, SPREAD), pre: vec![[0.0; 2]; (rate * 0.25) as usize + 1], pre_i: 0, pre_len: 1, rate }
     }
 
     pub fn set_predelay(&mut self, ms: f32) {
-        self.pre_len = ((ms.clamp(0.0, 100.0) / 1000.0 * self.rate) as usize).clamp(1, self.pre.len());
+        self.pre_len = ((ms.clamp(0.0, 250.0) / 1000.0 * self.rate) as usize).clamp(1, self.pre.len());
     }
 
     /// Wet output of one frame.

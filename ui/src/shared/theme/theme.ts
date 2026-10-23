@@ -40,7 +40,7 @@ export interface Background {
 }
 
 /** Settings a theme can bring along ("parts of the UX"). */
-export const LOOK_KEYS = ['covers', 'density', 'readout', 'volume', 'tuner', 'tint', 'immersive', 'backdropBlur', 'backdropDim', 'backdropMotion', 'motion', 'sidebarCounts', 'listCovers', 'columns'] as const
+export const LOOK_KEYS = ['covers', 'density', 'readout', 'volume', 'tuner', 'tint', 'appTint', 'immersive', 'backdropBlur', 'backdropDim', 'backdropMotion', 'motion', 'sidebarCounts', 'listCovers', 'columns'] as const
 export type LookKey = (typeof LOOK_KEYS)[number]
 export type Look = Partial<Pick<Settings, LookKey>>
 
@@ -68,7 +68,7 @@ export const PRESETS: Theme[] = [
 
 export const ACCENTS = ['#FF5A1F', '#E5383B', '#F2B705', '#2E8B57', '#2F6FEB', '#171614']
 
-export const COLUMNS = ['album', 'sources', 'plays', 'duration'] as const
+export const COLUMNS = ['album', 'sources', 'plays', 'added', 'duration'] as const
 /** List sorts (features/library/filter): checked on load. */
 const SORTS: readonly Sort[] = ['manual', 'added-new', 'added-old', 'most-played', 'recently-played', 'title', 'title-desc', 'artist', 'album', 'duration', 'duration-short', 'random', 'recent']
 const GROUP_SORTS: readonly GroupSort[] = ['name', 'name-desc', 'artist', 'songs', 'albums', 'added-new', 'added-old', 'most-played', 'recently-played', 'length', 'random']
@@ -89,6 +89,36 @@ export interface HomeSection {
 }
 
 /** Saved Home layout → every known section once, in the saved order, ones added since at their default place. */
+/** Smart playlist rule: a song field, a test, a value (numbers as text, like a form field). */
+export const SMART_FIELDS = ['artist', 'album', 'title', 'source', 'plays', 'played', 'added'] as const
+export type SmartField = (typeof SMART_FIELDS)[number]
+export interface SmartRule {
+  field: SmartField
+  /** artist / album / title: has, is, not · source: is, not · plays: atLeast, atMost · played: within, notWithin · added: last */
+  op: string
+  value: string
+}
+export const SMART_SORTS = ['plays', 'recent', 'added', 'title', 'artist', 'random'] as const
+/** A playlist that fills itself from rules (kept in settings: synced with Sync Mode, nothing in the library). */
+export interface SmartList {
+  id: string
+  name: string
+  match: 'all' | 'any'
+  rules: SmartRule[]
+  sort: (typeof SMART_SORTS)[number]
+  /** Songs at most; 0 = all. */
+  limit: number
+}
+
+export function sanitizeSmart(raw: unknown): SmartList[] {
+  const lists = Array.isArray(raw) ? raw : []
+  return lists.flatMap((l): SmartList[] => {
+    if (!l || typeof l !== 'object' || typeof l.id !== 'string' || typeof l.name !== 'string') return []
+    const rules = (Array.isArray(l.rules) ? l.rules : []).filter((r: SmartRule) => r && SMART_FIELDS.includes(r.field) && typeof r.op === 'string' && typeof r.value === 'string')
+    return [{ id: l.id, name: l.name.slice(0, 200), match: l.match === 'any' ? 'any' : 'all', rules, sort: SMART_SORTS.includes(l.sort) ? l.sort : 'plays', limit: Number.isInteger(l.limit) && l.limit > 0 ? Math.min(l.limit, 10_000) : 0 }]
+  })
+}
+
 export function sanitizeHome(raw: unknown): HomeSection[] {
   const saved = (Array.isArray(raw) ? raw : []).filter((x): x is HomeSection => !!x && typeof x === 'object' && HOME_SECTIONS.includes((x as HomeSection).id))
   const out: HomeSection[] = []
@@ -213,6 +243,8 @@ export interface Settings {
   miniPlayer: boolean
   /** Now Playing takes a flat tint from the cover. */
   tint: boolean
+  /** The whole app takes that tint while a song plays. */
+  appTint: boolean
   /** Now Playing over the song's cover, big and blurred (tint used when off). */
   immersive: boolean
   /** Immersive background: blur in screen px (0–80), veil strength % (0–80), slow drift. */
@@ -251,6 +283,7 @@ export interface Settings {
   /** Home: which sections show, in what order. */
   homeSections: HomeSection[]
   homeFilter: HomeFilter
+  smartLists: SmartList[]
   /** Per playlist (playlistKey). Missing = service logo in the sidebar, first cover on its page. */
   playlistCovers: Record<string, PlaylistCover>
   /** Mixes page: 4 song covers, the first one, or the plain numbered tile. */
@@ -312,7 +345,8 @@ export const DEFAULTS: Settings = {
   readout: true,
   volume: 'bar',
   tuner: false,
-  columns: [...COLUMNS],
+  // Date added on demand (unknown for songs added before 2026-10-23).
+  columns: COLUMNS.filter((c) => c !== 'added'),
   songSort: 'artist',
   playlistSort: 'manual',
   albumSort: 'name',
@@ -320,6 +354,7 @@ export const DEFAULTS: Settings = {
   shield: true,
   miniPlayer: false,
   tint: true,
+  appTint: false,
   immersive: true,
   backdropBlur: 24,
   backdropDim: 40,
@@ -341,6 +376,7 @@ export const DEFAULTS: Settings = {
   hiddenPlaylists: [],
   playlistOrder: 'custom',
   homeSections: HOME_SECTIONS.map((id) => ({ id, on: !HOME_OFF.includes(id) })),
+  smartLists: [],
   homeFilter: 'all',
   playlistCovers: {},
   mixCovers: 'grid',
@@ -478,6 +514,7 @@ export function sanitize(raw: unknown): Settings {
     shield: typeof r.shield === 'boolean' ? r.shield : DEFAULTS.shield,
     miniPlayer: typeof r.miniPlayer === 'boolean' ? r.miniPlayer : DEFAULTS.miniPlayer,
     tint: typeof r.tint === 'boolean' ? r.tint : DEFAULTS.tint,
+    appTint: r.appTint === true,
     immersive: typeof r.immersive === 'boolean' ? r.immersive : DEFAULTS.immersive,
     backdropBlur: num(r.backdropBlur, 0, 80, DEFAULTS.backdropBlur),
     backdropDim: num(r.backdropDim, 0, 80, DEFAULTS.backdropDim),
@@ -497,6 +534,7 @@ export function sanitize(raw: unknown): Settings {
     fade: sanitizeFade(r.fade),
     subtitles: typeof r.subtitles === 'boolean' ? r.subtitles : DEFAULTS.subtitles,
     homeSections: sanitizeHome(r.homeSections),
+    smartLists: sanitizeSmart(r.smartLists),
     homeFilter: pick(r.homeFilter, HOME_FILTERS, DEFAULTS.homeFilter),
     playlistOrder: pick(r.playlistOrder, PLAYLIST_ORDERS, DEFAULTS.playlistOrder),
     hiddenPlaylists: Array.isArray(r.hiddenPlaylists) ? [...new Set(r.hiddenPlaylists.filter((k): k is string => typeof k === 'string' && k.length <= 200))].slice(0, 500) : [],
@@ -531,7 +569,7 @@ export function sanitize(raw: unknown): Settings {
     ...(saved < 4 ? V4 : {}),
     ...(saved < 5 ? v5(r) : {}),
     // v7 (app v4, 2026-10-23): a Plays column, for those who kept the old default columns.
-    ...(saved < 7 && Array.isArray(r.columns) && r.columns.join() === 'album,sources,duration' ? { columns: [...COLUMNS] } : {}),
+    ...(saved < 7 && Array.isArray(r.columns) && r.columns.join() === 'album,sources,duration' ? { columns: COLUMNS.filter((c) => c !== 'added') } : {}),
     ...(saved < 6 ? { homeSections: sanitizeHome(r.homeSections).map((x) => (HOME_OFF.includes(x.id) ? { ...x, on: false } : x)) } : {}),
   }
 }

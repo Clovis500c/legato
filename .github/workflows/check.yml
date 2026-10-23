@@ -30,10 +30,13 @@ jobs:
       - uses: actions/checkout@v4
 
       # Same list as docs/development.md › Tools.
+      # A slow Ubuntu mirror used to hang `apt-get update` for 20+ minutes: short timeouts, retries, a cap on the step.
       - if: runner.os == 'Linux'
+        timeout-minutes: 10
         run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential pkg-config libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev libxdo-dev libssl-dev libasound2-dev libdbus-1-dev
+          APT="-o Acquire::Retries=3 -o Acquire::http::Timeout=20 -o Acquire::https::Timeout=20"
+          for i in 1 2 3; do sudo apt-get $APT update && break; sleep 5; done
+          sudo apt-get $APT install -y build-essential pkg-config libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev libxdo-dev libssl-dev libasound2-dev libdbus-1-dev
 
       # No "packageManager" in package.json, so pin the major here (drop `version` if one is added).
       - uses: pnpm/action-setup@v4

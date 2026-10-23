@@ -316,15 +316,15 @@ export function EditorPanel({ onHide }: { onHide: () => void }) {
         </Section>
 
         <Section title={tr('Speed and pitch')} hint={tr('Speed changes both, like a record (slowed, sped up). Tempo keeps the pitch; pitch keeps the tempo.')}>
-          <Slider center label={tr('Speed')} value={e.speed} min={0.5} max={1.5} step={0.01} rest={1} show={times} onChange={(speed) => setEffects({ speed })} />
-          <Slider center label={tr('Tempo')} value={e.tempo} min={0.5} max={1.5} step={0.01} rest={1} show={times} onChange={(tempo) => setEffects({ tempo })} />
-          <Slider center label={tr('Pitch')} value={e.pitch} min={-12} max={12} step={0.5} rest={0} show={(v) => tr('{n} st', { n: signed(v, v % 1 ? 1 : 0) })} onChange={(pitch) => setEffects({ pitch })} />
+          <Slider center label={tr('Speed')} value={e.speed} min={0.25} max={2.5} step={0.01} rest={1} show={times} onChange={(speed) => setEffects({ speed })} />
+          <Slider center label={tr('Tempo')} value={e.tempo} min={0.25} max={2.5} step={0.01} rest={1} show={times} onChange={(tempo) => setEffects({ tempo })} />
+          <Slider center label={tr('Pitch')} value={e.pitch} min={-24} max={24} step={0.5} rest={0} show={(v) => tr('{n} st', { n: signed(v, v % 1 ? 1 : 0) })} onChange={(pitch) => setEffects({ pitch })} />
         </Section>
 
         <Section title={tr('Tone')}>
-          <Slider label={tr('Bass boost')} value={e.bass} min={0} max={12} step={0.5} rest={0} show={db} onChange={(bass) => setEffects({ bass })} />
+          <Slider label={tr('Bass boost')} value={e.bass} min={0} max={24} step={0.5} rest={0} show={db} onChange={(bass) => setEffects({ bass })} />
           {EQ_FREQS.map((f, i) => (
-            <Slider key={f} center label={hz(f)} value={e.eq[i]} min={-12} max={12} step={0.5} rest={0} show={db} onChange={(g) => eq(i, g)} />
+            <Slider key={f} center label={hz(f)} value={e.eq[i]} min={-24} max={24} step={0.5} rest={0} show={db} onChange={(g) => eq(i, g)} />
           ))}
         </Section>
 
@@ -334,14 +334,14 @@ export function EditorPanel({ onHide }: { onHide: () => void }) {
             <>
               <Slider label={tr('Room size')} value={e.reverb.size} min={0} max={1} step={0.01} rest={NEUTRAL.reverb.size} show={pct} onChange={(size) => sub('reverb', { size })} />
               <Slider label={tr('Softness')} value={e.reverb.damping} min={0} max={1} step={0.01} rest={NEUTRAL.reverb.damping} show={pct} onChange={(damping) => sub('reverb', { damping })} />
-              <Slider label={tr('Pre-delay')} value={e.reverb.predelayMs} min={0} max={100} step={1} rest={NEUTRAL.reverb.predelayMs} show={(v) => `${v} ms`} onChange={(predelayMs) => sub('reverb', { predelayMs })} />
+              <Slider label={tr('Pre-delay')} value={e.reverb.predelayMs} min={0} max={250} step={1} rest={NEUTRAL.reverb.predelayMs} show={(v) => `${v} ms`} onChange={(predelayMs) => sub('reverb', { predelayMs })} />
             </>
           )}
           <Slider label={tr('Echo')} value={e.echo.mix} min={0} max={1} step={0.01} rest={0} show={pct} onChange={(mix) => sub('echo', { mix })} />
           {e.echo.mix > 0 && (
             <>
-              <Slider label={tr('Echo time')} value={e.echo.timeMs} min={50} max={1000} step={10} rest={NEUTRAL.echo.timeMs} show={(v) => `${v} ms`} onChange={(timeMs) => sub('echo', { timeMs })} />
-              <Slider label={tr('Repeats')} value={e.echo.feedback} min={0} max={0.85} step={0.01} rest={NEUTRAL.echo.feedback} show={pct} onChange={(feedback) => sub('echo', { feedback })} />
+              <Slider label={tr('Echo time')} value={e.echo.timeMs} min={20} max={2000} step={10} rest={NEUTRAL.echo.timeMs} show={(v) => `${v} ms`} onChange={(timeMs) => sub('echo', { timeMs })} />
+              <Slider label={tr('Repeats')} value={e.echo.feedback} min={0} max={0.95} step={0.01} rest={NEUTRAL.echo.feedback} show={pct} onChange={(feedback) => sub('echo', { feedback })} />
             </>
           )}
         </Section>
@@ -360,9 +360,9 @@ export function EditorPanel({ onHide }: { onHide: () => void }) {
                 </div>
               </div>
               <Slider center label={tr('Direction')} value={e.space.azimuth} min={-180} max={180} step={1} rest={0} show={(v) => `${v}°`} onChange={(azimuth) => sub('space', { azimuth })} />
-              <Slider center label={tr('Height')} value={e.space.elevation} min={-40} max={40} step={1} rest={0} show={(v) => `${v}°`} onChange={(elevation) => sub('space', { elevation })} />
-              <Slider label={tr('Distance')} value={e.space.distance} min={0.5} max={3} step={0.1} rest={1} show={(v) => `${v.toFixed(1)} m`} onChange={(distance) => sub('space', { distance })} />
-              {e.space.rotate && <Slider label={tr('One turn')} value={e.space.periodS} min={2} max={30} step={1} rest={NEUTRAL.space.periodS} show={(v) => `${v} s`} onChange={(periodS) => sub('space', { periodS })} />}
+              <Slider center label={tr('Height')} value={e.space.elevation} min={-90} max={90} step={1} rest={0} show={(v) => `${v}°`} onChange={(elevation) => sub('space', { elevation })} />
+              <Slider label={tr('Distance')} value={e.space.distance} min={0.25} max={10} step={0.05} rest={1} show={(v) => `${v.toFixed(v < 1 ? 2 : 1)} m`} onChange={(distance) => sub('space', { distance })} />
+              {e.space.rotate && <Slider label={tr('One turn')} value={e.space.periodS} min={1} max={60} step={1} rest={NEUTRAL.space.periodS} show={(v) => `${v} s`} onChange={(periodS) => sub('space', { periodS })} />}
               <Slider label={tr('Room')} value={e.space.room} min={0} max={1} step={0.01} rest={NEUTRAL.space.room} show={pct} onChange={(room) => sub('space', { room })} />
             </>
           )}
@@ -373,7 +373,7 @@ export function EditorPanel({ onHide }: { onHide: () => void }) {
         </Section>
 
         <Section title={tr('Stereo')}>
-          <Slider center label={tr('Width')} value={e.width} min={0} max={2} step={0.01} rest={1} show={(v) => (v === 0 ? tr('Mono') : pct(v))} onChange={(width) => setEffects({ width })} />
+          <Slider center label={tr('Width')} value={e.width} min={0} max={3} step={0.01} rest={1} show={(v) => (v === 0 ? tr('Mono') : pct(v))} onChange={(width) => setEffects({ width })} />
           <Slider center label={tr('Balance')} value={e.balance} min={-1} max={1} step={0.01} rest={0} show={(v) => (v === 0 ? tr('Center') : v < 0 ? tr('{n}% left', { n: Math.round(-v * 100) }) : tr('{n}% right', { n: Math.round(v * 100) }))} onChange={(balance) => setEffects({ balance })} />
         </Section>
         {local && <ExportCopy path={local} effects={e} />}

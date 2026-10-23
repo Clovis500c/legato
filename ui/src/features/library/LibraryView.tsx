@@ -21,6 +21,7 @@ import { FIT_FIELD, SongsThatFit } from './SongsThatFit'
 import { PlaylistCover } from './PlaylistCover'
 import { COLUMNS, type Column } from '../../shared/theme/theme'
 import { filterTracks, groupAlbums, groupArtists, groupStats, libraryStats, musicOnly, sortGroups as orderGroups, sortTracks, type Filter, type GroupSort, type Sort } from './filter'
+import { DuplicatesButton } from './DuplicatesDialog'
 import { HiddenVideos } from './HiddenVideos'
 import { TrackTable } from './TrackTable'
 import { msg, tr, trn } from '../../shared/i18n/i18n'
@@ -82,7 +83,7 @@ export function ShuffleRound({ tracks }: { tracks: LibraryTrack[] }) {
   )
 }
 
-const columnLabels: Record<Column, string> = { album: msg('Album'), sources: msg('Sources'), plays: msg('Plays'), duration: msg('Duration') }
+const columnLabels: Record<Column, string> = { album: msg('Album'), sources: msg('Sources'), plays: msg('Plays'), added: msg('Date added'), duration: msg('Duration') }
 
 /** Which list columns show (settings columns, also in Appearance). */
 function ColumnsButton() {
@@ -272,6 +273,7 @@ export function SongsView() {
       <div className="flex shrink-0 flex-wrap items-center justify-between gap-x-4 gap-y-2 pb-3">
         <SourceChips tracks={tracks} value={filter} onChange={setFilter} />
         <div className="flex items-center gap-2">
+          <DuplicatesButton />
           <Playability tracks={shown} />
           <SortMenu />
           <ColumnsButton />

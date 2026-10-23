@@ -112,7 +112,7 @@ function Appearance() {
   const { settings: s, update, current } = useSettings()
   const playing = usePlayer((p) => !!p.now)
   const col = (c: Column) => (s.columns.includes(c) ? s.columns.filter((x) => x !== c) : COLUMNS.filter((x) => x === c || s.columns.includes(x)))
-  const labels: Record<Column, string> = { album: msg('Album'), sources: msg('Sources'), plays: msg('Plays'), duration: msg('Duration') }
+  const labels: Record<Column, string> = { album: msg('Album'), sources: msg('Sources'), plays: msg('Plays'), added: msg('Date added'), duration: msg('Duration') }
   const reset: Partial<Settings> = { accent: DEFAULTS.accent, covers: DEFAULTS.covers, density: DEFAULTS.density, zoom: DEFAULTS.zoom, readout: DEFAULTS.readout, volume: DEFAULTS.volume, tuner: DEFAULTS.tuner, columns: DEFAULTS.columns, tint: DEFAULTS.tint, immersive: DEFAULTS.immersive, miniPlayer: DEFAULTS.miniPlayer, font: DEFAULTS.font, motion: DEFAULTS.motion, sidebarCounts: DEFAULTS.sidebarCounts, listCovers: DEFAULTS.listCovers, stage: DEFAULTS.stage, miniSpot: DEFAULTS.miniSpot, miniPlace: DEFAULTS.miniPlace, textSize: DEFAULTS.textSize }
   return (
     <div className="flex flex-col gap-7">
@@ -178,6 +178,9 @@ function Appearance() {
           <Row setting="tint" label={msg('Cover tint')} sub={tr('Now Playing takes a flat color from the cover (when immersive is off)')} preview={<NowPlayingScene s={{ ...s, immersive: false }} />}>
             <Toggle label={tr('Cover tint')} checked={s.tint} onChange={(tint) => update({ tint })} />
           </Row>
+          <Row setting="appTint" label={msg('Whole app in the cover’s color')} sub={tr('While a song plays, every page takes a soft color from its cover. Text stays readable')}>
+            <Toggle label={tr('Whole app in the cover’s color')} checked={s.appTint} onChange={(appTint) => update({ appTint })} />
+          </Row>
           <Row setting="miniPlayer" label={msg('Mini player')} sub={tr('For every source. YouTube always shows one: its video must stay visible.')} preview={<MiniPlayerScene miniPlayer={s.miniPlayer} />}>
             <Toggle label={tr('Mini player')} checked={s.miniPlayer} onChange={(miniPlayer) => update({ miniPlayer })} />
           </Row>
@@ -236,7 +239,7 @@ function Appearance() {
           <Row setting="sidebarCounts" label={msg('Counts in the sidebar')} sub={tr('Number of songs next to each entry')} preview={<CountsScene sidebarCounts={s.sidebarCounts} />}>
             <Toggle label={tr('Counts in the sidebar')} checked={s.sidebarCounts} onChange={(sidebarCounts) => update({ sidebarCounts })} />
           </Row>
-          <Row setting="motion" label={msg('Animations')} sub={tr('Transitions and fades')} preview={<MotionScene motion={s.motion} />}>
+          <Row setting="motion" label={msg('Animations')} sub={tr('Pages, menus, Now Playing and covers move a little. Off: nothing moves')} preview={<MotionScene motion={s.motion} />}>
             <Toggle label={tr('Animations')} checked={s.motion} onChange={(motion) => update({ motion })} />
           </Row>
         </div>

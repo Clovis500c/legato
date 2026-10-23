@@ -7,11 +7,14 @@ import { SearchView } from '../features/search/SearchView'
 // Up next running out: similar songs (registers itself with the player).
 import '../features/player/autoplay'
 import { HomeView } from '../features/home/HomeView'
+import { StatsView } from '../features/stats/StatsView'
+import { SmartView } from '../features/smart/SmartView'
 import { MixesView, MixView } from '../features/mixes/MixesView'
 import { AlbumView, ArtistView } from '../features/library/AlbumArtist'
 import { AlbumsView, ArtistsView, PlaylistView, SongsView } from '../features/library/LibraryView'
 import { appMenu } from '../features/menus'
 import { startDiscord } from '../features/addons/discord'
+import { startLastfm } from '../features/sources/lastfm'
 import { startUpdates } from '../features/update/updates'
 import { startSyncMode } from '../features/syncmode/syncmode'
 import { startPlugins } from '../features/plugins/host'
@@ -19,8 +22,10 @@ import { startMedia } from '../features/player/media'
 import { resumeSession, startSessionSaving } from '../features/player/session'
 import { MiniPlayer } from '../features/player/MiniPlayer'
 import { NowPlaying } from '../features/player/NowPlaying'
+import { useAmbient } from '../features/player/ambient'
+import { trackArt } from '../shared/art'
 import { PlayerBar } from '../features/player/PlayerBar'
-import { usePlayer } from '../features/player/store'
+import { useNowTrack, usePlayer } from '../features/player/store'
 import { ImportDialog } from '../features/share/ImportDialog'
 import { ConnectWizard } from '../features/sources/ConnectWizard'
 import { SearchBar } from '../features/search/SearchBar'
@@ -34,7 +39,7 @@ import { searchShift, STAGE_ID } from './searchShift'
 import { useSettings } from './settings'
 import { restoreScreen, startClosingPlayerOnNavigate, startScreenSaving } from './screen'
 import { startShortcuts } from './shortcuts'
-import { useStore } from './store'
+import { useStore, type View } from './store'
 import { Toasts } from './Toasts'
 import { Asker } from '../shared/ui/Ask'
 import { tr, trn, useLang } from '../shared/i18n/i18n'
@@ -159,9 +164,18 @@ function Alerts() {
   )
 }
 
+/** One key per page shown: a new one replays the page's entrance. */
+const pageKey = (v: View) => ('id' in v ? `${v.name}:${v.id}` : 'album' in v ? `album:${v.album}` : 'artist' in v ? `artist:${v.artist}` : v.name === 'settings' ? 'settings' : v.name)
+
 export function App() {
   const { view, go, refresh, incoming } = useStore(useShallow((s) => ({ view: s.view, go: s.go, refresh: s.refresh, incoming: s.incoming })))
   const full = usePlayer((s) => s.full)
+  const tintOn = useSettings((s) => s.settings.appTint)
+  // Re-rendered when the theme or accent change (current() below).
+  useSettings((s) => s.settings.theme)
+  useSettings((s) => s.settings.accent)
+  const nowTrack = useNowTrack()
+  const appTint = useAmbient(tintOn && nowTrack ? trackArt(nowTrack)[0] : undefined, useSettings.getState().current())
   // Language changed: everything below renders again in it (nothing remounts: the player keeps playing).
   useLang((s) => s.lang)
   useEffect(() => {
@@ -190,6 +204,7 @@ export function App() {
   useEffect(() => startMedia(), [])
   useEffect(() => startShortcuts(), [])
   useEffect(() => startDiscord(), [])
+  useEffect(() => startLastfm(), [])
   useEffect(() => startUpdates(), [])
   useEffect(() => startSyncMode(), [])
   // Watched local folders changed: the library shows it.
@@ -214,17 +229,21 @@ export function App() {
   }, [])
 
   return (
-    <div className="flex h-full flex-col">
+    // Setting appTint: every surface takes the playing cover's color (text keeps AA, ambient.ts).
+    <div className="flex h-full flex-col bg-bg transition-colors duration-700" style={appTint}>
       <TopBar />
       <div className="flex min-h-0 flex-1">
         <Sidebar />
         <main className="flex min-w-0 flex-1 flex-col pt-3">
           <Alerts />
-          <div className="flex min-h-0 flex-1 flex-col px-10">
+          {/* New page: a short rise (styles.css .page-in), not when only its details change. */}
+          <div key={pageKey(view)} className="page-in flex min-h-0 flex-1 flex-col px-10">
             {view.name === 'home' && <HomeView />}
             {view.name === 'add' && <AddView />}
             {view.name === 'search' && <SearchView />}
             {view.name === 'mixes' && <MixesView />}
+            {view.name === 'stats' && <StatsView />}
+            {view.name === 'smart' && <SmartView id={view.id} />}
             {view.name === 'mix' && <MixView id={view.id} />}
             {view.name === 'songs' && <SongsView />}
             {view.name === 'albums' && <AlbumsView />}

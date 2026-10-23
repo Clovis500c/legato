@@ -85,7 +85,7 @@ function Panel({ items, x, y, anchor, focusFirst, onBack }: { items: MenuEntry[]
         e.preventDefault()
         e.stopPropagation()
       }}
-      className="fixed z-50 flex max-h-[80vh] min-w-56 flex-col overflow-y-auto rounded-xl border border-line bg-raised p-1.5 text-ink shadow-[0_12px_32px_var(--shadow)]"
+      className="pop-in fixed z-50 flex max-h-[80vh] min-w-56 flex-col overflow-y-auto rounded-xl border border-line bg-raised p-1.5 text-ink shadow-[0_12px_32px_var(--shadow)]"
     >
       {list.map((it, i) =>
         it === '-' ? (

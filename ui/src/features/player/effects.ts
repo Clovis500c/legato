@@ -24,7 +24,9 @@ export const NEUTRAL: Effects = {
 export const EQ_FREQS = [60, 250, 1000, 4000, 12000] as const
 
 /** Timeline speed and pitch ratio (effects.rs `rates`). */
-export const rates = (e: Effects): [number, number] => (e.on ? [e.speed * e.tempo, e.speed * 2 ** (e.pitch / 12)] : [1, 1])
+/** Time and pitch rates, ×0.25 to ×4 each (what the stretcher takes: effects.rs `rates`, live.js). */
+const fitRate = (r: number) => Math.min(4, Math.max(0.25, r))
+export const rates = (e: Effects): [number, number] => (e.on ? [fitRate(e.speed * e.tempo), fitRate(e.speed * 2 ** (e.pitch / 12))] : [1, 1])
 
 /** Changes nothing (or bypassed). */
 export function neutral(e: Effects): boolean {
@@ -44,16 +46,16 @@ export function cleanEffects(raw: unknown): Effects {
   const eq = Array.isArray(o.eq) ? o.eq : []
   return {
     on: o.on !== false,
-    speed: n(o.speed, 0.5, 1.5, 1),
-    tempo: n(o.tempo, 0.5, 1.5, 1),
-    pitch: n(o.pitch, -12, 12, 0),
-    bass: n(o.bass, 0, 12, 0),
-    eq: [0, 1, 2, 3, 4].map((i) => n(eq[i], -12, 12, 0)) as Effects['eq'],
-    reverb: { mix: n(r.mix, 0, 1, 0), size: n(r.size, 0, 1, 0.7), damping: n(r.damping, 0, 1, 0.4), predelayMs: n(r.predelayMs, 0, 100, 20) },
-    echo: { mix: n(c.mix, 0, 1, 0), timeMs: n(c.timeMs, 50, 1000, 300), feedback: n(c.feedback, 0, 0.85, 0.3) },
-    space: { on: s.on === true, azimuth: n(s.azimuth, -180, 180, 0), elevation: n(s.elevation, -40, 40, 0), distance: n(s.distance, 0.5, 3, 1), rotate: s.rotate === true, periodS: n(s.periodS, 2, 30, 8), room: n(s.room, 0, 1, 0.2) },
+    speed: n(o.speed, 0.25, 2.5, 1),
+    tempo: n(o.tempo, 0.25, 2.5, 1),
+    pitch: n(o.pitch, -24, 24, 0),
+    bass: n(o.bass, 0, 24, 0),
+    eq: [0, 1, 2, 3, 4].map((i) => n(eq[i], -24, 24, 0)) as Effects['eq'],
+    reverb: { mix: n(r.mix, 0, 1, 0), size: n(r.size, 0, 1, 0.7), damping: n(r.damping, 0, 1, 0.4), predelayMs: n(r.predelayMs, 0, 250, 20) },
+    echo: { mix: n(c.mix, 0, 1, 0), timeMs: n(c.timeMs, 20, 2000, 300), feedback: n(c.feedback, 0, 0.95, 0.3) },
+    space: { on: s.on === true, azimuth: n(s.azimuth, -180, 180, 0), elevation: n(s.elevation, -90, 90, 0), distance: n(s.distance, 0.25, 10, 1), rotate: s.rotate === true, periodS: n(s.periodS, 1, 60, 8), room: n(s.room, 0, 1, 0.2) },
     compress: n(o.compress, 0, 1, 0),
-    width: n(o.width, 0, 2, 1),
+    width: n(o.width, 0, 3, 1),
     balance: n(o.balance, -1, 1, 0),
   }
 }

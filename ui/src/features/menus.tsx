@@ -22,6 +22,7 @@ import {
   MagnifyingGlass,
   MicrophoneStage,
   MinusCircle,
+  Moon,
   Pause,
   PencilSimple,
   PictureInPicture,
@@ -32,6 +33,7 @@ import {
   Prohibit,
   PuzzlePiece,
   Queue,
+  Radio,
   Repeat,
   ShareNetwork,
   Shuffle,
@@ -64,6 +66,8 @@ import { isFull, viaLabel, vias } from './player/sources'
 import { bypass, deletePreset, deleteVersion, playVersion, reset, useEditor } from './editor/editor'
 import { loadPlugins, pluginCommands, runCommand } from './plugins/host'
 import { isRemote, nowTrack, remoteTrack, usePlayer } from './player/store'
+import { startRadio } from './player/radio'
+import { sleepMenu } from './player/sleep'
 import { msg, tr, trn } from '../shared/i18n/i18n'
 import { ask, askText } from '../shared/ui/Ask'
 
@@ -269,6 +273,7 @@ function remoteMenu(t: LibraryTrack, list: LibraryTrack[], index: number): MenuE
     { label: tr('Play'), icon: <Play size={16} />, onSelect: () => player().playTracks(list, index) },
     { label: tr('Play next'), icon: <Queue size={16} />, onSelect: () => player().enqueue([t], true) },
     { label: tr('Add to queue'), icon: <ListPlus size={16} />, onSelect: () => player().enqueue([t], false) },
+    { label: tr('Start radio'), icon: <Radio size={16} />, onSelect: () => void startRadio(t) },
     '-',
     addToLibraryItem(t),
     '-',
@@ -340,6 +345,7 @@ export function trackMenu(t: LibraryTrack, ctx: { list?: LibraryTrack[]; index?:
     { label: tr('Add to queue'), icon: <ListPlus size={16} />, disabled: !playable, onSelect: () => player().enqueue([t], false) },
     ctx.queueIndex !== undefined && { label: tr('Remove from queue'), icon: <MinusCircle size={16} />, onSelect: () => player().dequeue(ctx.queueIndex!) },
     playVia(t, list, index),
+    playable && { label: tr('Start radio'), icon: <Radio size={16} />, onSelect: () => void startRadio(t) },
     '-',
     addTo(() => [t]),
     ctx.playlistId !== undefined && { label: tr('Remove from this playlist'), icon: <MinusCircle size={16} />, onSelect: () => void removeFromPlaylist(ctx.playlistId!, ctx.position!) },
@@ -531,6 +537,7 @@ export function playerMenu(): MenuEntry[] {
     '-',
     { label: full ? tr('Leave full screen') : tr('Full screen'), icon: <ArrowsOutSimple size={16} />, onSelect: () => setFull(!full) },
     { label: tr('Live Editor'), icon: <SlidersHorizontal size={16} />, onSelect: () => (useSettings.getState().update({ editor: true }), setFull(true)) },
+    { label: tr('Sleep timer'), icon: <Moon size={16} />, items: sleepMenu() },
     { label: tr('Mini player'), icon: <PictureInPicture size={16} />, checked: mini || !!video, disabled: !!video, onSelect: () => useSettings.getState().update({ miniPlayer: !mini }) },
     '-',
     t && playVia(t, list, index),

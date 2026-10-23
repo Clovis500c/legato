@@ -189,7 +189,7 @@ Everything still open, gathered from the sections below. Tick a line when it lan
 - [x] GitHub secret `TAURI_SIGNING_PRIVATE_KEY` (contents of `~/.tauri/music-app.key`), set 2026-10-17. The key has no
       password (checked by signing a test file) and matches the public key in `tauri.conf.json`.
 - [x] Releases readable without sign-in: the repo is public (checked 2026-10-17).
-- [ ] Back up the signing key somewhere safe (lost key = installed copies never update again).
+- [x] Back up the signing key somewhere safe (done by the user, 2026-10-23) (lost key = installed copies never update again).
 - [x] Automatic releases (2026-10-17): every push to master that passes `check` → `release.yml`, version
       MAJOR.MINOR (tauri.conf.json) + patch = commit count (`scripts/release.mjs`), notes = feat / fix / perf
       subjects, `[skip release]` to skip.
@@ -254,8 +254,12 @@ Everything still open, gathered from the sections below. Tick a line when it lan
       words, its menu for export / duplicate / delete, Songs that fit); Album (numbered, More by); Artist (most played,
       discography albums / singles, Radio); Now Playing (Up next · Lyrics · Sound tabs, remove from Up next, similar songs
       after the queue, setting autoplay); Settings (Reset off default, Accounts dot); sidebar playlist order + "+".
-- [ ] App v4 leftovers needing data: album years and track numbers, songs of an album missing from the library (from
-      YouTube Music's album page), "date added" as a real date (the library keeps a rank only).
+- [x] Album pages complete (2026-10-23): year, track numbers and discs, songs you don't have (dimmed, play, add),
+      your other songs of it after; from the Apple catalog (`itunes::album`, keyless, cached a day), matched by
+      `music_core::matching::album_slots`.
+- [x] "Date added" as a real date (2026-10-23): schema v11 `added_at`, set for songs added from now on (older ones
+      unknown, never guessed); optional Date added column.
+- [x] Start radio from any song, sleep timer (15–90 min or end of song, 30 s fade), save the queue as a playlist.
 - [x] Local folders: watch for changes (`notify` crate, `src-tauri/src/folders.rs`, big update phase 7).
 - [x] Preview straight from search results (before adding): Add music plays a song not in the library (big update
       phase 2).
@@ -263,7 +267,19 @@ Everything still open, gathered from the sections below. Tick a line when it lan
 - [ ] Mixes: genre / year tags (not stored yet), Last.fm "Discoveries" (user's key).
 - [ ] Sharing: remote wormhole words (needs the user's OK on the public relay), webcam QR scanning, `musicapp://` links
       clicked in a browser (deep-link registration).
-- [ ] Bonus list (pick): smart playlists, listening stats, duplicate finder, related-tracks radio, Last.fm scrobbling,
+- [x] Stats page (2026-10-23): time, listens, top songs / artists / albums, over time, time of day, weekday, days in a
+      row, new artists; 4 weeks / 6 months / this year / all time, from the whole history (`play_history`).
+- [x] Smart playlists (2026-10-23): rules on artist / album / title / source / plays / last played / newest added, every
+      or any, sort and limit; kept in settings `smartLists` (synced), sidebar + menu, save as a normal playlist.
+- [x] Motion (2026-10-23): page entrance, Now Playing rising, menus / dialogs growing, cover fade on a new song,
+      press and hover lift; under 260 ms, transform / opacity only. Appearance › Animations turns all off; Windows'
+      reduced motion = fades only.
+- [x] Live Editor ranges much wider (2026-10-23): speed / tempo ×0.25–2.5, pitch ±24 st, bass / EQ 24 dB, echo 2 s.
+- [x] Duplicate finder (2026-10-23): same title (packaging aside) + artist, other versions (live, remix, slowed…)
+      apart; Songs page button, pick the copy to keep, merge one or all (`Library::merge_tracks`).
+- [x] Last.fm scrobbling (2026-10-23): Settings › Accounts, user's own key + secret, allowed on last.fm; now playing and
+      real listens (half or 4 min), offline ones sent later (memory). App tinted by the cover (option). Live Editor wider.
+- [ ] Bonus list (pick): related-tracks radio,
       sleep timer, equalizer (local files).
 
 **Spotify** (no keys; user chose link import)

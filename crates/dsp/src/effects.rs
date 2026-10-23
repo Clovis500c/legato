@@ -78,16 +78,16 @@ pub struct Effects {
     pub tempo: f32,
     /// Pitch in semitones, speed kept, -12..12.
     pub pitch: f32,
-    /// Bass boost, dB 0..12.
+    /// Bass boost, dB 0..24.
     pub bass: f32,
-    /// dB per band (`EQ_FREQS`), -12..12.
+    /// dB per band (`EQ_FREQS`), -24..24.
     pub eq: [f32; 5],
     pub reverb: Reverb,
     pub echo: Echo,
     pub space: Space,
     /// Compressor amount, 0..1 (0 = off).
     pub compress: f32,
-    /// Stereo width, 0 (mono) .. 2.
+    /// Stereo width, 0 (mono) .. 3.
     pub width: f32,
     /// -1 (left) .. 1 (right).
     pub balance: f32,
@@ -109,29 +109,29 @@ impl Effects {
         let d = Self::default();
         Self {
             on: self.on,
-            speed: fit(self.speed, 0.5, 1.5, 1.0),
-            tempo: fit(self.tempo, 0.5, 1.5, 1.0),
-            pitch: fit(self.pitch, -12.0, 12.0, 0.0),
-            bass: fit(self.bass, 0.0, 12.0, 0.0),
-            eq: self.eq.map(|g| fit(g, -12.0, 12.0, 0.0)),
+            speed: fit(self.speed, 0.25, 2.5, 1.0),
+            tempo: fit(self.tempo, 0.25, 2.5, 1.0),
+            pitch: fit(self.pitch, -24.0, 24.0, 0.0),
+            bass: fit(self.bass, 0.0, 24.0, 0.0),
+            eq: self.eq.map(|g| fit(g, -24.0, 24.0, 0.0)),
             reverb: Reverb {
                 mix: fit(self.reverb.mix, 0.0, 1.0, 0.0),
                 size: fit(self.reverb.size, 0.0, 1.0, d.reverb.size),
                 damping: fit(self.reverb.damping, 0.0, 1.0, d.reverb.damping),
-                predelay_ms: fit(self.reverb.predelay_ms, 0.0, 100.0, d.reverb.predelay_ms),
+                predelay_ms: fit(self.reverb.predelay_ms, 0.0, 250.0, d.reverb.predelay_ms),
             },
-            echo: Echo { mix: fit(self.echo.mix, 0.0, 1.0, 0.0), time_ms: fit(self.echo.time_ms, 50.0, 1_000.0, d.echo.time_ms), feedback: fit(self.echo.feedback, 0.0, 0.85, d.echo.feedback) },
+            echo: Echo { mix: fit(self.echo.mix, 0.0, 1.0, 0.0), time_ms: fit(self.echo.time_ms, 20.0, 2_000.0, d.echo.time_ms), feedback: fit(self.echo.feedback, 0.0, 0.95, d.echo.feedback) },
             space: Space {
                 on: self.space.on,
                 azimuth: fit(self.space.azimuth, -180.0, 180.0, 0.0),
-                elevation: fit(self.space.elevation, -40.0, 40.0, 0.0),
-                distance: fit(self.space.distance, 0.5, 3.0, 1.0),
+                elevation: fit(self.space.elevation, -90.0, 90.0, 0.0),
+                distance: fit(self.space.distance, 0.25, 10.0, 1.0),
                 rotate: self.space.rotate,
-                period_s: fit(self.space.period_s, 2.0, 30.0, d.space.period_s),
+                period_s: fit(self.space.period_s, 1.0, 60.0, d.space.period_s),
                 room: fit(self.space.room, 0.0, 1.0, d.space.room),
             },
             compress: fit(self.compress, 0.0, 1.0, 0.0),
-            width: fit(self.width, 0.0, 2.0, 1.0),
+            width: fit(self.width, 0.0, 3.0, 1.0),
             balance: fit(self.balance, -1.0, 1.0, 0.0),
         }
     }
@@ -141,7 +141,8 @@ impl Effects {
         if !self.on {
             return (1.0, 1.0);
         }
-        (self.speed * self.tempo, self.speed * 2f32.powf(self.pitch / 12.0))
+        // ×0.25 to ×4 each: what the stretcher takes (live.js and effects.ts alike).
+        ((self.speed * self.tempo).clamp(0.25, 4.0), (self.speed * 2f32.powf(self.pitch / 12.0)).clamp(0.25, 4.0))
     }
 
     /// Nothing changes the sound (or bypassed): samples go through untouched.
@@ -171,7 +172,7 @@ mod tests {
     fn defaults_are_neutral_and_values_are_kept_in_range() {
         assert!(Effects::default().neutral());
         let e = Effects { speed: 9.0, pitch: f32::NAN, eq: [99.0, -99.0, 0.0, 0.0, 0.0], echo: Echo { feedback: 2.0, ..Echo::default() }, ..Effects::default() }.clamped();
-        assert_eq!((e.speed, e.pitch, e.eq[0], e.eq[1], e.echo.feedback), (1.5, 0.0, 12.0, -12.0, 0.85));
+        assert_eq!((e.speed, e.pitch, e.eq[0], e.eq[1], e.echo.feedback), (2.5, 0.0, 24.0, -24.0, 0.95));
         assert!(!e.neutral());
         assert!(Effects { on: false, ..e }.neutral());
     }

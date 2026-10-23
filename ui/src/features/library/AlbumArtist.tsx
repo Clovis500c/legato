@@ -1,9 +1,9 @@
-import { CaretLeft, CaretRight, DotsThree, Play, Radio, Waveform } from '@phosphor-icons/react'
-import { useMemo, useState, type ReactNode } from 'react'
+import { CaretLeft, CaretRight, DotsThree, Play, Plus, Radio, Waveform } from '@phosphor-icons/react'
+import { Fragment, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useStore } from '../../app/store'
-import { api, type LibraryTrack } from '../../shared/api'
+import { api, type AlbumInfo, type LibraryTrack, type Track } from '../../shared/api'
 import { firstArt, trackArt } from '../../shared/art'
-import { fold, formatCount, formatDuration } from '../../shared/format'
+import { fold, formatCount, formatDuration, region } from '../../shared/format'
 import { tr, trn } from '../../shared/i18n/i18n'
 import { Button } from '../../shared/ui/Button'
 import { onMenu, openMenu } from '../../shared/ui/ContextMenu'
@@ -15,6 +15,7 @@ import { useMixes } from '../mixes/MixesView'
 import { remoteTrack, usePlayer } from '../player/store'
 import { vias } from '../player/sources'
 import { AddToPlaylist } from './AddToPlaylist'
+import { albumRows } from './albumPage'
 import { discography } from './discography'
 import { groupAlbums, primaryArtist, type AlbumGroup } from './filter'
 import { PlayAll, ShuffleRound, totalTime } from './LibraryView'
@@ -47,7 +48,7 @@ function AlbumCard({ a, sub }: { a: AlbumGroup; sub: string }) {
   return (
     <li onContextMenu={onMenu(() => tracksMenu(a.tracks))} className="w-37.5 shrink-0">
       <button onClick={() => go({ name: 'album', album: a.album, artist: a.artist })} className="group flex w-full flex-col gap-2 text-left">
-        <Cover title={a.album} art={firstArt(a.tracks)} size={150} />
+        <Cover title={a.album} art={firstArt(a.tracks)} size={150} className="lift" />
         <span className="truncate text-[0.8125rem] font-semibold group-hover:underline">{a.album}</span>
         <span className="-mt-1.5 truncate text-xs text-ink-2">{sub}</span>
       </button>
@@ -56,7 +57,7 @@ function AlbumCard({ a, sub }: { a: AlbumGroup; sub: string }) {
 }
 
 /** One song row: number (or the song playing; hovered: play), title, what else, duration. */
-function SongRow({ list, i, cover, extra, sub }: { list: LibraryTrack[]; i: number; cover?: boolean; extra?: ReactNode; sub?: string }) {
+function SongRow({ list, i, cover, extra, sub, number }: { list: LibraryTrack[]; i: number; cover?: boolean; extra?: ReactNode; sub?: string; number?: number }) {
   const t = list[i]
   const play = usePlayer((s) => s.playTracks)
   const on = usePlayer((s) => s.now?.trackId === t.id)
@@ -65,7 +66,7 @@ function SongRow({ list, i, cover, extra, sub }: { list: LibraryTrack[]; i: numb
   return (
     <li onContextMenu={onMenu(() => trackMenu(t, { list, index: i }))} onDoubleClick={() => playable && play(list, i)} className="group flex h-13 items-center gap-4 rounded-md px-3 hover:bg-raised">
       <span className="flex w-6 shrink-0 justify-end text-xs text-ink-3 tabular-nums">
-        <span className={playable ? 'group-hover:hidden' : ''}>{on ? <Waveform size={14} className="text-accent" /> : i + 1}</span>
+        <span className={playable ? 'group-hover:hidden' : ''}>{on ? <Waveform size={14} className="text-accent" /> : (number ?? i + 1)}</span>
         {playable && (
           <button aria-label={tr('Play {title}', { title: t.title })} onClick={() => play(list, i)} className="hidden text-ink group-hover:block">
             <Play size={13} weight="fill" />
@@ -83,12 +84,65 @@ function SongRow({ list, i, cover, extra, sub }: { list: LibraryTrack[]; i: numb
   )
 }
 
+/** A song of the album you don't have: dimmed, plays its full version (found on YouTube), one click adds it. */
+function MissingRow({ track, number, sub }: { track: Track; number: number; sub?: string }) {
+  const [busy, setBusy] = useState(false)
+  const play = async () => usePlayer.getState().playTracks([remoteTrack(await api.resolveTrack(track).catch(() => track))], 0)
+  const add = async () => {
+    setBusy(true)
+    try {
+      await api.addTrack(await api.resolveTrack(track).catch(() => track))
+      await useStore.getState().refresh()
+    } catch (e) {
+      useStore.getState().notify(String(e), { kind: 'error' })
+    } finally {
+      setBusy(false)
+    }
+  }
+  return (
+    <li onDoubleClick={() => void play()} className="group flex h-13 items-center gap-4 rounded-md px-3 text-ink-3 hover:bg-raised">
+      <span className="flex w-6 shrink-0 justify-end text-xs tabular-nums">
+        <span className="group-hover:hidden">{number}</span>
+        <button aria-label={tr('Play {title}', { title: track.title })} onClick={() => void play()} className="hidden text-ink group-hover:block">
+          <Play size={13} weight="fill" />
+        </button>
+      </span>
+      <span className="flex min-w-0 flex-1 flex-col">
+        <span className="truncate text-[0.8125rem] font-semibold">{track.title}</span>
+        <span className="truncate text-xs">{sub ? `${sub} · ` : ''}{tr('Not in your library')}</span>
+      </span>
+      <RoundButton label={tr('Add {title}', { title: track.title })} kind="soft" size="sm" disabled={busy} onClick={() => void add()}>
+        <Plus size={14} />
+      </RoundButton>
+      <span className="w-12 shrink-0 text-right text-xs tabular-nums">{formatDuration(track.durationMs)}</span>
+    </li>
+  )
+}
+
+/** Catalog details of an album (year, every song): asked again when your songs of it change. */
+function useAlbumInfo(album: string, artist: string, ids: number[]) {
+  const [info, setInfo] = useState<AlbumInfo | null>(null)
+  const key = ids.join(',')
+  useEffect(() => {
+    let live = true
+    api.albumInfo(artist, album, ids, region()).then((i) => live && setInfo(i), () => live && setInfo(null))
+    return () => void (live = false)
+  }, [album, artist, key]) // key = ids
+  return info
+}
+
 /** An album read as an album: its songs numbered without covers, the artist only when someone else sings, then more by the artist. */
 export function AlbumView({ album, artist }: { album: string; artist: string }) {
   const { tracks, stats, go } = useStore()
   const shown = useMemo(() => tracks.filter((t) => t.album && fold(t.album) === fold(album) && fold(primaryArtist(t.artist)) === fold(artist)), [tracks, album, artist])
   const more = useMemo(() => groupAlbums(tracks.filter((t) => fold(primaryArtist(t.artist)) === fold(artist) && !(t.album && fold(t.album) === fold(album)))).slice(0, 6), [tracks, album, artist])
   const toArtist = () => go({ name: 'artist', artist })
+  const info = useAlbumInfo(album, artist, shown.map((t) => t.id))
+  const page = useMemo(() => (info && info.slots.length ? albumRows(info, shown) : null), [info, shown])
+  const missing = page ? page.rows.filter((r) => 'missing' in r).length : 0
+  const ordered = page?.ordered ?? shown
+  const plays = (t: LibraryTrack) => <span className="w-14 shrink-0 text-right text-xs text-ink-3 tabular-nums">{stats[t.id]?.[0] ? formatCount(stats[t.id][0]) : ''}</span>
+  const featured = (t: Track) => (primaryArtist(t.artist) !== t.artist ? t.artist : undefined)
   return (
     <div className="-mx-2 flex min-h-0 flex-1 flex-col overflow-y-auto px-2 pb-8">
       <PageHeader
@@ -101,25 +155,48 @@ export function AlbumView({ album, artist }: { album: string; artist: string }) 
             <button onClick={toArtist} className="font-semibold text-ink hover:underline">
               {artist}
             </button>
-            · {trn(shown.length, '{n} song', '{n} songs')} · {totalTime(shown)}
+            {info?.year && <>· {info.year}</>} · {missing ? tr('{n} of {total} songs', { n: shown.length, total: shown.length + missing }) : trn(shown.length, '{n} song', '{n} songs')} · {totalTime(shown)}
           </span>
         }
         actions={
           <>
-            <PlayAll tracks={shown} />
-            <ShuffleRound tracks={shown} />
-            <AddToPlaylist trackIds={shown.map((t) => t.id)} label={tr('Add {n} songs to a playlist', { n: shown.length })} />
+            <PlayAll tracks={ordered} />
+            <ShuffleRound tracks={ordered} />
+            <AddToPlaylist trackIds={ordered.map((t) => t.id)} label={tr('Add {n} songs to a playlist', { n: shown.length })} />
             <RoundButton label={tr('More')} kind="plain" onClick={(e) => openMenu(e, tracksMenu(shown, ['-', { label: tr('Go to artist'), onSelect: toArtist }]))}>
               <DotsThree size={20} weight="bold" />
             </RoundButton>
           </>
         }
       />
-      <ul className="flex flex-col border-t border-line pt-1">
-        {shown.map((t, i) => (
-          <SongRow key={t.id} list={shown} i={i} sub={primaryArtist(t.artist) !== t.artist ? t.artist : undefined} extra={<span className="w-14 shrink-0 text-right text-xs text-ink-3 tabular-nums">{stats[t.id]?.[0] ? formatCount(stats[t.id][0]) : ''}</span>} />
-        ))}
-      </ul>
+      {page ? (
+        <>
+          <ul className="flex flex-col border-t border-line pt-1">
+            {page.rows.map((r, k) => (
+              <Fragment key={k}>
+                {page.discs > 1 && (k === 0 || page.rows[k - 1].disc !== r.disc) && <li className="kicker px-3 pt-4 pb-1">{tr('Disc {n}', { n: r.disc })}</li>}
+                {'mine' in r ? <SongRow list={ordered} i={ordered.indexOf(r.mine)} number={r.number} sub={featured(r.mine)} extra={plays(r.mine)} /> : <MissingRow track={r.missing} number={r.number} sub={featured(r.missing)} />}
+              </Fragment>
+            ))}
+          </ul>
+          {page.extras.length > 0 && (
+            <div className="pt-6">
+              <h2 className="kicker px-3 pb-1">{tr('Also in your library')}</h2>
+              <ul className="flex flex-col">
+                {page.extras.map((t) => (
+                  <SongRow key={t.id} list={ordered} i={ordered.indexOf(t)} sub={featured(t)} extra={plays(t)} />
+                ))}
+              </ul>
+            </div>
+          )}
+        </>
+      ) : (
+        <ul className="flex flex-col border-t border-line pt-1">
+          {shown.map((t, i) => (
+            <SongRow key={t.id} list={shown} i={i} sub={featured(t)} extra={plays(t)} />
+          ))}
+        </ul>
+      )}
       {more.length > 0 && (
         <div className="pt-9">
           <Section title={tr('More by {artist}', { artist })} side={<SideLink label={tr('Go to artist')} onClick={toArtist} />}>

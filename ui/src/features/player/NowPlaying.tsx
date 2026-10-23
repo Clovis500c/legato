@@ -239,7 +239,7 @@ export function NowPlaying() {
 
   return (
     // Whole window, under the see-through top bar (logo, Close player and window buttons stay on top, z-30).
-    <div role="dialog" aria-label={tr('Now playing')} onContextMenu={onMenu(playerMenu)} className="fixed inset-0 z-20 isolate flex flex-col overflow-hidden bg-bg px-10 pt-17 pb-7 text-ink transition-colors duration-500" style={ambient}>
+    <div role="dialog" aria-label={tr('Now playing')} onContextMenu={onMenu(playerMenu)} className="np-in fixed inset-0 z-20 isolate flex flex-col overflow-hidden bg-bg px-10 pt-17 pb-7 text-ink transition-colors duration-500" style={ambient}>
       {immersive && <Backdrop url={backdrop} dim={backdropDim} motion={backdropMotion} />}
       {!upNext && !lyrics && !editor && <PanelTabs className="absolute top-17 right-10 z-10" upNext={false} lyrics={false} editor={false} next={nextCount} />}
 

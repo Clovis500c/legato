@@ -100,8 +100,37 @@ pub fn merge_tracks(a: &Track, b: &Track) -> Track {
     }
 }
 
+/// Album page: which of your songs fills each catalog slot (index into `mine`), each used once. Same recording first,
+/// then the same title (same album already: a video's longer intro doesn't make it another song).
+pub fn album_slots(catalog: &[Track], mine: &[Track]) -> Vec<Option<usize>> {
+    let mut used = vec![false; mine.len()];
+    let mut slots = vec![None; catalog.len()];
+    let same_title = |a: &Track, b: &Track| normalize(&a.title) == normalize(&b.title);
+    for strict in [true, false] {
+        let pass = |a: &Track, b: &Track| if strict { same_track(a, b) } else { same_title(a, b) };
+        for (slot, c) in slots.iter_mut().zip(catalog) {
+            if slot.is_some() {
+                continue;
+            }
+            if let Some(j) = (0..mine.len()).find(|&j| !used[j] && pass(c, &mine[j])) {
+                used[j] = true;
+                *slot = Some(j);
+            }
+        }
+    }
+    slots
+}
+
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn album_slots_take_each_song_once() {
+        let t = |title: &str, ms: u32| Track { title: title.into(), artist: "Daft Punk".into(), album: Some("Discovery".into()), duration_ms: Some(ms), isrc: None, ids: Default::default(), art: None, musicness: None };
+        let catalog = [t("One More Time", 320_000), t("Aerodynamic", 212_000), t("Digital Love", 301_000)];
+        let mine = [t("Digital Love (Official Video)", 340_000), t("One More Time", 321_000), t("Bonus", 100_000)];
+        assert_eq!(album_slots(&catalog, &mine), [Some(1), None, Some(0)]);
+    }
+
     use super::*;
     use crate::model::Source;
 

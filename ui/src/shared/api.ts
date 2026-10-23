@@ -25,6 +25,8 @@ export interface LibraryTrack extends Track {
   id: number
   /** "Date added" rank: order the app met the track (services give no dates). */
   added: number
+  /** When this PC's library got it (unix s); null/absent = added before the app kept dates. */
+  addedAt?: number | null
 }
 
 /** Stable identity of a playlist: service + its id there (survives re-imports); own playlists by row id. */
@@ -400,6 +402,36 @@ export interface ExportReport {
   noYoutube: number
 }
 
+/** connectors lastfm::Scrobble: one listen (timestamp = start, unix s). */
+export interface Scrobble {
+  artist: string
+  track: string
+  album: string | null
+  durationS: number | null
+  timestamp: number
+}
+
+/** src-tauri lastfm::Status. */
+export interface LastfmStatus {
+  configured: boolean
+  user: string | null
+  waiting: number
+}
+
+/** src-tauri AlbumSlot: one catalog song of an album, and your copy when you have it. */
+export interface AlbumSlot {
+  disc: number
+  number: number
+  track: Track
+  libraryId: number | null
+}
+
+/** src-tauri AlbumInfo. */
+export interface AlbumInfo {
+  year: number | null
+  slots: AlbumSlot[]
+}
+
 /** src-tauri NearbyState. */
 export type NearbyState = { state: 'idle' } | { state: 'waiting'; code: string } | { state: 'sent' } | { state: 'failed'; error: string }
 
@@ -418,6 +450,8 @@ export const api = {
   removeFromPlaylist: (id: number, trackId: number) => invoke<void>('remove_from_playlist', { id, trackId }),
   /** Out of the library and every playlist here; syncs and folder scans leave it out. */
   removeFromLibrary: (trackId: number) => invoke<void>('remove_from_library', { trackId }),
+  /** Duplicates: `others` become `keep` (every source, playlist spot and play on one song). */
+  mergeTracks: (keep: number, others: number[]) => invoke<void>('merge_duplicates', { keep, others }),
   /** Pasted YouTube link → library. Returns "Artist – Title". */
   addLink: (url: string) => invoke<string>('add_link', { url }),
   searchCatalogs: (query: string, country: string) => invoke<SearchResults>('search_catalogs', { query, country }),
@@ -430,6 +464,15 @@ export const api = {
   /** mood = a chip's params: the home filtered to it. */
   ytmHome: (mood?: string) => invoke<YtmHome>('ytm_home', { mood: mood ?? null }),
   ytmList: (list: ListRef) => invoke<Track[]>('ytm_list', { list }),
+  /** Year and every song of an album from the Apple catalog, with which ones you have. Null = not in the store. */
+  lastfmStatus: () => invoke<LastfmStatus>('lastfm_status'),
+  /** Key + shared secret from last.fm/api, then the user allows the app on last.fm (browser). Returns the user name. */
+  lastfmConnect: (key: string, secret: string) => invoke<string>('lastfm_connect', { key, secret }),
+  lastfmDisconnect: () => invoke<void>('lastfm_disconnect'),
+  lastfmNowPlaying: (scrobble: Scrobble) => invoke<void>('lastfm_now_playing', { scrobble }),
+  /** Listens still waiting (offline). */
+  lastfmScrobble: (scrobble: Scrobble) => invoke<number>('lastfm_scrobble', { scrobble }),
+  albumInfo: (artist: string, album: string, trackIds: number[], country: string) => invoke<AlbumInfo | null>('album_info', { artist, album, trackIds, country }),
   /** YouTube versions for tracks with no full source (1 search each, daily budget). */
   findVersions: (ids: number[]) => invoke<FindReport>('find_versions', { ids }),
   /** Real covers for Apple tracks (1 batched lookup). Returns tracks updated. */
@@ -578,6 +621,8 @@ export const api = {
   playStats: () => invoke<Record<number, [number, number]>>('play_stats'),
   /** Plays since `since` (unix s, two weeks at most), oldest first. */
   recentPlays: (since: number) => invoke<Play[]>('recent_plays', { since }),
+  /** Every play since `since` (unix s, 0 = all), oldest first: the Stats page. */
+  playHistory: (since: number) => invoke<Play[]>('play_history', { since }),
   cacheStats: () => invoke<CacheStats>('cache_stats'),
   /** Third-party notices shipped with the app, in the default browser. */
   openLicenses: () => invoke<void>('open_licenses'),

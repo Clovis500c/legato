@@ -1,4 +1,4 @@
-import { ArrowsOutSimple, SpeakerHigh, SpeakerLow, SpeakerSlash } from '@phosphor-icons/react'
+import { ArrowsOutSimple, Moon, SpeakerHigh, SpeakerLow, SpeakerSlash } from '@phosphor-icons/react'
 import { getCurrentWebview } from '@tauri-apps/api/webview'
 import { useEffect, useRef, useState } from 'react'
 import { useSettings } from '../../app/settings'
@@ -9,13 +9,14 @@ import { Bar, Knob, RoundButton } from '../../shared/ui/controls'
 import { SourceIcon } from '../../shared/ui/SourceIcon'
 import { SeekBar, TimeText } from './Progress'
 import { Transport } from './Transport'
-import { onMenu } from '../../shared/ui/ContextMenu'
+import { onMenu, openMenu } from '../../shared/ui/ContextMenu'
+import { sleepLabel, sleepMenu, useSleep } from './sleep'
 import { playerMenu } from '../menus'
 import { trackArt } from '../../shared/art'
 import { Cover } from '../../shared/ui/Cover'
 import { bindFrame, useNowTrack, usePlayer, useVideoSlot } from './store'
 import { embedUrl, parseYt, ytPost } from './youtube'
-import { closeWatch, cropWatch, placeWatch, useWatch, watchUpdate } from './watch'
+import { closeWatch, cropWatch, placeWatch, sendWatch, useWatch, watchUpdate } from './watch'
 import { frameAround } from '../../shared/artbox'
 import { bindLiveFrame, sendLive } from './live'
 import { useLiveSync } from './liveSync'
@@ -76,6 +77,8 @@ function YouTubeFrame({ videoId }: { videoId: string }) {
       // Fresh page: commands sent while it loaded were lost. Volume (it stays muted until then) and crop again.
       if (r.ready) {
         usePlayer.getState().applyVolume(true)
+        // Commands sent before the page's script ran are lost: paused in the app = paused there too.
+        if (!usePlayer.getState().playing) sendWatch('pauseVideo', [])
         sendLive()
       }
       const box = useVideoSlot.getState().box
@@ -138,6 +141,24 @@ function YouTubeFrame({ videoId }: { videoId: string }) {
 }
 
 /** Knob, or YouTube-like speaker (click = mute) and bar. */
+/** Sleep timer: a moon; on, it shows the time left (minute steps). */
+function SleepButton() {
+  const ends = useSleep((s) => s.ends)
+  const [, tick] = useState(0)
+  useEffect(() => {
+    if (typeof ends !== 'number') return
+    const id = setInterval(() => tick((n) => n + 1), 15_000)
+    return () => clearInterval(id)
+  }, [ends])
+  const left = sleepLabel(ends)
+  return (
+    <button type="button" title={tr('Sleep timer')} aria-label={left ? `${tr('Sleep timer')}: ${left}` : tr('Sleep timer')} onClick={(e) => openMenu(e, sleepMenu())} className={`flex h-8 items-center gap-1.5 rounded-full px-2 text-xs font-semibold transition hover:bg-raised ${left ? 'text-accent' : 'text-ink-3 hover:text-ink'}`}>
+      <Moon size={16} weight={left ? 'fill' : 'regular'} />
+      {left && <span className="tabular-nums">{left}</span>}
+    </button>
+  )
+}
+
 export function VolumeControl({ big }: { big?: boolean }) {
   const volume = usePlayer((s) => s.volume)
   const setVolume = usePlayer((s) => s.setVolume)
@@ -221,7 +242,8 @@ export function PlayerBar() {
       {now?.youtubeId && <YouTubeFrame videoId={now.youtubeId} />}
 
       <button disabled={!now} onClick={() => setFull(true)} title={now ? tr('Open Now Playing') : undefined} className="flex w-85 min-w-0 items-center gap-3.5 text-left">
-        <Cover title={now?.title ?? ''} art={track && trackArt(track)} size={56} />
+        {/* New song: its cover fades in. */}
+        <Cover key={now?.trackId ?? now?.title} className="fade-in" title={now?.title ?? ''} art={track && trackArt(track)} size={56} />
         <span className="flex min-w-0 flex-col gap-1">
           <span className="truncate text-sm font-semibold">{now?.title ?? tr('Nothing playing')}</span>
           <span className="truncate text-xs text-ink-2">{now?.artist ?? tr('Play a YouTube track or drop audio files here')}</span>
@@ -243,6 +265,7 @@ export function PlayerBar() {
             <SourceIcon source={viaSource[now.via]} size={17} />
           </span>
         )}
+        <SleepButton />
         <VolumeControl />
         <RoundButton label={tr('Now playing, full screen')} disabled={!now} onClick={() => setFull(true)}>
           <ArrowsOutSimple size={15} />
