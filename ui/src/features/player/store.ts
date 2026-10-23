@@ -201,6 +201,8 @@ function playOnWatchPage(video: string, startMs: number) {
   if (!rect) return void tryOtherUpload(usePlayer.getState().now?.trackId ?? 0, video, tr('This video can’t play in apps'))
   // Cover mode: made hidden, it plays unseen.
   openWatch(video, startMs / 1000, useVideoSlot.getState().hidden ? null : rect).catch(() => tryOtherUpload(usePlayer.getState().now?.trackId ?? 0, video, tr('This video can’t play in apps')))
+  // The watch page can sit unstarted too (cookie wall, sign-in page): checked again, a little longer.
+  watchForStuck(usePlayer.getState().playId, 15_000)
 }
 
 // Stuck embed (review 2026-10-22): some refused videos never send onError; the frame sits unstarted (-1) on YouTube's
@@ -208,7 +210,7 @@ function playOnWatchPage(video: string, startMs: number) {
 // loaded paused at launch) = refused.
 let ytState: number | undefined
 let stuckTimer: ReturnType<typeof setTimeout> | undefined
-function watchForStuck(playId: number) {
+function watchForStuck(playId: number, wait = 10_000) {
   clearTimeout(stuckTimer)
   ytState = undefined
   const check = () => {
@@ -223,7 +225,7 @@ function watchForStuck(playId: number) {
     }
     void tryOtherUpload(p.now?.trackId ?? 0, id, tr('This video can’t play in apps'))
   }
-  stuckTimer = setTimeout(check, 10_000)
+  stuckTimer = setTimeout(check, wait)
 }
 
 async function tryOtherUpload(trackId: number, failed: string, why: string) {
@@ -517,13 +519,15 @@ export const usePlayer = create<PlayerState>((set, get) => ({
       return get().step(1)
     }
     if (u.error !== undefined) {
-      // 101 / 150: owner turned embedding off. Same video from its watch page, invisible switch.
-      if (now?.youtubeId && [101, 150].includes(u.error) && !watching(now.youtubeId)) {
+      // 100: removed. Another upload of the same song, else the next song.
+      if (now?.trackId && now.youtubeId && u.error === 100) return void tryOtherUpload(now.trackId, now.youtubeId, tr('This video was removed'))
+      // Any other refusal (101 / 150 embedding off, 152 / 153 player configuration, 5 player error…): same video from
+      // its watch page, invisible switch. Refused there too: another upload, never a dead stop.
+      if (now?.youtubeId && !watching(now.youtubeId)) {
         blocked.add(now.youtubeId)
         return playOnWatchPage(now.youtubeId, get().positionMs)
       }
-      // 100: removed. Another upload of the same song, else the next song.
-      if (now?.trackId && now.youtubeId && u.error === 100) return void tryOtherUpload(now.trackId, now.youtubeId, tr('This video was removed'))
+      if (now?.trackId && now.youtubeId) return void tryOtherUpload(now.trackId, now.youtubeId, tr('YouTube playback failed (error {code}).', { code: u.error }))
       useStore.setState({ error: tr('YouTube playback failed (error {code}).', { code: u.error }) })
       return set({ playing: false })
     }

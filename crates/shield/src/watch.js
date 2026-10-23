@@ -30,10 +30,15 @@ ${AROUND}, ${OVERLAYS} { display: none !important; }
   keep()
   new MutationObserver(keep).observe(document, { childList: true, subtree: true })
 
+  // #movie_player, else any YouTube player element (the id has moved before).
   const player = () => {
-    const p = document.getElementById('movie_player')
+    const p = document.getElementById('movie_player') ?? document.querySelector('.html5-video-player')
     return p && typeof p.getPlayerState === 'function' ? p : null
   }
+  // What the app asked: playing unless it paused. YouTube can leave the video cued (autoplay off on the account, a
+  // slow start): asked again every 1.5 s while it should play.
+  let wanted = true
+  let idleSince = 0
   const text = (t) => (t ? (t.simpleText ?? (t.runs ?? []).map((r) => r.text).join('')) : '')
   let failed = false
   // Silent until the app sends its volume: the page must never play louder than the app.
@@ -60,6 +65,13 @@ ${AROUND}, ${OVERLAYS} { display: none !important; }
     const state = p.getPlayerState()
     // Ended: stop here, YouTube's autoplay would open another video.
     if (state === 0) p.pauseVideo()
+    if (wanted && (state === -1 || state === 5)) {
+      if (!idleSince) idleSince = Date.now()
+      else if (Date.now() - idleSince > 1500) {
+        p.playVideo()
+        idleSince = Date.now()
+      }
+    } else idleSince = 0
     // ready = waiting for the app's volume and crop (commands sent before this script ran are lost).
     const cropped = !!document.documentElement.style.getPropertyValue('--w')
     const key = `${state}|${volumeSet}|${cropped}`
@@ -73,8 +85,13 @@ ${AROUND}, ${OVERLAYS} { display: none !important; }
     cmd(name, value) {
       const p = player()
       if (!p) return
-      if (name === 'play') p.playVideo()
-      else if (name === 'pause') p.pauseVideo()
+      if (name === 'play') {
+        wanted = true
+        p.playVideo()
+      } else if (name === 'pause') {
+        wanted = false
+        p.pauseVideo()
+      }
       else if (name === 'seek') p.seekTo(value, true)
       else if (name === 'crop') {
         const [x, y, w, h] = value

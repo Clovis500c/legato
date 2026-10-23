@@ -16,7 +16,7 @@ import { trackArt } from '../../shared/art'
 import { Cover } from '../../shared/ui/Cover'
 import { bindFrame, useNowTrack, usePlayer, useVideoSlot } from './store'
 import { embedUrl, parseYt, ytPost } from './youtube'
-import { closeWatch, cropWatch, placeWatch, useWatch, watchUpdate } from './watch'
+import { closeWatch, cropWatch, placeWatch, sendWatch, useWatch, watchUpdate } from './watch'
 import { frameAround } from '../../shared/artbox'
 import { bindLiveFrame, sendLive } from './live'
 import { useLiveSync } from './liveSync'
@@ -77,6 +77,8 @@ function YouTubeFrame({ videoId }: { videoId: string }) {
       // Fresh page: commands sent while it loaded were lost. Volume (it stays muted until then) and crop again.
       if (r.ready) {
         usePlayer.getState().applyVolume(true)
+        // Commands sent before the page's script ran are lost: paused in the app = paused there too.
+        if (!usePlayer.getState().playing) sendWatch('pauseVideo', [])
         sendLive()
       }
       const box = useVideoSlot.getState().box
