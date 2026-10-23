@@ -249,6 +249,13 @@ Everything still open, gathered from the sections below. Tick a line when it lan
       filled from what you played) instead of Shortcuts; songs as rows (Recently played, Recently added, YouTube Music's
       song shelves); Your week (time per day, top artist and song, from the play history); a ⋮ menu per section; signed
       out = one line at the bottom; Your playlists off by default (defaults v6).
+- [x] App v4 (user's OK 2026-10-23, Figma page "App v4 — Full redesign proposal", points 1-15): compact headers;
+      Songs (Play / Shuffle in words, playability pill, sorts remembered, Plays column, defaults v7); Playlist (actions in
+      words, its menu for export / duplicate / delete, Songs that fit); Album (numbered, More by); Artist (most played,
+      discography albums / singles, Radio); Now Playing (Up next · Lyrics · Sound tabs, remove from Up next, similar songs
+      after the queue, setting autoplay); Settings (Reset off default, Accounts dot); sidebar playlist order + "+".
+- [ ] App v4 leftovers needing data: album years and track numbers, songs of an album missing from the library (from
+      YouTube Music's album page), "date added" as a real date (the library keeps a rank only).
 - [x] Local folders: watch for changes (`notify` crate, `src-tauri/src/folders.rs`, big update phase 7).
 - [x] Preview straight from search results (before adding): Add music plays a song not in the library (big update
       phase 2).

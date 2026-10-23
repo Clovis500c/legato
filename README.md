@@ -18,7 +18,8 @@ A fast, private desktop music player for Windows, built with Tauri 2 and Rust.
 ## Features
 
 - **Unified library.** The same song on several services becomes one track (matched by ISRC, or title, artist and
-  duration). Songs, Albums, Artists and Playlists views, YouTube-style sorting, drag and drop.
+  duration). Songs, Albums, Artists and Playlists views (sorts remembered), artist pages with your most played and the
+  discography, playlists with songs that fit, drag and drop.
 - **One search bar.** Your library as you type, YouTube's suggestions and your recent searches (kept on this PC), then
   one results page across your library, YouTube, YouTube Music and Apple Music.
 - **Music only.** Talks, tutorials and gameplay that YouTube imports bring along are set aside in a fold you can open,
