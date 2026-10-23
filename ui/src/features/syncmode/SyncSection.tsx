@@ -1,4 +1,4 @@
-import { ArrowsClockwise, Cloud, Desktop, FolderOpen, LockSimple, LockSimpleOpen, WifiHigh } from '@phosphor-icons/react'
+import { ArrowsClockwise, Cloud, Copy, Desktop, Eye, EyeSlash, FolderOpen, Sparkle, LockSimple, LockSimpleOpen, WifiHigh } from '@phosphor-icons/react'
 import { open } from '@tauri-apps/plugin-dialog'
 import { useEffect, useState, type ReactNode } from 'react'
 import { useStore } from '../../app/store'
@@ -8,7 +8,7 @@ import { tr } from '../../shared/i18n/i18n'
 import { Button } from '../../shared/ui/Button'
 import { Dialog } from '../../shared/ui/Dialog'
 import { mergedText } from './merged'
-import { strength, type Hint } from './strength'
+import { passphrase, strength, type Hint } from './strength'
 
 const MIN_PASSWORD = 10
 
@@ -77,6 +77,8 @@ function Setup({ folder, onClose, onDone }: { folder: string; onClose: () => voi
   const [protect, setProtect] = useState(true)
   const [password, setPassword] = useState('')
   const [again, setAgain] = useState('')
+  const [shown, setShown] = useState(false)
+  const [caps, setCaps] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string>()
   useEffect(() => {
@@ -101,8 +103,32 @@ function Setup({ folder, onClose, onDone }: { folder: string; onClose: () => voi
     }
   }
   const field = (value: string, set: (v: string) => void, label: string) => (
-    <input type="password" aria-label={label} placeholder={label} value={value} onChange={(e) => set(e.target.value)} className="rounded-md border border-line bg-bg px-3 py-2 text-sm outline-none focus:border-ink-3" />
+    <div className="relative flex">
+      <input
+        type={shown ? 'text' : 'password'}
+        aria-label={label}
+        placeholder={label}
+        value={value}
+        onChange={(e) => set(e.target.value)}
+        onKeyDown={(e) => {
+          setCaps(e.getModifierState('CapsLock'))
+          if (e.key === 'Enter' && probe && ready && !busy) void start()
+        }}
+        onKeyUp={(e) => setCaps(e.getModifierState('CapsLock'))}
+        className="flex-1 rounded-md border border-line bg-bg py-2 pr-9 pl-3 text-sm outline-none focus:border-ink-3"
+      />
+      <button type="button" aria-label={shown ? tr('Hide password') : tr('Show password')} title={shown ? tr('Hide password') : tr('Show password')} onClick={() => setShown(!shown)} className="absolute inset-y-0 right-0 px-2.5 text-ink-2 hover:text-ink">
+        {shown ? <EyeSlash size={16} /> : <Eye size={16} />}
+      </button>
+    </div>
   )
+  const generate = () => {
+    const p = passphrase()
+    setPassword(p)
+    setAgain(p)
+    setShown(true)
+  }
+  const copy = () => void navigator.clipboard.writeText(password).then(() => useStore.getState().notify(tr('Copied to clipboard'), { kind: 'ok' }))
   const choice = (on: boolean, title: string, sub: string, icon: ReactNode) => (
     <button role="radio" aria-checked={protect === on} onClick={() => setProtect(on)} className={`flex gap-3 rounded-lg border p-3 text-left transition ${protect === on ? 'border-ink bg-bg' : 'border-line hover:bg-bg'}`}>
       <span className="mt-0.5">{icon}</span>
@@ -130,9 +156,20 @@ function Setup({ folder, onClose, onDone }: { folder: string; onClose: () => voi
       {probe && needs && (
         <div className="flex flex-col gap-2">
           {field(password, setPassword, tr('Password'))}
+          {caps && <p className="text-xs text-[#F0A020]">{tr('Caps Lock is on.')}</p>}
           {!joining && <Meter password={password} />}
           {!joining && field(again, setAgain, tr('Same password again'))}
           {!joining && again && again !== password && <p className="text-xs text-[#F23F43]">{tr('The two passwords don’t match.')}</p>}
+          {!joining && (
+            <div className="flex gap-2">
+              <Button variant="ghost" onClick={generate}>
+                <Sparkle size={14} /> {tr('Generate one')}
+              </Button>
+              <Button variant="ghost" disabled={!password} onClick={copy}>
+                <Copy size={14} /> {tr('Copy')}
+              </Button>
+            </div>
+          )}
           {!joining && <p className="text-xs text-ink-3">{tr('At least {n} characters. It can’t be recovered: without it, set up a new folder.', { n: MIN_PASSWORD })}</p>}
         </div>
       )}
