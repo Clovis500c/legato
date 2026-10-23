@@ -219,7 +219,7 @@ async fn connect(state: State<'_, AppState>, source: Source, credentials: Creden
 }
 
 #[tauri::command]
-fn disconnect(state: State<AppState>, source: Source) -> CmdResult<()> {
+async fn disconnect(state: State<'_, AppState>, source: Source) -> CmdResult<()> {
     state.cache.status.clear();
     state.connector(source).map_or(Ok(()), |c| c.disconnect()).map_err(err)
 }
@@ -240,7 +240,7 @@ struct LibraryData {
 }
 
 #[tauri::command]
-fn library(state: State<AppState>) -> CmdResult<Response> {
+async fn library(state: State<'_, AppState>) -> CmdResult<Response> {
     // Lock held while computing: no write can slip between the version read and the answer.
     let lib = state.lib();
     let answer = state.cache.library.get_or((), lib.versions.library(), || serde_json::to_string(&LibraryData { tracks: lib.tracks().map_err(err)?, playlists: lib.playlists().map_err(err)? }).map_err(err))?;
@@ -248,7 +248,7 @@ fn library(state: State<AppState>) -> CmdResult<Response> {
 }
 
 #[tauri::command]
-fn playlist_tracks(state: State<AppState>, id: i64) -> CmdResult<Response> {
+async fn playlist_tracks(state: State<'_, AppState>, id: i64) -> CmdResult<Response> {
     let lib = state.lib();
     let answer = state.cache.playlist.get_or(id, lib.versions.library(), || serde_json::to_string(&lib.playlist_tracks(id).map_err(err)?).map_err(err))?;
     Ok(json(answer))
@@ -266,8 +266,8 @@ async fn rescan(state: &AppState, dirs: Vec<String>) -> CmdResult<usize> {
 }
 
 #[tauri::command]
-fn local_folders(state: State<AppState>) -> Vec<String> {
-    folders(&state.lib())
+async fn local_folders(state: State<'_, AppState>) -> CmdResult<Vec<String>> {
+    Ok(folders(&state.lib()))
 }
 
 #[tauri::command]
@@ -563,7 +563,7 @@ fn shared_playlist(lib: &Library, id: i64) -> CmdResult<Shared> {
 }
 
 #[tauri::command]
-fn share_playlist(state: State<AppState>, id: i64) -> CmdResult<ShareCode> {
+async fn share_playlist(state: State<'_, AppState>, id: i64) -> CmdResult<ShareCode> {
     let shared = shared_playlist(&state.lib(), id)?;
     let qr = share::qr_modules(&share::to_qr_text(&shared)).map(|(size, dark)| (size, dark.iter().map(|&d| if d { '1' } else { '0' }).collect()));
     Ok(ShareCode { link: share::to_link(&shared), qr, tracks: shared.items.len(), bytes: share::encode(&shared).len() })
@@ -580,7 +580,7 @@ enum NearbyState {
 
 /// Offer a playlist on the local network. Returns the 6-digit code to read out.
 #[tauri::command]
-fn nearby_send(state: State<AppState>, id: i64) -> CmdResult<String> {
+async fn nearby_send(state: State<'_, AppState>, id: i64) -> CmdResult<String> {
     let payload = share::encode(&shared_playlist(&state.lib(), id)?);
     let code = music_connectors::nearby::new_code();
     nearby_stop(state.clone());
@@ -638,7 +638,7 @@ struct SharePreview {
 }
 
 #[tauri::command]
-fn share_preview(state: State<AppState>, code: String) -> CmdResult<SharePreview> {
+async fn share_preview(state: State<'_, AppState>, code: String) -> CmdResult<SharePreview> {
     let shared = share::parse(&code).map_err(err)?;
     let lib = state.lib();
     let known = shared.items.iter().map(|i| lib.find(&probe(i))).collect::<anyhow::Result<Vec<_>>>().map_err(err)?.iter().flatten().count();
@@ -731,7 +731,7 @@ fn unix_now() -> i64 {
 }
 
 #[tauri::command]
-fn record_play(state: State<AppState>, play: Play) -> CmdResult<()> {
+async fn record_play(state: State<'_, AppState>, play: Play) -> CmdResult<()> {
     // Trust boundary: plausible times only (no future plays skewing scores).
     let now = unix_now();
     if !(0..=now + 60).contains(&play.started_at) || play.listened_ms > 24 * 3600 * 1000 {
@@ -742,7 +742,7 @@ fn record_play(state: State<AppState>, play: Play) -> CmdResult<()> {
 
 /// Mixes for today. `utc_offset` = local minus UTC, seconds (from the UI clock).
 #[tauri::command]
-fn mixes(state: State<AppState>, utc_offset: i64) -> CmdResult<Response> {
+async fn mixes(state: State<'_, AppState>, utc_offset: i64) -> CmdResult<Response> {
     let utc_offset = utc_offset.clamp(-14 * 3600, 14 * 3600);
     let now = unix_now();
     let lib = state.lib();
@@ -758,7 +758,7 @@ fn mixes(state: State<AppState>, utc_offset: i64) -> CmdResult<Response> {
 
 /// "It's music" (true) / "Not music" (false) from the user, None = back to the app's guess.
 #[tauri::command]
-fn set_music(state: State<AppState>, track_ids: Vec<i64>, music: Option<bool>) -> CmdResult<()> {
+async fn set_music(state: State<'_, AppState>, track_ids: Vec<i64>, music: Option<bool>) -> CmdResult<()> {
     // Trust boundary: a selection, not the whole world.
     if track_ids.len() > 10_000 {
         return Err("Too many tracks".into());
@@ -768,12 +768,12 @@ fn set_music(state: State<AppState>, track_ids: Vec<i64>, music: Option<bool>) -
 
 /// None clears it.
 #[tauri::command]
-fn set_track_pref(state: State<AppState>, track_id: i64, pref: Option<Pref>) -> CmdResult<()> {
+async fn set_track_pref(state: State<'_, AppState>, track_id: i64, pref: Option<Pref>) -> CmdResult<()> {
     state.lib().set_pref(track_id, pref).map_err(err)
 }
 
 #[tauri::command]
-fn clear_history(state: State<AppState>) -> CmdResult<()> {
+async fn clear_history(state: State<'_, AppState>) -> CmdResult<()> {
     state.lib().clear_history().map_err(err)
 }
 
@@ -882,13 +882,13 @@ async fn remove_from_playlist(state: State<'_, AppState>, id: i64, track_id: i64
 /// Right-click › Remove from library: out of every playlist here and kept out of syncs and folder scans (the services'
 /// own playlists and the files on disk stay as they are).
 #[tauri::command]
-fn remove_from_library(state: State<'_, AppState>, track_id: i64) -> CmdResult<()> {
+async fn remove_from_library(state: State<'_, AppState>, track_id: i64) -> CmdResult<()> {
     state.lib().remove_track(track_id).map_err(err)
 }
 
 /// Duplicates finder: `others` folded into `keep` (sources, playlist spots, plays).
 #[tauri::command]
-fn merge_duplicates(state: State<'_, AppState>, keep: i64, others: Vec<i64>) -> CmdResult<()> {
+async fn merge_duplicates(state: State<'_, AppState>, keep: i64, others: Vec<i64>) -> CmdResult<()> {
     state.lib().merge_tracks(keep, &others).map_err(err)
 }
 
@@ -1154,7 +1154,7 @@ async fn ytm_accounts(state: State<'_, AppState>) -> CmdResult<YtmAccounts> {
 
 /// Accounts to sync (first one also gets exports).
 #[tauri::command]
-fn set_ytm_accounts(state: State<AppState>, accounts: Vec<Account>) -> CmdResult<()> {
+async fn set_ytm_accounts(state: State<'_, AppState>, accounts: Vec<Account>) -> CmdResult<()> {
     // Trust boundary: values end up in request headers.
     let ok = accounts.len() <= 20 && accounts.iter().all(|a| a.authuser < 10 && a.name.chars().count() <= 200 && a.page_id.as_ref().is_none_or(|p| p.len() <= 40 && p.bytes().all(|b| b.is_ascii_digit())) && a.photo.as_ref().is_none_or(|p| p.len() <= 500));
     if !ok {
@@ -1166,17 +1166,17 @@ fn set_ytm_accounts(state: State<AppState>, accounts: Vec<Account>) -> CmdResult
 }
 
 #[tauri::command]
-fn edit_playlist(state: State<AppState>, edit: PlaylistEdit) -> CmdResult<Option<i64>> {
+async fn edit_playlist(state: State<'_, AppState>, edit: PlaylistEdit) -> CmdResult<Option<i64>> {
     state.lib().edit_playlist(edit).map_err(err)
 }
 
 #[tauri::command]
-fn load_settings(state: State<AppState>) -> CmdResult<Option<serde_json::Value>> {
+async fn load_settings(state: State<'_, AppState>) -> CmdResult<Option<serde_json::Value>> {
     state.lib().setting("ui").map_err(err)
 }
 
 #[tauri::command]
-fn save_settings(state: State<AppState>, settings: serde_json::Value) -> CmdResult<()> {
+async fn save_settings(state: State<'_, AppState>, settings: serde_json::Value) -> CmdResult<()> {
     // Trust boundary: object only, bounded size (custom themes included).
     if !settings.is_object() || settings.to_string().len() > 256 * 1024 {
         return Err("Invalid settings".into());
@@ -1187,19 +1187,19 @@ fn save_settings(state: State<AppState>, settings: serde_json::Value) -> CmdResu
 
 /// Plays of the last days (since = unix s, two weeks at most): Home's Your week.
 #[tauri::command]
-fn recent_plays(state: State<AppState>, since: i64) -> CmdResult<Vec<Play>> {
+async fn recent_plays(state: State<'_, AppState>, since: i64) -> CmdResult<Vec<Play>> {
     state.lib().plays_since(since.max(unix_now() - 15 * 86_400)).map_err(err)
 }
 
 /// Every play since `since` (unix s, 0 = all of it), oldest first: the Stats page.
 #[tauri::command]
-fn play_history(state: State<AppState>, since: i64) -> CmdResult<Vec<Play>> {
+async fn play_history(state: State<'_, AppState>, since: i64) -> CmdResult<Vec<Play>> {
     state.lib().plays_since(since.max(0)).map_err(err)
 }
 
 /// Track id → [listens, last start (unix s)]: Most played / Recently played sorts.
 #[tauri::command]
-fn play_stats(state: State<AppState>) -> CmdResult<Response> {
+async fn play_stats(state: State<'_, AppState>) -> CmdResult<Response> {
     let lib = state.lib();
     let answer = state.cache.stats.get_or((), lib.versions.history(), || serde_json::to_string(&lib.play_stats().map_err(err)?).map_err(err))?;
     Ok(json(answer))
@@ -1207,7 +1207,7 @@ fn play_stats(state: State<AppState>) -> CmdResult<Response> {
 
 /// Track ids of every playlist in order: covers (first song, grid of 4) are picked from them.
 #[tauri::command]
-fn playlist_orders(state: State<AppState>) -> CmdResult<Response> {
+async fn playlist_orders(state: State<'_, AppState>) -> CmdResult<Response> {
     let lib = state.lib();
     let answer = state.cache.orders.get_or((), lib.versions.library(), || serde_json::to_string(&lib.playlist_orders().map_err(err)?).map_err(err))?;
     Ok(json(answer))
@@ -1404,7 +1404,7 @@ async fn export_cover(app: tauri::AppHandle, source: String, crop: Option<music_
 
 /// Image picked for a playlist cover: copied into the app's covers folder. Returns its name (art scheme `cover/<name>`).
 #[tauri::command]
-fn save_cover(app: tauri::AppHandle, playlist_id: i64, path: String) -> CmdResult<String> {
+async fn save_cover(app: tauri::AppHandle, playlist_id: i64, path: String) -> CmdResult<String> {
     let bytes = std::fs::read(&path).map_err(err)?;
     if bytes.len() > 10 << 20 {
         return Err("Image too big (10 MB max)".into());
@@ -1433,12 +1433,12 @@ fn save_cover(app: tauri::AppHandle, playlist_id: i64, path: String) -> CmdResul
 
 /// Last playback (queue as track ids, position): picked up at launch if Settings › Advanced says so.
 #[tauri::command]
-fn load_session(state: State<AppState>) -> CmdResult<Option<serde_json::Value>> {
+async fn load_session(state: State<'_, AppState>) -> CmdResult<Option<serde_json::Value>> {
     state.lib().setting("session").map_err(err)
 }
 
 #[tauri::command]
-fn save_session(state: State<AppState>, session: serde_json::Value) -> CmdResult<()> {
+async fn save_session(state: State<'_, AppState>, session: serde_json::Value) -> CmdResult<()> {
     // Trust boundary: object only, bounded (10,000 ids fit).
     if !session.is_object() || session.to_string().len() > 512 * 1024 {
         return Err("Invalid session".into());

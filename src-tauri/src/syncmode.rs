@@ -242,19 +242,19 @@ pub fn spawn(app: AppHandle) {
 }
 
 #[tauri::command]
-pub fn sync_status(state: State<AppState>, sync: State<SyncMode>) -> Status {
+pub async fn sync_status(state: State<'_, AppState>, sync: State<'_, SyncMode>) -> CmdResult<Status> {
     let c = config(&state);
     let protected = c.folder.as_ref().and_then(|f| read_manifest(&PathBuf::from(f).join(DIR))).is_some_and(|m| m.protected);
     let onedrive = sm::onedrive_folders(|k| std::env::var(k).ok()).into_iter().filter(|p| p.is_dir()).map(|p| p.display().to_string()).collect();
     let inner = sync.inner.lock().unwrap();
     let mut devices: Vec<Device> = inner.devices.values().cloned().collect();
     devices.sort_by_key(|d| std::cmp::Reverse(d.at));
-    Status { onedrive, folder: c.folder, protected, asked: c.asked, device_name: device_name(), devices, last: inner.last, error: inner.error.clone() }
+    Ok(Status { onedrive, folder: c.folder, protected, asked: c.asked, device_name: device_name(), devices, last: inner.last, error: inner.error.clone() })
 }
 
 /// Before setting up `folder`: does another PC sync there already, with a password?
 #[tauri::command]
-pub fn sync_probe(state: State<AppState>, folder: String) -> CmdResult<Probe> {
+pub async fn sync_probe(state: State<'_, AppState>, folder: String) -> CmdResult<Probe> {
     let dir = PathBuf::from(&folder).join(DIR);
     let me = config(&state).device;
     Ok(match read_manifest(&dir) {
@@ -316,7 +316,7 @@ pub async fn sync_setup(app: AppHandle, state: State<'_, AppState>, folder: Stri
 
 /// Stops syncing here; files stay in the folder (other PCs keep going).
 #[tauri::command]
-pub fn sync_stop(state: State<AppState>, sync: State<SyncMode>) -> CmdResult<()> {
+pub async fn sync_stop(state: State<'_, AppState>, sync: State<'_, SyncMode>) -> CmdResult<()> {
     let mut c = config(&state);
     c.folder = None;
     save_config(&state, &c)?;
@@ -335,7 +335,7 @@ pub async fn sync_now(app: AppHandle) -> CmdResult<Merged> {
 
 /// "Not now" on the OneDrive question.
 #[tauri::command]
-pub fn sync_dismiss(state: State<AppState>) -> CmdResult<()> {
+pub async fn sync_dismiss(state: State<'_, AppState>) -> CmdResult<()> {
     let mut c = config(&state);
     c.asked = true;
     save_config(&state, &c)
