@@ -2,8 +2,9 @@ import { readFileSync, readdirSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { afterEach, describe, expect, it } from 'vitest'
-import fr from './fr'
-import { resolveLang, tr, trn, useLang } from './i18n'
+import { CATALOG, LANGUAGES, resolveLang, tr, trn, useLang } from './i18n'
+
+const LOCALES = import.meta.glob<Record<string, string>>('./locales/*.ts', { eager: true, import: 'default' })
 
 const ROOT = fileURLToPath(new URL('../..', import.meta.url))
 
@@ -35,19 +36,27 @@ function used(): Set<string> {
 
 const slots = (s: string) => [...s.matchAll(/\{(\w+)\}/g)].map((m) => m[1]).sort()
 
-describe('translations', () => {
+describe.each(Object.entries(LOCALES))('translations %s', (path, table) => {
   const texts = used()
 
-  it('has French for every text', () => {
-    expect([...texts].filter((t) => !(t in fr))).toEqual([])
+  it('is a catalogue language', () => {
+    expect(CATALOG.map((l) => `./locales/${l.code}.ts`)).toContain(path)
   })
 
-  it('keeps no French for texts gone from the code', () => {
-    expect(Object.keys(fr).filter((k) => !texts.has(k))).toEqual([])
+  it('has every text', () => {
+    expect([...texts].filter((t) => !(t in table))).toEqual([])
+  })
+
+  it('keeps no text gone from the code', () => {
+    expect(Object.keys(table).filter((k) => !texts.has(k))).toEqual([])
   })
 
   it('keeps the same {slots}', () => {
-    expect(Object.entries(fr).filter(([k, v]) => slots(k).join() !== slots(v).join())).toEqual([])
+    expect(Object.entries(table).filter(([k, v]) => slots(k).join() !== slots(v).join())).toEqual([])
+  })
+
+  it('translates nothing to empty', () => {
+    expect(Object.entries(table).filter(([, v]) => !v.trim())).toEqual([])
   })
 })
 
@@ -56,10 +65,11 @@ describe('i18n', () => {
 
   it('follows Windows when asked, English otherwise', () => {
     expect(resolveLang('system', ['fr-FR', 'en-US'])).toBe('fr')
-    expect(resolveLang('system', ['de-DE', 'en-GB'])).toBe('en')
-    expect(resolveLang('system', ['ja-JP'])).toBe('en')
+    expect(resolveLang('system', ['xx-XX', 'en-GB'])).toBe('en')
+    expect(resolveLang('system', ['yy-YY'])).toBe('en')
     expect(resolveLang('fr', ['en-US'])).toBe('fr')
     expect(resolveLang('xx', [])).toBe('en')
+    expect(LANGUAGES.map((l) => l.code)).toContain('fr')
   })
 
   it('fills slots and counts by the language rules', () => {

@@ -1,18 +1,43 @@
 import { create } from 'zustand'
-import fr from './fr'
 
 /**
  * Interface languages. English is the source: the English text is the key (`tr('Play')`), each other language maps
- * it (`fr.ts`). Adding one = a file like `fr.ts` + a line here. A test checks every `tr` / `trn` / `msg` text has its
- * translation (i18n.test.ts). Pure: no `app/settings` here.
+ * it in `locales/<code>.ts`. A language shows in the picker once its file exists. A test checks every file covers every
+ * `tr` / `trn` / `msg` text with the same {slots} (i18n.test.ts). Pure: no `app/settings` here.
  */
-export const LANGUAGES = [
-  { code: 'en', name: 'English' },
-  { code: 'fr', name: 'Français' },
+export const CATALOG = [
+  { code: 'en', name: 'English', country: 'GB' },
+  { code: 'fr', name: 'Français', country: 'FR' },
+  { code: 'es', name: 'Español', country: 'ES' },
+  { code: 'de', name: 'Deutsch', country: 'DE' },
+  { code: 'it', name: 'Italiano', country: 'IT' },
+  { code: 'pt', name: 'Português (Brasil)', country: 'BR' },
+  { code: 'nl', name: 'Nederlands', country: 'NL' },
+  { code: 'pl', name: 'Polski', country: 'PL' },
+  { code: 'sv', name: 'Svenska', country: 'SE' },
+  { code: 'tr', name: 'Türkçe', country: 'TR' },
+  { code: 'ru', name: 'Русский', country: 'RU' },
+  { code: 'uk', name: 'Українська', country: 'UA' },
+  { code: 'hi', name: 'हिन्दी', country: 'IN' },
+  { code: 'id', name: 'Bahasa Indonesia', country: 'ID' },
+  { code: 'vi', name: 'Tiếng Việt', country: 'VN' },
+  { code: 'ja', name: '日本語', country: 'JP' },
+  { code: 'ko', name: '한국어', country: 'KR' },
+  { code: 'zh', name: '中文（简体）', country: 'CN' },
 ] as const
-export type Lang = (typeof LANGUAGES)[number]['code']
+export type Lang = (typeof CATALOG)[number]['code']
 
-const TABLES: Record<Lang, Record<string, string> | null> = { en: null, fr: french(fr) }
+// shortcut: every table bundled up front (~100 kB each, read from disk), lazy-load if startup slows.
+const FILES = import.meta.glob<Record<string, string>>('./locales/*.ts', { eager: true, import: 'default' })
+const TABLES: Partial<Record<Lang, Record<string, string>>> = Object.fromEntries(
+  Object.entries(FILES).map(([path, table]) => {
+    const code = path.slice('./locales/'.length, -'.ts'.length)
+    return [code, code === 'fr' ? french(table) : table]
+  }),
+)
+
+/** Languages the interface speaks (English + every translated file), in catalogue order. */
+export const LANGUAGES = CATALOG.filter((l) => l.code === 'en' || l.code in TABLES)
 
 /** French typography: no-break space before : ; ? ! and inside « ». */
 function french(table: Record<string, string>): Record<string, string> {
