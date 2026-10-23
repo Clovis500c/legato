@@ -76,3 +76,16 @@ export function moveInOrder(order: number[], i: number, j: number): number[] {
   out.splice(to, 0, i)
   return out
 }
+
+/** Songs still to come that are already higher in the queue (list indexes): "Remove repeats" in Up next's menu. */
+export function repeatsAhead(order: number[], index: number, idOf: (i: number) => number | undefined): number[] {
+  const at = order.indexOf(index)
+  const seen = new Set<number>()
+  return order.flatMap((i, k) => {
+    const id = idOf(i)
+    if (id === undefined) return []
+    if (seen.has(id)) return k > at ? [i] : []
+    seen.add(id)
+    return []
+  })
+}

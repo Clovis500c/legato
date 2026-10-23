@@ -34,6 +34,7 @@ import { Sidebar } from '../features/sidebar/Sidebar'
 import { api } from '../shared/api'
 import { region, spotifyList } from '../shared/format'
 import { ContextMenuHost } from '../shared/ui/ContextMenu'
+import { DuplicatesHost } from '../features/library/DuplicatesDialog'
 import { Logo } from '../shared/ui/Logo'
 import { searchShift, STAGE_ID } from './searchShift'
 import { useSettings } from './settings'
@@ -265,6 +266,7 @@ export function App() {
       <Toasts />
       <Asker />
       <ContextMenuHost fallback={appMenu} />
+      <DuplicatesHost />
       {incoming && <ImportDialog key={incoming} code={incoming} />}
     </div>
   )

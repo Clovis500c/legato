@@ -222,39 +222,46 @@ function YourWeek() {
   const narrow = new Intl.DateTimeFormat(locale(), { weekday: 'narrow' })
   const long = new Intl.DateTimeFormat(locale(), { weekday: 'long' })
   const { topArtist, topSong } = week
+  const same = Math.abs(diff) < 60_000
+  const tile = 'flex min-w-0 items-center gap-3 rounded-xl border border-line-soft p-3 text-left transition hover:bg-raised'
+  // Three blocks centred on one line (user's request 2026-10-23): time, days, then top artist and song share the rest.
   return (
-    <div className="flex flex-wrap items-end gap-x-12 gap-y-6 rounded-xl border border-line bg-panel p-5">
-      <div className="flex flex-col gap-1">
-        <span className="text-[1.75rem] leading-none font-bold tracking-[-0.02em]">{hours(week.total)}</span>
-        <span className="text-xs text-ink-2">{Math.abs(diff) < 60_000 ? tr('Same as last week') : diff > 0 ? tr('{time} more than last week', { time: hours(diff) }) : tr('{time} less than last week', { time: hours(-diff) })}</span>
+    <div className="flex flex-wrap items-center gap-x-10 gap-y-5 rounded-2xl border border-line bg-panel p-5">
+      <div className="flex flex-col gap-2">
+        <span className="text-[2rem] leading-none font-bold tracking-[-0.02em]">{hours(week.total)}</span>
+        <span className={`flex w-fit items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${same ? 'bg-raised text-ink-2' : diff > 0 ? 'bg-accent-soft text-accent' : 'bg-raised text-ink-2'}`}>
+          {!same && (diff > 0 ? <ArrowUp size={11} weight="bold" /> : <ArrowDown size={11} weight="bold" />)}
+          {same ? tr('Same as last week') : diff > 0 ? tr('{time} more than last week', { time: hours(diff) }) : tr('{time} less than last week', { time: hours(-diff) })}
+        </span>
+        <span className="text-xs text-ink-3">{tr('About {time} a day', { time: hours(week.total / 7) })}</span>
       </div>
-      <ul className="flex items-end gap-2" aria-label={tr('Time heard per day')}>
+      <ul className="flex h-24 items-end gap-2" aria-label={tr('Time heard per day')}>
         {week.days.map((ms, i) => (
-          <li key={i} title={`${long.format(week.starts[i])} · ${hours(ms)}`} className="flex flex-col items-center gap-1.5">
-            <span className={`w-7 rounded ${i === 6 ? 'bg-accent' : 'bg-line'}`} style={{ height: Math.max(ms ? 4 : 2, Math.round((ms / max) * 64)) }} />
-            <span className="text-[0.625rem] text-ink-3 uppercase">{narrow.format(week.starts[i])}</span>
+          <li key={i} title={`${long.format(week.starts[i])} · ${hours(ms)}`} className="group flex h-full flex-col items-center justify-end gap-1.5">
+            <span className={`w-7 rounded-md transition-colors ${i === 6 ? 'bg-accent' : 'bg-line group-hover:bg-ink-3'}`} style={{ height: Math.max(ms ? 4 : 2, Math.round((ms / max) * 72)) }} />
+            <span className={`text-[0.625rem] uppercase ${i === 6 ? 'font-semibold text-ink' : 'text-ink-3'}`}>{narrow.format(week.starts[i])}</span>
           </li>
         ))}
       </ul>
-      <div className="flex min-w-0 flex-1 flex-wrap gap-x-8 gap-y-3">
+      <div className="grid min-w-0 flex-1 basis-72 grid-cols-[repeat(auto-fit,minmax(13rem,1fr))] gap-2">
         {topArtist && (
-          <button onClick={() => go({ name: 'artist', artist: topArtist.name })} className="flex min-w-0 items-center gap-3 text-left">
-            <Cover title={topArtist.name} art={trackArt(topArtist.cover)} size={44} className="rounded-full!" />
+          <button onClick={() => go({ name: 'artist', artist: topArtist.name })} onContextMenu={onMenu(() => tracksMenu(tracks.filter((t) => primaryArtist(t.artist) === topArtist.name), [{ label: tr('Go to artist'), onSelect: () => go({ name: 'artist', artist: topArtist.name }) }, '-']))} className={tile}>
+            <Cover title={topArtist.name} art={trackArt(topArtist.cover)} size={48} className="rounded-full!" />
             <span className="flex min-w-0 flex-col">
               <span className="text-[0.6875rem] text-ink-3">{tr('Top artist')}</span>
-              <span className="truncate text-[0.8125rem] font-semibold hover:underline">
-                {topArtist.name} · {hours(topArtist.ms)}
-              </span>
+              <span className="truncate text-sm font-semibold">{topArtist.name}</span>
+              <span className="text-xs text-ink-2">{hours(topArtist.ms)}</span>
             </span>
           </button>
         )}
         {topSong && (
-          <button onClick={() => usePlayer.getState().playTracks([topSong.track], 0)} className="flex min-w-0 items-center gap-3 text-left">
-            <Cover title={topSong.track.album ?? topSong.track.title} art={trackArt(topSong.track)} size={44} />
+          <button onClick={() => usePlayer.getState().playTracks([topSong.track], 0)} onContextMenu={onMenu(() => trackMenu(topSong.track))} className={tile}>
+            <Cover title={topSong.track.album ?? topSong.track.title} art={trackArt(topSong.track)} size={48} />
             <span className="flex min-w-0 flex-col">
               <span className="text-[0.6875rem] text-ink-3">{tr('Top song')}</span>
-              <span className="truncate text-[0.8125rem] font-semibold hover:underline">
-                {topSong.track.title} · {trn(topSong.plays, '{n} play', '{n} plays')}
+              <span className="truncate text-sm font-semibold">{topSong.track.title}</span>
+              <span className="truncate text-xs text-ink-2">
+                {topSong.track.artist} · {trn(topSong.plays, '{n} play', '{n} plays')}
               </span>
             </span>
           </button>

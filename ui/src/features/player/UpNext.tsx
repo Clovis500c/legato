@@ -1,20 +1,20 @@
-import { CaretRight, DotsSixVertical, FloppyDisk, Waveform, X } from '@phosphor-icons/react'
+import { CaretRight, ClipboardText, DotsSixVertical, FloppyDisk, MinusCircle, Waveform, X } from '@phosphor-icons/react'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { useEffect, useMemo, useRef } from 'react'
 import { useSettings } from '../../app/settings'
 import { useStore } from '../../app/store'
 import { trackArt } from '../../shared/art'
 import { formatDuration } from '../../shared/format'
-import { onMenu } from '../../shared/ui/ContextMenu'
+import { onMenu, type MenuEntry } from '../../shared/ui/ContextMenu'
 import { RoundButton, Toggle } from '../../shared/ui/controls'
 import { Cover } from '../../shared/ui/Cover'
 import { dragSource, useDrag, useDropTarget } from '../../shared/ui/drag'
 import { trackMenu } from '../menus'
 import { fileFormat } from './PlayerBar'
-import { queueRows, type QueueRow } from './queue'
+import { queueRows, repeatsAhead, type QueueRow } from './queue'
 import { vias } from './sources'
 import { fileTitle, isRemote, useNowTrack, usePlayer } from './store'
-import { tr } from '../../shared/i18n/i18n'
+import { tr, trn } from '../../shared/i18n/i18n'
 import { api } from '../../shared/api'
 import { askText } from '../../shared/ui/Ask'
 
@@ -61,6 +61,23 @@ async function saveQueue() {
   } catch (e) {
     notify(String(e), { kind: 'error' })
   }
+}
+
+/** Right-click on the panel (not on a row): the whole queue. */
+function queueMenu(onHide: () => void): MenuEntry[] {
+  const { list, order, index, shuffle, toggleShuffle, clearNext, dequeue } = usePlayer.getState()
+  const queue = order.length > 0
+  const ahead = repeatsAhead(order, index, (i) => list[i]?.id)
+  const songs = order.flatMap((i) => list[i] ?? [])
+  return [
+    queue && { label: tr('Save the queue as a playlist'), icon: <FloppyDisk size={16} />, onSelect: () => void saveQueue() },
+    queue && { label: tr('Shuffle'), checked: shuffle, onSelect: toggleShuffle },
+    ahead.length > 0 && { label: trn(ahead.length, 'Remove {n} repeat', 'Remove {n} repeats'), icon: <MinusCircle size={16} />, onSelect: () => ahead.forEach(dequeue) },
+    queue && order.indexOf(index) < order.length - 1 && { label: tr('Clear what’s next'), icon: <X size={16} />, onSelect: clearNext },
+    songs.length > 1 && { label: tr('Copy song list'), icon: <ClipboardText size={16} />, onSelect: () => void navigator.clipboard.writeText(songs.map((t) => `${t.artist} – ${t.title}`).join('\n')).then(() => useStore.getState().notify(trn(songs.length, '{n} song copied', '{n} songs copied'))) },
+    '-',
+    { label: tr('Hide up next'), icon: <CaretRight size={16} />, onSelect: onHide },
+  ]
 }
 
 /**
@@ -111,13 +128,9 @@ export function UpNext({ onHide }: { onHide: () => void }) {
   }, [current, v])
 
   return (
-    <aside className="flex min-h-0 flex-col gap-2 rounded-2xl border border-line-soft bg-[color-mix(in_srgb,var(--panel)_55%,transparent)] p-3">
+    <aside onContextMenu={onMenu(() => queueMenu(onHide))} className="flex min-h-0 flex-col gap-2 rounded-2xl border border-line-soft bg-[color-mix(in_srgb,var(--panel)_55%,transparent)] p-3">
       <div className="flex items-center gap-2 px-1">
-        <span className="text-[0.8125rem] font-semibold">{tr('Up next')}</span>
-        <span className="kicker flex-1">
-          {tr('{n} next', { n: next })}
-          {played ? ` · ${tr('{n} played', { n: played })}` : ''}
-        </span>
+        <span className="flex-1 text-[0.8125rem] font-semibold">{tr('Up next')}</span>
         {next > 0 && rows[current]?.i !== undefined && rows[current].i >= 0 && (
           <button onClick={clearNext} className="rounded-full px-2 py-0.5 text-xs font-medium text-ink-2 hover:bg-raised hover:text-ink">
             {tr('Clear')}
@@ -132,6 +145,20 @@ export function UpNext({ onHide }: { onHide: () => void }) {
           <CaretRight size={14} />
         </RoundButton>
       </div>
+      {/* Where the queue stands: "38 / 1 292 played", bar below (user's request 2026-10-23: the old line was too small). */}
+      {rows.length > 1 && (
+        <div className="flex flex-col gap-1.5 px-1 pb-1">
+          <div className="flex items-baseline justify-between gap-2 text-xs text-ink-2 tabular-nums">
+            <span>
+              <span className="font-semibold text-ink">{played.toLocaleString()}</span> / {rows.length.toLocaleString()} {tr('played')}
+            </span>
+            <span>{tr('{n} next', { n: next.toLocaleString() })}</span>
+          </div>
+          <div className="h-1 overflow-hidden rounded-full bg-line-soft">
+            <div className="h-full rounded-full bg-accent transition-[width] duration-300" style={{ width: `${(played / rows.length) * 100}%` }} />
+          </div>
+        </div>
+      )}
       <ol ref={scroller} data-list data-drop={queue ? 'queue' : undefined} className="scroll-quiet relative min-h-0 flex-1 overflow-y-auto">
         <div style={{ height: v.getTotalSize() }} className="relative">
           {v.getVirtualItems().map((item) => {

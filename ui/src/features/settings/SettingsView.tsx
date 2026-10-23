@@ -1,5 +1,5 @@
 import { ShortcutsSection } from './ShortcutsSection'
-import { ArrowCounterClockwise, ArrowsClockwise, Check, GearSix, Info, Keyboard, MagnifyingGlass, PaintBrush, Plugs, Plus, ShieldCheck, SpeakerHigh } from '@phosphor-icons/react'
+import { ArrowCounterClockwise, ArrowsClockwise, Check, Copy, GearSix, Info, Keyboard, MagnifyingGlass, PaintBrush, Plugs, Plus, ShieldCheck, SpeakerHigh } from '@phosphor-icons/react'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { useSettings } from '../../app/settings'
 import { useStore, type SettingsSection } from '../../app/store'
@@ -9,6 +9,7 @@ import { ACCENTS, ADAPTIVE_LEVELS, COLUMNS, DEFAULTS, type AdaptiveLevel, type C
 import { Button } from '../../shared/ui/Button'
 import { Led, Segmented, Toggle } from '../../shared/ui/controls'
 import { PageHeader } from '../../shared/ui/PageHeader'
+import { onMenu } from '../../shared/ui/ContextMenu'
 import { curveLabels } from '../player/fade'
 import { usePlayer } from '../player/store'
 import { useLive } from '../player/live'
@@ -20,7 +21,8 @@ import { ThemeStudio } from './ThemeStudio'
 import { FadeEditor } from './FadeEditor'
 import { CountsScene, CoverShapes, DensityScene, FadeScene, ListCoversScene, MiniPlayerScene, MixCoverScene, MotionScene, NowPlayingScene, SourceIconScene, TunerScene, VolumeScene } from './previews'
 import { searchSettings, type SettingEntry } from './search'
-import { LANGUAGES, msg, resolveLang, tr } from '../../shared/i18n/i18n'
+import { msg, tr } from '../../shared/i18n/i18n'
+import { LanguagePicker } from './LanguagePicker'
 import { ask } from '../../shared/ui/Ask'
 
 const sections: { id: SettingsSection; label: string; icon: ReactNode }[] = [
@@ -57,7 +59,14 @@ function Group({ title, count, hint, children }: { title: string; count?: number
 function Row({ label, sub, children, preview, setting }: { label: string; sub?: string; children: ReactNode; preview?: ReactNode; setting?: keyof Settings }) {
   const changed = useSettings((st) => !!setting && JSON.stringify(st.settings[setting]) !== JSON.stringify(DEFAULTS[setting]))
   return (
-    <div data-setting={label} className="flex items-center gap-4 border-b border-line-soft px-4 py-3 last:border-0">
+    <div
+      data-setting={label}
+      onContextMenu={onMenu(() => [
+        setting && { label: tr('Back to the default'), icon: <ArrowCounterClockwise size={16} />, disabled: !changed, onSelect: () => useSettings.getState().update({ [setting]: DEFAULTS[setting] }) },
+        { label: tr('Copy name'), icon: <Copy size={16} />, onSelect: () => void navigator.clipboard.writeText(tr(label)) },
+      ])}
+      className="flex items-center gap-4 border-b border-line-soft px-4 py-3 last:border-0"
+    >
       <div className="flex-1">
         <p className="flex items-center gap-2 text-[0.8125rem] font-medium">
           {tr(label)}
@@ -395,12 +404,7 @@ function GeneralSection() {
   return (
     <div className="flex max-w-190 flex-col gap-6">
       <Group title={msg('Language')}>
-        <Segmented
-          label={tr('Language')}
-          value={s.language}
-          onChange={(language) => update({ language })}
-          options={[{ value: 'system', label: tr('Windows ({language})', { language: LANGUAGES.find((l) => l.code === resolveLang('system', navigator.languages))!.name }) }, ...LANGUAGES.map((l) => ({ value: l.code, label: l.name }))]}
-        />
+        <LanguagePicker value={s.language} onChange={(language) => update({ language })} />
       </Group>
       <Group title={msg('Starting and closing')}>
         <div className="rounded-xl border border-line bg-raised">

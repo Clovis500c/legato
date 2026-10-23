@@ -10,7 +10,7 @@ import { onMenu, openMenu } from '../../shared/ui/ContextMenu'
 import type { PlaylistOrder } from '../../shared/theme/theme'
 import { byOpened, useOpenedLists } from '../home/recentLists'
 import { PlaylistCover } from '../library/PlaylistCover'
-import { canDropOn, dropOn, playlistMenu, playlistsMenu } from '../menus'
+import { canDropOn, dropOn, navMenu, playlistMenu, playlistsMenu } from '../menus'
 import { useDrag, useDropTarget } from '../../shared/ui/drag'
 import { usePlayer } from '../player/store'
 import { groupAlbums, groupArtists } from '../library/filter'
@@ -99,16 +99,16 @@ export function Sidebar() {
     <aside className="flex w-63 shrink-0 flex-col border-r border-line bg-panel">
       <div className="scroll-quiet flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-3 pt-3 pb-3">
         <div className="flex flex-col gap-px">
-          <NavItem on={is('home')} icon={<House size={16} />} label={tr('Home')} onClick={() => go({ name: 'home' })} />
-          <NavItem on={is('mixes') || is('mix')} icon={<Disc size={16} />} label={tr('Mixes')} onClick={() => go({ name: 'mixes' })} />
-          <NavItem on={is('stats')} icon={<ChartBar size={16} />} label={tr('Stats')} onClick={() => go({ name: 'stats' })} />
-          <NavItem on={is('add')} icon={<PlusCircle size={16} />} label={tr('Add music')} onClick={() => go({ name: 'add' })} />
+          <NavItem on={is('home')} icon={<House size={16} />} label={tr('Home')} onClick={() => go({ name: 'home' })} onContextMenu={onMenu(() => navMenu({ name: 'home' }))} />
+          <NavItem on={is('mixes') || is('mix')} icon={<Disc size={16} />} label={tr('Mixes')} onClick={() => go({ name: 'mixes' })} onContextMenu={onMenu(() => navMenu({ name: 'mixes' }))} />
+          <NavItem on={is('stats')} icon={<ChartBar size={16} />} label={tr('Stats')} onClick={() => go({ name: 'stats' })} onContextMenu={onMenu(() => navMenu({ name: 'stats' }))} />
+          <NavItem on={is('add')} icon={<PlusCircle size={16} />} label={tr('Add music')} onClick={() => go({ name: 'add' })} onContextMenu={onMenu(() => navMenu({ name: 'add' }))} />
         </div>
 
         <Section title={tr('Library')}>
-          <NavItem on={is('songs')} icon={<MusicNotes size={16} />} label={tr('Songs')} count={tracks.length} onClick={() => go({ name: 'songs' })} />
-          <NavItem on={is('albums') || is('album')} icon={<VinylRecord size={16} />} label={tr('Albums')} count={counts.albums} onClick={() => go({ name: 'albums' })} />
-          <NavItem on={is('artists') || is('artist')} icon={<MicrophoneStage size={16} />} label={tr('Artists')} count={counts.artists} onClick={() => go({ name: 'artists' })} />
+          <NavItem on={is('songs')} icon={<MusicNotes size={16} />} label={tr('Songs')} count={tracks.length} onClick={() => go({ name: 'songs' })} onContextMenu={onMenu(() => navMenu({ name: 'songs' }, useStore.getState().tracks))} />
+          <NavItem on={is('albums') || is('album')} icon={<VinylRecord size={16} />} label={tr('Albums')} count={counts.albums} onClick={() => go({ name: 'albums' })} onContextMenu={onMenu(() => navMenu({ name: 'albums' }))} />
+          <NavItem on={is('artists') || is('artist')} icon={<MicrophoneStage size={16} />} label={tr('Artists')} count={counts.artists} onClick={() => go({ name: 'artists' })} onContextMenu={onMenu(() => navMenu({ name: 'artists' }))} />
         </Section>
 
         <Section
@@ -136,8 +136,8 @@ export function Sidebar() {
 
       <SidebarPlayer />
       <div className="flex shrink-0 flex-col gap-px border-t border-line-soft px-3 pt-2 pb-3.5">
-        <NavItem on={is('addons')} icon={<PuzzlePiece size={16} />} label={tr('Add-ons')} onClick={() => go({ name: 'addons' })} />
-        <NavItem on={is('settings')} icon={<Gear size={16} />} label={tr('Settings')} onClick={() => go({ name: 'settings', section: 'general' })} />
+        <NavItem on={is('addons')} icon={<PuzzlePiece size={16} />} label={tr('Add-ons')} onClick={() => go({ name: 'addons' })} onContextMenu={onMenu(() => navMenu({ name: 'addons' }))} />
+        <NavItem on={is('settings')} icon={<Gear size={16} />} label={tr('Settings')} onClick={() => go({ name: 'settings', section: 'general' })} onContextMenu={onMenu(() => navMenu({ name: 'settings', section: 'general' }))} />
       </div>
     </aside>
   )

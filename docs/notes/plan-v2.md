@@ -279,8 +279,15 @@ Everything still open, gathered from the sections below. Tick a line when it lan
       apart; Songs page button, pick the copy to keep, merge one or all (`Library::merge_tracks`).
 - [x] Last.fm scrobbling (2026-10-23): Settings › Accounts, user's own key + secret, allowed on last.fm; now playing and
       real listens (half or 4 min), offline ones sent later (memory). App tinted by the cover (option). Live Editor wider.
-- [ ] Bonus list (pick): related-tracks radio,
-      sleep timer, equalizer (local files).
+- [x] Polish round (2026-10-23): menus and the mic menu rendered in body (a transformed parent carried them off /
+      gave scrollbars); hidden-videos list sized to its rows; Up next "38 / 1 292 played" + bar; sleep menu above
+      its button; Your week card redone; F opens Now Playing (was Ctrl+P); language dropdown with drawn flags, other
+      languages listed as coming soon; webviews keep full-speed timers hidden (slow song switch from the tray).
+- [x] More right-click (2026-10-23): duplicate finder for any playlist / list / selection, repeated songs out of a
+      custom playlist or Up next, copy song list / name, Up next panel, list header (columns, density, covers),
+      settings rows (back to default), sidebar entries, hidden-videos fold.
+- [ ] Real translations beyond French (the language menu lists them as coming soon).
+- [ ] Bonus list (pick): equalizer (local files).
 
 **Spotify** (no keys; user chose link import)
 - [x] Playlists over 100 tracks (embed limit: only the first 100 come in). Big update phase 7: whole playlist with the
