@@ -14,9 +14,10 @@ export interface Fade {
 
 export const NO_FADE: Fade = { out: 0, in: 0, outCurve: 'scurve', inCurve: 'scurve', skip: false, pause: 0 }
 
-/** Settings → fade. Simple mode: same seconds out and in, S-curve, nothing else. */
+/** Settings → fade. Simple mode: same seconds out and in, S-curve, skips fade in, nothing else. */
 export function effectiveFade(s: Pick<Settings, 'crossfade' | 'fade'>): Fade {
-  if (!s.fade.advanced) return { ...NO_FADE, out: s.crossfade, in: s.crossfade }
+  // Skips fade in too (user's request 2026-10-23: a skip came in at full volume).
+  if (!s.fade.advanced) return { ...NO_FADE, out: s.crossfade, in: s.crossfade, skip: true }
   const { out, in: fin, outCurve, inCurve, skip, pause } = s.fade
   return { out, in: fin, outCurve, inCurve, skip, pause }
 }

@@ -209,6 +209,9 @@ function playOnWatchPage(video: string, startMs: number) {
 // own "Video unavailable" card. A video asked to play that hasn't started 10 s later (not buffering, not paused, not
 // loaded paused at launch) = refused.
 let ytState: number | undefined
+// New video asked: the embed still reports the old one for a moment (late times, its duration). Ignored until a time
+// near the new start comes, else the fade in jumps to full volume (review 2026-10-23: skips started loud).
+let ytFresh = false
 let stuckTimer: ReturnType<typeof setTimeout> | undefined
 function watchForStuck(playId: number, wait = 10_000) {
   clearTimeout(stuckTimer)
@@ -357,7 +360,10 @@ export const usePlayer = create<PlayerState>((set, get) => ({
         yt('seekTo', start / 1000, true)
         yt('playVideo')
       }
+      ytFresh = true
       set({ now: { ...base, youtubeId: video } })
+      // Fade in starts silent: volume set before the embed loads the next video (it keeps the last one).
+      get().applyVolume(true)
       // Refused by the embed earlier this session: its watch page at once.
       if (blocked.has(video) && !watching(video)) playOnWatchPage(video, start)
       return
@@ -530,6 +536,13 @@ export const usePlayer = create<PlayerState>((set, get) => ({
       if (now?.trackId && now.youtubeId) return void tryOtherUpload(now.trackId, now.youtubeId, tr('YouTube playback failed (error {code}).', { code: u.error }))
       useStore.setState({ error: tr('YouTube playback failed (error {code}).', { code: u.error }) })
       return set({ playing: false })
+    }
+    if (ytFresh) {
+      if (u.time === undefined || u.time * 1000 > get().startAt + 3000) {
+        // Old video's last words: its time, duration and end don't count.
+        if (u.state === 0) return
+        u = { ...u, time: undefined, duration: undefined }
+      } else ytFresh = false
     }
     if (u.state !== undefined) ytState = u.state
     set({
