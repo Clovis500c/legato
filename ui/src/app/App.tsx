@@ -7,6 +7,7 @@ import { SearchView } from '../features/search/SearchView'
 // Up next running out: similar songs (registers itself with the player).
 import '../features/player/autoplay'
 import { HomeView } from '../features/home/HomeView'
+import { StatsView } from '../features/stats/StatsView'
 import { MixesView, MixView } from '../features/mixes/MixesView'
 import { AlbumView, ArtistView } from '../features/library/AlbumArtist'
 import { AlbumsView, ArtistsView, PlaylistView, SongsView } from '../features/library/LibraryView'
@@ -225,6 +226,7 @@ export function App() {
             {view.name === 'add' && <AddView />}
             {view.name === 'search' && <SearchView />}
             {view.name === 'mixes' && <MixesView />}
+            {view.name === 'stats' && <StatsView />}
             {view.name === 'mix' && <MixView id={view.id} />}
             {view.name === 'songs' && <SongsView />}
             {view.name === 'albums' && <AlbumsView />}

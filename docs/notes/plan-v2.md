@@ -265,6 +265,8 @@ Everything still open, gathered from the sections below. Tick a line when it lan
 - [ ] Mixes: genre / year tags (not stored yet), Last.fm "Discoveries" (user's key).
 - [ ] Sharing: remote wormhole words (needs the user's OK on the public relay), webcam QR scanning, `musicapp://` links
       clicked in a browser (deep-link registration).
+- [x] Stats page (2026-10-23): time, listens, top songs / artists / albums, over time, time of day, weekday, days in a
+      row, new artists; 4 weeks / 6 months / this year / all time, from the whole history (`play_history`).
 - [ ] Bonus list (pick): smart playlists, listening stats, duplicate finder, related-tracks radio, Last.fm scrobbling,
       sleep timer, equalizer (local files).
 

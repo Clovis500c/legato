@@ -1,4 +1,4 @@
-import { Disc, Gear, House, MicrophoneStage, MusicNotes, Plus, PlusCircle, PuzzlePiece, SortAscending, VinylRecord } from '@phosphor-icons/react'
+import { ChartBar, Disc, Gear, House, MicrophoneStage, MusicNotes, Plus, PlusCircle, PuzzlePiece, SortAscending, VinylRecord } from '@phosphor-icons/react'
 import { useMemo, type ReactNode } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import { useSettings } from '../../app/settings'
@@ -91,6 +91,7 @@ export function Sidebar() {
         <div className="flex flex-col gap-px">
           <NavItem on={is('home')} icon={<House size={16} />} label={tr('Home')} onClick={() => go({ name: 'home' })} />
           <NavItem on={is('mixes') || is('mix')} icon={<Disc size={16} />} label={tr('Mixes')} onClick={() => go({ name: 'mixes' })} />
+          <NavItem on={is('stats')} icon={<ChartBar size={16} />} label={tr('Stats')} onClick={() => go({ name: 'stats' })} />
           <NavItem on={is('add')} icon={<PlusCircle size={16} />} label={tr('Add music')} onClick={() => go({ name: 'add' })} />
         </div>
 

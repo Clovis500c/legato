@@ -594,6 +594,8 @@ export const api = {
   playStats: () => invoke<Record<number, [number, number]>>('play_stats'),
   /** Plays since `since` (unix s, two weeks at most), oldest first. */
   recentPlays: (since: number) => invoke<Play[]>('recent_plays', { since }),
+  /** Every play since `since` (unix s, 0 = all), oldest first: the Stats page. */
+  playHistory: (since: number) => invoke<Play[]>('play_history', { since }),
   cacheStats: () => invoke<CacheStats>('cache_stats'),
   /** Third-party notices shipped with the app, in the default browser. */
   openLicenses: () => invoke<void>('open_licenses'),
