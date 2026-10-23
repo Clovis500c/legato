@@ -45,5 +45,7 @@ Reference mockups: Figma file "Bow Game / Music App", page "Music App v3 — Hi-
 - Right-click: every surface gets a menu from `features/menus.tsx` (`onMenu(() => …)`); text fields keep the native one.
 - Default look: theme `system` = Modern / Modern Dark (YouTube-style, Roboto) following Windows light/dark, accent `system` = Windows accent.
 - Running to-do of the user's requests: `docs/notes/plan-v2.md` (tick lines as they land, so a new session can resume).
+- Tauri commands that lock the library, read files or compute: `async fn` (a sync command runs on the window's thread; a
+  wait there freezes the whole app: Windows' AppHang on v0.1.217, 2026-10-23).
 - Small commits, one tested step at a time.
 - Check API quotas and endpoints before freezing them (they change; Spotify renamed `/tracks` to `/items` in February 2026).

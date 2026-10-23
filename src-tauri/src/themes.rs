@@ -16,7 +16,7 @@ fn store_background(app: &tauri::AppHandle, bytes: &[u8]) -> CmdResult<String> {
 
 /// Picture picked for a theme's background (the original can move).
 #[tauri::command]
-pub fn save_background(app: tauri::AppHandle, path: String) -> CmdResult<String> {
+pub async fn save_background(app: tauri::AppHandle, path: String) -> CmdResult<String> {
     if std::fs::metadata(&path).map_err(err)?.len() > music_core::themefile::MAX_IMAGE as u64 {
         return Err("Picture too big (15 MB max)".into());
     }
@@ -25,7 +25,7 @@ pub fn save_background(app: tauri::AppHandle, path: String) -> CmdResult<String>
 
 /// A background no theme uses any more.
 #[tauri::command]
-pub fn forget_background(app: tauri::AppHandle, name: String) -> CmdResult<()> {
+pub async fn forget_background(app: tauri::AppHandle, name: String) -> CmdResult<()> {
     if name.starts_with("bg-") && art::valid_cover_name(&name) {
         let _ = std::fs::remove_file(art::covers_dir(&app).ok_or("No app data folder")?.join(name));
     }
@@ -34,14 +34,14 @@ pub fn forget_background(app: tauri::AppHandle, name: String) -> CmdResult<()> {
 
 /// A `.theme` file: the theme and its background picture in one.
 #[tauri::command]
-pub fn export_theme(app: tauri::AppHandle, path: String, theme: serde_json::Value) -> CmdResult<()> {
+pub async fn export_theme(app: tauri::AppHandle, path: String, theme: serde_json::Value) -> CmdResult<()> {
     let picture = theme["background"]["image"].as_str().filter(|n| art::valid_cover_name(n)).and_then(|n| std::fs::read(art::covers_dir(&app)?.join(n)).ok());
     std::fs::write(path, music_core::themefile::pack(&theme, picture.as_deref()).map_err(err)?).map_err(err)
 }
 
 /// A `.theme` file read back: its picture stored, the theme returned for the interface to check.
 #[tauri::command]
-pub fn import_theme(app: tauri::AppHandle, path: String) -> CmdResult<serde_json::Value> {
+pub async fn import_theme(app: tauri::AppHandle, path: String) -> CmdResult<serde_json::Value> {
     if std::fs::metadata(&path).map_err(err)?.len() > 25 << 20 {
         return Err("File too big for a theme".into());
     }
