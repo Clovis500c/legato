@@ -1342,6 +1342,15 @@ const fr: Record<string, string> = {
   'YouTube': 'YouTube',
   'Spotify': 'Spotify',
   'Apple Music': 'Apple Music',
+  'Merge into the one picked': 'Fusionner dans celui choisi',
+  'Merged {n} song': '{n} titre fusionné',
+  'Merged {n} songs': '{n} titres fusionnés',
+  'Duplicates': 'Doublons',
+  'Merged, each becomes one song with every source, playlist spot and play. Live takes, remixes and slowed versions stay apart.': 'Une fois fusionnés, chacun devient un seul titre avec toutes ses sources, ses places dans les playlists et ses écoutes. Les versions live, remix et ralenties restent à part.',
+  'Merge all ({n})': 'Tout fusionner ({n})',
+  'No duplicates in your library.': 'Aucun doublon dans votre bibliothèque.',
+  '{n} duplicate': '{n} doublon',
+  '{n} duplicates': '{n} doublons',
 }
 
 export default fr
