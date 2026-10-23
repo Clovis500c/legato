@@ -51,6 +51,16 @@ pub async fn loopback_authorize(
     open: impl FnOnce(&str) -> Result<()>,
     timeout: Duration,
 ) -> Result<(String, String)> {
+    loopback_param("code", build_url, open, timeout).await
+}
+
+/// Same loopback, any answer name: OAuth's `code`, Last.fm's `token` (its callback keeps our `state` query).
+pub async fn loopback_param(
+    name: &str,
+    build_url: impl FnOnce(&str, &str) -> String,
+    open: impl FnOnce(&str) -> Result<()>,
+    timeout: Duration,
+) -> Result<(String, String)> {
     let state = URL_SAFE_NO_PAD.encode(rand::random::<[u8; 16]>());
     let listener = TcpListener::bind("127.0.0.1:0").await?;
     let redirect = format!("http://127.0.0.1:{}/callback", listener.local_addr()?.port());
@@ -68,7 +78,7 @@ pub async fn loopback_authorize(
                 continue;
             }
             let q: HashMap<String, String> = url.query_pairs().into_owned().collect();
-            let code = q.get("code").filter(|_| q.get("state") == Some(&state));
+            let code = q.get(name).filter(|_| q.get("state") == Some(&state));
             let (status, body) = match code {
                 Some(_) => ("200 OK", "<p>Account connected. You can close this tab.</p>"),
                 None => ("400 Bad Request", "<p>Connection failed.</p>"),

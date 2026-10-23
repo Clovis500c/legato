@@ -2,6 +2,7 @@ pub mod art;
 pub mod audd;
 pub mod discord;
 pub mod itunes;
+pub mod lastfm;
 pub mod lrclib;
 pub mod nearby;
 pub mod oauth;
