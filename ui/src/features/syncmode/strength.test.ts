@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { strength } from './strength'
+import { passphrase, strength } from './strength'
 
 describe('strength', () => {
   it('too short below the minimum', () => {
@@ -17,5 +17,12 @@ describe('strength', () => {
 
   it('very strong when long and mixed', () => {
     expect(strength('Tr0mbone-Velours-Q7uartz', 10)).toEqual({ level: 4, hints: [] })
+  })
+
+  it('generated passphrases are very strong and differ', () => {
+    const a = passphrase()
+    expect(a).toMatch(/^([A-Z][a-z]+-){2}\d\d(-[A-Z][a-z]+){3}$/)
+    expect(strength(a, 10).level).toBe(4)
+    expect(passphrase()).not.toBe(a)
   })
 })
