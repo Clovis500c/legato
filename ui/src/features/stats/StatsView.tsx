@@ -148,7 +148,7 @@ export function StatsView() {
               return (
                 <li key={`${r.item.album}\u0000${r.item.artist}`} onContextMenu={onMenu(() => tracksMenu(own))} className="w-37.5 shrink-0">
                   <button onClick={() => go({ name: 'album', album: r.item.album, artist: r.item.artist })} className="group flex w-full flex-col gap-2 text-left">
-                    <Cover title={r.item.album} art={trackArt(r.item.cover)} size={150} />
+                    <Cover title={r.item.album} art={trackArt(r.item.cover)} size={150} className="lift" />
                     <span className="truncate text-[0.8125rem] font-semibold group-hover:underline">{r.item.album}</span>
                     <span className="-mt-1.5 truncate text-xs text-ink-2">
                       {r.item.artist} · {trn(r.listens, '{n} play', '{n} plays')}

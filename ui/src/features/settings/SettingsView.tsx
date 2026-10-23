@@ -236,7 +236,7 @@ function Appearance() {
           <Row setting="sidebarCounts" label={msg('Counts in the sidebar')} sub={tr('Number of songs next to each entry')} preview={<CountsScene sidebarCounts={s.sidebarCounts} />}>
             <Toggle label={tr('Counts in the sidebar')} checked={s.sidebarCounts} onChange={(sidebarCounts) => update({ sidebarCounts })} />
           </Row>
-          <Row setting="motion" label={msg('Animations')} sub={tr('Transitions and fades')} preview={<MotionScene motion={s.motion} />}>
+          <Row setting="motion" label={msg('Animations')} sub={tr('Pages, menus, Now Playing and covers move a little. Off: nothing moves')} preview={<MotionScene motion={s.motion} />}>
             <Toggle label={tr('Animations')} checked={s.motion} onChange={(motion) => update({ motion })} />
           </Row>
         </div>

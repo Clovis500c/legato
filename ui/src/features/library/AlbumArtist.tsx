@@ -48,7 +48,7 @@ function AlbumCard({ a, sub }: { a: AlbumGroup; sub: string }) {
   return (
     <li onContextMenu={onMenu(() => tracksMenu(a.tracks))} className="w-37.5 shrink-0">
       <button onClick={() => go({ name: 'album', album: a.album, artist: a.artist })} className="group flex w-full flex-col gap-2 text-left">
-        <Cover title={a.album} art={firstArt(a.tracks)} size={150} />
+        <Cover title={a.album} art={firstArt(a.tracks)} size={150} className="lift" />
         <span className="truncate text-[0.8125rem] font-semibold group-hover:underline">{a.album}</span>
         <span className="-mt-1.5 truncate text-xs text-ink-2">{sub}</span>
       </button>

@@ -36,7 +36,7 @@ import { searchShift, STAGE_ID } from './searchShift'
 import { useSettings } from './settings'
 import { restoreScreen, startClosingPlayerOnNavigate, startScreenSaving } from './screen'
 import { startShortcuts } from './shortcuts'
-import { useStore } from './store'
+import { useStore, type View } from './store'
 import { Toasts } from './Toasts'
 import { Asker } from '../shared/ui/Ask'
 import { tr, trn, useLang } from '../shared/i18n/i18n'
@@ -161,6 +161,9 @@ function Alerts() {
   )
 }
 
+/** One key per page shown: a new one replays the page's entrance. */
+const pageKey = (v: View) => ('id' in v ? `${v.name}:${v.id}` : 'album' in v ? `album:${v.album}` : 'artist' in v ? `artist:${v.artist}` : v.name === 'settings' ? 'settings' : v.name)
+
 export function App() {
   const { view, go, refresh, incoming } = useStore(useShallow((s) => ({ view: s.view, go: s.go, refresh: s.refresh, incoming: s.incoming })))
   const full = usePlayer((s) => s.full)
@@ -222,7 +225,8 @@ export function App() {
         <Sidebar />
         <main className="flex min-w-0 flex-1 flex-col pt-3">
           <Alerts />
-          <div className="flex min-h-0 flex-1 flex-col px-10">
+          {/* New page: a short rise (styles.css .page-in), not when only its details change. */}
+          <div key={pageKey(view)} className="page-in flex min-h-0 flex-1 flex-col px-10">
             {view.name === 'home' && <HomeView />}
             {view.name === 'add' && <AddView />}
             {view.name === 'search' && <SearchView />}

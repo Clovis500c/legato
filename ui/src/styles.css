@@ -189,6 +189,77 @@ code {
   }
 }
 
+/*
+ * Motion (Appearance › Animations; off = `.still`). Short (under 260 ms), transform and opacity only: composited,
+ * nothing runs while idle. Windows' "Animation effects" off: fades only, nothing moves.
+ */
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(28px) scale(0.985);
+  }
+}
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+/* A new page: content rises a little. */
+.page-in {
+  animation: page-in 0.2s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+/* Now Playing comes up from the player bar. */
+.np-in {
+  animation: rise-in 0.26s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+/* Menus and dialogs grow from where they open. */
+.pop-in {
+  animation: pop-in 0.14s ease-out both;
+  transform-origin: top left;
+}
+.dialog-in {
+  animation: pop-in 0.18s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.fade-in {
+  animation: fade-in 0.3s ease-out both;
+}
+/* Buttons give a little under the click (scale property: keeps their own translate). */
+:where(button, [role='button'], [role='tab']):not(:disabled):active {
+  scale: 0.97;
+}
+/* Covers on cards lift on hover. */
+.group:hover > .lift,
+.group:hover .lift {
+  translate: 0 -3px;
+  box-shadow: 0 10px 24px var(--shadow);
+}
+.lift {
+  transition:
+    translate 0.18s ease-out,
+    box-shadow 0.18s ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .page-in,
+  .np-in,
+  .pop-in,
+  .dialog-in {
+    animation-name: fade-in;
+  }
+  :where(button, [role='button'], [role='tab']):not(:disabled):active {
+    scale: none;
+  }
+  .group:hover .lift {
+    translate: none;
+  }
+}
+
 /* Mono kicker label: BIBLIOTHÈQUE · 4 SOURCES */
 .kicker {
   @apply font-mono text-[0.625rem] font-medium tracking-[0.09em] text-ink-3 uppercase;

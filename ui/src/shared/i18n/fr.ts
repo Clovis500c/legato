@@ -678,7 +678,7 @@ const fr: Record<string, string> = {
   'Open on': 'Ouvrir sur',
   'Screen shown when the app starts': 'Écran affiché au démarrage',
   'Animations': 'Animations',
-  'Transitions and fades': 'Transitions et fondus',
+  'Pages, menus, Now Playing and covers move a little. Off: nothing moves': 'Pages, menus, Lecture en cours et pochettes bougent un peu. Désactivé : rien ne bouge',
   'List columns': 'Colonnes des listes',
   'Background': 'Fond',
   'Panel': 'Panneau',

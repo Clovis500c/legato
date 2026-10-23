@@ -37,8 +37,8 @@ export function Dialog({ title, kicker, onClose, children }: { title: string; ki
     }
   }, [])
   return (
-    <div className="fixed inset-0 z-40 grid place-items-center bg-[var(--shadow)] p-6" onClick={onClose}>
-      <div ref={box} role="dialog" aria-modal aria-label={title} onClick={(e) => e.stopPropagation()} className="flex max-h-full w-full max-w-120 flex-col gap-5 overflow-y-auto rounded-xl border border-line bg-panel p-6 shadow-[0_24px_64px_var(--shadow)]">
+    <div className="fade-in fixed inset-0 z-40 grid place-items-center bg-[var(--shadow)] p-6" onClick={onClose}>
+      <div ref={box} role="dialog" aria-modal aria-label={title} onClick={(e) => e.stopPropagation()} className="dialog-in flex max-h-full w-full max-w-120 flex-col gap-5 overflow-y-auto rounded-xl border border-line bg-panel p-6 shadow-[0_24px_64px_var(--shadow)]">
         <header className="flex items-start justify-between gap-4">
           <div className="flex flex-col gap-1">
             {kicker && <p className="kicker">{kicker}</p>}

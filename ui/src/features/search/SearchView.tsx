@@ -109,7 +109,7 @@ function Tile({ title, sub, art, round, onOpen, menu }: { title: string; sub: st
   return (
     <li onContextMenu={menu && onMenu(menu)} className="w-36 shrink-0">
       <button onClick={onOpen} className="group flex w-full flex-col gap-2 text-left">
-        <span className={`block size-36 overflow-hidden ${round ? 'rounded-full' : 'rounded-cover'}`}>{art}</span>
+        <span className={`lift block size-36 overflow-hidden ${round ? 'rounded-full' : 'rounded-cover'}`}>{art}</span>
         <span className="block truncate text-[0.8125rem] font-semibold group-hover:underline">{title}</span>
         <span className="-mt-1.5 block truncate text-xs text-ink-2">{sub}</span>
       </button>

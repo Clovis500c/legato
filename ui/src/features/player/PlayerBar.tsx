@@ -221,7 +221,8 @@ export function PlayerBar() {
       {now?.youtubeId && <YouTubeFrame videoId={now.youtubeId} />}
 
       <button disabled={!now} onClick={() => setFull(true)} title={now ? tr('Open Now Playing') : undefined} className="flex w-85 min-w-0 items-center gap-3.5 text-left">
-        <Cover title={now?.title ?? ''} art={track && trackArt(track)} size={56} />
+        {/* New song: its cover fades in. */}
+        <Cover key={now?.trackId ?? now?.title} className="fade-in" title={now?.title ?? ''} art={track && trackArt(track)} size={56} />
         <span className="flex min-w-0 flex-col gap-1">
           <span className="truncate text-sm font-semibold">{now?.title ?? tr('Nothing playing')}</span>
           <span className="truncate text-xs text-ink-2">{now?.artist ?? tr('Play a YouTube track or drop audio files here')}</span>
