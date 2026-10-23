@@ -1275,6 +1275,8 @@ const fr: Record<string, string> = {
   'Remove from Up next': 'Retirer de la file',
   'Then, similar songs': 'Ensuite, des titres proches',
   'When Up next runs out': 'Quand la file est finie',
+  'Back to the default': 'Revenir au réglage par défaut',
+  'A service needs you to sign in again': 'Un service demande de vous reconnecter',
 }
 
 export default fr

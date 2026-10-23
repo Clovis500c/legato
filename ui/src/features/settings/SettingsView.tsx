@@ -50,12 +50,23 @@ function Group({ title, count, hint, children }: { title: string; count?: number
   )
 }
 
-/** label: English, the setting's id (search, data-setting); shown translated. preview = live picture of what the setting changes. */
-function Row({ label, sub, children, preview }: { label: string; sub?: string; children: ReactNode; preview?: ReactNode }) {
+/**
+ * label: English, the setting's id (search, data-setting); shown translated. preview = live picture of what the setting
+ * changes. setting = the key it edits: "Reset" shows once it's off its default.
+ */
+function Row({ label, sub, children, preview, setting }: { label: string; sub?: string; children: ReactNode; preview?: ReactNode; setting?: keyof Settings }) {
+  const changed = useSettings((st) => !!setting && JSON.stringify(st.settings[setting]) !== JSON.stringify(DEFAULTS[setting]))
   return (
     <div data-setting={label} className="flex items-center gap-4 border-b border-line-soft px-4 py-3 last:border-0">
       <div className="flex-1">
-        <p className="text-[0.8125rem] font-medium">{tr(label)}</p>
+        <p className="flex items-center gap-2 text-[0.8125rem] font-medium">
+          {tr(label)}
+          {changed && (
+            <button type="button" onClick={() => useSettings.getState().update({ [setting!]: DEFAULTS[setting!] })} title={tr('Back to the default')} className="flex items-center gap-1 rounded-full bg-raised px-2 py-px text-[0.6875rem] font-normal text-ink-2 hover:text-ink">
+              <ArrowCounterClockwise size={11} /> {tr('Reset')}
+            </button>
+          )}
+        </p>
         {sub && <p className="text-xs text-ink-2">{sub}</p>}
       </div>
       {preview}
@@ -161,13 +172,13 @@ function Appearance() {
       <InterfaceSize />
       <Group title={msg('Player')}>
         <div className="rounded-xl border border-line bg-raised">
-          <Row label={msg('Immersive player')} sub={tr("Now Playing over the song's cover, big and blurred")} preview={<NowPlayingScene s={s} />}>
+          <Row setting="immersive" label={msg('Immersive player')} sub={tr("Now Playing over the song's cover, big and blurred")} preview={<NowPlayingScene s={s} />}>
             <Toggle label={tr('Immersive player')} checked={s.immersive} onChange={(immersive) => update({ immersive })} />
           </Row>
-          <Row label={msg('Cover tint')} sub={tr('Now Playing takes a flat color from the cover (when immersive is off)')} preview={<NowPlayingScene s={{ ...s, immersive: false }} />}>
+          <Row setting="tint" label={msg('Cover tint')} sub={tr('Now Playing takes a flat color from the cover (when immersive is off)')} preview={<NowPlayingScene s={{ ...s, immersive: false }} />}>
             <Toggle label={tr('Cover tint')} checked={s.tint} onChange={(tint) => update({ tint })} />
           </Row>
-          <Row label={msg('Mini player')} sub={tr('For every source. YouTube always shows one: its video must stay visible.')} preview={<MiniPlayerScene miniPlayer={s.miniPlayer} />}>
+          <Row setting="miniPlayer" label={msg('Mini player')} sub={tr('For every source. YouTube always shows one: its video must stay visible.')} preview={<MiniPlayerScene miniPlayer={s.miniPlayer} />}>
             <Toggle label={tr('Mini player')} checked={s.miniPlayer} onChange={(miniPlayer) => update({ miniPlayer })} />
           </Row>
           <Row label={msg('Mini player place')} sub={tr('In the sidebar it never covers the page; floating, drag it anywhere.')}>
@@ -198,7 +209,7 @@ function Appearance() {
           <Row label={msg('Background dimming')} sub={tr('{n} %: veil in the theme’s color, keeps text readable', { n: s.backdropDim })}>
             <Slider label={tr('Background dimming')} value={s.backdropDim} max={80} onChange={(backdropDim) => update({ backdropDim })} />
           </Row>
-          <Row label={msg('Background motion')} sub={tr('The cover drifts slowly behind the player')}>
+          <Row setting="backdropMotion" label={msg('Background motion')} sub={tr('The cover drifts slowly behind the player')}>
             <Toggle label={tr('Background motion')} checked={s.backdropMotion} onChange={(backdropMotion) => update({ backdropMotion })} />
           </Row>
         </div>
@@ -206,26 +217,26 @@ function Appearance() {
       <details className="group/hifi">
         <summary className="kicker cursor-pointer list-none py-1 hover:text-ink">{tr('Hi-Fi extras')} ›</summary>
         <div className="mt-3 rounded-xl border border-line bg-raised">
-          <Row label={msg('Source icon')} sub={tr('Where the song plays from, next to the volume')} preview={<SourceIconScene readout={s.readout} />}>
+          <Row setting="readout" label={msg('Source icon')} sub={tr('Where the song plays from, next to the volume')} preview={<SourceIconScene readout={s.readout} />}>
             <Toggle label={tr('Source icon')} checked={s.readout} onChange={(readout) => update({ readout })} />
           </Row>
           <Row label={msg('Volume control')} preview={<VolumeScene volume={s.volume} />}>
             <Segmented label={tr('Volume control')} value={s.volume} onChange={(volume) => update({ volume })} options={[{ value: 'knob', label: tr('Knob') }, { value: 'bar', label: tr('Bar') }]} />
           </Row>
-          <Row label={msg('Tuner scale')} sub={tr('Tuner-style progress bar in full screen')} preview={<TunerScene tuner={s.tuner} />}>
+          <Row setting="tuner" label={msg('Tuner scale')} sub={tr('Tuner-style progress bar in full screen')} preview={<TunerScene tuner={s.tuner} />}>
             <Toggle label={tr('Tuner scale')} checked={s.tuner} onChange={(tuner) => update({ tuner })} />
           </Row>
         </div>
       </details>
       <Group title={msg('Lists and navigation')}>
         <div className="rounded-xl border border-line bg-raised">
-          <Row label={msg('Covers in lists')} preview={<ListCoversScene listCovers={s.listCovers} />}>
+          <Row setting="listCovers" label={msg('Covers in lists')} preview={<ListCoversScene listCovers={s.listCovers} />}>
             <Toggle label={tr('Covers in lists')} checked={s.listCovers} onChange={(listCovers) => update({ listCovers })} />
           </Row>
-          <Row label={msg('Counts in the sidebar')} sub={tr('Number of songs next to each entry')} preview={<CountsScene sidebarCounts={s.sidebarCounts} />}>
+          <Row setting="sidebarCounts" label={msg('Counts in the sidebar')} sub={tr('Number of songs next to each entry')} preview={<CountsScene sidebarCounts={s.sidebarCounts} />}>
             <Toggle label={tr('Counts in the sidebar')} checked={s.sidebarCounts} onChange={(sidebarCounts) => update({ sidebarCounts })} />
           </Row>
-          <Row label={msg('Animations')} sub={tr('Transitions and fades')} preview={<MotionScene motion={s.motion} />}>
+          <Row setting="motion" label={msg('Animations')} sub={tr('Transitions and fades')} preview={<MotionScene motion={s.motion} />}>
             <Toggle label={tr('Animations')} checked={s.motion} onChange={(motion) => update({ motion })} />
           </Row>
         </div>
@@ -343,7 +354,7 @@ function SoundGroup() {
   return (
     <Group title={msg('Sound processing')}>
       <div className="rounded-xl border border-line bg-raised">
-        <Row label={msg('Adaptive Sound')} sub={tr('Loud and quiet songs end up alike, adjusted as they play. A thin line under the volume shows the result. Local files and YouTube; not Spotify (its own app plays it).')}>
+        <Row setting="adaptiveSound" label={msg('Adaptive Sound')} sub={tr('Loud and quiet songs end up alike, adjusted as they play. A thin line under the volume shows the result. Local files and YouTube; not Spotify (its own app plays it).')}>
           <Toggle label={tr('Adaptive Sound')} checked={s.adaptiveSound} onChange={(adaptiveSound) => update({ adaptiveSound })} />
         </Row>
         {s.adaptiveSound && (
@@ -356,7 +367,7 @@ function SoundGroup() {
             />
           </Row>
         )}
-        <Row label={msg('Moving cover')} sub={s.motion ? tr('In Now Playing, the cover swells and settles with the music') : tr('Needs Animations on (Appearance)')}>
+        <Row setting="coverPulse" label={msg('Moving cover')} sub={s.motion ? tr('In Now Playing, the cover swells and settles with the music') : tr('Needs Animations on (Appearance)')}>
           <Toggle label={tr('Moving cover')} checked={s.coverPulse} onChange={(coverPulse) => update({ coverPulse })} />
         </Row>
         <Row
@@ -391,13 +402,13 @@ function GeneralSection() {
       <Group title={msg('Starting and closing')}>
         <div className="rounded-xl border border-line bg-raised">
           <OpenAtStartup />
-          <Row label={msg('Keep running in the notification area')} sub={s.closeToTray ? tr('Closing the window keeps the music going; Quit from the icon’s menu') : tr('Closing the window quits the app')}>
+          <Row setting="closeToTray" label={msg('Keep running in the notification area')} sub={s.closeToTray ? tr('Closing the window keeps the music going; Quit from the icon’s menu') : tr('Closing the window quits the app')}>
             <Toggle label={tr('Keep running in the notification area')} checked={s.closeToTray} onChange={(closeToTray) => update({ closeToTray })} />
           </Row>
-          <Row label={msg('Reopen where you left off')} sub={tr('Same screen as when the app closed, Now Playing open if it was')}>
+          <Row setting="reopen" label={msg('Reopen where you left off')} sub={tr('Same screen as when the app closed, Now Playing open if it was')}>
             <Toggle label={tr('Reopen where you left off')} checked={s.reopen} onChange={(reopen) => update({ reopen })} />
           </Row>
-          <Row label={msg('Resume playback on launch')} sub={tr('The last song picks up where it stopped, with its queue, when the app opens')}>
+          <Row setting="resume" label={msg('Resume playback on launch')} sub={tr('The last song picks up where it stopped, with its queue, when the app opens')}>
             <Toggle label={tr('Resume playback on launch')} checked={s.resume} onChange={(resume) => update({ resume })} />
           </Row>
           <Row label={msg('Open on')} sub={s.reopen ? tr('Used when “Reopen where you left off” is off (above)') : tr('Screen shown when the app starts')}>
@@ -407,20 +418,20 @@ function GeneralSection() {
       </Group>
       <Group title={msg('Search bar')}>
         <div className="rounded-xl border border-line bg-raised">
-          <Row label={msg('Remember recent searches')} sub={tr('Listed when you click the search bar. Kept on this PC only, never synced')}>
+          <Row setting="rememberSearches" label={msg('Remember recent searches')} sub={tr('Listed when you click the search bar. Kept on this PC only, never synced')}>
             <Toggle label={tr('Remember recent searches')} checked={s.rememberSearches} onChange={(rememberSearches) => (update({ rememberSearches }), rememberSearches || clearRecent())} />
           </Row>
-          <Row label={msg('Search suggestions')} sub={tr('YouTube’s suggestions as you type: what you type goes to Google')}>
+          <Row setting="searchSuggestions" label={msg('Search suggestions')} sub={tr('YouTube’s suggestions as you type: what you type goes to Google')}>
             <Toggle label={tr('Search suggestions')} checked={s.searchSuggestions} onChange={(searchSuggestions) => update({ searchSuggestions })} />
           </Row>
         </div>
       </Group>
       <Group title={msg('Voice and recognition')}>
         <div className="rounded-xl border border-line bg-raised">
-          <Row label={msg('Voice search')} sub={tr('The mic in the search bar. Windows’ online speech recognition: your voice goes to Microsoft’s service while the mic listens, nothing is kept')}>
+          <Row setting="voiceSearch" label={msg('Voice search')} sub={tr('The mic in the search bar. Windows’ online speech recognition: your voice goes to Microsoft’s service while the mic listens, nothing is kept')}>
             <Toggle label={tr('Voice search')} checked={s.voiceSearch} onChange={(voiceSearch) => update({ voiceSearch })} />
           </Row>
-          <Row label={msg('Music Detector')} sub={tr('Identify a song (Add music, or the mic): 10 seconds from the microphone or from what this PC plays, kept in memory, sent once to AudD with your token, nothing saved')}>
+          <Row setting="detector" label={msg('Music Detector')} sub={tr('Identify a song (Add music, or the mic): 10 seconds from the microphone or from what this PC plays, kept in memory, sent once to AudD with your token, nothing saved')}>
             <Toggle label={tr('Music Detector')} checked={s.detector} onChange={(detector) => update({ detector })} />
           </Row>
         </div>
@@ -456,10 +467,10 @@ function PlaybackSection() {
       <SoundGroup />
       <Group title={msg('YouTube videos')}>
         <div className="rounded-xl border border-line bg-raised">
-          <Row label={msg('Subtitles on videos')} sub={tr('Off: hidden even when your Google account shows them')}>
+          <Row setting="subtitles" label={msg('Subtitles on videos')} sub={tr('Off: hidden even when your Google account shows them')}>
             <Toggle label={tr('Subtitles on videos')} checked={s.subtitles} onChange={(subtitles) => update({ subtitles })} />
           </Row>
-          <Row label={msg('YouTube controls on the video')} sub={tr("YouTube's own title, buttons and hover menu on the video. From the next track.")}>
+          <Row setting="youtubeControls" label={msg('YouTube controls on the video')} sub={tr("YouTube's own title, buttons and hover menu on the video. From the next track.")}>
             <Toggle label={tr('YouTube controls on the video')} checked={s.youtubeControls} onChange={(youtubeControls) => update({ youtubeControls })} />
           </Row>
         </div>
@@ -501,6 +512,8 @@ export function SettingsView({ section }: { section: SettingsSection }) {
   const go = useStore((s) => s.go)
   const focus = useStore((s) => (s.view.name === 'settings' ? s.view.focus : undefined))
   const content = useRef<HTMLDivElement>(null)
+  // Set up once, signed out since (expired session): Accounts says so.
+  const signIn = useStore((s) => Object.values(s.status).some((x) => x.configured && !x.connected))
   // Search result opened: bring the setting into view and flash it.
   useEffect(() => {
     if (!focus) return
@@ -521,9 +534,9 @@ export function SettingsView({ section }: { section: SettingsSection }) {
         <nav className="flex shrink-0 flex-wrap gap-px @2xl:w-52 @2xl:flex-col @2xl:flex-nowrap">
           <SettingsSearch onPick={(e) => go({ name: 'settings', section: e.section, focus: e.label })} />
           {sections.map((s) => (
-            <button key={s.id} aria-current={s.id === section ? 'page' : undefined} onClick={() => go({ name: 'settings', section: s.id })} className={`flex items-center gap-2.5 rounded-md py-2 pr-2.5 pl-1 text-left ${s.id === section ? 'bg-raised font-semibold' : 'text-ink-2 hover:text-ink'}`}>
-              <span className="w-1.5">{s.id === section && <Led on />}</span>
-              {s.icon} {tr(s.label)}
+            <button key={s.id} aria-current={s.id === section ? 'page' : undefined} onClick={() => go({ name: 'settings', section: s.id })} className={`flex items-center gap-3 rounded-lg px-3 py-2 text-left ${s.id === section ? 'bg-raised font-semibold' : 'text-ink-2 hover:text-ink'}`}>
+              {s.icon} <span className="flex-1">{tr(s.label)}</span>
+              {s.id === 'sources' && signIn && <span title={tr('A service needs you to sign in again')} className="size-2 rounded-full bg-danger" />}
             </button>
           ))}
         </nav>
