@@ -13,7 +13,7 @@ fn song_key_ok(song: &str) -> bool {
 
 /// Live Editor: a song's saved edits, or the presets (song None).
 #[tauri::command]
-pub fn edits(state: State<AppState>, song: Option<String>) -> CmdResult<Vec<music_core::library::Edit>> {
+pub async fn edits(state: State<'_, AppState>, song: Option<String>) -> CmdResult<Vec<music_core::library::Edit>> {
     if song.as_deref().is_some_and(|s| !song_key_ok(s)) {
         return Err("bad song key".into());
     }
@@ -22,7 +22,7 @@ pub fn edits(state: State<AppState>, song: Option<String>) -> CmdResult<Vec<musi
 
 /// New (id None) or changed edit; effects clamped, stored as numbers only. Returns its id.
 #[tauri::command]
-pub fn save_edit(state: State<AppState>, id: Option<i64>, song: Option<String>, name: String, effects: music_player::Effects) -> CmdResult<i64> {
+pub async fn save_edit(state: State<'_, AppState>, id: Option<i64>, song: Option<String>, name: String, effects: music_player::Effects) -> CmdResult<i64> {
     let name: String = name.trim().chars().take(60).collect();
     if name.is_empty() || song.as_deref().is_some_and(|s| !song_key_ok(s)) {
         return Err("bad edit".into());
@@ -32,13 +32,13 @@ pub fn save_edit(state: State<AppState>, id: Option<i64>, song: Option<String>, 
 }
 
 #[tauri::command]
-pub fn delete_edit(state: State<AppState>, id: i64) -> CmdResult<()> {
+pub async fn delete_edit(state: State<'_, AppState>, id: i64) -> CmdResult<()> {
     state.lib().delete_edit(id).map_err(err)
 }
 
 /// The edit that plays with this song from now on (None = as is).
 #[tauri::command]
-pub fn activate_edit(state: State<AppState>, song: String, id: Option<i64>) -> CmdResult<()> {
+pub async fn activate_edit(state: State<'_, AppState>, song: String, id: Option<i64>) -> CmdResult<()> {
     if !song_key_ok(&song) {
         return Err("bad song key".into());
     }
@@ -101,7 +101,7 @@ fn drafts(state: &AppState) -> serde_json::Map<String, serde_json::Value> {
 }
 
 #[tauri::command]
-pub fn edit_draft(state: State<AppState>, song: String) -> CmdResult<Option<Draft>> {
+pub async fn edit_draft(state: State<'_, AppState>, song: String) -> CmdResult<Option<Draft>> {
     if !song_key_ok(&song) {
         return Err("bad song key".into());
     }
@@ -110,7 +110,7 @@ pub fn edit_draft(state: State<AppState>, song: String) -> CmdResult<Option<Draf
 
 /// Keeps (Some) or drops (None, saved or reset) this song's unsaved settings.
 #[tauri::command]
-pub fn save_edit_draft(state: State<AppState>, song: String, draft: Option<Draft>) -> CmdResult<()> {
+pub async fn save_edit_draft(state: State<'_, AppState>, song: String, draft: Option<Draft>) -> CmdResult<()> {
     if !song_key_ok(&song) {
         return Err("bad song key".into());
     }

@@ -233,7 +233,7 @@ pub fn start_all(app: &AppHandle) {
 }
 
 #[tauri::command]
-pub fn plugins_list(app: AppHandle, state: State<AppState>, plugins: State<Plugins>) -> CmdResult<Vec<PluginInfo>> {
+pub async fn plugins_list(app: AppHandle, state: State<'_, AppState>, plugins: State<'_, Plugins>) -> CmdResult<Vec<PluginInfo>> {
     let reg = registry(&state);
     let root = dir(&app)?;
     let mut out = Vec::new();
@@ -262,7 +262,7 @@ pub fn plugins_list(app: AppHandle, state: State<AppState>, plugins: State<Plugi
 }
 
 #[tauri::command]
-pub fn plugin_inspect(app: AppHandle, state: State<AppState>, folder: String) -> CmdResult<Inspect> {
+pub async fn plugin_inspect(app: AppHandle, state: State<'_, AppState>, folder: String) -> CmdResult<Inspect> {
     let folder = PathBuf::from(folder);
     let m = read_manifest(&folder).map_err(err)?;
     let files = files(&folder, &m).map_err(err)?;
@@ -273,7 +273,7 @@ pub fn plugin_inspect(app: AppHandle, state: State<AppState>, folder: String) ->
 
 /// Installs (or updates) the plugin in `folder`, its permissions approved by the user, and turns it on.
 #[tauri::command]
-pub fn plugin_install(app: AppHandle, state: State<AppState>, folder: String) -> CmdResult<String> {
+pub async fn plugin_install(app: AppHandle, state: State<'_, AppState>, folder: String) -> CmdResult<String> {
     let folder = PathBuf::from(folder);
     let m = read_manifest(&folder).map_err(err)?;
     let files = files(&folder, &m).map_err(err)?;
@@ -298,7 +298,7 @@ pub fn plugin_install(app: AppHandle, state: State<AppState>, folder: String) ->
 }
 
 #[tauri::command]
-pub fn plugin_set(app: AppHandle, state: State<AppState>, id: String, on: bool) -> CmdResult<()> {
+pub async fn plugin_set(app: AppHandle, state: State<'_, AppState>, id: String, on: bool) -> CmdResult<()> {
     let mut reg = registry(&state);
     let entry = reg.get_mut(&id).ok_or("Plugin not installed")?;
     entry.on = on;
@@ -314,7 +314,7 @@ pub fn plugin_set(app: AppHandle, state: State<AppState>, id: String, on: bool) 
 
 /// Removes the plugin, its storage and its log.
 #[tauri::command]
-pub fn plugin_uninstall(app: AppHandle, state: State<AppState>, plugins: State<Plugins>, id: String) -> CmdResult<()> {
+pub async fn plugin_uninstall(app: AppHandle, state: State<'_, AppState>, plugins: State<'_, Plugins>, id: String) -> CmdResult<()> {
     stop(&app, &id);
     let mut reg = registry(&state);
     reg.remove(&id);
