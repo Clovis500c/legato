@@ -3,7 +3,7 @@ import { useCallback, useMemo, useState } from 'react'
 import { useSettings } from '../../app/settings'
 import { pageQuery, useStore } from '../../app/store'
 import { api, type LibraryTrack } from '../../shared/api'
-import { fold, formatCount } from '../../shared/format'
+import { formatCount } from '../../shared/format'
 import { Button } from '../../shared/ui/Button'
 import { Led, LedChip, RoundButton, Segmented } from '../../shared/ui/controls'
 import { VirtualGrid } from '../../shared/ui/VirtualGrid'
@@ -20,7 +20,7 @@ import { SharePanel } from '../share/SharePanel'
 import { FIT_FIELD, SongsThatFit } from './SongsThatFit'
 import { PlaylistCover } from './PlaylistCover'
 import { COLUMNS, type Column } from '../../shared/theme/theme'
-import { filterTracks, groupAlbums, groupArtists, groupStats, libraryStats, musicOnly, primaryArtist, sortGroups as orderGroups, sortTracks, type Filter, type GroupSort, type Sort } from './filter'
+import { filterTracks, groupAlbums, groupArtists, groupStats, libraryStats, musicOnly, sortGroups as orderGroups, sortTracks, type Filter, type GroupSort, type Sort } from './filter'
 import { HiddenVideos } from './HiddenVideos'
 import { TrackTable } from './TrackTable'
 import { msg, tr, trn } from '../../shared/i18n/i18n'
@@ -49,7 +49,7 @@ const sortGroups: { id: Sort; label: string }[][] = [
   [{ id: 'random', label: msg('Random') }],
 ]
 
-const totalTime = (tracks: LibraryTrack[]) => {
+export const totalTime = (tracks: LibraryTrack[]) => {
   const min = Math.round(tracks.reduce((s, t) => s + (t.durationMs ?? 0), 0) / 60_000)
   return min >= 60 ? tr('{h} hr {m} min', { h: Math.floor(min / 60), m: String(min % 60).padStart(2, '0') }) : tr('{m} min', { m: min })
 }
@@ -73,7 +73,7 @@ function PlayPills({ tracks }: { tracks: LibraryTrack[] }) {
 }
 
 /** Shuffle next to a page's round Play (album, artist, playlist). */
-function ShuffleRound({ tracks }: { tracks: LibraryTrack[] }) {
+export function ShuffleRound({ tracks }: { tracks: LibraryTrack[] }) {
   if (!tracks.length) return null
   return (
     <RoundButton label={tr('Shuffle play')} onClick={() => shufflePlay(tracks)}>
@@ -96,7 +96,7 @@ function ColumnsButton() {
 }
 
 /** Round play button: starts first playable track of the list. Absent if none. */
-function PlayAll({ tracks }: { tracks: LibraryTrack[] }) {
+export function PlayAll({ tracks }: { tracks: LibraryTrack[] }) {
   const play = usePlayer((s) => s.playTracks)
   const sp = useStore((s) => s.status.spotify.connected)
   const first = tracks.findIndex((t) => vias(t, sp).length > 0)
@@ -408,17 +408,6 @@ export function AlbumsView() {
   )
 }
 
-export function AlbumView({ album, artist }: { album: string; artist: string }) {
-  const tracks = useStore((s) => s.tracks)
-  const shown = useMemo(() => tracks.filter((t) => t.album && fold(t.album) === fold(album) && fold(primaryArtist(t.artist)) === fold(artist)), [tracks, album, artist])
-  return (
-    <>
-      <PageHeader onContextMenu={onMenu(() => tracksMenu(shown, ['-', { label: tr('Go to artist'), onSelect: () => useStore.getState().go({ name: 'artist', artist }) }]))} art={<Cover title={album} art={firstArt(shown)} size={150} />} kicker={tr('Album · {artist}', { artist })} title={album} sub={<span className="font-mono text-[0.6875rem] tracking-[0.06em] uppercase">{trn(shown.length, '{n} track', '{n} tracks')} · {totalTime(shown)}</span>} actions={<><PlayAll tracks={shown} /><ShuffleRound tracks={shown} /></>} />
-      <TrackTable tracks={shown} empty={tr('No songs.')} />
-    </>
-  )
-}
-
 export function ArtistsView() {
   const { tracks, go, artistView: v, stats, seed } = useStore()
   const query = useStore(pageQuery)
@@ -443,17 +432,6 @@ export function ArtistsView() {
           </div>
         )}
       </VirtualList>
-    </>
-  )
-}
-
-export function ArtistView({ artist }: { artist: string }) {
-  const tracks = useStore((s) => s.tracks)
-  const shown = useMemo(() => tracks.filter((t) => fold(primaryArtist(t.artist)) === fold(artist)), [tracks, artist])
-  return (
-    <>
-      <PageHeader onContextMenu={onMenu(() => tracksMenu(shown))} art={<Cover title={artist} art={firstArt(shown)} size={120} className="rounded-full!" />} kicker={tr('Artist')} title={artist} sub={<span className="font-mono text-[0.6875rem] tracking-[0.06em] uppercase">{trn(shown.length, '{n} track', '{n} tracks')} · {totalTime(shown)}</span>} actions={<PlayAll tracks={shown} />} />
-      <TrackTable tracks={shown} empty={tr('No songs.')} />
     </>
   )
 }

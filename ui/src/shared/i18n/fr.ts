@@ -368,7 +368,6 @@ const fr: Record<string, string> = {
   '{n} albums': '{n} albums',
   'No matching albums.': 'Aucun album correspondant.',
   'No albums yet.': 'Pas encore d’album.',
-  'Album · {artist}': 'Album · {artist}',
   '{n} artist': '{n} artiste',
   '{n} artists': '{n} artistes',
   'No matching artists.': 'Aucun artiste correspondant.',
@@ -1266,6 +1265,12 @@ const fr: Record<string, string> = {
   'From your library: same artists and mixes as this playlist': 'De votre bibliothèque : mêmes artistes et mêmes mixes que cette playlist',
   'Find songs to add': 'Chercher des titres à ajouter',
   'Add a few songs: suggestions follow them.': 'Ajoutez quelques titres : les suggestions suivront.',
+  'More by {artist}': 'Plus de {artist}',
+  'Back to {artist}': 'Retour à {artist}',
+  'Your most played': 'Vos plus écoutés',
+  'All {n} songs': 'Les {n} titres',
+  'Discography': 'Discographie',
+  'Singles and EPs': 'Singles et EP',
 }
 
 export default fr
