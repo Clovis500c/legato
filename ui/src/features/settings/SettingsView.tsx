@@ -424,6 +424,9 @@ function GeneralSection() {
           <Row setting="searchSuggestions" label={msg('Search suggestions')} sub={tr('YouTube’s suggestions as you type: what you type goes to Google')}>
             <Toggle label={tr('Search suggestions')} checked={s.searchSuggestions} onChange={(searchSuggestions) => update({ searchSuggestions })} />
           </Row>
+          <Row setting="searchOnCover" label={msg('Over the cover in Now Playing')} sub={tr('Centered above the cover or video, not the window, when a panel is open beside it')}>
+            <Toggle label={tr('Over the cover in Now Playing')} checked={s.searchOnCover} onChange={(searchOnCover) => update({ searchOnCover })} />
+          </Row>
         </div>
       </Group>
       <Group title={msg('Voice and recognition')}>

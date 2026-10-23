@@ -135,9 +135,9 @@ function VideoCard({ hit, onPlay, onAdded }: { hit: SearchHit; onPlay: () => voi
   )
 }
 
-function Section({ title, onAll, children }: { title: string; onAll?: () => void; children: ReactNode }) {
+function Section({ title, onAll, children, className = '' }: { title: string; onAll?: () => void; children: ReactNode; className?: string }) {
   return (
-    <section className="flex flex-col gap-3">
+    <section className={`flex flex-col gap-3 ${className}`}>
       <div className="flex items-end justify-between gap-4">
         <h2 className="text-xl font-bold tracking-[-0.02em]">{title}</h2>
         {onAll && (
@@ -340,7 +340,7 @@ export function SearchView() {
         <div className="flex items-start gap-7">
           {top}
           {anySongs && (
-            <Section title={tr('Songs')} onAll={() => setKind('songs')}>
+            <Section title={tr('Songs')} onAll={() => setKind('songs')} className="min-w-0 flex-1">
               {songsList}
             </Section>
           )}
@@ -348,8 +348,9 @@ export function SearchView() {
       )}
       {everywhere && videos.length > 0 && (
         <Section title={tr('Videos')} onAll={() => setKind('videos')}>
-          <ul className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-5">
-            {videos.slice(0, 4).map((h) => (
+          {/* One row, as many cards as fit the width (the rest wait behind See all). */}
+          <ul className="grid auto-rows-[0] grid-cols-[repeat(auto-fill,minmax(220px,1fr))] grid-rows-[auto] gap-x-5 overflow-hidden">
+            {videos.slice(0, 8).map((h) => (
               <VideoCard key={Object.values(h.ids).join('|')} hit={h} onPlay={() => void playHit(h, videos)} onAdded={(id) => markAdded(h, id)} />
             ))}
           </ul>

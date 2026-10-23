@@ -244,6 +244,13 @@ function playVia(t: LibraryTrack, list: LibraryTrack[], index: number): MenuEntr
   return ways.length > 1 && { label: tr('Play via'), icon: <SpeakerHigh size={16} />, items: ways.map((v) => ({ label: tr(viaLabel[v]), onSelect: () => player().playTracks(list, index, v) })) }
 }
 
+/** Library row of a recommendation once added (same YouTube, Apple or Spotify id), else the song itself. */
+function ownOf(t: LibraryTrack): LibraryTrack {
+  if (!isRemote(t)) return t
+  const same = (x: LibraryTrack) => (['youtube', 'apple', 'spotify'] as const).some((s) => t.ids[s] && x.ids[s] === t.ids[s])
+  return app().tracks.find(same) ?? t
+}
+
 /** Recommendation → library (then it can go in playlists). */
 const addToLibraryItem = (t: LibraryTrack): MenuEntry => ({
   label: tr('Add to library'),
@@ -322,6 +329,8 @@ function removeFrom(t: LibraryTrack): MenuEntry {
 export function trackMenu(t: LibraryTrack, ctx: { list?: LibraryTrack[]; index?: number; playlistId?: number; position?: number; queueIndex?: number } = {}): MenuEntry[] {
   const list = ctx.list ?? [t]
   const index = ctx.index ?? 0
+  // Added since: library actions (playlists) from now on.
+  t = ownOf(t)
   if (isRemote(t)) return remoteMenu(t, list, index)
   const playable = vias(t, sp()).length > 0
   const go = app().go
@@ -401,10 +410,11 @@ export function pluginMenu(p: PluginInfo, about: () => void): MenuEntry[] {
 
 /** Catalog search result (Add music). */
 export function hitMenu(hit: SearchHit, add: () => void, busy: boolean, play: () => void): MenuEntry[] {
-  const t = app().tracks.find((x) => x.id === hit.libraryId)
-  if (t) return trackMenu(t)
-  const links = pages({ ...hit, id: 0, added: 0 })
   const item = remoteTrack(hit)
+  // In the library (added here or before): its menu, playlists included.
+  const t = app().tracks.find((x) => x.id === hit.libraryId) ?? ownOf(item)
+  if (!isRemote(t)) return trackMenu(t)
+  const links = pages({ ...hit, id: 0, added: 0 })
   return [
     { label: tr('Play'), icon: <Play size={16} />, onSelect: play },
     { label: tr('Play next'), icon: <Queue size={16} />, onSelect: () => player().enqueue([item], true) },
@@ -504,7 +514,8 @@ export function playlistMenu(p: LibraryPlaylist): MenuEntry[] {
 export function playerMenu(): MenuEntry[] {
   const { now, playing, shuffle, repeat, full, positionMs, list, index, toggle, step, toggleShuffle, setFull } = player()
   if (!now) return appMenu()
-  const lib = nowTrack()
+  const playingNow = nowTrack()
+  const lib = playingNow && ownOf(playingNow)
   // Recommendation playing: not in the library, so no playlist or library actions.
   const t = lib && !isRemote(lib) ? lib : undefined
   const video = now.youtubeId

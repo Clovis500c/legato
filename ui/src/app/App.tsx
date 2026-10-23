@@ -1,6 +1,6 @@
 import { CaretDown, CopySimple, Minus, Square, Warning, X } from '@phosphor-icons/react'
 import { getCurrentWindow } from '@tauri-apps/api/window'
-import { lazy, Suspense, useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import { AddView } from '../features/add/AddView'
 import { SearchView } from '../features/search/SearchView'
@@ -30,6 +30,7 @@ import { api } from '../shared/api'
 import { region, spotifyList } from '../shared/format'
 import { ContextMenuHost } from '../shared/ui/ContextMenu'
 import { Logo } from '../shared/ui/Logo'
+import { searchShift, STAGE_ID } from './searchShift'
 import { useSettings } from './settings'
 import { restoreScreen, startClosingPlayerOnNavigate, startScreenSaving } from './screen'
 import { startShortcuts } from './shortcuts'
@@ -51,8 +52,39 @@ const winBtn = 'grid h-9 w-11 place-items-center rounded-md text-ink transition 
  * player included), window buttons. Empty areas drag the window. Over Now Playing it's see-through: the player's
  * backdrop or tint runs under it, no grey band.
  */
+/** Now Playing (setting searchOnCover): the search's middle over the cover / video column, following its size. */
+function useSearchOverCover(box: React.RefObject<HTMLDivElement | null>, on: boolean) {
+  const [shift, setShift] = useState(0)
+  useEffect(() => {
+    if (!on) return void setShift(0)
+    const measure = () => {
+      const stage = document.getElementById(STAGE_ID)
+      const el = box.current
+      const bar = el?.firstElementChild
+      if (!stage || !el || !bar) return setShift(0)
+      const s = stage.getBoundingClientRect()
+      const b = el.getBoundingClientRect()
+      setShift(searchShift(s.left + s.width / 2, { left: b.left, width: b.width }, bar.getBoundingClientRect().width))
+    }
+    // The stage mounts with Now Playing and resizes when a panel opens: watch it once it's there.
+    const ro = new ResizeObserver(measure)
+    const watch = () => {
+      const stage = document.getElementById(STAGE_ID)
+      if (stage) ro.observe(stage)
+      if (box.current) ro.observe(box.current)
+      measure()
+    }
+    const t = setTimeout(watch)
+    return () => (clearTimeout(t), ro.disconnect())
+  }, [on, box])
+  return shift
+}
+
 function TopBar() {
   const full = usePlayer((s) => s.full)
+  const searchBox = useRef<HTMLDivElement>(null)
+  const onCover = useSettings((s) => s.settings.searchOnCover)
+  const shift = useSearchOverCover(searchBox, full && onCover)
   const setFull = usePlayer((s) => s.setFull)
   const go = useStore((s) => s.go)
   const [maximized, setMaximized] = useState(false)
@@ -74,7 +106,7 @@ function TopBar() {
           <CaretDown size={12} weight="bold" /> {tr('Close player')}
         </button>
       )}
-      <div data-tauri-drag-region className="flex h-full min-w-0 flex-1 items-center justify-center px-4">
+      <div ref={searchBox} data-tauri-drag-region className="flex h-full min-w-0 flex-1 items-center justify-center px-4 *:translate-x-(--shift) *:transition-[translate] *:duration-300" style={{ ['--shift' as string]: `${shift}px` }}>
         <SearchBar>
           <VoiceSearch />
         </SearchBar>

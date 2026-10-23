@@ -1,4 +1,5 @@
 import { ArrowSquareOut } from '@phosphor-icons/react'
+import { STAGE_ID } from '../../app/searchShift'
 import { openUrl } from '@tauri-apps/plugin-opener'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
@@ -243,7 +244,7 @@ export function NowPlaying() {
       {!upNext && !lyrics && !editor && <PanelTabs className="absolute top-17 right-10 z-10" upNext={false} lyrics={false} editor={false} next={nextCount} />}
 
       <div className={`grid min-h-0 flex-1 gap-10 ${editor ? 'grid-cols-[minmax(0,1fr)_400px]' : lyrics ? 'grid-cols-[minmax(0,1fr)_minmax(0,1fr)]' : upNext ? 'grid-cols-[minmax(0,1fr)_360px]' : 'grid-cols-1'}`}>
-        <section className="flex min-h-0 min-w-0 flex-col items-center gap-4">
+        <section id={STAGE_ID} className="flex min-h-0 min-w-0 flex-col items-center gap-4">
           {/* Every song (user's pick 2026-10-23): Video on a file or a preview switches to its YouTube version, same spot. */}
           <Segmented
             className="glass"

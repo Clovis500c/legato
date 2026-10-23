@@ -87,11 +87,24 @@ jobs:
 
       # Third-party notices bundled in the installer (docs/licenses.md), from this commit's Cargo.lock and
       # pnpm-lock.yaml. The release build stops if they're missing.
-      - uses: taiki-e/install-action@v2
+      # Same lockfiles as a past release: its notices again (2 min saved), only the version line changes.
+      - id: notices
+        uses: actions/cache@v4
+        with:
+          path: src-tauri/third-party-licenses.html
+          key: notices-${{ runner.os }}-${{ hashFiles('Cargo.lock', 'pnpm-lock.yaml', 'about.toml', 'scripts/notices.mjs') }}
+
+      - if: steps.notices.outputs.cache-hit == 'true'
+        shell: bash
+        run: sed -i -E "s/Music App [0-9]+\.[0-9]+\.[0-9]+/Music App ${{ steps.release.outputs.version }}/g" src-tauri/third-party-licenses.html
+
+      - if: steps.notices.outputs.cache-hit != 'true'
+        uses: taiki-e/install-action@v2
         with:
           tool: cargo-about@0.9.2
 
-      - run: pnpm notices
+      - if: steps.notices.outputs.cache-hit != 'true'
+        run: pnpm notices
 
       - uses: tauri-apps/tauri-action@v0
         env:
