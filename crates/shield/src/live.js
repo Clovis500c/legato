@@ -50,20 +50,21 @@
     const eq = Array.isArray(o.eq) ? o.eq : []
     return {
       on: o.on !== false,
-      speed: num(o.speed, 0.5, 1.5, 1),
-      tempo: num(o.tempo, 0.5, 1.5, 1),
-      pitch: num(o.pitch, -12, 12, 0),
-      bass: num(o.bass, 0, 12, 0),
-      eq: [0, 1, 2, 3, 4].map((i) => num(eq[i], -12, 12, 0)),
-      reverb: { mix: num(r.mix, 0, 1, 0), size: num(r.size, 0, 1, 0.7), damping: num(r.damping, 0, 1, 0.4), predelayMs: num(r.predelayMs, 0, 100, 20) },
-      echo: { mix: num(c.mix, 0, 1, 0), timeMs: num(c.timeMs, 50, 1000, 300), feedback: num(c.feedback, 0, 0.85, 0.3) },
-      space: { on: s.on === true, azimuth: num(s.azimuth, -180, 180, 0), elevation: num(s.elevation, -40, 40, 0), distance: num(s.distance, 0.5, 3, 1), rotate: s.rotate === true, periodS: num(s.periodS, 2, 30, 8), room: num(s.room, 0, 1, 0.2) },
+      speed: num(o.speed, 0.25, 2.5, 1),
+      tempo: num(o.tempo, 0.25, 2.5, 1),
+      pitch: num(o.pitch, -24, 24, 0),
+      bass: num(o.bass, 0, 24, 0),
+      eq: [0, 1, 2, 3, 4].map((i) => num(eq[i], -24, 24, 0)),
+      reverb: { mix: num(r.mix, 0, 1, 0), size: num(r.size, 0, 1, 0.7), damping: num(r.damping, 0, 1, 0.4), predelayMs: num(r.predelayMs, 0, 250, 20) },
+      echo: { mix: num(c.mix, 0, 1, 0), timeMs: num(c.timeMs, 20, 2000, 300), feedback: num(c.feedback, 0, 0.95, 0.3) },
+      space: { on: s.on === true, azimuth: num(s.azimuth, -180, 180, 0), elevation: num(s.elevation, -90, 90, 0), distance: num(s.distance, 0.25, 10, 1), rotate: s.rotate === true, periodS: num(s.periodS, 1, 60, 8), room: num(s.room, 0, 1, 0.2) },
       compress: num(o.compress, 0, 1, 0),
-      width: num(o.width, 0, 2, 1),
+      width: num(o.width, 0, 3, 1),
       balance: num(o.balance, -1, 1, 0),
     }
   }
-  const rates = (e) => (e.on ? [e.speed * e.tempo, e.speed * 2 ** (e.pitch / 12)] : [1, 1])
+  const fitRate = (r) => Math.min(4, Math.max(0.25, r))
+  const rates = (e) => (e.on ? [fitRate(e.speed * e.tempo), fitRate(e.speed * 2 ** (e.pitch / 12))] : [1, 1])
   /** Effects change the sound (effects.rs `neutral`, negated). */
   const edited = (e) => {
     const [t, p] = rates(e)
@@ -89,7 +90,7 @@
     const scale = ctx.sampleRate / 44100
     // Mono downmix averages: twice the native input gain (it sums).
     const input = new GainNode(ctx, { gain: 0.03, channelCount: 1, channelCountMode: 'explicit' })
-    const pre = new DelayNode(ctx, { maxDelayTime: 0.1, delayTime: 0.02 })
+    const pre = new DelayNode(ctx, { maxDelayTime: 0.25, delayTime: 0.02 })
     input.connect(pre)
     const output = ctx.createChannelMerger(2)
     const combs = []
@@ -204,7 +205,7 @@
     node.connect(compOff).connect(afterComp)
     const width = matrix(ctx, afterComp)
     const afterEcho = new GainNode(ctx)
-    const echo = new DelayNode(ctx, { maxDelayTime: 1.05, delayTime: 0.3 })
+    const echo = new DelayNode(ctx, { maxDelayTime: 2.05, delayTime: 0.3 })
     const echoFb = new GainNode(ctx, { gain: 0.3 })
     const echoWet = new GainNode(ctx, { gain: 0 })
     width.output.connect(afterEcho)

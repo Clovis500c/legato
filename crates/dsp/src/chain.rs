@@ -61,7 +61,7 @@ impl Chain {
             env: 0.0,
             att: 1.0 - (-1.0 / (ATTACK_S * r)).exp(),
             rel: 1.0 - (-1.0 / (RELEASE_S * r)).exp(),
-            echo: vec![[0.0; 2]; (r * 1.05) as usize],
+            echo: vec![[0.0; 2]; (r * 2.05) as usize],
             echo_i: 0,
             reverb: Reverb::new(r),
             room: Reverb::new(r),

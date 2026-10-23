@@ -154,7 +154,7 @@ impl Space {
                 t.retune(Biquad::highshelf(self.rate, 4_000.0, tilt));
             }
         }
-        let level = (1.0 / s.distance.max(0.5)).min(1.5);
+        let level = (1.0 / s.distance.max(0.25)).min(1.5);
         for (ear, angle) in angles.into_iter().enumerate() {
             self.shadows[ear].tune(self.rate, shadow_alpha(angle));
             let want = if ear == far { lag } else { 0.0 };

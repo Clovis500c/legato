@@ -285,7 +285,7 @@ mod tests {
         assert!(parse_live(YT, r#"musicapp-ytwatch:{"state":1}"#).is_none());
         assert_eq!(script(Cmd::Live { on: true, adaptive: false, target_lufs: -99.0, effects: None }), "window.__musicAppLive && window.__musicAppLive.set({ on: true, adaptive: false, targetLufs: -30 }, undefined)");
         let with = script(Cmd::Live { on: true, adaptive: false, target_lufs: -14.0, effects: Some(music_player::Effects { speed: 9.0, ..Default::default() }) });
-        assert!(with.contains("\"speed\":1.5") && with.ends_with("})"), "{with}");
+        assert!(with.contains("\"speed\":2.5") && with.ends_with("})"), "{with}");
         // The UI's shape (api.ts WatchCmd).
         let cmd: Cmd = serde_json::from_str(r#"{"type":"live","on":true,"adaptive":true,"targetLufs":-16}"#).unwrap();
         assert!(matches!(cmd, Cmd::Live { on: true, adaptive: true, target_lufs, effects: None } if target_lufs == -16.0));
