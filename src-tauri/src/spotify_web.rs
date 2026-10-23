@@ -20,6 +20,6 @@ pub fn open(app: &AppHandle) -> tauri::Result<()> {
     if let Some(w) = app.get_webview_window(LABEL) {
         return w.set_focus();
     }
-    WebviewWindowBuilder::new(app, LABEL, WebviewUrl::External(Url::parse(PLAYER).expect("valid url"))).title("Spotify").inner_size(1100.0, 760.0).build()?;
+    WebviewWindowBuilder::new(app, LABEL, WebviewUrl::External(Url::parse(PLAYER).expect("valid url"))).additional_browser_args(crate::background::BROWSER_ARGS).title("Spotify").inner_size(1100.0, 760.0).build()?;
     Ok(())
 }
