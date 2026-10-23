@@ -1359,6 +1359,7 @@ const fr: Record<string, string> = {
   'Turn off the sleep timer': 'Arrêter la minuterie',
   'Save the queue as a playlist': 'Enregistrer la file comme playlist',
   'Queue of {date}': 'File du {date}',
+  'Date added': 'Date d’ajout',
 }
 
 export default fr

@@ -257,7 +257,9 @@ Everything still open, gathered from the sections below. Tick a line when it lan
 - [x] Album pages complete (2026-10-23): year, track numbers and discs, songs you don't have (dimmed, play, add),
       your other songs of it after; from the Apple catalog (`itunes::album`, keyless, cached a day), matched by
       `music_core::matching::album_slots`.
-- [ ] "Date added" as a real date (the library keeps a rank only).
+- [x] "Date added" as a real date (2026-10-23): schema v11 `added_at`, set for songs added from now on (older ones
+      unknown, never guessed); optional Date added column.
+- [x] Start radio from any song, sleep timer (15–90 min or end of song, 30 s fade), save the queue as a playlist.
 - [x] Local folders: watch for changes (`notify` crate, `src-tauri/src/folders.rs`, big update phase 7).
 - [x] Preview straight from search results (before adding): Add music plays a song not in the library (big update
       phase 2).

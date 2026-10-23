@@ -25,10 +25,16 @@ import { msg, tr, trn } from '../../shared/i18n/i18n'
 const ROW = { compact: 40, comfort: 52, airy: 64 }
 const order: Source[] = ['spotify', 'youtube', 'apple', 'local']
 const onControl = (e: React.MouseEvent) => e.target instanceof Element && !!e.target.closest('button, a, input, [role="menu"]')
-const width: Record<Column, string> = { album: 'minmax(0,220px)', sources: '76px', plays: '52px', duration: '52px' }
-const head: Record<Column, string> = { album: msg('Album'), sources: msg('Sources'), plays: msg('Plays'), duration: msg('Duration') }
+const width: Record<Column, string> = { album: 'minmax(0,220px)', sources: '76px', plays: '52px', added: '92px', duration: '52px' }
+const head: Record<Column, string> = { album: msg('Album'), sources: msg('Sources'), plays: msg('Plays'), added: msg('Date added'), duration: msg('Duration') }
 /** Header click sorts: first click → first sort, again → the second (reverse). Sources can't sort. */
-const headSorts: Partial<Record<Column | 'title', [Sort, Sort]>> = { title: ['title', 'title-desc'], album: ['album', 'album'], plays: ['most-played', 'most-played'], duration: ['duration', 'duration-short'] }
+/** "23 Oct", "12 Mar 2025"; nothing when unknown (added before the app kept dates). */
+const addedDate = (at?: number | null) => {
+  if (!at) return ''
+  const d = new Date(at * 1000)
+  return d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: d.getFullYear() === new Date().getFullYear() ? undefined : 'numeric' })
+}
+const headSorts: Partial<Record<Column | 'title', [Sort, Sort]>> = { title: ['title', 'title-desc'], album: ['album', 'album'], plays: ['most-played', 'most-played'], added: ['added-new', 'added-old'], duration: ['duration', 'duration-short'] }
 
 /**
  * Virtualized: only visible rows hit the DOM, so 50k tracks stay smooth. editId = custom playlist shown unfiltered
@@ -229,6 +235,10 @@ export function TrackTable({ tracks, empty, editId, rowActions, sort, onSort, fo
                     ) : c === 'plays' ? (
                       <span key={c} role="gridcell" className="text-right text-xs text-ink-3 tabular-nums">
                         {stats[t.id]?.[0] ? formatCount(stats[t.id][0]) : ''}
+                      </span>
+                    ) : c === 'added' ? (
+                      <span key={c} role="gridcell" className="text-right text-xs text-ink-3 tabular-nums">
+                        {addedDate(t.addedAt)}
                       </span>
                     ) : c === 'sources' ? (
                       <span key={c} role="gridcell" className="flex items-center gap-2 text-ink-3">

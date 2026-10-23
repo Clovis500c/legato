@@ -68,7 +68,7 @@ export const PRESETS: Theme[] = [
 
 export const ACCENTS = ['#FF5A1F', '#E5383B', '#F2B705', '#2E8B57', '#2F6FEB', '#171614']
 
-export const COLUMNS = ['album', 'sources', 'plays', 'duration'] as const
+export const COLUMNS = ['album', 'sources', 'plays', 'added', 'duration'] as const
 /** List sorts (features/library/filter): checked on load. */
 const SORTS: readonly Sort[] = ['manual', 'added-new', 'added-old', 'most-played', 'recently-played', 'title', 'title-desc', 'artist', 'album', 'duration', 'duration-short', 'random', 'recent']
 const GROUP_SORTS: readonly GroupSort[] = ['name', 'name-desc', 'artist', 'songs', 'albums', 'added-new', 'added-old', 'most-played', 'recently-played', 'length', 'random']
@@ -343,7 +343,8 @@ export const DEFAULTS: Settings = {
   readout: true,
   volume: 'bar',
   tuner: false,
-  columns: [...COLUMNS],
+  // Date added on demand (unknown for songs added before 2026-10-23).
+  columns: COLUMNS.filter((c) => c !== 'added'),
   songSort: 'artist',
   playlistSort: 'manual',
   albumSort: 'name',
@@ -564,7 +565,7 @@ export function sanitize(raw: unknown): Settings {
     ...(saved < 4 ? V4 : {}),
     ...(saved < 5 ? v5(r) : {}),
     // v7 (app v4, 2026-10-23): a Plays column, for those who kept the old default columns.
-    ...(saved < 7 && Array.isArray(r.columns) && r.columns.join() === 'album,sources,duration' ? { columns: [...COLUMNS] } : {}),
+    ...(saved < 7 && Array.isArray(r.columns) && r.columns.join() === 'album,sources,duration' ? { columns: COLUMNS.filter((c) => c !== 'added') } : {}),
     ...(saved < 6 ? { homeSections: sanitizeHome(r.homeSections).map((x) => (HOME_OFF.includes(x.id) ? { ...x, on: false } : x)) } : {}),
   }
 }

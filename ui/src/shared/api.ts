@@ -25,6 +25,8 @@ export interface LibraryTrack extends Track {
   id: number
   /** "Date added" rank: order the app met the track (services give no dates). */
   added: number
+  /** When this PC's library got it (unix s); null/absent = added before the app kept dates. */
+  addedAt?: number | null
 }
 
 /** Stable identity of a playlist: service + its id there (survives re-imports); own playlists by row id. */

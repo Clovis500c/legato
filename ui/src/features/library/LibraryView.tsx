@@ -83,7 +83,7 @@ export function ShuffleRound({ tracks }: { tracks: LibraryTrack[] }) {
   )
 }
 
-const columnLabels: Record<Column, string> = { album: msg('Album'), sources: msg('Sources'), plays: msg('Plays'), duration: msg('Duration') }
+const columnLabels: Record<Column, string> = { album: msg('Album'), sources: msg('Sources'), plays: msg('Plays'), added: msg('Date added'), duration: msg('Duration') }
 
 /** Which list columns show (settings columns, also in Appearance). */
 function ColumnsButton() {
