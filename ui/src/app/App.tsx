@@ -14,6 +14,7 @@ import { AlbumView, ArtistView } from '../features/library/AlbumArtist'
 import { AlbumsView, ArtistsView, PlaylistView, SongsView } from '../features/library/LibraryView'
 import { appMenu } from '../features/menus'
 import { startDiscord } from '../features/addons/discord'
+import { startLastfm } from '../features/sources/lastfm'
 import { startUpdates } from '../features/update/updates'
 import { startSyncMode } from '../features/syncmode/syncmode'
 import { startPlugins } from '../features/plugins/host'
@@ -203,6 +204,7 @@ export function App() {
   useEffect(() => startMedia(), [])
   useEffect(() => startShortcuts(), [])
   useEffect(() => startDiscord(), [])
+  useEffect(() => startLastfm(), [])
   useEffect(() => startUpdates(), [])
   useEffect(() => startSyncMode(), [])
   // Watched local folders changed: the library shows it.

@@ -1363,6 +1363,18 @@ const fr: Record<string, string> = {
   'Whole app in the cover’s color': 'Toute l’app aux couleurs de la pochette',
   'While a song plays, every page takes a soft color from its cover. Text stays readable': 'Pendant la lecture, toutes les pages prennent une couleur douce tirée de la pochette. Le texte reste lisible',
   'tint ambient background color theme cover everywhere': 'teinte ambiance fond couleur thème pochette partout',
+  'Scrobbling to Last.fm as {user}': 'Scrobbling vers Last.fm en tant que {user}',
+  'Stop scrobbling to Last.fm?': 'Arrêter le scrobbling vers Last.fm ?',
+  'The key, secret and session are removed from this PC. Your Last.fm profile keeps what was sent.': 'La clé, le secret et la session sont retirés de ce PC. Votre profil Last.fm garde ce qui a été envoyé.',
+  'Every song you listen to goes to your profile (half of it or 4 minutes heard)': 'Chaque titre écouté va sur votre profil (moitié du titre ou 4 minutes écoutées)',
+  'Scrobbling: your listens on your Last.fm profile, from every source. Free, with your own API key': 'Scrobbling : vos écoutes sur votre profil Last.fm, quelle que soit la source. Gratuit, avec votre propre clé API',
+  '{user} · {n} waiting': '{user} · {n} en attente',
+  'Signed out': 'Déconnecté',
+  '1. Create a free API account on last.fm (any name, no callback needed). 2. Paste its API key and shared secret. 3. Allow Music App on the page that opens.': '1. Créez un compte API gratuit sur last.fm (n’importe quel nom, pas besoin de callback). 2. Collez sa clé API et son secret partagé. 3. Autorisez Music App sur la page qui s’ouvre.',
+  'API key': 'Clé API',
+  'Shared secret': 'Secret partagé',
+  'Waiting for Last.fm…': 'En attente de Last.fm…',
+  'Allow on Last.fm': 'Autoriser sur Last.fm',
 }
 
 export default fr

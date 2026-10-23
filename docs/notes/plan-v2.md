@@ -277,7 +277,9 @@ Everything still open, gathered from the sections below. Tick a line when it lan
 - [x] Live Editor ranges much wider (2026-10-23): speed / tempo ×0.25–2.5, pitch ±24 st, bass / EQ 24 dB, echo 2 s.
 - [x] Duplicate finder (2026-10-23): same title (packaging aside) + artist, other versions (live, remix, slowed…)
       apart; Songs page button, pick the copy to keep, merge one or all (`Library::merge_tracks`).
-- [ ] Bonus list (pick): related-tracks radio, Last.fm scrobbling,
+- [x] Last.fm scrobbling (2026-10-23): Settings › Accounts, user's own key + secret, allowed on last.fm; now playing and
+      real listens (half or 4 min), offline ones sent later (memory). App tinted by the cover (option). Live Editor wider.
+- [ ] Bonus list (pick): related-tracks radio,
       sleep timer, equalizer (local files).
 
 **Spotify** (no keys; user chose link import)

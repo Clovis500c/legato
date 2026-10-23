@@ -402,6 +402,22 @@ export interface ExportReport {
   noYoutube: number
 }
 
+/** connectors lastfm::Scrobble: one listen (timestamp = start, unix s). */
+export interface Scrobble {
+  artist: string
+  track: string
+  album: string | null
+  durationS: number | null
+  timestamp: number
+}
+
+/** src-tauri lastfm::Status. */
+export interface LastfmStatus {
+  configured: boolean
+  user: string | null
+  waiting: number
+}
+
 /** src-tauri AlbumSlot: one catalog song of an album, and your copy when you have it. */
 export interface AlbumSlot {
   disc: number
@@ -449,6 +465,13 @@ export const api = {
   ytmHome: (mood?: string) => invoke<YtmHome>('ytm_home', { mood: mood ?? null }),
   ytmList: (list: ListRef) => invoke<Track[]>('ytm_list', { list }),
   /** Year and every song of an album from the Apple catalog, with which ones you have. Null = not in the store. */
+  lastfmStatus: () => invoke<LastfmStatus>('lastfm_status'),
+  /** Key + shared secret from last.fm/api, then the user allows the app on last.fm (browser). Returns the user name. */
+  lastfmConnect: (key: string, secret: string) => invoke<string>('lastfm_connect', { key, secret }),
+  lastfmDisconnect: () => invoke<void>('lastfm_disconnect'),
+  lastfmNowPlaying: (scrobble: Scrobble) => invoke<void>('lastfm_now_playing', { scrobble }),
+  /** Listens still waiting (offline). */
+  lastfmScrobble: (scrobble: Scrobble) => invoke<number>('lastfm_scrobble', { scrobble }),
   albumInfo: (artist: string, album: string, trackIds: number[], country: string) => invoke<AlbumInfo | null>('album_info', { artist, album, trackIds, country }),
   /** YouTube versions for tracks with no full source (1 search each, daily budget). */
   findVersions: (ids: number[]) => invoke<FindReport>('find_versions', { ids }),

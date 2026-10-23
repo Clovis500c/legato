@@ -12,6 +12,8 @@ import { SourceIcon, sourceLabel } from '../../shared/ui/SourceIcon'
 import { guides } from './guides'
 import { tr, trn } from '../../shared/i18n/i18n'
 import { ask } from '../../shared/ui/Ask'
+import { openUrl } from '@tauri-apps/plugin-opener'
+import { useLastfm } from './lastfm'
 
 function ServiceRow({ service }: { service: 'spotify' }) {
   const { status, disconnect, busy, go, view } = useStore()
@@ -62,6 +64,77 @@ function SpotifyWeb() {
       <Button variant={on ? 'ghost' : undefined} onClick={() => api.spotifyWebOpen().catch((e) => useStore.setState({ error: String(e) }))}>
         {tr('Open')}
       </Button>
+    </div>
+  )
+}
+
+/** Last.fm: your own free API key (last.fm/api), then you allow the app on last.fm. Listens go to your profile. */
+function LastfmRow() {
+  const { configured, user, waiting, refresh } = useLastfm()
+  const [form, setForm] = useState(false)
+  const [key, setKey] = useState('')
+  const [secret, setSecret] = useState('')
+  const [busy, setBusy] = useState(false)
+  const connect = async () => {
+    setBusy(true)
+    try {
+      const name = await api.lastfmConnect(key, secret)
+      setForm(false)
+      setKey('')
+      setSecret('')
+      useStore.getState().notify(tr('Scrobbling to Last.fm as {user}', { user: name }))
+    } catch (e) {
+      useStore.setState({ error: String(e) })
+    } finally {
+      setBusy(false)
+      void refresh()
+    }
+  }
+  const disconnect = async () => {
+    if (!(await ask({ title: tr('Stop scrobbling to Last.fm?'), body: tr('The key, secret and session are removed from this PC. Your Last.fm profile keeps what was sent.'), ok: tr('Disconnect') }))) return
+    await api.lastfmDisconnect().catch(() => {})
+    void refresh()
+  }
+  const field = 'h-8 w-full rounded-md border border-line bg-bg px-2 font-mono text-xs'
+  return (
+    <div data-setting="Last.fm" className="flex flex-col gap-3 border-b border-line-soft px-4 py-3.5">
+      <div className="flex items-center gap-4">
+        <Led on={!!user} />
+        <span className="grid size-9 place-items-center rounded-full border border-line text-xs font-bold text-ink-2">fm</span>
+        <div className="flex-1">
+          <p className="text-[0.8125rem] font-semibold">Last.fm</p>
+          <p className="text-xs text-ink-2">{user ? tr('Every song you listen to goes to your profile (half of it or 4 minutes heard)') : tr('Scrobbling: your listens on your Last.fm profile, from every source. Free, with your own API key')}</p>
+        </div>
+        <span className="kicker">{user ? (waiting ? tr('{user} · {n} waiting', { user, n: waiting }) : user) : configured ? tr('Signed out') : tr('Not connected')}</span>
+        {user ? (
+          <Button variant="ghost" onClick={() => void disconnect()}>
+            {tr('Disconnect')}
+          </Button>
+        ) : (
+          <Button onClick={() => setForm((f) => !f)}>{tr('Connect')}</Button>
+        )}
+      </div>
+      {form && !user && (
+        <div className="ml-13 flex flex-col gap-2 rounded-lg border border-line bg-bg p-3 text-xs">
+          <p className="text-ink-2">
+            {tr('1. Create a free API account on last.fm (any name, no callback needed). 2. Paste its API key and shared secret. 3. Allow Music App on the page that opens.')}{' '}
+            <button type="button" className="font-semibold text-ink underline" onClick={() => void openUrl('https://www.last.fm/api/account/create')}>
+              last.fm/api/account/create
+            </button>
+          </p>
+          <label className="flex flex-col gap-1">
+            <span className="text-ink-2">{tr('API key')}</span>
+            <input value={key} onChange={(e) => setKey(e.target.value)} spellCheck={false} className={field} />
+          </label>
+          <label className="flex flex-col gap-1">
+            <span className="text-ink-2">{tr('Shared secret')}</span>
+            <input value={secret} onChange={(e) => setSecret(e.target.value)} spellCheck={false} type="password" className={field} />
+          </label>
+          <Button className="w-fit" disabled={busy || key.trim().length !== 32 || secret.trim().length !== 32} onClick={() => void connect()}>
+            {busy ? tr('Waiting for Last.fm…') : tr('Allow on Last.fm')}
+          </Button>
+        </div>
+      )}
     </div>
   )
 }
@@ -253,6 +326,7 @@ export function SourcesView() {
         <GoogleAccounts />
         <SpotifyWeb />
         <ServiceRow service="spotify" />
+        <LastfmRow />
         <LocalFolders />
       </div>
       <p className="flex w-fit items-center gap-2.5 text-xs text-ink-2">
