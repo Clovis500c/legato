@@ -1418,6 +1418,11 @@ const hi: Record<string, string> = {
   'Shared secret': 'शेयर्ड सीक्रेट',
   'Waiting for Last.fm…': 'Last.fm का इंतज़ार…',
   'Allow on Last.fm': 'Last.fm पर अनुमति दें',
+  // Lyrics timing fixed by hand
+  'Fix the timing': 'टाइमिंग ठीक करें',
+  'Click each line the moment you hear it start. Two lines far apart fix the speed too.': 'हर लाइन पर उसी पल क्लिक करें जब आप उसे शुरू होते सुनें। दूर-दूर की दो लाइनें स्पीड भी ठीक कर देती हैं।',
+  'Lyrics earlier': 'बोल पहले',
+  'Lyrics later': 'बोल बाद में',
 }
 
 export default hi

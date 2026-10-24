@@ -1418,6 +1418,11 @@ const zh: Record<string, string> = {
   'Shared secret': '共享密钥',
   'Waiting for Last.fm…': '正在等待 Last.fm…',
   'Allow on Last.fm': '在 Last.fm 上允许',
+  // Lyrics timing fixed by hand
+  'Fix the timing': '校准歌词时间',
+  'Click each line the moment you hear it start. Two lines far apart fix the speed too.': '在听到每一行开始的那一刻点击它。点击相隔较远的两行，还能校准速度。',
+  'Lyrics earlier': '歌词提前',
+  'Lyrics later': '歌词延后',
 }
 
 export default zh

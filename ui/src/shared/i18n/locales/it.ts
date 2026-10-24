@@ -1418,6 +1418,11 @@ const it: Record<string, string> = {
   'Shared secret': 'Segreto condiviso',
   'Waiting for Last.fm…': 'In attesa di Last.fm…',
   'Allow on Last.fm': 'Consenti su Last.fm',
+  // Lyrics timing fixed by hand
+  'Fix the timing': 'Correggi la sincronizzazione',
+  'Click each line the moment you hear it start. Two lines far apart fix the speed too.': 'Fai clic su ogni riga nel momento in cui la senti iniziare. Due righe lontane correggono anche la velocità.',
+  'Lyrics earlier': 'Testo prima',
+  'Lyrics later': 'Testo dopo',
 }
 
 export default it

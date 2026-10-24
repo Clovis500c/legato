@@ -1418,6 +1418,11 @@ const tr: Record<string, string> = {
   'Shared secret': 'Paylaşılan gizli anahtar',
   'Waiting for Last.fm…': 'Last.fm bekleniyor…',
   'Allow on Last.fm': 'Last.fm’de izin ver',
+  // Lyrics timing fixed by hand
+  'Fix the timing': 'Zamanlamayı düzelt',
+  'Click each line the moment you hear it start. Two lines far apart fix the speed too.': 'Her satırın başladığını duyduğun anda o satıra tıkla. Birbirinden uzak iki satır hızı da düzeltir.',
+  'Lyrics earlier': 'Sözler daha erken',
+  'Lyrics later': 'Sözler daha geç',
 }
 
 export default tr

@@ -1418,6 +1418,11 @@ const ja: Record<string, string> = {
   'Shared secret': '共有シークレット',
   'Waiting for Last.fm…': 'Last.fmを待っています…',
   'Allow on Last.fm': 'Last.fmで許可',
+  // Lyrics timing fixed by hand
+  'Fix the timing': 'タイミングを調整',
+  'Click each line the moment you hear it start. Two lines far apart fix the speed too.': '各行が始まるのが聞こえた瞬間にその行をクリックしてください。離れた2行をクリックすると速度も補正されます。',
+  'Lyrics earlier': '歌詞を早く',
+  'Lyrics later': '歌詞を遅く',
 }
 
 export default ja

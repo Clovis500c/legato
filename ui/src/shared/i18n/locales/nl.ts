@@ -1418,6 +1418,11 @@ const nl: Record<string, string> = {
   'Shared secret': 'Gedeeld geheim',
   'Waiting for Last.fm…': 'Wachten op Last.fm…',
   'Allow on Last.fm': 'Toestaan op Last.fm',
+  // Lyrics timing fixed by hand
+  'Fix the timing': 'Timing corrigeren',
+  'Click each line the moment you hear it start. Two lines far apart fix the speed too.': 'Klik op elke regel op het moment dat je hem hoort beginnen. Twee regels ver uit elkaar corrigeren ook de snelheid.',
+  'Lyrics earlier': 'Songtekst eerder',
+  'Lyrics later': 'Songtekst later',
 }
 
 export default nl

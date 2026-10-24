@@ -55,6 +55,12 @@ function onFrame(tick: () => void) {
 }
 const still = () => () => {}
 
+/** Position at this instant (a click), outside React. */
+export function positionNow(): number {
+  const { playing, durationMs } = usePlayer.getState()
+  return extrapolate(base.ms, base.at, performance.now(), playing, durationMs)
+}
+
 /**
  * Smooth position between reports. Re-renders only when it crosses `step` (ms): 1000 for a clock, a fraction of the
  * track for a bar. Every frame per component cost ~10 renders a frame at 144 Hz (2026-10-17 profile).

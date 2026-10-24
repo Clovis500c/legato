@@ -1418,6 +1418,11 @@ const sv: Record<string, string> = {
   'Shared secret': 'Delad hemlighet',
   'Waiting for Last.fm…': 'Väntar på Last.fm…',
   'Allow on Last.fm': 'Tillåt på Last.fm',
+  // Lyrics timing fixed by hand
+  'Fix the timing': 'Justera tajmingen',
+  'Click each line the moment you hear it start. Two lines far apart fix the speed too.': 'Klicka på varje rad i samma stund som du hör den börja. Två rader långt ifrån varandra justerar även hastigheten.',
+  'Lyrics earlier': 'Låttext tidigare',
+  'Lyrics later': 'Låttext senare',
 }
 
 export default sv

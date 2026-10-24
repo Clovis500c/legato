@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { lineAt, lineEnd, withBreaks, wordTimes } from './lyricsAt'
+import { NO_FIX, applyFix, fixFromTaps, lineAt, lineEnd, withBreaks, wordTimes } from './lyricsAt'
 
 describe('lineAt', () => {
   const lines = [{ ms: 1000 }, { ms: 2000 }, { ms: 2000 }, { ms: 5000 }]
@@ -53,5 +53,31 @@ describe('karaoke fill', () => {
     expect(lineEnd(lines, 0, null)).toBe(2000)
     expect(lineEnd(lines, 1, null)).toBe(2000 + 4500)
     expect(lineEnd(lines, 1, 4000)).toBe(4000)
+  })
+})
+
+describe('timing fixed by hand', () => {
+  it('one tap shifts every line, two far apart fix the speed too', () => {
+    // Line at 10 s in the lyrics heard at 12.5 s: everything 2.5 s later.
+    const one = fixFromTaps([{ lyric: 10000, song: 12500 }], NO_FIX)
+    expect(one).toEqual({ offset: 2500, rate: 1 })
+    // Slowed to 0.8 speed with a 1 s intro: 10 s → 13.5 s, 60 s → 76 s.
+    const two = fixFromTaps([{ lyric: 10000, song: 13500 }, { lyric: 60000, song: 76000 }], NO_FIX)
+    expect(two.rate).toBe(1.25)
+    expect(two.offset).toBe(1000)
+    // Too close together: speed kept, offset from the last tap.
+    expect(fixFromTaps([{ lyric: 10000, song: 11000 }, { lyric: 12000, song: 13500 }], { offset: 0, rate: 1.1 })).toEqual({ offset: 300, rate: 1.1 })
+    // Absurd speeds clamped.
+    expect(fixFromTaps([{ lyric: 0, song: 0 }, { lyric: 10000, song: 90000 }], NO_FIX).rate).toBe(2)
+  })
+  it('moves starts and given ends, never before 0', () => {
+    const lines = [{ ms: 1000, text: 'a', endMs: 2000 }, { ms: 3000, text: 'b' }]
+    expect(applyFix(lines, { offset: -1500, rate: 1 })).toEqual([{ ms: 0, text: 'a', endMs: 500 }, { ms: 1500, text: 'b', endMs: undefined }])
+    expect(applyFix(lines, NO_FIX)).toBe(lines)
+  })
+  it('a line ends at its own end when the source gives one', () => {
+    const lines = [{ ms: 0, text: 'a', endMs: 1200 }, { ms: 6000, text: 'b' }]
+    expect(lineEnd(lines, 0, null)).toBe(1200)
+    expect(withBreaks(lines, null)).toEqual([lines[0], { ms: 1200, text: '' }, lines[1]])
   })
 })

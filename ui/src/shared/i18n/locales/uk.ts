@@ -1418,6 +1418,11 @@ const uk: Record<string, string> = {
   'Shared secret': 'Спільний секрет',
   'Waiting for Last.fm…': 'Чекаємо Last.fm…',
   'Allow on Last.fm': 'Дозволити в Last.fm',
+  // Lyrics timing fixed by hand
+  'Fix the timing': 'Виправити синхронізацію',
+  'Click each line the moment you hear it start. Two lines far apart fix the speed too.': 'Натискайте на рядок у ту мить, коли чуєте його початок. Два далекі один від одного рядки виправлять і швидкість.',
+  'Lyrics earlier': 'Текст раніше',
+  'Lyrics later': 'Текст пізніше',
 }
 
 export default uk

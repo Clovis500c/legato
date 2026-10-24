@@ -1418,6 +1418,11 @@ const id: Record<string, string> = {
   'Shared secret': 'Shared secret',
   'Waiting for Last.fm…': 'Menunggu Last.fm…',
   'Allow on Last.fm': 'Izinkan di Last.fm',
+  // Lyrics timing fixed by hand
+  'Fix the timing': 'Perbaiki waktu lirik',
+  'Click each line the moment you hear it start. Two lines far apart fix the speed too.': 'Klik setiap baris tepat saat kamu mendengarnya dimulai. Dua baris yang berjauhan juga memperbaiki kecepatan.',
+  'Lyrics earlier': 'Lirik lebih awal',
+  'Lyrics later': 'Lirik lebih lambat',
 }
 
 export default id

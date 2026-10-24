@@ -278,6 +278,8 @@ export interface Settings {
   subtitles: boolean
   /** Playlists left out of the sidebar and menus (playlistKey), still in the library. */
   hiddenPlaylists: string[]
+  /** Lyrics timing fixed by hand, per song (effects.ts songKey): song time = lyric time × rate + offset (ms). */
+  lyricsSync: Record<string, { offset: number; rate: number }>
   /** Sidebar's playlist order: as imported / made, A–Z, most songs, opened lately (remembered). */
   playlistOrder: PlaylistOrder
   /** Home: which sections show, in what order. */
@@ -374,6 +376,7 @@ export const DEFAULTS: Settings = {
   fade: { advanced: false, out: 2, in: 2, outCurve: 'scurve', inCurve: 'scurve', skip: true, pause: 0 },
   subtitles: false,
   hiddenPlaylists: [],
+  lyricsSync: {},
   playlistOrder: 'custom',
   homeSections: HOME_SECTIONS.map((id) => ({ id, on: !HOME_OFF.includes(id) })),
   smartLists: [],
@@ -538,6 +541,7 @@ export function sanitize(raw: unknown): Settings {
     homeFilter: pick(r.homeFilter, HOME_FILTERS, DEFAULTS.homeFilter),
     playlistOrder: pick(r.playlistOrder, PLAYLIST_ORDERS, DEFAULTS.playlistOrder),
     hiddenPlaylists: Array.isArray(r.hiddenPlaylists) ? [...new Set(r.hiddenPlaylists.filter((k): k is string => typeof k === 'string' && k.length <= 200))].slice(0, 500) : [],
+    lyricsSync: sanitizeLyricsSync(r.lyricsSync),
     playlistCovers: sanitizeCovers(r.playlistCovers),
     mixCovers: pick(r.mixCovers, ['grid', 'single', 'template'] as const, DEFAULTS.mixCovers),
     autoUpdate: typeof r.autoUpdate === 'boolean' ? r.autoUpdate : DEFAULTS.autoUpdate,
@@ -602,6 +606,19 @@ function sanitizeDiscord(raw: unknown): DiscordSettings {
     paused: typeof d.paused === 'boolean' ? d.paused : def.paused,
     github: typeof d.github === 'boolean' ? d.github : def.github,
   }
+}
+
+/** Per-song lyrics fixes: song keys, offset within ±10 min, speed 0.5–2×. */
+// shortcut: one settings key for every song, so two PCs fixing different songs at once keep the newest map only; per-song rows if that bites.
+function sanitizeLyricsSync(v: unknown): Settings['lyricsSync'] {
+  if (!v || typeof v !== 'object' || Array.isArray(v)) return {}
+  const out: Settings['lyricsSync'] = {}
+  for (const [k, f] of Object.entries(v).slice(0, 2000)) {
+    const { offset, rate } = (f ?? {}) as { offset?: unknown; rate?: unknown }
+    if (k.length > 300 || typeof offset !== 'number' || typeof rate !== 'number' || !Number.isFinite(offset) || !Number.isFinite(rate)) continue
+    out[k] = { offset: Math.round(Math.min(600_000, Math.max(-600_000, offset))), rate: Math.min(2, Math.max(0.5, rate)) }
+  }
+  return out
 }
 
 function sanitizeCovers(raw: unknown): Record<string, PlaylistCover> {

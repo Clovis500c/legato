@@ -1418,6 +1418,11 @@ const vi: Record<string, string> = {
   'Shared secret': 'Mã bí mật dùng chung',
   'Waiting for Last.fm…': 'Đang chờ Last.fm…',
   'Allow on Last.fm': 'Cho phép trên Last.fm',
+  // Lyrics timing fixed by hand
+  'Fix the timing': 'Chỉnh thời gian lời bài hát',
+  'Click each line the moment you hear it start. Two lines far apart fix the speed too.': 'Nhấp vào từng dòng ngay khi bạn nghe nó bắt đầu. Hai dòng cách xa nhau cũng chỉnh luôn tốc độ.',
+  'Lyrics earlier': 'Lời sớm hơn',
+  'Lyrics later': 'Lời muộn hơn',
 }
 
 export default vi

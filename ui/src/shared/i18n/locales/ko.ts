@@ -1418,6 +1418,11 @@ const ko: Record<string, string> = {
   'Shared secret': '공유 시크릿',
   'Waiting for Last.fm…': 'Last.fm을 기다리는 중…',
   'Allow on Last.fm': 'Last.fm에서 허용',
+  // Lyrics timing fixed by hand
+  'Fix the timing': '타이밍 맞추기',
+  'Click each line the moment you hear it start. Two lines far apart fix the speed too.': '각 줄이 시작되는 게 들리는 순간 그 줄을 클릭하세요. 멀리 떨어진 두 줄을 클릭하면 속도도 맞춰집니다.',
+  'Lyrics earlier': '가사 앞당기기',
+  'Lyrics later': '가사 늦추기',
 }
 
 export default ko

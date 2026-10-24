@@ -1418,6 +1418,11 @@ const pl: Record<string, string> = {
   'Shared secret': 'Wspólny sekret',
   'Waiting for Last.fm…': 'Czekam na Last.fm…',
   'Allow on Last.fm': 'Zezwól w Last.fm',
+  // Lyrics timing fixed by hand
+  'Fix the timing': 'Popraw synchronizację',
+  'Click each line the moment you hear it start. Two lines far apart fix the speed too.': 'Kliknij każdy wers w chwili, gdy słyszysz, że się zaczyna. Dwa odległe wersy poprawiają też tempo.',
+  'Lyrics earlier': 'Tekst wcześniej',
+  'Lyrics later': 'Tekst później',
 }
 
 export default pl

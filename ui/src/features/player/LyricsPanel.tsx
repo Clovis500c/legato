@@ -1,10 +1,12 @@
-import { ArrowCounterClockwise, CaretRight, MusicNotesSimple, Queue } from '@phosphor-icons/react'
+import { ArrowCounterClockwise, CaretLeft, CaretRight, MusicNotesSimple, Queue, Timer } from '@phosphor-icons/react'
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { useSettings } from '../../app/settings'
 import { useStore } from '../../app/store'
 import { api, type Lyrics } from '../../shared/api'
 import { RoundButton } from '../../shared/ui/controls'
-import { lineAt, lineEnd, withBreaks, wordTimes } from './lyricsAt'
-import { usePosition } from './Progress'
+import { songKey } from './effects'
+import { applyFix, fixFromTaps, lineAt, lineEnd, NO_FIX, withBreaks, wordTimes, type LyricsFix } from './lyricsAt'
+import { positionNow, usePosition } from './Progress'
 import { useNowTrack, usePlayer } from './store'
 import { tr } from '../../shared/i18n/i18n'
 
@@ -12,6 +14,11 @@ import { tr } from '../../shared/i18n/i18n'
 const LEAD_MS = 200
 /** A hand on the scroll wins for this long. */
 const HAND_MS = 4000
+
+/** A tap comes this late after the line is heard (reaction time): taken off. */
+const REACTION_MS = 150
+/** ± buttons move the lyrics by this much. */
+const NUDGE_MS = 500
 
 /** Off by more than this from the song (seek, stall): the fill jumps to where the song is. */
 const RESYNC_MS = 250
@@ -58,8 +65,9 @@ function Sung({ text, start, end }: { text: string; start: number; end: number }
  * Synced lines: the current one filled as it's sung and kept in the middle; click a line to go there. ♪ where nothing
  * is sung.
  */
-function Synced({ lines: sung, durationMs }: { lines: Lyrics['lines']; durationMs: number | null }) {
-  const lines = useMemo(() => withBreaks(sung, durationMs), [sung, durationMs])
+function Synced({ lines: sung, durationMs, fix, onTap }: { lines: Lyrics['lines']; durationMs: number | null; fix: LyricsFix; onTap?: (lyricMs: number) => void }) {
+  // lyricMs: the line's own time, for "starts now" taps whatever the fix.
+  const lines = useMemo(() => withBreaks(applyFix(sung.map((l) => ({ ...l, lyricMs: l.ms })), fix), durationMs), [sung, fix, durationMs])
   const pos = usePosition(100)
   const seek = usePlayer((s) => s.seek)
   const at = lineAt(lines, pos + LEAD_MS)
@@ -78,7 +86,12 @@ function Synced({ lines: sung, durationMs }: { lines: Lyrics['lines']; durationM
         <button
           key={i}
           data-line={i}
-          onClick={() => seek(l.ms)}
+          onClick={() => {
+            // ♪ breaks (added here) have no lyric time: nothing to tap.
+            const lyricMs = (l as { lyricMs?: number }).lyricMs
+            if (!onTap) seek(l.ms)
+            else if (l.text && lyricMs !== undefined) onTap(lyricMs)
+          }}
           className={`block w-full origin-left py-1.5 text-left text-[1.625rem] leading-snug font-bold tracking-[-0.01em] transition-[color,transform,opacity] duration-300 ${i === at ? 'scale-[1.03] text-ink' : i < at ? 'text-ink-2 opacity-70 hover:opacity-100' : 'text-ink-3 hover:text-ink-2'}`}
         >
           {!l.text ? (
@@ -155,12 +168,48 @@ export function LyricsPanel({ onHide, onUpNext }: { onHide: () => void; onUpNext
     }
   }, [key, ready, retry]) // once per song (and per retry)
 
+  // Timing fixed by hand for this song (Settings, synced with the other PCs).
+  const song = songKey(now)
+  const fix = useSettings((s) => (song && s.settings.lyricsSync[song]) || NO_FIX)
+  const [tuning, setTuning] = useState(false)
+  const taps = useRef<{ lyric: number; song: number }[]>([])
+  useEffect(() => {
+    setTuning(false)
+    taps.current = []
+  }, [key])
+  const saveFix = (f: LyricsFix | null) => {
+    if (!song) return
+    const all = { ...useSettings.getState().settings.lyricsSync }
+    if (f && (f.offset || f.rate !== 1)) all[song] = f
+    else delete all[song]
+    useSettings.getState().update({ lyricsSync: all })
+  }
+  const tap = (lyric: number) => {
+    taps.current = [...taps.current, { lyric, song: positionNow() - REACTION_MS }]
+    saveFix(fixFromTaps(taps.current, fix))
+  }
+
   const mine = got?.for === key ? got : undefined
   const l = mine?.lyrics
   return (
     <aside aria-label={tr('Lyrics')} className="flex min-h-0 flex-col gap-2 rounded-2xl border border-line-soft bg-[color-mix(in_srgb,var(--panel)_55%,transparent)] p-3">
       <div className="flex items-center gap-2 px-1">
         <span className="flex-1 text-[0.8125rem] font-semibold">{tr('Lyrics')}</span>
+        {!!l?.lines.length && song && (
+          <RoundButton
+            label={tr('Fix the timing')}
+            kind="plain"
+            size="sm"
+            aria-pressed={tuning}
+            className={tuning ? 'bg-ink! text-bg!' : ''}
+            onClick={() => {
+              taps.current = []
+              setTuning(!tuning)
+            }}
+          >
+            <Timer size={14} />
+          </RoundButton>
+        )}
         <RoundButton label={tr('Show Up next instead')} kind="plain" size="sm" onClick={onUpNext}>
           <Queue size={14} />
         </RoundButton>
@@ -182,7 +231,39 @@ export function LyricsPanel({ onHide, onUpNext }: { onHide: () => void; onUpNext
       ) : l.instrumental && !l.lines.length && !l.plain ? (
         <p className="m-auto text-lg font-semibold text-ink-2">♪ {tr('Instrumental')}</p>
       ) : l.lines.length ? (
-        <Synced lines={l.lines} durationMs={durationMs} />
+        <>
+          {tuning && (
+            <div className="flex flex-col gap-2 rounded-xl border border-line bg-raised p-2.5 text-xs">
+              <p className="text-ink-2">{tr('Click each line the moment you hear it start. Two lines far apart fix the speed too.')}</p>
+              <div className="flex items-center gap-1.5">
+                <RoundButton label={tr('Lyrics earlier')} size="sm" onClick={() => saveFix({ ...fix, offset: fix.offset - NUDGE_MS })}>
+                  <CaretLeft size={13} />
+                </RoundButton>
+                <span className="min-w-20 text-center font-mono tabular-nums">
+                  {fix.offset >= 0 ? '+' : '−'}
+                  {(Math.abs(fix.offset) / 1000).toFixed(1)} s{fix.rate !== 1 && ` · ×${fix.rate.toFixed(2)}`}
+                </span>
+                <RoundButton label={tr('Lyrics later')} size="sm" onClick={() => saveFix({ ...fix, offset: fix.offset + NUDGE_MS })}>
+                  <CaretRight size={13} />
+                </RoundButton>
+                <span className="flex-1" />
+                <button
+                  onClick={() => {
+                    taps.current = []
+                    saveFix(null)
+                  }}
+                  className="rounded-full px-2.5 py-1 font-medium text-ink-2 hover:bg-panel hover:text-ink"
+                >
+                  {tr('Reset')}
+                </button>
+                <button onClick={() => setTuning(false)} className="rounded-full bg-ink px-3 py-1 font-semibold text-bg">
+                  {tr('Done')}
+                </button>
+              </div>
+            </div>
+          )}
+          <Synced lines={l.lines} durationMs={durationMs} fix={fix} onTap={tuning ? tap : undefined} />
+        </>
       ) : (
         <Plain text={l.plain ?? ''} durationMs={durationMs} />
       )}
