@@ -4,6 +4,7 @@
 
 use anyhow::{Context, Result, bail};
 use async_trait::async_trait;
+use music_core::lyrics::Line;
 use music_core::matching::best_match;
 use music_core::model::{Connector, PlaylistRef, Source, Track};
 use music_core::musicness::{Clues, VideoType, classify};
@@ -21,6 +22,8 @@ pub use home::{Home, HomeItem, ListRef, Mood, Shelf, valid_mood};
 pub const API: &str = "https://music.youtube.com/youtubei/v1";
 const ORIGIN: &str = "https://music.youtube.com";
 const UA: &str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36";
+/// YouTube Music's Android app as client: the only one given timed lyrics (ytmusicapi `as_mobile`, checked 2026-10-24).
+const MOBILE: (&str, &str, &str) = ("ANDROID_MUSIC", "7.21.50", "21");
 /// Search filter "Songs" (protobuf params the site sends).
 const SONGS: &str = "EgWKAQIIAWoMEA4QChADEAQQCRAF";
 /// Filter "Videos": same message, field II → IQ.
@@ -137,6 +140,32 @@ fn lyrics_of(page: &Value) -> Option<(String, String)> {
     let body = text(shelf.get("description")?)?;
     let source = shelf.get("footer").and_then(text).unwrap_or_default();
     (!body.trim().is_empty()).then_some((body, source))
+}
+
+/// Lyrics YouTube Music has for a video.
+#[derive(Debug, PartialEq)]
+pub enum YtLyrics {
+    /// Start and end of each line, and the source line ("Source: LyricFind"…).
+    Timed(Vec<Line>, String),
+    /// Text only, and its source line.
+    Plain(String, String),
+}
+
+/// Android client's lyrics page → timed lines (`timedLyricsData`: `lyricLine` + `cueRange` in ms, as strings).
+fn timed_lyrics_of(page: &Value) -> Option<(Vec<Line>, String)> {
+    let data = all(page, "timedLyricsData").into_iter().find_map(Value::as_array)?;
+    let ms = |c: &Value, k: &str| c.get(k).and_then(|v| v.as_str().and_then(|s| s.parse().ok()).or_else(|| v.as_u64()?.try_into().ok()));
+    let mut lines = Vec::new();
+    for d in data {
+        let cue = d.get("cueRange")?;
+        let text = d.get("lyricLine").and_then(Value::as_str).unwrap_or("").trim();
+        // ♪ alone = nothing sung: shown as a break.
+        let text = if text.chars().all(|c| c == '♪' || c.is_whitespace()) { "" } else { text };
+        lines.push(Line { ms: ms(cue, "startTimeMilliseconds")?, text: text.to_string(), end_ms: ms(cue, "endTimeMilliseconds") });
+    }
+    lines.sort_by_key(|l| l.ms);
+    let source = all(page, "sourceMessage").into_iter().find_map(|v| v.as_str().map(String::from).or_else(|| text(v))).unwrap_or_default();
+    lines.iter().any(|l| !l.text.is_empty()).then_some((lines, source))
 }
 
 /// Result of adding videos to a playlist.
@@ -280,9 +309,16 @@ impl YouTubeMusic {
         self
     }
 
-    async fn call(&self, endpoint: &str, mut body: Value) -> Result<Value> {
-        let version = client_version();
-        body["context"] = json!({ "client": { "clientName": "WEB_REMIX", "clientVersion": version, "hl": "en" }, "user": {} });
+    async fn call(&self, endpoint: &str, body: Value) -> Result<Value> {
+        self.call_as(endpoint, body, None).await
+    }
+
+    /// `client`: (name, version, header id) instead of the web player's, e.g. MOBILE.
+    async fn call_as(&self, endpoint: &str, mut body: Value, client: Option<(&str, &str, &str)>) -> Result<Value> {
+        let web = client_version();
+        let (name, version, id) = client.unwrap_or(("WEB_REMIX", &web, "67"));
+        let version = version.to_string();
+        body["context"] = json!({ "client": { "clientName": name, "clientVersion": version, "hl": "en" }, "user": {} });
         let ts = SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs();
         let mut req = self
             .http
@@ -293,7 +329,7 @@ impl YouTubeMusic {
             .header("x-origin", ORIGIN)
             .header("origin", ORIGIN)
             .header("user-agent", UA)
-            .header("x-youtube-client-name", "67")
+            .header("x-youtube-client-name", id)
             .header("x-youtube-client-version", &version)
             .json(&body);
         if let Some(p) = &self.page_id {
@@ -414,14 +450,21 @@ impl YouTubeMusic {
         })
     }
 
-    /// Like videos: what "add to Liked Music" means on YouTube Music.
-    /// Lyrics YouTube Music shows for this video (its Lyrics tab: plain text) and their source line ("Source: …").
-    pub async fn lyrics(&self, video_id: &str) -> Result<Option<(String, String)>> {
+    /// Lyrics YouTube Music has for this video (its Lyrics tab): timed lines when the Android app's client gets them
+    /// (as ytmusicapi does), else the web page's plain text. Each with its source line ("Source: …").
+    pub async fn lyrics(&self, video_id: &str) -> Result<Option<YtLyrics>> {
         let next = self.call("next", json!({ "videoId": video_id, "isAudioOnly": true })).await?;
         let Some(id) = all(&next, "browseId").into_iter().filter_map(Value::as_str).find(|b| b.starts_with("MPLYt")) else { return Ok(None) };
-        Ok(lyrics_of(&self.call("browse", json!({ "browseId": id })).await?))
+        // Timed: best effort, the plain page still answers if the Android client is refused.
+        if let Ok(page) = self.call_as("browse", json!({ "browseId": id }), Some(MOBILE)).await
+            && let Some((lines, source)) = timed_lyrics_of(&page)
+        {
+            return Ok(Some(YtLyrics::Timed(lines, source)));
+        }
+        Ok(lyrics_of(&self.call("browse", json!({ "browseId": id })).await?).map(|(text, source)| YtLyrics::Plain(text, source)))
     }
 
+    /// Like videos: what "add to Liked Music" means on YouTube Music.
     pub async fn like(&self, video_ids: &[String]) -> Result<()> {
         for v in video_ids {
             self.call("like/like", json!({ "target": { "videoId": v } })).await?;
@@ -739,15 +782,31 @@ mod tests {
     #[tokio::test]
     async fn lyrics_come_from_the_lyrics_tab() {
         let mut s = Server::new_async().await;
-        let tabs = json!({ "contents": { "tabs": [{ "tabRenderer": { "endpoint": { "browseEndpoint": { "browseId": "MPADx" } } } }, { "tabRenderer": { "endpoint": { "browseEndpoint": { "browseId": "MPLYt_abc" } } } }] } });
-        s.mock("POST", "/next").match_query(Matcher::Any).match_body(Matcher::PartialJson(json!({ "videoId": "v1" }))).with_body(tabs.to_string()).create_async().await;
+        let tabs = |id: &str| json!({ "contents": { "tabs": [{ "tabRenderer": { "endpoint": { "browseEndpoint": { "browseId": "MPADx" } } } }, { "tabRenderer": { "endpoint": { "browseEndpoint": { "browseId": id } } } }] } });
+        for (video, id) in [("v1", "MPLYt_abc"), ("v3", "MPLYt_timed")] {
+            s.mock("POST", "/next").match_query(Matcher::Any).match_body(Matcher::PartialJson(json!({ "videoId": video }))).with_body(tabs(id).to_string()).create_async().await;
+        }
+        // v1: the Android client gets nothing timed, the web page has the text.
+        s.mock("POST", "/browse").match_query(Matcher::Any).match_body(Matcher::PartialJson(json!({ "browseId": "MPLYt_abc", "context": { "client": { "clientName": "ANDROID_MUSIC" } } }))).with_body(json!({ "contents": {} }).to_string()).create_async().await;
         let page = json!({ "contents": { "sectionListRenderer": { "contents": [{ "musicDescriptionShelfRenderer": { "description": { "runs": [{ "text": "line one
 line two" }] }, "footer": { "runs": [{ "text": "Source: LyricFind" }] } } }] } } });
-        s.mock("POST", "/browse").match_query(Matcher::Any).match_body(Matcher::PartialJson(json!({ "browseId": "MPLYt_abc" }))).with_body(page.to_string()).create_async().await;
+        s.mock("POST", "/browse").match_query(Matcher::Any).match_body(Matcher::PartialJson(json!({ "browseId": "MPLYt_abc", "context": { "client": { "clientName": "WEB_REMIX" } } }))).with_body(page.to_string()).create_async().await;
+        // v3: timed lines, ♪ as a break, starts and ends as strings.
+        let timed = json!({ "contents": { "elementRenderer": { "newElement": { "type": { "componentType": { "model": { "timedLyricsModel": { "lyricsData": {
+            "timedLyricsData": [
+                { "lyricLine": "Second", "cueRange": { "startTimeMilliseconds": "5200", "endTimeMilliseconds": "7900" } },
+                { "lyricLine": "First", "cueRange": { "startTimeMilliseconds": "1000", "endTimeMilliseconds": "4100" } },
+                { "lyricLine": "♪", "cueRange": { "startTimeMilliseconds": "8000", "endTimeMilliseconds": "20000" } }
+            ],
+            "sourceMessage": "Source: LyricFind"
+        } } } } } } } } });
+        s.mock("POST", "/browse").match_query(Matcher::Any).match_body(Matcher::PartialJson(json!({ "browseId": "MPLYt_timed", "context": { "client": { "clientName": "ANDROID_MUSIC" } } }))).with_body(timed.to_string()).create_async().await;
         s.mock("POST", "/next").match_query(Matcher::Any).match_body(Matcher::PartialJson(json!({ "videoId": "v2" }))).with_body(json!({ "contents": {} }).to_string()).create_async().await;
         let yt = YouTubeMusic::with_api(&s.url(), COOKIE).unwrap();
-        assert_eq!(yt.lyrics("v1").await.unwrap(), Some(("line one
+        assert_eq!(yt.lyrics("v1").await.unwrap(), Some(YtLyrics::Plain("line one
 line two".into(), "Source: LyricFind".into())));
+        let line = |ms, text: &str, end| Line { ms, text: text.into(), end_ms: Some(end) };
+        assert_eq!(yt.lyrics("v3").await.unwrap(), Some(YtLyrics::Timed(vec![line(1000, "First", 4100), line(5200, "Second", 7900), line(8000, "", 20000)], "Source: LyricFind".into())));
         assert_eq!(yt.lyrics("v2").await.unwrap(), None);
     }
 
@@ -768,6 +827,7 @@ line two".into(), "Source: LyricFind".into())));
             assert!(rows(v).is_empty(), "{v}");
             assert_eq!(playlist_rows(v), (vec![], None), "{v}");
             assert!(parse_accounts(v).is_empty(), "{v}");
+            assert_eq!(timed_lyrics_of(v), None, "{v}");
         }
     }
 }

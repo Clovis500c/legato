@@ -63,9 +63,9 @@ A fast, private desktop music player for Windows, built with Tauri 2 and Rust.
 - **One gateway to the network.** All requests go through the Rust core; the interface never calls the network itself.
 - **Voice search (off until you allow it).** The mic uses Windows' own online speech recognition: while it listens,
   your voice goes to Microsoft's speech service through Windows. The app keeps nothing.
-- **Lyrics.** Opening lyrics in Now Playing sends the song's title, artist, album and length to
-  [LRCLIB](https://lrclib.net) (free, open lyrics database), then to YouTube Music when you're signed in. Answers are
-  kept on your PC.
+- **Lyrics.** Opening lyrics in Now Playing asks YouTube Music first when you're signed in (its timed lyrics, the
+  video's id), then sends the song's title, artist, album and length to [LRCLIB](https://lrclib.net) (free, open lyrics
+  database). Answers are kept on your PC; timings you fix by hand travel with Sync Mode.
 - **Music Detector (off until you allow it).** "Identify a song" listens for 10 seconds to the microphone, or to what
   this PC plays (asked separately; Music App pauses its own music meanwhile), keeps the sound in memory and sends it
   once to [AudD](https://audd.io) to name the song: a few a day with no account, more with your own AudD token. Nothing

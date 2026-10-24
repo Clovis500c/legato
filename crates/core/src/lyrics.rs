@@ -6,9 +6,13 @@ use serde::{Deserialize, Serialize};
 
 /// One synced line. Empty text = instrumental gap.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Line {
     pub ms: u32,
     pub text: String,
+    /// When the line ends, when the source says (YouTube Music); LRC gives starts only.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub end_ms: Option<u32>,
 }
 
 /// What Now Playing shows.
@@ -53,7 +57,7 @@ pub fn parse_lrc(text: &str) -> Vec<Line> {
         }
         for ms in stamps {
             // LRC offset: positive = lyrics come sooner.
-            out.push(Line { ms: (ms as i64 - offset).max(0) as u32, text: rest.trim().to_string() });
+            out.push(Line { ms: (ms as i64 - offset).max(0) as u32, text: rest.trim().to_string(), end_ms: None });
         }
     }
     out.sort_by_key(|l| l.ms);
@@ -228,7 +232,8 @@ pub fn key(artist: &str, title: &str, duration_ms: Option<u32>) -> String {
     let norm = |s: &str| s.to_lowercase().split_whitespace().collect::<Vec<_>>().join(" ");
     // v2 (2026-10-22): slowed versions cached before stretching covered them come again. v3: plain-only results
     // asked again (looser durations, lead artist).
-    format!("v3|{}|{}|{}", norm(artist), norm(title), duration_ms.map(|d| d / 1000).unwrap_or(0))
+    // v4 (2026-10-24): YouTube Music's timed lyrics (line ends too) come first when signed in.
+    format!("v4|{}|{}|{}", norm(artist), norm(title), duration_ms.map(|d| d / 1000).unwrap_or(0))
 }
 
 #[cfg(test)]
@@ -240,10 +245,10 @@ mod tests {
         let lrc = "[ar:Someone]\n[offset:+500]\n[00:12.34]First\n[01:02.5][02:00.00]Chorus\n[00:20.123]\n[bad]Nope\n";
         let l = parse_lrc(lrc);
         assert_eq!(l, vec![
-            Line { ms: 11_840, text: "First".into() },
-            Line { ms: 19_623, text: "".into() },
-            Line { ms: 62_000, text: "Chorus".into() },
-            Line { ms: 119_500, text: "Chorus".into() },
+            Line { ms: 11_840, text: "First".into(), end_ms: None },
+            Line { ms: 19_623, text: "".into(), end_ms: None },
+            Line { ms: 62_000, text: "Chorus".into(), end_ms: None },
+            Line { ms: 119_500, text: "Chorus".into(), end_ms: None },
         ]);
         assert!(parse_lrc("no stamps here").is_empty());
     }
@@ -312,6 +317,6 @@ mod tests {
         // Synced beats plain-only at the same fit.
         let plain_only = Record { synced: None, ..rec(200.0, false) };
         assert!(pick(vec![plain_only, rec(201.0, true)], Some(200.0), false).unwrap().0.synced.is_some());
-        assert_eq!(key("Daft  Punk", "One More Time", Some(320_500)), "v3|daft punk|one more time|320");
+        assert_eq!(key("Daft  Punk", "One More Time", Some(320_500)), "v4|daft punk|one more time|320");
     }
 }

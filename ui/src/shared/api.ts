@@ -258,7 +258,7 @@ export type Detection = { kind: 'found'; track: Track } | { kind: 'unknown' } | 
 
 /** crates/core lyrics.rs. Lines synced (ms); empty = plain only. */
 export interface Lyrics {
-  lines: { ms: number; text: string }[]
+  lines: { ms: number; text: string; endMs?: number | null }[]
   plain: string | null
   instrumental: boolean
   source: string

@@ -29,7 +29,7 @@ mod ytwatch;
 use music_connectors::lrclib::Lrclib;
 use music_connectors::oauth::Opener;
 use music_connectors::spotify::Spotify;
-use music_connectors::ytmusic::{Account, Home, ListRef, YouTubeMusic, valid_mood};
+use music_connectors::ytmusic::{Account, Home, ListRef, YouTubeMusic, YtLyrics, valid_mood};
 use music_connectors::ytweb::YouTubeWeb;
 use music_core::cache::{Memo, Stats, Ttl};
 use music_core::history::{Play, Pref};
@@ -1280,8 +1280,8 @@ struct LyricsAsk {
 /// Nothing found: asked again after a week (LRCLIB fills gaps over time).
 const LYRICS_RETRY_S: i64 = 7 * 86_400;
 
-/// Now Playing › Lyrics: cache, then LRCLIB (exact match, then search, timings fitted to slowed / sped up versions),
-/// then YouTube Music's own (plain) when signed in. Network failures are not cached.
+/// Now Playing › Lyrics: cache, then YouTube Music's timed lyrics when signed in, then LRCLIB (exact match, then search,
+/// timings fitted to slowed / sped up versions), then YouTube Music's plain text. Network failures are not cached.
 #[tauri::command]
 async fn lyrics(state: State<'_, AppState>, ask: LyricsAsk) -> CmdResult<Option<Lyrics>> {
     // Trust boundary: text from the UI.
@@ -1300,10 +1300,28 @@ async fn lyrics(state: State<'_, AppState>, ask: LyricsAsk) -> CmdResult<Option<
     let playing_s = ask.duration_ms.map(|d| d as f32 / 1000.0);
     let lrclib = Lrclib::default();
     let mut found = None;
+    let mut failed = None;
+    // Signed in: YouTube Music's own first. Its timed lines (start and end) win; plain text waits behind LRCLIB.
+    // A speed-changed version keeps LRCLIB's stretch (YouTube's timings are the original's).
+    let youtube = ask.youtube.filter(|v| v.len() == 11 && v.chars().all(|c| c.is_ascii_alphanumeric() || c == '-' || c == '_'));
+    let mut yt_plain = None;
+    if let Some(id) = &youtube
+        && let Some(yt) = state.ytm()
+    {
+        let source = |s: String| if s.is_empty() { "YouTube Music".to_string() } else { format!("YouTube Music · {s}") };
+        match yt.lyrics(id).await {
+            Ok(Some(YtLyrics::Timed(lines, s))) if !speed => found = Some(Lyrics { plain: Some(lines.iter().map(|l| l.text.as_str()).filter(|t| !t.is_empty()).collect::<Vec<_>>().join("
+")), lines, instrumental: false, source: source(s) }),
+            Ok(Some(YtLyrics::Timed(lines, s))) => yt_plain = Some(Lyrics { lines: Vec::new(), plain: Some(lines.iter().map(|l| l.text.as_str()).filter(|t| !t.is_empty()).collect::<Vec<_>>().join("
+")), instrumental: false, source: source(s) }),
+            Ok(Some(YtLyrics::Plain(text, s))) => yt_plain = Some(Lyrics { lines: Vec::new(), plain: Some(text), instrumental: false, source: source(s) }),
+            Ok(None) => {}
+            Err(e) => failed = Some(e),
+        }
+    }
     // Plain-only (or unfitting) answer: kept while other queries may still give synced lines (user's report
     // 2026-10-22: lyrics that stay white).
     let mut plain = None;
-    let mut failed = None;
     let take = |l: Lyrics, plain: &mut Option<Lyrics>| {
         if !l.lines.is_empty() || l.instrumental {
             return Some(l);
@@ -1312,6 +1330,9 @@ async fn lyrics(state: State<'_, AppState>, ask: LyricsAsk) -> CmdResult<Option<
         None
     };
     for (artist, title) in lyrics::queries(&ask.artist, &ask.title) {
+        if found.is_some() {
+            break;
+        }
         // Exact first; another speed never matches its duration.
         if !speed {
             match lrclib.get(&title, &artist, ask.album.as_deref(), ask.duration_ms.map(|d| (d + 500) / 1000)).await {
@@ -1336,20 +1357,7 @@ async fn lyrics(state: State<'_, AppState>, ask: LyricsAsk) -> CmdResult<Option<
             break;
         }
     }
-    found = found.or(plain);
-    if found.is_none()
-        && let Some(id) = ask.youtube.filter(|v| v.len() == 11 && v.chars().all(|c| c.is_ascii_alphanumeric() || c == '-' || c == '_'))
-        && let Some(yt) = state.ytm()
-    {
-        match yt.lyrics(&id).await {
-            Ok(Some((text, source))) => {
-                let source = if source.is_empty() { "YouTube Music".to_string() } else { format!("YouTube Music · {source}") };
-                found = Some(Lyrics { lines: Vec::new(), plain: Some(text), instrumental: false, source });
-            }
-            Ok(None) => {}
-            Err(e) => failed = Some(e),
-        }
-    }
+    found = found.or(plain).or(yt_plain);
     match (found, failed) {
         (Some(l), _) => {
             state.lib().save_lyrics(&key, serde_json::to_string(&l).ok().as_deref(), now).map_err(err)?;
