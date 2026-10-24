@@ -57,11 +57,16 @@ export function VideoSlot({ className = '', style, hidden = false, fill = false,
     window.addEventListener('resize', update)
     // Capture: any scrolling ancestor moves the slot.
     window.addEventListener('scroll', update, true)
+    // Now Playing rises in (np-in, 28 px): measured mid-animation, the video stayed low over the title. Again at its end.
+    window.addEventListener('animationend', update, true)
+    window.addEventListener('transitionend', update, true)
     update()
     return () => {
       ro.disconnect()
       window.removeEventListener('resize', update)
       window.removeEventListener('scroll', update, true)
+      window.removeEventListener('animationend', update, true)
+      window.removeEventListener('transitionend', update, true)
       set(null)
     }
   }, [set])
