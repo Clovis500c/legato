@@ -227,6 +227,14 @@ pub fn build(record: Record, fit: Option<f32>, source: &str) -> Lyrics {
     Lyrics { lines, plain, instrumental: record.instrumental, source: source.to_string() }
 }
 
+/// Junk record: under 4 sung lines for a song over a minute (user's test 2026-10-24: LRCLIB's exact match for a
+/// famous song was one line, "probe"). Skipped so the search's real ones come.
+pub fn too_thin(l: &Lyrics, playing_s: Option<f32>) -> bool {
+    let sung = |n: usize| n < 4 && playing_s.is_none_or(|p| p > 60.0);
+    let plain_lines = l.plain.as_deref().map_or(0, |p| p.lines().filter(|t| !t.trim().is_empty()).count());
+    !l.instrumental && sung(l.lines.iter().filter(|x| !x.text.is_empty()).count().max(plain_lines))
+}
+
 /// Cache key: who, what, how long (a slowed version is its own entry).
 pub fn key(artist: &str, title: &str, duration_ms: Option<u32>) -> String {
     let norm = |s: &str| s.to_lowercase().split_whitespace().collect::<Vec<_>>().join(" ");
@@ -239,6 +247,19 @@ pub fn key(artist: &str, title: &str, duration_ms: Option<u32>) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn junk_records_are_too_thin() {
+        let probe = build(Record { synced: Some("[00:00.00]probe".into()), plain: Some("probe".into()), ..Default::default() }, Some(1.0), "LRCLIB");
+        assert!(too_thin(&probe, Some(214.0)));
+        assert!(!too_thin(&probe, Some(30.0)));
+        let real = build(Record { synced: Some("[00:01.00]a
+[00:02.00]b
+[00:03.00]c
+[00:04.00]d".into()), ..Default::default() }, Some(1.0), "LRCLIB");
+        assert!(!too_thin(&real, Some(214.0)));
+        assert!(!too_thin(&Lyrics { lines: vec![], plain: None, instrumental: true, source: String::new() }, Some(200.0)));
+    }
 
     #[test]
     fn reads_lrc() {

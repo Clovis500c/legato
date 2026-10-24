@@ -67,8 +67,10 @@ describe('timing fixed by hand', () => {
     expect(two.offset).toBe(1000)
     // Too close together: speed kept, offset from the last tap.
     expect(fixFromTaps([{ lyric: 10000, song: 11000 }, { lyric: 12000, song: 13500 }], { offset: 0, rate: 1.1 })).toEqual({ offset: 300, rate: 1.1 })
-    // Absurd speeds clamped.
-    expect(fixFromTaps([{ lyric: 0, song: 0 }, { lyric: 10000, song: 90000 }], NO_FIX).rate).toBe(2)
+    // A few hundred ms of jitter on a normal-speed song: still ×1.
+    expect(fixFromTaps([{ lyric: 20000, song: 20100 }, { lyric: 45000, song: 44500 }], { offset: 0, rate: 1 }).rate).toBe(1)
+    // Two far lines clicked a second apart: a slip, the speed stays, the shift follows the last tap.
+    expect(fixFromTaps([{ lyric: 26000, song: 27600 }, { lyric: 150000, song: 28700 }], NO_FIX)).toEqual({ offset: -121300, rate: 1 })
   })
   it('moves starts and given ends, never before 0', () => {
     const lines = [{ ms: 1000, text: 'a', endMs: 2000 }, { ms: 3000, text: 'b' }]

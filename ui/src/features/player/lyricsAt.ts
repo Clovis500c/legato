@@ -28,18 +28,22 @@ export function applyFix<T extends Timed>(lines: T[], fix: LyricsFix): T[] {
 }
 
 /** Taps further apart than this (lyric time) also fix the speed; closer, only the offset moves. */
-const RATE_SPAN_MS = 8000
+const RATE_SPAN_MS = 20000
 
 /**
  * "This line starts now" taps → fix. One tap: shift, same speed. Two far enough apart: the speed too (a slowed or sped
- * up version nobody named so), from the first and last tap; kept within 0.5–2×.
+ * up version nobody named so), from the first and last tap; a speed outside 0.5–2× is a slip and ignored.
  */
 export function fixFromTaps(taps: { lyric: number; song: number }[], prev: LyricsFix): LyricsFix {
   if (!taps.length) return prev
   const first = taps[0]
   const last = taps[taps.length - 1]
   const span = last.lyric - first.lyric
-  const rate = Math.abs(span) >= RATE_SPAN_MS ? Math.min(2, Math.max(0.5, (last.song - first.song) / span)) : prev.rate
+  const measured = Math.abs(span) >= RATE_SPAN_MS ? (last.song - first.song) / span : NaN
+  // Outside 0.5–2×: a slip (two far lines clicked in a row), not a speed. The shift alone follows the last tap.
+  // Within 3 % of normal: tap jitter (measured live 2026-10-24: 0.97 on a song at normal speed). Speed versions
+  // are 5 % off or more.
+  const rate = Math.abs(measured - 1) < 0.03 ? 1 : measured >= 0.5 && measured <= 2 ? measured : prev.rate
   return { rate: Math.round(rate * 10000) / 10000, offset: Math.round(last.song - last.lyric * rate) }
 }
 

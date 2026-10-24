@@ -1323,6 +1323,9 @@ async fn lyrics(state: State<'_, AppState>, ask: LyricsAsk) -> CmdResult<Option<
     // 2026-10-22: lyrics that stay white).
     let mut plain = None;
     let take = |l: Lyrics, plain: &mut Option<Lyrics>| {
+        if lyrics::too_thin(&l, playing_s) {
+            return None;
+        }
         if !l.lines.is_empty() || l.instrumental {
             return Some(l);
         }
