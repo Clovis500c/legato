@@ -134,6 +134,9 @@ export function AboutSection() {
           {(status?.state === 'ready' || status?.state === 'available') && status.notes && (
             <Row label={tr('What’s new in {version}', { version: status.version })} sub={<span className="whitespace-pre-wrap">{status.notes}</span>} />
           )}
+          {status?.state !== 'ready' && status?.state !== 'available' && status?.lastUpdate?.notes && (
+            <Row label={tr('What’s new in {version}', { version: status.lastUpdate.to })} sub={<span className="whitespace-pre-wrap">{status.lastUpdate.notes}</span>} />
+          )}
         </div>
       </section>
 

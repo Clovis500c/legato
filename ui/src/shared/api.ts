@@ -88,7 +88,7 @@ export type UpdateStatus = UpdateState & {
   current: string
   /** Unix seconds. */
   lastCheck: number | null
-  lastUpdate: { from: string; to: string; at: number } | null
+  lastUpdate: { from: string; to: string; at: number; notes?: string | null } | null
   /** First launch after an update. */
   justUpdated: boolean
 }

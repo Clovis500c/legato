@@ -191,7 +191,7 @@ export function App() {
         const s = useSettings.getState().settings
         await resumeSession(s.resume, exact)
         if (s.reopen || exact) restoreScreen()
-        if (exact && u?.lastUpdate) useStore.getState().notify(tr('Version {version} installed', { version: u.lastUpdate.to }), { action: { label: tr('What’s new'), run: () => useStore.getState().go({ name: 'settings', section: 'about' }) } })
+        if (exact && u?.lastUpdate) useStore.getState().notify(tr('Version {version} installed', { version: u.lastUpdate.to }), { action: { label: tr('What’s new'), run: () => useStore.getState().go({ name: 'settings', section: 'about', focus: 'Updates' }) } })
       })
       .catch(() => {})
     void library

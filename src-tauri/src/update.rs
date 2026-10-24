@@ -40,6 +40,9 @@ pub struct Installed {
     pub from: String,
     pub to: String,
     pub at: i64,
+    /// Release notes of `to`, for "What's new" after the restart. Older saves: none.
+    #[serde(default)]
+    pub notes: Option<String>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
@@ -163,7 +166,7 @@ impl Updater {
     pub fn install(&self, app: &AppHandle) -> Result<(), String> {
         let (update, bytes) = self.ready.lock().unwrap().take().ok_or("No update downloaded")?;
         let current = self.status().current;
-        save(app, &Saved { pending: Some(Installed { from: current, to: update.version.clone(), at: now() }), last: self.status().last_update });
+        save(app, &Saved { pending: Some(Installed { from: current, to: update.version.clone(), at: now(), notes: update.body.clone() }), last: self.status().last_update });
         self.set(app, State::Installing { version: update.version.clone() });
         // Windows installer ends the process: no exit event.
         crate::window_place::save(app);
@@ -205,4 +208,17 @@ pub fn check_if_stale(app: &AppHandle) {
     }
     let app = app.clone();
     tauri::async_runtime::spawn(async move { app.state::<Updater>().check(&app, automatic(&app)).await });
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn older_saves_load_without_notes() {
+        let s: Saved = serde_json::from_str(r#"{"pending":null,"last":{"from":"0.1.246","to":"0.1.270","at":1}}"#).unwrap();
+        assert_eq!(s.last.unwrap().notes, None);
+        let s: Saved = serde_json::from_str(r#"{"last":{"from":"a","to":"b","at":1,"notes":"feat: x"}}"#).unwrap();
+        assert_eq!(s.last.unwrap().notes.as_deref(), Some("feat: x"));
+    }
 }
