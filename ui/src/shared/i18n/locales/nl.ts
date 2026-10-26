@@ -256,6 +256,8 @@ const nl: Record<string, string> = {
   'Show all': 'Alles weergeven',
   'Play via': 'Afspelen via',
   'Add to library': 'Toevoegen aan bibliotheek',
+  'Add to Liked Music': 'Toevoegen aan Liked Music',
+  'Remove from Liked Music': 'Verwijderen uit Liked Music',
   'Added “{title}” to your library': '‘{title}’ toegevoegd aan je bibliotheek',
   'Play next': 'Hierna afspelen',
   'Add to queue': 'Toevoegen aan wachtrij',

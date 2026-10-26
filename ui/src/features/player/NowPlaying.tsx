@@ -1,4 +1,4 @@
-import { ArrowSquareOut } from '@phosphor-icons/react'
+import { ArrowSquareOut, Heart } from '@phosphor-icons/react'
 import { STAGE_ID } from '../../app/searchShift'
 import { openUrl } from '@tauri-apps/plugin-opener'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
@@ -10,7 +10,8 @@ import { clampRatio } from '../../shared/artbox'
 import type { Settings } from '../../shared/theme/theme'
 import { Button } from '../../shared/ui/Button'
 import { onMenu } from '../../shared/ui/ContextMenu'
-import { Segmented } from '../../shared/ui/controls'
+import { RoundButton, Segmented } from '../../shared/ui/controls'
+import { toggleLike, useLiked } from './like'
 import { Cover } from '../../shared/ui/Cover'
 import { SourceIcon } from '../../shared/ui/SourceIcon'
 import { playerMenu } from '../menus'
@@ -223,6 +224,7 @@ export function NowPlaying() {
   const theme = useSettings.getState().current()
   const track = useNowTrack()
   const nextCount = useNextCount()
+  const liked = useLiked(track)
   const ambient = useAmbient(tint && !immersive && track ? trackArt(track)[0] : undefined, theme)
   // Auto: a still-image upload shows as a cover.
   const still = useStill(now?.via === 'youtube' ? now.youtubeId : undefined)
@@ -280,6 +282,11 @@ export function NowPlaying() {
                 <h2 className="truncate text-[1.75rem] leading-tight font-bold tracking-[-0.02em]">{now.title}</h2>
                 <p className="truncate text-sm text-ink-2">{track?.album ? `${now.artist} — ${track.album}` : now.artist}</p>
               </div>
+              {track && (
+                <RoundButton label={liked ? tr('Remove from Liked Music') : tr('Add to Liked Music')} aria-pressed={liked} kind="plain" size="md" onClick={() => void toggleLike(track)} className={liked ? 'text-accent' : 'text-ink-2 hover:text-ink'}>
+                  <Heart size={24} weight={liked ? 'fill' : 'regular'} />
+                </RoundButton>
+              )}
             </div>
             <div className="flex flex-col gap-1.5">
               {tuner ? <Tuner /> : <SeekBar />}

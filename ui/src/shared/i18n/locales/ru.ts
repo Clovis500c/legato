@@ -256,6 +256,8 @@ const ru: Record<string, string> = {
   'Show all': 'Показать все',
   'Play via': 'Воспроизвести через',
   'Add to library': 'Добавить в медиатеку',
+  'Add to Liked Music': 'Добавить в Liked Music',
+  'Remove from Liked Music': 'Удалить из Liked Music',
   'Added “{title}” to your library': 'Добавлено в медиатеку: «{title}»',
   'Play next': 'Воспроизвести следующим',
   'Add to queue': 'Добавить в очередь',

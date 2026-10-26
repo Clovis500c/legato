@@ -256,6 +256,8 @@ const zh: Record<string, string> = {
   'Show all': '全部显示',
   'Play via': '播放方式',
   'Add to library': '添加到音乐库',
+  'Add to Liked Music': '添加到 Liked Music',
+  'Remove from Liked Music': '从 Liked Music 移除',
   'Added “{title}” to your library': '已将“{title}”添加到你的音乐库',
   'Play next': '下一首播放',
   'Add to queue': '添加到队列',

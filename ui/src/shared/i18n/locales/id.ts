@@ -256,6 +256,8 @@ const id: Record<string, string> = {
   'Show all': 'Tampilkan semua',
   'Play via': 'Putar melalui',
   'Add to library': 'Tambahkan ke koleksi',
+  'Add to Liked Music': 'Tambahkan ke Liked Music',
+  'Remove from Liked Music': 'Hapus dari Liked Music',
   'Added “{title}” to your library': '“{title}” ditambahkan ke koleksimu',
   'Play next': 'Putar berikutnya',
   'Add to queue': 'Tambahkan ke antrean',

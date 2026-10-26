@@ -256,6 +256,8 @@ const vi: Record<string, string> = {
   'Show all': 'Hiện tất cả',
   'Play via': 'Phát qua',
   'Add to library': 'Thêm vào thư viện',
+  'Add to Liked Music': 'Thêm vào Liked Music',
+  'Remove from Liked Music': 'Xóa khỏi Liked Music',
   'Added “{title}” to your library': 'Đã thêm “{title}” vào thư viện của bạn',
   'Play next': 'Phát tiếp theo',
   'Add to queue': 'Thêm vào hàng đợi',

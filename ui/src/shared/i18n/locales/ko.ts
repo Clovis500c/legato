@@ -256,6 +256,8 @@ const ko: Record<string, string> = {
   'Show all': '모두 표시',
   'Play via': '재생 방법',
   'Add to library': '보관함에 추가',
+  'Add to Liked Music': 'Liked Music에 추가',
+  'Remove from Liked Music': 'Liked Music에서 삭제',
   'Added “{title}” to your library': '\'{title}\'을(를) 보관함에 추가했습니다',
   'Play next': '다음에 재생',
   'Add to queue': '대기열에 추가',

@@ -256,6 +256,8 @@ const sv: Record<string, string> = {
   'Show all': 'Visa alla',
   'Play via': 'Spela via',
   'Add to library': 'Lägg till i biblioteket',
+  'Add to Liked Music': 'Lägg till i Liked Music',
+  'Remove from Liked Music': 'Ta bort från Liked Music',
   'Added “{title}” to your library': '”{title}” har lagts till i ditt bibliotek',
   'Play next': 'Spela härnäst',
   'Add to queue': 'Lägg till i kön',

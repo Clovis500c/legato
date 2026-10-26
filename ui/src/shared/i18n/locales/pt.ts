@@ -256,6 +256,8 @@ const pt: Record<string, string> = {
   'Show all': 'Mostrar tudo',
   'Play via': 'Tocar com',
   'Add to library': 'Adicionar à biblioteca',
+  'Add to Liked Music': 'Adicionar a Liked Music',
+  'Remove from Liked Music': 'Remover de Liked Music',
   'Added “{title}” to your library': '“{title}” adicionada à sua biblioteca',
   'Play next': 'Tocar em seguida',
   'Add to queue': 'Adicionar à fila',

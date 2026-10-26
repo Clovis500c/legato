@@ -256,6 +256,8 @@ const ja: Record<string, string> = {
   'Show all': 'すべて表示',
   'Play via': '再生方法',
   'Add to library': 'ライブラリに追加',
+  'Add to Liked Music': 'Liked Music に追加',
+  'Remove from Liked Music': 'Liked Music から削除',
   'Added “{title}” to your library': '「{title}」をライブラリに追加しました',
   'Play next': '次に再生',
   'Add to queue': 'キューに追加',

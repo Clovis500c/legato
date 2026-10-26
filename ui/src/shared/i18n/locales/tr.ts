@@ -256,6 +256,8 @@ const tr: Record<string, string> = {
   'Show all': 'Tümünü göster',
   'Play via': 'Şununla çal',
   'Add to library': 'Kitaplığa ekle',
+  'Add to Liked Music': "Liked Music'e ekle",
+  'Remove from Liked Music': "Liked Music'ten kaldır",
   'Added “{title}” to your library': '“{title}” kitaplığına eklendi',
   'Play next': 'Sonra çal',
   'Add to queue': 'Sıraya ekle',

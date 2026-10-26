@@ -256,6 +256,8 @@ const uk: Record<string, string> = {
   'Show all': 'Показати всі',
   'Play via': 'Відтворити через',
   'Add to library': 'Додати до медіатеки',
+  'Add to Liked Music': 'Додати до Liked Music',
+  'Remove from Liked Music': 'Видалити з Liked Music',
   'Added “{title}” to your library': 'Додано до медіатеки: «{title}»',
   'Play next': 'Відтворити наступним',
   'Add to queue': 'Додати до черги',

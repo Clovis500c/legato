@@ -256,6 +256,8 @@ const hi: Record<string, string> = {
   'Show all': 'सब दिखाएं',
   'Play via': 'इससे चलाएं',
   'Add to library': 'लाइब्रेरी में जोड़ें',
+  'Add to Liked Music': 'Liked Music में जोड़ें',
+  'Remove from Liked Music': 'Liked Music से हटाएँ',
   'Added “{title}” to your library': '“{title}” को आपकी लाइब्रेरी में जोड़ा गया',
   'Play next': 'इसके बाद चलाएं',
   'Add to queue': 'कतार में जोड़ें',
