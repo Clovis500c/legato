@@ -57,10 +57,14 @@ export function shape(curve: FadeCurve, x: number): number {
  */
 export function fadeGain(positionMs: number, durationMs: number | null, f: Fade, fadeIn: boolean): number {
   const up = fadeIn && f.in > 0 ? shape(f.inCurve, positionMs / (f.in * 1000)) : 1
-  const span = f.out * 1000
-  const down = span > 0 && durationMs && durationMs > span + Math.max(span, f.in * 1000) ? shape(f.outCurve, (durationMs - positionMs) / span) : 1
+  const down = fadesOut(durationMs, f) ? shape(f.outCurve, (durationMs! - positionMs) / (f.out * 1000)) : 1
   return Math.min(up, down)
 }
+
+const fadesOut = (durationMs: number | null, f: Fade) => f.out > 0 && !!durationMs && durationMs > f.out * 1000 + Math.max(f.out, f.in) * 1000
+
+/** Songs overlap (X shape): the next one starts as this one's fade out begins. */
+export const overlapDue = (positionMs: number, durationMs: number | null, f: Fade) => fadesOut(durationMs, f) && positionMs >= durationMs! - f.out * 1000
 
 /** Silence between songs in the preview: about what the next song takes to start. */
 export const DEMO_GAP = 0.6

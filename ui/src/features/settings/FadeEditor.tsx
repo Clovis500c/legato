@@ -7,19 +7,15 @@ import { curveHints, curveLabels, curvePath, DEMO_GAP, demoLength, effectiveFade
 import { usePlayer } from '../player/store'
 import { msg, tr } from '../../shared/i18n/i18n'
 
-// Graph geometry (viewBox units). Two halves: end of the song, start of the next; 12 s each.
+// Graph geometry (viewBox units). One time line, 0 = end of the song; the next one starts as the fade out does (X).
 const W = 640
 const H = 230
 const TOP = 26
 const BASE = H - 34
 const L0 = 44
-const GAP = 28
-const HALF = (W - 16 - L0 - GAP) / 2
-const R0 = L0 + HALF + GAP
 const MAX = 12
-const k = HALF / MAX
-const xOut = (t: number) => L0 + HALF + t * k // t ≤ 0
-const xIn = (t: number) => R0 + t * k // t ≥ 0
+const k = (W - 16 - L0) / (2 * MAX)
+const x = (t: number) => L0 + (t + MAX) * k
 const y = (g: number) => BASE - g * (BASE - TOP)
 const snap = (s: number) => Math.min(MAX, Math.max(0, Math.round(s * 2) / 2))
 const pct = (g: number) => `${Math.round(g * 100)} %`
@@ -32,17 +28,12 @@ function svgX(svg: SVGSVGElement, clientX: number) {
   return ((clientX - r.left) / r.width) * W
 }
 
-/** Point on the curves under viewBox x: side, seconds from the song change, volume. */
-function probe(x: number, f: Fade): { side: 'out' | 'in'; t: number; g: number } | null {
-  if (x >= L0 && x <= L0 + HALF) {
-    const t = (x - L0 - HALF) / k
-    return { side: 'out', t, g: f.out > 0 && -t <= f.out ? shape(f.outCurve, -t / f.out) : -t > 0 ? 1 : 0 }
-  }
-  if (x >= R0 && x <= R0 + HALF) {
-    const t = (x - R0) / k
-    return { side: 'in', t, g: f.in > 0 ? shape(f.inCurve, t / f.in) : 1 }
-  }
-  return null
+/** Both curves under viewBox x: seconds from the song's end, volume of each song (out = ending, in = next). */
+function probe(vx: number, f: Fade): { t: number; out: number; in: number } | null {
+  const t = (vx - L0) / k - MAX
+  if (t < -MAX || t > MAX) return null
+  const from = t + f.out
+  return { t, out: t >= 0 ? 0 : f.out > 0 ? shape(f.outCurve, -t / f.out) : 1, in: from < 0 ? 0 : f.in > 0 ? shape(f.inCurve, from / f.in) : 1 }
 }
 
 /** Volume over time around a song change, with drag handles for both lengths. playhead = preview time, seconds. */
@@ -51,15 +42,17 @@ export function FadeGraph({ fade, onChange, playhead }: { fade: Fade; onChange: 
   const [drag, setDrag] = useState<'out' | 'in' | null>(null)
   const [hover, setHover] = useState<ReturnType<typeof probe>>(null)
 
-  // Full volume until the fade starts, then down to the song change; next song up from it, then full.
-  const outLine = `M${xOut(-MAX)},${y(1)}` + (fade.out > 0 ? curvePath(fade.outCurve, xOut(-fade.out), xOut(0), y(0), y(1), 32, true).replace('M', 'L') : `L${xOut(0)},${y(1)}L${xOut(0)},${y(0)}`)
-  const inLine = (fade.in > 0 ? curvePath(fade.inCurve, xIn(0), xIn(fade.in), y(0), y(1)) : `M${xIn(0)},${y(0)}L${xIn(0)},${y(1)}`) + `L${xIn(MAX)},${y(1)}`
+  // Full volume until the fade starts, then down to the song's end; next song up from that start, then full.
+  const start = x(-fade.out)
+  const outLine = `M${x(-MAX)},${y(1)}` + (fade.out > 0 ? curvePath(fade.outCurve, start, x(0), y(0), y(1), 32, true).replace('M', 'L') : `L${x(0)},${y(1)}L${x(0)},${y(0)}`)
+  const inLine = (fade.in > 0 ? curvePath(fade.inCurve, start, x(fade.in - fade.out), y(0), y(1)) : `M${start},${y(0)}L${start},${y(1)}`) + `L${x(MAX)},${y(1)}`
 
   const move = (e: ReactPointerEvent<SVGSVGElement>) => {
-    const x = svgX(e.currentTarget, e.clientX)
-    if (drag === 'out') return onChange({ out: snap((L0 + HALF - x) / k) })
-    if (drag === 'in') return onChange({ in: snap((x - R0) / k) })
-    setHover(probe(x, fade))
+    const vx = svgX(e.currentTarget, e.clientX)
+    const t = (vx - L0) / k - MAX
+    if (drag === 'out') return onChange({ out: snap(-t) })
+    if (drag === 'in') return onChange({ in: snap(t + fade.out) })
+    setHover(probe(vx, fade))
   }
   const keys = (side: 'out' | 'in') => (e: KeyboardEvent<SVGGElement>) => {
     const d = e.key === 'ArrowRight' || e.key === 'ArrowUp' ? 0.5 : e.key === 'ArrowLeft' || e.key === 'ArrowDown' ? -0.5 : 0
@@ -69,9 +62,9 @@ export function FadeGraph({ fade, onChange, playhead }: { fade: Fade; onChange: 
     onChange(side === 'out' ? { out: snap(fade.out - d) } : { in: snap(fade.in + d) })
   }
 
-  // Preview time → x: fade out, gap, fade in.
-  const head = playhead === null ? null : playhead < fade.out ? xOut(playhead - fade.out) : playhead < fade.out + DEMO_GAP ? L0 + HALF + ((playhead - fade.out) / DEMO_GAP) * GAP : xIn(playhead - fade.out - DEMO_GAP)
-  const handle = (side: 'out' | 'in', x: number, value: number) => (
+  // Preview time → x. One song can't overlap itself: the preview plays the fade out, then the fade in from its start.
+  const head = playhead === null ? null : x(playhead < fade.out ? playhead - fade.out : Math.max(0, playhead - fade.out - DEMO_GAP) - fade.out)
+  const handle = (side: 'out' | 'in', hx: number, value: number) => (
     <g
       role="slider"
       tabIndex={0}
@@ -89,11 +82,11 @@ export function FadeGraph({ fade, onChange, playhead }: { fade: Fade; onChange: 
       }}
       className="cursor-ew-resize outline-none [&:focus-visible>circle:last-child]:stroke-ink"
     >
-      <text x={x} y={y(1) - 12} textAnchor="middle" className="fill-ink font-mono text-[0.6875rem] font-semibold">
+      <text x={hx} y={y(1) - 12} textAnchor="middle" className="fill-ink font-mono text-[0.6875rem] font-semibold">
         {value} s
       </text>
-      <circle cx={x} cy={y(1)} r={14} fill="transparent" />
-      <circle cx={x} cy={y(1)} r={drag === side ? 8 : 6.5} className={`${side === 'out' ? 'fill-accent' : 'fill-ink'} stroke-raised transition-[r]`} strokeWidth={2.5} />
+      <circle cx={hx} cy={y(1)} r={14} fill="transparent" />
+      <circle cx={hx} cy={y(1)} r={drag === side ? 8 : 6.5} className={`${side === 'out' ? 'fill-accent' : 'fill-ink'} stroke-raised transition-[r]`} strokeWidth={2.5} />
     </g>
   )
 
@@ -117,44 +110,40 @@ export function FadeGraph({ fade, onChange, playhead }: { fade: Fade; onChange: 
           </text>
         </g>
       ))}
-      {Array.from({ length: MAX / 2 + 1 }, (_, i) => i * 2).map((s) => (
-        <g key={s} className="fill-ink-3 font-mono text-[0.625rem]">
-          <text x={xOut(-s)} y={BASE + 16} textAnchor="middle">
-            {s ? `−${s}` : '0'}
-          </text>
-          <text x={xIn(s)} y={BASE + 16} textAnchor="middle">
-            {s ? `+${s}` : '0'}
-          </text>
-        </g>
+      {Array.from({ length: MAX + 1 }, (_, i) => i * 2 - MAX).map((s) => (
+        <text key={s} x={x(s)} y={BASE + 16} textAnchor="middle" className="fill-ink-3 font-mono text-[0.625rem]">
+          {s < 0 ? `−${-s}` : s ? `+${s}` : '0'}
+        </text>
       ))}
       <text x={L0} y={12} className="fill-ink-3 font-mono text-[0.625rem] tracking-[0.09em]">
         {tr('SONG ENDS')}
       </text>
-      <text x={R0} y={12} className="fill-ink-3 font-mono text-[0.625rem] tracking-[0.09em]">
+      <text x={W - 16} y={12} textAnchor="end" className="fill-ink-3 font-mono text-[0.625rem] tracking-[0.09em]">
         {tr('NEXT SONG')}
       </text>
-      {/* Song change. */}
-      <rect x={L0 + HALF} y={TOP} width={GAP} height={BASE - TOP} className="fill-ink" fillOpacity={0.05} />
+      {/* End of the song. */}
+      <line x1={x(0)} x2={x(0)} y1={TOP} y2={BASE} className="stroke-ink-3" strokeDasharray="2 3" />
 
-      {/* Curves: filled under, line on top. */}
-      <path d={`${outLine}L${xOut(0)},${y(0)}L${xOut(-MAX)},${y(0)}Z`} className="fill-accent" fillOpacity={0.14} />
+      {/* Curves: filled under, lines on top. */}
+      <path d={`${outLine}L${x(0)},${y(0)}L${x(-MAX)},${y(0)}Z`} className="fill-accent" fillOpacity={0.14} />
+      <path d={`${inLine}L${x(MAX)},${y(0)}L${start},${y(0)}Z`} className="fill-ink" fillOpacity={0.08} />
       <path d={outLine} fill="none" className="stroke-accent" strokeWidth={2.5} strokeLinejoin="round" />
-      <path d={`${inLine}L${xIn(MAX)},${y(0)}L${xIn(0)},${y(0)}Z`} className="fill-ink" fillOpacity={0.08} />
       <path d={inLine} fill="none" className="stroke-ink" strokeWidth={2.5} strokeLinejoin="round" />
 
       {hover && !drag && (
         <g pointerEvents="none">
-          <line x1={hover.side === 'out' ? xOut(hover.t) : xIn(hover.t)} x2={hover.side === 'out' ? xOut(hover.t) : xIn(hover.t)} y1={TOP} y2={BASE} className="stroke-ink-3" strokeDasharray="2 3" />
-          <circle cx={hover.side === 'out' ? xOut(hover.t) : xIn(hover.t)} cy={y(hover.g)} r={4} className={hover.side === 'out' ? 'fill-accent' : 'fill-ink'} />
-          <text x={(hover.side === 'out' ? xOut(hover.t) : xIn(hover.t)) + (hover.side === 'out' ? 8 : -8)} y={Math.max(TOP + 10, y(hover.g) - 8)} textAnchor={hover.side === 'out' ? 'start' : 'end'} className="fill-ink font-mono text-[0.625rem]">
-            {`${hover.t < 0 ? '−' : '+'}${Math.abs(hover.t).toFixed(1)} s · ${pct(hover.g)} · ${db(hover.g)}`}
+          <line x1={x(hover.t)} x2={x(hover.t)} y1={TOP} y2={BASE} className="stroke-ink-3" strokeDasharray="2 3" />
+          <circle cx={x(hover.t)} cy={y(hover.out)} r={4} className="fill-accent" />
+          <circle cx={x(hover.t)} cy={y(hover.in)} r={4} className="fill-ink" />
+          <text x={x(hover.t) + (hover.t < 0 ? 8 : -8)} y={TOP + 10} textAnchor={hover.t < 0 ? 'start' : 'end'} className="fill-ink font-mono text-[0.625rem]">
+            {`${hover.t < 0 ? '−' : '+'}${Math.abs(hover.t).toFixed(1)} s · ${pct(hover.out)} (${db(hover.out)}) · ${pct(hover.in)} (${db(hover.in)})`}
           </text>
         </g>
       )}
       {head !== null && <line x1={head} x2={head} y1={TOP - 6} y2={BASE} className="stroke-accent" strokeWidth={2} pointerEvents="none" />}
 
-      {handle('out', xOut(-fade.out), fade.out)}
-      {handle('in', xIn(fade.in), fade.in)}
+      {handle('out', start, fade.out)}
+      {handle('in', x(fade.in - fade.out), fade.in)}
     </svg>
   )
 }

@@ -465,6 +465,8 @@ Original plan:
 - [x] Discord: own buttons are hidden by Discord on your own profile (friends see them). Explain, no fix.
 - [x] Fade: simple setting by default; Advanced › advanced fade with a curve editor (shape of fade out / in, overlap,
       graph of both volumes over time).
+- [x] Fade overlap (2026-10-26): YouTube → YouTube songs play together during the fade (X on the graph); local files
+      still fade out, then in.
 - [x] Interactive preview for visual settings (background blur, dimming, motion, …): small live sample of the effect.
 - [x] Artists and Albums: filter and sort, like songs in playlists.
 - [x] Mixes: better algorithm, more mixes; covers as a 2×2 grid like playlists, setting in Advanced: grid / single

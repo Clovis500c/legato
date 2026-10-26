@@ -84,7 +84,8 @@ export function startLive(playing: () => 'native' | 'youtube' | null): () => voi
     if (m.attached !== undefined) useLive.setState({ attached: m.attached, error: m.error ?? undefined })
   }
   const onMessage = (e: MessageEvent) => {
-    const m = parseLive(e.origin, e.data)
+    // Fading-out tail embed (overlap): not what plays now.
+    const m = e.source === frame?.contentWindow ? parseLive(e.origin, e.data) : null
     if (m && playing() === 'youtube' && !watching()) take(m)
   }
   window.addEventListener('message', onMessage)

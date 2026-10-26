@@ -16,6 +16,7 @@ import { trackArt } from '../../shared/art'
 import { Cover } from '../../shared/ui/Cover'
 import { bindFrame, useNowTrack, usePlayer, useVideoSlot } from './store'
 import { embedUrl, parseYt, ytPost } from './youtube'
+import { fadeGain } from './fade'
 import { closeWatch, cropWatch, placeWatch, sendWatch, useWatch, watchUpdate } from './watch'
 import { frameAround } from '../../shared/artbox'
 import { bindLiveFrame, sendLive } from './live'
@@ -38,9 +39,10 @@ function viaTitle(via: string, path?: string) {
 /**
  * YouTube rules: player stays visible, min 200×200. Follows the Now Playing slot when open. One embed for a whole run
  * of YouTube tracks: the next video is loaded into the player already running (loadVideoById), no page reload, so
- * songs follow each other without the embed's loading time.
+ * songs follow each other without the embed's loading time. Overlapping songs: tail = the old embed, unseen, fading out
+ * on its own until its video ends.
  */
-function YouTubeFrame({ videoId }: { videoId: string }) {
+function YouTubeFrame({ videoId, tail = false }: { videoId: string; tail?: boolean }) {
   const onYoutube = usePlayer((s) => s.onYoutube)
   const rect = useVideoSlot((s) => s.rect)
   const hidden = useVideoSlot((s) => s.hidden)
@@ -57,10 +59,19 @@ function YouTubeFrame({ videoId }: { videoId: string }) {
   const [src] = useState(() => ({ first: videoId, controls: useSettings.getState().settings.youtubeControls, start: usePlayer.getState().startAt / 1000, autoplay: !usePlayer.getState().hold }))
   const shown = useRef(videoId)
   const captionsOff = useRef<string | null>(null)
+  const isTail = useRef(tail)
+  isTail.current = tail
   useEffect(() => {
     const onMessage = (e: MessageEvent) => {
-      const u = parseYt(e.origin, e.data)
+      // Two embeds while songs overlap: each reads its own.
+      const u = e.source === frame.current?.contentWindow ? parseYt(e.origin, e.data) : undefined
       if (!u) return
+      if (isTail.current) {
+        if (u.state === 0 || u.error !== undefined) return usePlayer.setState({ tail: null })
+        const { volume, fade } = usePlayer.getState()
+        if (u.time !== undefined && u.duration) ytPost(frame.current, 'command', 'setVolume', [Math.round(volume * fadeGain(u.time * 1000, u.duration * 1000, fade, false) * 100)])
+        return
+      }
       // Subtitles off (default): YouTube may turn them on from the Google account, unload them once per video.
       if (u.state === 1 && captionsOff.current !== shown.current && !useSettings.getState().settings.subtitles) {
         captionsOff.current = shown.current
@@ -72,7 +83,7 @@ function YouTubeFrame({ videoId }: { videoId: string }) {
     // Watch page reports: same updates; a click on it is our play / pause.
     const off = api.onYtWatch((r) => {
       const v = useWatch.getState().video
-      if (!v) return
+      if (!v || isTail.current) return
       if (r.click) return usePlayer.getState().toggle()
       // Fresh page: commands sent while it loaded were lost. Volume (it stays muted until then) and crop again.
       if (r.ready) {
@@ -93,16 +104,21 @@ function YouTubeFrame({ videoId }: { videoId: string }) {
   }, [onYoutube])
   // Watch page follows the slot (or this frame's own spot), hidden in cover mode. Gone with the last YouTube track.
   useEffect(() => {
-    if (!watch) return
+    if (!watch || tail) return
     const follow = () => placeWatch(hidden ? null : (rect ?? frame.current?.getBoundingClientRect() ?? null))
     follow()
     window.addEventListener('resize', follow)
     return () => window.removeEventListener('resize', follow)
-  }, [watch, rect, hidden])
+  }, [watch, rect, hidden, tail])
   useEffect(() => {
-    if (watch && box) cropWatch(box)
-  }, [watch, box])
-  useEffect(() => () => closeWatch(), [])
+    if (watch && box && !tail) cropWatch(box)
+  }, [watch, box, tail])
+  useEffect(
+    () => () => {
+      if (!isTail.current) closeWatch()
+    },
+    [],
+  )
   // Next video: into the running player. Not loaded yet: onLoad sends it.
   useEffect(() => {
     if (shown.current === videoId || !ready.current) return
@@ -114,6 +130,7 @@ function YouTubeFrame({ videoId }: { videoId: string }) {
     <iframe
       ref={(el) => {
         frame.current = el
+        if (tail) return
         bindFrame(el)
         bindLiveFrame(el)
       }}
@@ -133,9 +150,9 @@ function YouTubeFrame({ videoId }: { videoId: string }) {
         sendLive()
       }}
       // Hidden (cover shown instead): YouTube's minimum size, so it streams a low resolution nobody sees.
-      style={crop ?? (rect ? { left: rect.left, top: rect.top, width: hidden ? 200 : rect.width, height: hidden ? 200 : rect.height } : undefined)}
+      style={tail ? undefined : (crop ?? (rect ? { left: rect.left, top: rect.top, width: hidden ? 200 : rect.width, height: hidden ? 200 : rect.height } : undefined))}
       // Bare video: no pointer on it, so YouTube's hover overlay never shows; our controls drive it.
-      className={`fixed z-30 bg-black ${crop ? '' : 'rounded-lg border border-line'} ${src.controls && !hidden && !watch ? '' : 'pointer-events-none'} ${hidden || watch ? 'opacity-0' : ''} ${rect ? '' : 'right-6 bottom-[112px] h-50 w-89 shadow-[0_12px_32px_var(--shadow)]'}`}
+      className={`fixed z-30 bg-black ${crop ? '' : 'rounded-lg border border-line'} ${src.controls && !hidden && !watch && !tail ? '' : 'pointer-events-none'} ${hidden || watch || tail ? 'opacity-0' : ''} ${rect && !tail ? '' : 'right-6 bottom-[112px] h-50 w-89 shadow-[0_12px_32px_var(--shadow)]'}`}
     />
   )
 }
@@ -190,6 +207,8 @@ export function VolumeControl({ big }: { big?: boolean }) {
 
 export function PlayerBar() {
   const now = usePlayer((s) => s.now)
+  const tail = usePlayer((s) => s.tail)
+  const frameKey = usePlayer((s) => s.frameKey)
   const playFiles = usePlayer((s) => s.playFiles)
   const onLocal = usePlayer((s) => s.onLocal)
   const onSpotify = usePlayer((s) => s.onSpotify)
@@ -239,7 +258,10 @@ export function PlayerBar() {
 
   return (
     <footer onContextMenu={onMenu(playerMenu)} className="flex h-25 shrink-0 items-center justify-between gap-6 border-t border-line bg-panel px-6 py-2">
-      {now?.youtubeId && <YouTubeFrame videoId={now.youtubeId} />}
+      {/* One list, tail first: keys keep each iframe in place (a moved iframe reloads). */}
+      {[...(tail ? [tail] : []), ...(now?.youtubeId ? [{ key: frameKey, videoId: now.youtubeId }] : [])].map((f) => (
+        <YouTubeFrame key={f.key} videoId={f.videoId} tail={f === tail} />
+      ))}
 
       <button disabled={!now} onClick={() => setFull(true)} title={now ? tr('Open Now Playing') : undefined} className="flex w-85 min-w-0 items-center gap-3.5 text-left">
         {/* New song: its cover fades in. */}

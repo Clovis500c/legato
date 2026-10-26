@@ -94,6 +94,8 @@ Status on 2026-10-16. YouTube, local files and Apple Music previews: done and te
 - Now Playing Auto mode: frames `1.jpg` / `2.jpg` / `3.jpg` (25 / 50 / 75 %) compared at 32×24 (`still.ts`); nearly the
   same = still image upload = cover. Cover mode keeps the embed playing, transparent (user's choice, see plan).
 - Fades between songs: volume × `fadeGain` (smoothstep), only on transitions that happen on their own; Spotify none.
+  YouTube → YouTube overlap: as the fade out begins, the next song starts in a second embed; the old one plays on
+  unseen as the tail (`tail` in the store), fading itself out until its video ends. Watch page, other sources: no overlap.
 - Driven by `postMessage`, the protocol `iframe_api` uses internally (`listening`, `command`, `infoDelivery`, `onError`).
   We don't load `iframe_api`: a remote script in the app's origin would get access to Tauri IPC.
 - CSP: only addition, `frame-src https://www.youtube.com`.

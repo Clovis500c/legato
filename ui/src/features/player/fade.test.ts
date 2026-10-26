@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { FadeSettings } from '../../shared/theme/theme'
-import { curvePath, demoGain, demoLength, effectiveFade, fadeGain, NO_FADE, shape, type Fade } from './fade'
+import { curvePath, demoGain, demoLength, effectiveFade, fadeGain, NO_FADE, overlapDue, shape, type Fade } from './fade'
 
 const simple = (s: number): Fade => ({ ...NO_FADE, out: s, in: s })
 
@@ -17,6 +17,14 @@ describe('fadeGain', () => {
     expect(fadeGain(2500, dur, simple(5), true)).toBeCloseTo(0.5)
     expect(fadeGain(dur - 2500, dur, simple(5), false)).toBeCloseTo(0.5)
     expect(fadeGain(dur, dur, simple(5), false)).toBe(0)
+  })
+
+  it('next song overlaps from the start of the fade out, long enough songs only', () => {
+    expect(overlapDue(dur - 5001, dur, simple(5))).toBe(false)
+    expect(overlapDue(dur - 5000, dur, simple(5))).toBe(true)
+    expect(overlapDue(dur, dur, simple(0))).toBe(false)
+    expect(overlapDue(9000, 9500, simple(5))).toBe(false)
+    expect(overlapDue(9000, null, simple(5))).toBe(false)
   })
 
   it('short or unknown-length tracks never fade out', () => {

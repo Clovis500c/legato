@@ -228,10 +228,12 @@ export function MotionScene({ motion }: Pick<Settings, 'motion'>) {
 
 /** Simple fade: both songs' volume around the change. */
 export function FadeScene({ crossfade }: Pick<Settings, 'crossfade'>) {
-  // 12 s each side over 50 units.
+  // 12 s over 46 units; songs overlap (X) around the middle.
   const w = (crossfade / 12) * 46
-  const out = crossfade ? `M2,6L${48 - w},6` + curvePath('scurve', 48 - w, 48, 34, 6, 16, true).replace('M', 'L') : 'M2,6L48,6L48,34'
-  const inn = crossfade ? curvePath('scurve', 52, 52 + w, 34, 6, 16) + 'L98,6' : 'M52,34L52,6L98,6'
+  const a = 50 - w / 2
+  const b = 50 + w / 2
+  const out = crossfade ? `M2,6L${a},6` + curvePath('scurve', a, b, 34, 6, 16, true).replace('M', 'L') : 'M2,6L50,6L50,34'
+  const inn = crossfade ? curvePath('scurve', a, b, 34, 6, 16) + 'L98,6' : 'M50,34L50,6L98,6'
   return (
     <Frame label={tr('Fade preview')} className="px-1.5">
       <svg viewBox="0 0 100 40" className="size-full" aria-hidden>
