@@ -1544,9 +1544,10 @@ fn discord_status(state: State<'_, AppState>) -> discord::Status {
 /// Tray and Windows media panel. Same track as last call: play state and timeline only (cover not fetched again).
 /// Cover: local file's own (track_id), else `art` URL through the cache.
 #[tauri::command]
-async fn media_update(state: State<'_, AppState>, now: Option<media::NowPlaying>, track_id: Option<i64>, art: Option<String>) -> CmdResult<()> {
+async fn media_update(app: tauri::AppHandle, state: State<'_, AppState>, now: Option<media::NowPlaying>, track_id: Option<i64>, art: Option<String>) -> CmdResult<()> {
     let playing = now.as_ref().is_some_and(|n| n.playing);
     background::set_playing(playing);
+    background::played(&app, playing, now.as_ref().map_or(0, |n| n.position_ms));
     thumbbar::set_playing(playing);
     if let Some(tray) = &state.tray {
         tray.update(now.as_ref()).map_err(err)?;
@@ -1715,7 +1716,7 @@ pub fn run() {
             let tray = tray::Tray::install(app.handle()).ok();
             // Created hidden: shown once back where it was closed. Updated from the tray: stays there.
             if update::back_to_tray(&lib, &app.package_info().version.to_string()) {
-                background::hide(app.handle());
+                background::hide_until_playing(app.handle());
             } else {
                 window_place::restore(&window).or_else(|_| window.show())?;
             }

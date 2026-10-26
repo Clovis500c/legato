@@ -2,11 +2,13 @@ import { useStore } from '../../app/store'
 import { api, type LibraryTrack } from '../../shared/api'
 import type { Repeat } from './queue'
 import type { Via } from './sources'
-import { usePlayer } from './store'
+import { remoteTrack, usePlayer } from './store'
 
 /** Saved playback: library queue as ids (dropped files are not kept). */
 export interface Session {
   ids: number[]
+  /** Songs not in the library (radio, similar songs, search, home): whole, their ids last one run only. */
+  remote: LibraryTrack[]
   index: number
   order: number[]
   shuffle: boolean
@@ -19,6 +21,7 @@ export interface Session {
 }
 
 const MAX_IDS = 10_000
+const MAX_REMOTE = 150
 
 /** What to save from the player, or null when nothing from the library plays. */
 export function snapshot(p: { now?: { trackId?: number; via: Via }; list: LibraryTrack[]; index: number; order: number[]; shuffle: boolean; repeat: Repeat; positionMs: number; volume: number; playing?: boolean }): Session | null {
@@ -27,10 +30,19 @@ export function snapshot(p: { now?: { trackId?: number; via: Via }; list: Librar
   const from = Math.max(0, Math.min(p.index - MAX_IDS / 2, p.list.length - MAX_IDS))
   const list = p.list.slice(from, from + MAX_IDS)
   const order = from || list.length < p.list.length ? [] : p.order
-  return { ids: list.map((t) => t.id), index: p.index - from, order, shuffle: p.shuffle, repeat: p.repeat, positionMs: Math.round(p.positionMs), via: p.now.via, volume: p.volume, paused: p.playing === false }
+  // shortcut: remote songs far from the current one are dropped (session size cap), keep more if queues grow huge.
+  const remote = list.filter((t, i) => t.id < 0 && Math.abs(i - (p.index - from)) <= MAX_REMOTE)
+  return { ids: list.map((t) => t.id), remote, index: p.index - from, order, shuffle: p.shuffle, repeat: p.repeat, positionMs: Math.round(p.positionMs), via: p.now.via, volume: p.volume, paused: p.playing === false }
 }
 
 const isInt = (v: unknown): v is number => Number.isInteger(v) && (v as number) >= 0
+
+/** Saved remote song back as a queue item (new id for this run), or nothing when junk. */
+function remoteBack(v: unknown): [number, LibraryTrack][] {
+  const t = v as LibraryTrack | null
+  if (!t || typeof t !== 'object' || !Number.isInteger(t.id) || t.id >= 0 || typeof t.title !== 'string' || typeof t.artist !== 'string' || !t.ids || typeof t.ids !== 'object') return []
+  return [[t.id, remoteTrack(t)]]
+}
 
 /**
  * Stored session → queue on today's library. Tracks deleted since are dropped; the current one gone = nothing to
@@ -40,11 +52,16 @@ export function restore(raw: unknown, tracks: LibraryTrack[]): { volume: number;
   if (!raw || typeof raw !== 'object') return null
   const r = raw as Record<string, unknown>
   const volume = typeof r.volume === 'number' && r.volume >= 0 && r.volume <= 1 ? r.volume : 1
-  const ids = Array.isArray(r.ids) ? r.ids.filter(isInt) : []
-  const current = isInt(r.index) ? ids[r.index] : undefined
-  const byId = new Map(tracks.map((t) => [t.id, t]))
-  const list = ids.flatMap((id) => byId.get(id) ?? [])
-  const index = list.findIndex((t) => t.id === current)
+  const ids: unknown[] = Array.isArray(r.ids) ? r.ids : []
+  const byId = new Map<unknown, LibraryTrack>([...tracks.map((t) => [t.id, t] as const), ...(Array.isArray(r.remote) ? r.remote.flatMap(remoteBack) : [])])
+  const list: LibraryTrack[] = []
+  let index = -1
+  ids.forEach((id, i) => {
+    const t = byId.get(id)
+    if (!t) return
+    if (i === r.index) index = list.length
+    list.push(t)
+  })
   if (index < 0) return { volume, queue: null }
   // Same tracks as saved: saved shuffle order still fits, else rebuilt by the player.
   const order = list.length === ids.length && Array.isArray(r.order) && r.order.every(isInt) ? (r.order as number[]) : []

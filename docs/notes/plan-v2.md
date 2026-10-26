@@ -467,6 +467,8 @@ Original plan:
       graph of both volumes over time).
 - [x] Fade overlap (2026-10-26): YouTube → YouTube songs play together during the fade (X on the graph); local files
       still fade out, then in.
+- [x] Update relaunch played nothing (2026-10-26): from the tray the page was never shown (Chromium holds its media),
+      and songs not in the library (radio, similar songs) were lost from the saved queue.
 - [x] Interactive preview for visual settings (background blur, dimming, motion, …): small live sample of the effect.
 - [x] Artists and Albums: filter and sort, like songs in playlists.
 - [x] Mixes: better algorithm, more mixes; covers as a 2×2 grid like playlists, setting in Advanced: grid / single

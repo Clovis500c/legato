@@ -18,6 +18,8 @@ static QUITTING: AtomicBool = AtomicBool::new(false);
 /// Something plays (media panel updates): never suspended then.
 static PLAYING: AtomicBool = AtomicBool::new(false);
 static SUSPENDED: AtomicBool = AtomicBool::new(false);
+/// Started in the tray: page still `visible` until the music moves, first position seen then.
+static HELD: Mutex<Option<Option<u64>>> = Mutex::new(None);
 /// Since when the window is hidden.
 static HIDDEN: Mutex<Option<Instant>> = Mutex::new(None);
 /// Hidden and silent this long: suspended.
@@ -29,6 +31,36 @@ pub fn quitting() -> bool {
 
 pub fn set_playing(playing: bool) {
     PLAYING.store(playing, Ordering::Relaxed);
+}
+
+/// Music really moved: playing, over a second away from the first position seen.
+pub fn has_moved(first: Option<u64>, playing: bool, position_ms: u64) -> bool {
+    playing && first.is_some_and(|f| position_ms.abs_diff(f) > 1000)
+}
+
+/// Launch in the tray (after an update from there): window hidden, page left `visible`. Chromium never starts media
+/// in a page that was never shown (resumed song sat at 0:00, 2026-10-26); low-resource mode once the music moves.
+pub fn hide_until_playing(app: &AppHandle) {
+    if let Some(w) = app.get_window("main") {
+        let _ = w.hide();
+    }
+    *HIDDEN.lock().unwrap() = Some(Instant::now());
+    *HELD.lock().unwrap() = Some(None);
+}
+
+/// Player report (media panel): ends the hold once the music moves.
+pub fn played(app: &AppHandle, playing: bool, position_ms: u64) {
+    let mut held = HELD.lock().unwrap();
+    let Some(first) = *held else { return };
+    if has_moved(first, playing, position_ms) {
+        *held = None;
+        drop(held);
+        if HIDDEN.lock().unwrap().is_some() {
+            set_visible(app, false);
+        }
+    } else if playing && first.is_none() {
+        *held = Some(Some(position_ms));
+    }
 }
 
 /// Should a hidden window go to sleep now?
@@ -49,6 +81,7 @@ pub fn hide(app: &AppHandle) {
 pub fn show(app: &AppHandle) {
     wake(app);
     *HIDDEN.lock().unwrap() = None;
+    *HELD.lock().unwrap() = None;
     set_visible(app, true);
     // Started in the tray: first time on screen, at its saved place.
     if !crate::window_place::placed()
@@ -146,6 +179,14 @@ pub fn spawn_sleeper(app: AppHandle) {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn tray_launch_hold_ends_once_the_music_moves() {
+        assert!(!has_moved(None, true, 5000), "first report");
+        assert!(!has_moved(Some(0), true, 0), "stuck at 0:00");
+        assert!(!has_moved(Some(0), false, 5000), "paused");
+        assert!(has_moved(Some(60_000), true, 62_000));
+    }
 
     #[test]
     fn sleeps_only_hidden_silent_and_long_enough() {

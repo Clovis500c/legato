@@ -28,6 +28,16 @@ describe('session', () => {
     expect(r?.queue).toMatchObject({ list: [t(1), t(3), t(4)], index: 1, order: [] })
   })
 
+  it('songs not in the library come back too (radio, similar songs): an update between two of them resumes', () => {
+    const radio = (id: number, v: string): LibraryTrack => ({ ...t(0), id, title: v, ids: { youtube: v } })
+    const list = [t(1), radio(-1, 'r1'), radio(-2, 'r2')]
+    const s = JSON.parse(JSON.stringify(snapshot({ ...player, list, index: 2, order: [0, 1, 2], now: { trackId: -2, via: 'youtube' } })))
+    const q = restore({ ...s, remote: [...s.remote, 'junk', { id: 5, title: 'x', artist: 'y', ids: {} }] }, lib)?.queue
+    expect(q?.list.map((x) => x.ids.youtube)).toEqual(['v1', 'r1', 'r2'])
+    expect(q?.index).toBe(2)
+    expect(q?.list[2].id).toBeLessThan(0)
+  })
+
   it('current track gone or junk: no queue, volume kept when valid', () => {
     expect(restore(snapshot(player), [t(1)])).toEqual({ volume: 0.4, queue: null })
     expect(restore('junk', lib)).toBeNull()
