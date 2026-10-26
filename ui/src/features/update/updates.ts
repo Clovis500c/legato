@@ -3,7 +3,7 @@ import { useSettings } from '../../app/settings'
 import { useStore } from '../../app/store'
 import { api, type UpdateStatus } from '../../shared/api'
 import { nextIndex } from '../player/queue'
-import { saveSessionAtNext, saveSessionNow } from '../player/session'
+import { saveSessionAtNext, saveSessionNow, thawSession } from '../player/session'
 import { vias } from '../player/sources'
 import { onSongEnd, usePlayer } from '../player/store'
 import { tr } from '../../shared/i18n/i18n'
@@ -22,7 +22,10 @@ export async function installUpdate(next?: number) {
   if (s?.state !== 'ready') return
   useStore.getState().notify(tr('Updating to {version}… back in a few seconds', { version: s.version }), { kind: 'info' })
   await (next === undefined ? saveSessionNow() : saveSessionAtNext(next))
-  await api.updateInstall().catch((e) => useStore.getState().notify(String(e), { kind: 'error' }))
+  await api.updateInstall().catch((e) => {
+    thawSession()
+    useStore.getState().notify(String(e), { kind: 'error' })
+  })
 }
 
 /** Pure: may an update install between two songs? Not while someone is using the app. */

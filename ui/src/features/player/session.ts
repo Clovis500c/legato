@@ -67,8 +67,15 @@ export async function resumeSession(enabled: boolean, exact = false) {
   usePlayer.getState().resume({ ...saved.queue, paused: exact && saved.queue.paused })
 }
 
+// Update installing: its session is final. The ended song's last statuses must not overwrite it (came back paused at
+// the old song's end, 2026-10-26).
+let frozen = false
+/** Install failed: saving goes on. */
+export const thawSession = () => void (frozen = false)
+
 /** The next song, from its start, playing: an update installs between two songs and the app comes back on it. */
 export async function saveSessionAtNext(index: number) {
+  frozen = true
   const p = usePlayer.getState()
   const s = snapshot({ ...p, index, positionMs: 0, playing: true })
   // Its own best source: the one that ended may not suit it.
@@ -77,6 +84,7 @@ export async function saveSessionAtNext(index: number) {
 
 /** Right now (before an update closes the app). */
 export async function saveSessionNow() {
+  frozen = true
   const s = snapshot(usePlayer.getState())
   if (s) await api.saveSession(s).catch(() => {})
 }
@@ -92,7 +100,7 @@ export function startSessionSaving(): () => void {
   const save = () => {
     clearTimeout(later)
     const s = snapshot(usePlayer.getState())
-    if (!s) return
+    if (!s || frozen) return
     at = Date.now()
     void api.saveSession(s).catch(() => {})
   }

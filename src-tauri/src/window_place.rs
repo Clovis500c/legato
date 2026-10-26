@@ -14,8 +14,16 @@ pub fn plugin<R: Runtime>() -> TauriPlugin<R> {
     tauri_plugin_window_state::Builder::new().with_state_flags(FLAGS).skip_initial_state("main").build()
 }
 
+static PLACED: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+
+/// Saved place applied yet? Not when the app started in the tray (after an update from there).
+pub fn placed() -> bool {
+    PLACED.load(std::sync::atomic::Ordering::Relaxed)
+}
+
 /// Saved place applied, pulled back onto its screen if that screen got smaller or moved, then shown.
 pub fn restore(window: &WebviewWindow) -> tauri::Result<()> {
+    PLACED.store(true, std::sync::atomic::Ordering::Relaxed);
     settle_frame(window);
     let _ = window.restore_state(FLAGS);
     if !window.is_maximized()? && !window.is_fullscreen()? {

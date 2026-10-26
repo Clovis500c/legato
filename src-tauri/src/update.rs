@@ -51,6 +51,9 @@ struct Saved {
     /// Written right before the installer runs.
     pending: Option<Installed>,
     last: Option<Installed>,
+    /// Window was in the tray when the installer ran: the new version starts there too.
+    #[serde(default)]
+    hidden: bool,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -166,7 +169,8 @@ impl Updater {
     pub fn install(&self, app: &AppHandle) -> Result<(), String> {
         let (update, bytes) = self.ready.lock().unwrap().take().ok_or("No update downloaded")?;
         let current = self.status().current;
-        save(app, &Saved { pending: Some(Installed { from: current, to: update.version.clone(), at: now(), notes: update.body.clone() }), last: self.status().last_update });
+        let hidden = app.get_window("main").is_some_and(|w| !w.is_visible().unwrap_or(true));
+        save(app, &Saved { pending: Some(Installed { from: current, to: update.version.clone(), at: now(), notes: update.body.clone() }), last: self.status().last_update, hidden });
         self.set(app, State::Installing { version: update.version.clone() });
         // Windows installer ends the process: no exit event.
         crate::window_place::save(app);
@@ -179,6 +183,12 @@ impl Updater {
         // Not Windows: the new version is in place, start it.
         app.restart();
     }
+}
+
+/// Launch right after an update installed from the tray: stay there (before `Updater::new`, which clears the record).
+pub fn back_to_tray(lib: &music_core::library::Library, current: &str) -> bool {
+    let s: Saved = lib.setting(KEY).ok().flatten().and_then(|v| serde_json::from_value(v).ok()).unwrap_or_default();
+    s.hidden && s.pending.is_some_and(|p| p.to == current)
 }
 
 /// Settings › About › Automatic updates (UI settings, on by default).
@@ -220,5 +230,17 @@ mod tests {
         assert_eq!(s.last.unwrap().notes, None);
         let s: Saved = serde_json::from_str(r#"{"last":{"from":"a","to":"b","at":1,"notes":"feat: x"}}"#).unwrap();
         assert_eq!(s.last.unwrap().notes.as_deref(), Some("feat: x"));
+    }
+
+    #[test]
+    fn back_to_tray_only_right_after_an_update_from_there() {
+        let lib = music_core::library::Library::in_memory().unwrap();
+        assert!(!back_to_tray(&lib, "0.2.0"), "nothing saved");
+        let pending = |hidden| serde_json::json!({ "pending": { "from": "0.1.0", "to": "0.2.0", "at": 1 }, "last": null, "hidden": hidden });
+        lib.set_setting(KEY, &pending(true)).unwrap();
+        assert!(back_to_tray(&lib, "0.2.0"));
+        assert!(!back_to_tray(&lib, "0.1.0"), "install failed: old version runs");
+        lib.set_setting(KEY, &pending(false)).unwrap();
+        assert!(!back_to_tray(&lib, "0.2.0"), "window was on screen");
     }
 }

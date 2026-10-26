@@ -50,6 +50,12 @@ pub fn show(app: &AppHandle) {
     wake(app);
     *HIDDEN.lock().unwrap() = None;
     set_visible(app, true);
+    // Started in the tray: first time on screen, at its saved place.
+    if !crate::window_place::placed()
+        && let Some(w) = app.get_webview_window("main")
+    {
+        let _ = crate::window_place::restore(&w);
+    }
     if let Some(w) = app.get_window("main") {
         let _ = w.unminimize();
         let _ = w.show();

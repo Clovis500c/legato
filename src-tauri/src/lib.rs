@@ -1704,8 +1704,12 @@ pub fn run() {
             // Previous / Play / Next under the taskbar thumbnail.
             let _ = thumbbar::install(&window);
             let tray = tray::Tray::install(app.handle()).ok();
-            // Created hidden: shown once back where it was closed.
-            window_place::restore(&window).or_else(|_| window.show())?;
+            // Created hidden: shown once back where it was closed. Updated from the tray: stays there.
+            if update::back_to_tray(&lib, &app.package_info().version.to_string()) {
+                background::hide(app.handle());
+            } else {
+                window_place::restore(&window).or_else(|_| window.show())?;
+            }
 
             let lists = dir.join("shield");
             let fresh = shield.clone();
