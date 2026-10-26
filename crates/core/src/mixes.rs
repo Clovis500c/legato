@@ -1,5 +1,6 @@
 //! Personalized mixes, computed locally from listening history + playlists. Pure: same input and seed = same mixes.
-//! Track score = Σ play weight × decay (half-life 30 days) + bonus when in one of your playlists (imported ones less).
+//! Track score = Σ play weight × decay (half-life 30 days) + bonus when in one of your playlists (imported ones less),
+//! more when liked.
 //! Daily mixes = artist clusters (label propagation on "listened in the same session / near in a playlist" graph).
 //! Inside a mix, songs follow what you play back to back ("flow"); songs heard in the last hours wait their turn.
 
@@ -18,6 +19,11 @@ const SESSION_GAP: i64 = 30 * 60;
 const PLAYLIST_BONUS: f64 = 1.5;
 /// Imported playlists (YouTube Music likes, Spotify): saved there, not picked here.
 const SAVED_BONUS: f64 = 0.6;
+/// Liked Music (heart button, YouTube likes): a clear "I like it", above any playlist. Newest like gets it all; it
+/// halves every LIKES_HALF likes since, down to LIKED_OLD (years of likes would flatten it otherwise).
+const LIKED_BONUS: f64 = 3.0;
+const LIKED_OLD: f64 = 1.0;
+const LIKES_HALF: f64 = 100.0;
 const LESS: f64 = 0.3;
 /// Skipped again and again: left out.
 const FLOOR: f64 = -1.0;
@@ -49,6 +55,8 @@ pub struct Input<'a> {
     pub playlists: &'a [Vec<i64>],
     /// Imported playlists, in order.
     pub saved: &'a [Vec<i64>],
+    /// Liked Music, yours and YouTube Music's, newest like first.
+    pub liked: &'a [i64],
     pub prefs: &'a HashMap<i64, Pref>,
     /// Unix seconds.
     pub now: i64,
@@ -92,14 +100,16 @@ pub struct Words {
     pub names: Vec<String>,
 }
 
-/// Full listen > partial > skip (negative).
-pub fn play_weight(p: &Play) -> f64 {
+/// Full listen 1; partial: more of the song heard, more weight; skip (under 30 s) negative, earlier = worse.
+pub fn play_weight(p: &Play, duration_ms: Option<u32>) -> f64 {
     if p.completed {
         1.0
     } else if p.listened_ms >= SKIP_MS {
-        0.5
+        // Unknown length: half a song.
+        duration_ms.filter(|d| *d > 0).map_or(0.5, |d| 0.3 + 0.6 * (p.listened_ms as f64 / d as f64).min(1.0))
     } else {
-        -0.7
+        // Above FLOOR: one skip alone never leaves a song out.
+        -0.9 + 0.6 * p.listened_ms as f64 / SKIP_MS as f64
     }
 }
 
@@ -277,6 +287,8 @@ pub fn mixes(input: &Input) -> Vec<Mix> {
         artist.insert(t.id, key);
     }
     let plays: Vec<&Play> = input.plays.iter().filter(|p| artist.contains_key(&p.track_id)).collect();
+    let length: HashMap<i64, u32> = input.tracks.iter().filter_map(|t| Some((t.id, t.track.duration_ms?))).collect();
+    let play_weight = |p: &Play| play_weight(p, length.get(&p.track_id).copied());
 
     let mut score: HashMap<i64, f64> = HashMap::new();
     for p in &plays {
@@ -287,6 +299,11 @@ pub fn mixes(input: &Input) -> Vec<Mix> {
             if artist.contains_key(id) {
                 *score.entry(*id).or_default() += bonus;
             }
+        }
+    }
+    for (rank, id) in input.liked.iter().enumerate() {
+        if artist.contains_key(id) {
+            *score.entry(*id).or_default() += LIKED_OLD + (LIKED_BONUS - LIKED_OLD) * 0.5f64.powf(rank as f64 / LIKES_HALF);
         }
     }
 
@@ -520,7 +537,7 @@ mod tests {
     }
 
     fn run(tracks: &[LibraryTrack], plays: &[Play], prefs: &HashMap<i64, Pref>, seed: u64) -> Vec<Mix> {
-        mixes(&Input { tracks, plays, playlists: &[], saved: &[], prefs, now: NOW, utc_offset: 0, seed })
+        mixes(&Input { tracks, plays, playlists: &[], saved: &[], liked: &[], prefs, now: NOW, utc_offset: 0, seed })
     }
 
     fn artists(tracks: &[LibraryTrack], m: &Mix) -> BTreeSet<String> {
@@ -529,8 +546,11 @@ mod tests {
 
     #[test]
     fn weights_and_decay() {
-        let w = |completed, listened_ms| play_weight(&Play { track_id: 1, started_at: 0, listened_ms, completed });
-        assert!(w(true, 200_000) > w(false, 60_000) && w(false, 60_000) > 0.0 && w(false, 5_000) < 0.0);
+        let w = |completed, listened_ms, length| play_weight(&Play { track_id: 1, started_at: 0, listened_ms, completed }, length);
+        assert!(w(true, 200_000, None) > w(false, 60_000, None) && w(false, 60_000, None) > 0.0 && w(false, 5_000, None) < 0.0);
+        // More of the song heard, more weight; earlier skip, worse; one skip stays above the floor.
+        assert!(w(false, 150_000, Some(200_000)) > w(false, 40_000, Some(200_000)) && w(false, 40_000, Some(200_000)) > 0.0);
+        assert!(w(false, 3_000, None) < w(false, 25_000, None) && w(false, 2_000, None) > FLOOR);
         assert!((decay(30 * DAY) - 0.5).abs() < 1e-9 && decay(0) == 1.0 && decay(-5) == 1.0);
     }
 
@@ -604,7 +624,7 @@ mod tests {
         // Evenings 20:00 local (UTC+2 → 18:00 UTC) on past days; now = 21:00 local.
         let day0 = NOW - NOW.rem_euclid(DAY);
         let plays: Vec<Play> = (1..=6).map(|i| play(i, day0 - i * DAY + 18 * 3600, true)).collect();
-        let out = mixes(&Input { tracks: &tracks, plays: &plays, playlists: &[], saved: &[], prefs: &HashMap::new(), now: day0 + 19 * 3600, utc_offset: 2 * 3600, seed: 1 });
+        let out = mixes(&Input { tracks: &tracks, plays: &plays, playlists: &[], saved: &[], liked: &[], prefs: &HashMap::new(), now: day0 + 19 * 3600, utc_offset: 2 * 3600, seed: 1 });
         let m = out.iter().find(|m| m.id == "now").expect("time of day mix");
         assert_eq!((m.title.as_str(), m.track_ids.len()), ("Your evenings", 6));
     }
@@ -612,11 +632,27 @@ mod tests {
     #[test]
     fn custom_playlists_count_without_history() {
         let tracks: Vec<LibraryTrack> = (1..=6).map(|i| t(i, if i % 2 == 0 { "Even" } else { "Odd" })).collect();
-        let out = mixes(&Input { tracks: &tracks, plays: &[], playlists: &[(1..=6).collect()], saved: &[], prefs: &HashMap::new(), now: NOW, utc_offset: 0, seed: 1 });
+        let out = mixes(&Input { tracks: &tracks, plays: &[], playlists: &[(1..=6).collect()], saved: &[], liked: &[], prefs: &HashMap::new(), now: NOW, utc_offset: 0, seed: 1 });
         // Artist, fresh and gems mixes would repeat daily-1 in so small a library: dropped.
         assert_eq!(out.iter().map(|m| m.id.as_str()).collect::<Vec<_>>(), ["daily-1"]);
         assert_eq!(out[0].reason, "Because you listen to Even and Odd");
         assert_eq!((out[0].words.number, out[0].words.names.clone()), (Some(1), vec!["Even".to_string(), "Odd".to_string()]));
+    }
+
+    #[test]
+    fn liked_songs_make_the_mix_first() {
+        // 40 songs, all in one playlist: only 25 fit a mix, the liked ones always among them.
+        let tracks = library_of(40, &["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"]);
+        let liked: Vec<i64> = (33..=40).collect();
+        let out = mixes(&Input { tracks: &tracks, plays: &[], playlists: &[(1..=40).collect()], saved: &[], liked: &liked, prefs: &HashMap::new(), now: NOW, utc_offset: 0, seed: 1 });
+        let mix: HashSet<i64> = out[0].track_ids.iter().copied().collect();
+        assert!(liked.iter().all(|id| mix.contains(id)), "{mix:?}");
+        // 300 likes since: these weigh little more than a playlist, the 8 newest likes win.
+        let old: Vec<i64> = (1000..1300).chain((1..=8).chain(17..=40)).collect();
+        let newest: Vec<i64> = (9..=16).chain(old.clone()).collect();
+        let out = mixes(&Input { tracks: &tracks, plays: &[], playlists: &[(1..=40).collect()], saved: &[], liked: &newest, prefs: &HashMap::new(), now: NOW, utc_offset: 0, seed: 1 });
+        let mix: HashSet<i64> = out[0].track_ids.iter().copied().collect();
+        assert!((9..=16).all(|id| mix.contains(&id)), "{mix:?}");
     }
 
     fn library_of(n: i64, artists: &[&str]) -> Vec<LibraryTrack> {
@@ -674,7 +710,7 @@ mod tests {
         let tracks = library_of(30, &["X", "Y", "Z"]);
         let plays: Vec<Play> = (1..=10).map(|i| play(i, NOW - 5 * DAY + i * 3 * 3600, true)).collect();
         let saved = vec![(1..=30).collect::<Vec<i64>>()];
-        let out = mixes(&Input { tracks: &tracks, plays: &plays, playlists: &[], saved: &saved, prefs: &HashMap::new(), now: NOW, utc_offset: 0, seed: 1 });
+        let out = mixes(&Input { tracks: &tracks, plays: &plays, playlists: &[], saved: &saved, liked: &[], prefs: &HashMap::new(), now: NOW, utc_offset: 0, seed: 1 });
         let gems = out.iter().find(|m| m.id == "gems").unwrap_or_else(|| panic!("{out:?}"));
         assert!(gems.track_ids.iter().all(|id| *id > 10), "{gems:?}");
         if let Some(fresh) = out.iter().find(|m| m.id == "fresh") {

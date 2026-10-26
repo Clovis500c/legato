@@ -1,7 +1,7 @@
 import { useStore } from '../../app/store'
 import { api, type LibraryPlaylist, type LibraryTrack } from '../../shared/api'
 import { tr } from '../../shared/i18n/i18n'
-import { isRemote } from './store'
+import { isRemote, usePlayer } from './store'
 
 // Like button (user's request 2026-10-26): song into the library and Liked Music. Signed in to YouTube Music = the
 // account's own Liked Music (a real like there); else, or no YouTube version, a playlist of yours by that name.
@@ -30,6 +30,15 @@ export function useLiked(t: LibraryTrack | undefined) {
   useStore((s) => s.orders)
   useStore((s) => s.tracks)
   return !!t && holding(t).length > 0
+}
+
+/** Thumbs down: ranked lower in mixes (Undo = back to normal), and on to the next song. */
+export function lessLikeThis(t: LibraryTrack) {
+  const fail = (e: unknown) => app().notify(String(e), { kind: 'error' })
+  api
+    .setTrackPref(t.id, 'less')
+    .then(() => app().notify(tr('Less of this in your mixes'), { action: { label: tr('Undo'), run: () => void api.setTrackPref(t.id, null).catch(fail) } }), fail)
+  usePlayer.getState().step(1)
 }
 
 export async function toggleLike(t: LibraryTrack) {

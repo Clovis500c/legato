@@ -751,8 +751,8 @@ async fn mixes(state: State<'_, AppState>, utc_offset: i64) -> CmdResult<Respons
     // Same data, same day, same hour: same mixes.
     let stamp = (lib.versions.library(), lib.versions.history(), today(), (now + utc_offset).div_euclid(3600));
     let answer = state.cache.mixes.get_or(utc_offset, stamp, || {
-        let (tracks, plays, playlists, saved, prefs) = (lib.tracks().map_err(err)?, lib.plays().map_err(err)?, lib.custom_playlists().map_err(err)?, lib.saved_playlists().map_err(err)?, lib.prefs().map_err(err)?);
-        let input = music_core::mixes::Input { tracks: &tracks, plays: &plays, playlists: &playlists, saved: &saved, prefs: &prefs, now, utc_offset, seed: today() };
+        let (tracks, plays, playlists, saved, liked, prefs) = (lib.tracks().map_err(err)?, lib.plays().map_err(err)?, lib.custom_playlists().map_err(err)?, lib.saved_playlists().map_err(err)?, lib.liked_tracks().map_err(err)?, lib.prefs().map_err(err)?);
+        let input = music_core::mixes::Input { tracks: &tracks, plays: &plays, playlists: &playlists, saved: &saved, liked: &liked, prefs: &prefs, now, utc_offset, seed: today() };
         serde_json::to_string(&music_core::mixes::mixes(&input)).map_err(err)
     })?;
     Ok(json(answer))

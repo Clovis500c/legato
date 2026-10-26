@@ -1,4 +1,4 @@
-import { ArrowSquareOut, Heart } from '@phosphor-icons/react'
+import { ArrowSquareOut, Heart, ThumbsDown } from '@phosphor-icons/react'
 import { STAGE_ID } from '../../app/searchShift'
 import { openUrl } from '@tauri-apps/plugin-opener'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
@@ -11,7 +11,7 @@ import type { Settings } from '../../shared/theme/theme'
 import { Button } from '../../shared/ui/Button'
 import { onMenu } from '../../shared/ui/ContextMenu'
 import { RoundButton, Segmented } from '../../shared/ui/controls'
-import { toggleLike, useLiked } from './like'
+import { lessLikeThis, toggleLike, useLiked } from './like'
 import { Cover } from '../../shared/ui/Cover'
 import { SourceIcon } from '../../shared/ui/SourceIcon'
 import { playerMenu } from '../menus'
@@ -21,7 +21,7 @@ import { VolumeControl } from './PlayerBar'
 import { SeekBar, TimeText, usePosition } from './Progress'
 import { viaLabel, type Via } from './sources'
 import { useStill } from './still'
-import { useNowTrack, usePlayer, useVideoSlot } from './store'
+import { isRemote, useNowTrack, usePlayer, useVideoSlot } from './store'
 import { Transport } from './Transport'
 import { UpNext, useNextCount } from './UpNext'
 import { LyricsPanel } from './LyricsPanel'
@@ -282,6 +282,11 @@ export function NowPlaying() {
                 <h2 className="truncate text-[1.75rem] leading-tight font-bold tracking-[-0.02em]">{now.title}</h2>
                 <p className="truncate text-sm text-ink-2">{track?.album ? `${now.artist} — ${track.album}` : now.artist}</p>
               </div>
+              {track && !isRemote(track) && (
+                <RoundButton label={tr('Less like this')} kind="plain" size="md" onClick={() => lessLikeThis(track)} className="ml-auto text-ink-2 hover:text-ink">
+                  <ThumbsDown size={22} />
+                </RoundButton>
+              )}
               {track && (
                 <RoundButton label={liked ? tr('Remove from Liked Music') : tr('Add to Liked Music')} aria-pressed={liked} kind="plain" size="md" onClick={() => void toggleLike(track)} className={liked ? 'text-accent' : 'text-ink-2 hover:text-ink'}>
                   <Heart size={24} weight={liked ? 'fill' : 'regular'} />

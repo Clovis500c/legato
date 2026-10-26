@@ -113,6 +113,28 @@ impl Library {
         self.playlist_lists(false)
     }
 
+    /// Track ids in Liked Music, newest like first: YouTube Music's (each account, newest on top) and yours of that name
+    /// (heart button, newest at the end). Liked in several: its newest spot.
+    pub fn liked_tracks(&self) -> Result<Vec<i64>> {
+        let mut stmt = self.db.prepare_cached(
+            "SELECT p.id, p.custom, pt.track_id FROM playlist_tracks pt JOIN playlists p ON p.id = pt.playlist_id
+             WHERE (p.source = 'youtube' AND p.custom = 0 AND (p.source_id = 'LM' OR p.source_id LIKE 'LM~%')) OR (p.custom = 1 AND p.name = 'Liked Music')
+             ORDER BY p.id, pt.position",
+        )?;
+        let rows: Vec<(i64, bool, i64)> = stmt.query_map([], |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?)))?.collect::<rusqlite::Result<_>>()?;
+        let mut rank: HashMap<i64, usize> = HashMap::new();
+        for list in rows.chunk_by(|a, b| a.0 == b.0) {
+            let n = list.len();
+            for (i, (_, custom, track)) in list.iter().enumerate() {
+                let r = if *custom { n - 1 - i } else { i };
+                rank.entry(*track).and_modify(|x| *x = (*x).min(r)).or_insert(r);
+            }
+        }
+        let mut out: Vec<(usize, i64)> = rank.into_iter().map(|(t, r)| (r, t)).collect();
+        out.sort_unstable();
+        Ok(out.into_iter().map(|(_, t)| t).collect())
+    }
+
     fn playlist_lists(&self, custom: bool) -> Result<Vec<Vec<i64>>> {
         let mut stmt = self.db.prepare_cached("SELECT pt.playlist_id, pt.track_id FROM playlist_tracks pt JOIN playlists p ON p.id = pt.playlist_id WHERE p.custom = ?1 ORDER BY pt.playlist_id, pt.position")?;
         let mut out: Vec<(i64, Vec<i64>)> = Vec::new();
@@ -184,6 +206,21 @@ mod tests {
         let p = lib.edit_playlist(PlaylistEdit::Create { name: "Mine".into() })?.unwrap();
         lib.edit_playlist(PlaylistEdit::Add { id: p, track_ids: vec![b, a] })?;
         assert_eq!(lib.custom_playlists()?, [vec![b, a]]);
+        Ok(())
+    }
+
+    #[test]
+    fn liked_tracks_from_youtube_and_your_liked_music() -> Result<()> {
+        let lib = Library::in_memory()?;
+        let (a, b, c) = (track(&lib, "A", Source::Youtube, "a"), track(&lib, "B", Source::Youtube, "b"), track(&lib, "C", Source::Youtube, "c"));
+        let ids = |t: i64| lib.tracks().unwrap().into_iter().find(|x| x.id == t).unwrap().track;
+        lib.save_playlist(Source::Youtube, "LM~1", "Liked Music", &[ids(a)])?;
+        lib.save_playlist(Source::Youtube, "PL", "Liked Music", &[ids(c)])?;
+        let p = lib.edit_playlist(PlaylistEdit::Create { name: "Liked Music".into() })?.unwrap();
+        lib.edit_playlist(PlaylistEdit::Add { id: p, track_ids: vec![b] })?;
+        lib.edit_playlist(PlaylistEdit::Add { id: p, track_ids: vec![a] })?;
+        // a: newest on YouTube (top) and here (end); b: second here.
+        assert_eq!(lib.liked_tracks()?, [a, b], "a YouTube playlist merely named so doesn't count");
         Ok(())
     }
 }
