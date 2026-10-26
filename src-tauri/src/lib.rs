@@ -1291,11 +1291,16 @@ async fn lyrics(state: State<'_, AppState>, ask: LyricsAsk) -> CmdResult<Option<
     let key = lyrics::key(&ask.artist, &ask.title, ask.duration_ms);
     let now = unix_now();
     let cached = state.lib().cached_lyrics(&key).map_err(err)?;
-    match cached {
-        Some((Some(body), _)) => return Ok(serde_json::from_str(&body).ok()),
+    // Plain text older than a day: asked again, shown still if nothing better comes.
+    let stale = match cached {
+        Some((Some(body), at)) => match serde_json::from_str::<Lyrics>(&body) {
+            Ok(l) if lyrics::keep_cached(&l, now - at) => return Ok(Some(l)),
+            Ok(l) => Some(l),
+            Err(_) => None,
+        },
         Some((None, at)) if now - at < LYRICS_RETRY_S => return Ok(None),
-        _ => {}
-    }
+        _ => None,
+    };
     let speed = lyrics::speed_changed(&ask.title);
     let playing_s = ask.duration_ms.map(|d| d as f32 / 1000.0);
     let lrclib = Lrclib::default();
@@ -1362,10 +1367,14 @@ async fn lyrics(state: State<'_, AppState>, ask: LyricsAsk) -> CmdResult<Option<
     }
     found = found.or(plain).or(yt_plain);
     match (found, failed) {
-        (Some(l), _) => {
-            state.lib().save_lyrics(&key, serde_json::to_string(&l).ok().as_deref(), now).map_err(err)?;
+        (Some(l), failed) => {
+            // Plain while a lookup failed: not kept, the next play asks again for synced lines.
+            if failed.is_none() || !l.lines.is_empty() || l.instrumental {
+                state.lib().save_lyrics(&key, serde_json::to_string(&l).ok().as_deref(), now).map_err(err)?;
+            }
             Ok(Some(l))
         }
+        (None, _) if stale.is_some() => Ok(stale),
         (None, Some(e)) => Err(err(e)),
         (None, None) => {
             state.lib().save_lyrics(&key, None, now).map_err(err)?;

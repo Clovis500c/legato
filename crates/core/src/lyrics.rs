@@ -227,6 +227,15 @@ pub fn build(record: Record, fit: Option<f32>, source: &str) -> Lyrics {
     Lyrics { lines, plain, instrumental: record.instrumental, source: source.to_string() }
 }
 
+/// Plain text cached: asked again after this (LRCLIB gains synced lines over time; a lookup may have failed).
+const PLAIN_RETRY_S: i64 = 86_400;
+
+/// Cached answer still good? Synced or instrumental: always. Plain text: a day (user's report 2026-10-26: songs stuck
+/// "Not synced").
+pub fn keep_cached(l: &Lyrics, age_s: i64) -> bool {
+    !l.lines.is_empty() || l.instrumental || age_s < PLAIN_RETRY_S
+}
+
 /// Junk record: under 4 sung lines for a song over a minute (user's test 2026-10-24: LRCLIB's exact match for a
 /// famous song was one line, "probe"). Skipped so the search's real ones come.
 pub fn too_thin(l: &Lyrics, playing_s: Option<f32>) -> bool {
@@ -246,6 +255,15 @@ pub fn key(artist: &str, title: &str, duration_ms: Option<u32>) -> String {
 
 #[cfg(test)]
 mod tests {
+
+    #[test]
+    fn plain_lyrics_asked_again_after_a_day() {
+        let plain = Lyrics { lines: Vec::new(), plain: Some("la".into()), instrumental: false, source: "YouTube Music".into() };
+        assert!(keep_cached(&plain, 3600) && !keep_cached(&plain, 2 * 86_400));
+        let synced = Lyrics { lines: vec![Line { ms: 0, text: "la".into(), end_ms: None }], ..plain };
+        assert!(keep_cached(&synced, 365 * 86_400));
+    }
+
     use super::*;
 
     #[test]
