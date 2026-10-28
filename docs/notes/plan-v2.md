@@ -495,7 +495,13 @@ Original plan:
 - [x] Settings › Appearance › Hi-Fi extras: a better menu (2026-10-28): a settings group like the others, folded
       under one line that says what's inside, a preview for each extra, clearer texts; a settings search result inside
       opens it (it landed on the closed fold). Volume control gets Reset like the rest.
-- [ ] Optimize the front end and the back end as far as possible (2026-10-28).
+- [x] Optimize the front end and the back end as far as possible (2026-10-28), measured: sound engine CPU in silence
+      (denormals: meter 1.4 s → 35 ms per minute, reverb 3.3 s → 0.1 s), Adaptive Sound 3× lighter (target per block),
+      YouTube graph 159 → 15 nodes until the Live Editor is used, startup script 2,453 → 538 kB (languages on demand),
+      pages no longer redraw on every key typed (narrow store picks), local folder rescans 1.91 s → 6 ms (3,000 files),
+      one shared HTTP client (connections kept), SQLite synchronous NORMAL + 16 MB cache.
+- [ ] Next if wanted: the library reloads whole (~11 MB JSON for 50,000 songs) after every like, add or edit;
+      sending only what changed would make those instant on big libraries. Bigger change, not started.
 - [x] Interactive preview for visual settings (background blur, dimming, motion, …): small live sample of the effect.
 - [x] Artists and Albums: filter and sort, like songs in playlists.
 - [x] Mixes: better algorithm, more mixes; covers as a 2×2 grid like playlists, setting in Advanced: grid / single
