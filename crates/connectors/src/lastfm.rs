@@ -96,7 +96,7 @@ impl LastFm {
         params.insert("format".into(), "json".into());
         // Form body by hand (reqwest built without its form feature).
         let form = url::form_urlencoded::Serializer::new(String::new()).extend_pairs(&params).finish();
-        let res = reqwest::Client::new()
+        let res = crate::http()
             .post(&self.api)
             .header("content-type", "application/x-www-form-urlencoded; charset=utf-8")
             .body(form)

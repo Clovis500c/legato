@@ -44,7 +44,7 @@ pub async fn track_from_link(link: &str, oembed: &str) -> Result<Track> {
     let id = video_id(link).ok_or_else(|| anyhow::anyhow!("YouTube link not recognized"))?;
     let watch = format!("https://www.youtube.com/watch?v={id}");
     let url = Url::parse_with_params(oembed, &[("url", watch.as_str()), ("format", "json")])?;
-    let o: OEmbed = reqwest::get(url).await?.error_for_status()?.json().await?;
+    let o: OEmbed = crate::http().get(url).send().await?.error_for_status()?.json().await?;
     let (artist, title) = parse_video(&o.title, &o.author_name);
     Ok(Track { title, artist, art: Some(music_core::model::youtube_art(&id)), ids: BTreeMap::from([(Source::Youtube, id)]), ..Default::default() })
 }

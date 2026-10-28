@@ -49,7 +49,7 @@ pub fn apple_url(url: &str) -> bool {
 pub async fn preview(api: &str, id: &str, country: &str) -> Result<Preview> {
     anyhow::ensure!(!id.is_empty() && id.len() <= 20 && id.bytes().all(|b| b.is_ascii_digit()), "Bad Apple Music id");
     let url = Url::parse_with_params(api, &[("id", id), ("country", country)])?;
-    let page: serde_json::Value = reqwest::get(url).await?.error_for_status()?.json().await?;
+    let page: serde_json::Value = crate::http().get(url).send().await?.error_for_status()?.json().await?;
     let hit: LookupHit = serde_json::from_value(page["results"][0].clone()).unwrap_or(LookupHit { preview_url: None, track_view_url: None });
     match (hit.preview_url, hit.track_view_url) {
         (Some(audio), Some(page)) if apple_url(&audio) && apple_url(&page) => Ok(Preview { audio, page }),
@@ -61,7 +61,7 @@ pub async fn preview(api: &str, id: &str, country: &str) -> Result<Preview> {
 pub async fn preview_audio(p: &Preview) -> Result<Vec<u8>> {
     const MAX: usize = 8 << 20;
     anyhow::ensure!(apple_url(&p.audio), "Not an Apple preview URL");
-    let bytes = reqwest::get(&p.audio).await?.error_for_status()?.bytes().await?;
+    let bytes = crate::http().get(&p.audio).send().await?.error_for_status()?.bytes().await?;
     anyhow::ensure!(bytes.len() <= MAX, "Preview too large");
     Ok(bytes.to_vec())
 }
@@ -73,7 +73,7 @@ pub async fn search(api: &str, term: &str, country: &str) -> Result<Vec<Track>> 
 }
 
 async fn songs(url: Url) -> Result<Vec<Track>> {
-    let page: Page = reqwest::get(url).await?.error_for_status()?.json().await?;
+    let page: Page = crate::http().get(url).send().await?.error_for_status()?.json().await?;
     Ok(page
         .results
         .into_iter()
@@ -165,10 +165,10 @@ fn pick_album(hits: &[AlbumHit], artist: &str, album: &str) -> Option<u64> {
 pub async fn album(search_api: &str, lookup_api: &str, artist: &str, album: &str, country: &str) -> Result<Option<Album>> {
     let term = format!("{artist} {album}");
     let url = Url::parse_with_params(search_api, &[("term", term.as_str()), ("entity", "album"), ("limit", "10"), ("country", country)])?;
-    let found: AlbumPage = reqwest::get(url).await?.error_for_status()?.json().await?;
+    let found: AlbumPage = crate::http().get(url).send().await?.error_for_status()?.json().await?;
     let Some(id) = pick_album(&found.results, artist, album) else { return Ok(None) };
     let url = Url::parse_with_params(lookup_api, &[("id", id.to_string().as_str()), ("entity", "song"), ("country", country)])?;
-    let page: AlbumPage = reqwest::get(url).await?.error_for_status()?.json().await?;
+    let page: AlbumPage = crate::http().get(url).send().await?.error_for_status()?.json().await?;
     Ok(album_of(page.results))
 }
 

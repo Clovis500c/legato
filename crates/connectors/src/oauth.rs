@@ -105,7 +105,7 @@ pub struct OAuthClient {
 
 impl OAuthClient {
     pub fn new(cfg: OAuthConfig, store: Arc<dyn SecretStore>, open: Opener) -> Self {
-        Self { cfg, store, open, http: reqwest::Client::new() }
+        Self { cfg, store, open, http: crate::http() }
     }
 
     pub fn is_connected(&self) -> bool {
@@ -240,7 +240,7 @@ pub(crate) mod tests {
                 Some(c) => back.query_pairs_mut().append_pair("code", c).append_pair("state", if forge_state { "forged" } else { &q["state"] }),
                 None => back.query_pairs_mut().append_pair("error", "access_denied"),
             };
-            tokio::spawn(reqwest::get(back.to_string()));
+            tokio::spawn(crate::http().get(back.to_string()).send());
             Ok(())
         }
     }

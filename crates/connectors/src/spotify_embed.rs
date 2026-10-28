@@ -77,7 +77,7 @@ fn parse_page(html: &str, kind: &str, id: &str) -> Result<SpotifyList> {
 /// Public playlist or album behind `link`, read from its embed page (`embed` = base URL, injectable for tests).
 pub async fn fetch(embed: &str, link: &str) -> Result<SpotifyList> {
     let (kind, id) = parse_link(link).context("Not a Spotify playlist or album link")?;
-    let res = reqwest::Client::new().get(format!("{embed}/{kind}/{id}")).header("user-agent", UA).send().await?;
+    let res = crate::http().get(format!("{embed}/{kind}/{id}")).header("user-agent", UA).send().await?;
     anyhow::ensure!(res.status() != reqwest::StatusCode::NOT_FOUND, "This Spotify {kind} is private or doesn't exist");
     parse_page(&res.error_for_status()?.text().await?, &kind, &id)
 }

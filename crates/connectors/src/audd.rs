@@ -116,7 +116,7 @@ impl Default for AudD {
 
 impl AudD {
     pub fn with_urls(api: &str) -> Self {
-        Self { api: api.to_string(), http: reqwest::Client::new() }
+        Self { api: api.to_string(), http: crate::http() }
     }
 
     /// The song in `wav`, None if AudD knows it not. `market`: storefront for the Apple Music / Spotify ids.

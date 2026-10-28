@@ -303,7 +303,7 @@ impl YouTubeMusic {
 
     pub fn with_api(api: &str, cookie: &str) -> Result<Self> {
         let sapisid = cookie_value(cookie, "SAPISID").or_else(|| cookie_value(cookie, "__Secure-3PAPISID")).context("Not signed in to YouTube Music")?.to_string();
-        Ok(Self { api: api.into(), cookie: cookie.into(), sapisid: Some(sapisid), authuser: 0, page_id: None, account: None, http: reqwest::Client::new() })
+        Ok(Self { api: api.into(), cookie: cookie.into(), sapisid: Some(sapisid), authuser: 0, page_id: None, account: None, http: crate::http() })
     }
 
     /// Signed out: public pages (artists, albums, playlists) without account headers.
@@ -312,7 +312,7 @@ impl YouTubeMusic {
     }
 
     pub fn anonymous_with_api(api: &str) -> Self {
-        Self { api: api.into(), cookie: String::new(), sapisid: None, authuser: 0, page_id: None, account: None, http: reqwest::Client::new() }
+        Self { api: api.into(), cookie: String::new(), sapisid: None, authuser: 0, page_id: None, account: None, http: crate::http() }
     }
 
     /// Same session, acting as `account`.

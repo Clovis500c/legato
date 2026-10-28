@@ -93,7 +93,7 @@ impl YouTubeWeb {
 
     pub fn with_api(api: &str, cookie: Option<&str>) -> Self {
         let sapisid = cookie.and_then(|c| cookie_value(c, "SAPISID").or_else(|| cookie_value(c, "__Secure-3PAPISID"))).map(String::from);
-        Self { api: api.into(), cookie: cookie.map(String::from), sapisid, http: reqwest::Client::new() }
+        Self { api: api.into(), cookie: cookie.map(String::from), sapisid, http: crate::http() }
     }
 
     async fn call(&self, endpoint: &str, mut body: Value) -> Result<Value> {
@@ -136,7 +136,7 @@ impl YouTubeWeb {
 pub async fn suggestions(base: &str, query: &str, hl: &str, gl: &str) -> Result<Vec<String>> {
     let params = [("client", "firefox"), ("ds", "yt"), ("ie", "utf-8"), ("oe", "utf-8"), ("hl", hl), ("gl", gl), ("q", query)];
     let url = url::Url::parse_with_params(base, &params)?;
-    let res = reqwest::Client::new().get(url).header("user-agent", UA).send().await?;
+    let res = crate::http().get(url).header("user-agent", UA).send().await?;
     let status = res.status();
     if !status.is_success() {
         bail!("YouTube suggestions → {status}");

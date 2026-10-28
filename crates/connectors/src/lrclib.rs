@@ -41,12 +41,11 @@ impl Default for Lrclib {
 
 impl Lrclib {
     pub fn with_urls(api: &str) -> Self {
-        let http = reqwest::Client::builder().user_agent(AGENT).timeout(std::time::Duration::from_secs(15)).build().unwrap_or_default();
-        Self { api: api.trim_end_matches('/').to_string(), http }
+        Self { api: api.trim_end_matches('/').to_string(), http: crate::http() }
     }
 
     async fn ask(&self, url: Url) -> Result<Option<String>> {
-        let r = self.http.get(url).send().await?;
+        let r = self.http.get(url).header(reqwest::header::USER_AGENT, AGENT).timeout(std::time::Duration::from_secs(15)).send().await?;
         match r.status().as_u16() {
             404 => Ok(None),
             429 | 503 => bail!("LRCLIB is busy, try again in a moment"),
