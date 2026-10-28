@@ -1432,6 +1432,9 @@ const sv: Record<string, string> = {
   'Click each line the moment you hear it start. Two lines far apart fix the speed too.': 'Klicka på varje rad i samma stund som du hör den börja. Två rader långt ifrån varandra justerar även hastigheten.',
   'Lyrics earlier': 'Låttext tidigare',
   'Lyrics later': 'Låttext senare',
+  'Early endings': 'Tidiga slut',
+  'YouTube videos whose song ends early (silence, an end screen): the fade and the next song start where the song ends. Learned as they play': 'YouTube-videor där låten slutar tidigare (tystnad, slutskärm): övertoningen och nästa låt börjar där låten slutar. Lärs in medan den spelas',
+  'silence end screen outro video ends early custom end detect': 'tystnad slutskärm outro video tidigt slut upptäck',
 }
 
 export default sv

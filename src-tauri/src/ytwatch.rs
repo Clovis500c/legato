@@ -85,6 +85,9 @@ pub struct LiveReport {
     pub error: Option<String>,
     #[serde(default)]
     pub levels: Option<LiveLevels>,
+    /// The song ended here (s of the video), silence after it: an early end.
+    #[serde(default)]
+    pub end: Option<f64>,
 }
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Serialize, Deserialize)]
@@ -103,7 +106,8 @@ pub fn parse_live(source: &str, message: &str) -> Option<LiveReport> {
     }
     let r: LiveReport = serde_json::from_str(message.strip_prefix("musicapp-live:")?).ok()?;
     let ok_levels = r.levels.is_none_or(|l| [l.fast, l.momentary, l.short, l.gain].iter().all(|v| v.is_finite() && (-200.0..=60.0).contains(v)) && l.peak.is_finite() && (0.0..=16.0).contains(&l.peak));
-    (ok_levels && r.error.as_ref().is_none_or(|e| e.chars().count() <= 200)).then_some(r)
+    let ok_end = r.end.is_none_or(|e| e.is_finite() && (0.0..=86_400.0).contains(&e));
+    (ok_levels && ok_end && r.error.as_ref().is_none_or(|e| e.chars().count() <= 200)).then_some(r)
 }
 
 /// Trust boundary: video id from the UI.
@@ -127,6 +131,9 @@ pub enum Cmd {
     #[serde(rename_all = "camelCase")]
     Live {
         on: bool,
+        /// Levels only: the video keeps its own sound.
+        #[serde(default)]
+        listen: bool,
         adaptive: bool,
         target_lufs: f64,
         /// The app fades the song out: Adaptive Sound holds.
@@ -148,12 +155,12 @@ pub fn script(cmd: Cmd) -> String {
         Cmd::Pause => call("pause", 0.0),
         Cmd::Seek { seconds } => call("seek", if seconds.is_finite() { seconds.max(0.0) } else { 0.0 }),
         Cmd::Volume { percent } => call("volume", if percent.is_finite() { percent.clamp(0.0, 100.0).round() } else { 100.0 }),
-        Cmd::Live { on, adaptive, target_lufs, ending, gain, effects } => {
+        Cmd::Live { on, listen, adaptive, target_lufs, ending, gain, effects } => {
             let t = if target_lufs.is_finite() { target_lufs.clamp(-30.0, -6.0) } else { -14.0 };
             let gain = gain.filter(|g| g.is_finite()).map_or_else(|| "null".into(), |g| g.clamp(-12.0, 9.0).to_string());
             // Clamped, then JSON of numbers and booleans only: nothing to inject.
             let fx = effects.map(|e| serde_json::to_string(&e.clamped()).unwrap_or_else(|_| "undefined".into())).unwrap_or_else(|| "undefined".into());
-            format!("window.__musicAppLive && window.__musicAppLive.set({{ on: {on}, adaptive: {adaptive}, targetLufs: {t}, ending: {ending}, gain: {gain} }}, {fx})")
+            format!("window.__musicAppLive && window.__musicAppLive.set({{ on: {on}, listen: {listen}, adaptive: {adaptive}, targetLufs: {t}, ending: {ending}, gain: {gain} }}, {fx})")
         }
         Cmd::Crop { x, y, w, h } => {
             let f = |v: f64, lo: f64| if v.is_finite() { v.clamp(lo, 1.0) } else { lo };
@@ -290,14 +297,16 @@ mod tests {
         assert!(parse_live(YT, r#"musicapp-live:{"levels":{"fast":0,"momentary":1e9,"short":0,"peak":0,"gain":0}}"#).is_none());
         assert!(parse_live("https://x.example/", r#"musicapp-live:{"attached":true}"#).is_none());
         assert!(parse_live(YT, r#"musicapp-ytwatch:{"state":1}"#).is_none());
-        assert_eq!(script(Cmd::Live { on: true, adaptive: false, target_lufs: -99.0, ending: false, gain: None, effects: None }), "window.__musicAppLive && window.__musicAppLive.set({ on: true, adaptive: false, targetLufs: -30, ending: false, gain: null }, undefined)");
-        assert!(script(Cmd::Live { on: true, adaptive: true, target_lufs: -14.0, ending: true, gain: Some(40.0), effects: None }).contains("ending: true, gain: 9 }"));
-        assert!(script(Cmd::Live { on: true, adaptive: true, target_lufs: -14.0, ending: false, gain: Some(f64::NAN), effects: None }).contains("gain: null }"));
-        let with = script(Cmd::Live { on: true, adaptive: false, target_lufs: -14.0, ending: false, gain: None, effects: Some(music_player::Effects { speed: 9.0, ..Default::default() }) });
-        assert!(with.contains("\"speed\":2.5") && with.ends_with("})"), "{with}");
+        assert_eq!(parse_live(YT, r#"musicapp-live:{"end":212.4}"#).unwrap().end, Some(212.4));
+        assert!(parse_live(YT, r#"musicapp-live:{"end":-1}"#).is_none());
+        assert_eq!(script(Cmd::Live { on: true, listen: false, adaptive: false, target_lufs: -99.0, ending: false, gain: None, effects: None }), "window.__musicAppLive && window.__musicAppLive.set({ on: true, listen: false, adaptive: false, targetLufs: -30, ending: false, gain: null }, undefined)");
+        assert!(script(Cmd::Live { on: true, listen: false, adaptive: true, target_lufs: -14.0, ending: true, gain: Some(40.0), effects: None }).contains("ending: true, gain: 9 }"));
+        assert!(script(Cmd::Live { on: true, listen: false, adaptive: true, target_lufs: -14.0, ending: false, gain: Some(f64::NAN), effects: None }).contains("gain: null }"));
+        let with = script(Cmd::Live { on: true, listen: true, adaptive: false, target_lufs: -14.0, ending: false, gain: None, effects: Some(music_player::Effects { speed: 9.0, ..Default::default() }) });
+        assert!(with.contains("\"speed\":2.5") && with.contains("listen: true") && with.ends_with("})"), "{with}");
         // The UI's shape (api.ts WatchCmd).
         let cmd: Cmd = serde_json::from_str(r#"{"type":"live","on":true,"adaptive":true,"targetLufs":-16}"#).unwrap();
-        assert!(matches!(cmd, Cmd::Live { on: true, adaptive: true, target_lufs, ending: false, gain: None, effects: None } if target_lufs == -16.0));
+        assert!(matches!(cmd, Cmd::Live { on: true, listen: false, adaptive: true, target_lufs, ending: false, gain: None, effects: None } if target_lufs == -16.0));
         let cmd: Cmd = serde_json::from_str(r#"{"type":"live","on":true,"adaptive":true,"targetLufs":-16,"ending":true,"gain":-3.5}"#).unwrap();
         assert!(matches!(cmd, Cmd::Live { ending: true, gain: Some(g), .. } if g == -3.5));
     }

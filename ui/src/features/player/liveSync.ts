@@ -15,8 +15,8 @@ const playing = () => {
 
 /** Live processing follows the settings (Settings › Advanced › Sound) and the Live Editor. Mounted once, by the player bar. */
 export function useLiveSync() {
-  const { adaptiveSound, adaptiveLevel, coverPulse, liveYoutube } = useSettings(
-    useShallow(({ settings: s }) => ({ adaptiveSound: s.adaptiveSound, adaptiveLevel: s.adaptiveLevel, coverPulse: s.coverPulse, liveYoutube: s.liveYoutube })),
+  const { adaptiveSound, adaptiveLevel, coverPulse, earlyEnds, liveYoutube } = useSettings(
+    useShallow(({ settings: s }) => ({ adaptiveSound: s.adaptiveSound, adaptiveLevel: s.adaptiveLevel, coverPulse: s.coverPulse, earlyEnds: s.earlyEnds, liveYoutube: s.liveYoutube })),
   )
   const effects = useEditor((s) => s.effects)
   useEffect(() => startLive(playing), [])
@@ -25,7 +25,8 @@ export function useLiveSync() {
   // overlap hands the live link to the next song's embed.
   useEffect(() => usePlayer.subscribe((s) => setEnding(overlapDue(s.positionMs, s.durationMs, s.fade))), [])
   useEffect(() => {
-    // Bypassed edits keep processing attached: A / B switches at once.
-    sendLive({ on: adaptiveSound || coverPulse || !neutral({ ...effects, on: true }), adaptive: adaptiveSound, targetLufs: adaptiveLevel, youtube: liveYoutube, effects })
-  }, [adaptiveSound, adaptiveLevel, coverPulse, liveYoutube, effects])
+    // Bypassed edits keep processing attached: A / B switches at once. Levels alone (moving cover, early ends) only listen.
+    const process = adaptiveSound || !neutral({ ...effects, on: true })
+    sendLive({ on: process || coverPulse, ends: earlyEnds, listen: !process, adaptive: adaptiveSound, targetLufs: adaptiveLevel, youtube: liveYoutube, effects })
+  }, [adaptiveSound, adaptiveLevel, coverPulse, earlyEnds, liveYoutube, effects])
 }

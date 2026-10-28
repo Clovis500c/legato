@@ -467,6 +467,9 @@ function PlaybackSection() {
           <Row label={msg('Advanced fade')} sub={s.fade.advanced ? tr('Your own lengths and shapes, below') : tr('Off: {fade}', { fade: s.crossfade ? tr('{n} s each way, S-curve', { n: s.crossfade }) : tr('no fade') })}>
             <Toggle label={tr('Advanced fade')} checked={s.fade.advanced} onChange={(advanced) => update({ fade: { ...s.fade, advanced } })} />
           </Row>
+          <Row setting="earlyEnds" label={msg('Early endings')} sub={tr('YouTube videos whose song ends early (silence, an end screen): the fade and the next song start where the song ends. Learned as they play')}>
+            <Toggle label={tr('Early endings')} checked={s.earlyEnds} onChange={(earlyEnds) => update({ earlyEnds })} />
+          </Row>
         </div>
         {s.fade.advanced && <FadeEditor />}
       </Group>

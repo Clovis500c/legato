@@ -1432,6 +1432,9 @@ const vi: Record<string, string> = {
   'Click each line the moment you hear it start. Two lines far apart fix the speed too.': 'Nhấp vào từng dòng ngay khi bạn nghe nó bắt đầu. Hai dòng cách xa nhau cũng chỉnh luôn tốc độ.',
   'Lyrics earlier': 'Lời sớm hơn',
   'Lyrics later': 'Lời muộn hơn',
+  'Early endings': 'Kết thúc sớm',
+  'YouTube videos whose song ends early (silence, an end screen): the fade and the next song start where the song ends. Learned as they play': 'Video YouTube có bài hát kết thúc sớm (im lặng, màn hình kết thúc): hiệu ứng chuyển và bài tiếp theo bắt đầu ở nơi bài hát kết thúc. Học được khi phát',
+  'silence end screen outro video ends early custom end detect': 'im lặng màn hình kết thúc outro video kết thúc sớm phát hiện',
 }
 
 export default vi

@@ -1432,6 +1432,9 @@ const hi: Record<string, string> = {
   'Click each line the moment you hear it start. Two lines far apart fix the speed too.': 'हर लाइन पर उसी पल क्लिक करें जब आप उसे शुरू होते सुनें। दूर-दूर की दो लाइनें स्पीड भी ठीक कर देती हैं।',
   'Lyrics earlier': 'बोल पहले',
   'Lyrics later': 'बोल बाद में',
+  'Early endings': 'जल्दी अंत',
+  'YouTube videos whose song ends early (silence, an end screen): the fade and the next song start where the song ends. Learned as they play': 'YouTube वीडियो जिनका गाना पहले ख़त्म हो जाता है (ख़ामोशी, एंड स्क्रीन): फ़ेड और अगला गाना वहीं से शुरू होते हैं जहाँ गाना ख़त्म होता है। चलते समय सीखा जाता है',
+  'silence end screen outro video ends early custom end detect': 'ख़ामोशी एंड स्क्रीन आउट्रो वीडियो जल्दी अंत silence end screen outro early',
 }
 
 export default hi

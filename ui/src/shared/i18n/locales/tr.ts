@@ -1432,6 +1432,9 @@ const tr: Record<string, string> = {
   'Click each line the moment you hear it start. Two lines far apart fix the speed too.': 'Her satırın başladığını duyduğun anda o satıra tıkla. Birbirinden uzak iki satır hızı da düzeltir.',
   'Lyrics earlier': 'Sözler daha erken',
   'Lyrics later': 'Sözler daha geç',
+  'Early endings': 'Erken bitişler',
+  'YouTube videos whose song ends early (silence, an end screen): the fade and the next song start where the song ends. Learned as they play': 'Şarkısı videodan önce biten YouTube videoları (sessizlik, bitiş ekranı): geçiş ve sonraki şarkı, şarkının bittiği yerden başlar. Çalarken öğrenilir',
+  'silence end screen outro video ends early custom end detect': 'sessizlik bitiş ekranı outro video erken bitiş algıla',
 }
 
 export default tr

@@ -1432,6 +1432,9 @@ const ja: Record<string, string> = {
   'Click each line the moment you hear it start. Two lines far apart fix the speed too.': '各行が始まるのが聞こえた瞬間にその行をクリックしてください。離れた2行をクリックすると速度も補正されます。',
   'Lyrics earlier': '歌詞を早く',
   'Lyrics later': '歌詞を遅く',
+  'Early endings': '早めの終わり',
+  'YouTube videos whose song ends early (silence, an end screen): the fade and the next song start where the song ends. Learned as they play': '曲が動画より先に終わる YouTube 動画（無音、終了画面）：フェードと次の曲を曲の本当の終わりから始めます。再生中に学習します',
+  'silence end screen outro video ends early custom end detect': '無音 終了画面 アウトロ 動画 早い終わり silence end screen outro early',
 }
 
 export default ja

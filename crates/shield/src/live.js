@@ -31,6 +31,13 @@
   const db = (g) => 10 ** (g / 20)
   // Playing this long with nothing captured: capture doesn't work here, the element gets its sound back.
   const SILENT_GIVE_UP_S = 4
+  // Early end (ui player/ends.ts): the song over before the video, silence after it (an end screen). Quiet (this read)
+  // for QUIET_S within the video's last END_S: said once per song, from where it went quiet.
+  // shortcut: a song with 2 s of silence then a final part in its last 25 s ends at the silence (learned as such),
+  // add a check against the song's known length if users report cut endings.
+  const QUIET_LUFS = -50
+  const QUIET_S = 2
+  const END_S = 25
   const MUTED = Object.getOwnPropertyDescriptor(HTMLMediaElement.prototype, 'muted')
 
   // Live Editor, same settings and order as crates/dsp (effects.rs, chain.rs, stretch.rs). Speed and tempo: the
@@ -288,11 +295,13 @@
     return { input, output: balance.output, set, turn, rates: () => rates(fx.on ? fx : cleanFx(null)) }
   }
 
+  // listen = levels only (cover pulse, early ends): the element plays its own sound, untouched, and this only listens.
   // ending = the app fades the song out (the gain holds); gain = where a new song's gain starts (the app's last song,
   // which may have played in the other embed), null = this frame's own.
-  let settings = { on: false, adaptive: false, targetLufs: -14, ending: false, gain: null }
+  let settings = { on: false, listen: false, adaptive: false, targetLufs: -14, ending: false, gain: null }
   let effects = cleanFx(null)
-  // { ctx, video, stream, track, src, gain, limiter, shelf, raw, k, wanted, … } while attached.
+  // { ctx, video, stream, track, src, full, gain, limiter, fx, raw, k, wanted, … } while attached; full = the sound
+  // comes out of here (gain, limiter, fx), else they are null.
   let g = null
   let busy = false
   let retry = 0
@@ -311,13 +320,15 @@
     const s = g
     g = null
     clearInterval(s.timer)
-    // Sound back first, to the element's own mute as the page last set it: whatever happens next, the video is heard.
-    delete s.video.muted
-    MUTED.set.call(s.video, s.wanted)
-    s.video.removeEventListener('volumechange', s.onVolume)
-    s.video.removeEventListener('ratechange', s.onRate)
-    s.video.playbackRate = 1
-    s.video.preservesPitch = true
+    if (s.full) {
+      // Sound back first, to the element's own mute as the page last set it: whatever happens next, the video is heard.
+      delete s.video.muted
+      MUTED.set.call(s.video, s.wanted)
+      s.video.removeEventListener('volumechange', s.onVolume)
+      s.video.removeEventListener('ratechange', s.onRate)
+      s.video.playbackRate = 1
+      s.video.preservesPitch = true
+    }
     s.stream.removeEventListener('addtrack', s.plug)
     s.stream.removeEventListener('removetrack', s.plug)
     s.ctx.close().catch(() => {})
@@ -343,32 +354,43 @@
     try {
       const stream = video.captureStream()
       ctx = new AudioContext({ latencyHint: 'playback' })
-      // Stereo in (mono is spread to both sides), then gain → peak limiter → speakers.
+      const full = !settings.listen
+      // Stereo in (mono is spread to both sides), then effects → gain → peak limiter → speakers. Listening only: the
+      // analysers alone (Chromium pulls them unconnected), the element keeps its own sound.
       const input = new GainNode(ctx, { channelCount: 2, channelCountMode: 'explicit', channelInterpretation: 'speakers' })
-      const gain = ctx.createGain()
-      // Peak limiter, engaged only while boosting or edited (ratio 1 = untouched otherwise).
-      const limiter = new DynamicsCompressorNode(ctx, { threshold: -1, knee: 0, ratio: 1, attack: 0.003, release: 0.12 })
-      // Live Editor effects between the sound and the gain.
-      const fx = buildFx(ctx)
-      input.connect(fx.input)
-      fx.output.connect(gain).connect(limiter).connect(ctx.destination)
+      let tap = input
+      let gain = null
+      let limiter = null
+      let fx = null
+      if (full) {
+        gain = ctx.createGain()
+        // Peak limiter, engaged only while boosting or edited (ratio 1 = untouched otherwise).
+        limiter = new DynamicsCompressorNode(ctx, { threshold: -1, knee: 0, ratio: 1, attack: 0.003, release: 0.12 })
+        // Live Editor effects between the sound and the gain.
+        fx = buildFx(ctx)
+        input.connect(fx.input)
+        fx.output.connect(gain).connect(limiter).connect(ctx.destination)
+        tap = fx.output
+      }
       // K-weighting (BS.1770) on the analysis branch: after the effects, before the gain (as the native chain).
       const shelf = new BiquadFilterNode(ctx, { type: 'highshelf', frequency: 1681, gain: 4 })
       const hp = new BiquadFilterNode(ctx, { type: 'highpass', frequency: 38.1, Q: 0.5 })
-      fx.output.connect(shelf).connect(hp)
+      tap.connect(shelf).connect(hp)
       const k = pair(ctx, hp)
-      const raw = pair(ctx, fx.output)
+      const raw = pair(ctx, tap)
       await ctx.resume()
       if (ctx.state !== 'running') throw new Error('Sound processing is waiting for a click in the app')
-      if (!settings.on || g || document.querySelector('video') !== video) return void ctx.close()
-      const s = { ctx, video, stream, input, fx, gain, limiter, k, raw, buf: new Float32Array(2048), track: null, src: null, wanted: video.muted, momentary: 0, short: 0, peak: 0, gainDb: startGain(0), elapsed: 0, at: performance.now(), time: video.currentTime, silent: 0 }
+      if (!settings.on || g || document.querySelector('video') !== video || full === settings.listen) return void ctx.close()
+      const s = { ctx, video, stream, input, full, fx, gain, limiter, k, raw, buf: new Float32Array(2048), track: null, src: null, wanted: video.muted, momentary: 0, short: 0, peak: 0, gainDb: full ? startGain(0) : 0, elapsed: 0, at: performance.now(), time: video.currentTime, silent: 0, quietAt: null, endSaid: false }
       // The captured track changes with each video (new metadata): follow it.
       s.plug = () => {
         const track = stream.getAudioTracks().find((t) => t.readyState === 'live') ?? null
         if (track === s.track) return
         // Next song: loudness measured afresh, the gain carries on from the last one (the app's, across embeds).
         s.momentary = s.short = s.elapsed = 0
-        if (track) s.gainDb = startGain(s.gainDb)
+        s.quietAt = null
+        s.endSaid = false
+        if (track && full) s.gainDb = startGain(s.gainDb)
         s.src?.disconnect()
         s.track = track
         s.src = track ? s.ctx.createMediaStreamSource(new MediaStream([track])) : null
@@ -382,23 +404,25 @@
       // From here, detach() undoes everything (the catch below too): the element always gets its sound back.
       g = s
       ctx = null
-      // The page keeps its own mute (what it sets is what it reads, YouTube's mute button too); the element itself
-      // stays muted: its sound now comes out of here.
-      Object.defineProperty(video, 'muted', {
-        configurable: true,
-        get: () => s.wanted,
-        set: (v) => {
-          if (s.wanted === !!v) return
-          s.wanted = !!v
-          setGain()
-          video.dispatchEvent(new Event('volumechange'))
-        },
-      })
-      MUTED.set.call(video, true)
-      video.addEventListener('volumechange', s.onVolume)
-      video.addEventListener('ratechange', s.onRate)
-      fx.set(effects)
-      applyRate()
+      if (full) {
+        // The page keeps its own mute (what it sets is what it reads, YouTube's mute button too); the element itself
+        // stays muted: its sound now comes out of here.
+        Object.defineProperty(video, 'muted', {
+          configurable: true,
+          get: () => s.wanted,
+          set: (v) => {
+            if (s.wanted === !!v) return
+            s.wanted = !!v
+            setGain()
+            video.dispatchEvent(new Event('volumechange'))
+          },
+        })
+        MUTED.set.call(video, true)
+        video.addEventListener('volumechange', s.onVolume)
+        video.addEventListener('ratechange', s.onRate)
+        fx.set(effects)
+        applyRate()
+      }
       stream.addEventListener('addtrack', s.plug)
       stream.addEventListener('removetrack', s.plug)
       s.plug()
@@ -424,7 +448,7 @@
 
   // The element's own volume (the app's volume and fades) no longer reaches the captured sound: applied here.
   function setGain() {
-    if (!g) return
+    if (!g?.full) return
     const level = g.wanted ? 0 : g.video.volume * db(g.gainDb)
     g.gain.gain.setTargetAtTime(level, g.ctx.currentTime, 0.03)
     // Effects before the gain can push peaks over too (bass boost).
@@ -433,7 +457,7 @@
 
   /** Speed and tempo on the video itself: pitch kept for tempo alone, else follows (the shifter corrects pitch). */
   function applyRate() {
-    if (!g) return
+    if (!g?.full) return
     const [time, pitch] = g.fx.rates()
     g.rate = time
     g.video.preservesPitch = Math.abs(pitch - 1) < 1e-6
@@ -469,7 +493,7 @@
     const now = performance.now()
     const dt = Math.min(0.2, (now - g.at) / 1000)
     g.at = now
-    g.fx.turn(dt)
+    g.fx?.turn(dt)
     // Paused: one last report, then quiet until it plays again.
     if (g.video.paused && g.idle) return
     g.idle = g.video.paused
@@ -493,13 +517,24 @@
     g.peak = Math.max(peak, g.peak * 10 ** -dt)
     const mom = lufs(g.momentary)
     const short = lufs(g.short)
-    let want = 0
-    // The app fading the song out, silence, or the music falling away: hold (processor.rs `wanted_db`).
-    if (settings.adaptive) want = settings.ending || mom < HOLD_BELOW || mom < short - FALLING_DB ? g.gainDb : Math.min(MAX_BOOST, Math.max(MAX_CUT, settings.targetLufs - short))
-    g.gainDb += (want - g.gainDb) * (1 - Math.exp(-dt / (g.elapsed < START_S ? GLIDE_START_S : GLIDE_S)))
-    setGain()
+    if (g.full) {
+      let want = 0
+      // The app fading the song out, silence, or the music falling away: hold (processor.rs `wanted_db`).
+      if (settings.adaptive) want = settings.ending || mom < HOLD_BELOW || mom < short - FALLING_DB ? g.gainDb : Math.min(MAX_BOOST, Math.max(MAX_CUT, settings.targetLufs - short))
+      g.gainDb += (want - g.gainDb) * (1 - Math.exp(-dt / (g.elapsed < START_S ? GLIDE_START_S : GLIDE_S)))
+      setGain()
+    }
     // fast: this read alone (the analysers hold ~43 ms).
-    send({ levels: { fast: lufs(ms), momentary: mom, short, peak: g.peak, gain: g.gainDb } })
+    const fast = lufs(ms)
+    // Early end: quiet near the video's end for QUIET_S (a seek back starts over).
+    const t = v.currentTime
+    if (fast >= QUIET_LUFS || !(v.duration - t < END_S) || (g.quietAt !== null && t < g.quietAt)) g.quietAt = null
+    else if (playing && g.quietAt === null) g.quietAt = t
+    if (g.quietAt !== null && !g.endSaid && t - g.quietAt >= QUIET_S) {
+      g.endSaid = true
+      send({ end: g.quietAt })
+    }
+    send({ levels: { fast, momentary: mom, short, peak: g.peak, gain: g.gainDb } })
   }
 
   function apply(next, fx) {
@@ -507,20 +542,22 @@
     if (fx !== undefined) {
       effects = cleanFx(fx)
       if (g) {
-        g.fx.set(effects)
+        g.fx?.set(effects)
         applyRate()
         setGain()
       }
     }
     const t = Number(next.targetLufs)
     // A start gain waits for its song (the next track): later messages without one keep it.
-    settings = { on: next.on === true, adaptive: next.adaptive === true, targetLufs: Number.isFinite(t) ? Math.min(-6, Math.max(-30, t)) : -14, ending: next.ending === true, gain: num(next.gain, MAX_CUT, MAX_BOOST, settings.gain) }
+    settings = { on: next.on === true, listen: next.listen === true, adaptive: next.adaptive === true, targetLufs: Number.isFinite(t) ? Math.min(-6, Math.max(-30, t)) : -14, ending: next.ending === true, gain: num(next.gain, MAX_CUT, MAX_BOOST, settings.gain) }
     if (!settings.on) {
       clearInterval(retry)
       retry = 0
       said = ''
       return detach()
     }
+    // Listening ↔ processing: attached again the other way (below).
+    if (g && g.full === settings.listen) detach()
     setGain()
     void attach()
     // Not attached yet (no video yet, sound blocked until a click, new source after a give-up): try again now and then.

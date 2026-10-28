@@ -1432,6 +1432,9 @@ const id: Record<string, string> = {
   'Click each line the moment you hear it start. Two lines far apart fix the speed too.': 'Klik setiap baris tepat saat kamu mendengarnya dimulai. Dua baris yang berjauhan juga memperbaiki kecepatan.',
   'Lyrics earlier': 'Lirik lebih awal',
   'Lyrics later': 'Lirik lebih lambat',
+  'Early endings': 'Akhir lebih awal',
+  'YouTube videos whose song ends early (silence, an end screen): the fade and the next song start where the song ends. Learned as they play': 'Video YouTube yang lagunya berakhir lebih awal (hening, layar akhir): transisi dan lagu berikutnya mulai di akhir lagu yang sebenarnya. Dipelajari saat diputar',
+  'silence end screen outro video ends early custom end detect': 'hening layar akhir outro video berakhir lebih awal deteksi',
 }
 
 export default id

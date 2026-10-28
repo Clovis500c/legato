@@ -144,7 +144,7 @@ export type WatchCmd =
   | { type: 'seek'; seconds: number }
   | { type: 'volume'; percent: number }
   | { type: 'crop'; x: number; y: number; w: number; h: number }
-  | { type: 'live'; on: boolean; adaptive: boolean; targetLufs: number; ending: boolean; gain: number | null; effects?: Effects }
+  | { type: 'live'; on: boolean; listen: boolean; adaptive: boolean; targetLufs: number; ending: boolean; gain: number | null; effects?: Effects }
 
 /** crates/dsp control.rs: live processing settings of the native engine. */
 export interface LiveSettings {
@@ -280,6 +280,8 @@ export interface LiveReport {
   attached?: boolean
   error?: string | null
   levels?: LiveLevels | null
+  /** The song ended here (s of the video), silence after it: an early end. */
+  end?: number
 }
 export interface WatchReport {
   state?: number

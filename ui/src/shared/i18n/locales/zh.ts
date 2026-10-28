@@ -1432,6 +1432,9 @@ const zh: Record<string, string> = {
   'Click each line the moment you hear it start. Two lines far apart fix the speed too.': '在听到每一行开始的那一刻点击它。点击相隔较远的两行，还能校准速度。',
   'Lyrics earlier': '歌词提前',
   'Lyrics later': '歌词延后',
+  'Early endings': '提前结束',
+  'YouTube videos whose song ends early (silence, an end screen): the fade and the next song start where the song ends. Learned as they play': '歌曲比视频先结束的 YouTube 视频（静音、片尾画面）：淡出和下一首从歌曲真正结束处开始。播放时学习',
+  'silence end screen outro video ends early custom end detect': '静音 片尾 结尾画面 视频 提前结束 silence end screen outro early',
 }
 
 export default zh

@@ -61,7 +61,7 @@ function apply(s: Settings) {
     // Tray menu and taskbar buttons too.
     void api.setUiLanguage(lang).catch(() => {})
   }
-  usePlayer.setState({ fade: effectiveFade(s), skipLong: s.skipLong })
+  usePlayer.setState({ fade: effectiveFade(s), skipLong: s.skipLong, earlyEnds: s.earlyEnds })
   const root = document.documentElement.style
   const theme = resolveTheme(s, systemDark.matches, systemAccent)
   for (const [k, v] of Object.entries(cssVars(theme, s))) root.setProperty(k, v)

@@ -18,6 +18,7 @@ import { ArtistLink } from './ArtistLink'
 import { bindFrame, useNowTrack, usePlayer, useVideoSlot } from './store'
 import { embedUrl, parseYt, ytPost } from './youtube'
 import { fadeGain } from './fade'
+import { songEnd } from './ends'
 import { closeWatch, cropWatch, placeWatch, sendWatch, useWatch, watchUpdate } from './watch'
 import { frameAround } from '../../shared/artbox'
 import { bindLiveFrame, sendLive } from './live'
@@ -68,10 +69,12 @@ function YouTubeFrame({ videoId, tail = false, idle = false }: { videoId: string
       const u = e.source === frame.current?.contentWindow ? parseYt(e.origin, e.data) : undefined
       if (!u) return
       if (isTail.current) {
-        const { tail: t, volume, fade } = usePlayer.getState()
+        const { tail: t, volume, fade, earlyEnds } = usePlayer.getState()
         if (!t || t.done) return
-        if (u.state === 0 || u.error !== undefined) return usePlayer.setState({ tail: { ...t, done: true } })
-        if (u.time !== undefined && u.duration) ytPost(frame.current, 'command', 'setVolume', [Math.round(volume * fadeGain(u.time * 1000, u.duration * 1000, fade, false) * 100)])
+        // Fades out to its song's own end (learned early end), then only silence is left: stopped too.
+        const end = u.duration ? (earlyEnds ? songEnd(t.videoId, u.duration * 1000) : u.duration * 1000) : 0
+        if (u.state === 0 || u.error !== undefined || (end && u.time !== undefined && u.time * 1000 >= end)) return usePlayer.setState({ tail: { ...t, done: true } })
+        if (u.time !== undefined && end) ytPost(frame.current, 'command', 'setVolume', [Math.round(volume * fadeGain(u.time * 1000, end, fade, false) * 100)])
         return
       }
       // Subtitles off (default): YouTube may turn them on from the Google account, unload them once per video.

@@ -1432,6 +1432,9 @@ const de: Record<string, string> = {
   'Click each line the moment you hear it start. Two lines far apart fix the speed too.': 'Klicke auf jede Zeile in dem Moment, in dem du sie beginnen hörst. Zwei weit auseinanderliegende Zeilen korrigieren auch das Tempo.',
   'Lyrics earlier': 'Songtext früher',
   'Lyrics later': 'Songtext später',
+  'Early endings': 'Vorzeitige Enden',
+  'YouTube videos whose song ends early (silence, an end screen): the fade and the next song start where the song ends. Learned as they play': 'YouTube-Videos, deren Song früher endet (Stille, Abspann): Überblendung und nächster Song beginnen am echten Ende. Wird beim Abspielen gelernt',
+  'silence end screen outro video ends early custom end detect': 'stille abspann endbildschirm outro video frühes ende erkennen',
 }
 
 export default de

@@ -1432,6 +1432,9 @@ const pt: Record<string, string> = {
   'Click each line the moment you hear it start. Two lines far apart fix the speed too.': 'Clique em cada linha no momento em que ouvir ela começar. Duas linhas distantes corrigem a velocidade também.',
   'Lyrics earlier': 'Letra antes',
   'Lyrics later': 'Letra depois',
+  'Early endings': 'Finais antecipados',
+  'YouTube videos whose song ends early (silence, an end screen): the fade and the next song start where the song ends. Learned as they play': 'Vídeos do YouTube cuja música termina antes (silêncio, tela final): o fade e a próxima música começam onde a música termina. Aprendido enquanto toca',
+  'silence end screen outro video ends early custom end detect': 'silêncio tela final outro vídeo final antecipado detectar',
 }
 
 export default pt

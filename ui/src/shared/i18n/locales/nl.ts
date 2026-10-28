@@ -1432,6 +1432,9 @@ const nl: Record<string, string> = {
   'Click each line the moment you hear it start. Two lines far apart fix the speed too.': 'Klik op elke regel op het moment dat je hem hoort beginnen. Twee regels ver uit elkaar corrigeren ook de snelheid.',
   'Lyrics earlier': 'Songtekst eerder',
   'Lyrics later': 'Songtekst later',
+  'Early endings': 'Vroege eindes',
+  'YouTube videos whose song ends early (silence, an end screen): the fade and the next song start where the song ends. Learned as they play': 'YouTube-video’s waarvan het nummer eerder eindigt (stilte, eindscherm): de overgang en het volgende nummer beginnen waar het nummer eindigt. Geleerd tijdens het afspelen',
+  'silence end screen outro video ends early custom end detect': 'stilte eindscherm outro video vroeg einde detecteren',
 }
 
 export default nl

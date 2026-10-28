@@ -14,6 +14,10 @@ import { YT_ORIGIN } from './youtube'
 export interface LiveWish {
   /** A feature wants processing or levels. */
   on: boolean
+  /** YouTube only: early ends heard (ends.ts), which needs levels too. */
+  ends: boolean
+  /** Levels only (cover pulse, early ends): YouTube's sound stays its own, live.js only listens. */
+  listen: boolean
   adaptive: boolean
   targetLufs: number
   /** YouTube's sound may be processed (Settings › Advanced). */
@@ -36,10 +40,11 @@ export function punch(l: LiveLevels | null): number {
 
 /** What the YouTube player gets. */
 export function frameSettings(w: LiveWish) {
-  return { on: w.on && w.youtube, adaptive: w.adaptive, targetLufs: w.targetLufs }
+  return { on: (w.on || w.ends) && w.youtube, listen: w.listen, adaptive: w.adaptive, targetLufs: w.targetLufs }
 }
 
-type Report = { attached?: boolean; error?: string | null; levels?: LiveLevels | null }
+/** end = the song ended there (s of the video), silence after it (live.js, ends.ts). */
+type Report = { attached?: boolean; error?: string | null; levels?: LiveLevels | null; end?: number }
 
 /** A frame message from live.js, if it is one. */
 export function parseLive(origin: string, data: unknown): Report | null {
@@ -52,7 +57,10 @@ export function parseLive(origin: string, data: unknown): Report | null {
   }
 }
 
-let wish: LiveWish = { on: false, adaptive: false, targetLufs: -14, youtube: true, effects: NEUTRAL }
+let wish: LiveWish = { on: false, ends: false, listen: false, adaptive: false, targetLufs: -14, youtube: true, effects: NEUTRAL }
+// Early end heard (the store's): tail = from the overlap's fading-out embed, not what plays now.
+let ended: ((end: number, tail: boolean) => void) | null = null
+export const onEndHeard = (f: (end: number, tail: boolean) => void) => void (ended = f)
 let frame: HTMLIFrameElement | null = null
 // The app fades the song out: Adaptive Sound holds (its fades are never bent or brought up).
 let ending = false
@@ -98,13 +106,18 @@ export function startLive(playing: () => 'native' | 'youtube' | null): () => voi
     if (m.attached !== undefined) useLive.setState({ attached: m.attached, error: m.error ?? undefined })
   }
   const onMessage = (e: MessageEvent) => {
-    // Fading-out tail embed (overlap): not what plays now.
-    const m = e.source === frame?.contentWindow ? parseLive(e.origin, e.data) : null
-    if (m && playing() === 'youtube' && !watching()) take(m)
+    const m = parseLive(e.origin, e.data)
+    if (!m || playing() !== 'youtube' || watching()) return
+    // Another of our embeds: the overlap's fading-out tail, not what plays now (its end only).
+    const now = e.source === frame?.contentWindow
+    if (typeof m.end === 'number') ended?.(m.end, !now)
+    if (now) take(m)
   }
   window.addEventListener('message', onMessage)
   const off = api.onLive((m) => {
-    if (playing() === 'youtube' && watching()) take(m)
+    if (playing() !== 'youtube' || !watching()) return
+    if (typeof m.end === 'number') ended?.(m.end, false)
+    take(m)
   })
   // Embed ↔ watch page: settings follow the video.
   const unwatch = useWatch.subscribe((s, prev) => {

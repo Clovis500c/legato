@@ -1432,6 +1432,9 @@ const ru: Record<string, string> = {
   'Click each line the moment you hear it start. Two lines far apart fix the speed too.': 'Нажимайте на строку в тот момент, когда слышите её начало. Две далёкие друг от друга строки исправят и скорость.',
   'Lyrics earlier': 'Текст раньше',
   'Lyrics later': 'Текст позже',
+  'Early endings': 'Ранние концовки',
+  'YouTube videos whose song ends early (silence, an end screen): the fade and the next song start where the song ends. Learned as they play': 'Видео на YouTube, где песня заканчивается раньше (тишина, конечная заставка): переход и следующая песня начинаются там, где кончается песня. Запоминается при прослушивании',
+  'silence end screen outro video ends early custom end detect': 'тишина конечная заставка аутро видео ранний конец определить',
 }
 
 export default ru

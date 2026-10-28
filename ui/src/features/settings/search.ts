@@ -28,6 +28,7 @@ export const SETTINGS_INDEX: SettingEntry[] = [
   { section: 'appearance', label: msg('Sleep timer button'), keywords: msg('moon sleep timer button hide') },
   { section: 'playback', label: msg('Skip long songs'), keywords: msg('skip long songs minutes length duration mix') },
   { section: 'playback', label: msg('Fade between songs'), keywords: msg('crossfade transition fade out in') },
+  { section: 'playback', label: msg('Early endings'), keywords: msg('silence end screen outro video ends early custom end detect') },
   { section: 'appearance', label: msg('Tuner scale'), keywords: msg('progress bar seek') },
   { section: 'appearance', label: msg('Immersive player'), keywords: msg('blur blurred background cover now playing ambient') },
   { section: 'appearance', label: msg('Cover tint'), keywords: msg('ambient background color now playing') },

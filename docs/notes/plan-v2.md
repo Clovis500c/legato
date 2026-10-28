@@ -488,8 +488,10 @@ Original plan:
       song's own ending) and the next song started from it, loud; across the two YouTube embeds the next song started
       from a stale gain. Now held while the app fades out and while the music falls away; the next song starts from
       the last one's gain, whichever embed or engine played it.
-- [ ] Early endings (2026-10-28): videos whose song ends a few seconds before the video does (silence, outro):
-      detected, the fade and the next song start from the song's real end.
+- [x] Early endings (2026-10-28): videos whose song ends a few seconds before the video does (silence, outro):
+      detected live (live.js listens, the sound untouched), the song is over there and the end is kept per video:
+      later plays fade and move on from the song's real end. Settings › Playback › Fades › Early endings (on).
+      Not checked live: needs the real app on a video with a silent end.
 - [ ] Settings › Appearance › Hi-Fi extras: a better menu (2026-10-28).
 - [ ] Optimize the front end and the back end as far as possible (2026-10-28).
 - [x] Interactive preview for visual settings (background blur, dimming, motion, …): small live sample of the effect.

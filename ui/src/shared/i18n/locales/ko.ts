@@ -1432,6 +1432,9 @@ const ko: Record<string, string> = {
   'Click each line the moment you hear it start. Two lines far apart fix the speed too.': '각 줄이 시작되는 게 들리는 순간 그 줄을 클릭하세요. 멀리 떨어진 두 줄을 클릭하면 속도도 맞춰집니다.',
   'Lyrics earlier': '가사 앞당기기',
   'Lyrics later': '가사 늦추기',
+  'Early endings': '이른 끝부분',
+  'YouTube videos whose song ends early (silence, an end screen): the fade and the next song start where the song ends. Learned as they play': '노래가 영상보다 먼저 끝나는 YouTube 동영상(무음, 최종 화면): 페이드와 다음 곡이 노래가 끝나는 지점에서 시작됩니다. 재생하면서 학습합니다',
+  'silence end screen outro video ends early custom end detect': '무음 최종 화면 아웃트로 동영상 이른 끝 silence end screen outro early',
 }
 
 export default ko

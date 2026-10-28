@@ -101,6 +101,13 @@ Status on 2026-10-16. YouTube, local files and Apple Music previews: done and te
   decoder for ~15 s with data buffered (measured 2026-10-28, also with `about:blank`). The two embeds swap roles at
   each overlap; the next song loads into the stopped one. In the tray the first one is born in a hidden page, where
   Chromium never starts its video: the page is held `visible` until the music moves (`hold_page`).
+- Early endings (2026-10-28, Settings › Playback › Fades, on by default): videos that run on after their song
+  (silence, a silent end screen). `live.js` listens (levels only when nothing else needs the sound: the element keeps
+  its own sound) and reports `end` once the sound stayed under −50 LUFS for 2 s within the video's last 25 s. The
+  playing song is over there (paused if nothing follows, so the silence never ends it twice); the overlap's tail is
+  stopped. The end is kept per video (`player/ends.ts`, localStorage like `still.ts`, 3000 videos) and becomes the
+  song's length on later plays: fades, overlap, Adaptive Sound's hold, times shown. Limit: 2 s of silence then a final
+  part within the last 25 s ends at the silence. Local files: not done (gapless albums, hidden tracks).
 - Driven by `postMessage`, the protocol `iframe_api` uses internally (`listening`, `command`, `infoDelivery`, `onError`).
   We don't load `iframe_api`: a remote script in the app's origin would get access to Tauri IPC.
 - CSP: only addition, `frame-src https://www.youtube.com`.
@@ -162,7 +169,9 @@ never: downloading, extracting, recording or exporting a platform's audio, or to
   `captureStream()`, the element is muted, and Chromium's own audio nodes play it: gain → limiter, plus a K-weighted
   analysis branch. Same formulas as the native chain. The page keeps its own mute (an instance `muted` property),
   the element's volume (the app's volume and fades) is applied in the gain. Any failure (sound blocked before a
-  click, nothing captured for 4 s while playing) unmutes the element: the video plays as before. Messages: embed
+  click, nothing captured for 4 s while playing) unmutes the element: the video plays as before. Levels only (moving
+  cover, early endings, no Adaptive Sound or edits): `listen`, analysers alone (Chromium pulls them unconnected), the
+  element never muted, its sound untouched. Switching modes attaches again. Messages: embed
   `postMessage` to the app's origin only; watch page `musicapp-live:` strings checked in Rust (`ytwatch.rs`).
 - **Spotify**: plays in Spotify's own app, out of reach. Shown as such under the volume.
 - **Volume mixer** (2026-10-23): YouTube's sound plays in WebView2's own processes, so Windows listed it as "Microsoft

@@ -7,7 +7,8 @@ import { endListen, progress, startListen } from './listens'
 import { demoGain, demoLength, fadeGain, NO_FADE, overlapDue, type Fade } from './fade'
 import { insertAt, moveInOrder, moveToSlot, nextIndex, playOrder, queued, tooLong, type Repeat } from './queue'
 import { vias, type Via } from './sources'
-import { bindLiveFrame } from './live'
+import { rememberEnd, songEnd } from './ends'
+import { bindLiveFrame, onEndHeard } from './live'
 import { closeWatch, openWatch, sendWatch, watching } from './watch'
 import { ytPost, type YtUpdate } from './youtube'
 import { tr } from '../../shared/i18n/i18n'
@@ -44,6 +45,8 @@ interface PlayerState {
   fade: Fade
   /** Settings › Playback › Skip long songs: minutes, 0 = off. */
   skipLong: number
+  /** Settings › Playback › Early endings: a video ends where its song does (ends.ts). */
+  earlyEnds: boolean
   /** Current track started on its own after the previous one (or a skip, if asked): fades in. */
   fadeIn: boolean
   /** Where the current item started (resume), ms. */
@@ -293,6 +296,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
   repeat: 'off',
   fade: NO_FADE,
   skipLong: 0,
+  earlyEnds: true,
   fadeIn: false,
   startAt: 0,
   playId: 0,
@@ -578,15 +582,20 @@ export const usePlayer = create<PlayerState>((set, get) => ({
       } else ytFresh = false
     }
     if (u.state !== undefined) ytState = u.state
+    // The song's own end (learned early end) is the length everywhere: fades, overlap, times shown.
+    const videoMs = u.duration ? u.duration * 1000 : 0
+    const durationMs = videoMs && get().earlyEnds ? songEnd(now?.youtubeId, videoMs) : videoMs
     set({
       ...(u.state !== undefined && u.state !== 3 && { playing: u.state === 1 }),
       ...(u.time !== undefined && { positionMs: u.time * 1000 }),
-      ...(u.duration && { durationMs: u.duration * 1000 }),
+      ...(durationMs && { durationMs }),
     })
     if (u.time !== undefined) {
-      progress(u.time * 1000, u.duration && u.duration * 1000)
+      progress(u.time * 1000, videoMs || undefined)
       get().applyVolume()
       overlap()
+      // Past the song's own end, silence left: over (unless the overlap just moved on).
+      if (durationMs < videoMs && u.time * 1000 >= durationMs && get().now === now) return songOver()
     }
     if (u.state === 0) {
       endListen(true)
@@ -669,6 +678,34 @@ function overlap() {
 
 usePlayer.subscribe((s, prev) => {
   if (s.playId !== prev.playId && s.now?.via === 'youtube') watchForStuck(s.playId)
+})
+
+// Song whose early end was reached (playId): over once.
+let overId = -1
+/** The playing YouTube song is over before its video (silence left): on to the next, as at the video's own end. */
+function songOver() {
+  const p = usePlayer.getState()
+  if (p.playId === overId) return
+  overId = p.playId
+  endListen(true)
+  p.step(1, true)
+  // Nothing started (queue done, sleep timer, an update installing): the silence doesn't play on to end again.
+  if (usePlayer.getState().playId === overId) yt('pauseVideo')
+}
+
+// Early end heard (live.js, in the silence after the song): kept for the next plays. The overlap's tail stops; the
+// playing song is over now. Its position checks the report is about this video (not one skipped from meanwhile).
+onEndHeard((end, tail) => {
+  const p = usePlayer.getState()
+  if (!p.earlyEnds) return
+  if (tail) {
+    if (!p.tail) return
+    rememberEnd(p.tail.videoId, end)
+    return usePlayer.setState({ tail: stopTail(p.tail) })
+  }
+  if (p.now?.via !== 'youtube' || !p.now.youtubeId || p.positionMs < end * 1000) return
+  rememberEnd(p.now.youtubeId, end)
+  songOver()
 })
 
 // A song plays: earlier failures no longer in a row.
