@@ -61,11 +61,12 @@ function Panel({ items, x, y, up, anchor, focusFirst, onBack }: { items: MenuEnt
   // Fit in the window; submenus open on the right, or on the left when there's no room.
   useLayoutEffect(() => {
     const el = ref.current!
-    const r = el.getBoundingClientRect()
+    // Layout size: pop-in starts scaled to 96 %, a measured box came out short and the menu ran past the window's foot.
+    const [w, h] = [el.offsetWidth, el.offsetHeight]
     let left = anchor ? anchor.right - 4 : x
-    if (left + r.width > innerWidth - 4) left = anchor ? anchor.left - r.width + 4 : innerWidth - r.width - 4
+    if (left + w > innerWidth - 4) left = anchor ? anchor.left - w + 4 : innerWidth - w - 4
     el.style.left = `${Math.max(4, left)}px`
-    el.style.top = `${Math.max(4, Math.min(anchor ? anchor.top - 6 : up ? y - r.height : y, innerHeight - r.height - 4))}px`
+    el.style.top = `${Math.max(4, Math.min(anchor ? anchor.top - 6 : up ? y - h : y, innerHeight - h - 4))}px`
     el.style.visibility = 'visible'
     if (focusFirst) el.querySelector<HTMLElement>(ITEM)?.focus()
   }, [x, y, up, anchor, focusFirst])
