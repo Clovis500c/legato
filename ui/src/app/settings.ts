@@ -8,13 +8,17 @@ import { cssVars, DEFAULTS, resolveTheme, sanitize, type Settings, type SystemAc
 import { effectiveFade } from '../features/player/fade'
 import { usePlayer } from '../features/player/store'
 import { useStore } from './store'
-import { resolveLang, useLang } from '../shared/i18n/i18n'
+import { loadLang, resolveLang, useLang, type Lang } from '../shared/i18n/i18n'
 
 const systemDark = window.matchMedia('(prefers-color-scheme: dark)')
 let systemAccent: SystemAccent | null = null
 
 // Last applied settings, read back before first render: no flash of default theme while IPC loads.
 const CACHE = 'settings'
+// Language asked for, and its table loading: awaited before the first render, no flash of English (main.tsx).
+let wanted: Lang = 'en'
+let langLoad: Promise<void> = Promise.resolve()
+export const languageReady = () => langLoad
 
 /** Before first render: last session's look. Settings load (IPC) confirms it. */
 export function applyCached() {
@@ -55,11 +59,19 @@ function apply(s: Settings) {
   }
   document.documentElement.classList.toggle('still', !s.motion)
   const lang = resolveLang(s.language, navigator.languages)
-  if (useLang.getState().lang !== lang) {
-    useLang.setState({ lang })
-    document.documentElement.lang = lang
-    // Tray menu and taskbar buttons too.
-    void api.setUiLanguage(lang).catch(() => {})
+  if (wanted !== lang) {
+    wanted = lang
+    // Its table first (loaded on demand); a later pick wins if quicker.
+    langLoad = loadLang(lang).then(
+      () => {
+        if (wanted !== lang) return
+        useLang.setState({ lang })
+        document.documentElement.lang = lang
+        // Tray menu and taskbar buttons too.
+        void api.setUiLanguage(lang).catch(() => {})
+      },
+      () => {},
+    )
   }
   usePlayer.setState({ fade: effectiveFade(s), skipLong: s.skipLong, earlyEnds: s.earlyEnds })
   const root = document.documentElement.style

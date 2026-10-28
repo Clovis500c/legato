@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest'
 import type { Mix } from '../../shared/api'
-import { useLang } from '../../shared/i18n/i18n'
+import { loadLang, useLang } from '../../shared/i18n/i18n'
 import { mixReason, mixTitle, weekdayName } from './words'
 
 const mix = (id: string, words: Mix['words'], title = 'T', reason = 'R'): Mix => ({ id, title, reason, trackIds: [], kind: 'daily', words })
@@ -18,7 +18,8 @@ describe('mix words', () => {
     expect(mixTitle(mix('future-kind', {}, 'Something new'))).toBe('Something new')
   })
 
-  it('words mixes in French', () => {
+  it('words mixes in French', async () => {
+    await loadLang('fr')
     useLang.setState({ lang: 'fr' })
     expect(mixReason(mix('daily-1', { number: 1, names: ['A', 'B', 'C'] }))).toBe('Parce que vous écoutez A, B et C')
     expect(mixTitle(mix('weekday', { day: 5 }))).toBe('Vos vendredis')

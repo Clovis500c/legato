@@ -27,17 +27,22 @@ export const CATALOG = [
 ] as const
 export type Lang = (typeof CATALOG)[number]['code']
 
-// shortcut: every table bundled up front (~100 kB each, read from disk), lazy-load if startup slows.
-const FILES = import.meta.glob<Record<string, string>>('./locales/*.ts', { eager: true, import: 'default' })
-const TABLES: Partial<Record<Lang, Record<string, string>>> = Object.fromEntries(
-  Object.entries(FILES).map(([path, table]) => {
-    const code = path.slice('./locales/'.length, -'.ts'.length)
-    return [code, code === 'fr' ? french(table) : table]
-  }),
-)
+// Each table loads when first needed (~100 kB each): the language in use before the first render (main.tsx), another
+// when picked. All up front made 1.6 MB of the 2.4 MB startup script (2026-10-28).
+const FILES = import.meta.glob<Record<string, string>>('./locales/*.ts', { import: 'default' })
+const file = (code: string) => FILES[`./locales/${code}.ts`]
+const TABLES: Partial<Record<Lang, Record<string, string>>> = {}
 
 /** Languages the interface speaks (English + every translated file), in catalogue order. */
-export const LANGUAGES = CATALOG.filter((l) => l.code === 'en' || l.code in TABLES)
+export const LANGUAGES = CATALOG.filter((l) => l.code === 'en' || !!file(l.code))
+
+/** Reads `code`'s table, once (English has none). Until it's there, tr() answers in English. */
+export async function loadLang(code: Lang): Promise<void> {
+  const load = file(code)
+  if (TABLES[code] || !load) return
+  const table = await load()
+  TABLES[code] = code === 'fr' ? french(table) : table
+}
 
 /** French typography: no-break space before : ; ? ! and inside « ». */
 function french(table: Record<string, string>): Record<string, string> {

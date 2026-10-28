@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest'
-import { useLang } from '../../shared/i18n/i18n'
+import { loadLang, useLang } from '../../shared/i18n/i18n'
 import { searchSettings, SETTINGS_INDEX } from './search'
 
 const labels = (q: string) => searchSettings(q).map((e) => e.label)
@@ -33,7 +33,8 @@ describe('settings search', () => {
   describe('in French', () => {
     afterEach(() => useLang.setState({ lang: 'en' }))
 
-    it('finds French labels and keywords, English still works', () => {
+    it('finds French labels and keywords, English still works', async () => {
+      await loadLang('fr')
       useLang.setState({ lang: 'fr' })
       expect(labels('fondu')[0]).toBe('Fade between songs')
       expect(labels('langue')).toContain('Language')

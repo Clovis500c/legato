@@ -2,7 +2,7 @@ import { readFileSync, readdirSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { afterEach, describe, expect, it } from 'vitest'
-import { CATALOG, LANGUAGES, resolveLang, tr, trn, useLang } from './i18n'
+import { CATALOG, LANGUAGES, loadLang, resolveLang, tr, trn, useLang } from './i18n'
 
 const LOCALES = import.meta.glob<Record<string, string>>('./locales/*.ts', { eager: true, import: 'default' })
 
@@ -72,12 +72,14 @@ describe('i18n', () => {
     expect(LANGUAGES.map((l) => l.code)).toContain('fr')
   })
 
-  it('fills slots and counts by the language rules', () => {
+  it('fills slots and counts by the language rules', async () => {
     expect(tr('Hello {name}', { name: 'A' })).toBe('Hello A')
     expect(trn(1, '{n} song', '{n} songs')).toBe('1 song')
     expect(trn(0, '{n} song', '{n} songs')).toBe('0 songs')
     expect(trn(1674, '{n} song', '{n} songs')).toBe('1,674 songs')
+    await loadLang('fr')
     useLang.setState({ lang: 'fr' })
+    expect(tr('Home')).toBe('Accueil')
     // French: 0 and 1 singular; untranslated text falls back to English.
     expect(trn(0, 'zzz {n} one', 'zzz {n} other')).toBe('zzz 0 one')
     expect(trn(1674, 'zzz {n} one', 'zzz {n} other')).toBe('zzz 1 674 other')
