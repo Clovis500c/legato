@@ -229,6 +229,8 @@ export interface Settings {
   /** Webview zoom, percent. */
   zoom: number
   readout: boolean
+  /** Moon (sleep timer) next to the volume; the timer stays in the player's menu. */
+  sleepButton: boolean
   volume: 'knob' | 'bar'
   tuner: boolean
   columns: Column[]
@@ -273,6 +275,8 @@ export interface Settings {
   miniWidth: number
   /** Fade between songs, seconds (0 = off). */
   crossfade: number
+  /** Songs longer than this many minutes skipped as the queue moves on (0 = off). */
+  skipLong: number
   fade: FadeSettings
   /** YouTube subtitles (off: hidden even when the Google account turns them on). */
   subtitles: boolean
@@ -345,6 +349,7 @@ export const DEFAULTS: Settings = {
   textSize: 'normal',
   zoom: 100,
   readout: true,
+  sleepButton: true,
   volume: 'bar',
   tuner: false,
   // Date added on demand (unknown for songs added before 2026-10-23).
@@ -373,6 +378,7 @@ export const DEFAULTS: Settings = {
   miniPlace: 'sidebar',
   miniWidth: 356,
   crossfade: 2,
+  skipLong: 0,
   fade: { advanced: false, out: 2, in: 2, outCurve: 'scurve', inCurve: 'scurve', skip: true, pause: 0 },
   subtitles: false,
   hiddenPlaylists: [],
@@ -507,6 +513,7 @@ export function sanitize(raw: unknown): Settings {
     textSize: pick(r.textSize, Object.keys(TEXT_SCALES) as TextSize[], DEFAULTS.textSize),
     zoom: typeof r.zoom === 'number' && Number.isFinite(r.zoom) ? Math.min(125, Math.max(90, Math.round(r.zoom / 5) * 5)) : DEFAULTS.zoom,
     readout: typeof r.readout === 'boolean' ? r.readout : DEFAULTS.readout,
+    sleepButton: typeof r.sleepButton === 'boolean' ? r.sleepButton : DEFAULTS.sleepButton,
     volume: pick(r.volume, ['knob', 'bar'] as const, DEFAULTS.volume),
     tuner: typeof r.tuner === 'boolean' ? r.tuner : DEFAULTS.tuner,
     columns,
@@ -534,6 +541,7 @@ export function sanitize(raw: unknown): Settings {
     miniPlace: pick(r.miniPlace, ['sidebar', 'float'] as const, DEFAULTS.miniPlace),
     miniWidth: typeof r.miniWidth === 'number' && Number.isFinite(r.miniWidth) ? Math.min(960, Math.max(356, Math.round(r.miniWidth))) : DEFAULTS.miniWidth,
     crossfade: typeof r.crossfade === 'number' && Number.isFinite(r.crossfade) ? Math.min(12, Math.max(0, Math.round(r.crossfade))) : DEFAULTS.crossfade,
+    skipLong: typeof r.skipLong === 'number' && Number.isFinite(r.skipLong) ? Math.min(60, Math.max(0, Math.round(r.skipLong))) : DEFAULTS.skipLong,
     fade: sanitizeFade(r.fade),
     subtitles: typeof r.subtitles === 'boolean' ? r.subtitles : DEFAULTS.subtitles,
     homeSections: sanitizeHome(r.homeSections),

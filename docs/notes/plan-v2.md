@@ -473,6 +473,9 @@ Original plan:
       one; the two embeds now swap roles, the old one stopped, never removed while YouTube plays.
 - [x] Play from the tray after a long pause did nothing until the window opened (2026-10-28): the suspended page
       stayed frozen after `Resume()`; any key / tray / shortcut now holds the page `visible` until the music moves.
+- [x] Right-click menus ran past the window's foot (2026-10-28): placed from their size during the pop-in animation.
+- [x] Settings: hide the sleep timer's moon (Appearance › Hi-Fi extras; the player's menu keeps the timer) and Skip long
+      songs (Playback › Up next, 0–60 min): the queue passes over longer songs; a length learned once playing skips too.
 - [x] Interactive preview for visual settings (background blur, dimming, motion, …): small live sample of the effect.
 - [x] Artists and Albums: filter and sort, like songs in playlists.
 - [x] Mixes: better algorithm, more mixes; covers as a 2×2 grid like playlists, setting in Advanced: grid / single

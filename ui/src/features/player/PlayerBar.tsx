@@ -224,6 +224,7 @@ export function PlayerBar() {
   const onSpotify = usePlayer((s) => s.onSpotify)
   const setFull = usePlayer((s) => s.setFull)
   const readout = useSettings((s) => s.settings.readout)
+  const sleepButton = useSettings((s) => s.settings.sleepButton)
   const track = useNowTrack()
   useLiveSync()
   // Engine plays local files and previews: poll it. Spotify Connect: poll its API, slower (rate limits).
@@ -298,7 +299,7 @@ export function PlayerBar() {
             <SourceIcon source={viaSource[now.via]} size={17} />
           </span>
         )}
-        <SleepButton />
+        {sleepButton && <SleepButton />}
         <VolumeControl />
         <RoundButton label={tr('Now playing, full screen')} disabled={!now} onClick={() => setFull(true)}>
           <ArrowsOutSimple size={15} />

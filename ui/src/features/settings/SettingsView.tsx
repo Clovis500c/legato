@@ -122,7 +122,7 @@ function Appearance() {
   const playing = usePlayer((p) => !!p.now)
   const col = (c: Column) => (s.columns.includes(c) ? s.columns.filter((x) => x !== c) : COLUMNS.filter((x) => x === c || s.columns.includes(x)))
   const labels: Record<Column, string> = { album: msg('Album'), sources: msg('Sources'), plays: msg('Plays'), added: msg('Date added'), duration: msg('Duration') }
-  const reset: Partial<Settings> = { accent: DEFAULTS.accent, covers: DEFAULTS.covers, density: DEFAULTS.density, zoom: DEFAULTS.zoom, readout: DEFAULTS.readout, volume: DEFAULTS.volume, tuner: DEFAULTS.tuner, columns: DEFAULTS.columns, tint: DEFAULTS.tint, immersive: DEFAULTS.immersive, miniPlayer: DEFAULTS.miniPlayer, font: DEFAULTS.font, motion: DEFAULTS.motion, sidebarCounts: DEFAULTS.sidebarCounts, listCovers: DEFAULTS.listCovers, stage: DEFAULTS.stage, miniSpot: DEFAULTS.miniSpot, miniPlace: DEFAULTS.miniPlace, textSize: DEFAULTS.textSize }
+  const reset: Partial<Settings> = { accent: DEFAULTS.accent, covers: DEFAULTS.covers, density: DEFAULTS.density, zoom: DEFAULTS.zoom, readout: DEFAULTS.readout, sleepButton: DEFAULTS.sleepButton, volume: DEFAULTS.volume, tuner: DEFAULTS.tuner, columns: DEFAULTS.columns, tint: DEFAULTS.tint, immersive: DEFAULTS.immersive, miniPlayer: DEFAULTS.miniPlayer, font: DEFAULTS.font, motion: DEFAULTS.motion, sidebarCounts: DEFAULTS.sidebarCounts, listCovers: DEFAULTS.listCovers, stage: DEFAULTS.stage, miniSpot: DEFAULTS.miniSpot, miniPlace: DEFAULTS.miniPlace, textSize: DEFAULTS.textSize }
   return (
     <div className="flex flex-col gap-7">
       <div className="flex justify-end">
@@ -231,6 +231,9 @@ function Appearance() {
         <div className="mt-3 rounded-xl border border-line bg-raised">
           <Row setting="readout" label={msg('Source icon')} sub={tr('Where the song plays from, next to the volume')} preview={<SourceIconScene readout={s.readout} />}>
             <Toggle label={tr('Source icon')} checked={s.readout} onChange={(readout) => update({ readout })} />
+          </Row>
+          <Row setting="sleepButton" label={msg('Sleep timer button')} sub={tr('Moon next to the volume (the timer stays in the player’s menu)')}>
+            <Toggle label={tr('Sleep timer button')} checked={s.sleepButton} onChange={(sleepButton) => update({ sleepButton })} />
           </Row>
           <Row label={msg('Volume control')} preview={<VolumeScene volume={s.volume} />}>
             <Segmented label={tr('Volume control')} value={s.volume} onChange={(volume) => update({ volume })} options={[{ value: 'knob', label: tr('Knob') }, { value: 'bar', label: tr('Bar') }]} />
@@ -471,6 +474,13 @@ function PlaybackSection() {
         <div className="rounded-xl border border-line bg-raised">
           <Row label={msg('Play with')} sub={tr('On a track row')}>
             <Segmented label={tr('Play with')} value={s.clickToPlay} onChange={(clickToPlay) => update({ clickToPlay })} options={[{ value: 'single', label: tr('One click') }, { value: 'double', label: tr('Double-click') }]} />
+          </Row>
+        </div>
+      </Group>
+      <Group title={msg('Up next')}>
+        <div className="rounded-xl border border-line bg-raised">
+          <Row setting="skipLong" label={msg('Skip long songs')} sub={s.skipLong ? tr('Songs over {n} min are skipped as the queue moves on', { n: s.skipLong }) : tr('Off')}>
+            <input type="range" aria-label={tr('Skip long songs')} min={0} max={60} step={1} value={s.skipLong} onChange={(e) => update({ skipLong: +e.target.value })} className="bar w-40" style={{ backgroundImage: `linear-gradient(to right, var(--ink) ${(s.skipLong / 60) * 100}%, var(--line) 0)` }} />
           </Row>
         </div>
       </Group>

@@ -5,7 +5,7 @@ import type { Box } from '../../shared/artbox'
 import { region } from '../../shared/format'
 import { endListen, progress, startListen } from './listens'
 import { demoGain, demoLength, fadeGain, NO_FADE, overlapDue, type Fade } from './fade'
-import { insertAt, moveInOrder, moveToSlot, nextIndex, playOrder, queued, type Repeat } from './queue'
+import { insertAt, moveInOrder, moveToSlot, nextIndex, playOrder, queued, tooLong, type Repeat } from './queue'
 import { vias, type Via } from './sources'
 import { closeWatch, openWatch, sendWatch, watching } from './watch'
 import { ytPost, type YtUpdate } from './youtube'
@@ -41,6 +41,8 @@ interface PlayerState {
   repeat: Repeat
   /** Fades between songs and on pause (Settings › Player, Advanced). */
   fade: Fade
+  /** Settings › Playback › Skip long songs: minutes, 0 = off. */
+  skipLong: number
   /** Current track started on its own after the previous one (or a skip, if asked): fades in. */
   fadeIn: boolean
   /** Where the current item started (resume), ms. */
@@ -147,6 +149,8 @@ let frame: HTMLIFrameElement | null = null
 export const bindFrame = (el: HTMLIFrameElement | null) => void (frame = el)
 // Other embed stopped, kept for the next overlap.
 const stopTail = (t: PlayerState['tail']) => t && { ...t, done: true }
+// The queue passes over it: nothing to play it with, or longer than Skip long songs (known lengths only).
+const passOver = (t: LibraryTrack, longMin: number) => !vias(t, spotifyOn()).length || tooLong(t.durationMs, longMin)
 
 // Engine status lags commands: until it reports one of these paths, statuses are stale. [] = ignore all.
 let expect: string[] | null = null
@@ -222,6 +226,8 @@ let ytState: number | undefined
 // New video asked: the embed still reports the old one for a moment (late times, its duration). Ignored until a time
 // near the new start comes, else the fade in jumps to full volume (review 2026-10-23: skips started loud).
 let ytFresh = false
+// Current song came by the queue moving on (song ended): Skip long songs applies once its length is known.
+let reachedAuto = false
 let stuckTimer: ReturnType<typeof setTimeout> | undefined
 function watchForStuck(playId: number, wait = 10_000) {
   clearTimeout(stuckTimer)
@@ -273,6 +279,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
   shuffle: false,
   repeat: 'off',
   fade: NO_FADE,
+  skipLong: 0,
   fadeIn: false,
   startAt: 0,
   playId: 0,
@@ -348,6 +355,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     const how = via ?? (t && vias(t, spotifyOn())[0])
     if (!t || !how || !vias(t, spotifyOn()).includes(how)) return
     const mine = ++seq
+    reachedAuto = auto
     // Watch page belongs to one video: anything else plays elsewhere.
     if (how !== 'youtube') closeWatch()
     // Leaving Spotify: pause the user's Spotify app.
@@ -494,7 +502,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     if (auto && delta > 0 && beforeNext?.()) return
     const { now, list, index, order, repeat } = get()
     if (now && !now.trackId) return void send({ type: delta > 0 ? 'next' : 'prev' })
-    const i = nextIndex(order, index, delta, repeat, auto, (j) => !vias(list[j], spotifyOn()).length)
+    const i = nextIndex(order, index, delta, repeat, auto, (j) => passOver(list[j], get().skipLong))
     if (i !== null) return void get().playAt(i, undefined, { auto })
     if (delta <= 0) return
     // Up next ran out: similar songs when the setting says so (autoplay.ts), else stop.
@@ -630,8 +638,7 @@ function overlap() {
   const p = usePlayer.getState()
   const { now, list, order, index, repeat } = p
   if (p.tail?.done === false || !p.playing || ytFresh || stopAtEnd || now?.via !== 'youtube' || !now.youtubeId || watching() || !overlapDue(p.positionMs, p.durationMs, p.fade)) return
-  const skip = (j: number) => !vias(list[j], spotifyOn()).length
-  const i = nextIndex(order, index, 1, repeat, true, skip)
+  const i = nextIndex(order, index, 1, repeat, true, (j) => passOver(list[j], p.skipLong))
   const next = i === null ? undefined : (useStore.getState().tracks.find((x) => x.id === list[i].id) ?? list[i])
   if (i === null || i === index || !next || vias(next, spotifyOn())[0] !== 'youtube' || next.ids.youtube === now.youtubeId) return
   if (beforeNext?.()) return
@@ -647,6 +654,17 @@ function overlap() {
 
 usePlayer.subscribe((s, prev) => {
   if (s.playId !== prev.playId && s.now?.via === 'youtube') watchForStuck(s.playId)
+})
+
+// Length known once playing (some YouTube cards come without): too long, and the queue got here on its own = next. The
+// queue keeps the length, so a second pass skips it before it starts (no endless loop on repeat).
+usePlayer.subscribe((s, prev) => {
+  const t = s.list[s.index]
+  if (!t || s.now?.trackId !== t.id || s.playId !== prev.playId || prev.durationMs !== null || s.durationMs === null || !reachedAuto || s.repeat === 'one') return
+  const known = { ...t, durationMs: s.durationMs }
+  if (!passOver(known, s.skipLong)) return
+  usePlayer.setState({ list: s.list.map((x, j) => (j === s.index ? known : x)) })
+  s.step(1, true)
 })
 
 /** Where the YouTube iframe should sit. Null = mini player. Moving the iframe in DOM would reload it. */

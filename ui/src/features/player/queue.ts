@@ -23,6 +23,9 @@ export function queued(order: number[], index: number, added: number[], next: bo
  * Next list index to try from `index` in `order`, or null at the end. auto = track ended by itself
  * (repeat one replays it; a manual skip still moves on). skip(i) = not playable here.
  */
+/** Settings › Playback › Skip long songs (minutes, 0 = off): known lengths only. */
+export const tooLong = (durationMs: number | null, minutes: number) => minutes > 0 && (durationMs ?? 0) > minutes * 60_000
+
 export function nextIndex(order: number[], index: number, delta: 1 | -1, repeat: Repeat, auto: boolean, skip: (i: number) => boolean = () => false): number | null {
   if (auto && repeat === 'one') return index
   const at = order.indexOf(index)

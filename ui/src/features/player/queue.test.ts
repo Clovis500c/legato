@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { insertAt, moveInOrder, moveToSlot, nextIndex, playOrder, queued, queueRows, repeatsAhead } from './queue'
+import { insertAt, moveInOrder, moveToSlot, nextIndex, playOrder, queued, queueRows, repeatsAhead, tooLong } from './queue'
 
 describe('playOrder', () => {
   it('keeps list order, or shuffles with the current track first', () => {
@@ -22,6 +22,12 @@ describe('queued', () => {
 
 describe('nextIndex', () => {
   const order = [2, 0, 3, 1]
+  it('passes over songs longer than Skip long songs, unknown lengths play', () => {
+    const lengths = [180_000, 3_600_000, null, 600_001]
+    expect(nextIndex([0, 1, 2, 3], 0, 1, 'off', true, (j) => tooLong(lengths[j], 10))).toBe(2)
+    expect(nextIndex([0, 1, 2, 3], 2, 1, 'all', true, (j) => tooLong(lengths[j], 10))).toBe(0)
+    expect(tooLong(3_600_000, 0)).toBe(false)
+  })
   it('walks the order and stops at the end without repeat', () => {
     expect(nextIndex(order, 2, 1, 'off', false)).toBe(0)
     expect(nextIndex(order, 1, 1, 'off', true)).toBeNull()
