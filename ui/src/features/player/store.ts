@@ -49,9 +49,13 @@ interface PlayerState {
   playId: number
   /** Restored paused (after an update): the first item loads without playing. */
   hold: boolean
-  /** Song fading out in its own embed while the next one plays (overlap). key = its frame's. */
-  tail: { key: number; videoId: string } | null
-  /** Key of the playing embed: a new one per overlap, the old one plays on as the tail. */
+  /**
+   * The other embed (overlap): its song fading out while the next one plays, then stopped (done) and kept for the next
+   * overlap. Never unmounted while a YouTube song plays: removing an embed stalled the other one's video ~15 s, sound
+   * gone after the fade (Chromium, 2026-10-28). key = its frame's.
+   */
+  tail: { key: number; videoId: string; done: boolean } | null
+  /** Key of the playing embed; the two embeds swap roles at each overlap. */
   frameKey: number
   toggleShuffle: () => void
   /** off → all → one → off. */
@@ -141,6 +145,8 @@ export const stopAfterSong = (f: (() => void) | null) => void (stopAtEnd = f)
 // Embed iframe, bound by PlayerBar.
 let frame: HTMLIFrameElement | null = null
 export const bindFrame = (el: HTMLIFrameElement | null) => void (frame = el)
+// Other embed stopped, kept for the next overlap.
+const stopTail = (t: PlayerState['tail']) => t && { ...t, done: true }
 
 // Engine status lags commands: until it reports one of these paths, statuses are stale. [] = ignore all.
 let expect: string[] | null = null
@@ -351,7 +357,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     const base: NowPlaying = { title: t.title, artist: t.artist, trackId: t.id, via: how }
     // Preview: 30 s from Apple, no resume point.
     const start = how === 'preview' ? 0 : from
-    set({ index, playId: get().playId + 1, playing: !hold, hold, positionMs: start, startAt: start, durationMs: t.durationMs, upcoming: [], tail: null, fadeIn: (auto || get().fade.skip) && get().fade.in > 0 })
+    set({ index, playId: get().playId + 1, playing: !hold, hold, positionMs: start, startAt: start, durationMs: t.durationMs, upcoming: [], tail: how === 'youtube' ? stopTail(get().tail) : null, fadeIn: (auto || get().fade.skip) && get().fade.in > 0 })
     sent = -1
 
     if (how === 'youtube') {
@@ -441,7 +447,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
       else if (now.via === 'spotify') void spotify({ type: playing ? 'pause' : 'resume' })
       else send({ type: 'toggle' })
     }
-    set({ playing: !playing, ...(playing && { tail: null }) })
+    set({ playing: !playing, ...(playing && { tail: stopTail(get().tail) }) })
     // Fade on pause: down, then pause. On play: play silent, then up. Spotify: no volume control fast enough.
     if (!fade.pause || now.via === 'spotify') return pause()
     if (playing) return ramp((t) => 1 - t, fade.pause, pause)
@@ -623,17 +629,20 @@ export const usePlayer = create<PlayerState>((set, get) => ({
 function overlap() {
   const p = usePlayer.getState()
   const { now, list, order, index, repeat } = p
-  if (p.tail || !p.playing || ytFresh || stopAtEnd || now?.via !== 'youtube' || !now.youtubeId || watching() || !overlapDue(p.positionMs, p.durationMs, p.fade)) return
+  if (p.tail?.done === false || !p.playing || ytFresh || stopAtEnd || now?.via !== 'youtube' || !now.youtubeId || watching() || !overlapDue(p.positionMs, p.durationMs, p.fade)) return
   const skip = (j: number) => !vias(list[j], spotifyOn()).length
   const i = nextIndex(order, index, 1, repeat, true, skip)
   const next = i === null ? undefined : (useStore.getState().tracks.find((x) => x.id === list[i].id) ?? list[i])
   if (i === null || i === index || !next || vias(next, spotifyOn())[0] !== 'youtube' || next.ids.youtube === now.youtubeId) return
   if (beforeNext?.()) return
   endListen(true)
+  // In the tray: a new embed's video never starts in a hidden page (Chromium); a reused one has played there before.
+  if (!p.tail) void api.holdPage().catch(() => {})
   // Old embed plays on: commands meant for the new song go nowhere until its embed binds.
   bindFrame(null)
   void p.playAt(i, undefined, { auto: true })
-  usePlayer.setState({ tail: { key: p.frameKey, videoId: now.youtubeId }, frameKey: p.frameKey + 1 })
+  // The stopped embed takes the next song into its running player; the first overlap makes it.
+  usePlayer.setState({ tail: { key: p.frameKey, videoId: now.youtubeId, done: false }, frameKey: p.tail?.key ?? p.frameKey + 1 })
 }
 
 usePlayer.subscribe((s, prev) => {

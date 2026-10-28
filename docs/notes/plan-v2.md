@@ -469,6 +469,10 @@ Original plan:
       still fade out, then in.
 - [x] Update relaunch played nothing (2026-10-26): from the tray the page was never shown (Chromium holds its media),
       and songs not in the library (radio, similar songs) were lost from the saved queue.
+- [x] Fade overlap: sound gone after the fade, back ~15 s later (2026-10-28): removing the old embed stalled the new
+      one; the two embeds now swap roles, the old one stopped, never removed while YouTube plays.
+- [x] Play from the tray after a long pause did nothing until the window opened (2026-10-28): the suspended page
+      stayed frozen after `Resume()`; any key / tray / shortcut now holds the page `visible` until the music moves.
 - [x] Interactive preview for visual settings (background blur, dimming, motion, …): small live sample of the effect.
 - [x] Artists and Albums: filter and sort, like songs in playlists.
 - [x] Mixes: better algorithm, more mixes; covers as a 2×2 grid like playlists, setting in Advanced: grid / single

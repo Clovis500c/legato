@@ -40,9 +40,9 @@ function viaTitle(via: string, path?: string) {
  * YouTube rules: player stays visible, min 200×200. Follows the Now Playing slot when open. One embed for a whole run
  * of YouTube tracks: the next video is loaded into the player already running (loadVideoById), no page reload, so
  * songs follow each other without the embed's loading time. Overlapping songs: tail = the old embed, unseen, fading out
- * on its own until its video ends.
+ * on its own until its video ends; idle = stopped there, waiting to take the next overlap's song.
  */
-function YouTubeFrame({ videoId, tail = false }: { videoId: string; tail?: boolean }) {
+function YouTubeFrame({ videoId, tail = false, idle = false }: { videoId: string; tail?: boolean; idle?: boolean }) {
   const onYoutube = usePlayer((s) => s.onYoutube)
   const rect = useVideoSlot((s) => s.rect)
   const hidden = useVideoSlot((s) => s.hidden)
@@ -67,8 +67,9 @@ function YouTubeFrame({ videoId, tail = false }: { videoId: string; tail?: boole
       const u = e.source === frame.current?.contentWindow ? parseYt(e.origin, e.data) : undefined
       if (!u) return
       if (isTail.current) {
-        if (u.state === 0 || u.error !== undefined) return usePlayer.setState({ tail: null })
-        const { volume, fade } = usePlayer.getState()
+        const { tail: t, volume, fade } = usePlayer.getState()
+        if (!t || t.done) return
+        if (u.state === 0 || u.error !== undefined) return usePlayer.setState({ tail: { ...t, done: true } })
         if (u.time !== undefined && u.duration) ytPost(frame.current, 'command', 'setVolume', [Math.round(volume * fadeGain(u.time * 1000, u.duration * 1000, fade, false) * 100)])
         return
       }
@@ -119,12 +120,21 @@ function YouTubeFrame({ videoId, tail = false }: { videoId: string; tail?: boole
     },
     [],
   )
-  // Next video: into the running player. Not loaded yet: onLoad sends it.
+  // Song over or cut short: stopped (frees its video), the embed stays. Taken back, it loads its song, even this one.
   useEffect(() => {
-    if (shown.current === videoId || !ready.current) return
+    if (!idle) return
+    ytPost(frame.current, 'command', 'stopVideo')
+    shown.current = ''
+  }, [idle])
+  // Next video: into the running player. Not loaded yet: onLoad sends it. Volume and live settings first: an embed
+  // taken back from idle has its last song's.
+  useEffect(() => {
+    if (shown.current === videoId || !ready.current || tail) return
     shown.current = videoId
+    usePlayer.getState().applyVolume(true)
+    sendLive()
     ytPost(frame.current, 'command', 'loadVideoById', [videoId, usePlayer.getState().startAt / 1000])
-  }, [videoId])
+  }, [videoId, tail])
 
   return (
     <iframe
@@ -258,10 +268,11 @@ export function PlayerBar() {
 
   return (
     <footer onContextMenu={onMenu(playerMenu)} className="flex h-25 shrink-0 items-center justify-between gap-6 border-t border-line bg-panel px-6 py-2">
-      {/* One list, tail first: keys keep each iframe in place (a moved iframe reloads). */}
-      {[...(tail ? [tail] : []), ...(now?.youtubeId ? [{ key: frameKey, videoId: now.youtubeId }] : [])].map((f) => (
-        <YouTubeFrame key={f.key} videoId={f.videoId} tail={f === tail} />
-      ))}
+      {/* In key order: each iframe keeps its place as the two swap roles (a moved iframe reloads). */}
+      {now?.youtubeId &&
+        [...(tail ? [tail] : []), { key: frameKey, videoId: now.youtubeId }]
+          .sort((a, b) => a.key - b.key)
+          .map((f) => <YouTubeFrame key={f.key} videoId={f.videoId} tail={f === tail} idle={f === tail && !!tail?.done} />)}
 
       <button disabled={!now} onClick={() => setFull(true)} title={now ? tr('Open Now Playing') : undefined} className="flex w-85 min-w-0 items-center gap-3.5 text-left">
         {/* New song: its cover fades in. */}

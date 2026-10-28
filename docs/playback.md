@@ -96,6 +96,10 @@ Status on 2026-10-16. YouTube, local files and Apple Music previews: done and te
 - Fades between songs: volume × `fadeGain` (smoothstep), only on transitions that happen on their own; Spotify none.
   YouTube → YouTube overlap: as the fade out begins, the next song starts in a second embed; the old one plays on
   unseen as the tail (`tail` in the store), fading itself out until its video ends. Watch page, other sources: no overlap.
+  The tail is then stopped, never unmounted: removing an embed while the other plays stalls the other one's video
+  decoder for ~15 s with data buffered (measured 2026-10-28, also with `about:blank`). The two embeds swap roles at
+  each overlap; the next song loads into the stopped one. In the tray the first one is born in a hidden page, where
+  Chromium never starts its video: the page is held `visible` until the music moves (`hold_page`).
 - Driven by `postMessage`, the protocol `iframe_api` uses internally (`listening`, `command`, `infoDelivery`, `onError`).
   We don't load `iframe_api`: a remote script in the app's origin would get access to Tauri IPC.
 - CSP: only addition, `frame-src https://www.youtube.com`.

@@ -658,6 +658,8 @@ export const api = {
   /** Raw JSON; validated by features/player/session. */
   loadSession: () => invoke<unknown>('load_session'),
   saveSession: (session: object) => invoke<void>('save_session', { session }),
+  /** A new player is about to start: the hidden window's page stays `visible` until the music moves. */
+  holdPage: () => invoke<void>('hold_page'),
   /** Windows media panel; null = nothing playing. Cover: local file's (trackId), else `art` URL. */
   mediaUpdate: (now: MediaNow | null, trackId: number | null, art: string | null) => invoke<void>('media_update', { now, trackId, art }),
 }
