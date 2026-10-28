@@ -23,6 +23,14 @@ pub use control::{Control, Levels, Live};
 pub use meter::Meter;
 pub use processor::Processor;
 
+/// Under -400 dB: 0. Filters and feedback loops decay through denormal floats once the music stops, and the CPU runs
+/// those ~50× slower (2026-10-28: 60 s of silence after a song cost the meter 1.4 s instead of 21 ms, the reverb
+/// 3.3 s instead of 77 ms). Freeverb's own "undenormalise", in every recursive state.
+#[inline]
+pub(crate) fn flush(x: f32) -> f32 {
+    if x.abs() < 1e-20 { 0.0 } else { x }
+}
+
 /// dB → linear gain.
 pub fn db_to_gain(db: f32) -> f32 {
     10f32.powf(db / 20.0)

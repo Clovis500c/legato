@@ -120,7 +120,7 @@ impl Chain {
                 // Peak envelope, stereo-linked, soft knee of 6 dB.
                 let peak = l.abs().max(r.abs());
                 let k = if peak > self.env { self.att } else { self.rel };
-                self.env += (peak - self.env) * k;
+                self.env = crate::flush(self.env + (peak - self.env) * k);
                 let level = 20.0 * self.env.max(1e-6).log10();
                 let over = level - threshold;
                 let cut = if over <= -3.0 {
@@ -143,7 +143,7 @@ impl Chain {
             if e.echo.mix > 0.0 {
                 let len = self.echo.len();
                 let back = self.echo[(self.echo_i + len - echo_len) % len];
-                self.echo[self.echo_i] = [l + back[0] * e.echo.feedback, r + back[1] * e.echo.feedback];
+                self.echo[self.echo_i] = [crate::flush(l + back[0] * e.echo.feedback), crate::flush(r + back[1] * e.echo.feedback)];
                 self.echo_i = (self.echo_i + 1) % len;
                 l += back[0] * e.echo.mix;
                 r += back[1] * e.echo.mix;

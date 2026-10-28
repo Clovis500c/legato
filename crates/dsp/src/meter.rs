@@ -3,7 +3,7 @@
 //! (400 ms), fast (50 ms) and peak drive the cover animation and the meters. Until a window is full (start, seek), its
 //! mean covers what was heard so far instead of rising from silence: the first seconds read right.
 
-use crate::Biquad;
+use crate::{Biquad, flush};
 
 const FAST_S: f32 = 0.05;
 const MOMENTARY_S: f32 = 0.4;
@@ -64,10 +64,10 @@ impl Meter {
         // Channel weights are 1 for left / right (BS.1770). Plain average of all so far until a window is full.
         self.n = self.n.saturating_add(1);
         let so_far = 1.0 / self.n as f32;
-        self.fast += (sum - self.fast) * self.a_fast.max(so_far);
-        self.momentary += (sum - self.momentary) * self.a_mom.max(so_far);
-        self.short += (sum - self.short) * self.a_short.max(so_far);
-        self.peak = (self.peak * self.fall).max(peak);
+        self.fast = flush(self.fast + (sum - self.fast) * self.a_fast.max(so_far));
+        self.momentary = flush(self.momentary + (sum - self.momentary) * self.a_mom.max(so_far));
+        self.short = flush(self.short + (sum - self.short) * self.a_short.max(so_far));
+        self.peak = flush(self.peak * self.fall).max(peak);
     }
 
     pub fn fast_lufs(&self) -> f32 {

@@ -49,7 +49,7 @@ impl Shadow {
     fn run(&mut self, x: f32) -> f32 {
         let y = self.b0 * x + self.b1 * self.x1 - self.a1 * self.y1;
         self.x1 = x;
-        self.y1 = y;
+        self.y1 = crate::flush(y);
         y
     }
 }

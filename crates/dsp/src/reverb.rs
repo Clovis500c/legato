@@ -39,8 +39,8 @@ impl Comb {
     #[inline]
     fn run(&mut self, x: f32, feedback: f32, damp: f32) -> f32 {
         let out = self.buf[self.i];
-        self.store = out * (1.0 - damp) + self.store * damp;
-        self.buf[self.i] = x + self.store * feedback;
+        self.store = crate::flush(out * (1.0 - damp) + self.store * damp);
+        self.buf[self.i] = crate::flush(x + self.store * feedback);
         self.i = (self.i + 1) % self.buf.len();
         out
     }
@@ -59,7 +59,7 @@ impl Allpass {
     #[inline]
     fn run(&mut self, x: f32) -> f32 {
         let delayed = self.buf[self.i];
-        self.buf[self.i] = x + delayed * ALLPASS_GAIN;
+        self.buf[self.i] = crate::flush(x + delayed * ALLPASS_GAIN);
         self.i = (self.i + 1) % self.buf.len();
         delayed - x
     }
@@ -126,6 +126,16 @@ impl Reverb {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn its_tail_ends_in_zeros_not_denormals() {
+        let mut r = Reverb::new(48_000.0);
+        let (fb, dmp) = (feedback(0.7), damp(0.4));
+        let _ = r.run(1.0, 1.0, fb, dmp);
+        let tail: Vec<[f32; 2]> = (0..48_000 * 20).map(|_| r.run(0.0, 0.0, fb, dmp)).collect();
+        assert!(tail.iter().flatten().all(|y| *y == 0.0 || y.is_normal()));
+        assert!(tail[tail.len() - 48_000..].iter().flatten().all(|y| *y == 0.0));
+    }
 
     #[test]
     fn a_click_rings_on_and_fades() {

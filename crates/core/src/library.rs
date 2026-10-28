@@ -7,8 +7,13 @@ use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet, HashMap};
 use std::path::Path;
 
+// WAL + synchronous NORMAL: one disk flush per checkpoint, not per write (each play, like, edit); safe from
+// corruption, a power cut may drop the last writes only. 16 MB page cache: whole-library reads stay in memory.
 const SCHEMA: &str = "
 PRAGMA journal_mode = WAL;
+PRAGMA synchronous = NORMAL;
+PRAGMA cache_size = -16000;
+PRAGMA temp_store = MEMORY;
 PRAGMA foreign_keys = ON;
 CREATE TABLE IF NOT EXISTS tracks (
   id INTEGER PRIMARY KEY,

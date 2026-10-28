@@ -24,6 +24,8 @@ const CEILING: f32 = 0.97;
 const RELEASE_S: f32 = 0.12;
 /// Levels sent this often, seconds.
 const REPORT_S: f32 = 0.02;
+/// Frames per gain step (the target is worked out once per step).
+const STEP_FRAMES: usize = 256;
 
 #[derive(Debug, Clone)]
 pub struct Processor {
@@ -98,11 +100,24 @@ impl Processor {
         if std::mem::take(&mut self.fresh) && self.live.adaptive {
             self.gain_db = control.last_gain().unwrap_or(0.0).clamp(MAX_CUT_DB, MAX_BOOST_DB);
         }
-        for frame in block.chunks_exact_mut(self.channels) {
+        let step = STEP_FRAMES * self.channels;
+        for part in block.chunks_mut(step) {
+            self.run(part, control);
+        }
+    }
+
+    fn run(&mut self, block: &mut [f32], control: &Control) {
+        // Loudness windows move over 400 ms and more: the target once per step (~5 ms), not per frame (2 logs, a pow).
+        // The gain still glides frame by frame: its curve over the step in closed form, the linear gain interpolated.
+        let frames = block.len() / self.channels;
+        let want = self.wanted_db();
+        let glide = if self.meter.heard_s() < START_S { self.glide_start } else { self.glide };
+        let from = db_to_gain(self.gain_db);
+        self.gain_db = want + (self.gain_db - want) * (1.0 - glide).powi(frames as i32);
+        let step = (db_to_gain(self.gain_db) - from) / frames.max(1) as f32;
+        for (i, frame) in block.chunks_exact_mut(self.channels).enumerate() {
             self.meter.frame(frame);
-            let glide = if self.meter.heard_s() < START_S { self.glide_start } else { self.glide };
-            self.gain_db += (self.wanted_db() - self.gain_db) * glide;
-            let g = db_to_gain(self.gain_db);
+            let g = from + step * (i + 1) as f32;
             let peak = frame.iter().fold(0f32, |m, x| m.max((x * g).abs()));
             // Limiter, only while boosting or edited (a cut can't clip; untouched otherwise): down at once, back up slowly.
             let need = if (g > 1.0 || self.edited) && peak > CEILING { CEILING / peak } else { 1.0 };
@@ -251,3 +266,8 @@ mod tests {
         assert!((p.gain_db - before).abs() < 0.01, "{before} → {}", p.gain_db);
     }
 }
+
+
+
+
+

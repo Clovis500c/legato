@@ -69,8 +69,10 @@ impl Biquad {
     #[inline]
     pub fn run(&mut self, x: f32) -> f32 {
         let y = self.b0 * x + self.z1;
-        self.z1 = self.b1 * x - self.a1 * y + self.z2;
-        self.z2 = self.b2 * x - self.a2 * y;
+        let (z1, z2) = (self.b1 * x - self.a1 * y + self.z2, self.b2 * x - self.a2 * y);
+        // Silent: both to 0 together (crate::flush). One alone throws the pair off balance: z1 then grew ×2 a sample
+        // and hovered near 1e-20, squares denormal forever.
+        (self.z1, self.z2) = if z1.abs() < 1e-20 && z2.abs() < 1e-20 { (0.0, 0.0) } else { (z1, z2) };
         y
     }
 
@@ -94,6 +96,16 @@ impl Biquad {
 mod tests {
     use super::*;
     use crate::gain_to_db;
+
+    #[test]
+    fn silence_ends_in_zeros_not_denormals() {
+        // Denormal floats run ~50× slower: a decaying filter lands on 0 and stays there.
+        let mut f = Biquad::highpass(48_000.0, 38.1, 0.5);
+        (0..4_800).for_each(|_| _ = f.run(0.5));
+        let tail: Vec<f32> = (0..48_000).map(|_| f.run(0.0)).collect();
+        assert!(tail.iter().all(|y| *y == 0.0 || y.is_normal()));
+        assert!(tail[24_000..].iter().all(|y| *y == 0.0));
+    }
 
     #[test]
     fn shapes_follow_the_cookbook() {

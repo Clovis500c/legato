@@ -184,6 +184,11 @@ never: downloading, extracting, recording or exporting a platform's audio, or to
   starts from the last one's gain; across the two YouTube embeds of an overlap the app sends it (`gain`, used once by
   the next track). Limiter (ceiling 0.97) only while boosting: off, the sound is bit-identical (test). Targets: Quiet
   −20, Normal −14, Loud −11 LUFS.
+- **CPU** (2026-10-28): every recursive state (filters, reverb, echo, compressor, meter) puts values under −400 dB
+  to 0. Decaying into denormal floats once the music stopped, the meter cost 1.4 s of CPU per minute of silence
+  (21 ms from a clean start) and the reverb 3.3 s (77 ms); now ~35 and ~100 ms. Biquads clear both states together
+  (one alone made the pair grow back). Adaptive Sound's target is worked out once per 256 frames, the gain still
+  glides per frame: 600 s of music 1.43 s → 0.49 s of CPU.
 - **Moving cover**: scale from the momentary loudness, up fast and down slow (`player/pulse.ts`), transform only,
   none with reduced motion or Animations off.
 - UI: `player/live.ts` (settings out, levels in, only from what plays now), `liveSync.ts`, `AdaptiveBar.tsx`.
