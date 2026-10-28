@@ -184,7 +184,7 @@ function Backdrop({ url, dim, motion }: { url?: string; dim: number; motion: boo
 }
 
 /** Settings Now Playing reads. */
-const pick = ({ tuner, tint, immersive, backdropBlur, backdropDim, backdropMotion, stage, upNext, volume, coverPulse, motion, lyrics, editor }: Settings) => ({ tuner, tint, immersive, backdropBlur, backdropDim, backdropMotion, stage, upNext, volume, coverPulse, motion, lyrics, editor })
+const pick = ({ tuner, tint, immersive, backdropBlur, backdropDim, backdropMotion, stage, upNext, volume, coverPulse, motion, lyrics, editor, readout }: Settings) => ({ tuner, tint, immersive, backdropBlur, backdropDim, backdropMotion, stage, upNext, volume, coverPulse, motion, lyrics, editor, readout })
 
 /** Tuner dial on the smooth clock: Now Playing itself doesn't re-render on every position report. */
 function Tuner() {
@@ -217,7 +217,7 @@ function PanelTabs({ upNext, lyrics, editor, next, className = '' }: { upNext: b
 export function NowPlaying() {
   const now = usePlayer((s) => s.now)
   const setFull = usePlayer((s) => s.setFull)
-  const { tuner, tint, immersive, backdropBlur, backdropDim, backdropMotion, stage, upNext, volume: volumeMode, coverPulse, motion, lyrics, editor } = useSettings(
+  const { tuner, tint, immersive, backdropBlur, backdropDim, backdropMotion, stage, upNext, volume: volumeMode, coverPulse, motion, lyrics, editor, readout } = useSettings(
     useShallow((s) => ({ ...pick(s.settings), theme: s.settings.theme, accent: s.settings.accent, customThemes: s.settings.customThemes })),
   )
   const update = useSettings((s) => s.update)
@@ -303,9 +303,7 @@ export function NowPlaying() {
             </div>
             {/* Side columns may shrink (small window): the volume bar narrows instead of running under Up next. */}
             <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center">
-              <span className="flex items-center gap-1">
-                <SourceBadge via={now.via} />
-              </span>
+              <span className="flex items-center gap-1">{readout && <SourceBadge via={now.via} />}</span>
               <Transport size="lg" />
               <div className="flex min-w-0 flex-col items-end gap-1">
                 <VolumeControl big />

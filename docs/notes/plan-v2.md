@@ -483,6 +483,12 @@ Original plan:
 - [x] Artist page with all their music (2026-10-28): YouTube Music's top songs (See all = every song), albums, singles,
       videos, playlists they're featured on and their own, under your own songs of them; works for artists not in the
       library and signed out. The artist's name is a link in every player (bar, sidebar, mini, Now Playing).
+- [x] Source icon turned off still showed in Now Playing (2026-10-28): hidden there too.
+- [ ] Adaptive Sound fought the custom fade between songs (2026-10-28).
+- [ ] Early endings (2026-10-28): videos whose song ends a few seconds before the video does (silence, outro):
+      detected, the fade and the next song start from the song's real end.
+- [ ] Settings › Appearance › Hi-Fi extras: a better menu (2026-10-28).
+- [ ] Optimize the front end and the back end as far as possible (2026-10-28).
 - [x] Interactive preview for visual settings (background blur, dimming, motion, …): small live sample of the effect.
 - [x] Artists and Albums: filter and sort, like songs in playlists.
 - [x] Mixes: better algorithm, more mixes; covers as a 2×2 grid like playlists, setting in Advanced: grid / single
