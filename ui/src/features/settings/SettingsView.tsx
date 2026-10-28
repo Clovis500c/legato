@@ -1,5 +1,5 @@
 import { ShortcutsSection } from './ShortcutsSection'
-import { ArrowCounterClockwise, ArrowsClockwise, Check, Copy, GearSix, Info, Keyboard, MagnifyingGlass, PaintBrush, Plugs, Plus, ShieldCheck, SpeakerHigh } from '@phosphor-icons/react'
+import { ArrowCounterClockwise, ArrowsClockwise, CaretDown, Check, Copy, GearSix, Info, Keyboard, MagnifyingGlass, PaintBrush, Plugs, Plus, ShieldCheck, SpeakerHigh } from '@phosphor-icons/react'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { useSettings } from '../../app/settings'
 import { useStore, type SettingsSection } from '../../app/store'
@@ -19,7 +19,7 @@ import { clearRecent } from '../search/recent'
 import { AboutSection } from './AboutSection'
 import { ThemeStudio } from './ThemeStudio'
 import { FadeEditor } from './FadeEditor'
-import { CountsScene, CoverShapes, DensityScene, FadeScene, ListCoversScene, MiniPlayerScene, MixCoverScene, MotionScene, NowPlayingScene, SourceIconScene, TunerScene, VolumeScene } from './previews'
+import { CountsScene, CoverShapes, DensityScene, FadeScene, ListCoversScene, MiniPlayerScene, MixCoverScene, MotionScene, NowPlayingScene, SleepButtonScene, SourceIconScene, TunerScene, VolumeScene } from './previews'
 import { searchSettings, type SettingEntry } from './search'
 import { msg, tr } from '../../shared/i18n/i18n'
 import { LanguagePicker } from './LanguagePicker'
@@ -226,23 +226,29 @@ function Appearance() {
           </Row>
         </div>
       </Group>
-      <details className="group/hifi">
-        <summary className="kicker cursor-pointer list-none py-1 hover:text-ink">{tr('Hi-Fi extras')} ›</summary>
-        <div className="mt-3 rounded-xl border border-line bg-raised">
-          <Row setting="readout" label={msg('Source icon')} sub={tr('Where the song plays from, next to the volume')} preview={<SourceIconScene readout={s.readout} />}>
-            <Toggle label={tr('Source icon')} checked={s.readout} onChange={(readout) => update({ readout })} />
-          </Row>
-          <Row setting="sleepButton" label={msg('Sleep timer button')} sub={tr('Moon next to the volume (the timer stays in the player’s menu)')}>
-            <Toggle label={tr('Sleep timer button')} checked={s.sleepButton} onChange={(sleepButton) => update({ sleepButton })} />
-          </Row>
-          <Row label={msg('Volume control')} preview={<VolumeScene volume={s.volume} />}>
-            <Segmented label={tr('Volume control')} value={s.volume} onChange={(volume) => update({ volume })} options={[{ value: 'knob', label: tr('Knob') }, { value: 'bar', label: tr('Bar') }]} />
-          </Row>
-          <Row setting="tuner" label={msg('Tuner scale')} sub={tr('Tuner-style progress bar in full screen')} preview={<TunerScene tuner={s.tuner} />}>
-            <Toggle label={tr('Tuner scale')} checked={s.tuner} onChange={(tuner) => update({ tuner })} />
-          </Row>
-        </div>
-      </details>
+      {/* Folded away like the hi-fi's own extras; a search result inside opens it (SettingsView). */}
+      <Group title={msg('Hi-Fi extras')}>
+        <details className="group/hifi rounded-xl border border-line bg-raised">
+          <summary className="flex cursor-pointer list-none items-center gap-3 rounded-xl px-4 py-3 text-xs text-ink-2 hover:text-ink [&::-webkit-details-marker]:hidden">
+            <span className="flex-1">{tr('The source icon, the sleep timer’s moon, the volume knob and the tuner scale')}</span>
+            <CaretDown size={14} className="shrink-0 transition-transform group-open/hifi:rotate-180" />
+          </summary>
+          <div className="border-t border-line-soft">
+            <Row setting="readout" label={msg('Source icon')} sub={tr('Where the song plays from, in the player bar and Now Playing')} preview={<SourceIconScene readout={s.readout} />}>
+              <Toggle label={tr('Source icon')} checked={s.readout} onChange={(readout) => update({ readout })} />
+            </Row>
+            <Row setting="sleepButton" label={msg('Sleep timer button')} sub={tr('Moon next to the volume (the timer stays in the player’s menu)')} preview={<SleepButtonScene sleepButton={s.sleepButton} />}>
+              <Toggle label={tr('Sleep timer button')} checked={s.sleepButton} onChange={(sleepButton) => update({ sleepButton })} />
+            </Row>
+            <Row setting="volume" label={msg('Volume control')} sub={tr('An amplifier knob, or a speaker and a bar')} preview={<VolumeScene volume={s.volume} />}>
+              <Segmented label={tr('Volume control')} value={s.volume} onChange={(volume) => update({ volume })} options={[{ value: 'knob', label: tr('Knob') }, { value: 'bar', label: tr('Bar') }]} />
+            </Row>
+            <Row setting="tuner" label={msg('Tuner scale')} sub={tr('Tuner-style progress bar in full screen')} preview={<TunerScene tuner={s.tuner} />}>
+              <Toggle label={tr('Tuner scale')} checked={s.tuner} onChange={(tuner) => update({ tuner })} />
+            </Row>
+          </div>
+        </details>
+      </Group>
       <Group title={msg('Lists and navigation')}>
         <div className="rounded-xl border border-line bg-raised">
           <Row setting="listCovers" label={msg('Covers in lists')} preview={<ListCoversScene listCovers={s.listCovers} />}>
@@ -542,6 +548,9 @@ export function SettingsView({ section }: { section: SettingsSection }) {
     if (!focus) return
     const el = [...(content.current?.querySelectorAll<HTMLElement>('[data-setting]') ?? [])].find((x) => x.dataset.setting === focus)
     if (!el) return
+    // Folded group (Hi-Fi extras): opened first, a closed one has nothing to show.
+    const fold = el.closest('details')
+    if (fold) fold.open = true
     el.scrollIntoView({ block: 'center', behavior: 'smooth' })
     el.classList.remove('flash')
     void el.offsetWidth

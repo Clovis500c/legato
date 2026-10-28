@@ -680,7 +680,6 @@ const uk: Record<string, string> = {
   'Comfortable': 'Зручно',
   'Airy': 'Просторо',
   'Source icon': 'Значок джерела',
-  'Where the song plays from, next to the volume': 'Звідки грає пісня, поруч із гучністю',
   'Sleep timer button': 'Кнопка таймера сну',
   'Moon next to the volume (the timer stays in the player’s menu)': 'Місяць біля гучності (таймер лишається в меню плеєра)',
   'Skip long songs': 'Пропускати довгі треки',
@@ -1435,6 +1434,11 @@ const uk: Record<string, string> = {
   'Early endings': 'Ранні кінцівки',
   'YouTube videos whose song ends early (silence, an end screen): the fade and the next song start where the song ends. Learned as they play': 'Відео на YouTube, де пісня закінчується раніше (тиша, кінцева заставка): перехід і наступна пісня починаються там, де закінчується пісня. Запам’ятовується під час прослуховування',
   'silence end screen outro video ends early custom end detect': 'тиша кінцева заставка аутро відео ранній кінець визначити',
+  'The source icon, the sleep timer’s moon, the volume knob and the tuner scale': 'Значок джерела, місяць таймера сну, крутилка гучності та шкала радіоприймача',
+  'Where the song plays from, in the player bar and Now Playing': 'Звідки грає пісня, на панелі плеєра та в повноекранному плеєрі',
+  'An amplifier knob, or a speaker and a bar': 'Крутилка як на підсилювачі або динамік зі смугою',
+  'Sleep timer button preview': 'Попередній перегляд кнопки таймера сну',
+  'hifi extras player details touches': 'hifi доповнення плеєр деталі',
 }
 
 export default uk

@@ -680,7 +680,6 @@ const sv: Record<string, string> = {
   'Comfortable': 'Bekväm',
   'Airy': 'Luftig',
   'Source icon': 'Källikon',
-  'Where the song plays from, next to the volume': 'Var låten spelas ifrån, bredvid volymen',
   'Sleep timer button': 'Knapp för insomningstimer',
   'Moon next to the volume (the timer stays in the player’s menu)': 'Månen bredvid volymen (timern finns kvar i spelarens meny)',
   'Skip long songs': 'Hoppa över långa låtar',
@@ -1435,6 +1434,11 @@ const sv: Record<string, string> = {
   'Early endings': 'Tidiga slut',
   'YouTube videos whose song ends early (silence, an end screen): the fade and the next song start where the song ends. Learned as they play': 'YouTube-videor där låten slutar tidigare (tystnad, slutskärm): övertoningen och nästa låt börjar där låten slutar. Lärs in medan den spelas',
   'silence end screen outro video ends early custom end detect': 'tystnad slutskärm outro video tidigt slut upptäck',
+  'The source icon, the sleep timer’s moon, the volume knob and the tuner scale': 'Källikonen, insomningstimerns måne, volymratten och radioskalan',
+  'Where the song plays from, in the player bar and Now Playing': 'Var låten spelas från, i spelarfältet och i helskärmsspelaren',
+  'An amplifier knob, or a speaker and a bar': 'En förstärkarratt, eller en högtalare och ett reglage',
+  'Sleep timer button preview': 'Förhandsvisning av knappen för insomningstimer',
+  'hifi extras player details touches': 'hifi extra spelare detaljer',
 }
 
 export default sv

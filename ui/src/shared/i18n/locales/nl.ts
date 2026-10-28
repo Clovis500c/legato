@@ -680,7 +680,6 @@ const nl: Record<string, string> = {
   'Comfortable': 'Comfortabel',
   'Airy': 'Ruim',
   'Source icon': 'Bronpictogram',
-  'Where the song plays from, next to the volume': 'Waar het nummer vandaan speelt, naast het volume',
   'Sleep timer button': 'Slaaptimerknop',
   'Moon next to the volume (the timer stays in the player’s menu)': 'Maan naast het volume (de timer blijft in het spelermenu)',
   'Skip long songs': 'Lange nummers overslaan',
@@ -1435,6 +1434,11 @@ const nl: Record<string, string> = {
   'Early endings': 'Vroege eindes',
   'YouTube videos whose song ends early (silence, an end screen): the fade and the next song start where the song ends. Learned as they play': 'YouTube-video’s waarvan het nummer eerder eindigt (stilte, eindscherm): de overgang en het volgende nummer beginnen waar het nummer eindigt. Geleerd tijdens het afspelen',
   'silence end screen outro video ends early custom end detect': 'stilte eindscherm outro video vroeg einde detecteren',
+  'The source icon, the sleep timer’s moon, the volume knob and the tuner scale': 'Het bronpictogram, de maan van de slaaptimer, de volumedraaiknop en de afstemschaal',
+  'Where the song plays from, in the player bar and Now Playing': 'Waar het nummer vandaan speelt, in de spelerbalk en de speler op volledig scherm',
+  'An amplifier knob, or a speaker and a bar': 'Een versterkerknop, of een luidspreker en een balk',
+  'Sleep timer button preview': 'Voorbeeld van de slaaptimerknop',
+  'hifi extras player details touches': 'hifi extra\'s speler details',
 }
 
 export default nl

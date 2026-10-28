@@ -680,7 +680,6 @@ const ru: Record<string, string> = {
   'Comfortable': 'Удобно',
   'Airy': 'Просторно',
   'Source icon': 'Значок источника',
-  'Where the song plays from, next to the volume': 'Откуда играет песня, рядом с громкостью',
   'Sleep timer button': 'Кнопка таймера сна',
   'Moon next to the volume (the timer stays in the player’s menu)': 'Луна рядом с громкостью (таймер остаётся в меню плеера)',
   'Skip long songs': 'Пропускать длинные треки',
@@ -1435,6 +1434,11 @@ const ru: Record<string, string> = {
   'Early endings': 'Ранние концовки',
   'YouTube videos whose song ends early (silence, an end screen): the fade and the next song start where the song ends. Learned as they play': 'Видео на YouTube, где песня заканчивается раньше (тишина, конечная заставка): переход и следующая песня начинаются там, где кончается песня. Запоминается при прослушивании',
   'silence end screen outro video ends early custom end detect': 'тишина конечная заставка аутро видео ранний конец определить',
+  'The source icon, the sleep timer’s moon, the volume knob and the tuner scale': 'Значок источника, луна таймера сна, крутилка громкости и шкала радиоприёмника',
+  'Where the song plays from, in the player bar and Now Playing': 'Откуда играет песня, на панели плеера и в полноэкранном плеере',
+  'An amplifier knob, or a speaker and a bar': 'Крутилка как на усилителе или динамик с полосой',
+  'Sleep timer button preview': 'Предпросмотр кнопки таймера сна',
+  'hifi extras player details touches': 'hifi дополнения плеер детали',
 }
 
 export default ru

@@ -23,6 +23,7 @@ export const SETTINGS_INDEX: SettingEntry[] = [
   { section: 'appearance', label: msg('List density'), keywords: msg('compact rows spacing') },
   { section: 'appearance', label: msg('Text size'), keywords: msg('font bigger smaller readable letters') },
   { section: 'appearance', label: msg('Interface size'), keywords: msg('zoom scale bigger smaller') },
+  { section: 'appearance', label: msg('Hi-Fi extras'), keywords: msg('hifi extras player details touches') },
   { section: 'appearance', label: msg('Source icon'), keywords: msg('readout source format youtube local display') },
   { section: 'appearance', label: msg('Volume control'), keywords: msg('knob bar slider sound') },
   { section: 'appearance', label: msg('Sleep timer button'), keywords: msg('moon sleep timer button hide') },

@@ -680,7 +680,6 @@ const ja: Record<string, string> = {
   'Comfortable': '標準',
   'Airy': 'ゆったり',
   'Source icon': 'ソースのアイコン',
-  'Where the song plays from, next to the volume': '曲の再生元を音量の横に表示',
   'Sleep timer button': 'スリープタイマーのボタン',
   'Moon next to the volume (the timer stays in the player’s menu)': '音量の横の月アイコン（タイマーはプレーヤーのメニューから使えます）',
   'Skip long songs': '長い曲をスキップ',
@@ -1435,6 +1434,11 @@ const ja: Record<string, string> = {
   'Early endings': '早めの終わり',
   'YouTube videos whose song ends early (silence, an end screen): the fade and the next song start where the song ends. Learned as they play': '曲が動画より先に終わる YouTube 動画（無音、終了画面）：フェードと次の曲を曲の本当の終わりから始めます。再生中に学習します',
   'silence end screen outro video ends early custom end detect': '無音 終了画面 アウトロ 動画 早い終わり silence end screen outro early',
+  'The source icon, the sleep timer’s moon, the volume knob and the tuner scale': 'ソースのアイコン、スリープタイマーの月、音量ノブ、チューナー目盛り',
+  'Where the song plays from, in the player bar and Now Playing': '曲の再生元。プレーヤーバーと再生中画面に表示',
+  'An amplifier knob, or a speaker and a bar': 'アンプのようなノブ、またはスピーカーとバー',
+  'Sleep timer button preview': 'スリープタイマーのボタンのプレビュー',
+  'hifi extras player details touches': 'hifi エクストラ プレーヤー 細部 extras player',
 }
 
 export default ja

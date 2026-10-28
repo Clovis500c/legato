@@ -680,7 +680,6 @@ const tr: Record<string, string> = {
   'Comfortable': 'Rahat',
   'Airy': 'Ferah',
   'Source icon': 'Kaynak simgesi',
-  'Where the song plays from, next to the volume': 'Şarkının nereden çaldığı, ses düzeyinin yanında',
   'Sleep timer button': 'Uyku zamanlayıcısı düğmesi',
   'Moon next to the volume (the timer stays in the player’s menu)': 'Ses düzeyinin yanındaki ay (zamanlayıcı oynatıcının menüsünde kalır)',
   'Skip long songs': 'Uzun şarkıları atla',
@@ -1435,6 +1434,11 @@ const tr: Record<string, string> = {
   'Early endings': 'Erken bitişler',
   'YouTube videos whose song ends early (silence, an end screen): the fade and the next song start where the song ends. Learned as they play': 'Şarkısı videodan önce biten YouTube videoları (sessizlik, bitiş ekranı): geçiş ve sonraki şarkı, şarkının bittiği yerden başlar. Çalarken öğrenilir',
   'silence end screen outro video ends early custom end detect': 'sessizlik bitiş ekranı outro video erken bitiş algıla',
+  'The source icon, the sleep timer’s moon, the volume knob and the tuner scale': 'Kaynak simgesi, uyku zamanlayıcısının ayı, ses düğmesi ve radyo kadranı',
+  'Where the song plays from, in the player bar and Now Playing': 'Şarkının nereden çaldığı, oynatıcı çubuğunda ve tam ekran oynatıcıda',
+  'An amplifier knob, or a speaker and a bar': 'Bir amfi düğmesi ya da hoparlör ve çubuk',
+  'Sleep timer button preview': 'Uyku zamanlayıcısı düğmesi önizlemesi',
+  'hifi extras player details touches': 'hifi ekstralar oynatıcı ayrıntılar',
 }
 
 export default tr

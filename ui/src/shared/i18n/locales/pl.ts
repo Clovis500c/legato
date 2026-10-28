@@ -680,7 +680,6 @@ const pl: Record<string, string> = {
   'Comfortable': 'Wygodna',
   'Airy': 'Przestronna',
   'Source icon': 'Ikona źródła',
-  'Where the song plays from, next to the volume': 'Skąd gra utwór, obok głośności',
   'Sleep timer button': 'Przycisk wyłącznika czasowego',
   'Moon next to the volume (the timer stays in the player’s menu)': 'Księżyc obok głośności (wyłącznik zostaje w menu odtwarzacza)',
   'Skip long songs': 'Pomijaj długie utwory',
@@ -1435,6 +1434,11 @@ const pl: Record<string, string> = {
   'Early endings': 'Wcześniejsze zakończenia',
   'YouTube videos whose song ends early (silence, an end screen): the fade and the next song start where the song ends. Learned as they play': 'Filmy z YouTube, w których utwór kończy się wcześniej (cisza, ekran końcowy): przejście i następny utwór zaczynają się tam, gdzie kończy się utwór. Wykrywane podczas odtwarzania',
   'silence end screen outro video ends early custom end detect': 'cisza ekran końcowy outro film wcześniejsze zakończenie wykryj',
+  'The source icon, the sleep timer’s moon, the volume knob and the tuner scale': 'Ikona źródła, księżyc wyłącznika czasowego, pokrętło głośności i skala strojenia',
+  'Where the song plays from, in the player bar and Now Playing': 'Skąd gra utwór, na pasku odtwarzacza i w odtwarzaczu pełnoekranowym',
+  'An amplifier knob, or a speaker and a bar': 'Pokrętło jak we wzmacniaczu albo głośnik i pasek',
+  'Sleep timer button preview': 'Podgląd przycisku wyłącznika czasowego',
+  'hifi extras player details touches': 'hifi dodatki odtwarzacz szczegóły',
 }
 
 export default pl

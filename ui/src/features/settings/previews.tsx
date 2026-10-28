@@ -1,4 +1,4 @@
-import { HardDrives, Pause, SkipBack, SkipForward, SpeakerHigh } from '@phosphor-icons/react'
+import { HardDrives, Moon, Pause, SkipBack, SkipForward, SpeakerHigh } from '@phosphor-icons/react'
 import type { ReactNode } from 'react'
 import { useStore } from '../../app/store'
 import { trackArt } from '../../shared/art'
@@ -177,6 +177,18 @@ export function SourceIconScene({ readout }: Pick<Settings, 'readout'>) {
   return (
     <Frame label={tr('Source icon preview')} className="flex items-center justify-end gap-2 px-3">
       {readout && <HardDrives size={12} className="text-ink-2" />}
+      <span className="h-[3px] w-10 rounded-full bg-ink-4">
+        <span className="block h-full w-3/4 rounded-full bg-ink" />
+      </span>
+    </Frame>
+  )
+}
+
+/** Player bar end: the sleep timer's moon or nothing, then volume. */
+export function SleepButtonScene({ sleepButton }: Pick<Settings, 'sleepButton'>) {
+  return (
+    <Frame label={tr('Sleep timer button preview')} className="flex items-center justify-end gap-2 px-3">
+      {sleepButton && <Moon size={12} className="text-ink-2" />}
       <span className="h-[3px] w-10 rounded-full bg-ink-4">
         <span className="block h-full w-3/4 rounded-full bg-ink" />
       </span>

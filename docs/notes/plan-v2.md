@@ -492,7 +492,9 @@ Original plan:
       detected live (live.js listens, the sound untouched), the song is over there and the end is kept per video:
       later plays fade and move on from the song's real end. Settings › Playback › Fades › Early endings (on).
       Not checked live: needs the real app on a video with a silent end.
-- [ ] Settings › Appearance › Hi-Fi extras: a better menu (2026-10-28).
+- [x] Settings › Appearance › Hi-Fi extras: a better menu (2026-10-28): a settings group like the others, folded
+      under one line that says what's inside, a preview for each extra, clearer texts; a settings search result inside
+      opens it (it landed on the closed fold). Volume control gets Reset like the rest.
 - [ ] Optimize the front end and the back end as far as possible (2026-10-28).
 - [x] Interactive preview for visual settings (background blur, dimming, motion, …): small live sample of the effect.
 - [x] Artists and Albums: filter and sort, like songs in playlists.

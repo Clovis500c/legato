@@ -680,7 +680,6 @@ const ko: Record<string, string> = {
   'Comfortable': '편안하게',
   'Airy': '여유 있게',
   'Source icon': '소스 아이콘',
-  'Where the song plays from, next to the volume': '곡이 재생되는 곳을 볼륨 옆에 표시',
   'Sleep timer button': '수면 타이머 버튼',
   'Moon next to the volume (the timer stays in the player’s menu)': '볼륨 옆의 달 아이콘 (타이머는 플레이어 메뉴에 그대로 있습니다)',
   'Skip long songs': '긴 곡 건너뛰기',
@@ -1435,6 +1434,11 @@ const ko: Record<string, string> = {
   'Early endings': '이른 끝부분',
   'YouTube videos whose song ends early (silence, an end screen): the fade and the next song start where the song ends. Learned as they play': '노래가 영상보다 먼저 끝나는 YouTube 동영상(무음, 최종 화면): 페이드와 다음 곡이 노래가 끝나는 지점에서 시작됩니다. 재생하면서 학습합니다',
   'silence end screen outro video ends early custom end detect': '무음 최종 화면 아웃트로 동영상 이른 끝 silence end screen outro early',
+  'The source icon, the sleep timer’s moon, the volume knob and the tuner scale': '소스 아이콘, 수면 타이머 달, 볼륨 노브, 튜너 눈금',
+  'Where the song plays from, in the player bar and Now Playing': '노래가 재생되는 곳, 플레이어 바와 지금 재생 중 화면에 표시',
+  'An amplifier knob, or a speaker and a bar': '앰프 같은 노브, 또는 스피커와 막대',
+  'Sleep timer button preview': '수면 타이머 버튼 미리 보기',
+  'hifi extras player details touches': 'hifi 추가 기능 플레이어 디테일 extras player',
 }
 
 export default ko

@@ -680,7 +680,6 @@ const vi: Record<string, string> = {
   'Comfortable': 'Thoải mái',
   'Airy': 'Thoáng',
   'Source icon': 'Biểu tượng nguồn',
-  'Where the song plays from, next to the volume': 'Nơi bài hát đang phát, cạnh âm lượng',
   'Sleep timer button': 'Nút hẹn giờ tắt',
   'Moon next to the volume (the timer stays in the player’s menu)': 'Mặt trăng cạnh âm lượng (hẹn giờ vẫn có trong menu trình phát)',
   'Skip long songs': 'Bỏ qua bài dài',
@@ -1435,6 +1434,11 @@ const vi: Record<string, string> = {
   'Early endings': 'Kết thúc sớm',
   'YouTube videos whose song ends early (silence, an end screen): the fade and the next song start where the song ends. Learned as they play': 'Video YouTube có bài hát kết thúc sớm (im lặng, màn hình kết thúc): hiệu ứng chuyển và bài tiếp theo bắt đầu ở nơi bài hát kết thúc. Học được khi phát',
   'silence end screen outro video ends early custom end detect': 'im lặng màn hình kết thúc outro video kết thúc sớm phát hiện',
+  'The source icon, the sleep timer’s moon, the volume knob and the tuner scale': 'Biểu tượng nguồn, mặt trăng hẹn giờ tắt, núm xoay âm lượng và thang dò đài',
+  'Where the song plays from, in the player bar and Now Playing': 'Bài hát phát từ đâu, trên thanh trình phát và màn hình Đang phát',
+  'An amplifier knob, or a speaker and a bar': 'Núm xoay như ampli, hoặc loa và thanh trượt',
+  'Sleep timer button preview': 'Xem trước nút hẹn giờ tắt',
+  'hifi extras player details touches': 'hifi tiện ích trình phát chi tiết',
 }
 
 export default vi

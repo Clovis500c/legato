@@ -680,7 +680,6 @@ const es: Record<string, string> = {
   'Comfortable': 'Cómoda',
   'Airy': 'Amplia',
   'Source icon': 'Icono de fuente',
-  'Where the song plays from, next to the volume': 'De dónde suena la canción, junto al volumen',
   'Sleep timer button': 'Botón del temporizador de apagado',
   'Moon next to the volume (the timer stays in the player’s menu)': 'Luna junto al volumen (el temporizador sigue en el menú del reproductor)',
   'Skip long songs': 'Saltar canciones largas',
@@ -1435,6 +1434,11 @@ const es: Record<string, string> = {
   'Early endings': 'Finales anticipados',
   'YouTube videos whose song ends early (silence, an end screen): the fade and the next song start where the song ends. Learned as they play': 'Videos de YouTube cuya canción termina antes (silencio, pantalla final): el fundido y la siguiente canción empiezan donde termina la canción. Se aprende al reproducir',
   'silence end screen outro video ends early custom end detect': 'silencio pantalla final outro video final anticipado detectar',
+  'The source icon, the sleep timer’s moon, the volume knob and the tuner scale': 'El icono de fuente, la luna del temporizador de apagado, la rueda de volumen y el dial de sintonizador',
+  'Where the song plays from, in the player bar and Now Playing': 'De dónde suena la canción, en la barra del reproductor y en el reproductor a pantalla completa',
+  'An amplifier knob, or a speaker and a bar': 'Una rueda de amplificador, o un altavoz y una barra',
+  'Sleep timer button preview': 'Vista previa del botón del temporizador de apagado',
+  'hifi extras player details touches': 'hifi extras reproductor detalles toques',
 }
 
 export default es

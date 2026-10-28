@@ -680,7 +680,6 @@ const id: Record<string, string> = {
   'Comfortable': 'Nyaman',
   'Airy': 'Lega',
   'Source icon': 'Ikon sumber',
-  'Where the song plays from, next to the volume': 'Dari mana lagu diputar, di samping volume',
   'Sleep timer button': 'Tombol timer tidur',
   'Moon next to the volume (the timer stays in the player’s menu)': 'Bulan di sebelah volume (timer tetap ada di menu pemutar)',
   'Skip long songs': 'Lewati lagu panjang',
@@ -1435,6 +1434,11 @@ const id: Record<string, string> = {
   'Early endings': 'Akhir lebih awal',
   'YouTube videos whose song ends early (silence, an end screen): the fade and the next song start where the song ends. Learned as they play': 'Video YouTube yang lagunya berakhir lebih awal (hening, layar akhir): transisi dan lagu berikutnya mulai di akhir lagu yang sebenarnya. Dipelajari saat diputar',
   'silence end screen outro video ends early custom end detect': 'hening layar akhir outro video berakhir lebih awal deteksi',
+  'The source icon, the sleep timer’s moon, the volume knob and the tuner scale': 'Ikon sumber, bulan timer tidur, kenop volume, dan skala tuner',
+  'Where the song plays from, in the player bar and Now Playing': 'Dari mana lagu diputar, di bilah pemutar dan pemutar layar penuh',
+  'An amplifier knob, or a speaker and a bar': 'Kenop seperti amplifier, atau speaker dan bilah',
+  'Sleep timer button preview': 'Pratinjau tombol timer tidur',
+  'hifi extras player details touches': 'hifi ekstra pemutar detail',
 }
 
 export default id

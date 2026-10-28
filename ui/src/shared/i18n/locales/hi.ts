@@ -680,7 +680,6 @@ const hi: Record<string, string> = {
   'Comfortable': 'आरामदायक',
   'Airy': 'खुला-खुला',
   'Source icon': 'सोर्स आइकन',
-  'Where the song plays from, next to the volume': 'गाना कहां से चल रहा है, आवाज़ के पास',
   'Sleep timer button': 'स्लीप टाइमर बटन',
   'Moon next to the volume (the timer stays in the player’s menu)': 'वॉल्यूम के पास चाँद (टाइमर प्लेयर के मेन्यू में रहता है)',
   'Skip long songs': 'लंबे गाने छोड़ें',
@@ -1435,6 +1434,11 @@ const hi: Record<string, string> = {
   'Early endings': 'जल्दी अंत',
   'YouTube videos whose song ends early (silence, an end screen): the fade and the next song start where the song ends. Learned as they play': 'YouTube वीडियो जिनका गाना पहले ख़त्म हो जाता है (ख़ामोशी, एंड स्क्रीन): फ़ेड और अगला गाना वहीं से शुरू होते हैं जहाँ गाना ख़त्म होता है। चलते समय सीखा जाता है',
   'silence end screen outro video ends early custom end detect': 'ख़ामोशी एंड स्क्रीन आउट्रो वीडियो जल्दी अंत silence end screen outro early',
+  'The source icon, the sleep timer’s moon, the volume knob and the tuner scale': 'सोर्स आइकन, स्लीप टाइमर का चाँद, आवाज़ का नॉब और ट्यूनर स्केल',
+  'Where the song plays from, in the player bar and Now Playing': 'गाना कहाँ से चल रहा है, प्लेयर बार और अभी चल रहा में',
+  'An amplifier knob, or a speaker and a bar': 'एम्प्लिफ़ायर जैसा नॉब, या स्पीकर और बार',
+  'Sleep timer button preview': 'स्लीप टाइमर बटन का प्रीव्यू',
+  'hifi extras player details touches': 'hifi एक्स्ट्रा प्लेयर डिटेल extras player',
 }
 
 export default hi

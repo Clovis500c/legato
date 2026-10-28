@@ -680,7 +680,6 @@ const zh: Record<string, string> = {
   'Comfortable': '舒适',
   'Airy': '宽松',
   'Source icon': '来源图标',
-  'Where the song plays from, next to the volume': '在音量旁显示歌曲的播放来源',
   'Sleep timer button': '睡眠定时器按钮',
   'Moon next to the volume (the timer stays in the player’s menu)': '音量旁的月亮图标（定时器仍在播放器菜单中）',
   'Skip long songs': '跳过长歌曲',
@@ -1435,6 +1434,11 @@ const zh: Record<string, string> = {
   'Early endings': '提前结束',
   'YouTube videos whose song ends early (silence, an end screen): the fade and the next song start where the song ends. Learned as they play': '歌曲比视频先结束的 YouTube 视频（静音、片尾画面）：淡出和下一首从歌曲真正结束处开始。播放时学习',
   'silence end screen outro video ends early custom end detect': '静音 片尾 结尾画面 视频 提前结束 silence end screen outro early',
+  'The source icon, the sleep timer’s moon, the volume knob and the tuner scale': '来源图标、睡眠定时器的月亮、音量旋钮和调谐器刻度',
+  'Where the song plays from, in the player bar and Now Playing': '歌曲的播放来源，显示在播放栏和正在播放中',
+  'An amplifier knob, or a speaker and a bar': '功放式旋钮，或扬声器加滑条',
+  'Sleep timer button preview': '睡眠定时器按钮预览',
+  'hifi extras player details touches': 'hifi 附加功能 播放器 细节 extras player',
 }
 
 export default zh
