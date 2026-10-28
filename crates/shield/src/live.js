@@ -21,6 +21,8 @@
   const MAX_CUT = -12
   const MAX_BOOST = 9
   const HOLD_BELOW = -45
+  // Momentary this far under short-term: the music is falling away (an ending), the gain holds.
+  const FALLING_DB = 10
   // Gain time constant; quicker while a song is new (first seconds), so it settles fast.
   const GLIDE_S = 2.5
   const GLIDE_START_S = 0.6
@@ -286,7 +288,9 @@
     return { input, output: balance.output, set, turn, rates: () => rates(fx.on ? fx : cleanFx(null)) }
   }
 
-  let settings = { on: false, adaptive: false, targetLufs: -14 }
+  // ending = the app fades the song out (the gain holds); gain = where a new song's gain starts (the app's last song,
+  // which may have played in the other embed), null = this frame's own.
+  let settings = { on: false, adaptive: false, targetLufs: -14, ending: false, gain: null }
   let effects = cleanFx(null)
   // { ctx, video, stream, track, src, gain, limiter, shelf, raw, k, wanted, … } while attached.
   let g = null
@@ -357,13 +361,14 @@
       await ctx.resume()
       if (ctx.state !== 'running') throw new Error('Sound processing is waiting for a click in the app')
       if (!settings.on || g || document.querySelector('video') !== video) return void ctx.close()
-      const s = { ctx, video, stream, input, fx, gain, limiter, k, raw, buf: new Float32Array(2048), track: null, src: null, wanted: video.muted, momentary: 0, short: 0, peak: 0, gainDb: 0, elapsed: 0, at: performance.now(), time: video.currentTime, silent: 0 }
+      const s = { ctx, video, stream, input, fx, gain, limiter, k, raw, buf: new Float32Array(2048), track: null, src: null, wanted: video.muted, momentary: 0, short: 0, peak: 0, gainDb: startGain(0), elapsed: 0, at: performance.now(), time: video.currentTime, silent: 0 }
       // The captured track changes with each video (new metadata): follow it.
       s.plug = () => {
         const track = stream.getAudioTracks().find((t) => t.readyState === 'live') ?? null
         if (track === s.track) return
-        // Next song: loudness measured afresh, the gain carries on from the last one.
+        // Next song: loudness measured afresh, the gain carries on from the last one (the app's, across embeds).
         s.momentary = s.short = s.elapsed = 0
+        if (track) s.gainDb = startGain(s.gainDb)
         s.src?.disconnect()
         s.track = track
         s.src = track ? s.ctx.createMediaStreamSource(new MediaStream([track])) : null
@@ -408,6 +413,13 @@
     } finally {
       busy = false
     }
+  }
+
+  /** Gain a new song starts from: the app's, used once (a mid-song track change keeps `own`). */
+  function startGain(own) {
+    const from = settings.adaptive && settings.gain !== null ? settings.gain : own
+    settings = { ...settings, gain: null }
+    return from
   }
 
   // The element's own volume (the app's volume and fades) no longer reaches the captured sound: applied here.
@@ -482,7 +494,8 @@
     const mom = lufs(g.momentary)
     const short = lufs(g.short)
     let want = 0
-    if (settings.adaptive) want = mom < HOLD_BELOW ? g.gainDb : Math.min(MAX_BOOST, Math.max(MAX_CUT, settings.targetLufs - short))
+    // The app fading the song out, silence, or the music falling away: hold (processor.rs `wanted_db`).
+    if (settings.adaptive) want = settings.ending || mom < HOLD_BELOW || mom < short - FALLING_DB ? g.gainDb : Math.min(MAX_BOOST, Math.max(MAX_CUT, settings.targetLufs - short))
     g.gainDb += (want - g.gainDb) * (1 - Math.exp(-dt / (g.elapsed < START_S ? GLIDE_START_S : GLIDE_S)))
     setGain()
     // fast: this read alone (the analysers hold ~43 ms).
@@ -500,7 +513,8 @@
       }
     }
     const t = Number(next.targetLufs)
-    settings = { on: next.on === true, adaptive: next.adaptive === true, targetLufs: Number.isFinite(t) ? Math.min(-6, Math.max(-30, t)) : -14 }
+    // A start gain waits for its song (the next track): later messages without one keep it.
+    settings = { on: next.on === true, adaptive: next.adaptive === true, targetLufs: Number.isFinite(t) ? Math.min(-6, Math.max(-30, t)) : -14, ending: next.ending === true, gain: num(next.gain, MAX_CUT, MAX_BOOST, settings.gain) }
     if (!settings.on) {
       clearInterval(retry)
       retry = 0

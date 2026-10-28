@@ -7,6 +7,7 @@ import { endListen, progress, startListen } from './listens'
 import { demoGain, demoLength, fadeGain, NO_FADE, overlapDue, type Fade } from './fade'
 import { insertAt, moveInOrder, moveToSlot, nextIndex, playOrder, queued, tooLong, type Repeat } from './queue'
 import { vias, type Via } from './sources'
+import { bindLiveFrame } from './live'
 import { closeWatch, openWatch, sendWatch, watching } from './watch'
 import { ytPost, type YtUpdate } from './youtube'
 import { tr } from '../../shared/i18n/i18n'
@@ -657,8 +658,10 @@ function overlap() {
   endListen(true)
   // In the tray: a new embed's video never starts in a hidden page (Chromium); a reused one has played there before.
   if (!p.tail) void api.holdPage().catch(() => {})
-  // Old embed plays on: commands meant for the new song go nowhere until its embed binds.
+  // Old embed plays on: commands meant for the new song go nowhere until its embed binds. Live settings too: the old
+  // one keeps its Adaptive Sound held through its fade out.
   bindFrame(null)
+  bindLiveFrame(null)
   void p.playAt(i, undefined, { auto: true })
   // The stopped embed takes the next song into its running player; the first overlap makes it.
   usePlayer.setState({ tail: { key: p.frameKey, videoId: now.youtubeId, done: false }, frameKey: p.tail?.key ?? p.frameKey + 1 })

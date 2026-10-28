@@ -484,7 +484,10 @@ Original plan:
       videos, playlists they're featured on and their own, under your own songs of them; works for artists not in the
       library and signed out. The artist's name is a link in every player (bar, sidebar, mini, Now Playing).
 - [x] Source icon turned off still showed in Now Playing (2026-10-28): hidden there too.
-- [ ] Adaptive Sound fought the custom fade between songs (2026-10-28).
+- [x] Adaptive Sound fought the custom fade between songs (2026-10-28): its gain rose ~5 dB under a fade out (the
+      song's own ending) and the next song started from it, loud; across the two YouTube embeds the next song started
+      from a stale gain. Now held while the app fades out and while the music falls away; the next song starts from
+      the last one's gain, whichever embed or engine played it.
 - [ ] Early endings (2026-10-28): videos whose song ends a few seconds before the video does (silence, outro):
       detected, the fade and the next song start from the song's real end.
 - [ ] Settings › Appearance › Hi-Fi extras: a better menu (2026-10-28).

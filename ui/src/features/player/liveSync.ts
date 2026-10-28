@@ -3,7 +3,8 @@ import { useShallow } from 'zustand/react/shallow'
 import { useSettings } from '../../app/settings'
 import { startEditor, useEditor } from '../editor/editor'
 import { neutral } from './effects'
-import { sendLive, startLive } from './live'
+import { overlapDue } from './fade'
+import { sendLive, setEnding, startLive } from './live'
 import { usePlayer } from './store'
 
 // Who plays now, for levels: the native engine (local files, previews) or YouTube. Spotify: its own app, none.
@@ -20,6 +21,9 @@ export function useLiveSync() {
   const effects = useEditor((s) => s.effects)
   useEffect(() => startLive(playing), [])
   useEffect(() => startEditor(), [])
+  // Fade out under way: Adaptive Sound holds. Synchronous with the position, so the playing frame hears it before an
+  // overlap hands the live link to the next song's embed.
+  useEffect(() => usePlayer.subscribe((s) => setEnding(overlapDue(s.positionMs, s.durationMs, s.fade))), [])
   useEffect(() => {
     // Bypassed edits keep processing attached: A / B switches at once.
     sendLive({ on: adaptiveSound || coverPulse || !neutral({ ...effects, on: true }), adaptive: adaptiveSound, targetLufs: adaptiveLevel, youtube: liveYoutube, effects })

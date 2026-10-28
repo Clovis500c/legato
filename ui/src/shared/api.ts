@@ -144,12 +144,14 @@ export type WatchCmd =
   | { type: 'seek'; seconds: number }
   | { type: 'volume'; percent: number }
   | { type: 'crop'; x: number; y: number; w: number; h: number }
-  | { type: 'live'; on: boolean; adaptive: boolean; targetLufs: number; effects?: Effects }
+  | { type: 'live'; on: boolean; adaptive: boolean; targetLufs: number; ending: boolean; gain: number | null; effects?: Effects }
 
 /** crates/dsp control.rs: live processing settings of the native engine. */
 export interface LiveSettings {
   adaptive: boolean
   targetLufs: number
+  /** The app fades the song out: Adaptive Sound holds. */
+  ending: boolean
 }
 /** crates/dsp effects.rs: Live Editor settings (numbers only; clamped by Rust and live.js). */
 export interface Effects {

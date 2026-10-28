@@ -92,7 +92,7 @@ function YouTubeFrame({ videoId, tail = false, idle = false }: { videoId: string
         usePlayer.getState().applyVolume(true)
         // Commands sent before the page's script ran are lost: paused in the app = paused there too.
         if (!usePlayer.getState().playing) sendWatch('pauseVideo', [])
-        sendLive()
+        sendLive(undefined, true)
       }
       const box = useVideoSlot.getState().box
       if (box && !r.cropped && !useVideoSlot.getState().hidden) cropWatch(box)
@@ -133,7 +133,7 @@ function YouTubeFrame({ videoId, tail = false, idle = false }: { videoId: string
     if (shown.current === videoId || !ready.current || tail) return
     shown.current = videoId
     usePlayer.getState().applyVolume(true)
-    sendLive()
+    sendLive(undefined, true)
     ytPost(frame.current, 'command', 'loadVideoById', [videoId, usePlayer.getState().startAt / 1000])
   }, [videoId, tail])
 
@@ -158,7 +158,7 @@ function YouTubeFrame({ videoId, tail = false, idle = false }: { videoId: string
           ytPost(e.currentTarget, 'command', 'loadVideoById', [videoId, usePlayer.getState().startAt / 1000])
         }
         usePlayer.getState().applyVolume(true)
-        sendLive()
+        sendLive(undefined, true)
       }}
       // Hidden (cover shown instead): YouTube's minimum size, so it streams a low resolution nobody sees.
       style={tail ? undefined : (crop ?? (rect ? { left: rect.left, top: rect.top, width: hidden ? 200 : rect.width, height: hidden ? 200 : rect.height } : undefined))}

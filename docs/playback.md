@@ -169,8 +169,12 @@ never: downloading, extracting, recording or exporting a platform's audio, or to
   Edge WebView2". `src-tauri/src/mixer.rs` gives our WebView2 audio sessions (only processes this app started) Music
   App's name, icon and grouping every 3 s. Label only: the sound is never taken out of the player (no extraction).
 - **Adaptive Sound**: gain heads for `target − short-term loudness`, clamped −12..+9 dB, 2.5 s glide, held while the
-  momentary loudness is under −45 LUFS (silence, fade-outs). Limiter (ceiling 0.97) only while boosting: off, the
-  sound is bit-identical (test). Targets: Quiet −20, Normal −14, Loud −11 LUFS.
+  momentary loudness is under −45 LUFS (silence) or 10 dB under the short-term (the music falling away: a song's own
+  fade-out, a stop), and while the app fades the song out (`ending`, sent when the fade out begins). The fades are the
+  app's: before 2026-10-28 the gain rose ~5 dB under a fade out and the next song started from it, loud. A new song
+  starts from the last one's gain; across the two YouTube embeds of an overlap the app sends it (`gain`, used once by
+  the next track). Limiter (ceiling 0.97) only while boosting: off, the sound is bit-identical (test). Targets: Quiet
+  −20, Normal −14, Loud −11 LUFS.
 - **Moving cover**: scale from the momentary loudness, up fast and down slow (`player/pulse.ts`), transform only,
   none with reduced motion or Animations off.
 - UI: `player/live.ts` (settings out, levels in, only from what plays now), `liveSync.ts`, `AdaptiveBar.tsx`.

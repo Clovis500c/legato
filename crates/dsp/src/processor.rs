@@ -1,8 +1,9 @@
 //! The chain one source plays through: meter, Adaptive Sound gain, peak limiter. Blocks of interleaved frames.
 //!
 //! Adaptive Sound (an automatic gain control): the gain heads for `target - short-term loudness`, clamped to
-//! -12..+9 dB, moving slowly (a few seconds) so the music breathes instead of pumping, frozen in silence and quiet
-//! passages (a fade-out is not brought up). A peak limiter right after keeps a boosted song from clipping.
+//! -12..+9 dB, moving slowly (a few seconds) so the music breathes instead of pumping, frozen in silence, quiet
+//! passages, a song's own ending and the app's fade out (fades are the app's: never bent, never brought up). A peak
+//! limiter right after keeps a boosted song from clipping.
 
 use crate::control::{Control, Levels, Live};
 use crate::{Meter, db_to_gain};
@@ -13,8 +14,11 @@ const MAX_BOOST_DB: f32 = 9.0;
 const GLIDE_S: f32 = 2.5;
 const GLIDE_START_S: f32 = 0.6;
 const START_S: f32 = 3.0;
-/// Below this short-term loudness the gain holds (silence, fade-outs, intros).
+/// Below this momentary loudness the gain holds (silence, fade-outs, intros).
 const HOLD_BELOW_LUFS: f32 = -45.0;
+/// Momentary this far under short-term: the music is falling away (a song's own fade-out, a stop), the gain holds.
+/// A steady quieter part catches up within seconds and is followed again.
+const FALLING_DB: f32 = 10.0;
 const CEILING: f32 = 0.97;
 /// Limiter release, seconds.
 const RELEASE_S: f32 = 0.12;
@@ -71,11 +75,13 @@ impl Processor {
         if !self.live.adaptive {
             return 0.0;
         }
-        // Silence or a quiet passage right now (momentary): hold, the 3 s average still remembers the music.
-        if self.meter.momentary_lufs() < HOLD_BELOW_LUFS {
+        // The app fading the song out, silence, or the music falling away: hold (2026-10-28: the gain rose under the
+        // fade out and the next song started from it, loud).
+        let (momentary, short) = (self.meter.momentary_lufs(), self.meter.short_lufs());
+        if self.live.ending || momentary < HOLD_BELOW_LUFS || momentary < short - FALLING_DB {
             return self.gain_db;
         }
-        (self.live.target_lufs - self.meter.short_lufs()).clamp(MAX_CUT_DB, MAX_BOOST_DB)
+        (self.live.target_lufs - short).clamp(MAX_CUT_DB, MAX_BOOST_DB)
     }
 
     /// Effects before this stage (Live Editor): a bass boost can clip with no gain from here.
@@ -159,7 +165,7 @@ mod tests {
     #[test]
     fn quiet_and_loud_songs_end_up_alike() {
         let c = Control::default();
-        c.set(Live { adaptive: true, target_lufs: -14.0 });
+        c.set(Live { adaptive: true, target_lufs: -14.0, ..Live::default() });
         let level = |amp: f32| {
             let mut p = Processor::new(48_000, 2);
             let mut out = tone(amp, 20.0, 48_000);
@@ -175,7 +181,7 @@ mod tests {
     #[test]
     fn never_clips_while_boosting() {
         let c = Control::default();
-        c.set(Live { adaptive: true, target_lufs: -6.0 });
+        c.set(Live { adaptive: true, target_lufs: -6.0, ..Live::default() });
         let mut p = Processor::new(48_000, 2);
         let mut out = tone(0.9, 10.0, 48_000);
         p.process(&mut out, &c);
@@ -185,7 +191,7 @@ mod tests {
     #[test]
     fn settles_within_the_first_seconds_and_carries_on() {
         let c = Control::default();
-        c.set(Live { adaptive: true, target_lufs: -14.0 });
+        c.set(Live { adaptive: true, target_lufs: -14.0, ..Live::default() });
         let mut p = Processor::new(48_000, 2);
         let mut quiet = tone(0.05, 2.0, 48_000);
         p.process(&mut quiet, &c);
@@ -201,7 +207,7 @@ mod tests {
     #[test]
     fn silence_holds_the_gain() {
         let c = Control::default();
-        c.set(Live { adaptive: true, target_lufs: -14.0 });
+        c.set(Live { adaptive: true, target_lufs: -14.0, ..Live::default() });
         let mut p = Processor::new(48_000, 2);
         let mut quiet = tone(0.1, 10.0, 48_000);
         p.process(&mut quiet, &c);
@@ -209,5 +215,39 @@ mod tests {
         let mut silence = vec![0.0; 48_000 * 2 * 5];
         p.process(&mut silence, &c);
         assert!((p.gain_db - before).abs() < 1.5, "{} → {}", before, p.gain_db);
+    }
+
+    #[test]
+    fn a_songs_own_fade_out_is_not_brought_up() {
+        let c = Control::default();
+        c.set(Live { adaptive: true, target_lufs: -14.0, ..Live::default() });
+        let mut p = Processor::new(48_000, 2);
+        let mut body = tone(0.4, 10.0, 48_000);
+        p.process(&mut body, &c);
+        let before = p.gain_db;
+        // Its own fade-out: -6 dB a second for 8 s.
+        let mut fade = tone(0.4, 8.0, 48_000);
+        for (i, f) in fade.as_chunks_mut::<2>().0.iter_mut().enumerate() {
+            let g = db_to_gain(-6.0 * i as f32 / 48_000.0);
+            f.iter_mut().for_each(|x| *x *= g);
+        }
+        p.process(&mut fade, &c);
+        // Rose 5 dB before (and the next song started there, loud).
+        assert!(p.gain_db - before < 1.5, "{before} → {}", p.gain_db);
+    }
+
+    #[test]
+    fn the_apps_fade_out_holds_the_gain() {
+        let c = Control::default();
+        c.set(Live { adaptive: true, target_lufs: -14.0, ..Live::default() });
+        let mut p = Processor::new(48_000, 2);
+        let mut body = tone(0.4, 10.0, 48_000);
+        p.process(&mut body, &c);
+        let before = p.gain_db;
+        c.set(Live { adaptive: true, target_lufs: -14.0, ending: true });
+        // Much quieter yet steady music under the fade: followed if not ending.
+        let mut quiet = tone(0.05, 6.0, 48_000);
+        p.process(&mut quiet, &c);
+        assert!((p.gain_db - before).abs() < 0.01, "{before} → {}", p.gain_db);
     }
 }

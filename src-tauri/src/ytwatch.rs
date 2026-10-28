@@ -129,6 +129,12 @@ pub enum Cmd {
         on: bool,
         adaptive: bool,
         target_lufs: f64,
+        /// The app fades the song out: Adaptive Sound holds.
+        #[serde(default)]
+        ending: bool,
+        /// Adaptive Sound gain a new song starts from, dB (the last song's).
+        #[serde(default)]
+        gain: Option<f64>,
         /// Live Editor settings; absent = unchanged.
         #[serde(default)]
         effects: Option<music_player::Effects>,
@@ -142,11 +148,12 @@ pub fn script(cmd: Cmd) -> String {
         Cmd::Pause => call("pause", 0.0),
         Cmd::Seek { seconds } => call("seek", if seconds.is_finite() { seconds.max(0.0) } else { 0.0 }),
         Cmd::Volume { percent } => call("volume", if percent.is_finite() { percent.clamp(0.0, 100.0).round() } else { 100.0 }),
-        Cmd::Live { on, adaptive, target_lufs, effects } => {
+        Cmd::Live { on, adaptive, target_lufs, ending, gain, effects } => {
             let t = if target_lufs.is_finite() { target_lufs.clamp(-30.0, -6.0) } else { -14.0 };
+            let gain = gain.filter(|g| g.is_finite()).map_or_else(|| "null".into(), |g| g.clamp(-12.0, 9.0).to_string());
             // Clamped, then JSON of numbers and booleans only: nothing to inject.
             let fx = effects.map(|e| serde_json::to_string(&e.clamped()).unwrap_or_else(|_| "undefined".into())).unwrap_or_else(|| "undefined".into());
-            format!("window.__musicAppLive && window.__musicAppLive.set({{ on: {on}, adaptive: {adaptive}, targetLufs: {t} }}, {fx})")
+            format!("window.__musicAppLive && window.__musicAppLive.set({{ on: {on}, adaptive: {adaptive}, targetLufs: {t}, ending: {ending}, gain: {gain} }}, {fx})")
         }
         Cmd::Crop { x, y, w, h } => {
             let f = |v: f64, lo: f64| if v.is_finite() { v.clamp(lo, 1.0) } else { lo };
@@ -283,12 +290,16 @@ mod tests {
         assert!(parse_live(YT, r#"musicapp-live:{"levels":{"fast":0,"momentary":1e9,"short":0,"peak":0,"gain":0}}"#).is_none());
         assert!(parse_live("https://x.example/", r#"musicapp-live:{"attached":true}"#).is_none());
         assert!(parse_live(YT, r#"musicapp-ytwatch:{"state":1}"#).is_none());
-        assert_eq!(script(Cmd::Live { on: true, adaptive: false, target_lufs: -99.0, effects: None }), "window.__musicAppLive && window.__musicAppLive.set({ on: true, adaptive: false, targetLufs: -30 }, undefined)");
-        let with = script(Cmd::Live { on: true, adaptive: false, target_lufs: -14.0, effects: Some(music_player::Effects { speed: 9.0, ..Default::default() }) });
+        assert_eq!(script(Cmd::Live { on: true, adaptive: false, target_lufs: -99.0, ending: false, gain: None, effects: None }), "window.__musicAppLive && window.__musicAppLive.set({ on: true, adaptive: false, targetLufs: -30, ending: false, gain: null }, undefined)");
+        assert!(script(Cmd::Live { on: true, adaptive: true, target_lufs: -14.0, ending: true, gain: Some(40.0), effects: None }).contains("ending: true, gain: 9 }"));
+        assert!(script(Cmd::Live { on: true, adaptive: true, target_lufs: -14.0, ending: false, gain: Some(f64::NAN), effects: None }).contains("gain: null }"));
+        let with = script(Cmd::Live { on: true, adaptive: false, target_lufs: -14.0, ending: false, gain: None, effects: Some(music_player::Effects { speed: 9.0, ..Default::default() }) });
         assert!(with.contains("\"speed\":2.5") && with.ends_with("})"), "{with}");
         // The UI's shape (api.ts WatchCmd).
         let cmd: Cmd = serde_json::from_str(r#"{"type":"live","on":true,"adaptive":true,"targetLufs":-16}"#).unwrap();
-        assert!(matches!(cmd, Cmd::Live { on: true, adaptive: true, target_lufs, effects: None } if target_lufs == -16.0));
+        assert!(matches!(cmd, Cmd::Live { on: true, adaptive: true, target_lufs, ending: false, gain: None, effects: None } if target_lufs == -16.0));
+        let cmd: Cmd = serde_json::from_str(r#"{"type":"live","on":true,"adaptive":true,"targetLufs":-16,"ending":true,"gain":-3.5}"#).unwrap();
+        assert!(matches!(cmd, Cmd::Live { ending: true, gain: Some(g), .. } if g == -3.5));
     }
 
     #[test]

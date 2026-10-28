@@ -13,11 +13,13 @@ pub struct Live {
     pub adaptive: bool,
     /// Loudness songs are brought to, LUFS (streaming services use about -14).
     pub target_lufs: f32,
+    /// The app fades the song out now: Adaptive Sound holds its gain (the fade is the app's).
+    pub ending: bool,
 }
 
 impl Default for Live {
     fn default() -> Self {
-        Self { adaptive: false, target_lufs: -14.0 }
+        Self { adaptive: false, target_lufs: -14.0, ending: false }
     }
 }
 
@@ -132,7 +134,7 @@ mod tests {
     fn settings_reach_the_audio_side_once() {
         let c = Control::default();
         assert!(c.newer(0).is_none());
-        c.set(Live { adaptive: true, target_lufs: -50.0 });
+        c.set(Live { adaptive: true, target_lufs: -50.0, ..Live::default() });
         let (v, live) = c.newer(0).unwrap();
         assert!(live.adaptive);
         assert_eq!(live.target_lufs, -30.0);

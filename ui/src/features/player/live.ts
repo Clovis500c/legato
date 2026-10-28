@@ -54,21 +54,35 @@ export function parseLive(origin: string, data: unknown): Report | null {
 
 let wish: LiveWish = { on: false, adaptive: false, targetLufs: -14, youtube: true, effects: NEUTRAL }
 let frame: HTMLIFrameElement | null = null
+// The app fades the song out: Adaptive Sound holds (its fades are never bent or brought up).
+let ending = false
 
-const post = (settings: ReturnType<typeof frameSettings>, effects: Effects) => frame?.contentWindow?.postMessage(JSON.stringify({ musicApp: 'live', settings, effects }), YT_ORIGIN)
+type FrameSettings = ReturnType<typeof frameSettings> & { ending: boolean; gain: number | null }
+const post = (settings: FrameSettings, effects: Effects) => frame?.contentWindow?.postMessage(JSON.stringify({ musicApp: 'live', settings, effects }), YT_ORIGIN)
 
-/** Sends the current wish (or a new one) everywhere: engine always (cheap); YouTube where it plays, off elsewhere. */
-export function sendLive(next?: LiveWish) {
+/**
+ * Sends the current wish (or a new one) everywhere: engine always (cheap); YouTube where it plays, off elsewhere.
+ * newSong = a frame is about to play a new song: its Adaptive Sound starts from the last song's gain, which may have
+ * played in the other embed (overlap) or the engine.
+ */
+export function sendLive(next?: LiveWish, newSong = false) {
   if (next) wish = next
-  void api.playerLive({ adaptive: wish.adaptive, targetLufs: wish.targetLufs }).catch(() => {})
+  void api.playerLive({ adaptive: wish.adaptive, targetLufs: wish.targetLufs, ending }).catch(() => {})
   void api.playerEffects(wish.effects).catch(() => {})
-  const s = frameSettings(wish)
+  const s = { ...frameSettings(wish), ending, gain: newSong ? (useLive.getState().levels?.gain ?? null) : null }
   if (watching()) {
     void api.ytwatchCmd({ type: 'live', ...s, effects: wish.effects }).catch(() => {})
     // The embed stopped for the watch page: no second processing in the background.
     post({ ...s, on: false }, NEUTRAL)
   } else post(s, wish.effects)
   if (!s.on) useLive.setState({ attached: false, error: undefined })
+}
+
+/** The app's fade out began (true) or is over (false): sent once per change. */
+export function setEnding(on: boolean) {
+  if (on === ending) return
+  ending = on
+  sendLive()
 }
 
 /** The embed element (PlayerBar). Each load starts idle: sendLive() again then. */

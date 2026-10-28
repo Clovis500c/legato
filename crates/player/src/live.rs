@@ -179,7 +179,7 @@ mod tests {
     #[test]
     fn adaptive_sound_changes_the_level() {
         let control = Arc::new(Control::default());
-        control.set(Settings { adaptive: true, target_lufs: -30.0 });
+        control.set(Settings { adaptive: true, target_lufs: -30.0, ..Settings::default() });
         let a: f32 = source(48_000 * 2 * 4).map(|x| x * x).sum();
         let b: f32 = Live::new(source(48_000 * 2 * 4), control).map(|x| x * x).sum();
         assert!(b < a * 0.8, "{b} vs {a}");
