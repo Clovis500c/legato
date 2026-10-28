@@ -1,10 +1,23 @@
 //! Local music folders: find audio files, read tags (lofty) into Tracks. Track id = file path.
 
 use crate::model::{Source, Track};
+use lofty::config::ParseOptions;
+use lofty::file::TaggedFile;
 use lofty::picture::PictureType;
 use lofty::prelude::*;
-use std::collections::BTreeMap;
+use lofty::probe::Probe;
+use std::collections::{BTreeMap, HashMap};
 use std::path::{Path, PathBuf};
+use std::sync::atomic::{AtomicUsize, Ordering};
+use std::sync::{LazyLock, Mutex, PoisonError};
+use std::time::SystemTime;
+
+/// File size and date: same = same tags.
+type Stamp = (u64, Option<SystemTime>);
+
+/// Tags read before, per file: a rescan reads only new or changed files. A watched folder rescans whole after each
+/// change (one album copied into 5,000 files was 5,000 tag reads).
+static KNOWN: LazyLock<Mutex<HashMap<PathBuf, (Stamp, Track)>>> = LazyLock::new(Mutex::default);
 
 const AUDIO: [&str; 6] = ["mp3", "flac", "wav", "ogg", "m4a", "aac"];
 
@@ -15,14 +28,30 @@ pub fn is_audio(path: &Path) -> bool {
 
 /// All audio files under `dirs`, recursively. Symlinked dirs skipped (no loops).
 pub fn scan(dirs: &[PathBuf]) -> Vec<Track> {
-    let mut out = Vec::new();
+    let mut files = Vec::new();
     for d in dirs {
-        walk(d, &mut out);
+        walk(d, &mut files);
     }
+    let old = std::mem::take(&mut *KNOWN.lock().unwrap_or_else(PoisonError::into_inner));
+    // No date known: read again.
+    let kept = |path: &PathBuf, stamp: &Stamp| old.get(path).filter(|(s, _)| stamp.1.is_some() && s == stamp).map(|(_, t)| t.clone());
+    let todo: Vec<&Path> = files.iter().filter(|(p, s)| kept(p, s).is_none()).map(|(p, _)| p.as_path()).collect();
+    let mut fresh = read_all(&todo).into_iter();
+    let mut now = HashMap::with_capacity(files.len());
+    let out = files
+        .into_iter()
+        .map(|(path, stamp)| {
+            let track = kept(&path, &stamp).unwrap_or_else(|| fresh.next().expect("one read per new file"));
+            now.insert(path, (stamp, track.clone()));
+            track
+        })
+        .collect();
+    // Files gone since are forgotten.
+    *KNOWN.lock().unwrap_or_else(PoisonError::into_inner) = now;
     out
 }
 
-fn walk(dir: &Path, out: &mut Vec<Track>) {
+fn walk(dir: &Path, out: &mut Vec<(PathBuf, Stamp)>) {
     let Ok(entries) = std::fs::read_dir(dir) else { return };
     for e in entries.flatten() {
         let Ok(kind) = e.file_type() else { continue };
@@ -30,14 +59,43 @@ fn walk(dir: &Path, out: &mut Vec<Track>) {
         if kind.is_dir() {
             walk(&path, out);
         } else if kind.is_file() && is_audio(&path) {
-            out.push(read(&path));
+            let meta = e.metadata().ok();
+            out.push((path, (meta.as_ref().map_or(0, |m| m.len()), meta.and_then(|m| m.modified().ok()))));
         }
     }
 }
 
+/// Tags of `paths`, in order, read on a few threads: one file's disk wait overlaps another's parsing.
+fn read_all(paths: &[&Path]) -> Vec<Track> {
+    let next = AtomicUsize::new(0);
+    let workers = std::thread::available_parallelism().map_or(1, |n| n.get()).min(8).min(paths.len());
+    let mut got: Vec<(usize, Track)> = std::thread::scope(|s| {
+        let handles: Vec<_> = (0..workers)
+            .map(|_| {
+                s.spawn(|| {
+                    let mut mine = Vec::new();
+                    loop {
+                        let i = next.fetch_add(1, Ordering::Relaxed);
+                        let Some(p) = paths.get(i) else { return mine };
+                        mine.push((i, read(p)));
+                    }
+                })
+            })
+            .collect();
+        handles.into_iter().flat_map(|h| h.join().expect("tag reader")).collect()
+    });
+    got.sort_unstable_by_key(|(i, _)| *i);
+    got.into_iter().map(|(_, t)| t).collect()
+}
+
+/// The file's tags and properties, covers left out (read() never shows them; picture() reads them on demand).
+fn tagged(path: &Path) -> Option<TaggedFile> {
+    Probe::open(path).ok()?.options(ParseOptions::new().read_cover_art(false)).read().ok()
+}
+
 /// Tags when present, file name otherwise. Unreadable file still listed (engine reports errors).
 pub fn read(path: &Path) -> Track {
-    let file = lofty::read_from_path(path).ok();
+    let file = tagged(path);
     let tag = file.as_ref().and_then(|f| f.primary_tag().or_else(|| f.first_tag()));
     let text = |v: Option<std::borrow::Cow<str>>| v.map(|s| s.trim().to_string()).filter(|s| !s.is_empty());
     Track {
@@ -108,6 +166,30 @@ pub(crate) mod tests {
     }
 
     #[test]
+    fn rescans_keep_order_and_follow_changes() {
+        let dir = tempfile::tempdir().unwrap();
+        for i in 0..20 {
+            wav(&dir.path().join(format!("{i:02}.wav")));
+        }
+        let dirs = [dir.path().to_path_buf()];
+        let mut files = Vec::new();
+        walk(dir.path(), &mut files);
+        let one_by_one: Vec<String> = files.iter().map(|(p, _)| read(p).title).collect();
+        let titles = |t: &[Track]| t.iter().map(|t| t.title.clone()).collect::<Vec<_>>();
+        assert_eq!(titles(&scan(&dirs)), one_by_one);
+        // Tagged since (size changes): read again; deleted: gone; the rest as before.
+        let p = dir.path().join("05.wav");
+        let mut tag = lofty::tag::Tag::new(lofty::tag::TagType::Id3v2);
+        tag.set_title("Renamed".into());
+        tag.save_to_path(&p, lofty::config::WriteOptions::default()).unwrap();
+        std::fs::remove_file(dir.path().join("07.wav")).unwrap();
+        let again = titles(&scan(&dirs));
+        assert_eq!(again.len(), 19);
+        assert!(again.contains(&"Renamed".to_string()) && !again.contains(&"05".to_string()) && !again.contains(&"07".to_string()));
+        assert!(again.contains(&"19".to_string()));
+    }
+
+    #[test]
     fn reads_embedded_cover() {
         use lofty::picture::{MimeType, Picture};
         let dir = tempfile::tempdir().unwrap();
@@ -121,3 +203,5 @@ pub(crate) mod tests {
         assert_eq!(picture(&p), Some((b"front".to_vec(), "image/png".into())));
     }
 }
+
+
