@@ -1,4 +1,5 @@
 import { ArrowClockwise, ArrowSquareOut, Disc, DownloadSimple } from '@phosphor-icons/react'
+import { useShallow } from 'zustand/react/shallow'
 import { openUrl } from '@tauri-apps/plugin-opener'
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useSettings } from '../../app/settings'
@@ -75,7 +76,7 @@ function Stat({ value, name }: { value: string; name: string }) {
 export function AboutSection() {
   const { settings: s, update } = useSettings()
   const status = useUpdate((u) => u.status)
-  const { tracks, playlists, stats, notify } = useStore()
+  const { tracks, playlists, stats, notify } = useStore(useShallow(({ tracks, playlists, stats, notify }) => ({ tracks, playlists, stats, notify })))
   const [cache, setCache] = useState<CacheStats>()
   useEffect(() => {
     const load = () =>

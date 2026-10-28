@@ -1,4 +1,5 @@
 import { Copy } from '@phosphor-icons/react'
+import { useShallow } from 'zustand/react/shallow'
 import { useMemo, useState } from 'react'
 import { create } from 'zustand'
 import { useStore } from '../../app/store'
@@ -61,7 +62,7 @@ export const findDuplicates = (scope: DupeScope = {}) => useDupes.setState({ sco
  * with every source, playlist spot and play. Live takes, remixes, slowed versions stay apart.
  */
 function DuplicatesDialog({ scope, onClose }: { scope: DupeScope; onClose: () => void }) {
-  const { tracks: all, stats, refresh, notify, orders, playlists } = useStore()
+  const { tracks: all, stats, refresh, notify, orders, playlists } = useStore(useShallow(({ tracks, stats, refresh, notify, orders, playlists }) => ({ tracks, stats, refresh, notify, orders, playlists })))
   const tracks = useMemo(() => {
     if (!scope.ids) return all
     const ids = new Set(scope.ids)

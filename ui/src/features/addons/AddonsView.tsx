@@ -1,4 +1,5 @@
 import { ArrowSquareOut, CaretDown, Gear, Info, MagnifyingGlass, SealCheck, Tag, WarningCircle } from '@phosphor-icons/react'
+import { useShallow } from 'zustand/react/shallow'
 import { openUrl } from '@tauri-apps/plugin-opener'
 import { useEffect, useState, type ReactNode } from 'react'
 import { useSettings } from '../../app/settings'
@@ -141,7 +142,7 @@ function StatusPill({ live, label }: { live: Live; label: string }) {
 
 /** What friends see, live with the player. Discord's own dark look, not the theme's. */
 function Preview({ d }: { d: DiscordSettings }) {
-  const { now, playing, positionMs, durationMs } = usePlayer()
+  const { now, playing, positionMs, durationMs } = usePlayer(useShallow(({ now, playing, positionMs, durationMs }) => ({ now, playing, positionMs, durationMs })))
   const track = useNowTrack()
   const p = presenceFor(now, track, playing, positionMs, durationMs, d)
   const shell = 'flex flex-col gap-2.5 rounded-xl bg-[#232428] p-3.5 text-[#DBDEE1] shadow-[0_8px_24px_rgba(0,0,0,.25)]'

@@ -1,4 +1,5 @@
 import { CaretDown, DotsThree, Info, MagnifyingGlass, Play, Plus, ShareNetwork, Shuffle, SlidersHorizontal, SortAscending } from '@phosphor-icons/react'
+import { useShallow } from 'zustand/react/shallow'
 import { useCallback, useMemo, useState } from 'react'
 import { pageQuery, useStore } from '../../app/store'
 import { api, type LibraryTrack } from '../../shared/api'
@@ -121,7 +122,7 @@ function SortButton<T extends string>({ groups, value, onPick }: { groups: { id:
 
 /** Songs sort. playlist = adds Manual. */
 function SortMenu({ playlist = false }: { playlist?: boolean }) {
-  const { sort, playlistSort, setSort, setPlaylistSort } = useStore()
+  const { sort, playlistSort, setSort, setPlaylistSort } = useStore(useShallow(({ sort, playlistSort, setSort, setPlaylistSort }) => ({ sort, playlistSort, setSort, setPlaylistSort })))
   return <SortButton groups={sortGroups.filter((g) => playlist || g[0].id !== 'manual')} value={playlist ? playlistSort : sort} onPick={playlist ? setPlaylistSort : setSort} />
 }
 
@@ -195,7 +196,7 @@ function GroupBar({ page, tracks }: { page: 'albumView' | 'artistView'; tracks: 
 
 /** "Find versions": YouTube match for tracks that only preview or don't play. 1 search each. */
 function FindVersions({ tracks }: { tracks: LibraryTrack[] }) {
-  const { status, refresh, notify } = useStore()
+  const { status, refresh, notify } = useStore(useShallow(({ status, refresh, notify }) => ({ status, refresh, notify })))
   const [busy, setBusy] = useState(false)
   if (!tracks.length) return null
   if (!status.youtube.connected) return <span className="font-sans text-xs tracking-normal text-ink-2 normal-case">{tr('Sign in to YouTube Music (Settings › Accounts) to find full versions.')}</span>
@@ -253,7 +254,7 @@ function Playability({ tracks }: { tracks: LibraryTrack[] }) {
 }
 
 export function SongsView() {
-  const { tracks, filter, setFilter, sort, setSort, go, stats: plays, seed } = useStore()
+  const { tracks, filter, setFilter, sort, setSort, go, stats: plays, seed } = useStore(useShallow(({ tracks, filter, setFilter, sort, setSort, go, stats, seed }) => ({ tracks, filter, setFilter, sort, setSort, go, stats, seed })))
   const query = useStore(pageQuery)
   const stats = useMemo(() => libraryStats(tracks), [tracks])
   const music = useMemo(() => musicOnly(tracks), [tracks])
@@ -313,7 +314,7 @@ function EditableTitle({ id, name }: { id: number; name: string }) {
 }
 
 export function PlaylistView({ id }: { id: number }) {
-  const { playlists, playlistTracks, playlistSort, setPlaylistSort, stats, seed } = useStore()
+  const { playlists, playlistTracks, playlistSort, setPlaylistSort, stats, seed } = useStore(useShallow(({ playlists, playlistTracks, playlistSort, setPlaylistSort, stats, seed }) => ({ playlists, playlistTracks, playlistSort, setPlaylistSort, stats, seed })))
   const query = useStore(pageQuery)
   const playlist = playlists.find((p) => p.id === id)
   const newestFirst = playlist?.newestFirst ?? false
@@ -370,7 +371,7 @@ export function PlaylistView({ id }: { id: number }) {
 }
 
 export function AlbumsView() {
-  const { tracks, go, albumView: v, stats, seed } = useStore()
+  const { tracks, go, albumView: v, stats, seed } = useStore(useShallow(({ tracks, go, albumView, stats, seed }) => ({ tracks, go, albumView, stats, seed })))
   const query = useStore(pageQuery)
   const all = useMemo(() => tracks.filter((t) => t.album), [tracks])
   const albums = useMemo(() => orderGroups(groupAlbums(filterTracks(all, query, v.filter)).map((g) => ({ ...g, name: g.album })), v.sort, { size: v.size, stats, seed }), [all, query, v, stats, seed])
@@ -405,7 +406,7 @@ export function AlbumsView() {
 }
 
 export function ArtistsView() {
-  const { tracks, go, artistView: v, stats, seed } = useStore()
+  const { tracks, go, artistView: v, stats, seed } = useStore(useShallow(({ tracks, go, artistView, stats, seed }) => ({ tracks, go, artistView, stats, seed })))
   const query = useStore(pageQuery)
   const artists = useMemo(() => orderGroups(groupArtists(filterTracks(tracks, query, v.filter)).map((g) => ({ ...g, name: g.artist })), v.sort, { size: v.size, stats, seed }), [tracks, query, v, stats, seed])
   return (

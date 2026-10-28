@@ -1,4 +1,5 @@
 import { ArrowsClockwise, FolderPlus, GoogleLogo, HardDrives, ShieldCheck, SignOut, UserPlus, X } from '@phosphor-icons/react'
+import { useShallow } from 'zustand/react/shallow'
 import { open } from '@tauri-apps/plugin-dialog'
 import { useCallback, useEffect, useState } from 'react'
 import { useStore } from '../../app/store'
@@ -16,7 +17,7 @@ import { openUrl } from '@tauri-apps/plugin-opener'
 import { useLastfm } from './lastfm'
 
 function ServiceRow({ service }: { service: 'spotify' }) {
-  const { status, disconnect, busy, go, view } = useStore()
+  const { status, disconnect, busy, go, view } = useStore(useShallow(({ status, disconnect, busy, go, view }) => ({ status, disconnect, busy, go, view })))
   const { connected } = status[service]
   const selected = view.name === 'settings' && view.wizard === service
   return (
@@ -141,7 +142,7 @@ function LastfmRow() {
 
 /** YouTube Music through a normal Google sign-in (like Pear Desktop): no keys. Several Google accounts / channels, pick which to sync. */
 function GoogleAccounts() {
-  const { refresh, sync, busy, lastSync } = useStore()
+  const { refresh, sync, busy, lastSync } = useStore(useShallow(({ refresh, sync, busy, lastSync }) => ({ refresh, sync, busy, lastSync })))
   const [data, setData] = useState<{ signedIn: boolean; accounts: YtmAccount[]; picked: string[] }>()
   const [waiting, setWaiting] = useState(false)
   const load = useCallback(
@@ -256,7 +257,7 @@ function GoogleAccounts() {
 
 /** Music folders: scanned with tags, linked to tracks already known from other services. */
 function LocalFolders() {
-  const { refresh, tracks } = useStore()
+  const { refresh, tracks } = useStore(useShallow(({ refresh, tracks }) => ({ refresh, tracks })))
   const [folders, setFolders] = useState<string[]>([])
   const [busy, setBusy] = useState(false)
   const files = tracks.filter((t) => t.ids.local).length

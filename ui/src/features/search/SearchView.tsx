@@ -1,4 +1,5 @@
 import { CaretRight, Check, Play, Plus, Shuffle, SpinnerGap } from '@phosphor-icons/react'
+import { useShallow } from 'zustand/react/shallow'
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useSettings } from '../../app/settings'
 import { useStore } from '../../app/store'
@@ -157,7 +158,7 @@ function Section({ title, onAll, children, className = '' }: { title: string; on
  */
 export function SearchView() {
   const request = useStore((s) => s.search)
-  const { tracks, playlists, status, go } = useStore()
+  const { tracks, playlists, status, go } = useStore(useShallow(({ tracks, playlists, status, go }) => ({ tracks, playlists, status, go })))
   const play = usePlayer((s) => s.playTracks)
   const rememberSearches = useSettings((s) => s.settings.rememberSearches)
   const q = request?.q ?? ''

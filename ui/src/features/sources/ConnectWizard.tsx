@@ -1,4 +1,5 @@
 import { openUrl } from '@tauri-apps/plugin-opener'
+import { useShallow } from 'zustand/react/shallow'
 import { ArrowRight, ArrowSquareOut, Check, Copy, Info, X } from '@phosphor-icons/react'
 import { useState } from 'react'
 import { useStore } from '../../app/store'
@@ -25,7 +26,7 @@ function CopyField({ value }: { value: string }) {
 }
 
 export function ConnectWizard({ service, onClose }: { service: 'spotify'; onClose: () => void }) {
-  const { connect, busy, error } = useStore()
+  const { connect, busy, error } = useStore(useShallow(({ connect, busy, error }) => ({ connect, busy, error })))
   const guide = guides[service]
   const last = guide.steps.length - 1
   const [step, setStep] = useState(0)

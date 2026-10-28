@@ -1,4 +1,5 @@
 import { CaretLeft, CaretRight, DotsThree, Play, Plus, Radio, SpinnerGap, Waveform } from '@phosphor-icons/react'
+import { useShallow } from 'zustand/react/shallow'
 import { Fragment, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useStore } from '../../app/store'
 import { api, type AlbumInfo, type LibraryTrack, type ListRef, type Track, type YtmArtist } from '../../shared/api'
@@ -135,7 +136,7 @@ function useAlbumInfo(album: string, artist: string, ids: number[]) {
 
 /** An album read as an album: its songs numbered without covers, the artist only when someone else sings, then more by the artist. */
 export function AlbumView({ album, artist }: { album: string; artist: string }) {
-  const { tracks, stats, go } = useStore()
+  const { tracks, stats, go } = useStore(useShallow(({ tracks, stats, go }) => ({ tracks, stats, go })))
   const shown = useMemo(() => tracks.filter((t) => t.album && fold(t.album) === fold(album) && fold(primaryArtist(t.artist)) === fold(artist)), [tracks, album, artist])
   const more = useMemo(() => groupAlbums(tracks.filter((t) => fold(primaryArtist(t.artist)) === fold(artist) && !(t.album && fold(t.album) === fold(album)))).slice(0, 6), [tracks, album, artist])
   const toArtist = () => go({ name: 'artist', artist })
@@ -255,7 +256,7 @@ function useYtmArtist(artist: string) {
  * singles and EPs), then the artist's YouTube Music shelves: albums, videos, playlists they're on, their own playlists.
  */
 export function ArtistView({ artist }: { artist: string }) {
-  const { tracks, stats } = useStore()
+  const { tracks, stats } = useStore(useShallow(({ tracks, stats }) => ({ tracks, stats })))
   const { mixes } = useMixes()
   // Every song: yours, or YouTube Music's (its list, loaded on demand).
   const [all, setAll] = useState<'mine' | 'youtube' | null>(null)

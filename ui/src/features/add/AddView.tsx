@@ -1,4 +1,5 @@
 import { ArrowRight, ClipboardText, FolderPlus, MagnifyingGlass, QrCode } from '@phosphor-icons/react'
+import { useShallow } from 'zustand/react/shallow'
 import { useState } from 'react'
 import { useStore } from '../../app/store'
 import { api, type Track } from '../../shared/api'
@@ -49,7 +50,7 @@ function ImportCode() {
 const focusSearch = () => document.querySelector<HTMLInputElement>('[data-search]')?.focus()
 
 export function AddView() {
-  const { go, status } = useStore()
+  const { go, status } = useStore(useShallow(({ go, status }) => ({ go, status })))
   const ytOn = status.youtube.connected
   // Music Detector's song: searched for, shown above the results.
   const onFound = (t: Track) => useStore.getState().searchFor(`${t.artist} ${t.title}`, t)

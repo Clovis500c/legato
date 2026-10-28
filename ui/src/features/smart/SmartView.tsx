@@ -1,4 +1,5 @@
 import { DotsThree, Lightning, PencilSimple, Plus, X } from '@phosphor-icons/react'
+import { useShallow } from 'zustand/react/shallow'
 import { useMemo, useState } from 'react'
 import { useSettings } from '../../app/settings'
 import { useStore } from '../../app/store'
@@ -152,7 +153,7 @@ function Editor({ list }: { list: SmartList }) {
 /** A smart playlist: its songs today, from its rules; the rules edited in place (saved as you type). */
 export function SmartView({ id }: { id: string }) {
   const list = useSmartList(id)
-  const { tracks, stats } = useStore()
+  const { tracks, stats } = useStore(useShallow(({ tracks, stats }) => ({ tracks, stats })))
   const [editing, setEditing] = useState(false)
   const songs = useMemo(() => (list ? smartTracks(list, tracks, stats) : []), [list, tracks, stats])
   if (!list) return <p className="py-16 text-center text-ink-3">{tr('This smart playlist was deleted.')}</p>

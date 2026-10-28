@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { useShallow } from 'zustand/react/shallow'
 import { useStore } from '../../app/store'
 import { api, type SharePreview } from '../../shared/api'
 import { region } from '../../shared/format'
@@ -9,7 +10,7 @@ import { tr, trn } from '../../shared/i18n/i18n'
 
 /** Shared code (pasted, QR image, nearby) → preview → new custom playlist. */
 export function ImportDialog({ code }: { code: string }) {
-  const { refresh, go, notify } = useStore()
+  const { refresh, go, notify } = useStore(useShallow(({ refresh, go, notify }) => ({ refresh, go, notify })))
   const [preview, setPreview] = useState<SharePreview>()
   const [busy, setBusy] = useState(false)
   const close = useCallback(() => useStore.setState({ incoming: undefined }), [])

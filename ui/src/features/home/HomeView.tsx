@@ -1,4 +1,5 @@
 import { ArrowDown, ArrowUp, ArrowUUpLeft, CaretRight, ChartBar, ClockCounterClockwise, DotsSixVertical, DotsThreeVertical, EyeSlash, Play, Playlist, PlusCircle, SlidersHorizontal, Sparkle, SpinnerGap, YoutubeLogo } from '@phosphor-icons/react'
+import { useShallow } from 'zustand/react/shallow'
 import { openUrl } from '@tauri-apps/plugin-opener'
 import { Fragment, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useSettings } from '../../app/settings'
@@ -160,7 +161,7 @@ function JumpTile({ art, title, sub, onOpen, onPlay, menu }: { art: ReactNode; t
 
 /** Lists opened lately (playlists, albums, artists, mixes), filled from what you played: back in one click. */
 function JumpBackIn({ mixes }: { mixes?: Mix[] }) {
-  const { tracks, stats, playlists, go } = useStore()
+  const { tracks, stats, playlists, go } = useStore(useShallow(({ tracks, stats, playlists, go }) => ({ tracks, stats, playlists, go })))
   const opened = useOpenedLists((s) => s.list)
   const play = usePlayer((s) => s.playTracks)
   const lists = useMemo(() => jumpLists(opened, { tracks, stats, playlists, mixIds: mixes?.map((m) => m.id) }), [opened, tracks, stats, playlists, mixes])
@@ -463,7 +464,7 @@ function CustomizeHome({ onClose }: { onClose: () => void }) {
  * the sections in the order set in Customize Home. Songs show as rows, lists as cards; each section's ⋮ hides or moves it.
  */
 export function HomeView() {
-  const { tracks, playlists, stats, go, status } = useStore()
+  const { tracks, playlists, stats, go, status } = useStore(useShallow(({ tracks, playlists, stats, go, status }) => ({ tracks, playlists, stats, go, status })))
   const { hiddenPlaylists: hidden, homeSections: sections, homeFilter } = useSettings((s) => s.settings)
   const update = useSettings((s) => s.update)
   const [customizing, setCustomizing] = useState(false)

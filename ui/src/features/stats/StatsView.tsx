@@ -1,4 +1,5 @@
 import { Play } from '@phosphor-icons/react'
+import { useShallow } from 'zustand/react/shallow'
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useStore } from '../../app/store'
 import { api, type Play as Listen } from '../../shared/api'
@@ -63,7 +64,7 @@ function Bars({ values, labels, tips }: { values: number[]; labels: (string | nu
 
 /** Your listening in numbers: time, top songs / artists / albums, when you listen, streaks. All from this PC's history. */
 export function StatsView() {
-  const { tracks, go } = useStore()
+  const { tracks, go } = useStore(useShallow(({ tracks, go }) => ({ tracks, go })))
   const play = usePlayer((s) => s.playTracks)
   const [period, setPeriod] = useState<Period>('4w')
   const [history, setHistory] = useState<Listen[] | null>(null)

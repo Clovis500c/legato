@@ -1,4 +1,5 @@
 import { ListPlus, Plus } from '@phosphor-icons/react'
+import { useShallow } from 'zustand/react/shallow'
 import { useState } from 'react'
 import { useStore } from '../../app/store'
 import { RoundButton } from '../../shared/ui/controls'
@@ -10,7 +11,7 @@ import { tr } from '../../shared/i18n/i18n'
  * `trackIds` may be a function: tracks not in the library yet get added once a playlist is picked.
  */
 export function AddToPlaylist({ trackIds, label }: { trackIds: number[] | (() => Promise<number[]>); label: string }) {
-  const { playlists, editPlaylist } = useStore()
+  const { playlists, editPlaylist } = useStore(useShallow(({ playlists, editPlaylist }) => ({ playlists, editPlaylist })))
   const [at, setAt] = useState<DOMRect | null>(null)
   const custom = playlists.filter((p) => p.custom)
   const add = async (id: number | null) => {
