@@ -7,6 +7,7 @@ use tauri::{AppHandle, Manager, Url, WebviewUrl, WebviewWindowBuilder};
 
 pub const SITE: &str = "https://music.youtube.com/";
 const LABEL: &str = "ytm-sign-in";
+const REFRESH: &str = "ytm-refresh";
 /// Google's own pages: the app never sees the password.
 const SIGN_IN: &str = "https://accounts.google.com/ServiceLogin?service=youtube&continue=https%3A%2F%2Fmusic.youtube.com%2F";
 const ADD_ACCOUNT: &str = "https://accounts.google.com/AddSession?service=youtube&continue=https%3A%2F%2Fmusic.youtube.com%2F";
@@ -43,6 +44,27 @@ pub fn open(app: &AppHandle, add_account: bool) -> tauri::Result<()> {
         }
     });
     Ok(())
+}
+
+/// Google renews its session cookies from its own pages, which the app never shows after sign-in: twelve days on they
+/// were still the sign-in's, and Google refused likes as signed out (401, 2026-10-28). Its sign-in page, hidden: a live
+/// session goes straight back to YouTube Music with fresh cookies. False: signed out, or Google wants the user.
+pub async fn refresh(app: &AppHandle) -> bool {
+    if session(app).is_none() || app.get_webview_window(LABEL).is_some() || app.get_webview_window(REFRESH).is_some() {
+        return false;
+    }
+    let url = Url::parse(SIGN_IN).expect("valid url");
+    let Ok(w) = WebviewWindowBuilder::new(app, REFRESH, WebviewUrl::External(url)).additional_browser_args(crate::background::BROWSER_ARGS).visible(false).build() else { return false };
+    let mut back = false;
+    for _ in 0..15 {
+        tokio::time::sleep(Duration::from_secs(2)).await;
+        back = w.url().is_ok_and(|u| u.host_str() == Some("music.youtube.com"));
+        if back {
+            break;
+        }
+    }
+    let _ = w.close();
+    back && session(app).is_some()
 }
 
 /// Forgets every Google session (and other site data) in the app's webview profile.

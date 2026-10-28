@@ -476,6 +476,10 @@ Original plan:
 - [x] Right-click menus ran past the window's foot (2026-10-28): placed from their size during the pop-in animation.
 - [x] Settings: hide the sleep timer's moon (Appearance › Hi-Fi extras; the player's menu keeps the timer) and Skip long
       songs (Playback › Up next, 0–60 min): the queue passes over longer songs; a length learned once playing skips too.
+- [x] YouTube Music "signed out" (401 on like, 2026-10-28): the Google cookies were never renewed (12 days old). Hidden
+      sign-in page refreshes them (launch, every 12 h, on a 401 then retry). Likes refused or made signed out wait in
+      your own Liked Music; sync likes them on the account (two-way, nothing dropped). Not verifiable without the
+      user's account: watch for 401s after a few days.
 - [x] Interactive preview for visual settings (background blur, dimming, motion, …): small live sample of the effect.
 - [x] Artists and Albums: filter and sort, like songs in playlists.
 - [x] Mixes: better algorithm, more mixes; covers as a 2×2 grid like playlists, setting in Advanced: grid / single

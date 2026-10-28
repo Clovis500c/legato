@@ -26,6 +26,7 @@ mod window_place;
 mod ytm;
 mod ytwatch;
 
+use anyhow::Context;
 use music_connectors::lrclib::Lrclib;
 use music_connectors::oauth::Opener;
 use music_connectors::spotify::Spotify;
@@ -58,6 +59,23 @@ type CmdResult<T> = Result<T, String>;
 
 fn err(e: impl Into<anyhow::Error>) -> String {
     format!("{:#}", e.into())
+}
+
+/// Google refused the session as signed out: its cookies went stale (ytm::refresh).
+fn signed_out(e: &anyhow::Error) -> bool {
+    e.to_string().starts_with(music_connectors::ytmusic::SIGNED_OUT)
+}
+
+/// A YouTube Music call with the picked accounts. Refused as signed out: session refreshed, then once more.
+async fn with_ytm<T, F, Fut>(state: &AppState, f: F) -> anyhow::Result<T>
+where
+    F: Fn(Vec<YouTubeMusic>) -> Fut,
+    Fut: std::future::Future<Output = anyhow::Result<T>>,
+{
+    match f(state.ytm_all()).await {
+        Err(e) if signed_out(&e) && ytm::refresh(&state.app).await => f(state.ytm_all()).await,
+        r => r,
+    }
 }
 
 /// Spotify app key (Spotify has no keyless sign-in). Stored in OS keychain.
@@ -228,11 +246,50 @@ async fn disconnect(state: State<'_, AppState>, source: Source) -> CmdResult<()>
 
 #[tauri::command]
 async fn sync_all(state: State<'_, AppState>) -> CmdResult<SyncReport> {
+    let mut report = sync_once(&state).await;
+    // Stale Google session: refreshed, then the whole sync once more.
+    if report.errors.iter().any(|e| e.contains(music_connectors::ytmusic::SIGNED_OUT)) && ytm::refresh(&state.app).await {
+        report = sync_once(&state).await;
+    }
+    if let Err(e) = push_own_likes(&state).await {
+        report.errors.push(format!("Liked Music: {e:#}"));
+    }
+    Ok(report)
+}
+
+async fn sync_once(state: &AppState) -> SyncReport {
     let (spotify, youtube) = (state.spotify(), state.ytm_all());
     let mut all: Vec<&dyn Connector> = Vec::new();
     all.extend(spotify.as_ref().map(|c| c as &dyn Connector));
     all.extend(youtube.iter().map(|c| c as &dyn Connector));
-    Ok(sync(&state.lib, &all, spotify.as_ref().map(|c| c as &dyn Connector)).await)
+    sync(&state.lib, &all, spotify.as_ref().map(|c| c as &dyn Connector)).await
+}
+
+/// Likes made here while YouTube Music was out of reach wait in your own "Liked Music" (like.ts): liked on the account,
+/// then moved into its Liked Music. Nothing dropped on either side (user's choice 2026-10-28).
+async fn push_own_likes(state: &AppState) -> anyhow::Result<()> {
+    let (own, liked, todo) = {
+        let lib = state.lib();
+        let playlists = lib.playlists()?;
+        let own = playlists.iter().find(|p| p.custom && p.name == "Liked Music");
+        let liked = playlists.iter().find(|p| p.source == Source::Youtube && !p.custom && p.source_id == "LM");
+        let (Some(own), Some(liked)) = (own, liked) else { return Ok(()) };
+        let there: HashSet<i64> = lib.playlist_tracks(liked.id)?.into_iter().map(|t| t.id).collect();
+        // Already liked there: only out of your list. No YouTube version: stays.
+        let todo: Vec<(i64, Option<String>)> = lib.playlist_tracks(own.id)?.into_iter().filter_map(|t| Some((t.id, t.track.ids.get(&Source::Youtube)?.clone()))).map(|(id, v)| (id, (!there.contains(&id)).then_some(v))).collect();
+        (own.id, liked.id, todo)
+    };
+    let videos: Vec<String> = todo.iter().filter_map(|(_, v)| v.clone()).collect();
+    if !videos.is_empty() {
+        let videos = &videos;
+        with_ytm(state, |accounts| async move { accounts.into_iter().find(|y| y.account_key() == "0").context("Sign in to YouTube Music first (Settings › Accounts)")?.like(videos).await }).await?;
+    }
+    let lib = state.lib();
+    lib.append_to_imported(liked, &todo.iter().filter(|(_, v)| v.is_some()).map(|(id, _)| *id).collect::<Vec<_>>())?;
+    for (id, _) in &todo {
+        lib.edit_playlist(PlaylistEdit::RemoveTrack { id: own, track_id: *id })?;
+    }
+    Ok(())
 }
 
 #[derive(Serialize)]
@@ -857,8 +914,8 @@ async fn remove_from_playlist(state: State<'_, AppState>, id: i64, track_id: i64
     }
     if let Some(key) = playlist.source_id.strip_prefix("LM") {
         let key = key.strip_prefix('~').unwrap_or("0");
-        let yt = accounts.into_iter().find(|y| y.account_key() == key).ok_or("That Google account isn't synced any more")?;
-        yt.unlike(&videos).await.map_err(err)?;
+        let videos = &videos;
+        with_ytm(&state, |accounts| async move { accounts.into_iter().find(|y| y.account_key() == key).context("That Google account isn't synced any more")?.unlike(videos).await }).await.map_err(err)?;
     } else {
         // Playlist id carries no account: try each, the owner takes it.
         let remote = playlist.source_id.split('~').next().unwrap_or(&playlist.source_id).to_string();
@@ -924,8 +981,8 @@ async fn add_to_youtube(state: State<'_, AppState>, id: i64, track_ids: Vec<i64>
     }
     let taken: HashSet<String> = if let Some(key) = playlist.source_id.strip_prefix("LM") {
         let key = key.strip_prefix('~').unwrap_or("0");
-        let yt = accounts.into_iter().find(|y| y.account_key() == key).ok_or("That Google account isn't synced any more")?;
-        yt.like(&ids).await.map_err(err)?;
+        let ids = &ids;
+        with_ytm(&state, |accounts| async move { accounts.into_iter().find(|y| y.account_key() == key).context("That Google account isn't synced any more")?.like(ids).await }).await.map_err(err)?;
         ids.iter().cloned().collect()
     } else {
         // Playlist id carries no account: try each, the owner takes it.
@@ -1738,6 +1795,16 @@ pub fn run() {
                     && let Ok(text) = music_shield::download_lists(&lists).await
                 {
                     fresh.reload(&text);
+                }
+            });
+
+            // Google session kept fresh like a browser that visits YouTube now and then: soon after launch, then twice a day.
+            let google = app.handle().clone();
+            tauri::async_runtime::spawn(async move {
+                tokio::time::sleep(Duration::from_secs(90)).await;
+                loop {
+                    ytm::refresh(&google).await;
+                    tokio::time::sleep(Duration::from_secs(12 * 3600)).await;
                 }
             });
 

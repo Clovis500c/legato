@@ -20,6 +20,8 @@ mod home;
 pub use home::{Home, HomeItem, ListRef, Mood, Shelf, valid_mood};
 
 pub const API: &str = "https://music.youtube.com/youtubei/v1";
+/// Start of the error when Google refuses the session as signed out (401): its cookies went stale (src-tauri ytm.rs).
+pub const SIGNED_OUT: &str = "YouTube Music signed you out";
 const ORIGIN: &str = "https://music.youtube.com";
 const UA: &str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36";
 /// YouTube Music's Android app as client: the only one given timed lyrics (ytmusicapi `as_mobile`, checked 2026-10-24).
@@ -342,6 +344,9 @@ impl YouTubeMusic {
             res = req.send().await?;
         }
         let status = res.status();
+        if status == reqwest::StatusCode::UNAUTHORIZED {
+            bail!("{SIGNED_OUT} ({endpoint} → {status}): sign in again in Settings › Accounts");
+        }
         if !status.is_success() {
             bail!("YouTube Music {endpoint} → {status} {}", res.text().await.unwrap_or_default().chars().take(300).collect::<String>());
         }
@@ -775,7 +780,7 @@ mod tests {
         s.mock("POST", "/search").match_query(Matcher::Any).with_header("content-type", "text/html").with_body("<html>Before you continue to YouTube</html>").create_async().await;
         let yt = YouTubeMusic::with_api(&s.url(), COOKIE).unwrap();
         let e = yt.playlist_videos("PL1").await.unwrap_err().to_string();
-        assert!(e.contains("401") && e.contains("UNAUTHENTICATED"), "{e}");
+        assert!(e.starts_with(SIGNED_OUT) && e.contains("401"), "{e}");
         assert!(yt.search_songs("a").await.is_err());
     }
 

@@ -40,6 +40,12 @@ the window is back on music.youtube.com with a session, it closes, and the app r
 webview when it calls YouTube Music (`src-tauri/src/ytm.rs`). Nothing goes in the keychain. Sign out clears the whole
 webview profile.
 
+Google renews those cookies from its own pages, which the app never shows: left alone they kept their sign-in date and
+after days Google answered 401 "You must be signed in" (likes failed, 2026-10-28). `ytm::refresh` opens the same
+sign-in page hidden; a live session goes straight back to music.youtube.com with fresh cookies. It runs 90 s after
+launch, then every 12 h, and on a 401 before one more try (likes, unlikes, sync). A like YouTube still refuses waits
+in your own "Liked Music" list; the next sync likes it on the account and moves it there.
+
 - The API is YouTube Music's own web API (InnerTube), unofficial: a change on YouTube's side can break a parser. The
   parsers have tests on sample responses (`crates/connectors/src/ytmusic.rs`, `ytmusic/home.rs`): when a real
   response stops parsing, add its shape there first.
