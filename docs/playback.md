@@ -201,7 +201,8 @@ Edit the playing song live; written from scratch, Audacity's ideas as inspiratio
 - **Order**: speed / tempo / pitch → EQ (bass shelf 100 Hz, 60 Hz shelf, 250 / 1k / 4k peaks, 12k shelf) →
   compressor → stereo width (M/S) → echo → reverb → 3D → balance → Adaptive Sound → limiter. Native: `crates/dsp`
   `chain.rs` + `stretch.rs`, run by `crates/player` `live.rs`. YouTube: the same graph in `live.js` from Chromium's
-  nodes.
+  nodes, built on the first edit (2026-10-28: Adaptive Sound alone ran its 144 nodes, two reverbs and an HRTF panner
+  included, now 15 nodes), faded in over a direct path that then stays silent.
 - **Speed** moves time and pitch together (slowed, nightcore), **tempo** only time, **pitch** only pitch.
   Native: WSOLA time stretch (Hann windows, 50 % overlap, normalized cross-correlation search) then a Catmull-Rom
   resampler; pitch alone = stretch by 1/p then resample by p. YouTube: `playbackRate` with `preservesPitch` for the

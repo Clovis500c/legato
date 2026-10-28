@@ -361,16 +361,19 @@
       let tap = input
       let gain = null
       let limiter = null
-      let fx = null
+      let post = null
+      let direct = null
       if (full) {
         gain = ctx.createGain()
         // Peak limiter, engaged only while boosting or edited (ratio 1 = untouched otherwise).
         limiter = new DynamicsCompressorNode(ctx, { threshold: -1, knee: 0, ratio: 1, attack: 0.003, release: 0.12 })
-        // Live Editor effects between the sound and the gain.
-        fx = buildFx(ctx)
-        input.connect(fx.input)
-        fx.output.connect(gain).connect(limiter).connect(ctx.destination)
-        tap = fx.output
+        // Straight to the gain until the Live Editor is used: its graph (two reverbs, a 3D panner, a pitch shifter)
+        // costs CPU even when neutral. Then through it for good (fxOn).
+        post = new GainNode(ctx)
+        direct = new GainNode(ctx)
+        input.connect(direct).connect(post)
+        post.connect(gain).connect(limiter).connect(ctx.destination)
+        tap = post
       }
       // K-weighting (BS.1770) on the analysis branch: after the effects, before the gain (as the native chain).
       const shelf = new BiquadFilterNode(ctx, { type: 'highshelf', frequency: 1681, gain: 4 })
@@ -381,7 +384,7 @@
       await ctx.resume()
       if (ctx.state !== 'running') throw new Error('Sound processing is waiting for a click in the app')
       if (!settings.on || g || document.querySelector('video') !== video || full === settings.listen) return void ctx.close()
-      const s = { ctx, video, stream, input, full, fx, gain, limiter, k, raw, buf: new Float32Array(2048), track: null, src: null, wanted: video.muted, momentary: 0, short: 0, peak: 0, gainDb: full ? startGain(0) : 0, elapsed: 0, at: performance.now(), time: video.currentTime, silent: 0, quietAt: null, endSaid: false }
+      const s = { ctx, video, stream, input, full, fx: null, post, direct, gain, limiter, k, raw, buf: new Float32Array(2048), track: null, src: null, wanted: video.muted, momentary: 0, short: 0, peak: 0, gainDb: full ? startGain(0) : 0, elapsed: 0, at: performance.now(), time: video.currentTime, silent: 0, quietAt: null, endSaid: false }
       // The captured track changes with each video (new metadata): follow it.
       s.plug = () => {
         const track = stream.getAudioTracks().find((t) => t.readyState === 'live') ?? null
@@ -420,7 +423,7 @@
         MUTED.set.call(video, true)
         video.addEventListener('volumechange', s.onVolume)
         video.addEventListener('ratechange', s.onRate)
-        fx.set(effects)
+        fxOn()
         applyRate()
       }
       stream.addEventListener('addtrack', s.plug)
@@ -437,6 +440,22 @@
     } finally {
       busy = false
     }
+  }
+
+  /**
+   * Live Editor in use (even bypassed: A / B flips at once after): its graph built and faded in, the direct path
+   * faded out and kept silent. Once per attach.
+   */
+  function fxOn() {
+    if (!g?.full || g.fx || !edited({ ...effects, on: true })) return
+    const fx = buildFx(g.ctx)
+    fx.set(effects)
+    const wet = new GainNode(g.ctx, { gain: 0 })
+    g.input.connect(fx.input)
+    fx.output.connect(wet).connect(g.post)
+    wet.gain.setTargetAtTime(1, g.ctx.currentTime, 0.015)
+    g.direct.gain.setTargetAtTime(0, g.ctx.currentTime, 0.015)
+    g.fx = fx
   }
 
   /** Gain a new song starts from: the app's, used once (a mid-song track change keeps `own`). */
@@ -458,7 +477,7 @@
   /** Speed and tempo on the video itself: pitch kept for tempo alone, else follows (the shifter corrects pitch). */
   function applyRate() {
     if (!g?.full) return
-    const [time, pitch] = g.fx.rates()
+    const [time, pitch] = g.fx?.rates() ?? [1, 1]
     g.rate = time
     g.video.preservesPitch = Math.abs(pitch - 1) < 1e-6
     if (Math.abs(g.video.playbackRate - time) > 1e-3) g.video.playbackRate = time
@@ -542,6 +561,7 @@
     if (fx !== undefined) {
       effects = cleanFx(fx)
       if (g) {
+        fxOn()
         g.fx?.set(effects)
         applyRate()
         setGain()
