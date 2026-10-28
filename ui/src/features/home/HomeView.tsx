@@ -277,8 +277,8 @@ function listUrl(l: ListRef) {
   return l.id.startsWith('VL') ? `https://music.youtube.com/playlist?list=${l.id.slice(2)}` : `https://music.youtube.com/browse/${l.id}`
 }
 
-/** One shelf of YouTube Music's home: songs as a list (Quick picks), lists as cards that load their songs first. */
-function YouTubeShelf({ shelf, menu }: { shelf: Shelf; menu: () => MenuEntry[] }) {
+/** One shelf of YouTube Music's home (or an artist's page): songs as a list (Quick picks), lists as cards that load their songs first. */
+export function YouTubeShelf({ shelf, menu }: { shelf: Shelf; menu?: () => MenuEntry[] }) {
   const play = usePlayer((s) => s.playTracks)
   const enqueue = usePlayer((s) => s.enqueue)
   const [busy, setBusy] = useState<number | null>(null)

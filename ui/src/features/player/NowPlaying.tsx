@@ -21,6 +21,7 @@ import { VolumeControl } from './PlayerBar'
 import { SeekBar, TimeText, usePosition } from './Progress'
 import { viaLabel, type Via } from './sources'
 import { useStill } from './still'
+import { ArtistLink } from './ArtistLink'
 import { isRemote, useNowTrack, usePlayer, useVideoSlot } from './store'
 import { Transport } from './Transport'
 import { UpNext, useNextCount } from './UpNext'
@@ -280,7 +281,10 @@ export function NowPlaying() {
             <div className="flex items-end justify-between gap-6">
               <div className="min-w-0">
                 <h2 className="truncate text-[1.75rem] leading-tight font-bold tracking-[-0.02em]">{now.title}</h2>
-                <p className="truncate text-sm text-ink-2">{track?.album ? `${now.artist} — ${track.album}` : now.artist}</p>
+                <p className="truncate text-sm text-ink-2">
+                  <ArtistLink now={now} />
+                  {track?.album && ` — ${track.album}`}
+                </p>
               </div>
               {track && !isRemote(track) && (
                 <RoundButton label={tr('Less like this')} kind="plain" size="md" onClick={() => lessLikeThis(track)} className="ml-auto text-ink-2 hover:text-ink">

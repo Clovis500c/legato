@@ -14,6 +14,7 @@ import { sleepLabel, sleepMenu, useSleep } from './sleep'
 import { playerMenu } from '../menus'
 import { trackArt } from '../../shared/art'
 import { Cover } from '../../shared/ui/Cover'
+import { ArtistLink } from './ArtistLink'
 import { bindFrame, useNowTrack, usePlayer, useVideoSlot } from './store'
 import { embedUrl, parseYt, ytPost } from './youtube'
 import { fadeGain } from './fade'
@@ -275,14 +276,18 @@ export function PlayerBar() {
           .sort((a, b) => a.key - b.key)
           .map((f) => <YouTubeFrame key={f.key} videoId={f.videoId} tail={f === tail} idle={f === tail && !!tail?.done} />)}
 
-      <button disabled={!now} onClick={() => setFull(true)} title={now ? tr('Open Now Playing') : undefined} className="flex w-85 min-w-0 items-center gap-3.5 text-left">
-        {/* New song: its cover fades in. */}
-        <Cover key={now?.trackId ?? now?.title} className="fade-in" title={now?.title ?? ''} art={track && trackArt(track)} size={56} />
-        <span className="flex min-w-0 flex-col gap-1">
-          <span className="truncate text-sm font-semibold">{now?.title ?? tr('Nothing playing')}</span>
-          <span className="truncate text-xs text-ink-2">{now?.artist ?? tr('Play a YouTube track or drop audio files here')}</span>
+      <div className="flex w-85 min-w-0 items-center gap-3.5">
+        <button disabled={!now} onClick={() => setFull(true)} title={now ? tr('Open Now Playing') : undefined} className="shrink-0">
+          {/* New song: its cover fades in. */}
+          <Cover key={now?.trackId ?? now?.title} className="fade-in" title={now?.title ?? ''} art={track && trackArt(track)} size={56} />
+        </button>
+        <span className="flex min-w-0 flex-col items-start gap-1">
+          <button disabled={!now} onClick={() => setFull(true)} title={now ? tr('Open Now Playing') : undefined} className="max-w-full truncate text-left text-sm font-semibold">
+            {now?.title ?? tr('Nothing playing')}
+          </button>
+          {now ? <ArtistLink now={now} className="max-w-full truncate text-xs text-ink-2" /> : <span className="truncate text-xs text-ink-2">{tr('Play a YouTube track or drop audio files here')}</span>}
         </span>
-      </button>
+      </div>
 
       <div className="flex w-140 min-w-0 flex-col items-center gap-2.5">
         <Transport />

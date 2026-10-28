@@ -46,6 +46,9 @@ sign-in page hidden; a live session goes straight back to music.youtube.com with
 launch, then every 12 h, and on a 401 before one more try (likes, unlikes, sync). A like YouTube still refuses waits
 in your own "Liked Music" list; the next sync likes it on the account and moves it there.
 
+Artist pages (`ytm_artist`) and the albums and playlists opened from them are public: asked without the account
+(`YouTubeMusic::anonymous`), so they work signed out too.
+
 - The API is YouTube Music's own web API (InnerTube), unofficial: a change on YouTube's side can break a parser. The
   parsers have tests on sample responses (`crates/connectors/src/ytmusic.rs`, `ytmusic/home.rs`): when a real
   response stops parsing, add its shape there first.

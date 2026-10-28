@@ -8,6 +8,7 @@ import { Cover } from '../../shared/ui/Cover'
 import { playerMenu } from '../menus'
 import { VideoSlot } from './NowPlaying'
 import { gripCorner, nearestSpot, resized, spotPosition, type Point, type Size } from './snap'
+import { ArtistLink } from './ArtistLink'
 import { useNowTrack, usePlayer } from './store'
 import { Transport } from './Transport'
 import { tr } from '../../shared/i18n/i18n'
@@ -136,10 +137,12 @@ export function MiniPlayer() {
       {video && <VideoSlot live={live} className="aspect-video w-full rounded-none" />}
       <div className="flex items-center gap-3 p-3">
         {!video && <Cover title={now.title} art={track && trackArt(track)} size={44} />}
-        <button onClick={() => setFull(true)} className="min-w-0 flex-1 text-left" title={tr('Open Now Playing')}>
-          <span className="block truncate text-[0.8125rem] font-semibold">{now.title}</span>
-          <span className="block truncate text-xs text-ink-2">{now.artist}</span>
-        </button>
+        <div className="min-w-0 flex-1">
+          <button onClick={() => setFull(true)} className="block max-w-full truncate text-left text-[0.8125rem] font-semibold" title={tr('Open Now Playing')}>
+            {now.title}
+          </button>
+          <ArtistLink now={now} className="block max-w-full truncate text-xs text-ink-2" />
+        </div>
         <Transport size="sm" compact />
         <RoundButton label={tr('Now playing, full screen')} kind="plain" size="sm" onClick={() => setFull(true)}>
           <ArrowsOutSimple size={13} />

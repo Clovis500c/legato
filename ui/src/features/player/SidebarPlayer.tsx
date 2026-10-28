@@ -10,6 +10,7 @@ import { playerMenu } from '../menus'
 import { averageColor, type Rgb } from './ambient'
 import { VideoSlot } from './NowPlaying'
 import { usePosition } from './Progress'
+import { ArtistLink } from './ArtistLink'
 import { useNowTrack, usePlayer } from './store'
 
 /** Art width inside the card: sidebar 252 px, card margins, border and padding. */
@@ -110,10 +111,12 @@ export function SidebarPlayer() {
         </button>
       )}
       <div className="relative flex items-center gap-1.5">
-        <button onClick={() => setFull(true)} className="min-w-0 flex-1 text-left" title={tr('Open Now Playing')}>
-          <span className="block truncate text-[0.8125rem] font-semibold hover:underline">{now.title}</span>
-          <span className="block truncate text-xs text-ink-2">{now.artist}</span>
-        </button>
+        <div className="min-w-0 flex-1">
+          <button onClick={() => setFull(true)} className="block max-w-full truncate text-left text-[0.8125rem] font-semibold hover:underline" title={tr('Open Now Playing')}>
+            {now.title}
+          </button>
+          <ArtistLink now={now} className="block max-w-full truncate text-xs text-ink-2" />
+        </div>
         <RoundButton label={playing ? tr('Pause') : tr('Play')} kind="soft" size="sm" onClick={toggle}>
           {playing ? <Pause size={13} weight="fill" /> : <Play size={13} weight="fill" />}
         </RoundButton>

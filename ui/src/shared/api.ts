@@ -82,6 +82,15 @@ export interface Shelf {
   items: HomeItem[]
 }
 
+/** An artist's YouTube Music page (src-tauri ytm_artist): top songs, every song behind allSongs, then shelves. */
+export interface YtmArtist {
+  name: string
+  art: string | null
+  songs: Track[]
+  allSongs: ListRef | null
+  shelves: Shelf[]
+}
+
 /** src-tauri update::Status: what the background updater is doing. */
 export type UpdateState = { state: 'idle' | 'checking' | 'upToDate' } | { state: 'available'; version: string; notes: string | null } | { state: 'downloading'; version: string; percent: number } | { state: 'ready'; version: string; notes: string | null } | { state: 'installing'; version: string } | { state: 'error'; message: string }
 export type UpdateStatus = UpdateState & {
@@ -464,6 +473,8 @@ export const api = {
   /** mood = a chip's params: the home filtered to it. */
   ytmHome: (mood?: string) => invoke<YtmHome>('ytm_home', { mood: mood ?? null }),
   ytmList: (list: ListRef) => invoke<Track[]>('ytm_list', { list }),
+  /** Null = no artist of that name on YouTube Music. Works signed out. */
+  ytmArtist: (name: string) => invoke<YtmArtist | null>('ytm_artist', { name }),
   /** Year and every song of an album from the Apple catalog, with which ones you have. Null = not in the store. */
   lastfmStatus: () => invoke<LastfmStatus>('lastfm_status'),
   /** Key + shared secret from last.fm/api, then the user allows the app on last.fm (browser). Returns the user name. */

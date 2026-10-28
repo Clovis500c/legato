@@ -480,6 +480,9 @@ Original plan:
       sign-in page refreshes them (launch, every 12 h, on a 401 then retry). Likes refused or made signed out wait in
       your own Liked Music; sync likes them on the account (two-way, nothing dropped). Not verifiable without the
       user's account: watch for 401s after a few days.
+- [x] Artist page with all their music (2026-10-28): YouTube Music's top songs (See all = every song), albums, singles,
+      videos, playlists they're featured on and their own, under your own songs of them; works for artists not in the
+      library and signed out. The artist's name is a link in every player (bar, sidebar, mini, Now Playing).
 - [x] Interactive preview for visual settings (background blur, dimming, motion, …): small live sample of the effect.
 - [x] Artists and Albums: filter and sort, like songs in playlists.
 - [x] Mixes: better algorithm, more mixes; covers as a 2×2 grid like playlists, setting in Advanced: grid / single

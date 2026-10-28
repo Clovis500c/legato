@@ -17,7 +17,7 @@ use std::sync::LazyLock;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 mod home;
-pub use home::{Home, HomeItem, ListRef, Mood, Shelf, valid_mood};
+pub use home::{Artist, Home, HomeItem, ListRef, Mood, Shelf, valid_mood};
 
 pub const API: &str = "https://music.youtube.com/youtubei/v1";
 /// Start of the error when Google refuses the session as signed out (401): its cookies went stale (src-tauri ytm.rs).
@@ -30,6 +30,8 @@ const MOBILE: (&str, &str, &str) = ("ANDROID_MUSIC", "7.21.50", "21");
 const SONGS: &str = "EgWKAQIIAWoMEA4QChADEAQQCRAF";
 /// Filter "Videos": same message, field II → IQ.
 const VIDEOS: &str = "EgWKAQIQAWoMEA4QChADEAQQCRAF";
+/// Search filter: artists.
+const ARTISTS: &str = "EgWKAQIgAWoMEA4QChADEAQQCRAF";
 const MAX_PAGES: usize = 60;
 
 static DURATION: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"^(?:(\d+):)?(\d{1,2}):(\d{2})$").unwrap());
@@ -64,7 +66,8 @@ impl Account {
 pub struct YouTubeMusic {
     api: String,
     cookie: String,
-    sapisid: String,
+    /// None: signed out (public pages only).
+    sapisid: Option<String>,
     authuser: u32,
     page_id: Option<String>,
     /// Set for extra accounts: their Liked Music gets its own id and name.
@@ -300,7 +303,16 @@ impl YouTubeMusic {
 
     pub fn with_api(api: &str, cookie: &str) -> Result<Self> {
         let sapisid = cookie_value(cookie, "SAPISID").or_else(|| cookie_value(cookie, "__Secure-3PAPISID")).context("Not signed in to YouTube Music")?.to_string();
-        Ok(Self { api: api.into(), cookie: cookie.into(), sapisid, authuser: 0, page_id: None, account: None, http: reqwest::Client::new() })
+        Ok(Self { api: api.into(), cookie: cookie.into(), sapisid: Some(sapisid), authuser: 0, page_id: None, account: None, http: reqwest::Client::new() })
+    }
+
+    /// Signed out: public pages (artists, albums, playlists) without account headers.
+    pub fn anonymous() -> Self {
+        Self::anonymous_with_api(API)
+    }
+
+    pub fn anonymous_with_api(api: &str) -> Self {
+        Self { api: api.into(), cookie: String::new(), sapisid: None, authuser: 0, page_id: None, account: None, http: reqwest::Client::new() }
     }
 
     /// Same session, acting as `account`.
@@ -325,15 +337,15 @@ impl YouTubeMusic {
         let mut req = self
             .http
             .post(format!("{}/{endpoint}?prettyPrint=false", self.api))
-            .header("cookie", &self.cookie)
-            .header("authorization", sapisid_hash(&self.sapisid, ts))
-            .header("x-goog-authuser", self.authuser.to_string())
             .header("x-origin", ORIGIN)
             .header("origin", ORIGIN)
             .header("user-agent", UA)
             .header("x-youtube-client-name", id)
             .header("x-youtube-client-version", &version)
             .json(&body);
+        if let Some(sapisid) = &self.sapisid {
+            req = req.header("cookie", &self.cookie).header("authorization", sapisid_hash(sapisid, ts)).header("x-goog-authuser", self.authuser.to_string());
+        }
         if let Some(p) = &self.page_id {
             req = req.header("x-goog-pageid", p);
         }

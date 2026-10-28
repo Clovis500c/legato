@@ -1,8 +1,8 @@
-import { CaretLeft, CaretRight, DotsThree, Play, Plus, Radio, Waveform } from '@phosphor-icons/react'
+import { CaretLeft, CaretRight, DotsThree, Play, Plus, Radio, SpinnerGap, Waveform } from '@phosphor-icons/react'
 import { Fragment, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useStore } from '../../app/store'
-import { api, type AlbumInfo, type LibraryTrack, type Track } from '../../shared/api'
-import { firstArt, trackArt } from '../../shared/art'
+import { api, type AlbumInfo, type LibraryTrack, type ListRef, type Track, type YtmArtist } from '../../shared/api'
+import { firstArt, remoteArt, trackArt } from '../../shared/art'
 import { fold, formatCount, formatDuration, region } from '../../shared/format'
 import { tr, trn } from '../../shared/i18n/i18n'
 import { Button } from '../../shared/ui/Button'
@@ -10,6 +10,8 @@ import { onMenu, openMenu } from '../../shared/ui/ContextMenu'
 import { LedChip, RoundButton } from '../../shared/ui/controls'
 import { Cover } from '../../shared/ui/Cover'
 import { PageHeader } from '../../shared/ui/PageHeader'
+import { SourceIcon } from '../../shared/ui/SourceIcon'
+import { YouTubeShelf } from '../home/HomeView'
 import { trackMenu, tracksMenu } from '../menus'
 import { useMixes } from '../mixes/MixesView'
 import { remoteTrack, usePlayer } from '../player/store'
@@ -233,31 +235,63 @@ async function startRadio(songs: LibraryTrack[], mixes: { trackIds: number[] }[]
   if (mixed.length) play(mixed, 0)
 }
 
-/** An artist in sections: your most played, then the discography (albums, singles and EPs); every song on demand. */
+/** The artist's YouTube Music page (public, signed in or not). undefined = loading, null = none there. */
+function useYtmArtist(artist: string) {
+  const [page, setPage] = useState<YtmArtist | null>()
+  useEffect(() => {
+    let live = true
+    setPage(undefined)
+    api.ytmArtist(artist).then(
+      (p) => live && setPage(p),
+      () => live && setPage(null),
+    )
+    return () => void (live = false)
+  }, [artist])
+  return page
+}
+
+/**
+ * An artist in sections: your most played, YouTube Music's top songs (every song on demand), the discography (albums,
+ * singles and EPs), then the artist's YouTube Music shelves: albums, videos, playlists they're on, their own playlists.
+ */
 export function ArtistView({ artist }: { artist: string }) {
   const { tracks, stats } = useStore()
   const { mixes } = useMixes()
-  const [all, setAll] = useState(false)
+  // Every song: yours, or YouTube Music's (its list, loaded on demand).
+  const [all, setAll] = useState<'mine' | 'youtube' | null>(null)
+  const [everySong, setEverySong] = useState<LibraryTrack[] | null>(null)
   const [kind, setKind] = useState<'albums' | 'singles'>('albums')
+  const yt = useYtmArtist(artist)
+  const ytSongs = useMemo(() => (yt?.songs ?? []).map(remoteTrack), [yt])
   const shown = useMemo(() => tracks.filter((t) => fold(primaryArtist(t.artist)) === fold(artist)), [tracks, artist])
   const top = useMemo(() => [...shown].sort((a, b) => (stats[b.id]?.[0] ?? 0) - (stats[a.id]?.[0] ?? 0)).slice(0, 5), [shown, stats])
   const disco = useMemo(() => discography(tracks, artist), [tracks, artist])
   const releases = kind === 'singles' && disco.singles.length ? disco.singles : disco.albums.length ? disco.albums : disco.singles
+  // Not in your library: YouTube Music's songs play.
+  const playable = shown.length ? shown : ytSongs
+  const openEvery = (list: ListRef) => {
+    setAll('youtube')
+    setEverySong(null)
+    api.ytmList(list).then(
+      (t) => setEverySong(t.map(remoteTrack)),
+      (e) => (useStore.getState().notify(String(e), { kind: 'error' }), setAll(null)),
+    )
+  }
   const header = (
     <PageHeader
-      onContextMenu={onMenu(() => tracksMenu(shown))}
-      art={<Cover title={artist} art={firstArt(shown)} size={168} eager className="rounded-full!" />}
+      onContextMenu={onMenu(() => tracksMenu(playable))}
+      art={<Cover title={artist} art={shown.length || !yt?.art ? firstArt(shown) : [remoteArt(yt.art)]} size={168} eager className="rounded-full!" />}
       kicker={tr('Artist')}
       title={artist}
-      sub={`${trn(shown.length, '{n} song', '{n} songs')} · ${trn(disco.albums.length + disco.singles.length, '{n} album', '{n} albums')} · ${totalTime(shown)}`}
+      sub={shown.length ? `${trn(shown.length, '{n} song', '{n} songs')} · ${trn(disco.albums.length + disco.singles.length, '{n} album', '{n} albums')} · ${totalTime(shown)}` : undefined}
       actions={
         <>
-          <PlayAll tracks={shown} />
-          <ShuffleRound tracks={shown} />
-          <Button variant="ghost" onClick={() => void startRadio(top.length ? top : shown, mixes, tracks)}>
+          <PlayAll tracks={playable} />
+          <ShuffleRound tracks={playable} />
+          <Button variant="ghost" onClick={() => void startRadio(top.length ? top : playable, mixes, tracks)}>
             <Radio size={16} /> {tr('Radio')}
           </Button>
-          <RoundButton label={tr('More')} kind="plain" onClick={(e) => openMenu(e, tracksMenu(shown))}>
+          <RoundButton label={tr('More')} kind="plain" onClick={(e) => openMenu(e, tracksMenu(playable))}>
             <DotsThree size={20} weight="bold" />
           </RoundButton>
         </>
@@ -268,22 +302,40 @@ export function ArtistView({ artist }: { artist: string }) {
     return (
       <>
         {header}
-        <button onClick={() => setAll(false)} className="mb-2 flex w-fit items-center gap-1 text-xs font-semibold text-ink-2 hover:text-ink">
+        <button onClick={() => setAll(null)} className="mb-2 flex w-fit items-center gap-1 text-xs font-semibold text-ink-2 hover:text-ink">
           <CaretLeft size={11} weight="bold" /> {tr('Back to {artist}', { artist })}
         </button>
-        <TrackTable tracks={shown} empty={tr('No songs.')} />
+        {all === 'mine' ? <TrackTable tracks={shown} empty={tr('No songs.')} /> : <TrackTable tracks={everySong ?? []} empty={everySong ? tr('No songs.') : <SpinnerGap size={20} className="animate-spin" />} />}
       </>
     )
   return (
     <div className="-mx-2 flex min-h-0 flex-1 flex-col gap-9 overflow-y-auto px-2 pb-8">
       {header}
-      <Section title={tr('Your most played')} side={shown.length > top.length && <SideLink label={tr('All {n} songs', { n: formatCount(shown.length) })} onClick={() => setAll(true)} />}>
-        <ul className="-mt-1 flex flex-col">
-          {top.map((t, i) => (
-            <SongRow key={t.id} list={top} i={i} cover extra={<span className="hidden w-56 truncate text-xs text-ink-2 md:block">{t.album}</span>} sub={stats[t.id]?.[0] ? trn(stats[t.id][0], '{n} play', '{n} plays') : undefined} />
-          ))}
-        </ul>
-      </Section>
+      {top.length > 0 && (
+        <Section title={tr('Your most played')} side={shown.length > top.length && <SideLink label={tr('All {n} songs', { n: formatCount(shown.length) })} onClick={() => setAll('mine')} />}>
+          <ul className="-mt-1 flex flex-col">
+            {top.map((t, i) => (
+              <SongRow key={t.id} list={top} i={i} cover extra={<span className="hidden w-56 truncate text-xs text-ink-2 md:block">{t.album}</span>} sub={stats[t.id]?.[0] ? trn(stats[t.id][0], '{n} play', '{n} plays') : undefined} />
+            ))}
+          </ul>
+        </Section>
+      )}
+      {ytSongs.length > 0 && (
+        <Section
+          title={
+            <>
+              <SourceIcon source="youtube" size={18} /> {tr('Top songs')}
+            </>
+          }
+          side={yt?.allSongs && <SideLink label={tr('See all')} onClick={() => openEvery(yt.allSongs!)} />}
+        >
+          <ul className="-mt-1 flex flex-col">
+            {ytSongs.map((t, i) => (
+              <SongRow key={t.id} list={ytSongs} i={i} cover extra={<span className="hidden w-56 truncate text-xs text-ink-2 md:block">{t.album}</span>} sub={t.artist} />
+            ))}
+          </ul>
+        </Section>
+      )}
       {releases.length > 0 && (
         <Section
           title={
@@ -305,6 +357,7 @@ export function ArtistView({ artist }: { artist: string }) {
           </ul>
         </Section>
       )}
+      {yt?.shelves.map((s) => <YouTubeShelf key={s.title} shelf={s} />)}
     </div>
   )
 }
