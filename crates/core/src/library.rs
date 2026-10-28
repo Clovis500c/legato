@@ -230,11 +230,65 @@ fn to_track(r: &Row) -> rusqlite::Result<LibraryTrack> {
 /// Musicness text the user chose ("It's music" / "Not music"): beats any guess, kept through re-imports.
 const USER: &str = "user:";
 
+/// Rows written since the UI last read the library, whatever wrote them (`take_changes`): kind 0 = song (artist = the
+/// channel it left, '' when its row still says it), 1 = playlist (its row or its songs). One line per row: bounded by
+/// the library's size. Temp: this connection only, gone on close. DO NOTHING, not OR IGNORE: an outer statement's
+/// conflict policy (an upsert's update aborts) overrides a trigger's OR clause, not its upsert.
+const CHANGE_LOG: &str = "
+CREATE TEMP TABLE IF NOT EXISTS changed (kind INTEGER NOT NULL, id INTEGER NOT NULL, artist TEXT NOT NULL, PRIMARY KEY (kind, id, artist)) WITHOUT ROWID;
+CREATE TEMP TRIGGER IF NOT EXISTS song_in AFTER INSERT ON tracks BEGIN INSERT INTO changed VALUES (0, new.id, '') ON CONFLICT DO NOTHING; END;
+CREATE TEMP TRIGGER IF NOT EXISTS song_set AFTER UPDATE ON tracks
+  WHEN (old.title, old.artist, old.album, old.duration_ms, old.isrc, old.art, old.added, old.added_at, old.musicness)
+    IS NOT (new.title, new.artist, new.album, new.duration_ms, new.isrc, new.art, new.added, new.added_at, new.musicness)
+  BEGIN
+    INSERT INTO changed VALUES (0, new.id, '') ON CONFLICT DO NOTHING;
+    INSERT INTO changed SELECT 0, old.id, old.artist WHERE old.artist IS NOT new.artist ON CONFLICT DO NOTHING;
+  END;
+CREATE TEMP TRIGGER IF NOT EXISTS song_out AFTER DELETE ON tracks BEGIN INSERT INTO changed VALUES (0, old.id, old.artist) ON CONFLICT DO NOTHING; END;
+-- Never INSERT OR REPLACE into these tables: the rows it drops fire no trigger.
+CREATE TEMP TRIGGER IF NOT EXISTS id_in AFTER INSERT ON track_ids BEGIN INSERT INTO changed VALUES (0, new.track_id, '') ON CONFLICT DO NOTHING; END;
+CREATE TEMP TRIGGER IF NOT EXISTS id_set AFTER UPDATE ON track_ids BEGIN INSERT INTO changed VALUES (0, old.track_id, ''), (0, new.track_id, '') ON CONFLICT DO NOTHING; END;
+CREATE TEMP TRIGGER IF NOT EXISTS id_out AFTER DELETE ON track_ids BEGIN INSERT INTO changed VALUES (0, old.track_id, '') ON CONFLICT DO NOTHING; END;
+CREATE TEMP TRIGGER IF NOT EXISTS list_in AFTER INSERT ON playlists BEGIN INSERT INTO changed VALUES (1, new.id, '') ON CONFLICT DO NOTHING; END;
+CREATE TEMP TRIGGER IF NOT EXISTS list_set AFTER UPDATE ON playlists BEGIN INSERT INTO changed VALUES (1, old.id, ''), (1, new.id, '') ON CONFLICT DO NOTHING; END;
+CREATE TEMP TRIGGER IF NOT EXISTS list_out AFTER DELETE ON playlists BEGIN INSERT INTO changed VALUES (1, old.id, '') ON CONFLICT DO NOTHING; END;
+CREATE TEMP TRIGGER IF NOT EXISTS spot_in AFTER INSERT ON playlist_tracks BEGIN INSERT INTO changed VALUES (1, new.playlist_id, '') ON CONFLICT DO NOTHING; END;
+CREATE TEMP TRIGGER IF NOT EXISTS spot_set AFTER UPDATE ON playlist_tracks BEGIN INSERT INTO changed VALUES (1, old.playlist_id, ''), (1, new.playlist_id, '') ON CONFLICT DO NOTHING; END;
+CREATE TEMP TRIGGER IF NOT EXISTS spot_out AFTER DELETE ON playlist_tracks BEGIN INSERT INTO changed VALUES (1, old.playlist_id, '') ON CONFLICT DO NOTHING; END;
+";
+
+/// `musicness::talk_channels` key.
+fn channel(artist: &str) -> String {
+    artist.trim().to_lowercase()
+}
+
+fn ids_json(ids: impl IntoIterator<Item = i64>) -> String {
+    serde_json::to_string(&ids.into_iter().collect::<Vec<_>>()).unwrap_or_else(|_| "[]".into())
+}
+
+/// What the UI's copy of the library lacks since its last read (`Library::take_changes`).
+#[derive(Debug, Default, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Changes {
+    /// Whole rows: new or changed songs, and every song of their channels (musicness follows talk channels).
+    pub tracks: Vec<LibraryTrack>,
+    /// Out of the library list: removed, merged into another, last source gone.
+    pub gone: Vec<i64>,
+    pub playlists: Vec<LibraryPlaylist>,
+    pub playlists_gone: Vec<i64>,
+    /// Changed playlists' song ids, in order.
+    pub orders: HashMap<i64, Vec<i64>>,
+    /// Plays or mix preferences written since: play counts to read again.
+    pub history: bool,
+}
+
 /// Local unified library. One track = one row, whatever number of sources.
 pub struct Library {
     pub(crate) db: Connection,
     /// Bumped on every row written (update hook): cached answers check it.
     pub versions: std::sync::Arc<crate::cache::Versions>,
+    /// History version at the last library read (`Changes::history`).
+    history_read: std::sync::atomic::AtomicU64,
 }
 
 /// Live Editor edit: a song's (or a preset), its effects as JSON (music_dsp::Effects).
@@ -307,7 +361,7 @@ impl Library {
         if db.query_row("PRAGMA user_version", [], |r| r.get::<_, i64>(0))? < 4 {
             migrate_v4(&db)?;
         }
-        let lib = Self { db, versions: std::sync::Arc::new(crate::cache::Versions::default()) };
+        let lib = Self { db, versions: std::sync::Arc::new(crate::cache::Versions::default()), history_read: Default::default() };
         if lib.db.query_row("PRAGMA user_version", [], |r| r.get::<_, i64>(0))? < 5 {
             migrate_v5(&lib)?;
         }
@@ -353,6 +407,9 @@ impl Library {
             // v11: real "date added" (unix s) for songs from now on; older ones unknown (null), never guessed.
             lib.db.execute_batch("BEGIN; ALTER TABLE tracks ADD COLUMN added_at INTEGER; PRAGMA user_version = 11; COMMIT;")?;
         }
+        lib.db.execute_batch(CHANGE_LOG)?;
+        // Statements on logged tables compile their triggers too: kept, not rebuilt per call.
+        lib.db.set_prepared_statement_cache_capacity(64);
         let v = lib.versions.clone();
         lib.db.update_hook(Some(move |_: rusqlite::hooks::Action, _: &str, table: &str, _: i64| v.touch(table)))?;
         Ok(lib)
@@ -392,11 +449,11 @@ impl Library {
             let isrc = t.isrc.as_ref().map(|s| s.to_uppercase());
             let id = match found.pop_first() {
                 None => {
-                    self.db.execute(
+                    self.db.prepare_cached(
                         "INSERT INTO tracks (title, artist, album, duration_ms, isrc, match_key, art, musicness, added, added_at)
                          VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, (SELECT coalesce(max(added), 0) + 1 FROM tracks), CAST(strftime('%s', 'now') AS INTEGER))",
-                        params![t.title, t.artist, t.album, t.duration_ms, isrc, match_key(&t.title, &t.artist), t.art, t.musicness.map(Musicness::as_str)],
-                    )?;
+                    )?
+                    .execute(params![t.title, t.artist, t.album, t.duration_ms, isrc, match_key(&t.title, &t.artist), t.art, t.musicness.map(Musicness::as_str)])?;
                     self.db.last_insert_rowid()
                 }
                 Some(keep) => {
@@ -409,7 +466,11 @@ impl Library {
                 }
             };
 
-            let mut link = self.db.prepare_cached("INSERT OR REPLACE INTO track_ids (source, source_id, track_id) VALUES (?1, ?2, ?3)")?;
+            // Not OR REPLACE: a known id stays unwritten (and out of the change log), a moved one is an update.
+            let mut link = self.db.prepare_cached(
+                "INSERT INTO track_ids (source, source_id, track_id) VALUES (?1, ?2, ?3)
+                 ON CONFLICT (source, source_id) DO UPDATE SET track_id = excluded.track_id WHERE track_id != excluded.track_id",
+            )?;
             for (s, sid) in &t.ids {
                 link.execute(params![s.as_str(), sid, id])?;
             }
@@ -474,7 +535,6 @@ impl Library {
                     flipped = true;
                 }
             }
-            self.db.execute("DELETE FROM playlist_tracks WHERE playlist_id = ?1", [id])?;
             // Removed from the library by the user: stays out.
             let kept: Vec<Track> = tracks.iter().filter(|t| !self.is_removed(t).unwrap_or(false)).cloned().collect();
             let tracks = kept.as_slice();
@@ -488,8 +548,12 @@ impl Library {
             if before.as_deref() != Some(name) || ids != old_order || flipped {
                 self.touch(id)?;
             }
-            for (pos, track_id) in ids.into_iter().enumerate() {
-                self.db.execute("INSERT INTO playlist_tracks (playlist_id, position, track_id) VALUES (?1, ?2, ?3)", params![id, pos as i64, track_id])?;
+            // Same songs in the same order (most syncs): rows left as they are.
+            if ids != old_order {
+                self.db.execute("DELETE FROM playlist_tracks WHERE playlist_id = ?1", [id])?;
+                for (pos, track_id) in ids.into_iter().enumerate() {
+                    self.db.execute("INSERT INTO playlist_tracks (playlist_id, position, track_id) VALUES (?1, ?2, ?3)", params![id, pos as i64, track_id])?;
+                }
             }
             if flipped {
                 self.rerank(&[id])?;
@@ -532,23 +596,36 @@ impl Library {
     }
 
     pub fn tracks(&self) -> Result<Vec<LibraryTrack>> {
+        let rows = self.track_rows(None)?;
+        self.judged(rows, None)
+    }
+
+    /// Library list rows (songs with a source) in its order, all or `only` these ids (JSON array).
+    fn track_rows(&self, only: Option<&str>) -> Result<Vec<LibraryTrack>> {
+        let filter = if only.is_some() { "WHERE t.id IN (SELECT value FROM json_each(?1))" } else { "" };
+        // id last: one order, the UI places new rows the same way (libraryPatch.ts).
         let mut stmt = self.db.prepare_cached(&format!(
             "SELECT {TRACK_COLS}, json_group_object(i.source, i.source_id)
-             FROM tracks t JOIN track_ids i ON i.track_id = t.id
-             GROUP BY t.id ORDER BY t.artist COLLATE NOCASE, t.title COLLATE NOCASE"
+             FROM tracks t JOIN track_ids i ON i.track_id = t.id {filter}
+             GROUP BY t.id ORDER BY t.artist COLLATE NOCASE, t.title COLLATE NOCASE, t.id"
         ))?;
-        let rows: Vec<LibraryTrack> = stmt.query_map([], to_track)?.collect::<rusqlite::Result<_>>()?;
-        self.judged(rows)
+        Ok(stmt.query_map(rusqlite::params_from_iter(only), to_track)?.collect::<rusqlite::Result<_>>()?)
     }
 
     /// Music or not for every track, by today's rules (musicness.rs `judge`, talk channels), the user's choice first.
     /// Stored words stay as imported: better rules apply to old imports without a migration. ~15 ms for 3,000 tracks.
     pub fn music_words(&self) -> Result<HashMap<i64, Musicness>> {
-        let mut stmt = self.db.prepare_cached(
+        self.words_of(None)
+    }
+
+    /// `music_words` of `only` these ids (JSON array). Exact for whole channels only (`channel_members`).
+    fn words_of(&self, only: Option<&str>) -> Result<HashMap<i64, Musicness>> {
+        let filter = if only.is_some() { "WHERE t.id IN (SELECT value FROM json_each(?1))" } else { "" };
+        let mut stmt = self.db.prepare_cached(&format!(
             "SELECT t.id, t.title, t.artist, t.duration_ms, t.musicness,
                     EXISTS (SELECT 1 FROM track_ids i WHERE i.track_id = t.id AND i.source != 'youtube')
-             FROM tracks t",
-        )?;
+             FROM tracks t {filter}"
+        ))?;
         struct Seen {
             id: i64,
             title: String,
@@ -558,7 +635,7 @@ impl Library {
             other_source: bool,
         }
         let rows: Vec<Seen> = stmt
-            .query_map([], |r| Ok(Seen { id: r.get(0)?, title: r.get(1)?, artist: r.get(2)?, duration_ms: r.get(3)?, stored: r.get(4)?, other_source: r.get(5)? }))?
+            .query_map(rusqlite::params_from_iter(only), |r| Ok(Seen { id: r.get(0)?, title: r.get(1)?, artist: r.get(2)?, duration_ms: r.get(3)?, stored: r.get(4)?, other_source: r.get(5)? }))?
             .collect::<rusqlite::Result<_>>()?;
         let mut out = HashMap::with_capacity(rows.len());
         let mut doubts = Vec::new();
@@ -588,13 +665,70 @@ impl Library {
         Ok(out)
     }
 
-    /// Rows with today's musicness (`music_words`).
-    fn judged(&self, mut rows: Vec<LibraryTrack>) -> Result<Vec<LibraryTrack>> {
-        let words = self.music_words()?;
+    /// Rows with today's musicness (`music_words`), judged among `group` (JSON ids: every song of their channels), or
+    /// the whole library.
+    fn judged(&self, mut rows: Vec<LibraryTrack>, group: Option<&str>) -> Result<Vec<LibraryTrack>> {
+        let words = self.words_of(group)?;
         for t in &mut rows {
             t.track.musicness = words.get(&t.id).copied().or(t.track.musicness);
         }
         Ok(rows)
+    }
+
+    /// Ids of every song (library list or not) of these channels: what `words_of` needs to judge them exactly.
+    fn channel_members(&self, channels: &std::collections::HashSet<String>) -> Result<Vec<i64>> {
+        if channels.is_empty() {
+            return Ok(Vec::new());
+        }
+        let mut stmt = self.db.prepare_cached("SELECT id, artist FROM tracks")?;
+        let rows = stmt.query_map([], |r| Ok((r.get::<_, i64>(0)?, r.get::<_, String>(1)?)))?;
+        let mut out = Vec::new();
+        for row in rows {
+            let (id, artist) = row?;
+            if channels.contains(&channel(&artist)) {
+                out.push(id);
+            }
+        }
+        Ok(out)
+    }
+
+    /// The UI read the whole library: changes logged until now are in it.
+    pub fn forget_changes(&self) -> Result<()> {
+        self.db.execute("DELETE FROM changed", [])?;
+        self.history_read.store(self.versions.history(), std::sync::atomic::Ordering::Relaxed);
+        Ok(())
+    }
+
+    /// What changed since the last read (this one or `forget_changes`), log emptied once it is all read. None = more
+    /// than `max` songs to send: read it whole (log kept until then).
+    pub fn take_changes(&self, max: usize) -> Result<Option<Changes>> {
+        let logged: Vec<(i64, i64, String)> = self.db.prepare_cached("SELECT kind, id, artist FROM changed")?.query_map([], |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?)))?.collect::<rusqlite::Result<_>>()?;
+        let (lists, songs): (Vec<_>, Vec<_>) = logged.into_iter().partition(|(kind, ..)| *kind == 1);
+        if songs.len() > max {
+            return Ok(None);
+        }
+        let songs_json = ids_json(songs.iter().map(|(_, id, _)| *id));
+        // Channels before (logged) and now: a song in or out can turn its whole channel to talk or back.
+        let mut channels: std::collections::HashSet<String> = songs.iter().filter(|(.., a)| !a.is_empty()).map(|(.., a)| channel(a)).collect();
+        let mut now = self.db.prepare_cached("SELECT artist FROM tracks WHERE id IN (SELECT value FROM json_each(?1))")?;
+        for artist in now.query_map([&songs_json], |r| r.get::<_, String>(0))? {
+            channels.insert(channel(&artist?));
+        }
+        let group = self.channel_members(&channels)?;
+        if group.len() > max {
+            return Ok(None);
+        }
+        let group = ids_json(group);
+        let tracks = self.judged(self.track_rows(Some(&group))?, Some(&group))?;
+        let shown: BTreeSet<i64> = tracks.iter().map(|t| t.id).collect();
+        let gone = songs.iter().map(|(_, id, _)| *id).filter(|id| !shown.contains(id)).collect::<BTreeSet<_>>().into_iter().collect();
+        let lists: BTreeSet<i64> = lists.into_iter().map(|(_, id, _)| id).collect();
+        let playlists = self.playlist_rows(Some(&ids_json(lists.iter().copied())))?;
+        let orders = playlists.iter().map(|p| Ok((p.id, self.playlist_track_ids(p.id)?))).collect::<Result<_>>()?;
+        let playlists_gone = lists.into_iter().filter(|id| !playlists.iter().any(|p| p.id == *id)).collect();
+        let history = self.history_read.load(std::sync::atomic::Ordering::Relaxed) != self.versions.history();
+        self.forget_changes()?;
+        Ok(Some(Changes { tracks, gone, playlists, playlists_gone, orders, history }))
     }
 
     /// The user says these are music (true) or not (false), above any guess. None = back to the guess.
@@ -616,12 +750,18 @@ impl Library {
     }
 
     pub fn playlists(&self) -> Result<Vec<LibraryPlaylist>> {
-        let mut stmt = self.db.prepare_cached(
+        self.playlist_rows(None)
+    }
+
+    /// All playlists or `only` these ids (JSON array), in the sidebar's order.
+    fn playlist_rows(&self, only: Option<&str>) -> Result<Vec<LibraryPlaylist>> {
+        let filter = if only.is_some() { "WHERE p.id IN (SELECT value FROM json_each(?1))" } else { "" };
+        let mut stmt = self.db.prepare_cached(&format!(
             "SELECT p.id, p.source, p.source_id, p.name, COUNT(pt.track_id), p.custom, p.newest_first, p.order_manual
-             FROM playlists p LEFT JOIN playlist_tracks pt ON pt.playlist_id = p.id
-             GROUP BY p.id ORDER BY p.name COLLATE NOCASE",
-        )?;
-        let rows = stmt.query_map([], |r| {
+             FROM playlists p LEFT JOIN playlist_tracks pt ON pt.playlist_id = p.id {filter}
+             GROUP BY p.id ORDER BY p.name COLLATE NOCASE, p.id"
+        ))?;
+        let rows = stmt.query_map(rusqlite::params_from_iter(only), |r| {
             let source: String = r.get(1)?;
             let source: Source = serde_json::from_value(source.into()).map_err(|e| rusqlite::Error::ToSqlConversionFailure(e.into()))?;
             let source_id: String = r.get(2)?;
@@ -646,7 +786,9 @@ impl Library {
              WHERE pt.playlist_id = ?1 ORDER BY pt.position"
         ))?;
         let rows: Vec<LibraryTrack> = stmt.query_map([playlist_id], to_track)?.collect::<rusqlite::Result<_>>()?;
-        self.judged(rows)
+        // Judged among its channels only: a playlist opens in time with its own size, not the library's.
+        let group = ids_json(self.channel_members(&rows.iter().map(|t| channel(&t.track.artist)).collect())?);
+        self.judged(rows, Some(&group))
     }
 
     /// Local files mirror a fresh scan: upsert all (links to known tracks), drop vanished paths and orphan rows.
@@ -937,10 +1079,13 @@ impl Library {
             Some(m) if m.starts_with(USER) => Some(m),
             m => Musicness::merge(m.as_deref().and_then(Musicness::parse), music).map(|m| m.as_str().to_string()),
         };
-        self.db.execute(
-            "UPDATE tracks SET album = coalesce(album, ?1), duration_ms = coalesce(duration_ms, ?2), isrc = coalesce(isrc, ?3), art = ?4, musicness = ?5 WHERE id = ?6",
-            params![album, duration_ms, isrc, crate::model::pick_art(old, art), music, id],
-        )?;
+        // Nothing new (most syncs): row left unwritten.
+        self.db
+            .prepare_cached(
+                "UPDATE tracks SET album = coalesce(album, ?1), duration_ms = coalesce(duration_ms, ?2), isrc = coalesce(isrc, ?3), art = ?4, musicness = ?5
+                 WHERE id = ?6 AND (album, duration_ms, isrc, art, musicness) IS NOT (coalesce(album, ?1), coalesce(duration_ms, ?2), coalesce(isrc, ?3), ?4, ?5)",
+            )?
+            .execute(params![album, duration_ms, isrc, crate::model::pick_art(old, art), music, id])?;
         Ok(())
     }
 
@@ -1418,6 +1563,88 @@ mod tests {
         Ok(())
     }
 
+    /// What the UI reads after a like, whole library vs. changes only (2026-10-28 pass), 50,000 songs in 21 playlists.
+    /// `cargo test -p music-core --release -- --ignored --nocapture fifty_thousand_reads`. MUSIC_BENCH_JSON=<file>: the
+    /// whole answer written there (webview parse timed apart).
+    #[test]
+    #[ignore]
+    fn fifty_thousand_reads() -> Result<()> {
+        #[derive(Serialize)]
+        struct Whole {
+            tracks: Vec<LibraryTrack>,
+            playlists: Vec<LibraryPlaylist>,
+        }
+        let lib = Library::in_memory()?;
+        let t0 = std::time::Instant::now();
+        let ids = lib.tx(|| {
+            (0..50_000)
+                .map(|i| {
+                    let mut t = spotify();
+                    t.title = format!("Song {i}");
+                    t.artist = format!("Artist {}", i % 4000);
+                    t.isrc = None;
+                    t.ids = BTreeMap::from([(Source::Youtube, format!("v{i:010}"))]);
+                    // A third also on Spotify (no music guess for those).
+                    if i % 3 == 0 {
+                        t.ids.insert(Source::Spotify, format!("s{i:010}"));
+                    }
+                    lib.upsert_track(&t)
+                })
+                .collect::<Result<Vec<_>>>()
+        })?;
+        let liked = lib.edit_playlist(PlaylistEdit::Create { name: "Liked Music".into() })?.unwrap();
+        lib.edit_playlist(PlaylistEdit::Add { id: liked, track_ids: ids[..2000].to_vec() })?;
+        for n in 0..20 {
+            let p = lib.edit_playlist(PlaylistEdit::Create { name: format!("Mix {n}") })?.unwrap();
+            lib.edit_playlist(PlaylistEdit::Add { id: p, track_ids: ids[n * 500..n * 500 + 500].to_vec() })?;
+        }
+        eprintln!("50k: insert {:?}", t0.elapsed());
+        let t0 = std::time::Instant::now();
+        lib.tx(|| {
+            for i in 0..50_000 {
+                let mut t = spotify();
+                t.title = format!("Song {i}");
+                t.artist = format!("Artist {}", i % 4000);
+                t.isrc = None;
+                t.ids = BTreeMap::from([(Source::Youtube, format!("v{i:010}"))]);
+                lib.upsert_track(&t)?;
+            }
+            Ok(())
+        })?;
+        eprintln!("50k: seen again {:?}", t0.elapsed());
+
+        let t = std::time::Instant::now();
+        let whole = serde_json::to_string(&Whole { tracks: lib.tracks()?, playlists: lib.playlists()? })?;
+        let orders = serde_json::to_string(&lib.playlist_orders()?)?;
+        eprintln!("whole read: {:?}, {} + {} bytes (library + orders)", t.elapsed(), whole.len(), orders.len());
+        let t = std::time::Instant::now();
+        lib.music_words()?;
+        eprintln!("  of which music words: {:?}", t.elapsed());
+        if let Ok(path) = std::env::var("MUSIC_BENCH_JSON") {
+            std::fs::write(path, &whole)?;
+        }
+
+        lib.forget_changes()?;
+        let changes = |what: &str, edit: &dyn Fn() -> Result<()>| -> Result<()> {
+            edit()?;
+            let t = std::time::Instant::now();
+            let c = serde_json::to_string(&lib.take_changes(5000)?.expect("small"))?;
+            eprintln!("{what}, changes read: {:?}, {} bytes", t.elapsed(), c.len());
+            Ok(())
+        };
+        changes("like (Liked Music, 2,000 songs)", &|| lib.edit_playlist(PlaylistEdit::Add { id: liked, track_ids: vec![ids[40_000]] }).map(drop))?;
+        changes("song added", &|| lib.upsert_track(&Track { title: "New".into(), ..song(1) }).map(drop))?;
+        changes("song out of the library and a playlist", &|| lib.remove_track(ids[100]))?;
+        let rows = lib.playlist_tracks(liked)?;
+        let t = std::time::Instant::now();
+        lib.judged(rows.clone(), None)?;
+        let all = t.elapsed();
+        let t = std::time::Instant::now();
+        lib.playlist_tracks(liked)?;
+        eprintln!("Liked Music opened: {:?} (judged among the whole library: {all:?} more)", t.elapsed());
+        Ok(())
+    }
+
     #[test]
     fn an_older_library_is_copied_before_migrating_a_new_one_is_not() -> Result<()> {
         let dir = tempfile::tempdir()?;
@@ -1520,6 +1747,92 @@ mod tests {
         assert!(lib.versions.library() > l);
         lib.clear_history()?;
         assert!(lib.versions.history() > h);
+        Ok(())
+    }
+
+    /// `run` on a library the UI read whole: its copy patched with `take_changes` (as libraryPatch.ts does) equals a
+    /// whole read again. Returns the changes and what `run` returned.
+    fn patched_equals_whole<T>(lib: &Library, run: impl FnOnce() -> Result<T>) -> Result<(Changes, T)> {
+        let (mut tracks, mut lists, mut orders) = (lib.tracks()?, lib.playlists()?, lib.playlist_orders()?);
+        lib.forget_changes()?;
+        let ran = run()?;
+        let c = lib.take_changes(1000)?.expect("a small change");
+        // SQLite's NOCASE: ASCII folded, then bytes.
+        let nocase = |a: &str, b: &str| a.bytes().map(|x| x.to_ascii_lowercase()).cmp(b.bytes().map(|x| x.to_ascii_lowercase()));
+        tracks.retain(|t| !c.gone.contains(&t.id) && c.tracks.iter().all(|n| n.id != t.id));
+        tracks.extend(c.tracks.iter().cloned());
+        tracks.sort_by(|a, b| nocase(&a.track.artist, &b.track.artist).then(nocase(&a.track.title, &b.track.title)).then(a.id.cmp(&b.id)));
+        assert_eq!(tracks, lib.tracks()?);
+        lists.retain(|p| !c.playlists_gone.contains(&p.id) && c.playlists.iter().all(|n| n.id != p.id));
+        lists.extend(c.playlists.iter().cloned());
+        lists.sort_by(|a, b| nocase(&a.name, &b.name).then(a.id.cmp(&b.id)));
+        assert_eq!(lists, lib.playlists()?);
+        // Whole reads leave empty playlists out.
+        orders.retain(|id, _| !c.playlists_gone.contains(id) && !c.orders.contains_key(id));
+        orders.extend(c.orders.iter().filter(|(_, o)| !o.is_empty()).map(|(id, o)| (*id, o.clone())));
+        assert_eq!(orders, lib.playlist_orders()?);
+        Ok((c, ran))
+    }
+
+    #[test]
+    fn changes_follow_likes_adds_edits_and_removals() -> Result<()> {
+        let lib = Library::in_memory()?;
+        let (a, b) = (lib.upsert_track(&song(1))?, lib.upsert_track(&song(2))?);
+        let liked = lib.edit_playlist(PlaylistEdit::Create { name: "Liked Music".into() })?.unwrap();
+        // A like: one playlist and its order, no song row.
+        let (c, _) = patched_equals_whole(&lib, || lib.edit_playlist(PlaylistEdit::Add { id: liked, track_ids: vec![a] }))?;
+        assert_eq!((c.tracks.len(), c.playlists.len(), &c.orders[&liked]), (0, 1, &vec![a]));
+        // Added from a search: its row only (its channel has nothing else).
+        let (c, new_id) = patched_equals_whole(&lib, || lib.upsert_track(&song(3)))?;
+        assert_eq!(c.tracks.iter().map(|t| t.id).collect::<Vec<_>>(), [new_id]);
+        // Seen again, nothing new: nothing logged. A play: only the play counts to read again.
+        lib.upsert_track(&song(3))?;
+        assert_eq!(lib.take_changes(1000)?, Some(Changes::default()));
+        lib.record_play(&crate::history::Play { track_id: a, started_at: 1, listened_ms: 1000, completed: false })?;
+        assert_eq!(lib.take_changes(1000)?, Some(Changes { history: true, ..Default::default() }));
+        // Another source for a song, a rename, an unlike, a playlist gone.
+        patched_equals_whole(&lib, || lib.upsert_track(&Track { ids: BTreeMap::from([(Source::Spotify, "s2".into())]), ..song(2) }))?;
+        patched_equals_whole(&lib, || lib.edit_playlist(PlaylistEdit::Rename { id: liked, name: "aaa".into() }))?;
+        patched_equals_whole(&lib, || lib.edit_playlist(PlaylistEdit::RemoveTrack { id: liked, track_id: a }))?;
+        let (c, _) = patched_equals_whole(&lib, || lib.edit_playlist(PlaylistEdit::Delete { id: liked }))?;
+        assert_eq!(c.playlists_gone, [liked]);
+        // Out of the library, from a playlist too; merged into another.
+        let mine = lib.edit_playlist(PlaylistEdit::Create { name: "Mine".into() })?.unwrap();
+        lib.edit_playlist(PlaylistEdit::Add { id: mine, track_ids: vec![a, b, new_id] })?;
+        let (c, _) = patched_equals_whole(&lib, || lib.remove_track(a))?;
+        assert_eq!((c.gone, &c.orders[&mine]), (vec![a], &vec![b, new_id]));
+        let (c, _) = patched_equals_whole(&lib, || lib.merge_tracks(b, &[new_id]))?;
+        assert_eq!((c.gone, &c.orders[&mine]), (vec![new_id], &vec![b, b]));
+        Ok(())
+    }
+
+    #[test]
+    fn changes_carry_a_whole_channel_when_it_turns_to_talk() -> Result<()> {
+        let lib = Library::in_memory()?;
+        let video = |n: u32, title: &str| Track { title: title.into(), artist: "Roblox Learn".into(), duration_ms: Some(500_000), ids: BTreeMap::from([(Source::Youtube, format!("v{n}"))]), ..Default::default() };
+        let doubt = lib.upsert_track(&video(1, "Big day"))?;
+        lib.upsert_track(&video(2, "How To Make A Combat System In Roblox Studio"))?;
+        assert_ne!(lib.music_words()?[&doubt], Musicness::NotMusic);
+        // A second talk video: the channel is talk, its doubt too, though the doubt's row never changed.
+        let (c, talk) = patched_equals_whole(&lib, || lib.upsert_track(&video(3, "How to style your UI on Roblox")))?;
+        assert_eq!(c.tracks.iter().find(|t| t.id == doubt).unwrap().track.musicness, Some(Musicness::NotMusic));
+        // And back once it leaves.
+        patched_equals_whole(&lib, || lib.remove_track(talk))?;
+        assert_ne!(lib.music_words()?[&doubt], Musicness::NotMusic);
+        Ok(())
+    }
+
+    #[test]
+    fn too_many_changes_ask_for_a_whole_read() -> Result<()> {
+        let lib = Library::in_memory()?;
+        for n in 0..5 {
+            lib.upsert_track(&song(n))?;
+        }
+        // Kept until the whole read is done.
+        assert_eq!(lib.take_changes(4)?, None);
+        assert_eq!(lib.take_changes(4)?, None);
+        lib.forget_changes()?;
+        assert_eq!(lib.take_changes(4)?, Some(Changes::default()));
         Ok(())
     }
 }
