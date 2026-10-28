@@ -150,7 +150,7 @@ async function addToYoutubePlaylist(p: LibraryPlaylist, ids: number[]) {
   if (!ids.length) return
   try {
     const r = await api.addToYoutube(p.id, ids)
-    await app().refresh()
+    await app().refreshChanged()
     const also = [r.already > 0 && trn(r.already, '{n} already there', '{n} already there'), r.noYoutube > 0 && trn(r.noYoutube, '{n} with no YouTube version', '{n} with no YouTube version'), r.refused].filter(Boolean).join(' · ')
     const open = { label: tr('Open'), run: () => app().go({ name: 'playlist', id: p.id }) }
     const added = tr('Added to {name} on YouTube Music: {songs}', { name: p.name, songs: r.added === ids.length ? songs(ids) : trn(r.added, '{n} song', '{n} songs') })
@@ -279,7 +279,7 @@ const addToLibraryItem = (t: LibraryTrack): MenuEntry => ({
   onSelect: () =>
     api
       .addTrack(t)
-      .then(() => app().refresh())
+      .then(() => app().refreshChanged())
       .then(() => app().notify(tr('Added “{title}” to your library', { title: t.title })))
       .catch(fail),
 })
@@ -310,8 +310,8 @@ function removeFrom(t: LibraryTrack): MenuEntry {
   const fromYoutube = async (p: LibraryPlaylist) => {
     try {
       await api.removeFromPlaylist(p.id, t.id)
-      await app().refresh()
-      const undo = () => void api.addToYoutube(p.id, [t.id]).then(() => app().refresh()).catch(fail)
+      await app().refreshChanged()
+      const undo = () => void api.addToYoutube(p.id, [t.id]).then(() => app().refreshChanged()).catch(fail)
       app().notify(tr('Removed from {name} on YouTube Music: {songs}', { name: p.name, songs: songs([t.id]) }), { kind: 'removed', action: { label: tr('Undo'), run: undo } })
     } catch (e) {
       fail(e)
@@ -322,7 +322,7 @@ function removeFrom(t: LibraryTrack): MenuEntry {
     if (!ok) return
     try {
       await api.removeFromLibrary(t.id)
-      await app().refresh()
+      await app().refreshChanged()
       app().notify(tr('Removed “{title}” from your library', { title: t.title }), { kind: 'removed' })
     } catch (e) {
       fail(e)
@@ -378,7 +378,7 @@ export function trackMenu(t: LibraryTrack, ctx: { list?: LibraryTrack[]; index?:
           api
             .findVersions([t.id])
             .then(async (r) => {
-              await app().refresh()
+              await app().refreshChanged()
               app().notify(r.found ? tr('Full version found') : tr('No full version found'))
             })
             .catch(fail),

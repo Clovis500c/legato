@@ -44,7 +44,7 @@ function HitRow({ hit, onAdded, onPlay, extra }: { hit: SearchHit; onAdded: (id:
     setBusy(true)
     try {
       onAdded(await api.addTrack(trackOf(hit)))
-      await useStore.getState().refresh()
+      await useStore.getState().refreshChanged()
     } catch (e) {
       useStore.setState({ error: String(e) })
     } finally {
@@ -121,7 +121,7 @@ function Tile({ title, sub, art, round, onOpen, menu }: { title: string; sub: st
 /** YouTube result as a 16:9 card (thumbnails are 4:3 with bars: the crop drops them). */
 function VideoCard({ hit, onPlay, onAdded }: { hit: SearchHit; onPlay: () => void; onAdded: (id: number) => void }) {
   const src = trackArt({ ...hit, id: hit.libraryId ?? undefined })[0]
-  const add = () => void api.addTrack(trackOf(hit)).then(async (id) => (onAdded(id), await useStore.getState().refresh()), (e) => useStore.setState({ error: String(e) }))
+  const add = () => void api.addTrack(trackOf(hit)).then(async (id) => (onAdded(id), await useStore.getState().refreshChanged()), (e) => useStore.setState({ error: String(e) }))
   return (
     <li onContextMenu={onMenu(() => hitMenu(hit, add, false, onPlay))} className="min-w-0">
       <button onClick={onPlay} className="group flex w-full flex-col gap-2 text-left">
@@ -236,7 +236,7 @@ export function SearchView() {
     if (identified?.libraryId) return [identified.libraryId]
     const id = await api.addTrack(trackOf(identified!))
     setFound((f) => f && { ...f, libraryId: id })
-    await useStore.getState().refresh()
+    await useStore.getState().refreshChanged()
     return [id]
   }
 

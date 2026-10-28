@@ -196,7 +196,7 @@ export function App() {
       .catch(() => {})
     void library
       .then(() => api.backfillArt(region()))
-      .then((n) => (n ? refresh() : undefined))
+      .then((n) => (n ? useStore.getState().refreshChanged() : undefined))
       .catch(() => {})
   }, [refresh])
   useEffect(() => startSessionSaving(), [])
@@ -210,7 +210,7 @@ export function App() {
   useEffect(() => startSyncMode(), [])
   // Watched local folders changed: the library shows it.
   useEffect(() => {
-    const off = api.onLocalChanged(() => void useStore.getState().refresh())
+    const off = api.onLocalChanged(() => void useStore.getState().refreshChanged())
     return () => void off.then((f) => f())
   }, [])
   useEffect(() => startPlugins(), [])

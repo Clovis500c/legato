@@ -58,12 +58,12 @@ export async function deleteSmart(list: SmartList) {
 
 /** Today's songs copied into a normal playlist (which then stays as it is). */
 async function saveAsPlaylist(list: SmartList, ids: number[]) {
-  const { refresh, notify, go } = useStore.getState()
+  const { refreshChanged, notify, go } = useStore.getState()
   try {
     const id = await api.editPlaylist({ type: 'create', name: list.name })
     if (id === null) return
     if (ids.length) await api.editPlaylist({ type: 'add', id, trackIds: ids })
-    await refresh()
+    await refreshChanged()
     notify(tr('Saved as the playlist “{name}”', { name: list.name }), { action: { label: tr('Open'), run: () => go({ name: 'playlist', id }) } })
   } catch (e) {
     notify(String(e), { kind: 'error' })

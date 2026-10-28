@@ -500,8 +500,11 @@ Original plan:
       YouTube graph 159 → 15 nodes until the Live Editor is used, startup script 2,453 → 538 kB (languages on demand),
       pages no longer redraw on every key typed (narrow store picks), local folder rescans 1.91 s → 6 ms (3,000 files),
       one shared HTTP client (connections kept), SQLite synchronous NORMAL + 16 MB cache.
-- [ ] Next if wanted: the library reloads whole (~11 MB JSON for 50,000 songs) after every like, add or edit;
-      sending only what changed would make those instant on big libraries. Bigger change, not started.
+- [x] The library no longer reloads whole after every like, add or edit (2026-10-28): Rust logs the rows written
+      (temp triggers), `library_changes` sends only those, the UI patches its copy in place. 50,000 songs: a like
+      166 ms + 12.6 MB of JSON (+ 34 ms parse, every list re-sorted) → 0.5 ms + 9 kB, the songs list untouched; an
+      add 9 ms + 3.5 kB, a removal 7.5 ms + 14 kB; a 2,000-song playlist opens in 40 ms instead of 85. Syncs with
+      nothing new 0.70 → 0.38 s (unchanged rows no longer rewritten). Not checked in the real app yet.
 - [x] Interactive preview for visual settings (background blur, dimming, motion, …): small live sample of the effect.
 - [x] Artists and Albums: filter and sort, like songs in playlists.
 - [x] Mixes: better algorithm, more mixes; covers as a 2×2 grid like playlists, setting in Advanced: grid / single

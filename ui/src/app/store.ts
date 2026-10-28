@@ -3,6 +3,7 @@ import { api, type Credentials, type LibraryPlaylist, type LibraryTrack, type Pl
 import type { Filter, GroupSize, GroupSort, PlayStats, Sort } from '../features/library/filter'
 import { tr, trn } from '../shared/i18n/i18n'
 import { noteList } from '../features/home/recentLists'
+import { patchLibrary } from './libraryPatch'
 
 export type SettingsSection = 'general' | 'playback' | 'appearance' | 'sources' | 'sync' | 'shield' | 'shortcuts' | 'about'
 
@@ -97,7 +98,11 @@ interface State {
   setSort: (sort: Sort) => void
   setPlaylistSort: (sort: Sort) => void
   dismissError: () => void
+  /** Everything read again: sign-in states, library, play counts. Startup, syncs, imports, sign-ins. */
   refresh: () => Promise<void>
+  /** After an edit (like, add, playlist edit, removal, merge…): only the library rows written since come, patched in
+   *  (the whole library when too many did). */
+  refreshChanged: () => Promise<void>
   sync: () => Promise<void>
   connect: (source: Service, credentials: Credentials) => Promise<boolean>
   disconnect: (source: Service) => Promise<void>
@@ -117,8 +122,8 @@ const offline: SourceStatus = { configured: false, connected: false }
 export const pageQuery = (s: State) => (s.scoped ? s.query : '')
 
 export const useStore = create<State>((set, get) => {
-  /** Run action: busy flag, error capture, reload. Returns success. */
-  async function run(fn: () => Promise<unknown>): Promise<boolean> {
+  /** Run action: busy flag, error capture, reload (whole, or what changed). Returns success. */
+  async function run(fn: () => Promise<unknown>, whole = true): Promise<boolean> {
     set({ busy: true, error: undefined })
     try {
       await fn()
@@ -127,7 +132,7 @@ export const useStore = create<State>((set, get) => {
       set({ error: String(e) })
       return false
     } finally {
-      await get().refresh()
+      await (whole ? get().refresh() : get().refreshChanged())
       set({ busy: false })
     }
   }
@@ -136,7 +141,37 @@ export const useStore = create<State>((set, get) => {
   let shown = 0
   function loadPlaylist(id: number) {
     const mine = ++shown
-    api.playlistTracks(id).then((playlistTracks) => mine === shown && get().view.name === 'playlist' && set({ playlistTracks }), () => {})
+    return api.playlistTracks(id).then((playlistTracks) => void (mine === shown && get().view.name === 'playlist' && set({ playlistTracks })), () => {})
+  }
+
+  // One library read at a time: each empties Rust's change log, so an answer landing after a newer one would undo it.
+  let lane: Promise<unknown> = Promise.resolve()
+  function inLane(read: () => Promise<void>) {
+    const next = lane.then(read)
+    lane = next.catch(() => {})
+    return next
+  }
+
+  async function readWhole() {
+    const [status, lib, stats] = await Promise.all([api.sourcesStatus(), api.library(), api.playStats().catch(() => ({}))])
+    set({ status, ...lib, stats })
+    // The open playlist follows (sync, Find versions, add to YouTube, removals).
+    const v = get().view
+    if (v.name === 'playlist') void loadPlaylist(v.id)
+  }
+
+  async function readChanges() {
+    const c = await api.libraryChanges()
+    if (!c) return readWhole()
+    const before = get()
+    const lists = patchLibrary(before, c)
+    set(lists)
+    if (c.history) set({ stats: await api.playStats().catch(() => get().stats) })
+    // The open playlist again only when it changed: its own rows, or one of its songs (rows without a source too).
+    const v = get().view
+    if (v.name !== 'playlist') return
+    const touched = new Set([...c.gone, ...c.tracks.map((t) => t.id)])
+    if (v.id in c.orders || c.playlistsGone.includes(v.id) || before.playlistTracks.some((t) => touched.has(t.id))) await loadPlaylist(v.id)
   }
 
   function show(view: View) {
@@ -208,13 +243,8 @@ export const useStore = create<State>((set, get) => {
     setPlaylistSort: (playlistSort) => set({ playlistSort, ...(playlistSort === 'random' && { seed: Date.now() }) }),
     dismissError: () => set({ error: undefined }),
 
-    async refresh() {
-      const [status, lib, orders, stats] = await Promise.all([api.sourcesStatus(), api.library(), api.playlistOrders().catch(() => ({})), api.playStats().catch(() => ({}))])
-      set({ status, ...lib, orders, stats })
-      // The open playlist follows (sync, Find versions, add to YouTube, removals).
-      const v = get().view
-      if (v.name === 'playlist') loadPlaylist(v.id)
-    },
+    refresh: () => inLane(readWhole),
+    refreshChanged: () => inLane(readChanges),
 
     async sync() {
       let report: SyncReport | undefined
@@ -228,7 +258,7 @@ export const useStore = create<State>((set, get) => {
     disconnect: (source) => run(() => api.disconnect(source)).then(() => {}),
     async addLink(url) {
       let added = ''
-      if (await run(async () => (added = await api.addLink(url)))) get().notify(tr('Added: {title}', { title: added }))
+      if (await run(async () => (added = await api.addLink(url)), false)) get().notify(tr('Added: {title}', { title: added }))
     },
     async importSpotify(url) {
       get().notify(tr('Importing from Spotify… (finding each song on YouTube)'))
@@ -252,9 +282,8 @@ export const useStore = create<State>((set, get) => {
     dismissToast: (id) => set({ toasts: get().toasts.filter((t) => t.id !== id) }),
     async editPlaylist(edit) {
       let id: number | null = null
-      const ok = await run(async () => (id = await api.editPlaylist(edit)))
-      const v = get().view
-      if (ok && v.name === 'playlist') set({ playlistTracks: await api.playlistTracks(v.id) })
+      // The open playlist comes again with the changes when it is the one edited.
+      await run(async () => (id = await api.editPlaylist(edit)), false)
       return id
     },
   }

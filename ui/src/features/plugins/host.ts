@@ -77,13 +77,13 @@ async function answer(c: PluginCall): Promise<unknown> {
     }
     case 'playlists.create': {
       const id = await api.editPlaylist({ type: 'create', name: String(a.name ?? '').slice(0, 200) })
-      await useStore.getState().refresh()
+      await useStore.getState().refreshChanged()
       return id
     }
     case 'playlists.add': {
       const trackIds = Array.isArray(a.trackIds) ? a.trackIds.filter((x): x is number => Number.isInteger(x)) : []
       await api.editPlaylist({ type: 'add', id: Number(a.id), trackIds })
-      await useStore.getState().refresh()
+      await useStore.getState().refreshChanged()
       return null
     }
     case 'ui.notify':

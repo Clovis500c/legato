@@ -50,11 +50,11 @@ export async function toggleLike(t: LibraryTrack) {
         if (p.custom) await app().editPlaylist({ type: 'removeTrack', id: p.id, trackId: id })
         else await api.removeFromPlaylist(p.id, id)
       }
-      await app().refresh()
+      await app().refreshChanged()
       return
     }
     const id = libraryId(t, app().tracks) ?? (await api.addTrack(t))
-    await app().refresh()
+    await app().refreshChanged()
     const yt = app().status.youtube.connected && t.ids.youtube ? youtubeLiked(app().playlists) : undefined
     // Refused by YouTube Music (signed out): kept in your own list, liked there at the next sync (sync_all).
     let refused: unknown = null
@@ -67,7 +67,7 @@ export async function toggleLike(t: LibraryTrack) {
       if (own === null) return
       await app().editPlaylist({ type: 'add', id: own, trackIds: [id] })
     }
-    await app().refresh()
+    await app().refreshChanged()
     app().notify(tr('Added to {name}: {songs}', { name: NAME, songs: tr('“{title}”', { title: t.title }) }))
     if (refused) app().notify(String(refused), { kind: 'error' })
   } catch (e) {

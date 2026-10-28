@@ -14,7 +14,7 @@ export function startSyncMode(): () => void {
     const text = mergedText(m)
     if (text) useStore.getState().notify(text, { kind: 'info' })
     if (m.settings) void useSettings.getState().reload()
-    void useStore.getState().refresh()
+    void useStore.getState().refreshChanged()
     if (m.edits) void loadSong(useEditor.getState().song)
   })
   void api

@@ -48,6 +48,11 @@ src-tauri/              thin shell: commands, keychain, WebView2 hook, media pan
 - SQLite's update hook bumps a library or history version on every row written. Library, playlist, play stats and
   mixes answers are kept as ready-to-send JSON until their version changes (mixes also on a new day or hour), so no
   write path can forget to invalidate.
+- Library change log: temp triggers note every song and playlist row written, whatever wrote it. After an edit the UI
+  asks `library_changes` for those rows only (plus the rest of their channels: talk-channel musicness) and patches its
+  copy (`ui/src/app/libraryPatch.ts`: unchanged rows keep their objects, new ones land where a whole read puts them).
+  Startup, syncs, imports and sign-ins read the library whole, as does any change of more than 5,000 songs; a whole
+  read empties the log. Never `INSERT OR REPLACE` into the library tables: the rows it drops fire no trigger.
 - Images: a 64 MB memory LRU in front of the 300 MB disk cache; the same image asked by many rows at once is read or
   downloaded once.
 - Network answers (YouTube Music and Apple searches) for 30 minutes; sign-in state for 30 seconds, cleared on

@@ -83,7 +83,7 @@ export async function removePositions(id: number, positions: number[]) {
 export async function markMusic(ids: number[], music: boolean | null) {
   try {
     await api.setMusic(ids, music)
-    await app().refresh()
+    await app().refreshChanged()
   } catch (e) {
     return app().notify(String(e), { kind: 'error' })
   }

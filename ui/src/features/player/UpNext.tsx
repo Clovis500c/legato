@@ -44,7 +44,7 @@ export function useNextCount(): number {
 /** The whole queue in play order as a new playlist (recommendations join the library on the way). */
 async function saveQueue() {
   const { list, order } = usePlayer.getState()
-  const { refresh, notify, go } = useStore.getState()
+  const { refreshChanged, notify, go } = useStore.getState()
   const name = await askText({ title: tr('Save the queue as a playlist'), ok: tr('Save'), value: tr('Queue of {date}', { date: new Date().toLocaleDateString() }) })
   if (!name) return
   try {
@@ -56,7 +56,7 @@ async function saveQueue() {
     const id = await api.editPlaylist({ type: 'create', name })
     if (id === null) return
     await api.editPlaylist({ type: 'add', id, trackIds: ids })
-    await refresh()
+    await refreshChanged()
     notify(tr('Saved as the playlist “{name}”', { name }), { action: { label: tr('Open'), run: () => go({ name: 'playlist', id }) } })
   } catch (e) {
     notify(String(e), { kind: 'error' })

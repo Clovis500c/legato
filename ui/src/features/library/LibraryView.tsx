@@ -196,7 +196,7 @@ function GroupBar({ page, tracks }: { page: 'albumView' | 'artistView'; tracks: 
 
 /** "Find versions": YouTube match for tracks that only preview or don't play. 1 search each. */
 function FindVersions({ tracks }: { tracks: LibraryTrack[] }) {
-  const { status, refresh, notify } = useStore(useShallow(({ status, refresh, notify }) => ({ status, refresh, notify })))
+  const { status, refreshChanged, notify } = useStore(useShallow(({ status, refreshChanged, notify }) => ({ status, refreshChanged, notify })))
   const [busy, setBusy] = useState(false)
   if (!tracks.length) return null
   if (!status.youtube.connected) return <span className="font-sans text-xs tracking-normal text-ink-2 normal-case">{tr('Sign in to YouTube Music (Settings › Accounts) to find full versions.')}</span>
@@ -204,7 +204,7 @@ function FindVersions({ tracks }: { tracks: LibraryTrack[] }) {
     setBusy(true)
     try {
       const r = await api.findVersions(tracks.map((t) => t.id))
-      await refresh()
+      await refreshChanged()
       notify(tr('Full versions found: {found} of {total}', { found: r.found, total: r.found + r.missing }))
     } catch (e) {
       useStore.setState({ error: String(e) })

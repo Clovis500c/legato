@@ -95,7 +95,7 @@ function MissingRow({ track, number, sub }: { track: Track; number: number; sub?
     setBusy(true)
     try {
       await api.addTrack(await api.resolveTrack(track).catch(() => track))
-      await useStore.getState().refresh()
+      await useStore.getState().refreshChanged()
     } catch (e) {
       useStore.getState().notify(String(e), { kind: 'error' })
     } finally {

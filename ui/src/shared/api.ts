@@ -59,6 +59,27 @@ export interface LibraryPlaylist {
   orderManual: boolean
 }
 
+/** src-tauri library: the whole library. orders = playlist id → its track ids in order (empty playlists left out). */
+export interface LibraryData {
+  tracks: LibraryTrack[]
+  playlists: LibraryPlaylist[]
+  orders: Record<number, number[]>
+}
+
+/** crates/core library::Changes: what was written since the last library read (app/libraryPatch.ts applies it). */
+export interface LibraryChanges {
+  /** Whole rows: new or changed songs, and the other songs of their channels (musicness can follow). */
+  tracks: LibraryTrack[]
+  /** Out of the library list. */
+  gone: number[]
+  playlists: LibraryPlaylist[]
+  playlistsGone: number[]
+  /** Changed playlists' track ids in order. */
+  orders: Record<number, number[]>
+  /** Plays or mix preferences written since: play counts to read again. */
+  history: boolean
+}
+
 /** crates/connectors ytmusic::ListRef: a playlist / album page, or a radio. */
 export type ListRef = { type: 'browse'; id: string } | { type: 'radio'; videoId: string | null; playlistId: string }
 
@@ -455,7 +476,9 @@ export const api = {
   connect: (source: Service, credentials: Credentials) => invoke<void>('connect', { source, credentials }),
   disconnect: (source: Service) => invoke<void>('disconnect', { source }),
   sync: () => invoke<SyncReport>('sync_all'),
-  library: () => invoke<{ tracks: LibraryTrack[]; playlists: LibraryPlaylist[] }>('library'),
+  library: () => invoke<LibraryData>('library'),
+  /** null = too much changed: read the library whole. */
+  libraryChanges: () => invoke<LibraryChanges | null>('library_changes'),
   playlistTracks: (id: number) => invoke<LibraryTrack[]>('playlist_tracks', { id }),
   /** New playlist id for create / duplicate. */
   editPlaylist: (edit: PlaylistEdit) => invoke<number | null>('edit_playlist', { edit }),
@@ -658,8 +681,6 @@ export const api = {
   onYtWatch: (cb: (r: WatchReport) => void) => listen<WatchReport>('ytwatch', (e) => cb(e.payload)),
   /** Live processing reports of the watch page (live.js). */
   onLive: (cb: (r: LiveReport) => void) => listen<LiveReport>('live', (e) => cb(e.payload)),
-  /** Track ids of every playlist, in order (covers). */
-  playlistOrders: () => invoke<Record<number, number[]>>('playlist_orders'),
   /** Picked image copied into the app; returns its name for the art scheme (cover/<name>). */
   saveCover: (playlistId: number, path: string) => invoke<string>('save_cover', { playlistId, path }),
   /** Track cover to a file (png/jpg). source = art scheme path, crop = fractions (video bars cut). Returns the file written. */

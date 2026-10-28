@@ -62,7 +62,7 @@ export const findDuplicates = (scope: DupeScope = {}) => useDupes.setState({ sco
  * with every source, playlist spot and play. Live takes, remixes, slowed versions stay apart.
  */
 function DuplicatesDialog({ scope, onClose }: { scope: DupeScope; onClose: () => void }) {
-  const { tracks: all, stats, refresh, notify, orders, playlists } = useStore(useShallow(({ tracks, stats, refresh, notify, orders, playlists }) => ({ tracks, stats, refresh, notify, orders, playlists })))
+  const { tracks: all, stats, refreshChanged, notify, orders, playlists } = useStore(useShallow(({ tracks, stats, refreshChanged, notify, orders, playlists }) => ({ tracks, stats, refreshChanged, notify, orders, playlists })))
   const tracks = useMemo(() => {
     if (!scope.ids) return all
     const ids = new Set(scope.ids)
@@ -84,7 +84,7 @@ function DuplicatesDialog({ scope, onClose }: { scope: DupeScope; onClose: () =>
           g.map((t) => t.id).filter((id) => id !== keep),
         )
       }
-      await refresh()
+      await refreshChanged()
       notify(trn(list.length, 'Merged {n} song', 'Merged {n} songs'))
     } catch (e) {
       notify(String(e), { kind: 'error' })
