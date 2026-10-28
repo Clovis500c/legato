@@ -201,6 +201,8 @@ function ramp(gain: (t: number) => number, ms: number, done?: () => void) {
 const blocked = new Set<string>()
 const unplayable = new Set<string>()
 let others: { trackId: number; ids: string[] } | null = null
+// Songs skipped for failing since one last played (track ids): once they cover the queue, it stops.
+const failedRun = new Set<number>()
 
 /** Where the video shows: the slot, or the embed's own default spot (iframe box). */
 function videoRect(): DOMRect | null {
@@ -263,9 +265,19 @@ async function tryOtherUpload(trackId: number, failed: string, why: string) {
     // Same embed: the frame loads the new id (loadVideoById).
     return usePlayer.setState((s) => (s.now ? { now: { ...s.now, youtubeId: next }, playId: s.playId + 1, positionMs: 0, playing: true } : {}))
   }
+  failedRun.add(trackId)
+  const p = usePlayer.getState()
+  // Whole queue failed in a row: stop once, repeat would loop over it forever (2026-10-28: ~80 songs a second).
+  if (p.order.every((j) => failedRun.has(p.list[j].id) || passOver(p.list[j], p.skipLong))) {
+    failedRun.clear()
+    // Last song's stuck check (10 s) would start the queue again.
+    clearTimeout(stuckTimer)
+    notify(tr('No song in the queue can play here: stopped'), { kind: 'error' })
+    return usePlayer.setState({ playing: false })
+  }
   notify(tr('{why}, and no other upload was found: skipped', { why }), { kind: 'error' })
   // Manual step: repeat one would replay the blocked video forever.
-  usePlayer.getState().step(1)
+  p.step(1)
 }
 
 export const usePlayer = create<PlayerState>((set, get) => ({
@@ -654,6 +666,11 @@ function overlap() {
 
 usePlayer.subscribe((s, prev) => {
   if (s.playId !== prev.playId && s.now?.via === 'youtube') watchForStuck(s.playId)
+})
+
+// A song plays: earlier failures no longer in a row.
+usePlayer.subscribe((s) => {
+  if (s.positionMs > s.startAt) failedRun.clear()
 })
 
 // Length known once playing (some YouTube cards come without): too long, and the queue got here on its own = next. The

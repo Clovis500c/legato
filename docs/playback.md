@@ -90,7 +90,8 @@ Status on 2026-10-16. YouTube, local files and Apple Music previews: done and te
 - Still unplayable on the watch page (region, age without a signed-in adult account, removed, private: playability
   status), or error 100 (removed): `alternative_videos` searches YouTube Music songs and videos for the same song (same
   cleaned title and length, any channel) and plays the first that works, else a clear message and the next song.
-  Nothing is extracted: both are YouTube's own players.
+  When every song of the queue has failed in a row (none played since), playback stops with one message instead of
+  looping on repeat (2026-10-28). Nothing is extracted: both are YouTube's own players.
 - Now Playing Auto mode: frames `1.jpg` / `2.jpg` / `3.jpg` (25 / 50 / 75 %) compared at 32×24 (`still.ts`); nearly the
   same = still image upload = cover. Cover mode keeps the embed playing, transparent (user's choice, see plan).
 - Fades between songs: volume × `fadeGain` (smoothstep), only on transitions that happen on their own; Spotify none.

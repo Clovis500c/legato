@@ -203,6 +203,7 @@ const hi: Record<string, string> = {
   'This video can’t play in apps': 'यह वीडियो ऐप्स में नहीं चल सकता',
   '{why}: playing another upload of the song': '{why}: इस गाने का कोई दूसरा अपलोड चल रहा है',
   '{why}, and no other upload was found: skipped': '{why}, और कोई दूसरा अपलोड नहीं मिला: छोड़ दिया गया',
+  'No song in the queue can play here: stopped': 'कतार का कोई भी गाना यहाँ नहीं चल सकता: प्लेबैक रोक दिया गया',
   'This video can’t play here ({reason})': 'यह वीडियो यहां नहीं चल सकता ({reason})',
   'This video can’t play here ({reason}): skipped': 'यह वीडियो यहां नहीं चल सकता ({reason}): छोड़ दिया गया',
   'This video was removed': 'यह वीडियो हटा दिया गया',

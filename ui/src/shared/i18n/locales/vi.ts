@@ -203,6 +203,7 @@ const vi: Record<string, string> = {
   'This video can’t play in apps': 'Video này không phát được trong ứng dụng',
   '{why}: playing another upload of the song': '{why}: đang phát một bản tải lên khác của bài hát',
   '{why}, and no other upload was found: skipped': '{why}, và không tìm thấy bản tải lên khác: đã bỏ qua',
+  'No song in the queue can play here: stopped': 'Không bài hát nào trong hàng đợi phát được ở đây: đã dừng',
   'This video can’t play here ({reason})': 'Video này không phát được ở đây ({reason})',
   'This video can’t play here ({reason}): skipped': 'Video này không phát được ở đây ({reason}): đã bỏ qua',
   'This video was removed': 'Video này đã bị gỡ',

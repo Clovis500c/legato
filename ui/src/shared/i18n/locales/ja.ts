@@ -203,6 +203,7 @@ const ja: Record<string, string> = {
   'This video can’t play in apps': 'この動画はアプリでは再生できません',
   '{why}: playing another upload of the song': '{why}：この曲の別のアップロードを再生します',
   '{why}, and no other upload was found: skipped': '{why}、別のアップロードも見つからなかったためスキップしました',
+  'No song in the queue can play here: stopped': 'キューの曲はどれもここでは再生できないため停止しました',
   'This video can’t play here ({reason})': 'この動画はここでは再生できません（{reason}）',
   'This video can’t play here ({reason}): skipped': 'この動画はここでは再生できません（{reason}）：スキップしました',
   'This video was removed': 'この動画は削除されました',

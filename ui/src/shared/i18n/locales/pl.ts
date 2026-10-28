@@ -203,6 +203,7 @@ const pl: Record<string, string> = {
   'This video can’t play in apps': 'Tego filmu nie można odtwarzać w aplikacjach',
   '{why}: playing another upload of the song': '{why}: odtwarzanie innej wersji tego utworu',
   '{why}, and no other upload was found: skipped': '{why}, a innej wersji nie znaleziono: pominięto',
+  'No song in the queue can play here: stopped': 'Żadnego utworu z kolejki nie da się tu odtworzyć: zatrzymano',
   'This video can’t play here ({reason})': 'Tego filmu nie można tu odtworzyć ({reason})',
   'This video can’t play here ({reason}): skipped': 'Tego filmu nie można tu odtworzyć ({reason}): pominięto',
   'This video was removed': 'Ten film został usunięty',

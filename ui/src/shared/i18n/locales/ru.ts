@@ -203,6 +203,7 @@ const ru: Record<string, string> = {
   'This video can’t play in apps': 'Это видео нельзя воспроизвести в приложениях',
   '{why}: playing another upload of the song': '{why}: играет другая загрузка этой песни',
   '{why}, and no other upload was found: skipped': '{why}, другая загрузка не найдена: пропущено',
+  'No song in the queue can play here: stopped': 'Ни одну песню из очереди нельзя воспроизвести здесь: остановлено',
   'This video can’t play here ({reason})': 'Это видео нельзя воспроизвести здесь ({reason})',
   'This video can’t play here ({reason}): skipped': 'Это видео нельзя воспроизвести здесь ({reason}): пропущено',
   'This video was removed': 'Это видео удалено',

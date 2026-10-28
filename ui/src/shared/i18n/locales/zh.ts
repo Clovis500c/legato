@@ -203,6 +203,7 @@ const zh: Record<string, string> = {
   'This video can’t play in apps': '此视频无法在应用中播放',
   '{why}: playing another upload of the song': '{why}：正在播放这首歌的另一个上传版本',
   '{why}, and no other upload was found: skipped': '{why}，且未找到其他上传版本：已跳过',
+  'No song in the queue can play here: stopped': '队列中没有可在此播放的歌曲：已停止',
   'This video can’t play here ({reason})': '此视频无法在这里播放（{reason}）',
   'This video can’t play here ({reason}): skipped': '此视频无法在这里播放（{reason}）：已跳过',
   'This video was removed': '此视频已被删除',

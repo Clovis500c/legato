@@ -203,6 +203,7 @@ const ko: Record<string, string> = {
   'This video can’t play in apps': '이 동영상은 앱에서 재생할 수 없습니다',
   '{why}: playing another upload of the song': '{why}: 이 곡의 다른 업로드를 재생합니다',
   '{why}, and no other upload was found: skipped': '{why}, 다른 업로드도 찾지 못해 건너뛰었습니다',
+  'No song in the queue can play here: stopped': '대기열의 어떤 노래도 여기서 재생할 수 없어 중지했습니다',
   'This video can’t play here ({reason})': '이 동영상은 여기에서 재생할 수 없습니다 ({reason})',
   'This video can’t play here ({reason}): skipped': '이 동영상은 여기에서 재생할 수 없습니다 ({reason}): 건너뜀',
   'This video was removed': '이 동영상은 삭제되었습니다',

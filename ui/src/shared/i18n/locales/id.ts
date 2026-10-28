@@ -203,6 +203,7 @@ const id: Record<string, string> = {
   'This video can’t play in apps': 'Video ini tidak bisa diputar di aplikasi',
   '{why}: playing another upload of the song': '{why}: memutar unggahan lain dari lagu ini',
   '{why}, and no other upload was found: skipped': '{why}, dan tidak ada unggahan lain: dilewati',
+  'No song in the queue can play here: stopped': 'Tidak ada lagu di antrean yang bisa diputar di sini: dihentikan',
   'This video can’t play here ({reason})': 'Video ini tidak bisa diputar di sini ({reason})',
   'This video can’t play here ({reason}): skipped': 'Video ini tidak bisa diputar di sini ({reason}): dilewati',
   'This video was removed': 'Video ini telah dihapus',

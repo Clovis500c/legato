@@ -203,6 +203,7 @@ const tr: Record<string, string> = {
   'This video can’t play in apps': 'Bu video uygulamalarda oynatılamıyor',
   '{why}: playing another upload of the song': '{why}: şarkının başka bir yüklemesi çalınıyor',
   '{why}, and no other upload was found: skipped': '{why} ve başka yükleme bulunamadı: atlandı',
+  'No song in the queue can play here: stopped': 'Sıradaki hiçbir şarkı burada çalınamıyor: durduruldu',
   'This video can’t play here ({reason})': 'Bu video burada oynatılamıyor ({reason})',
   'This video can’t play here ({reason}): skipped': 'Bu video burada oynatılamıyor ({reason}): atlandı',
   'This video was removed': 'Bu video kaldırıldı',

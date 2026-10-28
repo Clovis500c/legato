@@ -203,6 +203,7 @@ const sv: Record<string, string> = {
   'This video can’t play in apps': 'Den här videon kan inte spelas i appar',
   '{why}: playing another upload of the song': '{why}: spelar en annan uppladdning av låten',
   '{why}, and no other upload was found: skipped': '{why}, och ingen annan uppladdning hittades: hoppades över',
+  'No song in the queue can play here: stopped': 'Ingen låt i kön kan spelas här: uppspelningen stoppades',
   'This video can’t play here ({reason})': 'Den här videon kan inte spelas här ({reason})',
   'This video can’t play here ({reason}): skipped': 'Den här videon kan inte spelas här ({reason}): hoppades över',
   'This video was removed': 'Den här videon har tagits bort',

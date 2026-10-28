@@ -203,6 +203,7 @@ const uk: Record<string, string> = {
   'This video can’t play in apps': 'Це відео не можна відтворити в застосунках',
   '{why}: playing another upload of the song': '{why}: грає інше завантаження цієї пісні',
   '{why}, and no other upload was found: skipped': '{why}, іншого завантаження не знайдено: пропущено',
+  'No song in the queue can play here: stopped': 'Жодну пісню з черги не можна відтворити тут: зупинено',
   'This video can’t play here ({reason})': 'Це відео не можна відтворити тут ({reason})',
   'This video can’t play here ({reason}): skipped': 'Це відео не можна відтворити тут ({reason}): пропущено',
   'This video was removed': 'Це відео видалено',
