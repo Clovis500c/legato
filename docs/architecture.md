@@ -91,8 +91,9 @@ and the app's caches.
 `src-tauri/src/background.rs`: closing the window keeps the app in the notification area (Settings › General, on by
 default), music playing. Hidden, the WebView2 controller is set invisible (no painting, page `hidden`) and its memory
 target low; after 5 minutes hidden with nothing playing it is suspended, and woken before the tray, a global shortcut,
-a media key or showing the window reach it. A second launch shows the running one (single instance). Quit in the tray
-menu is the only exit. Measured: WebView2 working set 867 MB shown → 96 MB hidden, music on.
+a media key or showing the window reach it: the page is then held `visible` until the music moves (a hidden page
+stayed frozen after `Resume()`, the key was lost). A second launch shows the running one (single instance). Quit in
+the tray menu is the only exit. Measured: WebView2 working set 867 MB shown → 96 MB hidden, music on.
 
 ## Add-ons
 

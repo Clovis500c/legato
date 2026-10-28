@@ -18,7 +18,7 @@ static QUITTING: AtomicBool = AtomicBool::new(false);
 /// Something plays (media panel updates): never suspended then.
 static PLAYING: AtomicBool = AtomicBool::new(false);
 static SUSPENDED: AtomicBool = AtomicBool::new(false);
-/// Started in the tray: page still `visible` until the music moves, first position seen then.
+/// Hidden window, page `visible` until the music moves (first position seen while playing).
 static HELD: Mutex<Option<Option<u64>>> = Mutex::new(None);
 /// Since when the window is hidden.
 static HIDDEN: Mutex<Option<Instant>> = Mutex::new(None);
@@ -33,19 +33,25 @@ pub fn set_playing(playing: bool) {
     PLAYING.store(playing, Ordering::Relaxed);
 }
 
-/// Music really moved: playing, over a second away from the first position seen.
+/// Music really moved: playing, over a second past the first position seen.
 pub fn has_moved(first: Option<u64>, playing: bool, position_ms: u64) -> bool {
-    playing && first.is_some_and(|f| position_ms.abs_diff(f) > 1000)
+    playing && first.is_some_and(|f| position_ms > f + 1000)
 }
 
-/// Launch in the tray (after an update from there): window hidden, page left `visible`. Chromium never starts media
-/// in a page that was never shown (resumed song sat at 0:00, 2026-10-26); low-resource mode once the music moves.
+/// Launch in the tray (after an update from there): hidden, page held `visible` until the music moves.
 pub fn hide_until_playing(app: &AppHandle) {
-    if let Some(w) = app.get_window("main") {
-        let _ = w.hide();
+    hide(app);
+    hold(app);
+}
+
+/// Chromium never starts a new media load in a hidden page: a song resumed after a tray launch sat at 0:00
+/// (2026-10-26), a second embed (songs overlapping) never started (2026-10-28). Page `visible` until the music moves.
+pub fn hold(app: &AppHandle) {
+    if HIDDEN.lock().unwrap().is_none() {
+        return;
     }
-    *HIDDEN.lock().unwrap() = Some(Instant::now());
     *HELD.lock().unwrap() = Some(None);
+    set_visible(app, true);
 }
 
 /// Player report (media panel): ends the hold once the music moves.
@@ -58,7 +64,8 @@ pub fn played(app: &AppHandle, playing: bool, position_ms: u64) {
         if HIDDEN.lock().unwrap().is_some() {
             set_visible(app, false);
         }
-    } else if playing && first.is_none() {
+    } else if playing && first.is_none_or(|f| position_ms < f) {
+        // First report, or a new song from its start: counted from there.
         *held = Some(Some(position_ms));
     }
 }
@@ -106,8 +113,10 @@ pub fn quit(app: &AppHandle) {
     app.exit(0);
 }
 
-/// Suspended webview resumed: call before sending it anything.
+/// Before the webview gets anything (key, tray, shortcut): resumed if suspended; hidden, page held `visible`. Resume()
+/// alone left a hidden page frozen: the key was lost, nothing played until the window opened (2026-10-28).
 pub fn wake(app: &AppHandle) {
+    hold(app);
     if !SUSPENDED.swap(false, Ordering::Relaxed) {
         return;
     }
@@ -156,6 +165,10 @@ pub fn spawn_sleeper(app: AppHandle) {
             if !should_sleep(hidden_for, PLAYING.load(Ordering::Relaxed), SUSPENDED.load(Ordering::Relaxed)) {
                 continue;
             }
+            // Held for a key that started nothing: hidden again (WebView2 only suspends hidden pages).
+            if HELD.lock().unwrap().take().is_some() {
+                set_visible(&app, false);
+            }
             #[cfg(windows)]
             if let Some(wv) = app.get_webview("main") {
                 let _ = wv.with_webview(|pw| unsafe {
@@ -186,6 +199,7 @@ mod tests {
         assert!(!has_moved(Some(0), true, 0), "stuck at 0:00");
         assert!(!has_moved(Some(0), false, 5000), "paused");
         assert!(has_moved(Some(60_000), true, 62_000));
+        assert!(!has_moved(Some(208_000), true, 0), "next song starting");
     }
 
     #[test]
