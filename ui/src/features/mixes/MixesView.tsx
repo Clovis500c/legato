@@ -150,8 +150,8 @@ export function MixesView() {
             const list = mixes?.filter((m) => m.kind === kind) ?? []
             if (!list.length) return null
             return (
-              <section key={kind} className="flex flex-col gap-4">
-                <h2 className="kicker">{tr(title)}</h2>
+              <section key={kind} className="flex flex-col gap-3">
+                <h2 className="text-[1.375rem] leading-7 font-bold">{tr(title)}</h2>
                 {/* Cards' own padding is the gap (shared/ui/Section MediaCard). */}
                 <ul className="-mx-3 -mt-2 flex flex-wrap">
                   {list.map((m) => (

@@ -375,22 +375,34 @@ export function AlbumsView() {
       {albums.length === 0 ? (
         <p className="py-10 text-center text-ink-2">{all.length ? tr('No matching albums.') : tr('No albums yet.')}</p>
       ) : (
+        // Media/Card in a grid: the cards' padding is the gap, covers line up with the title.
         <VirtualGrid
           items={albums}
           itemKey={(a) => `${a.album}\u0000${a.artist}`}
-          className="-mx-2 px-2 pb-6"
+          min={200}
+          gapX={0}
+          gapY={0}
+          className="-mx-3 pb-6"
           render={(a) => (
-            <button onClick={() => go({ name: 'album', album: a.album, artist: a.artist })} onContextMenu={onMenu(() => tracksMenu(a.tracks, ['-', { label: tr('Go to artist'), onSelect: () => go({ name: 'artist', artist: a.artist }) }]))} className="group flex w-full flex-col gap-2 text-left">
-              <span className="relative aspect-square w-full">
-                <Cover title={a.album} art={firstArt(a.tracks)} size={150} className="size-full! text-[1.75rem]!" />
-              </span>
-              <span className="min-w-0">
-                <span className="block truncate text-[0.8125rem] font-semibold group-hover:underline">{a.album}</span>
-                <span className="block truncate text-xs text-ink-2">
-                  {a.artist} · {trn(a.tracks.length, '{n} track', '{n} tracks')}
+            <div onContextMenu={onMenu(() => tracksMenu(a.tracks, ['-', { label: tr('Go to artist'), onSelect: () => go({ name: 'artist', artist: a.artist }) }]))} className="group relative rounded-lg p-3 transition-colors hover:bg-raised">
+              <button onClick={() => go({ name: 'album', album: a.album, artist: a.artist })} className="flex w-full flex-col gap-2.5 text-left">
+                <span className="relative aspect-square w-full">
+                  <Cover title={a.album} art={firstArt(a.tracks)} size={176} className="size-full! text-[1.75rem]!" />
                 </span>
+                <span className="flex min-w-0 flex-col gap-0.5">
+                  <span className="truncate text-base font-medium">{a.album}</span>
+                  <span className="truncate text-[0.8125rem] text-ink-3">
+                    {a.artist} · {trn(a.tracks.length, '{n} track', '{n} tracks')}
+                  </span>
+                </span>
+              </button>
+              {/* Over the cover's bottom right, whatever the card's width. */}
+              <span className="pointer-events-none absolute inset-x-3 top-3 aspect-square">
+                <RoundButton label={tr('Play {title}', { title: a.album })} kind="primary" size="md" className="pointer-events-auto absolute right-2.5 bottom-2.5 opacity-0 group-hover:opacity-100 focus:opacity-100" onClick={() => usePlayer.getState().playTracks(a.tracks, 0)}>
+                  <Play weight="fill" size={16} />
+                </RoundButton>
               </span>
-            </button>
+            </div>
           )}
         />
       )}
@@ -410,11 +422,11 @@ export function ArtistsView() {
       <VirtualList items={artists} rowHeight={57} className="-mx-2 px-2 pb-6">
         {(a, i) => (
           <div role="listitem" key={a.artist} onContextMenu={onMenu(() => tracksMenu(a.tracks))} className="h-full">
-            <button onClick={() => go({ name: 'artist', artist: a.artist })} className="flex h-full w-full items-center gap-4 border-b border-line-soft px-2 text-left hover:bg-raised">
-              <span className="w-8 text-right font-mono text-[0.6875rem] text-ink-3">{String(i + 1).padStart(2, '0')}</span>
-              <Cover title={a.artist} art={trackArt(a.cover)} size={36} className="rounded-full!" />
-              <span className="flex-1 truncate text-[0.8125rem] font-semibold">{a.artist}</span>
-              <span className="font-mono text-[0.625rem] tracking-[0.06em] text-ink-3 uppercase">
+            <button onClick={() => go({ name: 'artist', artist: a.artist })} className="flex h-full w-full items-center gap-4 rounded-md px-2 text-left transition-colors hover:bg-raised">
+              <span className="w-8 text-right text-[0.8125rem] text-ink-3 tabular-nums">{i + 1}</span>
+              <Cover title={a.artist} art={trackArt(a.cover)} size={40} className="rounded-full!" />
+              <span className="flex-1 truncate text-sm font-medium">{a.artist}</span>
+              <span className="text-[0.8125rem] text-ink-3">
                 {trn(a.count, '{n} track', '{n} tracks')} · {trn(a.albums, '{n} album', '{n} albums')}
                 {v.sort === 'most-played' && ` · ${trn(groupStats(a, stats).plays, '{n} play', '{n} plays')}`}
               </span>
