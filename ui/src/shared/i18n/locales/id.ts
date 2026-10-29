@@ -1500,6 +1500,23 @@ const id: Record<string, string> = {
   'Then from the list': 'Lalu dari daftar',
   'Your mixes': 'Mix-mu',
   'Made on this PC from what you play': 'Dibuat di PC ini dari yang kamu putar',
+  'Notifications': 'Notifikasi',
+  'Notification position': 'Posisi notifikasi',
+  'Where the short messages show (song added, liked, errors…)': 'Tempat pesan singkat muncul (lagu ditambahkan, disukai, galat…)',
+  'Bottom': 'Bawah',
+  'Bottom right': 'Kanan bawah',
+  'Top': 'Atas',
+  'Top right': 'Kanan atas',
+  'Which notifications': 'Notifikasi yang ditampilkan',
+  'Important: errors, and the ones with a button (Undo, Open…)': 'Penting: galat, dan yang punya tombol (Urungkan, Buka…)',
+  'Important only': 'Hanya yang penting',
+  'How long notifications stay': 'Lama notifikasi tampil',
+  'Errors stay twice as long': 'Galat tampil dua kali lebih lama',
+  'Short': 'Singkat',
+  'Long': 'Lama',
+  'toast popup message where place corner bottom top right': 'toast popup pesan di mana tempat sudut bawah atas kanan',
+  'toast popup messages fewer quiet annoying errors only important': 'toast popup pesan lebih sedikit tenang mengganggu hanya galat penting',
+  'toast popup message time seconds duration short long': 'toast popup pesan waktu detik durasi singkat lama',
 }
 
 export default id

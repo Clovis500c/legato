@@ -1500,6 +1500,23 @@ const vi: Record<string, string> = {
   'Then from the list': 'Sau đó từ danh sách',
   'Your mixes': 'Bản phối của bạn',
   'Made on this PC from what you play': 'Tạo trên PC này từ những gì bạn nghe',
+  'Notifications': 'Thông báo',
+  'Notification position': 'Vị trí thông báo',
+  'Where the short messages show (song added, liked, errors…)': 'Nơi hiện các thông báo ngắn (đã thêm bài, đã thích, lỗi…)',
+  'Bottom': 'Dưới',
+  'Bottom right': 'Dưới bên phải',
+  'Top': 'Trên',
+  'Top right': 'Trên bên phải',
+  'Which notifications': 'Thông báo nào',
+  'Important: errors, and the ones with a button (Undo, Open…)': 'Quan trọng: lỗi, và các thông báo có nút (Hoàn tác, Mở…)',
+  'Important only': 'Chỉ quan trọng',
+  'How long notifications stay': 'Thông báo hiện trong bao lâu',
+  'Errors stay twice as long': 'Lỗi hiện lâu gấp đôi',
+  'Short': 'Ngắn',
+  'Long': 'Dài',
+  'toast popup message where place corner bottom top right': 'popup thông báo ở đâu vị trí góc dưới trên phải',
+  'toast popup messages fewer quiet annoying errors only important': 'popup thông báo ít hơn yên tĩnh phiền chỉ lỗi quan trọng',
+  'toast popup message time seconds duration short long': 'popup thông báo thời gian giây độ dài ngắn dài',
 }
 
 export default vi

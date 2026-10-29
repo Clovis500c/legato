@@ -1500,6 +1500,23 @@ const zh: Record<string, string> = {
   'Then from the list': '然后来自列表',
   'Your mixes': '你的混音',
   'Made on this PC from what you play': '根据你的播放记录在此电脑上生成',
+  'Notifications': '通知',
+  'Notification position': '通知位置',
+  'Where the short messages show (song added, liked, errors…)': '简短消息显示的位置（已添加歌曲、已点赞、错误等）',
+  'Bottom': '底部',
+  'Bottom right': '右下角',
+  'Top': '顶部',
+  'Top right': '右上角',
+  'Which notifications': '显示哪些通知',
+  'Important: errors, and the ones with a button (Undo, Open…)': '重要：错误，以及带按钮的通知（撤销、打开等）',
+  'Important only': '仅重要通知',
+  'How long notifications stay': '通知显示时长',
+  'Errors stay twice as long': '错误提示的显示时间加倍',
+  'Short': '短',
+  'Long': '长',
+  'toast popup message where place corner bottom top right': '弹出 提示 消息 位置 角落 底部 顶部 右侧',
+  'toast popup messages fewer quiet annoying errors only important': '弹出 提示 消息 减少 安静 烦人 仅错误 重要',
+  'toast popup message time seconds duration short long': '弹出 提示 消息 时间 秒 时长 短 长',
 }
 
 export default zh

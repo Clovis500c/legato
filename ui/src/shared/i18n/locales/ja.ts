@@ -1500,6 +1500,23 @@ const ja: Record<string, string> = {
   'Then from the list': '続いてリストから',
   'Your mixes': 'あなたのミックス',
   'Made on this PC from what you play': '再生履歴からこのPCで作成',
+  'Notifications': '通知',
+  'Notification position': '通知の位置',
+  'Where the short messages show (song added, liked, errors…)': '短いメッセージの表示位置（曲の追加、高評価、エラーなど）',
+  'Bottom': '下',
+  'Bottom right': '右下',
+  'Top': '上',
+  'Top right': '右上',
+  'Which notifications': '表示する通知',
+  'Important: errors, and the ones with a button (Undo, Open…)': '重要: エラーと、ボタン付きの通知（元に戻す、開くなど）',
+  'Important only': '重要なもののみ',
+  'How long notifications stay': '通知の表示時間',
+  'Errors stay twice as long': 'エラーはその2倍表示されます',
+  'Short': '短め',
+  'Long': '長め',
+  'toast popup message where place corner bottom top right': 'トースト ポップアップ メッセージ 場所 位置 隅 下 上 右',
+  'toast popup messages fewer quiet annoying errors only important': 'トースト ポップアップ メッセージ 減らす 静か うるさい エラーのみ 重要',
+  'toast popup message time seconds duration short long': 'トースト ポップアップ メッセージ 時間 秒 長さ 短い 長い',
 }
 
 export default ja

@@ -1500,6 +1500,23 @@ const sv: Record<string, string> = {
   'Then from the list': 'Sedan från listan',
   'Your mixes': 'Dina mixar',
   'Made on this PC from what you play': 'Skapade på den här datorn utifrån det du spelar',
+  'Notifications': 'Aviseringar',
+  'Notification position': 'Aviseringarnas placering',
+  'Where the short messages show (song added, liked, errors…)': 'Var de korta meddelandena visas (låt tillagd, gillad, fel…)',
+  'Bottom': 'Nederst',
+  'Bottom right': 'Nere till höger',
+  'Top': 'Överst',
+  'Top right': 'Uppe till höger',
+  'Which notifications': 'Vilka aviseringar',
+  'Important: errors, and the ones with a button (Undo, Open…)': 'Viktiga: fel, och de med en knapp (Ångra, Öppna…)',
+  'Important only': 'Bara viktiga',
+  'How long notifications stay': 'Hur länge aviseringar visas',
+  'Errors stay twice as long': 'Fel visas dubbelt så länge',
+  'Short': 'Kort',
+  'Long': 'Lång',
+  'toast popup message where place corner bottom top right': 'toast popup meddelande var plats hörn nere uppe höger',
+  'toast popup messages fewer quiet annoying errors only important': 'toast popup meddelanden färre tyst irriterande bara fel viktiga',
+  'toast popup message time seconds duration short long': 'toast popup meddelande tid sekunder längd kort lång',
 }
 
 export default sv

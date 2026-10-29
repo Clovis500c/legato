@@ -113,7 +113,9 @@ interface State {
   importSpotify: (url: string) => Promise<void>
   /** Add › Import a list of songs. True when a playlist came out of it. */
   importSongList: (name: string, text: string | null, path: string | null) => Promise<boolean>
-  /** Toast for 4 s (with a button 6 s, error 8 s). */
+  /** Settings › General › Notifications, set by app/settings: errors and toasts with a button only; time × scale. */
+  toastPrefs: { important: boolean; scale: number }
+  /** Toast for 4 s (with a button 6 s, error 8 s), times toastPrefs.scale. */
   notify: (text: string, opts?: ToastOptions) => void
   dismissToast: (id: number) => void
 }
@@ -212,6 +214,7 @@ export const useStore = create<State>((set, get) => {
     busy: false,
     sharing: null,
     toasts: [],
+    toastPrefs: { important: false, scale: 1 },
 
     go: (view) => {
       set({ back: [...get().back, get().view].slice(-50), fwd: [] })
@@ -288,11 +291,13 @@ export const useStore = create<State>((set, get) => {
       get().go({ name: 'playlist', id: r.playlistId })
     },
     notify(text, { kind = 'ok', action } = {}) {
+      const { important, scale } = get().toastPrefs
+      if (important && kind !== 'error' && !action) return
       const id = ++toastId
       // Same text again: replace, don't stack.
       const rest = get().toasts.filter((t) => t.text !== text)
       set({ toasts: [...rest, { id, text, kind, action }].slice(-MAX_TOASTS) })
-      setTimeout(() => get().dismissToast(id), kind === 'error' ? 8000 : action ? 6000 : 4000)
+      setTimeout(() => get().dismissToast(id), (kind === 'error' ? 8000 : action ? 6000 : 4000) * scale)
     },
     dismissToast: (id) => set({ toasts: get().toasts.filter((t) => t.id !== id) }),
     async editPlaylist(edit) {

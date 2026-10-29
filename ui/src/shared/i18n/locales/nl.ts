@@ -1500,6 +1500,23 @@ const nl: Record<string, string> = {
   'Then from the list': 'Dan uit de lijst',
   'Your mixes': 'Jouw mixen',
   'Made on this PC from what you play': 'Op deze pc gemaakt op basis van wat je afspeelt',
+  'Notifications': 'Meldingen',
+  'Notification position': 'Positie van meldingen',
+  'Where the short messages show (song added, liked, errors…)': 'Waar de korte berichten verschijnen (nummer toegevoegd, geliket, fouten…)',
+  'Bottom': 'Onder',
+  'Bottom right': 'Rechtsonder',
+  'Top': 'Boven',
+  'Top right': 'Rechtsboven',
+  'Which notifications': 'Welke meldingen',
+  'Important: errors, and the ones with a button (Undo, Open…)': 'Belangrijk: fouten, en meldingen met een knop (Ongedaan maken, Openen…)',
+  'Important only': 'Alleen belangrijke',
+  'How long notifications stay': 'Hoe lang meldingen blijven',
+  'Errors stay twice as long': 'Fouten blijven twee keer zo lang',
+  'Short': 'Kort',
+  'Long': 'Lang',
+  'toast popup message where place corner bottom top right': 'toast pop-up bericht waar plaats hoek onder boven rechts',
+  'toast popup messages fewer quiet annoying errors only important': 'toast pop-up berichten minder rustig irritant alleen fouten belangrijk',
+  'toast popup message time seconds duration short long': 'toast pop-up bericht tijd seconden duur kort lang',
 }
 
 export default nl

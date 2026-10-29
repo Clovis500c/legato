@@ -99,6 +99,7 @@ function apply(s: Settings) {
     )
   }
   usePlayer.setState({ fade: effectiveFade(s), skipLong: s.skipLong, earlyEnds: s.earlyEnds })
+  useStore.setState({ toastPrefs: { important: s.toastShow === 'important', scale: { short: 0.5, normal: 1, long: 2 }[s.toastTime] } })
   const root = document.documentElement.style
   const theme = resolveTheme(s, systemDark.matches, systemAccent)
   for (const [k, v] of Object.entries(cssVars(theme, s))) root.setProperty(k, v)

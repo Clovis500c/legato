@@ -1500,6 +1500,23 @@ const fr: Record<string, string> = {
   'Then from the list': 'Puis depuis la liste',
   'Your mixes': 'Vos mix',
   'Made on this PC from what you play': 'Faits sur ce PC à partir de ce que vous écoutez',
+  'Notifications': 'Notifications',
+  'Notification position': 'Position des notifications',
+  'Where the short messages show (song added, liked, errors…)': 'Où s’affichent les petits messages (titre ajouté, aimé, erreurs…)',
+  'Bottom': 'En bas',
+  'Bottom right': 'En bas à droite',
+  'Top': 'En haut',
+  'Top right': 'En haut à droite',
+  'Which notifications': 'Quelles notifications',
+  'Important: errors, and the ones with a button (Undo, Open…)': 'Importantes : les erreurs, et celles avec un bouton (Annuler, Ouvrir…)',
+  'Important only': 'Importantes seulement',
+  'How long notifications stay': 'Durée des notifications',
+  'Errors stay twice as long': 'Les erreurs restent deux fois plus longtemps',
+  'Short': 'Court',
+  'Long': 'Long',
+  'toast popup message where place corner bottom top right': 'toast popup message où place coin bas haut droite',
+  'toast popup messages fewer quiet annoying errors only important': 'toast popup messages moins calme gênant erreurs seulement importantes',
+  'toast popup message time seconds duration short long': 'toast popup message temps secondes durée court long',
 }
 
 export default fr

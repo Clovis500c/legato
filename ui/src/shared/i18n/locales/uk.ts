@@ -1500,6 +1500,23 @@ const uk: Record<string, string> = {
   'Then from the list': 'Потім зі списку',
   'Your mixes': 'Твої мікси',
   'Made on this PC from what you play': 'Зібрано на цьому ПК з того, що ти слухаєш',
+  'Notifications': 'Сповіщення',
+  'Notification position': 'Де показувати сповіщення',
+  'Where the short messages show (song added, liked, errors…)': 'Де з’являються короткі повідомлення (пісню додано, вподобано, помилки…)',
+  'Bottom': 'Унизу',
+  'Bottom right': 'Унизу праворуч',
+  'Top': 'Угорі',
+  'Top right': 'Угорі праворуч',
+  'Which notifications': 'Які сповіщення',
+  'Important: errors, and the ones with a button (Undo, Open…)': 'Важливі: помилки й повідомлення з кнопкою («Скасувати», «Відкрити»…)',
+  'Important only': 'Лише важливі',
+  'How long notifications stay': 'Скільки тримаються сповіщення',
+  'Errors stay twice as long': 'Помилки тримаються вдвічі довше',
+  'Short': 'Коротко',
+  'Long': 'Довго',
+  'toast popup message where place corner bottom top right': 'спливаюче повідомлення тост де місце кут низ верх праворуч',
+  'toast popup messages fewer quiet annoying errors only important': 'спливаючі повідомлення менше тихо дратує лише помилки важливі',
+  'toast popup message time seconds duration short long': 'спливаюче повідомлення час секунди тривалість коротко довго',
 }
 
 export default uk

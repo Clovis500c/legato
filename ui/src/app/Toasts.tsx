@@ -1,6 +1,8 @@
 import { CheckCircle, Info, MinusCircle, Warning, X } from '@phosphor-icons/react'
+import { useSettings } from './settings'
 import { useStore, type Toast } from './store'
 import { tr } from '../shared/i18n/i18n'
+import type { Settings } from '../shared/theme/theme'
 
 // Fixed colors: a success is green whatever the theme.
 const icons: Record<Toast['kind'], { Icon: typeof CheckCircle; color: string }> = {
@@ -10,17 +12,26 @@ const icons: Record<Toast['kind'], { Icon: typeof CheckCircle; color: string }> 
   error: { Icon: Warning, color: 'var(--color-danger)' },
 }
 
-/** Bottom center, above the player bar and Now Playing. Newest at the bottom. */
+// Above the player bar and Now Playing's controls, or under the top bar (Settings › General › Notifications).
+const places: Record<Settings['toastPlace'], string> = {
+  bottom: 'inset-x-0 bottom-[116px] items-center',
+  bottomRight: 'right-0 bottom-[116px] items-end',
+  top: 'inset-x-0 top-14 items-center',
+  topRight: 'right-0 top-14 items-end',
+}
+
+/** Newest at the bottom. */
 export function Toasts() {
   const toasts = useStore((s) => s.toasts)
   const dismissToast = useStore((s) => s.dismissToast)
+  const place = useSettings((s) => s.settings.toastPlace)
   if (!toasts.length) return null
   return (
-    <div aria-live="polite" className="pointer-events-none fixed inset-x-0 bottom-[116px] z-[60] flex flex-col items-center gap-2 px-4">
+    <div aria-live="polite" className={`pointer-events-none fixed z-[60] flex flex-col gap-2 px-4 ${places[place]}`}>
       {toasts.map((t) => {
         const { Icon, color } = icons[t.kind]
         return (
-          <div key={t.id} role={t.kind === 'error' ? 'alert' : 'status'} className="toast pointer-events-auto flex max-w-[min(560px,100%)] items-center gap-3 rounded-xl border border-line bg-raised py-2 pr-2 pl-3.5 text-[0.8125rem] text-ink shadow-[0_12px_32px_var(--shadow)]">
+          <div key={t.id} role={t.kind === 'error' ? 'alert' : 'status'} className="toast pointer-events-auto flex max-w-[min(560px,100%)] items-center gap-3 rounded-lg border border-line bg-raised py-2 pr-2 pl-3.5 text-[0.8125rem] text-ink shadow-[0_12px_32px_var(--shadow)]">
             <Icon size={18} weight="fill" style={{ color }} className="shrink-0" />
             <span className="min-w-0 flex-1 py-0.5">{t.text}</span>
             {t.action && (
@@ -29,7 +40,7 @@ export function Toasts() {
                   dismissToast(t.id)
                   t.action!.run()
                 }}
-                className="shrink-0 rounded-full px-3 py-1 text-xs font-semibold text-accent-ink transition hover:bg-bg"
+                className="shrink-0 rounded-full px-3 py-1 text-xs font-semibold text-ink transition hover:bg-bg"
               >
                 {t.action.label}
               </button>

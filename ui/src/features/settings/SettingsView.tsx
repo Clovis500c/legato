@@ -445,6 +445,19 @@ function GeneralSection() {
           </Row>
         </div>
       </Group>
+      <Group title={msg('Notifications')}>
+        <div className="rounded-xl border border-line bg-raised">
+          <Row setting="toastPlace" label={msg('Notification position')} sub={tr('Where the short messages show (song added, liked, errors…)')}>
+            <Segmented label={tr('Notification position')} value={s.toastPlace} onChange={(toastPlace) => update({ toastPlace })} options={[{ value: 'bottom', label: tr('Bottom') }, { value: 'bottomRight', label: tr('Bottom right') }, { value: 'top', label: tr('Top') }, { value: 'topRight', label: tr('Top right') }]} />
+          </Row>
+          <Row setting="toastShow" label={msg('Which notifications')} sub={tr('Important: errors, and the ones with a button (Undo, Open…)')}>
+            <Segmented label={tr('Which notifications')} value={s.toastShow} onChange={(toastShow) => update({ toastShow })} options={[{ value: 'all', label: tr('All') }, { value: 'important', label: tr('Important only') }]} />
+          </Row>
+          <Row setting="toastTime" label={msg('How long notifications stay')} sub={tr('Errors stay twice as long')}>
+            <Segmented label={tr('How long notifications stay')} value={s.toastTime} onChange={(toastTime) => update({ toastTime })} options={[{ value: 'short', label: tr('Short') }, { value: 'normal', label: tr('Normal') }, { value: 'long', label: tr('Long') }]} />
+          </Row>
+        </div>
+      </Group>
       <Group title={msg('Search bar')}>
         <div className="rounded-xl border border-line bg-raised">
           <Row setting="rememberSearches" label={msg('Remember recent searches')} sub={tr('Listed when you click the search bar. Kept on this PC only, never synced')}>

@@ -153,6 +153,8 @@ export function placeHome(list: HomeSection[], id: HomeSectionId, slot: number):
 export type Column = (typeof COLUMNS)[number]
 
 export const START_VIEWS = ['home', 'songs', 'mixes', 'albums', 'artists'] as const
+/** Where notifications show: above the player bar (centered or right), or under the top bar. */
+export const TOAST_PLACES = ['bottom', 'bottomRight', 'top', 'topRight'] as const
 
 /** Mini player resting spots: corners and edge middles (t = top, b = bottom, l = left, r = right). */
 /** Playlist icon: service logo, first song's cover, grid of the first 4, or a picked image. */
@@ -303,6 +305,10 @@ export interface Settings {
   upNext: boolean
   /** Main window's right panel, beside every page: Up next, lyrics, or closed. Apart from Now Playing's. */
   sidePanel: 'upNext' | 'lyrics' | 'none'
+  /** Notifications (app/Toasts): where, which (important = errors and those with a button), how long. */
+  toastPlace: (typeof TOAST_PLACES)[number]
+  toastShow: 'all' | 'important'
+  toastTime: 'short' | 'normal' | 'long'
   /** Now Playing: lyrics beside the cover (wins over Up next). */
   lyrics: boolean
   /** Now Playing: Live Editor beside the cover (wins over lyrics and Up next). */
@@ -403,6 +409,9 @@ export const DEFAULTS: Settings = {
   autoUpdate: true,
   upNext: false,
   sidePanel: 'upNext',
+  toastPlace: 'bottom',
+  toastShow: 'all',
+  toastTime: 'normal',
   lyrics: false,
   editor: false,
   resume: true,
@@ -584,6 +593,9 @@ export function sanitize(raw: unknown): Settings {
     autoUpdate: typeof r.autoUpdate === 'boolean' ? r.autoUpdate : DEFAULTS.autoUpdate,
     upNext: typeof r.upNext === 'boolean' ? r.upNext : DEFAULTS.upNext,
     sidePanel: pick(r.sidePanel, ['upNext', 'lyrics', 'none'] as const, DEFAULTS.sidePanel),
+    toastPlace: pick(r.toastPlace, TOAST_PLACES, DEFAULTS.toastPlace),
+    toastShow: pick(r.toastShow, ['all', 'important'] as const, DEFAULTS.toastShow),
+    toastTime: pick(r.toastTime, ['short', 'normal', 'long'] as const, DEFAULTS.toastTime),
     lyrics: r.lyrics === true,
     editor: r.editor === true,
     resume: typeof r.resume === 'boolean' ? r.resume : DEFAULTS.resume,

@@ -1500,6 +1500,23 @@ const ru: Record<string, string> = {
   'Then from the list': 'Затем из списка',
   'Your mixes': 'Твои миксы',
   'Made on this PC from what you play': 'Собрано на этом ПК из того, что ты слушаешь',
+  'Notifications': 'Уведомления',
+  'Notification position': 'Где показывать уведомления',
+  'Where the short messages show (song added, liked, errors…)': 'Где появляются короткие сообщения (песня добавлена, лайк, ошибки…)',
+  'Bottom': 'Внизу',
+  'Bottom right': 'Внизу справа',
+  'Top': 'Вверху',
+  'Top right': 'Вверху справа',
+  'Which notifications': 'Какие уведомления',
+  'Important: errors, and the ones with a button (Undo, Open…)': 'Важные: ошибки и сообщения с кнопкой («Отменить», «Открыть»…)',
+  'Important only': 'Только важные',
+  'How long notifications stay': 'Сколько держатся уведомления',
+  'Errors stay twice as long': 'Ошибки держатся вдвое дольше',
+  'Short': 'Коротко',
+  'Long': 'Долго',
+  'toast popup message where place corner bottom top right': 'всплывающее сообщение тост где место угол низ верх справа',
+  'toast popup messages fewer quiet annoying errors only important': 'всплывающие сообщения меньше тихо раздражает только ошибки важные',
+  'toast popup message time seconds duration short long': 'всплывающее сообщение время секунды длительность коротко долго',
 }
 
 export default ru

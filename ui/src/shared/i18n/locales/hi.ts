@@ -1500,6 +1500,23 @@ const hi: Record<string, string> = {
   'Then from the list': 'फिर सूची से',
   'Your mixes': 'आपके मिक्स',
   'Made on this PC from what you play': 'आपके सुने गानों से इस PC पर बनाया गया',
+  'Notifications': 'सूचनाएँ',
+  'Notification position': 'सूचनाओं की जगह',
+  'Where the short messages show (song added, liked, errors…)': 'छोटे संदेश कहाँ दिखें (गाना जोड़ा गया, पसंद किया, त्रुटियाँ…)',
+  'Bottom': 'नीचे',
+  'Bottom right': 'नीचे दाएँ',
+  'Top': 'ऊपर',
+  'Top right': 'ऊपर दाएँ',
+  'Which notifications': 'कौन-सी सूचनाएँ',
+  'Important: errors, and the ones with a button (Undo, Open…)': 'ज़रूरी: त्रुटियाँ, और बटन वाली सूचनाएँ (पहले जैसा करें, खोलें…)',
+  'Important only': 'सिर्फ़ ज़रूरी',
+  'How long notifications stay': 'सूचनाएँ कितनी देर दिखें',
+  'Errors stay twice as long': 'त्रुटियाँ दोगुनी देर रहती हैं',
+  'Short': 'कम',
+  'Long': 'ज़्यादा',
+  'toast popup message where place corner bottom top right': 'टोस्ट पॉपअप संदेश कहाँ जगह कोना नीचे ऊपर दाएँ',
+  'toast popup messages fewer quiet annoying errors only important': 'टोस्ट पॉपअप संदेश कम शांत परेशान सिर्फ़ त्रुटियाँ ज़रूरी',
+  'toast popup message time seconds duration short long': 'टोस्ट पॉपअप संदेश समय सेकंड अवधि कम ज़्यादा',
 }
 
 export default hi

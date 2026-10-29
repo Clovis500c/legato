@@ -1500,6 +1500,23 @@ const tr: Record<string, string> = {
   'Then from the list': 'Sonra listeden',
   'Your mixes': 'Mix’lerin',
   'Made on this PC from what you play': 'Bu bilgisayarda dinlediklerinden yapıldı',
+  'Notifications': 'Bildirimler',
+  'Notification position': 'Bildirim konumu',
+  'Where the short messages show (song added, liked, errors…)': 'Kısa mesajların göründüğü yer (şarkı eklendi, beğenildi, hatalar…)',
+  'Bottom': 'Altta',
+  'Bottom right': 'Sağ altta',
+  'Top': 'Üstte',
+  'Top right': 'Sağ üstte',
+  'Which notifications': 'Hangi bildirimler',
+  'Important: errors, and the ones with a button (Undo, Open…)': 'Önemli: hatalar ve düğmesi olanlar (Geri al, Aç…)',
+  'Important only': 'Yalnızca önemliler',
+  'How long notifications stay': 'Bildirimler ne kadar kalsın',
+  'Errors stay twice as long': 'Hatalar iki kat uzun kalır',
+  'Short': 'Kısa',
+  'Long': 'Uzun',
+  'toast popup message where place corner bottom top right': 'açılır bildirim mesaj nerede yer köşe alt üst sağ',
+  'toast popup messages fewer quiet annoying errors only important': 'açılır bildirim mesajlar daha az sessiz rahatsız edici yalnızca hatalar önemli',
+  'toast popup message time seconds duration short long': 'açılır bildirim mesaj süre saniye kısa uzun',
 }
 
 export default tr

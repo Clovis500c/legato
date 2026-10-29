@@ -1500,6 +1500,23 @@ const ko: Record<string, string> = {
   'Then from the list': '이어서 목록에서',
   'Your mixes': '내 믹스',
   'Made on this PC from what you play': '내 재생 기록으로 이 PC에서 만듦',
+  'Notifications': '알림',
+  'Notification position': '알림 위치',
+  'Where the short messages show (song added, liked, errors…)': '짧은 메시지가 표시되는 위치(노래 추가, 좋아요, 오류 등)',
+  'Bottom': '아래',
+  'Bottom right': '오른쪽 아래',
+  'Top': '위',
+  'Top right': '오른쪽 위',
+  'Which notifications': '표시할 알림',
+  'Important: errors, and the ones with a button (Undo, Open…)': '중요: 오류, 그리고 버튼이 있는 알림(실행 취소, 열기 등)',
+  'Important only': '중요한 것만',
+  'How long notifications stay': '알림 표시 시간',
+  'Errors stay twice as long': '오류는 두 배로 오래 표시됩니다',
+  'Short': '짧게',
+  'Long': '길게',
+  'toast popup message where place corner bottom top right': '토스트 팝업 메시지 어디 위치 모서리 아래 위 오른쪽',
+  'toast popup messages fewer quiet annoying errors only important': '토스트 팝업 메시지 줄이기 조용히 귀찮음 오류만 중요',
+  'toast popup message time seconds duration short long': '토스트 팝업 메시지 시간 초 길이 짧게 길게',
 }
 
 export default ko
