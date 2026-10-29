@@ -198,8 +198,7 @@ Theme (light) / Dark / Brand / Scale, components, Home, Songs, Album, Search, No
       page, player bar with like, lyrics and Up next. Rows: Artist column, heart, grey selection, blue playing mark.
       Bands in the cover's tint on album, artist and playlist pages; display titles. Version 2.0.
 - [x] Up next in three blocks (Now playing, Next added by you, Then from the list): the queue records what the user
-      queued; Add to queue puts songs after those, before the rest of the list (kept through shuffle). Not saved with
-      the session yet (after a restart they read as part of the list).
+      queued; Add to queue puts songs after those, before the rest of the list (kept through shuffle).
 - [x] Now Playing as in the mockup: cover or video left, title (Display XL), artist, album, source and the next song
       right, controls across the bottom; lyrics, Up next and Sound as icons, a panel replaces the details. The main
       window's right panel has its own setting (`sidePanel`), so Now Playing opens without one (defaults v8).
@@ -209,7 +208,9 @@ Theme (light) / Dark / Brand / Scale, components, Home, Songs, Album, Search, No
 - [x] Search as in the mockup: no page title, one row of chips (All, Your library, YouTube Music, YouTube, Apple Music,
       with counts or Failed), Top result card (Display M, In your library, big play), 56 px song rows, cards; the
       type views stay behind each section's Show all (with a way back); Spotify and YouTube Music sign-in at the bottom.
-- [ ] Save the songs the user queued (`added`) with the session.
+- [x] Save the songs the user queued (`added`) with the session: back in Next added by you after a restart, with the
+      saved order only (a track deleted since, or a queue over 10,000 songs, makes them part of the list again). A
+      queue edit saves the session 0.6 s later, paused or not.
 - [ ] Decide the name: Legato recommended (finalists Tutti, Diapason); trademark search (INPI, EUIPO, USPTO classes 9,
       41, 42), domain, Microsoft Store name. Never rename the identifier, `_musicapp._tcp`, `MA1` or keychain entries.
       Wordmark and app icon wait on the name.

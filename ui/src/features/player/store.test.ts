@@ -57,3 +57,13 @@ describe('fade in', () => {
     expect(usePlayer.getState().fadeIn).toBe(5)
   })
 })
+
+describe('resume', () => {
+  it('brings back the songs the user queued with their order, not with a rebuilt one', () => {
+    const list = [song(7), song(8), song(9)]
+    usePlayer.getState().resume({ list, index: 0, order: [0, 2, 1], added: [2], shuffle: false, repeat: 'off', positionMs: 0, paused: true })
+    expect(usePlayer.getState().added).toEqual([2])
+    usePlayer.getState().resume({ list, index: 0, order: [], added: [2], shuffle: false, repeat: 'off', positionMs: 0, paused: true })
+    expect(usePlayer.getState().added).toEqual([])
+  })
+})
