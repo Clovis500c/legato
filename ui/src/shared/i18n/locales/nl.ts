@@ -330,7 +330,6 @@ const nl: Record<string, string> = {
   'Remove from playlist': 'Verwijderen uit playlist',
   'Play {title}': '{title} afspelen',
   // Add to playlist
-  'Add to': 'Toevoegen aan',
   // Export to YouTube Music
   // Library
   'Date added (newest)': 'Datum toegevoegd (nieuwste)',

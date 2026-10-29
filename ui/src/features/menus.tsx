@@ -172,17 +172,17 @@ export function dropOn(p: LibraryPlaylist, ids: number[]) {
   if (canDropOn(p)) void addToYoutubePlaylist(p, ids)
 }
 
-/** "Add to playlist ›": a new one, your playlists, then your YouTube Music ones (added there too), each with its sidebar icon. Hidden ones left out. */
-function addTo(tracks: () => LibraryTrack[] | Promise<LibraryTrack[]>): MenuEntry {
-  const add = async (id: number) => addToPlaylist(id, (await tracks()).map((t) => t.id))
-  const addYoutube = async (p: LibraryPlaylist) => addToYoutubePlaylist(p, (await tracks()).map((t) => t.id))
+/**
+ * Add to playlist choices: a new one, your playlists, then your YouTube Music ones (added there too), each with its
+ * sidebar icon. Hidden ones left out. A submenu of the song menus; the row and Now Playing buttons open it alone.
+ */
+export function addToItems(ids: () => number[] | Promise<number[]>): MenuEntry[] {
+  const add = async (id: number) => addToPlaylist(id, await ids())
+  const addYoutube = async (p: LibraryPlaylist) => addToYoutubePlaylist(p, await ids())
   const off = hidden()
   const shown = app().playlists.filter((p) => !off.has(playlistKey(p)))
   const youtube = app().status.youtube.connected ? shown.filter((p) => p.source === 'youtube' && !p.custom) : []
-  return {
-    label: tr('Add to playlist'),
-    icon: <ListPlus size={16} />,
-    items: [
+  return [
       {
         label: tr('New playlist…'),
         icon: <Plus size={16} />,
@@ -197,8 +197,12 @@ function addTo(tracks: () => LibraryTrack[] | Promise<LibraryTrack[]>): MenuEntr
       ...shown.filter((p) => p.custom).map((p) => ({ label: p.name, icon: <PlaylistIcon p={p} size={16} />, onSelect: () => void add(p.id) })),
       youtube.length > 0 && '-',
       ...youtube.map((p) => ({ label: p.name, icon: <PlaylistIcon p={p} size={16} />, onSelect: () => void addYoutube(p) })),
-    ],
-  }
+  ]
+}
+
+/** "Add to playlist ›". */
+function addTo(tracks: () => LibraryTrack[] | Promise<LibraryTrack[]>): MenuEntry {
+  return { label: tr('Add to playlist'), icon: <ListPlus size={16} />, items: addToItems(async () => (await tracks()).map((t) => t.id)) }
 }
 
 const orderLabels: Record<PlaylistCover['order'], string> = { playlist: msg('Playlist order'), recent: msg('Recently added'), title: msg('Title'), artist: msg('Artist'), album: msg('Album'), duration: msg('Longest first') }

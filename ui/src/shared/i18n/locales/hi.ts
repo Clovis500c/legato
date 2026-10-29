@@ -330,7 +330,6 @@ const hi: Record<string, string> = {
   'Remove from playlist': 'प्लेलिस्ट से हटाएं',
   'Play {title}': '{title} चलाएं',
   // Add to playlist
-  'Add to': 'इसमें जोड़ें',
   // Export to YouTube Music
   // Library
   'Date added (newest)': 'जोड़ने की तारीख (सबसे नए)',

@@ -330,7 +330,6 @@ const id: Record<string, string> = {
   'Remove from playlist': 'Hapus dari playlist',
   'Play {title}': 'Putar {title}',
   // Add to playlist
-  'Add to': 'Tambahkan ke',
   // Export to YouTube Music
   // Library
   'Date added (newest)': 'Tanggal ditambahkan (terbaru)',

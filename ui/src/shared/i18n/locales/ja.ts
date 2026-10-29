@@ -330,7 +330,6 @@ const ja: Record<string, string> = {
   'Remove from playlist': 'プレイリストから削除',
   'Play {title}': '{title}を再生',
   // Add to playlist
-  'Add to': '追加先',
   // Export to YouTube Music
   // Library
   'Date added (newest)': '追加日（新しい順）',

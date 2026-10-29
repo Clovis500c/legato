@@ -330,7 +330,6 @@ const es: Record<string, string> = {
   'Remove from playlist': 'Quitar de la playlist',
   'Play {title}': 'Reproducir {title}',
   // Add to playlist
-  'Add to': 'Añadir a',
   // Export to YouTube Music
   // Library
   'Date added (newest)': 'Fecha de añadido (recientes)',

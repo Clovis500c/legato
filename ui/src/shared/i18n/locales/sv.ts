@@ -330,7 +330,6 @@ const sv: Record<string, string> = {
   'Remove from playlist': 'Ta bort från spellistan',
   'Play {title}': 'Spela {title}',
   // Add to playlist
-  'Add to': 'Lägg till i',
   // Export to YouTube Music
   // Library
   'Date added (newest)': 'Tillagda (senaste)',

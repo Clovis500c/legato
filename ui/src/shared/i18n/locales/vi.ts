@@ -330,7 +330,6 @@ const vi: Record<string, string> = {
   'Remove from playlist': 'Xóa khỏi danh sách phát',
   'Play {title}': 'Phát {title}',
   // Add to playlist
-  'Add to': 'Thêm vào',
   // Export to YouTube Music
   // Library
   'Date added (newest)': 'Ngày thêm (mới nhất)',

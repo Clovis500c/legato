@@ -330,7 +330,6 @@ const ko: Record<string, string> = {
   'Remove from playlist': '플레이리스트에서 삭제',
   'Play {title}': '{title} 재생',
   // Add to playlist
-  'Add to': '추가할 위치',
   // Export to YouTube Music
   // Library
   'Date added (newest)': '추가한 날짜 (최신순)',

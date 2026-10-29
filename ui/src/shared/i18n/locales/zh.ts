@@ -330,7 +330,6 @@ const zh: Record<string, string> = {
   'Remove from playlist': '从歌单中移除',
   'Play {title}': '播放 {title}',
   // Add to playlist
-  'Add to': '添加到',
   // Export to YouTube Music
   // Library
   'Date added (newest)': '添加日期（最新）',

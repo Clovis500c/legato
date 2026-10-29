@@ -330,7 +330,6 @@ const ru: Record<string, string> = {
   'Remove from playlist': 'Удалить из плейлиста',
   'Play {title}': 'Воспроизвести {title}',
   // Add to playlist
-  'Add to': 'Добавить в',
   // Export to YouTube Music
   // Library
   'Date added (newest)': 'Дата добавления (новые)',

@@ -330,7 +330,6 @@ const tr: Record<string, string> = {
   'Remove from playlist': 'Çalma listesinden kaldır',
   'Play {title}': 'Çal: {title}',
   // Add to playlist
-  'Add to': 'Şuraya ekle',
   // Export to YouTube Music
   // Library
   'Date added (newest)': 'Eklenme tarihi (en yeni)',

@@ -330,7 +330,6 @@ const uk: Record<string, string> = {
   'Remove from playlist': 'Видалити з плейлиста',
   'Play {title}': 'Відтворити {title}',
   // Add to playlist
-  'Add to': 'Додати до',
   // Export to YouTube Music
   // Library
   'Date added (newest)': 'Дата додавання (нові)',
