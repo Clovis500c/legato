@@ -1497,6 +1497,12 @@ const hi: Record<string, string> = {
   'Couldn’t like it on YouTube Music: {reason}. Taken back out of {name}.': 'YouTube Music पर पसंद नहीं हो सका: {reason}। {name} से हटाया गया।',
   'Not removed from {name} on YouTube Music: {reason}. Put back here.': 'YouTube Music पर {name} से नहीं हटा: {reason}। यहाँ वापस रखा गया।',
   'Couldn’t take the like back on YouTube Music: {reason}. Still in {name}.': 'YouTube Music पर पसंद वापस नहीं हुई: {reason}। अब भी {name} में है।',
+  'Visualizer style': 'विज़ुअलाइज़र की शैली',
+  'Bars': 'पट्टियाँ',
+  'Mirror': 'दर्पण',
+  'Peaks': 'शिखर',
+  'Wave': 'तरंग',
+  'bars mirror peaks wave look': 'पट्टियाँ दर्पण शिखर तरंग रूप bars mirror peaks wave',
 }
 
 export default hi

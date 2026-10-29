@@ -1497,6 +1497,12 @@ const it: Record<string, string> = {
   'Couldn’t like it on YouTube Music: {reason}. Taken back out of {name}.': 'Impossibile mettere “mi piace” su YouTube Music: {reason}. Tolto da {name}.',
   'Not removed from {name} on YouTube Music: {reason}. Put back here.': 'Non tolto da {name} su YouTube Music: {reason}. Rimesso qui.',
   'Couldn’t take the like back on YouTube Music: {reason}. Still in {name}.': 'Impossibile togliere il “mi piace” su YouTube Music: {reason}. Ancora in {name}.',
+  'Visualizer style': 'Stile del visualizzatore',
+  'Bars': 'Barre',
+  'Mirror': 'Specchio',
+  'Peaks': 'Picchi',
+  'Wave': 'Onda',
+  'bars mirror peaks wave look': 'barre specchio picchi onda aspetto',
 }
 
 export default it

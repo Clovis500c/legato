@@ -1497,6 +1497,12 @@ const de: Record<string, string> = {
   'Couldn’t like it on YouTube Music: {reason}. Taken back out of {name}.': 'Like auf YouTube Music fehlgeschlagen: {reason}. Wieder aus {name} entfernt.',
   'Not removed from {name} on YouTube Music: {reason}. Put back here.': 'Nicht aus {name} auf YouTube Music entfernt: {reason}. Hier wieder eingefügt.',
   'Couldn’t take the like back on YouTube Music: {reason}. Still in {name}.': 'Like auf YouTube Music nicht zurückgenommen: {reason}. Weiter in {name}.',
+  'Visualizer style': 'Stil der Visualisierung',
+  'Bars': 'Balken',
+  'Mirror': 'Spiegel',
+  'Peaks': 'Spitzen',
+  'Wave': 'Welle',
+  'bars mirror peaks wave look': 'balken spiegel spitzen welle aussehen',
 }
 
 export default de

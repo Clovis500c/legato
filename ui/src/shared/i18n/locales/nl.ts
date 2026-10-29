@@ -1497,6 +1497,12 @@ const nl: Record<string, string> = {
   'Couldn’t like it on YouTube Music: {reason}. Taken back out of {name}.': 'Liken op YouTube Music lukte niet: {reason}. Weer uit {name} gehaald.',
   'Not removed from {name} on YouTube Music: {reason}. Put back here.': 'Niet verwijderd uit {name} op YouTube Music: {reason}. Hier teruggezet.',
   'Couldn’t take the like back on YouTube Music: {reason}. Still in {name}.': 'Like op YouTube Music niet teruggedraaid: {reason}. Nog steeds in {name}.',
+  'Visualizer style': 'Stijl van de visualisatie',
+  'Bars': 'Balken',
+  'Mirror': 'Spiegel',
+  'Peaks': 'Pieken',
+  'Wave': 'Golf',
+  'bars mirror peaks wave look': 'balken spiegel pieken golf uiterlijk',
 }
 
 export default nl

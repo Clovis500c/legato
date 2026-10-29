@@ -1497,6 +1497,12 @@ const uk: Record<string, string> = {
   'Couldn’t like it on YouTube Music: {reason}. Taken back out of {name}.': 'Не вдалося вподобати на YouTube Music: {reason}. Прибрано з {name}.',
   'Not removed from {name} on YouTube Music: {reason}. Put back here.': 'Не прибрано з {name} на YouTube Music: {reason}. Повернуто сюди.',
   'Couldn’t take the like back on YouTube Music: {reason}. Still in {name}.': 'Не вдалося скасувати вподобання на YouTube Music: {reason}. Досі в {name}.',
+  'Visualizer style': 'Стиль візуалізації',
+  'Bars': 'Смуги',
+  'Mirror': 'Дзеркало',
+  'Peaks': 'Піки',
+  'Wave': 'Хвиля',
+  'bars mirror peaks wave look': 'смуги дзеркало піки хвиля вигляд',
 }
 
 export default uk

@@ -1497,6 +1497,12 @@ const id: Record<string, string> = {
   'Couldn’t like it on YouTube Music: {reason}. Taken back out of {name}.': 'Tidak bisa menyukai di YouTube Music: {reason}. Dihapus lagi dari {name}.',
   'Not removed from {name} on YouTube Music: {reason}. Put back here.': 'Tidak dihapus dari {name} di YouTube Music: {reason}. Dikembalikan di sini.',
   'Couldn’t take the like back on YouTube Music: {reason}. Still in {name}.': 'Tidak bisa membatalkan suka di YouTube Music: {reason}. Masih di {name}.',
+  'Visualizer style': 'Gaya visualisasi',
+  'Bars': 'Batang',
+  'Mirror': 'Cermin',
+  'Peaks': 'Puncak',
+  'Wave': 'Gelombang',
+  'bars mirror peaks wave look': 'batang cermin puncak gelombang tampilan',
 }
 
 export default id

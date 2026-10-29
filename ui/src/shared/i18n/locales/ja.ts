@@ -1497,6 +1497,12 @@ const ja: Record<string, string> = {
   'Couldn’t like it on YouTube Music: {reason}. Taken back out of {name}.': 'YouTube Music で高評価できませんでした：{reason}。{name} から外しました。',
   'Not removed from {name} on YouTube Music: {reason}. Put back here.': 'YouTube Music の {name} から外せませんでした：{reason}。こちらに戻しました。',
   'Couldn’t take the like back on YouTube Music: {reason}. Still in {name}.': 'YouTube Music で高評価を取り消せませんでした：{reason}。{name} に残っています。',
+  'Visualizer style': 'ビジュアライザーのスタイル',
+  'Bars': 'バー',
+  'Mirror': 'ミラー',
+  'Peaks': 'ピーク',
+  'Wave': 'ウェーブ',
+  'bars mirror peaks wave look': 'バー ミラー ピーク ウェーブ 見た目 bars mirror peaks wave',
 }
 
 export default ja

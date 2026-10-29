@@ -1497,6 +1497,12 @@ const ru: Record<string, string> = {
   'Couldn’t like it on YouTube Music: {reason}. Taken back out of {name}.': 'Не удалось поставить лайк на YouTube Music: {reason}. Убрано из {name}.',
   'Not removed from {name} on YouTube Music: {reason}. Put back here.': 'Не удалено из {name} на YouTube Music: {reason}. Возвращено сюда.',
   'Couldn’t take the like back on YouTube Music: {reason}. Still in {name}.': 'Не удалось убрать лайк на YouTube Music: {reason}. Всё ещё в {name}.',
+  'Visualizer style': 'Стиль визуализации',
+  'Bars': 'Полосы',
+  'Mirror': 'Зеркало',
+  'Peaks': 'Пики',
+  'Wave': 'Волна',
+  'bars mirror peaks wave look': 'полосы зеркало пики волна вид',
 }
 
 export default ru

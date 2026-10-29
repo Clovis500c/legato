@@ -1497,6 +1497,12 @@ const zh: Record<string, string> = {
   'Couldn’t like it on YouTube Music: {reason}. Taken back out of {name}.': '无法在 YouTube Music 上点赞：{reason}。已从 {name} 撤回。',
   'Not removed from {name} on YouTube Music: {reason}. Put back here.': '未能从 YouTube Music 的 {name} 移除：{reason}。已放回此处。',
   'Couldn’t take the like back on YouTube Music: {reason}. Still in {name}.': '无法在 YouTube Music 上取消点赞：{reason}。仍在 {name} 中。',
+  'Visualizer style': '可视化样式',
+  'Bars': '条形',
+  'Mirror': '镜像',
+  'Peaks': '峰值',
+  'Wave': '波形',
+  'bars mirror peaks wave look': '条形 镜像 峰值 波形 外观 bars mirror peaks wave',
 }
 
 export default zh

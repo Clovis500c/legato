@@ -541,8 +541,8 @@ Original plan:
 - [x] Sends to YouTube Music don't make the interface wait (2026-10-29): likes, adds, removals change the library at
       once, the request follows in order (src-tauri push.rs); refused = undone + a notice (a main-account like stays
       in your own Liked Music for the next sync).
-- [ ] Visualizer flat on YouTube (2026-10-29): bands now sent with every report, and the reason shown under the bars
-      when YouTube's sound can't be heard. Cause not confirmed: waiting on what the app shows there.
+- [x] Visualizer flat on YouTube (2026-10-29): bands now sent with every report (moves, user checked), and the reason shown under the bars
+      when YouTube's sound can't be heard. Four looks since (Settings › Playback): bars, mirror, peaks, wave.
 - [x] Up next: played songs and the current one can be moved too (2026-10-29); above the current = history.
 - [x] Interactive preview for visual settings (background blur, dimming, motion, …): small live sample of the effect.
 - [x] Artists and Albums: filter and sort, like songs in playlists.

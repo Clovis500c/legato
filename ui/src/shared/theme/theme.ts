@@ -157,6 +157,9 @@ export const START_VIEWS = ['home', 'songs', 'mixes', 'albums', 'artists'] as co
 /** Mini player resting spots: corners and edge middles (t = top, b = bottom, l = left, r = right). */
 /** Playlist icon: service logo, first song's cover, grid of the first 4, or a picked image. */
 export const COVER_MODES = ['source', 'first', 'grid', 'image'] as const
+/** Visualizer.tsx looks: bars from the bottom, mirrored from the middle, bars with falling peaks, a wave. */
+export const VISUALIZER_STYLES = ['bars', 'mirror', 'peaks', 'wave'] as const
+export type VisualizerStyle = (typeof VISUALIZER_STYLES)[number]
 /** Order the cover songs are taken in: the playlist's own, or a library sort. */
 export const COVER_ORDERS = ['playlist', 'recent', 'title', 'artist', 'album', 'duration'] as const
 export interface PlaylistCover {
@@ -315,6 +318,7 @@ export interface Settings {
   coverPulse: boolean
   /** Now Playing shows the music as moving bars (16 bands, crates/dsp spectrum.rs). */
   visualizer: boolean
+  visualizerStyle: VisualizerStyle
   /** Videos whose song ends before the video (silence, end screen): the next song starts at the song's end (ends.ts). */
   earlyEnds: boolean
   /** YouTube's sound may go through the processing above (off: untouched, features work on local files only). */
@@ -404,6 +408,7 @@ export const DEFAULTS: Settings = {
   adaptiveLevel: -14,
   coverPulse: false,
   visualizer: false,
+  visualizerStyle: 'bars',
   earlyEnds: true,
   liveYoutube: true,
   voiceSearch: false,
@@ -571,6 +576,7 @@ export function sanitize(raw: unknown): Settings {
     adaptiveLevel: ADAPTIVE_LEVELS.includes(r.adaptiveLevel as AdaptiveLevel) ? (r.adaptiveLevel as AdaptiveLevel) : DEFAULTS.adaptiveLevel,
     coverPulse: r.coverPulse === true,
     visualizer: r.visualizer === true,
+    visualizerStyle: pick(r.visualizerStyle, VISUALIZER_STYLES, 'bars'),
     earlyEnds: r.earlyEnds !== false,
     liveYoutube: typeof r.liveYoutube === 'boolean' ? r.liveYoutube : DEFAULTS.liveYoutube,
     voiceSearch: r.voiceSearch === true,

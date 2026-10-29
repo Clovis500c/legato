@@ -1497,6 +1497,12 @@ const vi: Record<string, string> = {
   'Couldn’t like it on YouTube Music: {reason}. Taken back out of {name}.': 'Không thích được trên YouTube Music: {reason}. Đã gỡ khỏi {name}.',
   'Not removed from {name} on YouTube Music: {reason}. Put back here.': 'Không gỡ được khỏi {name} trên YouTube Music: {reason}. Đã đặt lại ở đây.',
   'Couldn’t take the like back on YouTube Music: {reason}. Still in {name}.': 'Không bỏ thích được trên YouTube Music: {reason}. Vẫn còn trong {name}.',
+  'Visualizer style': 'Kiểu hình ảnh âm thanh',
+  'Bars': 'Thanh',
+  'Mirror': 'Gương',
+  'Peaks': 'Đỉnh',
+  'Wave': 'Sóng',
+  'bars mirror peaks wave look': 'thanh gương đỉnh sóng giao diện',
 }
 
 export default vi

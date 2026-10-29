@@ -1497,6 +1497,12 @@ const ko: Record<string, string> = {
   'Couldn’t like it on YouTube Music: {reason}. Taken back out of {name}.': 'YouTube Music에서 좋아요를 누르지 못함: {reason}. {name}에서 다시 뺐습니다.',
   'Not removed from {name} on YouTube Music: {reason}. Put back here.': 'YouTube Music의 {name}에서 빼지 못함: {reason}. 여기에 다시 넣었습니다.',
   'Couldn’t take the like back on YouTube Music: {reason}. Still in {name}.': 'YouTube Music에서 좋아요를 취소하지 못함: {reason}. {name}에 그대로 있습니다.',
+  'Visualizer style': '비주얼라이저 스타일',
+  'Bars': '막대',
+  'Mirror': '미러',
+  'Peaks': '피크',
+  'Wave': '웨이브',
+  'bars mirror peaks wave look': '막대 미러 피크 웨이브 모양 bars mirror peaks wave',
 }
 
 export default ko

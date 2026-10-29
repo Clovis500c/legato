@@ -5,7 +5,7 @@ import { useSettings } from '../../app/settings'
 import { useStore, type SettingsSection } from '../../app/store'
 import { api } from '../../shared/api'
 import { formatCount } from '../../shared/format'
-import { ACCENTS, ADAPTIVE_LEVELS, COLUMNS, DEFAULTS, type AdaptiveLevel, type Column, type Settings } from '../../shared/theme/theme'
+import { ACCENTS, ADAPTIVE_LEVELS, COLUMNS, DEFAULTS, VISUALIZER_STYLES, type AdaptiveLevel, type Column, type Settings } from '../../shared/theme/theme'
 import { Button } from '../../shared/ui/Button'
 import { Led, Segmented, Toggle } from '../../shared/ui/controls'
 import { PageHeader } from '../../shared/ui/PageHeader'
@@ -394,6 +394,16 @@ function SoundGroup() {
         <Row setting="visualizer" label={msg('Visualizer')} sub={s.motion ? tr('In Now Playing, bars under the cover move with the music, low notes on the left') : tr('Needs Animations on (Appearance)')}>
           <Toggle label={tr('Visualizer')} checked={s.visualizer} onChange={(visualizer) => update({ visualizer })} />
         </Row>
+        {s.visualizer && (
+          <Row setting="visualizerStyle" label={msg('Visualizer style')}>
+            <Segmented
+              label={tr('Visualizer style')}
+              value={s.visualizerStyle}
+              onChange={(visualizerStyle) => update({ visualizerStyle })}
+              options={VISUALIZER_STYLES.map((v) => ({ value: v, label: tr({ bars: msg('Bars'), mirror: msg('Mirror'), peaks: msg('Peaks'), wave: msg('Wave') }[v]) }))}
+            />
+          </Row>
+        )}
         <Row
           label={msg("Process YouTube's sound")}
           sub={

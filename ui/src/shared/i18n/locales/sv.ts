@@ -1497,6 +1497,12 @@ const sv: Record<string, string> = {
   'Couldn’t like it on YouTube Music: {reason}. Taken back out of {name}.': 'Kunde inte gilla på YouTube Music: {reason}. Borttagen ur {name} igen.',
   'Not removed from {name} on YouTube Music: {reason}. Put back here.': 'Inte borttagen ur {name} på YouTube Music: {reason}. Tillbakalagd här.',
   'Couldn’t take the like back on YouTube Music: {reason}. Still in {name}.': 'Kunde inte ta tillbaka gillningen på YouTube Music: {reason}. Finns kvar i {name}.',
+  'Visualizer style': 'Visualiseringens stil',
+  'Bars': 'Staplar',
+  'Mirror': 'Spegel',
+  'Peaks': 'Toppar',
+  'Wave': 'Våg',
+  'bars mirror peaks wave look': 'staplar spegel toppar våg utseende',
 }
 
 export default sv
