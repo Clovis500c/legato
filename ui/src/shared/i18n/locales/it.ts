@@ -67,7 +67,6 @@ const it: Record<string, string> = {
   'New playlist': 'Nuova playlist',
   // Search bar
   'Search this list, or press Enter to search everywhere': 'Filtra questo elenco o premi Invio per cercare ovunque',
-  'Search songs, artists, videos': 'Cerca brani, artisti, video',
   'Clear search': 'Cancella ricerca',
   'Clear': 'Cancella',
   // Voice search
@@ -1517,6 +1516,7 @@ const it: Record<string, string> = {
   'toast popup message where place corner bottom top right': 'toast popup messaggio dove posizione angolo basso alto destra',
   'toast popup messages fewer quiet annoying errors only important': 'toast popup messaggi meno tranquillo fastidioso solo errori importanti',
   'toast popup message time seconds duration short long': 'toast popup messaggio tempo secondi durata breve lungo',
+  'What do you want to play?': 'Cosa vuoi ascoltare?',
 }
 
 export default it

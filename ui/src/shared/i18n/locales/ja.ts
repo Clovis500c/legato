@@ -67,7 +67,6 @@ const ja: Record<string, string> = {
   'New playlist': '新しいプレイリスト',
   // Search bar
   'Search this list, or press Enter to search everywhere': 'このリストを検索、Enterですべてを検索',
-  'Search songs, artists, videos': '曲、アーティスト、動画を検索',
   'Clear search': '検索をクリア',
   'Clear': 'クリア',
   // Voice search
@@ -1517,6 +1516,7 @@ const ja: Record<string, string> = {
   'toast popup message where place corner bottom top right': 'トースト ポップアップ メッセージ 場所 位置 隅 下 上 右',
   'toast popup messages fewer quiet annoying errors only important': 'トースト ポップアップ メッセージ 減らす 静か うるさい エラーのみ 重要',
   'toast popup message time seconds duration short long': 'トースト ポップアップ メッセージ 時間 秒 長さ 短い 長い',
+  'What do you want to play?': '何を再生しますか？',
 }
 
 export default ja

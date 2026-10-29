@@ -67,7 +67,6 @@ const zh: Record<string, string> = {
   'New playlist': '新建歌单',
   // Search bar
   'Search this list, or press Enter to search everywhere': '搜索此列表，或按 Enter 搜索全部',
-  'Search songs, artists, videos': '搜索歌曲、艺人、视频',
   'Clear search': '清除搜索',
   'Clear': '清除',
   // Voice search
@@ -1517,6 +1516,7 @@ const zh: Record<string, string> = {
   'toast popup message where place corner bottom top right': '弹出 提示 消息 位置 角落 底部 顶部 右侧',
   'toast popup messages fewer quiet annoying errors only important': '弹出 提示 消息 减少 安静 烦人 仅错误 重要',
   'toast popup message time seconds duration short long': '弹出 提示 消息 时间 秒 时长 短 长',
+  'What do you want to play?': '想听什么？',
 }
 
 export default zh

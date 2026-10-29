@@ -258,7 +258,7 @@ export function SearchBar({ children }: { children?: ReactNode }) {
           // The list keeps the focus here (its lines don't take it); the mic or a button next to the field closes it.
           onFocus={() => (setFocused(true), setOpen(true))}
           onBlur={() => (setFocused(false), close())}
-          placeholder={scope ? tr('Search this list, or press Enter to search everywhere') : tr('Search songs, artists, videos')}
+          placeholder={scope ? tr('Search this list, or press Enter to search everywhere') : tr('What do you want to play?')}
           aria-label={tr('Search')}
           className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-ink-3"
         />

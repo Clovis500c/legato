@@ -67,7 +67,6 @@ const id: Record<string, string> = {
   'New playlist': 'Playlist baru',
   // Search bar
   'Search this list, or press Enter to search everywhere': 'Cari di daftar ini, atau tekan Enter untuk mencari di mana saja',
-  'Search songs, artists, videos': 'Cari lagu, artis, video',
   'Clear search': 'Hapus pencarian',
   'Clear': 'Hapus',
   // Voice search
@@ -1517,6 +1516,7 @@ const id: Record<string, string> = {
   'toast popup message where place corner bottom top right': 'toast popup pesan di mana tempat sudut bawah atas kanan',
   'toast popup messages fewer quiet annoying errors only important': 'toast popup pesan lebih sedikit tenang mengganggu hanya galat penting',
   'toast popup message time seconds duration short long': 'toast popup pesan waktu detik durasi singkat lama',
+  'What do you want to play?': 'Mau putar apa?',
 }
 
 export default id

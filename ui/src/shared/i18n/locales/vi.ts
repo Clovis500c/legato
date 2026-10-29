@@ -67,7 +67,6 @@ const vi: Record<string, string> = {
   'New playlist': 'Danh sách phát mới',
   // Search bar
   'Search this list, or press Enter to search everywhere': 'Tìm trong danh sách này, hoặc nhấn Enter để tìm ở mọi nơi',
-  'Search songs, artists, videos': 'Tìm bài hát, nghệ sĩ, video',
   'Clear search': 'Xóa tìm kiếm',
   'Clear': 'Xóa',
   // Voice search
@@ -1517,6 +1516,7 @@ const vi: Record<string, string> = {
   'toast popup message where place corner bottom top right': 'popup thông báo ở đâu vị trí góc dưới trên phải',
   'toast popup messages fewer quiet annoying errors only important': 'popup thông báo ít hơn yên tĩnh phiền chỉ lỗi quan trọng',
   'toast popup message time seconds duration short long': 'popup thông báo thời gian giây độ dài ngắn dài',
+  'What do you want to play?': 'Bạn muốn nghe gì?',
 }
 
 export default vi

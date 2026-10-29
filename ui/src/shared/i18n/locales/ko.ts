@@ -67,7 +67,6 @@ const ko: Record<string, string> = {
   'New playlist': '새 플레이리스트',
   // Search bar
   'Search this list, or press Enter to search everywhere': '이 목록에서 검색하거나 Enter를 눌러 전체 검색',
-  'Search songs, artists, videos': '노래, 아티스트, 동영상 검색',
   'Clear search': '검색 지우기',
   'Clear': '지우기',
   // Voice search
@@ -1517,6 +1516,7 @@ const ko: Record<string, string> = {
   'toast popup message where place corner bottom top right': '토스트 팝업 메시지 어디 위치 모서리 아래 위 오른쪽',
   'toast popup messages fewer quiet annoying errors only important': '토스트 팝업 메시지 줄이기 조용히 귀찮음 오류만 중요',
   'toast popup message time seconds duration short long': '토스트 팝업 메시지 시간 초 길이 짧게 길게',
+  'What do you want to play?': '무엇을 재생할까요?',
 }
 
 export default ko

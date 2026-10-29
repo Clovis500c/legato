@@ -67,7 +67,6 @@ const sv: Record<string, string> = {
   'New playlist': 'Ny spellista',
   // Search bar
   'Search this list, or press Enter to search everywhere': 'Sök i den här listan, eller tryck på Enter för att söka överallt',
-  'Search songs, artists, videos': 'Sök låtar, artister, videor',
   'Clear search': 'Rensa sökningen',
   'Clear': 'Rensa',
   // Voice search
@@ -1517,6 +1516,7 @@ const sv: Record<string, string> = {
   'toast popup message where place corner bottom top right': 'toast popup meddelande var plats hörn nere uppe höger',
   'toast popup messages fewer quiet annoying errors only important': 'toast popup meddelanden färre tyst irriterande bara fel viktiga',
   'toast popup message time seconds duration short long': 'toast popup meddelande tid sekunder längd kort lång',
+  'What do you want to play?': 'Vad vill du lyssna på?',
 }
 
 export default sv

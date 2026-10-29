@@ -1,4 +1,4 @@
-import { ArrowsIn, ArrowsOut, CaretDown, CopySimple, Gear, Minus, PuzzlePiece, Square, Warning, X } from '@phosphor-icons/react'
+import { ArrowsIn, ArrowsOut, CaretDown, CaretLeft, CaretRight, CopySimple, Gear, Minus, PuzzlePiece, Square, Warning, X } from '@phosphor-icons/react'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
@@ -55,6 +55,7 @@ const AddonsView = lazy(() => import('../features/addons/AddonsView').then((m) =
 const win = getCurrentWindow()
 // Full contrast: grey window buttons were hard to find (user, 2026-10-23).
 const winBtn = 'grid h-9 w-11 place-items-center rounded-md text-ink transition hover:bg-raised'
+const navBtn = 'grid size-8 place-items-center rounded-full bg-raised text-ink-2 transition hover:text-ink disabled:pointer-events-none disabled:opacity-40'
 
 /**
  * Replaces the OS title bar (decorations: false), full width on the window's background like Spotify's: logo and name
@@ -97,6 +98,7 @@ function TopBar() {
   const setFull = usePlayer((s) => s.setFull)
   const go = useStore((s) => s.go)
   const page = useStore((s) => s.view.name)
+  const { canBack, canForward, goBack, goForward } = useStore(useShallow((s) => ({ canBack: s.back.length > 0, canForward: s.fwd.length > 0, goBack: s.goBack, goForward: s.goForward })))
   const [maximized, setMaximized] = useState(false)
   const [fullscreen, setFullscreen] = useState(false)
   useEffect(() => {
@@ -115,10 +117,20 @@ function TopBar() {
         <Logo />
         <span data-brand-name className="text-[0.9375rem] font-bold tracking-tight">Music App</span>
       </button>
-      {full && (
+      {full ? (
         <button onClick={() => setFull(false)} title={tr('Close Now Playing (Esc)')} className="glass flex items-center gap-1.5 rounded-full border border-line px-3 py-1 text-xs font-medium text-ink transition hover:bg-raised">
           <CaretDown size={12} weight="bold" /> {tr('Close player')}
         </button>
+      ) : (
+        // ← → of the mockups (the mouse's back / forward buttons do the same).
+        <span className="flex items-center gap-2">
+          <button className={navBtn} aria-label={tr('Back')} title={tr('Back')} disabled={!canBack} onClick={goBack}>
+            <CaretLeft size={16} />
+          </button>
+          <button className={navBtn} aria-label={tr('Forward')} title={tr('Forward')} disabled={!canForward} onClick={goForward}>
+            <CaretRight size={16} />
+          </button>
+        </span>
       )}
       <div ref={searchBox} data-tauri-drag-region className="flex h-full min-w-0 flex-1 items-center justify-center px-4 *:translate-x-(--shift) *:transition-[translate] *:duration-300" style={{ ['--shift' as string]: `${shift}px` }}>
         <SearchBar>

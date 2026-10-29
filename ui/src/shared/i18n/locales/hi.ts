@@ -67,7 +67,6 @@ const hi: Record<string, string> = {
   'New playlist': 'नई प्लेलिस्ट',
   // Search bar
   'Search this list, or press Enter to search everywhere': 'इस सूची में खोजें, या हर जगह खोजने के लिए Enter दबाएं',
-  'Search songs, artists, videos': 'गाने, कलाकार, वीडियो खोजें',
   'Clear search': 'खोज साफ़ करें',
   'Clear': 'साफ़ करें',
   // Voice search
@@ -1517,6 +1516,7 @@ const hi: Record<string, string> = {
   'toast popup message where place corner bottom top right': 'टोस्ट पॉपअप संदेश कहाँ जगह कोना नीचे ऊपर दाएँ',
   'toast popup messages fewer quiet annoying errors only important': 'टोस्ट पॉपअप संदेश कम शांत परेशान सिर्फ़ त्रुटियाँ ज़रूरी',
   'toast popup message time seconds duration short long': 'टोस्ट पॉपअप संदेश समय सेकंड अवधि कम ज़्यादा',
+  'What do you want to play?': 'आप क्या सुनना चाहते हैं?',
 }
 
 export default hi

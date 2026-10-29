@@ -67,7 +67,6 @@ const nl: Record<string, string> = {
   'New playlist': 'Nieuwe playlist',
   // Search bar
   'Search this list, or press Enter to search everywhere': 'Filter deze lijst, of druk op Enter om overal te zoeken',
-  'Search songs, artists, videos': 'Zoek nummers, artiesten, video\'s',
   'Clear search': 'Zoekopdracht wissen',
   'Clear': 'Wissen',
   // Voice search
@@ -1517,6 +1516,7 @@ const nl: Record<string, string> = {
   'toast popup message where place corner bottom top right': 'toast pop-up bericht waar plaats hoek onder boven rechts',
   'toast popup messages fewer quiet annoying errors only important': 'toast pop-up berichten minder rustig irritant alleen fouten belangrijk',
   'toast popup message time seconds duration short long': 'toast pop-up bericht tijd seconden duur kort lang',
+  'What do you want to play?': 'Wat wil je afspelen?',
 }
 
 export default nl

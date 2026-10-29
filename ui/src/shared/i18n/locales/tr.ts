@@ -67,7 +67,6 @@ const tr: Record<string, string> = {
   'New playlist': 'Yeni çalma listesi',
   // Search bar
   'Search this list, or press Enter to search everywhere': 'Bu listede ara veya her yerde aramak için Enter’a bas',
-  'Search songs, artists, videos': 'Şarkı, sanatçı, video ara',
   'Clear search': 'Aramayı temizle',
   'Clear': 'Temizle',
   // Voice search
@@ -1517,6 +1516,7 @@ const tr: Record<string, string> = {
   'toast popup message where place corner bottom top right': 'açılır bildirim mesaj nerede yer köşe alt üst sağ',
   'toast popup messages fewer quiet annoying errors only important': 'açılır bildirim mesajlar daha az sessiz rahatsız edici yalnızca hatalar önemli',
   'toast popup message time seconds duration short long': 'açılır bildirim mesaj süre saniye kısa uzun',
+  'What do you want to play?': 'Ne dinlemek istersin?',
 }
 
 export default tr
