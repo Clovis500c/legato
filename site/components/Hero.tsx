@@ -37,7 +37,7 @@ export function Hero() {
         ))}
       </h1>
       <motion.p variants={rise} className="max-w-[640px] text-[clamp(16px,1.4vw,18px)] leading-[1.45] font-medium text-ink-2">
-        Music App puts YouTube Music, Spotify, Apple Music and the files on your PC into one library and one player, on Windows, with no account of ours.
+        Legato puts YouTube Music, Spotify, Apple Music and the files on your PC into one library and one player, on Windows, with no account of ours.
       </motion.p>
       <motion.div variants={rise} className="flex flex-wrap items-center gap-x-6 gap-y-3">
         <motion.a href={href} whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }} className="inline-flex items-center gap-2 rounded-full bg-ink px-6 py-3 text-[15px] font-medium text-on-ink shadow-[0_8px_24px_-12px_rgb(0_0_0/0.5)]">
@@ -75,7 +75,7 @@ export function Shot() {
       <motion.div style={{ y }}>
         <motion.picture initial={{ opacity: 0, y: 64, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ duration: 1.1, ease: EASE, delay: 0.3 }} className="block">
           <source srcSet={dark.src} media="(prefers-color-scheme: dark)" />
-          <img src={light.src} width={1128} height={640} alt="Music App's Songs page: your library on the left, songs from YouTube Music, Spotify, Apple Music and your folders in one list, Up next on the right." className="block h-auto w-full rounded-xl shadow-(--shot-shadow) min-[1000px]:w-[1128px] min-[1000px]:max-w-none" />
+          <img src={light.src} width={1128} height={640} alt="Legato's Songs page: your library on the left, songs from YouTube Music, Spotify, Apple Music and your folders in one list, Up next on the right." className="block h-auto w-full rounded-xl shadow-(--shot-shadow) min-[1000px]:w-[1128px] min-[1000px]:max-w-none" />
         </motion.picture>
       </motion.div>
     </div>

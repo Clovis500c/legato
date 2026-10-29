@@ -15,5 +15,5 @@ const parts = Object.entries(list)
     const text = file ? readFileSync(join(dir, file), 'utf8').replace(/\r\n?/g, '\n').trim() : `License: ${p.license}`
     return `${p.name} ${p.versions.join(', ')} (${p.license})${p.homepage ? `\n${p.homepage}` : ''}\n\n${text}`
   })
-writeFileSync('public/third-party-licenses.txt', `Music App website: third-party software\n\n${parts.join(`\n\n${'-'.repeat(80)}\n\n`)}\n`)
+writeFileSync('public/third-party-licenses.txt', `Legato website: third-party software\n\n${parts.join(`\n\n${'-'.repeat(80)}\n\n`)}\n`)
 console.log(`third-party-licenses.txt: ${parts.length} packages`)

@@ -23,9 +23,9 @@ export function Header() {
   return (
     <header className={`sticky top-0 z-20 border-b transition-[background-color,border-color] duration-300 ${frost ? 'border-line-soft bg-bg/80 backdrop-blur-xl backdrop-saturate-150' : 'border-transparent'}`}>
       <div className="mx-auto flex h-[78px] max-w-[1440px] items-center justify-between gap-6 px-(--pad)">
-        <a href="#top" aria-label="Music App, top of the page" className="group flex items-center gap-2.5 text-2xl font-black tracking-[-0.02em]">
-          <Logo className="size-[30px] transition-transform duration-500 ease-out group-hover:-rotate-8" />
-          Music App
+        <a href="#top" aria-label="Legato, top of the page" className="group flex items-center gap-2.5 text-[28px] leading-none font-black tracking-[-0.02em]">
+          <Logo className="size-8 transition-transform duration-500 ease-out group-hover:-rotate-8" />
+          Legato
         </a>
         <nav aria-label="Sections" className="flex items-center gap-7">
           {LINKS.map(([label, to]) => (

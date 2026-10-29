@@ -40,17 +40,18 @@ Everything a new session needs to carry on the redesign (version 1.0, branch `v2
   - Motion (design.md › Shape, icons, motion): `shared/motion.ts` `pop()` on like and toggles, `.stagger`,
     `.slide-in`, `.swap-in`, `.icon-in`, `.nudge-l/-r`, `.turn` in `ui/src/styles.css`.
   - Website: `site/` (Next.js 16 static export, Tailwind 4, Motion), deployed by `.github/workflows/pages.yml` from
-    master once GitHub Pages is on (Settings › Pages › Source: GitHub Actions, not done yet). It replaces the user
+    master (GitHub Pages on since 2026-10-29, source GitHub Actions: https://clovis500c.github.io/music-app/). It replaces the user
     docs (README features, privacy.md); copy in `site/components/content.tsx`, pictures exported from Figma's
-    landing page (node 11:8927 light, 11:10438 dark). Its name says "Music App" until the user picks one.
+    landing page (node 11:8927 light, 11:10438 dark). Name and icon: Legato and the L on the playback blue (Figma, 01
+    Brand, node 11:9323), the user's choice 2026-10-29; the app itself still says Music App until the user says go.
 
 ## Next
 
-1. The name: Legato recommended, not decided by the user. Never rename the identifier, `_musicapp._tcp`, `MA1` or
-   keychain entries; the wordmark and app icon wait on it. Ask before changing what the app is called.
+1. The name is Legato (user's choice 2026-10-29), on the website so far. Renaming the app itself waits on the user's go
+   (plan-v2.md). Never rename the identifier, `_musicapp._tcp`, `MA1` or keychain entries.
 2. Left from the mockup pass (plan-v2.md): Your library ↗ full width, the player bar's "artist · from your file".
 3. Before merging: `pnpm check` (all of it) and `pnpm build` in `site/`, then ask the user whether to merge `v2` into
-   `master` and push, and whether to turn GitHub Pages on.
+   `master` and push (that push is release 1.0 and the website's first deploy).
 
 `pnpm dev` resumes playback at launch and after every full reload Vite does when a store module changes (settings,
 player store): pause it right after edits, or stop the dev app while editing those files.

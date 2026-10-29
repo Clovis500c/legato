@@ -8,13 +8,13 @@ import './globals.css'
 // Served from here (OFL, public/roboto-LICENSE.txt): no font host sees the visitors.
 const roboto = localFont({ src: './fonts/roboto.woff2', weight: '100 900', variable: '--font-roboto', display: 'swap' })
 
-const description = 'Music App puts YouTube Music, Spotify, Apple Music and the files on your PC into one library and one player, on Windows, with no account of ours.'
+const description = 'Legato puts YouTube Music, Spotify, Apple Music and the files on your PC into one library and one player, on Windows, with no account of ours.'
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://clovis500c.github.io'),
-  title: 'Music App: one player for YouTube Music, Spotify, Apple Music and your files',
+  title: 'Legato: one player for YouTube Music, Spotify, Apple Music and your files',
   description,
-  openGraph: { type: 'website', title: 'Music App', description, images: [{ url: dark.src, width: dark.width, height: dark.height }] },
+  openGraph: { type: 'website', title: 'Legato', description, images: [{ url: dark.src, width: dark.width, height: dark.height }] },
   twitter: { card: 'summary_large_image' },
 }
 

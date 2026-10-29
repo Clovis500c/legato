@@ -36,7 +36,7 @@ It runs the type check, ESLint, Vitest, Clippy (warnings are errors) and the Rus
 ## Website
 
 `site/`: Next.js exported to plain files, deployed to GitHub Pages by `.github/workflows/pages.yml` when master's
-`site/` changes (Settings › Pages › Source must be GitHub Actions). Its own packages: in `site/`, `pnpm install`, then
+`site/` changes (Settings › Pages › Source: GitHub Actions, on since 2026-10-29). Its own packages: in `site/`, `pnpm install`, then
 `pnpm dev` (http://localhost:3000) or `pnpm build` (into `site/out`). The copy is in `site/components/content.tsx`; its
 privacy rows replace the old `docs/privacy.md`, so change them when the app starts sending something new.
 

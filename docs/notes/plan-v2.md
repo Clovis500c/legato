@@ -16,12 +16,14 @@ Version 1.0 (user's choice 2026-10-29: the first releases were 0.1). A new sessi
       website (`site/`), docs cleaned up.
 - [ ] Your library ↗ (open it full width, design.md), and the player bar's "artist · from your file" line.
 - [ ] Check in the app: "No sound could be taken" gone from the second YouTube video on (fix 51946d5).
-- [ ] Website: turn GitHub Pages on (Settings › Pages › Source: GitHub Actions); `pages.yml` deploys `site/` from
-      `master`.
+- [x] Website on GitHub Pages (user's choice 2026-10-29): Pages on, source GitHub Actions; `pages.yml` deploys `site/`
+      from `master` at https://clovis500c.github.io/music-app/ (first deploy with the merge).
 - [ ] Merge `v2` into `master` and push (= release v1.0.x): only when the user says.
-- [ ] Decide the name: Legato recommended (finalists Tutti, Diapason); trademark search (INPI, EUIPO, USPTO classes 9,
-      41, 42), domain, Microsoft Store name. Never rename the identifier, `_musicapp._tcp`, `MA1` or keychain entries.
-      Wordmark, app icon and the website's name wait on it.
+- [x] Name: Legato, with Figma's brand (01 Brand: Roboto Black wordmark, the L on the playback blue), user's choice
+      2026-10-29. The website uses it.
+- [ ] The app itself still says Music App (window, installer, top bar, About, texts, icon): rename on the user's go.
+      Never rename the identifier, `_musicapp._tcp`, `MA1` or keychain entries; a new productName moves the install
+      folder (check the updater first). Trademark search (INPI, EUIPO, USPTO classes 9, 41, 42) still to do.
 - [ ] Figma: muted text (ink3) light is #606060 in the app (AA on cover tints), #6B6B6B in the file. Rename the file
       "Legato · Design" (the plugin can't rename files).
 

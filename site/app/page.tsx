@@ -11,8 +11,8 @@ export default function Home() {
       <main id="main">
         <Hero />
         <Shot />
-        <Split id="fixes" title="What listeners keep asking the big apps for" intro="Collected from Spotify's community forum, YouTube Music reviews and press coverage of their redesigns. Each line is something Music App does today.">
-          <Rows head={['The complaint', 'In Music App']} rows={FIXES} />
+        <Split id="fixes" title="What listeners keep asking the big apps for" intro="Collected from Spotify's community forum, YouTube Music reviews and press coverage of their redesigns. Each line is something Legato does today.">
+          <Rows head={['The complaint', 'In Legato']} rows={FIXES} />
         </Split>
         <Block id="features" title="One app for all of it" intro="Everything below works the same whatever the song comes from.">
           <Features />
