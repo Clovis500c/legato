@@ -26,7 +26,8 @@ import { msg, tr, trn } from '../../shared/i18n/i18n'
 const ROW = { compact: 40, comfort: 52, airy: 64 }
 const order: Source[] = ['spotify', 'youtube', 'apple', 'local']
 const onControl = (e: React.MouseEvent) => e.target instanceof Element && !!e.target.closest('button, a, input, [role="menu"]')
-const width: Record<Column, string> = { album: 'minmax(0,200px)', sources: '76px', plays: '52px', added: '92px', duration: '52px' }
+// Title, artist and album share the room 2:1:1, so a narrow window never squeezes the title out.
+const width: Record<Column, string> = { album: 'minmax(0,1fr)', sources: '76px', plays: '52px', added: '92px', duration: '52px' }
 const head: Record<Column, string> = { album: msg('Album'), sources: msg('Sources'), plays: msg('Plays'), added: msg('Date added'), duration: msg('Duration') }
 /** Header click sorts: first click → first sort, again → the second (reverse). Sources can't sort. */
 /** "23 Oct", "12 Mar 2025"; nothing when unknown (added before the app kept dates). */
@@ -113,7 +114,7 @@ export function TrackTable({ tracks, empty, editId, rowActions, sort, onSort, fo
     if (e.key === 'Enter' && sel.cursor !== null && vias(tracks[sel.cursor], sp).length) return play(tracks, sel.cursor)
     if (e.key === 'Delete' && editId !== undefined && sel.ids.size) removeChosen()
   }
-  const grid = { gridTemplateColumns: ['32px', 'minmax(0,1fr)', ...(artistCol ? ['minmax(0,200px)'] : []), editId ? '188px' : rowActions ? 'max-content' : '96px', ...columns.map((c) => width[c])].join(' ') }
+  const grid = { gridTemplateColumns: ['32px', 'minmax(0,2fr)', ...(artistCol ? ['minmax(0,1fr)'] : []), editId ? '188px' : rowActions ? 'max-content' : '96px', ...columns.map((c) => width[c])].join(' ') }
   const cover = density === 'compact' ? 28 : density === 'comfort' ? 36 : 46
 
   return (
@@ -306,16 +307,16 @@ function Head({ label, icon, sorts, sort, onSort, right = false }: { label: stri
   const now = sorts && sort ? (sort === sorts[0] ? 0 : sort === sorts[1] && sorts[1] !== sorts[0] ? 1 : null) : null
   if (!sorts || !onSort)
     return (
-      <span role="columnheader" aria-label={label} className={`flex text-xs text-ink-3 ${right ? 'justify-end' : ''}`}>
+      <span role="columnheader" aria-label={label} className={`flex min-w-0 truncate text-xs text-ink-3 ${right ? 'justify-end' : ''}`}>
         {icon ?? label}
       </span>
     )
   return (
-    <span role="columnheader" aria-sort={now === 0 ? 'ascending' : now === 1 ? 'descending' : 'none'} className={right ? 'flex justify-end' : 'flex'}>
-      <button onClick={() => onSort(now === 0 ? sorts[1] : sorts[0])} aria-label={label} title={tr('Sort by {column}', { column: label })} className={`flex items-center gap-1 text-xs text-ink-3 hover:text-ink ${now !== null ? 'font-semibold text-ink!' : ''}`}>
-        {icon ?? label}
-        {now === 0 && <CaretUp size={9} weight="bold" />}
-        {now === 1 && <CaretDown size={9} weight="bold" />}
+    <span role="columnheader" aria-sort={now === 0 ? 'ascending' : now === 1 ? 'descending' : 'none'} className={`flex min-w-0 ${right ? 'justify-end' : ''}`}>
+      <button onClick={() => onSort(now === 0 ? sorts[1] : sorts[0])} aria-label={label} title={tr('Sort by {column}', { column: label })} className={`flex min-w-0 items-center gap-1 text-xs text-ink-3 hover:text-ink ${now !== null ? 'font-semibold text-ink!' : ''}`}>
+        <span className="truncate">{icon ?? label}</span>
+        {now === 0 && <CaretUp size={9} weight="bold" className="shrink-0" />}
+        {now === 1 && <CaretDown size={9} weight="bold" className="shrink-0" />}
       </button>
     </span>
   )

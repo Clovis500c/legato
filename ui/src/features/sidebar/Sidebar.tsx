@@ -163,9 +163,10 @@ export function Sidebar() {
             <Plus size={18} />
           </RoundButton>
         </div>
-        <div role="tablist" aria-label={tr('Show')} className="flex shrink-0 gap-2 px-3 py-2">
+        {/* Fits the panel at the normal text size; bigger text or longer words (other languages) scroll sideways, never cut. */}
+        <div role="tablist" aria-label={tr('Show')} className="no-scrollbar flex shrink-0 gap-1.5 overflow-x-auto px-3 py-2">
           {KINDS.map((k) => (
-            <button key={k.id} role="tab" aria-selected={kind === k.id} onClick={() => setKind(kind === k.id ? null : k.id)} className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition ${kind === k.id ? 'bg-ink text-bg' : 'bg-raised text-ink hover:bg-line'}`}>
+            <button key={k.id} role="tab" aria-selected={kind === k.id} onClick={() => setKind(kind === k.id ? null : k.id)} className={`shrink-0 rounded-full px-3 py-1 text-[0.8125rem] font-medium whitespace-nowrap transition ${kind === k.id ? 'bg-ink text-bg' : 'bg-raised text-ink hover:bg-line'}`}>
               {tr(k.label)}
             </button>
           ))}
