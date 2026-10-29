@@ -169,7 +169,7 @@ never: downloading, extracting, recording or exporting a platform's audio, or to
   `captureStream()`, the element is muted, and Chromium's own audio nodes play it: gain → limiter, plus a K-weighted
   analysis branch. Same formulas as the native chain. The page keeps its own mute (an instance `muted` property),
   the element's volume (the app's volume and fades) is applied in the gain. Any failure (sound blocked before a
-  click, nothing captured for 4 s while playing) unmutes the element: the video plays as before. Levels only (moving
+  click, nothing captured yet) leaves the element its own sound: it is muted only once captured sound proves the capture works, and gets its sound back after 2 s of lost capture. Levels only (moving
   cover, early endings, no Adaptive Sound or edits): `listen`, analysers alone (Chromium pulls them unconnected), the
   element never muted, its sound untouched. Switching modes attaches again. Messages: embed
   `postMessage` to the app's origin only; watch page `musicapp-live:` strings checked in Rust (`ytwatch.rs`).

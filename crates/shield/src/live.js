@@ -2,8 +2,9 @@
 // video's sound with Chromium's own audio nodes: the app sends settings, the frame sends levels back. Same settings and
 // levels as the native engine (crates/dsp). Off until asked: the sound is untouched.
 //
-// The sound is taken with captureStream() (the element itself is then muted), not createMediaElementSource(): that one
-// can't be undone, and a failure would leave the video silent. Here, off or failing = unmute, back to normal.
+// The sound is taken with captureStream() (the element itself muted once captured sound proves it works), not
+// createMediaElementSource(): that one can't be undone, and a failure would leave the video silent. Here, off, failing
+// or not proven yet = the element's own sound, back to normal.
 ;(() => {
   if (!/(^|\.)youtube(-nocookie)?\.com$/.test(location.hostname)) return
   const embed = location.pathname.startsWith('/embed/')
@@ -29,8 +30,15 @@
   const START_S = 3
   const lufs = (ms) => (ms <= 1e-12 ? -120 : -0.691 + 10 * Math.log10(ms))
   const db = (g) => 10 ** (g / 20)
-  // Playing this long with nothing captured: capture doesn't work here, the element gets its sound back.
-  const SILENT_GIVE_UP_S = 4
+  // The element is muted only once captured sound proves the capture works (until then it plays its own sound,
+  // unprocessed): a silent intro or a capture that gives nothing never leaves a video silent, nothing is given up on.
+  // Playing this long with nothing captured: said once, still listening in case sound comes.
+  const SILENT_SAY_S = 20
+  // Captured sound gone this long while processing (track swap, ad, a silent break): the element's own sound back
+  // until it returns.
+  const LOST_S = 2
+  // Captured peak above this = sound (digital silence reads 0).
+  const SOUND = 1e-4
   // Early end (ui player/ends.ts): the song over before the video, silence after it (an end screen). Quiet (this read)
   // for QUIET_S within the video's last END_S: said once per song, from where it went quiet.
   // shortcut: a song with 2 s of silence then a final part in its last 25 s ends at the silence (learned as such),
@@ -328,9 +336,8 @@
   let g = null
   let busy = false
   let retry = 0
-  // Last error sent (retries don't repeat it), and the source given up on (capture gave nothing).
+  // Last error sent (retries don't repeat it).
   let said = ''
-  let skip = ''
 
   function report(error) {
     if (error === said) return
@@ -371,7 +378,7 @@
 
   async function attach() {
     const video = document.querySelector('video')
-    if (!video || g || busy || !settings.on || (video.currentSrc && video.currentSrc === skip)) return
+    if (!video || g || busy || !settings.on) return
     busy = true
     let ctx
     try {
@@ -386,6 +393,7 @@
       let limiter = null
       let post = null
       let direct = null
+      let gate = null
       if (full) {
         gain = ctx.createGain()
         // Peak limiter, engaged only while boosting or edited (ratio 1 = untouched otherwise).
@@ -394,8 +402,10 @@
         // costs CPU even when neutral. Then through it for good (fxOn).
         post = new GainNode(ctx)
         direct = new GainNode(ctx)
+        // Closed until the capture is proven (prove): the element's own sound meanwhile, never both.
+        gate = new GainNode(ctx, { gain: 0 })
         input.connect(direct).connect(post)
-        post.connect(gain).connect(limiter).connect(ctx.destination)
+        post.connect(gain).connect(limiter).connect(gate).connect(ctx.destination)
         tap = post
       }
       // K-weighting (BS.1770) on the analysis branch: after the effects, before the gain (as the native chain).
@@ -407,15 +417,18 @@
       await ctx.resume()
       if (ctx.state !== 'running') throw new Error('Sound processing is waiting for a click in the app')
       if (!settings.on || g || document.querySelector('video') !== video || full === settings.listen) return void ctx.close()
-      const s = { ctx, video, stream, input, full, fx: null, post, direct, gain, limiter, k, raw, buf: new Float32Array(2048), track: null, src: null, wanted: video.muted, momentary: 0, short: 0, peak: 0, gainDb: full ? startGain(0) : 0, elapsed: 0, at: performance.now(), time: video.currentTime, silent: 0, quietAt: null, endSaid: false }
+      const s = { ctx, video, stream, input, full, fx: null, post, direct, gain, limiter, gate, proven: false, told: false, k, raw, buf: new Float32Array(2048), track: null, src: null, wanted: video.muted, momentary: 0, short: 0, peak: 0, gainDb: full ? startGain(0) : 0, elapsed: 0, at: performance.now(), time: video.currentTime, silent: 0, quietAt: null, endSaid: false }
       // The captured track changes with each video (new metadata): follow it.
       s.plug = () => {
         const track = stream.getAudioTracks().find((t) => t.readyState === 'live') ?? null
         if (track === s.track) return
         // Next song: loudness measured afresh, the gain carries on from the last one (the app's, across embeds).
-        s.momentary = s.short = s.elapsed = 0
+        s.momentary = s.short = s.elapsed = s.silent = 0
         s.quietAt = null
         s.endSaid = false
+        // New source: proven again before the element goes quiet.
+        prove(s, false)
+        s.told = false
         if (track && full) s.gainDb = startGain(s.gainDb)
         s.src?.disconnect()
         s.track = track
@@ -439,11 +452,11 @@
           set: (v) => {
             if (s.wanted === !!v) return
             s.wanted = !!v
+            if (!s.proven) MUTED.set.call(video, s.wanted)
             setGain()
             video.dispatchEvent(new Event('volumechange'))
           },
         })
-        MUTED.set.call(video, true)
         video.addEventListener('volumechange', s.onVolume)
         video.addEventListener('ratechange', s.onRate)
         fxOn()
@@ -454,8 +467,6 @@
       s.plug()
       setGain()
       s.timer = setInterval(tick, 33)
-      said = ''
-      send({ attached: true })
     } catch (e) {
       ctx?.close().catch(() => {})
       detach()
@@ -479,6 +490,20 @@
     wet.gain.setTargetAtTime(1, g.ctx.currentTime, 0.015)
     g.direct.gain.setTargetAtTime(0, g.ctx.currentTime, 0.015)
     g.fx = fx
+  }
+
+  /** Capture proven (sound came) or not: processing, the element muted, its sound from here; else the element's own. */
+  function prove(s, on) {
+    if (s.proven === on) return
+    s.proven = on
+    if (s.full) {
+      MUTED.set.call(s.video, on || s.wanted)
+      s.gate.gain.setTargetAtTime(on ? 1 : 0, s.ctx.currentTime, 0.005)
+    }
+    if (on) {
+      said = ''
+      send({ attached: true })
+    }
   }
 
   /** Gain a new song starts from: the app's, used once (a mid-song track change keeps `own`). */
@@ -559,15 +584,18 @@
     g.idle = g.video.paused
     const { ms } = read(g.k)
     const { peak } = read(g.raw)
-    // Playing, yet nothing captured: capture doesn't work for this source. Normal sound for it, no retry until the next.
+    // Sound captured: processing. Silent while playing: the element's own sound back after LOST_S; never any sound
+    // for SILENT_SAY_S: said (the video plays as usual meanwhile).
     const v = g.video
     const playing = !v.paused && v.currentTime !== g.time
     g.time = v.currentTime
-    g.silent = playing && peak < 1e-6 ? g.silent + dt : 0
-    if (g.silent > SILENT_GIVE_UP_S) {
-      skip = v.currentSrc
-      detach()
-      return report('No sound could be taken from this video')
+    const sound = peak > SOUND
+    g.silent = playing && !sound ? g.silent + dt : 0
+    if (sound) prove(g, true)
+    else if (g.proven && g.silent > LOST_S) prove(g, false)
+    else if (!g.proven && !g.told && g.silent > SILENT_SAY_S) {
+      g.told = true
+      report('No sound could be taken from this video')
     }
     // Windows not full yet (song start): plain average of all so far, as the native meter does.
     g.elapsed += dt
