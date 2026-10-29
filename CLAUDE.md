@@ -2,7 +2,7 @@
 
 Desktop app (Tauri 2 + Rust + React/TS) that unifies Spotify / YouTube / Apple Music / local libraries. Overview: `docs/architecture.md`; original brief: `docs/notes/brief.md`; plan and history: `docs/notes/plan-v2.md`.
 Repo docs: `README.md` (short, user-facing), `CONTRIBUTING.md`, `docs/`. Keep README brief: details go in `docs/`.
-Reference mockups: Figma file "Bow Game / Music App", page "Music App v3 — Hi-Fi".
+Design direction (v2): `docs/design.md`; mockups in the Figma file "Untitled" (to be renamed "Legato · Design"), every page in light and dark.
 
 ## Non-negotiable rules
 - Serverless: no backend of ours. Secrets in the OS keychain (`keyring` crate), local SQLite library. Sync between the user's PCs (user's choice, 2026-10-21): a OneDrive (or any shared) folder, one file per PC, or the local network with a 6-digit code; secrets travel only sealed (password or code), otherwise sign in again. See `docs/sync-mode.md`.
@@ -43,7 +43,7 @@ Reference mockups: Figma file "Bow Game / Music App", page "Music App v3 — Hi-
 - Long lists: virtualized (`@tanstack/react-virtual`). No network access from the front end: everything goes through Rust.
   Images too: `shared/art.ts` → `art` URI scheme (`src-tauri/src/art.rs`, host allowlist + disk cache). CSP img-src has no https.
 - Right-click: every surface gets a menu from `features/menus.tsx` (`onMenu(() => …)`); text fields keep the native one.
-- Default look: theme `system` = Modern / Modern Dark (YouTube-style, Roboto) following Windows light/dark, accent `system` = Windows accent.
+- Default look (v2, `docs/design.md`): theme `system` = Modern / Modern Dark (Roboto, layered panels) following Windows light/dark, accent = the theme's sky blue, for playback only (play button, playing mark); everything else ink and greys.
 - Running to-do of the user's requests: `docs/notes/plan-v2.md` (tick lines as they land, so a new session can resume).
 - Tauri commands that lock the library, read files or compute: `async fn` (a sync command runs on the window's thread; a
   wait there freezes the whole app: Windows' AppHang on v0.1.217, 2026-10-23).

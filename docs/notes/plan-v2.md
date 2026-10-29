@@ -185,6 +185,28 @@ needs it; 2 s fade by default.
 
 Everything still open, gathered from the sections below. Tick a line when it lands; details stay in their section.
 
+**v2: rebrand and redesign** (proposal 3 of 2026-10-29, sky blue accent: Roboto, Spotify-style panels, rules from
+what listeners ask music apps for; direction in [design.md](../design.md), brief
+https://claude.ai/artifact/33xMyBxcFnf7pwwmLBdVVQ, Figma file "Untitled": every page in light and dark, variables
+Theme (light) / Dark / Brand / Scale, components, Home, Songs, Album, Search, Now Playing, landing. Proposals 1
+"Nocturne v0.1" and 2 "Proposal 2 (poster)" are in the Figma version history.) Version 2.0 (user's choice
+2026-10-29: the redesign is v2), built on branch `v2`.
+- [x] Direction adopted by the user (2026-10-29), sky blue instead of yellow.
+- [x] Step 1: Modern / Modern Dark take the v2 palettes, sky blue for playback only, defaults v8 (theme accent,
+      compact rows without covers, square covers, flat Now Playing). Layered panels, two-panel sidebar with Your library
+      (kind chips, covers), Add-ons and Settings in the top bar, Up next / lyrics / Live Editor as a right panel on every
+      page, player bar with like, lyrics and Up next. Rows: Artist column, heart, grey selection, blue playing mark.
+      Bands in the cover's tint on album, artist and playlist pages; display titles. Version 2.0.
+- [ ] Up next in three blocks (Now playing, Next added by you, Then from the list): the queue doesn't record what the
+      user added yet.
+- [ ] Now Playing as in the mockup: cover left, title and details right (today: stage centered, bigger title).
+- [ ] Home as in the mockup (shortcut tiles at the top), Search screen pass, list column picker in the header.
+- [ ] Decide the name: Legato recommended (finalists Tutti, Diapason); trademark search (INPI, EUIPO, USPTO classes 9,
+      41, 42), domain, Microsoft Store name. Never rename the identifier, `_musicapp._tcp`, `MA1` or keychain entries.
+      Wordmark and app icon wait on the name.
+- [ ] Figma: muted text (ink3) light is #606060 in the app (AA on cover tints), #6B6B6B in the file.
+- [ ] Rename the Figma file "Legato · Design" (the plugin can't rename files).
+
 **Release and updates** (the updater can't work until these are done)
 - [x] GitHub secret `TAURI_SIGNING_PRIVATE_KEY` (contents of `~/.tauri/music-app.key`), set 2026-10-17. The key has no
       password (checked by signing a test file) and matches the public key in `tauri.conf.json`.
