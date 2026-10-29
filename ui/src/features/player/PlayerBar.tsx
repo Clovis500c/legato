@@ -220,12 +220,12 @@ export function VolumeControl({ big }: { big?: boolean }) {
   )
 }
 
-/** Right panel switch (Up next, lyrics): Fill when open, again closes it. Same settings as Now Playing's panels. */
+/** Right panel switch (Up next, lyrics): Fill when open, again closes it. */
 function PanelButton({ panel, label, icon: Icon }: { panel: 'upNext' | 'lyrics'; label: string; icon: typeof Queue }) {
-  const on = useSettings((s) => s.settings[panel] && (panel === 'lyrics' || !s.settings.lyrics) && !s.settings.editor)
+  const on = useSettings((s) => s.settings.sidePanel === panel)
   const now = usePlayer((s) => !!s.now)
   return (
-    <RoundButton label={label} aria-pressed={on} kind="plain" size="sm" disabled={!now} className={on ? 'text-ink!' : ''} onClick={() => useSettings.getState().update(on ? { [panel]: false } : { upNext: panel === 'upNext', lyrics: panel === 'lyrics', editor: false })}>
+    <RoundButton label={label} aria-pressed={on} kind="plain" size="sm" disabled={!now} className={on ? 'text-ink!' : ''} onClick={() => useSettings.getState().update({ sidePanel: on ? 'none' : panel })}>
       <Icon size={19} weight={on ? 'fill' : 'regular'} />
     </RoundButton>
   )

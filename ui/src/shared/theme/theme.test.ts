@@ -102,6 +102,9 @@ describe('resolveTheme', () => {
     expect(off(sanitize({ homeSections: [{ id: 'playlists', on: true }], defaultsVersion: 6 }))).toBe(true)
     // App v2 (v8): old defaults move once (Windows accent → sky blue, compact rows, square covers, flat Now Playing).
     expect(sanitize({ accent: 'system', density: 'comfort', listCovers: true, covers: 'rounded', immersive: true, defaultsVersion: 7 })).toMatchObject({ accent: null, density: 'compact', listCovers: false, covers: 'net', immersive: false })
+    expect(sanitize({ upNext: true, defaultsVersion: 7 }).upNext).toBe(false)
+    expect(sanitize({ upNext: true, sidePanel: 'lyrics', defaultsVersion: 8 })).toMatchObject({ upNext: true, sidePanel: 'lyrics' })
+    expect(sanitize({ sidePanel: 'editor' }).sidePanel).toBe('upNext')
     expect(sanitize({ accent: '#2F6FEB', density: 'airy', listCovers: true, covers: 'vinyl', defaultsVersion: 7 })).toMatchObject({ accent: '#2F6FEB', density: 'airy', listCovers: true, covers: 'vinyl' })
     expect(sanitize({ accent: 'system', immersive: true, defaultsVersion: 8 })).toMatchObject({ accent: 'system', immersive: true })
     // Plays column once (v7), only for the old default columns.

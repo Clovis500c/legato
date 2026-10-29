@@ -299,8 +299,10 @@ export interface Settings {
   mixCovers: 'grid' | 'single' | 'template'
   /** Download updates in the background and install them when nothing plays. */
   autoUpdate: boolean
-  /** Now Playing: Up next panel open. */
+  /** Now Playing: Up next panel open (off: the title big beside the cover, docs/design.md). */
   upNext: boolean
+  /** Main window's right panel, beside every page: Up next, lyrics, or closed. Apart from Now Playing's. */
+  sidePanel: 'upNext' | 'lyrics' | 'none'
   /** Now Playing: lyrics beside the cover (wins over Up next). */
   lyrics: boolean
   /** Now Playing: Live Editor beside the cover (wins over lyrics and Up next). */
@@ -398,7 +400,8 @@ export const DEFAULTS: Settings = {
   playlistCovers: {},
   mixCovers: 'grid',
   autoUpdate: true,
-  upNext: true,
+  upNext: false,
+  sidePanel: 'upNext',
   lyrics: false,
   editor: false,
   resume: true,
@@ -441,6 +444,7 @@ function v8(r: Record<string, unknown>): Partial<Settings> {
     ...(compact && { density: 'compact', listCovers: false }),
     ...((r.covers ?? 'rounded') === 'rounded' && { covers: 'net' }),
     immersive: false,
+    upNext: false,
   }
 }
 
@@ -578,6 +582,7 @@ export function sanitize(raw: unknown): Settings {
     mixCovers: pick(r.mixCovers, ['grid', 'single', 'template'] as const, DEFAULTS.mixCovers),
     autoUpdate: typeof r.autoUpdate === 'boolean' ? r.autoUpdate : DEFAULTS.autoUpdate,
     upNext: typeof r.upNext === 'boolean' ? r.upNext : DEFAULTS.upNext,
+    sidePanel: pick(r.sidePanel, ['upNext', 'lyrics', 'none'] as const, DEFAULTS.sidePanel),
     lyrics: r.lyrics === true,
     editor: r.editor === true,
     resume: typeof r.resume === 'boolean' ? r.resume : DEFAULTS.resume,

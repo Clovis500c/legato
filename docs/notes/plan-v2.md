@@ -197,9 +197,12 @@ Theme (light) / Dark / Brand / Scale, components, Home, Songs, Album, Search, No
       (kind chips, covers), Add-ons and Settings in the top bar, Up next / lyrics / Live Editor as a right panel on every
       page, player bar with like, lyrics and Up next. Rows: Artist column, heart, grey selection, blue playing mark.
       Bands in the cover's tint on album, artist and playlist pages; display titles. Version 2.0.
-- [ ] Up next in three blocks (Now playing, Next added by you, Then from the list): the queue doesn't record what the
-      user added yet.
-- [ ] Now Playing as in the mockup: cover left, title and details right (today: stage centered, bigger title).
+- [x] Up next in three blocks (Now playing, Next added by you, Then from the list): the queue records what the user
+      queued; Add to queue puts songs after those, before the rest of the list (kept through shuffle). Not saved with
+      the session yet (after a restart they read as part of the list).
+- [x] Now Playing as in the mockup: cover or video left, title (Display XL), artist, album, source and the next song
+      right, controls across the bottom; lyrics, Up next and Sound as icons, a panel replaces the details. The main
+      window's right panel has its own setting (`sidePanel`), so Now Playing opens without one (defaults v8).
 - [ ] Home as in the mockup (shortcut tiles at the top), Search screen pass, list column picker in the header.
 - [ ] Decide the name: Legato recommended (finalists Tutti, Diapason); trademark search (INPI, EUIPO, USPTO classes 9,
       41, 42), domain, Microsoft Store name. Never rename the identifier, `_musicapp._tcp`, `MA1` or keychain entries.

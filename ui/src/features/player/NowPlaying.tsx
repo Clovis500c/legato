@@ -1,4 +1,4 @@
-import { ArrowSquareOut, Heart, ThumbsDown } from '@phosphor-icons/react'
+import { ArrowSquareOut, Heart, Queue, Quotes, SlidersHorizontal, ThumbsDown } from '@phosphor-icons/react'
 import { STAGE_ID } from '../../app/searchShift'
 import { openUrl } from '@tauri-apps/plugin-opener'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
@@ -24,7 +24,8 @@ import { useStill } from './still'
 import { ArtistLink } from './ArtistLink'
 import { isRemote, useNowTrack, usePlayer, useVideoSlot } from './store'
 import { Transport } from './Transport'
-import { UpNext, useNextCount } from './UpNext'
+import { UpNext } from './UpNext'
+import { AddToPlaylist } from '../library/AddToPlaylist'
 import { LyricsPanel } from './LyricsPanel'
 import { EditorPanel } from '../editor/EditorPanel'
 import { useVideoBox } from './videoBox'
@@ -195,26 +196,41 @@ function Tuner() {
   return <TunerScale value={pos} max={durationMs ?? 0} onChange={seek} />
 }
 
-/** Up next · Lyrics · Sound (the Live Editor): one click opens a panel beside the cover, again closes it. */
-function PanelTabs({ upNext, lyrics, editor, next, className = '' }: { upNext: boolean; lyrics: boolean; editor: boolean; next: number; className?: string }) {
-  const active = editor ? 'sound' : lyrics ? 'lyrics' : upNext ? 'upnext' : null
-  const pick = (t: 'upnext' | 'lyrics' | 'sound') => useSettings.getState().update(t === active ? { upNext: false, lyrics: false, editor: false } : { upNext: t === 'upnext', lyrics: t === 'lyrics', editor: t === 'sound' })
-  const tabs = [
-    { id: 'upnext' as const, label: next ? tr('Up next · {n}', { n: next }) : tr('Up next') },
-    { id: 'lyrics' as const, label: tr('Lyrics') },
-    { id: 'sound' as const, label: tr('Sound') },
-  ]
+
+type PanelId = 'upNext' | 'lyrics' | 'editor'
+
+/** Lyrics, Up next, Sound (the Live Editor): an icon each, Fill when its panel is open beside the cover; again closes it. */
+function PanelToggle({ id, label, icon: Icon, active }: { id: PanelId; label: string; icon: typeof Queue; active: PanelId | null }) {
+  const on = active === id
   return (
-    <div role="tablist" aria-label={tr('Panels')} className={`glass flex w-fit gap-0.5 rounded-full border border-line p-[3px] ${className}`}>
-      {tabs.map((t) => (
-        <button key={t.id} role="tab" aria-selected={active === t.id} onClick={() => pick(t.id)} className={`rounded-full px-3.5 py-1 text-xs font-semibold transition ${active === t.id ? 'bg-ink text-bg' : 'text-ink-2 hover:text-ink'}`}>
-          {t.label}
-        </button>
-      ))}
-    </div>
+    <RoundButton label={label} aria-pressed={on} kind="plain" size="md" className={on ? 'text-ink!' : ''} onClick={() => useSettings.getState().update(on ? { upNext: false, lyrics: false, editor: false } : { upNext: id === 'upNext', lyrics: id === 'lyrics', editor: id === 'editor' })}>
+      <Icon size={22} weight={on ? 'fill' : 'regular'} />
+    </RoundButton>
   )
 }
 
+/** What plays after this one; a click opens Up next. */
+function NextLine() {
+  const next = usePlayer((s) => {
+    const at = s.order.indexOf(s.index)
+    return at >= 0 && at + 1 < s.order.length ? s.list[s.order[at + 1]] : undefined
+  })
+  if (!next) return null
+  return (
+    <button onClick={() => useSettings.getState().update({ upNext: true, lyrics: false, editor: false })} title={tr('Up next')} className="-mx-2 flex w-fit max-w-full items-center gap-3 rounded-md p-2 text-left transition hover:bg-raised">
+      <Cover title={next.album ?? next.title} art={trackArt(next)} size={40} />
+      <span className="min-w-0">
+        <span className="block truncate text-sm font-medium">{tr('Next: {title}', { title: next.title })}</span>
+        <span className="block truncate text-[0.8125rem] text-ink-2">{next.artist}</span>
+      </span>
+    </button>
+  )
+}
+
+/**
+ * Whole window (docs/design.md): the cover's flat tint, cover or video on the left, the title big on the right (or a
+ * panel there: Up next, lyrics, the Live Editor, the title then over the controls), controls across the bottom.
+ */
 export function NowPlaying() {
   const now = usePlayer((s) => s.now)
   const setFull = usePlayer((s) => s.setFull)
@@ -225,7 +241,6 @@ export function NowPlaying() {
   // Re-rendered when the theme or accent change (selected above).
   const theme = useSettings.getState().current()
   const track = useNowTrack()
-  const nextCount = useNextCount()
   const liked = useLiked(track)
   const ambient = useAmbient(tint && !immersive && track ? trackArt(track)[0] : undefined, theme)
   // Auto: a still-image upload shows as a cover.
@@ -245,14 +260,20 @@ export function NowPlaying() {
   const video = now.via === 'youtube'
   // A file, a preview: its YouTube version, if it has one, can show the video (Spotify plays in its own app).
   const ytVersion = !video && now.via !== 'spotify' && !!track?.ids.youtube
+  const panel: PanelId | null = editor ? 'editor' : lyrics ? 'lyrics' : upNext ? 'upNext' : null
+  const source = (
+    <span className="flex items-center gap-2 text-[0.8125rem] text-ink-2">
+      <SourceIcon source={viaSource[now.via]} size={15} />
+      {tr('Playing from {source}', { source: tr(viaLabel[now.via]) })}
+    </span>
+  )
 
   return (
     // Whole window, under the see-through top bar (logo, Close player and window buttons stay on top, z-30).
     <div role="dialog" aria-label={tr('Now playing')} onContextMenu={onMenu(playerMenu)} className="np-in fixed inset-0 z-20 isolate flex flex-col overflow-hidden bg-bg px-10 pt-17 pb-7 text-ink transition-colors duration-500" style={ambient}>
       {immersive && <Backdrop url={backdrop} dim={backdropDim} motion={backdropMotion} />}
-      {!upNext && !lyrics && !editor && <PanelTabs className="absolute top-17 right-10 z-10" upNext={false} lyrics={false} editor={false} next={nextCount} />}
 
-      <div className={`grid min-h-0 flex-1 gap-10 ${editor ? 'grid-cols-[minmax(0,1fr)_400px]' : lyrics ? 'grid-cols-[minmax(0,1fr)_minmax(0,1fr)]' : upNext ? 'grid-cols-[minmax(0,1fr)_360px]' : 'grid-cols-1'}`}>
+      <div className={`grid min-h-0 flex-1 gap-12 ${panel === 'editor' ? 'grid-cols-[minmax(0,1fr)_400px]' : panel === 'upNext' ? 'grid-cols-[minmax(0,1fr)_360px]' : 'grid-cols-[minmax(0,1fr)_minmax(0,1fr)]'}`}>
         <section id={STAGE_ID} className="flex min-h-0 min-w-0 flex-col items-center gap-4">
           {/* Every song (user's pick 2026-10-23): Video on a file or a preview switches to its YouTube version, same spot. */}
           <Segmented
@@ -278,50 +299,66 @@ export function NowPlaying() {
               )}
             </div>
           )}
-          {/* Controls in one centered column, not stretched across the window. */}
-          <div className="flex w-full max-w-[880px] shrink-0 flex-col gap-4">
-            <div className="flex items-end justify-between gap-6">
-              <div className="min-w-0">
-                {/* Display type (docs/design.md), smaller in a small window. */}
-                <h2 className="truncate pb-1 text-[clamp(2rem,4.2vw,3.5rem)] leading-[1.07] font-black tracking-[-0.02em]">{now.title}</h2>
-                <p className="truncate text-base text-ink-2">
-                  <ArtistLink now={now} className="font-medium text-ink" />
-                  {track?.album && ` — ${track.album}`}
-                </p>
-              </div>
-              {track && !isRemote(track) && (
-                <RoundButton label={tr('Less like this')} kind="plain" size="md" onClick={() => lessLikeThis(track)} className="ml-auto text-ink-2 hover:text-ink">
-                  <ThumbsDown size={22} />
-                </RoundButton>
-              )}
-              {track && (
-                <RoundButton label={liked ? tr('Remove from Liked Music') : tr('Add to Liked Music')} aria-pressed={liked} kind="plain" size="md" onClick={() => void toggleLike(track)} className={liked ? 'text-accent-ink' : 'text-ink-2 hover:text-ink'}>
-                  <Heart size={24} weight={liked ? 'fill' : 'regular'} />
-                </RoundButton>
-              )}
-            </div>
-            <div className="flex flex-col gap-1.5">
-              {tuner ? <Tuner /> : <SeekBar />}
-              <TimeText part="both" className="text-[0.8125rem] text-ink-2" />
-            </div>
-            {/* Side columns may shrink (small window): the volume bar narrows instead of running under Up next. */}
-            <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center">
-              <span className="flex items-center gap-1">{readout && <SourceBadge via={now.via} />}</span>
-              <Transport size="lg" />
-              <div className="flex min-w-0 flex-col items-end gap-1">
-                <VolumeControl big />
-                {volumeMode === 'knob' && <span className="kicker">{tr('Volume')}</span>}
-              </div>
-            </div>
-          </div>
         </section>
 
-        {(editor || lyrics || upNext) && (
-          <div className="flex min-h-0 flex-col gap-2">
-            <PanelTabs className="self-end" upNext={upNext} lyrics={lyrics} editor={editor} next={nextCount} />
-            {editor ? <EditorPanel onHide={() => update({ editor: false })} /> : lyrics ? <LyricsPanel onHide={() => update({ lyrics: false })} onUpNext={() => update({ lyrics: false, upNext: true })} /> : <UpNext onHide={() => update({ upNext: false })} />}
+        {panel === 'editor' ? (
+          <EditorPanel onHide={() => update({ editor: false })} />
+        ) : panel === 'lyrics' ? (
+          <LyricsPanel onHide={() => update({ lyrics: false })} onUpNext={() => update({ lyrics: false, upNext: true })} />
+        ) : panel === 'upNext' ? (
+          <UpNext onHide={() => update({ upNext: false })} />
+        ) : (
+          // Display XL (docs/design.md), smaller in a small window; long video titles wrap to two lines.
+          <div className="flex min-w-0 flex-col justify-center gap-4 pb-8">
+            <h2 className="line-clamp-2 pb-1 text-[clamp(2.5rem,5.5vw,5.5rem)] leading-[1.05] font-black tracking-[-0.02em] break-words">{now.title}</h2>
+            <ArtistLink now={now} className="w-fit max-w-full truncate text-[1.375rem] leading-7 font-bold" />
+            {track?.album && <p className="truncate text-sm">{track.album}</p>}
+            {readout && source}
+            <hr className="border-line" />
+            <NextLine />
           </div>
         )}
+      </div>
+
+      <div className="flex shrink-0 flex-col gap-3 pt-6">
+        {panel && (
+          <div className="min-w-0">
+            <h2 className="truncate text-[2rem] leading-tight font-black tracking-[-0.02em]">{now.title}</h2>
+            <ArtistLink now={now} className="block w-fit max-w-full truncate text-base font-medium" />
+          </div>
+        )}
+        <div className="flex items-center gap-3 text-xs text-ink-2">
+          <TimeText part="elapsed" className="w-10" />
+          <div className="min-w-0 flex-1">{tuner ? <Tuner /> : <SeekBar />}</div>
+          <TimeText part="remaining" className="w-10 text-right" />
+        </div>
+        {/* Side columns may shrink (small window): the volume bar narrows instead of running into the transport. */}
+        <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center">
+          <span className="flex min-w-0 items-center gap-1">
+            {track && (
+              <RoundButton label={liked ? tr('Remove from Liked Music') : tr('Add to Liked Music')} aria-pressed={liked} kind="plain" size="md" onClick={() => void toggleLike(track)} className={liked ? 'text-ink!' : ''}>
+                <Heart size={22} weight={liked ? 'fill' : 'regular'} />
+              </RoundButton>
+            )}
+            {track && !isRemote(track) && <AddToPlaylist trackIds={[track.id]} label={tr('Add {title} to a playlist', { title: track.title })} />}
+            {track && !isRemote(track) && (
+              <RoundButton label={tr('Less like this')} kind="plain" size="md" onClick={() => lessLikeThis(track)}>
+                <ThumbsDown size={22} />
+              </RoundButton>
+            )}
+            {readout && panel && <SourceBadge via={now.via} />}
+          </span>
+          <Transport size="lg" />
+          <div className="flex min-w-0 items-center justify-end gap-1">
+            <PanelToggle id="lyrics" label={tr('Lyrics')} icon={Quotes} active={panel} />
+            <PanelToggle id="upNext" label={tr('Up next')} icon={Queue} active={panel} />
+            <PanelToggle id="editor" label={tr('Sound')} icon={SlidersHorizontal} active={panel} />
+            <span className="flex min-w-0 flex-col items-end gap-1">
+              <VolumeControl big />
+              {volumeMode === 'knob' && <span className="kicker">{tr('Volume')}</span>}
+            </span>
+          </div>
+        </div>
       </div>
     </div>
   )

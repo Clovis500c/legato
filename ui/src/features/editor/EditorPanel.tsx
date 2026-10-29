@@ -6,7 +6,6 @@ import { useSettings } from '../../app/settings'
 import { useStore } from '../../app/store'
 import { api, type Effects } from '../../shared/api'
 import { tr } from '../../shared/i18n/i18n'
-import { CARD } from '../player/UpNext'
 import { onMenu } from '../../shared/ui/ContextMenu'
 import { RoundButton, Toggle } from '../../shared/ui/controls'
 import { editPresetMenu, editVersionMenu, editorMenu } from '../menus'
@@ -197,7 +196,7 @@ function ExportCopy({ path, effects }: { path: string; effects: Effects }) {
  * Now Playing › Live Editor, beside the cover. Changes play at once (local files in the app's engine, YouTube in its
  * player); versions are saved per song and one of them plays whenever the song does. Only numbers are saved.
  */
-export function EditorPanel({ onHide, className = CARD }: { onHide: () => void; className?: string }) {
+export function EditorPanel({ onHide }: { onHide: () => void }) {
   const { song, effects: e, versions, presets, versionId, dirty } = useEditor()
   const motion = useSettings((s) => s.settings.motion)
   const playing = usePlayer((s) => s.playing)
@@ -210,7 +209,7 @@ export function EditorPanel({ onHide, className = CARD }: { onHide: () => void; 
   const fail = (err: unknown) => useStore.getState().notify(String(err), { kind: 'error' })
 
   return (
-    <aside aria-label={tr('Live Editor')} onContextMenu={onMenu(() => editorMenu(onHide))} className={`flex min-h-0 flex-col gap-2 ${className}`}>
+    <aside aria-label={tr('Live Editor')} onContextMenu={onMenu(() => editorMenu(onHide))} className="flex min-h-0 flex-col gap-2 rounded-2xl border border-line-soft bg-[color-mix(in_srgb,var(--panel)_55%,transparent)] p-3">
       <div className="flex items-center gap-2 px-1">
         <span className="flex-1 text-[0.8125rem] font-semibold">{tr('Live Editor')}</span>
         <span className="text-[0.6875rem] text-ink-3">{e.on ? tr('Edited') : tr('Original sound')}</span>
