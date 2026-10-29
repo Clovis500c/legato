@@ -518,9 +518,12 @@ Original plan:
   - [x] Video as a theme background (MP4 / WebM, 40 MB max, muted loop, still when animations are off or hidden; served by byte ranges).
   - [x] Audio visualizer: 16 bars under the cover in Now Playing (Settings › Playback), local files and YouTube; bands computed only while it shows.
   - [x] Edit a local file's tags (right-click › Edit song info…: title, artist, album, front cover), written in a copy then swapped in.
-  - [ ] SoundCloud import. Without a key the public page gives a playlist's first 5 songs only. The user picked
-        SoundCloud's own web access (2026-10-29), but its API call with the key from SoundCloud's site was refused by
-        the assistant's safety checks: waiting on the user (allow it, or their own SoundCloud developer app).
+  - [ ] SoundCloud import: not built. Without a key the public page gives a playlist's first 5 songs only; SoundCloud's
+        own web key was refused by the assistant's safety checks. The user's own key (their pick, 2026-10-29) doesn't
+        fit either (SoundCloud docs read 2026-10-29): registering an app needs an Artist Pro subscription, and the API
+        terms forbid storing its track data past the session and any playback that "aggregates and streams User
+        Content with content from other services" (their example: SoundCloud with YouTube), which an import into the
+        library played from YouTube is. Waiting on the user.
   - Not done: downloading songs from the services (fixed limit: no audio extraction).
 - [x] "Invalid title" on Add to library for a song the Music Detector named without an Apple / Spotify link
       (2026-10-29): its YouTube version looked up first.
