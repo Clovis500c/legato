@@ -1,7 +1,9 @@
 # Music App
 
-Desktop app (Tauri 2 + Rust + React/TS) that unifies Spotify / YouTube / Apple Music / local libraries. Overview: `docs/architecture.md`; original brief: `docs/notes/brief.md`; plan and history: `docs/notes/plan-v2.md`.
-Repo docs: `README.md` (short, user-facing), `CONTRIBUTING.md`, `docs/`. Keep README brief: details go in `docs/`.
+Desktop app (Tauri 2 + Rust + React/TS) that unifies Spotify / YouTube / Apple Music / local libraries. Overview: `docs/architecture.md`; open work: `docs/notes/plan-v2.md` (history in git).
+Repo docs: `README.md` (short, points to the website), `CONTRIBUTING.md`, `docs/` (for developers). What users read (features,
+playback, privacy, FAQ) is the website: `site/` (Next.js static export, GitHub Pages, copy in `site/components/content.tsx`).
+Keep its privacy rows true when the app starts sending something new.
 Design direction (v2): `docs/design.md`; mockups in the Figma file "Untitled" (to be renamed "Legato · Design"), every page in light and dark.
 
 ## Non-negotiable rules

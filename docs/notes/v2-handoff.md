@@ -1,11 +1,11 @@
 # v2 handoff (2026-10-29)
 
-Everything a new session needs to carry on the v2 front-end redesign. Read this, then `docs/design.md` (the
-direction) and the "v2: rebrand and redesign" block of `docs/notes/plan-v2.md` (the to-do, tick lines as they land).
+Everything a new session needs to carry on the redesign (version 1.0, branch `v2`). Read this, then
+`docs/design.md` (the direction) and `docs/notes/plan-v2.md` (open work, tick lines as they land).
 
 ## Where it stands
 
-- Branch `v2`, 26 commits on top of `master` (81e5213). Nothing pushed, nothing merged. Every push to `master` is a
+- Branch `v2`, about 40 commits on top of `master` (81e5213). Nothing pushed, nothing merged. Every push to `master` is a
   release (`v1.0.<commits>` now): merge and push only when the user says so.
 - Done and checked in the app (light and dark):
   - Theme: Modern / Modern Dark carry the v2 palettes (`ui/src/shared/theme/theme.ts`), sky blue `#7CB8FF` = playback
@@ -35,14 +35,22 @@ direction) and the "v2: rebrand and redesign" block of `docs/notes/plan-v2.md` (
     behind each section's Show all with a back arrow; Spotify and YouTube Music sign-in on a line at the bottom.
   - Session (`features/player/session.ts`): `added` saved with the order and restored with it only; a queue edit
     saves 0.6 s later.
+  - Mini player on top of the right panel by default (`miniPlace` 'panel', `SidePanel.tsx`): the sidebar holds the
+    library only; YouTube's video shows there even with the panel hidden.
+  - Motion (design.md › Shape, icons, motion): `shared/motion.ts` `pop()` on like and toggles, `.stagger`,
+    `.slide-in`, `.swap-in`, `.icon-in`, `.nudge-l/-r`, `.turn` in `ui/src/styles.css`.
+  - Website: `site/` (Next.js 16 static export, Tailwind 4, Motion), deployed by `.github/workflows/pages.yml` from
+    master once GitHub Pages is on (Settings › Pages › Source: GitHub Actions, not done yet). It replaces the user
+    docs (README features, privacy.md); copy in `site/components/content.tsx`, pictures exported from Figma's
+    landing page (node 11:8927 light, 11:10438 dark). Its name says "Music App" until the user picks one.
 
 ## Next
 
 1. The name: Legato recommended, not decided by the user. Never rename the identifier, `_musicapp._tcp`, `MA1` or
    keychain entries; the wordmark and app icon wait on it. Ask before changing what the app is called.
-2. Left from the mockup pass (plan-v2.md, v2 block): the sidebar mini player (the user wants it hidden, YouTube's
-   video must stay visible: ask which option), Your library ↗ full width, the player bar's "artist · from your file".
-3. Before merging: `pnpm check` (all of it), then ask the user whether to merge `v2` into `master` and push.
+2. Left from the mockup pass (plan-v2.md): Your library ↗ full width, the player bar's "artist · from your file".
+3. Before merging: `pnpm check` (all of it) and `pnpm build` in `site/`, then ask the user whether to merge `v2` into
+   `master` and push, and whether to turn GitHub Pages on.
 
 `pnpm dev` resumes playback at launch and after every full reload Vite does when a store module changes (settings,
 player store): pause it right after edits, or stop the dev app while editing those files.
