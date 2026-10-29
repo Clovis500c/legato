@@ -114,8 +114,35 @@ export function TrackTable({ tracks, empty, editId, rowActions, sort, onSort, fo
     if (e.key === 'Enter' && sel.cursor !== null && vias(tracks[sel.cursor], sp).length) return play(tracks, sel.cursor)
     if (e.key === 'Delete' && editId !== undefined && sel.ids.size) removeChosen()
   }
-  const grid = { gridTemplateColumns: ['32px', 'minmax(0,2fr)', ...(artistCol ? ['minmax(0,1fr)'] : []), editId ? '188px' : rowActions ? 'max-content' : '96px', ...columns.map((c) => width[c])].join(' ') }
+  // Mockup order: the hover actions and the heart sit right before the time (last column).
+  const lead = columns.filter((c) => c !== 'duration')
+  const tail = columns.includes('duration') ? (['duration'] as const) : []
+  const grid = { gridTemplateColumns: ['32px', 'minmax(0,2fr)', ...(artistCol ? ['minmax(0,1fr)'] : []), ...lead.map((c) => width[c]), editId ? '188px' : rowActions ? 'max-content' : '96px', ...tail.map((c) => width[c])].join(' ') }
   const cover = density === 'compact' ? 28 : density === 'comfort' ? 36 : 46
+  const cell = (t: LibraryTrack, c: Column) =>
+    c === 'album' ? (
+      <span key={c} role="gridcell" className="truncate text-sm text-ink-2">
+        {t.album}
+      </span>
+    ) : c === 'plays' ? (
+      <span key={c} role="gridcell" className="text-right text-xs text-ink-3 tabular-nums">
+        {stats[t.id]?.[0] ? formatCount(stats[t.id][0]) : ''}
+      </span>
+    ) : c === 'added' ? (
+      <span key={c} role="gridcell" className="text-right text-xs text-ink-3 tabular-nums">
+        {addedDate(t.addedAt)}
+      </span>
+    ) : c === 'sources' ? (
+      <span key={c} role="gridcell" className="flex items-center gap-2 text-ink-3">
+        {order.filter((s) => t.ids[s]).map((s) => (
+          <SourceIcon key={s} source={s} size={13} />
+        ))}
+      </span>
+    ) : (
+      <span key={c} role="gridcell" className="text-right text-[0.8125rem] text-ink-2 tabular-nums">
+        {formatDuration(t.durationMs)}
+      </span>
+    )
 
   return (
     <div role="grid" aria-rowcount={tracks.length} aria-multiselectable className="flex min-h-0 flex-1 flex-col">
@@ -146,9 +173,12 @@ export function TrackTable({ tracks, empty, editId, rowActions, sort, onSort, fo
         <span role="columnheader" className="text-right text-xs text-ink-3">#</span>
         <Head label={tr('Title')} sorts={headSorts.title} sort={sort} onSort={onSort} />
         {artistCol && <Head label={tr('Artist')} sorts={['artist', 'artist']} sort={sort} onSort={onSort} />}
+        {lead.map((c) => (
+          <Head key={c} label={tr(head[c])} sorts={headSorts[c]} sort={sort} onSort={onSort} right={c === 'plays'} />
+        ))}
         <span />
-        {columns.map((c) => (
-          <Head key={c} label={tr(head[c])} icon={c === 'duration' ? <Clock size={14} /> : undefined} sorts={headSorts[c]} sort={sort} onSort={onSort} right={c === 'duration' || c === 'plays'} />
+        {tail.map((c) => (
+          <Head key={c} label={tr(head[c])} icon={<Clock size={14} />} sorts={headSorts[c]} sort={sort} onSort={onSort} right />
         ))}
       </div>
       {tracks.length === 0 ? (
@@ -239,6 +269,7 @@ export function TrackTable({ tracks, empty, editId, rowActions, sort, onSort, fo
                       {t.artist}
                     </span>
                   )}
+                  {lead.map((c) => cell(t, c))}
                   <span role="gridcell" className="flex items-center justify-end gap-0.5">
                     <span className="flex gap-0.5 opacity-0 group-hover:opacity-100 focus-within:opacity-100">
                     {editId !== undefined && (
@@ -265,31 +296,7 @@ export function TrackTable({ tracks, empty, editId, rowActions, sort, onSort, fo
                       <Heart size={15} weight={liked.has(t.id) ? 'fill' : 'regular'} />
                     </RoundButton>
                   </span>
-                  {columns.map((c) =>
-                    c === 'album' ? (
-                      <span key={c} role="gridcell" className="truncate text-sm text-ink-2">
-                        {t.album}
-                      </span>
-                    ) : c === 'plays' ? (
-                      <span key={c} role="gridcell" className="text-right text-xs text-ink-3 tabular-nums">
-                        {stats[t.id]?.[0] ? formatCount(stats[t.id][0]) : ''}
-                      </span>
-                    ) : c === 'added' ? (
-                      <span key={c} role="gridcell" className="text-right text-xs text-ink-3 tabular-nums">
-                        {addedDate(t.addedAt)}
-                      </span>
-                    ) : c === 'sources' ? (
-                      <span key={c} role="gridcell" className="flex items-center gap-2 text-ink-3">
-                        {order.filter((s) => t.ids[s]).map((s) => (
-                          <SourceIcon key={s} source={s} size={13} />
-                        ))}
-                      </span>
-                    ) : (
-                      <span key={c} role="gridcell" className="text-right text-[0.8125rem] text-ink-2 tabular-nums">
-                        {formatDuration(t.durationMs)}
-                      </span>
-                    ),
-                  )}
+                  {tail.map((c) => cell(t, c))}
                 </div>
               )
             })}

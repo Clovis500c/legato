@@ -55,30 +55,12 @@ export const totalTime = (tracks: LibraryTrack[]) => {
   return min >= 60 ? tr('{h} hr {m} min', { h: Math.floor(min / 60), m: String(min % 60).padStart(2, '0') }) : tr('{m} min', { m: min })
 }
 
-/** Play and Shuffle in words (list pages): the first playable song, or any. Absent if none plays. */
-function PlayPills({ tracks }: { tracks: LibraryTrack[] }) {
-  const play = usePlayer((s) => s.playTracks)
-  const sp = useStore((s) => s.status.spotify.connected)
-  const first = tracks.findIndex((t) => vias(t, sp).length > 0)
-  if (first < 0) return null
-  return (
-    <>
-      <Button variant="accent" onClick={() => play(tracks, first)}>
-        <Play weight="fill" size={14} /> {tr('Play')}
-      </Button>
-      <Button variant="ghost" onClick={() => shufflePlay(tracks)}>
-        <Shuffle size={14} /> {tr('Shuffle')}
-      </Button>
-    </>
-  )
-}
-
-/** Shuffle next to a page's round Play (album, artist, playlist). */
+/** Shuffle next to a page's round Play (songs, album, artist, playlist): a plain icon, as in the mockups. */
 export function ShuffleRound({ tracks }: { tracks: LibraryTrack[] }) {
   if (!tracks.length) return null
   return (
-    <RoundButton label={tr('Shuffle play')} onClick={() => shufflePlay(tracks)}>
-      <Shuffle size={18} />
+    <RoundButton label={tr('Shuffle play')} kind="plain" onClick={() => shufflePlay(tracks)}>
+      <Shuffle size={22} />
     </RoundButton>
   )
 }
@@ -265,9 +247,14 @@ export function SongsView() {
 
   return (
     <>
-      <PageHeader title={tr('Songs')} sub={`${trn(shown.length, '{n} song', '{n} songs')} · ${totalTime(shown)}${stats.sources > 1 ? ` · ${tr('{pct}% linked', { pct: stats.linkedPct })}` : ''}`} actions={<PlayPills tracks={shown} />} />
+      <PageHeader title={tr('Songs')} sub={`${trn(shown.length, '{n} song', '{n} songs')} · ${totalTime(shown)}${stats.sources > 1 ? ` · ${tr('{pct}% linked', { pct: stats.linkedPct })}` : ''}`} />
+      {/* Mockup: the round play and shuffle first, then the chips. */}
       <div className="flex shrink-0 flex-wrap items-center justify-between gap-x-4 gap-y-2 pb-3">
-        <SourceChips tracks={tracks} value={filter} onChange={setFilter} />
+        <div className="flex flex-wrap items-center gap-3">
+          <PlayAll tracks={shown} />
+          <ShuffleRound tracks={shown} />
+          <SourceChips tracks={tracks} value={filter} onChange={setFilter} />
+        </div>
         <div className="flex items-center gap-2">
           <DuplicatesButton />
           <Playability tracks={shown} />
