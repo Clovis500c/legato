@@ -1459,6 +1459,9 @@ const sv: Record<string, string> = {
   'Acoustic': 'Akustiskt',
   'Loudness': 'Loudness',
   'Distortion': 'Distorsion',
+  'Full screen on / off': 'Helskärm på / av',
+  'Full screen (F11)': 'Helskärm (F11)',
+  'Exit full screen (F11)': 'Lämna helskärm (F11)',
 }
 
 export default sv

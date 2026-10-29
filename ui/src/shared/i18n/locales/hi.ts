@@ -1459,6 +1459,9 @@ const hi: Record<string, string> = {
   'Acoustic': 'अकूस्टिक',
   'Loudness': 'लाउडनेस',
   'Distortion': 'डिस्टॉर्शन',
+  'Full screen on / off': 'फ़ुल स्क्रीन चालू / बंद',
+  'Full screen (F11)': 'फ़ुल स्क्रीन (F11)',
+  'Exit full screen (F11)': 'फ़ुल स्क्रीन से बाहर (F11)',
 }
 
 export default hi

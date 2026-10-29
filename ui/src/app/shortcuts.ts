@@ -4,6 +4,7 @@ import { api } from '../shared/api'
 import { accelerator, ACTIONS, bindings, comboOf, type ActionId, type Combo } from './keys'
 import { useSettings } from './settings'
 import { useStore } from './store'
+import { toggleFullscreen } from './fullscreen'
 
 const player = () => usePlayer.getState()
 const seekBy = (ms: number) => {
@@ -29,6 +30,7 @@ export const RUN: Record<ActionId, () => void> = {
   shuffle: () => player().toggleShuffle(),
   repeat: () => player().cycleRepeat(),
   nowPlaying: () => player().now && player().setFull(!player().full),
+  fullscreen: () => void toggleFullscreen(),
   search: () => document.querySelector<HTMLInputElement>('[data-search]')?.focus(),
   settings: () => useStore.getState().go({ name: 'settings', section: 'shortcuts' }),
   goBack: () => (player().full ? player().setFull(false) : useStore.getState().goBack()),

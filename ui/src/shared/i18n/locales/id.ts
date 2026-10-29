@@ -1459,6 +1459,9 @@ const id: Record<string, string> = {
   'Acoustic': 'Akustik',
   'Loudness': 'Loudness',
   'Distortion': 'Distorsi',
+  'Full screen on / off': 'Layar penuh hidup / mati',
+  'Full screen (F11)': 'Layar penuh (F11)',
+  'Exit full screen (F11)': 'Keluar layar penuh (F11)',
 }
 
 export default id

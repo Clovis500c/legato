@@ -1459,6 +1459,9 @@ const it: Record<string, string> = {
   'Acoustic': 'Acustica',
   'Loudness': 'Loudness',
   'Distortion': 'Distorsione',
+  'Full screen on / off': 'Schermo intero sì / no',
+  'Full screen (F11)': 'Schermo intero (F11)',
+  'Exit full screen (F11)': 'Esci da schermo intero (F11)',
 }
 
 export default it

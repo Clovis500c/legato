@@ -1459,6 +1459,9 @@ const ko: Record<string, string> = {
   'Acoustic': '어쿠스틱',
   'Loudness': '라우드니스',
   'Distortion': '디스토션',
+  'Full screen on / off': '전체 화면 켜기 / 끄기',
+  'Full screen (F11)': '전체 화면 (F11)',
+  'Exit full screen (F11)': '전체 화면 종료 (F11)',
 }
 
 export default ko

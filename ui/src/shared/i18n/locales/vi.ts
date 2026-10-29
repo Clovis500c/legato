@@ -1459,6 +1459,9 @@ const vi: Record<string, string> = {
   'Acoustic': 'Mộc',
   'Loudness': 'Loudness',
   'Distortion': 'Méo tiếng',
+  'Full screen on / off': 'Bật / tắt toàn màn hình',
+  'Full screen (F11)': 'Toàn màn hình (F11)',
+  'Exit full screen (F11)': 'Thoát toàn màn hình (F11)',
 }
 
 export default vi

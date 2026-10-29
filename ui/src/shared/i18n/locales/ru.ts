@@ -1459,6 +1459,9 @@ const ru: Record<string, string> = {
   'Acoustic': 'Акустика',
   'Loudness': 'Тонкомпенсация',
   'Distortion': 'Дисторшн',
+  'Full screen on / off': 'Полный экран вкл. / выкл.',
+  'Full screen (F11)': 'Полный экран (F11)',
+  'Exit full screen (F11)': 'Выйти из полного экрана (F11)',
 }
 
 export default ru

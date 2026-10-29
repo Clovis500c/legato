@@ -1459,6 +1459,9 @@ const ja: Record<string, string> = {
   'Acoustic': 'アコースティック',
   'Loudness': 'ラウドネス',
   'Distortion': 'ディストーション',
+  'Full screen on / off': '全画面のオン / オフ',
+  'Full screen (F11)': '全画面 (F11)',
+  'Exit full screen (F11)': '全画面を終了 (F11)',
 }
 
 export default ja

@@ -1459,6 +1459,9 @@ const zh: Record<string, string> = {
   'Acoustic': '原声',
   'Loudness': '响度',
   'Distortion': '失真',
+  'Full screen on / off': '开启 / 关闭全屏',
+  'Full screen (F11)': '全屏 (F11)',
+  'Exit full screen (F11)': '退出全屏 (F11)',
 }
 
 export default zh

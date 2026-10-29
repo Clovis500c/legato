@@ -514,7 +514,7 @@ Original plan:
         (likes then stay in your own Liked Music). Spotify: import or off (sending to Spotify isn't built).
   - [x] 10-band equalizer (was 5, older edits keep their curve) with 9 equalizer presets, same in YouTube's live processing.
   - [x] Distortion in the Live Editor (soft clipping, level kept), local files and YouTube.
-  - [ ] Fullscreen (F11 and a button).
+  - [x] Fullscreen: F11 (Settings › Shortcuts) and a button in the title bar.
   - [ ] Video as a theme background.
   - [ ] Audio visualizer.
   - [ ] Edit a local file's tags (title, artist, album, cover).

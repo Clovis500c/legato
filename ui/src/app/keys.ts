@@ -21,6 +21,7 @@ export type ActionId =
   | 'shuffle'
   | 'repeat'
   | 'nowPlaying'
+  | 'fullscreen'
   | 'search'
   | 'settings'
   | 'goBack'
@@ -55,6 +56,7 @@ export const ACTIONS: ActionInfo[] = [
   { id: 'shuffle', label: msg('Shuffle on / off'), keys: 'Ctrl+KeyS', global: null },
   { id: 'repeat', label: msg('Repeat: off, queue, track'), keys: 'Ctrl+KeyR', global: null },
   { id: 'nowPlaying', label: msg('Open / close Now Playing'), keys: 'KeyF', global: null }, // F (user's choice 2026-10-23), was Ctrl+P.
+  { id: 'fullscreen', label: msg('Full screen on / off'), keys: 'F11', global: null },
   { id: 'search', label: msg('Search'), keys: 'Ctrl+KeyK', global: null },
   { id: 'settings', label: msg('Settings'), keys: 'Ctrl+Comma', global: null },
   { id: 'goBack', label: msg('Back'), keys: 'Alt+ArrowLeft', global: null },

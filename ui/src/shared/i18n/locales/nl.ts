@@ -1459,6 +1459,9 @@ const nl: Record<string, string> = {
   'Acoustic': 'Akoestisch',
   'Loudness': 'Loudness',
   'Distortion': 'Vervorming',
+  'Full screen on / off': 'Volledig scherm aan / uit',
+  'Full screen (F11)': 'Volledig scherm (F11)',
+  'Exit full screen (F11)': 'Volledig scherm sluiten (F11)',
 }
 
 export default nl

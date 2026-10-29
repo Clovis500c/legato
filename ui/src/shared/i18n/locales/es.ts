@@ -1459,6 +1459,9 @@ const es: Record<string, string> = {
   'Acoustic': 'Acústica',
   'Loudness': 'Sonoridad',
   'Distortion': 'Distorsión',
+  'Full screen on / off': 'Pantalla completa sí / no',
+  'Full screen (F11)': 'Pantalla completa (F11)',
+  'Exit full screen (F11)': 'Salir de pantalla completa (F11)',
 }
 
 export default es

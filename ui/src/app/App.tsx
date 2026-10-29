@@ -1,4 +1,4 @@
-import { CaretDown, CopySimple, Minus, Square, Warning, X } from '@phosphor-icons/react'
+import { ArrowsIn, ArrowsOut, CaretDown, CopySimple, Minus, Square, Warning, X } from '@phosphor-icons/react'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
@@ -41,6 +41,7 @@ import { useSettings } from './settings'
 import { restoreScreen, startClosingPlayerOnNavigate, startScreenSaving } from './screen'
 import { startShortcuts } from './shortcuts'
 import { useStore, type View } from './store'
+import { toggleFullscreen } from './fullscreen'
 import { Toasts } from './Toasts'
 import { Asker } from '../shared/ui/Ask'
 import { tr, trn, useLang } from '../shared/i18n/i18n'
@@ -94,8 +95,12 @@ function TopBar() {
   const setFull = usePlayer((s) => s.setFull)
   const go = useStore((s) => s.go)
   const [maximized, setMaximized] = useState(false)
+  const [fullscreen, setFullscreen] = useState(false)
   useEffect(() => {
-    const check = () => void win.isMaximized().then(setMaximized, () => {})
+    const check = () => {
+      void win.isMaximized().then(setMaximized, () => {})
+      void win.isFullscreen().then(setFullscreen, () => {})
+    }
     check()
     const off = win.onResized(check)
     return () => void off.then((f) => f())
@@ -118,6 +123,9 @@ function TopBar() {
         </SearchBar>
       </div>
       <span className={`flex items-center ${full ? 'glass rounded-lg' : ''}`}>
+        <button className={winBtn} aria-label={fullscreen ? tr('Exit full screen (F11)') : tr('Full screen (F11)')} title={fullscreen ? tr('Exit full screen (F11)') : tr('Full screen (F11)')} onClick={() => void toggleFullscreen()}>
+          {fullscreen ? <ArrowsIn size={15} /> : <ArrowsOut size={15} />}
+        </button>
         <button className={winBtn} aria-label={tr('Minimize')} title={tr('Minimize')} onClick={() => win.minimize()}>
           <Minus size={16} />
         </button>
