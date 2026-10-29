@@ -46,7 +46,7 @@ export function MediaCard({ title, sub, art, round, onOpen, onPlay, menu, busy }
   return (
     <li onContextMenu={menu && onMenu(menu)} className="group relative flex w-[200px] shrink-0 snap-start rounded-lg p-3 transition-colors hover:bg-raised">
       <button onClick={onOpen} className="flex min-w-0 flex-1 flex-col gap-2.5 text-left">
-        <span className={`block size-[176px] overflow-hidden ${round ? 'rounded-full' : 'rounded-cover'}`}>{art}</span>
+        <span className={`grid size-[176px] overflow-hidden ${round ? 'rounded-full' : 'rounded-cover'}`}>{art}</span>
         <span className="flex min-w-0 flex-col gap-0.5">
           <span className="truncate text-base font-medium">{title}</span>
           <span className="line-clamp-2 text-[0.8125rem] text-ink-3">{sub}</span>
