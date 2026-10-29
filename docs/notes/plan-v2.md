@@ -213,6 +213,20 @@ Theme (light) / Dark / Brand / Scale, components, Home, Songs, Album, Search, No
 - [x] Save the songs the user queued (`added`) with the session: back in Next added by you after a restart, with the
       saved order only (a track deleted since, or a queue over 10,000 songs, makes them part of the list again). A
       queue edit saves the session 0.6 s later, paused or not.
+- [ ] What still differs from the mockups (comparison of 2026-10-29, light, 1440 × 900):
+      - user's calls: the window's top bar (mockup: none, search and ← → in the main pane; Windows needs a drag area
+        and its buttons), the sidebar mini player (mockup: none), Play / Shuffle in words (v4 pick) or the round play;
+      - Album page: full-width band, actions under it (play, shuffle, ♥, ⊕, Compact), the full song table, sources
+        line and year;
+      - Now Playing: ⌄ · "Playing from <list>" · ··· on top, lyrics preview, total time; player bar "artist · from your
+        file" and total time;
+      - ← → buttons, Your library ↗ (full width), tabs on the right panel (Up next, Lyrics), heart column before the
+        time, search hint "What do you want to play?", "See all" left on artist pages, Albums / Artists grids and the
+        Mixes page labels in the v2 style.
+- [ ] Seen while testing (2026-10-29): a pause given while a YouTube video loads can be undone by the player; App tint
+      keeps the old theme's tint when Windows switches light / dark mid-song.
+- [ ] Check in the app: "No sound could be taken" gone from the second YouTube video on (fix 51946d5).
+- [ ] Merge `v2` into `master` and push (= release v2.0.x): only when the user says.
 - [ ] Decide the name: Legato recommended (finalists Tutti, Diapason); trademark search (INPI, EUIPO, USPTO classes 9,
       41, 42), domain, Microsoft Store name. Never rename the identifier, `_musicapp._tcp`, `MA1` or keychain entries.
       Wordmark and app icon wait on the name.
