@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { NO_FIX, applyFix, fixFromTaps, lineAt, lineEnd, withBreaks, wordTimes } from './lyricsAt'
+import { NO_FIX, applyFix, fixFromTaps, lineAt, lineEnd, peekLine, withBreaks, wordTimes } from './lyricsAt'
 
 describe('lineAt', () => {
   const lines = [{ ms: 1000 }, { ms: 2000 }, { ms: 2000 }, { ms: 5000 }]
@@ -81,5 +81,18 @@ describe('timing fixed by hand', () => {
     const lines = [{ ms: 0, text: 'a', endMs: 1200 }, { ms: 6000, text: 'b' }]
     expect(lineEnd(lines, 0, null)).toBe(1200)
     expect(withBreaks(lines, null)).toEqual([lines[0], { ms: 1200, text: '' }, lines[1]])
+  })
+})
+
+describe('peekLine', () => {
+  it('shows the line being sung, the first one before it starts, else plain text’s first line', () => {
+    const lines = [
+      { ms: 5_000, text: 'One' },
+      { ms: 9_000, text: 'Two' },
+    ]
+    expect(peekLine(lines, null, 0)).toBe('One')
+    expect(peekLine(lines, null, 9_500)).toBe('Two')
+    expect(peekLine([], '\n  \nFirst words\nNext', 0)).toBe('First words')
+    expect(peekLine([], null, 0)).toBe('')
   })
 })

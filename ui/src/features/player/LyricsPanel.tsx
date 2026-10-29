@@ -131,16 +131,12 @@ function Plain({ text, durationMs }: { text: string; durationMs: number | null }
   )
 }
 
-/**
- * Now Playing › Lyrics, beside the cover (Spotify-like). LRCLIB first (synced when it can be, stretched for slowed /
- * sped up versions), YouTube Music's own when signed in (src-tauri lyrics), cached on disk.
- */
-/** heading = what heads the panel instead of "Lyrics" (the main window's tabs, which also reach Up next). */
-export function LyricsPanel({ onHide, onUpNext, className = CARD, heading }: { onHide: () => void; onUpNext: () => void; className?: string; heading?: ReactNode }) {
+/** Lyrics of what plays (lrclib, cached by the app): asked once per song, again once its length is known (slowed
+ * versions need it to fit the timings). mine.lyrics undefined = still looking. */
+export function useNowLyrics() {
   const now = usePlayer((s) => s.now)
   const playerMs = usePlayer((s) => s.durationMs)
   const track = useNowTrack()
-  const signedIn = useStore((s) => s.status.youtube.connected)
   const title = now?.title ?? ''
   const artist = now?.artist ?? ''
   // The duration decides slowed timings: wait for it a moment.
@@ -169,6 +165,19 @@ export function LyricsPanel({ onHide, onUpNext, className = CARD, heading }: { o
       live = false
     }
   }, [key, ready, retry]) // once per song (and per retry)
+  const mine = got?.for === key ? got : undefined
+  return { mine, key, durationMs, retry: () => setRetry((n) => n + 1) }
+}
+
+/**
+ * Now Playing › Lyrics, beside the cover (Spotify-like). LRCLIB first (synced when it can be, stretched for slowed /
+ * sped up versions), YouTube Music's own when signed in (src-tauri lyrics), cached on disk. heading = what heads the
+ * panel instead of "Lyrics" (the main window's tabs, which also reach Up next).
+ */
+export function LyricsPanel({ onHide, onUpNext, className = CARD, heading }: { onHide: () => void; onUpNext: () => void; className?: string; heading?: ReactNode }) {
+  const now = usePlayer((s) => s.now)
+  const signedIn = useStore((s) => s.status.youtube.connected)
+  const { mine, key, durationMs, retry } = useNowLyrics()
 
   // Timing fixed by hand for this song (Settings, synced with the other PCs).
   const song = songKey(now)
@@ -191,7 +200,6 @@ export function LyricsPanel({ onHide, onUpNext, className = CARD, heading }: { o
     saveFix(fixFromTaps(taps.current, fix))
   }
 
-  const mine = got?.for === key ? got : undefined
   const l = mine?.lyrics
   return (
     <aside aria-label={tr('Lyrics')} className={`flex min-h-0 flex-col gap-2 ${className}`}>
@@ -226,7 +234,7 @@ export function LyricsPanel({ onHide, onUpNext, className = CARD, heading }: { o
       ) : mine.error ? (
         <div className="m-auto flex flex-col items-center gap-3 text-sm text-ink-2">
           {tr('Lyrics can’t be loaded right now.')}
-          <button onClick={() => setRetry((n) => n + 1)} className="flex items-center gap-1.5 rounded-full border border-line px-3 py-1 font-medium text-ink hover:bg-raised">
+          <button onClick={retry} className="flex items-center gap-1.5 rounded-full border border-line px-3 py-1 font-medium text-ink hover:bg-raised">
             <ArrowCounterClockwise size={13} /> {tr('Try again')}
           </button>
         </div>

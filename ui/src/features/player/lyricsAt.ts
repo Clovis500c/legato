@@ -13,6 +13,12 @@ export function lineAt(lines: { ms: number }[], ms: number): number {
   return found
 }
 
+/** Now Playing's peek at the lyrics: the synced line at `ms` (the first one before it starts), else plain text's first line. */
+export function peekLine(lines: { ms: number; text: string }[], plain: string | null, ms: number): string {
+  if (lines.length) return lines[Math.max(0, lineAt(lines, ms))].text
+  return plain?.split('\n').find((x) => x.trim()) ?? ''
+}
+
 /** A synced line; endMs when the source gives it (YouTube Music), else guessed. */
 export type Timed = { ms: number; text: string; endMs?: number | null }
 

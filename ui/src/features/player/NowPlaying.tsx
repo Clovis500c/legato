@@ -1,7 +1,7 @@
 import { ArrowSquareOut, Heart, Queue, Quotes, SlidersHorizontal, ThumbsDown } from '@phosphor-icons/react'
 import { STAGE_ID } from '../../app/searchShift'
 import { openUrl } from '@tauri-apps/plugin-opener'
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import { useSettings } from '../../app/settings'
 import type { LibraryTrack, Source } from '../../shared/api'
@@ -26,7 +26,9 @@ import { isRemote, useNowTrack, usePlayer, useVideoSlot } from './store'
 import { Transport } from './Transport'
 import { UpNext } from './UpNext'
 import { AddToPlaylist } from '../library/AddToPlaylist'
-import { LyricsPanel } from './LyricsPanel'
+import { LyricsPanel, useNowLyrics } from './LyricsPanel'
+import { songKey } from './effects'
+import { applyFix, NO_FIX, peekLine } from './lyricsAt'
 import { EditorPanel } from '../editor/EditorPanel'
 import { useVideoBox } from './videoBox'
 import { usePulse } from './pulse'
@@ -209,6 +211,26 @@ function PanelToggle({ id, label, icon: Icon, active }: { id: PanelId; label: st
   )
 }
 
+/** The mockup's peek at the lyrics: the line being sung (or the first one), or instrumental; none found = nothing. A click opens them. */
+function LyricsPeek() {
+  const now = usePlayer((s) => s.now)
+  const { mine } = useNowLyrics()
+  const song = songKey(now)
+  const fix = useSettings((s) => (song && s.settings.lyricsSync[song]) || NO_FIX)
+  const pos = usePosition(250)
+  const l = mine?.lyrics
+  const synced = useMemo(() => (l?.lines.length ? applyFix(l.lines, fix) : null), [l, fix])
+  // A line shows a moment early, as in the lyrics panel.
+  const line = l ? peekLine(synced ?? [], l.plain, pos + 200) || (l.instrumental ? `♪ ${tr('Instrumental')}` : '') : ''
+  if (!line.trim()) return null
+  return (
+    <button onClick={() => useSettings.getState().update({ lyrics: true, upNext: false, editor: false })} title={tr('Lyrics')} className="-mx-2 flex w-fit max-w-full flex-col gap-1 rounded-md p-2 text-left transition hover:bg-raised">
+      <span className="text-sm font-medium">{tr('Lyrics')}</span>
+      <span className="line-clamp-2 text-sm text-ink-2">{line}</span>
+    </button>
+  )
+}
+
 /** What plays after this one; a click opens Up next. */
 function NextLine() {
   const next = usePlayer((s) => {
@@ -318,6 +340,7 @@ export function NowPlaying() {
             {track?.album && <p className="truncate text-sm">{track.album}</p>}
             {readout && source}
             <hr className="border-line" />
+            <LyricsPeek />
             <NextLine />
           </div>
         )}
