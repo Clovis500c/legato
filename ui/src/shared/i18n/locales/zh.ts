@@ -1516,6 +1516,7 @@ const zh: Record<string, string> = {
   'toast popup messages fewer quiet annoying errors only important': '弹出 提示 消息 减少 安静 烦人 仅错误 重要',
   'toast popup message time seconds duration short long': '弹出 提示 消息 时间 秒 时长 短 长',
   'What do you want to play?': '想听什么？',
+  'Playing from {list}': '正在从 {list} 播放',
 }
 
 export default zh

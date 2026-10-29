@@ -1516,6 +1516,7 @@ const vi: Record<string, string> = {
   'toast popup messages fewer quiet annoying errors only important': 'popup thông báo ít hơn yên tĩnh phiền chỉ lỗi quan trọng',
   'toast popup message time seconds duration short long': 'popup thông báo thời gian giây độ dài ngắn dài',
   'What do you want to play?': 'Bạn muốn nghe gì?',
+  'Playing from {list}': 'Đang phát từ {list}',
 }
 
 export default vi

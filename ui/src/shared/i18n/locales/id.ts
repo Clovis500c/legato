@@ -1516,6 +1516,7 @@ const id: Record<string, string> = {
   'toast popup messages fewer quiet annoying errors only important': 'toast popup pesan lebih sedikit tenang mengganggu hanya galat penting',
   'toast popup message time seconds duration short long': 'toast popup pesan waktu detik durasi singkat lama',
   'What do you want to play?': 'Mau putar apa?',
+  'Playing from {list}': 'Diputar dari {list}',
 }
 
 export default id

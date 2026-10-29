@@ -323,7 +323,7 @@ export function PlayerBar() {
         <div className="flex w-full items-center gap-3 text-xs text-ink-2 tabular-nums">
           <TimeText part="elapsed" />
           <SeekBar className="flex-1" />
-          <TimeText part="remaining" />
+          <TimeText part="total" />
         </div>
       </div>
 

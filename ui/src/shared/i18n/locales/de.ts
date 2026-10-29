@@ -1516,6 +1516,7 @@ const de: Record<string, string> = {
   'toast popup messages fewer quiet annoying errors only important': 'Toast Popup Meldungen weniger ruhig nervig nur Fehler wichtig',
   'toast popup message time seconds duration short long': 'Toast Popup Meldung Zeit Sekunden Dauer kurz lang',
   'What do you want to play?': 'Was möchtest du hören?',
+  'Playing from {list}': 'Wiedergabe aus {list}',
 }
 
 export default de

@@ -131,10 +131,10 @@ export function SeekBar({ className = '' }: { className?: string }) {
   )
 }
 
-/** "0:54 / 2:52" (YouTube) or elapsed / remaining around the bar. */
-export function TimeText({ part, className = '' }: { part: 'both' | 'elapsed' | 'remaining'; className?: string }) {
+/** "0:54 / 2:52" (YouTube) or elapsed / the song's length around the bar (the mockups'). */
+export function TimeText({ part, className = '' }: { part: 'both' | 'elapsed' | 'total'; className?: string }) {
   const durationMs = usePlayer((s) => s.durationMs)
   const pos = usePosition(1000)
-  const text = part === 'both' ? `${clock(pos)} / ${clock(durationMs)}` : part === 'elapsed' ? clock(pos) : `-${clock(Math.max(0, (durationMs ?? 0) - pos))}`
+  const text = part === 'both' ? `${clock(pos)} / ${clock(durationMs)}` : part === 'elapsed' ? clock(pos) : clock(durationMs)
   return <span className={`tabular-nums ${className}`}>{text}</span>
 }

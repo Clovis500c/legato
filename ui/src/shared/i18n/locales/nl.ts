@@ -1516,6 +1516,7 @@ const nl: Record<string, string> = {
   'toast popup messages fewer quiet annoying errors only important': 'toast pop-up berichten minder rustig irritant alleen fouten belangrijk',
   'toast popup message time seconds duration short long': 'toast pop-up bericht tijd seconden duur kort lang',
   'What do you want to play?': 'Wat wil je afspelen?',
+  'Playing from {list}': 'Afgespeeld uit {list}',
 }
 
 export default nl

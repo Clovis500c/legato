@@ -1516,6 +1516,7 @@ const ja: Record<string, string> = {
   'toast popup messages fewer quiet annoying errors only important': 'トースト ポップアップ メッセージ 減らす 静か うるさい エラーのみ 重要',
   'toast popup message time seconds duration short long': 'トースト ポップアップ メッセージ 時間 秒 長さ 短い 長い',
   'What do you want to play?': '何を再生しますか？',
+  'Playing from {list}': '{list}から再生中',
 }
 
 export default ja

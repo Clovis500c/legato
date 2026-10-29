@@ -233,6 +233,8 @@ function NextLine() {
  */
 export function NowPlaying() {
   const now = usePlayer((s) => s.now)
+  // The page the queue was started from (the mockup's "Playing from Late piano").
+  const from = usePlayer((s) => s.from)
   const setFull = usePlayer((s) => s.setFull)
   const { tuner, tint, immersive, backdropBlur, backdropDim, backdropMotion, stage, upNext, volume: volumeMode, coverPulse, visualizer, motion, lyrics, editor, readout } = useSettings(
     useShallow((s) => ({ ...pick(s.settings), theme: s.settings.theme, accent: s.settings.accent, customThemes: s.settings.customThemes, systemDark: s.systemDark })),
@@ -310,6 +312,7 @@ export function NowPlaying() {
         ) : (
           // Display XL (docs/design.md), smaller in a small window; long video titles wrap to two lines.
           <div className="flex min-w-0 flex-col justify-center gap-4 pb-8">
+            {from && <p className="kicker truncate">{tr('Playing from {list}', { list: from })}</p>}
             <h2 className="line-clamp-2 pb-1 text-[clamp(2.5rem,5.5vw,5.5rem)] leading-[1.05] font-black tracking-[-0.02em] break-words">{now.title}</h2>
             <ArtistLink now={now} className="w-fit max-w-full truncate text-[1.375rem] leading-7 font-bold" />
             {track?.album && <p className="truncate text-sm">{track.album}</p>}
@@ -330,7 +333,7 @@ export function NowPlaying() {
         <div className="flex items-center gap-3 text-xs text-ink-2">
           <TimeText part="elapsed" className="w-10" />
           <div className="min-w-0 flex-1">{tuner ? <Tuner /> : <SeekBar />}</div>
-          <TimeText part="remaining" className="w-10 text-right" />
+          <TimeText part="total" className="w-10 text-right" />
         </div>
         {/* Side columns may shrink (small window): the volume bar narrows instead of running into the transport. */}
         <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center">

@@ -1516,6 +1516,7 @@ const sv: Record<string, string> = {
   'toast popup messages fewer quiet annoying errors only important': 'toast popup meddelanden färre tyst irriterande bara fel viktiga',
   'toast popup message time seconds duration short long': 'toast popup meddelande tid sekunder längd kort lång',
   'What do you want to play?': 'Vad vill du lyssna på?',
+  'Playing from {list}': 'Spelas från {list}',
 }
 
 export default sv

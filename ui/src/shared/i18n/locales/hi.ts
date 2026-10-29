@@ -1516,6 +1516,7 @@ const hi: Record<string, string> = {
   'toast popup messages fewer quiet annoying errors only important': 'टोस्ट पॉपअप संदेश कम शांत परेशान सिर्फ़ त्रुटियाँ ज़रूरी',
   'toast popup message time seconds duration short long': 'टोस्ट पॉपअप संदेश समय सेकंड अवधि कम ज़्यादा',
   'What do you want to play?': 'आप क्या सुनना चाहते हैं?',
+  'Playing from {list}': '{list} से चल रहा है',
 }
 
 export default hi
