@@ -1,7 +1,9 @@
 # Legato
 
-Formerly Music App (renamed 2026-10-29). The first name stays where it is an identifier: `dev.musicapp.desktop`,
-`music-app.exe`, the repo, `_musicapp._tcp`, `MA1`, keychain entries, the `Music App Sync` folder, the Run entry.
+Formerly Music App (renamed 2026-10-29). Identifier `app.legato.desktop` (was `dev.musicapp.desktop`: `src-tauri/src/rename.rs`
+moves its folders and keychain entries at first launch), exe `legato.exe`, Run entry and new sync folders "Legato".
+Kept for compatibility between versions and PCs: `_musicapp._tcp`, `MA1`, `.musicsync` files and an existing
+`Music App Sync` folder, reading `musicapp://` links, the repo's name. Never rename those.
 
 Desktop app (Tauri 2 + Rust + React/TS) that unifies Spotify / YouTube / Apple Music / local libraries. Overview: `docs/architecture.md`; open work: `docs/notes/plan-v2.md` (history in git).
 Repo docs: `README.md` (short, points to the website), `CONTRIBUTING.md`, `docs/` (for developers). What users read (features,

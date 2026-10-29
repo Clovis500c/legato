@@ -47,8 +47,9 @@ Everything a new session needs to carry on the redesign (version 1.0, branch `v2
 
 ## Next
 
-1. The name is Legato (user's choice 2026-10-29), on the website so far. Renaming the app itself waits on the user's go
-   (plan-v2.md). Never rename the identifier, `_musicapp._tcp`, `MA1` or keychain entries.
+1. The name is Legato (user's choice 2026-10-29), app and website. Local names follow (identifier
+   `app.legato.desktop`, `legato.exe`, moved at first launch by `src-tauri/src/rename.rs`); CLAUDE.md lists what keeps
+   the old name for compatibility.
 2. Left from the mockup pass (plan-v2.md): Your library ↗ full width, the player bar's "artist · from your file".
 3. Before merging: `pnpm check` (all of it) and `pnpm build` in `site/`, then ask the user whether to merge `v2` into
    `master` and push (that push is release 1.0 and the website's first deploy).
@@ -89,11 +90,11 @@ https://claude.ai/artifact/33xMyBxcFnf7pwwmLBdVVQ
 - A virtual list whose rows change kind needs `getItemKey` (Up next headers overlapped rows without it).
 - Running the app: `pnpm dev` (own data folder; its settings are already at v8, so new v8 defaults don't show there).
   It resumes playback with sound: pause it. Editing many files while it runs (the locales) can leave the player half
-  reloaded: restart. Stopping the background task leaves Vite on port 5173 and `target\debug\music-app.exe` running:
-  stop those two by PID (never the installed `AppData\Local\Music App\music-app.exe`). A second launch while one runs
-  exits at once (single instance).
-- Screenshots of the dev app (computer use): ask access for `C:\dev\music-app\target\debug\music-app.exe`; the name
-  "Music App" maps to the installed app.
+  reloaded: restart. Stopping the background task leaves Vite on port 5173 and `target\debug\legato.exe` running:
+  stop those two by PID (never the installed app: `AppData\Local\Music App\music-app.exe` until it updates, then
+  `AppData\Local\Legato\legato.exe`). A second launch while one runs exits at once (single instance).
+- Screenshots of the dev app (computer use): ask access for `C:\dev\music-app\target\debug\legato.exe`; the name
+  "Legato" may map to the installed app.
 - Without computer use: start `pnpm dev` with `WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS=--remote-debugging-port=9333`
   (plus `background::BROWSER_ARGS`), then drive the page over CDP from a node script (global `WebSocket`):
   `Page.captureScreenshot`, `Emulation.setEmulatedMedia` (prefers-color-scheme light / dark), `Input.dispatchMouseEvent`

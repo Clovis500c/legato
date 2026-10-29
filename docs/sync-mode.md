@@ -37,7 +37,7 @@ A protected folder refuses plain files (no downgrade by someone who can write to
 Found from the variables OneDrive sets (`OneDriveConsumer`, `OneDrive`, `OneDriveCommercial`). Asked once (a
 notice at start: "OneDrive is on this PC: sync…?", then Settings › Sync Mode): set up with or without a password.
 
-Layout: `<folder>\Music App Sync\sync.json` (protected or not, salt, check) and one `<pc id>.musicsync` per PC
+Layout: `<folder>\Legato Sync\sync.json` (a `Music App Sync` folder made before the rename is used while it's there) (protected or not, salt, check) and one `<pc id>.musicsync` per PC
 (gzip'd JSON, sealed or not). Each PC writes only its own file (temp file, then rename), so OneDrive never has to
 merge one and never makes "conflict copies". Every minute (and at start, and on "Sync now"): other PCs' files that
 changed are merged; this PC's file is written again only if its content changed (hash without its time), so two PCs

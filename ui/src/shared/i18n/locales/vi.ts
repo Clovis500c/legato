@@ -457,7 +457,7 @@ const vi: Record<string, string> = {
   'Add {title}': 'Thêm {title}',
   'Import a shared playlist': 'Nhập danh sách phát được chia sẻ',
   'Looking for the sender on this network…': 'Đang tìm người gửi trên mạng này…',
-  'Paste a musicapp:// link, type a 6-digit code from a nearby Legato, or drop a QR screenshot on the window.': 'Dán liên kết musicapp://, nhập mã 6 chữ số từ một Legato ở gần, hoặc thả ảnh chụp mã QR vào cửa sổ.',
+  'Paste a legato:// link, type a 6-digit code from a nearby Legato, or drop a QR screenshot on the window.': 'Dán liên kết legato://, nhập mã 6 chữ số từ một Legato ở gần, hoặc thả ảnh chụp mã QR vào cửa sổ.',
   'Link or 6-digit code': 'Liên kết hoặc mã 6 chữ số',
   'Share link or code': 'Liên kết hoặc mã chia sẻ',
   'Import': 'Nhập',

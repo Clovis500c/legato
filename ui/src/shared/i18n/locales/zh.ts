@@ -457,7 +457,7 @@ const zh: Record<string, string> = {
   'Add {title}': '添加 {title}',
   'Import a shared playlist': '导入分享的歌单',
   'Looking for the sender on this network…': '正在此网络中查找发送方…',
-  'Paste a musicapp:// link, type a 6-digit code from a nearby Legato, or drop a QR screenshot on the window.': '粘贴 musicapp:// 链接，输入附近 Legato 显示的 6 位代码，或将二维码截图拖放到窗口上。',
+  'Paste a legato:// link, type a 6-digit code from a nearby Legato, or drop a QR screenshot on the window.': '粘贴 legato:// 链接，输入附近 Legato 显示的 6 位代码，或将二维码截图拖放到窗口上。',
   'Link or 6-digit code': '链接或 6 位代码',
   'Share link or code': '分享链接或代码',
   'Import': '导入',

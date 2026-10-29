@@ -79,8 +79,8 @@ jobs:
 
       - if: runner.os == 'Linux'
         run: |
-          cargo clippy --workspace --exclude music-app --all-targets -- -D warnings
-          cargo test --workspace --exclude music-app
+          cargo clippy --workspace --exclude legato --all-targets -- -D warnings
+          cargo test --workspace --exclude legato
         env:
           CARGO_NET_OFFLINE: true
           HTTP_PROXY: http://127.0.0.1:9

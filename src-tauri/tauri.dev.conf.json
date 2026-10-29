@@ -1,4 +1,4 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "identifier": "dev.musicapp.desktop.devbuild"
+  "identifier": "app.legato.desktop.devbuild"
 }

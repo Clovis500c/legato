@@ -30,7 +30,9 @@ const MAX_ITEMS: u64 = 10_000;
 const MAX_TEXT: u64 = 300;
 /// Decompressed cap: zip bomb guard.
 const MAX_RAW: u64 = 4 << 20;
-pub const LINK: &str = "musicapp://playlist/";
+pub const LINK: &str = "legato://playlist/";
+/// Links made by Music App (the app's first name): still read.
+const OLD_LINK: &str = "musicapp://playlist/";
 pub const QR: &str = "MA1:";
 
 impl Item {
@@ -193,7 +195,7 @@ pub fn unbase45(s: &str) -> Result<Vec<u8>> {
     Ok(out)
 }
 
-/// For messages: `musicapp://playlist/…`.
+/// For messages: `legato://playlist/…`.
 pub fn to_link(s: &Shared) -> String {
     format!("{LINK}{}", URL_SAFE_NO_PAD.encode(encode(s)))
 }
@@ -220,7 +222,7 @@ pub fn read_qr(path: &Path) -> Result<String> {
 /// Link or QR text. Whitespace inside links tolerated (chat apps wrap lines).
 pub fn parse(text: &str) -> Result<Shared> {
     let text = text.trim();
-    if let Some(rest) = text.strip_prefix(LINK) {
+    if let Some(rest) = text.strip_prefix(LINK).or_else(|| text.strip_prefix(OLD_LINK)) {
         let clean: String = rest.chars().filter(|c| !c.is_whitespace()).collect();
         return decode(&URL_SAFE_NO_PAD.decode(clean).context("Share link is damaged")?);
     }
@@ -254,6 +256,8 @@ mod tests {
         // Chat app wrapped the link.
         let link = to_link(&sample());
         assert_eq!(parse(&format!("  {}\n{} ", &link[..30], &link[30..])).unwrap(), sample());
+        // Made by Music App, before the rename.
+        assert_eq!(parse(&link.replace(LINK, OLD_LINK)).unwrap(), sample());
         assert!(to_qr_text(&sample()).bytes().all(|b| B45.contains(&b) || b"MA1:".contains(&b)));
     }
 

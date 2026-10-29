@@ -131,7 +131,7 @@ We still pin the policy on the iframe: a meta tag or header added later can't br
 | Option | Effect | Cost |
 |---|---|---|
 | `useHttpsScheme: true` (window) | origin `https://tauri.localhost` | origin changes, so the webview's localStorage, IndexedDB and cookies are lost for existing installs (we keep nothing there today); Windows and Android only |
-| `Referer` forced through WebView2 `WebResourceRequested` (`https://dev.musicapp.desktop`) | follows YouTube's rule for desktop apps to the letter (`Referer` header = app id over HTTPS) | Windows-only code (`webview2-com`), to redo per platform |
+| `Referer` forced through WebView2 `WebResourceRequested` (`https://app.legato.desktop`) | follows YouTube's rule for desktop apps to the letter (`Referer` header = app id over HTTPS) | Windows-only code (`webview2-com`), to redo per platform |
 | `tauri-plugin-localhost` | whole UI served on `http://localhost:PORT` | server open to every local process, IPC exposed to a plain http origin; discouraged by Tauri |
 | Relay page on `127.0.0.1` | loopback `Referer` for the iframe only | small loopback server, double iframe, messages to relay |
 

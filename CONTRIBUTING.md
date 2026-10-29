@@ -20,7 +20,7 @@ pnpm install
 pnpm dev
 ```
 
-`pnpm dev` runs as `dev.musicapp.desktop.devbuild` (`src-tauri/tauri.dev.conf.json`): its own library, settings,
+`pnpm dev` runs as `app.legato.desktop.devbuild` (`src-tauri/tauri.dev.conf.json`): its own library, settings,
 keychain entries and WebView2 profile, never the installed app's. An older app must never open a library a newer
 build migrated (2026-10-21: the installed app and a dev build shared one and damaged it); `Library::open` now refuses
 a library newer than `SCHEMA_VERSION`.

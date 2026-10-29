@@ -19,18 +19,19 @@ Windows is the app's platform. In CI, macOS builds the whole app and passes ever
 only (no WebKitGTK download from slow mirrors). The app has never been driven on either:
 the media panel, the ad shield's network hook and the system accent are Windows only.
 
-## Your dev build uses your real data
+## Your dev build has its own data
 
-`pnpm dev` runs with the same identifier as an installed copy (`dev.musicapp.desktop`), so it reads and writes the same
-library, the same keychain entries and the same Google session. Copy `library.db` before trying risky changes.
+`pnpm dev` runs as `app.legato.desktop.devbuild` (`src-tauri/tauri.dev.conf.json`): its own library, keychain entries
+and Google session, never the installed app's. Folders and entries made under the old identifiers (`app.legato.desktop`,
+and `.devbuild` for dev) move to the new ones at first launch (`src-tauri/src/rename.rs`).
 
 Two things only an installed copy does: Settings › General › Open at startup refuses to turn on (a dev build would
 start at sign-in without its dev server), and background update checks only run when asked (Settings › About).
 
 | What | Windows | macOS | Linux |
 |---|---|---|---|
-| Library (`library.db`), cover cache (`art/`), shield lists (`shield/`) | `%APPDATA%\dev.musicapp.desktop` | `~/Library/Application Support/dev.musicapp.desktop` | `~/.local/share/dev.musicapp.desktop` |
-| Google session (webview cookies) | `%LOCALAPPDATA%\dev.musicapp.desktop\EBWebView` | The system webview's own store | The system webview's own store |
+| Library (`library.db`), cover cache (`art/`), shield lists (`shield/`) | `%APPDATA%\app.legato.desktop` | `~/Library/Application Support/app.legato.desktop` | `~/.local/share/app.legato.desktop` |
+| Google session (webview cookies) | `%LOCALAPPDATA%\app.legato.desktop\EBWebView` | The system webview's own store | The system webview's own store |
 | Secrets | Credential Manager | Keychain | Secret Service |
 
 ## YouTube Music (no keys)
@@ -78,7 +79,7 @@ most) can sign in.
 
 ## Keychain
 
-Secrets go through the `keyring` crate (`src-tauri/src/secrets.rs`): service `dev.musicapp.desktop`, one entry per
+Secrets go through the `keyring` crate (`src-tauri/src/secrets.rs`): service `app.legato.desktop`, one entry per
 key, JSON values.
 
 | Entry | Holds |
@@ -90,9 +91,9 @@ To look at or delete them (here for `spotify`):
 
 | System | List | Delete |
 |---|---|---|
-| Windows | `cmdkey /list:spotify.dev.musicapp.desktop` (or Credential Manager › Windows Credentials) | `cmdkey /delete:spotify.dev.musicapp.desktop` |
-| macOS | `security find-generic-password -s dev.musicapp.desktop -a spotify` | `security delete-generic-password -s dev.musicapp.desktop -a spotify` |
-| Linux | `secret-tool search service dev.musicapp.desktop` | `secret-tool clear service dev.musicapp.desktop username spotify` |
+| Windows | `cmdkey /list:spotify.app.legato.desktop` (or Credential Manager › Windows Credentials) | `cmdkey /delete:spotify.app.legato.desktop` |
+| macOS | `security find-generic-password -s app.legato.desktop -a spotify` | `security delete-generic-password -s app.legato.desktop -a spotify` |
+| Linux | `secret-tool search service app.legato.desktop` | `secret-tool clear service app.legato.desktop username spotify` |
 
 Linux needs a running Secret Service (GNOME Keyring, or KWallet with its Secret Service on). Without one, nothing can
 be saved and Spotify stays signed out.

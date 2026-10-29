@@ -457,7 +457,7 @@ const ru: Record<string, string> = {
   'Add {title}': 'Добавить {title}',
   'Import a shared playlist': 'Импортировать общий плейлист',
   'Looking for the sender on this network…': 'Ищем отправителя в этой сети…',
-  'Paste a musicapp:// link, type a 6-digit code from a nearby Legato, or drop a QR screenshot on the window.': 'Вставь ссылку musicapp://, введи 6-значный код из Legato поблизости или перетащи в окно скриншот QR-кода.',
+  'Paste a legato:// link, type a 6-digit code from a nearby Legato, or drop a QR screenshot on the window.': 'Вставь ссылку legato://, введи 6-значный код из Legato поблизости или перетащи в окно скриншот QR-кода.',
   'Link or 6-digit code': 'Ссылка или 6-значный код',
   'Share link or code': 'Ссылка или код для обмена',
   'Import': 'Импорт',

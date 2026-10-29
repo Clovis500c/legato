@@ -1,5 +1,5 @@
 {
-  "name": "music-app",
+  "name": "legato",
   "version": "1.0.0",
   "description": "One library for YouTube Music, Spotify, Apple Music and your own files. Desktop app (Tauri 2 + Rust).",
   "author": "Clovis500c",

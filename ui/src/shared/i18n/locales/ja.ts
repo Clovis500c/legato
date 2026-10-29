@@ -457,7 +457,7 @@ const ja: Record<string, string> = {
   'Add {title}': '{title}を追加',
   'Import a shared playlist': '共有されたプレイリストをインポート',
   'Looking for the sender on this network…': 'このネットワークで送信元を探しています…',
-  'Paste a musicapp:// link, type a 6-digit code from a nearby Legato, or drop a QR screenshot on the window.': 'musicapp:// リンクを貼り付けるか、近くのLegatoに表示された6桁のコードを入力するか、QRコードのスクリーンショットをウィンドウにドロップしてください。',
+  'Paste a legato:// link, type a 6-digit code from a nearby Legato, or drop a QR screenshot on the window.': 'legato:// リンクを貼り付けるか、近くのLegatoに表示された6桁のコードを入力するか、QRコードのスクリーンショットをウィンドウにドロップしてください。',
   'Link or 6-digit code': 'リンクまたは6桁のコード',
   'Share link or code': '共有リンクまたはコード',
   'Import': 'インポート',

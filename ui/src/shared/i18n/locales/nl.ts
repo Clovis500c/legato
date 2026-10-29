@@ -457,7 +457,7 @@ const nl: Record<string, string> = {
   'Add {title}': '{title} toevoegen',
   'Import a shared playlist': 'Gedeelde playlist importeren',
   'Looking for the sender on this network…': 'Afzender zoeken op dit netwerk…',
-  'Paste a musicapp:// link, type a 6-digit code from a nearby Legato, or drop a QR screenshot on the window.': 'Plak een musicapp://-link, typ een 6-cijferige code van een Legato in de buurt of zet een screenshot van een QR-code op het venster neer.',
+  'Paste a legato:// link, type a 6-digit code from a nearby Legato, or drop a QR screenshot on the window.': 'Plak een legato://-link, typ een 6-cijferige code van een Legato in de buurt of zet een screenshot van een QR-code op het venster neer.',
   'Link or 6-digit code': 'Link of 6-cijferige code',
   'Share link or code': 'Link of code om te delen',
   'Import': 'Importeren',

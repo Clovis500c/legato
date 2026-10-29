@@ -457,7 +457,7 @@ const tr: Record<string, string> = {
   'Add {title}': 'Ekle: {title}',
   'Import a shared playlist': 'Paylaşılan bir çalma listesini içe aktar',
   'Looking for the sender on this network…': 'Gönderen bu ağda aranıyor…',
-  'Paste a musicapp:// link, type a 6-digit code from a nearby Legato, or drop a QR screenshot on the window.': 'Bir musicapp:// bağlantısı yapıştır, yakındaki bir Legato’ten 6 haneli bir kod yaz veya pencereye bir QR ekran görüntüsü bırak.',
+  'Paste a legato:// link, type a 6-digit code from a nearby Legato, or drop a QR screenshot on the window.': 'Bir legato:// bağlantısı yapıştır, yakındaki bir Legato’ten 6 haneli bir kod yaz veya pencereye bir QR ekran görüntüsü bırak.',
   'Link or 6-digit code': 'Bağlantı veya 6 haneli kod',
   'Share link or code': 'Paylaşım bağlantısı veya kodu',
   'Import': 'İçe aktar',

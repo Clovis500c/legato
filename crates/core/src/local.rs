@@ -138,7 +138,7 @@ pub fn write_tags(path: &Path, edit: &TagEdit) -> anyhow::Result<()> {
     use lofty::tag::Tag;
     let mut tmp = path.as_os_str().to_owned();
     // Not an audio extension: the folder watcher ignores it.
-    tmp.push(".musicapp-tmp");
+    tmp.push(".legato-tmp");
     let tmp = PathBuf::from(tmp);
     std::fs::copy(path, &tmp)?;
     let written = (|| -> anyhow::Result<()> {

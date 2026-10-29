@@ -457,7 +457,7 @@ const ko: Record<string, string> = {
   'Add {title}': '{title} 추가',
   'Import a shared playlist': '공유된 플레이리스트 가져오기',
   'Looking for the sender on this network…': '이 네트워크에서 보낸 사람을 찾는 중…',
-  'Paste a musicapp:// link, type a 6-digit code from a nearby Legato, or drop a QR screenshot on the window.': 'musicapp:// 링크를 붙여넣거나, 근처 Legato의 6자리 코드를 입력하거나, QR 스크린샷을 창에 놓으세요.',
+  'Paste a legato:// link, type a 6-digit code from a nearby Legato, or drop a QR screenshot on the window.': 'legato:// 링크를 붙여넣거나, 근처 Legato의 6자리 코드를 입력하거나, QR 스크린샷을 창에 놓으세요.',
   'Link or 6-digit code': '링크 또는 6자리 코드',
   'Share link or code': '공유 링크 또는 코드',
   'Import': '가져오기',

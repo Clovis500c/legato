@@ -17,6 +17,7 @@ mod shield;
 mod speech;
 mod syncmode;
 mod push;
+mod rename;
 mod songlist;
 mod tags;
 mod spotify_web;
@@ -696,7 +697,7 @@ async fn play_preview(state: State<'_, AppState>, id: String, country: String) -
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 struct ShareCode {
-    /// `musicapp://playlist/…`, for messages.
+    /// `legato://playlist/…`, for messages.
     link: String,
     /// QR modules: size, row-major "0"/"1". None = too big for a QR code.
     qr: Option<(usize, String)>,
@@ -1929,6 +1930,11 @@ fn stop_with(text: &str) -> ! {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    let context = tauri::generate_context!();
+    // Before anything opens the app's folders (window place, WebView2, library): Music App's move to Legato's name.
+    if let Err(e) = rename::migrate(&context.config().identifier) {
+        stop_with(&format!("Legato can't move your library and settings to its new folder ({e}). Close Music App if it still runs, then start Legato again."));
+    }
     tauri::Builder::default()
         // First: a second launch shows this one (from the tray too) instead of starting again.
         .plugin(tauri_plugin_single_instance::init(|app, _, _| background::show(app)))
@@ -2043,7 +2049,7 @@ pub fn run() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, library_changes, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, search_suggestions, add_track, backfill_art, find_versions, play_preview, share_playlist, share_preview, share_read_image, share_import, nearby_send, nearby_status, nearby_stop, nearby_receive, record_play, recent_plays, play_history, mixes, set_track_pref, set_music, clear_history, export_youtube, spotify_player, spotify_playback, ytm_sign_in, ytm_sign_out, spotify_web_open, spotify_web_status, import_spotify_link, ytm_accounts, set_ytm_accounts, sync_directions, set_sync_direction, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, system_accent, restart_app, autostart, set_autostart, hold_page, media_update, load_session, save_session, add_to_youtube, save_cover, export_cover, alternative_videos, embed_refused, play_stats, cache_stats, open_licenses, update_status, update_check, update_install, ytm_home, ytm_list, ytm_artist, album_info, discord_presence, discord_off, discord_status, remove_from_playlist, remove_from_library, merge_duplicates, resolve_track, set_global_shortcuts, player_live, editor::player_effects, player_levels, editor::export_edit, editor::export_stop, editor::edits, editor::save_edit, editor::delete_edit, editor::activate_edit, editor::edit_draft, editor::save_edit_draft, voice_listen, voice_stop, open_windows_settings, detector::detector_status, detector::set_detector_token, detector::detect_song, detector::detect_stop, lastfm::lastfm_status, lastfm::lastfm_connect, lastfm::lastfm_disconnect, lastfm::lastfm_now_playing, lastfm::lastfm_scrobble, lyrics, set_ui_language, ytwatch_open, ytwatch_place, ytwatch_cmd, ytwatch_close, syncmode::sync_status, syncmode::sync_probe, syncmode::sync_setup, syncmode::sync_stop, syncmode::sync_now, syncmode::sync_dismiss, syncmode::sync_offer, syncmode::sync_offer_stop, syncmode::sync_join, plugins::plugins_list, plugins::plugin_inspect, plugins::plugin_install, plugins::plugin_set, plugins::plugin_uninstall, plugins::plugin_reply, plugins::plugin_event, plugins::plugin_input, plugins::plugin_log, themes::save_background, themes::forget_background, themes::export_theme, themes::import_theme, tags::edit_tags, songlist::import_song_list])
-        .run(tauri::generate_context!())
+        .run(context)
         .expect("error while running tauri application");
 }
 

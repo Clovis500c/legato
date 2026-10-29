@@ -1,10 +1,12 @@
 //! Opens at sign-in (Settings › Advanced). Windows: the HKCU Run entry Task Manager › Startup apps lists.
 //! Task Manager's own switch lives in StartupApproved: read here, and turned back on with ours. Elsewhere: not offered.
 
-/// Run value name (Task Manager falls back to it when the exe has no description). The app's first name, kept: the entry
-/// already made under it goes on working (`follow`).
+/// Run value name (Task Manager falls back to it when the exe has no description).
 #[cfg(windows)]
-const NAME: &str = "Music App";
+const NAME: &str = "Legato";
+/// The same entry under the app's first name: `follow` renames it.
+#[cfg(windows)]
+const OLD_NAME: &str = "Music App";
 
 /// Some(on) on Windows: this exe registered and not turned off in Task Manager. None elsewhere.
 pub fn get() -> Option<bool> {
@@ -27,13 +29,15 @@ pub fn set(on: bool) -> anyhow::Result<()> {
     }
 }
 
-/// Music App became Legato (2026-10-29), so updates install in a new folder: the Run entry may still name the old exe,
-/// gone with the old folder. Point it at this one (Task Manager's switch stays as it was). Installed app only.
+/// Music App became Legato (2026-10-29): its Run entry takes the new name, and since updates install in a new folder, it
+/// may still name the old exe, gone with the old folder: pointed at this one. Task Manager's switch stays as it was.
+/// Installed app only.
 pub fn follow() {
     #[cfg(windows)]
     if !cfg!(debug_assertions)
         && let Ok(exe) = std::env::current_exe()
     {
+        let _ = win::rename(OLD_NAME, NAME);
         let _ = win::follow(NAME, &exe);
     }
 }
@@ -69,6 +73,16 @@ mod win {
         ours && super::approved(value.as_deref())
     }
 
+    /// Entry made under `old`: now under `new`, Task Manager's switch with it.
+    pub fn rename(old: &str, new: &str) -> Result<()> {
+        let Ok(command) = CURRENT_USER.open(RUN).and_then(|k| k.get_string(old)) else { return Ok(()) };
+        CURRENT_USER.create(RUN)?.set_string(new, &command)?;
+        if let Ok(switch) = CURRENT_USER.open(APPROVED).and_then(|k| k.get_value(old)) {
+            CURRENT_USER.create(APPROVED)?.set_bytes(new, Type::Bytes, &switch)?;
+        }
+        set(old, Path::new(""), false)
+    }
+
     /// Entry naming an exe that no longer exists: now `exe`. Ours already, another exe that exists, or none: left alone.
     pub fn follow(name: &str, exe: &Path) -> Result<()> {
         let Ok(old) = CURRENT_USER.open(RUN).and_then(|k| k.get_string(name)) else { return Ok(()) };
@@ -97,7 +111,7 @@ mod win {
     mod tests {
         use super::*;
 
-        /// Real HKCU, own value name, fake exe (harmless if left behind). By hand: cargo test -p music-app -- --ignored
+        /// Real HKCU, own value name, fake exe (harmless if left behind). By hand: cargo test -p legato -- --ignored
         #[test]
         #[ignore = "writes the user's registry"]
         fn round_trip_and_task_manager_switch() {
@@ -121,8 +135,10 @@ mod win {
         #[test]
         #[ignore = "writes the user's registry"]
         fn follows_a_moved_install() {
-            let (name, gone, here) = ("Music App test entry 2", Path::new(r"C:\Nowhere\Music App\music-app.exe"), std::env::current_exe().unwrap());
-            set(name, gone, true).unwrap();
+            let (old, name, gone, here) = ("Legato test old entry", "Legato test entry 2", Path::new(r"C:\Nowhere\Music App\music-app.exe"), std::env::current_exe().unwrap());
+            set(old, gone, true).unwrap();
+            rename(old, name).unwrap();
+            assert!(CURRENT_USER.open(RUN).unwrap().get_string(old).is_err());
             follow(name, &here).unwrap();
             assert!(get(name, &here));
             follow(name, gone).unwrap();

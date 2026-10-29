@@ -457,7 +457,7 @@ const uk: Record<string, string> = {
   'Add {title}': 'Додати {title}',
   'Import a shared playlist': 'Імпортувати спільний плейлист',
   'Looking for the sender on this network…': 'Шукаємо відправника в цій мережі…',
-  'Paste a musicapp:// link, type a 6-digit code from a nearby Legato, or drop a QR screenshot on the window.': 'Встав посилання musicapp://, введи 6-значний код із Legato поблизу або перетягни у вікно знімок екрана з QR-кодом.',
+  'Paste a legato:// link, type a 6-digit code from a nearby Legato, or drop a QR screenshot on the window.': 'Встав посилання legato://, введи 6-значний код із Legato поблизу або перетягни у вікно знімок екрана з QR-кодом.',
   'Link or 6-digit code': 'Посилання або 6-значний код',
   'Share link or code': 'Посилання або код для обміну',
   'Import': 'Імпорт',

@@ -17,8 +17,9 @@ use std::time::{Duration, SystemTime};
 use tauri::{AppHandle, Emitter, Manager, State};
 
 /// Folder made inside the chosen one.
-/// The app's first name, kept: other PCs and folders made before the rename use it.
-const DIR: &str = "Music App Sync";
+const DIR: &str = "Legato Sync";
+/// The same, made by Music App (the app's first name): used while it's there, other PCs may still be on it.
+const OLD_DIR: &str = "Music App Sync";
 const MANIFEST: &str = "sync.json";
 /// This PC's Sync Mode settings (library settings row, never synced).
 const CONFIG: &str = "sync";
@@ -27,12 +28,18 @@ const KEY: &str = "sync_key";
 const FIRST: Duration = Duration::from_secs(15);
 const EVERY: Duration = Duration::from_secs(60);
 
+/// Sync files' folder inside the chosen one: Music App's if it's there, else Legato's.
+fn sync_dir(folder: &Path) -> PathBuf {
+    let old = folder.join(OLD_DIR);
+    if old.is_dir() { old } else { folder.join(DIR) }
+}
+
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct Config {
     #[serde(default)]
     device: String,
-    /// Folder holding `Music App Sync`. None = off.
+    /// Folder holding `Legato Sync` (or Music App's). None = off.
     #[serde(default)]
     folder: Option<String>,
     /// The OneDrive question was answered (set up, or not now).
@@ -182,7 +189,7 @@ fn folder_round(app: &AppHandle) -> anyhow::Result<Merged> {
     let sync = app.state::<SyncMode>();
     let c = config(&state);
     let Some(folder) = c.folder else { return Ok(Merged::default()) };
-    let dir = PathBuf::from(folder).join(DIR);
+    let dir = sync_dir(Path::new(&folder));
     let manifest = read_manifest(&dir).ok_or_else(|| anyhow::anyhow!("The sync folder is gone (moved, or OneDrive is off)"))?;
     let key = if manifest.protected { Some(file_key(&state).ok_or_else(|| anyhow::anyhow!("Enter the sync password on this PC"))?) } else { None };
     let mut total = Merged::default();
@@ -245,7 +252,7 @@ pub fn spawn(app: AppHandle) {
 #[tauri::command]
 pub async fn sync_status(state: State<'_, AppState>, sync: State<'_, SyncMode>) -> CmdResult<Status> {
     let c = config(&state);
-    let protected = c.folder.as_ref().and_then(|f| read_manifest(&PathBuf::from(f).join(DIR))).is_some_and(|m| m.protected);
+    let protected = c.folder.as_ref().and_then(|f| read_manifest(&sync_dir(Path::new(f)))).is_some_and(|m| m.protected);
     let onedrive = sm::onedrive_folders(|k| std::env::var(k).ok()).into_iter().filter(|p| p.is_dir()).map(|p| p.display().to_string()).collect();
     let inner = sync.inner.lock().unwrap();
     let mut devices: Vec<Device> = inner.devices.values().cloned().collect();
@@ -256,7 +263,7 @@ pub async fn sync_status(state: State<'_, AppState>, sync: State<'_, SyncMode>) 
 /// Before setting up `folder`: does another PC sync there already, with a password?
 #[tauri::command]
 pub async fn sync_probe(state: State<'_, AppState>, folder: String) -> CmdResult<Probe> {
-    let dir = PathBuf::from(&folder).join(DIR);
+    let dir = sync_dir(Path::new(&folder));
     let me = config(&state).device;
     Ok(match read_manifest(&dir) {
         Some(m) => Probe { exists: true, protected: m.protected, devices: others(&dir, &me).len() },
@@ -272,7 +279,7 @@ pub async fn sync_setup(app: AppHandle, state: State<'_, AppState>, folder: Stri
     if !root.is_absolute() || !root.is_dir() {
         return Err("This folder can't be found".into());
     }
-    let dir = root.join(DIR);
+    let dir = sync_dir(&root);
     let password = password.filter(|p| !p.is_empty());
     let (key, first) = match read_manifest(&dir) {
         Some(m) if m.protected => {

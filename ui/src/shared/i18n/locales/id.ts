@@ -457,7 +457,7 @@ const id: Record<string, string> = {
   'Add {title}': 'Tambahkan {title}',
   'Import a shared playlist': 'Impor playlist yang dibagikan',
   'Looking for the sender on this network…': 'Mencari pengirim di jaringan ini…',
-  'Paste a musicapp:// link, type a 6-digit code from a nearby Legato, or drop a QR screenshot on the window.': 'Tempel link musicapp://, ketik kode 6 digit dari Legato di dekatmu, atau letakkan tangkapan layar kode QR di jendela.',
+  'Paste a legato:// link, type a 6-digit code from a nearby Legato, or drop a QR screenshot on the window.': 'Tempel link legato://, ketik kode 6 digit dari Legato di dekatmu, atau letakkan tangkapan layar kode QR di jendela.',
   'Link or 6-digit code': 'Link atau kode 6 digit',
   'Share link or code': 'Link atau kode berbagi',
   'Import': 'Impor',

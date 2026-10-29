@@ -457,7 +457,7 @@ const sv: Record<string, string> = {
   'Add {title}': 'Lägg till {title}',
   'Import a shared playlist': 'Importera en delad spellista',
   'Looking for the sender on this network…': 'Letar efter avsändaren på det här nätverket…',
-  'Paste a musicapp:// link, type a 6-digit code from a nearby Legato, or drop a QR screenshot on the window.': 'Klistra in en musicapp://-länk, skriv en 6-siffrig kod från en Legato i närheten, eller släpp en skärmbild av en QR-kod på fönstret.',
+  'Paste a legato:// link, type a 6-digit code from a nearby Legato, or drop a QR screenshot on the window.': 'Klistra in en legato://-länk, skriv en 6-siffrig kod från en Legato i närheten, eller släpp en skärmbild av en QR-kod på fönstret.',
   'Link or 6-digit code': 'Länk eller 6-siffrig kod',
   'Share link or code': 'Delningslänk eller kod',
   'Import': 'Importera',

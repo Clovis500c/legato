@@ -457,7 +457,7 @@ const it: Record<string, string> = {
   'Add {title}': 'Aggiungi {title}',
   'Import a shared playlist': 'Importa una playlist condivisa',
   'Looking for the sender on this network…': 'Cerco il mittente su questa rete…',
-  'Paste a musicapp:// link, type a 6-digit code from a nearby Legato, or drop a QR screenshot on the window.': 'Incolla un link musicapp://, digita un codice di 6 cifre di una Legato vicina o trascina uno screenshot di un codice QR sulla finestra.',
+  'Paste a legato:// link, type a 6-digit code from a nearby Legato, or drop a QR screenshot on the window.': 'Incolla un link legato://, digita un codice di 6 cifre di una Legato vicina o trascina uno screenshot di un codice QR sulla finestra.',
   'Link or 6-digit code': 'Link o codice di 6 cifre',
   'Share link or code': 'Link o codice da condividere',
   'Import': 'Importa',

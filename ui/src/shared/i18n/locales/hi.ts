@@ -457,7 +457,7 @@ const hi: Record<string, string> = {
   'Add {title}': '{title} जोड़ें',
   'Import a shared playlist': 'शेयर की गई प्लेलिस्ट इंपोर्ट करें',
   'Looking for the sender on this network…': 'इस नेटवर्क पर भेजने वाले को ढूंढ रहे हैं…',
-  'Paste a musicapp:// link, type a 6-digit code from a nearby Legato, or drop a QR screenshot on the window.': 'musicapp:// लिंक पेस्ट करें, पास के Legato से 6 अंकों का कोड टाइप करें, या QR स्क्रीनशॉट को विंडो पर छोड़ें।',
+  'Paste a legato:// link, type a 6-digit code from a nearby Legato, or drop a QR screenshot on the window.': 'legato:// लिंक पेस्ट करें, पास के Legato से 6 अंकों का कोड टाइप करें, या QR स्क्रीनशॉट को विंडो पर छोड़ें।',
   'Link or 6-digit code': 'लिंक या 6 अंकों का कोड',
   'Share link or code': 'शेयर लिंक या कोड',
   'Import': 'इंपोर्ट करें',
