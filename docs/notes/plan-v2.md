@@ -508,6 +508,18 @@ Original plan:
 - [x] A song picked by hand (skip, click) lost its first 3-4 s (2026-10-29): the 5 s S-curve fade in (advanced fades,
       "Fade in after a skip" on) kept it near silent ~2 s. Picked songs now fade in over 1 s at most; songs that follow
       on their own keep the full fade in.
+- What Riff has and we don't (2026-10-29, the user: "do everything feasible"):
+  - [x] Sync direction per account (Settings › Accounts): both ways, import only, send only, off. Import skips the
+        accounts that don't take it in; likes, adds and removals aren't sent to an account that doesn't take them
+        (likes then stay in your own Liked Music). Spotify: import or off (sending to Spotify isn't built).
+  - [ ] 10-band equalizer (was 5), same in YouTube's live processing.
+  - [ ] Distortion in the Live Editor.
+  - [ ] Fullscreen (F11 and a button).
+  - [ ] Video as a theme background.
+  - [ ] Audio visualizer.
+  - [ ] Edit a local file's tags (title, artist, album, cover).
+  - [ ] SoundCloud import.
+  - Not done: downloading songs from the services (fixed limit: no audio extraction).
 - [x] Interactive preview for visual settings (background blur, dimming, motion, …): small live sample of the effect.
 - [x] Artists and Albums: filter and sort, like songs in playlists.
 - [x] Mixes: better algorithm, more mixes; covers as a 2×2 grid like playlists, setting in Advanced: grid / single

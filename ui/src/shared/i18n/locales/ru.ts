@@ -1439,6 +1439,15 @@ const ru: Record<string, string> = {
   'An amplifier knob, or a speaker and a bar': 'Крутилка как на усилителе или динамик с полосой',
   'Sleep timer button preview': 'Предпросмотр кнопки таймера сна',
   'hifi extras player details touches': 'hifi дополнения плеер детали',
+  'Both ways': 'В обе стороны',
+  'Import only': 'Только импорт',
+  'Send only': 'Только отправка',
+  'Sync direction': 'Направление синхронизации',
+  'Its playlists and likes come in; your likes, adds and removals here go out to {service}.': 'Его плейлисты и лайки приходят сюда; ваши лайки, добавления и удаления здесь уходят в {service}.',
+  'Its playlists and likes come in. Nothing made here goes out: your likes stay in your own Liked Music.': 'Его плейлисты и лайки приходят сюда. Отсюда ничего не уходит: ваши лайки остаются в вашей собственной Liked Music.',
+  'Your likes, adds and removals here go out to {service}. Nothing new comes in from it.': 'Ваши лайки, добавления и удаления здесь уходят в {service}. Оттуда ничего нового не приходит.',
+  'Nothing comes in or goes out. What was imported stays.': 'Ничего не приходит и не уходит. Уже импортированное остаётся.',
+  'two way one way both import only send only push pull upload download off account': 'в обе стороны в одну сторону только импорт только отправка загрузка скачивание выкл аккаунт',
 }
 
 export default ru

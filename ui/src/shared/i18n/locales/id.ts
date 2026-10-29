@@ -1439,6 +1439,15 @@ const id: Record<string, string> = {
   'An amplifier knob, or a speaker and a bar': 'Kenop seperti amplifier, atau speaker dan bilah',
   'Sleep timer button preview': 'Pratinjau tombol timer tidur',
   'hifi extras player details touches': 'hifi ekstra pemutar detail',
+  'Both ways': 'Dua arah',
+  'Import only': 'Hanya impor',
+  'Send only': 'Hanya kirim',
+  'Sync direction': 'Arah sinkronisasi',
+  'Its playlists and likes come in; your likes, adds and removals here go out to {service}.': 'Playlist dan suka dari akun ini masuk ke sini; suka, tambahan, dan hapusan Anda di sini dikirim ke {service}.',
+  'Its playlists and likes come in. Nothing made here goes out: your likes stay in your own Liked Music.': 'Playlist dan suka dari akun ini masuk ke sini. Tak ada yang dikirim dari sini: suka Anda tetap di Liked Music milik Anda.',
+  'Your likes, adds and removals here go out to {service}. Nothing new comes in from it.': 'Suka, tambahan, dan hapusan Anda di sini dikirim ke {service}. Tak ada yang baru masuk dari sana.',
+  'Nothing comes in or goes out. What was imported stays.': 'Tak ada yang masuk atau keluar. Yang sudah diimpor tetap ada.',
+  'two way one way both import only send only push pull upload download off account': 'dua arah satu arah hanya impor hanya kirim unggah unduh mati akun',
 }
 
 export default id

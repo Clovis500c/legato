@@ -1439,6 +1439,15 @@ const ko: Record<string, string> = {
   'An amplifier knob, or a speaker and a bar': '앰프 같은 노브, 또는 스피커와 막대',
   'Sleep timer button preview': '수면 타이머 버튼 미리 보기',
   'hifi extras player details touches': 'hifi 추가 기능 플레이어 디테일 extras player',
+  'Both ways': '양방향',
+  'Import only': '가져오기만',
+  'Send only': '보내기만',
+  'Sync direction': '동기화 방향',
+  'Its playlists and likes come in; your likes, adds and removals here go out to {service}.': '이 계정의 재생목록과 좋아요가 들어오고, 여기서 한 좋아요·추가·삭제는 {service}(으)로 보내집니다.',
+  'Its playlists and likes come in. Nothing made here goes out: your likes stay in your own Liked Music.': '이 계정의 재생목록과 좋아요가 들어옵니다. 여기서 한 일은 보내지지 않고, 좋아요는 내 Liked Music에 남습니다.',
+  'Your likes, adds and removals here go out to {service}. Nothing new comes in from it.': '여기서 한 좋아요·추가·삭제는 {service}(으)로 보내집니다. 그쪽에서 새로 들어오는 것은 없습니다.',
+  'Nothing comes in or goes out. What was imported stays.': '들어오거나 나가는 것이 없습니다. 이미 가져온 것은 남습니다.',
+  'two way one way both import only send only push pull upload download off account': '양방향 단방향 가져오기만 보내기만 업로드 다운로드 끄기 계정',
 }
 
 export default ko

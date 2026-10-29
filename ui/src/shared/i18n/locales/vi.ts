@@ -1439,6 +1439,15 @@ const vi: Record<string, string> = {
   'An amplifier knob, or a speaker and a bar': 'Núm xoay như ampli, hoặc loa và thanh trượt',
   'Sleep timer button preview': 'Xem trước nút hẹn giờ tắt',
   'hifi extras player details touches': 'hifi tiện ích trình phát chi tiết',
+  'Both ways': 'Hai chiều',
+  'Import only': 'Chỉ nhập',
+  'Send only': 'Chỉ gửi',
+  'Sync direction': 'Chiều đồng bộ',
+  'Its playlists and likes come in; your likes, adds and removals here go out to {service}.': 'Danh sách phát và lượt thích của tài khoản về đây; lượt thích, bài thêm và bài xoá của bạn ở đây được gửi lên {service}.',
+  'Its playlists and likes come in. Nothing made here goes out: your likes stay in your own Liked Music.': 'Danh sách phát và lượt thích của tài khoản về đây. Không gì từ đây được gửi đi: lượt thích nằm trong Liked Music của riêng bạn.',
+  'Your likes, adds and removals here go out to {service}. Nothing new comes in from it.': 'Lượt thích, bài thêm và bài xoá của bạn ở đây được gửi lên {service}. Không có gì mới về từ đó.',
+  'Nothing comes in or goes out. What was imported stays.': 'Không có gì vào hay ra. Những gì đã nhập vẫn giữ nguyên.',
+  'two way one way both import only send only push pull upload download off account': 'hai chiều một chiều chỉ nhập chỉ gửi tải lên tải xuống tắt tài khoản',
 }
 
 export default vi

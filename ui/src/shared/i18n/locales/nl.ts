@@ -1439,6 +1439,15 @@ const nl: Record<string, string> = {
   'An amplifier knob, or a speaker and a bar': 'Een versterkerknop, of een luidspreker en een balk',
   'Sleep timer button preview': 'Voorbeeld van de slaaptimerknop',
   'hifi extras player details touches': 'hifi extra\'s speler details',
+  'Both ways': 'Beide kanten op',
+  'Import only': 'Alleen importeren',
+  'Send only': 'Alleen versturen',
+  'Sync direction': 'Synchronisatierichting',
+  'Its playlists and likes come in; your likes, adds and removals here go out to {service}.': 'De playlists en likes komen binnen; je likes, toevoegingen en verwijderingen hier gaan naar {service}.',
+  'Its playlists and likes come in. Nothing made here goes out: your likes stay in your own Liked Music.': 'De playlists en likes komen binnen. Niets van hier gaat naar buiten: je likes blijven in je eigen Liked Music.',
+  'Your likes, adds and removals here go out to {service}. Nothing new comes in from it.': 'Je likes, toevoegingen en verwijderingen hier gaan naar {service}. Er komt niets nieuws van binnen.',
+  'Nothing comes in or goes out. What was imported stays.': 'Er komt niets binnen en er gaat niets uit. Wat al geïmporteerd is, blijft.',
+  'two way one way both import only send only push pull upload download off account': 'twee kanten één kant beide alleen importeren alleen versturen uploaden downloaden uit account',
 }
 
 export default nl

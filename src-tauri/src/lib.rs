@@ -41,7 +41,7 @@ use music_core::musicness::Musicness;
 use music_core::search::{self, Hit};
 use music_core::model::{Connector, SecretStore, Source, Track};
 use music_core::share::{self, Item, Shared};
-use music_core::sync::{SyncReport, sync};
+use music_core::sync::{self as service_sync, DIRECTIONS, Direction, SyncReport, sync};
 use music_player::{Command, Player, Status};
 use music_shield::Shield;
 use serde::{Deserialize, Serialize};
@@ -147,6 +147,24 @@ impl AppState {
             return YouTubeMusic::new(&cookie).into_iter().collect();
         }
         picked.iter().filter_map(|a| YouTubeMusic::new(&cookie).ok().map(|y| y.as_account(a))).collect()
+    }
+
+    /// Account's sync direction (Settings › Accounts). Keys: "spotify", "youtube:<account key>".
+    fn direction(&self, key: &str) -> Direction {
+        service_sync::direction(self.lib().setting(DIRECTIONS).ok().flatten().as_ref(), key)
+    }
+
+    /// Picked YouTube Music accounts that take changes made here, or why none does.
+    fn ytm_senders(&self) -> CmdResult<Vec<YouTubeMusic>> {
+        let all = self.ytm_all();
+        if all.is_empty() {
+            return Err("Sign in to YouTube Music first (Settings › Accounts)".into());
+        }
+        let send: Vec<_> = all.into_iter().filter(|y| self.direction(&ytm_key(y)).pushes()).collect();
+        if send.is_empty() {
+            return Err(NOT_SENT.into());
+        }
+        Ok(send)
     }
 
     /// First picked account: search, export.
@@ -258,7 +276,9 @@ async fn sync_all(state: State<'_, AppState>) -> CmdResult<SyncReport> {
 }
 
 async fn sync_once(state: &AppState) -> SyncReport {
-    let (spotify, youtube) = (state.spotify(), state.ytm_all());
+    // Accounts set to send only (or off) bring nothing in; Spotify off = no linking either.
+    let spotify = state.spotify().filter(|_| state.direction("spotify").pulls());
+    let youtube: Vec<_> = state.ytm_all().into_iter().filter(|y| state.direction(&ytm_key(y)).pulls()).collect();
     let mut all: Vec<&dyn Connector> = Vec::new();
     all.extend(spotify.as_ref().map(|c| c as &dyn Connector));
     all.extend(youtube.iter().map(|c| c as &dyn Connector));
@@ -268,6 +288,10 @@ async fn sync_once(state: &AppState) -> SyncReport {
 /// Likes made here while YouTube Music was out of reach wait in your own "Liked Music" (like.ts): liked on the account,
 /// then moved into its Liked Music. Nothing dropped on either side (user's choice 2026-10-28).
 async fn push_own_likes(state: &AppState) -> anyhow::Result<()> {
+    // Account set not to take changes: likes stay in your own list.
+    if !state.direction("youtube:0").pushes() {
+        return Ok(());
+    }
     let (own, liked, todo) = {
         let lib = state.lib();
         let playlists = lib.playlists()?;
@@ -921,12 +945,12 @@ async fn remove_from_playlist(state: State<'_, AppState>, id: i64, track_id: i64
     if playlist.source != Source::Youtube {
         return Err("Imported Spotify playlists are read-only here: change them in Spotify.".into());
     }
-    let accounts = state.ytm_all();
-    if accounts.is_empty() {
-        return Err("Sign in to YouTube Music first (Settings › Accounts)".into());
-    }
+    let accounts = state.ytm_senders()?;
     if let Some(key) = playlist.source_id.strip_prefix("LM") {
         let key = key.strip_prefix('~').unwrap_or("0");
+        if !state.direction(&format!("youtube:{key}")).pushes() {
+            return Err(NOT_SENT.into());
+        }
         let videos = &videos;
         with_ytm(&state, |accounts| async move { accounts.into_iter().find(|y| y.account_key() == key).context("That Google account isn't synced any more")?.unlike(videos).await }).await.map_err(err)?;
     } else {
@@ -988,12 +1012,12 @@ async fn add_to_youtube(state: State<'_, AppState>, id: i64, track_ids: Vec<i64>
         return Ok(report);
     }
     let ids: Vec<String> = videos.iter().map(|(_, v)| v.clone()).collect();
-    let accounts = state.ytm_all();
-    if accounts.is_empty() {
-        return Err("Sign in to YouTube Music first (Settings › Accounts)".into());
-    }
+    let accounts = state.ytm_senders()?;
     let taken: HashSet<String> = if let Some(key) = playlist.source_id.strip_prefix("LM") {
         let key = key.strip_prefix('~').unwrap_or("0");
+        if !state.direction(&format!("youtube:{key}")).pushes() {
+            return Err(NOT_SENT.into());
+        }
         let ids = &ids;
         with_ytm(&state, |accounts| async move { accounts.into_iter().find(|y| y.account_key() == key).context("That Google account isn't synced any more")?.like(ids).await }).await.map_err(err)?;
         ids.iter().cloned().collect()
@@ -1253,6 +1277,25 @@ async fn set_ytm_accounts(state: State<'_, AppState>, accounts: Vec<Account>) ->
     state.cache.youtube.clear();
     state.cache.home.clear();
     state.lib().save_shared_setting("ytm_accounts", &serde_json::json!(accounts), music_core::library::now_ms()).map_err(err)
+}
+
+const NOT_SENT: &str = "Changes made here aren't sent to this YouTube Music account (Settings › Accounts › Sync)";
+
+fn ytm_key(y: &YouTubeMusic) -> String {
+    format!("youtube:{}", y.account_key())
+}
+
+/// Each account's sync direction; missing = both ways.
+#[tauri::command]
+async fn sync_directions(state: State<'_, AppState>) -> CmdResult<serde_json::Value> {
+    Ok(state.lib().setting(DIRECTIONS).map_err(err)?.unwrap_or_else(|| serde_json::json!({})))
+}
+
+#[tauri::command]
+async fn set_sync_direction(state: State<'_, AppState>, key: String, direction: Direction) -> CmdResult<()> {
+    let lib = state.lib();
+    let saved = service_sync::with_direction(lib.setting(DIRECTIONS).map_err(err)?.as_ref(), &key, direction);
+    lib.save_shared_setting(DIRECTIONS, &saved, music_core::library::now_ms()).map_err(err)
 }
 
 #[tauri::command]
@@ -1844,7 +1887,7 @@ pub fn run() {
             folders::watch(app.handle(), &dirs);
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, library_changes, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, search_suggestions, add_track, backfill_art, find_versions, play_preview, share_playlist, share_preview, share_read_image, share_import, nearby_send, nearby_status, nearby_stop, nearby_receive, record_play, recent_plays, play_history, mixes, set_track_pref, set_music, clear_history, export_youtube, spotify_player, spotify_playback, ytm_sign_in, ytm_sign_out, spotify_web_open, spotify_web_status, import_spotify_link, ytm_accounts, set_ytm_accounts, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, system_accent, restart_app, autostart, set_autostart, hold_page, media_update, load_session, save_session, add_to_youtube, save_cover, export_cover, alternative_videos, play_stats, cache_stats, open_licenses, update_status, update_check, update_install, ytm_home, ytm_list, ytm_artist, album_info, discord_presence, discord_off, discord_status, remove_from_playlist, remove_from_library, merge_duplicates, resolve_track, set_global_shortcuts, player_live, editor::player_effects, player_levels, editor::export_edit, editor::export_stop, editor::edits, editor::save_edit, editor::delete_edit, editor::activate_edit, editor::edit_draft, editor::save_edit_draft, voice_listen, voice_stop, open_windows_settings, detector::detector_status, detector::set_detector_token, detector::detect_song, detector::detect_stop, lastfm::lastfm_status, lastfm::lastfm_connect, lastfm::lastfm_disconnect, lastfm::lastfm_now_playing, lastfm::lastfm_scrobble, lyrics, set_ui_language, ytwatch_open, ytwatch_place, ytwatch_cmd, ytwatch_close, syncmode::sync_status, syncmode::sync_probe, syncmode::sync_setup, syncmode::sync_stop, syncmode::sync_now, syncmode::sync_dismiss, syncmode::sync_offer, syncmode::sync_offer_stop, syncmode::sync_join, plugins::plugins_list, plugins::plugin_inspect, plugins::plugin_install, plugins::plugin_set, plugins::plugin_uninstall, plugins::plugin_reply, plugins::plugin_event, plugins::plugin_input, plugins::plugin_log, themes::save_background, themes::forget_background, themes::export_theme, themes::import_theme])
+        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, library_changes, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, search_suggestions, add_track, backfill_art, find_versions, play_preview, share_playlist, share_preview, share_read_image, share_import, nearby_send, nearby_status, nearby_stop, nearby_receive, record_play, recent_plays, play_history, mixes, set_track_pref, set_music, clear_history, export_youtube, spotify_player, spotify_playback, ytm_sign_in, ytm_sign_out, spotify_web_open, spotify_web_status, import_spotify_link, ytm_accounts, set_ytm_accounts, sync_directions, set_sync_direction, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, system_accent, restart_app, autostart, set_autostart, hold_page, media_update, load_session, save_session, add_to_youtube, save_cover, export_cover, alternative_videos, play_stats, cache_stats, open_licenses, update_status, update_check, update_install, ytm_home, ytm_list, ytm_artist, album_info, discord_presence, discord_off, discord_status, remove_from_playlist, remove_from_library, merge_duplicates, resolve_track, set_global_shortcuts, player_live, editor::player_effects, player_levels, editor::export_edit, editor::export_stop, editor::edits, editor::save_edit, editor::delete_edit, editor::activate_edit, editor::edit_draft, editor::save_edit_draft, voice_listen, voice_stop, open_windows_settings, detector::detector_status, detector::set_detector_token, detector::detect_song, detector::detect_stop, lastfm::lastfm_status, lastfm::lastfm_connect, lastfm::lastfm_disconnect, lastfm::lastfm_now_playing, lastfm::lastfm_scrobble, lyrics, set_ui_language, ytwatch_open, ytwatch_place, ytwatch_cmd, ytwatch_close, syncmode::sync_status, syncmode::sync_probe, syncmode::sync_setup, syncmode::sync_stop, syncmode::sync_now, syncmode::sync_dismiss, syncmode::sync_offer, syncmode::sync_offer_stop, syncmode::sync_join, plugins::plugins_list, plugins::plugin_inspect, plugins::plugin_install, plugins::plugin_set, plugins::plugin_uninstall, plugins::plugin_reply, plugins::plugin_event, plugins::plugin_input, plugins::plugin_log, themes::save_background, themes::forget_background, themes::export_theme, themes::import_theme])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

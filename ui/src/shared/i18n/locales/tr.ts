@@ -1439,6 +1439,15 @@ const tr: Record<string, string> = {
   'An amplifier knob, or a speaker and a bar': 'Bir amfi düğmesi ya da hoparlör ve çubuk',
   'Sleep timer button preview': 'Uyku zamanlayıcısı düğmesi önizlemesi',
   'hifi extras player details touches': 'hifi ekstralar oynatıcı ayrıntılar',
+  'Both ways': 'İki yönlü',
+  'Import only': 'Yalnızca içe aktar',
+  'Send only': 'Yalnızca gönder',
+  'Sync direction': 'Eşitleme yönü',
+  'Its playlists and likes come in; your likes, adds and removals here go out to {service}.': 'Çalma listeleri ve beğenileri buraya gelir; burada yaptığın beğeniler, eklemeler ve kaldırmalar {service} hizmetine gider.',
+  'Its playlists and likes come in. Nothing made here goes out: your likes stay in your own Liked Music.': 'Çalma listeleri ve beğenileri buraya gelir. Burada yapılan hiçbir şey gönderilmez: beğenilerin kendi Liked Music listende kalır.',
+  'Your likes, adds and removals here go out to {service}. Nothing new comes in from it.': 'Burada yaptığın beğeniler, eklemeler ve kaldırmalar {service} hizmetine gider. Oradan yeni bir şey gelmez.',
+  'Nothing comes in or goes out. What was imported stays.': 'Hiçbir şey gelmez ya da gitmez. İçe aktarılmış olanlar kalır.',
+  'two way one way both import only send only push pull upload download off account': 'iki yönlü tek yönlü yalnızca içe aktar yalnızca gönder yükle indir kapalı hesap',
 }
 
 export default tr

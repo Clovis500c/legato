@@ -1439,6 +1439,15 @@ const hi: Record<string, string> = {
   'An amplifier knob, or a speaker and a bar': 'एम्प्लिफ़ायर जैसा नॉब, या स्पीकर और बार',
   'Sleep timer button preview': 'स्लीप टाइमर बटन का प्रीव्यू',
   'hifi extras player details touches': 'hifi एक्स्ट्रा प्लेयर डिटेल extras player',
+  'Both ways': 'दोनों तरफ़',
+  'Import only': 'सिर्फ़ इम्पोर्ट',
+  'Send only': 'सिर्फ़ भेजें',
+  'Sync direction': 'सिंक की दिशा',
+  'Its playlists and likes come in; your likes, adds and removals here go out to {service}.': 'इसकी प्लेलिस्ट और पसंद यहाँ आती हैं; यहाँ की आपकी पसंद, जोड़े और हटाए गए गाने {service} पर जाते हैं।',
+  'Its playlists and likes come in. Nothing made here goes out: your likes stay in your own Liked Music.': 'इसकी प्लेलिस्ट और पसंद यहाँ आती हैं। यहाँ का कुछ भी बाहर नहीं जाता: आपकी पसंद आपकी अपनी Liked Music में रहती है।',
+  'Your likes, adds and removals here go out to {service}. Nothing new comes in from it.': 'यहाँ की आपकी पसंद, जोड़े और हटाए गए गाने {service} पर जाते हैं। वहाँ से कुछ नया नहीं आता।',
+  'Nothing comes in or goes out. What was imported stays.': 'न कुछ आता है, न जाता है। जो इम्पोर्ट हो चुका है, वह रहता है।',
+  'two way one way both import only send only push pull upload download off account': 'दोनों तरफ़ एक तरफ़ सिर्फ़ इम्पोर्ट सिर्फ़ भेजें अपलोड डाउनलोड बंद खाता',
 }
 
 export default hi

@@ -27,7 +27,7 @@ pub const LOCAL_SETTINGS: [&str; 4] = ["zoom", "miniSpot", "miniWidth", "default
 /// Library settings row holding when each interface setting last changed (unix ms).
 const TIMES: &str = "sync_times";
 /// Other library settings rows that travel (key → its stamp in TIMES).
-const SHARED_ROWS: [&str; 1] = ["ytm_accounts"];
+const SHARED_ROWS: [&str; 2] = ["ytm_accounts", crate::sync::DIRECTIONS];
 /// Unpacked snapshot limit: a hostile file can't fill memory.
 const MAX_SNAPSHOT: u64 = 64 << 20;
 const MAGIC: &[u8; 6] = b"MASYNC";

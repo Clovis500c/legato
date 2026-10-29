@@ -3,40 +3,84 @@ import { useShallow } from 'zustand/react/shallow'
 import { open } from '@tauri-apps/plugin-dialog'
 import { useCallback, useEffect, useState } from 'react'
 import { useStore } from '../../app/store'
-import { accountKey, api, type YtmAccount } from '../../shared/api'
+import { accountKey, api, type Direction, type YtmAccount } from '../../shared/api'
 import { timeAgo } from '../../shared/format'
 import { Button } from '../../shared/ui/Button'
-import { Led, RoundButton, Toggle } from '../../shared/ui/controls'
+import { Led, RoundButton, Segmented, Toggle } from '../../shared/ui/controls'
 import { remoteArt } from '../../shared/art'
 import { Cover } from '../../shared/ui/Cover'
 import { SourceIcon, sourceLabel } from '../../shared/ui/SourceIcon'
 import { guides } from './guides'
-import { tr, trn } from '../../shared/i18n/i18n'
+import { msg, tr, trn } from '../../shared/i18n/i18n'
 import { ask } from '../../shared/ui/Ask'
 import { openUrl } from '@tauri-apps/plugin-opener'
 import { useLastfm } from './lastfm'
+
+/** Each account's sync direction (user's request 2026-10-29), kept in Rust (music_core::sync). */
+function useDirections() {
+  const [dirs, setDirs] = useState<Record<string, Direction>>({})
+  useEffect(() => void api.syncDirections().then(setDirs, () => {}), [])
+  const set = (key: string, d: Direction) => {
+    setDirs((m) => ({ ...m, [key]: d }))
+    api.setSyncDirection(key, d).catch((e) => useStore.setState({ error: String(e) }))
+  }
+  return [dirs, set] as const
+}
+
+const directionHelp: Record<Direction, string> = {
+  both: msg('Its playlists and likes come in; your likes, adds and removals here go out to {service}.'),
+  pull: msg('Its playlists and likes come in. Nothing made here goes out: your likes stay in your own Liked Music.'),
+  push: msg('Your likes, adds and removals here go out to {service}. Nothing new comes in from it.'),
+  off: msg('Nothing comes in or goes out. What was imported stays.'),
+}
+
+/** Spotify: playlists come in only (sending to Spotify isn't built: no Premium account to test it on). */
+function DirectionPicker({ service, value, onChange, receives = true }: { service: string; value: Direction; onChange: (d: Direction) => void; receives?: boolean }) {
+  const all: { value: Direction; label: string }[] = [
+    { value: 'both', label: tr('Both ways') },
+    { value: 'pull', label: tr('Import only') },
+    { value: 'push', label: tr('Send only') },
+    { value: 'off', label: tr('Off') },
+  ]
+  const options = receives ? all : all.filter((o) => o.value === 'pull' || o.value === 'off')
+  const shown = receives || value === 'off' ? value : 'pull'
+  return (
+    <div data-setting="Sync direction" className="flex flex-col gap-1.5">
+      <Segmented label={tr('Sync direction')} value={shown} onChange={onChange} options={options} />
+      <p className="text-xs text-ink-2">{tr(directionHelp[shown], { service })}</p>
+    </div>
+  )
+}
 
 function ServiceRow({ service }: { service: 'spotify' }) {
   const { status, disconnect, busy, go, view } = useStore(useShallow(({ status, disconnect, busy, go, view }) => ({ status, disconnect, busy, go, view })))
   const { connected } = status[service]
   const selected = view.name === 'settings' && view.wizard === service
+  const [dirs, setDir] = useDirections()
   return (
-    <div data-setting={sourceLabel[service]} className={`flex items-center gap-4 border-b border-line-soft px-4 py-3.5 ${selected ? 'bg-bg' : ''}`}>
-      <Led on={connected} />
-      <span className="grid size-9 place-items-center rounded-full border border-line text-ink-2">
-        <SourceIcon source={service} size={16} />
-      </span>
-      <div className="flex-1">
-        <p className="text-[0.8125rem] font-semibold">{sourceLabel[service]}</p>
-        <p className="text-xs text-ink-2">{tr(guides[service].pitch)}</p>
+    <div data-setting={sourceLabel[service]} className={`flex flex-col gap-3 border-b border-line-soft px-4 py-3.5 ${selected ? 'bg-bg' : ''}`}>
+      <div className="flex items-center gap-4">
+        <Led on={connected} />
+        <span className="grid size-9 place-items-center rounded-full border border-line text-ink-2">
+          <SourceIcon source={service} size={16} />
+        </span>
+        <div className="flex-1">
+          <p className="text-[0.8125rem] font-semibold">{sourceLabel[service]}</p>
+          <p className="text-xs text-ink-2">{tr(guides[service].pitch)}</p>
+        </div>
+        <span className="kicker">{connected ? tr('Connected') : tr('Not connected')}</span>
+        {connected ? (
+          <Button variant="ghost" disabled={busy} onClick={() => disconnect(service)}>
+            {tr('Disconnect')}
+          </Button>
+        ) : (
+          <Button onClick={() => go({ name: 'settings', section: 'sources', wizard: service })}>{tr('Connect')}</Button>
+        )}
       </div>
-      <span className="kicker">{connected ? tr('Connected') : tr('Not connected')}</span>
-      {connected ? (
-        <Button variant="ghost" disabled={busy} onClick={() => disconnect(service)}>
-          {tr('Disconnect')}
-        </Button>
-      ) : (
-        <Button onClick={() => go({ name: 'settings', section: 'sources', wizard: service })}>{tr('Connect')}</Button>
+      {connected && (
+        <div className="ml-13">
+          <DirectionPicker service={sourceLabel[service]} value={dirs.spotify ?? 'both'} onChange={(d) => setDir('spotify', d)} receives={false} />
+        </div>
       )}
     </div>
   )
@@ -145,6 +189,7 @@ function GoogleAccounts() {
   const { refresh, sync, busy, lastSync } = useStore(useShallow(({ refresh, sync, busy, lastSync }) => ({ refresh, sync, busy, lastSync })))
   const [data, setData] = useState<{ signedIn: boolean; accounts: YtmAccount[]; picked: string[] }>()
   const [waiting, setWaiting] = useState(false)
+  const [dirs, setDir] = useDirections()
   const load = useCallback(
     () =>
       api
@@ -217,16 +262,23 @@ function GoogleAccounts() {
               const on = data.picked.includes(accountKey(a))
               const first = data.picked[0] === accountKey(a)
               return (
-                <li key={accountKey(a)} className="flex items-center gap-3 border-b border-line-soft px-3 py-2 last:border-0">
-                  <Cover title={a.name} art={a.photo ? [remoteArt(a.photo)] : []} size={30} className="rounded-full!" />
-                  <div className="min-w-0 flex-1">
-                    <p className="flex items-center gap-2 truncate text-[0.8125rem] font-medium">
-                      {a.name} {first && on && <span className="kicker">{tr('Exports here')}</span>}
-                    </p>
-                    <p className="truncate text-xs text-ink-2">{[a.handle, a.email, a.pageId && tr('channel')].filter(Boolean).join(' · ')}</p>
+                <li key={accountKey(a)} className="flex flex-col gap-2 border-b border-line-soft px-3 py-2 last:border-0">
+                  <div className="flex items-center gap-3">
+                    <Cover title={a.name} art={a.photo ? [remoteArt(a.photo)] : []} size={30} className="rounded-full!" />
+                    <div className="min-w-0 flex-1">
+                      <p className="flex items-center gap-2 truncate text-[0.8125rem] font-medium">
+                        {a.name} {first && on && <span className="kicker">{tr('Exports here')}</span>}
+                      </p>
+                      <p className="truncate text-xs text-ink-2">{[a.handle, a.email, a.pageId && tr('channel')].filter(Boolean).join(' · ')}</p>
+                    </div>
+                    <span className="text-xs text-ink-2">{tr('Sync')}</span>
+                    <Toggle label={tr('Sync {name}', { name: a.name })} checked={on} onChange={(v) => toggle(a, v)} />
                   </div>
-                  <span className="text-xs text-ink-2">{tr('Sync')}</span>
-                  <Toggle label={tr('Sync {name}', { name: a.name })} checked={on} onChange={(v) => toggle(a, v)} />
+                  {on && (
+                    <div className="ml-[42px]">
+                      <DirectionPicker service="YouTube Music" value={dirs[`youtube:${accountKey(a)}`] ?? 'both'} onChange={(d) => setDir(`youtube:${accountKey(a)}`, d)} />
+                    </div>
+                  )}
                 </li>
               )
             })}

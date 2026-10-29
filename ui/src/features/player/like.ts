@@ -55,7 +55,9 @@ export async function toggleLike(t: LibraryTrack) {
     }
     const id = libraryId(t, app().tracks) ?? (await api.addTrack(t))
     await app().refreshChanged()
-    const yt = app().status.youtube.connected && t.ids.youtube ? youtubeLiked(app().playlists) : undefined
+    // Account set not to take changes (Settings › Accounts › Sync): your own list, no error.
+    const sends = await api.syncDirections().then((d) => !['pull', 'off'].includes(d['youtube:0'] ?? 'both'), () => true)
+    const yt = sends && app().status.youtube.connected && t.ids.youtube ? youtubeLiked(app().playlists) : undefined
     // Refused by YouTube Music (signed out): kept in your own list, liked there at the next sync (sync_all).
     let refused: unknown = null
     if (yt)

@@ -1439,6 +1439,15 @@ const sv: Record<string, string> = {
   'An amplifier knob, or a speaker and a bar': 'En förstärkarratt, eller en högtalare och ett reglage',
   'Sleep timer button preview': 'Förhandsvisning av knappen för insomningstimer',
   'hifi extras player details touches': 'hifi extra spelare detaljer',
+  'Both ways': 'Åt båda hållen',
+  'Import only': 'Endast import',
+  'Send only': 'Endast skicka',
+  'Sync direction': 'Synkroniseringsriktning',
+  'Its playlists and likes come in; your likes, adds and removals here go out to {service}.': 'Dess spellistor och gillningar kommer hit; dina gillningar, tillägg och borttagningar här skickas till {service}.',
+  'Its playlists and likes come in. Nothing made here goes out: your likes stay in your own Liked Music.': 'Dess spellistor och gillningar kommer hit. Inget härifrån skickas: dina gillningar stannar i din egen Liked Music.',
+  'Your likes, adds and removals here go out to {service}. Nothing new comes in from it.': 'Dina gillningar, tillägg och borttagningar här skickas till {service}. Inget nytt kommer därifrån.',
+  'Nothing comes in or goes out. What was imported stays.': 'Inget kommer in eller går ut. Det som redan importerats stannar.',
+  'two way one way both import only send only push pull upload download off account': 'båda hållen ett håll endast import endast skicka ladda upp ladda ner av konto',
 }
 
 export default sv

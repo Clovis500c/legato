@@ -1439,6 +1439,15 @@ const pt: Record<string, string> = {
   'An amplifier knob, or a speaker and a bar': 'Um botão giratório de amplificador, ou um alto-falante e uma barra',
   'Sleep timer button preview': 'Prévia do botão do timer para dormir',
   'hifi extras player details touches': 'hifi extras player detalhes toques',
+  'Both ways': 'Nos dois sentidos',
+  'Import only': 'Só importar',
+  'Send only': 'Só enviar',
+  'Sync direction': 'Sentido da sincronização',
+  'Its playlists and likes come in; your likes, adds and removals here go out to {service}.': 'As playlists e os “gostos” chegam aqui; os teus “gostos”, adições e remoções feitos aqui vão para {service}.',
+  'Its playlists and likes come in. Nothing made here goes out: your likes stay in your own Liked Music.': 'As playlists e os “gostos” chegam aqui. Nada feito aqui é enviado: os teus “gostos” ficam na tua própria Liked Music.',
+  'Your likes, adds and removals here go out to {service}. Nothing new comes in from it.': 'Os teus “gostos”, adições e remoções feitos aqui vão para {service}. Nada de novo chega de lá.',
+  'Nothing comes in or goes out. What was imported stays.': 'Nada entra nem sai. O que já foi importado fica.',
+  'two way one way both import only send only push pull upload download off account': 'dois sentidos um sentido ambos só importar só enviar carregar descarregar desligado conta',
 }
 
 export default pt

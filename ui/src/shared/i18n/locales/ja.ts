@@ -1439,6 +1439,15 @@ const ja: Record<string, string> = {
   'An amplifier knob, or a speaker and a bar': 'アンプのようなノブ、またはスピーカーとバー',
   'Sleep timer button preview': 'スリープタイマーのボタンのプレビュー',
   'hifi extras player details touches': 'hifi エクストラ プレーヤー 細部 extras player',
+  'Both ways': '双方向',
+  'Import only': '取り込みのみ',
+  'Send only': '送信のみ',
+  'Sync direction': '同期の方向',
+  'Its playlists and likes come in; your likes, adds and removals here go out to {service}.': 'このアカウントのプレイリストと高評価がここに入り、ここでの高評価・追加・削除は {service} に送られます。',
+  'Its playlists and likes come in. Nothing made here goes out: your likes stay in your own Liked Music.': 'このアカウントのプレイリストと高評価がここに入ります。ここでの操作は送られず、高評価はあなた自身の Liked Music に残ります。',
+  'Your likes, adds and removals here go out to {service}. Nothing new comes in from it.': 'ここでの高評価・追加・削除は {service} に送られます。向こうからは何も入りません。',
+  'Nothing comes in or goes out. What was imported stays.': '何も入らず、何も送られません。取り込み済みのものは残ります。',
+  'two way one way both import only send only push pull upload download off account': '双方向 片方向 取り込みのみ 送信のみ アップロード ダウンロード オフ アカウント',
 }
 
 export default ja

@@ -1,8 +1,49 @@
 use crate::library::Library;
 use crate::matching::merge_tracks;
 use crate::model::Connector;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
+use serde_json::Value;
+use std::collections::BTreeMap;
 use std::sync::Mutex;
+
+/// Library settings row: each account's direction.
+pub const DIRECTIONS: &str = "sync_directions";
+
+/// Which way songs travel between one account and the library (user's choice 2026-10-29). Pull = the account's
+/// playlists and likes come in; push = likes, adds and removals made here go out.
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum Direction {
+    #[default]
+    Both,
+    Pull,
+    Push,
+    Off,
+}
+
+impl Direction {
+    pub fn pulls(self) -> bool {
+        matches!(self, Direction::Both | Direction::Pull)
+    }
+    pub fn pushes(self) -> bool {
+        matches!(self, Direction::Both | Direction::Push)
+    }
+}
+
+/// Account key ("spotify", "youtube:0", "youtube:1:pageid") → its direction. Missing or unknown = both ways.
+pub fn direction(saved: Option<&Value>, key: &str) -> Direction {
+    saved.and_then(|v| v.get(key)).and_then(|d| serde_json::from_value(d.clone()).ok()).unwrap_or_default()
+}
+
+/// Saved map with `key` set. Both = no entry; junk dropped; bounded (row travels between PCs).
+pub fn with_direction(saved: Option<&Value>, key: &str, d: Direction) -> Value {
+    let mut map: BTreeMap<String, Direction> = saved.and_then(Value::as_object).into_iter().flatten().filter_map(|(k, v)| Some((k.clone(), serde_json::from_value(v.clone()).ok()?))).collect();
+    map.remove(key);
+    if d != Direction::Both {
+        map.insert(key.to_string(), d);
+    }
+    serde_json::json!(map.into_iter().filter(|(k, _)| k.len() <= 80).take(50).collect::<BTreeMap<_, _>>())
+}
 
 #[derive(Debug, Default, PartialEq, Serialize)]
 pub struct SyncReport {
@@ -146,6 +187,22 @@ mod tests {
         assert_eq!(report.matched, 1);
         let by_title: BTreeMap<_, _> = lib.lock().unwrap().tracks().unwrap().into_iter().map(|t| (t.track.title, t.track.ids.len())).collect();
         assert_eq!(by_title, BTreeMap::from([("Get Lucky".into(), 2), ("Hello".into(), 2), ("Unknown Demo".into(), 1)]));
+    }
+
+    #[test]
+    fn directions_default_both_and_round_trip() {
+        assert_eq!(direction(None, "spotify"), Direction::Both);
+        let saved = with_direction(None, "youtube:0", Direction::Pull);
+        let saved = with_direction(Some(&saved), "spotify", Direction::Off);
+        assert_eq!(direction(Some(&saved), "youtube:0"), Direction::Pull);
+        assert_eq!(direction(Some(&saved), "youtube:1"), Direction::Both);
+        assert!(!direction(Some(&saved), "spotify").pulls());
+        // Back to both: entry gone. Junk from another PC: ignored.
+        let saved = with_direction(Some(&saved), "youtube:0", Direction::Both);
+        assert_eq!(saved, serde_json::json!({ "spotify": "off" }));
+        let junk = serde_json::json!({ "spotify": "sideways", "youtube:0": "push" });
+        assert_eq!(direction(Some(&junk), "spotify"), Direction::Both);
+        assert!(direction(Some(&junk), "youtube:0").pushes() && !direction(Some(&junk), "youtube:0").pulls());
     }
 
     #[tokio::test]

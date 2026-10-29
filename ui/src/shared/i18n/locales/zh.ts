@@ -1439,6 +1439,15 @@ const zh: Record<string, string> = {
   'An amplifier knob, or a speaker and a bar': '功放式旋钮，或扬声器加滑条',
   'Sleep timer button preview': '睡眠定时器按钮预览',
   'hifi extras player details touches': 'hifi 附加功能 播放器 细节 extras player',
+  'Both ways': '双向',
+  'Import only': '仅导入',
+  'Send only': '仅发送',
+  'Sync direction': '同步方向',
+  'Its playlists and likes come in; your likes, adds and removals here go out to {service}.': '其播放列表和点赞会导入这里；你在这里的点赞、添加和移除会发送到 {service}。',
+  'Its playlists and likes come in. Nothing made here goes out: your likes stay in your own Liked Music.': '其播放列表和点赞会导入这里。这里的操作不会发送出去：你的点赞留在你自己的 Liked Music 中。',
+  'Your likes, adds and removals here go out to {service}. Nothing new comes in from it.': '你在这里的点赞、添加和移除会发送到 {service}。不会从那里导入新内容。',
+  'Nothing comes in or goes out. What was imported stays.': '不导入也不发送。已导入的内容保留。',
+  'two way one way both import only send only push pull upload download off account': '双向 单向 仅导入 仅发送 上传 下载 关闭 账号',
 }
 
 export default zh

@@ -358,6 +358,9 @@ export interface YtmAccount {
 
 export const accountKey = (a: YtmAccount) => (a.pageId ? `${a.authuser}:${a.pageId}` : String(a.authuser))
 
+/** music_core::sync::Direction: which way songs travel between an account and the library. */
+export type Direction = 'both' | 'pull' | 'push' | 'off'
+
 /** crates/player Command. */
 export type PlayerCommand =
   | { type: 'play'; paths: string[]; start: number }
@@ -555,6 +558,9 @@ export const api = {
   ytmAccounts: () => invoke<{ signedIn: boolean; accounts: YtmAccount[]; picked: string[] }>('ytm_accounts'),
   /** Synced accounts, in order (first = exports). */
   setYtmAccounts: (accounts: YtmAccount[]) => invoke<void>('set_ytm_accounts', { accounts }),
+  /** Account key ("spotify", "youtube:<accountKey>") → direction; missing = both. */
+  syncDirections: () => invoke<Record<string, Direction>>('sync_directions'),
+  setSyncDirection: (key: string, direction: Direction) => invoke<void>('set_sync_direction', { key, direction }),
   localFolders: () => invoke<string[]>('local_folders'),
   /** Saves folders, rescans. Returns local file count. */
   setLocalFolders: (folders: string[]) => invoke<number>('set_local_folders', { folders }),

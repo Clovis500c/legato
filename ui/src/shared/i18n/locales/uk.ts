@@ -1439,6 +1439,15 @@ const uk: Record<string, string> = {
   'An amplifier knob, or a speaker and a bar': 'Крутилка як на підсилювачі або динамік зі смугою',
   'Sleep timer button preview': 'Попередній перегляд кнопки таймера сну',
   'hifi extras player details touches': 'hifi доповнення плеєр деталі',
+  'Both ways': 'В обидва боки',
+  'Import only': 'Лише імпорт',
+  'Send only': 'Лише надсилання',
+  'Sync direction': 'Напрямок синхронізації',
+  'Its playlists and likes come in; your likes, adds and removals here go out to {service}.': 'Його плейлисти й вподобання надходять сюди; ваші вподобання, додавання й вилучення тут ідуть у {service}.',
+  'Its playlists and likes come in. Nothing made here goes out: your likes stay in your own Liked Music.': 'Його плейлисти й вподобання надходять сюди. Звідси нічого не йде: ваші вподобання лишаються у вашій власній Liked Music.',
+  'Your likes, adds and removals here go out to {service}. Nothing new comes in from it.': 'Ваші вподобання, додавання й вилучення тут ідуть у {service}. Звідти нічого нового не надходить.',
+  'Nothing comes in or goes out. What was imported stays.': 'Нічого не надходить і не йде. Уже імпортоване лишається.',
+  'two way one way both import only send only push pull upload download off account': 'в обидва боки в один бік лише імпорт лише надсилання вивантажити завантажити вимк обліковий запис',
 }
 
 export default uk
