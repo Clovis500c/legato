@@ -1458,6 +1458,7 @@ const ru: Record<string, string> = {
   'Electronic': 'Электроника',
   'Acoustic': 'Акустика',
   'Loudness': 'Тонкомпенсация',
+  'Distortion': 'Дисторшн',
 }
 
 export default ru

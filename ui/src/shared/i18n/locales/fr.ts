@@ -1458,6 +1458,7 @@ const fr: Record<string, string> = {
   'Electronic': 'Électro',
   'Acoustic': 'Acoustique',
   'Loudness': 'Loudness',
+  'Distortion': 'Distorsion',
 }
 
 export default fr

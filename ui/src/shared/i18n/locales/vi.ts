@@ -1458,6 +1458,7 @@ const vi: Record<string, string> = {
   'Electronic': 'Điện tử',
   'Acoustic': 'Mộc',
   'Loudness': 'Loudness',
+  'Distortion': 'Méo tiếng',
 }
 
 export default vi

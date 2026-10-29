@@ -110,6 +110,8 @@ pub struct Effects {
     pub reverb: Reverb,
     pub echo: Echo,
     pub space: Space,
+    /// Distortion (soft clipping, level kept), 0..1 (0 = off).
+    pub drive: f32,
     /// Compressor amount, 0..1 (0 = off).
     pub compress: f32,
     /// Stereo width, 0 (mono) .. 3.
@@ -120,7 +122,7 @@ pub struct Effects {
 
 impl Default for Effects {
     fn default() -> Self {
-        Self { on: true, speed: 1.0, tempo: 1.0, pitch: 0.0, bass: 0.0, eq: [0.0; 10], reverb: Reverb::default(), echo: Echo::default(), space: Space::default(), compress: 0.0, width: 1.0, balance: 0.0 }
+        Self { on: true, speed: 1.0, tempo: 1.0, pitch: 0.0, bass: 0.0, eq: [0.0; 10], reverb: Reverb::default(), echo: Echo::default(), space: Space::default(), drive: 0.0, compress: 0.0, width: 1.0, balance: 0.0 }
     }
 }
 
@@ -155,6 +157,7 @@ impl Effects {
                 period_s: fit(self.space.period_s, 1.0, 60.0, d.space.period_s),
                 room: fit(self.space.room, 0.0, 1.0, d.space.room),
             },
+            drive: fit(self.drive, 0.0, 1.0, 0.0),
             compress: fit(self.compress, 0.0, 1.0, 0.0),
             width: fit(self.width, 0.0, 3.0, 1.0),
             balance: fit(self.balance, -1.0, 1.0, 0.0),
@@ -183,6 +186,7 @@ impl Effects {
                 && self.reverb.mix == 0.0
                 && self.echo.mix == 0.0
                 && !self.space.on
+                && self.drive == 0.0
                 && self.compress == 0.0
                 && self.width == 1.0
                 && self.balance == 0.0)

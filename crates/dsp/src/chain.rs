@@ -1,5 +1,5 @@
-//! The Live Editor's effects after the speed / pitch stage, in order: bass and equalizer, compressor, stereo width,
-//! echo, reverb, 3D / 8D, balance. Stereo in and out (mono is spread, more channels: the first two are processed).
+//! The Live Editor's effects after the speed / pitch stage, in order: bass and equalizer, distortion, compressor,
+//! stereo width, echo, reverb, 3D / 8D, balance. Stereo in and out (mono is spread, more channels: the first two are processed).
 //! Settings are read once per block; filters retune only when they change.
 
 use crate::effects::{EQ_FREQS, EQ_Q, Effects};
@@ -20,6 +20,14 @@ pub fn compressor(amount: f32) -> (f32, f32, f32) {
     // Half the gain lost on a full-scale peak comes back.
     let makeup = -threshold * (1.0 - 1.0 / ratio) * 0.5;
     (threshold, ratio, makeup)
+}
+
+/// Distortion macro: one amount → drive gain (up to +30 dB) and the scale keeping a -12 dBFS peak where it was
+/// (so the level holds while the shape changes). Shared with live.js: y = scale · tanh(drive · x).
+pub fn distortion(amount: f32) -> (f32, f32) {
+    const REF: f32 = 0.25;
+    let drive = db_to_gain(30.0 * amount.clamp(0.0, 1.0));
+    (drive, REF / (drive * REF).tanh())
 }
 
 /// Per-channel filters for one setting of bass + EQ.
@@ -99,6 +107,7 @@ impl Chain {
         let eq_on = e.bass != 0.0 || e.eq.iter().any(|g| *g != 0.0);
         let (threshold, ratio, makeup) = compressor(e.compress);
         let makeup = db_to_gain(makeup);
+        let (drive, shape) = distortion(e.drive);
         let echo_len = ((e.echo.time_ms / 1000.0 * self.rate) as usize).clamp(1, self.echo.len() - 1);
         self.reverb.set_predelay(e.reverb.predelay_ms);
         let (fb, damp) = (reverb::feedback(e.reverb.size), reverb::damp(e.reverb.damping));
@@ -113,6 +122,10 @@ impl Chain {
             if eq_on {
                 l = self.eq[0].iter_mut().fold(l, |x, b| b.run(x));
                 r = self.eq[1].iter_mut().fold(r, |x, b| b.run(x));
+            }
+            if e.drive > 0.0 {
+                l = shape * (drive * l).tanh();
+                r = shape * (drive * r).tanh();
             }
             if e.compress > 0.0 {
                 // Peak envelope, stereo-linked, soft knee of 6 dB.
@@ -212,6 +225,17 @@ mod tests {
         };
         assert!(gain(30.0) > 3.0, "{}", gain(30.0));
         assert!((gain(5_000.0) - 1.0).abs() < 0.05, "{}", gain(5_000.0));
+    }
+
+    #[test]
+    fn distortion_squares_the_wave_and_keeps_the_level() {
+        let mut c = Chain::new(48_000);
+        let mut out = tone(440.0, 0.5);
+        c.process(&mut out, 2, &Effects { drive: 1.0, ..Effects::default() });
+        let peak = out.iter().fold(0.0f32, |m, x| m.max(x.abs()));
+        // 0.3 peak in: about the -12 dBFS reference out, nearly square (sine: rms / peak = 0.71).
+        assert!((0.24..0.27).contains(&peak), "{peak}");
+        assert!(rms(&out) / peak > 0.9, "{}", rms(&out) / peak);
     }
 
     #[test]

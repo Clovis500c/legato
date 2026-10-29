@@ -15,6 +15,7 @@ export const NEUTRAL: Effects = {
   reverb: { mix: 0, size: 0.7, damping: 0.4, predelayMs: 20 },
   echo: { mix: 0, timeMs: 300, feedback: 0.3 },
   space: { on: false, azimuth: 0, elevation: 0, distance: 1, rotate: false, periodS: 8, room: 0.2 },
+  drive: 0,
   compress: 0,
   width: 1,
   balance: 0,
@@ -58,7 +59,7 @@ export const rates = (e: Effects): [number, number] => (e.on ? [fitRate(e.speed 
 export function neutral(e: Effects): boolean {
   if (!e.on) return true
   const [t, p] = rates(e)
-  return t === 1 && p === 1 && e.bass === 0 && e.eq.every((g) => g === 0) && e.reverb.mix === 0 && e.echo.mix === 0 && !e.space.on && e.compress === 0 && e.width === 1 && e.balance === 0
+  return t === 1 && p === 1 && e.bass === 0 && e.eq.every((g) => g === 0) && e.reverb.mix === 0 && e.echo.mix === 0 && !e.space.on && e.drive === 0 && e.compress === 0 && e.width === 1 && e.balance === 0
 }
 
 /** Missing or wrong fields → neutral ones (saved edits from older versions, hand-edited JSON). */
@@ -80,6 +81,7 @@ export function cleanEffects(raw: unknown): Effects {
     reverb: { mix: n(r.mix, 0, 1, 0), size: n(r.size, 0, 1, 0.7), damping: n(r.damping, 0, 1, 0.4), predelayMs: n(r.predelayMs, 0, 250, 20) },
     echo: { mix: n(c.mix, 0, 1, 0), timeMs: n(c.timeMs, 20, 2000, 300), feedback: n(c.feedback, 0, 0.95, 0.3) },
     space: { on: s.on === true, azimuth: n(s.azimuth, -180, 180, 0), elevation: n(s.elevation, -90, 90, 0), distance: n(s.distance, 0.25, 10, 1), rotate: s.rotate === true, periodS: n(s.periodS, 1, 60, 8), room: n(s.room, 0, 1, 0.2) },
+    drive: n(o.drive, 0, 1, 0),
     compress: n(o.compress, 0, 1, 0),
     width: n(o.width, 0, 3, 1),
     balance: n(o.balance, -1, 1, 0),

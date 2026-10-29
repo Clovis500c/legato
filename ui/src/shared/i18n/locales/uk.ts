@@ -1458,6 +1458,7 @@ const uk: Record<string, string> = {
   'Electronic': 'Електроніка',
   'Acoustic': 'Акустика',
   'Loudness': 'Тонкомпенсація',
+  'Distortion': 'Дисторшн',
 }
 
 export default uk

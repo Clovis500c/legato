@@ -376,6 +376,7 @@ export function EditorPanel({ onHide }: { onHide: () => void }) {
         </Section>
 
         <Section title={tr('Dynamics')}>
+          <Slider label={tr('Distortion')} value={e.drive} min={0} max={1} step={0.01} rest={0} show={pct} onChange={(drive) => setEffects({ drive })} />
           <Slider label={tr('Compressor')} value={e.compress} min={0} max={1} step={0.01} rest={0} show={pct} onChange={(compress) => setEffects({ compress })} />
         </Section>
 

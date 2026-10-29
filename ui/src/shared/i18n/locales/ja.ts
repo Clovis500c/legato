@@ -1458,6 +1458,7 @@ const ja: Record<string, string> = {
   'Electronic': 'エレクトロニック',
   'Acoustic': 'アコースティック',
   'Loudness': 'ラウドネス',
+  'Distortion': 'ディストーション',
 }
 
 export default ja

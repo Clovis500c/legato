@@ -1458,6 +1458,7 @@ const tr: Record<string, string> = {
   'Electronic': 'Elektronik',
   'Acoustic': 'Akustik',
   'Loudness': 'Loudness',
+  'Distortion': 'Distorsiyon',
 }
 
 export default tr

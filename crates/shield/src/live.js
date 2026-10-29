@@ -78,6 +78,7 @@
       reverb: { mix: num(r.mix, 0, 1, 0), size: num(r.size, 0, 1, 0.7), damping: num(r.damping, 0, 1, 0.4), predelayMs: num(r.predelayMs, 0, 250, 20) },
       echo: { mix: num(c.mix, 0, 1, 0), timeMs: num(c.timeMs, 20, 2000, 300), feedback: num(c.feedback, 0, 0.95, 0.3) },
       space: { on: s.on === true, azimuth: num(s.azimuth, -180, 180, 0), elevation: num(s.elevation, -90, 90, 0), distance: num(s.distance, 0.25, 10, 1), rotate: s.rotate === true, periodS: num(s.periodS, 1, 60, 8), room: num(s.room, 0, 1, 0.2) },
+      drive: num(o.drive, 0, 1, 0),
       compress: num(o.compress, 0, 1, 0),
       width: num(o.width, 0, 3, 1),
       balance: num(o.balance, -1, 1, 0),
@@ -88,7 +89,7 @@
   /** Effects change the sound (effects.rs `neutral`, negated). */
   const edited = (e) => {
     const [t, p] = rates(e)
-    return e.on && !(t === 1 && p === 1 && e.bass === 0 && e.eq.every((x) => x === 0) && e.reverb.mix === 0 && e.echo.mix === 0 && !e.space.on && e.compress === 0 && e.width === 1 && e.balance === 0)
+    return e.on && !(t === 1 && p === 1 && e.bass === 0 && e.eq.every((x) => x === 0) && e.reverb.mix === 0 && e.echo.mix === 0 && !e.space.on && e.drive === 0 && e.compress === 0 && e.width === 1 && e.balance === 0)
   }
 
   /** Stereo 2×2 mix: set(ll, lr, rl, rr) = left→left, left→right, right→left, right→right. */
@@ -217,6 +218,11 @@
       node.connect(fl)
       node = fl
     }
+    // Distortion: chain.rs `distortion`, y = scale · tanh(drive · x). No curve = passes through.
+    const shaper = new WaveShaperNode(ctx, { oversample: '4x' })
+    let shaped = 0
+    node.connect(shaper)
+    node = shaper
     const comp = new DynamicsCompressorNode(ctx, { knee: 6, attack: 0.005, release: 0.15 })
     const compOn = new GainNode(ctx, { gain: 0 })
     const compOff = new GainNode(ctx, { gain: 1 })
@@ -266,6 +272,12 @@
       shifter.set(Math.abs(pitch - 1) < 1e-6 || Math.abs(pitch - time) < 1e-6 ? 1 : pitch / time)
       to(filters[0].gain, e.bass)
       e.eq.forEach((gdb, i) => to(filters[i + 1].gain, gdb))
+      if (e.drive !== shaped) {
+        shaped = e.drive
+        const drive = 10 ** ((30 * e.drive) / 20)
+        const scale = 0.25 / Math.tanh(drive * 0.25)
+        shaper.curve = e.drive > 0 ? Float32Array.from({ length: 2049 }, (_, i) => scale * Math.tanh(drive * (i / 1024 - 1))) : null
+      }
       const a = Math.min(1, Math.max(0, e.compress))
       comp.threshold.value = -6 - 24 * a
       comp.ratio.value = 1 + 7 * a

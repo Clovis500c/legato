@@ -1458,6 +1458,7 @@ const it: Record<string, string> = {
   'Electronic': 'Elettronica',
   'Acoustic': 'Acustica',
   'Loudness': 'Loudness',
+  'Distortion': 'Distorsione',
 }
 
 export default it

@@ -1458,6 +1458,7 @@ const ko: Record<string, string> = {
   'Electronic': '일렉트로닉',
   'Acoustic': '어쿠스틱',
   'Loudness': '라우드니스',
+  'Distortion': '디스토션',
 }
 
 export default ko

@@ -1458,6 +1458,7 @@ const zh: Record<string, string> = {
   'Electronic': '电子',
   'Acoustic': '原声',
   'Loudness': '响度',
+  'Distortion': '失真',
 }
 
 export default zh

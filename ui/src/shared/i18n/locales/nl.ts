@@ -1458,6 +1458,7 @@ const nl: Record<string, string> = {
   'Electronic': 'Elektronisch',
   'Acoustic': 'Akoestisch',
   'Loudness': 'Loudness',
+  'Distortion': 'Vervorming',
 }
 
 export default nl

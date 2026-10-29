@@ -186,6 +186,8 @@ export interface Effects {
   reverb: { mix: number; size: number; damping: number; predelayMs: number }
   echo: { mix: number; timeMs: number; feedback: number }
   space: { on: boolean; azimuth: number; elevation: number; distance: number; rotate: boolean; periodS: number; room: number }
+  /** Distortion, 0..1 (0 = off). */
+  drive: number
   compress: number
   width: number
   balance: number

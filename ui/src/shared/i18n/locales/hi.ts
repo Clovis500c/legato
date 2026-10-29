@@ -1458,6 +1458,7 @@ const hi: Record<string, string> = {
   'Electronic': 'इलेक्ट्रॉनिक',
   'Acoustic': 'अकूस्टिक',
   'Loudness': 'लाउडनेस',
+  'Distortion': 'डिस्टॉर्शन',
 }
 
 export default hi

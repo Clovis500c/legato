@@ -1458,6 +1458,7 @@ const id: Record<string, string> = {
   'Electronic': 'Elektronik',
   'Acoustic': 'Akustik',
   'Loudness': 'Loudness',
+  'Distortion': 'Distorsi',
 }
 
 export default id

@@ -1458,6 +1458,7 @@ const sv: Record<string, string> = {
   'Electronic': 'Elektroniskt',
   'Acoustic': 'Akustiskt',
   'Loudness': 'Loudness',
+  'Distortion': 'Distorsion',
 }
 
 export default sv

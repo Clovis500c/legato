@@ -1458,6 +1458,7 @@ const es: Record<string, string> = {
   'Electronic': 'Electrónica',
   'Acoustic': 'Acústica',
   'Loudness': 'Sonoridad',
+  'Distortion': 'Distorsión',
 }
 
 export default es
