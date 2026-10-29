@@ -2,7 +2,7 @@ name: release
 
 # Every push to master that passes `check` is released: signed Windows installer + latest.json on a GitHub release,
 # which the app's updater reads (src-tauri/tauri.conf.json › plugins.updater). Version = MAJOR.MINOR from
-# tauri.conf.json + patch = commits on master (scripts/release.mjs): 0.1.0 in the file, 0.1.109 released.
+# tauri.conf.json + patch = commits on master (scripts/release.mjs): 2.0.0 in the file, 2.0.<commits> released.
 # "[skip release]" in the commit's first line: no release for that push. Run by hand: Actions › release › Run workflow.
 on:
   workflow_run:

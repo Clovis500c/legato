@@ -1,6 +1,6 @@
 {
   "name": "music-app",
-  "version": "0.1.0",
+  "version": "2.0.0",
   "description": "One library for YouTube Music, Spotify, Apple Music and your own files. Desktop app (Tauri 2 + Rust).",
   "author": "Clovis500c",
   "repository": "github:Clovis500c/music-app",

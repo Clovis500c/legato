@@ -3041,7 +3041,7 @@ checksum = "743fb55ba31b18fb1ecef6bdc9aa2743314978ac084044301a7eee33fb99a20d"
 
 [[package]]
 name = "music-app"
-version = "0.1.0"
+version = "2.0.0"
 dependencies = [
  "anyhow",
  "keyring",
@@ -3070,7 +3070,7 @@ dependencies = [
 
 [[package]]
 name = "music-connectors"
-version = "0.1.0"
+version = "2.0.0"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -3095,7 +3095,7 @@ dependencies = [
 
 [[package]]
 name = "music-core"
-version = "0.1.0"
+version = "2.0.0"
 dependencies = [
  "anyhow",
  "argon2",
@@ -3119,7 +3119,7 @@ dependencies = [
 
 [[package]]
 name = "music-dsp"
-version = "0.1.0"
+version = "2.0.0"
 dependencies = [
  "serde",
  "serde_json",
@@ -3127,7 +3127,7 @@ dependencies = [
 
 [[package]]
 name = "music-player"
-version = "0.1.0"
+version = "2.0.0"
 dependencies = [
  "anyhow",
  "music-dsp",
@@ -3137,7 +3137,7 @@ dependencies = [
 
 [[package]]
 name = "music-plugins"
-version = "0.1.0"
+version = "2.0.0"
 dependencies = [
  "anyhow",
  "mockito",
@@ -3150,7 +3150,7 @@ dependencies = [
 
 [[package]]
 name = "music-shield"
-version = "0.1.0"
+version = "2.0.0"
 dependencies = [
  "adblock",
  "anyhow",

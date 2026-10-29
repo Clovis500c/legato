@@ -43,8 +43,9 @@ Every push to `master` that passes the `check` workflow becomes a release on its
 and `perf` commit subjects since the previous release (the app's update card shows them).
 
 - **Version**: `MAJOR.MINOR` comes from `src-tauri/tauri.conf.json`, the patch number is the number of commits on
-  `master` (`scripts/release.mjs`). The files say `0.1.0`; the release says `0.1.109`. For a bigger step, change
-  `MAJOR.MINOR` in `tauri.conf.json` (and `package.json`, `Cargo.toml` to match).
+  `master` (`scripts/release.mjs`). The files say `2.0.0`; the release says `2.0.` plus that count. For a bigger step,
+  change `MAJOR.MINOR` in `tauri.conf.json` (and `package.json`, the workspace `Cargo.toml` and the `music-*` path
+  dependencies to match). 2.0: the front-end redesign (docs/design.md).
 - **No release for a push**: put `[skip release]` in the commit's first line.
 - **By hand**: Actions › release › Run workflow (releases `master` as it is).
 
