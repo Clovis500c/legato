@@ -547,7 +547,7 @@
 
   // Visualizer bands (crates/dsp spectrum.rs): each bin's power into the nearest of 16 bands (centers 50 · 2^(i·8/15)
   // Hz), both channels averaged, in dB. +8.2: a sine's power through the analyser's Blackman window and 1/N scale
-  // reads 8.2 dB under the native band-passes.
+  // reads 8.2 dB under the native band-passes. Sent with every report: cheap here (the analysers run anyway).
   function bands(pair) {
     const n = pair[0].frequencyBinCount
     const hz = g.ctx.sampleRate / pair[0].fftSize
@@ -622,7 +622,7 @@
       g.endSaid = true
       send({ end: g.quietAt })
     }
-    send({ levels: { fast, momentary: mom, short, peak: g.peak, gain: g.gainDb, ...(settings.bands && { bands: bands(g.raw) }) } })
+    send({ levels: { fast, momentary: mom, short, peak: g.peak, gain: g.gainDb, bands: bands(g.raw) } })
   }
 
   function apply(next, fx) {

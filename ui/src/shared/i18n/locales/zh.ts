@@ -1491,6 +1491,7 @@ const zh: Record<string, string> = {
   'Daft Punk - Get Lucky': 'Daft Punk - Get Lucky',
   'Songs to import': '要导入的歌曲',
   'Open a file…': '打开文件…',
+  'YouTube’s sound isn’t listened to: turn on “Process YouTube’s sound” in Settings › Playback': '未接收 YouTube 的声音：请在 设置 › 播放 中打开“处理 YouTube 的声音”',
 }
 
 export default zh

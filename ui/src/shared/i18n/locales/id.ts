@@ -1491,6 +1491,7 @@ const id: Record<string, string> = {
   'Daft Punk - Get Lucky': 'Daft Punk - Get Lucky',
   'Songs to import': 'Lagu untuk diimpor',
   'Open a file…': 'Buka berkas…',
+  'YouTube’s sound isn’t listened to: turn on “Process YouTube’s sound” in Settings › Playback': 'Suara YouTube tidak didengarkan: aktifkan “Proses suara YouTube” di Pengaturan › Pemutaran',
 }
 
 export default id

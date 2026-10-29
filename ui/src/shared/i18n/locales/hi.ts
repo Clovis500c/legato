@@ -1491,6 +1491,7 @@ const hi: Record<string, string> = {
   'Daft Punk - Get Lucky': 'Daft Punk - Get Lucky',
   'Songs to import': 'इम्पोर्ट करने के गाने',
   'Open a file…': 'फ़ाइल खोलें…',
+  'YouTube’s sound isn’t listened to: turn on “Process YouTube’s sound” in Settings › Playback': 'YouTube की आवाज़ नहीं सुनी जा रही: सेटिंग्स › प्लेबैक में “YouTube की आवाज़ प्रोसेस करें” चालू करें',
 }
 
 export default hi

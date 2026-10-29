@@ -1491,6 +1491,7 @@ const ko: Record<string, string> = {
   'Daft Punk - Get Lucky': 'Daft Punk - Get Lucky',
   'Songs to import': '가져올 곡',
   'Open a file…': '파일 열기…',
+  'YouTube’s sound isn’t listened to: turn on “Process YouTube’s sound” in Settings › Playback': 'YouTube 소리를 듣지 않고 있습니다: 설정 › 재생에서 “YouTube 소리 처리”를 켜세요',
 }
 
 export default ko

@@ -1491,6 +1491,7 @@ const nl: Record<string, string> = {
   'Daft Punk - Get Lucky': 'Daft Punk - Get Lucky',
   'Songs to import': 'Te importeren nummers',
   'Open a file…': 'Bestand openen…',
+  'YouTube’s sound isn’t listened to: turn on “Process YouTube’s sound” in Settings › Playback': 'Het geluid van YouTube wordt niet beluisterd: zet “YouTube-geluid verwerken” aan in Instellingen › Afspelen',
 }
 
 export default nl

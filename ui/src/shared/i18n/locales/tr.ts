@@ -1491,6 +1491,7 @@ const tr: Record<string, string> = {
   'Daft Punk - Get Lucky': 'Daft Punk - Get Lucky',
   'Songs to import': 'İçe aktarılacak şarkılar',
   'Open a file…': 'Dosya aç…',
+  'YouTube’s sound isn’t listened to: turn on “Process YouTube’s sound” in Settings › Playback': 'YouTube sesi dinlenmiyor: Ayarlar › Oynatma\'da “YouTube sesini işle”yi aç',
 }
 
 export default tr

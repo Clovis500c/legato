@@ -1491,6 +1491,7 @@ const sv: Record<string, string> = {
   'Daft Punk - Get Lucky': 'Daft Punk - Get Lucky',
   'Songs to import': 'Låtar att importera',
   'Open a file…': 'Öppna en fil…',
+  'YouTube’s sound isn’t listened to: turn on “Process YouTube’s sound” in Settings › Playback': 'YouTubes ljud lyssnas inte på: slå på ”Bearbeta YouTubes ljud” under Inställningar › Uppspelning',
 }
 
 export default sv

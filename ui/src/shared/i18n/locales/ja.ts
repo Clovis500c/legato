@@ -1491,6 +1491,7 @@ const ja: Record<string, string> = {
   'Daft Punk - Get Lucky': 'Daft Punk - Get Lucky',
   'Songs to import': '取り込む曲',
   'Open a file…': 'ファイルを開く…',
+  'YouTube’s sound isn’t listened to: turn on “Process YouTube’s sound” in Settings › Playback': 'YouTube の音を取得していません：設定 › 再生 で「YouTube の音を処理」をオンにしてください',
 }
 
 export default ja

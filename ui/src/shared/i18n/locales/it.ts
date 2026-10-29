@@ -1491,6 +1491,7 @@ const it: Record<string, string> = {
   'Daft Punk - Get Lucky': 'Daft Punk - Get Lucky',
   'Songs to import': 'Brani da importare',
   'Open a file…': 'Apri un file…',
+  'YouTube’s sound isn’t listened to: turn on “Process YouTube’s sound” in Settings › Playback': 'Il suono di YouTube non viene ascoltato: attiva «Elabora il suono di YouTube» in Impostazioni › Riproduzione',
 }
 
 export default it
