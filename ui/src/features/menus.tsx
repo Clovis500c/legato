@@ -152,7 +152,7 @@ async function addToYoutubePlaylist(p: LibraryPlaylist, ids: number[]) {
   try {
     const r = await api.addToYoutube(p.id, ids)
     await app().refreshChanged()
-    const also = [r.already > 0 && trn(r.already, '{n} already there', '{n} already there'), r.noYoutube > 0 && trn(r.noYoutube, '{n} with no YouTube version', '{n} with no YouTube version'), r.refused].filter(Boolean).join(' · ')
+    const also = [r.already > 0 && trn(r.already, '{n} already there', '{n} already there'), r.noYoutube > 0 && trn(r.noYoutube, '{n} with no YouTube version', '{n} with no YouTube version')].filter(Boolean).join(' · ')
     const open = { label: tr('Open'), run: () => app().go({ name: 'playlist', id: p.id }) }
     const added = tr('Added to {name} on YouTube Music: {songs}', { name: p.name, songs: r.added === ids.length ? songs(ids) : trn(r.added, '{n} song', '{n} songs') })
     if (r.added) app().notify(added + (also ? ` · ${also}` : ''), { action: open })

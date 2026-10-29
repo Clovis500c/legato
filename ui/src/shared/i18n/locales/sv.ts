@@ -1492,6 +1492,11 @@ const sv: Record<string, string> = {
   'Songs to import': 'Låtar att importera',
   'Open a file…': 'Öppna en fil…',
   'YouTube’s sound isn’t listened to: turn on “Process YouTube’s sound” in Settings › Playback': 'YouTubes ljud lyssnas inte på: slå på ”Bearbeta YouTubes ljud” under Inställningar › Uppspelning',
+  'Not added to {name} on YouTube Music: {reason}. Taken back out here.': 'Inte tillagd i {name} på YouTube Music: {reason}. Borttagen här igen.',
+  'Couldn’t like it on YouTube Music: {reason}. Kept in your Liked Music, liked at the next sync.': 'Kunde inte gilla på YouTube Music: {reason}. Sparad i din Liked Music, gillas vid nästa synk.',
+  'Couldn’t like it on YouTube Music: {reason}. Taken back out of {name}.': 'Kunde inte gilla på YouTube Music: {reason}. Borttagen ur {name} igen.',
+  'Not removed from {name} on YouTube Music: {reason}. Put back here.': 'Inte borttagen ur {name} på YouTube Music: {reason}. Tillbakalagd här.',
+  'Couldn’t take the like back on YouTube Music: {reason}. Still in {name}.': 'Kunde inte ta tillbaka gillningen på YouTube Music: {reason}. Finns kvar i {name}.',
 }
 
 export default sv

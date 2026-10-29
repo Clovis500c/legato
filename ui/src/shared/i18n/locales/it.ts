@@ -1492,6 +1492,11 @@ const it: Record<string, string> = {
   'Songs to import': 'Brani da importare',
   'Open a file…': 'Apri un file…',
   'YouTube’s sound isn’t listened to: turn on “Process YouTube’s sound” in Settings › Playback': 'Il suono di YouTube non viene ascoltato: attiva «Elabora il suono di YouTube» in Impostazioni › Riproduzione',
+  'Not added to {name} on YouTube Music: {reason}. Taken back out here.': 'Non aggiunto a {name} su YouTube Music: {reason}. Tolto anche qui.',
+  'Couldn’t like it on YouTube Music: {reason}. Kept in your Liked Music, liked at the next sync.': 'Impossibile mettere “mi piace” su YouTube Music: {reason}. Tenuto nella tua Liked Music, messo alla prossima sincronizzazione.',
+  'Couldn’t like it on YouTube Music: {reason}. Taken back out of {name}.': 'Impossibile mettere “mi piace” su YouTube Music: {reason}. Tolto da {name}.',
+  'Not removed from {name} on YouTube Music: {reason}. Put back here.': 'Non tolto da {name} su YouTube Music: {reason}. Rimesso qui.',
+  'Couldn’t take the like back on YouTube Music: {reason}. Still in {name}.': 'Impossibile togliere il “mi piace” su YouTube Music: {reason}. Ancora in {name}.',
 }
 
 export default it

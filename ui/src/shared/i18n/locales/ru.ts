@@ -1492,6 +1492,11 @@ const ru: Record<string, string> = {
   'Songs to import': 'Песни для импорта',
   'Open a file…': 'Открыть файл…',
   'YouTube’s sound isn’t listened to: turn on “Process YouTube’s sound” in Settings › Playback': 'Звук YouTube не принимается: включите «Обрабатывать звук YouTube» в Настройки › Воспроизведение',
+  'Not added to {name} on YouTube Music: {reason}. Taken back out here.': 'Не добавлено в {name} на YouTube Music: {reason}. Здесь тоже убрано.',
+  'Couldn’t like it on YouTube Music: {reason}. Kept in your Liked Music, liked at the next sync.': 'Не удалось поставить лайк на YouTube Music: {reason}. Сохранено в вашей Liked Music, лайк будет при следующей синхронизации.',
+  'Couldn’t like it on YouTube Music: {reason}. Taken back out of {name}.': 'Не удалось поставить лайк на YouTube Music: {reason}. Убрано из {name}.',
+  'Not removed from {name} on YouTube Music: {reason}. Put back here.': 'Не удалено из {name} на YouTube Music: {reason}. Возвращено сюда.',
+  'Couldn’t take the like back on YouTube Music: {reason}. Still in {name}.': 'Не удалось убрать лайк на YouTube Music: {reason}. Всё ещё в {name}.',
 }
 
 export default ru

@@ -1492,6 +1492,11 @@ const zh: Record<string, string> = {
   'Songs to import': '要导入的歌曲',
   'Open a file…': '打开文件…',
   'YouTube’s sound isn’t listened to: turn on “Process YouTube’s sound” in Settings › Playback': '未接收 YouTube 的声音：请在 设置 › 播放 中打开“处理 YouTube 的声音”',
+  'Not added to {name} on YouTube Music: {reason}. Taken back out here.': '未能添加到 YouTube Music 的 {name}：{reason}。此处也已撤回。',
+  'Couldn’t like it on YouTube Music: {reason}. Kept in your Liked Music, liked at the next sync.': '无法在 YouTube Music 上点赞：{reason}。已保留在你的 Liked Music，下次同步时点赞。',
+  'Couldn’t like it on YouTube Music: {reason}. Taken back out of {name}.': '无法在 YouTube Music 上点赞：{reason}。已从 {name} 撤回。',
+  'Not removed from {name} on YouTube Music: {reason}. Put back here.': '未能从 YouTube Music 的 {name} 移除：{reason}。已放回此处。',
+  'Couldn’t take the like back on YouTube Music: {reason}. Still in {name}.': '无法在 YouTube Music 上取消点赞：{reason}。仍在 {name} 中。',
 }
 
 export default zh

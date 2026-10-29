@@ -1492,6 +1492,11 @@ const tr: Record<string, string> = {
   'Songs to import': 'İçe aktarılacak şarkılar',
   'Open a file…': 'Dosya aç…',
   'YouTube’s sound isn’t listened to: turn on “Process YouTube’s sound” in Settings › Playback': 'YouTube sesi dinlenmiyor: Ayarlar › Oynatma\'da “YouTube sesini işle”yi aç',
+  'Not added to {name} on YouTube Music: {reason}. Taken back out here.': 'YouTube Music\'te {name} listesine eklenmedi: {reason}. Burada da geri çıkarıldı.',
+  'Couldn’t like it on YouTube Music: {reason}. Kept in your Liked Music, liked at the next sync.': 'YouTube Music\'te beğenilemedi: {reason}. Liked Music listende tutuldu, bir sonraki eşitlemede beğenilecek.',
+  'Couldn’t like it on YouTube Music: {reason}. Taken back out of {name}.': 'YouTube Music\'te beğenilemedi: {reason}. {name} listesinden geri çıkarıldı.',
+  'Not removed from {name} on YouTube Music: {reason}. Put back here.': 'YouTube Music\'te {name} listesinden çıkarılmadı: {reason}. Buraya geri kondu.',
+  'Couldn’t take the like back on YouTube Music: {reason}. Still in {name}.': 'YouTube Music\'te beğeni geri alınamadı: {reason}. Hâlâ {name} listesinde.',
 }
 
 export default tr

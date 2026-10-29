@@ -1492,6 +1492,11 @@ const hi: Record<string, string> = {
   'Songs to import': 'इम्पोर्ट करने के गाने',
   'Open a file…': 'फ़ाइल खोलें…',
   'YouTube’s sound isn’t listened to: turn on “Process YouTube’s sound” in Settings › Playback': 'YouTube की आवाज़ नहीं सुनी जा रही: सेटिंग्स › प्लेबैक में “YouTube की आवाज़ प्रोसेस करें” चालू करें',
+  'Not added to {name} on YouTube Music: {reason}. Taken back out here.': 'YouTube Music पर {name} में नहीं जुड़ा: {reason}। यहाँ से भी हटाया गया।',
+  'Couldn’t like it on YouTube Music: {reason}. Kept in your Liked Music, liked at the next sync.': 'YouTube Music पर पसंद नहीं हो सका: {reason}। आपकी Liked Music में रखा गया, अगले सिंक में पसंद होगा।',
+  'Couldn’t like it on YouTube Music: {reason}. Taken back out of {name}.': 'YouTube Music पर पसंद नहीं हो सका: {reason}। {name} से हटाया गया।',
+  'Not removed from {name} on YouTube Music: {reason}. Put back here.': 'YouTube Music पर {name} से नहीं हटा: {reason}। यहाँ वापस रखा गया।',
+  'Couldn’t take the like back on YouTube Music: {reason}. Still in {name}.': 'YouTube Music पर पसंद वापस नहीं हुई: {reason}। अब भी {name} में है।',
 }
 
 export default hi

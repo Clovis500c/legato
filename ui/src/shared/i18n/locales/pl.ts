@@ -1492,6 +1492,11 @@ const pl: Record<string, string> = {
   'Songs to import': 'Utwory do zaimportowania',
   'Open a file…': 'Otwórz plik…',
   'YouTube’s sound isn’t listened to: turn on “Process YouTube’s sound” in Settings › Playback': 'Dźwięk YouTube nie jest odbierany: włącz „Przetwarzaj dźwięk YouTube” w Ustawienia › Odtwarzanie',
+  'Not added to {name} on YouTube Music: {reason}. Taken back out here.': 'Nie dodano do {name} w YouTube Music: {reason}. Usunięto też tutaj.',
+  'Couldn’t like it on YouTube Music: {reason}. Kept in your Liked Music, liked at the next sync.': 'Nie udało się polubić w YouTube Music: {reason}. Zostaje w twojej Liked Music, polubimy przy następnej synchronizacji.',
+  'Couldn’t like it on YouTube Music: {reason}. Taken back out of {name}.': 'Nie udało się polubić w YouTube Music: {reason}. Usunięto z {name}.',
+  'Not removed from {name} on YouTube Music: {reason}. Put back here.': 'Nie usunięto z {name} w YouTube Music: {reason}. Przywrócono tutaj.',
+  'Couldn’t take the like back on YouTube Music: {reason}. Still in {name}.': 'Nie udało się cofnąć polubienia w YouTube Music: {reason}. Nadal w {name}.',
 }
 
 export default pl

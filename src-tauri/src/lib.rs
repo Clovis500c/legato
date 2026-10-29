@@ -16,6 +16,7 @@ mod secrets;
 mod shield;
 mod speech;
 mod syncmode;
+mod push;
 mod songlist;
 mod tags;
 mod spotify_web;
@@ -1008,12 +1009,22 @@ struct AddReport {
     already: usize,
     /// No YouTube version: can't go into a YouTube playlist.
     no_youtube: usize,
-    /// YouTube's reason for the ones it refused, when others went in.
-    refused: Option<String>,
 }
 
-/// Right-click › Remove from a playlist, every occurrence. Custom: here. YouTube Music: on the account first (the owner
-/// account accepts, others refuse; Liked Music = take the like back), then the mirror. Spotify imports are read-only.
+/// Liked Music's account key ("0" = signed-in default), None for another playlist.
+fn liked_key(source_id: &str) -> Option<String> {
+    source_id.strip_prefix("LM").map(|k| k.strip_prefix('~').unwrap_or("0").to_string())
+}
+
+/// YouTube's own words when it gave them, else a hint (a bare status: likely not the user's playlist).
+fn refusal(why: Option<String>, hint: &str) -> String {
+    let why = why.unwrap_or_else(|| "YouTube Music refused".into());
+    if why.starts_with("YouTube Music: ") { why } else { format!("{why}. {hint}") }
+}
+
+/// Right-click › Remove from a playlist, every occurrence. Custom: here. YouTube Music: here at once, then on the
+/// account in the background (push.rs: the owner account accepts, others refuse; Liked Music = take the like back),
+/// put back if it refuses. Spotify imports are read-only.
 #[tauri::command]
 async fn remove_from_playlist(state: State<'_, AppState>, id: i64, track_id: i64) -> CmdResult<()> {
     let (playlist, videos) = {
@@ -1028,34 +1039,48 @@ async fn remove_from_playlist(state: State<'_, AppState>, id: i64, track_id: i64
     if playlist.source != Source::Youtube {
         return Err("Imported Spotify playlists are read-only here: change them in Spotify.".into());
     }
+    // Signed out, sending off: said at once, nothing changed.
     let accounts = state.ytm_senders()?;
-    if let Some(key) = playlist.source_id.strip_prefix("LM") {
-        let key = key.strip_prefix('~').unwrap_or("0");
-        if !state.direction(&format!("youtube:{key}")).pushes() {
-            return Err(NOT_SENT.into());
-        }
-        let videos = &videos;
-        with_ytm(&state, |accounts| async move { accounts.into_iter().find(|y| y.account_key() == key).context("That Google account isn't synced any more")?.unlike(videos).await }).await.map_err(err)?;
-    } else {
-        // Playlist id carries no account: try each, the owner takes it.
-        let remote = playlist.source_id.split('~').next().unwrap_or(&playlist.source_id).to_string();
-        let mut last = None;
-        let mut done = false;
-        for yt in accounts {
-            match yt.remove_videos(&remote, &videos).await {
-                Ok(_) => {
-                    done = true;
-                    break;
-                }
-                Err(e) => last = Some(err(e)),
-            }
-        }
-        if !done {
-            let why = last.unwrap_or_else(|| "YouTube Music refused".into());
-            return Err(if why.starts_with("YouTube Music: ") { why } else { format!("{why}. Only playlists you own on YouTube Music can be changed.") });
-        }
+    let like = liked_key(&playlist.source_id);
+    if let Some(key) = &like
+        && !state.direction(&format!("youtube:{key}")).pushes()
+    {
+        return Err(NOT_SENT.into());
     }
-    state.lib().remove_from_imported(id, track_id).map_err(err)
+    state.lib().remove_from_imported(id, track_id).map_err(err)?;
+    let app = state.app.clone();
+    push::later(async move {
+        let st = app.state::<AppState>();
+        let sent = match &like {
+            Some(key) => with_ytm(&st, |accounts| {
+                let videos = &videos;
+                async move { accounts.into_iter().find(|y| y.account_key() == *key).context("That Google account isn't synced any more")?.unlike(videos).await }
+            })
+            .await
+            .map_err(err),
+            None => {
+                // Playlist id carries no account: try each, the owner takes it.
+                let remote = playlist.source_id.split('~').next().unwrap_or(&playlist.source_id).to_string();
+                let mut last = None;
+                let mut done = false;
+                for yt in accounts {
+                    match yt.remove_videos(&remote, &videos).await {
+                        Ok(_) => {
+                            done = true;
+                            break;
+                        }
+                        Err(e) => last = Some(err(e)),
+                    }
+                }
+                if done { Ok(()) } else { Err(refusal(last, "Only playlists you own on YouTube Music can be changed.")) }
+            }
+        };
+        if let Err(reason) = sent {
+            let _ = st.lib().append_to_imported(id, &[track_id]);
+            push::failed(&app, push::Failed { kind: if like.is_some() { push::Kind::Unlike } else { push::Kind::Remove }, playlist: playlist.name, songs: 1, reason });
+        }
+    });
+    Ok(())
 }
 
 /// Right-click › Remove from library: out of every playlist here and kept out of syncs and folder scans (the services'
@@ -1071,8 +1096,9 @@ async fn merge_duplicates(state: State<'_, AppState>, keep: i64, others: Vec<i64
     state.lib().merge_tracks(keep, &others).map_err(err)
 }
 
-/// Add to an imported YouTube Music playlist: on YouTube first (owner account accepts, others refuse), then the mirror.
-/// Liked Music = like the songs with that account.
+/// Add to an imported YouTube Music playlist: here at once, then on YouTube in the background (push.rs: owner account
+/// accepts, others refuse). Liked Music = like the songs with that account. Refused: taken back out here; a like of
+/// the main account stays in your own Liked Music instead (liked at the next sync).
 #[tauri::command]
 async fn add_to_youtube(state: State<'_, AppState>, id: i64, track_ids: Vec<i64>) -> CmdResult<AddReport> {
     let (playlist, videos, there) = {
@@ -1090,47 +1116,92 @@ async fn add_to_youtube(state: State<'_, AppState>, id: i64, track_ids: Vec<i64>
     // Already in the mirror: YouTube would refuse them anyway.
     let mut seen = HashSet::new();
     let (videos, dup): (Vec<_>, Vec<_>) = videos.into_iter().filter(|(_, v)| seen.insert(v.clone())).partition(|(_, v)| !there.contains(v));
-    let mut report = AddReport { added: 0, already: dup.len(), no_youtube, refused: None };
+    let mut report = AddReport { added: 0, already: dup.len(), no_youtube };
     if videos.is_empty() {
         return Ok(report);
     }
-    let ids: Vec<String> = videos.iter().map(|(_, v)| v.clone()).collect();
+    // Signed out, sending off: said at once, nothing changed.
     let accounts = state.ytm_senders()?;
-    let taken: HashSet<String> = if let Some(key) = playlist.source_id.strip_prefix("LM") {
-        let key = key.strip_prefix('~').unwrap_or("0");
-        if !state.direction(&format!("youtube:{key}")).pushes() {
-            return Err(NOT_SENT.into());
-        }
-        let ids = &ids;
-        with_ytm(&state, |accounts| async move { accounts.into_iter().find(|y| y.account_key() == key).context("That Google account isn't synced any more")?.like(ids).await }).await.map_err(err)?;
-        ids.iter().cloned().collect()
-    } else {
-        // Playlist id carries no account: try each, the owner takes it.
-        let remote = playlist.source_id.split('~').next().unwrap_or(&playlist.source_id).to_string();
-        let mut last = None;
-        let mut done = None;
-        for yt in accounts {
-            match yt.add_videos(&remote, &ids).await {
-                Ok(r) => {
-                    done = Some(r);
-                    break;
-                }
-                Err(e) => last = Some(err(e)),
-            }
-        }
-        let Some(r) = done else {
-            let why = last.unwrap_or_else(|| "YouTube Music refused".into());
-            // YouTube said why: show that. Bare status: likely not the user's playlist.
-            return Err(if why.starts_with("YouTube Music: ") { why } else { format!("{why}. Only playlists you own on YouTube Music can take new songs.") });
-        };
-        report.already += r.already.len();
-        report.refused = r.refused;
-        r.added.into_iter().collect()
-    };
-    let added: Vec<i64> = videos.iter().filter(|(_, v)| taken.contains(v)).map(|(t, _)| *t).collect();
+    let like = liked_key(&playlist.source_id);
+    if let Some(key) = &like
+        && !state.direction(&format!("youtube:{key}")).pushes()
+    {
+        return Err(NOT_SENT.into());
+    }
+    let added: Vec<i64> = videos.iter().map(|(t, _)| *t).collect();
     state.lib().append_to_imported(id, &added).map_err(err)?;
     report.added = added.len();
+    let app = state.app.clone();
+    push::later(async move {
+        let st = app.state::<AppState>();
+        let ids: Vec<String> = videos.iter().map(|(_, v)| v.clone()).collect();
+        // Taken by YouTube (added, or there already), and why the others weren't.
+        let (taken, reason): (HashSet<String>, Option<String>) = match &like {
+            Some(key) => {
+                let liked = with_ytm(&st, |accounts| {
+                    let ids = &ids;
+                    async move { accounts.into_iter().find(|y| y.account_key() == *key).context("That Google account isn't synced any more")?.like(ids).await }
+                })
+                .await;
+                match liked {
+                    Ok(()) => (ids.iter().cloned().collect(), None),
+                    Err(e) => (HashSet::new(), Some(err(e))),
+                }
+            }
+            None => {
+                // Playlist id carries no account: try each, the owner takes it.
+                let remote = playlist.source_id.split('~').next().unwrap_or(&playlist.source_id).to_string();
+                let mut last = None;
+                let mut done = None;
+                for yt in accounts {
+                    match yt.add_videos(&remote, &ids).await {
+                        Ok(r) => {
+                            done = Some(r);
+                            break;
+                        }
+                        Err(e) => last = Some(err(e)),
+                    }
+                }
+                match done {
+                    Some(r) => (r.added.into_iter().chain(r.already).collect(), r.refused),
+                    None => (HashSet::new(), Some(refusal(last, "Only playlists you own on YouTube Music can take new songs."))),
+                }
+            }
+        };
+        let lost: Vec<i64> = videos.iter().filter(|(_, v)| !taken.contains(v)).map(|(t, _)| *t).collect();
+        if lost.is_empty() {
+            return;
+        }
+        let kept = {
+            let lib = st.lib();
+            for t in &lost {
+                let _ = lib.remove_from_imported(id, *t);
+            }
+            // The main account's like: into your own Liked Music, liked there at the next sync (push_own_likes).
+            like.as_deref() == Some("0") && keep_in_own_likes(&lib, &lost).is_ok()
+        };
+        let kind = match (&like, kept) {
+            (Some(_), true) => push::Kind::Like,
+            (Some(_), false) => push::Kind::LikeLost,
+            (None, _) => push::Kind::Add,
+        };
+        push::failed(&app, push::Failed { kind, playlist: playlist.name, songs: lost.len(), reason: reason.unwrap_or_else(|| "YouTube Music refused".into()) });
+    });
     Ok(report)
+}
+
+/// Your own "Liked Music" (like.ts): songs whose like couldn't reach YouTube Music wait there.
+fn keep_in_own_likes(lib: &Library, ids: &[i64]) -> anyhow::Result<()> {
+    let own = match lib.playlists()?.into_iter().find(|p| p.custom && p.name == "Liked Music") {
+        Some(p) => p.id,
+        None => lib.edit_playlist(PlaylistEdit::Create { name: "Liked Music".into() })?.context("Liked Music not created")?,
+    };
+    let there: HashSet<i64> = lib.playlist_tracks(own)?.into_iter().map(|t| t.id).collect();
+    let todo: Vec<i64> = ids.iter().copied().filter(|t| !there.contains(t)).collect();
+    if !todo.is_empty() {
+        lib.edit_playlist(PlaylistEdit::Add { id: own, track_ids: todo })?;
+    }
+    Ok(())
 }
 
 fn spotify_on(state: &AppState) -> CmdResult<Spotify> {

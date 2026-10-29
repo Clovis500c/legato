@@ -222,6 +222,22 @@ export function App() {
     const off = api.onLocalChanged(() => void useStore.getState().refreshChanged())
     return () => void off.then((f) => f())
   }, [])
+  // A like, add or removal YouTube Music refused after the fact (push.rs): undone in the library, said here.
+  useEffect(() => {
+    const off = api.onPushFailed((f) => {
+      const say = { name: f.playlist, reason: f.reason }
+      const text = {
+        add: tr('Not added to {name} on YouTube Music: {reason}. Taken back out here.', say),
+        like: tr('Couldn’t like it on YouTube Music: {reason}. Kept in your Liked Music, liked at the next sync.', say),
+        likeLost: tr('Couldn’t like it on YouTube Music: {reason}. Taken back out of {name}.', say),
+        remove: tr('Not removed from {name} on YouTube Music: {reason}. Put back here.', say),
+        unlike: tr('Couldn’t take the like back on YouTube Music: {reason}. Still in {name}.', say),
+      }[f.kind]
+      useStore.getState().notify(text, { kind: 'error' })
+      void useStore.getState().refreshChanged()
+    })
+    return () => void off.then((f) => f())
+  }, [])
   useEffect(() => startPlugins(), [])
 
   // Ctrl+V outside text fields: share code → import, Spotify playlist / album → import, YouTube link → library.

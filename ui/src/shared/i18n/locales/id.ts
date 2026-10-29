@@ -1492,6 +1492,11 @@ const id: Record<string, string> = {
   'Songs to import': 'Lagu untuk diimpor',
   'Open a file…': 'Buka berkas…',
   'YouTube’s sound isn’t listened to: turn on “Process YouTube’s sound” in Settings › Playback': 'Suara YouTube tidak didengarkan: aktifkan “Proses suara YouTube” di Pengaturan › Pemutaran',
+  'Not added to {name} on YouTube Music: {reason}. Taken back out here.': 'Tidak ditambahkan ke {name} di YouTube Music: {reason}. Dihapus lagi di sini.',
+  'Couldn’t like it on YouTube Music: {reason}. Kept in your Liked Music, liked at the next sync.': 'Tidak bisa menyukai di YouTube Music: {reason}. Disimpan di Liked Music Anda, disukai pada sinkronisasi berikutnya.',
+  'Couldn’t like it on YouTube Music: {reason}. Taken back out of {name}.': 'Tidak bisa menyukai di YouTube Music: {reason}. Dihapus lagi dari {name}.',
+  'Not removed from {name} on YouTube Music: {reason}. Put back here.': 'Tidak dihapus dari {name} di YouTube Music: {reason}. Dikembalikan di sini.',
+  'Couldn’t take the like back on YouTube Music: {reason}. Still in {name}.': 'Tidak bisa membatalkan suka di YouTube Music: {reason}. Masih di {name}.',
 }
 
 export default id

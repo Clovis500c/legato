@@ -1492,6 +1492,11 @@ const vi: Record<string, string> = {
   'Songs to import': 'Bài hát cần nhập',
   'Open a file…': 'Mở tệp…',
   'YouTube’s sound isn’t listened to: turn on “Process YouTube’s sound” in Settings › Playback': 'Không nghe âm thanh YouTube: bật “Xử lý âm thanh YouTube” trong Cài đặt › Phát lại',
+  'Not added to {name} on YouTube Music: {reason}. Taken back out here.': 'Không thêm được vào {name} trên YouTube Music: {reason}. Đã gỡ lại ở đây.',
+  'Couldn’t like it on YouTube Music: {reason}. Kept in your Liked Music, liked at the next sync.': 'Không thích được trên YouTube Music: {reason}. Đã giữ trong Liked Music của bạn, sẽ thích ở lần đồng bộ tới.',
+  'Couldn’t like it on YouTube Music: {reason}. Taken back out of {name}.': 'Không thích được trên YouTube Music: {reason}. Đã gỡ khỏi {name}.',
+  'Not removed from {name} on YouTube Music: {reason}. Put back here.': 'Không gỡ được khỏi {name} trên YouTube Music: {reason}. Đã đặt lại ở đây.',
+  'Couldn’t take the like back on YouTube Music: {reason}. Still in {name}.': 'Không bỏ thích được trên YouTube Music: {reason}. Vẫn còn trong {name}.',
 }
 
 export default vi

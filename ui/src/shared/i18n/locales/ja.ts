@@ -1492,6 +1492,11 @@ const ja: Record<string, string> = {
   'Songs to import': '取り込む曲',
   'Open a file…': 'ファイルを開く…',
   'YouTube’s sound isn’t listened to: turn on “Process YouTube’s sound” in Settings › Playback': 'YouTube の音を取得していません：設定 › 再生 で「YouTube の音を処理」をオンにしてください',
+  'Not added to {name} on YouTube Music: {reason}. Taken back out here.': 'YouTube Music の {name} に追加できませんでした：{reason}。こちらでも外しました。',
+  'Couldn’t like it on YouTube Music: {reason}. Kept in your Liked Music, liked at the next sync.': 'YouTube Music で高評価できませんでした：{reason}。あなたの Liked Music に残し、次回の同期で高評価します。',
+  'Couldn’t like it on YouTube Music: {reason}. Taken back out of {name}.': 'YouTube Music で高評価できませんでした：{reason}。{name} から外しました。',
+  'Not removed from {name} on YouTube Music: {reason}. Put back here.': 'YouTube Music の {name} から外せませんでした：{reason}。こちらに戻しました。',
+  'Couldn’t take the like back on YouTube Music: {reason}. Still in {name}.': 'YouTube Music で高評価を取り消せませんでした：{reason}。{name} に残っています。',
 }
 
 export default ja

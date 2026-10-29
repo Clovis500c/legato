@@ -580,6 +580,8 @@ export const api = {
   rescanLocal: () => invoke<number>('rescan_local'),
   /** A watched local folder changed and was scanned again (src-tauri folders.rs): local file count. */
   onLocalChanged: (cb: (count: number) => void) => listen<number>('local-changed', (e) => cb(e.payload)),
+  /** A change YouTube Music refused after the fact (push.rs): already undone in the library. */
+  onPushFailed: (cb: (f: { kind: 'add' | 'like' | 'likeLost' | 'remove' | 'unlike'; playlist: string; songs: number; reason: string }) => void) => listen<{ kind: 'add' | 'like' | 'likeLost' | 'remove' | 'unlike'; playlist: string; songs: number; reason: string }>('push-failed', (e) => cb(e.payload)),
   player: (cmd: PlayerCommand) => invoke<void>('player', { cmd }),
   playerStatus: () => invoke<PlayerStatus>('player_status'),
   /** Live processing of local files (crates/dsp): applies from the next block, nothing restarts. */
@@ -711,7 +713,7 @@ export const api = {
   discordOff: () => invoke<void>('discord_off'),
   discordStatus: () => invoke<{ connected: boolean; error: string | null }>('discord_status'),
   /** Imported YouTube Music playlist: added on YouTube (Liked Music = like), then locally. */
-  addToYoutube: (id: number, trackIds: number[]) => invoke<{ added: number; already: number; noYoutube: number; refused: string | null }>('add_to_youtube', { id, trackIds }),
+  addToYoutube: (id: number, trackIds: number[]) => invoke<{ added: number; already: number; noYoutube: number }>('add_to_youtube', { id, trackIds }),
   /** Raw JSON; validated by features/player/session. */
   loadSession: () => invoke<unknown>('load_session'),
   saveSession: (session: object) => invoke<void>('save_session', { session }),

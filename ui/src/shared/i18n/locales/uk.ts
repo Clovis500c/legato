@@ -1492,6 +1492,11 @@ const uk: Record<string, string> = {
   'Songs to import': 'Пісні для імпорту',
   'Open a file…': 'Відкрити файл…',
   'YouTube’s sound isn’t listened to: turn on “Process YouTube’s sound” in Settings › Playback': 'Звук YouTube не приймається: увімкніть «Обробляти звук YouTube» у Налаштування › Відтворення',
+  'Not added to {name} on YouTube Music: {reason}. Taken back out here.': 'Не додано до {name} на YouTube Music: {reason}. Тут теж прибрано.',
+  'Couldn’t like it on YouTube Music: {reason}. Kept in your Liked Music, liked at the next sync.': 'Не вдалося вподобати на YouTube Music: {reason}. Збережено у вашій Liked Music, вподобаємо під час наступної синхронізації.',
+  'Couldn’t like it on YouTube Music: {reason}. Taken back out of {name}.': 'Не вдалося вподобати на YouTube Music: {reason}. Прибрано з {name}.',
+  'Not removed from {name} on YouTube Music: {reason}. Put back here.': 'Не прибрано з {name} на YouTube Music: {reason}. Повернуто сюди.',
+  'Couldn’t take the like back on YouTube Music: {reason}. Still in {name}.': 'Не вдалося скасувати вподобання на YouTube Music: {reason}. Досі в {name}.',
 }
 
 export default uk

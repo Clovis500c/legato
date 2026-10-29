@@ -1492,6 +1492,11 @@ const ko: Record<string, string> = {
   'Songs to import': '가져올 곡',
   'Open a file…': '파일 열기…',
   'YouTube’s sound isn’t listened to: turn on “Process YouTube’s sound” in Settings › Playback': 'YouTube 소리를 듣지 않고 있습니다: 설정 › 재생에서 “YouTube 소리 처리”를 켜세요',
+  'Not added to {name} on YouTube Music: {reason}. Taken back out here.': 'YouTube Music의 {name}에 추가되지 않음: {reason}. 여기서도 다시 뺐습니다.',
+  'Couldn’t like it on YouTube Music: {reason}. Kept in your Liked Music, liked at the next sync.': 'YouTube Music에서 좋아요를 누르지 못함: {reason}. 내 Liked Music에 두고 다음 동기화 때 좋아요를 누릅니다.',
+  'Couldn’t like it on YouTube Music: {reason}. Taken back out of {name}.': 'YouTube Music에서 좋아요를 누르지 못함: {reason}. {name}에서 다시 뺐습니다.',
+  'Not removed from {name} on YouTube Music: {reason}. Put back here.': 'YouTube Music의 {name}에서 빼지 못함: {reason}. 여기에 다시 넣었습니다.',
+  'Couldn’t take the like back on YouTube Music: {reason}. Still in {name}.': 'YouTube Music에서 좋아요를 취소하지 못함: {reason}. {name}에 그대로 있습니다.',
 }
 
 export default ko
