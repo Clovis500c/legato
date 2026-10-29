@@ -534,8 +534,9 @@ Original plan:
       the video up for good. The element now keeps its own sound until captured sound proves the capture works.
 - [x] Faster switch to the watch page (2026-10-29): refused videos remembered between launches, oEmbed asked as a song
       starts (and for the next two), stuck embeds given up after 6 s instead of 10.
-- [ ] Mixes: a real YouTube-like algorithm (2026-10-29), in its own session. The "Mon mix" panel in the user's
-      screenshot is YouTube's own My Mix (RDMM), not ours.
+- [x] Mixes: a real YouTube-like algorithm (2026-10-29), built in its own session (branch `claude/mixes-algo`,
+      merged): one version per song, a Supermix, discoveries from YouTube Music radios. The "Mon mix" panel in the
+      user's screenshot is YouTube's own My Mix (RDMM), not ours. Not tried in the app with a real account yet.
 - [x] README simplified (2026-10-29): one short line per feature; privacy details moved to docs/privacy.md.
 - [x] Interactive preview for visual settings (background blur, dimming, motion, …): small live sample of the effect.
 - [x] Artists and Albums: filter and sort, like songs in playlists.
