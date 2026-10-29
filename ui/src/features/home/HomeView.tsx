@@ -18,7 +18,7 @@ import { dragSource, useDrag, useDropTarget } from '../../shared/ui/drag'
 import { primaryArtist, type Sort } from '../library/filter'
 import { PlaylistCover } from '../library/PlaylistCover'
 import { trackMenu, tracksMenu } from '../menus'
-import { MixCard, useMixes } from '../mixes/MixesView'
+import { MixCard, mixSongs, useMixes } from '../mixes/MixesView'
 import { mixTitle } from '../mixes/words'
 import { remoteTrack, usePlayer } from '../player/store'
 import { jumpLists, useOpenedLists, type OpenedList } from './recentLists'
@@ -177,7 +177,7 @@ function JumpBackIn({ mixes }: { mixes?: Mix[] }) {
       const m = mixes?.find((x) => x.id === l.id)
       if (!m) return null
       const byId = new Map(tracks.map((t) => [t.id, t]))
-      const songs = m.trackIds.flatMap((id) => byId.get(id) ?? [])
+      const songs = mixSongs(m, byId)
       const openIt = () => go({ name: 'mix', id: m.id })
       return <JumpTile key={`m${m.id}`} art={<Cover title={mixTitle(m)} art={trackArt(songs[0])} size={56} className="rounded-none! border-0!" />} title={mixTitle(m)} sub={tr('Mix')} onOpen={openIt} onPlay={() => play(songs, 0)} menu={open([{ label: tr('Open'), onSelect: openIt }], songs)} />
     }

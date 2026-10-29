@@ -425,6 +425,8 @@ export interface Mix {
   kind: 'daily' | 'moment' | 'favorites' | 'explore'
   /** What title and reason are made of: the UI words them in its language (features/mixes/words.ts). */
   words: { slot?: 'morning' | 'afternoon' | 'evening' | 'night'; day?: number; number?: number; name?: string; names?: string[] }
+  /** Songs new to you (YouTube Music radios), `at` = place in the whole mix. */
+  found?: { at: number; track: Track }[]
 }
 
 /** crates/connectors spotify::PlayerCommand (Spotify Connect). */

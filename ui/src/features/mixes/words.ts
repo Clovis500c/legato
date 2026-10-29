@@ -17,6 +17,7 @@ const FIXED: Record<string, { title: string; reason: string }> = {
   fresh: { title: msg('Fresh in your library'), reason: msg('Just added, barely played yet') },
   gems: { title: msg('Hidden gems'), reason: msg('Saved but never played here, by artists you like') },
   rediscover: { title: msg('Rediscover'), reason: msg('Tracks you loved, not played for two months') },
+  discover: { title: msg('Discover Mix'), reason: msg('New to you, from radios of the songs you love') },
 }
 
 /** "A, B and C" in the language. */
@@ -31,6 +32,7 @@ export function mixTitle(m: Mix): string {
   if (m.id === 'weekday' && w.day !== undefined) return tr('Your {day}s', { day: weekdayName(w.day) })
   if (m.id.startsWith('daily-') && w.number) return tr('Daily Mix {n}', { n: w.number })
   if (m.id.startsWith('artist-') && w.name) return tr('{name} Mix', { name: w.name })
+  if (m.id === 'supermix') return tr('Supermix')
   return FIXED[m.id] ? tr(FIXED[m.id].title) : m.title
 }
 
@@ -41,5 +43,6 @@ export function mixReason(m: Mix): string {
   if (m.id === 'weekday' && w.day !== undefined) return tr('What you play on {day}s', { day: weekdayName(w.day) })
   if (m.id.startsWith('daily-') && names.length) return tr('Because you listen to {names}', { names: listOf(names) })
   if (m.id.startsWith('artist-') && w.name) return names.length ? tr('{name}, with {names}', { name: w.name, names: listOf(names) }) : tr('All {name}, your way', { name: w.name })
+  if (m.id === 'supermix') return m.found?.length ? tr('Your favorites over the months, and new songs like them') : tr('Your favorites over the months')
   return FIXED[m.id] ? tr(FIXED[m.id].reason) : m.reason
 }

@@ -25,5 +25,9 @@ describe('mix words', () => {
     expect(mixTitle(mix('weekday', { day: 5 }))).toBe('Vos vendredis')
     expect(mixTitle(mix('artist-1', { name: 'Daft Punk' }))).toBe('Mix Daft Punk')
     expect(weekdayName(0)).toBe('dimanche')
+    // Supermix says so when it brings new songs.
+    expect(mixReason(mix('supermix', {}))).toBe('Vos favoris au fil des mois')
+    expect(mixReason({ ...mix('supermix', {}), found: [{ at: 2, track: { title: 'S', artist: 'A', ids: {} } as never }] })).toBe('Vos favoris au fil des mois, et des nouveautés dans le même genre')
+    expect(mixTitle(mix('discover', {}))).toBe('Mix découverte')
   })
 })
