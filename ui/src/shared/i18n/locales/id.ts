@@ -1248,7 +1248,6 @@ const id: Record<string, string> = {
   'Type in the search bar above, then press Enter.': 'Ketik di bilah pencarian di atas, lalu tekan Enter.',
   'Search in': 'Cari di',
   'Your library': 'Koleksimu',
-  'Searched': 'Dicari di',
   'In Songs': 'Di Lagu',
   'In Albums': 'Di Album',
   'In Artists': 'Di Artis',

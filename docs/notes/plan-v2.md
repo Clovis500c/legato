@@ -206,7 +206,9 @@ Theme (light) / Dark / Brand / Scale, components, Home, Songs, Album, Search, No
 - [x] Home as in the mockup: no page title, chips then shortcut tiles (Songs and 5 lists opened lately, 3 × 2, 2
       columns when narrow), sections with a title, a line under it and Show all (`shared/ui/Section.tsx`), cards grey
       on hover with the sky blue play button (Home, Mixes, artist pages' YouTube Music shelves).
-- [ ] Search screen pass. Handoff: [v2-handoff.md](v2-handoff.md).
+- [x] Search as in the mockup: no page title, one row of chips (All, Your library, YouTube Music, YouTube, Apple Music,
+      with counts or Failed), Top result card (Display M, In your library, big play), 56 px song rows, cards; the
+      type views stay behind each section's Show all (with a way back); Spotify and YouTube Music sign-in at the bottom.
 - [ ] Save the songs the user queued (`added`) with the session.
 - [ ] Decide the name: Legato recommended (finalists Tutti, Diapason); trademark search (INPI, EUIPO, USPTO classes 9,
       41, 42), domain, Microsoft Store name. Never rename the identifier, `_musicapp._tcp`, `MA1` or keychain entries.

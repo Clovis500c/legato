@@ -1248,7 +1248,6 @@ const hi: Record<string, string> = {
   'Type in the search bar above, then press Enter.': 'ऊपर सर्च बार में टाइप करें, फिर Enter दबाएं।',
   'Search in': 'इसमें खोजें',
   'Your library': 'आपकी लाइब्रेरी',
-  'Searched': 'खोजा गया',
   'In Songs': 'गानों में',
   'In Albums': 'एल्बम में',
   'In Artists': 'कलाकारों में',

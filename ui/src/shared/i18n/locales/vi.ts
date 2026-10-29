@@ -1248,7 +1248,6 @@ const vi: Record<string, string> = {
   'Type in the search bar above, then press Enter.': 'Nhập vào thanh tìm kiếm ở trên, rồi nhấn Enter.',
   'Search in': 'Tìm trong',
   'Your library': 'Thư viện của bạn',
-  'Searched': 'Đã tìm',
   'In Songs': 'Trong Bài hát',
   'In Albums': 'Trong Album',
   'In Artists': 'Trong Nghệ sĩ',

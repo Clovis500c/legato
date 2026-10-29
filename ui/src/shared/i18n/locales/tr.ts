@@ -1248,7 +1248,6 @@ const tr: Record<string, string> = {
   'Type in the search bar above, then press Enter.': 'Yukarıdaki arama çubuğuna yaz, sonra Enter’a bas.',
   'Search in': 'Aranacak yer',
   'Your library': 'Kitaplığın',
-  'Searched': 'Arandı',
   'In Songs': 'Şarkılar’da',
   'In Albums': 'Albümler’de',
   'In Artists': 'Sanatçılar’da',

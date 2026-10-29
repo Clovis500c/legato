@@ -1248,7 +1248,6 @@ const de: Record<string, string> = {
   'Type in the search bar above, then press Enter.': 'Tippe oben in die Suchleiste und drück dann Enter.',
   'Search in': 'Suchen in',
   'Your library': 'Deine Bibliothek',
-  'Searched': 'Durchsucht',
   'In Songs': 'In Songs',
   'In Albums': 'In Alben',
   'In Artists': 'In Künstlern',

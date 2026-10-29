@@ -1248,7 +1248,6 @@ const zh: Record<string, string> = {
   'Type in the search bar above, then press Enter.': '在上方的搜索栏中输入，然后按 Enter。',
   'Search in': '搜索范围',
   'Your library': '你的音乐库',
-  'Searched': '已搜索',
   'In Songs': '在歌曲中',
   'In Albums': '在专辑中',
   'In Artists': '在艺人中',

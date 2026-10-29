@@ -1248,7 +1248,6 @@ const nl: Record<string, string> = {
   'Type in the search bar above, then press Enter.': 'Typ in de zoekbalk hierboven en druk op Enter.',
   'Search in': 'Zoeken in',
   'Your library': 'Je bibliotheek',
-  'Searched': 'Doorzocht',
   'In Songs': 'In Nummers',
   'In Albums': 'In Albums',
   'In Artists': 'In Artiesten',

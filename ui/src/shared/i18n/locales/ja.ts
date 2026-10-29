@@ -1248,7 +1248,6 @@ const ja: Record<string, string> = {
   'Type in the search bar above, then press Enter.': '上の検索バーに入力して、Enterを押してください。',
   'Search in': '検索対象',
   'Your library': 'ライブラリ',
-  'Searched': '検索済み',
   'In Songs': '曲の中',
   'In Albums': 'アルバムの中',
   'In Artists': 'アーティストの中',

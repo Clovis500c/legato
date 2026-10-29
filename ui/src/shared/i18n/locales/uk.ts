@@ -1248,7 +1248,6 @@ const uk: Record<string, string> = {
   'Type in the search bar above, then press Enter.': 'Введи запит у рядку пошуку вище й натисни Enter.',
   'Search in': 'Шукати в',
   'Your library': 'Твоя медіатека',
-  'Searched': 'Де шукали',
   'In Songs': 'У піснях',
   'In Albums': 'В альбомах',
   'In Artists': 'У виконавцях',

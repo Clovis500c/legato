@@ -1248,7 +1248,6 @@ const ko: Record<string, string> = {
   'Type in the search bar above, then press Enter.': '위 검색창에 입력한 다음 Enter를 누르세요.',
   'Search in': '검색 범위',
   'Your library': '내 보관함',
-  'Searched': '검색함',
   'In Songs': '노래에서',
   'In Albums': '앨범에서',
   'In Artists': '아티스트에서',

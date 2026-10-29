@@ -19,9 +19,9 @@ export function RoundButton({ label, kind = 'ghost', size = 'md', className = ''
 export const Led = ({ on }: { on: boolean }) => <span className="led" data-on={on} aria-hidden />
 
 /** Filter chip: a pill, ink when picked, grey otherwise (YouTube's and Spotify's chips, docs/design.md). */
-export function LedChip({ on, label, count, onClick }: { on: boolean; label: string; count?: string; onClick: () => void }) {
+export function LedChip({ on, label, count, title, onClick }: { on: boolean; label: string; count?: string; title?: string; onClick: () => void }) {
   return (
-    <button role="tab" aria-selected={on} onClick={onClick} className={`flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[0.8125rem] font-medium whitespace-nowrap transition ${on ? 'bg-ink text-bg' : 'bg-raised text-ink hover:bg-line'}`}>
+    <button role="tab" aria-selected={on} title={title} onClick={onClick} className={`flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[0.8125rem] font-medium whitespace-nowrap transition ${on ? 'bg-ink text-bg' : 'bg-raised text-ink hover:bg-line'}`}>
       {label}
       {count !== undefined && <span className={`text-xs tabular-nums ${on ? 'text-ink-4' : 'text-ink-3'}`}>{count}</span>}
     </button>

@@ -1248,7 +1248,6 @@ const it: Record<string, string> = {
   'Type in the search bar above, then press Enter.': 'Scrivi nella barra di ricerca qui sopra, poi premi Invio.',
   'Search in': 'Cerca in',
   'Your library': 'La tua libreria',
-  'Searched': 'Cercato in',
   'In Songs': 'In Brani',
   'In Albums': 'In Album',
   'In Artists': 'In Artisti',

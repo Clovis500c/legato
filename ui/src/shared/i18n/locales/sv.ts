@@ -1248,7 +1248,6 @@ const sv: Record<string, string> = {
   'Type in the search bar above, then press Enter.': 'Skriv i sökfältet ovan och tryck sedan på Enter.',
   'Search in': 'Sök i',
   'Your library': 'Ditt bibliotek',
-  'Searched': 'Sökte i',
   'In Songs': 'I Låtar',
   'In Albums': 'I Album',
   'In Artists': 'I Artister',

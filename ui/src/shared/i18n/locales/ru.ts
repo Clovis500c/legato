@@ -1248,7 +1248,6 @@ const ru: Record<string, string> = {
   'Type in the search bar above, then press Enter.': 'Введи запрос в строке поиска выше и нажми Enter.',
   'Search in': 'Искать в',
   'Your library': 'Твоя медиатека',
-  'Searched': 'Где искали',
   'In Songs': 'В песнях',
   'In Albums': 'В альбомах',
   'In Artists': 'В исполнителях',
