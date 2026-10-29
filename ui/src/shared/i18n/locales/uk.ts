@@ -442,7 +442,6 @@ const uk: Record<string, string> = {
   'Less like {title}': 'Менше схожого на {title}',
   'Never put {title} in mixes': 'Ніколи не додавати {title} до міксів',
   // Home
-  'See all': 'Усі',
   'From YouTube Music': 'З YouTube Music',
   'Sign in to YouTube Music to see its recommendations here too.': 'Увійди в YouTube Music, щоб бачити тут і його рекомендації.',
   'Sign in': 'Увійти',

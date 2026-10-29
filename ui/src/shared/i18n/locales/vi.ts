@@ -442,7 +442,6 @@ const vi: Record<string, string> = {
   'Less like {title}': 'Ít bài giống {title} hơn',
   'Never put {title} in mixes': 'Không bao giờ đưa {title} vào bản phối',
   // Home
-  'See all': 'Xem tất cả',
   'From YouTube Music': 'Từ YouTube Music',
   'Sign in to YouTube Music to see its recommendations here too.': 'Đăng nhập YouTube Music để xem cả đề xuất của nó ở đây.',
   'Sign in': 'Đăng nhập',

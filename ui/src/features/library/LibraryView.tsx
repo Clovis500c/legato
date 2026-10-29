@@ -339,7 +339,7 @@ export function PlaylistView({ id }: { id: number }) {
                 <Plus size={15} /> {tr('Add songs')}
               </Button>
             )}
-            <RoundButton label={tr('Share playlist')} onClick={() => useStore.setState({ sharing: id })} disabled={!playlistTracks.length}>
+            <RoundButton label={tr('Share playlist')} kind="plain" onClick={() => useStore.setState({ sharing: id })} disabled={!playlistTracks.length}>
               <ShareNetwork size={17} />
             </RoundButton>
             {/* Export, duplicate, rename, delete: the playlist's own menu, as on a right-click. */}
@@ -348,12 +348,14 @@ export function PlaylistView({ id }: { id: number }) {
             </RoundButton>
           </>
         }
+        side={
+          <>
+            <Playability tracks={playlistTracks} />
+            <SortMenu playlist />
+            <ColumnsButton />
+          </>
+        }
       />
-      <div className="flex shrink-0 items-center justify-end gap-2 pb-3">
-        <Playability tracks={playlistTracks} />
-        <SortMenu playlist />
-        <ColumnsButton />
-      </div>
       <HiddenVideos tracks={hidden} />
       {sharing && <SharePanel id={id} name={playlist.name} onClose={closeShare} />}
       <TrackTable tracks={shown} sort={playlistSort} onSort={setPlaylistSort} empty={playlist.custom ? tr('Empty playlist: add songs below, or from Songs with the “Add to playlist” button.') : tr('No songs.')} editId={playlist.custom && !query && playlistSort === 'manual' ? id : undefined} footer={playlist.custom && <SongsThatFit id={id} songs={playlistTracks} />} />

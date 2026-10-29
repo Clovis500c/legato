@@ -442,7 +442,6 @@ const hi: Record<string, string> = {
   'Less like {title}': '{title} जैसे गाने कम',
   'Never put {title} in mixes': '{title} को कभी मिक्स में न डालें',
   // Home
-  'See all': 'सब देखें',
   'From YouTube Music': 'YouTube Music से',
   'Sign in to YouTube Music to see its recommendations here too.': 'यहां भी इसके सुझाव देखने के लिए YouTube Music में साइन इन करें।',
   'Sign in': 'साइन इन करें',

@@ -442,7 +442,6 @@ const de: Record<string, string> = {
   'Less like {title}': 'Weniger wie {title}',
   'Never put {title} in mixes': '{title} nie in Mixe aufnehmen',
   // Home
-  'See all': 'Alle anzeigen',
   'From YouTube Music': 'Von YouTube Music',
   'Sign in to YouTube Music to see its recommendations here too.': 'Melde dich bei YouTube Music an, um auch hier seine Empfehlungen zu sehen.',
   'Sign in': 'Anmelden',

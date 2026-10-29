@@ -442,7 +442,6 @@ const id: Record<string, string> = {
   'Less like {title}': 'Kurangi yang seperti {title}',
   'Never put {title} in mixes': 'Jangan pernah masukkan {title} ke mix',
   // Home
-  'See all': 'Lihat semua',
   'From YouTube Music': 'Dari YouTube Music',
   'Sign in to YouTube Music to see its recommendations here too.': 'Masuk ke YouTube Music untuk melihat rekomendasinya di sini juga.',
   'Sign in': 'Masuk',

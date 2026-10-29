@@ -442,7 +442,6 @@ const tr: Record<string, string> = {
   'Less like {title}': 'Şuna benzerlerden daha az: {title}',
   'Never put {title} in mixes': '{title} şarkısını asla mix’lere koyma',
   // Home
-  'See all': 'Tümünü gör',
   'From YouTube Music': 'YouTube Music’ten',
   'Sign in to YouTube Music to see its recommendations here too.': 'Önerilerini burada da görmek için YouTube Music’te oturum aç.',
   'Sign in': 'Oturum aç',

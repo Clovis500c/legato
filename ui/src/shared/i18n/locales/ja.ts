@@ -442,7 +442,6 @@ const ja: Record<string, string> = {
   'Less like {title}': '{title}のような曲を減らす',
   'Never put {title} in mixes': '{title}をミックスに入れない',
   // Home
-  'See all': 'すべて表示',
   'From YouTube Music': 'YouTube Musicから',
   'Sign in to YouTube Music to see its recommendations here too.': 'YouTube Musicにログインすると、ここにもおすすめが表示されます。',
   'Sign in': 'ログイン',

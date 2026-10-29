@@ -442,7 +442,6 @@ const zh: Record<string, string> = {
   'Less like {title}': '减少类似 {title} 的歌',
   'Never put {title} in mixes': '永不将 {title} 放入混音',
   // Home
-  'See all': '查看全部',
   'From YouTube Music': '来自 YouTube Music',
   'Sign in to YouTube Music to see its recommendations here too.': '登录 YouTube Music，在这里也能看到它的推荐。',
   'Sign in': '登录',

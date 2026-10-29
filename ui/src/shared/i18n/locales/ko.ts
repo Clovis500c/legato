@@ -442,7 +442,6 @@ const ko: Record<string, string> = {
   'Less like {title}': '{title} 같은 곡 덜 보기',
   'Never put {title} in mixes': '{title}을(를) 믹스에서 제외',
   // Home
-  'See all': '모두 보기',
   'From YouTube Music': 'YouTube Music에서',
   'Sign in to YouTube Music to see its recommendations here too.': 'YouTube Music에 로그인하면 여기에서도 추천을 볼 수 있습니다.',
   'Sign in': '로그인',

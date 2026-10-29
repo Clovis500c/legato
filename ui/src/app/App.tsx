@@ -172,7 +172,7 @@ function Alerts() {
   const shown = view.name === 'settings' && view.wizard ? undefined : error
   if (!shown && !errors.length) return null
   return (
-    <div role="alert" className="mx-6 mb-3 flex items-start gap-2.5 rounded-lg border border-line bg-recess px-3.5 py-3 text-xs">
+    <div role="alert" className="mx-6 mt-5 flex items-start gap-2.5 rounded-lg border border-line bg-recess px-3.5 py-3 text-xs">
       <Warning size={15} className="mt-px shrink-0 text-danger" />
       <div className="flex-1">
         {shown && <p>{shown}</p>}
@@ -285,10 +285,11 @@ export function App() {
       <TopBar />
       <div className="flex min-h-0 flex-1 gap-2 px-2">
         <Sidebar />
-        <main className="flex min-w-0 flex-1 flex-col overflow-hidden rounded-lg bg-bg pt-5">
+        <main className="flex min-w-0 flex-1 flex-col overflow-hidden rounded-lg bg-bg">
           <Alerts />
-          {/* New page: a short rise (styles.css .page-in), not when only its details change. */}
-          <div key={pageKey(view)} className="page-in flex min-h-0 flex-1 flex-col px-6">
+          {/* New page: a short rise (styles.css .page-in), not when only its details change. Its padding is what a
+              page band undoes to reach the pane's edges (PageHeader). */}
+          <div key={pageKey(view)} className="page-in flex min-h-0 flex-1 flex-col px-6 pt-5">
             {view.name === 'home' && <HomeView />}
             {view.name === 'add' && <AddView />}
             {view.name === 'search' && <SearchView />}

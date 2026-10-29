@@ -442,7 +442,6 @@ const nl: Record<string, string> = {
   'Less like {title}': 'Minder zoals {title}',
   'Never put {title} in mixes': '{title} nooit in mixen zetten',
   // Home
-  'See all': 'Alles weergeven',
   'From YouTube Music': 'Van YouTube Music',
   'Sign in to YouTube Music to see its recommendations here too.': 'Log in bij YouTube Music om hier ook de aanbevelingen ervan te zien.',
   'Sign in': 'Inloggen',
