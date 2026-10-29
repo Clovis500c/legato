@@ -6,7 +6,7 @@ import { useStore } from '../../app/store'
 import { api, type Source } from '../../shared/api'
 import { formatDuration } from '../../shared/format'
 import { Bar, Knob, RoundButton } from '../../shared/ui/controls'
-import { SourceIcon } from '../../shared/ui/SourceIcon'
+import { SourceIcon, sourceLabel } from '../../shared/ui/SourceIcon'
 import { SeekBar, TimeText } from './Progress'
 import { Transport } from './Transport'
 import { onMenu, openMenu } from '../../shared/ui/ContextMenu'
@@ -32,7 +32,7 @@ const AUDIO = /\.(mp3|flac|wav|ogg|m4a|aac)$/i
 export const clock = (ms: number | null) => formatDuration(ms) || '0:00'
 export const fileFormat = (path?: string) => path?.split('.').pop()?.toUpperCase()
 
-// Source of what plays: icon only, details in its tooltip. Previews come from Apple Music.
+// Source of what plays: icon and name after the artist, details in its tooltip. Previews come from Apple Music.
 const viaSource: Record<string, Source> = { local: 'local', youtube: 'youtube', spotify: 'spotify', preview: 'apple' }
 function viaTitle(via: string, path?: string) {
   if (via === 'local') return tr('Playing a local file') + (path ? ` · ${fileFormat(path)}` : '')
@@ -315,7 +315,21 @@ export function PlayerBar() {
           <button disabled={!now} onClick={() => setFull(true)} title={now ? tr('Open Now Playing') : undefined} className="max-w-full truncate text-left text-sm font-medium">
             {now?.title ?? tr('Nothing playing')}
           </button>
-          {now ? <ArtistLink now={now} className="max-w-full truncate text-[0.8125rem] text-ink-2" /> : <span className="truncate text-[0.8125rem] text-ink-2">{tr('Play a YouTube track or drop audio files here')}</span>}
+          {now ? (
+            // Mockup: artist · where it plays from (setting readout), details in the tooltip.
+            <span className="flex max-w-full min-w-0 items-center gap-1 text-[0.8125rem] text-ink-2">
+              <ArtistLink now={now} className="min-w-0 truncate" />
+              {readout && (
+                <span title={viaTitle(now.via, now.path)} className="flex shrink-0 items-center gap-1">
+                  {now.artist && '· '}
+                  <SourceIcon source={viaSource[now.via]} size={12} />
+                  {now.via === 'local' ? tr('Local file') : sourceLabel[viaSource[now.via]]}
+                </span>
+              )}
+            </span>
+          ) : (
+            <span className="truncate text-[0.8125rem] text-ink-2">{tr('Play a YouTube track or drop audio files here')}</span>
+          )}
         </span>
         <LikeButton />
       </div>
@@ -330,11 +344,6 @@ export function PlayerBar() {
       </div>
 
       <div className="flex w-85 items-center justify-end gap-2">
-        {readout && now && (
-          <span title={viaTitle(now.via, now.path)} className="grid size-8 shrink-0 place-items-center text-ink-2">
-            <SourceIcon source={viaSource[now.via]} size={17} />
-          </span>
-        )}
         {sleepButton && <SleepButton />}
         <PanelButton panel="lyrics" label={tr('Lyrics')} icon={Quotes} />
         <PanelButton panel="upNext" label={tr('Up next')} icon={Queue} />

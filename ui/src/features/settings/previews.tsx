@@ -172,13 +172,15 @@ export function MiniPlayerScene({ miniPlayer }: Pick<Settings, 'miniPlayer'>) {
   )
 }
 
-/** Player bar end: source icon or nothing, then volume. */
+/** Player bar start: title, then the artist and the source (icon and name) or the artist alone. */
 export function SourceIconScene({ readout }: Pick<Settings, 'readout'>) {
   return (
-    <Frame label={tr('Source icon preview')} className="flex items-center justify-end gap-2 px-3">
-      {readout && <HardDrives size={12} className="text-ink-2" />}
-      <span className="h-[3px] w-10 rounded-full bg-ink-4">
-        <span className="block h-full w-3/4 rounded-full bg-ink" />
+    <Frame label={tr('Source icon preview')} className="flex flex-col justify-center gap-2 px-3">
+      <span className="h-[3px] w-14 rounded-full bg-ink" />
+      <span className="flex items-center gap-1.5">
+        <span className="h-[3px] w-8 rounded-full bg-ink-4" />
+        {readout && <HardDrives size={10} className="text-ink-2" />}
+        {readout && <span className="h-[3px] w-6 rounded-full bg-ink-4" />}
       </span>
     </Frame>
   )
