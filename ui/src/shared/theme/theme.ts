@@ -20,7 +20,7 @@ export interface Theme extends Palette {
   background?: Background
   /** Appearance choices the theme brings when picked (cover shape, density, player…). */
   look?: Look
-  /** Advanced: the theme's own CSS (cleaned; Music App's name, logo and legal notices stay). */
+  /** Advanced: the theme's own CSS (cleaned; Legato's name, logo and legal notices stay). */
   css?: string
 }
 

@@ -48,7 +48,7 @@ impl Manifest {
         ensure!(m.description.chars().count() <= 300, "plugin.json: description is over 300 characters");
         ensure!(m.api >= 1, "plugin.json: api must be 1 or more");
         if m.api > API {
-            bail!("This plugin needs a newer Music App (plugin API {}, this app has {API})", m.api);
+            bail!("This plugin needs a newer version of Legato (plugin API {}, this app has {API})", m.api);
         }
         ensure!(m.main.ends_with(".js") && !m.main.contains(['/', '\\']) && !m.main.starts_with('.') && m.main.len() <= 64, "plugin.json: main must be a .js file next to plugin.json");
         ensure!(m.permissions.len() <= 32, "plugin.json: too many permissions");
@@ -95,6 +95,6 @@ mod tests {
             assert!(Manifest::parse(&bad).is_err(), "{bad}");
         }
         let newer = Manifest::parse(&json("").replace("\"api\":1", "\"api\":9")).unwrap_err().to_string();
-        assert!(newer.contains("newer Music App"), "{newer}");
+        assert!(newer.contains("newer version of Legato"), "{newer}");
     }
 }

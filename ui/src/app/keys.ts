@@ -61,7 +61,7 @@ export const ACTIONS: ActionInfo[] = [
   { id: 'settings', label: msg('Settings'), keys: 'Ctrl+Comma', global: null },
   { id: 'goBack', label: msg('Back'), keys: 'Alt+ArrowLeft', global: null },
   { id: 'goForward', label: msg('Forward'), keys: 'Alt+ArrowRight', global: null },
-  { id: 'showApp', label: msg('Show Music App'), keys: null, global: 'Ctrl+Alt+KeyM', globalOnly: true },
+  { id: 'showApp', label: msg('Show Legato'), keys: null, global: 'Ctrl+Alt+KeyM', globalOnly: true },
 ]
 
 /** What the user changed (settings `shortcuts`): null = removed, absent = default. */

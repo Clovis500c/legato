@@ -1,7 +1,8 @@
 //! Opens at sign-in (Settings › Advanced). Windows: the HKCU Run entry Task Manager › Startup apps lists.
 //! Task Manager's own switch lives in StartupApproved: read here, and turned back on with ours. Elsewhere: not offered.
 
-/// Run value name (Task Manager falls back to it when the exe has no description).
+/// Run value name (Task Manager falls back to it when the exe has no description). The app's first name, kept: the entry
+/// already made under it goes on working (`follow`).
 #[cfg(windows)]
 const NAME: &str = "Music App";
 
@@ -26,7 +27,18 @@ pub fn set(on: bool) -> anyhow::Result<()> {
     }
 }
 
-/// Run command. Quoted: install folder has a space ("Music App").
+/// Music App became Legato (2026-10-29), so updates install in a new folder: the Run entry may still name the old exe,
+/// gone with the old folder. Point it at this one (Task Manager's switch stays as it was). Installed app only.
+pub fn follow() {
+    #[cfg(windows)]
+    if !cfg!(debug_assertions)
+        && let Ok(exe) = std::env::current_exe()
+    {
+        let _ = win::follow(NAME, &exe);
+    }
+}
+
+/// Run command. Quoted: install folders can have a space.
 #[cfg(any(windows, test))]
 fn command(exe: &std::path::Path) -> String {
     format!("\"{}\"", exe.display())
@@ -55,6 +67,15 @@ mod win {
         let ours = CURRENT_USER.open(RUN).and_then(|k| k.get_string(name)).is_ok_and(|v| v.eq_ignore_ascii_case(&super::command(exe)));
         let value = CURRENT_USER.open(APPROVED).and_then(|k| k.get_value(name)).ok();
         ours && super::approved(value.as_deref())
+    }
+
+    /// Entry naming an exe that no longer exists: now `exe`. Ours already, another exe that exists, or none: left alone.
+    pub fn follow(name: &str, exe: &Path) -> Result<()> {
+        let Ok(old) = CURRENT_USER.open(RUN).and_then(|k| k.get_string(name)) else { return Ok(()) };
+        if !old.eq_ignore_ascii_case(&super::command(exe)) && !Path::new(old.trim_matches('"')).exists() {
+            CURRENT_USER.create(RUN)?.set_string(name, super::command(exe))?;
+        }
+        Ok(())
     }
 
     pub fn set(name: &str, exe: &Path, on: bool) -> Result<()> {
@@ -94,6 +115,19 @@ mod win {
             assert!(!get(name, exe));
             assert!(CURRENT_USER.open(RUN).unwrap().get_string(name).is_err());
             set(name, exe, false).unwrap();
+        }
+
+        /// Same, by hand: an entry left on a removed install follows this exe; one on an exe that exists stays.
+        #[test]
+        #[ignore = "writes the user's registry"]
+        fn follows_a_moved_install() {
+            let (name, gone, here) = ("Music App test entry 2", Path::new(r"C:\Nowhere\Music App\music-app.exe"), std::env::current_exe().unwrap());
+            set(name, gone, true).unwrap();
+            follow(name, &here).unwrap();
+            assert!(get(name, &here));
+            follow(name, gone).unwrap();
+            assert!(get(name, &here));
+            set(name, &here, false).unwrap();
         }
     }
 }

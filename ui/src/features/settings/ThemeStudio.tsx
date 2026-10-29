@@ -149,7 +149,7 @@ function ThemeEditor({ id, onClose }: { id: string; onClose: () => void }) {
     }
   }
   const exportFile = async () => {
-    const path = await saveDialog({ defaultPath: `${t.name}.theme`, filters: [{ name: 'Music App theme', extensions: ['theme'] }] })
+    const path = await saveDialog({ defaultPath: `${t.name}.theme`, filters: [{ name: 'Legato theme', extensions: ['theme'] }] })
     if (path) await api.exportTheme(path, t).then(() => useStore.getState().notify(tr('Theme saved'), { kind: 'ok' }), fail)
   }
   const report = contrastReport(t)
@@ -245,7 +245,7 @@ function ThemeEditor({ id, onClose }: { id: string; onClose: () => void }) {
           </div>
           {t.background ? (
             <>
-              {isVideo(t.background.image) && <p className="text-xs text-ink-2">{tr('Plays muted in a loop, still while animations are off or Music App is hidden.')}</p>}
+              {isVideo(t.background.image) && <p className="text-xs text-ink-2">{tr('Plays muted in a loop, still while animations are off or Legato is hidden.')}</p>}
               <Segmented label={tr('Fit')} value={t.background.fit} onChange={(fit) => bg({ fit })} options={FITS.filter((f) => f !== 'tile' || !isVideo(t.background!.image)).map((f) => ({ value: f, label: tr({ cover: msg('Fill'), contain: msg('Fit'), tile: msg('Tile') }[f]) }))} />
               <Range label={tr('Color over it')} value={t.background.dim} min={0} max={90} unit="%" onChange={(dim) => bg({ dim })} />
               <Range label={tr('Blur')} value={t.background.blur} min={0} max={40} unit="px" onChange={(blur) => bg({ blur })} />
@@ -294,7 +294,7 @@ function ThemeEditor({ id, onClose }: { id: string; onClose: () => void }) {
 
       {tab === 'css' && (
         <div className="flex flex-col gap-2">
-          <p className="text-xs text-ink-2">{tr('Your own CSS on top of the theme: any part of the interface. Links and @import are removed; Music App’s name, logo and legal notices stay as they are.')}</p>
+          <p className="text-xs text-ink-2">{tr('Your own CSS on top of the theme: any part of the interface. Links and @import are removed; Legato’s name, logo and legal notices stay as they are.')}</p>
           <textarea
             defaultValue={t.css ?? ''}
             key={t.id}
@@ -327,7 +327,7 @@ export function ThemeStudio() {
   }
   const fresh = (t: Partial<Theme>) => sanitizeTheme({ ...current(), ...t, id: undefined })
   const importFile = async () => {
-    const file = await open({ filters: [{ name: 'Music App theme', extensions: ['theme', 'json'] }] })
+    const file = await open({ filters: [{ name: 'Legato theme', extensions: ['theme', 'json'] }] })
     if (typeof file !== 'string') return
     try {
       const t = sanitizeTheme({ ...((await api.importTheme(file)) as object), id: undefined })

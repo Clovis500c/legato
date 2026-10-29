@@ -13,7 +13,7 @@ const FRENCH: &[(&str, &str)] = &[
     ("Pause", "Pause"),
     ("Next", "Suivant"),
     ("Previous", "Précédent"),
-    ("Show Music App", "Afficher Music App"),
+    ("Show Legato", "Afficher Legato"),
     ("Quit", "Quitter"),
 ];
 

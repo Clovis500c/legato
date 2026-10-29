@@ -111,7 +111,7 @@ export function VoiceSearch() {
           {step.name === 'ask' && (
             <>
               <p className="text-sm text-ink-2">
-                {tr('Voice search uses Windows’ own speech recognition: while the microphone listens, your voice goes to Microsoft’s speech service through Windows. Music App keeps nothing, and nothing goes to us.')}
+                {tr('Voice search uses Windows’ own speech recognition: while the microphone listens, your voice goes to Microsoft’s speech service through Windows. Legato keeps nothing, and nothing goes to us.')}
               </p>
               <div className="flex justify-end gap-2">
                 <Button variant="ghost" onClick={close}>

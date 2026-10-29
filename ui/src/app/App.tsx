@@ -115,7 +115,7 @@ function TopBar() {
     <header data-tauri-drag-region className={`relative z-30 flex h-13 shrink-0 items-center gap-3 pr-2 pl-5 ${full ? 'bg-[linear-gradient(to_bottom,color-mix(in_srgb,var(--bg)_80%,transparent),transparent)]' : ''}`}>
       <button data-brand onClick={() => go({ name: 'home' })} title={tr('Home')} className="flex items-center gap-2.5 rounded-md px-2 py-1">
         <Logo />
-        <span data-brand-name className="text-[0.9375rem] font-bold tracking-tight">Music App</span>
+        <span data-brand-name className="text-[0.9375rem] font-bold tracking-tight">Legato</span>
       </button>
       {full ? (
         <button onClick={() => setFull(false)} title={tr('Close Now Playing (Esc)')} className="glass flex items-center gap-1.5 rounded-full border border-line px-3 py-1 text-xs font-medium text-ink transition hover:bg-raised">

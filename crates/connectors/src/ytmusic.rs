@@ -424,7 +424,7 @@ impl YouTubeMusic {
 
     /// Private playlist with these videos. Returns its id.
     pub async fn create_playlist(&self, title: &str, video_ids: &[String]) -> Result<String> {
-        let v = self.call("playlist/create", json!({ "title": title, "description": "Exported from Music App", "privacyStatus": "PRIVATE", "videoIds": video_ids })).await?;
+        let v = self.call("playlist/create", json!({ "title": title, "description": "Exported from Legato", "privacyStatus": "PRIVATE", "videoIds": video_ids })).await?;
         v.get("playlistId").and_then(Value::as_str).map(String::from).context("YouTube Music didn't return the playlist")
     }
 

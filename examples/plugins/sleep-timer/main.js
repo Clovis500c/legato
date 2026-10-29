@@ -1,5 +1,5 @@
 // Sleep timer: pauses the music after a while, fading out over the last 30 seconds.
-// A Music App plugin (docs/plugins.md). Runs in its own sandbox: everything goes through `app`.
+// A Legato plugin (docs/plugins.md). Runs in its own sandbox: everything goes through `app`.
 
 const FADE_MS = 30_000
 

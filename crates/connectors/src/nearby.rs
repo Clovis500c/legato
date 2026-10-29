@@ -137,7 +137,7 @@ async fn sync_join_at(peers: &[SocketAddr], code: &str, mine: &[u8]) -> Result<V
 pub async fn sync_join(code: &str, mine: &[u8]) -> Result<Vec<u8>> {
     ensure!(code.len() == 6 && code.bytes().all(|b| b.is_ascii_digit()), "The code has 6 digits");
     let peers = browse(SYNC_SERVICE).await?;
-    ensure!(!peers.is_empty(), "No Music App is waiting to sync on this network");
+    ensure!(!peers.is_empty(), "No PC with Legato is waiting to sync on this network");
     sync_join_at(&peers, code, mine).await
 }
 
@@ -188,7 +188,7 @@ async fn receive_from(peers: &[SocketAddr], code: &str) -> Result<Vec<u8>> {
 pub async fn receive(code: &str) -> Result<Vec<u8>> {
     ensure!(code.len() == 6 && code.bytes().all(|b| b.is_ascii_digit()), "The code has 6 digits");
     let peers = browse(SERVICE).await?;
-    ensure!(!peers.is_empty(), "No Music App is sharing on this network");
+    ensure!(!peers.is_empty(), "No PC with Legato is sharing on this network");
     receive_from(&peers, code).await
 }
 

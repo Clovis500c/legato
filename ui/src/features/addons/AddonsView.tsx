@@ -150,7 +150,7 @@ function Preview({ d }: { d: DiscordSettings }) {
   const pct = p.playing && p.durationMs ? Math.min(100, (p.positionMs / p.durationMs) * 100) : 0
   return (
     <div aria-label={tr('Discord preview')} className={shell}>
-      <p className="truncate text-[0.6875rem] font-bold tracking-wide text-[#B5BAC1] uppercase">{tr('Listening to {name}', { name: d.status === 'song' ? p.title : d.status === 'artist' ? p.artist : 'Music App' })}</p>
+      <p className="truncate text-[0.6875rem] font-bold tracking-wide text-[#B5BAC1] uppercase">{tr('Listening to {name}', { name: d.status === 'song' ? p.title : d.status === 'artist' ? p.artist : 'Legato' })}</p>
       <div className="flex items-center gap-3">
         <Cover title={p.title} art={track ? trackArt(track) : []} size={64} className="rounded-lg! border-0!" />
         <div className="flex min-w-0 flex-1 flex-col gap-0.5 text-[0.8125rem]">
@@ -214,7 +214,7 @@ function DiscordPanel() {
           label={tr('Discord application')}
           sub={
             <>
-              {d.appId === DISCORD_APP ? tr('Music App’s own.') : tr('Your own.')} {tr('Use yours to change the name after “Listening to”.')}{' '}
+              {d.appId === DISCORD_APP ? tr('Legato’s own.') : tr('Your own.')} {tr('Use yours to change the name after “Listening to”.')}{' '}
               <button onClick={() => void openUrl('https://discord.com/developers/applications')} className="inline-flex items-center gap-1 font-medium text-ink underline-offset-2 hover:underline">
                 Developer Portal <ArrowSquareOut size={11} />
               </button>

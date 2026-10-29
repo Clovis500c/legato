@@ -13,7 +13,7 @@ export function cleanCss(raw: unknown, max = 100_000): string {
 }
 
 /**
- * Music App's name, logo and legal notices (marked `data-brand`) stay as they are, whatever a theme's or a plugin's
+ * Legato's name, logo and legal notices (marked `data-brand`) stay as they are, whatever a theme's or a plugin's
  * CSS says. Goes after their styles.
  */
 export const BRAND_GUARD = `:root [data-brand][data-brand][data-brand], :root [data-brand][data-brand][data-brand] * { visibility: visible !important; opacity: 1 !important; filter: none !important; clip-path: none !important; transform: none !important; mask: none !important; }

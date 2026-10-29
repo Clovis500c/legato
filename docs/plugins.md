@@ -1,6 +1,6 @@
 # Writing a plugin
 
-A plugin adds a feature to Music App: menu items, a panel, a new look, reactions to what plays, a link to a web
+A plugin adds a feature to Legato: menu items, a panel, a new look, reactions to what plays, a link to a web
 service. It is a folder with two files, installed by the user from **Add-ons › Install a plugin…**. Before anything
 runs, the user sees who made it and every permission it asks for, and approves them.
 
@@ -35,7 +35,7 @@ my-plugin/
 - `id`: 3-64 characters, `a-z 0-9 . -`. Installing a folder with the same id updates the plugin; new permissions
   are pointed out and approved again.
 - `api`: the plugin API version you wrote for. This app offers **1**; a plugin asking for more is refused with "needs
-  a newer Music App". Versions only grow: a later app keeps running API 1 plugins.
+  a newer version of Legato". Versions only grow: a later app keeps running API 1 plugins.
 - `main`: a `.js` file next to `plugin.json`, 2 MB at most.
 
 ## Permissions
@@ -150,7 +150,7 @@ Controls show the value you give: after an event, call `setPanel` again with the
 
 ## Versions of this API
 
-- **1** (Music App, 2026-10): everything above.
+- **1** (Music App, now Legato, 2026-10): everything above.
 
 New features come as new methods, events or parts within API 1 when nothing existing changes meaning; anything that
 would break a plugin waits for API 2, and API 1 plugins keep working.

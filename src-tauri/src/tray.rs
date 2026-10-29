@@ -22,7 +22,7 @@ pub struct Tray {
 
 /// Tooltip and menu header. Windows cuts tooltips at 127 UTF-16 units.
 pub fn label(now: Option<&NowPlaying>) -> String {
-    let Some(n) = now else { return "Music App".into() };
+    let Some(n) = now else { return "Legato".into() };
     let text = format!("{} · {}", n.title, n.artist);
     let (mut out, mut units) = (String::new(), 0);
     for c in text.chars() {
@@ -42,11 +42,11 @@ impl Tray {
         let toggle = MenuItem::with_id(app, "toggle", lang::tr("Play"), false, None::<&str>)?;
         let next = MenuItem::with_id(app, "next", lang::tr("Next"), true, None::<&str>)?;
         let prev = MenuItem::with_id(app, "previous", lang::tr("Previous"), true, None::<&str>)?;
-        let show = MenuItem::with_id(app, "show", lang::tr("Show Music App"), true, None::<&str>)?;
+        let show = MenuItem::with_id(app, "show", lang::tr("Show Legato"), true, None::<&str>)?;
         let quit = MenuItem::with_id(app, "quit", lang::tr("Quit"), true, None::<&str>)?;
         let menu = Menu::with_items(app, &[&now, &PredefinedMenuItem::separator(app)?, &toggle, &next, &prev, &PredefinedMenuItem::separator(app)?, &show, &quit])?;
         let mut builder = TrayIconBuilder::with_id("main")
-            .tooltip("Music App")
+            .tooltip("Legato")
             .menu(&menu)
             .show_menu_on_left_click(false)
             .on_menu_event(|app, e| match e.id.as_ref() {
@@ -82,7 +82,7 @@ impl Tray {
     pub fn relabel(&self) -> tauri::Result<()> {
         self.next.set_text(lang::tr("Next"))?;
         self.prev.set_text(lang::tr("Previous"))?;
-        self.show.set_text(lang::tr("Show Music App"))?;
+        self.show.set_text(lang::tr("Show Legato"))?;
         self.quit.set_text(lang::tr("Quit"))?;
         let last = self.last.lock().unwrap().clone();
         self.update(last.as_ref())
@@ -104,7 +104,7 @@ mod tests {
 
     #[test]
     fn label_names_track_and_fits_tooltip() {
-        assert_eq!(label(None), "Music App");
+        assert_eq!(label(None), "Legato");
         assert_eq!(label(Some(&np("Get Lucky"))), "Get Lucky · Daft Punk");
         let long = label(Some(&np(&"é".repeat(300))));
         assert!(long.ends_with('…'));

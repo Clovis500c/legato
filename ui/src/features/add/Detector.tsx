@@ -53,7 +53,7 @@ function TokenForm({ onSaved, onCancel, has }: { onSaved: () => void; onCancel?:
       className="flex flex-col gap-2"
     >
       <p className="text-xs text-ink-2">
-        {tr('Uses AudD (audd.io) with your own API token: free to try, then AudD’s own plans. Music App has no AudD account and no server.')}{' '}
+        {tr('Uses AudD (audd.io) with your own API token: free to try, then AudD’s own plans. Legato has no AudD account and no server.')}{' '}
         <button type="button" onClick={() => void openUrl(DASHBOARD)} className="inline-flex items-center gap-1 font-medium text-ink underline-offset-2 hover:underline">
           {tr('Get a token')} <ArrowSquareOut size={11} />
         </button>
@@ -85,7 +85,7 @@ function TokenForm({ onSaved, onCancel, has }: { onSaved: () => void; onCancel?:
 /**
  * Music Detector (Add music): names a song, like Shazam. 10 s through the microphone (music around you) or from what
  * this PC plays (another app, a video), kept in memory and sent once to AudD (src-tauri detect_song). Each source is
- * asked once before its first use; Music App's own playback pauses meanwhile (it would be what's heard).
+ * asked once before its first use; Legato's own playback pauses meanwhile (it would be what's heard).
  */
 export function Detector({ onFound }: { onFound: (t: Track) => void }) {
   const [token, setToken] = useState<boolean | null>(null)
@@ -120,7 +120,7 @@ export function Detector({ onFound }: { onFound: (t: Track) => void }) {
       else if (r.miss === 'canceled') setPhase({ name: 'idle' })
       else {
         if (r.miss === 'badToken' || r.miss === 'freeLimit') setEditing(true)
-        const text = r.miss === 'silent' && from === 'pc' ? tr('Nothing is playing on this PC (Music App pauses its own music while it listens).') : tr(MISSES[r.miss])
+        const text = r.miss === 'silent' && from === 'pc' ? tr('Nothing is playing on this PC (Legato pauses its own music while it listens).') : tr(MISSES[r.miss])
         setPhase({ name: 'note', text: text + (r.detail ? ` (${r.detail})` : ''), mic: r.miss === 'micBlocked' })
       }
     } catch (e) {
@@ -186,7 +186,7 @@ export function Detector({ onFound }: { onFound: (t: Track) => void }) {
               { value: 'pc', label: tr('This PC') },
             ]}
           />
-          <p className="text-xs text-ink-2">{input === 'mic' ? tr('A song playing around you? Music App listens for {n} seconds and names it.', { n: SECONDS }) : tr('A song playing in another app or a video? Music App listens to this PC for {n} seconds and names it.', { n: SECONDS })}</p>
+          <p className="text-xs text-ink-2">{input === 'mic' ? tr('A song playing around you? Legato listens for {n} seconds and names it.', { n: SECONDS }) : tr('A song playing in another app or a video? Legato listens to this PC for {n} seconds and names it.', { n: SECONDS })}</p>
           {phase.name === 'note' && (
             <p className="text-xs text-ink">
               {phase.text}{' '}
@@ -209,8 +209,8 @@ export function Detector({ onFound }: { onFound: (t: Track) => void }) {
         <Dialog title={phase.input === 'mic' ? tr('Identify songs with the microphone') : tr('Identify songs playing on this PC')} onClose={() => setPhase({ name: 'idle' })}>
           <p className="text-sm text-ink-2">
             {phase.input === 'mic'
-              ? tr('Music App listens through your microphone for {n} seconds. The sound stays in memory, goes once to AudD (audd.io) to name the song, then is dropped: nothing is saved. Your music pauses while it listens.', { n: SECONDS })
-              : tr('Music App listens to what this PC plays (every app) for {n} seconds. The sound stays in memory, goes once to AudD (audd.io) to name the song, then is dropped: nothing is saved. Music App’s own music pauses while it listens, so it’s never part of it.', { n: SECONDS })}
+              ? tr('Legato listens through your microphone for {n} seconds. The sound stays in memory, goes once to AudD (audd.io) to name the song, then is dropped: nothing is saved. Your music pauses while it listens.', { n: SECONDS })
+              : tr('Legato listens to what this PC plays (every app) for {n} seconds. The sound stays in memory, goes once to AudD (audd.io) to name the song, then is dropped: nothing is saved. Legato’s own music pauses while it listens, so it’s never part of it.', { n: SECONDS })}
           </p>
           <div className="flex justify-end gap-2">
             <Button variant="ghost" onClick={() => setPhase({ name: 'idle' })}>

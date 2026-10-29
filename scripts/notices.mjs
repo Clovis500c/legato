@@ -125,7 +125,7 @@ const html = `<!doctype html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Music App ${esc(version)} · Third-party licenses</title>
+<title>Legato ${esc(version)} · Third-party licenses</title>
 <style>
 :root { color-scheme: light dark; font: 14px/1.5 system-ui, sans-serif; }
 body { max-width: 960px; margin: 0 auto; padding: 24px 16px 64px; }
@@ -139,7 +139,7 @@ section { margin-top: 24px; }
 </head>
 <body>
 <h1>Third-party licenses</h1>
-<p>Music App ${esc(version)} is built on the open-source components below. Each keeps its own license: the full texts
+<p>Legato ${esc(version)} is built on the open-source components below. Each keeps its own license: the full texts
 follow the list, with their copyright lines. Built for ${esc(target)} from Cargo.lock and pnpm-lock.yaml.</p>
 
 <h2>Source code of the MPL-2.0 components</h2>

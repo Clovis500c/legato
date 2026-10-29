@@ -143,7 +143,7 @@ pub fn decode(bytes: &[u8]) -> Result<Shared> {
     ZlibDecoder::new(bytes).take(MAX_RAW).read_to_end(&mut raw).context("Share code is damaged")?;
     let mut r = Reader(&raw);
     let version = r.byte()?;
-    ensure!(version == VERSION, "Share code made by a newer Music App: update the app");
+    ensure!(version == VERSION, "Share code made by a newer version of Legato: update the app");
     let name = r.str()?;
     let count = r.varint()?;
     ensure!(count <= MAX_ITEMS, "Too many tracks in share code");
@@ -227,7 +227,7 @@ pub fn parse(text: &str) -> Result<Shared> {
     if let Some(rest) = text.strip_prefix(QR) {
         return decode(&unbase45(rest)?);
     }
-    bail!("Not a Music App share code")
+    bail!("Not a Legato share code")
 }
 
 #[cfg(test)]

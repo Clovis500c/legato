@@ -54,13 +54,13 @@ CREATE TABLE IF NOT EXISTS settings (
 /// Schema version this code writes (user_version after migrations).
 pub const SCHEMA_VERSION: i64 = 11;
 
-/// The library was made by a newer Music App.
+/// The library was made by a newer version of the app.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct NewerLibrary(pub i64);
 
 impl std::fmt::Display for NewerLibrary {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "This library was made by a newer Music App (schema {}, this one knows {SCHEMA_VERSION}). Update the app.", self.0)
+        write!(f, "This library was made by a newer version of Legato (schema {}, this one knows {SCHEMA_VERSION}). Update the app.", self.0)
     }
 }
 

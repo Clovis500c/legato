@@ -36,7 +36,7 @@ function ImportCode() {
       <p className="flex items-center gap-2 text-xs font-semibold">
         <QrCode size={16} className="text-ink-2" /> {tr('Import a shared playlist')}
       </p>
-      <p className="text-xs text-ink-2">{busy ? tr('Looking for the sender on this network…') : tr('Paste a musicapp:// link, type a 6-digit code from a nearby Music App, or drop a QR screenshot on the window.')}</p>
+      <p className="text-xs text-ink-2">{busy ? tr('Looking for the sender on this network…') : tr('Paste a musicapp:// link, type a 6-digit code from a nearby Legato, or drop a QR screenshot on the window.')}</p>
       <span className="flex gap-2">
         <input value={text} onChange={(e) => setText(e.target.value)} placeholder={tr('Link or 6-digit code')} aria-label={tr('Share link or code')} className="h-8 min-w-0 flex-1 rounded-md border border-line bg-raised px-2.5 font-mono text-[0.6875rem] placeholder:text-ink-3" />
         <RoundButton label={tr('Import')} kind="ink" size="sm" type="submit" disabled={!text.trim() || busy}>

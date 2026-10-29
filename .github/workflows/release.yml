@@ -96,7 +96,7 @@ jobs:
 
       - if: steps.notices.outputs.cache-hit == 'true'
         shell: bash
-        run: sed -i -E "s/Music App [0-9]+\.[0-9]+\.[0-9]+/Music App ${{ steps.release.outputs.version }}/g" src-tauri/third-party-licenses.html
+        run: sed -i -E "s/Legato [0-9]+\.[0-9]+\.[0-9]+/Legato ${{ steps.release.outputs.version }}/g" src-tauri/third-party-licenses.html
 
       - if: steps.notices.outputs.cache-hit != 'true'
         uses: taiki-e/install-action@v2
@@ -113,7 +113,7 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
           tagName: v${{ steps.release.outputs.version }}
-          releaseName: Music App v${{ steps.release.outputs.version }}
+          releaseName: Legato v${{ steps.release.outputs.version }}
           releaseCommitish: ${{ env.SHA }}
           releaseBody: ${{ steps.release.outputs.notes }}
           releaseDraft: false

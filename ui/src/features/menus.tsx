@@ -323,7 +323,7 @@ function removeFrom(t: LibraryTrack): MenuEntry {
     }
   }
   const fromLibrary = async () => {
-    const ok = await ask({ title: tr('Remove “{title}” from your library?', { title: t.title }), body: tr('It also leaves every playlist in Music App. Your YouTube Music and Spotify playlists keep it, and syncs won’t bring it back here. Files on disk stay where they are.'), ok: tr('Remove') })
+    const ok = await ask({ title: tr('Remove “{title}” from your library?', { title: t.title }), body: tr('It also leaves every playlist in Legato. Your YouTube Music and Spotify playlists keep it, and syncs won’t bring it back here. Files on disk stay where they are.'), ok: tr('Remove') })
     if (!ok) return
     try {
       await api.removeFromLibrary(t.id)

@@ -57,7 +57,7 @@ export function applyCached() {
   }
 }
 
-/** The theme's own CSS, then the guard keeping Music App's name, logo and legal notices as they are. */
+/** The theme's own CSS, then the guard keeping Legato's name, logo and legal notices as they are. */
 function themeCss(css: string) {
   const style = (id: string) => {
     let el = document.getElementById(id) as HTMLStyleElement | null

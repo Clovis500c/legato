@@ -588,7 +588,7 @@ pub fn encode(s: &Snapshot, key: Option<&Key>) -> Result<Vec<u8>> {
 
 /// File bytes → snapshot. A sealed file needs the key; a plain one is refused when a key is expected (no downgrade).
 pub fn decode(bytes: &[u8], key: Option<&Key>) -> Result<Snapshot> {
-    ensure!(bytes.len() > 7 && &bytes[..6] == MAGIC, "Not a Music App sync file");
+    ensure!(bytes.len() > 7 && &bytes[..6] == MAGIC, "Not a Legato sync file");
     let packed = match (bytes[6], key) {
         (1, Some(k)) => open(k, &bytes[7..])?,
         (1, None) => bail!("This sync file is protected by a password"),

@@ -8,7 +8,7 @@ use serde::Deserialize;
 use url::Url;
 
 pub const API: &str = "https://lrclib.net/api";
-const AGENT: &str = concat!("Music App v", env!("CARGO_PKG_VERSION"), " (https://github.com/Clovis500c/music-app)");
+const AGENT: &str = concat!("Legato v", env!("CARGO_PKG_VERSION"), " (https://github.com/Clovis500c/music-app)");
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -92,7 +92,7 @@ mod tests {
         let mut s = mockito::Server::new_async().await;
         let m = s
             .mock("GET", "/api/get")
-            .match_header("user-agent", Matcher::Regex("^Music App v".into()))
+            .match_header("user-agent", Matcher::Regex("^Legato v".into()))
             .match_query(Matcher::AllOf(vec![
                 Matcher::UrlEncoded("track_name".into(), "I Want to Live".into()),
                 Matcher::UrlEncoded("artist_name".into(), "Borislav Slavov".into()),

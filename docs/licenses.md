@@ -1,6 +1,6 @@
 # Third-party licenses
 
-Audit of everything the app bundles, done 2026-10-17. Music App's own license is in [LICENSE](../LICENSE); section 6
+Audit of everything the app bundles, done 2026-10-17. Legato's own license is in [LICENSE](../LICENSE); section 6
 there says third-party components keep their own licenses.
 
 ## Checks

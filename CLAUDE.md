@@ -1,4 +1,7 @@
-# Music App
+# Legato
+
+Formerly Music App (renamed 2026-10-29). The first name stays where it is an identifier: `dev.musicapp.desktop`,
+`music-app.exe`, the repo, `_musicapp._tcp`, `MA1`, keychain entries, the `Music App Sync` folder, the Run entry.
 
 Desktop app (Tauri 2 + Rust + React/TS) that unifies Spotify / YouTube / Apple Music / local libraries. Overview: `docs/architecture.md`; open work: `docs/notes/plan-v2.md` (history in git).
 Repo docs: `README.md` (short, points to the website), `CONTRIBUTING.md`, `docs/` (for developers). What users read (features,
@@ -30,7 +33,7 @@ Design direction (v2): `docs/design.md`; mockups in the Figma file "Untitled" (t
 - `ui/`: React 19 + Zustand + Tailwind v4, split by feature:
   - `app/` (shell, store, navigation, settings), `features/<name>/` (library, sources, sidebar, player, add, settings…), `shared/` (typed api, format, theme, `ui/` components).
   - `shared/api.ts` = the only place that calls `invoke`. Types copied by hand from Rust: keep them in sync.
-- Design tokens: `ui/src/styles.css` (`@theme`) fed by CSS variables from `shared/theme/theme.ts`. Themes (Settings › Appearance, `features/settings/ThemeStudio.tsx`): palette, font, corners (Tailwind radius vars), glow, background picture (covers folder `bg-<hash>`, served by the `art` scheme, surfaces see-through over it), a look (appearance settings applied on pick), own CSS (`shared/css.ts` cleaned; `BRAND_GUARD` keeps elements marked `data-brand`: Music App's name, logo, legal notices). `.theme` files carry the picture (`music_core::themefile`).
+- Design tokens: `ui/src/styles.css` (`@theme`) fed by CSS variables from `shared/theme/theme.ts`. Themes (Settings › Appearance, `features/settings/ThemeStudio.tsx`): palette, font, corners (Tailwind radius vars), glow, background picture (covers folder `bg-<hash>`, served by the `art` scheme, surfaces see-through over it), a look (appearance settings applied on pick), own CSS (`shared/css.ts` cleaned; `BRAND_GUARD` keeps elements marked `data-brand`: Legato's name, logo, legal notices). `.theme` files carry the picture (`music_core::themefile`).
 
 ## Commands
 - `pnpm dev`: run the app (Vite + Tauri), with its own data folder (`tauri.dev.conf.json` identifier): never the installed app's library. Bump `library::SCHEMA_VERSION` with each migration.

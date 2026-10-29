@@ -28,11 +28,11 @@ function Nearby({ id }: { id: number }) {
   return (
     <div className="flex flex-col gap-2.5 rounded-lg border border-line px-4 py-3">
       <p className="flex items-center gap-2 text-xs font-semibold">
-        <WifiHigh size={16} className="text-ink-2" /> {tr('Send to a nearby Music App')}
+        <WifiHigh size={16} className="text-ink-2" /> {tr('Send to a nearby Legato')}
       </p>
       {!code || status?.state === 'failed' ? (
         <>
-          <p className="text-xs text-ink-2">{status?.state === 'failed' ? status.error : tr('Same Wi-Fi or network, a 6-digit code to read out. Windows may ask to allow Music App on private networks.')}</p>
+          <p className="text-xs text-ink-2">{status?.state === 'failed' ? status.error : tr('Same Wi-Fi or network, a 6-digit code to read out. Windows may ask to allow Legato on private networks.')}</p>
           <Button variant="ghost" className="w-fit" onClick={start}>
             {code ? tr('New code') : tr('Get a code')}
           </Button>
@@ -80,13 +80,13 @@ export function SharePanel({ id, name, onClose }: { id: number; name: string; on
                 <rect width="100%" height="100%" fill="#FFFFFF" />
                 <path d={qrPath(code.qr[0], code.qr[1], 4)} fill="#000000" />
               </svg>
-              <figcaption className="text-center text-xs text-ink-2">{tr('Scan it, or send a screenshot: Music App reads the code from the image (drop it on the window).')}</figcaption>
+              <figcaption className="text-center text-xs text-ink-2">{tr('Scan it, or send a screenshot: Legato reads the code from the image (drop it on the window).')}</figcaption>
             </figure>
           ) : (
             <p className="rounded-lg border border-line bg-recess px-3.5 py-3 text-xs">{tr('Too many tracks for a QR code: send the link instead.')}</p>
           )}
           <div className="flex flex-col gap-1.5">
-            <span className="kicker">{tr('Link · paste it anywhere in Music App (Ctrl+V)')}</span>
+            <span className="kicker">{tr('Link · paste it anywhere in Legato (Ctrl+V)')}</span>
             <div className="flex h-10.5 items-center gap-2.5 rounded-[9px] border border-line bg-raised pr-1.5 pl-3">
               <code className="flex-1 truncate font-mono text-[0.6875rem]">{code.link}</code>
               <Button variant="ghost" className="px-2.5! py-1! text-[0.6875rem]" onClick={copy}>

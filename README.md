@@ -1,6 +1,6 @@
 <div align="center">
 
-# Music App
+# Legato
 
 **One library and one player for YouTube Music, Spotify, Apple Music and your own files.**
 
@@ -10,7 +10,7 @@ Windows 10 and 11 · free · no account of ours
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="site/assets/app-dark.png">
-  <img alt="Music App's Songs page: the library on the left, songs from every service in one list, Up next on the right" src="site/assets/app-light.png">
+  <img alt="Legato's Songs page: the library on the left, songs from every service in one list, Up next on the right" src="site/assets/app-light.png">
 </picture>
 
 </div>

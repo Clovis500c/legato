@@ -1,5 +1,5 @@
 //! Windows volume mixer: YouTube's sound comes out of WebView2's own processes (msedgewebview2.exe), so Windows listed
-//! it as "Microsoft Edge WebView2". Our WebView2 audio sessions get Music App's name, icon and grouping, joining the
+//! it as "Microsoft Edge WebView2". Our WebView2 audio sessions get Legato's name, icon and grouping, joining the
 //! native player's session. Only processes started by this app: other apps' WebView2 (Teams…) are left alone.
 //! Label only: the sound itself still plays in WebView2, never taken out of the player.
 
@@ -32,8 +32,8 @@ mod imp {
     use windows::Win32::System::Com::{CoCreateInstance, CoInitializeEx, CoTaskMemFree, CLSCTX_ALL, COINIT_MULTITHREADED};
     use windows::Win32::System::Diagnostics::ToolHelp::{CreateToolhelp32Snapshot, Process32FirstW, Process32NextW, PROCESSENTRY32W, TH32CS_SNAPPROCESS};
 
-    const NAME: &str = "Music App";
-    /// Same value on every Music App session: the mixer shows them as one app.
+    const NAME: &str = "Legato";
+    /// Same value on every Legato session: the mixer shows them as one app.
     const GROUP: GUID = GUID::from_u128(0x6d75_7369_6361_7070_6d69_7865_7200_0001);
 
     fn wide(s: &str) -> Vec<u16> {

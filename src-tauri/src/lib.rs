@@ -1919,11 +1919,11 @@ fn stop_with(text: &str) -> ! {
         use windows::core::HSTRING;
         // SAFETY: plain modal box, no owner window, strings live through the call.
         unsafe {
-            MessageBoxW(None, &HSTRING::from(text), &HSTRING::from("Music App"), MB_OK | MB_ICONERROR);
+            MessageBoxW(None, &HSTRING::from(text), &HSTRING::from("Legato"), MB_OK | MB_ICONERROR);
         }
     }
     #[cfg(not(windows))]
-    eprintln!("Music App: {text}");
+    eprintln!("Legato: {text}");
     std::process::exit(1);
 }
 
@@ -1942,6 +1942,7 @@ pub fn run() {
             tauri::async_runtime::spawn(async move { responder.respond(art::respond(app, req).await) });
         })
         .setup(|app| {
+            autostart::follow();
             let dir = app.path().app_data_dir()?;
             std::fs::create_dir_all(&dir)?;
             let handle = app.handle().clone();
@@ -1951,7 +1952,7 @@ pub fn run() {
                 // Newer app's library: say so and stop, never write into it.
                 Err(e) if e.is::<music_core::library::NewerLibrary>() => stop_with(&e.to_string()),
                 // Damaged file (the copy before a migration fails too): say where it is rather than vanish.
-                Err(e) => stop_with(&format!("Music App can't open its library ({e:#}).\n\nThe file is {}; copies made before updates and each day sit next to it (library-before-v*.db, library-daily.db).", dir.join("library.db").display())),
+                Err(e) => stop_with(&format!("Legato can't open its library ({e:#}).\n\nThe file is {}; copies made before updates and each day sit next to it (library-before-v*.db, library-daily.db).", dir.join("library.db").display())),
             };
             // Daily copy of the library, off the startup path (best effort: a full disk mustn't stop the app).
             let db_path = dir.join("library.db");
@@ -1986,7 +1987,7 @@ pub fn run() {
                 }
             });
             background::spawn_sleeper(app.handle().clone());
-            // Volume mixer: YouTube's WebView2 sound listed as Music App.
+            // Volume mixer: YouTube's WebView2 sound listed as Legato.
             #[cfg(windows)]
             mixer::spawn();
             #[cfg(windows)]

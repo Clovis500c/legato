@@ -162,7 +162,7 @@ function LastfmRow() {
       {form && !user && (
         <div className="ml-13 flex flex-col gap-2 rounded-lg border border-line bg-bg p-3 text-xs">
           <p className="text-ink-2">
-            {tr('1. Create a free API account on last.fm (any name, no callback needed). 2. Paste its API key and shared secret. 3. Allow Music App on the page that opens.')}{' '}
+            {tr('1. Create a free API account on last.fm (any name, no callback needed). 2. Paste its API key and shared secret. 3. Allow Legato on the page that opens.')}{' '}
             <button type="button" className="font-semibold text-ink underline" onClick={() => void openUrl('https://www.last.fm/api/account/create')}>
               last.fm/api/account/create
             </button>
@@ -231,7 +231,7 @@ function GoogleAccounts() {
     await load()
   }
   const signOut = async () => {
-    if (!(await ask({ title: tr('Sign out of Google?'), body: tr('Every Google account leaves Music App. Your library stays as it is.'), ok: tr('Sign out') }))) return
+    if (!(await ask({ title: tr('Sign out of Google?'), body: tr('Every Google account leaves Legato. Your library stays as it is.'), ok: tr('Sign out') }))) return
     await api.ytmSignOut().catch((e) => useStore.setState({ error: String(e) }))
     await load()
     void refresh()
@@ -383,7 +383,7 @@ export function SourcesView() {
         <LocalFolders />
       </div>
       <p className="flex w-fit items-center gap-2.5 text-xs text-ink-2">
-        <ShieldCheck size={16} /> {tr('You type your password on Google’s own page, never in Music App. The session stays in the app’s browser storage on this PC, like in a browser.')}
+        <ShieldCheck size={16} /> {tr('You type your password on Google’s own page, never in Legato. The session stays in the app’s browser storage on this PC, like in a browser.')}
       </p>
     </div>
   )

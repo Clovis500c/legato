@@ -17,6 +17,7 @@ use std::time::{Duration, SystemTime};
 use tauri::{AppHandle, Emitter, Manager, State};
 
 /// Folder made inside the chosen one.
+/// The app's first name, kept: other PCs and folders made before the rename use it.
 const DIR: &str = "Music App Sync";
 const MANIFEST: &str = "sync.json";
 /// This PC's Sync Mode settings (library settings row, never synced).

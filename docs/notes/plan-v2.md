@@ -1,4 +1,4 @@
-# Music App: plan
+# Legato: plan
 
 Open work only. Tick a line when it lands; drop ticked lines once a release ships them. Everything done before
 (phases 1 to 8, the big update, the redesign's steps, the user's choices along the way) is in git:
@@ -21,9 +21,14 @@ Version 1.0 (user's choice 2026-10-29: the first releases were 0.1). A new sessi
 - [ ] Merge `v2` into `master` and push (= release v1.0.x): only when the user says.
 - [x] Name: Legato, with Figma's brand (01 Brand: Roboto Black wordmark, the L on the playback blue), user's choice
       2026-10-29. The website uses it.
-- [ ] The app itself still says Music App (window, installer, top bar, About, texts, icon): rename on the user's go.
-      Never rename the identifier, `_musicapp._tcp`, `MA1` or keychain entries; a new productName moves the install
-      folder (check the updater first). Trademark search (INPI, EUIPO, USPTO classes 9, 41, 42) still to do.
+- [x] The app renamed Legato (user's go 2026-10-29): product name, window, top bar, About, texts in every language,
+      tray, volume mixer, messages, app icon. Identifiers kept (CLAUDE.md). The installer finds an install by product
+      name, so `src-tauri/windows/hooks.nsh` removes the old "Music App" one after the first Legato update (silent
+      uninstall: app data kept) and `autostart::follow` points Open at startup at the new exe.
+- [ ] Check on a real update from 0.1 (user's PC): Legato installed, old folder and its shortcuts gone, library,
+      sign-ins and Open at startup still there.
+- [ ] Discord shows "Listening to Music App": that's the name of the app on Discord's developer portal (rename it there).
+- [ ] Trademark search for Legato (INPI, EUIPO, USPTO classes 9, 41, 42).
 - [ ] Figma: muted text (ink3) light is #606060 in the app (AA on cover tints), #6B6B6B in the file. Rename the file
       "Legato · Design" (the plugin can't rename files).
 

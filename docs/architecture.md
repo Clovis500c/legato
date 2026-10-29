@@ -1,6 +1,6 @@
 # Architecture
 
-Music App is a Tauri 2 desktop app: a Rust core does the work, and a React interface draws it in a WebView2 window.
+Legato (formerly Music App) is a Tauri 2 desktop app: a Rust core does the work, and a React interface draws it in a WebView2 window.
 There is no backend: the library, settings and tokens stay on the user's PC.
 
 ```

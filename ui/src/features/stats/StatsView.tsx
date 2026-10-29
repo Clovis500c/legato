@@ -79,7 +79,7 @@ export function StatsView() {
   const header = (
     <PageHeader
       title={tr('Your stats')}
-      sub={tr('From what you played in Music App on this PC')}
+      sub={tr('From what you played in Legato on this PC')}
       actions={<Segmented label={tr('Period')} value={period} onChange={setPeriod} options={[{ value: '4w', label: tr('4 weeks') }, { value: '6m', label: tr('6 months') }, { value: 'year', label: tr('This year') }, { value: 'all', label: tr('All time') }]} />}
     />
   )
