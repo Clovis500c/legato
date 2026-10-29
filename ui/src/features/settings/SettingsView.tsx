@@ -193,12 +193,13 @@ function Appearance() {
           <Row setting="miniPlayer" label={msg('Mini player')} sub={tr('For every source. YouTube always shows one: its video must stay visible.')} preview={<MiniPlayerScene miniPlayer={s.miniPlayer} />}>
             <Toggle label={tr('Mini player')} checked={s.miniPlayer} onChange={(miniPlayer) => update({ miniPlayer })} />
           </Row>
-          <Row label={msg('Mini player place')} sub={tr('In the sidebar it never covers the page; floating, drag it anywhere.')}>
+          <Row label={msg('Mini player place')} sub={tr('In the right panel or the sidebar it never covers the page; floating, drag it anywhere.')}>
             <Segmented
               label={tr('Mini player place')}
               value={s.miniPlace}
               onChange={(miniPlace) => update({ miniPlace })}
               options={[
+                { value: 'panel', label: tr('In the right panel') },
                 { value: 'sidebar', label: tr('In the sidebar') },
                 { value: 'float', label: tr('Floating') },
               ]}

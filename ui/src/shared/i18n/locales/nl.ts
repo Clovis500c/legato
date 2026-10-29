@@ -1202,7 +1202,6 @@ const nl: Record<string, string> = {
   // Docked mini player
   'For every source. YouTube always shows one: its video must stay visible.': 'Voor elke bron. YouTube toont er altijd een: de video moet zichtbaar blijven.',
   'Mini player place': 'Plek van minispeler',
-  'In the sidebar it never covers the page; floating, drag it anywhere.': 'In de zijbalk bedekt hij nooit de pagina; zwevend kun je hem overal heen slepen.',
   'In the sidebar': 'In de zijbalk',
   'Floating': 'Zwevend',
   'sidebar docked floating video corner': 'zijbalk vastgezet zwevend video hoek sidebar docked floating',
@@ -1517,6 +1516,8 @@ const nl: Record<string, string> = {
   'toast popup message time seconds duration short long': 'toast pop-up bericht tijd seconden duur kort lang',
   'What do you want to play?': 'Wat wil je afspelen?',
   'Playing from {list}': 'Afgespeeld uit {list}',
+  'In the right panel': 'In het rechterpaneel',
+  'In the right panel or the sidebar it never covers the page; floating, drag it anywhere.': 'In het rechterpaneel of de zijbalk bedekt hij nooit de pagina; zwevend kun je hem overal heen slepen.',
 }
 
 export default nl

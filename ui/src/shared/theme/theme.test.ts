@@ -104,6 +104,9 @@ describe('resolveTheme', () => {
     // covers stay on the rows.
     expect(sanitize({ accent: 'system', density: 'comfort', listCovers: true, covers: 'rounded', immersive: true, defaultsVersion: 7 })).toMatchObject({ accent: null, density: 'compact', listCovers: true, covers: 'net', immersive: false })
     expect(sanitize({}).listCovers).toBe(true)
+    expect(sanitize({ miniPlace: 'sidebar', defaultsVersion: 7 }).miniPlace).toBe('panel')
+    expect(sanitize({ miniPlace: 'float', defaultsVersion: 7 }).miniPlace).toBe('float')
+    expect(sanitize({ miniPlace: 'sidebar', defaultsVersion: 8 }).miniPlace).toBe('sidebar')
     expect(sanitize({ upNext: true, defaultsVersion: 7 }).upNext).toBe(false)
     expect(sanitize({ upNext: true, sidePanel: 'lyrics', defaultsVersion: 8 })).toMatchObject({ upNext: true, sidePanel: 'lyrics' })
     expect(sanitize({ sidePanel: 'editor' }).sidePanel).toBe('upNext')

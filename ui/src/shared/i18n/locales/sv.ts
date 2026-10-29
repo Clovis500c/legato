@@ -1202,7 +1202,6 @@ const sv: Record<string, string> = {
   // Docked mini player
   'For every source. YouTube always shows one: its video must stay visible.': 'För alla källor. YouTube visar alltid en: dess video måste synas.',
   'Mini player place': 'Minispelarens plats',
-  'In the sidebar it never covers the page; floating, drag it anywhere.': 'I sidofältet täcker den aldrig sidan; flytande kan du dra den vart du vill.',
   'In the sidebar': 'I sidofältet',
   'Floating': 'Flytande',
   'sidebar docked floating video corner': 'sidofält dockad flytande video hörn',
@@ -1517,6 +1516,8 @@ const sv: Record<string, string> = {
   'toast popup message time seconds duration short long': 'toast popup meddelande tid sekunder längd kort lång',
   'What do you want to play?': 'Vad vill du lyssna på?',
   'Playing from {list}': 'Spelas från {list}',
+  'In the right panel': 'I högerpanelen',
+  'In the right panel or the sidebar it never covers the page; floating, drag it anywhere.': 'I högerpanelen eller sidofältet täcker den aldrig sidan; flytande kan du dra den vart du vill.',
 }
 
 export default sv

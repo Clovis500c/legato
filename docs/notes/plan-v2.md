@@ -223,9 +223,9 @@ Theme (light) / Dark / Brand / Scale, components, Home, Songs, Album, Search, No
       cards; Albums grid as cards, Artists rows, Mixes titles; right panel tabs (Up next, Lyrics; Clear and Save in
       its ⋮); song length instead of time left; Now Playing "Playing from <list>" and a lyrics peek.
 - [x] Fixed (2026-10-29): a pause given while a YouTube video starts holds; cover tints follow Windows' light / dark.
-- [ ] Sidebar mini player hidden by default (user's pick): blocked for YouTube, whose video must stay visible (200 px
-      minimum, docs/playback.md); other sources already show none by default. Options to put to the user: the video
-      in the right panel's top, or the floating card by default.
+- [x] Sidebar mini player hidden by default (user's pick: option 1, 2026-10-29): the mini player sits on top of the
+      right panel (`miniPlace` 'panel', the default; v8 moves 'sidebar' there). YouTube's video shows there even with
+      the panel hidden (200 px, docs/playback.md); the sidebar holds the library only.
 - [ ] Your library ↗ (open it full width, design.md), and the player bar's "artist · from your file" line.
 - [ ] Check in the app: "No sound could be taken" gone from the second YouTube video on (fix 51946d5).
 - [ ] Merge `v2` into `master` and push (= release v2.0.x): only when the user says.

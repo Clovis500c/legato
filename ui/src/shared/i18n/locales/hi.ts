@@ -1202,7 +1202,6 @@ const hi: Record<string, string> = {
   // Docked mini player
   'For every source. YouTube always shows one: its video must stay visible.': 'हर सोर्स के लिए। YouTube हमेशा एक दिखाता है: उसका वीडियो दिखते रहना चाहिए।',
   'Mini player place': 'मिनी प्लेयर की जगह',
-  'In the sidebar it never covers the page; floating, drag it anywhere.': 'साइडबार में यह कभी पेज को नहीं ढकता; फ़्लोटिंग हो तो इसे कहीं भी खींचें।',
   'In the sidebar': 'साइडबार में',
   'Floating': 'फ़्लोटिंग',
   'sidebar docked floating video corner': 'साइडबार डॉक फ़्लोटिंग वीडियो कोना sidebar docked floating video corner',
@@ -1517,6 +1516,8 @@ const hi: Record<string, string> = {
   'toast popup message time seconds duration short long': 'टोस्ट पॉपअप संदेश समय सेकंड अवधि कम ज़्यादा',
   'What do you want to play?': 'आप क्या सुनना चाहते हैं?',
   'Playing from {list}': '{list} से चल रहा है',
+  'In the right panel': 'दाएँ पैनल में',
+  'In the right panel or the sidebar it never covers the page; floating, drag it anywhere.': 'दाएँ पैनल या साइडबार में यह कभी पेज को नहीं ढकता; फ़्लोटिंग हो तो इसे कहीं भी खींचें।',
 }
 
 export default hi

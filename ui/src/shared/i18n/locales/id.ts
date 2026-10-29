@@ -1202,7 +1202,6 @@ const id: Record<string, string> = {
   // Docked mini player
   'For every source. YouTube always shows one: its video must stay visible.': 'Untuk semua sumber. YouTube selalu menampilkannya: videonya harus tetap terlihat.',
   'Mini player place': 'Posisi pemutar mini',
-  'In the sidebar it never covers the page; floating, drag it anywhere.': 'Di bilah samping, pemutar tidak pernah menutupi halaman; saat mengambang, seret ke mana saja.',
   'In the sidebar': 'Di bilah samping',
   'Floating': 'Mengambang',
   'sidebar docked floating video corner': 'bilah samping tertambat mengambang video sudut',
@@ -1517,6 +1516,8 @@ const id: Record<string, string> = {
   'toast popup message time seconds duration short long': 'toast popup pesan waktu detik durasi singkat lama',
   'What do you want to play?': 'Mau putar apa?',
   'Playing from {list}': 'Diputar dari {list}',
+  'In the right panel': 'Di panel kanan',
+  'In the right panel or the sidebar it never covers the page; floating, drag it anywhere.': 'Di panel kanan atau bilah samping, pemutar tidak pernah menutupi halaman; saat mengambang, seret ke mana saja.',
 }
 
 export default id

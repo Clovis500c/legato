@@ -1202,7 +1202,6 @@ const pl: Record<string, string> = {
   // Docked mini player
   'For every source. YouTube always shows one: its video must stay visible.': 'Dla każdego źródła. YouTube zawsze go pokazuje: jego film musi być widoczny.',
   'Mini player place': 'Miejsce miniodtwarzacza',
-  'In the sidebar it never covers the page; floating, drag it anywhere.': 'Na pasku bocznym nigdy nie zasłania strony; pływający możesz przeciągnąć w dowolne miejsce.',
   'In the sidebar': 'Na pasku bocznym',
   'Floating': 'Pływający',
   'sidebar docked floating video corner': 'pasek boczny zadokowany pływający wideo róg sidebar docked floating',
@@ -1517,6 +1516,8 @@ const pl: Record<string, string> = {
   'toast popup message time seconds duration short long': 'toast wyskakujące komunikat czas sekundy długość krótko długo',
   'What do you want to play?': 'Czego chcesz posłuchać?',
   'Playing from {list}': 'Odtwarzanie z: {list}',
+  'In the right panel': 'W prawym panelu',
+  'In the right panel or the sidebar it never covers the page; floating, drag it anywhere.': 'W prawym panelu lub na pasku bocznym nigdy nie zasłania strony; pływający możesz przeciągnąć w dowolne miejsce.',
 }
 
 export default pl

@@ -274,8 +274,8 @@ export interface Settings {
   /** Now Playing with YouTube: video, cover (video transparent), or auto: cover when the video is a still image. */
   stage: 'auto' | 'video' | 'cover'
   miniSpot: Spot
-  /** Where the mini player sits: docked at the bottom of the sidebar (never over the content) or floating. */
-  miniPlace: 'sidebar' | 'float'
+  /** Where the mini player sits: top of the right panel, bottom of the sidebar (neither over the content) or floating. */
+  miniPlace: 'panel' | 'sidebar' | 'float'
   /** Mini player width, px (video 16:9 below it, 200 px tall at least). */
   miniWidth: number
   /** Fade between songs, seconds (0 = off). */
@@ -392,7 +392,7 @@ export const DEFAULTS: Settings = {
   youtubeControls: false,
   stage: 'auto',
   miniSpot: 'br',
-  miniPlace: 'sidebar',
+  miniPlace: 'panel',
   miniWidth: 356,
   crossfade: 2,
   skipLong: 0,
@@ -455,6 +455,8 @@ function v8(r: Record<string, unknown>): Partial<Settings> {
     ...((r.covers ?? 'rounded') === 'rounded' && { covers: 'net' }),
     immersive: false,
     upNext: false,
+    // Sidebar = library only (user's pick 2026-10-29): YouTube's video goes to the right panel.
+    ...(r.miniPlace !== 'float' && { miniPlace: 'panel' }),
   }
 }
 
@@ -576,7 +578,7 @@ export function sanitize(raw: unknown): Settings {
     youtubeControls: typeof r.youtubeControls === 'boolean' ? r.youtubeControls : DEFAULTS.youtubeControls,
     stage: pick(r.stage, ['auto', 'video', 'cover'] as const, DEFAULTS.stage),
     miniSpot: pick(r.miniSpot, SPOTS, DEFAULTS.miniSpot),
-    miniPlace: pick(r.miniPlace, ['sidebar', 'float'] as const, DEFAULTS.miniPlace),
+    miniPlace: pick(r.miniPlace, ['panel', 'sidebar', 'float'] as const, DEFAULTS.miniPlace),
     miniWidth: typeof r.miniWidth === 'number' && Number.isFinite(r.miniWidth) ? Math.min(960, Math.max(356, Math.round(r.miniWidth))) : DEFAULTS.miniWidth,
     crossfade: typeof r.crossfade === 'number' && Number.isFinite(r.crossfade) ? Math.min(12, Math.max(0, Math.round(r.crossfade))) : DEFAULTS.crossfade,
     skipLong: typeof r.skipLong === 'number' && Number.isFinite(r.skipLong) ? Math.min(60, Math.max(0, Math.round(r.skipLong))) : DEFAULTS.skipLong,

@@ -1202,7 +1202,6 @@ const vi: Record<string, string> = {
   // Docked mini player
   'For every source. YouTube always shows one: its video must stay visible.': 'Cho mọi nguồn. YouTube luôn hiện trình phát mini: video của nó phải luôn hiển thị.',
   'Mini player place': 'Vị trí trình phát mini',
-  'In the sidebar it never covers the page; floating, drag it anywhere.': 'Ở thanh bên thì không bao giờ che trang; khi nổi, kéo đi đâu cũng được.',
   'In the sidebar': 'Ở thanh bên',
   'Floating': 'Nổi',
   'sidebar docked floating video corner': 'thanh bên ghim nổi video góc sidebar docked floating video corner',
@@ -1517,6 +1516,8 @@ const vi: Record<string, string> = {
   'toast popup message time seconds duration short long': 'popup thông báo thời gian giây độ dài ngắn dài',
   'What do you want to play?': 'Bạn muốn nghe gì?',
   'Playing from {list}': 'Đang phát từ {list}',
+  'In the right panel': 'Ở bảng bên phải',
+  'In the right panel or the sidebar it never covers the page; floating, drag it anywhere.': 'Ở bảng bên phải hoặc thanh bên thì không bao giờ che trang; khi nổi, kéo đi đâu cũng được.',
 }
 
 export default vi

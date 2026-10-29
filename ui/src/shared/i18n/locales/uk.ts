@@ -1202,7 +1202,6 @@ const uk: Record<string, string> = {
   // Docked mini player
   'For every source. YouTube always shows one: its video must stay visible.': 'Для всіх джерел. YouTube показує його завжди: його відео має лишатися видимим.',
   'Mini player place': 'Місце мініплеєра',
-  'In the sidebar it never covers the page; floating, drag it anywhere.': 'На бічній панелі він ніколи не закриває сторінку; плаваючий можна перетягнути куди завгодно.',
   'In the sidebar': 'На бічній панелі',
   'Floating': 'Плаваючий',
   'sidebar docked floating video corner': 'бічна панель закріплений плаваючий відео кут',
@@ -1517,6 +1516,8 @@ const uk: Record<string, string> = {
   'toast popup message time seconds duration short long': 'спливаюче повідомлення час секунди тривалість коротко довго',
   'What do you want to play?': 'Що хочеш послухати?',
   'Playing from {list}': 'Грає з: {list}',
+  'In the right panel': 'На правій панелі',
+  'In the right panel or the sidebar it never covers the page; floating, drag it anywhere.': 'На правій або бічній панелі він ніколи не закриває сторінку; плаваючий можна перетягнути куди завгодно.',
 }
 
 export default uk
