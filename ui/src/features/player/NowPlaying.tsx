@@ -282,9 +282,10 @@ export function NowPlaying() {
           <div className="flex w-full max-w-[880px] shrink-0 flex-col gap-4">
             <div className="flex items-end justify-between gap-6">
               <div className="min-w-0">
-                <h2 className="truncate text-[1.75rem] leading-tight font-bold tracking-[-0.02em]">{now.title}</h2>
-                <p className="truncate text-sm text-ink-2">
-                  <ArtistLink now={now} />
+                {/* Display type (docs/design.md), smaller in a small window. */}
+                <h2 className="truncate pb-1 text-[clamp(2rem,4.2vw,3.5rem)] leading-[1.07] font-black tracking-[-0.02em]">{now.title}</h2>
+                <p className="truncate text-base text-ink-2">
+                  <ArtistLink now={now} className="font-medium text-ink" />
                   {track?.album && ` — ${track.album}`}
                 </p>
               </div>

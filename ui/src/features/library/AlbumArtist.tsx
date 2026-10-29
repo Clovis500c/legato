@@ -4,6 +4,7 @@ import { Fragment, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useStore } from '../../app/store'
 import { api, type AlbumInfo, type LibraryTrack, type ListRef, type Track, type YtmArtist } from '../../shared/api'
 import { firstArt, remoteArt, trackArt } from '../../shared/art'
+import { useCoverTint } from '../player/coverTint'
 import { fold, formatCount, formatDuration, region } from '../../shared/format'
 import { tr, trn } from '../../shared/i18n/i18n'
 import { Button } from '../../shared/ui/Button'
@@ -146,11 +147,13 @@ export function AlbumView({ album, artist }: { album: string; artist: string }) 
   const ordered = page?.ordered ?? shown
   const plays = (t: LibraryTrack) => <span className="w-14 shrink-0 text-right text-xs text-ink-3 tabular-nums">{stats[t.id]?.[0] ? formatCount(stats[t.id][0]) : ''}</span>
   const featured = (t: Track) => (primaryArtist(t.artist) !== t.artist ? t.artist : undefined)
+  const tint = useCoverTint(firstArt(shown)[0])
   return (
     <div className="-mx-2 flex min-h-0 flex-1 flex-col overflow-y-auto px-2 pb-8">
       <PageHeader
         onContextMenu={onMenu(() => tracksMenu(shown, ['-', { label: tr('Go to artist'), onSelect: toArtist }]))}
-        art={<Cover title={album} art={firstArt(shown)} size={200} eager className="shadow-[0_12px_32px_var(--shadow)]" />}
+        art={<Cover title={album} art={firstArt(shown)} size={200} eager className="border-0" />}
+        tint={tint}
         kicker={tr('Album')}
         title={album}
         sub={
@@ -278,10 +281,13 @@ export function ArtistView({ artist }: { artist: string }) {
       (e) => (useStore.getState().notify(String(e), { kind: 'error' }), setAll(null)),
     )
   }
+  const photo = shown.length || !yt?.art ? firstArt(shown) : [remoteArt(yt.art)]
+  const tint = useCoverTint(photo[0])
   const header = (
     <PageHeader
       onContextMenu={onMenu(() => tracksMenu(playable))}
-      art={<Cover title={artist} art={shown.length || !yt?.art ? firstArt(shown) : [remoteArt(yt.art)]} size={168} eager className="rounded-full!" />}
+      art={<Cover title={artist} art={photo} size={168} eager className="rounded-full! border-0" />}
+      tint={tint}
       kicker={tr('Artist')}
       title={artist}
       sub={shown.length ? `${trn(shown.length, '{n} song', '{n} songs')} · ${trn(disco.albums.length + disco.singles.length, '{n} album', '{n} albums')} · ${totalTime(shown)}` : undefined}

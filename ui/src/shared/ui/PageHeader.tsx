@@ -1,12 +1,12 @@
 import type { ReactNode } from 'react'
 
 /**
- * Page header: optional kicker, title, subtitle, actions on the right. Compact (a list page keeps its rows in view);
- * a page with art (album, artist, playlist) gets a bigger title.
+ * Page header: optional kicker, title, subtitle, actions on the right. A page with art (album, artist, playlist) is a
+ * band in the cover's tint (`tint`: palette variables from useCoverTint; the page's own colors until it's known).
  */
-export function PageHeader({ kicker, title, sub, actions, art, onContextMenu }: { kicker?: string; title: ReactNode; sub?: ReactNode; actions?: ReactNode; art?: ReactNode; onContextMenu?: (e: React.MouseEvent) => void }) {
+export function PageHeader({ kicker, title, sub, actions, art, tint, onContextMenu }: { kicker?: string; title: ReactNode; sub?: ReactNode; actions?: ReactNode; art?: ReactNode; tint?: Record<string, string>; onContextMenu?: (e: React.MouseEvent) => void }) {
   return (
-    <header onContextMenu={onContextMenu} className={`flex shrink-0 items-end justify-between gap-6 pt-1 ${art ? 'pb-6' : 'pb-4'}`}>
+    <header onContextMenu={onContextMenu} style={tint} className={`flex shrink-0 items-end justify-between gap-6 ${art ? 'mb-4 rounded-lg bg-bg p-6 transition-colors duration-500' : 'pt-1 pb-4'}`}>
       <div className="flex min-w-0 items-end gap-7">
         {art}
         <div className={`flex min-w-0 flex-col ${art ? 'gap-2' : 'gap-1'}`}>

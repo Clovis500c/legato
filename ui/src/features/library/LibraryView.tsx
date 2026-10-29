@@ -9,6 +9,7 @@ import { Led, LedChip, RoundButton, Segmented } from '../../shared/ui/controls'
 import { VirtualGrid } from '../../shared/ui/VirtualGrid'
 import { VirtualList } from '../../shared/ui/VirtualList'
 import { firstArt, trackArt } from '../../shared/art'
+import { useCoverTint } from '../player/coverTint'
 import { onMenu, openMenu, type MenuEntry } from '../../shared/ui/ContextMenu'
 import { Cover } from '../../shared/ui/Cover'
 import { playlistMenu, shufflePlay, tracksMenu } from '../menus'
@@ -324,6 +325,8 @@ export function PlaylistView({ id }: { id: number }) {
   const shown = useMemo(() => sortTracks(filterTracks(music.kept, query, 'all'), playlistSort, { stats, seed, positional: true, newestFirst }), [music, query, playlistSort, stats, seed, newestFirst])
   const sharing = useStore((s) => s.sharing === id)
   const closeShare = useCallback(() => useStore.setState({ sharing: null }), [])
+  // Band in the tint of the first song's cover (the playlist's own picture aside).
+  const tint = useCoverTint(playlistTracks[0] && trackArt(playlistTracks[0])[0])
   if (!playlist) return null
   // Add songs: to the panel under the list, its field ready.
   const addSongs = () => {
@@ -336,6 +339,7 @@ export function PlaylistView({ id }: { id: number }) {
       <PageHeader
         onContextMenu={onMenu(() => playlistMenu(playlist))}
         art={<PlaylistCover p={playlist} size={184} big />}
+        tint={tint}
         kicker={playlist.custom ? tr('Your playlist') : tr('Playlist · {source} · imported', { source: tr(sourceLabel[playlist.source]) })}
         title={playlist.custom ? <EditableTitle key={playlist.name} id={id} name={playlist.name} /> : playlist.name}
         sub={`${trn(playlist.trackCount, '{n} song', '{n} songs')} · ${totalTime(playlistTracks)}`}
