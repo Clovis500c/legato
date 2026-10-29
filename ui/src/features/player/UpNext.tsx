@@ -1,11 +1,11 @@
-import { CaretRight, ClipboardText, DotsSixVertical, FloppyDisk, MinusCircle, Waveform, X } from '@phosphor-icons/react'
+import { CaretRight, ClipboardText, DotsSixVertical, DotsThreeVertical, FloppyDisk, MinusCircle, Waveform, X } from '@phosphor-icons/react'
 import { useVirtualizer } from '@tanstack/react-virtual'
-import { useCallback, useEffect, useMemo, useRef } from 'react'
+import { useCallback, useEffect, useMemo, useRef, type ReactNode } from 'react'
 import { useSettings } from '../../app/settings'
 import { useStore } from '../../app/store'
 import { trackArt } from '../../shared/art'
 import { formatDuration } from '../../shared/format'
-import { onMenu, type MenuEntry } from '../../shared/ui/ContextMenu'
+import { onMenu, openMenu, type MenuEntry } from '../../shared/ui/ContextMenu'
 import { RoundButton, Toggle } from '../../shared/ui/controls'
 import { Cover } from '../../shared/ui/Cover'
 import { dragSource, useDrag, useDropTarget } from '../../shared/ui/drag'
@@ -86,12 +86,12 @@ function queueMenu(onHide: () => void): MenuEntry[] {
  * What's next, or only what you added, can be cleared. className: the panel's own look (default: a card over Now
  * Playing).
  */
-export function UpNext({ onHide, className = CARD }: { onHide: () => void; className?: string }) {
+/** heading = what heads the panel instead of "Up next" (the main window's tabs). */
+export function UpNext({ onHide, className = CARD, heading }: { onHide: () => void; className?: string; heading?: ReactNode }) {
   const rows = useRows()
   const list = usePlayer((s) => s.list)
   const playAt = usePlayer((s) => s.playAt)
   const move = usePlayer((s) => s.move)
-  const clearNext = usePlayer((s) => s.clearNext)
   const nowTitle = usePlayer((s) => s.now?.title ?? '')
   const nowArtist = usePlayer((s) => s.now?.artist ?? '')
   const track = useNowTrack()
@@ -145,17 +145,11 @@ export function UpNext({ onHide, className = CARD }: { onHide: () => void; class
   return (
     <aside onContextMenu={onMenu(() => queueMenu(onHide))} className={`flex min-h-0 flex-col gap-2 ${className}`}>
       <div className="flex items-center gap-2 px-1">
-        <span className="flex-1 text-[0.8125rem] font-semibold">{tr('Up next')}</span>
-        {next > 0 && rows[current]?.i !== undefined && rows[current].i >= 0 && (
-          <button onClick={clearNext} className="rounded-full px-2 py-0.5 text-xs font-medium text-ink-2 hover:bg-raised hover:text-ink">
-            {tr('Clear')}
-          </button>
-        )}
-        {queue && (
-          <RoundButton label={tr('Save the queue as a playlist')} kind="plain" size="sm" onClick={() => void saveQueue()}>
-            <FloppyDisk size={14} />
-          </RoundButton>
-        )}
+        <span className="flex min-w-0 flex-1 items-center text-[0.8125rem] font-semibold">{heading ?? tr('Up next')}</span>
+        {/* Save, shuffle, clear what's next, copy: the panel's menu, as on a right-click (room for the tabs). */}
+        <RoundButton label={tr('More')} kind="plain" size="sm" onClick={(e) => openMenu(e, queueMenu(onHide))}>
+          <DotsThreeVertical size={14} weight="bold" />
+        </RoundButton>
         <RoundButton label={tr('Hide up next')} kind="plain" size="sm" onClick={onHide}>
           <CaretRight size={14} />
         </RoundButton>

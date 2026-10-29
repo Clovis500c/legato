@@ -1,5 +1,5 @@
 import { ArrowCounterClockwise, CaretLeft, CaretRight, MusicNotesSimple, Queue, Timer } from '@phosphor-icons/react'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useSettings } from '../../app/settings'
 import { useStore } from '../../app/store'
 import { api, type Lyrics } from '../../shared/api'
@@ -135,7 +135,8 @@ function Plain({ text, durationMs }: { text: string; durationMs: number | null }
  * Now Playing › Lyrics, beside the cover (Spotify-like). LRCLIB first (synced when it can be, stretched for slowed /
  * sped up versions), YouTube Music's own when signed in (src-tauri lyrics), cached on disk.
  */
-export function LyricsPanel({ onHide, onUpNext, className = CARD }: { onHide: () => void; onUpNext: () => void; className?: string }) {
+/** heading = what heads the panel instead of "Lyrics" (the main window's tabs, which also reach Up next). */
+export function LyricsPanel({ onHide, onUpNext, className = CARD, heading }: { onHide: () => void; onUpNext: () => void; className?: string; heading?: ReactNode }) {
   const now = usePlayer((s) => s.now)
   const playerMs = usePlayer((s) => s.durationMs)
   const track = useNowTrack()
@@ -195,7 +196,7 @@ export function LyricsPanel({ onHide, onUpNext, className = CARD }: { onHide: ()
   return (
     <aside aria-label={tr('Lyrics')} className={`flex min-h-0 flex-col gap-2 ${className}`}>
       <div className="flex items-center gap-2 px-1">
-        <span className="flex-1 text-[0.8125rem] font-semibold">{tr('Lyrics')}</span>
+        <span className="flex min-w-0 flex-1 items-center text-[0.8125rem] font-semibold">{heading ?? tr('Lyrics')}</span>
         {!!l?.lines.length && song && (
           <RoundButton
             label={tr('Fix the timing')}
@@ -211,9 +212,11 @@ export function LyricsPanel({ onHide, onUpNext, className = CARD }: { onHide: ()
             <Timer size={14} />
           </RoundButton>
         )}
-        <RoundButton label={tr('Show Up next instead')} kind="plain" size="sm" onClick={onUpNext}>
-          <Queue size={14} />
-        </RoundButton>
+        {!heading && (
+          <RoundButton label={tr('Show Up next instead')} kind="plain" size="sm" onClick={onUpNext}>
+            <Queue size={14} />
+          </RoundButton>
+        )}
         <RoundButton label={tr('Hide lyrics')} kind="plain" size="sm" onClick={onHide}>
           <CaretRight size={14} />
         </RoundButton>
