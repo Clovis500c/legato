@@ -199,6 +199,8 @@ struct Caches {
     /// YouTube Music home shelves, and the songs of the playlists / radios opened from them.
     home: Ttl<Home>,
     lists: Ttl<Vec<Track>>,
+    /// Mixes' discoveries: radios of their leading songs, asked a few times a day.
+    radios: Ttl<Vec<Track>>,
     artists: Ttl<Option<Artist>>,
     /// Album pages from the Apple catalog (None = not in the store): change rarely.
     albums: Ttl<Option<music_connectors::itunes::Album>>,
@@ -219,6 +221,7 @@ impl Default for Caches {
             status: Ttl::new(Duration::from_secs(30), 1),
             home: Ttl::new(Duration::from_secs(15 * 60), 12),
             lists: Ttl::new(Duration::from_secs(15 * 60), 30),
+            radios: Ttl::new(Duration::from_secs(12 * 3600), 16),
             artists: Ttl::new(Duration::from_secs(30 * 60), 32),
             albums: Ttl::new(Duration::from_secs(24 * 3600), 64),
             embeds: Ttl::new(Duration::from_secs(24 * 3600), 2000),
@@ -889,15 +892,47 @@ async fn record_play(state: State<'_, AppState>, play: Play) -> CmdResult<()> {
 async fn mixes(state: State<'_, AppState>, utc_offset: i64) -> CmdResult<Response> {
     let utc_offset = utc_offset.clamp(-14 * 3600, 14 * 3600);
     let now = unix_now();
-    let lib = state.lib();
-    // Same data, same day, same hour: same mixes.
-    let stamp = (lib.versions.library(), lib.versions.history(), today(), (now + utc_offset).div_euclid(3600));
-    let answer = state.cache.mixes.get_or(utc_offset, stamp, || {
-        let (tracks, plays, playlists, saved, liked, prefs) = (lib.tracks().map_err(err)?, lib.plays().map_err(err)?, lib.custom_playlists().map_err(err)?, lib.saved_playlists().map_err(err)?, lib.liked_tracks().map_err(err)?, lib.prefs().map_err(err)?);
-        let input = music_core::mixes::Input { tracks: &tracks, plays: &plays, playlists: &playlists, saved: &saved, liked: &liked, prefs: &prefs, now, utc_offset, seed: today() };
-        serde_json::to_string(&music_core::mixes::mixes(&input)).map_err(err)
-    })?;
+    let (stamp, (tracks, plays, playlists, saved, liked, prefs)) = {
+        let lib = state.lib();
+        // Same data, same day, same hour: same mixes.
+        let stamp = (lib.versions.library(), lib.versions.history(), today(), (now + utc_offset).div_euclid(3600));
+        if let Some(hit) = state.cache.mixes.peek(&utc_offset, &stamp) {
+            return Ok(json(hit));
+        }
+        (stamp, (lib.tracks().map_err(err)?, lib.plays().map_err(err)?, lib.custom_playlists().map_err(err)?, lib.saved_playlists().map_err(err)?, lib.liked_tracks().map_err(err)?, lib.prefs().map_err(err)?))
+    };
+    let input = music_core::mixes::Input { tracks: &tracks, plays: &plays, playlists: &playlists, saved: &saved, liked: &liked, prefs: &prefs, now, utc_offset, seed: today(), found: &[] };
+    let found = radios(&state, music_core::mixes::seeds(&input)).await;
+    let answer = state.cache.mixes.get_or(utc_offset, stamp, || serde_json::to_string(&music_core::mixes::mixes(&music_core::mixes::Input { found: &found, ..input })).map_err(err))?;
     Ok(json(answer))
+}
+
+/// YouTube Music's radio of each mix seed (track id, video id): the mixes' discoveries. Kept for hours; a radio that
+/// fails (offline) is left out, the mixes come without its songs.
+async fn radios(state: &AppState, seeds: Vec<(i64, String)>) -> Vec<(i64, Vec<Track>)> {
+    let mut yt: Option<Arc<YouTubeMusic>> = None;
+    let mut out = Vec::new();
+    let mut asked = Vec::new();
+    for (id, video) in seeds {
+        if let Some(hit) = state.cache.radios.get(&video) {
+            out.push((id, (*hit).clone()));
+            continue;
+        }
+        let list = ListRef::Radio { video_id: Some(video.clone()), playlist_id: format!("RDAMVM{video}") };
+        // Trust boundary: ids go into YouTube requests.
+        if !list.valid() {
+            continue;
+        }
+        // Signed out: anonymous radios.
+        let yt = yt.get_or_insert_with(|| Arc::new(state.ytm().unwrap_or_else(YouTubeMusic::anonymous))).clone();
+        asked.push((id, video, tauri::async_runtime::spawn(async move { yt.list_tracks(&list).await })));
+    }
+    for (id, video, task) in asked {
+        if let Ok(Ok(tracks)) = task.await {
+            out.push((id, (*state.cache.radios.put(&video, tracks)).clone()));
+        }
+    }
+    out
 }
 
 /// "It's music" (true) / "Not music" (false) from the user, None = back to the app's guess.

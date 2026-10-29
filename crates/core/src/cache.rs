@@ -117,6 +117,20 @@ impl<K: Eq + Hash + Clone, S: PartialEq> Memo<K, S> {
         Ok(answer)
     }
 
+    /// Kept answer when the stamp still matches, nothing computed (an answer that needs network first).
+    pub fn peek(&self, key: &K, stamp: &S) -> Option<Arc<str>> {
+        let mut m = self.inner.lock().unwrap();
+        m.tick += 1;
+        let tick = m.tick;
+        let answer = {
+            let e = m.map.get_mut(key).filter(|e| e.0 == *stamp)?;
+            e.2 = tick;
+            e.1.clone()
+        };
+        m.hits += 1;
+        Some(answer)
+    }
+
     pub fn clear(&self) {
         self.inner.lock().unwrap().map.clear();
     }
@@ -263,6 +277,9 @@ mod tests {
         // Errors are not kept.
         assert!(memo.get_or("x", 0, || Err::<String, _>("boom")).is_err());
         assert_eq!(&*memo.get_or::<()>("x", 0, || Ok("ok".into())).unwrap(), "ok");
+        // Peek: kept answer for this stamp only.
+        assert_eq!(memo.peek(&"lib", &2).as_deref(), Some("v2"));
+        assert_eq!(memo.peek(&"lib", &3), None);
     }
 
     #[test]

@@ -15,7 +15,7 @@ import { musicOnly } from '../library/filter'
 import { HiddenVideos } from '../library/HiddenVideos'
 import { TrackTable } from '../library/TrackTable'
 import { tracksMenu } from '../menus'
-import { usePlayer } from '../player/store'
+import { isRemote, remoteTrack, usePlayer } from '../player/store'
 import { msg, tr, trn } from '../../shared/i18n/i18n'
 import { mixReason, mixTitle, weekdayName } from './words'
 import { ask } from '../../shared/ui/Ask'
@@ -35,12 +35,16 @@ export function useMixes() {
   return { mixes, reload }
 }
 
+/** A mix's songs in order: library songs, songs new to you slotted at their place. */
+export function mixSongs(mix: Mix, byId: Map<number, LibraryTrack>): LibraryTrack[] {
+  const songs = mix.trackIds.flatMap((id) => byId.get(id) ?? [])
+  for (const f of mix.found ?? []) songs.splice(f.at, 0, remoteTrack(f.track))
+  return songs
+}
+
 function useMixTracks(mix?: Mix): LibraryTrack[] {
   const tracks = useStore((s) => s.tracks)
-  return useMemo(() => {
-    const byId = new Map(tracks.map((t) => [t.id, t]))
-    return (mix?.trackIds ?? []).flatMap((id) => byId.get(id) ?? [])
-  }, [tracks, mix])
+  return useMemo(() => (mix ? mixSongs(mix, new Map(tracks.map((t) => [t.id, t]))) : []), [tracks, mix])
 }
 
 /** Short label and big mark of a mix (template tile, badge on covers). */
@@ -56,6 +60,8 @@ function mixMark(mix: Mix): { label: string; mark: string } {
     fresh: { label: tr('New'), mark: '+' },
     gems: { label: tr('Gems'), mark: '◇' },
     rediscover: { label: tr('Again'), mark: '↺' },
+    supermix: { label: tr('Mix'), mark: '★' },
+    discover: { label: tr('Discover'), mark: '✦' },
   }
   return marks[mix.id] ?? { label: tr('Mix'), mark: '♪' }
 }
@@ -165,7 +171,7 @@ export function MixesView() {
             )
           })}
         </div>
-        {mixes && mixes.length > 0 && <p className="mt-8 max-w-160 text-xs text-ink-2">{tr('Built from your plays (full listens count more, skips count against), your playlists, your saves on YouTube Music and Spotify, what you play back to back and the time of day. Nothing leaves this computer. On a mix, use “Less like this” or “Never in mixes” to steer it.')}</p>}
+        {mixes && mixes.length > 0 && <p className="mt-8 max-w-160 text-xs text-ink-2">{tr('Built from your plays (full listens count more, skips count against), your playlists, your saves on YouTube Music and Spotify, what you play back to back and the time of day. To find new songs, a few of your favorites go to YouTube Music for their radio; your history stays on this computer. On a mix, use “Less like this” or “Never in mixes” to steer it.')}</p>}
       </div>
     </>
   )
@@ -204,16 +210,19 @@ export function MixView({ id }: { id: string }) {
       <TrackTable
         tracks={tracks}
         empty={tr('Nothing left in this mix.')}
-        rowActions={(t) => (
-          <>
-            <RoundButton label={tr('Less like {title}', { title: t.title })} kind="plain" size="xs" onClick={() => steer(t, 'less')}>
-              <ThumbsDown size={13} />
-            </RoundButton>
-            <RoundButton label={tr('Never put {title} in mixes', { title: t.title })} kind="plain" size="xs" onClick={() => steer(t, 'never')}>
-              <Prohibit size={13} />
-            </RoundButton>
-          </>
-        )}
+        rowActions={(t) =>
+          // Songs new to you: not in the library, nothing to steer.
+          !isRemote(t) && (
+            <>
+              <RoundButton label={tr('Less like {title}', { title: t.title })} kind="plain" size="xs" onClick={() => steer(t, 'less')}>
+                <ThumbsDown size={13} />
+              </RoundButton>
+              <RoundButton label={tr('Never put {title} in mixes', { title: t.title })} kind="plain" size="xs" onClick={() => steer(t, 'never')}>
+                <Prohibit size={13} />
+              </RoundButton>
+            </>
+          )
+        }
       />
     </>
   )
