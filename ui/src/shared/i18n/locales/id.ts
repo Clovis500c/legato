@@ -1145,7 +1145,6 @@ const id: Record<string, string> = {
   'Backdrop blur': 'Buram latar',
   'Backdrop dim': 'Peredupan latar',
   'Backdrop motion': 'Gerakan latar',
-  'Pictures': 'Gambar',
   'Theme saved': 'Tema disimpan',
   'Save as a .theme file': 'Simpan sebagai file .theme',
   'Copy as text (without the picture)': 'Salin sebagai teks (tanpa gambar)',
@@ -1155,8 +1154,6 @@ const id: Record<string, string> = {
   'Base color': 'Warna dasar',
   'Light': 'Terang',
   'Dark': 'Gelap',
-  'Another picture…': 'Gambar lain…',
-  'Choose a picture…': 'Pilih gambar…',
   'No picture': 'Tanpa gambar',
   'Fit': 'Pas',
   'Fill': 'Isi',
@@ -1462,6 +1459,10 @@ const id: Record<string, string> = {
   'Full screen on / off': 'Layar penuh hidup / mati',
   'Full screen (F11)': 'Layar penuh (F11)',
   'Exit full screen (F11)': 'Keluar layar penuh (F11)',
+  'Pictures and videos': 'Gambar dan video',
+  'Choose a picture or video…': 'Pilih gambar atau video…',
+  'Another picture or video…': 'Gambar atau video lain…',
+  'Plays muted in a loop, still while animations are off or Music App is hidden.': 'Diputar tanpa suara berulang, diam saat animasi mati atau Music App tersembunyi.',
 }
 
 export default id

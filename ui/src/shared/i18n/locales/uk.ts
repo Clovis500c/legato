@@ -1145,7 +1145,6 @@ const uk: Record<string, string> = {
   'Backdrop blur': 'Розмиття тла',
   'Backdrop dim': 'Затемнення тла',
   'Backdrop motion': 'Рух тла',
-  'Pictures': 'Картинки',
   'Theme saved': 'Тему збережено',
   'Save as a .theme file': 'Зберегти як файл .theme',
   'Copy as text (without the picture)': 'Копіювати як текст (без картинки)',
@@ -1155,8 +1154,6 @@ const uk: Record<string, string> = {
   'Base color': 'Базовий колір',
   'Light': 'Світла',
   'Dark': 'Темна',
-  'Another picture…': 'Інша картинка…',
-  'Choose a picture…': 'Вибрати картинку…',
   'No picture': 'Без картинки',
   'Fit': 'Вписати',
   'Fill': 'Заповнити',
@@ -1462,6 +1459,10 @@ const uk: Record<string, string> = {
   'Full screen on / off': 'Повний екран увімк. / вимк.',
   'Full screen (F11)': 'Повний екран (F11)',
   'Exit full screen (F11)': 'Вийти з повного екрана (F11)',
+  'Pictures and videos': 'Зображення й відео',
+  'Choose a picture or video…': 'Вибрати зображення чи відео…',
+  'Another picture or video…': 'Інше зображення чи відео…',
+  'Plays muted in a loop, still while animations are off or Music App is hidden.': 'Грає без звуку по колу; стоїть, коли анімації вимкнено або Music App приховано.',
 }
 
 export default uk

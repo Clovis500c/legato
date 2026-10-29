@@ -1145,7 +1145,6 @@ const tr: Record<string, string> = {
   'Backdrop blur': 'Arka plan bulanıklığı',
   'Backdrop dim': 'Arka plan karartma',
   'Backdrop motion': 'Arka plan hareketi',
-  'Pictures': 'Resimler',
   'Theme saved': 'Tema kaydedildi',
   'Save as a .theme file': '.theme dosyası olarak kaydet',
   'Copy as text (without the picture)': 'Metin olarak kopyala (resim olmadan)',
@@ -1155,8 +1154,6 @@ const tr: Record<string, string> = {
   'Base color': 'Temel renk',
   'Light': 'Açık',
   'Dark': 'Koyu',
-  'Another picture…': 'Başka bir resim…',
-  'Choose a picture…': 'Bir resim seç…',
   'No picture': 'Resim yok',
   'Fit': 'Sığdır',
   'Fill': 'Doldur',
@@ -1462,6 +1459,10 @@ const tr: Record<string, string> = {
   'Full screen on / off': 'Tam ekran açık / kapalı',
   'Full screen (F11)': 'Tam ekran (F11)',
   'Exit full screen (F11)': 'Tam ekrandan çık (F11)',
+  'Pictures and videos': 'Resimler ve videolar',
+  'Choose a picture or video…': 'Resim veya video seç…',
+  'Another picture or video…': 'Başka bir resim veya video…',
+  'Plays muted in a loop, still while animations are off or Music App is hidden.': 'Sessiz ve döngüde oynar; animasyonlar kapalıyken veya Music App gizliyken durur.',
 }
 
 export default tr

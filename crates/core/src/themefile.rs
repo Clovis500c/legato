@@ -1,4 +1,4 @@
-//! `.theme` files: a theme's JSON, its background picture inside (base64) so one file carries everything. Pictures
+//! `.theme` files: a theme's JSON, its background picture or video inside (base64) so one file carries everything. Pictures
 //! are kept by content: the same picture twice is one file.
 
 use anyhow::{Result, bail, ensure};
@@ -8,22 +8,34 @@ use std::hash::{Hash, Hasher};
 
 /// A picture a theme can use: PNG, JPEG, WebP or GIF, 15 MB at most.
 pub const MAX_IMAGE: usize = 15 << 20;
+/// Or a video (MP4, WebM), played muted in a loop: 40 MB at most.
+pub const MAX_VIDEO: usize = 40 << 20;
 
-/// Picture kind from its first bytes.
+/// Picture or video kind from its first bytes.
 pub fn image_ext(bytes: &[u8]) -> Option<&'static str> {
     match bytes {
         [0x89, b'P', b'N', b'G', ..] => Some("png"),
         [0xFF, 0xD8, 0xFF, ..] => Some("jpg"),
         [b'G', b'I', b'F', ..] => Some("gif"),
         [b'R', b'I', b'F', b'F', _, _, _, _, b'W', b'E', b'B', b'P', ..] => Some("webp"),
+        [_, _, _, _, b'f', b't', b'y', b'p', ..] => Some("mp4"),
+        [0x1A, 0x45, 0xDF, 0xA3, ..] => Some("webm"),
         _ => None,
     }
 }
 
-/// File name for a background picture: `bg-<16 hex of its content>.<kind>`.
+pub fn is_video(ext: &str) -> bool {
+    matches!(ext, "mp4" | "webm")
+}
+
+/// File name for a background picture or video: `bg-<16 hex of its content>.<kind>`.
 pub fn background_name(bytes: &[u8]) -> Result<String> {
-    ensure!(bytes.len() <= MAX_IMAGE, "Picture too big (15 MB max)");
-    let Some(ext) = image_ext(bytes) else { bail!("Not a PNG, JPEG, WebP or GIF picture") };
+    let Some(ext) = image_ext(bytes) else { bail!("Not a PNG, JPEG, WebP, GIF, MP4 or WebM file") };
+    if is_video(ext) {
+        ensure!(bytes.len() <= MAX_VIDEO, "Video too big (40 MB max)");
+    } else {
+        ensure!(bytes.len() <= MAX_IMAGE, "Picture too big (15 MB max)");
+    }
     let mut h = std::collections::hash_map::DefaultHasher::new();
     bytes.hash(&mut h);
     Ok(format!("bg-{:016x}.{ext}", h.finish()))
@@ -42,7 +54,7 @@ pub fn pack(theme: &Value, picture: Option<&[u8]>) -> Result<String> {
 
 /// File text → theme JSON (still to be checked by the interface) and its picture, if any.
 pub fn unpack(text: &str) -> Result<(Value, Option<Vec<u8>>)> {
-    ensure!(text.len() <= MAX_IMAGE * 4 / 3 + (1 << 20), "File too big for a theme");
+    ensure!(text.len() <= MAX_VIDEO * 4 / 3 + (1 << 20), "File too big for a theme");
     let mut t: Value = serde_json::from_str(text).map_err(|_| anyhow::anyhow!("Not a theme file"))?;
     let obj = t.as_object_mut().ok_or_else(|| anyhow::anyhow!("Not a theme file"))?;
     let picture = match obj.remove("backgroundData") {
@@ -70,6 +82,14 @@ mod tests {
         assert_eq!(background_name(PNG).unwrap(), a);
         assert_ne!(background_name(&[0x89, b'P', b'N', b'G', 9]).unwrap(), a);
         assert!(background_name(b"MZ\x90\x00").is_err());
+        assert!(background_name(b"\0\0\0\x20ftypisom").unwrap().ends_with(".mp4"));
+        assert!(background_name(&[0x1A, 0x45, 0xDF, 0xA3, 1]).unwrap().ends_with(".webm"));
+        // Pictures stay at 15 MB; videos may be bigger.
+        let mut big = vec![0x89, b'P', b'N', b'G'];
+        big.resize(MAX_IMAGE + 1, 0);
+        assert!(background_name(&big).is_err());
+        big[..8].copy_from_slice(b"\0\0\0\x20ftyp");
+        assert!(background_name(&big).is_ok());
     }
 
     #[test]

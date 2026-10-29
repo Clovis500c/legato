@@ -1145,7 +1145,6 @@ const hi: Record<string, string> = {
   'Backdrop blur': 'बैकड्रॉप धुंधलापन',
   'Backdrop dim': 'बैकड्रॉप गहराई',
   'Backdrop motion': 'बैकड्रॉप मोशन',
-  'Pictures': 'तस्वीरें',
   'Theme saved': 'थीम सेव हुई',
   'Save as a .theme file': '.theme फ़ाइल के रूप में सेव करें',
   'Copy as text (without the picture)': 'टेक्स्ट के रूप में कॉपी करें (तस्वीर के बिना)',
@@ -1155,8 +1154,6 @@ const hi: Record<string, string> = {
   'Base color': 'बेस रंग',
   'Light': 'लाइट',
   'Dark': 'डार्क',
-  'Another picture…': 'दूसरी तस्वीर…',
-  'Choose a picture…': 'तस्वीर चुनें…',
   'No picture': 'कोई तस्वीर नहीं',
   'Fit': 'फ़िट',
   'Fill': 'भरें',
@@ -1462,6 +1459,10 @@ const hi: Record<string, string> = {
   'Full screen on / off': 'फ़ुल स्क्रीन चालू / बंद',
   'Full screen (F11)': 'फ़ुल स्क्रीन (F11)',
   'Exit full screen (F11)': 'फ़ुल स्क्रीन से बाहर (F11)',
+  'Pictures and videos': 'तस्वीरें और वीडियो',
+  'Choose a picture or video…': 'तस्वीर या वीडियो चुनें…',
+  'Another picture or video…': 'दूसरी तस्वीर या वीडियो…',
+  'Plays muted in a loop, still while animations are off or Music App is hidden.': 'बिना आवाज़ लूप में चलता है; एनिमेशन बंद हों या Music App छिपा हो तो रुका रहता है।',
 }
 
 export default hi

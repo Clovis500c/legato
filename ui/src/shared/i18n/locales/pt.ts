@@ -1145,7 +1145,6 @@ const pt: Record<string, string> = {
   'Backdrop blur': 'Desfoque do fundo',
   'Backdrop dim': 'Escurecimento do fundo',
   'Backdrop motion': 'Movimento do fundo',
-  'Pictures': 'Imagens',
   'Theme saved': 'Tema salvo',
   'Save as a .theme file': 'Salvar como arquivo .theme',
   'Copy as text (without the picture)': 'Copiar como texto (sem a imagem)',
@@ -1155,8 +1154,6 @@ const pt: Record<string, string> = {
   'Base color': 'Cor base',
   'Light': 'Claro',
   'Dark': 'Escuro',
-  'Another picture…': 'Outra imagem…',
-  'Choose a picture…': 'Escolher uma imagem…',
   'No picture': 'Sem imagem',
   'Fit': 'Ajustar',
   'Fill': 'Preencher',
@@ -1462,6 +1459,10 @@ const pt: Record<string, string> = {
   'Full screen on / off': 'Ecrã inteiro sim / não',
   'Full screen (F11)': 'Ecrã inteiro (F11)',
   'Exit full screen (F11)': 'Sair do ecrã inteiro (F11)',
+  'Pictures and videos': 'Imagens e vídeos',
+  'Choose a picture or video…': 'Escolher uma imagem ou um vídeo…',
+  'Another picture or video…': 'Outra imagem ou vídeo…',
+  'Plays muted in a loop, still while animations are off or Music App is hidden.': 'Reproduz sem som em ciclo, parado com as animações desligadas ou a Music App oculta.',
 }
 
 export default pt

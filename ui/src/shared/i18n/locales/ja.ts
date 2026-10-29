@@ -1145,7 +1145,6 @@ const ja: Record<string, string> = {
   'Backdrop blur': '背景のぼかし',
   'Backdrop dim': '背景の暗さ',
   'Backdrop motion': '背景の動き',
-  'Pictures': '画像',
   'Theme saved': 'テーマを保存しました',
   'Save as a .theme file': '.themeファイルとして保存',
   'Copy as text (without the picture)': 'テキストとしてコピー（画像なし）',
@@ -1155,8 +1154,6 @@ const ja: Record<string, string> = {
   'Base color': 'ベースカラー',
   'Light': 'ライト',
   'Dark': 'ダーク',
-  'Another picture…': '別の画像…',
-  'Choose a picture…': '画像を選択…',
   'No picture': '画像なし',
   'Fit': '全体を表示',
   'Fill': '画面いっぱい',
@@ -1462,6 +1459,10 @@ const ja: Record<string, string> = {
   'Full screen on / off': '全画面のオン / オフ',
   'Full screen (F11)': '全画面 (F11)',
   'Exit full screen (F11)': '全画面を終了 (F11)',
+  'Pictures and videos': '画像と動画',
+  'Choose a picture or video…': '画像または動画を選ぶ…',
+  'Another picture or video…': '別の画像または動画…',
+  'Plays muted in a loop, still while animations are off or Music App is hidden.': '無音でループ再生。アニメーションがオフのときや Music App が隠れているときは止まります。',
 }
 
 export default ja

@@ -114,6 +114,16 @@ body::after {
   inset: 0;
   background: var(--theme-dim, transparent);
 }
+/* Theme video (settings.ts themeVideo): between the picture layer and the dim. Blur re-runs every frame: costs GPU. */
+#theme-video {
+  position: fixed;
+  inset: calc(var(--theme-blur, 0px) * -2);
+  width: calc(100% + var(--theme-blur, 0px) * 4);
+  height: calc(100% + var(--theme-blur, 0px) * 4);
+  z-index: -1;
+  pointer-events: none;
+  filter: blur(var(--theme-blur, 0px));
+}
 
 input,
 textarea,

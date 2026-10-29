@@ -1145,7 +1145,6 @@ const vi: Record<string, string> = {
   'Backdrop blur': 'Làm mờ nền',
   'Backdrop dim': 'Làm tối nền',
   'Backdrop motion': 'Chuyển động nền',
-  'Pictures': 'Ảnh',
   'Theme saved': 'Đã lưu chủ đề',
   'Save as a .theme file': 'Lưu thành tệp .theme',
   'Copy as text (without the picture)': 'Sao chép dạng văn bản (không kèm ảnh)',
@@ -1155,8 +1154,6 @@ const vi: Record<string, string> = {
   'Base color': 'Màu gốc',
   'Light': 'Sáng',
   'Dark': 'Tối',
-  'Another picture…': 'Ảnh khác…',
-  'Choose a picture…': 'Chọn ảnh…',
   'No picture': 'Không có ảnh',
   'Fit': 'Vừa khít',
   'Fill': 'Lấp đầy',
@@ -1462,6 +1459,10 @@ const vi: Record<string, string> = {
   'Full screen on / off': 'Bật / tắt toàn màn hình',
   'Full screen (F11)': 'Toàn màn hình (F11)',
   'Exit full screen (F11)': 'Thoát toàn màn hình (F11)',
+  'Pictures and videos': 'Ảnh và video',
+  'Choose a picture or video…': 'Chọn ảnh hoặc video…',
+  'Another picture or video…': 'Ảnh hoặc video khác…',
+  'Plays muted in a loop, still while animations are off or Music App is hidden.': 'Phát không tiếng, lặp lại; đứng yên khi tắt hiệu ứng động hoặc Music App bị ẩn.',
 }
 
 export default vi

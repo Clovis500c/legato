@@ -7,6 +7,13 @@ use tauri::Manager;
 use tauri::http::{Request, Response, StatusCode, header};
 
 pub async fn respond(app: tauri::AppHandle, req: Request<Vec<u8>>) -> Response<Cow<'static, [u8]>> {
+    let path = req.uri().path().trim_start_matches('/');
+    if let Some(name) = path.strip_prefix("cover/").filter(|n| valid_cover_name(n) && (n.ends_with(".mp4") || n.ends_with(".webm"))) {
+        let range = req.headers().get(header::RANGE).and_then(|v| v.to_str().ok());
+        if let Some(res) = video(&app, name, range) {
+            return res;
+        }
+    }
     match image(&app, req.uri().path()).await {
         Some((bytes, kind)) => Response::builder()
             .header(header::CONTENT_TYPE, kind)
@@ -17,6 +24,41 @@ pub async fn respond(app: tauri::AppHandle, req: Request<Vec<u8>>) -> Response<C
         None => Response::builder().status(StatusCode::NOT_FOUND).header(header::ACCESS_CONTROL_ALLOW_ORIGIN, "*").body(Cow::Borrowed(&[][..])),
     }
     .expect("static response parts")
+}
+
+/// Largest piece of a video sent at once.
+const VIDEO_PIECE: u64 = 2 << 20;
+
+/// A theme's background video, in the byte ranges the player asks for (a whole 40 MB file per request would stall it).
+fn video(app: &tauri::AppHandle, name: &str, range: Option<&str>) -> Option<Response<Cow<'static, [u8]>>> {
+    use std::io::{Read, Seek, SeekFrom};
+    let mut file = std::fs::File::open(covers_dir(app)?.join(name)).ok()?;
+    let len = file.metadata().ok()?.len();
+    let (start, end) = byte_range(range, len)?;
+    let end = end.min(start + VIDEO_PIECE - 1);
+    let mut buf = vec![0; (end - start + 1) as usize];
+    file.seek(SeekFrom::Start(start)).ok()?;
+    file.read_exact(&mut buf).ok()?;
+    Response::builder()
+        .status(StatusCode::PARTIAL_CONTENT)
+        .header(header::CONTENT_TYPE, if name.ends_with(".webm") { "video/webm" } else { "video/mp4" })
+        .header(header::ACCEPT_RANGES, "bytes")
+        .header(header::CONTENT_RANGE, format!("bytes {start}-{end}/{len}"))
+        .body(Cow::Owned(buf))
+        .ok()
+}
+
+/// `Range: bytes=a-b` (or `a-`, `-n`, none) → first and last byte, inclusive. Out of the file: None.
+fn byte_range(range: Option<&str>, len: u64) -> Option<(u64, u64)> {
+    let last = len.checked_sub(1)?;
+    let Some(spec) = range.and_then(|r| r.strip_prefix("bytes=")) else { return Some((0, last)) };
+    let (a, b) = spec.split(',').next()?.trim().split_once('-')?;
+    let (start, end) = match (a.parse::<u64>().ok(), b.parse::<u64>().ok()) {
+        (Some(s), e) => (s, e.unwrap_or(last).min(last)),
+        (None, Some(n)) => (len.saturating_sub(n), last),
+        (None, None) => return None,
+    };
+    (start <= end).then_some((start, end))
 }
 
 /// Image for an art scheme path (percent-encoded, leading slash allowed).
@@ -39,7 +81,7 @@ pub fn covers_dir(app: &tauri::AppHandle) -> Option<std::path::PathBuf> {
 /// Name as written by `save_cover` only: no path tricks.
 pub fn valid_cover_name(name: &str) -> bool {
     let (stem, ext) = name.rsplit_once('.').unwrap_or(("", ""));
-    !stem.is_empty() && stem.len() <= 80 && stem.chars().all(|c| c.is_ascii_alphanumeric() || c == '-') && ["png", "jpg", "webp", "gif"].contains(&ext)
+    !stem.is_empty() && stem.len() <= 80 && stem.chars().all(|c| c.is_ascii_alphanumeric() || c == '-') && ["png", "jpg", "webp", "gif", "mp4", "webm"].contains(&ext)
 }
 
 fn cover(app: &tauri::AppHandle, name: &str) -> Option<(Vec<u8>, String)> {
@@ -65,7 +107,19 @@ pub async fn remote(app: &tauri::AppHandle, url: &str) -> Option<(Vec<u8>, Strin
 
 #[cfg(test)]
 mod tests {
-    use super::valid_cover_name;
+    use super::{byte_range, valid_cover_name};
+
+    #[test]
+    fn video_ranges() {
+        assert_eq!(byte_range(None, 100), Some((0, 99)));
+        assert_eq!(byte_range(Some("bytes=0-"), 100), Some((0, 99)));
+        assert_eq!(byte_range(Some("bytes=10-19"), 100), Some((10, 19)));
+        assert_eq!(byte_range(Some("bytes=90-500"), 100), Some((90, 99)));
+        assert_eq!(byte_range(Some("bytes=-30"), 100), Some((70, 99)));
+        assert_eq!(byte_range(Some("bytes=100-"), 100), None);
+        assert_eq!(byte_range(Some("bytes=x"), 100), None);
+        assert_eq!(byte_range(None, 0), None);
+    }
 
     #[test]
     fn cover_names_are_plain_files() {

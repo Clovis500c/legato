@@ -1145,7 +1145,6 @@ const de: Record<string, string> = {
   'Backdrop blur': 'Hintergrund-Unschärfe',
   'Backdrop dim': 'Hintergrund abdunkeln',
   'Backdrop motion': 'Hintergrundbewegung',
-  'Pictures': 'Bilder',
   'Theme saved': 'Design gespeichert',
   'Save as a .theme file': 'Als .theme-Datei speichern',
   'Copy as text (without the picture)': 'Als Text kopieren (ohne Bild)',
@@ -1155,8 +1154,6 @@ const de: Record<string, string> = {
   'Base color': 'Grundfarbe',
   'Light': 'Hell',
   'Dark': 'Dunkel',
-  'Another picture…': 'Anderes Bild …',
-  'Choose a picture…': 'Bild auswählen …',
   'No picture': 'Kein Bild',
   'Fit': 'Einpassen',
   'Fill': 'Füllen',
@@ -1462,6 +1459,10 @@ const de: Record<string, string> = {
   'Full screen on / off': 'Vollbild ein / aus',
   'Full screen (F11)': 'Vollbild (F11)',
   'Exit full screen (F11)': 'Vollbild beenden (F11)',
+  'Pictures and videos': 'Bilder und Videos',
+  'Choose a picture or video…': 'Bild oder Video wählen…',
+  'Another picture or video…': 'Anderes Bild oder Video…',
+  'Plays muted in a loop, still while animations are off or Music App is hidden.': 'Läuft stumm in Schleife, steht still, wenn Animationen aus sind oder Music App ausgeblendet ist.',
 }
 
 export default de

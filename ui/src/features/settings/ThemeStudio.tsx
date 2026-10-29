@@ -6,7 +6,7 @@ import { useStore } from '../../app/store'
 import { api } from '../../shared/api'
 import { coverImage } from '../../shared/art'
 import { msg, tr } from '../../shared/i18n/i18n'
-import { contrastReport, FITS, FONTS, LOOK_KEYS, lookOf, MAX_THEME_CSS, paletteFrom, PALETTE_KEYS, PRESETS, RADII, sanitizeTheme, type Background, type Palette, type PaletteKey, type Theme } from '../../shared/theme/theme'
+import { contrastReport, FITS, FONTS, isVideo, LOOK_KEYS, lookOf, MAX_THEME_CSS, paletteFrom, PALETTE_KEYS, PRESETS, RADII, sanitizeTheme, type Background, type Palette, type PaletteKey, type Theme } from '../../shared/theme/theme'
 import { Button } from '../../shared/ui/Button'
 import { Led, RoundButton, Segmented, Toggle } from '../../shared/ui/controls'
 
@@ -18,7 +18,13 @@ function ThemeThumb({ t }: { t: Palette & Partial<Pick<Theme, 'background' | 'ra
   const see = (c: string) => (t.background ? `color-mix(in srgb, ${c} ${t.background.panels}%, transparent)` : c)
   return (
     <span className="relative block h-23 w-full overflow-hidden" style={{ background: t.bg }}>
-      {t.background && <span className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url("${coverImage(t.background.image)}")`, filter: `blur(${t.background.blur / 4}px)` }} />}
+      {t.background &&
+        (isVideo(t.background.image) ? (
+          // First frame only: a thumbnail grid of playing videos would cost too much.
+          <video src={`${coverImage(t.background.image)}#t=0.1`} muted preload="metadata" aria-hidden className="absolute inset-0 size-full object-cover" style={{ filter: `blur(${t.background.blur / 4}px)` }} />
+        ) : (
+          <span className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url("${coverImage(t.background.image)}")`, filter: `blur(${t.background.blur / 4}px)` }} />
+        ))}
       {t.background && <span className="absolute inset-0" style={{ background: `color-mix(in srgb, ${t.bg} ${t.background.dim}%, transparent)` }} />}
       <span className="absolute inset-y-0 left-0 w-[24%]" style={{ background: see(t.panel) }} />
       <span className="absolute top-3 left-[5%] size-1.5 rounded-full" style={{ background: t.accent }} />
@@ -133,7 +139,7 @@ function ThemeEditor({ id, onClose }: { id: string; onClose: () => void }) {
   }
   const bg = (patch: Partial<Background>) => t.background && save({ background: { ...t.background, ...patch } })
   const pickPicture = async () => {
-    const file = await open({ filters: [{ name: tr('Pictures'), extensions: ['png', 'jpg', 'jpeg', 'webp', 'gif'] }] })
+    const file = await open({ filters: [{ name: tr('Pictures and videos'), extensions: ['png', 'jpg', 'jpeg', 'webp', 'gif', 'mp4', 'webm'] }] })
     if (typeof file !== 'string') return
     try {
       const image = await api.saveBackground(file)
@@ -229,7 +235,7 @@ function ThemeEditor({ id, onClose }: { id: string; onClose: () => void }) {
         <div className="flex flex-col gap-3">
           <div className="flex items-center gap-2">
             <Button variant="ghost" onClick={() => void pickPicture()}>
-              <Image size={14} /> {t.background ? tr('Another picture…') : tr('Choose a picture…')}
+              <Image size={14} /> {t.background ? tr('Another picture or video…') : tr('Choose a picture or video…')}
             </Button>
             {t.background && (
               <Button variant="ghost" onClick={() => save({ background: undefined })}>
@@ -239,7 +245,8 @@ function ThemeEditor({ id, onClose }: { id: string; onClose: () => void }) {
           </div>
           {t.background ? (
             <>
-              <Segmented label={tr('Fit')} value={t.background.fit} onChange={(fit) => bg({ fit })} options={FITS.map((f) => ({ value: f, label: tr({ cover: msg('Fill'), contain: msg('Fit'), tile: msg('Tile') }[f]) }))} />
+              {isVideo(t.background.image) && <p className="text-xs text-ink-2">{tr('Plays muted in a loop, still while animations are off or Music App is hidden.')}</p>}
+              <Segmented label={tr('Fit')} value={t.background.fit} onChange={(fit) => bg({ fit })} options={FITS.filter((f) => f !== 'tile' || !isVideo(t.background!.image)).map((f) => ({ value: f, label: tr({ cover: msg('Fill'), contain: msg('Fit'), tile: msg('Tile') }[f]) }))} />
               <Range label={tr('Color over it')} value={t.background.dim} min={0} max={90} unit="%" onChange={(dim) => bg({ dim })} />
               <Range label={tr('Blur')} value={t.background.blur} min={0} max={40} unit="px" onChange={(blur) => bg({ blur })} />
               <Range label={tr('Panels')} value={t.background.panels} min={40} max={100} unit="%" onChange={(panels) => bg({ panels })} />

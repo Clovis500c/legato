@@ -1145,7 +1145,6 @@ const zh: Record<string, string> = {
   'Backdrop blur': '背景模糊',
   'Backdrop dim': '背景变暗',
   'Backdrop motion': '背景动效',
-  'Pictures': '图片',
   'Theme saved': '主题已保存',
   'Save as a .theme file': '另存为 .theme 文件',
   'Copy as text (without the picture)': '复制为文本（不含图片）',
@@ -1155,8 +1154,6 @@ const zh: Record<string, string> = {
   'Base color': '基础色',
   'Light': '浅色',
   'Dark': '深色',
-  'Another picture…': '换一张图片…',
-  'Choose a picture…': '选择图片…',
   'No picture': '无图片',
   'Fit': '适应',
   'Fill': '填充',
@@ -1462,6 +1459,10 @@ const zh: Record<string, string> = {
   'Full screen on / off': '开启 / 关闭全屏',
   'Full screen (F11)': '全屏 (F11)',
   'Exit full screen (F11)': '退出全屏 (F11)',
+  'Pictures and videos': '图片和视频',
+  'Choose a picture or video…': '选择图片或视频…',
+  'Another picture or video…': '换一张图片或视频…',
+  'Plays muted in a loop, still while animations are off or Music App is hidden.': '静音循环播放；关闭动画或隐藏 Music App 时静止。',
 }
 
 export default zh

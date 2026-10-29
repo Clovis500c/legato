@@ -4,7 +4,7 @@ import { create } from 'zustand'
 import { api } from '../shared/api'
 import { coverImage } from '../shared/art'
 import { BRAND_GUARD } from '../shared/css'
-import { cssVars, DEFAULTS, resolveTheme, sanitize, type Settings, type SystemAccent, type Theme } from '../shared/theme/theme'
+import { cssVars, DEFAULTS, isVideo, resolveTheme, sanitize, type Settings, type SystemAccent, type Theme } from '../shared/theme/theme'
 import { effectiveFade } from '../features/player/fade'
 import { usePlayer } from '../features/player/store'
 import { useStore } from './store'
@@ -12,6 +12,31 @@ import { loadLang, resolveLang, useLang, type Lang } from '../shared/i18n/i18n'
 
 const systemDark = window.matchMedia('(prefers-color-scheme: dark)')
 let systemAccent: SystemAccent | null = null
+
+const quiet = () => document.hidden || matchMedia('(prefers-reduced-motion: reduce)').matches
+const videoEl = () => document.getElementById('theme-video') as HTMLVideoElement | null
+
+/** Theme video: a muted loop behind everything (pictures are body::before). Still when animations are off or the window is hidden. */
+function themeVideo(src: string | undefined, fit: string, still: boolean) {
+  let v = videoEl()
+  if (!src) return v?.remove()
+  if (!v) {
+    v = Object.assign(document.createElement('video'), { id: 'theme-video', muted: true, loop: true, playsInline: true })
+    v.setAttribute('aria-hidden', 'true')
+    document.body.prepend(v)
+  }
+  if (v.getAttribute('src') !== src) v.src = src
+  v.style.objectFit = fit === 'contain' ? 'contain' : 'cover'
+  v.dataset.still = String(still)
+  if (still || quiet()) v.pause()
+  else void v.play().catch(() => {})
+}
+document.addEventListener('visibilitychange', () => {
+  const v = videoEl()
+  if (!v) return
+  if (quiet() || v.dataset.still === 'true') v.pause()
+  else void v.play().catch(() => {})
+})
 
 // Last applied settings, read back before first render: no flash of default theme while IPC loads.
 const CACHE = 'settings'
@@ -77,7 +102,9 @@ function apply(s: Settings) {
   const root = document.documentElement.style
   const theme = resolveTheme(s, systemDark.matches, systemAccent)
   for (const [k, v] of Object.entries(cssVars(theme, s))) root.setProperty(k, v)
-  root.setProperty('--theme-image', theme.background ? `url("${coverImage(theme.background.image)}")` : 'none')
+  const video = theme.background && isVideo(theme.background.image) ? theme.background : undefined
+  root.setProperty('--theme-image', theme.background && !video ? `url("${coverImage(theme.background.image)}")` : 'none')
+  themeVideo(video && coverImage(video.image), video?.fit ?? 'cover', !s.motion)
   themeCss(theme.css ?? '')
   getCurrentWebview()
     .setZoom(s.zoom / 100)

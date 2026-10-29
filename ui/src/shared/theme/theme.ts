@@ -437,7 +437,9 @@ function v5(r: Record<string, unknown>): Partial<Settings> {
 
 const HEX = /^#[0-9a-f]{6}$/i
 /** Background file names as `save_background` writes them. */
-const BG_NAME = /^bg-[0-9a-f]{16}\.(png|jpg|webp|gif)$/
+const BG_NAME = /^bg-[0-9a-f]{16}\.(png|jpg|webp|gif|mp4|webm)$/
+/** A background that plays (muted, looped) instead of a picture. */
+export const isVideo = (name: string) => /\.(mp4|webm)$/.test(name)
 const isHex = (v: unknown): v is string => typeof v === 'string' && HEX.test(v)
 const num = (v: unknown, min: number, max: number, fallback: number) => (typeof v === 'number' && Number.isFinite(v) ? Math.min(max, Math.max(min, Math.round(v))) : fallback)
 const pick = <T,>(v: unknown, allowed: readonly T[], fallback: T): T => (allowed.includes(v as T) ? (v as T) : fallback)

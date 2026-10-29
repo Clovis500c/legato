@@ -1145,7 +1145,6 @@ const ru: Record<string, string> = {
   'Backdrop blur': 'Размытие фона',
   'Backdrop dim': 'Затемнение фона',
   'Backdrop motion': 'Движение фона',
-  'Pictures': 'Картинки',
   'Theme saved': 'Тема сохранена',
   'Save as a .theme file': 'Сохранить как файл .theme',
   'Copy as text (without the picture)': 'Копировать как текст (без картинки)',
@@ -1155,8 +1154,6 @@ const ru: Record<string, string> = {
   'Base color': 'Базовый цвет',
   'Light': 'Светлая',
   'Dark': 'Тёмная',
-  'Another picture…': 'Другая картинка…',
-  'Choose a picture…': 'Выбрать картинку…',
   'No picture': 'Без картинки',
   'Fit': 'Вписать',
   'Fill': 'Заполнить',
@@ -1462,6 +1459,10 @@ const ru: Record<string, string> = {
   'Full screen on / off': 'Полный экран вкл. / выкл.',
   'Full screen (F11)': 'Полный экран (F11)',
   'Exit full screen (F11)': 'Выйти из полного экрана (F11)',
+  'Pictures and videos': 'Картинки и видео',
+  'Choose a picture or video…': 'Выбрать картинку или видео…',
+  'Another picture or video…': 'Другая картинка или видео…',
+  'Plays muted in a loop, still while animations are off or Music App is hidden.': 'Играет без звука по кругу; стоит, когда анимации выключены или Music App скрыта.',
 }
 
 export default ru

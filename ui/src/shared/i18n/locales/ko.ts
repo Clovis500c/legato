@@ -1145,7 +1145,6 @@ const ko: Record<string, string> = {
   'Backdrop blur': '배경 흐림',
   'Backdrop dim': '배경 어둡게',
   'Backdrop motion': '배경 움직임',
-  'Pictures': '사진',
   'Theme saved': '테마가 저장되었습니다',
   'Save as a .theme file': '.theme 파일로 저장',
   'Copy as text (without the picture)': '텍스트로 복사 (사진 제외)',
@@ -1155,8 +1154,6 @@ const ko: Record<string, string> = {
   'Base color': '기본 색',
   'Light': '라이트',
   'Dark': '다크',
-  'Another picture…': '다른 사진…',
-  'Choose a picture…': '사진 선택…',
   'No picture': '사진 없음',
   'Fit': '맞춤',
   'Fill': '채우기',
@@ -1462,6 +1459,10 @@ const ko: Record<string, string> = {
   'Full screen on / off': '전체 화면 켜기 / 끄기',
   'Full screen (F11)': '전체 화면 (F11)',
   'Exit full screen (F11)': '전체 화면 종료 (F11)',
+  'Pictures and videos': '사진 및 동영상',
+  'Choose a picture or video…': '사진 또는 동영상 선택…',
+  'Another picture or video…': '다른 사진 또는 동영상…',
+  'Plays muted in a loop, still while animations are off or Music App is hidden.': '소리 없이 반복 재생되며, 애니메이션이 꺼져 있거나 Music App이 숨겨지면 멈춥니다.',
 }
 
 export default ko

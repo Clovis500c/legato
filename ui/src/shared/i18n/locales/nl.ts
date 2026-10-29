@@ -1145,7 +1145,6 @@ const nl: Record<string, string> = {
   'Backdrop blur': 'Achtergrondvervaging',
   'Backdrop dim': 'Achtergrond dimmen',
   'Backdrop motion': 'Achtergrondbeweging',
-  'Pictures': 'Afbeeldingen',
   'Theme saved': 'Thema opgeslagen',
   'Save as a .theme file': 'Opslaan als .theme-bestand',
   'Copy as text (without the picture)': 'Kopiëren als tekst (zonder afbeelding)',
@@ -1155,8 +1154,6 @@ const nl: Record<string, string> = {
   'Base color': 'Basiskleur',
   'Light': 'Licht',
   'Dark': 'Donker',
-  'Another picture…': 'Andere afbeelding…',
-  'Choose a picture…': 'Afbeelding kiezen…',
   'No picture': 'Geen afbeelding',
   'Fit': 'Passend',
   'Fill': 'Vullen',
@@ -1462,6 +1459,10 @@ const nl: Record<string, string> = {
   'Full screen on / off': 'Volledig scherm aan / uit',
   'Full screen (F11)': 'Volledig scherm (F11)',
   'Exit full screen (F11)': 'Volledig scherm sluiten (F11)',
+  'Pictures and videos': 'Afbeeldingen en video’s',
+  'Choose a picture or video…': 'Kies een afbeelding of video…',
+  'Another picture or video…': 'Andere afbeelding of video…',
+  'Plays muted in a loop, still while animations are off or Music App is hidden.': 'Speelt zonder geluid in een lus, stil als animaties uit staan of Music App verborgen is.',
 }
 
 export default nl

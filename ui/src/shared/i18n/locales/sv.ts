@@ -1145,7 +1145,6 @@ const sv: Record<string, string> = {
   'Backdrop blur': 'Bakgrundsoskärpa',
   'Backdrop dim': 'Bakgrundsdämpning',
   'Backdrop motion': 'Bakgrundsrörelse',
-  'Pictures': 'Bilder',
   'Theme saved': 'Temat sparat',
   'Save as a .theme file': 'Spara som en .theme-fil',
   'Copy as text (without the picture)': 'Kopiera som text (utan bilden)',
@@ -1155,8 +1154,6 @@ const sv: Record<string, string> = {
   'Base color': 'Grundfärg',
   'Light': 'Ljust',
   'Dark': 'Mörkt',
-  'Another picture…': 'En annan bild…',
-  'Choose a picture…': 'Välj en bild…',
   'No picture': 'Ingen bild',
   'Fit': 'Anpassa',
   'Fill': 'Fyll',
@@ -1462,6 +1459,10 @@ const sv: Record<string, string> = {
   'Full screen on / off': 'Helskärm på / av',
   'Full screen (F11)': 'Helskärm (F11)',
   'Exit full screen (F11)': 'Lämna helskärm (F11)',
+  'Pictures and videos': 'Bilder och videor',
+  'Choose a picture or video…': 'Välj en bild eller video…',
+  'Another picture or video…': 'En annan bild eller video…',
+  'Plays muted in a loop, still while animations are off or Music App is hidden.': 'Spelas utan ljud i en slinga, stilla när animationer är av eller Music App är dold.',
 }
 
 export default sv
