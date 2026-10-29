@@ -136,7 +136,7 @@ export function TrackTable({ tracks, empty, editId, rowActions, sort, onSort, fo
     ) : c === 'sources' ? (
       <span key={c} role="gridcell" className="flex items-center gap-2 text-ink-3">
         {order.filter((s) => t.ids[s]).map((s) => (
-          <SourceIcon key={s} source={s} size={13} />
+          <SourceIcon key={s} source={s} size={13} brand />
         ))}
       </span>
     ) : (

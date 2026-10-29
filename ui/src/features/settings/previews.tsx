@@ -1,4 +1,4 @@
-import { HardDrives, Moon, Pause, SkipBack, SkipForward, SpeakerHigh } from '@phosphor-icons/react'
+import { Folder, Moon, Pause, SkipBack, SkipForward, SpeakerHigh } from '@phosphor-icons/react'
 import type { ReactNode } from 'react'
 import { useStore } from '../../app/store'
 import { trackArt } from '../../shared/art'
@@ -179,7 +179,7 @@ export function SourceIconScene({ readout }: Pick<Settings, 'readout'>) {
       <span className="h-[3px] w-14 rounded-full bg-ink" />
       <span className="flex items-center gap-1.5">
         <span className="h-[3px] w-8 rounded-full bg-ink-4" />
-        {readout && <HardDrives size={10} className="text-ink-2" />}
+        {readout && <Folder size={10} className="text-ink-2" />}
         {readout && <span className="h-[3px] w-6 rounded-full bg-ink-4" />}
       </span>
     </Frame>

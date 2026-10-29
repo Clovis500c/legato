@@ -97,7 +97,7 @@ function HitRow({ hit, onAdded, onPlay, extra }: { hit: SearchHit; onAdded: (id:
         </>
       }
       sources={order.filter((s) => hit.ids[s]).map((s) => (
-        <SourceIcon key={s} source={s} size={13} />
+        <SourceIcon key={s} source={s} size={13} brand />
       ))}
       ms={hit.durationMs}
       onPlay={onPlay}
@@ -127,7 +127,7 @@ function LibraryRow({ list, i }: { list: LibraryTrack[]; i: number }) {
       sub={[t.artist, t.album].filter(Boolean).join(' · ')}
       art={<Cover title={t.album ?? t.title} art={trackArt(t)} size={40} />}
       sources={order.filter((s) => t.ids[s]).map((s) => (
-        <SourceIcon key={s} source={s} size={13} />
+        <SourceIcon key={s} source={s} size={13} brand />
       ))}
       ms={t.durationMs}
       onPlay={() => usePlayer.getState().playTracks(list, i)}

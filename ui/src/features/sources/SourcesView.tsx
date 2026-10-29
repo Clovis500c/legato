@@ -1,4 +1,4 @@
-import { ArrowsClockwise, FolderPlus, GoogleLogo, HardDrives, ShieldCheck, SignOut, UserPlus, X } from '@phosphor-icons/react'
+import { ArrowsClockwise, FolderPlus, GoogleLogo, ShieldCheck, SignOut, UserPlus, X } from '@phosphor-icons/react'
 import { useShallow } from 'zustand/react/shallow'
 import { open } from '@tauri-apps/plugin-dialog'
 import { useCallback, useEffect, useState } from 'react'
@@ -337,7 +337,7 @@ function LocalFolders() {
       <div className="flex items-center gap-4">
         <Led on={folders.length > 0} />
         <span className="grid size-9 place-items-center rounded-full border border-line text-ink-2">
-          <HardDrives size={16} />
+          <SourceIcon source="local" size={16} />
         </span>
         <div className="flex-1">
           <p className="text-[0.8125rem] font-semibold">{tr('Local files')}</p>
