@@ -505,6 +505,9 @@ Original plan:
       166 ms + 12.6 MB of JSON (+ 34 ms parse, every list re-sorted) → 0.5 ms + 9 kB, the songs list untouched; an
       add 9 ms + 3.5 kB, a removal 7.5 ms + 14 kB; a 2,000-song playlist opens in 40 ms instead of 85. Syncs with
       nothing new 0.70 → 0.38 s (unchanged rows no longer rewritten). Not checked in the real app yet.
+- [x] A song picked by hand (skip, click) lost its first 3-4 s (2026-10-29): the 5 s S-curve fade in (advanced fades,
+      "Fade in after a skip" on) kept it near silent ~2 s. Picked songs now fade in over 1 s at most; songs that follow
+      on their own keep the full fade in.
 - [x] Interactive preview for visual settings (background blur, dimming, motion, …): small live sample of the effect.
 - [x] Artists and Albums: filter and sort, like songs in playlists.
 - [x] Mixes: better algorithm, more mixes; covers as a 2×2 grid like playlists, setting in Advanced: grid / single

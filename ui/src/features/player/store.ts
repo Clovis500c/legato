@@ -4,7 +4,7 @@ import { api, type LibraryTrack, type PlayerCommand, type PlayerStatus, type Spo
 import type { Box } from '../../shared/artbox'
 import { region } from '../../shared/format'
 import { endListen, progress, startListen } from './listens'
-import { demoGain, demoLength, fadeGain, NO_FADE, overlapDue, type Fade } from './fade'
+import { demoGain, demoLength, fadeGain, NO_FADE, overlapDue, PICK_IN_S, type Fade } from './fade'
 import { insertAt, moveInOrder, moveToSlot, nextIndex, playOrder, queued, tooLong, type Repeat } from './queue'
 import { vias, type Via } from './sources'
 import { rememberEnd, songEnd } from './ends'
@@ -47,8 +47,8 @@ interface PlayerState {
   skipLong: number
   /** Settings › Playback › Early endings: a video ends where its song does (ends.ts). */
   earlyEnds: boolean
-  /** Current track started on its own after the previous one (or a skip, if asked): fades in. */
-  fadeIn: boolean
+  /** Fade in of the current track, s: full after the previous one, short after a skip (if asked), 0 = none. */
+  fadeIn: number
   /** Where the current item started (resume), ms. */
   startAt: number
   /** Bumped each time an item starts (song, other upload, gapless move): per-song UI state checks it. */
@@ -297,7 +297,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
   fade: NO_FADE,
   skipLong: 0,
   earlyEnds: true,
-  fadeIn: false,
+  fadeIn: 0,
   startAt: 0,
   playId: 0,
   hold: false,
@@ -382,7 +382,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     const base: NowPlaying = { title: t.title, artist: t.artist, trackId: t.id, via: how }
     // Preview: 30 s from Apple, no resume point.
     const start = how === 'preview' ? 0 : from
-    set({ index, playId: get().playId + 1, playing: !hold, hold, positionMs: start, startAt: start, durationMs: t.durationMs, upcoming: [], tail: how === 'youtube' ? stopTail(get().tail) : null, fadeIn: (auto || get().fade.skip) && get().fade.in > 0 })
+    set({ index, playId: get().playId + 1, playing: !hold, hold, positionMs: start, startAt: start, durationMs: t.durationMs, upcoming: [], tail: how === 'youtube' ? stopTail(get().tail) : null, fadeIn: auto ? get().fade.in : get().fade.skip ? Math.min(get().fade.in, PICK_IN_S) : 0 })
     sent = -1
 
     if (how === 'youtube') {
@@ -460,7 +460,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     send({ type: 'play', paths, start: 0 })
     send({ type: 'volume', value: get().volume })
     // Clearing youtubeId unmounts embed.
-    set({ now: { title: fileTitle(paths[0]), artist: tr('Local file'), path: paths[0], via: 'local' }, playId: get().playId + 1, list: [], order: [], index: 0, playing: true, positionMs: 0, durationMs: null, fadeIn: false, startAt: 0 })
+    set({ now: { title: fileTitle(paths[0]), artist: tr('Local file'), path: paths[0], via: 'local' }, playId: get().playId + 1, list: [], order: [], index: 0, playing: true, positionMs: 0, durationMs: null, fadeIn: 0, startAt: 0 })
   },
 
   toggle() {
@@ -546,7 +546,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
       if (force) volumeTimer = setTimeout(() => void spotify({ type: 'volume', percent: Math.round(volume * 100) }), 300)
       return
     }
-    const value = Math.round(volume * fadeGain(positionMs, durationMs, fade, fadeIn) * gainNow * 100) / 100
+    const value = Math.round(volume * fadeGain(positionMs, durationMs, { ...fade, in: fadeIn }, true) * gainNow * 100) / 100
     if (!force && value === sent) return
     sent = value
     if (via === 'youtube') yt('setVolume', Math.round(value * 100))
@@ -630,7 +630,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
       positionMs: s.positionMs,
       upcoming: now?.trackId ? [] : s.upcoming,
       ...(s.durationMs && { durationMs: s.durationMs }),
-      ...(i > index && { index: i, playId: get().playId + 1, fadeIn: get().fade.in > 0, now: { title: list[i].title, artist: list[i].artist, trackId: list[i].id, via: 'local', path: s.path! } }),
+      ...(i > index && { index: i, playId: get().playId + 1, fadeIn: get().fade.in, now: { title: list[i].title, artist: list[i].artist, trackId: list[i].id, via: 'local', path: s.path! } }),
       ...(s.path && !now?.trackId && { now: { title: fileTitle(s.path), artist: tr('Local file'), path: s.path, via: 'local' }, ...(s.path !== now?.path && { playId: get().playId + 1 }) }),
     })
     if (s.path) get().applyVolume()

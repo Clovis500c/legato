@@ -44,3 +44,16 @@ describe('queue of refused videos on repeat all', () => {
     expect(notify.mock.calls.map((c) => c[0])).not.toContain(STOPPED)
   })
 })
+
+describe('fade in', () => {
+  it('is short for a song picked by hand, full for one that follows on its own', async () => {
+    usePlayer.setState({ repeat: 'off', fade: { out: 5, in: 5, outCurve: 'scurve', inCurve: 'scurve', skip: true, pause: 0 } })
+    usePlayer.getState().playTracks([song(5), song(6)], 0)
+    expect(usePlayer.getState().fadeIn).toBe(1)
+    usePlayer.getState().onYoutube({ state: 1, time: 1 })
+    usePlayer.getState().onYoutube({ state: 0 })
+    await settle()
+    expect(usePlayer.getState().now?.youtubeId).toBe('video6')
+    expect(usePlayer.getState().fadeIn).toBe(5)
+  })
+})

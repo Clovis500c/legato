@@ -12,6 +12,9 @@ export interface Fade {
   pause: number
 }
 
+/** Longest fade in of a song picked by hand (skip, click): its start stays heard (a 5 s S-curve hid ~2 s of it). */
+export const PICK_IN_S = 1
+
 export const NO_FADE: Fade = { out: 0, in: 0, outCurve: 'scurve', inCurve: 'scurve', skip: false, pause: 0 }
 
 /** Settings → fade. Simple mode: same seconds out and in, S-curve, skips fade in, nothing else. */
