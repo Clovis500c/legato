@@ -420,7 +420,9 @@
       const s = { ctx, video, stream, input, full, fx: null, post, direct, gain, limiter, gate, proven: false, told: false, k, raw, buf: new Float32Array(2048), track: null, src: null, wanted: video.muted, momentary: 0, short: 0, peak: 0, gainDb: full ? startGain(0) : 0, elapsed: 0, at: performance.now(), time: video.currentTime, silent: 0, quietAt: null, endSaid: false }
       // The captured track changes with each video (new metadata): follow it.
       s.plug = () => {
-        const track = stream.getAudioTracks().find((t) => t.readyState === 'live') ?? null
+        // Newest live track: the next video in the same element adds one, the old one stays "live" but silent
+        // (Chromium; the first one gave "No sound could be taken" from the second video on, 2026-10-29).
+        const track = stream.getAudioTracks().filter((t) => t.readyState === 'live').at(-1) ?? null
         if (track === s.track) return
         // Next song: loudness measured afresh, the gain carries on from the last one (the app's, across embeds).
         s.momentary = s.short = s.elapsed = s.silent = 0

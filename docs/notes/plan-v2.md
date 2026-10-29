@@ -577,6 +577,10 @@ Original plan:
       in your own Liked Music for the next sync).
 - [x] Visualizer flat on YouTube (2026-10-29): bands now sent with every report (moves, user checked), and the reason shown under the bars
       when YouTube's sound can't be heard. Four looks since (Settings › Playback): bars, mirror, peaks, wave.
+- [x] "No sound could be taken from this video" from the second video of an embed on (2026-10-29, user's screenshot):
+      each new video adds a captured track, the old one stays "live" but silent, and live.js took the first. Now the
+      newest (checked in a muted test embed: no DRM, old track peak 0, new one 0.34 after a switch). The user's idea of
+      taking the sound from Windows instead (loopback) isn't needed.
 - [x] Up next: played songs and the current one can be moved too (2026-10-29); above the current = history.
 - [x] Interactive preview for visual settings (background blur, dimming, motion, …): small live sample of the effect.
 - [x] Artists and Albums: filter and sort, like songs in playlists.
