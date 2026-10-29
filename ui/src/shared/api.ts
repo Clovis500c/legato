@@ -670,6 +670,8 @@ export const api = {
   setAutostart: (on: boolean) => invoke<void>('set_autostart', { on }),
   /** Other uploads of the same song when the video refuses embedding (101 / 150), best first. */
   alternativeVideos: (trackId: number, exclude: string[]) => invoke<string[]>('alternative_videos', { trackId, exclude }),
+  /** Of these videos, those whose owner turned embedding off (oEmbed, cached a day): straight to their watch page. */
+  embedRefused: (videos: string[]) => invoke<string[]>('embed_refused', { videos }),
   /** Track id → [listens, last start]: Most played / Recently played. */
   playStats: () => invoke<Record<number, [number, number]>>('play_stats'),
   /** Plays since `since` (unix s, two weeks at most), oldest first. */

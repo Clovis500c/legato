@@ -201,6 +201,8 @@ struct Caches {
     artists: Ttl<Option<Artist>>,
     /// Album pages from the Apple catalog (None = not in the store): change rarely.
     albums: Ttl<Option<music_connectors::itunes::Album>>,
+    /// Video → may it play in an embed (oEmbed).
+    embeds: Ttl<bool>,
 }
 
 impl Default for Caches {
@@ -218,6 +220,7 @@ impl Default for Caches {
             lists: Ttl::new(Duration::from_secs(15 * 60), 30),
             artists: Ttl::new(Duration::from_secs(30 * 60), 32),
             albums: Ttl::new(Duration::from_secs(24 * 3600), 64),
+            embeds: Ttl::new(Duration::from_secs(24 * 3600), 2000),
         }
     }
 }
@@ -621,6 +624,39 @@ async fn find_versions(state: State<'_, AppState>, ids: Vec<i64>) -> CmdResult<F
         }
     }
     Ok(FindReport { found, missing: todo.len() - found })
+}
+
+/// Of these videos (the one starting and the next ones), those whose owner turned embedding off: they go to their
+/// watch page at once instead of failing in the embed first. Checked once a day each, all at the same time.
+#[tauri::command]
+async fn embed_refused(state: State<'_, AppState>, videos: Vec<String>) -> CmdResult<Vec<String>> {
+    // Trust boundary: video ids only, a few.
+    let videos: Vec<String> = videos.into_iter().filter(|v| v.len() == 11 && v.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'-' || b == b'_')).take(5).collect();
+    let jobs: Vec<_> = videos
+        .into_iter()
+        .map(|v| match state.cache.embeds.get(&v) {
+            Some(ok) => (v, None, *ok),
+            None => {
+                let id = v.clone();
+                (v, Some(tauri::async_runtime::spawn(async move { music_connectors::youtube::embeddable(&id, music_connectors::youtube::OEMBED).await })), true)
+            }
+        })
+        .collect();
+    let mut refused = Vec::new();
+    for (v, job, known) in jobs {
+        let ok = match job {
+            None => known,
+            Some(job) => match job.await {
+                Ok(Ok(ok)) => *state.cache.embeds.put(&v, ok),
+                // Unknown: the embed decides.
+                _ => true,
+            },
+        };
+        if !ok {
+            refused.push(v);
+        }
+    }
+    Ok(refused)
 }
 
 /// Video whose owner turned embedding off (error 101 / 150): other uploads of the same song, best first, at most 5.
@@ -1898,7 +1934,7 @@ pub fn run() {
             folders::watch(app.handle(), &dirs);
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, library_changes, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, search_suggestions, add_track, backfill_art, find_versions, play_preview, share_playlist, share_preview, share_read_image, share_import, nearby_send, nearby_status, nearby_stop, nearby_receive, record_play, recent_plays, play_history, mixes, set_track_pref, set_music, clear_history, export_youtube, spotify_player, spotify_playback, ytm_sign_in, ytm_sign_out, spotify_web_open, spotify_web_status, import_spotify_link, ytm_accounts, set_ytm_accounts, sync_directions, set_sync_direction, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, system_accent, restart_app, autostart, set_autostart, hold_page, media_update, load_session, save_session, add_to_youtube, save_cover, export_cover, alternative_videos, play_stats, cache_stats, open_licenses, update_status, update_check, update_install, ytm_home, ytm_list, ytm_artist, album_info, discord_presence, discord_off, discord_status, remove_from_playlist, remove_from_library, merge_duplicates, resolve_track, set_global_shortcuts, player_live, editor::player_effects, player_levels, editor::export_edit, editor::export_stop, editor::edits, editor::save_edit, editor::delete_edit, editor::activate_edit, editor::edit_draft, editor::save_edit_draft, voice_listen, voice_stop, open_windows_settings, detector::detector_status, detector::set_detector_token, detector::detect_song, detector::detect_stop, lastfm::lastfm_status, lastfm::lastfm_connect, lastfm::lastfm_disconnect, lastfm::lastfm_now_playing, lastfm::lastfm_scrobble, lyrics, set_ui_language, ytwatch_open, ytwatch_place, ytwatch_cmd, ytwatch_close, syncmode::sync_status, syncmode::sync_probe, syncmode::sync_setup, syncmode::sync_stop, syncmode::sync_now, syncmode::sync_dismiss, syncmode::sync_offer, syncmode::sync_offer_stop, syncmode::sync_join, plugins::plugins_list, plugins::plugin_inspect, plugins::plugin_install, plugins::plugin_set, plugins::plugin_uninstall, plugins::plugin_reply, plugins::plugin_event, plugins::plugin_input, plugins::plugin_log, themes::save_background, themes::forget_background, themes::export_theme, themes::import_theme, tags::edit_tags])
+        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, library_changes, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, search_suggestions, add_track, backfill_art, find_versions, play_preview, share_playlist, share_preview, share_read_image, share_import, nearby_send, nearby_status, nearby_stop, nearby_receive, record_play, recent_plays, play_history, mixes, set_track_pref, set_music, clear_history, export_youtube, spotify_player, spotify_playback, ytm_sign_in, ytm_sign_out, spotify_web_open, spotify_web_status, import_spotify_link, ytm_accounts, set_ytm_accounts, sync_directions, set_sync_direction, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, system_accent, restart_app, autostart, set_autostart, hold_page, media_update, load_session, save_session, add_to_youtube, save_cover, export_cover, alternative_videos, embed_refused, play_stats, cache_stats, open_licenses, update_status, update_check, update_install, ytm_home, ytm_list, ytm_artist, album_info, discord_presence, discord_off, discord_status, remove_from_playlist, remove_from_library, merge_duplicates, resolve_track, set_global_shortcuts, player_live, editor::player_effects, player_levels, editor::export_edit, editor::export_stop, editor::edits, editor::save_edit, editor::delete_edit, editor::activate_edit, editor::edit_draft, editor::save_edit_draft, voice_listen, voice_stop, open_windows_settings, detector::detector_status, detector::set_detector_token, detector::detect_song, detector::detect_stop, lastfm::lastfm_status, lastfm::lastfm_connect, lastfm::lastfm_disconnect, lastfm::lastfm_now_playing, lastfm::lastfm_scrobble, lyrics, set_ui_language, ytwatch_open, ytwatch_place, ytwatch_cmd, ytwatch_close, syncmode::sync_status, syncmode::sync_probe, syncmode::sync_setup, syncmode::sync_stop, syncmode::sync_now, syncmode::sync_dismiss, syncmode::sync_offer, syncmode::sync_offer_stop, syncmode::sync_join, plugins::plugins_list, plugins::plugin_inspect, plugins::plugin_install, plugins::plugin_set, plugins::plugin_uninstall, plugins::plugin_reply, plugins::plugin_event, plugins::plugin_input, plugins::plugin_log, themes::save_background, themes::forget_background, themes::export_theme, themes::import_theme, tags::edit_tags])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

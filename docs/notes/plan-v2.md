@@ -518,8 +518,19 @@ Original plan:
   - [x] Video as a theme background (MP4 / WebM, 40 MB max, muted loop, still when animations are off or hidden; served by byte ranges).
   - [x] Audio visualizer: 16 bars under the cover in Now Playing (Settings › Playback), local files and YouTube; bands computed only while it shows.
   - [x] Edit a local file's tags (right-click › Edit song info…: title, artist, album, front cover), written in a copy then swapped in.
-  - [ ] SoundCloud import.
+  - [ ] SoundCloud import. Without a key the public page gives a playlist's first 5 songs only. The user picked
+        SoundCloud's own web access (2026-10-29), but its API call with the key from SoundCloud's site was refused by
+        the assistant's safety checks: waiting on the user (allow it, or their own SoundCloud developer app).
   - Not done: downloading songs from the services (fixed limit: no audio extraction).
+- [x] "Invalid title" on Add to library for a song the Music Detector named without an Apple / Spotify link
+      (2026-10-29): its YouTube version looked up first.
+- [x] Live Editor "No sound could be taken from this video" (2026-10-29): 4 s of silence (a music video's intro) gave
+      the video up for good. The element now keeps its own sound until captured sound proves the capture works.
+- [x] Faster switch to the watch page (2026-10-29): refused videos remembered between launches, oEmbed asked as a song
+      starts (and for the next two), stuck embeds given up after 6 s instead of 10.
+- [ ] Mixes: a real YouTube-like algorithm (2026-10-29), in its own session. The "Mon mix" panel in the user's
+      screenshot is YouTube's own My Mix (RDMM), not ours.
+- [ ] README simplified (2026-10-29).
 - [x] Interactive preview for visual settings (background blur, dimming, motion, …): small live sample of the effect.
 - [x] Artists and Albums: filter and sort, like songs in playlists.
 - [x] Mixes: better algorithm, more mixes; covers as a 2×2 grid like playlists, setting in Advanced: grid / single

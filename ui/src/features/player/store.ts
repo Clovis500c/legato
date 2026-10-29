@@ -200,9 +200,28 @@ function ramp(gain: (t: number) => number, ms: number, done?: () => void) {
   tick()
 }
 
-// Videos the embed refused this session (they play from their watch page), videos that can't play at all here, and the
-// other uploads still to try for the current track.
-const blocked = new Set<string>()
+// Videos the embed refuses (they play from their watch page; kept between launches, newest 500), videos that can't
+// play at all here, and the other uploads still to try for the current track.
+const BLOCKED = 'embedBlocked'
+const blocked = new Set<string>(
+  (() => {
+    try {
+      const v: unknown = JSON.parse(localStorage.getItem(BLOCKED) ?? '[]')
+      return Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string' && x.length === 11) : []
+    } catch {
+      return []
+    }
+  })(),
+)
+function block(video: string) {
+  blocked.delete(video)
+  blocked.add(video)
+  try {
+    localStorage.setItem(BLOCKED, JSON.stringify([...blocked].slice(-500)))
+  } catch {
+    // Storage off: this session still knows.
+  }
+}
 const unplayable = new Set<string>()
 let others: { trackId: number; ids: string[] } | null = null
 // Songs skipped for failing since one last played (track ids): once they cover the queue, it stops.
@@ -226,7 +245,7 @@ function playOnWatchPage(video: string, startMs: number) {
 }
 
 // Stuck embed (review 2026-10-22): some refused videos never send onError; the frame sits unstarted (-1) on YouTube's
-// own "Video unavailable" card. A video asked to play that hasn't started 10 s later (not buffering, not paused, not
+// own "Video unavailable" card. A video asked to play that hasn't started 6 s later (not buffering, not paused, not
 // loaded paused at launch) = refused.
 let ytState: number | undefined
 // New video asked: the embed still reports the old one for a moment (late times, its duration). Ignored until a time
@@ -235,7 +254,7 @@ let ytFresh = false
 // Current song came by the queue moving on (song ended): Skip long songs applies once its length is known.
 let reachedAuto = false
 let stuckTimer: ReturnType<typeof setTimeout> | undefined
-function watchForStuck(playId: number, wait = 10_000) {
+function watchForStuck(playId: number, wait = 6_000) {
   clearTimeout(stuckTimer)
   ytState = undefined
   const check = () => {
@@ -245,7 +264,7 @@ function watchForStuck(playId: number, wait = 10_000) {
     // Slow network: give it longer.
     if (ytState === 3) return void (stuckTimer = setTimeout(check, 10_000))
     if (!watching(id)) {
-      blocked.add(id)
+      block(id)
       return playOnWatchPage(id, 0)
     }
     void tryOtherUpload(p.now?.trackId ?? 0, id, tr('This video can’t play in apps'))
@@ -401,8 +420,22 @@ export const usePlayer = create<PlayerState>((set, get) => ({
       set({ now: { ...base, youtubeId: video } })
       // Fade in starts silent: volume set before the embed loads the next video (it keeps the last one).
       get().applyVolume(true)
-      // Refused by the embed earlier this session: its watch page at once.
+      // Refused by the embed before: its watch page at once.
       if (blocked.has(video) && !watching(video)) playOnWatchPage(video, start)
+      // Not known yet: oEmbed says whether its owner turned embedding off, for this one and the next ones (Rust caches
+      // it a day), so the switch doesn't wait for the embed to fail. Late answer for a song gone: only remembered.
+      const playId = get().playId
+      const ahead = list.slice(index + 1, index + 3).flatMap((x) => (x.ids.youtube ? [x.ids.youtube] : []))
+      const ask = [...(blocked.has(video) ? [] : [video]), ...ahead.filter((v) => !blocked.has(v))]
+      if (ask.length)
+        void api
+          .embedRefused(ask)
+          .then((refused) => {
+            refused.forEach(block)
+            const p = get()
+            if (refused.includes(video) && p.playId === playId && p.now?.youtubeId === video && !watching(video)) playOnWatchPage(video, p.positionMs)
+          })
+          .catch(() => {})
       return
     }
     if (how === 'local') {
@@ -567,7 +600,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
       // Any other refusal (101 / 150 embedding off, 152 / 153 player configuration, 5 player error…): same video from
       // its watch page, invisible switch. Refused there too: another upload, never a dead stop.
       if (now?.youtubeId && !watching(now.youtubeId)) {
-        blocked.add(now.youtubeId)
+        block(now.youtubeId)
         return playOnWatchPage(now.youtubeId, get().positionMs)
       }
       if (now?.trackId && now.youtubeId) return void tryOtherUpload(now.trackId, now.youtubeId, tr('YouTube playback failed (error {code}).', { code: u.error }))

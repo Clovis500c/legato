@@ -49,6 +49,14 @@ pub async fn track_from_link(link: &str, oembed: &str) -> Result<Track> {
     Ok(Track { title, artist, art: Some(music_core::model::youtube_art(&id)), ids: BTreeMap::from([(Source::Youtube, id)]), ..Default::default() })
 }
 
+/// May this video play in an embed? oEmbed answers 401 when its owner turned embedding off (or it's private): false.
+/// Anything else (fine, removed, network trouble) = true: the embed itself says the rest.
+pub async fn embeddable(id: &str, oembed: &str) -> Result<bool> {
+    let watch = format!("https://www.youtube.com/watch?v={id}");
+    let url = Url::parse_with_params(oembed, &[("url", watch.as_str()), ("format", "json")])?;
+    Ok(crate::http().get(url).send().await?.status() != reqwest::StatusCode::UNAUTHORIZED)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -101,5 +109,8 @@ mod tests {
             let e = track_from_link(&format!("https://youtu.be/{id}"), &oembed).await.unwrap_err();
             assert!(format!("{e:#}").contains(if id.starts_with('a') { "401" } else { "404" }), "{e:#}");
         }
+        // Embedding off: known before the embed fails; removed: left to the embed.
+        assert!(!embeddable("aaaaaaaaaaa", &oembed).await.unwrap());
+        assert!(embeddable("bbbbbbbbbbb", &oembed).await.unwrap());
     }
 }
