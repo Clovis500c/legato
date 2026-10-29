@@ -84,6 +84,18 @@ describe('Up next drops', () => {
     expect(insertAt([0, 1, 2], [5, 6], 1)).toEqual([0, 5, 6, 1, 2])
     expect(insertAt([0, 1], [5], 99)).toEqual([0, 1, 5])
   })
+
+  it('moves played songs and the current one too: above the current = history, below = still to play', () => {
+    const state = (order: number[], index: number) => queueRows(order, index, () => true).map((r) => (r.current ? 'now' : r.played ? 'played' : 'next'))
+    // Current song (1) dragged to the end: what was next becomes history.
+    const moved = moveToSlot([0, 1, 2, 3], 1, 4)
+    expect(moved).toEqual([0, 2, 3, 1])
+    expect(state(moved, 1)).toEqual(['played', 'played', 'played', 'now'])
+    // A played song (0) dragged below the current one: it plays again.
+    const again = moveToSlot([0, 1, 2, 3], 0, 2)
+    expect(again).toEqual([1, 0, 2, 3])
+    expect(state(again, 1)).toEqual(['now', 'next', 'next', 'next'])
+  })
 })
 
 describe('repeatsAhead', () => {

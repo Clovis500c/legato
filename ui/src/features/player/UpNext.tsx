@@ -82,8 +82,9 @@ function queueMenu(onHide: () => void): MenuEntry[] {
 
 /**
  * Queue in play order, shuffle aware: songs already played stay (dimmed, click to play again), then the current one,
- * then what's next. Opens on the current song; virtualized (queues reach thousands). What's next can be dragged into
- * another order (or Alt+↑ / Alt+↓ on a song), and cleared.
+ * then what's next. Opens on the current song; virtualized (queues reach thousands). Any song, played ones and the
+ * current one too (user's request 2026-10-29), can be dragged into another order (or Alt+↑ / Alt+↓ on a song): above
+ * the current song = history, below = still to play. What's next can be cleared.
  */
 export function UpNext({ onHide }: { onHide: () => void }) {
   const rows = useRows()
@@ -100,14 +101,14 @@ export function UpNext({ onHide }: { onHide: () => void }) {
   const current = rows.findIndex((r) => r.current)
   const played = current < 0 ? 0 : current
   const next = rows.length - played - (current < 0 ? 0 : 1)
-  // Pointer drag (shared/ui/drag.ts): what's next takes songs from here and from any list, never above the current one.
+  // Pointer drag (shared/ui/drag.ts): songs of the queue go anywhere in it; songs from a list only after the current one.
   const queue = current >= 0 && rows[current].i >= 0
   useDropTarget(
     'queue',
     queue
       ? {
           accepts: (d) => d.kind === 'queue' || d.kind === 'tracks',
-          clamp: (slot) => Math.max(current + 1, slot),
+          clamp: (slot) => (useDrag.getState().data?.kind === 'queue' ? slot : Math.max(current + 1, slot)),
           drop: (d, slot) => {
             const { order, moveTo, enqueueAt } = usePlayer.getState()
             const at = slot === null || slot >= rows.length ? order.length : order.indexOf(rows[slot].i)
@@ -167,11 +168,11 @@ export function UpNext({ onHide }: { onHide: () => void }) {
             const title = r.current ? nowTitle : (t?.title ?? fileTitle(r.path ?? ''))
             const artist = r.current ? nowArtist : (t?.artist ?? fileFormat(r.path) ?? '')
             const art = r.current && track ? trackArt(track) : t ? trackArt(t) : []
-            // Only what's next moves (history and the current song stay put).
-            const movable = !!t && !r.current && !r.played
+            // Every song of the queue moves: history, the current one, what's next.
+            const movable = !!t
             const neighbor = (d: 1 | -1) => {
               const n = rows[item.index + d]
-              return n && n.i >= 0 && !n.current && !n.played ? n.i : null
+              return n && n.i >= 0 ? n.i : null
             }
             const line = dropAt === item.index ? 'shadow-[inset_0_2px_0_var(--accent)]' : dropAt === item.index + 1 && item.index === rows.length - 1 ? 'shadow-[inset_0_-2px_0_var(--accent)]' : ''
             return (
@@ -187,8 +188,9 @@ export function UpNext({ onHide }: { onHide: () => void }) {
                 onContextMenu={t ? onMenu(() => trackMenu(t, { list, index: r.i, queueIndex: r.i })) : undefined}
               >
                 <button
-                  disabled={!t || r.current}
-                  onClick={() => void playAt(r.i)}
+                  // The current one stays enabled: a disabled button takes no pointer, it couldn't be dragged.
+                  disabled={!t}
+                  onClick={() => !r.current && void playAt(r.i)}
                   onKeyDown={(e) => {
                     const d = e.altKey && e.key === 'ArrowUp' ? -1 : e.altKey && e.key === 'ArrowDown' ? 1 : 0
                     const n = d && movable ? neighbor(d) : null
@@ -207,7 +209,7 @@ export function UpNext({ onHide }: { onHide: () => void }) {
                   </span>
                   {r.current ? <Waveform size={14} className="shrink-0 text-accent" /> : t && <span className={`shrink-0 text-xs text-ink-3 tabular-nums ${movable ? 'group-hover:invisible' : ''}`}>{formatDuration(t.durationMs)}</span>}
                 </button>
-                {movable && (
+                {movable && !r.current && (
                   <RoundButton label={tr('Remove from Up next')} kind="plain" size="xs" className="absolute top-1/2 right-1.5 -translate-y-1/2 opacity-0 group-hover:opacity-100 focus:opacity-100" onClick={() => usePlayer.getState().dequeue(r.i)}>
                     <X size={13} />
                   </RoundButton>
