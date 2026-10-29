@@ -8,4 +8,4 @@ publish.workspace = true
 anyhow = "1.0.104"
 rodio = { version = "0.23.0", default-features = false, features = ["playback", "flac", "mp3", "mp4", "vorbis", "wav"] }
 serde = { version = "1.0.229", features = ["derive"] }
-music-dsp = { version = "2.0.0", path = "../dsp" }
+music-dsp = { version = "1.0.0", path = "../dsp" }

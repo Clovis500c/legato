@@ -1,7 +1,7 @@
 # Design direction
 
 Source of direction for UI work (the antislop filter reads it as `DESIGN.md`). Proposal 3 of 2026-10-29, adopted for
-version 2.0: System (Modern / Modern Dark) carries it. Earlier proposals are in the Figma version history ("Nocturne
+version 1.0: System (Modern / Modern Dark) carries it. Earlier proposals are in the Figma version history ("Nocturne
 v0.1", "Proposal 2 (poster)"). Where the app differs from the mockups: the search stays in the top bar (the window
 needs a drag area and its buttons there), with Add-ons and Settings.
 

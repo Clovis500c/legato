@@ -6,7 +6,7 @@ direction) and the "v2: rebrand and redesign" block of `docs/notes/plan-v2.md` (
 ## Where it stands
 
 - Branch `v2`, 26 commits on top of `master` (81e5213). Nothing pushed, nothing merged. Every push to `master` is a
-  release (`v2.0.<commits>` now): merge and push only when the user says so.
+  release (`v1.0.<commits>` now): merge and push only when the user says so.
 - Done and checked in the app (light and dark):
   - Theme: Modern / Modern Dark carry the v2 palettes (`ui/src/shared/theme/theme.ts`), sky blue `#7CB8FF` = playback
     only. Defaults v8 (`v8()` in theme.ts): theme accent instead of the Windows one, compact rows (covers on them, the
@@ -25,7 +25,7 @@ direction) and the "v2: rebrand and redesign" block of `docs/notes/plan-v2.md` (
     right, controls across the bottom; lyrics / Up next / Sound icons open a panel in the details' place.
   - Queue (`features/player/queue.ts`, `store.ts`, `UpNext.tsx`): Up next in three blocks; Add to queue lands after the
     songs already queued, before the rest of the list; kept through shuffle (`keepQueued`).
-  - Version 2.0 (tauri.conf.json, package.json, workspace Cargo.toml and the `music-*` path dependencies).
+  - Version 1.0 (after the 0.1 releases; tauri.conf.json, package.json, workspace Cargo.toml and the `music-*` path dependencies).
   - Home (`features/home/HomeView.tsx`): no page title; chips, then shortcut tiles (Songs + 5 lists opened lately,
     `JUMP` in `recentLists.ts`, 3 × 2 or 2 columns by container query), sections with title, line under, Show all.
   - Shared section head and cards: `shared/ui/Section.tsx` (`Section`, `CardRow`, `MediaCard`: 200 px card, 176 px
