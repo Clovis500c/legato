@@ -6,9 +6,14 @@ export const remoteArt = (url: string) => convertFileSrc(url, 'art')
 /** Picture the user put in the app (covers/ folder: playlist images, theme backgrounds). */
 export const coverImage = (name: string) => convertFileSrc(`cover/${name}`, 'art')
 
+// Local covers rewritten this session (Edit song info): a new URL, the webview's cached picture skipped.
+const rewritten = new Map<number, number>()
+export const coverRewritten = (id: number) => void rewritten.set(id, Date.now())
+
 /** Image candidates for a track, best first: cover embedded in its local file, then its stored art. */
 export function trackArt(t: Pick<Track, 'ids' | 'art'> & { id?: number }): string[] {
-  const local = t.ids.local && t.id !== undefined ? convertFileSrc(`local/${t.id}`, 'art') : null
+  const v = t.id !== undefined ? rewritten.get(t.id) : undefined
+  const local = t.ids.local && t.id !== undefined ? convertFileSrc(`local/${t.id}${v ? `~${v}` : ''}`, 'art') : null
   return [local, t.art ? remoteArt(t.art) : null].filter((s): s is string => !!s)
 }
 

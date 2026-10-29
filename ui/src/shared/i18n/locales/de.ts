@@ -1466,6 +1466,14 @@ const de: Record<string, string> = {
   'Visualizer': 'Visualisierung',
   'In Now Playing, bars under the cover move with the music, low notes on the left': 'In „Wird gespielt“ bewegen sich Balken unter dem Cover mit der Musik, tiefe Töne links',
   'spectrum bars equalizer analyzer frequencies audio visualiser music moving': 'spektrum balken equalizer analysator frequenzen audio visualisierung musik bewegung',
+  'Pictures': 'Bilder',
+  'Edit song info': 'Titelinfos bearbeiten',
+  'Edit song info…': 'Titelinfos bearbeiten…',
+  'Saved in the file': 'In der Datei gespeichert',
+  'New: {name}': 'Neu: {name}',
+  'Cover…': 'Cover…',
+  'No cover': 'Kein Cover',
+  'Written into the file: other players see it too. The sound stays as it is.': 'Wird in die Datei geschrieben: andere Player sehen es auch. Der Klang bleibt unverändert.',
 }
 
 export default de

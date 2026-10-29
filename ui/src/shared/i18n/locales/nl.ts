@@ -1466,6 +1466,14 @@ const nl: Record<string, string> = {
   'Visualizer': 'Visualisatie',
   'In Now Playing, bars under the cover move with the music, low notes on the left': 'In Nu speelt bewegen balken onder de hoes mee met de muziek, lage tonen links',
   'spectrum bars equalizer analyzer frequencies audio visualiser music moving': 'spectrum balken equalizer analyzer frequenties audio visualisatie muziek beweging',
+  'Pictures': 'Afbeeldingen',
+  'Edit song info': 'Nummerinfo bewerken',
+  'Edit song info…': 'Nummerinfo bewerken…',
+  'Saved in the file': 'Opgeslagen in het bestand',
+  'New: {name}': 'Nieuw: {name}',
+  'Cover…': 'Hoes…',
+  'No cover': 'Geen hoes',
+  'Written into the file: other players see it too. The sound stays as it is.': 'Wordt in het bestand geschreven: andere spelers zien het ook. Het geluid blijft zoals het is.',
 }
 
 export default nl

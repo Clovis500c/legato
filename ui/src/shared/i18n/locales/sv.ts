@@ -1466,6 +1466,14 @@ const sv: Record<string, string> = {
   'Visualizer': 'Visualisering',
   'In Now Playing, bars under the cover move with the music, low notes on the left': 'I Spelas nu rör sig staplar under omslaget med musiken, låga toner till vänster',
   'spectrum bars equalizer analyzer frequencies audio visualiser music moving': 'spektrum staplar equalizer analysator frekvenser ljud visualisering musik rörelse',
+  'Pictures': 'Bilder',
+  'Edit song info': 'Redigera låtinfo',
+  'Edit song info…': 'Redigera låtinfo…',
+  'Saved in the file': 'Sparat i filen',
+  'New: {name}': 'Ny: {name}',
+  'Cover…': 'Omslag…',
+  'No cover': 'Inget omslag',
+  'Written into the file: other players see it too. The sound stays as it is.': 'Skrivs in i filen: andra spelare ser det också. Ljudet förblir som det är.',
 }
 
 export default sv

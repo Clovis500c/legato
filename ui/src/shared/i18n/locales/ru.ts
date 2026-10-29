@@ -1466,6 +1466,14 @@ const ru: Record<string, string> = {
   'Visualizer': 'Визуализация',
   'In Now Playing, bars under the cover move with the music, low notes on the left': 'В «Сейчас играет» полосы под обложкой двигаются с музыкой, низкие частоты слева',
   'spectrum bars equalizer analyzer frequencies audio visualiser music moving': 'спектр полосы эквалайзер анализатор частоты аудио визуализация музыка',
+  'Pictures': 'Картинки',
+  'Edit song info': 'Изменить данные трека',
+  'Edit song info…': 'Изменить данные трека…',
+  'Saved in the file': 'Сохранено в файле',
+  'New: {name}': 'Новая: {name}',
+  'Cover…': 'Обложка…',
+  'No cover': 'Без обложки',
+  'Written into the file: other players see it too. The sound stays as it is.': 'Записывается в файл: другие плееры тоже это увидят. Звук не меняется.',
 }
 
 export default ru

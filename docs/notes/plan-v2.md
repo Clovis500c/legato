@@ -517,7 +517,7 @@ Original plan:
   - [x] Fullscreen: F11 (Settings › Shortcuts) and a button in the title bar.
   - [x] Video as a theme background (MP4 / WebM, 40 MB max, muted loop, still when animations are off or hidden; served by byte ranges).
   - [x] Audio visualizer: 16 bars under the cover in Now Playing (Settings › Playback), local files and YouTube; bands computed only while it shows.
-  - [ ] Edit a local file's tags (title, artist, album, cover).
+  - [x] Edit a local file's tags (right-click › Edit song info…: title, artist, album, front cover), written in a copy then swapped in.
   - [ ] SoundCloud import.
   - Not done: downloading songs from the services (fixed limit: no audio extraction).
 - [x] Interactive preview for visual settings (background blur, dimming, motion, …): small live sample of the effect.

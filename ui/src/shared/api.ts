@@ -546,6 +546,8 @@ export const api = {
   setTrackPref: (trackId: number, pref: 'less' | 'never' | null) => invoke<void>('set_track_pref', { trackId, pref }),
   /** The user's word: music (true), not music (false), null = the app's guess again. */
   setMusic: (trackIds: number[], music: boolean | null) => invoke<void>('set_music', { trackIds, music }),
+  /** Edit song info: a local file's tags rewritten (tags.rs). coverPath = new front cover; removeCover = none. */
+  editTags: (trackId: number, tags: { title: string; artist: string; album: string | null; coverPath: string | null; removeCover: boolean }) => invoke<void>('edit_tags', { trackId, tags }),
   clearHistory: () => invoke<void>('clear_history'),
   /** Private YouTube playlist; same one updated on later exports. */
   exportYoutube: (id: number) => invoke<ExportReport>('export_youtube', { id }),

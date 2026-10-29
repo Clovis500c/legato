@@ -1466,6 +1466,14 @@ const hi: Record<string, string> = {
   'Visualizer': 'विज़ुअलाइज़र',
   'In Now Playing, bars under the cover move with the music, low notes on the left': 'अभी चल रहा में कवर के नीचे की पट्टियाँ संगीत के साथ हिलती हैं, नीचे के सुर बाईं ओर',
   'spectrum bars equalizer analyzer frequencies audio visualiser music moving': 'स्पेक्ट्रम पट्टियाँ इक्वलाइज़र एनालाइज़र फ़्रीक्वेंसी ऑडियो विज़ुअलाइज़र संगीत spectrum bars visualizer',
+  'Pictures': 'तस्वीरें',
+  'Edit song info': 'गाने की जानकारी बदलें',
+  'Edit song info…': 'गाने की जानकारी बदलें…',
+  'Saved in the file': 'फ़ाइल में सहेजा गया',
+  'New: {name}': 'नया: {name}',
+  'Cover…': 'कवर…',
+  'No cover': 'कोई कवर नहीं',
+  'Written into the file: other players see it too. The sound stays as it is.': 'फ़ाइल में लिखा जाता है: दूसरे प्लेयर भी इसे देखते हैं। आवाज़ जैसी है वैसी रहती है।',
 }
 
 export default hi

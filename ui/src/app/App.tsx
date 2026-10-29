@@ -44,6 +44,7 @@ import { useStore, type View } from './store'
 import { toggleFullscreen } from './fullscreen'
 import { Toasts } from './Toasts'
 import { Asker } from '../shared/ui/Ask'
+import { EditInfoHost } from '../features/library/EditInfo'
 import { tr, trn, useLang } from '../shared/i18n/i18n'
 
 // Opened now and then: loaded on first visit, not at launch.
@@ -273,6 +274,7 @@ export function App() {
       {full && <NowPlaying />}
       <Toasts />
       <Asker />
+      <EditInfoHost />
       <ContextMenuHost fallback={appMenu} />
       <DuplicatesHost />
       {incoming && <ImportDialog key={incoming} code={incoming} />}

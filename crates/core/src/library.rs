@@ -731,6 +731,13 @@ impl Library {
         Ok(Some(Changes { tracks, gone, playlists, playlists_gone, orders, history }))
     }
 
+    /// A local file's tags rewritten by the user (Edit song info): its row follows (rescans only fill gaps).
+    pub fn set_details(&self, id: i64, title: &str, artist: &str, album: Option<&str>) -> Result<()> {
+        let n = self.db.execute("UPDATE tracks SET title = ?1, artist = ?2, album = ?3, match_key = ?4 WHERE id = ?5", params![title, artist, album, match_key(title, artist), id])?;
+        anyhow::ensure!(n == 1, "Song not found");
+        Ok(())
+    }
+
     /// The user says these are music (true) or not (false), above any guess. None = back to the guess.
     pub fn set_music(&self, ids: &[i64], music: Option<bool>) -> Result<()> {
         self.tx(|| {
@@ -1467,6 +1474,13 @@ mod tests {
         let all = lib.tracks()?;
         assert_eq!(all.len(), 1, "vanished file's orphan row removed");
         assert_eq!(all[0].track.ids.len(), 2);
+        // Tags rewritten by the user: the row follows, a later rescan keeps it.
+        let id = all[0].id;
+        lib.set_details(id, "Get Lucky (Radio Edit)", "Daft Punk feat. Pharrell", None)?;
+        lib.replace_local(std::slice::from_ref(&Track { title: "Get Lucky (Radio Edit)".into(), artist: "Daft Punk feat. Pharrell".into(), ..lucky }))?;
+        let t = lib.tracks()?.into_iter().find(|t| t.id == id).unwrap().track;
+        assert_eq!((t.title.as_str(), t.artist.as_str()), ("Get Lucky (Radio Edit)", "Daft Punk feat. Pharrell"));
+        assert!(lib.set_details(9_999, "a", "b", None).is_err());
         Ok(())
     }
 

@@ -1466,6 +1466,14 @@ const vi: Record<string, string> = {
   'Visualizer': 'Hình ảnh âm thanh',
   'In Now Playing, bars under the cover move with the music, low notes on the left': 'Trong Đang phát, các thanh dưới ảnh bìa chuyển động theo nhạc, âm trầm ở bên trái',
   'spectrum bars equalizer analyzer frequencies audio visualiser music moving': 'phổ thanh bộ chỉnh âm phân tích tần số âm thanh hình ảnh nhạc chuyển động',
+  'Pictures': 'Ảnh',
+  'Edit song info': 'Sửa thông tin bài hát',
+  'Edit song info…': 'Sửa thông tin bài hát…',
+  'Saved in the file': 'Đã lưu vào tệp',
+  'New: {name}': 'Mới: {name}',
+  'Cover…': 'Ảnh bìa…',
+  'No cover': 'Không ảnh bìa',
+  'Written into the file: other players see it too. The sound stays as it is.': 'Được ghi vào tệp: trình phát khác cũng thấy. Âm thanh giữ nguyên.',
 }
 
 export default vi

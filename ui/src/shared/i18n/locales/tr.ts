@@ -1466,6 +1466,14 @@ const tr: Record<string, string> = {
   'Visualizer': 'Görselleştirici',
   'In Now Playing, bars under the cover move with the music, low notes on the left': 'Şimdi çalıyor ekranında kapağın altındaki çubuklar müzikle hareket eder, pes sesler solda',
   'spectrum bars equalizer analyzer frequencies audio visualiser music moving': 'spektrum çubuklar ekolayzır analizör frekanslar ses görselleştirici müzik hareket',
+  'Pictures': 'Resimler',
+  'Edit song info': 'Şarkı bilgilerini düzenle',
+  'Edit song info…': 'Şarkı bilgilerini düzenle…',
+  'Saved in the file': 'Dosyaya kaydedildi',
+  'New: {name}': 'Yeni: {name}',
+  'Cover…': 'Kapak…',
+  'No cover': 'Kapak yok',
+  'Written into the file: other players see it too. The sound stays as it is.': 'Dosyaya yazılır: diğer oynatıcılar da görür. Ses olduğu gibi kalır.',
 }
 
 export default tr

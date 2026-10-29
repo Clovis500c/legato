@@ -1466,6 +1466,14 @@ const zh: Record<string, string> = {
   'Visualizer': '可视化',
   'In Now Playing, bars under the cover move with the music, low notes on the left': '在正在播放中，封面下方的条形随音乐跳动，低音在左',
   'spectrum bars equalizer analyzer frequencies audio visualiser music moving': '频谱 条形 均衡器 分析器 频率 音频 可视化 音乐 spectrum visualizer',
+  'Pictures': '图片',
+  'Edit song info': '编辑歌曲信息',
+  'Edit song info…': '编辑歌曲信息…',
+  'Saved in the file': '已保存到文件',
+  'New: {name}': '新：{name}',
+  'Cover…': '封面…',
+  'No cover': '无封面',
+  'Written into the file: other players see it too. The sound stays as it is.': '写入文件本身：其他播放器也能看到。声音保持不变。',
 }
 
 export default zh

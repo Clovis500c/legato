@@ -64,6 +64,7 @@ import type { Addon } from './addons/registry'
 import { isOn, setAddon } from './addons/state'
 import { addToPlaylist, markMusic, removeFromPlaylist, removePositions, removeTrackFromPlaylist, songs } from './library/edits'
 import { findDuplicates } from './library/DuplicatesDialog'
+import { editInfo } from './library/EditInfo'
 import { repeatedRows } from './library/duplicates'
 import { PlaylistCover as PlaylistIcon } from './library/PlaylistCover'
 import { primaryArtist } from './library/filter'
@@ -402,6 +403,7 @@ export function trackMenu(t: LibraryTrack, ctx: { list?: LibraryTrack[]; index?:
     { label: tr('Copy title and artist'), icon: <Copy size={16} />, onSelect: () => copy(`${t.artist} – ${t.title}`, tr('Title and artist copied')) },
     saveCoverItem(t),
     ...pages(t).map((p) => ({ label: tr('Open in {service}', { service: p.label }), icon: <ArrowSquareOut size={16} />, onSelect: () => openUrl(p.url).catch(fail) })),
+    t.ids.local && { label: tr('Edit song info…'), icon: <PencilSimple size={16} />, onSelect: () => editInfo(t) },
     t.ids.local && { label: tr('Show in folder'), icon: <FolderOpen size={16} />, onSelect: () => revealItemInDir(t.ids.local!).catch(fail) },
     list.length > 1 && {
       label: tr('This list'),

@@ -1466,6 +1466,14 @@ const id: Record<string, string> = {
   'Visualizer': 'Visualisasi',
   'In Now Playing, bars under the cover move with the music, low notes on the left': 'Di Sedang Diputar, batang di bawah sampul bergerak mengikuti musik, nada rendah di kiri',
   'spectrum bars equalizer analyzer frequencies audio visualiser music moving': 'spektrum batang equalizer penganalisis frekuensi audio visualisasi musik bergerak',
+  'Pictures': 'Gambar',
+  'Edit song info': 'Ubah info lagu',
+  'Edit song info…': 'Ubah info lagu…',
+  'Saved in the file': 'Disimpan di berkas',
+  'New: {name}': 'Baru: {name}',
+  'Cover…': 'Sampul…',
+  'No cover': 'Tanpa sampul',
+  'Written into the file: other players see it too. The sound stays as it is.': 'Ditulis ke berkas: pemutar lain juga melihatnya. Suaranya tetap sama.',
 }
 
 export default id

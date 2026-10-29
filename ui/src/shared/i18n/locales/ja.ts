@@ -1466,6 +1466,14 @@ const ja: Record<string, string> = {
   'Visualizer': 'ビジュアライザー',
   'In Now Playing, bars under the cover move with the music, low notes on the left': '再生中画面でジャケットの下のバーが音楽に合わせて動きます（左が低音）',
   'spectrum bars equalizer analyzer frequencies audio visualiser music moving': 'スペクトラム バー イコライザー アナライザー 周波数 オーディオ ビジュアライザー 音楽 spectrum visualizer',
+  'Pictures': '画像',
+  'Edit song info': '曲の情報を編集',
+  'Edit song info…': '曲の情報を編集…',
+  'Saved in the file': 'ファイルに保存しました',
+  'New: {name}': '新規: {name}',
+  'Cover…': 'ジャケット…',
+  'No cover': 'ジャケットなし',
+  'Written into the file: other players see it too. The sound stays as it is.': 'ファイルに書き込まれ、他のプレーヤーにも表示されます。音はそのままです。',
 }
 
 export default ja

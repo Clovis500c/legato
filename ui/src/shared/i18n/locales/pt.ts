@@ -1466,6 +1466,14 @@ const pt: Record<string, string> = {
   'Visualizer': 'Visualizador',
   'In Now Playing, bars under the cover move with the music, low notes on the left': 'Em A tocar, barras sob a capa mexem-se com a música, os graves à esquerda',
   'spectrum bars equalizer analyzer frequencies audio visualiser music moving': 'espetro barras equalizador analisador frequências áudio visualizador música movimento',
+  'Pictures': 'Imagens',
+  'Edit song info': 'Editar a informação da música',
+  'Edit song info…': 'Editar a informação da música…',
+  'Saved in the file': 'Guardado no ficheiro',
+  'New: {name}': 'Nova: {name}',
+  'Cover…': 'Capa…',
+  'No cover': 'Sem capa',
+  'Written into the file: other players see it too. The sound stays as it is.': 'Escrito no ficheiro: outros leitores também o veem. O som fica como está.',
 }
 
 export default pt

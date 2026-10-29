@@ -68,7 +68,8 @@ pub async fn image(app: &tauri::AppHandle, path: &str) -> Option<(Vec<u8>, Strin
         return cover(app, name);
     }
     match path.strip_prefix("local/") {
-        Some(id) => local(app, id.parse().ok()?).await,
+        // "<id>~<version>": same cover, asked again after an edit (art.ts coverRewritten).
+        Some(id) => local(app, id.split('~').next()?.parse().ok()?).await,
         None => remote(app, &path).await,
     }
 }

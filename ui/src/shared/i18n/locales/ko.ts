@@ -1466,6 +1466,14 @@ const ko: Record<string, string> = {
   'Visualizer': '비주얼라이저',
   'In Now Playing, bars under the cover move with the music, low notes on the left': '재생 화면에서 커버 아래 막대가 음악에 맞춰 움직입니다(왼쪽이 저음)',
   'spectrum bars equalizer analyzer frequencies audio visualiser music moving': '스펙트럼 막대 이퀄라이저 분석기 주파수 오디오 비주얼라이저 음악 spectrum visualizer',
+  'Pictures': '사진',
+  'Edit song info': '곡 정보 편집',
+  'Edit song info…': '곡 정보 편집…',
+  'Saved in the file': '파일에 저장됨',
+  'New: {name}': '새 파일: {name}',
+  'Cover…': '커버…',
+  'No cover': '커버 없음',
+  'Written into the file: other players see it too. The sound stays as it is.': '파일에 기록되어 다른 플레이어에서도 보입니다. 소리는 그대로입니다.',
 }
 
 export default ko

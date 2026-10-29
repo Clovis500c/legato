@@ -119,6 +119,64 @@ pub fn picture(path: &Path) -> Option<(Vec<u8>, String)> {
     Some((pic.data().to_vec(), pic.mime_type().map_or("image/jpeg", |m| m.as_str()).to_string()))
 }
 
+/// What the user rewrites in a local file's tags (right-click › Edit song info).
+#[derive(Debug, Clone, Default)]
+pub struct TagEdit {
+    pub title: String,
+    pub artist: String,
+    pub album: Option<String>,
+    /// New front cover (PNG / JPEG / WebP / GIF bytes); None = the one there stays.
+    pub cover: Option<Vec<u8>>,
+    pub remove_cover: bool,
+}
+
+/// Rewrites the file's main tag in a copy next to it, then swaps the copy in: a failure leaves the original untouched.
+/// The audio itself is never rewritten.
+pub fn write_tags(path: &Path, edit: &TagEdit) -> anyhow::Result<()> {
+    use lofty::config::WriteOptions;
+    use lofty::picture::{MimeType, Picture};
+    use lofty::tag::Tag;
+    let mut tmp = path.as_os_str().to_owned();
+    // Not an audio extension: the folder watcher ignores it.
+    tmp.push(".musicapp-tmp");
+    let tmp = PathBuf::from(tmp);
+    std::fs::copy(path, &tmp)?;
+    let written = (|| -> anyhow::Result<()> {
+        let file = Probe::open(&tmp)?.guess_file_type()?.read()?;
+        let kind = file.primary_tag_type();
+        let mut tag = file.tag(kind).cloned().unwrap_or_else(|| Tag::new(kind));
+        tag.set_title(edit.title.trim().to_string());
+        tag.set_artist(edit.artist.trim().to_string());
+        match edit.album.as_deref().map(str::trim).filter(|a| !a.is_empty()) {
+            Some(a) => tag.set_album(a.to_string()),
+            None => tag.remove_album(),
+        }
+        if edit.remove_cover || edit.cover.is_some() {
+            tag.remove_picture_type(PictureType::CoverFront);
+        }
+        if let Some(bytes) = &edit.cover {
+            let mime = match crate::themefile::image_ext(bytes) {
+                Some("png") => MimeType::Png,
+                Some("jpg") => MimeType::Jpeg,
+                Some("gif") => MimeType::Gif,
+                Some("webp") => MimeType::Unknown("image/webp".into()),
+                _ => anyhow::bail!("Not a PNG, JPEG, WebP or GIF picture"),
+            };
+            tag.push_picture(Picture::unchecked(bytes.clone()).pic_type(PictureType::CoverFront).mime_type(mime).build());
+        }
+        tag.save_to_path(&tmp, WriteOptions::default())?;
+        Ok(())
+    })();
+    match written {
+        Ok(()) => std::fs::rename(&tmp, path).inspect_err(|_| drop(std::fs::remove_file(&tmp)))?,
+        Err(e) => {
+            let _ = std::fs::remove_file(&tmp);
+            return Err(e);
+        }
+    }
+    Ok(())
+}
+
 #[cfg(test)]
 pub(crate) mod tests {
     use super::*;
@@ -201,6 +259,29 @@ pub(crate) mod tests {
         tag.push_picture(Picture::unchecked(b"front".to_vec()).pic_type(PictureType::CoverFront).mime_type(MimeType::Png).build());
         tag.save_to_path(&p, lofty::config::WriteOptions::default()).unwrap();
         assert_eq!(picture(&p), Some((b"front".to_vec(), "image/png".into())));
+    }
+
+    #[test]
+    fn rewrites_tags_and_cover_keeping_the_sound() {
+        let dir = tempfile::tempdir().unwrap();
+        let p = dir.path().join("a.wav");
+        wav(&p);
+        let sound = |p: &Path| read(p).duration_ms;
+        let before = sound(&p);
+        let png = vec![0x89, b'P', b'N', b'G', 1, 2, 3];
+        write_tags(&p, &TagEdit { title: " New title ".into(), artist: "Someone".into(), album: Some("Record".into()), cover: Some(png.clone()), remove_cover: false }).unwrap();
+        let t = read(&p);
+        assert_eq!((t.title.as_str(), t.artist.as_str(), t.album.as_deref(), t.duration_ms), ("New title", "Someone", Some("Record"), before));
+        assert_eq!(picture(&p), Some((png, "image/png".into())));
+        // Album emptied, cover taken off; no copy left behind.
+        write_tags(&p, &TagEdit { title: "New title".into(), artist: "Someone".into(), album: None, cover: None, remove_cover: true }).unwrap();
+        assert_eq!((read(&p).album, picture(&p)), (None, None));
+        assert_eq!(std::fs::read_dir(dir.path()).unwrap().count(), 1);
+        // Not a picture: refused, file as it was.
+        let kept = std::fs::read(&p).unwrap();
+        assert!(write_tags(&p, &TagEdit { title: "x".into(), artist: "y".into(), cover: Some(b"MZ".to_vec()), ..Default::default() }).is_err());
+        assert_eq!(std::fs::read(&p).unwrap(), kept);
+        assert_eq!(std::fs::read_dir(dir.path()).unwrap().count(), 1);
     }
 }
 

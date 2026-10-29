@@ -1466,6 +1466,14 @@ const fr: Record<string, string> = {
   'Visualizer': 'Visualiseur',
   'In Now Playing, bars under the cover move with the music, low notes on the left': 'Dans le lecteur, des barres sous la pochette bougent avec la musique, les graves à gauche',
   'spectrum bars equalizer analyzer frequencies audio visualiser music moving': 'spectre barres égaliseur analyseur fréquences audio visualiseur musique mouvement',
+  'Pictures': 'Images',
+  'Edit song info': 'Modifier les infos du titre',
+  'Edit song info…': 'Modifier les infos du titre…',
+  'Saved in the file': 'Enregistré dans le fichier',
+  'New: {name}': 'Nouvelle : {name}',
+  'Cover…': 'Pochette…',
+  'No cover': 'Sans pochette',
+  'Written into the file: other players see it too. The sound stays as it is.': 'Écrit dans le fichier : les autres lecteurs le voient aussi. Le son reste tel quel.',
 }
 
 export default fr

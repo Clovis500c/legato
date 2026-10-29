@@ -1466,6 +1466,14 @@ const uk: Record<string, string> = {
   'Visualizer': 'Візуалізація',
   'In Now Playing, bars under the cover move with the music, low notes on the left': 'У «Зараз грає» смуги під обкладинкою рухаються з музикою, низькі частоти ліворуч',
   'spectrum bars equalizer analyzer frequencies audio visualiser music moving': 'спектр смуги еквалайзер аналізатор частоти аудіо візуалізація музика',
+  'Pictures': 'Зображення',
+  'Edit song info': 'Змінити дані пісні',
+  'Edit song info…': 'Змінити дані пісні…',
+  'Saved in the file': 'Збережено у файлі',
+  'New: {name}': 'Нова: {name}',
+  'Cover…': 'Обкладинка…',
+  'No cover': 'Без обкладинки',
+  'Written into the file: other players see it too. The sound stays as it is.': 'Записується у файл: інші плеєри теж це бачать. Звук лишається як є.',
 }
 
 export default uk
