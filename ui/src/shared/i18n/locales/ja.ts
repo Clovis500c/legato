@@ -1503,6 +1503,9 @@ const ja: Record<string, string> = {
   'Peaks': 'ピーク',
   'Wave': 'ウェーブ',
   'bars mirror peaks wave look': 'バー ミラー ピーク ウェーブ 見た目 bars mirror peaks wave',
+  // v2 redesign
+  'Playing': '再生中',
+  'All your songs': 'すべての曲',
 }
 
 export default ja

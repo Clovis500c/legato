@@ -230,7 +230,7 @@ function YourWeek() {
     <div className="flex flex-wrap items-center gap-x-10 gap-y-5 rounded-2xl border border-line bg-panel p-5">
       <div className="flex flex-col gap-2">
         <span className="text-[2rem] leading-none font-bold tracking-[-0.02em]">{hours(week.total)}</span>
-        <span className={`flex w-fit items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${same ? 'bg-raised text-ink-2' : diff > 0 ? 'bg-accent-soft text-accent' : 'bg-raised text-ink-2'}`}>
+        <span className={`flex w-fit items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${same ? 'bg-raised text-ink-2' : diff > 0 ? 'bg-accent-soft text-accent-ink' : 'bg-raised text-ink-2'}`}>
           {!same && (diff > 0 ? <ArrowUp size={11} weight="bold" /> : <ArrowDown size={11} weight="bold" />)}
           {same ? tr('Same as last week') : diff > 0 ? tr('{time} more than last week', { time: hours(diff) }) : tr('{time} less than last week', { time: hours(-diff) })}
         </span>
@@ -239,7 +239,7 @@ function YourWeek() {
       <ul className="flex h-24 items-end gap-2" aria-label={tr('Time heard per day')}>
         {week.days.map((ms, i) => (
           <li key={i} title={`${long.format(week.starts[i])} · ${hours(ms)}`} className="group flex h-full flex-col items-center justify-end gap-1.5">
-            <span className={`w-7 rounded-md transition-colors ${i === 6 ? 'bg-accent' : 'bg-line group-hover:bg-ink-3'}`} style={{ height: Math.max(ms ? 4 : 2, Math.round((ms / max) * 72)) }} />
+            <span className={`w-7 rounded-md transition-colors ${i === 6 ? 'bg-ink' : 'bg-line group-hover:bg-ink-3'}`} style={{ height: Math.max(ms ? 4 : 2, Math.round((ms / max) * 72)) }} />
             <span className={`text-[0.625rem] uppercase ${i === 6 ? 'font-semibold text-ink' : 'text-ink-3'}`}>{narrow.format(week.starts[i])}</span>
           </li>
         ))}
@@ -444,7 +444,7 @@ function CustomizeHome({ onClose }: { onClose: () => void }) {
             >
               <DotsSixVertical size={16} weight="bold" />
             </button>
-            <span className={`grid size-9 shrink-0 place-items-center rounded-lg bg-bg ${x.on ? 'text-accent' : 'text-ink-3'}`}>{sectionIcons[x.id]}</span>
+            <span className={`grid size-9 shrink-0 place-items-center rounded-lg bg-bg ${x.on ? 'text-accent-ink' : 'text-ink-3'}`}>{sectionIcons[x.id]}</span>
             <span className="min-w-0 flex-1">
               <span className={`block truncate text-[0.8125rem] font-semibold ${x.on ? '' : 'text-ink-3'}`}>{tr(sectionLabels[x.id])}</span>
               <span className="block truncate text-xs text-ink-3">{tr(sectionHints[x.id])}</span>

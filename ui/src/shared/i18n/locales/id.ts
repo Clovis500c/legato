@@ -1503,6 +1503,9 @@ const id: Record<string, string> = {
   'Peaks': 'Puncak',
   'Wave': 'Gelombang',
   'bars mirror peaks wave look': 'batang cermin puncak gelombang tampilan',
+  // v2 redesign
+  'Playing': 'Sedang diputar',
+  'All your songs': 'Semua lagumu',
 }
 
 export default id

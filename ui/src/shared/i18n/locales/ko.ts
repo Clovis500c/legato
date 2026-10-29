@@ -1503,6 +1503,9 @@ const ko: Record<string, string> = {
   'Peaks': '피크',
   'Wave': '웨이브',
   'bars mirror peaks wave look': '막대 미러 피크 웨이브 모양 bars mirror peaks wave',
+  // v2 redesign
+  'Playing': '재생 중',
+  'All your songs': '내 모든 노래',
 }
 
 export default ko

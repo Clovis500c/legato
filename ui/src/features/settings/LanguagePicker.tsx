@@ -122,7 +122,7 @@ export function LanguagePicker({ value, onChange }: { value: string; onChange: (
                     <span className="truncate text-[0.8125rem] font-medium">{r.name}</span>
                     {r.sub && <span className="truncate text-xs text-ink-2">{r.sub}</span>}
                   </span>
-                  {r.value === value && <Check size={15} weight="bold" className="shrink-0 text-accent" />}
+                  {r.value === value && <Check size={15} weight="bold" className="shrink-0 text-accent-ink" />}
                 </div>
               ))}
               {!shown.length && <p className="px-2.5 py-3 text-xs text-ink-2">{tr('No language matches “{query}”.', { query })}</p>}

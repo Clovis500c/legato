@@ -8,11 +8,11 @@ describe('sanitize', () => {
     expect(sanitize({ theme: 'papier' }).theme).toBe('paper')
   })
 
-  it('defaults to Windows theme and accent, keeps an explicit theme accent', () => {
-    expect(DEFAULTS).toMatchObject({ theme: 'system', accent: 'system' })
+  it("defaults to Windows' light or dark with the theme's accent, keeps the Windows accent when picked", () => {
+    expect(DEFAULTS).toMatchObject({ theme: 'system', accent: null })
     expect(sanitize({ accent: null }).accent).toBeNull()
-    expect(sanitize({ accent: 'system' }).accent).toBe('system')
-    expect(sanitize({ accent: 'red' }).accent).toBe('system')
+    expect(sanitize({ accent: 'system', defaultsVersion: 8 }).accent).toBe('system')
+    expect(sanitize({ accent: 'red' }).accent).toBeNull()
   })
 
   it('clamps zoom and keeps valid values', () => {
@@ -50,13 +50,13 @@ describe('resolveTheme', () => {
 
   it('uses the Windows accent variant matching theme brightness', () => {
     const win = { light: '#005fb8', dark: '#60CDFF' }
-    const light = resolveTheme(DEFAULTS, false, win)
-    const dark = resolveTheme(DEFAULTS, true, win)
+    const light = resolveTheme({ ...DEFAULTS, accent: 'system' }, false, win)
+    const dark = resolveTheme({ ...DEFAULTS, accent: 'system' }, true, win)
     expect([light.id, light.accent, light.onAccent]).toEqual(['modern', '#005FB8', '#FFFFFF'])
     expect([dark.id, dark.accent, dark.onAccent]).toEqual(['modern-dark', '#60CDFF', '#171614'])
     // No Windows accent (other OS, error): theme's own.
-    expect(resolveTheme(DEFAULTS, true, null).accent).toBe('#FF0033')
-    expect(resolveTheme({ ...DEFAULTS, accent: null }, false, win).accent).toBe('#FF0033')
+    expect(resolveTheme({ ...DEFAULTS, accent: 'system' }, true, null).accent).toBe('#7CB8FF')
+    expect(resolveTheme(DEFAULTS, false, win).accent).toBe('#7CB8FF')
   })
 
   it('text on any accent reaches AA 4.5', () => {
@@ -71,6 +71,9 @@ describe('resolveTheme', () => {
     const v = cssVars(paper, { ...DEFAULTS, covers: 'vinyl', density: 'compact' })
     expect(v).toMatchObject({ '--bg': '#F3F1EC', '--line-soft': '#E4E0D7', '--ink-2': '#5C5852', '--cover-radius': '999px', '--row-h': '40px' })
     expect(v['--font-ui']).toContain('Schibsted')
+    // Sky blue as text on white darkens until AA.
+    const modern = cssVars(PRESETS[0], DEFAULTS)['--accent-ink']
+    expect(contrast(modern, '#FFFFFF')).toBeGreaterThanOrEqual(4.5)
     expect(cssVars(paper, { ...DEFAULTS, font: 'modern' })['--font-ui']).toContain('Roboto')
   })
 
@@ -83,7 +86,7 @@ describe('resolveTheme', () => {
 
   it('settings saved before v2 get the new defaults once, later choices stay', () => {
     const old = sanitize({ volume: 'knob', tuner: true, clickToPlay: 'double', zoom: 110 })
-    expect(old).toMatchObject({ volume: 'bar', tuner: false, clickToPlay: 'single', stage: 'auto', zoom: 110, startView: 'home', defaultsVersion: 7 })
+    expect(old).toMatchObject({ volume: 'bar', tuner: false, clickToPlay: 'single', stage: 'auto', zoom: 110, startView: 'home', defaultsVersion: 8 })
     // Saved at v2: only v3's change applies.
     expect(sanitize({ volume: 'knob', stage: 'video', defaultsVersion: 2 })).toMatchObject({ volume: 'knob', stage: 'auto' })
     // Home opens first once (v4), then the user's pick stays.
@@ -97,6 +100,10 @@ describe('resolveTheme', () => {
     const off = (x: ReturnType<typeof sanitize>) => x.homeSections.find((h) => h.id === 'playlists')?.on
     expect(off(sanitize({ homeSections: [{ id: 'playlists', on: true }], defaultsVersion: 5 }))).toBe(false)
     expect(off(sanitize({ homeSections: [{ id: 'playlists', on: true }], defaultsVersion: 6 }))).toBe(true)
+    // App v2 (v8): old defaults move once (Windows accent → sky blue, compact rows, square covers, flat Now Playing).
+    expect(sanitize({ accent: 'system', density: 'comfort', listCovers: true, covers: 'rounded', immersive: true, defaultsVersion: 7 })).toMatchObject({ accent: null, density: 'compact', listCovers: false, covers: 'net', immersive: false })
+    expect(sanitize({ accent: '#2F6FEB', density: 'airy', listCovers: true, covers: 'vinyl', defaultsVersion: 7 })).toMatchObject({ accent: '#2F6FEB', density: 'airy', listCovers: true, covers: 'vinyl' })
+    expect(sanitize({ accent: 'system', immersive: true, defaultsVersion: 8 })).toMatchObject({ accent: 'system', immersive: true })
     // Plays column once (v7), only for the old default columns.
     expect(sanitize({ columns: ['album', 'sources', 'duration'], defaultsVersion: 6 }).columns).toEqual(['album', 'sources', 'plays', 'duration'])
     expect(sanitize({ columns: ['album'], defaultsVersion: 6 }).columns).toEqual(['album'])

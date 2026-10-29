@@ -294,7 +294,7 @@ export function NowPlaying() {
                 </RoundButton>
               )}
               {track && (
-                <RoundButton label={liked ? tr('Remove from Liked Music') : tr('Add to Liked Music')} aria-pressed={liked} kind="plain" size="md" onClick={() => void toggleLike(track)} className={liked ? 'text-accent' : 'text-ink-2 hover:text-ink'}>
+                <RoundButton label={liked ? tr('Remove from Liked Music') : tr('Add to Liked Music')} aria-pressed={liked} kind="plain" size="md" onClick={() => void toggleLike(track)} className={liked ? 'text-accent-ink' : 'text-ink-2 hover:text-ink'}>
                   <Heart size={24} weight={liked ? 'fill' : 'regular'} />
                 </RoundButton>
               )}

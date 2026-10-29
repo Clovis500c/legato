@@ -1503,6 +1503,9 @@ const pt: Record<string, string> = {
   'Peaks': 'Picos',
   'Wave': 'Onda',
   'bars mirror peaks wave look': 'barras espelho picos onda aspeto',
+  // v2 redesign
+  'Playing': 'Tocando',
+  'All your songs': 'Todas as suas músicas',
 }
 
 export default pt

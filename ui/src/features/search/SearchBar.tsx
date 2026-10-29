@@ -121,7 +121,7 @@ export function SearchBar({ children }: { children?: ReactNode }) {
         label: (
           <>
             {tr('Recent searches')}
-            <button type="button" onClick={clearRecent} className="font-sans text-xs font-semibold tracking-normal text-accent normal-case hover:underline">
+            <button type="button" onClick={clearRecent} className="font-sans text-xs font-semibold tracking-normal text-accent-ink normal-case hover:underline">
               {tr('Clear all')}
             </button>
           </>
@@ -233,11 +233,11 @@ export function SearchBar({ children }: { children?: ReactNode }) {
       onSubmit={submit}
       className="relative flex h-10 w-full max-w-[640px] min-w-0"
     >
-      <span className={`flex h-full min-w-0 flex-1 items-center gap-2.5 rounded-full border bg-bg pr-1 pl-4 transition ${focused ? 'border-accent ring-1 ring-accent' : 'border-line hover:border-ink-4'}`}>
+      <span className={`flex h-full min-w-0 flex-1 items-center gap-2.5 rounded-full border bg-bg pr-1 pl-4 transition ${focused ? 'border-accent-ink ring-1 ring-accent-ink' : 'border-line hover:border-ink-4'}`}>
         <MagnifyingGlass size={17} className="shrink-0 text-ink-3" aria-hidden />
         {scope && (
           <span className="flex shrink-0 items-center gap-1.5 rounded-full bg-raised py-0.5 pr-0.5 pl-2.5 text-xs font-medium">
-            <span className="text-accent">{scope.icon}</span>
+            <span className="text-accent-ink">{scope.icon}</span>
             {scope.label}
             <button type="button" aria-label={tr('Search everywhere instead (Backspace)')} title={tr('Search everywhere instead (Backspace)')} onClick={() => (useStore.getState().setScoped(false), input.current?.focus())} className="grid size-5 place-items-center rounded-full text-ink-3 hover:bg-line hover:text-ink">
               <X size={10} weight="bold" />

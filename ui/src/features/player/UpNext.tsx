@@ -19,6 +19,8 @@ import { api } from '../../shared/api'
 import { askText } from '../../shared/ui/Ask'
 
 const ROW = 60
+/** Panels beside Now Playing's cover: a see-through card. */
+export const CARD = 'rounded-2xl border border-line-soft bg-[color-mix(in_srgb,var(--panel)_55%,transparent)] p-3'
 
 /** Rows of the queue panel: library queue in play order, or dropped files (current + engine queue). */
 function useRows(): QueueRow[] {
@@ -86,7 +88,8 @@ function queueMenu(onHide: () => void): MenuEntry[] {
  * current one too (user's request 2026-10-29), can be dragged into another order (or Alt+↑ / Alt+↓ on a song): above
  * the current song = history, below = still to play. What's next can be cleared.
  */
-export function UpNext({ onHide }: { onHide: () => void }) {
+/** className: the panel's own look (default: a card over Now Playing). */
+export function UpNext({ onHide, className = CARD }: { onHide: () => void; className?: string }) {
   const rows = useRows()
   const list = usePlayer((s) => s.list)
   const playAt = usePlayer((s) => s.playAt)
@@ -129,7 +132,7 @@ export function UpNext({ onHide }: { onHide: () => void }) {
   }, [current, v])
 
   return (
-    <aside onContextMenu={onMenu(() => queueMenu(onHide))} className="flex min-h-0 flex-col gap-2 rounded-2xl border border-line-soft bg-[color-mix(in_srgb,var(--panel)_55%,transparent)] p-3">
+    <aside onContextMenu={onMenu(() => queueMenu(onHide))} className={`flex min-h-0 flex-col gap-2 ${className}`}>
       <div className="flex items-center gap-2 px-1">
         <span className="flex-1 text-[0.8125rem] font-semibold">{tr('Up next')}</span>
         {next > 0 && rows[current]?.i !== undefined && rows[current].i >= 0 && (
@@ -156,7 +159,7 @@ export function UpNext({ onHide }: { onHide: () => void }) {
             <span>{tr('{n} next', { n: next.toLocaleString() })}</span>
           </div>
           <div className="h-1 overflow-hidden rounded-full bg-line-soft">
-            <div className="h-full rounded-full bg-accent transition-[width] duration-300" style={{ width: `${(played / rows.length) * 100}%` }} />
+            <div className="h-full rounded-full bg-ink transition-[width] duration-300" style={{ width: `${(played / rows.length) * 100}%` }} />
           </div>
         </div>
       )}
@@ -199,15 +202,19 @@ export function UpNext({ onHide }: { onHide: () => void }) {
                     move(r.i, n)
                   }}
                   title={movable ? tr('Drag to change the order (Alt+↑ / Alt+↓)') : undefined}
-                  className={`flex h-full w-full items-center gap-3 rounded-lg px-2 text-left ${r.current ? 'bg-accent-soft' : 'enabled:hover:bg-raised'} ${r.played ? 'opacity-55 hover:opacity-100' : ''} ${movable ? 'cursor-grab active:cursor-grabbing' : ''}`}
+                  className={`flex h-full w-full items-center gap-3 rounded-lg px-2 text-left ${r.current ? 'bg-raised' : 'enabled:hover:bg-raised'} ${r.played ? 'opacity-55 hover:opacity-100' : ''} ${movable ? 'cursor-grab active:cursor-grabbing' : ''}`}
                 >
                   {movable && <DotsSixVertical size={12} className="-mr-2 -ml-1.5 shrink-0 text-ink-3 opacity-0 group-hover:opacity-100" />}
                   <Cover title={title} art={art} size={44} />
                   <span className="min-w-0 flex-1">
-                    <span className={`block truncate text-[0.8125rem] font-semibold ${r.current ? 'text-accent' : ''}`}>{title}</span>
+                    <span className="block truncate text-sm font-medium">{title}</span>
                     <span className="block truncate text-xs text-ink-2">{artist}</span>
                   </span>
-                  {r.current ? <Waveform size={14} className="shrink-0 text-accent" /> : t && <span className={`shrink-0 text-xs text-ink-3 tabular-nums ${movable ? 'group-hover:invisible' : ''}`}>{formatDuration(t.durationMs)}</span>}
+                  {r.current ? (
+                    <span title={tr('Playing')} className="grid size-6 shrink-0 place-items-center rounded-[4px] bg-accent text-on-accent">
+                      <Waveform size={14} weight="bold" />
+                    </span>
+                  ) : t && <span className={`shrink-0 text-xs text-ink-3 tabular-nums ${movable ? 'group-hover:invisible' : ''}`}>{formatDuration(t.durationMs)}</span>}
                 </button>
                 {movable && !r.current && (
                   <RoundButton label={tr('Remove from Up next')} kind="plain" size="xs" className="absolute top-1/2 right-1.5 -translate-y-1/2 opacity-0 group-hover:opacity-100 focus:opacity-100" onClick={() => usePlayer.getState().dequeue(r.i)}>

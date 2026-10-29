@@ -1503,6 +1503,9 @@ const nl: Record<string, string> = {
   'Peaks': 'Pieken',
   'Wave': 'Golf',
   'bars mirror peaks wave look': 'balken spiegel pieken golf uiterlijk',
+  // v2 redesign
+  'Playing': 'Speelt nu',
+  'All your songs': 'Al je nummers',
 }
 
 export default nl

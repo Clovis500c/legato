@@ -69,7 +69,7 @@ function SongRow({ list, i, cover, extra, sub, number }: { list: LibraryTrack[];
   return (
     <li onContextMenu={onMenu(() => trackMenu(t, { list, index: i }))} onDoubleClick={() => playable && play(list, i)} className="group flex h-13 items-center gap-4 rounded-md px-3 hover:bg-raised">
       <span className="flex w-6 shrink-0 justify-end text-xs text-ink-3 tabular-nums">
-        <span className={playable ? 'group-hover:hidden' : ''}>{on ? <Waveform size={14} className="text-accent" /> : (number ?? i + 1)}</span>
+        <span className={playable ? 'group-hover:hidden' : ''}>{on ? <Waveform size={14} className="text-accent-ink" /> : (number ?? i + 1)}</span>
         {playable && (
           <button aria-label={tr('Play {title}', { title: t.title })} onClick={() => play(list, i)} className="hidden text-ink group-hover:block">
             <Play size={13} weight="fill" />
@@ -78,7 +78,7 @@ function SongRow({ list, i, cover, extra, sub, number }: { list: LibraryTrack[];
       </span>
       {cover && <Cover title={t.album ?? t.title} art={trackArt(t)} size={40} />}
       <span className="flex min-w-0 flex-1 flex-col">
-        <span className={`truncate text-[0.8125rem] font-semibold ${on ? 'text-accent' : ''}`}>{t.title}</span>
+        <span className={`truncate text-[0.8125rem] font-semibold ${on ? 'text-accent-ink' : ''}`}>{t.title}</span>
         {sub && <span className="truncate text-xs text-ink-2">{sub}</span>}
       </span>
       {extra}

@@ -3,7 +3,7 @@ import { formatCount } from '../format'
 import { tr } from '../i18n/i18n'
 
 const kinds = {
-  primary: 'bg-accent text-on-accent shadow-[0_2px_10px_var(--accent-soft)] hover:brightness-110',
+  primary: 'bg-accent text-on-accent hover:brightness-105',
   ink: 'bg-ink text-bg hover:opacity-85',
   ghost: 'border border-line text-ink hover:bg-raised',
   soft: 'border border-line bg-raised text-ink shadow-[0_1px_2px_var(--shadow)] hover:bg-bg',
@@ -18,12 +18,12 @@ export function RoundButton({ label, kind = 'ghost', size = 'md', className = ''
 
 export const Led = ({ on }: { on: boolean }) => <span className="led" data-on={on} aria-hidden />
 
-/** Filter chip lit like an amp input selector. */
+/** Filter chip: a pill, ink when picked, grey otherwise (YouTube's and Spotify's chips, docs/design.md). */
 export function LedChip({ on, label, count, onClick }: { on: boolean; label: string; count?: string; onClick: () => void }) {
   return (
-    <button role="tab" aria-selected={on} onClick={onClick} className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition ${on ? 'bg-ink text-bg' : 'border border-line text-ink hover:bg-raised'}`}>
-      <Led on={on} /> {label}
-      {count !== undefined && <span className={`font-mono text-[0.625rem] ${on ? 'text-ink-4' : 'text-ink-3'}`}>{count}</span>}
+    <button role="tab" aria-selected={on} onClick={onClick} className={`flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[0.8125rem] font-medium whitespace-nowrap transition ${on ? 'bg-ink text-bg' : 'bg-raised text-ink hover:bg-line'}`}>
+      {label}
+      {count !== undefined && <span className={`text-xs tabular-nums ${on ? 'text-ink-4' : 'text-ink-3'}`}>{count}</span>}
     </button>
   )
 }
@@ -99,7 +99,7 @@ export function Knob({ value, onChange, size = 32, ticks = false, label = tr('Vo
 /** Thin range bar; fill painted with a hard stop (no gradient look). seek = YouTube-like: accent fill, grows on hover. */
 export function Bar({ label, value, max, onChange, className = '', seek = false }: { label: string; value: number; max: number; onChange: (v: number) => void; className?: string; seek?: boolean }) {
   const pct = max ? Math.min(100, (value / max) * 100) : 0
-  const fill = seek ? 'var(--accent)' : 'var(--ink)'
+  const fill = 'var(--ink)'
   return (
     <input
       type="range"

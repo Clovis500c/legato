@@ -49,7 +49,7 @@ function KeyButton({ combo, onChange, global, problem, label }: { combo: Combo |
         onClick={() => setRecording(true)}
         onBlur={() => setRecording(false)}
         aria-label={tr('{action}: {keys}. Change', { action: label, keys: combo ? comboLabel(combo) : tr('none') })}
-        className={`min-w-24 rounded-md border px-2 py-0.5 text-left font-mono text-xs transition ${recording ? 'border-accent bg-accent-soft' : problem ? 'border-danger' : 'border-line bg-recess hover:border-ink-3'}`}
+        className={`min-w-24 rounded-md border px-2 py-0.5 text-left font-mono text-xs transition ${recording ? 'border-accent-ink bg-accent-soft' : problem ? 'border-danger' : 'border-line bg-recess hover:border-ink-3'}`}
       >
         {recording ? tr('Press keys…') : combo ? comboLabel(combo) : '—'}
       </button>

@@ -1503,6 +1503,9 @@ const pl: Record<string, string> = {
   'Peaks': 'Szczyty',
   'Wave': 'Fala',
   'bars mirror peaks wave look': 'słupki lustro szczyty fala wygląd',
+  // v2 redesign
+  'Playing': 'Odtwarzane',
+  'All your songs': 'Wszystkie twoje utwory',
 }
 
 export default pl

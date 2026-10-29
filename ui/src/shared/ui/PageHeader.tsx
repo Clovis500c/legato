@@ -11,7 +11,8 @@ export function PageHeader({ kicker, title, sub, actions, art, onContextMenu }: 
         {art}
         <div className={`flex min-w-0 flex-col ${art ? 'gap-2' : 'gap-1'}`}>
           {kicker && <p className="kicker">{kicker}</p>}
-          <h1 className={`truncate leading-tight font-bold tracking-[-0.02em] ${art ? 'text-[2.25rem]' : 'text-[1.75rem]'}`}>{title}</h1>
+          {/* Display L (docs/design.md): Roboto Black, 56 / 60. */}
+          <h1 className="truncate pb-1 text-[3.5rem] leading-[1.07] font-black tracking-[-0.015em]">{title}</h1>
           {sub && <div className="text-[0.8125rem] text-ink-2">{sub}</div>}
           {/* With art, the actions sit under the title (Play first), like an album sleeve. */}
           {art && actions && <div className="flex items-center gap-3 pt-2">{actions}</div>}

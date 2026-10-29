@@ -1,4 +1,4 @@
-import { ArrowsOutSimple, Moon, SpeakerHigh, SpeakerLow, SpeakerSlash } from '@phosphor-icons/react'
+import { ArrowsOutSimple, Heart, Moon, Queue, Quotes, SpeakerHigh, SpeakerLow, SpeakerSlash } from '@phosphor-icons/react'
 import { getCurrentWebview } from '@tauri-apps/api/webview'
 import { useEffect, useRef, useState } from 'react'
 import { useSettings } from '../../app/settings'
@@ -24,6 +24,7 @@ import { frameAround } from '../../shared/artbox'
 import { bindLiveFrame, sendLive } from './live'
 import { useLiveSync } from './liveSync'
 import { AdaptiveBar } from './AdaptiveBar'
+import { toggleLike, useLiked } from './like'
 import { tr } from '../../shared/i18n/i18n'
 
 const AUDIO = /\.(mp3|flac|wav|ogg|m4a|aac)$/i
@@ -166,7 +167,7 @@ function YouTubeFrame({ videoId, tail = false, idle = false }: { videoId: string
       // Hidden (cover shown instead): YouTube's minimum size, so it streams a low resolution nobody sees.
       style={tail ? undefined : (crop ?? (rect ? { left: rect.left, top: rect.top, width: hidden ? 200 : rect.width, height: hidden ? 200 : rect.height } : undefined))}
       // Bare video: no pointer on it, so YouTube's hover overlay never shows; our controls drive it.
-      className={`fixed z-30 bg-black ${crop ? '' : 'rounded-lg border border-line'} ${src.controls && !hidden && !watch && !tail ? '' : 'pointer-events-none'} ${hidden || watch || tail ? 'opacity-0' : ''} ${rect && !tail ? '' : 'right-6 bottom-[112px] h-50 w-89 shadow-[0_12px_32px_var(--shadow)]'}`}
+      className={`fixed z-30 bg-black ${crop ? '' : 'rounded-lg border border-line'} ${src.controls && !hidden && !watch && !tail ? '' : 'pointer-events-none'} ${hidden || watch || tail ? 'opacity-0' : ''} ${rect && !tail ? '' : 'right-6 bottom-[100px] h-50 w-89 shadow-[0_12px_32px_var(--shadow)]'}`}
     />
   )
 }
@@ -183,7 +184,7 @@ function SleepButton() {
   }, [ends])
   const left = sleepLabel(ends)
   return (
-    <button type="button" title={tr('Sleep timer')} aria-label={left ? `${tr('Sleep timer')}: ${left}` : tr('Sleep timer')} onClick={(e) => openMenu(e, sleepMenu(), { place: 'above' })} className={`flex h-8 items-center gap-1.5 rounded-full px-2 text-xs font-semibold transition hover:bg-raised ${left ? 'text-accent' : 'text-ink-3 hover:text-ink'}`}>
+    <button type="button" title={tr('Sleep timer')} aria-label={left ? `${tr('Sleep timer')}: ${left}` : tr('Sleep timer')} onClick={(e) => openMenu(e, sleepMenu(), { place: 'above' })} className={`flex h-8 items-center gap-1.5 rounded-full px-2 text-xs font-semibold transition hover:bg-raised ${left ? 'text-accent-ink' : 'text-ink-3 hover:text-ink'}`}>
       <Moon size={16} weight={left ? 'fill' : 'regular'} />
       {left && <span className="tabular-nums">{left}</span>}
     </button>
@@ -216,6 +217,29 @@ export function VolumeControl({ big }: { big?: boolean }) {
         <AdaptiveBar className="absolute inset-x-0 bottom-0" />
       </span>
     </span>
+  )
+}
+
+/** Right panel switch (Up next, lyrics): Fill when open, again closes it. Same settings as Now Playing's panels. */
+function PanelButton({ panel, label, icon: Icon }: { panel: 'upNext' | 'lyrics'; label: string; icon: typeof Queue }) {
+  const on = useSettings((s) => s.settings[panel] && (panel === 'lyrics' || !s.settings.lyrics) && !s.settings.editor)
+  const now = usePlayer((s) => !!s.now)
+  return (
+    <RoundButton label={label} aria-pressed={on} kind="plain" size="sm" disabled={!now} className={on ? 'text-ink!' : ''} onClick={() => useSettings.getState().update(on ? { [panel]: false } : { upNext: panel === 'upNext', lyrics: panel === 'lyrics', editor: false })}>
+      <Icon size={19} weight={on ? 'fill' : 'regular'} />
+    </RoundButton>
+  )
+}
+
+/** One click saves the song (a hidden like caused a backlash at Spotify, docs/design.md). */
+function LikeButton() {
+  const track = useNowTrack()
+  const liked = useLiked(track)
+  if (!track) return null
+  return (
+    <RoundButton label={liked ? tr('Remove from Liked Music') : tr('Add to Liked Music')} aria-pressed={liked} kind="plain" size="sm" className={liked ? 'text-ink!' : ''} onClick={() => void toggleLike(track)}>
+      <Heart size={19} weight={liked ? 'fill' : 'regular'} />
+    </RoundButton>
   )
 }
 
@@ -272,45 +296,49 @@ export function PlayerBar() {
   }, [remote, onSpotify])
 
   return (
-    <footer onContextMenu={onMenu(playerMenu)} className="flex h-25 shrink-0 items-center justify-between gap-6 border-t border-line bg-panel px-6 py-2">
+    // On the window's background, under the panels (docs/design.md).
+    <footer onContextMenu={onMenu(playerMenu)} className="flex h-22 shrink-0 items-center justify-between gap-6 px-4">
       {/* In key order: each iframe keeps its place as the two swap roles (a moved iframe reloads). */}
       {now?.youtubeId &&
         [...(tail ? [tail] : []), { key: frameKey, videoId: now.youtubeId }]
           .sort((a, b) => a.key - b.key)
           .map((f) => <YouTubeFrame key={f.key} videoId={f.videoId} tail={f === tail} idle={f === tail && !!tail?.done} />)}
 
-      <div className="flex w-85 min-w-0 items-center gap-3.5">
+      <div className="flex w-85 min-w-0 items-center gap-3">
         <button disabled={!now} onClick={() => setFull(true)} title={now ? tr('Open Now Playing') : undefined} className="shrink-0">
           {/* New song: its cover fades in. */}
           <Cover key={now?.trackId ?? now?.title} className="fade-in" title={now?.title ?? ''} art={track && trackArt(track)} size={56} />
         </button>
         <span className="flex min-w-0 flex-col items-start gap-1">
-          <button disabled={!now} onClick={() => setFull(true)} title={now ? tr('Open Now Playing') : undefined} className="max-w-full truncate text-left text-sm font-semibold">
+          <button disabled={!now} onClick={() => setFull(true)} title={now ? tr('Open Now Playing') : undefined} className="max-w-full truncate text-left text-sm font-medium">
             {now?.title ?? tr('Nothing playing')}
           </button>
-          {now ? <ArtistLink now={now} className="max-w-full truncate text-xs text-ink-2" /> : <span className="truncate text-xs text-ink-2">{tr('Play a YouTube track or drop audio files here')}</span>}
+          {now ? <ArtistLink now={now} className="max-w-full truncate text-[0.8125rem] text-ink-2" /> : <span className="truncate text-[0.8125rem] text-ink-2">{tr('Play a YouTube track or drop audio files here')}</span>}
         </span>
+        <LikeButton />
       </div>
 
-      <div className="flex w-140 min-w-0 flex-col items-center gap-2.5">
+      <div className="flex w-140 min-w-0 flex-col items-center gap-1">
         <Transport />
-        <div className="flex w-full items-center gap-3 font-mono text-[0.625rem] text-ink-3">
+        <div className="flex w-full items-center gap-3 text-xs text-ink-2 tabular-nums">
           <TimeText part="elapsed" />
           <SeekBar className="flex-1" />
           <TimeText part="remaining" />
         </div>
       </div>
 
-      <div className="flex w-85 items-center justify-end gap-3.5">
+      <div className="flex w-85 items-center justify-end gap-2">
         {readout && now && (
           <span title={viaTitle(now.via, now.path)} className="grid size-8 shrink-0 place-items-center text-ink-2">
             <SourceIcon source={viaSource[now.via]} size={17} />
           </span>
         )}
         {sleepButton && <SleepButton />}
+        <PanelButton panel="lyrics" label={tr('Lyrics')} icon={Quotes} />
+        <PanelButton panel="upNext" label={tr('Up next')} icon={Queue} />
         <VolumeControl />
-        <RoundButton label={tr('Now playing, full screen')} disabled={!now} onClick={() => setFull(true)}>
-          <ArrowsOutSimple size={15} />
+        <RoundButton label={tr('Now playing, full screen')} kind="plain" size="sm" disabled={!now} onClick={() => setFull(true)}>
+          <ArrowsOutSimple size={18} />
         </RoundButton>
       </div>
     </footer>

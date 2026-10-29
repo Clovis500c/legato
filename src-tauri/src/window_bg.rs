@@ -5,7 +5,7 @@ use serde_json::Value;
 // Preset bg, keep in sync with ui/src/shared/theme/theme.ts PRESETS.
 const PRESETS: &[(&str, &str)] = &[
     ("modern", "#FFFFFF"),
-    ("modern-dark", "#0F0F0F"),
+    ("modern-dark", "#131313"),
     ("paper", "#F3F1EC"),
     ("graphite", "#121211"),
     ("studio", "#000000"),
@@ -55,8 +55,8 @@ mod tests {
     #[test]
     fn system_follows_windows_mode() {
         assert_eq!(resolve(None, false), "#FFFFFF");
-        assert_eq!(resolve(None, true), "#0F0F0F");
-        assert_eq!(resolve(Some(&json!({ "theme": "system" })), true), "#0F0F0F");
+        assert_eq!(resolve(None, true), "#131313");
+        assert_eq!(resolve(Some(&json!({ "theme": "system" })), true), "#131313");
     }
 
     #[test]

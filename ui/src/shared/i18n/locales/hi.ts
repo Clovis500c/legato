@@ -1503,6 +1503,9 @@ const hi: Record<string, string> = {
   'Peaks': 'शिखर',
   'Wave': 'तरंग',
   'bars mirror peaks wave look': 'पट्टियाँ दर्पण शिखर तरंग रूप bars mirror peaks wave',
+  // v2 redesign
+  'Playing': 'चल रहा है',
+  'All your songs': 'आपके सभी गाने',
 }
 
 export default hi

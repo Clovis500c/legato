@@ -1503,6 +1503,9 @@ const zh: Record<string, string> = {
   'Peaks': '峰值',
   'Wave': '波形',
   'bars mirror peaks wave look': '条形 镜像 峰值 波形 外观 bars mirror peaks wave',
+  // v2 redesign
+  'Playing': '正在播放',
+  'All your songs': '你的所有歌曲',
 }
 
 export default zh

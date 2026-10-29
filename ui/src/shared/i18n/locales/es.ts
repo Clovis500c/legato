@@ -1503,6 +1503,9 @@ const es: Record<string, string> = {
   'Peaks': 'Picos',
   'Wave': 'Onda',
   'bars mirror peaks wave look': 'barras espejo picos onda aspecto',
+  // v2 redesign
+  'Playing': 'Sonando',
+  'All your songs': 'Todas tus canciones',
 }
 
 export default es

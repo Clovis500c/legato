@@ -1503,6 +1503,9 @@ const ru: Record<string, string> = {
   'Peaks': 'Пики',
   'Wave': 'Волна',
   'bars mirror peaks wave look': 'полосы зеркало пики волна вид',
+  // v2 redesign
+  'Playing': 'Играет',
+  'All your songs': 'Все ваши треки',
 }
 
 export default ru

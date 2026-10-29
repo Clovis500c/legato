@@ -47,7 +47,7 @@ function Dropdown({ icon, label, items }: { icon: ReactNode; label: string; item
 function AuthorBadge({ author }: { author: Author }) {
   return author.verified ? (
     <span title={tr('Verified')} className="flex items-center gap-1 font-medium text-ink-2">
-      <SealCheck size={14} weight="fill" className="text-accent" /> {tr(author.name)}
+      <SealCheck size={14} weight="fill" className="text-accent-ink" /> {tr(author.name)}
     </span>
   ) : (
     <span title={tr('Not checked by the developer')} className="flex items-center gap-1 text-ink-3">

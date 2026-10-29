@@ -55,9 +55,9 @@ const preset = (id: string, name: string, dark: boolean, p: Palette, font: Font 
 
 // ink3 values tuned for WCAG AA (4.5:1) on bg, panels and cards (raised).
 export const PRESETS: Theme[] = [
-  // YouTube's own palettes and font: what System follows by default.
-  preset('modern', 'Modern', false, { bg: '#FFFFFF', panel: '#F9F9F9', raised: '#F2F2F2', recess: '#F2F2F2', line: '#E5E5E5', lineSoft: '#EFEFEF', ink: '#0F0F0F', ink2: '#606060', ink3: '#606060', ink4: '#CCCCCC', accent: '#FF0033', onAccent: '#FFFFFF', ledOff: '#D9D9D9' }, 'modern', false),
-  preset('modern-dark', 'Modern Dark', true, { bg: '#0F0F0F', panel: '#181818', raised: '#272727', recess: '#090909', line: '#3F3F3F', lineSoft: '#272727', ink: '#F1F1F1', ink2: '#AAAAAA', ink3: '#909090', ink4: '#4D4D4D', accent: '#FF0033', onAccent: '#FFFFFF', ledOff: '#3F3F3F' }, 'modern', false),
+  // v2 (docs/design.md, 2026-10-29): Roboto, layered greys (window recess, panels, main bg), sky blue = playback.
+  preset('modern', 'Modern', false, { bg: '#FFFFFF', panel: '#F7F7F5', raised: '#EFEFEC', recess: '#E6E6E3', line: '#DEDEDA', lineSoft: '#ECECE9', ink: '#0F0F0F', ink2: '#565656', ink3: '#606060', ink4: '#A8A8A8', accent: '#7CB8FF', onAccent: '#0F0F0F', ledOff: '#D2D2CE' }, 'modern', false),
+  preset('modern-dark', 'Modern Dark', true, { bg: '#131313', panel: '#171717', raised: '#232323', recess: '#050505', line: '#2C2C2C', lineSoft: '#1E1E1E', ink: '#F1F1F1', ink2: '#B3B3B3', ink3: '#8C8C8C', ink4: '#4A4A4A', accent: '#7CB8FF', onAccent: '#0F0F0F', ledOff: '#3A3A3A' }, 'modern', false),
   preset('paper', 'Paper', false, { bg: '#F3F1EC', panel: '#EAE7E0', raised: '#FBFAF7', recess: '#E1DDD4', line: '#D6D1C6', lineSoft: '#E4E0D7', ink: '#171614', ink2: '#5C5852', ink3: '#6B665E', ink4: '#B2ACA1', accent: '#FF5A1F', onAccent: '#FFFFFF', ledOff: '#CDC7BB' }),
   preset('graphite', 'Graphite', true, { bg: '#121211', panel: '#1A1A18', raised: '#24231F', recess: '#0B0B0A', line: '#302F2B', lineSoft: '#252421', ink: '#EDEAE4', ink2: '#A6A198', ink3: '#948E85', ink4: '#55524C', accent: '#FF6A2E', onAccent: '#171614', ledOff: '#3A3935' }),
   preset('studio', 'Studio', true, { bg: '#000000', panel: '#0A0A0A', raised: '#161616', recess: '#000000', line: '#262626', lineSoft: '#1A1A1A', ink: '#FFFFFF', ink2: '#A3A3A3', ink3: '#858585', ink4: '#4D4D4D', accent: '#FF3B30', onAccent: '#FFFFFF', ledOff: '#333333' }),
@@ -193,7 +193,7 @@ export interface DiscordSettings {
 }
 
 /** Bumped when defaults change for everyone (saved settings get the new ones once). */
-const DEFAULTS_VERSION = 7
+const DEFAULTS_VERSION = 8
 
 /** Adaptive Sound targets, LUFS: Quiet, Normal (streaming services' usual level), Loud. */
 export const ADAPTIVE_LEVELS = [-20, -14, -11] as const
@@ -222,7 +222,7 @@ export interface Settings {
   language: string
   /** Preset id, custom theme id, or 'system' (Modern / Modern Dark, following Windows). */
   theme: string
-  /** Hex overrides theme accent; 'system' = Windows accent; null = theme's own. */
+  /** Hex overrides theme accent; 'system' = Windows accent; null = theme's own (sky blue in v2). */
   accent: string | null
   customThemes: Theme[]
   covers: 'net' | 'rounded' | 'vinyl'
@@ -350,10 +350,10 @@ export interface Settings {
 export const DEFAULTS: Settings = {
   language: 'system',
   theme: 'system',
-  accent: 'system',
+  accent: null,
   customThemes: [],
-  covers: 'rounded',
-  density: 'comfort',
+  covers: 'net',
+  density: 'compact',
   textSize: 'normal',
   zoom: 100,
   readout: true,
@@ -370,14 +370,14 @@ export const DEFAULTS: Settings = {
   miniPlayer: false,
   tint: true,
   appTint: false,
-  immersive: true,
+  immersive: false,
   backdropBlur: 24,
   backdropDim: 40,
   backdropMotion: true,
   font: 'theme',
   motion: true,
   sidebarCounts: true,
-  listCovers: true,
+  listCovers: false,
   clickToPlay: 'single',
   startView: 'home',
   youtubeControls: false,
@@ -432,6 +432,17 @@ const V3: Partial<Settings> = { stage: 'auto' }
 
 /** Version 4 (2026-10-17): the new Home opens first. */
 const V4: Partial<Settings> = { startView: 'home' }
+
+/** Version 8 (app v2 redesign, docs/design.md): old defaults move to the new ones, picks of their own stay. */
+function v8(r: Record<string, unknown>): Partial<Settings> {
+  const compact = (r.density ?? 'comfort') === 'comfort'
+  return {
+    ...(r.accent === 'system' && { accent: null }),
+    ...(compact && { density: 'compact', listCovers: false }),
+    ...((r.covers ?? 'rounded') === 'rounded' && { covers: 'net' }),
+    immersive: false,
+  }
+}
 
 /** Version 6 (Home v4, 2026-10-23): Your playlists off (see HOME_OFF), applied below. */
 
@@ -519,7 +530,7 @@ export function sanitize(raw: unknown): Settings {
   return {
     language: typeof r.language === 'string' && (r.language === 'system' || LANGUAGES.some((l) => l.code === r.language)) ? r.language : DEFAULTS.language,
     theme: pick(LEGACY_IDS[r.theme as string] ?? r.theme, ids, DEFAULTS.theme),
-    accent: isHex(r.accent) ? r.accent.toUpperCase() : r.accent === null ? null : DEFAULTS.accent,
+    accent: isHex(r.accent) ? r.accent.toUpperCase() : r.accent === null || r.accent === 'system' ? r.accent : DEFAULTS.accent,
     customThemes,
     covers: pick(r.covers, ['net', 'rounded', 'vinyl'] as const, DEFAULTS.covers),
     density: pick(r.density, ['compact', 'comfort', 'airy'] as const, DEFAULTS.density),
@@ -598,6 +609,8 @@ export function sanitize(raw: unknown): Settings {
     ...(saved < 5 ? v5(r) : {}),
     // v7 (app v4, 2026-10-23): a Plays column, for those who kept the old default columns.
     ...(saved < 7 && Array.isArray(r.columns) && r.columns.join() === 'album,sources,duration' ? { columns: COLUMNS.filter((c) => c !== 'added') } : {}),
+    // v8 (app v2, 2026-10-29): the theme's sky blue, compact rows without covers, square covers, flat tint.
+    ...(saved < 8 ? v8(r) : {}),
     ...(saved < 6 ? { homeSections: sanitizeHome(r.homeSections).map((x) => (HOME_OFF.includes(x.id) ? { ...x, on: false } : x)) } : {}),
   }
 }
@@ -775,10 +788,12 @@ export function cssVars(t: Theme, s: Settings): Record<string, string> {
     '--radius-xl': r[3],
     '--radius-2xl': r[4],
     '--accent-soft': `${t.accent}1F`,
+    // Accent as text: darkened toward ink until AA (sky blue on white is 2:1).
+    '--accent-ink': readable(t.accent, t.ink, [t.bg, t.panel], 4.5),
     '--shadow': t.dark ? '#00000099' : '#17161424',
     '--led-glow': t.glow ? `0 0 6px ${t.accent}AA` : 'none',
     '--font-ui': FONT_STACKS[s.font === 'theme' ? t.font : s.font],
-    '--cover-radius': { net: '3px', rounded: '10px', vinyl: '999px' }[s.covers],
+    '--cover-radius': { net: '4px', rounded: '10px', vinyl: '999px' }[s.covers],
     '--row-h': { compact: '40px', comfort: '52px', airy: '64px' }[s.density],
     '--text-scale': String(TEXT_SCALES[s.textSize]),
     'color-scheme': t.dark ? 'dark' : 'light',

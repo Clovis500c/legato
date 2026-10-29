@@ -8,6 +8,7 @@ import { songKey } from './effects'
 import { applyFix, fixFromTaps, lineAt, lineEnd, NO_FIX, withBreaks, wordTimes, type LyricsFix } from './lyricsAt'
 import { positionNow, usePosition } from './Progress'
 import { useNowTrack, usePlayer } from './store'
+import { CARD } from './UpNext'
 import { tr } from '../../shared/i18n/i18n'
 
 /** Lines light up this much early: a line shows as it's sung, not after. */
@@ -134,7 +135,7 @@ function Plain({ text, durationMs }: { text: string; durationMs: number | null }
  * Now Playing › Lyrics, beside the cover (Spotify-like). LRCLIB first (synced when it can be, stretched for slowed /
  * sped up versions), YouTube Music's own when signed in (src-tauri lyrics), cached on disk.
  */
-export function LyricsPanel({ onHide, onUpNext }: { onHide: () => void; onUpNext: () => void }) {
+export function LyricsPanel({ onHide, onUpNext, className = CARD }: { onHide: () => void; onUpNext: () => void; className?: string }) {
   const now = usePlayer((s) => s.now)
   const playerMs = usePlayer((s) => s.durationMs)
   const track = useNowTrack()
@@ -192,7 +193,7 @@ export function LyricsPanel({ onHide, onUpNext }: { onHide: () => void; onUpNext
   const mine = got?.for === key ? got : undefined
   const l = mine?.lyrics
   return (
-    <aside aria-label={tr('Lyrics')} className="flex min-h-0 flex-col gap-2 rounded-2xl border border-line-soft bg-[color-mix(in_srgb,var(--panel)_55%,transparent)] p-3">
+    <aside aria-label={tr('Lyrics')} className={`flex min-h-0 flex-col gap-2 ${className}`}>
       <div className="flex items-center gap-2 px-1">
         <span className="flex-1 text-[0.8125rem] font-semibold">{tr('Lyrics')}</span>
         {!!l?.lines.length && song && (

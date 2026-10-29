@@ -1503,6 +1503,9 @@ const tr: Record<string, string> = {
   'Peaks': 'Tepeler',
   'Wave': 'Dalga',
   'bars mirror peaks wave look': 'çubuklar ayna tepeler dalga görünüm',
+  // v2 redesign
+  'Playing': 'Çalıyor',
+  'All your songs': 'Tüm şarkıların',
 }
 
 export default tr

@@ -1,4 +1,4 @@
-import { ArrowsIn, ArrowsOut, CaretDown, CopySimple, Minus, Square, Warning, X } from '@phosphor-icons/react'
+import { ArrowsIn, ArrowsOut, CaretDown, CopySimple, Gear, Minus, PuzzlePiece, Square, Warning, X } from '@phosphor-icons/react'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
@@ -12,7 +12,7 @@ import { SmartView } from '../features/smart/SmartView'
 import { MixesView, MixView } from '../features/mixes/MixesView'
 import { AlbumView, ArtistView } from '../features/library/AlbumArtist'
 import { AlbumsView, ArtistsView, PlaylistView, SongsView } from '../features/library/LibraryView'
-import { appMenu } from '../features/menus'
+import { appMenu, navMenu } from '../features/menus'
 import { startDiscord } from '../features/addons/discord'
 import { startLastfm } from '../features/sources/lastfm'
 import { startUpdates } from '../features/update/updates'
@@ -25,6 +25,7 @@ import { NowPlaying } from '../features/player/NowPlaying'
 import { useAmbient } from '../features/player/ambient'
 import { trackArt } from '../shared/art'
 import { PlayerBar } from '../features/player/PlayerBar'
+import { SidePanel } from '../features/player/SidePanel'
 import { useNowTrack, usePlayer } from '../features/player/store'
 import { ImportDialog } from '../features/share/ImportDialog'
 import { ConnectWizard } from '../features/sources/ConnectWizard'
@@ -33,7 +34,7 @@ import { VoiceSearch } from '../features/search/VoiceSearch'
 import { Sidebar } from '../features/sidebar/Sidebar'
 import { api } from '../shared/api'
 import { region, spotifyList } from '../shared/format'
-import { ContextMenuHost } from '../shared/ui/ContextMenu'
+import { ContextMenuHost, onMenu } from '../shared/ui/ContextMenu'
 import { DuplicatesHost } from '../features/library/DuplicatesDialog'
 import { Logo } from '../shared/ui/Logo'
 import { searchShift, STAGE_ID } from './searchShift'
@@ -56,9 +57,9 @@ const win = getCurrentWindow()
 const winBtn = 'grid h-9 w-11 place-items-center rounded-md text-ink transition hover:bg-raised'
 
 /**
- * Replaces the OS title bar (decorations: false), full width like YouTube's: logo and name (Home, from anywhere, the
- * player included), window buttons. Empty areas drag the window. Over Now Playing it's see-through: the player's
- * backdrop or tint runs under it, no grey band.
+ * Replaces the OS title bar (decorations: false), full width on the window's background like Spotify's: logo and name
+ * (Home, from anywhere, the player included), search, Add-ons and Settings, window buttons. Empty areas drag the
+ * window. Over Now Playing it's see-through: the player's backdrop or tint runs under it, no grey band.
  */
 /** Now Playing (setting searchOnCover): the search's middle over the cover / video column, following its size. */
 function useSearchOverCover(box: React.RefObject<HTMLDivElement | null>, on: boolean) {
@@ -95,6 +96,7 @@ function TopBar() {
   const shift = useSearchOverCover(searchBox, full && onCover)
   const setFull = usePlayer((s) => s.setFull)
   const go = useStore((s) => s.go)
+  const page = useStore((s) => s.view.name)
   const [maximized, setMaximized] = useState(false)
   const [fullscreen, setFullscreen] = useState(false)
   useEffect(() => {
@@ -108,7 +110,7 @@ function TopBar() {
   }, [])
   return (
     // Over Now Playing: a veil from the top keeps logo, Close player and window buttons readable on any cover.
-    <header data-tauri-drag-region className={`relative z-30 flex h-13 shrink-0 items-center gap-3 pr-2 pl-5 ${full ? 'bg-[linear-gradient(to_bottom,color-mix(in_srgb,var(--bg)_80%,transparent),transparent)]' : 'bg-panel'}`}>
+    <header data-tauri-drag-region className={`relative z-30 flex h-13 shrink-0 items-center gap-3 pr-2 pl-5 ${full ? 'bg-[linear-gradient(to_bottom,color-mix(in_srgb,var(--bg)_80%,transparent),transparent)]' : ''}`}>
       <button data-brand onClick={() => go({ name: 'home' })} title={tr('Home')} className="flex items-center gap-2.5 rounded-md px-2 py-1">
         <Logo />
         <span data-brand-name className="text-[0.9375rem] font-bold tracking-tight">Music App</span>
@@ -123,6 +125,16 @@ function TopBar() {
           <VoiceSearch />
         </SearchBar>
       </div>
+      {!full && (
+        <span className="flex items-center gap-1 pr-2">
+          <button className={`${winBtn} rounded-full! ${page === 'addons' ? 'bg-raised' : ''}`} aria-label={tr('Add-ons')} title={tr('Add-ons')} onClick={() => go({ name: 'addons' })} onContextMenu={onMenu(() => navMenu({ name: 'addons' }))}>
+            <PuzzlePiece size={18} weight={page === 'addons' ? 'fill' : 'regular'} />
+          </button>
+          <button className={`${winBtn} rounded-full! ${page === 'settings' ? 'bg-raised' : ''}`} aria-label={tr('Settings')} title={tr('Settings')} onClick={() => go({ name: 'settings', section: 'general' })} onContextMenu={onMenu(() => navMenu({ name: 'settings', section: 'general' }))}>
+            <Gear size={18} weight={page === 'settings' ? 'fill' : 'regular'} />
+          </button>
+        </span>
+      )}
       <span className={`flex items-center ${full ? 'glass rounded-lg' : ''}`}>
         <button className={winBtn} aria-label={fullscreen ? tr('Exit full screen (F11)') : tr('Full screen (F11)')} title={fullscreen ? tr('Exit full screen (F11)') : tr('Full screen (F11)')} onClick={() => void toggleFullscreen()}>
           {fullscreen ? <ArrowsIn size={15} /> : <ArrowsOut size={15} />}
@@ -148,7 +160,7 @@ function Alerts() {
   const shown = view.name === 'settings' && view.wizard ? undefined : error
   if (!shown && !errors.length) return null
   return (
-    <div role="alert" className="mx-10 mb-3 flex items-start gap-2.5 rounded-lg border border-line bg-recess px-3.5 py-3 text-xs">
+    <div role="alert" className="mx-6 mb-3 flex items-start gap-2.5 rounded-lg border border-line bg-recess px-3.5 py-3 text-xs">
       <Warning size={15} className="mt-px shrink-0 text-danger" />
       <div className="flex-1">
         {shown && <p>{shown}</p>}
@@ -256,14 +268,15 @@ export function App() {
 
   return (
     // Setting appTint: every surface takes the playing cover's color (text keeps AA, ambient.ts).
-    <div className="flex h-full flex-col bg-bg transition-colors duration-700" style={appTint}>
+    // Layered panels on the window's background (docs/design.md): sidebar, page, right panel; the player bar below.
+    <div className="flex h-full flex-col bg-recess transition-colors duration-700" style={appTint}>
       <TopBar />
-      <div className="flex min-h-0 flex-1">
+      <div className="flex min-h-0 flex-1 gap-2 px-2">
         <Sidebar />
-        <main className="flex min-w-0 flex-1 flex-col pt-3">
+        <main className="flex min-w-0 flex-1 flex-col overflow-hidden rounded-lg bg-bg pt-5">
           <Alerts />
           {/* New page: a short rise (styles.css .page-in), not when only its details change. */}
-          <div key={pageKey(view)} className="page-in flex min-h-0 flex-1 flex-col px-10">
+          <div key={pageKey(view)} className="page-in flex min-h-0 flex-1 flex-col px-6">
             {view.name === 'home' && <HomeView />}
             {view.name === 'add' && <AddView />}
             {view.name === 'search' && <SearchView />}
@@ -283,6 +296,7 @@ export function App() {
             </Suspense>
           </div>
         </main>
+        <SidePanel />
         {view.name === 'settings' && view.wizard && <ConnectWizard key={view.wizard} service={view.wizard} onClose={() => go({ name: 'settings', section: 'sources' })} />}
       </div>
       <PlayerBar />

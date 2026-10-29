@@ -1503,6 +1503,9 @@ const vi: Record<string, string> = {
   'Peaks': 'Đỉnh',
   'Wave': 'Sóng',
   'bars mirror peaks wave look': 'thanh gương đỉnh sóng giao diện',
+  // v2 redesign
+  'Playing': 'Đang phát',
+  'All your songs': 'Tất cả bài hát của bạn',
 }
 
 export default vi

@@ -1503,6 +1503,9 @@ const sv: Record<string, string> = {
   'Peaks': 'Toppar',
   'Wave': 'Våg',
   'bars mirror peaks wave look': 'staplar spegel toppar våg utseende',
+  // v2 redesign
+  'Playing': 'Spelas',
+  'All your songs': 'Alla dina låtar',
 }
 
 export default sv

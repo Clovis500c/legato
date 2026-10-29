@@ -19,6 +19,8 @@
   --color-ink-4: var(--ink-4);
   --color-accent: var(--accent);
   --color-accent-soft: var(--accent-soft);
+  /* Accent for text and thin lines: readable on light themes too (theme.ts cssVars). */
+  --color-accent-ink: var(--accent-ink);
   --color-on-accent: var(--on-accent);
   --color-led-off: var(--led-off);
   --color-danger: #d93a2b;
@@ -30,40 +32,42 @@
 
 :root {
   --bg: #ffffff;
-  --panel: #f9f9f9;
-  --raised: #f2f2f2;
-  --recess: #f2f2f2;
-  --line: #e5e5e5;
-  --line-soft: #efefef;
+  --panel: #f7f7f5;
+  --raised: #efefec;
+  --recess: #e6e6e3;
+  --line: #dededa;
+  --line-soft: #ecece9;
   --ink: #0f0f0f;
-  --ink-2: #606060;
+  --ink-2: #565656;
   --ink-3: #606060;
-  --ink-4: #cccccc;
-  --accent: #ff0033;
-  --accent-soft: #ff00331f;
-  --on-accent: #ffffff;
-  --led-off: #d9d9d9;
+  --ink-4: #a8a8a8;
+  --accent: #7cb8ff;
+  --accent-soft: #7cb8ff1f;
+  --accent-ink: #50749f;
+  --on-accent: #0f0f0f;
+  --led-off: #d2d2ce;
   --shadow: #17161424;
   --led-glow: none;
   --font-ui: 'Roboto Variable', Roboto, 'Segoe UI', system-ui, sans-serif;
-  --cover-radius: 10px;
-  --row-h: 52px;
+  --cover-radius: 4px;
+  --row-h: 40px;
 }
 
 /* First launch, Windows dark: Modern Dark. */
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #0f0f0f;
-    --panel: #181818;
-    --raised: #272727;
-    --recess: #090909;
-    --line: #3f3f3f;
-    --line-soft: #272727;
+    --bg: #131313;
+    --panel: #171717;
+    --raised: #232323;
+    --recess: #050505;
+    --line: #2c2c2c;
+    --line-soft: #1e1e1e;
     --ink: #f1f1f1;
-    --ink-2: #aaaaaa;
-    --ink-3: #909090;
-    --ink-4: #4d4d4d;
-    --led-off: #3f3f3f;
+    --ink-2: #b3b3b3;
+    --ink-3: #8c8c8c;
+    --ink-4: #4a4a4a;
+    --accent-ink: #7cb8ff;
+    --led-off: #3a3a3a;
     --shadow: #00000099;
     color-scheme: dark;
   }
@@ -270,18 +274,18 @@ code {
   }
 }
 
-/* Mono kicker label: BIBLIOTHÈQUE · 4 SOURCES */
+/* Small label over a title or a value (Label style, Roboto only: docs/design.md). */
 .kicker {
-  @apply font-mono text-[0.625rem] font-medium tracking-[0.09em] text-ink-3 uppercase;
+  @apply text-xs font-medium text-ink-2;
 }
 
 /* Indicator light. data-on = lit. */
 .led {
   @apply inline-block size-1.5 shrink-0 rounded-full bg-led-off;
 }
+/* Ink, not the accent: sky blue only marks playback (docs/design.md). */
 .led[data-on='true'] {
-  @apply bg-accent;
-  box-shadow: var(--led-glow);
+  @apply bg-ink;
 }
 
 /* Range bars: track painted inline (see shared/ui/Bar). */
@@ -309,7 +313,7 @@ code {
 .bar:focus-visible::-webkit-slider-thumb {
   @apply opacity-100;
 }
-/* Progress bar, YouTube-like: thicker and accent knob on hover. Box stays 14 px tall (only the painted track grows):
+/* Progress bar, YouTube-like: thicker and a knob on hover (ink: sky blue stays for playback buttons, docs/design.md). Box stays 14 px tall (only the painted track grows):
    nothing around it moves while seeking. */
 .bar.seek {
   @apply h-3.5 rounded-none bg-transparent;
@@ -323,7 +327,7 @@ code {
   background-size: 100% 6px;
 }
 .bar.seek::-webkit-slider-thumb {
-  @apply size-3.5 bg-accent;
+  @apply size-3.5 bg-ink;
 }
 
 /* Controls over a picture (Now Playing's backdrop): the theme's own background behind them, blurred, so their text

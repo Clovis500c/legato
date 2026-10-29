@@ -29,7 +29,7 @@ export function Toasts() {
                   dismissToast(t.id)
                   t.action!.run()
                 }}
-                className="shrink-0 rounded-full px-3 py-1 text-xs font-semibold text-accent transition hover:bg-bg"
+                className="shrink-0 rounded-full px-3 py-1 text-xs font-semibold text-accent-ink transition hover:bg-bg"
               >
                 {t.action.label}
               </button>

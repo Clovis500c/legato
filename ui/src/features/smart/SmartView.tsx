@@ -166,7 +166,7 @@ export function SmartView({ id }: { id: string }) {
         kicker={tr('Smart playlist')}
         title={
           <span className="flex items-center gap-3">
-            <Lightning size={26} weight="fill" className="text-accent" /> {list.name || tr('Smart playlist')}
+            <Lightning size={26} weight="fill" className="text-accent-ink" /> {list.name || tr('Smart playlist')}
           </span>
         }
         sub={`${trn(songs.length, '{n} song', '{n} songs')} · ${totalTime(songs)} · ${tr('Updates by itself as you add and play songs')}`}

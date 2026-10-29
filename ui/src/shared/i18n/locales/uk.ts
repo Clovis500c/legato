@@ -1503,6 +1503,9 @@ const uk: Record<string, string> = {
   'Peaks': 'Піки',
   'Wave': 'Хвиля',
   'bars mirror peaks wave look': 'смуги дзеркало піки хвиля вигляд',
+  // v2 redesign
+  'Playing': 'Грає',
+  'All your songs': 'Усі ваші треки',
 }
 
 export default uk

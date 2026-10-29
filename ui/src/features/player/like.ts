@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { useStore } from '../../app/store'
 import { api, type LibraryPlaylist, type LibraryTrack } from '../../shared/api'
 import { tr } from '../../shared/i18n/i18n'
@@ -30,6 +31,13 @@ export function useLiked(t: LibraryTrack | undefined) {
   useStore((s) => s.orders)
   useStore((s) => s.tracks)
   return !!t && holding(t).length > 0
+}
+
+/** Library ids in Liked Music, for long lists (one lookup per row). */
+export function useLikedIds(): Set<number> {
+  const playlists = useStore((s) => s.playlists)
+  const orders = useStore((s) => s.orders)
+  return useMemo(() => new Set([youtubeLiked(playlists), ownLiked(playlists)].flatMap((p) => (p ? (orders[p.id] ?? []) : []))), [playlists, orders])
 }
 
 /** Thumbs down: ranked lower in mixes (Undo = back to normal), and on to the next song. */

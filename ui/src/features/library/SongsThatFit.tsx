@@ -37,7 +37,7 @@ export function SongsThatFit({ id, songs }: { id: number; songs: LibraryTrack[] 
           <h2 className="text-[0.9375rem] font-semibold">{tr('Songs that fit')}</h2>
           <p className="text-xs text-ink-2">{tr('From your library: same artists and mixes as this playlist')}</p>
         </div>
-        <label className="flex h-9 w-72 items-center gap-2 rounded-full border border-line bg-bg px-3.5 focus-within:border-accent">
+        <label className="flex h-9 w-72 items-center gap-2 rounded-full border border-line bg-bg px-3.5 focus-within:border-accent-ink">
           <MagnifyingGlass size={15} className="shrink-0 text-ink-3" />
           <input id={FIT_FIELD} value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => e.key === 'Escape' && setQ('')} placeholder={tr('Find songs to add')} aria-label={tr('Find songs to add')} className="min-w-0 flex-1 bg-transparent text-[0.8125rem] outline-none placeholder:text-ink-3" />
         </label>
