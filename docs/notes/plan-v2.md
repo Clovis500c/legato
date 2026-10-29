@@ -203,7 +203,8 @@ Theme (light) / Dark / Brand / Scale, components, Home, Songs, Album, Search, No
 - [x] Now Playing as in the mockup: cover or video left, title (Display XL), artist, album, source and the next song
       right, controls across the bottom; lyrics, Up next and Sound as icons, a panel replaces the details. The main
       window's right panel has its own setting (`sidePanel`), so Now Playing opens without one (defaults v8).
-- [ ] Home as in the mockup (shortcut tiles at the top), Search screen pass, list column picker in the header.
+- [ ] Home as in the mockup (shortcut tiles at the top), Search screen pass. Handoff: [v2-handoff.md](v2-handoff.md).
+- [ ] Save the songs the user queued (`added`) with the session.
 - [ ] Decide the name: Legato recommended (finalists Tutti, Diapason); trademark search (INPI, EUIPO, USPTO classes 9,
       41, 42), domain, Microsoft Store name. Never rename the identifier, `_musicapp._tcp`, `MA1` or keychain entries.
       Wordmark and app icon wait on the name.
