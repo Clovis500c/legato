@@ -1,5 +1,6 @@
 import { ArrowSquareOut, Heart, Queue, Quotes, SlidersHorizontal, ThumbsDown } from '@phosphor-icons/react'
 import { STAGE_ID } from '../../app/searchShift'
+import { pop } from '../../shared/motion'
 import { openUrl } from '@tauri-apps/plugin-opener'
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
@@ -205,7 +206,7 @@ type PanelId = 'upNext' | 'lyrics' | 'editor'
 function PanelToggle({ id, label, icon: Icon, active }: { id: PanelId; label: string; icon: typeof Queue; active: PanelId | null }) {
   const on = active === id
   return (
-    <RoundButton label={label} aria-pressed={on} kind="plain" size="md" className={on ? 'text-ink!' : ''} onClick={() => useSettings.getState().update(on ? { upNext: false, lyrics: false, editor: false } : { upNext: id === 'upNext', lyrics: id === 'lyrics', editor: id === 'editor' })}>
+    <RoundButton label={label} aria-pressed={on} kind="plain" size="md" className={on ? 'text-ink!' : ''} onClick={(e) => (useSettings.getState().update(on ? { upNext: false, lyrics: false, editor: false } : { upNext: id === 'upNext', lyrics: id === 'lyrics', editor: id === 'editor' }), pop(e.currentTarget))}>
       <Icon size={22} weight={on ? 'fill' : 'regular'} />
     </RoundButton>
   )
@@ -362,7 +363,7 @@ export function NowPlaying() {
         <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center">
           <span className="flex min-w-0 items-center gap-1">
             {track && (
-              <RoundButton label={liked ? tr('Remove from Liked Music') : tr('Add to Liked Music')} aria-pressed={liked} kind="plain" size="md" onClick={() => void toggleLike(track)} className={liked ? 'text-ink!' : ''}>
+              <RoundButton label={liked ? tr('Remove from Liked Music') : tr('Add to Liked Music')} aria-pressed={liked} kind="plain" size="md" onClick={(e) => (void toggleLike(track), pop(e.currentTarget))} className={liked ? 'text-ink!' : ''}>
                 <Heart size={22} weight={liked ? 'fill' : 'regular'} />
               </RoundButton>
             )}

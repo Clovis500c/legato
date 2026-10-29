@@ -8,7 +8,8 @@ needs a drag area and its buttons there), with Add-ons and Settings.
 Reading this as: desktop music player and library for people whose music lives in several services. Familiar like
 Spotify and YouTube Music, denser and calmer than both.
 
-Dial (app): ENERGY 2 / RHYTHM 2 / MOTION 1. Dial (landing page): ENERGY 2 / RHYTHM 2 / MOTION 1.
+Dial (app): ENERGY 2 / RHYTHM 2 / MOTION 2 (more motion, user's request 2026-10-29). Dial (website): ENERGY 2 /
+RHYTHM 2 / MOTION 2.
 
 ## What listeners ask for (research, 2026-10-29)
 
@@ -89,5 +90,9 @@ tabular figures.
   and Spotify, which these listeners use daily), round for the play button and artist photos.
 - Flat. One shadow, for menus and dialogs over content.
 - Icons: Phosphor (already in the app). Regular at rest, Fill when active.
-- Motion: hover and pressed 120 ms, panels 200 ms, opening Now Playing 240 ms. No loops. Settings › Animations off
-  removes it.
+- Motion: hover and pressed 120 to 150 ms, panels 200 ms, opening Now Playing 240 ms. Icons answer: arrows lean the
+  way they go on hover, the Settings gear turns, a heart or a toggle pops when clicked (`shared/motion.ts`), play /
+  pause, the volume icon and the open page's icon grow in when they change. Sections, tiles and cards come in one after
+  another (30 ms apart, `.stagger`), the right panel slides in, a new song's title rises in the player bar, a card's
+  play button rises into place. Transform and opacity only, no loops. Settings › Animations off removes it; Windows'
+  animation effects off leaves fades only.

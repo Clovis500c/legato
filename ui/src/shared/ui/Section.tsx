@@ -38,7 +38,7 @@ export function Section({ title, sub, onAll, action, menu, className = '', child
 
 /** Cards side by side, scrolled sideways; their padding is the gap, so covers line up with the title. */
 export function CardRow({ children }: { children: ReactNode }) {
-  return <ul className="-mx-3 -mt-2 flex snap-x overflow-x-auto">{children}</ul>
+  return <ul className="stagger -mx-3 -mt-2 flex snap-x overflow-x-auto">{children}</ul>
 }
 
 /** Media/Card: cover, title, line under; grey on hover with the sky blue play button on the cover. busy = loading its songs. */
@@ -53,7 +53,7 @@ export function MediaCard({ title, sub, art, round, onOpen, onPlay, menu, busy }
         </span>
       </button>
       {onPlay && (
-        <RoundButton label={tr('Play {title}', { title })} kind="primary" size="md" className={`absolute top-[138px] right-[22px] ${busy ? '' : 'opacity-0 group-hover:opacity-100 focus:opacity-100'}`} onClick={onPlay}>
+        <RoundButton label={tr('Play {title}', { title })} kind="primary" size="md" className={`absolute top-[138px] right-[22px] shadow-[0_8px_16px_rgb(0_0_0/0.3)] ${busy ? '' : 'translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 focus:translate-y-0 focus:opacity-100'}`} onClick={onPlay}>
           {busy ? <SpinnerGap size={16} className="animate-spin" /> : <Play weight="fill" size={16} />}
         </RoundButton>
       )}

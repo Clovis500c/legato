@@ -124,10 +124,10 @@ function TopBar() {
       ) : (
         // ← → of the mockups (the mouse's back / forward buttons do the same).
         <span className="flex items-center gap-2">
-          <button className={navBtn} aria-label={tr('Back')} title={tr('Back')} disabled={!canBack} onClick={goBack}>
+          <button className={`${navBtn} nudge-l`} aria-label={tr('Back')} title={tr('Back')} disabled={!canBack} onClick={goBack}>
             <CaretLeft size={16} />
           </button>
-          <button className={navBtn} aria-label={tr('Forward')} title={tr('Forward')} disabled={!canForward} onClick={goForward}>
+          <button className={`${navBtn} nudge-r`} aria-label={tr('Forward')} title={tr('Forward')} disabled={!canForward} onClick={goForward}>
             <CaretRight size={16} />
           </button>
         </span>
@@ -142,7 +142,7 @@ function TopBar() {
           <button className={`${winBtn} rounded-full! ${page === 'addons' ? 'bg-raised' : ''}`} aria-label={tr('Add-ons')} title={tr('Add-ons')} onClick={() => go({ name: 'addons' })} onContextMenu={onMenu(() => navMenu({ name: 'addons' }))}>
             <PuzzlePiece size={18} weight={page === 'addons' ? 'fill' : 'regular'} />
           </button>
-          <button className={`${winBtn} rounded-full! ${page === 'settings' ? 'bg-raised' : ''}`} aria-label={tr('Settings')} title={tr('Settings')} onClick={() => go({ name: 'settings', section: 'general' })} onContextMenu={onMenu(() => navMenu({ name: 'settings', section: 'general' }))}>
+          <button className={`${winBtn} turn rounded-full! ${page === 'settings' ? 'bg-raised' : ''}`} aria-label={tr('Settings')} title={tr('Settings')} onClick={() => go({ name: 'settings', section: 'general' })} onContextMenu={onMenu(() => navMenu({ name: 'settings', section: 'general' }))}>
             <Gear size={18} weight={page === 'settings' ? 'fill' : 'regular'} />
           </button>
         </span>

@@ -7,6 +7,7 @@ import { firstArt, remoteArt, trackArt } from '../../shared/art'
 import { useCoverTint } from '../player/coverTint'
 import { fold, formatCount, formatDuration, region } from '../../shared/format'
 import { tr, trn } from '../../shared/i18n/i18n'
+import { pop } from '../../shared/motion'
 import { Button } from '../../shared/ui/Button'
 import { onMenu, openMenu } from '../../shared/ui/ContextMenu'
 import { LedChip, RoundButton } from '../../shared/ui/controls'
@@ -109,7 +110,7 @@ function AlbumRow({ list, i, number }: { list: LibraryTrack[]; i: number; number
         ))}
       </span>
       <span className="text-right text-xs text-ink-3 tabular-nums">{plays ? formatCount(plays) : ''}</span>
-      <RoundButton label={liked ? tr('Remove from Liked Music') : tr('Add to Liked Music')} aria-pressed={liked} kind="plain" size="xs" className={liked ? 'text-ink!' : 'opacity-0 group-hover:opacity-100 focus:opacity-100'} onClick={() => void toggleLike(t)}>
+      <RoundButton label={liked ? tr('Remove from Liked Music') : tr('Add to Liked Music')} aria-pressed={liked} kind="plain" size="xs" className={liked ? 'text-ink!' : 'opacity-0 group-hover:opacity-100 focus:opacity-100'} onClick={(e) => (void toggleLike(t), pop(e.currentTarget))}>
         <Heart size={15} weight={liked ? 'fill' : 'regular'} />
       </RoundButton>
       <span className="text-right text-[0.8125rem] text-ink-2 tabular-nums">{formatDuration(t.durationMs)}</span>

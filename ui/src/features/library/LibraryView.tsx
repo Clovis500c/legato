@@ -398,7 +398,7 @@ export function AlbumsView() {
               </button>
               {/* Over the cover's bottom right, whatever the card's width. */}
               <span className="pointer-events-none absolute inset-x-3 top-3 aspect-square">
-                <RoundButton label={tr('Play {title}', { title: a.album })} kind="primary" size="md" className="pointer-events-auto absolute right-2.5 bottom-2.5 opacity-0 group-hover:opacity-100 focus:opacity-100" onClick={() => usePlayer.getState().playTracks(a.tracks, 0)}>
+                <RoundButton label={tr('Play {title}', { title: a.album })} kind="primary" size="md" className="pointer-events-auto absolute right-2.5 bottom-2.5 translate-y-2 opacity-0 shadow-[0_8px_16px_rgb(0_0_0/0.3)] group-hover:translate-y-0 group-hover:opacity-100 focus:translate-y-0 focus:opacity-100" onClick={() => usePlayer.getState().playTracks(a.tracks, 0)}>
                   <Play weight="fill" size={16} />
                 </RoundButton>
               </span>

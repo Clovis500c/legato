@@ -1,5 +1,6 @@
 import { Pause, Play, Repeat, RepeatOnce, Shuffle, SkipBack, SkipForward } from '@phosphor-icons/react'
 import { RoundButton } from '../../shared/ui/controls'
+import { pop } from '../../shared/motion'
 import { useShallow } from 'zustand/react/shallow'
 import { usePlayer } from './store'
 import { msg, tr } from '../../shared/i18n/i18n'
@@ -22,21 +23,21 @@ export function Transport({ size = 'md', compact = false }: { size?: 'sm' | 'md'
   const mode = (on: boolean) => (on ? 'relative text-ink! after:absolute after:bottom-0.5 after:size-1 after:rounded-full after:bg-ink' : '')
   const buttons = [
     !compact && (
-      <RoundButton key="shuffle" label={shuffle ? tr('Shuffle: on') : tr('Shuffle: off')} aria-pressed={shuffle} kind="plain" size={s.skip} disabled={!queue} onClick={toggleShuffle} className={mode(shuffle)}>
+      <RoundButton key="shuffle" label={shuffle ? tr('Shuffle: on') : tr('Shuffle: off')} aria-pressed={shuffle} kind="plain" size={s.skip} disabled={!queue} onClick={(e) => (toggleShuffle(), pop(e.currentTarget))} className={mode(shuffle)}>
         <Shuffle size={s.mode} weight={shuffle ? 'bold' : 'regular'} />
       </RoundButton>
     ),
-    <RoundButton key="prev" label={tr('Previous')} kind="plain" size={s.skip} disabled={!has} onClick={() => step(-1)}>
+    <RoundButton key="prev" label={tr('Previous')} kind="plain" size={s.skip} disabled={!has} onClick={() => step(-1)} className="nudge-l">
       <SkipBack weight="fill" size={s.icon} className="text-ink" />
     </RoundButton>,
     <RoundButton key="play" label={playing ? tr('Pause') : tr('Play')} kind="primary" size={s.play} disabled={!has} onClick={toggle}>
-      {playing ? <Pause weight="fill" size={s.big} /> : <Play weight="fill" size={s.big} />}
+      {playing ? <Pause key="pause" weight="fill" size={s.big} className="icon-in" /> : <Play key="play" weight="fill" size={s.big} className="icon-in" />}
     </RoundButton>,
-    <RoundButton key="next" label={tr('Next')} kind="plain" size={s.skip} disabled={!has} onClick={() => step(1)}>
+    <RoundButton key="next" label={tr('Next')} kind="plain" size={s.skip} disabled={!has} onClick={() => step(1)} className="nudge-r">
       <SkipForward weight="fill" size={s.icon} className="text-ink" />
     </RoundButton>,
     !compact && (
-      <RoundButton key="repeat" label={tr(repeatLabel[repeat])} aria-pressed={repeat !== 'off'} kind="plain" size={s.skip} disabled={!queue} onClick={cycleRepeat} className={mode(repeat !== 'off')}>
+      <RoundButton key="repeat" label={tr(repeatLabel[repeat])} aria-pressed={repeat !== 'off'} kind="plain" size={s.skip} disabled={!queue} onClick={(e) => (cycleRepeat(), pop(e.currentTarget))} className={mode(repeat !== 'off')}>
         {repeat === 'one' ? <RepeatOnce size={s.mode} weight="bold" /> : <Repeat size={s.mode} weight={repeat === 'all' ? 'bold' : 'regular'} />}
       </RoundButton>
     ),

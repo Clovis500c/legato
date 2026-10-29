@@ -16,6 +16,7 @@ import { trackArt } from '../../shared/art'
 import { Cover } from '../../shared/ui/Cover'
 import { ArtistLink } from './ArtistLink'
 import { bindFrame, useNowTrack, usePlayer, useVideoSlot } from './store'
+import { pop } from '../../shared/motion'
 import { embedUrl, parseYt, ytPost } from './youtube'
 import { fadeGain } from './fade'
 import { songEnd } from './ends'
@@ -211,7 +212,7 @@ export function VolumeControl({ big }: { big?: boolean }) {
   return (
     <span className="flex max-w-full min-w-0 items-center gap-1">
       <RoundButton label={volume > 0 ? tr('Mute') : tr('Unmute')} kind="plain" size={big ? 'md' : 'sm'} onClick={toggleMute}>
-        <Icon size={big ? 20 : 16} />
+        <Icon key={Icon.displayName} size={big ? 20 : 16} className="icon-in" />
       </RoundButton>
       <span className="relative flex min-w-0 items-center">
         <Bar label={tr('Volume')} value={volume} max={1} onChange={setVolume} className={`min-w-10 shrink ${big ? 'w-32' : 'w-24'}`} />
@@ -226,7 +227,7 @@ function PanelButton({ panel, label, icon: Icon }: { panel: 'upNext' | 'lyrics';
   const on = useSettings((s) => s.settings.sidePanel === panel)
   const now = usePlayer((s) => !!s.now)
   return (
-    <RoundButton label={label} aria-pressed={on} kind="plain" size="sm" disabled={!now} className={on ? 'text-ink!' : ''} onClick={() => useSettings.getState().update({ sidePanel: on ? 'none' : panel })}>
+    <RoundButton label={label} aria-pressed={on} kind="plain" size="sm" disabled={!now} className={on ? 'text-ink!' : ''} onClick={(e) => (useSettings.getState().update({ sidePanel: on ? 'none' : panel }), pop(e.currentTarget))}>
       <Icon size={19} weight={on ? 'fill' : 'regular'} />
     </RoundButton>
   )
@@ -238,7 +239,7 @@ function LikeButton() {
   const liked = useLiked(track)
   if (!track) return null
   return (
-    <RoundButton label={liked ? tr('Remove from Liked Music') : tr('Add to Liked Music')} aria-pressed={liked} kind="plain" size="sm" className={liked ? 'text-ink!' : ''} onClick={() => void toggleLike(track)}>
+    <RoundButton label={liked ? tr('Remove from Liked Music') : tr('Add to Liked Music')} aria-pressed={liked} kind="plain" size="sm" className={liked ? 'text-ink!' : ''} onClick={(e) => (void toggleLike(track), pop(e.currentTarget))}>
       <Heart size={19} weight={liked ? 'fill' : 'regular'} />
     </RoundButton>
   )
@@ -310,7 +311,7 @@ export function PlayerBar() {
           {/* New song: its cover fades in. */}
           <Cover key={now?.trackId ?? now?.title} className="fade-in" title={now?.title ?? ''} art={track && trackArt(track)} size={56} />
         </button>
-        <span className="flex min-w-0 flex-col items-start gap-1">
+        <span key={now?.trackId ?? now?.title} className="swap-in flex min-w-0 flex-col items-start gap-1">
           <button disabled={!now} onClick={() => setFull(true)} title={now ? tr('Open Now Playing') : undefined} className="max-w-full truncate text-left text-sm font-medium">
             {now?.title ?? tr('Nothing playing')}
           </button>

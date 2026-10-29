@@ -26,7 +26,7 @@ import { saveSmart, smartMenu } from '../smart/SmartView'
 function NavItem({ on, icon: Icon, label, onClick, onContextMenu }: { on: boolean; icon: typeof House; label: string; onClick: () => void; onContextMenu?: (e: React.MouseEvent) => void }) {
   return (
     <button aria-current={on ? 'page' : undefined} onClick={onClick} onContextMenu={onContextMenu} className={`flex h-10 w-full items-center gap-4 rounded-md px-3 text-left text-[0.9375rem] font-medium transition ${on ? 'text-ink' : 'text-ink-2 hover:text-ink'}`}>
-      <Icon size={22} weight={on ? 'fill' : 'regular'} />
+      <Icon key={String(on)} size={22} weight={on ? 'fill' : 'regular'} className={on ? 'icon-in' : ''} />
       <span className="min-w-0 flex-1 truncate">{label}</span>
     </button>
   )

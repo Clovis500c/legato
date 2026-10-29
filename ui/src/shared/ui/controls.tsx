@@ -30,8 +30,8 @@ export function LedChip({ on, label, count, title, onClick }: { on: boolean; lab
 
 export function Toggle({ checked, onChange, label }: { checked: boolean; onChange: (v: boolean) => void; label: string }) {
   return (
-    <button type="button" role="switch" aria-checked={checked} aria-label={label} onClick={() => onChange(!checked)} className={`flex h-5 w-[34px] shrink-0 items-center rounded-full p-0.5 transition ${checked ? 'justify-end bg-ink' : 'justify-start bg-line'}`}>
-      <span className="size-4 rounded-full bg-raised shadow-[0_1px_2px_var(--shadow)]" />
+    <button type="button" role="switch" aria-checked={checked} aria-label={label} onClick={() => onChange(!checked)} className={`flex h-5 w-[34px] shrink-0 items-center rounded-full p-0.5 transition ${checked ? 'bg-ink' : 'bg-line'}`}>
+      <span className={`size-4 rounded-full bg-raised shadow-[0_1px_2px_var(--shadow)] transition-transform duration-200 ${checked ? 'translate-x-3.5' : ''}`} />
     </button>
   )
 }

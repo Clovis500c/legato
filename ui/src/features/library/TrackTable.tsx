@@ -22,6 +22,7 @@ import { removeFromPlaylist, removePositions } from './edits'
 import { dragSource, landing, useDrag, useDropTarget } from '../../shared/ui/drag'
 import { all, NONE, pick, picked, pickedRows, step, type Selection } from './selection'
 import { msg, tr, trn } from '../../shared/i18n/i18n'
+import { pop } from '../../shared/motion'
 
 const ROW = { compact: 40, comfort: 52, airy: 64 }
 const order: Source[] = ['spotify', 'youtube', 'apple', 'local']
@@ -292,7 +293,7 @@ export function TrackTable({ tracks, empty, editId, rowActions, sort, onSort, fo
                     </RoundButton>
                     </span>
                     {/* Saving a song stays one click, on the row (docs/design.md): shown when liked, else on hover. */}
-                    <RoundButton label={liked.has(t.id) ? tr('Remove from Liked Music') : tr('Add to Liked Music')} aria-pressed={liked.has(t.id)} kind="plain" size="xs" className={liked.has(t.id) ? 'text-ink!' : 'opacity-0 group-hover:opacity-100 focus:opacity-100'} onClick={() => void toggleLike(t)}>
+                    <RoundButton label={liked.has(t.id) ? tr('Remove from Liked Music') : tr('Add to Liked Music')} aria-pressed={liked.has(t.id)} kind="plain" size="xs" className={liked.has(t.id) ? 'text-ink!' : 'opacity-0 group-hover:opacity-100 focus:opacity-100'} onClick={(e) => (void toggleLike(t), pop(e.currentTarget))}>
                       <Heart size={15} weight={liked.has(t.id) ? 'fill' : 'regular'} />
                     </RoundButton>
                   </span>

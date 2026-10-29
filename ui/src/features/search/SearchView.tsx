@@ -440,7 +440,7 @@ export function SearchView() {
       {/* Behind a section's Show all: its title, and the way back. */}
       {shown !== 'all' && (
         <div className="flex shrink-0 items-center gap-2 pb-3">
-          <RoundButton label={tr('Search results')} kind="plain" size="sm" onClick={() => setKind('all')}>
+          <RoundButton label={tr('Search results')} kind="plain" size="sm" className="nudge-l" onClick={() => setKind('all')}>
             <ArrowLeft size={18} />
           </RoundButton>
           <h2 className="text-[1.375rem] leading-7 font-bold">{tr(KINDS[shown])}</h2>

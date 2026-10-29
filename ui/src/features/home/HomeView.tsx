@@ -511,7 +511,7 @@ export function HomeView() {
         </RoundButton>
       </div>
       {/* Cards' padding reaches 12 px out (CardRow): room for it, or the row would scroll the page sideways. */}
-      <div className="@container -mx-3 flex min-h-0 flex-1 flex-col gap-5.5 overflow-y-auto px-3 pb-8">
+      <div className="@container stagger -mx-3 flex min-h-0 flex-1 flex-col gap-5.5 overflow-y-auto px-3 pb-8">
         {sections
           .filter((x) => (x.on || (mood && x.id === 'youtube')) && visible(x.id))
           .map((x) => (

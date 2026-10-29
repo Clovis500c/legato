@@ -259,12 +259,73 @@ code {
     translate 0.18s ease-out,
     box-shadow 0.18s ease-out;
 }
+/* Fill backwards only below: nothing stays transformed after (a transform would hold fixed children, like menus). */
+/* Sections, tiles and cards come in one after another, 30 ms apart (the first ten, then the rest together). */
+.stagger > * {
+  animation: page-in 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+  animation-delay: calc(min(sibling-index() - 1, 10) * 30ms);
+}
+/* Right panel's Up next and lyrics slide in from the side. */
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    translate: 16px 0;
+  }
+}
+.slide-in {
+  animation: slide-in 0.2s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+}
+/* A new song's title and artist in the player bar. */
+@keyframes swap-in {
+  from {
+    opacity: 0;
+    translate: 0 6px;
+  }
+}
+.swap-in {
+  animation: swap-in 0.22s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+}
+/* Icon swaps (play / pause, volume): keyed in the JSX, so only a change grows the new one in. */
+@keyframes icon-in {
+  from {
+    opacity: 0;
+    scale: 0.55;
+  }
+}
+.icon-in {
+  animation: icon-in 0.16s cubic-bezier(0.3, 0.9, 0.4, 1.3) backwards;
+}
+/* Icons answer the pointer: arrows lean the way they go, the gear turns. */
+:where(.nudge-l, .nudge-r, .turn) svg {
+  transition:
+    translate 0.15s ease-out,
+    rotate 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.nudge-l:hover svg {
+  translate: -2px 0;
+}
+.nudge-r:hover svg {
+  translate: 2px 0;
+}
+.turn:hover svg {
+  rotate: 60deg;
+}
 @media (prefers-reduced-motion: reduce) {
   .page-in,
   .np-in,
   .pop-in,
-  .dialog-in {
+  .dialog-in,
+  .stagger > *,
+  .slide-in,
+  .swap-in,
+  .icon-in {
     animation-name: fade-in;
+  }
+  .nudge-l:hover svg,
+  .nudge-r:hover svg,
+  .turn:hover svg {
+    translate: none;
+    rotate: none;
   }
   :where(button, [role='button'], [role='tab']):not(:disabled):active {
     scale: none;

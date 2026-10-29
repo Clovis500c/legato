@@ -56,7 +56,7 @@ export function SidePanel() {
       <LedChip on={panel === 'lyrics'} label={tr('Lyrics')} onClick={() => update({ sidePanel: 'lyrics' })} />
     </span>
   )
-  const look = `min-h-0 flex-1 ${LOOK}`
+  const look = `slide-in min-h-0 flex-1 ${LOOK}`
   return (
     <div className="flex w-75 shrink-0 flex-col gap-2">
       {stage && <Stage />}
