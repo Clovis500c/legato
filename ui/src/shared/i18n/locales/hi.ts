@@ -1448,6 +1448,16 @@ const hi: Record<string, string> = {
   'Your likes, adds and removals here go out to {service}. Nothing new comes in from it.': 'यहाँ की आपकी पसंद, जोड़े और हटाए गए गाने {service} पर जाते हैं। वहाँ से कुछ नया नहीं आता।',
   'Nothing comes in or goes out. What was imported stays.': 'न कुछ आता है, न जाता है। जो इम्पोर्ट हो चुका है, वह रहता है।',
   'two way one way both import only send only push pull upload download off account': 'दोनों तरफ़ एक तरफ़ सिर्फ़ इम्पोर्ट सिर्फ़ भेजें अपलोड डाउनलोड बंद खाता',
+  'Equalizer presets': 'इक्वलाइज़र प्रीसेट',
+  'Flat': 'सपाट',
+  'Bass': 'बेस',
+  'Treble': 'ट्रेबल',
+  'Vocal': 'आवाज़',
+  'Rock': 'रॉक',
+  'Pop': 'पॉप',
+  'Electronic': 'इलेक्ट्रॉनिक',
+  'Acoustic': 'अकूस्टिक',
+  'Loudness': 'लाउडनेस',
 }
 
 export default hi

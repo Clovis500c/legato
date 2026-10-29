@@ -1448,6 +1448,16 @@ const ru: Record<string, string> = {
   'Your likes, adds and removals here go out to {service}. Nothing new comes in from it.': 'Ваши лайки, добавления и удаления здесь уходят в {service}. Оттуда ничего нового не приходит.',
   'Nothing comes in or goes out. What was imported stays.': 'Ничего не приходит и не уходит. Уже импортированное остаётся.',
   'two way one way both import only send only push pull upload download off account': 'в обе стороны в одну сторону только импорт только отправка загрузка скачивание выкл аккаунт',
+  'Equalizer presets': 'Пресеты эквалайзера',
+  'Flat': 'Ровно',
+  'Bass': 'Басы',
+  'Treble': 'Высокие',
+  'Vocal': 'Вокал',
+  'Rock': 'Рок',
+  'Pop': 'Поп',
+  'Electronic': 'Электроника',
+  'Acoustic': 'Акустика',
+  'Loudness': 'Тонкомпенсация',
 }
 
 export default ru

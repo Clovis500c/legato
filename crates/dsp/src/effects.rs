@@ -1,10 +1,34 @@
 //! Live Editor settings: what a song goes through, as numbers only (saved per song in SQLite, never audio). The same
 //! settings drive the native chain (`chain.rs`, `stretch.rs`) and the YouTube player's (crates/shield live.js).
 
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize};
 
-/// Equalizer bands: low shelf, three peaks, high shelf.
-pub const EQ_FREQS: [f32; 5] = [60.0, 250.0, 1_000.0, 4_000.0, 12_000.0];
+/// Equalizer bands, an octave apart: low shelf, eight peaks, high shelf.
+pub const EQ_FREQS: [f32; 10] = [32.0, 64.0, 125.0, 250.0, 500.0, 1_000.0, 2_000.0, 4_000.0, 8_000.0, 16_000.0];
+/// Peak width for octave spacing.
+pub const EQ_Q: f32 = 1.41;
+/// Bands before 2026-10-29 (5 gains in older saved edits).
+const OLD_EQ: [f32; 5] = [60.0, 250.0, 1_000.0, 4_000.0, 12_000.0];
+
+/// Saved gains onto the 10 bands. 5 = an older edit: its curve read at the new bands (straight lines over log
+/// frequency, flat past the ends). Same in effects.ts and live.js.
+pub fn eq_from(gains: &[f32]) -> [f32; 10] {
+    if gains.len() != OLD_EQ.len() {
+        return std::array::from_fn(|i| gains.get(i).copied().unwrap_or(0.0));
+    }
+    EQ_FREQS.map(|f| match OLD_EQ.iter().position(|o| *o > f) {
+        Some(0) => gains[0],
+        None => gains[4],
+        Some(i) => {
+            let t = (f / OLD_EQ[i - 1]).log2() / (OLD_EQ[i] / OLD_EQ[i - 1]).log2();
+            gains[i - 1] + t * (gains[i] - gains[i - 1])
+        }
+    })
+}
+
+fn eq_de<'de, D: Deserializer<'de>>(d: D) -> Result<[f32; 10], D::Error> {
+    Ok(eq_from(&Vec::<f32>::deserialize(d)?))
+}
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", default)]
@@ -81,7 +105,8 @@ pub struct Effects {
     /// Bass boost, dB 0..24.
     pub bass: f32,
     /// dB per band (`EQ_FREQS`), -24..24.
-    pub eq: [f32; 5],
+    #[serde(deserialize_with = "eq_de")]
+    pub eq: [f32; 10],
     pub reverb: Reverb,
     pub echo: Echo,
     pub space: Space,
@@ -95,7 +120,7 @@ pub struct Effects {
 
 impl Default for Effects {
     fn default() -> Self {
-        Self { on: true, speed: 1.0, tempo: 1.0, pitch: 0.0, bass: 0.0, eq: [0.0; 5], reverb: Reverb::default(), echo: Echo::default(), space: Space::default(), compress: 0.0, width: 1.0, balance: 0.0 }
+        Self { on: true, speed: 1.0, tempo: 1.0, pitch: 0.0, bass: 0.0, eq: [0.0; 10], reverb: Reverb::default(), echo: Echo::default(), space: Space::default(), compress: 0.0, width: 1.0, balance: 0.0 }
     }
 }
 
@@ -171,7 +196,7 @@ mod tests {
     #[test]
     fn defaults_are_neutral_and_values_are_kept_in_range() {
         assert!(Effects::default().neutral());
-        let e = Effects { speed: 9.0, pitch: f32::NAN, eq: [99.0, -99.0, 0.0, 0.0, 0.0], echo: Echo { feedback: 2.0, ..Echo::default() }, ..Effects::default() }.clamped();
+        let e = Effects { speed: 9.0, pitch: f32::NAN, eq: [99.0, -99.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], echo: Echo { feedback: 2.0, ..Echo::default() }, ..Effects::default() }.clamped();
         assert_eq!((e.speed, e.pitch, e.eq[0], e.eq[1], e.echo.feedback), (2.5, 0.0, 24.0, -24.0, 0.95));
         assert!(!e.neutral());
         assert!(Effects { on: false, ..e }.neutral());
@@ -189,5 +214,16 @@ mod tests {
         // Saved edits from the UI: missing fields take defaults.
         let e: Effects = serde_json::from_str(r#"{"speed":0.85,"reverb":{"mix":0.3}}"#).unwrap();
         assert_eq!((e.speed, e.reverb.mix, e.reverb.size, e.on), (0.85, 0.3, 0.7, true));
+    }
+
+    #[test]
+    fn older_five_band_edits_keep_their_curve() {
+        let e: Effects = serde_json::from_str(r#"{"eq":[6,0,-6,0,12]}"#).unwrap();
+        // 32 and 64 Hz: under the old 60 Hz shelf, flat; 250 / 1k / 4k: the old bands themselves; 16k: past the end.
+        assert_eq!((e.eq[0], e.eq[3], e.eq[5], e.eq[7], e.eq[9]), (6.0, 0.0, -6.0, 0.0, 12.0));
+        assert!((e.eq[1] - 5.73).abs() < 0.05, "{}", e.eq[1]);
+        assert!((e.eq[4] + 3.0).abs() < 1e-4 && (e.eq[8] - 7.57).abs() < 0.05, "{:?}", e.eq);
+        let ten: Effects = serde_json::from_str(r#"{"eq":[1,2,3,4,5,6,7,8,9,10]}"#).unwrap();
+        assert_eq!(ten.eq[9], 10.0);
     }
 }

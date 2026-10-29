@@ -1448,6 +1448,16 @@ const it: Record<string, string> = {
   'Your likes, adds and removals here go out to {service}. Nothing new comes in from it.': 'I tuoi “mi piace”, aggiunte e rimozioni fatte qui vanno a {service}. Da lì non arriva niente di nuovo.',
   'Nothing comes in or goes out. What was imported stays.': 'Non entra né esce niente. Ciò che è già importato resta.',
   'two way one way both import only send only push pull upload download off account': 'due sensi un senso entrambi solo importazione solo invio caricare scaricare spento account',
+  'Equalizer presets': 'Preset dell’equalizzatore',
+  'Flat': 'Piatto',
+  'Bass': 'Bassi',
+  'Treble': 'Alti',
+  'Vocal': 'Voce',
+  'Rock': 'Rock',
+  'Pop': 'Pop',
+  'Electronic': 'Elettronica',
+  'Acoustic': 'Acustica',
+  'Loudness': 'Loudness',
 }
 
 export default it

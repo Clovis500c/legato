@@ -198,7 +198,7 @@ never: downloading, extracting, recording or exporting a platform's audio, or to
 
 Edit the playing song live; written from scratch, Audacity's ideas as inspiration only (no code read or copied).
 
-- **Order**: speed / tempo / pitch → EQ (bass shelf 100 Hz, 60 Hz shelf, 250 / 1k / 4k peaks, 12k shelf) →
+- **Order**: speed / tempo / pitch → EQ (bass shelf 100 Hz, 10 bands an octave apart: 32 Hz shelf, 64 Hz to 8k peaks, 16k shelf; older 5-band edits read onto them) →
   compressor → stereo width (M/S) → echo → reverb → 3D → balance → Adaptive Sound → limiter. Native: `crates/dsp`
   `chain.rs` + `stretch.rs`, run by `crates/player` `live.rs`. YouTube: the same graph in `live.js` from Chromium's
   nodes, built on the first edit (2026-10-28: Adaptive Sound alone ran its 144 nodes, two reverbs and an HRTF panner

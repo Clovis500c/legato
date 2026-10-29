@@ -512,7 +512,7 @@ Original plan:
   - [x] Sync direction per account (Settings › Accounts): both ways, import only, send only, off. Import skips the
         accounts that don't take it in; likes, adds and removals aren't sent to an account that doesn't take them
         (likes then stay in your own Liked Music). Spotify: import or off (sending to Spotify isn't built).
-  - [ ] 10-band equalizer (was 5), same in YouTube's live processing.
+  - [x] 10-band equalizer (was 5, older edits keep their curve) with 9 equalizer presets, same in YouTube's live processing.
   - [ ] Distortion in the Live Editor.
   - [ ] Fullscreen (F11 and a button).
   - [ ] Video as a theme background.

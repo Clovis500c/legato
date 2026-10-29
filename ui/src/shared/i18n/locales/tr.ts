@@ -1448,6 +1448,16 @@ const tr: Record<string, string> = {
   'Your likes, adds and removals here go out to {service}. Nothing new comes in from it.': 'Burada yaptığın beğeniler, eklemeler ve kaldırmalar {service} hizmetine gider. Oradan yeni bir şey gelmez.',
   'Nothing comes in or goes out. What was imported stays.': 'Hiçbir şey gelmez ya da gitmez. İçe aktarılmış olanlar kalır.',
   'two way one way both import only send only push pull upload download off account': 'iki yönlü tek yönlü yalnızca içe aktar yalnızca gönder yükle indir kapalı hesap',
+  'Equalizer presets': 'Ekolayzır ön ayarları',
+  'Flat': 'Düz',
+  'Bass': 'Bas',
+  'Treble': 'Tiz',
+  'Vocal': 'Vokal',
+  'Rock': 'Rock',
+  'Pop': 'Pop',
+  'Electronic': 'Elektronik',
+  'Acoustic': 'Akustik',
+  'Loudness': 'Loudness',
 }
 
 export default tr

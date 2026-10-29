@@ -105,6 +105,7 @@ await app.ui.setStyle('.some-class { … }')   // links and @import are taken ou
 
 // editor
 await app.editor.get()          // Live Editor settings (speed, tempo, pitch, bass, eq, reverb, echo, space…)
+                                // eq: 10 gains in dB, 32 Hz to 16 kHz an octave apart (5 gains = the older bands)
 await app.editor.set({ ...settings, speed: 0.8 })
 
 // storage (always allowed, 1 MB per plugin, JSON values)

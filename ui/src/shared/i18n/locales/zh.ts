@@ -1448,6 +1448,16 @@ const zh: Record<string, string> = {
   'Your likes, adds and removals here go out to {service}. Nothing new comes in from it.': '你在这里的点赞、添加和移除会发送到 {service}。不会从那里导入新内容。',
   'Nothing comes in or goes out. What was imported stays.': '不导入也不发送。已导入的内容保留。',
   'two way one way both import only send only push pull upload download off account': '双向 单向 仅导入 仅发送 上传 下载 关闭 账号',
+  'Equalizer presets': '均衡器预设',
+  'Flat': '平直',
+  'Bass': '低音',
+  'Treble': '高音',
+  'Vocal': '人声',
+  'Rock': '摇滚',
+  'Pop': '流行',
+  'Electronic': '电子',
+  'Acoustic': '原声',
+  'Loudness': '响度',
 }
 
 export default zh

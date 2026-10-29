@@ -1448,6 +1448,16 @@ const fr: Record<string, string> = {
   'An amplifier knob, or a speaker and a bar': 'Une molette d’ampli, ou un haut-parleur et une barre',
   'Sleep timer button preview': 'Aperçu du bouton de la minuterie de sommeil',
   'hifi extras player details touches': 'hifi extras lecteur détails touches',
+  'Equalizer presets': 'Préréglages de l’égaliseur',
+  'Flat': 'Neutre',
+  'Bass': 'Basses',
+  'Treble': 'Aigus',
+  'Vocal': 'Voix',
+  'Rock': 'Rock',
+  'Pop': 'Pop',
+  'Electronic': 'Électro',
+  'Acoustic': 'Acoustique',
+  'Loudness': 'Loudness',
 }
 
 export default fr

@@ -1448,6 +1448,16 @@ const uk: Record<string, string> = {
   'Your likes, adds and removals here go out to {service}. Nothing new comes in from it.': 'Ваші вподобання, додавання й вилучення тут ідуть у {service}. Звідти нічого нового не надходить.',
   'Nothing comes in or goes out. What was imported stays.': 'Нічого не надходить і не йде. Уже імпортоване лишається.',
   'two way one way both import only send only push pull upload download off account': 'в обидва боки в один бік лише імпорт лише надсилання вивантажити завантажити вимк обліковий запис',
+  'Equalizer presets': 'Пресети еквалайзера',
+  'Flat': 'Рівно',
+  'Bass': 'Баси',
+  'Treble': 'Високі',
+  'Vocal': 'Вокал',
+  'Rock': 'Рок',
+  'Pop': 'Поп',
+  'Electronic': 'Електроніка',
+  'Acoustic': 'Акустика',
+  'Loudness': 'Тонкомпенсація',
 }
 
 export default uk

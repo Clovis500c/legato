@@ -1448,6 +1448,16 @@ const ko: Record<string, string> = {
   'Your likes, adds and removals here go out to {service}. Nothing new comes in from it.': '여기서 한 좋아요·추가·삭제는 {service}(으)로 보내집니다. 그쪽에서 새로 들어오는 것은 없습니다.',
   'Nothing comes in or goes out. What was imported stays.': '들어오거나 나가는 것이 없습니다. 이미 가져온 것은 남습니다.',
   'two way one way both import only send only push pull upload download off account': '양방향 단방향 가져오기만 보내기만 업로드 다운로드 끄기 계정',
+  'Equalizer presets': '이퀄라이저 프리셋',
+  'Flat': '플랫',
+  'Bass': '저음',
+  'Treble': '고음',
+  'Vocal': '보컬',
+  'Rock': '록',
+  'Pop': '팝',
+  'Electronic': '일렉트로닉',
+  'Acoustic': '어쿠스틱',
+  'Loudness': '라우드니스',
 }
 
 export default ko

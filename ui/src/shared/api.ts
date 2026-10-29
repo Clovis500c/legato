@@ -181,7 +181,8 @@ export interface Effects {
   tempo: number
   pitch: number
   bass: number
-  eq: [number, number, number, number, number]
+  /** dB per band, 10 bands (effects.ts EQ_FREQS). */
+  eq: number[]
   reverb: { mix: number; size: number; damping: number; predelayMs: number }
   echo: { mix: number; timeMs: number; feedback: number }
   space: { on: boolean; azimuth: number; elevation: number; distance: number; rotate: boolean; periodS: number; room: number }

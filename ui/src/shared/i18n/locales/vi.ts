@@ -1448,6 +1448,16 @@ const vi: Record<string, string> = {
   'Your likes, adds and removals here go out to {service}. Nothing new comes in from it.': 'Lượt thích, bài thêm và bài xoá của bạn ở đây được gửi lên {service}. Không có gì mới về từ đó.',
   'Nothing comes in or goes out. What was imported stays.': 'Không có gì vào hay ra. Những gì đã nhập vẫn giữ nguyên.',
   'two way one way both import only send only push pull upload download off account': 'hai chiều một chiều chỉ nhập chỉ gửi tải lên tải xuống tắt tài khoản',
+  'Equalizer presets': 'Cài sẵn bộ chỉnh âm',
+  'Flat': 'Phẳng',
+  'Bass': 'Âm trầm',
+  'Treble': 'Âm bổng',
+  'Vocal': 'Giọng hát',
+  'Rock': 'Rock',
+  'Pop': 'Pop',
+  'Electronic': 'Điện tử',
+  'Acoustic': 'Mộc',
+  'Loudness': 'Loudness',
 }
 
 export default vi

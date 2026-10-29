@@ -1448,6 +1448,16 @@ const sv: Record<string, string> = {
   'Your likes, adds and removals here go out to {service}. Nothing new comes in from it.': 'Dina gillningar, tillägg och borttagningar här skickas till {service}. Inget nytt kommer därifrån.',
   'Nothing comes in or goes out. What was imported stays.': 'Inget kommer in eller går ut. Det som redan importerats stannar.',
   'two way one way both import only send only push pull upload download off account': 'båda hållen ett håll endast import endast skicka ladda upp ladda ner av konto',
+  'Equalizer presets': 'Equalizer-förval',
+  'Flat': 'Platt',
+  'Bass': 'Bas',
+  'Treble': 'Diskant',
+  'Vocal': 'Sång',
+  'Rock': 'Rock',
+  'Pop': 'Pop',
+  'Electronic': 'Elektroniskt',
+  'Acoustic': 'Akustiskt',
+  'Loudness': 'Loudness',
 }
 
 export default sv

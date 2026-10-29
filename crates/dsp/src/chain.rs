@@ -2,7 +2,7 @@
 //! echo, reverb, 3D / 8D, balance. Stereo in and out (mono is spread, more channels: the first two are processed).
 //! Settings are read once per block; filters retune only when they change.
 
-use crate::effects::{EQ_FREQS, Effects};
+use crate::effects::{EQ_FREQS, EQ_Q, Effects};
 use crate::reverb::{self, Reverb};
 use crate::space::Space;
 use crate::{Biquad, db_to_gain};
@@ -23,22 +23,20 @@ pub fn compressor(amount: f32) -> (f32, f32, f32) {
 }
 
 /// Per-channel filters for one setting of bass + EQ.
-fn filters(rate: f32, e: &Effects) -> [Biquad; 6] {
-    let eq = e.eq;
-    [
-        Biquad::lowshelf(rate, BASS_HZ, e.bass),
-        Biquad::lowshelf(rate, EQ_FREQS[0], eq[0]),
-        Biquad::peaking(rate, EQ_FREQS[1], 1.0, eq[1]),
-        Biquad::peaking(rate, EQ_FREQS[2], 1.0, eq[2]),
-        Biquad::peaking(rate, EQ_FREQS[3], 1.0, eq[3]),
-        Biquad::highshelf(rate, EQ_FREQS[4], eq[4]),
-    ]
+fn filters(rate: f32, e: &Effects) -> [Biquad; 11] {
+    let last = EQ_FREQS.len() - 1;
+    std::array::from_fn(|i| match i {
+        0 => Biquad::lowshelf(rate, BASS_HZ, e.bass),
+        1 => Biquad::lowshelf(rate, EQ_FREQS[0], e.eq[0]),
+        _ if i - 1 == last => Biquad::highshelf(rate, EQ_FREQS[last], e.eq[last]),
+        _ => Biquad::peaking(rate, EQ_FREQS[i - 1], EQ_Q, e.eq[i - 1]),
+    })
 }
 
 pub struct Chain {
     rate: f32,
-    eq: [[Biquad; 6]; 2],
-    tuned: Option<(f32, [f32; 5])>,
+    eq: [[Biquad; 11]; 2],
+    tuned: Option<(f32, [f32; 10])>,
     env: f32,
     att: f32,
     rel: f32,
@@ -214,6 +212,23 @@ mod tests {
         };
         assert!(gain(30.0) > 3.0, "{}", gain(30.0));
         assert!((gain(5_000.0) - 1.0).abs() < 0.05, "{}", gain(5_000.0));
+    }
+
+    #[test]
+    fn each_band_lifts_its_own_octave() {
+        // +12 dB at 1 kHz: about ×4 there, an octave either side well under, far bands untouched.
+        let mut eq = [0.0; 10];
+        eq[5] = 12.0;
+        let e = Effects { eq, ..Effects::default() };
+        let gain = |f: f32| {
+            let mut c = Chain::new(48_000);
+            let mut out = tone(f, 1.0);
+            c.process(&mut out, 2, &e);
+            rms(&out[48_000..]) / 0.3 * std::f32::consts::SQRT_2
+        };
+        assert!((gain(1_000.0) - 3.98).abs() < 0.1, "{}", gain(1_000.0));
+        assert!(gain(2_000.0) < 2.5 && gain(500.0) < 2.5, "{} {}", gain(2_000.0), gain(500.0));
+        assert!((gain(60.0) - 1.0).abs() < 0.05 && (gain(12_000.0) - 1.0).abs() < 0.05, "{} {}", gain(60.0), gain(12_000.0));
     }
 
     #[test]

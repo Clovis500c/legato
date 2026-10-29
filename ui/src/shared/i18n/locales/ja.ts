@@ -1448,6 +1448,16 @@ const ja: Record<string, string> = {
   'Your likes, adds and removals here go out to {service}. Nothing new comes in from it.': 'ここでの高評価・追加・削除は {service} に送られます。向こうからは何も入りません。',
   'Nothing comes in or goes out. What was imported stays.': '何も入らず、何も送られません。取り込み済みのものは残ります。',
   'two way one way both import only send only push pull upload download off account': '双方向 片方向 取り込みのみ 送信のみ アップロード ダウンロード オフ アカウント',
+  'Equalizer presets': 'イコライザーのプリセット',
+  'Flat': 'フラット',
+  'Bass': '低音',
+  'Treble': '高音',
+  'Vocal': 'ボーカル',
+  'Rock': 'ロック',
+  'Pop': 'ポップ',
+  'Electronic': 'エレクトロニック',
+  'Acoustic': 'アコースティック',
+  'Loudness': 'ラウドネス',
 }
 
 export default ja

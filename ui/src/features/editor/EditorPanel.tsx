@@ -9,7 +9,7 @@ import { tr } from '../../shared/i18n/i18n'
 import { onMenu } from '../../shared/ui/ContextMenu'
 import { RoundButton, Toggle } from '../../shared/ui/controls'
 import { editPresetMenu, editVersionMenu, editorMenu } from '../menus'
-import { EQ_FREQS, NEUTRAL, neutral, PRESETS } from '../player/effects'
+import { EQ_FREQS, EQ_PRESETS, NEUTRAL, neutral, PRESETS } from '../player/effects'
 import { useLive } from '../player/live'
 import { usePlayer } from '../player/store'
 import { applyPreset, bypass, playVersion, presetEffects, renameVersion, reset, savePreset, saveVersion, setEffects, updateVersion, useEditor } from './editor'
@@ -323,6 +323,13 @@ export function EditorPanel({ onHide }: { onHide: () => void }) {
 
         <Section title={tr('Tone')}>
           <Slider label={tr('Bass boost')} value={e.bass} min={0} max={24} step={0.5} rest={0} show={db} onChange={(bass) => setEffects({ bass })} />
+          <div role="group" aria-label={tr('Equalizer presets')} className="flex flex-wrap gap-1.5">
+            {EQ_PRESETS.map((p) => (
+              <button key={p.name} onClick={() => setEffects({ eq: p.eq })} className={chip(p.eq.every((g, i) => g === e.eq[i]))}>
+                {tr(p.name)}
+              </button>
+            ))}
+          </div>
           {EQ_FREQS.map((f, i) => (
             <Slider key={f} center label={hz(f)} value={e.eq[i]} min={-24} max={24} step={0.5} rest={0} show={db} onChange={(g) => eq(i, g)} />
           ))}

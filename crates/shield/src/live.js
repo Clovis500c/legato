@@ -44,11 +44,22 @@
   // video's own rate (pitch kept or not); pitch alone: two sweeping delay taps (no worklet: YouTube's policy blocks
   // them); then EQ, compressor, width, echo, reverb (same Freeverb layout as reverb.rs), 3D / 8D (Chromium's HRTF
   // panner), balance.
-  const EQ_FREQS = [60, 250, 1000, 4000, 12000]
+  const EQ_FREQS = [32, 64, 125, 250, 500, 1000, 2000, 4000, 8000, 16000]
+  const OLD_EQ = [60, 250, 1000, 4000, 12000]
   const COMBS = [1116, 1188, 1277, 1356, 1422, 1491, 1557, 1617]
   const ALLPASSES = [556, 441, 341, 225]
   const SPREAD = 23
   const num = (v, lo, hi, d) => (typeof v === 'number' && Number.isFinite(v) ? Math.min(hi, Math.max(lo, v)) : d)
+  /** Saved gains onto the 10 bands; 5 = an older edit, its curve read at the new bands (effects.rs `eq_from`). */
+  function eqFrom(g) {
+    if (g.length !== OLD_EQ.length || !g.every((x) => typeof x === 'number')) return EQ_FREQS.map((_, i) => g[i])
+    return EQ_FREQS.map((f) => {
+      const i = OLD_EQ.findIndex((o) => o > f)
+      if (i === 0) return g[0]
+      if (i < 0) return g[4]
+      return g[i - 1] + (Math.log2(f / OLD_EQ[i - 1]) / Math.log2(OLD_EQ[i] / OLD_EQ[i - 1])) * (g[i] - g[i - 1])
+    })
+  }
 
   /** Trust boundary, like Effects::clamped. */
   function cleanFx(e) {
@@ -56,14 +67,14 @@
     const r = o.reverb || {}
     const c = o.echo || {}
     const s = o.space || {}
-    const eq = Array.isArray(o.eq) ? o.eq : []
+    const eq = eqFrom(Array.isArray(o.eq) ? o.eq : [])
     return {
       on: o.on !== false,
       speed: num(o.speed, 0.25, 2.5, 1),
       tempo: num(o.tempo, 0.25, 2.5, 1),
       pitch: num(o.pitch, -24, 24, 0),
       bass: num(o.bass, 0, 24, 0),
-      eq: [0, 1, 2, 3, 4].map((i) => num(eq[i], -24, 24, 0)),
+      eq: eq.map((g) => num(g, -24, 24, 0)),
       reverb: { mix: num(r.mix, 0, 1, 0), size: num(r.size, 0, 1, 0.7), damping: num(r.damping, 0, 1, 0.4), predelayMs: num(r.predelayMs, 0, 250, 20) },
       echo: { mix: num(c.mix, 0, 1, 0), timeMs: num(c.timeMs, 20, 2000, 300), feedback: num(c.feedback, 0, 0.95, 0.3) },
       space: { on: s.on === true, azimuth: num(s.azimuth, -180, 180, 0), elevation: num(s.elevation, -90, 90, 0), distance: num(s.distance, 0.25, 10, 1), rotate: s.rotate === true, periodS: num(s.periodS, 1, 60, 8), room: num(s.room, 0, 1, 0.2) },
@@ -200,7 +211,7 @@
     const input = new GainNode(ctx, { channelCount: 2, channelCountMode: 'explicit' })
     const shifter = pitchShifter(ctx)
     input.connect(shifter.input)
-    const filters = [new BiquadFilterNode(ctx, { type: 'lowshelf', frequency: 100, gain: 0 }), ...EQ_FREQS.map((frequency, i) => new BiquadFilterNode(ctx, { type: i === 0 ? 'lowshelf' : i === 4 ? 'highshelf' : 'peaking', frequency, Q: 1, gain: 0 }))]
+    const filters = [new BiquadFilterNode(ctx, { type: 'lowshelf', frequency: 100, gain: 0 }), ...EQ_FREQS.map((frequency, i) => new BiquadFilterNode(ctx, { type: i === 0 ? 'lowshelf' : i === EQ_FREQS.length - 1 ? 'highshelf' : 'peaking', frequency, Q: 1.41, gain: 0 }))]
     let node = shifter.output
     for (const fl of filters) {
       node.connect(fl)

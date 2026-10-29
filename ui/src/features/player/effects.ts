@@ -11,7 +11,7 @@ export const NEUTRAL: Effects = {
   tempo: 1,
   pitch: 0,
   bass: 0,
-  eq: [0, 0, 0, 0, 0],
+  eq: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
   reverb: { mix: 0, size: 0.7, damping: 0.4, predelayMs: 20 },
   echo: { mix: 0, timeMs: 300, feedback: 0.3 },
   space: { on: false, azimuth: 0, elevation: 0, distance: 1, rotate: false, periodS: 8, room: 0.2 },
@@ -20,8 +20,34 @@ export const NEUTRAL: Effects = {
   balance: 0,
 }
 
-/** Equalizer bands, Hz (effects.rs EQ_FREQS). */
-export const EQ_FREQS = [60, 250, 1000, 4000, 12000] as const
+/** Equalizer bands, Hz, an octave apart (effects.rs EQ_FREQS). */
+export const EQ_FREQS = [32, 64, 125, 250, 500, 1000, 2000, 4000, 8000, 16000] as const
+const OLD_EQ = [60, 250, 1000, 4000, 12000]
+
+/** Saved gains onto the 10 bands; 5 = an older edit, its curve read at the new bands (effects.rs `eq_from`). */
+export function eqFrom(gains: unknown[]): unknown[] {
+  if (gains.length !== OLD_EQ.length || !gains.every((g) => typeof g === 'number')) return EQ_FREQS.map((_, i) => gains[i])
+  const g = gains as number[]
+  return EQ_FREQS.map((f) => {
+    const i = OLD_EQ.findIndex((o) => o > f)
+    if (i === 0) return g[0]
+    if (i < 0) return g[4]
+    return g[i - 1] + (Math.log2(f / OLD_EQ[i - 1]) / Math.log2(OLD_EQ[i] / OLD_EQ[i - 1])) * (g[i] - g[i - 1])
+  })
+}
+
+/** Equalizer curves: one click sets the 10 bands, the rest of the edit stays. */
+export const EQ_PRESETS: { name: string; eq: number[] }[] = [
+  { name: msg('Flat'), eq: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
+  { name: msg('Bass'), eq: [6, 5, 4, 2, 0, 0, 0, 0, 0, 0] },
+  { name: msg('Treble'), eq: [0, 0, 0, 0, 0, 0, 1, 3, 5, 6] },
+  { name: msg('Vocal'), eq: [-2, -2, -1, 0, 2, 4, 4, 2, 0, -1] },
+  { name: msg('Rock'), eq: [4, 3, 2, 0, -1, -1, 1, 3, 4, 4] },
+  { name: msg('Pop'), eq: [-1, 0, 2, 3, 3, 1, 0, -1, -1, -1] },
+  { name: msg('Electronic'), eq: [5, 4, 1, 0, -2, 0, 1, 2, 4, 5] },
+  { name: msg('Acoustic'), eq: [3, 2, 1, 1, 2, 1, 2, 2, 2, 1] },
+  { name: msg('Loudness'), eq: [5, 3, 0, 0, -1, 0, -1, 0, 3, 4] },
+]
 
 /** Timeline speed and pitch ratio (effects.rs `rates`). */
 /** Time and pitch rates, ×0.25 to ×4 each (what the stretcher takes: effects.rs `rates`, live.js). */
@@ -43,14 +69,14 @@ export function cleanEffects(raw: unknown): Effects {
   const r = sub('reverb')
   const c = sub('echo')
   const s = sub('space')
-  const eq = Array.isArray(o.eq) ? o.eq : []
+  const eq = eqFrom(Array.isArray(o.eq) ? o.eq : [])
   return {
     on: o.on !== false,
     speed: n(o.speed, 0.25, 2.5, 1),
     tempo: n(o.tempo, 0.25, 2.5, 1),
     pitch: n(o.pitch, -24, 24, 0),
     bass: n(o.bass, 0, 24, 0),
-    eq: [0, 1, 2, 3, 4].map((i) => n(eq[i], -24, 24, 0)) as Effects['eq'],
+    eq: eq.map((g) => n(g, -24, 24, 0)),
     reverb: { mix: n(r.mix, 0, 1, 0), size: n(r.size, 0, 1, 0.7), damping: n(r.damping, 0, 1, 0.4), predelayMs: n(r.predelayMs, 0, 250, 20) },
     echo: { mix: n(c.mix, 0, 1, 0), timeMs: n(c.timeMs, 20, 2000, 300), feedback: n(c.feedback, 0, 0.95, 0.3) },
     space: { on: s.on === true, azimuth: n(s.azimuth, -180, 180, 0), elevation: n(s.elevation, -90, 90, 0), distance: n(s.distance, 0.25, 10, 1), rotate: s.rotate === true, periodS: n(s.periodS, 1, 60, 8), room: n(s.room, 0, 1, 0.2) },
@@ -67,7 +93,7 @@ export const PRESETS: { name: string; effects: Effects }[] = [
   { name: msg('Nightcore'), effects: { ...NEUTRAL, speed: 1.25 } },
   { name: msg('Sped up'), effects: { ...NEUTRAL, speed: 1.15 } },
   { name: msg('8D'), effects: { ...NEUTRAL, space: { on: true, azimuth: 0, elevation: 0, distance: 1.2, rotate: true, periodS: 8, room: 0.3 } } },
-  { name: msg('Bass boost'), effects: { ...NEUTRAL, bass: 8, eq: [3, 0, 0, 0, 0] } },
+  { name: msg('Bass boost'), effects: { ...NEUTRAL, bass: 8, eq: [3, 3, 1.5, 0, 0, 0, 0, 0, 0, 0] } },
   { name: msg('Concert hall'), effects: { ...NEUTRAL, reverb: { mix: 0.45, size: 0.95, damping: 0.3, predelayMs: 40 }, width: 1.3 } },
 ]
 

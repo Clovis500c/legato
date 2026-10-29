@@ -1448,6 +1448,16 @@ const id: Record<string, string> = {
   'Your likes, adds and removals here go out to {service}. Nothing new comes in from it.': 'Suka, tambahan, dan hapusan Anda di sini dikirim ke {service}. Tak ada yang baru masuk dari sana.',
   'Nothing comes in or goes out. What was imported stays.': 'Tak ada yang masuk atau keluar. Yang sudah diimpor tetap ada.',
   'two way one way both import only send only push pull upload download off account': 'dua arah satu arah hanya impor hanya kirim unggah unduh mati akun',
+  'Equalizer presets': 'Preset equalizer',
+  'Flat': 'Datar',
+  'Bass': 'Bass',
+  'Treble': 'Treble',
+  'Vocal': 'Vokal',
+  'Rock': 'Rock',
+  'Pop': 'Pop',
+  'Electronic': 'Elektronik',
+  'Acoustic': 'Akustik',
+  'Loudness': 'Loudness',
 }
 
 export default id

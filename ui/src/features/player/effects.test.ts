@@ -24,7 +24,11 @@ describe('effects', () => {
     const e = cleanEffects({ speed: 9, pitch: 'x', eq: [30, null], reverb: { mix: 0.5 }, space: { on: true, azimuth: 500 }, on: false })
     expect(e.speed).toBe(2.5)
     expect(e.pitch).toBe(0)
-    expect(e.eq).toEqual([24, 0, 0, 0, 0])
+    expect(e.eq).toEqual([24, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+    // Older 5-band edit: same curve on the 10 bands (effects.rs older_five_band_edits_keep_their_curve).
+    const old = cleanEffects({ eq: [6, 0, -6, 0, 12] }).eq
+    expect([old[0], old[3], old[4], old[5], old[7], old[9]]).toEqual([6, 0, -3, -6, 0, 12])
+    expect(old[8]).toBeCloseTo(7.57, 1)
     expect(e.reverb).toEqual({ ...NEUTRAL.reverb, mix: 0.5 })
     expect(e.space.on).toBe(true)
     expect(e.space.azimuth).toBe(180)
