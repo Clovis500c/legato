@@ -41,6 +41,14 @@ check fails if the two lists differ.
 - **Services** (YouTube Music, Spotify, Apple's catalog, Discord): reached at runtime under each user's own account and
   terms. No code or data from them is bundled.
 
+### The website
+
+`site/` (GitHub Pages) bundles its own packages: Next.js, React, Motion and Phosphor icons (MIT), Simple Icons (CC0),
+Roboto (OFL-1.1: `site/public/roboto-LICENSE.txt`, served next to the font). Minified bundles lose license comments, so
+each build writes every production package's license text to `third-party-licenses.txt` (`site/scripts/notices.mjs`);
+the footer links both. `scripts/licenses.mjs` checks the app's packages, not the site's: add packages there with an
+allowed license only.
+
 ## Notices in the installer
 
 Done 2026-10-17 (it was the to-do before the first release). The installer carries `third-party-licenses.html`, which

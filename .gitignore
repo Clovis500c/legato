@@ -6,3 +6,6 @@ dist
 /target
 /src-tauri/gen/schemas
 /src-tauri/third-party-licenses.html
+/site/.next
+/site/next-env.d.ts
+/site/public/third-party-licenses.txt
