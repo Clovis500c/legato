@@ -462,7 +462,6 @@ const zh: Record<string, string> = {
   'Share link or code': '分享链接或代码',
   'Import': '导入',
   'Add · YouTube, YouTube Music, Apple Music and your files': '添加 · YouTube、YouTube Music、Apple Music 和你的文件',
-  'Search catalogs': '搜索曲库',
   'Hide covers and karaoke': '隐藏翻唱和卡拉OK',
   'In your library': '在你的音乐库中',
   'Not in your library': '不在你的音乐库中',
@@ -482,7 +481,6 @@ const zh: Record<string, string> = {
   'Paste a YouTube link': '粘贴 YouTube 链接',
   'anywhere (Ctrl+V): the track is added right away.': '在任意位置（Ctrl+V）：歌曲会立即添加。',
   'Add a music folder': '添加音乐文件夹',
-  ': your files play first.': '：优先播放你的文件。',
   // Music Detector
   'Another app is using the microphone.': '另一个应用正在使用麦克风。',
   'AudD refused your token. Check it on dashboard.audd.io.': 'AudD 拒绝了你的令牌。请在 dashboard.audd.io 上检查。',
@@ -1520,6 +1518,9 @@ const zh: Record<string, string> = {
   'Expand Your library': '展开你的音乐库',
   'Collapse Your library': '收起你的音乐库',
   'Resize the sidebar': '调整侧边栏大小',
+  'Song, artist or album': '歌曲、艺人或专辑',
+  'Paste a list': '粘贴列表',
+  'One song per line, from SoundCloud, Deezer or anywhere: each is found on YouTube.': '每行一首歌，来自 SoundCloud、Deezer 或任何地方：每首都会在 YouTube 上查找。',
 }
 
 export default zh

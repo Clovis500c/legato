@@ -462,7 +462,6 @@ const nl: Record<string, string> = {
   'Share link or code': 'Link of code om te delen',
   'Import': 'Importeren',
   'Add · YouTube, YouTube Music, Apple Music and your files': 'Toevoegen · YouTube, YouTube Music, Apple Music en je bestanden',
-  'Search catalogs': 'Catalogi doorzoeken',
   'Hide covers and karaoke': 'Covers en karaoke verbergen',
   'In your library': 'In je bibliotheek',
   'Not in your library': 'Niet in je bibliotheek',
@@ -482,7 +481,6 @@ const nl: Record<string, string> = {
   'Paste a YouTube link': 'Plak een YouTube-link',
   'anywhere (Ctrl+V): the track is added right away.': 'waar dan ook (Ctrl+V): het nummer wordt meteen toegevoegd.',
   'Add a music folder': 'Voeg een muziekmap toe',
-  ': your files play first.': ': je bestanden worden eerst afgespeeld.',
   // Music Detector
   'Another app is using the microphone.': 'Een andere app gebruikt de microfoon.',
   'AudD refused your token. Check it on dashboard.audd.io.': 'AudD heeft je token geweigerd. Controleer hem op dashboard.audd.io.',
@@ -1520,6 +1518,9 @@ const nl: Record<string, string> = {
   'Expand Your library': 'Je bibliotheek vergroten',
   'Collapse Your library': 'Je bibliotheek verkleinen',
   'Resize the sidebar': 'Zijbalk van grootte veranderen',
+  'Song, artist or album': 'Nummer, artiest of album',
+  'Paste a list': 'Lijst plakken',
+  'One song per line, from SoundCloud, Deezer or anywhere: each is found on YouTube.': 'Eén nummer per regel, van SoundCloud, Deezer of waar dan ook: elk wordt op YouTube gezocht.',
 }
 
 export default nl

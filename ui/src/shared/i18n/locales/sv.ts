@@ -462,7 +462,6 @@ const sv: Record<string, string> = {
   'Share link or code': 'Delningslänk eller kod',
   'Import': 'Importera',
   'Add · YouTube, YouTube Music, Apple Music and your files': 'Lägg till · YouTube, YouTube Music, Apple Music och dina filer',
-  'Search catalogs': 'Sök i kataloger',
   'Hide covers and karaoke': 'Dölj covers och karaoke',
   'In your library': 'I ditt bibliotek',
   'Not in your library': 'Inte i ditt bibliotek',
@@ -482,7 +481,6 @@ const sv: Record<string, string> = {
   'Paste a YouTube link': 'Klistra in en YouTube-länk',
   'anywhere (Ctrl+V): the track is added right away.': 'var som helst (Ctrl+V): låten läggs till direkt.',
   'Add a music folder': 'Lägg till en musikmapp',
-  ': your files play first.': ': dina filer spelas först.',
   // Music Detector
   'Another app is using the microphone.': 'En annan app använder mikrofonen.',
   'AudD refused your token. Check it on dashboard.audd.io.': 'AudD godkände inte din token. Kontrollera den på dashboard.audd.io.',
@@ -1520,6 +1518,9 @@ const sv: Record<string, string> = {
   'Expand Your library': 'Visa Ditt bibliotek större',
   'Collapse Your library': 'Visa Ditt bibliotek mindre',
   'Resize the sidebar': 'Ändra storlek på sidofältet',
+  'Song, artist or album': 'Låt, artist eller album',
+  'Paste a list': 'Klistra in en lista',
+  'One song per line, from SoundCloud, Deezer or anywhere: each is found on YouTube.': 'En låt per rad, från SoundCloud, Deezer eller var som helst: varje låt söks upp på YouTube.',
 }
 
 export default sv

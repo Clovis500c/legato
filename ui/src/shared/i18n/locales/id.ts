@@ -462,7 +462,6 @@ const id: Record<string, string> = {
   'Share link or code': 'Link atau kode berbagi',
   'Import': 'Impor',
   'Add · YouTube, YouTube Music, Apple Music and your files': 'Tambah · YouTube, YouTube Music, Apple Music, dan file-mu',
-  'Search catalogs': 'Cari di katalog',
   'Hide covers and karaoke': 'Sembunyikan cover dan karaoke',
   'In your library': 'Di koleksimu',
   'Not in your library': 'Tidak ada di koleksimu',
@@ -482,7 +481,6 @@ const id: Record<string, string> = {
   'Paste a YouTube link': 'Tempel link YouTube',
   'anywhere (Ctrl+V): the track is added right away.': 'di mana saja (Ctrl+V): lagu langsung ditambahkan.',
   'Add a music folder': 'Tambahkan folder musik',
-  ': your files play first.': ': file-mu diputar lebih dulu.',
   // Music Detector
   'Another app is using the microphone.': 'Aplikasi lain sedang memakai mikrofon.',
   'AudD refused your token. Check it on dashboard.audd.io.': 'AudD menolak token-mu. Periksa di dashboard.audd.io.',
@@ -1520,6 +1518,9 @@ const id: Record<string, string> = {
   'Expand Your library': 'Perbesar Koleksimu',
   'Collapse Your library': 'Perkecil Koleksimu',
   'Resize the sidebar': 'Ubah ukuran bilah samping',
+  'Song, artist or album': 'Lagu, artis, atau album',
+  'Paste a list': 'Tempel daftar',
+  'One song per line, from SoundCloud, Deezer or anywhere: each is found on YouTube.': 'Satu lagu per baris, dari SoundCloud, Deezer, atau mana saja: tiap lagu dicari di YouTube.',
 }
 
 export default id

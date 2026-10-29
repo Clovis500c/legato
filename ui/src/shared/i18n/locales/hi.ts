@@ -462,7 +462,6 @@ const hi: Record<string, string> = {
   'Share link or code': 'शेयर लिंक या कोड',
   'Import': 'इंपोर्ट करें',
   'Add · YouTube, YouTube Music, Apple Music and your files': 'जोड़ें · YouTube, YouTube Music, Apple Music और आपकी फ़ाइलें',
-  'Search catalogs': 'कैटलॉग में खोजें',
   'Hide covers and karaoke': 'कवर और कराओके छिपाएं',
   'In your library': 'आपकी लाइब्रेरी में',
   'Not in your library': 'आपकी लाइब्रेरी में नहीं',
@@ -482,7 +481,6 @@ const hi: Record<string, string> = {
   'Paste a YouTube link': 'YouTube लिंक पेस्ट करें',
   'anywhere (Ctrl+V): the track is added right away.': 'कहीं भी (Ctrl+V): ट्रैक तुरंत जुड़ जाता है।',
   'Add a music folder': 'म्यूज़िक फ़ोल्डर जोड़ें',
-  ': your files play first.': ': आपकी फ़ाइलें पहले चलती हैं।',
   // Music Detector
   'Another app is using the microphone.': 'कोई दूसरा ऐप माइक्रोफ़ोन इस्तेमाल कर रहा है।',
   'AudD refused your token. Check it on dashboard.audd.io.': 'AudD ने आपका टोकन अस्वीकार कर दिया। इसे dashboard.audd.io पर जांचें।',
@@ -1520,6 +1518,9 @@ const hi: Record<string, string> = {
   'Expand Your library': 'आपकी लाइब्रेरी बड़ी करें',
   'Collapse Your library': 'आपकी लाइब्रेरी छोटी करें',
   'Resize the sidebar': 'साइडबार का आकार बदलें',
+  'Song, artist or album': 'गाना, कलाकार या एल्बम',
+  'Paste a list': 'सूची चिपकाएँ',
+  'One song per line, from SoundCloud, Deezer or anywhere: each is found on YouTube.': 'हर पंक्ति में एक गाना, SoundCloud, Deezer या कहीं से भी: हर गाना YouTube पर खोजा जाता है।',
 }
 
 export default hi

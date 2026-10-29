@@ -462,7 +462,6 @@ const tr: Record<string, string> = {
   'Share link or code': 'Paylaşım bağlantısı veya kodu',
   'Import': 'İçe aktar',
   'Add · YouTube, YouTube Music, Apple Music and your files': 'Ekle · YouTube, YouTube Music, Apple Music ve dosyaların',
-  'Search catalogs': 'Kataloglarda ara',
   'Hide covers and karaoke': 'Cover ve karaokeleri gizle',
   'In your library': 'Kitaplığında',
   'Not in your library': 'Kitaplığında değil',
@@ -482,7 +481,6 @@ const tr: Record<string, string> = {
   'Paste a YouTube link': 'Bir YouTube bağlantısı yapıştır',
   'anywhere (Ctrl+V): the track is added right away.': 'her yerde (Ctrl+V): şarkı hemen eklenir.',
   'Add a music folder': 'Bir müzik klasörü ekle',
-  ': your files play first.': ': önce dosyaların çalınır.',
   // Music Detector
   'Another app is using the microphone.': 'Mikrofonu başka bir uygulama kullanıyor.',
   'AudD refused your token. Check it on dashboard.audd.io.': 'AudD token’ını reddetti. dashboard.audd.io adresinden kontrol et.',
@@ -1520,6 +1518,9 @@ const tr: Record<string, string> = {
   'Expand Your library': 'Kitaplığını genişlet',
   'Collapse Your library': 'Kitaplığını daralt',
   'Resize the sidebar': 'Kenar çubuğunu yeniden boyutlandır',
+  'Song, artist or album': 'Şarkı, sanatçı veya albüm',
+  'Paste a list': 'Liste yapıştır',
+  'One song per line, from SoundCloud, Deezer or anywhere: each is found on YouTube.': 'Her satıra bir şarkı, SoundCloud, Deezer ya da herhangi bir yerden: her biri YouTube’da aranır.',
 }
 
 export default tr

@@ -462,7 +462,6 @@ const ko: Record<string, string> = {
   'Share link or code': '공유 링크 또는 코드',
   'Import': '가져오기',
   'Add · YouTube, YouTube Music, Apple Music and your files': '추가 · YouTube, YouTube Music, Apple Music 및 내 파일',
-  'Search catalogs': '카탈로그 검색',
   'Hide covers and karaoke': '커버와 노래방 숨기기',
   'In your library': '보관함에 있음',
   'Not in your library': '보관함에 없음',
@@ -482,7 +481,6 @@ const ko: Record<string, string> = {
   'Paste a YouTube link': 'YouTube 링크 붙여넣기',
   'anywhere (Ctrl+V): the track is added right away.': '어디서나 (Ctrl+V): 곡이 바로 추가됩니다.',
   'Add a music folder': '음악 폴더 추가',
-  ': your files play first.': ': 내 파일이 먼저 재생됩니다.',
   // Music Detector
   'Another app is using the microphone.': '다른 앱이 마이크를 사용 중입니다.',
   'AudD refused your token. Check it on dashboard.audd.io.': 'AudD가 토큰을 거부했습니다. dashboard.audd.io에서 확인하세요.',
@@ -1520,6 +1518,9 @@ const ko: Record<string, string> = {
   'Expand Your library': '내 보관함 넓히기',
   'Collapse Your library': '내 보관함 좁히기',
   'Resize the sidebar': '사이드바 크기 조절',
+  'Song, artist or album': '노래, 아티스트 또는 앨범',
+  'Paste a list': '목록 붙여넣기',
+  'One song per line, from SoundCloud, Deezer or anywhere: each is found on YouTube.': '한 줄에 한 곡, SoundCloud, Deezer 등 어디서든: 각 곡을 YouTube에서 찾습니다.',
 }
 
 export default ko

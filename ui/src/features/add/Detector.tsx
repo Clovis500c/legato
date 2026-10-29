@@ -9,6 +9,7 @@ import { Button } from '../../shared/ui/Button'
 import { Segmented } from '../../shared/ui/controls'
 import { Dialog } from '../../shared/ui/Dialog'
 import { usePlayer } from '../player/store'
+import { Card } from './Card'
 import { msg, tr } from '../../shared/i18n/i18n'
 
 const DASHBOARD = 'https://dashboard.audd.io/'
@@ -143,10 +144,7 @@ export function Detector({ onFound }: { onFound: (t: Track) => void }) {
 
   const listening = phase.name === 'listening' ? phase : null
   return (
-    <div className="flex flex-col gap-3 rounded-xl border border-line px-4 py-3">
-      <p className="flex items-center gap-2 text-xs font-semibold">
-        <Waveform size={16} className="text-ink-2" /> {tr('Identify a song')}
-      </p>
+    <Card icon={Waveform} title={tr('Identify a song')}>
       {editing ? (
         <TokenForm
           onSaved={() => {
@@ -177,16 +175,7 @@ export function Detector({ onFound }: { onFound: (t: Track) => void }) {
         </div>
       ) : (
         <>
-          <Segmented
-            label={tr('Listen to')}
-            value={input}
-            onChange={(detectorInput) => useSettings.getState().update({ detectorInput })}
-            options={[
-              { value: 'mic', label: tr('Microphone') },
-              { value: 'pc', label: tr('This PC') },
-            ]}
-          />
-          <p className="text-xs text-ink-2">{input === 'mic' ? tr('A song playing around you? Legato listens for {n} seconds and names it.', { n: SECONDS }) : tr('A song playing in another app or a video? Legato listens to this PC for {n} seconds and names it.', { n: SECONDS })}</p>
+          <p className="text-[0.8125rem] text-ink-2">{input === 'mic' ? tr('A song playing around you? Legato listens for {n} seconds and names it.', { n: SECONDS }) : tr('A song playing in another app or a video? Legato listens to this PC for {n} seconds and names it.', { n: SECONDS })}</p>
           {phase.name === 'note' && (
             <p className="text-xs text-ink">
               {phase.text}{' '}
@@ -197,12 +186,23 @@ export function Detector({ onFound }: { onFound: (t: Track) => void }) {
               )}
             </p>
           )}
-          <Button onClick={() => void listen()} disabled={token === null} className="self-start">
-            {input === 'mic' ? <Microphone size={15} weight="fill" /> : <Desktop size={15} weight="fill" />} {tr('Listen')}
-          </Button>
-          <button onClick={() => setEditing(true)} className="self-start text-[0.6875rem] text-ink-3 hover:text-ink">
-            {token ? tr('AudD token · Change') : tr('A few free recognitions a day · Add your own AudD token')}
-          </button>
+          <div className="mt-auto flex flex-col items-start gap-3">
+            <Segmented
+              label={tr('Listen to')}
+              value={input}
+              onChange={(detectorInput) => useSettings.getState().update({ detectorInput })}
+              options={[
+                { value: 'mic', label: tr('Microphone') },
+                { value: 'pc', label: tr('This PC') },
+              ]}
+            />
+            <Button onClick={() => void listen()} disabled={token === null}>
+              {input === 'mic' ? <Microphone size={15} weight="fill" /> : <Desktop size={15} weight="fill" />} {tr('Listen')}
+            </Button>
+            <button onClick={() => setEditing(true)} className="text-left text-[0.6875rem] text-ink-3 hover:text-ink">
+              {token ? tr('AudD token · Change') : tr('A few free recognitions a day · Add your own AudD token')}
+            </button>
+          </div>
         </>
       )}
       {phase.name === 'consent' && (
@@ -228,6 +228,6 @@ export function Detector({ onFound }: { onFound: (t: Track) => void }) {
           </div>
         </Dialog>
       )}
-    </div>
+    </Card>
   )
 }

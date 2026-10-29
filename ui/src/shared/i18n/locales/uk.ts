@@ -462,7 +462,6 @@ const uk: Record<string, string> = {
   'Share link or code': 'Посилання або код для обміну',
   'Import': 'Імпорт',
   'Add · YouTube, YouTube Music, Apple Music and your files': 'Додати · YouTube, YouTube Music, Apple Music і твої файли',
-  'Search catalogs': 'Пошук у каталогах',
   'Hide covers and karaoke': 'Сховати кавери й караоке',
   'In your library': 'У медіатеці',
   'Not in your library': 'Не в медіатеці',
@@ -482,7 +481,6 @@ const uk: Record<string, string> = {
   'Paste a YouTube link': 'Встав посилання YouTube',
   'anywhere (Ctrl+V): the track is added right away.': 'будь-де (Ctrl+V): трек одразу додасться.',
   'Add a music folder': 'Додай папку з музикою',
-  ': your files play first.': ': твої файли грають першими.',
   // Music Detector
   'Another app is using the microphone.': 'Мікрофон зайнятий іншим застосунком.',
   'AudD refused your token. Check it on dashboard.audd.io.': 'AudD відхилив твій токен. Перевір його на dashboard.audd.io.',
@@ -1520,6 +1518,9 @@ const uk: Record<string, string> = {
   'Expand Your library': 'Розгорнути медіатеку',
   'Collapse Your library': 'Згорнути медіатеку',
   'Resize the sidebar': 'Змінити розмір бічної панелі',
+  'Song, artist or album': 'Трек, виконавець або альбом',
+  'Paste a list': 'Вставити список',
+  'One song per line, from SoundCloud, Deezer or anywhere: each is found on YouTube.': 'Один трек на рядок, із SoundCloud, Deezer чи будь-звідки: кожен шукається на YouTube.',
 }
 
 export default uk

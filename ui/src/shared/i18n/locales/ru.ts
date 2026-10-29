@@ -462,7 +462,6 @@ const ru: Record<string, string> = {
   'Share link or code': 'Ссылка или код для обмена',
   'Import': 'Импорт',
   'Add · YouTube, YouTube Music, Apple Music and your files': 'Добавить · YouTube, YouTube Music, Apple Music и твои файлы',
-  'Search catalogs': 'Поиск по каталогам',
   'Hide covers and karaoke': 'Скрыть каверы и караоке',
   'In your library': 'В медиатеке',
   'Not in your library': 'Не в медиатеке',
@@ -482,7 +481,6 @@ const ru: Record<string, string> = {
   'Paste a YouTube link': 'Вставь ссылку YouTube',
   'anywhere (Ctrl+V): the track is added right away.': 'в любом месте (Ctrl+V): трек сразу добавится.',
   'Add a music folder': 'Добавь папку с музыкой',
-  ': your files play first.': ': твои файлы играют первыми.',
   // Music Detector
   'Another app is using the microphone.': 'Микрофон занят другим приложением.',
   'AudD refused your token. Check it on dashboard.audd.io.': 'AudD отклонил твой токен. Проверь его на dashboard.audd.io.',
@@ -1520,6 +1518,9 @@ const ru: Record<string, string> = {
   'Expand Your library': 'Развернуть медиатеку',
   'Collapse Your library': 'Свернуть медиатеку',
   'Resize the sidebar': 'Изменить размер боковой панели',
+  'Song, artist or album': 'Трек, исполнитель или альбом',
+  'Paste a list': 'Вставить список',
+  'One song per line, from SoundCloud, Deezer or anywhere: each is found on YouTube.': 'Один трек на строку, из SoundCloud, Deezer или откуда угодно: каждый ищется на YouTube.',
 }
 
 export default ru

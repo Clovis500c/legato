@@ -462,7 +462,6 @@ const pl: Record<string, string> = {
   'Share link or code': 'Link lub kod do udostępnienia',
   'Import': 'Importuj',
   'Add · YouTube, YouTube Music, Apple Music and your files': 'Dodaj · YouTube, YouTube Music, Apple Music i twoje pliki',
-  'Search catalogs': 'Szukaj w katalogach',
   'Hide covers and karaoke': 'Ukryj covery i karaoke',
   'In your library': 'W twojej bibliotece',
   'Not in your library': 'Poza twoją biblioteką',
@@ -482,7 +481,6 @@ const pl: Record<string, string> = {
   'Paste a YouTube link': 'Wklej link z YouTube',
   'anywhere (Ctrl+V): the track is added right away.': 'gdziekolwiek (Ctrl+V): utwór zostanie od razu dodany.',
   'Add a music folder': 'Dodaj folder z muzyką',
-  ': your files play first.': ': twoje pliki są odtwarzane najpierw.',
   // Music Detector
   'Another app is using the microphone.': 'Inna aplikacja używa mikrofonu.',
   'AudD refused your token. Check it on dashboard.audd.io.': 'AudD odrzucił twój token. Sprawdź go na dashboard.audd.io.',
@@ -1520,6 +1518,9 @@ const pl: Record<string, string> = {
   'Expand Your library': 'Powiększ Twoją bibliotekę',
   'Collapse Your library': 'Zmniejsz Twoją bibliotekę',
   'Resize the sidebar': 'Zmień rozmiar paska bocznego',
+  'Song, artist or album': 'Utwór, wykonawca lub album',
+  'Paste a list': 'Wklej listę',
+  'One song per line, from SoundCloud, Deezer or anywhere: each is found on YouTube.': 'Jeden utwór w wierszu, z SoundCloud, Deezera lub skądkolwiek: każdy jest wyszukiwany na YouTube.',
 }
 
 export default pl

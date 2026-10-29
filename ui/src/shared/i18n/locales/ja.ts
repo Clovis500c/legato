@@ -462,7 +462,6 @@ const ja: Record<string, string> = {
   'Share link or code': '共有リンクまたはコード',
   'Import': 'インポート',
   'Add · YouTube, YouTube Music, Apple Music and your files': '追加 · YouTube、YouTube Music、Apple Music、ローカルファイル',
-  'Search catalogs': 'カタログを検索',
   'Hide covers and karaoke': 'カバーとカラオケを隠す',
   'In your library': 'ライブラリにあり',
   'Not in your library': 'ライブラリにない',
@@ -482,7 +481,6 @@ const ja: Record<string, string> = {
   'Paste a YouTube link': 'YouTubeのリンクを貼り付け',
   'anywhere (Ctrl+V): the track is added right away.': 'どこでも（Ctrl+V）：すぐに曲が追加されます。',
   'Add a music folder': '音楽フォルダーを追加',
-  ': your files play first.': '：ファイルが優先して再生されます。',
   // Music Detector
   'Another app is using the microphone.': '別のアプリがマイクを使用しています。',
   'AudD refused your token. Check it on dashboard.audd.io.': 'AudDがトークンを拒否しました。dashboard.audd.io で確認してください。',
@@ -1520,6 +1518,9 @@ const ja: Record<string, string> = {
   'Expand Your library': 'ライブラリを広げる',
   'Collapse Your library': 'ライブラリを狭める',
   'Resize the sidebar': 'サイドバーのサイズを変更',
+  'Song, artist or album': '曲、アーティスト、アルバム',
+  'Paste a list': 'リストを貼り付け',
+  'One song per line, from SoundCloud, Deezer or anywhere: each is found on YouTube.': '1行に1曲、SoundCloudやDeezerなどから：各曲をYouTubeで探します。',
 }
 
 export default ja

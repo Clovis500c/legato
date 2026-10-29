@@ -462,7 +462,6 @@ const vi: Record<string, string> = {
   'Share link or code': 'Liên kết hoặc mã chia sẻ',
   'Import': 'Nhập',
   'Add · YouTube, YouTube Music, Apple Music and your files': 'Thêm · YouTube, YouTube Music, Apple Music và tệp của bạn',
-  'Search catalogs': 'Tìm trong kho nhạc',
   'Hide covers and karaoke': 'Ẩn bản cover và karaoke',
   'In your library': 'Trong thư viện của bạn',
   'Not in your library': 'Không có trong thư viện',
@@ -482,7 +481,6 @@ const vi: Record<string, string> = {
   'Paste a YouTube link': 'Dán liên kết YouTube',
   'anywhere (Ctrl+V): the track is added right away.': 'ở bất kỳ đâu (Ctrl+V): bài hát được thêm ngay.',
   'Add a music folder': 'Thêm thư mục nhạc',
-  ': your files play first.': ': tệp của bạn được phát trước.',
   // Music Detector
   'Another app is using the microphone.': 'Một ứng dụng khác đang dùng micrô.',
   'AudD refused your token. Check it on dashboard.audd.io.': 'AudD đã từ chối mã token của bạn. Hãy kiểm tra trên dashboard.audd.io.',
@@ -1520,6 +1518,9 @@ const vi: Record<string, string> = {
   'Expand Your library': 'Mở rộng Thư viện của bạn',
   'Collapse Your library': 'Thu gọn Thư viện của bạn',
   'Resize the sidebar': 'Đổi kích thước thanh bên',
+  'Song, artist or album': 'Bài hát, nghệ sĩ hoặc album',
+  'Paste a list': 'Dán danh sách',
+  'One song per line, from SoundCloud, Deezer or anywhere: each is found on YouTube.': 'Mỗi dòng một bài, từ SoundCloud, Deezer hay bất cứ đâu: mỗi bài được tìm trên YouTube.',
 }
 
 export default vi
