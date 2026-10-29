@@ -188,7 +188,6 @@ const ja: Record<string, string> = {
   'It’s music': '音楽です',
   'Not music: hide it': '音楽ではない：非表示にする',
   // Customize Home cards
-  'Daily Mixes and mixes for right now': 'デイリーミックスと今にぴったりのミックス',
   'What you played lately': '最近再生したもの',
   'Your own and imported playlists': '自分のプレイリストとインポートしたプレイリスト',
   'Shelves from YouTube Music, when signed in': 'YouTube Musicのおすすめ（ログイン時）',
@@ -444,17 +443,11 @@ const ja: Record<string, string> = {
   'Less like {title}': '{title}のような曲を減らす',
   'Never put {title} in mixes': '{title}をミックスに入れない',
   // Home
-  'Good night': 'おやすみなさい',
-  'Good morning': 'おはようございます',
-  'Good afternoon': 'こんにちは',
-  'Good evening': 'こんばんは',
   'See all': 'すべて表示',
-  'Made for you': 'あなたのために',
   'From YouTube Music': 'YouTube Musicから',
   'Sign in to YouTube Music to see its recommendations here too.': 'YouTube Musicにログインすると、ここにもおすすめが表示されます。',
   'Sign in': 'ログイン',
   'YouTube Music recommendations unavailable: {error}': 'YouTube Musicのおすすめを利用できません：{error}',
-  'Made on this PC': 'このPCで作成',
   'Your playlists': 'あなたのプレイリスト',
   // Add music
   'CLIP': 'MV',
@@ -1293,7 +1286,6 @@ const ja: Record<string, string> = {
   'Romance': 'ロマンス',
   'Focus': '集中',
   'Workout': 'ワークアウト',
-  'Open a playlist, an album or a mix: it shows up here, back in one click.': 'プレイリスト、アルバム、ミックスを開くとここに表示され、ワンクリックで戻れます。',
   'Nothing played in the last 7 days. Your listening time shows up here.': '過去7日間に再生した曲はありません。再生時間がここに表示されます。',
   'Same as last week': '先週と同じ',
   '{time} more than last week': '先週より{time}多い',
@@ -1507,6 +1499,8 @@ const ja: Record<string, string> = {
   'Next, added by you': '次に再生（追加した曲）',
   'Then from {name}': '続いて {name} から',
   'Then from the list': '続いてリストから',
+  'Your mixes': 'あなたのミックス',
+  'Made on this PC from what you play': '再生履歴からこのPCで作成',
 }
 
 export default ja

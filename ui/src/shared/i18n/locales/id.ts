@@ -188,7 +188,6 @@ const id: Record<string, string> = {
   'It’s music': 'Ini musik',
   'Not music: hide it': 'Bukan musik: sembunyikan',
   // Customize Home cards
-  'Daily Mixes and mixes for right now': 'Daily Mix dan mix untuk saat ini',
   'What you played lately': 'Yang kamu putar akhir-akhir ini',
   'Your own and imported playlists': 'Playlist buatanmu dan yang diimpor',
   'Shelves from YouTube Music, when signed in': 'Rak dari YouTube Music, saat sudah masuk',
@@ -444,17 +443,11 @@ const id: Record<string, string> = {
   'Less like {title}': 'Kurangi yang seperti {title}',
   'Never put {title} in mixes': 'Jangan pernah masukkan {title} ke mix',
   // Home
-  'Good night': 'Selamat malam',
-  'Good morning': 'Selamat pagi',
-  'Good afternoon': 'Selamat siang',
-  'Good evening': 'Selamat sore',
   'See all': 'Lihat semua',
-  'Made for you': 'Dibuat untukmu',
   'From YouTube Music': 'Dari YouTube Music',
   'Sign in to YouTube Music to see its recommendations here too.': 'Masuk ke YouTube Music untuk melihat rekomendasinya di sini juga.',
   'Sign in': 'Masuk',
   'YouTube Music recommendations unavailable: {error}': 'Rekomendasi YouTube Music tidak tersedia: {error}',
-  'Made on this PC': 'Dibuat di PC ini',
   'Your playlists': 'Playlist-mu',
   // Add music
   'CLIP': 'KLIP',
@@ -1293,7 +1286,6 @@ const id: Record<string, string> = {
   'Romance': 'Romantis',
   'Focus': 'Fokus',
   'Workout': 'Olahraga',
-  'Open a playlist, an album or a mix: it shows up here, back in one click.': 'Buka playlist, album, atau mix: akan muncul di sini, tinggal sekali klik.',
   'Nothing played in the last 7 days. Your listening time shows up here.': 'Tidak ada yang diputar dalam 7 hari terakhir. Waktu mendengarkanmu muncul di sini.',
   'Same as last week': 'Sama seperti minggu lalu',
   '{time} more than last week': '{time} lebih banyak dari minggu lalu',
@@ -1507,6 +1499,8 @@ const id: Record<string, string> = {
   'Next, added by you': 'Berikutnya, tambahanmu',
   'Then from {name}': 'Lalu dari {name}',
   'Then from the list': 'Lalu dari daftar',
+  'Your mixes': 'Mix-mu',
+  'Made on this PC from what you play': 'Dibuat di PC ini dari yang kamu putar',
 }
 
 export default id

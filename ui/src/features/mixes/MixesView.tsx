@@ -6,10 +6,10 @@ import { api, type LibraryTrack, type Mix } from '../../shared/api'
 import { trackArt } from '../../shared/art'
 import { Button } from '../../shared/ui/Button'
 import { Led, RoundButton } from '../../shared/ui/controls'
-import { onMenu } from '../../shared/ui/ContextMenu'
 import { Cover } from '../../shared/ui/Cover'
 import { CoverGrid } from '../../shared/ui/CoverGrid'
 import { PageHeader } from '../../shared/ui/PageHeader'
+import { MediaCard } from '../../shared/ui/Section'
 import { coverTracks } from '../library/covers'
 import { musicOnly } from '../library/filter'
 import { HiddenVideos } from '../library/HiddenVideos'
@@ -97,7 +97,7 @@ function MixCover({ mix, tracks, size }: { mix: Mix; tracks: LibraryTrack[]; siz
       )}
       {/* Badge on the art: fixed dark chip, readable over any cover. */}
       <span className="absolute top-2.5 left-2.5 flex items-center gap-1.5 rounded-full bg-black/60 px-2 py-0.5 font-mono text-[0.625rem] tracking-[0.08em] text-white uppercase">
-        <span className="size-1.5 rounded-full bg-accent" /> {label}
+        <span className="size-1.5 rounded-full bg-white" /> {label}
       </span>
     </span>
   )
@@ -107,18 +107,8 @@ export function MixCard({ mix }: { mix: Mix }) {
   const go = useStore((s) => s.go)
   const play = usePlayer((s) => s.playTracks)
   const tracks = useMixTracks(mix)
-  return (
-    <li onContextMenu={onMenu(() => tracksMenu(tracks, ['-', { label: tr('Open'), onSelect: () => go({ name: 'mix', id: mix.id }) }]))} className="group relative flex w-[180px] shrink-0 flex-col gap-2">
-      <button onClick={() => go({ name: 'mix', id: mix.id })} className="flex flex-col gap-2 text-left">
-        <MixCover mix={mix} tracks={tracks} size={180} />
-        <span className="block text-[0.8125rem] font-semibold group-hover:underline">{mixTitle(mix)}</span>
-        <span className="line-clamp-2 text-xs text-ink-2">{mixReason(mix)}</span>
-      </button>
-      <RoundButton label={tr('Play {title}', { title: mixTitle(mix) })} kind="primary" size="md" className="absolute top-[130px] left-[130px] opacity-0 group-hover:opacity-100 focus:opacity-100" onClick={() => play(tracks, 0)}>
-        <Play weight="fill" size={16} />
-      </RoundButton>
-    </li>
-  )
+  const open = () => go({ name: 'mix', id: mix.id })
+  return <MediaCard title={mixTitle(mix)} sub={mixReason(mix)} art={<MixCover mix={mix} tracks={tracks} size={176} />} onOpen={open} onPlay={() => play(tracks, 0)} menu={() => tracksMenu(tracks, ['-', { label: tr('Open'), onSelect: open }])} />
 }
 
 const SECTIONS: { kind: Mix['kind']; title: string }[] = [
@@ -148,7 +138,7 @@ export function MixesView() {
   return (
     <>
       <PageHeader kicker={tr('For you · made on this PC from what you play')} title={tr('Mixes')} actions={<ResetHistory onDone={reload} />} />
-      <div className="-mx-2 min-h-0 flex-1 overflow-y-auto px-2 pb-6">
+      <div className="-mx-3 min-h-0 flex-1 overflow-y-auto px-3 pb-6">
         {mixes && mixes.length === 0 && (
           <div className="flex flex-col items-center gap-2 py-16 text-center text-ink-2">
             <p className="text-base text-ink">{tr('No mixes yet')}</p>
@@ -162,7 +152,8 @@ export function MixesView() {
             return (
               <section key={kind} className="flex flex-col gap-4">
                 <h2 className="kicker">{tr(title)}</h2>
-                <ul className="grid grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-x-6 gap-y-8">
+                {/* Cards' own padding is the gap (shared/ui/Section MediaCard). */}
+                <ul className="-mx-3 -mt-2 flex flex-wrap">
                   {list.map((m) => (
                     <MixCard key={m.id} mix={m} />
                   ))}

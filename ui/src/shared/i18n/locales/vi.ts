@@ -188,7 +188,6 @@ const vi: Record<string, string> = {
   'It’s music': 'Đây là nhạc',
   'Not music: hide it': 'Không phải nhạc: ẩn đi',
   // Customize Home cards
-  'Daily Mixes and mixes for right now': 'Daily Mix và bản phối cho lúc này',
   'What you played lately': 'Những gì bạn nghe gần đây',
   'Your own and imported playlists': 'Danh sách phát của bạn và danh sách đã nhập',
   'Shelves from YouTube Music, when signed in': 'Các kệ nội dung từ YouTube Music, khi đã đăng nhập',
@@ -444,17 +443,11 @@ const vi: Record<string, string> = {
   'Less like {title}': 'Ít bài giống {title} hơn',
   'Never put {title} in mixes': 'Không bao giờ đưa {title} vào bản phối',
   // Home
-  'Good night': 'Chúc ngủ ngon',
-  'Good morning': 'Chào buổi sáng',
-  'Good afternoon': 'Chào buổi chiều',
-  'Good evening': 'Chào buổi tối',
   'See all': 'Xem tất cả',
-  'Made for you': 'Dành riêng cho bạn',
   'From YouTube Music': 'Từ YouTube Music',
   'Sign in to YouTube Music to see its recommendations here too.': 'Đăng nhập YouTube Music để xem cả đề xuất của nó ở đây.',
   'Sign in': 'Đăng nhập',
   'YouTube Music recommendations unavailable: {error}': 'Không có đề xuất từ YouTube Music: {error}',
-  'Made on this PC': 'Tạo trên PC này',
   'Your playlists': 'Danh sách phát của bạn',
   // Add music
   'CLIP': 'MV',
@@ -1293,7 +1286,6 @@ const vi: Record<string, string> = {
   'Romance': 'Lãng mạn',
   'Focus': 'Tập trung',
   'Workout': 'Tập luyện',
-  'Open a playlist, an album or a mix: it shows up here, back in one click.': 'Mở một danh sách phát, album hoặc bản phối: nó sẽ hiện ở đây, quay lại chỉ bằng một cú nhấp.',
   'Nothing played in the last 7 days. Your listening time shows up here.': 'Không phát gì trong 7 ngày qua. Thời gian nghe của bạn sẽ hiện ở đây.',
   'Same as last week': 'Như tuần trước',
   '{time} more than last week': 'Nhiều hơn tuần trước {time}',
@@ -1507,6 +1499,8 @@ const vi: Record<string, string> = {
   'Next, added by you': 'Tiếp theo, bạn đã thêm',
   'Then from {name}': 'Sau đó từ {name}',
   'Then from the list': 'Sau đó từ danh sách',
+  'Your mixes': 'Bản phối của bạn',
+  'Made on this PC from what you play': 'Tạo trên PC này từ những gì bạn nghe',
 }
 
 export default vi

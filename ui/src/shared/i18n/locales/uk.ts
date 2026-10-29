@@ -188,7 +188,6 @@ const uk: Record<string, string> = {
   'It’s music': 'Це музика',
   'Not music: hide it': 'Не музика: сховати',
   // Customize Home cards
-  'Daily Mixes and mixes for right now': 'Daily Mix і мікси для цього моменту',
   'What you played lately': 'Нещодавно прослухане',
   'Your own and imported playlists': 'Твої та імпортовані плейлисти',
   'Shelves from YouTube Music, when signed in': 'Добірки з YouTube Music, коли виконано вхід',
@@ -444,17 +443,11 @@ const uk: Record<string, string> = {
   'Less like {title}': 'Менше схожого на {title}',
   'Never put {title} in mixes': 'Ніколи не додавати {title} до міксів',
   // Home
-  'Good night': 'Добраніч',
-  'Good morning': 'Доброго ранку',
-  'Good afternoon': 'Добрий день',
-  'Good evening': 'Добрий вечір',
   'See all': 'Усі',
-  'Made for you': 'Створено для тебе',
   'From YouTube Music': 'З YouTube Music',
   'Sign in to YouTube Music to see its recommendations here too.': 'Увійди в YouTube Music, щоб бачити тут і його рекомендації.',
   'Sign in': 'Увійти',
   'YouTube Music recommendations unavailable: {error}': 'Рекомендації YouTube Music недоступні: {error}',
-  'Made on this PC': 'Зібрано на цьому ПК',
   'Your playlists': 'Твої плейлисти',
   // Add music
   'CLIP': 'КЛІП',
@@ -1293,7 +1286,6 @@ const uk: Record<string, string> = {
   'Romance': 'Романтика',
   'Focus': 'Зосередженість',
   'Workout': 'Тренування',
-  'Open a playlist, an album or a mix: it shows up here, back in one click.': 'Відкрий плейлист, альбом чи мікс: він з’явиться тут, за одне клацання.',
   'Nothing played in the last 7 days. Your listening time shows up here.': 'За останні 7 днів нічого не прослухано. Тут з’явиться час прослуховування.',
   'Same as last week': 'Як минулого тижня',
   '{time} more than last week': 'На {time} більше, ніж минулого тижня',
@@ -1507,6 +1499,8 @@ const uk: Record<string, string> = {
   'Next, added by you': 'Далі, додані вами',
   'Then from {name}': 'Потім із {name}',
   'Then from the list': 'Потім зі списку',
+  'Your mixes': 'Твої мікси',
+  'Made on this PC from what you play': 'Зібрано на цьому ПК з того, що ти слухаєш',
 }
 
 export default uk

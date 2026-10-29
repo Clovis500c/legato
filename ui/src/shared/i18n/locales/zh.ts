@@ -188,7 +188,6 @@ const zh: Record<string, string> = {
   'It’s music': '这是音乐',
   'Not music: hide it': '不是音乐：隐藏',
   // Customize Home cards
-  'Daily Mixes and mixes for right now': '每日推荐和当下混音',
   'What you played lately': '最近播放',
   'Your own and imported playlists': '你自己的歌单和导入的歌单',
   'Shelves from YouTube Music, when signed in': '来自 YouTube Music 的推荐（登录后）',
@@ -444,17 +443,11 @@ const zh: Record<string, string> = {
   'Less like {title}': '减少类似 {title} 的歌',
   'Never put {title} in mixes': '永不将 {title} 放入混音',
   // Home
-  'Good night': '晚安',
-  'Good morning': '早上好',
-  'Good afternoon': '下午好',
-  'Good evening': '晚上好',
   'See all': '查看全部',
-  'Made for you': '为你打造',
   'From YouTube Music': '来自 YouTube Music',
   'Sign in to YouTube Music to see its recommendations here too.': '登录 YouTube Music，在这里也能看到它的推荐。',
   'Sign in': '登录',
   'YouTube Music recommendations unavailable: {error}': 'YouTube Music 推荐不可用：{error}',
-  'Made on this PC': '在此电脑上生成',
   'Your playlists': '你的歌单',
   // Add music
   'CLIP': 'MV',
@@ -1293,7 +1286,6 @@ const zh: Record<string, string> = {
   'Romance': '浪漫',
   'Focus': '专注',
   'Workout': '健身',
-  'Open a playlist, an album or a mix: it shows up here, back in one click.': '打开一个歌单、专辑或混音：它会显示在这里，一键即可回去。',
   'Nothing played in the last 7 days. Your listening time shows up here.': '过去 7 天没有播放任何内容。你的收听时长会显示在这里。',
   'Same as last week': '与上周相同',
   '{time} more than last week': '比上周多 {time}',
@@ -1507,6 +1499,8 @@ const zh: Record<string, string> = {
   'Next, added by you': '接下来，你添加的',
   'Then from {name}': '然后来自 {name}',
   'Then from the list': '然后来自列表',
+  'Your mixes': '你的混音',
+  'Made on this PC from what you play': '根据你的播放记录在此电脑上生成',
 }
 
 export default zh

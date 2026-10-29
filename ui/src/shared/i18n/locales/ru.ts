@@ -188,7 +188,6 @@ const ru: Record<string, string> = {
   'It’s music': 'Это музыка',
   'Not music: hide it': 'Не музыка: скрыть',
   // Customize Home cards
-  'Daily Mixes and mixes for right now': 'Daily Mix и миксы для этого момента',
   'What you played lately': 'Недавно прослушанное',
   'Your own and imported playlists': 'Твои и импортированные плейлисты',
   'Shelves from YouTube Music, when signed in': 'Подборки из YouTube Music, когда выполнен вход',
@@ -444,17 +443,11 @@ const ru: Record<string, string> = {
   'Less like {title}': 'Меньше похожего на {title}',
   'Never put {title} in mixes': 'Никогда не добавлять {title} в миксы',
   // Home
-  'Good night': 'Доброй ночи',
-  'Good morning': 'Доброе утро',
-  'Good afternoon': 'Добрый день',
-  'Good evening': 'Добрый вечер',
   'See all': 'Все',
-  'Made for you': 'Создано для тебя',
   'From YouTube Music': 'Из YouTube Music',
   'Sign in to YouTube Music to see its recommendations here too.': 'Войди в YouTube Music, чтобы видеть здесь и его рекомендации.',
   'Sign in': 'Войти',
   'YouTube Music recommendations unavailable: {error}': 'Рекомендации YouTube Music недоступны: {error}',
-  'Made on this PC': 'Собрано на этом ПК',
   'Your playlists': 'Твои плейлисты',
   // Add music
   'CLIP': 'КЛИП',
@@ -1293,7 +1286,6 @@ const ru: Record<string, string> = {
   'Romance': 'Романтика',
   'Focus': 'Концентрация',
   'Workout': 'Тренировка',
-  'Open a playlist, an album or a mix: it shows up here, back in one click.': 'Открой плейлист, альбом или микс: он появится здесь, в одном клике.',
   'Nothing played in the last 7 days. Your listening time shows up here.': 'За последние 7 дней ничего не прослушано. Здесь появится время прослушивания.',
   'Same as last week': 'Как на прошлой неделе',
   '{time} more than last week': 'На {time} больше, чем на прошлой неделе',
@@ -1507,6 +1499,8 @@ const ru: Record<string, string> = {
   'Next, added by you': 'Далее, добавленные вами',
   'Then from {name}': 'Затем из {name}',
   'Then from the list': 'Затем из списка',
+  'Your mixes': 'Твои миксы',
+  'Made on this PC from what you play': 'Собрано на этом ПК из того, что ты слушаешь',
 }
 
 export default ru

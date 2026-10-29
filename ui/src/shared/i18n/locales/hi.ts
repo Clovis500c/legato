@@ -188,7 +188,6 @@ const hi: Record<string, string> = {
   'It’s music': 'यह संगीत है',
   'Not music: hide it': 'संगीत नहीं: छिपाएं',
   // Customize Home cards
-  'Daily Mixes and mixes for right now': 'डेली मिक्स और अभी के लिए मिक्स',
   'What you played lately': 'आपने हाल में क्या चलाया',
   'Your own and imported playlists': 'आपकी अपनी और इंपोर्ट की गई प्लेलिस्ट',
   'Shelves from YouTube Music, when signed in': 'YouTube Music से शेल्फ़, साइन इन होने पर',
@@ -444,17 +443,11 @@ const hi: Record<string, string> = {
   'Less like {title}': '{title} जैसे गाने कम',
   'Never put {title} in mixes': '{title} को कभी मिक्स में न डालें',
   // Home
-  'Good night': 'शुभ रात्रि',
-  'Good morning': 'सुप्रभात',
-  'Good afternoon': 'नमस्कार',
-  'Good evening': 'शुभ संध्या',
   'See all': 'सब देखें',
-  'Made for you': 'आपके लिए बनाया गया',
   'From YouTube Music': 'YouTube Music से',
   'Sign in to YouTube Music to see its recommendations here too.': 'यहां भी इसके सुझाव देखने के लिए YouTube Music में साइन इन करें।',
   'Sign in': 'साइन इन करें',
   'YouTube Music recommendations unavailable: {error}': 'YouTube Music सुझाव उपलब्ध नहीं: {error}',
-  'Made on this PC': 'इस PC पर बनाया गया',
   'Your playlists': 'आपकी प्लेलिस्ट',
   // Add music
   'CLIP': 'क्लिप',
@@ -1293,7 +1286,6 @@ const hi: Record<string, string> = {
   'Romance': 'रोमांस',
   'Focus': 'फ़ोकस',
   'Workout': 'वर्कआउट',
-  'Open a playlist, an album or a mix: it shows up here, back in one click.': 'कोई प्लेलिस्ट, एल्बम या मिक्स खोलें: यह यहां दिखेगा, एक क्लिक में वापस।',
   'Nothing played in the last 7 days. Your listening time shows up here.': 'पिछले 7 दिनों में कुछ नहीं चलाया। आपका सुनने का समय यहां दिखेगा।',
   'Same as last week': 'पिछले हफ़्ते जितना',
   '{time} more than last week': 'पिछले हफ़्ते से {time} ज़्यादा',
@@ -1507,6 +1499,8 @@ const hi: Record<string, string> = {
   'Next, added by you': 'आगे, आपके जोड़े हुए',
   'Then from {name}': 'फिर {name} से',
   'Then from the list': 'फिर सूची से',
+  'Your mixes': 'आपके मिक्स',
+  'Made on this PC from what you play': 'आपके सुने गानों से इस PC पर बनाया गया',
 }
 
 export default hi

@@ -8,8 +8,8 @@ export type OpenedList = { kind: 'playlist'; id: number } | { kind: 'album'; alb
 
 const KEY = 'recentLists'
 export const MAX_LISTS = 12
-/** Tiles in Jump back in. */
-export const JUMP = 8
+/** Lists in Home's shortcut tiles (Songs is the sixth: 3 × 2). */
+export const JUMP = 5
 
 export const listKey = (l: OpenedList) => (l.kind === 'playlist' || l.kind === 'mix' ? `${l.kind}:${l.id}` : l.kind === 'album' ? `album:${l.album}\u0000${l.artist}` : `artist:${l.artist}`)
 

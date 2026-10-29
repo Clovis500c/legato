@@ -21,7 +21,8 @@ describe('opened lists', () => {
   it('reopens what still exists, then fills from what was played and the playlists', () => {
     const opened: OpenedList[] = [{ kind: 'playlist', id: 99 }, { kind: 'album', album: 'OutRun', artist: 'Kavinsky' }, { kind: 'mix', id: 'gone' }]
     const stats = { 3: [2, 200], 1: [1, 100] } as Record<number, [number, number]>
-    const got = jumpLists(opened, { tracks, stats, playlists: [pl(5, 'Big import', 300, false), pl(6, 'Mine', 4, true)], mixIds: ['daily-1'] })
+    const playlists = [pl(5, 'Big import', 300, false), pl(6, 'Mine', 4, true)]
+    const got = jumpLists(opened, { tracks, stats, playlists, mixIds: ['daily-1'] })
     expect(got).toEqual([
       { kind: 'album', album: 'OutRun', artist: 'Kavinsky' },
       // Played lately, newest first: M83's album and artist, then Daft Punk's.
@@ -29,11 +30,13 @@ describe('opened lists', () => {
       { kind: 'artist', artist: 'M83' },
       { kind: 'album', album: 'Random Access Memories', artist: 'Daft Punk' },
       { kind: 'artist', artist: 'Daft Punk' },
-      // Own playlists first.
+    ])
+    expect(got).toHaveLength(JUMP)
+    // Nothing opened or played: own playlists first.
+    expect(jumpLists([], { tracks, stats: {}, playlists })).toEqual([
       { kind: 'playlist', id: 6 },
       { kind: 'playlist', id: 5 },
     ])
-    expect(got.length).toBeLessThanOrEqual(JUMP)
     // Mixes still loading: an opened mix stays.
     expect(jumpLists([{ kind: 'mix', id: 'x' }], { tracks, stats: {}, playlists: [] })).toEqual([{ kind: 'mix', id: 'x' }])
   })

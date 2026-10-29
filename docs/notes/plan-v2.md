@@ -203,7 +203,10 @@ Theme (light) / Dark / Brand / Scale, components, Home, Songs, Album, Search, No
 - [x] Now Playing as in the mockup: cover or video left, title (Display XL), artist, album, source and the next song
       right, controls across the bottom; lyrics, Up next and Sound as icons, a panel replaces the details. The main
       window's right panel has its own setting (`sidePanel`), so Now Playing opens without one (defaults v8).
-- [ ] Home as in the mockup (shortcut tiles at the top), Search screen pass. Handoff: [v2-handoff.md](v2-handoff.md).
+- [x] Home as in the mockup: no page title, chips then shortcut tiles (Songs and 5 lists opened lately, 3 × 2, 2
+      columns when narrow), sections with a title, a line under it and Show all (`shared/ui/Section.tsx`), cards grey
+      on hover with the sky blue play button (Home, Mixes, artist pages' YouTube Music shelves).
+- [ ] Search screen pass. Handoff: [v2-handoff.md](v2-handoff.md).
 - [ ] Save the songs the user queued (`added`) with the session.
 - [ ] Decide the name: Legato recommended (finalists Tutti, Diapason); trademark search (INPI, EUIPO, USPTO classes 9,
       41, 42), domain, Microsoft Store name. Never rename the identifier, `_musicapp._tcp`, `MA1` or keychain entries.

@@ -188,7 +188,6 @@ const tr: Record<string, string> = {
   'It’s music': 'Bu müzik',
   'Not music: hide it': 'Müzik değil: gizle',
   // Customize Home cards
-  'Daily Mixes and mixes for right now': 'Daily Mix’ler ve şu an için mix’ler',
   'What you played lately': 'Son zamanlarda çaldıkların',
   'Your own and imported playlists': 'Kendi ve içe aktarılan çalma listelerin',
   'Shelves from YouTube Music, when signed in': 'Oturum açıkken YouTube Music’ten raflar',
@@ -444,17 +443,11 @@ const tr: Record<string, string> = {
   'Less like {title}': 'Şuna benzerlerden daha az: {title}',
   'Never put {title} in mixes': '{title} şarkısını asla mix’lere koyma',
   // Home
-  'Good night': 'İyi geceler',
-  'Good morning': 'Günaydın',
-  'Good afternoon': 'Tünaydın',
-  'Good evening': 'İyi akşamlar',
   'See all': 'Tümünü gör',
-  'Made for you': 'Senin için yapıldı',
   'From YouTube Music': 'YouTube Music’ten',
   'Sign in to YouTube Music to see its recommendations here too.': 'Önerilerini burada da görmek için YouTube Music’te oturum aç.',
   'Sign in': 'Oturum aç',
   'YouTube Music recommendations unavailable: {error}': 'YouTube Music önerileri kullanılamıyor: {error}',
-  'Made on this PC': 'Bu bilgisayarda yapıldı',
   'Your playlists': 'Çalma listelerin',
   // Add music
   'CLIP': 'KLİP',
@@ -1293,7 +1286,6 @@ const tr: Record<string, string> = {
   'Romance': 'Romantik',
   'Focus': 'Odaklan',
   'Workout': 'Antrenman',
-  'Open a playlist, an album or a mix: it shows up here, back in one click.': 'Bir çalma listesi, albüm veya mix aç: burada görünür, bir tık uzakta.',
   'Nothing played in the last 7 days. Your listening time shows up here.': 'Son 7 günde hiçbir şey çalınmadı. Dinleme süren burada görünür.',
   'Same as last week': 'Geçen haftayla aynı',
   '{time} more than last week': 'Geçen haftadan {time} fazla',
@@ -1507,6 +1499,8 @@ const tr: Record<string, string> = {
   'Next, added by you': 'Sıradakiler, senin eklediklerin',
   'Then from {name}': 'Sonra {name} listesinden',
   'Then from the list': 'Sonra listeden',
+  'Your mixes': 'Mix’lerin',
+  'Made on this PC from what you play': 'Bu bilgisayarda dinlediklerinden yapıldı',
 }
 
 export default tr

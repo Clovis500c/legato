@@ -188,7 +188,6 @@ const es: Record<string, string> = {
   'It’s music': 'Es música',
   'Not music: hide it': 'No es música: ocultar',
   // Customize Home cards
-  'Daily Mixes and mixes for right now': 'Daily Mixes y mixes para este momento',
   'What you played lately': 'Lo que has escuchado últimamente',
   'Your own and imported playlists': 'Tus playlists y las importadas',
   'Shelves from YouTube Music, when signed in': 'Estanterías de YouTube Music, con la sesión iniciada',
@@ -444,17 +443,11 @@ const es: Record<string, string> = {
   'Less like {title}': 'Menos como {title}',
   'Never put {title} in mixes': 'No poner nunca {title} en mixes',
   // Home
-  'Good night': 'Buenas noches',
-  'Good morning': 'Buenos días',
-  'Good afternoon': 'Buenas tardes',
-  'Good evening': 'Buenas noches',
   'See all': 'Ver todo',
-  'Made for you': 'Hecho para ti',
   'From YouTube Music': 'De YouTube Music',
   'Sign in to YouTube Music to see its recommendations here too.': 'Inicia sesión en YouTube Music para ver aquí también sus recomendaciones.',
   'Sign in': 'Iniciar sesión',
   'YouTube Music recommendations unavailable: {error}': 'Recomendaciones de YouTube Music no disponibles: {error}',
-  'Made on this PC': 'Hechos en este PC',
   'Your playlists': 'Tus playlists',
   // Add music
   'CLIP': 'VIDEOCLIP',
@@ -1293,7 +1286,6 @@ const es: Record<string, string> = {
   'Romance': 'Romance',
   'Focus': 'Concentración',
   'Workout': 'Ejercicio',
-  'Open a playlist, an album or a mix: it shows up here, back in one click.': 'Abre una playlist, un álbum o un mix: aparece aquí, a un clic.',
   'Nothing played in the last 7 days. Your listening time shows up here.': 'No has escuchado nada en los últimos 7 días. Tu tiempo de escucha aparecerá aquí.',
   'Same as last week': 'Igual que la semana pasada',
   '{time} more than last week': '{time} más que la semana pasada',
@@ -1507,6 +1499,8 @@ const es: Record<string, string> = {
   'Next, added by you': 'A continuación, añadidas por ti',
   'Then from {name}': 'Después, de {name}',
   'Then from the list': 'Después, de la lista',
+  'Your mixes': 'Tus mixes',
+  'Made on this PC from what you play': 'Hechos en este PC a partir de lo que escuchas',
 }
 
 export default es

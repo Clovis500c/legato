@@ -188,7 +188,6 @@ const ko: Record<string, string> = {
   'It’s music': '음악이에요',
   'Not music: hide it': '음악 아님: 숨기기',
   // Customize Home cards
-  'Daily Mixes and mixes for right now': '데일리 믹스와 지금 듣기 좋은 믹스',
   'What you played lately': '최근에 재생한 항목',
   'Your own and imported playlists': '내 플레이리스트와 가져온 플레이리스트',
   'Shelves from YouTube Music, when signed in': 'YouTube Music 추천 (로그인 시)',
@@ -444,17 +443,11 @@ const ko: Record<string, string> = {
   'Less like {title}': '{title} 같은 곡 덜 보기',
   'Never put {title} in mixes': '{title}을(를) 믹스에서 제외',
   // Home
-  'Good night': '좋은 밤 보내세요',
-  'Good morning': '좋은 아침이에요',
-  'Good afternoon': '좋은 오후예요',
-  'Good evening': '좋은 저녁이에요',
   'See all': '모두 보기',
-  'Made for you': '맞춤 추천',
   'From YouTube Music': 'YouTube Music에서',
   'Sign in to YouTube Music to see its recommendations here too.': 'YouTube Music에 로그인하면 여기에서도 추천을 볼 수 있습니다.',
   'Sign in': '로그인',
   'YouTube Music recommendations unavailable: {error}': 'YouTube Music 추천을 사용할 수 없음: {error}',
-  'Made on this PC': '이 PC에서 만듦',
   'Your playlists': '내 플레이리스트',
   // Add music
   'CLIP': '뮤비',
@@ -1293,7 +1286,6 @@ const ko: Record<string, string> = {
   'Romance': '로맨스',
   'Focus': '집중',
   'Workout': '운동',
-  'Open a playlist, an album or a mix: it shows up here, back in one click.': '플레이리스트, 앨범, 믹스를 열면 여기에 표시되어 한 번의 클릭으로 돌아갈 수 있습니다.',
   'Nothing played in the last 7 days. Your listening time shows up here.': '지난 7일 동안 재생한 항목이 없습니다. 감상 시간이 여기에 표시됩니다.',
   'Same as last week': '지난주와 같음',
   '{time} more than last week': '지난주보다 {time} 더',
@@ -1507,6 +1499,8 @@ const ko: Record<string, string> = {
   'Next, added by you': '다음, 내가 추가한 곡',
   'Then from {name}': '이어서 {name}에서',
   'Then from the list': '이어서 목록에서',
+  'Your mixes': '내 믹스',
+  'Made on this PC from what you play': '내 재생 기록으로 이 PC에서 만듦',
 }
 
 export default ko

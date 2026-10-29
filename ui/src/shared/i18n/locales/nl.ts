@@ -188,7 +188,6 @@ const nl: Record<string, string> = {
   'It’s music': 'Het is muziek',
   'Not music: hide it': 'Geen muziek: verbergen',
   // Customize Home cards
-  'Daily Mixes and mixes for right now': 'Daily Mixes en mixen voor nu',
   'What you played lately': 'Wat je onlangs hebt afgespeeld',
   'Your own and imported playlists': 'Je eigen en geïmporteerde playlists',
   'Shelves from YouTube Music, when signed in': 'Planken van YouTube Music, als je bent ingelogd',
@@ -444,17 +443,11 @@ const nl: Record<string, string> = {
   'Less like {title}': 'Minder zoals {title}',
   'Never put {title} in mixes': '{title} nooit in mixen zetten',
   // Home
-  'Good night': 'Goedenacht',
-  'Good morning': 'Goedemorgen',
-  'Good afternoon': 'Goedemiddag',
-  'Good evening': 'Goedenavond',
   'See all': 'Alles weergeven',
-  'Made for you': 'Speciaal voor jou',
   'From YouTube Music': 'Van YouTube Music',
   'Sign in to YouTube Music to see its recommendations here too.': 'Log in bij YouTube Music om hier ook de aanbevelingen ervan te zien.',
   'Sign in': 'Inloggen',
   'YouTube Music recommendations unavailable: {error}': 'Aanbevelingen van YouTube Music niet beschikbaar: {error}',
-  'Made on this PC': 'Gemaakt op deze pc',
   'Your playlists': 'Jouw playlists',
   // Add music
   'CLIP': 'CLIP',
@@ -1293,7 +1286,6 @@ const nl: Record<string, string> = {
   'Romance': 'Romantiek',
   'Focus': 'Focus',
   'Workout': 'Workout',
-  'Open a playlist, an album or a mix: it shows up here, back in one click.': 'Open een playlist, een album of een mix: hij verschijnt hier, één klik verderop.',
   'Nothing played in the last 7 days. Your listening time shows up here.': 'Niets afgespeeld in de afgelopen 7 dagen. Je luistertijd verschijnt hier.',
   'Same as last week': 'Hetzelfde als vorige week',
   '{time} more than last week': '{time} meer dan vorige week',
@@ -1507,6 +1499,8 @@ const nl: Record<string, string> = {
   'Next, added by you': 'Hierna, door jou toegevoegd',
   'Then from {name}': 'Dan uit {name}',
   'Then from the list': 'Dan uit de lijst',
+  'Your mixes': 'Jouw mixen',
+  'Made on this PC from what you play': 'Op deze pc gemaakt op basis van wat je afspeelt',
 }
 
 export default nl

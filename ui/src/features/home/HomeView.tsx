@@ -1,36 +1,30 @@
-import { ArrowDown, ArrowUp, ArrowUUpLeft, CaretRight, ChartBar, ClockCounterClockwise, DotsSixVertical, DotsThreeVertical, EyeSlash, Play, Playlist, PlusCircle, SlidersHorizontal, Sparkle, SpinnerGap, YoutubeLogo } from '@phosphor-icons/react'
+import { ArrowDown, ArrowUp, ArrowUUpLeft, ChartBar, ClockCounterClockwise, DotsSixVertical, EyeSlash, MusicNotes, Play, Playlist, PlusCircle, SlidersHorizontal, Sparkle, YoutubeLogo } from '@phosphor-icons/react'
 import { useShallow } from 'zustand/react/shallow'
 import { openUrl } from '@tauri-apps/plugin-opener'
 import { Fragment, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useSettings } from '../../app/settings'
-import { useStore, type View } from '../../app/store'
+import { useStore } from '../../app/store'
 import { api, playlistKey, type HomeItem, type LibraryTrack, type ListRef, type Mix, type Play as PlayRow, type Shelf, type YtmHome } from '../../shared/api'
 import { remoteArt, trackArt } from '../../shared/art'
 import { locale, msg, tr, trn } from '../../shared/i18n/i18n'
-import { onMenu, openMenu, type MenuEntry } from '../../shared/ui/ContextMenu'
+import { onMenu, type MenuEntry } from '../../shared/ui/ContextMenu'
 import { LedChip, RoundButton, Toggle } from '../../shared/ui/controls'
 import { Cover } from '../../shared/ui/Cover'
 import { Dialog } from '../../shared/ui/Dialog'
-import { PageHeader } from '../../shared/ui/PageHeader'
+import { CardRow, MediaCard, Section } from '../../shared/ui/Section'
 import { SourceIcon } from '../../shared/ui/SourceIcon'
 import { moveHome, placeHome, type HomeFilter, type HomeSectionId } from '../../shared/theme/theme'
 import { dragSource, useDrag, useDropTarget } from '../../shared/ui/drag'
 import { primaryArtist, type Sort } from '../library/filter'
 import { PlaylistCover } from '../library/PlaylistCover'
-import { trackMenu, tracksMenu } from '../menus'
+import { playlistMenu, trackMenu, tracksMenu } from '../menus'
 import { MixCard, mixSongs, useMixes } from '../mixes/MixesView'
 import { mixTitle } from '../mixes/words'
 import { remoteTrack, usePlayer } from '../player/store'
 import { jumpLists, useOpenedLists, type OpenedList } from './recentLists'
 import { weekOf } from './week'
 
-const CARD = 156
 const ROW = 12
-
-const greeting = () => {
-  const h = new Date().getHours()
-  return h < 5 ? tr('Good night') : h < 12 ? tr('Good morning') : h < 18 ? tr('Good afternoon') : tr('Good evening')
-}
 
 /** YouTube Music's mood chips come in English (requests use hl=en): the interface's language here. */
 const MOODS: Record<string, string> = {
@@ -46,73 +40,11 @@ const MOODS: Record<string, string> = {
   Workout: msg('Workout'),
 }
 
-/** Titled block; its ⋮ (or a right-click on the title) hides or moves the section. */
-function Section({ kicker, title, action, menu, children }: { kicker?: ReactNode; title: string; action?: ReactNode; menu?: () => MenuEntry[]; children: ReactNode }) {
-  return (
-    <section className="flex flex-col gap-3">
-      <div onContextMenu={menu && onMenu(menu)} className="flex items-end justify-between gap-4">
-        <div className="flex flex-col gap-1">
-          {kicker && <p className="kicker flex items-center gap-1.5">{kicker}</p>}
-          <h2 className="text-xl font-bold tracking-[-0.02em]">{title}</h2>
-        </div>
-        <div className="flex items-center gap-1">
-          {action}
-          {menu && (
-            <RoundButton label={tr('Section options')} kind="plain" size="sm" onClick={(e) => openMenu(e, menu())}>
-              <DotsThreeVertical size={16} weight="bold" />
-            </RoundButton>
-          )}
-        </div>
-      </div>
-      {children}
-    </section>
-  )
-}
-
-/** Titled row of cards, scrolled sideways. */
-function Row({ children, ...head }: { kicker?: ReactNode; title: string; action?: ReactNode; menu?: () => MenuEntry[]; children: ReactNode }) {
-  return (
-    <Section {...head}>
-      <ul className="-mx-2 flex snap-x gap-5 overflow-x-auto px-2 pb-2">{children}</ul>
-    </Section>
-  )
-}
-
-/** sort = Songs page opens sorted that way. */
-function SeeAll({ to, sort }: { to: View; sort?: Sort }) {
-  const go = useStore((s) => s.go)
-  return (
-    <button onClick={() => (sort && useStore.getState().setSort(sort), go(to))} className="flex items-center gap-1 px-1 text-xs font-semibold text-ink-2 hover:text-ink">
-      {tr('See all')} <CaretRight size={11} weight="bold" />
-    </button>
-  )
-}
-
 function PlayAll({ tracks }: { tracks: LibraryTrack[] }) {
   return (
-    <button onClick={() => usePlayer.getState().playTracks(tracks, 0)} className="flex items-center gap-1.5 rounded-full border border-line px-3.5 py-1.5 text-xs font-semibold transition hover:bg-raised">
+    <button onClick={() => usePlayer.getState().playTracks(tracks, 0)} className="flex items-center gap-1.5 rounded-full border border-line px-3.5 py-1.5 text-[0.8125rem] font-medium transition hover:bg-raised">
       <Play size={12} weight="fill" /> {tr('Play all')}
     </button>
-  )
-}
-
-/** Cover, title, subtitle; round play button on hover. busy = list loading. */
-function Card({ title, sub, art, onOpen, onPlay, menu, busy }: { title: string; sub: string; art: ReactNode; onOpen: () => void; onPlay?: () => void; menu?: () => MenuEntry[]; busy?: boolean }) {
-  return (
-    <li onContextMenu={menu && onMenu(menu)} className="group relative flex shrink-0 snap-start flex-col gap-2" style={{ width: CARD }}>
-      <button onClick={onOpen} className="flex flex-col gap-2 text-left">
-        <span className="lift relative block overflow-hidden rounded-cover" style={{ width: CARD, height: CARD }}>
-          {art}
-        </span>
-        <span className="block truncate text-[0.8125rem] font-semibold group-hover:underline">{title}</span>
-        <span className="-mt-1.5 line-clamp-2 text-xs text-ink-2">{sub}</span>
-      </button>
-      {onPlay && (
-        <RoundButton label={tr('Play {title}', { title })} kind="primary" size="md" className={`absolute right-2 ${busy ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 focus:opacity-100'}`} style={{ top: CARD - 48 }} onClick={onPlay}>
-          {busy ? <SpinnerGap size={16} className="animate-spin" /> : <Play weight="fill" size={16} />}
-        </RoundButton>
-      )}
-    </li>
   )
 }
 
@@ -123,7 +55,7 @@ function SongList({ tracks }: { tracks: LibraryTrack[] }) {
     <ul className="-mx-2 grid grid-cols-[repeat(auto-fill,minmax(250px,1fr))] gap-x-4">
       {tracks.map((t, i) => (
         <li key={t.id} onContextMenu={onMenu(() => trackMenu(t, { list: tracks, index: i }))}>
-          <button onClick={() => play(tracks, i)} className="group flex w-full items-center gap-3 rounded-md px-2 py-1.5 text-left hover:bg-raised">
+          <button onClick={() => play(tracks, i)} className="group flex w-full items-center gap-3 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-raised">
             <span className="relative shrink-0">
               <Cover title={t.album ?? t.title} art={trackArt(t)} size={48} />
               <span aria-hidden className="absolute inset-0 grid place-items-center rounded-cover bg-black/45 text-white opacity-0 group-hover:opacity-100">
@@ -131,8 +63,8 @@ function SongList({ tracks }: { tracks: LibraryTrack[] }) {
               </span>
             </span>
             <span className="flex min-w-0 flex-1 flex-col">
-              <span className="truncate text-[0.8125rem] font-semibold">{t.title}</span>
-              <span className="truncate text-xs text-ink-2">{t.album ? `${t.artist} · ${t.album}` : t.artist}</span>
+              <span className="truncate text-sm font-medium">{t.title}</span>
+              <span className="truncate text-[0.8125rem] text-ink-2">{t.album ? `${t.artist} · ${t.album}` : t.artist}</span>
             </span>
           </button>
         </li>
@@ -141,16 +73,13 @@ function SongList({ tracks }: { tracks: LibraryTrack[] }) {
   )
 }
 
-/** One reopenable list: cover, name, kind; play button on hover. */
-function JumpTile({ art, title, sub, onOpen, onPlay, menu }: { art: ReactNode; title: string; sub: string; onOpen: () => void; onPlay: () => void; menu: () => MenuEntry[] }) {
+/** Shortcut tile (Media/Tile): cover left, name; play button on hover. */
+function JumpTile({ art, title, onOpen, onPlay, menu }: { art: ReactNode; title: string; onOpen: () => void; onPlay: () => void; menu: () => MenuEntry[] }) {
   return (
-    <div onContextMenu={onMenu(menu)} className="group flex h-14 items-center gap-3 overflow-hidden rounded-lg bg-raised pr-2 transition hover:bg-line">
+    <div onContextMenu={onMenu(menu)} className="group flex h-14 items-center gap-3 overflow-hidden rounded-md bg-raised pr-2 transition-colors hover:bg-line">
       <button onClick={onOpen} className="flex h-full min-w-0 flex-1 items-center gap-3 text-left">
         <span className="grid size-14 shrink-0 place-items-center overflow-hidden">{art}</span>
-        <span className="flex min-w-0 flex-col">
-          <span className="truncate text-[0.8125rem] font-semibold">{title}</span>
-          <span className="truncate text-[0.6875rem] text-ink-2">{sub}</span>
-        </span>
+        <span className="truncate text-sm font-medium">{title}</span>
       </button>
       <RoundButton label={tr('Play {title}', { title })} kind="primary" size="sm" className="opacity-0 group-hover:opacity-100 focus:opacity-100" onClick={onPlay}>
         <Play weight="fill" size={14} />
@@ -159,19 +88,19 @@ function JumpTile({ art, title, sub, onOpen, onPlay, menu }: { art: ReactNode; t
   )
 }
 
-/** Lists opened lately (playlists, albums, artists, mixes), filled from what you played: back in one click. */
-function JumpBackIn({ mixes }: { mixes?: Mix[] }) {
+/** Shortcut tiles on top of Home: Songs, then the lists opened lately (playlists, albums, artists, mixes), filled from what you played. */
+function Shortcuts({ mixes }: { mixes?: Mix[] }) {
   const { tracks, stats, playlists, go } = useStore(useShallow(({ tracks, stats, playlists, go }) => ({ tracks, stats, playlists, go })))
   const opened = useOpenedLists((s) => s.list)
   const play = usePlayer((s) => s.playTracks)
   const lists = useMemo(() => jumpLists(opened, { tracks, stats, playlists, mixIds: mixes?.map((m) => m.id) }), [opened, tracks, stats, playlists, mixes])
+  const open = (extra: MenuEntry[], songs: LibraryTrack[]) => (): MenuEntry[] => tracksMenu(songs, ['-', ...extra])
   const tile = (l: OpenedList) => {
-    const open = (extra: MenuEntry[], songs: LibraryTrack[]) => (): MenuEntry[] => tracksMenu(songs, ['-', ...extra])
     if (l.kind === 'playlist') {
       const p = playlists.find((x) => x.id === l.id)!
       const playIt = () => void api.playlistTracks(p.id).then((t) => play(t, 0))
       const openIt = () => go({ name: 'playlist', id: p.id })
-      return <JumpTile key={`p${p.id}`} art={<PlaylistCover p={p} size={56} />} title={p.name} sub={`${tr('Playlist')} · ${trn(p.trackCount, '{n} song', '{n} songs')}`} onOpen={openIt} onPlay={playIt} menu={() => [{ label: tr('Play'), icon: <Play size={16} />, onSelect: playIt }, { label: tr('Open'), onSelect: openIt }]} />
+      return <JumpTile key={`p${p.id}`} art={<PlaylistCover p={p} size={56} />} title={p.name} onOpen={openIt} onPlay={playIt} menu={() => [{ label: tr('Play'), icon: <Play size={16} />, onSelect: playIt }, { label: tr('Open'), onSelect: openIt }]} />
     }
     if (l.kind === 'mix') {
       const m = mixes?.find((x) => x.id === l.id)
@@ -179,19 +108,35 @@ function JumpBackIn({ mixes }: { mixes?: Mix[] }) {
       const byId = new Map(tracks.map((t) => [t.id, t]))
       const songs = mixSongs(m, byId)
       const openIt = () => go({ name: 'mix', id: m.id })
-      return <JumpTile key={`m${m.id}`} art={<Cover title={mixTitle(m)} art={trackArt(songs[0])} size={56} className="rounded-none! border-0!" />} title={mixTitle(m)} sub={tr('Mix')} onOpen={openIt} onPlay={() => play(songs, 0)} menu={open([{ label: tr('Open'), onSelect: openIt }], songs)} />
+      return <JumpTile key={`m${m.id}`} art={<Cover title={mixTitle(m)} art={trackArt(songs[0])} size={56} className="rounded-none! border-0!" />} title={mixTitle(m)} onOpen={openIt} onPlay={() => play(songs, 0)} menu={open([{ label: tr('Open'), onSelect: openIt }], songs)} />
     }
     const songs = tracks.filter((t) => primaryArtist(t.artist) === l.artist && (l.kind === 'artist' || t.album === l.album))
     if (l.kind === 'album') {
       const openIt = () => go({ name: 'album', album: l.album, artist: l.artist })
-      return <JumpTile key={`a${l.album}\u0000${l.artist}`} art={<Cover title={l.album} art={trackArt(songs[0])} size={56} className="rounded-none! border-0!" />} title={l.album} sub={`${tr('Album')} · ${l.artist}`} onOpen={openIt} onPlay={() => play(songs, 0)} menu={open([{ label: tr('Open'), onSelect: openIt }], songs)} />
+      return <JumpTile key={`a${l.album}\u0000${l.artist}`} art={<Cover title={l.album} art={trackArt(songs[0])} size={56} className="rounded-none! border-0!" />} title={l.album} onOpen={openIt} onPlay={() => play(songs, 0)} menu={open([{ label: tr('Open'), onSelect: openIt }], songs)} />
     }
     const cover = songs.find((t) => t.art) ?? songs[0]
     const openIt = () => go({ name: 'artist', artist: l.artist })
-    return <JumpTile key={`r${l.artist}`} art={<Cover title={l.artist} art={trackArt(cover)} size={44} className="rounded-full!" />} title={l.artist} sub={tr('Artist')} onOpen={openIt} onPlay={() => play(songs, 0)} menu={open([{ label: tr('Open'), onSelect: openIt }], songs)} />
+    return <JumpTile key={`r${l.artist}`} art={<Cover title={l.artist} art={trackArt(cover)} size={44} className="rounded-full!" />} title={l.artist} onOpen={openIt} onPlay={() => play(songs, 0)} menu={open([{ label: tr('Open'), onSelect: openIt }], songs)} />
   }
-  if (!lists.length) return <p className="text-sm text-ink-2">{tr('Open a playlist, an album or a mix: it shows up here, back in one click.')}</p>
-  return <div className="grid grid-cols-[repeat(auto-fill,minmax(230px,1fr))] gap-2">{lists.map(tile)}</div>
+  const openSongs = () => go({ name: 'songs' })
+  // 3 columns × 2 rows as in the mockup; 2 columns when the page is narrow.
+  return (
+    <div className="grid grid-cols-2 gap-2.5 @2xl:grid-cols-3">
+      <JumpTile
+        art={
+          <span className="grid size-full place-items-center bg-ink text-bg">
+            <MusicNotes size={22} weight="fill" />
+          </span>
+        }
+        title={tr('Songs')}
+        onOpen={openSongs}
+        onPlay={() => play(tracks, 0)}
+        menu={open([{ label: tr('Open'), onSelect: openSongs }], tracks)}
+      />
+      {lists.map(tile)}
+    </div>
+  )
 }
 
 /** "2 hr 05 min", "40 min". */
@@ -216,7 +161,7 @@ function YourWeek() {
     }
   }, [])
   const week = useMemo(() => plays && weekOf(plays, tracks), [plays, tracks])
-  if (!week) return <span className="h-36 animate-pulse rounded-xl bg-raised" aria-busy />
+  if (!week) return <span className="h-36 animate-pulse rounded-lg bg-raised" aria-busy />
   if (!week.total) return <p className="text-sm text-ink-2">{tr('Nothing played in the last 7 days. Your listening time shows up here.')}</p>
   const max = Math.max(...week.days)
   const diff = week.total - week.before
@@ -224,13 +169,14 @@ function YourWeek() {
   const long = new Intl.DateTimeFormat(locale(), { weekday: 'long' })
   const { topArtist, topSong } = week
   const same = Math.abs(diff) < 60_000
-  const tile = 'flex min-w-0 items-center gap-3 rounded-xl border border-line-soft p-3 text-left transition hover:bg-raised'
+  const tile = 'flex min-w-0 items-center gap-3 rounded-md border border-line-soft p-3 text-left transition-colors hover:bg-raised'
   // Three blocks centred on one line (user's request 2026-10-23): time, days, then top artist and song share the rest.
   return (
-    <div className="flex flex-wrap items-center gap-x-10 gap-y-5 rounded-2xl border border-line bg-panel p-5">
+    <div className="flex flex-wrap items-center gap-x-10 gap-y-5 rounded-lg border border-line bg-panel p-5">
       <div className="flex flex-col gap-2">
-        <span className="text-[2rem] leading-none font-bold tracking-[-0.02em]">{hours(week.total)}</span>
-        <span className={`flex w-fit items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${same ? 'bg-raised text-ink-2' : diff > 0 ? 'bg-accent-soft text-accent-ink' : 'bg-raised text-ink-2'}`}>
+        <span className="text-[2rem] leading-none font-bold tracking-[-0.01em]">{hours(week.total)}</span>
+        {/* Grey either way: sky blue only marks playback (docs/design.md). */}
+        <span className="flex w-fit items-center gap-1 rounded-full bg-raised px-2 py-0.5 text-xs font-medium text-ink-2">
           {!same && (diff > 0 ? <ArrowUp size={11} weight="bold" /> : <ArrowDown size={11} weight="bold" />)}
           {same ? tr('Same as last week') : diff > 0 ? tr('{time} more than last week', { time: hours(diff) }) : tr('{time} less than last week', { time: hours(-diff) })}
         </span>
@@ -284,14 +230,14 @@ export function YouTubeShelf({ shelf, menu }: { shelf: Shelf; menu?: () => MenuE
   const enqueue = usePlayer((s) => s.enqueue)
   const [busy, setBusy] = useState<number | null>(null)
   const songs = useMemo(() => shelf.items.flatMap((it) => (it.track ? [remoteTrack(it.track)] : [])), [shelf])
-  const kicker = (
+  const sub = (
     <>
-      <SourceIcon source="youtube" size={10} /> {tr('From YouTube Music')}
+      <SourceIcon source="youtube" size={12} /> {tr('From YouTube Music')}
     </>
   )
   if (songs.length === shelf.items.length)
     return (
-      <Section kicker={kicker} title={shelf.title} menu={menu} action={<PlayAll tracks={songs} />}>
+      <Section title={shelf.title} sub={sub} menu={menu} action={<PlayAll tracks={songs} />}>
         <SongList tracks={songs.slice(0, ROW)} />
       </Section>
     )
@@ -313,11 +259,11 @@ export function YouTubeShelf({ shelf, menu }: { shelf: Shelf; menu?: () => MenuE
     play(tracks, shuffle ? Math.floor(Math.random() * tracks.length) : 0)
   }
   const card = (it: HomeItem, i: number) => {
-    const art = <Cover title={it.title} art={it.art ? [remoteArt(it.art)] : []} size={CARD} className="size-full!" />
+    const art = <Cover title={it.title} art={it.art ? [remoteArt(it.art)] : []} size={176} />
     if (it.track) {
       const t = remoteTrack(it.track)
       const at = songs.findIndex((s) => s.id === t.id)
-      return <Card key={i} title={it.title} sub={it.subtitle} art={art} onOpen={() => play(songs, at)} onPlay={() => play(songs, at)} menu={() => trackMenu(t, { list: songs, index: at })} />
+      return <MediaCard key={i} title={it.title} sub={it.subtitle} art={art} onOpen={() => play(songs, at)} onPlay={() => play(songs, at)} menu={() => trackMenu(t, { list: songs, index: at })} />
     }
     const list = it.list!
     const entries = (): MenuEntry[] => [
@@ -327,12 +273,12 @@ export function YouTubeShelf({ shelf, menu }: { shelf: Shelf; menu?: () => MenuE
       '-',
       { label: tr('Open in YouTube Music'), icon: <SourceIcon source="youtube" size={14} />, onSelect: () => void openUrl(listUrl(list)).catch(() => {}) },
     ]
-    return <Card key={i} title={it.title} sub={it.subtitle} art={art} busy={busy === i} onOpen={() => void playList(i, list)} onPlay={() => void playList(i, list)} menu={entries} />
+    return <MediaCard key={i} title={it.title} sub={it.subtitle} art={art} busy={busy === i} onOpen={() => void playList(i, list)} onPlay={() => void playList(i, list)} menu={entries} />
   }
   return (
-    <Row kicker={kicker} title={shelf.title} menu={menu}>
-      {shelf.items.map(card)}
-    </Row>
+    <Section title={shelf.title} sub={sub} menu={menu}>
+      <CardRow>{shelf.items.map(card)}</CardRow>
+    </Section>
   )
 }
 
@@ -360,11 +306,11 @@ function ServiceShelves({ home, error, menu }: { home?: YtmHome; error?: string;
   if (error) return <p className="text-xs text-ink-3">{tr('YouTube Music recommendations unavailable: {error}', { error })}</p>
   if (!home)
     return (
-      <div className="flex flex-col gap-3" aria-busy>
-        <span className="h-5 w-48 animate-pulse rounded bg-raised" />
-        <div className="flex gap-5">
+      <div className="flex flex-col gap-3 overflow-hidden" aria-busy>
+        <span className="h-7 w-48 animate-pulse rounded-md bg-raised" />
+        <div className="flex gap-6 pt-2">
           {Array.from({ length: 6 }, (_, i) => (
-            <span key={i} className="animate-pulse rounded-cover bg-raised" style={{ width: CARD, height: CARD }} />
+            <span key={i} className="size-[176px] shrink-0 animate-pulse rounded-cover bg-raised" />
           ))}
         </div>
       </div>
@@ -375,7 +321,7 @@ function ServiceShelves({ home, error, menu }: { home?: YtmHome; error?: string;
 const sectionLabels: Record<HomeSectionId, string> = {
   quick: msg('Jump back in'),
   week: msg('Your week'),
-  mixes: msg('Made for you'),
+  mixes: msg('Your mixes'),
   recent: msg('Recently played'),
   playlists: msg('Your playlists'),
   youtube: msg('YouTube Music recommendations'),
@@ -385,7 +331,7 @@ const sectionLabels: Record<HomeSectionId, string> = {
 const sectionHints: Record<HomeSectionId, string> = {
   quick: msg('Playlists, albums, artists and mixes you opened lately'),
   week: msg('Time heard, top artist and song of the last 7 days'),
-  mixes: msg('Daily Mixes and mixes for right now'),
+  mixes: msg('Made on this PC from what you play'),
   recent: msg('What you played lately'),
   playlists: msg('Your own and imported playlists'),
   youtube: msg('Shelves from YouTube Music, when signed in'),
@@ -429,8 +375,8 @@ function CustomizeHome({ onClose }: { onClose: () => void }) {
             )}
             className={`relative flex cursor-grab items-center gap-3 rounded-xl border border-line bg-raised p-2.5 pr-3 transition-[opacity,box-shadow] hover:border-ink-3 active:cursor-grabbing ${dragging === x.id ? 'opacity-40' : ''}`}
           >
-            {dropAt === i && <span aria-hidden className="absolute inset-x-2 -top-[5px] h-0.5 rounded-full bg-accent" />}
-            {dropAt === i + 1 && i === list.length - 1 && <span aria-hidden className="absolute inset-x-2 -bottom-[5px] h-0.5 rounded-full bg-accent" />}
+            {dropAt === i && <span aria-hidden className="absolute inset-x-2 -top-[5px] h-0.5 rounded-full bg-ink" />}
+            {dropAt === i + 1 && i === list.length - 1 && <span aria-hidden className="absolute inset-x-2 -bottom-[5px] h-0.5 rounded-full bg-ink" />}
             <button
               aria-label={tr('Move {section} (Alt+↑ / Alt+↓)', { section: tr(sectionLabels[x.id]) })}
               title={tr('Drag to change the order (Alt+↑ / Alt+↓)')}
@@ -444,7 +390,7 @@ function CustomizeHome({ onClose }: { onClose: () => void }) {
             >
               <DotsSixVertical size={16} weight="bold" />
             </button>
-            <span className={`grid size-9 shrink-0 place-items-center rounded-lg bg-bg ${x.on ? 'text-accent-ink' : 'text-ink-3'}`}>{sectionIcons[x.id]}</span>
+            <span className={`grid size-9 shrink-0 place-items-center rounded-lg bg-bg ${x.on ? 'text-ink' : 'text-ink-3'}`}>{sectionIcons[x.id]}</span>
             <span className="min-w-0 flex-1">
               <span className={`block truncate text-[0.8125rem] font-semibold ${x.on ? '' : 'text-ink-3'}`}>{tr(sectionLabels[x.id])}</span>
               <span className="block truncate text-xs text-ink-3">{tr(sectionHints[x.id])}</span>
@@ -502,70 +448,70 @@ export function HomeView() {
     update({ homeFilter: f })
   }
 
+  // Show all: the Songs page sorted that way.
+  const songsBy = (sort: Sort) => () => (useStore.getState().setSort(sort), go({ name: 'songs' }))
   const sec: Record<HomeSectionId, () => ReactNode> = {
-    quick: () => (
-      <Section title={tr('Jump back in')} menu={menuFor('quick')}>
-        <JumpBackIn mixes={mixes} />
-      </Section>
-    ),
+    quick: () => <Shortcuts mixes={mixes} />,
     week: () => (
-      <Section title={tr('Your week')} menu={menuFor('week')}>
+      <Section title={tr('Your week')} sub={tr(sectionHints.week)} onAll={() => go({ name: 'stats' })} menu={menuFor('week')}>
         <YourWeek />
       </Section>
     ),
     mixes: () =>
       mixes &&
       mixes.length > 0 && (
-        <Row kicker={tr('Made on this PC')} title={tr('Made for you')} action={<SeeAll to={{ name: 'mixes' }} />} menu={menuFor('mixes')}>
-          {mixes.slice(0, ROW).map((m) => (
-            <MixCard key={m.id} mix={m} />
-          ))}
-        </Row>
+        <Section title={tr('Your mixes')} sub={tr(sectionHints.mixes)} onAll={() => go({ name: 'mixes' })} menu={menuFor('mixes')}>
+          <CardRow>
+            {mixes.slice(0, ROW).map((m) => (
+              <MixCard key={m.id} mix={m} />
+            ))}
+          </CardRow>
+        </Section>
       ),
     recent: () =>
       recent.length > 0 && (
-        <Section title={tr('Recently played')} action={<PlayAll tracks={recent} />} menu={menuFor('recent')}>
+        <Section title={tr('Recently played')} sub={tr(sectionHints.recent)} action={<PlayAll tracks={recent} />} onAll={songsBy('recently-played')} menu={menuFor('recent')}>
           <SongList tracks={recent} />
         </Section>
       ),
     playlists: () =>
       shown.length > 0 && (
-        <Row title={tr('Your playlists')} menu={menuFor('playlists')}>
-          {shown.map((p) => (
-            <Card key={p.id} title={p.name} sub={trn(p.trackCount, '{n} song', '{n} songs')} art={<PlaylistCover p={p} size={CARD} big />} onOpen={() => go({ name: 'playlist', id: p.id })} onPlay={() => void api.playlistTracks(p.id).then((t) => usePlayer.getState().playTracks(t, 0))} />
-          ))}
-        </Row>
+        <Section title={tr('Your playlists')} sub={tr(sectionHints.playlists)} menu={menuFor('playlists')}>
+          <CardRow>
+            {shown.map((p) => (
+              <MediaCard key={p.id} title={p.name} sub={trn(p.trackCount, '{n} song', '{n} songs')} art={<PlaylistCover p={p} size={176} big />} onOpen={() => go({ name: 'playlist', id: p.id })} onPlay={() => void api.playlistTracks(p.id).then((t) => usePlayer.getState().playTracks(t, 0))} menu={() => playlistMenu(p)} />
+            ))}
+          </CardRow>
+        </Section>
       ),
     youtube: () => ytOn && <ServiceShelves home={yt.home} error={yt.error} menu={menuFor('youtube')} />,
     added: () =>
       added.length > 0 && (
-        <Section title={tr('Recently added')} action={<SeeAll to={{ name: 'songs' }} sort="added-new" />} menu={menuFor('added')}>
+        <Section title={tr('Recently added')} sub={tr(sectionHints.added)} onAll={songsBy('added-new')} menu={menuFor('added')}>
           <SongList tracks={added} />
         </Section>
       ),
   }
 
+  // No page title (mockup): chips, then the shortcut tiles, then the sections.
   return (
     <>
-      <PageHeader
-        kicker={tr('Home')}
-        title={greeting()}
-        actions={
-          <RoundButton label={tr('Customize Home')} kind="plain" size="md" onClick={() => setCustomizing(true)}>
-            <SlidersHorizontal size={18} />
-          </RoundButton>
-        }
-      />
-      <div role="tablist" aria-label={tr('Show on Home')} className="-mt-1 flex shrink-0 flex-wrap items-center gap-2 pb-5">
-        <LedChip on={!mood && filter === 'all'} label={tr('All')} onClick={() => pick('all')} />
-        <LedChip on={!mood && filter === 'library'} label={tr('Your library')} onClick={() => pick('library')} />
-        {ytOn && ytSection && <LedChip on={!mood && filter === 'youtube'} label="YouTube Music" onClick={() => pick('youtube')} />}
-        {moods.length > 0 && <span aria-hidden className="mx-1 h-5 w-px bg-line" />}
-        {moods.map((m) => (
-          <LedChip key={m.params} on={mood === m.params} label={tr(MOODS[m.title] ?? m.title)} onClick={() => setMood(mood === m.params ? null : m.params)} />
-        ))}
+      <div className="flex shrink-0 items-start gap-4 pb-4">
+        <div role="tablist" aria-label={tr('Show on Home')} className="flex flex-1 flex-wrap items-center gap-2">
+          <LedChip on={!mood && filter === 'all'} label={tr('All')} onClick={() => pick('all')} />
+          <LedChip on={!mood && filter === 'library'} label={tr('Your library')} onClick={() => pick('library')} />
+          {ytOn && ytSection && <LedChip on={!mood && filter === 'youtube'} label="YouTube Music" onClick={() => pick('youtube')} />}
+          {moods.length > 0 && <span aria-hidden className="mx-1 h-5 w-px bg-line" />}
+          {moods.map((m) => (
+            <LedChip key={m.params} on={mood === m.params} label={tr(MOODS[m.title] ?? m.title)} onClick={() => setMood(mood === m.params ? null : m.params)} />
+          ))}
+        </div>
+        <RoundButton label={tr('Customize Home')} kind="plain" size="sm" onClick={() => setCustomizing(true)}>
+          <SlidersHorizontal size={18} />
+        </RoundButton>
       </div>
-      <div className="-mx-2 flex min-h-0 flex-1 flex-col gap-10 overflow-y-auto px-2 pb-8">
+      {/* Cards' padding reaches 12 px out (CardRow): room for it, or the row would scroll the page sideways. */}
+      <div className="@container -mx-3 flex min-h-0 flex-1 flex-col gap-5.5 overflow-y-auto px-3 pb-8">
         {sections
           .filter((x) => (x.on || (mood && x.id === 'youtube')) && visible(x.id))
           .map((x) => (

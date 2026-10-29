@@ -188,7 +188,6 @@ const sv: Record<string, string> = {
   'It’s music': 'Det är musik',
   'Not music: hide it': 'Inte musik: dölj den',
   // Customize Home cards
-  'Daily Mixes and mixes for right now': 'Daily Mixes och mixar för just nu',
   'What you played lately': 'Det du har spelat på sistone',
   'Your own and imported playlists': 'Dina egna och importerade spellistor',
   'Shelves from YouTube Music, when signed in': 'Hyllor från YouTube Music, när du är inloggad',
@@ -444,17 +443,11 @@ const sv: Record<string, string> = {
   'Less like {title}': 'Mindre som {title}',
   'Never put {title} in mixes': 'Lägg aldrig {title} i mixar',
   // Home
-  'Good night': 'God natt',
-  'Good morning': 'God morgon',
-  'Good afternoon': 'God eftermiddag',
-  'Good evening': 'God kväll',
   'See all': 'Visa alla',
-  'Made for you': 'Skapat för dig',
   'From YouTube Music': 'Från YouTube Music',
   'Sign in to YouTube Music to see its recommendations here too.': 'Logga in på YouTube Music för att se dess rekommendationer här också.',
   'Sign in': 'Logga in',
   'YouTube Music recommendations unavailable: {error}': 'Rekommendationer från YouTube Music är inte tillgängliga: {error}',
-  'Made on this PC': 'Skapade på den här datorn',
   'Your playlists': 'Dina spellistor',
   // Add music
   'CLIP': 'MUSIKVIDEO',
@@ -1293,7 +1286,6 @@ const sv: Record<string, string> = {
   'Romance': 'Romantik',
   'Focus': 'Fokus',
   'Workout': 'Träning',
-  'Open a playlist, an album or a mix: it shows up here, back in one click.': 'Öppna en spellista, ett album eller en mix: den dyker upp här, ett klick bort.',
   'Nothing played in the last 7 days. Your listening time shows up here.': 'Inget spelat de senaste 7 dagarna. Din lyssningstid visas här.',
   'Same as last week': 'Samma som förra veckan',
   '{time} more than last week': '{time} mer än förra veckan',
@@ -1507,6 +1499,8 @@ const sv: Record<string, string> = {
   'Next, added by you': 'Härnäst, tillagda av dig',
   'Then from {name}': 'Sedan från {name}',
   'Then from the list': 'Sedan från listan',
+  'Your mixes': 'Dina mixar',
+  'Made on this PC from what you play': 'Skapade på den här datorn utifrån det du spelar',
 }
 
 export default sv
