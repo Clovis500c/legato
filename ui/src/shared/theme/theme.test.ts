@@ -100,8 +100,10 @@ describe('resolveTheme', () => {
     const off = (x: ReturnType<typeof sanitize>) => x.homeSections.find((h) => h.id === 'playlists')?.on
     expect(off(sanitize({ homeSections: [{ id: 'playlists', on: true }], defaultsVersion: 5 }))).toBe(false)
     expect(off(sanitize({ homeSections: [{ id: 'playlists', on: true }], defaultsVersion: 6 }))).toBe(true)
-    // App v2 (v8): old defaults move once (Windows accent → sky blue, compact rows, square covers, flat Now Playing).
-    expect(sanitize({ accent: 'system', density: 'comfort', listCovers: true, covers: 'rounded', immersive: true, defaultsVersion: 7 })).toMatchObject({ accent: null, density: 'compact', listCovers: false, covers: 'net', immersive: false })
+    // App v2 (v8): old defaults move once (Windows accent → sky blue, compact rows, square covers, flat Now Playing);
+    // covers stay on the rows.
+    expect(sanitize({ accent: 'system', density: 'comfort', listCovers: true, covers: 'rounded', immersive: true, defaultsVersion: 7 })).toMatchObject({ accent: null, density: 'compact', listCovers: true, covers: 'net', immersive: false })
+    expect(sanitize({}).listCovers).toBe(true)
     expect(sanitize({ upNext: true, defaultsVersion: 7 }).upNext).toBe(false)
     expect(sanitize({ upNext: true, sidePanel: 'lyrics', defaultsVersion: 8 })).toMatchObject({ upNext: true, sidePanel: 'lyrics' })
     expect(sanitize({ sidePanel: 'editor' }).sidePanel).toBe('upNext')

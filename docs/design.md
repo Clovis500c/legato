@@ -30,8 +30,9 @@ Each rule below answers one of these.
 - Layered panels on a window background (8 px gaps, 8 px corners): sidebar, main pane, Up next, player bar.
 - Sidebar: Home, Mixes, Stats; then Your library with kind chips (Playlists, Albums, Artists) and items with cover,
   kind and count. Resizable, with a button to open the library full width.
-- Song lists default to Compact: 40 px rows, Title, Artist, Album, Source, heart, Time as columns. Comfortable (56 px,
-  with covers) is one click away. Columns are chosen from the list header.
+- Song lists default to Compact: 40 px rows with a small cover, Title, Artist, Album, Source, heart, Time as columns.
+  Comfortable (56 px, bigger covers) is one click away. Columns are chosen from the list header. The mockups' compact
+  rows have no cover; the app shows one by default (user's pick 2026-10-29), Settings › Appearance › Covers in lists.
 - Up next keeps three blocks: Now playing, Next added by you (always first), Then from the playlist or album.
 - Album, playlist and artist pages open with a band in a tint of the cover (light) or a deep tone of it (dark).
 - Now Playing: the same cover tone, flat, with the title in Display XL.

@@ -9,8 +9,8 @@ direction) and the "v2: rebrand and redesign" block of `docs/notes/plan-v2.md` (
   release (`v2.0.<commits>` now): merge and push only when the user says so.
 - Done and checked in the app (light and dark):
   - Theme: Modern / Modern Dark carry the v2 palettes (`ui/src/shared/theme/theme.ts`), sky blue `#7CB8FF` = playback
-    only. Defaults v8 (`v8()` in theme.ts): theme accent instead of the Windows one, compact rows without covers,
-    square covers, flat Now Playing, Now Playing without a panel. v8 isn't released: add new default changes to `v8()`,
+    only. Defaults v8 (`v8()` in theme.ts): theme accent instead of the Windows one, compact rows (covers on them, the
+    user's pick over the mockup), square covers, flat Now Playing, Now Playing without a panel. v8 isn't released: add new default changes to `v8()`,
     don't make a v9.
   - Shell (`ui/src/app/App.tsx`): window grey (`bg-recess`) behind rounded panels; top bar keeps logo, search, Add-ons,
     Settings, window buttons (the window needs it to drag; the mockup has the search in the page).

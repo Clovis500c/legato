@@ -193,7 +193,7 @@ Theme (light) / Dark / Brand / Scale, components, Home, Songs, Album, Search, No
 2026-10-29: the redesign is v2), built on branch `v2`.
 - [x] Direction adopted by the user (2026-10-29), sky blue instead of yellow.
 - [x] Step 1: Modern / Modern Dark take the v2 palettes, sky blue for playback only, defaults v8 (theme accent,
-      compact rows without covers, square covers, flat Now Playing). Layered panels, two-panel sidebar with Your library
+      compact rows, square covers, flat Now Playing). Layered panels, two-panel sidebar with Your library
       (kind chips, covers), Add-ons and Settings in the top bar, Up next / lyrics / Live Editor as a right panel on every
       page, player bar with like, lyrics and Up next. Rows: Artist column, heart, grey selection, blue playing mark.
       Bands in the cover's tint on album, artist and playlist pages; display titles. Version 2.0.
@@ -208,6 +208,8 @@ Theme (light) / Dark / Brand / Scale, components, Home, Songs, Album, Search, No
 - [x] Search as in the mockup: no page title, one row of chips (All, Your library, YouTube Music, YouTube, Apple Music,
       with counts or Failed), Top result card (Display M, In your library, big play), 56 px song rows, cards; the
       type views stay behind each section's Show all (with a way back); Spotify and YouTube Music sign-in at the bottom.
+- [x] Covers on song rows by default again, compact too (user's request 2026-10-29; the mockups' compact rows have
+      none). Defaults v8 no longer turn them off.
 - [x] Save the songs the user queued (`added`) with the session: back in Next added by you after a restart, with the
       saved order only (a track deleted since, or a queue over 10,000 songs, makes them part of the list again). A
       queue edit saves the session 0.6 s later, paused or not.

@@ -379,7 +379,8 @@ export const DEFAULTS: Settings = {
   font: 'theme',
   motion: true,
   sidebarCounts: true,
-  listCovers: false,
+  // Covers on every song row, compact too (user's pick 2026-10-29, over the mockup's coverless compact rows).
+  listCovers: true,
   clickToPlay: 'single',
   startView: 'home',
   youtubeControls: false,
@@ -441,7 +442,7 @@ function v8(r: Record<string, unknown>): Partial<Settings> {
   const compact = (r.density ?? 'comfort') === 'comfort'
   return {
     ...(r.accent === 'system' && { accent: null }),
-    ...(compact && { density: 'compact', listCovers: false }),
+    ...(compact && { density: 'compact' }),
     ...((r.covers ?? 'rounded') === 'rounded' && { covers: 'net' }),
     immersive: false,
     upNext: false,
