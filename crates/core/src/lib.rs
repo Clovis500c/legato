@@ -10,6 +10,7 @@ pub mod musicness;
 pub mod model;
 pub mod search;
 pub mod share;
+pub mod songlist;
 pub mod sync;
 pub mod syncmode;
 pub mod themefile;

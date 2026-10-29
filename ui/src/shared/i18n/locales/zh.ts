@@ -1474,6 +1474,17 @@ const zh: Record<string, string> = {
   'Cover…': '封面…',
   'No cover': '无封面',
   'Written into the file: other players see it too. The sound stays as it is.': '写入文件本身：其他播放器也能看到。声音保持不变。',
+  'Importing your list… (finding each song on YouTube)': '正在导入你的列表…（在 YouTube 上查找每首歌）',
+  'None of the {n} song was found on YouTube': '{n} 首歌都没有在 YouTube 上找到',
+  'None of the {n} songs were found on YouTube': '{n} 首歌都没有在 YouTube 上找到',
+  'Imported “{name}”: {found} of {songs} songs': '已导入“{name}”：{songs} 首中的 {found} 首',
+  'Not found: {songs}': '未找到：{songs}',
+  'Song lists': '歌曲列表',
+  'Import a list of songs': '导入歌曲列表',
+  'From SoundCloud, Deezer or anywhere: copy the titles, one per line like “Artist - Title”, and paste them here. Each song is found on YouTube.': '从 SoundCloud、Deezer 或任何地方复制歌名，每行一首，如“歌手 - 歌名”，粘贴到这里。每首歌都会在 YouTube 上查找。',
+  'Daft Punk - Get Lucky': 'Daft Punk - Get Lucky',
+  'Songs to import': '要导入的歌曲',
+  'Open a file…': '打开文件…',
 }
 
 export default zh

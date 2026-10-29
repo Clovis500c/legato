@@ -559,6 +559,8 @@ export const api = {
   ytmSignOut: () => invoke<void>('ytm_sign_out'),
   /** Public Spotify playlist / album link → imported playlist (no account); tracks get their YouTube version. */
   importSpotifyLink: (url: string) => invoke<{ playlistId: number; name: string; tracks: number; playable: number; truncated: boolean }>('import_spotify_link', { url }),
+  /** Add › Import a list of songs: text or a .txt / .csv file, each song found on YouTube, a playlist of the ones found. */
+  importSongList: (name: string, text: string | null, path: string | null) => invoke<{ playlistId: number | null; name: string; songs: number; found: number; missing: string[] }>('import_song_list', { name, text, path }),
   /** Spotify's own web player in an app window (prototype). */
   spotifyWebOpen: () => invoke<void>('spotify_web_open'),
   /** Signed in to the Spotify web player. */

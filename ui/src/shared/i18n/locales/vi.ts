@@ -1474,6 +1474,17 @@ const vi: Record<string, string> = {
   'Cover…': 'Ảnh bìa…',
   'No cover': 'Không ảnh bìa',
   'Written into the file: other players see it too. The sound stays as it is.': 'Được ghi vào tệp: trình phát khác cũng thấy. Âm thanh giữ nguyên.',
+  'Importing your list… (finding each song on YouTube)': 'Đang nhập danh sách… (tìm từng bài trên YouTube)',
+  'None of the {n} song was found on YouTube': 'Không tìm thấy {n} bài nào trên YouTube',
+  'None of the {n} songs were found on YouTube': 'Không tìm thấy bài nào trong {n} bài trên YouTube',
+  'Imported “{name}”: {found} of {songs} songs': 'Đã nhập “{name}”: {found}/{songs} bài',
+  'Not found: {songs}': 'Không tìm thấy: {songs}',
+  'Song lists': 'Danh sách bài hát',
+  'Import a list of songs': 'Nhập danh sách bài hát',
+  'From SoundCloud, Deezer or anywhere: copy the titles, one per line like “Artist - Title”, and paste them here. Each song is found on YouTube.': 'Từ SoundCloud, Deezer hay bất cứ đâu: sao chép tên bài, mỗi dòng một bài như “Nghệ sĩ - Tên bài”, rồi dán vào đây. Mỗi bài được tìm trên YouTube.',
+  'Daft Punk - Get Lucky': 'Daft Punk - Get Lucky',
+  'Songs to import': 'Bài hát cần nhập',
+  'Open a file…': 'Mở tệp…',
 }
 
 export default vi

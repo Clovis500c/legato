@@ -1474,6 +1474,17 @@ const ru: Record<string, string> = {
   'Cover…': 'Обложка…',
   'No cover': 'Без обложки',
   'Written into the file: other players see it too. The sound stays as it is.': 'Записывается в файл: другие плееры тоже это увидят. Звук не меняется.',
+  'Importing your list… (finding each song on YouTube)': 'Импорт списка… (поиск каждой песни на YouTube)',
+  'None of the {n} song was found on YouTube': '{n} песня не найдена на YouTube',
+  'None of the {n} songs were found on YouTube': 'Ни одна из {n} песен не найдена на YouTube',
+  'Imported “{name}”: {found} of {songs} songs': '«{name}» импортирован: {found} из {songs} песен',
+  'Not found: {songs}': 'Не найдено: {songs}',
+  'Song lists': 'Списки песен',
+  'Import a list of songs': 'Импортировать список песен',
+  'From SoundCloud, Deezer or anywhere: copy the titles, one per line like “Artist - Title”, and paste them here. Each song is found on YouTube.': 'Из SoundCloud, Deezer или откуда угодно: скопируйте названия, по одному в строке, например «Исполнитель - Название», и вставьте сюда. Каждая песня ищется на YouTube.',
+  'Daft Punk - Get Lucky': 'Daft Punk - Get Lucky',
+  'Songs to import': 'Песни для импорта',
+  'Open a file…': 'Открыть файл…',
 }
 
 export default ru

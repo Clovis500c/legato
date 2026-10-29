@@ -1474,6 +1474,17 @@ const ko: Record<string, string> = {
   'Cover…': '커버…',
   'No cover': '커버 없음',
   'Written into the file: other players see it too. The sound stays as it is.': '파일에 기록되어 다른 플레이어에서도 보입니다. 소리는 그대로입니다.',
+  'Importing your list… (finding each song on YouTube)': '목록을 가져오는 중…(각 곡을 YouTube에서 찾는 중)',
+  'None of the {n} song was found on YouTube': '{n}곡 모두 YouTube에서 찾지 못했습니다',
+  'None of the {n} songs were found on YouTube': '{n}곡 모두 YouTube에서 찾지 못했습니다',
+  'Imported “{name}”: {found} of {songs} songs': '“{name}” 가져옴: {songs}곡 중 {found}곡',
+  'Not found: {songs}': '찾지 못함: {songs}',
+  'Song lists': '곡 목록',
+  'Import a list of songs': '곡 목록 가져오기',
+  'From SoundCloud, Deezer or anywhere: copy the titles, one per line like “Artist - Title”, and paste them here. Each song is found on YouTube.': 'SoundCloud, Deezer 등에서 곡 제목을 “아티스트 - 제목”처럼 한 줄에 하나씩 복사해 여기에 붙여 넣으세요. 각 곡을 YouTube에서 찾습니다.',
+  'Daft Punk - Get Lucky': 'Daft Punk - Get Lucky',
+  'Songs to import': '가져올 곡',
+  'Open a file…': '파일 열기…',
 }
 
 export default ko

@@ -1474,6 +1474,17 @@ const ja: Record<string, string> = {
   'Cover…': 'ジャケット…',
   'No cover': 'ジャケットなし',
   'Written into the file: other players see it too. The sound stays as it is.': 'ファイルに書き込まれ、他のプレーヤーにも表示されます。音はそのままです。',
+  'Importing your list… (finding each song on YouTube)': 'リストを取り込み中…（各曲を YouTube で検索）',
+  'None of the {n} song was found on YouTube': '{n} 曲とも YouTube で見つかりませんでした',
+  'None of the {n} songs were found on YouTube': '{n} 曲とも YouTube で見つかりませんでした',
+  'Imported “{name}”: {found} of {songs} songs': '「{name}」を取り込みました：{songs} 曲中 {found} 曲',
+  'Not found: {songs}': '見つからなかった曲：{songs}',
+  'Song lists': '曲リスト',
+  'Import a list of songs': '曲リストを取り込む',
+  'From SoundCloud, Deezer or anywhere: copy the titles, one per line like “Artist - Title”, and paste them here. Each song is found on YouTube.': 'SoundCloud や Deezer などから曲名をコピーし、「アーティスト - タイトル」の形で 1 行に 1 曲ずつ貼り付けてください。各曲を YouTube で探します。',
+  'Daft Punk - Get Lucky': 'Daft Punk - Get Lucky',
+  'Songs to import': '取り込む曲',
+  'Open a file…': 'ファイルを開く…',
 }
 
 export default ja

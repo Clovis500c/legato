@@ -1474,6 +1474,17 @@ const id: Record<string, string> = {
   'Cover…': 'Sampul…',
   'No cover': 'Tanpa sampul',
   'Written into the file: other players see it too. The sound stays as it is.': 'Ditulis ke berkas: pemutar lain juga melihatnya. Suaranya tetap sama.',
+  'Importing your list… (finding each song on YouTube)': 'Mengimpor daftar Anda… (mencari tiap lagu di YouTube)',
+  'None of the {n} song was found on YouTube': '{n} lagu tidak ditemukan di YouTube',
+  'None of the {n} songs were found on YouTube': 'Tak satu pun dari {n} lagu ditemukan di YouTube',
+  'Imported “{name}”: {found} of {songs} songs': '“{name}” diimpor: {found} dari {songs} lagu',
+  'Not found: {songs}': 'Tidak ditemukan: {songs}',
+  'Song lists': 'Daftar lagu',
+  'Import a list of songs': 'Impor daftar lagu',
+  'From SoundCloud, Deezer or anywhere: copy the titles, one per line like “Artist - Title”, and paste them here. Each song is found on YouTube.': 'Dari SoundCloud, Deezer, atau mana pun: salin judulnya, satu per baris seperti “Artis - Judul”, lalu tempel di sini. Tiap lagu dicari di YouTube.',
+  'Daft Punk - Get Lucky': 'Daft Punk - Get Lucky',
+  'Songs to import': 'Lagu untuk diimpor',
+  'Open a file…': 'Buka berkas…',
 }
 
 export default id

@@ -1474,6 +1474,17 @@ const uk: Record<string, string> = {
   'Cover…': 'Обкладинка…',
   'No cover': 'Без обкладинки',
   'Written into the file: other players see it too. The sound stays as it is.': 'Записується у файл: інші плеєри теж це бачать. Звук лишається як є.',
+  'Importing your list… (finding each song on YouTube)': 'Імпорт списку… (пошук кожної пісні на YouTube)',
+  'None of the {n} song was found on YouTube': '{n} пісню не знайдено на YouTube',
+  'None of the {n} songs were found on YouTube': 'Жодної з {n} пісень не знайдено на YouTube',
+  'Imported “{name}”: {found} of {songs} songs': '«{name}» імпортовано: {found} із {songs} пісень',
+  'Not found: {songs}': 'Не знайдено: {songs}',
+  'Song lists': 'Списки пісень',
+  'Import a list of songs': 'Імпортувати список пісень',
+  'From SoundCloud, Deezer or anywhere: copy the titles, one per line like “Artist - Title”, and paste them here. Each song is found on YouTube.': 'Із SoundCloud, Deezer чи звідки завгодно: скопіюйте назви, по одній у рядку, як-от «Виконавець - Назва», і вставте сюди. Кожну пісню буде знайдено на YouTube.',
+  'Daft Punk - Get Lucky': 'Daft Punk - Get Lucky',
+  'Songs to import': 'Пісні для імпорту',
+  'Open a file…': 'Відкрити файл…',
 }
 
 export default uk

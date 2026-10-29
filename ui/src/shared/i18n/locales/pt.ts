@@ -1474,6 +1474,17 @@ const pt: Record<string, string> = {
   'Cover…': 'Capa…',
   'No cover': 'Sem capa',
   'Written into the file: other players see it too. The sound stays as it is.': 'Escrito no ficheiro: outros leitores também o veem. O som fica como está.',
+  'Importing your list… (finding each song on YouTube)': 'A importar a tua lista… (a procurar cada música no YouTube)',
+  'None of the {n} song was found on YouTube': 'A {n} música não foi encontrada no YouTube',
+  'None of the {n} songs were found on YouTube': 'Nenhuma das {n} músicas foi encontrada no YouTube',
+  'Imported “{name}”: {found} of {songs} songs': '«{name}» importada: {found} de {songs} músicas',
+  'Not found: {songs}': 'Não encontradas: {songs}',
+  'Song lists': 'Listas de músicas',
+  'Import a list of songs': 'Importar uma lista de músicas',
+  'From SoundCloud, Deezer or anywhere: copy the titles, one per line like “Artist - Title”, and paste them here. Each song is found on YouTube.': 'Do SoundCloud, Deezer ou de onde for: copia os títulos, um por linha como «Artista - Título», e cola-os aqui. Cada música é procurada no YouTube.',
+  'Daft Punk - Get Lucky': 'Daft Punk - Get Lucky',
+  'Songs to import': 'Músicas a importar',
+  'Open a file…': 'Abrir um ficheiro…',
 }
 
 export default pt

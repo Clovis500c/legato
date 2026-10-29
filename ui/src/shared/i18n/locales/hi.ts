@@ -1474,6 +1474,17 @@ const hi: Record<string, string> = {
   'Cover…': 'कवर…',
   'No cover': 'कोई कवर नहीं',
   'Written into the file: other players see it too. The sound stays as it is.': 'फ़ाइल में लिखा जाता है: दूसरे प्लेयर भी इसे देखते हैं। आवाज़ जैसी है वैसी रहती है।',
+  'Importing your list… (finding each song on YouTube)': 'आपकी सूची इम्पोर्ट हो रही है… (हर गाना YouTube पर खोजा जा रहा है)',
+  'None of the {n} song was found on YouTube': '{n} गाना YouTube पर नहीं मिला',
+  'None of the {n} songs were found on YouTube': '{n} गानों में से कोई भी YouTube पर नहीं मिला',
+  'Imported “{name}”: {found} of {songs} songs': '“{name}” इम्पोर्ट हुई: {songs} में से {found} गाने',
+  'Not found: {songs}': 'नहीं मिले: {songs}',
+  'Song lists': 'गानों की सूचियाँ',
+  'Import a list of songs': 'गानों की सूची इम्पोर्ट करें',
+  'From SoundCloud, Deezer or anywhere: copy the titles, one per line like “Artist - Title”, and paste them here. Each song is found on YouTube.': 'SoundCloud, Deezer या कहीं से भी: गानों के नाम कॉपी करें, हर लाइन में एक, जैसे “Artist - Title”, और यहाँ पेस्ट करें। हर गाना YouTube पर खोजा जाता है।',
+  'Daft Punk - Get Lucky': 'Daft Punk - Get Lucky',
+  'Songs to import': 'इम्पोर्ट करने के गाने',
+  'Open a file…': 'फ़ाइल खोलें…',
 }
 
 export default hi

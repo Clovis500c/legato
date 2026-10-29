@@ -1,4 +1,5 @@
-import { ArrowRight, ClipboardText, FolderPlus, MagnifyingGlass, QrCode } from '@phosphor-icons/react'
+import { ArrowRight, ClipboardText, FolderPlus, ListPlus, MagnifyingGlass, QrCode } from '@phosphor-icons/react'
+import { open } from '@tauri-apps/plugin-dialog'
 import { useShallow } from 'zustand/react/shallow'
 import { useState } from 'react'
 import { useStore } from '../../app/store'
@@ -46,6 +47,41 @@ function ImportCode() {
   )
 }
 
+/** Songs from anywhere (SoundCloud, Deezer, a friend's list): pasted or from a .txt / .csv file, found on YouTube. */
+function ImportList() {
+  const [text, setText] = useState('')
+  const [name, setName] = useState('')
+  const [busy, setBusy] = useState(false)
+  const run = async (path: string | null) => {
+    setBusy(true)
+    const done = await useStore.getState().importSongList(name, path ? null : text, path)
+    setBusy(false)
+    if (done) setText('')
+  }
+  const openFile = async () => {
+    const file = await open({ filters: [{ name: tr('Song lists'), extensions: ['txt', 'csv', 'tsv'] }] })
+    if (typeof file === 'string') void run(file)
+  }
+  return (
+    <div className="flex flex-col gap-2 rounded-xl border border-line px-4 py-3">
+      <p className="flex items-center gap-2 text-xs font-semibold">
+        <ListPlus size={16} className="text-ink-2" /> {tr('Import a list of songs')}
+      </p>
+      <p className="text-xs text-ink-2">{tr('From SoundCloud, Deezer or anywhere: copy the titles, one per line like “Artist - Title”, and paste them here. Each song is found on YouTube.')}</p>
+      <textarea value={text} onChange={(e) => setText(e.target.value)} rows={5} placeholder={tr('Daft Punk - Get Lucky')} aria-label={tr('Songs to import')} className="resize-y rounded-md border border-line bg-raised px-2.5 py-2 text-xs placeholder:text-ink-3" />
+      <span className="flex gap-2">
+        <input value={name} onChange={(e) => setName(e.target.value)} maxLength={100} placeholder={tr('Playlist name')} aria-label={tr('Playlist name')} className="h-8 min-w-0 flex-1 rounded-md border border-line bg-raised px-2.5 text-xs placeholder:text-ink-3" />
+        <Button variant="ghost" disabled={busy} onClick={() => void openFile()}>
+          {tr('Open a file…')}
+        </Button>
+        <Button disabled={busy || !text.trim()} onClick={() => void run(null)}>
+          {busy ? tr('Importing…') : tr('Import')}
+        </Button>
+      </span>
+    </div>
+  )
+}
+
 /** Where the search went: the top bar (Ctrl+K), results on the Search page. */
 const focusSearch = () => document.querySelector<HTMLInputElement>('[data-search]')?.focus()
 
@@ -79,6 +115,7 @@ export function AddView() {
               </p>
             ))}
           </div>
+          <ImportList />
           <div className="flex items-start gap-3 rounded-xl border border-line px-4 py-3">
             <ClipboardText size={18} className="mt-0.5 shrink-0 text-ink-2" />
             <p className="text-xs text-ink-2">

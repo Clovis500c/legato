@@ -523,7 +523,10 @@ Original plan:
         fit either (SoundCloud docs read 2026-10-29): registering an app needs an Artist Pro subscription, and the API
         terms forbid storing its track data past the session and any playback that "aggregates and streams User
         Content with content from other services" (their example: SoundCloud with YouTube), which an import into the
-        library played from YouTube is. Waiting on the user.
+        library played from YouTube is. The user's pick instead (free, no account): the next line.
+  - [x] Add › Import a list of songs (2026-10-29): pasted text or a .txt / .csv file ("Artist - Title" lines, numbered
+        or not, or a CSV export with title and artist columns; `music_core::songlist`), each song found on YouTube
+        Music then YouTube, the ones found in a new playlist of yours, the missing ones named.
   - Not done: downloading songs from the services (fixed limit: no audio extraction).
 - [x] "Invalid title" on Add to library for a song the Music Detector named without an Apple / Spotify link
       (2026-10-29): its YouTube version looked up first.

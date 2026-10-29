@@ -1474,6 +1474,17 @@ const tr: Record<string, string> = {
   'Cover…': 'Kapak…',
   'No cover': 'Kapak yok',
   'Written into the file: other players see it too. The sound stays as it is.': 'Dosyaya yazılır: diğer oynatıcılar da görür. Ses olduğu gibi kalır.',
+  'Importing your list… (finding each song on YouTube)': 'Listen içe aktarılıyor… (her şarkı YouTube\'da aranıyor)',
+  'None of the {n} song was found on YouTube': '{n} şarkı YouTube\'da bulunamadı',
+  'None of the {n} songs were found on YouTube': '{n} şarkının hiçbiri YouTube\'da bulunamadı',
+  'Imported “{name}”: {found} of {songs} songs': '“{name}” içe aktarıldı: {songs} şarkıdan {found} tanesi',
+  'Not found: {songs}': 'Bulunamadı: {songs}',
+  'Song lists': 'Şarkı listeleri',
+  'Import a list of songs': 'Şarkı listesi içe aktar',
+  'From SoundCloud, Deezer or anywhere: copy the titles, one per line like “Artist - Title”, and paste them here. Each song is found on YouTube.': 'SoundCloud, Deezer veya başka bir yerden: başlıkları “Sanatçı - Şarkı” gibi her satıra bir tane olacak şekilde kopyalayıp buraya yapıştır. Her şarkı YouTube\'da aranır.',
+  'Daft Punk - Get Lucky': 'Daft Punk - Get Lucky',
+  'Songs to import': 'İçe aktarılacak şarkılar',
+  'Open a file…': 'Dosya aç…',
 }
 
 export default tr

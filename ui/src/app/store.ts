@@ -111,6 +111,8 @@ interface State {
   addLink: (url: string) => Promise<void>
   /** Public Spotify playlist / album link: import it and open it. */
   importSpotify: (url: string) => Promise<void>
+  /** Add › Import a list of songs. True when a playlist came out of it. */
+  importSongList: (name: string, text: string | null, path: string | null) => Promise<boolean>
   /** Toast for 4 s (with a button 6 s, error 8 s). */
   notify: (text: string, opts?: ToastOptions) => void
   dismissToast: (id: number) => void
@@ -259,6 +261,19 @@ export const useStore = create<State>((set, get) => {
     async addLink(url) {
       let added = ''
       if (await run(async () => (added = await api.addLink(url)), false)) get().notify(tr('Added: {title}', { title: added }))
+    },
+    async importSongList(name, text, path) {
+      get().notify(tr('Importing your list… (finding each song on YouTube)'))
+      let r: Awaited<ReturnType<typeof api.importSongList>> | undefined
+      if (!(await run(async () => (r = await api.importSongList(name, text, path)))) || !r) return false
+      if (r.playlistId === null) {
+        get().notify(trn(r.songs, 'None of the {n} song was found on YouTube', 'None of the {n} songs were found on YouTube'), { kind: 'error' })
+        return false
+      }
+      get().notify(tr('Imported “{name}”: {found} of {songs} songs', { name: r.name, found: r.found, songs: r.songs }))
+      if (r.missing.length) get().notify(tr('Not found: {songs}', { songs: r.missing.slice(0, 3).join(', ') + (r.songs - r.found > 3 ? '…' : '') }), { kind: 'info' })
+      get().go({ name: 'playlist', id: r.playlistId })
+      return true
     },
     async importSpotify(url) {
       get().notify(tr('Importing from Spotify… (finding each song on YouTube)'))

@@ -1474,6 +1474,17 @@ const nl: Record<string, string> = {
   'Cover…': 'Hoes…',
   'No cover': 'Geen hoes',
   'Written into the file: other players see it too. The sound stays as it is.': 'Wordt in het bestand geschreven: andere spelers zien het ook. Het geluid blijft zoals het is.',
+  'Importing your list… (finding each song on YouTube)': 'Je lijst wordt geïmporteerd… (elk nummer wordt op YouTube gezocht)',
+  'None of the {n} song was found on YouTube': 'Het {n} nummer is niet gevonden op YouTube',
+  'None of the {n} songs were found on YouTube': 'Geen van de {n} nummers is gevonden op YouTube',
+  'Imported “{name}”: {found} of {songs} songs': '“{name}” geïmporteerd: {found} van {songs} nummers',
+  'Not found: {songs}': 'Niet gevonden: {songs}',
+  'Song lists': 'Nummerlijsten',
+  'Import a list of songs': 'Een nummerlijst importeren',
+  'From SoundCloud, Deezer or anywhere: copy the titles, one per line like “Artist - Title”, and paste them here. Each song is found on YouTube.': 'Van SoundCloud, Deezer of waar dan ook: kopieer de titels, één per regel zoals “Artiest - Titel”, en plak ze hier. Elk nummer wordt op YouTube gezocht.',
+  'Daft Punk - Get Lucky': 'Daft Punk - Get Lucky',
+  'Songs to import': 'Te importeren nummers',
+  'Open a file…': 'Bestand openen…',
 }
 
 export default nl

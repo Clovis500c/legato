@@ -1474,6 +1474,17 @@ const sv: Record<string, string> = {
   'Cover…': 'Omslag…',
   'No cover': 'Inget omslag',
   'Written into the file: other players see it too. The sound stays as it is.': 'Skrivs in i filen: andra spelare ser det också. Ljudet förblir som det är.',
+  'Importing your list… (finding each song on YouTube)': 'Importerar din lista… (letar upp varje låt på YouTube)',
+  'None of the {n} song was found on YouTube': 'Den {n} låten hittades inte på YouTube',
+  'None of the {n} songs were found on YouTube': 'Ingen av de {n} låtarna hittades på YouTube',
+  'Imported “{name}”: {found} of {songs} songs': '”{name}” importerad: {found} av {songs} låtar',
+  'Not found: {songs}': 'Hittades inte: {songs}',
+  'Song lists': 'Låtlistor',
+  'Import a list of songs': 'Importera en låtlista',
+  'From SoundCloud, Deezer or anywhere: copy the titles, one per line like “Artist - Title”, and paste them here. Each song is found on YouTube.': 'Från SoundCloud, Deezer eller var som helst: kopiera titlarna, en per rad som ”Artist - Titel”, och klistra in dem här. Varje låt letas upp på YouTube.',
+  'Daft Punk - Get Lucky': 'Daft Punk - Get Lucky',
+  'Songs to import': 'Låtar att importera',
+  'Open a file…': 'Öppna en fil…',
 }
 
 export default sv
