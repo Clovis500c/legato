@@ -5,7 +5,7 @@ direction) and the "v2: rebrand and redesign" block of `docs/notes/plan-v2.md` (
 
 ## Where it stands
 
-- Branch `v2`, 8 commits on top of `master` (81e5213). Nothing pushed, nothing merged. Every push to `master` is a
+- Branch `v2`, 12 commits on top of `master` (81e5213). Nothing pushed, nothing merged. Every push to `master` is a
   release (`v2.0.<commits>` now): merge and push only when the user says so.
 - Done and checked in the app (light and dark):
   - Theme: Modern / Modern Dark carry the v2 palettes (`ui/src/shared/theme/theme.ts`), sky blue `#7CB8FF` = playback
@@ -26,18 +26,26 @@ direction) and the "v2: rebrand and redesign" block of `docs/notes/plan-v2.md` (
   - Queue (`features/player/queue.ts`, `store.ts`, `UpNext.tsx`): Up next in three blocks; Add to queue lands after the
     songs already queued, before the rest of the list; kept through shuffle (`keepQueued`).
   - Version 2.0 (tauri.conf.json, package.json, workspace Cargo.toml and the `music-*` path dependencies).
+  - Home (`features/home/HomeView.tsx`): no page title; chips, then shortcut tiles (Songs + 5 lists opened lately,
+    `JUMP` in `recentLists.ts`, 3 × 2 or 2 columns by container query), sections with title, line under, Show all.
+  - Shared section head and cards: `shared/ui/Section.tsx` (`Section`, `CardRow`, `MediaCard`: 200 px card, 176 px
+    cover, grey on hover, sky blue play button). Used by Home, Mixes, Search and the artist pages' YouTube shelves.
+  - Search (`features/search/SearchView.tsx`): no page title; chips All / Your library / YouTube Music / YouTube /
+    Apple Music (a catalog chip hides the library's matches), Top result card, 56 px rows (`ResultRow`), type views
+    behind each section's Show all with a back arrow; Spotify and YouTube Music sign-in on a line at the bottom.
+  - Session (`features/player/session.ts`): `added` saved with the order and restored with it only; a queue edit
+    saves 0.6 s later.
 
 ## Next
 
-1. Home as in the mockup: shortcut tiles at the top (2 rows of 3, cover left and name, on `bg-raised`), sections with a
-   title, a subtitle and "Show all", cards with the sky blue play button on hover. Today: `features/home/HomeView.tsx`
-   (sections quick, week, mixes, recent, playlists, youtube, added; mood chips). Keep its features, restyle.
-2. Search as in the mockup: `features/search/SearchView.tsx`.
-3. Save the user's queued songs (`added` in the player store) with the session (`features/player/session.ts`
-   snapshot / restore). Today they read as part of the list after a restart (`shortcut:` comment in `store.ts` resume).
-4. The name: Legato recommended, not decided by the user. Never rename the identifier, `_musicapp._tcp`, `MA1` or
+1. The name: Legato recommended, not decided by the user. Never rename the identifier, `_musicapp._tcp`, `MA1` or
    keychain entries; the wordmark and app icon wait on it. Ask before changing what the app is called.
-5. Before merging: `pnpm check` (all of it), then ask the user whether to merge `v2` into `master` and push.
+2. Small leftovers seen on the way: "See all" still on the artist page's YouTube songs (`AlbumArtist.tsx`, the last
+   one; Show all elsewhere); card grids of the Albums / Artists pages and the Mixes page's section labels aren't v2 yet.
+3. Seen while testing, not looked into: a pause given while a YouTube video is still loading can be undone by the
+   player's late "playing" state; App tint (`appTint`) keeps the old theme's tint when Windows switches light / dark
+   while a song plays (`App.tsx` computes it at render).
+4. Before merging: `pnpm check` (all of it), then ask the user whether to merge `v2` into `master` and push.
 
 The column picker the plan mentions already exists ("Display options" button, right-click on a list header).
 
@@ -77,4 +85,11 @@ https://claude.ai/artifact/33xMyBxcFnf7pwwmLBdVVQ
   exits at once (single instance).
 - Screenshots of the dev app (computer use): ask access for `C:\dev\music-app\target\debug\music-app.exe`; the name
   "Music App" maps to the installed app.
+- Without computer use: start `pnpm dev` with `WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS=--remote-debugging-port=9333`
+  (plus `background::BROWSER_ARGS`), then drive the page over CDP from a node script (global `WebSocket`):
+  `Page.captureScreenshot`, `Emulation.setEmulatedMedia` (prefers-color-scheme light / dark), `Input.dispatchMouseEvent`
+  for hover. Vite serves modules by URL: `import()` the URL listed in `performance.getEntriesByType('resource')`
+  (after HMR it carries `?t=`) to reach the live stores (`usePlayer`, `useStore`, `useSettings`). Pause right after
+  each reload and keep checking a few seconds (YouTube's late state can start it again); dev settings have App tint
+  on: set it off in memory (`useSettings.setState`, not `update`) to see the default look.
 - Small commits on `v2`, `pnpm check` green before each.
