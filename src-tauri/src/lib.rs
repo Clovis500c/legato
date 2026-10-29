@@ -537,25 +537,35 @@ async fn with_youtube(state: &AppState, track: Track) -> Track {
     track
 }
 
-/// Trust boundary: a search hit from the UI. Catalog ids only, bounded text, https art.
+/// Trust boundary: a search hit from the UI. Catalog ids only (none yet: a song the Music Detector named without a
+/// catalog link), bounded text, https art.
 fn checked_hit(track: Track) -> Result<Track, String> {
     let ok_text = |s: &str| !s.trim().is_empty() && s.chars().count() <= 300;
-    if !ok_text(&track.title) || !ok_text(&track.artist) || track.ids.is_empty() || track.ids.iter().any(|(s, id)| *s == Source::Local || id.is_empty() || id.len() > 64) {
+    if !ok_text(&track.title) || !ok_text(&track.artist) || track.ids.len() > 8 || track.ids.iter().any(|(s, id)| *s == Source::Local || id.is_empty() || id.len() > 64) {
         return Err("Invalid title".into());
     }
     Ok(Track { art: track.art.filter(|a| a.len() <= 500 && a.starts_with("https://")), ..track })
 }
 
+/// Hit with its YouTube version looked up; still no source at all = nothing to play it from.
+async fn playable_hit(state: &AppState, track: Track) -> CmdResult<Track> {
+    let track = with_youtube(state, checked_hit(track)?).await;
+    if track.ids.is_empty() {
+        return Err(format!("“{}” wasn't found on YouTube or Apple Music: nothing to play it from", track.title));
+    }
+    Ok(track)
+}
+
 /// Search hit with its YouTube version when one exists, nothing written: plays in full without joining the library.
 #[tauri::command]
 async fn resolve_track(state: State<'_, AppState>, track: Track) -> CmdResult<Track> {
-    Ok(with_youtube(&state, checked_hit(track)?).await)
+    playable_hit(&state, track).await
 }
 
 /// Add search hit, with its YouTube version when one exists.
 #[tauri::command]
 async fn add_track(state: State<'_, AppState>, track: Track) -> CmdResult<i64> {
-    let track = with_youtube(&state, checked_hit(track)?).await;
+    let track = playable_hit(&state, track).await?;
     // Added by hand: a song removed earlier comes back.
     let lib = state.lib();
     lib.unremove(&track).map_err(err)?;
@@ -1904,5 +1914,14 @@ mod tests {
         let m = old.merged_with(new);
         assert_eq!(m.spotify_client_id.as_deref(), Some("OLD"));
         assert_eq!(m.merged_with(Credentials { spotify_client_id: Some(" NEW ".into()) }).spotify_client_id.as_deref(), Some("NEW"));
+    }
+
+    #[test]
+    fn hits_without_a_catalog_id_pass_to_the_youtube_lookup() {
+        let named = Track { title: "Parallel World".into(), artist: "Smv".into(), ..Default::default() };
+        assert!(checked_hit(named.clone()).is_ok(), "Music Detector hit, no Apple / Spotify link");
+        assert!(checked_hit(Track { title: " ".into(), ..named.clone() }).is_err());
+        let local = Track { ids: [(Source::Local, "C:/x.mp3".to_string())].into(), ..named };
+        assert!(checked_hit(local).is_err(), "a file path never comes from a search hit");
     }
 }
