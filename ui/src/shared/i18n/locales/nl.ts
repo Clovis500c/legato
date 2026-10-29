@@ -1517,6 +1517,9 @@ const nl: Record<string, string> = {
   'Playing from {list}': 'Afgespeeld uit {list}',
   'In the right panel': 'In het rechterpaneel',
   'In the right panel or the sidebar it never covers the page; floating, drag it anywhere.': 'In het rechterpaneel of de zijbalk bedekt hij nooit de pagina; zwevend kun je hem overal heen slepen.',
+  'Expand Your library': 'Je bibliotheek vergroten',
+  'Collapse Your library': 'Je bibliotheek verkleinen',
+  'Resize the sidebar': 'Zijbalk van grootte veranderen',
 }
 
 export default nl

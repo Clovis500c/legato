@@ -14,7 +14,9 @@ Version 1.0 (user's choice 2026-10-29: the first releases were 0.1). A new sessi
       mini player on top), song rows (artist column, heart, covers), page bands in the cover's tint, Now Playing, Up
       next in three blocks saved with the session, Home, Search, notifications setting, the mockup pass, motion, the
       website (`site/`), docs cleaned up.
-- [ ] Your library ↗ (open it full width, design.md), and the player bar's "artist · from your file" line.
+- [x] Your library ↗ (open it full width, design.md) and a sidebar resized by its edge; the right panel's player only
+      while something plays (user's ask 2026-10-30).
+- [ ] The player bar's "artist · from your file" line.
 - [ ] Check in the app: "No sound could be taken" gone from the second YouTube video on (fix 51946d5).
 - [x] Website on GitHub Pages (user's choice 2026-10-29): Pages on, source GitHub Actions; `pages.yml` deploys `site/`
       from `master` at https://clovis500c.github.io/music-app/ (first deploy with the merge).

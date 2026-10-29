@@ -41,15 +41,19 @@ function Stage() {
  */
 export function SidePanel() {
   const now = usePlayer((s) => s.now)
+  const playing = usePlayer((s) => s.playing)
   const full = usePlayer((s) => s.full)
   const panel = useSettings((s) => s.settings.sidePanel)
   const here = useSettings((s) => s.settings.miniPlace === 'panel')
   const on = useSettings((s) => s.settings.miniPlayer)
   const update = useSettings((s) => s.update)
   if (!now) return null
-  // Not under Now Playing: its own video slot takes the video.
-  const stage = here && !full && (now.via === 'youtube' || on)
-  if (!stage && panel === 'none') return null
+  // Not under Now Playing: its own video slot takes the video. Nothing playing (paused, restored): no player here
+  // (user's pick 2026-10-30).
+  const stage = here && !full && playing && (now.via === 'youtube' || on)
+  // Paused video kept unseen (without a slot it shows as the floating card).
+  const parked = here && !full && !playing && now.via === 'youtube' && <VideoSlot hidden className="fixed top-0 left-0 size-0" />
+  if (!stage && panel === 'none') return parked || null
   const tabs = (
     <span role="tablist" aria-label={tr('Show')} className="flex flex-wrap gap-1.5">
       <LedChip on={panel === 'upNext'} label={tr('Up next')} onClick={() => update({ sidePanel: 'upNext' })} />
@@ -60,6 +64,7 @@ export function SidePanel() {
   return (
     <div className="flex w-75 shrink-0 flex-col gap-2">
       {stage && <Stage />}
+      {parked}
       {panel === 'lyrics' && <LyricsPanel heading={tabs} onHide={() => update({ sidePanel: 'none' })} onUpNext={() => update({ sidePanel: 'upNext' })} className={look} />}
       {panel === 'upNext' && <UpNext heading={tabs} onHide={() => update({ sidePanel: 'none' })} className={look} />}
     </div>

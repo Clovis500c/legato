@@ -1517,6 +1517,9 @@ const uk: Record<string, string> = {
   'Playing from {list}': 'Грає з: {list}',
   'In the right panel': 'На правій панелі',
   'In the right panel or the sidebar it never covers the page; floating, drag it anywhere.': 'На правій або бічній панелі він ніколи не закриває сторінку; плаваючий можна перетягнути куди завгодно.',
+  'Expand Your library': 'Розгорнути медіатеку',
+  'Collapse Your library': 'Згорнути медіатеку',
+  'Resize the sidebar': 'Змінити розмір бічної панелі',
 }
 
 export default uk

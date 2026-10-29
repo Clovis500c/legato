@@ -1517,6 +1517,9 @@ const pt: Record<string, string> = {
   'Playing from {list}': 'Tocando de {list}',
   'In the right panel': 'No painel direito',
   'In the right panel or the sidebar it never covers the page; floating, drag it anywhere.': 'No painel direito ou na barra lateral ele nunca cobre a página; flutuante, arraste-o para onde quiser.',
+  'Expand Your library': 'Expandir Sua biblioteca',
+  'Collapse Your library': 'Recolher Sua biblioteca',
+  'Resize the sidebar': 'Redimensionar a barra lateral',
 }
 
 export default pt

@@ -1517,6 +1517,9 @@ const zh: Record<string, string> = {
   'Playing from {list}': '正在从 {list} 播放',
   'In the right panel': '在右侧面板中',
   'In the right panel or the sidebar it never covers the page; floating, drag it anywhere.': '在右侧面板或侧边栏中时不会遮挡页面；悬浮时可拖到任意位置。',
+  'Expand Your library': '展开你的音乐库',
+  'Collapse Your library': '收起你的音乐库',
+  'Resize the sidebar': '调整侧边栏大小',
 }
 
 export default zh

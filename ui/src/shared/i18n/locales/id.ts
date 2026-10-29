@@ -1517,6 +1517,9 @@ const id: Record<string, string> = {
   'Playing from {list}': 'Diputar dari {list}',
   'In the right panel': 'Di panel kanan',
   'In the right panel or the sidebar it never covers the page; floating, drag it anywhere.': 'Di panel kanan atau bilah samping, pemutar tidak pernah menutupi halaman; saat mengambang, seret ke mana saja.',
+  'Expand Your library': 'Perbesar Koleksimu',
+  'Collapse Your library': 'Perkecil Koleksimu',
+  'Resize the sidebar': 'Ubah ukuran bilah samping',
 }
 
 export default id

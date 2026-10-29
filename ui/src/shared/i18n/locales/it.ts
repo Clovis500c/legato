@@ -1517,6 +1517,9 @@ const it: Record<string, string> = {
   'Playing from {list}': 'Riproduzione da {list}',
   'In the right panel': 'Nel pannello destro',
   'In the right panel or the sidebar it never covers the page; floating, drag it anywhere.': 'Nel pannello destro o nella barra laterale non copre mai la pagina; mobile, trascinalo dove vuoi.',
+  'Expand Your library': 'Espandi La tua libreria',
+  'Collapse Your library': 'Riduci La tua libreria',
+  'Resize the sidebar': 'Ridimensiona la barra laterale',
 }
 
 export default it

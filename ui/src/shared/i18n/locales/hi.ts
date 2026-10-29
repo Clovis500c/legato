@@ -1517,6 +1517,9 @@ const hi: Record<string, string> = {
   'Playing from {list}': '{list} से चल रहा है',
   'In the right panel': 'दाएँ पैनल में',
   'In the right panel or the sidebar it never covers the page; floating, drag it anywhere.': 'दाएँ पैनल या साइडबार में यह कभी पेज को नहीं ढकता; फ़्लोटिंग हो तो इसे कहीं भी खींचें।',
+  'Expand Your library': 'आपकी लाइब्रेरी बड़ी करें',
+  'Collapse Your library': 'आपकी लाइब्रेरी छोटी करें',
+  'Resize the sidebar': 'साइडबार का आकार बदलें',
 }
 
 export default hi

@@ -1517,6 +1517,9 @@ const vi: Record<string, string> = {
   'Playing from {list}': 'Đang phát từ {list}',
   'In the right panel': 'Ở bảng bên phải',
   'In the right panel or the sidebar it never covers the page; floating, drag it anywhere.': 'Ở bảng bên phải hoặc thanh bên thì không bao giờ che trang; khi nổi, kéo đi đâu cũng được.',
+  'Expand Your library': 'Mở rộng Thư viện của bạn',
+  'Collapse Your library': 'Thu gọn Thư viện của bạn',
+  'Resize the sidebar': 'Đổi kích thước thanh bên',
 }
 
 export default vi

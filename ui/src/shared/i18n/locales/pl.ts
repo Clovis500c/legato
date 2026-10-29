@@ -1517,6 +1517,9 @@ const pl: Record<string, string> = {
   'Playing from {list}': 'Odtwarzanie z: {list}',
   'In the right panel': 'W prawym panelu',
   'In the right panel or the sidebar it never covers the page; floating, drag it anywhere.': 'W prawym panelu lub na pasku bocznym nigdy nie zasłania strony; pływający możesz przeciągnąć w dowolne miejsce.',
+  'Expand Your library': 'Powiększ Twoją bibliotekę',
+  'Collapse Your library': 'Zmniejsz Twoją bibliotekę',
+  'Resize the sidebar': 'Zmień rozmiar paska bocznego',
 }
 
 export default pl

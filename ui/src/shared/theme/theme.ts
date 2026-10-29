@@ -278,6 +278,10 @@ export interface Settings {
   miniPlace: 'panel' | 'sidebar' | 'float'
   /** Mini player width, px (video 16:9 below it, 200 px tall at least). */
   miniWidth: number
+  /** Sidebar width, px (dragged by its edge). */
+  sidebarWidth: number
+  /** Your library open full width in the page's place (its ↗ button). */
+  libraryWide: boolean
   /** Fade between songs, seconds (0 = off). */
   crossfade: number
   /** Songs longer than this many minutes skipped as the queue moves on (0 = off). */
@@ -394,6 +398,8 @@ export const DEFAULTS: Settings = {
   miniSpot: 'br',
   miniPlace: 'panel',
   miniWidth: 356,
+  sidebarWidth: 264,
+  libraryWide: false,
   crossfade: 2,
   skipLong: 0,
   fade: { advanced: false, out: 2, in: 2, outCurve: 'scurve', inCurve: 'scurve', skip: true, pause: 0 },
@@ -476,6 +482,10 @@ const BG_NAME = /^bg-[0-9a-f]{16}\.(png|jpg|webp|gif|mp4|webm)$/
 /** A background that plays (muted, looped) instead of a picture. */
 export const isVideo = (name: string) => /\.(mp4|webm)$/.test(name)
 const isHex = (v: unknown): v is string => typeof v === 'string' && HEX.test(v)
+/** Sidebar width bounds: its chips fit at the least, the page keeps room at the most. */
+export const SIDEBAR_MIN = 220
+export const SIDEBAR_MAX = 420
+
 const num = (v: unknown, min: number, max: number, fallback: number) => (typeof v === 'number' && Number.isFinite(v) ? Math.min(max, Math.max(min, Math.round(v))) : fallback)
 const pick = <T,>(v: unknown, allowed: readonly T[], fallback: T): T => (allowed.includes(v as T) ? (v as T) : fallback)
 
@@ -579,6 +589,8 @@ export function sanitize(raw: unknown): Settings {
     stage: pick(r.stage, ['auto', 'video', 'cover'] as const, DEFAULTS.stage),
     miniSpot: pick(r.miniSpot, SPOTS, DEFAULTS.miniSpot),
     miniPlace: pick(r.miniPlace, ['panel', 'sidebar', 'float'] as const, DEFAULTS.miniPlace),
+    sidebarWidth: num(r.sidebarWidth, SIDEBAR_MIN, SIDEBAR_MAX, DEFAULTS.sidebarWidth),
+    libraryWide: r.libraryWide === true,
     miniWidth: typeof r.miniWidth === 'number' && Number.isFinite(r.miniWidth) ? Math.min(960, Math.max(356, Math.round(r.miniWidth))) : DEFAULTS.miniWidth,
     crossfade: typeof r.crossfade === 'number' && Number.isFinite(r.crossfade) ? Math.min(12, Math.max(0, Math.round(r.crossfade))) : DEFAULTS.crossfade,
     skipLong: typeof r.skipLong === 'number' && Number.isFinite(r.skipLong) ? Math.min(60, Math.max(0, Math.round(r.skipLong))) : DEFAULTS.skipLong,

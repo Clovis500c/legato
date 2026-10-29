@@ -1517,6 +1517,9 @@ const tr: Record<string, string> = {
   'Playing from {list}': 'Çalınan liste: {list}',
   'In the right panel': 'Sağ panelde',
   'In the right panel or the sidebar it never covers the page; floating, drag it anywhere.': 'Sağ panelde veya kenar çubuğunda sayfayı asla kapatmaz; yüzerken istediğin yere sürükle.',
+  'Expand Your library': 'Kitaplığını genişlet',
+  'Collapse Your library': 'Kitaplığını daralt',
+  'Resize the sidebar': 'Kenar çubuğunu yeniden boyutlandır',
 }
 
 export default tr

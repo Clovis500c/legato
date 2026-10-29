@@ -1517,6 +1517,9 @@ const ja: Record<string, string> = {
   'Playing from {list}': '{list}から再生中',
   'In the right panel': '右パネル内',
   'In the right panel or the sidebar it never covers the page; floating, drag it anywhere.': '右パネルやサイドバー内ならページを隠しません。フローティングならどこへでもドラッグできます。',
+  'Expand Your library': 'ライブラリを広げる',
+  'Collapse Your library': 'ライブラリを狭める',
+  'Resize the sidebar': 'サイドバーのサイズを変更',
 }
 
 export default ja

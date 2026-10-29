@@ -1517,6 +1517,9 @@ const sv: Record<string, string> = {
   'Playing from {list}': 'Spelas från {list}',
   'In the right panel': 'I högerpanelen',
   'In the right panel or the sidebar it never covers the page; floating, drag it anywhere.': 'I högerpanelen eller sidofältet täcker den aldrig sidan; flytande kan du dra den vart du vill.',
+  'Expand Your library': 'Visa Ditt bibliotek större',
+  'Collapse Your library': 'Visa Ditt bibliotek mindre',
+  'Resize the sidebar': 'Ändra storlek på sidofältet',
 }
 
 export default sv

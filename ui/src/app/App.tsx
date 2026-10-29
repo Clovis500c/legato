@@ -205,6 +205,7 @@ export function App() {
   const { view, go, refresh, incoming } = useStore(useShallow((s) => ({ view: s.view, go: s.go, refresh: s.refresh, incoming: s.incoming })))
   const full = usePlayer((s) => s.full)
   const tintOn = useSettings((s) => s.settings.appTint)
+  const libraryWide = useSettings((s) => s.settings.libraryWide)
   // Re-rendered when the theme, accent or Windows' light / dark change (current() below).
   useSettings((s) => s.settings.theme)
   useSettings((s) => s.settings.accent)
@@ -286,7 +287,8 @@ export function App() {
       <TopBar />
       <div className="flex min-h-0 flex-1 gap-2 px-2">
         <Sidebar />
-        <main className="flex min-w-0 flex-1 flex-col overflow-hidden rounded-lg bg-bg">
+        {/* Your library open wide takes the page's place (kept, hidden: it comes back as it was). */}
+        <main className={`flex min-w-0 flex-1 flex-col overflow-hidden rounded-lg bg-bg ${libraryWide ? 'hidden' : ''}`}>
           <Alerts />
           {/* New page: a short rise (styles.css .page-in), not when only its details change. Its padding is what a
               page band undoes to reach the pane's edges (PageHeader). */}
