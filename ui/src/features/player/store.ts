@@ -255,6 +255,10 @@ let ytState: number | undefined
 // New video asked: the embed still reports the old one for a moment (late times, its duration). Ignored until a time
 // near the new start comes, else the fade in jumps to full volume (review 2026-10-23: skips started loud).
 let ytFresh = false
+// When the user last paused. YouTube ignores a pause while a video is still starting, then plays it anyway: a
+// "playing" that soon after is paused again (later, one from YouTube's own controls counts).
+let pausedAt = 0
+const PAUSE_HOLD_MS = 5000
 // Current song came by the queue moving on (song ended): Skip long songs applies once its length is known.
 let reachedAuto = false
 let stuckTimer: ReturnType<typeof setTimeout> | undefined
@@ -524,6 +528,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
       else send({ type: 'toggle' })
     }
     set({ playing: !playing, ...(playing && { tail: stopTail(get().tail) }) })
+    pausedAt = playing ? Date.now() : 0
     // Fade on pause: down, then pause. On play: play silent, then up. Spotify: no volume control fast enough.
     if (!fade.pause || now.via === 'spotify') return pause()
     if (playing) return ramp((t) => 1 - t, fade.pause, pause)
@@ -633,6 +638,11 @@ export const usePlayer = create<PlayerState>((set, get) => ({
       } else ytFresh = false
     }
     if (u.state !== undefined) ytState = u.state
+    // Paused (or restored paused) while it was starting, and YouTube plays it anyway: paused again.
+    if (u.state === 1 && !get().playing && (get().hold || Date.now() - pausedAt < PAUSE_HOLD_MS)) {
+      yt('pauseVideo')
+      u = { ...u, state: undefined }
+    }
     // The song's own end (learned early end) is the length everywhere: fades, overlap, times shown.
     const videoMs = u.duration ? u.duration * 1000 : 0
     const durationMs = videoMs && get().earlyEnds ? songEnd(now?.youtubeId, videoMs) : videoMs

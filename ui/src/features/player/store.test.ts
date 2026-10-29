@@ -67,3 +67,19 @@ describe('resume', () => {
     expect(usePlayer.getState().added).toEqual([])
   })
 })
+
+describe('pause while a YouTube video starts', () => {
+  it('stays paused when YouTube plays it anyway; a play from its own controls later counts', async () => {
+    usePlayer.setState({ repeat: 'off', fade: { out: 5, in: 5, outCurve: 'scurve', inCurve: 'scurve', skip: true, pause: 0 } })
+    usePlayer.getState().playTracks([song(11)], 0)
+    await settle()
+    usePlayer.getState().toggle()
+    usePlayer.getState().onYoutube({ state: 1, time: 0.2 })
+    expect(usePlayer.getState().playing).toBe(false)
+    const now = Date.now()
+    vi.spyOn(Date, 'now').mockReturnValue(now + 6_000)
+    usePlayer.getState().onYoutube({ state: 1, time: 3 })
+    expect(usePlayer.getState().playing).toBe(true)
+    vi.restoreAllMocks()
+  })
+})

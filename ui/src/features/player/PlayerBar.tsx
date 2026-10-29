@@ -138,7 +138,8 @@ function YouTubeFrame({ videoId, tail = false, idle = false }: { videoId: string
     shown.current = videoId
     usePlayer.getState().applyVolume(true)
     sendLive(undefined, true)
-    ytPost(frame.current, 'command', 'loadVideoById', [videoId, usePlayer.getState().startAt / 1000])
+    // Restored paused (hold): cued, as the first video of a new embed is.
+    ytPost(frame.current, 'command', usePlayer.getState().hold ? 'cueVideoById' : 'loadVideoById', [videoId, usePlayer.getState().startAt / 1000])
   }, [videoId, tail])
 
   return (
