@@ -1463,6 +1463,9 @@ const uk: Record<string, string> = {
   'Choose a picture or video…': 'Вибрати зображення чи відео…',
   'Another picture or video…': 'Інше зображення чи відео…',
   'Plays muted in a loop, still while animations are off or Music App is hidden.': 'Грає без звуку по колу; стоїть, коли анімації вимкнено або Music App приховано.',
+  'Visualizer': 'Візуалізація',
+  'In Now Playing, bars under the cover move with the music, low notes on the left': 'У «Зараз грає» смуги під обкладинкою рухаються з музикою, низькі частоти ліворуч',
+  'spectrum bars equalizer analyzer frequencies audio visualiser music moving': 'спектр смуги еквалайзер аналізатор частоти аудіо візуалізація музика',
 }
 
 export default uk

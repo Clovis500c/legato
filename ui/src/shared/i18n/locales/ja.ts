@@ -1463,6 +1463,9 @@ const ja: Record<string, string> = {
   'Choose a picture or video…': '画像または動画を選ぶ…',
   'Another picture or video…': '別の画像または動画…',
   'Plays muted in a loop, still while animations are off or Music App is hidden.': '無音でループ再生。アニメーションがオフのときや Music App が隠れているときは止まります。',
+  'Visualizer': 'ビジュアライザー',
+  'In Now Playing, bars under the cover move with the music, low notes on the left': '再生中画面でジャケットの下のバーが音楽に合わせて動きます（左が低音）',
+  'spectrum bars equalizer analyzer frequencies audio visualiser music moving': 'スペクトラム バー イコライザー アナライザー 周波数 オーディオ ビジュアライザー 音楽 spectrum visualizer',
 }
 
 export default ja

@@ -20,6 +20,8 @@ export interface LiveWish {
   listen: boolean
   adaptive: boolean
   targetLufs: number
+  /** The visualizer wants the bands (Now Playing open, visualizer on). */
+  bands: boolean
   /** YouTube's sound may be processed (Settings › Advanced). */
   youtube: boolean
   /** Live Editor settings (neutral = untouched). */
@@ -40,7 +42,7 @@ export function punch(l: LiveLevels | null): number {
 
 /** What the YouTube player gets. */
 export function frameSettings(w: LiveWish) {
-  return { on: (w.on || w.ends) && w.youtube, listen: w.listen, adaptive: w.adaptive, targetLufs: w.targetLufs }
+  return { on: (w.on || w.ends) && w.youtube, listen: w.listen, adaptive: w.adaptive, targetLufs: w.targetLufs, bands: w.bands }
 }
 
 /** end = the song ended there (s of the video), silence after it (live.js, ends.ts). */
@@ -57,7 +59,7 @@ export function parseLive(origin: string, data: unknown): Report | null {
   }
 }
 
-let wish: LiveWish = { on: false, ends: false, listen: false, adaptive: false, targetLufs: -14, youtube: true, effects: NEUTRAL }
+let wish: LiveWish = { on: false, ends: false, listen: false, adaptive: false, targetLufs: -14, bands: false, youtube: true, effects: NEUTRAL }
 // Early end heard (the store's): tail = from the overlap's fading-out embed, not what plays now.
 let ended: ((end: number, tail: boolean) => void) | null = null
 export const onEndHeard = (f: (end: number, tail: boolean) => void) => void (ended = f)
@@ -75,7 +77,7 @@ const post = (settings: FrameSettings, effects: Effects) => frame?.contentWindow
  */
 export function sendLive(next?: LiveWish, newSong = false) {
   if (next) wish = next
-  void api.playerLive({ adaptive: wish.adaptive, targetLufs: wish.targetLufs, ending }).catch(() => {})
+  void api.playerLive({ adaptive: wish.adaptive, targetLufs: wish.targetLufs, ending, bands: wish.bands }).catch(() => {})
   void api.playerEffects(wish.effects).catch(() => {})
   const s = { ...frameSettings(wish), ending, gain: newSong ? (useLive.getState().levels?.gain ?? null) : null }
   if (watching()) {

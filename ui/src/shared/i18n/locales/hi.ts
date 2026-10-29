@@ -1463,6 +1463,9 @@ const hi: Record<string, string> = {
   'Choose a picture or video…': 'तस्वीर या वीडियो चुनें…',
   'Another picture or video…': 'दूसरी तस्वीर या वीडियो…',
   'Plays muted in a loop, still while animations are off or Music App is hidden.': 'बिना आवाज़ लूप में चलता है; एनिमेशन बंद हों या Music App छिपा हो तो रुका रहता है।',
+  'Visualizer': 'विज़ुअलाइज़र',
+  'In Now Playing, bars under the cover move with the music, low notes on the left': 'अभी चल रहा में कवर के नीचे की पट्टियाँ संगीत के साथ हिलती हैं, नीचे के सुर बाईं ओर',
+  'spectrum bars equalizer analyzer frequencies audio visualiser music moving': 'स्पेक्ट्रम पट्टियाँ इक्वलाइज़र एनालाइज़र फ़्रीक्वेंसी ऑडियो विज़ुअलाइज़र संगीत spectrum bars visualizer',
 }
 
 export default hi

@@ -29,6 +29,7 @@ import { LyricsPanel } from './LyricsPanel'
 import { EditorPanel } from '../editor/EditorPanel'
 import { useVideoBox } from './videoBox'
 import { usePulse } from './pulse'
+import { Visualizer } from './Visualizer'
 import { tr } from '../../shared/i18n/i18n'
 
 /** Publishes its rect so the single YouTube iframe sits here. YouTube rules: at least 200×200, nothing on top. */
@@ -184,7 +185,7 @@ function Backdrop({ url, dim, motion }: { url?: string; dim: number; motion: boo
 }
 
 /** Settings Now Playing reads. */
-const pick = ({ tuner, tint, immersive, backdropBlur, backdropDim, backdropMotion, stage, upNext, volume, coverPulse, motion, lyrics, editor, readout }: Settings) => ({ tuner, tint, immersive, backdropBlur, backdropDim, backdropMotion, stage, upNext, volume, coverPulse, motion, lyrics, editor, readout })
+const pick = ({ tuner, tint, immersive, backdropBlur, backdropDim, backdropMotion, stage, upNext, volume, coverPulse, visualizer, motion, lyrics, editor, readout }: Settings) => ({ tuner, tint, immersive, backdropBlur, backdropDim, backdropMotion, stage, upNext, volume, coverPulse, visualizer, motion, lyrics, editor, readout })
 
 /** Tuner dial on the smooth clock: Now Playing itself doesn't re-render on every position report. */
 function Tuner() {
@@ -217,7 +218,7 @@ function PanelTabs({ upNext, lyrics, editor, next, className = '' }: { upNext: b
 export function NowPlaying() {
   const now = usePlayer((s) => s.now)
   const setFull = usePlayer((s) => s.setFull)
-  const { tuner, tint, immersive, backdropBlur, backdropDim, backdropMotion, stage, upNext, volume: volumeMode, coverPulse, motion, lyrics, editor, readout } = useSettings(
+  const { tuner, tint, immersive, backdropBlur, backdropDim, backdropMotion, stage, upNext, volume: volumeMode, coverPulse, visualizer, motion, lyrics, editor, readout } = useSettings(
     useShallow((s) => ({ ...pick(s.settings), theme: s.settings.theme, accent: s.settings.accent, customThemes: s.settings.customThemes })),
   )
   const update = useSettings((s) => s.update)
@@ -265,6 +266,7 @@ export function NowPlaying() {
             options={[{ value: 'auto', label: video && stage === 'auto' && still !== undefined ? (still ? tr('Auto · cover') : tr('Auto · video')) : tr('Auto') }, ...(video || ytVersion ? [{ value: 'video' as const, label: tr('Video') }] : []), { value: 'cover', label: tr('Cover') }]}
           />
           <Stage video={video} cover={stage === 'cover' || (stage === 'auto' && still === true)} track={track} title={now.title} youtubeId={now.youtubeId} pulse={coverPulse && motion} />
+          {visualizer && motion && now.via !== 'spotify' && <Visualizer />}
           {now.via === 'spotify' && <span className="kicker text-center">{tr('Playing in your Spotify app')}</span>}
           {now.via === 'preview' && (
             <div className="flex items-center justify-center gap-4">

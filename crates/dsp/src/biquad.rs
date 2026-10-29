@@ -32,6 +32,14 @@ impl Biquad {
         Self::new((1.0 - c) / 2.0, 1.0 - c, (1.0 - c) / 2.0, 1.0 + alpha, -2.0 * c, 1.0 - alpha)
     }
 
+    /// Passes a band around `freq`, 0 dB at its center.
+    pub fn bandpass(rate: f32, freq: f32, q: f32) -> Self {
+        let w = 2.0 * PI * freq / rate;
+        let (s, c) = w.sin_cos();
+        let alpha = s / (2.0 * q);
+        Self::new(alpha, 0.0, -alpha, 1.0 + alpha, -2.0 * c, 1.0 - alpha)
+    }
+
     /// Shelf boosting / cutting above `freq` by `db` (slope 1).
     pub fn highshelf(rate: f32, freq: f32, db: f32) -> Self {
         let a = 10f32.powf(db / 40.0);

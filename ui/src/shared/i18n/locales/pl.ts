@@ -1463,6 +1463,9 @@ const pl: Record<string, string> = {
   'Choose a picture or video…': 'Wybierz obraz lub film…',
   'Another picture or video…': 'Inny obraz lub film…',
   'Plays muted in a loop, still while animations are off or Music App is hidden.': 'Odtwarzany bez dźwięku w pętli, zatrzymany, gdy animacje są wyłączone lub Music App jest ukryta.',
+  'Visualizer': 'Wizualizacja',
+  'In Now Playing, bars under the cover move with the music, low notes on the left': 'W Odtwarzane teraz paski pod okładką ruszają się z muzyką, niskie tony po lewej',
+  'spectrum bars equalizer analyzer frequencies audio visualiser music moving': 'widmo paski korektor analizator częstotliwości audio wizualizacja muzyka ruch',
 }
 
 export default pl

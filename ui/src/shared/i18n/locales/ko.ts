@@ -1463,6 +1463,9 @@ const ko: Record<string, string> = {
   'Choose a picture or video…': '사진 또는 동영상 선택…',
   'Another picture or video…': '다른 사진 또는 동영상…',
   'Plays muted in a loop, still while animations are off or Music App is hidden.': '소리 없이 반복 재생되며, 애니메이션이 꺼져 있거나 Music App이 숨겨지면 멈춥니다.',
+  'Visualizer': '비주얼라이저',
+  'In Now Playing, bars under the cover move with the music, low notes on the left': '재생 화면에서 커버 아래 막대가 음악에 맞춰 움직입니다(왼쪽이 저음)',
+  'spectrum bars equalizer analyzer frequencies audio visualiser music moving': '스펙트럼 막대 이퀄라이저 분석기 주파수 오디오 비주얼라이저 음악 spectrum visualizer',
 }
 
 export default ko

@@ -516,7 +516,7 @@ Original plan:
   - [x] Distortion in the Live Editor (soft clipping, level kept), local files and YouTube.
   - [x] Fullscreen: F11 (Settings › Shortcuts) and a button in the title bar.
   - [x] Video as a theme background (MP4 / WebM, 40 MB max, muted loop, still when animations are off or hidden; served by byte ranges).
-  - [ ] Audio visualizer.
+  - [x] Audio visualizer: 16 bars under the cover in Now Playing (Settings › Playback), local files and YouTube; bands computed only while it shows.
   - [ ] Edit a local file's tags (title, artist, album, cover).
   - [ ] SoundCloud import.
   - Not done: downloading songs from the services (fixed limit: no audio extraction).

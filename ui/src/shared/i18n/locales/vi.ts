@@ -1463,6 +1463,9 @@ const vi: Record<string, string> = {
   'Choose a picture or video…': 'Chọn ảnh hoặc video…',
   'Another picture or video…': 'Ảnh hoặc video khác…',
   'Plays muted in a loop, still while animations are off or Music App is hidden.': 'Phát không tiếng, lặp lại; đứng yên khi tắt hiệu ứng động hoặc Music App bị ẩn.',
+  'Visualizer': 'Hình ảnh âm thanh',
+  'In Now Playing, bars under the cover move with the music, low notes on the left': 'Trong Đang phát, các thanh dưới ảnh bìa chuyển động theo nhạc, âm trầm ở bên trái',
+  'spectrum bars equalizer analyzer frequencies audio visualiser music moving': 'phổ thanh bộ chỉnh âm phân tích tần số âm thanh hình ảnh nhạc chuyển động',
 }
 
 export default vi

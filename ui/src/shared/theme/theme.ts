@@ -313,6 +313,8 @@ export interface Settings {
   adaptiveLevel: AdaptiveLevel
   /** Now Playing's cover moves with the music's loudness. */
   coverPulse: boolean
+  /** Now Playing shows the music as moving bars (16 bands, crates/dsp spectrum.rs). */
+  visualizer: boolean
   /** Videos whose song ends before the video (silence, end screen): the next song starts at the song's end (ends.ts). */
   earlyEnds: boolean
   /** YouTube's sound may go through the processing above (off: untouched, features work on local files only). */
@@ -401,6 +403,7 @@ export const DEFAULTS: Settings = {
   adaptiveSound: false,
   adaptiveLevel: -14,
   coverPulse: false,
+  visualizer: false,
   earlyEnds: true,
   liveYoutube: true,
   voiceSearch: false,
@@ -567,6 +570,7 @@ export function sanitize(raw: unknown): Settings {
     adaptiveSound: r.adaptiveSound === true,
     adaptiveLevel: ADAPTIVE_LEVELS.includes(r.adaptiveLevel as AdaptiveLevel) ? (r.adaptiveLevel as AdaptiveLevel) : DEFAULTS.adaptiveLevel,
     coverPulse: r.coverPulse === true,
+    visualizer: r.visualizer === true,
     earlyEnds: r.earlyEnds !== false,
     liveYoutube: typeof r.liveYoutube === 'boolean' ? r.liveYoutube : DEFAULTS.liveYoutube,
     voiceSearch: r.voiceSearch === true,

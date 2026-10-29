@@ -1463,6 +1463,9 @@ const zh: Record<string, string> = {
   'Choose a picture or video…': '选择图片或视频…',
   'Another picture or video…': '换一张图片或视频…',
   'Plays muted in a loop, still while animations are off or Music App is hidden.': '静音循环播放；关闭动画或隐藏 Music App 时静止。',
+  'Visualizer': '可视化',
+  'In Now Playing, bars under the cover move with the music, low notes on the left': '在正在播放中，封面下方的条形随音乐跳动，低音在左',
+  'spectrum bars equalizer analyzer frequencies audio visualiser music moving': '频谱 条形 均衡器 分析器 频率 音频 可视化 音乐 spectrum visualizer',
 }
 
 export default zh

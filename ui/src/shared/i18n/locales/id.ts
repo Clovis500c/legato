@@ -1463,6 +1463,9 @@ const id: Record<string, string> = {
   'Choose a picture or video…': 'Pilih gambar atau video…',
   'Another picture or video…': 'Gambar atau video lain…',
   'Plays muted in a loop, still while animations are off or Music App is hidden.': 'Diputar tanpa suara berulang, diam saat animasi mati atau Music App tersembunyi.',
+  'Visualizer': 'Visualisasi',
+  'In Now Playing, bars under the cover move with the music, low notes on the left': 'Di Sedang Diputar, batang di bawah sampul bergerak mengikuti musik, nada rendah di kiri',
+  'spectrum bars equalizer analyzer frequencies audio visualiser music moving': 'spektrum batang equalizer penganalisis frekuensi audio visualisasi musik bergerak',
 }
 
 export default id

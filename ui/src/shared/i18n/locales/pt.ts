@@ -1463,6 +1463,9 @@ const pt: Record<string, string> = {
   'Choose a picture or video…': 'Escolher uma imagem ou um vídeo…',
   'Another picture or video…': 'Outra imagem ou vídeo…',
   'Plays muted in a loop, still while animations are off or Music App is hidden.': 'Reproduz sem som em ciclo, parado com as animações desligadas ou a Music App oculta.',
+  'Visualizer': 'Visualizador',
+  'In Now Playing, bars under the cover move with the music, low notes on the left': 'Em A tocar, barras sob a capa mexem-se com a música, os graves à esquerda',
+  'spectrum bars equalizer analyzer frequencies audio visualiser music moving': 'espetro barras equalizador analisador frequências áudio visualizador música movimento',
 }
 
 export default pt

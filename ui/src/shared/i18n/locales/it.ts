@@ -1463,6 +1463,9 @@ const it: Record<string, string> = {
   'Choose a picture or video…': 'Scegli un’immagine o un video…',
   'Another picture or video…': 'Un’altra immagine o video…',
   'Plays muted in a loop, still while animations are off or Music App is hidden.': 'Riprodotto senza audio in loop, fermo se le animazioni sono spente o Music App è nascosta.',
+  'Visualizer': 'Visualizzatore',
+  'In Now Playing, bars under the cover move with the music, low notes on the left': 'In In riproduzione, barre sotto la copertina si muovono con la musica, i bassi a sinistra',
+  'spectrum bars equalizer analyzer frequencies audio visualiser music moving': 'spettro barre equalizzatore analizzatore frequenze audio visualizzatore musica movimento',
 }
 
 export default it

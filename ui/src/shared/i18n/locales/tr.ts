@@ -1463,6 +1463,9 @@ const tr: Record<string, string> = {
   'Choose a picture or video…': 'Resim veya video seç…',
   'Another picture or video…': 'Başka bir resim veya video…',
   'Plays muted in a loop, still while animations are off or Music App is hidden.': 'Sessiz ve döngüde oynar; animasyonlar kapalıyken veya Music App gizliyken durur.',
+  'Visualizer': 'Görselleştirici',
+  'In Now Playing, bars under the cover move with the music, low notes on the left': 'Şimdi çalıyor ekranında kapağın altındaki çubuklar müzikle hareket eder, pes sesler solda',
+  'spectrum bars equalizer analyzer frequencies audio visualiser music moving': 'spektrum çubuklar ekolayzır analizör frekanslar ses görselleştirici müzik hareket',
 }
 
 export default tr

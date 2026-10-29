@@ -1463,6 +1463,9 @@ const de: Record<string, string> = {
   'Choose a picture or video…': 'Bild oder Video wählen…',
   'Another picture or video…': 'Anderes Bild oder Video…',
   'Plays muted in a loop, still while animations are off or Music App is hidden.': 'Läuft stumm in Schleife, steht still, wenn Animationen aus sind oder Music App ausgeblendet ist.',
+  'Visualizer': 'Visualisierung',
+  'In Now Playing, bars under the cover move with the music, low notes on the left': 'In „Wird gespielt“ bewegen sich Balken unter dem Cover mit der Musik, tiefe Töne links',
+  'spectrum bars equalizer analyzer frequencies audio visualiser music moving': 'spektrum balken equalizer analysator frequenzen audio visualisierung musik bewegung',
 }
 
 export default de

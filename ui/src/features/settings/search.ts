@@ -62,6 +62,7 @@ export const SETTINGS_INDEX: SettingEntry[] = [
   { section: 'playback', label: msg('Adaptive Sound'), keywords: msg('loudness normalize normalization volume level even agc auto gain lufs') },
   { section: 'playback', label: msg('Adaptive Sound level'), keywords: msg('loudness target quiet normal loud lufs') },
   { section: 'playback', label: msg('Moving cover'), keywords: msg('animation pulse beat visualizer artwork react music') },
+  { section: 'playback', label: msg('Visualizer'), keywords: msg('spectrum bars equalizer analyzer frequencies audio visualiser music moving') },
   { section: 'playback', label: msg("Process YouTube's sound"), keywords: msg('audio live youtube video processing') },
   { section: 'appearance', label: msg('Background blur'), keywords: msg('immersive blurry flou sharp') },
   { section: 'appearance', label: msg('Background dimming'), keywords: msg('immersive dark veil brightness') },

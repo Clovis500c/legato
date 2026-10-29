@@ -371,7 +371,7 @@ const levelLabels: Record<AdaptiveLevel, string> = { [-20]: msg('Quiet'), [-14]:
 function SoundGroup() {
   const { settings: s, update } = useSettings()
   const youtubeError = useLive((l) => l.error)
-  const used = s.adaptiveSound || s.coverPulse
+  const used = s.adaptiveSound || s.coverPulse || s.visualizer
   return (
     <Group title={msg('Sound processing')}>
       <div className="rounded-xl border border-line bg-raised">
@@ -390,6 +390,9 @@ function SoundGroup() {
         )}
         <Row setting="coverPulse" label={msg('Moving cover')} sub={s.motion ? tr('In Now Playing, the cover swells and settles with the music') : tr('Needs Animations on (Appearance)')}>
           <Toggle label={tr('Moving cover')} checked={s.coverPulse} onChange={(coverPulse) => update({ coverPulse })} />
+        </Row>
+        <Row setting="visualizer" label={msg('Visualizer')} sub={s.motion ? tr('In Now Playing, bars under the cover move with the music, low notes on the left') : tr('Needs Animations on (Appearance)')}>
+          <Toggle label={tr('Visualizer')} checked={s.visualizer} onChange={(visualizer) => update({ visualizer })} />
         </Row>
         <Row
           label={msg("Process YouTube's sound")}

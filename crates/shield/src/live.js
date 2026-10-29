@@ -321,7 +321,7 @@
   // listen = levels only (cover pulse, early ends): the element plays its own sound, untouched, and this only listens.
   // ending = the app fades the song out (the gain holds); gain = where a new song's gain starts (the app's last song,
   // which may have played in the other embed), null = this frame's own.
-  let settings = { on: false, listen: false, adaptive: false, targetLufs: -14, ending: false, gain: null }
+  let settings = { on: false, listen: false, adaptive: false, targetLufs: -14, ending: false, bands: false, gain: null }
   let effects = cleanFx(null)
   // { ctx, video, stream, track, src, full, gain, limiter, fx, raw, k, wanted, … } while attached; full = the sound
   // comes out of here (gain, limiter, fx), else they are null.
@@ -363,7 +363,7 @@
     const split = ctx.createChannelSplitter(2)
     from.connect(split)
     return [0, 1].map((c) => {
-      const a = new AnalyserNode(ctx, { fftSize: 2048 })
+      const a = new AnalyserNode(ctx, { fftSize: 2048, smoothingTimeConstant: 0 })
       split.connect(a, c)
       return a
     })
@@ -520,6 +520,24 @@
     return { ms: sum / g.buf.length, peak }
   }
 
+  // Visualizer bands (crates/dsp spectrum.rs): each bin's power into the nearest of 16 bands (centers 50 · 2^(i·8/15)
+  // Hz), both channels averaged, in dB. +8.2: a sine's power through the analyser's Blackman window and 1/N scale
+  // reads 8.2 dB under the native band-passes.
+  function bands(pair) {
+    const n = pair[0].frequencyBinCount
+    const hz = g.ctx.sampleRate / pair[0].fftSize
+    if (!g.freq) g.freq = new Float32Array(n)
+    const power = new Array(16).fill(0)
+    for (const a of pair) {
+      a.getFloatFrequencyData(g.freq)
+      for (let k = 1; k < n; k++) {
+        const i = Math.round((15 / 8) * Math.log2((k * hz) / 50))
+        if (i >= 0 && i < 16) power[i] += 10 ** (g.freq[k] / 10) / pair.length
+      }
+    }
+    return power.map((p) => (p > 1e-12 ? 10 * Math.log10(p) + 8.2 : -120))
+  }
+
   function tick() {
     if (!g) return
     if (g.ctx.state !== 'running') {
@@ -576,7 +594,7 @@
       g.endSaid = true
       send({ end: g.quietAt })
     }
-    send({ levels: { fast, momentary: mom, short, peak: g.peak, gain: g.gainDb } })
+    send({ levels: { fast, momentary: mom, short, peak: g.peak, gain: g.gainDb, ...(settings.bands && { bands: bands(g.raw) }) } })
   }
 
   function apply(next, fx) {
@@ -592,7 +610,7 @@
     }
     const t = Number(next.targetLufs)
     // A start gain waits for its song (the next track): later messages without one keep it.
-    settings = { on: next.on === true, listen: next.listen === true, adaptive: next.adaptive === true, targetLufs: Number.isFinite(t) ? Math.min(-6, Math.max(-30, t)) : -14, ending: next.ending === true, gain: num(next.gain, MAX_CUT, MAX_BOOST, settings.gain) }
+    settings = { on: next.on === true, listen: next.listen === true, adaptive: next.adaptive === true, targetLufs: Number.isFinite(t) ? Math.min(-6, Math.max(-30, t)) : -14, ending: next.ending === true, bands: next.bands === true, gain: num(next.gain, MAX_CUT, MAX_BOOST, settings.gain) }
     if (!settings.on) {
       clearInterval(retry)
       retry = 0

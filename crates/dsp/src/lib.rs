@@ -13,6 +13,7 @@ mod meter;
 mod processor;
 pub mod reverb;
 pub mod space;
+pub mod spectrum;
 pub mod stretch;
 
 pub use biquad::Biquad;

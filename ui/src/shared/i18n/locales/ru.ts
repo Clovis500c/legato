@@ -1463,6 +1463,9 @@ const ru: Record<string, string> = {
   'Choose a picture or video…': 'Выбрать картинку или видео…',
   'Another picture or video…': 'Другая картинка или видео…',
   'Plays muted in a loop, still while animations are off or Music App is hidden.': 'Играет без звука по кругу; стоит, когда анимации выключены или Music App скрыта.',
+  'Visualizer': 'Визуализация',
+  'In Now Playing, bars under the cover move with the music, low notes on the left': 'В «Сейчас играет» полосы под обложкой двигаются с музыкой, низкие частоты слева',
+  'spectrum bars equalizer analyzer frequencies audio visualiser music moving': 'спектр полосы эквалайзер анализатор частоты аудио визуализация музыка',
 }
 
 export default ru

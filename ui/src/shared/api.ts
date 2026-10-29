@@ -165,7 +165,7 @@ export type WatchCmd =
   | { type: 'seek'; seconds: number }
   | { type: 'volume'; percent: number }
   | { type: 'crop'; x: number; y: number; w: number; h: number }
-  | { type: 'live'; on: boolean; listen: boolean; adaptive: boolean; targetLufs: number; ending: boolean; gain: number | null; effects?: Effects }
+  | { type: 'live'; on: boolean; listen: boolean; adaptive: boolean; targetLufs: number; ending: boolean; bands: boolean; gain: number | null; effects?: Effects }
 
 /** crates/dsp control.rs: live processing settings of the native engine. */
 export interface LiveSettings {
@@ -173,6 +173,8 @@ export interface LiveSettings {
   targetLufs: number
   /** The app fades the song out: Adaptive Sound holds. */
   ending: boolean
+  /** The visualizer wants the bands. */
+  bands: boolean
 }
 /** crates/dsp effects.rs: Live Editor settings (numbers only; clamped by Rust and live.js). */
 export interface Effects {
@@ -282,6 +284,8 @@ export interface LiveLevels {
   short: number
   peak: number
   gain: number
+  /** Visualizer: dB per band (crates/dsp spectrum.rs), when asked for. */
+  bands?: number[]
 }
 /** src-tauri speech.rs: why voice search heard nothing. */
 export type VoiceMiss = 'speechOff' | 'micBlocked' | 'noMic' | 'silence' | 'unclear' | 'offline' | 'language' | 'canceled' | 'failed'

@@ -1463,6 +1463,9 @@ const sv: Record<string, string> = {
   'Choose a picture or video…': 'Välj en bild eller video…',
   'Another picture or video…': 'En annan bild eller video…',
   'Plays muted in a loop, still while animations are off or Music App is hidden.': 'Spelas utan ljud i en slinga, stilla när animationer är av eller Music App är dold.',
+  'Visualizer': 'Visualisering',
+  'In Now Playing, bars under the cover move with the music, low notes on the left': 'I Spelas nu rör sig staplar under omslaget med musiken, låga toner till vänster',
+  'spectrum bars equalizer analyzer frequencies audio visualiser music moving': 'spektrum staplar equalizer analysator frekvenser ljud visualisering musik rörelse',
 }
 
 export default sv

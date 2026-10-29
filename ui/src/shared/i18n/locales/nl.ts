@@ -1463,6 +1463,9 @@ const nl: Record<string, string> = {
   'Choose a picture or video…': 'Kies een afbeelding of video…',
   'Another picture or video…': 'Andere afbeelding of video…',
   'Plays muted in a loop, still while animations are off or Music App is hidden.': 'Speelt zonder geluid in een lus, stil als animaties uit staan of Music App verborgen is.',
+  'Visualizer': 'Visualisatie',
+  'In Now Playing, bars under the cover move with the music, low notes on the left': 'In Nu speelt bewegen balken onder de hoes mee met de muziek, lage tonen links',
+  'spectrum bars equalizer analyzer frequencies audio visualiser music moving': 'spectrum balken equalizer analyzer frequenties audio visualisatie muziek beweging',
 }
 
 export default nl
