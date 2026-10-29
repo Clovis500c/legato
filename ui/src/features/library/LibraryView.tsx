@@ -1,4 +1,4 @@
-import { CaretDown, DotsThree, Info, MagnifyingGlass, Play, Plus, ShareNetwork, Shuffle, SlidersHorizontal, SortAscending } from '@phosphor-icons/react'
+import { CaretDown, DotsThree, Info, MagnifyingGlass, MicrophoneStage, Play, Plus, ShareNetwork, Shuffle, SlidersHorizontal, SortAscending } from '@phosphor-icons/react'
 import { useShallow } from 'zustand/react/shallow'
 import { useCallback, useMemo, useState } from 'react'
 import { pageQuery, useStore } from '../../app/store'
@@ -384,7 +384,7 @@ export function AlbumsView() {
           gapY={0}
           className="-mx-3 pb-6"
           render={(a) => (
-            <div onContextMenu={onMenu(() => tracksMenu(a.tracks, ['-', { label: tr('Go to artist'), onSelect: () => go({ name: 'artist', artist: a.artist }) }]))} className="group relative rounded-lg p-3 transition-colors hover:bg-raised">
+            <div onContextMenu={onMenu(() => tracksMenu(a.tracks, ['-', { label: tr('Go to artist'), icon: <MicrophoneStage size={16} />, onSelect: () => go({ name: 'artist', artist: a.artist }) }]))} className="group relative rounded-lg p-3 transition-colors hover:bg-raised">
               <button onClick={() => go({ name: 'album', album: a.album, artist: a.artist })} className="flex w-full flex-col gap-2.5 text-left">
                 <span className="relative aspect-square w-full">
                   <Cover title={a.album} art={firstArt(a.tracks)} size={176} className="size-full! text-[1.75rem]!" />

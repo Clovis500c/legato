@@ -1,4 +1,4 @@
-import { ArrowDown, ArrowUp, ArrowUUpLeft, ChartBar, ClockCounterClockwise, DotsSixVertical, EyeSlash, MusicNotes, Play, Playlist, PlusCircle, SlidersHorizontal, Sparkle, YoutubeLogo } from '@phosphor-icons/react'
+import { ArrowDown, ArrowRight, ArrowUp, ArrowUUpLeft, ChartBar, ClockCounterClockwise, DotsSixVertical, EyeSlash, ListPlus, MusicNotes, Play, Playlist, PlusCircle, Shuffle, SlidersHorizontal, Sparkle, YoutubeLogo } from '@phosphor-icons/react'
 import { useShallow } from 'zustand/react/shallow'
 import { openUrl } from '@tauri-apps/plugin-opener'
 import { Fragment, useEffect, useMemo, useState, type ReactNode } from 'react'
@@ -100,7 +100,7 @@ function Shortcuts({ mixes }: { mixes?: Mix[] }) {
       const p = playlists.find((x) => x.id === l.id)!
       const playIt = () => void api.playlistTracks(p.id).then((t) => play(t, 0))
       const openIt = () => go({ name: 'playlist', id: p.id })
-      return <JumpTile key={`p${p.id}`} art={<PlaylistCover p={p} size={56} />} title={p.name} onOpen={openIt} onPlay={playIt} menu={() => [{ label: tr('Play'), icon: <Play size={16} />, onSelect: playIt }, { label: tr('Open'), onSelect: openIt }]} />
+      return <JumpTile key={`p${p.id}`} art={<PlaylistCover p={p} size={56} />} title={p.name} onOpen={openIt} onPlay={playIt} menu={() => [{ label: tr('Play'), icon: <Play size={16} />, onSelect: playIt }, { label: tr('Open'), icon: <ArrowRight size={16} />, onSelect: openIt }]} />
     }
     if (l.kind === 'mix') {
       const m = mixes?.find((x) => x.id === l.id)
@@ -108,16 +108,16 @@ function Shortcuts({ mixes }: { mixes?: Mix[] }) {
       const byId = new Map(tracks.map((t) => [t.id, t]))
       const songs = mixSongs(m, byId)
       const openIt = () => go({ name: 'mix', id: m.id })
-      return <JumpTile key={`m${m.id}`} art={<Cover title={mixTitle(m)} art={trackArt(songs[0])} size={56} className="rounded-none! border-0!" />} title={mixTitle(m)} onOpen={openIt} onPlay={() => play(songs, 0)} menu={open([{ label: tr('Open'), onSelect: openIt }], songs)} />
+      return <JumpTile key={`m${m.id}`} art={<Cover title={mixTitle(m)} art={trackArt(songs[0])} size={56} className="rounded-none! border-0!" />} title={mixTitle(m)} onOpen={openIt} onPlay={() => play(songs, 0)} menu={open([{ label: tr('Open'), icon: <ArrowRight size={16} />, onSelect: openIt }], songs)} />
     }
     const songs = tracks.filter((t) => primaryArtist(t.artist) === l.artist && (l.kind === 'artist' || t.album === l.album))
     if (l.kind === 'album') {
       const openIt = () => go({ name: 'album', album: l.album, artist: l.artist })
-      return <JumpTile key={`a${l.album}\u0000${l.artist}`} art={<Cover title={l.album} art={trackArt(songs[0])} size={56} className="rounded-none! border-0!" />} title={l.album} onOpen={openIt} onPlay={() => play(songs, 0)} menu={open([{ label: tr('Open'), onSelect: openIt }], songs)} />
+      return <JumpTile key={`a${l.album}\u0000${l.artist}`} art={<Cover title={l.album} art={trackArt(songs[0])} size={56} className="rounded-none! border-0!" />} title={l.album} onOpen={openIt} onPlay={() => play(songs, 0)} menu={open([{ label: tr('Open'), icon: <ArrowRight size={16} />, onSelect: openIt }], songs)} />
     }
     const cover = songs.find((t) => t.art) ?? songs[0]
     const openIt = () => go({ name: 'artist', artist: l.artist })
-    return <JumpTile key={`r${l.artist}`} art={<Cover title={l.artist} art={trackArt(cover)} size={44} className="rounded-full!" />} title={l.artist} onOpen={openIt} onPlay={() => play(songs, 0)} menu={open([{ label: tr('Open'), onSelect: openIt }], songs)} />
+    return <JumpTile key={`r${l.artist}`} art={<Cover title={l.artist} art={trackArt(cover)} size={44} className="rounded-full!" />} title={l.artist} onOpen={openIt} onPlay={() => play(songs, 0)} menu={open([{ label: tr('Open'), icon: <ArrowRight size={16} />, onSelect: openIt }], songs)} />
   }
   const openSongs = () => go({ name: 'songs' })
   // 3 columns × 2 rows as in the mockup; 2 columns when the page is narrow.
@@ -132,7 +132,7 @@ function Shortcuts({ mixes }: { mixes?: Mix[] }) {
         title={tr('Songs')}
         onOpen={openSongs}
         onPlay={() => play(tracks, 0)}
-        menu={open([{ label: tr('Open'), onSelect: openSongs }], tracks)}
+        menu={open([{ label: tr('Open'), icon: <ArrowRight size={16} />, onSelect: openSongs }], tracks)}
       />
       {lists.map(tile)}
     </div>
@@ -268,8 +268,8 @@ export function YouTubeShelf({ shelf, menu }: { shelf: Shelf; menu?: () => MenuE
     const list = it.list!
     const entries = (): MenuEntry[] => [
       { label: tr('Play'), icon: <Play size={16} />, onSelect: () => void playList(i, list) },
-      { label: tr('Shuffle play'), onSelect: () => void playList(i, list, true) },
-      { label: tr('Add to queue'), onSelect: () => void load(i, list).then((t) => t.length && enqueue(t, false)) },
+      { label: tr('Shuffle play'), icon: <Shuffle size={16} />, onSelect: () => void playList(i, list, true) },
+      { label: tr('Add to queue'), icon: <ListPlus size={16} />, onSelect: () => void load(i, list).then((t) => t.length && enqueue(t, false)) },
       '-',
       { label: tr('Open in YouTube Music'), icon: <SourceIcon source="youtube" size={14} />, onSelect: () => void openUrl(listUrl(list)).catch(() => {}) },
     ]

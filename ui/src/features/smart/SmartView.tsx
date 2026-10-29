@@ -1,4 +1,4 @@
-import { DotsThree, Lightning, PencilSimple, Plus, X } from '@phosphor-icons/react'
+import { DotsThree, Lightning, ListPlus, PencilSimple, Plus, Trash, X } from '@phosphor-icons/react'
 import { useShallow } from 'zustand/react/shallow'
 import { useMemo, useState } from 'react'
 import { useSettings } from '../../app/settings'
@@ -73,9 +73,9 @@ async function saveAsPlaylist(list: SmartList, ids: number[]) {
 export function smartMenu(list: SmartList, ids: number[], edit?: () => void): MenuEntry[] {
   return [
     edit && { label: tr('Edit rules'), icon: <PencilSimple size={16} />, onSelect: edit },
-    { label: tr('Save as a playlist'), onSelect: () => void saveAsPlaylist(list, ids) },
+    { label: tr('Save as a playlist'), icon: <ListPlus size={16} />, onSelect: () => void saveAsPlaylist(list, ids) },
     '-',
-    { label: tr('Delete'), danger: true, onSelect: () => void deleteSmart(list) },
+    { label: tr('Delete'), icon: <Trash size={16} />, danger: true, onSelect: () => void deleteSmart(list) },
   ]
 }
 

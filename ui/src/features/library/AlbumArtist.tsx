@@ -1,4 +1,4 @@
-import { CaretLeft, Clock, DotsThree, Heart, Play, Plus, Radio, SpinnerGap, Waveform } from '@phosphor-icons/react'
+import { CaretLeft, Clock, DotsThree, Heart, MicrophoneStage, Play, Plus, Radio, SpinnerGap, Waveform } from '@phosphor-icons/react'
 import { useShallow } from 'zustand/react/shallow'
 import { Fragment, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useStore } from '../../app/store'
@@ -209,7 +209,7 @@ export function AlbumView({ album, artist }: { album: string; artist: string }) 
     // From the pane's edges (-mx-6 -mt-5): room for the band (PageHeader).
     <div className="-mx-6 -mt-5 flex min-h-0 flex-1 flex-col overflow-y-auto px-6 pt-5 pb-8">
       <PageHeader
-        onContextMenu={onMenu(() => tracksMenu(shown, ['-', { label: tr('Go to artist'), onSelect: toArtist }]))}
+        onContextMenu={onMenu(() => tracksMenu(shown, ['-', { label: tr('Go to artist'), icon: <MicrophoneStage size={16} />, onSelect: toArtist }]))}
         art={<Cover title={album} art={firstArt(shown)} size={200} eager className="border-0" />}
         tint={tint}
         kicker={tr('Album')}
@@ -238,7 +238,7 @@ export function AlbumView({ album, artist }: { album: string; artist: string }) 
             <PlayAll tracks={ordered} />
             <ShuffleRound tracks={ordered} />
             <AddToPlaylist trackIds={ordered.map((t) => t.id)} label={tr('Add {n} songs to a playlist', { n: shown.length })} />
-            <RoundButton label={tr('More')} kind="plain" onClick={(e) => openMenu(e, tracksMenu(shown, ['-', { label: tr('Go to artist'), onSelect: toArtist }]))}>
+            <RoundButton label={tr('More')} kind="plain" onClick={(e) => openMenu(e, tracksMenu(shown, ['-', { label: tr('Go to artist'), icon: <MicrophoneStage size={16} />, onSelect: toArtist }]))}>
               <DotsThree size={20} weight="bold" />
             </RoundButton>
           </>

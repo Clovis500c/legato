@@ -1,4 +1,4 @@
-import { ArrowCounterClockwise, Play, Prohibit, ThumbsDown } from '@phosphor-icons/react'
+import { ArrowCounterClockwise, ArrowRight, Play, Prohibit, ThumbsDown } from '@phosphor-icons/react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useSettings } from '../../app/settings'
 import { useStore } from '../../app/store'
@@ -108,7 +108,7 @@ export function MixCard({ mix }: { mix: Mix }) {
   const play = usePlayer((s) => s.playTracks)
   const tracks = useMixTracks(mix)
   const open = () => go({ name: 'mix', id: mix.id })
-  return <MediaCard title={mixTitle(mix)} sub={mixReason(mix)} art={<MixCover mix={mix} tracks={tracks} size={176} />} onOpen={open} onPlay={() => play(tracks, 0)} menu={() => tracksMenu(tracks, ['-', { label: tr('Open'), onSelect: open }])} />
+  return <MediaCard title={mixTitle(mix)} sub={mixReason(mix)} art={<MixCover mix={mix} tracks={tracks} size={176} />} onOpen={open} onPlay={() => play(tracks, 0)} menu={() => tracksMenu(tracks, ['-', { label: tr('Open'), icon: <ArrowRight size={16} />, onSelect: open }])} />
 }
 
 const SECTIONS: { kind: Mix['kind']; title: string }[] = [
