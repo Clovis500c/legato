@@ -111,8 +111,6 @@ const vi: Record<string, string> = {
   'Repeat: whole queue': 'Lặp lại: toàn bộ hàng đợi',
   'Repeat: this track': 'Lặp lại: bài này',
   'Repeat': 'Lặp lại',
-  'Repeat all': 'Lặp lại tất cả',
-  'Repeat one': 'Lặp lại một bài',
   'Shuffle: on': 'Phát ngẫu nhiên: bật',
   'Shuffle: off': 'Phát ngẫu nhiên: tắt',
   'Previous': 'Trước',
@@ -135,7 +133,6 @@ const vi: Record<string, string> = {
   'Position': 'Vị trí',
   'Playing from {source} · right-click to switch source': 'Đang phát từ {source} · nhấp chuột phải để đổi nguồn',
   'Now playing': 'Đang phát',
-  'Up next · {n}': 'Tiếp theo · {n}',
   'Show': 'Hiển thị',
   'Auto': 'Tự động',
   'Auto · cover': 'Tự động · ảnh bìa',
@@ -1506,6 +1503,10 @@ const vi: Record<string, string> = {
   // v2 redesign
   'Playing': 'Đang phát',
   'All your songs': 'Tất cả bài hát của bạn',
+  'Next: {title}': 'Tiếp theo: {title}',
+  'Next, added by you': 'Tiếp theo, bạn đã thêm',
+  'Then from {name}': 'Sau đó từ {name}',
+  'Then from the list': 'Sau đó từ danh sách',
 }
 
 export default vi

@@ -111,8 +111,6 @@ const ru: Record<string, string> = {
   'Repeat: whole queue': 'Повтор: вся очередь',
   'Repeat: this track': 'Повтор: этот трек',
   'Repeat': 'Повтор',
-  'Repeat all': 'Повторять все',
-  'Repeat one': 'Повторять один',
   'Shuffle: on': 'Перемешивание: вкл.',
   'Shuffle: off': 'Перемешивание: выкл.',
   'Previous': 'Предыдущий',
@@ -135,7 +133,6 @@ const ru: Record<string, string> = {
   'Position': 'Позиция',
   'Playing from {source} · right-click to switch source': 'Источник: {source} · правый клик, чтобы сменить источник',
   'Now playing': 'Сейчас играет',
-  'Up next · {n}': 'Далее · {n}',
   'Show': 'Показывать',
   'Auto': 'Авто',
   'Auto · cover': 'Авто · обложка',
@@ -1506,6 +1503,10 @@ const ru: Record<string, string> = {
   // v2 redesign
   'Playing': 'Играет',
   'All your songs': 'Все ваши треки',
+  'Next: {title}': 'Далее: {title}',
+  'Next, added by you': 'Далее, добавленные вами',
+  'Then from {name}': 'Затем из {name}',
+  'Then from the list': 'Затем из списка',
 }
 
 export default ru

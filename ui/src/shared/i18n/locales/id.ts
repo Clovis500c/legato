@@ -111,8 +111,6 @@ const id: Record<string, string> = {
   'Repeat: whole queue': 'Ulangi: seluruh antrean',
   'Repeat: this track': 'Ulangi: lagu ini',
   'Repeat': 'Ulangi',
-  'Repeat all': 'Ulangi semua',
-  'Repeat one': 'Ulangi satu',
   'Shuffle: on': 'Acak: aktif',
   'Shuffle: off': 'Acak: nonaktif',
   'Previous': 'Sebelumnya',
@@ -135,7 +133,6 @@ const id: Record<string, string> = {
   'Position': 'Posisi',
   'Playing from {source} · right-click to switch source': 'Diputar dari {source} · klik kanan untuk mengganti sumber',
   'Now playing': 'Sedang diputar',
-  'Up next · {n}': 'Berikutnya · {n}',
   'Show': 'Tampilkan',
   'Auto': 'Otomatis',
   'Auto · cover': 'Otomatis · sampul',
@@ -1506,6 +1503,10 @@ const id: Record<string, string> = {
   // v2 redesign
   'Playing': 'Sedang diputar',
   'All your songs': 'Semua lagumu',
+  'Next: {title}': 'Berikutnya: {title}',
+  'Next, added by you': 'Berikutnya, tambahanmu',
+  'Then from {name}': 'Lalu dari {name}',
+  'Then from the list': 'Lalu dari daftar',
 }
 
 export default id

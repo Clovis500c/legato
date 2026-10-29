@@ -111,8 +111,6 @@ const ja: Record<string, string> = {
   'Repeat: whole queue': 'リピート：キュー全体',
   'Repeat: this track': 'リピート：この曲',
   'Repeat': 'リピート',
-  'Repeat all': 'すべてをリピート',
-  'Repeat one': '1曲をリピート',
   'Shuffle: on': 'シャッフル：オン',
   'Shuffle: off': 'シャッフル：オフ',
   'Previous': '前へ',
@@ -135,7 +133,6 @@ const ja: Record<string, string> = {
   'Position': '再生位置',
   'Playing from {source} · right-click to switch source': '{source}から再生中 · 右クリックでソースを切り替え',
   'Now playing': '再生中',
-  'Up next · {n}': '次に再生 · {n}',
   'Show': '表示',
   'Auto': '自動',
   'Auto · cover': '自動 · カバー',
@@ -1506,6 +1503,10 @@ const ja: Record<string, string> = {
   // v2 redesign
   'Playing': '再生中',
   'All your songs': 'すべての曲',
+  'Next: {title}': '次: {title}',
+  'Next, added by you': '次に再生（追加した曲）',
+  'Then from {name}': '続いて {name} から',
+  'Then from the list': '続いてリストから',
 }
 
 export default ja

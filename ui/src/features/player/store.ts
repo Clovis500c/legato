@@ -5,7 +5,7 @@ import type { Box } from '../../shared/artbox'
 import { region } from '../../shared/format'
 import { endListen, progress, startListen } from './listens'
 import { demoGain, demoLength, fadeGain, NO_FADE, overlapDue, PICK_IN_S, type Fade } from './fade'
-import { insertAt, moveInOrder, moveToSlot, nextIndex, playOrder, queued, tooLong, type Repeat } from './queue'
+import { insertAt, keepQueued, moveInOrder, moveToSlot, nextIndex, playOrder, queued, tooLong, type Repeat } from './queue'
 import { vias, type Via } from './sources'
 import { rememberEnd, songEnd } from './ends'
 import { bindLiveFrame, onEndHeard } from './live'
@@ -39,6 +39,10 @@ interface PlayerState {
   index: number
   /** List indexes in play order (shuffled or not). */
   order: number[]
+  /** List indexes the user queued (Play next, Add to queue, dropped into Up next): Up next shows them first. */
+  added: number[]
+  /** What the queue was started from (the page it was played on), for Up next's "Then from …". */
+  from?: string
   shuffle: boolean
   repeat: Repeat
   /** Fades between songs and on pause (Settings › Player, Advanced). */
@@ -73,8 +77,8 @@ interface PlayerState {
   setFull: (full: boolean) => void
   /** via = force a source for the first track (context menu "Play via"). */
   playTracks: (list: LibraryTrack[], index: number, via?: Via) => void
-  /** next = right after the current track, else at the end. Nothing playing: plays them. */
-  enqueue: (tracks: LibraryTrack[], next: boolean) => void
+  /** next = right after the current track, else after the songs already queued (`mine` = false: similar songs, at the end). Nothing playing: plays them. */
+  enqueue: (tracks: LibraryTrack[], next: boolean, mine?: boolean) => void
   /** Drops list index `i` from the play order. */
   dequeue: (i: number) => void
   /** Up next, dragged: list index `i` goes where `j` is in the play order. */
@@ -303,6 +307,16 @@ async function tryOtherUpload(trackId: number, failed: string, why: string) {
   p.step(1)
 }
 
+/** The page a queue is played from, for Up next's "Then from …". */
+function contextName(): string | undefined {
+  const { view, playlists } = useStore.getState()
+  if (view.name === 'playlist') return playlists.find((p) => p.id === view.id)?.name
+  if (view.name === 'album') return view.album
+  if (view.name === 'artist') return view.artist
+  if (view.name === 'songs') return tr('Songs')
+  return undefined
+}
+
 export const usePlayer = create<PlayerState>((set, get) => ({
   playing: false,
   positionMs: 0,
@@ -311,6 +325,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
   list: [],
   index: 0,
   order: [],
+  added: [],
   shuffle: false,
   repeat: 'off',
   fade: NO_FADE,
@@ -329,14 +344,15 @@ export const usePlayer = create<PlayerState>((set, get) => ({
   playTracks(list, index, via) {
     const i = list.findIndex((t, j) => j >= index && vias(t, spotifyOn()).length > 0)
     if (i < 0) return
-    set({ list, order: playOrder(list.length, i, get().shuffle) })
+    set({ list, order: playOrder(list.length, i, get().shuffle), added: [], from: contextName() })
     void get().playAt(i, i === index ? via : undefined)
   },
 
-  enqueue(tracks, next) {
-    const { list, order, index, now } = get()
+  enqueue(tracks, next, mine = true) {
+    const { list, order, index, now, added } = get()
     if (!now?.trackId) return get().playTracks(tracks, 0)
-    set({ list: [...list, ...tracks], order: queued(order, index, tracks.map((_, k) => list.length + k), next) })
+    const fresh = tracks.map((_, k) => list.length + k)
+    set({ list: [...list, ...tracks], order: queued(order, index, fresh, next, mine ? added : undefined), added: mine ? [...added, ...fresh] : added })
   },
 
   dequeue: (i) => set({ order: get().order.filter((x) => x !== i || x === get().index) }),
@@ -356,7 +372,8 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     const { list, order, now } = get()
     if (!now?.trackId) return get().playTracks(tracks, 0)
     endRun()
-    set({ list: [...list, ...tracks], order: insertAt(order, tracks.map((_, k) => list.length + k), at) })
+    const fresh = tracks.map((_, k) => list.length + k)
+    set({ list: [...list, ...tracks], order: insertAt(order, fresh, at), added: [...get().added, ...fresh] })
   },
 
   clearNext() {
@@ -366,10 +383,10 @@ export const usePlayer = create<PlayerState>((set, get) => ({
   },
 
   toggleShuffle() {
-    const { shuffle, list, index } = get()
+    const { shuffle, list, index, order, added } = get()
     // Gapless local run queued in list order: engine keeps current only, store picks what's next.
     if (!shuffle) endRun()
-    set({ shuffle: !shuffle, order: playOrder(list.length, index, !shuffle) })
+    set({ shuffle: !shuffle, order: keepQueued(playOrder(list.length, index, !shuffle), order, index, added) })
   },
 
   cycleRepeat() {
@@ -380,7 +397,8 @@ export const usePlayer = create<PlayerState>((set, get) => ({
 
   resume({ list, index, order, shuffle, repeat, positionMs, via, paused = false }) {
     const valid = order.length === list.length && order.includes(index)
-    set({ list, shuffle, repeat, order: valid ? order : playOrder(list.length, index, shuffle) })
+    // shortcut: what the user queued isn't saved with the session, it reads as part of the list after a restart; save `added` if missed.
+    set({ list, shuffle, repeat, order: valid ? order : playOrder(list.length, index, shuffle), added: [], from: undefined })
     void get().playAt(index, via, { from: positionMs, hold: paused })
   },
 

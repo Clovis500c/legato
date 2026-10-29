@@ -111,8 +111,6 @@ const nl: Record<string, string> = {
   'Repeat: whole queue': 'Herhalen: hele wachtrij',
   'Repeat: this track': 'Herhalen: dit nummer',
   'Repeat': 'Herhalen',
-  'Repeat all': 'Alles herhalen',
-  'Repeat one': 'Eén herhalen',
   'Shuffle: on': 'Shuffle: aan',
   'Shuffle: off': 'Shuffle: uit',
   'Previous': 'Vorige',
@@ -135,7 +133,6 @@ const nl: Record<string, string> = {
   'Position': 'Positie',
   'Playing from {source} · right-click to switch source': 'Afgespeeld via {source} · klik met rechts om van bron te wisselen',
   'Now playing': 'Nu aan het afspelen',
-  'Up next · {n}': 'Hierna · {n}',
   'Show': 'Weergeven',
   'Auto': 'Auto',
   'Auto · cover': 'Auto · cover',
@@ -1506,6 +1503,10 @@ const nl: Record<string, string> = {
   // v2 redesign
   'Playing': 'Speelt nu',
   'All your songs': 'Al je nummers',
+  'Next: {title}': 'Hierna: {title}',
+  'Next, added by you': 'Hierna, door jou toegevoegd',
+  'Then from {name}': 'Dan uit {name}',
+  'Then from the list': 'Dan uit de lijst',
 }
 
 export default nl

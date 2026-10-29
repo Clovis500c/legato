@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { insertAt, moveInOrder, moveToSlot, nextIndex, playOrder, queued, queueRows, repeatsAhead, tooLong } from './queue'
+import { insertAt, keepQueued, moveInOrder, moveToSlot, nextIndex, playOrder, queued, queueItems, queueRows, repeatsAhead, tooLong } from './queue'
 
 describe('playOrder', () => {
   it('keeps list order, or shuffles with the current track first', () => {
@@ -17,6 +17,28 @@ describe('queued', () => {
   it('inserts after the current track or at the end', () => {
     expect(queued([2, 0, 1], 0, [3, 4], true)).toEqual([2, 0, 3, 4, 1])
     expect(queued([2, 0, 1], 0, [3], false)).toEqual([2, 0, 1, 3])
+  })
+
+  it("queues the user's songs after the current one, behind ones already queued, before the rest of the list", () => {
+    expect(queued([0, 1, 2], 0, [3], false, [])).toEqual([0, 3, 1, 2])
+    expect(queued([0, 3, 1, 2], 0, [4], false, [3])).toEqual([0, 3, 4, 1, 2])
+    // Play next still goes first.
+    expect(queued([0, 3, 1, 2], 0, [4], true, [3])).toEqual([0, 4, 3, 1, 2])
+  })
+
+  it('keeps them there when shuffle turns on or off', () => {
+    expect(keepQueued([0, 1, 2, 3, 4], [1, 4, 0, 2, 3], 1, [4])).toEqual([0, 1, 4, 2, 3])
+    // Already played: no longer ahead, stays where the new order puts it.
+    expect(keepQueued([0, 1, 2, 3], [3, 0, 1, 2], 0, [3])).toEqual([0, 1, 2, 3])
+  })
+})
+
+describe('queueItems', () => {
+  it('heads Now playing, the songs you queued and the rest', () => {
+    const rows = queueRows([0, 1, 5, 6, 2], 1, () => true)
+    expect(queueItems(rows, [5, 6])).toEqual([{ k: 0 }, { head: 'now' }, { k: 1 }, { head: 'mine' }, { k: 2 }, { k: 3 }, { head: 'then' }, { k: 4 }])
+    expect(queueItems(rows, [])).toEqual([{ k: 0 }, { head: 'now' }, { k: 1 }, { head: 'then' }, { k: 2 }, { k: 3 }, { k: 4 }])
+    expect(queueItems(queueRows([0], 0, () => true), [])).toEqual([{ head: 'now' }, { k: 0 }])
   })
 })
 

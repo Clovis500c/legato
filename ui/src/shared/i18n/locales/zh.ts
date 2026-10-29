@@ -111,8 +111,6 @@ const zh: Record<string, string> = {
   'Repeat: whole queue': '循环：整个队列',
   'Repeat: this track': '循环：这首歌',
   'Repeat': '循环',
-  'Repeat all': '全部循环',
-  'Repeat one': '单曲循环',
   'Shuffle: on': '随机播放：开启',
   'Shuffle: off': '随机播放：关闭',
   'Previous': '上一首',
@@ -135,7 +133,6 @@ const zh: Record<string, string> = {
   'Position': '位置',
   'Playing from {source} · right-click to switch source': '正在从 {source} 播放 · 右键单击可切换来源',
   'Now playing': '正在播放',
-  'Up next · {n}': '接下来播放 · {n}',
   'Show': '显示',
   'Auto': '自动',
   'Auto · cover': '自动 · 封面',
@@ -1506,6 +1503,10 @@ const zh: Record<string, string> = {
   // v2 redesign
   'Playing': '正在播放',
   'All your songs': '你的所有歌曲',
+  'Next: {title}': '下一首：{title}',
+  'Next, added by you': '接下来，你添加的',
+  'Then from {name}': '然后来自 {name}',
+  'Then from the list': '然后来自列表',
 }
 
 export default zh

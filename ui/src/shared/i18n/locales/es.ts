@@ -111,8 +111,6 @@ const es: Record<string, string> = {
   'Repeat: whole queue': 'Repetir: toda la cola',
   'Repeat: this track': 'Repetir: esta canción',
   'Repeat': 'Repetir',
-  'Repeat all': 'Repetir todo',
-  'Repeat one': 'Repetir una',
   'Shuffle: on': 'Aleatorio: sí',
   'Shuffle: off': 'Aleatorio: no',
   'Previous': 'Anterior',
@@ -135,7 +133,6 @@ const es: Record<string, string> = {
   'Position': 'Posición',
   'Playing from {source} · right-click to switch source': 'Reproduciendo desde {source} · clic derecho para cambiar de fuente',
   'Now playing': 'Reproduciendo',
-  'Up next · {n}': 'A continuación · {n}',
   'Show': 'Mostrar',
   'Auto': 'Auto',
   'Auto · cover': 'Auto · portada',
@@ -1506,6 +1503,10 @@ const es: Record<string, string> = {
   // v2 redesign
   'Playing': 'Sonando',
   'All your songs': 'Todas tus canciones',
+  'Next: {title}': 'A continuación: {title}',
+  'Next, added by you': 'A continuación, añadidas por ti',
+  'Then from {name}': 'Después, de {name}',
+  'Then from the list': 'Después, de la lista',
 }
 
 export default es

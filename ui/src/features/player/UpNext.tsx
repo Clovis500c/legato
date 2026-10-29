@@ -1,6 +1,6 @@
 import { CaretRight, ClipboardText, DotsSixVertical, FloppyDisk, MinusCircle, Waveform, X } from '@phosphor-icons/react'
 import { useVirtualizer } from '@tanstack/react-virtual'
-import { useEffect, useMemo, useRef } from 'react'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { useSettings } from '../../app/settings'
 import { useStore } from '../../app/store'
 import { trackArt } from '../../shared/art'
@@ -11,7 +11,7 @@ import { Cover } from '../../shared/ui/Cover'
 import { dragSource, useDrag, useDropTarget } from '../../shared/ui/drag'
 import { trackMenu } from '../menus'
 import { fileFormat } from './PlayerBar'
-import { queueRows, repeatsAhead, type QueueRow } from './queue'
+import { queueItems, queueRows, repeatsAhead, type QueueRow } from './queue'
 import { vias } from './sources'
 import { fileTitle, isRemote, useNowTrack, usePlayer } from './store'
 import { tr, trn } from '../../shared/i18n/i18n'
@@ -19,6 +19,8 @@ import { api } from '../../shared/api'
 import { askText } from '../../shared/ui/Ask'
 
 const ROW = 60
+/** Block headers: Now playing, Next added by you, Then from … */
+const HEAD = 36
 /** Panels beside Now Playing's cover: a see-through card. */
 export const CARD = 'rounded-2xl border border-line-soft bg-[color-mix(in_srgb,var(--panel)_55%,transparent)] p-3'
 
@@ -35,12 +37,6 @@ function useRows(): QueueRow[] {
     if (trackId !== undefined) return queueRows(order, index, (i) => !!list[i] && vias(list[i], sp).length > 0)
     return [...(path ? [path] : []), ...upcoming].map((p, k) => ({ key: p, i: -1, played: false, current: k === 0 && !!path, path: p }))
   }, [trackId, list, order, index, sp, upcoming, path])
-}
-
-/** Songs still to play after the current one (button label when the panel is folded). */
-export function useNextCount(): number {
-  const rows = useRows()
-  return rows.filter((r) => !r.played && !r.current).length
 }
 
 /** The whole queue in play order as a new playlist (recommendations join the library on the way). */
@@ -83,12 +79,13 @@ function queueMenu(onHide: () => void): MenuEntry[] {
 }
 
 /**
- * Queue in play order, shuffle aware: songs already played stay (dimmed, click to play again), then the current one,
- * then what's next. Opens on the current song; virtualized (queues reach thousands). Any song, played ones and the
- * current one too (user's request 2026-10-29), can be dragged into another order (or Alt+↑ / Alt+↓ on a song): above
- * the current song = history, below = still to play. What's next can be cleared.
+ * Queue in play order, shuffle aware: songs already played stay (dimmed, click to play again), then three blocks
+ * (docs/design.md): Now playing, Next added by you (always first), Then from the list. Opens on Now playing;
+ * virtualized (queues reach thousands). Any song, played ones and the current one too (user's request 2026-10-29), can
+ * be dragged into another order (or Alt+↑ / Alt+↓ on a song): above the current song = history, below = still to play.
+ * What's next, or only what you added, can be cleared. className: the panel's own look (default: a card over Now
+ * Playing).
  */
-/** className: the panel's own look (default: a card over Now Playing). */
 export function UpNext({ onHide, className = CARD }: { onHide: () => void; className?: string }) {
   const rows = useRows()
   const list = usePlayer((s) => s.list)
@@ -99,9 +96,23 @@ export function UpNext({ onHide, className = CARD }: { onHide: () => void; class
   const nowArtist = usePlayer((s) => s.now?.artist ?? '')
   const track = useNowTrack()
   const autoplay = useSettings((s) => s.settings.autoplay)
+  const added = usePlayer((s) => s.added)
+  const from = usePlayer((s) => s.from)
+  const items = useMemo(() => queueItems(rows, added), [rows, added])
   const scroller = useRef<HTMLOListElement>(null)
-  const v = useVirtualizer({ count: rows.length, getScrollElement: () => scroller.current, estimateSize: () => ROW, overscan: 8 })
+  // Keys follow the items: sizes are measured again when headers move (a new song), not kept by position.
+  const itemKey = useCallback(
+    (n: number) => {
+      const x = items[n]
+      return 'head' in x ? `head-${x.head}` : rows[x.k].key
+    },
+    [items, rows],
+  )
+  const v = useVirtualizer({ count: items.length, getScrollElement: () => scroller.current, estimateSize: (n) => ('head' in items[n] ? HEAD : ROW), getItemKey: itemKey, overscan: 8 })
   const current = rows.findIndex((r) => r.current)
+  const nowAt = items.findIndex((x) => 'head' in x && x.head === 'now')
+  const clearAdded = () => rows.slice(current + 1).forEach((r) => added.includes(r.i) && usePlayer.getState().dequeue(r.i))
+  const heads = { now: tr('Now playing'), mine: tr('Next, added by you'), then: from ? tr('Then from {name}', { name: from }) : tr('Then from the list') }
   const played = current < 0 ? 0 : current
   const next = rows.length - played - (current < 0 ? 0 : 1)
   // Pointer drag (shared/ui/drag.ts): songs of the queue go anywhere in it; songs from a list only after the current one.
@@ -126,10 +137,10 @@ export function UpNext({ onHide, className = CARD }: { onHide: () => void; class
   )
   const dropAt = useDrag((s) => (s.target === 'queue' ? s.slot : null))
   const drag = useDrag((s) => (s.data?.kind === 'queue' ? s.data.i : null))
-  // New song: bring it to the top, history above it within reach.
+  // New song: bring Now playing to the top, history above it within reach.
   useEffect(() => {
-    if (current >= 0) v.scrollToIndex(current, { align: 'start' })
-  }, [current, v])
+    if (nowAt >= 0) v.scrollToIndex(nowAt, { align: 'start' })
+  }, [nowAt, v])
 
   return (
     <aside onContextMenu={onMenu(() => queueMenu(onHide))} className={`flex min-h-0 flex-col gap-2 ${className}`}>
@@ -166,7 +177,21 @@ export function UpNext({ onHide, className = CARD }: { onHide: () => void; class
       <ol ref={scroller} data-list data-drop={queue ? 'queue' : undefined} className="scroll-quiet relative min-h-0 flex-1 overflow-y-auto">
         <div style={{ height: v.getTotalSize() }} className="relative">
           {v.getVirtualItems().map((item) => {
-            const r = rows[item.index]
+            const it = items[item.index]
+            if ('head' in it)
+              return (
+                <li key={`head-${it.head}`} className="absolute inset-x-0 flex items-end justify-between gap-2 px-1 pb-1.5" style={{ top: item.start, height: HEAD }}>
+                  <span className="truncate text-sm font-medium">{heads[it.head]}</span>
+                  {it.head === 'mine' && (
+                    <button onClick={clearAdded} className="shrink-0 rounded-full px-2 py-0.5 text-xs font-medium text-ink-2 hover:bg-raised hover:text-ink">
+                      {tr('Clear')}
+                    </button>
+                  )}
+                </li>
+              )
+            // Drop slots count songs only (headers aside): k = the song's row.
+            const k = it.k
+            const r = rows[k]
             const t = r.i >= 0 ? list[r.i] : undefined
             const title = r.current ? nowTitle : (t?.title ?? fileTitle(r.path ?? ''))
             const artist = r.current ? nowArtist : (t?.artist ?? fileFormat(r.path) ?? '')
@@ -174,14 +199,14 @@ export function UpNext({ onHide, className = CARD }: { onHide: () => void; class
             // Every song of the queue moves: history, the current one, what's next.
             const movable = !!t
             const neighbor = (d: 1 | -1) => {
-              const n = rows[item.index + d]
+              const n = rows[k + d]
               return n && n.i >= 0 ? n.i : null
             }
-            const line = dropAt === item.index ? 'shadow-[inset_0_2px_0_var(--accent)]' : dropAt === item.index + 1 && item.index === rows.length - 1 ? 'shadow-[inset_0_-2px_0_var(--accent)]' : ''
+            const line = dropAt === k ? 'shadow-[inset_0_2px_0_var(--ink)]' : dropAt === k + 1 && k === rows.length - 1 ? 'shadow-[inset_0_-2px_0_var(--ink)]' : ''
             return (
               <li
                 key={r.key}
-                data-slot={item.index}
+                data-slot={k}
                 onPointerDown={dragSource(
                   () => (movable ? { kind: 'queue', i: r.i } : null),
                   () => title,

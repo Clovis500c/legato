@@ -111,8 +111,6 @@ const uk: Record<string, string> = {
   'Repeat: whole queue': 'Повтор: уся черга',
   'Repeat: this track': 'Повтор: цей трек',
   'Repeat': 'Повтор',
-  'Repeat all': 'Повторювати все',
-  'Repeat one': 'Повторювати один',
   'Shuffle: on': 'Перемішування: увімк.',
   'Shuffle: off': 'Перемішування: вимк.',
   'Previous': 'Попередній',
@@ -135,7 +133,6 @@ const uk: Record<string, string> = {
   'Position': 'Позиція',
   'Playing from {source} · right-click to switch source': 'Джерело: {source} · правий клік, щоб змінити джерело',
   'Now playing': 'Зараз грає',
-  'Up next · {n}': 'Далі · {n}',
   'Show': 'Показувати',
   'Auto': 'Авто',
   'Auto · cover': 'Авто · обкладинка',
@@ -1506,6 +1503,10 @@ const uk: Record<string, string> = {
   // v2 redesign
   'Playing': 'Грає',
   'All your songs': 'Усі ваші треки',
+  'Next: {title}': 'Далі: {title}',
+  'Next, added by you': 'Далі, додані вами',
+  'Then from {name}': 'Потім із {name}',
+  'Then from the list': 'Потім зі списку',
 }
 
 export default uk

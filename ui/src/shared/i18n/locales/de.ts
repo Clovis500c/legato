@@ -111,8 +111,6 @@ const de: Record<string, string> = {
   'Repeat: whole queue': 'Wiederholen: ganze Warteschlange',
   'Repeat: this track': 'Wiederholen: dieser Titel',
   'Repeat': 'Wiederholen',
-  'Repeat all': 'Alle wiederholen',
-  'Repeat one': 'Einen wiederholen',
   'Shuffle: on': 'Zufallswiedergabe: an',
   'Shuffle: off': 'Zufallswiedergabe: aus',
   'Previous': 'Zurück',
@@ -135,7 +133,6 @@ const de: Record<string, string> = {
   'Position': 'Position',
   'Playing from {source} · right-click to switch source': 'Wiedergabe von {source} · Rechtsklick, um die Quelle zu wechseln',
   'Now playing': 'Aktuelle Wiedergabe',
-  'Up next · {n}': 'Als Nächstes · {n}',
   'Show': 'Anzeigen',
   'Auto': 'Auto',
   'Auto · cover': 'Auto · Cover',
@@ -1506,6 +1503,10 @@ const de: Record<string, string> = {
   // v2 redesign
   'Playing': 'Läuft',
   'All your songs': 'Alle deine Songs',
+  'Next: {title}': 'Als Nächstes: {title}',
+  'Next, added by you': 'Als Nächstes, von dir hinzugefügt',
+  'Then from {name}': 'Dann aus {name}',
+  'Then from the list': 'Dann aus der Liste',
 }
 
 export default de

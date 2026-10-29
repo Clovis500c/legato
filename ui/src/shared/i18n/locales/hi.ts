@@ -111,8 +111,6 @@ const hi: Record<string, string> = {
   'Repeat: whole queue': 'रिपीट: पूरी कतार',
   'Repeat: this track': 'रिपीट: यह गाना',
   'Repeat': 'रिपीट',
-  'Repeat all': 'सब रिपीट करें',
-  'Repeat one': 'एक रिपीट करें',
   'Shuffle: on': 'शफ़ल: चालू',
   'Shuffle: off': 'शफ़ल: बंद',
   'Previous': 'पिछला',
@@ -135,7 +133,6 @@ const hi: Record<string, string> = {
   'Position': 'पोज़िशन',
   'Playing from {source} · right-click to switch source': '{source} से चल रहा है · सोर्स बदलने के लिए राइट-क्लिक करें',
   'Now playing': 'अभी चल रहा',
-  'Up next · {n}': 'आगे आने वाले · {n}',
   'Show': 'दिखाएं',
   'Auto': 'ऑटो',
   'Auto · cover': 'ऑटो · कवर',
@@ -1506,6 +1503,10 @@ const hi: Record<string, string> = {
   // v2 redesign
   'Playing': 'चल रहा है',
   'All your songs': 'आपके सभी गाने',
+  'Next: {title}': 'अगला: {title}',
+  'Next, added by you': 'आगे, आपके जोड़े हुए',
+  'Then from {name}': 'फिर {name} से',
+  'Then from the list': 'फिर सूची से',
 }
 
 export default hi

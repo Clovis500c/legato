@@ -111,8 +111,6 @@ const ko: Record<string, string> = {
   'Repeat: whole queue': '반복: 대기열 전체',
   'Repeat: this track': '반복: 이 곡',
   'Repeat': '반복',
-  'Repeat all': '전체 반복',
-  'Repeat one': '한 곡 반복',
   'Shuffle: on': '셔플: 켜짐',
   'Shuffle: off': '셔플: 꺼짐',
   'Previous': '이전',
@@ -135,7 +133,6 @@ const ko: Record<string, string> = {
   'Position': '재생 위치',
   'Playing from {source} · right-click to switch source': '{source}에서 재생 중 · 우클릭하여 소스 전환',
   'Now playing': '지금 재생 중',
-  'Up next · {n}': '다음 곡 · {n}',
   'Show': '표시',
   'Auto': '자동',
   'Auto · cover': '자동 · 커버',
@@ -1506,6 +1503,10 @@ const ko: Record<string, string> = {
   // v2 redesign
   'Playing': '재생 중',
   'All your songs': '내 모든 노래',
+  'Next: {title}': '다음: {title}',
+  'Next, added by you': '다음, 내가 추가한 곡',
+  'Then from {name}': '이어서 {name}에서',
+  'Then from the list': '이어서 목록에서',
 }
 
 export default ko

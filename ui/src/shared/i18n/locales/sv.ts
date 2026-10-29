@@ -111,8 +111,6 @@ const sv: Record<string, string> = {
   'Repeat: whole queue': 'Upprepa: hela kön',
   'Repeat: this track': 'Upprepa: den här låten',
   'Repeat': 'Upprepa',
-  'Repeat all': 'Upprepa alla',
-  'Repeat one': 'Upprepa en',
   'Shuffle: on': 'Blanda: på',
   'Shuffle: off': 'Blanda: av',
   'Previous': 'Föregående',
@@ -135,7 +133,6 @@ const sv: Record<string, string> = {
   'Position': 'Position',
   'Playing from {source} · right-click to switch source': 'Spelas från {source} · högerklicka för att byta källa',
   'Now playing': 'Spelas nu',
-  'Up next · {n}': 'Näst på tur · {n}',
   'Show': 'Visa',
   'Auto': 'Auto',
   'Auto · cover': 'Auto · omslag',
@@ -1506,6 +1503,10 @@ const sv: Record<string, string> = {
   // v2 redesign
   'Playing': 'Spelas',
   'All your songs': 'Alla dina låtar',
+  'Next: {title}': 'Härnäst: {title}',
+  'Next, added by you': 'Härnäst, tillagda av dig',
+  'Then from {name}': 'Sedan från {name}',
+  'Then from the list': 'Sedan från listan',
 }
 
 export default sv

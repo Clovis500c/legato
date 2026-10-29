@@ -111,8 +111,6 @@ const tr: Record<string, string> = {
   'Repeat: whole queue': 'Tekrarla: tüm sıra',
   'Repeat: this track': 'Tekrarla: bu şarkı',
   'Repeat': 'Tekrarla',
-  'Repeat all': 'Tümünü tekrarla',
-  'Repeat one': 'Birini tekrarla',
   'Shuffle: on': 'Karıştır: açık',
   'Shuffle: off': 'Karıştır: kapalı',
   'Previous': 'Önceki',
@@ -135,7 +133,6 @@ const tr: Record<string, string> = {
   'Position': 'Konum',
   'Playing from {source} · right-click to switch source': 'Çalınan kaynak: {source} · kaynağı değiştirmek için sağ tıkla',
   'Now playing': 'Şimdi çalıyor',
-  'Up next · {n}': 'Sıradaki · {n}',
   'Show': 'Göster',
   'Auto': 'Otomatik',
   'Auto · cover': 'Otomatik · kapak',
@@ -1506,6 +1503,10 @@ const tr: Record<string, string> = {
   // v2 redesign
   'Playing': 'Çalıyor',
   'All your songs': 'Tüm şarkıların',
+  'Next: {title}': 'Sıradaki: {title}',
+  'Next, added by you': 'Sıradakiler, senin eklediklerin',
+  'Then from {name}': 'Sonra {name} listesinden',
+  'Then from the list': 'Sonra listeden',
 }
 
 export default tr

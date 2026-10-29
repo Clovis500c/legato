@@ -13,10 +13,23 @@ export function playOrder(n: number, current: number, shuffle: boolean, rand = M
   return current >= 0 && current < n ? [current, ...rest] : rest
 }
 
-/** Order with `added` list indexes after the current track (play next) or at the end. */
-export function queued(order: number[], index: number, added: number[], next: boolean): number[] {
-  const at = next ? order.indexOf(index) + 1 : order.length
+/**
+ * Order with `added` list indexes after the current track (play next), or after the songs the user already queued
+ * there (`mine`: they play before the rest of the list, what listeners ask, docs/design.md). No `mine` (similar songs
+ * added by the app): at the end.
+ */
+export function queued(order: number[], index: number, added: number[], next: boolean, mine?: readonly number[]): number[] {
+  let at = next || mine ? order.indexOf(index) + 1 : order.length
+  if (!next && mine) while (at < order.length && mine.includes(order[at])) at++
   return [...order.slice(0, at), ...added, ...order.slice(at)]
+}
+
+/** A new play order (shuffle on or off) that keeps the user's songs still to come right after the current one. */
+export function keepQueued(fresh: number[], old: number[], index: number, mine: readonly number[]): number[] {
+  const ahead = old.slice(old.indexOf(index) + 1).filter((i) => mine.includes(i))
+  const rest = fresh.filter((i) => !ahead.includes(i))
+  const at = rest.indexOf(index) + 1
+  return [...rest.slice(0, at), ...ahead, ...rest.slice(at)]
 }
 
 /**
@@ -53,6 +66,17 @@ export interface QueueRow {
 export function queueRows(order: number[], index: number, playable: (i: number) => boolean): QueueRow[] {
   const at = order.indexOf(index)
   return order.flatMap((i, k) => (k === at || playable(i) ? [{ key: String(i), i, played: at >= 0 && k < at, current: k === at }] : []))
+}
+
+/** Up next as shown: played songs, then headers over Now playing, the user's run right after it, the rest. k = row in `rows`. */
+export type QueueItem = { head: 'now' | 'mine' | 'then' } | { k: number }
+export function queueItems(rows: QueueRow[], mine: readonly number[]): QueueItem[] {
+  const cur = rows.findIndex((r) => r.current)
+  const span = (a: number, b: number): QueueItem[] => Array.from({ length: b - a }, (_, j) => ({ k: a + j }))
+  if (cur < 0) return span(0, rows.length)
+  let end = cur + 1
+  while (end < rows.length && mine.includes(rows[end].i)) end++
+  return [...span(0, cur), { head: 'now' }, { k: cur }, ...(end > cur + 1 ? [{ head: 'mine' as const }, ...span(cur + 1, end)] : []), ...(end < rows.length ? [{ head: 'then' as const }, ...span(end, rows.length)] : [])]
 }
 
 /** Order with list index `i` put at play-order position `at`, a drop slot in Up next (before what was there). */

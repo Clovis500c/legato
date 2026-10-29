@@ -12,7 +12,8 @@ async function similarSongs(): Promise<boolean> {
   const recent = list.slice(Math.max(0, index - 4), index + 1)
   const more = await similarTo(recent, new Set(list.map((t) => t.ids.youtube ?? `#${t.id}`)), MORE)
   if (!more.length) return false
-  enqueue(more, false)
+  // The app's pick, not the user's: at the end, outside "added by you".
+  enqueue(more, false, false)
   return true
 }
 
