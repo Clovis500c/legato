@@ -71,6 +71,8 @@ src-tauri/              thin shell: commands, keychain, WebView2 hook, media pan
   use before the first render (`main.tsx` awaits it): the startup script went from 2.4 MB to 0.54 MB (2026-10-28).
   The shell's own words (tray, taskbar buttons) follow through
   `src-tauri/src/lang.rs`. Mix titles come from Rust as parts (`mixes::Words`) and are worded by the UI.
+  Mixes' new songs: the core names its seeds (`mixes::seeds`), the shell fetches YouTube Music's radio of each and hands
+  them back (`Input::found`); the core stays without network.
   Not translated: messages from services and Rust errors, YouTube Music's own shelf titles (its parsing reads
   English), Discord presence buttons (shown on Discord).
 

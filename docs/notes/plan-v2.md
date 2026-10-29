@@ -524,6 +524,15 @@ Original plan:
 - [x] Artists and Albums: filter and sort, like songs in playlists.
 - [x] Mixes: better algorithm, more mixes; covers as a 2×2 grid like playlists, setting in Advanced: grid / single
       cover / current template.
+- [x] Mixes like YouTube's (2026-10-29: "a real algorithm like YouTube", mixes full of slowed / reverb uploads of the
+      same few songs): one version per song (slowed, reverb, sped up, remix, extended uploads fold; artist read from
+      "Artist - Title" when a channel uploaded it, so artists spread by their real name; Less / Never hold for every
+      version), Supermix (favourites over the months), discoveries from YouTube Music's radio of each mix's leading song
+      (a third of a daily mix, a quarter of an artist mix or the Supermix, plus a Discover Mix). Radios cached 12 h;
+      offline or failing: the mixes come without them.
+  - [ ] The screenshot's "Mon mix" panel was YouTube's own player UI (its RDMM "My Mix"), not ours: hide YouTube's
+        playlist panel in the watch-page player (`crates/shield/src/watch.js`) and stop its autoplay into a Mix.
+  - [ ] "Never in mixes" on a discovered song (not in the library: no row to hold the choice).
 - [x] Smart cache in Rust for most of the app (memory + disk, invalidated on change).
 - [x] Home: quick access to every section + recommendations (local mixes, then the connected services' own
       recommendations: YouTube Music home feed, Spotify if possible). Spotify: its recommendations API is closed to new
