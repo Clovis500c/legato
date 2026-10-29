@@ -120,12 +120,15 @@ interface SettingsState {
   update: (patch: Partial<Settings>) => void
   /** Theme currently on screen (resolved from preset, custom or system), or the one `theme` would give. */
   current: (theme?: string) => Theme
+  /** Windows in dark mode: selected by what resolves the theme at render (cover tints), so they follow a switch. */
+  systemDark: boolean
 }
 
 let saveTimer: ReturnType<typeof setTimeout> | undefined
 
 export const useSettings = create<SettingsState>((set, get) => ({
   settings: DEFAULTS,
+  systemDark: systemDark.matches,
 
   async load() {
     systemAccent = await api.systemAccent().catch(() => null)
@@ -171,7 +174,10 @@ useStore.subscribe((st, prev) => {
   if (Object.entries(next).some(([k, v]) => s[k as keyof typeof next] !== v)) useSettings.getState().update(next)
 })
 
-systemDark.addEventListener('change', () => apply(useSettings.getState().settings))
+systemDark.addEventListener('change', () => {
+  useSettings.setState({ systemDark: systemDark.matches })
+  apply(useSettings.getState().settings)
+})
 
 // Windows accent changed in Settings: picked up when the user comes back to the app.
 getCurrentWindow()

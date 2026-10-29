@@ -205,9 +205,10 @@ export function App() {
   const { view, go, refresh, incoming } = useStore(useShallow((s) => ({ view: s.view, go: s.go, refresh: s.refresh, incoming: s.incoming })))
   const full = usePlayer((s) => s.full)
   const tintOn = useSettings((s) => s.settings.appTint)
-  // Re-rendered when the theme or accent change (current() below).
+  // Re-rendered when the theme, accent or Windows' light / dark change (current() below).
   useSettings((s) => s.settings.theme)
   useSettings((s) => s.settings.accent)
+  useSettings((s) => s.systemDark)
   const nowTrack = useNowTrack()
   const appTint = useAmbient(tintOn && nowTrack ? trackArt(nowTrack)[0] : undefined, useSettings.getState().current())
   // Language changed: everything below renders again in it (nothing remounts: the player keeps playing).
