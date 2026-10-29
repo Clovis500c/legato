@@ -5,7 +5,7 @@ direction) and the "v2: rebrand and redesign" block of `docs/notes/plan-v2.md` (
 
 ## Where it stands
 
-- Branch `v2`, 12 commits on top of `master` (81e5213). Nothing pushed, nothing merged. Every push to `master` is a
+- Branch `v2`, 26 commits on top of `master` (81e5213). Nothing pushed, nothing merged. Every push to `master` is a
   release (`v2.0.<commits>` now): merge and push only when the user says so.
 - Done and checked in the app (light and dark):
   - Theme: Modern / Modern Dark carry the v2 palettes (`ui/src/shared/theme/theme.ts`), sky blue `#7CB8FF` = playback
@@ -40,12 +40,12 @@ direction) and the "v2: rebrand and redesign" block of `docs/notes/plan-v2.md` (
 
 1. The name: Legato recommended, not decided by the user. Never rename the identifier, `_musicapp._tcp`, `MA1` or
    keychain entries; the wordmark and app icon wait on it. Ask before changing what the app is called.
-2. Small leftovers seen on the way: "See all" still on the artist page's YouTube songs (`AlbumArtist.tsx`, the last
-   one; Show all elsewhere); card grids of the Albums / Artists pages and the Mixes page's section labels aren't v2 yet.
-3. Seen while testing, not looked into: a pause given while a YouTube video is still loading can be undone by the
-   player's late "playing" state; App tint (`appTint`) keeps the old theme's tint when Windows switches light / dark
-   while a song plays (`App.tsx` computes it at render).
-4. Before merging: `pnpm check` (all of it), then ask the user whether to merge `v2` into `master` and push.
+2. Left from the mockup pass (plan-v2.md, v2 block): the sidebar mini player (the user wants it hidden, YouTube's
+   video must stay visible: ask which option), Your library ↗ full width, the player bar's "artist · from your file".
+3. Before merging: `pnpm check` (all of it), then ask the user whether to merge `v2` into `master` and push.
+
+`pnpm dev` resumes playback at launch and after every full reload Vite does when a store module changes (settings,
+player store): pause it right after edits, or stop the dev app while editing those files.
 
 The column picker the plan mentions already exists ("Display options" button, right-click on a list header).
 

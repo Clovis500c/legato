@@ -216,18 +216,17 @@ Theme (light) / Dark / Brand / Scale, components, Home, Songs, Album, Search, No
 - [x] Notifications setting (user's request 2026-10-29, "sometimes annoying"): Settings › General › Notifications,
       where (bottom, bottom right, top, top right), which (all, or important only: errors and those with a button),
       how long (short, normal, long; errors stay twice as long).
-- [ ] What still differs from the mockups (comparison of 2026-10-29, light, 1440 × 900):
-      - user's calls: the window's top bar (mockup: none, search and ← → in the main pane; Windows needs a drag area
-        and its buttons), the sidebar mini player (mockup: none), Play / Shuffle in words (v4 pick) or the round play;
-      - Album page: full-width band, actions under it (play, shuffle, ♥, ⊕, Compact), the full song table, sources
-        line and year;
-      - Now Playing: ⌄ · "Playing from <list>" · ··· on top, lyrics preview, total time; player bar "artist · from your
-        file" and total time;
-      - ← → buttons, Your library ↗ (full width), tabs on the right panel (Up next, Lyrics), heart column before the
-        time, search hint "What do you want to play?", "See all" left on artist pages, Albums / Artists grids and the
-        Mixes page labels in the v2 style.
-- [ ] Seen while testing (2026-10-29): a pause given while a YouTube video loads can be undone by the player; App tint
-      keeps the old theme's tint when Windows switches light / dark mid-song.
+- [x] Mockup pass (comparison of 2026-10-29; user's picks: keep the top bar, round play, mini player hidden):
+      ← → in the top bar and the "What do you want to play?" hint; round play + plain shuffle on Songs; heart right
+      before the time; bands full width from the pane's top with the actions under them (playlist: sort and columns
+      on the right); album pages as a table (#, title, artist, sources, plays, heart, time), sources line, More by
+      cards; Albums grid as cards, Artists rows, Mixes titles; right panel tabs (Up next, Lyrics; Clear and Save in
+      its ⋮); song length instead of time left; Now Playing "Playing from <list>" and a lyrics peek.
+- [x] Fixed (2026-10-29): a pause given while a YouTube video starts holds; cover tints follow Windows' light / dark.
+- [ ] Sidebar mini player hidden by default (user's pick): blocked for YouTube, whose video must stay visible (200 px
+      minimum, docs/playback.md); other sources already show none by default. Options to put to the user: the video
+      in the right panel's top, or the floating card by default.
+- [ ] Your library ↗ (open it full width, design.md), and the player bar's "artist · from your file" line.
 - [ ] Check in the app: "No sound could be taken" gone from the second YouTube video on (fix 51946d5).
 - [ ] Merge `v2` into `master` and push (= release v2.0.x): only when the user says.
 - [ ] Decide the name: Legato recommended (finalists Tutti, Diapason); trademark search (INPI, EUIPO, USPTO classes 9,
