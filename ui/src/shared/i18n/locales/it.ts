@@ -1556,6 +1556,13 @@ const it: Record<string, string> = {
   'The app hit an unexpected error. Your library isn’t touched: reload to carry on. If it keeps happening, copy the diagnostics into a bug report.': 'L\'app ha riscontrato un errore imprevisto. La tua libreria non è stata toccata: ricarica per continuare. Se succede ancora, copia la diagnostica in una segnalazione di bug.',
   'Reload': 'Ricarica',
   'diagnostics log errors crash bug report support debug clipboard': 'diagnostica log registro errori arresto crash bug segnalazione supporto debug appunti',
+  // Release channels
+  'Update channel': 'Canale di aggiornamento',
+  'Stable': 'Stabile',
+  'Beta': 'Beta',
+  'Every change first, so it may break. Back on Stable, the app waits for a Stable version newer than this one: it never goes back to an older one': 'Ogni modifica per prima, quindi qualcosa può rompersi. Tornando a Stabile, l\'app aspetta una versione Stabile più recente di questa: non torna mai a una più vecchia',
+  'Versions already tried on Beta. Pick Beta to get every change first': 'Versioni già provate in Beta. Scegli Beta per ricevere ogni modifica per prima',
+  'beta stable release early preview prerelease testing new features updates version': 'beta stabile canale anteprima test novità aggiornamenti versione rilascio',
 }
 
 export default it

@@ -1556,6 +1556,13 @@ const id: Record<string, string> = {
   'The app hit an unexpected error. Your library isn’t touched: reload to carry on. If it keeps happening, copy the diagnostics into a bug report.': 'Aplikasi mengalami kesalahan tak terduga. Koleksimu tidak tersentuh: muat ulang untuk melanjutkan. Jika terus terjadi, salin diagnostik ke laporan bug.',
   'Reload': 'Muat ulang',
   'diagnostics log errors crash bug report support debug clipboard': 'diagnostik log kesalahan error crash bug laporan dukungan debug papan klip',
+  // Release channels
+  'Update channel': 'Saluran pembaruan',
+  'Stable': 'Stabil',
+  'Beta': 'Beta',
+  'Every change first, so it may break. Back on Stable, the app waits for a Stable version newer than this one: it never goes back to an older one': 'Setiap perubahan lebih dulu, jadi bisa saja bermasalah. Kembali ke Stabil, aplikasi menunggu versi Stabil yang lebih baru dari ini: tidak pernah mundur ke versi yang lebih lama',
+  'Versions already tried on Beta. Pick Beta to get every change first': 'Versi yang sudah dicoba di Beta. Pilih Beta untuk mendapatkan setiap perubahan lebih dulu',
+  'beta stable release early preview prerelease testing new features updates version': 'beta stabil saluran pratinjau uji coba fitur baru pembaruan versi rilis',
 }
 
 export default id

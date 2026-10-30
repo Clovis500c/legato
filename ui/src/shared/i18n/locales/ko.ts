@@ -1556,6 +1556,13 @@ const ko: Record<string, string> = {
   'The app hit an unexpected error. Your library isn’t touched: reload to carry on. If it keeps happening, copy the diagnostics into a bug report.': '앱에서 예기치 않은 오류가 발생했습니다. 보관함에는 영향이 없습니다. 계속하려면 새로고침하세요. 문제가 반복되면 진단 정보를 복사해 버그 신고에 붙여 넣으세요.',
   'Reload': '새로고침',
   'diagnostics log errors crash bug report support debug clipboard': '진단 로그 오류 충돌 크래시 버그 신고 지원 디버그 클립보드',
+  // Release channels
+  'Update channel': '업데이트 채널',
+  'Stable': '안정 버전',
+  'Beta': '베타 버전',
+  'Every change first, so it may break. Back on Stable, the app waits for a Stable version newer than this one: it never goes back to an older one': '모든 변경 사항을 가장 먼저 받으므로 문제가 생길 수 있습니다. 안정 버전으로 되돌리면 앱은 현재보다 새로운 안정 버전을 기다리며, 이전 버전으로는 돌아가지 않습니다',
+  'Versions already tried on Beta. Pick Beta to get every change first': '베타 버전에서 이미 사용해 본 버전입니다. 모든 변경 사항을 가장 먼저 받으려면 베타 버전을 선택하세요',
+  'beta stable release early preview prerelease testing new features updates version': '베타 안정 채널 미리보기 테스트 새 기능 업데이트 버전 beta stable release early preview prerelease testing new features updates version',
 }
 
 export default ko

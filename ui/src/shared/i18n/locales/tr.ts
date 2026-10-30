@@ -1556,6 +1556,13 @@ const tr: Record<string, string> = {
   'The app hit an unexpected error. Your library isn’t touched: reload to carry on. If it keeps happening, copy the diagnostics into a bug report.': 'Uygulama beklenmeyen bir hatayla karşılaştı. Kitaplığına dokunulmadı: devam etmek için yeniden yükle. Tekrar olursa tanılamayı bir hata bildirimine kopyala.',
   'Reload': 'Yeniden yükle',
   'diagnostics log errors crash bug report support debug clipboard': 'tanılama günlük log hatalar çökme crash hata bildirimi destek hata ayıklama pano',
+  // Release channels
+  'Update channel': 'Güncelleme kanalı',
+  'Stable': 'Kararlı',
+  'Beta': 'Beta',
+  'Every change first, so it may break. Back on Stable, the app waits for a Stable version newer than this one: it never goes back to an older one': 'Her değişiklik herkesten önce sana gelir, bu yüzden bir şeyler bozulabilir. Kararlı kanala dönünce uygulama bundan daha yeni bir kararlı sürümü bekler: asla eski bir sürüme geri dönmez',
+  'Versions already tried on Beta. Pick Beta to get every change first': 'Beta’da zaten denenmiş sürümler. Her değişikliği herkesten önce almak için Beta’yı seç',
+  'beta stable release early preview prerelease testing new features updates version': 'beta kararlı kanal ön sürüm test yeni özellikler güncellemeler sürüm',
 }
 
 export default tr

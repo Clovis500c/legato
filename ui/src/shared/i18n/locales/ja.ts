@@ -1556,6 +1556,13 @@ const ja: Record<string, string> = {
   'The app hit an unexpected error. Your library isn’t touched: reload to carry on. If it keeps happening, copy the diagnostics into a bug report.': 'アプリで予期しないエラーが起きました。ライブラリには影響していません。再読み込みして続けてください。繰り返し起きる場合は、診断情報を不具合報告にコピーしてください。',
   'Reload': '再読み込み',
   'diagnostics log errors crash bug report support debug clipboard': '診断 ログ エラー クラッシュ バグ 不具合 報告 サポート デバッグ クリップボード',
+  // Release channels
+  'Update channel': 'アップデートチャンネル',
+  'Stable': '安定版',
+  'Beta': 'ベータ版',
+  'Every change first, so it may break. Back on Stable, the app waits for a Stable version newer than this one: it never goes back to an older one': 'すべての変更をいち早く受け取るため、不具合が出ることがあります。安定版に戻した場合は、今のバージョンより新しい安定版が出るまで待ち、古いバージョンには戻りません',
+  'Versions already tried on Beta. Pick Beta to get every change first': 'ベータ版で試された後のバージョンです。すべての変更をいち早く受け取るにはベータ版を選びます',
+  'beta stable release early preview prerelease testing new features updates version': 'ベータ 安定版 チャンネル プレビュー テスト 先行 新機能 アップデート バージョン beta stable release early preview prerelease testing new features updates version',
 }
 
 export default ja

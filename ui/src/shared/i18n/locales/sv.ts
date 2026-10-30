@@ -1556,6 +1556,13 @@ const sv: Record<string, string> = {
   'The app hit an unexpected error. Your library isn’t touched: reload to carry on. If it keeps happening, copy the diagnostics into a bug report.': 'Appen stötte på ett oväntat fel. Ditt bibliotek är orört: ladda om för att fortsätta. Händer det igen, kopiera diagnostiken till en felrapport.',
   'Reload': 'Ladda om',
   'diagnostics log errors crash bug report support debug clipboard': 'diagnostik logg fel krasch bugg felrapport support felsökning urklipp',
+  // Release channels
+  'Update channel': 'Uppdateringskanal',
+  'Stable': 'Stabil',
+  'Beta': 'Beta',
+  'Every change first, so it may break. Back on Stable, the app waits for a Stable version newer than this one: it never goes back to an older one': 'Varje ändring först, så något kan gå sönder. När du går tillbaka till Stabil väntar appen på en nyare stabil version än den här: den går aldrig tillbaka till en äldre',
+  'Versions already tried on Beta. Pick Beta to get every change first': 'Versioner som redan har provats i Beta. Välj Beta för att få varje ändring först',
+  'beta stable release early preview prerelease testing new features updates version': 'beta stabil kanal förhandsversion test nya funktioner uppdateringar version utgåva',
 }
 
 export default sv

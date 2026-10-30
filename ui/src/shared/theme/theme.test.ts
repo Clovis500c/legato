@@ -84,6 +84,13 @@ describe('resolveTheme', () => {
     expect(sanitize({ stage: 'radio', miniSpot: 'center', crossfade: -3, defaultsVersion: 3 })).toMatchObject({ stage: 'auto', miniSpot: 'br', crossfade: 0 })
   })
 
+  it('keeps the update channel to Stable or Beta, Stable unless Beta was picked', () => {
+    expect(DEFAULTS.updateChannel).toBe('stable')
+    expect(sanitize({ updateChannel: 'beta' }).updateChannel).toBe('beta')
+    expect(sanitize({ updateChannel: 'nightly' }).updateChannel).toBe('stable')
+    expect(sanitize({ autoUpdate: false }).updateChannel).toBe('stable')
+  })
+
   it('settings saved before v2 get the new defaults once, later choices stay', () => {
     const old = sanitize({ volume: 'knob', tuner: true, clickToPlay: 'double', zoom: 110 })
     expect(old).toMatchObject({ volume: 'bar', tuner: false, clickToPlay: 'single', stage: 'auto', zoom: 110, startView: 'home', defaultsVersion: 8 })

@@ -1556,6 +1556,13 @@ const vi: Record<string, string> = {
   'The app hit an unexpected error. Your library isn’t touched: reload to carry on. If it keeps happening, copy the diagnostics into a bug report.': 'Ứng dụng gặp lỗi bất ngờ. Thư viện của bạn không bị ảnh hưởng: hãy tải lại để tiếp tục. Nếu lỗi cứ lặp lại, hãy sao chép chẩn đoán vào báo cáo lỗi.',
   'Reload': 'Tải lại',
   'diagnostics log errors crash bug report support debug clipboard': 'chẩn đoán nhật ký log lỗi sự cố treo crash bug báo cáo hỗ trợ gỡ lỗi bảng nhớ tạm',
+  // Release channels
+  'Update channel': 'Kênh cập nhật',
+  'Stable': 'Ổn định',
+  'Beta': 'Beta',
+  'Every change first, so it may break. Back on Stable, the app waits for a Stable version newer than this one: it never goes back to an older one': 'Mọi thay đổi đến trước, nên có thể gặp lỗi. Khi quay lại Ổn định, ứng dụng chờ một phiên bản Ổn định mới hơn bản này: không bao giờ lùi về bản cũ hơn',
+  'Versions already tried on Beta. Pick Beta to get every change first': 'Các phiên bản đã được thử trên Beta. Chọn Beta để nhận mọi thay đổi sớm nhất',
+  'beta stable release early preview prerelease testing new features updates version': 'beta ổn định kênh xem trước thử nghiệm tính năng mới cập nhật phiên bản beta stable release early preview prerelease testing new features updates version',
 }
 
 export default vi

@@ -1556,6 +1556,13 @@ const hi: Record<string, string> = {
   'The app hit an unexpected error. Your library isn’t touched: reload to carry on. If it keeps happening, copy the diagnostics into a bug report.': 'ऐप में एक अनपेक्षित त्रुटि आई। आपकी लाइब्रेरी को कुछ नहीं हुआ: आगे बढ़ने के लिए रीलोड करें। अगर यह बार-बार हो, तो डायग्नोस्टिक्स को बग रिपोर्ट में कॉपी करें।',
   'Reload': 'रीलोड करें',
   'diagnostics log errors crash bug report support debug clipboard': 'डायग्नोस्टिक्स लॉग त्रुटि क्रैश बग रिपोर्ट सहायता डीबग क्लिपबोर्ड diagnostics',
+  // Release channels
+  'Update channel': 'अपडेट चैनल',
+  'Stable': 'स्थिर',
+  'Beta': 'बीटा',
+  'Every change first, so it may break. Back on Stable, the app waits for a Stable version newer than this one: it never goes back to an older one': 'हर बदलाव सबसे पहले, इसलिए कुछ बिगड़ सकता है। स्थिर पर लौटने पर ऐप इस वर्शन से नए स्थिर वर्शन का इंतज़ार करता है: वह कभी पुराने वर्शन पर वापस नहीं जाता',
+  'Versions already tried on Beta. Pick Beta to get every change first': 'वे वर्शन जो पहले बीटा में आज़माए जा चुके हैं। हर बदलाव सबसे पहले पाने के लिए बीटा चुनें',
+  'beta stable release early preview prerelease testing new features updates version': 'बीटा स्थिर चैनल प्रीव्यू टेस्ट नई सुविधाएँ अपडेट वर्शन beta stable release early preview prerelease testing new features updates version',
 }
 
 export default hi

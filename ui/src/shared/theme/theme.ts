@@ -306,6 +306,8 @@ export interface Settings {
   mixCovers: 'grid' | 'single' | 'template'
   /** Download updates in the background and install them when nothing plays. */
   autoUpdate: boolean
+  /** Which releases this PC follows: Stable (promoted by hand) or Beta (every green push). Not synced between PCs. */
+  updateChannel: 'stable' | 'beta'
   /** Now Playing: Up next panel open (off: the title big beside the cover, docs/design.md). */
   upNext: boolean
   /** Main window's right panel, beside every page: Up next, lyrics, or closed. Apart from Now Playing's. */
@@ -416,6 +418,7 @@ export const DEFAULTS: Settings = {
   playlistCovers: {},
   mixCovers: 'grid',
   autoUpdate: true,
+  updateChannel: 'stable',
   upNext: false,
   sidePanel: 'upNext',
   toastPlace: 'bottom',
@@ -609,6 +612,7 @@ export function sanitize(raw: unknown): Settings {
     playlistCovers: sanitizeCovers(r.playlistCovers),
     mixCovers: pick(r.mixCovers, ['grid', 'single', 'template'] as const, DEFAULTS.mixCovers),
     autoUpdate: typeof r.autoUpdate === 'boolean' ? r.autoUpdate : DEFAULTS.autoUpdate,
+    updateChannel: pick(r.updateChannel, ['stable', 'beta'] as const, DEFAULTS.updateChannel),
     upNext: typeof r.upNext === 'boolean' ? r.upNext : DEFAULTS.upNext,
     sidePanel: pick(r.sidePanel, ['upNext', 'lyrics', 'none'] as const, DEFAULTS.sidePanel),
     toastPlace: pick(r.toastPlace, TOAST_PLACES, DEFAULTS.toastPlace),

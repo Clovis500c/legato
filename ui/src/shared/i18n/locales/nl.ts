@@ -1556,6 +1556,13 @@ const nl: Record<string, string> = {
   'The app hit an unexpected error. Your library isn’t touched: reload to carry on. If it keeps happening, copy the diagnostics into a bug report.': 'De app is op een onverwachte fout gestuit. Je bibliotheek blijft ongemoeid: laad opnieuw om verder te gaan. Gebeurt het weer, kopieer dan de diagnose in een bugmelding.',
   'Reload': 'Opnieuw laden',
   'diagnostics log errors crash bug report support debug clipboard': 'diagnose logboek log fouten crash bug bugmelding ondersteuning foutopsporing klembord',
+  // Release channels
+  'Update channel': 'Updatekanaal',
+  'Stable': 'Stabiel',
+  'Beta': 'Beta',
+  'Every change first, so it may break. Back on Stable, the app waits for a Stable version newer than this one: it never goes back to an older one': 'Elke wijziging als eerste, dus er kan iets kapotgaan. Terug op Stabiel wacht de app op een nieuwere stabiele versie dan deze: hij gaat nooit terug naar een oudere',
+  'Versions already tried on Beta. Pick Beta to get every change first': 'Versies die al in Beta zijn uitgeprobeerd. Kies Beta om elke wijziging als eerste te krijgen',
+  'beta stable release early preview prerelease testing new features updates version': 'beta stabiel kanaal voorbeeld testen nieuwe functies updates versie release',
 }
 
 export default nl

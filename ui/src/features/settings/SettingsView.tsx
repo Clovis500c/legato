@@ -446,6 +446,13 @@ function GeneralSection() {
           </Row>
         </div>
       </Group>
+      <Group title={msg('Updates')}>
+        <div className="rounded-xl border border-line bg-raised">
+          <Row setting="updateChannel" label={msg('Update channel')} sub={s.updateChannel === 'beta' ? tr('Every change first, so it may break. Back on Stable, the app waits for a Stable version newer than this one: it never goes back to an older one') : tr('Versions already tried on Beta. Pick Beta to get every change first')}>
+            <Segmented label={tr('Update channel')} value={s.updateChannel} onChange={(updateChannel) => update({ updateChannel })} options={[{ value: 'stable', label: tr('Stable') }, { value: 'beta', label: tr('Beta') }]} />
+          </Row>
+        </div>
+      </Group>
       <Group title={msg('Notifications')}>
         <div className="rounded-xl border border-line bg-raised">
           <Row setting="toastPlace" label={msg('Notification position')} sub={tr('Where the short messages show (song added, liked, errors…)')}>

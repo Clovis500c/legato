@@ -111,7 +111,9 @@ export function AboutSection() {
         </span>
         <div className="flex min-w-0 flex-1 flex-col gap-1">
           <p className="text-xl font-bold tracking-[-0.02em]">Legato</p>
-          <p className="font-mono text-xs text-ink-2">{tr('Version {version}', { version: status?.current ?? '…' })}</p>
+          <p className="font-mono text-xs text-ink-2">
+            {tr('Version {version}', { version: status?.current ?? '…' })} · {s.updateChannel === 'beta' ? tr('Beta') : tr('Stable')}
+          </p>
           <p className="flex items-center gap-2 text-xs">
             <span className={`size-2 rounded-full ${pulse ? 'animate-pulse' : ''}`} style={{ background: color, boxShadow: `0 0 8px ${color}` }} />
             {label(status)}

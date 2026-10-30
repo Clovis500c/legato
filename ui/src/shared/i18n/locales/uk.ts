@@ -1556,6 +1556,13 @@ const uk: Record<string, string> = {
   'The app hit an unexpected error. Your library isn’t touched: reload to carry on. If it keeps happening, copy the diagnostics into a bug report.': 'У застосунку сталася непередбачена помилка. Твоя медіатека не зачеплена: перезавантаж, щоб продовжити. Якщо це повториться, скопіюй діагностику до звіту про помилку.',
   'Reload': 'Перезавантажити',
   'diagnostics log errors crash bug report support debug clipboard': 'діагностика журнал лог помилки збій крах баг звіт підтримка налагодження буфер обміну',
+  // Release channels
+  'Update channel': 'Канал оновлень',
+  'Stable': 'Стабільний',
+  'Beta': 'Бета',
+  'Every change first, so it may break. Back on Stable, the app waits for a Stable version newer than this one: it never goes back to an older one': 'Кожна зміна першою, тож щось може зламатися. Після повернення на Стабільний застосунок чекає на новішу стабільну версію, ніж ця: до старішої він ніколи не повертається',
+  'Versions already tried on Beta. Pick Beta to get every change first': 'Версії, які вже випробувано в бета-версії. Оберіть «Бета», щоб отримувати кожну зміну першим',
+  'beta stable release early preview prerelease testing new features updates version': 'бета стабільний канал попередня тест нові функції оновлення версія випуск beta',
 }
 
 export default uk

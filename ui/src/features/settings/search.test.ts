@@ -11,6 +11,7 @@ describe('settings search', () => {
     expect(labels('resume')).toEqual(['Resume playback on launch'])
     expect(labels('google playlists')).toEqual(['YouTube Music'])
     expect(labels('credits')).toEqual(['Third-party licenses'])
+    expect(labels('beta')).toEqual(['Update channel'])
     expect(labels('zzz')).toEqual([])
     expect(labels('  ')).toEqual([])
   })

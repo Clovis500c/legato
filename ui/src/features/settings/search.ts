@@ -40,6 +40,7 @@ export const SETTINGS_INDEX: SettingEntry[] = [
   { section: 'playback', label: msg('Play with'), keywords: msg('single double click row') },
   { section: 'appearance', label: msg('Counts in the sidebar'), keywords: msg('numbers songs') },
   { section: 'general', label: msg('Open on'), keywords: msg('start screen launch home') },
+  { section: 'general', label: msg('Update channel'), keywords: msg('beta stable release early preview prerelease testing new features updates version') },
   { section: 'appearance', label: msg('Animations'), keywords: msg('motion transitions reduce') },
   { section: 'appearance', label: msg('List columns'), keywords: msg('album sources duration') },
   { section: 'sources', label: 'YouTube Music', keywords: msg('google sign in account import playlists sync liked') },

@@ -1556,6 +1556,13 @@ const ru: Record<string, string> = {
   'The app hit an unexpected error. Your library isn’t touched: reload to carry on. If it keeps happening, copy the diagnostics into a bug report.': 'В приложении произошла непредвиденная ошибка. Твоя медиатека не затронута: перезагрузи, чтобы продолжить. Если это повторится, скопируй диагностику в отчёт об ошибке.',
   'Reload': 'Перезагрузить',
   'diagnostics log errors crash bug report support debug clipboard': 'диагностика журнал лог ошибки сбой крах баг отчёт поддержка отладка буфер обмена',
+  // Release channels
+  'Update channel': 'Канал обновлений',
+  'Stable': 'Стабильный',
+  'Beta': 'Бета',
+  'Every change first, so it may break. Back on Stable, the app waits for a Stable version newer than this one: it never goes back to an older one': 'Каждое изменение первым, поэтому что-то может сломаться. При возврате на Стабильный приложение ждёт более новую стабильную версию, чем эта: к более старой оно никогда не откатывается',
+  'Versions already tried on Beta. Pick Beta to get every change first': 'Версии, уже проверенные в бета-версии. Выберите «Бета», чтобы получать каждое изменение первым',
+  'beta stable release early preview prerelease testing new features updates version': 'бета стабильный канал предварительная тест новые функции обновления версия выпуск beta',
 }
 
 export default ru

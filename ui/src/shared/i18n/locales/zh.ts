@@ -1556,6 +1556,13 @@ const zh: Record<string, string> = {
   'The app hit an unexpected error. Your library isn’t touched: reload to carry on. If it keeps happening, copy the diagnostics into a bug report.': '应用遇到了意外错误。你的音乐库没有受到影响：请重新加载以继续。如果问题反复出现，请把诊断信息复制到错误报告中。',
   'Reload': '重新加载',
   'diagnostics log errors crash bug report support debug clipboard': '诊断 日志 错误 崩溃 bug 错误报告 支持 调试 剪贴板',
+  // Release channels
+  'Update channel': '更新渠道',
+  'Stable': '稳定版',
+  'Beta': '测试版',
+  'Every change first, so it may break. Back on Stable, the app waits for a Stable version newer than this one: it never goes back to an older one': '第一时间获得每项更改，因此可能出问题。切回稳定版后，应用会等待比当前更新的稳定版，不会回退到旧版本',
+  'Versions already tried on Beta. Pick Beta to get every change first': '已在测试版中试用过的版本。选择测试版可第一时间获得每项更改',
+  'beta stable release early preview prerelease testing new features updates version': '测试版 稳定版 渠道 抢先 预览 测试 新功能 更新 版本 beta stable release early preview prerelease testing new features updates version',
 }
 
 export default zh
