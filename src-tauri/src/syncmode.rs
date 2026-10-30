@@ -234,9 +234,18 @@ async fn round(app: &AppHandle) -> CmdResult<Merged> {
         }
         Err(e) => {
             inner.error = Some(e.to_string());
-            Err(e.to_string())
+            logged("folder", Err(e.to_string()))
         }
     }
+}
+
+/// A failed exchange (`kind` = folder, offering or joining) in the diagnostics log: no device name or path in the
+/// message, the text as the detail. The result goes on unchanged.
+fn logged<T>(kind: &str, result: CmdResult<T>) -> CmdResult<T> {
+    if let Err(e) = &result {
+        crate::diag::warn("syncmode", &format!("{kind} sync failed"), e);
+    }
+    result
 }
 
 /// Minute timer (folder mode only; idle otherwise).
@@ -372,7 +381,7 @@ pub async fn sync_offer(app: AppHandle, state: State<'_, AppState>, sync: State<
             Ok(theirs) => sm::unpack(&theirs).and_then(|s| take(&a, &s)).map_err(|e| e.to_string()),
             Err(e) => Err(e.to_string()),
         };
-        let _ = a.emit_to("main", "sync-offer", out);
+        let _ = a.emit_to("main", "sync-offer", logged("offering", out));
     });
     if let Some(old) = sync.offer.lock().unwrap().replace(task) {
         old.abort();
@@ -396,8 +405,11 @@ pub fn sync_offer_stop(sync: State<SyncMode>) {
 /// Network, joining side: the code shown on the other PC.
 #[tauri::command]
 pub async fn sync_join(app: AppHandle, state: State<'_, AppState>, code: String) -> CmdResult<Merged> {
-    let mine = sm::pack(&snapshot(&state, &config(&state).device, true).map_err(err)?).map_err(err)?;
+    logged("joining", join(app, &state, code).await)
+}
+
+async fn join(app: AppHandle, state: &AppState, code: String) -> CmdResult<Merged> {
+    let mine = sm::pack(&snapshot(state, &config(state).device, true).map_err(err)?).map_err(err)?;
     let theirs = nearby::sync_join(code.trim(), &mine).await.map_err(err)?;
-    let a = app.clone();
-    tauri::async_runtime::spawn_blocking(move || sm::unpack(&theirs).and_then(|s| take(&a, &s))).await.map_err(err)?.map_err(err)
+    tauri::async_runtime::spawn_blocking(move || sm::unpack(&theirs).and_then(|s| take(&app, &s))).await.map_err(err)?.map_err(err)
 }

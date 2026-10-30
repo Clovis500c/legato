@@ -2,6 +2,7 @@ mod art;
 mod autostart;
 mod background;
 mod detector;
+mod diag;
 mod lastfm;
 mod discord;
 mod editor;
@@ -290,7 +291,19 @@ async fn sync_all(state: State<'_, AppState>) -> CmdResult<SyncReport> {
     if let Err(e) = push_own_likes(&state).await {
         report.errors.push(format!("Liked Music: {e:#}"));
     }
+    log_sync_errors(&report);
     Ok(report)
+}
+
+/// A sync's failures in the diagnostics log: the part that failed in the message, the text (it names playlists and
+/// songs) as the detail. Five at most, the rest counted.
+fn log_sync_errors(report: &SyncReport) {
+    for e in report.errors.iter().take(5) {
+        diag::warn("sync", &format!("{} failed", music_core::diag::failing_part(e)), e);
+    }
+    if report.errors.len() > 5 {
+        diag::warn("sync", &format!("{} more errors", report.errors.len() - 5), "");
+    }
 }
 
 async fn sync_once(state: &AppState) -> SyncReport {
@@ -1924,8 +1937,10 @@ fn player_status(state: State<AppState>) -> Status {
     state.player.status()
 }
 
-/// Error box before any window exists (startup), then the app quits.
+/// Error box before any window exists (startup), then the app quits. Kept in the diagnostics log too (when it runs yet).
 fn stop_with(text: &str) -> ! {
+    diag::error("startup", "stopped before the window opened", text);
+    diag::flush();
     #[cfg(windows)]
     {
         use windows::Win32::UI::WindowsAndMessaging::{MB_ICONERROR, MB_OK, MessageBoxW};
@@ -1935,8 +1950,6 @@ fn stop_with(text: &str) -> ! {
             MessageBoxW(None, &HSTRING::from(text), &HSTRING::from("Legato"), MB_OK | MB_ICONERROR);
         }
     }
-    #[cfg(not(windows))]
-    eprintln!("Legato: {text}");
     std::process::exit(1);
 }
 
@@ -1963,6 +1976,8 @@ pub fn run() {
             autostart::follow();
             let dir = app.path().app_data_dir()?;
             std::fs::create_dir_all(&dir)?;
+            // Before anything that can fail: later steps log, and a panic from here on lands in the diagnostics log.
+            diag::init(&dir, &app.package_info().version.to_string());
             let handle = app.handle().clone();
             let open: Opener = Arc::new(move |url: &str| handle.opener().open_url(url, None::<&str>).map_err(Into::into));
             let lib = match Library::open(dir.join("library.db")) {
@@ -2060,7 +2075,7 @@ pub fn run() {
             folders::watch(app.handle(), &dirs);
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, library_changes, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, search_suggestions, add_track, backfill_art, find_versions, play_preview, share_playlist, share_preview, share_read_image, share_import, nearby_send, nearby_status, nearby_stop, nearby_receive, record_play, recent_plays, play_history, mixes, set_track_pref, set_music, clear_history, export_youtube, spotify_player, spotify_playback, ytm_sign_in, ytm_sign_out, spotify_web_open, spotify_web_status, import_spotify_link, ytm_accounts, set_ytm_accounts, sync_directions, set_sync_direction, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, system_accent, restart_app, autostart, set_autostart, hold_page, media_update, load_session, save_session, add_to_youtube, save_cover, export_cover, alternative_videos, embed_refused, play_stats, cache_stats, open_licenses, update_status, update_check, update_install, ytm_home, ytm_list, ytm_artist, album_info, discord_presence, discord_off, discord_status, remove_from_playlist, remove_from_library, merge_duplicates, resolve_track, set_global_shortcuts, player_live, editor::player_effects, player_levels, editor::export_edit, editor::export_stop, editor::edits, editor::save_edit, editor::delete_edit, editor::activate_edit, editor::edit_draft, editor::save_edit_draft, voice_listen, voice_stop, open_windows_settings, detector::detector_status, detector::set_detector_token, detector::detect_song, detector::detect_stop, lastfm::lastfm_status, lastfm::lastfm_connect, lastfm::lastfm_disconnect, lastfm::lastfm_now_playing, lastfm::lastfm_scrobble, lyrics, set_ui_language, ytwatch_open, ytwatch_place, ytwatch_cmd, ytwatch_close, syncmode::sync_status, syncmode::sync_probe, syncmode::sync_setup, syncmode::sync_stop, syncmode::sync_now, syncmode::sync_dismiss, syncmode::sync_offer, syncmode::sync_offer_stop, syncmode::sync_join, plugins::plugins_list, plugins::plugin_inspect, plugins::plugin_install, plugins::plugin_set, plugins::plugin_uninstall, plugins::plugin_reply, plugins::plugin_event, plugins::plugin_input, plugins::plugin_log, themes::save_background, themes::forget_background, themes::export_theme, themes::import_theme, tags::edit_tags, songlist::import_song_list])
+        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, library_changes, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, search_suggestions, add_track, backfill_art, find_versions, play_preview, share_playlist, share_preview, share_read_image, share_import, nearby_send, nearby_status, nearby_stop, nearby_receive, record_play, recent_plays, play_history, mixes, set_track_pref, set_music, clear_history, export_youtube, spotify_player, spotify_playback, ytm_sign_in, ytm_sign_out, spotify_web_open, spotify_web_status, import_spotify_link, ytm_accounts, set_ytm_accounts, sync_directions, set_sync_direction, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, system_accent, restart_app, autostart, set_autostart, hold_page, media_update, load_session, save_session, add_to_youtube, save_cover, export_cover, alternative_videos, embed_refused, play_stats, cache_stats, open_licenses, update_status, update_check, update_install, ytm_home, ytm_list, ytm_artist, album_info, discord_presence, discord_off, discord_status, remove_from_playlist, remove_from_library, merge_duplicates, resolve_track, set_global_shortcuts, player_live, editor::player_effects, player_levels, editor::export_edit, editor::export_stop, editor::edits, editor::save_edit, editor::delete_edit, editor::activate_edit, editor::edit_draft, editor::save_edit_draft, voice_listen, voice_stop, open_windows_settings, detector::detector_status, detector::set_detector_token, detector::detect_song, detector::detect_stop, lastfm::lastfm_status, lastfm::lastfm_connect, lastfm::lastfm_disconnect, lastfm::lastfm_now_playing, lastfm::lastfm_scrobble, lyrics, set_ui_language, ytwatch_open, ytwatch_place, ytwatch_cmd, ytwatch_close, syncmode::sync_status, syncmode::sync_probe, syncmode::sync_setup, syncmode::sync_stop, syncmode::sync_now, syncmode::sync_dismiss, syncmode::sync_offer, syncmode::sync_offer_stop, syncmode::sync_join, plugins::plugins_list, plugins::plugin_inspect, plugins::plugin_install, plugins::plugin_set, plugins::plugin_uninstall, plugins::plugin_reply, plugins::plugin_event, plugins::plugin_input, plugins::plugin_log, themes::save_background, themes::forget_background, themes::export_theme, themes::import_theme, tags::edit_tags, songlist::import_song_list, diag::diag_log, diag::diag_report])
         .run(context)
         .expect("error while running tauri application");
 }

@@ -120,6 +120,12 @@ impl Updater {
         let _ = app.emit("update", status);
     }
 
+    /// The error About shows, kept in the diagnostics log too (`phase` = check, download or install).
+    fn failed(&self, app: &AppHandle, phase: &str, message: String) {
+        crate::diag::warn("update", &format!("{phase} failed"), &message);
+        self.set(app, State::Error { message });
+    }
+
     /// Check, then download what's new (download = false: only announce it). Busy or already downloaded: nothing.
     pub async fn check(&self, app: &AppHandle, download: bool) {
         {
@@ -137,7 +143,7 @@ impl Updater {
         let update = match found {
             Ok(Some(u)) => u,
             Ok(None) => return self.set(app, State::UpToDate),
-            Err(e) => return self.set(app, State::Error { message: e.to_string() }),
+            Err(e) => return self.failed(app, "check", e.to_string()),
         };
         let version = update.version.clone();
         if !download {
@@ -165,7 +171,7 @@ impl Updater {
                 *self.ready.lock().unwrap() = Some((update, bytes));
                 self.set(app, State::Ready { version, notes });
             }
-            Err(e) => self.set(app, State::Error { message: e.to_string() }),
+            Err(e) => self.failed(app, "download", e.to_string()),
         }
     }
 
@@ -181,7 +187,7 @@ impl Updater {
         if let Err(e) = update.install(&bytes) {
             let message = e.to_string();
             *self.ready.lock().unwrap() = Some((update, bytes));
-            self.set(app, State::Error { message: message.clone() });
+            self.failed(app, "install", message.clone());
             return Err(message);
         }
         // Not Windows: the new version is in place, start it.

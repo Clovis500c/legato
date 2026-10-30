@@ -54,6 +54,8 @@ pub struct Failed {
 }
 
 pub fn failed(app: &tauri::AppHandle, f: Failed) {
+    // The kind and the reason (a refusal's words); the playlist's name stays out.
+    crate::diag::warn("push", &format!("YouTube Music refused a change ({:?})", f.kind), &f.reason);
     let _ = app.emit("push-failed", f);
 }
 

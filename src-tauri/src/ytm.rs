@@ -64,7 +64,11 @@ pub async fn refresh(app: &AppHandle) -> bool {
         }
     }
     let _ = w.close();
-    back && session(app).is_some()
+    let fresh = back && session(app).is_some();
+    if !fresh {
+        crate::diag::warn("ytm", "the Google session didn't come back fresh", "");
+    }
+    fresh
 }
 
 /// Forgets every Google session (and other site data) in the app's webview profile.
