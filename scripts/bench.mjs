@@ -68,6 +68,12 @@ export function benchFolders(id, appData, localAppData) {
   return [path.win32.join(appData, id), path.win32.join(localAppData, id)]
 }
 
+/** The page of third-party notices a release build needs (`src-tauri/build.rs` stops without it): text of the file, or null
+ *  when there is none. The placeholder a dev build writes does not count. */
+export function noticesReady(html) {
+  return typeof html === 'string' && !html.includes('<meta name="placeholder">')
+}
+
 // Shared with `pnpm e2e` (scripts/guest.mjs); the tests read them from here.
 export { browserArgs, carriesId, isBuildInput }
 
@@ -181,7 +187,13 @@ function ensureBuild(o) {
     console.log('build: inputs unchanged, reusing target/bench/legato-bench.exe')
     return
   }
-  const fresh = existsSync(EXE) && existsSync(stamp) && readFileSync(stamp, 'utf8') === hash
+  // The release profile stops in build.rs without the notices; only `pnpm notices` writes them (git-ignored, cargo-about).
+  // Said now, not after minutes of compiling: a fresh clone, or a PC that only ever ran `pnpm dev`, has none.
+  const notices = path.join(ROOT, 'src-tauri', 'third-party-licenses.html')
+  if (!noticesReady(existsSync(notices) ? readFileSync(notices, 'utf8') : null)) {
+    fail('src-tauri/third-party-licenses.html is missing (or only the dev placeholder): the release build stops without it. Run `pnpm notices` once (needs cargo-about, docs/licenses.md), then pnpm bench again')
+  }
+  const fresh =existsSync(EXE) && existsSync(stamp) && readFileSync(stamp, 'utf8') === hash
   console.log(`build: tauri build --no-bundle (release, LTO: minutes)${fresh ? ' - the inputs have not changed, --skip-build would save them' : ''}`)
   const built = spawnSync('pnpm tauri build --no-bundle --config src-tauri/tauri.bench.conf.json', { cwd: ROOT, stdio: 'inherit', shell: true })
   if (built.status !== 0) fail('the build failed')

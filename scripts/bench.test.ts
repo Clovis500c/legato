@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
-import { BENCH_ID, benchFolders, browserArgs, carriesId, cpuSeconds, isBuildInput, memory, parseArgs, plan, share, summarize, tableRow, withRow } from './bench.mjs'
+import { BENCH_ID, benchFolders, browserArgs, carriesId, cpuSeconds, isBuildInput, memory, noticesReady, parseArgs, plan, share, summarize, tableRow, withRow } from './bench.mjs'
 
 const MB = 1024 * 1024
 const proc = (pid: number, name: string, cpu: number, wsp: number | null) => ({ pid, name, cpu, wsp })
@@ -57,6 +57,16 @@ describe('bench safety', () => {
   it('knows an exe built for another identifier', () => {
     expect(carriesId(Buffer.from('xx app.legato.desktop.bench yy'), BENCH_ID)).toBe(true)
     expect(carriesId(Buffer.from('xx app.legato.desktop yy'), BENCH_ID)).toBe(false)
+  })
+
+  it('wants the notices a release build stops without, not the placeholder a dev build leaves', () => {
+    expect(noticesReady('<!doctype html>\n<title>Third-party licenses</title>\n<h1>serde</h1>')).toBe(true)
+    expect(noticesReady('<!doctype html>\n<meta name="placeholder">\n<title>Third-party licenses</title>')).toBe(false)
+    expect(noticesReady(null)).toBe(false)
+    // The mark and the rule are build.rs's: the same text, and a release build stops on it.
+    const rs = readFileSync(new URL('../src-tauri/build.rs', import.meta.url), 'utf8')
+    expect(rs).toContain(String.raw`const MARK: &str = r#"<meta name="placeholder">"#;`)
+    expect(rs).toMatch(/PROFILE.*release[\s\S]*panic!/)
   })
 
   it('hashes what builds the app, not what only describes it', () => {
