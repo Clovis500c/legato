@@ -30,7 +30,8 @@ entry that Open at startup writes (`autostart.rs`: a dev build asking would star
 and move the folders and keychain entries of the old identifier `dev.musicapp.desktop` at first launch (`rename.rs`).
 A dev build, the bench build (`app.legato.desktop.bench`), the smoke test build (`app.legato.desktop.e2e`) or any other identifier is a guest: it never installs, never
 edits the Run entry and never migrates (a dev folder still named `dev.musicapp.desktop.devbuild` is renamed by hand). A
-dev build only checks for updates when asked (Settings › About), and cannot install what it finds. Any new side effect a
+dev build only checks for updates when asked (Settings › About), and cannot install what it finds: it can download, and
+its install ends in an error (the status leaves Ready, or the interface would ask again every 5 s). Any new side effect a
 release build has on the PC goes behind the same guard.
 
 | What | Windows | macOS | Linux |
@@ -59,8 +60,10 @@ Music and Apple, all answered by `e2e/mock.mjs` from `e2e/fixtures`) while the s
 welcome, the library is still there. About 15 s once built. A failure leaves screenshots, `failure.txt` (the step, the page's
 text, what the mock saw, the diagnostics log) in `target/e2e/shots`; CI uploads them. `--repeat 5` walks five times on one
 build, `--skip-build` reuses an unchanged build. The `e2e` job of `check.yml` runs it on Windows, the build and then the
-walk as two steps, the walk held to 5 minutes. Checked on 2026-10-30: with the click handler of the player's play button
-emptied, the walk fails at `pause-play` ("Pause did not pause"), exit code 1, screenshot and report left.
+walk as two steps, the walk held to 5 minutes. It is not blocking yet (`continue-on-error`, a warning on the run when it
+fails): it has not run on GitHub, and `release.yml` waits for a green `check`. Delete that line after a few green runs.
+Checked on 2026-10-30: with the click handler of the player's play button emptied, the walk fails at `pause-play`
+("Pause did not pause"), exit code 1, screenshot and report left.
 
 What the `e2e` cargo feature changes, and nothing else, in a build nobody installs:
 
@@ -75,8 +78,10 @@ What the `e2e` cargo feature changes, and nothing else, in a build nobody instal
   and a dev PC stays silent. The real device path is the one thing the walk does not cover.
 
 The native folder picker is an OS dialog a page cannot drive: the script answers its IPC request (CDP `Fetch`), and the
-rest of the interface runs as when a person picks. Only the two data folders of `.e2e` are ever deleted
-(`e2eFolders`, like the bench's). Like the bench, it never touches the installed app (`identity.rs`).
+rest of the interface runs as when a person picks. Only the two data folders of `.e2e` are ever deleted as folders
+(`e2eFolders`, like the bench's). `--shots` takes any folder, so a walk removes there just the files it writes, by exact
+name (the numbered pictures, `FAIL-<step>.png`, `failure.txt`, `diagnostics.log`: `clearShots`) and never empties it.
+Like the bench, it never touches the installed app (`identity.rs`).
 
 ## YouTube Music (no keys)
 

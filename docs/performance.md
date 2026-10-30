@@ -12,9 +12,11 @@ pnpm bench --quick    # 15 s windows and 1 minute in the tray, not saved (--save
 pnpm bench --skip-build --keep --note "fan noise" --shots shots
 ```
 
-Windows only (WebView2 and Windows' own counters), Node 22 or later, no other tool: `scripts/bench.mjs` in plain node,
-`scripts/cdp.mjs` for the DevTools port. Leave the PC alone while it runs, and close what you can: other apps move
-the numbers, and the row says so.
+Windows only (WebView2 and Windows' own counters), Node 22 or later, no other tool to measure: `scripts/bench.mjs` in
+plain node, `scripts/cdp.mjs` for the DevTools port. The build is the release profile, which stops without the
+third-party notices: run `pnpm notices` once on a fresh clone (needs cargo-about, `docs/licenses.md`; `pnpm build` leaves
+them too). The bench looks for them first and says so, instead of failing minutes into the build. Leave the PC alone
+while it runs, and close what you can: other apps move the numbers, and the row says so.
 
 ## What it does
 

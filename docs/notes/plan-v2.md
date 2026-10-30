@@ -103,15 +103,19 @@ playback (its terms), concerts (an API's terms), trademark search.
 - **Bench** (done 2026-10-30): `pnpm bench` prints cold start, first paint, RAM after 1 min playing and after 10 min in the
   tray, idle CPU, on 10 000 local songs (a generator, `crates/core/examples/bench_data.rs`, not a folder); numbers kept in
   `docs/performance.md`. Left: the website quotes them (Why Legato page); YouTube playback isn't measured (it needs the
-  network); not in CI yet.
+  network); not in CI yet. The release build needs `pnpm notices` once per clone: the bench checks for the file first
+  and says so (review fix, 2026-10-30).
 - **E2E smoke** (done 2026-10-30): `pnpm e2e` builds a debug app with the `e2e` cargo feature (own identifier, network on a
   loopback mock, silent audio output), then drives its real window over WebView2's DevTools port: the welcome comes first,
   a demo folder of three WAV songs is added and scanned, a song plays 3 s and the engine's position moves, Pause / Play,
   a search answered by the mock (suggestions, YouTube, YouTube Music, Apple) while the song plays on, quit with exit code
   0, relaunch (no welcome, library kept); about 15 s once built. A new `e2e` job in `check.yml` runs it on Windows,
   screenshots and a report as artifacts on failure. Left: the job has not run on GitHub yet (nothing was pushed): the
-  first runs may need tuning; the real audio device, the YouTube embed and the native folder picker (answered over
-  DevTools, not driven) are outside it.
+  first runs may need tuning, so it does not block yet (`continue-on-error`, a warning on a failure: `release.yml` waits
+  for a green `check`); delete that line in `check.yml` after a few green runs. The real audio device, the YouTube embed
+  and the native folder picker (answered over DevTools, not driven) are outside it. Review fixes (2026-10-30): `--shots`
+  can name any folder, so a walk removes only its own files there, never the folder; a refused install in a dev build
+  leaves the Ready state.
 - **Deezer / Apple link import**: pasting a Deezer or Apple Music playlist / album URL in Add music (or the search
   box) imports it like a Spotify link, with the matched count shown; mockito tests on recorded answers; the website's
   privacy rows name the two hosts.
