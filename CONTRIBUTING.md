@@ -43,19 +43,32 @@ privacy rows replace the old `docs/privacy.md`, so change them when the app star
 
 ## Releasing
 
-Updates reach users through the built-in updater (`src-tauri/src/update.rs`): it reads `latest.json` from the latest
-GitHub release, downloads in the background and installs once nothing plays.
+Updates reach users through the built-in updater (`src-tauri/src/update.rs`): it reads a `latest.json` from GitHub
+releases, downloads in the background and installs once nothing plays. Two channels, picked in Settings › General ›
+Updates (the `updateChannel` setting, kept per PC, not synced):
 
-Every push to `master` that passes the `check` workflow becomes a release on its own
-(`.github/workflows/release.yml`): signed installer, `latest.json`, tag `vX.Y.Z`, and notes made of the `feat`, `fix`
-and `perf` commit subjects since the previous release (the app's update card shows them).
+- **Beta**: every push to `master` that passes the `check` workflow is released on its own
+  (`.github/workflows/release.yml`) as a *prerelease*: signed installer, `latest.json`, tag `vX.Y.Z`, and notes made of
+  the `feat`, `fix` and `perf` commit subjects since the previous release (the app's update card shows them). The
+  workflow then copies that `latest.json` to the rolling release named `beta` (made on the first run), which Beta PCs
+  read: `releases/download/beta/latest.json`.
+- **Stable** (the default): a beta that was tried, promoted by hand. Actions › promote › Run workflow
+  (`.github/workflows/promote.yml`, `scripts/promote.mjs`) with a version like `1.0.375`, or empty for the newest beta.
+  It refuses a version that is not newer than the current Stable, writes the notes of everything since the previous
+  Stable (`feat` / `fix` / `perf`) into that release's `latest.json` and page, then makes it a normal release, marked
+  Latest. Stable PCs read `releases/latest/download/latest.json` and GitHub's "latest" skips prereleases, so a push
+  never reaches them. **That URL is the one every installed version has always read (`tauri.conf.json`): keep it.**
+  Until the first promote, Stable PCs stay on the last release made before channels existed.
+- Back from Beta to Stable the app never downgrades: it waits for a Stable newer than the version it runs.
 
 - **Version**: `MAJOR.MINOR` comes from `src-tauri/tauri.conf.json`, the patch number is the number of commits on
   `master` (`scripts/release.mjs`). The files say `1.0.0`; the release says `1.0.` plus that count. For a bigger step,
   change `MAJOR.MINOR` in `tauri.conf.json` (and `package.json`, the workspace `Cargo.toml` and the `music-*` path
   dependencies to match). 1.0: the front-end redesign (docs/design.md), after the 0.1 releases.
-- **No release for a push**: put `[skip release]` in the commit's first line.
-- **By hand**: Actions › release › Run workflow (releases `master` as it is).
+- **No release for a push**: put `[skip release]` in the commit's first line (no beta either).
+- **By hand**: Actions › release › Run workflow (releases `master` as it is, as a beta).
+- **Try a promote**: `node scripts/promote.mjs --dry-run` prints which version would become Stable and its notes; it
+  changes nothing (needs the `gh` CLI signed in).
 
 The workflow needs the repository secret `TAURI_SIGNING_PRIVATE_KEY`, the private key made with
 `pnpm tauri signer generate` (`~/.tauri/music-app.key`), plus `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` if that key has a

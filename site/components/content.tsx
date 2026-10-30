@@ -76,6 +76,6 @@ export const FAQ: { q: string; a: ReactNode }[] = [
   { q: 'Does it download music?', a: "No. Music plays in each service's own player or from your files. Nothing is downloaded, recorded or extracted." },
   { q: 'Why does Spotify need Premium and a key?', a: 'Spotify lets other apps play only through its own app, for Premium accounts, and every app needs a free key from its developer dashboard. Without them, paste a public playlist link: its songs play from YouTube when the app finds them there.' },
   { q: 'Mac or Linux?', a: 'Windows 10 and 11 only, for now.' },
-  { q: 'How do updates work?', a: 'The app checks GitHub at launch and installs a new version between two songs, or while nothing plays.' },
+  { q: 'How do updates work?', a: 'The app checks GitHub at launch and installs a new version between two songs, or while nothing plays. You get the versions that were tried first (Stable); Settings › General has a Beta channel that brings every change first, and may break.' },
   { q: 'Can I write a plugin?', a: <>Yes: a folder with a manifest and a script, which asks for its permissions when someone installs it. The guide: {link(`${GITHUB}/blob/master/docs/plugins.md`, 'docs/plugins.md')}.</> },
 ]

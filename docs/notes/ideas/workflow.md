@@ -16,6 +16,10 @@ into `ui/src/shared/api.ts` (735 lines). `src-tauri/src/lib.rs` 2068 lines, `cra
   that file's URL for Stable so old versions keep updating.
 - **Effort**: S-M. **Risk**: the endpoint for old installs (must stay Stable's).
 - **Done when**: a push reaches a Beta PC and not a Stable PC; a promote run updates the Stable PC.
+- **Done 2026-10-30** (code side): every push is a prerelease; a rolling `beta` release holds Beta's `latest.json` (copied by
+  `release.yml`) instead of a `latest-beta.json`; `promote.yml` + `scripts/promote.mjs` make a beta Stable; `update::Channel`
+  picks the endpoint; `updateChannel` is a per-PC setting. See CONTRIBUTING › Releasing and docs/architecture.md › Updates.
+  Not tried on GitHub yet.
 
 ## Release notes in the user's words
 

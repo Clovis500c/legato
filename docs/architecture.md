@@ -115,8 +115,19 @@ downloads in the background, else it only announces the version. Signature check
 `tauri.conf.json`. The interface (`features/update/updates.ts`) installs it without cutting a song: when a song ends on
 its own (nobody touched the app for a minute) the session is saved on the next song and the installer runs, or at a
 quiet moment (nothing played for 15 s, no input for a minute). The installer runs silently and starts the app again,
-which reopens as it was (queue, screen) and plays the next song. Settings › About shows the version, the update state
-and the app's caches.
+which reopens as it was (queue, screen) and plays the next song. Settings › About shows the version and its channel,
+the update state and the app's caches.
+
+Two channels, picked in Settings › General › Updates (UI setting `updateChannel`, Stable by default, one of the
+settings Sync Mode leaves on each PC). Stable reads the endpoint of `tauri.conf.json`,
+`releases/latest/download/latest.json`: GitHub's "latest" skips prereleases and every installed version has always read
+that URL. Beta reads `releases/download/beta/latest.json`, the rolling `beta` release that `release.yml` refreshes
+after each green push (every push is a prerelease). `update::Channel` picks the endpoint (pure, tested); Beta builds its
+updater with `updater_builder().endpoints(…)`, same plugin and same signature key. The plugin's default comparator only
+takes a version newer than the installed one, so Beta → Stable never downgrades. Choosing a channel
+(`save_settings` → `Updater::switched`) drops what was found or downloaded and checks the new one at once; a pass
+running at that moment looks again when it ends. `promote.yml` / `scripts/promote.mjs` turn a beta into Stable
+(CONTRIBUTING › Releasing).
 
 ## Diagnostics
 

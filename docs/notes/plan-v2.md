@@ -94,8 +94,8 @@ playback (its terms), concerts (an API's terms), trademark search.
 
 ### Done when (top items)
 
-- **Release channels**: Settings › General › Updates shows Stable / Beta; a push to master reaches Beta only; a tag
-  (or a manual workflow) promotes to Stable; `latest.json` per channel; switching to Stable never downgrades.
+- **Release channels** (done 2026-10-30, code side): Settings › General › Updates shows Stable / Beta; a push to master reaches
+  Beta only; a manual workflow promotes to Stable; `latest.json` per channel; switching to Stable never downgrades.
 - **Generated IPC types** (done 2026-10-30): `shared/api.ts` imports types written by a Rust build step; CI fails when
   they differ; no hand-copied struct left.
 - **Diagnostics**: rotating log in the app data folder (errors, warnings, playback switches; no titles unless the
@@ -276,8 +276,10 @@ Today: every green push to master is a release (369 so far, check 5-11 min then 
 tests; `src-tauri/src/lib.rs` 2068 lines; CLAUDE.md ~12 kB read by
 every session.
 
-- [ ] Release channels: Beta (every green push, opt-in in Settings › General) and Stable (a tag, weekly or by hand), so
-      a bad push never reaches everyone.
+- [x] Release channels: Beta (every green push, a prerelease, opt-in in Settings › General › Updates) and Stable (the
+      `promote` workflow by hand), so a bad push never reaches everyone. Limits: no tag trigger or weekly schedule; the
+      workflows have not run on GitHub yet (after the merge, check that the `beta` release appears and that
+      `releases/latest` still serves Stable); until the first promote, Stable PCs stay on the last pre-channels release.
 - [ ] Release notes written from the commits (feat / fix grouped, in the user's words), shown in the app after an update.
 - [x] Generated TypeScript types from Rust (`ts-rs`, `pnpm types` → `ui/src/shared/generated`) for every IPC type: no
       hand copies, CI diff check on the Windows job. Limit: the `invoke` wrappers in `api.ts` stay by hand (no
