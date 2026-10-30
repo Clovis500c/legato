@@ -176,6 +176,11 @@ impl AppState {
         self.ytm_all().into_iter().next()
     }
 
+    /// Searches and public pages: the first picked account, else YouTube Music's public catalog (signed out).
+    fn ytm_or_public(&self) -> YouTubeMusic {
+        self.ytm().unwrap_or_else(YouTubeMusic::anonymous)
+    }
+
     fn connector(&self, source: Source) -> Option<Box<dyn Connector>> {
         match source {
             Source::Spotify => self.spotify().map(|c| Box::new(c) as _),
@@ -413,18 +418,16 @@ fn today() -> u64 {
     std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map_or(0, |d| d.as_secs() / 86_400)
 }
 
-/// YouTube Music song search, cached for the session. None = signed out.
-async fn yt_search(state: &AppState, query: &str) -> Option<Result<Vec<Track>, String>> {
+/// YouTube Music song search, cached for the session. Signed out: its public catalog (2026-10-30: imports and
+/// fallbacks found nothing without a Google sign-in).
+async fn yt_search(state: &AppState, query: &str) -> Result<Vec<Track>, String> {
     let key = query.trim().to_lowercase();
     if let Some(hit) = state.cache.youtube.get(&key) {
-        return Some(Ok((*hit).clone()));
+        return Ok((*hit).clone());
     }
-    let yt = state.ytm()?;
-    let res = yt.search_songs(query).await.map_err(err);
-    if let Ok(found) = &res {
-        state.cache.youtube.put(&key, found.clone());
-    }
-    Some(res)
+    let found = state.ytm_or_public().search_songs(query).await.map_err(err)?;
+    state.cache.youtube.put(&key, found.clone());
+    Ok(found)
 }
 
 #[derive(Serialize)]
@@ -490,14 +493,10 @@ async fn search_catalogs(state: State<'_, AppState>, query: String, country: Str
         errors.push(format!("YouTube: {e}"));
         Vec::new()
     });
-    let songs = match songs {
-        Some(Ok(found)) => found,
-        Some(Err(e)) => {
-            errors.push(format!("YouTube Music: {e}"));
-            Vec::new()
-        }
-        None => Vec::new(),
-    };
+    let songs = songs.unwrap_or_else(|e| {
+        errors.push(format!("YouTube Music: {e}"));
+        Vec::new()
+    });
     let apple = match apple.await.map_err(err)? {
         Ok(found) => {
             state.cache.apple.put(&apple_key, found.clone());
@@ -531,8 +530,8 @@ async fn with_youtube(state: &AppState, track: Track) -> Track {
         return track;
     }
     let query = format!("{} {}", track.artist, track.title);
-    // YouTube Music songs first (clean metadata), then normal YouTube (signed out too).
-    if let Some(Ok(found)) = yt_search(state, &query).await
+    // YouTube Music songs first (clean metadata), then normal YouTube.
+    if let Ok(found) = yt_search(state, &query).await
         && let Some(hit) = music_core::matching::best_match(&track, &found)
     {
         return merge_tracks(&track, hit);
@@ -622,8 +621,7 @@ async fn find_versions(state: State<'_, AppState>, ids: Vec<i64>) -> CmdResult<F
     };
     let mut found = 0;
     for t in &todo {
-        let Some(res) = yt_search(&state, &format!("{} {}", t.artist, t.title)).await else { break };
-        let candidates = res?;
+        let candidates = yt_search(&state, &format!("{} {}", t.artist, t.title)).await?;
         if let Some(hit) = music_core::matching::best_match(t, &candidates) {
             state.lib().upsert_track(&merge_tracks(t, hit)).map_err(err)?;
             found += 1;
@@ -670,7 +668,7 @@ async fn embed_refused(state: State<'_, AppState>, videos: Vec<String>) -> CmdRe
 #[tauri::command]
 async fn alternative_videos(state: State<'_, AppState>, track_id: i64, exclude: Vec<String>) -> CmdResult<Vec<String>> {
     let t = state.lib().tracks().map_err(err)?.into_iter().find(|t| t.id == track_id).ok_or("Track not found")?.track;
-    let yt = state.ytm().ok_or("Sign in to YouTube Music first (Settings › Accounts)")?;
+    let yt = state.ytm_or_public();
     let mut out: Vec<String> = Vec::new();
     // Official song first, then uploads of it.
     let songs = yt.search_songs(&format!("{} {}", t.artist, t.title)).await.unwrap_or_default();
@@ -815,7 +813,7 @@ async fn resolve_text(state: &AppState, artist: &str, title: &str, country: &str
     {
         return Some(t.clone());
     }
-    let hits = yt_search(state, &query).await?.ok()?;
+    let hits = yt_search(state, &query).await.ok()?;
     music_core::matching::best_match(&want, &hits).cloned()
 }
 
@@ -926,7 +924,7 @@ async fn radios(state: &AppState, seeds: Vec<(i64, String)>) -> Vec<(i64, Vec<Tr
             continue;
         }
         // Signed out: anonymous radios.
-        let yt = yt.get_or_insert_with(|| Arc::new(state.ytm().unwrap_or_else(YouTubeMusic::anonymous))).clone();
+        let yt = yt.get_or_insert_with(|| Arc::new(state.ytm_or_public())).clone();
         asked.push((id, video, tauri::async_runtime::spawn(async move { yt.list_tracks(&list).await })));
     }
     for (id, video, task) in asked {
@@ -1240,7 +1238,7 @@ struct SpotifyImport {
 
 /// Public Spotify playlist or album link → imported playlist, no account. Each track gets its YouTube version (playback).
 #[tauri::command]
-async fn import_spotify_link(state: State<'_, AppState>, url: String) -> CmdResult<SpotifyImport> {
+async fn import_spotify_link(app: tauri::AppHandle, state: State<'_, AppState>, url: String) -> CmdResult<SpotifyImport> {
     use music_connectors::spotify_embed;
     // Trust boundary: clipboard / typed text.
     if url.len() > 2048 {
@@ -1257,23 +1255,16 @@ async fn import_spotify_link(state: State<'_, AppState>, url: String) -> CmdResu
         list.tracks = all;
         truncated = false;
     }
-    // Signed out of YouTube Music: tracks come in without a playable version.
-    let yt = state.ytm().map(Arc::new);
+    // Each song's YouTube version, signed in or not: YouTube Music's songs, then a music video (with_youtube). Signed
+    // out, imports used to come in with nothing playable (2026-10-30). 6 at a time: quick, still polite.
     let mut tracks = Vec::with_capacity(list.tracks.len());
-    // 6 searches at a time: quick, still polite.
     for chunk in list.tracks.chunks(6) {
         let jobs: Vec<_> = chunk
             .iter()
             .cloned()
             .map(|t| {
-                let yt = yt.clone();
-                tauri::async_runtime::spawn(async move {
-                    let Some(yt) = yt else { return t };
-                    match yt.search_songs(&format!("{} {}", t.artist, t.title)).await {
-                        Ok(found) => music_core::matching::best_match(&t, &found).map_or_else(|| t.clone(), |hit| merge_tracks(&t, hit)),
-                        Err(_) => t,
-                    }
-                })
+                let app = app.clone();
+                tauri::async_runtime::spawn(async move { with_youtube(&app.state::<AppState>(), t).await })
             })
             .collect();
         for job in jobs {
@@ -1370,7 +1361,7 @@ async fn ytm_list(state: State<'_, AppState>, list: ListRef) -> CmdResult<Vec<Tr
         return Ok((*hit).clone());
     }
     // Signed out: public lists (an artist's albums and playlists) still open.
-    let yt = state.ytm().unwrap_or_else(YouTubeMusic::anonymous);
+    let yt = state.ytm_or_public();
     let tracks = yt.list_tracks(&list).await.map_err(err)?;
     Ok((*state.cache.lists.put(&key, tracks)).clone())
 }

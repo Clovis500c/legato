@@ -40,7 +40,7 @@ Everything a new session needs to carry on the redesign (version 1.0, branch `v2
   - Motion (design.md › Shape, icons, motion): `shared/motion.ts` `pop()` on like and toggles, `.stagger`,
     `.slide-in`, `.swap-in`, `.icon-in`, `.nudge-l/-r`, `.turn` in `ui/src/styles.css`.
   - Website: `site/` (Next.js 16 static export, Tailwind 4, Motion), deployed by `.github/workflows/pages.yml` from
-    master (GitHub Pages on since 2026-10-29, source GitHub Actions: https://clovis500c.github.io/music-app/). It replaces the user
+    master (GitHub Pages on since 2026-10-29, source GitHub Actions: https://clovis500c.github.io/legato/). It replaces the user
     docs (README features, privacy.md); copy in `site/components/content.tsx`, pictures exported from Figma's
     landing page (node 11:8927 light, 11:10438 dark). Name and icon: Legato and the L on the playback blue (Figma, 01
     Brand, node 11:9323), the user's choice 2026-10-29; the app is renamed too (plan-v2.md, identifiers kept).

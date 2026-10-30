@@ -3,7 +3,9 @@
 Formerly Music App (renamed 2026-10-29). Identifier `app.legato.desktop` (was `dev.musicapp.desktop`: `src-tauri/src/rename.rs`
 moves its folders and keychain entries at first launch), exe `legato.exe`, Run entry and new sync folders "Legato".
 Kept for compatibility between versions and PCs: `_musicapp._tcp`, `MA1`, `.musicsync` files and an existing
-`Music App Sync` folder, reading `musicapp://` links, the repo's name. Never rename those.
+`Music App Sync` folder, reading `musicapp://` links. Never rename those. The repo is `Clovis500c/legato` (renamed by the
+user 2026-10-30; website https://clovis500c.github.io/legato/): GitHub redirects the old `music-app` URLs, and installed
+versions look for updates there, so never create a repo named `music-app` again.
 
 Desktop app (Tauri 2 + Rust + React/TS) that unifies Spotify / YouTube / Apple Music / local libraries. Overview: `docs/architecture.md`; open work: `docs/notes/plan-v2.md` (history in git).
 Repo docs: `README.md` (short, points to the website), `CONTRIBUTING.md`, `docs/` (for developers). What users read (features,
@@ -15,7 +17,7 @@ Design direction (v2): `docs/design.md`; mockups in the Figma file "Untitled" (t
 - Serverless: no backend of ours. Secrets in the OS keychain (`keyring` crate), local SQLite library. Sync between the user's PCs (user's choice, 2026-10-21): a OneDrive (or any shared) folder, one file per PC, or the local network with a 6-digit code; secrets travel only sealed (password or code), otherwise sign in again. See `docs/sync-mode.md`.
 - Legal audio playback only (Spotify Connect / official SDK, embedded YouTube player, local files, personal servers). No audio extraction: never download, record or export a platform's audio, never touch DRM. Live processing of what plays is allowed (user's choice 2026-10-20): native chain in `crates/dsp`, YouTube in its player (`crates/shield` `live.js`), see `docs/playback.md`.
 - Never copy code from Liner (non-commercial licence, reuse forbidden). Everything is written from scratch.
-- No keys for YouTube: Google sign-in in an app window (Google's own page), session kept in WebView2's cookie store, YouTube Music's and YouTube's own web APIs (InnerTube, unofficial: user's choices 2026-10-16 and 2026-10-20, may break). Search covers normal YouTube (anonymous when signed out), clear non-music hidden until asked (`music_core::musicness`). Spotify: user's own client ID (no keyless way; dev mode = Premium owner, 5 users max).
+- No keys for YouTube: Google sign-in in an app window (Google's own page), session kept in WebView2's cookie store, YouTube Music's and YouTube's own web APIs (InnerTube, unofficial: user's choices 2026-10-16 and 2026-10-20, may break). Search covers normal YouTube and YouTube Music (signed out: anonymous, YouTube Music's public catalog), clear non-music hidden until asked (`music_core::musicness`). Spotify: user's own client ID (no keyless way; dev mode = Premium owner, 5 users max).
 - English for code, comments, docs and commit messages. The interface speaks the user's language (user's choice 2026-10-20): English source and fallback, French, Windows' language by default or picked in Settings › General › Language. Every UI text goes through `shared/i18n` (`tr`, `trn` for counts, `msg` in tables); `fr.ts` holds French keyed by the English text; `i18n.test.ts` fails on any text without French. Setting ids (`data-setting`, search index labels) stay English.
 
 ## Structure
@@ -56,3 +58,15 @@ Design direction (v2): `docs/design.md`; mockups in the Figma file "Untitled" (t
   wait there freezes the whole app: Windows' AppHang on v0.1.217, 2026-10-23).
 - Small commits, one tested step at a time.
 - Check API quotas and endpoints before freezing them (they change; Spotify renamed `/tracks` to `/items` in February 2026).
+
+## graphify
+
+This project has a knowledge graph at graphify-out/ with god nodes, community structure, and cross-file relationships.
+
+Rules:
+- For codebase questions, first run `graphify query "<question>"` when graphify-out/graph.json exists. Use `graphify path "<A>" "<B>"` for relationships and `graphify explain "<concept>"` for focused concepts. These return a scoped subgraph, usually much smaller than GRAPH_REPORT.md or raw grep output.
+- Read graphify-out/GRAPH_REPORT.md only for broad architecture review or when query/path/explain do not surface enough context.
+- After modifying code, run `graphify update .` to keep the graph current (AST-only, no API cost).
+- Code only (local AST: no LLM, no subagents), so `docs/` isn't in it: read those directly. No graph yet (new clone):
+  `graphify extract . --code-only --cargo`, an empty `graphify-out/.graphify_labels.json` (`{}`: communities named
+  after their hub, no LLM), then `graphify cluster-only .`.

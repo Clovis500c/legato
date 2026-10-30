@@ -12,6 +12,7 @@ import { bindLiveFrame, onEndHeard } from './live'
 import { closeWatch, openWatch, sendWatch, watching } from './watch'
 import { ytPost, type YtUpdate } from './youtube'
 import { tr } from '../../shared/i18n/i18n'
+import { offline } from '../../shared/online'
 
 /** via youtube = embed plays it, else Rust engine (local file, or Apple preview held in memory). */
 export interface NowPlaying {
@@ -62,9 +63,10 @@ interface PlayerState {
   /**
    * The other embed (overlap): its song fading out while the next one plays, then stopped (done) and kept for the next
    * overlap. Never unmounted while a YouTube song plays: removing an embed stalled the other one's video ~15 s, sound
-   * gone after the fade (Chromium, 2026-10-28). key = its frame's.
+   * gone after the fade (Chromium, 2026-10-28). key = its frame's; end = its song's end (ms), where the overlap was
+   * timed and its fade out reaches silence.
    */
-  tail: { key: number; videoId: string; done: boolean } | null
+  tail: { key: number; videoId: string; end: number; done: boolean } | null
   /** Key of the playing embed; the two embeds swap roles at each overlap. */
   frameKey: number
   toggleShuffle: () => void
@@ -261,7 +263,34 @@ let pausedAt = 0
 const PAUSE_HOLD_MS = 5000
 // Current song came by the queue moving on (song ended): Skip long songs applies once its length is known.
 let reachedAuto = false
+// Length of the playing video, ms (0 = not known yet). YouTube sends it once, as the video loads: kept for the song.
+let videoMs = 0
 let stuckTimer: ReturnType<typeof setTimeout> | undefined
+
+// No network (Windows says so): a video that won't start isn't refused. Nothing is blocked or skipped; playback pauses
+// and the song starts over in a new embed once the network is back (2026-10-30: a dropped Wi-Fi marked every song it
+// reached as refused, for good, and skipped through the queue). playId waiting, -1 = none.
+let offlineFor = -1
+function waitForNetwork(playId: number) {
+  clearTimeout(stuckTimer)
+  usePlayer.setState({ playing: false })
+  const first = offlineFor < 0
+  offlineFor = playId
+  if (!first) return
+  useStore.getState().notify(tr('No internet connection: the song starts again when your PC is back online.'), { kind: 'error' })
+  const back = () => {
+    window.removeEventListener('online', back)
+    const id = offlineFor
+    offlineFor = -1
+    const p = usePlayer.getState()
+    // Moved on meanwhile (another song, a local file): nothing to start again.
+    if (p.playId !== id || p.now?.via !== 'youtube') return
+    // The embed born offline holds an error page: a new one (key), asked to play (playId arms the stuck check again).
+    usePlayer.setState((s) => ({ frameKey: Math.max(s.frameKey, s.tail?.key ?? 0) + 1, playId: s.playId + 1, positionMs: 0, playing: true }))
+  }
+  window.addEventListener('online', back)
+}
+
 function watchForStuck(playId: number, wait = 6_000) {
   clearTimeout(stuckTimer)
   ytState = undefined
@@ -271,6 +300,7 @@ function watchForStuck(playId: number, wait = 6_000) {
     if (p.playId !== playId || p.hold || !id || p.positionMs > p.startAt || ytState === 1 || ytState === 2) return
     // Slow network: give it longer.
     if (ytState === 3) return void (stuckTimer = setTimeout(check, 10_000))
+    if (offline()) return waitForNetwork(playId)
     if (!watching(id)) {
       block(id)
       return playOnWatchPage(id, 0)
@@ -281,6 +311,8 @@ function watchForStuck(playId: number, wait = 6_000) {
 }
 
 async function tryOtherUpload(trackId: number, failed: string, why: string) {
+  // Offline, nothing can be told about the video (waitForNetwork).
+  if (offline()) return waitForNetwork(usePlayer.getState().playId)
   unplayable.add(failed)
   closeWatch()
   const mine = seq
@@ -437,7 +469,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
       if (get().now?.youtubeId === video) {
         yt('seekTo', start / 1000, true)
         yt('playVideo')
-      }
+      } else videoMs = 0
       ytFresh = true
       set({ now: { ...base, youtubeId: video } })
       // Fade in starts silent: volume set before the embed loads the next video (it keeps the last one).
@@ -618,6 +650,8 @@ export const usePlayer = create<PlayerState>((set, get) => ({
       return get().step(1)
     }
     if (u.error !== undefined) {
+      // Network gone mid-song (player error 5…): the video isn't to blame, nothing is blocked.
+      if (offline()) return waitForNetwork(get().playId)
       // 100: removed. Another upload of the same song, else the next song.
       if (now?.trackId && now.youtubeId && u.error === 100) return void tryOtherUpload(now.trackId, now.youtubeId, tr('This video was removed'))
       // Any other refusal (101 / 150 embedding off, 152 / 153 player configuration, 5 player error…): same video from
@@ -644,19 +678,20 @@ export const usePlayer = create<PlayerState>((set, get) => ({
       u = { ...u, state: undefined }
     }
     // The song's own end (learned early end) is the length everywhere: fades, overlap, times shown.
-    const videoMs = u.duration ? u.duration * 1000 : 0
-    const durationMs = videoMs && get().earlyEnds ? songEnd(now?.youtubeId, videoMs) : videoMs
+    if (u.duration) videoMs = u.duration * 1000
+    const songMs = videoMs && get().earlyEnds ? songEnd(now?.youtubeId, videoMs) : videoMs
     set({
       ...(u.state !== undefined && u.state !== 3 && { playing: u.state === 1 }),
       ...(u.time !== undefined && { positionMs: u.time * 1000 }),
-      ...(durationMs && { durationMs }),
+      ...(u.duration && { durationMs: songMs }),
     })
     if (u.time !== undefined) {
       progress(u.time * 1000, videoMs || undefined)
       get().applyVolume()
       overlap()
-      // Past the song's own end, silence left: over (unless the overlap just moved on).
-      if (durationMs < videoMs && u.time * 1000 >= durationMs && get().now === now) return songOver()
+      // Past the song's own end, silence left: over (unless the overlap just moved on). Checked at each report: the
+      // length came once (2026-10-30: read from each report, an early end was only ever reached by the overlap).
+      if (songMs < videoMs && u.time * 1000 >= songMs && get().now === now) return songOver()
     }
     if (u.state === 0) {
       endListen(true)
@@ -734,11 +769,25 @@ function overlap() {
   bindLiveFrame(null)
   void p.playAt(i, undefined, { auto: true })
   // The stopped embed takes the next song into its running player; the first overlap makes it.
-  usePlayer.setState({ tail: { key: p.frameKey, videoId: now.youtubeId, done: false }, frameKey: p.tail?.key ?? p.frameKey + 1 })
+  usePlayer.setState({ tail: { key: p.frameKey, videoId: now.youtubeId, end: p.durationMs!, done: false }, frameKey: p.tail?.key ?? p.frameKey + 1 })
 }
 
+/**
+ * Report of the overlap's tail (PlayerBar): its fade out to its song's end, then stopped there. Volume to send it, if
+ * any. The end comes from the overlap: YouTube sends a video's length once, as it loads (2026-10-30: read from each
+ * report, the tail never faded and played on at full volume under the next song).
+ */
+export function tailVolume(u: YtUpdate): number | undefined {
+  const { tail, volume, fade } = usePlayer.getState()
+  if (!tail || tail.done) return
+  if (u.state === 0 || u.error !== undefined || (u.time !== undefined && u.time * 1000 >= tail.end)) return void usePlayer.setState({ tail: stopTail(tail) })
+  if (u.time !== undefined) return Math.round(volume * fadeGain(u.time * 1000, tail.end, fade, false) * 100)
+}
+
+// A new song, or its video: playAt counts the play before it sets what plays, so the video is watched once it's set.
+// Watched on playId alone, the first YouTube song of a session (or after a file) never was (2026-10-30).
 usePlayer.subscribe((s, prev) => {
-  if (s.playId !== prev.playId && s.now?.via === 'youtube') watchForStuck(s.playId)
+  if (s.now?.via === 'youtube' && (s.playId !== prev.playId || s.now.youtubeId !== prev.now?.youtubeId)) watchForStuck(s.playId)
 })
 
 // Song whose early end was reached (playId): over once.

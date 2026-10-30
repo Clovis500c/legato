@@ -1,8 +1,7 @@
 import type { LibraryTrack, Presence } from '../../shared/api'
+import { REPO } from '../../shared/links'
 import type { DiscordSettings } from '../../shared/theme/theme'
 import type { NowPlaying } from '../player/store'
-
-export const GITHUB = 'https://github.com/Clovis500c/music-app'
 
 /** What Discord should show now. null = nothing (stopped, or paused when the add-on hides pauses). */
 export function presenceFor(now: NowPlaying | undefined, track: LibraryTrack | undefined, playing: boolean, positionMs: number, durationMs: number | null, opts: DiscordSettings): Presence | null {
@@ -23,7 +22,7 @@ export function presenceFor(now: NowPlaying | undefined, track: LibraryTrack | u
     artist: now.artist,
     album: track?.album ?? null,
     art,
-    buttons: [song, opts.github ? (['Get App On GitHub', GITHUB] as [string, string]) : null].filter((b): b is [string, string] => !!b),
+    buttons: [song, opts.github ? (['Get App On GitHub', REPO] as [string, string]) : null].filter((b): b is [string, string] => !!b),
     playing,
     positionMs: Math.max(0, Math.round(positionMs)),
     durationMs: durationMs ? Math.round(durationMs) : null,

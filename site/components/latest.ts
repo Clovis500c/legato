@@ -10,7 +10,7 @@ type Release = { tag_name: string; assets: { name: string; browser_download_url:
 // One request per visit, shared by every download button.
 let pending: Promise<Latest> | null = null
 const latest = () =>
-  (pending ??= fetch('https://api.github.com/repos/Clovis500c/music-app/releases/latest')
+  (pending ??= fetch('https://api.github.com/repos/Clovis500c/legato/releases/latest')
     .then((r) => (r.ok ? (r.json() as Promise<Release>) : Promise.reject(new Error(String(r.status)))))
     .then((r) => ({ href: r.assets.find((a) => a.name.endsWith('-setup.exe'))?.browser_download_url ?? RELEASES, version: r.tag_name.replace(/^v/, '') }))
     .catch(() => ({ href: RELEASES, version: null })))

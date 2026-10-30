@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import type { LibraryTrack } from '../../shared/api'
 import type { DiscordSettings } from '../../shared/theme/theme'
 import type { NowPlaying } from '../player/store'
-import { GITHUB, presenceFor, samePresence } from './presence'
+import { presenceFor, samePresence } from './presence'
 import { ADDONS, allTags, DISCORD, filterAddons } from './registry'
 
 const opts: DiscordSettings = { appId: '1', status: 'song', buttons: true, paused: false, github: false }
@@ -14,7 +14,7 @@ describe('presenceFor', () => {
     expect(presenceFor(now, track, true, 30_000.4, 197_000, opts)).toEqual({ title: 'jinx', artist: 'lexycat', album: 'Pink', art: track.art, buttons: [['Listen on YouTube', 'https://www.youtube.com/watch?v=abc']], playing: true, positionMs: 30_000, durationMs: 197_000, status: 'song' })
     const sp = presenceFor({ ...now, via: 'spotify', youtubeId: undefined, spotifyId: 'xyz' }, undefined, true, 0, null, opts)
     expect(sp?.buttons).toEqual([['Listen on Spotify', 'https://open.spotify.com/track/xyz']])
-    expect(presenceFor(now, track, true, 0, null, { ...opts, github: true })?.buttons[1]).toEqual(['Get App On GitHub', GITHUB])
+    expect(presenceFor(now, track, true, 0, null, { ...opts, github: true })?.buttons[1]).toEqual(['Get App On GitHub', 'https://github.com/Clovis500c/legato'])
     expect(sp?.art).toBeNull()
   })
 

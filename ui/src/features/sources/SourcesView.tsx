@@ -1,9 +1,10 @@
 import { ArrowsClockwise, FolderPlus, GoogleLogo, ShieldCheck, SignOut, UserPlus, X } from '@phosphor-icons/react'
 import { useShallow } from 'zustand/react/shallow'
 import { open } from '@tauri-apps/plugin-dialog'
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useStore } from '../../app/store'
 import { accountKey, api, type Direction, type YtmAccount } from '../../shared/api'
+import { useGoogleAccounts } from './google'
 import { timeAgo } from '../../shared/format'
 import { Button } from '../../shared/ui/Button'
 import { Led, RoundButton, Segmented, Toggle } from '../../shared/ui/controls'
@@ -187,43 +188,8 @@ function LastfmRow() {
 /** YouTube Music through a normal Google sign-in (like Pear Desktop): no keys. Several Google accounts / channels, pick which to sync. */
 function GoogleAccounts() {
   const { refresh, sync, busy, lastSync } = useStore(useShallow(({ refresh, sync, busy, lastSync }) => ({ refresh, sync, busy, lastSync })))
-  const [data, setData] = useState<{ signedIn: boolean; accounts: YtmAccount[]; picked: string[] }>()
-  const [waiting, setWaiting] = useState(false)
+  const { data, waiting, load, signIn } = useGoogleAccounts()
   const [dirs, setDir] = useDirections()
-  const load = useCallback(
-    () =>
-      api
-        .ytmAccounts()
-        .then((d) => {
-          setData(d)
-          return d
-        })
-        .catch((e) => {
-          useStore.setState({ error: String(e) })
-          return undefined
-        }),
-    [],
-  )
-  useEffect(() => void load(), [load])
-  // Sign-in window open: watch for the session (window closes itself once signed in).
-  useEffect(() => {
-    if (!waiting) return
-    const before = data?.accounts.length ?? 0
-    const id = setInterval(async () => {
-      const d = await load()
-      if (d?.signedIn && d.accounts.length > before) {
-        setWaiting(false)
-        // Signed in: playlists come in right away, no extra step.
-        void sync()
-      }
-    }, 2000)
-    return () => clearInterval(id)
-  }, [waiting, load, sync, data?.accounts.length])
-
-  const signIn = (add: boolean) => {
-    setWaiting(true)
-    api.ytmSignIn(add).catch((e) => useStore.setState({ error: String(e) }))
-  }
   const toggle = async (a: YtmAccount, on: boolean) => {
     if (!data) return
     const keys = on ? [...data.picked, accountKey(a)] : data.picked.filter((k) => k !== accountKey(a))

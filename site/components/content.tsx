@@ -3,7 +3,7 @@ import type { ReactNode } from 'react'
 // Every line here is something the app does today (checked against the code, 2026-10-29). Privacy rows replace
 // docs/privacy.md: keep them in step with what the app sends.
 
-export const GITHUB = 'https://github.com/Clovis500c/music-app'
+export const GITHUB = 'https://github.com/Clovis500c/legato'
 
 export const FIXES: [string, string][] = [
   ['Fewer songs on screen after each redesign', 'A compact list by default: 40 px rows, artist and album in their own columns, the columns you pick.'],
@@ -41,6 +41,7 @@ export const PRIVACY: [string, string][] = [
   ['Library and settings', 'Stay on this PC, in a local database.'],
   ['Sign-ins and keys', 'Stay in the Windows Credential Manager.'],
   ['Requests', "Go out through the app's core only: the interface never calls the network by itself."],
+  ['Search', "What you search for goes to YouTube, YouTube Music and Apple Music, signed in or not, and to YouTube's suggestions as you type (Settings › General turns them off). Recent searches stay on this PC."],
   ['Lyrics', "When you open them: YouTube Music's timed lyrics first if you're signed in, then the song's title, artist, album and length go to LRCLIB. Answers stay on your PC."],
   ['Voice search', "Off until you allow it. While it listens, your voice goes to Microsoft through Windows' own speech recognition. The app keeps nothing."],
   ['Music Detector', 'Off until you allow it. 10 seconds of sound, from the microphone or what this PC plays, go once to AudD to name the song. Nothing is saved.'],

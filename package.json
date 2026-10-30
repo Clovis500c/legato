@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "One library for YouTube Music, Spotify, Apple Music and your own files. Desktop app (Tauri 2 + Rust).",
   "author": "Clovis500c",
-  "repository": "github:Clovis500c/music-app",
+  "repository": "github:Clovis500c/legato",
   "private": true,
   "license": "SEE LICENSE IN LICENSE",
   "type": "module",

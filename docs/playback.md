@@ -43,7 +43,8 @@ Status on 2026-10-16. YouTube, local files and Apple Music previews: done and te
   in-memory stream (Windows fetches nothing).
 - Buttons and media keys → `media-key` event → store (`play` / `pause` only act if they change something; `stop` pauses).
 - Checked live with a preview: Windows' session list shows title, artist, album and cover; play from the session
-  resumes the app. Not done: timeline (position) in the panel.
+  resumes the app. Timeline: position and length go with each play state (`set_state`, Windows moves the bar while
+  playing); a seek in the panel comes back as `media-seek`.
 
 ## Cover art
 
@@ -90,14 +91,22 @@ Status on 2026-10-16. YouTube, local files and Apple Music previews: done and te
   ready, and a page that hasn't started 15 s after opening counts as refused (cookie wall, sign-in page).
 - Still unplayable on the watch page (region, age without a signed-in adult account, removed, private: playability
   status), or error 100 (removed): `alternative_videos` searches YouTube Music songs and videos for the same song (same
-  cleaned title and length, any channel) and plays the first that works, else a clear message and the next song.
+  cleaned title and length, any channel; signed out, its public catalog) and plays the first that works, else a clear
+  message and the next song.
   When every song of the queue has failed in a row (none played since), playback stops with one message instead of
   looping on repeat (2026-10-28). Nothing is extracted: both are YouTube's own players.
+- No network (2026-10-30; Windows says so: `navigator.onLine` false, `shared/online.ts`): a video that won't start or
+  errors isn't refused. Nothing is blocked (the refused list is kept between launches) or skipped: playback pauses with
+  one message, and the song starts over in a new embed (`frameKey`) once the network is back (`waitForNetwork` in
+  `store.ts`). Before, a dropped Wi-Fi marked every song it reached as refused, for good. The top bar shows Offline.
+- The stuck check arms when the video is set, not only when the play count moves: `playAt` counts the play before it
+  sets what plays, so the first YouTube song of a session (or after a file) was never watched (2026-10-30).
 - Now Playing Auto mode: frames `1.jpg` / `2.jpg` / `3.jpg` (25 / 50 / 75 %) compared at 32×24 (`still.ts`); nearly the
   same = still image upload = cover. Cover mode keeps the embed playing, transparent (user's choice, see plan).
 - Fades between songs: volume × `fadeGain` (smoothstep), only on transitions that happen on their own; Spotify none.
   YouTube → YouTube overlap: as the fade out begins, the next song starts in a second embed; the old one plays on
-  unseen as the tail (`tail` in the store), fading itself out until its video ends. Watch page, other sources: no overlap.
+  unseen as the tail (`tail` in the store), fading out to its song's end (`tail.end`, where the overlap was timed), then
+  stopped there. Watch page, other sources: no overlap.
   The tail is then stopped, never unmounted: removing an embed while the other plays stalls the other one's video
   decoder for ~15 s with data buffered (measured 2026-10-28, also with `about:blank`). The two embeds swap roles at
   each overlap; the next song loads into the stopped one. In the tray the first one is born in a hidden page, where
@@ -110,7 +119,10 @@ Status on 2026-10-16. YouTube, local files and Apple Music previews: done and te
   song's length on later plays: fades, overlap, Adaptive Sound's hold, times shown. Limit: 2 s of silence then a final
   part within the last 25 s ends at the silence. Local files: not done (gapless albums, hidden tracks).
 - Driven by `postMessage`, the protocol `iframe_api` uses internally (`listening`, `command`, `infoDelivery`, `onError`).
-  We don't load `iframe_api`: a remote script in the app's origin would get access to Tauri IPC.
+  We don't load `iframe_api`: a remote script in the app's origin would get access to Tauri IPC. `infoDelivery` sends
+  what changed only: a video's `duration` comes once, as it loads (8 of 148 reports, measured 2026-10-30), so the store
+  keeps it per song. Read from each report, the overlap's tail never faded (the old song played on at full volume under
+  the next one) and an early end was only ever reached through the overlap.
 - CSP: only addition, `frame-src https://www.youtube.com`.
 - YouTube rules: the player stays visible (356×200, minimum 200×200) except in Now Playing's Cover mode (user's
   choice, against the terms). No audio is extracted.
@@ -273,9 +285,10 @@ via the Web API Player endpoints. Audio comes out of the Spotify app; we only se
   technical protection) or capturing the token the official player fetches. Both need the user's go-ahead first.
 - Chosen by the user (2026-10-16): no web-session import. **Public playlists and albums by link**, no account
   (`crates/connectors/src/spotify_embed.rs`): the official embed page (`open.spotify.com/embed/<kind>/<id>`) carries the
-  list in its `__NEXT_DATA__` JSON (first 100 tracks). Each track is matched to YouTube Music (6 searches at a time,
-  signed-in Google session) and plays through the YouTube embed. Saved as an imported Spotify playlist; importing again
-  refreshes it. Paste the link anywhere (Ctrl+V) or in Add music.
+  list in its `__NEXT_DATA__` JSON (first 100 tracks). Each track is matched to YouTube Music's songs, then to a music
+  video on normal YouTube (`with_youtube`, 6 at a time), and plays through the YouTube embed. Signed out, YouTube
+  Music's public catalog answers (2026-10-30: before, a signed-out import came in with nothing playable). Saved as an
+  imported Spotify playlist; importing again refreshes it. Paste the link anywhere (Ctrl+V) or in Add music.
 
 ## Ad shield (`crates/shield`) — user's choice, 2026-10-16
 

@@ -93,14 +93,47 @@ fn tagged(path: &Path) -> Option<TaggedFile> {
     Probe::open(path).ok()?.options(ParseOptions::new().read_cover_art(false)).read().ok()
 }
 
+/// A track number opening a file name, tried in order: "1-01 " (disc-track), "01. " / "01_" / "01) ", "01 - ", "01-",
+/// "01 " (zero-padded only: "99 Luftballons" and "2 Become 1" are titles).
+static TRACK_NO: LazyLock<[regex::Regex; 5]> = LazyLock::new(|| {
+    [r"^\d-\d{2}(?:\s*[._)]|\s+-)?\s+", r"^\d{1,3}\s*[._)]\s*", r"^\d{1,3}\s+-\s+", r"^\d{1,3}-", r"^0\d{1,2}\s+"].map(|p| regex::Regex::new(p).expect("valid regex"))
+});
+/// After " - ", a version of the title rather than the title ("Imagine - Remastered 2010", "Get Lucky - Radio Edit").
+static VERSION: LazyLock<regex::Regex> = LazyLock::new(|| {
+    regex::Regex::new(r"(?i)^(?:\d{4}\s+)?(?:remaster(?:ed)?|live|version|edit(?:ed|ion)?|(?:re)?mix(?:ed)?|demo|acoustic|instrumental|mono|stereo|radio|single|bonus|extended|original|explicit|clean)\b").expect("valid regex")
+});
+
+/// What a file name says when tags don't (ripped and downloaded files): its track number goes, "Artist - Title" splits.
+/// 2026-10-30: the whole name was the title and every such file "Unknown artist", so none linked to the same song from
+/// another service.
+pub fn from_name(stem: &str) -> (Option<String>, String) {
+    let stem = stem.trim();
+    // Never into a number: "1-800-273-8255" stays whole.
+    let name = TRACK_NO.iter().filter_map(|re| re.find(stem)).find(|m| stem[m.end()..].starts_with(|c: char| !c.is_ascii_digit())).map_or(stem, |m| &stem[m.end()..]);
+    for dash in [" - ", " – ", " — "] {
+        if let Some((artist, title)) = name.split_once(dash)
+            && !artist.trim().is_empty()
+            && !title.trim().is_empty()
+            && !VERSION.is_match(title.trim())
+        {
+            return (Some(artist.trim().to_string()), title.trim().to_string());
+        }
+    }
+    (None, name.trim().to_string())
+}
+
 /// Tags when present, file name otherwise. Unreadable file still listed (engine reports errors).
 pub fn read(path: &Path) -> Track {
     let file = tagged(path);
     let tag = file.as_ref().and_then(|f| f.primary_tag().or_else(|| f.first_tag()));
     let text = |v: Option<std::borrow::Cow<str>>| v.map(|s| s.trim().to_string()).filter(|s| !s.is_empty());
+    let (name_artist, name_title) = from_name(&path.file_stem().unwrap_or_default().to_string_lossy());
+    let title = text(tag.and_then(|t| t.title()));
+    // The name's artist only where its title is the song's (a title tag saying otherwise: the name is something else).
+    let artist = text(tag.and_then(|t| t.artist())).or_else(|| name_artist.filter(|_| title.as_deref().is_none_or(|t| t.eq_ignore_ascii_case(&name_title))));
     Track {
-        title: text(tag.and_then(|t| t.title())).unwrap_or_else(|| path.file_stem().unwrap_or_default().to_string_lossy().into()),
-        artist: text(tag.and_then(|t| t.artist())).unwrap_or_else(|| "Unknown artist".into()),
+        title: title.unwrap_or(name_title),
+        artist: artist.unwrap_or_else(|| "Unknown artist".into()),
         album: text(tag.and_then(|t| t.album())),
         duration_ms: file.as_ref().map(|f| f.properties().duration().as_millis() as u32).filter(|d| *d > 0),
         isrc: tag.and_then(|t| t.get_string(ItemKey::Isrc)).map(|s| s.trim().to_uppercase()).filter(|s| !s.is_empty()),
@@ -218,9 +251,42 @@ pub(crate) mod tests {
         let found = scan(&[dir.path().to_path_buf(), dir.path().join("missing")]);
         assert_eq!(found.len(), 1);
         let t = &found[0];
-        assert_eq!((t.title.as_str(), t.artist.as_str()), ("01 Intro", "Unknown artist"));
+        assert_eq!((t.title.as_str(), t.artist.as_str()), ("Intro", "Unknown artist"));
         assert_eq!(t.duration_ms, Some(1000));
         assert!(t.ids[&Source::Local].ends_with("01 Intro.WAV"));
+    }
+
+    #[test]
+    fn names_say_what_tags_dont() {
+        let some = |a: &str, t: &str| (Some(a.to_string()), t.to_string());
+        assert_eq!(from_name("01 - Daft Punk - Get Lucky"), some("Daft Punk", "Get Lucky"));
+        assert_eq!(from_name("Daft Punk – Get Lucky (feat. Pharrell Williams)"), some("Daft Punk", "Get Lucky (feat. Pharrell Williams)"));
+        assert_eq!(from_name("AC-DC - Back in Black"), some("AC-DC", "Back in Black"));
+        assert_eq!(from_name("Daft Punk - Get Lucky - Radio Edit"), some("Daft Punk", "Get Lucky - Radio Edit"));
+        for (name, title) in [("03. Within", "Within"), ("1-01 Give Life Back to Music", "Give Life Back to Music"), ("01 Intro", "Intro"), ("12 - Contact", "Contact"), ("07_Touch", "Touch")] {
+            assert_eq!(from_name(name), (None, title.to_string()), "{name}");
+        }
+        // Titles that open with a number, a version after a dash, a bare number: whole.
+        for name in ["99 Luftballons", "2 Become 1", "1-800-273-8255", "2-4-6-8 Motorway", "100 Bad Days", "Get Lucky - Radio Edit", "Imagine - Remastered 2010", "Song - 2011 Remaster", "05"] {
+            assert_eq!(from_name(name), (None, name.to_string()), "{name}");
+        }
+    }
+
+    #[test]
+    fn a_name_fills_in_only_what_the_tags_miss() {
+        let dir = tempfile::tempdir().unwrap();
+        let p = dir.path().join("02 - Daft Punk - Get Lucky.wav");
+        wav(&p);
+        let t = read(&p);
+        assert_eq!((t.title.as_str(), t.artist.as_str()), ("Get Lucky", "Daft Punk"));
+        // Its title tag is the name's: the name's artist comes along. Another title: the name is something else.
+        let mut tag = lofty::tag::Tag::new(lofty::tag::TagType::Id3v2);
+        tag.set_title("Get Lucky".into());
+        tag.save_to_path(&p, lofty::config::WriteOptions::default()).unwrap();
+        assert_eq!(read(&p).artist, "Daft Punk");
+        tag.set_title("Something Else".into());
+        tag.save_to_path(&p, lofty::config::WriteOptions::default()).unwrap();
+        assert_eq!((read(&p).title.as_str(), read(&p).artist.as_str()), ("Something Else", "Unknown artist"));
     }
 
     #[test]

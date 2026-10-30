@@ -356,6 +356,8 @@ export interface Settings {
   discord: DiscordSettings
   /** Keyboard shortcuts changed in Settings › Shortcuts (app/keys.ts): null = removed, absent = default. */
   shortcuts: Custom
+  /** First-launch welcome closed (features/welcome): it never shows again. */
+  welcomed: boolean
   defaultsVersion: number
 }
 
@@ -441,6 +443,7 @@ export const DEFAULTS: Settings = {
   addons: {},
   discord: { appId: DISCORD_APP, status: 'song', buttons: true, paused: false, github: true },
   shortcuts: {},
+  welcomed: false,
   defaultsVersion: DEFAULTS_VERSION,
 }
 
@@ -633,6 +636,7 @@ export function sanitize(raw: unknown): Settings {
     shortcuts: sanitizeShortcuts(r.shortcuts),
     addons: Object.fromEntries(Object.entries(r.addons && typeof r.addons === 'object' ? r.addons : {}).filter(([k, v]) => /^[a-z0-9-]{1,40}$/.test(k) && typeof v === 'boolean').slice(0, 100)),
     discord: sanitizeDiscord(r.discord),
+    welcomed: r.welcomed === true,
     defaultsVersion: DEFAULTS_VERSION,
     // Saved before the defaults changed: take the new ones once.
     ...(saved < 2 ? V2 : {}),

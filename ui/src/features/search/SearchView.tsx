@@ -170,7 +170,7 @@ const NONE: LibraryMatches = { songs: [], artists: [], albums: [], playlists: []
  */
 export function SearchView() {
   const request = useStore((s) => s.search)
-  const { tracks, playlists, status, go } = useStore(useShallow(({ tracks, playlists, status, go }) => ({ tracks, playlists, status, go })))
+  const { tracks, playlists, go } = useStore(useShallow(({ tracks, playlists, go }) => ({ tracks, playlists, go })))
   const play = usePlayer((s) => s.playTracks)
   const rememberSearches = useSettings((s) => s.settings.rememberSearches)
   const q = request?.q ?? ''
@@ -182,7 +182,6 @@ export function SearchView() {
   const [busy, setBusy] = useState(false)
   // Videos that clearly aren't music: their own fold, folded again on each search.
   const [round, setRound] = useState(0)
-  const ytOn = status.youtube.connected
   const everywhere = scope === 'everywhere'
 
   // Latest search only: a slow answer for the previous text must not land.
@@ -427,7 +426,8 @@ export function SearchView() {
         <div role="tablist" aria-label={tr('Search in')} className="flex flex-wrap items-center gap-2">
           <LedChip on={from === 'all'} label={tr('All')} onClick={() => pickFrom('all')} />
           <LedChip on={from === 'library'} label={tr('Your library')} count={formatCount(lib.songs.length)} onClick={() => pickFrom('library')} />
-          {ytOn && chip('ytmusic', 'YouTube Music')}
+          {/* Signed out too: YouTube Music's public catalog (search_catalogs). */}
+          {chip('ytmusic', 'YouTube Music')}
           {chip('youtube', 'YouTube')}
           {chip('apple', 'Apple Music')}
         </div>
@@ -496,14 +496,6 @@ export function SearchView() {
           {/* Who else was asked, quietly at the bottom. */}
           {everywhere && shown === 'all' && (
             <p className="flex flex-wrap items-center gap-x-4 gap-y-1 pt-8 text-xs text-ink-3">
-              {!ytOn && (
-                <span className="flex items-center gap-1.5">
-                  <SourceIcon source="youtube" size={12} /> YouTube Music ·
-                  <button onClick={() => go({ name: 'settings', section: 'sources' })} className="font-medium text-ink-2 hover:text-ink hover:underline">
-                    {tr('Sign in')}
-                  </button>
-                </span>
-              )}
               <span>Spotify · {tr('Search closed without Premium')}</span>
             </p>
           )}

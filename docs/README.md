@@ -1,7 +1,7 @@
 # Documentation
 
 For people working on the code. What the app does, how each service plays, what leaves your PC and the FAQ are on
-the website: https://clovis500c.github.io/music-app/ (source in `site/`).
+the website: https://clovis500c.github.io/legato/ (source in `site/`).
 
 | Document | Contents |
 |---|---|

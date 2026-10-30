@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { api, type Credentials, type LibraryPlaylist, type LibraryTrack, type PlaylistEdit, type Service, type SourceStatus, type SyncReport, type Track } from '../shared/api'
 import type { Filter, GroupSize, GroupSort, PlayStats, Sort } from '../features/library/filter'
+import { explain } from '../shared/errors'
 import { tr, trn } from '../shared/i18n/i18n'
 import { noteList } from '../features/home/recentLists'
 import { patchLibrary } from './libraryPatch'
@@ -284,15 +285,17 @@ export const useStore = create<State>((set, get) => {
       if (!(await run(async () => (r = await api.importSpotifyLink(url)))) || !r) return
       const missing = r.tracks - r.playable
       const done = trn(r.tracks, 'Imported “{name}”: {n} song', 'Imported “{name}”: {n} songs', { name: r.name })
-      const lost = missing ? ` · ${trn(missing, '{n} without a YouTube version', '{n} without a YouTube version')}${get().status.youtube.connected ? '' : ` ${tr('(sign in to YouTube Music to find them)')}`}` : ''
+      const lost = missing ? ` · ${trn(missing, '{n} without a YouTube version', '{n} without a YouTube version')}` : ''
       get().notify(done + lost)
       // Spotify's embed shows 100 songs at most; its API (your own key) reads the rest.
       if (r.truncated) get().notify(tr('Only the first 100 songs came in: connect Spotify in Accounts to import the whole playlist.'), { kind: 'info', action: { label: tr('Connect'), run: () => get().go({ name: 'settings', section: 'sources', wizard: 'spotify' }) } })
       get().go({ name: 'playlist', id: r.playlistId })
     },
-    notify(text, { kind = 'ok', action } = {}) {
+    notify(said, { kind = 'ok', action } = {}) {
       const { important, scale } = get().toastPrefs
       if (important && kind !== 'error' && !action) return
+      // Errors often come raw from Rust (notify(String(e))): said in plain words when it's a network failure.
+      const text = kind === 'error' ? explain(said).text : said
       const id = ++toastId
       // Same text again: replace, don't stack.
       const rest = get().toasts.filter((t) => t.text !== text)

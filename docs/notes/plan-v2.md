@@ -22,7 +22,7 @@ Version 1.0 (user's choice 2026-10-29: the first releases were 0.1). A new sessi
       identifier, other services linked with fake ids through `music_core::Library`).
 - [ ] Check in the app: "No sound could be taken" gone from the second YouTube video on (fix 51946d5).
 - [x] Website on GitHub Pages (user's choice 2026-10-29): Pages on, source GitHub Actions; `pages.yml` deploys `site/`
-      from `master` at https://clovis500c.github.io/music-app/ (first deploy with the merge).
+      from `master` at https://clovis500c.github.io/legato/ (first deploy with the merge).
 - [ ] Merge `v2` into `master` and push (= release v1.0.x): only when the user says.
 - [x] Name: Legato, with Figma's brand (01 Brand: Roboto Black wordmark, the L on the playback blue), user's choice
       2026-10-29. The website uses it.
@@ -36,6 +36,31 @@ Version 1.0 (user's choice 2026-10-29: the first releases were 0.1). A new sessi
 - [ ] Trademark search for Legato (INPI, EUIPO, USPTO classes 9, 41, 42).
 - [ ] Figma: muted text (ink3) light is #606060 in the app (AA on cover tints), #6B6B6B in the file. Rename the file
       "Legato · Design" (the plugin can't rename files).
+
+## Product pass (branch `product-pass`, 2026-10-30)
+
+Against Riff (rootscripts/riff: no login, one-click public playlist import): what a new user meets first.
+
+- [x] graphify knowledge graph for Claude Code (code only, local AST; CLAUDE.md › graphify). Git hooks not installed
+      (the auto mode refused persistence): the user may run `graphify hook install`, then drop the `.gitattributes`
+      line it adds (the graph isn't tracked).
+- [x] Signed out works: song searches fall back to YouTube Music's public catalog (`AppState::ytm_or_public`); a
+      Spotify link import plays (checked: Random Access Memories, 13 of 13 playable, no Google account).
+- [x] First-launch welcome (`features/welcome`): what Legato keeps on this PC, then folder / YouTube Music / link /
+      search; Home shows the same cards while the library is empty; About links "What leaves your PC".
+- [x] Offline: nothing blocked or skipped, the song starts again when the network is back; Offline in the top bar;
+      network errors in plain words (`shared/errors.ts`). Stuck check armed for the first YouTube song too.
+- [x] Untagged local files named by their file name ("01 - Artist - Title"): they link across services.
+- [x] Two songs at once (user's report 2026-10-30): the overlap's old song never faded (YouTube sends a video's length
+      once, the tail read it from each report) and played on at full volume under the next one. It fades out to its
+      song's end now and stops there; a learned early end ends the song without a crossfade too. Checked in a dev build
+      (8 s crossfade, both embeds' volumes sampled).
+- [x] Links after the repo's rename to `legato`: Discord's "Get App On GitHub" button, updates, LRCLIB's agent, the
+      website's base path (its styles and scripts were 404 at /legato/: live once merged).
+- [ ] Check on a real network cut (Wi-Fi off while a YouTube song starts): paused, one message, restarts on its own.
+      Only emulated so far (DevTools cuts the page, not YouTube's out-of-process frame).
+- [ ] "Unknown artist" is an English word stored in the library (`local::read`): show it translated.
+- [ ] Merge `product-pass` into `master` and push (= a release): only when the user says.
 
 ## Check live in the real app (built and unit-tested, never driven for real)
 
