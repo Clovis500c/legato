@@ -3,7 +3,7 @@ import type { ReactNode } from 'react'
 // Every line here is something the app does today (checked against the code, 2026-10-29). Privacy rows replace
 // docs/privacy.md: keep them in step with what the app sends.
 
-export const GITHUB = 'https://github.com/Clovis500c/music-app'
+export const GITHUB = 'https://github.com/Clovis500c/legato'
 
 export const FIXES: [string, string][] = [
   ['Fewer songs on screen after each redesign', 'A compact list by default: 40 px rows, artist and album in their own columns, the columns you pick.'],

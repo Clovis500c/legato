@@ -3,7 +3,9 @@
 Formerly Music App (renamed 2026-10-29). Identifier `app.legato.desktop` (was `dev.musicapp.desktop`: `src-tauri/src/rename.rs`
 moves its folders and keychain entries at first launch), exe `legato.exe`, Run entry and new sync folders "Legato".
 Kept for compatibility between versions and PCs: `_musicapp._tcp`, `MA1`, `.musicsync` files and an existing
-`Music App Sync` folder, reading `musicapp://` links, the repo's name. Never rename those.
+`Music App Sync` folder, reading `musicapp://` links. Never rename those. The repo is `Clovis500c/legato` (renamed by the
+user 2026-10-30; website https://clovis500c.github.io/legato/): GitHub redirects the old `music-app` URLs, and installed
+versions look for updates there, so never create a repo named `music-app` again.
 
 Desktop app (Tauri 2 + Rust + React/TS) that unifies Spotify / YouTube / Apple Music / local libraries. Overview: `docs/architecture.md`; open work: `docs/notes/plan-v2.md` (history in git).
 Repo docs: `README.md` (short, points to the website), `CONTRIBUTING.md`, `docs/` (for developers). What users read (features,

@@ -219,7 +219,7 @@ mod tests {
             art: Some("https://i.ytimg.com/vi/abc/hqdefault.jpg".into()),
             buttons: vec![
                 ("Listen on YouTube".into(), "https://www.youtube.com/watch?v=abc".into()),
-                ("Get App On GitHub".into(), "https://github.com/Clovis500c/music-app".into()),
+                ("Get App On GitHub".into(), "https://github.com/Clovis500c/legato".into()),
                 ("Third one".into(), "https://example.com".into()),
             ],
             playing: true,

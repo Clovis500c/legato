@@ -8,7 +8,7 @@ use serde::Deserialize;
 use url::Url;
 
 pub const API: &str = "https://lrclib.net/api";
-const AGENT: &str = concat!("Legato v", env!("CARGO_PKG_VERSION"), " (https://github.com/Clovis500c/music-app)");
+const AGENT: &str = concat!("Legato v", env!("CARGO_PKG_VERSION"), " (https://github.com/Clovis500c/legato)");
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
