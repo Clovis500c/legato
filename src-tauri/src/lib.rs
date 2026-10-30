@@ -1485,13 +1485,21 @@ async fn load_settings(state: State<'_, AppState>) -> CmdResult<Option<serde_jso
 }
 
 #[tauri::command]
-async fn save_settings(state: State<'_, AppState>, settings: serde_json::Value) -> CmdResult<()> {
+async fn save_settings(app: tauri::AppHandle, state: State<'_, AppState>, settings: serde_json::Value) -> CmdResult<()> {
     // Trust boundary: object only, bounded size (custom themes included).
     if !settings.is_object() || settings.to_string().len() > 256 * 1024 {
         return Err("Invalid settings".into());
     }
+    let channel = update::Channel::from_ui(state.lib().setting("ui").map_err(err)?.as_ref());
     // Stamped key by key: Sync Mode merges settings by their newest change.
-    state.lib().save_ui_settings(&settings, music_core::library::now_ms()).map_err(err)
+    state.lib().save_ui_settings(&settings, music_core::library::now_ms()).map_err(err)?;
+    // Update channel picked: the updater looks at the new one now (saved first, it reads the setting).
+    if update::Channel::from_ui(Some(&settings)) != channel
+        && let Some(updater) = app.try_state::<update::Updater>()
+    {
+        updater.switched(&app);
+    }
+    Ok(())
 }
 
 /// Plays of the last days (since = unix s, two weeks at most): Home's Your week.

@@ -2,6 +2,8 @@
 //! an hour, and every 6 hours; downloaded quietly when automatic updates are on (else only announced), installed when
 //! the UI says it won't cut the music: between two songs or when nothing plays (or the user asks). The installer runs silently and starts the app again; the UI then reopens
 //! where it was (session, screen, paused or not).
+//! Two channels (Settings › General › Updates): Stable, promoted by hand (`promote.yml`), and Beta, every green push
+//! (`release.yml`). Each has its own `latest.json`, same signature key.
 
 use crate::AppState;
 use serde::{Deserialize, Serialize};
@@ -16,6 +18,35 @@ const STALE: i64 = 3600;
 const EVERY: Duration = Duration::from_secs(6 * 3600);
 /// Settings key: the update being installed, then the last one installed.
 const KEY: &str = "update";
+/// Beta's file: the rolling `beta` release, whose latest.json `release.yml` replaces at every release. Stable's is
+/// `tauri.conf.json`'s endpoint (`releases/latest/download/latest.json`, which skips prereleases): every installed
+/// version reads it, so it stays.
+const BETA_ENDPOINT: &str = "https://github.com/Clovis500c/legato/releases/download/beta/latest.json";
+
+/// Which releases this PC follows.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Channel {
+    Stable,
+    Beta,
+}
+
+impl Channel {
+    /// From the interface's settings object (`updateChannel`). Stable unless it says "beta": older saves, bad values.
+    pub fn from_ui(ui: Option<&serde_json::Value>) -> Self {
+        match ui.and_then(|u| u.get("updateChannel")?.as_str()) {
+            Some("beta") => Self::Beta,
+            _ => Self::Stable,
+        }
+    }
+
+    /// Where this channel's latest.json is; None: the endpoint of `tauri.conf.json` (Stable).
+    fn endpoint(self) -> Option<&'static str> {
+        match self {
+            Self::Stable => None,
+            Self::Beta => Some(BETA_ENDPOINT),
+        }
+    }
+}
 
 #[derive(Debug, Clone, Default, Serialize, ts_rs::TS)]
 #[serde(tag = "state", rename_all = "camelCase", rename_all_fields = "camelCase")]
@@ -135,8 +166,21 @@ impl Updater {
             }
             s.last_check = Some(now());
         }
+        loop {
+            let channel = channel_of(app);
+            self.run(app, download, channel).await;
+            // Switched meanwhile: what it found or downloaded is the other channel's. Dropped, then again.
+            if channel == channel_of(app) || matches!(self.status().state, State::Installing { .. }) {
+                return;
+            }
+            *self.ready.lock().unwrap() = None;
+        }
+    }
+
+    /// One pass on one channel; ends with the state it reached (up to date, available, ready or error).
+    async fn run(&self, app: &AppHandle, download: bool, channel: Channel) {
         self.set(app, State::Checking);
-        let found = match app.updater() {
+        let found = match updater_for(app, channel) {
             Ok(u) => u.check().await,
             Err(e) => Err(e),
         };
@@ -175,6 +219,25 @@ impl Updater {
         }
     }
 
+    /// The channel setting changed (`save_settings`): an update found or downloaded came from the other channel, so it
+    /// goes and the new one is checked now, for the status to follow. A pass running sees the change when it ends.
+    pub fn switched(&self, app: &AppHandle) {
+        // Debug builds only check when asked.
+        if cfg!(debug_assertions) {
+            return;
+        }
+        {
+            let mut s = self.status.lock().unwrap();
+            if matches!(s.state, State::Checking | State::Downloading { .. } | State::Installing { .. }) {
+                return;
+            }
+            s.state = State::Idle;
+        }
+        *self.ready.lock().unwrap() = None;
+        let app = app.clone();
+        tauri::async_runtime::spawn(async move { app.state::<Updater>().check(&app, automatic(&app)).await });
+    }
+
     /// Runs the downloaded installer (silent), which closes the app and starts it again.
     pub fn install(&self, app: &AppHandle) -> Result<(), String> {
         let (update, bytes) = self.ready.lock().unwrap().take().ok_or("No update downloaded")?;
@@ -204,6 +267,21 @@ pub fn back_to_tray(lib: &music_core::library::Library, current: &str) -> bool {
 /// Settings › About › Automatic updates (UI settings, on by default).
 fn automatic(app: &AppHandle) -> bool {
     app.try_state::<AppState>().and_then(|s| s.lib().setting("ui").ok().flatten()).and_then(|u| u.get("autoUpdate")?.as_bool()).unwrap_or(true)
+}
+
+/// Settings › General › Updates (UI settings, Stable unless Beta was picked).
+fn channel_of(app: &AppHandle) -> Channel {
+    Channel::from_ui(app.try_state::<AppState>().and_then(|s| s.lib().setting("ui").ok().flatten()).as_ref())
+}
+
+/// The updater of a channel: Stable as `tauri.conf.json` has it, Beta with its own file. The plugin's default
+/// comparator only takes a version newer than the installed one, so going back from Beta to Stable never downgrades:
+/// the app stays on its beta until a Stable passes it.
+fn updater_for(app: &AppHandle, channel: Channel) -> tauri_plugin_updater::Result<tauri_plugin_updater::Updater> {
+    match channel.endpoint() {
+        None => app.updater(),
+        Some(url) => app.updater_builder().endpoints(vec![url.parse::<tauri::Url>()?])?.build(),
+    }
 }
 
 /// Background checks. Debug builds only check when asked (Settings › About).
@@ -240,6 +318,36 @@ mod tests {
         assert_eq!(s.last.unwrap().notes, None);
         let s: Saved = serde_json::from_str(r#"{"last":{"from":"a","to":"b","at":1,"notes":"feat: x"}}"#).unwrap();
         assert_eq!(s.last.unwrap().notes.as_deref(), Some("feat: x"));
+    }
+
+    #[test]
+    fn channel_comes_from_the_ui_setting_and_defaults_to_stable() {
+        let ui = |v: serde_json::Value| Channel::from_ui(Some(&v));
+        assert_eq!(Channel::from_ui(None), Channel::Stable, "nothing saved");
+        assert_eq!(ui(serde_json::json!({})), Channel::Stable, "saved before channels");
+        assert_eq!(ui(serde_json::json!({ "updateChannel": "stable" })), Channel::Stable);
+        assert_eq!(ui(serde_json::json!({ "updateChannel": "beta" })), Channel::Beta);
+        assert_eq!(ui(serde_json::json!({ "updateChannel": "nightly" })), Channel::Stable, "unknown name");
+        assert_eq!(ui(serde_json::json!({ "updateChannel": true })), Channel::Stable, "wrong type");
+    }
+
+    #[test]
+    fn stable_keeps_the_endpoint_installed_versions_read() {
+        // CLAUDE.md: installed versions read this URL, and GitHub's `latest` skips prereleases: it stays Stable's.
+        let conf: serde_json::Value = serde_json::from_str(include_str!("../tauri.conf.json")).unwrap();
+        assert_eq!(conf["plugins"]["updater"]["endpoints"], serde_json::json!(["https://github.com/Clovis500c/legato/releases/latest/download/latest.json"]));
+        assert_eq!(Channel::Stable.endpoint(), None, "Stable reads the configured endpoint");
+    }
+
+    #[test]
+    fn beta_reads_the_rolling_beta_release_that_the_workflow_feeds() {
+        let url = Channel::Beta.endpoint().unwrap();
+        assert_eq!(url, "https://github.com/Clovis500c/legato/releases/download/beta/latest.json");
+        assert!(url.parse::<tauri::Url>().is_ok());
+        // A push must reach Beta only: releases are prereleases (GitHub's latest skips them) and feed that release.
+        let release = include_str!("../../.github/workflows/release.yml");
+        assert!(release.contains("prerelease: true") && !release.contains("prerelease: false"), "a normal release would reach Stable");
+        assert!(release.contains("gh release upload beta "), "nothing feeds Beta's file");
     }
 
     #[test]

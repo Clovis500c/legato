@@ -22,8 +22,8 @@ use std::io::Read;
 use std::path::PathBuf;
 
 pub const FORMAT: u32 = 1;
-/// Settings that describe this PC, not the user: never synced.
-pub const LOCAL_SETTINGS: [&str; 4] = ["zoom", "miniSpot", "miniWidth", "defaultsVersion"];
+/// Settings that describe this PC, not the user: never synced (the update channel too: one PC can be the Beta one).
+pub const LOCAL_SETTINGS: [&str; 5] = ["zoom", "miniSpot", "miniWidth", "defaultsVersion", "updateChannel"];
 /// Library settings row holding when each interface setting last changed (unix ms).
 const TIMES: &str = "sync_times";
 /// Other library settings rows that travel (key → its stamp in TIMES).
@@ -842,18 +842,20 @@ mod tests {
     fn settings_newest_key_wins_local_ones_stay() -> Result<()> {
         let a = Library::in_memory()?;
         let b = Library::in_memory()?;
-        a.save_ui_settings(&serde_json::json!({ "theme": "dark", "zoom": 110, "crossfade": 4 }), 10)?;
-        b.save_ui_settings(&serde_json::json!({ "theme": "light", "zoom": 100, "crossfade": 0 }), 5)?;
-        b.save_ui_settings(&serde_json::json!({ "theme": "light", "zoom": 100, "crossfade": 6 }), 20)?;
+        a.save_ui_settings(&serde_json::json!({ "theme": "dark", "zoom": 110, "crossfade": 4, "updateChannel": "beta" }), 10)?;
+        b.save_ui_settings(&serde_json::json!({ "theme": "light", "zoom": 100, "crossfade": 0, "updateChannel": "stable" }), 5)?;
+        b.save_ui_settings(&serde_json::json!({ "theme": "light", "zoom": 100, "crossfade": 6, "updateChannel": "stable" }), 20)?;
         b.merge(&snap(&a))?;
         a.merge(&snap(&b))?;
         for lib in [&a, &b] {
             let ui = lib.setting("ui")?.unwrap();
             assert_eq!((ui["theme"].as_str(), ui["crossfade"].as_i64()), (Some("dark"), Some(6)));
         }
-        // Zoom is this PC's own.
+        // Zoom and the update channel are this PC's own.
         assert_eq!(a.setting("ui")?.unwrap()["zoom"], 110);
         assert_eq!(b.setting("ui")?.unwrap()["zoom"], 100);
+        assert_eq!(a.setting("ui")?.unwrap()["updateChannel"], "beta");
+        assert_eq!(b.setting("ui")?.unwrap()["updateChannel"], "stable");
         Ok(())
     }
 

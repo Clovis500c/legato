@@ -311,7 +311,7 @@ pub fn recent(dir: &Path, want: impl Fn(&Entry) -> bool, n: usize) -> Vec<Entry>
 
 /// Settings worth knowing in a bug report: how the app plays, updates and shows itself. Plain values only.
 const SETTINGS: &[&str] = &[
-    "language", "shield", "autoUpdate", "closeToTray", "resume", "reopen", "autoplay", "crossfade", "skipLong", "stage", "youtubeControls", "adaptiveSound", "liveYoutube", "earlyEnds",
+    "language", "shield", "autoUpdate", "updateChannel", "closeToTray", "resume", "reopen", "autoplay", "crossfade", "skipLong", "stage", "youtubeControls", "adaptiveSound", "liveYoutube", "earlyEnds",
     "immersive", "motion", "miniPlace", "sidePanel", "visualizer", "coverPulse", "voiceSearch", "detector", "zoom", "textSize", "defaultsVersion",
 ];
 
