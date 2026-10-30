@@ -28,7 +28,7 @@ Only the installed app, identifier exactly `app.legato.desktop`, may touch the P
 (`src-tauri/src/identity.rs`, `identity::installed()`): install an update over itself (`update.rs`), own the HKCU Run
 entry that Open at startup writes (`autostart.rs`: a dev build asking would start at sign-in without its dev server),
 and move the folders and keychain entries of the old identifier `dev.musicapp.desktop` at first launch (`rename.rs`).
-A dev build, the bench build (`app.legato.desktop.bench`) or any other identifier is a guest: it never installs, never
+A dev build, the bench build (`app.legato.desktop.bench`), the smoke test build (`app.legato.desktop.e2e`) or any other identifier is a guest: it never installs, never
 edits the Run entry and never migrates (a dev folder still named `dev.musicapp.desktop.devbuild` is renamed by hand). A
 dev build only checks for updates when asked (Settings › About), and cannot install what it finds. Any new side effect a
 release build has on the PC goes behind the same guard.
@@ -46,6 +46,37 @@ folder with 10 000 local songs (`crates/core/examples/bench_data.rs`) and reads 
 and 10 minutes in the tray. `--quick` is a short run. The numbers, how they are taken and what they leave out are in
 [performance.md](performance.md); a full run appends its row there. Windows only, and about 20 minutes of a PC left alone.
 `scripts/cdp.mjs` is its small DevTools client; the E2E smoke test reuses it.
+
+## Smoke test: `pnpm e2e`
+
+`pnpm e2e` builds the app as a guest (`tauri build --debug --no-bundle --features e2e`, identifier
+`app.legato.desktop.e2e`, `src-tauri/tauri.e2e.conf.json`, the exe copied to `target/e2e`) and walks a new user's first
+minutes through its real window, over WebView2's DevTools port (`scripts/cdp.mjs`, the flags of `scripts/guest.mjs`): the
+welcome comes first, Add folder (three WAV songs the test writes, `e2e/wav.mjs`), the Songs page lists them, a song plays
+3 s and the engine's position moves, Pause freezes it and Play moves it again, a search (suggestions, YouTube, YouTube
+Music and Apple, all answered by `e2e/mock.mjs` from `e2e/fixtures`) while the song plays on, the window's Close with
+"Keep running in the notification area" off (the app must end by itself, exit code 0), then the same data again: no
+welcome, the library is still there. About 15 s once built. A failure leaves screenshots, `failure.txt` (the step, the page's
+text, what the mock saw, the diagnostics log) in `target/e2e/shots`; CI uploads them. `--repeat 5` walks five times on one
+build, `--skip-build` reuses an unchanged build. The `e2e` job of `check.yml` runs it on Windows, the build and then the
+walk as two steps, the walk held to 5 minutes. Checked on 2026-10-30: with the click handler of the player's play button
+emptied, the walk fails at `pause-play` ("Pause did not pause"), exit code 1, screenshot and report left.
+
+What the `e2e` cargo feature changes, and nothing else, in a build nobody installs:
+
+- **Network** (`src-tauri/src/hosts.rs`): search, suggestions, lyrics and the Apple lookups go to one loopback server, read
+  from `LEGATO_E2E_MOCK` (only `http://127.0.0.1:<port>` is taken; without it, a dead port). A normal build has the real
+  hosts compiled in and no variable, setting or file moves them. The script also puts every other host behind a dead proxy,
+  so a call the mock does not stand for fails at once, and refuses an exe that lacks the variable's name (a build without
+  the feature). Each connector has a test that its mock fixture still reads (`smoke_test_fixture_reads`): change a parser,
+  change `e2e/fixtures`.
+- **Sound** (`crates/player/src/output.rs`, feature `null-output`): no audio device. A thread drains the mixer at the pace of
+  a real one, so the song decodes, goes through the live chain and moves its position on a CI runner without a sound card,
+  and a dev PC stays silent. The real device path is the one thing the walk does not cover.
+
+The native folder picker is an OS dialog a page cannot drive: the script answers its IPC request (CDP `Fetch`), and the
+rest of the interface runs as when a person picks. Only the two data folders of `.e2e` are ever deleted
+(`e2eFolders`, like the bench's). Like the bench, it never touches the installed app (`identity.rs`).
 
 ## YouTube Music (no keys)
 

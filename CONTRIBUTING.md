@@ -34,6 +34,10 @@ pnpm check
 It writes the interface's types from the Rust ones (`pnpm types`: commit what changes in `ui/src/shared/generated`),
 then runs the type check, ESLint, Vitest, Clippy (warnings are errors) and the Rust tests. Everything must pass.
 
+`pnpm e2e` is the smoke test of the built app (Windows): launch, welcome, scan a demo folder, play, search against a
+mock, quit. About 15 seconds once built; CI runs it in its own job. Run it when a change touches playback, the welcome,
+search, the library scan or how the app starts and ends. [docs/development.md](docs/development.md) has the details.
+
 ## Website
 
 `site/`: Next.js exported to plain files, deployed to GitHub Pages by `.github/workflows/pages.yml` when master's

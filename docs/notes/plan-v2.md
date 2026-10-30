@@ -79,7 +79,7 @@ Pick from the top. Each milestone is one release on the Stable channel; workflow
 
 | # | Milestone | What lands | Effort | Why now |
 |---|---|---|---|---|
-| 0 | Groundwork | Release channels Beta / Stable, generated IPC types, local diagnostics log, `pnpm bench` numbers (done 2026-10-30), E2E smoke test | M | Every later step is safer and faster |
+| 0 | Groundwork | Release channels Beta / Stable, generated IPC types, local diagnostics log, `pnpm bench` numbers (done 2026-10-30), E2E smoke test (done 2026-10-30) | M | Every later step is safer and faster |
 | 1 | First impression (1.1) | Deezer + Apple Music link import, "Why Legato" page with measured RAM, Unknown artist translated, cover cache cap, lazy pages, deferred startup | M | What a Riff user tries in the first minute |
 | 2 | Sound and sight (1.2) | Visualizer v2 (data, canvas renderer, LED bars, radial, VU, spectrogram, full screen), karaoke mode, precise volume, skip silences, SponsorBlock music_offtopic | L | The most visible gap, and the most shareable |
 | 3 | Lyrics (1.3) | Word-by-word lyrics, translation, find by a line, lyrics saved into files and tapped live | M | Riff and Cider's most loved screen |
@@ -104,8 +104,14 @@ playback (its terms), concerts (an API's terms), trademark search.
   tray, idle CPU, on 10 000 local songs (a generator, `crates/core/examples/bench_data.rs`, not a folder); numbers kept in
   `docs/performance.md`. Left: the website quotes them (Why Legato page); YouTube playback isn't measured (it needs the
   network); not in CI yet.
-- **E2E smoke**: Windows CI launches the built app with the demo folder, scans it, plays a local song for 3 s, checks
-  the position moved, searches with mocked YouTube, quits clean; under 5 min.
+- **E2E smoke** (done 2026-10-30): `pnpm e2e` builds a debug app with the `e2e` cargo feature (own identifier, network on a
+  loopback mock, silent audio output), then drives its real window over WebView2's DevTools port: the welcome comes first,
+  a demo folder of three WAV songs is added and scanned, a song plays 3 s and the engine's position moves, Pause / Play,
+  a search answered by the mock (suggestions, YouTube, YouTube Music, Apple) while the song plays on, quit with exit code
+  0, relaunch (no welcome, library kept); about 15 s once built. A new `e2e` job in `check.yml` runs it on Windows,
+  screenshots and a report as artifacts on failure. Left: the job has not run on GitHub yet (nothing was pushed): the
+  first runs may need tuning; the real audio device, the YouTube embed and the native folder picker (answered over
+  DevTools, not driven) are outside it.
 - **Deezer / Apple link import**: pasting a Deezer or Apple Music playlist / album URL in Add music (or the search
   box) imports it like a Spotify link, with the matched count shown; mockito tests on recorded answers; the website's
   privacy rows name the two hosts.
@@ -288,8 +294,11 @@ every session.
       `tauri-specta`), so a command's name and arguments are still checked by eye.
 - [ ] Split `src-tauri/src/lib.rs` by feature (library, player, accounts, sources) like `detector.rs` / `editor.rs`;
       same for `crates/core/src/library.rs` (queries per table).
-- [ ] End-to-end smoke test on Windows CI (tauri-driver / WebDriver): launch, welcome, scan the demo folder, play a
-      local song, search signed out (mocked), quit. Catches what unit tests can't (the "two songs at once" class).
+- [x] End-to-end smoke test on Windows CI: launch, welcome, scan the demo folder, play a local song, search signed out
+      (mocked), quit. Catches what unit tests can't (the "two songs at once" class). Done 2026-10-30 (`pnpm e2e`, the
+      `e2e` job, docs/development.md), over the DevTools port with `scripts/cdp.mjs`, no tauri-driver: no driver version
+      to pin (msedgedriver breaks on WebView2 133+ on the runners, runner-images#14738). Left: not yet run on GitHub; no
+      YouTube embed (needs the network), no real audio device.
 - [ ] The "Check live in the real app" list as a scripted checklist (a dev-only page that drives each step and logs the
       result), so a pass takes minutes, not a session.
 - [x] Crash and error log kept locally (rotating file, Settings › About › "Copy diagnostics"): bug reports with facts,

@@ -118,7 +118,7 @@ its own (nobody touched the app for a minute) the session is saved on the next s
 quiet moment (nothing played for 15 s, no input for a minute). The installer runs silently and starts the app again,
 which reopens as it was (queue, screen) and plays the next song. Settings › About shows the version and its channel,
 the update state and the app's caches. Only the installed app (identifier `app.legato.desktop`) updates: any other
-build, dev or bench, never installs (`identity.rs`, [development.md](development.md)).
+build, dev, bench or e2e, never installs (`identity.rs`, [development.md](development.md)).
 
 Two channels, picked in Settings › General › Updates (UI setting `updateChannel`, Stable by default, one of the
 settings Sync Mode leaves on each PC). Stable reads the endpoint of `tauri.conf.json`,
@@ -171,5 +171,8 @@ IPC pipe (`crates/connectors/src/discord.rs`), from a dedicated thread in `src-t
 
 - Rust tests sit in each module (`#[cfg(test)]`); front-end tests sit next to the code (`*.test.ts`, Vitest).
 - Tests never use the real network: connectors are tested against `mockito`.
+- `pnpm e2e` drives the built app like a new user: a debug build with the `e2e` cargo feature (own identifier, the network
+  on a loopback mock in `hosts.rs`, a silent audio output in `crates/player/src/output.rs`), a script over WebView2's
+  DevTools port (`e2e/smoke.mjs`). Windows CI runs it in the `e2e` job ([development.md](development.md)).
 - `pnpm check` runs everything: the Rust → TypeScript types, type check, ESLint, Vitest, Clippy with warnings as errors,
   `cargo test`.

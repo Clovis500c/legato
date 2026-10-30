@@ -43,6 +43,7 @@ Design direction (v2): `docs/design.md`; mockups in the Figma file "Untitled" (t
 - `pnpm dev`: run the app (Vite + Tauri), with its own data folder (`tauri.dev.conf.json` identifier): never the installed app's library. Bump `library::SCHEMA_VERSION` with each migration.
 - `pnpm check`: types (Rust → TS) + typecheck + lint + Vitest + clippy + cargo test (everything must pass before a commit)
 - `pnpm test` / `cargo test --workspace` separately
+- `pnpm e2e`: smoke test of the built app (Windows; `e2e/`, `docs/development.md`). Its cargo feature `e2e` stays off in every normal build: only there may an env var move the network (`src-tauri/src/hosts.rs`)
 - `pnpm build`: installer
 - `pnpm bench`: start time, RAM and CPU of the release build on 10 000 songs, under its own identifier `app.legato.desktop.bench`
   and data (`--quick` for a short run; a full run adds its row to `docs/performance.md`). Details: `docs/performance.md`.
