@@ -3,13 +3,15 @@
 pub mod export;
 mod live;
 pub mod mic;
+mod output;
 mod queue;
 
 pub use music_dsp::{Effects, Levels, Live as LiveSettings};
 pub use queue::Queue;
 
 use anyhow::Result;
-use rodio::{Decoder, DeviceSinkBuilder, MixerDeviceSink, Source};
+use output::Output;
+use rodio::{Decoder, Source};
 use serde::{Deserialize, Serialize};
 use std::collections::VecDeque;
 use std::fs::File;
@@ -122,7 +124,7 @@ impl Player {
 #[derive(Default)]
 struct Engine {
     /// Opened on first play: no audio device needed until then.
-    device: Option<MixerDeviceSink>,
+    device: Option<Output>,
     player: Option<rodio::Player>,
     queue: Queue,
     /// Durations of loaded items, same order as queue's loaded window.
@@ -197,7 +199,7 @@ impl Engine {
     /// Fresh rodio player at queue position. Dropping old one stops it.
     fn restart(&mut self) -> Result<()> {
         if self.device.is_none() {
-            self.device = Some(DeviceSinkBuilder::open_default_sink()?);
+            self.device = Some(Output::open()?);
         }
         let p = rodio::Player::connect_new(self.device.as_ref().unwrap().mixer());
         p.set_volume(self.volume);
