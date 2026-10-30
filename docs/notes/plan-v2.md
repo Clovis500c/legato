@@ -244,6 +244,30 @@ signal, no beat, small. Plan: better data first, then a real renderer, then the 
       shown as cards to play from YouTube.
 - [ ] "Aural fixations": songs you played a lot at one time of your life, brought back (from our own history).
 
+**Last batch: areas not covered above (after this the list stops growing; ideas come from real use)**
+- [ ] Long YouTube mixes and DJ sets split by their chapters (or timestamps in the description / pinned comment):
+      each part a song in Up next, skip within the video; Music Detector names unlabelled parts on request.
+- [ ] Audiobooks from local files (m4b chapters, resume per book, speed, sleep at chapter end), apart from music.
+- [ ] Playlists in and out as files: M3U / M3U8 / XSPF / CSV import and export (paths for local, links for streams).
+- [ ] Library health: missing files, YouTube videos gone private (with "Find another version", `alternative_videos`),
+      songs without covers or tags, one page to fix them.
+- [ ] Output devices: switch from the player bar, remember per device (volume, EQ preset), follow Windows' default.
+- [ ] Sleep timer "at the end of this song / album", and a gentle fade over the last minutes.
+- [ ] Profiles on one PC (each person's library, likes, history and Last.fm), switched from the top bar.
+- [ ] Living-room mode: big UI driven by a gamepad or the arrow keys (10-foot layout), for a PC on a TV.
+- [ ] Stream Deck plugin and an Xbox Game Bar widget (play / skip / like / now playing) over the local hotkeys.
+- [ ] Voice control beyond search: "next", "like this", "play my running playlist" (WinRT speech already there).
+- [ ] Blind test game: snippets from the library or a playlist, guess title / artist, scores, local multiplayer
+      on one screen or over the LAN code.
+- [ ] Share a song as a picture card (cover, title, a lyric line, the theme's colours) for social apps.
+- [ ] Theme and plugin gallery without a server: an index file in a GitHub repo, browsed from Add-ons, installed after
+      the usual permission review; authors submit by pull request.
+- [ ] Privacy page in the app: every host Legato talked to today and why (from the Rust gateway's log), matching the
+      website's rows.
+- [ ] Right-to-left languages (Arabic, Hebrew: mirrored layout) and community translations (Weblate), more languages.
+- [ ] Community: a Discord server or GitHub Discussions linked from About, "good first issue" labels, a showcase of
+      themes on the website.
+
 ## Workflow (how we build it)
 
 Today: every green push to master is a release (369 so far, check 5-11 min then release 13-18 min); no end-to-end
