@@ -23,7 +23,7 @@ Version 1.0 (user's choice 2026-10-29: the first releases were 0.1). A new sessi
 - [ ] Check in the app: "No sound could be taken" gone from the second YouTube video on (fix 51946d5).
 - [x] Website on GitHub Pages (user's choice 2026-10-29): Pages on, source GitHub Actions; `pages.yml` deploys `site/`
       from `master` at https://clovis500c.github.io/legato/ (first deploy with the merge).
-- [ ] Merge `v2` into `master` and push (= release v1.0.x): only when the user says.
+- [x] Merge `v2` into `master` and push (= release v1.0.x), through `product-pass`.
 - [x] Name: Legato, with Figma's brand (01 Brand: Roboto Black wordmark, the L on the playback blue), user's choice
       2026-10-29. The website uses it.
 - [x] The app renamed Legato (user's go 2026-10-29): product name, window, top bar, About, texts in every language,
@@ -60,7 +60,7 @@ Against Riff (rootscripts/riff: no login, one-click public playlist import): wha
 - [ ] Check on a real network cut (Wi-Fi off while a YouTube song starts): paused, one message, restarts on its own.
       Only emulated so far (DevTools cuts the page, not YouTube's out-of-process frame).
 - [ ] "Unknown artist" is an English word stored in the library (`local::read`): show it translated.
-- [ ] Merge `product-pass` into `master` and push (= a release): only when the user says.
+- [x] Merge `product-pass` into `master` and push (= a release): PR #10, e0c63b8.
 
 ## Best in class (user's ask 2026-10-30)
 
