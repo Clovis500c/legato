@@ -6,7 +6,7 @@
 
 Windows 10 and 11 · free · no account of ours
 
-[Website](https://clovis500c.github.io/music-app/) · [Download](https://github.com/Clovis500c/music-app/releases/latest) · [What leaves your PC](https://clovis500c.github.io/music-app/#privacy)
+[Website](https://clovis500c.github.io/legato/) · [Download](https://github.com/Clovis500c/legato/releases/latest) · [What leaves your PC](https://clovis500c.github.io/legato/#privacy)
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="site/assets/app-dark.png">
@@ -16,7 +16,7 @@ Windows 10 and 11 · free · no account of ours
 </div>
 
 What it does, how each service plays, what leaves your PC and the FAQ: on the
-[website](https://clovis500c.github.io/music-app/) (its source is `site/`).
+[website](https://clovis500c.github.io/legato/) (its source is `site/`).
 
 ## Build from source
 
