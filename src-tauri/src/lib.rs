@@ -8,6 +8,7 @@ mod discord;
 mod editor;
 mod folders;
 mod hotkeys;
+mod identity;
 mod lang;
 mod media;
 mod mixer;
@@ -1964,6 +1965,8 @@ fn stop_with(text: &str) -> ! {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let context = tauri::generate_context!();
+    // First: who runs decides what may touch the PC outside the app's own folders (identity.rs).
+    identity::init(&context.config().identifier);
     // Before anything opens the app's folders (window place, WebView2, library): Music App's move to Legato's name.
     if let Err(e) = rename::migrate(&context.config().identifier) {
         stop_with(&format!("Legato can't move your library and settings to its new folder ({e}). Close Music App if it still runs, then start Legato again."));

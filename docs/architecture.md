@@ -117,7 +117,8 @@ downloads in the background, else it only announces the version. Signature check
 its own (nobody touched the app for a minute) the session is saved on the next song and the installer runs, or at a
 quiet moment (nothing played for 15 s, no input for a minute). The installer runs silently and starts the app again,
 which reopens as it was (queue, screen) and plays the next song. Settings › About shows the version and its channel,
-the update state and the app's caches.
+the update state and the app's caches. Only the installed app (identifier `app.legato.desktop`) updates: any other
+build, dev or bench, never installs (`identity.rs`, [development.md](development.md)).
 
 Two channels, picked in Settings › General › Updates (UI setting `updateChannel`, Stable by default, one of the
 settings Sync Mode leaves on each PC). Stable reads the endpoint of `tauri.conf.json`,

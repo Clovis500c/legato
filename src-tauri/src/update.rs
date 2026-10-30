@@ -159,6 +159,10 @@ impl Updater {
 
     /// Check, then download what's new (download = false: only announce it). Busy or already downloaded: nothing.
     pub async fn check(&self, app: &AppHandle, download: bool) {
+        // A guest build (bench, say) never reaches for updates; a dev build only when asked from About, and it can't install.
+        if !crate::identity::installed() && !cfg!(debug_assertions) {
+            return self.set(app, State::Error { message: "Updates only run in the installed app".into() });
+        }
         {
             let mut s = self.status.lock().unwrap();
             if matches!(s.state, State::Checking | State::Downloading { .. } | State::Ready { .. } | State::Installing { .. }) {
@@ -222,8 +226,8 @@ impl Updater {
     /// The channel setting changed (`save_settings`): an update found or downloaded came from the other channel, so it
     /// goes and the new one is checked now, for the status to follow. A pass running sees the change when it ends.
     pub fn switched(&self, app: &AppHandle) {
-        // Debug builds only check when asked.
-        if cfg!(debug_assertions) {
+        // Debug builds only check when asked; guest builds never.
+        if cfg!(debug_assertions) || !crate::identity::installed() {
             return;
         }
         {
@@ -240,6 +244,10 @@ impl Updater {
 
     /// Runs the downloaded installer (silent), which closes the app and starts it again.
     pub fn install(&self, app: &AppHandle) -> Result<(), String> {
+        // The installer is the real app's: no other build may run it.
+        if !crate::identity::installed() {
+            return Err("Updates install from the installed app only".into());
+        }
         let (update, bytes) = self.ready.lock().unwrap().take().ok_or("No update downloaded")?;
         let current = self.status().current;
         let hidden = app.get_window("main").is_some_and(|w| !w.is_visible().unwrap_or(true));
@@ -284,9 +292,9 @@ fn updater_for(app: &AppHandle, channel: Channel) -> tauri_plugin_updater::Resul
     }
 }
 
-/// Background checks. Debug builds only check when asked (Settings › About).
+/// Background checks. Debug builds only check when asked (Settings › About); guest builds (`identity.rs`) never.
 pub fn spawn(app: AppHandle) {
-    if cfg!(debug_assertions) {
+    if cfg!(debug_assertions) || !crate::identity::installed() {
         return;
     }
     tauri::async_runtime::spawn(async move {
@@ -301,7 +309,7 @@ pub fn spawn(app: AppHandle) {
 /// Window back from the tray: "at every opening", without waiting for the 6-hour round.
 pub fn check_if_stale(app: &AppHandle) {
     let Some(updater) = app.try_state::<Updater>() else { return };
-    if cfg!(debug_assertions) || updater.status().last_check.is_some_and(|t| now() - t < STALE) {
+    if cfg!(debug_assertions) || !crate::identity::installed() || updater.status().last_check.is_some_and(|t| now() - t < STALE) {
         return;
     }
     let app = app.clone();

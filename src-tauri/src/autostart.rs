@@ -19,6 +19,8 @@ pub fn get() -> Option<bool> {
 pub fn set(on: bool) -> anyhow::Result<()> {
     #[cfg(windows)]
     {
+        // One Run value for every build under this user: a dev or bench build switching it off would switch the real one off.
+        anyhow::ensure!(crate::identity::installed(), "Open at startup works in the installed app: another build would change the real app's entry");
         anyhow::ensure!(!on || !cfg!(debug_assertions), "Open at startup works in the installed app: a dev build would start without its dev server");
         win::set(NAME, &std::env::current_exe()?, on)
     }
@@ -31,10 +33,11 @@ pub fn set(on: bool) -> anyhow::Result<()> {
 
 /// Music App became Legato (2026-10-29): its Run entry takes the new name, and since updates install in a new folder, it
 /// may still name the old exe, gone with the old folder: pointed at this one. Task Manager's switch stays as it was.
-/// Installed app only.
+/// Installed app only (`identity.rs`): any other build would point the real app's entry at itself.
 pub fn follow() {
     #[cfg(windows)]
     if !cfg!(debug_assertions)
+        && crate::identity::installed()
         && let Ok(exe) = std::env::current_exe()
     {
         let _ = win::rename(OLD_NAME, NAME);
