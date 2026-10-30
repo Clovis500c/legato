@@ -37,6 +37,25 @@ Version 1.0 (user's choice 2026-10-29: the first releases were 0.1). A new sessi
 - [ ] Figma: muted text (ink3) light is #606060 in the app (AA on cover tints), #6B6B6B in the file. Rename the file
       "Legato · Design" (the plugin can't rename files).
 
+## Product pass (branch `product-pass`, 2026-10-30)
+
+Against Riff (rootscripts/riff: no login, one-click public playlist import): what a new user meets first.
+
+- [x] graphify knowledge graph for Claude Code (code only, local AST; CLAUDE.md › graphify). Git hooks not installed
+      (the auto mode refused persistence): the user may run `graphify hook install`, then drop the `.gitattributes`
+      line it adds (the graph isn't tracked).
+- [x] Signed out works: song searches fall back to YouTube Music's public catalog (`AppState::ytm_or_public`); a
+      Spotify link import plays (checked: Random Access Memories, 13 of 13 playable, no Google account).
+- [x] First-launch welcome (`features/welcome`): what Legato keeps on this PC, then folder / YouTube Music / link /
+      search; Home shows the same cards while the library is empty; About links "What leaves your PC".
+- [x] Offline: nothing blocked or skipped, the song starts again when the network is back; Offline in the top bar;
+      network errors in plain words (`shared/errors.ts`). Stuck check armed for the first YouTube song too.
+- [x] Untagged local files named by their file name ("01 - Artist - Title"): they link across services.
+- [ ] Check on a real network cut (Wi-Fi off while a YouTube song starts): paused, one message, restarts on its own.
+      Only emulated so far (DevTools cuts the page, not YouTube's out-of-process frame).
+- [ ] "Unknown artist" is an English word stored in the library (`local::read`): show it translated.
+- [ ] Merge `product-pass` into `master` and push (= a release): only when the user says.
+
 ## Check live in the real app (built and unit-tested, never driven for real)
 
 - [ ] Add to a YouTube Music playlist from an album page (cause of `STATUS_FAILED` assumed = duplicates); toasts + Undo

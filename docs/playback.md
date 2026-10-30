@@ -43,7 +43,8 @@ Status on 2026-10-16. YouTube, local files and Apple Music previews: done and te
   in-memory stream (Windows fetches nothing).
 - Buttons and media keys → `media-key` event → store (`play` / `pause` only act if they change something; `stop` pauses).
 - Checked live with a preview: Windows' session list shows title, artist, album and cover; play from the session
-  resumes the app. Not done: timeline (position) in the panel.
+  resumes the app. Timeline: position and length go with each play state (`set_state`, Windows moves the bar while
+  playing); a seek in the panel comes back as `media-seek`.
 
 ## Cover art
 
