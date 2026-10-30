@@ -391,6 +391,8 @@ class Helper {
       }
     })
     this.#proc.stderr.resume()
+    // A write to a helper that died: the exit below rejects whoever waits.
+    this.#proc.stdin.on('error', () => {})
     this.#proc.on('exit', () => {
       for (const w of this.#waiting.splice(0)) w.reject(new Error('the PowerShell helper stopped'))
     })
@@ -493,7 +495,12 @@ async function measure(helper, pid, seconds, threads) {
 }
 
 async function main() {
-  const o = parseArgs(process.argv.slice(2))
+  let o
+  try {
+    o = parseArgs(process.argv.slice(2))
+  } catch (e) {
+    fail(e.message)
+  }
   if (process.platform !== 'win32') fail('pnpm bench measures WebView2 and Windows counters: Windows only')
   const conf = JSON.parse(readFileSync(CONF, 'utf8'))
   const [dataDir, localDir] = benchFolders(conf.identifier, process.env.APPDATA, process.env.LOCALAPPDATA)
