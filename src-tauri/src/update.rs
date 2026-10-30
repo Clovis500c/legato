@@ -142,13 +142,15 @@ impl Updater {
         self.status.lock().unwrap().clone()
     }
 
+    /// The status once `state` is in (the caller tells the interface).
+    fn put(&self, state: State) -> Status {
+        let mut s = self.status.lock().unwrap();
+        s.state = state;
+        s.clone()
+    }
+
     fn set(&self, app: &AppHandle, state: State) {
-        let status = {
-            let mut s = self.status.lock().unwrap();
-            s.state = state;
-            s.clone()
-        };
-        let _ = app.emit("update", status);
+        let _ = app.emit("update", self.put(state));
     }
 
     /// The error About shows, kept in the diagnostics log too (`phase` = check, download or install).
@@ -159,7 +161,8 @@ impl Updater {
 
     /// Check, then download what's new (download = false: only announce it). Busy or already downloaded: nothing.
     pub async fn check(&self, app: &AppHandle, download: bool) {
-        // A guest build (bench, say) never reaches for updates; a dev build only when asked from About, and it can't install.
+        // A guest build (bench, say) never reaches for updates; a dev build only when asked from About, and it can't install
+        // (`install` ends in an error then).
         if !crate::identity::installed() && !cfg!(debug_assertions) {
             return self.set(app, State::Error { message: "Updates only run in the installed app".into() });
         }
@@ -242,11 +245,23 @@ impl Updater {
         tauri::async_runtime::spawn(async move { app.state::<Updater>().check(&app, automatic(&app)).await });
     }
 
+    /// An install asked of a build that is not the installed app: the installer is the real app's. Out of Ready, like a
+    /// failed install: the interface installs a Ready update at the first quiet moment and would ask every 5 s. The download
+    /// goes too, nothing here can run it.
+    fn refuse(&self) -> (Status, String) {
+        let message = String::from("Updates install from the installed app only");
+        crate::diag::warn("update", "install refused", &message);
+        *self.ready.lock().unwrap() = None;
+        (self.put(State::Error { message: message.clone() }), message)
+    }
+
     /// Runs the downloaded installer (silent), which closes the app and starts it again.
     pub fn install(&self, app: &AppHandle) -> Result<(), String> {
         // The installer is the real app's: no other build may run it.
         if !crate::identity::installed() {
-            return Err("Updates install from the installed app only".into());
+            let (status, message) = self.refuse();
+            let _ = app.emit("update", status);
+            return Err(message);
         }
         let (update, bytes) = self.ready.lock().unwrap().take().ok_or("No update downloaded")?;
         let current = self.status().current;
@@ -368,5 +383,20 @@ mod tests {
         assert!(!back_to_tray(&lib, "0.1.0"), "install failed: old version runs");
         lib.set_setting(KEY, &pending(false)).unwrap();
         assert!(!back_to_tray(&lib, "0.2.0"), "window was on screen");
+    }
+
+    #[test]
+    fn a_refused_install_leaves_ready() {
+        // A debug guest reaches Ready (About's button downloads) and cannot install. Left in Ready, the interface asked
+        // again every 5 s, a toast each time, and held the music back between two songs.
+        let ready = Status { current: "1.0.0".into(), state: State::Ready { version: "1.0.9".into(), notes: None }, last_check: Some(1), last_update: None, just_updated: false };
+        let updater = Updater { status: Mutex::new(ready), ready: Mutex::default() };
+        let (told, message) = updater.refuse();
+        assert_eq!(message, "Updates install from the installed app only");
+        assert!(matches!(&told.state, State::Error { message: m } if *m == message), "told: {:?}", told.state);
+        assert!(matches!(&updater.status().state, State::Error { message: m } if *m == message), "kept: {:?}", updater.status().state);
+        assert!(updater.ready.lock().unwrap().is_none(), "the download is dropped");
+        // Asked again: the same, nothing comes back to Ready by itself.
+        assert!(matches!(updater.refuse().0.state, State::Error { .. }));
     }
 }
