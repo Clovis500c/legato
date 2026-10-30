@@ -5,7 +5,7 @@ import { rememberEnd } from './ends'
 import { NO_FADE } from './fade'
 import { tailVolume, usePlayer } from './store'
 
-const song = (id: number): LibraryTrack => ({ id, added: 0, title: `Song ${id}`, artist: 'Artist', album: null, durationMs: null, isrc: null, ids: { youtube: `video${id}` } })
+const song = (id: number): LibraryTrack => ({ id, added: 0, addedAt: null, title: `Song ${id}`, artist: 'Artist', album: null, durationMs: null, isrc: null, ids: { youtube: `video${id}` } })
 // No Tauri here: IPC calls fail, other uploads come back empty. A macrotask lets their awaits settle.
 const settle = () => new Promise((r) => setTimeout(r))
 const STOPPED = 'No song in the queue can play here: stopped'

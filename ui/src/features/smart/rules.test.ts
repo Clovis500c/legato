@@ -3,7 +3,7 @@ import type { LibraryTrack } from '../../shared/api'
 import { sanitizeSmart, type SmartList } from '../../shared/theme/theme'
 import { smartTracks } from './rules'
 
-const t = (id: number, title: string, artist: string, ids: LibraryTrack['ids'] = { youtube: `y${id}` }): LibraryTrack => ({ id, added: id, title, artist, album: null, durationMs: null, isrc: null, ids })
+const t = (id: number, title: string, artist: string, ids: LibraryTrack['ids'] = { youtube: `y${id}` }): LibraryTrack => ({ id, added: id, addedAt: null, title, artist, album: null, durationMs: null, isrc: null, ids })
 const tracks = [t(1, 'One More Time', 'Daft Punk'), t(2, 'Nightcall', 'Kavinsky', { spotify: 's2' }), t(3, 'Get Lucky', 'Daft Punk', { local: 'l3' }), t(4, 'Intro', 'The xx')]
 const now = 1_000_000
 const stats: Record<number, [number, number]> = { 1: [12, now - 3600], 2: [3, now - 40 * 86_400], 3: [7, now - 2 * 86_400] }

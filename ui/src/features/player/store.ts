@@ -127,7 +127,7 @@ export function remoteTrack(t: Track): LibraryTrack {
   const key = t.ids.youtube ?? `${t.artist}\u0000${t.title}`
   let id = remoteIds.get(key)
   if (id === undefined) remoteIds.set(key, (id = -(remoteIds.size + 1)))
-  return { ...t, id, added: 0 }
+  return { ...t, id, added: 0, addedAt: null }
 }
 
 export const isRemote = (t: { id: number }) => t.id < 0

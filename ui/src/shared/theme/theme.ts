@@ -3,6 +3,7 @@ import { LANGUAGES, msg, tr } from '../i18n/i18n'
 import { ACTIONS, validCombo, type Custom } from '../../app/keys'
 import { cleanCss } from '../css'
 import type { GroupSort, Sort } from '../../features/library/filter'
+import type { SystemAccent } from '../generated/SystemAccent'
 
 export const PALETTE_KEYS = ['bg', 'panel', 'raised', 'recess', 'line', 'lineSoft', 'ink', 'ink2', 'ink3', 'ink4', 'accent', 'onAccent', 'ledOff'] as const
 export type PaletteKey = (typeof PALETTE_KEYS)[number]
@@ -773,11 +774,8 @@ export function paletteFrom(accent: string, dark: boolean): Palette {
 /** Text / icon color on an accent: first of white, ink, black reaching AA 4.5 (black always does). */
 export const onAccentFor = (accent: string) => ['#FFFFFF', '#171614'].find((c) => contrast(c, accent) >= 4.5) ?? '#000000'
 
-/** src-tauri system_accent: Windows accent tuned per theme brightness. */
-export interface SystemAccent {
-  light: string
-  dark: string
-}
+/** src-tauri system_accent: Windows accent tuned per theme brightness (written from Rust, shared/generated). */
+export type { SystemAccent }
 
 export function resolveTheme(s: Settings, systemDark: boolean, system: SystemAccent | null = null): Theme {
   const id = s.theme === 'system' ? (systemDark ? 'modern-dark' : 'modern') : s.theme

@@ -31,7 +31,8 @@ a library newer than `SCHEMA_VERSION`.
 pnpm check
 ```
 
-It runs the type check, ESLint, Vitest, Clippy (warnings are errors) and the Rust tests. Everything must pass.
+It writes the interface's types from the Rust ones (`pnpm types`: commit what changes in `ui/src/shared/generated`),
+then runs the type check, ESLint, Vitest, Clippy (warnings are errors) and the Rust tests. Everything must pass.
 
 ## Website
 

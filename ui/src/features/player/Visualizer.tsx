@@ -38,7 +38,7 @@ export function Visualizer() {
     const frame = (now: number) => {
       const dt = Math.min(0.1, (now - last) / 1000)
       last = now
-      heights = stepBars(heights, usePlayer.getState().playing ? useLive.getState().levels?.bands : undefined, dt)
+      heights = stepBars(heights, usePlayer.getState().playing ? (useLive.getState().levels?.bands ?? undefined) : undefined, dt)
       if (wave && line) {
         wave.setAttribute('d', wavePath(heights, W, H, true))
         line.setAttribute('d', wavePath(heights, W, H, false))

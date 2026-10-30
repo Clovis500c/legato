@@ -29,8 +29,8 @@ src-tauri/              thin shell: commands, keychain, WebView2 hook, media pan
 ## Rules
 
 - **Logic lives in `crates/`.** The shell only connects the crates to the window.
-- **One door to Rust.** `ui/src/shared/api.ts` is the only file that calls `invoke`. Its types mirror the Rust ones by
-  hand and must be kept in sync.
+- **One door to Rust.** `ui/src/shared/api.ts` is the only file that calls `invoke`. Its wrappers are written by hand,
+  its types are not: they come from the Rust ones (see "IPC types" below).
 - **The interface never touches the network.** Images go through the `art` URI scheme (`src-tauri/src/art.rs`): host
   allowlist, disk cache.
 - **Secrets in the OS keychain** (`keyring`). Settings and the library are local (SQLite).
@@ -40,6 +40,29 @@ src-tauri/              thin shell: commands, keychain, WebView2 hook, media pan
 - **Settings schema.** One typed schema (`ui/src/shared/theme/theme.ts`), sanitized on load. Changing a default for
   everyone bumps `DEFAULTS_VERSION`.
 - **Database schema.** Migrations keyed on SQLite `user_version` (`crates/core/src/library.rs`).
+
+## IPC types
+
+Every type a command, an event or a plugin call carries is a Rust type (struct or enum) that derives `ts_rs::TS` and
+carries `#[ts(export)]` ([ts-rs](https://github.com/Aleph-Alpha/ts-rs), types only: the `invoke` wrappers in `api.ts`
+stay by hand). `pnpm types` (`scripts/types.mjs`) empties `ui/src/shared/generated/`, runs ts-rs's export tests
+(`cargo test --workspace --lib export_bindings`) and writes `index.ts`; `api.ts` re-exports the lot, so features keep
+importing from the API. The files are committed (LF) and `pnpm check` runs the step first, so the type check never
+sees stale types: a changed Rust type breaks the TypeScript build at once. CI (Windows job) fails when the result
+differs from the commit.
+
+- Where and how: `.cargo/config.toml` (`TS_RS_EXPORT_DIR`, and `TS_RS_LARGE_INT = "number"`: i64 / u64 are numbers
+  here, never `bigint`). One flat folder: two types can't share a TS name, so `#[ts(rename = "UpdateStatus")]` gives the
+  interface's name to Rust's `update::Status`.
+- serde attributes come through (`rename_all`, `tag`, `flatten` inlined, `skip`). One serde attribute ts-rs doesn't know
+  prints a warning, which Clippy turns into an error: use one it knows (`Effects::eq` uses `with`, not `deserialize_with`).
+- Tune the TypeScript from Rust: `#[ts(optional)]` / `#[ts(optional = nullable)]` for what the interface may leave out
+  (serde skips it, or defaults it), `#[ts(as = "Vec<f32>")]` for fixed-size arrays, `#[ts(type = "…")]` for a literal
+  union kept as a `&'static str` in Rust, `#[ts(skip)]` for a field the interface never reads or that repeats a flattened
+  key (`search::Hit::musicness`).
+- Not generated: JSON blobs the interface validates itself (settings, saved session, themes), and front-end-only types.
+- A new command: give its argument and result types the derive and the attribute, run `pnpm types`, name them in the
+  wrapper (`invoke<NewType>('new_command')`), commit the files.
 
 ## Caching
 
@@ -114,4 +137,5 @@ IPC pipe (`crates/connectors/src/discord.rs`), from a dedicated thread in `src-t
 
 - Rust tests sit in each module (`#[cfg(test)]`); front-end tests sit next to the code (`*.test.ts`, Vitest).
 - Tests never use the real network: connectors are tested against `mockito`.
-- `pnpm check` runs everything: type check, ESLint, Vitest, Clippy with warnings as errors, `cargo test`.
+- `pnpm check` runs everything: the Rust → TypeScript types, type check, ESLint, Vitest, Clippy with warnings as errors,
+  `cargo test`.

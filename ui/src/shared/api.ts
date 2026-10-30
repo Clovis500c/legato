@@ -1,485 +1,19 @@
 import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 import type { Box } from './artbox'
-import type { SystemAccent } from './theme/theme'
+import type { AddReport, AlbumInfo, CacheStats, Credentials, DetectInput, Detection, Direction, DiscordStatus, Edit, EditDraft, Effects, ExportReport, FindReport, Heard, ImportReport, LastfmStatus, LibraryChanges, LibraryData, LibraryPlaylist, LibraryTrack, ListImport, ListRef, LiveReport, LiveSettings, Lyrics, LyricsAsk, MediaNow, Merged, Mix, NearbyState, Play, PlayerCommand, PlayerLevels, PlayerStatus, PlaylistEdit, PluginCall, PluginInfo, PluginInspect, Pref, Presence, PushFailed, Scrobble, SearchResults, ShareCode, SharePreview, ShieldStatus, ShortcutEntry, SongTags, Source, SourceStatus, SpotifyCommand, SpotifyImport, SpotifyPlayback, SyncOffer, SyncProbe, SyncReport, SyncStatus, SystemAccent, Track, UpdateStatus, WatchCmd, WatchRect, WatchReport, YtmAccount, YtmAccounts, YtmArtist, YtmHome } from './generated'
 
-export type Source = 'spotify' | 'youtube' | 'local' | 'apple'
+// Every type the commands and events carry is a Rust type: `pnpm types` (ts-rs) writes it into ./generated, never by hand.
+// Re-exported here, so features import them from the api.
+export * from './generated'
+
 /** Services with an account to connect. */
-export type Service = 'spotify' | 'youtube'
-
-// shortcut: hand-mirrored from crates/core (model.rs, library.rs, sync.rs). Generate with ts-rs/specta when API grows.
-export interface Track {
-  title: string
-  artist: string
-  album: string | null
-  durationMs: number | null
-  isrc: string | null
-  ids: Partial<Record<Source, string>>
-  /** Cover art URL; shown through the app's image cache (shared/art). */
-  art?: string | null
-  /** Music or not (YouTube imports bring talks and games along). Absent = not looked at. */
-  musicness?: Musicness
-}
-
-export interface LibraryTrack extends Track {
-  id: number
-  /** "Date added" rank: order the app met the track (services give no dates). */
-  added: number
-  /** When this PC's library got it (unix s); null/absent = added before the app kept dates. */
-  addedAt?: number | null
-}
+export type Service = Extract<Source, 'spotify' | 'youtube'>
 
 /** Stable identity of a playlist: service + its id there (survives re-imports); own playlists by row id. */
 export const playlistKey = (p: Pick<LibraryPlaylist, 'id' | 'source' | 'sourceId' | 'custom'>) => (p.custom ? `custom:${p.id}` : `${p.source}:${p.sourceId}`)
 
-/** connectors discord::Presence. buttons = [label, https url], 2 at most. */
-export interface Presence {
-  title: string
-  artist: string
-  album: string | null
-  art: string | null
-  buttons: [string, string][]
-  playing: boolean
-  positionMs: number
-  durationMs: number | null
-  status: 'name' | 'artist' | 'song'
-}
-
-export interface LibraryPlaylist {
-  id: number
-  source: Source
-  sourceId: string
-  name: string
-  trackCount: number
-  /** Made in the app: editable. */
-  custom: boolean
-  /** Service order = newest first (new songs on top: Liked Music, most YouTube playlists). */
-  newestFirst: boolean
-  /** newestFirst set by hand (else learned from syncs). */
-  orderManual: boolean
-}
-
-/** src-tauri library: the whole library. orders = playlist id → its track ids in order (empty playlists left out). */
-export interface LibraryData {
-  tracks: LibraryTrack[]
-  playlists: LibraryPlaylist[]
-  orders: Record<number, number[]>
-}
-
-/** crates/core library::Changes: what was written since the last library read (app/libraryPatch.ts applies it). */
-export interface LibraryChanges {
-  /** Whole rows: new or changed songs, and the other songs of their channels (musicness can follow). */
-  tracks: LibraryTrack[]
-  /** Out of the library list. */
-  gone: number[]
-  playlists: LibraryPlaylist[]
-  playlistsGone: number[]
-  /** Changed playlists' track ids in order. */
-  orders: Record<number, number[]>
-  /** Plays or mix preferences written since: play counts to read again. */
-  history: boolean
-}
-
-/** crates/connectors ytmusic::ListRef: a playlist / album page, or a radio. */
-export type ListRef = { type: 'browse'; id: string } | { type: 'radio'; videoId: string | null; playlistId: string }
-
-/** Card on YouTube Music's home: a song to play, or a list to open. */
-export interface HomeItem {
-  title: string
-  subtitle: string
-  art: string | null
-  track: Track | null
-  list: ListRef | null
-}
-
-/** crates/connectors ytmusic::Home: shelves, and the mood chips that filter them (params = the chip's ask). */
-export interface YtmHome {
-  shelves: Shelf[]
-  moods: { title: string; params: string }[]
-}
-
-export interface Shelf {
-  title: string
-  items: HomeItem[]
-}
-
-/** An artist's YouTube Music page (src-tauri ytm_artist): top songs, every song behind allSongs, then shelves. */
-export interface YtmArtist {
-  name: string
-  art: string | null
-  songs: Track[]
-  allSongs: ListRef | null
-  shelves: Shelf[]
-}
-
-/** src-tauri update::Status: what the background updater is doing. */
-export type UpdateState = { state: 'idle' | 'checking' | 'upToDate' } | { state: 'available'; version: string; notes: string | null } | { state: 'downloading'; version: string; percent: number } | { state: 'ready'; version: string; notes: string | null } | { state: 'installing'; version: string } | { state: 'error'; message: string }
-export type UpdateStatus = UpdateState & {
-  current: string
-  /** Unix seconds. */
-  lastCheck: number | null
-  lastUpdate: { from: string; to: string; at: number; notes?: string | null } | null
-  /** First launch after an update. */
-  justUpdated: boolean
-}
-
-/** crates/core cache::Stats, per cache (Settings › About). */
-export interface CacheStat {
-  hits: number
-  misses: number
-  entries: number
-  bytes: number
-}
-export type CacheStats = Record<'library' | 'playlists' | 'mixes' | 'stats' | 'images', CacheStat>
-
-/** crates/core PlaylistEdit. */
-export type PlaylistEdit =
-  | { type: 'create'; name: string }
-  | { type: 'rename'; id: number; name: string }
-  | { type: 'delete'; id: number }
-  | { type: 'add'; id: number; trackIds: number[] }
-  | { type: 'remove'; id: number; position: number }
-  /** Every occurrence of a song. */
-  | { type: 'removeTrack'; id: number; trackId: number }
-  | { type: 'move'; id: number; from: number; to: number }
-  | { type: 'duplicate'; id: number; name: string }
-  /** Imported playlist: which end new songs land on. null = learned from syncs. */
-  | { type: 'setOrder'; id: number; newestFirst: boolean | null }
-
-export interface SyncReport {
-  playlists: number
-  matched: number
-  errors: string[]
-}
-
-/** src-tauri ytwatch.rs. */
-export interface WatchRect {
-  x: number
-  y: number
-  width: number
-  height: number
-}
-export type WatchCmd =
-  | { type: 'play' }
-  | { type: 'pause' }
-  | { type: 'seek'; seconds: number }
-  | { type: 'volume'; percent: number }
-  | { type: 'crop'; x: number; y: number; w: number; h: number }
-  | { type: 'live'; on: boolean; listen: boolean; adaptive: boolean; targetLufs: number; ending: boolean; bands: boolean; gain: number | null; effects?: Effects }
-
-/** crates/dsp control.rs: live processing settings of the native engine. */
-export interface LiveSettings {
-  adaptive: boolean
-  targetLufs: number
-  /** The app fades the song out: Adaptive Sound holds. */
-  ending: boolean
-  /** The visualizer wants the bands. */
-  bands: boolean
-}
-/** crates/dsp effects.rs: Live Editor settings (numbers only; clamped by Rust and live.js). */
-export interface Effects {
-  on: boolean
-  speed: number
-  tempo: number
-  pitch: number
-  bass: number
-  /** dB per band, 10 bands (effects.ts EQ_FREQS). */
-  eq: number[]
-  reverb: { mix: number; size: number; damping: number; predelayMs: number }
-  echo: { mix: number; timeMs: number; feedback: number }
-  space: { on: boolean; azimuth: number; elevation: number; distance: number; rotate: boolean; periodS: number; room: number }
-  /** Distortion, 0..1 (0 = off). */
-  drive: number
-  compress: number
-  width: number
-  balance: number
-}
-
-/** crates/core library.rs Edit: effects as JSON (parse with effects.ts cleanEffects). */
-export interface PluginManifest {
-  id: string
-  name: string
-  version: string
-  author: string
-  description: string
-  api: number
-  main: string
-  permissions: string[]
-  homepage?: string
-}
-
-export interface PluginInfo {
-  id: string
-  manifest: PluginManifest | null
-  on: boolean
-  running: boolean
-  granted: string[]
-  error: string | null
-  folder: string
-}
-
-export interface PluginInspect {
-  manifest: PluginManifest
-  installed: string | null
-  newPermissions: string[]
-  files: number
-  size: number
-}
-
-/** A plugin asks the interface for something (permission checked in Rust). */
-export interface PluginCall {
-  plugin: string
-  id: number
-  method: string
-  args: Record<string, unknown>
-}
-
-/** music_core::syncmode::Merged: what another PC's snapshot changed here. */
-export interface Merged {
-  playlists: number
-  deleted: number
-  songs: number
-  removed: number
-  plays: number
-  edits: number
-  settings: number
-}
-
-export interface SyncDevice {
-  name: string
-  at: number
-  accounts: { spotify: boolean; youtube: boolean }
-}
-
-export interface SyncStatus {
-  onedrive: string[]
-  folder: string | null
-  protected: boolean
-  asked: boolean
-  deviceName: string
-  devices: SyncDevice[]
-  last: number | null
-  error: string | null
-}
-
-export interface SyncProbe {
-  exists: boolean
-  protected: boolean
-  devices: number
-}
-
-export interface Edit {
-  id: number
-  song: string | null
-  name: string
-  effects: string
-  active: boolean
-}
-
-/** crates/dsp control.rs: what plays, as heard (LUFS, peak 0..1, Adaptive Sound gain in dB). */
-export interface LiveLevels {
-  /** Last 50 ms (beats). */
-  fast: number
-  momentary: number
-  short: number
-  peak: number
-  gain: number
-  /** Visualizer: dB per band (crates/dsp spectrum.rs), when asked for. */
-  bands?: number[]
-}
-/** src-tauri speech.rs: why voice search heard nothing. */
-export type VoiceMiss = 'speechOff' | 'micBlocked' | 'noMic' | 'silence' | 'unclear' | 'offline' | 'language' | 'canceled' | 'failed'
-export type Heard = { kind: 'text'; text: string } | { kind: 'miss'; miss: VoiceMiss }
-
-/** src-tauri detect_song: Music Detector outcome. */
-export type DetectMiss = 'noMic' | 'micBlocked' | 'micBusy' | 'noOutput' | 'silent' | 'unclear' | 'canceled' | 'badToken' | 'limit' | 'freeLimit' | 'offline' | 'failed'
-export type Detection = { kind: 'found'; track: Track } | { kind: 'unknown' } | { kind: 'miss'; miss: DetectMiss; detail: string | null }
-
-/** crates/core lyrics.rs. Lines synced (ms); empty = plain only. */
-export interface Lyrics {
-  lines: { ms: number; text: string; endMs?: number | null }[]
-  plain: string | null
-  instrumental: boolean
-  source: string
-}
-
-/** ytwatch.rs LiveReport (watch page). */
-export interface LiveReport {
-  attached?: boolean
-  error?: string | null
-  levels?: LiveLevels | null
-  /** The song ended here (s of the video), silence after it: an early end. */
-  end?: number
-}
-export interface WatchReport {
-  state?: number
-  time?: number
-  duration?: number
-  videoId?: string
-  /** Playability status when it can't play: UNPLAYABLE, LOGIN_REQUIRED, ERROR… */
-  error?: string
-  reason?: string
-  click: boolean
-  /** Muted, waiting for the app's volume. */
-  ready: boolean
-  /** The app's crop is applied. */
-  cropped: boolean
-}
-
-/** crates/core musicness: notMusic results are hidden until asked. */
-export type Musicness = 'music' | 'unsure' | 'notMusic'
-
-/** crates/core search::Origin: which search found a hit (YouTube videos, YouTube Music songs, Apple Music). */
-export type Origin = 'youtube' | 'ytmusic' | 'apple'
-
-export interface SearchHit extends Track {
-  libraryId: number | null
-  musicness: Musicness
-  from: Origin[]
-}
-
-export interface SearchResults {
-  hits: SearchHit[]
-  errors: string[]
-}
-
-export interface SourceStatus {
-  configured: boolean
-  connected: boolean
-}
-
-export interface Credentials {
-  spotifyClientId?: string
-}
-
-/** crates/connectors ytmusic::Account: a Google account (authuser) or one of its channels (pageId). */
-export interface YtmAccount {
-  name: string
-  handle: string | null
-  email: string | null
-  authuser: number
-  pageId: string | null
-  /** Profile picture URL (still or animated). */
-  photo?: string | null
-}
-
 export const accountKey = (a: YtmAccount) => (a.pageId ? `${a.authuser}:${a.pageId}` : String(a.authuser))
-
-/** music_core::sync::Direction: which way songs travel between an account and the library. */
-export type Direction = 'both' | 'pull' | 'push' | 'off'
-
-/** crates/player Command. */
-export type PlayerCommand =
-  | { type: 'play'; paths: string[]; start: number }
-  | { type: 'toggle' | 'next' | 'prev' | 'stop' | 'truncate' }
-  | { type: 'seek'; ms: number }
-  | { type: 'volume'; value: number }
-
-export interface PlayerStatus {
-  path: string | null
-  positionMs: number
-  durationMs: number | null
-  paused: boolean
-  upcoming: string[]
-  error: string | null
-  /** Queue ran out on its own. */
-  ended: boolean
-}
-
-/** src-tauri find_versions. */
-export interface FindReport {
-  found: number
-  missing: number
-}
-
-/** src-tauri share_playlist. qr = [size, row-major "0"/"1"], null when too big. */
-export interface ShareCode {
-  link: string
-  qr: [number, string] | null
-  tracks: number
-  bytes: number
-}
-
-export interface SharePreview {
-  name: string
-  tracks: number
-  /** Already in this library. */
-  known: number
-}
-
-/** crates/core history::Play. startedAt = unix seconds. */
-export interface Play {
-  trackId: number
-  startedAt: number
-  listenedMs: number
-  completed: boolean
-}
-
-/** crates/core mixes::Mix. */
-export interface Mix {
-  id: string
-  title: string
-  reason: string
-  trackIds: number[]
-  /** Section on the Mixes page. */
-  kind: 'daily' | 'moment' | 'favorites' | 'explore'
-  /** What title and reason are made of: the UI words them in its language (features/mixes/words.ts). */
-  words: { slot?: 'morning' | 'afternoon' | 'evening' | 'night'; day?: number; number?: number; name?: string; names?: string[] }
-  /** Songs new to you (YouTube Music radios), `at` = place in the whole mix. */
-  found?: { at: number; track: Track }[]
-}
-
-/** crates/connectors spotify::PlayerCommand (Spotify Connect). */
-export type SpotifyCommand = { type: 'play'; trackId: string } | { type: 'pause' | 'resume' | 'next' | 'previous' } | { type: 'seek'; ms: number } | { type: 'volume'; percent: number }
-
-export interface SpotifyPlayback {
-  playing: boolean
-  positionMs: number
-  durationMs: number | null
-  trackId: string | null
-  device: string | null
-}
-
-/** src-tauri export_youtube. */
-export interface ExportReport {
-  url: string
-  added: number
-  already: number
-  noYoutube: number
-}
-
-/** connectors lastfm::Scrobble: one listen (timestamp = start, unix s). */
-export interface Scrobble {
-  artist: string
-  track: string
-  album: string | null
-  durationS: number | null
-  timestamp: number
-}
-
-/** src-tauri lastfm::Status. */
-export interface LastfmStatus {
-  configured: boolean
-  user: string | null
-  waiting: number
-}
-
-/** src-tauri AlbumSlot: one catalog song of an album, and your copy when you have it. */
-export interface AlbumSlot {
-  disc: number
-  number: number
-  track: Track
-  libraryId: number | null
-}
-
-/** src-tauri AlbumInfo. */
-export interface AlbumInfo {
-  year: number | null
-  slots: AlbumSlot[]
-}
-
-/** src-tauri NearbyState. */
-export type NearbyState = { state: 'idle' } | { state: 'waiting'; code: string } | { state: 'sent' } | { state: 'failed'; error: string }
 
 /** Typed wrappers over Tauri commands (src-tauri/src/lib.rs). Rejections = error string. */
 export const api = {
@@ -534,7 +68,7 @@ export const api = {
   sharePreview: (code: string) => invoke<SharePreview>('share_preview', { code }),
   /** QR text from a PNG / JPEG file. */
   shareReadImage: (path: string) => invoke<string>('share_read_image', { path }),
-  shareImport: (code: string, country: string) => invoke<{ playlistId: number; added: number; missing: number }>('share_import', { code, country }),
+  shareImport: (code: string, country: string) => invoke<ImportReport>('share_import', { code, country }),
   /** Offers the playlist on the local network; returns the 6-digit code. */
   nearbySend: (id: number) => invoke<string>('nearby_send', { id }),
   nearbyStatus: () => invoke<NearbyState>('nearby_status'),
@@ -545,11 +79,11 @@ export const api = {
   /** Today's mixes, from local history and custom playlists. */
   mixes: () => invoke<Mix[]>('mixes', { utcOffset: -new Date().getTimezoneOffset() * 60 }),
   /** less = ranked lower in mixes, never = left out, null = back to normal. */
-  setTrackPref: (trackId: number, pref: 'less' | 'never' | null) => invoke<void>('set_track_pref', { trackId, pref }),
+  setTrackPref: (trackId: number, pref: Pref | null) => invoke<void>('set_track_pref', { trackId, pref }),
   /** The user's word: music (true), not music (false), null = the app's guess again. */
   setMusic: (trackIds: number[], music: boolean | null) => invoke<void>('set_music', { trackIds, music }),
   /** Edit song info: a local file's tags rewritten (tags.rs). coverPath = new front cover; removeCover = none. */
-  editTags: (trackId: number, tags: { title: string; artist: string; album: string | null; coverPath: string | null; removeCover: boolean }) => invoke<void>('edit_tags', { trackId, tags }),
+  editTags: (trackId: number, tags: SongTags) => invoke<void>('edit_tags', { trackId, tags }),
   clearHistory: () => invoke<void>('clear_history'),
   /** Private YouTube playlist; same one updated on later exports. */
   exportYoutube: (id: number) => invoke<ExportReport>('export_youtube', { id }),
@@ -560,15 +94,15 @@ export const api = {
   ytmSignIn: (add = false) => invoke<void>('ytm_sign_in', { add }),
   ytmSignOut: () => invoke<void>('ytm_sign_out'),
   /** Public Spotify playlist / album link → imported playlist (no account); tracks get their YouTube version. */
-  importSpotifyLink: (url: string) => invoke<{ playlistId: number; name: string; tracks: number; playable: number; truncated: boolean }>('import_spotify_link', { url }),
+  importSpotifyLink: (url: string) => invoke<SpotifyImport>('import_spotify_link', { url }),
   /** Add › Import a list of songs: text or a .txt / .csv file, each song found on YouTube, a playlist of the ones found. */
-  importSongList: (name: string, text: string | null, path: string | null) => invoke<{ playlistId: number | null; name: string; songs: number; found: number; missing: string[] }>('import_song_list', { name, text, path }),
+  importSongList: (name: string, text: string | null, path: string | null) => invoke<ListImport>('import_song_list', { name, text, path }),
   /** Spotify's own web player in an app window (prototype). */
   spotifyWebOpen: () => invoke<void>('spotify_web_open'),
   /** Signed in to the Spotify web player. */
   spotifyWebStatus: () => invoke<boolean>('spotify_web_status'),
   /** Every account in the Google session + keys of those synced. */
-  ytmAccounts: () => invoke<{ signedIn: boolean; accounts: YtmAccount[]; picked: string[] }>('ytm_accounts'),
+  ytmAccounts: () => invoke<YtmAccounts>('ytm_accounts'),
   /** Synced accounts, in order (first = exports). */
   setYtmAccounts: (accounts: YtmAccount[]) => invoke<void>('set_ytm_accounts', { accounts }),
   /** Account key ("spotify", "youtube:<accountKey>") → direction; missing = both. */
@@ -581,7 +115,7 @@ export const api = {
   /** A watched local folder changed and was scanned again (src-tauri folders.rs): local file count. */
   onLocalChanged: (cb: (count: number) => void) => listen<number>('local-changed', (e) => cb(e.payload)),
   /** A change YouTube Music refused after the fact (push.rs): already undone in the library. */
-  onPushFailed: (cb: (f: { kind: 'add' | 'like' | 'likeLost' | 'remove' | 'unlike'; playlist: string; songs: number; reason: string }) => void) => listen<{ kind: 'add' | 'like' | 'likeLost' | 'remove' | 'unlike'; playlist: string; songs: number; reason: string }>('push-failed', (e) => cb(e.payload)),
+  onPushFailed: (cb: (f: PushFailed) => void) => listen<PushFailed>('push-failed', (e) => cb(e.payload)),
   player: (cmd: PlayerCommand) => invoke<void>('player', { cmd }),
   playerStatus: () => invoke<PlayerStatus>('player_status'),
   /** Live processing of local files (crates/dsp): applies from the next block, nothing restarts. */
@@ -592,8 +126,8 @@ export const api = {
   deleteEdit: (id: number) => invoke<void>('delete_edit', { id }),
   activateEdit: (song: string, id: number | null) => invoke<void>('activate_edit', { song, id }),
   /** Live Editor settings not saved as a version (kept through a close), per song. */
-  editDraft: (song: string) => invoke<{ effects: Effects; version: number | null } | null>('edit_draft', { song }),
-  saveEditDraft: (song: string, draft: { effects: Effects; version: number | null } | null) => invoke<void>('save_edit_draft', { song, draft }),
+  editDraft: (song: string) => invoke<EditDraft | null>('edit_draft', { song }),
+  saveEditDraft: (song: string, draft: EditDraft | null) => invoke<void>('save_edit_draft', { song, draft }),
   /** Live Editor: a local file's copy with the effects applied, as a new WAV (the original is only read). */
   exportEdit: (input: string, output: string, effects: Effects) => invoke<void>('export_edit', { input, output, effects }),
   exportStop: () => invoke<void>('export_stop'),
@@ -613,7 +147,7 @@ export const api = {
   syncJoin: (code: string) => invoke<Merged>('sync_join', { code }),
   /** Another PC's changes were merged here: reload. */
   onSync: (cb: (m: Merged) => void) => listen<Merged>('sync', (e) => cb(e.payload)),
-  onSyncOffer: (cb: (r: { Ok?: Merged; Err?: string }) => void) => listen<{ Ok?: Merged; Err?: string }>('sync-offer', (e) => cb(e.payload)),
+  onSyncOffer: (cb: (r: SyncOffer) => void) => listen<SyncOffer>('sync-offer', (e) => cb(e.payload)),
   /** A picture for a theme's background, copied in by content. Returns its name (shared/art coverImage). */
   saveBackground: (path: string) => invoke<string>('save_background', { path }),
   /** A background no theme uses any more. */
@@ -641,7 +175,7 @@ export const api = {
   /** Live Editor settings for the native engine. */
   playerEffects: (effects: Effects) => invoke<void>('player_effects', { effects }),
   /** What the native engine plays, as heard. */
-  playerLevels: () => invoke<LiveLevels>('player_levels'),
+  playerLevels: () => invoke<PlayerLevels>('player_levels'),
   /** Voice search: one phrase through Windows' speech recognition. */
   voiceListen: () => invoke<Heard>('voice_listen'),
   voiceStop: () => invoke<void>('voice_stop'),
@@ -653,12 +187,12 @@ export const api = {
   setDetectorToken: (token: string | null) => invoke<void>('set_detector_token', { token }),
   /** Listens ~10 s through the microphone (memory only), AudD names the song. */
   /** input: the microphone, or what this PC plays (pause the app's own playback first). */
-  detectSong: (market: string, input: 'mic' | 'pc') => invoke<Detection>('detect_song', { market, input }),
+  detectSong: (market: string, input: DetectInput) => invoke<Detection>('detect_song', { market, input }),
   detectStop: () => invoke<void>('detect_stop'),
   /** While listening: seconds so far, microphone level 0..1. */
   onDetect: (cb: (seconds: number, level: number) => void) => listen<[number, number]>('detect', (e) => cb(e.payload[0], e.payload[1])),
   /** Lyrics of a song (LRCLIB, then YouTube Music's own when signed in), cached. null = none found. */
-  lyrics: (ask: { title: string; artist: string; album: string | null; durationMs: number | null; youtube: string | null }) => invoke<Lyrics | null>('lyrics', { ask }),
+  lyrics: (ask: LyricsAsk) => invoke<Lyrics | null>('lyrics', { ask }),
   /** Interface language, for what the shell shows itself (tray menu, taskbar buttons). */
   setUiLanguage: (lang: string) => invoke<void>('set_ui_language', { lang }),
   /** Windows' own settings page that unblocks a feature. */
@@ -666,7 +200,7 @@ export const api = {
   /** Raw JSON; validated by shared/theme/settings.sanitize. */
   loadSettings: () => invoke<unknown>('load_settings'),
   saveSettings: (settings: object) => invoke<void>('save_settings', { settings }),
-  shieldStatus: () => invoke<{ enabled: boolean; blocked: number }>('shield_status'),
+  shieldStatus: () => invoke<ShieldStatus>('shield_status'),
   setShield: (enabled: boolean) => invoke<void>('set_shield', { enabled }),
   /** Windows accent (light / dark theme variants); null off Windows. */
   systemAccent: () => invoke<SystemAccent | null>('system_accent'),
@@ -692,7 +226,7 @@ export const api = {
   updateInstall: () => invoke<void>('update_install'),
   onUpdate: (cb: (s: UpdateStatus) => void) => listen<UpdateStatus>('update', (e) => cb(e.payload)),
   /** Global shortcuts (Settings › Shortcuts, Everywhere). Returns the actions the OS refused. */
-  setGlobalShortcuts: (list: { id: string; accelerator: string }[]) => invoke<string[]>('set_global_shortcuts', { list }),
+  setGlobalShortcuts: (list: ShortcutEntry[]) => invoke<string[]>('set_global_shortcuts', { list }),
   /** A global shortcut was pressed (app in the background too). */
   onShortcut: (cb: (id: string) => void) => listen<string>('shortcut', (e) => cb(e.payload)),
   /** Blocked embed (101 / 150): the video plays from YouTube's watch page in a webview over the slot. Physical px. */
@@ -711,9 +245,9 @@ export const api = {
   /** Discord Rich Presence add-on: track shown under the user's Discord application (null = nothing). */
   discordPresence: (clientId: string, presence: Presence | null) => invoke<void>('discord_presence', { clientId, presence }),
   discordOff: () => invoke<void>('discord_off'),
-  discordStatus: () => invoke<{ connected: boolean; error: string | null }>('discord_status'),
+  discordStatus: () => invoke<DiscordStatus>('discord_status'),
   /** Imported YouTube Music playlist: added on YouTube (Liked Music = like), then locally. */
-  addToYoutube: (id: number, trackIds: number[]) => invoke<{ added: number; already: number; noYoutube: number }>('add_to_youtube', { id, trackIds }),
+  addToYoutube: (id: number, trackIds: number[]) => invoke<AddReport>('add_to_youtube', { id, trackIds }),
   /** Raw JSON; validated by features/player/session. */
   loadSession: () => invoke<unknown>('load_session'),
   saveSession: (session: object) => invoke<void>('save_session', { session }),
@@ -721,15 +255,4 @@ export const api = {
   holdPage: () => invoke<void>('hold_page'),
   /** Windows media panel; null = nothing playing. Cover: local file's (trackId), else `art` URL. */
   mediaUpdate: (now: MediaNow | null, trackId: number | null, art: string | null) => invoke<void>('media_update', { now, trackId, art }),
-}
-
-/** src-tauri media::NowPlaying. */
-export interface MediaNow {
-  title: string
-  artist: string
-  album: string | null
-  playing: boolean
-  positionMs: number
-  /** Null = unknown yet: no seek bar. */
-  durationMs: number | null
 }

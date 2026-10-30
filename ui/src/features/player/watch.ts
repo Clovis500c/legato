@@ -38,7 +38,7 @@ export function watchUpdate(r: WatchReport, video: string): YtUpdate | null {
   if (r.error === 'CONSENT') return { unplayable: tr('YouTube is waiting for a cookie choice; signing in to YouTube Music (Settings › Accounts) usually clears it') }
   if (r.error) return { unplayable: r.reason || r.error }
   if (r.videoId && r.videoId !== video) return null
-  return { state: r.state, time: r.time, duration: r.duration || undefined }
+  return { state: r.state ?? undefined, time: r.time ?? undefined, duration: r.duration || undefined }
 }
 
 /** CSS rect → window physical pixels (screen DPI and the interface zoom are both in devicePixelRatio). */

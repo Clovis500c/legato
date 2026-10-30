@@ -3,7 +3,7 @@ import type { LibraryTrack, Track } from '../../shared/api'
 import { albumRows } from './albumPage'
 
 const song = (title: string): Track => ({ title, artist: 'Daft Punk', album: 'Discovery', durationMs: null, isrc: null, ids: { apple: title } })
-const mine = (id: number, title: string): LibraryTrack => ({ ...song(title), id, added: id, ids: { youtube: `y${id}` } })
+const mine = (id: number, title: string): LibraryTrack => ({ ...song(title), id, added: id, addedAt: null, ids: { youtube: `y${id}` } })
 
 describe('albumRows', () => {
   it('puts your songs in album order, the missing ones between, extras after', () => {

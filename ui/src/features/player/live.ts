@@ -46,7 +46,7 @@ export function frameSettings(w: LiveWish) {
 }
 
 /** end = the song ended there (s of the video), silence after it (live.js, ends.ts). */
-type Report = { attached?: boolean; error?: string | null; levels?: LiveLevels | null; end?: number }
+type Report = { attached?: boolean | null; error?: string | null; levels?: LiveLevels | null; end?: number | null }
 
 /** A frame message from live.js, if it is one. */
 export function parseLive(origin: string, data: unknown): Report | null {
@@ -105,7 +105,7 @@ export const bindLiveFrame = (el: HTMLIFrameElement | null) => void (frame = el)
 export function startLive(playing: () => 'native' | 'youtube' | null): () => void {
   const take = (m: Report) => {
     if (m.levels) useLive.setState({ levels: m.levels })
-    if (m.attached !== undefined) useLive.setState({ attached: m.attached, error: m.error ?? undefined })
+    if (m.attached != null) useLive.setState({ attached: m.attached, error: m.error ?? undefined })
   }
   const onMessage = (e: MessageEvent) => {
     const m = parseLive(e.origin, e.data)

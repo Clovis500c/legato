@@ -35,6 +35,7 @@ into `ui/src/shared/api.ts` (735 lines). `src-tauri/src/lib.rs` 2068 lines, `cra
 - **Rules**: `shared/api.ts` stays the only caller of `invoke`.
 - **Effort**: M (many commands: 150+ in `generate_handler!`). Do it type by type: derive first, then switch callers.
 - **Done when**: no struct in `api.ts` written by hand; CI's diff check in place.
+- **Done 2026-10-30**: `ts-rs` (types only), `pnpm types`, CI diff on the Windows job; see docs/architecture.md "IPC types".
 
 ## Split the big files
 

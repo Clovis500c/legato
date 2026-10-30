@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import type { LibraryTrack } from '../../shared/api'
 import { bestCopy, duplicateGroups, repeatedRows } from './duplicates'
 
-const t = (id: number, title: string, artist = 'Kavinsky', ids: LibraryTrack['ids'] = { youtube: `y${id}` }, album: string | null = null): LibraryTrack => ({ id, added: id, title, artist, album, durationMs: null, isrc: null, ids })
+const t = (id: number, title: string, artist = 'Kavinsky', ids: LibraryTrack['ids'] = { youtube: `y${id}` }, album: string | null = null): LibraryTrack => ({ id, added: id, addedAt: null, title, artist, album, durationMs: null, isrc: null, ids })
 
 describe('duplicates', () => {
   it('groups copies of a song, not its other versions', () => {

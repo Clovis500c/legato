@@ -452,7 +452,7 @@ export function hitMenu(hit: SearchHit, add: () => void, busy: boolean, play: ()
   // In the library (added here or before): its menu, playlists included.
   const t = app().tracks.find((x) => x.id === hit.libraryId) ?? ownOf(item)
   if (!isRemote(t)) return trackMenu(t)
-  const links = pages({ ...hit, id: 0, added: 0 })
+  const links = pages({ ...hit, id: 0, added: 0, addedAt: null })
   return [
     { label: tr('Play'), icon: <Play size={16} />, onSelect: play },
     { label: tr('Play next'), icon: <Queue size={16} />, onSelect: () => player().enqueue([item], true) },

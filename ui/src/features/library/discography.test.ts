@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import type { LibraryTrack } from '../../shared/api'
 import { discography, isSingle } from './discography'
 
-const t = (id: number, title: string, album: string | null, artist = 'Daft Punk'): LibraryTrack => ({ id, added: id, title, artist, album, durationMs: null, isrc: null, ids: { youtube: `y${id}` } })
+const t = (id: number, title: string, album: string | null, artist = 'Daft Punk'): LibraryTrack => ({ id, added: id, addedAt: null, title, artist, album, durationMs: null, isrc: null, ids: { youtube: `y${id}` } })
 
 describe('discography', () => {
   it('tells singles and EPs from albums', () => {

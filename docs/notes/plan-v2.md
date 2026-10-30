@@ -96,8 +96,8 @@ playback (its terms), concerts (an API's terms), trademark search.
 
 - **Release channels**: Settings › General › Updates shows Stable / Beta; a push to master reaches Beta only; a tag
   (or a manual workflow) promotes to Stable; `latest.json` per channel; switching to Stable never downgrades.
-- **Generated IPC types**: `shared/api.ts` imports types written by a Rust build step; CI fails when they differ; no
-  hand-copied struct left.
+- **Generated IPC types** (done 2026-10-30): `shared/api.ts` imports types written by a Rust build step; CI fails when
+  they differ; no hand-copied struct left.
 - **Diagnostics**: rotating log in the app data folder (errors, warnings, playback switches; no titles unless the
   user opts in); Settings › About › Copy diagnostics; nothing sent.
 - **Bench**: `pnpm bench` prints cold start, first paint, RAM after 1 min playing and after 10 min in the tray, idle CPU,
@@ -273,14 +273,15 @@ signal, no beat, small. Plan: better data first, then a real renderer, then the 
 ## Workflow (how we build it)
 
 Today: every green push to master is a release (369 so far, check 5-11 min then release 13-18 min); no end-to-end
-tests; Rust types copied by hand into `shared/api.ts`; `src-tauri/src/lib.rs` 2068 lines; CLAUDE.md ~12 kB read by
+tests; `src-tauri/src/lib.rs` 2068 lines; CLAUDE.md ~12 kB read by
 every session.
 
 - [ ] Release channels: Beta (every green push, opt-in in Settings › General) and Stable (a tag, weekly or by hand), so
       a bad push never reaches everyone.
 - [ ] Release notes written from the commits (feat / fix grouped, in the user's words), shown in the app after an update.
-- [ ] Generated TypeScript types from Rust (`specta` / `ts-rs`) for every IPC command: no hand copies, a CI check that
-      fails when they drift.
+- [x] Generated TypeScript types from Rust (`ts-rs`, `pnpm types` → `ui/src/shared/generated`) for every IPC type: no
+      hand copies, CI diff check on the Windows job. Limit: the `invoke` wrappers in `api.ts` stay by hand (no
+      `tauri-specta`), so a command's name and arguments are still checked by eye.
 - [ ] Split `src-tauri/src/lib.rs` by feature (library, player, accounts, sources) like `detector.rs` / `editor.rs`;
       same for `crates/core/src/library.rs` (queries per table).
 - [ ] End-to-end smoke test on Windows CI (tauri-driver / WebDriver): launch, welcome, scan the demo folder, play a
