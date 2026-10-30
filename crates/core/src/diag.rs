@@ -144,28 +144,54 @@ fn re(pattern: &str) -> Regex {
     Regex::new(pattern).expect("valid regex")
 }
 
-// A URL's query and fragment: they carry codes, tokens and search words.
-static URL_QUERY: LazyLock<Regex> = LazyLock::new(|| re(r##"(?i)\b([a-z][a-z0-9+.-]{1,15}://[^\s?#"'<>()\[\]]+)[?#][^\s"'<>()\[\]]*"##));
+// A URL's query and fragment: they carry codes, tokens and search words. Path and query run to a space or a quote,
+// parentheses included ("a(1)/b", "(Live Version)"): one that stopped at a "(" left the rest in the file.
+static URL_QUERY: LazyLock<Regex> = LazyLock::new(|| re(r##"(?i)\b([a-z][a-z0-9+.-]{1,15}://[^\s?#"']+)[?#][^\s"']*"##));
 static BEARER: LazyLock<Regex> = LazyLock::new(|| re(r"(?i)\b(bearer|basic)\s+[A-Za-z0-9._~+/=-]{6,}"));
 // A JSON web token whole: its payload holds ids and emails.
 static JWT: LazyLock<Regex> = LazyLock::new(|| re(r"\beyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+(?:\.[A-Za-z0-9_-]*)?"));
-static COOKIE: LazyLock<Regex> = LazyLock::new(|| re(r"(?i)\b((?:set-)?cookie)\s*[:=][^\r\n]*"));
+// A cookie header: the rest of the line. A JSON field, plain or escaped (`\"cookie\":\"…\"`): up to its closing quote.
+static COOKIE: LazyLock<Regex> = LazyLock::new(|| re(r##"(?i)\b((?:set-)?cookie\\?"?\s*[:=][ \t]*)(?:(\\?")(?:\\.|[^"\\\r\n])*|[^\r\n]*)"##));
 // Google's session cookies by name, wherever they show up.
 static COOKIE_NAME: LazyLock<Regex> = LazyLock::new(|| re(r"(?i)\b(sapisid|apisid|ssid|hsid|sid|sidcc|login_info|visitor_info1_live|ysc|__secure-[a-z0-9_-]+|__host-[a-z0-9_-]+)\s*=\s*[^\s;,]+"));
-static KEY_VALUE: LazyLock<Regex> = LazyLock::new(|| re(r##"(?i)\b([a-z0-9_-]*(?:token|secret|password|passwd|api[_-]?key|authorization|session[_-]?id|signature))\b("?\s*[:=]\s*"?)[^\s"',;&}]{3,}"##));
+static KEY_VALUE: LazyLock<Regex> = LazyLock::new(|| re(r##"(?i)\b([a-z0-9_-]*(?:token|secret|password|passwd|api[_-]?key|authorization|session[_-]?id|signature))\b(\\?"?\s*[:=]\s*\\?"?)[^\s"',;&}]{3,}"##));
 static EMAIL: LazyLock<Regex> = LazyLock::new(|| re(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+"));
 // Long runs of letters and digits: keys, hashes, ids of a session.
 static OPAQUE: LazyLock<Regex> = LazyLock::new(|| re(r"[A-Za-z0-9_+-]{32,}"));
 // A Windows user folder, whoever it is: `C:\Users\jane`, `C:/Users/jane`, `\\?\C:\Users\jane`.
 static USER_DIR: LazyLock<Regex> = LazyLock::new(|| re(r##"(?i)(?:\\\\\?\\)?[a-z]:[\\/]+users[\\/]+[^\\/\s"'<>|:*?]+"##));
 
+/// What a matched URL ends with that isn't its own: a full stop, or the closing mark of an outer "(url)" (one with its
+/// opening mark inside the URL, as in "a(1)", is part of it). Those stay when the query goes.
+fn url_tail(url: &str) -> &str {
+    let mut end = url.len();
+    while let Some(last) = url[..end].chars().next_back() {
+        let open = match last {
+            ')' => Some('('),
+            ']' => Some('['),
+            '}' => Some('{'),
+            '>' => Some('<'),
+            '.' | ',' | ';' | ':' | '!' | '\\' => None,
+            _ => break,
+        };
+        if let Some(open) = open {
+            let head = &url[..end];
+            if head.matches(last).count() <= head.matches(open).count() {
+                break;
+            }
+        }
+        end -= last.len_utf8();
+    }
+    &url[end..]
+}
+
 /// The text without what must never be kept or shown: URL queries and fragments, bearer tokens, cookies, `token=…`
 /// style values, emails, long opaque strings. Always applied, "Include details" or not.
 pub fn redact_secrets(text: &str) -> String {
-    let s = URL_QUERY.replace_all(text, "${1}?<redacted>");
+    let s = URL_QUERY.replace_all(text, |c: &Captures| format!("{}?<redacted>{}", &c[1], url_tail(&c[0])));
     let s = BEARER.replace_all(&s, "$1 <redacted>");
     let s = JWT.replace_all(&s, "<redacted>");
-    let s = COOKIE.replace_all(&s, "$1: <redacted>");
+    let s = COOKIE.replace_all(&s, "$1$2<redacted>");
     let s = COOKIE_NAME.replace_all(&s, "$1=<redacted>");
     let s = KEY_VALUE.replace_all(&s, "$1$2<redacted>");
     let s = EMAIL.replace_all(&s, "<email>");
@@ -516,6 +542,14 @@ mod tests {
             "password=SECRETPASS api_key: SECRETKEY".to_string(),
             "signed in as jane.doe@example.com".to_string(),
             "id a1b2c3d4e5f6a7b8c9d0a1b2c3d4e5f6 hash".to_string(),
+            // A "(" in the path, and in the query: the whole query goes either way.
+            "GET https://host.test/a(1)/b?code=SECRETCODE&state=SECRETSTATE".to_string(),
+            "GET https://host.test/s?q=My%20Song%20(Live%20Version)%20Title&sig=SECRETSIG".to_string(),
+            // Cookies and keys in JSON, plain, escaped by Debug, or in a field of its own.
+            r#"{"cookie":"PREF=SECRETPREF; NID=SECRETNID"}"#.to_string(),
+            r#"{"Set-Cookie": "PREF=SECRETPREF; a=\"SECRETQUOTED\"", "ok": 1}"#.to_string(),
+            format!("{:?}", r#"{"access_token":"SECRETSHORT","cookie":"PREF=SECRETPREF"}"#),
+            format!("{:?}", r#"{"api_key": "SECRETSHORT"}"#),
         ];
         for t in texts {
             for part in [format_line("2026-10-30T12:34:56.789Z", Level::Error, "x", &t, ""), format_line("2026-10-30T12:34:56.789Z", Level::Error, "x", "m", &t)] {
@@ -526,6 +560,22 @@ mod tests {
         let kept = redact_secrets("GET https://music.youtube.com/youtubei/v1/browse?key=K failed for video dQw4w9WgXcQ: token expired");
         assert!(kept.contains("https://music.youtube.com/youtubei/v1/browse?<redacted>") && kept.contains("dQw4w9WgXcQ") && kept.contains("token expired"), "{kept}");
         assert_eq!(redact_secrets("a-long-name-made-only-of-letters-and-dashes-without-digits"), "a-long-name-made-only-of-letters-and-dashes-without-digits");
+    }
+
+    #[test]
+    fn a_url_in_a_sentence_keeps_the_marks_around_it() {
+        // The ")" of "(url)" and the stop after it are the sentence's, not the URL's.
+        let cases = [
+            ("error for url (https://host.test/a(1)/b?code=SECRETCODE): dns error", "error for url (https://host.test/a(1)/b?<redacted>): dns error"),
+            ("see https://host.test/s?q=a(b)c&x=1.", "see https://host.test/s?<redacted>."),
+            ("<https://host.test/p#SECRETFRAG>, then", "<https://host.test/p?<redacted>>, then"),
+            ("{url: https://host.test/p?k=SECRETKEY}", "{url: https://host.test/p?<redacted>}"),
+            ("Cookie: SID=SECRETSID; a=1\nnext line", "Cookie: <redacted>\nnext line"),
+            (r#"{"cookie":"a=SECRETA","n":1}"#, r#"{"cookie":"<redacted>","n":1}"#),
+        ];
+        for (text, want) in cases {
+            assert_eq!(redact_secrets(text), want, "{text}");
+        }
     }
 
     fn who() -> Who {
