@@ -4,6 +4,7 @@
 //! a move that fails leaves everything where it was.
 
 use std::io;
+#[cfg(any(windows, test))]
 use std::path::Path;
 
 const OLD: &str = "dev.musicapp.desktop";
@@ -33,6 +34,7 @@ pub fn migrate(id: &str) -> io::Result<()> {
 
 /// `from` becomes `to`. If `to` is there already, `from`'s entries it lacks move in (its own are kept, the others stay
 /// in `from`). Nothing to move: nothing done.
+#[cfg(any(windows, test))]
 fn move_dir(from: &Path, to: &Path) -> io::Result<()> {
     if !from.is_dir() {
         return Ok(());
