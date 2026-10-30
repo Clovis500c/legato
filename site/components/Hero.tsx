@@ -65,7 +65,7 @@ export function Hero() {
   )
 }
 
-/** The Songs page, bleeding off the right edge like the mockup; it drifts a little against the scroll. */
+/** The app's Songs page (demo library: silent public-domain files, never real data), bleeding off the right edge; it drifts a little against the scroll. */
 export function Shot() {
   const ref = useRef<HTMLDivElement>(null)
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] })
