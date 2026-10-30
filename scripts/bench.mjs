@@ -19,13 +19,12 @@
 //   --shots <dir>             a PNG of the window at each step
 
 import { execFileSync, spawn, spawnSync } from 'node:child_process'
-import { createHash } from 'node:crypto'
 import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
-import net from 'node:net'
 import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { Cdp, sleep, waitForPage } from './cdp.mjs'
+import { browserArgs, carriesId, freePort, inputsHash, isBuildInput } from './guest.mjs'
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..')
 const CONF = path.join(ROOT, 'src-tauri', 'tauri.bench.conf.json')
@@ -69,25 +68,8 @@ export function benchFolders(id, appData, localAppData) {
   return [path.win32.join(appData, id), path.win32.join(localAppData, id)]
 }
 
-const ROOT_INPUTS = new Set(['Cargo.toml', 'Cargo.lock', 'package.json', 'pnpm-lock.yaml', 'vite.config.ts', 'tsconfig.json'])
-
-/** Files whose content decides what the build makes (git paths). Docs, tests, examples and scripts do not. */
-export function isBuildInput(file) {
-  if (/(^|\/)examples\//.test(file) || /\.md$/.test(file) || /\.test\.tsx?$/.test(file)) return false
-  return ROOT_INPUTS.has(file) || /^(src-tauri|crates|ui)\//.test(file)
-}
-
-/** The identifier is baked into the exe: a build made for another one must not start here. */
-export function carriesId(bytes, id) {
-  return bytes.includes(Buffer.from(id))
-}
-
-/** Reads background::BROWSER_ARGS: every webview of the app must carry the same flags. */
-export function browserArgs(rustSource) {
-  const found = /pub const BROWSER_ARGS: &str = "([^"]*)";/.exec(rustSource)
-  if (!found) throw new Error('background.rs: BROWSER_ARGS not found')
-  return found[1]
-}
+// Shared with `pnpm e2e` (scripts/guest.mjs); the tests read them from here.
+export { browserArgs, carriesId, isBuildInput }
 
 /** RAM of one sample in MB: private working sets of the WebView2 processes and of the rest of the tree. */
 export function memory(sample) {
@@ -190,26 +172,11 @@ function runningBench() {
     .map((l) => l.split('","')[1])
 }
 
-function inputsHash() {
-  const files = execFileSync('git', ['ls-files', '-z', '--cached', '--others', '--exclude-standard'], { cwd: ROOT, maxBuffer: 1 << 28 })
-    .toString()
-    .split('\0')
-    .filter((f) => f && isBuildInput(f))
-    .sort()
-  const hash = createHash('sha256')
-  for (const f of files) {
-    if (!existsSync(path.join(ROOT, f))) continue
-    hash.update(`${f}\0`)
-    hash.update(readFileSync(path.join(ROOT, f)))
-  }
-  return hash.digest('hex')
-}
-
 /** `tauri build --no-bundle` under the bench identifier, then the exe copied to its own name and folder: only this script
  *  writes target/bench, so what runs there never is a normal build made later by `pnpm build`. */
 function ensureBuild(o) {
   const stamp = `${EXE}.inputs`
-  const hash = inputsHash()
+  const hash = inputsHash(ROOT)
   if (o.skipBuild && existsSync(EXE) && existsSync(stamp) && readFileSync(stamp, 'utf8') === hash) {
     console.log('build: inputs unchanged, reusing target/bench/legato-bench.exe')
     return
@@ -233,16 +200,6 @@ function freshData(dataDir, localDir, keep) {
     if (!keep) for (const dir of [dataDir, localDir]) rmSync(dir, { recursive: true, force: true, maxRetries: 10, retryDelay: 300 })
   }
 }
-
-const freePort = () =>
-  new Promise((resolve, reject) => {
-    const server = net.createServer()
-    server.once('error', reject)
-    server.listen(0, '127.0.0.1', () => {
-      const { port } = server.address()
-      server.close(() => resolve(port))
-    })
-  })
 
 // One PowerShell for the whole run, asked one line at a time (stdin), answering one JSON line each. Windows PowerShell 5.1
 // ships with Windows; -EncodedCommand needs no script file and no execution policy.
