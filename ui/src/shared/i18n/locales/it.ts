@@ -1538,6 +1538,15 @@ const it: Record<string, string> = {
   'Start listening': 'Inizia ad ascoltare',
   '{n} song in your library': '{n} brano nella tua libreria',
   '{n} songs in your library': '{n} brani nella tua libreria',
+  // Errors in plain words, offline (shared/errors.ts, shared/online.ts)
+  'No internet connection: check your network, then try again.': 'Nessuna connessione a internet: controlla la rete, poi riprova.',
+  'The service took too long to answer: try again in a moment.': 'Il servizio ha impiegato troppo a rispondere: riprova tra un attimo.',
+  'Too many requests for now: wait a few minutes, then try again.': 'Troppe richieste per ora: aspetta qualche minuto, poi riprova.',
+  'The service is having trouble right now: try again later.': 'Il servizio ha dei problemi in questo momento: riprova più tardi.',
+  'Details': 'Dettagli',
+  'Offline': 'Offline',
+  'No internet connection: your own files still play. Searches and YouTube come back with the connection.': 'Nessuna connessione a internet: i tuoi file continuano a suonare. Ricerche e YouTube tornano con la connessione.',
+  'No internet connection: the song starts again when your PC is back online.': 'Nessuna connessione a internet: il brano ripartirà quando il PC sarà di nuovo online.',
 }
 
 export default it

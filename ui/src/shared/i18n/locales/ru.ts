@@ -1538,6 +1538,15 @@ const ru: Record<string, string> = {
   'Start listening': 'Начать слушать',
   '{n} song in your library': 'Песен в медиатеке: {n}',
   '{n} songs in your library': 'Песен в медиатеке: {n}',
+  // Errors in plain words, offline (shared/errors.ts, shared/online.ts)
+  'No internet connection: check your network, then try again.': 'Нет подключения к интернету: проверь сеть и попробуй ещё раз.',
+  'The service took too long to answer: try again in a moment.': 'Сервис слишком долго отвечал: попробуй ещё раз через минуту.',
+  'Too many requests for now: wait a few minutes, then try again.': 'Слишком много запросов: подожди несколько минут и попробуй ещё раз.',
+  'The service is having trouble right now: try again later.': 'У сервиса сейчас проблемы: попробуй позже.',
+  'Details': 'Подробности',
+  'Offline': 'Нет сети',
+  'No internet connection: your own files still play. Searches and YouTube come back with the connection.': 'Нет подключения к интернету: твои собственные файлы по-прежнему играют. Поиск и YouTube вернутся вместе с подключением.',
+  'No internet connection: the song starts again when your PC is back online.': 'Нет подключения к интернету: трек начнётся заново, когда ПК снова будет в сети.',
 }
 
 export default ru

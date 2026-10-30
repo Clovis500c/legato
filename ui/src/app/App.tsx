@@ -1,4 +1,4 @@
-import { ArrowsIn, ArrowsOut, CaretDown, CaretLeft, CaretRight, CopySimple, Gear, Minus, PuzzlePiece, Square, Warning, X } from '@phosphor-icons/react'
+import { ArrowsIn, ArrowsOut, CaretDown, CaretLeft, CaretRight, CopySimple, Gear, Minus, PuzzlePiece, Square, Warning, WifiSlash, X } from '@phosphor-icons/react'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
@@ -33,6 +33,8 @@ import { SearchBar } from '../features/search/SearchBar'
 import { VoiceSearch } from '../features/search/VoiceSearch'
 import { Sidebar } from '../features/sidebar/Sidebar'
 import { api } from '../shared/api'
+import { explain } from '../shared/errors'
+import { useOnline } from '../shared/online'
 import { region } from '../shared/format'
 import { ContextMenuHost, onMenu } from '../shared/ui/ContextMenu'
 import { DuplicatesHost } from '../features/library/DuplicatesDialog'
@@ -101,6 +103,7 @@ function TopBar() {
   const go = useStore((s) => s.go)
   const page = useStore((s) => s.view.name)
   const { canBack, canForward, goBack, goForward } = useStore(useShallow((s) => ({ canBack: s.back.length > 0, canForward: s.fwd.length > 0, goBack: s.goBack, goForward: s.goForward })))
+  const online = useOnline()
   const [maximized, setMaximized] = useState(false)
   const [fullscreen, setFullscreen] = useState(false)
   useEffect(() => {
@@ -139,6 +142,11 @@ function TopBar() {
           <VoiceSearch />
         </SearchBar>
       </div>
+      {!online && (
+        <span role="status" title={tr('No internet connection: your own files still play. Searches and YouTube come back with the connection.')} className="swap-in flex shrink-0 items-center gap-1.5 rounded-full bg-raised px-3 py-1 text-xs font-medium text-ink-2">
+          <WifiSlash size={14} /> {tr('Offline')}
+        </span>
+      )}
       {!full && (
         <span className="flex items-center gap-1 pr-2">
           <button className={`${winBtn} rounded-full! ${page === 'addons' ? 'bg-raised' : ''}`} aria-label={tr('Add-ons')} title={tr('Add-ons')} onClick={() => go({ name: 'addons' })} onContextMenu={onMenu(() => navMenu({ name: 'addons' }))}>
@@ -173,11 +181,19 @@ function Alerts() {
   // Wizard shows its own error.
   const shown = view.name === 'settings' && view.wizard ? undefined : error
   if (!shown && !errors.length) return null
+  // Raw network failures in plain words, Rust's message one click away.
+  const said = shown ? explain(shown) : undefined
   return (
     <div role="alert" className="mx-6 mt-5 flex items-start gap-2.5 rounded-lg border border-line bg-recess px-3.5 py-3 text-xs">
       <Warning size={15} className="mt-px shrink-0 text-danger" />
       <div className="flex-1">
-        {shown && <p>{shown}</p>}
+        {said && <p>{said.text}</p>}
+        {said?.detail && (
+          <details className="mt-1 text-ink-3">
+            <summary className="cursor-pointer">{tr('Details')}</summary>
+            <p className="mt-1 font-mono text-[0.6875rem] break-all">{said.detail}</p>
+          </details>
+        )}
         {errors.length > 0 && (
           <details>
             <summary className="cursor-pointer">
@@ -257,7 +273,8 @@ export function App() {
   // A like, add or removal YouTube Music refused after the fact (push.rs): undone in the library, said here.
   useEffect(() => {
     const off = api.onPushFailed((f) => {
-      const say = { name: f.playlist, reason: f.reason }
+      // The reason in plain words, before the sentence around it (its own full stop goes: the sentence has one).
+      const say = { name: f.playlist, reason: explain(f.reason).text.replace(/\.$/, '') }
       const text = {
         add: tr('Not added to {name} on YouTube Music: {reason}. Taken back out here.', say),
         like: tr('Couldn’t like it on YouTube Music: {reason}. Kept in your Liked Music, liked at the next sync.', say),

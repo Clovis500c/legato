@@ -1538,6 +1538,15 @@ const sv: Record<string, string> = {
   'Start listening': 'Börja lyssna',
   '{n} song in your library': '{n} låt i ditt bibliotek',
   '{n} songs in your library': '{n} låtar i ditt bibliotek',
+  // Errors in plain words, offline (shared/errors.ts, shared/online.ts)
+  'No internet connection: check your network, then try again.': 'Ingen internetanslutning: kontrollera ditt nätverk och försök igen.',
+  'The service took too long to answer: try again in a moment.': 'Tjänsten tog för lång tid att svara: försök igen om en stund.',
+  'Too many requests for now: wait a few minutes, then try again.': 'För många förfrågningar just nu: vänta några minuter och försök igen.',
+  'The service is having trouble right now: try again later.': 'Tjänsten har problem just nu: försök igen senare.',
+  'Details': 'Detaljer',
+  'Offline': 'Offline',
+  'No internet connection: your own files still play. Searches and YouTube come back with the connection.': 'Ingen internetanslutning: dina egna filer spelas fortfarande. Sökning och YouTube kommer tillbaka med anslutningen.',
+  'No internet connection: the song starts again when your PC is back online.': 'Ingen internetanslutning: låten börjar om när datorn är online igen.',
 }
 
 export default sv

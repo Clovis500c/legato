@@ -1538,6 +1538,15 @@ const uk: Record<string, string> = {
   'Start listening': 'Почати слухати',
   '{n} song in your library': 'Пісень у медіатеці: {n}',
   '{n} songs in your library': 'Пісень у медіатеці: {n}',
+  // Errors in plain words, offline (shared/errors.ts, shared/online.ts)
+  'No internet connection: check your network, then try again.': 'Немає підключення до інтернету: перевір мережу й спробуй ще раз.',
+  'The service took too long to answer: try again in a moment.': 'Сервіс занадто довго відповідав: спробуй ще раз за мить.',
+  'Too many requests for now: wait a few minutes, then try again.': 'Забагато запитів: зачекай кілька хвилин і спробуй ще раз.',
+  'The service is having trouble right now: try again later.': 'У сервісу зараз проблеми: спробуй пізніше.',
+  'Details': 'Подробиці',
+  'Offline': 'Немає мережі',
+  'No internet connection: your own files still play. Searches and YouTube come back with the connection.': 'Немає підключення до інтернету: твої власні файли й далі грають. Пошук і YouTube повернуться разом із підключенням.',
+  'No internet connection: the song starts again when your PC is back online.': 'Немає підключення до інтернету: трек почнеться знову, щойно ПК знову буде в мережі.',
 }
 
 export default uk

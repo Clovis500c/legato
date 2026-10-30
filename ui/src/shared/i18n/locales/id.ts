@@ -1538,6 +1538,15 @@ const id: Record<string, string> = {
   'Start listening': 'Mulai mendengarkan',
   '{n} song in your library': '{n} lagu di koleksimu',
   '{n} songs in your library': '{n} lagu di koleksimu',
+  // Errors in plain words, offline (shared/errors.ts, shared/online.ts)
+  'No internet connection: check your network, then try again.': 'Tidak ada koneksi internet: periksa jaringanmu, lalu coba lagi.',
+  'The service took too long to answer: try again in a moment.': 'Layanan terlalu lama menjawab: coba lagi sebentar lagi.',
+  'Too many requests for now: wait a few minutes, then try again.': 'Terlalu banyak permintaan untuk saat ini: tunggu beberapa menit, lalu coba lagi.',
+  'The service is having trouble right now: try again later.': 'Layanan sedang bermasalah: coba lagi nanti.',
+  'Details': 'Detail',
+  'Offline': 'Offline',
+  'No internet connection: your own files still play. Searches and YouTube come back with the connection.': 'Tidak ada koneksi internet: file milikmu tetap bisa diputar. Pencarian dan YouTube kembali saat koneksi kembali.',
+  'No internet connection: the song starts again when your PC is back online.': 'Tidak ada koneksi internet: lagu diputar ulang dari awal saat PC-mu kembali online.',
 }
 
 export default id

@@ -12,6 +12,7 @@ import { bindLiveFrame, onEndHeard } from './live'
 import { closeWatch, openWatch, sendWatch, watching } from './watch'
 import { ytPost, type YtUpdate } from './youtube'
 import { tr } from '../../shared/i18n/i18n'
+import { offline } from '../../shared/online'
 
 /** via youtube = embed plays it, else Rust engine (local file, or Apple preview held in memory). */
 export interface NowPlaying {
@@ -262,6 +263,31 @@ const PAUSE_HOLD_MS = 5000
 // Current song came by the queue moving on (song ended): Skip long songs applies once its length is known.
 let reachedAuto = false
 let stuckTimer: ReturnType<typeof setTimeout> | undefined
+
+// No network (Windows says so): a video that won't start isn't refused. Nothing is blocked or skipped; playback pauses
+// and the song starts over in a new embed once the network is back (2026-10-30: a dropped Wi-Fi marked every song it
+// reached as refused, for good, and skipped through the queue). playId waiting, -1 = none.
+let offlineFor = -1
+function waitForNetwork(playId: number) {
+  clearTimeout(stuckTimer)
+  usePlayer.setState({ playing: false })
+  const first = offlineFor < 0
+  offlineFor = playId
+  if (!first) return
+  useStore.getState().notify(tr('No internet connection: the song starts again when your PC is back online.'), { kind: 'error' })
+  const back = () => {
+    window.removeEventListener('online', back)
+    const id = offlineFor
+    offlineFor = -1
+    const p = usePlayer.getState()
+    // Moved on meanwhile (another song, a local file): nothing to start again.
+    if (p.playId !== id || p.now?.via !== 'youtube') return
+    // The embed born offline holds an error page: a new one (key), asked to play (playId arms the stuck check again).
+    usePlayer.setState((s) => ({ frameKey: Math.max(s.frameKey, s.tail?.key ?? 0) + 1, playId: s.playId + 1, positionMs: 0, playing: true }))
+  }
+  window.addEventListener('online', back)
+}
+
 function watchForStuck(playId: number, wait = 6_000) {
   clearTimeout(stuckTimer)
   ytState = undefined
@@ -271,6 +297,7 @@ function watchForStuck(playId: number, wait = 6_000) {
     if (p.playId !== playId || p.hold || !id || p.positionMs > p.startAt || ytState === 1 || ytState === 2) return
     // Slow network: give it longer.
     if (ytState === 3) return void (stuckTimer = setTimeout(check, 10_000))
+    if (offline()) return waitForNetwork(playId)
     if (!watching(id)) {
       block(id)
       return playOnWatchPage(id, 0)
@@ -281,6 +308,8 @@ function watchForStuck(playId: number, wait = 6_000) {
 }
 
 async function tryOtherUpload(trackId: number, failed: string, why: string) {
+  // Offline, nothing can be told about the video (waitForNetwork).
+  if (offline()) return waitForNetwork(usePlayer.getState().playId)
   unplayable.add(failed)
   closeWatch()
   const mine = seq
@@ -618,6 +647,8 @@ export const usePlayer = create<PlayerState>((set, get) => ({
       return get().step(1)
     }
     if (u.error !== undefined) {
+      // Network gone mid-song (player error 5…): the video isn't to blame, nothing is blocked.
+      if (offline()) return waitForNetwork(get().playId)
       // 100: removed. Another upload of the same song, else the next song.
       if (now?.trackId && now.youtubeId && u.error === 100) return void tryOtherUpload(now.trackId, now.youtubeId, tr('This video was removed'))
       // Any other refusal (101 / 150 embedding off, 152 / 153 player configuration, 5 player error…): same video from
@@ -737,8 +768,10 @@ function overlap() {
   usePlayer.setState({ tail: { key: p.frameKey, videoId: now.youtubeId, done: false }, frameKey: p.tail?.key ?? p.frameKey + 1 })
 }
 
+// A new song, or its video: playAt counts the play before it sets what plays, so the video is watched once it's set.
+// Watched on playId alone, the first YouTube song of a session (or after a file) never was (2026-10-30).
 usePlayer.subscribe((s, prev) => {
-  if (s.playId !== prev.playId && s.now?.via === 'youtube') watchForStuck(s.playId)
+  if (s.now?.via === 'youtube' && (s.playId !== prev.playId || s.now.youtubeId !== prev.now?.youtubeId)) watchForStuck(s.playId)
 })
 
 // Song whose early end was reached (playId): over once.

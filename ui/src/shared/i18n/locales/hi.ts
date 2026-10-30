@@ -1538,6 +1538,15 @@ const hi: Record<string, string> = {
   'Start listening': 'सुनना शुरू करें',
   '{n} song in your library': 'आपकी लाइब्रेरी में {n} गाना',
   '{n} songs in your library': 'आपकी लाइब्रेरी में {n} गाने',
+  // Errors in plain words, offline (shared/errors.ts, shared/online.ts)
+  'No internet connection: check your network, then try again.': 'इंटरनेट कनेक्शन नहीं है: अपना नेटवर्क जाँचें, फिर दोबारा कोशिश करें।',
+  'The service took too long to answer: try again in a moment.': 'सेवा ने जवाब देने में बहुत देर लगाई: थोड़ी देर में दोबारा कोशिश करें।',
+  'Too many requests for now: wait a few minutes, then try again.': 'अभी बहुत ज़्यादा अनुरोध हैं: कुछ मिनट रुकें, फिर दोबारा कोशिश करें।',
+  'The service is having trouble right now: try again later.': 'सेवा में अभी समस्या है: बाद में दोबारा कोशिश करें।',
+  'Details': 'विवरण',
+  'Offline': 'ऑफ़लाइन',
+  'No internet connection: your own files still play. Searches and YouTube come back with the connection.': 'इंटरनेट कनेक्शन नहीं है: आपकी अपनी फ़ाइलें चलती रहेंगी। कनेक्शन लौटने पर खोज और YouTube भी लौट आएँगे।',
+  'No internet connection: the song starts again when your PC is back online.': 'इंटरनेट कनेक्शन नहीं है: आपका PC फिर से ऑनलाइन होते ही गाना शुरू से चलेगा।',
 }
 
 export default hi

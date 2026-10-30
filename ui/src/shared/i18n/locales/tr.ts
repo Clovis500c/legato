@@ -1538,6 +1538,15 @@ const tr: Record<string, string> = {
   'Start listening': 'Dinlemeye başla',
   '{n} song in your library': 'Kitaplığında {n} şarkı',
   '{n} songs in your library': 'Kitaplığında {n} şarkı',
+  // Errors in plain words, offline (shared/errors.ts, shared/online.ts)
+  'No internet connection: check your network, then try again.': 'İnternet bağlantısı yok: ağını kontrol et, sonra tekrar dene.',
+  'The service took too long to answer: try again in a moment.': 'Hizmet yanıt vermekte çok gecikti: birazdan tekrar dene.',
+  'Too many requests for now: wait a few minutes, then try again.': 'Şu an çok fazla istek var: birkaç dakika bekle, sonra tekrar dene.',
+  'The service is having trouble right now: try again later.': 'Hizmette şu anda bir sorun var: daha sonra tekrar dene.',
+  'Details': 'Ayrıntılar',
+  'Offline': 'Çevrimdışı',
+  'No internet connection: your own files still play. Searches and YouTube come back with the connection.': 'İnternet bağlantısı yok: kendi dosyaların çalmaya devam eder. Aramalar ve YouTube bağlantıyla geri gelir.',
+  'No internet connection: the song starts again when your PC is back online.': 'İnternet bağlantısı yok: bilgisayarın yeniden çevrimiçi olunca şarkı baştan başlar.',
 }
 
 export default tr

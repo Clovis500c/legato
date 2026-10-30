@@ -94,6 +94,12 @@ Status on 2026-10-16. YouTube, local files and Apple Music previews: done and te
   message and the next song.
   When every song of the queue has failed in a row (none played since), playback stops with one message instead of
   looping on repeat (2026-10-28). Nothing is extracted: both are YouTube's own players.
+- No network (2026-10-30; Windows says so: `navigator.onLine` false, `shared/online.ts`): a video that won't start or
+  errors isn't refused. Nothing is blocked (the refused list is kept between launches) or skipped: playback pauses with
+  one message, and the song starts over in a new embed (`frameKey`) once the network is back (`waitForNetwork` in
+  `store.ts`). Before, a dropped Wi-Fi marked every song it reached as refused, for good. The top bar shows Offline.
+- The stuck check arms when the video is set, not only when the play count moves: `playAt` counts the play before it
+  sets what plays, so the first YouTube song of a session (or after a file) was never watched (2026-10-30).
 - Now Playing Auto mode: frames `1.jpg` / `2.jpg` / `3.jpg` (25 / 50 / 75 %) compared at 32×24 (`still.ts`); nearly the
   same = still image upload = cover. Cover mode keeps the embed playing, transparent (user's choice, see plan).
 - Fades between songs: volume × `fadeGain` (smoothstep), only on transitions that happen on their own; Spotify none.

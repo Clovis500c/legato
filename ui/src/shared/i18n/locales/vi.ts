@@ -1538,6 +1538,15 @@ const vi: Record<string, string> = {
   'Start listening': 'Bắt đầu nghe',
   '{n} song in your library': '{n} bài hát trong thư viện của bạn',
   '{n} songs in your library': '{n} bài hát trong thư viện của bạn',
+  // Errors in plain words, offline (shared/errors.ts, shared/online.ts)
+  'No internet connection: check your network, then try again.': 'Không có kết nối internet: hãy kiểm tra mạng rồi thử lại.',
+  'The service took too long to answer: try again in a moment.': 'Dịch vụ phản hồi quá lâu: hãy thử lại sau giây lát.',
+  'Too many requests for now: wait a few minutes, then try again.': 'Quá nhiều yêu cầu lúc này: hãy đợi vài phút rồi thử lại.',
+  'The service is having trouble right now: try again later.': 'Dịch vụ đang gặp sự cố: hãy thử lại sau.',
+  'Details': 'Chi tiết',
+  'Offline': 'Ngoại tuyến',
+  'No internet connection: your own files still play. Searches and YouTube come back with the connection.': 'Không có kết nối internet: tệp của riêng bạn vẫn phát được. Tìm kiếm và YouTube sẽ trở lại khi có kết nối.',
+  'No internet connection: the song starts again when your PC is back online.': 'Không có kết nối internet: bài hát sẽ phát lại từ đầu khi PC của bạn trực tuyến trở lại.',
 }
 
 export default vi

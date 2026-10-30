@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { useStore } from '../../app/store'
 import type { LibraryTrack } from '../../shared/api'
 import { usePlayer } from './store'
@@ -42,6 +42,49 @@ describe('queue of refused videos on repeat all', () => {
     expect(usePlayer.getState().now?.youtubeId).toBe('video4')
     expect(usePlayer.getState().playing).toBe(true)
     expect(notify.mock.calls.map((c) => c[0])).not.toContain(STOPPED)
+  })
+})
+
+describe('network gone', () => {
+  const notify = vi.fn()
+  beforeEach(() => {
+    notify.mockClear()
+    useStore.setState({ notify })
+    usePlayer.setState({ repeat: 'off' })
+    // The webview's online / offline events, here.
+    vi.stubGlobal('window', new EventTarget())
+  })
+  afterEach(() => vi.unstubAllGlobals())
+
+  it('blames no video: paused with one notice, the same song again once back online', async () => {
+    vi.stubGlobal('navigator', { onLine: false })
+    usePlayer.getState().playTracks([song(21), song(22)], 0)
+    // Player errors while the Wi-Fi is down (before 2026-10-30: blocked for good, then skipped).
+    usePlayer.getState().onYoutube({ error: 5 })
+    usePlayer.getState().onYoutube({ error: 5 })
+    await settle()
+    const p = usePlayer.getState()
+    expect(p.now?.youtubeId).toBe('video21')
+    expect(p.playing).toBe(false)
+    expect(notify).toHaveBeenCalledTimes(1)
+    vi.stubGlobal('navigator', { onLine: true })
+    window.dispatchEvent(new Event('online'))
+    // A new embed (the old one holds an error page), asked to play.
+    expect(usePlayer.getState()).toMatchObject({ playing: true, playId: p.playId + 1, frameKey: p.frameKey + 1 })
+    expect(usePlayer.getState().now?.youtubeId).toBe('video21')
+  })
+
+  it('moved on meanwhile: nothing starts again', async () => {
+    vi.stubGlobal('navigator', { onLine: false })
+    usePlayer.getState().playTracks([song(23)], 0)
+    usePlayer.getState().onYoutube({ error: 5 })
+    await settle()
+    // A local file now (another source): the YouTube song stays behind.
+    usePlayer.setState((s) => ({ playId: s.playId + 1, now: s.now && { ...s.now, via: 'local' } }))
+    const { playId } = usePlayer.getState()
+    vi.stubGlobal('navigator', { onLine: true })
+    window.dispatchEvent(new Event('online'))
+    expect(usePlayer.getState().playId).toBe(playId)
   })
 })
 

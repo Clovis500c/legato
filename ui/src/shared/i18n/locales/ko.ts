@@ -1538,6 +1538,15 @@ const ko: Record<string, string> = {
   'Start listening': '듣기 시작',
   '{n} song in your library': '보관함에 {n}곡',
   '{n} songs in your library': '보관함에 {n}곡',
+  // Errors in plain words, offline (shared/errors.ts, shared/online.ts)
+  'No internet connection: check your network, then try again.': '인터넷 연결이 없습니다. 네트워크를 확인한 후 다시 시도하세요.',
+  'The service took too long to answer: try again in a moment.': '서비스 응답이 너무 오래 걸렸습니다. 잠시 후 다시 시도하세요.',
+  'Too many requests for now: wait a few minutes, then try again.': '지금은 요청이 너무 많습니다. 몇 분 기다린 후 다시 시도하세요.',
+  'The service is having trouble right now: try again later.': '지금 서비스에 문제가 있습니다. 나중에 다시 시도하세요.',
+  'Details': '자세히',
+  'Offline': '오프라인',
+  'No internet connection: your own files still play. Searches and YouTube come back with the connection.': '인터넷 연결이 없습니다. 내 파일은 계속 재생됩니다. 검색과 YouTube는 연결되면 다시 사용할 수 있습니다.',
+  'No internet connection: the song starts again when your PC is back online.': '인터넷 연결이 없습니다. PC가 다시 온라인이 되면 노래가 처음부터 다시 재생됩니다.',
 }
 
 export default ko

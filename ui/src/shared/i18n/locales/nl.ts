@@ -1538,6 +1538,15 @@ const nl: Record<string, string> = {
   'Start listening': 'Beginnen met luisteren',
   '{n} song in your library': '{n} nummer in je bibliotheek',
   '{n} songs in your library': '{n} nummers in je bibliotheek',
+  // Errors in plain words, offline (shared/errors.ts, shared/online.ts)
+  'No internet connection: check your network, then try again.': 'Geen internetverbinding: controleer je netwerk en probeer het opnieuw.',
+  'The service took too long to answer: try again in a moment.': 'De dienst deed te lang over een antwoord: probeer het zo opnieuw.',
+  'Too many requests for now: wait a few minutes, then try again.': 'Even te veel verzoeken: wacht een paar minuten en probeer het dan opnieuw.',
+  'The service is having trouble right now: try again later.': 'De dienst heeft nu problemen: probeer het later opnieuw.',
+  'Details': 'Details',
+  'Offline': 'Offline',
+  'No internet connection: your own files still play. Searches and YouTube come back with the connection.': 'Geen internetverbinding: je eigen bestanden spelen gewoon. Zoeken en YouTube komen terug met de verbinding.',
+  'No internet connection: the song starts again when your PC is back online.': 'Geen internetverbinding: het nummer begint opnieuw zodra je pc weer online is.',
 }
 
 export default nl

@@ -1538,6 +1538,15 @@ const zh: Record<string, string> = {
   'Start listening': '开始收听',
   '{n} song in your library': '音乐库中有 {n} 首歌',
   '{n} songs in your library': '音乐库中有 {n} 首歌',
+  // Errors in plain words, offline (shared/errors.ts, shared/online.ts)
+  'No internet connection: check your network, then try again.': '没有网络连接：请检查网络后重试。',
+  'The service took too long to answer: try again in a moment.': '服务响应时间过长：请稍后重试。',
+  'Too many requests for now: wait a few minutes, then try again.': '当前请求过多：请等几分钟后重试。',
+  'The service is having trouble right now: try again later.': '服务暂时出现问题：请稍后再试。',
+  'Details': '详细信息',
+  'Offline': '离线',
+  'No internet connection: your own files still play. Searches and YouTube come back with the connection.': '没有网络连接：你自己的文件照常播放。搜索和 YouTube 会在恢复连接后回来。',
+  'No internet connection: the song starts again when your PC is back online.': '没有网络连接：电脑重新联网后，这首歌会从头播放。',
 }
 
 export default zh

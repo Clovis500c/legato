@@ -1538,6 +1538,15 @@ const ja: Record<string, string> = {
   'Start listening': '聴きはじめる',
   '{n} song in your library': 'ライブラリに{n}曲',
   '{n} songs in your library': 'ライブラリに{n}曲',
+  // Errors in plain words, offline (shared/errors.ts, shared/online.ts)
+  'No internet connection: check your network, then try again.': 'インターネットに接続されていません：ネットワークを確認して、もう一度お試しください。',
+  'The service took too long to answer: try again in a moment.': 'サービスの応答に時間がかかりすぎました：少し待ってからもう一度お試しください。',
+  'Too many requests for now: wait a few minutes, then try again.': '現在リクエストが多すぎます：数分待ってから、もう一度お試しください。',
+  'The service is having trouble right now: try again later.': 'サービスに問題が発生しています：後でもう一度お試しください。',
+  'Details': '詳細',
+  'Offline': 'オフライン',
+  'No internet connection: your own files still play. Searches and YouTube come back with the connection.': 'インターネットに接続されていません：自分のファイルは引き続き再生できます。検索とYouTubeは接続が戻ると使えます。',
+  'No internet connection: the song starts again when your PC is back online.': 'インターネットに接続されていません：PCがオンラインに戻ると曲が最初から再生されます。',
 }
 
 export default ja
