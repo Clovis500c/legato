@@ -1,10 +1,10 @@
-import { mkdtempSync, readFileSync, readdirSync, rmSync, statSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import { afterAll, describe, expect, it } from 'vitest'
 import { carriesId } from '../scripts/guest.mjs'
 import { answer, known, startMock } from './mock.mjs'
-import { E2E_ID, FEATURE_MARK, appEnv, e2eFolders, flat, pace, parseArgs } from './smoke.mjs'
+import { E2E_ID, FEATURE_MARK, SHOTS, STEPS, appEnv, clearShots, e2eFolders, flat, pace, parseArgs, shotFiles } from './smoke.mjs'
 import { DEMO_SONGS, sineWav, writeDemo } from './wav.mjs'
 
 const read = (rel: string) => readFileSync(new URL(`../${rel}`, import.meta.url), 'utf8')
@@ -36,6 +36,35 @@ describe('smoke test safety', () => {
   it('refuses when the user folders are unknown or relative', () => {
     expect(() => e2eFolders(E2E_ID, undefined, local)).toThrow('APPDATA')
     expect(() => e2eFolders(E2E_ID, roaming, 'Local')).toThrow('APPDATA')
+  })
+
+  it('names the pictures and steps of its walk, so it knows every file it leaves in the shots folder', () => {
+    const walk = read('e2e/smoke.mjs')
+    expect(SHOTS).toEqual([...walk.matchAll(/\bshot\('([^']+)'\)/g)].map((m) => m[1]))
+    expect(STEPS).toEqual([...walk.matchAll(/\bstep\('([^']+)'/g)].map((m) => m[1]))
+    expect(shotFiles()).toContain('FAIL-pause-play.png')
+    // Plain file names: no wildcard, no folder, no way out of the shots folder.
+    for (const f of shotFiles()) expect(f, f).toMatch(/^[\w-]+\.(png|txt|log)$/)
+  })
+
+  it('clears only the files an earlier walk wrote in --shots, whatever folder that is, and never the folder', () => {
+    const dir = mkdtempSync(path.join(os.tmpdir(), 'legato-shots-'))
+    try {
+      mkdirSync(path.join(dir, 'sub'))
+      const own = shotFiles()
+      const others = ['holiday.png', 'notes.txt', 'package.json', 'sub/1-welcome.png']
+      for (const f of [...own, ...others]) writeFileSync(path.join(dir, f), 'x')
+      clearShots(dir)
+      expect(readdirSync(dir).sort()).toEqual(['holiday.png', 'notes.txt', 'package.json', 'sub'])
+      expect(existsSync(path.join(dir, 'sub', '1-welcome.png'))).toBe(true)
+      // Nothing there yet, or nothing of its own: nothing to remove, and the folder is made.
+      clearShots(dir)
+      clearShots(path.join(dir, 'new', 'deeper'))
+      expect(statSync(path.join(dir, 'new', 'deeper')).isDirectory()).toBe(true)
+      expect(readdirSync(dir).sort()).toEqual(['holiday.png', 'new', 'notes.txt', 'package.json', 'sub'])
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
   })
 
   it('uses the identifier of its config, which is not the installed app', () => {

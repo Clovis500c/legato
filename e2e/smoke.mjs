@@ -11,14 +11,16 @@
 //   relaunch     the same data again: no welcome, the library is there; one more quit
 // The native folder picker is an OS dialog a page can't drive: the script answers its IPC request (CDP Fetch). Nothing
 // else is faked on the page; the app's own side is the e2e build (src-tauri/src/hosts.rs, crates/player/src/output.rs).
-// Its data folders are the only ones this script deletes. Under 5 minutes of test time; the build comes before.
+// Its data folders are the only folders this script deletes; in the --shots folder it removes just the few files an
+// earlier walk wrote there, by name (clearShots). Under 5 minutes of test time; the build comes before.
 //
 //   pnpm e2e                 build, then run
 //   --skip-build             keep target/e2e/legato-e2e.exe when its inputs have not changed
 //   --build-only             build, then stop
 //   --repeat <n>             run the walk n times on the one build (flakiness check)
 //   --keep                   leave the data folders after the run
-//   --shots <dir>            PNGs, and on failure failure.txt and the diagnostics log (default target/e2e/shots)
+//   --shots <dir>            PNGs, and on failure failure.txt and the diagnostics log (default target/e2e/shots); any
+//                            folder: a walk replaces its own files there and leaves the rest
 
 import { spawn, spawnSync } from 'node:child_process'
 import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
@@ -83,6 +85,21 @@ export function pace(moved, wall) {
 
 /** Whitespace as one space: tab and chip labels carry line breaks. */
 export const flat = (s) => String(s).replace(/\s+/g, ' ').trim()
+
+/** The pictures the walk takes (`shot`) and its steps (`step`, named in FAIL-<step>.png): e2e.test.ts keeps both lists equal
+ *  to the walk's own calls. */
+export const SHOTS = ['1-welcome', '2-library', '3-songs', '4-playing', '5-search', '6-settings', '7-relaunch']
+export const STEPS = ['launch', 'welcome', 'songs', 'play', 'pause-play', 'search', 'quit', 'relaunch']
+
+/** Every file a walk writes in the shots folder, by exact name. */
+export const shotFiles = () => [...SHOTS.map((n) => `${n}.png`), ...STEPS.map((s) => `FAIL-${s}.png`), 'failure.txt', 'diagnostics.log']
+
+/** The shots folder at a walk's start: it exists, and the files an earlier walk wrote there are gone. --shots may name any
+ *  folder (the repo, Pictures): nothing else in it is touched, and the folder itself is never emptied or removed. */
+export function clearShots(dir) {
+  mkdirSync(dir, { recursive: true })
+  for (const f of shotFiles()) rmSync(path.join(dir, f), { force: true })
+}
 
 // ---- Process and build ----
 
@@ -331,8 +348,7 @@ async function removeData(dirs, timeout = 40000) {
 }
 
 async function walk(o, dataDirs) {
-  rmSync(o.shots, { recursive: true, force: true })
-  mkdirSync(o.shots, { recursive: true })
+  clearShots(o.shots)
   await removeData(dataDirs)
   writeDemo(DEMO)
   const mock = await startMock()
