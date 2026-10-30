@@ -54,19 +54,29 @@ export function withNotes(text, version, notes) {
   return `${JSON.stringify({ ...file, notes }, null, 2)}\n`
 }
 
+/**
+ * The current Stable's tag from `read`, undefined when GitHub says there is none yet. Only a real "not found" counts: a
+ * rate limit, a 5xx or a bad login throws, since reading it as "none" would switch the downgrade refusal off.
+ */
+export function currentStable(read) {
+  try {
+    return read()
+  } catch (e) {
+    if (/release not found|HTTP 404/i.test(String(e?.stderr ?? ''))) return undefined
+    throw e
+  }
+}
+
 const run = (cmd, ...args) => execFileSync(cmd, args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'inherit'] }).trim()
 const view = (...tag) => JSON.parse(run('gh', 'release', 'view', ...tag, '--json', 'tagName,isPrerelease,isDraft'))
+// Stderr kept (not shown): `currentStable` reads it.
+const viewLatest = () => JSON.parse(execFileSync('gh', ['release', 'view', '--json', 'tagName'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] })).tagName
 
 function main(argv) {
   const dry = argv.includes('--dry-run')
   const input = argv.find((a) => !a.startsWith('--'))?.trim()
-  // The current Stable = GitHub's Latest, what installed versions are served.
-  let stable
-  try {
-    stable = view().tagName
-  } catch {
-    // No normal release yet: any beta can be the first.
-  }
+  // The current Stable = GitHub's Latest, what installed versions are served. None yet: any beta can be the first.
+  const stable = currentStable(viewLatest)
   const tag = input ? toTag(input) : newestBeta(JSON.parse(run('gh', 'release', 'list', '--exclude-drafts', '--limit', '200', '--json', 'tagName,isPrerelease,isDraft')))?.tagName
   if (!tag) throw new Error('No beta to promote')
   const why = refusal(view(tag), stable)

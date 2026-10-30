@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { notesFrom } from './notes.mjs'
-import { compareTags, newestBeta, parseTag, refusal, toTag, withNotes } from './promote.mjs'
+import { compareTags, currentStable, newestBeta, parseTag, refusal, toTag, withNotes } from './promote.mjs'
 
 const rel = (tagName: string, isPrerelease = true, isDraft = false) => ({ tagName, isPrerelease, isDraft })
 
@@ -35,6 +35,18 @@ describe('promote', () => {
     expect(refusal(rel('v1.0.8'), 'v1.0.9')).toContain('not newer')
     expect(refusal(rel('v1.0.11', false), 'v1.0.9')).toContain('already Stable')
     expect(refusal(rel('v1.0.11', true, true), 'v1.0.9')).toContain('draft')
+  })
+
+  it('takes only a real not-found for "no Stable yet", any other failure stops the run', () => {
+    const fail = (stderr?: string) => () => {
+      throw Object.assign(new Error('Command failed: gh release view'), { stderr })
+    }
+    expect(currentStable(() => 'v1.0.9')).toBe('v1.0.9')
+    expect(currentStable(fail('release not found'))).toBeUndefined()
+    expect(currentStable(fail('HTTP 404: Not Found (https://api.github.com/repos/o/r/releases/latest)'))).toBeUndefined()
+    for (const stderr of ['HTTP 403: API rate limit exceeded for user ID 1', 'HTTP 502: Bad Gateway', 'HTTP 401: Bad credentials', 'error connecting to api.github.com', '', undefined]) {
+      expect(() => currentStable(fail(stderr))).toThrow('Command failed')
+    }
   })
 
   const manifest = (over: object = {}) => JSON.stringify({ version: '1.0.11', notes: 'old', pub_date: '2026-10-30T10:00:00Z', platforms: { 'windows-x86_64': { signature: 'sig', url: 'https://example.com/setup.exe' } }, ...over })
