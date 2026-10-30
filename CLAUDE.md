@@ -44,6 +44,8 @@ Design direction (v2): `docs/design.md`; mockups in the Figma file "Untitled" (t
 - `pnpm check`: types (Rust → TS) + typecheck + lint + Vitest + clippy + cargo test (everything must pass before a commit)
 - `pnpm test` / `cargo test --workspace` separately
 - `pnpm build`: installer
+- `pnpm bench`: start time, RAM and CPU of the release build on 10 000 songs, under its own identifier `app.legato.desktop.bench`
+  and data (`--quick` for a short run; a full run adds its row to `docs/performance.md`). Details: `docs/performance.md`.
 
 ## Conventions
 - Code comments: English, caveman style (short fragments, no articles or filler). E.g. `// Feb 2026: own playlists only.`
@@ -56,6 +58,9 @@ Design direction (v2): `docs/design.md`; mockups in the Figma file "Untitled" (t
 - Running to-do of the user's requests: `docs/notes/plan-v2.md` (tick lines as they land, so a new session can resume).
 - Tauri commands that lock the library, read files or compute: `async fn` (a sync command runs on the window's thread; a
   wait there freezes the whole app: Windows' AppHang on v0.1.217, 2026-10-23).
+- Only the installed app (identifier exactly `app.legato.desktop`) updates, edits the HKCU Run entry or migrates folders and
+  keychain entries: `identity::installed()` (`src-tauri/src/identity.rs`). A dev or bench build is a guest. Any new side
+  effect of a release build on the PC outside the app's own folders goes behind it.
 - Small commits, one tested step at a time.
 - Check API quotas and endpoints before freezing them (they change; Spotify renamed `/tracks` to `/items` in February 2026).
 

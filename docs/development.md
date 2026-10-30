@@ -22,17 +22,30 @@ the media panel, the ad shield's network hook and the system accent are Windows 
 ## Your dev build has its own data
 
 `pnpm dev` runs as `app.legato.desktop.devbuild` (`src-tauri/tauri.dev.conf.json`): its own library, keychain entries
-and Google session, never the installed app's. Folders and entries made under the old identifiers (`app.legato.desktop`,
-and `.devbuild` for dev) move to the new ones at first launch (`src-tauri/src/rename.rs`).
+and Google session, never the installed app's.
 
-Two things only an installed copy does: Settings › General › Open at startup refuses to turn on (a dev build would
-start at sign-in without its dev server), and background update checks only run when asked (Settings › About).
+Only the installed app, identifier exactly `app.legato.desktop`, may touch the PC outside its own folders
+(`src-tauri/src/identity.rs`, `identity::installed()`): install an update over itself (`update.rs`), own the HKCU Run
+entry that Open at startup writes (`autostart.rs`: a dev build asking would start at sign-in without its dev server),
+and move the folders and keychain entries of the old identifier `dev.musicapp.desktop` at first launch (`rename.rs`).
+A dev build, the bench build (`app.legato.desktop.bench`) or any other identifier is a guest: it never installs, never
+edits the Run entry and never migrates (a dev folder still named `dev.musicapp.desktop.devbuild` is renamed by hand). A
+dev build only checks for updates when asked (Settings › About), and cannot install what it finds. Any new side effect a
+release build has on the PC goes behind the same guard.
 
 | What | Windows | macOS | Linux |
 |---|---|---|---|
 | Library (`library.db`), cover cache (`art/`), shield lists (`shield/`), diagnostics log (`diagnostics.log`, `.1` to `.4`) | `%APPDATA%\app.legato.desktop` | `~/Library/Application Support/app.legato.desktop` | `~/.local/share/app.legato.desktop` |
 | Google session (webview cookies) | `%LOCALAPPDATA%\app.legato.desktop\EBWebView` | The system webview's own store | The system webview's own store |
 | Secrets | Credential Manager | Keychain | Secret Service |
+
+## Measuring: `pnpm bench`
+
+`pnpm bench` builds the release app under its own identifier (`src-tauri/tauri.bench.conf.json`), fills a fresh data
+folder with 10 000 local songs (`crates/core/examples/bench_data.rs`) and reads start time, RAM and CPU: paused, playing,
+and 10 minutes in the tray. `--quick` is a short run. The numbers, how they are taken and what they leave out are in
+[performance.md](performance.md); a full run appends its row there. Windows only, and about 20 minutes of a PC left alone.
+`scripts/cdp.mjs` is its small DevTools client; the E2E smoke test reuses it.
 
 ## YouTube Music (no keys)
 
