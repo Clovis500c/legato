@@ -71,6 +71,8 @@ Last.fm, Music Detector, Live Editor (10-band EQ, tempo, pitch, reverb, space), 
 timer, synced lyrics with offset, visualizer, themes + own CSS, plugins, Windows media panel, global shortcuts, many
 languages. Rules unchanged: nothing on this list downloads, records or exports a platform's audio, and no server of ours.
 
+Each line below is detailed (what the user sees, how, rules, effort, done when) in [ideas/](ideas/README.md).
+
 ### Roadmap (order to build in; effort S = one session, M = a few, L = many)
 
 Pick from the top. Each milestone is one release on the Stable channel; workflow items that unblock others go first.
@@ -139,7 +141,7 @@ playback (its terms), concerts (an API's terms), trademark search.
 
 **3. Best overall (what the big ones have)**
 - [ ] "Wrapped": a yearly / monthly recap from our stats, shareable as a picture.
-- [ ] Song radio and artist radio from any song (local + YouTube + Spotify matches), endless.
+- [ ] Artist / album / playlist radio and endless autoplay (song radio already there: `radio.ts`).
 - [ ] Smart shuffle (skips recently played, spreads artists) and "Daylist"-style mixes by time of day.
 - [ ] Genre / year / BPM / key tags stored (mixes, smart playlists, DJ-like transitions by BPM).
 - [ ] Podcasts by RSS (open feeds only: no platform audio taken), resume per episode, speed.
@@ -153,7 +155,7 @@ playback (its terms), concerts (an API's terms), trademark search.
 
 **4. Small things nobody else does well on Windows**
 - [ ] Command palette (Ctrl+K): any song, page, setting or action in one box.
-- [ ] Taskbar thumbnail buttons (previous / play / next) and a Jump List (recent playlists, Shuffle all).
+- [ ] Jump List (recent playlists, Shuffle all); thumbnail buttons already there (`thumbbar.rs`).
 - [ ] Pause when headphones are unplugged or Bluetooth drops; pause during a call (Windows' communication ducking).
 - [ ] Pick up on the other PC: Sync Mode carries "now playing + position", one click resumes there.
 - [ ] Alarm: wake up with a playlist (fade in), works from the tray.
@@ -252,7 +254,7 @@ signal, no beat, small. Plan: better data first, then a real renderer, then the 
 - [ ] Library health: missing files, YouTube videos gone private (with "Find another version", `alternative_videos`),
       songs without covers or tags, one page to fix them.
 - [ ] Output devices: switch from the player bar, remember per device (volume, EQ preset), follow Windows' default.
-- [ ] Sleep timer "at the end of this song / album", and a gentle fade over the last minutes.
+- [ ] Sleep timer "at the end of this album" ("this song" exists) and a fade over the last minutes.
 - [ ] Profiles on one PC (each person's library, likes, history and Last.fm), switched from the top bar.
 - [ ] Living-room mode: big UI driven by a gamepad or the arrow keys (10-foot layout), for a PC on a TV.
 - [ ] Stream Deck plugin and an Xbox Game Bar widget (play / skip / like / now playing) over the local hotkeys.
