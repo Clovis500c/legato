@@ -115,11 +115,17 @@ export class Cdp {
     }
   }
 
-  /** A key press: key as the page sees it (' ', 'Enter', 'ArrowRight'), code the physical key ('Space'). */
-  async key(key, code = key, { modifiers = 0 } = {}) {
-    const text = key.length === 1 ? key : undefined
-    await this.send('Input.dispatchKeyEvent', { type: text ? 'keyDown' : 'rawKeyDown', key, code, text, modifiers })
-    await this.send('Input.dispatchKeyEvent', { type: 'keyUp', key, code, modifiers })
+  /** A key press: key as the page sees it (' ', 'Enter', 'ArrowRight'), code the physical key ('Space'). A key that types
+   *  something sends `text`, and a form submits on Enter's: `enter()`. `vk` = Windows' virtual key code (13 for Enter). */
+  async key(key, code = key, { modifiers = 0, text = key.length === 1 ? key : undefined, vk } = {}) {
+    const keys = { key, code, modifiers, ...(vk ? { windowsVirtualKeyCode: vk, nativeVirtualKeyCode: vk } : {}) }
+    await this.send('Input.dispatchKeyEvent', { type: text ? 'keyDown' : 'rawKeyDown', ...keys, text })
+    await this.send('Input.dispatchKeyEvent', { type: 'keyUp', ...keys })
+  }
+
+  /** Enter as a keyboard sends it: the focused form submits. */
+  enter() {
+    return this.key('Enter', 'Enter', { text: '\r', vk: 13 })
   }
 
   /** PNG of the page, as a Buffer. */
