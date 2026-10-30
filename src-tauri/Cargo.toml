@@ -8,6 +8,11 @@ publish.workspace = true
 name = "legato_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
+[features]
+# The smoke test's build (`pnpm e2e`, e2e/smoke.mjs), off in every other: network calls to a loopback mock (hosts.rs),
+# no audio device (crates/player output.rs).
+e2e = ["music-player/null-output"]
+
 [dependencies]
 anyhow = "1.0.104"
 keyring = "4.2.0"

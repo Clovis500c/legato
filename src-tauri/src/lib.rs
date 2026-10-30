@@ -7,6 +7,7 @@ mod lastfm;
 mod discord;
 mod editor;
 mod folders;
+mod hosts;
 mod hotkeys;
 mod identity;
 mod lang;
@@ -182,7 +183,7 @@ impl AppState {
 
     /// Searches and public pages: the first picked account, else YouTube Music's public catalog (signed out).
     fn ytm_or_public(&self) -> YouTubeMusic {
-        self.ytm().unwrap_or_else(YouTubeMusic::anonymous)
+        self.ytm().unwrap_or_else(public_ytm)
     }
 
     fn connector(&self, source: Source) -> Option<Box<dyn Connector>> {
@@ -191,6 +192,11 @@ impl AppState {
             Source::Youtube | Source::Local | Source::Apple => None,
         }
     }
+}
+
+/// YouTube Music signed out: public catalog, artist pages. The host comes from `hosts` (the smoke test's mock).
+fn public_ytm() -> YouTubeMusic {
+    YouTubeMusic::anonymous_with_api(hosts::get().ytmusic)
 }
 
 /// Answers kept until the data under them changes (music_core::cache): library reads stamped with the library
@@ -464,7 +470,7 @@ async fn video_search(state: &AppState, query: &str) -> Result<Vec<(Track, Music
     if let Some(hit) = state.cache.videos.get(&key) {
         return Ok((*hit).clone());
     }
-    let web = YouTubeWeb::new(ytm::session(&state.app).as_deref());
+    let web = YouTubeWeb::with_api(hosts::get().youtube, ytm::session(&state.app).as_deref());
     let found: Vec<(Track, Musicness)> = web.search(query).await.map_err(err)?.into_iter().map(|v| {
         let m = v.musicness();
         (v.track, m)
@@ -503,7 +509,7 @@ async fn search_catalogs(state: State<'_, AppState>, query: String, country: Str
         async move {
             match known {
                 Some(hit) => Ok((*hit).clone()),
-                None => music_connectors::itunes::search(music_connectors::itunes::API, &q, &country).await,
+                None => music_connectors::itunes::search(hosts::get().itunes, &q, &country).await,
             }
         }
     });
@@ -541,7 +547,7 @@ async fn search_suggestions(query: String, lang: String, country: String) -> Cmd
         return Ok(Vec::new());
     }
     let lang = if lang.len() == 2 && lang.bytes().all(|b| b.is_ascii_lowercase()) { lang } else { "en".into() };
-    music_connectors::ytweb::suggestions(music_connectors::ytweb::SUGGEST, query, &lang, &store(&country)).await.map_err(err)
+    music_connectors::ytweb::suggestions(hosts::get().suggest, query, &lang, &store(&country)).await.map_err(err)
 }
 
 /// No YouTube id yet: try to find one (1 search) so the track plays in full.
@@ -611,7 +617,7 @@ async fn backfill_art(state: State<'_, AppState>, country: String) -> CmdResult<
     if ids.is_empty() {
         return Ok(0);
     }
-    let found: Vec<Track> = itunes::lookup(itunes::LOOKUP, &ids, &store(&country)).await.map_err(err)?.into_iter().filter(|t| t.art.is_some()).collect();
+    let found: Vec<Track> = itunes::lookup(hosts::get().itunes_lookup, &ids, &store(&country)).await.map_err(err)?.into_iter().filter(|t| t.art.is_some()).collect();
     let lib = state.lib();
     for t in &found {
         lib.upsert_track(t).map_err(err)?;
@@ -707,7 +713,7 @@ async fn alternative_videos(state: State<'_, AppState>, track_id: i64, exclude: 
 /// Apple 30 s preview into the local engine. Returns store page (shown as "Listen on Apple Music").
 #[tauri::command]
 async fn play_preview(state: State<'_, AppState>, id: String, country: String) -> CmdResult<String> {
-    let p = music_connectors::itunes::preview(music_connectors::itunes::LOOKUP, &id, &store(&country)).await.map_err(err)?;
+    let p = music_connectors::itunes::preview(hosts::get().itunes_lookup, &id, &store(&country)).await.map_err(err)?;
     let bytes = music_connectors::itunes::preview_audio(&p).await.map_err(err)?;
     state.player.send(Command::PlayMemory { label: format!("apple:{id}").into(), bytes: bytes.into() });
     Ok(p.page)
@@ -832,7 +838,7 @@ async fn share_read_image(path: String) -> CmdResult<String> {
 async fn resolve_text(state: &AppState, artist: &str, title: &str, country: &str) -> Option<Track> {
     let want = Track { artist: artist.into(), title: title.into(), ..Default::default() };
     let query = format!("{artist} {title}");
-    if let Ok(hits) = music_connectors::itunes::search(music_connectors::itunes::API, &query, country).await
+    if let Ok(hits) = music_connectors::itunes::search(hosts::get().itunes, &query, country).await
         && let Some(t) = music_core::matching::best_match(&want, &hits)
     {
         return Some(t.clone());
@@ -863,7 +869,7 @@ async fn share_import(state: State<'_, AppState>, code: String, country: String)
 
     // Apple: one batched lookup.
     let apple: Vec<u64> = shared.items.iter().zip(&ids).filter_map(|(item, id)| if let (Item::Apple(n), None) = (item, id) { Some(*n) } else { None }).collect();
-    let apple_found = if apple.is_empty() { Vec::new() } else { itunes::lookup(itunes::LOOKUP, &apple, &country).await.unwrap_or_default() };
+    let apple_found = if apple.is_empty() { Vec::new() } else { itunes::lookup(hosts::get().itunes_lookup, &apple, &country).await.unwrap_or_default() };
     // YouTube: keyless oEmbed per video, 8 at a time.
     let yt: Vec<(usize, String)> = shared.items.iter().zip(&ids).enumerate().filter_map(|(i, (item, id))| if let (Item::Youtube(v), None) = (item, id) { Some((i, v.clone())) } else { None }).collect();
     let mut yt_found: HashMap<usize, Track> = HashMap::new();
@@ -1366,7 +1372,7 @@ async fn album_info(state: State<'_, AppState>, artist: String, album: String, t
     let key = format!("{artist}\0{album}\0{country}");
     let found = match state.cache.albums.get(&key) {
         Some(hit) => hit,
-        None => state.cache.albums.put(&key, itunes::album(itunes::API, itunes::LOOKUP, &artist, &album, &country).await.map_err(err)?),
+        None => state.cache.albums.put(&key, itunes::album(hosts::get().itunes, hosts::get().itunes_lookup, &artist, &album, &country).await.map_err(err)?),
     };
     let Some(a) = found.as_ref() else { return Ok(None) };
     let mine: Vec<_> = state.lib().tracks().map_err(err)?.into_iter().filter(|t| track_ids.contains(&t.id)).collect();
@@ -1409,7 +1415,7 @@ async fn ytm_artist(state: State<'_, AppState>, name: String) -> CmdResult<Optio
     if let Some(hit) = state.cache.artists.get(&key) {
         return Ok((*hit).clone());
     }
-    let page = YouTubeMusic::anonymous().artist(&name).await.map_err(err)?;
+    let page = public_ytm().artist(&name).await.map_err(err)?;
     Ok((*state.cache.artists.put(&key, page)).clone())
 }
 
@@ -1613,7 +1619,7 @@ async fn lyrics(state: State<'_, AppState>, ask: LyricsAsk) -> CmdResult<Option<
     };
     let speed = lyrics::speed_changed(&ask.title);
     let playing_s = ask.duration_ms.map(|d| d as f32 / 1000.0);
-    let lrclib = Lrclib::default();
+    let lrclib = Lrclib::with_urls(hosts::get().lrclib);
     let mut found = None;
     let mut failed = None;
     // Signed in: YouTube Music's own first. Its timed lines (start and end) win; plain text waits behind LRCLIB.
