@@ -101,10 +101,14 @@ jobs:
   # search against a loopback mock, quit. Windows only: it is WebView2's page that is driven. A debug build with the `e2e`
   # cargo feature (its own identifier, no network, no sound card needed: the engine drains a silent output). The build
   # and the walk are two steps: the walk is the one held to 5 minutes. A failure leaves screenshots and a report.
+  # Not blocking yet: it has not run on GitHub, and a failure only this runner has (no WebView2 runtime, another layout, a
+  # slow cold start) must not turn `check` red, which holds back every beta (release.yml waits for `check` to succeed). A
+  # failure shows as a warning on the run, with the screenshots. Delete `continue-on-error` after a few green runs.
   e2e:
     name: e2e (windows-latest)
     runs-on: windows-latest
     timeout-minutes: 40
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
 
@@ -150,6 +154,10 @@ jobs:
           name: e2e-failure
           path: target/e2e/shots
           if-no-files-found: ignore
+
+      - if: failure()
+        shell: bash
+        run: echo '::warning title=e2e failed::The smoke test failed. It does not block yet (continue-on-error); the e2e-failure artifact and this job log say why.'
 
   # Third-party licenses (docs/licenses.md): interface packages, then every Rust crate on every platform.
   licenses:
