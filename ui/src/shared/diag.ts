@@ -51,18 +51,31 @@ export const report = throttled(toRust)
 /** A playback switch or another plain event, `message` in English with no title or name: "youtube: the embed refused the video…". */
 export const note = (area: string, message: string) => report('info', area, message)
 
-/** An error as message + detail. Engine errors (TypeError…) name a property, never a value: safe as the message. Any other
- * text may repeat a Rust error with a path or a title: it goes in the detail, `fallback` (our words) is the message,
- * unless it is a known network failure that errors.ts puts in plain English. */
+/** An error as message + detail. The message is never the error's own text, which can hold a value or a path: V8 puts
+ * them in the engine's errors too ("Cannot create property 'x' on string 'Stairway to Heaven'"). A TypeError and its kin
+ * say their name; any other says `fallback` (our words), unless it is a known network failure that errors.ts puts in plain
+ * English. What the error said is the detail, which a copied report shows only with "Include details". */
 export function describe(error: unknown, fallback: string): { message: string; detail?: string } {
-  if (error instanceof TypeError || error instanceof RangeError || error instanceof ReferenceError) return { message: `${error.name}: ${error.message}` }
+  if (error instanceof TypeError || error instanceof RangeError || error instanceof ReferenceError) return { message: error.name, detail: error.message || undefined }
   return { message: plainKind(error) ?? fallback, detail: rawOf(error) || undefined }
+}
+
+/** " at index-abc.js:1:2": where an Error was thrown, from its stack's first frame: file name and position, no path. The
+ * stack opens with "Name: message", where a value can sit, even a line that looks like a frame: that header is cut off
+ * first, and a stack that doesn't open with it (message changed since, other engine) gives no place. */
+export function placeOf(error: unknown): string {
+  if (!(error instanceof Error) || typeof error.stack !== 'string') return ''
+  const header = error.message ? `${error.name}: ${error.message}` : error.name
+  if (!error.stack.startsWith(header)) return ''
+  const frame = /^[ \t]*at (?:[^\n]*? \()?([^\s()]+):(\d+):(\d+)\)?[ \t]*$/m.exec(error.stack.slice(header.length))
+  const file = frame?.[1].split(/[/\\]/).pop()?.split('?')[0]
+  return frame && file ? ` at ${file}:${frame[2]}:${frame[3]}` : ''
 }
 
 /** `error` in the log under `area`; `fallback` = what to call it when its own text can't be trusted to be free of names. */
 export function reportError(area: string, error: unknown, fallback: string, level: Level = 'warn') {
   const said = describe(error, fallback)
-  report(level, area, said.message, said.detail)
+  report(level, area, said.message + placeOf(error), said.detail)
 }
 
 /** The first components of React's component stack (" at Sidebar (…)"): where a render error came from. */

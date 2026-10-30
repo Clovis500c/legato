@@ -1,5 +1,5 @@
 import { afterEach, describe as suite, expect, it, vi } from 'vitest'
-import { describe, frames, throttled, type Send } from './diag'
+import { describe, frames, placeOf, throttled, type Send } from './diag'
 import { loadLang, useLang } from './i18n/i18n'
 
 suite('throttled', () => {
@@ -50,9 +50,15 @@ suite('throttled', () => {
 suite('describe', () => {
   afterEach(() => useLang.setState({ lang: 'en' }))
 
-  it('trusts the engine’s own errors, which name a property and no value', () => {
-    expect(describe(new TypeError("Cannot read properties of undefined (reading 'title')"), 'x')).toEqual({ message: "TypeError: Cannot read properties of undefined (reading 'title')" })
-    expect(describe(new ReferenceError('foo is not defined'), 'x').message).toBe('ReferenceError: foo is not defined')
+  it('keeps only the name of an engine error as the message: V8 puts values in the text', () => {
+    // Both forms V8 prints with the value in them.
+    const create = "Cannot create property 'x' on string 'Stairway to Heaven'"
+    const inOp = "Cannot use 'in' operator to search for 'x' in Stairway to Heaven"
+    expect(describe(new TypeError(create), 'x')).toEqual({ message: 'TypeError', detail: create })
+    expect(describe(new TypeError(inOp), 'x')).toEqual({ message: 'TypeError', detail: inOp })
+    expect(describe(new RangeError('Invalid array length'), 'x')).toEqual({ message: 'RangeError', detail: 'Invalid array length' })
+    expect(describe(new ReferenceError('foo is not defined'), 'x')).toEqual({ message: 'ReferenceError', detail: 'foo is not defined' })
+    expect(describe(new TypeError(''), 'x')).toEqual({ message: 'TypeError', detail: undefined })
   })
 
   it('keeps what a Rust error said for the detail, our words for the message', () => {
@@ -71,6 +77,36 @@ suite('describe', () => {
 
   it('has no detail for an empty error', () => {
     expect(describe('', 'Uncaught error')).toEqual({ message: 'Uncaught error', detail: undefined })
+  })
+})
+
+suite('placeOf', () => {
+  it('gives the file and position of the first frame, nothing of the message', () => {
+    const e = new TypeError("Cannot create property 'x' on string 'Stairway to Heaven'")
+    expect(placeOf(e)).toMatch(/^ at [\w.-]+:\d+:\d+$/)
+    expect(placeOf(e)).not.toMatch(/Stairway|[\\/]/)
+    expect(placeOf(new Error(''))).toMatch(/^ at [\w.-]+:\d+:\d+$/)
+  })
+
+  it('does not take a frame from a message that imitates one', () => {
+    const e = new TypeError('bad value\n    at Evil (C:\\Users\\jane\\Music\\Secret Song.mp3:1:1)')
+    expect(placeOf(e)).not.toMatch(/Secret|jane|Evil/)
+    expect(placeOf(e)).toMatch(/^ at [\w.-]+:\d+:\d+$/)
+  })
+
+  it('reads a frame with a path, a bare one, and none', () => {
+    const at = (frame: string) => Object.assign(new Error('boom'), { stack: `Error: boom\n${frame}` })
+    expect(placeOf(at('    at run (http://tauri.localhost/assets/index-abc.js:12:34)'))).toBe(' at index-abc.js:12:34')
+    expect(placeOf(at('    at http://tauri.localhost/assets/index-abc.js?v=2:5:6'))).toBe(' at index-abc.js:5:6')
+    expect(placeOf(at('    at C:\\Users\\jane\\app\\main.js:7:8'))).toBe(' at main.js:7:8')
+    expect(placeOf(at('    at async Promise.all (index 0)'))).toBe('')
+  })
+
+  it('gives nothing for a stack that does not open with the message, or a non-Error', () => {
+    expect(placeOf(Object.assign(new Error('boom'), { stack: 'Error: other\n    at a (b.js:1:2)' }))).toBe('')
+    expect(placeOf(Object.assign(new Error('boom'), { stack: undefined }))).toBe('')
+    expect(placeOf('Error: x\n    at a (b.js:1:2)')).toBe('')
+    expect(placeOf(undefined)).toBe('')
   })
 })
 
