@@ -38,7 +38,6 @@ const hi: Record<string, string> = {
   'Imported “{name}”: {n} song': '“{name}” इंपोर्ट हुई: {n} गाना',
   'Imported “{name}”: {n} songs': '“{name}” इंपोर्ट हुई: {n} गाने',
   '{n} without a YouTube version': '{n} का YouTube वर्शन नहीं है',
-  '(sign in to YouTube Music to find them)': '(उन्हें ढूंढने के लिए YouTube Music में साइन इन करें)',
   // Formats (shared/format.ts)
   'just now': 'अभी-अभी',
   '{n} B': '{n} B',
@@ -356,7 +355,6 @@ const hi: Record<string, string> = {
   'How many songs': 'कितने गाने',
   '2+ songs': '2+ गाने',
   '1 song': '1 गाना',
-  'Sign in to YouTube Music (Settings › Accounts) to find full versions.': 'पूरे वर्शन ढूंढने के लिए YouTube Music में साइन इन करें (सेटिंग › अकाउंट)।',
   'Full versions found: {found} of {total}': 'पूरे वर्शन मिले: {total} में से {found}',
   'Searching…': 'खोज रहे हैं…',
   'Find full versions ({n})': 'पूरे वर्शन ढूंढें ({n})',
@@ -475,7 +473,6 @@ const hi: Record<string, string> = {
   'Search sources': 'खोज के सोर्स',
   'Every video, no account needed': 'हर वीडियो, अकाउंट की ज़रूरत नहीं',
   'Songs, with your Google account': 'गाने, आपके Google अकाउंट के साथ',
-  'Sign in with Google (Accounts)': 'Google से साइन इन करें (अकाउंट)',
   'Public catalog, no account': 'सार्वजनिक कैटलॉग, अकाउंट की ज़रूरत नहीं',
   'Search closed without Premium': 'Premium के बिना खोज बंद',
   'Paste a YouTube link': 'YouTube लिंक पेस्ट करें',

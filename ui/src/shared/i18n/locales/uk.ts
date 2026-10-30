@@ -38,7 +38,6 @@ const uk: Record<string, string> = {
   'Imported “{name}”: {n} song': '«{name}» імпортовано: {n} пісня',
   'Imported “{name}”: {n} songs': '«{name}» імпортовано, пісень: {n}',
   '{n} without a YouTube version': 'Без версії на YouTube: {n}',
-  '(sign in to YouTube Music to find them)': '(увійди в YouTube Music, щоб знайти їх)',
   // Formats (shared/format.ts)
   'just now': 'щойно',
   '{n} B': '{n} Б',
@@ -356,7 +355,6 @@ const uk: Record<string, string> = {
   'How many songs': 'Скільки пісень',
   '2+ songs': '2+ пісні',
   '1 song': '1 пісня',
-  'Sign in to YouTube Music (Settings › Accounts) to find full versions.': 'Увійди в YouTube Music (Налаштування › Облікові записи), щоб знайти повні версії.',
   'Full versions found: {found} of {total}': 'Знайдено повних версій: {found} з {total}',
   'Searching…': 'Пошук…',
   'Find full versions ({n})': 'Знайти повні версії ({n})',
@@ -475,7 +473,6 @@ const uk: Record<string, string> = {
   'Search sources': 'Джерела пошуку',
   'Every video, no account needed': 'Усі відео, без облікового запису',
   'Songs, with your Google account': 'Пісні, з твоїм обліковим записом Google',
-  'Sign in with Google (Accounts)': 'Увійти через Google (Облікові записи)',
   'Public catalog, no account': 'Відкритий каталог, без облікового запису',
   'Search closed without Premium': 'Пошук закритий без Premium',
   'Paste a YouTube link': 'Встав посилання YouTube',

@@ -20,7 +20,7 @@ function SearchHero() {
   const [q, setQ] = useState('')
   const sources = [
     { code: 'YouTube', note: tr('Every video, no account needed'), on: true },
-    { code: 'YouTube Music', note: ytOn ? tr('Songs, with your Google account') : tr('Sign in with Google (Accounts)'), on: ytOn },
+    { code: 'YouTube Music', note: ytOn ? tr('Songs, with your Google account') : tr('Public catalog, no account'), on: true },
     { code: 'Apple Music', note: tr('Public catalog, no account'), on: true },
     { code: 'Spotify', note: tr('Search closed without Premium'), on: false },
   ]

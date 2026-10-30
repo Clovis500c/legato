@@ -179,10 +179,9 @@ function GroupBar({ page, tracks }: { page: 'albumView' | 'artistView'; tracks: 
 
 /** "Find versions": YouTube match for tracks that only preview or don't play. 1 search each. */
 function FindVersions({ tracks }: { tracks: LibraryTrack[] }) {
-  const { status, refreshChanged, notify } = useStore(useShallow(({ status, refreshChanged, notify }) => ({ status, refreshChanged, notify })))
+  const { refreshChanged, notify } = useStore(useShallow(({ refreshChanged, notify }) => ({ refreshChanged, notify })))
   const [busy, setBusy] = useState(false)
   if (!tracks.length) return null
-  if (!status.youtube.connected) return <span className="font-sans text-xs tracking-normal text-ink-2 normal-case">{tr('Sign in to YouTube Music (Settings › Accounts) to find full versions.')}</span>
   const run = async () => {
     setBusy(true)
     try {

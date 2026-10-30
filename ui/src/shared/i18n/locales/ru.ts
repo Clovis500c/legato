@@ -38,7 +38,6 @@ const ru: Record<string, string> = {
   'Imported “{name}”: {n} song': '«{name}» импортирован: {n} песня',
   'Imported “{name}”: {n} songs': '«{name}» импортирован, песен: {n}',
   '{n} without a YouTube version': 'Без версии на YouTube: {n}',
-  '(sign in to YouTube Music to find them)': '(войди в YouTube Music, чтобы найти их)',
   // Formats (shared/format.ts)
   'just now': 'только что',
   '{n} B': '{n} Б',
@@ -356,7 +355,6 @@ const ru: Record<string, string> = {
   'How many songs': 'Сколько песен',
   '2+ songs': '2+ песни',
   '1 song': '1 песня',
-  'Sign in to YouTube Music (Settings › Accounts) to find full versions.': 'Войди в YouTube Music (Настройки › Аккаунты), чтобы найти полные версии.',
   'Full versions found: {found} of {total}': 'Найдено полных версий: {found} из {total}',
   'Searching…': 'Поиск…',
   'Find full versions ({n})': 'Найти полные версии ({n})',
@@ -475,7 +473,6 @@ const ru: Record<string, string> = {
   'Search sources': 'Источники поиска',
   'Every video, no account needed': 'Все видео, без аккаунта',
   'Songs, with your Google account': 'Песни, с твоим аккаунтом Google',
-  'Sign in with Google (Accounts)': 'Войти через Google (Аккаунты)',
   'Public catalog, no account': 'Открытый каталог, без аккаунта',
   'Search closed without Premium': 'Поиск закрыт без Premium',
   'Paste a YouTube link': 'Вставь ссылку YouTube',

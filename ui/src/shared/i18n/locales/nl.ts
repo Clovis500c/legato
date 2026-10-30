@@ -38,7 +38,6 @@ const nl: Record<string, string> = {
   'Imported “{name}”: {n} song': '‘{name}’ geïmporteerd: {n} nummer',
   'Imported “{name}”: {n} songs': '‘{name}’ geïmporteerd: {n} nummers',
   '{n} without a YouTube version': '{n} zonder YouTube-versie',
-  '(sign in to YouTube Music to find them)': '(log in bij YouTube Music om ze te vinden)',
   // Formats (shared/format.ts)
   'just now': 'zojuist',
   '{n} B': '{n} B',
@@ -356,7 +355,6 @@ const nl: Record<string, string> = {
   'How many songs': 'Aantal nummers',
   '2+ songs': '2+ nummers',
   '1 song': '1 nummer',
-  'Sign in to YouTube Music (Settings › Accounts) to find full versions.': 'Log in bij YouTube Music (Instellingen › Accounts) om volledige versies te vinden.',
   'Full versions found: {found} of {total}': 'Volledige versies gevonden: {found} van {total}',
   'Searching…': 'Zoeken…',
   'Find full versions ({n})': 'Volledige versies zoeken ({n})',
@@ -475,7 +473,6 @@ const nl: Record<string, string> = {
   'Search sources': 'Zoekbronnen',
   'Every video, no account needed': 'Elke video, geen account nodig',
   'Songs, with your Google account': 'Nummers, met je Google-account',
-  'Sign in with Google (Accounts)': 'Inloggen met Google (Accounts)',
   'Public catalog, no account': 'Openbare catalogus, geen account',
   'Search closed without Premium': 'Zoeken afgesloten zonder Premium',
   'Paste a YouTube link': 'Plak een YouTube-link',

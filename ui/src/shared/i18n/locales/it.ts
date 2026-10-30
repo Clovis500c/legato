@@ -38,7 +38,6 @@ const it: Record<string, string> = {
   'Imported “{name}”: {n} song': '«{name}» importata: {n} brano',
   'Imported “{name}”: {n} songs': '«{name}» importata: {n} brani',
   '{n} without a YouTube version': '{n} senza versione YouTube',
-  '(sign in to YouTube Music to find them)': '(accedi a YouTube Music per trovarli)',
   // Formats (shared/format.ts)
   'just now': 'proprio ora',
   '{n} B': '{n} B',
@@ -356,7 +355,6 @@ const it: Record<string, string> = {
   'How many songs': 'Quanti brani',
   '2+ songs': '2+ brani',
   '1 song': '1 brano',
-  'Sign in to YouTube Music (Settings › Accounts) to find full versions.': 'Accedi a YouTube Music (Impostazioni › Account) per trovare le versioni complete.',
   'Full versions found: {found} of {total}': 'Versioni complete trovate: {found} su {total}',
   'Searching…': 'Ricerca in corso…',
   'Find full versions ({n})': 'Trova le versioni complete ({n})',
@@ -475,7 +473,6 @@ const it: Record<string, string> = {
   'Search sources': 'Fonti di ricerca',
   'Every video, no account needed': 'Tutti i video, nessun account necessario',
   'Songs, with your Google account': 'Brani, con il tuo account Google',
-  'Sign in with Google (Accounts)': 'Accedi con Google (Account)',
   'Public catalog, no account': 'Catalogo pubblico, nessun account',
   'Search closed without Premium': 'Ricerca chiusa senza Premium',
   'Paste a YouTube link': 'Incolla un link di YouTube',

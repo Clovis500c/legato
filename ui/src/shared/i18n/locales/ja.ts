@@ -38,7 +38,6 @@ const ja: Record<string, string> = {
   'Imported “{name}”: {n} song': '「{name}」をインポートしました：{n}曲',
   'Imported “{name}”: {n} songs': '「{name}」をインポートしました：{n}曲',
   '{n} without a YouTube version': '{n}曲はYouTube版がありません',
-  '(sign in to YouTube Music to find them)': '（YouTube Musicにログインすると見つかります）',
   // Formats (shared/format.ts)
   'just now': 'たった今',
   '{n} B': '{n} B',
@@ -356,7 +355,6 @@ const ja: Record<string, string> = {
   'How many songs': '曲数',
   '2+ songs': '2曲以上',
   '1 song': '1曲',
-  'Sign in to YouTube Music (Settings › Accounts) to find full versions.': 'フルバージョンを探すには、YouTube Musicにログインしてください（設定 › アカウント）。',
   'Full versions found: {found} of {total}': '見つかったフルバージョン：{found}/{total}',
   'Searching…': '検索中…',
   'Find full versions ({n})': 'フルバージョンを探す（{n}）',
@@ -475,7 +473,6 @@ const ja: Record<string, string> = {
   'Search sources': '検索先',
   'Every video, no account needed': 'すべての動画、アカウント不要',
   'Songs, with your Google account': '曲、Googleアカウントで',
-  'Sign in with Google (Accounts)': 'Googleでログイン（アカウント）',
   'Public catalog, no account': '公開カタログ、アカウント不要',
   'Search closed without Premium': 'Premiumがないため検索不可',
   'Paste a YouTube link': 'YouTubeのリンクを貼り付け',

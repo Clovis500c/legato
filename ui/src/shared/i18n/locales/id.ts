@@ -38,7 +38,6 @@ const id: Record<string, string> = {
   'Imported “{name}”: {n} song': '“{name}” diimpor: {n} lagu',
   'Imported “{name}”: {n} songs': '“{name}” diimpor: {n} lagu',
   '{n} without a YouTube version': '{n} tanpa versi YouTube',
-  '(sign in to YouTube Music to find them)': '(masuk ke YouTube Music untuk menemukannya)',
   // Formats (shared/format.ts)
   'just now': 'baru saja',
   '{n} B': '{n} B',
@@ -356,7 +355,6 @@ const id: Record<string, string> = {
   'How many songs': 'Jumlah lagu',
   '2+ songs': '2+ lagu',
   '1 song': '1 lagu',
-  'Sign in to YouTube Music (Settings › Accounts) to find full versions.': 'Masuk ke YouTube Music (Pengaturan › Akun) untuk menemukan versi lengkap.',
   'Full versions found: {found} of {total}': 'Versi lengkap ditemukan: {found} dari {total}',
   'Searching…': 'Mencari…',
   'Find full versions ({n})': 'Cari versi lengkap ({n})',
@@ -475,7 +473,6 @@ const id: Record<string, string> = {
   'Search sources': 'Sumber pencarian',
   'Every video, no account needed': 'Semua video, tanpa akun',
   'Songs, with your Google account': 'Lagu, dengan akun Google-mu',
-  'Sign in with Google (Accounts)': 'Masuk dengan Google (Akun)',
   'Public catalog, no account': 'Katalog publik, tanpa akun',
   'Search closed without Premium': 'Pencarian tertutup tanpa Premium',
   'Paste a YouTube link': 'Tempel link YouTube',

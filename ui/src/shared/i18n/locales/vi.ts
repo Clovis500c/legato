@@ -38,7 +38,6 @@ const vi: Record<string, string> = {
   'Imported “{name}”: {n} song': 'Đã nhập “{name}”: {n} bài hát',
   'Imported “{name}”: {n} songs': 'Đã nhập “{name}”: {n} bài hát',
   '{n} without a YouTube version': '{n} bài không có bản YouTube',
-  '(sign in to YouTube Music to find them)': '(đăng nhập YouTube Music để tìm chúng)',
   // Formats (shared/format.ts)
   'just now': 'vừa xong',
   '{n} B': '{n} B',
@@ -356,7 +355,6 @@ const vi: Record<string, string> = {
   'How many songs': 'Số bài hát',
   '2+ songs': '2+ bài hát',
   '1 song': '1 bài hát',
-  'Sign in to YouTube Music (Settings › Accounts) to find full versions.': 'Đăng nhập YouTube Music (Cài đặt › Tài khoản) để tìm bản đầy đủ.',
   'Full versions found: {found} of {total}': 'Đã tìm thấy bản đầy đủ: {found} / {total}',
   'Searching…': 'Đang tìm…',
   'Find full versions ({n})': 'Tìm bản đầy đủ ({n})',
@@ -475,7 +473,6 @@ const vi: Record<string, string> = {
   'Search sources': 'Nguồn tìm kiếm',
   'Every video, no account needed': 'Mọi video, không cần tài khoản',
   'Songs, with your Google account': 'Bài hát, với tài khoản Google của bạn',
-  'Sign in with Google (Accounts)': 'Đăng nhập bằng Google (Tài khoản)',
   'Public catalog, no account': 'Kho nhạc công khai, không cần tài khoản',
   'Search closed without Premium': 'Không tìm được nếu không có Premium',
   'Paste a YouTube link': 'Dán liên kết YouTube',

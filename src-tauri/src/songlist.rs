@@ -24,10 +24,10 @@ pub struct ListImport {
     missing: Vec<String>,
 }
 
-/// The song on YouTube Music (signed in), else among YouTube videos (music only).
+/// The song on YouTube Music, else among YouTube videos (music only).
 async fn find(state: &AppState, w: &Wanted) -> Option<Track> {
     let query = format!("{} {}", w.artist, w.title).trim().to_string();
-    if let Some(Ok(songs)) = yt_search(state, &query).await
+    if let Ok(songs) = yt_search(state, &query).await
         && let Some(hit) = songlist::pick(w, &songs)
     {
         return Some(hit.clone());

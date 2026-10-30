@@ -38,7 +38,6 @@ const zh: Record<string, string> = {
   'Imported “{name}”: {n} song': '已导入“{name}”：{n} 首歌',
   'Imported “{name}”: {n} songs': '已导入“{name}”：{n} 首歌',
   '{n} without a YouTube version': '{n} 首没有 YouTube 版本',
-  '(sign in to YouTube Music to find them)': '（登录 YouTube Music 即可找到）',
   // Formats (shared/format.ts)
   'just now': '刚刚',
   '{n} B': '{n} B',
@@ -356,7 +355,6 @@ const zh: Record<string, string> = {
   'How many songs': '歌曲数量',
   '2+ songs': '2 首以上',
   '1 song': '1 首歌',
-  'Sign in to YouTube Music (Settings › Accounts) to find full versions.': '登录 YouTube Music（设置 › 账号）即可查找完整版。',
   'Full versions found: {found} of {total}': '已找到完整版：{found} / {total}',
   'Searching…': '正在搜索…',
   'Find full versions ({n})': '查找完整版（{n}）',
@@ -475,7 +473,6 @@ const zh: Record<string, string> = {
   'Search sources': '搜索来源',
   'Every video, no account needed': '所有视频，无需账号',
   'Songs, with your Google account': '歌曲，需要你的 Google 账号',
-  'Sign in with Google (Accounts)': '用 Google 登录（账号）',
   'Public catalog, no account': '公开曲库，无需账号',
   'Search closed without Premium': '没有 Premium 无法搜索',
   'Paste a YouTube link': '粘贴 YouTube 链接',

@@ -38,7 +38,6 @@ const sv: Record<string, string> = {
   'Imported “{name}”: {n} song': '”{name}” importerad: {n} låt',
   'Imported “{name}”: {n} songs': '”{name}” importerad: {n} låtar',
   '{n} without a YouTube version': '{n} utan YouTube-version',
-  '(sign in to YouTube Music to find them)': '(logga in på YouTube Music för att hitta dem)',
   // Formats (shared/format.ts)
   'just now': 'nyss',
   '{n} B': '{n} B',
@@ -356,7 +355,6 @@ const sv: Record<string, string> = {
   'How many songs': 'Antal låtar',
   '2+ songs': '2+ låtar',
   '1 song': '1 låt',
-  'Sign in to YouTube Music (Settings › Accounts) to find full versions.': 'Logga in på YouTube Music (Inställningar › Konton) för att hitta fullständiga versioner.',
   'Full versions found: {found} of {total}': 'Fullständiga versioner hittade: {found} av {total}',
   'Searching…': 'Söker…',
   'Find full versions ({n})': 'Hitta fullständiga versioner ({n})',
@@ -475,7 +473,6 @@ const sv: Record<string, string> = {
   'Search sources': 'Sökkällor',
   'Every video, no account needed': 'Alla videor, inget konto behövs',
   'Songs, with your Google account': 'Låtar, med ditt Google-konto',
-  'Sign in with Google (Accounts)': 'Logga in med Google (Konton)',
   'Public catalog, no account': 'Offentlig katalog, inget konto',
   'Search closed without Premium': 'Sökning stängd utan Premium',
   'Paste a YouTube link': 'Klistra in en YouTube-länk',

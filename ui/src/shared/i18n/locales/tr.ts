@@ -38,7 +38,6 @@ const tr: Record<string, string> = {
   'Imported “{name}”: {n} song': '“{name}” içe aktarıldı: {n} şarkı',
   'Imported “{name}”: {n} songs': '“{name}” içe aktarıldı: {n} şarkı',
   '{n} without a YouTube version': '{n} şarkının YouTube sürümü yok',
-  '(sign in to YouTube Music to find them)': '(bulmak için YouTube Music’te oturum aç)',
   // Formats (shared/format.ts)
   'just now': 'az önce',
   '{n} B': '{n} B',
@@ -356,7 +355,6 @@ const tr: Record<string, string> = {
   'How many songs': 'Şarkı sayısı',
   '2+ songs': '2+ şarkı',
   '1 song': '1 şarkı',
-  'Sign in to YouTube Music (Settings › Accounts) to find full versions.': 'Tam sürümleri bulmak için YouTube Music’te oturum aç (Ayarlar › Hesaplar).',
   'Full versions found: {found} of {total}': 'Bulunan tam sürümler: {found} / {total}',
   'Searching…': 'Aranıyor…',
   'Find full versions ({n})': 'Tam sürümleri bul ({n})',
@@ -475,7 +473,6 @@ const tr: Record<string, string> = {
   'Search sources': 'Arama kaynakları',
   'Every video, no account needed': 'Tüm videolar, hesap gerekmez',
   'Songs, with your Google account': 'Şarkılar, Google hesabınla',
-  'Sign in with Google (Accounts)': 'Google ile oturum aç (Hesaplar)',
   'Public catalog, no account': 'Herkese açık katalog, hesap yok',
   'Search closed without Premium': 'Premium olmadan arama kapalı',
   'Paste a YouTube link': 'Bir YouTube bağlantısı yapıştır',

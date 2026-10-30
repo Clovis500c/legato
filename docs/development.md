@@ -48,7 +48,8 @@ launch, then every 12 h, and on a 401 before one more try (likes, unlikes, sync)
 in your own "Liked Music" list; the next sync likes it on the account and moves it there.
 
 Artist pages (`ytm_artist`) and the albums and playlists opened from them are public: asked without the account
-(`YouTubeMusic::anonymous`), so they work signed out too.
+(`YouTubeMusic::anonymous`), so they work signed out too. So do song searches signed out (`AppState::ytm_or_public`):
+Search, Spotify link and song list imports, Find full versions, another upload of a blocked video.
 
 - The API is YouTube Music's own web API (InnerTube), unofficial: a change on YouTube's side can break a parser. The
   parsers have tests on sample responses (`crates/connectors/src/ytmusic.rs`, `ytmusic/home.rs`): when a real

@@ -38,7 +38,6 @@ const ko: Record<string, string> = {
   'Imported “{name}”: {n} song': '\'{name}\' 가져옴: {n}곡',
   'Imported “{name}”: {n} songs': '\'{name}\' 가져옴: {n}곡',
   '{n} without a YouTube version': '{n}곡은 YouTube 버전 없음',
-  '(sign in to YouTube Music to find them)': '(YouTube Music에 로그인하면 찾을 수 있어요)',
   // Formats (shared/format.ts)
   'just now': '방금',
   '{n} B': '{n} B',
@@ -356,7 +355,6 @@ const ko: Record<string, string> = {
   'How many songs': '곡 수',
   '2+ songs': '2곡 이상',
   '1 song': '1곡',
-  'Sign in to YouTube Music (Settings › Accounts) to find full versions.': '전체 버전을 찾으려면 YouTube Music에 로그인하세요 (설정 › 계정).',
   'Full versions found: {found} of {total}': '찾은 전체 버전: {found}/{total}',
   'Searching…': '검색 중…',
   'Find full versions ({n})': '전체 버전 찾기 ({n})',
@@ -475,7 +473,6 @@ const ko: Record<string, string> = {
   'Search sources': '검색 소스',
   'Every video, no account needed': '모든 동영상, 계정 필요 없음',
   'Songs, with your Google account': '노래, Google 계정으로',
-  'Sign in with Google (Accounts)': 'Google로 로그인 (계정)',
   'Public catalog, no account': '공개 카탈로그, 계정 필요 없음',
   'Search closed without Premium': 'Premium 없이는 검색 불가',
   'Paste a YouTube link': 'YouTube 링크 붙여넣기',

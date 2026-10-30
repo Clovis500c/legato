@@ -90,7 +90,8 @@ Status on 2026-10-16. YouTube, local files and Apple Music previews: done and te
   ready, and a page that hasn't started 15 s after opening counts as refused (cookie wall, sign-in page).
 - Still unplayable on the watch page (region, age without a signed-in adult account, removed, private: playability
   status), or error 100 (removed): `alternative_videos` searches YouTube Music songs and videos for the same song (same
-  cleaned title and length, any channel) and plays the first that works, else a clear message and the next song.
+  cleaned title and length, any channel; signed out, its public catalog) and plays the first that works, else a clear
+  message and the next song.
   When every song of the queue has failed in a row (none played since), playback stops with one message instead of
   looping on repeat (2026-10-28). Nothing is extracted: both are YouTube's own players.
 - Now Playing Auto mode: frames `1.jpg` / `2.jpg` / `3.jpg` (25 / 50 / 75 %) compared at 32×24 (`still.ts`); nearly the
@@ -273,9 +274,10 @@ via the Web API Player endpoints. Audio comes out of the Spotify app; we only se
   technical protection) or capturing the token the official player fetches. Both need the user's go-ahead first.
 - Chosen by the user (2026-10-16): no web-session import. **Public playlists and albums by link**, no account
   (`crates/connectors/src/spotify_embed.rs`): the official embed page (`open.spotify.com/embed/<kind>/<id>`) carries the
-  list in its `__NEXT_DATA__` JSON (first 100 tracks). Each track is matched to YouTube Music (6 searches at a time,
-  signed-in Google session) and plays through the YouTube embed. Saved as an imported Spotify playlist; importing again
-  refreshes it. Paste the link anywhere (Ctrl+V) or in Add music.
+  list in its `__NEXT_DATA__` JSON (first 100 tracks). Each track is matched to YouTube Music's songs, then to a music
+  video on normal YouTube (`with_youtube`, 6 at a time), and plays through the YouTube embed. Signed out, YouTube
+  Music's public catalog answers (2026-10-30: before, a signed-out import came in with nothing playable). Saved as an
+  imported Spotify playlist; importing again refreshes it. Paste the link anywhere (Ctrl+V) or in Add music.
 
 ## Ad shield (`crates/shield`) — user's choice, 2026-10-16
 
