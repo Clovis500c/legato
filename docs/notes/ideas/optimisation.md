@@ -13,6 +13,9 @@ webview (`background.rs`); levels polled only while needed (`live.ts`).
   YouTube (mocked) for 60 s, RAM after 10 min in the tray. Results appended to `docs/performance.md` with the date and
   PC.
 - **Effort**: M. **Done when**: numbers for the current version recorded; the website quotes them.
+- **Done 2026-10-30**: `pnpm bench` (`scripts/bench.mjs`, `scripts/cdp.mjs`, `crates/core/examples/bench_data.rs`), numbers
+  and method in `docs/performance.md`. First paint is read from the page's own performance entries over DevTools, not a
+  mark over IPC. YouTube isn't measured (a mocked embed would measure the mock). Left: the website quotes the numbers.
 
 ## Performance budget in CI
 

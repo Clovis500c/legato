@@ -30,16 +30,18 @@ the numbers, and the row says so.
    `background::BROWSER_ARGS`), English interface. On the Songs page it stays paused, then plays the first song
    (the queue goes on through the library) for a minute, then is paused and closed to the tray (close = hide) for
    10 minutes. The app suspends its page after 5 minutes hidden and silent (`background.rs`), so the last number is the
-   suspended state. A second start follows, with the profile the first one made.
+   suspended state. A second start follows, with the profile the first one made. The OneDrive suggestion toast (any PC
+   with OneDrive) is dismissed first, as a user's settled session would have it, and the PC and the screen are kept awake
+   while the script runs (a media player's request, gone with the script).
 
 | Number | How |
 |---|---|
-| Window shown | Process spawn to the first visible top-level window of the process (a PowerShell watcher on the PID). |
+| Window shown | Process spawn to the app's main window (window class `Tauri Window`) being visible: a PowerShell watcher on the PID. Not `MainWindowHandle`: the single-instance plugin's window is visible from the start. |
 | First paint | Process spawn to the page's `first-contentful-paint` (performance entries read over DevTools, `timeOrigin` + start time, same clock as the spawn). The window comes first: it is shown at its saved place before the page paints. |
-| Cold / restart | Cold: the first launch, a new WebView2 profile, Windows scanning a new exe. Restart: the same data again. |
+| Cold / restart | Cold: the first launch on a new data folder and a new WebView2 profile. Restart: the same data again, after the first run was stopped. |
 | RAM | Private working set (Task Manager's Details tab "Memory") of `legato-bench.exe` plus its own `msedgewebview2.exe` descendants, walked from the PID. The installed app's processes are other trees and never counted. Last sample of the window. |
-| CPU | CPU time of the same processes over the window (60 s, every 5 s), as % of the whole PC, the way Task Manager shows it. Times the number of threads for % of one core. |
-| PC load | Windows' own CPU load, averaged over each window, in Notes: how busy the rest of the PC was. |
+| CPU | CPU time of the same processes over the window (60 s, sampled every 10 s), as % of the whole PC, the way Task Manager shows it. Times the number of threads for % of one core. The busiest processes of each window are printed with their WebView2 kind (renderer, gpu-process...). |
+| PC load | Windows' own CPU load (`Win32_Processor.LoadPercentage`), averaged over each window, in Notes: how busy the rest of the PC was. The samples themselves cost WMI a second of CPU each, inside that number. |
 
 ## What it leaves out
 
@@ -47,7 +49,7 @@ the numbers, and the row says so.
   Local files only.
 - **Decoding cost.** The songs are silent WAV: cheaper to decode than MP3 or FLAC. The engine, the 60 fps progress bar
   and the page are all there; the codec is not.
-- **The DevTools port.** It is open during the run (a few MB, no polling). The installed app has none.
+- **The DevTools port.** It is open during the run; the installed app has none.
 - **Disk speed and the first run on a slow disk.** The restart start is the one users have every day.
 - **GPU.** Task Manager's GPU columns are not read.
 
@@ -57,9 +59,29 @@ A release build does what a dev build does not: it checks for updates and instal
 the Run entry (Open at startup) at itself and moves the old folders and keychain entries. Only the installed app,
 identifier exactly `app.legato.desktop`, may (`src-tauri/src/identity.rs`: `update.rs`, `autostart.rs`, `rename.rs`).
 The bench build, the dev build and any other identifier are guests. The script also refuses to start an exe that does
-not carry the bench identifier, and stops only the PIDs it started.
+not carry the bench identifier, deletes only the two bench folders, and stops only the PIDs it started (checking the
+image name first). The first run was checked against the HKCU Run value and its Task Manager switch, the installed
+`legato.exe` and the folders under `%APPDATA%` and `%LOCALAPPDATA%`: nothing changed.
+
+## First run, 2026-10-30
+
+Version 1.0.0 on a PC that was busy (OneDrive syncing, other apps: PC load 39 to 49 %), so read the shape, not the last
+digit. Quick runs the same evening moved by about a third on the CPU while playing.
+
+- **Start.** The window is up in 1.05 s cold (0.67 s the next time) and the page has painted at 1.47 s (0.97 s). The
+  window shows first, at its saved place, before the page has anything to draw.
+- **RAM.** 153 MB paused: the app 22 MB, WebView2 131 MB over 7 processes in all. 233 MB playing: the growth is in
+  WebView2 (208 MB), the app stays at 25 MB. In the tray, silent: 131 MB after 1 minute and 129 MB after 4, then 54 MB
+  after 6, once the page is suspended (5 minutes hidden and silent, `background.rs`), and 55 MB at 10 minutes. The
+  150 MB mark of the Tray mode idea (`docs/notes/ideas/optimisation.md`) is crossed only before the suspend.
+- **CPU.** Paused on screen 0.8 % of a core. Playing a silent WAV 34 % of a core, nearly all of it in the page's
+  processes: the renderer 21 %, the GPU process 12 %, the app itself 1 %. In the tray, suspended, 1.0 % of a core, all of
+  it the app process and none of the page.
+
+These feed the Optimisation items of `docs/notes/plan-v2.md` (re-renders at 60 fps, tray mode).
 
 ## Results
 
 | Date | Version | PC | Window shown, cold / restart | First paint, cold / restart | RAM MB: paused / playing 1 min / tray 10 min | CPU % of the PC: paused / playing / tray | Notes |
 |---|---|---|---|---|---|---|---|
+| 2026-10-30 | 1.0.0 (5d8d3ae) | Ryzen 5 5500, 12 threads, 32 GB, Windows 11 (26300) | 1.05 / 0.67 s | 1.47 / 0.97 s | 153 / 233 / 55 | 0.1 / 2.9 / 0.1 | other apps were running; PC load 43 / 49 / 39 % |

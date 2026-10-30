@@ -79,7 +79,7 @@ Pick from the top. Each milestone is one release on the Stable channel; workflow
 
 | # | Milestone | What lands | Effort | Why now |
 |---|---|---|---|---|
-| 0 | Groundwork | Release channels Beta / Stable, generated IPC types, local diagnostics log, `pnpm bench` numbers, E2E smoke test | M | Every later step is safer and faster |
+| 0 | Groundwork | Release channels Beta / Stable, generated IPC types, local diagnostics log, `pnpm bench` numbers (done 2026-10-30), E2E smoke test | M | Every later step is safer and faster |
 | 1 | First impression (1.1) | Deezer + Apple Music link import, "Why Legato" page with measured RAM, Unknown artist translated, cover cache cap, lazy pages, deferred startup | M | What a Riff user tries in the first minute |
 | 2 | Sound and sight (1.2) | Visualizer v2 (data, canvas renderer, LED bars, radial, VU, spectrogram, full screen), karaoke mode, precise volume, skip silences, SponsorBlock music_offtopic | L | The most visible gap, and the most shareable |
 | 3 | Lyrics (1.3) | Word-by-word lyrics, translation, find by a line, lyrics saved into files and tapped live | M | Riff and Cider's most loved screen |
@@ -100,8 +100,10 @@ playback (its terms), concerts (an API's terms), trademark search.
   they differ; no hand-copied struct left.
 - **Diagnostics**: rotating log in the app data folder (errors, warnings, playback switches; no titles unless the
   user opts in); Settings › About › Copy diagnostics; nothing sent.
-- **Bench**: `pnpm bench` prints cold start, first paint, RAM after 1 min playing and after 10 min in the tray, idle CPU,
-  on the demo library x 100; numbers kept in `docs/performance.md`.
+- **Bench** (done 2026-10-30): `pnpm bench` prints cold start, first paint, RAM after 1 min playing and after 10 min in the
+  tray, idle CPU, on 10 000 local songs (a generator, `crates/core/examples/bench_data.rs`, not a folder); numbers kept in
+  `docs/performance.md`. Left: the website quotes them (Why Legato page); YouTube playback isn't measured (it needs the
+  network); not in CI yet.
 - **E2E smoke**: Windows CI launches the built app with the demo folder, scans it, plays a local song for 3 s, checks
   the position moved, searches with mocked YouTube, quits clean; under 5 min.
 - **Deezer / Apple link import**: pasting a Deezer or Apple Music playlist / album URL in Add music (or the search
@@ -304,8 +306,9 @@ every session.
 
 ## Optimisation (how it runs)
 
-- [ ] Measure first: RAM (app + WebView2), cold start to first paint, idle CPU while playing and in the tray, on a
-      10 000-song library. A `pnpm bench` script and numbers in `docs/`; the website quotes them.
+- [x] Measure first: RAM (app + WebView2), cold start to first paint, idle CPU while playing and in the tray, on a
+      10 000-song library. A `pnpm bench` script and numbers in `docs/`; the website quotes them. Done 2026-10-30
+      (`pnpm bench`, `docs/performance.md`); left: the website quoting the numbers, YouTube not measured.
 - [ ] Performance budget in CI: front-end bundle size and Rust startup time; fail on a large regression.
 - [ ] Bundle: analyse (`rollup-plugin-visualizer`), lazy-load more pages (Home, Search, Stats, Smart, Editor, Theme
       Studio; only Settings and Add-ons are today), icons tree-shaken.
