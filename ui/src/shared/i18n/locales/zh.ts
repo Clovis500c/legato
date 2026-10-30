@@ -1518,6 +1518,26 @@ const zh: Record<string, string> = {
   'Song, artist or album': '歌曲、艺人或专辑',
   'Paste a list': '粘贴列表',
   'One song per line, from SoundCloud, Deezer or anywhere: each is found on YouTube.': '每行一首歌，来自 SoundCloud、Deezer 或任何地方：每首都会在 YouTube 上查找。',
+  // Welcome (features/welcome)
+  'Welcome to Legato': '欢迎使用 Legato',
+  'One library and one player for YouTube Music, Spotify, Apple Music and your own files.': '一个音乐库、一个播放器，汇集 YouTube Music、Spotify、Apple Music 和你自己的文件。',
+  'Every source, one queue': '所有来源，一个队列',
+  'Private by design': '从设计上保护隐私',
+  'Your sign-ins stay yours': '你的登录只属于你',
+  'Nothing to set up': '无需设置',
+  'Search and play right away: signing in only brings your own playlists in.': '马上搜索播放：登录只是为了导入你自己的歌单。',
+  'What leaves your PC': '哪些内容会离开你的电脑',
+  'Get started': '开始使用',
+  'Bring your music': '添加你的音乐',
+  'Pick any, or none: Add music has them all, any time.': '选一个、几个或都不选：“添加音乐”里随时都有。',
+  'Paste a link': '粘贴链接',
+  'A public Spotify playlist or album comes in whole; a YouTube link adds its song.': '公开的 Spotify 歌单或专辑会整个导入；YouTube 链接会添加对应的歌曲。',
+  'Spotify or YouTube link': 'Spotify 或 YouTube 链接',
+  'Search and play': '搜索并播放',
+  'YouTube, YouTube Music and Apple Music, no account needed.': 'YouTube、YouTube Music 和 Apple Music，无需账号。',
+  'Start listening': '开始收听',
+  '{n} song in your library': '音乐库中有 {n} 首歌',
+  '{n} songs in your library': '音乐库中有 {n} 首歌',
 }
 
 export default zh

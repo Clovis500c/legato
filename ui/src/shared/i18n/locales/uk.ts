@@ -1518,6 +1518,26 @@ const uk: Record<string, string> = {
   'Song, artist or album': 'Трек, виконавець або альбом',
   'Paste a list': 'Вставити список',
   'One song per line, from SoundCloud, Deezer or anywhere: each is found on YouTube.': 'Один трек на рядок, із SoundCloud, Deezer чи будь-звідки: кожен шукається на YouTube.',
+  // Welcome (features/welcome)
+  'Welcome to Legato': 'Ласкаво просимо до Legato',
+  'One library and one player for YouTube Music, Spotify, Apple Music and your own files.': 'Одна медіатека й один плеєр для YouTube Music, Spotify, Apple Music і твоїх власних файлів.',
+  'Every source, one queue': 'Усі джерела, одна черга',
+  'Private by design': 'Приватність в основі',
+  'Your sign-ins stay yours': 'Твої акаунти залишаються твоїми',
+  'Nothing to set up': 'Нічого не треба налаштовувати',
+  'Search and play right away: signing in only brings your own playlists in.': 'Шукай і слухай одразу: вхід в акаунт потрібен лише, щоб перенести твої плейлисти.',
+  'What leaves your PC': 'Що залишає твій ПК',
+  'Get started': 'Почати',
+  'Bring your music': 'Додай свою музику',
+  'Pick any, or none: Add music has them all, any time.': 'Обери один спосіб, кілька або жодного: усі вони завжди є в розділі «Додати музику».',
+  'Paste a link': 'Вставити посилання',
+  'A public Spotify playlist or album comes in whole; a YouTube link adds its song.': 'Публічний плейлист або альбом Spotify переноситься повністю; посилання на YouTube додає трек.',
+  'Spotify or YouTube link': 'Посилання Spotify або YouTube',
+  'Search and play': 'Шукати й слухати',
+  'YouTube, YouTube Music and Apple Music, no account needed.': 'YouTube, YouTube Music і Apple Music, без облікового запису.',
+  'Start listening': 'Почати слухати',
+  '{n} song in your library': 'Пісень у медіатеці: {n}',
+  '{n} songs in your library': 'Пісень у медіатеці: {n}',
 }
 
 export default uk

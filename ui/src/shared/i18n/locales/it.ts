@@ -1518,6 +1518,26 @@ const it: Record<string, string> = {
   'Song, artist or album': 'Brano, artista o album',
   'Paste a list': 'Incolla un elenco',
   'One song per line, from SoundCloud, Deezer or anywhere: each is found on YouTube.': 'Un brano per riga, da SoundCloud, Deezer o altrove: ognuno viene cercato su YouTube.',
+  // Welcome (features/welcome)
+  'Welcome to Legato': 'Ti diamo il benvenuto in Legato',
+  'One library and one player for YouTube Music, Spotify, Apple Music and your own files.': 'Una libreria e un lettore per YouTube Music, Spotify, Apple Music e i tuoi file.',
+  'Every source, one queue': 'Tutte le fonti, una sola coda',
+  'Private by design': 'Privato fin dalla progettazione',
+  'Your sign-ins stay yours': 'I tuoi accessi restano tuoi',
+  'Nothing to set up': 'Niente da configurare',
+  'Search and play right away: signing in only brings your own playlists in.': 'Cerca e ascolta subito: l’accesso serve solo a portare le tue playlist.',
+  'What leaves your PC': 'Cosa esce dal tuo PC',
+  'Get started': 'Inizia',
+  'Bring your music': 'Porta la tua musica',
+  'Pick any, or none: Add music has them all, any time.': 'Scegline una, più d’una o nessuna: Aggiungi musica le ha tutte, sempre.',
+  'Paste a link': 'Incolla un link',
+  'A public Spotify playlist or album comes in whole; a YouTube link adds its song.': 'Una playlist o un album pubblico di Spotify arriva intero; un link di YouTube aggiunge il suo brano.',
+  'Spotify or YouTube link': 'Link di Spotify o YouTube',
+  'Search and play': 'Cerca e ascolta',
+  'YouTube, YouTube Music and Apple Music, no account needed.': 'YouTube, YouTube Music e Apple Music, senza account.',
+  'Start listening': 'Inizia ad ascoltare',
+  '{n} song in your library': '{n} brano nella tua libreria',
+  '{n} songs in your library': '{n} brani nella tua libreria',
 }
 
 export default it

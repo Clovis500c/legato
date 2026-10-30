@@ -1518,6 +1518,26 @@ const ja: Record<string, string> = {
   'Song, artist or album': '曲、アーティスト、アルバム',
   'Paste a list': 'リストを貼り付け',
   'One song per line, from SoundCloud, Deezer or anywhere: each is found on YouTube.': '1行に1曲、SoundCloudやDeezerなどから：各曲をYouTubeで探します。',
+  // Welcome (features/welcome)
+  'Welcome to Legato': 'Legatoへようこそ',
+  'One library and one player for YouTube Music, Spotify, Apple Music and your own files.': 'YouTube Music、Spotify、Apple Music、そして自分のファイルを、ひとつのライブラリとひとつのプレーヤーで。',
+  'Every source, one queue': 'すべてのソースを、ひとつのキューで',
+  'Private by design': '設計からプライベート',
+  'Your sign-ins stay yours': 'ログイン情報はあなたのもの',
+  'Nothing to set up': '設定は不要',
+  'Search and play right away: signing in only brings your own playlists in.': 'すぐに検索して再生：ログインは自分のプレイリストを取り込むためだけです。',
+  'What leaves your PC': 'PCから送られるもの',
+  'Get started': 'はじめる',
+  'Bring your music': '音楽を取り込む',
+  'Pick any, or none: Add music has them all, any time.': 'ひとつでも、いくつでも、なしでも：「音楽を追加」でいつでもすべて使えます。',
+  'Paste a link': 'リンクを貼り付け',
+  'A public Spotify playlist or album comes in whole; a YouTube link adds its song.': '公開のSpotifyプレイリストやアルバムはまるごと、YouTubeのリンクはその曲を追加します。',
+  'Spotify or YouTube link': 'SpotifyまたはYouTubeのリンク',
+  'Search and play': '検索して再生',
+  'YouTube, YouTube Music and Apple Music, no account needed.': 'YouTube、YouTube Music、Apple Music、アカウント不要。',
+  'Start listening': '聴きはじめる',
+  '{n} song in your library': 'ライブラリに{n}曲',
+  '{n} songs in your library': 'ライブラリに{n}曲',
 }
 
 export default ja

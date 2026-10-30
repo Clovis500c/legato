@@ -7,9 +7,9 @@ const FOCUSABLE = 'input:not([disabled]), select:not([disabled]), textarea:not([
 
 /**
  * Modal panel: Escape or backdrop click closes. Focus goes in (first field, else first action, Close last), Tab stays
- * inside, focus comes back to where it was on close.
+ * inside, focus comes back to where it was on close. wide: 720 px instead of 480 (a grid of cards).
  */
-export function Dialog({ title, kicker, onClose, children }: { title: string; kicker?: string; onClose: () => void; children: ReactNode }) {
+export function Dialog({ title, kicker, onClose, wide = false, children }: { title: string; kicker?: string; onClose: () => void; wide?: boolean; children: ReactNode }) {
   const box = useRef<HTMLDivElement>(null)
   const close = useRef(onClose)
   useEffect(() => {
@@ -38,7 +38,7 @@ export function Dialog({ title, kicker, onClose, children }: { title: string; ki
   }, [])
   return (
     <div className="fade-in fixed inset-0 z-40 grid place-items-center bg-[var(--shadow)] p-6" onClick={onClose}>
-      <div ref={box} role="dialog" aria-modal aria-label={title} onClick={(e) => e.stopPropagation()} className="dialog-in flex max-h-full w-full max-w-120 flex-col gap-5 overflow-y-auto rounded-xl border border-line bg-panel p-6 shadow-[0_24px_64px_var(--shadow)]">
+      <div ref={box} role="dialog" aria-modal aria-label={title} onClick={(e) => e.stopPropagation()} className={`dialog-in flex max-h-full w-full ${wide ? 'max-w-180' : 'max-w-120'} flex-col gap-5 overflow-y-auto rounded-xl border border-line bg-panel p-6 shadow-[0_24px_64px_var(--shadow)]`}>
         <header className="flex items-start justify-between gap-4">
           <div className="flex flex-col gap-1">
             {kicker && <p className="kicker">{kicker}</p>}

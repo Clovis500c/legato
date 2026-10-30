@@ -1518,6 +1518,26 @@ const ru: Record<string, string> = {
   'Song, artist or album': 'Трек, исполнитель или альбом',
   'Paste a list': 'Вставить список',
   'One song per line, from SoundCloud, Deezer or anywhere: each is found on YouTube.': 'Один трек на строку, из SoundCloud, Deezer или откуда угодно: каждый ищется на YouTube.',
+  // Welcome (features/welcome)
+  'Welcome to Legato': 'Добро пожаловать в Legato',
+  'One library and one player for YouTube Music, Spotify, Apple Music and your own files.': 'Одна медиатека и один плеер для YouTube Music, Spotify, Apple Music и твоих собственных файлов.',
+  'Every source, one queue': 'Все источники, одна очередь',
+  'Private by design': 'Приватность в основе',
+  'Your sign-ins stay yours': 'Твои аккаунты остаются твоими',
+  'Nothing to set up': 'Ничего не нужно настраивать',
+  'Search and play right away: signing in only brings your own playlists in.': 'Ищи и слушай сразу: вход в аккаунт нужен только, чтобы перенести твои плейлисты.',
+  'What leaves your PC': 'Что уходит с твоего ПК',
+  'Get started': 'Начать',
+  'Bring your music': 'Добавь свою музыку',
+  'Pick any, or none: Add music has them all, any time.': 'Выбери один способ, несколько или ни одного: все они всегда есть в разделе «Добавить музыку».',
+  'Paste a link': 'Вставить ссылку',
+  'A public Spotify playlist or album comes in whole; a YouTube link adds its song.': 'Публичный плейлист или альбом Spotify переносится целиком; ссылка на YouTube добавляет трек.',
+  'Spotify or YouTube link': 'Ссылка Spotify или YouTube',
+  'Search and play': 'Искать и слушать',
+  'YouTube, YouTube Music and Apple Music, no account needed.': 'YouTube, YouTube Music и Apple Music, без аккаунта.',
+  'Start listening': 'Начать слушать',
+  '{n} song in your library': 'Песен в медиатеке: {n}',
+  '{n} songs in your library': 'Песен в медиатеке: {n}',
 }
 
 export default ru

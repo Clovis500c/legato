@@ -1518,6 +1518,26 @@ const tr: Record<string, string> = {
   'Song, artist or album': 'Şarkı, sanatçı veya albüm',
   'Paste a list': 'Liste yapıştır',
   'One song per line, from SoundCloud, Deezer or anywhere: each is found on YouTube.': 'Her satıra bir şarkı, SoundCloud, Deezer ya da herhangi bir yerden: her biri YouTube’da aranır.',
+  // Welcome (features/welcome)
+  'Welcome to Legato': 'Legato’ya hoş geldin',
+  'One library and one player for YouTube Music, Spotify, Apple Music and your own files.': 'YouTube Music, Spotify, Apple Music ve kendi dosyaların için tek kitaplık ve tek oynatıcı.',
+  'Every source, one queue': 'Tüm kaynaklar, tek sıra',
+  'Private by design': 'Tasarımı gereği gizli',
+  'Your sign-ins stay yours': 'Oturum bilgilerin sende kalır',
+  'Nothing to set up': 'Ayarlanacak bir şey yok',
+  'Search and play right away: signing in only brings your own playlists in.': 'Hemen ara ve çal: oturum açmak sadece kendi çalma listelerini getirir.',
+  'What leaves your PC': 'Bilgisayarından ne çıkar',
+  'Get started': 'Başla',
+  'Bring your music': 'Müziğini getir',
+  'Pick any, or none: Add music has them all, any time.': 'Birini, birkaçını ya da hiçbirini seç: Müzik ekle’de hepsi her zaman var.',
+  'Paste a link': 'Bağlantı yapıştır',
+  'A public Spotify playlist or album comes in whole; a YouTube link adds its song.': 'Herkese açık bir Spotify çalma listesi ya da albümü eksiksiz gelir; bir YouTube bağlantısı şarkısını ekler.',
+  'Spotify or YouTube link': 'Spotify veya YouTube bağlantısı',
+  'Search and play': 'Ara ve çal',
+  'YouTube, YouTube Music and Apple Music, no account needed.': 'YouTube, YouTube Music ve Apple Music, hesap gerekmez.',
+  'Start listening': 'Dinlemeye başla',
+  '{n} song in your library': 'Kitaplığında {n} şarkı',
+  '{n} songs in your library': 'Kitaplığında {n} şarkı',
 }
 
 export default tr

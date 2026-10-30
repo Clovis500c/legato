@@ -1518,6 +1518,26 @@ const ko: Record<string, string> = {
   'Song, artist or album': '노래, 아티스트 또는 앨범',
   'Paste a list': '목록 붙여넣기',
   'One song per line, from SoundCloud, Deezer or anywhere: each is found on YouTube.': '한 줄에 한 곡, SoundCloud, Deezer 등 어디서든: 각 곡을 YouTube에서 찾습니다.',
+  // Welcome (features/welcome)
+  'Welcome to Legato': 'Legato에 오신 것을 환영합니다',
+  'One library and one player for YouTube Music, Spotify, Apple Music and your own files.': 'YouTube Music, Spotify, Apple Music, 그리고 내 파일을 위한 하나의 보관함과 하나의 플레이어.',
+  'Every source, one queue': '모든 소스, 하나의 대기열',
+  'Private by design': '설계부터 개인 정보 보호',
+  'Your sign-ins stay yours': '로그인 정보는 내 것으로',
+  'Nothing to set up': '설정할 것 없음',
+  'Search and play right away: signing in only brings your own playlists in.': '바로 검색하고 재생하세요. 로그인은 내 플레이리스트를 가져올 때만 필요합니다.',
+  'What leaves your PC': 'PC 밖으로 나가는 것',
+  'Get started': '시작하기',
+  'Bring your music': '음악 가져오기',
+  'Pick any, or none: Add music has them all, any time.': '하나만, 여러 개, 또는 아무것도 고르지 않아도 됩니다. 음악 추가에 언제든 모두 있습니다.',
+  'Paste a link': '링크 붙여넣기',
+  'A public Spotify playlist or album comes in whole; a YouTube link adds its song.': '공개 Spotify 플레이리스트나 앨범은 통째로 들어오고, YouTube 링크는 그 노래를 추가합니다.',
+  'Spotify or YouTube link': 'Spotify 또는 YouTube 링크',
+  'Search and play': '검색하고 재생',
+  'YouTube, YouTube Music and Apple Music, no account needed.': 'YouTube, YouTube Music, Apple Music, 계정 필요 없음.',
+  'Start listening': '듣기 시작',
+  '{n} song in your library': '보관함에 {n}곡',
+  '{n} songs in your library': '보관함에 {n}곡',
 }
 
 export default ko

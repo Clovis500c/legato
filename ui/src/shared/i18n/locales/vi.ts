@@ -1518,6 +1518,26 @@ const vi: Record<string, string> = {
   'Song, artist or album': 'Bài hát, nghệ sĩ hoặc album',
   'Paste a list': 'Dán danh sách',
   'One song per line, from SoundCloud, Deezer or anywhere: each is found on YouTube.': 'Mỗi dòng một bài, từ SoundCloud, Deezer hay bất cứ đâu: mỗi bài được tìm trên YouTube.',
+  // Welcome (features/welcome)
+  'Welcome to Legato': 'Chào mừng bạn đến với Legato',
+  'One library and one player for YouTube Music, Spotify, Apple Music and your own files.': 'Một thư viện và một trình phát cho YouTube Music, Spotify, Apple Music và tệp của riêng bạn.',
+  'Every source, one queue': 'Mọi nguồn, một hàng đợi',
+  'Private by design': 'Riêng tư ngay từ thiết kế',
+  'Your sign-ins stay yours': 'Thông tin đăng nhập là của bạn',
+  'Nothing to set up': 'Không cần thiết lập',
+  'Search and play right away: signing in only brings your own playlists in.': 'Tìm và phát ngay: đăng nhập chỉ để đưa danh sách phát của riêng bạn vào.',
+  'What leaves your PC': 'Những gì rời khỏi PC của bạn',
+  'Get started': 'Bắt đầu',
+  'Bring your music': 'Mang nhạc của bạn vào',
+  'Pick any, or none: Add music has them all, any time.': 'Chọn một, vài cách hoặc không chọn: Thêm nhạc luôn có đủ, bất cứ lúc nào.',
+  'Paste a link': 'Dán liên kết',
+  'A public Spotify playlist or album comes in whole; a YouTube link adds its song.': 'Danh sách phát hoặc album Spotify công khai được nhập trọn vẹn; liên kết YouTube thêm bài hát của nó.',
+  'Spotify or YouTube link': 'Liên kết Spotify hoặc YouTube',
+  'Search and play': 'Tìm và phát',
+  'YouTube, YouTube Music and Apple Music, no account needed.': 'YouTube, YouTube Music và Apple Music, không cần tài khoản.',
+  'Start listening': 'Bắt đầu nghe',
+  '{n} song in your library': '{n} bài hát trong thư viện của bạn',
+  '{n} songs in your library': '{n} bài hát trong thư viện của bạn',
 }
 
 export default vi

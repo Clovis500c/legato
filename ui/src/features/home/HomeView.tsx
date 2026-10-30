@@ -21,6 +21,7 @@ import { playlistMenu, trackMenu, tracksMenu } from '../menus'
 import { MixCard, mixSongs, useMixes } from '../mixes/MixesView'
 import { mixTitle } from '../mixes/words'
 import { remoteTrack, usePlayer } from '../player/store'
+import { WaysIn } from '../welcome/WaysIn'
 import { jumpLists, useOpenedLists, type OpenedList } from './recentLists'
 import { weekOf } from './week'
 
@@ -417,6 +418,7 @@ export function HomeView() {
   const [mood, setMood] = useState<string | null>(null)
   const { mixes } = useMixes()
   const ytOn = status.youtube.connected
+  const empty = !tracks.length && !playlists.length
   const ytSection = sections.some((x) => x.id === 'youtube' && x.on)
   const yt = useYtmHome(ytOn && ytSection, mood)
   const moods = ytOn && ytSection ? yt.moods.filter((m) => m.title !== 'Podcasts') : []
@@ -512,8 +514,14 @@ export function HomeView() {
       </div>
       {/* Cards' padding reaches 12 px out (CardRow): room for it, or the row would scroll the page sideways. */}
       <div className="@container stagger -mx-3 flex min-h-0 flex-1 flex-col gap-5.5 overflow-y-auto px-3 pb-8">
+        {/* Nothing in the library yet: the welcome's ways in, first; tiles and a week with nothing in them, not yet. */}
+        {empty && (
+          <Section title={tr('Bring your music')} sub={tr('Your library is empty')}>
+            <WaysIn />
+          </Section>
+        )}
         {sections
-          .filter((x) => (x.on || (mood && x.id === 'youtube')) && visible(x.id))
+          .filter((x) => (x.on || (mood && x.id === 'youtube')) && visible(x.id) && !(empty && (x.id === 'quick' || x.id === 'week')))
           .map((x) => (
             <Fragment key={x.id}>{sec[x.id]()}</Fragment>
           ))}

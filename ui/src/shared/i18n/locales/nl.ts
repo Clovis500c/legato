@@ -1518,6 +1518,26 @@ const nl: Record<string, string> = {
   'Song, artist or album': 'Nummer, artiest of album',
   'Paste a list': 'Lijst plakken',
   'One song per line, from SoundCloud, Deezer or anywhere: each is found on YouTube.': 'Eén nummer per regel, van SoundCloud, Deezer of waar dan ook: elk wordt op YouTube gezocht.',
+  // Welcome (features/welcome)
+  'Welcome to Legato': 'Welkom bij Legato',
+  'One library and one player for YouTube Music, Spotify, Apple Music and your own files.': 'Eén bibliotheek en één speler voor YouTube Music, Spotify, Apple Music en je eigen bestanden.',
+  'Every source, one queue': 'Elke bron, één wachtrij',
+  'Private by design': 'Privé vanaf het ontwerp',
+  'Your sign-ins stay yours': 'Je aanmeldingen blijven van jou',
+  'Nothing to set up': 'Niets in te stellen',
+  'Search and play right away: signing in only brings your own playlists in.': 'Zoek en speel meteen af: inloggen haalt alleen je eigen playlists binnen.',
+  'What leaves your PC': 'Wat je pc verlaat',
+  'Get started': 'Aan de slag',
+  'Bring your music': 'Breng je muziek mee',
+  'Pick any, or none: Add music has them all, any time.': 'Kies er een, een paar of geen: Muziek toevoegen heeft ze allemaal, altijd.',
+  'Paste a link': 'Plak een link',
+  'A public Spotify playlist or album comes in whole; a YouTube link adds its song.': 'Een openbare Spotify-playlist of -album komt er helemaal in; een YouTube-link voegt het nummer toe.',
+  'Spotify or YouTube link': 'Spotify- of YouTube-link',
+  'Search and play': 'Zoeken en afspelen',
+  'YouTube, YouTube Music and Apple Music, no account needed.': 'YouTube, YouTube Music en Apple Music, geen account nodig.',
+  'Start listening': 'Beginnen met luisteren',
+  '{n} song in your library': '{n} nummer in je bibliotheek',
+  '{n} songs in your library': '{n} nummers in je bibliotheek',
 }
 
 export default nl

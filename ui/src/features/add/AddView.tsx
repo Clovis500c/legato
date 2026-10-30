@@ -12,7 +12,7 @@ import { PageHeader } from '../../shared/ui/PageHeader'
 import { Card } from './Card'
 import { Detector } from './Detector'
 
-const FIELD = 'h-9 min-w-0 rounded-md border border-line bg-raised px-3 text-[0.8125rem] placeholder:text-ink-3'
+export const FIELD = 'h-9 min-w-0 rounded-md border border-line bg-raised px-3 text-[0.8125rem] placeholder:text-ink-3'
 
 /** The main way in: search here, results on the Search page (a song found is added with its YouTube version). */
 function SearchHero() {
@@ -140,8 +140,8 @@ function ImportList() {
   )
 }
 
-/** Watched folder added right here (Settings › Sources lists and removes them). */
-function AddFolder() {
+/** Watched folder added right here (Settings › Sources lists and removes them). Also in the welcome (WaysIn). */
+export function AddFolder() {
   const refresh = useStore((s) => s.refresh)
   const [folders, setFolders] = useState<string[]>([])
   const [busy, setBusy] = useState(false)
@@ -170,7 +170,7 @@ function AddFolder() {
         </p>
       )}
       <Button disabled={busy} onClick={() => void add()} className="mt-auto self-start">
-        {tr('Add folder')}
+        {busy ? tr('Scanning…') : tr('Add folder')}
       </Button>
     </Card>
   )

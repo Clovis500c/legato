@@ -1518,6 +1518,26 @@ const hi: Record<string, string> = {
   'Song, artist or album': 'गाना, कलाकार या एल्बम',
   'Paste a list': 'सूची चिपकाएँ',
   'One song per line, from SoundCloud, Deezer or anywhere: each is found on YouTube.': 'हर पंक्ति में एक गाना, SoundCloud, Deezer या कहीं से भी: हर गाना YouTube पर खोजा जाता है।',
+  // Welcome (features/welcome)
+  'Welcome to Legato': 'Legato में आपका स्वागत है',
+  'One library and one player for YouTube Music, Spotify, Apple Music and your own files.': 'YouTube Music, Spotify, Apple Music और आपकी अपनी फ़ाइलों के लिए एक लाइब्रेरी और एक प्लेयर।',
+  'Every source, one queue': 'हर सोर्स, एक कतार',
+  'Private by design': 'शुरू से निजी',
+  'Your sign-ins stay yours': 'आपके साइन-इन आपके ही रहते हैं',
+  'Nothing to set up': 'कुछ सेट अप नहीं करना',
+  'Search and play right away: signing in only brings your own playlists in.': 'तुरंत खोजें और चलाएँ: साइन इन सिर्फ़ आपकी अपनी प्लेलिस्ट लाने के लिए है।',
+  'What leaves your PC': 'आपके PC से क्या बाहर जाता है',
+  'Get started': 'शुरू करें',
+  'Bring your music': 'अपना संगीत लाएँ',
+  'Pick any, or none: Add music has them all, any time.': 'एक चुनें, कई या कोई नहीं: संगीत जोड़ें में ये सब कभी भी मिलते हैं।',
+  'Paste a link': 'लिंक चिपकाएँ',
+  'A public Spotify playlist or album comes in whole; a YouTube link adds its song.': 'सार्वजनिक Spotify प्लेलिस्ट या एल्बम पूरा आता है; YouTube लिंक उसका गाना जोड़ता है।',
+  'Spotify or YouTube link': 'Spotify या YouTube लिंक',
+  'Search and play': 'खोजें और चलाएँ',
+  'YouTube, YouTube Music and Apple Music, no account needed.': 'YouTube, YouTube Music और Apple Music, अकाउंट की ज़रूरत नहीं।',
+  'Start listening': 'सुनना शुरू करें',
+  '{n} song in your library': 'आपकी लाइब्रेरी में {n} गाना',
+  '{n} songs in your library': 'आपकी लाइब्रेरी में {n} गाने',
 }
 
 export default hi

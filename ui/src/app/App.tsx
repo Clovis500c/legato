@@ -33,9 +33,11 @@ import { SearchBar } from '../features/search/SearchBar'
 import { VoiceSearch } from '../features/search/VoiceSearch'
 import { Sidebar } from '../features/sidebar/Sidebar'
 import { api } from '../shared/api'
-import { region, spotifyList } from '../shared/format'
+import { region } from '../shared/format'
 import { ContextMenuHost, onMenu } from '../shared/ui/ContextMenu'
 import { DuplicatesHost } from '../features/library/DuplicatesDialog'
+import { Welcome } from '../features/welcome/Welcome'
+import { linkKind, shouldWelcome } from '../features/welcome/firstRun'
 import { Logo } from '../shared/ui/Logo'
 import { searchShift, STAGE_ID } from './searchShift'
 import { useSettings } from './settings'
@@ -212,6 +214,8 @@ export function App() {
   useSettings((s) => s.systemDark)
   const nowTrack = useNowTrack()
   const appTint = useAmbient(tintOn && nowTrack ? trackArt(nowTrack)[0] : undefined, useSettings.getState().current())
+  // First launch: what the app is, what stays on this PC, where the music comes from (features/welcome).
+  const [welcome, setWelcome] = useState(false)
   // Language changed: everything below renders again in it (nothing remounts: the player keeps playing).
   useLang((s) => s.lang)
   useEffect(() => {
@@ -226,6 +230,8 @@ export function App() {
         const s = useSettings.getState().settings
         await resumeSession(s.resume, exact)
         if (s.reopen || exact) restoreScreen()
+        const lib = useStore.getState()
+        if (shouldWelcome(s.welcomed, lib.tracks.length, lib.playlists.length)) setWelcome(true)
         if (exact && u?.lastUpdate) useStore.getState().notify(tr('Version {version} installed', { version: u.lastUpdate.to }), { action: { label: tr('What’s new'), run: () => useStore.getState().go({ name: 'settings', section: 'about', focus: 'Updates' }) } })
       })
       .catch(() => {})
@@ -272,9 +278,10 @@ export function App() {
       // Target may be document itself (nothing focused): not an Element.
       if (e.target instanceof Element && e.target.closest('input, textarea, [contenteditable]')) return
       const text = e.clipboardData?.getData('text').trim() ?? ''
+      const kind = linkKind(text)
       if (/^(musicapp:\/\/|MA1:)/i.test(text)) useStore.setState({ incoming: text })
-      else if (spotifyList(text)) void useStore.getState().importSpotify(text)
-      else if (/youtu\.?be/i.test(text)) void useStore.getState().addLink(text)
+      else if (kind === 'spotify') void useStore.getState().importSpotify(text)
+      else if (kind === 'youtube') void useStore.getState().addLink(text)
     }
     document.addEventListener('paste', onPaste)
     return () => document.removeEventListener('paste', onPaste)
@@ -324,6 +331,7 @@ export function App() {
       <ContextMenuHost fallback={appMenu} />
       <DuplicatesHost />
       {incoming && <ImportDialog key={incoming} code={incoming} />}
+      {welcome && <Welcome onClose={() => setWelcome(false)} />}
     </div>
   )
 }

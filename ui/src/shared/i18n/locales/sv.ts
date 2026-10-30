@@ -1518,6 +1518,26 @@ const sv: Record<string, string> = {
   'Song, artist or album': 'Låt, artist eller album',
   'Paste a list': 'Klistra in en lista',
   'One song per line, from SoundCloud, Deezer or anywhere: each is found on YouTube.': 'En låt per rad, från SoundCloud, Deezer eller var som helst: varje låt söks upp på YouTube.',
+  // Welcome (features/welcome)
+  'Welcome to Legato': 'Välkommen till Legato',
+  'One library and one player for YouTube Music, Spotify, Apple Music and your own files.': 'Ett bibliotek och en spelare för YouTube Music, Spotify, Apple Music och dina egna filer.',
+  'Every source, one queue': 'Alla källor, en kö',
+  'Private by design': 'Integritet från grunden',
+  'Your sign-ins stay yours': 'Dina inloggningar förblir dina',
+  'Nothing to set up': 'Inget att ställa in',
+  'Search and play right away: signing in only brings your own playlists in.': 'Sök och spela direkt: inloggning hämtar bara in dina egna spellistor.',
+  'What leaves your PC': 'Vad som lämnar din dator',
+  'Get started': 'Kom igång',
+  'Bring your music': 'Ta med din musik',
+  'Pick any, or none: Add music has them all, any time.': 'Välj en, flera eller ingen: Lägg till musik har alla, när som helst.',
+  'Paste a link': 'Klistra in en länk',
+  'A public Spotify playlist or album comes in whole; a YouTube link adds its song.': 'En offentlig Spotify-spellista eller ett album kommer in helt; en YouTube-länk lägger till sin låt.',
+  'Spotify or YouTube link': 'Spotify- eller YouTube-länk',
+  'Search and play': 'Sök och spela',
+  'YouTube, YouTube Music and Apple Music, no account needed.': 'YouTube, YouTube Music och Apple Music, inget konto behövs.',
+  'Start listening': 'Börja lyssna',
+  '{n} song in your library': '{n} låt i ditt bibliotek',
+  '{n} songs in your library': '{n} låtar i ditt bibliotek',
 }
 
 export default sv

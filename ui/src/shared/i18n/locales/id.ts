@@ -1518,6 +1518,26 @@ const id: Record<string, string> = {
   'Song, artist or album': 'Lagu, artis, atau album',
   'Paste a list': 'Tempel daftar',
   'One song per line, from SoundCloud, Deezer or anywhere: each is found on YouTube.': 'Satu lagu per baris, dari SoundCloud, Deezer, atau mana saja: tiap lagu dicari di YouTube.',
+  // Welcome (features/welcome)
+  'Welcome to Legato': 'Selamat datang di Legato',
+  'One library and one player for YouTube Music, Spotify, Apple Music and your own files.': 'Satu koleksi dan satu pemutar untuk YouTube Music, Spotify, Apple Music, dan file milikmu sendiri.',
+  'Every source, one queue': 'Semua sumber, satu antrean',
+  'Private by design': 'Privat sejak awal',
+  'Your sign-ins stay yours': 'Info masukmu tetap milikmu',
+  'Nothing to set up': 'Tanpa pengaturan',
+  'Search and play right away: signing in only brings your own playlists in.': 'Cari dan putar langsung: masuk akun hanya untuk membawa playlist milikmu.',
+  'What leaves your PC': 'Apa yang keluar dari PC-mu',
+  'Get started': 'Mulai',
+  'Bring your music': 'Bawa musikmu',
+  'Pick any, or none: Add music has them all, any time.': 'Pilih satu, beberapa, atau tidak sama sekali: semuanya ada di Tambah musik, kapan saja.',
+  'Paste a link': 'Tempel tautan',
+  'A public Spotify playlist or album comes in whole; a YouTube link adds its song.': 'Playlist atau album Spotify publik masuk utuh; tautan YouTube menambahkan lagunya.',
+  'Spotify or YouTube link': 'Tautan Spotify atau YouTube',
+  'Search and play': 'Cari dan putar',
+  'YouTube, YouTube Music and Apple Music, no account needed.': 'YouTube, YouTube Music, dan Apple Music, tanpa akun.',
+  'Start listening': 'Mulai mendengarkan',
+  '{n} song in your library': '{n} lagu di koleksimu',
+  '{n} songs in your library': '{n} lagu di koleksimu',
 }
 
 export default id
