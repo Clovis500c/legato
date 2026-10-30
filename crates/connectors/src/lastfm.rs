@@ -15,8 +15,9 @@ pub const AUTH: &str = "https://www.last.fm/api/auth/";
 pub const BATCH: usize = 50;
 
 /// One listen to send. `timestamp` = when it started (unix s, UTC).
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export)]
 pub struct Scrobble {
     pub artist: String,
     pub track: String,

@@ -39,8 +39,9 @@ static THUMB_SIZE: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"=w\d+-h\d+").
 static AUTHUSER: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"authuser=(\d+)").unwrap());
 
 /// One identity in the session: a Google account (authuser) or one of its brand channels (page id).
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export, rename = "YtmAccount")]
 pub struct Account {
     pub name: String,
     pub handle: Option<String>,
@@ -50,6 +51,7 @@ pub struct Account {
     pub page_id: Option<String>,
     /// Profile picture (still or animated).
     #[serde(default)]
+    #[ts(optional = nullable)]
     pub photo: Option<String>,
 }
 

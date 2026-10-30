@@ -29,8 +29,9 @@ pub fn later(job: impl Future<Output = ()> + Send + 'static) {
     let _ = tx.send(Box::pin(job));
 }
 
-#[derive(Debug, Clone, Copy, Serialize)]
+#[derive(Debug, Clone, Copy, Serialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export, rename = "PushKind")]
 pub enum Kind {
     Add,
     /// Kept in your own Liked Music instead (liked at the next sync).
@@ -42,8 +43,9 @@ pub enum Kind {
 }
 
 /// What the interface says when a change didn't reach the service.
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export, rename = "PushFailed")]
 pub struct Failed {
     pub kind: Kind,
     pub playlist: String,

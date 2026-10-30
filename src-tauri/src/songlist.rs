@@ -12,8 +12,9 @@ use tauri::{Manager, State};
 /// Text read, at most (2,000 songs fit well under).
 const MAX_TEXT: u64 = 1 << 20;
 
-#[derive(Serialize)]
+#[derive(Serialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export)]
 pub struct ListImport {
     /// None: nothing was found, no playlist made.
     playlist_id: Option<i64>,

@@ -14,7 +14,8 @@ use tauri::{AppHandle, Manager, PhysicalPosition, PhysicalSize, Url, WebviewBuil
 pub const LABEL: &str = "ytwatch";
 
 /// Where the video slot is, in window physical pixels (UI rect × devicePixelRatio: DPI and the UI's zoom both in).
-#[derive(Debug, Clone, Copy, Deserialize)]
+#[derive(Debug, Clone, Copy, Deserialize, ts_rs::TS)]
+#[ts(export, rename = "WatchRect")]
 pub struct Rect {
     pub x: f64,
     pub y: f64,
@@ -33,8 +34,9 @@ impl Rect {
 }
 
 /// What the watch page reports.
-#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export, rename = "WatchReport")]
 pub struct Report {
     #[serde(default)]
     pub state: Option<i32>,
@@ -76,8 +78,9 @@ pub fn parse_report(source: &str, message: &str) -> Option<Report> {
 }
 
 /// Live processing news from the page (live.js): attached or not, levels.
-#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export)]
 pub struct LiveReport {
     #[serde(default)]
     pub attached: Option<bool>,
@@ -90,7 +93,8 @@ pub struct LiveReport {
     pub end: Option<f64>,
 }
 
-#[derive(Debug, Clone, Copy, Default, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Serialize, Deserialize, ts_rs::TS)]
+#[ts(export)]
 pub struct LiveLevels {
     pub fast: f64,
     pub momentary: f64,
@@ -99,6 +103,7 @@ pub struct LiveLevels {
     pub gain: f64,
     /// Visualizer bands, dB (only when asked for).
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[ts(as = "Option<Vec<f64>>")]
     pub bands: Option<[f64; 16]>,
 }
 
@@ -121,8 +126,9 @@ pub fn watch_url(video: &str, start_s: f64) -> Option<Url> {
 }
 
 /// Player commands the UI may send. Built into a script from fixed names and numbers only.
-#[derive(Debug, Clone, Copy, Deserialize)]
+#[derive(Debug, Clone, Copy, Deserialize, ts_rs::TS)]
 #[serde(tag = "type", rename_all = "camelCase")]
+#[ts(export, rename = "WatchCmd")]
 pub enum Cmd {
     Play,
     Pause,
@@ -150,6 +156,7 @@ pub enum Cmd {
         gain: Option<f64>,
         /// Live Editor settings; absent = unchanged.
         #[serde(default)]
+        #[ts(optional)]
         effects: Option<music_player::Effects>,
     },
 }

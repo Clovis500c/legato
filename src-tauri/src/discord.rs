@@ -16,8 +16,9 @@ pub enum Update {
     Off,
 }
 
-#[derive(Debug, Clone, Default, Serialize)]
+#[derive(Debug, Clone, Default, Serialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export, rename = "DiscordStatus")]
 pub struct Status {
     pub connected: bool,
     pub error: Option<String>,

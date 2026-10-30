@@ -26,8 +26,9 @@ PRAGMA user_version = 2;
 const MAX_PLAYS: i64 = 50_000;
 
 /// One listen. `started_at` = unix seconds.
-#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export)]
 pub struct Play {
     pub track_id: i64,
     pub started_at: i64,
@@ -36,8 +37,9 @@ pub struct Play {
 }
 
 /// User control over mixes: Less = ranked lower, Never = left out.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export)]
 pub enum Pref {
     Less,
     Never,

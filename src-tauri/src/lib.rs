@@ -83,9 +83,11 @@ where
 }
 
 /// Spotify app key (Spotify has no keyless sign-in). Stored in OS keychain.
-#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, Serialize, Deserialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export)]
 struct Credentials {
+    #[ts(optional)]
     spotify_client_id: Option<String>,
 }
 
@@ -241,8 +243,9 @@ fn json(answer: Arc<str>) -> Response {
     Response::new(answer.to_string())
 }
 
-#[derive(Serialize, Clone)]
+#[derive(Serialize, Clone, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export)]
 struct SourceStatus {
     configured: bool,
     connected: bool,
@@ -331,7 +334,8 @@ async fn push_own_likes(state: &AppState) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, ts_rs::TS)]
+#[ts(export)]
 struct LibraryData {
     tracks: Vec<LibraryTrack>,
     playlists: Vec<LibraryPlaylist>,
@@ -430,8 +434,9 @@ async fn yt_search(state: &AppState, query: &str) -> Result<Vec<Track>, String> 
     Ok(found)
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export)]
 struct SearchHit {
     #[serde(flatten)]
     hit: Hit,
@@ -454,8 +459,9 @@ async fn video_search(state: &AppState, query: &str) -> Result<Vec<(Track, Music
     Ok(found)
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export)]
 struct SearchResults {
     hits: Vec<SearchHit>,
     errors: Vec<String>,
@@ -599,8 +605,9 @@ async fn backfill_art(state: State<'_, AppState>, country: String) -> CmdResult<
     Ok(found.len())
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export)]
 struct FindReport {
     /// Tracks that got a YouTube version.
     found: usize,
@@ -692,8 +699,9 @@ async fn play_preview(state: State<'_, AppState>, id: String, country: String) -
     Ok(p.page)
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export)]
 struct ShareCode {
     /// `legato://playlist/…`, for messages.
     link: String,
@@ -716,8 +724,9 @@ async fn share_playlist(state: State<'_, AppState>, id: i64) -> CmdResult<ShareC
     Ok(ShareCode { link: share::to_link(&shared), qr, tracks: shared.items.len(), bytes: share::encode(&shared).len() })
 }
 
-#[derive(Clone, Serialize)]
+#[derive(Clone, Serialize, ts_rs::TS)]
 #[serde(tag = "state", rename_all = "camelCase")]
+#[ts(export)]
 enum NearbyState {
     Idle,
     Waiting { code: String },
@@ -775,8 +784,9 @@ fn probe(item: &Item) -> Track {
     }
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export)]
 struct SharePreview {
     name: String,
     tracks: usize,
@@ -817,8 +827,9 @@ async fn resolve_text(state: &AppState, artist: &str, title: &str, country: &str
     music_core::matching::best_match(&want, &hits).cloned()
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export)]
 struct ImportReport {
     playlist_id: i64,
     added: usize,
@@ -956,8 +967,9 @@ async fn clear_history(state: State<'_, AppState>) -> CmdResult<()> {
     state.lib().clear_history().map_err(err)
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export)]
 struct ExportReport {
     url: String,
     added: usize,
@@ -1000,8 +1012,9 @@ async fn export_youtube(state: State<'_, AppState>, id: i64) -> CmdResult<Export
     Ok(ExportReport { url: url(&remote), added: videos.len(), already: 0, no_youtube })
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export)]
 struct AddReport {
     added: usize,
     /// Already in the playlist (YouTube refuses duplicates).
@@ -1224,8 +1237,9 @@ async fn ytm_sign_in(app: tauri::AppHandle, add: bool) -> CmdResult<()> {
     ytm::open(&app, add).map_err(err)
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export)]
 struct SpotifyImport {
     playlist_id: i64,
     name: String,
@@ -1307,8 +1321,9 @@ async fn ytm_home(state: State<'_, AppState>, mood: Option<String>) -> CmdResult
 }
 
 /// One slot of an album page: catalog song, and your copy when you have it.
-#[derive(Serialize)]
+#[derive(Serialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export)]
 struct AlbumSlot {
     disc: u8,
     number: u16,
@@ -1316,8 +1331,9 @@ struct AlbumSlot {
     library_id: Option<i64>,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export)]
 struct AlbumInfo {
     year: Option<u16>,
     slots: Vec<AlbumSlot>,
@@ -1393,8 +1409,9 @@ async fn ytm_sign_out(state: State<'_, AppState>) -> CmdResult<()> {
     state.lib().set_setting("ytm_accounts", &serde_json::json!([])).map_err(err)
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export)]
 struct YtmAccounts {
     signed_in: bool,
     /// Every Google account and channel in the session.
@@ -1502,8 +1519,9 @@ fn update_install(app: tauri::AppHandle, updater: State<update::Updater>) -> Cmd
     updater.install(&app)
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export)]
 struct CacheStats {
     library: Stats,
     playlists: Stats,
@@ -1535,8 +1553,9 @@ fn voice_stop() {
 }
 
 /// The song Now Playing wants lyrics for.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export)]
 struct LyricsAsk {
     title: String,
     artist: String,
@@ -1737,7 +1756,8 @@ async fn save_session(state: State<'_, AppState>, session: serde_json::Value) ->
     state.lib().set_setting("session", &session).map_err(err)
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, ts_rs::TS)]
+#[ts(export)]
 struct ShieldStatus {
     enabled: bool,
     blocked: u64,
@@ -1754,7 +1774,8 @@ fn set_shield(state: State<AppState>, enabled: bool) {
     state.shield.enabled.store(enabled, Ordering::Relaxed)
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, ts_rs::TS)]
+#[ts(export)]
 struct SystemAccent {
     /// For light themes (Windows AccentDark1, as WinUI uses it).
     light: String,

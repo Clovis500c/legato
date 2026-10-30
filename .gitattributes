@@ -1,1 +1,3 @@
 * text=auto eol=lf
+# Written by `pnpm types` (ts-rs), LF whatever the OS; collapsed in pull request diffs.
+ui/src/shared/generated/** text eol=lf linguist-generated

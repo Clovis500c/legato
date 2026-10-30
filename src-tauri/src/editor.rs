@@ -84,12 +84,14 @@ pub fn export_stop() {
 
 /// Live Editor settings not saved as a version yet, per song: they come back after a close or a crash. This PC only
 /// (library setting `edit_drafts`, not synced), the last 50 songs.
-#[derive(serde::Serialize, serde::Deserialize, Clone)]
+#[derive(serde::Serialize, serde::Deserialize, Clone, ts_rs::TS)]
+#[ts(export, rename = "EditDraft")]
 pub struct Draft {
     pub effects: music_player::Effects,
     /// Version they started from, if any.
     pub version: Option<i64>,
     #[serde(default)]
+    #[ts(skip)]
     pub at: i64,
 }
 

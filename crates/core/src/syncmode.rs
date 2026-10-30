@@ -104,8 +104,9 @@ pub struct Stamped {
 }
 
 /// Services connected on a PC (the list other PCs show, to sign in there too).
-#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export)]
 pub struct Accounts {
     pub spotify: bool,
     pub youtube: bool,
@@ -146,8 +147,9 @@ pub struct Snapshot {
 }
 
 /// What a merge changed here.
-#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export)]
 pub struct Merged {
     pub playlists: usize,
     pub deleted: usize,

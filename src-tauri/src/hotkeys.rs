@@ -11,7 +11,8 @@ use tauri_plugin_global_shortcut::{GlobalShortcutExt, Shortcut, ShortcutState};
 /// Hotkey id → action id.
 static ACTIONS: Mutex<Option<HashMap<u32, String>>> = Mutex::new(None);
 
-#[derive(Debug, serde::Deserialize)]
+#[derive(Debug, serde::Deserialize, ts_rs::TS)]
+#[ts(export, rename = "ShortcutEntry")]
 pub struct Entry {
     pub id: String,
     pub accelerator: String,

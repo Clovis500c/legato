@@ -30,8 +30,9 @@ struct Entry {
     granted: Vec<String>,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export)]
 pub struct PluginInfo {
     id: String,
     manifest: Option<Manifest>,
@@ -44,8 +45,9 @@ pub struct PluginInfo {
 }
 
 /// A folder before installing it: what it is and what it asks for.
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export, rename = "PluginInspect")]
 pub struct Inspect {
     manifest: Manifest,
     /// Version installed now (an update).
@@ -99,6 +101,17 @@ fn files(folder: &Path, m: &Manifest) -> anyhow::Result<Vec<(PathBuf, u64)>> {
     Ok(out)
 }
 
+/// "plugin-call" event: a plugin asks the interface for something (answered by `plugin_reply`).
+#[derive(Clone, Serialize, ts_rs::TS)]
+#[ts(export, rename = "PluginCall")]
+struct UiCall {
+    plugin: String,
+    id: u64,
+    method: String,
+    #[ts(type = "Record<string, unknown>")]
+    args: Value,
+}
+
 /// Bridge for one app: calls out, logs kept, stops told to the interface.
 struct Bridge(AppHandle);
 
@@ -106,7 +119,7 @@ impl Outbox for Bridge {
     fn call(&self, call: Call) {
         let app = self.0.clone();
         if call.route == Route::Ui {
-            let _ = app.emit_to("main", "plugin-call", json!({ "plugin": call.plugin, "id": call.id, "method": call.method, "args": call.args }));
+            let _ = app.emit_to("main", "plugin-call", UiCall { plugin: call.plugin, id: call.id, method: call.method, args: call.args });
             return;
         }
         tauri::async_runtime::spawn(async move {

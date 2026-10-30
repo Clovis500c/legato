@@ -12,8 +12,9 @@ const PING: u32 = 3;
 const PONG: u32 = 4;
 
 /// What the member list shows after "Listening to": the Discord app's name, the artist or the song.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize, ts_rs::TS)]
 #[serde(rename_all = "lowercase")]
+#[ts(export, rename = "PresenceStatus")]
 pub enum StatusShows {
     Name,
     Artist,
@@ -21,8 +22,9 @@ pub enum StatusShows {
 }
 
 /// Current track, from the player.
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Deserialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export)]
 pub struct Presence {
     pub title: String,
     pub artist: String,

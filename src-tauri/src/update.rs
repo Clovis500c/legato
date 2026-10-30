@@ -17,8 +17,9 @@ const EVERY: Duration = Duration::from_secs(6 * 3600);
 /// Settings key: the update being installed, then the last one installed.
 const KEY: &str = "update";
 
-#[derive(Debug, Clone, Default, Serialize)]
+#[derive(Debug, Clone, Default, Serialize, ts_rs::TS)]
 #[serde(tag = "state", rename_all = "camelCase", rename_all_fields = "camelCase")]
+#[ts(export, rename = "UpdateState")]
 pub enum State {
     #[default]
     Idle,
@@ -34,14 +35,16 @@ pub enum State {
 }
 
 /// One update installed: from which version, to which, when (unix s).
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export, rename = "UpdateInstalled")]
 pub struct Installed {
     pub from: String,
     pub to: String,
     pub at: i64,
     /// Release notes of `to`, for "What's new" after the restart. Older saves: none.
     #[serde(default)]
+    #[ts(optional = nullable)]
     pub notes: Option<String>,
 }
 
@@ -56,8 +59,9 @@ struct Saved {
     hidden: bool,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export, rename = "UpdateStatus")]
 pub struct Status {
     pub current: String,
     #[serde(flatten)]

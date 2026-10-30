@@ -77,6 +77,15 @@ jobs:
           ALL_PROXY: http://127.0.0.1:9
           NO_PROXY: 127.0.0.1,localhost
 
+      # pnpm check began by writing the interface's types from the Rust ones (scripts/types.mjs): they must be what is
+      # committed. Intent-to-add, so a new type's file counts too. Windows only: Linux leaves out the app crate, which
+      # holds some of the types.
+      - if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          git add --intent-to-add ui/src/shared/generated
+          git diff --exit-code ui/src/shared/generated || { echo '::error::Generated types are stale: run pnpm types and commit ui/src/shared/generated'; exit 1; }
+
       - if: runner.os == 'Linux'
         run: |
           cargo clippy --workspace --exclude legato --all-targets -- -D warnings

@@ -11,8 +11,9 @@ pub const DIRECTIONS: &str = "sync_directions";
 
 /// Which way songs travel between one account and the library (user's choice 2026-10-29). Pull = the account's
 /// playlists and likes come in; push = likes, adds and removals made here go out.
-#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export)]
 pub enum Direction {
     #[default]
     Both,
@@ -45,7 +46,8 @@ pub fn with_direction(saved: Option<&Value>, key: &str, d: Direction) -> Value {
     serde_json::json!(map.into_iter().filter(|(k, _)| k.len() <= 80).take(50).collect::<BTreeMap<_, _>>())
 }
 
-#[derive(Debug, Default, PartialEq, Serialize)]
+#[derive(Debug, Default, PartialEq, Serialize, ts_rs::TS)]
+#[ts(export)]
 pub struct SyncReport {
     pub playlists: usize,
     pub matched: usize,

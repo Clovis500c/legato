@@ -161,7 +161,8 @@ UPDATE tracks SET art = (SELECT 'https://i.ytimg.com/vi/' || source_id || '/hqde
 PRAGMA user_version = 3;
 ";
 
-#[derive(Debug, Clone, PartialEq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, ts_rs::TS)]
+#[ts(export)]
 pub struct LibraryTrack {
     pub id: i64,
     /// "Date added" rank: order the app met the track (services give no dates).
@@ -173,8 +174,9 @@ pub struct LibraryTrack {
     pub track: Track,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export)]
 pub struct LibraryPlaylist {
     pub id: i64,
     pub source: Source,
@@ -190,8 +192,9 @@ pub struct LibraryPlaylist {
 }
 
 /// Edits on custom playlists. Duplicate also works on imported ones.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, ts_rs::TS)]
 #[serde(tag = "type", rename_all = "camelCase", rename_all_fields = "camelCase")]
+#[ts(export)]
 pub enum PlaylistEdit {
     Create { name: String },
     Rename { id: i64, name: String },
@@ -267,8 +270,9 @@ fn ids_json(ids: impl IntoIterator<Item = i64>) -> String {
 }
 
 /// What the UI's copy of the library lacks since its last read (`Library::take_changes`).
-#[derive(Debug, Default, PartialEq, Serialize)]
+#[derive(Debug, Default, PartialEq, Serialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export, rename = "LibraryChanges")]
 pub struct Changes {
     /// Whole rows: new or changed songs, and every song of their channels (musicness follows talk channels).
     pub tracks: Vec<LibraryTrack>,
@@ -292,8 +296,9 @@ pub struct Library {
 }
 
 /// Live Editor edit: a song's (or a preset), its effects as JSON (music_dsp::Effects).
-#[derive(Debug, Clone, PartialEq, serde::Serialize)]
+#[derive(Debug, Clone, PartialEq, serde::Serialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export)]
 pub struct Edit {
     pub id: i64,
     pub song: Option<String>,

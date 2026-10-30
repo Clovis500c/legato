@@ -209,8 +209,9 @@ pub struct Device {
 }
 
 /// What the active device plays, shaped for the player bar.
-#[derive(Debug, Clone, PartialEq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export, rename = "SpotifyPlayback")]
 pub struct Playback {
     pub playing: bool,
     pub position_ms: u64,
@@ -220,8 +221,9 @@ pub struct Playback {
 }
 
 /// Remote control of the user's own Spotify app. Audio never passes through us.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, ts_rs::TS)]
 #[serde(tag = "type", rename_all = "camelCase")]
+#[ts(export, rename = "SpotifyCommand")]
 pub enum PlayerCommand {
     #[serde(rename_all = "camelCase")]
     Play {

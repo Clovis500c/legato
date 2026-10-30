@@ -20,8 +20,9 @@ use std::sync::mpsc::{self, RecvTimeoutError, Sender};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, ts_rs::TS)]
 #[serde(tag = "type", rename_all = "camelCase")]
+#[ts(export, rename = "PlayerCommand")]
 pub enum Command {
     Play { paths: Vec<PathBuf>, start: usize },
     /// Rust-side only (preview bytes). `label` stands in for path in status.
@@ -37,8 +38,9 @@ pub enum Command {
     Stop,
 }
 
-#[derive(Debug, Clone, Default, Serialize)]
+#[derive(Debug, Clone, Default, Serialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export, rename = "PlayerStatus")]
 pub struct Status {
     pub path: Option<PathBuf>,
     pub position_ms: u64,

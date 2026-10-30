@@ -8,8 +8,9 @@ use serde::{Deserialize, Serialize};
 /// Plugin API this app offers. A plugin asks for one; newer ones are refused ("update the app").
 pub const API: u32 = 1;
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export, rename = "PluginManifest")]
 pub struct Manifest {
     /// Reverse domain or simple name: `com.example.sleep-timer`.
     pub id: String,

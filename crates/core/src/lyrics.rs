@@ -5,8 +5,9 @@
 use serde::{Deserialize, Serialize};
 
 /// One synced line. Empty text = instrumental gap.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export, rename = "LyricLine")]
 pub struct Line {
     pub ms: u32,
     pub text: String,
@@ -16,8 +17,9 @@ pub struct Line {
 }
 
 /// What Now Playing shows.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export)]
 pub struct Lyrics {
     /// Synced lines; empty = plain only.
     pub lines: Vec<Line>,

@@ -81,8 +81,9 @@ pub struct Input<'a> {
     pub found: &'a [(i64, Vec<Track>)],
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export)]
 pub struct Mix {
     pub id: String,
     pub title: String,
@@ -90,26 +91,31 @@ pub struct Mix {
     pub reason: String,
     pub track_ids: Vec<i64>,
     /// Section on the Mixes page: daily, moment, favorites, explore.
+    #[ts(type = r#""daily" | "moment" | "favorites" | "explore""#)]
     pub kind: &'static str,
     /// What `title` and `reason` are made of, for the UI to word them in its language (they stay English).
     pub words: Words,
     /// Songs new to you, slotted between `track_ids`.
-    #[serde(skip_serializing_if = "Vec::is_empty")]
+    // default: only so ts-rs types the skipped field optional.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub found: Vec<Found>,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, ts_rs::TS)]
+#[ts(export, rename = "MixFound")]
 pub struct Found {
     /// Place in the whole mix (library songs and discoveries together).
     pub at: usize,
     pub track: Track,
 }
 
-#[derive(Debug, Clone, Default, PartialEq, Serialize)]
+#[derive(Debug, Clone, Default, PartialEq, Serialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export, rename = "MixWords", optional_fields)]
 pub struct Words {
     /// morning, afternoon, evening, night.
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[ts(optional, type = r#""morning" | "afternoon" | "evening" | "night""#)]
     pub slot: Option<&'static str>,
     /// 0 = Sunday.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -121,7 +127,9 @@ pub struct Words {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
     /// Artists named in the reason, best first.
-    #[serde(skip_serializing_if = "Vec::is_empty")]
+    // default: as `Mix::found`.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    #[ts(optional = nullable)]
     pub names: Vec<String>,
 }
 

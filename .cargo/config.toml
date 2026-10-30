@@ -1,0 +1,4 @@
+# Rust types → TypeScript (ts-rs): `pnpm types` writes ui/src/shared/generated (committed). Numbers only: i64 / u64 as number.
+[env]
+TS_RS_EXPORT_DIR = { value = "ui/src/shared/generated", relative = true }
+TS_RS_LARGE_INT = "number"

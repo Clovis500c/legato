@@ -6,8 +6,9 @@ use std::sync::Mutex;
 use std::sync::atomic::{AtomicU64, Ordering};
 
 /// Live processing settings.
-#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase", default)]
+#[ts(export, rename = "LiveSettings")]
 pub struct Live {
     /// Adaptive Sound: every song brought to the same loudness, then the volume knob on top.
     pub adaptive: bool,
@@ -33,8 +34,9 @@ impl Live {
 }
 
 /// What plays now, as heard.
-#[derive(Debug, Clone, Copy, Default, PartialEq, Serialize)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Serialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export, rename = "PlayerLevels")]
 pub struct Levels {
     /// Loudness over the last 50 ms (beats: the moving cover), LUFS.
     pub fast: f32,
@@ -47,6 +49,7 @@ pub struct Levels {
     /// Gain Adaptive Sound applies, dB (0 when off).
     pub gain: f32,
     /// Visualizer: dB per band (`spectrum::center`).
+    #[ts(as = "Vec<f32>")]
     pub bands: [f32; crate::spectrum::BANDS],
 }
 

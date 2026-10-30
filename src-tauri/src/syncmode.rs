@@ -47,8 +47,9 @@ struct Config {
     asked: bool,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export, rename = "SyncDevice")]
 pub struct Device {
     name: String,
     at: i64,
@@ -56,8 +57,9 @@ pub struct Device {
 }
 
 /// Settings › Sync.
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export, rename = "SyncStatus")]
 pub struct Status {
     /// OneDrive folders found on this PC.
     onedrive: Vec<String>,
@@ -72,8 +74,9 @@ pub struct Status {
 }
 
 /// A folder before setting up: new, or another PC syncs there already (with a password or not).
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export, rename = "SyncProbe")]
 pub struct Probe {
     exists: bool,
     protected: bool,
@@ -376,6 +379,12 @@ pub async fn sync_offer(app: AppHandle, state: State<'_, AppState>, sync: State<
     }
     Ok(code)
 }
+
+/// "sync-offer" event: the other PC joined with the code (Ok), or the exchange failed (Err). Only writes the type.
+#[cfg(test)]
+#[derive(ts_rs::TS)]
+#[ts(export, rename = "SyncOffer", as = "Result<Merged, String>")]
+struct SyncOfferEvent;
 
 #[tauri::command]
 pub fn sync_offer_stop(sync: State<SyncMode>) {
