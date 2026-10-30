@@ -102,6 +102,18 @@ struct Inner {
     error: Option<String>,
 }
 
+impl Inner {
+    /// Keeps a failed round's text. True when new (not the one held): only then logged. Folder that stays broken
+    /// would fill the diagnostics log, a line a minute. A good round clears the text.
+    fn fail(&mut self, text: &str) -> bool {
+        let fresh = self.error.as_deref() != Some(text);
+        if fresh {
+            self.error = Some(text.to_string());
+        }
+        fresh
+    }
+}
+
 fn device_name() -> String {
     std::env::var("COMPUTERNAME").ok().filter(|n| !n.is_empty()).unwrap_or_else(|| "PC".into())
 }
@@ -233,8 +245,9 @@ async fn round(app: &AppHandle) -> CmdResult<Merged> {
             Ok(m)
         }
         Err(e) => {
-            inner.error = Some(e.to_string());
-            logged("folder", Err(e.to_string()))
+            let text = e.to_string();
+            let fresh = inner.fail(&text);
+            if fresh { logged("folder", Err(text)) } else { Err(text) }
         }
     }
 }
@@ -412,4 +425,24 @@ async fn join(app: AppHandle, state: &AppState, code: String) -> CmdResult<Merge
     let mine = sm::pack(&snapshot(state, &config(state).device, true).map_err(err)?).map_err(err)?;
     let theirs = nearby::sync_join(code.trim(), &mine).await.map_err(err)?;
     tauri::async_runtime::spawn_blocking(move || sm::unpack(&theirs).and_then(|s| take(&app, &s))).await.map_err(err)?.map_err(err)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn a_failure_that_repeats_is_logged_once() {
+        let mut inner = Inner::default();
+        assert!(inner.fail("The sync folder is gone"), "first round to fail");
+        for _ in 0..30 {
+            assert!(!inner.fail("The sync folder is gone"), "same failure a minute later");
+        }
+        assert_eq!(inner.error.as_deref(), Some("The sync folder is gone"), "Settings still shows it");
+        assert!(inner.fail("Enter the sync password on this PC"), "another failure is news");
+        assert!(!inner.fail("Enter the sync password on this PC"));
+        // A good round clears the text (round()): the same failure back later is a new one.
+        inner.error = None;
+        assert!(inner.fail("Enter the sync password on this PC"), "back after a good round");
+    }
 }
