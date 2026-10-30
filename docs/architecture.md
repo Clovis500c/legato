@@ -45,8 +45,9 @@ src-tauri/              thin shell: commands, keychain, WebView2 hook, media pan
 
 Every type a command, an event or a plugin call carries is a Rust type (struct or enum) that derives `ts_rs::TS` and
 carries `#[ts(export)]` ([ts-rs](https://github.com/Aleph-Alpha/ts-rs), types only: the `invoke` wrappers in `api.ts`
-stay by hand). `pnpm types` (`scripts/types.mjs`) empties `ui/src/shared/generated/`, runs ts-rs's export tests
-(`cargo test --workspace --lib export_bindings`) and writes `index.ts`; `api.ts` re-exports the lot, so features keep
+stay by hand). `pnpm types` (`scripts/types.mjs`) runs ts-rs's export tests (`cargo test --workspace --lib
+export_bindings`) into a temporary folder and, only once cargo has succeeded, empties `ui/src/shared/generated/` and
+fills it with the result and `index.ts` (a Rust compile error leaves the committed files alone); `api.ts` re-exports the lot, so features keep
 importing from the API. The files are committed (LF) and `pnpm check` runs the step first, so the type check never
 sees stale types: a changed Rust type breaks the TypeScript build at once. CI (Windows job) fails when the result
 differs from the commit.
