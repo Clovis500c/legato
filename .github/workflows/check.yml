@@ -97,6 +97,60 @@ jobs:
           ALL_PROXY: http://127.0.0.1:9
           NO_PROXY: 127.0.0.1,localhost
 
+  # The built app, driven like a new user (e2e/smoke.mjs, docs/development.md): welcome, a demo folder, a song that plays,
+  # search against a loopback mock, quit. Windows only: it is WebView2's page that is driven. A debug build with the `e2e`
+  # cargo feature (its own identifier, no network, no sound card needed: the engine drains a silent output). The build
+  # and the walk are two steps: the walk is the one held to 5 minutes. A failure leaves screenshots and a report.
+  e2e:
+    name: e2e (windows-latest)
+    runs-on: windows-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      # A failed walk is no reason to throw the build away.
+      - uses: Swatinem/rust-cache@v2
+        with:
+          cache-on-failure: true
+
+      - run: pnpm install --frozen-lockfile
+
+      # Not provisioned by the image, only found on it: say which one runs, or that none does.
+      - name: WebView2 runtime
+        shell: pwsh
+        run: |
+          $id = '{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}'
+          $v = ('HKLM:\SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\' + $id), ('HKCU:\Software\Microsoft\EdgeUpdate\Clients\' + $id) | ForEach-Object { (Get-ItemProperty $_ -ErrorAction SilentlyContinue).pv } | Where-Object { $_ } | Select-Object -First 1
+          if (-not $v) { throw 'No WebView2 runtime on this runner: the app has no window to open' }
+          "WebView2 runtime $v"
+
+      # No debug info: a smaller build and a faster link, nothing here needs a debugger.
+      - run: pnpm e2e --build-only
+        env:
+          CARGO_PROFILE_DEV_DEBUG: 0
+
+      - name: walk
+        timeout-minutes: 5
+        run: pnpm e2e --skip-build
+
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-failure
+          path: target/e2e/shots
+          if-no-files-found: ignore
+
   # Third-party licenses (docs/licenses.md): interface packages, then every Rust crate on every platform.
   licenses:
     runs-on: ubuntu-latest
