@@ -1547,6 +1547,15 @@ const ru: Record<string, string> = {
   'Offline': 'Нет сети',
   'No internet connection: your own files still play. Searches and YouTube come back with the connection.': 'Нет подключения к интернету: твои собственные файлы по-прежнему играют. Поиск и YouTube вернутся вместе с подключением.',
   'No internet connection: the song starts again when your PC is back online.': 'Нет подключения к интернету: трек начнётся заново, когда ПК снова будет в сети.',
+  // Diagnostics (Settings › About, app/ErrorBoundary)
+  'Copy diagnostics': 'Скопировать диагностику',
+  'Versions, the settings that matter and the latest errors, as text for a bug report. Nothing is sent: the log stays on this PC. “Include details” adds song titles, account names and file paths.': 'Версии, важные настройки и последние ошибки в виде текста для отчёта об ошибке. Ничего не отправляется: журнал остаётся на этом компьютере. «Включить подробности» добавляет названия песен, имена аккаунтов и пути к файлам.',
+  'Include details': 'Включить подробности',
+  'Couldn’t copy the diagnostics': 'Не удалось скопировать диагностику',
+  'Something went wrong': 'Что-то пошло не так',
+  'The app hit an unexpected error. Your library isn’t touched: reload to carry on. If it keeps happening, copy the diagnostics into a bug report.': 'В приложении произошла непредвиденная ошибка. Твоя медиатека не затронута: перезагрузи, чтобы продолжить. Если это повторится, скопируй диагностику в отчёт об ошибке.',
+  'Reload': 'Перезагрузить',
+  'diagnostics log errors crash bug report support debug clipboard': 'диагностика журнал лог ошибки сбой крах баг отчёт поддержка отладка буфер обмена',
 }
 
 export default ru

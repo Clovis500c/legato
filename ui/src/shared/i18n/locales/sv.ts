@@ -1547,6 +1547,15 @@ const sv: Record<string, string> = {
   'Offline': 'Offline',
   'No internet connection: your own files still play. Searches and YouTube come back with the connection.': 'Ingen internetanslutning: dina egna filer spelas fortfarande. Sökning och YouTube kommer tillbaka med anslutningen.',
   'No internet connection: the song starts again when your PC is back online.': 'Ingen internetanslutning: låten börjar om när datorn är online igen.',
+  // Diagnostics (Settings › About, app/ErrorBoundary)
+  'Copy diagnostics': 'Kopiera diagnostik',
+  'Versions, the settings that matter and the latest errors, as text for a bug report. Nothing is sent: the log stays on this PC. “Include details” adds song titles, account names and file paths.': 'Versioner, de viktiga inställningarna och de senaste felen, som text för en felrapport. Inget skickas: loggen stannar på den här datorn. ”Ta med detaljer” lägger till låttitlar, kontonamn och filsökvägar.',
+  'Include details': 'Ta med detaljer',
+  'Couldn’t copy the diagnostics': 'Det gick inte att kopiera diagnostiken',
+  'Something went wrong': 'Något gick fel',
+  'The app hit an unexpected error. Your library isn’t touched: reload to carry on. If it keeps happening, copy the diagnostics into a bug report.': 'Appen stötte på ett oväntat fel. Ditt bibliotek är orört: ladda om för att fortsätta. Händer det igen, kopiera diagnostiken till en felrapport.',
+  'Reload': 'Ladda om',
+  'diagnostics log errors crash bug report support debug clipboard': 'diagnostik logg fel krasch bugg felrapport support felsökning urklipp',
 }
 
 export default sv

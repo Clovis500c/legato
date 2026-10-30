@@ -55,6 +55,7 @@ export const SETTINGS_INDEX: SettingEntry[] = [
   { section: 'about', label: msg('App status'), keywords: msg('stats cache memory songs playlists listens') },
   { section: 'about', label: msg('About'), keywords: msg('version license github source privacy') },
   { section: 'about', label: msg('Third-party licenses'), keywords: msg('open source credits notices attribution copyright mit apache mpl fonts') },
+  { section: 'about', label: msg('Copy diagnostics'), keywords: msg('diagnostics log errors crash bug report support debug clipboard') },
   { section: 'playback', label: msg('Advanced fade'), keywords: msg('fade curve crossfade graph volume shape equal power exponential logarithmic s-curve dj') },
   { section: 'playback', label: msg('Fade in after a skip'), keywords: msg('fade manual next pick') },
   { section: 'playback', label: msg('Fade on pause and play'), keywords: msg('fade pause unpause smooth glide') },

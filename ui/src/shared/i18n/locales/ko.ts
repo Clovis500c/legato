@@ -1547,6 +1547,15 @@ const ko: Record<string, string> = {
   'Offline': '오프라인',
   'No internet connection: your own files still play. Searches and YouTube come back with the connection.': '인터넷 연결이 없습니다. 내 파일은 계속 재생됩니다. 검색과 YouTube는 연결되면 다시 사용할 수 있습니다.',
   'No internet connection: the song starts again when your PC is back online.': '인터넷 연결이 없습니다. PC가 다시 온라인이 되면 노래가 처음부터 다시 재생됩니다.',
+  // Diagnostics (Settings › About, app/ErrorBoundary)
+  'Copy diagnostics': '진단 정보 복사',
+  'Versions, the settings that matter and the latest errors, as text for a bug report. Nothing is sent: the log stays on this PC. “Include details” adds song titles, account names and file paths.': '버전, 중요한 설정, 최근 오류를 버그 신고용 텍스트로 만듭니다. 아무것도 전송되지 않으며, 로그는 이 PC에만 남습니다. “세부 정보 포함”을 선택하면 노래 제목, 계정 이름, 파일 경로가 추가됩니다.',
+  'Include details': '세부 정보 포함',
+  'Couldn’t copy the diagnostics': '진단 정보를 복사하지 못했습니다',
+  'Something went wrong': '문제가 발생했습니다',
+  'The app hit an unexpected error. Your library isn’t touched: reload to carry on. If it keeps happening, copy the diagnostics into a bug report.': '앱에서 예기치 않은 오류가 발생했습니다. 보관함에는 영향이 없습니다. 계속하려면 새로고침하세요. 문제가 반복되면 진단 정보를 복사해 버그 신고에 붙여 넣으세요.',
+  'Reload': '새로고침',
+  'diagnostics log errors crash bug report support debug clipboard': '진단 로그 오류 충돌 크래시 버그 신고 지원 디버그 클립보드',
 }
 
 export default ko

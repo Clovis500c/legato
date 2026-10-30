@@ -118,6 +118,25 @@ quiet moment (nothing played for 15 s, no input for a minute). The installer run
 which reopens as it was (queue, screen) and plays the next song. Settings › About shows the version, the update state
 and the app's caches.
 
+## Diagnostics
+
+A local log for bug reports, nothing sent: `diagnostics.log` (then `.1` to `.4`, 1 MB each, 5 MB at most) in the app data
+folder. `crates/core/src/diag.rs` is the pure part: the size-rotating writer (the time-based appenders of `tracing` can't
+hold a size), the line (`2026-10-30T12:34:56.789Z WARN update check failed | the raw error`), the redaction and the report
+text. `src-tauri/src/diag.rs` runs a writer thread (a caller only queues a line, so a slow disk never holds up the
+window; the file opens at the first line), a panic hook chained to the default one, and two async commands: `diag_log`
+(the interface's errors and playback switches, `shared/diag.ts`: throttled, one line per minute at most per text, 30 a
+minute) and `diag_report`. The updater, Sync Mode, sync reports, YouTube Music refusals, the Google session refresh and
+the startup stop log from Rust.
+
+A line is a message and an optional detail. The message is our own words in English (a service, a kind of failure: no
+song title, account name or path); the detail is what the error said, and is copied out only with "Include details".
+Secrets (URL queries, tokens, cookies, emails) are cut before a line reaches the file; without details a copied report
+also hides the user's folder and name in paths. Settings › About › Copy diagnostics builds the text: version, Windows
+build, WebView2 version, the settings that matter, who is signed in, the latest warnings and errors, the latest events.
+The interface forwards uncaught errors, unhandled rejections, errors shown in its alert and a top-level error boundary
+(`app/ErrorBoundary.tsx`: a calm page with Reload and Copy diagnostics).
+
 ## Background (tray)
 
 `src-tauri/src/background.rs`: closing the window keeps the app in the notification area (Settings › General, on by

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { explain } from './errors'
+import { explain, plainKind, rawOf } from './errors'
 
 describe('explain', () => {
   it('says what a network failure means, the raw error kept as detail', () => {
@@ -23,5 +23,17 @@ describe('explain', () => {
       const once = explain(raw).text
       expect(explain(once).text).toBe(once)
     }
+  })
+})
+
+describe('plainKind', () => {
+  it('words a known failure in English, service first, whatever the interface speaks', () => {
+    expect(plainKind('Spotify → 503 Service Unavailable')).toBe('Spotify: The service is having trouble right now: try again later.')
+    expect(plainKind(new Error('Failed to fetch'))).toBe('No internet connection: check your network, then try again.')
+  })
+
+  it('has nothing to say about any other text', () => {
+    expect(plainKind('Playlist not found')).toBeUndefined()
+    expect(rawOf(new Error('Error: Playlist not found'))).toBe('Playlist not found')
   })
 })

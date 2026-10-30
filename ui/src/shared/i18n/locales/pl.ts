@@ -1547,6 +1547,15 @@ const pl: Record<string, string> = {
   'Offline': 'Offline',
   'No internet connection: your own files still play. Searches and YouTube come back with the connection.': 'Brak połączenia z internetem: twoje własne pliki nadal grają. Wyszukiwanie i YouTube wrócą razem z połączeniem.',
   'No internet connection: the song starts again when your PC is back online.': 'Brak połączenia z internetem: utwór zacznie się od nowa, gdy komputer znów będzie online.',
+  // Diagnostics (Settings › About, app/ErrorBoundary)
+  'Copy diagnostics': 'Kopiuj diagnostykę',
+  'Versions, the settings that matter and the latest errors, as text for a bug report. Nothing is sent: the log stays on this PC. “Include details” adds song titles, account names and file paths.': 'Wersje, ważne ustawienia i ostatnie błędy jako tekst do zgłoszenia błędu. Nic nie jest wysyłane: dziennik zostaje na tym komputerze. „Dołącz szczegóły” dodaje tytuły utworów, nazwy kont i ścieżki plików.',
+  'Include details': 'Dołącz szczegóły',
+  'Couldn’t copy the diagnostics': 'Nie udało się skopiować diagnostyki',
+  'Something went wrong': 'Coś poszło nie tak',
+  'The app hit an unexpected error. Your library isn’t touched: reload to carry on. If it keeps happening, copy the diagnostics into a bug report.': 'Aplikacja napotkała nieoczekiwany błąd. Twoja biblioteka nie została naruszona: załaduj ponownie, aby kontynuować. Jeśli to się powtarza, skopiuj diagnostykę do zgłoszenia błędu.',
+  'Reload': 'Załaduj ponownie',
+  'diagnostics log errors crash bug report support debug clipboard': 'diagnostyka dziennik log błędy awaria crash błąd zgłoszenie wsparcie debugowanie schowek',
 }
 
 export default pl

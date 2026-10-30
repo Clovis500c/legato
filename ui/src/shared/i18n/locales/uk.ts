@@ -1547,6 +1547,15 @@ const uk: Record<string, string> = {
   'Offline': 'Немає мережі',
   'No internet connection: your own files still play. Searches and YouTube come back with the connection.': 'Немає підключення до інтернету: твої власні файли й далі грають. Пошук і YouTube повернуться разом із підключенням.',
   'No internet connection: the song starts again when your PC is back online.': 'Немає підключення до інтернету: трек почнеться знову, щойно ПК знову буде в мережі.',
+  // Diagnostics (Settings › About, app/ErrorBoundary)
+  'Copy diagnostics': 'Скопіювати діагностику',
+  'Versions, the settings that matter and the latest errors, as text for a bug report. Nothing is sent: the log stays on this PC. “Include details” adds song titles, account names and file paths.': 'Версії, важливі налаштування й останні помилки у вигляді тексту для звіту про помилку. Нічого не надсилається: журнал залишається на цьому комп’ютері. «Додати подробиці» додає назви пісень, імена облікових записів і шляхи до файлів.',
+  'Include details': 'Додати подробиці',
+  'Couldn’t copy the diagnostics': 'Не вдалося скопіювати діагностику',
+  'Something went wrong': 'Щось пішло не так',
+  'The app hit an unexpected error. Your library isn’t touched: reload to carry on. If it keeps happening, copy the diagnostics into a bug report.': 'У застосунку сталася непередбачена помилка. Твоя медіатека не зачеплена: перезавантаж, щоб продовжити. Якщо це повториться, скопіюй діагностику до звіту про помилку.',
+  'Reload': 'Перезавантажити',
+  'diagnostics log errors crash bug report support debug clipboard': 'діагностика журнал лог помилки збій крах баг звіт підтримка налагодження буфер обміну',
 }
 
 export default uk

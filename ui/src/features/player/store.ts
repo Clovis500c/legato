@@ -13,6 +13,7 @@ import { closeWatch, openWatch, sendWatch, watching } from './watch'
 import { ytPost, type YtUpdate } from './youtube'
 import { tr } from '../../shared/i18n/i18n'
 import { offline } from '../../shared/online'
+import { note, report } from '../../shared/diag'
 
 /** via youtube = embed plays it, else Rust engine (local file, or Apple preview held in memory). */
 export interface NowPlaying {
@@ -240,12 +241,13 @@ function videoRect(): DOMRect | null {
 
 /** Embed refused the video (owner turned embedding off): same video from YouTube's watch page, where it was. */
 function playOnWatchPage(video: string, startMs: number) {
+  note('playback', 'youtube: the embed refused the video, playing it from its watch page')
   const rect = videoRect()
   // The embed stops for good: no second player in the background.
   ytPost(frame, 'command', 'pauseVideo')
-  if (!rect) return void tryOtherUpload(usePlayer.getState().now?.trackId ?? 0, video, tr('This video can’t play in apps'))
+  if (!rect) return void tryOtherUpload(usePlayer.getState().now?.trackId ?? 0, video, tr('This video can’t play in apps'), 'no room for the watch page')
   // Cover mode: made hidden, it plays unseen.
-  openWatch(video, startMs / 1000, useVideoSlot.getState().hidden ? null : rect).catch(() => tryOtherUpload(usePlayer.getState().now?.trackId ?? 0, video, tr('This video can’t play in apps')))
+  openWatch(video, startMs / 1000, useVideoSlot.getState().hidden ? null : rect).catch(() => tryOtherUpload(usePlayer.getState().now?.trackId ?? 0, video, tr('This video can’t play in apps'), 'the watch page failed to open'))
   // The watch page can sit unstarted too (cookie wall, sign-in page): checked again, a little longer.
   watchForStuck(usePlayer.getState().playId, 15_000)
 }
@@ -277,9 +279,11 @@ function waitForNetwork(playId: number) {
   const first = offlineFor < 0
   offlineFor = playId
   if (!first) return
+  report('warn', 'playback', 'offline: waiting for the network to play again')
   useStore.getState().notify(tr('No internet connection: the song starts again when your PC is back online.'), { kind: 'error' })
   const back = () => {
     window.removeEventListener('online', back)
+    note('playback', 'network back: the song starts again')
     const id = offlineFor
     offlineFor = -1
     const p = usePlayer.getState()
@@ -305,12 +309,13 @@ function watchForStuck(playId: number, wait = 6_000) {
       block(id)
       return playOnWatchPage(id, 0)
     }
-    void tryOtherUpload(p.now?.trackId ?? 0, id, tr('This video can’t play in apps'))
+    void tryOtherUpload(p.now?.trackId ?? 0, id, tr('This video can’t play in apps'), 'the watch page never started')
   }
   stuckTimer = setTimeout(check, wait)
 }
 
-async function tryOtherUpload(trackId: number, failed: string, why: string) {
+/** `why` = the notice's words; `cause` = the same in English for the diagnostics log (no title, no name). */
+async function tryOtherUpload(trackId: number, failed: string, why: string, cause: string) {
   // Offline, nothing can be told about the video (waitForNetwork).
   if (offline()) return waitForNetwork(usePlayer.getState().playId)
   unplayable.add(failed)
@@ -324,6 +329,7 @@ async function tryOtherUpload(trackId: number, failed: string, why: string) {
   const next = others.ids.find((v) => !unplayable.has(v))
   const { notify } = useStore.getState()
   if (next) {
+    note('playback', `youtube: ${cause}, trying another upload`)
     notify(tr('{why}: playing another upload of the song', { why }))
     // Same embed: the frame loads the new id (loadVideoById).
     return usePlayer.setState((s) => (s.now ? { now: { ...s.now, youtubeId: next }, playId: s.playId + 1, positionMs: 0, playing: true } : {}))
@@ -335,9 +341,11 @@ async function tryOtherUpload(trackId: number, failed: string, why: string) {
     failedRun.clear()
     // Last song's stuck check (10 s) would start the queue again.
     clearTimeout(stuckTimer)
+    report('warn', 'playback', `youtube: ${cause}, and no song in the queue can play: stopped`)
     notify(tr('No song in the queue can play here: stopped'), { kind: 'error' })
     return usePlayer.setState({ playing: false })
   }
+  report('warn', 'playback', `youtube: ${cause}, no other upload found: skipped`)
   notify(tr('{why}, and no other upload was found: skipped', { why }), { kind: 'error' })
   // Manual step: repeat one would replay the blocked video forever.
   p.step(1)
@@ -645,7 +653,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     const { now } = get()
     // Watch page can't play it either (region, age, removed): another upload of the song, else the next song.
     if (u.unplayable !== undefined) {
-      if (now?.trackId && now.youtubeId) return void tryOtherUpload(now.trackId, now.youtubeId, tr('This video can’t play here ({reason})', { reason: u.unplayable }))
+      if (now?.trackId && now.youtubeId) return void tryOtherUpload(now.trackId, now.youtubeId, tr('This video can’t play here ({reason})', { reason: u.unplayable }), 'unplayable on the watch page')
       useStore.getState().notify(tr('This video can’t play here ({reason}): skipped', { reason: u.unplayable }), { kind: 'error' })
       return get().step(1)
     }
@@ -653,14 +661,14 @@ export const usePlayer = create<PlayerState>((set, get) => ({
       // Network gone mid-song (player error 5…): the video isn't to blame, nothing is blocked.
       if (offline()) return waitForNetwork(get().playId)
       // 100: removed. Another upload of the same song, else the next song.
-      if (now?.trackId && now.youtubeId && u.error === 100) return void tryOtherUpload(now.trackId, now.youtubeId, tr('This video was removed'))
+      if (now?.trackId && now.youtubeId && u.error === 100) return void tryOtherUpload(now.trackId, now.youtubeId, tr('This video was removed'), 'removed (error 100)')
       // Any other refusal (101 / 150 embedding off, 152 / 153 player configuration, 5 player error…): same video from
       // its watch page, invisible switch. Refused there too: another upload, never a dead stop.
       if (now?.youtubeId && !watching(now.youtubeId)) {
         block(now.youtubeId)
         return playOnWatchPage(now.youtubeId, get().positionMs)
       }
-      if (now?.trackId && now.youtubeId) return void tryOtherUpload(now.trackId, now.youtubeId, tr('YouTube playback failed (error {code}).', { code: u.error }))
+      if (now?.trackId && now.youtubeId) return void tryOtherUpload(now.trackId, now.youtubeId, tr('YouTube playback failed (error {code}).', { code: u.error }), `player error ${u.error}`)
       useStore.setState({ error: tr('YouTube playback failed (error {code}).', { code: u.error }) })
       return set({ playing: false })
     }

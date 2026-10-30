@@ -255,4 +255,8 @@ export const api = {
   holdPage: () => invoke<void>('hold_page'),
   /** Windows media panel; null = nothing playing. Cover: local file's (trackId), else `art` URL. */
   mediaUpdate: (now: MediaNow | null, trackId: number | null, art: string | null) => invoke<void>('media_update', { now, trackId, art }),
+  /** One line in the local diagnostics log (shared/diag.ts). message = our words; detail = what an error said, shown only with Include details. */
+  diagLog: (level: 'info' | 'warn' | 'error', area: string, message: string, detail?: string) => invoke<void>('diag_log', { level, area, message, detail }),
+  /** Settings › About › Copy diagnostics: the text for a bug report. details = song titles, account names and paths too. */
+  diagReport: (details: boolean) => invoke<string>('diag_report', { details }),
 }

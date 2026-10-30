@@ -1547,6 +1547,15 @@ const id: Record<string, string> = {
   'Offline': 'Offline',
   'No internet connection: your own files still play. Searches and YouTube come back with the connection.': 'Tidak ada koneksi internet: file milikmu tetap bisa diputar. Pencarian dan YouTube kembali saat koneksi kembali.',
   'No internet connection: the song starts again when your PC is back online.': 'Tidak ada koneksi internet: lagu diputar ulang dari awal saat PC-mu kembali online.',
+  // Diagnostics (Settings › About, app/ErrorBoundary)
+  'Copy diagnostics': 'Salin diagnostik',
+  'Versions, the settings that matter and the latest errors, as text for a bug report. Nothing is sent: the log stays on this PC. “Include details” adds song titles, account names and file paths.': 'Versi, pengaturan yang penting, dan kesalahan terbaru, sebagai teks untuk laporan bug. Tidak ada yang dikirim: log tetap di PC ini. “Sertakan detail” menambahkan judul lagu, nama akun, dan jalur file.',
+  'Include details': 'Sertakan detail',
+  'Couldn’t copy the diagnostics': 'Diagnostik tidak bisa disalin',
+  'Something went wrong': 'Terjadi masalah',
+  'The app hit an unexpected error. Your library isn’t touched: reload to carry on. If it keeps happening, copy the diagnostics into a bug report.': 'Aplikasi mengalami kesalahan tak terduga. Koleksimu tidak tersentuh: muat ulang untuk melanjutkan. Jika terus terjadi, salin diagnostik ke laporan bug.',
+  'Reload': 'Muat ulang',
+  'diagnostics log errors crash bug report support debug clipboard': 'diagnostik log kesalahan error crash bug laporan dukungan debug papan klip',
 }
 
 export default id

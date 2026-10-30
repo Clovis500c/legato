@@ -1547,6 +1547,15 @@ const nl: Record<string, string> = {
   'Offline': 'Offline',
   'No internet connection: your own files still play. Searches and YouTube come back with the connection.': 'Geen internetverbinding: je eigen bestanden spelen gewoon. Zoeken en YouTube komen terug met de verbinding.',
   'No internet connection: the song starts again when your PC is back online.': 'Geen internetverbinding: het nummer begint opnieuw zodra je pc weer online is.',
+  // Diagnostics (Settings › About, app/ErrorBoundary)
+  'Copy diagnostics': 'Diagnose kopiëren',
+  'Versions, the settings that matter and the latest errors, as text for a bug report. Nothing is sent: the log stays on this PC. “Include details” adds song titles, account names and file paths.': 'Versies, de belangrijke instellingen en de laatste fouten, als tekst voor een bugmelding. Er wordt niets verzonden: het logboek blijft op deze pc. “Details opnemen” voegt nummertitels, accountnamen en bestandspaden toe.',
+  'Include details': 'Details opnemen',
+  'Couldn’t copy the diagnostics': 'De diagnose kon niet worden gekopieerd',
+  'Something went wrong': 'Er is iets misgegaan',
+  'The app hit an unexpected error. Your library isn’t touched: reload to carry on. If it keeps happening, copy the diagnostics into a bug report.': 'De app is op een onverwachte fout gestuit. Je bibliotheek blijft ongemoeid: laad opnieuw om verder te gaan. Gebeurt het weer, kopieer dan de diagnose in een bugmelding.',
+  'Reload': 'Opnieuw laden',
+  'diagnostics log errors crash bug report support debug clipboard': 'diagnose logboek log fouten crash bug bugmelding ondersteuning foutopsporing klembord',
 }
 
 export default nl

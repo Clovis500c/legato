@@ -1547,6 +1547,15 @@ const vi: Record<string, string> = {
   'Offline': 'Ngoại tuyến',
   'No internet connection: your own files still play. Searches and YouTube come back with the connection.': 'Không có kết nối internet: tệp của riêng bạn vẫn phát được. Tìm kiếm và YouTube sẽ trở lại khi có kết nối.',
   'No internet connection: the song starts again when your PC is back online.': 'Không có kết nối internet: bài hát sẽ phát lại từ đầu khi PC của bạn trực tuyến trở lại.',
+  // Diagnostics (Settings › About, app/ErrorBoundary)
+  'Copy diagnostics': 'Sao chép chẩn đoán',
+  'Versions, the settings that matter and the latest errors, as text for a bug report. Nothing is sent: the log stays on this PC. “Include details” adds song titles, account names and file paths.': 'Phiên bản, các cài đặt quan trọng và những lỗi gần nhất, dưới dạng văn bản cho báo cáo lỗi. Không có gì được gửi đi: nhật ký nằm lại trên PC này. “Bao gồm chi tiết” thêm tên bài hát, tên tài khoản và đường dẫn tệp.',
+  'Include details': 'Bao gồm chi tiết',
+  'Couldn’t copy the diagnostics': 'Không thể sao chép chẩn đoán',
+  'Something went wrong': 'Đã xảy ra sự cố',
+  'The app hit an unexpected error. Your library isn’t touched: reload to carry on. If it keeps happening, copy the diagnostics into a bug report.': 'Ứng dụng gặp lỗi bất ngờ. Thư viện của bạn không bị ảnh hưởng: hãy tải lại để tiếp tục. Nếu lỗi cứ lặp lại, hãy sao chép chẩn đoán vào báo cáo lỗi.',
+  'Reload': 'Tải lại',
+  'diagnostics log errors crash bug report support debug clipboard': 'chẩn đoán nhật ký log lỗi sự cố treo crash bug báo cáo hỗ trợ gỡ lỗi bảng nhớ tạm',
 }
 
 export default vi

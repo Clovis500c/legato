@@ -18,11 +18,24 @@ const KINDS: [RegExp, string][] = [
 /** A service named first, as Rust prefixes its errors ("YouTube Music: …"): it stays in front of the explanation. */
 const SERVICE = /^(YouTube Music|YouTube|Apple Music|Spotify|Last\.fm|LRCLIB|AudD|Discord)\b/
 
+/** The text of an error, without the "Error: " JavaScript puts in front of a thrown string. */
+export const rawOf = (error: unknown) => (error instanceof Error ? error.message : String(error)).replace(/^Error: /, '').trim()
+
 /** A raw error, or the same text when it's already in plain words (most of the app's own errors are). */
 export function explain(error: unknown): Explained {
-  const raw = (error instanceof Error ? error.message : String(error)).replace(/^Error: /, '').trim()
+  const raw = rawOf(error)
   const kind = KINDS.find(([re]) => re.test(raw))
   if (!kind) return { text: raw }
   const service = SERVICE.exec(raw)?.[1]
   return { text: service ? `${service}: ${tr(kind[1])}` : tr(kind[1]), detail: raw }
+}
+
+/** A known failure in plain English, service first ("Spotify: No internet connection…"); undefined for any other text. Never
+ * translated: the diagnostics log is read by whoever fixes the bug, whatever the interface's language. */
+export function plainKind(error: unknown): string | undefined {
+  const raw = rawOf(error)
+  const kind = KINDS.find(([re]) => re.test(raw))
+  if (!kind) return undefined
+  const service = SERVICE.exec(raw)?.[1]
+  return service ? `${service}: ${kind[1]}` : kind[1]
 }

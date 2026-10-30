@@ -288,8 +288,9 @@ every session.
       local song, search signed out (mocked), quit. Catches what unit tests can't (the "two songs at once" class).
 - [ ] The "Check live in the real app" list as a scripted checklist (a dev-only page that drives each step and logs the
       result), so a pass takes minutes, not a session.
-- [ ] Crash and error log kept locally (rotating file, Settings › About › "Copy diagnostics"): bug reports with facts,
-      nothing sent.
+- [x] Crash and error log kept locally (rotating file, Settings › About › "Copy diagnostics"): bug reports with facts,
+      nothing sent. Limit: a crash that ends the process without a Rust panic (a native fault, a kill) leaves no line;
+      Windows' event log and minidumps are not read.
 - [ ] Faster CI: run the macOS job only on pushes that touch Rust or `src-tauri`, `cargo nextest`, `sccache`; Linux
       job stays crates only.
 - [ ] `graphify hook install` (the user's go) so the graph stays fresh without asking.

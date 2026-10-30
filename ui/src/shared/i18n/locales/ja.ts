@@ -1547,6 +1547,15 @@ const ja: Record<string, string> = {
   'Offline': 'オフライン',
   'No internet connection: your own files still play. Searches and YouTube come back with the connection.': 'インターネットに接続されていません：自分のファイルは引き続き再生できます。検索とYouTubeは接続が戻ると使えます。',
   'No internet connection: the song starts again when your PC is back online.': 'インターネットに接続されていません：PCがオンラインに戻ると曲が最初から再生されます。',
+  // Diagnostics (Settings › About, app/ErrorBoundary)
+  'Copy diagnostics': '診断情報をコピー',
+  'Versions, the settings that matter and the latest errors, as text for a bug report. Nothing is sent: the log stays on this PC. “Include details” adds song titles, account names and file paths.': 'バージョン、主な設定、最新のエラーを、不具合報告用のテキストとして。何も送信されません。ログはこのPCにだけ残ります。「詳細を含める」を選ぶと、曲名、アカウント名、ファイルのパスが加わります。',
+  'Include details': '詳細を含める',
+  'Couldn’t copy the diagnostics': '診断情報をコピーできませんでした',
+  'Something went wrong': '問題が発生しました',
+  'The app hit an unexpected error. Your library isn’t touched: reload to carry on. If it keeps happening, copy the diagnostics into a bug report.': 'アプリで予期しないエラーが起きました。ライブラリには影響していません。再読み込みして続けてください。繰り返し起きる場合は、診断情報を不具合報告にコピーしてください。',
+  'Reload': '再読み込み',
+  'diagnostics log errors crash bug report support debug clipboard': '診断 ログ エラー クラッシュ バグ 不具合 報告 サポート デバッグ クリップボード',
 }
 
 export default ja

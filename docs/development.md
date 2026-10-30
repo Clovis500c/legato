@@ -30,7 +30,7 @@ start at sign-in without its dev server), and background update checks only run 
 
 | What | Windows | macOS | Linux |
 |---|---|---|---|
-| Library (`library.db`), cover cache (`art/`), shield lists (`shield/`) | `%APPDATA%\app.legato.desktop` | `~/Library/Application Support/app.legato.desktop` | `~/.local/share/app.legato.desktop` |
+| Library (`library.db`), cover cache (`art/`), shield lists (`shield/`), diagnostics log (`diagnostics.log`, `.1` to `.4`) | `%APPDATA%\app.legato.desktop` | `~/Library/Application Support/app.legato.desktop` | `~/.local/share/app.legato.desktop` |
 | Google session (webview cookies) | `%LOCALAPPDATA%\app.legato.desktop\EBWebView` | The system webview's own store | The system webview's own store |
 | Secrets | Credential Manager | Keychain | Secret Service |
 

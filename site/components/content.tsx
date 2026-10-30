@@ -48,6 +48,7 @@ export const PRIVACY: [string, string][] = [
   ['Sync Mode', 'Off until you set it up. One file per PC in a folder you pick (OneDrive by default), sealed with your password if you set one. Over your network, a 6-digit code seals the exchange.'],
   ['YouTube embedding check', "When a YouTube song starts, its video id (and the next two) goes to YouTube's oEmbed, to learn whether its owner allows embedding. The answer is kept a day."],
   ['Updates', 'At launch, the app asks GitHub whether a newer version exists, and installs it between two songs.'],
+  ['Error log', 'Errors and playback switches are noted in a small log on this PC (5 MB at most). Nothing sends it: Settings › About › Copy diagnostics puts a summary in your clipboard for a bug report, without song titles or account names unless you ask.'],
 ]
 
 export const SERVICES: [string, string][] = [
