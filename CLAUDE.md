@@ -56,3 +56,15 @@ Design direction (v2): `docs/design.md`; mockups in the Figma file "Untitled" (t
   wait there freezes the whole app: Windows' AppHang on v0.1.217, 2026-10-23).
 - Small commits, one tested step at a time.
 - Check API quotas and endpoints before freezing them (they change; Spotify renamed `/tracks` to `/items` in February 2026).
+
+## graphify
+
+This project has a knowledge graph at graphify-out/ with god nodes, community structure, and cross-file relationships.
+
+Rules:
+- For codebase questions, first run `graphify query "<question>"` when graphify-out/graph.json exists. Use `graphify path "<A>" "<B>"` for relationships and `graphify explain "<concept>"` for focused concepts. These return a scoped subgraph, usually much smaller than GRAPH_REPORT.md or raw grep output.
+- Read graphify-out/GRAPH_REPORT.md only for broad architecture review or when query/path/explain do not surface enough context.
+- After modifying code, run `graphify update .` to keep the graph current (AST-only, no API cost).
+- Code only (local AST: no LLM, no subagents), so `docs/` isn't in it: read those directly. No graph yet (new clone):
+  `graphify extract . --code-only --cargo`, an empty `graphify-out/.graphify_labels.json` (`{}`: communities named
+  after their hub, no LLM), then `graphify cluster-only .`.
