@@ -1,6 +1,7 @@
 pub mod library;
 pub mod cache;
 pub mod cover;
+pub mod diag;
 pub mod local;
 pub mod lyrics;
 pub mod history;
