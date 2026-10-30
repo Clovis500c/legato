@@ -1,0 +1,23 @@
+{
+  "resultCount": 2,
+  "results": [
+    {
+      "wrapperType": "track",
+      "kind": "song",
+      "trackId": 900000001,
+      "artistName": "Glass Harbour",
+      "collectionName": "Lanterns",
+      "trackName": "Paper Lanterns",
+      "trackTimeMillis": 201000
+    },
+    {
+      "wrapperType": "track",
+      "kind": "song",
+      "trackId": 900000002,
+      "artistName": "Moss and Stone",
+      "collectionName": "Night Shift",
+      "trackName": "Night Bus",
+      "trackTimeMillis": 178000
+    }
+  ]
+}

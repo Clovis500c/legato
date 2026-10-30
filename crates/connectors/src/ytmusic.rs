@@ -626,6 +626,16 @@ mod tests {
         assert_eq!((t[1].artist.as_str(), t[1].duration_ms, t[1].ids[&Source::Youtube].as_str()), ("A Channel", Some(3_723_000), "v2"));
     }
 
+    /// The smoke test's mock (e2e/mock.mjs) answers with this file: it has to read the way the client expects.
+    #[tokio::test]
+    async fn smoke_test_fixture_reads() {
+        let mut s = Server::new_async().await;
+        s.mock("POST", "/search").match_query(Matcher::Any).with_body(include_str!("../../../e2e/fixtures/ytmusic-search.json")).create_async().await;
+        let found = YouTubeMusic::anonymous_with_api(&s.url()).search_songs("paper lanterns").await.unwrap();
+        assert_eq!(found.iter().map(|t| (t.title.as_str(), t.artist.as_str(), t.album.as_deref(), t.duration_ms)).collect::<Vec<_>>(), [("Paper Lanterns", "Glass Harbour", Some("Lanterns"), Some(201_000)), ("Tidewater", "Glass Harbour", Some("Lanterns"), Some(245_000))]);
+        assert!(found.iter().all(|t| t.musicness == Some(music_core::musicness::Musicness::Music)), "{found:?}");
+    }
+
     #[tokio::test]
     async fn add_reports_refusals() {
         let mut s = Server::new_async().await;

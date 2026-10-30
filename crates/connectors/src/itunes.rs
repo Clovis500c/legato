@@ -254,6 +254,15 @@ mod tests {
         assert!(album(&format!("{}/search", s.url()), &format!("{}/lookup", s.url()), "Daft Punk", "Homework", "FR").await.unwrap().is_none());
     }
 
+    /// The smoke test's mock (e2e/mock.mjs) answers with this file: it has to read the way the client expects.
+    #[tokio::test]
+    async fn smoke_test_fixture_reads() {
+        let mut s = Server::new_async().await;
+        s.mock("GET", "/search").match_query(Matcher::Any).with_body(include_str!("../../../e2e/fixtures/itunes-search.json")).create_async().await;
+        let found = search(&format!("{}/search", s.url()), "paper lanterns", "US").await.unwrap();
+        assert_eq!(found.iter().map(|t| (t.title.as_str(), t.artist.as_str(), t.duration_ms)).collect::<Vec<_>>(), [("Paper Lanterns", "Glass Harbour", Some(201_000)), ("Night Bus", "Moss and Stone", Some(178_000))]);
+    }
+
     #[tokio::test]
     async fn preview_needs_apple_hosts() {
         let mut s = Server::new_async().await;
