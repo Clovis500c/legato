@@ -1,7 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { useStore } from '../../app/store'
 import type { LibraryTrack } from '../../shared/api'
-import { usePlayer } from './store'
+import { rememberEnd } from './ends'
+import { NO_FADE } from './fade'
+import { tailVolume, usePlayer } from './store'
 
 const song = (id: number): LibraryTrack => ({ id, added: 0, title: `Song ${id}`, artist: 'Artist', album: null, durationMs: null, isrc: null, ids: { youtube: `video${id}` } })
 // No Tauri here: IPC calls fail, other uploads come back empty. A macrotask lets their awaits settle.
@@ -98,6 +100,36 @@ describe('fade in', () => {
     await settle()
     expect(usePlayer.getState().now?.youtubeId).toBe('video6')
     expect(usePlayer.getState().fadeIn).toBe(5)
+  })
+})
+
+// YouTube sends a video's length once, as it loads; later reports carry the time alone.
+describe('song ends', () => {
+  it('fades the overlap’s old song out to its end, then stops it there', async () => {
+    usePlayer.setState({ repeat: 'off', volume: 1, fade: { out: 8, in: 8, outCurve: 'linear', inCurve: 'linear', skip: false, pause: 0 } })
+    usePlayer.getState().playTracks([song(31), song(32)], 0)
+    await settle()
+    usePlayer.getState().onYoutube({ state: 1, time: 1, duration: 200 })
+    usePlayer.getState().onYoutube({ time: 192.5 })
+    expect(usePlayer.getState().now?.youtubeId).toBe('video32')
+    expect(usePlayer.getState().tail).toMatchObject({ videoId: 'video31', end: 200_000, done: false })
+    // Regression guard: the old song played on at full volume under the next one (2026-10-30).
+    expect(tailVolume({ time: 196 })).toBe(50)
+    expect(tailVolume({ time: 200 })).toBeUndefined()
+    expect(usePlayer.getState().tail?.done).toBe(true)
+  })
+
+  it('moves on at a learned early end', async () => {
+    usePlayer.setState({ repeat: 'off', fade: NO_FADE })
+    rememberEnd('video34', 150)
+    usePlayer.getState().playTracks([song(34), song(35)], 0)
+    await settle()
+    usePlayer.getState().onYoutube({ state: 1, time: 1, duration: 160 })
+    expect(usePlayer.getState().durationMs).toBe(150_000)
+    usePlayer.getState().onYoutube({ time: 149 })
+    expect(usePlayer.getState().now?.youtubeId).toBe('video34')
+    usePlayer.getState().onYoutube({ time: 150.2 })
+    expect(usePlayer.getState().now?.youtubeId).toBe('video35')
   })
 })
 

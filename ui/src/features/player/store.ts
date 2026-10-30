@@ -63,9 +63,10 @@ interface PlayerState {
   /**
    * The other embed (overlap): its song fading out while the next one plays, then stopped (done) and kept for the next
    * overlap. Never unmounted while a YouTube song plays: removing an embed stalled the other one's video ~15 s, sound
-   * gone after the fade (Chromium, 2026-10-28). key = its frame's.
+   * gone after the fade (Chromium, 2026-10-28). key = its frame's; end = its song's end (ms), where the overlap was
+   * timed and its fade out reaches silence.
    */
-  tail: { key: number; videoId: string; done: boolean } | null
+  tail: { key: number; videoId: string; end: number; done: boolean } | null
   /** Key of the playing embed; the two embeds swap roles at each overlap. */
   frameKey: number
   toggleShuffle: () => void
@@ -262,6 +263,8 @@ let pausedAt = 0
 const PAUSE_HOLD_MS = 5000
 // Current song came by the queue moving on (song ended): Skip long songs applies once its length is known.
 let reachedAuto = false
+// Length of the playing video, ms (0 = not known yet). YouTube sends it once, as the video loads: kept for the song.
+let videoMs = 0
 let stuckTimer: ReturnType<typeof setTimeout> | undefined
 
 // No network (Windows says so): a video that won't start isn't refused. Nothing is blocked or skipped; playback pauses
@@ -466,7 +469,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
       if (get().now?.youtubeId === video) {
         yt('seekTo', start / 1000, true)
         yt('playVideo')
-      }
+      } else videoMs = 0
       ytFresh = true
       set({ now: { ...base, youtubeId: video } })
       // Fade in starts silent: volume set before the embed loads the next video (it keeps the last one).
@@ -675,19 +678,20 @@ export const usePlayer = create<PlayerState>((set, get) => ({
       u = { ...u, state: undefined }
     }
     // The song's own end (learned early end) is the length everywhere: fades, overlap, times shown.
-    const videoMs = u.duration ? u.duration * 1000 : 0
-    const durationMs = videoMs && get().earlyEnds ? songEnd(now?.youtubeId, videoMs) : videoMs
+    if (u.duration) videoMs = u.duration * 1000
+    const songMs = videoMs && get().earlyEnds ? songEnd(now?.youtubeId, videoMs) : videoMs
     set({
       ...(u.state !== undefined && u.state !== 3 && { playing: u.state === 1 }),
       ...(u.time !== undefined && { positionMs: u.time * 1000 }),
-      ...(durationMs && { durationMs }),
+      ...(u.duration && { durationMs: songMs }),
     })
     if (u.time !== undefined) {
       progress(u.time * 1000, videoMs || undefined)
       get().applyVolume()
       overlap()
-      // Past the song's own end, silence left: over (unless the overlap just moved on).
-      if (durationMs < videoMs && u.time * 1000 >= durationMs && get().now === now) return songOver()
+      // Past the song's own end, silence left: over (unless the overlap just moved on). Checked at each report: the
+      // length came once (2026-10-30: read from each report, an early end was only ever reached by the overlap).
+      if (songMs < videoMs && u.time * 1000 >= songMs && get().now === now) return songOver()
     }
     if (u.state === 0) {
       endListen(true)
@@ -765,7 +769,19 @@ function overlap() {
   bindLiveFrame(null)
   void p.playAt(i, undefined, { auto: true })
   // The stopped embed takes the next song into its running player; the first overlap makes it.
-  usePlayer.setState({ tail: { key: p.frameKey, videoId: now.youtubeId, done: false }, frameKey: p.tail?.key ?? p.frameKey + 1 })
+  usePlayer.setState({ tail: { key: p.frameKey, videoId: now.youtubeId, end: p.durationMs!, done: false }, frameKey: p.tail?.key ?? p.frameKey + 1 })
+}
+
+/**
+ * Report of the overlap's tail (PlayerBar): its fade out to its song's end, then stopped there. Volume to send it, if
+ * any. The end comes from the overlap: YouTube sends a video's length once, as it loads (2026-10-30: read from each
+ * report, the tail never faded and played on at full volume under the next song).
+ */
+export function tailVolume(u: YtUpdate): number | undefined {
+  const { tail, volume, fade } = usePlayer.getState()
+  if (!tail || tail.done) return
+  if (u.state === 0 || u.error !== undefined || (u.time !== undefined && u.time * 1000 >= tail.end)) return void usePlayer.setState({ tail: stopTail(tail) })
+  if (u.time !== undefined) return Math.round(volume * fadeGain(u.time * 1000, tail.end, fade, false) * 100)
 }
 
 // A new song, or its video: playAt counts the play before it sets what plays, so the video is watched once it's set.
