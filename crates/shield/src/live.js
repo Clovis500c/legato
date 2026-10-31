@@ -46,6 +46,9 @@
   const QUIET_LUFS = -50
   const QUIET_S = 2
   const END_S = 25
+  // Late start (ui player/ends.ts): silence from the very start of the song for LEAD_S or more, then music. Said once
+  // per song, from where the music began; a seek in between (the time not matching what was heard) says nothing.
+  const LEAD_S = 2
   const MUTED = Object.getOwnPropertyDescriptor(HTMLMediaElement.prototype, 'muted')
 
   // Live Editor, same settings and order as crates/dsp (effects.rs, chain.rs, stretch.rs). Speed and tempo: the
@@ -417,7 +420,7 @@
       await ctx.resume()
       if (ctx.state !== 'running') throw new Error('Sound processing is waiting for a click in the app')
       if (!settings.on || g || document.querySelector('video') !== video || full === settings.listen) return void ctx.close()
-      const s = { ctx, video, stream, input, full, fx: null, post, direct, gain, limiter, gate, proven: false, told: false, k, raw, buf: new Float32Array(2048), track: null, src: null, wanted: video.muted, momentary: 0, short: 0, peak: 0, gainDb: full ? startGain(0) : 0, elapsed: 0, at: performance.now(), time: video.currentTime, silent: 0, quietAt: null, endSaid: false }
+      const s = { ctx, video, stream, input, full, fx: null, post, direct, gain, limiter, gate, proven: false, told: false, k, raw, buf: new Float32Array(2048), track: null, src: null, wanted: video.muted, momentary: 0, short: 0, peak: 0, gainDb: full ? startGain(0) : 0, elapsed: 0, at: performance.now(), time: video.currentTime, silent: 0, quietAt: null, endSaid: false, leadFrom: null, leadQuiet: 0, leadSaid: false }
       // The captured track changes with each video (new metadata): follow it.
       s.plug = () => {
         // Newest live track: the next video in the same element adds one, the old one stays "live" but silent
@@ -428,6 +431,9 @@
         s.momentary = s.short = s.elapsed = s.silent = 0
         s.quietAt = null
         s.endSaid = false
+        s.leadFrom = null
+        s.leadQuiet = 0
+        s.leadSaid = false
         // New source: proven again before the element goes quiet.
         prove(s, false)
         s.told = false
@@ -623,6 +629,19 @@
     if (g.quietAt !== null && !g.endSaid && t - g.quietAt >= QUIET_S) {
       g.endSaid = true
       send({ end: g.quietAt })
+    }
+    // Late start: the first quiet reads from the start, then the first sound.
+    if (!g.leadSaid && playing) {
+      if (fast < QUIET_LUFS) {
+        if (g.leadFrom === null) {
+          g.leadFrom = t
+          if (t > 1) g.leadSaid = true
+        }
+        g.leadQuiet += dt
+      } else {
+        g.leadSaid = true
+        if (g.leadFrom !== null && g.leadQuiet >= LEAD_S && t - g.leadFrom <= g.leadQuiet + 1) send({ lead: t })
+      }
     }
     send({ levels: { fast, momentary: mom, short, peak: g.peak, gain: g.gainDb, bands: bands(g.raw) } })
   }

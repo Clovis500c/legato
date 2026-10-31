@@ -1585,6 +1585,9 @@ const id: Record<string, string> = {
   '{n} GB': '{n} GB',
   'covers pictures images artwork cache disk space storage size limit clear delete empty free': 'sampul gambar artwork cache disk ruang penyimpanan ukuran batas bersihkan hapus kosongkan',
   'Couldn’t load this page.': 'Halaman ini tidak dapat dimuat.',
+  'Skip silence': 'Lewati hening',
+  'Songs start on the music and end where it ends, when they open or close with more than a moment of silence. Off by default: some silences are meant (hidden tracks, gapless albums)': 'Lagu dimulai dari musiknya dan berakhir di tempat musik berakhir, jika dibuka atau ditutup dengan hening lebih dari sesaat. Mati secara bawaan: sebagian hening disengaja (lagu tersembunyi, album tanpa jeda)',
+  'silence quiet start end intro outro gap trim skip hidden track gapless': 'hening sunyi awal akhir intro outro jeda potong lewati lagu tersembunyi tanpa jeda',
 }
 
 export default id

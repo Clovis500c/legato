@@ -125,6 +125,7 @@ export const api = {
   player: (cmd: PlayerCommand) => invoke<void>('player', { cmd }),
   playerStatus: () => invoke<PlayerStatus>('player_status'),
   /** Live processing of local files (crates/dsp): applies from the next block, nothing restarts. */
+  silencePrepare: (paths: string[]) => invoke<void>('silence_prepare', { paths }),
   playerLive: (settings: LiveSettings) => invoke<void>('player_live', { settings }),
   /** Live Editor: a song's saved edits (key from effects.ts songKey), or the presets (null). */
   edits: (song: string | null) => invoke<Edit[]>('edits', { song }),

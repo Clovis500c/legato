@@ -1585,6 +1585,9 @@ const hi: Record<string, string> = {
   '{n} GB': '{n} GB',
   'covers pictures images artwork cache disk space storage size limit clear delete empty free': 'कवर तस्वीर चित्र आर्टवर्क कैश डिस्क जगह स्टोरेज आकार सीमा साफ़ हटाएँ खाली',
   'Couldn’t load this page.': 'यह पेज लोड नहीं हो सका।',
+  'Skip silence': 'खामोशी छोड़ें',
+  'Songs start on the music and end where it ends, when they open or close with more than a moment of silence. Off by default: some silences are meant (hidden tracks, gapless albums)': 'जब गाने की शुरुआत या अंत में पल भर से ज़्यादा खामोशी हो, तो गाना संगीत से शुरू होता है और जहाँ संगीत खत्म होता है वहीं खत्म होता है। डिफ़ॉल्ट रूप से बंद: कुछ खामोशियाँ जानबूझकर होती हैं (छिपे हुए ट्रैक, बिना अंतराल वाले एल्बम)',
+  'silence quiet start end intro outro gap trim skip hidden track gapless': 'खामोशी शांत शुरुआत अंत इंट्रो आउट्रो अंतराल काटना छोड़ें छिपा ट्रैक',
 }
 
 export default hi

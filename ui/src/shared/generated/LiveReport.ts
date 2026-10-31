@@ -8,4 +8,8 @@ export type LiveReport = { attached: boolean | null, error: string | null, level
 /**
  * The song ended here (s of the video), silence after it: an early end.
  */
-end: number | null, };
+end: number | null, 
+/**
+ * The music began here (s of the video), after silence from the start: a late start.
+ */
+lead: number | null, };

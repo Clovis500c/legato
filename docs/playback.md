@@ -118,7 +118,7 @@ Status on 2026-10-16. YouTube, local files and Apple Music previews: done and te
   playing song is over there (paused if nothing follows, so the silence never ends it twice); the overlap's tail is
   stopped. The end is kept per video (`player/ends.ts`, localStorage like `still.ts`, 3000 videos) and becomes the
   song's length on later plays: fades, overlap, Adaptive Sound's hold, times shown. Limit: 2 s of silence then a final
-  part within the last 25 s ends at the silence. Local files: not done (gapless albums, hidden tracks).
+  part within the last 25 s ends at the silence. Local files: see Skip silence below.
 - Driven by `postMessage`, the protocol `iframe_api` uses internally (`listening`, `command`, `infoDelivery`, `onError`).
   We don't load `iframe_api`: a remote script in the app's origin would get access to Tauri IPC. `infoDelivery` sends
   what changed only: a video's `duration` comes once, as it loads (8 of 148 reports, measured 2026-10-30), so the store
@@ -168,6 +168,19 @@ We still pin the policy on the iframe: a meta tag or header added later can't br
   the window.
 - Live processing chain on every file: see Live processing below.
 - Limits: no opus; position obtained by polling, not events.
+- Skip silence (2026-10-31, Settings › Playback, off by default: hidden tracks and gapless albums mean their silence).
+  `crates/player/src/silence.rs` measures a file: RMS over 20 ms windows under −60 dBFS is silence; the music starts 50 ms
+  before the first loud window, ends 200 ms after the last; under 0.3 s at the start or 1.5 s at the end is left alone.
+  Measured when a song is about to play, never at scan time: `silence_prepare` (`src-tauri/src/silence.rs`) looks up
+  SQLite `silence` (by path and modified time, `Library::cached_silence`), else finds the start fast (the scan stops at
+  the first loud window), tells the engine (`Command::Trims`), and decodes the whole file once in the background for
+  the end (4 files ahead per call, again when the gapless run moves on). The engine seeks past the start when a song
+  begins (also at each gapless hand-over) and reports `trim_end_ms`; the front end offers it to `ends.ts` as
+  `local:<path>`, so the fade and the hand-over to the next song use the same early-end path as a video's, and a
+  song past its end goes to the next one (a normal `step`, so no gapless chain across a trimmed end). Nothing
+  measured (failed, not yet): the song plays as it is. YouTube: `live.js` reports `lead` when the music began after 2 s
+  or more of silence from the video's very start; kept per video (`ends.ts` `song-starts`), the next play seeks there
+  once (never a loop). The first play of a video can't know.
 
 ## Live processing (Adaptive Sound, moving cover; 2026-10-21)
 

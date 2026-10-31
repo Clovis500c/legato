@@ -1585,6 +1585,9 @@ const pl: Record<string, string> = {
   '{n} GB': '{n} GB',
   'covers pictures images artwork cache disk space storage size limit clear delete empty free': 'okładki obrazy grafiki cache pamięć podręczna dysk miejsce rozmiar limit wyczyść usuń zwolnij',
   'Couldn’t load this page.': 'Nie udało się wczytać tej strony.',
+  'Skip silence': 'Pomijaj ciszę',
+  'Songs start on the music and end where it ends, when they open or close with more than a moment of silence. Off by default: some silences are meant (hidden tracks, gapless albums)': 'Utwory zaczynają się od muzyki i kończą tam, gdzie ona, gdy zaczynają się lub kończą dłuższą ciszą. Domyślnie wyłączone: część ciszy jest zamierzona (ukryte utwory, albumy bez przerw)',
+  'silence quiet start end intro outro gap trim skip hidden track gapless': 'cisza cichy początek koniec intro outro przerwa przytnij pomiń ukryty utwór bez przerw',
 }
 
 export default pl

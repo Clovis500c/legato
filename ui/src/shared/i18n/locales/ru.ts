@@ -1585,6 +1585,9 @@ const ru: Record<string, string> = {
   '{n} GB': '{n} ГБ',
   'covers pictures images artwork cache disk space storage size limit clear delete empty free': 'обложки картинки изображения кэш диск место хранилище размер лимит очистить удалить освободить',
   'Couldn’t load this page.': 'Не удалось загрузить эту страницу.',
+  'Skip silence': 'Пропускать тишину',
+  'Songs start on the music and end where it ends, when they open or close with more than a moment of silence. Off by default: some silences are meant (hidden tracks, gapless albums)': 'Песни начинаются с музыки и заканчиваются там, где она кончается, если в начале или в конце больше мгновения тишины. По умолчанию выключено: часть тишины задумана (скрытые треки, альбомы без пауз)',
+  'silence quiet start end intro outro gap trim skip hidden track gapless': 'тишина тихо начало конец интро аутро пауза обрезать пропустить скрытый трек без пауз',
 }
 
 export default ru

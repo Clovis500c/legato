@@ -15,8 +15,8 @@ const playing = () => {
 
 /** Live processing follows the settings (Settings › Advanced › Sound) and the Live Editor. Mounted once, by the player bar. */
 export function useLiveSync() {
-  const { adaptiveSound, adaptiveLevel, coverPulse, earlyEnds, liveYoutube, visualizer } = useSettings(
-    useShallow(({ settings: s }) => ({ adaptiveSound: s.adaptiveSound, adaptiveLevel: s.adaptiveLevel, coverPulse: s.coverPulse, earlyEnds: s.earlyEnds, liveYoutube: s.liveYoutube, visualizer: s.visualizer && s.motion })),
+  const { adaptiveSound, adaptiveLevel, coverPulse, earlyEnds, skipSilence, liveYoutube, visualizer } = useSettings(
+    useShallow(({ settings: s }) => ({ adaptiveSound: s.adaptiveSound, adaptiveLevel: s.adaptiveLevel, coverPulse: s.coverPulse, earlyEnds: s.earlyEnds, skipSilence: s.skipSilence, liveYoutube: s.liveYoutube, visualizer: s.visualizer && s.motion })),
   )
   // Bands cost filters on the sound thread: only while the visualizer is on screen.
   const bands = usePlayer((s) => visualizer && s.full)
@@ -29,6 +29,6 @@ export function useLiveSync() {
   useEffect(() => {
     // Bypassed edits keep processing attached: A / B switches at once. Levels alone (moving cover, early ends) only listen.
     const process = adaptiveSound || !neutral({ ...effects, on: true })
-    sendLive({ on: process || coverPulse || bands, ends: earlyEnds, listen: !process, adaptive: adaptiveSound, targetLufs: adaptiveLevel, bands, youtube: liveYoutube, effects })
-  }, [adaptiveSound, adaptiveLevel, coverPulse, earlyEnds, liveYoutube, effects, bands])
+    sendLive({ on: process || coverPulse || bands, ends: earlyEnds || skipSilence, listen: !process, adaptive: adaptiveSound, targetLufs: adaptiveLevel, bands, youtube: liveYoutube, effects })
+  }, [adaptiveSound, adaptiveLevel, coverPulse, earlyEnds, skipSilence, liveYoutube, effects, bands])
 }

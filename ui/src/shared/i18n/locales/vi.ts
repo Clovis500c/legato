@@ -1585,6 +1585,9 @@ const vi: Record<string, string> = {
   '{n} GB': '{n} GB',
   'covers pictures images artwork cache disk space storage size limit clear delete empty free': 'ảnh bìa hình ảnh bộ nhớ đệm cache ổ đĩa dung lượng lưu trữ giới hạn xoá dọn giải phóng',
   'Couldn’t load this page.': 'Không thể tải trang này.',
+  'Skip silence': 'Bỏ qua khoảng lặng',
+  'Songs start on the music and end where it ends, when they open or close with more than a moment of silence. Off by default: some silences are meant (hidden tracks, gapless albums)': 'Bài hát bắt đầu ở chỗ có nhạc và kết thúc nơi nhạc dứt, khi mở đầu hoặc kết thúc có khoảng lặng dài hơn một chút. Mặc định tắt: có những khoảng lặng là chủ ý (bản ẩn, album liền mạch)',
+  'silence quiet start end intro outro gap trim skip hidden track gapless': 'im lặng yên tĩnh đầu cuối intro outro khoảng nghỉ cắt bỏ qua bản ẩn liền mạch',
 }
 
 export default vi

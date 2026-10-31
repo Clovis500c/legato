@@ -1585,6 +1585,9 @@ const sv: Record<string, string> = {
   '{n} GB': '{n} GB',
   'covers pictures images artwork cache disk space storage size limit clear delete empty free': 'omslag bilder konstverk cache disk utrymme lagring storlek gräns rensa ta bort frigör',
   'Couldn’t load this page.': 'Sidan kunde inte läsas in.',
+  'Skip silence': 'Hoppa över tystnad',
+  'Songs start on the music and end where it ends, when they open or close with more than a moment of silence. Off by default: some silences are meant (hidden tracks, gapless albums)': 'Låtar börjar där musiken börjar och slutar där den slutar, när de inleds eller avslutas med mer än en stunds tystnad. Av som standard: viss tystnad är avsiktlig (dolda spår, album utan luckor)',
+  'silence quiet start end intro outro gap trim skip hidden track gapless': 'tystnad tyst början slut intro outro lucka trimma hoppa över dolt spår luckfri',
 }
 
 export default sv

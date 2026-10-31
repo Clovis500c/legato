@@ -1585,6 +1585,9 @@ const zh: Record<string, string> = {
   '{n} GB': '{n} GB',
   'covers pictures images artwork cache disk space storage size limit clear delete empty free': '封面 图片 专辑图 缓存 磁盘 空间 存储 大小 上限 清除 删除 释放',
   'Couldn’t load this page.': '无法加载此页面。',
+  'Skip silence': '跳过静音',
+  'Songs start on the music and end where it ends, when they open or close with more than a moment of silence. Off by default: some silences are meant (hidden tracks, gapless albums)': '歌曲开头或结尾有超过片刻的静音时，从音乐开始处播放，在音乐结束处结束。默认关闭：有些静音是有意为之（隐藏曲目、无缝专辑）',
+  'silence quiet start end intro outro gap trim skip hidden track gapless': '静音 安静 开头 结尾 前奏 尾奏 间隔 裁剪 跳过 隐藏曲目 无缝',
 }
 
 export default zh

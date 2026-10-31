@@ -1585,6 +1585,9 @@ const de: Record<string, string> = {
   '{n} GB': '{n} GB',
   'covers pictures images artwork cache disk space storage size limit clear delete empty free': 'Cover Bilder Artwork Cache Speicher Festplatte Größe Limit leeren löschen freigeben',
   'Couldn’t load this page.': 'Diese Seite konnte nicht geladen werden.',
+  'Skip silence': 'Stille überspringen',
+  'Songs start on the music and end where it ends, when they open or close with more than a moment of silence. Off by default: some silences are meant (hidden tracks, gapless albums)': 'Titel beginnen bei der Musik und enden, wo sie endet, wenn sie mit mehr als einem Moment Stille beginnen oder enden. Standardmäßig aus: manche Stille ist gewollt (versteckte Titel, lückenlose Alben)',
+  'silence quiet start end intro outro gap trim skip hidden track gapless': 'Stille leise Anfang Ende Intro Outro Lücke kürzen überspringen versteckter Titel lückenlos',
 }
 
 export default de

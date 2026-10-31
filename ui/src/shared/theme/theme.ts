@@ -339,6 +339,8 @@ export interface Settings {
   visualizerStyle: VisualizerStyle
   /** Videos whose song ends before the video (silence, end screen): the next song starts at the song's end (ends.ts). */
   earlyEnds: boolean
+  /** Songs start on the music and end where it ends: silence at the start and end skipped (local: measured; YouTube: learned). */
+  skipSilence: boolean
   /** YouTube's sound may go through the processing above (off: untouched, features work on local files only). */
   liveYoutube: boolean
   /** Voice search agreed to (Windows' online speech recognition: the voice goes to Microsoft while the mic listens). */
@@ -439,6 +441,7 @@ export const DEFAULTS: Settings = {
   visualizer: false,
   visualizerStyle: 'bars',
   earlyEnds: true,
+  skipSilence: false,
   liveYoutube: true,
   voiceSearch: false,
   autoplay: true,
@@ -634,6 +637,7 @@ export function sanitize(raw: unknown): Settings {
     visualizer: r.visualizer === true,
     visualizerStyle: pick(r.visualizerStyle, VISUALIZER_STYLES, 'bars'),
     earlyEnds: r.earlyEnds !== false,
+    skipSilence: r.skipSilence === true,
     liveYoutube: typeof r.liveYoutube === 'boolean' ? r.liveYoutube : DEFAULTS.liveYoutube,
     voiceSearch: r.voiceSearch === true,
     autoplay: r.autoplay !== false,

@@ -45,8 +45,8 @@ export function frameSettings(w: LiveWish) {
   return { on: (w.on || w.ends) && w.youtube, listen: w.listen, adaptive: w.adaptive, targetLufs: w.targetLufs, bands: w.bands }
 }
 
-/** end = the song ended there (s of the video), silence after it (live.js, ends.ts). */
-type Report = { attached?: boolean | null; error?: string | null; levels?: LiveLevels | null; end?: number | null }
+/** end = the song ended there (s of the video), silence after it; lead = the music began there, silence before it (live.js, ends.ts). */
+type Report = { attached?: boolean | null; error?: string | null; levels?: LiveLevels | null; end?: number | null; lead?: number | null }
 
 /** A frame message from live.js, if it is one. */
 export function parseLive(origin: string, data: unknown): Report | null {
@@ -63,6 +63,9 @@ let wish: LiveWish = { on: false, ends: false, listen: false, adaptive: false, t
 // Early end heard (the store's): tail = from the overlap's fading-out embed, not what plays now.
 let ended: ((end: number, tail: boolean) => void) | null = null
 export const onEndHeard = (f: (end: number, tail: boolean) => void) => void (ended = f)
+// Late start heard (the store's): the music of the playing video began there.
+let led: ((lead: number) => void) | null = null
+export const onLeadHeard = (f: (lead: number) => void) => void (led = f)
 let frame: HTMLIFrameElement | null = null
 // The app fades the song out: Adaptive Sound holds (its fades are never bent or brought up).
 let ending = false
@@ -113,12 +116,14 @@ export function startLive(playing: () => 'native' | 'youtube' | null): () => voi
     // Another of our embeds: the overlap's fading-out tail, not what plays now (its end only).
     const now = e.source === frame?.contentWindow
     if (typeof m.end === 'number') ended?.(m.end, !now)
+    if (now && typeof m.lead === 'number') led?.(m.lead)
     if (now) take(m)
   }
   window.addEventListener('message', onMessage)
   const off = api.onLive((m) => {
     if (playing() !== 'youtube' || !watching()) return
     if (typeof m.end === 'number') ended?.(m.end, false)
+    if (typeof m.lead === 'number') led?.(m.lead)
     take(m)
   })
   // Embed ↔ watch page: settings follow the video.

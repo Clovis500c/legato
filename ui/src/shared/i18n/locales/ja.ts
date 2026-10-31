@@ -1585,6 +1585,9 @@ const ja: Record<string, string> = {
   '{n} GB': '{n} GB',
   'covers pictures images artwork cache disk space storage size limit clear delete empty free': 'カバー 画像 アートワーク キャッシュ ディスク 容量 ストレージ サイズ 上限 消去 削除 空き',
   'Couldn’t load this page.': 'このページを読み込めませんでした。',
+  'Skip silence': '無音をスキップ',
+  'Songs start on the music and end where it ends, when they open or close with more than a moment of silence. Off by default: some silences are meant (hidden tracks, gapless albums)': '曲の冒頭や末尾に少しでも長い無音があるとき、音楽が始まる所から再生し、音楽が終わる所で終えます。初期設定ではオフ：意図された無音もあります（隠しトラック、ギャップレスのアルバム）',
+  'silence quiet start end intro outro gap trim skip hidden track gapless': '無音 静か 開始 終了 イントロ アウトロ 間 トリム スキップ 隠しトラック ギャップレス',
 }
 
 export default ja

@@ -1585,6 +1585,9 @@ const ko: Record<string, string> = {
   '{n} GB': '{n} GB',
   'covers pictures images artwork cache disk space storage size limit clear delete empty free': '커버 이미지 앨범아트 캐시 디스크 공간 저장소 크기 한도 지우기 삭제 비우기',
   'Couldn’t load this page.': '이 페이지를 불러오지 못했습니다.',
+  'Skip silence': '무음 건너뛰기',
+  'Songs start on the music and end where it ends, when they open or close with more than a moment of silence. Off by default: some silences are meant (hidden tracks, gapless albums)': '곡의 처음이나 끝에 잠깐 이상의 무음이 있으면 음악이 시작되는 곳에서 재생하고 음악이 끝나는 곳에서 끝냅니다. 기본값은 꺼짐: 의도된 무음도 있습니다(히든 트랙, 갭리스 앨범)',
+  'silence quiet start end intro outro gap trim skip hidden track gapless': '무음 조용 시작 끝 인트로 아웃트로 간격 자르기 건너뛰기 히든 트랙 갭리스',
 }
 
 export default ko

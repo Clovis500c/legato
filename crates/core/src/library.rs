@@ -52,7 +52,7 @@ CREATE TABLE IF NOT EXISTS settings (
 ";
 
 /// Schema version this code writes (user_version after migrations).
-pub const SCHEMA_VERSION: i64 = 11;
+pub const SCHEMA_VERSION: i64 = 12;
 
 /// The library was made by a newer version of the app.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -411,6 +411,10 @@ impl Library {
         if lib.db.query_row("PRAGMA user_version", [], |r| r.get::<_, i64>(0))? < 11 {
             // v11: real "date added" (unix s) for songs from now on; older ones unknown (null), never guessed.
             lib.db.execute_batch("BEGIN; ALTER TABLE tracks ADD COLUMN added_at INTEGER; PRAGMA user_version = 11; COMMIT;")?;
+        }
+        if lib.db.query_row("PRAGMA user_version", [], |r| r.get::<_, i64>(0))? < 12 {
+            // v12: measured silence at the start / end of local files, by path and modified time (not synced: a cache).
+            lib.db.execute_batch("BEGIN; CREATE TABLE IF NOT EXISTS silence (path TEXT PRIMARY KEY, modified INTEGER NOT NULL, start_ms INTEGER NOT NULL, end_ms INTEGER, total_ms INTEGER NOT NULL); PRAGMA user_version = 12; COMMIT;")?;
         }
         lib.db.execute_batch(CHANGE_LOG)?;
         // Statements on logged tables compile their triggers too: kept, not rebuilt per call.
@@ -1024,6 +1028,23 @@ impl Library {
         self.db.execute(
             "INSERT INTO lyrics (key, body, fetched) VALUES (?1, ?2, ?3) ON CONFLICT (key) DO UPDATE SET body = excluded.body, fetched = excluded.fetched",
             params![key, body, fetched],
+        )?;
+        Ok(())
+    }
+
+    /// Silence measured in a local file: Some((start_ms, end_ms, total_ms)) when it was measured with this `modified`
+    /// time (a changed file is measured again). end_ms None = no silence worth cutting at the end.
+    pub fn cached_silence(&self, path: &str, modified: i64) -> Result<Option<(u64, Option<u64>, u64)>> {
+        Ok(self
+            .db
+            .query_row("SELECT start_ms, end_ms, total_ms FROM silence WHERE path = ?1 AND modified = ?2", params![path, modified], |r| Ok((r.get::<_, i64>(0)? as u64, r.get::<_, Option<i64>>(1)?.map(|e| e as u64), r.get::<_, i64>(2)? as u64)))
+            .optional()?)
+    }
+
+    pub fn save_silence(&self, path: &str, modified: i64, start_ms: u64, end_ms: Option<u64>, total_ms: u64) -> Result<()> {
+        self.db.execute(
+            "INSERT INTO silence (path, modified, start_ms, end_ms, total_ms) VALUES (?1, ?2, ?3, ?4, ?5) ON CONFLICT (path) DO UPDATE SET modified = excluded.modified, start_ms = excluded.start_ms, end_ms = excluded.end_ms, total_ms = excluded.total_ms",
+            params![path, modified, start_ms as i64, end_ms.map(|e| e as i64), total_ms as i64],
         )?;
         Ok(())
     }
@@ -1719,6 +1740,19 @@ mod tests {
         assert_eq!(lib.cached_lyrics("a|b|200")?, Some((None, 10)));
         lib.save_lyrics("a|b|200", Some("{}"), 20)?;
         assert_eq!(lib.cached_lyrics("a|b|200")?, Some((Some("{}".into()), 20)));
+        Ok(())
+    }
+
+    #[test]
+    fn silence_cache_is_by_path_and_modified_time() -> Result<()> {
+        let lib = Library::in_memory()?;
+        assert_eq!(lib.cached_silence("a.mp3", 5)?, None);
+        lib.save_silence("a.mp3", 5, 4_950, Some(200_000), 210_000)?;
+        assert_eq!(lib.cached_silence("a.mp3", 5)?, Some((4_950, Some(200_000), 210_000)));
+        // Changed file: measured again.
+        assert_eq!(lib.cached_silence("a.mp3", 6)?, None);
+        lib.save_silence("a.mp3", 6, 0, None, 210_000)?;
+        assert_eq!(lib.cached_silence("a.mp3", 6)?, Some((0, None, 210_000)));
         Ok(())
     }
 

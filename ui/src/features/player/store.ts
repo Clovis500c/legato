@@ -7,8 +7,8 @@ import { endListen, progress, startListen } from './listens'
 import { demoGain, demoLength, fadeGain, NO_FADE, overlapDue, PICK_IN_S, type Fade } from './fade'
 import { insertAt, keepQueued, moveInOrder, moveToSlot, nextIndex, playOrder, queued, tooLong, type Repeat } from './queue'
 import { vias, type Via } from './sources'
-import { rememberEnd, songEnd } from './ends'
-import { bindLiveFrame, onEndHeard } from './live'
+import { offerEnd, rememberEnd, rememberStart, songEnd, songStart } from './ends'
+import { bindLiveFrame, onEndHeard, onLeadHeard } from './live'
 import { closeWatch, openWatch, sendWatch, watching } from './watch'
 import { ytPost, type YtUpdate } from './youtube'
 import { tr } from '../../shared/i18n/i18n'
@@ -53,6 +53,8 @@ interface PlayerState {
   skipLong: number
   /** Settings › Playback › Early endings: a video ends where its song does (ends.ts). */
   earlyEnds: boolean
+  /** Settings › Playback › Skip silence: songs start on the music and end where it ends (ends.ts, engine for local files). */
+  skipSilence: boolean
   /** Fade in of the current track, s: full after the previous one, short after a skip (if asked), 0 = none. */
   fadeIn: number
   /** Where the current item started (resume), ms. */
@@ -375,6 +377,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
   fade: NO_FADE,
   skipLong: 0,
   earlyEnds: true,
+  skipSilence: false,
   fadeIn: 0,
   startAt: 0,
   playId: 0,
@@ -505,6 +508,11 @@ export const usePlayer = create<PlayerState>((set, get) => ({
       let end = index + 1
       while (!get().shuffle && get().repeat !== 'one' && end < list.length && vias(list[end])[0] === 'local') end++
       const paths = list.slice(index, end).map((x) => x.ids.local!)
+      // Skip silence: the engine learns where the music starts before the song does (cached; a failure plays it as it is).
+      if (get().skipSilence) {
+        await api.silencePrepare(paths).catch(() => {})
+        if (mine !== seq) return
+      }
       expect = paths
       send({ type: 'play', paths, start: 0 })
       if (start) send({ type: 'seek', ms: start })
@@ -694,12 +702,22 @@ export const usePlayer = create<PlayerState>((set, get) => ({
       ...(u.duration && { durationMs: songMs }),
     })
     if (u.time !== undefined) {
-      progress(u.time * 1000, videoMs || undefined)
+      // Skip silence: this video's music starts later (learned by live.js): one seek past it, once per play, from the
+      // start only (a resume or a seek back stays where it is).
+      let time = u.time
+      const lead = skipLeadId !== get().playId && get().skipSilence && now?.youtubeId && time < 1.5 && get().startAt === 0 && get().playing ? songStart(now.youtubeId) : 0
+      if (lead > time + 1.5) {
+        skipLeadId = get().playId
+        yt('seekTo', lead, true)
+        time = lead
+        set({ positionMs: lead * 1000 })
+      }
+      progress(time * 1000, videoMs || undefined)
       get().applyVolume()
       overlap()
       // Past the song's own end, silence left: over (unless the overlap just moved on). Checked at each report: the
       // length came once (2026-10-30: read from each report, an early end was only ever reached by the overlap).
-      if (songMs < videoMs && u.time * 1000 >= songMs && get().now === now) return songOver()
+      if (songMs < videoMs && time * 1000 >= songMs && get().now === now) return songOver()
     }
     if (u.state === 0) {
       endListen(true)
@@ -727,17 +745,26 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     if (i > index) {
       endListen(true)
       startListen(list[i].id, s.durationMs)
+      // The run moved on: the engine learns the silences of the songs now ahead of it.
+      if (get().skipSilence) void api.silencePrepare(list.slice(i, i + 4).flatMap((x) => (x.ids.local ? [x.ids.local] : []))).catch(() => {})
     }
-    if (s.path) progress(s.positionMs, s.durationMs)
+    // Skip silence: the engine says where the music of this file ends; from there it is a video with an early end.
+    const skip = get().skipSilence
+    const key = s.path ? `local:${s.path}` : undefined
+    if (key) offerEnd(key, skip && s.trimEndMs ? s.trimEndMs / 1000 : null)
+    const songMs = skip && s.durationMs ? songEnd(key, s.durationMs) : s.durationMs
+    if (s.path) progress(s.positionMs, songMs)
     set({
       playing: !!s.path && !s.paused,
       positionMs: s.positionMs,
       upcoming: now?.trackId ? [] : s.upcoming,
-      ...(s.durationMs && { durationMs: s.durationMs }),
+      ...(songMs && { durationMs: songMs }),
       ...(i > index && { index: i, playId: get().playId + 1, fadeIn: get().fade.in, now: { title: list[i].title, artist: list[i].artist, trackId: list[i].id, via: 'local', path: s.path! } }),
       ...(s.path && !now?.trackId && { now: { title: fileTitle(s.path), artist: tr('Local file'), path: s.path, via: 'local' }, ...(s.path !== now?.path && { playId: get().playId + 1 }) }),
     })
     if (s.path) get().applyVolume()
+    // Past the music's end, silence left: over, as for a video (once per song).
+    if (s.durationMs && songMs && songMs < s.durationMs && !s.paused && s.positionMs >= songMs && get().now?.path === s.path) songOver()
   },
 
   onSpotify(p) {
@@ -798,9 +825,11 @@ usePlayer.subscribe((s, prev) => {
   if (s.now?.via === 'youtube' && (s.playId !== prev.playId || s.now.youtubeId !== prev.now?.youtubeId)) watchForStuck(s.playId)
 })
 
+// Play (playId) whose silent start was skipped: one seek per play, never a loop.
+let skipLeadId = -1
 // Song whose early end was reached (playId): over once.
 let overId = -1
-/** The playing YouTube song is over before its video (silence left): on to the next, as at the video's own end. */
+/** The playing song is over before its video or file (silence left): on to the next, as at the video's own end. */
 function songOver() {
   const p = usePlayer.getState()
   if (p.playId === overId) return
@@ -808,7 +837,10 @@ function songOver() {
   endListen(true)
   p.step(1, true)
   // Nothing started (queue done, sleep timer, an update installing): the silence doesn't play on to end again.
-  if (usePlayer.getState().playId === overId) yt('pauseVideo')
+  if (usePlayer.getState().playId === overId) {
+    if (p.now?.via === 'youtube') yt('pauseVideo')
+    else if (usePlayer.getState().playing) send({ type: 'toggle' })
+  }
 }
 
 // Early end heard (live.js, in the silence after the song): kept for the next plays. The overlap's tail stops; the
@@ -824,6 +856,19 @@ onEndHeard((end, tail) => {
   if (p.now?.via !== 'youtube' || !p.now.youtubeId || p.positionMs < end * 1000) return
   rememberEnd(p.now.youtubeId, end)
   songOver()
+})
+
+// Skip silence on / off: the engine skips the starts it knows (and says where music ends) only when asked.
+usePlayer.subscribe((s, prev) => {
+  if (s.skipSilence !== prev.skipSilence) send({ type: 'skipSilence', on: s.skipSilence })
+})
+
+// Late start heard (live.js: 2 s or more of silence from the start, then music): kept for the next plays of the video,
+// which seek past it once (below). Not for a video that began elsewhere (resume, a seek): live.js checks that.
+onLeadHeard((lead) => {
+  const p = usePlayer.getState()
+  if (!p.skipSilence || p.now?.via !== 'youtube' || !p.now.youtubeId || p.startAt > 0) return
+  rememberStart(p.now.youtubeId, Math.max(0, lead - 0.3))
 })
 
 // A song plays: earlier failures no longer in a row.

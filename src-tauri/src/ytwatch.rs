@@ -91,6 +91,9 @@ pub struct LiveReport {
     /// The song ended here (s of the video), silence after it: an early end.
     #[serde(default)]
     pub end: Option<f64>,
+    /// The music began here (s of the video), after silence from the start: a late start.
+    #[serde(default)]
+    pub lead: Option<f64>,
 }
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Serialize, Deserialize, ts_rs::TS)]
@@ -114,7 +117,7 @@ pub fn parse_live(source: &str, message: &str) -> Option<LiveReport> {
     }
     let r: LiveReport = serde_json::from_str(message.strip_prefix("musicapp-live:")?).ok()?;
     let ok_levels = r.levels.is_none_or(|l| [l.fast, l.momentary, l.short, l.gain].iter().chain(l.bands.iter().flatten()).all(|v| v.is_finite() && (-200.0..=60.0).contains(v)) && l.peak.is_finite() && (0.0..=16.0).contains(&l.peak));
-    let ok_end = r.end.is_none_or(|e| e.is_finite() && (0.0..=86_400.0).contains(&e));
+    let ok_end = [r.end, r.lead].iter().flatten().all(|e| e.is_finite() && (0.0..=86_400.0).contains(e));
     (ok_levels && ok_end && r.error.as_ref().is_none_or(|e| e.chars().count() <= 200)).then_some(r)
 }
 
@@ -316,6 +319,8 @@ mod tests {
         assert!(parse_live(YT, r#"musicapp-ytwatch:{"state":1}"#).is_none());
         assert_eq!(parse_live(YT, r#"musicapp-live:{"end":212.4}"#).unwrap().end, Some(212.4));
         assert!(parse_live(YT, r#"musicapp-live:{"end":-1}"#).is_none());
+        assert_eq!(parse_live(YT, r#"musicapp-live:{"lead":5.2}"#).unwrap().lead, Some(5.2));
+        assert!(parse_live(YT, r#"musicapp-live:{"lead":1e9}"#).is_none());
         assert_eq!(script(Cmd::Live { on: true, listen: false, adaptive: false, target_lufs: -99.0, ending: false, bands: true, gain: None, effects: None }), "window.__musicAppLive && window.__musicAppLive.set({ on: true, listen: false, adaptive: false, targetLufs: -30, ending: false, bands: true, gain: null }, undefined)");
         assert!(script(Cmd::Live { on: true, listen: false, adaptive: true, target_lufs: -14.0, ending: true, bands: false, gain: Some(40.0), effects: None }).contains("ending: true, bands: false, gain: 9 }"));
         assert!(script(Cmd::Live { on: true, listen: false, adaptive: true, target_lufs: -14.0, ending: false, bands: false, gain: Some(f64::NAN), effects: None }).contains("gain: null }"));

@@ -1585,6 +1585,9 @@ const uk: Record<string, string> = {
   '{n} GB': '{n} ГБ',
   'covers pictures images artwork cache disk space storage size limit clear delete empty free': 'обкладинки зображення картинки кеш диск місце сховище розмір ліміт очистити видалити звільнити',
   'Couldn’t load this page.': 'Не вдалося завантажити цю сторінку.',
+  'Skip silence': 'Пропускати тишу',
+  'Songs start on the music and end where it ends, when they open or close with more than a moment of silence. Off by default: some silences are meant (hidden tracks, gapless albums)': 'Пісні починаються з музики й закінчуються там, де вона закінчується, якщо на початку чи в кінці більше миті тиші. За замовчуванням вимкнено: частина тиші задумана (приховані треки, альбоми без пауз)',
+  'silence quiet start end intro outro gap trim skip hidden track gapless': 'тиша тихо початок кінець інтро аутро пауза обрізати пропустити прихований трек без пауз',
 }
 
 export default uk

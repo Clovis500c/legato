@@ -541,6 +541,9 @@ function PlaybackSection() {
           <Row setting="earlyEnds" label={msg('Early endings')} sub={tr('YouTube videos whose song ends early (silence, an end screen): the fade and the next song start where the song ends. Learned as they play')}>
             <Toggle label={tr('Early endings')} checked={s.earlyEnds} onChange={(earlyEnds) => update({ earlyEnds })} />
           </Row>
+          <Row setting="skipSilence" label={msg('Skip silence')} sub={tr('Songs start on the music and end where it ends, when they open or close with more than a moment of silence. Off by default: some silences are meant (hidden tracks, gapless albums)')}>
+            <Toggle label={tr('Skip silence')} checked={s.skipSilence} onChange={(skipSilence) => update({ skipSilence })} />
+          </Row>
         </div>
         {s.fade.advanced && <FadeEditor />}
       </Group>

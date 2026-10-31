@@ -12,4 +12,8 @@ error: string | null,
 /**
  * Queue ran out on its own (not stopped): caller moves on.
  */
-ended: boolean, };
+ended: boolean, 
+/**
+ * Skip silence on and the playing file's music ends here (ms), well before the file does: its early end.
+ */
+trimEndMs: number | null, };

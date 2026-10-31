@@ -1585,6 +1585,9 @@ const tr: Record<string, string> = {
   '{n} GB': '{n} GB',
   'covers pictures images artwork cache disk space storage size limit clear delete empty free': 'kapaklar resimler görseller önbellek disk alan depolama boyut sınır temizle sil boşalt',
   'Couldn’t load this page.': 'Bu sayfa yüklenemedi.',
+  'Skip silence': 'Sessizliği atla',
+  'Songs start on the music and end where it ends, when they open or close with more than a moment of silence. Off by default: some silences are meant (hidden tracks, gapless albums)': 'Şarkılar, başında veya sonunda bir andan uzun sessizlik varsa müzikle başlar ve müziğin bittiği yerde biter. Varsayılan olarak kapalı: bazı sessizlikler isteyerek konmuştur (gizli parçalar, aralıksız albümler)',
+  'silence quiet start end intro outro gap trim skip hidden track gapless': 'sessizlik sessiz başlangıç son giriş çıkış boşluk kırp atla gizli parça aralıksız',
 }
 
 export default tr
