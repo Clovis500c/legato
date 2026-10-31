@@ -33,7 +33,7 @@ import path from 'node:path'
 import { decodePng, strongShare } from './png.mjs'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { Cdp, sleep, waitForPage } from '../scripts/cdp.mjs'
-import { browserArgs, carriesId, freePort, inputsHash } from '../scripts/guest.mjs'
+import { carriesId, freePort, inputsHash } from '../scripts/guest.mjs'
 import { APPLE_LINK, DEEZER_LINK, startMock } from './mock.mjs'
 import { DEMO_SONGS, writeDemo } from './wav.mjs'
 
@@ -73,13 +73,13 @@ export function e2eFolders(id, appData, localAppData) {
   return [path.win32.join(appData, id), path.win32.join(localAppData, id)]
 }
 
-/** The app's environment: DevTools port and the build's flags for WebView2, the mock's address, and every other host
+/** The app's environment: the walk's WebView2 flags (the e2e build adds them to its own), the mock's address, and every other host
  *  behind a dead proxy (reqwest reads it; loopback stays direct): a call the mock does not stand for fails at once. */
 export function appEnv(base, { flags, mock }) {
   const dead = 'http://127.0.0.1:9'
   // Names differ by case on other systems, not on Windows: drop whatever the shell carries before setting ours.
   const kept = Object.fromEntries(Object.entries(base).filter(([k]) => !/^(http|https|all|no)_proxy$/i.test(k) && k !== 'WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS' && k !== FEATURE_MARK))
-  return { ...kept, WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS: flags, [FEATURE_MARK]: mock, HTTP_PROXY: dead, HTTPS_PROXY: dead, ALL_PROXY: dead, NO_PROXY: '127.0.0.1,localhost' }
+  return { ...kept, LEGATO_E2E_BROWSER_ARGS: flags, [FEATURE_MARK]: mock, HTTP_PROXY: dead, HTTPS_PROXY: dead, ALL_PROXY: dead, NO_PROXY: '127.0.0.1,localhost' }
 }
 
 /** What is wrong with a song's position `moved` ms further after `wall` ms by the clock, or '' when it kept time. */
@@ -328,9 +328,9 @@ class Page {
 // ---- One walk ----
 
 /** Starts the app on its data and attaches to its page. `exited` resolves with the exit code when it ends. */
-async function launch(mock, flags, errors) {
+async function launch(mock, errors) {
   const port = await freePort()
-  const env = appEnv(process.env, { flags: `--remote-debugging-port=${port} --lang=en-US ${flags}`, mock: mock.url })
+  const env = appEnv(process.env, { flags: `--remote-debugging-port=${port} --lang=en-US`, mock: mock.url })
   const child = spawn(EXE, [], { env, stdio: 'ignore' })
   started.add(child.pid)
   const exited = new Promise((resolve) => child.once('exit', (code, signal) => resolve({ code, signal })))
@@ -382,7 +382,6 @@ async function walk(o, dataDirs) {
   await removeData(dataDirs)
   writeDemo(DEMO)
   const mock = await startMock()
-  const flags = browserArgs(readFileSync(path.join(ROOT, 'src-tauri', 'src', 'background.rs'), 'utf8'))
   let app
   const errors = []
   let current = 'start'
@@ -402,7 +401,7 @@ async function walk(o, dataDirs) {
 
   try {
     await step('launch', async () => {
-      app = await launch(mock, flags, errors)
+      app = await launch(mock, errors)
       // A fresh profile: the welcome is the first thing, over the empty Home.
       await app.page.waitDialog('Welcome to Legato', 45000)
       await shot('1-welcome')
@@ -687,7 +686,7 @@ async function walk(o, dataDirs) {
     })
 
     await step('relaunch', async () => {
-      app = await launch(mock, flags, errors)
+      app = await launch(mock, errors)
       // The count fills in once the library is read: a first look says 0. 3 demo songs + the 2 the imports found.
       await app.cdp.waitFor(String.raw`/All your songs\s*·\s*5\b/.test(document.body.innerText)`, { timeout: 15000 }).catch(() => {
         throw new Error('the library lost its songs')
@@ -723,7 +722,9 @@ export async function webviewState(port, profile) {
     "webview processes: $($all.Count)"
     $all | Where-Object { $_.CommandLine -notmatch '--type=' } | ForEach-Object { "browser $($_.ProcessId): $($_.CommandLine)" }
     Get-NetTCPConnection -State Listen -ErrorAction SilentlyContinue | Where-Object { $all.ProcessId -contains $_.OwningProcess } | ForEach-Object { "listening $($_.LocalAddress):$($_.LocalPort), process $($_.OwningProcess)" }
-    "administrator: " + ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole('Administrators')`
+    "administrator: " + ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole('Administrators')
+    (Get-CimInstance Win32_OperatingSystem).Caption
+    foreach ($root in 'HKLM', 'HKCU') { reg query "$root\\SOFTWARE\\Policies\\Microsoft\\Edge" /s 2>$null | Where-Object { $_ } | Select-Object -First 20 }`
   const ps = spawnSync('powershell', ['-NoProfile', '-EncodedCommand', Buffer.from(script, 'utf16le').toString('base64')], { encoding: 'utf8', timeout: 30000 })
   const lines = [...String(ps.stdout).trim().split(/\r?\n/)]
   const active = path.join(profile, 'EBWebView', 'DevToolsActivePort')

@@ -91,7 +91,8 @@ describe('smoke test safety', () => {
 
   it('puts every other host behind a dead proxy and keeps loopback direct', () => {
     const env = appEnv({ Path: 'C:\\x', http_proxy: 'http://proxy.corp:8080', No_Proxy: 'corp', LEGATO_E2E_MOCK: 'http://evil', WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS: '--old' }, { flags: '--remote-debugging-port=1', mock: 'http://127.0.0.1:2' })
-    expect(env).toMatchObject({ Path: 'C:\\x', WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS: '--remote-debugging-port=1', LEGATO_E2E_MOCK: 'http://127.0.0.1:2', HTTP_PROXY: 'http://127.0.0.1:9', HTTPS_PROXY: 'http://127.0.0.1:9', ALL_PROXY: 'http://127.0.0.1:9', NO_PROXY: '127.0.0.1,localhost' })
+    expect(env).toMatchObject({ Path: 'C:\\x', LEGATO_E2E_BROWSER_ARGS: '--remote-debugging-port=1', LEGATO_E2E_MOCK: 'http://127.0.0.1:2', HTTP_PROXY: 'http://127.0.0.1:9', HTTPS_PROXY: 'http://127.0.0.1:9', ALL_PROXY: 'http://127.0.0.1:9', NO_PROXY: '127.0.0.1,localhost' })
+    expect(env).not.toHaveProperty('WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS')
     // None of the shell's own spellings is left to win.
     expect(Object.keys(env).filter((k) => /proxy/i.test(k)).sort()).toEqual(['ALL_PROXY', 'HTTPS_PROXY', 'HTTP_PROXY', 'NO_PROXY'])
   })
