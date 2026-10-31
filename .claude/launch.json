@@ -1,0 +1,29 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "ui-preview",
+      "url": "http://localhost:5173",
+      "port": 5173
+    },
+    {
+      "name": "ui-vite",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "vite"
+      ],
+      "port": 5173
+    },
+    {
+      "name": "app",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "dev"
+      ],
+      "port": 5173,
+      "env": {
+        "WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS": "--remote-debugging-port=9333 --autoplay-policy=no-user-gesture-required"
+      }
+    }
+  ]
+}

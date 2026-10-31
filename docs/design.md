@@ -1,6 +1,6 @@
 # Design direction
 
-Source of direction for UI work (the antislop filter reads it as `DESIGN.md`). Proposal 3 of 2026-10-29, adopted for
+Source of direction for UI work. Proposal 3 of 2026-10-29, adopted for
 version 1.0: System (Modern / Modern Dark) carries it. Earlier proposals are in the Figma version history ("Nocturne
 v0.1", "Proposal 2 (poster)"). Where the app differs from the mockups: the search stays in the top bar (the window
 needs a drag area and its buttons there), with Add-ons and Settings.
@@ -69,8 +69,8 @@ Names match `PALETTE_KEYS` (`ui/src/shared/theme/theme.ts`).
 
 ## Type
 
-Roboto only, the font of YouTube and YouTube Music, already bundled (`@fontsource-variable/roboto`). Numbers use
-tabular figures.
+Roboto for every word, the font of YouTube and YouTube Music, already bundled (`@fontsource-variable/roboto`). Geist
+Mono only for what reads as data: codes, links, paths, keys, hex colours, some counters. Numbers use tabular figures.
 
 | Style | Weight | Size / line |
 |---|---|---|
@@ -83,6 +83,25 @@ tabular figures.
 | Body M | Regular | 14 / 20 |
 | Body S | Regular | 13 / 18 |
 | Label | Medium | 12 / 16 |
+
+## Mockups
+
+Figma file "Untitled" (to be renamed "Legato · Design"), through the FigmaBridge MCP: the file must be open in Figma
+desktop with Plugins › Development › Figma Bridge running. `screenshot {nodeId, returnImage: true}` shows a screen.
+
+| Screen | Light | Dark |
+|---|---|---|
+| Songs | 11:5450 | 11:7375 |
+| Album | 11:5922 (main) | 11:7758 |
+| Search | 11:6142 (main) | 11:8062 |
+| Home | 11:6362 (main) | 11:8346 |
+| Now Playing | 11:6933 | 11:8602 |
+| Components | 11:5248 | 11:8661 |
+| Website landing | 11:8927 | 11:10438 |
+| Brand (name and icon) | 11:9323 | |
+
+Variables: collections Theme (light), Dark (`dark/` keys; free plan = one mode per collection), Brand, Scale. The file's
+light ink3 is still #6B6B6B; the app uses #606060 (AA on cover tints, `ambient.test.ts`).
 
 ## Shape, icons, motion
 

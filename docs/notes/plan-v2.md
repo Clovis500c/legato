@@ -4,10 +4,21 @@ Open work only. Tick a line when it lands; drop ticked lines once a release ship
 (phases 1 to 8, the big update, the redesign, the product pass, roadmap milestones 0 to 2, the user's choices along the
 way) is in git: `git log -p docs/notes/plan-v2.md`, and in the release notes.
 
-Stable: v1.1.479 (2026-10-31). Next: milestone 3, Platforms.
+Stable: v1.1.479 (2026-10-31). Next: milestone 3, Platforms. Where the work stands: [handoff.md](handoff.md).
 
 Every idea here stays: the user wants them all built in the end, just later (user's choice 2026-10-31). The roadmap sets
 the order; a line leaves only when it ships or the user drops it.
+
+## Website
+
+- [x] `M` Home page as a scroll story (user's choice 2026-10-31): the real interface in a 3D window (`site/demo`), eight
+      chapters, the visitor takes it at the end; audit of the page's slop (`docs/design.md` › Website). Local, not
+      published.
+- [ ] `S` Publish it with the next Stable (user's choice 2026-10-31), the one that gets what it shows and 1.1.479 hasn't:
+      Connect Spotify, the import screen, Songs not found, the "Then" heading in Up next. Before that: try it on a weak PC,
+      in Firefox and Safari. Order: `platforms` reaches master and Stable first, then branch `claude/site-scroll-3d-aff654`
+      (local only), `[skip release]` in the merge's first line: Pages publishes on that merge. It is also the demo's first
+      build on Linux; a red run leaves the old site up.
 
 ## Best in class (user's ask 2026-10-30)
 
@@ -81,6 +92,8 @@ What the services allow, read on 2026-10-31 (specs in [ideas/catch-up.md](ideas/
       many searches were refused.
 - [x] `M` Songs not found kept and shown (user's ask 2026-10-31): searched and truly missing, skipped by imports for 30 days,
       a page in the sidebar to read them, find one by hand, or search them all again. Not tried on a real search yet.
+- [ ] `S` A version found by hand stays a separate row: the song stays on the not-found list and its playlists keep the row
+      with nothing to play.
 - [x] `M` Import under YouTube's limit (user's ask 2026-10-31): a line for the time left, one for the limit with its countdown,
       held-back time counted in the estimate, one search settling every song in line it brought back. Measured on an address
       already limited: 44 searches, then blocked 5 min, then about one every 15 s. The gain from `Line` isn't measured yet.
@@ -341,6 +354,10 @@ Most useful first; the tag is the effort.
       default if wanted.
 - [ ] Spotify: try Ctrl+A, Ctrl+C on a private playlist in the desktop app and paste into Notepad (links, one per line?).
 - [ ] Spotify: ask for the data export (Privacy settings › Download your data); its `Playlist1.json` is the test file.
+- [ ] Quit the installed Legato from the tray and open it again: a session closed its hidden single-instance window by
+      mistake on 2026-10-31.
+- [ ] The soft glow on the sung line (`LyricsPanel.tsx`) goes against "no glows" in `docs/design.md`, and `SONG ENDS`,
+      `NEXT SONG`, `PREVIEW` are still written in capitals: keep or change (the capitals are keys in all 17 languages).
 
 ## Not done yet
 

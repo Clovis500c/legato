@@ -40,6 +40,53 @@ release build has on the PC goes behind the same guard.
 | Google session (webview cookies) | `%LOCALAPPDATA%\app.legato.desktop\EBWebView` | The system webview's own store | The system webview's own store |
 | Secrets | Credential Manager | Keychain | Secret Service |
 
+## Running and checking the app
+
+Running it:
+
+- `pnpm dev` resumes playback at launch and after every full reload (a store module changed: settings, player store),
+  with sound: pause it, or stop the app while editing those files. Editing many files at once (the locales) can leave
+  the player half reloaded: restart.
+- A change in `src-tauri` or `crates/` restarts the app and cuts what runs in it. Interface files only hot-reload.
+- Stopping it leaves Vite on port 5173 and `target\debug\legato.exe` running: stop those two by PID, never the installed
+  app (`%LOCALAPPDATA%\Legato\legato.exe`). A second launch while one runs exits at once (single instance).
+- Dev data that already passed a `DEFAULTS_VERSION` doesn't get a default changed under that same version.
+
+**Two dev libraries under Claude desktop.** It is an MSIX package (`Claude_pzs8sxrjxfjjc`), so its Bash and PowerShell
+tools see `%APPDATA%\app.legato.desktop.devbuild` at
+`%LOCALAPPDATA%\Packages\Claude_pzs8sxrjxfjjc\LocalCache\Roaming\…`, an old copy with other data. Its Terminal panel runs
+outside the package, so a `pnpm dev` started there uses the true Roaming folder. To read what a running dev app holds,
+run a read-only script from a Terminal tab (`process.env.APPDATA` is the true one there). File times stuck in the past,
+or a `diagnostics.log` missing the latest lines, mean you are on the copy (it cost a long wrong diagnosis on 2026-10-31).
+
+Checking it without touching the owner's running app:
+
+- Interface alone: `.claude/launch.json` has `ui-vite` (starts Vite) and `ui-preview` (attaches to the one running). The
+  page needs a fake Tauri: on Vite's origin, write `fetch('/')`'s HTML into a same-origin iframe, with
+  `<base href="http://localhost:5173/">` and a script defining `window.__TAURI_INTERNALS__` before anything else
+  (`metadata`, `transformCallback`, `convertFileSrc`, `invoke` answering `plugin:event|listen`, `library`
+  `{tracks, playlists, orders}`, `not_found`, `sources_status`, `play_stats`, `[]` for lists). Settings › About also needs
+  a full `cache_stats`. Fire events through the callback `transformCallback` kept. `site/demo` (branch in
+  [handoff.md](notes/handoff.md)) has a fuller one.
+- Reaching the stores: Vite serves modules by URL, so `import()` the URL listed in
+  `performance.getEntriesByType('resource')` (after a hot reload it carries `?t=`), or you get a second instance.
+- Real app: the `app` entry of `.claude/launch.json` opens WebView2's DevTools port 9333. Drive the page over CDP from a
+  node script (`scripts/cdp.mjs`): `Page.captureScreenshot`, `Emulation.setEmulatedMedia` for light and dark,
+  `Input.dispatchMouseEvent` for hover. Pause right after each reload and keep checking a few seconds: YouTube's late
+  state can start it again.
+- Screenshots by computer use: ask access for `C:\dev\music-app\target\debug\legato.exe`; the name "Legato" may map to the
+  installed app.
+
+Writing code:
+
+- No formatter. The repository has no Prettier config and isn't Prettier-clean: never run it, write lines like the code
+  around them (long single-line JSX is normal here).
+- New interface text: its key in all 17 `ui/src/shared/i18n/locales/*.ts`. Keys use the typographic ’. A key you stop
+  using goes too. `scripts/i18n-fill.mjs` builds a new language from `fr.ts`.
+- A virtual list whose rows change kind needs `getItemKey` (Up next's headers overlapped rows without it).
+- Text in the accent: `text-accent-ink` (darkened until AA). Selection `bg-line`, chips ink when picked (`LedChip`), LEDs ink.
+- Read `pnpm check`'s real exit code (`pnpm check > log; echo $?`): a pipe hides it.
+
 ## Measuring: `pnpm bench`
 
 `pnpm bench` builds the release app under its own identifier (`src-tauri/tauri.bench.conf.json`), fills a fresh data
@@ -120,8 +167,9 @@ Search, Spotify link and song list imports, Find full versions, another upload o
 
 ## Spotify (optional, your own key)
 
-Spotify has no keyless sign-in, so each user brings a Client ID. Without one, public playlist links still import
-(`crates/connectors/src/spotify_embed.rs`).
+Spotify's official API needs each user's own Client ID. Without one, public playlist links still import
+(`crates/connectors/src/spotify_embed.rs`), and Connect Spotify brings in private playlists and Liked Songs
+([playback.md](playback.md)).
 
 1. [Spotify developer dashboard](https://developer.spotify.com/dashboard) › Create app. Any name and description; tick
    "Web API".
@@ -148,6 +196,8 @@ key, JSON values.
 |---|---|
 | `credentials` | `{"spotifyClientId": "…"}` |
 | `spotify` | Spotify tokens: `accessToken`, `refreshToken`, `expiresAt` (epoch ms). Refreshed by the app. |
+| `lastfm` | The Last.fm session |
+| `sync_key` | Sync Mode's key |
 
 To look at or delete them (here for `spotify`):
 

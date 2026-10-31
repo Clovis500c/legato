@@ -62,7 +62,6 @@ Updates (the `updateChannel` setting, kept per PC, not synced):
   Stable (`feat` / `fix` / `perf`) into that release's `latest.json` and page, then makes it a normal release, marked
   Latest. Stable PCs read `releases/latest/download/latest.json` and GitHub's "latest" skips prereleases, so a push
   never reaches them. **That URL is the one every installed version has always read (`tauri.conf.json`): keep it.**
-  Until the first promote, Stable PCs stay on the last release made before channels existed.
 - Back from Beta to Stable the app never downgrades: it waits for a Stable newer than the version it runs.
 
 - **Version**: `MAJOR.MINOR` comes from `src-tauri/tauri.conf.json`, the patch number is the number of commits on
@@ -88,7 +87,8 @@ gh secret set TAURI_SIGNING_PRIVATE_KEY < ~/.tauri/music-app.key
 - **Small commits**, one tested step at a time, with
   [Conventional Commits](https://www.conventionalcommits.org) messages: `feat(player): …`, `fix(library): …`,
   `docs: …`.
-- **English** for code, comments, interface text and documentation.
+- **English** for code, comments and documentation. Interface text is written in English and goes through `shared/i18n`,
+  with its translation in every language.
 - **Comments** are short fragments: `// Feb 2026: own playlists only.`
 - **Tests** next to the code: `#[cfg(test)]` modules in Rust, `*.test.ts` files in the interface. No real network.
 - **No placeholder buttons.** A feature that isn't wired is absent or marked "Coming soon".

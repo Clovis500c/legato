@@ -10,3 +10,4 @@ dist
 /site/next-env.d.ts
 /site/public/third-party-licenses.txt
 /graphify-out
+/.claude/worktrees

@@ -11,20 +11,22 @@ src-tauri/              thin shell: commands, keychain, WebView2 hook, media pan
   ├─ crates/core        library, matching, SQLite, sync, mixes, sharing
   ├─ crates/connectors  YouTube Music, Spotify, Apple catalog, Discord, nearby sharing, image cache
   ├─ crates/player      audio engine thread, gapless queue
-  └─ crates/shield      ad and tracker blocking
+  ├─ crates/dsp         live audio processing
+  ├─ crates/shield      ad and tracker blocking, scripts for the app's web windows
+  └─ crates/plugins     third-party plugin runtime
 ```
 
 ## Crates
 
 | Crate | Role |
 |---|---|
-| `music-core` | Track model, matching (ISRC, then title + artist + duration), SQLite library with versioned migrations, sync, Sync Mode between PCs (snapshot, merge, sealing), local file scan (tags read on a few threads, covers skipped, a rescan reads only files whose size or date changed; missing tags filled from the file name, "01 - Artist - Title", so untagged files link to the same song from other services), listening history and mixes, share codes, search merging and the music / not music classifier. No Tauri, no network. |
-| `music-connectors` | One module per service. Shared OAuth PKCE loopback (Spotify), YouTube Music web session, normal YouTube search, iTunes catalog and Apple Music album / playlist links, Deezer playlist / album links (public API), LRCLIB lyrics, SponsorBlock segments (hash prefix, opt-in), AudD song recognition (user's token), Discord IPC, nearby sharing and Sync Mode's network swap (mDNS + SPAKE2), image cache. One HTTP client for all of them (`connectors::http()`: connections and TLS sessions reused; a client per call cost a new connection per request). Base URLs are injectable for tests. |
+| `music-core` | Track model, matching (ISRC, then title + artist + duration), SQLite library with versioned migrations, sync, Sync Mode between PCs (snapshot, merge, sealing), local file scan (tags read on a few threads, covers skipped, a rescan reads only files whose size or date changed; missing tags filled from the file name, "01 - Artist - Title", so untagged files link to the same song from other services), listening history and mixes, share codes, search merging and the music / not music classifier, Exportify's files (`spotify_export`), the pace of an import's searches (`searchpace`). No Tauri, no network. |
+| `music-connectors` | One module per service. Shared OAuth PKCE loopback (Spotify), Spotify's public embeds and the messages of Connect Spotify's page, YouTube Music web session, normal YouTube search, iTunes catalog and Apple Music album / playlist links, Deezer playlist / album links (public API), LRCLIB lyrics, SponsorBlock segments (hash prefix, opt-in), AudD song recognition (user's token), Last.fm, Discord IPC, nearby sharing and Sync Mode's network swap (mDNS + SPAKE2), image cache. One HTTP client for all of them (`connectors::http()`: connections and TLS sessions reused; a client per call cost a new connection per request). Base URLs are injectable for tests. |
 | `music-player` | Native playback of local files and previews (rodio, symphonia) on its own thread, with a gapless queue, through the live processing chain. Live Editor export of local files (WAV). Music Detector clips from the microphone or what the PC plays (WASAPI loopback), memory only. |
 | `music-dsp` | Live audio processing, pure Rust: biquads, BS.1770 loudness meter, Adaptive Sound gain, limiter, the Live Editor's effects (EQ, compressor, width, echo, reverb, 3D) and speed / tempo / pitch (WSOLA), shared `Control`. |
-| `music-shield` | Ad and tracker blocking with Brave's adblock engine, plus the YouTube player script. |
+| `music-shield` | Ad and tracker blocking with Brave's adblock engine, plus the scripts for the app's web windows: YouTube's player (`live.js` and its neighbours), Spotify's page (`spotify.js`), Exportify's (`exportify.js`). |
 | `music-plugins` | Third-party plugins: one QuickJS runtime per plugin (64 MB, 1 s per run, no DOM, network or files), manifest and permissions checked in Rust, HTTPS gateway to approved public hosts. Author guide: `docs/plugins.md`. |
-| `src-tauri` | IPC commands (`lib.rs`, and per feature: `detector.rs`, `editor.rs`, `themes.rs`, `syncmode.rs`, `plugins.rs`), OS keychain, WebView2 request hook, Windows media panel, tray icon, window background, voice search through Windows' speech recognition (`speech.rs`). No business logic. |
+| `src-tauri` | IPC commands (`lib.rs`, and per feature: `detector.rs`, `editor.rs`, `themes.rs`, `syncmode.rs`, `plugins.rs`, `links.rs`, `spotify_web.rs`, `spotify_export.rs`), OS keychain, WebView2 request hook, Windows media panel, tray icon, window background, voice search through Windows' speech recognition (`speech.rs`). No business logic. |
 
 ## Rules
 
@@ -89,8 +91,8 @@ differs from the commit.
 - `ui/src/shared/`: typed API, formatting, themes, image helpers and the small component kit (`shared/ui/`).
 - Long lists are virtualized (`@tanstack/react-virtual`).
 - Languages: `ui/src/shared/i18n/` (no library). English text is the key: `tr('Play')`, `trn(n, '{n} song', '{n} songs')`
-  (the language's plural rules), `msg()` marks text kept in tables and translated where shown. `fr.ts` maps English
-  to French; a test scans the code and fails on a missing or stale translation. Language = Windows' (the webview's)
+  (the language's plural rules), `msg()` marks text kept in tables and translated where shown. Each file of `locales/`
+  maps English to one of 17 languages; a test scans the code and fails on a missing or stale translation. Language = Windows' (the webview's)
   or the user's pick; changing it re-renders in place. Each language's table loads on demand (`loadLang`), the one in
   use before the first render (`main.tsx` awaits it): the startup script went from 2.4 MB to 0.54 MB (2026-10-28).
   The shell's own words (tray, taskbar buttons) follow through
@@ -116,6 +118,14 @@ differs from the commit.
   song's, must already meet them. Pages (`app/pages.ts`) load on first visit; the shell, sidebar, player and shortcuts
   are in the first chunk, a page loading leaves the shell standing (`PageBoundary`: `Suspense`, no fallback). A chunk that fails to load shows
   "Couldn’t load this page" + Try again in that spot only; the next draw asks for the chunk anew.
+
+## Imports
+
+Playlists and likes come in from links (`src-tauri/src/links.rs`), song lists (`songlist.rs`), Connect Spotify and the
+official APIs. Whatever the source, a song has nothing to play until it has a version, and `find_on_youtube` looks for
+one. Google sets the speed of those unofficial searches: the library is asked first, the lists are saved before any
+search, `music_core::searchpace` paces the rest, and a song truly missing goes in `not_found` instead of being searched
+at every import. Details: [playback.md](playback.md).
 
 ## Updates
 
@@ -173,8 +183,11 @@ the tray menu is the only exit. Measured: WebView2 working set 867 MB shown → 
 ## Add-ons
 
 Optional built-in features, listed in `ui/src/features/addons/registry.ts` with their author and a verified mark, and
-turned on in settings. No third-party code is loaded. Discord Rich Presence talks to the local Discord app over its
-IPC pipe (`crates/connectors/src/discord.rs`), from a dedicated thread in `src-tauri/src/discord.rs`.
+turned on in settings. Discord Rich Presence talks to the local Discord app over its IPC pipe
+(`crates/connectors/src/discord.rs`), from a dedicated thread in `src-tauri/src/discord.rs`.
+
+Third-party plugins are apart: local folders the user installs after approving their permissions, each in its own
+QuickJS runtime (`crates/plugins`, `src-tauri/src/plugins.rs`, `features/plugins/`, [plugins.md](plugins.md)).
 
 ## Testing
 
