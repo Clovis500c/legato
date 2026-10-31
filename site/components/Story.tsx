@@ -11,6 +11,7 @@ import { EASE } from './motion'
 // The app's first window (tauri.conf.json); the stage scales it.
 const APP = { w: 1360, h: 860 }
 const PINNED = '(min-width: 1000px) and (prefers-reduced-motion: no-preference)'
+const FRAMED = 'mx-(--pad) block h-auto w-[calc(100%-2*var(--pad))] max-w-[880px] rounded-lg outline outline-line pinned:hidden'
 
 const HERO_POSE: Pose = { x: 0.3, y: 0.14, rx: 7, ry: -24, zoom: 0.92 }
 const STAGES: { scene: string; pose: Pose }[] = [{ scene: 'library', pose: HERO_POSE }, ...CHAPTERS]
@@ -56,10 +57,9 @@ function Still({ name, alt, lazy, className = '' }: { name: string; alt: string;
 }
 
 /** The real interface in its frame. Waits for the page to be up; `ready` from the demo shows it over the picture. `live`: the visitor's. */
-function Demo({ at, live, onLeave }: { at: MotionValue<number>; live: boolean; onLeave: () => void }) {
+function Demo({ at, ready, live, onReady, onLeave }: { at: MotionValue<number>; ready: boolean; live: boolean; onReady: () => void; onLeave: () => void }) {
   const frame = useRef<HTMLIFrameElement>(null)
   const [wanted, setWanted] = useState(false)
-  const [ready, setReady] = useState(false)
   const last = useRef('')
   const seen = useRef(true)
   const taken = useRef(false)
@@ -83,7 +83,7 @@ function Demo({ at, live, onLeave }: { at: MotionValue<number>; live: boolean; o
       if (e.origin !== location.origin) return
       if (e.data.legato === 'leave') onLeave()
       if (e.data.legato !== 'ready') return
-      setReady(true)
+      onReady()
       last.current = ''
       send(at.get())
     }
@@ -120,9 +120,11 @@ function Demo({ at, live, onLeave }: { at: MotionValue<number>; live: boolean; o
   return <iframe ref={frame} src="demo/index.html" title="Legato's interface" tabIndex={live ? 0 : -1} inert={!live} className={`absolute inset-0 size-full border-0 transition-opacity duration-300 ${live ? '' : 'pointer-events-none'} ${ready ? 'opacity-100' : 'opacity-0'}`} />
 }
 
-/** The window: one transform, from the scroll, the stage's size and the visitor's turn. */
-function AppWindow({ at, take, live, onLeave }: { at: MotionValue<number>; take: MotionValue<number>; live: boolean; onLeave: () => void }) {
+/** The window: one transform, from the scroll, the stage's size and the visitor's turn. No demo: each chapter's picture. */
+function AppWindow({ at, take, ready, live, onReady, onLeave }: { at: MotionValue<number>; take: MotionValue<number>; ready: boolean; live: boolean; onReady: () => void; onLeave: () => void }) {
   const box = useRef<HTMLDivElement>(null)
+  const [still, setStill] = useState('library')
+  useMotionValueEvent(at, 'change', (a) => ready || setStill(STAGES[Math.round(Math.min(a, LAST))].scene))
   const w = useMotionValue(1440)
   const h = useMotionValue(900)
   useEffect(() => {
@@ -146,8 +148,8 @@ function AppWindow({ at, take, live, onLeave }: { at: MotionValue<number>; take:
   })
   return (
     <motion.div ref={box} aria-hidden={!live} style={{ transform, width: APP.w, height: APP.h, marginLeft: -APP.w / 2, marginTop: -APP.h / 2 }} className="absolute top-1/2 left-1/2 overflow-hidden rounded-[10px] bg-panel shadow-(--shot-shadow) outline outline-line">
-      <Still name="library" alt="" className="absolute inset-0 size-full" />
-      <Demo at={at} live={live} onLeave={onLeave} />
+      <Still name={still} alt="" className="absolute inset-0 size-full" />
+      <Demo at={at} ready={ready} live={live} onReady={onReady} onLeave={onLeave} />
     </motion.div>
   )
 }
@@ -213,20 +215,20 @@ function ChapterBar({ at, taken, onBack }: { at: MotionValue<number>; taken: boo
   )
 }
 
-/** The last chapter's way out: the window itself if it's here, the installer always. */
-function Actions({ pinned, onTake, button }: { pinned: boolean; onTake: () => void; button: RefObject<HTMLButtonElement | null> }) {
+/** The last chapter's way out: the window itself if the demo is up, the installer always. */
+function Actions({ ready, onTake, button }: { ready: boolean; onTake: () => void; button: RefObject<HTMLButtonElement | null> }) {
   const { href } = useLatest()
   const pill = 'inline-flex items-center gap-2 rounded-full px-6 py-3 text-[15px] font-medium'
   return (
     <>
-      {pinned && <p className="mt-4 text-[clamp(16px,1.3vw,18px)] leading-[1.45] text-ink-2">That window is the real interface, with invented songs and no sound.</p>}
+      {ready && <p className="mt-4 text-[clamp(16px,1.3vw,18px)] leading-[1.45] text-ink-2">That window is the real interface, with invented songs and no sound.</p>}
       <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-3">
-        {pinned && (
+        {ready && (
           <button ref={button} onClick={onTake} className={`${pill} cursor-pointer bg-ink text-on-ink`}>
             Try it here <ArrowRight size={16} />
           </button>
         )}
-        <a href={href} className={pinned ? 'inline-flex items-center gap-2 text-[15px] font-medium' : `${pill} bg-ink text-on-ink`}>
+        <a href={href} className={ready ? 'inline-flex items-center gap-2 text-[15px] font-medium' : `${pill} bg-ink text-on-ink`}>
           <WindowsLogo size={18} weight="fill" /> Download for Windows
         </a>
       </div>
@@ -247,6 +249,7 @@ export function Story() {
   useMotionValueEvent(night, 'change', (d) => setBlack(d > 0.5))
 
   // The visitor's turn: the window comes flat and takes the stage, until they leave or scroll away.
+  const [ready, setReady] = useState(false)
   const [taken, setTaken] = useState(false)
   const take = useMotionValue(0)
   const back = () => setTaken(false)
@@ -268,19 +271,19 @@ export function Story() {
       {pinned && CHAPTERS.map(({ scene }, n) => <span key={scene} id={`chapter-${scene}`} style={{ top: `${(n + 1) * 130}svh` }} className="absolute" />)}
       <motion.div data-black={black || undefined} style={pinned ? { perspective: 1800, zIndex } : undefined} className="text-ink pinned:sticky pinned:top-0 pinned:h-svh pinned:overflow-hidden">
         {pinned && <motion.div aria-hidden style={{ opacity: night }} className="absolute inset-0 bg-[#131313]" />}
-        {pinned && <AppWindow at={at} take={take} live={taken} onLeave={back} />}
+        {pinned && <AppWindow at={at} take={take} ready={ready} live={taken} onReady={() => setReady(true)} onLeave={back} />}
         <Panel i={0} at={at} take={take} pinned={pinned}>
           <Hero />
-          <Still name="library" alt={CHAPTERS[0].alt} className="block h-auto w-full px-(--pad) pinned:hidden" />
+          <Still name="library" alt={CHAPTERS[0].alt} className={FRAMED} />
         </Panel>
         {CHAPTERS.map(({ scene, title, text, alt, pose }, n) => (
           <Panel key={scene} i={n + 1} at={at} take={take} pinned={pinned} right={pose.x < 0}>
             <div className="px-(--pad) py-10 pinned:p-0">
               <h2 className="text-[clamp(32px,3.9vw,56px)] leading-[1.07] font-black tracking-[-0.015em]">{title}</h2>
               <p className="mt-4 max-w-[440px] text-[clamp(16px,1.3vw,18px)] leading-[1.45] text-ink-2">{text}</p>
-              {n + 1 === LAST && <Actions pinned={pinned} onTake={() => setTaken(true)} button={tryIt} />}
+              {n + 1 === LAST && <Actions ready={pinned && ready} onTake={() => setTaken(true)} button={tryIt} />}
             </div>
-            {n > 0 && <Still name={scene} alt={alt} lazy className="block h-auto w-full px-(--pad) pinned:hidden" />}
+            {n > 0 && <Still name={scene} alt={alt} lazy className={FRAMED} />}
           </Panel>
         ))}
         {pinned && <ChapterBar at={at} taken={taken} onBack={back} />}

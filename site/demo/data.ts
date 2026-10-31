@@ -149,6 +149,17 @@ const ANSWERS: Record<string, (args: Record<string, unknown>) => unknown> = {
   ytm_home: () => ({ shelves: [], moods: [] }),
   shield_status: () => ({ enabled: false, blocked: 0 }),
   edit_draft: () => null,
+  // Settings: nothing set up.
+  ytm_accounts: () => ({ signedIn: false, accounts: [], picked: [] }),
+  sync_status: () => ({ onedrive: [], folder: null, protected: false, asked: false, deviceName: 'This PC', devices: [], last: null, error: null }),
+  sync_directions: () => ({}),
+  lastfm_status: () => ({ configured: false, user: null, waiting: 0 }),
+  discord_status: () => ({ connected: false, error: null }),
+  nearby_status: () => ({ state: 'idle' }),
+  cache_stats: () => Object.fromEntries(['library', 'playlists', 'mixes', 'stats', 'images'].map((k) => [k, { hits: 0, misses: 0, entries: 0, bytes: 0 }])),
+  art_cache_size: () => 0,
+  detector_status: () => false,
+  spotify_web_status: () => false,
 }
 
 // What needs an account, the network or the PC: said plainly, never faked.

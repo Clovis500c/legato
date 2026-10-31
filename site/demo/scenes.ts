@@ -8,6 +8,7 @@ import { usePlayer } from '../../ui/src/features/player/store'
 import { closeVizFull, openVizFull, useVizFull } from '../../ui/src/features/player/vizFull'
 import type { LibraryTrack } from '../../ui/src/shared/api'
 import { TRACKS } from './data'
+import './demo.css'
 
 // The website picks what shows: { legato: 'scene', name, p } from the parent page, p = how far the visitor scrolled in it.
 
@@ -132,6 +133,8 @@ const SCENES: Record<string, Scene> = {
 
 let shown: string | undefined
 let taken = false
+const drive = (on: boolean) => document.documentElement.toggleAttribute('data-driven', on)
+drive(true)
 
 /** Whatever the visitor left open. */
 function tidy() {
@@ -173,11 +176,13 @@ window.addEventListener('message', (e: MessageEvent<{ legato?: string; name: str
   // The visitor's turn: from the screen they stopped on, back to the app as it starts.
   if (e.data.legato === 'take') {
     taken = true
+    drive(false)
     show('library', 0)
     play(true)
   }
   if (e.data.legato === 'give') {
     taken = false
+    drive(true)
     shown = undefined
     tidy()
   }
@@ -199,6 +204,7 @@ const up = () =>
     const asked = new URLSearchParams(location.search)
     window.parent.postMessage({ legato: 'ready' }, location.origin)
     if (asked.get('shot')) show(asked.get('shot')!, Number(asked.get('p') ?? 1))
+    if (asked.has('full')) usePlayer.getState().setFull(true)
   })
 if (useStore.getState().tracks.length) up()
 else {

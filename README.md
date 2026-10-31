@@ -9,8 +9,8 @@ Windows 10 and 11 · free · no account of ours
 [Website](https://clovis500c.github.io/legato/) · [Download](https://github.com/Clovis500c/legato/releases/latest) · [What leaves your PC](https://clovis500c.github.io/legato/#privacy)
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="site/assets/app-dark.png">
-  <img alt="Legato's Songs page: the library on the left, songs from every service in one list, Up next on the right" src="site/assets/app-light.png">
+  <source media="(prefers-color-scheme: dark)" srcset="site/public/shots/library-dark.webp">
+  <img alt="Legato's Songs page: the library on the left, songs from every service in one list, Up next on the right" src="site/public/shots/library-light.webp">
 </picture>
 
 </div>

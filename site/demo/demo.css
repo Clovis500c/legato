@@ -1,0 +1,4 @@
+/* While the page drives: a theme flips in one repaint. The app's own fade repaints the whole window each frame, under a moving scroll. */
+html[data-driven] * {
+  transition: none !important;
+}

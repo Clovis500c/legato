@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import localFont from 'next/font/local'
 import type { ReactNode } from 'react'
-import dark from '@/assets/app-dark.png'
+import og from '@/assets/og.jpg'
 import { Motion } from '@/components/motion'
 import './globals.css'
 
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   metadataBase: new URL('https://clovis500c.github.io'),
   title: 'Legato: one player for YouTube Music, Spotify, Apple Music and your files',
   description,
-  openGraph: { type: 'website', title: 'Legato', description, images: [{ url: dark.src, width: dark.width, height: dark.height }] },
+  openGraph: { type: 'website', title: 'Legato', description, images: [{ url: og.src, width: og.width, height: og.height }] },
   twitter: { card: 'summary_large_image' },
 }
 
