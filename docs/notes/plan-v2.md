@@ -116,9 +116,13 @@ playback (its terms), concerts (an API's terms), trademark search.
   and the native folder picker (answered over DevTools, not driven) are outside it. Review fixes (2026-10-30): `--shots`
   can name any folder, so a walk removes only its own files there, never the folder; a refused install in a dev build
   leaves the Ready state.
-- **Deezer / Apple link import**: pasting a Deezer or Apple Music playlist / album URL in Add music (or the search
-  box) imports it like a Spotify link, with the matched count shown; mockito tests on recorded answers; the website's
-  privacy rows name the two hosts.
+- **Deezer / Apple link import** (done 2026-10-31): pasting a Deezer or Apple Music playlist / album URL in Add music (or
+  the search box, or Ctrl+V) imports it like a Spotify link, with the matched count shown ("12 of 13 songs found");
+  mockito tests on recorded answers; the website's privacy rows name the hosts. Choices: the songs land in a new
+  playlist of yours (no new library source: older versions of Sync Mode would not read it); Apple playlists show about
+  100 songs at most on the page (the toast says when the list is longer). Checked for real against a 153- and a
+  200-song Deezer playlist and Apple's editorial and users' playlists (a throwaway caller, not CI). Short links
+  (`link.deezer.com`) are tested on a recorded 302 only: no real one was at hand. Details: `docs/playback.md`.
 - **Why Legato page**: a section on the website with the measured numbers and the four differences (legal, light,
   Sync Mode, Last.fm), in every site language, no competitor named.
 - **Visualizer v2 first cut**: 1/6-octave bands at 60 Hz from both twins (tests: a sine lights its band in Rust and JS
@@ -128,8 +132,8 @@ playback (its terms), concerts (an API's terms), trademark search.
   on Esc; works with plain lyrics as a scroll.
 
 **1. Catch up with Riff (what a Riff user would miss)**
-- [ ] Paste a Deezer playlist / album link: imported like a Spotify link (Deezer's public API, no key).
-- [ ] Paste an Apple Music playlist / album link: iTunes lookup for albums, the page's data for playlists.
+- [x] Paste a Deezer playlist / album link: imported like a Spotify link (Deezer's public API, no key). (2026-10-31)
+- [x] Paste an Apple Music playlist / album link: iTunes lookup for albums, the page's data for playlists. (2026-10-31)
 - [ ] Paste a SoundCloud link: imported; plays in SoundCloud's official embedded widget (no audio taken).
 - [ ] SoundCloud search beside YouTube's (widget playback, its terms checked first).
 - [ ] Karaoke / TV mode: full screen, big synced lyrics over the blurred cover, line by line.

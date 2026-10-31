@@ -289,6 +289,26 @@ via the Web API Player endpoints. Audio comes out of the Spotify app; we only se
   video on normal YouTube (`with_youtube`, 6 at a time), and plays through the YouTube embed. Signed out, YouTube
   Music's public catalog answers (2026-10-30: before, a signed-out import came in with nothing playable). Saved as an
   imported Spotify playlist; importing again refreshes it. Paste the link anywhere (Ctrl+V) or in Add music.
+- **Deezer and Apple Music links** (2026-10-31), same flow, metadata only (no audio, no preview URL kept). The connectors
+  give a name, a cover and the songs (`crates/connectors/src/deezer.rs`, `itunes.rs` `link_list`, shared `LinkList`);
+  `src-tauri/src/links.rs` (`import_link`) matches each song to YouTube with `with_youtube`, like the Spotify import, and
+  puts the ones found in a **new playlist of yours** (not a synced one: a new library source would break the other PCs
+  of Sync Mode that do not know it). The toast says "12 of 13 songs found".
+  - Deezer: `api.deezer.com/playlist|album/{id}` for the name, then `/tracks?index=&limit=100`, page by page, ISRC
+    included. Quota (50 requests / 5 s) comes as HTTP 200 with an `error` object (code 4): wait and try again, 4 times.
+    Private or removed lists answer code 800 or 200. `link.deezer.com/s/…` short links: one redirect, read in Rust and
+    followed only to a deezer.com page. Hosts accepted: `deezer.com`, `www.deezer.com` (with /fr/ and the like),
+    `link.deezer.com`, nothing else.
+  - Apple Music, albums: the iTunes lookup (`entity=song&country=<store of the link>&limit=200`); the store in the link
+    matters, region-only albums come back empty otherwise. Playlists have no keyless API: the public page's
+    `serialized-server-data` JSON (editorial `pl.<hex>` and users' `pl.u-…` alike; around 100 songs at most on the page,
+    the toast says when the list is longer). The page URL is built from the store and the id, never from the pasted
+    text. If the layout changes the error says so in plain words and points to Import a list of songs. Single-song links
+    (`/song/`, `?i=`) are refused in plain words.
+  - Base URLs live in `src-tauri/src/hosts.rs` (the e2e build sends them to a dead port or the mock). Covers: exact hosts
+    `cdn-images.dzcdn.net`, `e-cdns-images.dzcdn.net` and `*.mzstatic.com` in the `art` allowlist.
+  - Fixtures in `e2e/fixtures/` (`deezer-*.json`, `apple-playlist-*.html`, `itunes-lookup-album.json`) were recorded by
+    hand on 2026-10-31 and cut down to the fields the parsers read.
 
 ## Ad shield (`crates/shield`) — user's choice, 2026-10-16
 

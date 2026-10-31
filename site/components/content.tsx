@@ -42,6 +42,7 @@ export const PRIVACY: [string, string][] = [
   ['Sign-ins and keys', 'Stay in the Windows Credential Manager.'],
   ['Requests', "Go out through the app's core only: the interface never calls the network by itself."],
   ['Search', "What you search for goes to YouTube, YouTube Music and Apple Music, signed in or not, and to YouTube's suggestions as you type (Settings › General turns them off). Recent searches stay on this PC."],
+  ['Pasted playlist links', 'A public Spotify, Deezer or Apple Music playlist or album link makes the app ask that service for the list: open.spotify.com, api.deezer.com (link.deezer.com for its short links), music.apple.com and itunes.apple.com. No account; only titles, artists, lengths and covers come back, then each song is searched on YouTube. Cover pictures load from the image hosts of those services.'],
   ['Lyrics', "When you open them: YouTube Music's timed lyrics first if you're signed in, then the song's title, artist, album and length go to LRCLIB. Answers stay on your PC."],
   ['Voice search', "Off until you allow it. While it listens, your voice goes to Microsoft through Windows' own speech recognition. The app keeps nothing."],
   ['Music Detector', 'Off until you allow it. 10 seconds of sound, from the microphone or what this PC plays, go once to AudD to name the song. Nothing is saved.'],
@@ -54,7 +55,8 @@ export const PRIVACY: [string, string][] = [
 export const SERVICES: [string, string][] = [
   ['YouTube Music', "Sign in with Google, on Google's own page. Several accounts."],
   ['Spotify', "Your own app from the Spotify Developer Dashboard (Premium needed while it's in development mode), or paste public playlist links."],
-  ['Apple Music', 'Catalog search and 30-second previews, no account.'],
+  ['Apple Music', 'Catalog search and 30-second previews, and public playlist or album links, no account.'],
+  ['Deezer', 'Paste a public playlist or album link: its songs come in and play from YouTube. No account.'],
   ['Your files', 'Add your music folders; changes in them show up as they happen.'],
 ]
 
