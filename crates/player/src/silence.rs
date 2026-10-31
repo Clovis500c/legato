@@ -16,6 +16,8 @@ const TAIL_MS: u64 = 200;
 /// Less than this at the start or the end is left alone: not worth a seek, and album gaps are meant.
 pub const MIN_START_MS: u64 = 300;
 pub const MIN_END_MS: u64 = 1_500;
+/// The quick start scan decodes this much at most: a longer silence (or a file quiet throughout) plays untrimmed.
+const LEAD_SCAN_MS: u64 = 30_000;
 
 /// Where the music is in a file. start_ms = 0 and end_ms None = nothing to cut.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -58,10 +60,14 @@ pub fn scan(samples: impl Iterator<Item = f32>, channels: usize, rate: u32, firs
 fn decode(path: &Path, first_only: bool) -> Result<Trim> {
     let src = Decoder::try_from(File::open(path)?)?;
     let (channels, rate) = (src.channels().get() as usize, src.sample_rate().get());
-    Ok(scan(src, channels, rate, first_only))
+    if first_only {
+        let cap = (rate as u64 * LEAD_SCAN_MS / 1000) as usize * channels;
+        return Ok(scan(src.take(cap), channels, rate, true));
+    }
+    Ok(scan(src, channels, rate, false))
 }
 
-/// Start only: stops at the first loud window, so it costs what the silence lasts. end_ms and total_ms are not set.
+/// Start only: stops at the first loud window, so it costs what the silence lasts (30 s at most). end_ms and total_ms are not set.
 pub fn leading(path: &Path) -> Result<Trim> {
     decode(path, true)
 }

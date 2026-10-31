@@ -8,7 +8,7 @@ import { demoGain, demoLength, fadeGain, NO_FADE, overlapDue, PICK_IN_S, type Fa
 import { insertAt, keepQueued, moveInOrder, moveToSlot, nextIndex, playOrder, queued, tooLong, type Repeat } from './queue'
 import { vias, type Via } from './sources'
 import { formatDuration } from '../../shared/format'
-import { endCut, isUndone, rememberUndone, toSkip, useSponsor } from './sponsor'
+import { endCut, isUndone, landed, rememberUndone, toSkip, useSponsor } from './sponsor'
 import { offerEnd, rememberEnd, rememberStart, songEnd, songStart } from './ends'
 import { bindLiveFrame, onEndHeard, onLeadHeard } from './live'
 import { closeWatch, openWatch, sendWatch, watching } from './watch'
@@ -63,6 +63,8 @@ interface PlayerState {
   fadeIn: number
   /** Where the current item started (resume), ms. */
   startAt: number
+  /** Where the music began after a skipped silence or intro, ms: the fade in counts from here. */
+  fadeFrom: number
   /** Bumped each time an item starts (song, other upload, gapless move): per-song UI state checks it. */
   playId: number
   /** Restored paused (after an update): the first item loads without playing. */
@@ -269,6 +271,8 @@ let ytFresh = false
 // "playing" that soon after is paused again (later, one from YouTube's own controls counts).
 let pausedAt = 0
 const PAUSE_HOLD_MS = 5000
+// Play waits this long for the silence scan of a local file, then starts it as it is.
+const SILENCE_WAIT_MS = 400
 // Current song came by the queue moving on (song ended): Skip long songs applies once its length is known.
 let reachedAuto = false
 // Length of the playing video, ms (0 = not known yet). YouTube sends it once, as the video loads: kept for the song.
@@ -385,6 +389,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
   skipNonMusic: false,
   fadeIn: 0,
   startAt: 0,
+  fadeFrom: 0,
   playId: 0,
   hold: false,
   tail: null,
@@ -471,7 +476,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     const base: NowPlaying = { title: t.title, artist: t.artist, trackId: t.id, via: how }
     // Preview: 30 s from Apple, no resume point.
     const start = how === 'preview' ? 0 : from
-    set({ index, playId: get().playId + 1, playing: !hold, hold, positionMs: start, startAt: start, durationMs: t.durationMs, upcoming: [], tail: how === 'youtube' ? stopTail(get().tail) : null, fadeIn: auto ? get().fade.in : get().fade.skip ? Math.min(get().fade.in, PICK_IN_S) : 0 })
+    set({ index, playId: get().playId + 1, playing: !hold, hold, positionMs: start, startAt: start, fadeFrom: 0, durationMs: t.durationMs, upcoming: [], tail: how === 'youtube' ? stopTail(get().tail) : null, fadeIn: auto ? get().fade.in : get().fade.skip ? Math.min(get().fade.in, PICK_IN_S) : 0 })
     sent = -1
     useSponsor.setState({ video: undefined, segs: [] })
     parts = { playId: get().playId, prev: start / 1000, done: new Set() }
@@ -516,9 +521,10 @@ export const usePlayer = create<PlayerState>((set, get) => ({
       let end = index + 1
       while (!get().shuffle && get().repeat !== 'one' && end < list.length && vias(list[end])[0] === 'local') end++
       const paths = list.slice(index, end).map((x) => x.ids.local!)
-      // Skip silence: the engine learns where the music starts before the song does (cached; a failure plays it as it is).
+      // Skip silence: the engine learns where the music starts before the song does (cached). A scan not done in time
+      // or failed plays the song as it is: the engine seeks past the silence when the answer comes late.
       if (get().skipSilence) {
-        await api.silencePrepare(paths).catch(() => {})
+        await Promise.race([api.silencePrepare(paths).catch(() => {}), new Promise((done) => setTimeout(done, SILENCE_WAIT_MS))])
         if (mine !== seq) return
       }
       expect = paths
@@ -571,7 +577,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     send({ type: 'play', paths, start: 0 })
     send({ type: 'volume', value: get().volume })
     // Clearing youtubeId unmounts embed.
-    set({ now: { title: fileTitle(paths[0]), artist: tr('Local file'), path: paths[0], via: 'local' }, playId: get().playId + 1, list: [], order: [], index: 0, playing: true, positionMs: 0, durationMs: null, fadeIn: 0, startAt: 0 })
+    set({ now: { title: fileTitle(paths[0]), artist: tr('Local file'), path: paths[0], via: 'local' }, playId: get().playId + 1, list: [], order: [], index: 0, playing: true, positionMs: 0, durationMs: null, fadeIn: 0, startAt: 0, fadeFrom: 0 })
   },
 
   toggle() {
@@ -650,7 +656,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
   },
 
   applyVolume(force = false) {
-    const { now, volume, positionMs, durationMs, fade, fadeIn } = get()
+    const { now, volume, positionMs, durationMs, fade, fadeIn, fadeFrom } = get()
     const via = now?.via
     if (via === 'spotify') {
       // Spotify Connect: rate-limited API, no fades.
@@ -658,7 +664,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
       if (force) volumeTimer = setTimeout(() => void spotify({ type: 'volume', percent: Math.round(volume * 100) }), 300)
       return
     }
-    const value = Math.round(volume * fadeGain(positionMs, durationMs, { ...fade, in: fadeIn }, true) * gainNow * 100) / 100
+    const value = Math.round(volume * fadeGain(positionMs, durationMs, { ...fade, in: fadeIn }, true, fadeFrom) * gainNow * 100) / 100
     if (!force && value === sent) return
     sent = value
     if (via === 'youtube') yt('setVolume', Math.round(value * 100))
@@ -721,9 +727,9 @@ export const usePlayer = create<PlayerState>((set, get) => ({
         skipLeadId = get().playId
         yt('seekTo', lead, true)
         time = lead
-        set({ positionMs: lead * 1000 })
+        set({ positionMs: lead * 1000, fadeFrom: lead * 1000 })
       }
-      skipPart(time)
+      skipPart(time, lead > 0 && time === lead)
       progress(time * 1000, videoMs || undefined)
       get().applyVolume()
       overlap()
@@ -741,6 +747,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     if (s.error) useStore.setState({ error: s.error })
     const via = get().now?.via
     if (via === 'youtube' || via === 'spotify') return
+    enginePaused = s.paused
     if (expect) {
       // Error = engine already tried our items (bad file skipped): status is ours.
       if (!(s.path && expect.includes(s.path)) && !s.error) return
@@ -766,12 +773,16 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     if (key) offerEnd(key, skip && s.trimEndMs ? s.trimEndMs / 1000 : null)
     const songMs = skip && s.durationMs ? songEnd(key, s.durationMs) : s.durationMs
     if (s.path) progress(s.positionMs, songMs)
+    // Skip silence: the engine jumped past the silence while the fade in still runs: the fade in starts there.
+    const was = get()
+    const jumped = skip && !s.paused && was.fadeIn > 0 && s.path === was.now?.path && s.positionMs - was.positionMs > 300 && was.positionMs - was.fadeFrom < was.fadeIn * 1000
     set({
       playing: !!s.path && !s.paused,
       positionMs: s.positionMs,
+      ...(jumped && { fadeFrom: s.positionMs }),
       upcoming: now?.trackId ? [] : s.upcoming,
       ...(songMs && { durationMs: songMs }),
-      ...(i > index && { index: i, playId: get().playId + 1, fadeIn: get().fade.in, now: { title: list[i].title, artist: list[i].artist, trackId: list[i].id, via: 'local', path: s.path! } }),
+      ...(i > index && { index: i, playId: get().playId + 1, fadeIn: get().fade.in, fadeFrom: skip && s.positionMs > 600 ? s.positionMs : 0, now: { title: list[i].title, artist: list[i].artist, trackId: list[i].id, via: 'local', path: s.path! } }),
       ...(s.path && !now?.trackId && { now: { title: fileTitle(s.path), artist: tr('Local file'), path: s.path, via: 'local' }, ...(s.path !== now?.path && { playId: get().playId + 1 }) }),
     })
     if (s.path) get().applyVolume()
@@ -854,7 +865,7 @@ function loadParts(video: string, playId: number) {
 }
 
 /** The time of the playing video was heard: jump over the part playing just reached, with a notice that can undo it. */
-function skipPart(time: number) {
+function skipPart(time: number, own = false) {
   const p = usePlayer.getState()
   const video = p.now?.youtubeId
   if (parts.playId !== p.playId) parts = { playId: p.playId, prev: p.startAt / 1000, done: new Set() }
@@ -862,12 +873,16 @@ function skipPart(time: number) {
   parts.prev = time
   if (!p.skipNonMusic || !video || isUndone(video)) return
   const segs = partsOf(video)
+  // A seek into a part (not our own jump): the listener chose it, it stays.
+  if (!own) landed(segs, time, prev).forEach((j) => parts.done.add(j))
   const i = toSkip(segs, time, prev, p.startAt / 1000, parts.done)
   if (i < 0) return
   parts.done.add(i)
   const { startS, endS } = segs[i]
   yt('seekTo', endS, true)
   parts.prev = endS
+  // An intro skipped while the fade in still runs: the fade in starts where the music does.
+  if (p.fadeIn > 0 && prev * 1000 - p.fadeFrom < p.fadeIn * 1000) usePlayer.setState({ fadeFrom: endS * 1000 })
   useStore.getState().notify(tr('Skipped a non-music part ({time})', { time: formatDuration((endS - startS) * 1000) }), {
     action: {
       label: tr('Undo'),
@@ -880,6 +895,8 @@ function skipPart(time: number) {
   })
 }
 
+// The engine's own pause state, from its last status (songOver pauses what plays on; the store's `playing` is already false then).
+let enginePaused = false
 // Play (playId) whose silent start was skipped: one seek per play, never a loop.
 let skipLeadId = -1
 // Song whose early end was reached (playId): over once.
@@ -894,7 +911,7 @@ function songOver() {
   // Nothing started (queue done, sleep timer, an update installing): the silence doesn't play on to end again.
   if (usePlayer.getState().playId === overId) {
     if (p.now?.via === 'youtube') yt('pauseVideo')
-    else if (usePlayer.getState().playing) send({ type: 'toggle' })
+    else if (!enginePaused) send({ type: 'toggle' })
   }
 }
 

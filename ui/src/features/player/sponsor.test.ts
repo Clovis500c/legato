@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { endCut, isUndone, rememberUndone, toSkip, type Seg } from './sponsor'
+import { endCut, isUndone, landed, rememberUndone, toSkip, type Seg } from './sponsor'
 
 const intro: Seg = { startS: 0, endS: 38 }
 const mid: Seg = { startS: 100, endS: 130 }
@@ -33,6 +33,18 @@ describe('toSkip', () => {
   it('nothing at the very end of a part, nothing before it', () => {
     expect(toSkip([mid], 129.8, 129.3, 0, none)).toBe(-1)
     expect(toSkip([mid], 99, 98, 0, none)).toBe(-1)
+  })
+})
+
+describe('landed', () => {
+  it('a seek into a part is a position the listener chose', () => {
+    expect(landed([intro, mid], 105, 10)).toEqual([1])
+    expect(landed([intro, mid], 102, 140)).toEqual([1])
+  })
+
+  it('playing on, or a seek outside every part, lands nowhere', () => {
+    expect(landed([intro, mid], 105, 104.6)).toEqual([])
+    expect(landed([intro, mid], 60, 10)).toEqual([])
   })
 })
 

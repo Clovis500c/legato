@@ -35,8 +35,9 @@ pub async fn silence_prepare(state: State<'_, AppState>, paths: Vec<String>) -> 
             }
         }
     }
-    // Start: fast, decoded until the first loud window.
-    let quick = missed.clone();
+    // Start of the playing file only: fast, decoded until the first loud window (30 s at most). The next ones wait for
+    // the background pass, so a press on play never waits on four files.
+    let quick: Vec<_> = missed.iter().take(1).cloned().collect();
     let found = tauri::async_runtime::spawn_blocking(move || quick.into_iter().filter_map(|(path, _)| silence::leading(&path).ok().map(|t| (path, t))).collect::<Vec<_>>()).await.map_err(|e| e.to_string())?;
     known.extend(found);
     if !known.is_empty() {

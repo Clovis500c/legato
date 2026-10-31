@@ -123,10 +123,11 @@ Status on 2026-10-16. YouTube, local files and Apple Music previews: done and te
   SponsorBlock's community segments, category `music_offtopic`, action `skip` only. `crates/connectors/src/sponsorblock.rs`:
   `GET sponsor.ajay.app/api/skipSegments/{first 4 hex of the id's SHA-256}`, the answer holds a dozen videos and is
   filtered by the full id here, so the id never leaves the PC (4 s timeout; 404 = none; parts under a second dropped).
-  `sponsor_segments` (`src-tauri/src/sponsor.rs`) caches per video in SQLite `sponsor`, the empty answer too, a week.
+  `sponsor_segments` (`src-tauri/src/sponsor.rs`) caches per video in SQLite `sponsor` (rows older than a month dropped), the empty answer too, a week.
   The store (`player/store.ts` `skipPart`, rules in `player/sponsor.ts`) seeks past a part the play just reached with the
-  official player's `seekTo`, once per part and play: a seek back into it stays there, a resume inside it never skips,
-  data late by a few seconds still catches an intro. Notice "Skipped a non-music part (0:24) · Undo": Undo seeks to the
+  official player's `seekTo`, once per part and play: a seek (back or forward) into it stays there (`landed`: a move of
+  over 4 s between two reports), a resume inside it never skips, data late by a few seconds still catches an intro.
+  A skipped intro or silence moves where the fade in counts from (`fadeFrom` in the store). Notice "Skipped a non-music part (0:24) · Undo": Undo seeks to the
   part's start and the video is left alone from then on (localStorage `sponsor-undone`). Marks under the progress bar
   (`PartMarks`). A last part running to the video's end is where the music ends: offered to `ends.ts`, so the fade, the
   overlap and the next song start there. A failure or no answer: no skip, the song never waits for it.
@@ -183,9 +184,10 @@ We still pin the policy on the iframe: a meta tag or header added later can't br
   `crates/player/src/silence.rs` measures a file: RMS over 20 ms windows under −60 dBFS is silence; the music starts 50 ms
   before the first loud window, ends 200 ms after the last; under 0.3 s at the start or 1.5 s at the end is left alone.
   Measured when a song is about to play, never at scan time: `silence_prepare` (`src-tauri/src/silence.rs`) looks up
-  SQLite `silence` (by path and modified time, `Library::cached_silence`), else finds the start fast (the scan stops at
-  the first loud window), tells the engine (`Command::Trims`), and decodes the whole file once in the background for
-  the end (4 files ahead per call, again when the gapless run moves on). The engine seeks past the start when a song
+  SQLite `silence` (by path and modified time, `Library::cached_silence`; the newest 20 000 rows kept), else finds the
+  start of the playing file fast (the scan stops at the first loud window, 30 s of decoding at most), tells the engine (`Command::Trims`), and decodes the whole file once in the background for
+  the end (4 files ahead per call, again when the gapless run moves on). Play waits 400 ms for the first scan at most;
+  one that comes later still makes the engine seek past the silence if the song is inside it. The engine seeks past the start when a song
   begins (also at each gapless hand-over) and reports `trim_end_ms`; the front end offers it to `ends.ts` as
   `local:<path>`, so the fade and the hand-over to the next song use the same early-end path as a video's, and a
   song past its end goes to the next one (a normal `step`, so no gapless chain across a trimmed end). Nothing

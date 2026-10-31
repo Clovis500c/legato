@@ -168,7 +168,14 @@ impl Engine {
                 if self.trims.len() > 500 {
                     self.trims.clear();
                 }
+                // Arrived after its song began (a slow scan): a seek past the silence, if still inside it.
+                let late = self.queue.current().and_then(|c| list.iter().find(|(p, t)| p == c && t.start_ms > 0 && self.trims.get(c).is_none_or(|old| old.start_ms == 0)).map(|(_, t)| t.start_ms));
                 self.trims.extend(list);
+                if let (Some(ms), Some(p)) = (late.filter(|_| self.skip_silence), &self.player)
+                    && self.control.position_ms() + 200 < ms
+                {
+                    let _ = p.try_seek(Duration::from_millis(ms));
+                }
             }
             Command::Toggle => {
                 if let Some(p) = &self.player {
@@ -345,6 +352,21 @@ mod tests {
         // Off (the default): from the first second, silence and all.
         let off = played(&path, false, 400);
         assert!(off.position_ms < 1_500, "{}", off.position_ms);
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
+    fn a_scan_that_arrives_late_still_skips_the_silence() {
+        let path = wav("late", 5, 3, 0);
+        let mut e = Engine { volume: 1.0, ..Default::default() };
+        e.device = Some(Output::Null(Null::open()));
+        e.handle(Command::SkipSilence { on: true }).unwrap();
+        e.handle(Command::Play { paths: vec![path.clone()], start: 0 }).unwrap();
+        e.handle(Command::Trims { list: vec![(path.clone(), silence::measure(&path).unwrap())] }).unwrap();
+        std::thread::sleep(Duration::from_millis(400));
+        e.tick();
+        let on = e.status().position_ms;
+        assert!((4_900..6_000).contains(&on), "{on}");
         let _ = std::fs::remove_file(path);
     }
 
