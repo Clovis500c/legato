@@ -57,7 +57,13 @@ export function MiniPlayer() {
 
   const card = useCallback((el: HTMLDivElement | null) => {
     measure(el)
-    return volumeWheelRef(el)
+    const off = volumeWheelRef(el)
+    // React 19 never calls a ref with null once it returns a cleanup: stop measuring here.
+    return () => {
+      off?.()
+      observer.current?.disconnect()
+      observer.current = null
+    }
   }, [measure])
 
   const w = width ?? miniWidth
