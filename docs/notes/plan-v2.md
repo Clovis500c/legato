@@ -423,6 +423,10 @@ every session.
       silence across real crossfades, Karaoke on plain lyrics, with animations off and over a video in the watch page, a
       10 000-song scroll asking only 64 px covers.
 
+- [ ] `pnpm bench` on a quiet PC: the full run on af27405 was disturbed (someone back at the PC: load 78 %, restart 1.91 s,
+      tray 135 MB, the page awake again after its suspend), row not kept. The website's numbers come from d853980: confirm the
+      54 MB in the tray after Visualizer v2, or find what wakes the page and fix the numbers.
+
 ## Not done yet
 
 - [ ] Media panel off Windows.
