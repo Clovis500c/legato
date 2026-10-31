@@ -14,6 +14,7 @@
 //   --visualizer              instead: the CPU of the whole app with the visualizer open on a playing song, each look in
 //                             Now Playing and full screen, against the same run with it off. Built with the silent output
 //                             (the e2e feature: nothing reaches the speakers), so it is its own build; not saved
+//   --looks "LED,Radial"      with --visualizer: only these looks (their names in Settings)
 //   --skip-build              keep target/bench/legato-bench.exe when its inputs have not changed
 //   --build-only              build, then stop
 //   --save | --no-save        save the row (default: full runs) or not
@@ -41,11 +42,12 @@ const MB = 1024 * 1024
 // ---- Pure parts (scripts/bench.test.ts) ----
 
 export function parseArgs(argv) {
-  const o = { quick: false, visualizer: false, skipBuild: false, buildOnly: false, save: undefined, keep: false, note: '', shots: '' }
+  const o = { quick: false, visualizer: false, skipBuild: false, buildOnly: false, save: undefined, keep: false, note: '', shots: '', looks: '' }
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i]
     if (a === '--quick') o.quick = true
     else if (a === '--visualizer') o.visualizer = true
+    else if (a === '--looks') o.looks = argv[++i] ?? ''
     else if (a === '--skip-build') o.skipBuild = true
     else if (a === '--build-only') o.buildOnly = true
     else if (a === '--save') o.save = true
@@ -471,15 +473,18 @@ async function measure(helper, pid, seconds, threads) {
 /** The visualizer's looks, by their name in Settings. */
 const LOOKS = ['LED', 'Bars', 'Mirror', 'Peaks', 'Wave', 'Radial', 'VU needles', 'Spectrogram']
 
-/** Page pixels of a switch or a radio by its label. */
+/** Page pixels of a settings button, switch or radio by its label (scrolled into view first). */
 const whereControl = (label) => `(() => {
-  const el = [...document.querySelectorAll('[role=switch], [role=radio]')].find((e) => (e.getAttribute('aria-label') || e.innerText || '').trim() === ${JSON.stringify(label)})
+  const el = [...document.querySelectorAll('button, [role=tab], [role=switch], [role=radio]')].find((e) => (e.getAttribute('aria-label') || e.innerText || '').trim().split('\\n')[0].trim() === ${JSON.stringify(label)})
+  el?.scrollIntoView({ block: 'center' })
   const r = el?.getBoundingClientRect()
   return r && r.width && r.height ? { x: r.x + r.width / 2, y: r.y + r.height / 2 } : null
 })()`
 
-/** CPU of the whole app on a playing song, the visualizer off, then each look open in Now Playing (the strip, or Radial's
- *  ring) and full screen (V), then off again. The two off windows bracket the drift of the PC. */
+/** CPU of the whole app on a playing song. Control: Now Playing open with the visualizer off, before and after (the page
+ *  itself costs: its progress bar, its backdrop). Then each look open in Now Playing (the strip, or Radial's ring) and in V's
+ *  full screen, whose extra is read against the same controls (a full screen window is bigger: that part is in the
+ *  number). The two controls bracket the drift of the PC. */
 async function visualizerRun(o, app, helper, t, threads, shot) {
   const key = (code) => app.cdp.evaluate(`window.dispatchEvent(new KeyboardEvent('keydown', { code: ${JSON.stringify(code)}, bubbles: true, cancelable: true }))`)
   const canvas = (scope) => `(() => { const c = document.querySelector('${scope} canvas'); const r = c?.getBoundingClientRect(); return r && r.width > 50 && r.height > 20 ? true : null })()`
@@ -488,25 +493,44 @@ async function visualizerRun(o, app, helper, t, threads, shot) {
     await app.cdp.click(p.x, p.y)
   }
   const secs = t.play
-  console.log(`playing a local song, visualizer off: ${secs} s`)
+  const NOW = '[role=dialog][aria-label="Now playing"]'
+  /** Settings › Playback › Visualizer on or off. */
+  const setVisualizer = async (want) => {
+    await press(app.cdp, 'Settings')
+    await control('Playback')
+    const on = () => app.cdp.evaluate(`document.querySelector('[aria-label="Visualizer"][role=switch]')?.getAttribute('aria-checked') === 'true'`)
+    await app.cdp.waitFor(`!!document.querySelector('[aria-label="Visualizer"][role=switch]')`, { timeout: 10000 })
+    if ((await on()) !== want) await control('Visualizer')
+  }
+  /** Now Playing open, measured, closed. */
+  const nowPlaying = async (what) => {
+    await key('KeyF')
+    await app.cdp.waitFor(`!!document.querySelector('${NOW}')`, { timeout: 10000 })
+    await sleep(3000)
+    console.log(`${what}: ${secs} s`)
+    const w = await measure(helper, app.pid, secs, threads)
+    return w
+  }
+  const closeNowPlaying = async () => {
+    await key('KeyF')
+    await app.cdp.waitFor(`!document.querySelector('${NOW}')`, { timeout: 10000 })
+  }
+  console.log(`playing a local song, Songs page: ${secs} s`)
   const row = await app.cdp.waitFor(FIRST_ROW)
   await app.cdp.click(row.x, row.y)
   await app.cdp.waitFor(where('Pause'), { timeout: 15000 })
   await sleep(5000)
-  const before = await measure(helper, app.pid, secs, threads)
-  await press(app.cdp, 'Settings')
-  await press(app.cdp, 'Playback')
-  const on = await app.cdp.evaluate(`document.querySelector('[aria-label="Visualizer"][role=switch]')?.getAttribute('aria-checked') === 'true'`)
-  if (!on) await control('Visualizer')
+  const songs = await measure(helper, app.pid, secs, threads)
+  await setVisualizer(false)
+  const off1 = await nowPlaying('Now Playing, visualizer off')
+  await closeNowPlaying()
+  await setVisualizer(true)
   const rows = []
-  for (const look of LOOKS) {
+  for (const look of o.looks ? o.looks.split(',') : LOOKS) {
     await control(look)
-    await key('KeyF')
-    await app.cdp.waitFor(canvas('[role=dialog][aria-label="Now playing"]'), { timeout: 10000 })
-    await sleep(3000)
-    console.log(`${look}: Now Playing, ${secs} s`)
-    const strip = await measure(helper, app.pid, secs, threads)
-    await shot(app, `viz-${look.replace(/W+/g, '-').toLowerCase()}`)
+    const strip = await nowPlaying(`${look}: Now Playing`)
+    await shot(app, `viz-${look.replace(/\W+/g, '-').toLowerCase()}`)
+    await app.cdp.waitFor(canvas(NOW), { timeout: 10000 })
     await key('KeyV')
     await app.cdp.waitFor(canvas('[role=dialog][aria-label="Visualizer"]'), { timeout: 10000 })
     await sleep(3000)
@@ -514,25 +538,29 @@ async function visualizerRun(o, app, helper, t, threads, shot) {
     const full = await measure(helper, app.pid, secs, threads)
     await key('Escape')
     await sleep(500)
-    await key('KeyF')
-    await app.cdp.waitFor(`!document.querySelector('[role=dialog][aria-label="Now playing"]')`, { timeout: 10000 })
+    await closeNowPlaying()
     rows.push({ look, strip, full })
   }
-  await sleep(3000)
-  console.log(`visualizer closed again: ${secs} s`)
-  const after = await measure(helper, app.pid, secs, threads)
+  await setVisualizer(false)
+  const off2 = await nowPlaying('Now Playing, visualizer off again')
+  await closeNowPlaying()
   if (!(await app.cdp.evaluate(where('Pause')))) fail('the music stopped during the visualizer run')
+  const off = (off1.cpu.pc + off2.cpu.pc) / 2
+  const pc = (w) => `${w.cpu.pc.toFixed(2)} %`
+  const extra = (w) => `${w.cpu.pc - off >= 0 ? '+' : ''}${(w.cpu.pc - off).toFixed(2)}`
   console.log(`
-${''.padEnd(26)} ${'Now Playing'.padStart(12)} ${'full screen'.padStart(12)}   (% of the PC; extra over the off windows)`)
-  const off = (before.cpu.pc + after.cpu.pc) / 2
-  console.log(`${'visualizer off'.padEnd(26)} ${`${before.cpu.pc.toFixed(2)} %`.padStart(12)} ${`${after.cpu.pc.toFixed(2)} %`.padStart(12)}   (before / after)`)
+% of the whole PC (${threads} threads), whole app, a local song playing. Extra = over the Now Playing controls.
+`)
+  console.log(`${'Songs page, visualizer off'.padEnd(30)} ${pc(songs).padStart(8)}`)
+  console.log(`${'Now Playing, off (before / after)'.padEnd(30)} ${pc(off1).padStart(8)} ${pc(off2).padStart(8)}   mean ${off.toFixed(2)} %`)
+  console.log(`
+${''.padEnd(30)} ${'Now Playing'.padStart(8)} ${'extra'.padStart(7)} ${'full screen'.padStart(12)} ${'extra'.padStart(7)}`)
   for (const r of rows) {
-    const d = (w) => `${w.cpu.pc.toFixed(2)} % (${w.cpu.pc - off >= 0 ? '+' : ''}${(w.cpu.pc - off).toFixed(2)})`
-    console.log(`${r.look.padEnd(26)} ${d(r.strip).padStart(12)} ${d(r.full).padStart(12)}`)
-    console.log(`${''.padEnd(26)} busiest, % of a core: ${r.strip.hot.map((p) => `${p.label} ${p.core.toFixed(1)}`).join(', ')}`)
+    console.log(`${r.look.padEnd(30)} ${pc(r.strip).padStart(8)} ${extra(r.strip).padStart(7)} ${pc(r.full).padStart(12)} ${extra(r.full).padStart(7)}`)
+    console.log(`${''.padEnd(30)} busiest, % of a core, Now Playing: ${r.strip.hot.map((p) => `${p.label} ${p.core.toFixed(1)}`).join(', ')}; full screen: ${r.full.hot.map((p) => `${p.label} ${p.core.toFixed(1)}`).join(', ')}`)
   }
   console.log(`
-${threads} threads; the budget is under 3 % of the PC over the off windows. Not saved: put the numbers in docs/performance.md.`)
+Budget: under 3 % of the PC over the controls. Not saved: put the numbers in docs/performance.md.`)
 }
 
 async function main() {
