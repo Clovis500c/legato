@@ -17,7 +17,7 @@ describe('live processing', () => {
   })
 
   it('leaves YouTube alone unless a feature needs it and it is allowed', () => {
-    const wish = { on: true, ends: false, listen: false, adaptive: true, targetLufs: -14, viz: false, youtube: true, effects: NEUTRAL }
+    const wish = { on: true, levels: true, ends: false, listen: false, adaptive: true, targetLufs: -14, viz: false, youtube: true, effects: NEUTRAL }
     expect(frameSettings(wish)).toEqual({ on: true, listen: false, adaptive: true, targetLufs: -14, viz: false })
     // Early ends alone: YouTube only listens.
     expect(frameSettings({ ...wish, on: false, ends: true, listen: true })).toMatchObject({ on: true, listen: true })

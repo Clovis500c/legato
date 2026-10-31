@@ -15,6 +15,8 @@ import { YT_ORIGIN } from './youtube'
 export interface LiveWish {
   /** A feature wants processing or levels. */
   on: boolean
+  /** The engine's levels are wanted (processing, moving cover): the native poll runs only then. The visualizer reads frames, not levels. */
+  levels: boolean
   /** YouTube only: early ends heard (ends.ts), which needs levels too. */
   ends: boolean
   /** Levels only (cover pulse, early ends): YouTube's sound stays its own, live.js only listens. */
@@ -60,7 +62,7 @@ export function parseLive(origin: string, data: unknown): Report | null {
   }
 }
 
-let wish: LiveWish = { on: false, ends: false, listen: false, adaptive: false, targetLufs: -14, viz: false, youtube: true, effects: NEUTRAL }
+let wish: LiveWish = { on: false, levels: false, ends: false, listen: false, adaptive: false, targetLufs: -14, viz: false, youtube: true, effects: NEUTRAL }
 // Early end heard (the store's): tail = from the overlap's fading-out embed, not what plays now.
 let ended: ((end: number, tail: boolean) => void) | null = null
 export const onEndHeard = (f: (end: number, tail: boolean) => void) => void (ended = f)
@@ -135,7 +137,7 @@ export function startLive(playing: () => 'native' | 'youtube' | null): () => voi
   })
   // Engine levels at ~30 Hz, only when asked for and playing natively (hidden window: timers slow down by themselves).
   const poll = setInterval(() => {
-    if (!wish.on || playing() !== 'native') return
+    if (!wish.levels || playing() !== 'native') return
     void api
       .playerLevels()
       .then((levels) => useLive.setState({ levels }))
