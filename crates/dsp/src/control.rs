@@ -2,7 +2,7 @@
 //! looks with try_lock, never waits), levels come out the same way.
 
 use serde::{Deserialize, Serialize};
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
 use std::sync::atomic::{AtomicU64, Ordering};
 
 /// Live processing settings.
@@ -63,6 +63,8 @@ pub struct Control {
     effects_version: AtomicU64,
     /// Where the playing song is, ms of the song itself (not of what played: speed changes count).
     position_ms: AtomicU64,
+    /// A copy of what plays for the visualizer's FFT (`viz`), filled only while someone listens.
+    tap: Arc<crate::tap::Tap>,
 }
 
 impl Control {
@@ -112,6 +114,11 @@ impl Control {
             return None;
         }
         self.effects.try_lock().ok().map(|e| (v, *e))
+    }
+
+    /// The sound as played, copied for the visualizer.
+    pub fn tap(&self) -> &Arc<crate::tap::Tap> {
+        &self.tap
     }
 
     pub fn set_position_ms(&self, ms: u64) {

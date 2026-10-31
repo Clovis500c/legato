@@ -31,6 +31,7 @@ const STEP_FRAMES: usize = 256;
 #[derive(Debug, Clone)]
 pub struct Processor {
     channels: usize,
+    rate: u32,
     meter: Meter,
     spectrum: Spectrum,
     live: Live,
@@ -55,6 +56,7 @@ impl Processor {
         let r = rate as f32;
         Self {
             channels: channels.max(1),
+            rate,
             meter: Meter::new(r, channels.max(1)),
             spectrum: Spectrum::new(r),
             live: Live::default(),
@@ -107,6 +109,8 @@ impl Processor {
         for part in block.chunks_mut(step) {
             self.run(part, control);
         }
+        // As heard: after the gain and the limiter. One atomic read when nobody listens.
+        control.tap().push(block, self.channels, self.rate);
     }
 
     fn run(&mut self, block: &mut [f32], control: &Control) {
@@ -160,6 +164,23 @@ mod tests {
 
     fn rms(v: &[f32]) -> f32 {
         (v.iter().map(|x| x * x).sum::<f32>() / v.len() as f32).sqrt()
+    }
+
+    #[test]
+    fn the_visualizer_copy_is_the_sound_as_played_and_only_while_listened_to() {
+        let c = Control::default();
+        let mut p = Processor::new(44_100, 2);
+        let mut quiet = tone(0.5, 0.05, 44_100);
+        p.process(&mut quiet, &c);
+        let listener = c.tap().listen();
+        assert_eq!(listener.head(), 0, "nothing copied before anyone listened");
+        let mut out = tone(0.5, 0.05, 44_100);
+        p.process(&mut out, &c);
+        let (mut l, mut r) = ([0.0; 4], [0.0; 4]);
+        listener.latest(&mut l, &mut r);
+        let n = out.len();
+        assert_eq!((l, r), ([out[n - 8], out[n - 6], out[n - 4], out[n - 2]], [out[n - 7], out[n - 5], out[n - 3], out[n - 1]]));
+        assert_eq!((listener.head(), listener.rate()), ((n / 2) as u64, 44_100));
     }
 
     #[test]

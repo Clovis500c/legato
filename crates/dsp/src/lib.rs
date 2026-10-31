@@ -15,6 +15,8 @@ pub mod reverb;
 pub mod space;
 pub mod spectrum;
 pub mod stretch;
+pub mod tap;
+pub mod viz;
 
 pub use biquad::Biquad;
 pub use chain::Chain;
