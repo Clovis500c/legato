@@ -1582,6 +1582,7 @@ const zh: Record<string, string> = {
   '{size} on this PC now. Playlist pictures and theme backgrounds stay': '这台电脑上目前有 {size}。播放列表图片和主题背景会保留',
   '{n} GB': '{n} GB',
   'covers pictures images artwork cache disk space storage size limit clear delete empty free': '封面 图片 专辑图 缓存 磁盘 空间 存储 大小 上限 清除 删除 释放',
+  'Couldn’t load this page.': '无法加载此页面。',
 }
 
 export default zh

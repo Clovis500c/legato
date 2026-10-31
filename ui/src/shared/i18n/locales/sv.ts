@@ -1582,6 +1582,7 @@ const sv: Record<string, string> = {
   '{size} on this PC now. Playlist pictures and theme backgrounds stay': '{size} på den här datorn nu. Spellistebilder och temabakgrunder finns kvar',
   '{n} GB': '{n} GB',
   'covers pictures images artwork cache disk space storage size limit clear delete empty free': 'omslag bilder konstverk cache disk utrymme lagring storlek gräns rensa ta bort frigör',
+  'Couldn’t load this page.': 'Sidan kunde inte läsas in.',
 }
 
 export default sv

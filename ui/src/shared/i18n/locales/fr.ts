@@ -1582,6 +1582,7 @@ const fr: Record<string, string> = {
   '{size} on this PC now. Playlist pictures and theme backgrounds stay': '{size} sur ce PC en ce moment. Les images de playlists et les fonds de thème restent',
   '{n} GB': '{n} Go',
   'covers pictures images artwork cache disk space storage size limit clear delete empty free': 'pochettes images illustrations cache disque espace stockage taille limite vider supprimer libérer',
+  'Couldn’t load this page.': 'Impossible de charger cette page.',
 }
 
 export default fr

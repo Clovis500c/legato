@@ -1582,6 +1582,7 @@ const ru: Record<string, string> = {
   '{size} on this PC now. Playlist pictures and theme backgrounds stay': 'Сейчас на этом ПК: {size}. Картинки плейлистов и фоны тем остаются',
   '{n} GB': '{n} ГБ',
   'covers pictures images artwork cache disk space storage size limit clear delete empty free': 'обложки картинки изображения кэш диск место хранилище размер лимит очистить удалить освободить',
+  'Couldn’t load this page.': 'Не удалось загрузить эту страницу.',
 }
 
 export default ru

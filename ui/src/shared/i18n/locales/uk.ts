@@ -1582,6 +1582,7 @@ const uk: Record<string, string> = {
   '{size} on this PC now. Playlist pictures and theme backgrounds stay': 'Зараз на цьому ПК: {size}. Зображення плейлистів і тла тем залишаються',
   '{n} GB': '{n} ГБ',
   'covers pictures images artwork cache disk space storage size limit clear delete empty free': 'обкладинки зображення картинки кеш диск місце сховище розмір ліміт очистити видалити звільнити',
+  'Couldn’t load this page.': 'Не вдалося завантажити цю сторінку.',
 }
 
 export default uk

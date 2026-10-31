@@ -1582,6 +1582,7 @@ const nl: Record<string, string> = {
   '{size} on this PC now. Playlist pictures and theme backgrounds stay': '{size} nu op deze pc. Afbeeldingen van afspeellijsten en thema-achtergronden blijven',
   '{n} GB': '{n} GB',
   'covers pictures images artwork cache disk space storage size limit clear delete empty free': 'hoezen covers afbeeldingen cache schijf ruimte opslag grootte limiet wissen verwijderen vrijmaken',
+  'Couldn’t load this page.': 'Deze pagina kon niet worden geladen.',
 }
 
 export default nl

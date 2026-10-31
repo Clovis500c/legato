@@ -1582,6 +1582,7 @@ const hi: Record<string, string> = {
   '{size} on this PC now. Playlist pictures and theme backgrounds stay': 'अभी इस पीसी पर {size}। प्लेलिस्ट की तस्वीरें और थीम की पृष्ठभूमि बनी रहती हैं',
   '{n} GB': '{n} GB',
   'covers pictures images artwork cache disk space storage size limit clear delete empty free': 'कवर तस्वीर चित्र आर्टवर्क कैश डिस्क जगह स्टोरेज आकार सीमा साफ़ हटाएँ खाली',
+  'Couldn’t load this page.': 'यह पेज लोड नहीं हो सका।',
 }
 
 export default hi

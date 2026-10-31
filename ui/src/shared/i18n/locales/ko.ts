@@ -1582,6 +1582,7 @@ const ko: Record<string, string> = {
   '{size} on this PC now. Playlist pictures and theme backgrounds stay': '현재 이 PC에 {size}. 재생목록 이미지와 테마 배경은 그대로 남습니다',
   '{n} GB': '{n} GB',
   'covers pictures images artwork cache disk space storage size limit clear delete empty free': '커버 이미지 앨범아트 캐시 디스크 공간 저장소 크기 한도 지우기 삭제 비우기',
+  'Couldn’t load this page.': '이 페이지를 불러오지 못했습니다.',
 }
 
 export default ko

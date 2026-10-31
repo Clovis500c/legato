@@ -1,4 +1,4 @@
-import { lazy } from 'react'
+import { type ComponentType, createElement, lazy } from 'react'
 
 // Pages that load on their first visit, not at launch (the shell, sidebar and player stay in the first chunk).
 // `preloadPages` pulls them in when idle, so a click rarely waits. Home is asked for at once: it is the usual first screen.
@@ -17,18 +17,41 @@ const load = {
   welcome: () => import('../features/welcome/Welcome').then((m) => ({ default: m.Welcome })),
 }
 
-export const HomeView = lazy(load.home)
-export const AddView = lazy(load.add)
-export const SearchView = lazy(load.search)
-export const MixesView = lazy(load.mixes)
-export const MixView = lazy(load.mix)
-export const StatsView = lazy(load.stats)
-export const SmartView = lazy(load.smart)
-export const SettingsView = lazy(load.settings)
-export const AddonsView = lazy(load.addons)
-export const EditorPanel = lazy(load.editor)
-export const YouTubeShelf = lazy(load.shelf)
-export const Welcome = lazy(load.welcome)
+type Load<P> = () => Promise<{ default: ComponentType<P> }>
+
+// React.lazy keeps a failed load for good. Each page sits behind a stable component that swaps in a new lazy when the last
+// one failed: the next draw of the page (a visit, PageBoundary's Try again) asks for the chunk anew.
+function page<P extends object>(fetch: Load<P>): ComponentType<P> {
+  let broken = false
+  const make = () =>
+    lazy(() =>
+      fetch().catch((e: unknown) => {
+        broken = true
+        throw e
+      }),
+    )
+  let Inner = make()
+  return (props: P) => {
+    if (broken) {
+      broken = false
+      Inner = make()
+    }
+    return createElement(Inner as ComponentType<P>, props)
+  }
+}
+
+export const HomeView = page(load.home)
+export const AddView = page(load.add)
+export const SearchView = page(load.search)
+export const MixesView = page(load.mixes)
+export const MixView = page(load.mix)
+export const StatsView = page(load.stats)
+export const SmartView = page(load.smart)
+export const SettingsView = page(load.settings)
+export const AddonsView = page(load.addons)
+export const EditorPanel = page(load.editor)
+export const YouTubeShelf = page(load.shelf)
+export const Welcome = page(load.welcome)
 
 /** Starts Home's download now (before the library is in), the likeliest first screen. */
 export const preloadHome = () => void load.home()

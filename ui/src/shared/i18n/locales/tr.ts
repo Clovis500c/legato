@@ -1582,6 +1582,7 @@ const tr: Record<string, string> = {
   '{size} on this PC now. Playlist pictures and theme backgrounds stay': 'Şu anda bu bilgisayarda {size}. Çalma listesi resimleri ve tema arka planları kalır',
   '{n} GB': '{n} GB',
   'covers pictures images artwork cache disk space storage size limit clear delete empty free': 'kapaklar resimler görseller önbellek disk alan depolama boyut sınır temizle sil boşalt',
+  'Couldn’t load this page.': 'Bu sayfa yüklenemedi.',
 }
 
 export default tr

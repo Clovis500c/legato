@@ -1,7 +1,7 @@
 import { CaretLeft, Clock, DotsThree, Heart, MicrophoneStage, Play, Plus, Radio, SpinnerGap, Waveform } from '@phosphor-icons/react'
 import { artistName } from '../../shared/artistName'
 import { useShallow } from 'zustand/react/shallow'
-import { Fragment, Suspense, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { Fragment, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useStore } from '../../app/store'
 import { api, type AlbumInfo, type LibraryTrack, type ListRef, type Source, type Track, type YtmArtist } from '../../shared/api'
 import { firstArt, remoteArt, trackArt } from '../../shared/art'
@@ -16,6 +16,7 @@ import { Cover } from '../../shared/ui/Cover'
 import { PageHeader } from '../../shared/ui/PageHeader'
 import { CardRow, MediaCard } from '../../shared/ui/Section'
 import { SourceIcon, sourceLabel } from '../../shared/ui/SourceIcon'
+import { PageBoundary } from '../../app/PageBoundary'
 import { YouTubeShelf } from '../../app/pages'
 import { trackMenu, tracksMenu } from '../menus'
 import { useMixes } from '../mixes/useMixes'
@@ -435,7 +436,7 @@ export function ArtistView({ artist }: { artist: string }) {
           </CardRow>
         </Section>
       )}
-      <Suspense>{yt?.shelves.map((s) => <YouTubeShelf key={s.title} shelf={s} />)}</Suspense>
+      <PageBoundary fallback={null}>{yt?.shelves.map((s) => <YouTubeShelf key={s.title} shelf={s} />)}</PageBoundary>
     </div>
   )
 }

@@ -114,7 +114,8 @@ differs from the commit.
   not paint, a broken build never says ready: an update must still be able to repair it); a gate lets it run once, a
   page reload included. The shield's lists load right away, in their own task: the first YouTube request, a resumed
   song's, must already meet them. Pages (`app/pages.ts`) load on first visit; the shell, sidebar, player and shortcuts
-  are in the first chunk, a page loading leaves the shell standing (`Suspense`, no fallback).
+  are in the first chunk, a page loading leaves the shell standing (`PageBoundary`: `Suspense`, no fallback). A chunk that fails to load shows
+  "Couldn’t load this page" + Try again in that spot only; the next draw asks for the chunk anew.
 
 ## Updates
 

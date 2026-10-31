@@ -1582,6 +1582,7 @@ const vi: Record<string, string> = {
   '{size} on this PC now. Playlist pictures and theme backgrounds stay': 'Hiện có {size} trên máy này. Ảnh danh sách phát và hình nền giao diện vẫn được giữ',
   '{n} GB': '{n} GB',
   'covers pictures images artwork cache disk space storage size limit clear delete empty free': 'ảnh bìa hình ảnh bộ nhớ đệm cache ổ đĩa dung lượng lưu trữ giới hạn xoá dọn giải phóng',
+  'Couldn’t load this page.': 'Không thể tải trang này.',
 }
 
 export default vi

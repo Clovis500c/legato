@@ -3,7 +3,7 @@ import { artistName } from '../../shared/artistName'
 import { STAGE_ID } from '../../app/searchShift'
 import { pop } from '../../shared/motion'
 import { openUrl } from '@tauri-apps/plugin-opener'
-import { Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import { useSettings } from '../../app/settings'
 import type { LibraryTrack, Source } from '../../shared/api'
@@ -31,6 +31,7 @@ import { AddToPlaylist } from '../library/AddToPlaylist'
 import { LyricsPanel, useNowLyrics } from './LyricsPanel'
 import { songKey } from './effects'
 import { applyFix, NO_FIX, peekLine } from './lyricsAt'
+import { PageBoundary } from '../../app/PageBoundary'
 import { EditorPanel } from '../../app/pages'
 import { useVideoBox } from './videoBox'
 import { usePulse } from './pulse'
@@ -328,9 +329,9 @@ export function NowPlaying() {
         </section>
 
         {panel === 'editor' ? (
-          <Suspense>
+          <PageBoundary>
             <EditorPanel onHide={() => update({ editor: false })} />
-          </Suspense>
+          </PageBoundary>
         ) : panel === 'lyrics' ? (
           <LyricsPanel onHide={() => update({ lyrics: false })} onUpNext={() => update({ lyrics: false, upNext: true })} />
         ) : panel === 'upNext' ? (

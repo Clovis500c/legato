@@ -1,6 +1,6 @@
 import { ArrowsIn, ArrowsOut, CaretDown, CaretLeft, CaretRight, CopySimple, Gear, Minus, PuzzlePiece, Square, Warning, WifiSlash, X } from '@phosphor-icons/react'
 import { getCurrentWindow } from '@tauri-apps/api/window'
-import { Suspense, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import { AddonsView, AddView, HomeView, MixesView, MixView, preloadHome, SearchView, SettingsView, SmartView, StatsView, Welcome } from './pages'
 // Up next running out: similar songs (registers itself with the player).
@@ -10,6 +10,7 @@ import { AlbumsView, ArtistsView, PlaylistView, SongsView } from '../features/li
 import { appMenu, navMenu } from '../features/menus'
 import { startUpdates } from '../features/update/updates'
 import { startDeferred } from './deferred'
+import { PageBoundary } from './PageBoundary'
 import { startMedia } from '../features/player/media'
 import { resumeSession, startSessionSaving } from '../features/player/session'
 import { MiniPlayer } from '../features/player/MiniPlayer'
@@ -310,7 +311,7 @@ export function App() {
           {/* New page: a short rise (styles.css .page-in), not when only its details change. Its padding is what a
               page band undoes to reach the pane's edges (PageHeader). */}
           <div key={pageKey(view)} className="page-in flex min-h-0 flex-1 flex-col px-6 pt-5">
-            <Suspense>
+            <PageBoundary>
               {view.name === 'home' && <HomeView />}
               {view.name === 'add' && <AddView />}
               {view.name === 'search' && <SearchView />}
@@ -326,7 +327,7 @@ export function App() {
               {view.name === 'playlist' && <PlaylistView id={view.id} />}
               {view.name === 'settings' && <SettingsView section={view.section} />}
               {view.name === 'addons' && <AddonsView />}
-            </Suspense>
+            </PageBoundary>
           </div>
         </main>
         <SidePanel />
@@ -342,9 +343,9 @@ export function App() {
       <DuplicatesHost />
       {incoming && <ImportDialog key={incoming} code={incoming} />}
       {welcome && (
-        <Suspense>
+        <PageBoundary fallback={null}>
           <Welcome onClose={() => setWelcome(false)} />
-        </Suspense>
+        </PageBoundary>
       )}
     </div>
   )

@@ -1582,6 +1582,7 @@ const id: Record<string, string> = {
   '{size} on this PC now. Playlist pictures and theme backgrounds stay': '{size} di PC ini sekarang. Gambar playlist dan latar tema tetap ada',
   '{n} GB': '{n} GB',
   'covers pictures images artwork cache disk space storage size limit clear delete empty free': 'sampul gambar artwork cache disk ruang penyimpanan ukuran batas bersihkan hapus kosongkan',
+  'Couldn’t load this page.': 'Halaman ini tidak dapat dimuat.',
 }
 
 export default id

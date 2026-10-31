@@ -1582,6 +1582,7 @@ const ja: Record<string, string> = {
   '{size} on this PC now. Playlist pictures and theme backgrounds stay': '現在このPCに {size}。プレイリストの画像とテーマの背景は残ります',
   '{n} GB': '{n} GB',
   'covers pictures images artwork cache disk space storage size limit clear delete empty free': 'カバー 画像 アートワーク キャッシュ ディスク 容量 ストレージ サイズ 上限 消去 削除 空き',
+  'Couldn’t load this page.': 'このページを読み込めませんでした。',
 }
 
 export default ja
