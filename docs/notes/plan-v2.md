@@ -99,7 +99,8 @@ What the services allow, read on 2026-10-31 (specs in [ideas/catch-up.md](ideas/
       already limited: 44 searches, then blocked 5 min, then about one every 15 s. The gain from `Line` isn't measured yet.
 - [ ] `S` Exportify's file names are lowered, with underscores ("Cool music" for "Cool Music"): a real name needs its
       playlist column ([exportify#194](https://github.com/watsonbox/exportify/issues/194)) or the first way's names.
-- [ ] `S` Spotify's `spotify_export::list` drops local files (8 in the user's export): keep them as songs to find.
+- [x] `S` Spotify's `spotify_export::list` drops local files (8 in the user's export): they come as songs to find, named
+      from their columns or their form-encoded URI, searched on YouTube. Not tried on the user's export yet.
 - [x] `S` Spotify's "private or doesn't exist" message says what works instead: Connect Spotify, in the user's language
       (`shared/errors.ts`; an album says removed or not in the country).
 - [x] `S` A Legato link brings its videos (user's ask 2026-10-31): share code version 2, each YouTube entry with the

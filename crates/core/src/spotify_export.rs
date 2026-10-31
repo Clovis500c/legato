@@ -146,11 +146,45 @@ fn clean(cell: &str) -> Option<String> {
     (!s.is_empty() && s.chars().count() <= MAX_TEXT && !s.chars().any(char::is_control)).then(|| s.to_string())
 }
 
-/// Columns: 0 uri, 1 name, 3 artists, 5 album, 9 cover, 12 duration, 16 ISRC. Local files and episodes: no song to find.
+/// "Daft+Punk%21" → "Daft Punk!": a local file's URI parts are form-encoded.
+fn unform(part: &str) -> String {
+    let b = part.as_bytes();
+    let mut out = Vec::with_capacity(b.len());
+    let mut i = 0;
+    while i < b.len() {
+        let hex = b.get(i + 1..i + 3).filter(|h| h.iter().all(u8::is_ascii_hexdigit)).and_then(|h| u8::from_str_radix(std::str::from_utf8(h).ok()?, 16).ok());
+        match (b[i], hex) {
+            (b'+', _) => out.push(b' '),
+            (b'%', Some(byte)) => {
+                out.push(byte);
+                i += 2;
+            }
+            (c, _) => out.push(c),
+        }
+        i += 1;
+    }
+    String::from_utf8_lossy(&out).into_owned()
+}
+
+/// Columns: 0 uri, 1 name, 3 artists, 5 album, 9 cover, 12 duration, 16 ISRC. Episodes: no song to find. A file of the
+/// user's own (`spotify:local:artist:album:title:secs`): no Spotify id, its names searched like a pasted song.
 fn track(line: &str) -> Option<Track> {
     let row = cells(line, ',');
-    let id = row.first()?.strip_prefix("spotify:track:").filter(|id| id.len() == 22 && id.bytes().all(|b| b.is_ascii_alphanumeric()))?;
     let cell = |n: usize| row.get(n).and_then(|c| clean(c));
+    if let Some(parts) = row.first()?.strip_prefix("spotify:local:") {
+        // The columns win; the URI fills what they leave empty.
+        let parts: Vec<String> = parts.split(':').map(unform).collect();
+        let part = |n: usize| parts.get(n).filter(|_| parts.len() == 4).and_then(|p| clean(p));
+        return Some(Track {
+            title: cell(1).or_else(|| part(2))?,
+            artist: cell(3).or_else(|| part(0))?,
+            album: cell(5).or_else(|| part(1)),
+            duration_ms: cell(12).and_then(|d| d.parse().ok()).filter(|ms| *ms > 0).or_else(|| part(3)?.parse::<u32>().ok()?.checked_mul(1000).filter(|ms| *ms > 0)),
+            musicness: None,
+            ..Default::default()
+        });
+    }
+    let id = row.first()?.strip_prefix("spotify:track:").filter(|id| id.len() == 22 && id.bytes().all(|b| b.is_ascii_alphanumeric()))?;
     Some(Track {
         title: cell(1)?,
         artist: cell(3)?,
@@ -254,9 +288,22 @@ mod tests {
     }
 
     #[test]
+    fn local_files_come_as_songs_to_find() {
+        // As Exportify writes them: the URI form-encoded, the columns sometimes empty.
+        let named = "\"spotify:local:x:y:z:1\",\"Mine\",\"\",\"Me\"";
+        let bare = "\"spotify:local:Daft+Punk:Discovery:One+More+Time%21:320\",\"\",\"\",\"\"";
+        let l = list("a.csv", &format!("{HEAD}\n{named}\n{bare}\n")).unwrap();
+        let got: Vec<_> = l.tracks.iter().map(|t| (t.title.as_str(), t.artist.as_str(), t.album.as_deref(), t.duration_ms, t.ids.len())).collect();
+        assert_eq!(got, [("Mine", "Me", Some("y"), Some(1000), 0), ("One More Time!", "Daft Punk", Some("Discovery"), Some(320_000), 0)]);
+        // Nothing to search by: left out.
+        assert_eq!(list("a.csv", &format!("{HEAD}\n\"spotify:local:::%07:\",\"\",\"\",\"\"\n")), None);
+        assert_eq!(unform("%zz+%4"), "%zz %4");
+    }
+
+    #[test]
     fn keeps_only_songs_and_refuses_what_no_list_holds() {
-        let local = "\"spotify:local:x\",\"Mine\",\"\",\"Me\"";
-        let odd = [row("short", "A"), row(ID, ""), row(ID, "A\u{7}"), row(ID, &"x".repeat(301)), local.to_string()].join("\n");
+        let episode = "\"spotify:episode:x\",\"Talk\",\"\",\"Host\"";
+        let odd = [row("short", "A"), row(ID, ""), row(ID, "A\u{7}"), row(ID, &"x".repeat(301)), episode.to_string()].join("\n");
         assert_eq!(list("a.csv", &format!("{HEAD}\n{odd}\n{}\n", row(ID, "Good"))).unwrap().tracks.len(), 1);
         assert_eq!(list("a.csv", &format!("{HEAD}\n{odd}\n")), None);
         let bad_art = row(ID, "A").replace("https://i.scdn.co/image/ab67", "https://evil.example/a.jpg");
