@@ -1,4 +1,5 @@
-import type { LibraryPlaylist, LibraryTrack, PlayerCommand, PlayerStatus, Source } from '../../ui/src/shared/api'
+import type { LibraryPlaylist, LibraryTrack, LyricsAsk, Play, PlayerCommand, PlayerStatus, SearchHit, Source } from '../../ui/src/shared/api'
+import { startFrames, stopFrames, type Frames } from './viz'
 
 // Everything here is invented: artists, albums, songs. Covers are drawn below, from a palette and a shape.
 
@@ -63,10 +64,49 @@ export function art(path: string) {
   return COVERS[Number(album?.replace('demo:', ''))] ?? COVERS[0]
 }
 
+// Songs a search finds outside the library.
+const CATALOG = [
+  { title: 'Harbour Wall', artist: 'Nils Arrow', album: 'Harbour Lights, 4 a.m.', from: 'ytmusic', n: 8 },
+  { title: 'The Harbour Line', artist: 'Halden Marsh', album: 'Low Tide Radio', from: 'apple', n: 0 },
+  { title: 'Harbour Mouth (Live at the Boathouse)', artist: 'Wren Hollis', album: null, from: 'youtube', n: 5 },
+  { title: 'Harbour Bells', artist: 'Amara Lindqvist', album: 'Field Notes', from: 'ytmusic', n: 10 },
+  { title: 'Goodnight, Harbour', artist: 'The Quiet Tenants', album: null, from: 'youtube', n: 1 },
+] as const
+
+function search({ query }: Record<string, unknown>) {
+  const word = String(query).toLowerCase()
+  const known: SearchHit[] = TRACKS.filter((t) => `${t.title} ${t.artist} ${t.album}`.toLowerCase().includes(word)).map((t) => ({ ...t, libraryId: t.id, from: t.ids.apple ? ['apple'] : ['ytmusic'] }))
+  const more: SearchHit[] = CATALOG.filter((c) => c.title.toLowerCase().includes(word)).map((c, i) => ({ title: c.title, artist: c.artist, album: c.album, durationMs: seconds(c.title) * 1000, isrc: null, ids: { [c.from === 'apple' ? 'apple' : 'youtube']: `demo-found-${i}` }, art: `demo:${c.n}`, libraryId: null, from: [c.from] }))
+  return { hits: [...more, ...known], errors: [] }
+}
+
+// Written for this page.
+const VERSES = ['Pier lights out along the bay', 'The last boat took the tide away', 'I kept your name in the radio hum', 'Counting the waves till the morning comes', 'Salt on my hands and the dial turned low', "Nobody's listening, so here we go", "Slow down, slow down, the harbour's asleep", 'Some things are easier not to keep']
+
+function lyrics({ ask }: Record<string, unknown>) {
+  const { durationMs } = ask as LyricsAsk
+  const lines = Array.from({ length: Math.floor((durationMs ?? 200_000) / 5200) }, (_, i) => ({ ms: 2000 + i * 5200, text: VERSES[i % VERSES.length] }))
+  return { lines, plain: null, instrumental: false, source: 'Written for this demo' }
+}
+
+// Two months of listening, for Home, Stats and Mixes.
+const NOW = Math.floor(Date.now() / 1000)
+const PLAYS: Play[] = Array.from({ length: 480 }, (_, i) => {
+  const t = TRACKS[(i * 13 + (i >> 3)) % 27]
+  return { trackId: t.id, startedAt: NOW - i * 10_800 - ((i * 977) % 3000), listenedMs: t.durationMs ?? 0, completed: true }
+})
+
+const MIXES = ['Daily Mix 1', 'Daily Mix 2', 'Daily Mix 3'].map((title, i) => ({ id: `demo-${i}`, title, reason: 'From what you played this week', trackIds: TRACKS.filter((t) => t.id % 3 === i).slice(0, 14).map((t) => t.id), kind: 'daily', words: {} }))
+
 // The engine: no sound, only a position that moves.
 const OPENING = TRACKS.findIndex((t) => t.ids.local)
+// Two songs the listener added: Up next's own block.
+const ADDED = [OPENING + 19, OPENING + 34]
+const ORDER = [...TRACKS.keys()].filter((i) => !ADDED.includes(i))
+ORDER.splice(OPENING + 1, 0, ...ADDED)
+
 const engine = { path: null as string | null, at: 0, since: 0, paused: true }
-const durationOf = (path: string | null) => TRACKS.find((t) => t.ids.local === path)?.durationMs ?? null
+const durationOf = (path: string | null) => (path ? (TRACKS[Number(path.replace('demo-', '')) - 1]?.durationMs ?? 200_000) : null)
 const position = () => engine.at + (engine.paused ? 0 : Date.now() - engine.since)
 
 function player(cmd: PlayerCommand) {
@@ -83,23 +123,39 @@ const status = (): PlayerStatus => {
   return { path: engine.path, positionMs, durationMs, paused: engine.paused, upcoming: [], error: null, ended: !!durationMs && positionMs >= durationMs, trimEndMs: null }
 }
 
+const shot = new URLSearchParams(location.search)
+
 const ANSWERS: Record<string, (args: Record<string, unknown>) => unknown> = {
   library: () => ({ tracks: TRACKS, playlists: PLAYLISTS, orders: Object.fromEntries(PLAYLISTS.map((p) => [p.id, inList(p.id).map((t) => t.id)])) }),
   library_changes: () => null,
   playlist_tracks: ({ id }) => inList(id as number),
   sources_status: () => [['spotify', { configured: true, connected: true }], ['youtube', { configured: true, connected: true }]],
-  // The app's first window, a little less sidebar: titles read whole. No Plays column: nothing played here.
-  load_settings: () => ({ defaultsVersion: 9, welcomed: true, language: 'en', reopen: false, startView: 'songs', songSort: 'added-old', columns: ['album', 'sources', 'duration'], sidebarWidth: 240 }),
-  load_session: () => ({ ids: TRACKS.map((t) => t.id), remote: [], index: OPENING, order: [], added: [], shuffle: false, repeat: 'off', positionMs: 84_000, via: 'local', volume: 0.8, paused: true }),
+  // The app's first window, a little less sidebar: titles read whole.
+  load_settings: () => ({ defaultsVersion: 9, welcomed: true, language: 'en', reopen: false, startView: 'songs', songSort: 'added-old', columns: ['album', 'sources', 'duration'], sidebarWidth: 240, theme: shot.get('theme') ?? 'system' }),
+  load_session: () => ({ ids: TRACKS.map((t) => t.id), remote: [], index: OPENING, order: ORDER, added: ADDED, shuffle: false, repeat: 'off', positionMs: 84_000, via: 'local', volume: 0.8, paused: true }),
   update_status: () => ({ current: 'demo', lastCheck: null, lastUpdate: null, justUpdated: true, state: 'idle' }),
   player: ({ cmd }) => player(cmd as PlayerCommand),
   player_status: status,
-  play_stats: () => ({}),
+  search_catalogs: search,
+  lyrics,
+  viz_start: ({ frames }) => startFrames(frames as Frames),
+  viz_stop: stopFrames,
+  play_stats: () => Object.fromEntries(PLAYS.map((p) => [p.trackId, [PLAYS.filter((x) => x.trackId === p.trackId).length, p.startedAt]])),
+  recent_plays: ({ since }) => PLAYS.filter((p) => p.startedAt >= (since as number)),
+  play_history: () => PLAYS,
+  mixes: () => MIXES,
   system_accent: () => null,
   autostart: () => false,
   ytm_home: () => ({ shelves: [], moods: [] }),
   shield_status: () => ({ enabled: false, blocked: 0 }),
+  edit_draft: () => null,
 }
 
+// What needs an account, the network or the PC: said plainly, never faked.
+const REFUSED = new Set(['connect', 'disconnect', 'sync_all', 'add_link', 'add_track', 'ytm_sign_in', 'ytm_sign_out', 'lastfm_connect', 'spotify_web_open', 'spotify_export_open', 'import_link', 'import_spotify_link', 'import_song_list', 'spotify_import', 'export_youtube', 'add_to_youtube', 'share_playlist', 'share_import', 'nearby_send', 'nearby_receive', 'sync_setup', 'sync_join', 'sync_offer', 'plugin_install', 'voice_listen', 'detect_song', 'update_check', 'update_install', 'open_licenses', 'export_edit', 'export_cover', 'export_theme', 'rescan_local', 'set_local_folders', 'restart_app'])
+
 /** What Rust would say; a list, for all the commands no screen here reads. */
-export const answer = (cmd: string, args: Record<string, unknown>) => (ANSWERS[cmd] ?? (() => []))(args)
+export function answer(cmd: string, args: Record<string, unknown>) {
+  if (REFUSED.has(cmd)) throw new Error('Not in this demo: install Legato for that')
+  return (ANSWERS[cmd] ?? (() => []))(args)
+}
