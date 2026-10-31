@@ -182,6 +182,6 @@ IPC pipe (`crates/connectors/src/discord.rs`), from a dedicated thread in `src-t
 - Tests never use the real network: connectors are tested against `mockito`.
 - `pnpm e2e` drives the built app like a new user: a debug build with the `e2e` cargo feature (own identifier, the network
   on a loopback mock in `hosts.rs`, a silent audio output in `crates/player/src/output.rs`), a script over WebView2's
-  DevTools port (`e2e/smoke.mjs`). Windows CI runs it in the `e2e` job ([development.md](development.md)).
+  DevTools port (`e2e/smoke.mjs`; it also pastes a Deezer and an Apple link and reads the diagnostics log). Windows CI runs it in the `e2e` job ([development.md](development.md)).
 - `pnpm check` runs everything: the Rust → TypeScript types, type check, ESLint, Vitest, Clippy with warnings as errors,
   `cargo test`.

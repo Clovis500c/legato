@@ -4,7 +4,7 @@ import path from 'node:path'
 import { afterAll, describe, expect, it } from 'vitest'
 import { carriesId } from '../scripts/guest.mjs'
 import { answer, known, startMock } from './mock.mjs'
-import { E2E_ID, FEATURE_MARK, SHOTS, STEPS, appEnv, clearShots, e2eFolders, flat, pace, parseArgs, shotFiles } from './smoke.mjs'
+import { DEFERRED_BY, E2E_ID, FEATURE_MARK, SHOTS, STEPS, appEnv, clearShots, deferredStarts, e2eFolders, flat, pace, parseArgs, shotFiles } from './smoke.mjs'
 import { DEMO_SONGS, sineWav, writeDemo } from './wav.mjs'
 
 const read = (rel: string) => readFileSync(new URL(`../${rel}`, import.meta.url), 'utf8')
@@ -96,6 +96,17 @@ describe('smoke test safety', () => {
 })
 
 describe('smoke test checks', () => {
+  it('counts what started the deferred work from the log, and says the words the app logs', () => {
+    const log = `2026-10-31T10:00:00.000Z INFO app started 0.2.0
+2026-10-31T10:00:01.000Z INFO startup ${DEFERRED_BY.ready}
+2026-10-31T10:00:09.000Z INFO startup ${DEFERRED_BY.timer}
+`
+    expect(deferredStarts(log)).toEqual({ ready: 1, timer: 1 })
+    expect(deferredStarts('')).toEqual({ ready: 0, timer: 0 })
+    const rust = read('src-tauri/src/deferred.rs')
+    for (const words of Object.values(DEFERRED_BY)) expect(rust, words).toContain(`"${words}"`)
+  })
+
   it('tells a song that keeps time from one that does not', () => {
     expect(pace(3000, 3000)).toBe('')
     expect(pace(2000, 3000)).toBe('')
@@ -147,7 +158,25 @@ describe('mock network', () => {
     expect(JSON.stringify(body('POST', '/ytmusic/search'))).toContain('musicResponsiveListItemRenderer')
     expect(body('GET', '/itunes/search').results).toHaveLength(2)
     expect(body('GET', '/itunes/lookup').results).toEqual([])
+    expect(body('GET', '/itunes/lookup', 'id=1440857781').results).toHaveLength(3)
+    expect(body('GET', '/deezer/playlist/2477790684').nb_tracks).toBe(153)
+    expect(body('GET', '/deezer/playlist/2477790684/tracks', 'index=0&limit=100').data).toHaveLength(2)
+    expect(body('GET', '/deezer/playlist/2477790684/tracks', 'index=2&limit=100').data).toEqual([])
     expect(body('GET', '/suggest', 'q=paper')[1]).toContain('paper glass harbour')
+  })
+
+  it('finds one song of each pasted list on YouTube, a second late, and none for the other', () => {
+    const search = (service: string, query: string) => answer('POST', `/${service}/search`, new URLSearchParams(), { query })
+    const found = search('youtube', "Macklemore Can't Hold Us (feat. Ray Dalton)")
+    expect(found.body).toContain('Macklemore - Can')
+    expect(found.delay).toBeGreaterThan(500)
+    expect(search('youtube', 'Jack Johnson Better Together').body).toContain('Jack Johnson - Better Together')
+    expect(JSON.stringify(JSON.parse(search('youtube', 'Lykke Li I Follow Rivers').body))).not.toContain('videoRenderer')
+    expect(search('ytmusic', 'Lykke Li I Follow Rivers').body).toBe('{}')
+    // The walk's own search keeps the default results, at once.
+    expect(search('youtube', 'paper lanterns')).toMatchObject({ delay: 0 })
+    expect(search('youtube', 'paper lanterns').body).toContain('Paper Lanterns')
+    expect(search('ytmusic', 'paper lanterns').body).toContain('musicResponsiveListItemRenderer')
   })
 
   it('says "not found" the way LRCLIB does, and to anything it does not know', () => {

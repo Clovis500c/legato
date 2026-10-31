@@ -7,6 +7,7 @@
 //   play         a local song plays 3 s: the engine's position moves, sound goes through the live chain
 //   pause-play   Pause freezes it, Play moves it again
 //   search       typed text: suggestions, then YouTube, YouTube Music and Apple results, all from e2e/mock.mjs; the song plays on
+//   links        a pasted Deezer playlist (Add music) and Apple album (Ctrl+V): the progress toast, Cancel, the playlist made
 //   quit         "Keep running in the notification area" off, the window's Close: the app ends by itself, exit code 0
 //   relaunch     the same data again: no welcome, the library is there; one more quit
 // The native folder picker is an OS dialog a page can't drive: the script answers its IPC request (CDP Fetch). Nothing
@@ -28,7 +29,7 @@ import path from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { Cdp, sleep, waitForPage } from '../scripts/cdp.mjs'
 import { browserArgs, carriesId, freePort, inputsHash } from '../scripts/guest.mjs'
-import { startMock } from './mock.mjs'
+import { APPLE_LINK, DEEZER_LINK, startMock } from './mock.mjs'
 import { DEMO_SONGS, writeDemo } from './wav.mjs'
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..')
@@ -88,8 +89,18 @@ export const flat = (s) => String(s).replace(/\s+/g, ' ').trim()
 
 /** The pictures the walk takes (`shot`) and its steps (`step`, named in FAIL-<step>.png): e2e.test.ts keeps both lists equal
  *  to the walk's own calls. */
-export const SHOTS = ['1-welcome', '2-library', '3-songs', '4-playing', '5-search', '6-settings', '7-relaunch']
-export const STEPS = ['launch', 'welcome', 'songs', 'play', 'pause-play', 'search', 'quit', 'relaunch']
+export const SHOTS = ['1-welcome', '2-library', '3-songs', '4-playing', '5-search', '5-imported', '6-settings', '7-relaunch']
+export const STEPS = ['launch', 'welcome', 'songs', 'play', 'pause-play', 'search', 'links', 'quit', 'relaunch']
+
+/** What the app's log says started its deferred work (src-tauri/src/deferred.rs), once per launch. */
+export const DEFERRED_BY = { ready: 'deferred start by the UI ready signal', timer: 'deferred start by the timer' }
+
+/** The log's launches by cause: { ready, timer }. A walk is wrong when the timer started the work (the page never said
+ *  ready in time) or nothing did. */
+export function deferredStarts(log) {
+  const lines = String(log).split('\n')
+  return { ready: lines.filter((l) => l.includes(DEFERRED_BY.ready)).length, timer: lines.filter((l) => l.includes(DEFERRED_BY.timer)).length }
+}
 
 /** Every file a walk writes in the shots folder, by exact name. */
 export const shotFiles = () => [...SHOTS.map((n) => `${n}.png`), ...STEPS.map((s) => `FAIL-${s}.png`), 'failure.txt', 'diagnostics.log']
@@ -186,6 +197,20 @@ const rowWith = (text) => `(() => {
   const r = el.getBoundingClientRect()
   return r.height ? { x: r.x + Math.min(200, r.width / 3), y: r.y + r.height / 2 } : null
 })()`
+
+/** The search box of the Add music page (its page has a section; the top bar has not). */
+const ADD_BOX = `(() => {
+  const el = [...document.querySelectorAll('input[aria-label=Search]')].find((e) => e.closest('section'))
+  if (!el) return null
+  const r = el.getBoundingClientRect()
+  return r.width ? { x: r.x + r.width / 2, y: r.y + r.height / 2 } : null
+})()`
+
+/** Ctrl+V outside a text field, as the page gets it: a paste event on the document that carries `text`. */
+const pasteEvent = (text) => `document.dispatchEvent(Object.assign(new Event('paste', { bubbles: true }), { clipboardData: { getData: () => ${JSON.stringify(text)} } }))`
+
+/** The songs table's rows, as text. */
+const ROWS = "[...document.querySelectorAll('[role=grid] [role=row]')].map((r) => r.innerText)"
 
 const SEARCH_BOX = `(() => {
   const el = document.querySelector('input[aria-label=Search]')
@@ -465,6 +490,41 @@ async function walk(o, dataDirs) {
       await shot('5-search')
     })
 
+    await step('links', async () => {
+      const waitText = (text) => page.waitText(text, 20000)
+      // A Deezer playlist link typed in Add music's box: two songs read, one of them on YouTube.
+      await page.press('Add music')
+      await page.clickAt(ADD_BOX, 'Add music search box')
+      await app.cdp.send('Input.insertText', { text: DEEZER_LINK })
+      await app.cdp.enter()
+      await waitText('Importing from Deezer… 0 of 2')
+      await waitText('Imported “Soirée Hits 2026 : La Playlist Certifiée”: 1 of 2 songs found')
+      await waitText('Not found: Lykke Li – I Follow Rivers (The Magician Remix)')
+      await waitText('Only 2 of the 153 songs came in')
+      await app.cdp.waitFor(`${ROWS}.some((r) => r.includes("Can't Hold Us"))`, { timeout: 10000 }).catch(() => {
+        throw new Error('the new playlist does not list its song')
+      })
+      const rows = await app.cdp.evaluate(ROWS)
+      if (rows.some((r) => r.includes('I Follow Rivers'))) throw new Error(`the playlist lists a song that was not found: ${JSON.stringify(rows)}`)
+      if (!(await page.text()).includes('Soirée Hits 2026')) throw new Error('the playlist is not in the page')
+      if (mock.to('GET', '/deezer/playlist/2477790684').length !== 1) throw new Error('the Deezer playlist was not read once')
+      await shot('5-imported')
+      // An Apple Music album link pasted anywhere (Ctrl+V): Cancel ends the searches, nothing is made.
+      await app.cdp.evaluate(pasteEvent(APPLE_LINK))
+      await waitText('Importing from Apple Music… 0 of 2')
+      await page.press('Cancel', { scope: 'page' })
+      await waitText('Import canceled')
+      if ((await page.text()).includes('In Between Dreams')) throw new Error('a canceled import made a playlist')
+      // Again, left to finish: the first one freed the import for it.
+      await app.cdp.evaluate(pasteEvent(APPLE_LINK))
+      await waitText('Imported “In Between Dreams (Bonus Track Version)”: 1 of 2 songs found')
+      await app.cdp.waitFor(`${ROWS}.some((r) => r.includes('Better Together'))`, { timeout: 10000 }).catch(() => {
+        throw new Error('the album playlist does not list its song')
+      })
+      const stray = mock.unexpected()
+      if (stray.length) throw new Error(`calls the mock has no answer for: ${stray.map((r) => `${r.method} ${r.path}`).join(', ')}`)
+    })
+
     await step('quit', async () => {
       await page.press('Settings')
       await page.press('Keep running in the notification area')
@@ -477,8 +537,8 @@ async function walk(o, dataDirs) {
 
     await step('relaunch', async () => {
       app = await launch(mock, flags, errors)
-      // The count fills in once the library is read: a first look says 0.
-      await app.cdp.waitFor(String.raw`/All your songs\s*·\s*3\b/.test(document.body.innerText)`, { timeout: 15000 }).catch(() => {
+      // The count fills in once the library is read: a first look says 0. 3 demo songs + the 2 the imports found.
+      await app.cdp.waitFor(String.raw`/All your songs\s*·\s*5\b/.test(document.body.innerText)`, { timeout: 15000 }).catch(() => {
         throw new Error('the library lost its songs')
       })
       // The welcome would show at once; give it a moment.
@@ -526,7 +586,7 @@ async function explain(o, app, mock, errors, step, error, dataDirs) {
   console.log(`  what was left: ${o.shots}`)
 }
 
-/** The diagnostics log of a run that passed: no panic in it. */
+/** The diagnostics log of a run that passed: no panic in it, and the page (not the 8 s timer) started the deferred work. */
 function checkLog(dataDir) {
   const log = path.join(dataDir, 'diagnostics.log')
   if (!existsSync(log)) return
@@ -534,6 +594,9 @@ function checkLog(dataDir) {
   const bad = lines.filter((l) => /\bpanic/i.test(l))
   if (bad.length) throw new Error(`the diagnostics log holds a panic: ${bad[0]}`)
   const errors = lines.filter((l) => /\sERROR\s/.test(l))
+  const starts = deferredStarts(lines.join('\n'))
+  if (starts.timer) throw new Error(`the deferred work was started by the 8 s timer ${starts.timer} time(s): the page did not say ready in time`)
+  if (!starts.ready) throw new Error('the diagnostics log never says the page started the deferred work')
   if (errors.length) console.log(`  note ${errors.length} error line(s) in the diagnostics log, first: ${errors[0].slice(0, 200)}`)
 }
 

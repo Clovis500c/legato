@@ -55,15 +55,19 @@ and 10 minutes in the tray. `--quick` is a short run. The numbers, how they are 
 minutes through its real window, over WebView2's DevTools port (`scripts/cdp.mjs`, the flags of `scripts/guest.mjs`): the
 welcome comes first, Add folder (three WAV songs the test writes, `e2e/wav.mjs`), the Songs page lists them, a song plays
 3 s and the engine's position moves, Pause freezes it and Play moves it again, a search (suggestions, YouTube, YouTube
-Music and Apple, all answered by `e2e/mock.mjs` from `e2e/fixtures`) while the song plays on, the window's Close with
+Music and Apple, all answered by `e2e/mock.mjs` from `e2e/fixtures`) while the song plays on, a Deezer playlist link typed
+in Add music (its progress toast, the playlist made with the one song found, the one not found said) and an Apple Music album
+link pasted with Ctrl+V (Cancel makes nothing, then the full import), the window's Close with
 "Keep running in the notification area" off (the app must end by itself, exit code 0), then the same data again: no
-welcome, the library is still there. About 15 s once built. A failure leaves screenshots, `failure.txt` (the step, the page's
+welcome, the library is still there. About 20 s once built. The diagnostics log says what started the deferred work at each launch
+(`src-tauri/src/deferred.rs`): the walk fails when it was the 8 s timer, not the page's ready signal. A failure leaves screenshots, `failure.txt` (the step, the page's
 text, what the mock saw, the diagnostics log) in `target/e2e/shots`; CI uploads them. `--repeat 5` walks five times on one
 build, `--skip-build` reuses an unchanged build. The `e2e` job of `check.yml` runs it on Windows, the build and then the
 walk as two steps, the walk held to 5 minutes. It is not blocking yet (`continue-on-error`, a warning on the run when it
 fails): it has not run on GitHub, and `release.yml` waits for a green `check`. Delete that line after a few green runs.
 Checked on 2026-10-30: with the click handler of the player's play button emptied, the walk fails at `pause-play`
-("Pause did not pause"), exit code 1, screenshot and report left.
+("Pause did not pause"), exit code 1, screenshot and report left. Checked on 2026-10-31: with the Deezer link recogniser
+(`deezerLink`) broken, the walk fails at `links` ("the page never showed Importing from Deezer… 0 of 2").
 
 What the `e2e` cargo feature changes, and nothing else, in a build nobody installs:
 

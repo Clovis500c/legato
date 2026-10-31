@@ -124,6 +124,11 @@ playback (its terms), concerts (an API's terms), trademark search.
   100 songs at most on the page (the toast says when the list is longer). Checked for real against a 153- and a
   200-song Deezer playlist and Apple's editorial and users' playlists (a throwaway caller, not CI). Short links
   (`link.deezer.com`) are tested on a recorded 302 only: no real one was at hand. Details: `docs/playback.md`.
+- **Smoke test: pasted links and the ready signal** (done 2026-10-31): the walk's `links` step types a Deezer playlist link in
+  Add music and pastes an Apple album link (Ctrl+V), answered by `e2e/mock.mjs` from the connector fixtures and a song search
+  that finds one song of each list; it checks the progress toast, Cancel, the found count, the playlists and the library
+  count. The diagnostics log says what started the deferred work; a walk fails on the 8 s timer. Broken on purpose once
+  (the Deezer link recogniser): the step fails. About 17 s.
 - **Why Legato page** (done 2026-10-31): a section on the website with the 2026-10-31 bench row's numbers and the four differences (legal, light,
   Sync Mode, Last.fm), no competitor named; the site has one language (English), so one copy. Numbers in `BENCH` of
   `site/components/content.tsx`: change them with each new row of `docs/performance.md` (the README line too). Not
@@ -346,14 +351,16 @@ every session.
       First-load JS 948 to 829 kB (gzip 279 to 255). Left: LyricsPanel, dialogs, NowPlaying are still in the first chunk.
       Review fixes (2026-10-31): a failed chunk is caught by `PageBoundary` (retry), the deferred starts are independent,
       cover temp files are unique per write, the Legal wording is true, Deezer links route by host, link requests time out
-      (20 s) and Apple's page is capped (8 MB). Left: no progress or cancel for the 3000-song YouTube matching.
+      (20 s) and Apple's page is capped (8 MB). The 3000-song YouTube matching reports progress ("120 of 300") and has a Cancel
+      (2026-10-31, `docs/playback.md`).
 - [ ] Re-renders: profile the player bar, Up next and lyrics at 60 fps (`Progress.tsx`); Zustand selectors everywhere.
 - [ ] Library at scale: 50 000 songs, check every query with `EXPLAIN QUERY PLAN` (indexes for artist, album,
       plays, likes), search with FTS5, scans in the background with progress.
 - [x] Cover cache: size cap with least-recently-used eviction, thumbnails at the sizes we show (no full images in lists). (done 2026-10-31: cap 500 MB, a setting; `?s=64/256/600`; `crates/core/src/artcache.rs`)
 - [ ] YouTube embeds: one player reused instead of one per song where the crossfade allows; unload the hidden one.
 - [ ] Tray mode: measure what's left (WebView2 suspended?), drop it further if the page can be unloaded and restored.
-- [x] Startup: plugins, the update and Sync Mode rounds, Discord, Last.fm start after the UI's ready signal (or 8 s). Left, on purpose:
+- [x] Startup: plugins, the update and Sync Mode rounds, Discord, Last.fm start after the UI's ready signal (or 8 s; the log says which,
+      and the e2e walk fails on the timer). Left, on purpose:
       the shield's lists load early (first YouTube request), the library opens in setup (the window's colour needs its settings).
 - [ ] Installer size: check what's in it (`cargo bloat`, features of big crates, adblock lists compressed).
 
