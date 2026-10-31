@@ -1604,6 +1604,10 @@ const id: Record<string, string> = {
   'Visualizer full screen on / off': 'Visualisasi layar penuh aktif / nonaktif',
   '← → move the lyrics · Esc leaves': '← → geser lirik · Esc untuk keluar',
   // Connect Spotify
+  'Exportify, a free open-source tool, opens in a window. Sign in on Spotify’s own page, accept, then export all your lists: the rest happens by itself.': 'Exportify, alat gratis dan sumber terbuka, terbuka di sebuah jendela. Masuk di halaman Spotify sendiri, setujui, lalu ekspor semua daftar Anda: sisanya berjalan sendiri.',
+  'Waiting for your lists…': 'Menunggu daftar Anda…',
+  'Read Spotify’s page instead': 'Baca halaman Spotify saja',
+  'Spotify export': 'Ekspor Spotify',
   'Connect Spotify': 'Hubungkan Spotify',
   'Import your playlists and Liked Songs, private ones too, with any free account.': 'Impor playlist dan Lagu yang Disukai, termasuk yang pribadi, dengan akun gratis apa pun.',
   'Before you connect': 'Sebelum menghubungkan',

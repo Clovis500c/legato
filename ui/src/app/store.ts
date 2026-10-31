@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { api, type Credentials, type LibraryPlaylist, type LibraryTrack, type PlaylistEdit, type Service, type SourceStatus, type SpotifyPick, type SyncReport, type Track } from '../shared/api'
+import { api, type Credentials, type LibraryPlaylist, type LibraryTrack, type PlaylistEdit, type Service, type SourceStatus, type SpotifyLibraryImport, type SyncReport, type Track } from '../shared/api'
 import type { Filter, GroupSize, GroupSort, PlayStats, Sort } from '../features/library/filter'
 import { explain } from '../shared/errors'
 import { tr, trn } from '../shared/i18n/i18n'
@@ -118,8 +118,8 @@ interface State {
   importSpotify: (url: string) => Promise<void>
   /** A Deezer or Apple Music playlist / album link: a playlist of yours with the songs found on YouTube. */
   importLink: (url: string, from: 'deezer' | 'apple') => Promise<void>
-  /** Connect Spotify's ticked lists: read in Spotify's window, then a toast that counts, with Cancel. */
-  importSpotifyLists: (picks: SpotifyPick[]) => Promise<void>
+  /** Spotify's ticked lists, by `job` (Exportify's file or Spotify's page): a toast that counts, with Cancel. */
+  importSpotifyLists: (job: () => Promise<SpotifyLibraryImport>) => Promise<void>
   /** Add › Import a list of songs. True when a playlist came out of it. */
   importSongList: (name: string, text: string | null, path: string | null) => Promise<boolean>
   /** Settings › General › Notifications, set by app/settings: errors and toasts with a button only; time × scale. */
@@ -329,18 +329,18 @@ export const useStore = create<State>((set, get) => {
       if (r.total > r.songs) get().notify(tr('Only {n} of the {total} songs came in: the link shows no more.', { n: r.songs, total: r.total }), { kind: 'info' })
       get().go({ name: 'playlist', id: r.playlistId })
     },
-    async importSpotifyLists(picks) {
+    async importSpotifyLists(job) {
       const cancel = { label: tr('Cancel'), run: () => void api.importLinkStop() }
-      const shown = get().notify(tr('Reading your library on Spotify…'), { sticky: true, action: cancel })
+      const shown = get().notify(tr('Importing…'), { sticky: true, action: cancel })
       const off = api.onSpotifyImport(({ name, list, lists, matching, done, total }) => {
         const said = matching ? tr('Spotify, list {list} of {lists}: finding “{name}” on YouTube… {done} of {total}', { list, lists, name, done, total }) : tr('Spotify, list {list} of {lists}: reading “{name}”… {done} of {total}', { list, lists, name, done, total })
         get().notify(said, { sticky: true, id: shown })
       })
-      let r: Awaited<ReturnType<typeof api.spotifyImport>> | undefined
+      let r: SpotifyLibraryImport | undefined
       let canceled = false
       const ok = await run(async () => {
         try {
-          r = await api.spotifyImport(picks)
+          r = await job()
         } catch (e) {
           if (String(e) !== 'canceled') throw e
           canceled = true

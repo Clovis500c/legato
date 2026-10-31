@@ -1604,6 +1604,10 @@ const vi: Record<string, string> = {
   'Visualizer full screen on / off': 'Trình hiển thị toàn màn hình bật / tắt',
   '← → move the lyrics · Esc leaves': '← → dịch lời bài hát · Esc để thoát',
   // Connect Spotify
+  'Exportify, a free open-source tool, opens in a window. Sign in on Spotify’s own page, accept, then export all your lists: the rest happens by itself.': 'Exportify, một công cụ miễn phí và mã nguồn mở, sẽ mở trong một cửa sổ. Đăng nhập trên trang của chính Spotify, chấp nhận, rồi xuất tất cả danh sách: phần còn lại tự diễn ra.',
+  'Waiting for your lists…': 'Đang chờ danh sách của bạn…',
+  'Read Spotify’s page instead': 'Thay vào đó, đọc trang của Spotify',
+  'Spotify export': 'Bản xuất Spotify',
   'Connect Spotify': 'Kết nối Spotify',
   'Import your playlists and Liked Songs, private ones too, with any free account.': 'Nhập danh sách phát và Bài hát đã thích, kể cả riêng tư, bằng bất kỳ tài khoản miễn phí nào.',
   'Before you connect': 'Trước khi kết nối',

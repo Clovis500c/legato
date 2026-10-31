@@ -1,4 +1,5 @@
 import { SpotifyLogo } from '@phosphor-icons/react'
+import { open } from '@tauri-apps/plugin-dialog'
 import { useEffect, useState } from 'react'
 import { useStore } from '../../app/store'
 import { api, type SpotifyList } from '../../shared/api'
@@ -9,9 +10,9 @@ import { Cover } from '../../shared/ui/Cover'
 import { Dialog } from '../../shared/ui/Dialog'
 import { Card } from './Card'
 
-// Liked Songs has no playlist of its own on Spotify (music_connectors::spotify_page::LIKED).
+// Liked Songs has no playlist of its own on Spotify (music_core::spotify_export::LIKED, spotify_page::LIKED).
 const LIKED = 'liked'
-// Spotify's rules: said once on this PC, before the first connection.
+// Spotify's rules: said once on this PC, before its page is first read.
 const AGREED = 'spotify-rules-read'
 
 const agreed = () => {
@@ -30,28 +31,64 @@ const remember = () => {
   }
 }
 
-type Step = 'rules' | 'sign-in' | 'reading' | 'pick'
+type Step = 'export' | 'rules' | 'sign-in' | 'reading' | 'pick'
 
 /**
- * Connect Spotify: any free account, private playlists and Liked Songs. The user signs in on Spotify's page, ticks lists
- * here, the import runs in a toast. Rust reads the page (src-tauri/src/spotify_web.rs).
+ * Spotify's playlists and Liked Songs, private ones too, any account. First way: Exportify's page in a window (official
+ * API, its file comes back by itself, src-tauri/src/spotify_export.rs). Second way, for when it's gone: Spotify's own page
+ * read (against its rules, the dialog says so; src-tauri/src/spotify_web.rs). Lists are ticked here, imported in a toast.
  */
 export function SpotifyConnect() {
   const [step, setStep] = useState<Step>()
   const [lists, setLists] = useState<SpotifyList[]>([])
   const [off, setOff] = useState<string[]>([])
+  const [fromPage, setFromPage] = useState(false)
 
   const close = () => {
     setStep(undefined)
     void api.spotifyWebClose().catch(() => {})
+    void api.spotifyExportClose().catch(() => {})
+  }
+  const fail = (e: unknown) => {
+    close()
+    useStore.setState({ error: String(e) })
+  }
+  const pick = (found: SpotifyList[]) => {
+    setLists(found.map((l) => (l.id === LIKED ? { ...l, name: tr('Liked Songs') } : l)))
+    setOff([])
+    setStep('pick')
+  }
+  const exportify = () => {
+    setFromPage(false)
+    setStep('export')
+    api.spotifyExportOpen().catch(fail)
+  }
+  const openFile = async () => {
+    const file = await open({ filters: [{ name: tr('Spotify export'), extensions: ['zip', 'csv'] }] })
+    if (typeof file !== 'string') return
+    void api.spotifyExportClose().catch(() => {})
+    setFromPage(false)
+    api.spotifyExportFile(file).then(pick, fail)
   }
   const signIn = () => {
     setStep('sign-in')
-    api.spotifyWebOpen().catch((e) => {
-      setStep(undefined)
-      useStore.setState({ error: String(e) })
-    })
+    api.spotifyWebOpen().catch(fail)
   }
+  const readPage = () => {
+    void api.spotifyExportClose().catch(() => {})
+    setFromPage(true)
+    if (agreed()) signIn()
+    else setStep('rules')
+  }
+
+  useEffect(() => {
+    if (step !== 'export') return
+    const off = api.onSpotifyExport(({ lists: found, error }) => {
+      if (error) fail(error)
+      else pick(found)
+    })
+    return () => void off.then((f) => f())
+  }, [step])
 
   // The session cookie is the sign-in's end (the window stays: it reads next).
   useEffect(() => {
@@ -67,15 +104,10 @@ export function SpotifyConnect() {
     let live = true
     api.spotifyLists().then(
       (found) => {
-        if (!live) return
-        setLists([{ id: LIKED, name: tr('Liked Songs'), cover: null }, ...found])
-        setOff([])
-        setStep('pick')
+        if (live) pick([{ id: LIKED, name: '', cover: null, songs: null }, ...found])
       },
       (e) => {
-        if (!live) return
-        close()
-        useStore.setState({ error: String(e) })
+        if (live) fail(e)
       },
     )
     return () => {
@@ -85,15 +117,32 @@ export function SpotifyConnect() {
 
   const ticked = lists.filter((l) => !off.includes(l.id))
   const start = () => {
+    const picks = ticked.map((l) => ({ id: l.id, name: l.name }))
     setStep(undefined)
-    void useStore.getState().importSpotifyLists(ticked.map((l) => ({ id: l.id, name: l.name })))
+    void useStore.getState().importSpotifyLists(() => (fromPage ? api.spotifyImport(picks) : api.spotifyExportImport(picks)))
   }
 
   return (
     <Card icon={SpotifyLogo} title={tr('Connect Spotify')} sub={tr('Import your playlists and Liked Songs, private ones too, with any free account.')}>
-      <Button className="mt-auto self-start" onClick={() => (agreed() ? signIn() : setStep('rules'))}>
+      <Button className="mt-auto self-start" onClick={exportify}>
         {tr('Connect')}
       </Button>
+      {step === 'export' && (
+        <Dialog title={tr('Connect Spotify')} onClose={close}>
+          <p className="text-sm text-ink-2">{tr('Exportify, a free open-source tool, opens in a window. Sign in on Spotify’s own page, accept, then export all your lists: the rest happens by itself.')}</p>
+          <p role="status" className="text-sm text-ink-3">
+            {tr('Waiting for your lists…')}
+          </p>
+          <div className="flex flex-wrap justify-end gap-2">
+            <Button variant="ghost" onClick={readPage}>
+              {tr('Read Spotify’s page instead')}
+            </Button>
+            <Button variant="ghost" onClick={() => void openFile()}>
+              {tr('Open a file…')}
+            </Button>
+          </div>
+        </Dialog>
+      )}
       {step === 'rules' && (
         <Dialog title={tr('Before you connect')} onClose={close}>
           <p className="text-sm text-ink-2">{tr('Legato opens Spotify’s own page and reads your lists as they appear on it. Your password stays with Spotify, and each song is then found on YouTube.')}</p>
@@ -129,6 +178,7 @@ export function SpotifyConnect() {
                   <input type="checkbox" className="size-3.5 accent-ink" checked={!off.includes(l.id)} onChange={(e) => setOff(e.target.checked ? off.filter((id) => id !== l.id) : [...off, l.id])} />
                   <Cover title={l.name} art={l.cover ? [remoteArt(l.cover)] : []} size={32} />
                   <span className="min-w-0 flex-1 truncate text-[0.8125rem]">{l.name}</span>
+                  {l.songs !== null && <span className="text-xs text-ink-3">{trn(l.songs, '{n} song', '{n} songs')}</span>}
                 </label>
               </li>
             ))}

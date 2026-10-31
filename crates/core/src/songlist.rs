@@ -53,7 +53,7 @@ fn csv(text: &str) -> Option<Vec<Wanted>> {
 }
 
 /// One CSV row: separator outside quotes, "" = a quote inside.
-fn cells(line: &str, sep: char) -> Vec<String> {
+pub(crate) fn cells(line: &str, sep: char) -> Vec<String> {
     let mut out = vec![String::new()];
     let mut quoted = false;
     let mut chars = line.chars().peekable();

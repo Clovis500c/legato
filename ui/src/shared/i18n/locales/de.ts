@@ -1604,6 +1604,10 @@ const de: Record<string, string> = {
   'Visualizer full screen on / off': 'Visualisierung im Vollbild ein / aus',
   '← → move the lyrics · Esc leaves': '← → Songtext verschieben · Esc beendet',
   // Connect Spotify
+  'Exportify, a free open-source tool, opens in a window. Sign in on Spotify’s own page, accept, then export all your lists: the rest happens by itself.': 'Exportify, ein kostenloses Open-Source-Tool, öffnet sich in einem Fenster. Melde dich auf Spotifys eigener Seite an, stimme zu und exportiere alle deine Listen: Der Rest geschieht von selbst.',
+  'Waiting for your lists…': 'Warten auf deine Listen…',
+  'Read Spotify’s page instead': 'Stattdessen Spotifys Seite lesen',
+  'Spotify export': 'Spotify-Export',
   'Connect Spotify': 'Spotify verbinden',
   'Import your playlists and Liked Songs, private ones too, with any free account.': 'Importiere deine Playlists und Lieblingssongs, auch private, mit jedem kostenlosen Konto.',
   'Before you connect': 'Bevor du verbindest',

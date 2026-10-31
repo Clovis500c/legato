@@ -1604,6 +1604,10 @@ const ru: Record<string, string> = {
   'Visualizer full screen on / off': 'Визуализатор на весь экран вкл. / выкл.',
   '← → move the lyrics · Esc leaves': '← → сдвинуть текст · Esc — выход',
   // Connect Spotify
+  'Exportify, a free open-source tool, opens in a window. Sign in on Spotify’s own page, accept, then export all your lists: the rest happens by itself.': 'Exportify, бесплатный инструмент с открытым кодом, откроется в окне. Войдите на странице Spotify, согласитесь и экспортируйте все списки: остальное произойдёт само.',
+  'Waiting for your lists…': 'Ожидание ваших списков…',
+  'Read Spotify’s page instead': 'Вместо этого прочитать страницу Spotify',
+  'Spotify export': 'Экспорт Spotify',
   'Connect Spotify': 'Подключить Spotify',
   'Import your playlists and Liked Songs, private ones too, with any free account.': 'Импортируйте плейлисты и Любимые треки, даже приватные, с любого бесплатного аккаунта.',
   'Before you connect': 'Перед подключением',

@@ -103,14 +103,15 @@ async fn songs(app: &AppHandle, id: &str, mut read: impl FnMut(usize, usize)) ->
     }
 }
 
-/// A playlist of the signed-in user, as Spotify's column shows it.
+/// A list to tick. Song count: Exportify's files give it, Spotify's column doesn't.
 #[derive(Debug, Clone, Serialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export)]
 pub struct SpotifyList {
-    id: String,
-    name: String,
-    cover: Option<String>,
+    pub id: String,
+    pub name: String,
+    pub cover: Option<String>,
+    pub songs: Option<u32>,
 }
 
 /// The playlists in the signed-in user's library. Liked Songs isn't one: the interface adds it.
@@ -121,7 +122,7 @@ pub async fn spotify_lists(app: AppHandle) -> CmdResult<Vec<SpotifyList>> {
         let mut all = Vec::new();
         loop {
             match next(&mut rx).await? {
-                Message::Lists(lists) => all.extend(lists.into_iter().map(|l| SpotifyList { id: l.id, name: l.name, cover: l.cover })),
+                Message::Lists(lists) => all.extend(lists.into_iter().map(|l| SpotifyList { id: l.id, name: l.name, cover: l.cover, songs: None })),
                 Message::Done => return anyhow::Ok(all),
                 _ => {}
             }
@@ -134,8 +135,8 @@ pub async fn spotify_lists(app: AppHandle) -> CmdResult<Vec<SpotifyList>> {
 #[derive(Debug, Deserialize, ts_rs::TS)]
 #[ts(export)]
 pub struct SpotifyPick {
-    id: String,
-    name: String,
+    pub id: String,
+    pub name: String,
 }
 
 #[derive(Serialize, ts_rs::TS)]
@@ -143,27 +144,27 @@ pub struct SpotifyPick {
 #[ts(export)]
 pub struct SpotifyLibraryImport {
     /// The first list saved, to open.
-    playlist_id: Option<i64>,
-    lists: usize,
-    songs: usize,
+    pub playlist_id: Option<i64>,
+    pub lists: usize,
+    pub songs: usize,
     /// Of those, the ones with a YouTube version (they play in full).
-    playable: usize,
+    pub playable: usize,
     /// Lists that couldn't be read or held no songs.
-    failed: Vec<String>,
+    pub failed: Vec<String>,
 }
 
 #[derive(Clone, Serialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export)]
 pub struct SpotifyProgress {
-    name: String,
+    pub name: String,
     /// This list's place among the picked ones, from 1.
-    list: usize,
-    lists: usize,
+    pub list: usize,
+    pub lists: usize,
     /// False: reading Spotify's page. True: finding the songs on YouTube.
-    matching: bool,
-    done: usize,
-    total: usize,
+    pub matching: bool,
+    pub done: usize,
+    pub total: usize,
 }
 
 /// The ticked lists → imported playlists, each song with its YouTube version. Same ids as a Spotify link's import, so a

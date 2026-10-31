@@ -415,8 +415,19 @@ via the Web API Player endpoints. Audio comes out of the Spotify app; we only se
 - (b) Reading playlists and Liked Songs through the session's token: **never**. The web player's access token comes from
   `/api/token` with a TOTP whose secret is hidden in the player's code; getting it means rebuilding that scheme (defeating a
   technical protection) or capturing the token the official player fetches.
-- **Connect Spotify** (user's choice 2026-10-31, Add music, `ui/src/features/add/SpotifyConnect.tsx`): any free account,
-  private playlists and Liked Songs. No token and no request of ours: the window opens on Spotify's sign-in page,
+- **Connect Spotify** (Add music, `ui/src/features/add/SpotifyConnect.tsx`, user's ask 2026-10-31: any free account, private
+  playlists and Liked Songs, instant, no risk to the account). First way, **Exportify** (`src-tauri/src/spotify_export.rs`,
+  `crates/core/src/spotify_export.rs`): its page (exportify.app, open source, not ours) in an app window with no IPC and
+  nothing injected; the user consents on Spotify's page and exports; it reads the official Web API in the page and makes a
+  ZIP of CSVs, one per list, `liked.csv` for Liked Songs. Tauri's `on_download` puts the file in the cache, it is read and
+  deleted, the user ticks lists. Header in the browser's language, same columns in each, so read by position. A file the
+  user already has opens the same way. The same list imported again replaces its copy (id: the file's name).
+  **Why not our own copy of it:** the code is the easy part, Legato already has PKCE. What it has is a key that serves
+  everybody. A new app is in Development Mode (Premium owner, 5 allowlisted users), and extended quota is only for
+  organizations with 250k monthly users. Its key can't be reused either: Spotify only redirects to the addresses registered
+  for it, and passing as another app isn't ours to do. If exportify.app goes, the second way stays.
+- Second way, **Spotify's page read** (user's choice 2026-10-31), behind "Read Spotify's page instead". No token and no
+  request of ours: the window opens on Spotify's sign-in page,
   `crates/shield/src/spotify.js` (injected in that window only) reads the rows the page draws and posts them on WebView2's message channel; `crates/connectors/src/spotify_page.rs` checks sender, shape and
   sizes. The window stays on top while reading (Chromium stops drawing a hidden window). Each song then goes through
   `with_youtube`, like a link import, and the list is saved under the same id, so a second import refreshes it. Cancel

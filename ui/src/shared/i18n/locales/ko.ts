@@ -1604,6 +1604,10 @@ const ko: Record<string, string> = {
   'Visualizer full screen on / off': '비주얼라이저 전체 화면 켜기 / 끄기',
   '← → move the lyrics · Esc leaves': '← → 가사 이동 · Esc로 나가기',
   // Connect Spotify
+  'Exportify, a free open-source tool, opens in a window. Sign in on Spotify’s own page, accept, then export all your lists: the rest happens by itself.': '무료 오픈 소스 도구 Exportify가 창으로 열립니다. Spotify 공식 페이지에서 로그인하고 동의한 다음 모든 목록을 내보내세요. 나머지는 자동으로 진행됩니다.',
+  'Waiting for your lists…': '목록을 기다리는 중…',
+  'Read Spotify’s page instead': '대신 Spotify 페이지 읽기',
+  'Spotify export': 'Spotify 내보내기',
   'Connect Spotify': 'Spotify 연결',
   'Import your playlists and Liked Songs, private ones too, with any free account.': '무료 계정으로도 비공개를 포함한 플레이리스트와 좋아요 표시한 곡을 가져옵니다.',
   'Before you connect': '연결하기 전에',

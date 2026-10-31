@@ -62,12 +62,14 @@ What the services allow, read on 2026-10-31 (specs in [ideas/catch-up.md](ideas/
       Liked Songs, 244 of 244 read, Cancel, a second import).
 - [ ] `S` Connect Spotify, not tried yet: playlists inside a library folder, a collapsed library column, an expired
       session, the window covering Legato while it reads (Cancel in the toast may be behind it), a list with local files.
-- [ ] `M` Spotify, instant and no scraping (user's ask 2026-10-31): [Exportify](https://github.com/watsonbox/exportify) reads a
-      user's own lists with the official API after Spotify's own consent page, in the browser (open source, MIT, no server),
-      Liked Songs included, into one CSV per list. Legato reads those files in any Exportify language. Left: one real try
-      with a free account (it may have been hit by the 2026 API rules: not confirmed either way), then one button that
-      opens it in an app window and takes the ZIP in by itself, each file a playlist under its name. Limits to lift:
-      `MAX_TEXT` 1 MB (about 2000 rows), a ZIP, several artists in one cell (the file will show how).
+- [ ] `M` Spotify, instant and no scraping (user's ask 2026-10-31): Connect Spotify opens
+      [Exportify](https://github.com/watsonbox/exportify) in an app window (official API after Spotify's consent page, in the
+      browser, open source), takes its ZIP in by itself, lists to tick (`docs/playback.md`, why not our own copy too).
+      Read on the user's real export (21 lists, 2142 songs), one list imported. Spotify's page stays as the second way.
+      Left: the first real catch of the file in the window (`on_download`, a blob: address); today only a file opened by hand.
+- [ ] `S` Exportify's file names are lowered, with underscores ("Cool music" for "Cool Music"): a real name needs its
+      playlist column ([exportify#194](https://github.com/watsonbox/exportify/issues/194)) or the first way's names.
+- [ ] `S` Spotify's `spotify_export::list` drops local files (8 in the user's export): keep them as songs to find.
 - [ ] `S` Spotify's "private or doesn't exist" message says what works instead (the routes here).
 - [ ] `S` Playlists in and out as files: M3U / M3U8 / XSPF / CSV import and export (paths for local, links for streams).
 - [ ] `M` Spotify private playlists and Liked Songs by paste, free, no sign-in: Ctrl+A then Ctrl+C in Spotify's desktop app
@@ -320,7 +322,6 @@ Most useful first; the tag is the effort.
       "Legato · Design" (the plugin can't rename files).
 - [ ] SponsorBlock stays off by default (a new third party gets a hash prefix per video, the user opts in): flip the
       default if wanted.
-- [ ] Spotify: try exportify.app with a free account, Export All, and keep the ZIP (it decides the route above).
 - [ ] Spotify: try Ctrl+A, Ctrl+C on a private playlist in the desktop app and paste into Notepad (links, one per line?).
 - [ ] Spotify: ask for the data export (Privacy settings › Download your data); its `Playlist1.json` is the test file.
 

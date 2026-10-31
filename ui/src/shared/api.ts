@@ -1,7 +1,7 @@
 import { Channel, invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 import type { Box } from './artbox'
-import type { AddReport, AlbumInfo, CacheStats, Credentials, DetectInput, Detection, Direction, DiscordStatus, Edit, EditDraft, Effects, ExportReport, FindReport, Heard, ImportReport, LastfmStatus, LibraryChanges, LibraryData, LibraryPlaylist, LibraryTrack, ListImport, LinkImport, ListRef, LiveReport, LiveSettings, Lyrics, LyricsAsk, MediaNow, Merged, Mix, NearbyState, Play, PlayerCommand, PlayerLevels, PlayerStatus, PlaylistEdit, PluginCall, PluginInfo, PluginInspect, Pref, Presence, PushFailed, Scrobble, SearchResults, ShareCode, SharePreview, ShieldStatus, ShortcutEntry, SongTags, Source, SourceStatus, SpotifyCommand, SpotifyImport, SpotifyLibraryImport, SpotifyList, SpotifyPick, SpotifyPlayback, SpotifyProgress, SponsorSegment, SyncOffer, SyncProbe, SyncReport, SyncStatus, SystemAccent, Track, UpdateStatus, WatchCmd, WatchRect, WatchReport, YtmAccount, YtmAccounts, YtmArtist, YtmHome } from './generated'
+import type { AddReport, AlbumInfo, CacheStats, Credentials, DetectInput, Detection, Direction, DiscordStatus, Edit, EditDraft, Effects, ExportReport, FindReport, Heard, ImportReport, LastfmStatus, LibraryChanges, LibraryData, LibraryPlaylist, LibraryTrack, ListImport, LinkImport, ListRef, LiveReport, LiveSettings, Lyrics, LyricsAsk, MediaNow, Merged, Mix, NearbyState, Play, PlayerCommand, PlayerLevels, PlayerStatus, PlaylistEdit, PluginCall, PluginInfo, PluginInspect, Pref, Presence, PushFailed, Scrobble, SearchResults, ShareCode, SharePreview, ShieldStatus, ShortcutEntry, SongTags, Source, SourceStatus, SpotifyCommand, SpotifyExport, SpotifyImport, SpotifyLibraryImport, SpotifyList, SpotifyPick, SpotifyPlayback, SpotifyProgress, SponsorSegment, SyncOffer, SyncProbe, SyncReport, SyncStatus, SystemAccent, Track, UpdateStatus, WatchCmd, WatchRect, WatchReport, YtmAccount, YtmAccounts, YtmArtist, YtmHome } from './generated'
 
 // Every type the commands and events carry is a Rust type: `pnpm types` (ts-rs) writes it into ./generated, never by hand.
 // Re-exported here, so features import them from the api.
@@ -116,6 +116,14 @@ export const api = {
   spotifyLists: () => invoke<SpotifyList[]>('spotify_lists'),
   /** Reads the ticked lists there and imports them. Ended by importLinkStop ("canceled", lists saved so far stay). */
   spotifyImport: (picks: SpotifyPick[]) => invoke<SpotifyLibraryImport>('spotify_import', { picks }),
+  /** Opens Exportify's page; its file comes back on onSpotifyExport. */
+  spotifyExportOpen: () => invoke<void>('spotify_export_open'),
+  /** An Exportify file the user already has: its lists. */
+  spotifyExportFile: (path: string) => invoke<SpotifyList[]>('spotify_export_file', { path }),
+  spotifyExportClose: () => invoke<void>('spotify_export_close'),
+  /** Imports the ticked lists of that file. Ended by importLinkStop ("canceled", lists saved so far stay). */
+  spotifyExportImport: (picks: SpotifyPick[]) => invoke<SpotifyLibraryImport>('spotify_export_import', { picks }),
+  onSpotifyExport: (cb: (r: SpotifyExport) => void) => listen<SpotifyExport>('spotify-export', (e) => cb(e.payload)),
   onSpotifyImport: (cb: (p: SpotifyProgress) => void) => listen<SpotifyProgress>('spotify-import', (e) => cb(e.payload)),
   /** Every account in the Google session + keys of those synced. */
   ytmAccounts: () => invoke<YtmAccounts>('ytm_accounts'),
