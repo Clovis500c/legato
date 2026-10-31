@@ -13,7 +13,7 @@ export const FIXES: [string, string][] = [
   ['Lyrics hidden behind a tab', 'Timed lyrics beside any page, from YouTube Music or LRCLIB.'],
 ]
 
-export type IconName = 'Stack' | 'MagnifyingGlass' | 'PlayCircle' | 'Playlist' | 'Sparkle' | 'SlidersHorizontal' | 'FolderSimple' | 'Devices' | 'Quotes' | 'Palette' | 'PuzzlePiece' | 'Translate'
+export type IconName = 'SealCheck' | 'Feather' | 'Headphones' | 'Stack' | 'MagnifyingGlass' | 'PlayCircle' | 'Playlist' | 'Sparkle' | 'SlidersHorizontal' | 'FolderSimple' | 'Devices' | 'Quotes' | 'Palette' | 'PuzzlePiece' | 'Translate'
 
 export const FEATURES: { icon: IconName; title: string; text: string }[] = [
   { icon: 'Stack', title: 'One library', text: 'The same song on several services is one track, wherever you saved it.' },
@@ -29,6 +29,19 @@ export const FEATURES: { icon: IconName; title: string; text: string }[] = [
   { icon: 'PuzzlePiece', title: 'Add-ons and plugins', text: 'Plugins by others ask for what they need before they can do anything.' },
   { icon: 'Translate', title: '18 languages', text: 'Following Windows, with its media keys, a tray icon and full screen.' },
 ]
+
+// Latest row of docs/performance.md (`pnpm bench`), copied as it is: change these with each new row.
+export const BENCH = { date: '2026-10-31', version: '1.0.0', os: 'Windows 11', pc: 'Ryzen 5 5500, 32 GB', songs: '10 000', ramPaused: '141', ramTray: '54', windowCold: '0.84', paintCold: '1.26' }
+
+export const WHY: { icon: IconName; title: string; text: string }[] = [
+  { icon: 'SealCheck', title: 'Legal', text: "Songs play in the official players: YouTube's own, the Spotify app, and your files in Legato's own. Nothing is downloaded, recorded or extracted." },
+  { icon: 'Feather', title: 'Light', text: `${BENCH.ramPaused} MB of RAM with the app open and paused, ${BENCH.ramTray} MB after 10 minutes in the tray, silent. On a cold start the window shows in ${BENCH.windowCold} s and the first screen is painted at ${BENCH.paintCold} s.` },
+  { icon: 'Devices', title: 'Your PCs in sync', text: 'Sync Mode keeps your library on every PC through a OneDrive folder or your own network. No account of ours, no server.' },
+  { icon: 'Headphones', title: 'Your scrobbles', text: 'What you play, from any source, goes to your Last.fm profile with your own free API key. Off until you connect it.' },
+]
+
+/** Under the cards: where the Light numbers come from. */
+export const WHY_NOTE = `Measured ${BENCH.date} on ${BENCH.os} (${BENCH.pc}), Legato ${BENCH.version}, a library of ${BENCH.songs} songs. RAM is the app and its WebView2 processes together. Other apps were running during the measure, so another PC will differ.`
 
 export const PLAYBACK: [string, string][] = [
   ['YouTube Music and YouTube', "In YouTube's own player, its video in view: in the right panel, or big in Now Playing."],

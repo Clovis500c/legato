@@ -103,7 +103,7 @@ playback (its terms), concerts (an API's terms), trademark search.
   user opts in); Settings › About › Copy diagnostics; nothing sent.
 - **Bench** (done 2026-10-30): `pnpm bench` prints cold start, first paint, RAM after 1 min playing and after 10 min in the
   tray, idle CPU, on 10 000 local songs (a generator, `crates/core/examples/bench_data.rs`, not a folder); numbers kept in
-  `docs/performance.md`. Left: the website quotes them (Why Legato page); YouTube playback isn't measured (it needs the
+  `docs/performance.md`. Left: YouTube playback isn't measured (it needs the
   network); not in CI yet. The release build needs `pnpm notices` once per clone: the bench checks for the file first
   and says so (review fix, 2026-10-30).
 - **E2E smoke** (done 2026-10-30): `pnpm e2e` builds a debug app with the `e2e` cargo feature (own identifier, network on a
@@ -124,8 +124,21 @@ playback (its terms), concerts (an API's terms), trademark search.
   100 songs at most on the page (the toast says when the list is longer). Checked for real against a 153- and a
   200-song Deezer playlist and Apple's editorial and users' playlists (a throwaway caller, not CI). Short links
   (`link.deezer.com`) are tested on a recorded 302 only: no real one was at hand. Details: `docs/playback.md`.
-- **Why Legato page**: a section on the website with the measured numbers and the four differences (legal, light,
-  Sync Mode, Last.fm), in every site language, no competitor named.
+- **Why Legato page** (done 2026-10-31): a section on the website with the 2026-10-31 bench row's numbers and the four differences (legal, light,
+  Sync Mode, Last.fm), no competitor named; the site has one language (English), so one copy. Numbers in `BENCH` of
+  `site/components/content.tsx`: change them with each new row of `docs/performance.md` (the README line too). Not
+  deployed: Pages deploys from master only.
+- **Cover cache cap and thumbnails** (done 2026-10-31): the `art/` folder (only the cache writes there; `covers/` with
+  playlist pictures and theme backgrounds is another folder and never pruned) stays under a cap, 500 MB by default
+  (Settings › General › Cover cache: 250 MB to 2 GB, current size, Clear covers; per PC, not synced). Least recently
+  used out down to 80 % of the cap, on a thread of its own at launch (deferred start) and after writes that pass the cap;
+  a file's modified time is touched at most once a day on a read. Lists ask `art://…?s=64|256|600` (`shared/art.ts`
+  `sizedArt`, picked in `Cover` from the drawn size × the screen's density; the big cover and video-bar detection keep
+  the full picture or at least 256): cut once from the cached original on a worker thread, two at a time, kept as
+  `<key>.<size>`, short edge = the size, ratio kept, never enlarged; a failed cut (GIF, WebP) serves the original. Local
+  files' covers are cut in memory only (the file can change). Rules and tests: `crates/core/src/artcache.rs`. Left:
+  WebP and GIF originals are not cut (the `image` crate here has PNG and JPEG only: the hosts send JPEG); the
+  10 000-song scroll was not measured in the running app, only tested in Rust.
 - **Visualizer v2 first cut**: 1/6-octave bands at 60 Hz from both twins (tests: a sine lights its band in Rust and JS
   alike), one canvas renderer, four looks (LED bars with peaks, radial around the cover, VU needles, spectrogram), full
   screen on F, under 3 % CPU on the bench PC, reduced motion respected.
@@ -144,7 +157,7 @@ playback (its terms), concerts (an API's terms), trademark search.
 - [ ] More visualizers (rings, wave, mirrored bars) and a full-screen one.
 
 **2. Beat Riff (things it can't or won't do)**
-- [ ] "Why Legato" on the website: legal, light (measure our RAM and say it), Sync Mode, Last.fm, no telemetry.
+- [x] "Why Legato" on the website: legal, light (measure our RAM and say it), Sync Mode, Last.fm, no telemetry. (done 2026-10-31)
 - [ ] Personal servers: Jellyfin, Navidrome / Subsonic, Plex (the user's own music, streamed legally, keychain login).
 - [ ] Cast: DLNA / UPnP speakers and Chromecast for local files and personal servers.
 - [ ] Listen together on the local network: one PC leads, the others follow (Sync Mode's code, no server).
@@ -334,7 +347,7 @@ every session.
 - [ ] Re-renders: profile the player bar, Up next and lyrics at 60 fps (`Progress.tsx`); Zustand selectors everywhere.
 - [ ] Library at scale: 50 000 songs, check every query with `EXPLAIN QUERY PLAN` (indexes for artist, album,
       plays, likes), search with FTS5, scans in the background with progress.
-- [ ] Cover cache: size cap with least-recently-used eviction, thumbnails at the sizes we show (no full images in lists).
+- [x] Cover cache: size cap with least-recently-used eviction, thumbnails at the sizes we show (no full images in lists). (done 2026-10-31: cap 500 MB, a setting; `?s=64/256/600`; `crates/core/src/artcache.rs`)
 - [ ] YouTube embeds: one player reused instead of one per song where the crossfade allows; unload the hidden one.
 - [ ] Tray mode: measure what's left (WebView2 suspended?), drop it further if the page can be unloaded and restored.
 - [x] Startup: plugins, the update and Sync Mode rounds, Discord, Last.fm start after the UI's ready signal (or 8 s). Left, on purpose:

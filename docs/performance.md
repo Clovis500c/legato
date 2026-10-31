@@ -2,7 +2,7 @@
 
 What Legato costs on a 10 000-song library: how long it takes to start, how much memory it holds and how much CPU it
 uses doing nothing. `pnpm bench` measures it on the release build and adds one row to the table at the end of this
-page; the website quotes the latest row. Compare rows from the same PC only.
+page; the website and the README quote the latest row (`BENCH` in `site/components/content.tsx`: change it with each new row). Compare rows from the same PC only.
 
 ## Running it
 

@@ -1,7 +1,7 @@
 import { FIXES, GITHUB, PLAYBACK, PRIVACY, SERVICES, STEPS } from '@/components/content'
 import { Header } from '@/components/Header'
 import { Hero, Shot } from '@/components/Hero'
-import { Block, Faq, Features, Rows, Split, Steps } from '@/components/Sections'
+import { Block, Faq, Features, Rows, Split, Steps, Why } from '@/components/Sections'
 
 /** The website: what the README and the user docs used to say, on one page (docs/ keeps the developer side). */
 export default function Home() {
@@ -14,6 +14,9 @@ export default function Home() {
         <Split id="fixes" title="What listeners keep asking the big apps for" intro="Collected from Spotify's community forum, YouTube Music reviews and press coverage of their redesigns. Each line is something Legato does today.">
           <Rows head={['The complaint', 'In Legato']} rows={FIXES} />
         </Split>
+        <Block id="why" title="Why Legato" intro="Four things you can check for yourself.">
+          <Why />
+        </Block>
         <Block id="features" title="One app for all of it" intro="Everything below works the same whatever the song comes from.">
           <Features />
         </Block>

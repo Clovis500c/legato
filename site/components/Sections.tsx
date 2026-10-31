@@ -1,12 +1,12 @@
 'use client'
 
-import { Devices, FolderSimple, MagnifyingGlass, Palette, PlayCircle, Playlist, Plus, PuzzlePiece, Quotes, SlidersHorizontal, Sparkle, Stack, Translate } from '@phosphor-icons/react'
+import { Devices, Feather, FolderSimple, Headphones, MagnifyingGlass, Palette, PlayCircle, Playlist, Plus, PuzzlePiece, Quotes, SealCheck, SlidersHorizontal, Sparkle, Stack, Translate } from '@phosphor-icons/react'
 import { AnimatePresence, motion } from 'motion/react'
 import { useState, type ReactNode } from 'react'
-import { FAQ, FEATURES, type IconName } from './content'
+import { FAQ, FEATURES, GITHUB, WHY, WHY_NOTE, type IconName } from './content'
 import { EASE, group, inView, item, Reveal } from './motion'
 
-const ICONS: Record<IconName, typeof Stack> = { Stack, MagnifyingGlass, PlayCircle, Playlist, Sparkle, SlidersHorizontal, FolderSimple, Devices, Quotes, Palette, PuzzlePiece, Translate }
+const ICONS: Record<IconName, typeof Stack> = { SealCheck, Feather, Headphones, Stack, MagnifyingGlass, PlayCircle, Playlist, Sparkle, SlidersHorizontal, FolderSimple, Devices, Quotes, Palette, PuzzlePiece, Translate }
 
 const h2 = 'text-[clamp(26px,2.6vw,32px)] leading-tight font-bold tracking-[-0.01em]'
 const section = 'mx-auto max-w-[1440px] px-(--pad) py-[clamp(56px,8vw,104px)]'
@@ -67,11 +67,11 @@ export function Rows({ head, caption, rows }: { head?: [string, string]; caption
   )
 }
 
-/** One card per feature, the app's own icons; the icon turns a little under the pointer. */
-export function Features() {
+/** Cards in a grid, the app's own icons; the icon turns a little under the pointer. */
+function Cards({ list, grid }: { list: { icon: IconName; title: string; text: string }[]; grid: string }) {
   return (
-    <motion.ul {...inView} variants={group} className="grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] gap-3">
-      {FEATURES.map(({ icon, title, text }) => {
+    <motion.ul {...inView} variants={group} className={`grid gap-3 ${grid}`}>
+      {list.map(({ icon, title, text }) => {
         const Icon = ICONS[icon]
         return (
           <motion.li key={title} variants={item} whileHover={{ y: -4 }} className="group flex flex-col gap-2 rounded-lg bg-panel p-6 transition-colors duration-200 hover:bg-raised">
@@ -84,6 +84,29 @@ export function Features() {
         )
       })}
     </motion.ul>
+  )
+}
+
+/** One card per feature. */
+export function Features() {
+  return <Cards list={FEATURES} grid="grid-cols-[repeat(auto-fill,minmax(260px,1fr))]" />
+}
+
+/** The four differences, and under them where the numbers come from. */
+export function Why() {
+  return (
+    <>
+      <Cards list={WHY} grid="grid-cols-[repeat(auto-fill,minmax(260px,1fr))]" />
+      <Reveal>
+        <p className="mt-5 max-w-[860px] text-[13px] text-ink-3">
+          {WHY_NOTE}{' '}
+          <a href={`${GITHUB}/blob/master/docs/performance.md`} className="underline decoration-line underline-offset-4 hover:text-ink hover:decoration-ink">
+            All the measures
+          </a>
+          .
+        </p>
+      </Reveal>
+    </>
   )
 }
 
