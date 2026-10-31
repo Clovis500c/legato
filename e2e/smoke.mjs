@@ -90,7 +90,7 @@ export const flat = (s) => String(s).replace(/\s+/g, ' ').trim()
 /** The pictures the walk takes (`shot`) and its steps (`step`, named in FAIL-<step>.png): e2e.test.ts keeps both lists equal
  *  to the walk's own calls. */
 export const SHOTS = ['1-welcome', '2-library', '3-songs', '4-playing', '5-search', '5-imported', '6-settings', '7-relaunch']
-export const STEPS = ['launch', 'welcome', 'songs', 'play', 'pause-play', 'search', 'links', 'quit', 'relaunch']
+export const STEPS = ['launch', 'welcome', 'songs', 'play', 'pause-play', 'karaoke', 'search', 'links', 'quit', 'relaunch']
 
 /** What the app's log says started its deferred work (src-tauri/src/deferred.rs), once per launch. */
 export const DEFERRED_BY = { ready: 'deferred start by the UI ready signal', timer: 'deferred start by the timer' }
@@ -458,6 +458,22 @@ async function walk(o, dataDirs) {
       await sleep(1500)
       const later = await page.status()
       if (later.positionMs < back.positionMs + 800) throw new Error(`the song did not play on after Play: ${back.positionMs} to ${later.positionMs}`)
+    })
+
+    // The mock has no lyrics: the screen opens full window with its calm message, and Esc brings the page back.
+    await step('karaoke', async () => {
+      const key = (code) => page.cdp.evaluate(`window.dispatchEvent(new KeyboardEvent('keydown', { code: ${JSON.stringify(code)}, bubbles: true, cancelable: true }))`)
+      const open = "document.querySelector('[role=dialog][aria-label=Karaoke]')"
+      await key('KeyK')
+      await page.cdp.waitFor(`${open} && ${open}.innerText.includes('No lyrics found')`, { timeout: 15000 }).catch(() => {
+        throw new Error('K did not open Karaoke with its message')
+      })
+      await key('Escape')
+      await page.cdp.waitFor(`!${open}`, { timeout: 5000 }).catch(() => {
+        throw new Error('Esc did not close Karaoke')
+      })
+      // The window comes back out of full screen before the walk goes on.
+      await sleep(800)
     })
 
     await step('search', async () => {
