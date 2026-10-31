@@ -5,6 +5,25 @@ code), then [plan-v2.md](plan-v2.md) (open work). Rewrite it when a branch or th
 
 Written 2026-10-31.
 
+## Autonomous run (the owner's ask, 2026-10-31 evening)
+
+The owner left the PC running and asked for as much of the plan as possible, without stopping, resuming by itself after
+the usage limits reset. A recurring job in the Claude session wakes it every 30 minutes when idle (session-only, gone
+if the app closes, expires after 7 days). Rules on top of `CLAUDE.md`:
+
+- Local commits on `platforms` only, one tested step each (`pnpm check` green). No push, no PR, no merge.
+- Nothing that needs a real account, a sign-in, a bulk real search or the owner's ear: those lines wait in
+  [plan-v2.md](plan-v2.md) › Check live in the real app.
+- No subagents, no workflows. Graph first (`graphify query`), `graphify update .` after code changes.
+- Each line ticked as it lands, with what wasn't tried for real; this file says what's next.
+
+Order: the plan's Platforms lines that need no account, then quick wins from Features › High, Optimisation and
+Workflow, then milestone 4 (Lyrics).
+
+Done in this run (newest last):
+
+- (nothing yet)
+
 ## Branches
 
 | Branch | State | Next |
@@ -24,11 +43,16 @@ Done and tried on the owner's real account in the dev app:
   in a dialog.
 - An import of 21 lists and 2142 songs: lists saved first, songs the library knows not searched, an import screen.
 
-Done, tested on simulated events and `pnpm check` only, never on a real run:
+Done, tested on simulated events, a public page or `pnpm check` only, never on a real run:
 
 - The screen's line for the time left and its line for YouTube's limit, with the countdown.
 - `searchpace::Line`, one search settling the other songs it brought back. Its gain isn't measured.
 - Search again on the Songs not found page, and an import giving up after 15 minutes refused.
+- Karaoke (K) no longer crashes the YouTube player (a hook skipped in `PlayerBar.tsx`, found from 1.1.479's report).
+- A Legato link carries its videos named (share code version 2): no oEmbed, no search for them.
+- A Google refusal during a sync stops that account in one line; YouTube Music every 15 minutes, off by default,
+  offered at sign-in.
+- Connect Apple Music (Apple's page read like Spotify's, against Apple's terms, said first).
 
 Known facts for whoever tests it:
 
@@ -38,10 +62,10 @@ Known facts for whoever tests it:
 
 ## Next
 
-1. The owner runs a real import on the current code. Read the `YouTube refused searches` line of `diagnostics.log` (it
-   gives refused and answered counts) to judge `Line`, then update the plan's lines. The real `diagnostics.log` is not the
-   one your tools see: [development.md](../development.md) › Two dev libraries.
-2. The open lines of [plan-v2.md](plan-v2.md) › Platforms, top down.
+1. The owner tries what waits in [plan-v2.md](plan-v2.md) › Check live in the real app, Connect Apple Music first, and a
+   real import: the `YouTube refused searches` line of `diagnostics.log` (refused and answered counts) judges `Line`. The
+   real `diagnostics.log` is not the one your tools see: [development.md](../development.md) › Two dev libraries.
+2. The open lines of [plan-v2.md](plan-v2.md), in the autonomous run's order above.
 3. When the owner calls the milestone done: `platforms` into master, try the Beta, `promote`, then the site.
 
 ## On this PC

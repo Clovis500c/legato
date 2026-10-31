@@ -333,6 +333,12 @@ Most useful first; the tag is the effort.
 
 ## Check live in the real app (built and unit-tested, never driven for real)
 
+- [ ] Connect Apple Music on the owner's account (the owner's ask to keep it in mind, 2026-10-31): All Playlists read with
+      covers, a long library playlist and Favorite Songs read to their end, the `media-user-token` cookie ending the
+      sign-in step, a second import updating the lists. If it breaks, `apple.js`'s selectors are the first suspect (only a
+      public playlist page was seen).
+- [ ] YouTube Music every 15 minutes: offered after a Google sign-in, runs while the app is open, silent on a refusal.
+- [ ] A Legato link between two PCs: its videos come in named, no search.
 - [ ] "No sound could be taken" gone from the second YouTube video on (fix 51946d5).
 - [ ] A real update from 0.1 (user's PC): Legato installed, old folder and its shortcuts gone, library, sign-ins and Open
       at startup still there.
