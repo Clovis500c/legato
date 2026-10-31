@@ -94,7 +94,7 @@ function ImportCode() {
   )
 }
 
-/** Songs from anywhere (SoundCloud, Deezer, a friend's list): pasted in a dialog or from a .txt / .csv file, found on YouTube. */
+/** Songs from anywhere (SoundCloud, Deezer, a friend's list): pasted in a dialog or from a .txt / .csv / playlist file, found on YouTube. */
 function ImportList() {
   const [shown, setShown] = useState(false)
   const [text, setText] = useState('')
@@ -110,11 +110,11 @@ function ImportList() {
     }
   }
   const openFile = async () => {
-    const file = await open({ filters: [{ name: tr('Song lists'), extensions: ['txt', 'csv', 'tsv'] }] })
+    const file = await open({ filters: [{ name: tr('Song lists'), extensions: ['txt', 'csv', 'tsv', 'm3u', 'm3u8', 'xspf'] }] })
     if (typeof file === 'string') void run(file)
   }
   return (
-    <Card icon={ListPlus} title={tr('Import a list of songs')} sub={tr('One song per line, from SoundCloud, Deezer or anywhere: each is found on YouTube.')}>
+    <Card icon={ListPlus} title={tr('Import a list of songs')} sub={tr('One song per line from SoundCloud, Deezer or anywhere, or an M3U / XSPF playlist file. Songs not in your library are found on YouTube.')}>
       <span className="mt-auto flex flex-wrap gap-2">
         <Button disabled={busy} onClick={() => setShown(true)}>
           {busy ? tr('Importing…') : tr('Paste a list')}

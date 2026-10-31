@@ -9,6 +9,7 @@ pub mod history;
 pub mod matching;
 pub mod mixes;
 pub mod musicness;
+pub mod playfile;
 pub mod model;
 pub mod search;
 pub mod searchpace;

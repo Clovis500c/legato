@@ -108,6 +108,8 @@ export const api = {
   onImportProgress: (cb: (done: number, total: number) => void) => listen<[number, number]>('import-progress', (e) => cb(e.payload[0], e.payload[1])),
   /** Add › Import a list of songs: text or a .txt / .csv file, each song found on YouTube, a playlist of the ones found. */
   importSongList: (name: string, text: string | null, path: string | null) => invoke<ListImport>('import_song_list', { name, text, path }),
+  /** M3U / M3U8, XSPF or CSV by the extension of `path` (a file the user picked). */
+  exportPlaylistFile: (playlistId: number, path: string) => invoke<void>('export_playlist_file', { playlistId, path }),
   /** Spotify's own web player in an app window (prototype). */
   spotifyWebOpen: () => invoke<void>('spotify_web_open'),
   /** Signed in to the Spotify web player. */

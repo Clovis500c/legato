@@ -115,7 +115,10 @@ What the services allow, read on 2026-10-31 (specs in [ideas/catch-up.md](ideas/
       `connectors::apple_page`, shell `apple_web.rs`), ticked, then the import screen. No developer account, no token.
       Song rows checked on a public playlist page; the signed-in pages (All Playlists, a library playlist) and the
       media-user-token cookie not seen yet: needs the user's account.
-- [ ] `S` Playlists in and out as files: M3U / M3U8 / XSPF / CSV import and export (paths for local, links for streams).
+- [x] `S` Playlists in and out as files: M3U / M3U8 / XSPF / CSV import and export (paths for local, links for streams).
+      In: Add music › Import a list of songs › Open a file (`music_core::playfile`): a library file comes as it is, a
+      YouTube link with names too (without: oEmbed), the rest searched by name; the list's own name kept. Out: a
+      playlist's menu › Save as file. Not tried in the real app yet (a foobar2000 / VLC / MusicBee file is the test).
 - [ ] `M` Spotify private playlists and Liked Songs by paste, free, no sign-in: Ctrl+A then Ctrl+C in Spotify's desktop app
       copies `open.spotify.com/track/…` lines (a Spotify community moderator's guide; try it on the user's PC first).
       Legato takes those lines in Add music, names each song from its public embed page (title, artists, duration: checked

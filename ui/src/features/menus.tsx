@@ -117,6 +117,22 @@ async function saveCover(t: LibraryTrack) {
 
 const saveCoverItem = (t: LibraryTrack) => bigTrackArt(t).length > 0 && { label: tr('Save cover…'), icon: <DownloadSimple size={16} />, onSelect: () => void saveCover(t).catch(fail) }
 
+/** A playlist as an M3U8 / XSPF / CSV file: local songs by path, the others by their page. */
+async function savePlaylistFile(p: LibraryPlaylist) {
+  const path = await save({
+    title: tr('Save playlist as a file'),
+    defaultPath: `${fileName(p.name)}.m3u8`,
+    filters: [
+      { name: tr('M3U playlist'), extensions: ['m3u8', 'm3u'] },
+      { name: tr('XSPF playlist'), extensions: ['xspf'] },
+      { name: tr('CSV table'), extensions: ['csv'] },
+    ],
+  })
+  if (!path) return
+  await api.exportPlaylistFile(p.id, path)
+  app().notify(tr('Playlist saved: {file}', { file: path.split(/[\\/]/).pop() ?? '' }))
+}
+
 /** Track page on its service, best first. */
 function pages(t: LibraryTrack): { label: string; url: string }[] {
   return [
@@ -506,6 +522,7 @@ export function playlistMenu(p: LibraryPlaylist): MenuEntry[] {
         onSelect: () => void removePositions(p.id, repeatedRows(app().orders[p.id] ?? [])),
       },
     { label: tr('Copy song list'), icon: <ClipboardText size={16} />, disabled: !p.trackCount, onSelect: () => tracks().then(copyList, fail) },
+    { label: tr('Save as file…'), icon: <DownloadSimple size={16} />, disabled: !p.trackCount, onSelect: () => void savePlaylistFile(p).catch(fail) },
     { label: tr('Copy name'), icon: <Copy size={16} />, onSelect: () => copy(p.name, tr('Name copied')) },
     p.custom && {
       label: tr('Rename…'),
