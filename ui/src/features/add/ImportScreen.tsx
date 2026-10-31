@@ -1,4 +1,4 @@
-import { CheckCircle, ShareNetwork, SpotifyLogo } from '@phosphor-icons/react'
+import { AppleLogo, CheckCircle, ShareNetwork, SpotifyLogo } from '@phosphor-icons/react'
 import { useEffect, useState } from 'react'
 import { useStore } from '../../app/store'
 import { api } from '../../shared/api'
@@ -8,11 +8,11 @@ import { tr, trn } from '../../shared/i18n/i18n'
 import { Button } from '../../shared/ui/Button'
 import { Cover } from '../../shared/ui/Cover'
 import { Dialog } from '../../shared/ui/Dialog'
-import { card, secondsLeft, share, summary, timeLeft, waitLeft, type ImportRun, type Seen } from './importRun'
+import { card, secondsLeft, share, summary, timeLeft, waitLeft, type ImportKind, type ImportRun, type Seen } from './importRun'
 
-function Deck({ seen, shared }: { seen: Seen[]; shared: boolean }) {
+function Deck({ seen, kind }: { seen: Seen[]; kind: ImportKind }) {
   const newest = seen.at(-1)?.seq ?? 0
-  const Icon = shared ? ShareNetwork : SpotifyLogo
+  const Icon = kind === 'shared' ? ShareNetwork : kind === 'apple' ? AppleLogo : SpotifyLogo
   return (
     <div aria-hidden className="relative -mx-6 h-40 overflow-hidden">
       {seen.length === 0 && (
@@ -47,14 +47,14 @@ function Timing({ run }: { run: ImportRun }) {
   )
 }
 
-/** An import (Spotify's lists, a shared list, the songs not found): songs landing one by one, every list counted. Hide leaves a toast and the app free. */
+/** An import (Spotify's or Apple Music's lists, a shared list, the songs not found): songs landing one by one, every list counted. Hide leaves a toast and the app free. */
 export function ImportScreen() {
   const run = useStore((s) => s.importRun)
   const notFound = useStore((s) => s.notFound.length)
   if (!run || run.hidden) return null
   const { hideImport, endImport, go } = useStore.getState()
   const { progress: p, result, kind } = run
-  const importing = kind === 'shared' ? tr('Importing a shared playlist') : tr('Importing from Spotify')
+  const importing = kind === 'shared' ? tr('Importing a shared playlist') : kind === 'apple' ? tr('Importing from Apple Music') : tr('Importing from Spotify')
   const open = () => {
     endImport()
     if (result?.playlistId != null) go({ name: 'playlist', id: result.playlistId })
@@ -69,7 +69,7 @@ export function ImportScreen() {
   const searching = p?.matching && !!p.toSearch
   return (
     <Dialog title={kind === 'again' ? (result ? tr('Search finished') : tr('Searching YouTube')) : result ? tr('Import finished') : importing} onClose={result ? endImport : hideImport}>
-      <Deck seen={run.seen} shared={kind === 'shared'} />
+      <Deck seen={run.seen} kind={kind} />
       {result ? (
         <>
           <p className="flex items-start gap-2 text-sm">

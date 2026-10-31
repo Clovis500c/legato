@@ -105,6 +105,13 @@ What the services allow, read on 2026-10-31 (specs in [ideas/catch-up.md](ideas/
       sender's artist, title and length, taken as is (no oEmbed, no search); version 1 codes still read, QR codes stay ids
       only. Its import runs on the import screen, covers landing; artist + title entries searched at YouTube's pace.
       Not tried between two PCs yet.
+- [x] `S` YouTube Music every 15 minutes (user's ask 2026-10-31): an option, off by default, offered after each Google
+      sign-in and in Settings › Accounts; a refusal from Google waits 30 min, silently. Not tried in the real app yet.
+- [x] `M` Connect Apple Music, like Spotify's page (user's choice 2026-10-31, against Apple's terms: the app says so
+      first): Apple's own page in a window, signed in there, its playlists read (`apple.js`, checked by
+      `connectors::apple_page`, shell `apple_web.rs`), ticked, then the import screen. No developer account, no token.
+      Song rows checked on a public playlist page; the signed-in pages (All Playlists, a library playlist) and the
+      media-user-token cookie not seen yet: needs the user's account.
 - [ ] `S` Playlists in and out as files: M3U / M3U8 / XSPF / CSV import and export (paths for local, links for streams).
 - [ ] `M` Spotify private playlists and Liked Songs by paste, free, no sign-in: Ctrl+A then Ctrl+C in Spotify's desktop app
       copies `open.spotify.com/track/…` lines (a Spotify community moderator's guide; try it on the user's PC first).

@@ -1,13 +1,12 @@
 import { SpotifyLogo } from '@phosphor-icons/react'
 import { useEffect, useState } from 'react'
 import { useStore } from '../../app/store'
-import { api, type ExportTrouble, type SpotifyList } from '../../shared/api'
-import { remoteArt } from '../../shared/art'
-import { msg, tr, trn } from '../../shared/i18n/i18n'
+import { api, type ExportTrouble, type SpotifyList, type SpotifyPick } from '../../shared/api'
+import { msg, tr } from '../../shared/i18n/i18n'
 import { Button } from '../../shared/ui/Button'
-import { Cover } from '../../shared/ui/Cover'
 import { Dialog } from '../../shared/ui/Dialog'
 import { Card } from './Card'
+import { ListPick } from './ListPick'
 
 // Liked Songs has no playlist of its own on Spotify (music_core::spotify_export::LIKED, spotify_page::LIKED).
 const LIKED = 'liked'
@@ -48,7 +47,6 @@ const TROUBLES: Record<Exclude<ExportTrouble, 'closed'>, string> = {
 export function SpotifyImport({ label, className }: { label: string; className?: string }) {
   const [step, setStep] = useState<Step>()
   const [lists, setLists] = useState<SpotifyList[]>([])
-  const [off, setOff] = useState<string[]>([])
   const [trouble, setTrouble] = useState<Exclude<ExportTrouble, 'closed'>>('down')
 
   const close = () => {
@@ -62,7 +60,6 @@ export function SpotifyImport({ label, className }: { label: string; className?:
   }
   const pick = (found: SpotifyList[]) => {
     setLists(found.map((l) => (l.id === LIKED ? { ...l, name: tr('Liked Songs') } : l)))
-    setOff([])
     setStep('pick')
   }
   const exportify = () => {
@@ -122,9 +119,7 @@ export function SpotifyImport({ label, className }: { label: string; className?:
     }
   }, [step])
 
-  const ticked = lists.filter((l) => !off.includes(l.id))
-  const start = () => {
-    const picks = ticked.map((l) => ({ id: l.id, name: l.name }))
+  const start = (picks: SpotifyPick[]) => {
     setStep(undefined)
     void useStore.getState().importSpotifyLists(() => api.spotifyImport(picks))
   }
@@ -185,30 +180,7 @@ export function SpotifyImport({ label, className }: { label: string; className?:
           </p>
         </Dialog>
       )}
-      {step === 'pick' && (
-        <Dialog title={tr('Your Spotify lists')} onClose={close}>
-          <ul className="flex max-h-80 flex-col overflow-y-auto">
-            {lists.map((l) => (
-              <li key={l.id}>
-                <label className="flex items-center gap-3 rounded-md px-2 py-1.5 hover:bg-raised">
-                  <input type="checkbox" className="size-3.5 accent-ink" checked={!off.includes(l.id)} onChange={(e) => setOff(e.target.checked ? off.filter((id) => id !== l.id) : [...off, l.id])} />
-                  <Cover title={l.name} art={l.cover ? [remoteArt(l.cover)] : []} size={32} />
-                  <span className="min-w-0 flex-1 truncate text-[0.8125rem]">{l.name}</span>
-                  {l.songs !== null && <span className="text-xs text-ink-3">{trn(l.songs, '{n} song', '{n} songs')}</span>}
-                </label>
-              </li>
-            ))}
-          </ul>
-          <div className="flex justify-between gap-2">
-            <Button variant="ghost" onClick={() => setOff(ticked.length ? lists.map((l) => l.id) : [])}>
-              {ticked.length ? tr('Clear selection') : tr('Select all')}
-            </Button>
-            <Button disabled={!ticked.length} onClick={start}>
-              {trn(ticked.length, 'Import {n} list', 'Import {n} lists')}
-            </Button>
-          </div>
-        </Dialog>
-      )}
+      {step === 'pick' && <ListPick title={tr('Your Spotify lists')} lists={lists} onClose={close} onStart={start} />}
     </>
   )
 }

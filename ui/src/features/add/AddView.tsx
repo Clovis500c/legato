@@ -11,6 +11,7 @@ import { Dialog } from '../../shared/ui/Dialog'
 import { PageHeader } from '../../shared/ui/PageHeader'
 import { Card } from './Card'
 import { Detector } from './Detector'
+import { AppleConnect } from './AppleConnect'
 import { SpotifyConnect } from './SpotifyConnect'
 
 export const FIELD = 'h-9 min-w-0 rounded-md border border-line bg-raised px-3 text-[0.8125rem] placeholder:text-ink-3'
@@ -188,6 +189,7 @@ export function AddView() {
         <div className="stagger grid grid-cols-[repeat(auto-fit,minmax(280px,1fr))] gap-4">
           <Detector onFound={onFound} />
           <SpotifyConnect />
+          <AppleConnect />
           <ImportList />
           <ImportCode />
           <AddFolder />

@@ -21,12 +21,12 @@ src-tauri/              thin shell: commands, keychain, WebView2 hook, media pan
 | Crate | Role |
 |---|---|
 | `music-core` | Track model, matching (ISRC, then title + artist + duration), SQLite library with versioned migrations, sync, Sync Mode between PCs (snapshot, merge, sealing), local file scan (tags read on a few threads, covers skipped, a rescan reads only files whose size or date changed; missing tags filled from the file name, "01 - Artist - Title", so untagged files link to the same song from other services), listening history and mixes, share codes, search merging and the music / not music classifier, Exportify's files (`spotify_export`), the pace of an import's searches (`searchpace`). No Tauri, no network. |
-| `music-connectors` | One module per service. Shared OAuth PKCE loopback (Spotify), Spotify's public embeds and the messages of Connect Spotify's page, YouTube Music web session, normal YouTube search, iTunes catalog and Apple Music album / playlist links, Deezer playlist / album links (public API), LRCLIB lyrics, SponsorBlock segments (hash prefix, opt-in), AudD song recognition (user's token), Last.fm, Discord IPC, nearby sharing and Sync Mode's network swap (mDNS + SPAKE2), image cache. One HTTP client for all of them (`connectors::http()`: connections and TLS sessions reused; a client per call cost a new connection per request). Base URLs are injectable for tests. |
+| `music-connectors` | One module per service. Shared OAuth PKCE loopback (Spotify), Spotify's public embeds and the messages of Connect Spotify's and Connect Apple Music's pages, YouTube Music web session, normal YouTube search, iTunes catalog and Apple Music album / playlist links, Deezer playlist / album links (public API), LRCLIB lyrics, SponsorBlock segments (hash prefix, opt-in), AudD song recognition (user's token), Last.fm, Discord IPC, nearby sharing and Sync Mode's network swap (mDNS + SPAKE2), image cache. One HTTP client for all of them (`connectors::http()`: connections and TLS sessions reused; a client per call cost a new connection per request). Base URLs are injectable for tests. |
 | `music-player` | Native playback of local files and previews (rodio, symphonia) on its own thread, with a gapless queue, through the live processing chain. Live Editor export of local files (WAV). Music Detector clips from the microphone or what the PC plays (WASAPI loopback), memory only. |
 | `music-dsp` | Live audio processing, pure Rust: biquads, BS.1770 loudness meter, Adaptive Sound gain, limiter, the Live Editor's effects (EQ, compressor, width, echo, reverb, 3D) and speed / tempo / pitch (WSOLA), shared `Control`. |
-| `music-shield` | Ad and tracker blocking with Brave's adblock engine, plus the scripts for the app's web windows: YouTube's player (`live.js` and its neighbours), Spotify's page (`spotify.js`), Exportify's (`exportify.js`). |
+| `music-shield` | Ad and tracker blocking with Brave's adblock engine, plus the scripts for the app's web windows: YouTube's player (`live.js` and its neighbours), Spotify's page (`spotify.js`), Apple Music's (`apple.js`), Exportify's (`exportify.js`). |
 | `music-plugins` | Third-party plugins: one QuickJS runtime per plugin (64 MB, 1 s per run, no DOM, network or files), manifest and permissions checked in Rust, HTTPS gateway to approved public hosts. Author guide: `docs/plugins.md`. |
-| `src-tauri` | IPC commands (`lib.rs`, and per feature: `detector.rs`, `editor.rs`, `themes.rs`, `syncmode.rs`, `plugins.rs`, `links.rs`, `spotify_web.rs`, `spotify_export.rs`), OS keychain, WebView2 request hook, Windows media panel, tray icon, window background, voice search through Windows' speech recognition (`speech.rs`). No business logic. |
+| `src-tauri` | IPC commands (`lib.rs`, and per feature: `detector.rs`, `editor.rs`, `themes.rs`, `syncmode.rs`, `plugins.rs`, `links.rs`, `spotify_web.rs`, `spotify_export.rs`, `apple_web.rs`), OS keychain, WebView2 request hook, Windows media panel, tray icon, window background, voice search through Windows' speech recognition (`speech.rs`). No business logic. |
 
 ## Rules
 
@@ -121,8 +121,8 @@ differs from the commit.
 
 ## Imports
 
-Playlists and likes come in from links (`src-tauri/src/links.rs`), song lists (`songlist.rs`), Connect Spotify and the
-official APIs. Whatever the source, a song has nothing to play until it has a version, and `find_on_youtube` looks for
+Playlists and likes come in from links (`src-tauri/src/links.rs`), song lists (`songlist.rs`), Connect Spotify,
+Connect Apple Music (`apple_web.rs`) and the official APIs. Whatever the source, a song has nothing to play until it has a version, and `find_on_youtube` looks for
 one. Google sets the speed of those unofficial searches: the library is asked first, the lists are saved before any
 search, `music_core::searchpace` paces the rest, and a song truly missing goes in `not_found` instead of being searched
 at every import. Details: [playback.md](playback.md).

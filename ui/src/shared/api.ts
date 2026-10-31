@@ -116,6 +116,14 @@ export const api = {
   spotifyLists: () => invoke<SpotifyList[]>('spotify_lists'),
   /** Reads the ticked lists there and imports them. Ended by importLinkStop ("canceled", lists saved so far stay). */
   spotifyImport: (picks: SpotifyPick[]) => invoke<SpotifyLibraryImport>('spotify_import', { picks }),
+  /** Apple Music's own web player in an app window, on its sign-in sheet when signed out. */
+  appleWebOpen: () => invoke<void>('apple_web_open'),
+  appleWebStatus: () => invoke<boolean>('apple_web_status'),
+  appleWebClose: () => invoke<void>('apple_web_close'),
+  /** The signed-in user's playlists, read from Apple Music's window. */
+  appleLists: () => invoke<SpotifyList[]>('apple_lists'),
+  /** The ticked playlists imported; progress on onSpotifyImport. */
+  appleImport: (picks: SpotifyPick[]) => invoke<SpotifyLibraryImport>('apple_import', { picks }),
   /** Opens Exportify's page; its file comes back on onSpotifyExport. */
   spotifyExportOpen: () => invoke<void>('spotify_export_open'),
   spotifyExportClose: () => invoke<void>('spotify_export_close'),

@@ -54,6 +54,7 @@ export const SETTINGS_INDEX: SettingEntry[] = [
   { section: 'sync', label: 'OneDrive', keywords: msg('sync other pc computer cloud password encrypted backup') },
   { section: 'sync', label: msg('Sync over the network'), keywords: msg('code local wifi other pc computer') },
   { section: 'sources', label: msg('Spotify web player'), keywords: msg('sign in') },
+  { section: 'sources', label: msg('Apple Music'), keywords: msg('apple itunes import playlists favorite songs sign in') },
   { section: 'sources', label: msg('Local files'), keywords: msg('music folder mp3 flac scan') },
   { section: 'shield', label: msg('Block ads and trackers'), keywords: msg('adblock shield easylist privacy') },
   ...ACTIONS.map((a): SettingEntry => ({ section: 'shortcuts', label: a.label, keywords: msg('keyboard shortcut hotkey global background'), extra: a.keys ? comboLabel(a.keys) : undefined })),

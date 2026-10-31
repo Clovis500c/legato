@@ -46,7 +46,7 @@ export const WHY_NOTE = `Measured ${BENCH.date} on ${BENCH.os} (${BENCH.pc}), Le
 export const PLAYBACK: [string, string][] = [
   ['YouTube Music and YouTube', "In YouTube's own player, its video in view: in the right panel, or big in Now Playing."],
   ['Spotify', 'Through the Spotify app (Spotify Connect), with Premium and your own app key. Without either, public playlist links and Connect Spotify bring your lists in, and their songs play from YouTube.'],
-  ['Apple Music', 'Catalog search and 30-second previews, no account. The full song plays from YouTube when the app finds it there.'],
+  ['Apple Music', 'Catalog search and 30-second previews, no account. The full song plays from YouTube when the app finds it there. Connect Apple Music brings your own playlists in.'],
   ['Your files', "The app's own player: gapless, on your PC."],
 ]
 
@@ -57,6 +57,7 @@ export const PRIVACY: [string, string][] = [
   ['Search', "What you search for goes to YouTube, YouTube Music and Apple Music, signed in or not, and to YouTube's suggestions as you type (Settings › General turns them off). Recent searches stay on this PC."],
   ['Connect Spotify', "Only when you use it. Exportify, a free open-source tool that isn't ours, opens at exportify.app in an app window. You sign in and accept on Spotify's own page, and it reads your lists through Spotify's official access and makes a file, which the app takes in and deletes. Exportify keeps its Spotify access in that window's storage, on this PC; you can end it at spotify.com/account/apps. Only titles, artists, lengths and covers are kept, then each song is searched on YouTube. Your Liked Songs join Liked Music: signed in to YouTube Music, those not liked there yet are liked on that account at the next sync, unless it's set not to take changes in Settings › Accounts. Spotify's own direction there, Import only or Off, decides whether Connect Spotify brings anything in, and nothing is ever sent back to Spotify."],
   ['Reading Spotify\'s page', "A second way, only if you choose it: you sign in on Spotify's own page and the app reads your lists as that page shows them. Spotify's rules forbid collecting its data with a tool and allow it to close an account that does, so the app says it first."],
+  ['Connect Apple Music', "Only when you use it: you sign in on Apple Music's own page (music.apple.com) in an app window, and the app reads your playlists as that page shows them. Apple's terms forbid reading its services with an automated tool, so the app says it first. Only titles, artists, albums, lengths and covers are kept, then each song is searched on YouTube; nothing is sent to Apple. Apple's session stays in that window's storage, on this PC."],
   ['Pasted playlist links', 'A public Spotify, Deezer or Apple Music playlist or album link makes the app ask that service for the list: open.spotify.com, api.deezer.com (link.deezer.com for its short links), music.apple.com and itunes.apple.com. No account; only titles, artists, lengths and covers come back, then each song is searched on YouTube. Cover pictures load from the image hosts of those services.'],
   ['Lyrics', "When you open them: YouTube Music's timed lyrics first if you're signed in, then the song's title, artist, album and length go to LRCLIB. Answers stay on your PC."],
   ['Skip non-music parts', "Off until you turn it on. For each YouTube video that plays, the first 4 characters of its id's hash (never the id) go to SponsorBlock, sponsor.ajay.app, to learn the community's marked intros, skits and outros. The answer is kept a week on this PC."],
@@ -71,7 +72,7 @@ export const PRIVACY: [string, string][] = [
 export const SERVICES: [string, string][] = [
   ['YouTube Music', "Sign in with Google, on Google's own page. Several accounts."],
   ['Spotify', "Your own app from the Spotify Developer Dashboard (Premium needed while it's in development mode), or Add music › Connect Spotify, or paste public playlist links."],
-  ['Apple Music', 'Catalog search and 30-second previews, and public playlist or album links, no account.'],
+  ['Apple Music', 'Catalog search and 30-second previews, and public playlist or album links, no account. For your own playlists: Add music › Connect Apple Music.'],
   ['Deezer', 'Paste a public playlist or album link: its songs come in and play from YouTube. No account.'],
   ['Your files', 'Add your music folders; changes in them show up as they happen.'],
 ]

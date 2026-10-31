@@ -4,6 +4,7 @@ import { open } from '@tauri-apps/plugin-dialog'
 import { useEffect, useState } from 'react'
 import { useSettings } from '../../app/settings'
 import { useStore } from '../../app/store'
+import { AppleImport } from '../add/AppleConnect'
 import { SpotifyImport } from '../add/SpotifyConnect'
 import { accountKey, api, type Direction, type YtmAccount } from '../../shared/api'
 import { useGoogleAccounts } from './google'
@@ -131,6 +132,31 @@ function SpotifyWeb() {
 }
 
 /** Last.fm: your own free API key (last.fm/api), then you allow the app on last.fm. Listens go to your profile. */
+/** Apple Music: its own page read for the playlists (Connect Apple Music); nothing plays there. */
+function AppleWeb() {
+  const [on, setOn] = useState<boolean>()
+  useEffect(() => {
+    const check = () => void api.appleWebStatus().then(setOn, () => setOn(false))
+    check()
+    window.addEventListener('focus', check)
+    return () => window.removeEventListener('focus', check)
+  }, [])
+  return (
+    <div data-setting="Apple Music" className="flex items-center gap-4 border-b border-line-soft px-4 py-3.5">
+      <Led on={!!on} />
+      <span className="grid size-9 place-items-center rounded-full border border-line text-ink-2">
+        <SourceIcon source="apple" size={16} />
+      </span>
+      <div className="flex-1">
+        <p className="text-[0.8125rem] font-semibold">{tr('Apple Music')}</p>
+        <p className="text-xs text-ink-2">{tr('Your playlists are read on Apple Music’s own page, signed in there, and their songs play through YouTube.')}</p>
+      </div>
+      <span className="kicker">{on ? tr('Signed in') : tr('Not signed in')}</span>
+      <AppleImport label={tr('Import my lists')} />
+    </div>
+  )
+}
+
 function LastfmRow() {
   const { configured, user, waiting, refresh } = useLastfm()
   const [form, setForm] = useState(false)
@@ -370,6 +396,7 @@ export function SourcesView() {
         <GoogleAccounts />
         <SpotifyWeb />
         <ServiceRow service="spotify" />
+        <AppleWeb />
         <LastfmRow />
         <LocalFolders />
       </div>

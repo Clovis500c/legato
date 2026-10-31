@@ -21,6 +21,9 @@ pub const BARE_SCRIPT: &str = include_str!("bare.js");
 pub const WATCH_SCRIPT: &str = include_str!("watch.js");
 /// Reads the lists and songs Spotify's signed-in pages draw, when the app asks. The app's Spotify window only, main frame.
 pub const SPOTIFY_SCRIPT: &str = include_str!("spotify.js");
+/// Reads the playlists and songs Apple Music's signed-in pages draw, when the app asks. The app's Apple Music window only,
+/// main frame.
+pub const APPLE_SCRIPT: &str = include_str!("apple.js");
 /// Presses Exportify's own buttons, in its window only.
 pub const EXPORTIFY_SCRIPT: &str = include_str!("exportify.js");
 /// Live processing of YouTube's sound (Adaptive Sound, cover animation, Live Editor). Embed and watch page; idle until

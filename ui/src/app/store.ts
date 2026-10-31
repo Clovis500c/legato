@@ -123,7 +123,7 @@ interface State {
   /** A Deezer or Apple Music playlist / album link: a playlist of yours with the songs found on YouTube. */
   importLink: (url: string, from: 'deezer' | 'apple') => Promise<void>
   /** Spotify's ticked lists, by `job` (Exportify's file or Spotify's page): the import screen (features/add/ImportScreen). */
-  /** On the import screen: Spotify's lists by default, else the songs not found or a shared list. */
+  /** On the import screen: Spotify's lists by default, else Apple Music's, the songs not found or a shared list. */
   importSpotifyLists: (job: () => Promise<SpotifyLibraryImport>, kind?: ImportKind) => Promise<void>
   importRun?: ImportRun
   /** Songs YouTube had no version of (track ids). */
@@ -145,9 +145,13 @@ const offline: SourceStatus = { configured: false, connected: false }
 // The toast while the import screen is hidden.
 let importToast = 0
 
-const importText = (p: SpotifyProgress | undefined) => {
+const importText = (p: SpotifyProgress | undefined, kind: ImportKind) => {
   if (!p) return tr('Importing…')
   const { list, lists, name, done, total } = p
+  if (kind === 'apple') {
+    if (p.matching && p.toSearch) return tr('Apple Music: searching YouTube… {done} of {total}', { done: p.searched, total: p.toSearch })
+    return p.matching ? tr('Apple Music, list {list} of {lists}: finding “{name}” on YouTube… {done} of {total}', { list, lists, name, done, total }) : tr('Apple Music, list {list} of {lists}: reading “{name}”… {done} of {total}', { list, lists, name, done, total })
+  }
   if (p.matching && p.toSearch) return tr('Spotify: searching YouTube… {done} of {total}', { done: p.searched, total: p.toSearch })
   return p.matching ? tr('Spotify, list {list} of {lists}: finding “{name}” on YouTube… {done} of {total}', { list, lists, name, done, total }) : tr('Spotify, list {list} of {lists}: reading “{name}”… {done} of {total}', { list, lists, name, done, total })
 }
@@ -360,7 +364,7 @@ export const useStore = create<State>((set, get) => {
         const run = get().importRun
         if (!run || !latest) return
         set({ importRun: advance(run, latest) })
-        if (run.hidden) get().notify(importText(latest), { sticky: true, id: importToast })
+        if (run.hidden) get().notify(importText(latest, run.kind), { sticky: true, id: importToast })
       }
       let listsShown = false
       const off = api.onSpotifyImport((p) => {
@@ -403,7 +407,7 @@ export const useStore = create<State>((set, get) => {
       const run = get().importRun
       if (!run || run.hidden) return
       set({ importRun: { ...run, hidden: true } })
-      importToast = get().notify(importText(run.progress), { sticky: true, action: { label: tr('Show'), run: () => get().showImport() } })
+      importToast = get().notify(importText(run.progress, run.kind), { sticky: true, action: { label: tr('Show'), run: () => get().showImport() } })
     },
     showImport() {
       const run = get().importRun

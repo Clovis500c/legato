@@ -1,3 +1,4 @@
+pub mod apple_page;
 pub mod art;
 pub mod audd;
 pub mod deezer;

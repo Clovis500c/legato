@@ -70,13 +70,13 @@ fn valid_id(id: &str) -> bool {
     id.len() == 22 && id.bytes().all(|b| b.is_ascii_alphanumeric())
 }
 
-fn clean(text: &str) -> Option<String> {
+pub(crate) fn clean(text: &str) -> Option<String> {
     let t = text.trim();
     (!t.is_empty() && t.chars().count() <= MAX_TEXT && !t.chars().any(char::is_control)).then(|| t.to_string())
 }
 
 /// Image hosts `art` serves only (a playlist's cover can be a long mosaic address).
-fn clean_art(url: Option<String>) -> Option<String> {
+pub(crate) fn clean_art(url: Option<String>) -> Option<String> {
     url.filter(|u| u.len() <= 400 && crate::art::allowed(u))
 }
 
