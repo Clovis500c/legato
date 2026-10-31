@@ -1489,7 +1489,7 @@ const fr: Record<string, string> = {
   // v2 redesign
   'Playing': 'En lecture',
   'All your songs': 'Tous vos titres',
-  'Next: {title}': 'Ensuite : {title}',
+  'Then': 'Ensuite',
   'Next, added by you': 'Ensuite, ajoutés par vous',
   'Then from {name}': 'Puis depuis {name}',
   'Then from the list': 'Puis depuis la liste',

@@ -1489,7 +1489,7 @@ const hi: Record<string, string> = {
   // v2 redesign
   'Playing': 'चल रहा है',
   'All your songs': 'आपके सभी गाने',
-  'Next: {title}': 'अगला: {title}',
+  'Then': 'इसके बाद',
   'Next, added by you': 'आगे, आपके जोड़े हुए',
   'Then from {name}': 'फिर {name} से',
   'Then from the list': 'फिर सूची से',

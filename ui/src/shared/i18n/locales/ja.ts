@@ -1489,7 +1489,7 @@ const ja: Record<string, string> = {
   // v2 redesign
   'Playing': '再生中',
   'All your songs': 'すべての曲',
-  'Next: {title}': '次: {title}',
+  'Then': '次に',
   'Next, added by you': '次に再生（追加した曲）',
   'Then from {name}': '続いて {name} から',
   'Then from the list': '続いてリストから',

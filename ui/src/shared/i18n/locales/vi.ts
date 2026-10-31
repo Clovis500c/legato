@@ -1489,7 +1489,7 @@ const vi: Record<string, string> = {
   // v2 redesign
   'Playing': 'Đang phát',
   'All your songs': 'Tất cả bài hát của bạn',
-  'Next: {title}': 'Tiếp theo: {title}',
+  'Then': 'Tiếp theo',
   'Next, added by you': 'Tiếp theo, bạn đã thêm',
   'Then from {name}': 'Sau đó từ {name}',
   'Then from the list': 'Sau đó từ danh sách',

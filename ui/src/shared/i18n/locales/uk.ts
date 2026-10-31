@@ -1489,7 +1489,7 @@ const uk: Record<string, string> = {
   // v2 redesign
   'Playing': 'Грає',
   'All your songs': 'Усі ваші треки',
-  'Next: {title}': 'Далі: {title}',
+  'Then': 'Далі',
   'Next, added by you': 'Далі, додані вами',
   'Then from {name}': 'Потім із {name}',
   'Then from the list': 'Потім зі списку',

@@ -1489,7 +1489,7 @@ const ko: Record<string, string> = {
   // v2 redesign
   'Playing': '재생 중',
   'All your songs': '내 모든 노래',
-  'Next: {title}': '다음: {title}',
+  'Then': '다음',
   'Next, added by you': '다음, 내가 추가한 곡',
   'Then from {name}': '이어서 {name}에서',
   'Then from the list': '이어서 목록에서',

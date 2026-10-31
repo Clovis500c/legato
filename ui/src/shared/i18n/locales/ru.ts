@@ -1489,7 +1489,7 @@ const ru: Record<string, string> = {
   // v2 redesign
   'Playing': 'Играет',
   'All your songs': 'Все ваши треки',
-  'Next: {title}': 'Далее: {title}',
+  'Then': 'Далее',
   'Next, added by you': 'Далее, добавленные вами',
   'Then from {name}': 'Затем из {name}',
   'Then from the list': 'Затем из списка',

@@ -1489,7 +1489,7 @@ const zh: Record<string, string> = {
   // v2 redesign
   'Playing': '正在播放',
   'All your songs': '你的所有歌曲',
-  'Next: {title}': '下一首：{title}',
+  'Then': '接下来',
   'Next, added by you': '接下来，你添加的',
   'Then from {name}': '然后来自 {name}',
   'Then from the list': '然后来自列表',

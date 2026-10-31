@@ -1489,7 +1489,7 @@ const id: Record<string, string> = {
   // v2 redesign
   'Playing': 'Sedang diputar',
   'All your songs': 'Semua lagumu',
-  'Next: {title}': 'Berikutnya: {title}',
+  'Then': 'Selanjutnya',
   'Next, added by you': 'Berikutnya, tambahanmu',
   'Then from {name}': 'Lalu dari {name}',
   'Then from the list': 'Lalu dari daftar',

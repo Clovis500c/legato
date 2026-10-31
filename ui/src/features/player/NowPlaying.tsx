@@ -266,11 +266,14 @@ function NextLine() {
   })
   if (!next) return null
   return (
-    <button onClick={() => useSettings.getState().update({ upNext: true, lyrics: false, editor: false })} title={tr('Up next')} className="-mx-2 flex w-fit max-w-full items-center gap-3 rounded-md p-2 text-left transition hover:bg-raised">
-      <Cover title={next.album ?? next.title} art={trackArt(next)} size={40} />
-      <span className="min-w-0">
-        <span className="block truncate text-sm font-medium">{tr('Next: {title}', { title: next.title })}</span>
-        <span className="block truncate text-[0.8125rem] text-ink-2">{artistName(next.artist)}</span>
+    <button onClick={() => useSettings.getState().update({ upNext: true, lyrics: false, editor: false })} title={tr('Up next')} className="-mx-2 flex w-fit max-w-full flex-col gap-2 rounded-md p-2 text-left transition hover:bg-raised">
+      <span className="text-sm font-medium">{tr('Then')}</span>
+      <span className="flex min-w-0 items-center gap-3">
+        <Cover title={next.album ?? next.title} art={trackArt(next)} size={40} />
+        <span className="min-w-0">
+          <span className="block truncate text-sm">{next.title}</span>
+          <span className="block truncate text-[0.8125rem] text-ink-2">{artistName(next.artist)}</span>
+        </span>
       </span>
     </button>
   )

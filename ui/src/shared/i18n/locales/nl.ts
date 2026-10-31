@@ -1489,7 +1489,7 @@ const nl: Record<string, string> = {
   // v2 redesign
   'Playing': 'Speelt nu',
   'All your songs': 'Al je nummers',
-  'Next: {title}': 'Hierna: {title}',
+  'Then': 'Hierna',
   'Next, added by you': 'Hierna, door jou toegevoegd',
   'Then from {name}': 'Dan uit {name}',
   'Then from the list': 'Dan uit de lijst',

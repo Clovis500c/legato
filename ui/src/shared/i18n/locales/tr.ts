@@ -1489,7 +1489,7 @@ const tr: Record<string, string> = {
   // v2 redesign
   'Playing': 'Çalıyor',
   'All your songs': 'Tüm şarkıların',
-  'Next: {title}': 'Sıradaki: {title}',
+  'Then': 'Sonra',
   'Next, added by you': 'Sıradakiler, senin eklediklerin',
   'Then from {name}': 'Sonra {name} listesinden',
   'Then from the list': 'Sonra listeden',

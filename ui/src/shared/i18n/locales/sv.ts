@@ -1489,7 +1489,7 @@ const sv: Record<string, string> = {
   // v2 redesign
   'Playing': 'Spelas',
   'All your songs': 'Alla dina låtar',
-  'Next: {title}': 'Härnäst: {title}',
+  'Then': 'Sedan',
   'Next, added by you': 'Härnäst, tillagda av dig',
   'Then from {name}': 'Sedan från {name}',
   'Then from the list': 'Sedan från listan',
