@@ -95,6 +95,7 @@ describe('resolveTheme', () => {
     expect(sanitize({}).visualizerStyle).toBe('led')
     expect(sanitize({ visualizerStyle: 'bars', defaultsVersion: 8 }).visualizerStyle).toBe('led')
     expect(sanitize({ visualizerStyle: 'wave', defaultsVersion: 8 }).visualizerStyle).toBe('wave')
+    for (const look of ['radial', 'vu', 'spectrogram']) expect(sanitize({ visualizerStyle: look, defaultsVersion: 9 }).visualizerStyle).toBe(look)
     expect(sanitize({ visualizerStyle: 'bars', defaultsVersion: 9 }).visualizerStyle).toBe('bars')
     expect(sanitize({ visualizerStyle: 'nonsense', defaultsVersion: 9 }).visualizerStyle).toBe('led')
   })

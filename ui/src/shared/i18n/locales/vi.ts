@@ -1481,7 +1481,11 @@ const vi: Record<string, string> = {
   'Mirror': 'Gương',
   'Peaks': 'Đỉnh',
   'Wave': 'Sóng',
-  'bars mirror peaks wave look': 'thanh gương đỉnh sóng giao diện',
+  'Radial': 'Vòng tròn',
+  'VU needles': 'Kim VU',
+  'Spectrogram': 'Phổ đồ',
+  'Radial goes around a big cover; where the cover is small it shows bars': 'Vòng tròn bao quanh bìa lớn; bìa nhỏ thì hiện thanh',
+  'bars mirror peaks wave radial circle vu needles meter spectrogram waterfall look': 'thanh gương đỉnh sóng giao diện vòng tròn vu kim đồng hồ phổ đồ thác',
   // v2 redesign
   'Playing': 'Đang phát',
   'All your songs': 'Tất cả bài hát của bạn',

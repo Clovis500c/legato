@@ -12,7 +12,9 @@ import { VizCanvas } from './VizCanvas'
  * there. A double click or V takes it full screen; right-click picks the look. Quiet while the full screen is up.
  */
 export function Visualizer() {
-  const look = useSettings((s) => s.settings.visualizerStyle)
+  const picked = useSettings((s) => s.settings.visualizerStyle)
+  // Radial goes around a big cover (Stage, NowPlaying.tsx); the strip is too small for it.
+  const look = picked === 'radial' ? 'bars' : picked
   const full = useVizFull((s) => s.open)
   // YouTube's sound can't be heard here (setting off, capture refused): said under the bars rather than a flat line.
   const youtube = usePlayer((s) => s.now?.via === 'youtube')
@@ -27,4 +29,10 @@ export function Visualizer() {
       {why && <p className="text-center text-[0.6875rem] text-ink-3">{why}</p>}
     </div>
   )
+}
+
+/** The Radial look behind a big cover (Stage in NowPlaying.tsx): fills its parent, a square; quiet while the full screen is up. */
+export function RadialRing() {
+  const full = useVizFull((s) => s.open)
+  return <VizCanvas look="radial" listen={!full} />
 }

@@ -94,7 +94,7 @@ export function VizCanvas({ look, listen = true }: { look: VisualizerStyle; list
     const el = box.current
     const w = worker.current
     if (!el || !w) return
-    const send = () => w.postMessage({ t: 'look', look, calm, ink: getComputedStyle(el).color } satisfies ToWorker)
+    const send = () => w.postMessage({ t: 'look', look, calm, ink: getComputedStyle(el).color, warn: getComputedStyle(el).getPropertyValue('--color-danger').trim() } satisfies ToWorker)
     send()
     const late = setTimeout(send, 700)
     return () => clearTimeout(late)

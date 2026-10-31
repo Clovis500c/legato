@@ -16,7 +16,7 @@ import { RoundButton, Segmented } from '../../shared/ui/controls'
 import { lessLikeThis, toggleLike, useLiked } from './like'
 import { Cover } from '../../shared/ui/Cover'
 import { SourceIcon } from '../../shared/ui/SourceIcon'
-import { playerMenu } from '../menus'
+import { playerMenu, vizMenu } from '../menus'
 import { useAmbient } from './ambient'
 import { useBackdrop } from './immersive'
 import { toggleKaraoke } from './karaokeMode'
@@ -37,7 +37,9 @@ import { PageBoundary } from '../../app/PageBoundary'
 import { EditorPanel } from '../../app/pages'
 import { useVideoBox } from './videoBox'
 import { usePulse } from './pulse'
-import { Visualizer } from './Visualizer'
+import { RING_COVER, RING_MIN } from './vizDraw'
+import { openVizFull } from './vizFull'
+import { RadialRing, Visualizer } from './Visualizer'
 import { tr } from '../../shared/i18n/i18n'
 
 /** Publishes its rect so the single YouTube iframe sits here. YouTube rules: at least 200×200, nothing on top. */
@@ -117,7 +119,7 @@ function SourceBadge({ via }: { via: Via }) {
  * Video or cover, as big as the space allows without pushing the controls off screen. YouTube in cover mode (user's
  * choice 2026-10-16, against YouTube's terms like the shield): the embed keeps playing over the cover, fully transparent.
  */
-function Stage({ video, cover, track, title, youtubeId, pulse }: { video: boolean; cover: boolean; track?: LibraryTrack; title: string; youtubeId?: string; pulse: boolean }) {
+function Stage({ video, cover, track, title, youtubeId, pulse, wantRing, onRing }: { video: boolean; cover: boolean; track?: LibraryTrack; title: string; youtubeId?: string; pulse: boolean; wantRing: boolean; onRing: (on: boolean) => void }) {
   const big = video && !cover
   // Cover moving with the music (Advanced, off by default).
   const coverEl = useRef<HTMLSpanElement>(null)
@@ -133,18 +135,38 @@ function Stage({ video, cover, track, title, youtubeId, pulse }: { video: boolea
     useVideoSlot.setState({ box })
     return () => useVideoSlot.setState({ box: null })
   }, [big, box])
+  // Radial look: the cover turns round and the visualizer's ring goes behind it, where the stage is big and the art square.
+  const area = useRef<HTMLDivElement>(null)
+  const [side, setSide] = useState(0)
+  useEffect(() => {
+    const el = area.current
+    if (!el) return
+    const ro = new ResizeObserver(() => setSide(Math.min(el.clientWidth, el.clientHeight)))
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
+  const ring = wantRing && !big && Math.abs(art - 1) < 0.06 && side >= RING_MIN
+  useEffect(() => {
+    onRing(ring)
+    return () => onRing(false)
+  }, [ring, onRing])
   const ratio = big ? (box ? clampRatio((box.w * 16) / (box.h * 9)) : 16 / 9) : art
   // Container query units: fit inside both width and height, keep the ratio.
-  const fit = { width: `min(100cqw, 100cqh * ${ratio})`, aspectRatio: String(ratio) }
+  const fit = { width: ring ? `min(${RING_COVER * 100}cqw, ${RING_COVER * 100}cqh)` : `min(100cqw, 100cqh * ${ratio})`, aspectRatio: String(ring ? 1 : ratio) }
   return (
     // w-full: parent centers its children; without it the box shrinks to nothing and cq units go to 0.
-    <div className="grid min-h-50 w-full flex-1 place-items-center" style={{ containerType: 'size' }}>
+    <div ref={area} className="relative grid min-h-50 w-full flex-1 place-items-center" style={{ containerType: 'size' }}>
+      {ring && (
+        <div onContextMenu={onMenu(vizMenu)} onDoubleClick={openVizFull} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" style={{ width: 'min(100cqw, 100cqh)', aspectRatio: '1' }}>
+          <RadialRing />
+        </div>
+      )}
       {big ? (
         // Cropped: the iframe itself stays bigger than YouTube's 200×200 minimum, the slot can be any shape.
         <VideoSlot className={box ? 'min-h-50 min-w-50 bg-transparent!' : 'min-h-50 min-w-89'} style={fit} onClick={toggle} />
       ) : (
         <span ref={coverEl} style={fit} onClick={toggle} title={tr('Play / pause')} className="relative block cursor-pointer">
-          <Cover title={track?.album ?? title} art={track && bigTrackArt(track)} size={200} eager fit={setArt} className="size-full! text-[3.5rem]! shadow-[0_12px_40px_var(--shadow)]" />
+          <Cover title={track?.album ?? title} art={track && bigTrackArt(track)} size={200} eager fit={setArt} className={`size-full! text-[3.5rem]! shadow-[0_12px_40px_var(--shadow)] ${ring ? 'rounded-full!' : ''}`} />
           {video && <VideoSlot hidden className="absolute inset-0 bg-transparent" />}
         </span>
       )}
@@ -267,6 +289,9 @@ export function NowPlaying() {
     useShallow((s) => ({ ...pick(s.settings), theme: s.settings.theme, accent: s.settings.accent, customThemes: s.settings.customThemes, systemDark: s.systemDark })),
   )
   const update = useSettings((s) => s.update)
+  const look = useSettings((s) => s.settings.visualizerStyle)
+  // The Radial look's ring is around the cover (Stage): then the strip under it stays away.
+  const [ring, setRing] = useState(false)
   // Re-rendered when the theme or accent change (selected above).
   const theme = useSettings.getState().current()
   const track = useNowTrack()
@@ -315,8 +340,8 @@ export function NowPlaying() {
             }}
             options={[{ value: 'auto', label: video && stage === 'auto' && still !== undefined ? (still ? tr('Auto · cover') : tr('Auto · video')) : tr('Auto') }, ...(video || ytVersion ? [{ value: 'video' as const, label: tr('Video') }] : []), { value: 'cover', label: tr('Cover') }]}
           />
-          <Stage video={video} cover={stage === 'cover' || (stage === 'auto' && still === true)} track={track} title={now.title} youtubeId={now.youtubeId} pulse={coverPulse && motion} />
-          {visualizer && motion && now.via !== 'spotify' && <Visualizer />}
+          <Stage video={video} cover={stage === 'cover' || (stage === 'auto' && still === true)} track={track} title={now.title} youtubeId={now.youtubeId} pulse={coverPulse && motion} wantRing={visualizer && motion && look === 'radial' && now.via !== 'spotify'} onRing={setRing} />
+          {visualizer && motion && now.via !== 'spotify' && !ring && <Visualizer />}
           {now.via === 'spotify' && <span className="kicker text-center">{tr('Playing in your Spotify app')}</span>}
           {now.via === 'preview' && (
             <div className="flex items-center justify-center gap-4">

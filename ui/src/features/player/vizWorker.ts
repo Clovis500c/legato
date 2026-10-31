@@ -42,7 +42,7 @@ scope.onmessage = (e) => {
       wake()
       break
     case 'look':
-      painter?.set(m.look, m.calm, m.ink)
+      painter?.set(m.look, m.calm, m.ink, m.warn)
       wake()
       break
     case 'frame':

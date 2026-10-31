@@ -1481,7 +1481,11 @@ const pt: Record<string, string> = {
   'Mirror': 'Espelho',
   'Peaks': 'Picos',
   'Wave': 'Onda',
-  'bars mirror peaks wave look': 'barras espelho picos onda aspeto',
+  'Radial': 'Radial',
+  'VU needles': 'Ponteiros VU',
+  'Spectrogram': 'Espectrograma',
+  'Radial goes around a big cover; where the cover is small it shows bars': 'Radial envolve uma capa grande; se ela for pequena, mostra barras',
+  'bars mirror peaks wave radial circle vu needles meter spectrogram waterfall look': 'barras espelho picos onda aspeto radial círculo vu ponteiros medidor espectrograma cascata',
   // v2 redesign
   'Playing': 'Tocando',
   'All your songs': 'Todas as suas músicas',

@@ -1481,7 +1481,11 @@ const pl: Record<string, string> = {
   'Mirror': 'Lustro',
   'Peaks': 'Szczyty',
   'Wave': 'Fala',
-  'bars mirror peaks wave look': 'słupki lustro szczyty fala wygląd',
+  'Radial': 'Radialny',
+  'VU needles': 'Wskazówki VU',
+  'Spectrogram': 'Spektrogram',
+  'Radial goes around a big cover; where the cover is small it shows bars': 'Radialny otacza dużą okładkę; przy małej pokazuje słupki',
+  'bars mirror peaks wave radial circle vu needles meter spectrogram waterfall look': 'słupki lustro szczyty fala wygląd radialny koło vu wskazówki miernik spektrogram wodospad',
   // v2 redesign
   'Playing': 'Odtwarzane',
   'All your songs': 'Wszystkie twoje utwory',

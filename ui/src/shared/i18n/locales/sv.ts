@@ -1481,7 +1481,11 @@ const sv: Record<string, string> = {
   'Mirror': 'Spegel',
   'Peaks': 'Toppar',
   'Wave': 'Våg',
-  'bars mirror peaks wave look': 'staplar spegel toppar våg utseende',
+  'Radial': 'Radiell',
+  'VU needles': 'VU-visare',
+  'Spectrogram': 'Spektrogram',
+  'Radial goes around a big cover; where the cover is small it shows bars': 'Radiell går runt ett stort omslag; är omslaget litet visas staplar',
+  'bars mirror peaks wave radial circle vu needles meter spectrogram waterfall look': 'staplar spegel toppar våg utseende radiell cirkel vu visare mätare spektrogram vattenfall',
   // v2 redesign
   'Playing': 'Spelas',
   'All your songs': 'Alla dina låtar',

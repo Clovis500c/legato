@@ -1481,7 +1481,11 @@ const de: Record<string, string> = {
   'Mirror': 'Spiegel',
   'Peaks': 'Spitzen',
   'Wave': 'Welle',
-  'bars mirror peaks wave look': 'balken spiegel spitzen welle aussehen',
+  'Radial': 'Radial',
+  'VU needles': 'VU-Zeiger',
+  'Spectrogram': 'Spektrogramm',
+  'Radial goes around a big cover; where the cover is small it shows bars': 'Radial legt sich um ein großes Cover; bei kleinem Cover zeigt es Balken',
+  'bars mirror peaks wave radial circle vu needles meter spectrogram waterfall look': 'balken spiegel spitzen welle aussehen radial kreis vu zeiger messgerät spektrogramm wasserfall',
   // v2 redesign
   'Playing': 'Läuft',
   'All your songs': 'Alle deine Songs',

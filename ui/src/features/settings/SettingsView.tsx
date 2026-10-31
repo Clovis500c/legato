@@ -397,9 +397,10 @@ function SoundGroup() {
           <Toggle label={tr('Visualizer')} checked={s.visualizer} onChange={(visualizer) => update({ visualizer })} />
         </Row>
         {s.visualizer && (
-          <Row setting="visualizerStyle" label={msg('Visualizer style')}>
+          <Row setting="visualizerStyle" label={msg('Visualizer style')} sub={tr('Radial goes around a big cover; where the cover is small it shows bars')}>
             <Segmented
               label={tr('Visualizer style')}
+              className="max-w-md flex-wrap rounded-3xl!"
               value={s.visualizerStyle}
               onChange={(visualizerStyle) => update({ visualizerStyle })}
               options={VISUALIZER_STYLES.map((v) => ({ value: v, label: tr(VISUALIZER_LABELS[v]) }))}

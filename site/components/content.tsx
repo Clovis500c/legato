@@ -18,7 +18,7 @@ export type IconName = 'SealCheck' | 'Feather' | 'Headphones' | 'Stack' | 'Magni
 export const FEATURES: { icon: IconName; title: string; text: string }[] = [
   { icon: 'Stack', title: 'One library', text: 'The same song on several services is one track, wherever you saved it.' },
   { icon: 'MagnifyingGlass', title: 'One search', text: 'Your library, YouTube Music, YouTube and Apple Music, in one place.' },
-  { icon: 'PlayCircle', title: 'One player', text: 'Every source in one queue, with crossfade, lyrics and a visualizer.' },
+  { icon: 'PlayCircle', title: 'One player', text: 'Every source in one queue, with crossfade, lyrics and a visualizer (LED bars, a ring around the cover, VU needles, a spectrogram).' },
   { icon: 'Playlist', title: 'Playlists', text: 'Import, create, export to YouTube Music, share by link or QR code.' },
   { icon: 'Sparkle', title: 'Mixes made on your PC', text: 'Daily mixes and stats from what you play, Last.fm scrobbling if you want it.' },
   { icon: 'SlidersHorizontal', title: 'Live Editor', text: 'Speed, pitch, a 10-band EQ, reverb and 3D sound, changed as it plays.' },

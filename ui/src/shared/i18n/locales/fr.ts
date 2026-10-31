@@ -1481,7 +1481,11 @@ const fr: Record<string, string> = {
   'Mirror': 'Miroir',
   'Peaks': 'Crêtes',
   'Wave': 'Onde',
-  'bars mirror peaks wave look': 'barres miroir crêtes onde apparence',
+  'Radial': 'Radial',
+  'VU needles': 'Aiguilles VU',
+  'Spectrogram': 'Spectrogramme',
+  'Radial goes around a big cover; where the cover is small it shows bars': 'Radial entoure une grande pochette ; si elle est petite, il montre des barres',
+  'bars mirror peaks wave radial circle vu needles meter spectrogram waterfall look': 'barres miroir crêtes onde apparence radial cercle vu aiguilles indicateur spectrogramme cascade',
   // v2 redesign
   'Playing': 'En lecture',
   'All your songs': 'Tous vos titres',

@@ -1481,7 +1481,11 @@ const ja: Record<string, string> = {
   'Mirror': 'ミラー',
   'Peaks': 'ピーク',
   'Wave': 'ウェーブ',
-  'bars mirror peaks wave look': 'バー ミラー ピーク ウェーブ 見た目 bars mirror peaks wave',
+  'Radial': 'ラジアル',
+  'VU needles': 'VUメーター',
+  'Spectrogram': 'スペクトログラム',
+  'Radial goes around a big cover; where the cover is small it shows bars': 'ラジアルは大きなジャケットの周りに表示され、小さいときはバーになります',
+  'bars mirror peaks wave radial circle vu needles meter spectrogram waterfall look': 'バー ミラー ピーク ウェーブ 見た目 bars mirror peaks wave ラジアル 円 vu 針 メーター スペクトログラム radial circle needles meter spectrogram waterfall',
   // v2 redesign
   'Playing': '再生中',
   'All your songs': 'すべての曲',

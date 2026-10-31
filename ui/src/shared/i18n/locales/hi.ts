@@ -1481,7 +1481,11 @@ const hi: Record<string, string> = {
   'Mirror': 'दर्पण',
   'Peaks': 'शिखर',
   'Wave': 'तरंग',
-  'bars mirror peaks wave look': 'पट्टियाँ दर्पण शिखर तरंग रूप bars mirror peaks wave',
+  'Radial': 'रेडियल',
+  'VU needles': 'VU सुइयाँ',
+  'Spectrogram': 'स्पेक्ट्रोग्राम',
+  'Radial goes around a big cover; where the cover is small it shows bars': 'रेडियल बड़े कवर के चारों ओर बनता है; कवर छोटा हो तो पट्टियाँ दिखती हैं',
+  'bars mirror peaks wave radial circle vu needles meter spectrogram waterfall look': 'पट्टियाँ दर्पण शिखर तरंग रूप bars mirror peaks wave रेडियल गोला vu सुई मीटर स्पेक्ट्रोग्राम झरना radial circle needles meter spectrogram waterfall',
   // v2 redesign
   'Playing': 'चल रहा है',
   'All your songs': 'आपके सभी गाने',

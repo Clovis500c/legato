@@ -1481,7 +1481,11 @@ const ko: Record<string, string> = {
   'Mirror': '미러',
   'Peaks': '피크',
   'Wave': '웨이브',
-  'bars mirror peaks wave look': '막대 미러 피크 웨이브 모양 bars mirror peaks wave',
+  'Radial': '방사형',
+  'VU needles': 'VU 바늘',
+  'Spectrogram': '스펙트로그램',
+  'Radial goes around a big cover; where the cover is small it shows bars': '방사형은 큰 커버 둘레에 표시되며, 커버가 작으면 막대로 표시됩니다',
+  'bars mirror peaks wave radial circle vu needles meter spectrogram waterfall look': '막대 미러 피크 웨이브 모양 bars mirror peaks wave 방사형 원 vu 바늘 미터 스펙트로그램 radial circle needles meter spectrogram waterfall',
   // v2 redesign
   'Playing': '재생 중',
   'All your songs': '내 모든 노래',

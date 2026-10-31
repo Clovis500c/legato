@@ -161,8 +161,8 @@ export const COVER_CACHE_MB = [250, 500, 1000, 2000] as const
 /** Mini player resting spots: corners and edge middles (t = top, b = bottom, l = left, r = right). */
 /** Playlist icon: service logo, first song's cover, grid of the first 4, or a picked image. */
 export const COVER_MODES = ['source', 'first', 'grid', 'image'] as const
-/** Visualizer looks (VizCanvas.tsx): LED segments with held peaks, bars from the bottom, mirrored from the middle, bars with falling peaks, a wave. */
-export const VISUALIZER_STYLES = ['led', 'bars', 'mirror', 'peaks', 'wave'] as const
+/** Visualizer looks (VizCanvas.tsx): LED segments with held peaks, bars from the bottom, mirrored from the middle, bars with falling peaks, a wave; a ring around the cover, two VU needles, a scrolling spectrogram. */
+export const VISUALIZER_STYLES = ['led', 'bars', 'mirror', 'peaks', 'wave', 'radial', 'vu', 'spectrogram'] as const
 export type VisualizerStyle = (typeof VISUALIZER_STYLES)[number]
 /** Order the cover songs are taken in: the playlist's own, or a library sort. */
 export const COVER_ORDERS = ['playlist', 'recent', 'title', 'artist', 'album', 'duration'] as const

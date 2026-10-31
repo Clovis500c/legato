@@ -1,7 +1,9 @@
 import type { VisualizerStyle } from '../../shared/theme/theme'
 import { capSegment, litSegments } from './ledBars'
-import { columnSpans, columnsFor, ledRows, wavePath, type LedRows } from './vizDraw'
+import { columnSpans, columnsFor, dialGeometry, ledRows, ringBars, wavePath, type Dial, type LedRows, type Ring } from './vizDraw'
 import { createScene } from './vizScene'
+import { colorMap, fillColumn, rowMix, SCROLL, SCROLL_CALM, scrollBy } from './vizSpectro'
+import { createVu, vuPos, VU_MARKS } from './vizVu'
 
 /** Lowest bar, as a fraction of the box (a bar never vanishes). */
 const FLOOR = 0.04
@@ -10,6 +12,9 @@ const OFF = 0.09
 const LIT_LOW = 0.55
 const LIT_HIGH = 0.95
 const BAR = 0.85
+
+/** The VU dial's alarm colour when the caller sends none (the theme's danger red). */
+const WARN = '#d93a2b'
 
 interface Sprites {
   off: OffscreenCanvas
@@ -29,6 +34,14 @@ export function createPainter(canvas: OffscreenCanvas) {
   let look: VisualizerStyle = 'led'
   let calm = false
   let ink = '#888'
+  let warn = WARN
+  let vu = createVu(false)
+  let ring: Ring = ringBars(1, 1)
+  let dial: Dial = dialGeometry(1, 1)
+  let dialMap: OffscreenCanvas | null = null
+  let strip: { img: ImageData; px: Uint32Array; mix: ReturnType<typeof rowMix> } | null = null
+  const map = colorMap()
+  const acc = { v: 0 }
   let scene = createScene(columnsFor(0), false)
   let rows: LedRows = { y: [], h: [] }
   let sprites: Sprites | null = null
@@ -56,6 +69,75 @@ export function createPainter(canvas: OffscreenCanvas) {
       rows = ledRows(h, dpr)
       sprites = makeSprites(Math.max(...spans.w), h)
     }
+    if (look === 'radial') ring = ringBars(Math.min(w, h), n)
+    dialMap = null
+    if (look === 'vu') {
+      const m = meterBox()
+      dial = dialGeometry(m.w, m.h)
+      dialMap = makeDial(m.w, m.h)
+    }
+    strip = null
+    if (look === 'spectrogram') {
+      const img = new ImageData(1, h)
+      strip = { img, px: new Uint32Array(img.data.buffer), mix: rowMix(h, n) }
+    }
+  }
+
+  /** One needle meter's box, device px: the two sit side by side. */
+  function meterBox() {
+    const gap = Math.round(canvas.width * 0.03)
+    return { w: Math.floor((canvas.width - gap) / 2), h: canvas.height, gap }
+  }
+
+  /** The dial's face, drawn once: the scale's arc, its marks and numbers, the red end. Needles and LEDs go over it. */
+  function makeDial(w: number, h: number): OffscreenCanvas {
+    const face = new OffscreenCanvas(w, h)
+    const c = face.getContext('2d')!
+    const d = dial
+    const at = (p: number, r: number) => {
+      const a = d.swing * (2 * p - 1)
+      return [d.px + r * Math.sin(a), d.py - r * Math.cos(a)] as const
+    }
+    const tick = Math.max(3 * dpr, h * 0.07)
+    const arc = (from: number, to: number) => {
+      c.beginPath()
+      c.arc(d.px, d.py, d.r, -Math.PI / 2 + d.swing * (2 * from - 1), -Math.PI / 2 + d.swing * (2 * to - 1))
+    }
+    c.lineCap = 'butt'
+    c.strokeStyle = ink
+    c.globalAlpha = 0.55
+    c.lineWidth = Math.max(1, dpr)
+    arc(0, vuPos(0))
+    c.stroke()
+    // The red end: from 0 VU to the scale's last mark.
+    c.strokeStyle = warn
+    c.globalAlpha = 0.9
+    c.lineWidth = Math.max(2 * dpr, tick * 0.6)
+    arc(vuPos(0), 1)
+    c.stroke()
+    c.strokeStyle = ink
+    c.lineWidth = Math.max(1, dpr)
+    const big = h >= 70 * dpr
+    c.fillStyle = ink
+    c.font = `${Math.round(h * 0.065)}px system-ui, sans-serif`
+    c.textAlign = 'center'
+    c.textBaseline = 'middle'
+    for (const mark of VU_MARKS) {
+      const p = vuPos(mark)
+      const [x0, y0] = at(p, d.r)
+      const [x1, y1] = at(p, d.r - tick)
+      c.globalAlpha = 0.7
+      c.beginPath()
+      c.moveTo(x0, y0)
+      c.lineTo(x1, y1)
+      c.stroke()
+      if (big) {
+        const [tx, ty] = at(p, d.r - tick * 2.4)
+        c.globalAlpha = 0.6
+        c.fillText(mark > 0 ? `+${mark}` : String(-mark), tx, ty)
+      }
+    }
+    return face
   }
 
   function makeSprites(w: number, h: number): Sprites {
@@ -127,6 +209,87 @@ export function createPainter(canvas: OffscreenCanvas) {
     ctx.restore()
   }
 
+  /** The ring around the cover: bars start at the inner radius, mirrored left and right. */
+  function radial(levels: Float32Array, W: number, H: number) {
+    if (!ctx) return
+    const n = levels.length
+    const lw = Math.max(2 * dpr, ((ring.r0 * Math.PI) / (n * 2)) * 0.7)
+    const room = ring.len - lw
+    const cx = W / 2
+    const cy = H / 2
+    const r0 = ring.r0 + lw / 2
+    ctx.strokeStyle = ink
+    ctx.globalAlpha = BAR
+    ctx.lineWidth = lw
+    ctx.lineCap = 'round'
+    ctx.beginPath()
+    for (let i = 0; i < n * 2; i++) {
+      const to = r0 + Math.max(0, Math.max(FLOOR, levels[i % n]) * room)
+      ctx.moveTo(cx + ring.dx[i] * r0, cy + ring.dy[i] * r0)
+      ctx.lineTo(cx + ring.dx[i] * to, cy + ring.dy[i] * to)
+    }
+    ctx.stroke()
+  }
+
+  /** Two needle meters. True = at rest. */
+  function needles(dt: number): boolean {
+    if (!ctx || !dialMap) return true
+    const { pos, on, resting } = vu.step(dt)
+    const m = meterBox()
+    const d = dial
+    const lw = Math.max(1.5 * dpr, m.h * 0.012)
+    const led = Math.max(2.5 * dpr, m.h * 0.035)
+    for (let k = 0; k < 2; k++) {
+      ctx.save()
+      ctx.beginPath()
+      ctx.rect(k * (m.w + m.gap), 0, m.w, m.h)
+      ctx.clip()
+      ctx.translate(k * (m.w + m.gap), 0)
+      ctx.globalAlpha = 1
+      ctx.drawImage(dialMap, 0, 0)
+      const a = d.swing * (2 * Math.min(1.04, Math.max(0, pos[k])) - 1)
+      ctx.strokeStyle = ink
+      ctx.fillStyle = ink
+      ctx.globalAlpha = 0.95
+      ctx.lineWidth = lw
+      ctx.lineCap = 'round'
+      ctx.beginPath()
+      ctx.moveTo(d.px, d.py)
+      ctx.lineTo(d.px + d.r * 1.01 * Math.sin(a), d.py - d.r * 1.01 * Math.cos(a))
+      ctx.stroke()
+      if (d.py < m.h) {
+        ctx.beginPath()
+        ctx.arc(d.px, d.py, lw * 2.2, 0, Math.PI * 2)
+        ctx.fill()
+      }
+      // Peak LED, top right: the alarm colour when lit, a dim ink when not.
+      ctx.beginPath()
+      ctx.arc(m.w - led * 2, led * 2, led, 0, Math.PI * 2)
+      ctx.fillStyle = on[k] ? warn : ink
+      ctx.globalAlpha = on[k] ? 1 : 0.15
+      ctx.fill()
+      ctx.restore()
+    }
+    return resting
+  }
+
+  /** The picture moves left by the pixels due, a new column of colours at the right edge. */
+  function waterfall(levels: Float32Array, dt: number) {
+    if (!ctx || !strip) return
+    const W = canvas.width
+    const n = Math.min(W, scrollBy(acc, dt, calm ? SCROLL_CALM : SCROLL, dpr))
+    if (n <= 0) return
+    if (n < W) {
+      ctx.globalCompositeOperation = 'copy'
+      ctx.drawImage(canvas, n, 0, W - n, canvas.height, 0, 0, W - n, canvas.height)
+      ctx.globalCompositeOperation = 'source-over'
+    } else {
+      ctx.clearRect(0, 0, W, canvas.height)
+    }
+    fillColumn(strip.px, levels, strip.mix, map)
+    for (let x = W - n; x < W; x++) ctx.putImageData(strip.img, x, 0)
+  }
+
   return {
     size(w: number, h: number, ratio: number) {
       cssW = w
@@ -134,25 +297,47 @@ export function createPainter(canvas: OffscreenCanvas) {
       dpr = ratio
       layout()
     },
-    set(next: VisualizerStyle, calmer: boolean, color: string) {
+    set(next: VisualizerStyle, calmer: boolean, color: string, alarm = WARN) {
       const restart = calmer !== calm
+      // Another look: a clean canvas (the waterfall keeps its picture otherwise).
+      if (next !== look && ctx) ctx.clearRect(0, 0, canvas.width, canvas.height)
       look = next
       calm = calmer
       ink = color || '#888'
-      if (restart) cols = 0
+      warn = alarm || WARN
+      if (restart) {
+        cols = 0
+        vu = createVu(calm)
+      }
       layout()
     },
-    frame: (l: ArrayLike<number>, r: ArrayLike<number>) => scene.frame(l, r),
-    silence: () => scene.silence(),
+    frame(l: ArrayLike<number>, r: ArrayLike<number>) {
+      if (look === 'vu') vu.frame(l, r)
+      else scene.frame(l, r)
+    },
+    silence() {
+      scene.silence()
+      vu.silence()
+    },
     /** Draws a frame, `dt` seconds after the last. True = at rest (the caller may stop its loop). */
     draw(dt: number): boolean {
       if (!ctx || !cssW || !cssH) return true
+      if (look === 'vu') {
+        ctx.globalAlpha = 1
+        ctx.clearRect(0, 0, canvas.width, canvas.height)
+        return needles(dt)
+      }
       const { levels, peaks, resting } = scene.step(dt)
       const W = canvas.width
       const H = canvas.height
       ctx.globalAlpha = 1
+      if (look === 'spectrogram') {
+        waterfall(levels, dt)
+        return resting
+      }
       ctx.clearRect(0, 0, W, H)
-      if (look === 'led') led(levels, peaks, H)
+      if (look === 'radial') radial(levels, W, H)
+      else if (look === 'led') led(levels, peaks, H)
       else if (look === 'wave') wave(levels, W, H)
       else bars(levels, peaks, H)
       ctx.globalAlpha = 1

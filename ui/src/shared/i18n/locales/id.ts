@@ -1481,7 +1481,11 @@ const id: Record<string, string> = {
   'Mirror': 'Cermin',
   'Peaks': 'Puncak',
   'Wave': 'Gelombang',
-  'bars mirror peaks wave look': 'batang cermin puncak gelombang tampilan',
+  'Radial': 'Radial',
+  'VU needles': 'Jarum VU',
+  'Spectrogram': 'Spektrogram',
+  'Radial goes around a big cover; where the cover is small it shows bars': 'Radial melingkari sampul yang besar; jika sampul kecil, tampil batang',
+  'bars mirror peaks wave radial circle vu needles meter spectrogram waterfall look': 'batang cermin puncak gelombang tampilan radial lingkaran vu jarum meter spektrogram air terjun',
   // v2 redesign
   'Playing': 'Sedang diputar',
   'All your songs': 'Semua lagumu',

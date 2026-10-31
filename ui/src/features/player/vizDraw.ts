@@ -87,3 +87,57 @@ export function wavePath(heights: ArrayLike<number>, w: number, h: number, fill:
   d += ` L${r(xl)} ${r(yl)}`
   return fill ? `${d} L${r(w)} ${h} L0 ${h} Z` : d
 }
+
+/** Where the bars of the Radial look stand: the ring around the cover, mirrored left and right. */
+export interface Ring {
+  /** Direction of each bar (unit vector), starting at the bottom, going up both sides: first the right side's `half`, then the left's. */
+  dx: Float32Array
+  dy: Float32Array
+  /** Inner radius and the longest bar's length, in the box's units. */
+  r0: number
+  len: number
+}
+
+/** Share of the half box where the bars start (the cover fills the inside, circular, a little less than that). */
+export const RING_INNER = 0.7
+
+/** Bars for a ring in a square of `side`: `half` bars on the right, from the bottom up the side, mirrored on the left. */
+export function ringBars(side: number, half: number): Ring {
+  const dx = new Float32Array(half * 2)
+  const dy = new Float32Array(half * 2)
+  for (let i = 0; i < half; i++) {
+    // Low notes at the bottom, rising up both sides to meet at the top (a bar never sits on the seam).
+    const a = ((i + 0.5) / half) * Math.PI
+    dx[i] = Math.sin(a)
+    dy[i] = Math.cos(a)
+    dx[half + i] = -Math.sin(a)
+    dy[half + i] = Math.cos(a)
+  }
+  const R = side / 2
+  return { dx, dy, r0: R * RING_INNER, len: R * (1 - RING_INNER) }
+}
+
+/** Dial of one needle meter in a `w` × `h` box: the pivot, the needle's length and how far it swings either way (rad). */
+export interface Dial {
+  px: number
+  py: number
+  r: number
+  swing: number
+}
+
+/**
+ * A wide, low dial (the strip) is a shallow arc with its pivot far below the box; a tall one is nearer a real VU
+ * face. The arc's top sits at a fifth of the height, its ends at about 62 %, the swing at most 60 degrees.
+ */
+export function dialGeometry(w: number, h: number): Dial {
+  const half = Math.max(1, w / 2 - w * 0.08)
+  const top = h * 0.2
+  const sag = Math.max(1, h * 0.42)
+  const swing = Math.min(Math.PI / 3, 2 * Math.atan(sag / half))
+  const r = half / Math.sin(swing)
+  return { px: w / 2, py: top + r, r, swing }
+}
+
+/** The circular cover's share of the ring's square, and the smallest square (CSS px) where the ring is worth drawing. */
+export const RING_COVER = RING_INNER * 0.94
+export const RING_MIN = 330

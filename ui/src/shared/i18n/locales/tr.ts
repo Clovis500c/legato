@@ -1481,7 +1481,11 @@ const tr: Record<string, string> = {
   'Mirror': 'Ayna',
   'Peaks': 'Tepeler',
   'Wave': 'Dalga',
-  'bars mirror peaks wave look': 'çubuklar ayna tepeler dalga görünüm',
+  'Radial': 'Dairesel',
+  'VU needles': 'VU ibreleri',
+  'Spectrogram': 'Spektrogram',
+  'Radial goes around a big cover; where the cover is small it shows bars': 'Dairesel büyük bir kapağın çevresine çizilir; kapak küçükse çubuk gösterir',
+  'bars mirror peaks wave radial circle vu needles meter spectrogram waterfall look': 'çubuklar ayna tepeler dalga görünüm dairesel daire vu ibre ölçer spektrogram şelale',
   // v2 redesign
   'Playing': 'Çalıyor',
   'All your songs': 'Tüm şarkıların',

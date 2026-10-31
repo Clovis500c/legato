@@ -1481,7 +1481,11 @@ const ru: Record<string, string> = {
   'Mirror': 'Зеркало',
   'Peaks': 'Пики',
   'Wave': 'Волна',
-  'bars mirror peaks wave look': 'полосы зеркало пики волна вид',
+  'Radial': 'Круговой',
+  'VU needles': 'Стрелки VU',
+  'Spectrogram': 'Спектрограмма',
+  'Radial goes around a big cover; where the cover is small it shows bars': 'Круговой вид окружает большую обложку; если она мала, показываются полосы',
+  'bars mirror peaks wave radial circle vu needles meter spectrogram waterfall look': 'полосы зеркало пики волна вид круговой круг vu стрелки индикатор спектрограмма водопад',
   // v2 redesign
   'Playing': 'Играет',
   'All your songs': 'Все ваши треки',

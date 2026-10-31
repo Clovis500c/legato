@@ -1481,7 +1481,11 @@ const zh: Record<string, string> = {
   'Mirror': '镜像',
   'Peaks': '峰值',
   'Wave': '波形',
-  'bars mirror peaks wave look': '条形 镜像 峰值 波形 外观 bars mirror peaks wave',
+  'Radial': '环形',
+  'VU needles': 'VU 指针',
+  'Spectrogram': '频谱图',
+  'Radial goes around a big cover; where the cover is small it shows bars': '环形围绕较大的封面显示；封面较小时显示条形',
+  'bars mirror peaks wave radial circle vu needles meter spectrogram waterfall look': '条形 镜像 峰值 波形 外观 bars mirror peaks wave 环形 圆 vu 指针 表 频谱图 瀑布 radial circle needles meter spectrogram waterfall',
   // v2 redesign
   'Playing': '正在播放',
   'All your songs': '你的所有歌曲',

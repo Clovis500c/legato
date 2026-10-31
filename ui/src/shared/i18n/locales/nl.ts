@@ -1481,7 +1481,11 @@ const nl: Record<string, string> = {
   'Mirror': 'Spiegel',
   'Peaks': 'Pieken',
   'Wave': 'Golf',
-  'bars mirror peaks wave look': 'balken spiegel pieken golf uiterlijk',
+  'Radial': 'Radiaal',
+  'VU needles': 'VU-naalden',
+  'Spectrogram': 'Spectrogram',
+  'Radial goes around a big cover; where the cover is small it shows bars': 'Radiaal gaat rond een grote hoes; bij een kleine hoes toont het balken',
+  'bars mirror peaks wave radial circle vu needles meter spectrogram waterfall look': 'balken spiegel pieken golf uiterlijk radiaal cirkel vu naalden meter spectrogram waterval',
   // v2 redesign
   'Playing': 'Speelt nu',
   'All your songs': 'Al je nummers',

@@ -1481,7 +1481,11 @@ const uk: Record<string, string> = {
   'Mirror': 'Дзеркало',
   'Peaks': 'Піки',
   'Wave': 'Хвиля',
-  'bars mirror peaks wave look': 'смуги дзеркало піки хвиля вигляд',
+  'Radial': 'Круговий',
+  'VU needles': 'Стрілки VU',
+  'Spectrogram': 'Спектрограма',
+  'Radial goes around a big cover; where the cover is small it shows bars': 'Круговий вигляд обрамляє велику обкладинку; якщо вона мала, показуються смуги',
+  'bars mirror peaks wave radial circle vu needles meter spectrogram waterfall look': 'смуги дзеркало піки хвиля вигляд круговий коло vu стрілки індикатор спектрограма водоспад',
   // v2 redesign
   'Playing': 'Грає',
   'All your songs': 'Усі ваші треки',
