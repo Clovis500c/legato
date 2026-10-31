@@ -1,4 +1,4 @@
-import { CheckCircle, SpotifyLogo } from '@phosphor-icons/react'
+import { CheckCircle, ShareNetwork, SpotifyLogo } from '@phosphor-icons/react'
 import { useEffect, useState } from 'react'
 import { useStore } from '../../app/store'
 import { api } from '../../shared/api'
@@ -10,13 +10,14 @@ import { Cover } from '../../shared/ui/Cover'
 import { Dialog } from '../../shared/ui/Dialog'
 import { card, secondsLeft, share, summary, timeLeft, waitLeft, type ImportRun, type Seen } from './importRun'
 
-function Deck({ seen }: { seen: Seen[] }) {
+function Deck({ seen, shared }: { seen: Seen[]; shared: boolean }) {
   const newest = seen.at(-1)?.seq ?? 0
+  const Icon = shared ? ShareNetwork : SpotifyLogo
   return (
     <div aria-hidden className="relative -mx-6 h-40 overflow-hidden">
       {seen.length === 0 && (
         <span className="absolute top-3 left-1/2 -ml-16 grid size-32 place-items-center rounded-cover border border-line-soft bg-raised text-ink-3">
-          <SpotifyLogo size={40} />
+          <Icon size={40} />
         </span>
       )}
       {seen.map((s) => (
@@ -46,13 +47,14 @@ function Timing({ run }: { run: ImportRun }) {
   )
 }
 
-/** Spotify's import: songs landing one by one, every list counted. Hide leaves a toast and the app free. */
+/** An import (Spotify's lists, a shared list, the songs not found): songs landing one by one, every list counted. Hide leaves a toast and the app free. */
 export function ImportScreen() {
   const run = useStore((s) => s.importRun)
   const notFound = useStore((s) => s.notFound.length)
   if (!run || run.hidden) return null
   const { hideImport, endImport, go } = useStore.getState()
-  const { progress: p, result, again } = run
+  const { progress: p, result, kind } = run
+  const importing = kind === 'shared' ? tr('Importing a shared playlist') : tr('Importing from Spotify')
   const open = () => {
     endImport()
     if (result?.playlistId != null) go({ name: 'playlist', id: result.playlistId })
@@ -66,8 +68,8 @@ export function ImportScreen() {
   const total = p?.allTotal || p?.total
   const searching = p?.matching && !!p.toSearch
   return (
-    <Dialog title={again ? (result ? tr('Search finished') : tr('Searching YouTube')) : result ? tr('Import finished') : tr('Importing from Spotify')} onClose={result ? endImport : hideImport}>
-      <Deck seen={run.seen} />
+    <Dialog title={kind === 'again' ? (result ? tr('Search finished') : tr('Searching YouTube')) : result ? tr('Import finished') : importing} onClose={result ? endImport : hideImport}>
+      <Deck seen={run.seen} shared={kind === 'shared'} />
       {result ? (
         <>
           <p className="flex items-start gap-2 text-sm">
@@ -94,11 +96,11 @@ export function ImportScreen() {
             <p className="w-full truncate text-[0.8125rem] text-ink-2">{song ? artistName(song.artist) : '\u00a0'}</p>
           </div>
           <div className="flex flex-col gap-2">
-            <div role="progressbar" aria-label={tr('Importing from Spotify')} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(share(p) * 100)} className="h-1 overflow-hidden rounded-full bg-line">
+            <div role="progressbar" aria-label={importing} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(share(p) * 100)} className="h-1 overflow-hidden rounded-full bg-line">
               <div className="h-full origin-left rounded-full bg-ink transition-transform duration-200 ease-out" style={{ transform: `scaleX(${share(p)})` }} />
             </div>
             <div className="flex justify-between gap-3 text-xs text-ink-2">
-              <span className="min-w-0 truncate">{searching ? trn(p.toSearch, 'Searching YouTube for {n} song', 'Searching YouTube for {n} songs') : p ? tr('List {list} of {lists}: {name}', { list: p.list, lists: p.lists, name: p.name }) : tr('Importing…')}</span>
+              <span className="min-w-0 truncate">{searching ? trn(p.toSearch, 'Searching YouTube for {n} song', 'Searching YouTube for {n} songs') : p && kind === 'shared' ? p.name : p ? tr('List {list} of {lists}: {name}', { list: p.list, lists: p.lists, name: p.name }) : tr('Importing…')}</span>
               {!!total && <span className="shrink-0 tabular-nums">{tr('{done} of {total} songs', { done: done ?? 0, total })}</span>}
             </div>
             <p className="min-h-4 text-xs text-ink-3 tabular-nums">{!!p?.playable && trn(p.playable, '{n} song playable', '{n} songs playable')}</p>

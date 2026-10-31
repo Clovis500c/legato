@@ -25,7 +25,7 @@ export function NotFoundView() {
       {songs.length > 0 && (
         <div className="flex shrink-0 items-center justify-between gap-4 pb-3">
           <p className="min-w-0 text-[0.8125rem] text-ink-2">{tr('YouTube has no version that matches, so they can’t play. A new import looks again after a month.')}</p>
-          <Button variant="ghost" className="shrink-0" disabled={running} onClick={() => void importSpotifyLists(() => api.notFoundSearch(), true)}>
+          <Button variant="ghost" className="shrink-0" disabled={running} onClick={() => void importSpotifyLists(() => api.notFoundSearch(), 'again')}>
             <MagnifyingGlass size={16} /> {tr('Search again')}
           </Button>
         </div>

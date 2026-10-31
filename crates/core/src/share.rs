@@ -1,6 +1,8 @@
 //! MA1 share code: playlist as compact binary, zlib (deflate + Adler-32 checksum), then text.
 //! One entry per track, best id first: YouTube (full playback for anyone), Apple Music, else artist + title.
 //! Spotify ids / ISRC skipped: receiver without Premium or Apple API can't resolve them; text it can search.
+//! Version 2: a YouTube entry carries the sender's artist, title and length, so the receiver adds the song as is, no
+//! request to YouTube. Version 1 codes still read. QR codes stay version 1 (ids only): names don't fit a QR code.
 
 use crate::model::{Source, Track};
 use anyhow::{Context, Result, bail, ensure};
@@ -14,7 +16,8 @@ use std::path::Path;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Item {
-    Youtube(String),
+    /// No title: a version 1 code or a QR code, the receiver asks YouTube for the names. `secs` 0: length unknown.
+    Youtube { id: String, artist: String, title: String, secs: u32 },
     Apple(u64),
     Text { artist: String, title: String },
 }
@@ -25,7 +28,10 @@ pub struct Shared {
     pub items: Vec<Item>,
 }
 
-const VERSION: u8 = 1;
+/// Names on YouTube entries.
+const VERSION: u8 = 2;
+/// Ids only: written when no entry has names (QR codes), read by every version of the app.
+const COMPACT: u8 = 1;
 const MAX_ITEMS: u64 = 10_000;
 const MAX_TEXT: u64 = 300;
 /// Decompressed cap: zip bomb guard.
@@ -38,12 +44,40 @@ pub const QR: &str = "MA1:";
 impl Item {
     pub fn from_track(t: &Track) -> Self {
         if let Some(id) = t.ids.get(&Source::Youtube).filter(|id| yt_pack(id).is_some()) {
-            return Item::Youtube(id.clone());
+            let secs = t.duration_ms.map_or(0, |ms| ms.saturating_add(500) / 1000);
+            return Item::Youtube { id: id.clone(), artist: t.artist.clone(), title: t.title.clone(), secs };
         }
         if let Some(n) = t.ids.get(&Source::Apple).and_then(|id| id.parse().ok()) {
             return Item::Apple(n);
         }
         Item::Text { artist: t.artist.clone(), title: t.title.clone() }
+    }
+
+    /// The song as the sender has it, ready to play: a YouTube entry with its names. Else None (it needs a lookup).
+    pub fn ready(&self) -> Option<Track> {
+        let Item::Youtube { id, artist, title, secs } = self else { return None };
+        if title.trim().is_empty() {
+            return None;
+        }
+        Some(Track {
+            title: title.clone(),
+            artist: artist.clone(),
+            duration_ms: (*secs > 0).then(|| secs.saturating_mul(1000)),
+            ids: [(Source::Youtube, id.clone())].into(),
+            art: Some(format!("https://i.ytimg.com/vi/{id}/hqdefault.jpg")),
+            ..Default::default()
+        })
+    }
+}
+
+impl Shared {
+    /// Ids only, for a QR code.
+    pub fn compact(&self) -> Shared {
+        let bare = |i: &Item| match i {
+            Item::Youtube { id, .. } => Item::Youtube { id: id.clone(), artist: String::new(), title: String::new(), secs: 0 },
+            other => other.clone(),
+        };
+        Shared { name: self.name.clone(), items: self.items.iter().map(bare).collect() }
     }
 }
 
@@ -111,18 +145,22 @@ impl Reader<'_> {
 }
 
 pub fn encode(s: &Shared) -> Vec<u8> {
-    let mut raw = vec![VERSION];
+    let named = |i: &Item| matches!(i, Item::Youtube { title, .. } if !title.is_empty());
+    let mut raw = vec![if s.items.iter().any(named) { VERSION } else { COMPACT }];
     put_str(&mut raw, &s.name);
     put_varint(&mut raw, s.items.len() as u64);
     for item in &s.items {
         match item {
-            Item::Youtube(id) => match yt_pack(id) {
-                Some(n) => {
-                    raw.push(1);
-                    raw.extend_from_slice(&n.to_be_bytes());
+            Item::Youtube { id, artist, title, secs } => {
+                let n = yt_pack(id).expect("from_track keeps packable ids only");
+                raw.push(if title.is_empty() { 1 } else { 4 });
+                raw.extend_from_slice(&n.to_be_bytes());
+                if !title.is_empty() {
+                    put_str(&mut raw, artist);
+                    put_str(&mut raw, title);
+                    put_varint(&mut raw, u64::from(*secs));
                 }
-                None => unreachable!("from_track keeps packable ids only"),
-            },
+            }
             Item::Apple(n) => {
                 raw.push(2);
                 put_varint(&mut raw, *n);
@@ -145,17 +183,25 @@ pub fn decode(bytes: &[u8]) -> Result<Shared> {
     ZlibDecoder::new(bytes).take(MAX_RAW).read_to_end(&mut raw).context("Share code is damaged")?;
     let mut r = Reader(&raw);
     let version = r.byte()?;
-    ensure!(version == VERSION, "Share code made by a newer version of Legato: update the app");
+    ensure!(version == VERSION || version == COMPACT, "Share code made by a newer version of Legato: update the app");
     let name = r.str()?;
     let count = r.varint()?;
     ensure!(count <= MAX_ITEMS, "Too many tracks in share code");
     let mut items = Vec::with_capacity(count as usize);
     for _ in 0..count {
         items.push(match r.byte()? {
-            1 => {
+            tag @ (1 | 4) => {
                 let b: [u8; 8] = r.0.get(..8).context("Share code is cut short")?.try_into()?;
                 r.0 = &r.0[8..];
-                Item::Youtube(yt_unpack(u64::from_be_bytes(b)))
+                let id = yt_unpack(u64::from_be_bytes(b));
+                if tag == 1 {
+                    Item::Youtube { id, artist: String::new(), title: String::new(), secs: 0 }
+                } else {
+                    let (artist, title) = (r.str()?, r.str()?);
+                    let secs = u32::try_from(r.varint()?).context("Bad length in share code")?;
+                    ensure!(!title.is_empty(), "Bad text in share code");
+                    Item::Youtube { id, artist, title, secs }
+                }
             }
             2 => Item::Apple(r.varint()?),
             3 => Item::Text { artist: r.str()?, title: r.str()? },
@@ -200,9 +246,9 @@ pub fn to_link(s: &Shared) -> String {
     format!("{LINK}{}", URL_SAFE_NO_PAD.encode(encode(s)))
 }
 
-/// For QR codes: `MA1:` + base45, all in QR alphanumeric mode.
+/// For QR codes: `MA1:` + base45, all in QR alphanumeric mode. Ids only.
 pub fn to_qr_text(s: &Shared) -> String {
-    format!("{QR}{}", base45(&encode(s)))
+    format!("{QR}{}", base45(&encode(&s.compact())))
 }
 
 /// QR modules (row-major, true = dark). None = too big for a QR code (share the link instead).
@@ -237,14 +283,18 @@ mod tests {
     use super::*;
     use std::collections::BTreeMap;
 
+    fn yt(id: &str) -> Item {
+        Item::Youtube { id: id.into(), artist: String::new(), title: String::new(), secs: 0 }
+    }
+
     fn sample() -> Shared {
         Shared {
             name: "Road trip ☀".into(),
             items: vec![
-                Item::Youtube("dQw4w9WgXcQ".into()),
+                Item::Youtube { id: "dQw4w9WgXcQ".into(), artist: "Rick Astley".into(), title: "Never Gonna Give You Up".into(), secs: 213 },
                 Item::Apple(617_154_366),
                 Item::Text { artist: "Stromae".into(), title: "Alors on danse".into() },
-                Item::Youtube("jNQXAC9IVRw".into()),
+                yt("jNQXAC9IVRw"),
             ],
         }
     }
@@ -252,7 +302,9 @@ mod tests {
     #[test]
     fn round_trips_as_link_and_qr_text() {
         assert_eq!(parse(&to_link(&sample())).unwrap(), sample());
-        assert_eq!(parse(&to_qr_text(&sample())).unwrap(), sample());
+        // QR code: ids only.
+        assert_eq!(parse(&to_qr_text(&sample())).unwrap(), sample().compact());
+        assert_eq!(sample().compact().items[0], yt("dQw4w9WgXcQ"));
         // Chat app wrapped the link.
         let link = to_link(&sample());
         assert_eq!(parse(&format!("  {}\n{} ", &link[..30], &link[30..])).unwrap(), sample());
@@ -262,9 +314,46 @@ mod tests {
     }
 
     #[test]
+    fn version_1_codes_still_read() {
+        // Written as Legato 1.1 wrote it: version 1, entry 1 = an id alone.
+        let mut raw = vec![1, 3];
+        raw.extend_from_slice(b"Old");
+        raw.extend_from_slice(&[1, 1]);
+        raw.extend_from_slice(&yt_pack("dQw4w9WgXcQ").unwrap().to_be_bytes());
+        let mut z = ZlibEncoder::new(Vec::new(), Compression::fast());
+        z.write_all(&raw).unwrap();
+        let old = decode(&z.finish().unwrap()).unwrap();
+        assert_eq!(old, Shared { name: "Old".into(), items: vec![yt("dQw4w9WgXcQ")] });
+        // No names: written as version 1 again, so Legato 1.1 reads it.
+        let version = |s: &Shared| {
+            let mut first = [0u8];
+            ZlibDecoder::new(&encode(s)[..]).read_exact(&mut first).unwrap();
+            first[0]
+        };
+        assert_eq!((version(&old), version(&sample().compact()), version(&sample())), (COMPACT, COMPACT, VERSION));
+        // A named entry needs its title.
+        let mut raw = vec![2, 0, 1, 4];
+        raw.extend_from_slice(&yt_pack("dQw4w9WgXcQ").unwrap().to_be_bytes());
+        raw.extend_from_slice(&[0, 0, 0]);
+        let mut z = ZlibEncoder::new(Vec::new(), Compression::fast());
+        z.write_all(&raw).unwrap();
+        assert!(decode(&z.finish().unwrap()).is_err());
+    }
+
+    #[test]
+    fn a_named_video_is_ready_to_play() {
+        let t = sample().items[0].ready().unwrap();
+        assert_eq!((t.title.as_str(), t.artist.as_str(), t.duration_ms), ("Never Gonna Give You Up", "Rick Astley", Some(213_000)));
+        assert_eq!(t.ids.get(&Source::Youtube).map(String::as_str), Some("dQw4w9WgXcQ"));
+        assert_eq!(t.art.as_deref(), Some("https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg"));
+        // Ids only, Apple, text: a lookup first.
+        assert!(sample().items[1..].iter().all(|i| i.ready().is_none()));
+    }
+
+    #[test]
     fn picks_best_id_per_track() {
-        let t = |ids: &[(Source, &str)]| Track { title: "T".into(), artist: "A".into(), ids: ids.iter().map(|(s, i)| (*s, i.to_string())).collect::<BTreeMap<_, _>>(), ..Default::default() };
-        assert_eq!(Item::from_track(&t(&[(Source::Apple, "5"), (Source::Youtube, "dQw4w9WgXcQ")])), Item::Youtube("dQw4w9WgXcQ".into()));
+        let t = |ids: &[(Source, &str)]| Track { title: "T".into(), artist: "A".into(), duration_ms: Some(200_400), ids: ids.iter().map(|(s, i)| (*s, i.to_string())).collect::<BTreeMap<_, _>>(), ..Default::default() };
+        assert_eq!(Item::from_track(&t(&[(Source::Apple, "5"), (Source::Youtube, "dQw4w9WgXcQ")])), Item::Youtube { id: "dQw4w9WgXcQ".into(), artist: "A".into(), title: "T".into(), secs: 200 });
         assert_eq!(Item::from_track(&t(&[(Source::Apple, "5"), (Source::Spotify, "x")])), Item::Apple(5));
         // Odd YouTube id (last char not packable) and Spotify-only fall back to text.
         assert_eq!(Item::from_track(&t(&[(Source::Youtube, "abcdefghijx")])), Item::Text { artist: "A".into(), title: "T".into() });
@@ -274,10 +363,16 @@ mod tests {
     #[test]
     fn hundred_youtube_tracks_fit_budget() {
         // Real ids are random 64-bit numbers: incompressible, worst case for the budget.
-        let items = (1..=100u64).map(|i| Item::Youtube(yt_unpack(i.wrapping_mul(0x9E37_79B9_7F4A_7C15)))).collect();
-        let s = Shared { name: "Hundred".into(), items };
+        let id = |i: u64| yt_unpack(i.wrapping_mul(0x9E37_79B9_7F4A_7C15));
+        let s = Shared { name: "Hundred".into(), items: (1..=100).map(|i| yt(&id(i))).collect() };
         assert!(encode(&s).len() < 1200, "{} bytes", encode(&s).len());
         assert_eq!(parse(&to_link(&s)).unwrap(), s);
+        // Named: a longer link, still one a chat app takes; the QR code stays the ids.
+        let items = (1..=100).map(|i| Item::Youtube { id: id(i), artist: format!("Artist {}", i % 17), title: format!("Some song title {i}"), secs: 180 + i as u32 }).collect();
+        let named = Shared { name: "Hundred".into(), items };
+        assert!(to_link(&named).len() < 6000, "{} chars", to_link(&named).len());
+        assert_eq!(parse(&to_link(&named)).unwrap(), named);
+        assert_eq!(to_qr_text(&named), to_qr_text(&s));
     }
 
     #[test]
@@ -291,7 +386,7 @@ mod tests {
         assert!(parse("MA1:abc").is_err());
         assert!(parse(&format!("{LINK}%%%")).is_err());
         let mut z = ZlibEncoder::new(Vec::new(), Compression::fast());
-        z.write_all(&[2, 0, 0]).unwrap();
+        z.write_all(&[VERSION + 1, 0, 0]).unwrap();
         assert!(decode(&z.finish().unwrap()).unwrap_err().to_string().contains("newer"));
     }
 
@@ -309,7 +404,7 @@ mod tests {
         let dir = tempfile::tempdir()?;
         let path = dir.path().join("qr.png");
         img.save(&path)?;
-        assert_eq!(parse(&read_qr(&path)?)?, sample());
+        assert_eq!(parse(&read_qr(&path)?)?, sample().compact());
         assert!(qr_modules(&"A".repeat(5000)).is_none());
         Ok(())
     }

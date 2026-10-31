@@ -54,6 +54,7 @@ use music_core::musicness::Musicness;
 use music_core::search::{self, Hit};
 use music_core::model::{Connector, SecretStore, Source, Track};
 use music_core::share::{self, Item, Shared};
+use spotify_web::{SpotifyLibraryImport, SpotifyProgress, SpotifySong};
 use music_core::sync::{self as service_sync, DIRECTIONS, Direction, SyncReport, sync};
 use music_player::{Command, Player, Status};
 use music_shield::Shield;
@@ -64,7 +65,7 @@ use std::sync::atomic::Ordering;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use tauri::ipc::Response;
-use tauri::{Manager, State};
+use tauri::{Emitter, Manager, State};
 use tauri_plugin_opener::OpenerExt;
 
 /// Errors cross IPC as plain strings (full anyhow chain).
@@ -832,7 +833,7 @@ async fn nearby_receive(code: String) -> CmdResult<String> {
 /// Library probe for a shared entry: by id, or by title + artist.
 fn probe(item: &Item) -> Track {
     match item {
-        Item::Youtube(id) => Track { ids: [(Source::Youtube, id.clone())].into(), ..Default::default() },
+        Item::Youtube { id, .. } => Track { ids: [(Source::Youtube, id.clone())].into(), ..Default::default() },
         Item::Apple(n) => Track { ids: [(Source::Apple, n.to_string())].into(), ..Default::default() },
         Item::Text { artist, title } => Track { artist: artist.clone(), title: title.clone(), ..Default::default() },
     }
@@ -846,14 +847,17 @@ struct SharePreview {
     tracks: usize,
     /// Already in this library.
     known: usize,
+    /// Of the others, videos named by the sender: they come in as they are, nothing to look up.
+    ready: usize,
 }
 
 #[tauri::command]
 async fn share_preview(state: State<'_, AppState>, code: String) -> CmdResult<SharePreview> {
     let shared = share::parse(&code).map_err(err)?;
     let lib = state.lib();
-    let known = shared.items.iter().map(|i| lib.find(&probe(i))).collect::<anyhow::Result<Vec<_>>>().map_err(err)?.iter().flatten().count();
-    Ok(SharePreview { name: shared.name, tracks: shared.items.len(), known })
+    let rows = shared.items.iter().map(|i| lib.find(&probe(i))).collect::<anyhow::Result<Vec<_>>>().map_err(err)?;
+    let ready = shared.items.iter().zip(&rows).filter(|(i, row)| row.is_none() && i.ready().is_some()).count();
+    Ok(SharePreview { name: shared.name, tracks: shared.items.len(), known: rows.iter().flatten().count(), ready })
 }
 
 /// QR code from a dropped screenshot or photo → share text.
@@ -868,74 +872,106 @@ async fn share_read_image(path: String) -> CmdResult<String> {
     tauri::async_runtime::spawn_blocking(move || share::read_qr(&p)).await.map_err(err)?.map_err(err)
 }
 
-/// Artist + title only (Spotify / local on sender side): Apple catalog, then YouTube within budget.
-async fn resolve_text(state: &AppState, artist: &str, title: &str, country: &str) -> Option<Track> {
-    let want = Track { artist: artist.into(), title: title.into(), ..Default::default() };
-    let query = format!("{artist} {title}");
-    if let Ok(hits) = music_connectors::itunes::search(hosts::get().itunes, &query, country).await
-        && let Some(t) = music_core::matching::best_match(&want, &hits)
-    {
-        return Some(t.clone());
-    }
-    let hits = yt_search(state, &query).await.ok()?;
-    music_core::matching::best_match(&want, &hits).cloned()
+/// While nothing is searched, a song lands on the import screen every this long: 2.5 s in all at most.
+fn landing(songs: usize) -> std::time::Duration {
+    std::time::Duration::from_millis((2500 / songs.max(1) as u64).clamp(10, 120))
 }
 
-#[derive(Serialize, ts_rs::TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export)]
-struct ImportReport {
-    playlist_id: i64,
-    added: usize,
-    missing: usize,
-}
-
-/// Shared playlist → new custom playlist. Known tracks reused, others looked up (YouTube oEmbed, Apple lookup, catalog search).
+/// Shared playlist → new custom playlist, on the import screen (`spotify-import` events, as a Spotify list). Known songs
+/// reused, videos named by the sender taken as they are (no request), Apple ids in one lookup, bare video ids (QR code,
+/// older Legato) by oEmbed, artist + title searched on YouTube at its pace like any import. `import_link_stop` ends it
+/// with "canceled", nothing made.
 #[tauri::command]
-async fn share_import(state: State<'_, AppState>, code: String, country: String) -> CmdResult<ImportReport> {
+async fn share_import(app: tauri::AppHandle, state: State<'_, AppState>, code: String, country: String) -> CmdResult<SpotifyLibraryImport> {
     use music_connectors::{itunes, youtube};
     let shared = share::parse(&code).map_err(err)?;
+    let _running = links::begin()?;
     let country = store(&country);
-    let mut ids: Vec<Option<i64>> = {
+    let name: String = if shared.name.trim().is_empty() { "Shared playlist".into() } else { shared.name.trim().chars().take(100).collect() };
+    let total = shared.items.len();
+    let say = |done: usize, playable: usize, (searched, to_search): (usize, usize), wait_secs: u32, song: Option<&Track>| {
+        let p = SpotifyProgress { name: name.clone(), list: 1, lists: 1, matching: to_search > 0, done, total, all_done: done, all_total: total, playable, searched, to_search, wait_secs, song: song.map(SpotifySong::from) };
+        let _ = app.emit_to("main", "spotify-import", p);
+    };
+    say(0, 0, (0, 0), 0, None);
+    let mut songs: Vec<Option<Track>> = {
         let lib = state.lib();
-        shared.items.iter().map(|i| lib.find(&probe(i))).collect::<anyhow::Result<_>>().map_err(err)?
+        let rows = shared.items.iter().map(|i| lib.find(&probe(i))).collect::<anyhow::Result<Vec<_>>>().map_err(err)?;
+        let known: HashMap<i64, Track> = if rows.iter().any(Option::is_some) { lib.tracks().map_err(err)?.into_iter().map(|t| (t.id, t.track)).collect() } else { HashMap::new() };
+        shared.items.iter().zip(rows).map(|(item, row)| row.and_then(|r| known.get(&r).cloned()).or_else(|| item.ready())).collect()
     };
 
     // Apple: one batched lookup.
-    let apple: Vec<u64> = shared.items.iter().zip(&ids).filter_map(|(item, id)| if let (Item::Apple(n), None) = (item, id) { Some(*n) } else { None }).collect();
+    let apple: Vec<u64> = shared.items.iter().zip(&songs).filter_map(|(item, s)| if let (Item::Apple(n), None) = (item, s) { Some(*n) } else { None }).collect();
     let apple_found = if apple.is_empty() { Vec::new() } else { itunes::lookup(hosts::get().itunes_lookup, &apple, &country).await.unwrap_or_default() };
-    // YouTube: keyless oEmbed per video, 8 at a time.
-    let yt: Vec<(usize, String)> = shared.items.iter().zip(&ids).enumerate().filter_map(|(i, (item, id))| if let (Item::Youtube(v), None) = (item, id) { Some((i, v.clone())) } else { None }).collect();
-    let mut yt_found: HashMap<usize, Track> = HashMap::new();
-    for chunk in yt.chunks(8) {
+    // Bare video ids: keyless oEmbed per video, 8 at a time.
+    let bare: Vec<(usize, String)> = shared.items.iter().zip(&songs).enumerate().filter_map(|(i, (item, s))| if let (Item::Youtube { id, .. }, None) = (item, s) { Some((i, id.clone())) } else { None }).collect();
+    for chunk in bare.chunks(8) {
+        if links::stopped() {
+            return Err("canceled".into());
+        }
         let jobs: Vec<_> = chunk.iter().cloned().map(|(i, v)| tauri::async_runtime::spawn(async move { (i, youtube::track_from_link(&format!("https://youtu.be/{v}"), youtube::OEMBED).await) })).collect();
         for job in jobs {
             if let Ok((i, Ok(t))) = job.await {
-                yt_found.insert(i, t);
+                songs[i] = Some(t);
             }
         }
     }
-
-    for (i, item) in shared.items.iter().enumerate() {
-        if ids[i].is_some() {
-            continue;
-        }
-        let track = match item {
-            Item::Youtube(_) => yt_found.remove(&i),
-            Item::Apple(n) => apple_found.iter().find(|t| t.ids.get(&Source::Apple) == Some(&n.to_string())).cloned(),
-            Item::Text { artist, title } => resolve_text(&state, artist, title, &country).await,
-        };
-        if let Some(t) = track {
-            ids[i] = Some(state.lib().upsert_track(&t).map_err(err)?);
+    for (item, s) in shared.items.iter().zip(songs.iter_mut()) {
+        if let Item::Apple(n) = item
+            && s.is_none()
+        {
+            *s = apple_found.iter().find(|t| t.ids.get(&Source::Apple) == Some(&n.to_string())).cloned();
         }
     }
 
-    let found: Vec<i64> = ids.iter().flatten().copied().collect();
-    let name = if shared.name.trim().is_empty() { "Shared playlist".to_string() } else { shared.name };
-    let lib = state.lib();
-    let playlist_id = lib.edit_playlist(PlaylistEdit::Create { name }).map_err(err)?.ok_or("Playlist not created")?;
-    lib.edit_playlist(PlaylistEdit::Add { id: playlist_id, track_ids: found.clone() }).map_err(err)?;
-    Ok(ImportReport { playlist_id, added: found.len(), missing: ids.len() - found.len() })
+    // Everything but the songs to search lands on the deck, one by one.
+    let to_find: Vec<usize> = (0..total).filter(|&i| songs[i].is_none() && matches!(shared.items[i], Item::Text { .. })).collect();
+    let pause = landing(total - to_find.len());
+    let (mut done, mut playable) = (0, 0);
+    for (i, song) in songs.iter().enumerate() {
+        if to_find.contains(&i) {
+            continue;
+        }
+        if links::stopped() {
+            return Err("canceled".into());
+        }
+        done += 1;
+        playable += usize::from(song.is_some());
+        say(done, playable, (0, 0), 0, song.as_ref());
+        if song.is_some() {
+            tokio::time::sleep(pause).await;
+        }
+    }
+
+    // Artist + title: YouTube at its pace; what the library knows and songs not found lately aren't searched.
+    let mut unsearched = 0;
+    if !to_find.is_empty() {
+        let wanted: Vec<Track> = to_find.iter().map(|&i| probe(&shared.items[i])).collect();
+        let step = |s: links::Searched| say(done + s.done, playable + s.found, (s.done, wanted.len()), s.wait_secs, s.song);
+        let found = links::find_on_youtube(&app, &wanted, step).await?.ok_or("canceled")?;
+        for (&i, t) in to_find.iter().zip(found.tracks) {
+            songs[i] = links::has_version(&t).then_some(t);
+        }
+        unsearched = found.unsearched;
+    }
+
+    let found: Vec<Track> = songs.into_iter().flatten().collect();
+    let playlist_id = if found.is_empty() {
+        None
+    } else {
+        let lib = state.lib();
+        let id = lib.edit_playlist(PlaylistEdit::Create { name: name.clone() }).map_err(err)?.ok_or("Playlist not created")?;
+        let mut ids = Vec::with_capacity(found.len());
+        for t in &found {
+            // Asked for by hand: a song removed earlier comes back.
+            lib.unremove(t).map_err(err)?;
+            ids.push(lib.upsert_track(t).map_err(err)?);
+        }
+        lib.edit_playlist(PlaylistEdit::Add { id, track_ids: ids }).map_err(err)?;
+        Some(id)
+    };
+    Ok(SpotifyLibraryImport { playlist_id, lists: 0, songs: total, playable: found.len(), failed: Vec::new(), unsearched })
 }
 
 fn unix_now() -> i64 {

@@ -4,7 +4,7 @@ import type { Filter, GroupSize, GroupSort, PlayStats, Sort } from '../features/
 import { explain } from '../shared/errors'
 import { tr, trn } from '../shared/i18n/i18n'
 import { noteList } from '../features/home/recentLists'
-import { advance, BEAT, newRun, summary, type ImportRun } from '../features/add/importRun'
+import { advance, BEAT, newRun, summary, type ImportKind, type ImportRun } from '../features/add/importRun'
 import { patchLibrary } from './libraryPatch'
 
 export type SettingsSection = 'general' | 'playback' | 'appearance' | 'sources' | 'sync' | 'shield' | 'shortcuts' | 'about'
@@ -121,8 +121,8 @@ interface State {
   /** A Deezer or Apple Music playlist / album link: a playlist of yours with the songs found on YouTube. */
   importLink: (url: string, from: 'deezer' | 'apple') => Promise<void>
   /** Spotify's ticked lists, by `job` (Exportify's file or Spotify's page): the import screen (features/add/ImportScreen). */
-  /** `again`: songs not found, searched again, no list involved. */
-  importSpotifyLists: (job: () => Promise<SpotifyLibraryImport>, again?: boolean) => Promise<void>
+  /** On the import screen: Spotify's lists by default, else the songs not found or a shared list. */
+  importSpotifyLists: (job: () => Promise<SpotifyLibraryImport>, kind?: ImportKind) => Promise<void>
   importRun?: ImportRun
   /** Songs YouTube had no version of (track ids). */
   notFound: number[]
@@ -349,8 +349,8 @@ export const useStore = create<State>((set, get) => {
       if (r.total > r.songs) get().notify(tr('Only {n} of the {total} songs came in: the link shows no more.', { n: r.songs, total: r.total }), { kind: 'info' })
       get().go({ name: 'playlist', id: r.playlistId })
     },
-    async importSpotifyLists(job, again) {
-      set({ importRun: newRun(again) })
+    async importSpotifyLists(job, kind) {
+      set({ importRun: newRun(kind) })
       let latest: SpotifyProgress | undefined
       let timer: ReturnType<typeof setTimeout> | undefined
       const beat = () => {

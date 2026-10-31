@@ -4,4 +4,8 @@ export type SharePreview = { name: string, tracks: number,
 /**
  * Already in this library.
  */
-known: number, };
+known: number, 
+/**
+ * Of the others, videos named by the sender: they come in as they are, nothing to look up.
+ */
+ready: number, };

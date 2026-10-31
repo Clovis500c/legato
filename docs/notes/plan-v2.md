@@ -101,6 +101,10 @@ What the services allow, read on 2026-10-31 (specs in [ideas/catch-up.md](ideas/
       playlist column ([exportify#194](https://github.com/watsonbox/exportify/issues/194)) or the first way's names.
 - [ ] `S` Spotify's `spotify_export::list` drops local files (8 in the user's export): keep them as songs to find.
 - [ ] `S` Spotify's "private or doesn't exist" message says what works instead (the routes here).
+- [x] `S` A Legato link brings its videos (user's ask 2026-10-31): share code version 2, each YouTube entry with the
+      sender's artist, title and length, taken as is (no oEmbed, no search); version 1 codes still read, QR codes stay ids
+      only. Its import runs on the import screen, covers landing; artist + title entries searched at YouTube's pace.
+      Not tried between two PCs yet.
 - [ ] `S` Playlists in and out as files: M3U / M3U8 / XSPF / CSV import and export (paths for local, links for streams).
 - [ ] `M` Spotify private playlists and Liked Songs by paste, free, no sign-in: Ctrl+A then Ctrl+C in Spotify's desktop app
       copies `open.spotify.com/track/…` lines (a Spotify community moderator's guide; try it on the user's PC first).

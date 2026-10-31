@@ -24,11 +24,13 @@ export interface ImportRun {
   next: number
   /** Hidden: a toast counts instead, the app stays free. */
   hidden: boolean
-  /** Songs not found, searched again: no list involved. */
-  again: boolean
+  /** What runs: Spotify's lists, the songs not found searched again (no list involved), or a list shared with Legato. */
+  kind: ImportKind
   /** The end, for the screen to say. */
   result?: SpotifyLibraryImport
 }
+
+export type ImportKind = 'spotify' | 'again' | 'shared'
 
 export const CARDS = 7
 /** Screen updates at most this often, whatever the pace of songs: every card gets to move. */
@@ -40,7 +42,7 @@ const PACE_SPAN = 90_000
 const FEWEST_SEARCHES = 6
 const SHORTEST_SPAN = 4_000
 
-export const newRun = (again = false): ImportRun => ({ marks: [], seen: [], next: 0, hidden: false, again })
+export const newRun = (kind: ImportKind = 'spotify'): ImportRun => ({ marks: [], seen: [], next: 0, hidden: false, kind })
 
 function marked(run: ImportRun, { searched, toSearch }: SpotifyProgress, at: number): Mark[] {
   if (!toSearch || searched === run.marks.at(-1)?.searched) return run.marks
