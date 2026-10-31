@@ -149,6 +149,14 @@ pub async fn spotify_export_open(app: AppHandle, state: State<'_, AppState>) -> 
     Ok(())
 }
 
+/// A file the user picked: Exportify's (ZIP, CSV) or Spotify's own data export (its ZIP, `Playlist1.json`,
+/// `YourLibrary.json`). Its lists held for `spotify_export_import`, like the window's.
+#[tauri::command]
+pub async fn spotify_export_file(state: State<'_, AppState>, path: String) -> CmdResult<Vec<SpotifyList>> {
+    state.spotify_takes()?;
+    tauri::async_runtime::spawn_blocking(move || hold(Path::new(&path))).await.map_err(err)?.map_err(err)
+}
+
 /// The dialog is gone: its window and the lists go too.
 #[tauri::command]
 pub async fn spotify_export_close(app: AppHandle) -> CmdResult<()> {

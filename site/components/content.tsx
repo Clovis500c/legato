@@ -71,7 +71,7 @@ export const PRIVACY: [string, string][] = [
 
 export const SERVICES: [string, string][] = [
   ['YouTube Music', "Sign in with Google, on Google's own page. Several accounts."],
-  ['Spotify', "Your own app from the Spotify Developer Dashboard (Premium needed while it's in development mode), or Add music › Connect Spotify, or paste public playlist links."],
+  ['Spotify', "Your own app from the Spotify Developer Dashboard (Premium needed while it's in development mode), or Add music › Connect Spotify or Spotify's own data export, or paste public playlist links."],
   ['Apple Music', 'Catalog search and 30-second previews, and public playlist or album links, no account. For your own playlists: Add music › Connect Apple Music.'],
   ['Deezer', 'Paste a public playlist or album link: its songs come in and play from YouTube. No account.'],
   ['Your files', 'Add your music folders; changes in them show up as they happen.'],

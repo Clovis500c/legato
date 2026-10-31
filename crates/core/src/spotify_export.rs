@@ -2,12 +2,14 @@
 //! reading the user's own lists through Spotify's official API, after Spotify's consent page. Its key is the point: a new
 //! app can't get one that serves everybody (Development Mode: Premium owner, 5 users; extended quota: companies with 250k
 //! users). One CSV per list, in a ZIP when all are exported, `liked.csv` = Liked Songs. Header in the user's language,
-//! same columns in each. A file the user or a page handed over: everything bounded.
+//! same columns in each. Also Spotify's own data export, a file the user picks (`data`). A file the user or a page handed
+//! over: everything bounded.
 
 use crate::model::{Source, Track};
 use crate::songlist::cells;
 use anyhow::{Context, bail};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
+use std::collections::HashSet;
 use std::io::{Cursor, Read, Seek};
 use std::path::Path;
 use std::time::Duration;
@@ -184,7 +186,7 @@ fn track(line: &str) -> Option<Track> {
             ..Default::default()
         });
     }
-    let id = row.first()?.strip_prefix("spotify:track:").filter(|id| id.len() == 22 && id.bytes().all(|b| b.is_ascii_alphanumeric()))?;
+    let id = row.first()?.strip_prefix("spotify:track:").filter(|id| track_id(id))?;
     Some(Track {
         title: cell(1)?,
         artist: cell(3)?,
@@ -195,6 +197,11 @@ fn track(line: &str) -> Option<Track> {
         art: cell(9).filter(|u| u.starts_with("https://i.scdn.co/image/")),
         musicness: None,
     })
+}
+
+/// A Spotify track id: 22 letters and digits.
+fn track_id(id: &str) -> bool {
+    id.len() == 22 && id.bytes().all(|b| b.is_ascii_alphanumeric())
 }
 
 /// "cool_music_🎶": the file's name, a list's name lowered with underscores for spaces. Enough to know it by.
@@ -216,6 +223,128 @@ pub fn list(file: &str, text: &str) -> Option<ExportedList> {
     Some(ExportedList { id, name: list_name(stem), tracks })
 }
 
+// Spotify's own data export (account › Privacy settings › Download your data, days to come): `Playlist1.json` (2, 3…
+// for many lists), `YourLibrary.json` for Liked Songs, in a ZIP with the account's other files (never opened). Names and
+// ids only: lengths and covers come with the versions found.
+
+#[derive(Deserialize, Default)]
+#[serde(default)]
+struct DataPlaylists {
+    playlists: Option<Vec<DataPlaylist>>,
+}
+
+#[derive(Deserialize, Default)]
+#[serde(default)]
+struct DataPlaylist {
+    name: Option<String>,
+    items: Option<Vec<DataItem>>,
+}
+
+#[derive(Deserialize, Default)]
+#[serde(default, rename_all = "camelCase")]
+struct DataItem {
+    track: Option<DataTrack>,
+    local_track: Option<DataLocal>,
+}
+
+#[derive(Deserialize, Default)]
+#[serde(default, rename_all = "camelCase")]
+struct DataTrack {
+    track_name: Option<String>,
+    artist_name: Option<String>,
+    album_name: Option<String>,
+    track_uri: Option<String>,
+}
+
+#[derive(Deserialize, Default)]
+#[serde(default)]
+struct DataLocal {
+    uri: Option<String>,
+}
+
+#[derive(Deserialize, Default)]
+#[serde(default)]
+struct DataLibrary {
+    tracks: Option<Vec<DataLiked>>,
+}
+
+#[derive(Deserialize, Default)]
+#[serde(default)]
+struct DataLiked {
+    artist: Option<String>,
+    album: Option<String>,
+    track: Option<String>,
+    uri: Option<String>,
+}
+
+/// "Playlist1.json", "YourLibrary.json": a file of the data export worth opening.
+fn is_data(file: &str) -> bool {
+    file == "YourLibrary.json" || file.strip_prefix("Playlist").and_then(|r| r.strip_suffix(".json")).is_some_and(|n| n.bytes().all(|b| b.is_ascii_digit()))
+}
+
+fn data_track(title: Option<String>, artist: Option<String>, album: Option<String>, uri: Option<String>) -> Option<Track> {
+    let id = uri.as_deref().and_then(|u| u.strip_prefix("spotify:track:")).filter(|id| track_id(id));
+    Some(Track {
+        title: clean(&title?)?,
+        artist: clean(&artist?)?,
+        album: album.as_deref().and_then(clean),
+        ids: id.map(|id| [(Source::Spotify, id.to_string())].into()).unwrap_or_default(),
+        ..Default::default()
+    })
+}
+
+/// `spotify:local:artist:album:title:secs`, parts form-encoded: a file of the user's own, its names searched.
+fn data_local(uri: &str) -> Option<Track> {
+    let parts: Vec<String> = uri.strip_prefix("spotify:local:")?.split(':').map(unform).collect();
+    let [artist, album, title, secs] = parts.as_slice() else { return None };
+    Some(Track { title: clean(title)?, artist: clean(artist)?, album: clean(album), duration_ms: secs.parse::<u32>().ok().and_then(|s| s.checked_mul(1000)).filter(|ms| *ms > 0), ..Default::default() })
+}
+
+/// Exportify's id for the same list ("cool_music"): either route refreshes it, and this one brings the real name.
+fn data_id(name: &str) -> String {
+    format!("export:{}", name.to_lowercase().split_whitespace().collect::<Vec<_>>().join("_").chars().take(100).collect::<String>())
+}
+
+/// The lists of one data export file (by its text: a downloaded copy may be renamed). Episodes left out.
+fn data(text: &str) -> Vec<ExportedList> {
+    let text = text.trim_start_matches('\u{feff}').trim_start();
+    if !text.starts_with('{') {
+        return Vec::new();
+    }
+    if let Ok(DataPlaylists { playlists: Some(lists) }) = serde_json::from_str(text) {
+        return lists
+            .into_iter()
+            .take(MAX_LISTS)
+            .filter_map(|p| {
+                let name: String = p.name?.trim().chars().take(100).collect();
+                let songs = p.items.unwrap_or_default().into_iter().filter_map(|i| match (i.track, i.local_track) {
+                    (Some(t), _) => data_track(t.track_name, t.artist_name, t.album_name, t.track_uri),
+                    (None, Some(l)) => data_local(l.uri.as_deref()?),
+                    (None, None) => None,
+                });
+                let tracks: Vec<Track> = songs.take(MAX_SONGS).collect();
+                (!name.is_empty() && !tracks.is_empty()).then(|| ExportedList { id: data_id(&name), name, tracks })
+            })
+            .collect();
+    }
+    let Ok(DataLibrary { tracks: Some(liked) }) = serde_json::from_str(text) else { return Vec::new() };
+    let tracks: Vec<Track> = liked.into_iter().filter_map(|t| data_track(t.track, t.artist, t.album, t.uri)).take(MAX_SONGS).collect();
+    if tracks.is_empty() { Vec::new() } else { vec![ExportedList { id: LIKED.to_string(), name: "Liked Songs".to_string(), tracks }] }
+}
+
+/// Two lists of one name ("New Playlist"): each its own id.
+fn distinct(lists: &mut [ExportedList]) {
+    let mut seen = HashSet::new();
+    for l in lists {
+        let base = l.id.clone();
+        let mut n = 1;
+        while !seen.insert(l.id.clone()) {
+            n += 1;
+            l.id = format!("{base}~{n}");
+        }
+    }
+}
+
 /// The ZIP's lists, Liked Songs first.
 fn unzip(file: impl Read + Seek) -> anyhow::Result<Vec<ExportedList>> {
     let mut zip = zip::ZipArchive::new(file).context("Not a ZIP file")?;
@@ -227,18 +356,29 @@ fn unzip(file: impl Read + Seek) -> anyhow::Result<Vec<ExportedList>> {
             continue;
         }
         let name = entry.name()?.to_string();
+        let file = name.rsplit(['/', '\\']).next().unwrap_or_default().to_string();
+        if !file.ends_with(".csv") && !is_data(&file) {
+            continue;
+        }
         let mut text = Vec::new();
         left -= entry.take(left).read_to_end(&mut text)? as u64;
         if left == 0 {
             bail!("That file is too big");
         }
-        lists.extend(list(&name, &String::from_utf8_lossy(&text)));
+        let text = String::from_utf8_lossy(&text);
+        if is_data(&file) {
+            lists.extend(data(&text));
+        } else {
+            lists.extend(list(&name, &text));
+        }
     }
+    lists.truncate(MAX_LISTS);
     lists.sort_by_key(|l| l.id != LIKED);
+    distinct(&mut lists);
     Ok(lists)
 }
 
-/// An Exportify file: the ZIP of all lists, or the CSV of one.
+/// An Exportify file (the ZIP of all lists, or the CSV of one), or Spotify's data export (its ZIP, or one of its JSON files).
 pub fn read(path: &Path) -> anyhow::Result<Vec<ExportedList>> {
     let bytes = std::fs::read(path)?;
     if bytes.len() as u64 > MAX_BYTES {
@@ -248,10 +388,13 @@ pub fn read(path: &Path) -> anyhow::Result<Vec<ExportedList>> {
         unzip(Cursor::new(bytes))?
     } else {
         let name = path.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_default();
-        list(&name, &String::from_utf8_lossy(&bytes)).into_iter().collect()
+        let text = String::from_utf8_lossy(&bytes);
+        let mut lists = if name.to_lowercase().ends_with(".json") { data(&text) } else { list(&name, &text).into_iter().collect() };
+        distinct(&mut lists);
+        lists
     };
     if lists.is_empty() {
-        bail!("No Spotify lists in that file: it should come from Exportify");
+        bail!("No Spotify lists in that file: it should come from Exportify or Spotify's data export");
     }
     Ok(lists)
 }
@@ -318,6 +461,50 @@ mod tests {
         let bytes = zipped(&[("2024.csv", &a), ("saved_albums.csv", albums), ("liked.csv", &a), ("notes.txt", "hi"), ("empty.csv", HEAD)]);
         let lists = unzip(Cursor::new(bytes)).unwrap();
         assert_eq!(lists.iter().map(|l| l.id.as_str()).collect::<Vec<_>>(), [LIKED, "export:2024"]);
+    }
+
+    const PLAYLISTS: &str = r#"{
+  "playlists" : [ {
+    "name" : "Cool Music",
+    "lastModifiedDate" : "2026-10-01",
+    "items" : [ {
+      "track" : { "trackName" : "Get Lucky", "artistName" : "Daft Punk", "albumName" : "Random Access Memories", "trackUri" : "spotify:track:0sNOF9WDwhWunNAHPD3Baj" },
+      "episode" : null, "localTrack" : null, "addedDate" : "2026-10-01"
+    }, {
+      "track" : null, "episode" : { "episodeName" : "Talk", "showName" : "Show" }, "localTrack" : null
+    }, {
+      "track" : null, "episode" : null, "localTrack" : { "uri" : "spotify:local:Justice:Cross:Genesis:234" }
+    }, {
+      "track" : { "trackName" : "No id", "artistName" : "Someone", "albumName" : null, "trackUri" : "spotify:track:bad" }
+    } ],
+    "description" : null,
+    "numberOfFollowers" : 0
+  }, {
+    "name" : "New Playlist", "items" : [ { "track" : { "trackName" : "A", "artistName" : "B", "trackUri" : null } } ]
+  }, {
+    "name" : "New Playlist", "items" : [ { "track" : { "trackName" : "C", "artistName" : "D" } } ]
+  }, {
+    "name" : "Only talk", "items" : [ { "track" : null, "episode" : { "episodeName" : "x" } } ]
+  }, {
+    "name" : "Empty", "items" : null
+  } ]
+}"#;
+    const LIBRARY: &str = r#"{ "tracks" : [ { "artist" : "Daft Punk", "album" : "Discovery", "track" : "One More Time", "uri" : "spotify:track:0DiWol3AO6WpXZgp0goxAV" } ], "albums" : [ ], "shows" : [ ], "episodes" : [ ], "bannedTracks" : [ ], "artists" : [ ], "bannedArtists" : [ ], "other" : [ ] }"#;
+
+    #[test]
+    fn reads_spotifys_own_data_export() {
+        let bytes = zipped(&[("Spotify Account Data/Playlist1.json", PLAYLISTS), ("Spotify Account Data/YourLibrary.json", LIBRARY), ("Spotify Account Data/Userdata.json", r#"{"username":"x"}"#), ("Spotify Account Data/ReadMeFirst_YourAccountData.pdf", "%PDF")]);
+        let lists = unzip(Cursor::new(bytes)).unwrap();
+        let ids: Vec<_> = lists.iter().map(|l| (l.id.as_str(), l.name.as_str(), l.tracks.len())).collect();
+        assert_eq!(ids, [(LIKED, "Liked Songs", 1), ("export:cool_music", "Cool Music", 3), ("export:new_playlist", "New Playlist", 1), ("export:new_playlist~2", "New Playlist", 1)]);
+        let songs: Vec<_> = lists[1].tracks.iter().map(|t| (t.title.as_str(), t.artist.as_str(), t.duration_ms, t.ids.get(&Source::Spotify).map(String::as_str))).collect();
+        assert_eq!(songs, [("Get Lucky", "Daft Punk", None, Some(ID)), ("Genesis", "Justice", Some(234_000), None), ("No id", "Someone", None, None)]);
+        assert_eq!(lists[0].tracks[0].ids[&Source::Spotify], "0DiWol3AO6WpXZgp0goxAV");
+        // One file on its own, even renamed by a browser; another JSON says nothing.
+        assert_eq!(data(&format!("\u{feff}{LIBRARY}")).len(), 1);
+        assert_eq!(data(r#"{"username":"x"}"#).len(), 0);
+        assert_eq!(data("not json").len(), 0);
+        assert!(is_data("Playlist12.json") && is_data("YourLibrary.json") && !is_data("Playlistx.json") && !is_data("Userdata.json"));
     }
 
     #[test]

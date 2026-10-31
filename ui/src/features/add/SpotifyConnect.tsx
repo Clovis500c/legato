@@ -1,4 +1,5 @@
 import { SpotifyLogo } from '@phosphor-icons/react'
+import { open } from '@tauri-apps/plugin-dialog'
 import { useEffect, useState } from 'react'
 import { useStore } from '../../app/store'
 import { api, type ExportTrouble, type SpotifyList, type SpotifyPick } from '../../shared/api'
@@ -185,10 +186,48 @@ export function SpotifyImport({ label, className }: { label: string; className?:
   )
 }
 
+/** Spotify's own data export (its privacy settings, days to come) or an Exportify file kept from before: its lists ticked, then the same import as Exportify's window (src-tauri/src/spotify_export.rs). */
+function SpotifyFile() {
+  const [lists, setLists] = useState<SpotifyList[]>()
+  const [busy, setBusy] = useState(false)
+  const close = () => {
+    setLists(undefined)
+    void api.spotifyExportClose().catch(() => {})
+  }
+  const pick = async () => {
+    const path = await open({ title: tr('Spotify data export'), filters: [{ name: tr('Spotify data export'), extensions: ['zip', 'json', 'csv'] }] })
+    if (typeof path !== 'string') return
+    setBusy(true)
+    try {
+      const found = await api.spotifyExportFile(path)
+      setLists(found.map((l) => (l.id === LIKED ? { ...l, name: tr('Liked Songs') } : l)))
+    } catch (e) {
+      useStore.setState({ error: String(e) })
+    } finally {
+      setBusy(false)
+    }
+  }
+  const start = (picks: SpotifyPick[]) => {
+    setLists(undefined)
+    void useStore.getState().importSpotifyLists(() => api.spotifyExportImport(picks))
+  }
+  return (
+    <>
+      <Button variant="ghost" disabled={busy} onClick={() => void pick()} title={tr('Spotify sends it a few days after you ask for your data in its privacy settings. An Exportify file works too.')}>
+        {busy ? tr('Reading the file…') : tr('Open Spotify’s data export…')}
+      </Button>
+      {lists && <ListPick title={tr('Your Spotify lists')} lists={lists} onClose={close} onStart={start} />}
+    </>
+  )
+}
+
 export function SpotifyConnect() {
   return (
     <Card icon={SpotifyLogo} title={tr('Connect Spotify')} sub={tr('Import your playlists and Liked Songs, private ones too, with any free account.')}>
-      <SpotifyImport className="mt-auto self-start" label={tr('Connect')} />
+      <span className="mt-auto flex flex-wrap gap-2">
+        <SpotifyImport label={tr('Connect')} />
+        <SpotifyFile />
+      </span>
     </Card>
   )
 }

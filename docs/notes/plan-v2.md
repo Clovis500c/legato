@@ -126,9 +126,12 @@ What the services allow, read on 2026-10-31 (specs in [ideas/catch-up.md](ideas/
       Also passes the embed's 100-song limit on public playlists. One request per song: few at a time, with retries (one
       real request gave a 504). The safe route beside Connect Spotify, guided: Add music › Spotify shows the two keys and
       catches the copy by itself, no paste box.
-- [ ] `S-M` Spotify's data export (Privacy settings › Download your data): open the zip or `Playlist1.json` in Add music,
-      each playlist comes in under its name. Official and free; takes days to arrive. Whether private playlists are in it
-      is unconfirmed: needs a real export, also to write the tests from.
+- [x] `S-M` Spotify's data export (Privacy settings › Download your data): open the zip or `Playlist1.json` in Add music,
+      each playlist comes in under its name. Official and free; takes days to arrive. Done: Connect Spotify's card ›
+      Open Spotify's data export (ZIP, `Playlist*.json`, `YourLibrary.json` = Liked Songs; an Exportify file too), the
+      lists ticked, then Exportify's import. A list keeps Exportify's id, so either route refreshes it and the export
+      brings the real name. Written from the format as documented: not tried on a real export yet, and whether private
+      playlists are in it is still unconfirmed.
 - [ ] `M` Paste a SoundCloud link: imported as metadata and matched like a Deezer link (oEmbed, then the set's list); songs
       with no match are reported, nothing plays from SoundCloud.
 - [x] `M` Import from other apps: the iTunes / MusicBee library file (`iTunes Music Library.xml`, `music_core::itunes_xml`):
@@ -380,7 +383,9 @@ Most useful first; the tag is the effort.
 - [ ] SponsorBlock stays off by default (a new third party gets a hash prefix per video, the user opts in): flip the
       default if wanted.
 - [ ] Spotify: try Ctrl+A, Ctrl+C on a private playlist in the desktop app and paste into Notepad (links, one per line?).
-- [ ] Spotify: ask for the data export (Privacy settings › Download your data); its `Playlist1.json` is the test file.
+- [ ] Spotify: ask for the data export (Privacy settings › Download your data); its `Playlist1.json` is the test file:
+      open the ZIP in Add music › Connect Spotify › Open Spotify's data export (are private playlists in it?).
+- [ ] A playlist file from foobar2000 / VLC / MusicBee, and an `iTunes Music Library.xml`, through Add music.
 - [ ] Quit the installed Legato from the tray and open it again: a session closed its hidden single-instance window by
       mistake on 2026-10-31.
 - [ ] The soft glow on the sung line (`LyricsPanel.tsx`) goes against "no glows" in `docs/design.md`, and `SONG ENDS`,
