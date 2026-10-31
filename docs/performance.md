@@ -82,6 +82,19 @@ digit. Quick runs the same evening moved by about a third on the CPU while playi
 
 These feed the Optimisation items of `docs/notes/plan-v2.md` (re-renders at 60 fps, tray mode).
 
+## Lazy pages and deferred start: before and after, 2026-10-31
+
+The two rows below disagree on the restart (first paint 0.97 s, then 1.25 s), with the PC at 41 to 50 % load. So three quick
+runs of each build, the same night, one after the other (d30bb75 before, 0133324 after, PC load 15 to 45 %). Medians:
+
+| | Window shown, cold / restart | First paint, cold / restart |
+|---|---|---|
+| Before | 0.71 / 0.57 s | 1.16 / 0.88 s |
+| After | 0.61 / 0.55 s | 1.04 / 0.81 s |
+
+No regression: the restart's first paint gains about 0.07 s and the cold one about 0.1 s; the window, which has no JS in it,
+does not move. The gap in the table was the PC's load. The first run after each build is the slow one of its three.
+
 ## Results
 
 First-load JS (the page's script and its preloaded chunks, `dist/index.html`), before and after lazy pages
