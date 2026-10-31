@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { usePlayer } from './store'
-import { nudged, wheelVolume } from './volumeWheel'
+import { nudged, wheelDelta, wheelVolume } from './volumeWheel'
 
 /** The number shown while the volume changes by wheel or keys: when it last changed. */
 export const useVolumeHud = create<{ at: number }>(() => ({ at: 0 }))
@@ -20,7 +20,7 @@ export function volumeWheelRef(el: HTMLElement | null): (() => void) | void {
   if (!el) return
   let acc = 0
   const on = (e: WheelEvent) => {
-    if (e.ctrlKey || e.deltaY === 0) return
+    if (e.ctrlKey || !wheelDelta(e)) return
     e.preventDefault()
     const r = wheelVolume(acc, e)
     acc = r.acc

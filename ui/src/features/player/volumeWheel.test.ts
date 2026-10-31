@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { nudged, wheelVolume } from './volumeWheel'
 
-const ev = (deltaY: number, shiftKey = false, deltaMode = 0) => ({ deltaY, deltaMode, shiftKey })
+const ev = (deltaY: number, shiftKey = false, deltaMode = 0, deltaX = 0) => ({ deltaX, deltaY, deltaMode, shiftKey })
 
 describe('wheelVolume', () => {
   it('a notch up is +1 %, down -1 %', () => {
@@ -10,6 +10,12 @@ describe('wheelVolume', () => {
   })
   it('Shift is 5 %', () => {
     expect(wheelVolume(0, ev(-100, true)).delta).toBeCloseTo(0.05)
+  })
+  it('Shift + wheel arriving in deltaX, as Chromium on Windows sends it, is 5 %', () => {
+    expect(wheelVolume(0, ev(0, true, 0, -100)).delta).toBeCloseTo(0.05)
+  })
+  it('a sideways wheel without Shift is no volume', () => {
+    expect(wheelVolume(0, ev(0, false, 0, -100)).delta).toBe(0)
   })
   it('a touchpad adds small events up to one step', () => {
     let acc = 0

@@ -3,11 +3,17 @@
 /** Wheel pixels that make one step: a mouse notch (100 or 120) is one, a touchpad adds up to it. */
 export const NOTCH = 100
 
-export type WheelLike = { deltaY: number; deltaMode: number; shiftKey: boolean }
+export type WheelLike = { deltaX: number; deltaY: number; deltaMode: number; shiftKey: boolean }
+
+/** The wheel's move. Chromium on Windows turns Shift + wheel into a sideways scroll: the notch comes in deltaX. */
+export function wheelDelta(e: WheelLike): number {
+  return e.deltaY || (e.shiftKey ? e.deltaX : 0)
+}
 
 /** Pixels of a wheel event (lines and pages count as 40 and 800 px). */
-export function wheelPixels(e: Pick<WheelLike, 'deltaY' | 'deltaMode'>): number {
-  return e.deltaMode === 1 ? e.deltaY * 40 : e.deltaMode === 2 ? e.deltaY * 800 : e.deltaY
+export function wheelPixels(e: WheelLike): number {
+  const d = wheelDelta(e)
+  return e.deltaMode === 1 ? d * 40 : e.deltaMode === 2 ? d * 800 : d
 }
 
 /**
