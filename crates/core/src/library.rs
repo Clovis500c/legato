@@ -52,7 +52,7 @@ CREATE TABLE IF NOT EXISTS settings (
 ";
 
 /// Schema version this code writes (user_version after migrations).
-pub const SCHEMA_VERSION: i64 = 13;
+pub const SCHEMA_VERSION: i64 = 14;
 
 /// The library was made by a newer version of the app.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -67,6 +67,9 @@ impl std::fmt::Display for NewerLibrary {
 impl std::error::Error for NewerLibrary {}
 
 /// Wall clock, unix ms (Sync Mode change times).
+/// A song not found is searched again by an import after this long (ms): 30 days.
+const SEARCH_AGAIN: i64 = 30 * 24 * 3_600_000;
+
 pub fn now_ms() -> i64 {
     std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_millis() as i64).unwrap_or(0)
 }
@@ -424,6 +427,10 @@ impl Library {
             // v13: SponsorBlock's non-music parts per video (JSON list, the empty one too), with when it was asked (a cache, not synced).
             lib.db.execute_batch("BEGIN; CREATE TABLE IF NOT EXISTS sponsor (video TEXT PRIMARY KEY, segments TEXT NOT NULL, fetched INTEGER NOT NULL); PRAGMA user_version = 13; COMMIT;")?;
         }
+        if lib.db.query_row("PRAGMA user_version", [], |r| r.get::<_, i64>(0))? < 14 {
+            // v14: songs searched on YouTube, no version, with when (a cache, not synced: another PC can search for itself).
+            lib.db.execute_batch("BEGIN; CREATE TABLE IF NOT EXISTS not_found (track_id INTEGER PRIMARY KEY REFERENCES tracks(id) ON DELETE CASCADE, searched INTEGER NOT NULL); PRAGMA user_version = 14; COMMIT;")?;
+        }
         lib.db.execute_batch(CHANGE_LOG)?;
         // Statements on logged tables compile their triggers too: kept, not rebuilt per call.
         lib.db.set_prepared_statement_cache_capacity(64);
@@ -455,6 +462,33 @@ impl Library {
             self.upsert_track(t)?;
         }
         Ok(())
+    }
+
+    /// Searched on YouTube, no version: on the list of songs not found, and left alone for a while.
+    pub fn mark_not_found(&self, t: &Track) -> Result<()> {
+        if let Some(row) = self.find(t)? {
+            self.db.prepare_cached("INSERT OR REPLACE INTO not_found (track_id, searched) VALUES (?1, ?2)")?.execute(params![row, now_ms()])?;
+        }
+        Ok(())
+    }
+
+    /// Searched lately with nothing found: an import doesn't ask again. After `SEARCH_AGAIN`, it does: YouTube gets new songs.
+    pub fn not_found_lately(&self, t: &Track) -> Result<bool> {
+        let mut when = self.db.prepare_cached("SELECT searched FROM not_found WHERE track_id = ?1")?;
+        for row in self.lookup(t)? {
+            if when.query_row([row], |r| r.get::<_, i64>(0)).optional()?.is_some_and(|at| now_ms() - at < SEARCH_AGAIN) {
+                return Ok(true);
+            }
+        }
+        Ok(false)
+    }
+
+    /// Songs not found: the rows still with nothing to play them from.
+    pub fn not_found(&self) -> Result<Vec<i64>> {
+        let mut stmt = self.db.prepare_cached(
+            "SELECT n.track_id FROM not_found n WHERE NOT EXISTS (SELECT 1 FROM track_ids i WHERE i.track_id = n.track_id AND i.source IN ('youtube', 'local'))",
+        )?;
+        Ok(stmt.query_map([], |r| r.get(0))?.collect::<rusqlite::Result<_>>()?)
     }
 
     /// Rows matching by source id, then ISRC, then title+artist+duration.
@@ -525,6 +559,7 @@ impl Library {
         self.db.execute("UPDATE playlist_tracks SET track_id = ?1 WHERE track_id = ?2", [keep, dupe])?;
         self.db.execute("UPDATE plays SET track_id = ?1 WHERE track_id = ?2", [keep, dupe])?;
         self.db.execute("UPDATE OR IGNORE track_prefs SET track_id = ?1 WHERE track_id = ?2", [keep, dupe])?;
+        self.db.execute("UPDATE OR IGNORE not_found SET track_id = ?1 WHERE track_id = ?2", [keep, dupe])?;
         self.db.execute(
             "UPDATE tracks SET added = min(added, (SELECT added FROM tracks WHERE id = ?2)),
                added_at = coalesce(min(added_at, (SELECT added_at FROM tracks WHERE id = ?2)), added_at, (SELECT added_at FROM tracks WHERE id = ?2))
@@ -1347,6 +1382,60 @@ mod tests {
 
     fn song(n: u32) -> Track {
         Track { title: format!("Song {n}"), artist: format!("Artist {n}"), ids: BTreeMap::from([(Source::Youtube, format!("vid{n}"))]), ..Default::default() }
+    }
+
+    #[test]
+    fn a_song_not_found_is_listed_and_left_alone_for_a_while() -> Result<()> {
+        let lib = Library::in_memory()?;
+        let spotify = |id: &str, title: &str| Track { title: title.into(), artist: "A".into(), ids: [(Source::Spotify, id.to_string())].into(), ..Default::default() };
+        let row = lib.upsert_track(&spotify("s1", "One"))?;
+        lib.upsert_track(&spotify("s2", "Two"))?;
+        assert!(lib.not_found()?.is_empty());
+        assert!(!lib.not_found_lately(&spotify("s1", "One"))?);
+        lib.mark_not_found(&spotify("s1", "One"))?;
+        assert_eq!(lib.not_found()?, [row]);
+        assert!(lib.not_found_lately(&spotify("s1", "One"))?);
+        assert!(!lib.not_found_lately(&spotify("s2", "Two"))?, "never searched");
+        lib.db.execute("UPDATE not_found SET searched = 0", [])?;
+        assert!(!lib.not_found_lately(&spotify("s1", "One"))?, "a month later: searched again");
+        assert_eq!(lib.not_found()?, [row], "still on the list meanwhile");
+        Ok(())
+    }
+
+    #[test]
+    fn a_song_found_after_all_leaves_the_list() -> Result<()> {
+        let lib = Library::in_memory()?;
+        let spotify = Track { title: "One".into(), artist: "A".into(), ids: [(Source::Spotify, "s1".to_string())].into(), ..Default::default() };
+        lib.upsert_track(&spotify)?;
+        lib.mark_not_found(&spotify)?;
+        lib.add_version(&Track { ids: [(Source::Spotify, "s1".to_string()), (Source::Youtube, "v1".to_string())].into(), ..spotify.clone() })?;
+        assert!(lib.not_found()?.is_empty());
+        Ok(())
+    }
+
+    #[test]
+    fn a_song_merged_into_another_stays_on_the_list() -> Result<()> {
+        let lib = Library::in_memory()?;
+        let on = |source, id: &str, isrc: Option<&str>| Track { title: "One".into(), artist: "A".into(), duration_ms: Some(1000), isrc: isrc.map(String::from), ids: [(source, id.to_string())].into(), ..Default::default() };
+        let keep = lib.upsert_track(&on(Source::Apple, "a1", None))?;
+        lib.db.execute("UPDATE tracks SET match_key = 'other' WHERE id = ?1", [keep])?;
+        let dupe = lib.upsert_track(&on(Source::Spotify, "s1", Some("USAAA0000001")))?;
+        assert_ne!(keep, dupe);
+        lib.mark_not_found(&on(Source::Spotify, "s1", None))?;
+        lib.upsert_track(&Track { ids: [(Source::Apple, "a1".to_string()), (Source::Spotify, "s1".to_string())].into(), ..on(Source::Apple, "a1", None) })?;
+        assert_eq!(lib.not_found()?, [keep]);
+        Ok(())
+    }
+
+    #[test]
+    fn a_song_removed_leaves_the_list() -> Result<()> {
+        let lib = Library::in_memory()?;
+        let spotify = Track { title: "One".into(), artist: "A".into(), ids: [(Source::Spotify, "s1".to_string())].into(), ..Default::default() };
+        let row = lib.upsert_track(&spotify)?;
+        lib.mark_not_found(&spotify)?;
+        lib.db.execute("DELETE FROM tracks WHERE id = ?1", [row])?;
+        assert!(lib.not_found()?.is_empty());
+        Ok(())
     }
 
     #[test]

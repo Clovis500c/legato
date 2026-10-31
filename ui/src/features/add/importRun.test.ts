@@ -80,6 +80,10 @@ describe('the import screen', () => {
     expect(timeLeft(600)).toBe('About 10 min left')
   })
 
+  it('ends a search again without speaking of lists', () => {
+    expect(summary({ playlistId: null, lists: 0, songs: 12, playable: 5, failed: [], unsearched: 0 })).toBe('5 of 12 songs found on YouTube')
+  })
+
   it('ends by saying what YouTube left unsearched', () => {
     const end = { playlistId: 1, lists: 2, songs: 10, playable: 6, failed: [], unsearched: 0 }
     expect(summary(end)).not.toContain('YouTube')

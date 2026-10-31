@@ -30,12 +30,17 @@ function Deck({ seen }: { seen: Seen[] }) {
 /** Spotify's import: songs landing one by one, every list counted. Hide leaves a toast and the app free. */
 export function ImportScreen() {
   const run = useStore((s) => s.importRun)
+  const notFound = useStore((s) => s.notFound.length)
   if (!run || run.hidden) return null
   const { hideImport, endImport, go } = useStore.getState()
-  const { progress: p, result } = run
+  const { progress: p, result, again } = run
   const open = () => {
     endImport()
     if (result?.playlistId != null) go({ name: 'playlist', id: result.playlistId })
+  }
+  const lost = () => {
+    endImport()
+    go({ name: 'notFound' })
   }
   const song = run.seen.at(-1)
   const done = p?.allTotal ? p.allDone : p?.done
@@ -43,7 +48,7 @@ export function ImportScreen() {
   const left = secondsLeft(run)
   const searching = p?.matching && !!p.toSearch
   return (
-    <Dialog title={result ? tr('Import finished') : tr('Importing from Spotify')} onClose={result ? endImport : hideImport}>
+    <Dialog title={again ? (result ? tr('Search finished') : tr('Searching YouTube')) : result ? tr('Import finished') : tr('Importing from Spotify')} onClose={result ? endImport : hideImport}>
       <Deck seen={run.seen} />
       {result ? (
         <>
@@ -56,6 +61,11 @@ export function ImportScreen() {
             <Button variant="ghost" onClick={endImport}>
               {tr('Close')}
             </Button>
+            {notFound > 0 && (
+              <Button variant="ghost" onClick={lost}>
+                {trn(notFound, '{n} song not found', '{n} songs not found')}
+              </Button>
+            )}
             {result.playlistId !== null && <Button onClick={open}>{tr('Open')}</Button>}
           </div>
         </>

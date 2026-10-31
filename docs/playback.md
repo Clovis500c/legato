@@ -430,7 +430,10 @@ via the Web API Player endpoints. Audio comes out of the Spotify app; we only se
   Google sets the speed: too many searches from one address get its "Sorry…" page (403, slow, seen at 5 to 9 s), which is
   not a missing song. `music_core::searchpace::Pace` starts at 4 at once, grows to 8 while YouTube answers, halves and waits
   (5 s to 60 s) on a refusal, the song goes back in line, and 5 min of nothing but refusals ends the search: an import later
-  finishes it. Never around a refusal: no other endpoint, no CAPTCHA, no faster retry. Liked Songs joins Liked Music,
+  finishes it. Never around a refusal: no other endpoint, no CAPTCHA, no faster retry. A song truly not found (a real
+  answer, no match) goes in `not_found` (schema v14, a cache, not synced): an import leaves it alone for 30 days, and Songs
+  not found (`features/library/NotFoundView.tsx`, in the sidebar when there are some, and on the import's last screen) lists
+  them, to find by hand or search again with the import's screen and pace. Liked Songs joins Liked Music,
   whatever the way in (`Library::add_likes`, user's choice 2026-10-31): no second list of likes. YouTube Music's Liked Music is
   rewritten by every sync, so a song not in it waits in your own, and at the next sync the ones with a YouTube version
   are liked on the account (`push_own_likes`, one every 400 ms). Exportify is a third party's site, so its window is watched (`Watch`, pure, in `music_core::spotify_export`;

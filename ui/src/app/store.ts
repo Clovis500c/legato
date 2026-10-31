@@ -17,6 +17,7 @@ export type View =
   | { name: 'mixes' }
   | { name: 'stats' }
   | { name: 'smart'; id: string }
+  | { name: 'notFound' }
   | { name: 'mix'; id: string }
   | { name: 'songs' }
   | { name: 'albums' }
@@ -120,8 +121,11 @@ interface State {
   /** A Deezer or Apple Music playlist / album link: a playlist of yours with the songs found on YouTube. */
   importLink: (url: string, from: 'deezer' | 'apple') => Promise<void>
   /** Spotify's ticked lists, by `job` (Exportify's file or Spotify's page): the import screen (features/add/ImportScreen). */
-  importSpotifyLists: (job: () => Promise<SpotifyLibraryImport>) => Promise<void>
+  /** `again`: songs not found, searched again, no list involved. */
+  importSpotifyLists: (job: () => Promise<SpotifyLibraryImport>, again?: boolean) => Promise<void>
   importRun?: ImportRun
+  /** Songs YouTube had no version of (track ids). */
+  notFound: number[]
   hideImport: () => void
   showImport: () => void
   endImport: () => void
@@ -181,8 +185,8 @@ export const useStore = create<State>((set, get) => {
   }
 
   async function readWhole() {
-    const [status, lib, stats] = await Promise.all([api.sourcesStatus(), api.library(), api.playStats().catch(() => ({}))])
-    set({ status, ...lib, stats })
+    const [status, lib, stats, notFound] = await Promise.all([api.sourcesStatus(), api.library(), api.playStats().catch(() => ({})), api.notFound().catch(() => [])])
+    set({ status, ...lib, stats, notFound })
     // The open playlist follows (sync, Find versions, add to YouTube, removals).
     const v = get().view
     if (v.name === 'playlist') void loadPlaylist(v.id)
@@ -193,7 +197,7 @@ export const useStore = create<State>((set, get) => {
     if (!c) return readWhole()
     const before = get()
     const lists = patchLibrary(before, c)
-    set(lists)
+    set({ ...lists, notFound: await api.notFound().catch(() => before.notFound) })
     if (c.history) set({ stats: await api.playStats().catch(() => get().stats) })
     // The open playlist again only when it changed: its own rows, or one of its songs (rows without a source too).
     const v = get().view
@@ -217,6 +221,7 @@ export const useStore = create<State>((set, get) => {
 
   return {
     view: { name: 'songs' },
+    notFound: [],
     back: [],
     fwd: [],
     status: { spotify: offline, youtube: offline },
@@ -344,8 +349,8 @@ export const useStore = create<State>((set, get) => {
       if (r.total > r.songs) get().notify(tr('Only {n} of the {total} songs came in: the link shows no more.', { n: r.songs, total: r.total }), { kind: 'info' })
       get().go({ name: 'playlist', id: r.playlistId })
     },
-    async importSpotifyLists(job) {
-      set({ importRun: newRun() })
+    async importSpotifyLists(job, again) {
+      set({ importRun: newRun(again) })
       let latest: SpotifyProgress | undefined
       let timer: ReturnType<typeof setTimeout> | undefined
       const beat = () => {

@@ -121,6 +121,8 @@ export const api = {
   spotifyExportClose: () => invoke<void>('spotify_export_close'),
   /** Imports the ticked lists of that file. Ended by importLinkStop ("canceled", lists saved so far stay). */
   spotifyExportImport: (picks: SpotifyPick[]) => invoke<SpotifyLibraryImport>('spotify_export_import', { picks }),
+  notFound: () => invoke<number[]>('not_found'),
+  notFoundSearch: () => invoke<SpotifyLibraryImport>('not_found_search'),
   onSpotifyExport: (cb: (r: SpotifyExport) => void) => listen<SpotifyExport>('spotify-export', (e) => cb(e.payload)),
   onSpotifyImport: (cb: (p: SpotifyProgress) => void) => listen<SpotifyProgress>('spotify-import', (e) => cb(e.payload)),
   /** Every account in the Google session + keys of those synced. */

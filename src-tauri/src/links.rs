@@ -1,13 +1,14 @@
 //! Pasted Deezer and Apple Music playlist / album links: the connectors read a name, a cover and the songs (metadata
 //! only), then each song gets its YouTube version like a Spotify import, and the ones found go in a new playlist.
 
+use crate::spotify_web::{SpotifyLibraryImport, SpotifyProgress, SpotifySong};
 use crate::{AppState, CmdResult, err, hosts, youtube_version};
 use music_connectors::{deezer, itunes, linklist::LinkList};
 use music_core::library::PlaylistEdit;
 use music_core::model::{Source, Track};
 use music_core::searchpace::Pace;
 use serde::Serialize;
-use std::collections::VecDeque;
+use std::collections::{BTreeSet, VecDeque};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::{Duration, Instant};
 use tauri::{Emitter, Manager, State};
@@ -85,6 +86,16 @@ pub struct Found {
     pub unsearched: usize,
 }
 
+pub fn has_version(t: &Track) -> bool {
+    t.ids.contains_key(&Source::Youtube)
+}
+
+/// What a search said of a song already in the library: its version, or none for now.
+pub fn note_search(state: &AppState, song: &Track) {
+    let lib = state.lib();
+    let _ = if has_version(song) { lib.add_version(song) } else { lib.mark_not_found(song) };
+}
+
 /// Fills in the versions the library knows. Lock per song: the interface reads the library meanwhile.
 pub fn fill_known(state: &AppState, tracks: &mut [Track]) {
     for t in tracks.iter_mut().filter(|t| !t.ids.contains_key(&Source::Youtube)) {
@@ -96,16 +107,20 @@ pub fn fill_known(state: &AppState, tracks: &mut [Track]) {
 
 /// Each song with its YouTube version when one exists, in order. What the library knows isn't searched: a list imported
 /// again, or sharing songs with another, takes seconds. As fast as YouTube allows (`Pace`): a song refused goes back in
-/// line. `progress`: after each song. None: stopped.
+/// line. Songs not found lately are left alone. `progress`: after each song. None: stopped.
 pub async fn find_on_youtube(app: &tauri::AppHandle, tracks: &[Track], progress: impl Fn(Searched)) -> Result<Option<Found>, String> {
     let state = app.state::<AppState>();
     let mut out = tracks.to_vec();
-    let playable = |t: &Track| t.ids.contains_key(&Source::Youtube);
     fill_known(&state, &mut out);
-    let mut todo: VecDeque<usize> = (0..out.len()).filter(|&i| !playable(&out[i])).collect();
+    let todo = (0..out.len()).filter(|&i| !has_version(&out[i]) && !state.lib().not_found_lately(&out[i]).unwrap_or(false)).collect();
+    search(app, out, todo, progress).await
+}
+
+/// `out[todo]` searched, whatever was said of them before.
+async fn search(app: &tauri::AppHandle, mut out: Vec<Track>, mut todo: VecDeque<usize>, progress: impl Fn(Searched)) -> Result<Option<Found>, String> {
     let mut done = out.len() - todo.len();
-    let mut found = done;
-    progress(Searched { done, found, song: out.iter().rfind(|t| playable(t)), waiting: false });
+    let mut found = out.iter().filter(|t| has_version(t)).count();
+    progress(Searched { done, found, song: out.iter().rfind(|t| has_version(t)), waiting: false });
     let mut pace = Pace::default();
     let mut running = tokio::task::JoinSet::new();
     loop {
@@ -134,7 +149,7 @@ pub async fn find_on_youtube(app: &tauri::AppHandle, tracks: &[Track], progress:
                 pace.answered(Instant::now());
                 out[i] = song;
                 done += 1;
-                found += usize::from(playable(&out[i]));
+                found += usize::from(has_version(&out[i]));
                 progress(Searched { done, found, song: Some(&out[i]), waiting: false });
             }
             None => {
@@ -148,6 +163,33 @@ pub async fn find_on_youtube(app: &tauri::AppHandle, tracks: &[Track], progress:
         crate::diag::warn("import", "YouTube refused searches", &format!("{} refused, {done} answered", pace.refusals));
     }
     Ok((!stopped()).then_some(Found { tracks: out, unsearched: todo.len() + running.len() }))
+}
+
+/// The songs not found, to look at.
+#[tauri::command]
+pub async fn not_found(state: State<'_, AppState>) -> CmdResult<Vec<i64>> {
+    state.lib().not_found().map_err(err)
+}
+
+/// The songs not found, looked up again now: the import's screen, its pace. `import_link_stop` ends it with "canceled".
+#[tauri::command]
+pub async fn not_found_search(app: tauri::AppHandle, state: State<'_, AppState>) -> CmdResult<SpotifyLibraryImport> {
+    let _running = begin()?;
+    let tracks: Vec<Track> = {
+        let lib = state.lib();
+        let ids: BTreeSet<i64> = lib.not_found().map_err(err)?.into_iter().collect();
+        lib.tracks().map_err(err)?.into_iter().filter(|t| ids.contains(&t.id)).map(|t| t.track).collect()
+    };
+    let to_search = tracks.len();
+    let step = |step: Searched| {
+        if let Some(song) = step.song {
+            note_search(&state, song);
+        }
+        let progress = SpotifyProgress { name: String::new(), list: 1, lists: 1, matching: true, done: step.done, total: to_search, all_done: step.done, all_total: to_search, playable: step.found, searched: step.done, to_search, waiting: step.waiting, song: step.song.map(SpotifySong::from) };
+        let _ = app.emit_to("main", "spotify-import", progress);
+    };
+    let Some(found) = search(&app, tracks, (0..to_search).collect(), step).await? else { return Err("canceled".into()) };
+    Ok(SpotifyLibraryImport { playlist_id: None, lists: 0, songs: to_search, playable: found.tracks.iter().filter(|t| has_version(t)).count(), failed: Vec::new(), unsearched: found.unsearched })
 }
 
 /// Deezer or Apple Music playlist / album link → a playlist of yours, no account. Same flow as a Spotify link.

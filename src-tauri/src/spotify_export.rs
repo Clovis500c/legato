@@ -5,7 +5,7 @@
 
 use crate::spotify_web::{SpotifyLibraryImport, SpotifyList, SpotifyPick, SpotifyProgress, SpotifySong};
 use crate::{AppState, CmdResult, err, links};
-use music_core::model::{Source, Track};
+use music_core::model::Source;
 use music_core::spotify_export::{self, ExportTrouble, ExportedList, Next, Signal, Watch};
 use serde::Serialize;
 use std::collections::BTreeSet;
@@ -171,12 +171,12 @@ pub async fn spotify_export_import(app: AppHandle, state: State<'_, AppState>, p
     if picked.is_empty() {
         return Err("Invalid lists".into());
     }
-    let has_version = |t: &Track| t.ids.contains_key(&Source::Youtube);
+    let has_version = links::has_version;
     let mut seen = BTreeSet::new();
     let mut missing = Vec::new();
     for (list, _) in &mut picked {
         links::fill_known(&state, &mut list.tracks);
-        missing.extend(list.tracks.iter().filter(|t| !has_version(t) && seen.insert(t.ids.get(&Source::Spotify).cloned())).cloned());
+        missing.extend(list.tracks.iter().filter(|t| !has_version(t) && !state.lib().not_found_lately(t).unwrap_or(false) && seen.insert(t.ids.get(&Source::Spotify).cloned())).cloned());
     }
     let lists = picked.len();
     let to_search = missing.len();
@@ -202,8 +202,8 @@ pub async fn spotify_export_import(app: AppHandle, state: State<'_, AppState>, p
     }
     let known = report.playable;
     let step = |step: links::Searched| {
-        if let Some(song) = step.song.filter(|t| has_version(t)) {
-            let _ = state.lib().add_version(song);
+        if let Some(song) = step.song {
+            links::note_search(&state, song);
         }
         tell(SpotifyProgress { name: String::new(), list: lists, lists, matching: true, done: step.done, total: to_search, all_done: all_total - to_search + step.done, all_total, playable: known + step.found, searched: step.done, to_search, waiting: step.waiting, song: step.song.map(SpotifySong::from) });
     };

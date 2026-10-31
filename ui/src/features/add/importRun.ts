@@ -22,6 +22,8 @@ export interface ImportRun {
   next: number
   /** Hidden: a toast counts instead, the app stays free. */
   hidden: boolean
+  /** Songs not found, searched again: no list involved. */
+  again: boolean
   /** The end, for the screen to say. */
   result?: SpotifyLibraryImport
 }
@@ -36,7 +38,7 @@ const PACE_SPAN = 45_000
 const FEWEST_SEARCHES = 10
 const SHORTEST_SPAN = 4_000
 
-export const newRun = (): ImportRun => ({ marks: [], seen: [], next: 0, hidden: false })
+export const newRun = (again = false): ImportRun => ({ marks: [], seen: [], next: 0, hidden: false, again })
 
 function marked(run: ImportRun, { searched, toSearch }: SpotifyProgress, at: number): Mark[] {
   if (!toSearch || searched === run.marks.at(-1)?.searched) return run.marks
@@ -82,6 +84,6 @@ export function card(seen: Seen, newest: number): CSSProperties {
 }
 
 export function summary(r: SpotifyLibraryImport) {
-  const said = trn(r.lists, 'Imported {n} list from Spotify: {found} of {songs} songs playable', 'Imported {n} lists from Spotify: {found} of {songs} songs playable', { found: r.playable, songs: r.songs })
+  const said = !r.lists ? tr('{found} of {songs} songs found on YouTube', { found: r.playable, songs: r.songs }) : trn(r.lists, 'Imported {n} list from Spotify: {found} of {songs} songs playable', 'Imported {n} lists from Spotify: {found} of {songs} songs playable', { found: r.playable, songs: r.songs })
   return r.unsearched ? `${said}. ${trn(r.unsearched, 'YouTube limited the searches: import again later for the {n} song left', 'YouTube limited the searches: import again later for the {n} songs left')}` : said
 }

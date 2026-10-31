@@ -242,6 +242,12 @@ pub async fn spotify_import(app: AppHandle, state: State<'_, AppState>, picks: V
         let Some(links::Found { tracks, unsearched }) = links::find_on_youtube(&app, &read, |step| tell(true, step.done, total, before + step.found, step.waiting, step.song)).await? else { break };
         let id = save(&state, &pick.id, pick.name.trim(), &tracks).map_err(err)?;
         report.unsearched += unsearched;
+        // Saved only now, so remembered only now. YouTube's refusals left some unsearched: can't tell which.
+        if unsearched == 0 {
+            for song in tracks.iter().filter(|t| !links::has_version(t) && !state.lib().not_found_lately(t).unwrap_or(true)) {
+                links::note_search(&state, song);
+            }
+        }
         report.playlist_id.get_or_insert(id);
         report.lists += 1;
         report.songs += total;

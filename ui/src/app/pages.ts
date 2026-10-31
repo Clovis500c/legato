@@ -10,6 +10,7 @@ const load = {
   mix: () => import('../features/mixes/MixesView').then((m) => ({ default: m.MixView })),
   stats: () => import('../features/stats/StatsView').then((m) => ({ default: m.StatsView })),
   smart: () => import('../features/smart/SmartView').then((m) => ({ default: m.SmartView })),
+  notFound: () => import('../features/library/NotFoundView').then((m) => ({ default: m.NotFoundView })),
   settings: () => import('../features/settings/SettingsView').then((m) => ({ default: m.SettingsView })),
   addons: () => import('../features/addons/AddonsView').then((m) => ({ default: m.AddonsView })),
   editor: () => import('../features/editor/EditorPanel').then((m) => ({ default: m.EditorPanel })),
@@ -49,6 +50,7 @@ export const MixesView = page(load.mixes)
 export const MixView = page(load.mix)
 export const StatsView = page(load.stats)
 export const SmartView = page(load.smart)
+export const NotFoundView = page(load.notFound)
 export const SettingsView = page(load.settings)
 export const AddonsView = page(load.addons)
 export const EditorPanel = page(load.editor)

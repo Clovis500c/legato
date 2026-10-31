@@ -1,4 +1,4 @@
-import { ArrowDownLeft, ArrowUpRight, ChartBar, Disc, House, Lightning, MusicNotes, Plus, PlusCircle, SortAscending } from '@phosphor-icons/react'
+import { ArrowDownLeft, ArrowUpRight, ChartBar, Disc, House, Lightning, MagnifyingGlass, MusicNotes, Plus, PlusCircle, SortAscending } from '@phosphor-icons/react'
 import { artistName } from '../../shared/artistName'
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useShallow } from 'zustand/react/shallow'
@@ -135,6 +135,7 @@ export function Sidebar() {
     go({ name: 'smart', id: list.id })
   }
   const smart = useSettings((s) => s.settings.smartLists)
+  const notFound = useStore((s) => s.notFound.length)
   const stats = useStore((s) => s.stats)
   const smartSongs = useMemo(() => new Map(smart.map((l) => [l.id, smartTracks(l, tracks, stats).map((t) => t.id)])), [smart, tracks, stats])
   const albums = useMemo(() => (kind === 'albums' ? groupAlbums(tracks).sort((a, b) => coll.compare(a.album, b.album)) : []), [kind, tracks])
@@ -172,6 +173,7 @@ export function Sidebar() {
             ...(kind ? [] : [{ key: 'songs', on: is('songs'), art: tile(<MusicNotes size={wide ? 64 : 22} weight="fill" />, 'bg-ink text-bg'), label: tr('Songs'), sub: dot(tr('All your songs'), counts ? formatCount(tracks.length) : ''), to: { name: 'songs' } as View, menu: () => navMenu({ name: 'songs' }, useStore.getState().tracks) }]),
             ...shown.map((p) => ({ key: `pl-${p.id}`, on: view.name === 'playlist' && view.id === p.id, art: <PlaylistCover p={p} size={art} big />, label: p.name, sub: dot(tr('Playlist'), songs(p.trackCount)), to: { name: 'playlist', id: p.id } as View, menu: () => playlistMenu(p), playlist: p })),
             ...smart.map((l) => ({ key: `sm-${l.id}`, on: view.name === 'smart' && view.id === l.id, art: tile(<Lightning size={wide ? 64 : 22} weight="fill" />, 'bg-raised text-ink'), label: l.name || tr('Smart playlist'), sub: dot(tr('Smart playlist'), songs(smartSongs.get(l.id)?.length ?? 0)), to: { name: 'smart', id: l.id } as View, menu: () => smartMenu(l, smartSongs.get(l.id) ?? []) })),
+            ...(!kind && notFound ? [{ key: 'not-found', on: is('notFound'), art: tile(<MagnifyingGlass size={wide ? 64 : 22} weight="bold" />, 'bg-raised text-ink-2'), label: tr('Songs not found'), sub: dot(tr('YouTube'), songs(notFound)), to: { name: 'notFound' } as View, menu: () => navMenu({ name: 'notFound' }) }] : []),
           ]
 
   return (
