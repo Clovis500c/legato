@@ -84,6 +84,12 @@ These feed the Optimisation items of `docs/notes/plan-v2.md` (re-renders at 60 f
 
 ## Results
 
+First-load JS (the page's script and its preloaded chunks, `dist/index.html`), before and after lazy pages
+(2026-10-31, `vite build`): 948 kB (279 kB gzip) to 829 kB (255 kB gzip). Home, Search, Add, Mixes, Stats, Smart, the
+editor panel, Welcome and the YouTube shelves load on first visit. What is left is the shell, the library pages, the
+player, Now Playing and the menus.
+
 | Date | Version | PC | Window shown, cold / restart | First paint, cold / restart | RAM MB: paused / playing 1 min / tray 10 min | CPU % of the PC: paused / playing / tray | Notes |
 |---|---|---|---|---|---|---|---|
 | 2026-10-30 | 1.0.0 (5d8d3ae) | Ryzen 5 5500, 12 threads, 32 GB, Windows 11 (26300) | 1.05 / 0.67 s | 1.47 / 0.97 s | 153 / 233 / 55 | 0.1 / 2.9 / 0.1 | other apps were running; PC load 43 / 49 / 39 % |
+| 2026-10-31 | 1.0.0 (d853980) | Ryzen 5 5500, 12 threads, 32 GB, Windows 11 (26300) | 0.84 / 0.84 s | 1.26 / 1.25 s | 141 / 229 / 54 | 0.1 / 2.6 / 0.1 | other apps were running; PC load 50 / 41 / 43 %; lazy pages + deferred startup (first-load JS 948 to 829 kB). The PC was as busy as for the row above, so the 0.2 s gaps between rows are within its noise: cold start improved, the restart did not (window shown, which no JS touches, moved the same way) |

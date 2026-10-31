@@ -1,8 +1,8 @@
 # Optimisation
 
 Measure first, then fix what the numbers show. Today known: SQLite in WAL with `synchronous = NORMAL` and a 16 MB
-cache (`library.rs`), indexes on match key, track ids, added date, edits; Settings and Add-ons lazy-loaded
-(`App.tsx`), locales loaded on demand (`i18n.ts`); release profile LTO + 1 codegen unit + strip; tray mode suspends the
+cache (`library.rs`), indexes on match key, track ids, added date, edits; pages lazy-loaded
+(`app/pages.ts`), deferred start (`deferred.rs`), locales loaded on demand (`i18n.ts`); release profile LTO + 1 codegen unit + strip; tray mode suspends the
 webview (`background.rs`); levels polled only while needed (`live.ts`).
 
 ## Measure: `pnpm bench`

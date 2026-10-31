@@ -107,10 +107,18 @@ differs from the commit.
 - Consecutive local files are sent to the Rust engine as one run, so they stay gapless.
 - YouTube plays in one persistent embedded player that switches videos instead of reloading.
 - Playback state is saved and restored on launch (`session.ts`), as is the last screen (`app/screen.ts`).
+- Launch order: window background (`window_bg.rs`), library (opened in `setup`: the window's colour and the shield switch
+  come from its settings), UI, then the UI's `app_ready` (`src-tauri/src/deferred.rs`), then the plugins and the update and
+  Sync Mode rounds; in the page, Discord, Last.fm, Sync Mode's messages and the plugin host (`app/deferred.ts`), then
+  the other pages preloaded when idle. A timer starts the Rust side after 8 s anyway (a hidden start at login does
+  not paint, a broken build never says ready: an update must still be able to repair it); a gate lets it run once, a
+  page reload included. The shield's lists load right away, in their own task: the first YouTube request, a resumed
+  song's, must already meet them. Pages (`app/pages.ts`) load on first visit; the shell, sidebar, player and shortcuts
+  are in the first chunk, a page loading leaves the shell standing (`Suspense`, no fallback).
 
 ## Updates
 
-`src-tauri/src/update.rs` with `tauri-plugin-updater`: checked 5 s after every launch, when the window comes back from
+`src-tauri/src/update.rs` with `tauri-plugin-updater`: checked 5 s after the UI says ready at every launch, when the window comes back from
 the tray after more than an hour, and every 6 hours (release builds). With Automatic updates on (Settings › About) it
 downloads in the background, else it only announces the version. Signature checked against the public key in
 `tauri.conf.json`. The interface (`features/update/updates.ts`) installs it without cutting a song: when a song ends on

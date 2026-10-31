@@ -59,7 +59,8 @@ Against Riff (rootscripts/riff: no login, one-click public playlist import): wha
       website's base path (its styles and scripts were 404 at /legato/: live once merged).
 - [ ] Check on a real network cut (Wi-Fi off while a YouTube song starts): paused, one message, restarts on its own.
       Only emulated so far (DevTools cuts the page, not YouTube's out-of-process frame).
-- [ ] "Unknown artist" is an English word stored in the library (`local::read`): show it translated.
+- [x] "Unknown artist" is an English word stored in the library (`local::read`): show it translated (`shared/artistName.ts`; the
+      media panel, Last.fm, Discord, copied text and the data keep the stored word).
 - [x] Merge `product-pass` into `master` and push (= a release): PR #10, e0c63b8.
 
 ## Best in class (user's ask 2026-10-30)
@@ -327,15 +328,17 @@ every session.
       10 000-song library. A `pnpm bench` script and numbers in `docs/`; the website quotes them. Done 2026-10-30
       (`pnpm bench`, `docs/performance.md`); left: the website quoting the numbers, YouTube not measured.
 - [ ] Performance budget in CI: front-end bundle size and Rust startup time; fail on a large regression.
-- [ ] Bundle: analyse (`rollup-plugin-visualizer`), lazy-load more pages (Home, Search, Stats, Smart, Editor, Theme
-      Studio; only Settings and Add-ons are today), icons tree-shaken.
+- [x] Bundle: Home, Search, Add, Mixes, Stats, Smart, editor panel, Welcome and the YouTube shelves are lazy (Theme Studio, Sync
+      Mode and Plugins live in Settings / Add-ons, already lazy); icons were already imported one by one (Phosphor).
+      First-load JS 948 to 829 kB (gzip 279 to 255). Left: LyricsPanel, dialogs, NowPlaying are still in the first chunk.
 - [ ] Re-renders: profile the player bar, Up next and lyrics at 60 fps (`Progress.tsx`); Zustand selectors everywhere.
 - [ ] Library at scale: 50 000 songs, check every query with `EXPLAIN QUERY PLAN` (indexes for artist, album,
       plays, likes), search with FTS5, scans in the background with progress.
 - [ ] Cover cache: size cap with least-recently-used eviction, thumbnails at the sizes we show (no full images in lists).
 - [ ] YouTube embeds: one player reused instead of one per song where the crossfade allows; unload the hidden one.
 - [ ] Tray mode: measure what's left (WebView2 suspended?), drop it further if the page can be unloaded and restored.
-- [ ] Startup: defer what isn't on screen (plugins, Sync Mode, Last.fm, update check) until after first paint.
+- [x] Startup: plugins, the update and Sync Mode rounds, Discord, Last.fm start after the UI's ready signal (or 8 s). Left, on purpose:
+      the shield's lists load early (first YouTube request), the library opens in setup (the window's colour needs its settings).
 - [ ] Installer size: check what's in it (`cargo bloat`, features of big crates, adblock lists compressed).
 
 ## Check live in the real app (built and unit-tested, never driven for real)
