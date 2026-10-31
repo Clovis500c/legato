@@ -133,6 +133,17 @@ const SCENES: Record<string, Scene> = {
 let shown: string | undefined
 let taken = false
 
+/** Whatever the visitor left open. */
+function tidy() {
+  closeKaraoke()
+  closeVizFull()
+  usePlayer.getState().setFull(false)
+  useEditor.setState({ dirty: false, effects: NEUTRAL })
+  useStore.setState({ query: '' })
+  set({ theme: THEMES[0], editor: false, visualizerStyle: 'led' })
+  songs()
+}
+
 function show(name: string, p: number) {
   if (name !== shown) {
     if (shown) SCENES[shown]?.leave?.()
@@ -168,6 +179,7 @@ window.addEventListener('message', (e: MessageEvent<{ legato?: string; name: str
   if (e.data.legato === 'give') {
     taken = false
     shown = undefined
+    tidy()
   }
 })
 

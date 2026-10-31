@@ -6,7 +6,7 @@ import { siApplemusic, siSpotify, siYoutubemusic } from 'simple-icons'
 import { useLatest } from './latest'
 import { EASE } from './motion'
 
-const rise: Variants = { hidden: { opacity: 0, y: '0.35em' }, show: { opacity: 1, y: 0, transition: { duration: 0.7, ease: EASE } } }
+const rise: Variants = { hidden: { opacity: 0, y: '0.35em' }, show: { opacity: 1, y: 0, transition: { duration: 0.24, ease: EASE } } }
 
 const Brand = ({ path }: { path: string }) => (
   <svg viewBox="0 0 24 24" aria-hidden className="size-[15px] fill-current">
@@ -37,9 +37,9 @@ export function Hero() {
         Legato puts YouTube Music, Spotify, Apple Music and the files on your PC into one library and one player, on Windows, with no account of ours.
       </motion.p>
       <motion.div variants={rise} className="flex flex-wrap items-center gap-x-6 gap-y-3">
-        <motion.a href={href} whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }} className="inline-flex items-center gap-2 rounded-full bg-ink px-6 py-3 text-[15px] font-medium text-on-ink shadow-[0_8px_24px_-12px_rgb(0_0_0/0.5)]">
+        <a href={href} className="inline-flex items-center gap-2 rounded-full bg-ink px-6 py-3 text-[15px] font-medium text-on-ink">
           <WindowsLogo size={18} weight="fill" /> Download for Windows
-        </motion.a>
+        </a>
         <a href="#privacy" className="group inline-flex items-center gap-1.5 text-[15px] font-medium">
           What leaves your PC <ArrowRight size={16} className="transition-transform duration-200 group-hover:translate-x-1" />
         </a>

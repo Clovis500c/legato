@@ -7,10 +7,10 @@ import type { ReactNode } from 'react'
 export const EASE = [0.2, 0.8, 0.2, 1] as const
 
 /** Children of a `group` come in one after another once it scrolls into view. */
-export const group: Variants = { show: { transition: { staggerChildren: 0.05 } } }
+export const group: Variants = { show: { transition: { staggerChildren: 0.03 } } }
 export const item: Variants = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: EASE } },
+  hidden: { opacity: 0, y: 8 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.24, ease: EASE } },
 }
 /** Once, a little before it's fully in view. */
 export const inView = { initial: 'hidden', whileInView: 'show', viewport: { once: true, margin: '0px 0px -8% 0px' } } as const

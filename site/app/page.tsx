@@ -16,7 +16,7 @@ export default function Home() {
         <Block id="why" title="Why Legato" intro="Four things you can check for yourself.">
           <Why />
         </Block>
-        <Block id="features" title="One app for all of it" intro="Everything below works the same whatever the song comes from.">
+        <Block id="features" title="Also in the app" intro="The rest, in a line each.">
           <Features />
         </Block>
         <Split id="playback" title="Official playback only" intro="Each service plays in its own player, your files in the app's. No platform's audio is downloaded, recorded or extracted (the Music Detector listens only when you ask it to); the sound features work on what plays, as it plays, in memory.">
