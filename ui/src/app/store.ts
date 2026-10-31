@@ -71,8 +71,9 @@ interface State {
   setScoped: (scoped: boolean) => void
   /** Last "search everywhere" (top bar Enter): the Search page runs it. n changes on each ask, same text too. found = a
    *  song the Music Detector named, shown above the results. */
-  search: { q: string; n: number; found?: Track } | null
-  searchFor: (q: string, found?: Track) => void
+  /** `pick`: a song not found whose version the user picks among the results (Songs not found › Find this song). */
+  search: { q: string; n: number; found?: Track; pick?: VersionPick } | null
+  searchFor: (q: string, found?: Track, pick?: VersionPick) => void
   /** Bumped by "Identify a song" (mic menu): the Music Detector on the Add music page starts listening. */
   identify: number
   identifySong: () => void
@@ -138,6 +139,12 @@ interface State {
   /** Toast for 4 s (with a button 6 s, error 8 s), times toastPrefs.scale. Returns its id (0: not shown). */
   notify: (text: string, opts?: ToastOptions) => number
   dismissToast: (id: number) => void
+}
+
+export interface VersionPick {
+  id: number
+  title: string
+  artist: string
 }
 
 const offline: SourceStatus = { configured: false, connected: false }
@@ -272,8 +279,8 @@ export const useStore = create<State>((set, get) => {
     },
     setQuery: (query) => set({ query }),
     setScoped: (scoped) => set({ scoped }),
-    searchFor: (q, found) => {
-      set({ search: { q, n: (get().search?.n ?? 0) + 1, found }, query: q })
+    searchFor: (q, found, pick) => {
+      set({ search: { q, n: (get().search?.n ?? 0) + 1, found, pick }, query: q })
       if (get().view.name !== 'search') get().go({ name: 'search' })
     },
     identifySong: () => {

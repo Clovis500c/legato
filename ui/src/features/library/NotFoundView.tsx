@@ -33,7 +33,7 @@ export function NotFoundView() {
       <TrackTable
         tracks={shown}
         rowActions={(t) => (
-          <RoundButton label={tr('Find this song')} kind="plain" size="xs" onClick={() => searchFor(`${t.artist} ${t.title}`)}>
+          <RoundButton label={tr('Find this song')} kind="plain" size="xs" onClick={() => searchFor(`${t.artist} ${t.title}`, undefined, { id: t.id, title: t.title, artist: t.artist })}>
             <MagnifyingGlass size={14} />
           </RoundButton>
         )}

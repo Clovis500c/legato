@@ -92,8 +92,9 @@ What the services allow, read on 2026-10-31 (specs in [ideas/catch-up.md](ideas/
       many searches were refused.
 - [x] `M` Songs not found kept and shown (user's ask 2026-10-31): searched and truly missing, skipped by imports for 30 days,
       a page in the sidebar to read them, find one by hand, or search them all again. Not tried on a real search yet.
-- [ ] `S` A version found by hand stays a separate row: the song stays on the not-found list and its playlists keep the row
-      with nothing to play.
+- [x] `S` A version found by hand stays a separate row: Find this song now opens the search in a pick mode (a banner,
+      Use this version on each result); the pick joins the song's own row (`Library::set_version`, a library song merges
+      in), so its playlists play it and it leaves the list. Not tried in the real app yet.
 - [x] `M` Import under YouTube's limit (user's ask 2026-10-31): a line for the time left, one for the limit with its countdown,
       held-back time counted in the estimate, one search settling every song in line it brought back. Measured on an address
       already limited: 44 searches, then blocked 5 min, then about one every 15 s. The gain from `Line` isn't measured yet.

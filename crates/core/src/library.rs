@@ -584,6 +584,20 @@ impl Library {
         })
     }
 
+    /// A version picked by hand for `keep` (Songs not found): the picked song's ids join that row, a row of its own folded
+    /// in, so the playlists holding `keep` play it and it leaves the list. Its names stay the imported ones.
+    pub fn set_version(&self, keep: i64, picked: &Track) -> Result<()> {
+        self.tx(|| {
+            anyhow::ensure!(self.db.query_row("SELECT 1 FROM tracks WHERE id = ?1", [keep], |_| Ok(())).optional()?.is_some(), "Song not found");
+            let other = self.upsert_track(picked)?;
+            if other != keep {
+                self.absorb(keep, other)?;
+            }
+            self.db.execute("DELETE FROM not_found WHERE track_id = ?1", [keep])?;
+            Ok(())
+        })
+    }
+
     /// Replace imported playlist content. A re-sync also learns which end new songs land on ("date added" order),
     /// unless the user set it by hand.
     pub fn save_playlist(&self, source: Source, source_id: &str, name: &str, tracks: &[Track]) -> Result<i64> {
@@ -1424,6 +1438,28 @@ mod tests {
         lib.mark_not_found(&on(Source::Spotify, "s1", None))?;
         lib.upsert_track(&Track { ids: [(Source::Apple, "a1".to_string()), (Source::Spotify, "s1".to_string())].into(), ..on(Source::Apple, "a1", None) })?;
         assert_eq!(lib.not_found()?, [keep]);
+        Ok(())
+    }
+
+    #[test]
+    fn a_version_picked_by_hand_joins_the_row_its_playlists_hold() -> Result<()> {
+        let lib = Library::in_memory()?;
+        let spotify = Track { title: "One".into(), artist: "A".into(), duration_ms: Some(200_000), ids: [(Source::Spotify, "s1".to_string())].into(), ..Default::default() };
+        let list = lib.save_playlist(Source::Spotify, "export:x", "X", std::slice::from_ref(&spotify))?;
+        let row = lib.playlist_tracks(list)?[0].id;
+        lib.mark_not_found(&spotify)?;
+        // The video the user picked is already a song of theirs, named its own way.
+        let video = Track { title: "A - One (Official Video)".into(), artist: "A VEVO".into(), duration_ms: Some(215_000), ids: [(Source::Youtube, "v1".to_string())].into(), art: Some("https://i.ytimg.com/vi/v1/hqdefault.jpg".into()), ..Default::default() };
+        let own = lib.upsert_track(&video)?;
+        assert_ne!(own, row);
+        lib.set_version(row, &video)?;
+        assert!(lib.not_found()?.is_empty());
+        let tracks = lib.tracks()?;
+        assert_eq!(tracks.len(), 1, "one row, not two");
+        let t = &tracks[0];
+        assert_eq!((t.id, t.track.title.as_str(), t.track.ids.get(&Source::Youtube).map(String::as_str)), (row, "One", Some("v1")));
+        assert_eq!(lib.playlist_tracks(list)?[0].id, row);
+        assert!(lib.set_version(9999, &video).is_err());
         Ok(())
     }
 

@@ -3,11 +3,12 @@ import { artistName } from '../../shared/artistName'
 import { useShallow } from 'zustand/react/shallow'
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useSettings } from '../../app/settings'
-import { useStore } from '../../app/store'
+import { useStore, type VersionPick } from '../../app/store'
 import { api, type LibraryTrack, type Origin, type SearchHit, type SearchResults, type Track } from '../../shared/api'
 import { trackArt } from '../../shared/art'
 import { formatCount, formatDuration, region } from '../../shared/format'
 import { msg, tr, trn } from '../../shared/i18n/i18n'
+import { Button } from '../../shared/ui/Button'
 import { onMenu } from '../../shared/ui/ContextMenu'
 import { LedChip, RoundButton, Toggle } from '../../shared/ui/controls'
 import { Cover } from '../../shared/ui/Cover'
@@ -73,7 +74,21 @@ const InLibrary = () => (
   </span>
 )
 
-function HitRow({ hit, onAdded, onPlay, extra }: { hit: SearchHit; onAdded: (id: number) => void; onPlay: () => void; extra?: ReactNode }) {
+/** Songs not found › Find this song: what replaces Add on each result. */
+function PickButton({ onPick, className = '' }: { onPick: () => Promise<void>; className?: string }) {
+  const [busy, setBusy] = useState(false)
+  const pick = () => {
+    setBusy(true)
+    void onPick().finally(() => setBusy(false))
+  }
+  return (
+    <Button variant="ghost" className={`h-8 shrink-0 px-3 ${className}`} disabled={busy} onClick={pick}>
+      {tr('Use this version')}
+    </Button>
+  )
+}
+
+function HitRow({ hit, onAdded, onPlay, extra, onPick }: { hit: SearchHit; onAdded: (id: number) => void; onPlay: () => void; extra?: ReactNode; onPick?: () => Promise<void> }) {
   const [busy, setBusy] = useState(false)
   const kind = hit.ids.youtube && !hit.ids.apple ? videoKind(hit.title) : null
   const add = async () => {
@@ -107,7 +122,9 @@ function HitRow({ hit, onAdded, onPlay, extra }: { hit: SearchHit; onAdded: (id:
       right={
         <>
           {extra}
-          {hit.libraryId ? (
+          {onPick ? (
+            <PickButton onPick={onPick} />
+          ) : hit.libraryId ? (
             <InLibrary />
           ) : (
             <RoundButton label={tr('Add {title}', { title: hit.title })} kind="soft" size="sm" disabled={busy} onClick={add}>
@@ -121,7 +138,7 @@ function HitRow({ hit, onAdded, onPlay, extra }: { hit: SearchHit; onAdded: (id:
 }
 
 /** A library song among the results: plays the matching songs from there. */
-function LibraryRow({ list, i }: { list: LibraryTrack[]; i: number }) {
+function LibraryRow({ list, i, onPick }: { list: LibraryTrack[]; i: number; onPick?: (t: LibraryTrack) => Promise<void> }) {
   const t = list[i]
   return (
     <ResultRow
@@ -134,13 +151,13 @@ function LibraryRow({ list, i }: { list: LibraryTrack[]; i: number }) {
       ms={t.durationMs}
       onPlay={() => usePlayer.getState().playTracks(list, i)}
       menu={() => trackMenu(t, { list, index: i })}
-      right={<InLibrary />}
+      right={onPick ? <PickButton onPick={() => onPick(t)} /> : <InLibrary />}
     />
   )
 }
 
 /** YouTube result as a 16:9 card (thumbnails are 4:3 with bars: the crop drops them); grey on hover like Media/Card. */
-function VideoCard({ hit, onPlay, onAdded }: { hit: SearchHit; onPlay: () => void; onAdded: (id: number) => void }) {
+function VideoCard({ hit, onPlay, onAdded, onPick }: { hit: SearchHit; onPlay: () => void; onAdded: (id: number) => void; onPick?: () => Promise<void> }) {
   const src = trackArt({ ...hit, id: hit.libraryId ?? undefined })[0]
   const add = () => void api.addTrack(trackOf(hit)).then(async (id) => (onAdded(id), await useStore.getState().refreshChanged()), (e) => useStore.setState({ error: String(e) }))
   return (
@@ -155,6 +172,7 @@ function VideoCard({ hit, onPlay, onAdded }: { hit: SearchHit; onPlay: () => voi
           <span className="truncate text-[0.8125rem] text-ink-3">{artistName(hit.artist)}</span>
         </span>
       </button>
+      {onPick && <PickButton onPick={onPick} className="mx-3" />}
     </li>
   )
 }
@@ -263,8 +281,26 @@ export function SearchView() {
     if (!h.libraryId && !h.ids.youtube) queue[i] = remoteTrack(await api.resolveTrack(trackOf(h)).catch(() => trackOf(h)))
     play(queue, i)
   }
+  // Songs not found › Find this song: the picked result becomes that song's version (a library song merges into it).
+  const pick = request?.pick
+  const endPick = () => {
+    const s = useStore.getState().search
+    useStore.setState({ search: s && { ...s, pick: undefined } })
+    go({ name: 'notFound' })
+  }
+  const picked = (p: VersionPick, done: Promise<void>) =>
+    done.then(
+      async () => {
+        endPick()
+        await useStore.getState().refreshChanged()
+        useStore.getState().notify(tr('“{title}” plays from the version you picked', { title: p.title }))
+      },
+      (e) => useStore.setState({ error: String(e) }),
+    )
+  const pickHit = pick ? (h: SearchHit) => () => picked(pick, api.pickVersion(pick.id, trackOf(h))) : undefined
+  const pickOwn = pick ? (t: LibraryTrack) => picked(pick, t.id === pick.id ? Promise.resolve() : api.mergeTracks(pick.id, [t.id])) : undefined
   const markAdded = (h: SearchHit, libraryId: number) => setRes((r) => r && { ...r, r: { ...r.r, hits: r.r.hits.map((x) => (x === h ? { ...x, libraryId } : x)) } })
-  const hitRows = (list: SearchHit[]) => list.map((h) => <HitRow key={Object.values(h.ids).join('|')} hit={h} onAdded={(id) => markAdded(h, id)} onPlay={() => void playHit(h, list)} />)
+  const hitRows = (list: SearchHit[]) => list.map((h) => <HitRow key={Object.values(h.ids).join('|')} hit={h} onAdded={(id) => markAdded(h, id)} onPlay={() => void playHit(h, list)} onPick={pickHit?.(h)} />)
 
   // A catalog's chip shows that catalog alone: your library's matches step aside.
   const mine = only ? NONE : lib
@@ -342,7 +378,7 @@ export function SearchView() {
   const songsList = (
     <ul className="min-w-0">
       {libSongs.map((t, i) => (
-        <LibraryRow key={t.id} list={mine.songs} i={i} />
+        <LibraryRow key={t.id} list={mine.songs} i={i} onPick={pickOwn} />
       ))}
       {everywhere && hitRows(songs.slice(0, FEW - libSongs.length))}
     </ul>
@@ -374,7 +410,7 @@ export function SearchView() {
           {/* One row, as many cards as fit the width (the rest wait behind Show all); their padding is the gap. */}
           <ul className="-mx-3 -mt-2 grid auto-rows-[0] grid-cols-[repeat(auto-fill,minmax(220px,1fr))] grid-rows-[auto] overflow-hidden">
             {videos.slice(0, 8).map((h) => (
-              <VideoCard key={Object.values(h.ids).join('|')} hit={h} onPlay={() => void playHit(h, videos)} onAdded={(id) => markAdded(h, id)} />
+              <VideoCard key={Object.values(h.ids).join('|')} hit={h} onPlay={() => void playHit(h, videos)} onAdded={(id) => markAdded(h, id)} onPick={pickHit?.(h)} />
             ))}
           </ul>
         </Section>
@@ -441,6 +477,14 @@ export function SearchView() {
           </label>
         )}
       </div>
+      {pick && (
+        <div className="mb-4 flex shrink-0 items-center justify-between gap-4 rounded-lg border border-line bg-raised px-4 py-3">
+          <p className="min-w-0 text-[0.8125rem] text-ink-2">{tr('Pick the version of “{title}” by {artist}: the playlists that hold it will play it.', { title: pick.title, artist: artistName(pick.artist) })}</p>
+          <Button variant="ghost" className="shrink-0" onClick={endPick}>
+            {tr('Cancel')}
+          </Button>
+        </div>
+      )}
       {/* Behind a section's Show all: its title, and the way back. */}
       {shown !== 'all' && (
         <div className="flex shrink-0 items-center gap-2 pb-3">
@@ -462,7 +506,7 @@ export function SearchView() {
                 <Section title={tr('In your library')} onAll={mine.songs.length > 10 ? () => pickFrom('library') : undefined}>
                   <ul>
                     {mine.songs.slice(0, 10).map((t, i) => (
-                      <LibraryRow key={t.id} list={mine.songs} i={i} />
+                      <LibraryRow key={t.id} list={mine.songs} i={i} onPick={pickOwn} />
                     ))}
                   </ul>
                 </Section>

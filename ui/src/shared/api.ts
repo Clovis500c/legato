@@ -37,6 +37,8 @@ export const api = {
   removeFromLibrary: (trackId: number) => invoke<void>('remove_from_library', { trackId }),
   /** Duplicates: `others` become `keep` (every source, playlist spot and play on one song). */
   mergeTracks: (keep: number, others: number[]) => invoke<void>('merge_duplicates', { keep, others }),
+  /** Songs not found: a search hit becomes the version of row `trackId` (no row of its own). */
+  pickVersion: (trackId: number, track: Track) => invoke<void>('pick_version', { trackId, track }),
   /** Pasted YouTube link → library. Returns "Artist – Title". */
   addLink: (url: string) => invoke<string>('add_link', { url }),
   searchCatalogs: (query: string, country: string) => invoke<SearchResults>('search_catalogs', { query, country }),
