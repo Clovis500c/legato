@@ -10,6 +10,7 @@ import { VideoSlot } from './NowPlaying'
 import { gripCorner, nearestSpot, resized, spotPosition, type Point, type Size } from './snap'
 import { ArtistLink } from './ArtistLink'
 import { useNowTrack, usePlayer } from './store'
+import { volumeWheelRef } from './volume'
 import { Transport } from './Transport'
 import { tr } from '../../shared/i18n/i18n'
 
@@ -53,6 +54,11 @@ export function MiniPlayer() {
     observer.current = new ResizeObserver(() => setHeight(el.offsetHeight))
     observer.current.observe(el)
   }, [])
+
+  const card = useCallback((el: HTMLDivElement | null) => {
+    measure(el)
+    return volumeWheelRef(el)
+  }, [measure])
 
   const w = width ?? miniWidth
   const size = { w, h: height }
@@ -123,7 +129,7 @@ export function MiniPlayer() {
   const glide = drag || width !== null ? '' : 'transition-[left,top] duration-300 ease-[cubic-bezier(.2,.9,.25,1)]'
   const body = (
     <div
-      ref={measure}
+      ref={card}
       role="region"
       aria-label={tr('Mini player')}
       onContextMenu={onMenu(playerMenu)}

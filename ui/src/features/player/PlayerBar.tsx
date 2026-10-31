@@ -16,6 +16,7 @@ import { trackArt } from '../../shared/art'
 import { Cover } from '../../shared/ui/Cover'
 import { ArtistLink } from './ArtistLink'
 import { bindFrame, tailVolume, useNowTrack, usePlayer, useVideoSlot } from './store'
+import { volumeWheelRef } from './volume'
 import { pop } from '../../shared/motion'
 import { embedUrl, parseYt, ytPost } from './youtube'
 import { closeWatch, cropWatch, placeWatch, sendWatch, useWatch, watchUpdate } from './watch'
@@ -294,7 +295,7 @@ export function PlayerBar() {
 
   return (
     // On the window's background, under the panels (docs/design.md).
-    <footer onContextMenu={onMenu(playerMenu)} className="flex h-22 shrink-0 items-center justify-between gap-6 px-4">
+    <footer ref={volumeWheelRef} onContextMenu={onMenu(playerMenu)} className="flex h-22 shrink-0 items-center justify-between gap-6 px-4">
       {/* In key order: each iframe keeps its place as the two swap roles (a moved iframe reloads). */}
       {now?.youtubeId &&
         [...(tail ? [tail] : []), { key: frameKey, videoId: now.youtubeId }]

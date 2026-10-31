@@ -25,6 +25,7 @@ import { viaLabel, type Via } from './sources'
 import { useStill } from './still'
 import { ArtistLink } from './ArtistLink'
 import { isRemote, useNowTrack, usePlayer, useVideoSlot } from './store'
+import { volumeWheelRef } from './volume'
 import { Transport } from './Transport'
 import { UpNext } from './UpNext'
 import { AddToPlaylist } from '../library/AddToPlaylist'
@@ -351,7 +352,7 @@ export function NowPlaying() {
         )}
       </div>
 
-      <div className="flex shrink-0 flex-col gap-3 pt-6">
+      <div ref={volumeWheelRef} className="flex shrink-0 flex-col gap-3 pt-6">
         {panel && (
           <div className="min-w-0">
             <h2 className="truncate text-[2rem] leading-tight font-black tracking-[-0.02em]">{now.title}</h2>

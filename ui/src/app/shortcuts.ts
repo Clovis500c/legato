@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { usePlayer } from '../features/player/store'
+import { nudgeVolume } from '../features/player/volume'
 import { api } from '../shared/api'
 import { accelerator, ACTIONS, bindings, comboOf, type ActionId, type Combo } from './keys'
 import { useSettings } from './settings'
@@ -11,7 +12,6 @@ const seekBy = (ms: number) => {
   const { now, positionMs, durationMs, seek } = player()
   if (now) seek(Math.max(0, Math.min(positionMs + ms, durationMs ?? Infinity)))
 }
-const volumeBy = (d: number) => player().setVolume(Math.round(Math.max(0, Math.min(1, player().volume + d)) * 100) / 100)
 
 /** What each action does. One table with keys.ts (labels, default keys): Settings › Shortcuts lists both. */
 export const RUN: Record<ActionId, () => void> = {
@@ -24,8 +24,8 @@ export const RUN: Record<ActionId, () => void> = {
   },
   forward: () => seekBy(10_000),
   back10: () => seekBy(-10_000),
-  volumeUp: () => volumeBy(0.1),
-  volumeDown: () => volumeBy(-0.1),
+  volumeUp: () => nudgeVolume(0.1),
+  volumeDown: () => nudgeVolume(-0.1),
   mute: () => player().toggleMute(),
   shuffle: () => player().toggleShuffle(),
   repeat: () => player().cycleRepeat(),

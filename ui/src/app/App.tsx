@@ -14,6 +14,7 @@ import { PageBoundary } from './PageBoundary'
 import { startMedia } from '../features/player/media'
 import { resumeSession, startSessionSaving } from '../features/player/session'
 import { MiniPlayer } from '../features/player/MiniPlayer'
+import { VolumeHud } from '../features/player/VolumeHud'
 import { NowPlaying } from '../features/player/NowPlaying'
 import { useAmbient } from '../features/player/ambient'
 import { trackArt } from '../shared/art'
@@ -335,6 +336,7 @@ export function App() {
       </div>
       <PlayerBar />
       <MiniPlayer />
+      <VolumeHud />
       {full && <NowPlaying />}
       <Toasts />
       <Asker />
