@@ -154,6 +154,22 @@ pub struct SpotifyLibraryImport {
     pub failed: Vec<String>,
 }
 
+/// A song going through: what the import screen shows.
+#[derive(Clone, Serialize, ts_rs::TS)]
+#[ts(export)]
+pub struct SpotifySong {
+    pub title: String,
+    pub artist: String,
+    pub cover: Option<String>,
+    pub playable: bool,
+}
+
+impl From<&Track> for SpotifySong {
+    fn from(t: &Track) -> Self {
+        Self { title: t.title.clone(), artist: t.artist.clone(), cover: t.art.clone(), playable: t.ids.contains_key(&Source::Youtube) }
+    }
+}
+
 #[derive(Clone, Serialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export)]
@@ -166,6 +182,12 @@ pub struct SpotifyProgress {
     pub matching: bool,
     pub done: usize,
     pub total: usize,
+    /// Every list's songs. 0: not known yet (Spotify's page says them list by list).
+    pub all_done: usize,
+    pub all_total: usize,
+    /// With a YouTube version so far, every list.
+    pub playable: usize,
+    pub song: Option<SpotifySong>,
 }
 
 /// A list imported: a playlist of its own, a second import updates it. Liked Songs joins Liked Music, all services in one.
@@ -192,11 +214,12 @@ pub async fn spotify_import(app: AppHandle, state: State<'_, AppState>, picks: V
         if links::stopped() {
             break;
         }
-        let tell = |matching, done, total| {
-            let _ = app.emit_to("main", "spotify-import", SpotifyProgress { name: pick.name.clone(), list: n + 1, lists, matching, done, total });
+        let before = report.playable;
+        let tell = |matching, done, total, playable, song: Option<&Track>| {
+            let _ = app.emit_to("main", "spotify-import", SpotifyProgress { name: pick.name.clone(), list: n + 1, lists, matching, done, total, all_done: 0, all_total: 0, playable, song: song.map(SpotifySong::from) });
         };
-        tell(false, 0, 0);
-        let read = match songs(&app, &pick.id, |done, total| tell(false, done, total)).await {
+        tell(false, 0, 0, before, None);
+        let read = match songs(&app, &pick.id, |done, total| tell(false, done, total, before, None)).await {
             Ok(read) if !read.is_empty() => read,
             Ok(_) => {
                 report.failed.push(pick.name.clone());
@@ -209,7 +232,7 @@ pub async fn spotify_import(app: AppHandle, state: State<'_, AppState>, picks: V
             }
         };
         let total = read.len();
-        let Some(tracks) = links::find_on_youtube(&app, &read, |done| tell(true, done, total)).await? else { break };
+        let Some(tracks) = links::find_on_youtube(&app, &read, |step| tell(true, step.done, total, before + step.found, step.song)).await? else { break };
         let id = save(&state, &pick.id, pick.name.trim(), &tracks).map_err(err)?;
         report.playlist_id.get_or_insert(id);
         report.lists += 1;

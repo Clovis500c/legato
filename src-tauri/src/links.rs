@@ -63,27 +63,49 @@ pub fn stopped() -> bool {
     STOP.load(Ordering::Relaxed)
 }
 
-/// Each song with its YouTube version when one exists, in order. 6 searches at a time: quick, still polite. `progress`:
-/// songs searched. None: stopped.
-pub async fn find_on_youtube(app: &tauri::AppHandle, tracks: &[Track], progress: impl Fn(usize)) -> Result<Option<Vec<Track>>, String> {
-    let mut out = Vec::with_capacity(tracks.len());
-    progress(0);
-    for chunk in tracks.chunks(6) {
+/// Searches running at once, a new one as each ends: quick, still polite (unofficial APIs).
+const SEARCHES: usize = 8;
+
+/// One step of a search.
+pub struct Searched<'a> {
+    pub done: usize,
+    /// Of those, the ones with a YouTube version.
+    pub found: usize,
+    pub song: Option<&'a Track>,
+}
+
+/// Each song with its YouTube version when one exists, in order. What the library knows isn't searched: a list imported
+/// again, or sharing songs with another, takes seconds. `progress`: after each song. None: stopped.
+pub async fn find_on_youtube(app: &tauri::AppHandle, tracks: &[Track], progress: impl Fn(Searched)) -> Result<Option<Vec<Track>>, String> {
+    let state = app.state::<AppState>();
+    let mut out = tracks.to_vec();
+    let playable = |t: &Track| t.ids.contains_key(&Source::Youtube);
+    for t in out.iter_mut().filter(|t| !t.ids.contains_key(&Source::Youtube)) {
+        // Lock per song: the interface reads the library meanwhile.
+        if let Ok(Some(video)) = state.lib().known_youtube(t) {
+            t.ids.insert(Source::Youtube, video);
+        }
+    }
+    let mut todo = (0..out.len()).filter(|&i| !playable(&out[i])).collect::<Vec<_>>().into_iter();
+    let mut done = out.len() - todo.len();
+    let mut found = done;
+    progress(Searched { done, found, song: out.iter().rfind(|t| playable(t)) });
+    let mut running = tokio::task::JoinSet::new();
+    loop {
         if stopped() {
             return Ok(None);
         }
-        let jobs: Vec<_> = chunk
-            .iter()
-            .cloned()
-            .map(|t| {
-                let app = app.clone();
-                tauri::async_runtime::spawn(async move { with_youtube(&app.state::<AppState>(), t).await })
-            })
-            .collect();
-        for job in jobs {
-            out.push(job.await.map_err(err)?);
+        while running.len() < SEARCHES {
+            let Some(i) = todo.next() else { break };
+            let (app, song) = (app.clone(), out[i].clone());
+            running.spawn(async move { (i, with_youtube(&app.state::<AppState>(), song).await) });
         }
-        progress(out.len());
+        let Some(ended) = running.join_next().await else { break };
+        let (i, song) = ended.map_err(err)?;
+        out[i] = song;
+        done += 1;
+        found += usize::from(playable(&out[i]));
+        progress(Searched { done, found, song: Some(&out[i]) });
     }
     Ok((!stopped()).then_some(out))
 }
@@ -100,8 +122,8 @@ pub async fn import_link(app: tauri::AppHandle, state: State<'_, AppState>, url:
     let _running = begin()?;
     let list = read(url.trim()).await.map_err(err)?;
     let total = list.tracks.len();
-    let progress = |done: usize| {
-        let _ = app.emit_to("main", "import-progress", [done, total]);
+    let progress = |step: Searched| {
+        let _ = app.emit_to("main", "import-progress", [step.done, total]);
     };
     let tracks = find_on_youtube(&app, &list.tracks, progress).await?.ok_or("canceled")?;
     let (found, missing): (Vec<_>, Vec<_>) = tracks.into_iter().partition(|t| t.ids.contains_key(&Source::Youtube));

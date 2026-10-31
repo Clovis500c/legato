@@ -3,7 +3,7 @@
 //! on Spotify's page, the first time. The file it makes is caught here, read by `music_core::spotify_export` and deleted.
 //! A third party's site: watched, so it failing ends in words, not a window left waiting (`Watch`).
 
-use crate::spotify_web::{SpotifyLibraryImport, SpotifyList, SpotifyPick, SpotifyProgress};
+use crate::spotify_web::{SpotifyLibraryImport, SpotifyList, SpotifyPick, SpotifyProgress, SpotifySong};
 use crate::{AppState, CmdResult, err, links};
 use music_core::model::Source;
 use music_core::spotify_export::{self, ExportTrouble, ExportedList, Next, Signal, Watch};
@@ -169,14 +169,17 @@ pub async fn spotify_export_import(app: AppHandle, state: State<'_, AppState>, p
         return Err("Invalid lists".into());
     }
     let lists = picked.len();
+    let all_total = picked.iter().map(|(l, _)| l.tracks.len()).sum();
     let mut report = SpotifyLibraryImport { playlist_id: None, lists: 0, songs: 0, playable: 0, failed: Vec::new() };
     for (n, (list, name)) in picked.iter().enumerate() {
         // Trust boundary: the interface's name, bounded.
         let name = name.trim();
         let name = if name.is_empty() || name.chars().count() > 200 { list.name.as_str() } else { name };
         let total = list.tracks.len();
-        let tell = |done| {
-            let _ = app.emit_to("main", "spotify-import", SpotifyProgress { name: name.to_string(), list: n + 1, lists, matching: true, done, total });
+        let (songs_before, playable_before) = (report.songs, report.playable);
+        let tell = |step: links::Searched| {
+            let progress = SpotifyProgress { name: name.to_string(), list: n + 1, lists, matching: true, done: step.done, total, all_done: songs_before + step.done, all_total, playable: playable_before + step.found, song: step.song.map(SpotifySong::from) };
+            let _ = app.emit_to("main", "spotify-import", progress);
         };
         let Some(tracks) = links::find_on_youtube(&app, &list.tracks, tell).await? else { break };
         let id = crate::spotify_web::save(&state, &list.id, name, &tracks).map_err(err)?;

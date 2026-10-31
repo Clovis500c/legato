@@ -29,7 +29,7 @@ tauri = { version = "2.12.4", features = ["tray-icon", "unstable"] }
 tauri-plugin-opener = "2.7.2"
 tauri-plugin-dialog = "=2.8.0"
 tauri-plugin-updater = "2"
-tokio = { version = "1.53.3", features = ["time", "macros"] }
+tokio = { version = "1.53.3", features = ["time", "macros", "rt"] }
 notify = "8"
 tauri-plugin-window-state = "2.5.0"
 tauri-plugin-global-shortcut = "2"

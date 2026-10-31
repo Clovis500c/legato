@@ -438,6 +438,17 @@ impl Library {
         Ok(self.lookup(t)?.first().copied())
     }
 
+    /// This song's YouTube version when the library has one: the same row `upsert_track` would pick, no search needed.
+    pub fn known_youtube(&self, t: &Track) -> Result<Option<String>> {
+        let mut video = self.db.prepare_cached("SELECT source_id FROM track_ids WHERE track_id = ?1 AND source = ?2")?;
+        for row in self.lookup(t)? {
+            if let Some(id) = video.query_row(params![row, Source::Youtube.as_str()], |r| r.get(0)).optional()? {
+                return Ok(Some(id));
+            }
+        }
+        Ok(None)
+    }
+
     /// Rows matching by source id, then ISRC, then title+artist+duration.
     fn lookup(&self, t: &Track) -> Result<BTreeSet<i64>> {
         let mut found = BTreeSet::new();
@@ -1328,6 +1339,22 @@ mod tests {
 
     fn song(n: u32) -> Track {
         Track { title: format!("Song {n}"), artist: format!("Artist {n}"), ids: BTreeMap::from([(Source::Youtube, format!("vid{n}"))]), ..Default::default() }
+    }
+
+    #[test]
+    fn an_import_knows_the_youtube_version_it_already_found() -> Result<()> {
+        let lib = Library::in_memory()?;
+        let spotify = |id: &str, title: &str| Track { title: title.into(), artist: "A".into(), ids: [(Source::Spotify, id.to_string())].into(), ..Default::default() };
+        let found = Track { ids: [(Source::Spotify, "s1".to_string()), (Source::Youtube, "v1".to_string())].into(), ..spotify("s1", "One") };
+        lib.upsert_track(&found)?;
+        lib.upsert_track(&spotify("s2", "Two"))?;
+        assert_eq!(lib.known_youtube(&spotify("s1", "One"))?.as_deref(), Some("v1"));
+        // Same song by its words, from another service's list.
+        let elsewhere = Track { ids: [(Source::Apple, "x".to_string())].into(), ..spotify("", "One") };
+        assert_eq!(lib.known_youtube(&elsewhere)?.as_deref(), Some("v1"));
+        assert_eq!(lib.known_youtube(&spotify("s2", "Two"))?, None, "known, but no version: searched");
+        assert_eq!(lib.known_youtube(&spotify("s3", "Three"))?, None);
+        Ok(())
     }
 
     #[test]
