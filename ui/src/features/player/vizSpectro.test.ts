@@ -28,11 +28,16 @@ describe('spectrogram scroll', () => {
 describe('spectrogram colours', () => {
   const map = colorMap()
 
-  it('silence is clear, the loudest is opaque and light', () => {
+  it('silence is clear, the loudest is opaque', () => {
     expect(unpack(map[0]).a).toBe(0)
-    const top = unpack(map[255])
-    expect(top.a).toBe(255)
-    expect(top.r).toBeGreaterThan(200)
+    expect(unpack(map[255]).a).toBe(255)
+  })
+
+  it('is the theme ink at every step, whatever the ink: no hues of its own', () => {
+    for (const rgb of [[20, 30, 40], [250, 240, 230]] as const) {
+      const m = colorMap(rgb)
+      for (const i of [1, 100, 255]) expect(unpack(m[i])).toMatchObject({ r: rgb[0], g: rgb[1], b: rgb[2] })
+    }
   })
 
   it('opacity only rises with the level', () => {
@@ -46,10 +51,10 @@ describe('spectrogram column', () => {
   it('low bands at the bottom, high at the top', () => {
     const out = new Uint32Array(40)
     fillColumn(out, [1, 0, 0, 0], rowMix(40, 4), map)
-    expect(unpack(out[39]).a).toBe(255)
+    expect(unpack(out[39]).a).toBeGreaterThan(200)
     expect(unpack(out[0]).a).toBe(0)
     fillColumn(out, [0, 0, 0, 1], rowMix(40, 4), map)
-    expect(unpack(out[0]).a).toBe(255)
+    expect(unpack(out[0]).a).toBeGreaterThan(200)
     expect(unpack(out[39]).a).toBe(0)
   })
 

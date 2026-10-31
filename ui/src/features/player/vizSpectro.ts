@@ -8,32 +8,19 @@ export const SCROLL = 90
 export const SCROLL_CALM = 45
 
 /**
- * Colour map, level 0..1 → [r, g, b, a]: clear at silence, then violet, red, orange, pale yellow (a magma-like
- * table, readable on a dark and on a light page).
+ * Colour map, level 0..1 → RGBA: the theme's ink at an opacity that rises with the level (clear at silence, full at
+ * the loudest). No hues of its own: the ink and greys rule (docs/design.md), and a dark or light page both read it.
+ * `rgb` = the ink's red, green, blue (0..255). 256 steps, each one packed for a Uint32 view of RGBA pixels (little
+ * endian: a, b, g, r).
  */
-const STOPS: [number, number, number, number, number][] = [
-  [0, 20, 8, 60, 0],
-  [0.2, 52, 14, 100, 0.55],
-  [0.4, 120, 28, 109, 0.85],
-  [0.6, 205, 63, 78, 1],
-  [0.8, 249, 130, 70, 1],
-  [1, 253, 231, 130, 1],
-]
-
-/** 256 steps of the map, each one packed for a Uint32 view of RGBA pixels (little endian: a, b, g, r). */
-export function colorMap(): Uint32Array {
+export function colorMap(rgb: readonly [number, number, number] = [128, 128, 128]): Uint32Array {
   const out = new Uint32Array(256)
+  const [r, g, b] = rgb.map((v) => Math.min(255, Math.max(0, Math.round(v))))
   for (let i = 0; i < 256; i++) {
-    const t = i / 255
-    let k = 1
-    while (k < STOPS.length - 1 && STOPS[k][0] < t) k++
-    const [t0, r0, g0, b0, a0] = STOPS[k - 1]
-    const [t1, r1, g1, b1, a1] = STOPS[k]
-    const f = Math.min(1, Math.max(0, (t - t0) / (t1 - t0)))
-    const mix = (a: number, b: number) => a + (b - a) * f
-    const a = Math.round(mix(a0, a1) * 255)
-    // Premultiplied or not, putImageData takes straight colour.
-    out[i] = ((a << 24) | (Math.round(mix(b0, b1)) << 16) | (Math.round(mix(g0, g1)) << 8) | Math.round(mix(r0, r1))) >>> 0
+    // A little above linear: the quiet end stays visible against the clear.
+    const a = Math.round((i / 255) ** 0.8 * 255)
+    // Straight colour: putImageData takes it so.
+    out[i] = ((a << 24) | (b << 16) | (g << 8) | r) >>> 0
   }
   return out
 }
