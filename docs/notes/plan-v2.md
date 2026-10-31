@@ -383,6 +383,10 @@ every session.
       back, Auto on a real music video, resume after a real restart, sort Most played.
 - [ ] Repeat one / repeat all at a track's end, menu actions that write (rename, delete, export, remove from playlist),
       local file covers, Apple cover backfill, Spotify covers, add another Google account, sign out.
+- [ ] Landed the night of 2026-10-31, never seen on a real screen: Deezer and Apple links through the paste box, Shift + wheel
+      on a real mouse and the volume number, SponsorBlock turned on (a real intro skipped, Undo, marks on the progress bar), Skip
+      silence across real crossfades, Karaoke on plain lyrics, with animations off and over a video in the watch page, a
+      10 000-song scroll asking only 64 px covers.
 
 ## Not done yet
 
