@@ -237,11 +237,14 @@ fn stop(app: &AppHandle, id: &str) {
 pub fn start_all(app: &AppHandle) {
     let state = app.state::<AppState>();
     for (id, e) in registry(&state) {
-        if e.on
-            && let Err(error) = start(app, &id, &e.granted)
-        {
-            app.state::<Plugins>().errors.lock().unwrap().insert(id, error);
+        if !e.on {
+            continue;
         }
+        if let Err(error) = start(app, &id, &e.granted) {
+            app.state::<Plugins>().errors.lock().unwrap().insert(id.clone(), error);
+        }
+        // Started after the page listed them: it looks again.
+        let _ = app.emit_to("main", "plugin-state", &id);
     }
 }
 

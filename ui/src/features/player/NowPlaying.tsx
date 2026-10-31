@@ -1,8 +1,9 @@
 import { ArrowSquareOut, Heart, Queue, Quotes, SlidersHorizontal, ThumbsDown } from '@phosphor-icons/react'
+import { artistName } from '../../shared/artistName'
 import { STAGE_ID } from '../../app/searchShift'
 import { pop } from '../../shared/motion'
 import { openUrl } from '@tauri-apps/plugin-opener'
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import { useSettings } from '../../app/settings'
 import type { LibraryTrack, Source } from '../../shared/api'
@@ -30,7 +31,7 @@ import { AddToPlaylist } from '../library/AddToPlaylist'
 import { LyricsPanel, useNowLyrics } from './LyricsPanel'
 import { songKey } from './effects'
 import { applyFix, NO_FIX, peekLine } from './lyricsAt'
-import { EditorPanel } from '../editor/EditorPanel'
+import { EditorPanel } from '../../app/pages'
 import { useVideoBox } from './videoBox'
 import { usePulse } from './pulse'
 import { Visualizer } from './Visualizer'
@@ -244,7 +245,7 @@ function NextLine() {
       <Cover title={next.album ?? next.title} art={trackArt(next)} size={40} />
       <span className="min-w-0">
         <span className="block truncate text-sm font-medium">{tr('Next: {title}', { title: next.title })}</span>
-        <span className="block truncate text-[0.8125rem] text-ink-2">{next.artist}</span>
+        <span className="block truncate text-[0.8125rem] text-ink-2">{artistName(next.artist)}</span>
       </span>
     </button>
   )
@@ -327,7 +328,9 @@ export function NowPlaying() {
         </section>
 
         {panel === 'editor' ? (
-          <EditorPanel onHide={() => update({ editor: false })} />
+          <Suspense>
+            <EditorPanel onHide={() => update({ editor: false })} />
+          </Suspense>
         ) : panel === 'lyrics' ? (
           <LyricsPanel onHide={() => update({ lyrics: false })} onUpNext={() => update({ lyrics: false, upNext: true })} />
         ) : panel === 'upNext' ? (

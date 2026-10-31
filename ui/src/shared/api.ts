@@ -223,6 +223,8 @@ export const api = {
   cacheStats: () => invoke<CacheStats>('cache_stats'),
   /** Third-party notices shipped with the app, in the default browser. */
   openLicenses: () => invoke<void>('open_licenses'),
+  /** The UI is up: plugins, update and Sync Mode rounds may start (Rust also starts them after a few seconds). */
+  appReady: () => invoke<void>('app_ready'),
   updateStatus: () => invoke<UpdateStatus>('update_status'),
   updateCheck: () => invoke<void>('update_check'),
   updateInstall: () => invoke<void>('update_install'),

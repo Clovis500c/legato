@@ -1,4 +1,5 @@
 import { ArrowDownLeft, ArrowUpRight, ChartBar, Disc, House, Lightning, MusicNotes, Plus, PlusCircle, SortAscending } from '@phosphor-icons/react'
+import { artistName } from '../../shared/artistName'
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import { useSettings } from '../../app/settings'
@@ -21,7 +22,7 @@ import { groupAlbums, groupArtists } from '../library/filter'
 import { msg, tr, trn } from '../../shared/i18n/i18n'
 import { SidebarPlayer } from '../player/SidebarPlayer'
 import { newSmartList, smartTracks } from '../smart/rules'
-import { saveSmart, smartMenu } from '../smart/SmartView'
+import { saveSmart, smartMenu } from '../smart/actions'
 
 /** Home, Mixes, Stats, Add music: icon Regular at rest, Fill when on (docs/design.md). */
 function NavItem({ on, icon: Icon, label, onClick, onContextMenu }: { on: boolean; icon: typeof House; label: string; onClick: () => void; onContextMenu?: (e: React.MouseEvent) => void }) {
@@ -160,12 +161,12 @@ export function Sidebar() {
     kind === 'albums'
       ? albums.map((g) => {
           const to: View = { name: 'album', album: g.album, artist: g.artist }
-          return { key: `al-${g.album}-${g.artist}`, on: view.name === 'album' && view.album === g.album && view.artist === g.artist, art: <Cover title={g.album} art={trackArt(g.tracks[0])} size={art} className="border-0" />, label: g.album, sub: dot(tr('Album'), g.artist), to, menu: () => navMenu(to, g.tracks) }
+          return { key: `al-${g.album}-${g.artist}`, on: view.name === 'album' && view.album === g.album && view.artist === g.artist, art: <Cover title={g.album} art={trackArt(g.tracks[0])} size={art} className="border-0" />, label: g.album, sub: dot(tr('Album'), artistName(g.artist)), to, menu: () => navMenu(to, g.tracks) }
         })
       : kind === 'artists'
         ? artists.map((g) => {
             const to: View = { name: 'artist', artist: g.artist }
-            return { key: `ar-${g.artist}`, on: view.name === 'artist' && view.artist === g.artist, art: <Cover title={g.artist} art={trackArt(g.cover)} size={art} className="rounded-full! border-0" />, label: g.artist, sub: dot(tr('Artist'), songs(g.count)), round: true, to, menu: () => navMenu(to, g.tracks) }
+            return { key: `ar-${g.artist}`, on: view.name === 'artist' && view.artist === g.artist, art: <Cover title={g.artist} art={trackArt(g.cover)} size={art} className="rounded-full! border-0" />, label: artistName(g.artist), sub: dot(tr('Artist'), songs(g.count)), round: true, to, menu: () => navMenu(to, g.tracks) }
           })
         : [
             ...(kind ? [] : [{ key: 'songs', on: is('songs'), art: tile(<MusicNotes size={wide ? 64 : 22} weight="fill" />, 'bg-ink text-bg'), label: tr('Songs'), sub: dot(tr('All your songs'), counts ? formatCount(tracks.length) : ''), to: { name: 'songs' } as View, menu: () => navMenu({ name: 'songs' }, useStore.getState().tracks) }]),
