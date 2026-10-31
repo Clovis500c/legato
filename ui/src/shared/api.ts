@@ -1,7 +1,7 @@
 import { Channel, invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 import type { Box } from './artbox'
-import type { AddReport, AlbumInfo, CacheStats, Credentials, DetectInput, Detection, Direction, DiscordStatus, Edit, EditDraft, Effects, ExportReport, FindReport, Heard, ImportReport, LastfmStatus, LibraryChanges, LibraryData, LibraryPlaylist, LibraryTrack, ListImport, LinkImport, ListRef, LiveReport, LiveSettings, Lyrics, LyricsAsk, MediaNow, Merged, Mix, NearbyState, Play, PlayerCommand, PlayerLevels, PlayerStatus, PlaylistEdit, PluginCall, PluginInfo, PluginInspect, Pref, Presence, PushFailed, Scrobble, SearchResults, ShareCode, SharePreview, ShieldStatus, ShortcutEntry, SongTags, Source, SourceStatus, SpotifyCommand, SpotifyImport, SpotifyPlayback, SponsorSegment, SyncOffer, SyncProbe, SyncReport, SyncStatus, SystemAccent, Track, UpdateStatus, WatchCmd, WatchRect, WatchReport, YtmAccount, YtmAccounts, YtmArtist, YtmHome } from './generated'
+import type { AddReport, AlbumInfo, CacheStats, Credentials, DetectInput, Detection, Direction, DiscordStatus, Edit, EditDraft, Effects, ExportReport, FindReport, Heard, ImportReport, LastfmStatus, LibraryChanges, LibraryData, LibraryPlaylist, LibraryTrack, ListImport, LinkImport, ListRef, LiveReport, LiveSettings, Lyrics, LyricsAsk, MediaNow, Merged, Mix, NearbyState, Play, PlayerCommand, PlayerLevels, PlayerStatus, PlaylistEdit, PluginCall, PluginInfo, PluginInspect, Pref, Presence, PushFailed, Scrobble, SearchResults, ShareCode, SharePreview, ShieldStatus, ShortcutEntry, SongTags, Source, SourceStatus, SpotifyCommand, SpotifyImport, SpotifyLibraryImport, SpotifyList, SpotifyPick, SpotifyPlayback, SpotifyProgress, SponsorSegment, SyncOffer, SyncProbe, SyncReport, SyncStatus, SystemAccent, Track, UpdateStatus, WatchCmd, WatchRect, WatchReport, YtmAccount, YtmAccounts, YtmArtist, YtmHome } from './generated'
 
 // Every type the commands and events carry is a Rust type: `pnpm types` (ts-rs) writes it into ./generated, never by hand.
 // Re-exported here, so features import them from the api.
@@ -110,6 +110,13 @@ export const api = {
   spotifyWebOpen: () => invoke<void>('spotify_web_open'),
   /** Signed in to the Spotify web player. */
   spotifyWebStatus: () => invoke<boolean>('spotify_web_status'),
+  /** Closes Spotify's window; the session stays. */
+  spotifyWebClose: () => invoke<void>('spotify_web_close'),
+  /** The signed-in user's playlists, read from Spotify's window. */
+  spotifyLists: () => invoke<SpotifyList[]>('spotify_lists'),
+  /** Reads the ticked lists there and imports them. Ended by importLinkStop ("canceled", lists saved so far stay). */
+  spotifyImport: (picks: SpotifyPick[]) => invoke<SpotifyLibraryImport>('spotify_import', { picks }),
+  onSpotifyImport: (cb: (p: SpotifyProgress) => void) => listen<SpotifyProgress>('spotify-import', (e) => cb(e.payload)),
   /** Every account in the Google session + keys of those synced. */
   ytmAccounts: () => invoke<YtmAccounts>('ytm_accounts'),
   /** Synced accounts, in order (first = exports). */

@@ -1603,6 +1603,25 @@ const zh: Record<string, string> = {
   'LED': 'LED',
   'Visualizer full screen on / off': '可视化全屏 开 / 关',
   '← → move the lyrics · Esc leaves': '← → 调整歌词 · Esc 退出',
+  // Connect Spotify
+  'Connect Spotify': '连接 Spotify',
+  'Import your playlists and Liked Songs, private ones too, with any free account.': '使用任意免费账户导入你的播放列表和已点赞的歌曲,私密列表也可以。',
+  'Before you connect': '连接之前',
+  'Legato opens Spotify’s own page and reads your lists as they appear on it. Your password stays with Spotify, and each song is then found on YouTube.': 'Legato 会打开 Spotify 自己的页面,并读取页面上显示的列表。你的密码留在 Spotify,之后每首歌都会在 YouTube 上查找。',
+  'Spotify’s rules forbid collecting its data with a tool and allow it to close an account that does. We know of no such case, but we can’t rule it out: the choice is yours.': 'Spotify 的规则禁止用工具收集其数据,并允许关闭这样做的账户。我们不知道有此类案例,但无法排除:由你决定。',
+  'I understand, continue': '我明白了,继续',
+  'Sign in on Spotify’s page. The next step comes by itself.': '请在 Spotify 页面上登录。下一步会自动开始。',
+  'Reading your library on Spotify…': '正在读取你的 Spotify 音乐库…',
+  'Your Spotify lists': '你的 Spotify 列表',
+  'Liked Songs': '已点赞的歌曲',
+  'Select all': '全选',
+  'Import {n} list': '导入 {n} 个列表',
+  'Import {n} lists': '导入 {n} 个列表',
+  'Spotify, list {list} of {lists}: reading “{name}”… {done} of {total}': 'Spotify,列表 {list}/{lists}:正在读取“{name}”… {done}/{total}',
+  'Spotify, list {list} of {lists}: finding “{name}” on YouTube… {done} of {total}': 'Spotify,列表 {list}/{lists}:正在 YouTube 上查找“{name}”… {done}/{total}',
+  'Imported {n} list from Spotify: {found} of {songs} songs playable': '已从 Spotify 导入 {n} 个列表:{songs} 首中有 {found} 首可播放',
+  'Imported {n} lists from Spotify: {found} of {songs} songs playable': '已从 Spotify 导入 {n} 个列表:{songs} 首中有 {found} 首可播放',
+  'Not read: {lists}': '未读取:{lists}',
 }
 
 export default zh

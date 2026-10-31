@@ -1603,6 +1603,25 @@ const hi: Record<string, string> = {
   'LED': 'LED',
   'Visualizer full screen on / off': 'विज़ुअलाइज़र फ़ुल स्क्रीन चालू / बंद',
   '← → move the lyrics · Esc leaves': '← → बोल खिसकाएँ · Esc से बाहर निकलें',
+  // Connect Spotify
+  'Connect Spotify': 'Spotify कनेक्ट करें',
+  'Import your playlists and Liked Songs, private ones too, with any free account.': 'किसी भी मुफ़्त खाते से अपनी प्लेलिस्ट और पसंद किए गए गाने आयात करें, निजी भी।',
+  'Before you connect': 'कनेक्ट करने से पहले',
+  'Legato opens Spotify’s own page and reads your lists as they appear on it. Your password stays with Spotify, and each song is then found on YouTube.': 'Legato Spotify का अपना पेज खोलता है और आपकी सूचियाँ वैसे ही पढ़ता है जैसे वे वहाँ दिखती हैं। आपका पासवर्ड Spotify के पास रहता है, फिर हर गाना YouTube पर खोजा जाता है।',
+  'Spotify’s rules forbid collecting its data with a tool and allow it to close an account that does. We know of no such case, but we can’t rule it out: the choice is yours.': 'Spotify के नियम किसी टूल से उसका डेटा इकट्ठा करने से मना करते हैं और ऐसा करने वाला खाता बंद करने की अनुमति देते हैं। हमें ऐसा कोई मामला नहीं पता, पर इसे नकारा नहीं जा सकता: चुनाव आपका है।',
+  'I understand, continue': 'समझ गया, जारी रखें',
+  'Sign in on Spotify’s page. The next step comes by itself.': 'Spotify के पेज पर साइन इन करें। अगला चरण अपने आप आएगा।',
+  'Reading your library on Spotify…': 'आपकी Spotify लाइब्रेरी पढ़ी जा रही है…',
+  'Your Spotify lists': 'आपकी Spotify सूचियाँ',
+  'Liked Songs': 'पसंद किए गए गाने',
+  'Select all': 'सभी चुनें',
+  'Import {n} list': '{n} सूची आयात करें',
+  'Import {n} lists': '{n} सूचियाँ आयात करें',
+  'Spotify, list {list} of {lists}: reading “{name}”… {done} of {total}': 'Spotify, सूची {list}/{lists}: “{name}” पढ़ी जा रही है… {done}/{total}',
+  'Spotify, list {list} of {lists}: finding “{name}” on YouTube… {done} of {total}': 'Spotify, सूची {list}/{lists}: “{name}” YouTube पर खोजी जा रही है… {done}/{total}',
+  'Imported {n} list from Spotify: {found} of {songs} songs playable': 'Spotify से {n} सूची आयात हुई: {songs} में से {found} गाने चल सकते हैं',
+  'Imported {n} lists from Spotify: {found} of {songs} songs playable': 'Spotify से {n} सूचियाँ आयात हुईं: {songs} में से {found} गाने चल सकते हैं',
+  'Not read: {lists}': 'नहीं पढ़ी गईं: {lists}',
 }
 
 export default hi

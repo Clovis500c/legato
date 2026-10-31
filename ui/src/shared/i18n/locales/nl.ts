@@ -1603,6 +1603,25 @@ const nl: Record<string, string> = {
   'LED': 'LED',
   'Visualizer full screen on / off': 'Visualizer op volledig scherm aan / uit',
   '← → move the lyrics · Esc leaves': '← → tekst verschuiven · Esc sluit af',
+  // Connect Spotify
+  'Connect Spotify': 'Spotify verbinden',
+  'Import your playlists and Liked Songs, private ones too, with any free account.': 'Importeer je playlists en Liked Songs, ook privélijsten, met elk gratis account.',
+  'Before you connect': 'Voordat je verbindt',
+  'Legato opens Spotify’s own page and reads your lists as they appear on it. Your password stays with Spotify, and each song is then found on YouTube.': 'Legato opent de eigen pagina van Spotify en leest je lijsten zoals ze daar verschijnen. Je wachtwoord blijft bij Spotify en daarna wordt elk nummer op YouTube gezocht.',
+  'Spotify’s rules forbid collecting its data with a tool and allow it to close an account that does. We know of no such case, but we can’t rule it out: the choice is yours.': 'De regels van Spotify verbieden het verzamelen van zijn gegevens met een hulpmiddel en staan toe een account dat dit doet te sluiten. We kennen geen enkel geval, maar kunnen het niet uitsluiten: de keuze is aan jou.',
+  'I understand, continue': 'Begrepen, doorgaan',
+  'Sign in on Spotify’s page. The next step comes by itself.': 'Log in op de pagina van Spotify. De volgende stap komt vanzelf.',
+  'Reading your library on Spotify…': 'Je Spotify-bibliotheek wordt gelezen…',
+  'Your Spotify lists': 'Je Spotify-lijsten',
+  'Liked Songs': 'Liked Songs',
+  'Select all': 'Alles selecteren',
+  'Import {n} list': '{n} lijst importeren',
+  'Import {n} lists': '{n} lijsten importeren',
+  'Spotify, list {list} of {lists}: reading “{name}”… {done} of {total}': 'Spotify, lijst {list} van {lists}: “{name}” wordt gelezen… {done} van {total}',
+  'Spotify, list {list} of {lists}: finding “{name}” on YouTube… {done} of {total}': 'Spotify, lijst {list} van {lists}: “{name}” wordt op YouTube gezocht… {done} van {total}',
+  'Imported {n} list from Spotify: {found} of {songs} songs playable': '{n} lijst uit Spotify geïmporteerd: {found} van {songs} nummers afspeelbaar',
+  'Imported {n} lists from Spotify: {found} of {songs} songs playable': '{n} lijsten uit Spotify geïmporteerd: {found} van {songs} nummers afspeelbaar',
+  'Not read: {lists}': 'Niet gelezen: {lists}',
 }
 
 export default nl

@@ -4,7 +4,7 @@
 use crate::{AppState, CmdResult, err, hosts, with_youtube};
 use music_connectors::{deezer, itunes, linklist::LinkList};
 use music_core::library::PlaylistEdit;
-use music_core::model::Source;
+use music_core::model::{Source, Track};
 use serde::Serialize;
 use std::sync::atomic::{AtomicBool, Ordering};
 use tauri::{Emitter, Manager, State};
@@ -42,12 +42,50 @@ static BUSY: AtomicBool = AtomicBool::new(false);
 static STOP: AtomicBool = AtomicBool::new(false);
 
 /// Frees `BUSY` on every way out of the import, errors included.
-struct Running;
+pub struct Running;
 
 impl Drop for Running {
     fn drop(&mut self) {
         BUSY.store(false, Ordering::Release);
     }
+}
+
+/// The one import at a time starts; `import_link_stop` is what ends it.
+pub fn begin() -> Result<Running, String> {
+    if BUSY.swap(true, Ordering::AcqRel) {
+        return Err("an import is already running".into());
+    }
+    STOP.store(false, Ordering::Relaxed);
+    Ok(Running)
+}
+
+pub fn stopped() -> bool {
+    STOP.load(Ordering::Relaxed)
+}
+
+/// Each song with its YouTube version when one exists, in order. 6 searches at a time: quick, still polite. `progress`:
+/// songs searched. None: stopped.
+pub async fn find_on_youtube(app: &tauri::AppHandle, tracks: &[Track], progress: impl Fn(usize)) -> Result<Option<Vec<Track>>, String> {
+    let mut out = Vec::with_capacity(tracks.len());
+    progress(0);
+    for chunk in tracks.chunks(6) {
+        if stopped() {
+            return Ok(None);
+        }
+        let jobs: Vec<_> = chunk
+            .iter()
+            .cloned()
+            .map(|t| {
+                let app = app.clone();
+                tauri::async_runtime::spawn(async move { with_youtube(&app.state::<AppState>(), t).await })
+            })
+            .collect();
+        for job in jobs {
+            out.push(job.await.map_err(err)?);
+        }
+        progress(out.len());
+    }
+    Ok((!stopped()).then_some(out))
 }
 
 /// Deezer or Apple Music playlist / album link → a playlist of yours, no account. Same flow as a Spotify link.
@@ -59,44 +97,15 @@ pub async fn import_link(app: tauri::AppHandle, state: State<'_, AppState>, url:
     if url.len() > 2048 {
         return Err("Link too long".into());
     }
-    if BUSY.swap(true, Ordering::AcqRel) {
-        return Err("an import is already running".into());
-    }
-    let _running = Running;
-    STOP.store(false, Ordering::Relaxed);
+    let _running = begin()?;
     let list = read(url.trim()).await.map_err(err)?;
-    let (mut found, mut missing) = (Vec::new(), Vec::new());
     let total = list.tracks.len();
     let progress = |done: usize| {
         let _ = app.emit_to("main", "import-progress", [done, total]);
     };
-    progress(0);
-    // 6 searches at a time: quick, still polite.
-    for (n, chunk) in list.tracks.chunks(6).enumerate() {
-        if STOP.load(Ordering::Relaxed) {
-            return Err("canceled".into());
-        }
-        let jobs: Vec<_> = chunk
-            .iter()
-            .cloned()
-            .map(|t| {
-                let app = app.clone();
-                tauri::async_runtime::spawn(async move { with_youtube(&app.state::<AppState>(), t).await })
-            })
-            .collect();
-        for job in jobs {
-            let t = job.await.map_err(err)?;
-            if t.ids.contains_key(&Source::Youtube) {
-                found.push(t);
-            } else {
-                missing.push(format!("{} – {}", t.artist, t.title));
-            }
-        }
-        progress((n * 6 + chunk.len()).min(total));
-    }
-    if STOP.load(Ordering::Relaxed) {
-        return Err("canceled".into());
-    }
+    let tracks = find_on_youtube(&app, &list.tracks, progress).await?.ok_or("canceled")?;
+    let (found, missing): (Vec<_>, Vec<_>) = tracks.into_iter().partition(|t| t.ids.contains_key(&Source::Youtube));
+    let missing: Vec<String> = missing.iter().map(|t| format!("{} – {}", t.artist, t.title)).collect();
     let name: String = list.name.trim().chars().take(100).collect();
     let report = |playlist_id, found| LinkImport { playlist_id, name: name.clone(), songs: list.tracks.len(), found, total: list.total, missing: missing.iter().take(20).cloned().collect() };
     if found.is_empty() {

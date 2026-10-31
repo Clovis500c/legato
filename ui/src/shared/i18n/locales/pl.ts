@@ -1603,6 +1603,25 @@ const pl: Record<string, string> = {
   'LED': 'LED',
   'Visualizer full screen on / off': 'Wizualizacja na pełnym ekranie włącz / wyłącz',
   '← → move the lyrics · Esc leaves': '← → przesuń tekst · Esc wychodzi',
+  // Connect Spotify
+  'Connect Spotify': 'Połącz Spotify',
+  'Import your playlists and Liked Songs, private ones too, with any free account.': 'Zaimportuj playlisty i Polubione utwory, także prywatne, z dowolnego darmowego konta.',
+  'Before you connect': 'Zanim połączysz',
+  'Legato opens Spotify’s own page and reads your lists as they appear on it. Your password stays with Spotify, and each song is then found on YouTube.': 'Legato otwiera stronę Spotify i odczytuje listy tak, jak się na niej pojawiają. Hasło zostaje w Spotify, a każdy utwór jest potem wyszukiwany w YouTube.',
+  'Spotify’s rules forbid collecting its data with a tool and allow it to close an account that does. We know of no such case, but we can’t rule it out: the choice is yours.': 'Zasady Spotify zabraniają zbierania jego danych za pomocą narzędzi i pozwalają zamknąć konto, które to robi. Nie znamy takiego przypadku, ale nie możemy go wykluczyć: wybór należy do Ciebie.',
+  'I understand, continue': 'Rozumiem, kontynuuj',
+  'Sign in on Spotify’s page. The next step comes by itself.': 'Zaloguj się na stronie Spotify. Następny krok pojawi się sam.',
+  'Reading your library on Spotify…': 'Odczytywanie biblioteki Spotify…',
+  'Your Spotify lists': 'Twoje listy Spotify',
+  'Liked Songs': 'Polubione utwory',
+  'Select all': 'Zaznacz wszystko',
+  'Import {n} list': 'Importuj listy: {n}',
+  'Import {n} lists': 'Importuj listy: {n}',
+  'Spotify, list {list} of {lists}: reading “{name}”… {done} of {total}': 'Spotify, lista {list} z {lists}: odczyt „{name}”… {done} z {total}',
+  'Spotify, list {list} of {lists}: finding “{name}” on YouTube… {done} of {total}': 'Spotify, lista {list} z {lists}: wyszukiwanie „{name}” w YouTube… {done} z {total}',
+  'Imported {n} list from Spotify: {found} of {songs} songs playable': 'Zaimportowano ze Spotify list: {n}, odtwarzalne utwory: {found} z {songs}',
+  'Imported {n} lists from Spotify: {found} of {songs} songs playable': 'Zaimportowano ze Spotify list: {n}, odtwarzalne utwory: {found} z {songs}',
+  'Not read: {lists}': 'Nieodczytane: {lists}',
 }
 
 export default pl

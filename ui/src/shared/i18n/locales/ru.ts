@@ -1603,6 +1603,25 @@ const ru: Record<string, string> = {
   'LED': 'Светодиоды',
   'Visualizer full screen on / off': 'Визуализатор на весь экран вкл. / выкл.',
   '← → move the lyrics · Esc leaves': '← → сдвинуть текст · Esc — выход',
+  // Connect Spotify
+  'Connect Spotify': 'Подключить Spotify',
+  'Import your playlists and Liked Songs, private ones too, with any free account.': 'Импортируйте плейлисты и Любимые треки, даже приватные, с любого бесплатного аккаунта.',
+  'Before you connect': 'Перед подключением',
+  'Legato opens Spotify’s own page and reads your lists as they appear on it. Your password stays with Spotify, and each song is then found on YouTube.': 'Legato открывает страницу Spotify и читает ваши списки так, как они там показаны. Пароль остаётся у Spotify, а затем каждый трек ищется на YouTube.',
+  'Spotify’s rules forbid collecting its data with a tool and allow it to close an account that does. We know of no such case, but we can’t rule it out: the choice is yours.': 'Правила Spotify запрещают собирать его данные с помощью инструментов и позволяют закрыть такой аккаунт. Мы не знаем ни одного случая, но не можем его исключить: выбор за вами.',
+  'I understand, continue': 'Понятно, продолжить',
+  'Sign in on Spotify’s page. The next step comes by itself.': 'Войдите на странице Spotify. Следующий шаг начнётся сам.',
+  'Reading your library on Spotify…': 'Чтение вашей медиатеки Spotify…',
+  'Your Spotify lists': 'Ваши списки Spotify',
+  'Liked Songs': 'Любимые треки',
+  'Select all': 'Выбрать всё',
+  'Import {n} list': 'Импортировать списки: {n}',
+  'Import {n} lists': 'Импортировать списки: {n}',
+  'Spotify, list {list} of {lists}: reading “{name}”… {done} of {total}': 'Spotify, список {list} из {lists}: чтение «{name}»… {done} из {total}',
+  'Spotify, list {list} of {lists}: finding “{name}” on YouTube… {done} of {total}': 'Spotify, список {list} из {lists}: поиск «{name}» на YouTube… {done} из {total}',
+  'Imported {n} list from Spotify: {found} of {songs} songs playable': 'Импортировано списков из Spotify: {n}, доступно треков: {found} из {songs}',
+  'Imported {n} lists from Spotify: {found} of {songs} songs playable': 'Импортировано списков из Spotify: {n}, доступно треков: {found} из {songs}',
+  'Not read: {lists}': 'Не прочитаны: {lists}',
 }
 
 export default ru

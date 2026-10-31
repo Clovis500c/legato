@@ -412,10 +412,19 @@ via the Web API Player endpoints. Audio comes out of the Spotify app; we only se
   that window, and no ad blocking there (the shield only hooks the main window).
 - (c) Playback in Spotify's official web player: WebView2 (Edge 155) reports both Widevine (`com.widevine.alpha`) and
   PlayReady through `requestMediaKeySystemAccess`. Real playback still needs the user's sign-in to confirm.
-- (b) Reading playlists and Liked Songs with the web session: **not built**. The web player's access token now comes from
+- (b) Reading playlists and Liked Songs through the session's token: **never**. The web player's access token comes from
   `/api/token` with a TOTP whose secret is hidden in the player's code; getting it means rebuilding that scheme (defeating a
-  technical protection) or capturing the token the official player fetches. Both need the user's go-ahead first.
-- Chosen by the user (2026-10-16): no web-session import. **Public playlists and albums by link**, no account
+  technical protection) or capturing the token the official player fetches.
+- **Connect Spotify** (user's choice 2026-10-31, Add music, `ui/src/features/add/SpotifyConnect.tsx`): any free account,
+  private playlists and Liked Songs. No token and no request of ours: the window opens on Spotify's sign-in page,
+  `crates/shield/src/spotify.js` (injected in that window only) reads the rows the page draws, scrolling at a person's
+  pace, and posts them on WebView2's message channel; `crates/connectors/src/spotify_page.rs` checks sender, shape and
+  sizes. The window stays on top while reading (Chromium stops drawing a hidden window). Each song then goes through
+  `with_youtube`, like a link import, and the list is saved under the same id, so a second import refreshes it. Cancel
+  keeps the lists already saved. A list that fails or reads empty is named at the end, never saved over the old copy.
+  Spotify's [User Guidelines](https://www.spotify.com/us/legal/user-guidelines/) ban scraping, by hand or automated, and a
+  breach can close the account (no such case found): the app says so before the first connection on each PC.
+- **Public playlists and albums by link**, no account
   (`crates/connectors/src/spotify_embed.rs`): the official embed page (`open.spotify.com/embed/<kind>/<id>`) carries the
   list in its `__NEXT_DATA__` JSON (first 100 tracks). Each track is matched to YouTube Music's songs, then to a music
   video on normal YouTube (`with_youtube`, 6 at a time), and plays through the YouTube embed. Signed out, YouTube

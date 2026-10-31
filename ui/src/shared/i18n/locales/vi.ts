@@ -1603,6 +1603,25 @@ const vi: Record<string, string> = {
   'LED': 'LED',
   'Visualizer full screen on / off': 'Trình hiển thị toàn màn hình bật / tắt',
   '← → move the lyrics · Esc leaves': '← → dịch lời bài hát · Esc để thoát',
+  // Connect Spotify
+  'Connect Spotify': 'Kết nối Spotify',
+  'Import your playlists and Liked Songs, private ones too, with any free account.': 'Nhập danh sách phát và Bài hát đã thích, kể cả riêng tư, bằng bất kỳ tài khoản miễn phí nào.',
+  'Before you connect': 'Trước khi kết nối',
+  'Legato opens Spotify’s own page and reads your lists as they appear on it. Your password stays with Spotify, and each song is then found on YouTube.': 'Legato mở trang của chính Spotify và đọc các danh sách như chúng hiển thị ở đó. Mật khẩu vẫn ở Spotify, sau đó mỗi bài được tìm trên YouTube.',
+  'Spotify’s rules forbid collecting its data with a tool and allow it to close an account that does. We know of no such case, but we can’t rule it out: the choice is yours.': 'Quy định của Spotify cấm thu thập dữ liệu bằng công cụ và cho phép đóng tài khoản vi phạm. Chúng tôi chưa biết trường hợp nào, nhưng không thể loại trừ: bạn tự quyết định.',
+  'I understand, continue': 'Tôi hiểu, tiếp tục',
+  'Sign in on Spotify’s page. The next step comes by itself.': 'Đăng nhập trên trang của Spotify. Bước tiếp theo sẽ tự đến.',
+  'Reading your library on Spotify…': 'Đang đọc thư viện Spotify của bạn…',
+  'Your Spotify lists': 'Danh sách Spotify của bạn',
+  'Liked Songs': 'Bài hát đã thích',
+  'Select all': 'Chọn tất cả',
+  'Import {n} list': 'Nhập {n} danh sách',
+  'Import {n} lists': 'Nhập {n} danh sách',
+  'Spotify, list {list} of {lists}: reading “{name}”… {done} of {total}': 'Spotify, danh sách {list}/{lists}: đang đọc “{name}”… {done}/{total}',
+  'Spotify, list {list} of {lists}: finding “{name}” on YouTube… {done} of {total}': 'Spotify, danh sách {list}/{lists}: đang tìm “{name}” trên YouTube… {done}/{total}',
+  'Imported {n} list from Spotify: {found} of {songs} songs playable': 'Đã nhập {n} danh sách từ Spotify: phát được {found}/{songs} bài',
+  'Imported {n} lists from Spotify: {found} of {songs} songs playable': 'Đã nhập {n} danh sách từ Spotify: phát được {found}/{songs} bài',
+  'Not read: {lists}': 'Chưa đọc được: {lists}',
 }
 
 export default vi

@@ -1603,6 +1603,25 @@ const sv: Record<string, string> = {
   'LED': 'LED',
   'Visualizer full screen on / off': 'Visualiserare i helskärm på / av',
   '← → move the lyrics · Esc leaves': '← → flytta texten · Esc avslutar',
+  // Connect Spotify
+  'Connect Spotify': 'Anslut Spotify',
+  'Import your playlists and Liked Songs, private ones too, with any free account.': 'Importera dina spellistor och Gillade låtar, även privata, med vilket gratiskonto som helst.',
+  'Before you connect': 'Innan du ansluter',
+  'Legato opens Spotify’s own page and reads your lists as they appear on it. Your password stays with Spotify, and each song is then found on YouTube.': 'Legato öppnar Spotifys egen sida och läser dina listor så som de visas där. Lösenordet stannar hos Spotify, och sedan letas varje låt upp på YouTube.',
+  'Spotify’s rules forbid collecting its data with a tool and allow it to close an account that does. We know of no such case, but we can’t rule it out: the choice is yours.': 'Spotifys regler förbjuder att samla in dess data med ett verktyg och tillåter att ett sådant konto stängs. Vi känner inte till något fall, men kan inte utesluta det: valet är ditt.',
+  'I understand, continue': 'Jag förstår, fortsätt',
+  'Sign in on Spotify’s page. The next step comes by itself.': 'Logga in på Spotifys sida. Nästa steg kommer av sig självt.',
+  'Reading your library on Spotify…': 'Läser ditt Spotify-bibliotek…',
+  'Your Spotify lists': 'Dina Spotify-listor',
+  'Liked Songs': 'Gillade låtar',
+  'Select all': 'Markera alla',
+  'Import {n} list': 'Importera {n} lista',
+  'Import {n} lists': 'Importera {n} listor',
+  'Spotify, list {list} of {lists}: reading “{name}”… {done} of {total}': 'Spotify, lista {list} av {lists}: läser ”{name}”… {done} av {total}',
+  'Spotify, list {list} of {lists}: finding “{name}” on YouTube… {done} of {total}': 'Spotify, lista {list} av {lists}: letar efter ”{name}” på YouTube… {done} av {total}',
+  'Imported {n} list from Spotify: {found} of {songs} songs playable': '{n} lista importerad från Spotify: {found} av {songs} låtar spelbara',
+  'Imported {n} lists from Spotify: {found} of {songs} songs playable': '{n} listor importerade från Spotify: {found} av {songs} låtar spelbara',
+  'Not read: {lists}': 'Inte lästa: {lists}',
 }
 
 export default sv

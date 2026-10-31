@@ -259,6 +259,18 @@ pub fn close(app: &AppHandle) -> tauri::Result<()> {
 #[cfg(windows)]
 fn listen(wv: &tauri::Webview, app: AppHandle) -> tauri::Result<()> {
     use tauri::Emitter;
+    on_message(wv, move |source, message| {
+        if let Some(report) = parse_report(source, message) {
+            let _ = app.emit_to("main", "ytwatch", report);
+        } else if let Some(live) = parse_live(source, message) {
+            let _ = app.emit_to("main", "live", live);
+        }
+    })
+}
+
+/// A remote page's strings on WebView2's message channel, with their sender: (source, message). No IPC for the page.
+#[cfg(windows)]
+pub fn on_message(wv: &tauri::Webview, got: impl Fn(&str, &str) + Send + 'static) -> tauri::Result<()> {
     use webview2_com::{WebMessageReceivedEventHandler, take_pwstr};
     use windows::core::PWSTR;
     wv.with_webview(move |pw| unsafe {
@@ -272,12 +284,7 @@ fn listen(wv: &tauri::Webview, app: AppHandle) -> tauri::Result<()> {
             if args.TryGetWebMessageAsString(&mut message).is_err() {
                 return Ok(());
             }
-            let (source, message) = (take_pwstr(source), take_pwstr(message));
-            if let Some(report) = parse_report(&source, &message) {
-                let _ = app.emit_to("main", "ytwatch", report);
-            } else if let Some(live) = parse_live(&source, &message) {
-                let _ = app.emit_to("main", "live", live);
-            }
+            got(&take_pwstr(source), &take_pwstr(message));
             Ok(())
         }));
         let mut token = Default::default();

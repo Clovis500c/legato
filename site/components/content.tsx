@@ -45,7 +45,7 @@ export const WHY_NOTE = `Measured ${BENCH.date} on ${BENCH.os} (${BENCH.pc}), Le
 
 export const PLAYBACK: [string, string][] = [
   ['YouTube Music and YouTube', "In YouTube's own player, its video in view: in the right panel, or big in Now Playing."],
-  ['Spotify', 'Through the Spotify app (Spotify Connect), with Premium and your own app key. Public playlist links come in without either.'],
+  ['Spotify', 'Through the Spotify app (Spotify Connect), with Premium and your own app key. Without either, public playlist links and Connect Spotify bring your lists in, and their songs play from YouTube.'],
   ['Apple Music', 'Catalog search and 30-second previews, no account. The full song plays from YouTube when the app finds it there.'],
   ['Your files', "The app's own player: gapless, on your PC."],
 ]
@@ -55,6 +55,7 @@ export const PRIVACY: [string, string][] = [
   ['Sign-ins and keys', 'Stay in the Windows Credential Manager.'],
   ['Requests', "Go out through the app's core only: the interface never calls the network by itself."],
   ['Search', "What you search for goes to YouTube, YouTube Music and Apple Music, signed in or not, and to YouTube's suggestions as you type (Settings › General turns them off). Recent searches stay on this PC."],
+  ['Connect Spotify', "Only when you use it. You sign in on Spotify's own page in an app window, and the app reads your playlists and Liked Songs as that page shows them. Your password stays with Spotify; only titles, artists, lengths and covers are kept, then each song is searched on YouTube. Spotify's rules forbid collecting its data with a tool and allow it to close an account that does, so the app says it before you connect."],
   ['Pasted playlist links', 'A public Spotify, Deezer or Apple Music playlist or album link makes the app ask that service for the list: open.spotify.com, api.deezer.com (link.deezer.com for its short links), music.apple.com and itunes.apple.com. No account; only titles, artists, lengths and covers come back, then each song is searched on YouTube. Cover pictures load from the image hosts of those services.'],
   ['Lyrics', "When you open them: YouTube Music's timed lyrics first if you're signed in, then the song's title, artist, album and length go to LRCLIB. Answers stay on your PC."],
   ['Skip non-music parts', "Off until you turn it on. For each YouTube video that plays, the first 4 characters of its id's hash (never the id) go to SponsorBlock, sponsor.ajay.app, to learn the community's marked intros, skits and outros. The answer is kept a week on this PC."],
@@ -68,7 +69,7 @@ export const PRIVACY: [string, string][] = [
 
 export const SERVICES: [string, string][] = [
   ['YouTube Music', "Sign in with Google, on Google's own page. Several accounts."],
-  ['Spotify', "Your own app from the Spotify Developer Dashboard (Premium needed while it's in development mode), or paste public playlist links."],
+  ['Spotify', "Your own app from the Spotify Developer Dashboard (Premium needed while it's in development mode), or Add music › Connect Spotify, or paste public playlist links."],
   ['Apple Music', 'Catalog search and 30-second previews, and public playlist or album links, no account.'],
   ['Deezer', 'Paste a public playlist or album link: its songs come in and play from YouTube. No account.'],
   ['Your files', 'Add your music folders; changes in them show up as they happen.'],
@@ -90,7 +91,7 @@ export const FAQ: { q: string; a: ReactNode }[] = [
   { q: 'Is it free?', a: 'Yes. The code is on GitHub, source-available: free to use, not open source. Issues and pull requests are welcome.' },
   { q: 'Do I need an account?', a: 'Not one of ours. You sign in to the services you already use, on their own pages.' },
   { q: 'Does it download music?', a: "No. Music plays in each service's own player or from your files. No platform's audio is downloaded, recorded or extracted; only the Music Detector listens, when you ask it to." },
-  { q: 'Why does Spotify need Premium and a key?', a: 'Spotify lets other apps play only through its own app, for Premium accounts, and every app needs a free key from its developer dashboard. Without them, paste a public playlist link: its songs play from YouTube when the app finds them there.' },
+  { q: 'Why does Spotify need Premium and a key?', a: 'Spotify lets other apps play only through its own app, for Premium accounts, and every app needs a free key from its developer dashboard. Without them, paste a public playlist link, or use Connect Spotify in Add music for your private lists and Liked Songs (read what it says first: the rules of Spotify forbid it): the songs play from YouTube when the app finds them there.' },
   { q: 'Mac or Linux?', a: 'Windows 10 and 11 only, for now.' },
   { q: 'How do updates work?', a: 'The app checks GitHub at launch and installs a new version between two songs, or while nothing plays. You get the versions that were tried first (Stable); Settings › General has a Beta channel that brings every change first, and may break.' },
   { q: 'Can I write a plugin?', a: <>Yes: a folder with a manifest and a script, which asks for its permissions when someone installs it. The guide: {link(`${GITHUB}/blob/master/docs/plugins.md`, 'docs/plugins.md')}.</> },

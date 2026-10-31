@@ -1603,6 +1603,25 @@ const tr: Record<string, string> = {
   'LED': 'LED',
   'Visualizer full screen on / off': 'Görselleştirici tam ekran açık / kapalı',
   '← → move the lyrics · Esc leaves': '← → sözleri kaydır · Esc çıkar',
+  // Connect Spotify
+  'Connect Spotify': 'Spotify’ı bağla',
+  'Import your playlists and Liked Songs, private ones too, with any free account.': 'Çalma listelerini ve Beğenilen Şarkılar’ı, gizli olanlar dahil, herhangi bir ücretsiz hesapla içe aktar.',
+  'Before you connect': 'Bağlanmadan önce',
+  'Legato opens Spotify’s own page and reads your lists as they appear on it. Your password stays with Spotify, and each song is then found on YouTube.': 'Legato, Spotify’ın kendi sayfasını açar ve listelerini orada göründüğü gibi okur. Parolan Spotify’da kalır, ardından her şarkı YouTube’da bulunur.',
+  'Spotify’s rules forbid collecting its data with a tool and allow it to close an account that does. We know of no such case, but we can’t rule it out: the choice is yours.': 'Spotify’ın kuralları verilerini bir araçla toplamayı yasaklar ve bunu yapan hesabı kapatmasına izin verir. Böyle bir olay bilmiyoruz ama olmayacağını da söyleyemeyiz: seçim senin.',
+  'I understand, continue': 'Anladım, devam et',
+  'Sign in on Spotify’s page. The next step comes by itself.': 'Spotify’ın sayfasında oturum aç. Sonraki adım kendiliğinden gelir.',
+  'Reading your library on Spotify…': 'Spotify kitaplığın okunuyor…',
+  'Your Spotify lists': 'Spotify listelerin',
+  'Liked Songs': 'Beğenilen Şarkılar',
+  'Select all': 'Tümünü seç',
+  'Import {n} list': '{n} listeyi içe aktar',
+  'Import {n} lists': '{n} listeyi içe aktar',
+  'Spotify, list {list} of {lists}: reading “{name}”… {done} of {total}': 'Spotify, liste {list}/{lists}: “{name}” okunuyor… {done}/{total}',
+  'Spotify, list {list} of {lists}: finding “{name}” on YouTube… {done} of {total}': 'Spotify, liste {list}/{lists}: “{name}” YouTube’da aranıyor… {done}/{total}',
+  'Imported {n} list from Spotify: {found} of {songs} songs playable': 'Spotify’dan {n} liste içe aktarıldı: {found}/{songs} şarkı çalınabilir',
+  'Imported {n} lists from Spotify: {found} of {songs} songs playable': 'Spotify’dan {n} liste içe aktarıldı: {found}/{songs} şarkı çalınabilir',
+  'Not read: {lists}': 'Okunamadı: {lists}',
 }
 
 export default tr

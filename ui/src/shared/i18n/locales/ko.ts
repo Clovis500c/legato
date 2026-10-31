@@ -1603,6 +1603,25 @@ const ko: Record<string, string> = {
   'LED': 'LED',
   'Visualizer full screen on / off': '비주얼라이저 전체 화면 켜기 / 끄기',
   '← → move the lyrics · Esc leaves': '← → 가사 이동 · Esc로 나가기',
+  // Connect Spotify
+  'Connect Spotify': 'Spotify 연결',
+  'Import your playlists and Liked Songs, private ones too, with any free account.': '무료 계정으로도 비공개를 포함한 플레이리스트와 좋아요 표시한 곡을 가져옵니다.',
+  'Before you connect': '연결하기 전에',
+  'Legato opens Spotify’s own page and reads your lists as they appear on it. Your password stays with Spotify, and each song is then found on YouTube.': 'Legato는 Spotify의 공식 페이지를 열어 화면에 표시되는 목록을 읽습니다. 비밀번호는 Spotify에 남아 있으며, 이후 각 곡을 YouTube에서 찾습니다.',
+  'Spotify’s rules forbid collecting its data with a tool and allow it to close an account that does. We know of no such case, but we can’t rule it out: the choice is yours.': 'Spotify 규칙은 도구로 데이터를 수집하는 것을 금지하며, 그런 계정을 폐쇄할 수 있습니다. 알려진 사례는 없지만 배제할 수는 없습니다. 직접 결정하세요.',
+  'I understand, continue': '이해했습니다, 계속',
+  'Sign in on Spotify’s page. The next step comes by itself.': 'Spotify 페이지에서 로그인하세요. 다음 단계는 자동으로 진행됩니다.',
+  'Reading your library on Spotify…': 'Spotify 보관함을 읽는 중…',
+  'Your Spotify lists': '내 Spotify 목록',
+  'Liked Songs': '좋아요 표시한 곡',
+  'Select all': '모두 선택',
+  'Import {n} list': '목록 {n}개 가져오기',
+  'Import {n} lists': '목록 {n}개 가져오기',
+  'Spotify, list {list} of {lists}: reading “{name}”… {done} of {total}': 'Spotify, 목록 {list}/{lists}: “{name}” 읽는 중… {done}/{total}',
+  'Spotify, list {list} of {lists}: finding “{name}” on YouTube… {done} of {total}': 'Spotify, 목록 {list}/{lists}: YouTube에서 “{name}” 찾는 중… {done}/{total}',
+  'Imported {n} list from Spotify: {found} of {songs} songs playable': 'Spotify에서 목록 {n}개를 가져왔습니다: {songs}곡 중 {found}곡 재생 가능',
+  'Imported {n} lists from Spotify: {found} of {songs} songs playable': 'Spotify에서 목록 {n}개를 가져왔습니다: {songs}곡 중 {found}곡 재생 가능',
+  'Not read: {lists}': '읽지 못함: {lists}',
 }
 
 export default ko

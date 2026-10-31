@@ -1603,6 +1603,25 @@ const ja: Record<string, string> = {
   'LED': 'LED',
   'Visualizer full screen on / off': 'ビジュアライザーの全画面 オン / オフ',
   '← → move the lyrics · Esc leaves': '← → 歌詞をずらす · Esc で終了',
+  // Connect Spotify
+  'Connect Spotify': 'Spotify に接続',
+  'Import your playlists and Liked Songs, private ones too, with any free account.': '無料アカウントでも、非公開を含むプレイリストと「お気に入りの曲」を取り込めます。',
+  'Before you connect': '接続の前に',
+  'Legato opens Spotify’s own page and reads your lists as they appear on it. Your password stays with Spotify, and each song is then found on YouTube.': 'Legato は Spotify 自身のページを開き、表示されたリストを読み取ります。パスワードは Spotify に留まり、その後、各曲を YouTube で探します。',
+  'Spotify’s rules forbid collecting its data with a tool and allow it to close an account that does. We know of no such case, but we can’t rule it out: the choice is yours.': 'Spotify の規約は、ツールによるデータ収集を禁じ、違反アカウントの閉鎖を認めています。そうした例は把握していませんが、ないとは言い切れません。ご自身で判断してください。',
+  'I understand, continue': '理解して続行',
+  'Sign in on Spotify’s page. The next step comes by itself.': 'Spotify のページでサインインしてください。次の手順は自動で始まります。',
+  'Reading your library on Spotify…': 'Spotify のライブラリを読み取り中…',
+  'Your Spotify lists': 'Spotify のリスト',
+  'Liked Songs': 'お気に入りの曲',
+  'Select all': 'すべて選択',
+  'Import {n} list': '{n} 件のリストを取り込む',
+  'Import {n} lists': '{n} 件のリストを取り込む',
+  'Spotify, list {list} of {lists}: reading “{name}”… {done} of {total}': 'Spotify、リスト {list}/{lists}:「{name}」を読み取り中… {done}/{total}',
+  'Spotify, list {list} of {lists}: finding “{name}” on YouTube… {done} of {total}': 'Spotify、リスト {list}/{lists}:「{name}」を YouTube で検索中… {done}/{total}',
+  'Imported {n} list from Spotify: {found} of {songs} songs playable': 'Spotify から {n} 件のリストを取り込みました:{songs} 曲中 {found} 曲を再生できます',
+  'Imported {n} lists from Spotify: {found} of {songs} songs playable': 'Spotify から {n} 件のリストを取り込みました:{songs} 曲中 {found} 曲を再生できます',
+  'Not read: {lists}': '読み取れませんでした:{lists}',
 }
 
 export default ja

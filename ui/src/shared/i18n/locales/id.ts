@@ -1603,6 +1603,25 @@ const id: Record<string, string> = {
   'LED': 'LED',
   'Visualizer full screen on / off': 'Visualisasi layar penuh aktif / nonaktif',
   '← → move the lyrics · Esc leaves': '← → geser lirik · Esc untuk keluar',
+  // Connect Spotify
+  'Connect Spotify': 'Hubungkan Spotify',
+  'Import your playlists and Liked Songs, private ones too, with any free account.': 'Impor playlist dan Lagu yang Disukai, termasuk yang pribadi, dengan akun gratis apa pun.',
+  'Before you connect': 'Sebelum menghubungkan',
+  'Legato opens Spotify’s own page and reads your lists as they appear on it. Your password stays with Spotify, and each song is then found on YouTube.': 'Legato membuka halaman Spotify sendiri dan membaca daftar Anda seperti yang tampil di sana. Kata sandi tetap di Spotify, lalu setiap lagu dicari di YouTube.',
+  'Spotify’s rules forbid collecting its data with a tool and allow it to close an account that does. We know of no such case, but we can’t rule it out: the choice is yours.': 'Aturan Spotify melarang pengumpulan datanya dengan alat dan mengizinkannya menutup akun yang melakukannya. Kami tidak tahu ada kasusnya, tetapi tidak bisa memastikannya: pilihan ada di tangan Anda.',
+  'I understand, continue': 'Saya mengerti, lanjutkan',
+  'Sign in on Spotify’s page. The next step comes by itself.': 'Masuk di halaman Spotify. Langkah berikutnya berjalan sendiri.',
+  'Reading your library on Spotify…': 'Membaca koleksi Spotify Anda…',
+  'Your Spotify lists': 'Daftar Spotify Anda',
+  'Liked Songs': 'Lagu yang Disukai',
+  'Select all': 'Pilih semua',
+  'Import {n} list': 'Impor {n} daftar',
+  'Import {n} lists': 'Impor {n} daftar',
+  'Spotify, list {list} of {lists}: reading “{name}”… {done} of {total}': 'Spotify, daftar {list} dari {lists}: membaca “{name}”… {done} dari {total}',
+  'Spotify, list {list} of {lists}: finding “{name}” on YouTube… {done} of {total}': 'Spotify, daftar {list} dari {lists}: mencari “{name}” di YouTube… {done} dari {total}',
+  'Imported {n} list from Spotify: {found} of {songs} songs playable': '{n} daftar diimpor dari Spotify: {found} dari {songs} lagu bisa diputar',
+  'Imported {n} lists from Spotify: {found} of {songs} songs playable': '{n} daftar diimpor dari Spotify: {found} dari {songs} lagu bisa diputar',
+  'Not read: {lists}': 'Tidak terbaca: {lists}',
 }
 
 export default id

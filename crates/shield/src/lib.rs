@@ -19,6 +19,8 @@ pub const YOUTUBE_SCRIPT: &str = include_str!("youtube.js");
 pub const BARE_SCRIPT: &str = include_str!("bare.js");
 /// YouTube's watch page as a bare player, for videos that can't be embedded. Its own webview only, main frame.
 pub const WATCH_SCRIPT: &str = include_str!("watch.js");
+/// Reads the lists and songs Spotify's signed-in pages draw, when the app asks. The app's Spotify window only, main frame.
+pub const SPOTIFY_SCRIPT: &str = include_str!("spotify.js");
 /// Live processing of YouTube's sound (Adaptive Sound, cover animation, Live Editor). Embed and watch page; idle until
 /// the app asks.
 pub const LIVE_SCRIPT: &str = include_str!("live.js");

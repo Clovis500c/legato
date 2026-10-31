@@ -87,7 +87,7 @@ function ServiceRow({ service }: { service: 'spotify' }) {
   )
 }
 
-/** Prototype: Spotify's official web player in a window, signed in on Spotify's page (no keys). Library import: not yet. */
+/** Prototype: Spotify's official web player in a window, signed in on Spotify's page (no keys). Library import: Add music › Connect Spotify. */
 function SpotifyWeb() {
   const [on, setOn] = useState<boolean>()
   useEffect(() => {
