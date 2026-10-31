@@ -233,6 +233,39 @@ never: downloading, extracting, recording or exporting a platform's audio, or to
   none with reduced motion or Animations off.
 - UI: `player/live.ts` (settings out, levels in, only from what plays now), `liveSync.ts`, `AdaptiveBar.tsx`.
   Settings › Playback › Sound processing; "Process YouTube's sound" turns the YouTube side off.
+- **Visualizer data, 60 Hz** (Visualizer v2 step 1, 2026-10-31; spec `docs/notes/ideas/visualizer.md`). 61 bands of 1/6
+  octave (base 10, 19.95 Hz to 19.95 kHz), left and right, plus left / right rms and peak, in a packed frame: 8 bytes
+  (version 1, band count, 2 reserved, rms L R, peak L R) + 61 bands L + 61 bands R, every dB value one byte, `(dB + 120)
+  · 2` (0.5 dB steps, floor -120). A sine of amplitude 1 reads 0 dB in its band; bands are energy sums (Parseval), so
+  the window does not matter for noise. Bands narrower than 3 bins (under ~320 Hz at 48 kHz) widen to 3 bins around
+  their center: a sine reads right (within 0.5 dB), the neighbours of the lowest bands read nearly as much (the 4096
+  FFT cannot split a 2.4 Hz band; a longer window for the lows is the fix if bass detail ever matters), and noise reads
+  a few dB high there. Both twins have this mapping: pure `BandMap` in `crates/dsp/src/viz.rs`, `vizMap` between
+  `viz:begin` and `viz:end` in `live.js`; `crates/dsp/fixtures/viz.json` is the shared signals with what Rust reads
+  (`UPDATE_VIZ_FIXTURE=1 cargo test -p music-dsp viz_fixture` rewrites it), `crates/shield/src/viz.test.ts` runs the
+  JS block on them through a model of Chromium's analyser (checked once against the real one in WebView2's engine: a
+  sine reads 0.00 dB). Twins agree within 2 dB on the bands that carry sound from 320 Hz up, 4 dB below (Blackman's
+  lobe is wider than Hann's, and sines closer than a lobe interfere differently).
+  - **Native**: hann 4096-point FFT (`realfft`), hop = rate / 60, any sample rate (44.1 and 96 kHz tested). The audio
+    thread only copies: `Processor::process` pushes its output (as heard: after gain and limiter, before the volume
+    knob) into `tap.rs`, a ring of atomics, when `Tap::listen()` has a listener (one relaxed load otherwise; no lock, no
+    allocation). The FFT runs in `src-tauri/src/viz.rs`: a worker thread alive only between `viz_start(frames)` and
+    `viz_stop` (also a page reload, `on_page_load`, and a failed send), `viz::Pump` every ~16.7 ms: a frame when new
+    audio came, one silent frame after ~100 ms of no new audio or digital silence, then nothing (a third of the
+    wake-ups while idle). Frames go over a Tauri `Channel<InvokeResponseBody>` as raw bytes. Where the device hands
+    sound over in bursts the rate is that of the bursts (the e2e build: every 20 ms, 50 a second).
+  - **YouTube**: `live.js` `vizStart` (only while `settings.viz`): a second pair of analysers at fftSize 4096 behind a
+    ChannelSplitter, made then and dropped when it stops, so the chain costs nothing more with no visualizer; the older
+    2048 pair keeps feeding the loudness and the 16 bands. A 16 ms timer sends the same frame as base64 text
+    (`{viz}` in the report, by the existing postMessage path, or the watch page's `musicapp-live:` string, checked in
+    `ytwatch.rs`), the silent frame once after ~100 ms of pause or silence.
+  - **Front end**: `features/player/vizFrames.ts`: `viz.subscribe(fn)` gives frames from whichever twin plays, same shape
+    (`vizUnpack.ts`, pure), `viz.latest()` the newest as it came; the first subscriber opens the channel and raises the
+    live wish `viz` (YouTube's 60 Hz), the last one closes both. Nothing subscribes yet (the strip under the cover still
+    runs on the 16 bands); the renderer (step 2) is the first subscriber.
+  - **To retire in step 2**: `spectrum.rs` (16 band-passes) and `Levels::bands`, `Live::bands` (`player_levels` carries
+    them), `live.js` `bands()` and `LiveLevels.bands`, the `bands` wish in `live.ts` / `liveSync.ts` and
+    `Visualizer.tsx`'s use of them (`bars.ts`).
 
 ## Live Editor (phase 4.1, 2026-10-21)
 

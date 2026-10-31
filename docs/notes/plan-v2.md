@@ -212,15 +212,24 @@ a 48 px strip under the cover; four looks (bars, mirror, peaks, wave). Coarse (1
 signal, no beat, small. Plan: better data first, then a real renderer, then the styles.
 
 **Data (both twins alike: `crates/dsp` and `live.js`)**
-- [ ] FFT spectrum (Hann window, 4096 points at 48 kHz, ~85 ms, 50 % overlap) mapped to log bands: 1/3, 1/6, 1/12
+- [x] FFT spectrum (Hann window, 4096 points at 48 kHz, ~85 ms, 50 % overlap) mapped to log bands: 1/3, 1/6, 1/12
       octave (31 / 62 / 120 bands, 20 Hz to 20 kHz), ANSI centers; `live.js` reads the same from its analyser bins.
+      (2026-10-31, step 1 of 3 of the first cut: **1/6 octave only, 61 bands** 19.95 Hz to 19.95 kHz, Hann here, Blackman
+      in `live.js` calibrated by its energy; 1/3 and 1/12 left. Under ~320 Hz the bands are narrower than the window
+      sees: a sine reads right, neighbours read high. Details and what the tests promise: `docs/playback.md`.)
 - [ ] Weighting (A or ITU-R 468) and a +3 dB/octave tilt option, so music looks level instead of bass-heavy.
 - [ ] Stereo: left and right bands separately; time-domain blocks (L/R, 1024 samples) for scope and vectorscope.
+      (Left / right bands, rms and peak done 2026-10-31; the time-domain blocks left.)
 - [ ] Beat and onset detection (spectral flux on low and mid bands, tempo estimate): kicks drive pulses, flashes, camera.
 - [ ] Loudness stream (momentary / short-term LUFS, true peak) already measured by Adaptive Sound: exposed for meters.
-- [ ] Push, not poll: a Tauri `Channel` at 60 Hz with a compact binary frame (bands as u8, samples as i16); only while a
+- [x] Push, not poll: a Tauri `Channel` at 60 Hz with a compact binary frame (bands as u8, samples as i16); only while a
       visualizer is on screen; the front end interpolates between frames.
+      (2026-10-31: `viz_start` / `viz_stop`, worker only while subscribed, `features/player/vizFrames.ts` for both twins;
+      bands and levels as u8, no samples yet; the interpolation is the renderer's, step 2. Nothing subscribes yet; the
+      old 16-band strip still runs, what can go then is listed in `docs/playback.md`. CPU of the stream on the bench PC
+      not measured.)
 - [ ] Unit tests: a sine lights its 1/12-octave band, a pink noise reads flat with the tilt, a click track gives its BPM.
+      (Sine in its 1/6-octave band, left-only, twins on a shared fixture: done 2026-10-31.)
 
 **Renderer**
 - [ ] One `<canvas>` (Canvas 2D first, WebGL2 for the heavy looks) in an OffscreenCanvas worker: no React, no layout;

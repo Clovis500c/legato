@@ -5,6 +5,7 @@
 //   welcome      Get started, Add folder (the demo songs this script writes), Start listening
 //   songs        the library lists the three songs
 //   play         a local song plays 3 s: the engine's position moves, sound goes through the live chain
+//   viz          the visualizer's stream (viz_start): ~60 frames a second of 1/6-octave bands, the song's own band lit, quiet after viz_stop
 //   pause-play   Pause freezes it, Play moves it again
 //   search       typed text: suggestions, then YouTube, YouTube Music and Apple results, all from e2e/mock.mjs; the song plays on
 //   links        a pasted Deezer playlist (Add music) and Apple album (Ctrl+V): the progress toast, Cancel, the playlist made
@@ -90,7 +91,7 @@ export const flat = (s) => String(s).replace(/\s+/g, ' ').trim()
 /** The pictures the walk takes (`shot`) and its steps (`step`, named in FAIL-<step>.png): e2e.test.ts keeps both lists equal
  *  to the walk's own calls. */
 export const SHOTS = ['1-welcome', '2-library', '3-songs', '4-playing', '5-search', '5-imported', '6-settings', '7-relaunch']
-export const STEPS = ['launch', 'welcome', 'songs', 'play', 'pause-play', 'karaoke', 'search', 'links', 'quit', 'relaunch']
+export const STEPS = ['launch', 'welcome', 'songs', 'play', 'viz', 'pause-play', 'karaoke', 'search', 'links', 'quit', 'relaunch']
 
 /** What the app's log says started its deferred work (src-tauri/src/deferred.rs), once per launch. */
 export const DEFERRED_BY = { ready: 'deferred start by the UI ready signal', timer: 'deferred start by the timer' }
@@ -442,6 +443,36 @@ async function walk(o, dataDirs) {
       const levels = await page.invoke('player_levels')
       if (!(levels.peak > 0.05)) throw new Error(`no sound in the live chain: ${JSON.stringify(levels)}`)
       await shot('4-playing')
+    })
+
+    // Visualizer v2's data (src-tauri viz.rs): a channel opened the way the interface's Channel does, frames of the
+    // song's 440 Hz tone (band 27, peak 0.3 = -10.5 dB) at about 60 a second, then silence of the stream after viz_stop.
+    await step('viz', async () => {
+      const frames = await page.cdp.evaluate(`(async () => {
+        const t = window.__TAURI_INTERNALS__
+        const got = []
+        const id = t.transformCallback((m) => m.message && got.push(Array.from(new Uint8Array(m.message))))
+        await t.invoke('viz_start', { frames: '__CHANNEL__:' + id })
+        await new Promise((r) => setTimeout(r, 1000))
+        await t.invoke('viz_stop')
+        // A frame already on its way may still land.
+        await new Promise((r) => setTimeout(r, 150))
+        const n = got.length
+        await new Promise((r) => setTimeout(r, 400))
+        return { got: got.slice(-5), n, after: got.length }
+      })()`)
+      // 60 a second of audio; the e2e build's drain hands sound over every 20 ms, so about 50 here.
+      if (frames.n < 30 || frames.n > 90) throw new Error(`${frames.n} frames in a second, not about 60`)
+      if (frames.after !== frames.n) throw new Error(`frames kept coming after viz_stop: ${frames.n} to ${frames.after}`)
+      const f = frames.got.at(-1)
+      if (f.length !== 130 || f[0] !== 1 || f[1] !== 61) throw new Error(`not a frame: ${f.slice(0, 8)}`)
+      const left = f.slice(8, 69)
+      const right = f.slice(69)
+      const top = left.indexOf(Math.max(...left))
+      if (top !== 27) throw new Error(`the tone lit band ${top}, not 27: ${left}`)
+      // 20 log10(0.3) = -10.46 dB, byte (dB + 120) * 2 = 219; the 44.1 kHz file through the 4096 FFT reads it within 0.5 dB.
+      if (Math.abs(left[27] - 219) > 1.5 || left.some((v, i) => i !== 27 && i !== 26 && i !== 28 && v > left[27] - 30)) throw new Error(`band levels off: ${left}`)
+      if (right.join() !== left.join()) throw new Error('a mono tone differs between the sides')
     })
 
     await step('pause-play', async () => {
