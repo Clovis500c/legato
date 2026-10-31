@@ -112,7 +112,9 @@ Rules:
 
 - The window is the real interface (`site/demo`), never a redrawn one. 6 to 8 chapters; the rest is a list.
 - Text sits on calm page space, never over the window.
-- Native scroll and `position: sticky`, no hijacking. Transform and opacity only.
+- Native scroll and `position: sticky`, no hijacking. Transform and opacity only. The stage follows the scroll through
+  a spring with no overshoot, so a wheel's notches move it in one glide; the window is its own layer only while it moves
+  (sharp again at rest, where its zoom can pass 1).
 - One exception to "Flat": a neutral shadow under the window, which follows its tilt. No glow, glass or gradient.
 - Wide screens with animations on get the stage. Phones and reduced motion get the chapters one after another, each
   with a picture.

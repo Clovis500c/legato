@@ -1,7 +1,7 @@
 'use client'
 
 import { ArrowRight, SpeakerHigh, WindowsLogo } from '@phosphor-icons/react'
-import { animate, motion, useMotionValue, useMotionValueEvent, useScroll, useTransform, type MotionValue } from 'motion/react'
+import { animate, motion, useMotionValue, useMotionValueEvent, useScroll, useSpring, useTransform, type MotionValue } from 'motion/react'
 import { useEffect, useRef, useState, type ReactNode, type RefObject } from 'react'
 import { CHAPTERS, type Pose } from './content'
 import { Hero } from './Hero'
@@ -139,6 +139,10 @@ function AppWindow({ at, take, ready, live, onReady, onLeave }: { at: MotionValu
     watch.observe(stage)
     return () => watch.disconnect()
   }, [w, h])
+  // Its own layer while it moves: no repaint of the interface each frame. Dropped at rest, so a zoom above 1 is sharp again.
+  const willChange = useMotionValue('auto')
+  useMotionValueEvent(at, 'animationStart', () => willChange.set('transform'))
+  useMotionValueEvent(at, 'animationComplete', () => willChange.set('auto'))
   const transform = useTransform(() => {
     const p = poseAt(at.get())
     const t = take.get()
@@ -147,7 +151,7 @@ function AppWindow({ at, take, ready, live, onReady, onLeave }: { at: MotionValu
     return `translate3d(${mix(p.x, 0, t) * w.get()}px, ${mix(p.y, 0.005, t) * h.get()}px, 0) rotateX(${mix(p.rx, 0, t)}deg) rotateY(${mix(p.ry, 0, t)}deg) scale(${mix(fit, full, t)})`
   })
   return (
-    <motion.div ref={box} aria-hidden={!live} style={{ transform, width: APP.w, height: APP.h, marginLeft: -APP.w / 2, marginTop: -APP.h / 2 }} className="absolute top-1/2 left-1/2 overflow-hidden rounded-[10px] bg-panel shadow-(--shot-shadow) outline outline-line">
+    <motion.div ref={box} aria-hidden={!live} style={{ transform, willChange, width: APP.w, height: APP.h, marginLeft: -APP.w / 2, marginTop: -APP.h / 2 }} className="absolute top-1/2 left-1/2 overflow-hidden rounded-[10px] bg-panel shadow-(--shot-shadow) outline outline-line">
       <Still name={still} alt="" className="absolute inset-0 size-full" />
       <Demo at={at} ready={ready} live={live} onReady={onReady} onLeave={onLeave} />
     </motion.div>
@@ -242,7 +246,8 @@ export function Story() {
   const tryIt = useRef<HTMLButtonElement>(null)
   const pinned = usePinned()
   const { scrollYProgress } = useScroll({ target: section, offset: ['start start', 'end end'] })
-  const at = useTransform(scrollYProgress, [0, 1], [0, LAST + TAIL])
+  // The stage glides after the scroll: a wheel's notches and a dragged scrollbar arrive as one movement. No overshoot.
+  const at = useSpring(useTransform(scrollYProgress, [0, 1], [0, LAST + TAIL]), { stiffness: 220, damping: 32, restDelta: 0.0005 })
   const night = useTransform(at, shade)
   const zIndex = useTransform(night, (d) => (d > 0 ? 30 : 0))
   const [black, setBlack] = useState(false)
