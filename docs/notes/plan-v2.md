@@ -147,6 +147,8 @@ playback (its terms), concerts (an API's terms), trademark search.
 - **Visualizer v2 first cut**: 1/6-octave bands at 60 Hz from both twins (tests: a sine lights its band in Rust and JS
   alike), one canvas renderer, four looks (LED bars with peaks, radial around the cover, VU needles, spectrogram), full
   screen on F, under 3 % CPU on the bench PC, reduced motion respected.
+  (Steps 1 and 2 of 3 landed 2026-10-31: the frames, then the worker's canvas, LED bars and full screen on V. Left:
+  radial, VU, spectrogram (step 3), the CPU on the bench PC.)
 - **Karaoke mode**: full screen, current line large, next lines dimmed, the blurred cover behind, offset keys, exits
   on Esc; works with plain lyrics as a scroll. (Done 2026-10-31.)
 
@@ -229,19 +231,29 @@ signal, no beat, small. Plan: better data first, then a real renderer, then the 
       old 16-band strip still runs, what can go then is listed in `docs/playback.md`. CPU of the stream on the bench PC
       not measured.)
 - [ ] Unit tests: a sine lights its 1/12-octave band, a pink noise reads flat with the tilt, a click track gives its BPM.
+      (Comfort: a 10 Hz strobe flashes at most 3 times a second after the limiter, done 2026-10-31.)
       (Sine in its 1/6-octave band, left-only, twins on a shared fixture: done 2026-10-31.)
 
 **Renderer**
-- [ ] One `<canvas>` (Canvas 2D first, WebGL2 for the heavy looks) in an OffscreenCanvas worker: no React, no layout;
+- [x] One `<canvas>` (Canvas 2D first, WebGL2 for the heavy looks) in an OffscreenCanvas worker: no React, no layout;
       pauses when hidden, 30 fps cap on battery, devicePixelRatio aware.
+      (2026-10-31, step 2 of 3: Canvas 2D in a worker, paused when hidden / off screen / not playing; the 30 fps cap on
+      battery left. Details: `docs/playback.md` › Visualizer renderer.)
 - [ ] Sizes: the strip under the cover (today), a big backdrop behind Now Playing, full screen (F), the mini player,
       the OBS overlay page; a click on the visualizer cycles its look.
+      (Strip and full screen done 2026-10-31: V and a double click, F stays Now Playing; right-click picks the look, a
+      click does nothing as before. The backdrop, mini player and OBS page left.)
 - [ ] Colours from the theme or the cover (`coverTint.ts`): gradient along frequency, by level, or the cover's palette.
-- [ ] Reduced motion: slower, no flashes (Windows' animation setting); a flash limit always (photosensitivity).
+      (2026-10-31: the theme's text colour as read where it is drawn, so Now Playing's cover tint applies; no colour
+      choices yet.)
+- [x] Reduced motion: slower, no flashes (Windows' animation setting); a flash limit always (photosensitivity).
+      (2026-10-31: `prefers-reduced-motion` and the app's Animations setting; the flash limiter is tested on a strobe.)
 
 **Styles (each with a few settings: bands, smoothing, peak hold, colours, mirror, reflection)**
 - [ ] Spectrum bars, realistic: 1/3 to 1/12 octave, LED segments, peak caps that hold then fall with gravity,
       reflection on a glossy floor, frequency and dB scales on hover.
+      (LED segments with held, falling caps done 2026-10-31, 1/6 octave; the reflection, the scales and the other band
+      counts left.)
 - [ ] Smooth spectrum curve (filled area, glow), stereo overlay (left and right in two colours).
 - [ ] Radial spectrum around the cover (the cover in the middle pulses with the kick, bars around it).
 - [ ] Analogue VU meters: two needles with real ballistics (300 ms VU, PPM option), peak LED, a skin from the theme.

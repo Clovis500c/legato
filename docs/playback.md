@@ -256,16 +256,45 @@ never: downloading, extracting, recording or exporting a platform's audio, or to
     sound over in bursts the rate is that of the bursts (the e2e build: every 20 ms, 50 a second).
   - **YouTube**: `live.js` `vizStart` (only while `settings.viz`): a second pair of analysers at fftSize 4096 behind a
     ChannelSplitter, made then and dropped when it stops, so the chain costs nothing more with no visualizer; the older
-    2048 pair keeps feeding the loudness and the 16 bands. A 16 ms timer sends the same frame as base64 text
+    2048 pair keeps feeding the loudness. A 16 ms timer sends the same frame as base64 text
     (`{viz}` in the report, by the existing postMessage path, or the watch page's `musicapp-live:` string, checked in
     `ytwatch.rs`), the silent frame once after ~100 ms of pause or silence.
   - **Front end**: `features/player/vizFrames.ts`: `viz.subscribe(fn)` gives frames from whichever twin plays, same shape
     (`vizUnpack.ts`, pure), `viz.latest()` the newest as it came; the first subscriber opens the channel and raises the
-    live wish `viz` (YouTube's 60 Hz), the last one closes both. Nothing subscribes yet (the strip under the cover still
-    runs on the 16 bands); the renderer (step 2) is the first subscriber.
-  - **To retire in step 2**: `spectrum.rs` (16 band-passes) and `Levels::bands`, `Live::bands` (`player_levels` carries
-    them), `live.js` `bands()` and `LiveLevels.bands`, the `bands` wish in `live.ts` / `liveSync.ts` and
-    `Visualizer.tsx`'s use of them (`bars.ts`).
+    live wish `viz` (YouTube's 60 Hz), the last one closes both. The renderer below is the subscriber.
+  - **Retired in step 2** (2026-10-31): the 16 band-passes (`spectrum.rs`), `Levels::bands`, `Live::bands`,
+    `live.js` `bands()`, `LiveLevels.bands`, the `bands` wish and the old DOM bars (`bars.ts`).
+- **Visualizer renderer** (Visualizer v2 step 2, 2026-10-31). One canvas drawn by a Web Worker on an `OffscreenCanvas`
+  (Canvas 2D): `VizCanvas.tsx` (page side: makes the canvas and the worker, sizes it with `devicePixelRatio`, reads the
+  theme's text colour where it is drawn, hands the frames over), `vizWorker.ts` (the loop), `vizPaint.ts` (drawing),
+  `vizScene.ts` (bands folded into columns, ballistics, flash limiter), pure and tested: `ledBars.ts` (level up fast and
+  down slowly, peak cap held 0.5 s then falling with gravity), `flash.ts`, `vizDraw.ts` (columns, LED rows, wave path).
+  The worker is Vite's (`new Worker(new URL(...), { type: 'module' })`, its own chunk); the CSP has no `worker-src`, so
+  `default-src 'self'` covers it: nothing changed there (checked in the e2e build, which draws).
+  - **Only while seen**: frames and the worker's loop run when the page is visible (`visibilityState`: the tray hides the
+    webview, `background.rs` `set_visible(false)`), the element intersects the viewport (IntersectionObserver), the
+    caller shows it (not the strip while the full screen is up) and the song plays. A paused song gets one `silence`
+    message: the bars fall, the loop stops at rest (all levels and caps under 0.002); `run: false` stops it outright.
+    No `requestAnimationFrame` loop, no subscription, no engine thread then, so nothing keeps the tray's suspend from
+    coming. Main thread cost: a `postMessage` of two small arrays per frame; the rAF intervals of the page read the same
+    with the strip on and off (4.17 ms mean, 4.3 ms p95, the debug e2e build).
+  - **Looks**: `led` (default; segments, lit ones brighter towards the top, cap segment white; sprites cached per size
+    and colour, a few dozen `drawImage` per frame), and the four older ones ported to the canvas, `bars`, `mirror`,
+    `peaks`, `wave`. One column per band down to 5 CSS px wide, fewer in narrow boxes (each takes the loudest of its
+    bands). Both sides become one by power. Height = -78 dB (nothing) to -10 dB (full). Colour: the theme's text colour
+    with an opacity per shade (never the accent, which is for playback), read from where it is drawn (Now Playing
+    tints it with the cover). A saved `bars` look moves to `led` once (`DEFAULTS_VERSION` 9); the other looks stay.
+  - **Comfort**: `prefers-reduced-motion` or Animations off (`useCalm`): slower attack and release, a cap that sinks
+    gently, one flash a second. Always: `flash.ts` limits the mean brightness of the bars to 3 flashes a second (a flash
+    = a rise and a fall of at least 10 % of the range; past the budget the brightness may not turn back by 10 % until
+    older swings are a second old); the test runs a 10 Hz strobe through it and counts.
+  - **Full screen** (`vizFull.ts`, `VizScreen.tsx`, lazy): V (rebindable, Settings › Shortcuts) or a double click on the
+    strip; right-click: look, full screen; Esc or a double click leaves (`vizFullKeys.ts`, capture on the window, a
+    menu on top keeps its Esc). The window goes full screen through `holdFullscreen` (`app/fullscreen.ts`: gives back only
+    what it took, sees F11 / the title bar leaving it, sessionStorage flag for a reload), the same care as karaoke's.
+    While it is up Now Playing's F and karaoke's K do nothing; the native watch page (a YouTube video that can't be
+    embedded) is hidden, as for karaoke (`PlayerBar.tsx`). Not offered while Spotify plays. Click on the strip still
+    does nothing (it did nothing before).
 
 ## Live Editor (phase 4.1, 2026-10-21)
 
