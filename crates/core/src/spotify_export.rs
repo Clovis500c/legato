@@ -25,6 +25,9 @@ const SIGNAL: &str = "legato-exportify:";
 /// Silence before the window counts as broken. Its buttons: seconds. Its reading: one long list can stay quiet for minutes.
 const LOAD: Duration = Duration::from_secs(30);
 const READ: Duration = Duration::from_secs(300);
+/// A page left on Spotify's own site: time to settle, then back. Tries, since a page that keeps coming back won't change.
+const SETTLE: Duration = Duration::from_secs(3);
+const MAX_BACK: u8 = 2;
 
 /// What Exportify's page says (`music_shield::EXPORTIFY_SCRIPT`).
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -64,11 +67,22 @@ pub enum ExportTrouble {
     BadFile,
 }
 
+/// What the window does next.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum Next {
+    Wait,
+    /// Signed in, left on Spotify's own pages: back to Exportify's.
+    BringBack,
+    Stop(ExportTrouble),
+}
+
 /// Exportify's window: silence per stage. Pure, ticked by the shell.
 #[derive(Debug, Default)]
 pub struct Watch {
     quiet: Duration,
     reading: bool,
+    stranded: Duration,
+    back: u8,
 }
 
 impl Watch {
@@ -79,15 +93,33 @@ impl Watch {
     }
 
     /// `url`: the window's page. Elsewhere than Exportify = signing in (Spotify, Google, Apple…), the user's: no limit.
-    pub fn tick(&mut self, step: Duration, url: &str) -> Option<ExportTrouble> {
+    pub fn tick(&mut self, step: Duration, url: &str) -> Next {
+        if stranded(url) {
+            self.stranded += step;
+            if self.stranded < SETTLE {
+                return Next::Wait;
+            }
+            self.stranded = Duration::ZERO;
+            self.back += 1;
+            return if self.back > MAX_BACK { Next::Stop(ExportTrouble::Refused) } else { Next::BringBack };
+        }
+        self.stranded = Duration::ZERO;
         if signing_in(url) {
             self.quiet = Duration::ZERO;
-            return None;
+            return Next::Wait;
         }
         self.quiet += step;
         let (limit, trouble) = if self.reading { (READ, ExportTrouble::Stalled) } else { (LOAD, ExportTrouble::Down) };
-        (self.quiet >= limit).then_some(trouble)
+        if self.quiet >= limit { Next::Stop(trouble) } else { Next::Wait }
     }
+}
+
+/// Spotify's own pages past a sign-in: nothing there leads back. Never its sign-in or consent page.
+fn stranded(url: &str) -> bool {
+    let Some(rest) = url.strip_prefix("https://") else { return false };
+    let (host, path) = rest.split_once('/').unwrap_or((rest, ""));
+    let page = path.split(['?', '#']).next().unwrap_or("");
+    matches!(host, "open.spotify.com" | "www.spotify.com") || (host == "accounts.spotify.com" && page.ends_with("status"))
 }
 
 /// Another site's page. Not a browser's error page: that one is Exportify's silence.
@@ -252,7 +284,30 @@ mod tests {
     }
 
     fn silence(watch: &mut Watch, secs: u64, url: &str) -> Option<ExportTrouble> {
-        (0..secs).find_map(|_| watch.tick(Duration::from_secs(1), url))
+        (0..secs).find_map(|_| match watch.tick(Duration::from_secs(1), url) {
+            Next::Stop(t) => Some(t),
+            _ => None,
+        })
+    }
+
+    #[test]
+    fn a_sign_in_left_on_spotify_goes_back_to_exportify() {
+        let second = Duration::from_secs(1);
+        for page in ["https://open.spotify.com/", "https://www.spotify.com/fr/account/overview/", "https://accounts.spotify.com/fr/status?x=1"] {
+            let mut watch = Watch::default();
+            // Back after its moment, twice, then it's said.
+            for _ in 0..MAX_BACK {
+                assert_eq!(watch.tick(second, page), Next::Wait);
+                assert_eq!(watch.tick(second, page), Next::Wait);
+                assert_eq!(watch.tick(second, page), Next::BringBack);
+            }
+            assert_eq!(silence(&mut watch, 3, page), Some(ExportTrouble::Refused));
+        }
+        // Sign-in and consent stay the user's.
+        for page in ["https://accounts.spotify.com/authorize?client_id=x", "https://accounts.spotify.com/fr/login?continue=x", "https://accounts.spotify.com/fr/authorize/accept"] {
+            let mut watch = Watch::default();
+            assert!((0..600).all(|_| watch.tick(second, page) == Next::Wait), "{page}");
+        }
     }
 
     #[test]

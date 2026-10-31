@@ -429,7 +429,8 @@ via the Web API Player endpoints. Audio comes out of the Spotify app; we only se
   are liked on the account (`push_own_likes`, one every 400 ms). Exportify is a third party's site, so its window is watched (`Watch`, pure, in `music_core::spotify_export`;
   the page says `ready` and `busy` on WebView2's message channel): 30 s without its buttons = down, 5 min of silence
   while reading = stalled, the sign-in button still there after Spotify = refused. Any other site in that window is a
-  sign-in, the user's, no limit. Each ends in a dialog offering Try again and the second way, never a window left waiting.
+  sign-in, the user's, no limit, except Spotify's own pages past a sign-in (its player, its account page, `/status`): nothing
+  there leads back, so the window returns to Exportify, twice at most. Its sign-in and consent pages are never touched. Each ends in a dialog offering Try again and the second way, never a window left waiting.
   Sync directions decide each hop: Spotify's (Settings › Accounts,
   shown without a key too) has to bring things in, or Connect Spotify says so and stops; YouTube Music's has to send, or
   the songs stay in your own list. Nothing goes to Spotify: Exportify only reads, and writing needs the official API, so a

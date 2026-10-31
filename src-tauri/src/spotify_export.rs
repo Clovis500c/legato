@@ -6,7 +6,7 @@
 use crate::spotify_web::{SpotifyLibraryImport, SpotifyList, SpotifyPick, SpotifyProgress};
 use crate::{AppState, CmdResult, err, links};
 use music_core::model::Source;
-use music_core::spotify_export::{self, ExportTrouble, ExportedList, Signal, Watch};
+use music_core::spotify_export::{self, ExportTrouble, ExportedList, Next, Signal, Watch};
 use serde::Serialize;
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
@@ -62,9 +62,18 @@ async fn watch(app: AppHandle, mut signals: UnboundedReceiver<Signal>) {
         }
         let Some(w) = app.get_webview_window(LABEL) else { return report(&app, Vec::new(), Some(ExportTrouble::Closed)) };
         let url = w.url().map(String::from).unwrap_or_default();
-        if let Some(t) = trouble.or_else(|| watch.tick(STEP, &url)) {
-            crate::diag::warn("spotify", "Exportify's window gave up", &format!("{t:?}"));
-            return report(&app, Vec::new(), Some(t));
+        let next = trouble.map_or_else(|| watch.tick(STEP, &url), Next::Stop);
+        match next {
+            Next::Wait => {}
+            Next::BringBack => {
+                if let Ok(page) = Url::parse(PAGE) {
+                    let _ = w.navigate(page);
+                }
+            }
+            Next::Stop(t) => {
+                crate::diag::warn("spotify", "Exportify's window gave up", &format!("{t:?}"));
+                return report(&app, Vec::new(), Some(t));
+            }
         }
     }
 }

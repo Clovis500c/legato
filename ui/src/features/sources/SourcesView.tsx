@@ -3,6 +3,7 @@ import { useShallow } from 'zustand/react/shallow'
 import { open } from '@tauri-apps/plugin-dialog'
 import { useEffect, useState } from 'react'
 import { useStore } from '../../app/store'
+import { SpotifyImport } from '../add/SpotifyConnect'
 import { accountKey, api, type Direction, type YtmAccount } from '../../shared/api'
 import { useGoogleAccounts } from './google'
 import { timeAgo } from '../../shared/format'
@@ -90,7 +91,7 @@ function ServiceRow({ service }: { service: 'spotify' }) {
   )
 }
 
-/** Prototype: Spotify's official web player in a window, signed in on Spotify's page (no keys). Library import: Add music › Connect Spotify, which follows the direction here. */
+/** Prototype: Spotify's official web player in a window, signed in on Spotify's page (no keys). Opening it imports nothing: the import is Connect Spotify's, offered here too, and follows the direction here. */
 function SpotifyWeb() {
   const [on, setOn] = useState<boolean>()
   const [dirs, setDir] = useDirections()
@@ -110,12 +111,13 @@ function SpotifyWeb() {
         </span>
         <div className="flex-1">
           <p className="text-[0.8125rem] font-semibold">{tr('Spotify web player')} <span className="kicker">{tr('Preview')}</span></p>
-          <p className="text-xs text-ink-2">{tr('Spotify’s own player in a window, signed in on Spotify’s page. To import a public playlist, paste its link anywhere (Ctrl+V).')}</p>
+          <p className="text-xs text-ink-2">{tr('Spotify’s own player in a window, signed in on Spotify’s page. Open only plays it: to bring your lists in, use Import my lists.')}</p>
         </div>
         <span className="kicker">{on ? tr('Signed in') : tr('Not signed in')}</span>
-        <Button variant={on ? 'ghost' : undefined} onClick={() => api.spotifyWebOpen().catch((e) => useStore.setState({ error: String(e) }))}>
+        <Button variant="ghost" onClick={() => api.spotifyWebOpen().catch((e) => useStore.setState({ error: String(e) }))}>
           {tr('Open')}
         </Button>
+        <SpotifyImport label={tr('Import my lists')} />
       </div>
       {/* With a key the row above shows it. */}
       {!keyed && (

@@ -43,8 +43,9 @@ const TROUBLES: Record<Exclude<ExportTrouble, 'closed'>, string> = {
  * Spotify's playlists and Liked Songs, private ones too, any account. First way: Exportify's page in a window, driven by
  * the app (official API, src-tauri/src/spotify_export.rs): every list comes straight in. Second way, for when it's gone:
  * Spotify's own page read (against its rules, the dialog says so; src-tauri/src/spotify_web.rs), lists ticked here.
+ * Its button goes wherever Spotify is offered: Add music, Settings › Accounts.
  */
-export function SpotifyConnect() {
+export function SpotifyImport({ label, className }: { label: string; className?: string }) {
   const [step, setStep] = useState<Step>()
   const [lists, setLists] = useState<SpotifyList[]>([])
   const [off, setOff] = useState<string[]>([])
@@ -129,9 +130,9 @@ export function SpotifyConnect() {
   }
 
   return (
-    <Card icon={SpotifyLogo} title={tr('Connect Spotify')} sub={tr('Import your playlists and Liked Songs, private ones too, with any free account.')}>
-      <Button className="mt-auto self-start" onClick={exportify}>
-        {tr('Connect')}
+    <>
+      <Button className={className} onClick={exportify}>
+        {label}
       </Button>
       {step === 'export' && (
         <Dialog title={tr('Connect Spotify')} onClose={close}>
@@ -208,6 +209,14 @@ export function SpotifyConnect() {
           </div>
         </Dialog>
       )}
+    </>
+  )
+}
+
+export function SpotifyConnect() {
+  return (
+    <Card icon={SpotifyLogo} title={tr('Connect Spotify')} sub={tr('Import your playlists and Liked Songs, private ones too, with any free account.')}>
+      <SpotifyImport className="mt-auto self-start" label={tr('Connect')} />
     </Card>
   )
 }

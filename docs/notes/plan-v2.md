@@ -71,6 +71,8 @@ What the services allow, read on 2026-10-31 (specs in [ideas/catch-up.md](ideas/
 - [x] `S` Exportify failing says so (user's go 2026-10-31): its window is watched, site down, page changed, reading stalled,
       access refused all end in a dialog with Try again and the page route. Its own copy can't remove the dependency: the key
       is what counts (`docs/playback.md`). Stalled and a real refusal on Spotify's page not seen live, signal path checked.
+- [x] `S` Nothing leaves you on Spotify's page (user's report 2026-10-31): Settings › Accounts offers Import my lists beside
+      Open, which only plays, and a sign-in left on Spotify's own pages returns to Exportify.
 - [ ] `S` Exportify's file names are lowered, with underscores ("Cool music" for "Cool Music"): a real name needs its
       playlist column ([exportify#194](https://github.com/watsonbox/exportify/issues/194)) or the first way's names.
 - [ ] `S` Spotify's `spotify_export::list` drops local files (8 in the user's export): keep them as songs to find.
