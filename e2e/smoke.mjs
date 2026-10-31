@@ -715,9 +715,33 @@ async function walk(o, dataDirs) {
   }
 }
 
+/** With no page to attach to: what WebView2 was started with, what it listens on, what the port answers. `profile` = the
+ *  folder holding EBWebView. */
+export async function webviewState(port, profile) {
+  const script = `
+    $all = @(Get-CimInstance Win32_Process -Filter "Name='msedgewebview2.exe'")
+    "webview processes: $($all.Count)"
+    $all | Where-Object { $_.CommandLine -notmatch '--type=' } | ForEach-Object { "browser $($_.ProcessId): $($_.CommandLine)" }
+    Get-NetTCPConnection -State Listen -ErrorAction SilentlyContinue | Where-Object { $all.ProcessId -contains $_.OwningProcess } | ForEach-Object { "listening $($_.LocalAddress):$($_.LocalPort), process $($_.OwningProcess)" }
+    "administrator: " + ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole('Administrators')`
+  const ps = spawnSync('powershell', ['-NoProfile', '-EncodedCommand', Buffer.from(script, 'utf16le').toString('base64')], { encoding: 'utf8', timeout: 30000 })
+  const lines = [...String(ps.stdout).trim().split(/\r?\n/)]
+  const active = path.join(profile, 'EBWebView', 'DevToolsActivePort')
+  lines.push(`DevToolsActivePort: ${existsSync(active) ? flat(readFileSync(active, 'utf8')) : 'no such file'}`)
+  const answer = await fetch(`http://127.0.0.1:${port}/json/list`).then((r) => r.text(), (e) => `${e.message} ${e.cause?.code ?? ''}`)
+  lines.push(`the port answers: ${flat(answer).slice(0, 1000)}`)
+  return lines
+}
+
 /** What a failure leaves for whoever reads it (a CI artifact): the window, the step, what the page and the mock saw. */
 async function explain(o, app, mock, errors, step, error, dataDirs) {
   const lines = [`step: ${step}`, `error: ${error.stack ?? error}`]
+  const port = app ? null : /DevTools port (\d+)/.exec(error.message)?.[1]
+  if (port) {
+    const state = await webviewState(port, dataDirs[1])
+    console.log(state.map((l) => `  ${l}`).join('\n'))
+    lines.push('', 'webview:', ...state)
+  }
   try {
     if (app) {
       writeFileSync(path.join(o.shots, `FAIL-${step}.png`), await app.cdp.screenshot())
