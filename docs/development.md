@@ -44,7 +44,7 @@ release build has on the PC goes behind the same guard.
 
 `pnpm bench` builds the release app under its own identifier (`src-tauri/tauri.bench.conf.json`), fills a fresh data
 folder with 10 000 local songs (`crates/core/examples/bench_data.rs`) and reads start time, RAM and CPU: paused, playing,
-and 10 minutes in the tray. `--quick` is a short run. The numbers, how they are taken and what they leave out are in
+and 10 minutes in the tray. `--quick` is a short run. `pnpm bench --visualizer` measures the visualizer instead (below). The numbers, how they are taken and what they leave out are in
 [performance.md](performance.md); a full run appends its row there. Windows only, and about 20 minutes of a PC left alone.
 `scripts/cdp.mjs` is its small DevTools client; the E2E smoke test reuses it.
 
@@ -56,7 +56,9 @@ minutes through its real window, over WebView2's DevTools port (`scripts/cdp.mjs
 welcome comes first, Add folder (three WAV songs the test writes, `e2e/wav.mjs`), the Songs page lists them, a song plays
 3 s and the engine's position moves, the visualizer's frames come at about 60 a second, Pause freezes it and Play moves it again, the
 visualizer turned on draws LED bars in Now Playing (a screenshot of the strip, and of V's full screen, must not be blank:
-`e2e/png.mjs` decodes it) and Esc leaves, a search (suggestions, YouTube, YouTube
+`e2e/png.mjs` decodes it) and Esc leaves, then Radial, VU needles and Spectrogram the same way (`10-radial.png` to
+`12-spectrogram-full.png`; read them by eye after a change to a look), and the engine's own count (`viz_stats`) shows frames
+coming while one is open and no worker left after it closes, a search (suggestions, YouTube, YouTube
 Music and Apple, all answered by `e2e/mock.mjs` from `e2e/fixtures`) while the song plays on, a Deezer playlist link typed
 in Add music (its progress toast, the playlist made with the one song found, the one not found said) and an Apple Music album
 link pasted with Ctrl+V (Cancel makes nothing, then the full import), the window's Close with

@@ -10,6 +10,7 @@ page; the website and the README quote the latest row (`BENCH` in `site/componen
 pnpm bench            # full run, about 20 minutes, row saved here
 pnpm bench --quick    # 15 s windows and 1 minute in the tray, not saved (--save to save)
 pnpm bench --skip-build --keep --note "fan noise" --shots shots
+pnpm bench --visualizer --quick   # the visualizer's CPU, each look (below); never saved by the script
 ```
 
 Windows only (WebView2 and Windows' own counters), Node 22 or later, no other tool to measure: `scripts/bench.mjs` in
@@ -44,6 +45,15 @@ while it runs, and close what you can: other apps move the numbers, and the row 
 | RAM | Private working set (Task Manager's Details tab "Memory") of `legato-bench.exe` plus its own `msedgewebview2.exe` descendants, walked from the PID. The installed app's processes are other trees and never counted. Last sample of the window. |
 | CPU | CPU time of the same processes over the window (60 s, sampled every 10 s), as % of the whole PC, the way Task Manager shows it. Times the number of threads for % of one core. The busiest processes of each window are printed with their WebView2 kind (renderer, gpu-process...). |
 | PC load | Windows' own CPU load (`Win32_Processor.LoadPercentage`), averaged over each window, in Notes: how busy the rest of the PC was. The samples themselves cost WMI a second of CPU each, inside that number. |
+
+## The visualizer: `pnpm bench --visualizer`
+
+A different run on the same data: a local song plays, and the CPU of the whole app (the same processes and window as
+above) is read with the visualizer off, then with each look open, in Now Playing (the strip, or Radial's ring) and in
+V's full screen, then off again; the two off windows bracket the drift of the PC. The target is under 3 % of the PC over
+the off windows. It is built with the `e2e` feature (silent output: nothing reaches the speakers, so it can run at night;
+its own stamp keeps it from being mistaken for the normal bench exe). The engine, the FFT worker, the page and the
+render worker are all there; what is not is the audio device's own callback cost. Results are written here by hand, below.
 
 ## What it leaves out
 
@@ -94,6 +104,48 @@ runs of each build, the same night, one after the other (d30bb75 before, 0133324
 
 No regression: the restart's first paint gains about 0.07 s and the cold one about 0.1 s; the window, which has no JS in it,
 does not move. The gap in the table was the PC's load. The first run after each build is the slow one of its three.
+
+## Visualizer, 2026-10-31 (Visualizer v2, step 3)
+
+`pnpm bench --visualizer`, 60 s windows, Ryzen 5 5500 (12 threads), Windows 11 (26300), silent output, other apps
+running. CPU of the whole app (its processes and its WebView2's) as % of the whole PC, a local song playing. "Extra" is
+over the Now Playing controls (the page open with the visualizer off: 3.51 % before, 4.87 % after the looks, mean
+4.19 %; the first run). The controls drift by about 1 point between two runs, so an extra under 1 is not a number. The
+Songs page with the visualizer off reads 3.88 % (2.89 % in the second run): Now Playing itself costs about a point over
+it (its 60 fps bar and backdrop, not the visualizer).
+
+**First run, drawn at the screen's rate (60 fps), the target is under 3 %: over budget.**
+
+| Look | Now Playing | Extra | Full screen | Extra |
+|---|---|---|---|---|
+| LED | 6.43 % | +2.24 | 5.79 % | +1.60 |
+| Bars | 5.86 % | +1.67 | 6.35 % | +2.16 |
+| Mirror | 7.61 % | +3.42 | 7.78 % | +3.59 |
+| Peaks | 6.72 % | +2.52 | 3.88 % | -0.31 |
+| Wave | 8.31 % | +4.12 | 7.37 % | +3.18 |
+| Radial | 8.23 % | +4.04 | 6.86 % | +2.67 |
+| VU needles | 8.75 % | +4.56 | 5.51 % | +1.32 |
+| Spectrogram | 6.26 % | +2.07 | 5.98 % | +1.79 |
+
+Five of the sixteen cells were over 3 points (up to +4.56, 1.5 points over). The busiest processes were the page's
+renderer (the worker's drawing and the frames' arrival, 25 to 45 % of a core) and the GPU process (compositing the canvas
+again each frame, 25 to 50 % of a core); the app's own process, which runs the FFT and the engine, was never among the three busiest
+(the browser process, third, 3 to 6 %). The cost is the number of presented frames, so the obvious fix is to draw fewer.
+
+**Second run, drawn at 30 fps (`VizCanvas.tsx` `FPS`; the sound's frames still come at 60), four looks:**
+
+| Look | Now Playing | Extra | Full screen | Extra |
+|---|---|---|---|---|
+| LED | 5.65 % | +1.77 | 5.19 % | +1.31 |
+| Radial | 4.85 % | +0.97 | 5.21 % | +1.32 |
+| VU needles | 5.31 % | +1.43 | 5.78 % | +1.90 |
+| Spectrogram | 5.41 % | +1.53 | 4.85 % | +0.97 |
+
+(Controls 4.11 % and 3.66 %, mean 3.88 %; the Songs page 2.89 %.) Every cell is under 3 points, about 1 to 2, which is
+12 to 24 % of a core. Bars, Mirror, Peaks and Wave were not run again at 30 fps; they draw less than LED and Radial, so
+they should sit alongside, but that is not measured. Not measured either: the frame stream's own cost apart from the
+drawing, YouTube (the bench is local files), a PC on battery. The 30 fps look is what the bars and the needles show
+(their ballistics are time-based, not frame-based); the spectrogram's fixed 90 px/s scrolls 3 pixels a drawn frame.
 
 ## Results
 

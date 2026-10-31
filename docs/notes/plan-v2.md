@@ -147,8 +147,11 @@ playback (its terms), concerts (an API's terms), trademark search.
 - **Visualizer v2 first cut**: 1/6-octave bands at 60 Hz from both twins (tests: a sine lights its band in Rust and JS
   alike), one canvas renderer, four looks (LED bars with peaks, radial around the cover, VU needles, spectrogram), full
   screen on F, under 3 % CPU on the bench PC, reduced motion respected.
-  (Steps 1 and 2 of 3 landed 2026-10-31: the frames, then the worker's canvas, LED bars and full screen on V. Left:
-  radial, VU, spectrogram (step 3), the CPU on the bench PC.)
+  (All 3 steps landed 2026-10-31: the frames, the worker's canvas with LED bars and full screen on V, then radial, VU
+  needles and spectrogram. CPU measured with `pnpm bench --visualizer`: at 60 fps drawing 5 of 16 looks and sizes were
+  over 3 % (up to +4.6 points of the PC), drawn at 30 fps the four looks run again are +1 to +1.9 (`docs/performance.md`).
+  Full screen is on V, not F (F stays Now Playing). Left of the whole Visualizer v2 list: weighting, beat, 1/3 and 1/12
+  octave, loudness, oscilloscope and the rest, in the lines above.)
 - **Karaoke mode**: full screen, current line large, next lines dimmed, the blurred cover behind, offset keys, exits
   on Esc; works with plain lyrics as a scroll. (Done 2026-10-31.)
 
@@ -255,12 +258,18 @@ signal, no beat, small. Plan: better data first, then a real renderer, then the 
       (LED segments with held, falling caps done 2026-10-31, 1/6 octave; the reflection, the scales and the other band
       counts left.)
 - [ ] Smooth spectrum curve (filled area, glow), stereo overlay (left and right in two colours).
-- [ ] Radial spectrum around the cover (the cover in the middle pulses with the kick, bars around it).
-- [ ] Analogue VU meters: two needles with real ballistics (300 ms VU, PPM option), peak LED, a skin from the theme.
+- [x] Radial spectrum around the cover (the cover in the middle pulses with the kick, bars around it).
+      (2026-10-31, step 3 of 3: mirrored bars on a ring behind a round cover in Now Playing where the stage is >= 330 px
+      and the art square, around the cover in the full screen, bars in the strip; the pulse is Moving cover's own, no
+      beat detection yet. `docs/playback.md` › Radial, VU needles, spectrogram.)
+- [x] Analogue VU meters: two needles with real ballistics (300 ms VU, PPM option), peak LED, a skin from the theme.
+      (2026-10-31: VU ballistics tested (99 % in 300 ms, 1.24 % over), peak LED held 1 s, the theme's ink and danger red;
+      left: the PPM option and other skins.)
 - [ ] Loudness meter: LUFS bars (momentary, short-term, integrated), true peak, dynamic range of the song.
 - [ ] Oscilloscope: the waveform, triggered on zero crossings so it stands still, phosphor afterglow.
 - [ ] Vectorscope / goniometer (left vs right, Lissajous) with a correlation meter: stereo width at a glance.
-- [ ] Spectrogram: scrolling waterfall, colour maps (magma, viridis, the theme), log frequency axis.
+- [x] Spectrogram: scrolling waterfall, colour maps (magma, viridis, the theme), log frequency axis.
+      (2026-10-31: Canvas 2D, one magma-like map, fixed 90 px/s whatever the refresh rate; left: the other maps, WebGL.)
 - [ ] Spectrum 3D: a terrain of the last seconds flying towards the camera (WebGL).
 - [ ] Particles on the beat (from the cover's colours), with the cover's blur behind (Plexamp-like backdrop).
 - [ ] Song waveform on the progress bar for local files (computed once from the file, cached; not for streams).

@@ -295,6 +295,44 @@ never: downloading, extracting, recording or exporting a platform's audio, or to
     While it is up Now Playing's F and karaoke's K do nothing; the native watch page (a YouTube video that can't be
     embedded) is hidden, as for karaoke (`PlayerBar.tsx`). Not offered while Spotify plays. Click on the strip still
     does nothing (it did nothing before).
+- **Radial, VU needles, spectrogram** (Visualizer v2 step 3, 2026-10-31). Same worker, same frames, three more looks
+  in `vizPaint.ts`; their numbers are pure and tested (`vizVu.ts`, `vizSpectro.ts`, the geometry in `vizDraw.ts`).
+  - **Radial**: bars on a ring, mirrored left and right, low notes at the bottom rising to meet at the top
+    (`ringBars`). It is drawn behind a round cover, never the strip: in Now Playing (`Stage`, `NowPlaying.tsx`) the
+    cover turns round and shrinks to 66 % of the stage's square, the canvas fills that square behind it, only when the
+    stage is at least 330 CSS px, the art is square (within 6 %, so not a video frame with bars) and the song is not
+    Spotify's; the strip under the cover then stays away (one worker, not two). Elsewhere the strip shows the bars
+    look. The full screen puts the round cover in the middle of the ring. The kick pulse is `pulse.ts`'s Moving cover
+    (a setting), which scales the cover element and so works with the ring unchanged; there is no pulse of its own.
+  - **VU needles**: two dials side by side, L and R, each a damped spring in closed form (`stepNeedle`: exact at any
+    frame rate), natural frequency 13.52 rad/s and damping 0.813: a step reaches 99 % in 300 ms with 1.24 % overshoot
+    (the VU standard: 300 ms, 1 to 1.5 %; the test steps it at 1 ms and checks both). 0 VU is a sine 14 dB under full
+    scale RMS (the streaming level); the scale runs -20 to +3 VU. The level is the band energies summed, minus 3 dB for
+    the sine-reads-its-amplitude convention. The peak LED lights at +3 VU and holds 1 s, so it changes at most once a
+    second whatever the sound (under the flash limit, and under calm mode's 1). The dial (arc, marks, red end, numbers
+    when tall enough) is drawn once to a bitmap per size and colour; the needles, hub and LEDs go over it each frame.
+    `dialGeometry` fits the arc to any box: a shallow arc with the pivot below the box in the strip, up to 60 degrees of
+    swing in a tall box. Colours: the theme's ink, and `--color-danger` for the red end and the lit LED. Reduced
+    motion smooths the level (0.45 s) before the spring, so the needles drift. PPM ballistics and skins are not done.
+  - **Spectrogram**: time to the right, the log band axis up (low at the bottom), new column at the right edge. Each
+    drawn frame copies the picture left by the whole device pixels due and paints the new column with `putImageData`
+    (one pixel column, mixed between neighbouring bands, coloured by a 256-step magma-like table that is clear at
+    silence, so it sits on any page). Speed 90 CSS px/s (45 in reduced motion), counted by time, not by frames: the
+    test scrolls 2 s at 24 to 240 Hz and 2x density and gets the same distance within a pixel. The picture is kept
+    across messages but not across a resize or a look change. Canvas 2D is enough: no WebGL.
+  - **Drawn at 30 fps** (`FPS` in `VizCanvas.tsx`, sent with the look; the worker's loop skips a tick that comes less than a
+    period minus 3 ms after the last drawing): at the screen's 60 the bench showed 5 of 16 looks and sizes over the
+    3 % budget (up to +4.6 points of the PC), at 30 all four looks run again were +1 to +1.9. The sound's own frames stay at
+    60 Hz (the newest one is used, and the needles and bars are time-based). Numbers: `docs/performance.md`.
+  - **Everywhere**: all three obey reduced motion (`useCalm`) and the flash limiter (the spectrogram and the ring read
+    the limited heights; the needles are not brightness). All eight looks are offered in the strip, Settings and the
+    full screen; Radial says where it falls back (the Settings row). The e2e walk draws each, in Now Playing and full
+    screen, and reads a screenshot of both (`target/e2e/shots/10-radial.png` and on).
+  - **The data path in short**: the engine's tap (after gain and limiter, before the volume knob) is copied only while a
+    `viz_start` channel exists; a worker thread runs the FFT and sends 130-byte frames at 60 Hz; the page unpacks them
+    (`vizFrames.ts`) and hands the arrays to the render worker; YouTube's frames come as base64 text from `live.js`.
+    `viz_stats` returns the workers alive and the frames sent so far (a count, nothing of the sound): the e2e walk
+    checks that frames come while a look is open and that none are sent, and no worker lives, after it closes.
 
 ## Live Editor (phase 4.1, 2026-10-21)
 
