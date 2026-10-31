@@ -4,8 +4,8 @@ import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { useSettings } from '../../app/settings'
 import { useStore, type SettingsSection } from '../../app/store'
 import { api } from '../../shared/api'
-import { formatCount } from '../../shared/format'
-import { ACCENTS, ADAPTIVE_LEVELS, COLUMNS, DEFAULTS, VISUALIZER_STYLES, type AdaptiveLevel, type Column, type Settings } from '../../shared/theme/theme'
+import { formatBytes, formatCount } from '../../shared/format'
+import { ACCENTS, ADAPTIVE_LEVELS, COLUMNS, COVER_CACHE_MB, DEFAULTS, VISUALIZER_STYLES, type AdaptiveLevel, type Column, type Settings } from '../../shared/theme/theme'
 import { Button } from '../../shared/ui/Button'
 import { Led, Segmented, Toggle } from '../../shared/ui/controls'
 import { PageHeader } from '../../shared/ui/PageHeader'
@@ -422,6 +422,34 @@ function SoundGroup() {
   )
 }
 
+
+/** Cover cache: its size cap on this PC, what it holds now, and a way to empty it. */
+function CoverCacheRows() {
+  const { settings: s, update } = useSettings()
+  const [used, setUsed] = useState<number | null>(null)
+  const [busy, setBusy] = useState(false)
+  const count = () => void api.artCacheSize().then(setUsed, () => setUsed(null))
+  useEffect(count, [])
+  const clear = async () => {
+    setBusy(true)
+    await api.clearArtCache().catch(() => 0)
+    setBusy(false)
+    count()
+  }
+  const label = (mb: number) => (mb >= 1000 ? tr('{n} GB', { n: mb / 1000 }) : tr('{n} MB', { n: mb }))
+  return (
+    <div className="rounded-xl border border-line bg-raised">
+      <Row setting="coverCacheMb" label={msg('Cover cache size')} sub={tr('Covers kept on this PC to show them quickly. Over the limit, the ones not shown for the longest time go first and download again when needed')}>
+        <Segmented label={tr('Cover cache size')} value={String(s.coverCacheMb)} onChange={(mb) => update({ coverCacheMb: Number(mb) as Settings['coverCacheMb'] })} options={COVER_CACHE_MB.map((mb) => ({ value: String(mb), label: label(mb) }))} />
+      </Row>
+      <Row label={msg('Clear covers')} sub={used === null ? undefined : tr('{size} on this PC now. Playlist pictures and theme backgrounds stay', { size: formatBytes(used) })}>
+        <Button variant="ghost" disabled={busy || used === 0} onClick={() => void clear()}>
+          {tr('Clear covers')}
+        </Button>
+      </Row>
+    </div>
+  )
+}
 function GeneralSection() {
   const { settings: s, update } = useSettings()
   return (
@@ -452,6 +480,9 @@ function GeneralSection() {
             <Segmented label={tr('Update channel')} value={s.updateChannel} onChange={(updateChannel) => update({ updateChannel })} options={[{ value: 'stable', label: tr('Stable') }, { value: 'beta', label: tr('Beta') }]} />
           </Row>
         </div>
+      </Group>
+      <Group title={msg('Cover cache')}>
+        <CoverCacheRows />
       </Group>
       <Group title={msg('Notifications')}>
         <div className="rounded-xl border border-line bg-raised">

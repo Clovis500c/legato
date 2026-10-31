@@ -221,6 +221,12 @@ export const api = {
   /** Every play since `since` (unix s, 0 = all), oldest first: the Stats page. */
   playHistory: (since: number) => invoke<Play[]>('play_history', { since }),
   cacheStats: () => invoke<CacheStats>('cache_stats'),
+  /** Bytes the cover cache holds on disk. */
+  artCacheSize: () => invoke<number>('art_cache_size'),
+  /** Cover cache cap in MB (the folder is pruned in the background when over it). */
+  setArtCacheCap: (mb: number) => invoke<void>('set_art_cache_cap', { mb }),
+  /** Empties the cover cache: covers download again when shown. Bytes freed. */
+  clearArtCache: () => invoke<number>('clear_art_cache'),
   /** Third-party notices shipped with the app, in the default browser. */
   openLicenses: () => invoke<void>('open_licenses'),
   /** The UI is up: plugins, update and Sync Mode rounds may start (Rust also starts them after a few seconds). */

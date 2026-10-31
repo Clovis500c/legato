@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { bigUrls, firstArt, isLetterboxed, trackArt } from './art'
+import { bigUrls, firstArt, isLetterboxed, sizedArt, trackArt } from './art'
 
 vi.mock('@tauri-apps/api/core', () => ({ convertFileSrc: (p: string, scheme: string) => `http://${scheme}.localhost/${encodeURIComponent(p)}` }))
 
@@ -24,5 +24,36 @@ describe('trackArt', () => {
     const [wide] = trackArt({ ids: {}, art: 'https://i.ytimg.com/vi/abc/mqdefault.jpg' })
     const [cover] = trackArt({ ids: {}, art: 'https://lh3.googleusercontent.com/x=w544-h544' })
     expect([frame, wide, cover].map(isLetterboxed)).toEqual([true, false, false])
+  })
+})
+
+describe('sizedArt', () => {
+  const remote = 'http://art.localhost/https%3A%2F%2Fi.scdn.co%2Fimage%2Fa'
+  const local = 'http://art.localhost/local%2F7'
+
+  it('asks the smallest thumbnail that covers the drawn size on this screen', () => {
+    expect(sizedArt(remote, 40, 1)).toBe(`${remote}?s=64`)
+    expect(sizedArt(remote, 40, 2)).toBe(`${remote}?s=256`)
+    expect(sizedArt(remote, 64, 1)).toBe(`${remote}?s=64`)
+    expect(sizedArt(remote, 65, 1)).toBe(`${remote}?s=256`)
+    expect(sizedArt(remote, 176, 1.5)).toBe(`${remote}?s=600`)
+    expect(sizedArt(local, 56, 1.25)).toBe(`${local}?s=256`)
+    // The detail a bar search needs.
+    expect(sizedArt(remote, 40, 1, 256)).toBe(`${remote}?s=256`)
+  })
+
+  it('leaves big covers, own pictures and sized URLs alone', () => {
+    expect(sizedArt(remote, 400, 2)).toBe(remote)
+    expect(sizedArt('http://art.localhost/cover%2Fpl-1.png', 40, 1)).toBe('http://art.localhost/cover%2Fpl-1.png')
+    expect(sizedArt(`${remote}?s=256`, 40, 1)).toBe(`${remote}?s=256`)
+    expect(sizedArt('https://example.com/a.jpg', 40, 1)).toBe('https://example.com/a.jpg')
+    expect(sizedArt('data:image/png;base64,AAA', 40, 1)).toBe('data:image/png;base64,AAA')
+  })
+
+  it('never asks a size the Rust side refuses', () => {
+    for (const css of [1, 30, 64, 100, 200, 300, 599, 600, 601]) {
+      const s = /\?s=(\d+)$/.exec(sizedArt(remote, css, 1))?.[1]
+      expect(s === undefined || [64, 256, 600].includes(Number(s))).toBe(true)
+    }
   })
 })

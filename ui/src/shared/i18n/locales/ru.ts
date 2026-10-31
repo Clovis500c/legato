@@ -1575,6 +1575,13 @@ const ru: Record<string, string> = {
   'Deezer is busy right now: try again in a minute': 'Deezer сейчас перегружен: попробуйте ещё раз через минуту',
   'Apple changed its page: paste the songs as text instead (Add music › Import a list of songs)': 'Apple изменила свою страницу: вставьте песни текстом (Добавить музыку › Импортировать список песен)',
   'Unknown artist': 'Неизвестный исполнитель',
+  'Cover cache': 'Кэш обложек',
+  'Cover cache size': 'Размер кэша обложек',
+  'Covers kept on this PC to show them quickly. Over the limit, the ones not shown for the longest time go first and download again when needed': 'Обложки хранятся на этом ПК, чтобы показывать их быстро. При превышении лимита первыми удаляются те, что дольше всего не показывались; при необходимости они загрузятся снова',
+  'Clear covers': 'Очистить обложки',
+  '{size} on this PC now. Playlist pictures and theme backgrounds stay': 'Сейчас на этом ПК: {size}. Картинки плейлистов и фоны тем остаются',
+  '{n} GB': '{n} ГБ',
+  'covers pictures images artwork cache disk space storage size limit clear delete empty free': 'обложки картинки изображения кэш диск место хранилище размер лимит очистить удалить освободить',
 }
 
 export default ru

@@ -1575,6 +1575,13 @@ const nl: Record<string, string> = {
   'Deezer is busy right now: try again in a minute': 'Deezer is nu druk bezet: probeer het over een minuut opnieuw',
   'Apple changed its page: paste the songs as text instead (Add music › Import a list of songs)': 'Apple heeft zijn pagina gewijzigd: plak de nummers in plaats daarvan als tekst (Muziek toevoegen › Een nummerlijst importeren)',
   'Unknown artist': 'Onbekende artiest',
+  'Cover cache': 'Hoescache',
+  'Cover cache size': 'Grootte van de hoescache',
+  'Covers kept on this PC to show them quickly. Over the limit, the ones not shown for the longest time go first and download again when needed': 'Hoezen die op deze pc staan om ze snel te tonen. Boven de limiet gaan de hoezen die het langst niet getoond zijn eerst weg; ze worden indien nodig opnieuw gedownload',
+  'Clear covers': 'Hoezen wissen',
+  '{size} on this PC now. Playlist pictures and theme backgrounds stay': '{size} nu op deze pc. Afbeeldingen van afspeellijsten en thema-achtergronden blijven',
+  '{n} GB': '{n} GB',
+  'covers pictures images artwork cache disk space storage size limit clear delete empty free': 'hoezen covers afbeeldingen cache schijf ruimte opslag grootte limiet wissen verwijderen vrijmaken',
 }
 
 export default nl

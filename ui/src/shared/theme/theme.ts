@@ -156,6 +156,7 @@ export type Column = (typeof COLUMNS)[number]
 export const START_VIEWS = ['home', 'songs', 'mixes', 'albums', 'artists'] as const
 /** Where notifications show: above the player bar (centered or right), or under the top bar. */
 export const TOAST_PLACES = ['bottom', 'bottomRight', 'top', 'topRight'] as const
+export const COVER_CACHE_MB = [250, 500, 1000, 2000] as const
 
 /** Mini player resting spots: corners and edge middles (t = top, b = bottom, l = left, r = right). */
 /** Playlist icon: service logo, first song's cover, grid of the first 4, or a picked image. */
@@ -308,6 +309,8 @@ export interface Settings {
   autoUpdate: boolean
   /** Which releases this PC follows: Stable (promoted by hand) or Beta (every green push). Not synced between PCs. */
   updateChannel: 'stable' | 'beta'
+  /** Cover cache size cap on this PC, MB (Rust keeps the folder under it, oldest covers out first). Not synced between PCs. */
+  coverCacheMb: (typeof COVER_CACHE_MB)[number]
   /** Now Playing: Up next panel open (off: the title big beside the cover, docs/design.md). */
   upNext: boolean
   /** Main window's right panel, beside every page: Up next, lyrics, or closed. Apart from Now Playing's. */
@@ -419,6 +422,7 @@ export const DEFAULTS: Settings = {
   mixCovers: 'grid',
   autoUpdate: true,
   updateChannel: 'stable',
+  coverCacheMb: 500,
   upNext: false,
   sidePanel: 'upNext',
   toastPlace: 'bottom',
@@ -613,6 +617,7 @@ export function sanitize(raw: unknown): Settings {
     mixCovers: pick(r.mixCovers, ['grid', 'single', 'template'] as const, DEFAULTS.mixCovers),
     autoUpdate: typeof r.autoUpdate === 'boolean' ? r.autoUpdate : DEFAULTS.autoUpdate,
     updateChannel: pick(r.updateChannel, ['stable', 'beta'] as const, DEFAULTS.updateChannel),
+    coverCacheMb: pick(r.coverCacheMb, COVER_CACHE_MB, DEFAULTS.coverCacheMb),
     upNext: typeof r.upNext === 'boolean' ? r.upNext : DEFAULTS.upNext,
     sidePanel: pick(r.sidePanel, ['upNext', 'lyrics', 'none'] as const, DEFAULTS.sidePanel),
     toastPlace: pick(r.toastPlace, TOAST_PLACES, DEFAULTS.toastPlace),

@@ -1575,6 +1575,13 @@ const tr: Record<string, string> = {
   'Deezer is busy right now: try again in a minute': 'Deezer şu an yoğun: bir dakika sonra tekrar deneyin',
   'Apple changed its page: paste the songs as text instead (Add music › Import a list of songs)': 'Apple sayfasını değiştirdi: şarkıları bunun yerine metin olarak yapıştırın (Müzik ekle › Şarkı listesi içe aktar)',
   'Unknown artist': 'Bilinmeyen sanatçı',
+  'Cover cache': 'Kapak önbelleği',
+  'Cover cache size': 'Kapak önbelleği boyutu',
+  'Covers kept on this PC to show them quickly. Over the limit, the ones not shown for the longest time go first and download again when needed': 'Hızlı göstermek için bu bilgisayarda tutulan kapaklar. Sınır aşılırsa en uzun süredir gösterilmeyenler önce silinir, gerektiğinde yeniden indirilir',
+  'Clear covers': 'Kapakları temizle',
+  '{size} on this PC now. Playlist pictures and theme backgrounds stay': 'Şu anda bu bilgisayarda {size}. Çalma listesi resimleri ve tema arka planları kalır',
+  '{n} GB': '{n} GB',
+  'covers pictures images artwork cache disk space storage size limit clear delete empty free': 'kapaklar resimler görseller önbellek disk alan depolama boyut sınır temizle sil boşalt',
 }
 
 export default tr

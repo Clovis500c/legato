@@ -1575,6 +1575,13 @@ const hi: Record<string, string> = {
   'Deezer is busy right now: try again in a minute': 'Deezer अभी व्यस्त है: एक मिनट बाद फिर कोशिश करें',
   'Apple changed its page: paste the songs as text instead (Add music › Import a list of songs)': 'Apple ने अपना पेज बदल दिया है: इसकी जगह गानों को टेक्स्ट के रूप में पेस्ट करें (संगीत जोड़ें › गानों की सूची इम्पोर्ट करें)',
   'Unknown artist': 'अज्ञात कलाकार',
+  'Cover cache': 'कवर कैश',
+  'Cover cache size': 'कवर कैश का आकार',
+  'Covers kept on this PC to show them quickly. Over the limit, the ones not shown for the longest time go first and download again when needed': 'तेज़ी से दिखाने के लिए इस पीसी पर रखे गए कवर। सीमा पार होने पर जो कवर सबसे लंबे समय से नहीं दिखे वे पहले हटते हैं, और ज़रूरत पड़ने पर दोबारा डाउनलोड हो जाते हैं',
+  'Clear covers': 'कवर साफ़ करें',
+  '{size} on this PC now. Playlist pictures and theme backgrounds stay': 'अभी इस पीसी पर {size}। प्लेलिस्ट की तस्वीरें और थीम की पृष्ठभूमि बनी रहती हैं',
+  '{n} GB': '{n} GB',
+  'covers pictures images artwork cache disk space storage size limit clear delete empty free': 'कवर तस्वीर चित्र आर्टवर्क कैश डिस्क जगह स्टोरेज आकार सीमा साफ़ हटाएँ खाली',
 }
 
 export default hi

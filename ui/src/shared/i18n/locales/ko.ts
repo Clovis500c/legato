@@ -1575,6 +1575,13 @@ const ko: Record<string, string> = {
   'Deezer is busy right now: try again in a minute': 'Deezer가 지금 혼잡합니다: 1분 후에 다시 시도하세요',
   'Apple changed its page: paste the songs as text instead (Add music › Import a list of songs)': 'Apple이 페이지를 변경했습니다: 대신 곡을 텍스트로 붙여넣으세요 (음악 추가 › 곡 목록 가져오기)',
   'Unknown artist': '알 수 없는 아티스트',
+  'Cover cache': '커버 캐시',
+  'Cover cache size': '커버 캐시 크기',
+  'Covers kept on this PC to show them quickly. Over the limit, the ones not shown for the longest time go first and download again when needed': '빠르게 보여 주려고 이 PC에 저장해 둔 커버입니다. 한도를 넘으면 가장 오래 표시되지 않은 것부터 지워지고, 필요할 때 다시 내려받습니다',
+  'Clear covers': '커버 지우기',
+  '{size} on this PC now. Playlist pictures and theme backgrounds stay': '현재 이 PC에 {size}. 재생목록 이미지와 테마 배경은 그대로 남습니다',
+  '{n} GB': '{n} GB',
+  'covers pictures images artwork cache disk space storage size limit clear delete empty free': '커버 이미지 앨범아트 캐시 디스크 공간 저장소 크기 한도 지우기 삭제 비우기',
 }
 
 export default ko

@@ -1575,6 +1575,13 @@ const vi: Record<string, string> = {
   'Deezer is busy right now: try again in a minute': 'Deezer đang bận: hãy thử lại sau một phút',
   'Apple changed its page: paste the songs as text instead (Add music › Import a list of songs)': 'Apple đã thay đổi trang của mình: hãy dán các bài hát dưới dạng văn bản (Thêm nhạc › Nhập danh sách bài hát)',
   'Unknown artist': 'Nghệ sĩ không xác định',
+  'Cover cache': 'Bộ nhớ đệm ảnh bìa',
+  'Cover cache size': 'Dung lượng bộ nhớ đệm ảnh bìa',
+  'Covers kept on this PC to show them quickly. Over the limit, the ones not shown for the longest time go first and download again when needed': 'Ảnh bìa được giữ trên máy này để hiện nhanh. Khi vượt giới hạn, ảnh lâu nhất chưa được hiển thị sẽ bị xoá trước và tải lại khi cần',
+  'Clear covers': 'Xoá ảnh bìa',
+  '{size} on this PC now. Playlist pictures and theme backgrounds stay': 'Hiện có {size} trên máy này. Ảnh danh sách phát và hình nền giao diện vẫn được giữ',
+  '{n} GB': '{n} GB',
+  'covers pictures images artwork cache disk space storage size limit clear delete empty free': 'ảnh bìa hình ảnh bộ nhớ đệm cache ổ đĩa dung lượng lưu trữ giới hạn xoá dọn giải phóng',
 }
 
 export default vi

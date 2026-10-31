@@ -41,6 +41,8 @@ export const SETTINGS_INDEX: SettingEntry[] = [
   { section: 'appearance', label: msg('Counts in the sidebar'), keywords: msg('numbers songs') },
   { section: 'general', label: msg('Open on'), keywords: msg('start screen launch home') },
   { section: 'general', label: msg('Update channel'), keywords: msg('beta stable release early preview prerelease testing new features updates version') },
+  { section: 'general', label: msg('Cover cache size'), keywords: msg('covers pictures images artwork cache disk space storage size limit clear delete empty free') },
+  { section: 'general', label: msg('Clear covers'), keywords: msg('covers pictures images artwork cache disk space storage size limit clear delete empty free') },
   { section: 'appearance', label: msg('Animations'), keywords: msg('motion transitions reduce') },
   { section: 'appearance', label: msg('List columns'), keywords: msg('album sources duration') },
   { section: 'sources', label: 'YouTube Music', keywords: msg('google sign in account import playlists sync liked') },

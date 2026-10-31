@@ -1575,6 +1575,13 @@ const id: Record<string, string> = {
   'Deezer is busy right now: try again in a minute': 'Deezer sedang sibuk: coba lagi satu menit lagi',
   'Apple changed its page: paste the songs as text instead (Add music › Import a list of songs)': 'Apple mengubah halamannya: tempel lagunya sebagai teks saja (Tambah musik › Impor daftar lagu)',
   'Unknown artist': 'Artis tidak dikenal',
+  'Cover cache': 'Cache sampul',
+  'Cover cache size': 'Ukuran cache sampul',
+  'Covers kept on this PC to show them quickly. Over the limit, the ones not shown for the longest time go first and download again when needed': 'Sampul yang disimpan di PC ini agar tampil cepat. Jika melewati batas, sampul yang paling lama tidak ditampilkan dihapus lebih dulu dan diunduh lagi saat diperlukan',
+  'Clear covers': 'Hapus sampul',
+  '{size} on this PC now. Playlist pictures and theme backgrounds stay': '{size} di PC ini sekarang. Gambar playlist dan latar tema tetap ada',
+  '{n} GB': '{n} GB',
+  'covers pictures images artwork cache disk space storage size limit clear delete empty free': 'sampul gambar artwork cache disk ruang penyimpanan ukuran batas bersihkan hapus kosongkan',
 }
 
 export default id

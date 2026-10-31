@@ -1575,6 +1575,13 @@ const sv: Record<string, string> = {
   'Deezer is busy right now: try again in a minute': 'Deezer är överbelastat just nu: försök igen om en minut',
   'Apple changed its page: paste the songs as text instead (Add music › Import a list of songs)': 'Apple har ändrat sin sida: klistra in låtarna som text i stället (Lägg till musik › Importera en låtlista)',
   'Unknown artist': 'Okänd artist',
+  'Cover cache': 'Omslagscache',
+  'Cover cache size': 'Storlek på omslagscachen',
+  'Covers kept on this PC to show them quickly. Over the limit, the ones not shown for the longest time go first and download again when needed': 'Omslag som sparas på den här datorn för att visas snabbt. Över gränsen försvinner de som visats för längst sedan först, och de laddas ned igen vid behov',
+  'Clear covers': 'Rensa omslag',
+  '{size} on this PC now. Playlist pictures and theme backgrounds stay': '{size} på den här datorn nu. Spellistebilder och temabakgrunder finns kvar',
+  '{n} GB': '{n} GB',
+  'covers pictures images artwork cache disk space storage size limit clear delete empty free': 'omslag bilder konstverk cache disk utrymme lagring storlek gräns rensa ta bort frigör',
 }
 
 export default sv

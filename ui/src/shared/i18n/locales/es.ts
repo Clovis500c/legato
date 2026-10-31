@@ -1575,6 +1575,13 @@ const es: Record<string, string> = {
   'Deezer is busy right now: try again in a minute': 'Deezer está saturado ahora mismo: prueba de nuevo en un minuto',
   'Apple changed its page: paste the songs as text instead (Add music › Import a list of songs)': 'Apple cambió su página: pega las canciones como texto (Añadir música › Importar una lista de canciones)',
   'Unknown artist': 'Artista desconocido',
+  'Cover cache': 'Caché de carátulas',
+  'Cover cache size': 'Tamaño de la caché de carátulas',
+  'Covers kept on this PC to show them quickly. Over the limit, the ones not shown for the longest time go first and download again when needed': 'Carátulas guardadas en este PC para mostrarlas rápido. Al pasar el límite, salen primero las que llevan más tiempo sin mostrarse y se vuelven a descargar cuando hacen falta',
+  'Clear covers': 'Borrar carátulas',
+  '{size} on this PC now. Playlist pictures and theme backgrounds stay': '{size} en este PC ahora. Las imágenes de listas y los fondos de tema se conservan',
+  '{n} GB': '{n} GB',
+  'covers pictures images artwork cache disk space storage size limit clear delete empty free': 'carátulas portadas imágenes caché disco espacio almacenamiento tamaño límite vaciar borrar liberar',
 }
 
 export default es

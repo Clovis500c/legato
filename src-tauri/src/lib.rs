@@ -1731,13 +1731,31 @@ fn cache_stats(state: State<AppState>) -> CacheStats {
     CacheStats { library: c.library.stats(), playlists: c.playlist.stats(), mixes: c.mixes.stats(), stats: c.stats.stats(), images: state.art.stats() }
 }
 
+/// Settings › General › Cover cache: how much the cover folder holds now.
+#[tauri::command]
+async fn art_cache_size(app: tauri::AppHandle) -> CmdResult<u64> {
+    tauri::async_runtime::spawn_blocking(move || app.state::<AppState>().art.size()).await.map_err(err)
+}
+
+/// New cap of the cover cache, in MB. Over it: pruned in the background.
+#[tauri::command]
+fn set_art_cache_cap(state: State<AppState>, mb: u64) {
+    state.art.set_cap(mb.clamp(50, 20_000) << 20);
+}
+
+/// Empties the cover cache (covers download again when shown). Bytes freed.
+#[tauri::command]
+async fn clear_art_cache(app: tauri::AppHandle) -> CmdResult<u64> {
+    tauri::async_runtime::spawn_blocking(move || app.state::<AppState>().art.clear()).await.map_err(err)
+}
+
 /// Cover saved where the user picked (save dialog). source = art scheme path (local/<id>, cover/<name> or a URL),
 /// crop = what the big cover shows (video bars cut). Returns the file written (extension may change, see cover::export).
 #[tauri::command]
 async fn export_cover(app: tauri::AppHandle, source: String, crop: Option<music_core::cover::Crop>, path: String) -> CmdResult<String> {
     let path = std::path::PathBuf::from(path);
     music_core::cover::wanted(&path).map_err(err)?;
-    let (bytes, _) = art::image(&app, &source).await.ok_or("Cover not available")?;
+    let (bytes, _) = art::image(&app, &source, None).await.ok_or("Cover not available")?;
     let out = tauri::async_runtime::spawn_blocking(move || music_core::cover::export(&bytes, crop, &path)).await.map_err(err)?.map_err(err)?;
     Ok(out.to_string_lossy().into_owned())
 }
@@ -1892,7 +1910,7 @@ async fn media_update(app: tauri::AppHandle, state: State<'_, AppState>, now: Op
                 if cover.is_none()
                     && let Some(url) = &art
                 {
-                    cover = art::remote(&state.app, url).await;
+                    cover = art::remote(&state.app, url, None).await;
                 }
             }
             // Track changed while cover loaded: newer call wins.
@@ -2081,7 +2099,7 @@ pub fn run() {
                 }
             });
 
-            app.manage(AppState { app: app.handle().clone(), lib: Mutex::new(lib), store: Arc::new(secrets::KeyringStore::new(&app.config().identifier)), open, player: Player::spawn(), shield, art: music_connectors::art::ArtCache::new(dir.join("art"), 300 << 20), cache: Caches::default(), nearby: Arc::new(Mutex::new(NearbyState::Idle)), nearby_task: Mutex::default(), media, media_last: Mutex::default(), tray, discord: discord::Discord::spawn() });
+            app.manage(AppState { app: app.handle().clone(), lib: Mutex::new(lib), store: Arc::new(secrets::KeyringStore::new(&app.config().identifier)), open, player: Player::spawn(), shield, art: music_connectors::art::ArtCache::new(dir.join("art"), 500 << 20), cache: Caches::default(), nearby: Arc::new(Mutex::new(NearbyState::Idle)), nearby_task: Mutex::default(), media, media_last: Mutex::default(), tray, discord: discord::Discord::spawn() });
             // Reads the library's settings: after AppState.
             app.manage(update::Updater::new(app.handle()));
             app.manage(syncmode::SyncMode::default());
@@ -2093,7 +2111,7 @@ pub fn run() {
             deferred::arm(app.handle());
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![deferred::app_ready, sources_status, connect, disconnect, sync_all, library, library_changes, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, search_suggestions, add_track, backfill_art, find_versions, play_preview, share_playlist, share_preview, share_read_image, share_import, nearby_send, nearby_status, nearby_stop, nearby_receive, record_play, recent_plays, play_history, mixes, set_track_pref, set_music, clear_history, export_youtube, spotify_player, spotify_playback, ytm_sign_in, ytm_sign_out, spotify_web_open, spotify_web_status, import_spotify_link, links::import_link, ytm_accounts, set_ytm_accounts, sync_directions, set_sync_direction, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, system_accent, restart_app, autostart, set_autostart, hold_page, media_update, load_session, save_session, add_to_youtube, save_cover, export_cover, alternative_videos, embed_refused, play_stats, cache_stats, open_licenses, update_status, update_check, update_install, ytm_home, ytm_list, ytm_artist, album_info, discord_presence, discord_off, discord_status, remove_from_playlist, remove_from_library, merge_duplicates, resolve_track, set_global_shortcuts, player_live, editor::player_effects, player_levels, editor::export_edit, editor::export_stop, editor::edits, editor::save_edit, editor::delete_edit, editor::activate_edit, editor::edit_draft, editor::save_edit_draft, voice_listen, voice_stop, open_windows_settings, detector::detector_status, detector::set_detector_token, detector::detect_song, detector::detect_stop, lastfm::lastfm_status, lastfm::lastfm_connect, lastfm::lastfm_disconnect, lastfm::lastfm_now_playing, lastfm::lastfm_scrobble, lyrics, set_ui_language, ytwatch_open, ytwatch_place, ytwatch_cmd, ytwatch_close, syncmode::sync_status, syncmode::sync_probe, syncmode::sync_setup, syncmode::sync_stop, syncmode::sync_now, syncmode::sync_dismiss, syncmode::sync_offer, syncmode::sync_offer_stop, syncmode::sync_join, plugins::plugins_list, plugins::plugin_inspect, plugins::plugin_install, plugins::plugin_set, plugins::plugin_uninstall, plugins::plugin_reply, plugins::plugin_event, plugins::plugin_input, plugins::plugin_log, themes::save_background, themes::forget_background, themes::export_theme, themes::import_theme, tags::edit_tags, songlist::import_song_list, diag::diag_log, diag::diag_report])
+        .invoke_handler(tauri::generate_handler![deferred::app_ready, sources_status, connect, disconnect, sync_all, library, library_changes, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, search_suggestions, add_track, backfill_art, find_versions, play_preview, share_playlist, share_preview, share_read_image, share_import, nearby_send, nearby_status, nearby_stop, nearby_receive, record_play, recent_plays, play_history, mixes, set_track_pref, set_music, clear_history, export_youtube, spotify_player, spotify_playback, ytm_sign_in, ytm_sign_out, spotify_web_open, spotify_web_status, import_spotify_link, links::import_link, ytm_accounts, set_ytm_accounts, sync_directions, set_sync_direction, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, system_accent, restart_app, autostart, set_autostart, hold_page, media_update, load_session, save_session, add_to_youtube, save_cover, export_cover, alternative_videos, embed_refused, play_stats, cache_stats, art_cache_size, set_art_cache_cap, clear_art_cache, open_licenses, update_status, update_check, update_install, ytm_home, ytm_list, ytm_artist, album_info, discord_presence, discord_off, discord_status, remove_from_playlist, remove_from_library, merge_duplicates, resolve_track, set_global_shortcuts, player_live, editor::player_effects, player_levels, editor::export_edit, editor::export_stop, editor::edits, editor::save_edit, editor::delete_edit, editor::activate_edit, editor::edit_draft, editor::save_edit_draft, voice_listen, voice_stop, open_windows_settings, detector::detector_status, detector::set_detector_token, detector::detect_song, detector::detect_stop, lastfm::lastfm_status, lastfm::lastfm_connect, lastfm::lastfm_disconnect, lastfm::lastfm_now_playing, lastfm::lastfm_scrobble, lyrics, set_ui_language, ytwatch_open, ytwatch_place, ytwatch_cmd, ytwatch_close, syncmode::sync_status, syncmode::sync_probe, syncmode::sync_setup, syncmode::sync_stop, syncmode::sync_now, syncmode::sync_dismiss, syncmode::sync_offer, syncmode::sync_offer_stop, syncmode::sync_join, plugins::plugins_list, plugins::plugin_inspect, plugins::plugin_install, plugins::plugin_set, plugins::plugin_uninstall, plugins::plugin_reply, plugins::plugin_event, plugins::plugin_input, plugins::plugin_log, themes::save_background, themes::forget_background, themes::export_theme, themes::import_theme, tags::edit_tags, songlist::import_song_list, diag::diag_log, diag::diag_report])
         .run(context)
         .expect("error while running tauri application");
 }

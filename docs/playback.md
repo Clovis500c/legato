@@ -51,7 +51,8 @@ Status on 2026-10-16. YouTube, local files and Apple Music previews: done and te
 - `tracks.art` holds an https URL; local files' covers are read from their tags on demand (`local::picture`).
 - The UI loads `http://art.localhost/<encoded URL>` or `/local/<track id>` (Tauri `art` URI scheme, `src-tauri/src/art.rs`).
   Rust fetches only from i.ytimg.com, yt3.ggpht.com, *.googleusercontent.com, *.mzstatic.com and i.scdn.co (redirects too),
-  keeps images in `art/` in the app data folder (300 MB, least recently used out first) and sends
+  keeps images in `art/` in the app data folder (500 MB by default, a setting; least recently used out first, on a
+  background thread) with 64 / 256 / 600 px thumbnails cut once (`?s=64`, list covers ask for the smallest that fits) and sends
   `Access-Control-Allow-Origin` so the cover tint can read pixels.
 
 ## Apple Music previews

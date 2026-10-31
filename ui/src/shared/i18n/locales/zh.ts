@@ -1575,6 +1575,13 @@ const zh: Record<string, string> = {
   'Deezer is busy right now: try again in a minute': 'Deezer 目前繁忙：请一分钟后重试',
   'Apple changed its page: paste the songs as text instead (Add music › Import a list of songs)': 'Apple 更改了页面：请改为以文本形式粘贴歌曲 (添加音乐 › 导入歌曲列表)',
   'Unknown artist': '未知艺术家',
+  'Cover cache': '封面缓存',
+  'Cover cache size': '封面缓存大小',
+  'Covers kept on this PC to show them quickly. Over the limit, the ones not shown for the longest time go first and download again when needed': '为了快速显示而保存在这台电脑上的封面。超过上限时，最久没有显示的封面先被清除，需要时会重新下载',
+  'Clear covers': '清除封面',
+  '{size} on this PC now. Playlist pictures and theme backgrounds stay': '这台电脑上目前有 {size}。播放列表图片和主题背景会保留',
+  '{n} GB': '{n} GB',
+  'covers pictures images artwork cache disk space storage size limit clear delete empty free': '封面 图片 专辑图 缓存 磁盘 空间 存储 大小 上限 清除 删除 释放',
 }
 
 export default zh

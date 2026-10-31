@@ -1575,6 +1575,13 @@ const uk: Record<string, string> = {
   'Deezer is busy right now: try again in a minute': 'Deezer зараз перевантажений: спробуйте ще раз за хвилину',
   'Apple changed its page: paste the songs as text instead (Add music › Import a list of songs)': 'Apple змінила свою сторінку: вставте пісні текстом (Додати музику › Імпортувати список пісень)',
   'Unknown artist': 'Невідомий виконавець',
+  'Cover cache': 'Кеш обкладинок',
+  'Cover cache size': 'Розмір кешу обкладинок',
+  'Covers kept on this PC to show them quickly. Over the limit, the ones not shown for the longest time go first and download again when needed': 'Обкладинки зберігаються на цьому ПК, щоб показувати їх швидко. Після перевищення ліміту першими видаляються ті, що найдовше не показувалися; за потреби вони завантажаться знову',
+  'Clear covers': 'Очистити обкладинки',
+  '{size} on this PC now. Playlist pictures and theme backgrounds stay': 'Зараз на цьому ПК: {size}. Зображення плейлистів і тла тем залишаються',
+  '{n} GB': '{n} ГБ',
+  'covers pictures images artwork cache disk space storage size limit clear delete empty free': 'обкладинки зображення картинки кеш диск місце сховище розмір ліміт очистити видалити звільнити',
 }
 
 export default uk

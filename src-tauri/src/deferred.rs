@@ -1,4 +1,4 @@
-//! Work that waits for the first screen: plugins, the update rounds, Sync Mode's rounds. Order at launch: window
+//! Work that waits for the first screen: plugins, the update rounds, Sync Mode's rounds, the cover cache's first prune. Order at launch: window
 //! background, library, UI, then the UI's "ready" (`app_ready`), then these. The shield's lists are not here: the first
 //! YouTube request must meet them (`lib.rs`, own task). The updater's guard (`identity::installed()`) is untouched.
 //! Never depends on the page: a hidden start (login, tray) does not paint, a broken build never says ready, so a
@@ -6,7 +6,7 @@
 
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::Duration;
-use tauri::AppHandle;
+use tauri::{AppHandle, Manager};
 
 const FALLBACK: Duration = Duration::from_secs(8);
 
@@ -30,6 +30,10 @@ pub fn start(app: &AppHandle) {
     }
     crate::update::spawn(app.clone());
     crate::syncmode::spawn(app.clone());
+    // Counts the cover folder and prunes it over its cap, on a thread of its own.
+    if let Some(state) = app.try_state::<crate::AppState>() {
+        state.art.prune_later();
+    }
     // Each plugin opens a QuickJS runtime and a thread: off the async workers' way.
     let app = app.clone();
     tauri::async_runtime::spawn_blocking(move || crate::plugins::start_all(&app));

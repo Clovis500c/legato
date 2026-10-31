@@ -1575,6 +1575,13 @@ const ja: Record<string, string> = {
   'Deezer is busy right now: try again in a minute': 'Deezer は今混み合っています。1 分後にもう一度お試しください',
   'Apple changed its page: paste the songs as text instead (Add music › Import a list of songs)': 'Apple がページを変更しました。代わりに曲をテキストとして貼り付けてください (音楽を追加 › 曲リストを取り込む)',
   'Unknown artist': '不明なアーティスト',
+  'Cover cache': 'カバーのキャッシュ',
+  'Cover cache size': 'カバーのキャッシュサイズ',
+  'Covers kept on this PC to show them quickly. Over the limit, the ones not shown for the longest time go first and download again when needed': 'すばやく表示するために、このPCに保存しているカバーです。上限を超えると、表示されていない期間が最も長いものから削除され、必要になったときに再ダウンロードされます',
+  'Clear covers': 'カバーを消去',
+  '{size} on this PC now. Playlist pictures and theme backgrounds stay': '現在このPCに {size}。プレイリストの画像とテーマの背景は残ります',
+  '{n} GB': '{n} GB',
+  'covers pictures images artwork cache disk space storage size limit clear delete empty free': 'カバー 画像 アートワーク キャッシュ ディスク 容量 ストレージ サイズ 上限 消去 削除 空き',
 }
 
 export default ja

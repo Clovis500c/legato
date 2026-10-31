@@ -32,7 +32,7 @@ src-tauri/              thin shell: commands, keychain, WebView2 hook, media pan
 - **One door to Rust.** `ui/src/shared/api.ts` is the only file that calls `invoke`. Its wrappers are written by hand,
   its types are not: they come from the Rust ones (see "IPC types" below).
 - **The interface never touches the network.** Images go through the `art` URI scheme (`src-tauri/src/art.rs`): host
-  allowlist, disk cache.
+  allowlist, disk cache under a size cap, thumbnails (`?s=64|256|600`) for lists; rules in `crates/core/src/artcache.rs`.
 - **Secrets in the OS keychain** (`keyring`). Settings and the library are local (SQLite).
 - **Legal playback only.** Official players and the user's own files; no audio extraction. Live processing of what
   plays (Adaptive Sound…) is allowed; downloading, recording or exporting a platform's audio never is. See

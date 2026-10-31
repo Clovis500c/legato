@@ -14,7 +14,7 @@ pub async fn respond(app: tauri::AppHandle, req: Request<Vec<u8>>) -> Response<C
             return res;
         }
     }
-    match image(&app, req.uri().path()).await {
+    match image(&app, req.uri().path(), music_core::artcache::size_of_query(req.uri().query())).await {
         Some((bytes, kind)) => Response::builder()
             .header(header::CONTENT_TYPE, kind)
             // Canvas reads pixels (ambient color): needs CORS.
@@ -62,15 +62,19 @@ fn byte_range(range: Option<&str>, len: u64) -> Option<(u64, u64)> {
 }
 
 /// Image for an art scheme path (percent-encoded, leading slash allowed).
-pub async fn image(app: &tauri::AppHandle, path: &str) -> Option<(Vec<u8>, String)> {
+/// `size` (64 / 256 / 600): a thumbnail of a remote or local-file cover; the user's own pictures are served whole.
+pub async fn image(app: &tauri::AppHandle, path: &str, size: Option<u32>) -> Option<(Vec<u8>, String)> {
     let path = percent_encoding::percent_decode_str(path.trim_start_matches('/')).decode_utf8().ok()?.into_owned();
     if let Some(name) = path.strip_prefix("cover/") {
         return cover(app, name);
     }
     match path.strip_prefix("local/") {
         // "<id>~<version>": same cover, asked again after an edit (art.ts coverRewritten).
-        Some(id) => local(app, id.split('~').next()?.parse().ok()?).await,
-        None => remote(app, &path).await,
+        Some(id) => match size {
+            Some(s) => local_sized(app, id.split('~').next()?.parse().ok()?, s, id).await,
+            None => local(app, id.split('~').next()?.parse().ok()?).await,
+        },
+        None => remote(app, &path, size).await,
     }
 }
 
@@ -100,9 +104,18 @@ pub async fn local(app: &tauri::AppHandle, track_id: i64) -> Option<(Vec<u8>, St
     tauri::async_runtime::spawn_blocking(move || music_core::local::picture(std::path::Path::new(&file))).await.ok()?
 }
 
-/// Remote image through the cache (allowlisted hosts only).
-pub async fn remote(app: &tauri::AppHandle, url: &str) -> Option<(Vec<u8>, String)> {
-    let (bytes, kind) = app.try_state::<AppState>()?.art.get(url).await.ok()?;
+/// Cover embedded in a local file, as a thumbnail (kept in memory, per cover version).
+async fn local_sized(app: &tauri::AppHandle, track_id: i64, size: u32, id: &str) -> Option<(Vec<u8>, String)> {
+    let state = app.try_state::<AppState>()?;
+    let app = app.clone();
+    let load = async move { local(&app, track_id).await.map(|(bytes, _)| bytes) };
+    let (bytes, kind) = state.art.local(id, size, load).await?;
+    Some((bytes, kind.to_string()))
+}
+
+/// Remote image through the cache (allowlisted hosts only), whole or as a thumbnail.
+pub async fn remote(app: &tauri::AppHandle, url: &str, size: Option<u32>) -> Option<(Vec<u8>, String)> {
+    let (bytes, kind) = app.try_state::<AppState>()?.art.get(url, size).await.ok()?;
     Some((bytes, kind.to_string()))
 }
 
