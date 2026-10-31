@@ -31,15 +31,15 @@ export const RUN: Record<ActionId, () => void> = {
   mute: () => player().toggleMute(),
   shuffle: () => player().toggleShuffle(),
   repeat: () => player().cycleRepeat(),
-  // The visualizer's screen is on top: Now Playing and karaoke wait for Esc (karaoke's full screen would clash with it).
+  // The visualizer's screen is on top: Now Playing, karaoke, search and navigation wait for Esc (karaoke's full screen would clash with it).
   nowPlaying: () => !useVizFull.getState().open && player().now && player().setFull(!player().full),
   fullscreen: () => void toggleFullscreen(),
   karaoke: () => !useVizFull.getState().open && toggleKaraoke(),
   vizFull: toggleVizFull,
-  search: () => document.querySelector<HTMLInputElement>('[data-search]')?.focus(),
-  settings: () => useStore.getState().go({ name: 'settings', section: 'shortcuts' }),
-  goBack: () => (player().full ? player().setFull(false) : useStore.getState().goBack()),
-  goForward: () => useStore.getState().goForward(),
+  search: () => !useVizFull.getState().open && document.querySelector<HTMLInputElement>('[data-search]')?.focus(),
+  settings: () => !useVizFull.getState().open && useStore.getState().go({ name: 'settings', section: 'shortcuts' }),
+  goBack: () => !useVizFull.getState().open && (player().full ? player().setFull(false) : useStore.getState().goBack()),
+  goForward: () => !useVizFull.getState().open && useStore.getState().goForward(),
   // Rust shows the window itself (global only).
   showApp: () => {},
 }

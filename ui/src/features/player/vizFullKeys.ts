@@ -1,11 +1,11 @@
 /**
  * Keys while the visualizer is full screen, ahead of every other listener (capture on the window): Esc leaves. Every
- * other key stays the app's (play / pause, volume, seek). A menu open on top (or a field) keeps its own Esc. Returns cleanup.
+ * other key stays the app's (play / pause, volume, seek). A menu open on top (or a field of the screen) keeps its own Esc; a field behind it does not. Returns cleanup.
  */
 export function vizFullKeys(leave: () => void): () => void {
   const onKey = (e: KeyboardEvent) => {
     if (e.code !== 'Escape' || e.ctrlKey || e.shiftKey || e.altKey || e.metaKey) return
-    if (document.querySelector('[role="menu"]') || (typeof Element !== 'undefined' && e.target instanceof Element && e.target.closest('input, textarea, select, [contenteditable]'))) return
+    if (document.querySelector('[role="menu"]') || (typeof Element !== 'undefined' && e.target instanceof Element && e.target.closest('input, textarea, select, [contenteditable]') && e.target.closest('[data-viz-screen]'))) return
     e.preventDefault()
     e.stopImmediatePropagation()
     leave()

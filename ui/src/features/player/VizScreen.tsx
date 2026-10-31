@@ -26,7 +26,7 @@ export function VizScreen() {
     if (!canVizFull()) closeVizFull()
   }, [now?.via, now])
   return (
-    <div role="dialog" aria-label={tr('Visualizer')} onContextMenu={onMenu(vizMenu)} onDoubleClick={closeVizFull} className="fade-in fixed inset-0 z-40 isolate flex flex-col overflow-hidden bg-bg text-ink">
+    <div role="dialog" data-viz-screen aria-label={tr('Visualizer')} onContextMenu={onMenu(vizMenu)} onDoubleClick={closeVizFull} className="fade-in fixed inset-0 z-40 isolate flex flex-col overflow-hidden bg-bg text-ink">
       <RoundButton label={tr('Leave full screen')} kind="plain" size="md" onClick={closeVizFull} className="absolute top-4 right-4 z-10">
         <X size={22} />
       </RoundButton>

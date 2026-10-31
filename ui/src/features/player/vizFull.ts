@@ -23,6 +23,8 @@ export const canVizFull = () => {
 export function openVizFull() {
   if (useVizFull.getState().open || !canVizFull()) return
   useVizFull.setState({ open: true })
+  // A field behind the screen (the search box) must not keep the keyboard.
+  if (typeof document !== 'undefined' && document.activeElement instanceof HTMLElement) document.activeElement.blur()
   unkey = vizFullKeys(closeVizFull)
   void screen.enter()
 }
