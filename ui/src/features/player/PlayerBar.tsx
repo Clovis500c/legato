@@ -54,7 +54,10 @@ function YouTubeFrame({ videoId, tail = false, idle = false }: { videoId: string
   const box = useVideoSlot((s) => s.box)
   const fill = useVideoSlot((s) => s.fill)
   // Karaoke and the visualizer's screen cover the window: the native watch page would stay above it.
-  const karaoke = useKaraoke((s) => s.open) || useVizFull((s) => s.open)
+  // Both hooks every render (no `||` between them): one skipped changed the hook count and crashed the player on K.
+  const karaokeOpen = useKaraoke((s) => s.open)
+  const vizOpen = useVizFull((s) => s.open)
+  const karaoke = karaokeOpen || vizOpen
   // Embed refused this video: YouTube's watch page plays it in a webview over the same place (watch.ts).
   const watch = useWatch((s) => s.video)
   // Bars baked into the video: frame enlarged, only the picture shows.
