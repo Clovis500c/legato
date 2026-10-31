@@ -20,7 +20,7 @@ export default function Home() {
         <Block id="features" title="One app for all of it" intro="Everything below works the same whatever the song comes from.">
           <Features />
         </Block>
-        <Split id="playback" title="Official playback only" intro="Each service plays in its own player, your files in the app's. Nothing is downloaded, recorded or extracted; the sound features work on what plays, as it plays, in memory.">
+        <Split id="playback" title="Official playback only" intro="Each service plays in its own player, your files in the app's. No platform's audio is downloaded, recorded or extracted (the Music Detector listens only when you ask it to); the sound features work on what plays, as it plays, in memory.">
           <Rows head={['Source', 'How it plays']} rows={PLAYBACK} />
         </Split>
         <Split id="privacy" title="What leaves your PC" intro="Nothing, until you connect a service or turn a feature on. No server, no account of ours.">

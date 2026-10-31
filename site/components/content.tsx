@@ -34,7 +34,7 @@ export const FEATURES: { icon: IconName; title: string; text: string }[] = [
 export const BENCH = { date: '2026-10-31', version: '1.0.0', os: 'Windows 11', pc: 'Ryzen 5 5500, 32 GB', songs: '10 000', ramPaused: '141', ramTray: '54', windowCold: '0.84', paintCold: '1.26' }
 
 export const WHY: { icon: IconName; title: string; text: string }[] = [
-  { icon: 'SealCheck', title: 'Legal', text: "Songs play in the official players: YouTube's own, the Spotify app, and your files in Legato's own. Nothing is downloaded, recorded or extracted." },
+  { icon: 'SealCheck', title: 'Legal', text: "Songs play in the official players: YouTube's own, the Spotify app, and your files in Legato's own. No platform's audio is downloaded, recorded or extracted. The Music Detector listens only when you ask, and Apple's previews are Apple's own 30 s clips." },
   { icon: 'Feather', title: 'Light', text: `${BENCH.ramPaused} MB of RAM with the app open and paused, ${BENCH.ramTray} MB after 10 minutes in the tray, silent. On a cold start the window shows in ${BENCH.windowCold} s and the first screen is painted at ${BENCH.paintCold} s.` },
   { icon: 'Devices', title: 'Your PCs in sync', text: 'Sync Mode keeps your library on every PC through a OneDrive folder or your own network. No account of ours, no server.' },
   { icon: 'Headphones', title: 'Your scrobbles', text: 'What you play, from any source, goes to your Last.fm profile with your own free API key. Off until you connect it.' },
@@ -88,7 +88,7 @@ const link = (href: string, text: string) => (
 export const FAQ: { q: string; a: ReactNode }[] = [
   { q: 'Is it free?', a: 'Yes. The code is on GitHub, source-available: free to use, not open source. Issues and pull requests are welcome.' },
   { q: 'Do I need an account?', a: 'Not one of ours. You sign in to the services you already use, on their own pages.' },
-  { q: 'Does it download music?', a: "No. Music plays in each service's own player or from your files. Nothing is downloaded, recorded or extracted." },
+  { q: 'Does it download music?', a: "No. Music plays in each service's own player or from your files. No platform's audio is downloaded, recorded or extracted; only the Music Detector listens, when you ask it to." },
   { q: 'Why does Spotify need Premium and a key?', a: 'Spotify lets other apps play only through its own app, for Premium accounts, and every app needs a free key from its developer dashboard. Without them, paste a public playlist link: its songs play from YouTube when the app finds them there.' },
   { q: 'Mac or Linux?', a: 'Windows 10 and 11 only, for now.' },
   { q: 'How do updates work?', a: 'The app checks GitHub at launch and installs a new version between two songs, or while nothing plays. You get the versions that were tried first (Stable); Settings › General has a Beta channel that brings every change first, and may break.' },
