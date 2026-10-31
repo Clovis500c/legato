@@ -23,8 +23,6 @@ pub struct PageList {
     pub id: String,
     pub name: String,
     pub cover: Option<String>,
-    /// Songs the row says it has, when it says.
-    pub songs: Option<u32>,
 }
 
 #[derive(Debug, PartialEq)]
@@ -45,7 +43,6 @@ struct RawList {
     id: String,
     name: String,
     cover: Option<String>,
-    songs: Option<u32>,
 }
 
 #[derive(Deserialize)]
@@ -78,14 +75,14 @@ fn clean(text: &str) -> Option<String> {
     (!t.is_empty() && t.chars().count() <= MAX_TEXT && !t.chars().any(char::is_control)).then(|| t.to_string())
 }
 
-/// Spotify's image host only, the one `art` already serves.
+/// Image hosts `art` serves only (a playlist's cover can be a long mosaic address).
 fn clean_art(url: Option<String>) -> Option<String> {
-    url.filter(|u| u.len() <= 200 && u.starts_with("https://i.scdn.co/image/"))
+    url.filter(|u| u.len() <= 400 && crate::art::allowed(u))
 }
 
 fn list(r: RawList) -> Option<PageList> {
     valid_id(&r.id).then_some(())?;
-    Some(PageList { id: r.id, name: clean(&r.name)?, cover: clean_art(r.cover), songs: r.songs })
+    Some(PageList { id: r.id, name: clean(&r.name)?, cover: clean_art(r.cover) })
 }
 
 fn song(r: RawSong) -> Option<Track> {
@@ -179,8 +176,8 @@ mod tests {
 
     #[test]
     fn reads_lists_and_steps() {
-        let m = format!(r#"legato-spotify:{{"lists":[{{"id":"{ID}","name":"Road trip","cover":"https://i.scdn.co/image/x","songs":34}},{{"id":"nope","name":"Bad"}}]}}"#);
-        assert_eq!(parse(PAGE, &m), Some(Message::Lists(vec![PageList { id: ID.into(), name: "Road trip".into(), cover: Some("https://i.scdn.co/image/x".into()), songs: Some(34) }])));
+        let m = format!(r#"legato-spotify:{{"lists":[{{"id":"{ID}","name":"Road trip","cover":"https://mosaic.scdn.co/60/ab"}},{{"id":"nope","name":"Bad"}}]}}"#);
+        assert_eq!(parse(PAGE, &m), Some(Message::Lists(vec![PageList { id: ID.into(), name: "Road trip".into(), cover: Some("https://mosaic.scdn.co/60/ab".into()) }])));
         assert_eq!(parse(PAGE, r#"legato-spotify:{"lists":[]}"#), Some(Message::Lists(vec![])));
         assert_eq!(parse(PAGE, r#"legato-spotify:{"started":true}"#), Some(Message::Started));
         assert_eq!(parse(PAGE, r#"legato-spotify:{"done":true}"#), Some(Message::Done));

@@ -68,7 +68,7 @@ export function SpotifyConnect() {
     api.spotifyLists().then(
       (found) => {
         if (!live) return
-        setLists([{ id: LIKED, name: tr('Liked Songs'), cover: null, songs: null }, ...found])
+        setLists([{ id: LIKED, name: tr('Liked Songs'), cover: null }, ...found])
         setOff([])
         setStep('pick')
       },
@@ -129,7 +129,6 @@ export function SpotifyConnect() {
                   <input type="checkbox" className="size-3.5 accent-ink" checked={!off.includes(l.id)} onChange={(e) => setOff(e.target.checked ? off.filter((id) => id !== l.id) : [...off, l.id])} />
                   <Cover title={l.name} art={l.cover ? [remoteArt(l.cover)] : []} size={32} />
                   <span className="min-w-0 flex-1 truncate text-[0.8125rem]">{l.name}</span>
-                  {l.songs !== null && <span className="text-xs text-ink-3">{trn(l.songs, '{n} song', '{n} songs')}</span>}
                 </label>
               </li>
             ))}

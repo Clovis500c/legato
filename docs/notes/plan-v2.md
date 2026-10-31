@@ -56,10 +56,12 @@ What the services allow, read on 2026-10-31 (specs in [ideas/catch-up.md](ideas/
   players used to build a streaming service (read as a summary only: the full page didn't load). So links imported
   as metadata first; playback and search are the user's call.
 
-- [ ] `M-L` Connect Spotify, the friendly way (user's go 2026-10-31; built, `docs/playback.md`): a button opens Spotify's
-      own page in an app window, any free account signs in, Legato lists the playlists and Liked Songs with their covers, the
-      user ticks some, Import, progress. Read from the rows the page shows, at a person's pace; only the songs are kept; a
-      second import refreshes. Left: a real signed-in try (the column's selectors, Liked Songs, a window left behind others).
+- [x] `M-L` Connect Spotify, the friendly way (user's go 2026-10-31, `docs/playback.md`): a button opens Spotify's sign-in
+      page in an app window, Legato lists the playlists and Liked Songs with their covers, the user ticks some, Import,
+      progress; a second import refreshes. Tried on the user's real account in the dev app (a page in French, 21 playlists +
+      Liked Songs, 244 of 244 read, Cancel, a second import).
+- [ ] `S` Connect Spotify, not tried yet: playlists inside a library folder, a collapsed library column, an expired
+      session, the window covering Legato while it reads (Cancel in the toast may be behind it), a list with local files.
 - [ ] `S` Spotify's "private or doesn't exist" message says what works instead (the routes here).
 - [ ] `S` Playlists in and out as files: M3U / M3U8 / XSPF / CSV import and export (paths for local, links for streams).
 - [ ] `M` Spotify private playlists and Liked Songs by paste, free, no sign-in: Ctrl+A then Ctrl+C in Spotify's desktop app
@@ -312,7 +314,6 @@ Most useful first; the tag is the effort.
       "Legato · Design" (the plugin can't rename files).
 - [ ] SponsorBlock stays off by default (a new third party gets a hash prefix per video, the user opts in): flip the
       default if wanted.
-- [ ] Connect Spotify: sign in once in the dev app, so the signed-in page can be read and checked (Platforms).
 - [ ] Spotify: try Ctrl+A, Ctrl+C on a private playlist in the desktop app and paste into Notepad (links, one per line?).
 - [ ] Spotify: ask for the data export (Privacy settings › Download your data); its `Playlist1.json` is the test file.
 

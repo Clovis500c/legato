@@ -11,7 +11,7 @@
   const pause = () => sleep(350 + Math.random() * 350)
   const ROW = '[data-testid="tracklist-row"]'
   const TRACK = /\/track\/([A-Za-z0-9]{22})/
-  const PLAYLIST = /\/playlist\/([A-Za-z0-9]{22})/
+  const COVER = /^https:\/\/(i\.scdn\.co|mosaic\.scdn\.co|[a-z0-9-]+\.spotifycdn\.com)\//
   const MAX_SONGS = 3000
   const MAX_LISTS = 500
   const BATCH = 40
@@ -19,7 +19,7 @@
   const text = (el) => (el?.textContent ?? '').trim()
   const cover = (root) => {
     const src = root?.querySelector('img')?.src ?? ''
-    return src.startsWith('https://i.scdn.co/') ? src : undefined
+    return COVER.test(src) ? src : undefined
   }
 
   // Nearest ancestor that really scrolls.
@@ -63,10 +63,12 @@
     const total = Math.max(0, (Number(grid.getAttribute?.('aria-rowcount')) || 0) - 1)
     const box = scrollerOf(first)
     const seen = new Set()
+    const count = Math.min(total || Infinity, MAX_SONGS)
     let still = 0
-    while (still < 6 && seen.size < MAX_SONGS) {
+    while (still < 20 && seen.size < count) {
       const fresh = []
-      for (const row of grid.querySelectorAll(ROW)) {
+      const rows = grid.querySelectorAll(ROW)
+      for (const row of rows) {
         // The row's place, not the song's: a playlist can hold a song twice.
         const key = row.closest('[aria-rowindex]')?.getAttribute('aria-rowindex') ?? row.querySelector('a[href*="/track/"]')?.getAttribute('href')
         if (!key || seen.has(key)) continue
@@ -75,35 +77,34 @@
         if (s) fresh.push(s)
       }
       for (let i = 0; i < fresh.length; i += BATCH) post({ rows: fresh.slice(i, i + BATCH), total })
-      const end = box.scrollTop + box.clientHeight >= box.scrollHeight - 4
-      still = fresh.length || !end ? 0 : still + 1
-      box.scrollTop += box.clientHeight * 0.8
+      // Long lists load in parts and a row exists once loaded: past the last one the list is blank, and rows it skips
+      // never draw. So the last row goes to the top, and the next ones are waited for there.
+      const last = rows[rows.length - 1]
+      if (last) box.scrollTop += last.getBoundingClientRect().top - box.getBoundingClientRect().top
+      still = fresh.length ? 0 : still + 1
       await pause()
     }
+    // Rust reports it as not read: a cut list must not replace a whole copy.
+    if (total && seen.size < count) throw new Error('list cut short')
   }
 
-  // The library's column: virtual too, playlists only (albums, artists and podcasts share it).
-  const LIBRARY = '[data-testid="rootlist"], [aria-label="Your Library"], nav[aria-label="Main"], #Desktop_LeftSidebar_Id'
-  const item = (a) => a.closest('[role="row"], li') ?? a
+  // The library's column: virtual too, albums and artists share it. A row's id says its kind, in any language; its
+  // subtitle names the owner, never the song count. Its rows have no links; the home page's playlists do.
+  const TITLE = '#Desktop_LeftSidebar_Id p[id^="listrow-title-spotify:playlist:"]'
   const lists = async () => {
-    const root = await waitFor(() => {
-      const r = document.querySelector(LIBRARY)
-      return r?.querySelector('a[href*="/playlist/"]') ? r : null
-    })
-    if (!root) return post({ lists: [] })
-    const box = scrollerOf(root.querySelector('a[href*="/playlist/"]'))
+    const first = await waitFor(() => document.querySelector(TITLE))
+    if (!first) {
+      if (document.querySelector('[data-testid="login-button"]')) throw new Error('signed out')
+      return post({ lists: [] })
+    }
+    const box = scrollerOf(first)
     const seen = new Map()
     let still = 0
     while (still < 4 && seen.size < MAX_LISTS) {
       const before = seen.size
-      for (const a of root.querySelectorAll('a[href*="/playlist/"]')) {
-        const id = a.getAttribute('href')?.match(PLAYLIST)?.[1]
-        if (!id || seen.has(id)) continue
-        const row = item(a)
-        const name = a.getAttribute('aria-label') || text(row.querySelector('p, span, h3')) || text(a)
-        // "Playlist • You • 34 songs": a number if the row shows one (any language).
-        const songs = (row.textContent ?? '').slice(name.length).match(/(\d[\d\s.,]*)\s*\p{L}*\s*$/u)?.[1]
-        seen.set(id, { id, name, cover: cover(row), songs: songs ? Number(songs.replace(/\D/g, '')) : undefined })
+      for (const title of document.querySelectorAll(TITLE)) {
+        const id = title.id.split(':').pop()
+        if (!seen.has(id)) seen.set(id, { id, name: text(title), cover: cover(title.closest('[role="row"]')) })
       }
       const end = box.scrollTop + box.clientHeight >= box.scrollHeight - 4
       still = seen.size > before || !end ? 0 : still + 1

@@ -417,11 +417,13 @@ via the Web API Player endpoints. Audio comes out of the Spotify app; we only se
   technical protection) or capturing the token the official player fetches.
 - **Connect Spotify** (user's choice 2026-10-31, Add music, `ui/src/features/add/SpotifyConnect.tsx`): any free account,
   private playlists and Liked Songs. No token and no request of ours: the window opens on Spotify's sign-in page,
-  `crates/shield/src/spotify.js` (injected in that window only) reads the rows the page draws, scrolling at a person's
-  pace, and posts them on WebView2's message channel; `crates/connectors/src/spotify_page.rs` checks sender, shape and
+  `crates/shield/src/spotify.js` (injected in that window only) reads the rows the page draws and posts them on WebView2's message channel; `crates/connectors/src/spotify_page.rs` checks sender, shape and
   sizes. The window stays on top while reading (Chromium stops drawing a hidden window). Each song then goes through
   `with_youtube`, like a link import, and the list is saved under the same id, so a second import refreshes it. Cancel
-  keeps the lists already saved. A list that fails or reads empty is named at the end, never saved over the old copy.
+  keeps the lists already saved. A row exists only once loaded, so the reader never scrolls past the last one (a long list loads in parts, and a
+  stretch it skips never draws). A list that fails, reads empty or comes out short of the count its page gives is named
+  at the end, never saved over the old copy. The library column has no links: a row's kind is in its ids
+  (`listrow-title-spotify:playlist:<id>`, any language), and its subtitle gives the owner, not a song count.
   Spotify's [User Guidelines](https://www.spotify.com/us/legal/user-guidelines/) ban scraping, by hand or automated, and a
   breach can close the account (no such case found): the app says so before the first connection on each PC.
 - **Public playlists and albums by link**, no account

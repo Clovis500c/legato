@@ -103,7 +103,7 @@ async fn songs(app: &AppHandle, id: &str, mut read: impl FnMut(usize, usize)) ->
     }
 }
 
-/// A playlist of the signed-in user, as Spotify's column shows it. Songs: when the row says.
+/// A playlist of the signed-in user, as Spotify's column shows it.
 #[derive(Debug, Clone, Serialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export)]
@@ -111,7 +111,6 @@ pub struct SpotifyList {
     id: String,
     name: String,
     cover: Option<String>,
-    songs: Option<u32>,
 }
 
 /// The playlists in the signed-in user's library. Liked Songs isn't one: the interface adds it.
@@ -122,7 +121,7 @@ pub async fn spotify_lists(app: AppHandle) -> CmdResult<Vec<SpotifyList>> {
         let mut all = Vec::new();
         loop {
             match next(&mut rx).await? {
-                Message::Lists(lists) => all.extend(lists.into_iter().map(|l| SpotifyList { id: l.id, name: l.name, cover: l.cover, songs: l.songs })),
+                Message::Lists(lists) => all.extend(lists.into_iter().map(|l| SpotifyList { id: l.id, name: l.name, cover: l.cover })),
                 Message::Done => return anyhow::Ok(all),
                 _ => {}
             }
