@@ -24,7 +24,7 @@ export const FEATURES: { icon: IconName; title: string; text: string }[] = [
   { icon: 'SlidersHorizontal', title: 'Live Editor', text: 'Speed, pitch, a 10-band EQ, reverb and 3D sound, changed as it plays.' },
   { icon: 'FolderSimple', title: 'Your own files', text: 'Gapless playback, and their title, artist, album and cover to edit.' },
   { icon: 'Devices', title: 'Sync Mode', text: 'Your library on all your PCs, through a OneDrive folder or your network.' },
-  { icon: 'Quotes', title: 'Lyrics', text: 'Timed lyrics in a panel beside any page, or big in Now Playing.' },
+  { icon: 'Quotes', title: 'Lyrics', text: 'Timed lyrics in a panel beside any page, big in Now Playing, or full screen in Karaoke mode (K).' },
   { icon: 'Palette', title: 'Themes', text: 'Colors, fonts, a picture or video background, your own CSS.' },
   { icon: 'PuzzlePiece', title: 'Add-ons and plugins', text: 'Plugins by others ask for what they need before they can do anything.' },
   { icon: 'Translate', title: '18 languages', text: 'Following Windows, with its media keys, a tray icon and full screen.' },

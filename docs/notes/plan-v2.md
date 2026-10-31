@@ -148,14 +148,14 @@ playback (its terms), concerts (an API's terms), trademark search.
   alike), one canvas renderer, four looks (LED bars with peaks, radial around the cover, VU needles, spectrogram), full
   screen on F, under 3 % CPU on the bench PC, reduced motion respected.
 - **Karaoke mode**: full screen, current line large, next lines dimmed, the blurred cover behind, offset keys, exits
-  on Esc; works with plain lyrics as a scroll.
+  on Esc; works with plain lyrics as a scroll. (Done 2026-10-31.)
 
 **1. Catch up with Riff (what a Riff user would miss)**
 - [x] Paste a Deezer playlist / album link: imported like a Spotify link (Deezer's public API, no key). (2026-10-31)
 - [x] Paste an Apple Music playlist / album link: iTunes lookup for albums, the page's data for playlists. (2026-10-31)
 - [ ] Paste a SoundCloud link: imported; plays in SoundCloud's official embedded widget (no audio taken).
 - [ ] SoundCloud search beside YouTube's (widget playback, its terms checked first).
-- [ ] Karaoke / TV mode: full screen, big synced lyrics over the blurred cover, line by line.
+- [x] Karaoke / TV mode: full screen, big synced lyrics over the blurred cover, line by line. (2026-10-31: K, buttons on the lyrics panel and Now Playing, right-click menu; the mock has no lyrics, so the walk checks the calm message only. Not done: a long-song 60 fps check on the bench PC, word-by-word timings.)
 - [ ] Lyrics translation in the panel (a service sends text: add the website's privacy row first).
 - [ ] Dynamic colour from the cover across the whole app, not only page bands (a Theme Studio choice).
 - [ ] Squiggly / waveform progress bar as a progress style choice.
