@@ -1,8 +1,8 @@
 name: release
 
 # Every push to master that passes `check` is released as a BETA: signed Windows installer + latest.json on a GitHub
-# prerelease. Version = MAJOR.MINOR from tauri.conf.json + patch = commits on master (scripts/release.mjs): 1.0.0 in the
-# file, 1.0.<commits> released. "[skip release]" in the commit's first line: no release for that push. Run by hand:
+# prerelease. Version = MAJOR.MINOR from tauri.conf.json + patch = commits on master (scripts/release.mjs): 1.1.0 in the
+# file, 1.1.<commits> released. "[skip release]" in the commit's first line: no release for that push. Run by hand:
 # Actions › release › Run workflow.
 # Two channels (Settings › General › Updates), two files (src-tauri/src/update.rs):
 # - Beta reads releases/download/beta/latest.json: the rolling `beta` release, whose latest.json is copied here from
