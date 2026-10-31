@@ -1564,6 +1564,8 @@ const pl: Record<string, string> = {
   'A public playlist or album from Spotify, Deezer or Apple Music comes in whole; a YouTube link adds its song.': 'Publiczna playlista lub album ze Spotify, Deezer albo Apple Music wchodzi w całości; link do YouTube dodaje swój utwór.',
   'Spotify, Deezer, Apple Music or YouTube link': 'Link do Spotify, Deezer, Apple Music lub YouTube',
   'Importing from {service}… (finding each song on YouTube)': 'Importowanie z {service}… (każdy utwór jest szukany w YouTube)',
+  'Importing from {service}… {done} of {total}': 'Importowanie z {service}… {done} z {total}',
+  'Import canceled': 'Import anulowany',
   'Imported “{name}”: {found} of {n} song found': 'Zaimportowano „{name}”: znaleziono {found} z {n} utworu',
   'Imported “{name}”: {found} of {n} songs found': 'Zaimportowano „{name}”: znaleziono {found} z {n} utworów',
   'Only {n} of the {total} songs came in: the link shows no more.': 'Weszło tylko {n} z {total} utworów: link nie pokazuje więcej.',

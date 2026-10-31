@@ -1564,6 +1564,8 @@ const ko: Record<string, string> = {
   'A public playlist or album from Spotify, Deezer or Apple Music comes in whole; a YouTube link adds its song.': 'Spotify, Deezer, Apple Music의 공개 플레이리스트나 앨범은 통째로 들어오고, YouTube 링크는 그 곡을 추가합니다.',
   'Spotify, Deezer, Apple Music or YouTube link': 'Spotify, Deezer, Apple Music 또는 YouTube 링크',
   'Importing from {service}… (finding each song on YouTube)': '{service}에서 가져오는 중… (각 곡을 YouTube에서 찾는 중)',
+  'Importing from {service}… {done} of {total}': '{service}에서 가져오는 중… {done} / {total}',
+  'Import canceled': '가져오기를 취소했습니다',
   'Imported “{name}”: {found} of {n} song found': '“{name}”을(를) 가져왔습니다: {n}곡 중 {found}곡 찾음',
   'Imported “{name}”: {found} of {n} songs found': '“{name}”을(를) 가져왔습니다: {n}곡 중 {found}곡 찾음',
   'Only {n} of the {total} songs came in: the link shows no more.': '{total}곡 중 {n}곡만 들어왔습니다: 링크에는 더 이상 표시되지 않습니다.',

@@ -1564,6 +1564,8 @@ const nl: Record<string, string> = {
   'A public playlist or album from Spotify, Deezer or Apple Music comes in whole; a YouTube link adds its song.': 'Een openbare afspeellijst of een album van Spotify, Deezer of Apple Music komt helemaal binnen; een YouTube-link voegt zijn nummer toe.',
   'Spotify, Deezer, Apple Music or YouTube link': 'Spotify-, Deezer-, Apple Music- of YouTube-link',
   'Importing from {service}… (finding each song on YouTube)': 'Importeren van {service}… (elk nummer wordt op YouTube gezocht)',
+  'Importing from {service}… {done} of {total}': 'Importeren van {service}… {done} van {total}',
+  'Import canceled': 'Import geannuleerd',
   'Imported “{name}”: {found} of {n} song found': '“{name}” geïmporteerd: {found} van {n} nummer gevonden',
   'Imported “{name}”: {found} of {n} songs found': '“{name}” geïmporteerd: {found} van {n} nummers gevonden',
   'Only {n} of the {total} songs came in: the link shows no more.': 'Slechts {n} van de {total} nummers kwamen binnen: de link toont er niet meer.',

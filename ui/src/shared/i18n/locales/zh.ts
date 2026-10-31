@@ -1564,6 +1564,8 @@ const zh: Record<string, string> = {
   'A public playlist or album from Spotify, Deezer or Apple Music comes in whole; a YouTube link adds its song.': '来自 Spotify、Deezer 或 Apple Music 的公开播放列表或专辑会整个导入；YouTube 链接则添加它的歌曲。',
   'Spotify, Deezer, Apple Music or YouTube link': 'Spotify、Deezer、Apple Music 或 YouTube 链接',
   'Importing from {service}… (finding each song on YouTube)': '正在从 {service} 导入…（在 YouTube 上查找每首歌）',
+  'Importing from {service}… {done} of {total}': '正在从 {service} 导入… {done} / {total}',
+  'Import canceled': '已取消导入',
   'Imported “{name}”: {found} of {n} song found': '已导入“{name}”：{n} 首中找到 {found} 首',
   'Imported “{name}”: {found} of {n} songs found': '已导入“{name}”：{n} 首中找到 {found} 首',
   'Only {n} of the {total} songs came in: the link shows no more.': '{total} 首中只有 {n} 首导入：链接没有显示更多。',

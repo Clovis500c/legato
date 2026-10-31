@@ -1564,6 +1564,8 @@ const tr: Record<string, string> = {
   'A public playlist or album from Spotify, Deezer or Apple Music comes in whole; a YouTube link adds its song.': 'Spotify, Deezer veya Apple Music’teki herkese açık bir çalma listesi ya da albüm bütünüyle gelir; bir YouTube bağlantısı kendi şarkısını ekler.',
   'Spotify, Deezer, Apple Music or YouTube link': 'Spotify, Deezer, Apple Music veya YouTube bağlantısı',
   'Importing from {service}… (finding each song on YouTube)': '{service} içinden içe aktarılıyor… (her şarkı YouTube’da aranıyor)',
+  'Importing from {service}… {done} of {total}': '{service} içinden içe aktarılıyor… {done} / {total}',
+  'Import canceled': 'İçe aktarma iptal edildi',
   'Imported “{name}”: {found} of {n} song found': '“{name}” içe aktarıldı: {n} şarkıdan {found} tanesi bulundu',
   'Imported “{name}”: {found} of {n} songs found': '“{name}” içe aktarıldı: {n} şarkıdan {found} tanesi bulundu',
   'Only {n} of the {total} songs came in: the link shows no more.': '{total} şarkıdan yalnızca {n} tanesi geldi: bağlantı daha fazlasını göstermiyor.',

@@ -1564,6 +1564,8 @@ const ja: Record<string, string> = {
   'A public playlist or album from Spotify, Deezer or Apple Music comes in whole; a YouTube link adds its song.': 'Spotify・Deezer・Apple Music の公開プレイリストやアルバムはまるごと取り込まれ、YouTube のリンクはその曲を追加します。',
   'Spotify, Deezer, Apple Music or YouTube link': 'Spotify・Deezer・Apple Music・YouTube のリンク',
   'Importing from {service}… (finding each song on YouTube)': '{service} から取り込み中…（YouTube で各曲を探しています）',
+  'Importing from {service}… {done} of {total}': '{service} から取り込み中… {done} / {total}',
+  'Import canceled': '取り込みをキャンセルしました',
   'Imported “{name}”: {found} of {n} song found': '「{name}」を取り込みました：{n} 曲中 {found} 曲が見つかりました',
   'Imported “{name}”: {found} of {n} songs found': '「{name}」を取り込みました：{n} 曲中 {found} 曲が見つかりました',
   'Only {n} of the {total} songs came in: the link shows no more.': '{total} 曲中 {n} 曲だけが取り込まれました。リンクにはこれ以上表示されません。',

@@ -294,7 +294,9 @@ via the Web API Player endpoints. Audio comes out of the Spotify app; we only se
   give a name, a cover and the songs (`crates/connectors/src/deezer.rs`, `itunes.rs` `link_list`, shared `LinkList`);
   `src-tauri/src/links.rs` (`import_link`) matches each song to YouTube with `with_youtube`, like the Spotify import, and
   puts the ones found in a **new playlist of yours** (not a synced one: a new library source would break the other PCs
-  of Sync Mode that do not know it). The toast says "12 of 13 songs found".
+  of Sync Mode that do not know it). The toast says "12 of 13 songs found". While it matches (up to 3000 searches, 6 at a time)
+  the command emits `import-progress` `[searched, total]` after each batch: a toast that stays reads "Importing from Deezer…
+  120 of 300", with a Cancel that calls `import_link_stop` (nothing is made, "Import canceled"). One import runs at a time.
   - Deezer: `api.deezer.com/playlist|album/{id}` for the name, then `/tracks?index=&limit=100`, page by page, ISRC
     included. Quota (50 requests / 5 s) comes as HTTP 200 with an `error` object (code 4): wait and try again, 4 times.
     Private or removed lists answer code 800 or 200. `link.deezer.com/s/…` short links: one redirect, read in Rust and

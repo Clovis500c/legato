@@ -97,6 +97,10 @@ export const api = {
   importSpotifyLink: (url: string) => invoke<SpotifyImport>('import_spotify_link', { url }),
   /** Deezer or Apple Music playlist / album link → a playlist of yours (no account); songs found on YouTube. */
   importLink: (url: string) => invoke<LinkImport>('import_link', { url }),
+  /** Ends a running importLink ("canceled", nothing made). */
+  importLinkStop: () => invoke<void>('import_link_stop'),
+  /** importLink's searches so far: [songs searched, songs in the list]. */
+  onImportProgress: (cb: (done: number, total: number) => void) => listen<[number, number]>('import-progress', (e) => cb(e.payload[0], e.payload[1])),
   /** Add › Import a list of songs: text or a .txt / .csv file, each song found on YouTube, a playlist of the ones found. */
   importSongList: (name: string, text: string | null, path: string | null) => invoke<ListImport>('import_song_list', { name, text, path }),
   /** Spotify's own web player in an app window (prototype). */

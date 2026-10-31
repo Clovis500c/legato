@@ -1564,6 +1564,8 @@ const ru: Record<string, string> = {
   'A public playlist or album from Spotify, Deezer or Apple Music comes in whole; a YouTube link adds its song.': 'Публичный плейлист или альбом из Spotify, Deezer или Apple Music добавляется целиком; ссылка на YouTube добавляет свою песню.',
   'Spotify, Deezer, Apple Music or YouTube link': 'Ссылка Spotify, Deezer, Apple Music или YouTube',
   'Importing from {service}… (finding each song on YouTube)': 'Импорт из {service}… (каждая песня ищется на YouTube)',
+  'Importing from {service}… {done} of {total}': 'Импорт из {service}… {done} из {total}',
+  'Import canceled': 'Импорт отменён',
   'Imported “{name}”: {found} of {n} song found': '«{name}» импортирован: найдена {found} песня из {n}',
   'Imported “{name}”: {found} of {n} songs found': '«{name}» импортирован: найдено {found} из {n} песен',
   'Only {n} of the {total} songs came in: the link shows no more.': 'Добавлено только {n} песен из {total}: ссылка не показывает больше.',

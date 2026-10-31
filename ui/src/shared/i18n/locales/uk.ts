@@ -1564,6 +1564,8 @@ const uk: Record<string, string> = {
   'A public playlist or album from Spotify, Deezer or Apple Music comes in whole; a YouTube link adds its song.': 'Публічний плейлист або альбом зі Spotify, Deezer чи Apple Music додається цілком; посилання на YouTube додає свою пісню.',
   'Spotify, Deezer, Apple Music or YouTube link': 'Посилання Spotify, Deezer, Apple Music або YouTube',
   'Importing from {service}… (finding each song on YouTube)': 'Імпорт із {service}… (кожну пісню шукаємо на YouTube)',
+  'Importing from {service}… {done} of {total}': 'Імпорт із {service}… {done} із {total}',
+  'Import canceled': 'Імпорт скасовано',
   'Imported “{name}”: {found} of {n} song found': '«{name}» імпортовано: знайдено {found} пісню з {n}',
   'Imported “{name}”: {found} of {n} songs found': '«{name}» імпортовано: знайдено {found} з {n} пісень',
   'Only {n} of the {total} songs came in: the link shows no more.': 'Додано лише {n} із {total} пісень: посилання не показує більше.',

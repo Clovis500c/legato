@@ -6,7 +6,8 @@ use music_connectors::{deezer, itunes, linklist::LinkList};
 use music_core::library::PlaylistEdit;
 use music_core::model::Source;
 use serde::Serialize;
-use tauri::{Manager, State};
+use std::sync::atomic::{AtomicBool, Ordering};
+use tauri::{Emitter, Manager, State};
 
 #[derive(Serialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
@@ -36,17 +37,45 @@ async fn read(url: &str) -> anyhow::Result<LinkList> {
     }
 }
 
+/// One import at a time (the stop flag is shared).
+static BUSY: AtomicBool = AtomicBool::new(false);
+static STOP: AtomicBool = AtomicBool::new(false);
+
+/// Frees `BUSY` on every way out of the import, errors included.
+struct Running;
+
+impl Drop for Running {
+    fn drop(&mut self) {
+        BUSY.store(false, Ordering::Release);
+    }
+}
+
 /// Deezer or Apple Music playlist / album link → a playlist of yours, no account. Same flow as a Spotify link.
+/// Progress: "import-progress" events `[searched, total]` after each batch of searches. `import_link_stop` ends it with
+/// "canceled", nothing made.
 #[tauri::command]
 pub async fn import_link(app: tauri::AppHandle, state: State<'_, AppState>, url: String) -> CmdResult<LinkImport> {
     // Trust boundary: clipboard / typed text.
     if url.len() > 2048 {
         return Err("Link too long".into());
     }
+    if BUSY.swap(true, Ordering::AcqRel) {
+        return Err("an import is already running".into());
+    }
+    let _running = Running;
+    STOP.store(false, Ordering::Relaxed);
     let list = read(url.trim()).await.map_err(err)?;
     let (mut found, mut missing) = (Vec::new(), Vec::new());
+    let total = list.tracks.len();
+    let progress = |done: usize| {
+        let _ = app.emit_to("main", "import-progress", [done, total]);
+    };
+    progress(0);
     // 6 searches at a time: quick, still polite.
-    for chunk in list.tracks.chunks(6) {
+    for (n, chunk) in list.tracks.chunks(6).enumerate() {
+        if STOP.load(Ordering::Relaxed) {
+            return Err("canceled".into());
+        }
         let jobs: Vec<_> = chunk
             .iter()
             .cloned()
@@ -63,6 +92,10 @@ pub async fn import_link(app: tauri::AppHandle, state: State<'_, AppState>, url:
                 missing.push(format!("{} – {}", t.artist, t.title));
             }
         }
+        progress((n * 6 + chunk.len()).min(total));
+    }
+    if STOP.load(Ordering::Relaxed) {
+        return Err("canceled".into());
     }
     let name: String = list.name.trim().chars().take(100).collect();
     let report = |playlist_id, found| LinkImport { playlist_id, name: name.clone(), songs: list.tracks.len(), found, total: list.total, missing: missing.iter().take(20).cloned().collect() };
@@ -79,4 +112,10 @@ pub async fn import_link(app: tauri::AppHandle, state: State<'_, AppState>, url:
     }
     lib.edit_playlist(PlaylistEdit::Add { id, track_ids: ids }).map_err(err)?;
     Ok(report(Some(id), found.len()))
+}
+
+/// The Cancel on the "Importing…" toast.
+#[tauri::command]
+pub fn import_link_stop() {
+    STOP.store(true, Ordering::Relaxed);
 }

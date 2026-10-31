@@ -1564,6 +1564,8 @@ const hi: Record<string, string> = {
   'A public playlist or album from Spotify, Deezer or Apple Music comes in whole; a YouTube link adds its song.': 'Spotify, Deezer या Apple Music की सार्वजनिक प्लेलिस्ट या एल्बम पूरा आ जाता है; YouTube लिंक उसका गाना जोड़ता है।',
   'Spotify, Deezer, Apple Music or YouTube link': 'Spotify, Deezer, Apple Music या YouTube लिंक',
   'Importing from {service}… (finding each song on YouTube)': '{service} से इम्पोर्ट हो रहा है… (हर गाना YouTube पर खोजा जा रहा है)',
+  'Importing from {service}… {done} of {total}': '{service} से इम्पोर्ट हो रहा है… {total} में से {done}',
+  'Import canceled': 'इम्पोर्ट रद्द किया गया',
   'Imported “{name}”: {found} of {n} song found': '“{name}” इम्पोर्ट हुई: {n} में से {found} गाना मिला',
   'Imported “{name}”: {found} of {n} songs found': '“{name}” इम्पोर्ट हुई: {n} में से {found} गाने मिले',
   'Only {n} of the {total} songs came in: the link shows no more.': '{total} में से केवल {n} गाने आए: लिंक इससे ज़्यादा नहीं दिखाता।',

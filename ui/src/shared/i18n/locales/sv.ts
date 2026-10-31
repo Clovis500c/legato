@@ -1564,6 +1564,8 @@ const sv: Record<string, string> = {
   'A public playlist or album from Spotify, Deezer or Apple Music comes in whole; a YouTube link adds its song.': 'En offentlig spellista eller ett album från Spotify, Deezer eller Apple Music kommer in helt; en YouTube-länk lägger till sin låt.',
   'Spotify, Deezer, Apple Music or YouTube link': 'Länk från Spotify, Deezer, Apple Music eller YouTube',
   'Importing from {service}… (finding each song on YouTube)': 'Importerar från {service}… (varje låt söks på YouTube)',
+  'Importing from {service}… {done} of {total}': 'Importerar från {service}… {done} av {total}',
+  'Import canceled': 'Importen avbröts',
   'Imported “{name}”: {found} of {n} song found': '”{name}” importerades: {found} av {n} låt hittades',
   'Imported “{name}”: {found} of {n} songs found': '”{name}” importerades: {found} av {n} låtar hittades',
   'Only {n} of the {total} songs came in: the link shows no more.': 'Bara {n} av {total} låtar kom med: länken visar inte fler.',

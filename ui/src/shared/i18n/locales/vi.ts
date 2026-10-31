@@ -1564,6 +1564,8 @@ const vi: Record<string, string> = {
   'A public playlist or album from Spotify, Deezer or Apple Music comes in whole; a YouTube link adds its song.': 'Danh sách phát hoặc album công khai từ Spotify, Deezer hay Apple Music được nhập trọn vẹn; liên kết YouTube thêm bài hát của nó.',
   'Spotify, Deezer, Apple Music or YouTube link': 'Liên kết Spotify, Deezer, Apple Music hoặc YouTube',
   'Importing from {service}… (finding each song on YouTube)': 'Đang nhập từ {service}… (tìm từng bài hát trên YouTube)',
+  'Importing from {service}… {done} of {total}': 'Đang nhập từ {service}… {done}/{total}',
+  'Import canceled': 'Đã hủy nhập',
   'Imported “{name}”: {found} of {n} song found': 'Đã nhập “{name}”: tìm thấy {found} trên {n} bài hát',
   'Imported “{name}”: {found} of {n} songs found': 'Đã nhập “{name}”: tìm thấy {found} trên {n} bài hát',
   'Only {n} of the {total} songs came in: the link shows no more.': 'Chỉ có {n} trên {total} bài hát được nhập: liên kết không hiển thị thêm.',

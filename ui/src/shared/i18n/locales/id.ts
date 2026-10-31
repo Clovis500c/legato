@@ -1564,6 +1564,8 @@ const id: Record<string, string> = {
   'A public playlist or album from Spotify, Deezer or Apple Music comes in whole; a YouTube link adds its song.': 'Playlist atau album publik dari Spotify, Deezer, atau Apple Music masuk seluruhnya; tautan YouTube menambahkan lagunya.',
   'Spotify, Deezer, Apple Music or YouTube link': 'Tautan Spotify, Deezer, Apple Music, atau YouTube',
   'Importing from {service}… (finding each song on YouTube)': 'Mengimpor dari {service}… (mencari tiap lagu di YouTube)',
+  'Importing from {service}… {done} of {total}': 'Mengimpor dari {service}… {done} dari {total}',
+  'Import canceled': 'Impor dibatalkan',
   'Imported “{name}”: {found} of {n} song found': '“{name}” diimpor: {found} dari {n} lagu ditemukan',
   'Imported “{name}”: {found} of {n} songs found': '“{name}” diimpor: {found} dari {n} lagu ditemukan',
   'Only {n} of the {total} songs came in: the link shows no more.': 'Hanya {n} dari {total} lagu yang masuk: tautan tidak menampilkan lebih banyak.',
