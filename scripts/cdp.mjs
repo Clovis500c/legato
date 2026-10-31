@@ -1,7 +1,7 @@
 // A small Chrome DevTools Protocol client on Node's global WebSocket: no dependency. Legato's WebView2 opens a port when
 // WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS holds --remote-debugging-port=<port> next to background::BROWSER_ARGS (all the
 // app's webviews must carry the same flags, docs/notes/v2-handoff.md "Without computer use"). Used by scripts/bench.mjs;
-// the E2E smoke test reuses it.
+// the E2E smoke test reuses it, its port in LEGATO_E2E_BROWSER_ARGS (that variable never arrives on GitHub's runner).
 
 export const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 

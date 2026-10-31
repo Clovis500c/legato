@@ -101,7 +101,7 @@ jobs:
   # search against a loopback mock, quit. Windows only: it is WebView2's page that is driven. A debug build with the `e2e`
   # cargo feature (its own identifier, no network, no sound card needed: the engine drains a silent output). The build
   # and the walk are two steps: the walk is the one held to 5 minutes. A failure leaves screenshots and a report.
-  # Not blocking yet: it has not run on GitHub, and a failure only this runner has (no WebView2 runtime, another layout, a
+  # Not blocking yet: first green run 2026-10-31, and a failure only this runner has (no WebView2 runtime, another layout, a
   # slow cold start) must not turn `check` red, which holds back every beta (release.yml waits for `check` to succeed). A
   # failure shows as a warning on the run, with the screenshots. Delete `continue-on-error` after a few green runs.
   e2e:
