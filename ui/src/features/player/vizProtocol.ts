@@ -5,7 +5,7 @@ export type ToWorker =
   | { t: 'init'; canvas: OffscreenCanvas }
   | { t: 'size'; w: number; h: number; dpr: number }
   /** `ink`: any CSS colour (the theme's text colour here); every shade is that colour with an opacity. `warn`: the VU dial's red end and lit LED. */
-  | { t: 'look'; look: VisualizerStyle; calm: boolean; ink: string; warn: string }
+  | { t: 'look'; look: VisualizerStyle; calm: boolean; ink: string; warn: string; fps: number }
   | { t: 'frame'; l: Float32Array; r: Float32Array }
   /** Nothing sounds: the bars fall to rest. */
   | { t: 'silence' }

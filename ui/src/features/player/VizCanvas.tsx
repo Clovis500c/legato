@@ -5,6 +5,9 @@ import { usePlayer } from './store'
 import { viz } from './vizFrames'
 import type { ToWorker } from './vizProtocol'
 
+/** Drawing rate, frames a second: the sound's own frames come at 60 (step 1), the picture is drawn at half of that. */
+const FPS = 30
+
 /** Reduced motion: the app's Animations setting off, or Windows' / the browser's preference. */
 export function useCalm() {
   const motion = useSettings((s) => s.settings.motion)
@@ -94,7 +97,7 @@ export function VizCanvas({ look, listen = true }: { look: VisualizerStyle; list
     const el = box.current
     const w = worker.current
     if (!el || !w) return
-    const send = () => w.postMessage({ t: 'look', look, calm, ink: getComputedStyle(el).color, warn: getComputedStyle(el).getPropertyValue('--color-danger').trim() } satisfies ToWorker)
+    const send = () => w.postMessage({ t: 'look', look, calm, ink: getComputedStyle(el).color, warn: getComputedStyle(el).getPropertyValue('--color-danger').trim(), fps: FPS } satisfies ToWorker)
     send()
     const late = setTimeout(send, 700)
     return () => clearTimeout(late)

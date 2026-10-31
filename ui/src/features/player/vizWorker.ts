@@ -12,6 +12,8 @@ let painter: Painter | null = null
 let running = true
 let id = 0
 let last = 0
+/** Drawing rate cap, frames a second (VizCanvas.tsx picks it); the loop may run faster, a tick that comes too soon draws nothing. */
+let gap = 0
 
 const schedule = (f: (t: number) => void) => (scope.requestAnimationFrame ? scope.requestAnimationFrame(f) : (setTimeout(() => f(performance.now()), 16) as unknown as number))
 const cancel = (n: number) => (scope.cancelAnimationFrame ? scope.cancelAnimationFrame(n) : clearTimeout(n))
@@ -19,6 +21,11 @@ const cancel = (n: number) => (scope.cancelAnimationFrame ? scope.cancelAnimatio
 function tick(now: number) {
   id = 0
   if (!running || !painter) return
+  // 3 ms of slack: a 60 Hz loop capped at 30 draws every second tick, not every third.
+  if (now - last < gap - 3) {
+    id = schedule(tick)
+    return
+  }
   const dt = Math.min(0.1, Math.max(0, (now - last) / 1000))
   last = now
   if (!painter.draw(dt)) id = schedule(tick)
@@ -43,6 +50,7 @@ scope.onmessage = (e) => {
       break
     case 'look':
       painter?.set(m.look, m.calm, m.ink, m.warn)
+      gap = 1000 / m.fps
       wake()
       break
     case 'frame':
