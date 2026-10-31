@@ -250,10 +250,19 @@ signal, no beat, small. Plan: better data first, then a real renderer, then the 
 
 ## Ideas loved in independent players (checked against our rules)
 
-- [ ] Skip a music video's non-music parts (intros, skits, outros) from SponsorBlock's community segments
+- [x] Skip a music video's non-music parts (intros, skits, outros) from SponsorBlock's community segments
       ("music_offtopic"; its public API, privacy row first). YouTube Music desktop's most used plugin.
-- [ ] Skip silences at the start and end of songs (local: measured; YouTube: from the live meter).
-- [ ] Precise volume: mouse wheel on the player bar, 1 % steps, a volume number shown; per-source volume memory.
+      Done 2026-10-31, off by default (a new third party gets a hash prefix per video: the user opts in; flip the default
+      if wanted). Limit: only the music_offtopic category; no vote or lock filtering of segments (the API gives none we use).
+- [x] Skip silences at the start and end of songs (local: measured; YouTube: from the live meter).
+      Done 2026-10-31, off by default. Limits: YouTube's start is learned (the first play of a video can't know where its
+      music begins; the next play seeks once); a trimmed local end hands over through a normal next (no gapless chain
+      across it); only the first 4 files of a run are measured ahead.
+- [x] Precise volume: mouse wheel on the player bar, 1 % steps, a volume number shown; per-source volume memory.
+      Done 2026-10-31 (wheel on the bar, full screen controls, sidebar and floating mini players; Shift 5 %; Ctrl+Up / Down
+      already rebindable). Not done: a perceptual (dB) curve (it would make every saved volume louder or quieter; local and
+      YouTube stay level because both are linear), and per-source volume memory (needs its own setting and a switch
+      rule: its own line if wanted).
 - [ ] Word-by-word lyrics when the source has them (enhanced LRC), background vocals apart, Apple-style animated lines
       (Cider, Spicetify's Beautiful Lyrics).
 - [ ] Sweet fades (Plexamp): crossfade length picked per pair from the songs' ends (loudness, silence, tempo).
