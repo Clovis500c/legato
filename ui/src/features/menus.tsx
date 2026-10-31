@@ -11,6 +11,7 @@ import {
   CopySimple,
   Disc,
   DownloadSimple,
+  ChartBar,
   Eye,
   EyeSlash,
   MusicNotesSimple,
@@ -57,7 +58,7 @@ import { api, playlistKey, type Edit, type LibraryPlaylist, type PluginInfo, typ
 import { bigTrackArt } from '../shared/art'
 import { loadFit } from '../shared/artfit'
 import { fileName } from '../shared/format'
-import { COVER_ORDERS, type PlaylistCover } from '../shared/theme/theme'
+import { COVER_ORDERS, VISUALIZER_STYLES, type PlaylistCover } from '../shared/theme/theme'
 import type { MenuEntry } from '../shared/ui/ContextMenu'
 import { SourceIcon } from '../shared/ui/SourceIcon'
 import type { Addon } from './addons/registry'
@@ -75,6 +76,8 @@ import { isRemote, nowTrack, remoteTrack, usePlayer } from './player/store'
 import { startRadio } from './player/radio'
 import { sleepMenu } from './player/sleep'
 import { closeKaraoke, nowFix, nudgeLyrics, toggleKaraoke } from './player/karaokeMode'
+import { canVizFull, toggleVizFull, useVizFull } from './player/vizFull'
+import { VISUALIZER_LABELS } from './player/vizLooks'
 import { msg, tr, trn } from '../shared/i18n/i18n'
 import { ask, askText } from '../shared/ui/Ask'
 
@@ -624,6 +627,20 @@ export function playerMenu(): MenuEntry[] {
     now.page && { label: tr('Listen on Apple Music'), icon: <ArrowSquareOut size={16} />, onSelect: () => openUrl(now.page!).catch(fail) },
     now.path && { label: tr('Show in folder'), icon: <FolderOpen size={16} />, onSelect: () => revealItemInDir(now.path!).catch(fail) },
     ...pluginItems('player', { trackId: t?.id ?? null, title: now.title, artist: now.artist }),
+  ]
+}
+
+/** The visualizer (the strip under the cover, its full screen): the look, full screen. */
+export function vizMenu(): MenuEntry[] {
+  const look = useSettings.getState().settings.visualizerStyle
+  const open = useVizFull.getState().open
+  return [
+    {
+      label: tr('Visualizer style'),
+      icon: <ChartBar size={16} />,
+      items: VISUALIZER_STYLES.map((v) => ({ label: tr(VISUALIZER_LABELS[v]), checked: look === v, onSelect: () => useSettings.getState().update({ visualizerStyle: v }) })),
+    },
+    { label: open ? tr('Leave full screen') : tr('Full screen'), icon: <ArrowsOutSimple size={16} />, disabled: !open && !canVizFull(), onSelect: toggleVizFull },
   ]
 }
 

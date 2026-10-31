@@ -16,13 +16,11 @@ pub struct Live {
     pub target_lufs: f32,
     /// The app fades the song out now: Adaptive Sound holds its gain (the fade is the app's).
     pub ending: bool,
-    /// The visualizer wants the bands (`Levels::bands`; -120 when off, the filters skipped).
-    pub bands: bool,
 }
 
 impl Default for Live {
     fn default() -> Self {
-        Self { adaptive: false, target_lufs: -14.0, ending: false, bands: false }
+        Self { adaptive: false, target_lufs: -14.0, ending: false }
     }
 }
 
@@ -48,9 +46,6 @@ pub struct Levels {
     pub peak: f32,
     /// Gain Adaptive Sound applies, dB (0 when off).
     pub gain: f32,
-    /// Visualizer: dB per band (`spectrum::center`).
-    #[ts(as = "Vec<f32>")]
-    pub bands: [f32; crate::spectrum::BANDS],
 }
 
 #[derive(Debug, Default)]
@@ -131,7 +126,7 @@ impl Control {
 
     /// Nothing plays: the meters fall to rest.
     pub fn quiet(&self) {
-        *self.levels.lock().unwrap() = Levels { fast: -120.0, momentary: -120.0, short: -120.0, peak: 0.0, gain: 0.0, bands: [-120.0; crate::spectrum::BANDS] };
+        *self.levels.lock().unwrap() = Levels { fast: -120.0, momentary: -120.0, short: -120.0, peak: 0.0, gain: 0.0 };
     }
 
     /// Audio thread: Adaptive Sound's gain at the end of the last song (the next one starts there), if readable now.

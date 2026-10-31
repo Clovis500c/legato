@@ -161,8 +161,8 @@ export const COVER_CACHE_MB = [250, 500, 1000, 2000] as const
 /** Mini player resting spots: corners and edge middles (t = top, b = bottom, l = left, r = right). */
 /** Playlist icon: service logo, first song's cover, grid of the first 4, or a picked image. */
 export const COVER_MODES = ['source', 'first', 'grid', 'image'] as const
-/** Visualizer.tsx looks: bars from the bottom, mirrored from the middle, bars with falling peaks, a wave. */
-export const VISUALIZER_STYLES = ['bars', 'mirror', 'peaks', 'wave'] as const
+/** Visualizer looks (VizCanvas.tsx): LED segments with held peaks, bars from the bottom, mirrored from the middle, bars with falling peaks, a wave. */
+export const VISUALIZER_STYLES = ['led', 'bars', 'mirror', 'peaks', 'wave'] as const
 export type VisualizerStyle = (typeof VISUALIZER_STYLES)[number]
 /** Order the cover songs are taken in: the playlist's own, or a library sort. */
 export const COVER_ORDERS = ['playlist', 'recent', 'title', 'artist', 'album', 'duration'] as const
@@ -197,7 +197,7 @@ export interface DiscordSettings {
 }
 
 /** Bumped when defaults change for everyone (saved settings get the new ones once). */
-const DEFAULTS_VERSION = 8
+const DEFAULTS_VERSION = 9
 
 /** Adaptive Sound targets, LUFS: Quiet, Normal (streaming services' usual level), Loud. */
 export const ADAPTIVE_LEVELS = [-20, -14, -11] as const
@@ -334,7 +334,7 @@ export interface Settings {
   adaptiveLevel: AdaptiveLevel
   /** Now Playing's cover moves with the music's loudness. */
   coverPulse: boolean
-  /** Now Playing shows the music as moving bars (16 bands, crates/dsp spectrum.rs). */
+  /** Now Playing shows the music as moving bars (1/6-octave bands, crates/dsp viz.rs). */
   visualizer: boolean
   visualizerStyle: VisualizerStyle
   /** Videos whose song ends before the video (silence, end screen): the next song starts at the song's end (ends.ts). */
@@ -441,7 +441,7 @@ export const DEFAULTS: Settings = {
   adaptiveLevel: -14,
   coverPulse: false,
   visualizer: false,
-  visualizerStyle: 'bars',
+  visualizerStyle: 'led',
   earlyEnds: true,
   skipSilence: false,
   skipNonMusic: false,
@@ -638,7 +638,7 @@ export function sanitize(raw: unknown): Settings {
     adaptiveLevel: ADAPTIVE_LEVELS.includes(r.adaptiveLevel as AdaptiveLevel) ? (r.adaptiveLevel as AdaptiveLevel) : DEFAULTS.adaptiveLevel,
     coverPulse: r.coverPulse === true,
     visualizer: r.visualizer === true,
-    visualizerStyle: pick(r.visualizerStyle, VISUALIZER_STYLES, 'bars'),
+    visualizerStyle: pick(r.visualizerStyle, VISUALIZER_STYLES, DEFAULTS.visualizerStyle),
     earlyEnds: r.earlyEnds !== false,
     skipSilence: r.skipSilence === true,
     skipNonMusic: r.skipNonMusic === true,
@@ -665,6 +665,8 @@ export function sanitize(raw: unknown): Settings {
     ...(saved < 7 && Array.isArray(r.columns) && r.columns.join() === 'album,sources,duration' ? { columns: COLUMNS.filter((c) => c !== 'added') } : {}),
     // v8 (app v2, 2026-10-29): the theme's sky blue, compact rows without covers, square covers, flat tint.
     ...(saved < 8 ? v8(r) : {}),
+    // v9 (visualizer v2, 2026-10-31): the LED look is the new default; the other looks are still there, picks of their own stay.
+    ...(saved < 9 && (r.visualizerStyle ?? 'bars') === 'bars' ? { visualizerStyle: 'led' as const } : {}),
     ...(saved < 6 ? { homeSections: sanitizeHome(r.homeSections).map((x) => (HOME_OFF.includes(x.id) ? { ...x, on: false } : x)) } : {}),
   }
 }

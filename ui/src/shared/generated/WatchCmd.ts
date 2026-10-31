@@ -14,10 +14,6 @@ listen: boolean, adaptive: boolean, targetLufs: number,
  */
 ending: boolean, 
 /**
- * The visualizer wants the bands.
- */
-bands: boolean, 
-/**
  * The 60 Hz visualizer frames wanted (`LiveReport::viz`).
  */
 viz: boolean, 

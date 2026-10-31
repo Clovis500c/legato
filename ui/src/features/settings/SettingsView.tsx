@@ -13,6 +13,7 @@ import { onMenu } from '../../shared/ui/ContextMenu'
 import { curveLabels } from '../player/fade'
 import { usePlayer } from '../player/store'
 import { useLive } from '../player/live'
+import { VISUALIZER_LABELS } from '../player/vizLooks'
 import { SourcesView } from '../sources/SourcesView'
 import { SyncSection } from '../syncmode/SyncSection'
 import { clearRecent } from '../search/recent'
@@ -401,7 +402,7 @@ function SoundGroup() {
               label={tr('Visualizer style')}
               value={s.visualizerStyle}
               onChange={(visualizerStyle) => update({ visualizerStyle })}
-              options={VISUALIZER_STYLES.map((v) => ({ value: v, label: tr({ bars: msg('Bars'), mirror: msg('Mirror'), peaks: msg('Peaks'), wave: msg('Wave') }[v]) }))}
+              options={VISUALIZER_STYLES.map((v) => ({ value: v, label: tr(VISUALIZER_LABELS[v]) }))}
             />
           </Row>
         )}

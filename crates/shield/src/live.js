@@ -332,7 +332,7 @@
   // listen = levels only (cover pulse, early ends): the element plays its own sound, untouched, and this only listens.
   // ending = the app fades the song out (the gain holds); gain = where a new song's gain starts (the app's last song,
   // which may have played in the other embed), null = this frame's own.
-  let settings = { on: false, listen: false, adaptive: false, targetLufs: -14, ending: false, bands: false, viz: false, gain: null }
+  let settings = { on: false, listen: false, adaptive: false, targetLufs: -14, ending: false, viz: false, gain: null }
   let effects = cleanFx(null)
   // { ctx, video, stream, track, src, full, gain, limiter, fx, raw, k, wanted, … } while attached; full = the sound
   // comes out of here (gain, limiter, fx), else they are null.
@@ -555,29 +555,11 @@
     return { ms: sum / g.buf.length, peak }
   }
 
-  // Visualizer bands (crates/dsp spectrum.rs): each bin's power into the nearest of 16 bands (centers 50 · 2^(i·8/15)
-  // Hz), both channels averaged, in dB. +8.2: a sine's power through the analyser's Blackman window and 1/N scale
-  // reads 8.2 dB under the native band-passes. Sent with every report: cheap here (the analysers run anyway).
-  function bands(pair) {
-    const n = pair[0].frequencyBinCount
-    const hz = g.ctx.sampleRate / pair[0].fftSize
-    if (!g.freq) g.freq = new Float32Array(n)
-    const power = new Array(16).fill(0)
-    for (const a of pair) {
-      a.getFloatFrequencyData(g.freq)
-      for (let k = 1; k < n; k++) {
-        const i = Math.round((15 / 8) * Math.log2((k * hz) / 50))
-        if (i >= 0 && i < 16) power[i] += 10 ** (g.freq[k] / 10) / pair.length
-      }
-    }
-    return power.map((p) => (p > 1e-12 ? 10 * Math.log10(p) + 8.2 : -120))
-  }
-
   // viz:begin
   // Visualizer v2 maths, pure (viz.test.ts runs this block). Twin of crates/dsp viz.rs: the same 61 bands of 1/6
   // octave (base 10, 19.95 Hz to 19.95 kHz), the same bin-to-band mapping and dB scale (a sine of amplitude 1 reads
   // 0 dB). Chromium's analyser windows with Blackman and scales its FFT by 1/N: vizNorm undoes both by the window's
-  // energy, as the +8.2 dB of the old bands() did. Frame = 8 bytes (version, band count, 2 reserved, rms L R, peak L R)
+  // energy. Frame = 8 bytes (version, band count, 2 reserved, rms L R, peak L R)
   // + 61 bands L + 61 bands R, every dB value one byte, (dB + 120) * 2.
   const VIZ_N = 4096
   const VIZ_BANDS = 61
@@ -784,7 +766,7 @@
         if (g.leadFrom !== null && g.leadQuiet >= LEAD_S && t - g.leadFrom <= g.leadQuiet + 1) send({ lead: t })
       }
     }
-    send({ levels: { fast, momentary: mom, short, peak: g.peak, gain: g.gainDb, bands: bands(g.raw) } })
+    send({ levels: { fast, momentary: mom, short, peak: g.peak, gain: g.gainDb } })
   }
 
   function apply(next, fx) {
@@ -800,7 +782,7 @@
     }
     const t = Number(next.targetLufs)
     // A start gain waits for its song (the next track): later messages without one keep it.
-    settings = { on: next.on === true, listen: next.listen === true, adaptive: next.adaptive === true, targetLufs: Number.isFinite(t) ? Math.min(-6, Math.max(-30, t)) : -14, ending: next.ending === true, bands: next.bands === true, viz: next.viz === true, gain: num(next.gain, MAX_CUT, MAX_BOOST, settings.gain) }
+    settings = { on: next.on === true, listen: next.listen === true, adaptive: next.adaptive === true, targetLufs: Number.isFinite(t) ? Math.min(-6, Math.max(-30, t)) : -14, ending: next.ending === true, viz: next.viz === true, gain: num(next.gain, MAX_CUT, MAX_BOOST, settings.gain) }
     if (!settings.on) {
       clearInterval(retry)
       retry = 0

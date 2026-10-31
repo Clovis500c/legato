@@ -1596,6 +1596,8 @@ const vi: Record<string, string> = {
   'Karaoke': 'Karaoke',
   'Leave Karaoke (Esc)': 'Thoát Karaoke (Esc)',
   'Karaoke on / off': 'Bật / tắt Karaoke',
+  'LED': 'LED',
+  'Visualizer full screen on / off': 'Trình hiển thị toàn màn hình bật / tắt',
   '← → move the lyrics · Esc leaves': '← → dịch lời bài hát · Esc để thoát',
 }
 

@@ -23,8 +23,4 @@ peak: number,
 /**
  * Gain Adaptive Sound applies, dB (0 when off).
  */
-gain: number, 
-/**
- * Visualizer: dB per band (`spectrum::center`).
- */
-bands: Array<number>, };
+gain: number, };

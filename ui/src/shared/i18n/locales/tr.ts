@@ -1596,6 +1596,8 @@ const tr: Record<string, string> = {
   'Karaoke': 'Karaoke',
   'Leave Karaoke (Esc)': 'Karaokeden çık (Esc)',
   'Karaoke on / off': 'Karaoke açık / kapalı',
+  'LED': 'LED',
+  'Visualizer full screen on / off': 'Görselleştirici tam ekran açık / kapalı',
   '← → move the lyrics · Esc leaves': '← → sözleri kaydır · Esc çıkar',
 }
 

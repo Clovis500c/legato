@@ -1596,6 +1596,8 @@ const zh: Record<string, string> = {
   'Karaoke': '卡拉OK',
   'Leave Karaoke (Esc)': '退出卡拉OK (Esc)',
   'Karaoke on / off': '卡拉OK 开 / 关',
+  'LED': 'LED',
+  'Visualizer full screen on / off': '可视化全屏 开 / 关',
   '← → move the lyrics · Esc leaves': '← → 调整歌词 · Esc 退出',
 }
 

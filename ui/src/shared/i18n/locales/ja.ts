@@ -1596,6 +1596,8 @@ const ja: Record<string, string> = {
   'Karaoke': 'カラオケ',
   'Leave Karaoke (Esc)': 'カラオケを終了 (Esc)',
   'Karaoke on / off': 'カラオケ オン / オフ',
+  'LED': 'LED',
+  'Visualizer full screen on / off': 'ビジュアライザーの全画面 オン / オフ',
   '← → move the lyrics · Esc leaves': '← → 歌詞をずらす · Esc で終了',
 }
 

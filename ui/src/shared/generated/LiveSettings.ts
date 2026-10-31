@@ -15,8 +15,4 @@ targetLufs: number,
 /**
  * The app fades the song out now: Adaptive Sound holds its gain (the fade is the app's).
  */
-ending: boolean, 
-/**
- * The visualizer wants the bands (`Levels::bands`; -120 when off, the filters skipped).
- */
-bands: boolean, };
+ending: boolean, };

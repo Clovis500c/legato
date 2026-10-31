@@ -23,6 +23,7 @@ export type ActionId =
   | 'nowPlaying'
   | 'fullscreen'
   | 'karaoke'
+  | 'vizFull'
   | 'search'
   | 'settings'
   | 'goBack'
@@ -59,6 +60,7 @@ export const ACTIONS: ActionInfo[] = [
   { id: 'nowPlaying', label: msg('Open / close Now Playing'), keys: 'KeyF', global: null }, // F (user's choice 2026-10-23), was Ctrl+P.
   { id: 'fullscreen', label: msg('Full screen on / off'), keys: 'F11', global: null },
   { id: 'karaoke', label: msg('Karaoke on / off'), keys: 'KeyK', global: null },
+  { id: 'vizFull', label: msg('Visualizer full screen on / off'), keys: 'KeyV', global: null },
   { id: 'search', label: msg('Search'), keys: 'Ctrl+KeyK', global: null },
   { id: 'settings', label: msg('Settings'), keys: 'Ctrl+Comma', global: null },
   { id: 'goBack', label: msg('Back'), keys: 'Alt+ArrowLeft', global: null },

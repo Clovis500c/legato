@@ -1596,6 +1596,8 @@ const uk: Record<string, string> = {
   'Karaoke': 'Караоке',
   'Leave Karaoke (Esc)': 'Вийти з караоке (Esc)',
   'Karaoke on / off': 'Караоке увімк. / вимк.',
+  'LED': 'Світлодіоди',
+  'Visualizer full screen on / off': 'Візуалізатор на весь екран увімк. / вимк.',
   '← → move the lyrics · Esc leaves': '← → зсунути текст · Esc — вихід',
 }
 

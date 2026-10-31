@@ -20,6 +20,7 @@ import { volumeWheelRef } from './volume'
 import { pop } from '../../shared/motion'
 import { embedUrl, parseYt, ytPost } from './youtube'
 import { useKaraoke } from './karaokeMode'
+import { useVizFull } from './vizFull'
 import { closeWatch, cropWatch, placeWatch, sendWatch, useWatch, watchUpdate } from './watch'
 import { frameAround } from '../../shared/artbox'
 import { bindLiveFrame, sendLive } from './live'
@@ -52,8 +53,8 @@ function YouTubeFrame({ videoId, tail = false, idle = false }: { videoId: string
   const hidden = useVideoSlot((s) => s.hidden)
   const box = useVideoSlot((s) => s.box)
   const fill = useVideoSlot((s) => s.fill)
-  // Karaoke covers the window: the native watch page would stay above it.
-  const karaoke = useKaraoke((s) => s.open)
+  // Karaoke and the visualizer's screen cover the window: the native watch page would stay above it.
+  const karaoke = useKaraoke((s) => s.open) || useVizFull((s) => s.open)
   // Embed refused this video: YouTube's watch page plays it in a webview over the same place (watch.ts).
   const watch = useWatch((s) => s.video)
   // Bars baked into the video: frame enlarged, only the picture shows.

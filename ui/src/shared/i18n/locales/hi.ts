@@ -1596,6 +1596,8 @@ const hi: Record<string, string> = {
   'Karaoke': 'कराओके',
   'Leave Karaoke (Esc)': 'कराओके से बाहर निकलें (Esc)',
   'Karaoke on / off': 'कराओके चालू / बंद',
+  'LED': 'LED',
+  'Visualizer full screen on / off': 'विज़ुअलाइज़र फ़ुल स्क्रीन चालू / बंद',
   '← → move the lyrics · Esc leaves': '← → बोल खिसकाएँ · Esc से बाहर निकलें',
 }
 

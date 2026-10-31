@@ -1596,6 +1596,8 @@ const ko: Record<string, string> = {
   'Karaoke': '노래방',
   'Leave Karaoke (Esc)': '노래방 나가기 (Esc)',
   'Karaoke on / off': '노래방 켜기 / 끄기',
+  'LED': 'LED',
+  'Visualizer full screen on / off': '비주얼라이저 전체 화면 켜기 / 끄기',
   '← → move the lyrics · Esc leaves': '← → 가사 이동 · Esc로 나가기',
 }
 

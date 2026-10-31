@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { usePlayer } from '../features/player/store'
 import { toggleKaraoke } from '../features/player/karaokeMode'
+import { toggleVizFull, useVizFull } from '../features/player/vizFull'
 import { nudgeVolume } from '../features/player/volume'
 import { api } from '../shared/api'
 import { accelerator, ACTIONS, bindings, comboOf, type ActionId, type Combo } from './keys'
@@ -30,9 +31,11 @@ export const RUN: Record<ActionId, () => void> = {
   mute: () => player().toggleMute(),
   shuffle: () => player().toggleShuffle(),
   repeat: () => player().cycleRepeat(),
-  nowPlaying: () => player().now && player().setFull(!player().full),
+  // The visualizer's screen is on top: Now Playing and karaoke wait for Esc (karaoke's full screen would clash with it).
+  nowPlaying: () => !useVizFull.getState().open && player().now && player().setFull(!player().full),
   fullscreen: () => void toggleFullscreen(),
-  karaoke: toggleKaraoke,
+  karaoke: () => !useVizFull.getState().open && toggleKaraoke(),
+  vizFull: toggleVizFull,
   search: () => document.querySelector<HTMLInputElement>('[data-search]')?.focus(),
   settings: () => useStore.getState().go({ name: 'settings', section: 'shortcuts' }),
   goBack: () => (player().full ? player().setFull(false) : useStore.getState().goBack()),
@@ -91,7 +94,7 @@ export function startShortcuts(): () => void {
     const combo = comboOf(e)
     const id = combo && map.get(combo)
     if (!id || inText(e.target)) return
-    if (e.repeat && (id === 'playPause' || id === 'karaoke')) return
+    if (e.repeat && (id === 'playPause' || id === 'karaoke' || id === 'vizFull')) return
     if (/^(Shift\+)?Arrow/.test(combo) && ownsArrows(e.target)) return
     if (combo === 'Space' && ownsSpace(e.target)) return
     e.preventDefault()

@@ -1596,6 +1596,8 @@ const id: Record<string, string> = {
   'Karaoke': 'Karaoke',
   'Leave Karaoke (Esc)': 'Keluar dari Karaoke (Esc)',
   'Karaoke on / off': 'Karaoke hidup / mati',
+  'LED': 'LED',
+  'Visualizer full screen on / off': 'Visualisasi layar penuh aktif / nonaktif',
   '← → move the lyrics · Esc leaves': '← → geser lirik · Esc untuk keluar',
 }
 

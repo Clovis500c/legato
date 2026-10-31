@@ -2,7 +2,7 @@ import { ArrowsIn, ArrowsOut, CaretDown, CaretLeft, CaretRight, CopySimple, Gear
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { useEffect, useRef, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
-import { AddonsView, AddView, HomeView, Karaoke, MixesView, MixView, preloadHome, SearchView, SettingsView, SmartView, StatsView, Welcome } from './pages'
+import { AddonsView, AddView, HomeView, Karaoke, MixesView, MixView, preloadHome, SearchView, SettingsView, SmartView, StatsView, VizScreen, Welcome } from './pages'
 // Up next running out: similar songs (registers itself with the player).
 import '../features/player/autoplay'
 import { AlbumView, ArtistView } from '../features/library/AlbumArtist'
@@ -16,6 +16,7 @@ import { resumeSession, startSessionSaving } from '../features/player/session'
 import { MiniPlayer } from '../features/player/MiniPlayer'
 import { VolumeHud } from '../features/player/VolumeHud'
 import { useKaraoke } from '../features/player/karaokeMode'
+import { useVizFull } from '../features/player/vizFull'
 import { NowPlaying } from '../features/player/NowPlaying'
 import { useAmbient } from '../features/player/ambient'
 import { trackArt } from '../shared/art'
@@ -216,6 +217,7 @@ export function App() {
   const { view, go, refresh, incoming } = useStore(useShallow((s) => ({ view: s.view, go: s.go, refresh: s.refresh, incoming: s.incoming })))
   const full = usePlayer((s) => s.full)
   const karaoke = useKaraoke((s) => s.open)
+  const vizFull = useVizFull((s) => s.open)
   const tintOn = useSettings((s) => s.settings.appTint)
   const libraryWide = useSettings((s) => s.settings.libraryWide)
   // Re-rendered when the theme, accent or Windows' light / dark change (current() below).
@@ -343,6 +345,11 @@ export function App() {
       {karaoke && (
         <PageBoundary fallback={null}>
           <Karaoke />
+        </PageBoundary>
+      )}
+      {vizFull && (
+        <PageBoundary fallback={null}>
+          <VizScreen />
         </PageBoundary>
       )}
       <Toasts />

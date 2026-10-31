@@ -1596,6 +1596,8 @@ const sv: Record<string, string> = {
   'Karaoke': 'Karaoke',
   'Leave Karaoke (Esc)': 'Lämna karaoke (Esc)',
   'Karaoke on / off': 'Karaoke på / av',
+  'LED': 'LED',
+  'Visualizer full screen on / off': 'Visualiserare i helskärm på / av',
   '← → move the lyrics · Esc leaves': '← → flytta texten · Esc avslutar',
 }
 
