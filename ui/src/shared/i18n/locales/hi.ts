@@ -1588,6 +1588,11 @@ const hi: Record<string, string> = {
   'Skip silence': 'खामोशी छोड़ें',
   'Songs start on the music and end where it ends, when they open or close with more than a moment of silence. Off by default: some silences are meant (hidden tracks, gapless albums)': 'जब गाने की शुरुआत या अंत में पल भर से ज़्यादा खामोशी हो, तो गाना संगीत से शुरू होता है और जहाँ संगीत खत्म होता है वहीं खत्म होता है। डिफ़ॉल्ट रूप से बंद: कुछ खामोशियाँ जानबूझकर होती हैं (छिपे हुए ट्रैक, बिना अंतराल वाले एल्बम)',
   'silence quiet start end intro outro gap trim skip hidden track gapless': 'खामोशी शांत शुरुआत अंत इंट्रो आउट्रो अंतराल काटना छोड़ें छिपा ट्रैक',
+  'Skip non-music parts': 'संगीत-रहित हिस्से छोड़ें',
+  'Intros, skits and talking in music videos are skipped, from SponsorBlock’s community marks. For each YouTube video, 4 characters of its id’s hash go to sponsor.ajay.app, never the id. Off by default': 'म्यूज़िक वीडियो के इंट्रो, स्किट और बातचीत SponsorBlock समुदाय के निशानों के आधार पर छोड़ दिए जाते हैं। हर YouTube वीडियो के लिए उसकी आईडी के हैश के 4 अक्षर sponsor.ajay.app को जाते हैं, आईडी कभी नहीं। डिफ़ॉल्ट रूप से बंद',
+  'sponsorblock intro skit talking outro music video skip segments community': 'sponsorblock इंट्रो स्किट बातचीत आउट्रो म्यूज़िक वीडियो छोड़ें हिस्से समुदाय',
+  'Skipped a non-music part ({time})': 'संगीत-रहित हिस्सा छोड़ा गया ({time})',
+  'Non-music part': 'संगीत-रहित हिस्सा',
 }
 
 export default hi

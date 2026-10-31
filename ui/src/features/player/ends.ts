@@ -28,7 +28,8 @@ export function offerEnd(key: string, seconds: number | null | undefined) {
 
 /** Where the song of `video` (or `local:<path>`) ends in its `durationMs`, ms: its learned end, else the whole. */
 export function songEnd(video: string | undefined, durationMs: number): number {
-  const s = video ? (offered.get(video) ?? known[video]) : undefined
+  // The engine's / SponsorBlock's end and the learned one: the earlier wins.
+  const s = video ? [offered.get(video), known[video]].reduce<number | undefined>((a, b) => (a === undefined || (b !== undefined && b < a) ? b : a), undefined) : undefined
   return s !== undefined && s * 1000 < durationMs ? s * 1000 : durationMs
 }
 

@@ -119,6 +119,17 @@ Status on 2026-10-16. YouTube, local files and Apple Music previews: done and te
   stopped. The end is kept per video (`player/ends.ts`, localStorage like `still.ts`, 3000 videos) and becomes the
   song's length on later plays: fades, overlap, Adaptive Sound's hold, times shown. Limit: 2 s of silence then a final
   part within the last 25 s ends at the silence. Local files: see Skip silence below.
+- Skip non-music parts (2026-10-31, Settings › Playback, off by default: a new third party, so the user opts in).
+  SponsorBlock's community segments, category `music_offtopic`, action `skip` only. `crates/connectors/src/sponsorblock.rs`:
+  `GET sponsor.ajay.app/api/skipSegments/{first 4 hex of the id's SHA-256}`, the answer holds a dozen videos and is
+  filtered by the full id here, so the id never leaves the PC (4 s timeout; 404 = none; parts under a second dropped).
+  `sponsor_segments` (`src-tauri/src/sponsor.rs`) caches per video in SQLite `sponsor`, the empty answer too, a week.
+  The store (`player/store.ts` `skipPart`, rules in `player/sponsor.ts`) seeks past a part the play just reached with the
+  official player's `seekTo`, once per part and play: a seek back into it stays there, a resume inside it never skips,
+  data late by a few seconds still catches an intro. Notice "Skipped a non-music part (0:24) · Undo": Undo seeks to the
+  part's start and the video is left alone from then on (localStorage `sponsor-undone`). Marks under the progress bar
+  (`PartMarks`). A last part running to the video's end is where the music ends: offered to `ends.ts`, so the fade, the
+  overlap and the next song start there. A failure or no answer: no skip, the song never waits for it.
 - Driven by `postMessage`, the protocol `iframe_api` uses internally (`listening`, `command`, `infoDelivery`, `onError`).
   We don't load `iframe_api`: a remote script in the app's origin would get access to Tauri IPC. `infoDelivery` sends
   what changed only: a video's `duration` comes once, as it loads (8 of 148 reports, measured 2026-10-30), so the store

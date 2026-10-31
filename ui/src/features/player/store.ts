@@ -7,6 +7,8 @@ import { endListen, progress, startListen } from './listens'
 import { demoGain, demoLength, fadeGain, NO_FADE, overlapDue, PICK_IN_S, type Fade } from './fade'
 import { insertAt, keepQueued, moveInOrder, moveToSlot, nextIndex, playOrder, queued, tooLong, type Repeat } from './queue'
 import { vias, type Via } from './sources'
+import { formatDuration } from '../../shared/format'
+import { endCut, isUndone, rememberUndone, toSkip, useSponsor } from './sponsor'
 import { offerEnd, rememberEnd, rememberStart, songEnd, songStart } from './ends'
 import { bindLiveFrame, onEndHeard, onLeadHeard } from './live'
 import { closeWatch, openWatch, sendWatch, watching } from './watch'
@@ -55,6 +57,8 @@ interface PlayerState {
   earlyEnds: boolean
   /** Settings › Playback › Skip silence: songs start on the music and end where it ends (ends.ts, engine for local files). */
   skipSilence: boolean
+  /** Settings › Playback › Skip non-music parts: SponsorBlock's marked intros, skits, outros (sponsor.ts). */
+  skipNonMusic: boolean
   /** Fade in of the current track, s: full after the previous one, short after a skip (if asked), 0 = none. */
   fadeIn: number
   /** Where the current item started (resume), ms. */
@@ -378,6 +382,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
   skipLong: 0,
   earlyEnds: true,
   skipSilence: false,
+  skipNonMusic: false,
   fadeIn: 0,
   startAt: 0,
   playId: 0,
@@ -468,6 +473,8 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     const start = how === 'preview' ? 0 : from
     set({ index, playId: get().playId + 1, playing: !hold, hold, positionMs: start, startAt: start, durationMs: t.durationMs, upcoming: [], tail: how === 'youtube' ? stopTail(get().tail) : null, fadeIn: auto ? get().fade.in : get().fade.skip ? Math.min(get().fade.in, PICK_IN_S) : 0 })
     sent = -1
+    useSponsor.setState({ video: undefined, segs: [] })
+    parts = { playId: get().playId, prev: start / 1000, done: new Set() }
 
     if (how === 'youtube') {
       expect = null
@@ -483,6 +490,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
       } else videoMs = 0
       ytFresh = true
       set({ now: { ...base, youtubeId: video } })
+      if (get().skipNonMusic && !isUndone(video)) loadParts(video, get().playId)
       // Fade in starts silent: volume set before the embed loads the next video (it keeps the last one).
       get().applyVolume(true)
       // Refused by the embed before: its watch page at once.
@@ -695,11 +703,14 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     }
     // The song's own end (learned early end) is the length everywhere: fades, overlap, times shown.
     if (u.duration) videoMs = u.duration * 1000
-    const songMs = videoMs && get().earlyEnds ? songEnd(now?.youtubeId, videoMs) : videoMs
+    // A last part running to the video's end (an outro) is where the music ends, as a learned early end is.
+    const cut = get().skipNonMusic && now?.youtubeId && !isUndone(now.youtubeId) && videoMs ? endCut(partsOf(now.youtubeId), videoMs / 1000) : null
+    if (now?.youtubeId) offerEnd(now.youtubeId, cut)
+    const songMs = videoMs && (get().earlyEnds || cut) ? songEnd(now?.youtubeId, videoMs) : videoMs
     set({
       ...(u.state !== undefined && u.state !== 3 && { playing: u.state === 1 }),
       ...(u.time !== undefined && { positionMs: u.time * 1000 }),
-      ...(u.duration && { durationMs: songMs }),
+      ...((u.duration || cut) && { durationMs: songMs }),
     })
     if (u.time !== undefined) {
       // Skip silence: this video's music starts later (learned by live.js): one seek past it, once per play, from the
@@ -712,6 +723,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
         time = lead
         set({ positionMs: lead * 1000 })
       }
+      skipPart(time)
       progress(time * 1000, videoMs || undefined)
       get().applyVolume()
       overlap()
@@ -824,6 +836,49 @@ export function tailVolume(u: YtUpdate): number | undefined {
 usePlayer.subscribe((s, prev) => {
   if (s.now?.via === 'youtube' && (s.playId !== prev.playId || s.now.youtubeId !== prev.now?.youtubeId)) watchForStuck(s.playId)
 })
+
+// SponsorBlock parts of the playing video (sponsor.ts): what this play has heard and skipped. A seek back into a part
+// already skipped stays there (done); a play that began inside one (a resume) never skips it.
+let parts = { playId: -1, prev: 0, done: new Set<number>() }
+const partsOf = (video: string) => (useSponsor.getState().video === video ? useSponsor.getState().segs : [])
+
+/** Asks for the parts of a video (cached in Rust, a week). A failure or a slow answer: no skip, the song plays on. */
+function loadParts(video: string, playId: number) {
+  void api
+    .sponsorSegments(video)
+    .then((list) => {
+      if (usePlayer.getState().playId !== playId || !usePlayer.getState().skipNonMusic) return
+      useSponsor.setState({ video, segs: list.map((s) => ({ startS: s.startS, endS: s.endS })) })
+    })
+    .catch(() => {})
+}
+
+/** The time of the playing video was heard: jump over the part playing just reached, with a notice that can undo it. */
+function skipPart(time: number) {
+  const p = usePlayer.getState()
+  const video = p.now?.youtubeId
+  if (parts.playId !== p.playId) parts = { playId: p.playId, prev: p.startAt / 1000, done: new Set() }
+  const prev = parts.prev
+  parts.prev = time
+  if (!p.skipNonMusic || !video || isUndone(video)) return
+  const segs = partsOf(video)
+  const i = toSkip(segs, time, prev, p.startAt / 1000, parts.done)
+  if (i < 0) return
+  parts.done.add(i)
+  const { startS, endS } = segs[i]
+  yt('seekTo', endS, true)
+  parts.prev = endS
+  useStore.getState().notify(tr('Skipped a non-music part ({time})', { time: formatDuration((endS - startS) * 1000) }), {
+    action: {
+      label: tr('Undo'),
+      run: () => {
+        // Back to where the part starts, and this video is left alone from now on.
+        rememberUndone(video)
+        if (usePlayer.getState().now?.youtubeId === video) yt('seekTo', startS, true)
+      },
+    },
+  })
+}
 
 // Play (playId) whose silent start was skipped: one seek per play, never a loop.
 let skipLeadId = -1

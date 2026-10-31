@@ -6,6 +6,7 @@
 //   GET  /itunes/lookup      Apple's lookup                   the album of a pasted Apple link, else no result
 //   GET  /suggest            YouTube's search suggestions     built from the typed text
 //   GET  /lrclib/...         lyrics                           not found
+//   GET  /sponsorblock/...   non-music parts (off by default)  none
 //   GET  /deezer/playlist/<id>[/tracks]  a pasted Deezer playlist   e2e/fixtures/deezer-playlist*.json
 // The song searches answer by the typed text. One song of the pasted Deezer playlist and one of the pasted Apple album
 // have a YouTube version (a second late, so the walk sees the import's progress toast), the other of each has none: "1 of 2
@@ -79,13 +80,14 @@ export function answer(method, pathname, query, body = null) {
     return typeof out === 'string' ? { status: 200, body: out, delay: 0 } : { status: 200, delay: 0, ...out }
   }
   // LRCLIB says "not found" with a 404 and this body.
+  if (method === 'GET' && pathname.startsWith('/sponsorblock/')) return { status: 404, delay: 0, body: 'Not Found' }
   if (method === 'GET' && pathname.startsWith('/lrclib/')) return { status: 404, delay: 0, body: JSON.stringify({ statusCode: 404, name: 'NotFound', message: 'Failed to find specified track' }) }
   return { status: 404, delay: 0, body: JSON.stringify({ error: `the smoke test's mock has no ${method} ${pathname}` }) }
 }
 
 /** Is this one of the calls the mock knows? */
 export function known(method, pathname) {
-  return `${method} ${pathname}` in ROUTES || (method === 'GET' && pathname.startsWith('/lrclib/'))
+  return `${method} ${pathname}` in ROUTES || (method === 'GET' && (pathname.startsWith('/lrclib/') || pathname.startsWith('/sponsorblock/')))
 }
 
 /** Starts the server on a free loopback port. `requests` lists what it got, in order: { method, path, query, body }. */

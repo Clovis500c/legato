@@ -341,6 +341,8 @@ export interface Settings {
   earlyEnds: boolean
   /** Songs start on the music and end where it ends: silence at the start and end skipped (local: measured; YouTube: learned). */
   skipSilence: boolean
+  /** Music videos: intros, skits and outros marked by SponsorBlock's community skipped (a hash prefix of each video id goes to sponsor.ajay.app). */
+  skipNonMusic: boolean
   /** YouTube's sound may go through the processing above (off: untouched, features work on local files only). */
   liveYoutube: boolean
   /** Voice search agreed to (Windows' online speech recognition: the voice goes to Microsoft while the mic listens). */
@@ -442,6 +444,7 @@ export const DEFAULTS: Settings = {
   visualizerStyle: 'bars',
   earlyEnds: true,
   skipSilence: false,
+  skipNonMusic: false,
   liveYoutube: true,
   voiceSearch: false,
   autoplay: true,
@@ -638,6 +641,7 @@ export function sanitize(raw: unknown): Settings {
     visualizerStyle: pick(r.visualizerStyle, VISUALIZER_STYLES, 'bars'),
     earlyEnds: r.earlyEnds !== false,
     skipSilence: r.skipSilence === true,
+    skipNonMusic: r.skipNonMusic === true,
     liveYoutube: typeof r.liveYoutube === 'boolean' ? r.liveYoutube : DEFAULTS.liveYoutube,
     voiceSearch: r.voiceSearch === true,
     autoplay: r.autoplay !== false,

@@ -544,6 +544,9 @@ function PlaybackSection() {
           <Row setting="skipSilence" label={msg('Skip silence')} sub={tr('Songs start on the music and end where it ends, when they open or close with more than a moment of silence. Off by default: some silences are meant (hidden tracks, gapless albums)')}>
             <Toggle label={tr('Skip silence')} checked={s.skipSilence} onChange={(skipSilence) => update({ skipSilence })} />
           </Row>
+          <Row setting="skipNonMusic" label={msg('Skip non-music parts')} sub={tr('Intros, skits and talking in music videos are skipped, from SponsorBlock’s community marks. For each YouTube video, 4 characters of its id’s hash go to sponsor.ajay.app, never the id. Off by default')}>
+            <Toggle label={tr('Skip non-music parts')} checked={s.skipNonMusic} onChange={(skipNonMusic) => update({ skipNonMusic })} />
+          </Row>
         </div>
         {s.fade.advanced && <FadeEditor />}
       </Group>

@@ -1588,6 +1588,11 @@ const ru: Record<string, string> = {
   'Skip silence': 'Пропускать тишину',
   'Songs start on the music and end where it ends, when they open or close with more than a moment of silence. Off by default: some silences are meant (hidden tracks, gapless albums)': 'Песни начинаются с музыки и заканчиваются там, где она кончается, если в начале или в конце больше мгновения тишины. По умолчанию выключено: часть тишины задумана (скрытые треки, альбомы без пауз)',
   'silence quiet start end intro outro gap trim skip hidden track gapless': 'тишина тихо начало конец интро аутро пауза обрезать пропустить скрытый трек без пауз',
+  'Skip non-music parts': 'Пропускать немузыкальные части',
+  'Intros, skits and talking in music videos are skipped, from SponsorBlock’s community marks. For each YouTube video, 4 characters of its id’s hash go to sponsor.ajay.app, never the id. Off by default': 'Вступления, скетчи и разговоры в музыкальных клипах пропускаются по отметкам сообщества SponsorBlock. Для каждого видео YouTube 4 символа хеша его идентификатора уходят на sponsor.ajay.app, сам идентификатор — никогда. По умолчанию выключено',
+  'sponsorblock intro skit talking outro music video skip segments community': 'sponsorblock интро скетч разговор аутро клип пропустить сегменты сообщество',
+  'Skipped a non-music part ({time})': 'Пропущена немузыкальная часть ({time})',
+  'Non-music part': 'Немузыкальная часть',
 }
 
 export default ru

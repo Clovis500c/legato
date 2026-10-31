@@ -1588,6 +1588,11 @@ const id: Record<string, string> = {
   'Skip silence': 'Lewati hening',
   'Songs start on the music and end where it ends, when they open or close with more than a moment of silence. Off by default: some silences are meant (hidden tracks, gapless albums)': 'Lagu dimulai dari musiknya dan berakhir di tempat musik berakhir, jika dibuka atau ditutup dengan hening lebih dari sesaat. Mati secara bawaan: sebagian hening disengaja (lagu tersembunyi, album tanpa jeda)',
   'silence quiet start end intro outro gap trim skip hidden track gapless': 'hening sunyi awal akhir intro outro jeda potong lewati lagu tersembunyi tanpa jeda',
+  'Skip non-music parts': 'Lewati bagian non-musik',
+  'Intros, skits and talking in music videos are skipped, from SponsorBlock’s community marks. For each YouTube video, 4 characters of its id’s hash go to sponsor.ajay.app, never the id. Off by default': 'Intro, sketsa, dan obrolan di video musik dilewati, berdasarkan tanda komunitas SponsorBlock. Untuk tiap video YouTube, 4 karakter hash id-nya dikirim ke sponsor.ajay.app, tidak pernah id-nya. Mati secara bawaan',
+  'sponsorblock intro skit talking outro music video skip segments community': 'sponsorblock intro sketsa obrolan outro video musik lewati segmen komunitas',
+  'Skipped a non-music part ({time})': 'Bagian non-musik dilewati ({time})',
+  'Non-music part': 'Bagian non-musik',
 }
 
 export default id

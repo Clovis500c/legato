@@ -1588,6 +1588,11 @@ const de: Record<string, string> = {
   'Skip silence': 'Stille überspringen',
   'Songs start on the music and end where it ends, when they open or close with more than a moment of silence. Off by default: some silences are meant (hidden tracks, gapless albums)': 'Titel beginnen bei der Musik und enden, wo sie endet, wenn sie mit mehr als einem Moment Stille beginnen oder enden. Standardmäßig aus: manche Stille ist gewollt (versteckte Titel, lückenlose Alben)',
   'silence quiet start end intro outro gap trim skip hidden track gapless': 'Stille leise Anfang Ende Intro Outro Lücke kürzen überspringen versteckter Titel lückenlos',
+  'Skip non-music parts': 'Nicht-musikalische Teile überspringen',
+  'Intros, skits and talking in music videos are skipped, from SponsorBlock’s community marks. For each YouTube video, 4 characters of its id’s hash go to sponsor.ajay.app, never the id. Off by default': 'Intros, Sketche und Gesprochenes in Musikvideos werden übersprungen, nach den Markierungen der SponsorBlock-Community. Pro YouTube-Video gehen 4 Zeichen des Hashs seiner ID an sponsor.ajay.app, nie die ID. Standardmäßig aus',
+  'sponsorblock intro skit talking outro music video skip segments community': 'sponsorblock intro sketch gesprochen outro musikvideo überspringen segmente community',
+  'Skipped a non-music part ({time})': 'Nicht-musikalischen Teil übersprungen ({time})',
+  'Non-music part': 'Nicht-musikalischer Teil',
 }
 
 export default de

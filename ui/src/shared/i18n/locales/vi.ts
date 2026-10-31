@@ -1588,6 +1588,11 @@ const vi: Record<string, string> = {
   'Skip silence': 'Bỏ qua khoảng lặng',
   'Songs start on the music and end where it ends, when they open or close with more than a moment of silence. Off by default: some silences are meant (hidden tracks, gapless albums)': 'Bài hát bắt đầu ở chỗ có nhạc và kết thúc nơi nhạc dứt, khi mở đầu hoặc kết thúc có khoảng lặng dài hơn một chút. Mặc định tắt: có những khoảng lặng là chủ ý (bản ẩn, album liền mạch)',
   'silence quiet start end intro outro gap trim skip hidden track gapless': 'im lặng yên tĩnh đầu cuối intro outro khoảng nghỉ cắt bỏ qua bản ẩn liền mạch',
+  'Skip non-music parts': 'Bỏ qua phần không phải nhạc',
+  'Intros, skits and talking in music videos are skipped, from SponsorBlock’s community marks. For each YouTube video, 4 characters of its id’s hash go to sponsor.ajay.app, never the id. Off by default': 'Phần mở đầu, tiểu phẩm và lời nói trong video nhạc được bỏ qua theo dấu của cộng đồng SponsorBlock. Với mỗi video YouTube, 4 ký tự của mã băm id được gửi tới sponsor.ajay.app, không bao giờ gửi id. Mặc định tắt',
+  'sponsorblock intro skit talking outro music video skip segments community': 'sponsorblock intro tiểu phẩm lời nói outro video nhạc bỏ qua đoạn cộng đồng',
+  'Skipped a non-music part ({time})': 'Đã bỏ qua phần không phải nhạc ({time})',
+  'Non-music part': 'Phần không phải nhạc',
 }
 
 export default vi

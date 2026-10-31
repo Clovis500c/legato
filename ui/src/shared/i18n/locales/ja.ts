@@ -1588,6 +1588,11 @@ const ja: Record<string, string> = {
   'Skip silence': '無音をスキップ',
   'Songs start on the music and end where it ends, when they open or close with more than a moment of silence. Off by default: some silences are meant (hidden tracks, gapless albums)': '曲の冒頭や末尾に少しでも長い無音があるとき、音楽が始まる所から再生し、音楽が終わる所で終えます。初期設定ではオフ：意図された無音もあります（隠しトラック、ギャップレスのアルバム）',
   'silence quiet start end intro outro gap trim skip hidden track gapless': '無音 静か 開始 終了 イントロ アウトロ 間 トリム スキップ 隠しトラック ギャップレス',
+  'Skip non-music parts': '音楽以外の部分をスキップ',
+  'Intros, skits and talking in music videos are skipped, from SponsorBlock’s community marks. For each YouTube video, 4 characters of its id’s hash go to sponsor.ajay.app, never the id. Off by default': 'ミュージックビデオのイントロ、寸劇、トークを、SponsorBlockコミュニティの印をもとにスキップします。YouTube動画ごとに、IDのハッシュの先頭4文字がsponsor.ajay.appに送られます（IDそのものは送られません）。初期設定ではオフ',
+  'sponsorblock intro skit talking outro music video skip segments community': 'sponsorblock イントロ 寸劇 トーク アウトロ ミュージックビデオ スキップ 区間 コミュニティ',
+  'Skipped a non-music part ({time})': '音楽以外の部分をスキップしました（{time}）',
+  'Non-music part': '音楽以外の部分',
 }
 
 export default ja

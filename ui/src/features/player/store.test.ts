@@ -3,7 +3,8 @@ import { useStore } from '../../app/store'
 import type { LibraryTrack } from '../../shared/api'
 import { rememberEnd } from './ends'
 import { NO_FADE } from './fade'
-import { tailVolume, usePlayer } from './store'
+import { useSponsor } from './sponsor'
+import { bindFrame, tailVolume, usePlayer } from './store'
 
 const song = (id: number): LibraryTrack => ({ id, added: 0, addedAt: null, title: `Song ${id}`, artist: 'Artist', album: null, durationMs: null, isrc: null, ids: { youtube: `video${id}` } })
 // No Tauri here: IPC calls fail, other uploads come back empty. A macrotask lets their awaits settle.
@@ -156,5 +157,64 @@ describe('pause while a YouTube video starts', () => {
     usePlayer.getState().onYoutube({ state: 1, time: 3 })
     expect(usePlayer.getState().playing).toBe(true)
     vi.restoreAllMocks()
+  })
+})
+
+// SponsorBlock's marked parts (sponsor.ts); the answer comes from Rust, here it is put in by hand.
+describe('skip non-music parts', () => {
+  const notify = vi.fn()
+  const post = vi.fn()
+  // Seconds the player was told to seek to.
+  const seeks = () => post.mock.calls.flatMap(([m]) => (JSON.parse(m as string).func === 'seekTo' ? [JSON.parse(m as string).args[0] as number] : []))
+  beforeEach(() => {
+    notify.mockClear()
+    post.mockClear()
+    useStore.setState({ notify })
+    bindFrame({ contentWindow: { postMessage: post } } as unknown as HTMLIFrameElement)
+    usePlayer.setState({ repeat: 'off', fade: NO_FADE, skipNonMusic: true })
+  })
+  afterEach(() => {
+    bindFrame(null)
+    usePlayer.setState({ skipNonMusic: false })
+  })
+
+  it('starts a video with a known intro at the music, once, with a notice that undoes it', async () => {
+    usePlayer.getState().playTracks([song(41), song(42)], 0)
+    await settle()
+    useSponsor.setState({ video: 'video41', segs: [{ startS: 0, endS: 24 }] })
+    usePlayer.getState().onYoutube({ state: 1, time: 0.5, duration: 200 })
+    expect(seeks()).toEqual([24])
+    expect(notify).toHaveBeenCalledWith('Skipped a non-music part (0:24)', expect.objectContaining({ action: expect.objectContaining({ label: 'Undo' }) }))
+    // Seeking back into it stays there.
+    usePlayer.getState().onYoutube({ time: 3 })
+    expect(seeks()).toEqual([24])
+    // Undo: back to the part's start, and this video is left alone.
+    notify.mock.calls[0][1].action.run()
+    expect(seeks()).toEqual([24, 0])
+    usePlayer.getState().playTracks([song(41)], 0)
+    await settle()
+    useSponsor.setState({ video: 'video41', segs: [{ startS: 0, endS: 24 }] })
+    post.mockClear()
+    usePlayer.getState().onYoutube({ state: 1, time: 0.5, duration: 200 })
+    expect(seeks()).toEqual([])
+  })
+
+  it('an outro running to the end is where the song ends: the next one starts there', async () => {
+    usePlayer.getState().playTracks([song(43), song(44)], 0)
+    await settle()
+    useSponsor.setState({ video: 'video43', segs: [{ startS: 150, endS: 160 }] })
+    usePlayer.getState().onYoutube({ state: 1, time: 1, duration: 160 })
+    expect(usePlayer.getState().durationMs).toBe(150_000)
+    usePlayer.getState().onYoutube({ time: 150.3 })
+    expect(usePlayer.getState().now?.youtubeId).toBe('video44')
+  })
+
+  it('does nothing with the setting off', async () => {
+    usePlayer.setState({ skipNonMusic: false })
+    usePlayer.getState().playTracks([song(45)], 0)
+    await settle()
+    useSponsor.setState({ video: 'video45', segs: [{ startS: 0, endS: 24 }] })
+    usePlayer.getState().onYoutube({ state: 1, time: 0.5, duration: 200 })
+    expect(seeks()).toEqual([])
   })
 })

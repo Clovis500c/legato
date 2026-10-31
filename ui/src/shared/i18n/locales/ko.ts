@@ -1588,6 +1588,11 @@ const ko: Record<string, string> = {
   'Skip silence': '무음 건너뛰기',
   'Songs start on the music and end where it ends, when they open or close with more than a moment of silence. Off by default: some silences are meant (hidden tracks, gapless albums)': '곡의 처음이나 끝에 잠깐 이상의 무음이 있으면 음악이 시작되는 곳에서 재생하고 음악이 끝나는 곳에서 끝냅니다. 기본값은 꺼짐: 의도된 무음도 있습니다(히든 트랙, 갭리스 앨범)',
   'silence quiet start end intro outro gap trim skip hidden track gapless': '무음 조용 시작 끝 인트로 아웃트로 간격 자르기 건너뛰기 히든 트랙 갭리스',
+  'Skip non-music parts': '음악이 아닌 부분 건너뛰기',
+  'Intros, skits and talking in music videos are skipped, from SponsorBlock’s community marks. For each YouTube video, 4 characters of its id’s hash go to sponsor.ajay.app, never the id. Off by default': '뮤직비디오의 인트로, 콩트, 대화를 SponsorBlock 커뮤니티의 표시에 따라 건너뜁니다. YouTube 영상마다 ID 해시의 4글자가 sponsor.ajay.app으로 전송되며 ID 자체는 보내지 않습니다. 기본값은 꺼짐',
+  'sponsorblock intro skit talking outro music video skip segments community': 'sponsorblock 인트로 콩트 대화 아웃트로 뮤직비디오 건너뛰기 구간 커뮤니티',
+  'Skipped a non-music part ({time})': '음악이 아닌 부분을 건너뛰었습니다({time})',
+  'Non-music part': '음악이 아닌 부분',
 }
 
 export default ko

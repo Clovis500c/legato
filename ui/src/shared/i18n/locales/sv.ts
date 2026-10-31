@@ -1588,6 +1588,11 @@ const sv: Record<string, string> = {
   'Skip silence': 'Hoppa över tystnad',
   'Songs start on the music and end where it ends, when they open or close with more than a moment of silence. Off by default: some silences are meant (hidden tracks, gapless albums)': 'Låtar börjar där musiken börjar och slutar där den slutar, när de inleds eller avslutas med mer än en stunds tystnad. Av som standard: viss tystnad är avsiktlig (dolda spår, album utan luckor)',
   'silence quiet start end intro outro gap trim skip hidden track gapless': 'tystnad tyst början slut intro outro lucka trimma hoppa över dolt spår luckfri',
+  'Skip non-music parts': 'Hoppa över icke-musikaliska delar',
+  'Intros, skits and talking in music videos are skipped, from SponsorBlock’s community marks. For each YouTube video, 4 characters of its id’s hash go to sponsor.ajay.app, never the id. Off by default': 'Intron, sketcher och prat i musikvideor hoppas över, enligt SponsorBlocks community-markeringar. För varje YouTube-video skickas 4 tecken av id:ts hash till sponsor.ajay.app, aldrig id:t. Av som standard',
+  'sponsorblock intro skit talking outro music video skip segments community': 'sponsorblock intro sketch prat outro musikvideo hoppa över segment community',
+  'Skipped a non-music part ({time})': 'Hoppade över en icke-musikalisk del ({time})',
+  'Non-music part': 'Icke-musikalisk del',
 }
 
 export default sv

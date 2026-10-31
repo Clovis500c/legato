@@ -1588,6 +1588,11 @@ const pl: Record<string, string> = {
   'Skip silence': 'Pomijaj ciszę',
   'Songs start on the music and end where it ends, when they open or close with more than a moment of silence. Off by default: some silences are meant (hidden tracks, gapless albums)': 'Utwory zaczynają się od muzyki i kończą tam, gdzie ona, gdy zaczynają się lub kończą dłuższą ciszą. Domyślnie wyłączone: część ciszy jest zamierzona (ukryte utwory, albumy bez przerw)',
   'silence quiet start end intro outro gap trim skip hidden track gapless': 'cisza cichy początek koniec intro outro przerwa przytnij pomiń ukryty utwór bez przerw',
+  'Skip non-music parts': 'Pomijaj fragmenty bez muzyki',
+  'Intros, skits and talking in music videos are skipped, from SponsorBlock’s community marks. For each YouTube video, 4 characters of its id’s hash go to sponsor.ajay.app, never the id. Off by default': 'Intra, skecze i gadanie w teledyskach są pomijane na podstawie oznaczeń społeczności SponsorBlock. Dla każdego filmu z YouTube 4 znaki skrótu jego identyfikatora trafiają do sponsor.ajay.app, nigdy sam identyfikator. Domyślnie wyłączone',
+  'sponsorblock intro skit talking outro music video skip segments community': 'sponsorblock intro skecz gadanie outro teledysk pomiń fragmenty społeczność',
+  'Skipped a non-music part ({time})': 'Pominięto fragment bez muzyki ({time})',
+  'Non-music part': 'Fragment bez muzyki',
 }
 
 export default pl

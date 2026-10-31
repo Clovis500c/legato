@@ -31,6 +31,7 @@ export const SETTINGS_INDEX: SettingEntry[] = [
   { section: 'playback', label: msg('Fade between songs'), keywords: msg('crossfade transition fade out in') },
   { section: 'playback', label: msg('Early endings'), keywords: msg('silence end screen outro video ends early custom end detect') },
   { section: 'playback', label: msg('Skip silence'), keywords: msg('silence quiet start end intro outro gap trim skip hidden track gapless') },
+  { section: 'playback', label: msg('Skip non-music parts'), keywords: msg('sponsorblock intro skit talking outro music video skip segments community') },
   { section: 'appearance', label: msg('Tuner scale'), keywords: msg('progress bar seek') },
   { section: 'appearance', label: msg('Immersive player'), keywords: msg('blur blurred background cover now playing ambient') },
   { section: 'appearance', label: msg('Cover tint'), keywords: msg('ambient background color now playing') },

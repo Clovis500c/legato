@@ -1588,6 +1588,11 @@ const tr: Record<string, string> = {
   'Skip silence': 'Sessizliği atla',
   'Songs start on the music and end where it ends, when they open or close with more than a moment of silence. Off by default: some silences are meant (hidden tracks, gapless albums)': 'Şarkılar, başında veya sonunda bir andan uzun sessizlik varsa müzikle başlar ve müziğin bittiği yerde biter. Varsayılan olarak kapalı: bazı sessizlikler isteyerek konmuştur (gizli parçalar, aralıksız albümler)',
   'silence quiet start end intro outro gap trim skip hidden track gapless': 'sessizlik sessiz başlangıç son giriş çıkış boşluk kırp atla gizli parça aralıksız',
+  'Skip non-music parts': 'Müzik olmayan kısımları atla',
+  'Intros, skits and talking in music videos are skipped, from SponsorBlock’s community marks. For each YouTube video, 4 characters of its id’s hash go to sponsor.ajay.app, never the id. Off by default': 'Müzik videolarındaki girişler, skeçler ve konuşmalar SponsorBlock topluluğunun işaretlerine göre atlanır. Her YouTube videosu için kimliğinin özetinin 4 karakteri sponsor.ajay.app’e gider, kimliğin kendisi asla. Varsayılan olarak kapalı',
+  'sponsorblock intro skit talking outro music video skip segments community': 'sponsorblock giriş skeç konuşma çıkış müzik videosu atla bölümler topluluk',
+  'Skipped a non-music part ({time})': 'Müzik olmayan bir kısım atlandı ({time})',
+  'Non-music part': 'Müzik olmayan kısım',
 }
 
 export default tr

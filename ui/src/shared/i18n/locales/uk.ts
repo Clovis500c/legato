@@ -1588,6 +1588,11 @@ const uk: Record<string, string> = {
   'Skip silence': 'Пропускати тишу',
   'Songs start on the music and end where it ends, when they open or close with more than a moment of silence. Off by default: some silences are meant (hidden tracks, gapless albums)': 'Пісні починаються з музики й закінчуються там, де вона закінчується, якщо на початку чи в кінці більше миті тиші. За замовчуванням вимкнено: частина тиші задумана (приховані треки, альбоми без пауз)',
   'silence quiet start end intro outro gap trim skip hidden track gapless': 'тиша тихо початок кінець інтро аутро пауза обрізати пропустити прихований трек без пауз',
+  'Skip non-music parts': 'Пропускати немузичні частини',
+  'Intros, skits and talking in music videos are skipped, from SponsorBlock’s community marks. For each YouTube video, 4 characters of its id’s hash go to sponsor.ajay.app, never the id. Off by default': 'Вступи, скетчі та розмови в музичних кліпах пропускаються за позначками спільноти SponsorBlock. Для кожного відео YouTube 4 символи хешу його ідентифікатора йдуть на sponsor.ajay.app, сам ідентифікатор — ніколи. За замовчуванням вимкнено',
+  'sponsorblock intro skit talking outro music video skip segments community': 'sponsorblock інтро скетч розмова аутро кліп пропустити сегменти спільнота',
+  'Skipped a non-music part ({time})': 'Пропущено немузичну частину ({time})',
+  'Non-music part': 'Немузична частина',
 }
 
 export default uk

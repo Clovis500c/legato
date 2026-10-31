@@ -1,4 +1,4 @@
-//! Where the network calls of search, lyrics, the Apple lookups and pasted Deezer / Apple links go. A normal build: the real hosts, fixed when it is
+//! Where the network calls of search, lyrics, SponsorBlock, the Apple lookups and pasted Deezer / Apple links go. A normal build: the real hosts, fixed when it is
 //! compiled; no variable, setting or file changes them. The smoke test's build (cargo feature `e2e`, `pnpm e2e`) sends
 //! those calls to one loopback server the test starts, named by `LEGATO_E2E_MOCK` (`http://127.0.0.1:<port>`, nothing
 //! else is taken). Without it they go to a dead port: that build never reaches the real hosts.
@@ -13,6 +13,8 @@ pub struct Hosts {
     pub itunes: &'static str,
     pub itunes_lookup: &'static str,
     pub lrclib: &'static str,
+    /// SponsorBlock's segments (hash prefix of a video id, Settings › Playback › Skip non-music parts).
+    pub sponsorblock: &'static str,
     /// Deezer's public API, and its short links (link.deezer.com): pasted playlist / album links.
     pub deezer: &'static str,
     pub deezer_link: &'static str,
@@ -22,8 +24,8 @@ pub struct Hosts {
 
 #[cfg(not(feature = "e2e"))]
 pub fn get() -> &'static Hosts {
-    use music_connectors::{deezer, itunes, lrclib, ytmusic, ytweb};
-    static REAL: Hosts = Hosts { youtube: ytweb::API, ytmusic: ytmusic::API, suggest: ytweb::SUGGEST, itunes: itunes::API, itunes_lookup: itunes::LOOKUP, lrclib: lrclib::API, deezer: deezer::API, deezer_link: deezer::LINK, apple_page: itunes::PAGE };
+    use music_connectors::{deezer, itunes, lrclib, sponsorblock, ytmusic, ytweb};
+    static REAL: Hosts = Hosts { youtube: ytweb::API, ytmusic: ytmusic::API, suggest: ytweb::SUGGEST, itunes: itunes::API, itunes_lookup: itunes::LOOKUP, lrclib: lrclib::API, sponsorblock: sponsorblock::API, deezer: deezer::API, deezer_link: deezer::LINK, apple_page: itunes::PAGE };
     &REAL
 }
 
@@ -34,7 +36,7 @@ pub fn get() -> &'static Hosts {
     MOCK.get_or_init(|| {
         let base = mock_base(std::env::var("LEGATO_E2E_MOCK").ok().as_deref());
         let url = |path: &str| -> &'static str { Box::leak(format!("{base}/{path}").into_boxed_str()) };
-        Hosts { youtube: url("youtube"), ytmusic: url("ytmusic"), suggest: url("suggest"), itunes: url("itunes/search"), itunes_lookup: url("itunes/lookup"), lrclib: url("lrclib"), deezer: url("deezer"), deezer_link: url("deezer-link"), apple_page: url("applepage") }
+        Hosts { youtube: url("youtube"), ytmusic: url("ytmusic"), suggest: url("suggest"), itunes: url("itunes/search"), itunes_lookup: url("itunes/lookup"), lrclib: url("lrclib"), sponsorblock: url("sponsorblock"), deezer: url("deezer"), deezer_link: url("deezer-link"), apple_page: url("applepage") }
     })
 }
 
@@ -54,7 +56,7 @@ fn mock_base(raw: Option<&str>) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use music_connectors::{deezer, itunes, lrclib, ytmusic, ytweb};
+    use music_connectors::{deezer, itunes, lrclib, sponsorblock, ytmusic, ytweb};
 
     #[test]
     fn a_normal_build_talks_to_the_real_hosts() {
@@ -65,8 +67,8 @@ mod tests {
         let h = get();
         assert_eq!((h.youtube, h.ytmusic), (ytweb::API, ytmusic::API));
         assert_eq!((h.suggest, h.itunes, h.itunes_lookup, h.lrclib), (ytweb::SUGGEST, itunes::API, itunes::LOOKUP, lrclib::API));
-        assert_eq!((h.deezer, h.deezer_link, h.apple_page), (deezer::API, deezer::LINK, itunes::PAGE));
-        for url in [h.youtube, h.ytmusic, h.suggest, h.itunes, h.itunes_lookup, h.lrclib, h.deezer, h.deezer_link, h.apple_page] {
+        assert_eq!((h.deezer, h.deezer_link, h.apple_page, h.sponsorblock), (deezer::API, deezer::LINK, itunes::PAGE, sponsorblock::API));
+        for url in [h.youtube, h.ytmusic, h.suggest, h.itunes, h.itunes_lookup, h.lrclib, h.sponsorblock, h.deezer, h.deezer_link, h.apple_page] {
             assert!(url.starts_with("https://"), "{url}");
         }
     }

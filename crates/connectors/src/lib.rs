@@ -10,6 +10,7 @@ pub mod nearby;
 pub mod oauth;
 pub mod spotify;
 pub mod spotify_embed;
+pub mod sponsorblock;
 pub mod youtube;
 pub mod ytmusic;
 pub mod ytweb;

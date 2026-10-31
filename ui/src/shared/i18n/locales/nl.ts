@@ -1588,6 +1588,11 @@ const nl: Record<string, string> = {
   'Skip silence': 'Stilte overslaan',
   'Songs start on the music and end where it ends, when they open or close with more than a moment of silence. Off by default: some silences are meant (hidden tracks, gapless albums)': 'Nummers beginnen bij de muziek en eindigen waar die eindigt, als ze met meer dan even stilte openen of sluiten. Standaard uit: sommige stiltes zijn bedoeld (verborgen nummers, gapless albums)',
   'silence quiet start end intro outro gap trim skip hidden track gapless': 'stilte stil begin einde intro outro pauze trimmen overslaan verborgen nummer gapless',
+  'Skip non-music parts': 'Niet-muzikale delen overslaan',
+  'Intros, skits and talking in music videos are skipped, from SponsorBlock’s community marks. For each YouTube video, 4 characters of its id’s hash go to sponsor.ajay.app, never the id. Off by default': 'Intro’s, sketches en gepraat in muziekvideo’s worden overgeslagen, volgens de markeringen van de SponsorBlock-community. Per YouTube-video gaan 4 tekens van de hash van het id naar sponsor.ajay.app, nooit het id zelf. Standaard uit',
+  'sponsorblock intro skit talking outro music video skip segments community': 'sponsorblock intro sketch gepraat outro muziekvideo overslaan segmenten community',
+  'Skipped a non-music part ({time})': 'Niet-muzikaal deel overgeslagen ({time})',
+  'Non-music part': 'Niet-muzikaal deel',
 }
 
 export default nl

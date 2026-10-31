@@ -52,7 +52,7 @@ CREATE TABLE IF NOT EXISTS settings (
 ";
 
 /// Schema version this code writes (user_version after migrations).
-pub const SCHEMA_VERSION: i64 = 12;
+pub const SCHEMA_VERSION: i64 = 13;
 
 /// The library was made by a newer version of the app.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -415,6 +415,10 @@ impl Library {
         if lib.db.query_row("PRAGMA user_version", [], |r| r.get::<_, i64>(0))? < 12 {
             // v12: measured silence at the start / end of local files, by path and modified time (not synced: a cache).
             lib.db.execute_batch("BEGIN; CREATE TABLE IF NOT EXISTS silence (path TEXT PRIMARY KEY, modified INTEGER NOT NULL, start_ms INTEGER NOT NULL, end_ms INTEGER, total_ms INTEGER NOT NULL); PRAGMA user_version = 12; COMMIT;")?;
+        }
+        if lib.db.query_row("PRAGMA user_version", [], |r| r.get::<_, i64>(0))? < 13 {
+            // v13: SponsorBlock's non-music parts per video (JSON list, the empty one too), with when it was asked (a cache, not synced).
+            lib.db.execute_batch("BEGIN; CREATE TABLE IF NOT EXISTS sponsor (video TEXT PRIMARY KEY, segments TEXT NOT NULL, fetched INTEGER NOT NULL); PRAGMA user_version = 13; COMMIT;")?;
         }
         lib.db.execute_batch(CHANGE_LOG)?;
         // Statements on logged tables compile their triggers too: kept, not rebuilt per call.
@@ -1045,6 +1049,19 @@ impl Library {
         self.db.execute(
             "INSERT INTO silence (path, modified, start_ms, end_ms, total_ms) VALUES (?1, ?2, ?3, ?4, ?5) ON CONFLICT (path) DO UPDATE SET modified = excluded.modified, start_ms = excluded.start_ms, end_ms = excluded.end_ms, total_ms = excluded.total_ms",
             params![path, modified, start_ms as i64, end_ms.map(|e| e as i64), total_ms as i64],
+        )?;
+        Ok(())
+    }
+
+    /// SponsorBlock's answer for a video asked before: Some((JSON list of parts, when)); the empty list is an answer.
+    pub fn cached_sponsor(&self, video: &str) -> Result<Option<(String, i64)>> {
+        Ok(self.db.query_row("SELECT segments, fetched FROM sponsor WHERE video = ?1", [video], |r| Ok((r.get(0)?, r.get(1)?))).optional()?)
+    }
+
+    pub fn save_sponsor(&self, video: &str, segments: &str, fetched: i64) -> Result<()> {
+        self.db.execute(
+            "INSERT INTO sponsor (video, segments, fetched) VALUES (?1, ?2, ?3) ON CONFLICT (video) DO UPDATE SET segments = excluded.segments, fetched = excluded.fetched",
+            params![video, segments, fetched],
         )?;
         Ok(())
     }
@@ -1753,6 +1770,17 @@ mod tests {
         assert_eq!(lib.cached_silence("a.mp3", 6)?, None);
         lib.save_silence("a.mp3", 6, 0, None, 210_000)?;
         assert_eq!(lib.cached_silence("a.mp3", 6)?, Some((0, None, 210_000)));
+        Ok(())
+    }
+
+    #[test]
+    fn sponsor_cache_keeps_the_empty_answer_too() -> Result<()> {
+        let lib = Library::in_memory()?;
+        assert_eq!(lib.cached_sponsor("aaaaaaaaaaa")?, None);
+        lib.save_sponsor("aaaaaaaaaaa", "[]", 10)?;
+        assert_eq!(lib.cached_sponsor("aaaaaaaaaaa")?, Some(("[]".into(), 10)));
+        lib.save_sponsor("aaaaaaaaaaa", r#"[{"startS":0,"endS":12}]"#, 20)?;
+        assert_eq!(lib.cached_sponsor("aaaaaaaaaaa")?.map(|c| c.1), Some(20));
         Ok(())
     }
 

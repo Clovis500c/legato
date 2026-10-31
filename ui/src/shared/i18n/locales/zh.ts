@@ -1588,6 +1588,11 @@ const zh: Record<string, string> = {
   'Skip silence': '跳过静音',
   'Songs start on the music and end where it ends, when they open or close with more than a moment of silence. Off by default: some silences are meant (hidden tracks, gapless albums)': '歌曲开头或结尾有超过片刻的静音时，从音乐开始处播放，在音乐结束处结束。默认关闭：有些静音是有意为之（隐藏曲目、无缝专辑）',
   'silence quiet start end intro outro gap trim skip hidden track gapless': '静音 安静 开头 结尾 前奏 尾奏 间隔 裁剪 跳过 隐藏曲目 无缝',
+  'Skip non-music parts': '跳过非音乐部分',
+  'Intros, skits and talking in music videos are skipped, from SponsorBlock’s community marks. For each YouTube video, 4 characters of its id’s hash go to sponsor.ajay.app, never the id. Off by default': '根据 SponsorBlock 社区的标记，跳过音乐视频中的片头、小品和对白。每个 YouTube 视频会把其 ID 哈希的 4 个字符发送到 sponsor.ajay.app，绝不发送 ID 本身。默认关闭',
+  'sponsorblock intro skit talking outro music video skip segments community': 'sponsorblock 片头 小品 对白 片尾 音乐视频 跳过 片段 社区',
+  'Skipped a non-music part ({time})': '已跳过非音乐部分（{time}）',
+  'Non-music part': '非音乐部分',
 }
 
 export default zh
