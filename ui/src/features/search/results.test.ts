@@ -5,7 +5,7 @@ import { groupAlbums, groupArtists } from '../library/filter'
 import { MAX_RECENT, remember } from './recent'
 import { countBy, errorOf, isSong, isVideo, libraryMatches } from './results'
 
-const t = (id: number, title: string, artist: string, album: string | null): LibraryTrack => ({ id, added: id, title, artist, album, durationMs: null, isrc: null, ids: { youtube: `y${id}` } })
+const t = (id: number, title: string, artist: string, album: string | null): LibraryTrack => ({ id, added: id, addedAt: null, title, artist, album, durationMs: null, isrc: null, ids: { youtube: `y${id}` } })
 const tracks = [t(1, 'Get Lucky', 'Daft Punk', 'Random Access Memories'), t(2, 'Instant Crush', 'Daft Punk', 'Random Access Memories'), t(3, 'Punk Rock Song', 'Bad Religion', 'The Gray Race'), t(4, 'Nightcall', 'Kavinsky', 'OutRun')]
 const pl = (id: number, name: string, trackCount: number): LibraryPlaylist => ({ id, source: 'local', sourceId: String(id), name, trackCount, custom: true, newestFirst: false, orderManual: false })
 const playlists = [pl(1, 'Best of punk', 30), pl(2, 'Punk mix', 3), pl(3, 'Chill', 10)]

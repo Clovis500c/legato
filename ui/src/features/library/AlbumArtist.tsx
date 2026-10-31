@@ -1,4 +1,5 @@
 import { CaretLeft, Clock, DotsThree, Heart, MicrophoneStage, Play, Plus, Radio, SpinnerGap, Waveform } from '@phosphor-icons/react'
+import { artistName } from '../../shared/artistName'
 import { useShallow } from 'zustand/react/shallow'
 import { Fragment, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useStore } from '../../app/store'
@@ -15,9 +16,10 @@ import { Cover } from '../../shared/ui/Cover'
 import { PageHeader } from '../../shared/ui/PageHeader'
 import { CardRow, MediaCard } from '../../shared/ui/Section'
 import { SourceIcon, sourceLabel } from '../../shared/ui/SourceIcon'
-import { YouTubeShelf } from '../home/HomeView'
+import { PageBoundary } from '../../app/PageBoundary'
+import { YouTubeShelf } from '../../app/pages'
 import { trackMenu, tracksMenu } from '../menus'
-import { useMixes } from '../mixes/MixesView'
+import { useMixes } from '../mixes/useMixes'
 import { toggleLike, useLikedIds } from '../player/like'
 import { remoteTrack, usePlayer } from '../player/store'
 import { vias } from '../player/sources'
@@ -103,7 +105,7 @@ function AlbumRow({ list, i, number }: { list: LibraryTrack[]; i: number; number
         )}
       </span>
       <span className="truncate text-sm font-medium">{t.title}</span>
-      <span className="truncate text-sm text-ink-2">{t.artist}</span>
+      <span className="truncate text-sm text-ink-2">{artistName(t.artist)}</span>
       <span className="flex items-center gap-2 text-ink-3">
         {SOURCES.filter((s) => t.ids[s]).map((s) => (
           <SourceIcon key={s} source={s} size={13} />
@@ -170,7 +172,7 @@ function MissingRow({ track, number }: { track: Track; number: number }) {
         </RoundButton>
       </span>
       <span className="truncate text-sm font-medium">{track.title}</span>
-      <span className="truncate text-sm">{track.artist}</span>
+      <span className="truncate text-sm">{artistName(track.artist)}</span>
       <span className="col-span-2 truncate text-xs">{tr('Not in your library')}</span>
       <RoundButton label={tr('Add {title}', { title: track.title })} kind="plain" size="xs" disabled={busy} onClick={() => void add()}>
         <Plus size={14} />
@@ -218,7 +220,7 @@ export function AlbumView({ album, artist }: { album: string; artist: string }) 
           <span className="flex flex-col gap-1.5">
             <span className="flex items-center gap-2">
               <button onClick={toArtist} className="font-semibold text-ink hover:underline">
-                {artist}
+                {artistName(artist)}
               </button>
               {info?.year && <>· {info.year}</>} · {missing ? tr('{n} of {total} songs', { n: shown.length, total: shown.length + missing }) : trn(shown.length, '{n} song', '{n} songs')} · {totalTime(shown)}
             </span>
@@ -275,7 +277,7 @@ export function AlbumView({ album, artist }: { album: string; artist: string }) 
       )}
       {more.length > 0 && (
         <div className="pt-9">
-          <Section title={tr('More by {artist}', { artist })} side={<SideLink label={tr('Go to artist')} onClick={toArtist} />}>
+          <Section title={tr('More by {artist}', { artist: artistName(artist) })} side={<SideLink label={tr('Go to artist')} onClick={toArtist} />}>
             <CardRow>
               {more.map((a) => (
                 <AlbumCard key={a.album} a={a} sub={trn(a.tracks.length, '{n} song', '{n} songs')} />
@@ -359,7 +361,7 @@ export function ArtistView({ artist }: { artist: string }) {
       art={<Cover title={artist} art={photo} size={168} eager className="rounded-full! border-0" />}
       tint={tint}
       kicker={tr('Artist')}
-      title={artist}
+      title={artistName(artist)}
       sub={shown.length ? `${trn(shown.length, '{n} song', '{n} songs')} · ${trn(disco.albums.length + disco.singles.length, '{n} album', '{n} albums')} · ${totalTime(shown)}` : undefined}
       actions={
         <>
@@ -380,7 +382,7 @@ export function ArtistView({ artist }: { artist: string }) {
       <>
         {header}
         <button onClick={() => setAll(null)} className="mb-2 flex w-fit items-center gap-1 text-xs font-semibold text-ink-2 hover:text-ink">
-          <CaretLeft size={11} weight="bold" /> {tr('Back to {artist}', { artist })}
+          <CaretLeft size={11} weight="bold" /> {tr('Back to {artist}', { artist: artistName(artist) })}
         </button>
         {all === 'mine' ? <TrackTable tracks={shown} empty={tr('No songs.')} /> : <TrackTable tracks={everySong ?? []} empty={everySong ? tr('No songs.') : <SpinnerGap size={20} className="animate-spin" />} />}
       </>
@@ -408,7 +410,7 @@ export function ArtistView({ artist }: { artist: string }) {
         >
           <ul className="-mt-1 flex flex-col">
             {ytSongs.map((t, i) => (
-              <SongRow key={t.id} list={ytSongs} i={i} cover extra={<span className="hidden w-56 truncate text-xs text-ink-2 md:block">{t.album}</span>} sub={t.artist} />
+              <SongRow key={t.id} list={ytSongs} i={i} cover extra={<span className="hidden w-56 truncate text-xs text-ink-2 md:block">{t.album}</span>} sub={artistName(t.artist)} />
             ))}
           </ul>
         </Section>
@@ -434,7 +436,7 @@ export function ArtistView({ artist }: { artist: string }) {
           </CardRow>
         </Section>
       )}
-      {yt?.shelves.map((s) => <YouTubeShelf key={s.title} shelf={s} />)}
+      <PageBoundary fallback={null}>{yt?.shelves.map((s) => <YouTubeShelf key={s.title} shelf={s} />)}</PageBoundary>
     </div>
   )
 }

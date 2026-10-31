@@ -44,6 +44,10 @@ export interface GroupView {
 export interface ToastOptions {
   kind?: Toast['kind']
   action?: Toast['action']
+  /** Stays until dismissed: a job still running. */
+  sticky?: boolean
+  /** Says it again in the toast with this id (kept, with its button) instead of adding one; gone by now: nothing. */
+  id?: number
 }
 
 const MAX_TOASTS = 3
@@ -112,12 +116,14 @@ interface State {
   addLink: (url: string) => Promise<void>
   /** Public Spotify playlist / album link: import it and open it. */
   importSpotify: (url: string) => Promise<void>
+  /** A Deezer or Apple Music playlist / album link: a playlist of yours with the songs found on YouTube. */
+  importLink: (url: string, from: 'deezer' | 'apple') => Promise<void>
   /** Add › Import a list of songs. True when a playlist came out of it. */
   importSongList: (name: string, text: string | null, path: string | null) => Promise<boolean>
   /** Settings › General › Notifications, set by app/settings: errors and toasts with a button only; time × scale. */
   toastPrefs: { important: boolean; scale: number }
-  /** Toast for 4 s (with a button 6 s, error 8 s), times toastPrefs.scale. */
-  notify: (text: string, opts?: ToastOptions) => void
+  /** Toast for 4 s (with a button 6 s, error 8 s), times toastPrefs.scale. Returns its id (0: not shown). */
+  notify: (text: string, opts?: ToastOptions) => number
   dismissToast: (id: number) => void
 }
 
@@ -291,16 +297,51 @@ export const useStore = create<State>((set, get) => {
       if (r.truncated) get().notify(tr('Only the first 100 songs came in: connect Spotify in Accounts to import the whole playlist.'), { kind: 'info', action: { label: tr('Connect'), run: () => get().go({ name: 'settings', section: 'sources', wizard: 'spotify' }) } })
       get().go({ name: 'playlist', id: r.playlistId })
     },
-    notify(said, { kind = 'ok', action } = {}) {
+    async importLink(url, from) {
+      const service = from === 'deezer' ? 'Deezer' : 'Apple Music'
+      // Up to 3000 searches: a toast that counts them, with a way out.
+      const cancel = { label: tr('Cancel'), run: () => void api.importLinkStop() }
+      const shown = get().notify(tr('Importing from {service}… (finding each song on YouTube)', { service }), { sticky: true, action: cancel })
+      const off = api.onImportProgress((done, total) => get().notify(tr('Importing from {service}… {done} of {total}', { service, done, total }), { sticky: true, id: shown }))
+      let r: Awaited<ReturnType<typeof api.importLink>> | undefined
+      let canceled = false
+      const ok = await run(async () => {
+        try {
+          r = await api.importLink(url)
+        } catch (e) {
+          if (String(e) !== 'canceled') throw e
+          canceled = true
+        }
+      })
+      void off.then((f) => f())
+      get().dismissToast(shown)
+      if (canceled) return void get().notify(tr('Import canceled'), { kind: 'info' })
+      if (!ok || !r) return
+      if (r.playlistId === null) {
+        get().notify(trn(r.songs, 'None of the {n} song was found on YouTube', 'None of the {n} songs were found on YouTube'), { kind: 'error' })
+        return
+      }
+      get().notify(trn(r.songs, 'Imported “{name}”: {found} of {n} song found', 'Imported “{name}”: {found} of {n} songs found', { name: r.name, found: r.found }))
+      if (r.missing.length) get().notify(tr('Not found: {songs}', { songs: r.missing.slice(0, 3).join(', ') + (r.songs - r.found > 3 ? '…' : '') }), { kind: 'info' })
+      // The link showed (or Apple's page listed) fewer songs than the list has.
+      if (r.total > r.songs) get().notify(tr('Only {n} of the {total} songs came in: the link shows no more.', { n: r.songs, total: r.total }), { kind: 'info' })
+      get().go({ name: 'playlist', id: r.playlistId })
+    },
+    notify(said, { kind = 'ok', action, sticky, id: again } = {}) {
       const { important, scale } = get().toastPrefs
-      if (important && kind !== 'error' && !action) return
+      if (important && kind !== 'error' && !action && again === undefined) return 0
       // Errors often come raw from Rust (notify(String(e))): said in plain words when it's a network failure.
       const text = kind === 'error' ? explain(said).text : said
+      if (again !== undefined) {
+        set({ toasts: get().toasts.map((t) => (t.id === again ? { ...t, text } : t)) })
+        return again
+      }
       const id = ++toastId
       // Same text again: replace, don't stack.
       const rest = get().toasts.filter((t) => t.text !== text)
       set({ toasts: [...rest, { id, text, kind, action }].slice(-MAX_TOASTS) })
-      setTimeout(() => get().dismissToast(id), (kind === 'error' ? 8000 : action ? 6000 : 4000) * scale)
+      if (!sticky) setTimeout(() => get().dismissToast(id), (kind === 'error' ? 8000 : action ? 6000 : 4000) * scale)
+      return id
     },
     dismissToast: (id) => set({ toasts: get().toasts.filter((t) => t.id !== id) }),
     async editPlaylist(edit) {

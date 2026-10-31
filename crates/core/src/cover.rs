@@ -5,7 +5,8 @@ use serde::Deserialize;
 use std::path::{Path, PathBuf};
 
 /// Part of an image, fractions of its size (front end's art box).
-#[derive(Debug, Clone, Copy, PartialEq, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Deserialize, ts_rs::TS)]
+#[ts(export, rename = "Box")]
 pub struct Crop {
     pub x: f64,
     pub y: f64,

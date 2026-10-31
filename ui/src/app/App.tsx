@@ -1,26 +1,22 @@
 import { ArrowsIn, ArrowsOut, CaretDown, CaretLeft, CaretRight, CopySimple, Gear, Minus, PuzzlePiece, Square, Warning, WifiSlash, X } from '@phosphor-icons/react'
 import { getCurrentWindow } from '@tauri-apps/api/window'
-import { lazy, Suspense, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
-import { AddView } from '../features/add/AddView'
-import { SearchView } from '../features/search/SearchView'
+import { AddonsView, AddView, HomeView, Karaoke, MixesView, MixView, preloadHome, SearchView, SettingsView, SmartView, StatsView, VizScreen, Welcome } from './pages'
 // Up next running out: similar songs (registers itself with the player).
 import '../features/player/autoplay'
-import { HomeView } from '../features/home/HomeView'
-import { StatsView } from '../features/stats/StatsView'
-import { SmartView } from '../features/smart/SmartView'
-import { MixesView, MixView } from '../features/mixes/MixesView'
 import { AlbumView, ArtistView } from '../features/library/AlbumArtist'
 import { AlbumsView, ArtistsView, PlaylistView, SongsView } from '../features/library/LibraryView'
 import { appMenu, navMenu } from '../features/menus'
-import { startDiscord } from '../features/addons/discord'
-import { startLastfm } from '../features/sources/lastfm'
 import { startUpdates } from '../features/update/updates'
-import { startSyncMode } from '../features/syncmode/syncmode'
-import { startPlugins } from '../features/plugins/host'
+import { startDeferred } from './deferred'
+import { PageBoundary } from './PageBoundary'
 import { startMedia } from '../features/player/media'
 import { resumeSession, startSessionSaving } from '../features/player/session'
 import { MiniPlayer } from '../features/player/MiniPlayer'
+import { VolumeHud } from '../features/player/VolumeHud'
+import { useKaraoke } from '../features/player/karaokeMode'
+import { useVizFull } from '../features/player/vizFull'
 import { NowPlaying } from '../features/player/NowPlaying'
 import { useAmbient } from '../features/player/ambient'
 import { trackArt } from '../shared/art'
@@ -38,7 +34,6 @@ import { useOnline } from '../shared/online'
 import { region } from '../shared/format'
 import { ContextMenuHost, onMenu } from '../shared/ui/ContextMenu'
 import { DuplicatesHost } from '../features/library/DuplicatesDialog'
-import { Welcome } from '../features/welcome/Welcome'
 import { linkKind, shouldWelcome } from '../features/welcome/firstRun'
 import { Logo } from '../shared/ui/Logo'
 import { searchShift, STAGE_ID } from './searchShift'
@@ -52,9 +47,8 @@ import { Asker } from '../shared/ui/Ask'
 import { EditInfoHost } from '../features/library/EditInfo'
 import { tr, trn, useLang } from '../shared/i18n/i18n'
 
-// Opened now and then: loaded on first visit, not at launch.
-const SettingsView = lazy(() => import('../features/settings/SettingsView').then((m) => ({ default: m.SettingsView })))
-const AddonsView = lazy(() => import('../features/addons/AddonsView').then((m) => ({ default: m.AddonsView })))
+// Pages load on first visit (pages.ts), Home's download starts now, in parallel with the settings and the library.
+preloadHome()
 
 const win = getCurrentWindow()
 // Full contrast: grey window buttons were hard to find (user, 2026-10-23).
@@ -222,6 +216,8 @@ const pageKey = (v: View) => ('id' in v ? `${v.name}:${v.id}` : 'album' in v ? `
 export function App() {
   const { view, go, refresh, incoming } = useStore(useShallow((s) => ({ view: s.view, go: s.go, refresh: s.refresh, incoming: s.incoming })))
   const full = usePlayer((s) => s.full)
+  const karaoke = useKaraoke((s) => s.open)
+  const vizFull = useVizFull((s) => s.open)
   const tintOn = useSettings((s) => s.settings.appTint)
   const libraryWide = useSettings((s) => s.settings.libraryWide)
   // Re-rendered when the theme, accent or Windows' light / dark change (current() below).
@@ -232,6 +228,7 @@ export function App() {
   const appTint = useAmbient(tintOn && nowTrack ? trackArt(nowTrack)[0] : undefined, useSettings.getState().current())
   // First launch: what the app is, what stays on this PC, where the music comes from (features/welcome).
   const [welcome, setWelcome] = useState(false)
+  const [up, setUp] = useState(false)
   // Language changed: everything below renders again in it (nothing remounts: the player keeps playing).
   useLang((s) => s.lang)
   useEffect(() => {
@@ -240,7 +237,10 @@ export function App() {
     // Settings and library both needed: resume flag, and the saved queue's tracks. First launch after an update:
     // everything back as it was (queue, paused or not, screen), whatever the resume settings.
     const updated = api.updateStatus().catch(() => null)
-    void Promise.all([settings, library, updated])
+    const loaded = Promise.all([settings, library, updated])
+    // Up (even when a load failed): the deferred start follows, whatever the resume below does.
+    void loaded.then(() => setUp(true), () => setUp(true))
+    void loaded
       .then(async ([, , u]) => {
         const exact = !!u?.justUpdated
         const s = useSettings.getState().settings
@@ -261,10 +261,7 @@ export function App() {
   useEffect(() => startClosingPlayerOnNavigate(), [])
   useEffect(() => startMedia(), [])
   useEffect(() => startShortcuts(), [])
-  useEffect(() => startDiscord(), [])
-  useEffect(() => startLastfm(), [])
   useEffect(() => startUpdates(), [])
-  useEffect(() => startSyncMode(), [])
   // Watched local folders changed: the library shows it.
   useEffect(() => {
     const off = api.onLocalChanged(() => void useStore.getState().refreshChanged())
@@ -287,9 +284,10 @@ export function App() {
     })
     return () => void off.then((f) => f())
   }, [])
-  useEffect(() => startPlugins(), [])
+  // Settings and library in (or failed), page mounted: the rest starts. Not on a paint: a hidden start has none.
+  useEffect(() => (up ? startDeferred() : undefined), [up])
 
-  // Ctrl+V outside text fields: share code → import, Spotify playlist / album → import, YouTube link → library.
+  // Ctrl+V outside text fields: share code → import, Spotify / Deezer / Apple Music playlist or album → import, YouTube link → library.
   useEffect(() => {
     const onPaste = (e: ClipboardEvent) => {
       // Target may be document itself (nothing focused): not an Element.
@@ -298,6 +296,7 @@ export function App() {
       const kind = linkKind(text)
       if (/^(musicapp:\/\/|MA1:)/i.test(text)) useStore.setState({ incoming: text })
       else if (kind === 'spotify') void useStore.getState().importSpotify(text)
+      else if (kind === 'deezer' || kind === 'apple') void useStore.getState().importLink(text, kind)
       else if (kind === 'youtube') void useStore.getState().addLink(text)
     }
     document.addEventListener('paste', onPaste)
@@ -317,23 +316,23 @@ export function App() {
           {/* New page: a short rise (styles.css .page-in), not when only its details change. Its padding is what a
               page band undoes to reach the pane's edges (PageHeader). */}
           <div key={pageKey(view)} className="page-in flex min-h-0 flex-1 flex-col px-6 pt-5">
-            {view.name === 'home' && <HomeView />}
-            {view.name === 'add' && <AddView />}
-            {view.name === 'search' && <SearchView />}
-            {view.name === 'mixes' && <MixesView />}
-            {view.name === 'stats' && <StatsView />}
-            {view.name === 'smart' && <SmartView id={view.id} />}
-            {view.name === 'mix' && <MixView id={view.id} />}
-            {view.name === 'songs' && <SongsView />}
-            {view.name === 'albums' && <AlbumsView />}
-            {view.name === 'album' && <AlbumView album={view.album} artist={view.artist} />}
-            {view.name === 'artists' && <ArtistsView />}
-            {view.name === 'artist' && <ArtistView artist={view.artist} />}
-            {view.name === 'playlist' && <PlaylistView id={view.id} />}
-            <Suspense>
+            <PageBoundary>
+              {view.name === 'home' && <HomeView />}
+              {view.name === 'add' && <AddView />}
+              {view.name === 'search' && <SearchView />}
+              {view.name === 'mixes' && <MixesView />}
+              {view.name === 'stats' && <StatsView />}
+              {view.name === 'smart' && <SmartView id={view.id} />}
+              {view.name === 'mix' && <MixView id={view.id} />}
+              {view.name === 'songs' && <SongsView />}
+              {view.name === 'albums' && <AlbumsView />}
+              {view.name === 'album' && <AlbumView album={view.album} artist={view.artist} />}
+              {view.name === 'artists' && <ArtistsView />}
+              {view.name === 'artist' && <ArtistView artist={view.artist} />}
+              {view.name === 'playlist' && <PlaylistView id={view.id} />}
               {view.name === 'settings' && <SettingsView section={view.section} />}
               {view.name === 'addons' && <AddonsView />}
-            </Suspense>
+            </PageBoundary>
           </div>
         </main>
         <SidePanel />
@@ -341,14 +340,29 @@ export function App() {
       </div>
       <PlayerBar />
       <MiniPlayer />
+      <VolumeHud />
       {full && <NowPlaying />}
+      {karaoke && (
+        <PageBoundary fallback={null}>
+          <Karaoke />
+        </PageBoundary>
+      )}
+      {vizFull && (
+        <PageBoundary fallback={null}>
+          <VizScreen />
+        </PageBoundary>
+      )}
       <Toasts />
       <Asker />
       <EditInfoHost />
       <ContextMenuHost fallback={appMenu} />
       <DuplicatesHost />
       {incoming && <ImportDialog key={incoming} code={incoming} />}
-      {welcome && <Welcome onClose={() => setWelcome(false)} />}
+      {welcome && (
+        <PageBoundary fallback={null}>
+          <Welcome onClose={() => setWelcome(false)} />
+        </PageBoundary>
+      )}
     </div>
   )
 }

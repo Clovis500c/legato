@@ -1,0 +1,52 @@
+{
+ "data": [
+  {
+   "id": 14235829,
+   "readable": false,
+   "title": "I Follow Rivers (The Magician Remix)",
+   "title_short": "I Follow Rivers",
+   "title_version": "(The Magician Remix)",
+   "isrc": "SEVUM1100103",
+   "link": "https://www.deezer.com/track/14235829",
+   "duration": 279,
+   "type": "track",
+   "artist": {
+    "id": 72503,
+    "name": "Lykke Li",
+    "type": "artist"
+   },
+   "album": {
+    "id": 1306557,
+    "title": "I Follow Rivers (The Magician Remix)",
+    "cover_medium": "https://cdn-images.dzcdn.net/images/cover/a91071665368a95007d4c40288e2074e/250x250-000000-80-0-0.jpg",
+    "cover_big": "https://cdn-images.dzcdn.net/images/cover/a91071665368a95007d4c40288e2074e/500x500-000000-80-0-0.jpg",
+    "type": "album"
+   }
+  },
+  {
+   "id": 61424044,
+   "readable": true,
+   "title": "Can't Hold Us (feat. Ray Dalton)",
+   "title_short": "Can't Hold Us (feat. Ray Dalton)",
+   "title_version": "",
+   "isrc": "GMM881200002",
+   "link": "https://www.deezer.com/track/61424044",
+   "duration": 258,
+   "type": "track",
+   "artist": {
+    "id": 152291,
+    "name": "Macklemore",
+    "type": "artist"
+   },
+   "album": {
+    "id": 6019334,
+    "title": "The Heist",
+    "cover_medium": "https://cdn-images.dzcdn.net/images/cover/238f1c36e8445fd162d1d53b8181ecb5/250x250-000000-80-0-0.jpg",
+    "cover_big": "https://cdn-images.dzcdn.net/images/cover/238f1c36e8445fd162d1d53b8181ecb5/500x500-000000-80-0-0.jpg",
+    "type": "album"
+   }
+  }
+ ],
+ "total": 153,
+ "next": "https://api.deezer.com/playlist/2477790684/tracks?limit=2&index=2"
+}

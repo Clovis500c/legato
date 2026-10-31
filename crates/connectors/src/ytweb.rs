@@ -237,6 +237,17 @@ mod tests {
         }
     }
 
+    /// The smoke test's mock (e2e/mock.mjs) answers with this file: it has to read the way the client expects.
+    #[tokio::test]
+    async fn smoke_test_fixture_reads() {
+        let mut s = Server::new_async().await;
+        s.mock("POST", "/search").match_query(Matcher::Any).with_body(include_str!("../../../e2e/fixtures/youtube-search.json")).create_async().await;
+        let found = YouTubeWeb::with_api(&s.url(), None).search("paper lanterns").await.unwrap();
+        assert_eq!(found.iter().map(|v| (v.track.title.as_str(), v.track.artist.as_str(), v.track.duration_ms)).collect::<Vec<_>>(), [("Paper Lanterns (Official Audio)", "Glass Harbour", Some(201_000)), ("How to fold paper lanterns (tutorial for beginners)", "Crafts With Mo", Some(760_000)), ("Night Bus", "Moss and Stone", Some(178_000))]);
+        // The tutorial is what the results page hides until asked.
+        assert_eq!(found.iter().map(|v| v.musicness()).collect::<Vec<_>>(), [Musicness::Music, Musicness::NotMusic, Musicness::Music]);
+    }
+
     /// Unofficial API: a reshuffled answer gives nothing, never a panic.
     #[test]
     fn parser_survives_unknown_shapes() {

@@ -51,7 +51,8 @@ Status on 2026-10-16. YouTube, local files and Apple Music previews: done and te
 - `tracks.art` holds an https URL; local files' covers are read from their tags on demand (`local::picture`).
 - The UI loads `http://art.localhost/<encoded URL>` or `/local/<track id>` (Tauri `art` URI scheme, `src-tauri/src/art.rs`).
   Rust fetches only from i.ytimg.com, yt3.ggpht.com, *.googleusercontent.com, *.mzstatic.com and i.scdn.co (redirects too),
-  keeps images in `art/` in the app data folder (300 MB, least recently used out first) and sends
+  keeps images in `art/` in the app data folder (500 MB by default, a setting; least recently used out first, on a
+  background thread) with 64 / 256 / 600 px thumbnails cut once (`?s=64`, list covers ask for the smallest that fits) and sends
   `Access-Control-Allow-Origin` so the cover tint can read pixels.
 
 ## Apple Music previews
@@ -117,7 +118,19 @@ Status on 2026-10-16. YouTube, local files and Apple Music previews: done and te
   playing song is over there (paused if nothing follows, so the silence never ends it twice); the overlap's tail is
   stopped. The end is kept per video (`player/ends.ts`, localStorage like `still.ts`, 3000 videos) and becomes the
   song's length on later plays: fades, overlap, Adaptive Sound's hold, times shown. Limit: 2 s of silence then a final
-  part within the last 25 s ends at the silence. Local files: not done (gapless albums, hidden tracks).
+  part within the last 25 s ends at the silence. Local files: see Skip silence below.
+- Skip non-music parts (2026-10-31, Settings › Playback, off by default: a new third party, so the user opts in).
+  SponsorBlock's community segments, category `music_offtopic`, action `skip` only. `crates/connectors/src/sponsorblock.rs`:
+  `GET sponsor.ajay.app/api/skipSegments/{first 4 hex of the id's SHA-256}`, the answer holds a dozen videos and is
+  filtered by the full id here, so the id never leaves the PC (4 s timeout; 404 = none; parts under a second dropped).
+  `sponsor_segments` (`src-tauri/src/sponsor.rs`) caches per video in SQLite `sponsor` (rows older than a month dropped), the empty answer too, a week.
+  The store (`player/store.ts` `skipPart`, rules in `player/sponsor.ts`) seeks past a part the play just reached with the
+  official player's `seekTo`, once per part and play: a seek (back or forward) into it stays there (`landed`: a move of
+  over 4 s between two reports), a resume inside it never skips, data late by a few seconds still catches an intro.
+  A skipped intro or silence moves where the fade in counts from (`fadeFrom` in the store). Notice "Skipped a non-music part (0:24) · Undo": Undo seeks to the
+  part's start and the video is left alone from then on (localStorage `sponsor-undone`). Marks under the progress bar
+  (`PartMarks`). A last part running to the video's end is where the music ends: offered to `ends.ts`, so the fade, the
+  overlap and the next song start there. A failure or no answer: no skip, the song never waits for it.
 - Driven by `postMessage`, the protocol `iframe_api` uses internally (`listening`, `command`, `infoDelivery`, `onError`).
   We don't load `iframe_api`: a remote script in the app's origin would get access to Tauri IPC. `infoDelivery` sends
   what changed only: a video's `duration` comes once, as it loads (8 of 148 reports, measured 2026-10-30), so the store
@@ -167,6 +180,20 @@ We still pin the policy on the iframe: a meta tag or header added later can't br
   the window.
 - Live processing chain on every file: see Live processing below.
 - Limits: no opus; position obtained by polling, not events.
+- Skip silence (2026-10-31, Settings › Playback, off by default: hidden tracks and gapless albums mean their silence).
+  `crates/player/src/silence.rs` measures a file: RMS over 20 ms windows under −60 dBFS is silence; the music starts 50 ms
+  before the first loud window, ends 200 ms after the last; under 0.3 s at the start or 1.5 s at the end is left alone.
+  Measured when a song is about to play, never at scan time: `silence_prepare` (`src-tauri/src/silence.rs`) looks up
+  SQLite `silence` (by path and modified time, `Library::cached_silence`; the newest 20 000 rows kept), else finds the
+  start of the playing file fast (the scan stops at the first loud window, 30 s of decoding at most), tells the engine (`Command::Trims`), and decodes the whole file once in the background for
+  the end (4 files ahead per call, again when the gapless run moves on). Play waits 400 ms for the first scan at most;
+  one that comes later still makes the engine seek past the silence if the song is inside it. The engine seeks past the start when a song
+  begins (also at each gapless hand-over) and reports `trim_end_ms`; the front end offers it to `ends.ts` as
+  `local:<path>`, so the fade and the hand-over to the next song use the same early-end path as a video's, and a
+  song past its end goes to the next one (a normal `step`, so no gapless chain across a trimmed end). Nothing
+  measured (failed, not yet): the song plays as it is. YouTube: `live.js` reports `lead` when the music began after 2 s
+  or more of silence from the video's very start; kept per video (`ends.ts` `song-starts`), the next play seeks there
+  once (never a loop). The first play of a video can't know.
 
 ## Live processing (Adaptive Sound, moving cover; 2026-10-21)
 
@@ -206,6 +233,111 @@ never: downloading, extracting, recording or exporting a platform's audio, or to
   none with reduced motion or Animations off.
 - UI: `player/live.ts` (settings out, levels in, only from what plays now), `liveSync.ts`, `AdaptiveBar.tsx`.
   Settings › Playback › Sound processing; "Process YouTube's sound" turns the YouTube side off.
+- **Visualizer data, 60 Hz** (Visualizer v2 step 1, 2026-10-31; spec `docs/notes/ideas/visualizer.md`). 61 bands of 1/6
+  octave (base 10, 19.95 Hz to 19.95 kHz), left and right, plus left / right rms and peak, in a packed frame: 8 bytes
+  (version 1, band count, 2 reserved, rms L R, peak L R) + 61 bands L + 61 bands R, every dB value one byte, `(dB + 120)
+  · 2` (0.5 dB steps, floor -120). A sine of amplitude 1 reads 0 dB in its band; bands are energy sums (Parseval), so
+  the window does not matter for noise. Bands narrower than 3 bins (under ~320 Hz at 48 kHz) widen to 3 bins around
+  their center: a sine reads right (within 0.5 dB), the neighbours of the lowest bands read nearly as much (the 4096
+  FFT cannot split a 2.4 Hz band; a longer window for the lows is the fix if bass detail ever matters), and noise reads
+  a few dB high there. Both twins have this mapping: pure `BandMap` in `crates/dsp/src/viz.rs`, `vizMap` between
+  `viz:begin` and `viz:end` in `live.js`; `crates/dsp/fixtures/viz.json` is the shared signals with what Rust reads
+  (`UPDATE_VIZ_FIXTURE=1 cargo test -p music-dsp viz_fixture` rewrites it), `crates/shield/src/viz.test.ts` runs the
+  JS block on them through a model of Chromium's analyser (checked once against the real one in WebView2's engine: a
+  sine reads 0.00 dB). Twins agree within 2 dB on the bands that carry sound from 320 Hz up, 4 dB below (Blackman's
+  lobe is wider than Hann's, and sines closer than a lobe interfere differently).
+  - **Native**: hann 4096-point FFT (`realfft`), hop = rate / 60, any sample rate (44.1 and 96 kHz tested). The audio
+    thread only copies: `Processor::process` pushes its output (as heard: after gain and limiter, before the volume
+    knob) into `tap.rs`, a ring of atomics, when `Tap::listen()` has a listener (one relaxed load otherwise; no lock, no
+    allocation). The FFT runs in `src-tauri/src/viz.rs`: a worker thread alive only between `viz_start(frames)` and
+    `viz_stop` (also a page reload, `on_page_load`, and a failed send; a new page claims the stream with `viz_page(id)` at start-up and a `viz_start` still in flight from the page before, carrying the old id, is dropped), `viz::Pump` every ~16.7 ms: a frame when new
+    audio came, one silent frame after ~100 ms of no new audio or digital silence, then nothing (a third of the
+    wake-ups while idle). Frames go over a Tauri `Channel<InvokeResponseBody>` as raw bytes. Where the device hands
+    sound over in bursts the rate is that of the bursts (the e2e build: every 20 ms, 50 a second).
+  - **YouTube**: `live.js` `vizStart` (only while `settings.viz`): a second pair of analysers at fftSize 4096 behind a
+    ChannelSplitter, made then and dropped when it stops, so the chain costs nothing more with no visualizer; the older
+    2048 pair keeps feeding the loudness. A 16 ms timer sends the same frame as base64 text
+    (`{viz}` in the report, by the existing postMessage path, or the watch page's `musicapp-live:` string, checked in
+    `ytwatch.rs`), the silent frame once after ~100 ms of pause or silence.
+  - **Front end**: `features/player/vizFrames.ts`: `viz.subscribe(fn)` gives frames from whichever twin plays, same shape
+    (`vizUnpack.ts`, pure), `viz.latest()` the newest as it came; the first subscriber opens the channel and raises the
+    live wish `viz` (YouTube's 60 Hz), the last one closes both. The renderer below is the subscriber.
+  - **Retired in step 2** (2026-10-31): the 16 band-passes (`spectrum.rs`), `Levels::bands`, `Live::bands`,
+    `live.js` `bands()`, `LiveLevels.bands`, the `bands` wish and the old DOM bars (`bars.ts`).
+- **Visualizer renderer** (Visualizer v2 step 2, 2026-10-31). One canvas drawn by a Web Worker on an `OffscreenCanvas`
+  (Canvas 2D): `VizCanvas.tsx` (page side: makes the canvas and the worker, sizes it with `devicePixelRatio`, reads the
+  theme's text colour where it is drawn, hands the frames over), `vizWorker.ts` (the loop), `vizPaint.ts` (drawing),
+  `vizScene.ts` (bands folded into columns, ballistics, flash limiter), pure and tested: `ledBars.ts` (level up fast and
+  down slowly, peak cap held 0.5 s then falling with gravity), `flash.ts`, `vizDraw.ts` (columns, LED rows, wave path).
+  The worker is Vite's (`new Worker(new URL(...), { type: 'module' })`, its own chunk); the CSP has no `worker-src`, so
+  `default-src 'self'` covers it: nothing changed there (checked in the e2e build, which draws).
+  - **Only while seen**: frames and the worker's loop run when the page is visible (`visibilityState`: the tray hides the
+    webview, `background.rs` `set_visible(false)`), the element intersects the viewport (IntersectionObserver), the
+    caller shows it (not the strip while the full screen is up) and the song plays. A paused song gets one `silence`
+    message: the bars fall, the loop stops at rest (all levels and caps under 0.002); `run: false` stops it outright.
+    No `requestAnimationFrame` loop, no subscription, no engine thread then, so nothing keeps the tray's suspend from
+    coming. Main thread cost: a `postMessage` of two small arrays per frame; the rAF intervals of the page read the same
+    with the strip on and off (4.17 ms mean, 4.3 ms p95, the debug e2e build).
+  - **Looks**: `led` (default; segments, lit ones brighter towards the top, cap segment white; sprites cached per size
+    and colour, a few dozen `drawImage` per frame), and the four older ones ported to the canvas, `bars`, `mirror`,
+    `peaks`, `wave`. One column per band down to 5 CSS px wide, fewer in narrow boxes (each takes the loudest of its
+    bands). Both sides become one by power. Height = -78 dB (nothing) to -10 dB (full). Colour: the theme's text colour
+    with an opacity per shade (never the accent, which is for playback), read from where it is drawn (Now Playing
+    tints it with the cover). A saved `bars` look moves to `led` once (`DEFAULTS_VERSION` 9); the other looks stay.
+  - **Comfort**: `prefers-reduced-motion` or Animations off (`useCalm`): slower attack and release, a cap that sinks
+    gently, one flash a second. Always: `flash.ts` limits the mean brightness of the bars to 3 flashes a second (a flash
+    = a rise and a fall of at least 10 % of the range; past the budget the brightness may not turn back by 10 % until
+    older swings are a second old); the test runs a 10 Hz strobe through it and counts.
+  - **Full screen** (`vizFull.ts`, `VizScreen.tsx`, lazy): V (rebindable, Settings › Shortcuts) or a double click on the
+    strip; right-click: look, full screen; Esc or a double click leaves (`vizFullKeys.ts`, capture on the window, a
+    menu on top keeps its Esc). The window goes full screen through `holdFullscreen` (`app/fullscreen.ts`: gives back only
+    what it took, sees F11 / the title bar leaving it, sessionStorage flag for a reload), the same care as karaoke's.
+    While it is up Now Playing's F and karaoke's K do nothing; the native watch page (a YouTube video that can't be
+    embedded) is hidden, as for karaoke (`PlayerBar.tsx`). Not offered while Spotify plays. Click on the strip still
+    does nothing (it did nothing before).
+- **Radial, VU needles, spectrogram** (Visualizer v2 step 3, 2026-10-31). Same worker, same frames, three more looks
+  in `vizPaint.ts`; their numbers are pure and tested (`vizVu.ts`, `vizSpectro.ts`, the geometry in `vizDraw.ts`).
+  - **Radial**: bars on a ring, mirrored left and right, low notes at the bottom rising to meet at the top
+    (`ringBars`). It is drawn behind a round cover, never the strip: in Now Playing (`Stage`, `NowPlaying.tsx`) the
+    cover turns round and shrinks to 66 % of the stage's square, the canvas fills that square behind it, only when the
+    stage is at least 330 CSS px, the art is square (within 6 %, so not a video frame with bars) and the song is not
+    Spotify's; the strip under the cover then stays away (one worker, not two). Elsewhere the strip shows the bars
+    look. The full screen puts the round cover in the middle of the ring. The kick pulse is `pulse.ts`'s Moving cover
+    (a setting), which scales the cover element and so works with the ring unchanged; there is no pulse of its own.
+  - **VU needles**: two dials side by side, L and R, each a damped spring in closed form (`stepNeedle`: exact at any
+    frame rate), natural frequency 13.52 rad/s and damping 0.813: a step reaches 99 % in 300 ms with 1.24 % overshoot
+    (the VU standard: 300 ms, 1 to 1.5 %; the test steps it at 1 ms and checks both). 0 VU is a sine 14 dB under full
+    scale RMS (the streaming level); the scale runs -20 to +3 VU. The level is the frame's window RMS (header
+    bytes 4-5; a full-scale sine reads -3 dB), not the bands summed: under 300 Hz the bands overlap, so a sum read 5 to 9 dB hot on bass. The peak LED lights at +3 VU and holds 1 s, so it changes at most once a
+    second whatever the sound (under the flash limit, and under calm mode's 1). The dial (arc, marks, red end, numbers
+    when tall enough) is drawn once to a bitmap per size and colour; the needles, hub and LEDs go over it each frame.
+    `dialGeometry` fits the arc to any box: a shallow arc with the pivot below the box in the strip, up to 60 degrees of
+    swing in a tall box. Colours: the theme's ink, and `--color-danger` for the red end and the lit LED. Reduced
+    motion smooths the level (0.45 s) before the spring, so the needles drift. PPM ballistics and skins are not done.
+  - **Spectrogram**: time to the right, the log band axis up (low at the bottom), new column at the right edge. Each
+    drawn frame copies the picture left by the whole device pixels due and paints the new column with `putImageData`
+    (one pixel column, mixed between neighbouring bands, the theme's ink at an opacity that rises with the level, 256 steps, clear at
+    silence, so it sits on any page and takes the theme; no hues of its own). Speed 90 CSS px/s (45 in reduced motion), counted by time, not by frames: the
+    test scrolls 2 s at 24 to 240 Hz and 2x density and gets the same distance within a pixel. The picture is kept
+    across messages but not across a resize or a look change. Canvas 2D is enough: no WebGL.
+  - **Drawn at 30 fps** (`FPS` in `VizCanvas.tsx`, sent with the look; the worker's loop skips a tick that comes less than a
+    period minus 3 ms after the last drawing): at the screen's 60 the bench showed 5 of 16 looks and sizes over the
+    3 % budget (up to +4.6 points of the PC), at 30 all four looks run again were +1 to +1.9. The sound's own frames stay at
+    60 Hz (the newest one is used, and the needles and bars are time-based). Numbers: `docs/performance.md`.
+  - **Silent frames are silence**: the twins send one all -120 frame when the sound stops or a window is all zeros
+    (a gap, a stalled buffer); `frameMessage` (`vizProtocol.ts`) turns it into the worker's `silence`, so the bars fall and
+    the loop stops at rest instead of redrawing a blank canvas. The native levels poll (`live.ts`) runs only for
+    processing or the moving cover (`LiveWish.levels`), not for the visualizer. In the visualizer's full screen, search,
+    settings and back / forward do nothing, the focus is dropped on open, and Esc leaves even from a field behind it.
+  - **Everywhere**: all three obey reduced motion (`useCalm`) and the flash limiter (the spectrogram and the ring read
+    the limited heights; the needles are not brightness). All eight looks are offered in the strip, Settings and the
+    full screen; Radial says where it falls back (the Settings row). The e2e walk draws each, in Now Playing and full
+    screen, and reads a screenshot of both (`target/e2e/shots/10-radial.png` and on).
+  - **The data path in short**: the engine's tap (after gain and limiter, before the volume knob) is copied only while a
+    `viz_start` channel exists; a worker thread runs the FFT and sends 130-byte frames at 60 Hz; the page unpacks them
+    (`vizFrames.ts`) and hands the arrays to the render worker; YouTube's frames come as base64 text from `live.js`.
+    `viz_stats` returns the workers alive and the frames sent so far (a count, nothing of the sound): the e2e walk
+    checks that frames come while a look is open and that none are sent, and no worker lives, after it closes.
 
 ## Live Editor (phase 4.1, 2026-10-21)
 
@@ -289,6 +421,28 @@ via the Web API Player endpoints. Audio comes out of the Spotify app; we only se
   video on normal YouTube (`with_youtube`, 6 at a time), and plays through the YouTube embed. Signed out, YouTube
   Music's public catalog answers (2026-10-30: before, a signed-out import came in with nothing playable). Saved as an
   imported Spotify playlist; importing again refreshes it. Paste the link anywhere (Ctrl+V) or in Add music.
+- **Deezer and Apple Music links** (2026-10-31), same flow, metadata only (no audio, no preview URL kept). The connectors
+  give a name, a cover and the songs (`crates/connectors/src/deezer.rs`, `itunes.rs` `link_list`, shared `LinkList`);
+  `src-tauri/src/links.rs` (`import_link`) matches each song to YouTube with `with_youtube`, like the Spotify import, and
+  puts the ones found in a **new playlist of yours** (not a synced one: a new library source would break the other PCs
+  of Sync Mode that do not know it). The toast says "12 of 13 songs found". While it matches (up to 3000 searches, 6 at a time)
+  the command emits `import-progress` `[searched, total]` after each batch: a toast that stays reads "Importing from Deezer…
+  120 of 300", with a Cancel that calls `import_link_stop` (nothing is made, "Import canceled"). One import runs at a time.
+  - Deezer: `api.deezer.com/playlist|album/{id}` for the name, then `/tracks?index=&limit=100`, page by page, ISRC
+    included. Quota (50 requests / 5 s) comes as HTTP 200 with an `error` object (code 4): wait and try again, 4 times.
+    Private or removed lists answer code 800 or 200. `link.deezer.com/s/…` short links: one redirect, read in Rust and
+    followed only to a deezer.com page. Hosts accepted: `deezer.com`, `www.deezer.com` (with /fr/ and the like),
+    `link.deezer.com`, nothing else.
+  - Apple Music, albums: the iTunes lookup (`entity=song&country=<store of the link>&limit=200`); the store in the link
+    matters, region-only albums come back empty otherwise. Playlists have no keyless API: the public page's
+    `serialized-server-data` JSON (editorial `pl.<hex>` and users' `pl.u-…` alike; around 100 songs at most on the page,
+    the toast says when the list is longer). The page URL is built from the store and the id, never from the pasted
+    text. If the layout changes the error says so in plain words and points to Import a list of songs. Single-song links
+    (`/song/`, `?i=`) are refused in plain words.
+  - Base URLs live in `src-tauri/src/hosts.rs` (the e2e build sends them to a dead port or the mock). Covers: exact hosts
+    `cdn-images.dzcdn.net`, `e-cdns-images.dzcdn.net` and `*.mzstatic.com` in the `art` allowlist.
+  - Fixtures in `e2e/fixtures/` (`deezer-*.json`, `apple-playlist-*.html`, `itunes-lookup-album.json`) were recorded by
+    hand on 2026-10-31 and cut down to the fields the parsers read.
 
 ## Ad shield (`crates/shield`) — user's choice, 2026-10-16
 

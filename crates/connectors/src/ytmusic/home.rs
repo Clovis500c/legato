@@ -12,24 +12,27 @@ use std::collections::{BTreeMap, HashSet};
 /// Shelves after the first page: two more pages at most.
 const MORE_PAGES: usize = 2;
 
-#[derive(Debug, Clone, PartialEq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export)]
 pub struct Shelf {
     pub title: String,
     pub items: Vec<HomeItem>,
 }
 
 /// Home page: its shelves, and the mood chips above them (Relax, Energize, Focus…) that filter it.
-#[derive(Debug, Clone, PartialEq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export, rename = "YtmHome")]
 pub struct Home {
     pub shelves: Vec<Shelf>,
     pub moods: Vec<Mood>,
 }
 
 /// A chip over the home: `params` asks the home filtered to it.
-#[derive(Debug, Clone, PartialEq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export, rename = "YtmMood")]
 pub struct Mood {
     pub title: String,
     pub params: String,
@@ -40,8 +43,9 @@ pub fn valid_mood(params: &str) -> bool {
     !params.is_empty() && params.len() <= 400 && params.bytes().all(|b| b.is_ascii_alphanumeric() || b"-_=%+/".contains(&b))
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export)]
 pub struct HomeItem {
     pub title: String,
     pub subtitle: String,
@@ -54,8 +58,9 @@ pub struct HomeItem {
 
 /// An artist's page: top songs (every song behind `all_songs`, a playlist), then its shelves (albums, singles, videos,
 /// playlists it's featured on, its own playlists).
-#[derive(Debug, Clone, PartialEq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export, rename = "YtmArtist")]
 pub struct Artist {
     pub name: String,
     pub art: Option<String>,
@@ -64,8 +69,9 @@ pub struct Artist {
     pub shelves: Vec<Shelf>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, ts_rs::TS)]
 #[serde(tag = "type", rename_all = "camelCase", rename_all_fields = "camelCase")]
+#[ts(export)]
 pub enum ListRef {
     /// Playlist (VL…) or album (MPRE…) page.
     Browse { id: String },

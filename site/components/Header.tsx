@@ -8,6 +8,7 @@ import { Logo } from './Logo'
 
 const LINKS = [
   ['What it fixes', '#fixes'],
+  ['Why Legato', '#why'],
   ['Features', '#features'],
   ['Privacy', '#privacy'],
   ['FAQ', '#faq'],

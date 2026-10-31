@@ -1,18 +1,18 @@
 //! Music App became Legato (2026-10-29), its identifier `dev.musicapp.desktop` became `app.legato.desktop`: the folders
 //! and keychain entries named after the old one move to the new name, once, before anything opens them (window place,
 //! WebView2 profile with the Google session, library, settings, covers). Only renames: nothing is copied or deleted, so
-//! a move that fails leaves everything where it was.
+//! a move that fails leaves everything where it was. Only the installed app migrates (`identity.rs`): a dev or bench
+//! build has nothing of the old name to take.
 
 use std::io;
 #[cfg(any(windows, test))]
 use std::path::Path;
 
 const OLD: &str = "dev.musicapp.desktop";
-const NEW: &str = "app.legato.desktop";
 
-/// The old identifier of this build's (installed app or dev build: same suffix).
-fn old_id(id: &str) -> Option<String> {
-    id.strip_prefix(NEW).map(|rest| format!("{OLD}{rest}"))
+/// The old identifier of the installed app. None for any other build (dev, bench): they never migrate.
+fn old_id(id: &str) -> Option<&'static str> {
+    crate::identity::is_installed(id).then_some(OLD)
 }
 
 /// Folders first (an error: they're in use, the old app still runs), then keychain entries (best effort).
@@ -22,10 +22,10 @@ pub fn migrate(id: &str) -> io::Result<()> {
     {
         for var in ["APPDATA", "LOCALAPPDATA"] {
             if let Some(base) = std::env::var_os(var).map(std::path::PathBuf::from) {
-                move_dir(&base.join(&old), &base.join(id))?;
+                move_dir(&base.join(old), &base.join(id))?;
             }
         }
-        move_secrets(&old, id);
+        move_secrets(old, id);
     }
     #[cfg(not(windows))]
     let _ = old;
@@ -86,8 +86,10 @@ mod tests {
 
     #[test]
     fn old_names() {
-        assert_eq!(old_id("app.legato.desktop").as_deref(), Some("dev.musicapp.desktop"));
-        assert_eq!(old_id("app.legato.desktop.devbuild").as_deref(), Some("dev.musicapp.desktop.devbuild"));
+        assert_eq!(old_id("app.legato.desktop"), Some("dev.musicapp.desktop"));
+        // Guests never migrate: dev build, bench build, anything else.
+        assert_eq!(old_id("app.legato.desktop.devbuild"), None);
+        assert_eq!(old_id("app.legato.desktop.bench"), None);
         assert_eq!(old_id("com.example.other"), None);
     }
 

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { isLetterboxed } from '../art'
+import { isLetterboxed, sizedArt } from '../art'
 import { cropStyle, cropTo, mayHaveBars } from '../artbox'
 import { fits, measure } from '../artfit'
 
@@ -11,11 +11,13 @@ import { fits, measure } from '../artfit'
 export function Cover({ title, art = [], size = 38, className = '', eager = false, fit }: { title: string; art?: string[]; size?: number; className?: string; eager?: boolean; fit?: (ratio: number) => void }) {
   // Failed URLs, not an index: virtualized rows reuse this component for other tracks.
   const [failed, setFailed] = useState<string[]>([])
-  const src = art.find((s) => !failed.includes(s))
+  const full = art.find((s) => !failed.includes(s))
   const [, setMeasured] = useState(0)
   // Measured once per image (cached): video frames everywhere, any image for the big cover.
-  const measured = !!src && (!!fit || mayHaveBars(src))
-  const known = measured ? fits.get(src) : undefined
+  const measured = !!full && (!!fit || mayHaveBars(full))
+  // Lists never decode a full-size cover: the smallest thumbnail that covers the drawn size (Rust cuts it once, then keeps it). The big cover (fit) wants the picture itself.
+  const src = full && (fit ? full : sizedArt(full, size, window.devicePixelRatio || 1, measured ? 256 : 0))
+  const known = measured && src ? fits.get(src) : undefined
   useEffect(() => {
     if (known) fit?.(known.ratio)
   }, [known, fit])
@@ -38,14 +40,14 @@ export function Cover({ title, art = [], size = 38, className = '', eager = fals
           decoding="async"
           crossOrigin="anonymous"
           draggable={false}
-          onError={() => setFailed((f) => [...f, src])}
+          onError={() => setFailed((f) => [...f, full!])}
           onLoad={(e) => {
             if (!measured || fits.has(src)) return
             measure(e.currentTarget, src)
             setMeasured((n) => n + 1)
           }}
           style={known ? cropStyle(cropTo(known.box, known.width, known.height, fit ? known.ratio : 1)) : undefined}
-          className={known ? 'absolute' : `absolute inset-0 size-full object-cover ${isLetterboxed(src) ? 'scale-[1.34]' : ''}`}
+          className={known ? 'absolute' : `absolute inset-0 size-full object-cover ${isLetterboxed(full!) ? 'scale-[1.34]' : ''}`}
         />
       )}
     </span>

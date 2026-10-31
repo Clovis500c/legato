@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import type { LibraryTrack } from '../../shared/api'
 import { songsThatFit } from './fit'
 
-const t = (id: number, artist: string): LibraryTrack => ({ id, added: id, title: `Song ${id}`, artist, album: null, durationMs: null, isrc: null, ids: { youtube: `y${id}` } })
+const t = (id: number, artist: string): LibraryTrack => ({ id, added: id, addedAt: null, title: `Song ${id}`, artist, album: null, durationMs: null, isrc: null, ids: { youtube: `y${id}` } })
 const tracks = [t(1, 'M83'), t(2, 'M83'), t(3, 'M83'), t(4, 'Kavinsky'), t(5, 'The xx'), t(6, 'Justice')]
 
 describe('songsThatFit', () => {

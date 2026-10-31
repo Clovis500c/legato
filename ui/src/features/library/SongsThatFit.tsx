@@ -1,4 +1,5 @@
 import { MagnifyingGlass, Plus } from '@phosphor-icons/react'
+import { artistName } from '../../shared/artistName'
 import { useMemo, useState } from 'react'
 import { useStore } from '../../app/store'
 import type { LibraryTrack } from '../../shared/api'
@@ -8,7 +9,7 @@ import { Button } from '../../shared/ui/Button'
 import { onMenu } from '../../shared/ui/ContextMenu'
 import { Cover } from '../../shared/ui/Cover'
 import { trackMenu } from '../menus'
-import { useMixes } from '../mixes/MixesView'
+import { useMixes } from '../mixes/useMixes'
 import { mixTitle } from '../mixes/words'
 import { addToPlaylist } from './edits'
 import { songsThatFit } from './fit'
@@ -29,7 +30,7 @@ export function SongsThatFit({ id, songs }: { id: number; songs: LibraryTrack[] 
   const inside = useMemo(() => new Set(songs.map((t) => t.id)), [songs])
   const fits = useMemo(() => songsThatFit(songs, tracks, { stats, mixes }), [songs, tracks, stats, mixes])
   const found = useMemo(() => (q.trim() ? filterTracks(tracks, q, 'all').filter((t) => !inside.has(t.id)).slice(0, 8) : []), [tracks, q, inside])
-  const rows = q.trim() ? found.map((track) => ({ track, why: track.artist })) : fits.map((f) => ({ track: f.track, why: f.mix ? tr('{artist} · in {mix}', { artist: f.track.artist, mix: mixTitle(mixes!.find((m) => m.id === f.mix)!) }) : tr('{artist} · same artist', { artist: f.track.artist }) }))
+  const rows = q.trim() ? found.map((track) => ({ track, why: artistName(track.artist) })) : fits.map((f) => ({ track: f.track, why: f.mix ? tr('{artist} · in {mix}', { artist: artistName(f.track.artist), mix: mixTitle(mixes!.find((m) => m.id === f.mix)!) }) : tr('{artist} · same artist', { artist: artistName(f.track.artist) }) }))
   return (
     <section className="mx-2 mt-6 mb-4 flex flex-col gap-2.5 rounded-xl border border-line bg-panel p-4">
       <div className="flex flex-wrap items-center justify-between gap-3">

@@ -52,7 +52,7 @@ CREATE TABLE IF NOT EXISTS settings (
 ";
 
 /// Schema version this code writes (user_version after migrations).
-pub const SCHEMA_VERSION: i64 = 11;
+pub const SCHEMA_VERSION: i64 = 13;
 
 /// The library was made by a newer version of the app.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -161,7 +161,8 @@ UPDATE tracks SET art = (SELECT 'https://i.ytimg.com/vi/' || source_id || '/hqde
 PRAGMA user_version = 3;
 ";
 
-#[derive(Debug, Clone, PartialEq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, ts_rs::TS)]
+#[ts(export)]
 pub struct LibraryTrack {
     pub id: i64,
     /// "Date added" rank: order the app met the track (services give no dates).
@@ -173,8 +174,9 @@ pub struct LibraryTrack {
     pub track: Track,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export)]
 pub struct LibraryPlaylist {
     pub id: i64,
     pub source: Source,
@@ -190,8 +192,9 @@ pub struct LibraryPlaylist {
 }
 
 /// Edits on custom playlists. Duplicate also works on imported ones.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, ts_rs::TS)]
 #[serde(tag = "type", rename_all = "camelCase", rename_all_fields = "camelCase")]
+#[ts(export)]
 pub enum PlaylistEdit {
     Create { name: String },
     Rename { id: i64, name: String },
@@ -267,8 +270,9 @@ fn ids_json(ids: impl IntoIterator<Item = i64>) -> String {
 }
 
 /// What the UI's copy of the library lacks since its last read (`Library::take_changes`).
-#[derive(Debug, Default, PartialEq, Serialize)]
+#[derive(Debug, Default, PartialEq, Serialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export, rename = "LibraryChanges")]
 pub struct Changes {
     /// Whole rows: new or changed songs, and every song of their channels (musicness follows talk channels).
     pub tracks: Vec<LibraryTrack>,
@@ -292,8 +296,9 @@ pub struct Library {
 }
 
 /// Live Editor edit: a song's (or a preset), its effects as JSON (music_dsp::Effects).
-#[derive(Debug, Clone, PartialEq, serde::Serialize)]
+#[derive(Debug, Clone, PartialEq, serde::Serialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export)]
 pub struct Edit {
     pub id: i64,
     pub song: Option<String>,
@@ -322,6 +327,10 @@ pub fn keep_daily_copy(path: &Path) -> Result<bool> {
     copy_to(&Connection::open_with_flags(path, rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY)?, &to)?;
     Ok(true)
 }
+
+/// Silence rows kept (a cache by path), and how long a SponsorBlock answer stays in its table, s.
+const SILENCE_KEEP: i64 = 20_000;
+const SPONSOR_KEEP_S: i64 = 30 * 86_400;
 
 impl Library {
     /// Before migrating an existing library, keeps it as it was (`library-before-v<N>.db` next to it, the first one
@@ -406,6 +415,14 @@ impl Library {
         if lib.db.query_row("PRAGMA user_version", [], |r| r.get::<_, i64>(0))? < 11 {
             // v11: real "date added" (unix s) for songs from now on; older ones unknown (null), never guessed.
             lib.db.execute_batch("BEGIN; ALTER TABLE tracks ADD COLUMN added_at INTEGER; PRAGMA user_version = 11; COMMIT;")?;
+        }
+        if lib.db.query_row("PRAGMA user_version", [], |r| r.get::<_, i64>(0))? < 12 {
+            // v12: measured silence at the start / end of local files, by path and modified time (not synced: a cache).
+            lib.db.execute_batch("BEGIN; CREATE TABLE IF NOT EXISTS silence (path TEXT PRIMARY KEY, modified INTEGER NOT NULL, start_ms INTEGER NOT NULL, end_ms INTEGER, total_ms INTEGER NOT NULL); PRAGMA user_version = 12; COMMIT;")?;
+        }
+        if lib.db.query_row("PRAGMA user_version", [], |r| r.get::<_, i64>(0))? < 13 {
+            // v13: SponsorBlock's non-music parts per video (JSON list, the empty one too), with when it was asked (a cache, not synced).
+            lib.db.execute_batch("BEGIN; CREATE TABLE IF NOT EXISTS sponsor (video TEXT PRIMARY KEY, segments TEXT NOT NULL, fetched INTEGER NOT NULL); PRAGMA user_version = 13; COMMIT;")?;
         }
         lib.db.execute_batch(CHANGE_LOG)?;
         // Statements on logged tables compile their triggers too: kept, not rebuilt per call.
@@ -1020,6 +1037,40 @@ impl Library {
             "INSERT INTO lyrics (key, body, fetched) VALUES (?1, ?2, ?3) ON CONFLICT (key) DO UPDATE SET body = excluded.body, fetched = excluded.fetched",
             params![key, body, fetched],
         )?;
+        Ok(())
+    }
+
+    /// Silence measured in a local file: Some((start_ms, end_ms, total_ms)) when it was measured with this `modified`
+    /// time (a changed file is measured again). end_ms None = no silence worth cutting at the end.
+    pub fn cached_silence(&self, path: &str, modified: i64) -> Result<Option<(u64, Option<u64>, u64)>> {
+        Ok(self
+            .db
+            .query_row("SELECT start_ms, end_ms, total_ms FROM silence WHERE path = ?1 AND modified = ?2", params![path, modified], |r| Ok((r.get::<_, i64>(0)? as u64, r.get::<_, Option<i64>>(1)?.map(|e| e as u64), r.get::<_, i64>(2)? as u64)))
+            .optional()?)
+    }
+
+    pub fn save_silence(&self, path: &str, modified: i64, start_ms: u64, end_ms: Option<u64>, total_ms: u64) -> Result<()> {
+        self.db.execute(
+            "INSERT INTO silence (path, modified, start_ms, end_ms, total_ms) VALUES (?1, ?2, ?3, ?4, ?5) ON CONFLICT (path) DO UPDATE SET modified = excluded.modified, start_ms = excluded.start_ms, end_ms = excluded.end_ms, total_ms = excluded.total_ms",
+            params![path, modified, start_ms as i64, end_ms.map(|e| e as i64), total_ms as i64],
+        )?;
+        // A cache: the oldest rows (files long gone, mostly) go past this many.
+        self.db.execute("DELETE FROM silence WHERE rowid <= (SELECT MAX(rowid) FROM silence) - ?1", [SILENCE_KEEP])?;
+        Ok(())
+    }
+
+    /// SponsorBlock's answer for a video asked before: Some((JSON list of parts, when)); the empty list is an answer.
+    pub fn cached_sponsor(&self, video: &str) -> Result<Option<(String, i64)>> {
+        Ok(self.db.query_row("SELECT segments, fetched FROM sponsor WHERE video = ?1", [video], |r| Ok((r.get(0)?, r.get(1)?))).optional()?)
+    }
+
+    pub fn save_sponsor(&self, video: &str, segments: &str, fetched: i64) -> Result<()> {
+        self.db.execute(
+            "INSERT INTO sponsor (video, segments, fetched) VALUES (?1, ?2, ?3) ON CONFLICT (video) DO UPDATE SET segments = excluded.segments, fetched = excluded.fetched",
+            params![video, segments, fetched],
+        )?;
+        // Answers are used for a week: older than a month are never read again.
+        self.db.execute("DELETE FROM sponsor WHERE fetched < ?1", [fetched - SPONSOR_KEEP_S])?;
         Ok(())
     }
 
@@ -1714,6 +1765,47 @@ mod tests {
         assert_eq!(lib.cached_lyrics("a|b|200")?, Some((None, 10)));
         lib.save_lyrics("a|b|200", Some("{}"), 20)?;
         assert_eq!(lib.cached_lyrics("a|b|200")?, Some((Some("{}".into()), 20)));
+        Ok(())
+    }
+
+    #[test]
+    fn silence_cache_is_by_path_and_modified_time() -> Result<()> {
+        let lib = Library::in_memory()?;
+        assert_eq!(lib.cached_silence("a.mp3", 5)?, None);
+        lib.save_silence("a.mp3", 5, 4_950, Some(200_000), 210_000)?;
+        assert_eq!(lib.cached_silence("a.mp3", 5)?, Some((4_950, Some(200_000), 210_000)));
+        // Changed file: measured again.
+        assert_eq!(lib.cached_silence("a.mp3", 6)?, None);
+        lib.save_silence("a.mp3", 6, 0, None, 210_000)?;
+        assert_eq!(lib.cached_silence("a.mp3", 6)?, Some((0, None, 210_000)));
+        Ok(())
+    }
+
+    #[test]
+    fn sponsor_cache_keeps_the_empty_answer_too() -> Result<()> {
+        let lib = Library::in_memory()?;
+        assert_eq!(lib.cached_sponsor("aaaaaaaaaaa")?, None);
+        lib.save_sponsor("aaaaaaaaaaa", "[]", 10)?;
+        assert_eq!(lib.cached_sponsor("aaaaaaaaaaa")?, Some(("[]".into(), 10)));
+        lib.save_sponsor("aaaaaaaaaaa", r#"[{"startS":0,"endS":12}]"#, 20)?;
+        assert_eq!(lib.cached_sponsor("aaaaaaaaaaa")?.map(|c| c.1), Some(20));
+        Ok(())
+    }
+
+    #[test]
+    fn old_sponsor_answers_and_silence_rows_are_dropped() -> Result<()> {
+        let lib = Library::in_memory()?;
+        let day = 86_400;
+        lib.save_sponsor("old", "[]", 1_000_000)?;
+        lib.save_sponsor("recent", "[]", 1_000_000 + 20 * day)?;
+        lib.save_sponsor("new", "[]", 1_000_000 + 40 * day)?;
+        assert_eq!(lib.cached_sponsor("old")?, None);
+        assert!(lib.cached_sponsor("recent")?.is_some() && lib.cached_sponsor("new")?.is_some());
+        for i in 0..(SILENCE_KEEP + 5) {
+            lib.save_silence(&format!("{i}.mp3"), 1, 0, None, 1)?;
+        }
+        assert_eq!(lib.cached_silence("0.mp3", 1)?, None);
+        assert!(lib.cached_silence(&format!("{}.mp3", SILENCE_KEEP + 4), 1)?.is_some());
         Ok(())
     }
 

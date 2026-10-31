@@ -7,8 +7,9 @@ use serde::Deserialize;
 use std::path::PathBuf;
 use tauri::State;
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export, rename = "SongTags")]
 pub struct Tags {
     title: String,
     artist: String,

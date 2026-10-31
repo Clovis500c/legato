@@ -4,8 +4,9 @@
 
 use serde::Deserialize;
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Deserialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export, rename = "MediaNow")]
 pub struct NowPlaying {
     pub title: String,
     pub artist: String,

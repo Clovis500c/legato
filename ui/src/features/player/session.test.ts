@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import type { LibraryTrack } from '../../shared/api'
 import { restore, snapshot } from './session'
 
-const t = (id: number): LibraryTrack => ({ id, added: id, title: `T${id}`, artist: 'A', album: null, durationMs: null, isrc: null, ids: { youtube: `v${id}` } })
+const t = (id: number): LibraryTrack => ({ id, added: id, addedAt: null, title: `T${id}`, artist: 'A', album: null, durationMs: null, isrc: null, ids: { youtube: `v${id}` } })
 const lib = [t(1), t(2), t(3), t(4)]
 // T4 (index 3) queued by the user: next after T3 in the shuffled order.
 const player = { now: { trackId: 3, via: 'youtube' as const }, list: lib, index: 2, order: [2, 3, 0, 1], added: [3], shuffle: true, repeat: 'all' as const, positionMs: 61_234.5, volume: 0.4 }

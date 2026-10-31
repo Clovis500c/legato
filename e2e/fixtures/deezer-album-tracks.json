@@ -1,0 +1,41 @@
+{
+ "data": [
+  {
+   "id": 4344812982,
+   "readable": true,
+   "title": "FREE CHEBA WARDA",
+   "title_short": "FREE CHEBA WARDA",
+   "title_version": "",
+   "isrc": "FR9W12644383",
+   "link": "https://www.deezer.com/track/4344812982",
+   "duration": 147,
+   "type": "track",
+   "artist": {
+    "id": 181895087,
+    "name": "Ino Casablanca",
+    "type": "artist"
+   },
+   "track_position": 1,
+   "disk_number": 1
+  },
+  {
+   "id": 4344812992,
+   "readable": true,
+   "title": "PANAFRI",
+   "title_short": "PANAFRI",
+   "title_version": "",
+   "isrc": "FR9W12644384",
+   "link": "https://www.deezer.com/track/4344812992",
+   "duration": 137,
+   "type": "track",
+   "artist": {
+    "id": 181895087,
+    "name": "Ino Casablanca",
+    "type": "artist"
+   },
+   "track_position": 2,
+   "disk_number": 1
+  }
+ ],
+ "total": 20
+}

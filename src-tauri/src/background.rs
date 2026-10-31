@@ -13,6 +13,15 @@ use tauri::{AppHandle, Manager};
 /// the tray (review 2026-10-23: switches took seconds in the background). Silent and hidden long = suspended anyway.
 pub const BROWSER_ARGS: &str = "--disable-features=msWebOOUI,msPdfOOUI,msSmartScreenProtection,IntensiveWakeUpThrottling --disable-background-timer-throttling --disable-renderer-backgrounding --disable-backgrounding-occluded-windows";
 
+/// What every webview is built with. e2e build: the walk's own flags after them (DevTools port, English).
+pub fn browser_args() -> String {
+    #[cfg(feature = "e2e")]
+    if let Ok(walk) = std::env::var("LEGATO_E2E_BROWSER_ARGS") {
+        return format!("{BROWSER_ARGS} {walk}");
+    }
+    BROWSER_ARGS.to_string()
+}
+
 /// Quit asked: the next close is real.
 static QUITTING: AtomicBool = AtomicBool::new(false);
 /// Something plays (media panel updates): never suspended then.

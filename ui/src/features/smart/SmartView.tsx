@@ -1,13 +1,11 @@
-import { DotsThree, Lightning, ListPlus, PencilSimple, Plus, Trash, X } from '@phosphor-icons/react'
+import { DotsThree, Lightning, PencilSimple, Plus, X } from '@phosphor-icons/react'
 import { useShallow } from 'zustand/react/shallow'
 import { useMemo, useState } from 'react'
-import { useSettings } from '../../app/settings'
 import { useStore } from '../../app/store'
-import { api, type Source } from '../../shared/api'
+import { type Source } from '../../shared/api'
 import { msg, tr, trn } from '../../shared/i18n/i18n'
 import { Button } from '../../shared/ui/Button'
-import { ask } from '../../shared/ui/Ask'
-import { onMenu, openMenu, type MenuEntry } from '../../shared/ui/ContextMenu'
+import { onMenu, openMenu } from '../../shared/ui/ContextMenu'
 import { RoundButton, Segmented } from '../../shared/ui/controls'
 import { PageHeader } from '../../shared/ui/PageHeader'
 import { SMART_FIELDS, type SmartField, type SmartList, type SmartRule } from '../../shared/theme/theme'
@@ -15,6 +13,7 @@ import { tracksMenu } from '../menus'
 import { PlayAll, ShuffleRound, totalTime } from '../library/LibraryView'
 import { TrackTable } from '../library/TrackTable'
 import { smartTracks } from './rules'
+import { saveSmart, smartMenu, useSmartList } from './actions'
 
 const FIELD_LABEL: Record<SmartField, string> = { artist: msg('Artist'), album: msg('Album'), title: msg('Title'), source: msg('Source'), plays: msg('Plays'), played: msg('Last played'), added: msg('Added') }
 const OPS: Record<SmartField, { value: string; label: string }[]> = {
@@ -40,44 +39,6 @@ const DEFAULT_RULE: Record<SmartField, SmartRule> = {
 
 const field = 'h-8 rounded-md border border-line bg-bg px-2 text-[0.8125rem]'
 
-export function useSmartList(id: string) {
-  return useSettings((s) => s.settings.smartLists.find((l) => l.id === id))
-}
-
-export function saveSmart(list: SmartList) {
-  const all = useSettings.getState().settings.smartLists
-  useSettings.getState().update({ smartLists: all.some((l) => l.id === list.id) ? all.map((l) => (l.id === list.id ? list : l)) : [...all, list] })
-}
-
-export async function deleteSmart(list: SmartList) {
-  if (!(await ask({ title: tr('Delete “{name}”?', { name: list.name }), body: tr('Only the rules go: your songs stay in the library.'), ok: tr('Delete') }))) return
-  useSettings.getState().update({ smartLists: useSettings.getState().settings.smartLists.filter((l) => l.id !== list.id) })
-  const v = useStore.getState().view
-  if (v.name === 'smart' && v.id === list.id) useStore.getState().go({ name: 'home' })
-}
-
-/** Today's songs copied into a normal playlist (which then stays as it is). */
-async function saveAsPlaylist(list: SmartList, ids: number[]) {
-  const { refreshChanged, notify, go } = useStore.getState()
-  try {
-    const id = await api.editPlaylist({ type: 'create', name: list.name })
-    if (id === null) return
-    if (ids.length) await api.editPlaylist({ type: 'add', id, trackIds: ids })
-    await refreshChanged()
-    notify(tr('Saved as the playlist “{name}”', { name: list.name }), { action: { label: tr('Open'), run: () => go({ name: 'playlist', id }) } })
-  } catch (e) {
-    notify(String(e), { kind: 'error' })
-  }
-}
-
-export function smartMenu(list: SmartList, ids: number[], edit?: () => void): MenuEntry[] {
-  return [
-    edit && { label: tr('Edit rules'), icon: <PencilSimple size={16} />, onSelect: edit },
-    { label: tr('Save as a playlist'), icon: <ListPlus size={16} />, onSelect: () => void saveAsPlaylist(list, ids) },
-    '-',
-    { label: tr('Delete'), icon: <Trash size={16} />, danger: true, onSelect: () => void deleteSmart(list) },
-  ]
-}
 
 function RuleRow({ rule, onChange, onRemove }: { rule: SmartRule; onChange: (r: SmartRule) => void; onRemove: () => void }) {
   return (

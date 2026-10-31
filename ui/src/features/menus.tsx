@@ -11,6 +11,7 @@ import {
   CopySimple,
   Disc,
   DownloadSimple,
+  ChartBar,
   Eye,
   EyeSlash,
   MusicNotesSimple,
@@ -57,7 +58,7 @@ import { api, playlistKey, type Edit, type LibraryPlaylist, type PluginInfo, typ
 import { bigTrackArt } from '../shared/art'
 import { loadFit } from '../shared/artfit'
 import { fileName } from '../shared/format'
-import { COVER_ORDERS, type PlaylistCover } from '../shared/theme/theme'
+import { COVER_ORDERS, VISUALIZER_STYLES, type PlaylistCover } from '../shared/theme/theme'
 import type { MenuEntry } from '../shared/ui/ContextMenu'
 import { SourceIcon } from '../shared/ui/SourceIcon'
 import type { Addon } from './addons/registry'
@@ -74,6 +75,9 @@ import { loadPlugins, pluginCommands, runCommand } from './plugins/host'
 import { isRemote, nowTrack, remoteTrack, usePlayer } from './player/store'
 import { startRadio } from './player/radio'
 import { sleepMenu } from './player/sleep'
+import { closeKaraoke, nowFix, nudgeLyrics, toggleKaraoke } from './player/karaokeMode'
+import { canVizFull, toggleVizFull, useVizFull } from './player/vizFull'
+import { VISUALIZER_LABELS } from './player/vizLooks'
 import { msg, tr, trn } from '../shared/i18n/i18n'
 import { ask, askText } from '../shared/ui/Ask'
 
@@ -452,7 +456,7 @@ export function hitMenu(hit: SearchHit, add: () => void, busy: boolean, play: ()
   // In the library (added here or before): its menu, playlists included.
   const t = app().tracks.find((x) => x.id === hit.libraryId) ?? ownOf(item)
   if (!isRemote(t)) return trackMenu(t)
-  const links = pages({ ...hit, id: 0, added: 0 })
+  const links = pages({ ...hit, id: 0, added: 0, addedAt: null })
   return [
     { label: tr('Play'), icon: <Play size={16} />, onSelect: play },
     { label: tr('Play next'), icon: <Queue size={16} />, onSelect: () => player().enqueue([item], true) },
@@ -605,6 +609,7 @@ export function playerMenu(): MenuEntry[] {
     { label: tr('Repeat'), icon: <Repeat size={16} />, disabled: !now.trackId, items: [rep('off', tr('Off')), rep('all', tr('Whole queue')), rep('one', tr('This track'))] },
     '-',
     { label: full ? tr('Leave full screen') : tr('Full screen'), icon: <ArrowsOutSimple size={16} />, onSelect: () => setFull(!full) },
+    { label: tr('Karaoke'), icon: <MicrophoneStage size={16} />, onSelect: toggleKaraoke },
     { label: tr('Live Editor'), icon: <SlidersHorizontal size={16} />, onSelect: () => (useSettings.getState().update({ editor: true }), setFull(true)) },
     { label: tr('Sleep timer'), icon: <Moon size={16} />, items: sleepMenu() },
     { label: tr('Mini player'), icon: <PictureInPicture size={16} />, checked: mini || !!video, disabled: !!video, onSelect: () => useSettings.getState().update({ miniPlayer: !mini }) },
@@ -622,6 +627,37 @@ export function playerMenu(): MenuEntry[] {
     now.page && { label: tr('Listen on Apple Music'), icon: <ArrowSquareOut size={16} />, onSelect: () => openUrl(now.page!).catch(fail) },
     now.path && { label: tr('Show in folder'), icon: <FolderOpen size={16} />, onSelect: () => revealItemInDir(now.path!).catch(fail) },
     ...pluginItems('player', { trackId: t?.id ?? null, title: now.title, artist: now.artist }),
+  ]
+}
+
+/** The visualizer (the strip under the cover, its full screen): the look, full screen. */
+export function vizMenu(): MenuEntry[] {
+  const look = useSettings.getState().settings.visualizerStyle
+  const open = useVizFull.getState().open
+  return [
+    {
+      label: tr('Visualizer style'),
+      icon: <ChartBar size={16} />,
+      items: VISUALIZER_STYLES.map((v) => ({ label: tr(VISUALIZER_LABELS[v]), checked: look === v, onSelect: () => useSettings.getState().update({ visualizerStyle: v }) })),
+    },
+    { label: open ? tr('Leave full screen') : tr('Full screen'), icon: <ArrowsOutSimple size={16} />, disabled: !open && !canVizFull(), onSelect: toggleVizFull },
+  ]
+}
+
+/** Karaoke screen: the player's basics, the lyrics timing (same fix as the lyrics panel), leave. */
+export function karaokeMenu(): MenuEntry[] {
+  const { playing, toggle, step } = player()
+  const fix = nowFix()
+  return [
+    { label: playing ? tr('Pause') : tr('Play'), icon: playing ? <Pause size={16} /> : <Play size={16} />, onSelect: toggle },
+    { label: tr('Previous'), icon: <SkipBack size={16} />, onSelect: () => step(-1) },
+    { label: tr('Next'), icon: <SkipForward size={16} />, onSelect: () => step(1) },
+    '-',
+    { label: tr('Lyrics earlier'), icon: <ArrowLeft size={16} />, onSelect: () => nudgeLyrics(-500) },
+    { label: tr('Lyrics later'), icon: <ArrowRight size={16} />, onSelect: () => nudgeLyrics(500) },
+    { label: tr('Reset'), icon: <ArrowCounterClockwise size={16} />, disabled: fix.offset === 0 && fix.rate === 1, onSelect: () => nudgeLyrics(null) },
+    '-',
+    { label: tr('Leave Karaoke (Esc)'), icon: <MicrophoneStage size={16} />, onSelect: closeKaraoke },
   ]
 }
 

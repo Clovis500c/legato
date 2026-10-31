@@ -38,16 +38,18 @@ const DETECT_SECONDS: f32 = 10.0;
 static DETECT_STOP: AtomicBool = AtomicBool::new(false);
 
 /// What the Music Detector got. `Miss`: why not, worded by the UI.
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, ts_rs::TS)]
 #[serde(tag = "kind", rename_all = "camelCase")]
+#[ts(export)]
 pub enum Detection {
     Found { track: Track },
     Unknown,
     Miss { miss: DetectMiss, detail: Option<String> },
 }
 
-#[derive(Debug, Clone, Copy, Serialize)]
+#[derive(Debug, Clone, Copy, Serialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export)]
 pub enum DetectMiss {
     NoMic,
     MicBlocked,

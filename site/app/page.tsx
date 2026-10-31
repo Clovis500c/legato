@@ -1,7 +1,7 @@
 import { FIXES, GITHUB, PLAYBACK, PRIVACY, SERVICES, STEPS } from '@/components/content'
 import { Header } from '@/components/Header'
 import { Hero, Shot } from '@/components/Hero'
-import { Block, Faq, Features, Rows, Split, Steps } from '@/components/Sections'
+import { Block, Faq, Features, Rows, Split, Steps, Why } from '@/components/Sections'
 
 /** The website: what the README and the user docs used to say, on one page (docs/ keeps the developer side). */
 export default function Home() {
@@ -14,10 +14,13 @@ export default function Home() {
         <Split id="fixes" title="What listeners keep asking the big apps for" intro="Collected from Spotify's community forum, YouTube Music reviews and press coverage of their redesigns. Each line is something Legato does today.">
           <Rows head={['The complaint', 'In Legato']} rows={FIXES} />
         </Split>
+        <Block id="why" title="Why Legato" intro="Four things you can check for yourself.">
+          <Why />
+        </Block>
         <Block id="features" title="One app for all of it" intro="Everything below works the same whatever the song comes from.">
           <Features />
         </Block>
-        <Split id="playback" title="Official playback only" intro="Each service plays in its own player, your files in the app's. Nothing is downloaded, recorded or extracted; the sound features work on what plays, as it plays, in memory.">
+        <Split id="playback" title="Official playback only" intro="Each service plays in its own player, your files in the app's. No platform's audio is downloaded, recorded or extracted (the Music Detector listens only when you ask it to); the sound features work on what plays, as it plays, in memory.">
           <Rows head={['Source', 'How it plays']} rows={PLAYBACK} />
         </Split>
         <Split id="privacy" title="What leaves your PC" intro="Nothing, until you connect a service or turn a feature on. No server, no account of ours.">

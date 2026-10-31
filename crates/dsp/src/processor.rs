@@ -6,7 +6,6 @@
 //! limiter right after keeps a boosted song from clipping.
 
 use crate::control::{Control, Levels, Live};
-use crate::spectrum::{BANDS, Spectrum};
 use crate::{Meter, db_to_gain};
 
 const MAX_CUT_DB: f32 = -12.0;
@@ -31,8 +30,8 @@ const STEP_FRAMES: usize = 256;
 #[derive(Debug, Clone)]
 pub struct Processor {
     channels: usize,
+    rate: u32,
     meter: Meter,
-    spectrum: Spectrum,
     live: Live,
     seen: u64,
     /// Adaptive gain now, dB.
@@ -55,8 +54,8 @@ impl Processor {
         let r = rate as f32;
         Self {
             channels: channels.max(1),
+            rate,
             meter: Meter::new(r, channels.max(1)),
-            spectrum: Spectrum::new(r),
             live: Live::default(),
             seen: 0,
             gain_db: 0.0,
@@ -107,6 +106,8 @@ impl Processor {
         for part in block.chunks_mut(step) {
             self.run(part, control);
         }
+        // As heard: after the gain and the limiter. One atomic read when nobody listens.
+        control.tap().push(block, self.channels, self.rate);
     }
 
     fn run(&mut self, block: &mut [f32], control: &Control) {
@@ -120,9 +121,6 @@ impl Processor {
         let step = (db_to_gain(self.gain_db) - from) / frames.max(1) as f32;
         for (i, frame) in block.chunks_exact_mut(self.channels).enumerate() {
             self.meter.frame(frame);
-            if self.live.bands {
-                self.spectrum.frame(frame);
-            }
             let g = from + step * (i + 1) as f32;
             let peak = frame.iter().fold(0f32, |m, x| m.max((x * g).abs()));
             // Limiter, only while boosting or edited (a cut can't clip; untouched otherwise): down at once, back up slowly.
@@ -133,7 +131,7 @@ impl Processor {
             self.since_report += 1;
             if self.since_report >= self.report_every {
                 self.since_report = 0;
-                control.report(Levels { fast: self.meter.fast_lufs(), momentary: self.meter.momentary_lufs(), short: self.meter.short_lufs(), peak: self.meter.peak(), gain: self.gain_db, bands: if self.live.bands { self.spectrum.db() } else { [-120.0; BANDS] } });
+                control.report(Levels { fast: self.meter.fast_lufs(), momentary: self.meter.momentary_lufs(), short: self.meter.short_lufs(), peak: self.meter.peak(), gain: self.gain_db });
             }
         }
     }
@@ -141,7 +139,6 @@ impl Processor {
     /// After a seek: loudness measured again from there (the gain keeps its place).
     pub fn reset(&mut self) {
         self.meter.reset();
-        self.spectrum.reset();
         self.limit = 1.0;
     }
 }
@@ -160,6 +157,23 @@ mod tests {
 
     fn rms(v: &[f32]) -> f32 {
         (v.iter().map(|x| x * x).sum::<f32>() / v.len() as f32).sqrt()
+    }
+
+    #[test]
+    fn the_visualizer_copy_is_the_sound_as_played_and_only_while_listened_to() {
+        let c = Control::default();
+        let mut p = Processor::new(44_100, 2);
+        let mut quiet = tone(0.5, 0.05, 44_100);
+        p.process(&mut quiet, &c);
+        let listener = c.tap().listen();
+        assert_eq!(listener.head(), 0, "nothing copied before anyone listened");
+        let mut out = tone(0.5, 0.05, 44_100);
+        p.process(&mut out, &c);
+        let (mut l, mut r) = ([0.0; 4], [0.0; 4]);
+        listener.latest(&mut l, &mut r);
+        let n = out.len();
+        assert_eq!((l, r), ([out[n - 8], out[n - 6], out[n - 4], out[n - 2]], [out[n - 7], out[n - 5], out[n - 3], out[n - 1]]));
+        assert_eq!((listener.head(), listener.rate()), ((n / 2) as u64, 44_100));
     }
 
     #[test]
@@ -266,7 +280,7 @@ mod tests {
         let mut body = tone(0.4, 10.0, 48_000);
         p.process(&mut body, &c);
         let before = p.gain_db;
-        c.set(Live { adaptive: true, target_lufs: -14.0, ending: true, ..Live::default() });
+        c.set(Live { adaptive: true, target_lufs: -14.0, ending: true });
         // Much quieter yet steady music under the fade: followed if not ending.
         let mut quiet = tone(0.05, 6.0, 48_000);
         p.process(&mut quiet, &c);

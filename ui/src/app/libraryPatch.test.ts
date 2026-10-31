@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import type { LibraryChanges, LibraryPlaylist, LibraryTrack } from '../shared/api'
 import { nocase, patchLibrary, type LibraryLists } from './libraryPatch'
 
-const t = (id: number, artist: string, title = 'Song', youtube = `y${id}`): LibraryTrack => ({ id, added: id, title, artist, album: null, durationMs: null, isrc: null, ids: { youtube } })
+const t = (id: number, artist: string, title = 'Song', youtube = `y${id}`): LibraryTrack => ({ id, added: id, addedAt: null, title, artist, album: null, durationMs: null, isrc: null, ids: { youtube } })
 const p = (id: number, name: string, trackCount = 0): LibraryPlaylist => ({ id, source: 'local', sourceId: `custom-${id}`, name, trackCount, custom: true, newestFirst: false, orderManual: false })
 const none: LibraryChanges = { tracks: [], gone: [], playlists: [], playlistsGone: [], orders: {}, history: false }
 

@@ -1,19 +1,27 @@
 mod art;
 mod autostart;
 mod background;
+mod deferred;
 mod detector;
+mod diag;
 mod lastfm;
 mod discord;
 mod editor;
 mod folders;
+mod hosts;
 mod hotkeys;
+mod identity;
 mod lang;
+mod links;
 mod media;
 mod mixer;
 mod plugins;
 mod secrets;
 #[cfg(windows)]
 mod shield;
+mod silence;
+mod sponsor;
+mod viz;
 mod speech;
 mod syncmode;
 mod push;
@@ -83,9 +91,11 @@ where
 }
 
 /// Spotify app key (Spotify has no keyless sign-in). Stored in OS keychain.
-#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, Serialize, Deserialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export)]
 struct Credentials {
+    #[ts(optional)]
     spotify_client_id: Option<String>,
 }
 
@@ -178,7 +188,7 @@ impl AppState {
 
     /// Searches and public pages: the first picked account, else YouTube Music's public catalog (signed out).
     fn ytm_or_public(&self) -> YouTubeMusic {
-        self.ytm().unwrap_or_else(YouTubeMusic::anonymous)
+        self.ytm().unwrap_or_else(public_ytm)
     }
 
     fn connector(&self, source: Source) -> Option<Box<dyn Connector>> {
@@ -187,6 +197,11 @@ impl AppState {
             Source::Youtube | Source::Local | Source::Apple => None,
         }
     }
+}
+
+/// YouTube Music signed out: public catalog, artist pages. The host comes from `hosts` (the smoke test's mock).
+fn public_ytm() -> YouTubeMusic {
+    YouTubeMusic::anonymous_with_api(hosts::get().ytmusic)
 }
 
 /// Answers kept until the data under them changes (music_core::cache): library reads stamped with the library
@@ -241,8 +256,9 @@ fn json(answer: Arc<str>) -> Response {
     Response::new(answer.to_string())
 }
 
-#[derive(Serialize, Clone)]
+#[derive(Serialize, Clone, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export)]
 struct SourceStatus {
     configured: bool,
     connected: bool,
@@ -287,7 +303,19 @@ async fn sync_all(state: State<'_, AppState>) -> CmdResult<SyncReport> {
     if let Err(e) = push_own_likes(&state).await {
         report.errors.push(format!("Liked Music: {e:#}"));
     }
+    log_sync_errors(&report);
     Ok(report)
+}
+
+/// A sync's failures in the diagnostics log: the part that failed in the message, the text (it names playlists and
+/// songs) as the detail. Five at most, the rest counted.
+fn log_sync_errors(report: &SyncReport) {
+    for e in report.errors.iter().take(5) {
+        diag::warn("sync", &format!("{} failed", music_core::diag::failing_part(e)), e);
+    }
+    if report.errors.len() > 5 {
+        diag::warn("sync", &format!("{} more errors", report.errors.len() - 5), "");
+    }
 }
 
 async fn sync_once(state: &AppState) -> SyncReport {
@@ -331,7 +359,8 @@ async fn push_own_likes(state: &AppState) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, ts_rs::TS)]
+#[ts(export)]
 struct LibraryData {
     tracks: Vec<LibraryTrack>,
     playlists: Vec<LibraryPlaylist>,
@@ -430,8 +459,9 @@ async fn yt_search(state: &AppState, query: &str) -> Result<Vec<Track>, String> 
     Ok(found)
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export)]
 struct SearchHit {
     #[serde(flatten)]
     hit: Hit,
@@ -445,7 +475,7 @@ async fn video_search(state: &AppState, query: &str) -> Result<Vec<(Track, Music
     if let Some(hit) = state.cache.videos.get(&key) {
         return Ok((*hit).clone());
     }
-    let web = YouTubeWeb::new(ytm::session(&state.app).as_deref());
+    let web = YouTubeWeb::with_api(hosts::get().youtube, ytm::session(&state.app).as_deref());
     let found: Vec<(Track, Musicness)> = web.search(query).await.map_err(err)?.into_iter().map(|v| {
         let m = v.musicness();
         (v.track, m)
@@ -454,8 +484,9 @@ async fn video_search(state: &AppState, query: &str) -> Result<Vec<(Track, Music
     Ok(found)
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export)]
 struct SearchResults {
     hits: Vec<SearchHit>,
     errors: Vec<String>,
@@ -483,7 +514,7 @@ async fn search_catalogs(state: State<'_, AppState>, query: String, country: Str
         async move {
             match known {
                 Some(hit) => Ok((*hit).clone()),
-                None => music_connectors::itunes::search(music_connectors::itunes::API, &q, &country).await,
+                None => music_connectors::itunes::search(hosts::get().itunes, &q, &country).await,
             }
         }
     });
@@ -521,7 +552,7 @@ async fn search_suggestions(query: String, lang: String, country: String) -> Cmd
         return Ok(Vec::new());
     }
     let lang = if lang.len() == 2 && lang.bytes().all(|b| b.is_ascii_lowercase()) { lang } else { "en".into() };
-    music_connectors::ytweb::suggestions(music_connectors::ytweb::SUGGEST, query, &lang, &store(&country)).await.map_err(err)
+    music_connectors::ytweb::suggestions(hosts::get().suggest, query, &lang, &store(&country)).await.map_err(err)
 }
 
 /// No YouTube id yet: try to find one (1 search) so the track plays in full.
@@ -591,7 +622,7 @@ async fn backfill_art(state: State<'_, AppState>, country: String) -> CmdResult<
     if ids.is_empty() {
         return Ok(0);
     }
-    let found: Vec<Track> = itunes::lookup(itunes::LOOKUP, &ids, &store(&country)).await.map_err(err)?.into_iter().filter(|t| t.art.is_some()).collect();
+    let found: Vec<Track> = itunes::lookup(hosts::get().itunes_lookup, &ids, &store(&country)).await.map_err(err)?.into_iter().filter(|t| t.art.is_some()).collect();
     let lib = state.lib();
     for t in &found {
         lib.upsert_track(t).map_err(err)?;
@@ -599,8 +630,9 @@ async fn backfill_art(state: State<'_, AppState>, country: String) -> CmdResult<
     Ok(found.len())
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export)]
 struct FindReport {
     /// Tracks that got a YouTube version.
     found: usize,
@@ -686,14 +718,15 @@ async fn alternative_videos(state: State<'_, AppState>, track_id: i64, exclude: 
 /// Apple 30 s preview into the local engine. Returns store page (shown as "Listen on Apple Music").
 #[tauri::command]
 async fn play_preview(state: State<'_, AppState>, id: String, country: String) -> CmdResult<String> {
-    let p = music_connectors::itunes::preview(music_connectors::itunes::LOOKUP, &id, &store(&country)).await.map_err(err)?;
+    let p = music_connectors::itunes::preview(hosts::get().itunes_lookup, &id, &store(&country)).await.map_err(err)?;
     let bytes = music_connectors::itunes::preview_audio(&p).await.map_err(err)?;
     state.player.send(Command::PlayMemory { label: format!("apple:{id}").into(), bytes: bytes.into() });
     Ok(p.page)
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export)]
 struct ShareCode {
     /// `legato://playlist/…`, for messages.
     link: String,
@@ -716,8 +749,9 @@ async fn share_playlist(state: State<'_, AppState>, id: i64) -> CmdResult<ShareC
     Ok(ShareCode { link: share::to_link(&shared), qr, tracks: shared.items.len(), bytes: share::encode(&shared).len() })
 }
 
-#[derive(Clone, Serialize)]
+#[derive(Clone, Serialize, ts_rs::TS)]
 #[serde(tag = "state", rename_all = "camelCase")]
+#[ts(export)]
 enum NearbyState {
     Idle,
     Waiting { code: String },
@@ -775,8 +809,9 @@ fn probe(item: &Item) -> Track {
     }
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export)]
 struct SharePreview {
     name: String,
     tracks: usize,
@@ -808,7 +843,7 @@ async fn share_read_image(path: String) -> CmdResult<String> {
 async fn resolve_text(state: &AppState, artist: &str, title: &str, country: &str) -> Option<Track> {
     let want = Track { artist: artist.into(), title: title.into(), ..Default::default() };
     let query = format!("{artist} {title}");
-    if let Ok(hits) = music_connectors::itunes::search(music_connectors::itunes::API, &query, country).await
+    if let Ok(hits) = music_connectors::itunes::search(hosts::get().itunes, &query, country).await
         && let Some(t) = music_core::matching::best_match(&want, &hits)
     {
         return Some(t.clone());
@@ -817,8 +852,9 @@ async fn resolve_text(state: &AppState, artist: &str, title: &str, country: &str
     music_core::matching::best_match(&want, &hits).cloned()
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export)]
 struct ImportReport {
     playlist_id: i64,
     added: usize,
@@ -838,7 +874,7 @@ async fn share_import(state: State<'_, AppState>, code: String, country: String)
 
     // Apple: one batched lookup.
     let apple: Vec<u64> = shared.items.iter().zip(&ids).filter_map(|(item, id)| if let (Item::Apple(n), None) = (item, id) { Some(*n) } else { None }).collect();
-    let apple_found = if apple.is_empty() { Vec::new() } else { itunes::lookup(itunes::LOOKUP, &apple, &country).await.unwrap_or_default() };
+    let apple_found = if apple.is_empty() { Vec::new() } else { itunes::lookup(hosts::get().itunes_lookup, &apple, &country).await.unwrap_or_default() };
     // YouTube: keyless oEmbed per video, 8 at a time.
     let yt: Vec<(usize, String)> = shared.items.iter().zip(&ids).enumerate().filter_map(|(i, (item, id))| if let (Item::Youtube(v), None) = (item, id) { Some((i, v.clone())) } else { None }).collect();
     let mut yt_found: HashMap<usize, Track> = HashMap::new();
@@ -956,8 +992,9 @@ async fn clear_history(state: State<'_, AppState>) -> CmdResult<()> {
     state.lib().clear_history().map_err(err)
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export)]
 struct ExportReport {
     url: String,
     added: usize,
@@ -1000,8 +1037,9 @@ async fn export_youtube(state: State<'_, AppState>, id: i64) -> CmdResult<Export
     Ok(ExportReport { url: url(&remote), added: videos.len(), already: 0, no_youtube })
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export)]
 struct AddReport {
     added: usize,
     /// Already in the playlist (YouTube refuses duplicates).
@@ -1224,8 +1262,9 @@ async fn ytm_sign_in(app: tauri::AppHandle, add: bool) -> CmdResult<()> {
     ytm::open(&app, add).map_err(err)
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export)]
 struct SpotifyImport {
     playlist_id: i64,
     name: String,
@@ -1307,8 +1346,9 @@ async fn ytm_home(state: State<'_, AppState>, mood: Option<String>) -> CmdResult
 }
 
 /// One slot of an album page: catalog song, and your copy when you have it.
-#[derive(Serialize)]
+#[derive(Serialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export)]
 struct AlbumSlot {
     disc: u8,
     number: u16,
@@ -1316,8 +1356,9 @@ struct AlbumSlot {
     library_id: Option<i64>,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export)]
 struct AlbumInfo {
     year: Option<u16>,
     slots: Vec<AlbumSlot>,
@@ -1336,7 +1377,7 @@ async fn album_info(state: State<'_, AppState>, artist: String, album: String, t
     let key = format!("{artist}\0{album}\0{country}");
     let found = match state.cache.albums.get(&key) {
         Some(hit) => hit,
-        None => state.cache.albums.put(&key, itunes::album(itunes::API, itunes::LOOKUP, &artist, &album, &country).await.map_err(err)?),
+        None => state.cache.albums.put(&key, itunes::album(hosts::get().itunes, hosts::get().itunes_lookup, &artist, &album, &country).await.map_err(err)?),
     };
     let Some(a) = found.as_ref() else { return Ok(None) };
     let mine: Vec<_> = state.lib().tracks().map_err(err)?.into_iter().filter(|t| track_ids.contains(&t.id)).collect();
@@ -1379,7 +1420,7 @@ async fn ytm_artist(state: State<'_, AppState>, name: String) -> CmdResult<Optio
     if let Some(hit) = state.cache.artists.get(&key) {
         return Ok((*hit).clone());
     }
-    let page = YouTubeMusic::anonymous().artist(&name).await.map_err(err)?;
+    let page = public_ytm().artist(&name).await.map_err(err)?;
     Ok((*state.cache.artists.put(&key, page)).clone())
 }
 
@@ -1393,8 +1434,9 @@ async fn ytm_sign_out(state: State<'_, AppState>) -> CmdResult<()> {
     state.lib().set_setting("ytm_accounts", &serde_json::json!([])).map_err(err)
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export)]
 struct YtmAccounts {
     signed_in: bool,
     /// Every Google account and channel in the session.
@@ -1455,13 +1497,21 @@ async fn load_settings(state: State<'_, AppState>) -> CmdResult<Option<serde_jso
 }
 
 #[tauri::command]
-async fn save_settings(state: State<'_, AppState>, settings: serde_json::Value) -> CmdResult<()> {
+async fn save_settings(app: tauri::AppHandle, state: State<'_, AppState>, settings: serde_json::Value) -> CmdResult<()> {
     // Trust boundary: object only, bounded size (custom themes included).
     if !settings.is_object() || settings.to_string().len() > 256 * 1024 {
         return Err("Invalid settings".into());
     }
+    let channel = update::Channel::from_ui(state.lib().setting("ui").map_err(err)?.as_ref());
     // Stamped key by key: Sync Mode merges settings by their newest change.
-    state.lib().save_ui_settings(&settings, music_core::library::now_ms()).map_err(err)
+    state.lib().save_ui_settings(&settings, music_core::library::now_ms()).map_err(err)?;
+    // Update channel picked: the updater looks at the new one now (saved first, it reads the setting).
+    if update::Channel::from_ui(Some(&settings)) != channel
+        && let Some(updater) = app.try_state::<update::Updater>()
+    {
+        updater.switched(&app);
+    }
+    Ok(())
 }
 
 /// Plays of the last days (since = unix s, two weeks at most): Home's Your week.
@@ -1502,8 +1552,9 @@ fn update_install(app: tauri::AppHandle, updater: State<update::Updater>) -> Cmd
     updater.install(&app)
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export)]
 struct CacheStats {
     library: Stats,
     playlists: Stats,
@@ -1535,8 +1586,9 @@ fn voice_stop() {
 }
 
 /// The song Now Playing wants lyrics for.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export)]
 struct LyricsAsk {
     title: String,
     artist: String,
@@ -1572,7 +1624,7 @@ async fn lyrics(state: State<'_, AppState>, ask: LyricsAsk) -> CmdResult<Option<
     };
     let speed = lyrics::speed_changed(&ask.title);
     let playing_s = ask.duration_ms.map(|d| d as f32 / 1000.0);
-    let lrclib = Lrclib::default();
+    let lrclib = Lrclib::with_urls(hosts::get().lrclib);
     let mut found = None;
     let mut failed = None;
     // Signed in: YouTube Music's own first. Its timed lines (start and end) win; plain text waits behind LRCLIB.
@@ -1682,13 +1734,31 @@ fn cache_stats(state: State<AppState>) -> CacheStats {
     CacheStats { library: c.library.stats(), playlists: c.playlist.stats(), mixes: c.mixes.stats(), stats: c.stats.stats(), images: state.art.stats() }
 }
 
+/// Settings › General › Cover cache: how much the cover folder holds now.
+#[tauri::command]
+async fn art_cache_size(app: tauri::AppHandle) -> CmdResult<u64> {
+    tauri::async_runtime::spawn_blocking(move || app.state::<AppState>().art.size()).await.map_err(err)
+}
+
+/// New cap of the cover cache, in MB. Over it: pruned in the background.
+#[tauri::command]
+fn set_art_cache_cap(state: State<AppState>, mb: u64) {
+    state.art.set_cap(mb.clamp(50, 20_000) << 20);
+}
+
+/// Empties the cover cache (covers download again when shown). Bytes freed.
+#[tauri::command]
+async fn clear_art_cache(app: tauri::AppHandle) -> CmdResult<u64> {
+    tauri::async_runtime::spawn_blocking(move || app.state::<AppState>().art.clear()).await.map_err(err)
+}
+
 /// Cover saved where the user picked (save dialog). source = art scheme path (local/<id>, cover/<name> or a URL),
 /// crop = what the big cover shows (video bars cut). Returns the file written (extension may change, see cover::export).
 #[tauri::command]
 async fn export_cover(app: tauri::AppHandle, source: String, crop: Option<music_core::cover::Crop>, path: String) -> CmdResult<String> {
     let path = std::path::PathBuf::from(path);
     music_core::cover::wanted(&path).map_err(err)?;
-    let (bytes, _) = art::image(&app, &source).await.ok_or("Cover not available")?;
+    let (bytes, _) = art::image(&app, &source, None).await.ok_or("Cover not available")?;
     let out = tauri::async_runtime::spawn_blocking(move || music_core::cover::export(&bytes, crop, &path)).await.map_err(err)?.map_err(err)?;
     Ok(out.to_string_lossy().into_owned())
 }
@@ -1737,7 +1807,8 @@ async fn save_session(state: State<'_, AppState>, session: serde_json::Value) ->
     state.lib().set_setting("session", &session).map_err(err)
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, ts_rs::TS)]
+#[ts(export)]
 struct ShieldStatus {
     enabled: bool,
     blocked: u64,
@@ -1754,7 +1825,8 @@ fn set_shield(state: State<AppState>, enabled: bool) {
     state.shield.enabled.store(enabled, Ordering::Relaxed)
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, ts_rs::TS)]
+#[ts(export)]
 struct SystemAccent {
     /// For light themes (Windows AccentDark1, as WinUI uses it).
     light: String,
@@ -1841,7 +1913,7 @@ async fn media_update(app: tauri::AppHandle, state: State<'_, AppState>, now: Op
                 if cover.is_none()
                     && let Some(url) = &art
                 {
-                    cover = art::remote(&state.app, url).await;
+                    cover = art::remote(&state.app, url, None).await;
                 }
             }
             // Track changed while cover loaded: newer call wins.
@@ -1903,8 +1975,10 @@ fn player_status(state: State<AppState>) -> Status {
     state.player.status()
 }
 
-/// Error box before any window exists (startup), then the app quits.
+/// Error box before any window exists (startup), then the app quits. Kept in the diagnostics log too (when it runs yet).
 fn stop_with(text: &str) -> ! {
+    diag::error("startup", "stopped before the window opened", text);
+    diag::flush();
     #[cfg(windows)]
     {
         use windows::Win32::UI::WindowsAndMessaging::{MB_ICONERROR, MB_OK, MessageBoxW};
@@ -1914,14 +1988,14 @@ fn stop_with(text: &str) -> ! {
             MessageBoxW(None, &HSTRING::from(text), &HSTRING::from("Legato"), MB_OK | MB_ICONERROR);
         }
     }
-    #[cfg(not(windows))]
-    eprintln!("Legato: {text}");
     std::process::exit(1);
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let context = tauri::generate_context!();
+    // First: who runs decides what may touch the PC outside the app's own folders (identity.rs).
+    identity::init(&context.config().identifier);
     // Before anything opens the app's folders (window place, WebView2, library): Music App's move to Legato's name.
     if let Err(e) = rename::migrate(&context.config().identifier) {
         stop_with(&format!("Legato can't move your library and settings to its new folder ({e}). Close Music App if it still runs, then start Legato again."));
@@ -1934,6 +2008,12 @@ pub fn run() {
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(window_place::plugin())
         .plugin(hotkeys::plugin())
+        // A reload of the interface forgets its channels: the visualizer's worker stops with it (viz.rs).
+        .on_page_load(|webview, payload| {
+            if webview.label() == "main" && payload.event() == tauri::webview::PageLoadEvent::Started {
+                viz::stop();
+            }
+        })
         .register_asynchronous_uri_scheme_protocol("art", |ctx, req, responder| {
             let app = ctx.app_handle().clone();
             tauri::async_runtime::spawn(async move { responder.respond(art::respond(app, req).await) });
@@ -1942,6 +2022,8 @@ pub fn run() {
             autostart::follow();
             let dir = app.path().app_data_dir()?;
             std::fs::create_dir_all(&dir)?;
+            // Before anything that can fail: later steps log, and a panic from here on lands in the diagnostics log.
+            diag::init(&dir, &app.package_info().version.to_string());
             let handle = app.handle().clone();
             let open: Opener = Arc::new(move |url: &str| handle.opener().open_url(url, None::<&str>).map_err(Into::into));
             let lib = match Library::open(dir.join("library.db")) {
@@ -1961,7 +2043,7 @@ pub fn run() {
             // Starts with built-in rules; cached / fresh lists swapped in below without blocking startup.
             let shield = Arc::new(Shield::new("", shield_on));
 
-            let mut window = tauri::WebviewWindowBuilder::from_config(app.handle(), &app.config().app.windows[0])?.additional_browser_args(background::BROWSER_ARGS);
+            let mut window = tauri::WebviewWindowBuilder::from_config(app.handle(), &app.config().app.windows[0])?.additional_browser_args(&background::browser_args());
             if let Some((r, g, b)) = window_bg::parse(&window_bg::resolve(ui.as_ref(), window_bg::system_dark())) {
                 window = window.background_color(tauri::window::Color(r, g, b, 255));
             }
@@ -2026,20 +2108,19 @@ pub fn run() {
                 }
             });
 
-            app.manage(AppState { app: app.handle().clone(), lib: Mutex::new(lib), store: Arc::new(secrets::KeyringStore::new(&app.config().identifier)), open, player: Player::spawn(), shield, art: music_connectors::art::ArtCache::new(dir.join("art"), 300 << 20), cache: Caches::default(), nearby: Arc::new(Mutex::new(NearbyState::Idle)), nearby_task: Mutex::default(), media, media_last: Mutex::default(), tray, discord: discord::Discord::spawn() });
+            app.manage(AppState { app: app.handle().clone(), lib: Mutex::new(lib), store: Arc::new(secrets::KeyringStore::new(&app.config().identifier)), open, player: Player::spawn(), shield, art: music_connectors::art::ArtCache::new(dir.join("art"), 500 << 20), cache: Caches::default(), nearby: Arc::new(Mutex::new(NearbyState::Idle)), nearby_task: Mutex::default(), media, media_last: Mutex::default(), tray, discord: discord::Discord::spawn() });
             // Reads the library's settings: after AppState.
             app.manage(update::Updater::new(app.handle()));
-            update::spawn(app.handle().clone());
             app.manage(syncmode::SyncMode::default());
             app.manage(lastfm::Pending::default());
-            syncmode::spawn(app.handle().clone());
             app.manage(plugins::Plugins::default());
-            plugins::start_all(app.handle());
             let dirs = folders(&app.state::<AppState>().lib());
             folders::watch(app.handle(), &dirs);
+            // Plugins, update and Sync Mode rounds: when the UI says ready, or after a few seconds.
+            deferred::arm(app.handle());
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![sources_status, connect, disconnect, sync_all, library, library_changes, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, search_suggestions, add_track, backfill_art, find_versions, play_preview, share_playlist, share_preview, share_read_image, share_import, nearby_send, nearby_status, nearby_stop, nearby_receive, record_play, recent_plays, play_history, mixes, set_track_pref, set_music, clear_history, export_youtube, spotify_player, spotify_playback, ytm_sign_in, ytm_sign_out, spotify_web_open, spotify_web_status, import_spotify_link, ytm_accounts, set_ytm_accounts, sync_directions, set_sync_direction, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, system_accent, restart_app, autostart, set_autostart, hold_page, media_update, load_session, save_session, add_to_youtube, save_cover, export_cover, alternative_videos, embed_refused, play_stats, cache_stats, open_licenses, update_status, update_check, update_install, ytm_home, ytm_list, ytm_artist, album_info, discord_presence, discord_off, discord_status, remove_from_playlist, remove_from_library, merge_duplicates, resolve_track, set_global_shortcuts, player_live, editor::player_effects, player_levels, editor::export_edit, editor::export_stop, editor::edits, editor::save_edit, editor::delete_edit, editor::activate_edit, editor::edit_draft, editor::save_edit_draft, voice_listen, voice_stop, open_windows_settings, detector::detector_status, detector::set_detector_token, detector::detect_song, detector::detect_stop, lastfm::lastfm_status, lastfm::lastfm_connect, lastfm::lastfm_disconnect, lastfm::lastfm_now_playing, lastfm::lastfm_scrobble, lyrics, set_ui_language, ytwatch_open, ytwatch_place, ytwatch_cmd, ytwatch_close, syncmode::sync_status, syncmode::sync_probe, syncmode::sync_setup, syncmode::sync_stop, syncmode::sync_now, syncmode::sync_dismiss, syncmode::sync_offer, syncmode::sync_offer_stop, syncmode::sync_join, plugins::plugins_list, plugins::plugin_inspect, plugins::plugin_install, plugins::plugin_set, plugins::plugin_uninstall, plugins::plugin_reply, plugins::plugin_event, plugins::plugin_input, plugins::plugin_log, themes::save_background, themes::forget_background, themes::export_theme, themes::import_theme, tags::edit_tags, songlist::import_song_list])
+        .invoke_handler(tauri::generate_handler![deferred::app_ready, sources_status, connect, disconnect, sync_all, library, library_changes, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, search_suggestions, add_track, backfill_art, find_versions, play_preview, share_playlist, share_preview, share_read_image, share_import, nearby_send, nearby_status, nearby_stop, nearby_receive, record_play, recent_plays, play_history, mixes, set_track_pref, set_music, clear_history, export_youtube, spotify_player, spotify_playback, ytm_sign_in, ytm_sign_out, spotify_web_open, spotify_web_status, import_spotify_link, links::import_link, links::import_link_stop, ytm_accounts, set_ytm_accounts, sync_directions, set_sync_direction, local_folders, set_local_folders, rescan_local, load_settings, save_settings, shield_status, set_shield, system_accent, restart_app, autostart, set_autostart, hold_page, media_update, load_session, save_session, add_to_youtube, save_cover, export_cover, alternative_videos, embed_refused, play_stats, cache_stats, art_cache_size, set_art_cache_cap, clear_art_cache, open_licenses, update_status, update_check, update_install, ytm_home, ytm_list, ytm_artist, album_info, discord_presence, discord_off, discord_status, remove_from_playlist, remove_from_library, merge_duplicates, resolve_track, set_global_shortcuts, player_live, editor::player_effects, player_levels, viz::viz_start, viz::viz_page, viz::viz_stop, viz::viz_stats, silence::silence_prepare, sponsor::sponsor_segments, editor::export_edit, editor::export_stop, editor::edits, editor::save_edit, editor::delete_edit, editor::activate_edit, editor::edit_draft, editor::save_edit_draft, voice_listen, voice_stop, open_windows_settings, detector::detector_status, detector::set_detector_token, detector::detect_song, detector::detect_stop, lastfm::lastfm_status, lastfm::lastfm_connect, lastfm::lastfm_disconnect, lastfm::lastfm_now_playing, lastfm::lastfm_scrobble, lyrics, set_ui_language, ytwatch_open, ytwatch_place, ytwatch_cmd, ytwatch_close, syncmode::sync_status, syncmode::sync_probe, syncmode::sync_setup, syncmode::sync_stop, syncmode::sync_now, syncmode::sync_dismiss, syncmode::sync_offer, syncmode::sync_offer_stop, syncmode::sync_join, plugins::plugins_list, plugins::plugin_inspect, plugins::plugin_install, plugins::plugin_set, plugins::plugin_uninstall, plugins::plugin_reply, plugins::plugin_event, plugins::plugin_input, plugins::plugin_log, themes::save_background, themes::forget_background, themes::export_theme, themes::import_theme, tags::edit_tags, songlist::import_song_list, diag::diag_log, diag::diag_report])
         .run(context)
         .expect("error while running tauri application");
 }

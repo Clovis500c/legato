@@ -8,8 +8,9 @@
 use serde::Serialize;
 
 /// Why no text came back. The UI words it and links to the Windows setting that fixes it, when one does.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export, rename = "VoiceMiss")]
 pub enum Miss {
     /// Online speech recognition off in Windows.
     SpeechOff,
@@ -25,8 +26,9 @@ pub enum Miss {
     Failed,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, ts_rs::TS)]
 #[serde(tag = "kind", rename_all = "camelCase")]
+#[ts(export)]
 pub enum Heard {
     Text { text: String },
     Miss { miss: Miss },

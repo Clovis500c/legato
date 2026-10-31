@@ -5,6 +5,13 @@ import { curvePath, demoGain, demoLength, effectiveFade, fadeGain, NO_FADE, over
 const simple = (s: number): Fade => ({ ...NO_FADE, out: s, in: s })
 
 describe('fadeGain', () => {
+  it('the fade in counts from where the music began, not from 0', () => {
+    expect(fadeGain(5000, 200_000, simple(4), true)).toBe(1)
+    expect(fadeGain(5000, 200_000, simple(4), true, 5000)).toBe(0)
+    expect(fadeGain(7000, 200_000, simple(4), true, 5000)).toBeCloseTo(0.5)
+    expect(fadeGain(100_000, 200_000, simple(4), true, 5000)).toBe(1)
+  })
+
   const dur = 200_000
   it('off at 0 seconds, full volume mid-track', () => {
     expect(fadeGain(199_000, dur, simple(0), true)).toBe(1)

@@ -1,4 +1,5 @@
 import { ArrowUpLeft, ClockCounterClockwise, GlobeSimple, LockSimple, MagnifyingGlass, MicrophoneStage, MusicNotes, Playlist, VinylRecord, X } from '@phosphor-icons/react'
+import { artistName } from '../../shared/artistName'
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { bindings, comboLabel } from '../../app/keys'
 import { useSettings } from '../../app/settings'
@@ -155,9 +156,9 @@ export function SearchBar({ children }: { children?: ReactNode }) {
         {extra}
       </>
     )
-    for (const a of lib.artists.slice(0, 1)) items.push({ key: `a:${a.artist}`, run: pick(() => go({ name: 'artist', artist: a.artist })), node: row(<Cover title={a.artist} art={trackArt(a.cover)} size={36} className="rounded-full!" />, a.artist, `${tr('Artist')} · ${trn(a.count, '{n} song', '{n} songs')}`) })
-    lib.songs.slice(0, 3).forEach((t, i) => items.push({ key: `s:${t.id}`, run: pick(() => usePlayer.getState().playTracks(lib.songs, i)), node: row(<Cover title={t.album ?? t.title} art={trackArt(t)} size={36} />, t.title, `${tr('Song')} · ${t.artist}`, <span className="font-mono text-[0.6875rem] text-ink-3">{formatDuration(t.durationMs)}</span>) }))
-    for (const a of lib.albums.slice(0, 1)) items.push({ key: `b:${a.album}\u0000${a.artist}`, run: pick(() => go({ name: 'album', album: a.album, artist: a.artist })), node: row(<Cover title={a.album} art={trackArt(a.tracks[0])} size={36} />, a.album, `${tr('Album')} · ${a.artist}`) })
+    for (const a of lib.artists.slice(0, 1)) items.push({ key: `a:${a.artist}`, run: pick(() => go({ name: 'artist', artist: a.artist })), node: row(<Cover title={a.artist} art={trackArt(a.cover)} size={36} className="rounded-full!" />, artistName(a.artist), `${tr('Artist')} · ${trn(a.count, '{n} song', '{n} songs')}`) })
+    lib.songs.slice(0, 3).forEach((t, i) => items.push({ key: `s:${t.id}`, run: pick(() => usePlayer.getState().playTracks(lib.songs, i)), node: row(<Cover title={t.album ?? t.title} art={trackArt(t)} size={36} />, t.title, `${tr('Song')} · ${artistName(t.artist)}`, <span className="font-mono text-[0.6875rem] text-ink-3">{formatDuration(t.durationMs)}</span>) }))
+    for (const a of lib.albums.slice(0, 1)) items.push({ key: `b:${a.album}\u0000${a.artist}`, run: pick(() => go({ name: 'album', album: a.album, artist: a.artist })), node: row(<Cover title={a.album} art={trackArt(a.tracks[0])} size={36} />, a.album, `${tr('Album')} · ${artistName(a.artist)}`) })
     for (const p of lib.playlists.slice(0, 1)) items.push({ key: `p:${p.id}`, run: pick(() => go({ name: 'playlist', id: p.id })), node: row(<PlaylistCover p={p} size={36} />, p.name, `${tr('Playlist')} · ${trn(p.trackCount, '{n} song', '{n} songs')}`) })
     if (items.length) sections.push({ label: tr('In your library'), items })
     const ideas = suggested?.q === text ? suggested.list.filter((s) => s.toLowerCase() !== text.toLowerCase()).slice(0, 4) : []

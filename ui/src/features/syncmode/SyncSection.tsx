@@ -197,7 +197,7 @@ function Network({ onDone }: { onDone: () => void }) {
     if (!code) return
     const off = api.onSyncOffer((r) => {
       setCode(null)
-      if (r.Ok) {
+      if ('Ok' in r) {
         done(r.Ok)
         onDone()
       } else setError(r.Err)

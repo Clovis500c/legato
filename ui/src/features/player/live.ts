@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { api, type Effects, type LiveLevels } from '../../shared/api'
 import { NEUTRAL } from './effects'
+import { bindVizSource, viz } from './vizFrames'
 import { useWatch, watching } from './watch'
 import { YT_ORIGIN } from './youtube'
 
@@ -14,14 +15,16 @@ import { YT_ORIGIN } from './youtube'
 export interface LiveWish {
   /** A feature wants processing or levels. */
   on: boolean
+  /** The engine's levels are wanted (processing, moving cover): the native poll runs only then. The visualizer reads frames, not levels. */
+  levels: boolean
   /** YouTube only: early ends heard (ends.ts), which needs levels too. */
   ends: boolean
   /** Levels only (cover pulse, early ends): YouTube's sound stays its own, live.js only listens. */
   listen: boolean
   adaptive: boolean
   targetLufs: number
-  /** The visualizer wants the bands (Now Playing open, visualizer on). */
-  bands: boolean
+  /** A visualizer listens to the 60 Hz frames (vizFrames.ts): YouTube's side makes them only then. */
+  viz: boolean
   /** YouTube's sound may be processed (Settings › Advanced). */
   youtube: boolean
   /** Live Editor settings (neutral = untouched). */
@@ -42,11 +45,11 @@ export function punch(l: LiveLevels | null): number {
 
 /** What the YouTube player gets. */
 export function frameSettings(w: LiveWish) {
-  return { on: (w.on || w.ends) && w.youtube, listen: w.listen, adaptive: w.adaptive, targetLufs: w.targetLufs, bands: w.bands }
+  return { on: (w.on || w.ends) && w.youtube, listen: w.listen, adaptive: w.adaptive, targetLufs: w.targetLufs, viz: w.viz }
 }
 
-/** end = the song ended there (s of the video), silence after it (live.js, ends.ts). */
-type Report = { attached?: boolean; error?: string | null; levels?: LiveLevels | null; end?: number }
+/** end = the song ended there (s of the video), silence after it; lead = the music began there, silence before it (live.js, ends.ts). */
+type Report = { attached?: boolean | null; error?: string | null; levels?: LiveLevels | null; end?: number | null; lead?: number | null; viz?: string | null }
 
 /** A frame message from live.js, if it is one. */
 export function parseLive(origin: string, data: unknown): Report | null {
@@ -59,10 +62,13 @@ export function parseLive(origin: string, data: unknown): Report | null {
   }
 }
 
-let wish: LiveWish = { on: false, ends: false, listen: false, adaptive: false, targetLufs: -14, bands: false, youtube: true, effects: NEUTRAL }
+let wish: LiveWish = { on: false, levels: false, ends: false, listen: false, adaptive: false, targetLufs: -14, viz: false, youtube: true, effects: NEUTRAL }
 // Early end heard (the store's): tail = from the overlap's fading-out embed, not what plays now.
 let ended: ((end: number, tail: boolean) => void) | null = null
 export const onEndHeard = (f: (end: number, tail: boolean) => void) => void (ended = f)
+// Late start heard (the store's): the music of the playing video began there.
+let led: ((lead: number) => void) | null = null
+export const onLeadHeard = (f: (lead: number) => void) => void (led = f)
 let frame: HTMLIFrameElement | null = null
 // The app fades the song out: Adaptive Sound holds (its fades are never bent or brought up).
 let ending = false
@@ -77,7 +83,7 @@ const post = (settings: FrameSettings, effects: Effects) => frame?.contentWindow
  */
 export function sendLive(next?: LiveWish, newSong = false) {
   if (next) wish = next
-  void api.playerLive({ adaptive: wish.adaptive, targetLufs: wish.targetLufs, ending, bands: wish.bands }).catch(() => {})
+  void api.playerLive({ adaptive: wish.adaptive, targetLufs: wish.targetLufs, ending }).catch(() => {})
   void api.playerEffects(wish.effects).catch(() => {})
   const s = { ...frameSettings(wish), ending, gain: newSong ? (useLive.getState().levels?.gain ?? null) : null }
   if (watching()) {
@@ -105,7 +111,8 @@ export const bindLiveFrame = (el: HTMLIFrameElement | null) => void (frame = el)
 export function startLive(playing: () => 'native' | 'youtube' | null): () => void {
   const take = (m: Report) => {
     if (m.levels) useLive.setState({ levels: m.levels })
-    if (m.attached !== undefined) useLive.setState({ attached: m.attached, error: m.error ?? undefined })
+    if (m.attached != null) useLive.setState({ attached: m.attached, error: m.error ?? undefined })
+    if (m.viz) viz.fromYoutube(m.viz)
   }
   const onMessage = (e: MessageEvent) => {
     const m = parseLive(e.origin, e.data)
@@ -113,12 +120,15 @@ export function startLive(playing: () => 'native' | 'youtube' | null): () => voi
     // Another of our embeds: the overlap's fading-out tail, not what plays now (its end only).
     const now = e.source === frame?.contentWindow
     if (typeof m.end === 'number') ended?.(m.end, !now)
+    if (now && typeof m.lead === 'number') led?.(m.lead)
     if (now) take(m)
   }
   window.addEventListener('message', onMessage)
+  bindVizSource(playing)
   const off = api.onLive((m) => {
     if (playing() !== 'youtube' || !watching()) return
     if (typeof m.end === 'number') ended?.(m.end, false)
+    if (typeof m.lead === 'number') led?.(m.lead)
     take(m)
   })
   // Embed ↔ watch page: settings follow the video.
@@ -127,7 +137,7 @@ export function startLive(playing: () => 'native' | 'youtube' | null): () => voi
   })
   // Engine levels at ~30 Hz, only when asked for and playing natively (hidden window: timers slow down by themselves).
   const poll = setInterval(() => {
-    if (!wish.on || playing() !== 'native') return
+    if (!wish.levels || playing() !== 'native') return
     void api
       .playerLevels()
       .then((levels) => useLive.setState({ levels }))
@@ -138,5 +148,6 @@ export function startLive(playing: () => 'native' | 'youtube' | null): () => voi
     void off.then((f) => f())
     unwatch()
     clearInterval(poll)
+    bindVizSource(() => null)
   }
 }

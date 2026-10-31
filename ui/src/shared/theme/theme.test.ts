@@ -84,9 +84,25 @@ describe('resolveTheme', () => {
     expect(sanitize({ stage: 'radio', miniSpot: 'center', crossfade: -3, defaultsVersion: 3 })).toMatchObject({ stage: 'auto', miniSpot: 'br', crossfade: 0 })
   })
 
+  it('keeps the update channel to Stable or Beta, Stable unless Beta was picked', () => {
+    expect(DEFAULTS.updateChannel).toBe('stable')
+    expect(sanitize({ updateChannel: 'beta' }).updateChannel).toBe('beta')
+    expect(sanitize({ updateChannel: 'nightly' }).updateChannel).toBe('stable')
+    expect(sanitize({ autoUpdate: false }).updateChannel).toBe('stable')
+  })
+
+  it('the visualizer opens on LED bars; other looks stay, the old default moves once', () => {
+    expect(sanitize({}).visualizerStyle).toBe('led')
+    expect(sanitize({ visualizerStyle: 'bars', defaultsVersion: 8 }).visualizerStyle).toBe('led')
+    expect(sanitize({ visualizerStyle: 'wave', defaultsVersion: 8 }).visualizerStyle).toBe('wave')
+    for (const look of ['radial', 'vu', 'spectrogram']) expect(sanitize({ visualizerStyle: look, defaultsVersion: 9 }).visualizerStyle).toBe(look)
+    expect(sanitize({ visualizerStyle: 'bars', defaultsVersion: 9 }).visualizerStyle).toBe('bars')
+    expect(sanitize({ visualizerStyle: 'nonsense', defaultsVersion: 9 }).visualizerStyle).toBe('led')
+  })
+
   it('settings saved before v2 get the new defaults once, later choices stay', () => {
     const old = sanitize({ volume: 'knob', tuner: true, clickToPlay: 'double', zoom: 110 })
-    expect(old).toMatchObject({ volume: 'bar', tuner: false, clickToPlay: 'single', stage: 'auto', zoom: 110, startView: 'home', defaultsVersion: 8 })
+    expect(old).toMatchObject({ volume: 'bar', tuner: false, clickToPlay: 'single', stage: 'auto', zoom: 110, startView: 'home', defaultsVersion: 9 })
     // Saved at v2: only v3's change applies.
     expect(sanitize({ volume: 'knob', stage: 'video', defaultsVersion: 2 })).toMatchObject({ volume: 'knob', stage: 'auto' })
     // Home opens first once (v4), then the user's pick stays.

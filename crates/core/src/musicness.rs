@@ -5,6 +5,7 @@
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use std::sync::LazyLock;
+use ts_rs::TS;
 
 /// YouTube Music's own kind of a video, when known (`musicVideoType`).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -45,8 +46,9 @@ pub struct Clues<'a> {
     pub live: bool,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export)]
 pub enum Musicness {
     Music,
     /// Can't tell: shown.

@@ -1,10 +1,7 @@
-/** Part of an image, as fractions of its size. */
-export interface Box {
-  x: number
-  y: number
-  w: number
-  h: number
-}
+import type { Box } from './generated'
+
+// Part of an image, as fractions of its size: the Rust `Crop` (crates/core/src/cover.rs), generated.
+export type { Box }
 
 export const FULL: Box = { x: 0, y: 0, w: 1, h: 1 }
 

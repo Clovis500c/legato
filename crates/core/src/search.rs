@@ -7,19 +7,23 @@ use crate::musicness::Musicness;
 use serde::Serialize;
 
 /// Where a hit was found: YouTube's video search, YouTube Music's songs, Apple Music's catalog.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export)]
 pub enum Origin {
     Youtube,
     Ytmusic,
     Apple,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export)]
 pub struct Hit {
     #[serde(flatten)]
     pub track: Track,
+    /// Same JSON key as the flattened track's (None for a hit): TS keeps the track's.
+    #[ts(skip)]
     pub musicness: Musicness,
     /// Each search that found it, in that order (Search page: per-source counts, songs vs videos).
     pub from: Vec<Origin>,

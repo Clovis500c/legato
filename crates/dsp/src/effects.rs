@@ -1,7 +1,7 @@
 //! Live Editor settings: what a song goes through, as numbers only (saved per song in SQLite, never audio). The same
 //! settings drive the native chain (`chain.rs`, `stretch.rs`) and the YouTube player's (crates/shield live.js).
 
-use serde::{Deserialize, Deserializer, Serialize};
+use serde::{Deserialize, Serialize};
 
 /// Equalizer bands, an octave apart: low shelf, eight peaks, high shelf.
 pub const EQ_FREQS: [f32; 10] = [32.0, 64.0, 125.0, 250.0, 500.0, 1_000.0, 2_000.0, 4_000.0, 8_000.0, 16_000.0];
@@ -26,12 +26,22 @@ pub fn eq_from(gains: &[f32]) -> [f32; 10] {
     })
 }
 
-fn eq_de<'de, D: Deserializer<'de>>(d: D) -> Result<[f32; 10], D::Error> {
-    Ok(eq_from(&Vec::<f32>::deserialize(d)?))
+/// `serde(with)` of `Effects::eq`: written as is, read through `eq_from` (older edits saved 5 gains).
+mod eq_serde {
+    use serde::{Deserialize, Deserializer, Serialize, Serializer};
+
+    pub fn serialize<S: Serializer>(gains: &[f32; 10], s: S) -> Result<S::Ok, S::Error> {
+        gains.serialize(s)
+    }
+
+    pub fn deserialize<'de, D: Deserializer<'de>>(d: D) -> Result<[f32; 10], D::Error> {
+        Ok(super::eq_from(&Vec::<f32>::deserialize(d)?))
+    }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase", default)]
+#[ts(export, rename = "EffectsReverb")]
 pub struct Reverb {
     /// Wet share, 0..1 (0 = off).
     pub mix: f32,
@@ -49,8 +59,9 @@ impl Default for Reverb {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase", default)]
+#[ts(export, rename = "EffectsEcho")]
 pub struct Echo {
     /// Wet share, 0..1 (0 = off).
     pub mix: f32,
@@ -67,8 +78,9 @@ impl Default for Echo {
 }
 
 /// 3D / 8D: the song as one sound placed around the listener's head (binaural, for headphones).
-#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase", default)]
+#[ts(export, rename = "EffectsSpace")]
 pub struct Space {
     pub on: bool,
     /// Degrees, 0 = ahead, 90 = right, -90 = left, ±180 = behind.
@@ -91,8 +103,9 @@ impl Default for Space {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase", default)]
+#[ts(export)]
 pub struct Effects {
     /// Off = bypassed (A/B), settings kept.
     pub on: bool,
@@ -105,7 +118,8 @@ pub struct Effects {
     /// Bass boost, dB 0..24.
     pub bass: f32,
     /// dB per band (`EQ_FREQS`), -24..24.
-    #[serde(deserialize_with = "eq_de")]
+    #[serde(with = "eq_serde")]
+    #[ts(as = "Vec<f32>")]
     pub eq: [f32; 10],
     pub reverb: Reverb,
     pub echo: Echo,

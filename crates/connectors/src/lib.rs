@@ -1,13 +1,16 @@
 pub mod art;
 pub mod audd;
+pub mod deezer;
 pub mod discord;
 pub mod itunes;
 pub mod lastfm;
+pub mod linklist;
 pub mod lrclib;
 pub mod nearby;
 pub mod oauth;
 pub mod spotify;
 pub mod spotify_embed;
+pub mod sponsorblock;
 pub mod youtube;
 pub mod ytmusic;
 pub mod ytweb;

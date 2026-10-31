@@ -1,0 +1,43 @@
+{
+  "contents": {
+    "twoColumnSearchResultsRenderer": {
+      "primaryContents": {
+        "sectionListRenderer": {
+          "contents": [
+            {
+              "itemSectionRenderer": {
+                "contents": [
+                  {
+                    "videoRenderer": {
+                      "videoId": "e2eVideo001",
+                      "title": { "runs": [{ "text": "Glass Harbour - Paper Lanterns (Official Audio)" }] },
+                      "ownerText": { "runs": [{ "text": "Glass Harbour" }] },
+                      "lengthText": { "simpleText": "3:21" },
+                      "ownerBadges": [{ "metadataBadgeRenderer": { "style": "BADGE_STYLE_TYPE_VERIFIED_ARTIST" } }]
+                    }
+                  },
+                  {
+                    "videoRenderer": {
+                      "videoId": "e2eVideo002",
+                      "title": { "runs": [{ "text": "How to fold paper lanterns (tutorial for beginners)" }] },
+                      "ownerText": { "runs": [{ "text": "Crafts With Mo" }] },
+                      "lengthText": { "simpleText": "12:40" }
+                    }
+                  },
+                  {
+                    "videoRenderer": {
+                      "videoId": "e2eVideo003",
+                      "title": { "runs": [{ "text": "Moss and Stone - Night Bus" }] },
+                      "ownerText": { "runs": [{ "text": "Moss and Stone" }] },
+                      "lengthText": { "simpleText": "2:58" }
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}

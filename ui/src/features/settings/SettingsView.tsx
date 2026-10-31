@@ -4,8 +4,8 @@ import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { useSettings } from '../../app/settings'
 import { useStore, type SettingsSection } from '../../app/store'
 import { api } from '../../shared/api'
-import { formatCount } from '../../shared/format'
-import { ACCENTS, ADAPTIVE_LEVELS, COLUMNS, DEFAULTS, VISUALIZER_STYLES, type AdaptiveLevel, type Column, type Settings } from '../../shared/theme/theme'
+import { formatBytes, formatCount } from '../../shared/format'
+import { ACCENTS, ADAPTIVE_LEVELS, COLUMNS, COVER_CACHE_MB, DEFAULTS, VISUALIZER_STYLES, type AdaptiveLevel, type Column, type Settings } from '../../shared/theme/theme'
 import { Button } from '../../shared/ui/Button'
 import { Led, Segmented, Toggle } from '../../shared/ui/controls'
 import { PageHeader } from '../../shared/ui/PageHeader'
@@ -13,6 +13,7 @@ import { onMenu } from '../../shared/ui/ContextMenu'
 import { curveLabels } from '../player/fade'
 import { usePlayer } from '../player/store'
 import { useLive } from '../player/live'
+import { VISUALIZER_LABELS } from '../player/vizLooks'
 import { SourcesView } from '../sources/SourcesView'
 import { SyncSection } from '../syncmode/SyncSection'
 import { clearRecent } from '../search/recent'
@@ -396,12 +397,13 @@ function SoundGroup() {
           <Toggle label={tr('Visualizer')} checked={s.visualizer} onChange={(visualizer) => update({ visualizer })} />
         </Row>
         {s.visualizer && (
-          <Row setting="visualizerStyle" label={msg('Visualizer style')}>
+          <Row setting="visualizerStyle" label={msg('Visualizer style')} sub={tr('Radial goes around a big cover; where the cover is small it shows bars')}>
             <Segmented
               label={tr('Visualizer style')}
+              className="max-w-md flex-wrap rounded-3xl!"
               value={s.visualizerStyle}
               onChange={(visualizerStyle) => update({ visualizerStyle })}
-              options={VISUALIZER_STYLES.map((v) => ({ value: v, label: tr({ bars: msg('Bars'), mirror: msg('Mirror'), peaks: msg('Peaks'), wave: msg('Wave') }[v]) }))}
+              options={VISUALIZER_STYLES.map((v) => ({ value: v, label: tr(VISUALIZER_LABELS[v]) }))}
             />
           </Row>
         )}
@@ -422,6 +424,34 @@ function SoundGroup() {
   )
 }
 
+
+/** Cover cache: its size cap on this PC, what it holds now, and a way to empty it. */
+function CoverCacheRows() {
+  const { settings: s, update } = useSettings()
+  const [used, setUsed] = useState<number | null>(null)
+  const [busy, setBusy] = useState(false)
+  const count = () => void api.artCacheSize().then(setUsed, () => setUsed(null))
+  useEffect(count, [])
+  const clear = async () => {
+    setBusy(true)
+    await api.clearArtCache().catch(() => 0)
+    setBusy(false)
+    count()
+  }
+  const label = (mb: number) => (mb >= 1000 ? tr('{n} GB', { n: mb / 1000 }) : tr('{n} MB', { n: mb }))
+  return (
+    <div className="rounded-xl border border-line bg-raised">
+      <Row setting="coverCacheMb" label={msg('Cover cache size')} sub={tr('Covers kept on this PC to show them quickly. Over the limit, the ones not shown for the longest time go first and download again when needed')}>
+        <Segmented label={tr('Cover cache size')} value={String(s.coverCacheMb)} onChange={(mb) => update({ coverCacheMb: Number(mb) as Settings['coverCacheMb'] })} options={COVER_CACHE_MB.map((mb) => ({ value: String(mb), label: label(mb) }))} />
+      </Row>
+      <Row label={msg('Clear covers')} sub={used === null ? undefined : tr('{size} on this PC now. Playlist pictures and theme backgrounds stay', { size: formatBytes(used) })}>
+        <Button variant="ghost" disabled={busy || used === 0} onClick={() => void clear()}>
+          {tr('Clear covers')}
+        </Button>
+      </Row>
+    </div>
+  )
+}
 function GeneralSection() {
   const { settings: s, update } = useSettings()
   return (
@@ -445,6 +475,16 @@ function GeneralSection() {
             <Segmented label={tr('Open on')} value={s.startView} onChange={(startView) => update({ startView })} options={[{ value: 'home', label: tr('Home') }, { value: 'songs', label: tr('Songs') }, { value: 'mixes', label: tr('Mixes') }, { value: 'albums', label: tr('Albums') }, { value: 'artists', label: tr('Artists') }]} />
           </Row>
         </div>
+      </Group>
+      <Group title={msg('Updates')}>
+        <div className="rounded-xl border border-line bg-raised">
+          <Row setting="updateChannel" label={msg('Update channel')} sub={s.updateChannel === 'beta' ? tr('Every change first, so it may break. Back on Stable, the app waits for a Stable version newer than this one: it never goes back to an older one') : tr('Versions already tried on Beta. Pick Beta to get every change first')}>
+            <Segmented label={tr('Update channel')} value={s.updateChannel} onChange={(updateChannel) => update({ updateChannel })} options={[{ value: 'stable', label: tr('Stable') }, { value: 'beta', label: tr('Beta') }]} />
+          </Row>
+        </div>
+      </Group>
+      <Group title={msg('Cover cache')}>
+        <CoverCacheRows />
       </Group>
       <Group title={msg('Notifications')}>
         <div className="rounded-xl border border-line bg-raised">
@@ -502,6 +542,12 @@ function PlaybackSection() {
           </Row>
           <Row setting="earlyEnds" label={msg('Early endings')} sub={tr('YouTube videos whose song ends early (silence, an end screen): the fade and the next song start where the song ends. Learned as they play')}>
             <Toggle label={tr('Early endings')} checked={s.earlyEnds} onChange={(earlyEnds) => update({ earlyEnds })} />
+          </Row>
+          <Row setting="skipSilence" label={msg('Skip silence')} sub={tr('Songs start on the music and end where it ends, when they open or close with more than a moment of silence. Off by default: some silences are meant (hidden tracks, gapless albums)')}>
+            <Toggle label={tr('Skip silence')} checked={s.skipSilence} onChange={(skipSilence) => update({ skipSilence })} />
+          </Row>
+          <Row setting="skipNonMusic" label={msg('Skip non-music parts')} sub={tr('Intros, skits and talking in music videos are skipped, from SponsorBlock’s community marks. For each YouTube video, 4 characters of its id’s hash go to sponsor.ajay.app, never the id. Off by default')}>
+            <Toggle label={tr('Skip non-music parts')} checked={s.skipNonMusic} onChange={(skipNonMusic) => update({ skipNonMusic })} />
           </Row>
         </div>
         {s.fade.advanced && <FadeEditor />}

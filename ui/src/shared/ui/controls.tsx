@@ -58,7 +58,7 @@ export function Stat({ label, value }: { label: string; value: number }) {
   )
 }
 
-/** Volume knob 0..1: drag up/down, wheel or arrows. Optional tick scale. */
+/** Volume knob 0..1: drag up/down or arrows (the player area owns the wheel). Optional tick scale. */
 export function Knob({ value, onChange, size = 32, ticks = false, label = tr('Volume') }: { value: number; onChange: (v: number) => void; size?: number; ticks?: boolean; label?: string }) {
   const start = useRef<{ y: number; v: number } | null>(null)
   const set = (v: number) => onChange(Math.min(1, Math.max(0, Math.round(v * 100) / 100)))
@@ -80,7 +80,6 @@ export function Knob({ value, onChange, size = 32, ticks = false, label = tr('Vo
       }}
       onPointerMove={(e) => start.current && set(start.current.v + (start.current.y - e.clientY) / 150)}
       onPointerUp={() => (start.current = null)}
-      onWheel={(e) => set(value - Math.sign(e.deltaY) * 0.05)}
       onKeyDown={(e) => {
         const d = ({ ArrowUp: 0.05, ArrowRight: 0.05, ArrowDown: -0.05, ArrowLeft: -0.05 } as Record<string, number>)[e.key]
         if (d) {

@@ -44,3 +44,17 @@ export const firstArt = (tracks: Pick<Track, 'ids' | 'art'>[]) => tracks.map(tra
 
 /** YouTube 4:3 frames (hq/sd/default.jpg) letterbox 16:9 videos: zoom past the black bars. */
 export const isLetterboxed = (src: string) => /i\.ytimg\.com.*%2F(hq|sd)?default\.jpg/.test(src)
+
+/** Sizes the art scheme cuts (Rust: music_core::artcache::SIZES, the only ones it serves). */
+export const THUMB_SIZES = [64, 256, 600]
+
+/**
+ * Smallest thumbnail that still covers a picture drawn `css` px wide on a screen of density `dpr`: `?s=64` / 256 / 600
+ * on a remote or local-file cover. `floor` = at least that many px (bars measured on the picture need detail).
+ * Too big for the biggest thumbnail, or not such a cover (the user's own pictures): the URL as it is.
+ */
+export function sizedArt(src: string, css: number, dpr = 1, floor = 0): string {
+  if (src.includes('?') || !/^(?:https?:\/\/art\.localhost|art:\/\/localhost)\/(?:https%3A|local%2F)/.test(src)) return src
+  const size = THUMB_SIZES.find((s) => s >= Math.max(css * dpr, floor))
+  return size ? `${src}?s=${size}` : src
+}

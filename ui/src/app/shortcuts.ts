@@ -1,5 +1,8 @@
 import { create } from 'zustand'
 import { usePlayer } from '../features/player/store'
+import { toggleKaraoke } from '../features/player/karaokeMode'
+import { toggleVizFull, useVizFull } from '../features/player/vizFull'
+import { nudgeVolume } from '../features/player/volume'
 import { api } from '../shared/api'
 import { accelerator, ACTIONS, bindings, comboOf, type ActionId, type Combo } from './keys'
 import { useSettings } from './settings'
@@ -11,7 +14,6 @@ const seekBy = (ms: number) => {
   const { now, positionMs, durationMs, seek } = player()
   if (now) seek(Math.max(0, Math.min(positionMs + ms, durationMs ?? Infinity)))
 }
-const volumeBy = (d: number) => player().setVolume(Math.round(Math.max(0, Math.min(1, player().volume + d)) * 100) / 100)
 
 /** What each action does. One table with keys.ts (labels, default keys): Settings › Shortcuts lists both. */
 export const RUN: Record<ActionId, () => void> = {
@@ -24,17 +26,20 @@ export const RUN: Record<ActionId, () => void> = {
   },
   forward: () => seekBy(10_000),
   back10: () => seekBy(-10_000),
-  volumeUp: () => volumeBy(0.1),
-  volumeDown: () => volumeBy(-0.1),
+  volumeUp: () => nudgeVolume(0.1),
+  volumeDown: () => nudgeVolume(-0.1),
   mute: () => player().toggleMute(),
   shuffle: () => player().toggleShuffle(),
   repeat: () => player().cycleRepeat(),
-  nowPlaying: () => player().now && player().setFull(!player().full),
+  // The visualizer's screen is on top: Now Playing, karaoke, search and navigation wait for Esc (karaoke's full screen would clash with it).
+  nowPlaying: () => !useVizFull.getState().open && player().now && player().setFull(!player().full),
   fullscreen: () => void toggleFullscreen(),
-  search: () => document.querySelector<HTMLInputElement>('[data-search]')?.focus(),
-  settings: () => useStore.getState().go({ name: 'settings', section: 'shortcuts' }),
-  goBack: () => (player().full ? player().setFull(false) : useStore.getState().goBack()),
-  goForward: () => useStore.getState().goForward(),
+  karaoke: () => !useVizFull.getState().open && toggleKaraoke(),
+  vizFull: toggleVizFull,
+  search: () => !useVizFull.getState().open && document.querySelector<HTMLInputElement>('[data-search]')?.focus(),
+  settings: () => !useVizFull.getState().open && useStore.getState().go({ name: 'settings', section: 'shortcuts' }),
+  goBack: () => !useVizFull.getState().open && (player().full ? player().setFull(false) : useStore.getState().goBack()),
+  goForward: () => !useVizFull.getState().open && useStore.getState().goForward(),
   // Rust shows the window itself (global only).
   showApp: () => {},
 }
@@ -89,7 +94,7 @@ export function startShortcuts(): () => void {
     const combo = comboOf(e)
     const id = combo && map.get(combo)
     if (!id || inText(e.target)) return
-    if (e.repeat && id === 'playPause') return
+    if (e.repeat && (id === 'playPause' || id === 'karaoke' || id === 'vizFull')) return
     if (/^(Shift\+)?Arrow/.test(combo) && ownsArrows(e.target)) return
     if (combo === 'Space' && ownsSpace(e.target)) return
     e.preventDefault()

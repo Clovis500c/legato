@@ -1,0 +1,42 @@
+name: promote
+
+# Stable = a beta that was tried, promoted by hand: Actions › promote › Run workflow. Leave the version empty for the
+# newest beta. The release (a prerelease so far, from release.yml) gets the notes of everything since the previous Stable
+# in its latest.json and on its page, then becomes a normal, Latest release: releases/latest/download/latest.json, the
+# file every installed version reads, is now this one's. Refuses a version that is not newer than the current Stable, and
+# a release whose latest.json is incomplete (scripts/promote.mjs). The installer and its signature are not touched.
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Version to promote, like 1.0.375 (empty = the newest beta)
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+
+concurrency:
+  group: promote
+  cancel-in-progress: false
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Notes = commits since the previous Stable's tag: full history and tags.
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Promote
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          VERSION: ${{ inputs.version }}
+        run: node scripts/promote.mjs "$VERSION"

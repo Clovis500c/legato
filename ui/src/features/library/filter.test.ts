@@ -6,6 +6,7 @@ import { filterTracks, groupAlbums, groupArtists, libraryStats, musicOnly, prima
 const t = (id: number, title: string, artist: string, ids: LibraryTrack['ids']): LibraryTrack => ({
   id,
   added: id,
+  addedAt: null,
   title,
   artist,
   album: null,

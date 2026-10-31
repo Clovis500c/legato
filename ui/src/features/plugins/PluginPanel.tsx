@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { artistName } from '../../shared/artistName'
 import { useStore } from '../../app/store'
 import { api } from '../../shared/api'
 import { tr } from '../../shared/i18n/i18n'
@@ -28,7 +29,7 @@ function Tracks({ ids }: { ids: number[] }) {
           <button onClick={() => usePlayer.getState().playTracks(list, i)} className="flex w-full items-center gap-3 rounded-md px-2 py-1.5 text-left text-[0.8125rem] hover:bg-raised">
             <span className="w-5 text-right font-mono text-[0.6875rem] text-ink-3">{i + 1}</span>
             <span className="min-w-0 flex-1 truncate">{t.title}</span>
-            <span className="max-w-[40%] truncate text-xs text-ink-2">{t.artist}</span>
+            <span className="max-w-[40%] truncate text-xs text-ink-2">{artistName(t.artist)}</span>
           </button>
         </li>
       ))}

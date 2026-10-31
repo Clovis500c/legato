@@ -4,7 +4,7 @@ import { coverTracks } from './covers'
 
 vi.mock('@tauri-apps/api/core', () => ({ convertFileSrc: (p: string, s: string) => `http://${s}.localhost/${encodeURIComponent(p)}`, invoke: vi.fn() }))
 
-const t = (id: number, title: string, art?: string): LibraryTrack => ({ id, added: id, title, artist: 'A', album: null, durationMs: null, isrc: null, ids: {}, art })
+const t = (id: number, title: string, art?: string): LibraryTrack => ({ id, added: id, addedAt: null, title, artist: 'A', album: null, durationMs: null, isrc: null, ids: {}, art })
 const byId = new Map([t(1, 'b', 'https://x/1'), t(2, 'a', 'https://x/2'), t(3, 'c'), t(4, 'd', 'https://x/1'), t(5, 'e', 'https://x/5')].map((x) => [x.id, x]))
 
 describe('coverTracks', () => {

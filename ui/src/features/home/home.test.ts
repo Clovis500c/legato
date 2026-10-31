@@ -3,7 +3,7 @@ import type { LibraryPlaylist, LibraryTrack, Play } from '../../shared/api'
 import { byOpened, JUMP, jumpLists, listOf, MAX_LISTS, pushList, type OpenedList } from './recentLists'
 import { weekOf } from './week'
 
-const t = (id: number, title: string, artist: string, album: string | null): LibraryTrack => ({ id, added: id, title, artist, album, durationMs: 200_000, isrc: null, ids: { youtube: `y${id}` } })
+const t = (id: number, title: string, artist: string, album: string | null): LibraryTrack => ({ id, added: id, addedAt: null, title, artist, album, durationMs: 200_000, isrc: null, ids: { youtube: `y${id}` } })
 const tracks = [t(1, 'Get Lucky', 'Daft Punk', 'Random Access Memories'), t(2, 'Nightcall', 'Kavinsky', 'OutRun'), t(3, 'Wait', 'M83', 'Hurry Up'), t(4, 'Intro', 'The xx', null)]
 const pl = (id: number, name: string, trackCount: number, custom: boolean): LibraryPlaylist => ({ id, source: 'local', sourceId: String(id), name, trackCount, custom, newestFirst: false, orderManual: false })
 

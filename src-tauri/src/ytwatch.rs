@@ -14,7 +14,8 @@ use tauri::{AppHandle, Manager, PhysicalPosition, PhysicalSize, Url, WebviewBuil
 pub const LABEL: &str = "ytwatch";
 
 /// Where the video slot is, in window physical pixels (UI rect × devicePixelRatio: DPI and the UI's zoom both in).
-#[derive(Debug, Clone, Copy, Deserialize)]
+#[derive(Debug, Clone, Copy, Deserialize, ts_rs::TS)]
+#[ts(export, rename = "WatchRect")]
 pub struct Rect {
     pub x: f64,
     pub y: f64,
@@ -33,8 +34,9 @@ impl Rect {
 }
 
 /// What the watch page reports.
-#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export, rename = "WatchReport")]
 pub struct Report {
     #[serde(default)]
     pub state: Option<i32>,
@@ -76,8 +78,9 @@ pub fn parse_report(source: &str, message: &str) -> Option<Report> {
 }
 
 /// Live processing news from the page (live.js): attached or not, levels.
-#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export)]
 pub struct LiveReport {
     #[serde(default)]
     pub attached: Option<bool>,
@@ -88,18 +91,22 @@ pub struct LiveReport {
     /// The song ended here (s of the video), silence after it: an early end.
     #[serde(default)]
     pub end: Option<f64>,
+    /// The music began here (s of the video), after silence from the start: a late start.
+    #[serde(default)]
+    pub lead: Option<f64>,
+    /// Visualizer frame (`music_dsp::viz::Frame::pack`, base64), 60 per second while it listens.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub viz: Option<String>,
 }
 
-#[derive(Debug, Clone, Copy, Default, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Serialize, Deserialize, ts_rs::TS)]
+#[ts(export)]
 pub struct LiveLevels {
     pub fast: f64,
     pub momentary: f64,
     pub short: f64,
     pub peak: f64,
     pub gain: f64,
-    /// Visualizer bands, dB (only when asked for).
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub bands: Option<[f64; 16]>,
 }
 
 /// Trust boundary, like `parse_report`: "musicapp-live:" + JSON, finite numbers in range, short error text.
@@ -108,9 +115,11 @@ pub fn parse_live(source: &str, message: &str) -> Option<LiveReport> {
         return None;
     }
     let r: LiveReport = serde_json::from_str(message.strip_prefix("musicapp-live:")?).ok()?;
-    let ok_levels = r.levels.is_none_or(|l| [l.fast, l.momentary, l.short, l.gain].iter().chain(l.bands.iter().flatten()).all(|v| v.is_finite() && (-200.0..=60.0).contains(v)) && l.peak.is_finite() && (0.0..=16.0).contains(&l.peak));
-    let ok_end = r.end.is_none_or(|e| e.is_finite() && (0.0..=86_400.0).contains(&e));
-    (ok_levels && ok_end && r.error.as_ref().is_none_or(|e| e.chars().count() <= 200)).then_some(r)
+    let ok_levels = r.levels.is_none_or(|l| [l.fast, l.momentary, l.short, l.gain].iter().all(|v| v.is_finite() && (-200.0..=60.0).contains(v)) && l.peak.is_finite() && (0.0..=16.0).contains(&l.peak));
+    let ok_end = [r.end, r.lead].iter().flatten().all(|e| e.is_finite() && (0.0..=86_400.0).contains(e));
+    // A frame is 130 bytes: 176 characters of base64.
+    let ok_viz = r.viz.as_ref().is_none_or(|v| v.len() <= 200 && v.bytes().all(|b| b.is_ascii_alphanumeric() || matches!(b, b'+' | b'/' | b'=')));
+    (ok_levels && ok_end && ok_viz && r.error.as_ref().is_none_or(|e| e.chars().count() <= 200)).then_some(r)
 }
 
 /// Trust boundary: video id from the UI.
@@ -121,8 +130,9 @@ pub fn watch_url(video: &str, start_s: f64) -> Option<Url> {
 }
 
 /// Player commands the UI may send. Built into a script from fixed names and numbers only.
-#[derive(Debug, Clone, Copy, Deserialize)]
+#[derive(Debug, Clone, Copy, Deserialize, ts_rs::TS)]
 #[serde(tag = "type", rename_all = "camelCase")]
+#[ts(export, rename = "WatchCmd")]
 pub enum Cmd {
     Play,
     Pause,
@@ -142,14 +152,15 @@ pub enum Cmd {
         /// The app fades the song out: Adaptive Sound holds.
         #[serde(default)]
         ending: bool,
-        /// The visualizer wants the bands.
+        /// The 60 Hz visualizer frames wanted (`LiveReport::viz`).
         #[serde(default)]
-        bands: bool,
+        viz: bool,
         /// Adaptive Sound gain a new song starts from, dB (the last song's).
         #[serde(default)]
         gain: Option<f64>,
         /// Live Editor settings; absent = unchanged.
         #[serde(default)]
+        #[ts(optional)]
         effects: Option<music_player::Effects>,
     },
 }
@@ -161,12 +172,12 @@ pub fn script(cmd: Cmd) -> String {
         Cmd::Pause => call("pause", 0.0),
         Cmd::Seek { seconds } => call("seek", if seconds.is_finite() { seconds.max(0.0) } else { 0.0 }),
         Cmd::Volume { percent } => call("volume", if percent.is_finite() { percent.clamp(0.0, 100.0).round() } else { 100.0 }),
-        Cmd::Live { on, listen, adaptive, target_lufs, ending, bands, gain, effects } => {
+        Cmd::Live { on, listen, adaptive, target_lufs, ending, viz, gain, effects } => {
             let t = if target_lufs.is_finite() { target_lufs.clamp(-30.0, -6.0) } else { -14.0 };
             let gain = gain.filter(|g| g.is_finite()).map_or_else(|| "null".into(), |g| g.clamp(-12.0, 9.0).to_string());
             // Clamped, then JSON of numbers and booleans only: nothing to inject.
             let fx = effects.map(|e| serde_json::to_string(&e.clamped()).unwrap_or_else(|_| "undefined".into())).unwrap_or_else(|| "undefined".into());
-            format!("window.__musicAppLive && window.__musicAppLive.set({{ on: {on}, listen: {listen}, adaptive: {adaptive}, targetLufs: {t}, ending: {ending}, bands: {bands}, gain: {gain} }}, {fx})")
+            format!("window.__musicAppLive && window.__musicAppLive.set({{ on: {on}, listen: {listen}, adaptive: {adaptive}, targetLufs: {t}, ending: {ending}, viz: {viz}, gain: {gain} }}, {fx})")
         }
         Cmd::Crop { x, y, w, h } => {
             let f = |v: f64, lo: f64| if v.is_finite() { v.clamp(lo, 1.0) } else { lo };
@@ -194,7 +205,7 @@ pub fn open(app: &AppHandle, video: &str, start_s: f64, rect: Option<Rect>, shie
         return Ok(());
     }
     let window = app.get_window("main").ok_or_else(|| anyhow::anyhow!("No main window"))?;
-    let mut builder = WebviewBuilder::new(LABEL, WebviewUrl::External(url)).additional_browser_args(crate::background::BROWSER_ARGS).initialization_script(music_shield::WATCH_SCRIPT).initialization_script(music_shield::LIVE_SCRIPT).on_navigation(allowed).background_color(tauri::window::Color(0, 0, 0, 255));
+    let mut builder = WebviewBuilder::new(LABEL, WebviewUrl::External(url)).additional_browser_args(&crate::background::browser_args()).initialization_script(music_shield::WATCH_SCRIPT).initialization_script(music_shield::LIVE_SCRIPT).on_navigation(allowed).background_color(tauri::window::Color(0, 0, 0, 255));
     if shield.enabled.load(std::sync::atomic::Ordering::Relaxed) {
         builder = builder.initialization_script_for_all_frames(music_shield::YOUTUBE_SCRIPT);
     }
@@ -301,22 +312,23 @@ mod tests {
         assert_eq!(ok.levels.unwrap().short, -14.0);
         assert_eq!(parse_live(YT, r#"musicapp-live:{"attached":true}"#).unwrap().attached, Some(true));
         assert!(parse_live(YT, r#"musicapp-live:{"levels":{"fast":0,"momentary":1e9,"short":0,"peak":0,"gain":0}}"#).is_none());
-        let bands = parse_live(YT, r#"musicapp-live:{"levels":{"fast":0,"momentary":0,"short":0,"peak":0,"gain":0,"bands":[-3,-120,0,0,0,0,0,0,0,0,0,0,0,0,0,-60]}}"#).unwrap();
-        assert_eq!(bands.levels.unwrap().bands.unwrap()[15], -60.0);
-        assert!(parse_live(YT, r#"musicapp-live:{"levels":{"fast":0,"momentary":0,"short":0,"peak":0,"gain":0,"bands":[1e9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]}}"#).is_none());
-        assert!(parse_live(YT, r#"musicapp-live:{"levels":{"fast":0,"momentary":0,"short":0,"peak":0,"gain":0,"bands":[0,0]}}"#).is_none());
         assert!(parse_live("https://x.example/", r#"musicapp-live:{"attached":true}"#).is_none());
         assert!(parse_live(YT, r#"musicapp-ytwatch:{"state":1}"#).is_none());
+        assert_eq!(parse_live(YT, r#"musicapp-live:{"viz":"AQ0AAAA="}"#).unwrap().viz.as_deref(), Some("AQ0AAAA="));
+        assert!(parse_live(YT, r#"musicapp-live:{"viz":"<script>"}"#).is_none());
+        assert!(parse_live(YT, &format!(r#"musicapp-live:{{"viz":"{}"}}"#, "A".repeat(201))).is_none());
         assert_eq!(parse_live(YT, r#"musicapp-live:{"end":212.4}"#).unwrap().end, Some(212.4));
         assert!(parse_live(YT, r#"musicapp-live:{"end":-1}"#).is_none());
-        assert_eq!(script(Cmd::Live { on: true, listen: false, adaptive: false, target_lufs: -99.0, ending: false, bands: true, gain: None, effects: None }), "window.__musicAppLive && window.__musicAppLive.set({ on: true, listen: false, adaptive: false, targetLufs: -30, ending: false, bands: true, gain: null }, undefined)");
-        assert!(script(Cmd::Live { on: true, listen: false, adaptive: true, target_lufs: -14.0, ending: true, bands: false, gain: Some(40.0), effects: None }).contains("ending: true, bands: false, gain: 9 }"));
-        assert!(script(Cmd::Live { on: true, listen: false, adaptive: true, target_lufs: -14.0, ending: false, bands: false, gain: Some(f64::NAN), effects: None }).contains("gain: null }"));
-        let with = script(Cmd::Live { on: true, listen: true, adaptive: false, target_lufs: -14.0, ending: false, bands: false, gain: None, effects: Some(music_player::Effects { speed: 9.0, ..Default::default() }) });
+        assert_eq!(parse_live(YT, r#"musicapp-live:{"lead":5.2}"#).unwrap().lead, Some(5.2));
+        assert!(parse_live(YT, r#"musicapp-live:{"lead":1e9}"#).is_none());
+        assert_eq!(script(Cmd::Live { on: true, listen: false, adaptive: false, target_lufs: -99.0, ending: false, viz: false, gain: None, effects: None }), "window.__musicAppLive && window.__musicAppLive.set({ on: true, listen: false, adaptive: false, targetLufs: -30, ending: false, viz: false, gain: null }, undefined)");
+        assert!(script(Cmd::Live { on: true, listen: false, adaptive: true, target_lufs: -14.0, ending: true, viz: false, gain: Some(40.0), effects: None }).contains("ending: true, viz: false, gain: 9 }"));
+        assert!(script(Cmd::Live { on: true, listen: false, adaptive: true, target_lufs: -14.0, ending: false, viz: false, gain: Some(f64::NAN), effects: None }).contains("gain: null }"));
+        let with = script(Cmd::Live { on: true, listen: true, adaptive: false, target_lufs: -14.0, ending: false, viz: false, gain: None, effects: Some(music_player::Effects { speed: 9.0, ..Default::default() }) });
         assert!(with.contains("\"speed\":2.5") && with.contains("listen: true") && with.ends_with("})"), "{with}");
         // The UI's shape (api.ts WatchCmd).
         let cmd: Cmd = serde_json::from_str(r#"{"type":"live","on":true,"adaptive":true,"targetLufs":-16}"#).unwrap();
-        assert!(matches!(cmd, Cmd::Live { on: true, listen: false, adaptive: true, target_lufs, ending: false, bands: false, gain: None, effects: None } if target_lufs == -16.0));
+        assert!(matches!(cmd, Cmd::Live { on: true, listen: false, adaptive: true, target_lufs, ending: false, viz: false, gain: None, effects: None } if target_lufs == -16.0));
         let cmd: Cmd = serde_json::from_str(r#"{"type":"live","on":true,"adaptive":true,"targetLufs":-16,"ending":true,"gain":-3.5}"#).unwrap();
         assert!(matches!(cmd, Cmd::Live { ending: true, gain: Some(g), .. } if g == -3.5));
     }

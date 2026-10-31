@@ -16,8 +16,11 @@ import { trackArt } from '../../shared/art'
 import { Cover } from '../../shared/ui/Cover'
 import { ArtistLink } from './ArtistLink'
 import { bindFrame, tailVolume, useNowTrack, usePlayer, useVideoSlot } from './store'
+import { volumeWheelRef } from './volume'
 import { pop } from '../../shared/motion'
 import { embedUrl, parseYt, ytPost } from './youtube'
+import { useKaraoke } from './karaokeMode'
+import { useVizFull } from './vizFull'
 import { closeWatch, cropWatch, placeWatch, sendWatch, useWatch, watchUpdate } from './watch'
 import { frameAround } from '../../shared/artbox'
 import { bindLiveFrame, sendLive } from './live'
@@ -50,6 +53,8 @@ function YouTubeFrame({ videoId, tail = false, idle = false }: { videoId: string
   const hidden = useVideoSlot((s) => s.hidden)
   const box = useVideoSlot((s) => s.box)
   const fill = useVideoSlot((s) => s.fill)
+  // Karaoke and the visualizer's screen cover the window: the native watch page would stay above it.
+  const karaoke = useKaraoke((s) => s.open) || useVizFull((s) => s.open)
   // Embed refused this video: YouTube's watch page plays it in a webview over the same place (watch.ts).
   const watch = useWatch((s) => s.video)
   // Bars baked into the video: frame enlarged, only the picture shows.
@@ -107,11 +112,11 @@ function YouTubeFrame({ videoId, tail = false, idle = false }: { videoId: string
   // Watch page follows the slot (or this frame's own spot), hidden in cover mode. Gone with the last YouTube track.
   useEffect(() => {
     if (!watch || tail) return
-    const follow = () => placeWatch(hidden ? null : (rect ?? frame.current?.getBoundingClientRect() ?? null))
+    const follow = () => placeWatch(hidden || karaoke ? null : (rect ?? frame.current?.getBoundingClientRect() ?? null))
     follow()
     window.addEventListener('resize', follow)
     return () => window.removeEventListener('resize', follow)
-  }, [watch, rect, hidden, tail])
+  }, [watch, rect, hidden, karaoke, tail])
   useEffect(() => {
     if (watch && box && !tail) cropWatch(box)
   }, [watch, box, tail])
@@ -294,7 +299,7 @@ export function PlayerBar() {
 
   return (
     // On the window's background, under the panels (docs/design.md).
-    <footer onContextMenu={onMenu(playerMenu)} className="flex h-22 shrink-0 items-center justify-between gap-6 px-4">
+    <footer ref={volumeWheelRef} onContextMenu={onMenu(playerMenu)} className="flex h-22 shrink-0 items-center justify-between gap-6 px-4">
       {/* In key order: each iframe keeps its place as the two swap roles (a moved iframe reloads). */}
       {now?.youtubeId &&
         [...(tail ? [tail] : []), { key: frameKey, videoId: now.youtubeId }]

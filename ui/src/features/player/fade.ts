@@ -56,10 +56,11 @@ export function shape(curve: FadeCurve, x: number): number {
 
 /**
  * Volume factor for fades between songs. fadeIn = track started on its own after the previous one (or a skip, if
- * asked). Tracks shorter than both fades never fade out.
+ * asked). Tracks shorter than both fades never fade out. `from` = where the music began (ms): a skipped silence or
+ * intro does not eat the fade in.
  */
-export function fadeGain(positionMs: number, durationMs: number | null, f: Fade, fadeIn: boolean): number {
-  const up = fadeIn && f.in > 0 ? shape(f.inCurve, positionMs / (f.in * 1000)) : 1
+export function fadeGain(positionMs: number, durationMs: number | null, f: Fade, fadeIn: boolean, from = 0): number {
+  const up = fadeIn && f.in > 0 ? shape(f.inCurve, (positionMs - from) / (f.in * 1000)) : 1
   const down = fadesOut(durationMs, f) ? shape(f.outCurve, (durationMs! - positionMs) / (f.out * 1000)) : 1
   return Math.min(up, down)
 }

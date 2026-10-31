@@ -12,13 +12,16 @@
     "build": "pnpm notices && tauri build",
     "tauri": "tauri",
     "vite": "vite",
+    "types": "node scripts/types.mjs",
+    "bench": "node scripts/bench.mjs",
+    "e2e": "node e2e/smoke.mjs",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "test": "vitest run",
     "test:rust": "cargo test --workspace",
     "check:licenses": "node scripts/licenses.mjs && cargo deny check licenses bans sources",
     "notices": "node scripts/notices.mjs",
-    "check": "pnpm typecheck && pnpm lint && pnpm test && cargo clippy --workspace --all-targets -- -D warnings && cargo test --workspace"
+    "check": "pnpm types && pnpm typecheck && pnpm lint && pnpm test && cargo clippy --workspace --all-targets -- -D warnings && cargo test --workspace"
   },
   "dependencies": {
     "@fontsource-variable/geist-mono": "5.3.0",

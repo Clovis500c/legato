@@ -18,6 +18,10 @@ Windows 10 and 11 · free · no account of ours
 What it does, how each service plays, what leaves your PC and the FAQ: on the
 [website](https://clovis500c.github.io/legato/) (its source is `site/`).
 
+Why Legato: it plays through the official players and never downloads, records or extracts a platform's audio; it holds 141 MB of RAM paused and 54 MB in the
+tray (measured 2026-10-31, Windows 11, 10 000 songs, [all the numbers](docs/performance.md)); Sync Mode keeps your PCs
+in step with no server; your plays go to Last.fm if you connect it.
+
 ## Build from source
 
 Windows 10 or 11, [Rust](https://rustup.rs) stable, Node.js 22 or later and [pnpm](https://pnpm.io).

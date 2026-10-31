@@ -1,5 +1,5 @@
 import { ArrowCounterClockwise, ArrowRight, Play, Prohibit, ThumbsDown } from '@phosphor-icons/react'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { useSettings } from '../../app/settings'
 import { useStore } from '../../app/store'
 import { api, type LibraryTrack, type Mix } from '../../shared/api'
@@ -17,23 +17,9 @@ import { TrackTable } from '../library/TrackTable'
 import { tracksMenu } from '../menus'
 import { isRemote, remoteTrack, usePlayer } from '../player/store'
 import { msg, tr, trn } from '../../shared/i18n/i18n'
+import { useMixes } from './useMixes'
 import { mixReason, mixTitle, weekdayName } from './words'
 import { ask } from '../../shared/ui/Ask'
-
-/** Today's mixes; reload after a pref change or reset. */
-export function useMixes() {
-  const [mixes, setMixes] = useState<Mix[]>()
-  const reload = useCallback(
-    () =>
-      api
-        .mixes()
-        .then(setMixes)
-        .catch((e) => useStore.setState({ error: String(e) })),
-    [],
-  )
-  useEffect(() => void reload(), [reload])
-  return { mixes, reload }
-}
 
 /** A mix's songs in order: library songs, songs new to you slotted at their place. */
 export function mixSongs(mix: Mix, byId: Map<number, LibraryTrack>): LibraryTrack[] {

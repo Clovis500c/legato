@@ -25,8 +25,9 @@ struct Saved {
 #[derive(Default)]
 pub struct Pending(Mutex<Vec<Scrobble>>);
 
-#[derive(Serialize)]
+#[derive(Serialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export, rename = "LastfmStatus")]
 pub struct Status {
     /// Key and secret entered.
     configured: bool,

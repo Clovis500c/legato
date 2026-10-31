@@ -3,9 +3,11 @@ use async_trait::async_trait;
 use serde::{Deserialize, Serialize, de::DeserializeOwned};
 use std::collections::{BTreeMap, HashMap};
 use std::sync::Mutex;
+use ts_rs::TS;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize, TS)]
 #[serde(rename_all = "lowercase")]
+#[ts(export)]
 pub enum Source {
     Spotify,
     Youtube,
@@ -26,8 +28,9 @@ impl Source {
 }
 
 /// Common track model. `ids` = same track id per source.
-#[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export)]
 pub struct Track {
     pub title: String,
     pub artist: String,
@@ -37,6 +40,7 @@ pub struct Track {
     pub ids: BTreeMap<Source, String>,
     /// Cover art URL (https, served to the UI through the app's image cache).
     #[serde(default)]
+    #[ts(optional = nullable)]
     pub art: Option<String>,
     /// Music or not (YouTube videos: talks, reactions, games come along with songs). None = not looked at.
     #[serde(default, skip_serializing_if = "Option::is_none")]

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { formatDuration } from '../../shared/format'
 import { Bar } from '../../shared/ui/controls'
 import { move, press, release, shown, type Drag } from './seekDrag'
+import { useSponsor } from './sponsor'
 import { usePlayer } from './store'
 import { tr } from '../../shared/i18n/i18n'
 
@@ -92,7 +93,7 @@ export function SeekBar({ className = '' }: { className?: string }) {
 
   return (
     <span
-      className={`flex ${className}`}
+      className={`relative flex ${className}`}
       onPointerDown={(e) => {
         if (e.button !== 0) return
         put(press(String(usePlayer.getState().playId), pos))
@@ -127,6 +128,26 @@ export function SeekBar({ className = '' }: { className?: string }) {
         }}
         className="w-full"
       />
+      <PartMarks />
+    </span>
+  )
+}
+
+/** The non-music parts SponsorBlock marked, as quiet marks on the bar (none when the setting is off or nothing is marked). */
+function PartMarks() {
+  const on = usePlayer((s) => s.skipNonMusic && !!s.now?.youtubeId)
+  const durationMs = usePlayer((s) => s.durationMs)
+  const video = usePlayer((s) => s.now?.youtubeId)
+  const { video: marked, segs } = useSponsor()
+  if (!on || !durationMs || marked !== video || !segs.length) return null
+  const total = durationMs / 1000
+  return (
+    <span aria-hidden className="pointer-events-none absolute inset-x-0 top-1/2 mt-[6px] h-[3px]">
+      {segs
+        .filter((s) => s.startS < total)
+        .map((s) => (
+          <span key={s.startS} title={tr('Non-music part')} className="absolute h-full rounded-full bg-ink-4" style={{ left: `${(s.startS / total) * 100}%`, width: `${((Math.min(s.endS, total) - s.startS) / total) * 100}%` }} />
+        ))}
     </span>
   )
 }

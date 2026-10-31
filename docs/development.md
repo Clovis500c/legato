@@ -22,17 +22,74 @@ the media panel, the ad shield's network hook and the system accent are Windows 
 ## Your dev build has its own data
 
 `pnpm dev` runs as `app.legato.desktop.devbuild` (`src-tauri/tauri.dev.conf.json`): its own library, keychain entries
-and Google session, never the installed app's. Folders and entries made under the old identifiers (`app.legato.desktop`,
-and `.devbuild` for dev) move to the new ones at first launch (`src-tauri/src/rename.rs`).
+and Google session, never the installed app's.
 
-Two things only an installed copy does: Settings › General › Open at startup refuses to turn on (a dev build would
-start at sign-in without its dev server), and background update checks only run when asked (Settings › About).
+Only the installed app, identifier exactly `app.legato.desktop`, may touch the PC outside its own folders
+(`src-tauri/src/identity.rs`, `identity::installed()`): install an update over itself (`update.rs`), own the HKCU Run
+entry that Open at startup writes (`autostart.rs`: a dev build asking would start at sign-in without its dev server),
+and move the folders and keychain entries of the old identifier `dev.musicapp.desktop` at first launch (`rename.rs`).
+A dev build, the bench build (`app.legato.desktop.bench`), the smoke test build (`app.legato.desktop.e2e`) or any other identifier is a guest: it never installs, never
+edits the Run entry and never migrates (a dev folder still named `dev.musicapp.desktop.devbuild` is renamed by hand). A
+dev build only checks for updates when asked (Settings › About), and cannot install what it finds: it can download, and
+its install ends in an error (the status leaves Ready, or the interface would ask again every 5 s). Any new side effect a
+release build has on the PC goes behind the same guard.
 
 | What | Windows | macOS | Linux |
 |---|---|---|---|
-| Library (`library.db`), cover cache (`art/`), shield lists (`shield/`) | `%APPDATA%\app.legato.desktop` | `~/Library/Application Support/app.legato.desktop` | `~/.local/share/app.legato.desktop` |
+| Library (`library.db`), cover cache (`art/`), shield lists (`shield/`), diagnostics log (`diagnostics.log`, `.1` to `.4`) | `%APPDATA%\app.legato.desktop` | `~/Library/Application Support/app.legato.desktop` | `~/.local/share/app.legato.desktop` |
 | Google session (webview cookies) | `%LOCALAPPDATA%\app.legato.desktop\EBWebView` | The system webview's own store | The system webview's own store |
 | Secrets | Credential Manager | Keychain | Secret Service |
+
+## Measuring: `pnpm bench`
+
+`pnpm bench` builds the release app under its own identifier (`src-tauri/tauri.bench.conf.json`), fills a fresh data
+folder with 10 000 local songs (`crates/core/examples/bench_data.rs`) and reads start time, RAM and CPU: paused, playing,
+and 10 minutes in the tray. `--quick` is a short run. `pnpm bench --visualizer` measures the visualizer instead (below). The numbers, how they are taken and what they leave out are in
+[performance.md](performance.md); a full run appends its row there. Windows only, and about 20 minutes of a PC left alone.
+`scripts/cdp.mjs` is its small DevTools client; the E2E smoke test reuses it.
+
+## Smoke test: `pnpm e2e`
+
+`pnpm e2e` builds the app as a guest (`tauri build --debug --no-bundle --features e2e`, identifier
+`app.legato.desktop.e2e`, `src-tauri/tauri.e2e.conf.json`, the exe copied to `target/e2e`) and walks a new user's first
+minutes through its real window, over WebView2's DevTools port (`scripts/cdp.mjs`, the flags of `scripts/guest.mjs`): the
+welcome comes first, Add folder (three WAV songs the test writes, `e2e/wav.mjs`), the Songs page lists them, a song plays
+3 s and the engine's position moves, the visualizer's frames come at about 60 a second, Pause freezes it and Play moves it again, the
+visualizer turned on draws LED bars in Now Playing (a screenshot of the strip, and of V's full screen, must not be blank:
+`e2e/png.mjs` decodes it) and Esc leaves, then Radial, VU needles and Spectrogram the same way (`10-radial.png` to
+`12-spectrogram-full.png`; read them by eye after a change to a look), and the engine's own count (`viz_stats`) shows frames
+coming while one is open and no worker left after it closes, a search (suggestions, YouTube, YouTube
+Music and Apple, all answered by `e2e/mock.mjs` from `e2e/fixtures`) while the song plays on, a Deezer playlist link typed
+in Add music (its progress toast, the playlist made with the one song found, the one not found said) and an Apple Music album
+link pasted with Ctrl+V (Cancel makes nothing, then the full import), the window's Close with
+"Keep running in the notification area" off (the app must end by itself, exit code 0), then the same data again: no
+welcome, the library is still there. About 20 s once built. The diagnostics log says what started the deferred work at each launch
+(`src-tauri/src/deferred.rs`): the walk fails when it was the 8 s timer, not the page's ready signal. A failure leaves screenshots, `failure.txt` (the step, the page's
+text, what the mock saw, the diagnostics log) in `target/e2e/shots`; CI uploads them. `--repeat 5` walks five times on one
+build, `--skip-build` reuses an unchanged build. The `e2e` job of `check.yml` runs it on Windows, the build and then the
+walk as two steps, the walk held to 5 minutes. It is not blocking yet (`continue-on-error`, a warning on the run when it
+fails): it has not run on GitHub, and `release.yml` waits for a green `check`. Delete that line after a few green runs.
+Checked on 2026-10-30: with the click handler of the player's play button emptied, the walk fails at `pause-play`
+("Pause did not pause"), exit code 1, screenshot and report left. Checked on 2026-10-31: with the Deezer link recogniser
+(`deezerLink`) broken, the walk fails at `links` ("the page never showed Importing from Deezer… 0 of 2").
+
+What the `e2e` cargo feature changes, and nothing else, in a build nobody installs:
+
+- **Network** (`src-tauri/src/hosts.rs`): search, suggestions, lyrics and the Apple lookups go to one loopback server, read
+  from `LEGATO_E2E_MOCK` (only `http://127.0.0.1:<port>` is taken; without it, a dead port). A normal build has the real
+  hosts compiled in and no variable, setting or file moves them. The script also puts every other host behind a dead proxy,
+  so a call the mock does not stand for fails at once, and refuses an exe that lacks the variable's name (a build without
+  the feature). Each connector has a test that its mock fixture still reads (`smoke_test_fixture_reads`): change a parser,
+  change `e2e/fixtures`.
+- **Sound** (`crates/player/src/output.rs`, feature `null-output`): no audio device. A thread drains the mixer at the pace of
+  a real one, so the song decodes, goes through the live chain and moves its position on a CI runner without a sound card,
+  and a dev PC stays silent. The real device path is the one thing the walk does not cover.
+
+The native folder picker is an OS dialog a page cannot drive: the script answers its IPC request (CDP `Fetch`), and the
+rest of the interface runs as when a person picks. Only the two data folders of `.e2e` are ever deleted as folders
+(`e2eFolders`, like the bench's). `--shots` takes any folder, so a walk removes there just the files it writes, by exact
+name (the numbered pictures, `FAIL-<step>.png`, `failure.txt`, `diagnostics.log`: `clearShots`) and never empties it.
+Like the bench, it never touches the installed app (`identity.rs`).
 
 ## YouTube Music (no keys)
 

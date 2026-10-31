@@ -1,4 +1,5 @@
 import { ArrowDown, ArrowUp, CaretDown, CaretUp, Clock, DotsThreeVertical, Heart, ListPlus, Play, Queue, Waveform, X } from '@phosphor-icons/react'
+import { artistName } from '../../shared/artistName'
 import { useShallow } from 'zustand/react/shallow'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { useRef, useState } from 'react'
@@ -262,12 +263,12 @@ export function TrackTable({ tracks, empty, editId, rowActions, sort, onSort, fo
                           </span>
                         )}
                       </span>
-                      {!artistCol && <span className="block truncate text-[0.8125rem] text-ink-2">{t.artist}</span>}
+                      {!artistCol && <span className="block truncate text-[0.8125rem] text-ink-2">{artistName(t.artist)}</span>}
                     </span>
                   </span>
                   {artistCol && (
                     <span role="gridcell" className="truncate text-sm text-ink-2">
-                      {t.artist}
+                      {artistName(t.artist)}
                     </span>
                   )}
                   {lead.map((c) => cell(t, c))}

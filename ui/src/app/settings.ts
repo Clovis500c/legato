@@ -76,7 +76,14 @@ function themeCss(css: string) {
   if (guard.nextElementSibling) document.head.appendChild(guard)
 }
 
+/** Last cover cache cap handed to Rust: it is told again only when it changes. */
+let capSent = 0
+
 function apply(s: Settings) {
+  if (s.coverCacheMb !== capSent) {
+    capSent = s.coverCacheMb
+    void api.setArtCacheCap(s.coverCacheMb).catch(() => {})
+  }
   try {
     localStorage.setItem(CACHE, JSON.stringify({ settings: s, systemAccent }))
   } catch {
@@ -98,7 +105,7 @@ function apply(s: Settings) {
       () => {},
     )
   }
-  usePlayer.setState({ fade: effectiveFade(s), skipLong: s.skipLong, earlyEnds: s.earlyEnds })
+  usePlayer.setState({ fade: effectiveFade(s), skipLong: s.skipLong, earlyEnds: s.earlyEnds, skipSilence: s.skipSilence, skipNonMusic: s.skipNonMusic })
   useStore.setState({ toastPrefs: { important: s.toastShow === 'important', scale: { short: 0.5, normal: 1, long: 2 }[s.toastTime] } })
   const root = document.documentElement.style
   const theme = resolveTheme(s, systemDark.matches, systemAccent)

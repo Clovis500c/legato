@@ -1,9 +1,15 @@
 name: release
 
-# Every push to master that passes `check` is released: signed Windows installer + latest.json on a GitHub release,
-# which the app's updater reads (src-tauri/tauri.conf.json › plugins.updater). Version = MAJOR.MINOR from
-# tauri.conf.json + patch = commits on master (scripts/release.mjs): 1.0.0 in the file, 1.0.<commits> released.
-# "[skip release]" in the commit's first line: no release for that push. Run by hand: Actions › release › Run workflow.
+# Every push to master that passes `check` is released as a BETA: signed Windows installer + latest.json on a GitHub
+# prerelease. Version = MAJOR.MINOR from tauri.conf.json + patch = commits on master (scripts/release.mjs): 1.0.0 in the
+# file, 1.0.<commits> released. "[skip release]" in the commit's first line: no release for that push. Run by hand:
+# Actions › release › Run workflow.
+# Two channels (Settings › General › Updates), two files (src-tauri/src/update.rs):
+# - Beta reads releases/download/beta/latest.json: the rolling `beta` release, whose latest.json is copied here from
+#   each new release (last step).
+# - Stable reads releases/latest/download/latest.json (src-tauri/tauri.conf.json › plugins.updater, the URL every installed
+#   version has always read). GitHub's "latest" skips prereleases, so it moves only when the `promote` workflow turns a
+#   beta into a normal release. Nothing here may touch it.
 on:
   workflow_run:
     workflows: [check]
@@ -117,5 +123,24 @@ jobs:
           releaseCommitish: ${{ env.SHA }}
           releaseBody: ${{ steps.release.outputs.notes }}
           releaseDraft: false
-          prerelease: false
+          # Beta only: a prerelease is never GitHub's "latest", so Stable's latest.json stays where it is.
+          prerelease: true
           updaterJsonPreferNsis: true
+
+      # Beta's file: the release called `beta` (made once, a prerelease, never "latest") carries only this latest.json,
+      # replaced at every release; its installer link points at the release above.
+      - name: Point Beta at this release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          VERSION: ${{ steps.release.outputs.version }}
+        run: |
+          dir="$RUNNER_TEMP/beta"
+          mkdir -p "$dir"
+          gh release download "v$VERSION" --pattern latest.json --dir "$dir" --clobber
+          if ! gh release view beta > /dev/null 2>&1; then
+            gh release create beta --prerelease --latest=false --target "$SHA" --title "Legato Beta" \
+              --notes "Only latest.json, which the app's Beta channel reads. Moves with every release; the installers are on the versioned releases."
+          fi
+          gh release upload beta "$dir/latest.json" --clobber

@@ -3,6 +3,7 @@ import { LANGUAGES, msg, tr } from '../i18n/i18n'
 import { ACTIONS, validCombo, type Custom } from '../../app/keys'
 import { cleanCss } from '../css'
 import type { GroupSort, Sort } from '../../features/library/filter'
+import type { SystemAccent } from '../generated/SystemAccent'
 
 export const PALETTE_KEYS = ['bg', 'panel', 'raised', 'recess', 'line', 'lineSoft', 'ink', 'ink2', 'ink3', 'ink4', 'accent', 'onAccent', 'ledOff'] as const
 export type PaletteKey = (typeof PALETTE_KEYS)[number]
@@ -155,12 +156,13 @@ export type Column = (typeof COLUMNS)[number]
 export const START_VIEWS = ['home', 'songs', 'mixes', 'albums', 'artists'] as const
 /** Where notifications show: above the player bar (centered or right), or under the top bar. */
 export const TOAST_PLACES = ['bottom', 'bottomRight', 'top', 'topRight'] as const
+export const COVER_CACHE_MB = [250, 500, 1000, 2000] as const
 
 /** Mini player resting spots: corners and edge middles (t = top, b = bottom, l = left, r = right). */
 /** Playlist icon: service logo, first song's cover, grid of the first 4, or a picked image. */
 export const COVER_MODES = ['source', 'first', 'grid', 'image'] as const
-/** Visualizer.tsx looks: bars from the bottom, mirrored from the middle, bars with falling peaks, a wave. */
-export const VISUALIZER_STYLES = ['bars', 'mirror', 'peaks', 'wave'] as const
+/** Visualizer looks (VizCanvas.tsx): LED segments with held peaks, bars from the bottom, mirrored from the middle, bars with falling peaks, a wave; a ring around the cover, two VU needles, a scrolling spectrogram. */
+export const VISUALIZER_STYLES = ['led', 'bars', 'mirror', 'peaks', 'wave', 'radial', 'vu', 'spectrogram'] as const
 export type VisualizerStyle = (typeof VISUALIZER_STYLES)[number]
 /** Order the cover songs are taken in: the playlist's own, or a library sort. */
 export const COVER_ORDERS = ['playlist', 'recent', 'title', 'artist', 'album', 'duration'] as const
@@ -195,7 +197,7 @@ export interface DiscordSettings {
 }
 
 /** Bumped when defaults change for everyone (saved settings get the new ones once). */
-const DEFAULTS_VERSION = 8
+const DEFAULTS_VERSION = 9
 
 /** Adaptive Sound targets, LUFS: Quiet, Normal (streaming services' usual level), Loud. */
 export const ADAPTIVE_LEVELS = [-20, -14, -11] as const
@@ -305,6 +307,10 @@ export interface Settings {
   mixCovers: 'grid' | 'single' | 'template'
   /** Download updates in the background and install them when nothing plays. */
   autoUpdate: boolean
+  /** Which releases this PC follows: Stable (promoted by hand) or Beta (every green push). Not synced between PCs. */
+  updateChannel: 'stable' | 'beta'
+  /** Cover cache size cap on this PC, MB (Rust keeps the folder under it, oldest covers out first). Not synced between PCs. */
+  coverCacheMb: (typeof COVER_CACHE_MB)[number]
   /** Now Playing: Up next panel open (off: the title big beside the cover, docs/design.md). */
   upNext: boolean
   /** Main window's right panel, beside every page: Up next, lyrics, or closed. Apart from Now Playing's. */
@@ -328,11 +334,15 @@ export interface Settings {
   adaptiveLevel: AdaptiveLevel
   /** Now Playing's cover moves with the music's loudness. */
   coverPulse: boolean
-  /** Now Playing shows the music as moving bars (16 bands, crates/dsp spectrum.rs). */
+  /** Now Playing shows the music as moving bars (1/6-octave bands, crates/dsp viz.rs). */
   visualizer: boolean
   visualizerStyle: VisualizerStyle
   /** Videos whose song ends before the video (silence, end screen): the next song starts at the song's end (ends.ts). */
   earlyEnds: boolean
+  /** Songs start on the music and end where it ends: silence at the start and end skipped (local: measured; YouTube: learned). */
+  skipSilence: boolean
+  /** Music videos: intros, skits and outros marked by SponsorBlock's community skipped (a hash prefix of each video id goes to sponsor.ajay.app). */
+  skipNonMusic: boolean
   /** YouTube's sound may go through the processing above (off: untouched, features work on local files only). */
   liveYoutube: boolean
   /** Voice search agreed to (Windows' online speech recognition: the voice goes to Microsoft while the mic listens). */
@@ -415,6 +425,8 @@ export const DEFAULTS: Settings = {
   playlistCovers: {},
   mixCovers: 'grid',
   autoUpdate: true,
+  updateChannel: 'stable',
+  coverCacheMb: 500,
   upNext: false,
   sidePanel: 'upNext',
   toastPlace: 'bottom',
@@ -429,8 +441,10 @@ export const DEFAULTS: Settings = {
   adaptiveLevel: -14,
   coverPulse: false,
   visualizer: false,
-  visualizerStyle: 'bars',
+  visualizerStyle: 'led',
   earlyEnds: true,
+  skipSilence: false,
+  skipNonMusic: false,
   liveYoutube: true,
   voiceSearch: false,
   autoplay: true,
@@ -608,6 +622,8 @@ export function sanitize(raw: unknown): Settings {
     playlistCovers: sanitizeCovers(r.playlistCovers),
     mixCovers: pick(r.mixCovers, ['grid', 'single', 'template'] as const, DEFAULTS.mixCovers),
     autoUpdate: typeof r.autoUpdate === 'boolean' ? r.autoUpdate : DEFAULTS.autoUpdate,
+    updateChannel: pick(r.updateChannel, ['stable', 'beta'] as const, DEFAULTS.updateChannel),
+    coverCacheMb: pick(r.coverCacheMb, COVER_CACHE_MB, DEFAULTS.coverCacheMb),
     upNext: typeof r.upNext === 'boolean' ? r.upNext : DEFAULTS.upNext,
     sidePanel: pick(r.sidePanel, ['upNext', 'lyrics', 'none'] as const, DEFAULTS.sidePanel),
     toastPlace: pick(r.toastPlace, TOAST_PLACES, DEFAULTS.toastPlace),
@@ -622,8 +638,10 @@ export function sanitize(raw: unknown): Settings {
     adaptiveLevel: ADAPTIVE_LEVELS.includes(r.adaptiveLevel as AdaptiveLevel) ? (r.adaptiveLevel as AdaptiveLevel) : DEFAULTS.adaptiveLevel,
     coverPulse: r.coverPulse === true,
     visualizer: r.visualizer === true,
-    visualizerStyle: pick(r.visualizerStyle, VISUALIZER_STYLES, 'bars'),
+    visualizerStyle: pick(r.visualizerStyle, VISUALIZER_STYLES, DEFAULTS.visualizerStyle),
     earlyEnds: r.earlyEnds !== false,
+    skipSilence: r.skipSilence === true,
+    skipNonMusic: r.skipNonMusic === true,
     liveYoutube: typeof r.liveYoutube === 'boolean' ? r.liveYoutube : DEFAULTS.liveYoutube,
     voiceSearch: r.voiceSearch === true,
     autoplay: r.autoplay !== false,
@@ -647,6 +665,8 @@ export function sanitize(raw: unknown): Settings {
     ...(saved < 7 && Array.isArray(r.columns) && r.columns.join() === 'album,sources,duration' ? { columns: COLUMNS.filter((c) => c !== 'added') } : {}),
     // v8 (app v2, 2026-10-29): the theme's sky blue, compact rows without covers, square covers, flat tint.
     ...(saved < 8 ? v8(r) : {}),
+    // v9 (visualizer v2, 2026-10-31): the LED look is the new default; the other looks are still there, picks of their own stay.
+    ...(saved < 9 && (r.visualizerStyle ?? 'bars') === 'bars' ? { visualizerStyle: 'led' as const } : {}),
     ...(saved < 6 ? { homeSections: sanitizeHome(r.homeSections).map((x) => (HOME_OFF.includes(x.id) ? { ...x, on: false } : x)) } : {}),
   }
 }
@@ -773,11 +793,8 @@ export function paletteFrom(accent: string, dark: boolean): Palette {
 /** Text / icon color on an accent: first of white, ink, black reaching AA 4.5 (black always does). */
 export const onAccentFor = (accent: string) => ['#FFFFFF', '#171614'].find((c) => contrast(c, accent) >= 4.5) ?? '#000000'
 
-/** src-tauri system_accent: Windows accent tuned per theme brightness. */
-export interface SystemAccent {
-  light: string
-  dark: string
-}
+/** src-tauri system_accent: Windows accent tuned per theme brightness (written from Rust, shared/generated). */
+export type { SystemAccent }
 
 export function resolveTheme(s: Settings, systemDark: boolean, system: SystemAccent | null = null): Theme {
   const id = s.theme === 'system' ? (systemDark ? 'modern-dark' : 'modern') : s.theme

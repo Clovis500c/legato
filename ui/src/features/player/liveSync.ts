@@ -5,6 +5,7 @@ import { startEditor, useEditor } from '../editor/editor'
 import { neutral } from './effects'
 import { overlapDue } from './fade'
 import { sendLive, setEnding, startLive } from './live'
+import { claimViz, useVizListeners } from './vizFrames'
 import { usePlayer } from './store'
 
 // Who plays now, for levels: the native engine (local files, previews) or YouTube. Spotify: its own app, none.
@@ -15,12 +16,14 @@ const playing = () => {
 
 /** Live processing follows the settings (Settings › Advanced › Sound) and the Live Editor. Mounted once, by the player bar. */
 export function useLiveSync() {
-  const { adaptiveSound, adaptiveLevel, coverPulse, earlyEnds, liveYoutube, visualizer } = useSettings(
-    useShallow(({ settings: s }) => ({ adaptiveSound: s.adaptiveSound, adaptiveLevel: s.adaptiveLevel, coverPulse: s.coverPulse, earlyEnds: s.earlyEnds, liveYoutube: s.liveYoutube, visualizer: s.visualizer && s.motion })),
+  const { adaptiveSound, adaptiveLevel, coverPulse, earlyEnds, skipSilence, liveYoutube } = useSettings(
+    useShallow(({ settings: s }) => ({ adaptiveSound: s.adaptiveSound, adaptiveLevel: s.adaptiveLevel, coverPulse: s.coverPulse, earlyEnds: s.earlyEnds, skipSilence: s.skipSilence, liveYoutube: s.liveYoutube })),
   )
-  // Bands cost filters on the sound thread: only while the visualizer is on screen.
-  const bands = usePlayer((s) => visualizer && s.full)
+  // The 60 Hz frames (Visualizer v2): YouTube's side makes them only while a view listens.
+  const viz = useVizListeners((s) => s.n > 0)
   const effects = useEditor((s) => s.effects)
+  // This page owns the visualizer stream from the start: a worker left by a page before a reload is stopped.
+  useEffect(() => claimViz(), [])
   useEffect(() => startLive(playing), [])
   useEffect(() => startEditor(), [])
   // Fade out under way: Adaptive Sound holds. Synchronous with the position, so the playing frame hears it before an
@@ -29,6 +32,6 @@ export function useLiveSync() {
   useEffect(() => {
     // Bypassed edits keep processing attached: A / B switches at once. Levels alone (moving cover, early ends) only listen.
     const process = adaptiveSound || !neutral({ ...effects, on: true })
-    sendLive({ on: process || coverPulse || bands, ends: earlyEnds, listen: !process, adaptive: adaptiveSound, targetLufs: adaptiveLevel, bands, youtube: liveYoutube, effects })
-  }, [adaptiveSound, adaptiveLevel, coverPulse, earlyEnds, liveYoutube, effects, bands])
+    sendLive({ on: process || coverPulse || viz, levels: process || coverPulse, ends: earlyEnds || skipSilence, listen: !process, adaptive: adaptiveSound, targetLufs: adaptiveLevel, viz, youtube: liveYoutube, effects })
+  }, [adaptiveSound, adaptiveLevel, coverPulse, earlyEnds, skipSilence, liveYoutube, effects, viz])
 }

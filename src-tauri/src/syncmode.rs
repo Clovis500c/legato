@@ -47,8 +47,9 @@ struct Config {
     asked: bool,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export, rename = "SyncDevice")]
 pub struct Device {
     name: String,
     at: i64,
@@ -56,8 +57,9 @@ pub struct Device {
 }
 
 /// Settings › Sync.
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export, rename = "SyncStatus")]
 pub struct Status {
     /// OneDrive folders found on this PC.
     onedrive: Vec<String>,
@@ -72,8 +74,9 @@ pub struct Status {
 }
 
 /// A folder before setting up: new, or another PC syncs there already (with a password or not).
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export, rename = "SyncProbe")]
 pub struct Probe {
     exists: bool,
     protected: bool,
@@ -97,6 +100,18 @@ struct Inner {
     devices: HashMap<String, Device>,
     last: Option<i64>,
     error: Option<String>,
+}
+
+impl Inner {
+    /// Keeps a failed round's text. True when new (not the one held): only then logged. Folder that stays broken
+    /// would fill the diagnostics log, a line a minute. A good round clears the text.
+    fn fail(&mut self, text: &str) -> bool {
+        let fresh = self.error.as_deref() != Some(text);
+        if fresh {
+            self.error = Some(text.to_string());
+        }
+        fresh
+    }
 }
 
 fn device_name() -> String {
@@ -230,10 +245,20 @@ async fn round(app: &AppHandle) -> CmdResult<Merged> {
             Ok(m)
         }
         Err(e) => {
-            inner.error = Some(e.to_string());
-            Err(e.to_string())
+            let text = e.to_string();
+            let fresh = inner.fail(&text);
+            if fresh { logged("folder", Err(text)) } else { Err(text) }
         }
     }
+}
+
+/// A failed exchange (`kind` = folder, offering or joining) in the diagnostics log: no device name or path in the
+/// message, the text as the detail. The result goes on unchanged.
+fn logged<T>(kind: &str, result: CmdResult<T>) -> CmdResult<T> {
+    if let Err(e) = &result {
+        crate::diag::warn("syncmode", &format!("{kind} sync failed"), e);
+    }
+    result
 }
 
 /// Minute timer (folder mode only; idle otherwise).
@@ -369,13 +394,19 @@ pub async fn sync_offer(app: AppHandle, state: State<'_, AppState>, sync: State<
             Ok(theirs) => sm::unpack(&theirs).and_then(|s| take(&a, &s)).map_err(|e| e.to_string()),
             Err(e) => Err(e.to_string()),
         };
-        let _ = a.emit_to("main", "sync-offer", out);
+        let _ = a.emit_to("main", "sync-offer", logged("offering", out));
     });
     if let Some(old) = sync.offer.lock().unwrap().replace(task) {
         old.abort();
     }
     Ok(code)
 }
+
+/// "sync-offer" event: the other PC joined with the code (Ok), or the exchange failed (Err). Only writes the type.
+#[cfg(test)]
+#[derive(ts_rs::TS)]
+#[ts(export, rename = "SyncOffer", as = "Result<Merged, String>")]
+struct SyncOfferEvent;
 
 #[tauri::command]
 pub fn sync_offer_stop(sync: State<SyncMode>) {
@@ -387,8 +418,31 @@ pub fn sync_offer_stop(sync: State<SyncMode>) {
 /// Network, joining side: the code shown on the other PC.
 #[tauri::command]
 pub async fn sync_join(app: AppHandle, state: State<'_, AppState>, code: String) -> CmdResult<Merged> {
-    let mine = sm::pack(&snapshot(&state, &config(&state).device, true).map_err(err)?).map_err(err)?;
+    logged("joining", join(app, &state, code).await)
+}
+
+async fn join(app: AppHandle, state: &AppState, code: String) -> CmdResult<Merged> {
+    let mine = sm::pack(&snapshot(state, &config(state).device, true).map_err(err)?).map_err(err)?;
     let theirs = nearby::sync_join(code.trim(), &mine).await.map_err(err)?;
-    let a = app.clone();
-    tauri::async_runtime::spawn_blocking(move || sm::unpack(&theirs).and_then(|s| take(&a, &s))).await.map_err(err)?.map_err(err)
+    tauri::async_runtime::spawn_blocking(move || sm::unpack(&theirs).and_then(|s| take(&app, &s))).await.map_err(err)?.map_err(err)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn a_failure_that_repeats_is_logged_once() {
+        let mut inner = Inner::default();
+        assert!(inner.fail("The sync folder is gone"), "first round to fail");
+        for _ in 0..30 {
+            assert!(!inner.fail("The sync folder is gone"), "same failure a minute later");
+        }
+        assert_eq!(inner.error.as_deref(), Some("The sync folder is gone"), "Settings still shows it");
+        assert!(inner.fail("Enter the sync password on this PC"), "another failure is news");
+        assert!(!inner.fail("Enter the sync password on this PC"));
+        // A good round clears the text (round()): the same failure back later is a new one.
+        inner.error = None;
+        assert!(inner.fail("Enter the sync password on this PC"), "back after a good round");
+    }
 }

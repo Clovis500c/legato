@@ -12,6 +12,7 @@ import { VideoSlot } from './NowPlaying'
 import { usePosition } from './Progress'
 import { ArtistLink } from './ArtistLink'
 import { useNowTrack, usePlayer } from './store'
+import { volumeWheelRef } from './volume'
 
 /** Art width inside the card: sidebar 252 px, card margins, border and padding. */
 const ART = 214
@@ -93,6 +94,7 @@ export function SidebarPlayer() {
   if (!now || full || !docked || !(video || on)) return null
   return (
     <section
+      ref={volumeWheelRef}
       aria-label={tr('Mini player')}
       onContextMenu={onMenu(playerMenu)}
       className="relative mx-2 mt-1 mb-2 flex shrink-0 flex-col gap-2.5 overflow-hidden rounded-xl border border-line-soft bg-raised p-2.5 pb-3 shadow-[0_8px_24px_var(--shadow)]"

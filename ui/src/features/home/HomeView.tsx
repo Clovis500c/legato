@@ -1,4 +1,5 @@
 import { ArrowDown, ArrowRight, ArrowUp, ArrowUUpLeft, ChartBar, ClockCounterClockwise, DotsSixVertical, EyeSlash, ListPlus, MusicNotes, Play, Playlist, PlusCircle, Shuffle, SlidersHorizontal, Sparkle, YoutubeLogo } from '@phosphor-icons/react'
+import { artistName } from '../../shared/artistName'
 import { useShallow } from 'zustand/react/shallow'
 import { openUrl } from '@tauri-apps/plugin-opener'
 import { Fragment, useEffect, useMemo, useState, type ReactNode } from 'react'
@@ -18,7 +19,8 @@ import { dragSource, useDrag, useDropTarget } from '../../shared/ui/drag'
 import { primaryArtist, type Sort } from '../library/filter'
 import { PlaylistCover } from '../library/PlaylistCover'
 import { playlistMenu, trackMenu, tracksMenu } from '../menus'
-import { MixCard, mixSongs, useMixes } from '../mixes/MixesView'
+import { MixCard, mixSongs } from '../mixes/MixesView'
+import { useMixes } from '../mixes/useMixes'
 import { mixTitle } from '../mixes/words'
 import { remoteTrack, usePlayer } from '../player/store'
 import { WaysIn } from '../welcome/WaysIn'
@@ -65,7 +67,7 @@ function SongList({ tracks }: { tracks: LibraryTrack[] }) {
             </span>
             <span className="flex min-w-0 flex-1 flex-col">
               <span className="truncate text-sm font-medium">{t.title}</span>
-              <span className="truncate text-[0.8125rem] text-ink-2">{t.album ? `${t.artist} · ${t.album}` : t.artist}</span>
+              <span className="truncate text-[0.8125rem] text-ink-2">{t.album ? `${artistName(t.artist)} · ${t.album}` : artistName(t.artist)}</span>
             </span>
           </button>
         </li>
@@ -118,7 +120,7 @@ function Shortcuts({ mixes }: { mixes?: Mix[] }) {
     }
     const cover = songs.find((t) => t.art) ?? songs[0]
     const openIt = () => go({ name: 'artist', artist: l.artist })
-    return <JumpTile key={`r${l.artist}`} art={<Cover title={l.artist} art={trackArt(cover)} size={44} className="rounded-full!" />} title={l.artist} onOpen={openIt} onPlay={() => play(songs, 0)} menu={open([{ label: tr('Open'), icon: <ArrowRight size={16} />, onSelect: openIt }], songs)} />
+    return <JumpTile key={`r${l.artist}`} art={<Cover title={l.artist} art={trackArt(cover)} size={44} className="rounded-full!" />} title={artistName(l.artist)} onOpen={openIt} onPlay={() => play(songs, 0)} menu={open([{ label: tr('Open'), icon: <ArrowRight size={16} />, onSelect: openIt }], songs)} />
   }
   const openSongs = () => go({ name: 'songs' })
   // 3 columns × 2 rows as in the mockup; 2 columns when the page is narrow.
@@ -209,7 +211,7 @@ function YourWeek() {
               <span className="text-[0.6875rem] text-ink-3">{tr('Top song')}</span>
               <span className="truncate text-sm font-semibold">{topSong.track.title}</span>
               <span className="truncate text-xs text-ink-2">
-                {topSong.track.artist} · {trn(topSong.plays, '{n} play', '{n} plays')}
+                {artistName(topSong.track.artist)} · {trn(topSong.plays, '{n} play', '{n} plays')}
               </span>
             </span>
           </button>

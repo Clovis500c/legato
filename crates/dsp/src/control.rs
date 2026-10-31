@@ -2,12 +2,13 @@
 //! looks with try_lock, never waits), levels come out the same way.
 
 use serde::{Deserialize, Serialize};
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
 use std::sync::atomic::{AtomicU64, Ordering};
 
 /// Live processing settings.
-#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase", default)]
+#[ts(export, rename = "LiveSettings")]
 pub struct Live {
     /// Adaptive Sound: every song brought to the same loudness, then the volume knob on top.
     pub adaptive: bool,
@@ -15,13 +16,11 @@ pub struct Live {
     pub target_lufs: f32,
     /// The app fades the song out now: Adaptive Sound holds its gain (the fade is the app's).
     pub ending: bool,
-    /// The visualizer wants the bands (`Levels::bands`; -120 when off, the filters skipped).
-    pub bands: bool,
 }
 
 impl Default for Live {
     fn default() -> Self {
-        Self { adaptive: false, target_lufs: -14.0, ending: false, bands: false }
+        Self { adaptive: false, target_lufs: -14.0, ending: false }
     }
 }
 
@@ -33,8 +32,9 @@ impl Live {
 }
 
 /// What plays now, as heard.
-#[derive(Debug, Clone, Copy, Default, PartialEq, Serialize)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Serialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(export, rename = "PlayerLevels")]
 pub struct Levels {
     /// Loudness over the last 50 ms (beats: the moving cover), LUFS.
     pub fast: f32,
@@ -46,8 +46,6 @@ pub struct Levels {
     pub peak: f32,
     /// Gain Adaptive Sound applies, dB (0 when off).
     pub gain: f32,
-    /// Visualizer: dB per band (`spectrum::center`).
-    pub bands: [f32; crate::spectrum::BANDS],
 }
 
 #[derive(Debug, Default)]
@@ -60,6 +58,8 @@ pub struct Control {
     effects_version: AtomicU64,
     /// Where the playing song is, ms of the song itself (not of what played: speed changes count).
     position_ms: AtomicU64,
+    /// A copy of what plays for the visualizer's FFT (`viz`), filled only while someone listens.
+    tap: Arc<crate::tap::Tap>,
 }
 
 impl Control {
@@ -111,6 +111,11 @@ impl Control {
         self.effects.try_lock().ok().map(|e| (v, *e))
     }
 
+    /// The sound as played, copied for the visualizer.
+    pub fn tap(&self) -> &Arc<crate::tap::Tap> {
+        &self.tap
+    }
+
     pub fn set_position_ms(&self, ms: u64) {
         self.position_ms.store(ms, Ordering::Relaxed);
     }
@@ -121,7 +126,7 @@ impl Control {
 
     /// Nothing plays: the meters fall to rest.
     pub fn quiet(&self) {
-        *self.levels.lock().unwrap() = Levels { fast: -120.0, momentary: -120.0, short: -120.0, peak: 0.0, gain: 0.0, bands: [-120.0; crate::spectrum::BANDS] };
+        *self.levels.lock().unwrap() = Levels { fast: -120.0, momentary: -120.0, short: -120.0, peak: 0.0, gain: 0.0 };
     }
 
     /// Audio thread: Adaptive Sound's gain at the end of the last song (the next one starts there), if readable now.

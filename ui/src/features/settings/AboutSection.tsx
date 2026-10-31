@@ -1,10 +1,11 @@
-import { ArrowClockwise, ArrowSquareOut, Disc, DownloadSimple } from '@phosphor-icons/react'
+import { ArrowClockwise, ArrowSquareOut, Copy, Disc, DownloadSimple } from '@phosphor-icons/react'
 import { useShallow } from 'zustand/react/shallow'
 import { openUrl } from '@tauri-apps/plugin-opener'
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useSettings } from '../../app/settings'
 import { useStore } from '../../app/store'
 import { api, type CacheStat, type CacheStats, type UpdateStatus } from '../../shared/api'
+import { copyDiagnostics } from '../../shared/diag'
 import { formatBytes, formatCount, timeAgo } from '../../shared/format'
 import { Button } from '../../shared/ui/Button'
 import { Toggle } from '../../shared/ui/controls'
@@ -77,6 +78,9 @@ export function AboutSection() {
   const status = useUpdate((u) => u.status)
   const { tracks, playlists, stats, notify } = useStore(useShallow(({ tracks, playlists, stats, notify }) => ({ tracks, playlists, stats, notify })))
   const [cache, setCache] = useState<CacheStats>()
+  // Copy diagnostics: with details = song titles, account names and file paths too.
+  const [details, setDetails] = useState(false)
+  const [copied, setCopied] = useState(false)
   useEffect(() => {
     const load = () =>
       api
@@ -88,6 +92,13 @@ export function AboutSection() {
     return () => clearInterval(id)
   }, [])
   const counts = useMemo(() => ({ albums: groupAlbums(tracks).length, artists: groupArtists(tracks).length, plays: Object.values(stats).reduce((n, [p]) => n + p, 0) }), [tracks, stats])
+  const copy = () =>
+    void copyDiagnostics(details).then((ok) => {
+      if (!ok) return notify(tr('Couldn’t copy the diagnostics'), { kind: 'error' })
+      notify(tr('Copied to clipboard'))
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    })
   const state = status?.state ?? 'idle'
   const busy = state === 'checking' || state === 'downloading' || state === 'installing'
   const { color, pulse } = pill[state]
@@ -100,7 +111,9 @@ export function AboutSection() {
         </span>
         <div className="flex min-w-0 flex-1 flex-col gap-1">
           <p className="text-xl font-bold tracking-[-0.02em]">Legato</p>
-          <p className="font-mono text-xs text-ink-2">{tr('Version {version}', { version: status?.current ?? '…' })}</p>
+          <p className="font-mono text-xs text-ink-2">
+            {tr('Version {version}', { version: status?.current ?? '…' })} · {s.updateChannel === 'beta' ? tr('Beta') : tr('Stable')}
+          </p>
           <p className="flex items-center gap-2 text-xs">
             <span className={`size-2 rounded-full ${pulse ? 'animate-pulse' : ''}`} style={{ background: color, boxShadow: `0 0 8px ${color}` }} />
             {label(status)}
@@ -172,6 +185,15 @@ export function AboutSection() {
           <Row label={msg('Privacy')} sub={tr('No server, no account of ours: your library, history and settings stay on this PC.')}>
             <Button variant="ghost" onClick={() => void openUrl(PRIVACY_PAGE).catch(() => {})}>
               <ArrowSquareOut size={14} /> {tr('What leaves your PC')}
+            </Button>
+          </Row>
+          <Row label={msg('Copy diagnostics')} sub={tr('Versions, the settings that matter and the latest errors, as text for a bug report. Nothing is sent: the log stays on this PC. “Include details” adds song titles, account names and file paths.')}>
+            <label className="flex shrink-0 cursor-pointer items-center gap-2 text-xs text-ink-2">
+              <input type="checkbox" className="size-3.5 accent-ink" checked={details} onChange={(e) => setDetails(e.target.checked)} />
+              {tr('Include details')}
+            </label>
+            <Button variant="ghost" onClick={copy}>
+              <Copy size={14} /> {copied ? tr('Copied') : tr('Copy')}
             </Button>
           </Row>
         </div>

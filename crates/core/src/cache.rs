@@ -56,7 +56,8 @@ impl Versions {
 }
 
 /// Hits and misses, for Settings › About.
-#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, serde::Serialize)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, serde::Serialize, ts_rs::TS)]
+#[ts(export, rename = "CacheStat")]
 pub struct Stats {
     pub hits: u64,
     pub misses: u64,

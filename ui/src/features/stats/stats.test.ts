@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import type { LibraryTrack, Play } from '../../shared/api'
 import { periodStart, statsOf } from './stats'
 
-const t = (id: number, title: string, artist: string, album: string | null = null): LibraryTrack => ({ id, added: id, title, artist, album, durationMs: 200_000, isrc: null, ids: { youtube: `y${id}` } })
+const t = (id: number, title: string, artist: string, album: string | null = null): LibraryTrack => ({ id, added: id, addedAt: null, title, artist, album, durationMs: 200_000, isrc: null, ids: { youtube: `y${id}` } })
 const tracks = [t(1, 'One More Time', 'Daft Punk', 'Discovery'), t(2, 'Aerodynamic', 'Daft Punk', 'Discovery'), t(3, 'Nightcall', 'Kavinsky', 'OutRun'), t(4, 'Old', 'Old Band')]
 const now = new Date(2026, 9, 23, 18, 0)
 // Local time, `daysAgo` days before `now`.

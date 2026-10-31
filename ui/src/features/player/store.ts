@@ -7,12 +7,15 @@ import { endListen, progress, startListen } from './listens'
 import { demoGain, demoLength, fadeGain, NO_FADE, overlapDue, PICK_IN_S, type Fade } from './fade'
 import { insertAt, keepQueued, moveInOrder, moveToSlot, nextIndex, playOrder, queued, tooLong, type Repeat } from './queue'
 import { vias, type Via } from './sources'
-import { rememberEnd, songEnd } from './ends'
-import { bindLiveFrame, onEndHeard } from './live'
+import { formatDuration } from '../../shared/format'
+import { endCut, isUndone, landed, rememberUndone, toSkip, useSponsor } from './sponsor'
+import { offerEnd, rememberEnd, rememberStart, songEnd, songStart } from './ends'
+import { bindLiveFrame, onEndHeard, onLeadHeard } from './live'
 import { closeWatch, openWatch, sendWatch, watching } from './watch'
 import { ytPost, type YtUpdate } from './youtube'
 import { tr } from '../../shared/i18n/i18n'
 import { offline } from '../../shared/online'
+import { note, report } from '../../shared/diag'
 
 /** via youtube = embed plays it, else Rust engine (local file, or Apple preview held in memory). */
 export interface NowPlaying {
@@ -52,10 +55,16 @@ interface PlayerState {
   skipLong: number
   /** Settings › Playback › Early endings: a video ends where its song does (ends.ts). */
   earlyEnds: boolean
+  /** Settings › Playback › Skip silence: songs start on the music and end where it ends (ends.ts, engine for local files). */
+  skipSilence: boolean
+  /** Settings › Playback › Skip non-music parts: SponsorBlock's marked intros, skits, outros (sponsor.ts). */
+  skipNonMusic: boolean
   /** Fade in of the current track, s: full after the previous one, short after a skip (if asked), 0 = none. */
   fadeIn: number
   /** Where the current item started (resume), ms. */
   startAt: number
+  /** Where the music began after a skipped silence or intro, ms: the fade in counts from here. */
+  fadeFrom: number
   /** Bumped each time an item starts (song, other upload, gapless move): per-song UI state checks it. */
   playId: number
   /** Restored paused (after an update): the first item loads without playing. */
@@ -127,7 +136,7 @@ export function remoteTrack(t: Track): LibraryTrack {
   const key = t.ids.youtube ?? `${t.artist}\u0000${t.title}`
   let id = remoteIds.get(key)
   if (id === undefined) remoteIds.set(key, (id = -(remoteIds.size + 1)))
-  return { ...t, id, added: 0 }
+  return { ...t, id, added: 0, addedAt: null }
 }
 
 export const isRemote = (t: { id: number }) => t.id < 0
@@ -240,12 +249,13 @@ function videoRect(): DOMRect | null {
 
 /** Embed refused the video (owner turned embedding off): same video from YouTube's watch page, where it was. */
 function playOnWatchPage(video: string, startMs: number) {
+  note('playback', 'youtube: the embed refused the video, playing it from its watch page')
   const rect = videoRect()
   // The embed stops for good: no second player in the background.
   ytPost(frame, 'command', 'pauseVideo')
-  if (!rect) return void tryOtherUpload(usePlayer.getState().now?.trackId ?? 0, video, tr('This video can’t play in apps'))
+  if (!rect) return void tryOtherUpload(usePlayer.getState().now?.trackId ?? 0, video, tr('This video can’t play in apps'), 'no room for the watch page')
   // Cover mode: made hidden, it plays unseen.
-  openWatch(video, startMs / 1000, useVideoSlot.getState().hidden ? null : rect).catch(() => tryOtherUpload(usePlayer.getState().now?.trackId ?? 0, video, tr('This video can’t play in apps')))
+  openWatch(video, startMs / 1000, useVideoSlot.getState().hidden ? null : rect).catch(() => tryOtherUpload(usePlayer.getState().now?.trackId ?? 0, video, tr('This video can’t play in apps'), 'the watch page failed to open'))
   // The watch page can sit unstarted too (cookie wall, sign-in page): checked again, a little longer.
   watchForStuck(usePlayer.getState().playId, 15_000)
 }
@@ -261,6 +271,8 @@ let ytFresh = false
 // "playing" that soon after is paused again (later, one from YouTube's own controls counts).
 let pausedAt = 0
 const PAUSE_HOLD_MS = 5000
+// Play waits this long for the silence scan of a local file, then starts it as it is.
+const SILENCE_WAIT_MS = 400
 // Current song came by the queue moving on (song ended): Skip long songs applies once its length is known.
 let reachedAuto = false
 // Length of the playing video, ms (0 = not known yet). YouTube sends it once, as the video loads: kept for the song.
@@ -277,9 +289,11 @@ function waitForNetwork(playId: number) {
   const first = offlineFor < 0
   offlineFor = playId
   if (!first) return
+  report('warn', 'playback', 'offline: waiting for the network to play again')
   useStore.getState().notify(tr('No internet connection: the song starts again when your PC is back online.'), { kind: 'error' })
   const back = () => {
     window.removeEventListener('online', back)
+    note('playback', 'network back: the song starts again')
     const id = offlineFor
     offlineFor = -1
     const p = usePlayer.getState()
@@ -305,12 +319,13 @@ function watchForStuck(playId: number, wait = 6_000) {
       block(id)
       return playOnWatchPage(id, 0)
     }
-    void tryOtherUpload(p.now?.trackId ?? 0, id, tr('This video can’t play in apps'))
+    void tryOtherUpload(p.now?.trackId ?? 0, id, tr('This video can’t play in apps'), 'the watch page never started')
   }
   stuckTimer = setTimeout(check, wait)
 }
 
-async function tryOtherUpload(trackId: number, failed: string, why: string) {
+/** `why` = the notice's words; `cause` = the same in English for the diagnostics log (no title, no name). */
+async function tryOtherUpload(trackId: number, failed: string, why: string, cause: string) {
   // Offline, nothing can be told about the video (waitForNetwork).
   if (offline()) return waitForNetwork(usePlayer.getState().playId)
   unplayable.add(failed)
@@ -324,6 +339,7 @@ async function tryOtherUpload(trackId: number, failed: string, why: string) {
   const next = others.ids.find((v) => !unplayable.has(v))
   const { notify } = useStore.getState()
   if (next) {
+    note('playback', `youtube: ${cause}, trying another upload`)
     notify(tr('{why}: playing another upload of the song', { why }))
     // Same embed: the frame loads the new id (loadVideoById).
     return usePlayer.setState((s) => (s.now ? { now: { ...s.now, youtubeId: next }, playId: s.playId + 1, positionMs: 0, playing: true } : {}))
@@ -335,9 +351,11 @@ async function tryOtherUpload(trackId: number, failed: string, why: string) {
     failedRun.clear()
     // Last song's stuck check (10 s) would start the queue again.
     clearTimeout(stuckTimer)
+    report('warn', 'playback', `youtube: ${cause}, and no song in the queue can play: stopped`)
     notify(tr('No song in the queue can play here: stopped'), { kind: 'error' })
     return usePlayer.setState({ playing: false })
   }
+  report('warn', 'playback', `youtube: ${cause}, no other upload found: skipped`)
   notify(tr('{why}, and no other upload was found: skipped', { why }), { kind: 'error' })
   // Manual step: repeat one would replay the blocked video forever.
   p.step(1)
@@ -367,8 +385,11 @@ export const usePlayer = create<PlayerState>((set, get) => ({
   fade: NO_FADE,
   skipLong: 0,
   earlyEnds: true,
+  skipSilence: false,
+  skipNonMusic: false,
   fadeIn: 0,
   startAt: 0,
+  fadeFrom: 0,
   playId: 0,
   hold: false,
   tail: null,
@@ -455,8 +476,10 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     const base: NowPlaying = { title: t.title, artist: t.artist, trackId: t.id, via: how }
     // Preview: 30 s from Apple, no resume point.
     const start = how === 'preview' ? 0 : from
-    set({ index, playId: get().playId + 1, playing: !hold, hold, positionMs: start, startAt: start, durationMs: t.durationMs, upcoming: [], tail: how === 'youtube' ? stopTail(get().tail) : null, fadeIn: auto ? get().fade.in : get().fade.skip ? Math.min(get().fade.in, PICK_IN_S) : 0 })
+    set({ index, playId: get().playId + 1, playing: !hold, hold, positionMs: start, startAt: start, fadeFrom: 0, durationMs: t.durationMs, upcoming: [], tail: how === 'youtube' ? stopTail(get().tail) : null, fadeIn: auto ? get().fade.in : get().fade.skip ? Math.min(get().fade.in, PICK_IN_S) : 0 })
     sent = -1
+    useSponsor.setState({ video: undefined, segs: [] })
+    parts = { playId: get().playId, prev: start / 1000, done: new Set() }
 
     if (how === 'youtube') {
       expect = null
@@ -472,6 +495,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
       } else videoMs = 0
       ytFresh = true
       set({ now: { ...base, youtubeId: video } })
+      if (get().skipNonMusic && !isUndone(video)) loadParts(video, get().playId)
       // Fade in starts silent: volume set before the embed loads the next video (it keeps the last one).
       get().applyVolume(true)
       // Refused by the embed before: its watch page at once.
@@ -497,6 +521,12 @@ export const usePlayer = create<PlayerState>((set, get) => ({
       let end = index + 1
       while (!get().shuffle && get().repeat !== 'one' && end < list.length && vias(list[end])[0] === 'local') end++
       const paths = list.slice(index, end).map((x) => x.ids.local!)
+      // Skip silence: the engine learns where the music starts before the song does (cached). A scan not done in time
+      // or failed plays the song as it is: the engine seeks past the silence when the answer comes late.
+      if (get().skipSilence) {
+        await Promise.race([api.silencePrepare(paths).catch(() => {}), new Promise((done) => setTimeout(done, SILENCE_WAIT_MS))])
+        if (mine !== seq) return
+      }
       expect = paths
       send({ type: 'play', paths, start: 0 })
       if (start) send({ type: 'seek', ms: start })
@@ -547,7 +577,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     send({ type: 'play', paths, start: 0 })
     send({ type: 'volume', value: get().volume })
     // Clearing youtubeId unmounts embed.
-    set({ now: { title: fileTitle(paths[0]), artist: tr('Local file'), path: paths[0], via: 'local' }, playId: get().playId + 1, list: [], order: [], index: 0, playing: true, positionMs: 0, durationMs: null, fadeIn: 0, startAt: 0 })
+    set({ now: { title: fileTitle(paths[0]), artist: tr('Local file'), path: paths[0], via: 'local' }, playId: get().playId + 1, list: [], order: [], index: 0, playing: true, positionMs: 0, durationMs: null, fadeIn: 0, startAt: 0, fadeFrom: 0 })
   },
 
   toggle() {
@@ -626,7 +656,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
   },
 
   applyVolume(force = false) {
-    const { now, volume, positionMs, durationMs, fade, fadeIn } = get()
+    const { now, volume, positionMs, durationMs, fade, fadeIn, fadeFrom } = get()
     const via = now?.via
     if (via === 'spotify') {
       // Spotify Connect: rate-limited API, no fades.
@@ -634,7 +664,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
       if (force) volumeTimer = setTimeout(() => void spotify({ type: 'volume', percent: Math.round(volume * 100) }), 300)
       return
     }
-    const value = Math.round(volume * fadeGain(positionMs, durationMs, { ...fade, in: fadeIn }, true) * gainNow * 100) / 100
+    const value = Math.round(volume * fadeGain(positionMs, durationMs, { ...fade, in: fadeIn }, true, fadeFrom) * gainNow * 100) / 100
     if (!force && value === sent) return
     sent = value
     if (via === 'youtube') yt('setVolume', Math.round(value * 100))
@@ -645,7 +675,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     const { now } = get()
     // Watch page can't play it either (region, age, removed): another upload of the song, else the next song.
     if (u.unplayable !== undefined) {
-      if (now?.trackId && now.youtubeId) return void tryOtherUpload(now.trackId, now.youtubeId, tr('This video can’t play here ({reason})', { reason: u.unplayable }))
+      if (now?.trackId && now.youtubeId) return void tryOtherUpload(now.trackId, now.youtubeId, tr('This video can’t play here ({reason})', { reason: u.unplayable }), 'unplayable on the watch page')
       useStore.getState().notify(tr('This video can’t play here ({reason}): skipped', { reason: u.unplayable }), { kind: 'error' })
       return get().step(1)
     }
@@ -653,14 +683,14 @@ export const usePlayer = create<PlayerState>((set, get) => ({
       // Network gone mid-song (player error 5…): the video isn't to blame, nothing is blocked.
       if (offline()) return waitForNetwork(get().playId)
       // 100: removed. Another upload of the same song, else the next song.
-      if (now?.trackId && now.youtubeId && u.error === 100) return void tryOtherUpload(now.trackId, now.youtubeId, tr('This video was removed'))
+      if (now?.trackId && now.youtubeId && u.error === 100) return void tryOtherUpload(now.trackId, now.youtubeId, tr('This video was removed'), 'removed (error 100)')
       // Any other refusal (101 / 150 embedding off, 152 / 153 player configuration, 5 player error…): same video from
       // its watch page, invisible switch. Refused there too: another upload, never a dead stop.
       if (now?.youtubeId && !watching(now.youtubeId)) {
         block(now.youtubeId)
         return playOnWatchPage(now.youtubeId, get().positionMs)
       }
-      if (now?.trackId && now.youtubeId) return void tryOtherUpload(now.trackId, now.youtubeId, tr('YouTube playback failed (error {code}).', { code: u.error }))
+      if (now?.trackId && now.youtubeId) return void tryOtherUpload(now.trackId, now.youtubeId, tr('YouTube playback failed (error {code}).', { code: u.error }), `player error ${u.error}`)
       useStore.setState({ error: tr('YouTube playback failed (error {code}).', { code: u.error }) })
       return set({ playing: false })
     }
@@ -679,19 +709,33 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     }
     // The song's own end (learned early end) is the length everywhere: fades, overlap, times shown.
     if (u.duration) videoMs = u.duration * 1000
-    const songMs = videoMs && get().earlyEnds ? songEnd(now?.youtubeId, videoMs) : videoMs
+    // A last part running to the video's end (an outro) is where the music ends, as a learned early end is.
+    const cut = get().skipNonMusic && now?.youtubeId && !isUndone(now.youtubeId) && videoMs ? endCut(partsOf(now.youtubeId), videoMs / 1000) : null
+    if (now?.youtubeId) offerEnd(now.youtubeId, cut)
+    const songMs = videoMs && (get().earlyEnds || cut) ? songEnd(now?.youtubeId, videoMs) : videoMs
     set({
       ...(u.state !== undefined && u.state !== 3 && { playing: u.state === 1 }),
       ...(u.time !== undefined && { positionMs: u.time * 1000 }),
-      ...(u.duration && { durationMs: songMs }),
+      ...((u.duration || cut) && { durationMs: songMs }),
     })
     if (u.time !== undefined) {
-      progress(u.time * 1000, videoMs || undefined)
+      // Skip silence: this video's music starts later (learned by live.js): one seek past it, once per play, from the
+      // start only (a resume or a seek back stays where it is).
+      let time = u.time
+      const lead = skipLeadId !== get().playId && get().skipSilence && now?.youtubeId && time < 1.5 && get().startAt === 0 && get().playing ? songStart(now.youtubeId) : 0
+      if (lead > time + 1.5) {
+        skipLeadId = get().playId
+        yt('seekTo', lead, true)
+        time = lead
+        set({ positionMs: lead * 1000, fadeFrom: lead * 1000 })
+      }
+      skipPart(time, lead > 0 && time === lead)
+      progress(time * 1000, videoMs || undefined)
       get().applyVolume()
       overlap()
       // Past the song's own end, silence left: over (unless the overlap just moved on). Checked at each report: the
       // length came once (2026-10-30: read from each report, an early end was only ever reached by the overlap).
-      if (songMs < videoMs && u.time * 1000 >= songMs && get().now === now) return songOver()
+      if (songMs < videoMs && time * 1000 >= songMs && get().now === now) return songOver()
     }
     if (u.state === 0) {
       endListen(true)
@@ -703,6 +747,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     if (s.error) useStore.setState({ error: s.error })
     const via = get().now?.via
     if (via === 'youtube' || via === 'spotify') return
+    enginePaused = s.paused
     if (expect) {
       // Error = engine already tried our items (bad file skipped): status is ours.
       if (!(s.path && expect.includes(s.path)) && !s.error) return
@@ -719,17 +764,30 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     if (i > index) {
       endListen(true)
       startListen(list[i].id, s.durationMs)
+      // The run moved on: the engine learns the silences of the songs now ahead of it.
+      if (get().skipSilence) void api.silencePrepare(list.slice(i, i + 4).flatMap((x) => (x.ids.local ? [x.ids.local] : []))).catch(() => {})
     }
-    if (s.path) progress(s.positionMs, s.durationMs)
+    // Skip silence: the engine says where the music of this file ends; from there it is a video with an early end.
+    const skip = get().skipSilence
+    const key = s.path ? `local:${s.path}` : undefined
+    if (key) offerEnd(key, skip && s.trimEndMs ? s.trimEndMs / 1000 : null)
+    const songMs = skip && s.durationMs ? songEnd(key, s.durationMs) : s.durationMs
+    if (s.path) progress(s.positionMs, songMs)
+    // Skip silence: the engine jumped past the silence while the fade in still runs: the fade in starts there.
+    const was = get()
+    const jumped = skip && !s.paused && was.fadeIn > 0 && s.path === was.now?.path && s.positionMs - was.positionMs > 300 && was.positionMs - was.fadeFrom < was.fadeIn * 1000
     set({
       playing: !!s.path && !s.paused,
       positionMs: s.positionMs,
+      ...(jumped && { fadeFrom: s.positionMs }),
       upcoming: now?.trackId ? [] : s.upcoming,
-      ...(s.durationMs && { durationMs: s.durationMs }),
-      ...(i > index && { index: i, playId: get().playId + 1, fadeIn: get().fade.in, now: { title: list[i].title, artist: list[i].artist, trackId: list[i].id, via: 'local', path: s.path! } }),
+      ...(songMs && { durationMs: songMs }),
+      ...(i > index && { index: i, playId: get().playId + 1, fadeIn: get().fade.in, fadeFrom: skip && s.positionMs > 600 ? s.positionMs : 0, now: { title: list[i].title, artist: list[i].artist, trackId: list[i].id, via: 'local', path: s.path! } }),
       ...(s.path && !now?.trackId && { now: { title: fileTitle(s.path), artist: tr('Local file'), path: s.path, via: 'local' }, ...(s.path !== now?.path && { playId: get().playId + 1 }) }),
     })
     if (s.path) get().applyVolume()
+    // Past the music's end, silence left: over, as for a video (once per song).
+    if (s.durationMs && songMs && songMs < s.durationMs && !s.paused && s.positionMs >= songMs && get().now?.path === s.path) songOver()
   },
 
   onSpotify(p) {
@@ -790,9 +848,60 @@ usePlayer.subscribe((s, prev) => {
   if (s.now?.via === 'youtube' && (s.playId !== prev.playId || s.now.youtubeId !== prev.now?.youtubeId)) watchForStuck(s.playId)
 })
 
+// SponsorBlock parts of the playing video (sponsor.ts): what this play has heard and skipped. A seek back into a part
+// already skipped stays there (done); a play that began inside one (a resume) never skips it.
+let parts = { playId: -1, prev: 0, done: new Set<number>() }
+const partsOf = (video: string) => (useSponsor.getState().video === video ? useSponsor.getState().segs : [])
+
+/** Asks for the parts of a video (cached in Rust, a week). A failure or a slow answer: no skip, the song plays on. */
+function loadParts(video: string, playId: number) {
+  void api
+    .sponsorSegments(video)
+    .then((list) => {
+      if (usePlayer.getState().playId !== playId || !usePlayer.getState().skipNonMusic) return
+      useSponsor.setState({ video, segs: list.map((s) => ({ startS: s.startS, endS: s.endS })) })
+    })
+    .catch(() => {})
+}
+
+/** The time of the playing video was heard: jump over the part playing just reached, with a notice that can undo it. */
+function skipPart(time: number, own = false) {
+  const p = usePlayer.getState()
+  const video = p.now?.youtubeId
+  if (parts.playId !== p.playId) parts = { playId: p.playId, prev: p.startAt / 1000, done: new Set() }
+  const prev = parts.prev
+  parts.prev = time
+  if (!p.skipNonMusic || !video || isUndone(video)) return
+  const segs = partsOf(video)
+  // A seek into a part (not our own jump): the listener chose it, it stays.
+  if (!own) landed(segs, time, prev).forEach((j) => parts.done.add(j))
+  const i = toSkip(segs, time, prev, p.startAt / 1000, parts.done)
+  if (i < 0) return
+  parts.done.add(i)
+  const { startS, endS } = segs[i]
+  yt('seekTo', endS, true)
+  parts.prev = endS
+  // An intro skipped while the fade in still runs: the fade in starts where the music does.
+  if (p.fadeIn > 0 && prev * 1000 - p.fadeFrom < p.fadeIn * 1000) usePlayer.setState({ fadeFrom: endS * 1000 })
+  useStore.getState().notify(tr('Skipped a non-music part ({time})', { time: formatDuration((endS - startS) * 1000) }), {
+    action: {
+      label: tr('Undo'),
+      run: () => {
+        // Back to where the part starts, and this video is left alone from now on.
+        rememberUndone(video)
+        if (usePlayer.getState().now?.youtubeId === video) yt('seekTo', startS, true)
+      },
+    },
+  })
+}
+
+// The engine's own pause state, from its last status (songOver pauses what plays on; the store's `playing` is already false then).
+let enginePaused = false
+// Play (playId) whose silent start was skipped: one seek per play, never a loop.
+let skipLeadId = -1
 // Song whose early end was reached (playId): over once.
 let overId = -1
-/** The playing YouTube song is over before its video (silence left): on to the next, as at the video's own end. */
+/** The playing song is over before its video or file (silence left): on to the next, as at the video's own end. */
 function songOver() {
   const p = usePlayer.getState()
   if (p.playId === overId) return
@@ -800,7 +909,10 @@ function songOver() {
   endListen(true)
   p.step(1, true)
   // Nothing started (queue done, sleep timer, an update installing): the silence doesn't play on to end again.
-  if (usePlayer.getState().playId === overId) yt('pauseVideo')
+  if (usePlayer.getState().playId === overId) {
+    if (p.now?.via === 'youtube') yt('pauseVideo')
+    else if (!enginePaused) send({ type: 'toggle' })
+  }
 }
 
 // Early end heard (live.js, in the silence after the song): kept for the next plays. The overlap's tail stops; the
@@ -816,6 +928,19 @@ onEndHeard((end, tail) => {
   if (p.now?.via !== 'youtube' || !p.now.youtubeId || p.positionMs < end * 1000) return
   rememberEnd(p.now.youtubeId, end)
   songOver()
+})
+
+// Skip silence on / off: the engine skips the starts it knows (and says where music ends) only when asked.
+usePlayer.subscribe((s, prev) => {
+  if (s.skipSilence !== prev.skipSilence) send({ type: 'skipSilence', on: s.skipSilence })
+})
+
+// Late start heard (live.js: 2 s or more of silence from the start, then music): kept for the next plays of the video,
+// which seek past it once (below). Not for a video that began elsewhere (resume, a seek): live.js checks that.
+onLeadHeard((lead) => {
+  const p = usePlayer.getState()
+  if (!p.skipSilence || p.now?.via !== 'youtube' || !p.now.youtubeId || p.startAt > 0) return
+  rememberStart(p.now.youtubeId, Math.max(0, lead - 0.3))
 })
 
 // A song plays: earlier failures no longer in a row.

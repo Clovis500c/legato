@@ -46,6 +46,9 @@
   const QUIET_LUFS = -50
   const QUIET_S = 2
   const END_S = 25
+  // Late start (ui player/ends.ts): silence from the very start of the song for LEAD_S or more, then music. Said once
+  // per song, from where the music began; a seek in between (the time not matching what was heard) says nothing.
+  const LEAD_S = 2
   const MUTED = Object.getOwnPropertyDescriptor(HTMLMediaElement.prototype, 'muted')
 
   // Live Editor, same settings and order as crates/dsp (effects.rs, chain.rs, stretch.rs). Speed and tempo: the
@@ -329,7 +332,7 @@
   // listen = levels only (cover pulse, early ends): the element plays its own sound, untouched, and this only listens.
   // ending = the app fades the song out (the gain holds); gain = where a new song's gain starts (the app's last song,
   // which may have played in the other embed), null = this frame's own.
-  let settings = { on: false, listen: false, adaptive: false, targetLufs: -14, ending: false, bands: false, gain: null }
+  let settings = { on: false, listen: false, adaptive: false, targetLufs: -14, ending: false, viz: false, gain: null }
   let effects = cleanFx(null)
   // { ctx, video, stream, track, src, full, gain, limiter, fx, raw, k, wanted, … } while attached; full = the sound
   // comes out of here (gain, limiter, fx), else they are null.
@@ -347,6 +350,7 @@
 
   function detach() {
     if (!g) return
+    vizStop()
     const s = g
     g = null
     clearInterval(s.timer)
@@ -417,7 +421,7 @@
       await ctx.resume()
       if (ctx.state !== 'running') throw new Error('Sound processing is waiting for a click in the app')
       if (!settings.on || g || document.querySelector('video') !== video || full === settings.listen) return void ctx.close()
-      const s = { ctx, video, stream, input, full, fx: null, post, direct, gain, limiter, gate, proven: false, told: false, k, raw, buf: new Float32Array(2048), track: null, src: null, wanted: video.muted, momentary: 0, short: 0, peak: 0, gainDb: full ? startGain(0) : 0, elapsed: 0, at: performance.now(), time: video.currentTime, silent: 0, quietAt: null, endSaid: false }
+      const s = { ctx, video, stream, input, tap, full, fx: null, post, direct, gain, limiter, gate, proven: false, told: false, k, raw, buf: new Float32Array(2048), track: null, src: null, wanted: video.muted, momentary: 0, short: 0, peak: 0, gainDb: full ? startGain(0) : 0, elapsed: 0, at: performance.now(), time: video.currentTime, silent: 0, quietAt: null, endSaid: false, leadFrom: null, leadQuiet: 0, leadSaid: false }
       // The captured track changes with each video (new metadata): follow it.
       s.plug = () => {
         // Newest live track: the next video in the same element adds one, the old one stays "live" but silent
@@ -428,6 +432,9 @@
         s.momentary = s.short = s.elapsed = s.silent = 0
         s.quietAt = null
         s.endSaid = false
+        s.leadFrom = null
+        s.leadQuiet = 0
+        s.leadSaid = false
         // New source: proven again before the element goes quiet.
         prove(s, false)
         s.told = false
@@ -469,6 +476,7 @@
       s.plug()
       setGain()
       s.timer = setInterval(tick, 33)
+      if (settings.viz) vizStart()
     } catch (e) {
       ctx?.close().catch(() => {})
       detach()
@@ -547,22 +555,143 @@
     return { ms: sum / g.buf.length, peak }
   }
 
-  // Visualizer bands (crates/dsp spectrum.rs): each bin's power into the nearest of 16 bands (centers 50 · 2^(i·8/15)
-  // Hz), both channels averaged, in dB. +8.2: a sine's power through the analyser's Blackman window and 1/N scale
-  // reads 8.2 dB under the native band-passes. Sent with every report: cheap here (the analysers run anyway).
-  function bands(pair) {
-    const n = pair[0].frequencyBinCount
-    const hz = g.ctx.sampleRate / pair[0].fftSize
-    if (!g.freq) g.freq = new Float32Array(n)
-    const power = new Array(16).fill(0)
-    for (const a of pair) {
-      a.getFloatFrequencyData(g.freq)
-      for (let k = 1; k < n; k++) {
-        const i = Math.round((15 / 8) * Math.log2((k * hz) / 50))
-        if (i >= 0 && i < 16) power[i] += 10 ** (g.freq[k] / 10) / pair.length
+  // viz:begin
+  // Visualizer v2 maths, pure (viz.test.ts runs this block). Twin of crates/dsp viz.rs: the same 61 bands of 1/6
+  // octave (base 10, 19.95 Hz to 19.95 kHz), the same bin-to-band mapping and dB scale (a sine of amplitude 1 reads
+  // 0 dB). Chromium's analyser windows with Blackman and scales its FFT by 1/N: vizNorm undoes both by the window's
+  // energy. Frame = 8 bytes (version, band count, 2 reserved, rms L R, peak L R)
+  // + 61 bands L + 61 bands R, every dB value one byte, (dB + 120) * 2.
+  const VIZ_N = 4096
+  const VIZ_BANDS = 61
+  // Narrowest a band reads, in bins (Hann and Blackman both hold 97 % of a sine in 3).
+  const VIZ_MIN_WIDTH = 3
+  const vizCentre = (i) => 1000 * 10 ** ((i - 34) / 20)
+  const vizDb = (e) => (e < 1e-12 ? -120 : 10 * Math.log10(e))
+  const vizQ = (v) => Math.min(255, Math.max(0, Math.round((v + 120) * 2)))
+
+  /** Per band: [first bin, share of each bin from there] (a bin owns [k - 0.5, k + 0.5] bins of frequency). */
+  function vizMap(rate) {
+    const df = rate / VIZ_N
+    const half = VIZ_N / 2
+    const edge = 10 ** 0.025
+    const map = []
+    for (let i = 0; i < VIZ_BANDS; i++) {
+      const c = vizCentre(i) / df
+      let lo = c / edge
+      let hi = c * edge
+      if (hi - lo < VIZ_MIN_WIDTH) {
+        lo = c - VIZ_MIN_WIDTH / 2
+        hi = c + VIZ_MIN_WIDTH / 2
       }
+      lo = Math.max(lo, -0.5)
+      hi = Math.min(hi, half + 0.5)
+      const shares = []
+      let first = 0
+      // Above Nyquist: no bins, the band reads -120.
+      if (c <= half && lo < hi) {
+        first = Math.max(0, Math.floor(lo + 0.5))
+        for (let k = first; k - 0.5 < hi; k++) shares.push(Math.max(0, Math.min(hi, k + 0.5) - Math.max(lo, k - 0.5)))
+      }
+      map.push([first, shares])
     }
-    return power.map((p) => (p > 1e-12 ? 10 * Math.log10(p) + 8.2 : -120))
+    return map
+  }
+
+  /** 4N / Σ w² over Chromium's Blackman window: a sine of amplitude A through its 1/N scaled FFT sums to A² / norm. */
+  function vizNorm() {
+    let e = 0
+    for (let n = 0; n < VIZ_N; n++) {
+      const w = 0.42 - 0.5 * Math.cos((2 * Math.PI * n) / VIZ_N) + 0.08 * Math.cos((4 * Math.PI * n) / VIZ_N)
+      e += w * w
+    }
+    return (4 * VIZ_N) / e
+  }
+
+  /** The analyser's dB per bin (getFloatFrequencyData) → the 61 bands, dB. */
+  function vizBands(map, norm, bins) {
+    return map.map(([first, shares]) => {
+      let e = 0
+      for (let j = 0; j < shares.length; j++) if (first + j < bins.length) e += shares[j] * 10 ** (bins[first + j] / 10)
+      return vizDb(e * norm)
+    })
+  }
+
+  /** rms (whole window) and peak (last `hop` samples) of one channel, dB; any = some sample is not zero. */
+  function vizLevels(x, hop) {
+    let sum = 0
+    let any = false
+    for (let i = 0; i < x.length; i++) {
+      sum += x[i] * x[i]
+      if (x[i] !== 0) any = true
+    }
+    let peak = 0
+    for (let i = Math.max(0, x.length - hop); i < x.length; i++) peak = Math.max(peak, Math.abs(x[i]))
+    return { rms: vizDb(sum / x.length), peak: vizDb(peak * peak), any }
+  }
+
+  function vizPack(rms, peak, left, right) {
+    const out = new Uint8Array(8 + 2 * VIZ_BANDS)
+    out.set([1, VIZ_BANDS, 0, 0, ...rms.map(vizQ), ...peak.map(vizQ)])
+    out.set(left.map(vizQ), 8)
+    out.set(right.map(vizQ), 8 + VIZ_BANDS)
+    return out
+  }
+  // viz:end
+
+  const vizSilent = () => vizPack([-120, -120], [-120, -120], new Array(VIZ_BANDS).fill(-120), new Array(VIZ_BANDS).fill(-120))
+  const vizSend = (bytes) => send({ viz: btoa(String.fromCharCode(...bytes)) })
+  // Ticks without news before the silent frame (~100 ms), as crates/dsp viz.rs.
+  const VIZ_STILL = 6
+
+  // Frames for the visualizer, 60 per second, only while the app asks (settings.viz): two analysers with the FFT size
+  // of the frame, made now and dropped when it stops, so nothing runs for a page that shows no visualizer.
+  function vizStart() {
+    if (!g || g.viz) return
+    const split = g.ctx.createChannelSplitter(2)
+    g.tap.connect(split)
+    const an = [0, 1].map((c) => {
+      const a = new AnalyserNode(g.ctx, { fftSize: VIZ_N, smoothingTimeConstant: 0 })
+      split.connect(a, c)
+      return a
+    })
+    g.viz = { split, an, t: new Float32Array(VIZ_N), f: new Float32Array(VIZ_N / 2), map: vizMap(g.ctx.sampleRate), norm: vizNorm(), idle: false, still: 0, timer: setInterval(vizTick, 16) }
+  }
+
+  function vizStop() {
+    const v = g?.viz
+    if (!v) return
+    g.viz = null
+    clearInterval(v.timer)
+    try {
+      g.tap.disconnect(v.split)
+    } catch {}
+  }
+
+  function vizTick() {
+    const v = g?.viz
+    if (!v) return
+    const quiet = () => {
+      if (!v.idle) vizSend(vizSilent())
+      v.idle = true
+    }
+    // Paused: a moment later one silent frame, then nothing until it plays again.
+    if (g.video.paused || g.ctx.state !== 'running') {
+      if (++v.still === VIZ_STILL) quiet()
+      return
+    }
+    v.still = 0
+    const hop = Math.round(g.ctx.sampleRate / 60)
+    const lv = []
+    const bands = []
+    for (const a of v.an) {
+      a.getFloatTimeDomainData(v.t)
+      lv.push(vizLevels(v.t, hop))
+      a.getFloatFrequencyData(v.f)
+      bands.push(vizBands(v.map, v.norm, v.f))
+    }
+    if (!lv.some((l) => l.any)) return quiet()
+    v.idle = false
+    vizSend(vizPack(lv.map((l) => l.rms), lv.map((l) => l.peak), bands[0], bands[1]))
   }
 
   function tick() {
@@ -624,7 +753,20 @@
       g.endSaid = true
       send({ end: g.quietAt })
     }
-    send({ levels: { fast, momentary: mom, short, peak: g.peak, gain: g.gainDb, bands: bands(g.raw) } })
+    // Late start: the first quiet reads from the start, then the first sound.
+    if (!g.leadSaid && playing) {
+      if (fast < QUIET_LUFS) {
+        if (g.leadFrom === null) {
+          g.leadFrom = t
+          if (t > 1) g.leadSaid = true
+        }
+        g.leadQuiet += dt
+      } else {
+        g.leadSaid = true
+        if (g.leadFrom !== null && g.leadQuiet >= LEAD_S && t - g.leadFrom <= g.leadQuiet + 1) send({ lead: t })
+      }
+    }
+    send({ levels: { fast, momentary: mom, short, peak: g.peak, gain: g.gainDb } })
   }
 
   function apply(next, fx) {
@@ -640,7 +782,7 @@
     }
     const t = Number(next.targetLufs)
     // A start gain waits for its song (the next track): later messages without one keep it.
-    settings = { on: next.on === true, listen: next.listen === true, adaptive: next.adaptive === true, targetLufs: Number.isFinite(t) ? Math.min(-6, Math.max(-30, t)) : -14, ending: next.ending === true, bands: next.bands === true, gain: num(next.gain, MAX_CUT, MAX_BOOST, settings.gain) }
+    settings = { on: next.on === true, listen: next.listen === true, adaptive: next.adaptive === true, targetLufs: Number.isFinite(t) ? Math.min(-6, Math.max(-30, t)) : -14, ending: next.ending === true, viz: next.viz === true, gain: num(next.gain, MAX_CUT, MAX_BOOST, settings.gain) }
     if (!settings.on) {
       clearInterval(retry)
       retry = 0
@@ -650,6 +792,10 @@
     // Listening ↔ processing: attached again the other way (below).
     if (g && g.full === settings.listen) detach()
     setGain()
+    if (g) {
+      if (settings.viz) vizStart()
+      else vizStop()
+    }
     void attach()
     // Not attached yet (no video yet, sound blocked until a click, new source after a give-up): try again now and then.
     if (!retry) retry = setInterval(() => void attach(), 2000)
