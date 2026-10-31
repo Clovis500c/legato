@@ -133,6 +133,8 @@ export const api = {
   spotifyExportClose: () => invoke<void>('spotify_export_close'),
   /** Imports the ticked lists of that file. Ended by importLinkStop ("canceled", lists saved so far stay). */
   /** Exportify's file or Spotify's own data export, picked by the user: its lists, held for spotifyExportImport. */
+  /** Spotify track links pasted (its app copies a list's songs so): each named from its embed page, then the import screen. */
+  importSpotifyTracks: (name: string, text: string) => invoke<SpotifyLibraryImport>('import_spotify_tracks', { name, text }),
   spotifyExportFile: (path: string) => invoke<SpotifyList[]>('spotify_export_file', { path }),
   spotifyExportImport: (picks: SpotifyPick[]) => invoke<SpotifyLibraryImport>('spotify_export_import', { picks }),
   /** An iTunes / MusicBee library file (iTunes Music Library.xml): its playlists, to tick. */

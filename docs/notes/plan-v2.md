@@ -119,13 +119,17 @@ What the services allow, read on 2026-10-31 (specs in [ideas/catch-up.md](ideas/
       In: Add music › Import a list of songs › Open a file (`music_core::playfile`): a library file comes as it is, a
       YouTube link with names too (without: oEmbed), the rest searched by name; the list's own name kept. Out: a
       playlist's menu › Save as file. Not tried in the real app yet (a foobar2000 / VLC / MusicBee file is the test).
-- [ ] `M` Spotify private playlists and Liked Songs by paste, free, no sign-in: Ctrl+A then Ctrl+C in Spotify's desktop app
+- [x] `M` Spotify private playlists and Liked Songs by paste, free, no sign-in: Ctrl+A then Ctrl+C in Spotify's desktop app
       copies `open.spotify.com/track/…` lines (a Spotify community moderator's guide; try it on the user's PC first).
       Legato takes those lines in Add music, names each song from its public embed page (title, artists, duration: checked
       on a real track, `spotify_embed.rs` reads playlists and albums only today) and imports through the usual matching.
       Also passes the embed's 100-song limit on public playlists. One request per song: few at a time, with retries (one
       real request gave a 504). The safe route beside Connect Spotify, guided: Add music › Spotify shows the two keys and
       catches the copy by itself, no paste box.
+      Done: the paste box of Add music › Import a list of songs takes those links (`src-tauri/src/spotify_paste.rs`):
+      each named from its embed page (`spotify_embed::track`, its format checked on a real track 2026-11-01), 4 at a
+      time with one retry, then the import screen; a playlist of yours. Not done: the guided route that catches the copy
+      by itself, and the 100-song limit of public playlists. Not tried with a real copy from Spotify's app yet.
 - [x] `S-M` Spotify's data export (Privacy settings › Download your data): open the zip or `Playlist1.json` in Add music,
       each playlist comes in under its name. Official and free; takes days to arrive. Done: Connect Spotify's card ›
       Open Spotify's data export (ZIP, `Playlist*.json`, `YourLibrary.json` = Liked Songs; an Exportify file too), the

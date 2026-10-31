@@ -28,10 +28,12 @@ Done in this run (newest last), none tried in the real app yet:
 - `bb2950e` Songs not found › Find this song: the version picked joins the song's own row (playlists play it).
 - `7438d6f` Playlists in and out as files: M3U / M3U8 / XSPF / CSV (Add music › Import a list; a playlist's menu ›
   Save as file).
+- `a190d0f` From iTunes or MusicBee: the library file's playlists ticked, then the import screen (Add music).
+- `051a07a` Spotify's own data export (`Playlist1.json`, `YourLibrary.json` or its ZIP), opened from Connect Spotify.
+- Spotify songs by paste: Ctrl+A then Ctrl+C in a list of Spotify's app, pasted in Add music › Import a list of songs;
+  each song named from its public embed page, then the import screen.
 
-- From iTunes or MusicBee: the library file's playlists ticked, then the import screen (Add music).
-
-Next in the run: Spotify's data export (`Playlist1.json`, `YourLibrary.json` or its ZIP) through Exportify's lists.
+Next in the run: a SoundCloud track link (oEmbed), then the quick wins of Features › High.
 
 ## Branches
 

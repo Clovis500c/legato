@@ -25,6 +25,9 @@ const KINDS: [RegExp, string][] = [
   [/^Deezer is busy right now/, msg('Deezer is busy right now: try again in a minute')],
   // Add music › Connect Spotify › Open Spotify's data export (crates/core spotify_export.rs).
   [/^No Spotify lists in that file/, msg("No Spotify lists in that file: it should come from Exportify or Spotify's data export")],
+  // Spotify's copied song links (src-tauri spotify_paste.rs).
+  [/^No Spotify song links in that text/, msg('No Spotify song links in that text')],
+  [/^Spotify's pages didn't answer/, msg("Spotify's pages didn't answer: try again later")],
   // Add music › From iTunes or MusicBee (src-tauri libfile.rs).
   [/^Not a library file: pick iTunes Music Library\.xml/, msg('Not a library file: pick iTunes Music Library.xml (from iTunes, or the copy MusicBee writes for other apps)')],
   [/^No playlists in that library file/, msg('No playlists in that library file')],

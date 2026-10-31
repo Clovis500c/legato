@@ -11,6 +11,7 @@ import { Dialog } from '../../shared/ui/Dialog'
 import { PageHeader } from '../../shared/ui/PageHeader'
 import { Card } from './Card'
 import { Detector } from './Detector'
+import { hasSpotifyTracks } from './pasted'
 import { AppleConnect } from './AppleConnect'
 import { AppFileImport } from './AppFileImport'
 import { SpotifyConnect } from './SpotifyConnect'
@@ -102,6 +103,13 @@ function ImportList() {
   const [name, setName] = useState('')
   const [busy, setBusy] = useState(false)
   const run = async (path: string | null) => {
+    // Spotify's copied links: the import screen, songs named from Spotify's pages first.
+    if (!path && hasSpotifyTracks(text)) {
+      const [pasted, title] = [text, name.trim() || tr('Spotify songs')]
+      setText('')
+      setShown(false)
+      return void useStore.getState().importSpotifyLists(() => api.importSpotifyTracks(title, pasted))
+    }
     setBusy(true)
     const done = await useStore.getState().importSongList(name, path ? null : text, path)
     setBusy(false)
@@ -127,6 +135,7 @@ function ImportList() {
       {shown && (
         <Dialog title={tr('Import a list of songs')} onClose={() => setShown(false)}>
           <p className="text-sm text-ink-2">{tr('From SoundCloud, Deezer or anywhere: copy the titles, one per line like “Artist - Title”, and paste them here. Each song is found on YouTube.')}</p>
+          <p className="text-sm text-ink-3">{tr('In Spotify’s app, Ctrl+A then Ctrl+C in a list copies its songs as links: they work here too, private lists and Liked Songs included.')}</p>
           <textarea autoFocus value={text} onChange={(e) => setText(e.target.value)} rows={8} placeholder={tr('Daft Punk - Get Lucky')} aria-label={tr('Songs to import')} className="resize-y rounded-md border border-line bg-raised px-3 py-2 text-[0.8125rem] placeholder:text-ink-3" />
           <input value={name} onChange={(e) => setName(e.target.value)} maxLength={100} placeholder={tr('Playlist name')} aria-label={tr('Playlist name')} className={FIELD} />
           <div className="flex justify-end gap-2">
