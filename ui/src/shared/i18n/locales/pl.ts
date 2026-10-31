@@ -1531,8 +1531,6 @@ const pl: Record<string, string> = {
   'Bring your music': 'Dodaj swoją muzykę',
   'Pick any, or none: Add music has them all, any time.': 'Wybierz jedną, kilka albo żadną: wszystkie są zawsze w Dodaj muzykę.',
   'Paste a link': 'Wklej link',
-  'A public Spotify playlist or album comes in whole; a YouTube link adds its song.': 'Publiczna playlista lub album ze Spotify trafia w całości; link do YouTube dodaje swój utwór.',
-  'Spotify or YouTube link': 'Link do Spotify lub YouTube',
   'Search and play': 'Szukaj i słuchaj',
   'YouTube, YouTube Music and Apple Music, no account needed.': 'YouTube, YouTube Music i Apple Music, bez konta.',
   'Start listening': 'Zacznij słuchać',
@@ -1563,6 +1561,19 @@ const pl: Record<string, string> = {
   'Every change first, so it may break. Back on Stable, the app waits for a Stable version newer than this one: it never goes back to an older one': 'Każda zmiana jako pierwsza, więc coś może się zepsuć. Po powrocie na Stabilny aplikacja czeka na nowszą wersję stabilną niż ta: nigdy nie wraca do starszej',
   'Versions already tried on Beta. Pick Beta to get every change first': 'Wersje już wypróbowane w wersji Beta. Wybierz Beta, aby dostawać każdą zmianę jako pierwszy',
   'beta stable release early preview prerelease testing new features updates version': 'beta stabilny kanał podgląd testy nowe funkcje aktualizacje wersja wydanie',
+  'A public playlist or album from Spotify, Deezer or Apple Music comes in whole; a YouTube link adds its song.': 'Publiczna playlista lub album ze Spotify, Deezer albo Apple Music wchodzi w całości; link do YouTube dodaje swój utwór.',
+  'Spotify, Deezer, Apple Music or YouTube link': 'Link do Spotify, Deezer, Apple Music lub YouTube',
+  'Importing from {service}… (finding each song on YouTube)': 'Importowanie z {service}… (każdy utwór jest szukany w YouTube)',
+  'Imported “{name}”: {found} of {n} song found': 'Zaimportowano „{name}”: znaleziono {found} z {n} utworu',
+  'Imported “{name}”: {found} of {n} songs found': 'Zaimportowano „{name}”: znaleziono {found} z {n} utworów',
+  'Only {n} of the {total} songs came in: the link shows no more.': 'Weszło tylko {n} z {total} utworów: link nie pokazuje więcej.',
+  "This playlist is private or doesn't exist": 'Ta playlista jest prywatna albo nie istnieje',
+  "This album was removed, or isn't available in its store": 'Ten album został usunięty albo nie jest dostępny w swoim sklepie',
+  'That link is a single song: paste a playlist or album link': 'Ten link prowadzi do jednego utworu: wklej link do playlisty lub albumu',
+  'This playlist has no songs': 'Ta playlista nie ma utworów',
+  "This Deezer link doesn't lead to a playlist or an album": 'Ten link Deezer nie prowadzi do playlisty ani albumu',
+  'Deezer is busy right now: try again in a minute': 'Deezer jest teraz przeciążony: spróbuj ponownie za minutę',
+  'Apple changed its page: paste the songs as text instead (Add music › Import a list of songs)': 'Apple zmieniło swoją stronę: wklej zamiast tego utwory jako tekst (Dodaj muzykę › Importuj listę utworów)',
 }
 
 export default pl

@@ -289,7 +289,7 @@ export function App() {
   }, [])
   useEffect(() => startPlugins(), [])
 
-  // Ctrl+V outside text fields: share code → import, Spotify playlist / album → import, YouTube link → library.
+  // Ctrl+V outside text fields: share code → import, Spotify / Deezer / Apple Music playlist or album → import, YouTube link → library.
   useEffect(() => {
     const onPaste = (e: ClipboardEvent) => {
       // Target may be document itself (nothing focused): not an Element.
@@ -298,6 +298,7 @@ export function App() {
       const kind = linkKind(text)
       if (/^(musicapp:\/\/|MA1:)/i.test(text)) useStore.setState({ incoming: text })
       else if (kind === 'spotify') void useStore.getState().importSpotify(text)
+      else if (kind === 'deezer' || kind === 'apple') void useStore.getState().importLink(text, kind)
       else if (kind === 'youtube') void useStore.getState().addLink(text)
     }
     document.addEventListener('paste', onPaste)

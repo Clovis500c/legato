@@ -1531,8 +1531,6 @@ const es: Record<string, string> = {
   'Bring your music': 'Trae tu música',
   'Pick any, or none: Add music has them all, any time.': 'Elige una, varias o ninguna: Añadir música las tiene todas, en cualquier momento.',
   'Paste a link': 'Pegar un enlace',
-  'A public Spotify playlist or album comes in whole; a YouTube link adds its song.': 'Una playlist o un álbum público de Spotify llega completo; un enlace de YouTube añade su canción.',
-  'Spotify or YouTube link': 'Enlace de Spotify o YouTube',
   'Search and play': 'Buscar y reproducir',
   'YouTube, YouTube Music and Apple Music, no account needed.': 'YouTube, YouTube Music y Apple Music, sin cuenta.',
   'Start listening': 'Empezar a escuchar',
@@ -1563,6 +1561,19 @@ const es: Record<string, string> = {
   'Every change first, so it may break. Back on Stable, the app waits for a Stable version newer than this one: it never goes back to an older one': 'Cada cambio antes que nadie, así que puede fallar. Al volver a Estable, la app espera una versión Estable más nueva que esta: nunca vuelve a una más antigua',
   'Versions already tried on Beta. Pick Beta to get every change first': 'Versiones ya probadas en Beta. Elige Beta para recibir cada cambio antes que nadie',
   'beta stable release early preview prerelease testing new features updates version': 'beta estable canal versión preliminar prueba antes novedades actualizaciones',
+  'A public playlist or album from Spotify, Deezer or Apple Music comes in whole; a YouTube link adds its song.': 'Una lista o álbum público de Spotify, Deezer o Apple Music entra completo; un enlace de YouTube añade su canción.',
+  'Spotify, Deezer, Apple Music or YouTube link': 'Enlace de Spotify, Deezer, Apple Music o YouTube',
+  'Importing from {service}… (finding each song on YouTube)': 'Importando desde {service}… (buscando cada canción en YouTube)',
+  'Imported “{name}”: {found} of {n} song found': '«{name}» importada: {found} de {n} canción encontrada',
+  'Imported “{name}”: {found} of {n} songs found': '«{name}» importada: {found} de {n} canciones encontradas',
+  'Only {n} of the {total} songs came in: the link shows no more.': 'Solo entraron {n} de las {total} canciones: el enlace no muestra más.',
+  "This playlist is private or doesn't exist": 'Esta lista es privada o no existe',
+  "This album was removed, or isn't available in its store": 'Este álbum se eliminó o no está disponible en su tienda',
+  'That link is a single song: paste a playlist or album link': 'Ese enlace es de una sola canción: pega el enlace de una lista o un álbum',
+  'This playlist has no songs': 'Esta lista no tiene canciones',
+  "This Deezer link doesn't lead to a playlist or an album": 'Este enlace de Deezer no lleva a una lista ni a un álbum',
+  'Deezer is busy right now: try again in a minute': 'Deezer está saturado ahora mismo: prueba de nuevo en un minuto',
+  'Apple changed its page: paste the songs as text instead (Add music › Import a list of songs)': 'Apple cambió su página: pega las canciones como texto (Añadir música › Importar una lista de canciones)',
 }
 
 export default es

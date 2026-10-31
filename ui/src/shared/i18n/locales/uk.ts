@@ -1531,8 +1531,6 @@ const uk: Record<string, string> = {
   'Bring your music': 'Додай свою музику',
   'Pick any, or none: Add music has them all, any time.': 'Обери один спосіб, кілька або жодного: усі вони завжди є в розділі «Додати музику».',
   'Paste a link': 'Вставити посилання',
-  'A public Spotify playlist or album comes in whole; a YouTube link adds its song.': 'Публічний плейлист або альбом Spotify переноситься повністю; посилання на YouTube додає трек.',
-  'Spotify or YouTube link': 'Посилання Spotify або YouTube',
   'Search and play': 'Шукати й слухати',
   'YouTube, YouTube Music and Apple Music, no account needed.': 'YouTube, YouTube Music і Apple Music, без облікового запису.',
   'Start listening': 'Почати слухати',
@@ -1563,6 +1561,19 @@ const uk: Record<string, string> = {
   'Every change first, so it may break. Back on Stable, the app waits for a Stable version newer than this one: it never goes back to an older one': 'Кожна зміна першою, тож щось може зламатися. Після повернення на Стабільний застосунок чекає на новішу стабільну версію, ніж ця: до старішої він ніколи не повертається',
   'Versions already tried on Beta. Pick Beta to get every change first': 'Версії, які вже випробувано в бета-версії. Оберіть «Бета», щоб отримувати кожну зміну першим',
   'beta stable release early preview prerelease testing new features updates version': 'бета стабільний канал попередня тест нові функції оновлення версія випуск beta',
+  'A public playlist or album from Spotify, Deezer or Apple Music comes in whole; a YouTube link adds its song.': 'Публічний плейлист або альбом зі Spotify, Deezer чи Apple Music додається цілком; посилання на YouTube додає свою пісню.',
+  'Spotify, Deezer, Apple Music or YouTube link': 'Посилання Spotify, Deezer, Apple Music або YouTube',
+  'Importing from {service}… (finding each song on YouTube)': 'Імпорт із {service}… (кожну пісню шукаємо на YouTube)',
+  'Imported “{name}”: {found} of {n} song found': '«{name}» імпортовано: знайдено {found} пісню з {n}',
+  'Imported “{name}”: {found} of {n} songs found': '«{name}» імпортовано: знайдено {found} з {n} пісень',
+  'Only {n} of the {total} songs came in: the link shows no more.': 'Додано лише {n} із {total} пісень: посилання не показує більше.',
+  "This playlist is private or doesn't exist": 'Цей плейлист закритий або не існує',
+  "This album was removed, or isn't available in its store": 'Цей альбом видалено або він недоступний у своєму магазині',
+  'That link is a single song: paste a playlist or album link': 'Це посилання на одну пісню: вставте посилання на плейлист або альбом',
+  'This playlist has no songs': 'У цьому плейлисті немає пісень',
+  "This Deezer link doesn't lead to a playlist or an album": 'Це посилання Deezer не веде ні на плейлист, ні на альбом',
+  'Deezer is busy right now: try again in a minute': 'Deezer зараз перевантажений: спробуйте ще раз за хвилину',
+  'Apple changed its page: paste the songs as text instead (Add music › Import a list of songs)': 'Apple змінила свою сторінку: вставте пісні текстом (Додати музику › Імпортувати список пісень)',
 }
 
 export default uk

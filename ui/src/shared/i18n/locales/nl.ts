@@ -1531,8 +1531,6 @@ const nl: Record<string, string> = {
   'Bring your music': 'Breng je muziek mee',
   'Pick any, or none: Add music has them all, any time.': 'Kies er een, een paar of geen: Muziek toevoegen heeft ze allemaal, altijd.',
   'Paste a link': 'Plak een link',
-  'A public Spotify playlist or album comes in whole; a YouTube link adds its song.': 'Een openbare Spotify-playlist of -album komt er helemaal in; een YouTube-link voegt het nummer toe.',
-  'Spotify or YouTube link': 'Spotify- of YouTube-link',
   'Search and play': 'Zoeken en afspelen',
   'YouTube, YouTube Music and Apple Music, no account needed.': 'YouTube, YouTube Music en Apple Music, geen account nodig.',
   'Start listening': 'Beginnen met luisteren',
@@ -1563,6 +1561,19 @@ const nl: Record<string, string> = {
   'Every change first, so it may break. Back on Stable, the app waits for a Stable version newer than this one: it never goes back to an older one': 'Elke wijziging als eerste, dus er kan iets kapotgaan. Terug op Stabiel wacht de app op een nieuwere stabiele versie dan deze: hij gaat nooit terug naar een oudere',
   'Versions already tried on Beta. Pick Beta to get every change first': 'Versies die al in Beta zijn uitgeprobeerd. Kies Beta om elke wijziging als eerste te krijgen',
   'beta stable release early preview prerelease testing new features updates version': 'beta stabiel kanaal voorbeeld testen nieuwe functies updates versie release',
+  'A public playlist or album from Spotify, Deezer or Apple Music comes in whole; a YouTube link adds its song.': 'Een openbare afspeellijst of een album van Spotify, Deezer of Apple Music komt helemaal binnen; een YouTube-link voegt zijn nummer toe.',
+  'Spotify, Deezer, Apple Music or YouTube link': 'Spotify-, Deezer-, Apple Music- of YouTube-link',
+  'Importing from {service}… (finding each song on YouTube)': 'Importeren van {service}… (elk nummer wordt op YouTube gezocht)',
+  'Imported “{name}”: {found} of {n} song found': '“{name}” geïmporteerd: {found} van {n} nummer gevonden',
+  'Imported “{name}”: {found} of {n} songs found': '“{name}” geïmporteerd: {found} van {n} nummers gevonden',
+  'Only {n} of the {total} songs came in: the link shows no more.': 'Slechts {n} van de {total} nummers kwamen binnen: de link toont er niet meer.',
+  "This playlist is private or doesn't exist": 'Deze afspeellijst is privé of bestaat niet',
+  "This album was removed, or isn't available in its store": 'Dit album is verwijderd of is niet beschikbaar in zijn store',
+  'That link is a single song: paste a playlist or album link': 'Die link is van één nummer: plak een link naar een afspeellijst of album',
+  'This playlist has no songs': 'Deze afspeellijst bevat geen nummers',
+  "This Deezer link doesn't lead to a playlist or an album": 'Deze Deezer-link leidt niet naar een afspeellijst of album',
+  'Deezer is busy right now: try again in a minute': 'Deezer is nu druk bezet: probeer het over een minuut opnieuw',
+  'Apple changed its page: paste the songs as text instead (Add music › Import a list of songs)': 'Apple heeft zijn pagina gewijzigd: plak de nummers in plaats daarvan als tekst (Muziek toevoegen › Een nummerlijst importeren)',
 }
 
 export default nl

@@ -5,7 +5,7 @@ import { useSettings } from '../../app/settings'
 import { useStore } from '../../app/store'
 import { api, type LibraryTrack, type Origin, type SearchHit, type SearchResults, type Track } from '../../shared/api'
 import { trackArt } from '../../shared/art'
-import { formatCount, formatDuration, region, spotifyList } from '../../shared/format'
+import { formatCount, formatDuration, region } from '../../shared/format'
 import { msg, tr, trn } from '../../shared/i18n/i18n'
 import { onMenu } from '../../shared/ui/ContextMenu'
 import { LedChip, RoundButton, Toggle } from '../../shared/ui/controls'
@@ -21,6 +21,7 @@ import { PlaylistCover } from '../library/PlaylistCover'
 import { TrackTable } from '../library/TrackTable'
 import { hitMenu, playlistMenu, trackMenu, tracksMenu } from '../menus'
 import { remoteTrack, usePlayer } from '../player/store'
+import { isListLink, linkKind } from '../welcome/firstRun'
 import { addRecent } from './recent'
 import { countBy, errorOf, isSong, isVideo, libraryMatches, type Kind, type LibraryMatches, type Scope } from './results'
 
@@ -210,7 +211,9 @@ export function SearchView() {
     const t = request.found
     const inLibrary = t && tracks.find((x) => (t.isrc && x.isrc === t.isrc) || (t.ids.apple && x.ids.apple === t.ids.apple))
     setFound(t ? { ...t, libraryId: inLibrary?.id ?? null, musicness: 'music', from: [] } : null)
-    if (spotifyList(request.q)) return void useStore.getState().importSpotify(request.q.trim())
+    const link = linkKind(request.q)
+    if (link === 'spotify') return void useStore.getState().importSpotify(request.q.trim())
+    if (link === 'deezer' || link === 'apple') return void useStore.getState().importLink(request.q.trim(), link)
     // A song named by the Music Detector isn't something you typed.
     if (rememberSearches && !t) addRecent(request.q)
     if (everywhere) void run(request.q)
@@ -219,7 +222,7 @@ export function SearchView() {
   const switched = useRef(false)
   useEffect(() => {
     if (!switched.current) return void (switched.current = true)
-    if (everywhere && q && res?.q !== q && !spotifyList(q)) void run(q)
+    if (everywhere && q && res?.q !== q && !isListLink(q)) void run(q)
   }, [scope])
 
   const groups = useMemo(() => ({ artists: groupArtists(tracks), albums: groupAlbums(tracks) }), [tracks])

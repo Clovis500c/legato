@@ -13,6 +13,14 @@ const KINDS: [RegExp, string][] = [
   [/timed out|deadline has elapsed|os error 10060/i, msg('The service took too long to answer: try again in a moment.')],
   [/\b429\b|Too Many Requests/, msg('Too many requests for now: wait a few minutes, then try again.')],
   [/→ 5\d\d\b|\b50[0234] (Internal Server Error|Bad Gateway|Service Unavailable|Gateway Timeout)/i, msg('The service is having trouble right now: try again later.')],
+  // Pasted Deezer / Apple Music links (crates/connectors deezer.rs, itunes.rs): said by Rust in English, shown in the user's language.
+  [/^This playlist is private or doesn't exist/, msg("This playlist is private or doesn't exist")],
+  [/^This album was removed, or isn't available in its store/, msg("This album was removed, or isn't available in its store")],
+  [/^That link is a single song: paste a playlist or album link/, msg('That link is a single song: paste a playlist or album link')],
+  [/^This playlist has no songs/, msg('This playlist has no songs')],
+  [/^This Deezer link doesn't lead to a playlist or an album/, msg("This Deezer link doesn't lead to a playlist or an album")],
+  [/^Deezer is busy right now/, msg('Deezer is busy right now: try again in a minute')],
+  [/^Apple changed its page/, msg('Apple changed its page: paste the songs as text instead (Add music › Import a list of songs)')],
 ]
 
 /** A service named first, as Rust prefixes its errors ("YouTube Music: …"): it stays in front of the explanation. */

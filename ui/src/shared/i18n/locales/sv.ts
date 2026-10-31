@@ -1531,8 +1531,6 @@ const sv: Record<string, string> = {
   'Bring your music': 'Ta med din musik',
   'Pick any, or none: Add music has them all, any time.': 'Välj en, flera eller ingen: Lägg till musik har alla, när som helst.',
   'Paste a link': 'Klistra in en länk',
-  'A public Spotify playlist or album comes in whole; a YouTube link adds its song.': 'En offentlig Spotify-spellista eller ett album kommer in helt; en YouTube-länk lägger till sin låt.',
-  'Spotify or YouTube link': 'Spotify- eller YouTube-länk',
   'Search and play': 'Sök och spela',
   'YouTube, YouTube Music and Apple Music, no account needed.': 'YouTube, YouTube Music och Apple Music, inget konto behövs.',
   'Start listening': 'Börja lyssna',
@@ -1563,6 +1561,19 @@ const sv: Record<string, string> = {
   'Every change first, so it may break. Back on Stable, the app waits for a Stable version newer than this one: it never goes back to an older one': 'Varje ändring först, så något kan gå sönder. När du går tillbaka till Stabil väntar appen på en nyare stabil version än den här: den går aldrig tillbaka till en äldre',
   'Versions already tried on Beta. Pick Beta to get every change first': 'Versioner som redan har provats i Beta. Välj Beta för att få varje ändring först',
   'beta stable release early preview prerelease testing new features updates version': 'beta stabil kanal förhandsversion test nya funktioner uppdateringar version utgåva',
+  'A public playlist or album from Spotify, Deezer or Apple Music comes in whole; a YouTube link adds its song.': 'En offentlig spellista eller ett album från Spotify, Deezer eller Apple Music kommer in helt; en YouTube-länk lägger till sin låt.',
+  'Spotify, Deezer, Apple Music or YouTube link': 'Länk från Spotify, Deezer, Apple Music eller YouTube',
+  'Importing from {service}… (finding each song on YouTube)': 'Importerar från {service}… (varje låt söks på YouTube)',
+  'Imported “{name}”: {found} of {n} song found': '”{name}” importerades: {found} av {n} låt hittades',
+  'Imported “{name}”: {found} of {n} songs found': '”{name}” importerades: {found} av {n} låtar hittades',
+  'Only {n} of the {total} songs came in: the link shows no more.': 'Bara {n} av {total} låtar kom med: länken visar inte fler.',
+  "This playlist is private or doesn't exist": 'Den här spellistan är privat eller finns inte',
+  "This album was removed, or isn't available in its store": 'Det här albumet har tagits bort eller finns inte i sin butik',
+  'That link is a single song: paste a playlist or album link': 'Den länken gäller en enda låt: klistra in en länk till en spellista eller ett album',
+  'This playlist has no songs': 'Den här spellistan har inga låtar',
+  "This Deezer link doesn't lead to a playlist or an album": 'Den här Deezer-länken leder inte till en spellista eller ett album',
+  'Deezer is busy right now: try again in a minute': 'Deezer är överbelastat just nu: försök igen om en minut',
+  'Apple changed its page: paste the songs as text instead (Add music › Import a list of songs)': 'Apple har ändrat sin sida: klistra in låtarna som text i stället (Lägg till musik › Importera en låtlista)',
 }
 
 export default sv

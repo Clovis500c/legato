@@ -1531,8 +1531,6 @@ const tr: Record<string, string> = {
   'Bring your music': 'Müziğini getir',
   'Pick any, or none: Add music has them all, any time.': 'Birini, birkaçını ya da hiçbirini seç: Müzik ekle’de hepsi her zaman var.',
   'Paste a link': 'Bağlantı yapıştır',
-  'A public Spotify playlist or album comes in whole; a YouTube link adds its song.': 'Herkese açık bir Spotify çalma listesi ya da albümü eksiksiz gelir; bir YouTube bağlantısı şarkısını ekler.',
-  'Spotify or YouTube link': 'Spotify veya YouTube bağlantısı',
   'Search and play': 'Ara ve çal',
   'YouTube, YouTube Music and Apple Music, no account needed.': 'YouTube, YouTube Music ve Apple Music, hesap gerekmez.',
   'Start listening': 'Dinlemeye başla',
@@ -1563,6 +1561,19 @@ const tr: Record<string, string> = {
   'Every change first, so it may break. Back on Stable, the app waits for a Stable version newer than this one: it never goes back to an older one': 'Her değişiklik herkesten önce sana gelir, bu yüzden bir şeyler bozulabilir. Kararlı kanala dönünce uygulama bundan daha yeni bir kararlı sürümü bekler: asla eski bir sürüme geri dönmez',
   'Versions already tried on Beta. Pick Beta to get every change first': 'Beta’da zaten denenmiş sürümler. Her değişikliği herkesten önce almak için Beta’yı seç',
   'beta stable release early preview prerelease testing new features updates version': 'beta kararlı kanal ön sürüm test yeni özellikler güncellemeler sürüm',
+  'A public playlist or album from Spotify, Deezer or Apple Music comes in whole; a YouTube link adds its song.': 'Spotify, Deezer veya Apple Music’teki herkese açık bir çalma listesi ya da albüm bütünüyle gelir; bir YouTube bağlantısı kendi şarkısını ekler.',
+  'Spotify, Deezer, Apple Music or YouTube link': 'Spotify, Deezer, Apple Music veya YouTube bağlantısı',
+  'Importing from {service}… (finding each song on YouTube)': '{service} içinden içe aktarılıyor… (her şarkı YouTube’da aranıyor)',
+  'Imported “{name}”: {found} of {n} song found': '“{name}” içe aktarıldı: {n} şarkıdan {found} tanesi bulundu',
+  'Imported “{name}”: {found} of {n} songs found': '“{name}” içe aktarıldı: {n} şarkıdan {found} tanesi bulundu',
+  'Only {n} of the {total} songs came in: the link shows no more.': '{total} şarkıdan yalnızca {n} tanesi geldi: bağlantı daha fazlasını göstermiyor.',
+  "This playlist is private or doesn't exist": 'Bu çalma listesi gizli veya mevcut değil',
+  "This album was removed, or isn't available in its store": 'Bu albüm kaldırılmış veya kendi mağazasında bulunmuyor',
+  'That link is a single song: paste a playlist or album link': 'Bu bağlantı tek bir şarkıya ait: bir çalma listesi veya albüm bağlantısı yapıştırın',
+  'This playlist has no songs': 'Bu çalma listesinde şarkı yok',
+  "This Deezer link doesn't lead to a playlist or an album": 'Bu Deezer bağlantısı bir çalma listesine ya da albüme çıkmıyor',
+  'Deezer is busy right now: try again in a minute': 'Deezer şu an yoğun: bir dakika sonra tekrar deneyin',
+  'Apple changed its page: paste the songs as text instead (Add music › Import a list of songs)': 'Apple sayfasını değiştirdi: şarkıları bunun yerine metin olarak yapıştırın (Müzik ekle › Şarkı listesi içe aktar)',
 }
 
 export default tr

@@ -1531,8 +1531,6 @@ const id: Record<string, string> = {
   'Bring your music': 'Bawa musikmu',
   'Pick any, or none: Add music has them all, any time.': 'Pilih satu, beberapa, atau tidak sama sekali: semuanya ada di Tambah musik, kapan saja.',
   'Paste a link': 'Tempel tautan',
-  'A public Spotify playlist or album comes in whole; a YouTube link adds its song.': 'Playlist atau album Spotify publik masuk utuh; tautan YouTube menambahkan lagunya.',
-  'Spotify or YouTube link': 'Tautan Spotify atau YouTube',
   'Search and play': 'Cari dan putar',
   'YouTube, YouTube Music and Apple Music, no account needed.': 'YouTube, YouTube Music, dan Apple Music, tanpa akun.',
   'Start listening': 'Mulai mendengarkan',
@@ -1563,6 +1561,19 @@ const id: Record<string, string> = {
   'Every change first, so it may break. Back on Stable, the app waits for a Stable version newer than this one: it never goes back to an older one': 'Setiap perubahan lebih dulu, jadi bisa saja bermasalah. Kembali ke Stabil, aplikasi menunggu versi Stabil yang lebih baru dari ini: tidak pernah mundur ke versi yang lebih lama',
   'Versions already tried on Beta. Pick Beta to get every change first': 'Versi yang sudah dicoba di Beta. Pilih Beta untuk mendapatkan setiap perubahan lebih dulu',
   'beta stable release early preview prerelease testing new features updates version': 'beta stabil saluran pratinjau uji coba fitur baru pembaruan versi rilis',
+  'A public playlist or album from Spotify, Deezer or Apple Music comes in whole; a YouTube link adds its song.': 'Playlist atau album publik dari Spotify, Deezer, atau Apple Music masuk seluruhnya; tautan YouTube menambahkan lagunya.',
+  'Spotify, Deezer, Apple Music or YouTube link': 'Tautan Spotify, Deezer, Apple Music, atau YouTube',
+  'Importing from {service}… (finding each song on YouTube)': 'Mengimpor dari {service}… (mencari tiap lagu di YouTube)',
+  'Imported “{name}”: {found} of {n} song found': '“{name}” diimpor: {found} dari {n} lagu ditemukan',
+  'Imported “{name}”: {found} of {n} songs found': '“{name}” diimpor: {found} dari {n} lagu ditemukan',
+  'Only {n} of the {total} songs came in: the link shows no more.': 'Hanya {n} dari {total} lagu yang masuk: tautan tidak menampilkan lebih banyak.',
+  "This playlist is private or doesn't exist": 'Playlist ini privat atau tidak ada',
+  "This album was removed, or isn't available in its store": 'Album ini telah dihapus, atau tidak tersedia di tokonya',
+  'That link is a single song: paste a playlist or album link': 'Tautan itu untuk satu lagu: tempel tautan playlist atau album',
+  'This playlist has no songs': 'Playlist ini tidak berisi lagu',
+  "This Deezer link doesn't lead to a playlist or an album": 'Tautan Deezer ini tidak mengarah ke playlist atau album',
+  'Deezer is busy right now: try again in a minute': 'Deezer sedang sibuk: coba lagi satu menit lagi',
+  'Apple changed its page: paste the songs as text instead (Add music › Import a list of songs)': 'Apple mengubah halamannya: tempel lagunya sebagai teks saja (Tambah musik › Impor daftar lagu)',
 }
 
 export default id

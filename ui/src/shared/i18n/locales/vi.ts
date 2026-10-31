@@ -1531,8 +1531,6 @@ const vi: Record<string, string> = {
   'Bring your music': 'Mang nhạc của bạn vào',
   'Pick any, or none: Add music has them all, any time.': 'Chọn một, vài cách hoặc không chọn: Thêm nhạc luôn có đủ, bất cứ lúc nào.',
   'Paste a link': 'Dán liên kết',
-  'A public Spotify playlist or album comes in whole; a YouTube link adds its song.': 'Danh sách phát hoặc album Spotify công khai được nhập trọn vẹn; liên kết YouTube thêm bài hát của nó.',
-  'Spotify or YouTube link': 'Liên kết Spotify hoặc YouTube',
   'Search and play': 'Tìm và phát',
   'YouTube, YouTube Music and Apple Music, no account needed.': 'YouTube, YouTube Music và Apple Music, không cần tài khoản.',
   'Start listening': 'Bắt đầu nghe',
@@ -1563,6 +1561,19 @@ const vi: Record<string, string> = {
   'Every change first, so it may break. Back on Stable, the app waits for a Stable version newer than this one: it never goes back to an older one': 'Mọi thay đổi đến trước, nên có thể gặp lỗi. Khi quay lại Ổn định, ứng dụng chờ một phiên bản Ổn định mới hơn bản này: không bao giờ lùi về bản cũ hơn',
   'Versions already tried on Beta. Pick Beta to get every change first': 'Các phiên bản đã được thử trên Beta. Chọn Beta để nhận mọi thay đổi sớm nhất',
   'beta stable release early preview prerelease testing new features updates version': 'beta ổn định kênh xem trước thử nghiệm tính năng mới cập nhật phiên bản beta stable release early preview prerelease testing new features updates version',
+  'A public playlist or album from Spotify, Deezer or Apple Music comes in whole; a YouTube link adds its song.': 'Danh sách phát hoặc album công khai từ Spotify, Deezer hay Apple Music được nhập trọn vẹn; liên kết YouTube thêm bài hát của nó.',
+  'Spotify, Deezer, Apple Music or YouTube link': 'Liên kết Spotify, Deezer, Apple Music hoặc YouTube',
+  'Importing from {service}… (finding each song on YouTube)': 'Đang nhập từ {service}… (tìm từng bài hát trên YouTube)',
+  'Imported “{name}”: {found} of {n} song found': 'Đã nhập “{name}”: tìm thấy {found} trên {n} bài hát',
+  'Imported “{name}”: {found} of {n} songs found': 'Đã nhập “{name}”: tìm thấy {found} trên {n} bài hát',
+  'Only {n} of the {total} songs came in: the link shows no more.': 'Chỉ có {n} trên {total} bài hát được nhập: liên kết không hiển thị thêm.',
+  "This playlist is private or doesn't exist": 'Danh sách phát này ở chế độ riêng tư hoặc không tồn tại',
+  "This album was removed, or isn't available in its store": 'Album này đã bị gỡ hoặc không có trong cửa hàng của nó',
+  'That link is a single song: paste a playlist or album link': 'Liên kết đó là của một bài hát: hãy dán liên kết danh sách phát hoặc album',
+  'This playlist has no songs': 'Danh sách phát này không có bài hát nào',
+  "This Deezer link doesn't lead to a playlist or an album": 'Liên kết Deezer này không dẫn đến danh sách phát hay album nào',
+  'Deezer is busy right now: try again in a minute': 'Deezer đang bận: hãy thử lại sau một phút',
+  'Apple changed its page: paste the songs as text instead (Add music › Import a list of songs)': 'Apple đã thay đổi trang của mình: hãy dán các bài hát dưới dạng văn bản (Thêm nhạc › Nhập danh sách bài hát)',
 }
 
 export default vi

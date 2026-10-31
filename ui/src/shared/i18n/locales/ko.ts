@@ -1531,8 +1531,6 @@ const ko: Record<string, string> = {
   'Bring your music': '음악 가져오기',
   'Pick any, or none: Add music has them all, any time.': '하나만, 여러 개, 또는 아무것도 고르지 않아도 됩니다. 음악 추가에 언제든 모두 있습니다.',
   'Paste a link': '링크 붙여넣기',
-  'A public Spotify playlist or album comes in whole; a YouTube link adds its song.': '공개 Spotify 플레이리스트나 앨범은 통째로 들어오고, YouTube 링크는 그 노래를 추가합니다.',
-  'Spotify or YouTube link': 'Spotify 또는 YouTube 링크',
   'Search and play': '검색하고 재생',
   'YouTube, YouTube Music and Apple Music, no account needed.': 'YouTube, YouTube Music, Apple Music, 계정 필요 없음.',
   'Start listening': '듣기 시작',
@@ -1563,6 +1561,19 @@ const ko: Record<string, string> = {
   'Every change first, so it may break. Back on Stable, the app waits for a Stable version newer than this one: it never goes back to an older one': '모든 변경 사항을 가장 먼저 받으므로 문제가 생길 수 있습니다. 안정 버전으로 되돌리면 앱은 현재보다 새로운 안정 버전을 기다리며, 이전 버전으로는 돌아가지 않습니다',
   'Versions already tried on Beta. Pick Beta to get every change first': '베타 버전에서 이미 사용해 본 버전입니다. 모든 변경 사항을 가장 먼저 받으려면 베타 버전을 선택하세요',
   'beta stable release early preview prerelease testing new features updates version': '베타 안정 채널 미리보기 테스트 새 기능 업데이트 버전 beta stable release early preview prerelease testing new features updates version',
+  'A public playlist or album from Spotify, Deezer or Apple Music comes in whole; a YouTube link adds its song.': 'Spotify, Deezer, Apple Music의 공개 플레이리스트나 앨범은 통째로 들어오고, YouTube 링크는 그 곡을 추가합니다.',
+  'Spotify, Deezer, Apple Music or YouTube link': 'Spotify, Deezer, Apple Music 또는 YouTube 링크',
+  'Importing from {service}… (finding each song on YouTube)': '{service}에서 가져오는 중… (각 곡을 YouTube에서 찾는 중)',
+  'Imported “{name}”: {found} of {n} song found': '“{name}”을(를) 가져왔습니다: {n}곡 중 {found}곡 찾음',
+  'Imported “{name}”: {found} of {n} songs found': '“{name}”을(를) 가져왔습니다: {n}곡 중 {found}곡 찾음',
+  'Only {n} of the {total} songs came in: the link shows no more.': '{total}곡 중 {n}곡만 들어왔습니다: 링크에는 더 이상 표시되지 않습니다.',
+  "This playlist is private or doesn't exist": '이 플레이리스트는 비공개이거나 존재하지 않습니다',
+  "This album was removed, or isn't available in its store": '이 앨범은 삭제되었거나 해당 스토어에서 이용할 수 없습니다',
+  'That link is a single song: paste a playlist or album link': '이 링크는 한 곡의 링크입니다: 플레이리스트나 앨범 링크를 붙여넣으세요',
+  'This playlist has no songs': '이 플레이리스트에는 곡이 없습니다',
+  "This Deezer link doesn't lead to a playlist or an album": '이 Deezer 링크는 플레이리스트나 앨범으로 연결되지 않습니다',
+  'Deezer is busy right now: try again in a minute': 'Deezer가 지금 혼잡합니다: 1분 후에 다시 시도하세요',
+  'Apple changed its page: paste the songs as text instead (Add music › Import a list of songs)': 'Apple이 페이지를 변경했습니다: 대신 곡을 텍스트로 붙여넣으세요 (음악 추가 › 곡 목록 가져오기)',
 }
 
 export default ko

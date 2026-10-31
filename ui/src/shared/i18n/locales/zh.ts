@@ -1531,8 +1531,6 @@ const zh: Record<string, string> = {
   'Bring your music': '添加你的音乐',
   'Pick any, or none: Add music has them all, any time.': '选一个、几个或都不选：“添加音乐”里随时都有。',
   'Paste a link': '粘贴链接',
-  'A public Spotify playlist or album comes in whole; a YouTube link adds its song.': '公开的 Spotify 歌单或专辑会整个导入；YouTube 链接会添加对应的歌曲。',
-  'Spotify or YouTube link': 'Spotify 或 YouTube 链接',
   'Search and play': '搜索并播放',
   'YouTube, YouTube Music and Apple Music, no account needed.': 'YouTube、YouTube Music 和 Apple Music，无需账号。',
   'Start listening': '开始收听',
@@ -1563,6 +1561,19 @@ const zh: Record<string, string> = {
   'Every change first, so it may break. Back on Stable, the app waits for a Stable version newer than this one: it never goes back to an older one': '第一时间获得每项更改，因此可能出问题。切回稳定版后，应用会等待比当前更新的稳定版，不会回退到旧版本',
   'Versions already tried on Beta. Pick Beta to get every change first': '已在测试版中试用过的版本。选择测试版可第一时间获得每项更改',
   'beta stable release early preview prerelease testing new features updates version': '测试版 稳定版 渠道 抢先 预览 测试 新功能 更新 版本 beta stable release early preview prerelease testing new features updates version',
+  'A public playlist or album from Spotify, Deezer or Apple Music comes in whole; a YouTube link adds its song.': '来自 Spotify、Deezer 或 Apple Music 的公开播放列表或专辑会整个导入；YouTube 链接则添加它的歌曲。',
+  'Spotify, Deezer, Apple Music or YouTube link': 'Spotify、Deezer、Apple Music 或 YouTube 链接',
+  'Importing from {service}… (finding each song on YouTube)': '正在从 {service} 导入…（在 YouTube 上查找每首歌）',
+  'Imported “{name}”: {found} of {n} song found': '已导入“{name}”：{n} 首中找到 {found} 首',
+  'Imported “{name}”: {found} of {n} songs found': '已导入“{name}”：{n} 首中找到 {found} 首',
+  'Only {n} of the {total} songs came in: the link shows no more.': '{total} 首中只有 {n} 首导入：链接没有显示更多。',
+  "This playlist is private or doesn't exist": '此播放列表是私密的或不存在',
+  "This album was removed, or isn't available in its store": '此专辑已被移除，或在其商店中不可用',
+  'That link is a single song: paste a playlist or album link': '该链接是单首歌曲：请粘贴播放列表或专辑链接',
+  'This playlist has no songs': '此播放列表中没有歌曲',
+  "This Deezer link doesn't lead to a playlist or an album": '此 Deezer 链接没有指向播放列表或专辑',
+  'Deezer is busy right now: try again in a minute': 'Deezer 目前繁忙：请一分钟后重试',
+  'Apple changed its page: paste the songs as text instead (Add music › Import a list of songs)': 'Apple 更改了页面：请改为以文本形式粘贴歌曲 (添加音乐 › 导入歌曲列表)',
 }
 
 export default zh

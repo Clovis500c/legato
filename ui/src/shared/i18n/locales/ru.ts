@@ -1531,8 +1531,6 @@ const ru: Record<string, string> = {
   'Bring your music': 'Добавь свою музыку',
   'Pick any, or none: Add music has them all, any time.': 'Выбери один способ, несколько или ни одного: все они всегда есть в разделе «Добавить музыку».',
   'Paste a link': 'Вставить ссылку',
-  'A public Spotify playlist or album comes in whole; a YouTube link adds its song.': 'Публичный плейлист или альбом Spotify переносится целиком; ссылка на YouTube добавляет трек.',
-  'Spotify or YouTube link': 'Ссылка Spotify или YouTube',
   'Search and play': 'Искать и слушать',
   'YouTube, YouTube Music and Apple Music, no account needed.': 'YouTube, YouTube Music и Apple Music, без аккаунта.',
   'Start listening': 'Начать слушать',
@@ -1563,6 +1561,19 @@ const ru: Record<string, string> = {
   'Every change first, so it may break. Back on Stable, the app waits for a Stable version newer than this one: it never goes back to an older one': 'Каждое изменение первым, поэтому что-то может сломаться. При возврате на Стабильный приложение ждёт более новую стабильную версию, чем эта: к более старой оно никогда не откатывается',
   'Versions already tried on Beta. Pick Beta to get every change first': 'Версии, уже проверенные в бета-версии. Выберите «Бета», чтобы получать каждое изменение первым',
   'beta stable release early preview prerelease testing new features updates version': 'бета стабильный канал предварительная тест новые функции обновления версия выпуск beta',
+  'A public playlist or album from Spotify, Deezer or Apple Music comes in whole; a YouTube link adds its song.': 'Публичный плейлист или альбом из Spotify, Deezer или Apple Music добавляется целиком; ссылка на YouTube добавляет свою песню.',
+  'Spotify, Deezer, Apple Music or YouTube link': 'Ссылка Spotify, Deezer, Apple Music или YouTube',
+  'Importing from {service}… (finding each song on YouTube)': 'Импорт из {service}… (каждая песня ищется на YouTube)',
+  'Imported “{name}”: {found} of {n} song found': '«{name}» импортирован: найдена {found} песня из {n}',
+  'Imported “{name}”: {found} of {n} songs found': '«{name}» импортирован: найдено {found} из {n} песен',
+  'Only {n} of the {total} songs came in: the link shows no more.': 'Добавлено только {n} песен из {total}: ссылка не показывает больше.',
+  "This playlist is private or doesn't exist": 'Этот плейлист закрыт или не существует',
+  "This album was removed, or isn't available in its store": 'Этот альбом удалён или недоступен в своём магазине',
+  'That link is a single song: paste a playlist or album link': 'Эта ссылка ведёт на одну песню: вставьте ссылку на плейлист или альбом',
+  'This playlist has no songs': 'В этом плейлисте нет песен',
+  "This Deezer link doesn't lead to a playlist or an album": 'Эта ссылка Deezer не ведёт ни на плейлист, ни на альбом',
+  'Deezer is busy right now: try again in a minute': 'Deezer сейчас перегружен: попробуйте ещё раз через минуту',
+  'Apple changed its page: paste the songs as text instead (Add music › Import a list of songs)': 'Apple изменила свою страницу: вставьте песни текстом (Добавить музыку › Импортировать список песен)',
 }
 
 export default ru

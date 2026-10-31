@@ -1531,8 +1531,6 @@ const hi: Record<string, string> = {
   'Bring your music': 'अपना संगीत लाएँ',
   'Pick any, or none: Add music has them all, any time.': 'एक चुनें, कई या कोई नहीं: संगीत जोड़ें में ये सब कभी भी मिलते हैं।',
   'Paste a link': 'लिंक चिपकाएँ',
-  'A public Spotify playlist or album comes in whole; a YouTube link adds its song.': 'सार्वजनिक Spotify प्लेलिस्ट या एल्बम पूरा आता है; YouTube लिंक उसका गाना जोड़ता है।',
-  'Spotify or YouTube link': 'Spotify या YouTube लिंक',
   'Search and play': 'खोजें और चलाएँ',
   'YouTube, YouTube Music and Apple Music, no account needed.': 'YouTube, YouTube Music और Apple Music, अकाउंट की ज़रूरत नहीं।',
   'Start listening': 'सुनना शुरू करें',
@@ -1563,6 +1561,19 @@ const hi: Record<string, string> = {
   'Every change first, so it may break. Back on Stable, the app waits for a Stable version newer than this one: it never goes back to an older one': 'हर बदलाव सबसे पहले, इसलिए कुछ बिगड़ सकता है। स्थिर पर लौटने पर ऐप इस वर्शन से नए स्थिर वर्शन का इंतज़ार करता है: वह कभी पुराने वर्शन पर वापस नहीं जाता',
   'Versions already tried on Beta. Pick Beta to get every change first': 'वे वर्शन जो पहले बीटा में आज़माए जा चुके हैं। हर बदलाव सबसे पहले पाने के लिए बीटा चुनें',
   'beta stable release early preview prerelease testing new features updates version': 'बीटा स्थिर चैनल प्रीव्यू टेस्ट नई सुविधाएँ अपडेट वर्शन beta stable release early preview prerelease testing new features updates version',
+  'A public playlist or album from Spotify, Deezer or Apple Music comes in whole; a YouTube link adds its song.': 'Spotify, Deezer या Apple Music की सार्वजनिक प्लेलिस्ट या एल्बम पूरा आ जाता है; YouTube लिंक उसका गाना जोड़ता है।',
+  'Spotify, Deezer, Apple Music or YouTube link': 'Spotify, Deezer, Apple Music या YouTube लिंक',
+  'Importing from {service}… (finding each song on YouTube)': '{service} से इम्पोर्ट हो रहा है… (हर गाना YouTube पर खोजा जा रहा है)',
+  'Imported “{name}”: {found} of {n} song found': '“{name}” इम्पोर्ट हुई: {n} में से {found} गाना मिला',
+  'Imported “{name}”: {found} of {n} songs found': '“{name}” इम्पोर्ट हुई: {n} में से {found} गाने मिले',
+  'Only {n} of the {total} songs came in: the link shows no more.': '{total} में से केवल {n} गाने आए: लिंक इससे ज़्यादा नहीं दिखाता।',
+  "This playlist is private or doesn't exist": 'यह प्लेलिस्ट निजी है या मौजूद नहीं है',
+  "This album was removed, or isn't available in its store": 'यह एल्बम हटा दिया गया है, या अपने स्टोर में उपलब्ध नहीं है',
+  'That link is a single song: paste a playlist or album link': 'यह लिंक एक अकेले गाने का है: प्लेलिस्ट या एल्बम का लिंक पेस्ट करें',
+  'This playlist has no songs': 'इस प्लेलिस्ट में कोई गाना नहीं है',
+  "This Deezer link doesn't lead to a playlist or an album": 'यह Deezer लिंक किसी प्लेलिस्ट या एल्बम तक नहीं ले जाता',
+  'Deezer is busy right now: try again in a minute': 'Deezer अभी व्यस्त है: एक मिनट बाद फिर कोशिश करें',
+  'Apple changed its page: paste the songs as text instead (Add music › Import a list of songs)': 'Apple ने अपना पेज बदल दिया है: इसकी जगह गानों को टेक्स्ट के रूप में पेस्ट करें (संगीत जोड़ें › गानों की सूची इम्पोर्ट करें)',
 }
 
 export default hi

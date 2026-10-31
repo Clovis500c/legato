@@ -112,6 +112,8 @@ interface State {
   addLink: (url: string) => Promise<void>
   /** Public Spotify playlist / album link: import it and open it. */
   importSpotify: (url: string) => Promise<void>
+  /** A Deezer or Apple Music playlist / album link: a playlist of yours with the songs found on YouTube. */
+  importLink: (url: string, from: 'deezer' | 'apple') => Promise<void>
   /** Add › Import a list of songs. True when a playlist came out of it. */
   importSongList: (name: string, text: string | null, path: string | null) => Promise<boolean>
   /** Settings › General › Notifications, set by app/settings: errors and toasts with a button only; time × scale. */
@@ -289,6 +291,20 @@ export const useStore = create<State>((set, get) => {
       get().notify(done + lost)
       // Spotify's embed shows 100 songs at most; its API (your own key) reads the rest.
       if (r.truncated) get().notify(tr('Only the first 100 songs came in: connect Spotify in Accounts to import the whole playlist.'), { kind: 'info', action: { label: tr('Connect'), run: () => get().go({ name: 'settings', section: 'sources', wizard: 'spotify' }) } })
+      get().go({ name: 'playlist', id: r.playlistId })
+    },
+    async importLink(url, from) {
+      get().notify(tr('Importing from {service}… (finding each song on YouTube)', { service: from === 'deezer' ? 'Deezer' : 'Apple Music' }))
+      let r: Awaited<ReturnType<typeof api.importLink>> | undefined
+      if (!(await run(async () => (r = await api.importLink(url)))) || !r) return
+      if (r.playlistId === null) {
+        get().notify(trn(r.songs, 'None of the {n} song was found on YouTube', 'None of the {n} songs were found on YouTube'), { kind: 'error' })
+        return
+      }
+      get().notify(trn(r.songs, 'Imported “{name}”: {found} of {n} song found', 'Imported “{name}”: {found} of {n} songs found', { name: r.name, found: r.found }))
+      if (r.missing.length) get().notify(tr('Not found: {songs}', { songs: r.missing.slice(0, 3).join(', ') + (r.songs - r.found > 3 ? '…' : '') }), { kind: 'info' })
+      // The link showed (or Apple's page listed) fewer songs than the list has.
+      if (r.total > r.songs) get().notify(tr('Only {n} of the {total} songs came in: the link shows no more.', { n: r.songs, total: r.total }), { kind: 'info' })
       get().go({ name: 'playlist', id: r.playlistId })
     },
     notify(said, { kind = 'ok', action } = {}) {

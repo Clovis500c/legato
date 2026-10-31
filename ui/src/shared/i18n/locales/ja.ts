@@ -1531,8 +1531,6 @@ const ja: Record<string, string> = {
   'Bring your music': '音楽を取り込む',
   'Pick any, or none: Add music has them all, any time.': 'ひとつでも、いくつでも、なしでも：「音楽を追加」でいつでもすべて使えます。',
   'Paste a link': 'リンクを貼り付け',
-  'A public Spotify playlist or album comes in whole; a YouTube link adds its song.': '公開のSpotifyプレイリストやアルバムはまるごと、YouTubeのリンクはその曲を追加します。',
-  'Spotify or YouTube link': 'SpotifyまたはYouTubeのリンク',
   'Search and play': '検索して再生',
   'YouTube, YouTube Music and Apple Music, no account needed.': 'YouTube、YouTube Music、Apple Music、アカウント不要。',
   'Start listening': '聴きはじめる',
@@ -1563,6 +1561,19 @@ const ja: Record<string, string> = {
   'Every change first, so it may break. Back on Stable, the app waits for a Stable version newer than this one: it never goes back to an older one': 'すべての変更をいち早く受け取るため、不具合が出ることがあります。安定版に戻した場合は、今のバージョンより新しい安定版が出るまで待ち、古いバージョンには戻りません',
   'Versions already tried on Beta. Pick Beta to get every change first': 'ベータ版で試された後のバージョンです。すべての変更をいち早く受け取るにはベータ版を選びます',
   'beta stable release early preview prerelease testing new features updates version': 'ベータ 安定版 チャンネル プレビュー テスト 先行 新機能 アップデート バージョン beta stable release early preview prerelease testing new features updates version',
+  'A public playlist or album from Spotify, Deezer or Apple Music comes in whole; a YouTube link adds its song.': 'Spotify・Deezer・Apple Music の公開プレイリストやアルバムはまるごと取り込まれ、YouTube のリンクはその曲を追加します。',
+  'Spotify, Deezer, Apple Music or YouTube link': 'Spotify・Deezer・Apple Music・YouTube のリンク',
+  'Importing from {service}… (finding each song on YouTube)': '{service} から取り込み中…（YouTube で各曲を探しています）',
+  'Imported “{name}”: {found} of {n} song found': '「{name}」を取り込みました：{n} 曲中 {found} 曲が見つかりました',
+  'Imported “{name}”: {found} of {n} songs found': '「{name}」を取り込みました：{n} 曲中 {found} 曲が見つかりました',
+  'Only {n} of the {total} songs came in: the link shows no more.': '{total} 曲中 {n} 曲だけが取り込まれました。リンクにはこれ以上表示されません。',
+  "This playlist is private or doesn't exist": 'このプレイリストは非公開か、存在しません',
+  "This album was removed, or isn't available in its store": 'このアルバムは削除されたか、そのストアでは利用できません',
+  'That link is a single song: paste a playlist or album link': 'このリンクは 1 曲のものです。プレイリストかアルバムのリンクを貼り付けてください',
+  'This playlist has no songs': 'このプレイリストには曲がありません',
+  "This Deezer link doesn't lead to a playlist or an album": 'この Deezer リンクはプレイリストにもアルバムにもつながっていません',
+  'Deezer is busy right now: try again in a minute': 'Deezer は今混み合っています。1 分後にもう一度お試しください',
+  'Apple changed its page: paste the songs as text instead (Add music › Import a list of songs)': 'Apple がページを変更しました。代わりに曲をテキストとして貼り付けてください (音楽を追加 › 曲リストを取り込む)',
 }
 
 export default ja

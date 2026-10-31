@@ -30,6 +30,12 @@ export const formatCount = (n: number) => n.toLocaleString(locale())
 /** Spotify playlist or album link / URI (same rule as Rust spotify_embed::parse_link). */
 export const spotifyList = (text: string) => /(open\.spotify\.com\/(intl-[a-z-]+\/)?(embed\/)?|spotify:)(playlist|album)[/:][A-Za-z0-9]{22}/.test(text)
 
+/** Deezer playlist / album link (a song's too, said plain by Rust) or short link: same rule as Rust deezer::target, the link alone. */
+export const deezerLink = (text: string) => /^\s*(https?:\/\/)?((www\.)?deezer\.com\/([a-z]{2}(-[a-z]{2})?\/)?(playlist|album|track)\/\d+|link\.deezer\.com\/s\/[A-Za-z0-9]+)\S*\s*$/i.test(text)
+
+/** Apple Music album / playlist link (a song's too, said plain by Rust): same rule as Rust itunes::apple_target, the link alone. */
+export const appleLink = (text: string) => /^\s*(https?:\/\/)?music\.apple\.com\/([a-z]{2}\/)?(album|playlist|song)\/\S+\s*$/i.test(text)
+
 /** Store country for catalogs, from UI locale. */
 export const region = () => new Intl.Locale(navigator.language).maximize().region ?? 'US'
 

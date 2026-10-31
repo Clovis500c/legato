@@ -4,6 +4,7 @@ import { useStore } from '../../app/store'
 import { tr } from '../../shared/i18n/i18n'
 import { Button } from '../../shared/ui/Button'
 import { Led, RoundButton } from '../../shared/ui/controls'
+import { LinkBrand } from '../../shared/ui/SourceIcon'
 import { AddFolder, FIELD } from '../add/AddView'
 import { Card } from '../add/Card'
 import { useGoogleAccounts } from '../sources/google'
@@ -28,24 +29,34 @@ function GoogleCard() {
   )
 }
 
-/** A public Spotify playlist or album (imported whole, played from YouTube), or a YouTube song. */
+/** A public Spotify, Deezer or Apple Music playlist or album (imported whole, played from YouTube), or a YouTube song. */
 function LinkCard({ onLeave }: { onLeave?: () => void }) {
   const [text, setText] = useState('')
   const link = text.trim()
   const kind = linkKind(link)
   return (
-    <Card icon={LinkSimple} title={tr('Paste a link')} sub={tr('A public Spotify playlist or album comes in whole; a YouTube link adds its song.')}>
+    <Card icon={LinkSimple} title={tr('Paste a link')} sub={tr('A public playlist or album from Spotify, Deezer or Apple Music comes in whole; a YouTube link adds its song.')}>
       <form
         onSubmit={(e) => {
           e.preventDefault()
           if (!kind) return
           onLeave?.()
-          const { importSpotify, addLink } = useStore.getState()
-          void (kind === 'spotify' ? importSpotify(link) : addLink(link))
+          const { importSpotify, importLink, addLink } = useStore.getState()
+          if (kind === 'spotify') void importSpotify(link)
+          else if (kind === 'deezer' || kind === 'apple') void importLink(link, kind)
+          else void addLink(link)
         }}
         className="mt-auto flex gap-2"
       >
-        <input value={text} onChange={(e) => setText(e.target.value)} placeholder={tr('Spotify or YouTube link')} aria-label={tr('Paste a link')} spellCheck={false} className={`${FIELD} flex-1`} />
+        <div className="relative min-w-0 flex-1">
+          <input value={text} onChange={(e) => setText(e.target.value)} placeholder={tr('Spotify, Deezer, Apple Music or YouTube link')} aria-label={tr('Paste a link')} spellCheck={false} className={`${FIELD} w-full`} style={kind ? { paddingRight: '2.25rem' } : undefined} />
+          {/* The service the pasted link comes from. */}
+          {kind && (
+            <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-ink-2">
+              <LinkBrand kind={kind} />
+            </span>
+          )}
+        </div>
         <RoundButton label={tr('Import')} kind="ink" size="sm" type="submit" disabled={!kind}>
           <ArrowRight size={14} />
         </RoundButton>
