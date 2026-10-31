@@ -1574,6 +1574,7 @@ const ko: Record<string, string> = {
   "This Deezer link doesn't lead to a playlist or an album": '이 Deezer 링크는 플레이리스트나 앨범으로 연결되지 않습니다',
   'Deezer is busy right now: try again in a minute': 'Deezer가 지금 혼잡합니다: 1분 후에 다시 시도하세요',
   'Apple changed its page: paste the songs as text instead (Add music › Import a list of songs)': 'Apple이 페이지를 변경했습니다: 대신 곡을 텍스트로 붙여넣으세요 (음악 추가 › 곡 목록 가져오기)',
+  'Unknown artist': '알 수 없는 아티스트',
 }
 
 export default ko

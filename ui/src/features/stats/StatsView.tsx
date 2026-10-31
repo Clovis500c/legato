@@ -1,4 +1,5 @@
 import { Play } from '@phosphor-icons/react'
+import { artistName } from '../../shared/artistName'
 import { useShallow } from 'zustand/react/shallow'
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useStore } from '../../app/store'
@@ -118,7 +119,7 @@ export function StatsView() {
                 <Cover title={r.item.album ?? r.item.title} art={trackArt(r.item)} size={40} />
                 <span className="flex min-w-0 flex-1 flex-col">
                   <span className="truncate text-[0.8125rem] font-semibold">{r.item.title}</span>
-                  <span className="truncate text-xs text-ink-2">{r.item.artist}</span>
+                  <span className="truncate text-xs text-ink-2">{artistName(r.item.artist)}</span>
                 </span>
                 <span className="shrink-0 text-xs text-ink-3 tabular-nums">{trn(r.listens, '{n} play', '{n} plays')}</span>
               </li>
@@ -152,7 +153,7 @@ export function StatsView() {
                     <Cover title={r.item.album} art={trackArt(r.item.cover)} size={150} className="lift" />
                     <span className="truncate text-[0.8125rem] font-semibold group-hover:underline">{r.item.album}</span>
                     <span className="-mt-1.5 truncate text-xs text-ink-2">
-                      {r.item.artist} · {trn(r.listens, '{n} play', '{n} plays')}
+                      {artistName(r.item.artist)} · {trn(r.listens, '{n} play', '{n} plays')}
                     </span>
                   </button>
                 </li>

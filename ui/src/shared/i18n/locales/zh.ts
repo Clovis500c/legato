@@ -1574,6 +1574,7 @@ const zh: Record<string, string> = {
   "This Deezer link doesn't lead to a playlist or an album": '此 Deezer 链接没有指向播放列表或专辑',
   'Deezer is busy right now: try again in a minute': 'Deezer 目前繁忙：请一分钟后重试',
   'Apple changed its page: paste the songs as text instead (Add music › Import a list of songs)': 'Apple 更改了页面：请改为以文本形式粘贴歌曲 (添加音乐 › 导入歌曲列表)',
+  'Unknown artist': '未知艺术家',
 }
 
 export default zh

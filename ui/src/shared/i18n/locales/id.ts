@@ -1574,6 +1574,7 @@ const id: Record<string, string> = {
   "This Deezer link doesn't lead to a playlist or an album": 'Tautan Deezer ini tidak mengarah ke playlist atau album',
   'Deezer is busy right now: try again in a minute': 'Deezer sedang sibuk: coba lagi satu menit lagi',
   'Apple changed its page: paste the songs as text instead (Add music › Import a list of songs)': 'Apple mengubah halamannya: tempel lagunya sebagai teks saja (Tambah musik › Impor daftar lagu)',
+  'Unknown artist': 'Artis tidak dikenal',
 }
 
 export default id

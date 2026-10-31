@@ -1,4 +1,5 @@
 import { ArrowLeft, FolderSimple, Play, Plus, Shuffle } from '@phosphor-icons/react'
+import { artistName } from '../../shared/artistName'
 import { useShallow } from 'zustand/react/shallow'
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useSettings } from '../../app/settings'
@@ -151,7 +152,7 @@ function VideoCard({ hit, onPlay, onAdded }: { hit: SearchHit; onPlay: () => voi
         </span>
         <span className="flex min-w-0 flex-col gap-0.5">
           <span className="line-clamp-2 text-sm font-medium">{hit.title}</span>
-          <span className="truncate text-[0.8125rem] text-ink-3">{hit.artist}</span>
+          <span className="truncate text-[0.8125rem] text-ink-3">{artistName(hit.artist)}</span>
         </span>
       </button>
     </li>
@@ -267,8 +268,8 @@ export function SearchView() {
 
   // A catalog's chip shows that catalog alone: your library's matches step aside.
   const mine = only ? NONE : lib
-  const artistCard = (a: ArtistGroup) => <MediaCard key={a.artist} round title={a.artist} sub={trn(a.count, '{n} song', '{n} songs')} art={<Cover title={a.artist} art={trackArt(a.cover)} size={176} className="rounded-full!" />} onOpen={() => go({ name: 'artist', artist: a.artist })} onPlay={() => play(a.tracks, 0)} menu={() => tracksMenu(a.tracks)} />
-  const albumCard = (a: AlbumGroup) => <MediaCard key={`${a.album}\u0000${a.artist}`} title={a.album} sub={a.artist} art={<Cover title={a.album} art={trackArt(a.tracks[0])} size={176} />} onOpen={() => go({ name: 'album', album: a.album, artist: a.artist })} onPlay={() => play(a.tracks, 0)} menu={() => tracksMenu(a.tracks)} />
+  const artistCard = (a: ArtistGroup) => <MediaCard key={a.artist} round title={artistName(a.artist)} sub={trn(a.count, '{n} song', '{n} songs')} art={<Cover title={a.artist} art={trackArt(a.cover)} size={176} className="rounded-full!" />} onOpen={() => go({ name: 'artist', artist: a.artist })} onPlay={() => play(a.tracks, 0)} menu={() => tracksMenu(a.tracks)} />
+  const albumCard = (a: AlbumGroup) => <MediaCard key={`${a.album}\u0000${a.artist}`} title={a.album} sub={artistName(a.artist)} art={<Cover title={a.album} art={trackArt(a.tracks[0])} size={176} />} onOpen={() => go({ name: 'album', album: a.album, artist: a.artist })} onPlay={() => play(a.tracks, 0)} menu={() => tracksMenu(a.tracks)} />
   const playlistCards = mine.playlists.map((p) => <MediaCard key={p.id} title={p.name} sub={trn(p.trackCount, '{n} song', '{n} songs')} art={<PlaylistCover p={p} size={176} big />} onOpen={() => go({ name: 'playlist', id: p.id })} onPlay={() => void api.playlistTracks(p.id).then((t) => play(t, 0))} menu={() => playlistMenu(p)} />)
   // Library page filtered by the same text (its own token on).
   const openPage = (name: 'songs' | 'albums' | 'artists') => {
@@ -310,7 +311,7 @@ export function SearchView() {
     ? topCard(
         <Cover title={topArtist.artist} art={trackArt(topArtist.cover)} size={96} className="rounded-full!" />,
         <button onClick={() => go({ name: 'artist', artist: topArtist.artist })} className={`${display} hover:underline`}>
-          {topArtist.artist}
+          {artistName(topArtist.artist)}
         </button>,
         `${tr('Artist')} · ${trn(topArtist.count, '{n} song', '{n} songs')}`,
         true,
@@ -329,7 +330,7 @@ export function SearchView() {
         return topCard(
           <Cover title={t.album ?? t.title} art={trackArt(topSong ?? { ...topHit!, id: topHit!.libraryId ?? undefined })} size={96} />,
           <p className={display}>{t.title}</p>,
-          `${tr('Song')} · ${t.artist}`,
+          `${tr('Song')} · ${artistName(t.artist)}`,
           !!topSong || !!topHit?.libraryId,
           <RoundButton label={tr('Play {title}', { title: t.title })} kind="primary" size="lg" onClick={() => (topSong ? play(mine.songs, 0) : void playHit(topHit!, songs.length ? songs : videos))}>
             <Play size={22} weight="fill" />

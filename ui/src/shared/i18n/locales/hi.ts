@@ -1574,6 +1574,7 @@ const hi: Record<string, string> = {
   "This Deezer link doesn't lead to a playlist or an album": 'यह Deezer लिंक किसी प्लेलिस्ट या एल्बम तक नहीं ले जाता',
   'Deezer is busy right now: try again in a minute': 'Deezer अभी व्यस्त है: एक मिनट बाद फिर कोशिश करें',
   'Apple changed its page: paste the songs as text instead (Add music › Import a list of songs)': 'Apple ने अपना पेज बदल दिया है: इसकी जगह गानों को टेक्स्ट के रूप में पेस्ट करें (संगीत जोड़ें › गानों की सूची इम्पोर्ट करें)',
+  'Unknown artist': 'अज्ञात कलाकार',
 }
 
 export default hi

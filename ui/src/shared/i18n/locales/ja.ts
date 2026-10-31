@@ -1574,6 +1574,7 @@ const ja: Record<string, string> = {
   "This Deezer link doesn't lead to a playlist or an album": 'この Deezer リンクはプレイリストにもアルバムにもつながっていません',
   'Deezer is busy right now: try again in a minute': 'Deezer は今混み合っています。1 分後にもう一度お試しください',
   'Apple changed its page: paste the songs as text instead (Add music › Import a list of songs)': 'Apple がページを変更しました。代わりに曲をテキストとして貼り付けてください (音楽を追加 › 曲リストを取り込む)',
+  'Unknown artist': '不明なアーティスト',
 }
 
 export default ja

@@ -1574,6 +1574,7 @@ const nl: Record<string, string> = {
   "This Deezer link doesn't lead to a playlist or an album": 'Deze Deezer-link leidt niet naar een afspeellijst of album',
   'Deezer is busy right now: try again in a minute': 'Deezer is nu druk bezet: probeer het over een minuut opnieuw',
   'Apple changed its page: paste the songs as text instead (Add music › Import a list of songs)': 'Apple heeft zijn pagina gewijzigd: plak de nummers in plaats daarvan als tekst (Muziek toevoegen › Een nummerlijst importeren)',
+  'Unknown artist': 'Onbekende artiest',
 }
 
 export default nl

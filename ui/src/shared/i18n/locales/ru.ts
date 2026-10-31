@@ -1574,6 +1574,7 @@ const ru: Record<string, string> = {
   "This Deezer link doesn't lead to a playlist or an album": 'Эта ссылка Deezer не ведёт ни на плейлист, ни на альбом',
   'Deezer is busy right now: try again in a minute': 'Deezer сейчас перегружен: попробуйте ещё раз через минуту',
   'Apple changed its page: paste the songs as text instead (Add music › Import a list of songs)': 'Apple изменила свою страницу: вставьте песни текстом (Добавить музыку › Импортировать список песен)',
+  'Unknown artist': 'Неизвестный исполнитель',
 }
 
 export default ru

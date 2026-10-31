@@ -1,4 +1,5 @@
 import { CaretDown, DotsThree, Info, MagnifyingGlass, MicrophoneStage, Play, Plus, ShareNetwork, Shuffle, SlidersHorizontal, SortAscending } from '@phosphor-icons/react'
+import { artistName } from '../../shared/artistName'
 import { useShallow } from 'zustand/react/shallow'
 import { useCallback, useMemo, useState } from 'react'
 import { pageQuery, useStore } from '../../app/store'
@@ -391,7 +392,7 @@ export function AlbumsView() {
                 <span className="flex min-w-0 flex-col gap-0.5">
                   <span className="truncate text-base font-medium">{a.album}</span>
                   <span className="truncate text-[0.8125rem] text-ink-3">
-                    {a.artist} · {trn(a.tracks.length, '{n} track', '{n} tracks')}
+                    {artistName(a.artist)} · {trn(a.tracks.length, '{n} track', '{n} tracks')}
                   </span>
                 </span>
               </button>
@@ -424,7 +425,7 @@ export function ArtistsView() {
             <button onClick={() => go({ name: 'artist', artist: a.artist })} className="flex h-full w-full items-center gap-4 rounded-md px-2 text-left transition-colors hover:bg-raised">
               <span className="w-8 text-right text-[0.8125rem] text-ink-3 tabular-nums">{i + 1}</span>
               <Cover title={a.artist} art={trackArt(a.cover)} size={40} className="rounded-full!" />
-              <span className="flex-1 truncate text-sm font-medium">{a.artist}</span>
+              <span className="flex-1 truncate text-sm font-medium">{artistName(a.artist)}</span>
               <span className="text-[0.8125rem] text-ink-3">
                 {trn(a.count, '{n} track', '{n} tracks')} · {trn(a.albums, '{n} album', '{n} albums')}
                 {v.sort === 'most-played' && ` · ${trn(groupStats(a, stats).plays, '{n} play', '{n} plays')}`}

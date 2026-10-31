@@ -1574,6 +1574,7 @@ const sv: Record<string, string> = {
   "This Deezer link doesn't lead to a playlist or an album": 'Den här Deezer-länken leder inte till en spellista eller ett album',
   'Deezer is busy right now: try again in a minute': 'Deezer är överbelastat just nu: försök igen om en minut',
   'Apple changed its page: paste the songs as text instead (Add music › Import a list of songs)': 'Apple har ändrat sin sida: klistra in låtarna som text i stället (Lägg till musik › Importera en låtlista)',
+  'Unknown artist': 'Okänd artist',
 }
 
 export default sv

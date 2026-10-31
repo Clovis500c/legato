@@ -1574,6 +1574,7 @@ const tr: Record<string, string> = {
   "This Deezer link doesn't lead to a playlist or an album": 'Bu Deezer bağlantısı bir çalma listesine ya da albüme çıkmıyor',
   'Deezer is busy right now: try again in a minute': 'Deezer şu an yoğun: bir dakika sonra tekrar deneyin',
   'Apple changed its page: paste the songs as text instead (Add music › Import a list of songs)': 'Apple sayfasını değiştirdi: şarkıları bunun yerine metin olarak yapıştırın (Müzik ekle › Şarkı listesi içe aktar)',
+  'Unknown artist': 'Bilinmeyen sanatçı',
 }
 
 export default tr

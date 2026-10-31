@@ -1574,6 +1574,7 @@ const vi: Record<string, string> = {
   "This Deezer link doesn't lead to a playlist or an album": 'Liên kết Deezer này không dẫn đến danh sách phát hay album nào',
   'Deezer is busy right now: try again in a minute': 'Deezer đang bận: hãy thử lại sau một phút',
   'Apple changed its page: paste the songs as text instead (Add music › Import a list of songs)': 'Apple đã thay đổi trang của mình: hãy dán các bài hát dưới dạng văn bản (Thêm nhạc › Nhập danh sách bài hát)',
+  'Unknown artist': 'Nghệ sĩ không xác định',
 }
 
 export default vi
