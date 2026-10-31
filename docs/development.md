@@ -52,7 +52,7 @@ and 10 minutes in the tray. `--quick` is a short run. `pnpm bench --visualizer` 
 
 `pnpm e2e` builds the app as a guest (`tauri build --debug --no-bundle --features e2e`, identifier
 `app.legato.desktop.e2e`, `src-tauri/tauri.e2e.conf.json`, the exe copied to `target/e2e`) and walks a new user's first
-minutes through its real window, over WebView2's DevTools port (`scripts/cdp.mjs`, the flags of `scripts/guest.mjs`): the
+minutes through its real window, over WebView2's DevTools port (`scripts/cdp.mjs`; how the port opens: below): the
 welcome comes first, Add folder (three WAV songs the test writes, `e2e/wav.mjs`), the Songs page lists them, a song plays
 3 s and the engine's position moves, the visualizer's frames come at about 60 a second, Pause freezes it and Play moves it again, the
 visualizer turned on draws LED bars in Now Playing (a screenshot of the strip, and of V's full screen, must not be blank:
@@ -67,8 +67,12 @@ welcome, the library is still there. About 20 s once built. The diagnostics log 
 (`src-tauri/src/deferred.rs`): the walk fails when it was the 8 s timer, not the page's ready signal. A failure leaves screenshots, `failure.txt` (the step, the page's
 text, what the mock saw, the diagnostics log) in `target/e2e/shots`; CI uploads them. `--repeat 5` walks five times on one
 build, `--skip-build` reuses an unchanged build. The `e2e` job of `check.yml` runs it on Windows, the build and then the
-walk as two steps, the walk held to 5 minutes. It is not blocking yet (`continue-on-error`, a warning on the run when it
-fails): it has not run on GitHub, and `release.yml` waits for a green `check`. Delete that line after a few green runs.
+walk as two steps, the walk held to 5 minutes. The port reaches WebView2 through `LEGATO_E2E_BROWSER_ARGS`, which only the
+e2e build reads (`background::browser_args`): on GitHub's runner `WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS` never shows on the
+browser's command line, with or without admin rights, while the same runtime (156.0.4314.50) takes it on a Windows 11 PC.
+Why is unknown. `pnpm bench` runs on a PC and keeps that variable. When no page attaches, the walk prints the browser's
+command line, the OS and the Edge policies. It is not blocking yet (`continue-on-error`, a warning on the run when it
+fails): first green on GitHub 2026-10-31, and `release.yml` waits for a green `check`. Delete that line after a few green runs.
 Checked on 2026-10-30: with the click handler of the player's play button emptied, the walk fails at `pause-play`
 ("Pause did not pause"), exit code 1, screenshot and report left. Checked on 2026-10-31: with the Deezer link recogniser
 (`deezerLink`) broken, the walk fails at `links` ("the page never showed Importing from Deezer… 0 of 2").

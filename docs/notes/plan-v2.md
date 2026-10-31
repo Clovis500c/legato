@@ -368,8 +368,8 @@ every session.
 - [x] End-to-end smoke test on Windows CI: launch, welcome, scan the demo folder, play a local song, search signed out
       (mocked), quit. Catches what unit tests can't (the "two songs at once" class). Done 2026-10-30 (`pnpm e2e`, the
       `e2e` job, docs/development.md), over the DevTools port with `scripts/cdp.mjs`, no tauri-driver: no driver version
-      to pin (msedgedriver breaks on WebView2 133+ on the runners, runner-images#14738). Left: not yet run on GitHub; no
-      YouTube embed (needs the network), no real audio device.
+      to pin (msedgedriver breaks on WebView2 133+ on the runners, runner-images#14738). Green on GitHub since 2026-10-31.
+      Left: no YouTube embed (needs the network), no real audio device.
 - [ ] The "Check live in the real app" list as a scripted checklist (a dev-only page that drives each step and logs the
       result), so a pass takes minutes, not a session.
 - [x] Crash and error log kept locally (rotating file, Settings › About › "Copy diagnostics"): bug reports with facts,
