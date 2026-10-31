@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { api, type Effects, type LiveLevels } from '../../shared/api'
 import { NEUTRAL } from './effects'
+import { bindVizSource, viz } from './vizFrames'
 import { useWatch, watching } from './watch'
 import { YT_ORIGIN } from './youtube'
 
@@ -22,6 +23,8 @@ export interface LiveWish {
   targetLufs: number
   /** The visualizer wants the bands (Now Playing open, visualizer on). */
   bands: boolean
+  /** A visualizer listens to the 60 Hz frames (vizFrames.ts): YouTube's side makes them only then. */
+  viz: boolean
   /** YouTube's sound may be processed (Settings › Advanced). */
   youtube: boolean
   /** Live Editor settings (neutral = untouched). */
@@ -42,11 +45,11 @@ export function punch(l: LiveLevels | null): number {
 
 /** What the YouTube player gets. */
 export function frameSettings(w: LiveWish) {
-  return { on: (w.on || w.ends) && w.youtube, listen: w.listen, adaptive: w.adaptive, targetLufs: w.targetLufs, bands: w.bands }
+  return { on: (w.on || w.ends) && w.youtube, listen: w.listen, adaptive: w.adaptive, targetLufs: w.targetLufs, bands: w.bands, viz: w.viz }
 }
 
 /** end = the song ended there (s of the video), silence after it; lead = the music began there, silence before it (live.js, ends.ts). */
-type Report = { attached?: boolean | null; error?: string | null; levels?: LiveLevels | null; end?: number | null; lead?: number | null }
+type Report = { attached?: boolean | null; error?: string | null; levels?: LiveLevels | null; end?: number | null; lead?: number | null; viz?: string | null }
 
 /** A frame message from live.js, if it is one. */
 export function parseLive(origin: string, data: unknown): Report | null {
@@ -59,7 +62,7 @@ export function parseLive(origin: string, data: unknown): Report | null {
   }
 }
 
-let wish: LiveWish = { on: false, ends: false, listen: false, adaptive: false, targetLufs: -14, bands: false, youtube: true, effects: NEUTRAL }
+let wish: LiveWish = { on: false, ends: false, listen: false, adaptive: false, targetLufs: -14, bands: false, viz: false, youtube: true, effects: NEUTRAL }
 // Early end heard (the store's): tail = from the overlap's fading-out embed, not what plays now.
 let ended: ((end: number, tail: boolean) => void) | null = null
 export const onEndHeard = (f: (end: number, tail: boolean) => void) => void (ended = f)
@@ -109,6 +112,7 @@ export function startLive(playing: () => 'native' | 'youtube' | null): () => voi
   const take = (m: Report) => {
     if (m.levels) useLive.setState({ levels: m.levels })
     if (m.attached != null) useLive.setState({ attached: m.attached, error: m.error ?? undefined })
+    if (m.viz) viz.fromYoutube(m.viz)
   }
   const onMessage = (e: MessageEvent) => {
     const m = parseLive(e.origin, e.data)
@@ -120,6 +124,7 @@ export function startLive(playing: () => 'native' | 'youtube' | null): () => voi
     if (now) take(m)
   }
   window.addEventListener('message', onMessage)
+  bindVizSource(playing)
   const off = api.onLive((m) => {
     if (playing() !== 'youtube' || !watching()) return
     if (typeof m.end === 'number') ended?.(m.end, false)
@@ -143,5 +148,6 @@ export function startLive(playing: () => 'native' | 'youtube' | null): () => voi
     void off.then((f) => f())
     unwatch()
     clearInterval(poll)
+    bindVizSource(() => null)
   }
 }

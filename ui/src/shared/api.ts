@@ -1,4 +1,4 @@
-import { invoke } from '@tauri-apps/api/core'
+import { Channel, invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 import type { Box } from './artbox'
 import type { AddReport, AlbumInfo, CacheStats, Credentials, DetectInput, Detection, Direction, DiscordStatus, Edit, EditDraft, Effects, ExportReport, FindReport, Heard, ImportReport, LastfmStatus, LibraryChanges, LibraryData, LibraryPlaylist, LibraryTrack, ListImport, LinkImport, ListRef, LiveReport, LiveSettings, Lyrics, LyricsAsk, MediaNow, Merged, Mix, NearbyState, Play, PlayerCommand, PlayerLevels, PlayerStatus, PlaylistEdit, PluginCall, PluginInfo, PluginInspect, Pref, Presence, PushFailed, Scrobble, SearchResults, ShareCode, SharePreview, ShieldStatus, ShortcutEntry, SongTags, Source, SourceStatus, SpotifyCommand, SpotifyImport, SpotifyPlayback, SponsorSegment, SyncOffer, SyncProbe, SyncReport, SyncStatus, SystemAccent, Track, UpdateStatus, WatchCmd, WatchRect, WatchReport, YtmAccount, YtmAccounts, YtmArtist, YtmHome } from './generated'
@@ -184,6 +184,16 @@ export const api = {
   playerEffects: (effects: Effects) => invoke<void>('player_effects', { effects }),
   /** What the native engine plays, as heard. */
   playerLevels: () => invoke<PlayerLevels>('player_levels'),
+  /**
+   * Visualizer frames from the native engine: packed bytes (crates/dsp `viz::Frame::pack`) at 60 Hz until vizStop,
+   * one silent frame when the sound stops. Resolves with a function that drops the handler.
+   */
+  vizStart: async (onFrame: (bytes: unknown) => void) => {
+    const frames = new Channel<unknown>(onFrame)
+    await invoke<void>('viz_start', { frames })
+    return () => void (frames.onmessage = () => {})
+  },
+  vizStop: () => invoke<void>('viz_stop'),
   /** Voice search: one phrase through Windows' speech recognition. */
   voiceListen: () => invoke<Heard>('voice_listen'),
   voiceStop: () => invoke<void>('voice_stop'),

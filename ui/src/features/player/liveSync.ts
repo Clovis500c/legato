@@ -5,6 +5,7 @@ import { startEditor, useEditor } from '../editor/editor'
 import { neutral } from './effects'
 import { overlapDue } from './fade'
 import { sendLive, setEnding, startLive } from './live'
+import { useVizListeners } from './vizFrames'
 import { usePlayer } from './store'
 
 // Who plays now, for levels: the native engine (local files, previews) or YouTube. Spotify: its own app, none.
@@ -20,6 +21,8 @@ export function useLiveSync() {
   )
   // Bands cost filters on the sound thread: only while the visualizer is on screen.
   const bands = usePlayer((s) => visualizer && s.full)
+  // The 60 Hz frames (Visualizer v2): YouTube's side makes them only while a view listens.
+  const viz = useVizListeners((s) => s.n > 0)
   const effects = useEditor((s) => s.effects)
   useEffect(() => startLive(playing), [])
   useEffect(() => startEditor(), [])
@@ -29,6 +32,6 @@ export function useLiveSync() {
   useEffect(() => {
     // Bypassed edits keep processing attached: A / B switches at once. Levels alone (moving cover, early ends) only listen.
     const process = adaptiveSound || !neutral({ ...effects, on: true })
-    sendLive({ on: process || coverPulse || bands, ends: earlyEnds || skipSilence, listen: !process, adaptive: adaptiveSound, targetLufs: adaptiveLevel, bands, youtube: liveYoutube, effects })
-  }, [adaptiveSound, adaptiveLevel, coverPulse, earlyEnds, skipSilence, liveYoutube, effects, bands])
+    sendLive({ on: process || coverPulse || bands || viz, ends: earlyEnds || skipSilence, listen: !process, adaptive: adaptiveSound, targetLufs: adaptiveLevel, bands, viz, youtube: liveYoutube, effects })
+  }, [adaptiveSound, adaptiveLevel, coverPulse, earlyEnds, skipSilence, liveYoutube, effects, bands, viz])
 }
