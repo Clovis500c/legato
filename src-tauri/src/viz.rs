@@ -14,6 +14,10 @@ use tauri::ipc::{Channel, InvokeResponseBody};
 /// The running worker's stop flag.
 static RUNNING: Mutex<Option<Arc<AtomicBool>>> = Mutex::new(None);
 
+/// The page that owns the stream: the id it claimed at load (`viz_page`). A `viz_start` still in flight from the page
+/// before a reload carries the old id and is dropped: its channel is dead but still sends Ok, so the worker would never end.
+static PAGE: Mutex<String> = Mutex::new(String::new());
+
 /// Frames sent so far and workers alive: what `viz_stats` reports (the e2e walk checks the stream follows the view).
 static SENT: AtomicU64 = AtomicU64::new(0);
 static ALIVE: AtomicUsize = AtomicUsize::new(0);
@@ -37,6 +41,17 @@ pub fn stop() {
     if let Some(flag) = RUNNING.lock().unwrap_or_else(PoisonError::into_inner).take() {
         flag.store(true, Relaxed);
     }
+}
+
+/// The new page claims the stream: the old one's worker stops, its late starts are refused.
+fn claim(page: &str) {
+    *PAGE.lock().unwrap_or_else(PoisonError::into_inner) = page.to_string();
+    stop();
+}
+
+/// Is this start from the page that owns the stream. No id (the e2e walk) = yes.
+fn owns(page: Option<&str>) -> bool {
+    page.is_none_or(|p| *PAGE.lock().unwrap_or_else(PoisonError::into_inner) == p)
 }
 
 fn start(tap: Arc<Tap>, frames: Channel<InvokeResponseBody>) {
@@ -73,8 +88,17 @@ fn start(tap: Arc<Tap>, frames: Channel<InvokeResponseBody>) {
 /// The visualizer opened: packed frames (`music_dsp::viz::Frame::pack`) go to `frames` until `viz_stop`, a new
 /// `viz_start` or a reload.
 #[tauri::command]
-pub async fn viz_start(state: State<'_, AppState>, frames: Channel<InvokeResponseBody>) -> Result<(), String> {
-    start(state.player.tap(), frames);
+pub async fn viz_start(state: State<'_, AppState>, page: Option<String>, frames: Channel<InvokeResponseBody>) -> Result<(), String> {
+    if owns(page.as_deref()) {
+        start(state.player.tap(), frames);
+    }
+    Ok(())
+}
+
+/// A page just loaded: it owns the stream from now on (`page` = an id it made up), whatever the page before left running.
+#[tauri::command]
+pub async fn viz_page(page: String) -> Result<(), String> {
+    claim(&page);
     Ok(())
 }
 
@@ -88,4 +112,19 @@ pub fn viz_stats() -> (usize, u64) {
 pub async fn viz_stop() -> Result<(), String> {
     stop();
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn a_late_start_from_the_page_before_a_reload_is_refused() {
+        claim("old");
+        assert!(owns(Some("old")));
+        claim("new");
+        assert!(!owns(Some("old")));
+        assert!(owns(Some("new")));
+        assert!(owns(None));
+    }
 }

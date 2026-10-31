@@ -78,3 +78,8 @@ export const viz = createViz(
   },
   (n) => useVizListeners.setState({ n }),
 )
+
+/** The page claims the stream (once, at start-up): see api.vizPage. Returns nothing to clean up. */
+export function claimViz() {
+  void api.vizPage().catch(() => {})
+}

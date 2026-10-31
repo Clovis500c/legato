@@ -16,6 +16,9 @@ export const playlistKey = (p: Pick<LibraryPlaylist, 'id' | 'source' | 'sourceId
 export const accountKey = (a: YtmAccount) => (a.pageId ? `${a.authuser}:${a.pageId}` : String(a.authuser))
 
 /** Typed wrappers over Tauri commands (src-tauri/src/lib.rs). Rejections = error string. */
+/** This page's id for the visualizer stream (api.vizPage). */
+const vizPageId = Math.random().toString(36).slice(2) + Date.now().toString(36)
+
 export const api = {
   sourcesStatus: async () =>
     Object.fromEntries(await invoke<[Service, SourceStatus][]>('sources_status')) as Record<Service, SourceStatus>,
@@ -190,10 +193,12 @@ export const api = {
    */
   vizStart: async (onFrame: (bytes: unknown) => void) => {
     const frames = new Channel<unknown>(onFrame)
-    await invoke<void>('viz_start', { frames })
+    await invoke<void>('viz_start', { page: vizPageId, frames })
     return () => void (frames.onmessage = () => {})
   },
   vizStop: () => invoke<void>('viz_stop'),
+  /** This page owns the visualizer stream (once, at load): a start still in flight from the page before a reload is dropped. */
+  vizPage: () => invoke<void>('viz_page', { page: vizPageId }),
   /** Voice search: one phrase through Windows' speech recognition. */
   voiceListen: () => invoke<Heard>('voice_listen'),
   voiceStop: () => invoke<void>('voice_stop'),
