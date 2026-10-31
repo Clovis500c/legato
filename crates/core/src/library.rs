@@ -328,6 +328,10 @@ pub fn keep_daily_copy(path: &Path) -> Result<bool> {
     Ok(true)
 }
 
+/// Silence rows kept (a cache by path), and how long a SponsorBlock answer stays in its table, s.
+const SILENCE_KEEP: i64 = 20_000;
+const SPONSOR_KEEP_S: i64 = 30 * 86_400;
+
 impl Library {
     /// Before migrating an existing library, keeps it as it was (`library-before-v<N>.db` next to it, the first one
     /// kept): an update with a bad migration must never cost the library (2026-10-21 incident).
@@ -1050,6 +1054,8 @@ impl Library {
             "INSERT INTO silence (path, modified, start_ms, end_ms, total_ms) VALUES (?1, ?2, ?3, ?4, ?5) ON CONFLICT (path) DO UPDATE SET modified = excluded.modified, start_ms = excluded.start_ms, end_ms = excluded.end_ms, total_ms = excluded.total_ms",
             params![path, modified, start_ms as i64, end_ms.map(|e| e as i64), total_ms as i64],
         )?;
+        // A cache: the oldest rows (files long gone, mostly) go past this many.
+        self.db.execute("DELETE FROM silence WHERE rowid <= (SELECT MAX(rowid) FROM silence) - ?1", [SILENCE_KEEP])?;
         Ok(())
     }
 
@@ -1063,6 +1069,8 @@ impl Library {
             "INSERT INTO sponsor (video, segments, fetched) VALUES (?1, ?2, ?3) ON CONFLICT (video) DO UPDATE SET segments = excluded.segments, fetched = excluded.fetched",
             params![video, segments, fetched],
         )?;
+        // Answers are used for a week: older than a month are never read again.
+        self.db.execute("DELETE FROM sponsor WHERE fetched < ?1", [fetched - SPONSOR_KEEP_S])?;
         Ok(())
     }
 
@@ -1781,6 +1789,23 @@ mod tests {
         assert_eq!(lib.cached_sponsor("aaaaaaaaaaa")?, Some(("[]".into(), 10)));
         lib.save_sponsor("aaaaaaaaaaa", r#"[{"startS":0,"endS":12}]"#, 20)?;
         assert_eq!(lib.cached_sponsor("aaaaaaaaaaa")?.map(|c| c.1), Some(20));
+        Ok(())
+    }
+
+    #[test]
+    fn old_sponsor_answers_and_silence_rows_are_dropped() -> Result<()> {
+        let lib = Library::in_memory()?;
+        let day = 86_400;
+        lib.save_sponsor("old", "[]", 1_000_000)?;
+        lib.save_sponsor("recent", "[]", 1_000_000 + 20 * day)?;
+        lib.save_sponsor("new", "[]", 1_000_000 + 40 * day)?;
+        assert_eq!(lib.cached_sponsor("old")?, None);
+        assert!(lib.cached_sponsor("recent")?.is_some() && lib.cached_sponsor("new")?.is_some());
+        for i in 0..(SILENCE_KEEP + 5) {
+            lib.save_silence(&format!("{i}.mp3"), 1, 0, None, 1)?;
+        }
+        assert_eq!(lib.cached_silence("0.mp3", 1)?, None);
+        assert!(lib.cached_silence(&format!("{}.mp3", SILENCE_KEEP + 4), 1)?.is_some());
         Ok(())
     }
 
