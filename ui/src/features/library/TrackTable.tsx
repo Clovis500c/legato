@@ -258,7 +258,7 @@ export function TrackTable({ tracks, empty, editId, rowActions, sort, onSort, fo
                       <span className="flex items-center gap-2 text-sm font-medium">
                         <span className="truncate">{t.title}</span>
                         {playable && !isFull(t, sp) && (
-                          <span title={tr('30-second preview')} className="shrink-0 rounded-[3px] border border-line px-1 font-mono text-[0.625rem] font-normal tracking-[0.08em] text-ink-3">
+                          <span title={tr('30-second preview')} className="shrink-0 rounded-[3px] border border-line px-1 text-[0.625rem] font-normal text-ink-3">
                             {tr('PREVIEW')}
                           </span>
                         )}

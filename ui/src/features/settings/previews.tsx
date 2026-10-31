@@ -294,7 +294,7 @@ export function MixCoverScene({ mixCovers }: Pick<Settings, 'mixCovers'>) {
       )}
       {mixCovers === 'single' && <SampleArt className="size-full" />}
       {mixCovers === 'template' && <span className="grid size-full place-items-center font-mono text-lg font-semibold text-ink-2">01</span>}
-      <span className="absolute top-1 left-1 rounded-full bg-black/60 px-1 font-mono text-[0.375rem] tracking-[0.08em] text-white uppercase">{tr('Daily')}</span>
+      <span className="absolute top-1 left-1 rounded-full bg-black/60 px-1 text-[0.4375rem] font-medium text-white">{tr('Daily')}</span>
     </div>
   )
 }

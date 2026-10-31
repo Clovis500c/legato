@@ -34,7 +34,7 @@ const ROW = 6
 const MANY = 120
 
 function Badge({ children }: { children: string }) {
-  return <span className="rounded-[3px] border border-line px-1.5 font-mono text-[0.625rem] tracking-[0.08em] text-ink-3">{children}</span>
+  return <span className="rounded-[3px] border border-line px-1.5 text-[0.625rem] text-ink-3">{children}</span>
 }
 
 /** The catalog track of a hit (no UI fields). */

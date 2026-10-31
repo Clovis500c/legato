@@ -133,7 +133,7 @@ function StatusPill({ live, label }: { live: Live; label: string }) {
     <span role="status" className="flex w-fit items-center gap-2 rounded-full border px-2.5 py-1 text-[0.6875rem] font-medium transition-colors" style={{ color, borderColor: `color-mix(in srgb, ${color} 40%, transparent)`, background: `color-mix(in srgb, ${color} 12%, transparent)` }}>
       <span className="relative flex size-2">
         {pulse && <span className="absolute inset-0 animate-ping rounded-full opacity-60" style={{ background: color }} />}
-        <span className="relative size-2 rounded-full" style={{ background: color, boxShadow: `0 0 6px ${color}` }} />
+        <span className="relative size-2 rounded-full" style={{ background: color }} />
       </span>
       {label}
     </span>

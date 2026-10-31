@@ -115,7 +115,7 @@ export function AboutSection() {
             {tr('Version {version}', { version: status?.current ?? '…' })} · {s.updateChannel === 'beta' ? tr('Beta') : tr('Stable')}
           </p>
           <p className="flex items-center gap-2 text-xs">
-            <span className={`size-2 rounded-full ${pulse ? 'animate-pulse' : ''}`} style={{ background: color, boxShadow: `0 0 8px ${color}` }} />
+            <span className={`size-2 rounded-full ${pulse ? 'animate-pulse' : ''}`} style={{ background: color }} />
             {label(status)}
           </p>
         </div>
