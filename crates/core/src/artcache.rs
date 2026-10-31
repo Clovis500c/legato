@@ -29,7 +29,8 @@ pub fn file_name(key: &str, size: Option<u32>) -> String {
 
 /// A name written by the cache: 16 hex digits, a size, a half-written `.tmp`. Anything else in the folder is not ours to delete.
 pub fn is_cache_file(name: &str) -> bool {
-    let name = name.strip_suffix(".tmp").unwrap_or(name);
+    // Half-written: `<name>~<n>.tmp`, one per write.
+    let name = name.strip_suffix(".tmp").map_or(name, |n| n.split_once('~').filter(|(_, c)| !c.is_empty() && c.bytes().all(|b| b.is_ascii_digit())).map_or(n, |(n, _)| n));
     let (key, size) = name.split_once('.').map_or((name, None), |(k, s)| (k, Some(s)));
     key.len() == 16 && key.bytes().all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b)) && size.is_none_or(|s| s.parse().is_ok_and(|n| SIZES.contains(&n)))
 }
@@ -182,6 +183,8 @@ mod tests {
         assert!(is_cache_file(key));
         assert!(is_cache_file(&file_name(key, Some(256))));
         assert!(is_cache_file(&format!("{}.tmp", file_name(key, Some(64)))));
+        assert!(is_cache_file(&format!("{}~12.tmp", file_name(key, Some(64)))));
+        assert!(!is_cache_file(&format!("{}~x.tmp", file_name(key, None))));
         assert!(!is_cache_file(&file_name(key, Some(99))));
         // Theme pictures and the user's covers: another folder, but even by mistake they are not matched.
         for other in ["bg-00ff00ff00ff00ff.png", "pl-12-1792176517.png", "notes.txt", "00FF00ff00ff00ff", "00ff", ""] {

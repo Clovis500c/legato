@@ -165,9 +165,10 @@ impl ArtCache {
         }
     }
 
-    /// Whole file at once (a reader never sees half of it).
+    /// Whole file at once (a reader never sees half of it). Own temp name per write: two fetches of one picture meet here.
     fn write(&self, name: &str, bytes: &[u8]) -> Result<()> {
-        let tmp = self.dir.join(format!("{name}.tmp"));
+        static WRITES: AtomicU64 = AtomicU64::new(0);
+        let tmp = self.dir.join(format!("{name}~{}.tmp", WRITES.fetch_add(1, Ordering::Relaxed)));
         std::fs::write(&tmp, bytes).context("Image cache")?;
         std::fs::rename(&tmp, self.dir.join(name)).context("Image cache")?;
         self.wrote(bytes.len());
@@ -213,7 +214,8 @@ impl ArtCache {
         ensure!(res.content_length().is_none_or(|n| n <= MAX_IMAGE as u64), "Image too large");
         let bytes = res.bytes().await?;
         ensure!(bytes.len() <= MAX_IMAGE, "Image too large");
-        self.write(&key(url), &bytes)?;
+        // A failed write still serves it; the next ask downloads again.
+        let _ = self.write(&key(url), &bytes);
         Ok((bytes.to_vec(), sniff(&bytes)))
     }
 }
@@ -343,6 +345,18 @@ mod tests {
         assert_eq!(dims(&cache.shared(&url("tiny.jpg"), Some(64)).await.unwrap().0), (40, 40));
         assert!(!dir.path().join(format!("{}.64", key(&url("tiny.jpg")))).exists(), "no copy of a picture that is small already");
         assert!(cache.shared(&url("missing.jpg"), Some(64)).await.is_none());
+    }
+
+    #[tokio::test]
+    async fn one_picture_in_three_sizes_at_once_all_arrive() {
+        let mut s = Server::new_async().await;
+        s.mock("GET", "/a.jpg").with_header("content-type", "image/jpeg").with_body(jpeg(640, 480)).create_async().await;
+        let dir = tempfile::tempdir().unwrap();
+        let cache = ArtCache::new(dir.path().to_path_buf(), 1 << 20);
+        let url = format!("{}/a.jpg", s.url());
+        let (a, b, c) = tokio::join!(cache.shared(&url, None), cache.shared(&url, Some(64)), cache.shared(&url, Some(256)));
+        assert!(a.is_some() && b.is_some() && c.is_some());
+        assert!(std::fs::read_dir(dir.path()).unwrap().flatten().all(|f| !f.file_name().to_string_lossy().ends_with(".tmp")), "no temp file left");
     }
 
     #[tokio::test]
