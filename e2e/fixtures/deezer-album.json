@@ -1,0 +1,18 @@
+{
+ "id": 1120288832,
+ "title": "EXTASIAAAAA",
+ "upc": "1200220202881",
+ "link": "https://www.deezer.com/album/1120288832",
+ "cover_big": "https://cdn-images.dzcdn.net/images/cover/627e2d5283d8090ec11a34890ca6226c/500x500-000000-80-0-0.jpg",
+ "cover_medium": "https://cdn-images.dzcdn.net/images/cover/627e2d5283d8090ec11a34890ca6226c/250x250-000000-80-0-0.jpg",
+ "nb_tracks": 20,
+ "release_date": "2026-10-23",
+ "record_type": "album",
+ "available": true,
+ "type": "album",
+ "artist": {
+  "id": 181895087,
+  "name": "Ino Casablanca",
+  "type": "artist"
+ }
+}

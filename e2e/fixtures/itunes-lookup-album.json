@@ -1,0 +1,49 @@
+{
+ "resultCount": 3,
+ "results": [
+  {
+   "wrapperType": "collection",
+   "collectionType": "Album",
+   "artistId": 909253,
+   "collectionId": 1440857781,
+   "artistName": "Jack Johnson",
+   "collectionName": "In Between Dreams (Bonus Track Version)",
+   "artworkUrl100": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/44/06/fd/4406fdc0-aab5-e300-82ba-3e5fe81a68a7/00602537868858.rgb.jpg/100x100bb.jpg",
+   "trackCount": 16,
+   "country": "FRA",
+   "releaseDate": "2005-03-01T08:00:00Z"
+  },
+  {
+   "wrapperType": "track",
+   "kind": "song",
+   "artistId": 909253,
+   "collectionId": 1440857781,
+   "trackId": 1440857786,
+   "artistName": "Jack Johnson",
+   "collectionName": "In Between Dreams (Bonus Track Version)",
+   "trackName": "Better Together",
+   "trackTimeMillis": 207679,
+   "artworkUrl100": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/44/06/fd/4406fdc0-aab5-e300-82ba-3e5fe81a68a7/00602537868858.rgb.jpg/100x100bb.jpg",
+   "trackCount": 15,
+   "trackNumber": 1,
+   "country": "FRA",
+   "releaseDate": "2005-01-01T12:00:00Z"
+  },
+  {
+   "wrapperType": "track",
+   "kind": "song",
+   "artistId": 909253,
+   "collectionId": 1440857781,
+   "trackId": 1440857794,
+   "artistName": "Jack Johnson",
+   "collectionName": "In Between Dreams (Bonus Track Version)",
+   "trackName": "Never Know",
+   "trackTimeMillis": 212862,
+   "artworkUrl100": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/44/06/fd/4406fdc0-aab5-e300-82ba-3e5fe81a68a7/00602537868858.rgb.jpg/100x100bb.jpg",
+   "trackCount": 15,
+   "trackNumber": 2,
+   "country": "FRA",
+   "releaseDate": "2005-03-01T12:00:00Z"
+  }
+ ]
+}
