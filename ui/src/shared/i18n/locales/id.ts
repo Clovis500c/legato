@@ -1605,6 +1605,9 @@ const id: Record<string, string> = {
   'Visualizer full screen on / off': 'Visualisasi layar penuh aktif / nonaktif',
   '← → move the lyrics · Esc leaves': '← → geser lirik · Esc untuk keluar',
   // Connect Spotify
+  'About {n} h left': 'Sekitar {n} jam lagi',
+  'YouTube is limiting searches: next try in {n} s': 'YouTube membatasi pencarian: coba lagi dalam {n} dtk',
+  'YouTube is limiting searches: trying again': 'YouTube membatasi pencarian: mencoba lagi',
   'Songs not found': 'Lagu tidak ditemukan',
   '{n} song not found': '{n} lagu tidak ditemukan',
   '{n} songs not found': '{n} lagu tidak ditemukan',
@@ -1617,7 +1620,6 @@ const id: Record<string, string> = {
   '{found} of {songs} songs found on YouTube': '{found} dari {songs} lagu ditemukan di YouTube',
   'Less than a minute left': 'Kurang dari semenit lagi',
   'About {n} min left': 'Sekitar {n} menit lagi',
-  'YouTube is limiting searches: waiting': 'YouTube membatasi pencarian: menunggu',
   'Searching YouTube for {n} song': 'Mencari {n} lagu di YouTube',
   'Searching YouTube for {n} songs': 'Mencari {n} lagu di YouTube',
   'Spotify: searching YouTube… {done} of {total}': 'Spotify: mencari di YouTube… {done} dari {total}',

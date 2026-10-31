@@ -1605,6 +1605,9 @@ const nl: Record<string, string> = {
   'Visualizer full screen on / off': 'Visualizer op volledig scherm aan / uit',
   '← → move the lyrics · Esc leaves': '← → tekst verschuiven · Esc sluit af',
   // Connect Spotify
+  'About {n} h left': 'Nog ongeveer {n} uur',
+  'YouTube is limiting searches: next try in {n} s': 'YouTube beperkt zoekopdrachten: nieuwe poging over {n} s',
+  'YouTube is limiting searches: trying again': 'YouTube beperkt zoekopdrachten: nieuwe poging',
   'Songs not found': 'Niet gevonden nummers',
   '{n} song not found': '{n} nummer niet gevonden',
   '{n} songs not found': '{n} nummers niet gevonden',
@@ -1617,7 +1620,6 @@ const nl: Record<string, string> = {
   '{found} of {songs} songs found on YouTube': '{found} van {songs} nummers gevonden op YouTube',
   'Less than a minute left': 'Minder dan een minuut',
   'About {n} min left': 'Nog ongeveer {n} min',
-  'YouTube is limiting searches: waiting': 'YouTube beperkt zoekopdrachten: wachten',
   'Searching YouTube for {n} song': '{n} nummer zoeken op YouTube',
   'Searching YouTube for {n} songs': '{n} nummers zoeken op YouTube',
   'Spotify: searching YouTube… {done} of {total}': 'Spotify: zoeken op YouTube… {done} van {total}',

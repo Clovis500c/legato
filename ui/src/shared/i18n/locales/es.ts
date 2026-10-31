@@ -1605,6 +1605,9 @@ const es: Record<string, string> = {
   'Visualizer full screen on / off': 'Visualizador a pantalla completa activado / desactivado',
   '← → move the lyrics · Esc leaves': '← → mover la letra · Esc sale',
   // Connect Spotify
+  'About {n} h left': 'Quedan unas {n} h',
+  'YouTube is limiting searches: next try in {n} s': 'YouTube limita las búsquedas: próximo intento en {n} s',
+  'YouTube is limiting searches: trying again': 'YouTube limita las búsquedas: reintentando',
   'Songs not found': 'Canciones no encontradas',
   '{n} song not found': '{n} canción no encontrada',
   '{n} songs not found': '{n} canciones no encontradas',
@@ -1617,7 +1620,6 @@ const es: Record<string, string> = {
   '{found} of {songs} songs found on YouTube': '{found} de {songs} canciones encontradas en YouTube',
   'Less than a minute left': 'Menos de un minuto',
   'About {n} min left': 'Quedan unos {n} min',
-  'YouTube is limiting searches: waiting': 'YouTube limita las búsquedas: esperando',
   'Searching YouTube for {n} song': 'Buscando {n} canción en YouTube',
   'Searching YouTube for {n} songs': 'Buscando {n} canciones en YouTube',
   'Spotify: searching YouTube… {done} of {total}': 'Spotify: buscando en YouTube… {done} de {total}',

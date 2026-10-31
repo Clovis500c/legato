@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import type { SpotifyProgress } from '../../shared/api'
-import { advance, card, CARDS, newRun, secondsLeft, share, summary, timeLeft, type ImportRun } from './importRun'
+import { advance, card, CARDS, newRun, secondsLeft, share, summary, timeLeft, waitLeft, type ImportRun } from './importRun'
 
-const step = (over: Partial<SpotifyProgress> = {}): SpotifyProgress => ({ name: 'A list', list: 1, lists: 2, matching: true, done: 0, total: 10, allDone: 0, allTotal: 0, playable: 0, searched: 0, toSearch: 0, waiting: false, song: null, ...over })
+const step = (over: Partial<SpotifyProgress> = {}): SpotifyProgress => ({ name: 'A list', list: 1, lists: 2, matching: true, done: 0, total: 10, allDone: 0, allTotal: 0, playable: 0, searched: 0, toSearch: 0, waitSecs: 0, song: null, ...over })
 const song = (title: string, playable = true) => ({ title, artist: 'A', cover: null, playable })
 
 describe('the import screen', () => {
@@ -39,30 +39,46 @@ describe('the import screen', () => {
   }
 
   it('tells the time left from the pace of the searches', () => {
-    expect(secondsLeft(running(20, 500))).toBeCloseTo((80 * 9.5) / 19)
+    expect(secondsLeft(running(20, 500), 10_000)).toBeCloseTo((80 * 9.5) / 19)
   })
 
   it('says nothing too early', () => {
-    expect(secondsLeft(running(5, 2000))).toBeUndefined()
-    expect(secondsLeft(running(20, 10))).toBeUndefined()
-    expect(secondsLeft(newRun())).toBeUndefined()
+    expect(secondsLeft(running(5, 2000), 10_000)).toBeUndefined()
+    expect(secondsLeft(running(20, 10), 200)).toBeUndefined()
+    expect(secondsLeft(newRun(), 0)).toBeUndefined()
   })
 
-  it('says nothing while YouTube makes it wait', () => {
-    expect(secondsLeft(running(20, 500, { waiting: true }))).toBeUndefined()
+  it('counts the time YouTube holds the searches back', () => {
+    const run = running(20, 500)
+    const steady = secondsLeft(run, 10_000) ?? 0
+    expect(secondsLeft(run, 100_000)).toBeGreaterThan(steady * 8)
+  })
+
+  it('adds the wait under way, and says how long it lasts', () => {
+    const run = advance(running(20, 500), step({ searched: 20, toSearch: 100, waitSecs: 30 }), 10_000)
+    expect(secondsLeft(run, 10_000)).toBeCloseTo((80 * 9.5) / 19 + 30)
+    expect(waitLeft(run, 10_000)).toBe(30)
+    expect(waitLeft(run, 25_500)).toBe(15)
+    expect(waitLeft(run, 40_000)).toBe(0)
+  })
+
+  it('has no wait once searches are answered again', () => {
+    let run = advance(running(20, 500), step({ searched: 20, toSearch: 100, waitSecs: 30 }), 10_000)
+    run = advance(run, step({ searched: 21, toSearch: 100 }), 41_000)
+    expect(waitLeft(run, 41_000)).toBeUndefined()
   })
 
   it('has no time to tell on Spotify’s page, list by list', () => {
     let run = newRun()
     for (let n = 1; n < 30; n++) run = advance(run, step({ done: n }), n * 1000)
     expect(run.marks).toEqual([])
-    expect(secondsLeft(run)).toBeUndefined()
+    expect(secondsLeft(run, 30_000)).toBeUndefined()
   })
 
   it('follows the recent pace, not the start', () => {
     let run = running(20, 500)
     for (let n = 21; n <= 40; n++) run = advance(run, step({ searched: n, toSearch: 100 }), 10_000 + (n - 20) * 5000)
-    const left = secondsLeft(run)
+    const left = secondsLeft(run, 110_000)
     expect(left).toBeGreaterThan(55 * 4)
     expect(left).toBeLessThan(60 * 6)
   })
@@ -70,7 +86,7 @@ describe('the import screen', () => {
   it('counts a pause in the pace', () => {
     let run = running(20, 500)
     run = advance(run, step({ searched: 21, toSearch: 100 }), 40_000)
-    expect(secondsLeft(run)).toBeGreaterThan(100)
+    expect(secondsLeft(run, 40_000)).toBeGreaterThan(100)
   })
 
   it('reads the time left in minutes, rounded up', () => {
@@ -78,6 +94,8 @@ describe('the import screen', () => {
     expect(timeLeft(60)).toBe('About 1 min left')
     expect(timeLeft(61)).toBe('About 2 min left')
     expect(timeLeft(600)).toBe('About 10 min left')
+    expect(timeLeft(3600)).toBe('About 1 h left')
+    expect(timeLeft(9000)).toBe('About 3 h left')
   })
 
   it('ends a search again without speaking of lists', () => {

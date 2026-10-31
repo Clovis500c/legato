@@ -1605,6 +1605,9 @@ const hi: Record<string, string> = {
   'Visualizer full screen on / off': 'विज़ुअलाइज़र फ़ुल स्क्रीन चालू / बंद',
   '← → move the lyrics · Esc leaves': '← → बोल खिसकाएँ · Esc से बाहर निकलें',
   // Connect Spotify
+  'About {n} h left': 'लगभग {n} घंटे बाकी',
+  'YouTube is limiting searches: next try in {n} s': 'YouTube खोज सीमित कर रहा है: {n} सेकंड में फिर कोशिश',
+  'YouTube is limiting searches: trying again': 'YouTube खोज सीमित कर रहा है: फिर कोशिश',
   'Songs not found': 'नहीं मिले गाने',
   '{n} song not found': '{n} गाना नहीं मिला',
   '{n} songs not found': '{n} गाने नहीं मिले',
@@ -1617,7 +1620,6 @@ const hi: Record<string, string> = {
   '{found} of {songs} songs found on YouTube': 'YouTube पर {songs} में से {found} गाने मिले',
   'Less than a minute left': 'एक मिनट से कम बाकी',
   'About {n} min left': 'लगभग {n} मिनट बाकी',
-  'YouTube is limiting searches: waiting': 'YouTube खोज सीमित कर रहा है: प्रतीक्षा',
   'Searching YouTube for {n} song': 'YouTube पर {n} गाना खोजा जा रहा है',
   'Searching YouTube for {n} songs': 'YouTube पर {n} गाने खोजे जा रहे हैं',
   'Spotify: searching YouTube… {done} of {total}': 'Spotify: YouTube पर खोज… {total} में से {done}',

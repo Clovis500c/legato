@@ -1605,6 +1605,9 @@ const zh: Record<string, string> = {
   'Visualizer full screen on / off': '可视化全屏 开 / 关',
   '← → move the lyrics · Esc leaves': '← → 调整歌词 · Esc 退出',
   // Connect Spotify
+  'About {n} h left': '剩余约 {n} 小时',
+  'YouTube is limiting searches: next try in {n} s': 'YouTube 正在限制搜索：{n} 秒后重试',
+  'YouTube is limiting searches: trying again': 'YouTube 正在限制搜索：正在重试',
   'Songs not found': '未找到的歌曲',
   '{n} song not found': '{n} 首歌未找到',
   '{n} songs not found': '{n} 首歌未找到',
@@ -1617,7 +1620,6 @@ const zh: Record<string, string> = {
   '{found} of {songs} songs found on YouTube': '在 YouTube 上找到 {found}/{songs} 首歌',
   'Less than a minute left': '剩余不到一分钟',
   'About {n} min left': '剩余约 {n} 分钟',
-  'YouTube is limiting searches: waiting': 'YouTube 正在限制搜索：等待中',
   'Searching YouTube for {n} song': '正在 YouTube 上搜索 {n} 首歌',
   'Searching YouTube for {n} songs': '正在 YouTube 上搜索 {n} 首歌',
   'Spotify: searching YouTube… {done} of {total}': 'Spotify：正在搜索 YouTube… {done}/{total}',

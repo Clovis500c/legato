@@ -23,6 +23,6 @@ playable: number,
  */
 searched: number, toSearch: number, 
 /**
- * YouTube refused: waiting before going on.
+ * YouTube refused: seconds before the searches go on. 0: they're running.
  */
-waiting: boolean, song: SpotifySong | null, };
+waitSecs: number, song: SpotifySong | null, };

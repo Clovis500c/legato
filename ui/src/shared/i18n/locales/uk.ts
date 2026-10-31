@@ -1605,6 +1605,9 @@ const uk: Record<string, string> = {
   'Visualizer full screen on / off': 'Візуалізатор на весь екран увімк. / вимк.',
   '← → move the lyrics · Esc leaves': '← → зсунути текст · Esc — вихід',
   // Connect Spotify
+  'About {n} h left': 'Залишилося близько {n} год',
+  'YouTube is limiting searches: next try in {n} s': 'YouTube обмежує пошук: нова спроба через {n} с',
+  'YouTube is limiting searches: trying again': 'YouTube обмежує пошук: нова спроба',
   'Songs not found': 'Незнайдені пісні',
   '{n} song not found': 'Не знайдено пісень: {n}',
   '{n} songs not found': 'Не знайдено пісень: {n}',
@@ -1617,7 +1620,6 @@ const uk: Record<string, string> = {
   '{found} of {songs} songs found on YouTube': 'Знайдено на YouTube: {found} з {songs}',
   'Less than a minute left': 'Менше хвилини',
   'About {n} min left': 'Залишилося близько {n} хв',
-  'YouTube is limiting searches: waiting': 'YouTube обмежує пошук: очікування',
   'Searching YouTube for {n} song': 'Пошук {n} пісні на YouTube',
   'Searching YouTube for {n} songs': 'Пошук пісень на YouTube: {n}',
   'Spotify: searching YouTube… {done} of {total}': 'Spotify: пошук на YouTube… {done} з {total}',

@@ -1605,6 +1605,9 @@ const vi: Record<string, string> = {
   'Visualizer full screen on / off': 'Trình hiển thị toàn màn hình bật / tắt',
   '← → move the lyrics · Esc leaves': '← → dịch lời bài hát · Esc để thoát',
   // Connect Spotify
+  'About {n} h left': 'Còn khoảng {n} giờ',
+  'YouTube is limiting searches: next try in {n} s': 'YouTube đang giới hạn tìm kiếm: thử lại sau {n} giây',
+  'YouTube is limiting searches: trying again': 'YouTube đang giới hạn tìm kiếm: đang thử lại',
   'Songs not found': 'Bài không tìm thấy',
   '{n} song not found': '{n} bài không tìm thấy',
   '{n} songs not found': '{n} bài không tìm thấy',
@@ -1617,7 +1620,6 @@ const vi: Record<string, string> = {
   '{found} of {songs} songs found on YouTube': 'Đã tìm thấy {found}/{songs} bài trên YouTube',
   'Less than a minute left': 'Còn chưa đầy một phút',
   'About {n} min left': 'Còn khoảng {n} phút',
-  'YouTube is limiting searches: waiting': 'YouTube đang giới hạn tìm kiếm: đang chờ',
   'Searching YouTube for {n} song': 'Đang tìm {n} bài trên YouTube',
   'Searching YouTube for {n} songs': 'Đang tìm {n} bài trên YouTube',
   'Spotify: searching YouTube… {done} of {total}': 'Spotify: đang tìm trên YouTube… {done}/{total}',

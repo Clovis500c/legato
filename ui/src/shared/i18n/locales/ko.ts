@@ -1605,6 +1605,9 @@ const ko: Record<string, string> = {
   'Visualizer full screen on / off': '비주얼라이저 전체 화면 켜기 / 끄기',
   '← → move the lyrics · Esc leaves': '← → 가사 이동 · Esc로 나가기',
   // Connect Spotify
+  'About {n} h left': '약 {n}시간 남음',
+  'YouTube is limiting searches: next try in {n} s': 'YouTube가 검색을 제한 중: {n}초 후 다시 시도',
+  'YouTube is limiting searches: trying again': 'YouTube가 검색을 제한 중: 다시 시도하는 중',
   'Songs not found': '찾지 못한 곡',
   '{n} song not found': '찾지 못한 곡 {n}개',
   '{n} songs not found': '찾지 못한 곡 {n}개',
@@ -1617,7 +1620,6 @@ const ko: Record<string, string> = {
   '{found} of {songs} songs found on YouTube': 'YouTube에서 {songs}곡 중 {found}곡 찾음',
   'Less than a minute left': '1분 미만 남음',
   'About {n} min left': '약 {n}분 남음',
-  'YouTube is limiting searches: waiting': 'YouTube가 검색을 제한 중: 기다리는 중',
   'Searching YouTube for {n} song': 'YouTube에서 {n}곡 검색 중',
   'Searching YouTube for {n} songs': 'YouTube에서 {n}곡 검색 중',
   'Spotify: searching YouTube… {done} of {total}': 'Spotify: YouTube 검색 중… {done}/{total}',

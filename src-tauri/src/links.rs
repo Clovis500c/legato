@@ -6,9 +6,9 @@ use crate::{AppState, CmdResult, err, hosts, youtube_version};
 use music_connectors::{deezer, itunes, linklist::LinkList};
 use music_core::library::PlaylistEdit;
 use music_core::model::{Source, Track};
-use music_core::searchpace::Pace;
+use music_core::searchpace::{Line, Pace};
 use serde::Serialize;
-use std::collections::{BTreeSet, VecDeque};
+use std::collections::BTreeSet;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::{Duration, Instant};
 use tauri::{Emitter, Manager, State};
@@ -76,8 +76,8 @@ pub struct Searched<'a> {
     /// Of those, the ones with a YouTube version.
     pub found: usize,
     pub song: Option<&'a Track>,
-    /// YouTube refused: waiting before going on.
-    pub waiting: bool,
+    /// YouTube refused: seconds before the searches go on. 0: they're running.
+    pub wait_secs: u32,
 }
 
 /// The songs, and how many of them YouTube's refusals left unsearched (none found: not the same as none to find).
@@ -117,10 +117,11 @@ pub async fn find_on_youtube(app: &tauri::AppHandle, tracks: &[Track], progress:
 }
 
 /// `out[todo]` searched, whatever was said of them before.
-async fn search(app: &tauri::AppHandle, mut out: Vec<Track>, mut todo: VecDeque<usize>, progress: impl Fn(Searched)) -> Result<Option<Found>, String> {
+async fn search(app: &tauri::AppHandle, mut out: Vec<Track>, todo: Vec<usize>, progress: impl Fn(Searched)) -> Result<Option<Found>, String> {
     let mut done = out.len() - todo.len();
     let mut found = out.iter().filter(|t| has_version(t)).count();
-    progress(Searched { done, found, song: out.iter().rfind(|t| has_version(t)), waiting: false });
+    progress(Searched { done, found, song: out.iter().rfind(|t| has_version(t)), wait_secs: 0 });
+    let mut line = Line::new(&out, todo);
     let mut pace = Pace::default();
     let mut running = tokio::task::JoinSet::new();
     loop {
@@ -132,37 +133,39 @@ async fn search(app: &tauri::AppHandle, mut out: Vec<Track>, mut todo: VecDeque<
             break;
         }
         while running.len() < pace.width(now) {
-            let Some(i) = todo.pop_front() else { break };
+            let Some(i) = line.pop() else { break };
             let (app, song) = (app.clone(), out[i].clone());
             running.spawn(async move { (i, youtube_version(&app.state::<AppState>(), &song).await) });
         }
         let Some(ended) = running.join_next().await else {
-            if todo.is_empty() {
+            if line.left() == 0 {
                 break;
             }
             tokio::time::sleep(WAITING).await;
             continue;
         };
-        let (i, song) = ended.map_err(err)?;
-        match song {
-            Some(song) => {
-                pace.answered(Instant::now());
-                out[i] = song;
-                done += 1;
-                found += usize::from(has_version(&out[i]));
-                progress(Searched { done, found, song: Some(&out[i]), waiting: false });
-            }
-            None => {
-                pace.refused(Instant::now());
-                todo.push_back(i);
-                progress(Searched { done, found, song: None, waiting: true });
-            }
+        let (i, answer) = ended.map_err(err)?;
+        let wait_secs = |pace: &Pace| pace.wait_left(Instant::now()).as_secs_f32().ceil() as u32;
+        let Some(answer) = answer else {
+            pace.refused(Instant::now());
+            line.again(i);
+            progress(Searched { done, found, song: None, wait_secs: wait_secs(&pace) });
+            continue;
+        };
+        pace.answered(Instant::now());
+        let own = line.settle(i).then_some((i, answer.song));
+        let others = line.also_found(&out, &answer.seen);
+        for (at, song) in own.into_iter().chain(others) {
+            out[at] = song;
+            done += 1;
+            found += usize::from(has_version(&out[at]));
+            progress(Searched { done, found, song: Some(&out[at]), wait_secs: wait_secs(&pace) });
         }
     }
     if pace.refusals > 0 {
         crate::diag::warn("import", "YouTube refused searches", &format!("{} refused, {done} answered", pace.refusals));
     }
-    Ok((!stopped()).then_some(Found { tracks: out, unsearched: todo.len() + running.len() }))
+    Ok((!stopped()).then_some(Found { tracks: out, unsearched: line.left() + running.len() }))
 }
 
 /// The songs not found, to look at.
@@ -185,7 +188,7 @@ pub async fn not_found_search(app: tauri::AppHandle, state: State<'_, AppState>)
         if let Some(song) = step.song {
             note_search(&state, song);
         }
-        let progress = SpotifyProgress { name: String::new(), list: 1, lists: 1, matching: true, done: step.done, total: to_search, all_done: step.done, all_total: to_search, playable: step.found, searched: step.done, to_search, waiting: step.waiting, song: step.song.map(SpotifySong::from) };
+        let progress = SpotifyProgress { name: String::new(), list: 1, lists: 1, matching: true, done: step.done, total: to_search, all_done: step.done, all_total: to_search, playable: step.found, searched: step.done, to_search, wait_secs: step.wait_secs, song: step.song.map(SpotifySong::from) };
         let _ = app.emit_to("main", "spotify-import", progress);
     };
     let Some(found) = search(&app, tracks, (0..to_search).collect(), step).await? else { return Err("canceled".into()) };

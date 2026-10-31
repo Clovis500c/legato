@@ -192,8 +192,8 @@ pub struct SpotifyProgress {
     /// One search of every list's unknown songs, what the time left counts. 0: Spotify's page goes list by list.
     pub searched: usize,
     pub to_search: usize,
-    /// YouTube refused: waiting before going on.
-    pub waiting: bool,
+    /// YouTube refused: seconds before the searches go on. 0: they're running.
+    pub wait_secs: u32,
     pub song: Option<SpotifySong>,
 }
 
@@ -222,11 +222,11 @@ pub async fn spotify_import(app: AppHandle, state: State<'_, AppState>, picks: V
             break;
         }
         let before = report.playable;
-        let tell = |matching, done, total, playable, waiting, song: Option<&Track>| {
-            let _ = app.emit_to("main", "spotify-import", SpotifyProgress { name: pick.name.clone(), list: n + 1, lists, matching, done, total, all_done: 0, all_total: 0, playable, searched: 0, to_search: 0, waiting, song: song.map(SpotifySong::from) });
+        let tell = |matching, done, total, playable, wait_secs, song: Option<&Track>| {
+            let _ = app.emit_to("main", "spotify-import", SpotifyProgress { name: pick.name.clone(), list: n + 1, lists, matching, done, total, all_done: 0, all_total: 0, playable, searched: 0, to_search: 0, wait_secs, song: song.map(SpotifySong::from) });
         };
-        tell(false, 0, 0, before, false, None);
-        let read = match songs(&app, &pick.id, |done, total| tell(false, done, total, before, false, None)).await {
+        tell(false, 0, 0, before, 0, None);
+        let read = match songs(&app, &pick.id, |done, total| tell(false, done, total, before, 0, None)).await {
             Ok(read) if !read.is_empty() => read,
             Ok(_) => {
                 report.failed.push(pick.name.clone());
@@ -239,7 +239,7 @@ pub async fn spotify_import(app: AppHandle, state: State<'_, AppState>, picks: V
             }
         };
         let total = read.len();
-        let Some(links::Found { tracks, unsearched }) = links::find_on_youtube(&app, &read, |step| tell(true, step.done, total, before + step.found, step.waiting, step.song)).await? else { break };
+        let Some(links::Found { tracks, unsearched }) = links::find_on_youtube(&app, &read, |step| tell(true, step.done, total, before + step.found, step.wait_secs, step.song)).await? else { break };
         let id = save(&state, &pick.id, pick.name.trim(), &tracks).map_err(err)?;
         report.unsearched += unsearched;
         // Saved only now, so remembered only now. YouTube's refusals left some unsearched: can't tell which.

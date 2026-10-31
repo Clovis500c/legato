@@ -1605,6 +1605,9 @@ const ja: Record<string, string> = {
   'Visualizer full screen on / off': 'ビジュアライザーの全画面 オン / オフ',
   '← → move the lyrics · Esc leaves': '← → 歌詞をずらす · Esc で終了',
   // Connect Spotify
+  'About {n} h left': '残り約{n}時間',
+  'YouTube is limiting searches: next try in {n} s': 'YouTube が検索を制限中: {n} 秒後に再試行',
+  'YouTube is limiting searches: trying again': 'YouTube が検索を制限中: 再試行しています',
   'Songs not found': '見つからなかった曲',
   '{n} song not found': '{n} 曲が見つかりません',
   '{n} songs not found': '{n} 曲が見つかりません',
@@ -1617,7 +1620,6 @@ const ja: Record<string, string> = {
   '{found} of {songs} songs found on YouTube': 'YouTube で {songs} 曲中 {found} 曲が見つかりました',
   'Less than a minute left': '残り1分未満',
   'About {n} min left': '残り約{n}分',
-  'YouTube is limiting searches: waiting': 'YouTube が検索を制限中: 待機しています',
   'Searching YouTube for {n} song': 'YouTube で {n} 曲を検索中',
   'Searching YouTube for {n} songs': 'YouTube で {n} 曲を検索中',
   'Spotify: searching YouTube… {done} of {total}': 'Spotify: YouTube を検索中… {done} / {total}',

@@ -11,6 +11,10 @@ describe('explain', () => {
     expect(explain(new Error('Failed to fetch')).text).toBe('No internet connection: check your network, then try again.')
   })
 
+  it('says Google’s Sorry page in plain words, not its HTML', () => {
+    expect(explain('YouTube Music search → 403 Forbidden <html><head><title>Sorry...</title>').text).toBe('YouTube Music: Too many requests for now: wait a few minutes, then try again.')
+  })
+
   it('leaves the app’s own words alone', () => {
     expect(explain('Spotify: sync direction is Off (Settings › Accounts)').text).toBe('Spotify: Sync direction is Off: nothing comes in (Settings › Accounts)')
     expect(explain('Sign in to YouTube Music first (Settings › Accounts)')).toEqual({ text: 'Sign in to YouTube Music first (Settings › Accounts)' })

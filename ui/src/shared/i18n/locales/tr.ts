@@ -1605,6 +1605,9 @@ const tr: Record<string, string> = {
   'Visualizer full screen on / off': 'Görselleştirici tam ekran açık / kapalı',
   '← → move the lyrics · Esc leaves': '← → sözleri kaydır · Esc çıkar',
   // Connect Spotify
+  'About {n} h left': 'Yaklaşık {n} sa kaldı',
+  'YouTube is limiting searches: next try in {n} s': 'YouTube aramaları sınırlıyor: {n} sn sonra yeniden denenecek',
+  'YouTube is limiting searches: trying again': 'YouTube aramaları sınırlıyor: yeniden deneniyor',
   'Songs not found': 'Bulunamayan şarkılar',
   '{n} song not found': '{n} şarkı bulunamadı',
   '{n} songs not found': '{n} şarkı bulunamadı',
@@ -1617,7 +1620,6 @@ const tr: Record<string, string> = {
   '{found} of {songs} songs found on YouTube': 'YouTube’da {songs} şarkıdan {found} tanesi bulundu',
   'Less than a minute left': 'Bir dakikadan az kaldı',
   'About {n} min left': 'Yaklaşık {n} dk kaldı',
-  'YouTube is limiting searches: waiting': 'YouTube aramaları sınırlıyor: bekleniyor',
   'Searching YouTube for {n} song': 'YouTube’da {n} şarkı aranıyor',
   'Searching YouTube for {n} songs': 'YouTube’da {n} şarkı aranıyor',
   'Spotify: searching YouTube… {done} of {total}': 'Spotify: YouTube’da aranıyor… {done}/{total}',

@@ -198,14 +198,14 @@ pub async fn spotify_export_import(app: AppHandle, state: State<'_, AppState>, p
         report.songs += list.tracks.len();
         report.playable += list.tracks.iter().filter(|t| has_version(t)).count();
         let song = list.tracks.iter().rfind(|t| has_version(t)).map(SpotifySong::from);
-        tell(SpotifyProgress { name: name.to_string(), list: n + 1, lists, matching: false, done: list.tracks.len(), total: list.tracks.len(), all_done: report.playable, all_total, playable: report.playable, searched: 0, to_search, waiting: false, song });
+        tell(SpotifyProgress { name: name.to_string(), list: n + 1, lists, matching: false, done: list.tracks.len(), total: list.tracks.len(), all_done: report.playable, all_total, playable: report.playable, searched: 0, to_search, wait_secs: 0, song });
     }
     let known = report.playable;
     let step = |step: links::Searched| {
         if let Some(song) = step.song {
             links::note_search(&state, song);
         }
-        tell(SpotifyProgress { name: String::new(), list: lists, lists, matching: true, done: step.done, total: to_search, all_done: all_total - to_search + step.done, all_total, playable: known + step.found, searched: step.done, to_search, waiting: step.waiting, song: step.song.map(SpotifySong::from) });
+        tell(SpotifyProgress { name: String::new(), list: lists, lists, matching: true, done: step.done, total: to_search, all_done: all_total - to_search + step.done, all_total, playable: known + step.found, searched: step.done, to_search, wait_secs: step.wait_secs, song: step.song.map(SpotifySong::from) });
     };
     let Some(found) = links::find_on_youtube(&app, &missing, step).await? else { return Err("canceled".into()) };
     let versions: BTreeSet<_> = found.tracks.iter().filter(|t| has_version(t)).filter_map(|t| t.ids.get(&Source::Spotify)).collect();

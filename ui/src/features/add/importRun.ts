@@ -18,6 +18,8 @@ export interface ImportRun {
   progress?: SpotifyProgress
   /** The last moments' searches: the pace changes with what YouTube allows. */
   marks: Mark[]
+  /** When YouTube lets the searches go on. Unset: it isn't holding them. */
+  resumeAt?: number
   seen: Seen[]
   next: number
   /** Hidden: a toast counts instead, the app stays free. */
@@ -33,9 +35,9 @@ export const CARDS = 7
 export const BEAT = 120
 
 /** The pace is read over this long. */
-const PACE_SPAN = 45_000
+const PACE_SPAN = 90_000
 /** Below this, no number worth saying. */
-const FEWEST_SEARCHES = 10
+const FEWEST_SEARCHES = 6
 const SHORTEST_SPAN = 4_000
 
 export const newRun = (again = false): ImportRun => ({ marks: [], seen: [], next: 0, hidden: false, again })
@@ -49,20 +51,27 @@ function marked(run: ImportRun, { searched, toSearch }: SpotifyProgress, at: num
 
 export function advance(run: ImportRun, progress: SpotifyProgress, now = Date.now()): ImportRun {
   const marks = marked(run, progress, now)
-  if (!progress.song) return { ...run, progress, marks }
-  return { ...run, progress, marks, seen: [...run.seen, { ...progress.song, seq: run.next }].slice(-CARDS), next: run.next + 1 }
+  const resumeAt = progress.waitSecs ? now + progress.waitSecs * 1000 : undefined
+  if (!progress.song) return { ...run, progress, marks, resumeAt }
+  return { ...run, progress, marks, resumeAt, seen: [...run.seen, { ...progress.song, seq: run.next }].slice(-CARDS), next: run.next + 1 }
 }
 
-/** Seconds of searching left at the recent pace. Undefined: too early to tell, or YouTube is making it wait. */
-export function secondsLeft({ progress: p, marks }: ImportRun): number | undefined {
+/** Seconds left at the recent pace, counted up to now: what YouTube holds back slows it, the wait under way adds to it. */
+export function secondsLeft({ progress: p, marks, resumeAt }: ImportRun, now: number): number | undefined {
   const [first, last] = [marks[0], marks.at(-1)]
-  if (!p?.toSearch || p.waiting || !first || !last) return undefined
-  const [searched, span] = [last.searched - first.searched, last.at - first.at]
+  if (!p?.toSearch || !first || !last) return undefined
+  const [searched, span] = [last.searched - first.searched, now - first.at]
   if (searched < FEWEST_SEARCHES || span < SHORTEST_SPAN) return undefined
-  return ((p.toSearch - p.searched) * span) / searched / 1000
+  return ((p.toSearch - p.searched) * span) / searched / 1000 + Math.max((resumeAt ?? now) - now, 0) / 1000
 }
 
-export const timeLeft = (seconds: number) => (seconds < 60 ? tr('Less than a minute left') : tr('About {n} min left', { n: Math.ceil(seconds / 60) }))
+/** Seconds of YouTube's wait left. 0: trying again. Undefined: no wait. */
+export const waitLeft = ({ resumeAt }: ImportRun, now: number) => (resumeAt === undefined ? undefined : Math.max(Math.ceil((resumeAt - now) / 1000), 0))
+
+export function timeLeft(seconds: number) {
+  if (seconds < 60) return tr('Less than a minute left')
+  return seconds < 3600 ? tr('About {n} min left', { n: Math.ceil(seconds / 60) }) : tr('About {n} h left', { n: Math.ceil(seconds / 3600) })
+}
 
 /** How far, 0 to 1. Spotify's page gives no total: each list counts the same. */
 export function share(p: SpotifyProgress | undefined): number {

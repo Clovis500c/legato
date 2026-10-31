@@ -563,21 +563,29 @@ async fn search_suggestions(query: String, lang: String, country: String) -> Cmd
 
 /// No YouTube id yet: try to find one (1 search) so the track plays in full.
 async fn with_youtube(state: &AppState, track: Track) -> Track {
-    youtube_version(state, &track).await.unwrap_or(track)
+    youtube_version(state, &track).await.map_or(track, |answer| answer.song)
 }
 
-/// The song, with its YouTube version when it has one. None: YouTube refused the search, nothing learned.
-async fn youtube_version(state: &AppState, track: &Track) -> Option<Track> {
+/// What a search said: the song, with its YouTube version when it has one, and everything it brought back.
+struct Answer {
+    song: Track,
+    seen: Vec<Track>,
+}
+
+/// None: YouTube refused the search, nothing learned.
+async fn youtube_version(state: &AppState, track: &Track) -> Option<Answer> {
     if track.ids.contains_key(&Source::Youtube) {
-        return Some(track.clone());
+        return Some(Answer { song: track.clone(), seen: Vec::new() });
     }
+    let mut seen = Vec::new();
     let query = format!("{} {}", track.artist, track.title);
     // YouTube Music songs first (clean metadata), then normal YouTube.
     match yt_search(state, &query).await {
         Ok(found) => {
             if let Some(hit) = music_core::matching::best_match(track, &found) {
-                return Some(merge_tracks(track, hit));
+                return Some(Answer { song: merge_tracks(track, hit), seen: found });
             }
+            seen = found;
         }
         Err(e) if music_connectors::refused(&e) => return None,
         Err(_) => {}
@@ -585,14 +593,16 @@ async fn youtube_version(state: &AppState, track: &Track) -> Option<Track> {
     match video_search(state, &query).await {
         Ok(found) => {
             let videos: Vec<Track> = found.into_iter().filter(|(_, m)| *m != Musicness::NotMusic).map(|(t, _)| t).collect();
-            if let Some(hit) = music_core::matching::best_match(track, &videos) {
-                return Some(merge_tracks(track, hit));
+            let song = music_core::matching::best_match(track, &videos).map(|hit| merge_tracks(track, hit));
+            seen.extend(videos);
+            if let Some(song) = song {
+                return Some(Answer { song, seen });
             }
         }
         Err(e) if music_connectors::refused(&e) => return None,
         Err(_) => {}
     }
-    Some(track.clone())
+    Some(Answer { song: track.clone(), seen })
 }
 
 /// Trust boundary: a search hit from the UI. Catalog ids only (none yet: a song the Music Detector named without a

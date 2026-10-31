@@ -11,7 +11,7 @@ export interface Explained {
 const KINDS: [RegExp, string][] = [
   [/dns error|no such host|error trying to connect|tcp connect error|network is unreachable|os error (10050|10051|10065|11001|11004)|failed to fetch/i, msg('No internet connection: check your network, then try again.')],
   [/timed out|deadline has elapsed|os error 10060/i, msg('The service took too long to answer: try again in a moment.')],
-  [/\b429\b|Too Many Requests/, msg('Too many requests for now: wait a few minutes, then try again.')],
+  [/\b429\b|Too Many Requests|→ 403 Forbidden[^]*Sorry/, msg('Too many requests for now: wait a few minutes, then try again.')],
   [/→ 5\d\d\b|\b50[0234] (Internal Server Error|Bad Gateway|Service Unavailable|Gateway Timeout)/i, msg('The service is having trouble right now: try again later.')],
   // Pasted Deezer / Apple Music links (crates/connectors deezer.rs, itunes.rs): said by Rust in English, shown in the user's language.
   [/^This playlist is private or doesn't exist/, msg("This playlist is private or doesn't exist")],

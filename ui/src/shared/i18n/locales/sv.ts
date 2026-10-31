@@ -1605,6 +1605,9 @@ const sv: Record<string, string> = {
   'Visualizer full screen on / off': 'Visualiserare i helskärm på / av',
   '← → move the lyrics · Esc leaves': '← → flytta texten · Esc avslutar',
   // Connect Spotify
+  'About {n} h left': 'Cirka {n} tim kvar',
+  'YouTube is limiting searches: next try in {n} s': 'YouTube begränsar sökningarna: nytt försök om {n} s',
+  'YouTube is limiting searches: trying again': 'YouTube begränsar sökningarna: försöker igen',
   'Songs not found': 'Låtar som inte hittades',
   '{n} song not found': '{n} låt hittades inte',
   '{n} songs not found': '{n} låtar hittades inte',
@@ -1617,7 +1620,6 @@ const sv: Record<string, string> = {
   '{found} of {songs} songs found on YouTube': '{found} av {songs} låtar hittades på YouTube',
   'Less than a minute left': 'Mindre än en minut kvar',
   'About {n} min left': 'Cirka {n} min kvar',
-  'YouTube is limiting searches: waiting': 'YouTube begränsar sökningarna: väntar',
   'Searching YouTube for {n} song': 'Söker {n} låt på YouTube',
   'Searching YouTube for {n} songs': 'Söker {n} låtar på YouTube',
   'Spotify: searching YouTube… {done} of {total}': 'Spotify: söker på YouTube … {done} av {total}',

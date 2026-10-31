@@ -426,10 +426,12 @@ via the Web API Player endpoints. Audio comes out of the Spotify app; we only se
   by position. The same list imported again replaces its copy (id: the file's name). Progress is a screen, `features/add/ImportScreen.tsx` (pure part `importRun.ts`): covers land on a
   fanned deck, updates every 120 ms at most, Hide leaves a toast. Every list is saved first, in seconds, with the YouTube
   versions the library knows (`Library::known_youtube`); then each unknown song is searched once, across all the lists, its
-  version joining them as it comes (`Library::add_version`). The screen says the time left from the last 45 s of searches.
+  version joining them as it comes (`Library::add_version`). A search brings back around twenty songs, so what it found settles
+  the songs in line with no search of their own (`searchpace::Line`, the artists with the most songs first). The screen says
+  the time left from the last 90 s up to now, so what YouTube holds back counts, and the wait under way on a line of its own.
   Google sets the speed: too many searches from one address get its "Sorry…" page (403, slow, seen at 5 to 9 s), which is
   not a missing song. `music_core::searchpace::Pace` starts at 4 at once, grows to 8 while YouTube answers, halves and waits
-  (5 s to 60 s) on a refusal, the song goes back in line, and 5 min of nothing but refusals ends the search: an import later
+  (5 s to 60 s) on a refusal, the song goes back in line, and 15 min of nothing but refusals ends the search: an import later
   finishes it. Never around a refusal: no other endpoint, no CAPTCHA, no faster retry. A song truly not found (a real
   answer, no match) goes in `not_found` (schema v14, a cache, not synced): an import leaves it alone for 30 days, and Songs
   not found (`features/library/NotFoundView.tsx`, in the sidebar when there are some, and on the import's last screen) lists
