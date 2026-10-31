@@ -1,6 +1,7 @@
 use crate::library::Library;
 use crate::matching::merge_tracks;
-use crate::model::Connector;
+use crate::model::{Connector, Source};
+use crate::searchpace::refused;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::collections::BTreeMap;
@@ -54,8 +55,14 @@ pub struct SyncReport {
     pub errors: Vec<String>,
 }
 
+/// Google refused this address (`searchpace::refused`): one line for the account, in words, not its HTML page.
+fn refused_line(source: Source) -> String {
+    format!("{}: Google is refusing this PC's requests for now (too many in a short time). Its lists come in at a later sync, in a few minutes.", source.as_str())
+}
+
 /// Import every playlist of connected services, then link tracks missing on `target` (e.g. YouTube → Spotify).
-/// Library lock held only for writes, never across network await.
+/// Library lock held only for writes, never across network await. Google refusing an account: its other lists aren't
+/// asked for, every request would be refused too and keep the block going (never around it: `searchpace`).
 pub async fn sync(lib: &Mutex<Library>, connectors: &[&dyn Connector], target: Option<&dyn Connector>) -> SyncReport {
     let mut report = SyncReport::default();
     for c in connectors.iter().filter(|c| c.is_connected()) {
@@ -63,7 +70,8 @@ pub async fn sync(lib: &Mutex<Library>, connectors: &[&dyn Connector], target: O
         let playlists = match c.list_playlists().await {
             Ok(p) => p,
             Err(e) => {
-                report.errors.push(format!("{}: {e:#}", source.as_str()));
+                let said = format!("{e:#}");
+                report.errors.push(if refused(&said) { refused_line(source) } else { format!("{}: {said}", source.as_str()) });
                 continue;
             }
         };
@@ -74,6 +82,10 @@ pub async fn sync(lib: &Mutex<Library>, connectors: &[&dyn Connector], target: O
             };
             match saved {
                 Ok(_) => report.playlists += 1,
+                Err(e) if refused(&format!("{e:#}")) => {
+                    report.errors.push(refused_line(source));
+                    break;
+                }
                 Err(e) => report.errors.push(format!("{} \"{}\": {e:#}", source.as_str(), p.name)),
             }
         }
@@ -138,6 +150,9 @@ mod tests {
             if id == "broken" {
                 bail!("403");
             }
+            if id == "sorry" {
+                bail!("YouTube Music browse → 403 Forbidden <html><head><title>Sorry...</title>");
+            }
             Ok(self.playlists.iter().find(|(p, _)| *p == id).unwrap().1.clone())
         }
         async fn search(&self, _: &str) -> Result<Vec<Track>> {
@@ -153,6 +168,18 @@ mod tests {
 
     fn track(title: &str, artist: &str, ms: Option<u32>, source: Source, id: &str) -> Track {
         Track { title: title.into(), artist: artist.into(), duration_ms: ms, ids: BTreeMap::from([(source, id.into())]), ..Default::default() }
+    }
+
+    #[tokio::test]
+    async fn google_refusing_stops_that_account_with_one_line() {
+        let lib = Mutex::new(Library::in_memory().unwrap());
+        let a = track("A", "X", None, Source::Youtube, "a1");
+        let yt = Fake { source: Source::Youtube, connected: true, playlists: vec![("a", vec![a.clone()]), ("sorry", vec![]), ("b", vec![a])], catalog: vec![] };
+        let report = sync(&lib, &[&yt], None).await;
+        // "b" not asked for: the block would only go on.
+        assert_eq!(report.playlists, 1);
+        assert_eq!(report.errors.len(), 1);
+        assert!(report.errors[0].starts_with("youtube: Google is refusing") && !report.errors[0].contains("<html>"), "{:?}", report.errors);
     }
 
     #[tokio::test]

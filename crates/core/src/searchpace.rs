@@ -17,6 +17,12 @@ const LONGEST_WAIT: Duration = Duration::from_secs(60);
 /// Refused this long, no answer: the rest waits for another import. A real block lasted 5 min (2026-10-31), and Hide leaves the app free.
 const GIVE_UP: Duration = Duration::from_secs(15 * 60);
 
+/// Google's answer to too many requests from one address (its "Sorry…" page, or a 429): says nothing about the song
+/// or the list asked for. Searches, YouTube Music's pages, its sync: one block for all of them.
+pub fn refused(error: &str) -> bool {
+    error.contains("429 Too Many Requests") || (error.contains("403 Forbidden") && error.contains("Sorry"))
+}
+
 pub struct Pace {
     width: usize,
     clean: usize,
@@ -143,6 +149,15 @@ impl Line {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn knows_too_many_requests_from_other_failures() {
+        assert!(refused("YouTube Music search → 403 Forbidden <html><head><title>Sorry...</title>"));
+        assert!(refused("YouTube search → 429 Too Many Requests "));
+        assert!(!refused("YouTube Music search → 403 Forbidden {\"error\":{\"message\":\"expired\"}}"));
+        assert!(!refused("YouTube Music search → 500 Internal Server Error"));
+        assert!(!refused("error sending request"));
+    }
 
     const SECOND: Duration = Duration::from_secs(1);
 
