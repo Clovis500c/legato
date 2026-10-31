@@ -1656,6 +1656,8 @@ const ru: Record<string, string> = {
   'Reading your library on Spotify…': 'Чтение вашей медиатеки Spotify…',
   'Your Spotify lists': 'Ваши списки Spotify',
   'Apple Music: searching YouTube… {done} of {total}': 'Apple Music: поиск на YouTube… {done} из {total}',
+  'Searching YouTube… {done} of {total}': 'Поиск на YouTube… {done} из {total}',
+  'Importing “{name}”… {done} of {total}': 'Импорт «{name}»… {done} из {total}',
   'Apple Music, list {list} of {lists}: finding “{name}” on YouTube… {done} of {total}': 'Apple Music, список {list} из {lists}: поиск «{name}» на YouTube… {done} из {total}',
   'Apple Music, list {list} of {lists}: reading “{name}”… {done} of {total}': 'Apple Music, список {list} из {lists}: чтение «{name}»… {done} из {total}',
   'No playlists were found in your Apple Music library.': 'В вашей медиатеке Apple Music не найдено плейлистов.',

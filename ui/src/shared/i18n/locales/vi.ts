@@ -1656,6 +1656,8 @@ const vi: Record<string, string> = {
   'Reading your library on Spotify…': 'Đang đọc thư viện Spotify của bạn…',
   'Your Spotify lists': 'Danh sách Spotify của bạn',
   'Apple Music: searching YouTube… {done} of {total}': 'Apple Music: đang tìm trên YouTube… {done}/{total}',
+  'Searching YouTube… {done} of {total}': 'Đang tìm trên YouTube… {done}/{total}',
+  'Importing “{name}”… {done} of {total}': 'Đang nhập “{name}”… {done}/{total}',
   'Apple Music, list {list} of {lists}: finding “{name}” on YouTube… {done} of {total}': 'Apple Music, danh sách {list}/{lists}: đang tìm “{name}” trên YouTube… {done}/{total}',
   'Apple Music, list {list} of {lists}: reading “{name}”… {done} of {total}': 'Apple Music, danh sách {list}/{lists}: đang đọc “{name}”… {done}/{total}',
   'No playlists were found in your Apple Music library.': 'Không tìm thấy danh sách phát nào trong thư viện Apple Music của bạn.',

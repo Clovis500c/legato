@@ -1656,6 +1656,8 @@ const nl: Record<string, string> = {
   'Reading your library on Spotify…': 'Je Spotify-bibliotheek wordt gelezen…',
   'Your Spotify lists': 'Je Spotify-lijsten',
   'Apple Music: searching YouTube… {done} of {total}': 'Apple Music: zoeken op YouTube… {done} van {total}',
+  'Searching YouTube… {done} of {total}': 'Zoeken op YouTube… {done} van {total}',
+  'Importing “{name}”… {done} of {total}': '“{name}” importeren… {done} van {total}',
   'Apple Music, list {list} of {lists}: finding “{name}” on YouTube… {done} of {total}': 'Apple Music, lijst {list} van {lists}: “{name}” zoeken op YouTube… {done} van {total}',
   'Apple Music, list {list} of {lists}: reading “{name}”… {done} of {total}': 'Apple Music, lijst {list} van {lists}: “{name}” lezen… {done} van {total}',
   'No playlists were found in your Apple Music library.': 'Er zijn geen playlists gevonden in je Apple Music-bibliotheek.',

@@ -1656,6 +1656,8 @@ const zh: Record<string, string> = {
   'Reading your library on Spotify…': '正在读取你的 Spotify 音乐库…',
   'Your Spotify lists': '你的 Spotify 列表',
   'Apple Music: searching YouTube… {done} of {total}': 'Apple Music：正在 YouTube 上搜索… {done}/{total}',
+  'Searching YouTube… {done} of {total}': '正在 YouTube 上搜索… {done}/{total}',
+  'Importing “{name}”… {done} of {total}': '正在导入“{name}”… {done}/{total}',
   'Apple Music, list {list} of {lists}: finding “{name}” on YouTube… {done} of {total}': 'Apple Music，列表 {list}/{lists}：正在 YouTube 上查找“{name}”… {done}/{total}',
   'Apple Music, list {list} of {lists}: reading “{name}”… {done} of {total}': 'Apple Music，列表 {list}/{lists}：正在读取“{name}”… {done}/{total}',
   'No playlists were found in your Apple Music library.': '你的 Apple Music 资料库中没有找到歌单。',

@@ -148,6 +148,9 @@ let importToast = 0
 const importText = (p: SpotifyProgress | undefined, kind: ImportKind) => {
   if (!p) return tr('Importing…')
   const { list, lists, name, done, total } = p
+  // Neither names a service: the songs not found searched again, a list shared with Legato.
+  if (kind === 'again') return tr('Searching YouTube… {done} of {total}', { done: p.searched, total: p.toSearch })
+  if (kind === 'shared') return tr('Importing “{name}”… {done} of {total}', { name, done, total })
   if (kind === 'apple') {
     if (p.matching && p.toSearch) return tr('Apple Music: searching YouTube… {done} of {total}', { done: p.searched, total: p.toSearch })
     return p.matching ? tr('Apple Music, list {list} of {lists}: finding “{name}” on YouTube… {done} of {total}', { list, lists, name, done, total }) : tr('Apple Music, list {list} of {lists}: reading “{name}”… {done} of {total}', { list, lists, name, done, total })

@@ -1656,6 +1656,8 @@ const es: Record<string, string> = {
   'Reading your library on Spotify…': 'Leyendo tu biblioteca de Spotify…',
   'Your Spotify lists': 'Tus listas de Spotify',
   'Apple Music: searching YouTube… {done} of {total}': 'Apple Music: buscando en YouTube… {done} de {total}',
+  'Searching YouTube… {done} of {total}': 'Buscando en YouTube… {done} de {total}',
+  'Importing “{name}”… {done} of {total}': 'Importando «{name}»… {done} de {total}',
   'Apple Music, list {list} of {lists}: finding “{name}” on YouTube… {done} of {total}': 'Apple Music, lista {list} de {lists}: buscando «{name}» en YouTube… {done} de {total}',
   'Apple Music, list {list} of {lists}: reading “{name}”… {done} of {total}': 'Apple Music, lista {list} de {lists}: leyendo «{name}»… {done} de {total}',
   'No playlists were found in your Apple Music library.': 'No se encontraron playlists en tu biblioteca de Apple Music.',

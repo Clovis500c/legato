@@ -1656,6 +1656,8 @@ const ko: Record<string, string> = {
   'Reading your library on Spotify…': 'Spotify 보관함을 읽는 중…',
   'Your Spotify lists': '내 Spotify 목록',
   'Apple Music: searching YouTube… {done} of {total}': 'Apple Music: YouTube 검색 중… {done}/{total}',
+  'Searching YouTube… {done} of {total}': 'YouTube 검색 중… {done}/{total}',
+  'Importing “{name}”… {done} of {total}': '“{name}” 가져오는 중… {done}/{total}',
   'Apple Music, list {list} of {lists}: finding “{name}” on YouTube… {done} of {total}': 'Apple Music, 목록 {list}/{lists}: YouTube에서 “{name}” 찾는 중… {done}/{total}',
   'Apple Music, list {list} of {lists}: reading “{name}”… {done} of {total}': 'Apple Music, 목록 {list}/{lists}: “{name}” 읽는 중… {done}/{total}',
   'No playlists were found in your Apple Music library.': 'Apple Music 보관함에서 플레이리스트를 찾지 못했습니다.',

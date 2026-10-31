@@ -1656,6 +1656,8 @@ const ja: Record<string, string> = {
   'Reading your library on Spotify…': 'Spotify のライブラリを読み取り中…',
   'Your Spotify lists': 'Spotify のリスト',
   'Apple Music: searching YouTube… {done} of {total}': 'Apple Music: YouTube を検索中… {done} / {total}',
+  'Searching YouTube… {done} of {total}': 'YouTube を検索中… {done} / {total}',
+  'Importing “{name}”… {done} of {total}': '「{name}」をインポート中… {done}/{total}',
   'Apple Music, list {list} of {lists}: finding “{name}” on YouTube… {done} of {total}': 'Apple Music、リスト {list}/{lists}:「{name}」を YouTube で検索中… {done}/{total}',
   'Apple Music, list {list} of {lists}: reading “{name}”… {done} of {total}': 'Apple Music、リスト {list}/{lists}:「{name}」を読み取り中… {done}/{total}',
   'No playlists were found in your Apple Music library.': 'Apple Music のライブラリにプレイリストが見つかりませんでした。',

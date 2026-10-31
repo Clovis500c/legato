@@ -1656,6 +1656,8 @@ const id: Record<string, string> = {
   'Reading your library on Spotify…': 'Membaca koleksi Spotify Anda…',
   'Your Spotify lists': 'Daftar Spotify Anda',
   'Apple Music: searching YouTube… {done} of {total}': 'Apple Music: mencari di YouTube… {done} dari {total}',
+  'Searching YouTube… {done} of {total}': 'Mencari di YouTube… {done} dari {total}',
+  'Importing “{name}”… {done} of {total}': 'Mengimpor “{name}”… {done} dari {total}',
   'Apple Music, list {list} of {lists}: finding “{name}” on YouTube… {done} of {total}': 'Apple Music, daftar {list} dari {lists}: mencari “{name}” di YouTube… {done} dari {total}',
   'Apple Music, list {list} of {lists}: reading “{name}”… {done} of {total}': 'Apple Music, daftar {list} dari {lists}: membaca “{name}”… {done} dari {total}',
   'No playlists were found in your Apple Music library.': 'Tidak ada playlist di perpustakaan Apple Music Anda.',

@@ -1656,6 +1656,8 @@ const uk: Record<string, string> = {
   'Reading your library on Spotify…': 'Читання вашої медіатеки Spotify…',
   'Your Spotify lists': 'Ваші списки Spotify',
   'Apple Music: searching YouTube… {done} of {total}': 'Apple Music: пошук на YouTube… {done} з {total}',
+  'Searching YouTube… {done} of {total}': 'Пошук на YouTube… {done} з {total}',
+  'Importing “{name}”… {done} of {total}': 'Імпорт «{name}»… {done} з {total}',
   'Apple Music, list {list} of {lists}: finding “{name}” on YouTube… {done} of {total}': 'Apple Music, список {list} з {lists}: пошук «{name}» на YouTube… {done} з {total}',
   'Apple Music, list {list} of {lists}: reading “{name}”… {done} of {total}': 'Apple Music, список {list} з {lists}: читання «{name}»… {done} з {total}',
   'No playlists were found in your Apple Music library.': 'У вашій медіатеці Apple Music не знайдено плейлистів.',

@@ -1656,6 +1656,8 @@ const tr: Record<string, string> = {
   'Reading your library on Spotify…': 'Spotify kitaplığın okunuyor…',
   'Your Spotify lists': 'Spotify listelerin',
   'Apple Music: searching YouTube… {done} of {total}': 'Apple Music: YouTube’da aranıyor… {done}/{total}',
+  'Searching YouTube… {done} of {total}': 'YouTube’da aranıyor… {done}/{total}',
+  'Importing “{name}”… {done} of {total}': '“{name}” içe aktarılıyor… {done}/{total}',
   'Apple Music, list {list} of {lists}: finding “{name}” on YouTube… {done} of {total}': 'Apple Music, liste {list}/{lists}: “{name}” YouTube’da aranıyor… {done}/{total}',
   'Apple Music, list {list} of {lists}: reading “{name}”… {done} of {total}': 'Apple Music, liste {list}/{lists}: “{name}” okunuyor… {done}/{total}',
   'No playlists were found in your Apple Music library.': 'Apple Music arşivinde çalma listesi bulunamadı.',

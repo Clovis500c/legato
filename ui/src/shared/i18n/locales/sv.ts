@@ -1656,6 +1656,8 @@ const sv: Record<string, string> = {
   'Reading your library on Spotify…': 'Läser ditt Spotify-bibliotek…',
   'Your Spotify lists': 'Dina Spotify-listor',
   'Apple Music: searching YouTube… {done} of {total}': 'Apple Music: söker på YouTube… {done} av {total}',
+  'Searching YouTube… {done} of {total}': 'Söker på YouTube… {done} av {total}',
+  'Importing “{name}”… {done} of {total}': 'Importerar ”{name}”… {done} av {total}',
   'Apple Music, list {list} of {lists}: finding “{name}” on YouTube… {done} of {total}': 'Apple Music, lista {list} av {lists}: söker efter ”{name}” på YouTube… {done} av {total}',
   'Apple Music, list {list} of {lists}: reading “{name}”… {done} of {total}': 'Apple Music, lista {list} av {lists}: läser ”{name}”… {done} av {total}',
   'No playlists were found in your Apple Music library.': 'Inga spellistor hittades i ditt Apple Music-bibliotek.',

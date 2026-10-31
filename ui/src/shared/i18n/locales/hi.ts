@@ -1656,6 +1656,8 @@ const hi: Record<string, string> = {
   'Reading your library on Spotify…': 'आपकी Spotify लाइब्रेरी पढ़ी जा रही है…',
   'Your Spotify lists': 'आपकी Spotify सूचियाँ',
   'Apple Music: searching YouTube… {done} of {total}': 'Apple Music: YouTube पर खोज जारी… {total} में से {done}',
+  'Searching YouTube… {done} of {total}': 'YouTube पर खोज जारी… {total} में से {done}',
+  'Importing “{name}”… {done} of {total}': '“{name}” इंपोर्ट हो रही है… {total} में से {done}',
   'Apple Music, list {list} of {lists}: finding “{name}” on YouTube… {done} of {total}': 'Apple Music, {lists} में से सूची {list}: YouTube पर “{name}” खोजी जा रही है… {total} में से {done}',
   'Apple Music, list {list} of {lists}: reading “{name}”… {done} of {total}': 'Apple Music, {lists} में से सूची {list}: “{name}” पढ़ी जा रही है… {total} में से {done}',
   'No playlists were found in your Apple Music library.': 'आपकी Apple Music लाइब्रेरी में कोई प्लेलिस्ट नहीं मिली।',
