@@ -12,4 +12,8 @@ playable: number,
 /**
  * Lists that couldn't be read or held no songs.
  */
-failed: Array<string>, };
+failed: Array<string>, 
+/**
+ * Songs YouTube's refusals left unsearched: a later import finishes them.
+ */
+unsearched: number, };

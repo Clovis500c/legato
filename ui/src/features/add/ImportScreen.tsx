@@ -7,7 +7,7 @@ import { tr, trn } from '../../shared/i18n/i18n'
 import { Button } from '../../shared/ui/Button'
 import { Cover } from '../../shared/ui/Cover'
 import { Dialog } from '../../shared/ui/Dialog'
-import { card, share, summary, type Seen } from './importRun'
+import { card, secondsLeft, share, summary, timeLeft, type Seen } from './importRun'
 
 function Deck({ seen }: { seen: Seen[] }) {
   const newest = seen.at(-1)?.seq ?? 0
@@ -40,6 +40,8 @@ export function ImportScreen() {
   const song = run.seen.at(-1)
   const done = p?.allTotal ? p.allDone : p?.done
   const total = p?.allTotal || p?.total
+  const left = secondsLeft(run)
+  const searching = p?.matching && !!p.toSearch
   return (
     <Dialog title={result ? tr('Import finished') : tr('Importing from Spotify')} onClose={result ? endImport : hideImport}>
       <Deck seen={run.seen} />
@@ -68,10 +70,13 @@ export function ImportScreen() {
               <div className="h-full origin-left rounded-full bg-ink transition-transform duration-200 ease-out" style={{ transform: `scaleX(${share(p)})` }} />
             </div>
             <div className="flex justify-between gap-3 text-xs text-ink-2">
-              <span className="min-w-0 truncate">{p ? tr('List {list} of {lists}: {name}', { list: p.list, lists: p.lists, name: p.name }) : tr('Importing…')}</span>
+              <span className="min-w-0 truncate">{searching ? trn(p.toSearch, 'Searching YouTube for {n} song', 'Searching YouTube for {n} songs') : p ? tr('List {list} of {lists}: {name}', { list: p.list, lists: p.lists, name: p.name }) : tr('Importing…')}</span>
               {!!total && <span className="shrink-0 tabular-nums">{tr('{done} of {total} songs', { done: done ?? 0, total })}</span>}
             </div>
-            {!!p?.playable && <p className="text-xs text-ink-3 tabular-nums">{trn(p.playable, '{n} song playable', '{n} songs playable')}</p>}
+            <div className="flex min-h-4 justify-between gap-3 text-xs text-ink-3 tabular-nums">
+              <span className="min-w-0 truncate">{!!p?.playable && trn(p.playable, '{n} song playable', '{n} songs playable')}</span>
+              <span className="shrink-0">{p?.waiting ? tr('YouTube is limiting searches: waiting') : left !== undefined && timeLeft(left)}</span>
+            </div>
           </div>
           <div className="flex justify-end gap-2">
             <Button variant="ghost" onClick={hideImport}>

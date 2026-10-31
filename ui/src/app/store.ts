@@ -142,6 +142,7 @@ let importToast = 0
 const importText = (p: SpotifyProgress | undefined) => {
   if (!p) return tr('Importing…')
   const { list, lists, name, done, total } = p
+  if (p.matching && p.toSearch) return tr('Spotify: searching YouTube… {done} of {total}', { done: p.searched, total: p.toSearch })
   return p.matching ? tr('Spotify, list {list} of {lists}: finding “{name}” on YouTube… {done} of {total}', { list, lists, name, done, total }) : tr('Spotify, list {list} of {lists}: reading “{name}”… {done} of {total}', { list, lists, name, done, total })
 }
 
@@ -354,9 +355,15 @@ export const useStore = create<State>((set, get) => {
         set({ importRun: advance(run, latest) })
         if (run.hidden) get().notify(importText(latest), { sticky: true, id: importToast })
       }
+      let listsShown = false
       const off = api.onSpotifyImport((p) => {
         latest = p
         timer ??= setTimeout(beat, BEAT)
+        // Every list saved: the library has them while the searches go on.
+        if (!listsShown && p.matching && p.toSearch) {
+          listsShown = true
+          get().refresh().catch(() => undefined)
+        }
       })
       let r: SpotifyLibraryImport | undefined
       let canceled = false

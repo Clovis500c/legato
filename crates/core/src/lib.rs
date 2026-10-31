@@ -11,6 +11,7 @@ pub mod mixes;
 pub mod musicness;
 pub mod model;
 pub mod search;
+pub mod searchpace;
 pub mod share;
 pub mod songlist;
 pub mod spotify_export;

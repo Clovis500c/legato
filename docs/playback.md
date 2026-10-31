@@ -424,9 +424,13 @@ via the Web API Player endpoints. Audio comes out of the Spotify app; we only se
   Spotify sends it back with a refusal. Tauri's `on_download` puts the file in the cache, it is read and deleted, and every
   list comes straight in: no file to see, nothing to tick. Header in the browser's language, same columns in each, so read
   by position. The same list imported again replaces its copy (id: the file's name). Progress is a screen, `features/add/ImportScreen.tsx` (pure part `importRun.ts`): covers land on a
-  fanned deck, updates every 120 ms at most, Hide leaves a toast. Songs the library knows keep their
-  YouTube version, no search (`Library::known_youtube`), so a list imported again takes seconds; the others: 8 searches at
-  once, a new one as each ends. Liked Songs joins Liked Music,
+  fanned deck, updates every 120 ms at most, Hide leaves a toast. Every list is saved first, in seconds, with the YouTube
+  versions the library knows (`Library::known_youtube`); then each unknown song is searched once, across all the lists, its
+  version joining them as it comes (`Library::add_version`). The screen says the time left from the last 45 s of searches.
+  Google sets the speed: too many searches from one address get its "Sorry…" page (403, slow, seen at 5 to 9 s), which is
+  not a missing song. `music_core::searchpace::Pace` starts at 4 at once, grows to 8 while YouTube answers, halves and waits
+  (5 s to 60 s) on a refusal, the song goes back in line, and 5 min of nothing but refusals ends the search: an import later
+  finishes it. Never around a refusal: no other endpoint, no CAPTCHA, no faster retry. Liked Songs joins Liked Music,
   whatever the way in (`Library::add_likes`, user's choice 2026-10-31): no second list of likes. YouTube Music's Liked Music is
   rewritten by every sync, so a song not in it waits in your own, and at the next sync the ones with a YouTube version
   are liked on the account (`push_own_likes`, one every 400 ms). Exportify is a third party's site, so its window is watched (`Watch`, pure, in `music_core::spotify_export`;

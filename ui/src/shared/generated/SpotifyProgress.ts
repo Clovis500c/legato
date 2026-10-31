@@ -7,7 +7,7 @@ export type SpotifyProgress = { name: string,
  */
 list: number, lists: number, 
 /**
- * False: reading Spotify's page. True: finding the songs on YouTube.
+ * False: reading Spotify's page, or saving the lists. True: finding the songs on YouTube.
  */
 matching: boolean, done: number, total: number, 
 /**
@@ -17,4 +17,12 @@ allDone: number, allTotal: number,
 /**
  * With a YouTube version so far, every list.
  */
-playable: number, song: SpotifySong | null, };
+playable: number, 
+/**
+ * One search of every list's unknown songs, what the time left counts. 0: Spotify's page goes list by list.
+ */
+searched: number, toSearch: number, 
+/**
+ * YouTube refused: waiting before going on.
+ */
+waiting: boolean, song: SpotifySong | null, };

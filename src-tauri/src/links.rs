@@ -1,12 +1,15 @@
 //! Pasted Deezer and Apple Music playlist / album links: the connectors read a name, a cover and the songs (metadata
 //! only), then each song gets its YouTube version like a Spotify import, and the ones found go in a new playlist.
 
-use crate::{AppState, CmdResult, err, hosts, with_youtube};
+use crate::{AppState, CmdResult, err, hosts, youtube_version};
 use music_connectors::{deezer, itunes, linklist::LinkList};
 use music_core::library::PlaylistEdit;
 use music_core::model::{Source, Track};
+use music_core::searchpace::Pace;
 use serde::Serialize;
+use std::collections::VecDeque;
 use std::sync::atomic::{AtomicBool, Ordering};
+use std::time::{Duration, Instant};
 use tauri::{Emitter, Manager, State};
 
 #[derive(Serialize, ts_rs::TS)]
@@ -63,8 +66,8 @@ pub fn stopped() -> bool {
     STOP.load(Ordering::Relaxed)
 }
 
-/// Searches running at once, a new one as each ends: quick, still polite (unofficial APIs).
-const SEARCHES: usize = 8;
+/// Checks for Cancel while YouTube makes the import wait.
+const WAITING: Duration = Duration::from_millis(250);
 
 /// One step of a search.
 pub struct Searched<'a> {
@@ -72,42 +75,79 @@ pub struct Searched<'a> {
     /// Of those, the ones with a YouTube version.
     pub found: usize,
     pub song: Option<&'a Track>,
+    /// YouTube refused: waiting before going on.
+    pub waiting: bool,
 }
 
-/// Each song with its YouTube version when one exists, in order. What the library knows isn't searched: a list imported
-/// again, or sharing songs with another, takes seconds. `progress`: after each song. None: stopped.
-pub async fn find_on_youtube(app: &tauri::AppHandle, tracks: &[Track], progress: impl Fn(Searched)) -> Result<Option<Vec<Track>>, String> {
-    let state = app.state::<AppState>();
-    let mut out = tracks.to_vec();
-    let playable = |t: &Track| t.ids.contains_key(&Source::Youtube);
-    for t in out.iter_mut().filter(|t| !t.ids.contains_key(&Source::Youtube)) {
-        // Lock per song: the interface reads the library meanwhile.
+/// The songs, and how many of them YouTube's refusals left unsearched (none found: not the same as none to find).
+pub struct Found {
+    pub tracks: Vec<Track>,
+    pub unsearched: usize,
+}
+
+/// Fills in the versions the library knows. Lock per song: the interface reads the library meanwhile.
+pub fn fill_known(state: &AppState, tracks: &mut [Track]) {
+    for t in tracks.iter_mut().filter(|t| !t.ids.contains_key(&Source::Youtube)) {
         if let Ok(Some(video)) = state.lib().known_youtube(t) {
             t.ids.insert(Source::Youtube, video);
         }
     }
-    let mut todo = (0..out.len()).filter(|&i| !playable(&out[i])).collect::<Vec<_>>().into_iter();
+}
+
+/// Each song with its YouTube version when one exists, in order. What the library knows isn't searched: a list imported
+/// again, or sharing songs with another, takes seconds. As fast as YouTube allows (`Pace`): a song refused goes back in
+/// line. `progress`: after each song. None: stopped.
+pub async fn find_on_youtube(app: &tauri::AppHandle, tracks: &[Track], progress: impl Fn(Searched)) -> Result<Option<Found>, String> {
+    let state = app.state::<AppState>();
+    let mut out = tracks.to_vec();
+    let playable = |t: &Track| t.ids.contains_key(&Source::Youtube);
+    fill_known(&state, &mut out);
+    let mut todo: VecDeque<usize> = (0..out.len()).filter(|&i| !playable(&out[i])).collect();
     let mut done = out.len() - todo.len();
     let mut found = done;
-    progress(Searched { done, found, song: out.iter().rfind(|t| playable(t)) });
+    progress(Searched { done, found, song: out.iter().rfind(|t| playable(t)), waiting: false });
+    let mut pace = Pace::default();
     let mut running = tokio::task::JoinSet::new();
     loop {
         if stopped() {
             return Ok(None);
         }
-        while running.len() < SEARCHES {
-            let Some(i) = todo.next() else { break };
-            let (app, song) = (app.clone(), out[i].clone());
-            running.spawn(async move { (i, with_youtube(&app.state::<AppState>(), song).await) });
+        let now = Instant::now();
+        if pace.gave_up(now) {
+            break;
         }
-        let Some(ended) = running.join_next().await else { break };
+        while running.len() < pace.width(now) {
+            let Some(i) = todo.pop_front() else { break };
+            let (app, song) = (app.clone(), out[i].clone());
+            running.spawn(async move { (i, youtube_version(&app.state::<AppState>(), &song).await) });
+        }
+        let Some(ended) = running.join_next().await else {
+            if todo.is_empty() {
+                break;
+            }
+            tokio::time::sleep(WAITING).await;
+            continue;
+        };
         let (i, song) = ended.map_err(err)?;
-        out[i] = song;
-        done += 1;
-        found += usize::from(playable(&out[i]));
-        progress(Searched { done, found, song: Some(&out[i]) });
+        match song {
+            Some(song) => {
+                pace.answered(Instant::now());
+                out[i] = song;
+                done += 1;
+                found += usize::from(playable(&out[i]));
+                progress(Searched { done, found, song: Some(&out[i]), waiting: false });
+            }
+            None => {
+                pace.refused(Instant::now());
+                todo.push_back(i);
+                progress(Searched { done, found, song: None, waiting: true });
+            }
+        }
     }
-    Ok((!stopped()).then_some(out))
+    if pace.refusals > 0 {
+        crate::diag::warn("import", "YouTube refused searches", &format!("{} refused, {done} answered", pace.refusals));
+    }
+    Ok((!stopped()).then_some(Found { tracks: out, unsearched: todo.len() + running.len() }))
 }
 
 /// Deezer or Apple Music playlist / album link → a playlist of yours, no account. Same flow as a Spotify link.
@@ -125,7 +165,7 @@ pub async fn import_link(app: tauri::AppHandle, state: State<'_, AppState>, url:
     let progress = |step: Searched| {
         let _ = app.emit_to("main", "import-progress", [step.done, total]);
     };
-    let tracks = find_on_youtube(&app, &list.tracks, progress).await?.ok_or("canceled")?;
+    let tracks = find_on_youtube(&app, &list.tracks, progress).await?.ok_or("canceled")?.tracks;
     let (found, missing): (Vec<_>, Vec<_>) = tracks.into_iter().partition(|t| t.ids.contains_key(&Source::Youtube));
     let missing: Vec<String> = missing.iter().map(|t| format!("{} – {}", t.artist, t.title)).collect();
     let name: String = list.name.trim().chars().take(100).collect();

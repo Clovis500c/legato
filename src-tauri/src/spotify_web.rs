@@ -152,6 +152,8 @@ pub struct SpotifyLibraryImport {
     pub playable: usize,
     /// Lists that couldn't be read or held no songs.
     pub failed: Vec<String>,
+    /// Songs YouTube's refusals left unsearched: a later import finishes them.
+    pub unsearched: usize,
 }
 
 /// A song going through: what the import screen shows.
@@ -178,7 +180,7 @@ pub struct SpotifyProgress {
     /// This list's place among the picked ones, from 1.
     pub list: usize,
     pub lists: usize,
-    /// False: reading Spotify's page. True: finding the songs on YouTube.
+    /// False: reading Spotify's page, or saving the lists. True: finding the songs on YouTube.
     pub matching: bool,
     pub done: usize,
     pub total: usize,
@@ -187,6 +189,11 @@ pub struct SpotifyProgress {
     pub all_total: usize,
     /// With a YouTube version so far, every list.
     pub playable: usize,
+    /// One search of every list's unknown songs, what the time left counts. 0: Spotify's page goes list by list.
+    pub searched: usize,
+    pub to_search: usize,
+    /// YouTube refused: waiting before going on.
+    pub waiting: bool,
     pub song: Option<SpotifySong>,
 }
 
@@ -209,17 +216,17 @@ pub async fn spotify_import(app: AppHandle, state: State<'_, AppState>, picks: V
     // Chromium stops drawing a window hidden behind others, and the list draws its rows as it goes.
     let _ = window.set_always_on_top(true);
     let lists = picks.len();
-    let mut report = SpotifyLibraryImport { playlist_id: None, lists: 0, songs: 0, playable: 0, failed: Vec::new() };
+    let mut report = SpotifyLibraryImport { playlist_id: None, lists: 0, songs: 0, playable: 0, failed: Vec::new(), unsearched: 0 };
     for (n, pick) in picks.iter().enumerate() {
         if links::stopped() {
             break;
         }
         let before = report.playable;
-        let tell = |matching, done, total, playable, song: Option<&Track>| {
-            let _ = app.emit_to("main", "spotify-import", SpotifyProgress { name: pick.name.clone(), list: n + 1, lists, matching, done, total, all_done: 0, all_total: 0, playable, song: song.map(SpotifySong::from) });
+        let tell = |matching, done, total, playable, waiting, song: Option<&Track>| {
+            let _ = app.emit_to("main", "spotify-import", SpotifyProgress { name: pick.name.clone(), list: n + 1, lists, matching, done, total, all_done: 0, all_total: 0, playable, searched: 0, to_search: 0, waiting, song: song.map(SpotifySong::from) });
         };
-        tell(false, 0, 0, before, None);
-        let read = match songs(&app, &pick.id, |done, total| tell(false, done, total, before, None)).await {
+        tell(false, 0, 0, before, false, None);
+        let read = match songs(&app, &pick.id, |done, total| tell(false, done, total, before, false, None)).await {
             Ok(read) if !read.is_empty() => read,
             Ok(_) => {
                 report.failed.push(pick.name.clone());
@@ -232,8 +239,9 @@ pub async fn spotify_import(app: AppHandle, state: State<'_, AppState>, picks: V
             }
         };
         let total = read.len();
-        let Some(tracks) = links::find_on_youtube(&app, &read, |step| tell(true, step.done, total, before + step.found, step.song)).await? else { break };
+        let Some(links::Found { tracks, unsearched }) = links::find_on_youtube(&app, &read, |step| tell(true, step.done, total, before + step.found, step.waiting, step.song)).await? else { break };
         let id = save(&state, &pick.id, pick.name.trim(), &tracks).map_err(err)?;
+        report.unsearched += unsearched;
         report.playlist_id.get_or_insert(id);
         report.lists += 1;
         report.songs += total;

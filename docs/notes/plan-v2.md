@@ -75,6 +75,11 @@ What the services allow, read on 2026-10-31 (specs in [ideas/catch-up.md](ideas/
       Open, which only plays, and a sign-in left on Spotify's own pages returns to Exportify.
 - [x] `M` Import quicker and shown properly (user's ask 2026-10-31): songs the library knows aren't searched, 8 searches in a
       sliding window, an import screen with covers landing on a deck instead of a toast.
+- [x] `M` Import's real limit is Google (user's ask 2026-10-31, measured: 2142 songs in about 13 min, then anonymous searches
+      refused with its "Sorry…" page): lists saved first, one search per unknown song, a refusal waits instead of counting as
+      not found (`searchpace`), time left on the screen. Not measured yet: a real run of this version; its log line says how
+      many searches were refused.
+- [ ] `S` Remember songs truly not found (no refusal), so an import again doesn't search them each time.
 - [ ] `S` Exportify's file names are lowered, with underscores ("Cool music" for "Cool Music"): a real name needs its
       playlist column ([exportify#194](https://github.com/watsonbox/exportify/issues/194)) or the first way's names.
 - [ ] `S` Spotify's `spotify_export::list` drops local files (8 in the user's export): keep them as songs to find.

@@ -5,9 +5,10 @@
 
 use crate::spotify_web::{SpotifyLibraryImport, SpotifyList, SpotifyPick, SpotifyProgress, SpotifySong};
 use crate::{AppState, CmdResult, err, links};
-use music_core::model::Source;
+use music_core::model::{Source, Track};
 use music_core::spotify_export::{self, ExportTrouble, ExportedList, Next, Signal, Watch};
 use serde::Serialize;
+use std::collections::BTreeSet;
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 use std::time::Duration;
@@ -158,38 +159,57 @@ pub async fn spotify_export_close(app: AppHandle) -> CmdResult<()> {
     }
 }
 
-/// The ticked lists → imported playlists, each song with its YouTube version. The same list imported again replaces its
-/// copy. `import_link_stop` ends it with "canceled": lists already saved stay.
+/// The ticked lists → imported playlists. Every list first, in seconds, with the versions the library knows: the library
+/// has them whatever the searches take. Then one search of each unknown song, its version joining the lists as it's found.
+/// The same list imported again replaces its copy. `import_link_stop` ends it with "canceled": the lists stay, an import
+/// later looks up what's left.
 #[tauri::command]
 pub async fn spotify_export_import(app: AppHandle, state: State<'_, AppState>, picks: Vec<SpotifyPick>) -> CmdResult<SpotifyLibraryImport> {
     let _running = links::begin()?;
     let held = std::mem::take(&mut *HELD.lock().unwrap());
-    let picked: Vec<(ExportedList, String)> = picks.into_iter().filter_map(|p| Some((held.iter().find(|l| l.id == p.id)?.clone(), p.name))).collect();
+    let mut picked: Vec<(ExportedList, String)> = picks.into_iter().filter_map(|p| Some((held.iter().find(|l| l.id == p.id)?.clone(), p.name))).collect();
     if picked.is_empty() {
         return Err("Invalid lists".into());
     }
+    let has_version = |t: &Track| t.ids.contains_key(&Source::Youtube);
+    let mut seen = BTreeSet::new();
+    let mut missing = Vec::new();
+    for (list, _) in &mut picked {
+        links::fill_known(&state, &mut list.tracks);
+        missing.extend(list.tracks.iter().filter(|t| !has_version(t) && seen.insert(t.ids.get(&Source::Spotify).cloned())).cloned());
+    }
     let lists = picked.len();
-    let all_total = picked.iter().map(|(l, _)| l.tracks.len()).sum();
-    let mut report = SpotifyLibraryImport { playlist_id: None, lists: 0, songs: 0, playable: 0, failed: Vec::new() };
+    let to_search = missing.len();
+    let all_total: usize = picked.iter().map(|(l, _)| l.tracks.len()).sum();
+    let mut report = SpotifyLibraryImport { playlist_id: None, lists: 0, songs: 0, playable: 0, failed: Vec::new(), unsearched: 0 };
+    let tell = |progress: SpotifyProgress| {
+        let _ = app.emit_to("main", "spotify-import", progress);
+    };
     for (n, (list, name)) in picked.iter().enumerate() {
+        if links::stopped() {
+            return Err("canceled".into());
+        }
         // Trust boundary: the interface's name, bounded.
         let name = name.trim();
         let name = if name.is_empty() || name.chars().count() > 200 { list.name.as_str() } else { name };
-        let total = list.tracks.len();
-        let (songs_before, playable_before) = (report.songs, report.playable);
-        let tell = |step: links::Searched| {
-            let progress = SpotifyProgress { name: name.to_string(), list: n + 1, lists, matching: true, done: step.done, total, all_done: songs_before + step.done, all_total, playable: playable_before + step.found, song: step.song.map(SpotifySong::from) };
-            let _ = app.emit_to("main", "spotify-import", progress);
-        };
-        let Some(tracks) = links::find_on_youtube(&app, &list.tracks, tell).await? else { break };
-        let id = crate::spotify_web::save(&state, &list.id, name, &tracks).map_err(err)?;
+        let id = crate::spotify_web::save(&state, &list.id, name, &list.tracks).map_err(err)?;
         report.playlist_id.get_or_insert(id);
         report.lists += 1;
-        report.songs += total;
-        report.playable += tracks.iter().filter(|t| t.ids.contains_key(&Source::Youtube)).count();
+        report.songs += list.tracks.len();
+        report.playable += list.tracks.iter().filter(|t| has_version(t)).count();
+        let song = list.tracks.iter().rfind(|t| has_version(t)).map(SpotifySong::from);
+        tell(SpotifyProgress { name: name.to_string(), list: n + 1, lists, matching: false, done: list.tracks.len(), total: list.tracks.len(), all_done: report.playable, all_total, playable: report.playable, searched: 0, to_search, waiting: false, song });
     }
-    if links::stopped() {
-        return Err("canceled".into());
-    }
+    let known = report.playable;
+    let step = |step: links::Searched| {
+        if let Some(song) = step.song.filter(|t| has_version(t)) {
+            let _ = state.lib().add_version(song);
+        }
+        tell(SpotifyProgress { name: String::new(), list: lists, lists, matching: true, done: step.done, total: to_search, all_done: all_total - to_search + step.done, all_total, playable: known + step.found, searched: step.done, to_search, waiting: step.waiting, song: step.song.map(SpotifySong::from) });
+    };
+    let Some(found) = links::find_on_youtube(&app, &missing, step).await? else { return Err("canceled".into()) };
+    let versions: BTreeSet<_> = found.tracks.iter().filter(|t| has_version(t)).filter_map(|t| t.ids.get(&Source::Spotify)).collect();
+    report.playable = picked.iter().flat_map(|(l, _)| &l.tracks).filter(|t| has_version(t) || t.ids.get(&Source::Spotify).is_some_and(|id| versions.contains(id))).count();
+    report.unsearched = found.unsearched;
     Ok(report)
 }

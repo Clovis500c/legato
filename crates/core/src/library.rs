@@ -449,6 +449,14 @@ impl Library {
         Ok(None)
     }
 
+    /// A song's YouTube version found after its list was saved. Removed by the user: stays out.
+    pub fn add_version(&self, t: &Track) -> Result<()> {
+        if !self.is_removed(t)? {
+            self.upsert_track(t)?;
+        }
+        Ok(())
+    }
+
     /// Rows matching by source id, then ISRC, then title+artist+duration.
     fn lookup(&self, t: &Track) -> Result<BTreeSet<i64>> {
         let mut found = BTreeSet::new();
@@ -1339,6 +1347,18 @@ mod tests {
 
     fn song(n: u32) -> Track {
         Track { title: format!("Song {n}"), artist: format!("Artist {n}"), ids: BTreeMap::from([(Source::Youtube, format!("vid{n}"))]), ..Default::default() }
+    }
+
+    #[test]
+    fn a_version_found_later_reaches_the_saved_list() -> Result<()> {
+        let lib = Library::in_memory()?;
+        let spotify = |id: &str, title: &str| Track { title: title.into(), artist: "A".into(), ids: [(Source::Spotify, id.to_string())].into(), ..Default::default() };
+        let list = lib.save_playlist(Source::Spotify, "export:x", "X", &[spotify("s1", "One"), spotify("s2", "Two")])?;
+        lib.add_version(&Track { ids: [(Source::Spotify, "s1".to_string()), (Source::Youtube, "v1".to_string())].into(), ..spotify("s1", "One") })?;
+        assert_eq!(lib.playlist_track_ids(list)?.len(), 2);
+        assert_eq!(lib.known_youtube(&spotify("s1", "One"))?.as_deref(), Some("v1"));
+        assert_eq!(lib.known_youtube(&spotify("s2", "Two"))?, None);
+        Ok(())
     }
 
     #[test]

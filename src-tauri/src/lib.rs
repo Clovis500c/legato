@@ -563,23 +563,36 @@ async fn search_suggestions(query: String, lang: String, country: String) -> Cmd
 
 /// No YouTube id yet: try to find one (1 search) so the track plays in full.
 async fn with_youtube(state: &AppState, track: Track) -> Track {
+    youtube_version(state, &track).await.unwrap_or(track)
+}
+
+/// The song, with its YouTube version when it has one. None: YouTube refused the search, nothing learned.
+async fn youtube_version(state: &AppState, track: &Track) -> Option<Track> {
     if track.ids.contains_key(&Source::Youtube) {
-        return track;
+        return Some(track.clone());
     }
     let query = format!("{} {}", track.artist, track.title);
     // YouTube Music songs first (clean metadata), then normal YouTube.
-    if let Ok(found) = yt_search(state, &query).await
-        && let Some(hit) = music_core::matching::best_match(&track, &found)
-    {
-        return merge_tracks(&track, hit);
-    }
-    if let Ok(found) = video_search(state, &query).await {
-        let videos: Vec<Track> = found.into_iter().filter(|(_, m)| *m != Musicness::NotMusic).map(|(t, _)| t).collect();
-        if let Some(hit) = music_core::matching::best_match(&track, &videos) {
-            return merge_tracks(&track, hit);
+    match yt_search(state, &query).await {
+        Ok(found) => {
+            if let Some(hit) = music_core::matching::best_match(track, &found) {
+                return Some(merge_tracks(track, hit));
+            }
         }
+        Err(e) if music_connectors::refused(&e) => return None,
+        Err(_) => {}
     }
-    track
+    match video_search(state, &query).await {
+        Ok(found) => {
+            let videos: Vec<Track> = found.into_iter().filter(|(_, m)| *m != Musicness::NotMusic).map(|(t, _)| t).collect();
+            if let Some(hit) = music_core::matching::best_match(track, &videos) {
+                return Some(merge_tracks(track, hit));
+            }
+        }
+        Err(e) if music_connectors::refused(&e) => return None,
+        Err(_) => {}
+    }
+    Some(track.clone())
 }
 
 /// Trust boundary: a search hit from the UI. Catalog ids only (none yet: a song the Music Detector named without a
