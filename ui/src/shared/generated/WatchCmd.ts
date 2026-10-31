@@ -18,6 +18,10 @@ ending: boolean,
  */
 bands: boolean, 
 /**
+ * The 60 Hz visualizer frames wanted (`LiveReport::viz`).
+ */
+viz: boolean, 
+/**
  * Adaptive Sound gain a new song starts from, dB (the last song's).
  */
 gain: number | null, 

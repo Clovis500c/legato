@@ -12,4 +12,8 @@ end: number | null,
 /**
  * The music began here (s of the video), after silence from the start: a late start.
  */
-lead: number | null, };
+lead: number | null, 
+/**
+ * Visualizer frame (`music_dsp::viz::Frame::pack`, base64), 60 per second while it listens.
+ */
+viz?: string | null, };
