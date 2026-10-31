@@ -1,4 +1,5 @@
 import { api } from '../shared/api'
+import { reportError } from '../shared/diag'
 import { preloadPages } from './pages'
 
 /**
@@ -8,21 +9,31 @@ import { preloadPages } from './pages'
  * (Rust also starts them after a few seconds). Returns cleanup.
  */
 export function startDeferred(): () => void {
-  let stop = () => {}
+  const offs: Array<() => void> = []
   let dead = false
-  void Promise.all([import('../features/addons/discord'), import('../features/sources/lastfm'), import('../features/syncmode/syncmode'), import('../features/plugins/host')])
-    .then(([discord, lastfm, sync, plugins]) => {
-      if (dead) return
-      const offs = [discord.startDiscord(), lastfm.startLastfm(), sync.startSyncMode(), plugins.startPlugins()]
-      stop = () => offs.forEach((f) => f())
-    })
-    .catch(() => {})
-    .finally(() => {
-      void api.appReady().catch(() => {})
-      preloadPages()
-    })
+  // Each module on its own: one chunk that fails to load or start leaves the other three running. Reported, not silent.
+  const starts: Array<[string, () => Promise<() => void>]> = [
+    ['Discord', () => import('../features/addons/discord').then((m) => m.startDiscord())],
+    ['Last.fm', () => import('../features/sources/lastfm').then((m) => m.startLastfm())],
+    ['Sync Mode', () => import('../features/syncmode/syncmode').then((m) => m.startSyncMode())],
+    ['Plugins', () => import('../features/plugins/host').then((m) => m.startPlugins())],
+  ]
+  void Promise.allSettled(
+    starts.map(async ([name, start]) => {
+      try {
+        const off = await start()
+        if (dead) off()
+        else offs.push(off)
+      } catch (e) {
+        reportError('startup', e, `${name} did not start`)
+      }
+    }),
+  ).finally(() => {
+    void api.appReady().catch(() => {})
+    preloadPages()
+  })
   return () => {
     dead = true
-    stop()
+    offs.splice(0).forEach((f) => f())
   }
 }
