@@ -32,7 +32,50 @@ SoundCloud through yt-dlp, imports from Spotify, Apple Music, Deezer, YouTube Mu
   plain words ("Apple changed its page: paste the songs as text instead") and point to Import a list of songs.
 - **Done when**: album and public playlist import, editorial playlists too (`pl.` ids); tests on saved answers.
 
+## Connect Spotify
+
+- **Sees**: Add music › Connect Spotify. Spotify's own page opens in an app window, any free account signs in. Legato shows
+  the playlists and Liked Songs with covers and counts; ticks some; Import, "120 of 300", Cancel. A second import refreshes.
+- **How**: `spotify_web.rs` already opens the signed-in player in its own window, sign-in on Spotify's page, cookies in
+  WebView2. A script there opens each list and reads the rows it draws (`data-testid="tracklist-row"`: title, artists,
+  album, duration, `/track/` link), scrolling at a person's pace (the list is virtual: 25 rows drawn of 50). The songs
+  reach `links.rs`' matching. To design: how they get back, as that window has no IPC on purpose (a capability scoped to
+  one command, or Rust reading WebView2's own view of the page). Liked Songs is `/collection/tracks`; the list of
+  playlists comes from the sidebar. Both unchecked: signed-in pages need the user's account.
+- **Rules**: never the token, never the TOTP, no request of our own to Spotify, no cookie read beyond "signed in", nothing
+  sent anywhere. Metadata only. Spotify's User Guidelines ban scraping and can close an account: the app says so before
+  the first import, in plain words. Privacy row. The user's go first, noted in CLAUDE.md.
+- **Needs**: the matching of `links.rs`; "paste" below as the fallback when the page changes.
+- **Effort**: M-L. **Risk**: the user's account (no ban found, none ruled out); selectors that change (fail in plain words,
+  point to the guided copy).
+- **Done when**: a free account imports a private playlist and Liked Songs, 300 songs, by clicks alone.
+
+## Spotify private playlists and Liked Songs, free
+
+- **Sees**: Add music › Spotify: selects all in Spotify's desktop app, copies, pastes into Legato; or opens Spotify's data
+  export. The songs come in as playlists of theirs, playing through the usual matches. No key, no Premium, no sign-in.
+- **How** (paste): a block of `open.spotify.com/track/…` lines (or `spotify:track:` URIs) recognised in Add music and by
+  Ctrl+V. `spotify_embed.rs`: `parse_link` takes tracks too, `open.spotify.com/embed/track/{id}` gives `title`, `artists`,
+  `duration` in `__NEXT_DATA__` (read on a real track 2026-10-31; no ISRC, so title + artist + duration matching). Few at
+  a time, retries, progress and Cancel as in `links.rs`. Spotify's own clipboard gives no playlist name: ask for one.
+- **How** (export): the zip or `Playlist1.json` opened in Add music; each playlist under its name. Field names from a
+  real export, none at hand yet. `YourLibrary.json` for Liked Songs if it holds them.
+- **Rules**: metadata only. No sign-in, no cookie, no token; the web session stays out (`docs/playback.md` › Spotify
+  without keys: its token needs a secret hidden in the player's code, the user said no on 2026-10-16). Privacy row:
+  the embed page is already listed for public links, say it now serves pasted songs too. Secrets: none.
+- **Needs**: nothing. **First**: try the copy on the user's PC. The guide found is a community moderator's, undated; a
+  thread says pasting several links *into* a playlist broke once, which isn't our direction.
+- **Effort**: M (paste), S-M (export). **Risk**: a rate limit on many embed pages (unknown; one real request gave a 504);
+  a change of the clipboard format or of the embed page; the export may leave private playlists out.
+- **Done when**: a 300-song private playlist and Liked Songs imported from a free account; mockito tests on saved pages.
+
 ## SoundCloud link
+
+Terms read 2026-10-31, before anything else here: the [API terms](https://developers.soundcloud.com/docs/api/terms-of-use)
+bar scraping, ask for a registered app and bar a playback experience that mixes SoundCloud's content with other services'
+(so a widget beside YouTube, even official, is doubtful). The site's terms restrict players used to build a streaming
+service: only a summary was read, the page doesn't load outside a browser. Order: metadata import first, like Deezer;
+playback only on the user's go, after reading the full text.
 
 - **Sees**: pastes a SoundCloud track, playlist ("set") or user likes link; the songs come in like a Spotify import,
   and SoundCloud-only tracks (remixes, unreleased) play from SoundCloud itself.

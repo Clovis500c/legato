@@ -4,7 +4,7 @@ Open work only. Tick a line when it lands; drop ticked lines once a release ship
 (phases 1 to 8, the big update, the redesign, the product pass, roadmap milestones 0 to 2, the user's choices along the
 way) is in git: `git log -p docs/notes/plan-v2.md`, and in the release notes.
 
-Stable: v1.1.479 (2026-10-31). Next: milestone 3, Lyrics.
+Stable: v1.1.479 (2026-10-31). Next: milestone 3, Platforms.
 
 Every idea here stays: the user wants them all built in the end, just later (user's choice 2026-10-31). The roadmap sets
 the order; a line leaves only when it ships or the user drops it.
@@ -22,166 +22,217 @@ Each line below is detailed (what the user sees, how, rules, effort, done when) 
 
 ### Roadmap (order to build in; effort S = one session, M = a few, L = many)
 
-Pick from the top. Each milestone is one release on the Stable channel; workflow items that unblock others go first.
-Milestones 0 (Groundwork), 1 (First impression) and 2 (Sound and sight) shipped together as Stable 1.1, so the version
-numbers below moved up by one.
+Pick from the top. Each milestone is one release on the Stable channel; workflow items that unblock others go first, and
+a quick win from Features › High can go in any release. Milestones 0 (Groundwork), 1 (First impression) and 2 (Sound and
+sight) shipped together as Stable 1.1.
 
 | # | Milestone | What lands | Effort | Why now |
 |---|---|---|---|---|
-| 3 | Lyrics (1.2) | Word-by-word lyrics, translation, find by a line, lyrics saved into files and tapped live | M | Riff and Cider's most loved screen |
-| 4 | Your own music (1.3) | Jellyfin / Navidrome / Subsonic, ReplayGain, batch tag editor + MusicBrainz, ratings, column view, ListenBrainz, playlist folders | L | MusicBee / foobar / Plexamp users switch for this |
-| 5 | Smart (1.4) | Local sonic analysis, song / artist radio, sweet fades, path between artists, auto-DJ, smart shuffle, Wrapped | L | What no free desktop app does without a server |
-| 6 | Around the house (1.5) | Phone remote, cast (DLNA / Chromecast), listen together on the LAN, pick up on the other PC | L | Turns a player into a home system |
-| 7 | Windows polish (1.6) | Command palette, taskbar buttons + Jump List, headphones / call pause, alarm, OBS overlay, PiP, drag from Explorer | M | Small, many, each a reason to stay |
-| 8 | Everywhere (2.0) | macOS and Linux builds, Android companion | L | Riff's one platform lead |
+| 3 | Platforms (1.2) | Spotify private playlists and Liked Songs for free (Connect Spotify, guided copy, data export), SoundCloud links, playlists as files, import from other apps | M | The user's ask; a library that can't move is the first reason not to switch |
+| 4 | Lyrics (1.3) | Word-by-word lyrics, translation, find by a line, lyrics saved into files and tapped live | M | Riff and Cider's most loved screen |
+| 5 | Your own music (1.4) | Jellyfin / Navidrome / Subsonic, ReplayGain, batch tag editor + MusicBrainz, ratings, column view, ListenBrainz, playlist folders | L | MusicBee / foobar / Plexamp users switch for this |
+| 6 | Smart (1.5) | Local sonic analysis, song / artist radio, sweet fades, path between artists, auto-DJ, smart shuffle, Wrapped | L | What no free desktop app does without a server |
+| 7 | Around the house (1.6) | Phone remote, cast (DLNA / Chromecast), listen together on the LAN, pick up on the other PC | L | Turns a player into a home system |
+| 8 | Windows polish (1.7) | Command palette, taskbar buttons + Jump List, headphones / call pause, alarm, OBS overlay, PiP, drag from Explorer | M | Small, many, each a reason to stay |
+| 9 | Everywhere (2.0) | macOS and Linux builds, Android companion | L | Riff's one platform lead |
 
-Kept apart (need the user's call or an outside step): Spotify playback paths, LLM playlists with a user key, SoundCloud
-playback (its terms), concerts (an API's terms), trademark search.
+Kept apart (need the user's call or an outside step): Spotify playback paths, Spotify's web session, LLM playlists with a
+user key, SoundCloud playback and search (its terms), concerts (an API's terms), trademark search.
 
-**1. Catch up with Riff (what a Riff user would miss)**
-- [ ] Paste a SoundCloud link: imported; plays in SoundCloud's official embedded widget (no audio taken).
-- [ ] SoundCloud search beside YouTube's (widget playback, its terms checked first).
-- [ ] Lyrics translation in the panel (a service sends text: add the website's privacy row first).
-- [ ] Cover colours beyond the surfaces: "Whole app in the cover's color" (`appTint`, `ambient.ts`) tints the surfaces with
-      one average colour; a small palette for the accent and the selection is left (Theme Studio choice).
-- [ ] Squiggly / waveform progress bar as a progress style choice.
+### Platforms (milestone 3, user's ask 2026-10-31)
 
-**2. Beat Riff (things it can't or won't do)**
-- [ ] Personal servers: Jellyfin, Navidrome / Subsonic, Plex (the user's own music, streamed legally, keychain login).
-- [ ] Cast: DLNA / UPnP speakers and Chromecast for local files and personal servers.
-- [ ] Listen together on the local network: one PC leads, the others follow (Sync Mode's code, no server).
-- [ ] Phone remote: a page served on the LAN (QR code) to pause, skip, see the queue (Plexamp-like).
-- [ ] Tag editor (one file already: right-click › Edit song info, `src-tauri/src/tags.rs`): several files at once,
-      track numbers, year, genre, MusicBrainz lookup that fills them.
-- [ ] ReplayGain / loudness normalisation for local files (reads the tags, or measures once and stores it).
-- [ ] Equalizer presets per output device (headphones vs speakers) and AutoEQ profiles for known headphones.
-- [ ] Exclusive WASAPI output / bit-perfect for local files (foobar's audiophiles).
-- [ ] Gapless + crossfade that knows albums (never crossfade inside a live or continuous album).
+What the services allow, read on 2026-10-31 (specs in [ideas/catch-up.md](ideas/catch-up.md)):
 
-**3. Best overall (what the big ones have)**
-- [ ] "Wrapped": a yearly / monthly recap from our stats, shareable as a picture.
-- [ ] Artist / album / playlist radio and endless autoplay (song radio already there: `radio.ts`).
-- [ ] Smart shuffle (skips recently played, spreads artists) and "Daylist"-style mixes by time of day.
-- [ ] Genre / year / BPM / key tags stored (mixes, smart playlists, DJ-like transitions by BPM).
-- [ ] Podcasts by RSS (open feeds only: no platform audio taken), resume per episode, speed.
-- [ ] Internet radio stations (Radio Browser's open directory).
-- [ ] Release radar: new releases from artists in the library (YouTube Music / MusicBrainz).
-- [ ] Concerts near the user from followed artists (a public API with no account; privacy row).
-- [ ] Mobile companion (Android first): the library from Sync Mode's folder, remote control.
-- [ ] macOS and Linux builds (media panel, detector, tray per OS).
-- [ ] Accessibility pass: full keyboard, screen reader labels, contrast AA everywhere, reduced motion.
-- [ ] Onboarding import from other apps: MusicBee / iTunes library XML, Spotify / YouTube likes in one go.
+- **Spotify, official API:** reads a user's own playlists, but a Development Mode app needs a Premium owner, so never free
+  ([migration guide](https://developer.spotify.com/documentation/web-api/tutorials/february-2026-migration-guide)).
+- **Spotify, web session:** the token needs the TOTP hidden in the web player's code. Rebuilding it defeats a technical
+  protection: never. Reading what the signed-in player shows needs neither that token nor that secret (each row has its
+  title, artists, album, duration and track link: checked on a public playlist, signed out, 25 rows drawn of 50, so it
+  scrolls). But Spotify's [User Guidelines](https://www.spotify.com/us/legal/user-guidelines/) ban scraping, by hand or
+  automated, and a breach can close the account (no such ban found in a search). The user took that risk on 2026-10-31,
+  and the app says it before the first connection.
+- **SoundCloud:** its [API terms](https://developers.soundcloud.com/docs/api/terms-of-use) bar scraping, require a
+  registered app, and bar a playback experience that mixes its content with other services'. Its site terms restrict
+  players used to build a streaming service (read as a summary only: the full page didn't load). So links imported
+  as metadata first; playback and search are the user's call.
 
-**4. Small things nobody else does well on Windows**
-- [ ] Command palette (Ctrl+K): any song, page, setting or action in one box.
-- [ ] Jump List (recent playlists, Shuffle all); thumbnail buttons already there (`thumbbar.rs`).
-- [ ] Pause when headphones are unplugged or Bluetooth drops; pause during a call (Windows' communication ducking).
-- [ ] Pick up on the other PC: Sync Mode carries "now playing + position", one click resumes there.
-- [ ] Alarm: wake up with a playlist (fade in), works from the tray.
-- [ ] Focus / workout sessions: a timer, no-lyrics or high-BPM mix, a summary after.
-- [ ] Now-playing overlay for streamers (a local page OBS can show, the app's theme).
-- [ ] Drag files or folders from Explorer onto the window: added (or played with Shift). Today dropped audio files play
+- [ ] `M-L` Connect Spotify, the friendly way (user's go 2026-10-31; built, `docs/playback.md`): a button opens Spotify's
+      own page in an app window, any free account signs in, Legato lists the playlists and Liked Songs with their covers, the
+      user ticks some, Import, progress. Read from the rows the page shows, at a person's pace; only the songs are kept; a
+      second import refreshes. Left: a real signed-in try (the column's selectors, Liked Songs, a window left behind others).
+- [ ] `S` Spotify's "private or doesn't exist" message says what works instead (the routes here).
+- [ ] `S` Playlists in and out as files: M3U / M3U8 / XSPF / CSV import and export (paths for local, links for streams).
+- [ ] `M` Spotify private playlists and Liked Songs by paste, free, no sign-in: Ctrl+A then Ctrl+C in Spotify's desktop app
+      copies `open.spotify.com/track/…` lines (a Spotify community moderator's guide; try it on the user's PC first).
+      Legato takes those lines in Add music, names each song from its public embed page (title, artists, duration: checked
+      on a real track, `spotify_embed.rs` reads playlists and albums only today) and imports through the usual matching.
+      Also passes the embed's 100-song limit on public playlists. One request per song: few at a time, with retries (one
+      real request gave a 504). The safe route beside Connect Spotify, guided: Add music › Spotify shows the two keys and
+      catches the copy by itself, no paste box.
+- [ ] `S-M` Spotify's data export (Privacy settings › Download your data): open the zip or `Playlist1.json` in Add music,
+      each playlist comes in under its name. Official and free; takes days to arrive. Whether private playlists are in it
+      is unconfirmed: needs a real export, also to write the tests from.
+- [ ] `M` Paste a SoundCloud link: imported as metadata and matched like a Deezer link (oEmbed, then the set's list); songs
+      with no match are reported, nothing plays from SoundCloud.
+- [ ] `M` Onboarding import from other apps: MusicBee / iTunes library XML, Spotify / YouTube likes in one go.
+- [ ] `S` per service: public playlist links from more services (TIDAL, Qobuz, Amazon Music), same flow as Deezer. Nothing
+      checked yet.
+- [ ] `L` SoundCloud playback in its official embedded widget (no audio taken). User's call first: see its terms above.
+- [ ] `M` SoundCloud search beside YouTube's (widget playback, its terms checked first). The only keyless way is the
+      site's own client id, which its API terms rule out: not advised.
+
+### Features, sorted (user's ask 2026-10-31)
+
+Three groups, easiest first inside each. The tag is the effort from the specs (a guess where there's no spec yet).
+Importance is a first estimate (2026-10-31), the user moves lines as they like.
+
+- **High**: most listeners would notice it, or it removes a reason not to switch.
+- **Medium**: a real gain for one kind of listener.
+- **Low**: niche or fun, for later.
+
+**High**
+- [ ] `S` Drag files or folders from Explorer onto the window: added (or played with Shift). Today dropped audio files play
       as a queue (`PlayerBar.tsx`), nothing is added and folders do nothing.
-- [ ] Find a song by a line of its lyrics (LRCLIB search), and hum to search if AudD's free tier allows it.
-- [ ] Credits and artist pages: who wrote / produced (MusicBrainz), a short bio (Wikipedia), links out.
-- [ ] Playlist folders, pinned playlists, generated playlist covers (a 2×2 of the songs' covers).
-- [ ] Same loudness across sources: YouTube vs local vs Spotify levelled by the Adaptive Sound meter.
-- [ ] Backup / restore the whole library to one file (playlists, likes, edits, stats), outside Sync Mode.
-- [ ] Hide explicit songs (a filter, YouTube Music's flag when there is one).
+- [ ] `S` Gapless + crossfade that knows albums (never crossfade inside a live or continuous album).
+- [ ] `S` Artist / album / playlist radio and endless autoplay (song radio already there: `radio.ts`).
+- [ ] `S` Playlist folders, pinned playlists, generated playlist covers (a 2×2 of the songs' covers).
+- [ ] `S` Backup / restore the whole library to one file (playlists, likes, edits, stats), outside Sync Mode.
+- [ ] `S-M` Smart shuffle (skips recently played, spreads artists) and "Daylist"-style mixes by time of day.
+- [ ] `S-M` Command palette (Ctrl+K): any song, page, setting or action in one box.
+- [ ] `S-M` Pause when headphones are unplugged or Bluetooth drops; pause during a call (Windows' communication ducking).
+- [ ] `S-M` Same loudness across sources: YouTube vs local vs Spotify levelled by the Adaptive Sound meter.
+- [ ] `M` Word-by-word lyrics when the source has them (enhanced LRC), background vocals apart, Apple-style animated lines
+      (Cider, Spicetify's Beautiful Lyrics).
+- [ ] `M` ReplayGain / loudness normalisation for local files (reads the tags, or measures once and stores it).
+- [ ] `M` Phone remote: a page served on the LAN (QR code) to pause, skip, see the queue (Plexamp-like).
+- [ ] `M` Accessibility pass: full keyboard, screen reader labels, contrast AA everywhere, reduced motion.
+- [ ] `M` Library health: missing files, YouTube videos gone private (with "Find another version", `alternative_videos`),
+      songs without covers or tags, one page to fix them.
+- [ ] `L` Personal servers: Jellyfin, Navidrome / Subsonic, Plex (the user's own music, streamed legally, keychain login).
+- [ ] `L` macOS and Linux builds (media panel, detector, tray per OS).
+
+**Medium**
+- [ ] `S` Find a song by a line of its lyrics (LRCLIB search), and hum to search if AudD's free tier allows it.
+- [ ] `S` Jump List (recent playlists, Shuffle all); thumbnail buttons already there (`thumbbar.rs`).
+- [ ] `S` Auto-DJ that keeps the queue going from the library with rules (MusicBee).
+- [ ] `S` Scrobble to ListenBrainz too (open, no key), beside Last.fm.
+- [ ] `S` Community: a Discord server or GitHub Discussions linked from About, "good first issue" labels, a showcase of
+      themes on the website.
+- [ ] `S-M` Pick up on the other PC: Sync Mode carries "now playing + position", one click resumes there.
+- [ ] `S-M` Rating with stars or half stars (local and synced), smart playlists on it.
+- [ ] `S-M` Discovery from open sources: new releases of followed artists, community picks (r/listentothis' public JSON),
+      shown as cards to play from YouTube.
+- [ ] `S-M` Privacy page in the app: every host Legato talked to today and why (from the Rust gateway's log), matching the
+      website's rows.
+- [ ] `S-M` Watch-page player: hide YouTube's own playlist panel (its RDMM "My Mix") and stop its autoplay into a Mix
+      (`crates/shield/src/watch.js`).
+- [ ] `M` Lyrics translation in the panel (a service sends text: add the website's privacy row first).
+- [ ] `M` Tag editor (one file already: right-click › Edit song info, `src-tauri/src/tags.rs`): several files at once,
+      track numbers, year, genre, MusicBrainz lookup that fills them.
+- [ ] `M` Equalizer presets per output device (headphones vs speakers) and AutoEQ profiles for known headphones.
+- [ ] `M` "Wrapped": a yearly / monthly recap from our stats, shareable as a picture.
+- [ ] `M` Genre / year / BPM / key tags stored (mixes, smart playlists, DJ-like transitions by BPM).
+- [ ] `M` Mixes: genre / year tags (not stored yet), Last.fm "Discoveries" (user's key); "Never in mixes" on a discovered
+      song (not in the library: no row to hold the choice).
+- [ ] `M` Internet radio stations (Radio Browser's open directory).
+- [ ] `M` Release radar: new releases from artists in the library (YouTube Music / MusicBrainz).
+- [ ] `M` Credits and artist pages: who wrote / produced (MusicBrainz), a short bio (Wikipedia), links out.
+- [ ] `M` Sweet fades (Plexamp): crossfade length picked per pair from the songs' ends (loudness, silence, tempo).
+- [ ] `M` Picture-in-picture: the video or cover floating above other windows, small controls.
+- [ ] `M` Classic skins: a compact "mini" layout (Winamp-like) with the user's theme; a column view of the library with
+      chosen columns, sorts and groupings (foobar2000, MusicBee).
+- [ ] `M` Long YouTube mixes and DJ sets split by their chapters (or timestamps in the description / pinned comment):
+      each part a song in Up next, skip within the video; Music Detector names unlabelled parts on request.
+- [ ] `M` Output devices: switch from the player bar, remember per device (volume, EQ preset), follow Windows' default.
+- [ ] `M` Right-to-left languages (Arabic, Hebrew: mirrored layout) and community translations (Weblate), more languages.
+- [ ] `M-L` Listen together on the local network: one PC leads, the others follow (Sync Mode's code, no server).
+- [ ] `L` Cast: DLNA / UPnP speakers and Chromecast for local files and personal servers.
+- [ ] `L` Sonic analysis, ours and local: features (tempo, key, energy, brightness, mood) computed from local files, and
+      from what plays live for streams (the meter already listens; measured, not extracted), stored per song. Feeds
+      "similar songs", song radio, sweet fades, the path between artists (Plexamp's Sonic Analysis needs a server).
+- [ ] `L` Mobile companion (Android first): the library from Sync Mode's folder, remote control.
+
+**Low**
+- [ ] `S` Squiggly / waveform progress bar as a progress style choice.
+- [ ] `S` Focus / workout sessions: a timer, no-lyrics or high-BPM mix, a summary after.
+- [ ] `S` Now-playing overlay for streamers (a local page OBS can show, the app's theme).
+- [ ] `S` Hide explicit songs (a filter, YouTube Music's flag when there is one).
+- [ ] `S` Bookmarks inside a song (a moment to come back to, a note), Spicetify's Bookmark.
+- [ ] `S` Full cover display: the cover alone, huge, title and progress over it (Spicetify's Full App Display); a clock
+      option, for a second screen.
+- [ ] `S` "Aural fixations": songs you played a lot at one time of your life, brought back (from our own history).
+- [ ] `S` Sleep timer "at the end of this album" ("this song" exists) and a fade over the last minutes.
+- [ ] `S` Share a song as a picture card (cover, title, a lyric line, the theme's colours) for social apps.
+- [ ] `S` Spotify previews.
+- [ ] `S-M` Alarm: wake up with a playlist (fade in), works from the tray.
+- [ ] `S-M` Cover colours beyond the surfaces: "Whole app in the cover's color" (`appTint`, `ambient.ts`) tints the surfaces
+      with one average colour; a small palette for the accent and the selection is left (Theme Studio choice).
+- [ ] `S-M` Volume: a perceptual (dB) curve (it would make every saved volume louder or quieter; local and YouTube stay level
+      because both are linear), and per-source volume memory (needs its own setting and a switch rule).
+- [ ] `S-M` Guest DJ-style picks between songs ("because you liked …"), local and explainable, no cloud.
+- [ ] `S-M` Voice control beyond search: "next", "like this", "play my running playlist" (WinRT speech already there).
+- [ ] `M` Concerts near the user from followed artists (a public API with no account; privacy row).
+- [ ] `M` Lyrics saved into local files and editable (Guayadeque, MusicBee): fix a line, timing tapped live.
+- [ ] `M` A path between two artists (Plexamp's "Sonic Adventure"): a mix that walks from one to the other.
+- [ ] `M` Describe a playlist in words ("calm rainy Sunday, no lyrics"): matched against the library's tags and sonic
+      features locally; an LLM only with the user's own key (like Last.fm's), privacy row first.
+- [ ] `M` Audiobooks from local files (m4b chapters, resume per book, speed, sleep at chapter end), apart from music.
+- [ ] `M` Stream Deck plugin and an Xbox Game Bar widget (play / skip / like / now playing) over the local hotkeys.
+- [ ] `M` Blind test game: snippets from the library or a playlist, guess title / artist, scores, local multiplayer
+      on one screen or over the LAN code.
+- [ ] `M` Theme and plugin gallery without a server: an index file in a GitHub repo, browsed from Add-ons, installed after
+      the usual permission review; authors submit by pull request.
+- [ ] `M` Sharing: remote wormhole words (needs the user's OK on the public relay), webcam QR scanning, `musicapp://` links
+      clicked in a browser (deep-link registration).
+- [ ] `M-L` Practice mode for musicians: A-B loop, slow down without pitch change (Live Editor has it), key and chords shown,
+      count-in / metronome on the song's tempo.
+- [ ] `M-L` Profiles on one PC (each person's library, likes, history and Last.fm), switched from the top bar.
+- [ ] `L` Exclusive WASAPI output / bit-perfect for local files (foobar's audiophiles).
+- [ ] `L` Podcasts by RSS (open feeds only: no platform audio taken), resume per episode, speed.
+- [ ] `L` Living-room mode: big UI driven by a gamepad or the arrow keys (10-foot layout), for a PC on a TV.
+- [ ] `L` Media panel off Windows.
 
 ## Visualizer v2 (user's ask 2026-10-30: more realistic, more detailed)
 
 First cut on Stable since 1.1 (`docs/playback.md`): 1/6-octave bands at 60 Hz from both twins, one canvas in a worker
 drawn at 30 fps, eight looks (LED, Bars, Mirror, Peaks, Wave, Radial, VU needles, Spectrogram), the strip under the cover
-and full screen on V. The lines left are in no milestone yet.
+and full screen on V. The lines left are in no milestone yet. Sorted like the features; both twins stay alike (`crates/dsp`
+and `live.js`), and a look waits for the data it needs. Each look has a few settings: bands, smoothing, peak hold,
+colours, mirror, reflection.
 
-**Data (both twins alike: `crates/dsp` and `live.js`)**
-- [ ] 1/3 and 1/12 octave bands (31 and 120, ANSI centers) beside today's 1/6 (61 bands).
-- [ ] Weighting (A or ITU-R 468) and a +3 dB/octave tilt option, so music looks level instead of bass-heavy.
-- [ ] Time-domain blocks in the frames (L/R, 1024 samples, as i16) for scope and vectorscope. Left / right bands, rms and
-      peak are in.
-- [ ] Beat and onset detection (spectral flux on low and mid bands, tempo estimate): kicks drive pulses, flashes, camera.
-      The radial ring's pulse is Moving cover's own until then.
-- [ ] Loudness stream (momentary / short-term LUFS, true peak) already measured by Adaptive Sound: exposed for meters.
-- [ ] Unit tests: a sine lights its 1/12-octave band, a pink noise reads flat with the tilt, a click track gives its BPM.
-      (The 1/6-octave sine, left-only, the twins' shared fixture and the 10 Hz strobe are in.)
-
-**Renderer**
-- [ ] Sizes left: a big backdrop behind Now Playing, the mini player, the OBS overlay page. A click on the visualizer
-      could cycle its look (today right-click picks it, a click does nothing).
-- [ ] Colours from the theme or the cover (`coverTint.ts`): gradient along frequency, by level, or the cover's palette.
-      (Today the theme's text colour as read where it is drawn, so Now Playing's cover tint applies; no colour choices.)
-
-**Styles (each with a few settings: bands, smoothing, peak hold, colours, mirror, reflection)**
-- [ ] Spectrum bars, realistic: 1/3 and 1/12 octave, reflection on a glossy floor, frequency and dB scales on hover. (LED
+**High**
+- [ ] `S` Weighting (A or ITU-R 468) and a +3 dB/octave tilt option, so music looks level instead of bass-heavy.
+- [ ] `S` Spectrum bars, realistic: 1/3 and 1/12 octave, reflection on a glossy floor, frequency and dB scales on hover. (LED
       segments with held, falling caps are in, 1/6 octave.)
-- [ ] Smooth spectrum curve (filled area, glow), stereo overlay (left and right in two colours).
-- [ ] VU meters: the PPM option and other skins. (Two needles with VU ballistics, the peak LED, the theme's ink are in.)
-- [ ] Loudness meter: LUFS bars (momentary, short-term, integrated), true peak, dynamic range of the song.
-- [ ] Oscilloscope: the waveform, triggered on zero crossings so it stands still, phosphor afterglow.
-- [ ] Vectorscope / goniometer (left vs right, Lissajous) with a correlation meter: stereo width at a glance.
-- [ ] Spectrogram colour maps as an opt-in (magma, viridis; today the theme's ink with opacity), WebGL.
-- [ ] Spectrum 3D: a terrain of the last seconds flying towards the camera (WebGL).
-- [ ] Particles on the beat (from the cover's colours), with the cover's blur behind (Plexamp-like backdrop).
-- [ ] Song waveform on the progress bar for local files (computed once from the file, cached; not for streams).
-- [ ] Preset engine, written from scratch: equations per frame / per vertex driven by bands and beat (MilkDrop-style
-      ideas), presets as small JSON shared like themes; `.milk` files the user owns loaded if a reader stays simple.
-- [ ] Visualizer API for plugins (`crates/plugins`): a plugin gets bands, beat and loudness, draws with a restricted
+- [ ] `S` Colours from the theme or the cover (`coverTint.ts`): gradient along frequency, by level, or the cover's palette.
+      (Today the theme's text colour as read where it is drawn, so Now Playing's cover tint applies; no colour choices.)
+- [ ] `S` Sizes left: a big backdrop behind Now Playing, the mini player, the OBS overlay page. A click on the visualizer
+      could cycle its look (today right-click picks it, a click does nothing).
+- [ ] `S-M` 1/3 and 1/12 octave bands (31 and 120, ANSI centers) beside today's 1/6 (61 bands).
+- [ ] `M` Beat and onset detection (spectral flux on low and mid bands, tempo estimate): kicks drive pulses, flashes, camera.
+      The radial ring's pulse is Moving cover's own until then.
+
+**Medium**
+- [ ] `S` Loudness stream (momentary / short-term LUFS, true peak) already measured by Adaptive Sound: exposed for meters.
+- [ ] `S` Loudness meter: LUFS bars (momentary, short-term, integrated), true peak, dynamic range of the song.
+- [ ] `S` Smooth spectrum curve (filled area, glow), stereo overlay (left and right in two colours).
+- [ ] `S` Oscilloscope: the waveform, triggered on zero crossings so it stands still, phosphor afterglow.
+- [ ] `S` Vectorscope / goniometer (left vs right, Lissajous) with a correlation meter: stereo width at a glance.
+- [ ] `S` Unit tests: a sine lights its 1/12-octave band, a pink noise reads flat with the tilt, a click track gives its BPM.
+      (The 1/6-octave sine, left-only, the twins' shared fixture and the 10 Hz strobe are in.)
+- [ ] `S-M` Time-domain blocks in the frames (L/R, 1024 samples, as i16) for scope and vectorscope. Left / right bands, rms and
+      peak are in.
+- [ ] `M` Particles on the beat (from the cover's colours), with the cover's blur behind (Plexamp-like backdrop).
+- [ ] `M` Song waveform on the progress bar for local files (computed once from the file, cached; not for streams).
+
+**Low**
+- [ ] `S` VU meters: the PPM option and other skins. (Two needles with VU ballistics, the peak LED, the theme's ink are in.)
+- [ ] `S` Spectrogram colour maps as an opt-in (magma, viridis; today the theme's ink with opacity), WebGL.
+- [ ] `M` Spectrum 3D: a terrain of the last seconds flying towards the camera (WebGL).
+- [ ] `M` Visualizer API for plugins (`crates/plugins`): a plugin gets bands, beat and loudness, draws with a restricted
       2D canvas command list (no raw access).
-
-## Ideas loved in independent players (checked against our rules)
-
-- [ ] Volume: a perceptual (dB) curve (it would make every saved volume louder or quieter; local and YouTube stay level
-      because both are linear), and per-source volume memory (needs its own setting and a switch rule).
-- [ ] Word-by-word lyrics when the source has them (enhanced LRC), background vocals apart, Apple-style animated lines
-      (Cider, Spicetify's Beautiful Lyrics).
-- [ ] Sweet fades (Plexamp): crossfade length picked per pair from the songs' ends (loudness, silence, tempo).
-- [ ] A path between two artists (Plexamp's "Sonic Adventure"): a mix that walks from one to the other.
-- [ ] Guest DJ-style picks between songs ("because you liked …"), local and explainable, no cloud.
-- [ ] Auto-DJ that keeps the queue going from the library with rules (MusicBee).
-- [ ] Picture-in-picture: the video or cover floating above other windows, small controls.
-- [ ] Classic skins: a compact "mini" layout (Winamp-like) with the user's theme; a column view of the library with
-      chosen columns, sorts and groupings (foobar2000, MusicBee).
-- [ ] Lyrics saved into local files and editable (Guayadeque, MusicBee): fix a line, timing tapped live.
-- [ ] Scrobble to ListenBrainz too (open, no key), beside Last.fm.
-- [ ] Rating with stars or half stars (local and synced), smart playlists on it.
-- [ ] Sonic analysis, ours and local: features (tempo, key, energy, brightness, mood) computed from local files, and
-      from what plays live for streams (the meter already listens; measured, not extracted), stored per song. Feeds
-      "similar songs", song radio, sweet fades, the path between artists (Plexamp's Sonic Analysis needs a server).
-- [ ] Describe a playlist in words ("calm rainy Sunday, no lyrics"): matched against the library's tags and sonic
-      features locally; an LLM only with the user's own key (like Last.fm's), privacy row first.
-- [ ] Bookmarks inside a song (a moment to come back to, a note), Spicetify's Bookmark.
-- [ ] Practice mode for musicians: A-B loop, slow down without pitch change (Live Editor has it), key and chords shown,
-      count-in / metronome on the song's tempo.
-- [ ] Full cover display: the cover alone, huge, title and progress over it (Spicetify's Full App Display); a clock
-      option, for a second screen.
-- [ ] Discovery from open sources: new releases of followed artists, community picks (r/listentothis' public JSON),
-      shown as cards to play from YouTube.
-- [ ] "Aural fixations": songs you played a lot at one time of your life, brought back (from our own history).
-
-**Last batch: areas not covered above (after this the list stops growing; ideas come from real use)**
-- [ ] Long YouTube mixes and DJ sets split by their chapters (or timestamps in the description / pinned comment):
-      each part a song in Up next, skip within the video; Music Detector names unlabelled parts on request.
-- [ ] Audiobooks from local files (m4b chapters, resume per book, speed, sleep at chapter end), apart from music.
-- [ ] Playlists in and out as files: M3U / M3U8 / XSPF / CSV import and export (paths for local, links for streams).
-- [ ] Library health: missing files, YouTube videos gone private (with "Find another version", `alternative_videos`),
-      songs without covers or tags, one page to fix them.
-- [ ] Output devices: switch from the player bar, remember per device (volume, EQ preset), follow Windows' default.
-- [ ] Sleep timer "at the end of this album" ("this song" exists) and a fade over the last minutes.
-- [ ] Profiles on one PC (each person's library, likes, history and Last.fm), switched from the top bar.
-- [ ] Living-room mode: big UI driven by a gamepad or the arrow keys (10-foot layout), for a PC on a TV.
-- [ ] Stream Deck plugin and an Xbox Game Bar widget (play / skip / like / now playing) over the local hotkeys.
-- [ ] Voice control beyond search: "next", "like this", "play my running playlist" (WinRT speech already there).
-- [ ] Blind test game: snippets from the library or a playlist, guess title / artist, scores, local multiplayer
-      on one screen or over the LAN code.
-- [ ] Share a song as a picture card (cover, title, a lyric line, the theme's colours) for social apps.
-- [ ] Theme and plugin gallery without a server: an index file in a GitHub repo, browsed from Add-ons, installed after
-      the usual permission review; authors submit by pull request.
-- [ ] Privacy page in the app: every host Legato talked to today and why (from the Rust gateway's log), matching the
-      website's rows.
-- [ ] Right-to-left languages (Arabic, Hebrew: mirrored layout) and community translations (Weblate), more languages.
-- [ ] Community: a Discord server or GitHub Discussions linked from About, "good first issue" labels, a showcase of
-      themes on the website.
+- [ ] `L` Preset engine, written from scratch: equations per frame / per vertex driven by bands and beat (MilkDrop-style
+      ideas), presets as small JSON shared like themes; `.milk` files the user owns loaded if a reader stays simple.
 
 ## Workflow (how we build it)
 
@@ -189,41 +240,45 @@ Today: every green push to master is a Beta prerelease (479 commits so far, chec
 Stable goes out by hand (`promote`); the smoke test runs on every push; `src-tauri/src/lib.rs` 2149 lines; CLAUDE.md
 ~15 kB read by every session.
 
-- [ ] Release notes grouped (feat / fix), in the user's words, shown in the app after an update. Today a flat list of
-      commit subjects (`scripts/release.mjs`) on the update card.
-- [ ] Typed `invoke` wrappers: the types are generated, the wrappers in `api.ts` stay by hand (no `tauri-specta`), so a
-      command's name and arguments are still checked by eye.
-- [ ] Split `src-tauri/src/lib.rs` by feature (library, player, accounts, sources) like `detector.rs` / `editor.rs`;
-      same for `crates/core/src/library.rs` (queries per table).
-- [ ] Make the smoke test blocking: delete `continue-on-error` in `check.yml` (green on the last 6 checks, 2026-10-31).
+Most useful first; the tag is the effort.
+
+- [ ] `S` Make the smoke test blocking: delete `continue-on-error` in `check.yml` (green on the last 6 checks, 2026-10-31).
       Still outside it: the YouTube embed (needs the network) and a real audio device.
-- [ ] The "Check live in the real app" list as a scripted checklist (a dev-only page that drives each step and logs the
+- [ ] `S-M` Release notes grouped (feat / fix), in the user's words, shown in the app after an update. Today a flat list of
+      commit subjects (`scripts/release.mjs`) on the update card.
+- [ ] `M` The "Check live in the real app" list as a scripted checklist (a dev-only page that drives each step and logs the
       result), so a pass takes minutes, not a session.
-- [ ] Diagnostics: a crash that ends the process without a Rust panic (a native fault, a kill) leaves no line; Windows'
-      event log and minidumps are not read.
-- [ ] Faster CI: run the macOS job only on pushes that touch Rust or `src-tauri`, `cargo nextest`, `sccache`; Linux
+- [ ] `S` Faster CI: run the macOS job only on pushes that touch Rust or `src-tauri`, `cargo nextest`, `sccache`; Linux
       job stays crates only.
-- [ ] `graphify hook install` (the user's go) so the graph stays fresh without asking; then drop the `.gitattributes`
-      line it adds (the graph isn't tracked).
-- [ ] Trim CLAUDE.md to rules + pointers (structure details move to `docs/architecture.md`): cheaper sessions.
-- [ ] Project skills for Claude Code: "release check", "add a setting" (schema, DEFAULTS_VERSION, search index, i18n),
+- [ ] `S` Trim CLAUDE.md to rules + pointers (structure details move to `docs/architecture.md`): cheaper sessions.
+- [ ] `S` Project skills for Claude Code: "release check", "add a setting" (schema, DEFAULTS_VERSION, search index, i18n),
       "add a connector" (module, mockito tests, privacy row): the repeated recipes written once.
-- [ ] Issue templates on GitHub (bug with diagnostics, feature idea) and a public roadmap page on the website from
+- [ ] `M` Split `src-tauri/src/lib.rs` by feature (library, player, accounts, sources) like `detector.rs` / `editor.rs`;
+      same for `crates/core/src/library.rs` (queries per table).
+- [ ] `M` Typed `invoke` wrappers: the types are generated, the wrappers in `api.ts` stay by hand (no `tauri-specta`), so a
+      command's name and arguments are still checked by eye.
+- [ ] `M` Diagnostics: a crash that ends the process without a Rust panic (a native fault, a kill) leaves no line; Windows'
+      event log and minidumps are not read.
+- [ ] `S` Issue templates on GitHub (bug with diagnostics, feature idea) and a public roadmap page on the website from
       this plan.
+- [ ] `S` `graphify hook install` (the user's go) so the graph stays fresh without asking; then drop the `.gitattributes`
+      line it adds (the graph isn't tracked).
 
 ## Optimisation (how it runs)
 
-- [ ] Performance budget in CI: front-end bundle size and Rust startup time; fail on a large regression. (`pnpm bench`
-      isn't in CI yet.)
-- [ ] Bundle: LyricsPanel, dialogs and NowPlaying are still in the first chunk.
-- [ ] Re-renders: profile the player bar, Up next and lyrics at 60 fps (`Progress.tsx`); Zustand selectors everywhere.
-- [ ] Library at scale: 50 000 songs, check every query with `EXPLAIN QUERY PLAN` (indexes for artist, album,
+Most useful first; the tag is the effort.
+
+- [ ] `M` Tray mode: measure what's left (WebView2 suspended?), drop it further if the page can be unloaded and restored.
+- [ ] `M` Library at scale: 50 000 songs, check every query with `EXPLAIN QUERY PLAN` (indexes for artist, album,
       plays, likes), search with FTS5, scans in the background with progress.
-- [ ] Cover thumbnails for WebP and GIF originals, served whole today (the `image` crate here has PNG and JPEG only; the
+- [ ] `S-M` Re-renders: profile the player bar, Up next and lyrics at 60 fps (`Progress.tsx`); Zustand selectors everywhere.
+- [ ] `S-M` YouTube embeds: one player reused instead of one per song where the crossfade allows; unload the hidden one.
+- [ ] `S-M` Performance budget in CI: front-end bundle size and Rust startup time; fail on a large regression. (`pnpm bench`
+      isn't in CI yet.)
+- [ ] `S` Bundle: LyricsPanel, dialogs and NowPlaying are still in the first chunk.
+- [ ] `S` Installer size: check what's in it (`cargo bloat`, features of big crates, adblock lists compressed).
+- [ ] `S` Cover thumbnails for WebP and GIF originals, served whole today (the `image` crate here has PNG and JPEG only; the
       hosts send JPEG).
-- [ ] YouTube embeds: one player reused instead of one per song where the crossfade allows; unload the hidden one.
-- [ ] Tray mode: measure what's left (WebView2 suspended?), drop it further if the page can be unloaded and restored.
-- [ ] Installer size: check what's in it (`cargo bloat`, features of big crates, adblock lists compressed).
 
 ## Check live in the real app (built and unit-tested, never driven for real)
 
@@ -257,22 +312,16 @@ Stable goes out by hand (`promote`); the smoke test runs on every push; `src-tau
       "Legato · Design" (the plugin can't rename files).
 - [ ] SponsorBlock stays off by default (a new third party gets a hash prefix per video, the user opts in): flip the
       default if wanted.
+- [ ] Connect Spotify: sign in once in the dev app, so the signed-in page can be read and checked (Platforms).
+- [ ] Spotify: try Ctrl+A, Ctrl+C on a private playlist in the desktop app and paste into Notepad (links, one per line?).
+- [ ] Spotify: ask for the data export (Privacy settings › Download your data); its `Playlist1.json` is the test file.
 
 ## Not done yet
-
-- [ ] Media panel off Windows.
-- [ ] Spotify previews.
-- [ ] Mixes: genre / year tags (not stored yet), Last.fm "Discoveries" (user's key); "Never in mixes" on a discovered
-      song (not in the library: no row to hold the choice).
-- [ ] Watch-page player: hide YouTube's own playlist panel (its RDMM "My Mix") and stop its autoplay into a Mix
-      (`crates/shield/src/watch.js`).
-- [ ] Sharing: remote wormhole words (needs the user's OK on the public relay), webcam QR scanning, `musicapp://` links
-      clicked in a browser (deep-link registration).
 
 **Spotify** (no keys; the user chose link import)
 - [ ] Keep or remove the Spotify app-key path (Settings › Accounts). User's call.
 - [ ] Real playback in the web player window (user signs in first).
-- [ ] Only if the user asks: private playlists and Liked Songs (web session), ad blocking (ToS / account risk first).
+- [ ] Only if the user asks: ad blocking (ToS / account risk first).
 - [ ] Needs paid accounts: Spotify Connect for real (Premium), MusicKit (Apple Developer).
 
 **Housekeeping**

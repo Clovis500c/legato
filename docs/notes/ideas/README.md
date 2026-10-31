@@ -4,7 +4,7 @@ The one-line to-do lives in [plan-v2.md](../plan-v2.md) (tick lines there). Thes
 line, so a session can pick one up without redoing the research (2026-10-30, against Riff and the best players). A line
 gone from the plan has shipped: its spec stays here as the record of the ask (what was built: `docs/` and git).
 
-| File | Plan section |
+| File | Theme (the plan sorts them by importance and effort) |
 |---|---|
 | [catch-up.md](catch-up.md) | 1. Catch up with Riff |
 | [lead.md](lead.md) | 2. Beat Riff |
