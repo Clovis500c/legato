@@ -1593,6 +1593,10 @@ const tr: Record<string, string> = {
   'sponsorblock intro skit talking outro music video skip segments community': 'sponsorblock giriş skeç konuşma çıkış müzik videosu atla bölümler topluluk',
   'Skipped a non-music part ({time})': 'Müzik olmayan bir kısım atlandı ({time})',
   'Non-music part': 'Müzik olmayan kısım',
+  'Karaoke': 'Karaoke',
+  'Leave Karaoke (Esc)': 'Karaokeden çık (Esc)',
+  'Karaoke on / off': 'Karaoke açık / kapalı',
+  '← → move the lyrics · Esc leaves': '← → sözleri kaydır · Esc çıkar',
 }
 
 export default tr

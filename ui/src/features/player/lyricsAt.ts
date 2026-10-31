@@ -97,3 +97,16 @@ export function wordTimes(text: string, start: number, end: number): { word: str
     return { word, t0, t1: start + ((end - start) * at) / total }
   })
 }
+
+/** The saved fixes (settings `lyricsSync`) with this song's replaced; null or a fix that changes nothing takes it out. */
+export function fixesWith(all: Record<string, LyricsFix>, song: string, fix: LyricsFix | null): Record<string, LyricsFix> {
+  const out = { ...all }
+  if (fix && (fix.offset || fix.rate !== 1)) out[song] = fix
+  else delete out[song]
+  return out
+}
+
+/** "+0.5 s", with "· ×0.95" when the speed is fixed too. */
+export function fixLabel(fix: LyricsFix): string {
+  return `${fix.offset >= 0 ? '+' : '−'}${(Math.abs(fix.offset) / 1000).toFixed(1)} s${fix.rate !== 1 ? ` · ×${fix.rate.toFixed(2)}` : ''}`
+}

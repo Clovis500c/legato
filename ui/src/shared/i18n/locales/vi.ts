@@ -1593,6 +1593,10 @@ const vi: Record<string, string> = {
   'sponsorblock intro skit talking outro music video skip segments community': 'sponsorblock intro tiểu phẩm lời nói outro video nhạc bỏ qua đoạn cộng đồng',
   'Skipped a non-music part ({time})': 'Đã bỏ qua phần không phải nhạc ({time})',
   'Non-music part': 'Phần không phải nhạc',
+  'Karaoke': 'Karaoke',
+  'Leave Karaoke (Esc)': 'Thoát Karaoke (Esc)',
+  'Karaoke on / off': 'Bật / tắt Karaoke',
+  '← → move the lyrics · Esc leaves': '← → dịch lời bài hát · Esc để thoát',
 }
 
 export default vi

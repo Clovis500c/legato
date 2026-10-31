@@ -1593,6 +1593,10 @@ const nl: Record<string, string> = {
   'sponsorblock intro skit talking outro music video skip segments community': 'sponsorblock intro sketch gepraat outro muziekvideo overslaan segmenten community',
   'Skipped a non-music part ({time})': 'Niet-muzikaal deel overgeslagen ({time})',
   'Non-music part': 'Niet-muzikaal deel',
+  'Karaoke': 'Karaoke',
+  'Leave Karaoke (Esc)': 'Karaoke verlaten (Esc)',
+  'Karaoke on / off': 'Karaoke aan / uit',
+  '← → move the lyrics · Esc leaves': '← → tekst verschuiven · Esc sluit af',
 }
 
 export default nl

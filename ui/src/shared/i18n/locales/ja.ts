@@ -1593,6 +1593,10 @@ const ja: Record<string, string> = {
   'sponsorblock intro skit talking outro music video skip segments community': 'sponsorblock イントロ 寸劇 トーク アウトロ ミュージックビデオ スキップ 区間 コミュニティ',
   'Skipped a non-music part ({time})': '音楽以外の部分をスキップしました（{time}）',
   'Non-music part': '音楽以外の部分',
+  'Karaoke': 'カラオケ',
+  'Leave Karaoke (Esc)': 'カラオケを終了 (Esc)',
+  'Karaoke on / off': 'カラオケ オン / オフ',
+  '← → move the lyrics · Esc leaves': '← → 歌詞をずらす · Esc で終了',
 }
 
 export default ja

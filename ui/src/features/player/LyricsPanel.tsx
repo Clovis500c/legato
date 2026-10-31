@@ -1,11 +1,12 @@
-import { ArrowCounterClockwise, CaretLeft, CaretRight, MusicNotesSimple, Queue, Timer } from '@phosphor-icons/react'
+import { ArrowCounterClockwise, CaretLeft, CaretRight, MicrophoneStage, MusicNotesSimple, Queue, Timer } from '@phosphor-icons/react'
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useSettings } from '../../app/settings'
 import { useStore } from '../../app/store'
 import { api, type Lyrics } from '../../shared/api'
 import { RoundButton } from '../../shared/ui/controls'
 import { songKey } from './effects'
-import { applyFix, fixFromTaps, lineAt, lineEnd, NO_FIX, withBreaks, wordTimes, type LyricsFix } from './lyricsAt'
+import { applyFix, fixesWith, fixFromTaps, fixLabel, lineAt, lineEnd, NO_FIX, withBreaks, wordTimes, type LyricsFix } from './lyricsAt'
+import { toggleKaraoke } from './karaokeMode'
 import { positionNow, usePosition } from './Progress'
 import { useNowTrack, usePlayer } from './store'
 import { CARD } from './UpNext'
@@ -29,7 +30,7 @@ const RESYNC_MS = 250
  * compositor's clock (smooth every frame); position reports only correct it when it's really off, never every tick
  * (that made it shake).
  */
-function Sung({ text, start, end }: { text: string; start: number; end: number }) {
+export function Sung({ text, start, end }: { text: string; start: number; end: number }) {
   const pos = usePosition(250)
   const playing = usePlayer((s) => s.playing)
   const box = useRef<HTMLSpanElement>(null)
@@ -189,11 +190,7 @@ export function LyricsPanel({ onHide, onUpNext, className = CARD, heading }: { o
     taps.current = []
   }, [key])
   const saveFix = (f: LyricsFix | null) => {
-    if (!song) return
-    const all = { ...useSettings.getState().settings.lyricsSync }
-    if (f && (f.offset || f.rate !== 1)) all[song] = f
-    else delete all[song]
-    useSettings.getState().update({ lyricsSync: all })
+    if (song) useSettings.getState().update({ lyricsSync: fixesWith(useSettings.getState().settings.lyricsSync, song, f) })
   }
   const tap = (lyric: number) => {
     taps.current = [...taps.current, { lyric, song: positionNow() - REACTION_MS }]
@@ -220,6 +217,9 @@ export function LyricsPanel({ onHide, onUpNext, className = CARD, heading }: { o
             <Timer size={14} />
           </RoundButton>
         )}
+        <RoundButton label={tr('Karaoke')} kind="plain" size="sm" onClick={toggleKaraoke}>
+          <MicrophoneStage size={14} />
+        </RoundButton>
         {!heading && (
           <RoundButton label={tr('Show Up next instead')} kind="plain" size="sm" onClick={onUpNext}>
             <Queue size={14} />
@@ -252,8 +252,7 @@ export function LyricsPanel({ onHide, onUpNext, className = CARD, heading }: { o
                   <CaretLeft size={13} />
                 </RoundButton>
                 <span className="min-w-20 text-center font-mono tabular-nums">
-                  {fix.offset >= 0 ? '+' : '−'}
-                  {(Math.abs(fix.offset) / 1000).toFixed(1)} s{fix.rate !== 1 && ` · ×${fix.rate.toFixed(2)}`}
+                  {fixLabel(fix)}
                 </span>
                 <RoundButton label={tr('Lyrics later')} size="sm" onClick={() => saveFix({ ...fix, offset: fix.offset + NUDGE_MS })}>
                   <CaretRight size={13} />

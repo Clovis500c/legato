@@ -74,6 +74,7 @@ import { loadPlugins, pluginCommands, runCommand } from './plugins/host'
 import { isRemote, nowTrack, remoteTrack, usePlayer } from './player/store'
 import { startRadio } from './player/radio'
 import { sleepMenu } from './player/sleep'
+import { closeKaraoke, nowFix, nudgeLyrics, toggleKaraoke } from './player/karaokeMode'
 import { msg, tr, trn } from '../shared/i18n/i18n'
 import { ask, askText } from '../shared/ui/Ask'
 
@@ -605,6 +606,7 @@ export function playerMenu(): MenuEntry[] {
     { label: tr('Repeat'), icon: <Repeat size={16} />, disabled: !now.trackId, items: [rep('off', tr('Off')), rep('all', tr('Whole queue')), rep('one', tr('This track'))] },
     '-',
     { label: full ? tr('Leave full screen') : tr('Full screen'), icon: <ArrowsOutSimple size={16} />, onSelect: () => setFull(!full) },
+    { label: tr('Karaoke'), icon: <MicrophoneStage size={16} />, onSelect: toggleKaraoke },
     { label: tr('Live Editor'), icon: <SlidersHorizontal size={16} />, onSelect: () => (useSettings.getState().update({ editor: true }), setFull(true)) },
     { label: tr('Sleep timer'), icon: <Moon size={16} />, items: sleepMenu() },
     { label: tr('Mini player'), icon: <PictureInPicture size={16} />, checked: mini || !!video, disabled: !!video, onSelect: () => useSettings.getState().update({ miniPlayer: !mini }) },
@@ -622,6 +624,23 @@ export function playerMenu(): MenuEntry[] {
     now.page && { label: tr('Listen on Apple Music'), icon: <ArrowSquareOut size={16} />, onSelect: () => openUrl(now.page!).catch(fail) },
     now.path && { label: tr('Show in folder'), icon: <FolderOpen size={16} />, onSelect: () => revealItemInDir(now.path!).catch(fail) },
     ...pluginItems('player', { trackId: t?.id ?? null, title: now.title, artist: now.artist }),
+  ]
+}
+
+/** Karaoke screen: the player's basics, the lyrics timing (same fix as the lyrics panel), leave. */
+export function karaokeMenu(): MenuEntry[] {
+  const { playing, toggle, step } = player()
+  const fix = nowFix()
+  return [
+    { label: playing ? tr('Pause') : tr('Play'), icon: playing ? <Pause size={16} /> : <Play size={16} />, onSelect: toggle },
+    { label: tr('Previous'), icon: <SkipBack size={16} />, onSelect: () => step(-1) },
+    { label: tr('Next'), icon: <SkipForward size={16} />, onSelect: () => step(1) },
+    '-',
+    { label: tr('Lyrics earlier'), icon: <ArrowLeft size={16} />, onSelect: () => nudgeLyrics(-500) },
+    { label: tr('Lyrics later'), icon: <ArrowRight size={16} />, onSelect: () => nudgeLyrics(500) },
+    { label: tr('Reset'), icon: <ArrowCounterClockwise size={16} />, disabled: fix.offset === 0 && fix.rate === 1, onSelect: () => nudgeLyrics(null) },
+    '-',
+    { label: tr('Leave Karaoke (Esc)'), icon: <MicrophoneStage size={16} />, onSelect: closeKaraoke },
   ]
 }
 

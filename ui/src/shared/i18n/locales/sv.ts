@@ -1593,6 +1593,10 @@ const sv: Record<string, string> = {
   'sponsorblock intro skit talking outro music video skip segments community': 'sponsorblock intro sketch prat outro musikvideo hoppa över segment community',
   'Skipped a non-music part ({time})': 'Hoppade över en icke-musikalisk del ({time})',
   'Non-music part': 'Icke-musikalisk del',
+  'Karaoke': 'Karaoke',
+  'Leave Karaoke (Esc)': 'Lämna karaoke (Esc)',
+  'Karaoke on / off': 'Karaoke på / av',
+  '← → move the lyrics · Esc leaves': '← → flytta texten · Esc avslutar',
 }
 
 export default sv

@@ -14,6 +14,7 @@ const load = {
   addons: () => import('../features/addons/AddonsView').then((m) => ({ default: m.AddonsView })),
   editor: () => import('../features/editor/EditorPanel').then((m) => ({ default: m.EditorPanel })),
   shelf: () => import('../features/home/HomeView').then((m) => ({ default: m.YouTubeShelf })),
+  karaoke: () => import('../features/player/Karaoke').then((m) => ({ default: m.Karaoke })),
   welcome: () => import('../features/welcome/Welcome').then((m) => ({ default: m.Welcome })),
 }
 
@@ -51,6 +52,7 @@ export const SettingsView = page(load.settings)
 export const AddonsView = page(load.addons)
 export const EditorPanel = page(load.editor)
 export const YouTubeShelf = page(load.shelf)
+export const Karaoke = page(load.karaoke)
 export const Welcome = page(load.welcome)
 
 /** Starts Home's download now (before the library is in), the likeliest first screen. */
@@ -58,7 +60,7 @@ export const preloadHome = () => void load.home()
 
 /** The other pages, one per idle slice once the app is up. A failed fetch is retried by the page itself on its visit. */
 export function preloadPages() {
-  const next = [load.search, load.add, load.mixes, load.stats, load.smart, load.editor, load.settings, load.addons]
+  const next = [load.search, load.add, load.mixes, load.stats, load.smart, load.editor, load.settings, load.addons, load.karaoke]
   const idle = window.requestIdleCallback ?? ((f: () => void) => window.setTimeout(f, 200))
   const step = () => {
     const f = next.shift()

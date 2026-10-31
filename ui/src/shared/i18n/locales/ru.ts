@@ -1593,6 +1593,10 @@ const ru: Record<string, string> = {
   'sponsorblock intro skit talking outro music video skip segments community': 'sponsorblock интро скетч разговор аутро клип пропустить сегменты сообщество',
   'Skipped a non-music part ({time})': 'Пропущена немузыкальная часть ({time})',
   'Non-music part': 'Немузыкальная часть',
+  'Karaoke': 'Караоке',
+  'Leave Karaoke (Esc)': 'Выйти из караоке (Esc)',
+  'Karaoke on / off': 'Караоке вкл. / выкл.',
+  '← → move the lyrics · Esc leaves': '← → сдвинуть текст · Esc — выход',
 }
 
 export default ru

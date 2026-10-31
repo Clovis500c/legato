@@ -1593,6 +1593,10 @@ const it: Record<string, string> = {
   'sponsorblock intro skit talking outro music video skip segments community': 'sponsorblock intro sketch parlato outro video musicale salta segmenti community',
   'Skipped a non-music part ({time})': 'Parte non musicale saltata ({time})',
   'Non-music part': 'Parte non musicale',
+  'Karaoke': 'Karaoke',
+  'Leave Karaoke (Esc)': 'Esci dal karaoke (Esc)',
+  'Karaoke on / off': 'Karaoke attivo / disattivo',
+  '← → move the lyrics · Esc leaves': '← → sposta il testo · Esc per uscire',
 }
 
 export default it

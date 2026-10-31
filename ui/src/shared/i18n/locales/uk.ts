@@ -1593,6 +1593,10 @@ const uk: Record<string, string> = {
   'sponsorblock intro skit talking outro music video skip segments community': 'sponsorblock інтро скетч розмова аутро кліп пропустити сегменти спільнота',
   'Skipped a non-music part ({time})': 'Пропущено немузичну частину ({time})',
   'Non-music part': 'Немузична частина',
+  'Karaoke': 'Караоке',
+  'Leave Karaoke (Esc)': 'Вийти з караоке (Esc)',
+  'Karaoke on / off': 'Караоке увімк. / вимк.',
+  '← → move the lyrics · Esc leaves': '← → зсунути текст · Esc — вихід',
 }
 
 export default uk

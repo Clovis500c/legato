@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { usePlayer } from '../features/player/store'
+import { toggleKaraoke } from '../features/player/karaokeMode'
 import { nudgeVolume } from '../features/player/volume'
 import { api } from '../shared/api'
 import { accelerator, ACTIONS, bindings, comboOf, type ActionId, type Combo } from './keys'
@@ -31,6 +32,7 @@ export const RUN: Record<ActionId, () => void> = {
   repeat: () => player().cycleRepeat(),
   nowPlaying: () => player().now && player().setFull(!player().full),
   fullscreen: () => void toggleFullscreen(),
+  karaoke: toggleKaraoke,
   search: () => document.querySelector<HTMLInputElement>('[data-search]')?.focus(),
   settings: () => useStore.getState().go({ name: 'settings', section: 'shortcuts' }),
   goBack: () => (player().full ? player().setFull(false) : useStore.getState().goBack()),

@@ -1593,6 +1593,10 @@ const zh: Record<string, string> = {
   'sponsorblock intro skit talking outro music video skip segments community': 'sponsorblock 片头 小品 对白 片尾 音乐视频 跳过 片段 社区',
   'Skipped a non-music part ({time})': '已跳过非音乐部分（{time}）',
   'Non-music part': '非音乐部分',
+  'Karaoke': '卡拉OK',
+  'Leave Karaoke (Esc)': '退出卡拉OK (Esc)',
+  'Karaoke on / off': '卡拉OK 开 / 关',
+  '← → move the lyrics · Esc leaves': '← → 调整歌词 · Esc 退出',
 }
 
 export default zh

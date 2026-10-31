@@ -1,4 +1,4 @@
-import { ArrowSquareOut, Heart, Queue, Quotes, SlidersHorizontal, ThumbsDown } from '@phosphor-icons/react'
+import { ArrowSquareOut, Heart, MicrophoneStage, Queue, Quotes, SlidersHorizontal, ThumbsDown } from '@phosphor-icons/react'
 import { artistName } from '../../shared/artistName'
 import { STAGE_ID } from '../../app/searchShift'
 import { pop } from '../../shared/motion'
@@ -19,6 +19,7 @@ import { SourceIcon } from '../../shared/ui/SourceIcon'
 import { playerMenu } from '../menus'
 import { useAmbient } from './ambient'
 import { useBackdrop } from './immersive'
+import { toggleKaraoke } from './karaokeMode'
 import { VolumeControl } from './PlayerBar'
 import { SeekBar, TimeText, usePosition } from './Progress'
 import { viaLabel, type Via } from './sources'
@@ -161,7 +162,7 @@ export function driftTransform(t: number): string {
 }
 
 /** Blurred cover layers: each new one fades in over the last, which goes once covered. Veil in the theme's color keeps text readable. */
-function Backdrop({ url, dim, motion }: { url?: string; dim: number; motion: boolean }) {
+export function Backdrop({ url, dim, motion }: { url?: string; dim: number; motion: boolean }) {
   const [layers, setLayers] = useState<string[]>([])
   const box = useRef<HTMLDivElement>(null)
   useEffect(() => {
@@ -385,6 +386,9 @@ export function NowPlaying() {
             <PanelToggle id="lyrics" label={tr('Lyrics')} icon={Quotes} active={panel} />
             <PanelToggle id="upNext" label={tr('Up next')} icon={Queue} active={panel} />
             <PanelToggle id="editor" label={tr('Sound')} icon={SlidersHorizontal} active={panel} />
+            <RoundButton label={tr('Karaoke')} kind="plain" size="md" onClick={(e) => (toggleKaraoke(), pop(e.currentTarget))}>
+              <MicrophoneStage size={22} />
+            </RoundButton>
             <span className="flex min-w-0 flex-col items-end gap-1">
               <VolumeControl big />
               {volumeMode === 'knob' && <span className="kicker">{tr('Volume')}</span>}

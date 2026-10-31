@@ -1593,6 +1593,10 @@ const id: Record<string, string> = {
   'sponsorblock intro skit talking outro music video skip segments community': 'sponsorblock intro sketsa obrolan outro video musik lewati segmen komunitas',
   'Skipped a non-music part ({time})': 'Bagian non-musik dilewati ({time})',
   'Non-music part': 'Bagian non-musik',
+  'Karaoke': 'Karaoke',
+  'Leave Karaoke (Esc)': 'Keluar dari Karaoke (Esc)',
+  'Karaoke on / off': 'Karaoke hidup / mati',
+  '← → move the lyrics · Esc leaves': '← → geser lirik · Esc untuk keluar',
 }
 
 export default id

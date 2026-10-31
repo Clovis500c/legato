@@ -1593,6 +1593,10 @@ const hi: Record<string, string> = {
   'sponsorblock intro skit talking outro music video skip segments community': 'sponsorblock इंट्रो स्किट बातचीत आउट्रो म्यूज़िक वीडियो छोड़ें हिस्से समुदाय',
   'Skipped a non-music part ({time})': 'संगीत-रहित हिस्सा छोड़ा गया ({time})',
   'Non-music part': 'संगीत-रहित हिस्सा',
+  'Karaoke': 'कराओके',
+  'Leave Karaoke (Esc)': 'कराओके से बाहर निकलें (Esc)',
+  'Karaoke on / off': 'कराओके चालू / बंद',
+  '← → move the lyrics · Esc leaves': '← → बोल खिसकाएँ · Esc से बाहर निकलें',
 }
 
 export default hi

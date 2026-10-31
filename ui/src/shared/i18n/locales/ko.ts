@@ -1593,6 +1593,10 @@ const ko: Record<string, string> = {
   'sponsorblock intro skit talking outro music video skip segments community': 'sponsorblock 인트로 콩트 대화 아웃트로 뮤직비디오 건너뛰기 구간 커뮤니티',
   'Skipped a non-music part ({time})': '음악이 아닌 부분을 건너뛰었습니다({time})',
   'Non-music part': '음악이 아닌 부분',
+  'Karaoke': '노래방',
+  'Leave Karaoke (Esc)': '노래방 나가기 (Esc)',
+  'Karaoke on / off': '노래방 켜기 / 끄기',
+  '← → move the lyrics · Esc leaves': '← → 가사 이동 · Esc로 나가기',
 }
 
 export default ko
