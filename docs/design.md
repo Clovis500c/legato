@@ -8,8 +8,8 @@ needs a drag area and its buttons there), with Add-ons and Settings.
 Reading this as: desktop music player and library for people whose music lives in several services. Familiar like
 Spotify and YouTube Music, denser and calmer than both.
 
-Dial (app): ENERGY 2 / RHYTHM 2 / MOTION 2 (more motion, user's request 2026-10-29). Dial (website): ENERGY 2 /
-RHYTHM 2 / MOTION 2.
+Dial (app): ENERGY 2 / RHYTHM 2 / MOTION 2 (more motion, user's request 2026-10-29). Dial (website, user's choice
+2026-10-31): ENERGY 2 / RHYTHM 2 / MOTION 3, for the scroll story only ([Website](#website)).
 
 ## What listeners ask for (research, 2026-10-29)
 
@@ -96,3 +96,24 @@ tabular figures.
   another (30 ms apart, `.stagger`), the right panel slides in, a new song's title rises in the player bar, a card's
   play button rises into place. Transform and opacity only, no loops. Settings › Animations off removes it; Windows'
   animation effects off leaves fades only.
+
+## Website
+
+The app's look, and one scroll story around the app itself (user's choice 2026-10-31). Five lines to judge a change by:
+
+- Product: a Windows player for people whose music is scattered.
+- Character: dense, calm, frank.
+- World: a hi-fi in the evening (LED bars, VU meters, record bins).
+- Moments: the 3D window that stays on screen, and the visualizer's chapter, where the page goes dark.
+- Signature: a player bar for the page itself, the chapter as the song, the next one as Up next, the scrubber as the
+  chapters. Sky blue only on its playing mark, as in the app.
+
+Rules:
+
+- The window is the real interface (`site/demo`), never a redrawn one. 6 to 8 chapters; the rest is a list.
+- Text sits on calm page space, never over the window.
+- Native scroll and `position: sticky`, no hijacking. Transform and opacity only.
+- One exception to "Flat": a neutral shadow under the window, which follows its tilt. No glow, glass or gradient.
+- Wide screens with animations on get the stage. Phones and reduced motion get the chapters one after another, each
+  with a picture.
+- In the demo, artists, songs and covers are invented; it makes no sound and reaches no network.

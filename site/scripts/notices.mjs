@@ -5,9 +5,16 @@ import { execSync } from 'node:child_process'
 import { readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 
-const list = JSON.parse(execSync('pnpm licenses list --prod --json', { encoding: 'utf8', maxBuffer: 1 << 26 }))
-const parts = Object.entries(list)
-  .flatMap(([license, pkgs]) => pkgs.map((p) => ({ ...p, license })))
+// The site's packages, and the app's: its demo ships them too (site/demo).
+const all = ['.', '..']
+  .map((cwd) => JSON.parse(execSync('pnpm licenses list --prod --json', { cwd, encoding: 'utf8', maxBuffer: 1 << 26 })))
+  .flatMap((list) => Object.entries(list).flatMap(([license, pkgs]) => pkgs.map((p) => ({ ...p, license }))))
+const byName = new Map()
+for (const p of all) {
+  const had = byName.get(p.name)
+  byName.set(p.name, had ? { ...had, versions: [...new Set([...had.versions, ...p.versions])] } : p)
+}
+const parts = [...byName.values()]
   .sort((a, b) => a.name.localeCompare(b.name))
   .map((p) => {
     const dir = p.paths[0]

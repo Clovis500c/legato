@@ -9,6 +9,14 @@ Stable: v1.1.479 (2026-10-31). Next: milestone 3, Platforms.
 Every idea here stays: the user wants them all built in the end, just later (user's choice 2026-10-31). The roadmap sets
 the order; a line leaves only when it ships or the user drops it.
 
+## Website
+
+- [x] `M` Home page as a scroll story (user's choice 2026-10-31): the real interface in a 3D window (`site/demo`), eight
+      chapters, the visitor takes it at the end; audit of the page's slop (`docs/design.md` › Website). Local, not
+      published.
+- [ ] `S` Publish it the day Stable gets what it shows and 1.1.479 hasn't: Connect Spotify, the import screen, Songs not
+      found, the "Then" heading in Up next. Before that: try it on a weak PC, in Firefox and Safari, on the real Pages.
+
 ## Best in class (user's ask 2026-10-30)
 
 What a listener would get, against Riff (rootscripts/riff: Electron, yt-dlp downloads, YouTube / SoundCloud, imports

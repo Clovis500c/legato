@@ -41,9 +41,19 @@ search, the library scan or how the app starts and ends. [docs/development.md](d
 ## Website
 
 `site/`: Next.js exported to plain files, deployed to GitHub Pages by `.github/workflows/pages.yml` when master's
-`site/` changes (Settings › Pages › Source: GitHub Actions, on since 2026-10-29). Its own packages: in `site/`, `pnpm install`, then
-`pnpm dev` (http://localhost:3000) or `pnpm build` (into `site/out`). The copy is in `site/components/content.tsx`; its
-privacy rows replace the old `docs/privacy.md`, so change them when the app starts sending something new.
+`site/` or `ui/` changes (Settings › Pages › Source: GitHub Actions, on since 2026-10-29). Packages: `pnpm install` at the
+root and in `site/`, then, in `site/`, `pnpm dev` (http://localhost:3000) or `pnpm build` (into `site/out`). The copy is in
+`site/components/content.tsx`; its privacy rows replace the old `docs/privacy.md`, so change them when the app starts
+sending something new.
+
+The window on the home page is the app: `site/demo` starts `ui/` as it is, over a fake Tauri (`tauri.ts`), invented data
+and answers (`data.ts`), and screens picked by the page's scroll (`scenes.ts`). `pnpm build` makes it into `public/demo`,
+so `pnpm dev` shows the pictures until a build has run. A screen that needs a new command at load may need an answer in
+`data.ts`; what needs an account, the network or the PC goes in its refused list. `pnpm typecheck` at the root covers it.
+
+`site/public/shots` holds those pictures: phones, reduced motion, and the window before the demo is up. Taken from the
+built demo, `demo/index.html?shot=<scene>&p=<0 to 1>&theme=modern` or `modern-dark` (add `&full` for Now Playing), at
+1024×648 so a phone can read them, `library` at 1360×860 to match the window.
 
 ## Releasing
 
