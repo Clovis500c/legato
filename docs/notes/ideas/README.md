@@ -1,7 +1,8 @@
 # Ideas: detailed specs
 
 The one-line to-do lives in [plan-v2.md](../plan-v2.md) (tick lines there). These files hold the detail behind each
-line, so a session can pick one up without redoing the research (2026-10-30, against Riff and the best players).
+line, so a session can pick one up without redoing the research (2026-10-30, against Riff and the best players). A line
+gone from the plan has shipped: its spec stays here as the record of the ask (what was built: `docs/` and git).
 
 | File | Plan section |
 |---|---|
@@ -40,3 +41,5 @@ mockito for any network, `docs/` and the website updated when users see it.
 - Tag editing for one local file: `src-tauri/src/tags.rs`, `features/library/EditInfo.tsx`.
 - Song lists pasted or from CSV / TSV: `crates/core/src/songlist.rs`.
 - Smart playlist rules today: artist, album, source, plays, added (`features/smart/rules.ts`).
+- Whole app in the cover's colour, surfaces only: setting `appTint`, `features/player/ambient.ts`.
+- Audio files dropped on the window play as a queue: `features/player/PlayerBar.tsx`.
