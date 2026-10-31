@@ -1578,6 +1578,8 @@ const es: Record<string, string> = {
   'Imported “{name}”: {found} of {n} songs found': '«{name}» importada: {found} de {n} canciones encontradas',
   'Only {n} of the {total} songs came in: the link shows no more.': 'Solo entraron {n} de las {total} canciones: el enlace no muestra más.',
   "This playlist is private or doesn't exist": 'Esta lista es privada o no existe',
+  "This Spotify playlist is private or doesn't exist: private playlists and Liked Songs come in with Add music › Connect Spotify": 'Esta playlist de Spotify es privada o no existe: las playlists privadas y las canciones que te gustan entran con Añadir música › Conectar Spotify',
+  "This Spotify album was removed, or isn't available in your country": 'Este álbum de Spotify se eliminó o no está disponible en tu país',
   "This album was removed, or isn't available in its store": 'Este álbum se eliminó o no está disponible en su tienda',
   'That link is a single song: paste a playlist or album link': 'Ese enlace es de una sola canción: pega el enlace de una lista o un álbum',
   'This playlist has no songs': 'Esta lista no tiene canciones',

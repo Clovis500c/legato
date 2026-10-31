@@ -1578,6 +1578,8 @@ const nl: Record<string, string> = {
   'Imported “{name}”: {found} of {n} songs found': '“{name}” geïmporteerd: {found} van {n} nummers gevonden',
   'Only {n} of the {total} songs came in: the link shows no more.': 'Slechts {n} van de {total} nummers kwamen binnen: de link toont er niet meer.',
   "This playlist is private or doesn't exist": 'Deze afspeellijst is privé of bestaat niet',
+  "This Spotify playlist is private or doesn't exist: private playlists and Liked Songs come in with Add music › Connect Spotify": 'Deze Spotify-playlist is privé of bestaat niet: privéplaylists en Liked Songs komen binnen met Muziek toevoegen › Spotify verbinden',
+  "This Spotify album was removed, or isn't available in your country": 'Dit Spotify-album is verwijderd, of is niet beschikbaar in jouw land',
   "This album was removed, or isn't available in its store": 'Dit album is verwijderd of is niet beschikbaar in zijn store',
   'That link is a single song: paste a playlist or album link': 'Die link is van één nummer: plak een link naar een afspeellijst of album',
   'This playlist has no songs': 'Deze afspeellijst bevat geen nummers',

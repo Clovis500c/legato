@@ -1578,6 +1578,8 @@ const hi: Record<string, string> = {
   'Imported “{name}”: {found} of {n} songs found': '“{name}” इम्पोर्ट हुई: {n} में से {found} गाने मिले',
   'Only {n} of the {total} songs came in: the link shows no more.': '{total} में से केवल {n} गाने आए: लिंक इससे ज़्यादा नहीं दिखाता।',
   "This playlist is private or doesn't exist": 'यह प्लेलिस्ट निजी है या मौजूद नहीं है',
+  "This Spotify playlist is private or doesn't exist: private playlists and Liked Songs come in with Add music › Connect Spotify": 'यह Spotify प्लेलिस्ट निजी है या मौजूद नहीं है: निजी प्लेलिस्ट और पसंद किए गए गाने संगीत जोड़ें › Spotify कनेक्ट करें से आते हैं',
+  "This Spotify album was removed, or isn't available in your country": 'यह Spotify एल्बम हटा दिया गया है, या आपके देश में उपलब्ध नहीं है',
   "This album was removed, or isn't available in its store": 'यह एल्बम हटा दिया गया है, या अपने स्टोर में उपलब्ध नहीं है',
   'That link is a single song: paste a playlist or album link': 'यह लिंक एक अकेले गाने का है: प्लेलिस्ट या एल्बम का लिंक पेस्ट करें',
   'This playlist has no songs': 'इस प्लेलिस्ट में कोई गाना नहीं है',

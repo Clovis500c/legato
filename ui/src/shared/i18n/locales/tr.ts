@@ -1578,6 +1578,8 @@ const tr: Record<string, string> = {
   'Imported “{name}”: {found} of {n} songs found': '“{name}” içe aktarıldı: {n} şarkıdan {found} tanesi bulundu',
   'Only {n} of the {total} songs came in: the link shows no more.': '{total} şarkıdan yalnızca {n} tanesi geldi: bağlantı daha fazlasını göstermiyor.',
   "This playlist is private or doesn't exist": 'Bu çalma listesi gizli veya mevcut değil',
+  "This Spotify playlist is private or doesn't exist: private playlists and Liked Songs come in with Add music › Connect Spotify": 'Bu Spotify çalma listesi gizli ya da yok: gizli listeler ve Beğenilen Şarkılar Müzik ekle › Spotify’ı bağla ile gelir',
+  "This Spotify album was removed, or isn't available in your country": 'Bu Spotify albümü kaldırılmış ya da ülkende kullanılamıyor',
   "This album was removed, or isn't available in its store": 'Bu albüm kaldırılmış veya kendi mağazasında bulunmuyor',
   'That link is a single song: paste a playlist or album link': 'Bu bağlantı tek bir şarkıya ait: bir çalma listesi veya albüm bağlantısı yapıştırın',
   'This playlist has no songs': 'Bu çalma listesinde şarkı yok',

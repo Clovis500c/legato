@@ -15,6 +15,9 @@ const KINDS: [RegExp, string][] = [
   [/→ 5\d\d\b|\b50[0234] (Internal Server Error|Bad Gateway|Service Unavailable|Gateway Timeout)/i, msg('The service is having trouble right now: try again later.')],
   // Pasted Deezer / Apple Music links (crates/connectors deezer.rs, itunes.rs): said by Rust in English, shown in the user's language.
   [/^This playlist is private or doesn't exist/, msg("This playlist is private or doesn't exist")],
+  // Spotify's public embed (spotify_embed.rs) can't see a private list: what works instead.
+  [/^This Spotify playlist is private or doesn't exist/, msg("This Spotify playlist is private or doesn't exist: private playlists and Liked Songs come in with Add music › Connect Spotify")],
+  [/^This Spotify album is private or doesn't exist/, msg("This Spotify album was removed, or isn't available in your country")],
   [/^This album was removed, or isn't available in its store/, msg("This album was removed, or isn't available in its store")],
   [/^That link is a single song: paste a playlist or album link/, msg('That link is a single song: paste a playlist or album link')],
   [/^This playlist has no songs/, msg('This playlist has no songs')],

@@ -1578,6 +1578,8 @@ const uk: Record<string, string> = {
   'Imported “{name}”: {found} of {n} songs found': '«{name}» імпортовано: знайдено {found} з {n} пісень',
   'Only {n} of the {total} songs came in: the link shows no more.': 'Додано лише {n} із {total} пісень: посилання не показує більше.',
   "This playlist is private or doesn't exist": 'Цей плейлист закритий або не існує',
+  "This Spotify playlist is private or doesn't exist: private playlists and Liked Songs come in with Add music › Connect Spotify": 'Цей плейлист Spotify приватний або не існує: приватні плейлисти й «Улюблені треки» можна перенести через «Додати музику › Підключити Spotify»',
+  "This Spotify album was removed, or isn't available in your country": 'Цей альбом Spotify видалено або він недоступний у вашій країні',
   "This album was removed, or isn't available in its store": 'Цей альбом видалено або він недоступний у своєму магазині',
   'That link is a single song: paste a playlist or album link': 'Це посилання на одну пісню: вставте посилання на плейлист або альбом',
   'This playlist has no songs': 'У цьому плейлисті немає пісень',

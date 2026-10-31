@@ -1578,6 +1578,8 @@ const vi: Record<string, string> = {
   'Imported “{name}”: {found} of {n} songs found': 'Đã nhập “{name}”: tìm thấy {found} trên {n} bài hát',
   'Only {n} of the {total} songs came in: the link shows no more.': 'Chỉ có {n} trên {total} bài hát được nhập: liên kết không hiển thị thêm.',
   "This playlist is private or doesn't exist": 'Danh sách phát này ở chế độ riêng tư hoặc không tồn tại',
+  "This Spotify playlist is private or doesn't exist: private playlists and Liked Songs come in with Add music › Connect Spotify": 'Danh sách phát Spotify này ở chế độ riêng tư hoặc không tồn tại: danh sách phát riêng tư và Bài hát đã thích vào bằng Thêm nhạc › Kết nối Spotify',
+  "This Spotify album was removed, or isn't available in your country": 'Album Spotify này đã bị gỡ, hoặc không có ở quốc gia của bạn',
   "This album was removed, or isn't available in its store": 'Album này đã bị gỡ hoặc không có trong cửa hàng của nó',
   'That link is a single song: paste a playlist or album link': 'Liên kết đó là của một bài hát: hãy dán liên kết danh sách phát hoặc album',
   'This playlist has no songs': 'Danh sách phát này không có bài hát nào',

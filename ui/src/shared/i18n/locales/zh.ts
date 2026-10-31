@@ -1578,6 +1578,8 @@ const zh: Record<string, string> = {
   'Imported “{name}”: {found} of {n} songs found': '已导入“{name}”：{n} 首中找到 {found} 首',
   'Only {n} of the {total} songs came in: the link shows no more.': '{total} 首中只有 {n} 首导入：链接没有显示更多。',
   "This playlist is private or doesn't exist": '此播放列表是私密的或不存在',
+  "This Spotify playlist is private or doesn't exist: private playlists and Liked Songs come in with Add music › Connect Spotify": '这个 Spotify 歌单是私密的或不存在：私密歌单和已点赞的歌曲可通过“添加音乐 › 连接 Spotify”导入',
+  "This Spotify album was removed, or isn't available in your country": '这张 Spotify 专辑已被移除，或在你的国家/地区不可用',
   "This album was removed, or isn't available in its store": '此专辑已被移除，或在其商店中不可用',
   'That link is a single song: paste a playlist or album link': '该链接是单首歌曲：请粘贴播放列表或专辑链接',
   'This playlist has no songs': '此播放列表中没有歌曲',

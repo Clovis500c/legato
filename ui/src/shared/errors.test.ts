@@ -23,6 +23,11 @@ describe('explain', () => {
     expect(explain('Couldn’t add “4290 Days”')).toEqual({ text: 'Couldn’t add “4290 Days”' })
   })
 
+  it('says what works instead of a private Spotify playlist', () => {
+    expect(explain("This Spotify playlist is private or doesn't exist").text).toBe("This Spotify playlist is private or doesn't exist: private playlists and Liked Songs come in with Add music › Connect Spotify")
+    expect(explain("This Spotify album is private or doesn't exist").text).toBe("This Spotify album was removed, or isn't available in your country")
+  })
+
   it('changes nothing the second time', () => {
     for (const raw of ['dns error', 'timed out', '429 Too Many Requests', 'YouTube → 502 Bad Gateway']) {
       const once = explain(raw).text

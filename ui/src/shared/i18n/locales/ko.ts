@@ -1578,6 +1578,8 @@ const ko: Record<string, string> = {
   'Imported “{name}”: {found} of {n} songs found': '“{name}”을(를) 가져왔습니다: {n}곡 중 {found}곡 찾음',
   'Only {n} of the {total} songs came in: the link shows no more.': '{total}곡 중 {n}곡만 들어왔습니다: 링크에는 더 이상 표시되지 않습니다.',
   "This playlist is private or doesn't exist": '이 플레이리스트는 비공개이거나 존재하지 않습니다',
+  "This Spotify playlist is private or doesn't exist: private playlists and Liked Songs come in with Add music › Connect Spotify": '이 Spotify 플레이리스트는 비공개이거나 존재하지 않습니다. 비공개 플레이리스트와 좋아요 표시한 곡은 음악 추가 › Spotify 연결로 가져올 수 있습니다',
+  "This Spotify album was removed, or isn't available in your country": '이 Spotify 앨범은 삭제되었거나 사용자의 국가에서 이용할 수 없습니다',
   "This album was removed, or isn't available in its store": '이 앨범은 삭제되었거나 해당 스토어에서 이용할 수 없습니다',
   'That link is a single song: paste a playlist or album link': '이 링크는 한 곡의 링크입니다: 플레이리스트나 앨범 링크를 붙여넣으세요',
   'This playlist has no songs': '이 플레이리스트에는 곡이 없습니다',

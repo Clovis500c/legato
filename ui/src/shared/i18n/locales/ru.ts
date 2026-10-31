@@ -1578,6 +1578,8 @@ const ru: Record<string, string> = {
   'Imported “{name}”: {found} of {n} songs found': '«{name}» импортирован: найдено {found} из {n} песен',
   'Only {n} of the {total} songs came in: the link shows no more.': 'Добавлено только {n} песен из {total}: ссылка не показывает больше.',
   "This playlist is private or doesn't exist": 'Этот плейлист закрыт или не существует',
+  "This Spotify playlist is private or doesn't exist: private playlists and Liked Songs come in with Add music › Connect Spotify": 'Этот плейлист Spotify закрыт или не существует: закрытые плейлисты и «Любимые треки» можно перенести через «Добавить музыку › Подключить Spotify»',
+  "This Spotify album was removed, or isn't available in your country": 'Этот альбом Spotify удалён или недоступен в вашей стране',
   "This album was removed, or isn't available in its store": 'Этот альбом удалён или недоступен в своём магазине',
   'That link is a single song: paste a playlist or album link': 'Эта ссылка ведёт на одну песню: вставьте ссылку на плейлист или альбом',
   'This playlist has no songs': 'В этом плейлисте нет песен',

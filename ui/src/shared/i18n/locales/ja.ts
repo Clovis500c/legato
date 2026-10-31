@@ -1578,6 +1578,8 @@ const ja: Record<string, string> = {
   'Imported “{name}”: {found} of {n} songs found': '「{name}」を取り込みました：{n} 曲中 {found} 曲が見つかりました',
   'Only {n} of the {total} songs came in: the link shows no more.': '{total} 曲中 {n} 曲だけが取り込まれました。リンクにはこれ以上表示されません。',
   "This playlist is private or doesn't exist": 'このプレイリストは非公開か、存在しません',
+  "This Spotify playlist is private or doesn't exist: private playlists and Liked Songs come in with Add music › Connect Spotify": 'この Spotify のプレイリストは非公開か存在しません。非公開のプレイリストとお気に入りの曲は「音楽を追加 › Spotify に接続」で取り込めます',
+  "This Spotify album was removed, or isn't available in your country": 'この Spotify のアルバムは削除されたか、お住まいの国では利用できません',
   "This album was removed, or isn't available in its store": 'このアルバムは削除されたか、そのストアでは利用できません',
   'That link is a single song: paste a playlist or album link': 'このリンクは 1 曲のものです。プレイリストかアルバムのリンクを貼り付けてください',
   'This playlist has no songs': 'このプレイリストには曲がありません',

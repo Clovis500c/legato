@@ -1578,6 +1578,8 @@ const sv: Record<string, string> = {
   'Imported “{name}”: {found} of {n} songs found': '”{name}” importerades: {found} av {n} låtar hittades',
   'Only {n} of the {total} songs came in: the link shows no more.': 'Bara {n} av {total} låtar kom med: länken visar inte fler.',
   "This playlist is private or doesn't exist": 'Den här spellistan är privat eller finns inte',
+  "This Spotify playlist is private or doesn't exist: private playlists and Liked Songs come in with Add music › Connect Spotify": 'Den här Spotify-spellistan är privat eller finns inte: privata spellistor och gillade låtar kommer in med Lägg till musik › Anslut Spotify',
+  "This Spotify album was removed, or isn't available in your country": 'Det här Spotify-albumet har tagits bort, eller finns inte i ditt land',
   "This album was removed, or isn't available in its store": 'Det här albumet har tagits bort eller finns inte i sin butik',
   'That link is a single song: paste a playlist or album link': 'Den länken gäller en enda låt: klistra in en länk till en spellista eller ett album',
   'This playlist has no songs': 'Den här spellistan har inga låtar',

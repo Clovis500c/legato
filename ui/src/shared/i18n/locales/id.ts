@@ -1578,6 +1578,8 @@ const id: Record<string, string> = {
   'Imported “{name}”: {found} of {n} songs found': '“{name}” diimpor: {found} dari {n} lagu ditemukan',
   'Only {n} of the {total} songs came in: the link shows no more.': 'Hanya {n} dari {total} lagu yang masuk: tautan tidak menampilkan lebih banyak.',
   "This playlist is private or doesn't exist": 'Playlist ini privat atau tidak ada',
+  "This Spotify playlist is private or doesn't exist: private playlists and Liked Songs come in with Add music › Connect Spotify": 'Playlist Spotify ini privat atau tidak ada: playlist privat dan Lagu yang Disukai masuk lewat Tambah musik › Hubungkan Spotify',
+  "This Spotify album was removed, or isn't available in your country": 'Album Spotify ini sudah dihapus, atau tidak tersedia di negara Anda',
   "This album was removed, or isn't available in its store": 'Album ini telah dihapus, atau tidak tersedia di tokonya',
   'That link is a single song: paste a playlist or album link': 'Tautan itu untuk satu lagu: tempel tautan playlist atau album',
   'This playlist has no songs': 'Playlist ini tidak berisi lagu',
