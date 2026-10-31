@@ -34,12 +34,14 @@ fn csv(text: &str) -> Option<Vec<Wanted>> {
     let mut lines = text.lines().filter(|l| !l.trim().is_empty());
     let head = lines.next()?;
     let sep = [',', ';', '\t'].into_iter().max_by_key(|s| head.matches(*s).count()).filter(|s| head.contains(*s))?;
+    let rows: Vec<&str> = lines.collect();
+    // Exportify: header in the user's language, same columns in every one (uri, name, artist uris, artist names).
+    let exportify = rows.iter().any(|r| cells(r, sep)[0].starts_with("spotify:"));
     let cols: Vec<String> = cells(head, sep).iter().map(|c| c.to_lowercase()).collect();
     let find = |names: &[&str]| cols.iter().position(|c| names.iter().any(|n| c == n || c.starts_with(&format!("{n} ")) || c.starts_with(&format!("{n}("))));
-    let title = find(&["title", "track name", "track", "song", "name", "titre"])?;
-    let artist = find(&["artist", "artist name(s)", "artist name", "artists", "artiste", "artistes"]);
+    let (title, artist) = if exportify { (1, Some(3)) } else { (find(&["title", "track name", "track", "song", "name", "titre"])?, find(&["artist", "artist name(s)", "artist name", "artists", "artiste", "artistes"])) };
     Some(
-        lines
+        rows.into_iter()
             .filter_map(|l| {
                 let row = cells(l, sep);
                 let title = row.get(title)?.trim().to_string();
@@ -163,6 +165,14 @@ mod tests {
         assert_eq!(parse("title\tartist\nHello\tAdele"), vec![w("Adele", "Hello")]);
         // A line with commas but no header: plain lines.
         assert_eq!(parse("Crosby, Stills & Nash - Helplessly Hoping"), vec![w("Crosby, Stills & Nash", "Helplessly Hoping")]);
+    }
+
+    #[test]
+    fn reads_exportify_in_any_language() {
+        let row = "\"spotify:track:0sNOF9WDwhWunNAHPD3Baj\",\"Hello\",\"spotify:artist:4dpARuHxo51G3z768sgnrY\",\"Adele\",\"spotify:album:x\",\"25\"";
+        for head in ["\"Track URI\",\"Track Name\",\"Artist URI(s)\",\"Artist Name(s)\",\"Album URI\",\"Album Name\"", "\"URI du titre\",\"Nom du titre\",\"URI(s) de l'artiste\",\"Nom(s) de l'artiste\",\"URI de l'album\",\"Nom de l'album\""] {
+            assert_eq!(parse(&format!("{head}\n{row}\n")), vec![w("Adele", "Hello")], "{head}");
+        }
     }
 
     #[test]
