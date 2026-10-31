@@ -3,7 +3,7 @@ import { useSettings } from '../../app/settings'
 import type { VisualizerStyle } from '../../shared/theme/theme'
 import { usePlayer } from './store'
 import { viz } from './vizFrames'
-import type { ToWorker } from './vizProtocol'
+import { frameMessage, type ToWorker } from './vizProtocol'
 
 /** Drawing rate, frames a second: the sound's own frames come at 60 (step 1), the picture is drawn at half of that. */
 const FPS = 30
@@ -112,7 +112,8 @@ export function VizCanvas({ look, listen = true }: { look: VisualizerStyle; list
       if (drawing) w.postMessage({ t: 'silence' } satisfies ToWorker)
       return
     }
-    return viz.subscribe((f) => w.postMessage({ t: 'frame', l: f.left, r: f.right } satisfies ToWorker))
+    // A silent frame (a gap, a stalled buffer, a stop) is silence: the bars fall, then the loop stops.
+    return viz.subscribe((f) => w.postMessage(frameMessage(f)))
   }, [ready, drawing, live])
 
   return <div ref={box} aria-hidden className="size-full text-ink" />

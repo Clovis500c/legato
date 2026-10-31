@@ -34,19 +34,31 @@ export function createPainter(canvas: OffscreenCanvas) {
   let look: VisualizerStyle = 'led'
   let calm = false
   let ink = '#888'
+  let inkRgb: [number, number, number] | null = null
   let warn = WARN
   let vu = createVu(false)
   let ring: Ring = ringBars(1, 1)
   let dial: Dial = dialGeometry(1, 1)
   let dialMap: OffscreenCanvas | null = null
   let strip: { img: ImageData; px: Uint32Array; mix: ReturnType<typeof rowMix> } | null = null
-  const map = colorMap()
+  let map = colorMap()
   const acc = { v: 0 }
   let scene = createScene(columnsFor(0), false)
   let rows: LedRows = { y: [], h: [] }
   let sprites: Sprites | null = null
   let spans = columnSpans(1, 1, 0)
   let cols = 0
+
+  /** A CSS colour as [r, g, b] (the canvas parses it). */
+  function rgbOf(color: string): [number, number, number] {
+    const one = new OffscreenCanvas(1, 1).getContext('2d', { willReadFrequently: true })
+    if (!one) return [128, 128, 128]
+    one.fillStyle = '#808080'
+    one.fillStyle = color
+    one.fillRect(0, 0, 1, 1)
+    const d = one.getImageData(0, 0, 1, 1).data
+    return [d[0], d[1], d[2]]
+  }
 
   /** Everything that depends on the size, the look or the colour. */
   function layout() {
@@ -303,7 +315,11 @@ export function createPainter(canvas: OffscreenCanvas) {
       if (next !== look && ctx) ctx.clearRect(0, 0, canvas.width, canvas.height)
       look = next
       calm = calmer
-      ink = color || '#888'
+      if ((color || '#888') !== ink || !inkRgb) {
+        ink = color || '#888'
+        inkRgb = rgbOf(ink)
+        map = colorMap(inkRgb)
+      }
       warn = alarm || WARN
       if (restart) {
         cols = 0
@@ -311,8 +327,8 @@ export function createPainter(canvas: OffscreenCanvas) {
       }
       layout()
     },
-    frame(l: ArrayLike<number>, r: ArrayLike<number>) {
-      if (look === 'vu') vu.frame(l, r)
+    frame(l: ArrayLike<number>, r: ArrayLike<number>, rms: ArrayLike<number>) {
+      if (look === 'vu') vu.frame(rms)
       else scene.frame(l, r)
     },
     silence() {

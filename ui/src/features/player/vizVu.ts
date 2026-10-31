@@ -22,15 +22,10 @@ export const VU_MARKS = [-20, -10, -7, -5, -3, 0, 3]
 export const vuPos = (vu: number) => Math.min(1.04, Math.max(0, (vu - VU_MIN) / (VU_MAX - VU_MIN)))
 
 /**
- * One side's level, VU, from its band levels (dB): the bands' energies summed. A sine reads its amplitude in dB in
- * the band it sits in (0 dB at full scale), so the sum is 3 dB over the RMS level.
+ * One side's level, VU, from the frame's window RMS (dB, 0 = full scale, a full-scale sine reads -3). Not from the
+ * bands: under 300 Hz they overlap, so summing them reads 5 to 9 dB hot on bass.
  */
-export function vuOf(bands: ArrayLike<number>): number {
-  let p = 0
-  for (let i = 0; i < bands.length; i++) p += 10 ** (bands[i] / 10)
-  const dbfs = 10 * Math.log10(Math.max(p, 1e-12)) - 3
-  return dbfs - VU_REF_DBFS
-}
+export const vuOf = (rmsDb: number) => rmsDb - VU_REF_DBFS
 
 /** A spring-and-damper needle (exact steps: the same at any frame rate). */
 export interface Needle {
@@ -70,10 +65,10 @@ export function createVu(calm: boolean) {
   const vu = [VU_MIN, VU_MIN]
   let silent = true
   return {
-    /** The newest frame (both sides, dB per band). */
-    frame(left: ArrayLike<number>, right: ArrayLike<number>) {
-      vu[0] = vuOf(left)
-      vu[1] = vuOf(right)
+    /** The newest frame's window RMS, both sides, dB. */
+    frame(rms: ArrayLike<number>) {
+      vu[0] = vuOf(rms[0])
+      vu[1] = vuOf(rms[1])
       silent = false
     },
     /** Nothing sounds: the needles fall to zero. */

@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest'
-import { VIZ_BANDS } from './vizUnpack'
 import { createVu, holdLed, LED_HOLD, stepNeedle, vuOf, vuPos, VU_MAX, VU_MIN, type Needle } from './vizVu'
 
 /** A step from 0 to 1, in 1 ms steps: time to 99 % and the highest value reached. */
@@ -42,22 +41,21 @@ describe('VU needle', () => {
 })
 
 describe('VU level', () => {
-  /** Bands carrying one sine of this amplitude in dB. */
-  const sine = (db: number) => Float32Array.from({ length: VIZ_BANDS }, (_, i) => (i === 30 ? db : -120))
-
   it('a sine at 14 dB under full scale RMS reads 0 VU', () => {
-    // Amplitude 14 dB under RMS full scale is 11 dB under full scale peak.
-    expect(vuOf(sine(-11))).toBeCloseTo(0, 5)
-    expect(vuOf(sine(-1))).toBeCloseTo(10, 5)
+    // A full-scale sine's RMS reads -3 dB: 11 dB under that is -14.
+    expect(vuOf(-14)).toBeCloseTo(0, 5)
+    expect(vuOf(-4)).toBeCloseTo(10, 5)
   })
 
-  it('splitting the energy over bands reads the same', () => {
-    const two = Float32Array.from({ length: VIZ_BANDS }, (_, i) => (i === 10 || i === 40 ? -11 - 10 * Math.log10(2) : -120))
-    expect(vuOf(two)).toBeCloseTo(vuOf(sine(-11)), 5)
+  it('reads the window RMS, not the bands (overlapping bass bands would read hot)', () => {
+    const vu = createVu(false)
+    vu.frame([-14, -14])
+    for (let i = 0; i < 400; i++) vu.step(1 / 60)
+    expect(vu.step(1 / 60).pos[0]).toBeCloseTo(vuPos(0), 3)
   })
 
   it('silence sits under the scale; the scale ends map to 0 and 1', () => {
-    expect(vuOf(new Float32Array(VIZ_BANDS).fill(-120))).toBeLessThan(VU_MIN)
+    expect(vuOf(-120)).toBeLessThan(VU_MIN)
     expect(vuPos(VU_MIN)).toBe(0)
     expect(vuPos(VU_MAX)).toBe(1)
     expect(vuPos(0)).toBeCloseTo(20 / 23, 9)
@@ -65,8 +63,7 @@ describe('VU level', () => {
 
   it('a steady 0 VU tone brings the needle to 99 % of its place in 300 ms', () => {
     const vu = createVu(false)
-    const l = Float32Array.from({ length: VIZ_BANDS }, (_, i) => (i === 30 ? -11 : -120))
-    vu.frame(l, l)
+    vu.frame([-14, -14])
     const goal = vuPos(0)
     let at = -1
     for (let t = 0.001; t < 1; t += 0.001) {
@@ -78,11 +75,10 @@ describe('VU level', () => {
   })
 
   it('calm: the needle drifts, slower than normal', () => {
-    const l = Float32Array.from({ length: VIZ_BANDS }, (_, i) => (i === 30 ? -11 : -120))
     const fast = createVu(false)
     const slow = createVu(true)
-    fast.frame(l, l)
-    slow.frame(l, l)
+    fast.frame([-14, -14])
+    slow.frame([-14, -14])
     let a = fast.step(0)
     let b = slow.step(0)
     for (let i = 0; i < 30; i++) {
@@ -103,14 +99,14 @@ describe('peak LED', () => {
 
   it('on/off at most once a second, even for a strobing level', () => {
     const vu = createVu(false)
-    const loud = Float32Array.from({ length: VIZ_BANDS }, (_, i) => (i === 30 ? 0 : -120))
-    const quiet = new Float32Array(VIZ_BANDS).fill(-120)
+    const loud = [-3, -3]
+    const quiet = [-120, -120]
     let last = false
     let flips = 0
     // A 10 Hz strobe for 2 s at 60 fps.
     for (let f = 0; f < 120; f++) {
       const on = Math.floor(f / 3) % 2 === 0
-      vu.frame(on ? loud : quiet, on ? loud : quiet)
+      vu.frame(on ? loud : quiet)
       const s = vu.step(1 / 60)
       if (s.on[0] !== last) flips++
       last = s.on[0]
@@ -121,8 +117,7 @@ describe('peak LED', () => {
 
   it('silence lets the needles and LEDs rest', () => {
     const vu = createVu(false)
-    const loud = Float32Array.from({ length: VIZ_BANDS }, (_, i) => (i === 30 ? 0 : -120))
-    vu.frame(loud, loud)
+    vu.frame([-3, -3])
     for (let i = 0; i < 60; i++) vu.step(1 / 60)
     vu.silence()
     let s = vu.step(1 / 60)
