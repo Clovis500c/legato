@@ -66,9 +66,9 @@ Updates (the `updateChannel` setting, kept per PC, not synced):
 - Back from Beta to Stable the app never downgrades: it waits for a Stable newer than the version it runs.
 
 - **Version**: `MAJOR.MINOR` comes from `src-tauri/tauri.conf.json`, the patch number is the number of commits on
-  `master` (`scripts/release.mjs`). The files say `1.0.0`; the release says `1.0.` plus that count. For a bigger step,
+  `master` (`scripts/release.mjs`). The files say `1.1.0`; the release says `1.1.` plus that count. For a bigger step,
   change `MAJOR.MINOR` in `tauri.conf.json` (and `package.json`, the workspace `Cargo.toml` and the `music-*` path
-  dependencies to match). 1.0: the front-end redesign (docs/design.md), after the 0.1 releases.
+  dependencies to match). 1.0: the front-end redesign (docs/design.md), after the 0.1 releases. 1.1: the first Stable of the v2 plan (2026-10-31).
 - **No release for a push**: put `[skip release]` in the commit's first line (no beta either).
 - **By hand**: Actions › release › Run workflow (releases `master` as it is, as a beta).
 - **Try a promote**: `node scripts/promote.mjs --dry-run` prints which version would become Stable and its notes; it
