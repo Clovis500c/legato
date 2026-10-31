@@ -54,7 +54,9 @@ and 10 minutes in the tray. `--quick` is a short run. The numbers, how they are 
 `app.legato.desktop.e2e`, `src-tauri/tauri.e2e.conf.json`, the exe copied to `target/e2e`) and walks a new user's first
 minutes through its real window, over WebView2's DevTools port (`scripts/cdp.mjs`, the flags of `scripts/guest.mjs`): the
 welcome comes first, Add folder (three WAV songs the test writes, `e2e/wav.mjs`), the Songs page lists them, a song plays
-3 s and the engine's position moves, Pause freezes it and Play moves it again, a search (suggestions, YouTube, YouTube
+3 s and the engine's position moves, the visualizer's frames come at about 60 a second, Pause freezes it and Play moves it again, the
+visualizer turned on draws LED bars in Now Playing (a screenshot of the strip, and of V's full screen, must not be blank:
+`e2e/png.mjs` decodes it) and Esc leaves, a search (suggestions, YouTube, YouTube
 Music and Apple, all answered by `e2e/mock.mjs` from `e2e/fixtures`) while the song plays on, a Deezer playlist link typed
 in Add music (its progress toast, the playlist made with the one song found, the one not found said) and an Apple Music album
 link pasted with Ctrl+V (Cancel makes nothing, then the full import), the window's Close with

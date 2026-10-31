@@ -1,9 +1,11 @@
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
+import { crc32, deflateSync } from 'node:zlib'
 import { afterAll, describe, expect, it } from 'vitest'
 import { carriesId } from '../scripts/guest.mjs'
 import { answer, known, startMock } from './mock.mjs'
+import { decodePng, strongShare } from './png.mjs'
 import { DEFERRED_BY, E2E_ID, FEATURE_MARK, SHOTS, STEPS, appEnv, clearShots, deferredStarts, e2eFolders, flat, pace, parseArgs, shotFiles } from './smoke.mjs'
 import { DEMO_SONGS, sineWav, writeDemo } from './wav.mjs'
 
@@ -203,5 +205,52 @@ describe('mock network', () => {
     } finally {
       await mock.close()
     }
+  })
+})
+
+describe('picture check', () => {
+  const chunk = (type: string, body: Buffer) => {
+    const head = Buffer.alloc(8)
+    head.writeUInt32BE(body.length, 0)
+    head.write(type, 4, 'latin1')
+    const tail = Buffer.alloc(4)
+    tail.writeUInt32BE(crc32(Buffer.concat([head.subarray(4), body])), 0)
+    return Buffer.concat([head, body, tail])
+  }
+  /** A PNG of `rows` (arrays of [r, g, b]), each row written with the given filter (0 none, 1 sub, 2 up). */
+  const png = (rows: number[][][], filters: number[]) => {
+    const w = rows[0].length
+    const ihdr = Buffer.alloc(13)
+    ihdr.writeUInt32BE(w, 0)
+    ihdr.writeUInt32BE(rows.length, 4)
+    ihdr[8] = 8
+    ihdr[9] = 2
+    const raw: number[] = []
+    rows.forEach((row, y) => {
+      const flat = row.flat()
+      raw.push(filters[y])
+      flat.forEach((v, x) => raw.push((v - (filters[y] === 1 ? (flat[x - 3] ?? 0) : filters[y] === 2 ? (rows[y - 1]?.flat()[x] ?? 0) : 0) + 256) & 255))
+    })
+    return Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), chunk('IHDR', ihdr), chunk('IDAT', deflateSync(Buffer.from(raw))), chunk('IEND', Buffer.alloc(0))])
+  }
+
+  it('reads pixels through the filters', () => {
+    const rows = [
+      [[10, 20, 30], [40, 50, 60]],
+      [[70, 80, 90], [100, 110, 120]],
+      [[1, 2, 3], [4, 5, 6]],
+    ]
+    const got = decodePng(png(rows, [0, 1, 2]))
+    expect([got.width, got.height, got.channels]).toEqual([2, 3, 3])
+    expect([...got.data]).toEqual(rows.flat(2))
+  })
+
+  it('tells a blank or faintly patterned picture from one with lit bars', () => {
+    const flat = Array.from({ length: 10 }, () => Array.from({ length: 10 }, () => [20, 20, 20]))
+    expect(strongShare(decodePng(png(flat, Array(10).fill(0))))).toBe(0)
+    const faint = flat.map((row, y) => row.map((p) => (y % 2 ? [40, 40, 40] : p)))
+    expect(strongShare(decodePng(png(faint, Array(10).fill(0))))).toBe(0)
+    const lit = flat.map((row, y) => row.map((p, x) => (x === 3 && y > 4 ? [230, 230, 230] : p)))
+    expect(strongShare(decodePng(png(lit, Array(10).fill(0))))).toBeCloseTo(0.05, 5)
   })
 })

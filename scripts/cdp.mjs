@@ -128,9 +128,9 @@ export class Cdp {
     return this.key('Enter', 'Enter', { text: '\r', vk: 13 })
   }
 
-  /** PNG of the page, as a Buffer. */
-  async screenshot() {
-    const { data } = await this.send('Page.captureScreenshot', { format: 'png' })
+  /** PNG of the page, as a Buffer; `clip` {x, y, width, height} (CSS px) for just a part. */
+  async screenshot(clip) {
+    const { data } = await this.send('Page.captureScreenshot', { format: 'png', ...(clip ? { clip: { ...clip, scale: 1 } } : {}) })
     return Buffer.from(data, 'base64')
   }
 

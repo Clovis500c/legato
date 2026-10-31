@@ -7,6 +7,8 @@
 //   play         a local song plays 3 s: the engine's position moves, sound goes through the live chain
 //   viz          the visualizer's stream (viz_start): ~60 frames a second of 1/6-octave bands, the song's own band lit, quiet after viz_stop
 //   pause-play   Pause freezes it, Play moves it again
+//   visualizer   the visualizer on: LED bars drawn by a worker under the cover (not blank), V takes it full screen, Esc leaves
+//   karaoke      K opens the lyrics screen, Esc closes it
 //   search       typed text: suggestions, then YouTube, YouTube Music and Apple results, all from e2e/mock.mjs; the song plays on
 //   links        a pasted Deezer playlist (Add music) and Apple album (Ctrl+V): the progress toast, Cancel, the playlist made
 //   quit         "Keep running in the notification area" off, the window's Close: the app ends by itself, exit code 0
@@ -27,6 +29,7 @@
 import { spawn, spawnSync } from 'node:child_process'
 import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
+import { decodePng, strongShare } from './png.mjs'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { Cdp, sleep, waitForPage } from '../scripts/cdp.mjs'
 import { browserArgs, carriesId, freePort, inputsHash } from '../scripts/guest.mjs'
@@ -90,8 +93,8 @@ export const flat = (s) => String(s).replace(/\s+/g, ' ').trim()
 
 /** The pictures the walk takes (`shot`) and its steps (`step`, named in FAIL-<step>.png): e2e.test.ts keeps both lists equal
  *  to the walk's own calls. */
-export const SHOTS = ['1-welcome', '2-library', '3-songs', '4-playing', '5-search', '5-imported', '6-settings', '7-relaunch']
-export const STEPS = ['launch', 'welcome', 'songs', 'play', 'viz', 'pause-play', 'karaoke', 'search', 'links', 'quit', 'relaunch']
+export const SHOTS = ['1-welcome', '2-library', '3-songs', '4-playing', '8-visualizer', '9-visualizer-full', '5-search', '5-imported', '6-settings', '7-relaunch']
+export const STEPS = ['launch', 'welcome', 'songs', 'play', 'viz', 'pause-play', 'visualizer', 'karaoke', 'search', 'links', 'quit', 'relaunch']
 
 /** What the app's log says started its deferred work (src-tauri/src/deferred.rs), once per launch. */
 export const DEFERRED_BY = { ready: 'deferred start by the UI ready signal', timer: 'deferred start by the timer' }
@@ -491,6 +494,46 @@ async function walk(o, dataDirs) {
       if (later.positionMs < back.positionMs + 800) throw new Error(`the song did not play on after Play: ${back.positionMs} to ${later.positionMs}`)
     })
 
+    // Visualizer v2's renderer: on in Settings, Now Playing's strip is a canvas a worker draws (LED bars, the tone's band lit:
+    // pixels that stand out from the page, not a blank or a faint grid), V takes it over the window, Esc gives it back.
+    await step('visualizer', async () => {
+      const key = (code) => page.cdp.evaluate(`window.dispatchEvent(new KeyboardEvent('keydown', { code: ${JSON.stringify(code)}, bubbles: true, cancelable: true }))`)
+      await page.press('Settings')
+      await page.press('Playback', { scope: 'page' })
+      await page.press('Visualizer', { scope: 'page' })
+      await app.cdp.waitFor(`document.querySelector('[aria-label="Visualizer"][role=switch]')?.getAttribute('aria-checked') === 'true'`, { timeout: 5000 })
+      await key('KeyF')
+      const canvas = (scope) => `(() => { const c = document.querySelector('${scope} canvas'); const r = c?.getBoundingClientRect(); return r && r.width > 50 && r.height > 20 ? { x: r.x, y: r.y, width: r.width, height: r.height } : null })()`
+      const strip = await app.cdp.waitFor(canvas('[role=dialog][aria-label="Now playing"]'), { timeout: 10000 }).catch(() => {
+        throw new Error('Now Playing shows no visualizer canvas')
+      })
+      await sleep(1500)
+      const lit = async (rect, what) => {
+        const share = strongShare(decodePng(await app.cdp.screenshot(rect)))
+        if (!(share > 0.004)) throw new Error(`the ${what} looks blank (${share} of it stands out)`)
+        return share
+      }
+      await lit(strip, 'strip')
+      await shot('8-visualizer')
+      await key('KeyV')
+      const full = await app.cdp.waitFor(canvas('[role=dialog][aria-label="Visualizer"]'), { timeout: 10000 }).catch(() => {
+        throw new Error('V did not open the visualizer screen')
+      })
+      await sleep(800)
+      await lit(full, 'full screen')
+      await shot('9-visualizer-full')
+      // Esc leaves; the strip underneath draws again.
+      await key('Escape')
+      await app.cdp.waitFor(`!document.querySelector('[role=dialog][aria-label="Visualizer"]')`, { timeout: 5000 }).catch(() => {
+        throw new Error('Esc did not leave the visualizer screen')
+      })
+      await sleep(800)
+      await key('KeyF')
+      await app.cdp.waitFor(`!document.querySelector('[role=dialog][aria-label="Now playing"]')`, { timeout: 5000 })
+      // Settings opens on the section it was left on: back to General, where the quit step looks.
+      await page.press('General', { scope: 'page' })
+    })
+
     // The mock has no lyrics: the screen opens full window with its calm message, and Esc brings the page back.
     await step('karaoke', async () => {
       const key = (code) => page.cdp.evaluate(`window.dispatchEvent(new KeyboardEvent('keydown', { code: ${JSON.stringify(code)}, bubbles: true, cancelable: true }))`)
@@ -574,6 +617,8 @@ async function walk(o, dataDirs) {
 
     await step('quit', async () => {
       await page.press('Settings')
+      // The page's first rows move down when the startup row appears (it asks Windows first): wait for it, or the click lands on it.
+      await app.cdp.waitFor(`!!document.querySelector('[aria-label="Open at startup"]')`, { timeout: 10000 })
       await page.press('Keep running in the notification area')
       await app.cdp.waitFor(`document.querySelector('[aria-label="Keep running in the notification area"]')?.getAttribute('aria-checked') === 'false'`, { timeout: 5000 })
       // Saved, not just shown: the window's close reads it from the library.
