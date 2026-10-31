@@ -1604,6 +1604,11 @@ const ja: Record<string, string> = {
   'Visualizer full screen on / off': 'ビジュアライザーの全画面 オン / オフ',
   '← → move the lyrics · Esc leaves': '← → 歌詞をずらす · Esc で終了',
   // Connect Spotify
+  'Exportify isn’t working right now.': 'Exportify は現在動作していません。',
+  'Spotify didn’t give Exportify access to your lists.': 'Spotify は Exportify にリストへのアクセスを許可しませんでした。',
+  'Exportify stopped before it finished reading your lists.': 'Exportify はリストを読み終える前に止まりました。',
+  'Exportify’s file couldn’t be read.': 'Exportify のファイルを読み取れませんでした。',
+  'Your library didn’t change. Try again later, or read Spotify’s page instead.': 'ライブラリは変更されていません。後でもう一度試すか、代わりに Spotify のページを読み取ってください。',
   'Its playlists and likes come in. Nothing goes back to Spotify; YouTube Music’s own direction decides what reaches it.': 'このアカウントのプレイリストと高評価がここに入ります。Spotify には何も戻りません。YouTube Music に届くものは、その同期の方向で決まります。',
   'Sync direction is Off: nothing comes in (Settings › Accounts)': '同期の方向がオフです: 何も入りません (設定 › アカウント)',
   'Exportify, a free open-source tool, reads your lists in a window. If Spotify’s page asks, sign in and accept: everything else happens by itself.': '無料のオープンソースツール Exportify がウィンドウでリストを読み取ります。Spotify のページで求められたらサインインして承認してください。あとはすべて自動で進みます。',

@@ -7,8 +7,10 @@
 use crate::model::{Source, Track};
 use crate::songlist::cells;
 use anyhow::{Context, bail};
+use serde::Serialize;
 use std::io::{Cursor, Read, Seek};
 use std::path::Path;
+use std::time::Duration;
 
 /// Same id as Connect Spotify's Liked Songs: either route refreshes it.
 pub const LIKED: &str = "liked";
@@ -18,6 +20,80 @@ const MAX_LISTS: usize = 500;
 const MAX_TEXT: usize = 300;
 /// File, and CSV text unpacked from it (a ZIP can claim anything).
 const MAX_BYTES: u64 = 200 << 20;
+const PAGE: &str = "https://exportify.app/";
+const SIGNAL: &str = "legato-exportify:";
+/// Silence before the window counts as broken. Its buttons: seconds. Its reading: one long list can stay quiet for minutes.
+const LOAD: Duration = Duration::from_secs(30);
+const READ: Duration = Duration::from_secs(300);
+
+/// What Exportify's page says (`music_shield::EXPORTIFY_SCRIPT`).
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum Signal {
+    /// One of its buttons is there.
+    Ready,
+    /// Its reading is moving.
+    Busy,
+    /// Back from Spotify with no way in.
+    Refused,
+}
+
+/// A signal, only from Exportify's page.
+pub fn signal(source: &str, message: &str) -> Option<Signal> {
+    if !source.starts_with(PAGE) {
+        return None;
+    }
+    match message.strip_prefix(SIGNAL)? {
+        "ready" => Some(Signal::Ready),
+        "busy" => Some(Signal::Busy),
+        "refused" => Some(Signal::Refused),
+        _ => None,
+    }
+}
+
+/// Why no lists came.
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, ts_rs::TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export)]
+pub enum ExportTrouble {
+    /// The user closed its window.
+    Closed,
+    /// No page, or one without its buttons.
+    Down,
+    Refused,
+    Stalled,
+    BadFile,
+}
+
+/// Exportify's window: silence per stage. Pure, ticked by the shell.
+#[derive(Debug, Default)]
+pub struct Watch {
+    quiet: Duration,
+    reading: bool,
+}
+
+impl Watch {
+    pub fn heard(&mut self, signal: Signal) -> Option<ExportTrouble> {
+        self.quiet = Duration::ZERO;
+        self.reading |= signal == Signal::Busy;
+        (signal == Signal::Refused).then_some(ExportTrouble::Refused)
+    }
+
+    /// `url`: the window's page. Elsewhere than Exportify = signing in (Spotify, Google, Apple…), the user's: no limit.
+    pub fn tick(&mut self, step: Duration, url: &str) -> Option<ExportTrouble> {
+        if signing_in(url) {
+            self.quiet = Duration::ZERO;
+            return None;
+        }
+        self.quiet += step;
+        let (limit, trouble) = if self.reading { (READ, ExportTrouble::Stalled) } else { (LOAD, ExportTrouble::Down) };
+        (self.quiet >= limit).then_some(trouble)
+    }
+}
+
+/// Another site's page. Not a browser's error page: that one is Exportify's silence.
+fn signing_in(url: &str) -> bool {
+    url.strip_prefix("https://").is_some_and(|rest| rest.split(['/', ':', '?', '#']).next() != Some("exportify.app"))
+}
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct ExportedList {
@@ -163,6 +239,63 @@ mod tests {
         let bytes = zipped(&[("2024.csv", &a), ("saved_albums.csv", albums), ("liked.csv", &a), ("notes.txt", "hi"), ("empty.csv", HEAD)]);
         let lists = unzip(Cursor::new(bytes)).unwrap();
         assert_eq!(lists.iter().map(|l| l.id.as_str()).collect::<Vec<_>>(), [LIKED, "export:2024"]);
+    }
+
+    #[test]
+    fn only_exportifys_page_signals() {
+        assert_eq!(signal("https://exportify.app/?code=x", "legato-exportify:ready"), Some(Signal::Ready));
+        assert_eq!(signal("https://exportify.app/", "legato-exportify:busy"), Some(Signal::Busy));
+        assert_eq!(signal("https://exportify.app/", "legato-exportify:refused"), Some(Signal::Refused));
+        assert_eq!(signal("https://exportify.app.evil.com/", "legato-exportify:ready"), None);
+        assert_eq!(signal("https://exportify.app/", "legato-exportify:other"), None);
+        assert_eq!(signal("https://exportify.app/", "ready"), None);
+    }
+
+    fn silence(watch: &mut Watch, secs: u64, url: &str) -> Option<ExportTrouble> {
+        (0..secs).find_map(|_| watch.tick(Duration::from_secs(1), url))
+    }
+
+    #[test]
+    fn a_page_without_its_buttons_is_down() {
+        let home = "https://exportify.app/";
+        let mut watch = Watch::default();
+        assert_eq!(silence(&mut watch, 29, home), None);
+        assert_eq!(silence(&mut watch, 1, home), Some(ExportTrouble::Down));
+        // Browser's error page, whatever its address.
+        assert_eq!(silence(&mut Watch::default(), 30, "chrome-error://chromewebdata/"), Some(ExportTrouble::Down));
+        // Its buttons keep it alive.
+        let mut watch = Watch::default();
+        assert_eq!(silence(&mut watch, 29, home), None);
+        assert_eq!(watch.heard(Signal::Ready), None);
+        assert_eq!(silence(&mut watch, 29, home), None);
+    }
+
+    #[test]
+    fn signing_in_takes_as_long_as_it_takes() {
+        let mut watch = Watch::default();
+        assert_eq!(silence(&mut watch, 29, "https://exportify.app/"), None);
+        for page in ["https://accounts.spotify.com/authorize?client_id=x", "https://accounts.google.com/", "https://appleid.apple.com/"] {
+            assert_eq!(silence(&mut watch, 3600, page), None);
+        }
+        // Back: a clean start, then the same limit.
+        assert_eq!(silence(&mut watch, 29, "https://exportify.app/?code=x"), None);
+        assert_eq!(silence(&mut watch, 1, "https://exportify.app/?code=x"), Some(ExportTrouble::Down));
+    }
+
+    #[test]
+    fn a_reading_has_minutes_then_counts_as_stalled() {
+        let home = "https://exportify.app/";
+        let mut watch = Watch::default();
+        assert_eq!(watch.heard(Signal::Busy), None);
+        assert_eq!(silence(&mut watch, 299, home), None);
+        assert_eq!(watch.heard(Signal::Busy), None);
+        assert_eq!(silence(&mut watch, 299, home), None);
+        assert_eq!(silence(&mut watch, 1, home), Some(ExportTrouble::Stalled));
+    }
+
+    #[test]
+    fn a_refusal_is_said_at_once() {
+        assert_eq!(Watch::default().heard(Signal::Refused), Some(ExportTrouble::Refused));
     }
 
     #[test]

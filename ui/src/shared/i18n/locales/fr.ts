@@ -1604,6 +1604,11 @@ const fr: Record<string, string> = {
   'Visualizer full screen on / off': 'Visualiseur en plein écran activé / désactivé',
   '← → move the lyrics · Esc leaves': '← → décaler les paroles · Échap pour quitter',
   // Connect Spotify
+  'Exportify isn’t working right now.': 'Exportify ne fonctionne pas pour le moment.',
+  'Spotify didn’t give Exportify access to your lists.': 'Spotify n’a pas donné à Exportify l’accès à vos listes.',
+  'Exportify stopped before it finished reading your lists.': 'Exportify s’est arrêté avant d’avoir lu toutes vos listes.',
+  'Exportify’s file couldn’t be read.': 'Le fichier d’Exportify n’a pas pu être lu.',
+  'Your library didn’t change. Try again later, or read Spotify’s page instead.': 'Votre bibliothèque n’a pas changé. Réessayez plus tard, ou lisez plutôt la page de Spotify.',
   'Its playlists and likes come in. Nothing goes back to Spotify; YouTube Music’s own direction decides what reaches it.': 'Ses playlists et titres aimés arrivent ici. Rien ne repart vers Spotify ; le sens choisi pour YouTube Music décide de ce qui lui parvient.',
   'Sync direction is Off: nothing comes in (Settings › Accounts)': 'Le sens de la synchronisation est sur Non : rien n’arrive (Paramètres › Comptes)',
   'Exportify, a free open-source tool, reads your lists in a window. If Spotify’s page asks, sign in and accept: everything else happens by itself.': 'Exportify, un outil gratuit et open source, lit vos listes dans une fenêtre. Si la page de Spotify le demande, connectez-vous et acceptez : tout le reste se fait tout seul.',

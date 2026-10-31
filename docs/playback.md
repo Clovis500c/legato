@@ -426,7 +426,11 @@ via the Web API Player endpoints. Audio comes out of the Spotify app; we only se
   by position. The same list imported again replaces its copy (id: the file's name). Liked Songs joins Liked Music,
   whatever the way in (`Library::add_likes`, user's choice 2026-10-31): no second list of likes. YouTube Music's Liked Music is
   rewritten by every sync, so a song not in it waits in your own, and at the next sync the ones with a YouTube version
-  are liked on the account (`push_own_likes`, one every 400 ms). Sync directions decide each hop: Spotify's (Settings › Accounts,
+  are liked on the account (`push_own_likes`, one every 400 ms). Exportify is a third party's site, so its window is watched (`Watch`, pure, in `music_core::spotify_export`;
+  the page says `ready` and `busy` on WebView2's message channel): 30 s without its buttons = down, 5 min of silence
+  while reading = stalled, the sign-in button still there after Spotify = refused. Any other site in that window is a
+  sign-in, the user's, no limit. Each ends in a dialog offering Try again and the second way, never a window left waiting.
+  Sync directions decide each hop: Spotify's (Settings › Accounts,
   shown without a key too) has to bring things in, or Connect Spotify says so and stops; YouTube Music's has to send, or
   the songs stay in your own list. Nothing goes to Spotify: Exportify only reads, and writing needs the official API, so a
   key and Premium (`DirectionPicker` keeps Import only and Off).

@@ -1604,6 +1604,11 @@ const ko: Record<string, string> = {
   'Visualizer full screen on / off': '비주얼라이저 전체 화면 켜기 / 끄기',
   '← → move the lyrics · Esc leaves': '← → 가사 이동 · Esc로 나가기',
   // Connect Spotify
+  'Exportify isn’t working right now.': 'Exportify가 지금 작동하지 않습니다.',
+  'Spotify didn’t give Exportify access to your lists.': 'Spotify가 Exportify에 내 목록에 대한 접근을 허용하지 않았습니다.',
+  'Exportify stopped before it finished reading your lists.': 'Exportify가 목록을 다 읽기 전에 멈췄습니다.',
+  'Exportify’s file couldn’t be read.': 'Exportify 파일을 읽을 수 없습니다.',
+  'Your library didn’t change. Try again later, or read Spotify’s page instead.': '라이브러리는 바뀌지 않았습니다. 나중에 다시 시도하거나 대신 Spotify 페이지를 읽으세요.',
   'Its playlists and likes come in. Nothing goes back to Spotify; YouTube Music’s own direction decides what reaches it.': '이 계정의 재생목록과 좋아요가 들어옵니다. Spotify로는 아무것도 돌아가지 않으며, YouTube Music에 무엇이 전달될지는 그쪽 동기화 방향이 정합니다.',
   'Sync direction is Off: nothing comes in (Settings › Accounts)': '동기화 방향이 꺼져 있어 아무것도 들어오지 않습니다 (설정 › 계정)',
   'Exportify, a free open-source tool, reads your lists in a window. If Spotify’s page asks, sign in and accept: everything else happens by itself.': '무료 오픈 소스 도구 Exportify가 창에서 목록을 읽습니다. Spotify 페이지에서 요청하면 로그인하고 동의하세요. 나머지는 모두 자동으로 진행됩니다.',

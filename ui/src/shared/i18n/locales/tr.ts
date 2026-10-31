@@ -1604,6 +1604,11 @@ const tr: Record<string, string> = {
   'Visualizer full screen on / off': 'Görselleştirici tam ekran açık / kapalı',
   '← → move the lyrics · Esc leaves': '← → sözleri kaydır · Esc çıkar',
   // Connect Spotify
+  'Exportify isn’t working right now.': 'Exportify şu anda çalışmıyor.',
+  'Spotify didn’t give Exportify access to your lists.': 'Spotify, Exportify’a listelerine erişim vermedi.',
+  'Exportify stopped before it finished reading your lists.': 'Exportify listelerini okumayı bitirmeden durdu.',
+  'Exportify’s file couldn’t be read.': 'Exportify dosyası okunamadı.',
+  'Your library didn’t change. Try again later, or read Spotify’s page instead.': 'Kitaplığın değişmedi. Daha sonra yeniden dene veya bunun yerine Spotify’ın sayfasını oku.',
   'Its playlists and likes come in. Nothing goes back to Spotify; YouTube Music’s own direction decides what reaches it.': 'Çalma listeleri ve beğenileri buraya gelir. Spotify’a hiçbir şey geri gitmez; YouTube Music’e neyin ulaşacağını onun kendi yönü belirler.',
   'Sync direction is Off: nothing comes in (Settings › Accounts)': 'Eşitleme yönü Kapalı: hiçbir şey gelmez (Ayarlar › Hesaplar)',
   'Exportify, a free open-source tool, reads your lists in a window. If Spotify’s page asks, sign in and accept: everything else happens by itself.': 'Ücretsiz ve açık kaynaklı bir araç olan Exportify, listelerini bir pencerede okur. Spotify’ın sayfası isterse oturum aç ve onayla: gerisi kendiliğinden olur.',

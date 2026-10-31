@@ -1,31 +1,72 @@
 //! Spotify's lists through Exportify (user's choice 2026-10-31): any account, nothing read from Spotify's page. Its own
 //! page in an app window (no IPC), its buttons pressed by `music_shield::EXPORTIFY_SCRIPT`, the user's only step is consent
 //! on Spotify's page, the first time. The file it makes is caught here, read by `music_core::spotify_export` and deleted.
+//! A third party's site: watched, so it failing ends in words, not a window left waiting (`Watch`).
 
 use crate::spotify_web::{SpotifyLibraryImport, SpotifyList, SpotifyPick, SpotifyProgress};
 use crate::{AppState, CmdResult, err, links};
 use music_core::model::Source;
-use music_core::spotify_export::{self, ExportedList};
+use music_core::spotify_export::{self, ExportTrouble, ExportedList, Signal, Watch};
 use serde::Serialize;
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
+use std::time::Duration;
 use tauri::webview::DownloadEvent;
 use tauri::{AppHandle, Emitter, Manager, State, Url, WebviewUrl, WebviewWindowBuilder};
+use tokio::sync::mpsc::error::TryRecvError;
+use tokio::sync::mpsc::{UnboundedReceiver, UnboundedSender, unbounded_channel};
 
 const PAGE: &str = "https://exportify.app/";
 const LABEL: &str = "exportify";
+const STEP: Duration = Duration::from_secs(1);
 
 /// The file's lists, from reading it until the import or the dialog's end.
 static HELD: Mutex<Vec<ExportedList>> = Mutex::new(Vec::new());
 /// Where the download goes.
 static SAVING: Mutex<Option<PathBuf>> = Mutex::new(None);
+/// The page's signals. A new window replaces it, which ends the last one's watch.
+static SIGNALS: Mutex<Option<UnboundedSender<Signal>>> = Mutex::new(None);
 
-/// Exportify's file arrived: its lists, or why not.
+/// Exportify's window ended: its lists, or why not.
 #[derive(Clone, Serialize, ts_rs::TS)]
 #[ts(export)]
 pub struct SpotifyExport {
     lists: Vec<SpotifyList>,
-    error: Option<String>,
+    trouble: Option<ExportTrouble>,
+}
+
+/// The window's end, its window gone.
+fn report(app: &AppHandle, lists: Vec<SpotifyList>, trouble: Option<ExportTrouble>) {
+    // Said once: ends the watch.
+    *SIGNALS.lock().unwrap() = None;
+    let _ = app.emit_to("main", "spotify-export", SpotifyExport { lists, trouble });
+    if let Some(w) = app.get_webview_window(LABEL) {
+        let _ = w.close();
+    }
+}
+
+/// Until the window closes: no page, a page without its buttons, a reading gone silent, a refusal.
+#[cfg_attr(not(windows), allow(dead_code))]
+async fn watch(app: AppHandle, mut signals: UnboundedReceiver<Signal>) {
+    let mut watch = Watch::default();
+    let mut clock = tokio::time::interval(STEP);
+    loop {
+        clock.tick().await;
+        let mut trouble = None;
+        loop {
+            match signals.try_recv() {
+                Ok(s) => trouble = trouble.or(watch.heard(s)),
+                Err(TryRecvError::Empty) => break,
+                Err(TryRecvError::Disconnected) => return,
+            }
+        }
+        let Some(w) = app.get_webview_window(LABEL) else { return report(&app, Vec::new(), Some(ExportTrouble::Closed)) };
+        let url = w.url().map(String::from).unwrap_or_default();
+        if let Some(t) = trouble.or_else(|| watch.tick(STEP, &url)) {
+            crate::diag::warn("spotify", "Exportify's window gave up", &format!("{t:?}"));
+            return report(&app, Vec::new(), Some(t));
+        }
+    }
 }
 
 /// Read and held; what the interface shows of it.
@@ -53,18 +94,16 @@ fn on_download(wv: tauri::Webview, event: DownloadEvent<'_>) -> bool {
             let path = SAVING.lock().unwrap().take();
             let app = wv.app_handle().clone();
             tauri::async_runtime::spawn(async move {
-                let Some(path) = path.filter(|_| success) else { return };
+                let Some(path) = path else { return };
                 let read = path.clone();
-                let got = tauri::async_runtime::spawn_blocking(move || hold(&read)).await;
+                let got = tauri::async_runtime::spawn_blocking(move || if success { hold(&read) } else { anyhow::bail!("download failed") }).await;
                 let _ = std::fs::remove_file(path);
-                let report = match got {
-                    Ok(Ok(lists)) => SpotifyExport { lists, error: None },
-                    Ok(Err(e)) => SpotifyExport { lists: Vec::new(), error: Some(format!("{e:#}")) },
-                    Err(e) => SpotifyExport { lists: Vec::new(), error: Some(e.to_string()) },
-                };
-                let _ = app.emit_to("main", "spotify-export", report);
-                if let Some(w) = app.get_webview_window(LABEL) {
-                    let _ = w.close();
+                match got.map_err(anyhow::Error::from).and_then(|r| r) {
+                    Ok(lists) => report(&app, lists, None),
+                    Err(e) => {
+                        crate::diag::warn("spotify", "Exportify's file couldn't be read", &format!("{e:#}"));
+                        report(&app, Vec::new(), Some(ExportTrouble::BadFile));
+                    }
                 }
             });
             true
@@ -82,6 +121,21 @@ pub async fn spotify_export_open(app: AppHandle, state: State<'_, AppState>) -> 
     }
     let page = Url::parse(PAGE).map_err(err)?;
     WebviewWindowBuilder::new(&app, LABEL, WebviewUrl::External(page)).additional_browser_args(&crate::background::browser_args()).title("Exportify").inner_size(1000.0, 720.0).initialization_script(music_shield::EXPORTIFY_SCRIPT).on_download(on_download).build().map_err(err)?;
+    // No channel, no signals: elsewhere nothing to tell a silent page from a working one.
+    #[cfg(windows)]
+    if let Some(wv) = app.get_webview(LABEL) {
+        let (tx, rx) = unbounded_channel();
+        *SIGNALS.lock().unwrap() = Some(tx);
+        crate::ytwatch::on_message(&wv, |source, message| {
+            if let Some(s) = spotify_export::signal(source, message)
+                && let Some(signals) = SIGNALS.lock().unwrap().as_ref()
+            {
+                let _ = signals.send(s);
+            }
+        })
+        .map_err(err)?;
+        tauri::async_runtime::spawn(watch(app.clone(), rx));
+    }
     Ok(())
 }
 

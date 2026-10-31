@@ -1604,6 +1604,11 @@ const ru: Record<string, string> = {
   'Visualizer full screen on / off': 'Визуализатор на весь экран вкл. / выкл.',
   '← → move the lyrics · Esc leaves': '← → сдвинуть текст · Esc — выход',
   // Connect Spotify
+  'Exportify isn’t working right now.': 'Exportify сейчас не работает.',
+  'Spotify didn’t give Exportify access to your lists.': 'Spotify не дал Exportify доступ к вашим спискам.',
+  'Exportify stopped before it finished reading your lists.': 'Exportify остановился, не дочитав ваши списки.',
+  'Exportify’s file couldn’t be read.': 'Не удалось прочитать файл Exportify.',
+  'Your library didn’t change. Try again later, or read Spotify’s page instead.': 'Ваша библиотека не изменилась. Попробуйте позже или прочитайте вместо этого страницу Spotify.',
   'Its playlists and likes come in. Nothing goes back to Spotify; YouTube Music’s own direction decides what reaches it.': 'Его плейлисты и лайки приходят сюда. В Spotify ничего не возвращается; что дойдёт до YouTube Music, решает его собственное направление.',
   'Sync direction is Off: nothing comes in (Settings › Accounts)': 'Направление синхронизации выключено: ничего не приходит (Настройки › Аккаунты)',
   'Exportify, a free open-source tool, reads your lists in a window. If Spotify’s page asks, sign in and accept: everything else happens by itself.': 'Exportify, бесплатный инструмент с открытым кодом, читает ваши списки в окне. Если страница Spotify попросит, войдите и согласитесь: всё остальное произойдёт само.',

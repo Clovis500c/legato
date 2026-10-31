@@ -1604,6 +1604,11 @@ const zh: Record<string, string> = {
   'Visualizer full screen on / off': '可视化全屏 开 / 关',
   '← → move the lyrics · Esc leaves': '← → 调整歌词 · Esc 退出',
   // Connect Spotify
+  'Exportify isn’t working right now.': 'Exportify 目前无法使用。',
+  'Spotify didn’t give Exportify access to your lists.': 'Spotify 未授予 Exportify 访问你的列表的权限。',
+  'Exportify stopped before it finished reading your lists.': 'Exportify 在读完你的列表之前就停止了。',
+  'Exportify’s file couldn’t be read.': '无法读取 Exportify 的文件。',
+  'Your library didn’t change. Try again later, or read Spotify’s page instead.': '你的音乐库没有变化。请稍后重试，或改为读取 Spotify 的页面。',
   'Its playlists and likes come in. Nothing goes back to Spotify; YouTube Music’s own direction decides what reaches it.': '其播放列表和点赞会导入这里。不会有任何内容发回 Spotify；发送到 YouTube Music 的内容由它自己的同步方向决定。',
   'Sync direction is Off: nothing comes in (Settings › Accounts)': '同步方向已关闭：不会导入任何内容（设置 › 账号）',
   'Exportify, a free open-source tool, reads your lists in a window. If Spotify’s page asks, sign in and accept: everything else happens by itself.': '免费开源工具 Exportify 会在窗口中读取你的列表。如果 Spotify 页面提示,请登录并同意,其余步骤都会自动完成。',

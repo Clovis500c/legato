@@ -1,9 +1,9 @@
 import { SpotifyLogo } from '@phosphor-icons/react'
 import { useEffect, useState } from 'react'
 import { useStore } from '../../app/store'
-import { api, type SpotifyList } from '../../shared/api'
+import { api, type ExportTrouble, type SpotifyList } from '../../shared/api'
 import { remoteArt } from '../../shared/art'
-import { tr, trn } from '../../shared/i18n/i18n'
+import { msg, tr, trn } from '../../shared/i18n/i18n'
 import { Button } from '../../shared/ui/Button'
 import { Cover } from '../../shared/ui/Cover'
 import { Dialog } from '../../shared/ui/Dialog'
@@ -30,7 +30,14 @@ const remember = () => {
   }
 }
 
-type Step = 'export' | 'rules' | 'sign-in' | 'reading' | 'pick'
+type Step = 'export' | 'failed' | 'rules' | 'sign-in' | 'reading' | 'pick'
+
+const TROUBLES: Record<Exclude<ExportTrouble, 'closed'>, string> = {
+  down: msg('Exportify isn’t working right now.'),
+  refused: msg('Spotify didn’t give Exportify access to your lists.'),
+  stalled: msg('Exportify stopped before it finished reading your lists.'),
+  badFile: msg('Exportify’s file couldn’t be read.'),
+}
 
 /**
  * Spotify's playlists and Liked Songs, private ones too, any account. First way: Exportify's page in a window, driven by
@@ -41,6 +48,7 @@ export function SpotifyConnect() {
   const [step, setStep] = useState<Step>()
   const [lists, setLists] = useState<SpotifyList[]>([])
   const [off, setOff] = useState<string[]>([])
+  const [trouble, setTrouble] = useState<Exclude<ExportTrouble, 'closed'>>('down')
 
   const close = () => {
     setStep(undefined)
@@ -73,10 +81,14 @@ export function SpotifyConnect() {
   useEffect(() => {
     if (step !== 'export') return
     let taken = false
-    const off = api.onSpotifyExport(({ lists: found, error }) => {
+    const off = api.onSpotifyExport(({ lists: found, trouble }) => {
       if (taken) return
       taken = true
-      if (error) return fail(error)
+      if (trouble === 'closed') return close()
+      if (trouble) {
+        setTrouble(trouble)
+        return setStep('failed')
+      }
       setStep(undefined)
       const picks = found.map((l) => ({ id: l.id, name: l.id === LIKED ? tr('Liked Songs') : l.name }))
       void useStore.getState().importSpotifyLists(() => api.spotifyExportImport(picks))
@@ -130,6 +142,20 @@ export function SpotifyConnect() {
           <Button variant="ghost" className="self-end" onClick={readPage}>
             {tr('Read Spotify’s page instead')}
           </Button>
+        </Dialog>
+      )}
+      {step === 'failed' && (
+        <Dialog title={tr('Connect Spotify')} onClose={close}>
+          <p role="alert" className="text-sm text-ink-2">
+            {tr(TROUBLES[trouble])}
+          </p>
+          <p className="text-sm text-ink-3">{tr('Your library didn’t change. Try again later, or read Spotify’s page instead.')}</p>
+          <div className="flex justify-end gap-2">
+            <Button variant="ghost" onClick={readPage}>
+              {tr('Read Spotify’s page instead')}
+            </Button>
+            <Button onClick={exportify}>{tr('Try again')}</Button>
+          </div>
         </Dialog>
       )}
       {step === 'rules' && (

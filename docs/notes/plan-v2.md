@@ -68,6 +68,9 @@ What the services allow, read on 2026-10-31 (specs in [ideas/catch-up.md](ideas/
       Tried on the user's real account in the dev app. Spotify's page stays as the second way.
 - [ ] `M` Likes and adds sent to Spotify (Send only, Both ways): official API only, so a key and a Premium account, also
       to test it. No way without them: Exportify only reads, and pressing hearts in Spotify's page would be a bot on the account.
+- [x] `S` Exportify failing says so (user's go 2026-10-31): its window is watched, site down, page changed, reading stalled,
+      access refused all end in a dialog with Try again and the page route. Its own copy can't remove the dependency: the key
+      is what counts (`docs/playback.md`). Stalled and a real refusal on Spotify's page not seen live, signal path checked.
 - [ ] `S` Exportify's file names are lowered, with underscores ("Cool music" for "Cool Music"): a real name needs its
       playlist column ([exportify#194](https://github.com/watsonbox/exportify/issues/194)) or the first way's names.
 - [ ] `S` Spotify's `spotify_export::list` drops local files (8 in the user's export): keep them as songs to find.
