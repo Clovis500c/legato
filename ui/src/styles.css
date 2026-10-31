@@ -265,6 +265,20 @@ code {
   animation: page-in 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
   animation-delay: calc(min(sibling-index() - 1, 10) * 30ms);
 }
+/* Import screen: each song lands on the deck, the last ones fan out behind it. */
+@keyframes card-in {
+  from {
+    opacity: 0;
+    translate: 0 28px;
+    scale: 0.9;
+  }
+}
+.import-card {
+  transition:
+    transform 0.26s cubic-bezier(0.2, 0.8, 0.2, 1),
+    opacity 0.26s ease;
+  animation: card-in 0.26s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+}
 /* Right panel's Up next and lyrics slide in from the side. */
 @keyframes slide-in {
   from {
@@ -318,8 +332,12 @@ code {
   .stagger > *,
   .slide-in,
   .swap-in,
-  .icon-in {
+  .icon-in,
+  .import-card {
     animation-name: fade-in;
+  }
+  .import-card {
+    transition: opacity 0.26s ease;
   }
   .nudge-l:hover svg,
   .nudge-r:hover svg,

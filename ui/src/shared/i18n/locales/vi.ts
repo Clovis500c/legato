@@ -1605,6 +1605,13 @@ const vi: Record<string, string> = {
   'Visualizer full screen on / off': 'Trình hiển thị toàn màn hình bật / tắt',
   '← → move the lyrics · Esc leaves': '← → dịch lời bài hát · Esc để thoát',
   // Connect Spotify
+  'Importing from Spotify': 'Đang nhập từ Spotify',
+  'Import finished': 'Đã nhập xong',
+  'Hide': 'Ẩn',
+  '{done} of {total} songs': '{done} trên {total} bài',
+  'List {list} of {lists}: {name}': 'Danh sách {list} trên {lists}: {name}',
+  '{n} song playable': '{n} bài phát được',
+  '{n} songs playable': '{n} bài phát được',
   'Exportify isn’t working right now.': 'Exportify hiện không hoạt động.',
   'Spotify didn’t give Exportify access to your lists.': 'Spotify không cấp cho Exportify quyền truy cập danh sách của bạn.',
   'Exportify stopped before it finished reading your lists.': 'Exportify đã dừng trước khi đọc xong danh sách của bạn.',

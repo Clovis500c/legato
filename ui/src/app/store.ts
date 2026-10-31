@@ -1,9 +1,10 @@
 import { create } from 'zustand'
-import { api, type Credentials, type LibraryPlaylist, type LibraryTrack, type PlaylistEdit, type Service, type SourceStatus, type SpotifyLibraryImport, type SyncReport, type Track } from '../shared/api'
+import { api, type Credentials, type LibraryPlaylist, type LibraryTrack, type PlaylistEdit, type Service, type SourceStatus, type SpotifyProgress, type SpotifyLibraryImport, type SyncReport, type Track } from '../shared/api'
 import type { Filter, GroupSize, GroupSort, PlayStats, Sort } from '../features/library/filter'
 import { explain } from '../shared/errors'
 import { tr, trn } from '../shared/i18n/i18n'
 import { noteList } from '../features/home/recentLists'
+import { advance, BEAT, newRun, summary, type ImportRun } from '../features/add/importRun'
 import { patchLibrary } from './libraryPatch'
 
 export type SettingsSection = 'general' | 'playback' | 'appearance' | 'sources' | 'sync' | 'shield' | 'shortcuts' | 'about'
@@ -118,8 +119,12 @@ interface State {
   importSpotify: (url: string) => Promise<void>
   /** A Deezer or Apple Music playlist / album link: a playlist of yours with the songs found on YouTube. */
   importLink: (url: string, from: 'deezer' | 'apple') => Promise<void>
-  /** Spotify's ticked lists, by `job` (Exportify's file or Spotify's page): a toast that counts, with Cancel. */
+  /** Spotify's ticked lists, by `job` (Exportify's file or Spotify's page): the import screen (features/add/ImportScreen). */
   importSpotifyLists: (job: () => Promise<SpotifyLibraryImport>) => Promise<void>
+  importRun?: ImportRun
+  hideImport: () => void
+  showImport: () => void
+  endImport: () => void
   /** Add › Import a list of songs. True when a playlist came out of it. */
   importSongList: (name: string, text: string | null, path: string | null) => Promise<boolean>
   /** Settings › General › Notifications, set by app/settings: errors and toasts with a button only; time × scale. */
@@ -130,6 +135,15 @@ interface State {
 }
 
 const offline: SourceStatus = { configured: false, connected: false }
+
+// The toast while the import screen is hidden.
+let importToast = 0
+
+const importText = (p: SpotifyProgress | undefined) => {
+  if (!p) return tr('Importing…')
+  const { list, lists, name, done, total } = p
+  return p.matching ? tr('Spotify, list {list} of {lists}: finding “{name}” on YouTube… {done} of {total}', { list, lists, name, done, total }) : tr('Spotify, list {list} of {lists}: reading “{name}”… {done} of {total}', { list, lists, name, done, total })
+}
 
 /** What a library page filters by: the top bar's text while its token is on. */
 export const pageQuery = (s: State) => (s.scoped ? s.query : '')
@@ -330,14 +344,23 @@ export const useStore = create<State>((set, get) => {
       get().go({ name: 'playlist', id: r.playlistId })
     },
     async importSpotifyLists(job) {
-      const cancel = { label: tr('Cancel'), run: () => void api.importLinkStop() }
-      const shown = get().notify(tr('Importing…'), { sticky: true, action: cancel })
-      const off = api.onSpotifyImport(({ name, list, lists, matching, done, total }) => {
-        const said = matching ? tr('Spotify, list {list} of {lists}: finding “{name}” on YouTube… {done} of {total}', { list, lists, name, done, total }) : tr('Spotify, list {list} of {lists}: reading “{name}”… {done} of {total}', { list, lists, name, done, total })
-        get().notify(said, { sticky: true, id: shown })
+      set({ importRun: newRun() })
+      let latest: SpotifyProgress | undefined
+      let timer: ReturnType<typeof setTimeout> | undefined
+      const beat = () => {
+        timer = undefined
+        const run = get().importRun
+        if (!run || !latest) return
+        set({ importRun: advance(run, latest) })
+        if (run.hidden) get().notify(importText(latest), { sticky: true, id: importToast })
+      }
+      const off = api.onSpotifyImport((p) => {
+        latest = p
+        timer ??= setTimeout(beat, BEAT)
       })
       let r: SpotifyLibraryImport | undefined
       let canceled = false
+      // A failed refresh after it says nothing about the import: its end still shows.
       const ok = await run(async () => {
         try {
           r = await job()
@@ -345,15 +368,35 @@ export const useStore = create<State>((set, get) => {
           if (String(e) !== 'canceled') throw e
           canceled = true
         }
-      })
+      }).catch(() => !!r)
       void off.then((f) => f())
-      get().dismissToast(shown)
-      if (canceled) return void get().notify(tr('Import canceled'), { kind: 'info' })
-      if (!ok || !r) return
-      if (r.lists) get().notify(trn(r.lists, 'Imported {n} list from Spotify: {found} of {songs} songs playable', 'Imported {n} lists from Spotify: {found} of {songs} songs playable', { found: r.playable, songs: r.songs }))
+      clearTimeout(timer)
+      const seen = get().importRun
+      get().dismissToast(importToast)
+      if (canceled) {
+        set({ importRun: undefined })
+        return void get().notify(tr('Import canceled'), { kind: 'info' })
+      }
+      if (!ok || !r) return set({ importRun: undefined })
+      if (seen && !seen.hidden) return set({ importRun: { ...seen, result: r } })
+      // Hidden: the app is in use, the news is a toast.
+      set({ importRun: undefined })
+      const id = r.playlistId
+      get().notify(summary(r), id === null ? {} : { action: { label: tr('Open'), run: () => get().go({ name: 'playlist', id }) } })
       if (r.failed.length) get().notify(tr('Not read: {lists}', { lists: r.failed.slice(0, 3).join(', ') + (r.failed.length > 3 ? '…' : '') }), { kind: 'error' })
-      if (r.playlistId !== null) get().go({ name: 'playlist', id: r.playlistId })
     },
+    hideImport() {
+      const run = get().importRun
+      if (!run || run.hidden) return
+      set({ importRun: { ...run, hidden: true } })
+      importToast = get().notify(importText(run.progress), { sticky: true, action: { label: tr('Show'), run: () => get().showImport() } })
+    },
+    showImport() {
+      const run = get().importRun
+      if (run) set({ importRun: { ...run, hidden: false } })
+      get().dismissToast(importToast)
+    },
+    endImport: () => set({ importRun: undefined }),
     notify(said, { kind = 'ok', action, sticky, id: again } = {}) {
       const { important, scale } = get().toastPrefs
       if (important && kind !== 'error' && !action && again === undefined) return 0

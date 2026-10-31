@@ -1605,6 +1605,13 @@ const ja: Record<string, string> = {
   'Visualizer full screen on / off': 'ビジュアライザーの全画面 オン / オフ',
   '← → move the lyrics · Esc leaves': '← → 歌詞をずらす · Esc で終了',
   // Connect Spotify
+  'Importing from Spotify': 'Spotify からインポート中',
+  'Import finished': 'インポート完了',
+  'Hide': '隠す',
+  '{done} of {total} songs': '{total} 曲中 {done} 曲',
+  'List {list} of {lists}: {name}': 'リスト {list}/{lists}: {name}',
+  '{n} song playable': '再生可能 {n} 曲',
+  '{n} songs playable': '再生可能 {n} 曲',
   'Exportify isn’t working right now.': 'Exportify は現在動作していません。',
   'Spotify didn’t give Exportify access to your lists.': 'Spotify は Exportify にリストへのアクセスを許可しませんでした。',
   'Exportify stopped before it finished reading your lists.': 'Exportify はリストを読み終える前に止まりました。',

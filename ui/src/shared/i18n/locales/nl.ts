@@ -1605,6 +1605,13 @@ const nl: Record<string, string> = {
   'Visualizer full screen on / off': 'Visualizer op volledig scherm aan / uit',
   '← → move the lyrics · Esc leaves': '← → tekst verschuiven · Esc sluit af',
   // Connect Spotify
+  'Importing from Spotify': 'Importeren uit Spotify',
+  'Import finished': 'Import voltooid',
+  'Hide': 'Verbergen',
+  '{done} of {total} songs': '{done} van {total} nummers',
+  'List {list} of {lists}: {name}': 'Lijst {list} van {lists}: {name}',
+  '{n} song playable': '{n} nummer afspeelbaar',
+  '{n} songs playable': '{n} nummers afspeelbaar',
   'Exportify isn’t working right now.': 'Exportify werkt op dit moment niet.',
   'Spotify didn’t give Exportify access to your lists.': 'Spotify heeft Exportify geen toegang tot je lijsten gegeven.',
   'Exportify stopped before it finished reading your lists.': 'Exportify is gestopt voordat al je lijsten gelezen waren.',

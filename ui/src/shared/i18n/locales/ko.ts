@@ -1605,6 +1605,13 @@ const ko: Record<string, string> = {
   'Visualizer full screen on / off': '비주얼라이저 전체 화면 켜기 / 끄기',
   '← → move the lyrics · Esc leaves': '← → 가사 이동 · Esc로 나가기',
   // Connect Spotify
+  'Importing from Spotify': 'Spotify에서 가져오는 중',
+  'Import finished': '가져오기 완료',
+  'Hide': '숨기기',
+  '{done} of {total} songs': '{total}곡 중 {done}곡',
+  'List {list} of {lists}: {name}': '목록 {list}/{lists}: {name}',
+  '{n} song playable': '재생 가능 {n}곡',
+  '{n} songs playable': '재생 가능 {n}곡',
   'Exportify isn’t working right now.': 'Exportify가 지금 작동하지 않습니다.',
   'Spotify didn’t give Exportify access to your lists.': 'Spotify가 Exportify에 내 목록에 대한 접근을 허용하지 않았습니다.',
   'Exportify stopped before it finished reading your lists.': 'Exportify가 목록을 다 읽기 전에 멈췄습니다.',

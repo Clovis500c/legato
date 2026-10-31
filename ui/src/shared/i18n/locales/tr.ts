@@ -1605,6 +1605,13 @@ const tr: Record<string, string> = {
   'Visualizer full screen on / off': 'Görselleştirici tam ekran açık / kapalı',
   '← → move the lyrics · Esc leaves': '← → sözleri kaydır · Esc çıkar',
   // Connect Spotify
+  'Importing from Spotify': 'Spotify’dan içe aktarılıyor',
+  'Import finished': 'İçe aktarma tamamlandı',
+  'Hide': 'Gizle',
+  '{done} of {total} songs': '{total} şarkıdan {done} tanesi',
+  'List {list} of {lists}: {name}': 'Liste {list}/{lists}: {name}',
+  '{n} song playable': '{n} şarkı çalınabilir',
+  '{n} songs playable': '{n} şarkı çalınabilir',
   'Exportify isn’t working right now.': 'Exportify şu anda çalışmıyor.',
   'Spotify didn’t give Exportify access to your lists.': 'Spotify, Exportify’a listelerine erişim vermedi.',
   'Exportify stopped before it finished reading your lists.': 'Exportify listelerini okumayı bitirmeden durdu.',

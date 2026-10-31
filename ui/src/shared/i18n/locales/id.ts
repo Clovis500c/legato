@@ -1605,6 +1605,13 @@ const id: Record<string, string> = {
   'Visualizer full screen on / off': 'Visualisasi layar penuh aktif / nonaktif',
   '← → move the lyrics · Esc leaves': '← → geser lirik · Esc untuk keluar',
   // Connect Spotify
+  'Importing from Spotify': 'Mengimpor dari Spotify',
+  'Import finished': 'Impor selesai',
+  'Hide': 'Sembunyikan',
+  '{done} of {total} songs': '{done} dari {total} lagu',
+  'List {list} of {lists}: {name}': 'Daftar {list} dari {lists}: {name}',
+  '{n} song playable': '{n} lagu bisa diputar',
+  '{n} songs playable': '{n} lagu bisa diputar',
   'Exportify isn’t working right now.': 'Exportify sedang tidak berfungsi.',
   'Spotify didn’t give Exportify access to your lists.': 'Spotify tidak memberi Exportify akses ke daftar Anda.',
   'Exportify stopped before it finished reading your lists.': 'Exportify berhenti sebelum selesai membaca daftar Anda.',

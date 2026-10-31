@@ -1,0 +1,46 @@
+import { describe, expect, it } from 'vitest'
+import type { SpotifyProgress } from '../../shared/api'
+import { advance, card, CARDS, newRun, share } from './importRun'
+
+const step = (over: Partial<SpotifyProgress> = {}): SpotifyProgress => ({ name: 'A list', list: 1, lists: 2, matching: true, done: 0, total: 10, allDone: 0, allTotal: 0, playable: 0, song: null, ...over })
+const song = (title: string, playable = true) => ({ title, artist: 'A', cover: null, playable })
+
+describe('the import screen', () => {
+  it('keeps the last songs, each with its own number', () => {
+    let run = newRun()
+    for (let n = 0; n < CARDS + 3; n++) run = advance(run, step({ song: song(`s${n}`) }))
+    expect(run.seen).toHaveLength(CARDS)
+    expect(run.seen.at(-1)).toMatchObject({ title: `s${CARDS + 2}`, seq: CARDS + 2 })
+    expect(run.seen[0].seq).toBe(3)
+  })
+
+  it('takes a step with no song without moving the deck', () => {
+    const run = advance(advance(newRun(), step({ song: song('one') })), step({ done: 4 }))
+    expect(run.seen).toHaveLength(1)
+    expect(run.progress?.done).toBe(4)
+  })
+
+  it('measures all the songs when their number is known', () => {
+    expect(share(step({ allDone: 50, allTotal: 200 }))).toBe(0.25)
+    expect(share(step({ allDone: 300, allTotal: 200 }))).toBe(1)
+    expect(share(undefined)).toBe(0)
+  })
+
+  it('measures by lists on Spotify’s page', () => {
+    expect(share(step({ list: 2, lists: 4, done: 5, total: 10 }))).toBe(0.375)
+    expect(share(step({ list: 3, lists: 4, total: 0 }))).toBe(0.5)
+  })
+
+  it('fans the older cards out, the newest flat on top', () => {
+    expect(card({ ...song('new'), seq: 8 }, 8)).toMatchObject({ transform: 'translateX(0px) rotate(0deg) scale(1)', opacity: 1, zIndex: CARDS })
+    const left = card({ ...song('old'), seq: 6 }, 8)
+    const right = card({ ...song('old'), seq: 5 }, 8)
+    expect(left.transform).toContain('translateX(-96px)')
+    expect(right.transform).toContain('translateX(144px)')
+    expect(Number(left.zIndex)).toBeLessThan(CARDS)
+  })
+
+  it('fades a song with no YouTube version', () => {
+    expect(card({ ...song('lost', false), seq: 2 }, 2).opacity).toBeLessThan(0.5)
+  })
+})

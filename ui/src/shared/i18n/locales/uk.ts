@@ -1605,6 +1605,13 @@ const uk: Record<string, string> = {
   'Visualizer full screen on / off': 'Візуалізатор на весь екран увімк. / вимк.',
   '← → move the lyrics · Esc leaves': '← → зсунути текст · Esc — вихід',
   // Connect Spotify
+  'Importing from Spotify': 'Імпорт зі Spotify',
+  'Import finished': 'Імпорт завершено',
+  'Hide': 'Сховати',
+  '{done} of {total} songs': '{done} із {total} треків',
+  'List {list} of {lists}: {name}': 'Список {list} із {lists}: {name}',
+  '{n} song playable': 'Можна слухати: {n}',
+  '{n} songs playable': 'Можна слухати: {n}',
   'Exportify isn’t working right now.': 'Exportify зараз не працює.',
   'Spotify didn’t give Exportify access to your lists.': 'Spotify не надав Exportify доступу до ваших списків.',
   'Exportify stopped before it finished reading your lists.': 'Exportify зупинився, не дочитавши ваші списки.',

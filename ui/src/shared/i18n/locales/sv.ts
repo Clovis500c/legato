@@ -1605,6 +1605,13 @@ const sv: Record<string, string> = {
   'Visualizer full screen on / off': 'Visualiserare i helskärm på / av',
   '← → move the lyrics · Esc leaves': '← → flytta texten · Esc avslutar',
   // Connect Spotify
+  'Importing from Spotify': 'Importerar från Spotify',
+  'Import finished': 'Importen är klar',
+  'Hide': 'Dölj',
+  '{done} of {total} songs': '{done} av {total} låtar',
+  'List {list} of {lists}: {name}': 'Lista {list} av {lists}: {name}',
+  '{n} song playable': '{n} låt spelbar',
+  '{n} songs playable': '{n} låtar spelbara',
   'Exportify isn’t working right now.': 'Exportify fungerar inte just nu.',
   'Spotify didn’t give Exportify access to your lists.': 'Spotify gav inte Exportify tillgång till dina listor.',
   'Exportify stopped before it finished reading your lists.': 'Exportify stannade innan alla dina listor var lästa.',

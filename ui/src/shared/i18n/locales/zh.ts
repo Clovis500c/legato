@@ -1605,6 +1605,13 @@ const zh: Record<string, string> = {
   'Visualizer full screen on / off': '可视化全屏 开 / 关',
   '← → move the lyrics · Esc leaves': '← → 调整歌词 · Esc 退出',
   // Connect Spotify
+  'Importing from Spotify': '正在从 Spotify 导入',
+  'Import finished': '导入完成',
+  'Hide': '隐藏',
+  '{done} of {total} songs': '{done} / {total} 首',
+  'List {list} of {lists}: {name}': '列表 {list} / {lists}：{name}',
+  '{n} song playable': '{n} 首可播放',
+  '{n} songs playable': '{n} 首可播放',
   'Exportify isn’t working right now.': 'Exportify 目前无法使用。',
   'Spotify didn’t give Exportify access to your lists.': 'Spotify 未授予 Exportify 访问你的列表的权限。',
   'Exportify stopped before it finished reading your lists.': 'Exportify 在读完你的列表之前就停止了。',

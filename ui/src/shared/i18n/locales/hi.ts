@@ -1605,6 +1605,13 @@ const hi: Record<string, string> = {
   'Visualizer full screen on / off': 'विज़ुअलाइज़र फ़ुल स्क्रीन चालू / बंद',
   '← → move the lyrics · Esc leaves': '← → बोल खिसकाएँ · Esc से बाहर निकलें',
   // Connect Spotify
+  'Importing from Spotify': 'Spotify से आयात',
+  'Import finished': 'आयात पूरा हुआ',
+  'Hide': 'छिपाएँ',
+  '{done} of {total} songs': '{total} में से {done} गाने',
+  'List {list} of {lists}: {name}': 'सूची {lists} में से {list}: {name}',
+  '{n} song playable': '{n} गाना चलाने योग्य',
+  '{n} songs playable': '{n} गाने चलाने योग्य',
   'Exportify isn’t working right now.': 'Exportify अभी काम नहीं कर रहा है।',
   'Spotify didn’t give Exportify access to your lists.': 'Spotify ने Exportify को आपकी सूचियों तक पहुँच नहीं दी।',
   'Exportify stopped before it finished reading your lists.': 'आपकी सूचियाँ पूरी पढ़ने से पहले Exportify रुक गया।',

@@ -43,6 +43,7 @@ import { startShortcuts } from './shortcuts'
 import { useStore, type View } from './store'
 import { toggleFullscreen } from './fullscreen'
 import { Toasts } from './Toasts'
+import { ImportScreen } from '../features/add/ImportScreen'
 import { Asker } from '../shared/ui/Ask'
 import { EditInfoHost } from '../features/library/EditInfo'
 import { tr, trn, useLang } from '../shared/i18n/i18n'
@@ -352,6 +353,7 @@ export function App() {
           <VizScreen />
         </PageBoundary>
       )}
+      <ImportScreen />
       <Toasts />
       <Asker />
       <EditInfoHost />
