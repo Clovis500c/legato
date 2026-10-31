@@ -6,6 +6,7 @@
 //   GET  /itunes/lookup      Apple's lookup                   no result
 //   GET  /suggest            YouTube's search suggestions     built from the typed text
 //   GET  /lrclib/...         lyrics                           not found
+// Paths /deezer, /deezer-link and /applepage (pasted Deezer / Apple Music links) are not answered: the test pastes none.
 // The fixtures hold the shapes the parsers read (crates/connectors), trimmed, with invented names. Anything else is a
 // 404 and is listed in `unexpected()`: a new call the app makes shows up in the test.
 
