@@ -10,6 +10,7 @@ describe('bench options', () => {
   it('saves full runs and not quick ones, unless told', () => {
     expect(parseArgs([])).toMatchObject({ quick: false, save: true, skipBuild: false })
     expect(parseArgs(['--quick'])).toMatchObject({ quick: true, save: false })
+    expect(parseArgs(['--visualizer'])).toMatchObject({ visualizer: true, save: false })
     expect(parseArgs(['--quick', '--save']).save).toBe(true)
     expect(parseArgs(['--no-save']).save).toBe(false)
     expect(parseArgs(['--skip-build', '--keep', '--note', 'fan on', '--shots', 'x'])).toMatchObject({ skipBuild: true, keep: true, note: 'fan on', shots: 'x' })

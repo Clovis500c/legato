@@ -11,6 +11,9 @@
 //
 //   pnpm bench                full run, about 20 minutes, row saved
 //   pnpm bench --quick        short windows (15 s, 1 min in the tray), not saved unless --save
+//   --visualizer              instead: the CPU of the whole app with the visualizer open on a playing song, each look in
+//                             Now Playing and full screen, against the same run with it off. Built with the silent output
+//                             (the e2e feature: nothing reaches the speakers), so it is its own build; not saved
 //   --skip-build              keep target/bench/legato-bench.exe when its inputs have not changed
 //   --build-only              build, then stop
 //   --save | --no-save        save the row (default: full runs) or not
@@ -38,10 +41,11 @@ const MB = 1024 * 1024
 // ---- Pure parts (scripts/bench.test.ts) ----
 
 export function parseArgs(argv) {
-  const o = { quick: false, skipBuild: false, buildOnly: false, save: undefined, keep: false, note: '', shots: '' }
+  const o = { quick: false, visualizer: false, skipBuild: false, buildOnly: false, save: undefined, keep: false, note: '', shots: '' }
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i]
     if (a === '--quick') o.quick = true
+    else if (a === '--visualizer') o.visualizer = true
     else if (a === '--skip-build') o.skipBuild = true
     else if (a === '--build-only') o.buildOnly = true
     else if (a === '--save') o.save = true
@@ -52,7 +56,7 @@ export function parseArgs(argv) {
     else throw new Error(`unknown option ${a} (the top of scripts/bench.mjs lists them)`)
   }
   // Short runs are not numbers of record.
-  o.save ??= !o.quick
+  o.save ??= !o.quick && !o.visualizer
   return o
 }
 
@@ -182,7 +186,8 @@ function runningBench() {
  *  writes target/bench, so what runs there never is a normal build made later by `pnpm build`. */
 function ensureBuild(o) {
   const stamp = `${EXE}.inputs`
-  const hash = inputsHash(ROOT)
+  // The visualizer run is a different build (silent output): its own stamp, so neither run reuses the other's exe.
+  const hash = inputsHash(ROOT) + (o.visualizer ? ':silent' : '')
   if (o.skipBuild && existsSync(EXE) && existsSync(stamp) && readFileSync(stamp, 'utf8') === hash) {
     console.log('build: inputs unchanged, reusing target/bench/legato-bench.exe')
     return
@@ -195,7 +200,7 @@ function ensureBuild(o) {
   }
   const fresh =existsSync(EXE) && existsSync(stamp) && readFileSync(stamp, 'utf8') === hash
   console.log(`build: tauri build --no-bundle (release, LTO: minutes)${fresh ? ' - the inputs have not changed, --skip-build would save them' : ''}`)
-  const built = spawnSync('pnpm tauri build --no-bundle --config src-tauri/tauri.bench.conf.json', { cwd: ROOT, stdio: 'inherit', shell: true })
+  const built = spawnSync(`pnpm tauri build --no-bundle ${o.visualizer ? '--features e2e ' : ''}--config src-tauri/tauri.bench.conf.json`, { cwd: ROOT, stdio: 'inherit', shell: true })
   if (built.status !== 0) fail('the build failed')
   mkdirSync(path.dirname(EXE), { recursive: true })
   copyFileSync(BUILT, EXE)
@@ -463,6 +468,73 @@ async function measure(helper, pid, seconds, threads) {
   return summarize(samples, threads)
 }
 
+/** The visualizer's looks, by their name in Settings. */
+const LOOKS = ['LED', 'Bars', 'Mirror', 'Peaks', 'Wave', 'Radial', 'VU needles', 'Spectrogram']
+
+/** Page pixels of a switch or a radio by its label. */
+const whereControl = (label) => `(() => {
+  const el = [...document.querySelectorAll('[role=switch], [role=radio]')].find((e) => (e.getAttribute('aria-label') || e.innerText || '').trim() === ${JSON.stringify(label)})
+  const r = el?.getBoundingClientRect()
+  return r && r.width && r.height ? { x: r.x + r.width / 2, y: r.y + r.height / 2 } : null
+})()`
+
+/** CPU of the whole app on a playing song, the visualizer off, then each look open in Now Playing (the strip, or Radial's
+ *  ring) and full screen (V), then off again. The two off windows bracket the drift of the PC. */
+async function visualizerRun(o, app, helper, t, threads, shot) {
+  const key = (code) => app.cdp.evaluate(`window.dispatchEvent(new KeyboardEvent('keydown', { code: ${JSON.stringify(code)}, bubbles: true, cancelable: true }))`)
+  const canvas = (scope) => `(() => { const c = document.querySelector('${scope} canvas'); const r = c?.getBoundingClientRect(); return r && r.width > 50 && r.height > 20 ? true : null })()`
+  const control = async (label) => {
+    const p = await app.cdp.waitFor(whereControl(label), { timeout: 10000 })
+    await app.cdp.click(p.x, p.y)
+  }
+  const secs = t.play
+  console.log(`playing a local song, visualizer off: ${secs} s`)
+  const row = await app.cdp.waitFor(FIRST_ROW)
+  await app.cdp.click(row.x, row.y)
+  await app.cdp.waitFor(where('Pause'), { timeout: 15000 })
+  await sleep(5000)
+  const before = await measure(helper, app.pid, secs, threads)
+  await press(app.cdp, 'Settings')
+  await press(app.cdp, 'Playback')
+  const on = await app.cdp.evaluate(`document.querySelector('[aria-label="Visualizer"][role=switch]')?.getAttribute('aria-checked') === 'true'`)
+  if (!on) await control('Visualizer')
+  const rows = []
+  for (const look of LOOKS) {
+    await control(look)
+    await key('KeyF')
+    await app.cdp.waitFor(canvas('[role=dialog][aria-label="Now playing"]'), { timeout: 10000 })
+    await sleep(3000)
+    console.log(`${look}: Now Playing, ${secs} s`)
+    const strip = await measure(helper, app.pid, secs, threads)
+    await shot(app, `viz-${look.replace(/W+/g, '-').toLowerCase()}`)
+    await key('KeyV')
+    await app.cdp.waitFor(canvas('[role=dialog][aria-label="Visualizer"]'), { timeout: 10000 })
+    await sleep(3000)
+    console.log(`${look}: full screen, ${secs} s`)
+    const full = await measure(helper, app.pid, secs, threads)
+    await key('Escape')
+    await sleep(500)
+    await key('KeyF')
+    await app.cdp.waitFor(`!document.querySelector('[role=dialog][aria-label="Now playing"]')`, { timeout: 10000 })
+    rows.push({ look, strip, full })
+  }
+  await sleep(3000)
+  console.log(`visualizer closed again: ${secs} s`)
+  const after = await measure(helper, app.pid, secs, threads)
+  if (!(await app.cdp.evaluate(where('Pause')))) fail('the music stopped during the visualizer run')
+  console.log(`
+${''.padEnd(26)} ${'Now Playing'.padStart(12)} ${'full screen'.padStart(12)}   (% of the PC; extra over the off windows)`)
+  const off = (before.cpu.pc + after.cpu.pc) / 2
+  console.log(`${'visualizer off'.padEnd(26)} ${`${before.cpu.pc.toFixed(2)} %`.padStart(12)} ${`${after.cpu.pc.toFixed(2)} %`.padStart(12)}   (before / after)`)
+  for (const r of rows) {
+    const d = (w) => `${w.cpu.pc.toFixed(2)} % (${w.cpu.pc - off >= 0 ? '+' : ''}${(w.cpu.pc - off).toFixed(2)})`
+    console.log(`${r.look.padEnd(26)} ${d(r.strip).padStart(12)} ${d(r.full).padStart(12)}`)
+    console.log(`${''.padEnd(26)} busiest, % of a core: ${r.strip.hot.map((p) => `${p.label} ${p.core.toFixed(1)}`).join(', ')}`)
+  }
+  console.log(`
+${threads} threads; the budget is under 3 % of the PC over the off windows. Not saved: put the numbers in docs/performance.md.`)
+}
+
 async function main() {
   let o
   try {
@@ -511,6 +583,10 @@ async function main() {
     if (toast) await app.cdp.click(toast.x, toast.y)
     await sleep(t.settle * 1000)
     await shot(app, '2-songs')
+    if (o.visualizer) {
+      await visualizerRun(o, app, helper, t, threads, shot)
+      return
+    }
 
     console.log(`idle: paused on the Songs page, ${t.idle} s`)
     const idle = await measure(helper, app.pid, t.idle, threads)
