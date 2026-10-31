@@ -1604,10 +1604,9 @@ const ja: Record<string, string> = {
   'Visualizer full screen on / off': 'ビジュアライザーの全画面 オン / オフ',
   '← → move the lyrics · Esc leaves': '← → 歌詞をずらす · Esc で終了',
   // Connect Spotify
-  'Exportify, a free open-source tool, opens in a window. Sign in on Spotify’s own page, accept, then export all your lists: the rest happens by itself.': '無料のオープンソースツール Exportify がウィンドウで開きます。Spotify 自身のページでサインインして承認し、すべてのリストをエクスポートしてください。あとは自動で進みます。',
+  'Exportify, a free open-source tool, reads your lists in a window. If Spotify’s page asks, sign in and accept: everything else happens by itself.': '無料のオープンソースツール Exportify がウィンドウでリストを読み取ります。Spotify のページで求められたらサインインして承認してください。あとはすべて自動で進みます。',
   'Waiting for your lists…': 'リストを待っています…',
   'Read Spotify’s page instead': '代わりに Spotify のページを読み取る',
-  'Spotify export': 'Spotify エクスポート',
   'Connect Spotify': 'Spotify に接続',
   'Import your playlists and Liked Songs, private ones too, with any free account.': '無料アカウントでも、非公開を含むプレイリストと「お気に入りの曲」を取り込めます。',
   'Before you connect': '接続の前に',

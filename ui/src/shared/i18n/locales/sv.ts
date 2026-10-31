@@ -1604,10 +1604,9 @@ const sv: Record<string, string> = {
   'Visualizer full screen on / off': 'Visualiserare i helskärm på / av',
   '← → move the lyrics · Esc leaves': '← → flytta texten · Esc avslutar',
   // Connect Spotify
-  'Exportify, a free open-source tool, opens in a window. Sign in on Spotify’s own page, accept, then export all your lists: the rest happens by itself.': 'Exportify, ett gratis verktyg med öppen källkod, öppnas i ett fönster. Logga in på Spotifys egen sida, godkänn och exportera alla dina listor: resten sker av sig självt.',
+  'Exportify, a free open-source tool, reads your lists in a window. If Spotify’s page asks, sign in and accept: everything else happens by itself.': 'Exportify, ett gratis verktyg med öppen källkod, läser dina listor i ett fönster. Om Spotifys sida frågar loggar du in och godkänner: allt annat sker av sig självt.',
   'Waiting for your lists…': 'Väntar på dina listor…',
   'Read Spotify’s page instead': 'Läs Spotifys sida i stället',
-  'Spotify export': 'Spotify-export',
   'Connect Spotify': 'Anslut Spotify',
   'Import your playlists and Liked Songs, private ones too, with any free account.': 'Importera dina spellistor och Gillade låtar, även privata, med vilket gratiskonto som helst.',
   'Before you connect': 'Innan du ansluter',

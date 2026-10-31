@@ -1,7 +1,7 @@
 use crate::matching::{match_key, same_track};
 use crate::model::{Source, Track};
 use crate::musicness::Musicness;
-use anyhow::Result;
+use anyhow::{Context, Result};
 use rusqlite::{Connection, OptionalExtension, Row, params};
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet, HashMap};
@@ -976,6 +976,37 @@ impl Library {
         })
     }
 
+    /// Your own "Liked Music": what a like waits in, or all of them with no YouTube Music. Made when first needed.
+    pub fn keep_in_own_likes(&self, ids: &[i64]) -> Result<i64> {
+        let own = match self.playlists()?.into_iter().find(|p| p.custom && p.name == "Liked Music") {
+            Some(p) => p.id,
+            None => self.edit_playlist(PlaylistEdit::Create { name: "Liked Music".into() })?.context("Liked Music not created")?,
+        };
+        let there: BTreeSet<i64> = self.playlist_track_ids(own)?.into_iter().collect();
+        let todo: Vec<i64> = ids.iter().copied().filter(|t| !there.contains(t)).collect();
+        if !todo.is_empty() {
+            self.edit_playlist(PlaylistEdit::Add { id: own, track_ids: todo })?;
+        }
+        Ok(own)
+    }
+
+    /// A service's likes into the one Liked Music (user's choice 2026-10-31). Not there yet on YouTube Music's: into your own,
+    /// and at the next sync the ones with a YouTube version are liked on the account and move over (`push_own_likes`).
+    /// Returns the list to open. Songs removed from the library stay out.
+    pub fn add_likes(&self, tracks: &[Track]) -> Result<i64> {
+        let youtube = self.playlists()?.into_iter().find(|p| p.source == Source::Youtube && !p.custom && p.source_id == "LM").map(|p| p.id);
+        let there: BTreeSet<i64> = youtube.map_or(Ok(Vec::new()), |id| self.playlist_track_ids(id))?.into_iter().collect();
+        let kept: Vec<&Track> = tracks.iter().filter(|t| !self.is_removed(t).unwrap_or(false)).collect();
+        let ids = self.tx(|| kept.iter().map(|t| self.upsert_track(t)).collect::<Result<Vec<_>>>())?;
+        let mut seen = BTreeSet::new();
+        let todo: Vec<i64> = ids.into_iter().filter(|id| !there.contains(id) && seen.insert(*id)).collect();
+        match youtube {
+            Some(id) if todo.is_empty() => Ok(id),
+            Some(id) => self.keep_in_own_likes(&todo).map(|_| id),
+            None => self.keep_in_own_likes(&todo),
+        }
+    }
+
     fn new_custom(&self, name: &str) -> Result<i64> {
         let name = clean_name(name)?;
         // Random id: another PC's playlists (Sync Mode) never collide with this one's.
@@ -1297,6 +1328,23 @@ mod tests {
 
     fn song(n: u32) -> Track {
         Track { title: format!("Song {n}"), artist: format!("Artist {n}"), ids: BTreeMap::from([(Source::Youtube, format!("vid{n}"))]), ..Default::default() }
+    }
+
+    #[test]
+    fn likes_of_any_service_go_to_the_one_liked_music() -> Result<()> {
+        let lib = Library::in_memory()?;
+        let song = |id: &str| Track { title: id.into(), artist: "A".into(), ids: [(Source::Spotify, id.to_string()), (Source::Youtube, format!("v{id}"))].into(), ..Default::default() };
+        // No YouTube Music: all in yours, once, however often imported.
+        let own = lib.add_likes(&[song("a"), song("b"), song("a")])?;
+        assert_eq!(lib.add_likes(&[song("b"), song("c")])?, own);
+        assert_eq!(lib.playlist_tracks(own)?.iter().map(|t| t.track.title.as_str()).collect::<Vec<_>>(), ["a", "b", "c"]);
+        assert_eq!(lib.playlists()?.len(), 1, "no Liked Songs beside it");
+        // Its list stays YouTube Music's own: what isn't there waits in yours, what is stays out.
+        let lm = lib.save_playlist(Source::Youtube, "LM", "Liked Music", &[song("a"), song("d")])?;
+        assert_eq!(lib.add_likes(&[song("d"), song("e")])?, lm);
+        assert_eq!(lib.playlist_tracks(own)?.iter().map(|t| t.track.title.as_str()).collect::<Vec<_>>(), ["a", "b", "c", "e"]);
+        assert_eq!(lib.playlist_tracks(lm)?.len(), 2);
+        Ok(())
     }
 
     #[test]

@@ -167,6 +167,11 @@ pub struct SpotifyProgress {
     pub total: usize,
 }
 
+/// A list imported: a playlist of its own, a second import updates it. Liked Songs joins Liked Music, all services in one.
+pub fn save(state: &AppState, id: &str, name: &str, tracks: &[Track]) -> anyhow::Result<i64> {
+    if id == music_core::spotify_export::LIKED { state.lib().add_likes(tracks) } else { state.lib().save_playlist(Source::Spotify, id, name, tracks) }
+}
+
 /// The ticked lists → imported playlists, each song with its YouTube version. Same ids as a Spotify link's import, so a
 /// second import updates them. A list that fails is reported, the others go on. `import_link_stop` ends it with
 /// "canceled": lists already saved stay.
@@ -204,7 +209,7 @@ pub async fn spotify_import(app: AppHandle, state: State<'_, AppState>, picks: V
         };
         let total = read.len();
         let Some(tracks) = links::find_on_youtube(&app, &read, |done| tell(true, done, total)).await? else { break };
-        let id = state.lib().save_playlist(Source::Spotify, &pick.id, pick.name.trim(), &tracks).map_err(err)?;
+        let id = save(&state, &pick.id, pick.name.trim(), &tracks).map_err(err)?;
         report.playlist_id.get_or_insert(id);
         report.lists += 1;
         report.songs += total;

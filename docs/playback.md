@@ -417,15 +417,21 @@ via the Web API Player endpoints. Audio comes out of the Spotify app; we only se
   technical protection) or capturing the token the official player fetches.
 - **Connect Spotify** (Add music, `ui/src/features/add/SpotifyConnect.tsx`, user's ask 2026-10-31: any free account, private
   playlists and Liked Songs, instant, no risk to the account). First way, **Exportify** (`src-tauri/src/spotify_export.rs`,
-  `crates/core/src/spotify_export.rs`): its page (exportify.app, open source, not ours) in an app window with no IPC and
-  nothing injected; the user consents on Spotify's page and exports; it reads the official Web API in the page and makes a
-  ZIP of CSVs, one per list, `liked.csv` for Liked Songs. Tauri's `on_download` puts the file in the cache, it is read and
-  deleted, the user ticks lists. Header in the browser's language, same columns in each, so read by position. A file the
-  user already has opens the same way. The same list imported again replaces its copy (id: the file's name).
+  `crates/core/src/spotify_export.rs`): its page (exportify.app, open source, not ours) in an app window with no IPC.
+  `crates/shield/src/exportify.js` presses its two buttons (`#loginButton`, `th.export button`: same in every language), so
+  its own code reads the official Web API and makes its ZIP of CSVs, one per list, `liked.csv` for Liked Songs. Consent on
+  Spotify's page stays the user's, the first time: the script runs on exportify.app only, and leaves the page alone when
+  Spotify sends it back with a refusal. Tauri's `on_download` puts the file in the cache, it is read and deleted, and every
+  list comes straight in: no file to see, nothing to tick. Header in the browser's language, same columns in each, so read
+  by position. The same list imported again replaces its copy (id: the file's name). Liked Songs joins Liked Music,
+  whatever the way in (`Library::add_likes`, user's choice 2026-10-31): no second list of likes. YouTube Music's Liked Music is
+  rewritten by every sync, so a song not in it waits in your own, and at the next sync the ones with a YouTube version
+  are liked on the account (`push_own_likes`, one every 400 ms). An account set not to take changes keeps them yours.
   **Why not our own copy of it:** the code is the easy part, Legato already has PKCE. What it has is a key that serves
   everybody. A new app is in Development Mode (Premium owner, 5 allowlisted users), and extended quota is only for
-  organizations with 250k monthly users. Its key can't be reused either: Spotify only redirects to the addresses registered
-  for it, and passing as another app isn't ours to do. If exportify.app goes, the second way stays.
+  organizations with 250k monthly users. Its key stays in its page: Spotify only redirects to the addresses registered for
+  it, and passing as another app isn't ours to do. So a fork of its source, ours to host, gets nowhere: the app drives
+  its page instead. If exportify.app goes or changes its buttons, the second way stays.
 - Second way, **Spotify's page read** (user's choice 2026-10-31), behind "Read Spotify's page instead". No token and no
   request of ours: the window opens on Spotify's sign-in page,
   `crates/shield/src/spotify.js` (injected in that window only) reads the rows the page draws and posts them on WebView2's message channel; `crates/connectors/src/spotify_page.rs` checks sender, shape and

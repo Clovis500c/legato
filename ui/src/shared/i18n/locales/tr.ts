@@ -1604,10 +1604,9 @@ const tr: Record<string, string> = {
   'Visualizer full screen on / off': 'Görselleştirici tam ekran açık / kapalı',
   '← → move the lyrics · Esc leaves': '← → sözleri kaydır · Esc çıkar',
   // Connect Spotify
-  'Exportify, a free open-source tool, opens in a window. Sign in on Spotify’s own page, accept, then export all your lists: the rest happens by itself.': 'Ücretsiz ve açık kaynaklı bir araç olan Exportify bir pencerede açılır. Spotify’ın kendi sayfasında oturum aç, onayla, ardından tüm listelerini dışa aktar: gerisi kendiliğinden olur.',
+  'Exportify, a free open-source tool, reads your lists in a window. If Spotify’s page asks, sign in and accept: everything else happens by itself.': 'Ücretsiz ve açık kaynaklı bir araç olan Exportify, listelerini bir pencerede okur. Spotify’ın sayfası isterse oturum aç ve onayla: gerisi kendiliğinden olur.',
   'Waiting for your lists…': 'Listelerin bekleniyor…',
   'Read Spotify’s page instead': 'Bunun yerine Spotify’ın sayfasını oku',
-  'Spotify export': 'Spotify dışa aktarımı',
   'Connect Spotify': 'Spotify’ı bağla',
   'Import your playlists and Liked Songs, private ones too, with any free account.': 'Çalma listelerini ve Beğenilen Şarkılar’ı, gizli olanlar dahil, herhangi bir ücretsiz hesapla içe aktar.',
   'Before you connect': 'Bağlanmadan önce',

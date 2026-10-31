@@ -1604,10 +1604,9 @@ const zh: Record<string, string> = {
   'Visualizer full screen on / off': '可视化全屏 开 / 关',
   '← → move the lyrics · Esc leaves': '← → 调整歌词 · Esc 退出',
   // Connect Spotify
-  'Exportify, a free open-source tool, opens in a window. Sign in on Spotify’s own page, accept, then export all your lists: the rest happens by itself.': '免费开源工具 Exportify 将在窗口中打开。请在 Spotify 自己的页面上登录并同意,然后导出所有列表,其余步骤会自动完成。',
+  'Exportify, a free open-source tool, reads your lists in a window. If Spotify’s page asks, sign in and accept: everything else happens by itself.': '免费开源工具 Exportify 会在窗口中读取你的列表。如果 Spotify 页面提示,请登录并同意,其余步骤都会自动完成。',
   'Waiting for your lists…': '正在等待你的列表…',
   'Read Spotify’s page instead': '改为读取 Spotify 页面',
-  'Spotify export': 'Spotify 导出文件',
   'Connect Spotify': '连接 Spotify',
   'Import your playlists and Liked Songs, private ones too, with any free account.': '使用任意免费账户导入你的播放列表和已点赞的歌曲,私密列表也可以。',
   'Before you connect': '连接之前',

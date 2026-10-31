@@ -1,5 +1,4 @@
 import { SpotifyLogo } from '@phosphor-icons/react'
-import { open } from '@tauri-apps/plugin-dialog'
 import { useEffect, useState } from 'react'
 import { useStore } from '../../app/store'
 import { api, type SpotifyList } from '../../shared/api'
@@ -34,15 +33,14 @@ const remember = () => {
 type Step = 'export' | 'rules' | 'sign-in' | 'reading' | 'pick'
 
 /**
- * Spotify's playlists and Liked Songs, private ones too, any account. First way: Exportify's page in a window (official
- * API, its file comes back by itself, src-tauri/src/spotify_export.rs). Second way, for when it's gone: Spotify's own page
- * read (against its rules, the dialog says so; src-tauri/src/spotify_web.rs). Lists are ticked here, imported in a toast.
+ * Spotify's playlists and Liked Songs, private ones too, any account. First way: Exportify's page in a window, driven by
+ * the app (official API, src-tauri/src/spotify_export.rs): every list comes straight in. Second way, for when it's gone:
+ * Spotify's own page read (against its rules, the dialog says so; src-tauri/src/spotify_web.rs), lists ticked here.
  */
 export function SpotifyConnect() {
   const [step, setStep] = useState<Step>()
   const [lists, setLists] = useState<SpotifyList[]>([])
   const [off, setOff] = useState<string[]>([])
-  const [fromPage, setFromPage] = useState(false)
 
   const close = () => {
     setStep(undefined)
@@ -59,16 +57,8 @@ export function SpotifyConnect() {
     setStep('pick')
   }
   const exportify = () => {
-    setFromPage(false)
     setStep('export')
     api.spotifyExportOpen().catch(fail)
-  }
-  const openFile = async () => {
-    const file = await open({ filters: [{ name: tr('Spotify export'), extensions: ['zip', 'csv'] }] })
-    if (typeof file !== 'string') return
-    void api.spotifyExportClose().catch(() => {})
-    setFromPage(false)
-    api.spotifyExportFile(file).then(pick, fail)
   }
   const signIn = () => {
     setStep('sign-in')
@@ -76,16 +66,20 @@ export function SpotifyConnect() {
   }
   const readPage = () => {
     void api.spotifyExportClose().catch(() => {})
-    setFromPage(true)
     if (agreed()) signIn()
     else setStep('rules')
   }
 
   useEffect(() => {
     if (step !== 'export') return
+    let taken = false
     const off = api.onSpotifyExport(({ lists: found, error }) => {
-      if (error) fail(error)
-      else pick(found)
+      if (taken) return
+      taken = true
+      if (error) return fail(error)
+      setStep(undefined)
+      const picks = found.map((l) => ({ id: l.id, name: l.id === LIKED ? tr('Liked Songs') : l.name }))
+      void useStore.getState().importSpotifyLists(() => api.spotifyExportImport(picks))
     })
     return () => void off.then((f) => f())
   }, [step])
@@ -119,7 +113,7 @@ export function SpotifyConnect() {
   const start = () => {
     const picks = ticked.map((l) => ({ id: l.id, name: l.name }))
     setStep(undefined)
-    void useStore.getState().importSpotifyLists(() => (fromPage ? api.spotifyImport(picks) : api.spotifyExportImport(picks)))
+    void useStore.getState().importSpotifyLists(() => api.spotifyImport(picks))
   }
 
   return (
@@ -129,18 +123,13 @@ export function SpotifyConnect() {
       </Button>
       {step === 'export' && (
         <Dialog title={tr('Connect Spotify')} onClose={close}>
-          <p className="text-sm text-ink-2">{tr('Exportify, a free open-source tool, opens in a window. Sign in on Spotify’s own page, accept, then export all your lists: the rest happens by itself.')}</p>
+          <p className="text-sm text-ink-2">{tr('Exportify, a free open-source tool, reads your lists in a window. If Spotify’s page asks, sign in and accept: everything else happens by itself.')}</p>
           <p role="status" className="text-sm text-ink-3">
             {tr('Waiting for your lists…')}
           </p>
-          <div className="flex flex-wrap justify-end gap-2">
-            <Button variant="ghost" onClick={readPage}>
-              {tr('Read Spotify’s page instead')}
-            </Button>
-            <Button variant="ghost" onClick={() => void openFile()}>
-              {tr('Open a file…')}
-            </Button>
-          </div>
+          <Button variant="ghost" className="self-end" onClick={readPage}>
+            {tr('Read Spotify’s page instead')}
+          </Button>
         </Dialog>
       )}
       {step === 'rules' && (

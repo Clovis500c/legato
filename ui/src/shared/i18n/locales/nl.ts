@@ -1604,10 +1604,9 @@ const nl: Record<string, string> = {
   'Visualizer full screen on / off': 'Visualizer op volledig scherm aan / uit',
   '← → move the lyrics · Esc leaves': '← → tekst verschuiven · Esc sluit af',
   // Connect Spotify
-  'Exportify, a free open-source tool, opens in a window. Sign in on Spotify’s own page, accept, then export all your lists: the rest happens by itself.': 'Exportify, een gratis opensourcetool, opent in een venster. Log in op de eigen pagina van Spotify, accepteer en exporteer al je lijsten: de rest gaat vanzelf.',
+  'Exportify, a free open-source tool, reads your lists in a window. If Spotify’s page asks, sign in and accept: everything else happens by itself.': 'Exportify, een gratis opensourcetool, leest je lijsten in een venster. Als de pagina van Spotify erom vraagt, log dan in en accepteer: de rest gaat vanzelf.',
   'Waiting for your lists…': 'Wachten op je lijsten…',
   'Read Spotify’s page instead': 'In plaats daarvan de pagina van Spotify lezen',
-  'Spotify export': 'Spotify-export',
   'Connect Spotify': 'Spotify verbinden',
   'Import your playlists and Liked Songs, private ones too, with any free account.': 'Importeer je playlists en Liked Songs, ook privélijsten, met elk gratis account.',
   'Before you connect': 'Voordat je verbindt',

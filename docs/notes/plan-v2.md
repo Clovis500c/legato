@@ -62,11 +62,10 @@ What the services allow, read on 2026-10-31 (specs in [ideas/catch-up.md](ideas/
       Liked Songs, 244 of 244 read, Cancel, a second import).
 - [ ] `S` Connect Spotify, not tried yet: playlists inside a library folder, a collapsed library column, an expired
       session, the window covering Legato while it reads (Cancel in the toast may be behind it), a list with local files.
-- [ ] `M` Spotify, instant and no scraping (user's ask 2026-10-31): Connect Spotify opens
+- [x] `M` Spotify, instant and no scraping (user's ask 2026-10-31): Connect Spotify drives
       [Exportify](https://github.com/watsonbox/exportify) in an app window (official API after Spotify's consent page, in the
-      browser, open source), takes its ZIP in by itself, lists to tick (`docs/playback.md`, why not our own copy too).
-      Read on the user's real export (21 lists, 2142 songs), one list imported. Spotify's page stays as the second way.
-      Left: the first real catch of the file in the window (`on_download`, a blob: address); today only a file opened by hand.
+      browser, open source) and every list comes straight in, no file to see (`docs/playback.md`, why not our own copy too).
+      Tried on the user's real account in the dev app. Spotify's page stays as the second way.
 - [ ] `S` Exportify's file names are lowered, with underscores ("Cool music" for "Cool Music"): a real name needs its
       playlist column ([exportify#194](https://github.com/watsonbox/exportify/issues/194)) or the first way's names.
 - [ ] `S` Spotify's `spotify_export::list` drops local files (8 in the user's export): keep them as songs to find.

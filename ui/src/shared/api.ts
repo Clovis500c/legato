@@ -118,8 +118,6 @@ export const api = {
   spotifyImport: (picks: SpotifyPick[]) => invoke<SpotifyLibraryImport>('spotify_import', { picks }),
   /** Opens Exportify's page; its file comes back on onSpotifyExport. */
   spotifyExportOpen: () => invoke<void>('spotify_export_open'),
-  /** An Exportify file the user already has: its lists. */
-  spotifyExportFile: (path: string) => invoke<SpotifyList[]>('spotify_export_file', { path }),
   spotifyExportClose: () => invoke<void>('spotify_export_close'),
   /** Imports the ticked lists of that file. Ended by importLinkStop ("canceled", lists saved so far stay). */
   spotifyExportImport: (picks: SpotifyPick[]) => invoke<SpotifyLibraryImport>('spotify_export_import', { picks }),

@@ -485,7 +485,11 @@ impl YouTubeMusic {
 
     /// Like videos: what "add to Liked Music" means on YouTube Music.
     pub async fn like(&self, video_ids: &[String]) -> Result<()> {
-        for v in video_ids {
+        for (n, v) in video_ids.iter().enumerate() {
+            // Hundreds at once from an import: a person's pace, its web API being unofficial.
+            if n > 0 {
+                tokio::time::sleep(std::time::Duration::from_millis(400)).await;
+            }
             self.call("like/like", json!({ "target": { "videoId": v } })).await?;
         }
         Ok(())

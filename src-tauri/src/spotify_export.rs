@@ -1,6 +1,6 @@
 //! Spotify's lists through Exportify (user's choice 2026-10-31): any account, nothing read from Spotify's page. Its own
-//! page in an app window (no IPC, nothing injected), the user consents on Spotify's page and exports, the file it makes is
-//! caught here and read by `music_core::spotify_export`. A file already downloaded goes the same way.
+//! page in an app window (no IPC), its buttons pressed by `music_shield::EXPORTIFY_SCRIPT`, the user's only step is consent
+//! on Spotify's page, the first time. The file it makes is caught here, read by `music_core::spotify_export` and deleted.
 
 use crate::spotify_web::{SpotifyLibraryImport, SpotifyList, SpotifyPick, SpotifyProgress};
 use crate::{AppState, CmdResult, err, links};
@@ -80,14 +80,8 @@ pub async fn spotify_export_open(app: AppHandle) -> CmdResult<()> {
         return w.set_focus().map_err(err);
     }
     let page = Url::parse(PAGE).map_err(err)?;
-    WebviewWindowBuilder::new(&app, LABEL, WebviewUrl::External(page)).additional_browser_args(&crate::background::browser_args()).title("Exportify").inner_size(1000.0, 720.0).on_download(on_download).build().map_err(err)?;
+    WebviewWindowBuilder::new(&app, LABEL, WebviewUrl::External(page)).additional_browser_args(&crate::background::browser_args()).title("Exportify").inner_size(1000.0, 720.0).initialization_script(music_shield::EXPORTIFY_SCRIPT).on_download(on_download).build().map_err(err)?;
     Ok(())
-}
-
-/// A file the user already has, picked in Add music.
-#[tauri::command]
-pub async fn spotify_export_file(path: String) -> CmdResult<Vec<SpotifyList>> {
-    tauri::async_runtime::spawn_blocking(move || hold(Path::new(&path))).await.map_err(err)?.map_err(err)
 }
 
 /// The dialog is gone: its window and the lists go too.
@@ -121,7 +115,7 @@ pub async fn spotify_export_import(app: AppHandle, state: State<'_, AppState>, p
             let _ = app.emit_to("main", "spotify-import", SpotifyProgress { name: name.to_string(), list: n + 1, lists, matching: true, done, total });
         };
         let Some(tracks) = links::find_on_youtube(&app, &list.tracks, tell).await? else { break };
-        let id = state.lib().save_playlist(Source::Spotify, &list.id, name, &tracks).map_err(err)?;
+        let id = crate::spotify_web::save(&state, &list.id, name, &tracks).map_err(err)?;
         report.playlist_id.get_or_insert(id);
         report.lists += 1;
         report.songs += total;
