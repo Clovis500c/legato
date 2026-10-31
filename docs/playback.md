@@ -250,7 +250,7 @@ never: downloading, extracting, recording or exporting a platform's audio, or to
     thread only copies: `Processor::process` pushes its output (as heard: after gain and limiter, before the volume
     knob) into `tap.rs`, a ring of atomics, when `Tap::listen()` has a listener (one relaxed load otherwise; no lock, no
     allocation). The FFT runs in `src-tauri/src/viz.rs`: a worker thread alive only between `viz_start(frames)` and
-    `viz_stop` (also a page reload, `on_page_load`, and a failed send), `viz::Pump` every ~16.7 ms: a frame when new
+    `viz_stop` (also a page reload, `on_page_load`, and a failed send; a new page claims the stream with `viz_page(id)` at start-up and a `viz_start` still in flight from the page before, carrying the old id, is dropped), `viz::Pump` every ~16.7 ms: a frame when new
     audio came, one silent frame after ~100 ms of no new audio or digital silence, then nothing (a third of the
     wake-ups while idle). Frames go over a Tauri `Channel<InvokeResponseBody>` as raw bytes. Where the device hands
     sound over in bursts the rate is that of the bursts (the e2e build: every 20 ms, 50 a second).
@@ -307,8 +307,8 @@ never: downloading, extracting, recording or exporting a platform's audio, or to
   - **VU needles**: two dials side by side, L and R, each a damped spring in closed form (`stepNeedle`: exact at any
     frame rate), natural frequency 13.52 rad/s and damping 0.813: a step reaches 99 % in 300 ms with 1.24 % overshoot
     (the VU standard: 300 ms, 1 to 1.5 %; the test steps it at 1 ms and checks both). 0 VU is a sine 14 dB under full
-    scale RMS (the streaming level); the scale runs -20 to +3 VU. The level is the band energies summed, minus 3 dB for
-    the sine-reads-its-amplitude convention. The peak LED lights at +3 VU and holds 1 s, so it changes at most once a
+    scale RMS (the streaming level); the scale runs -20 to +3 VU. The level is the frame's window RMS (header
+    bytes 4-5; a full-scale sine reads -3 dB), not the bands summed: under 300 Hz the bands overlap, so a sum read 5 to 9 dB hot on bass. The peak LED lights at +3 VU and holds 1 s, so it changes at most once a
     second whatever the sound (under the flash limit, and under calm mode's 1). The dial (arc, marks, red end, numbers
     when tall enough) is drawn once to a bitmap per size and colour; the needles, hub and LEDs go over it each frame.
     `dialGeometry` fits the arc to any box: a shallow arc with the pivot below the box in the strip, up to 60 degrees of
@@ -316,14 +316,19 @@ never: downloading, extracting, recording or exporting a platform's audio, or to
     motion smooths the level (0.45 s) before the spring, so the needles drift. PPM ballistics and skins are not done.
   - **Spectrogram**: time to the right, the log band axis up (low at the bottom), new column at the right edge. Each
     drawn frame copies the picture left by the whole device pixels due and paints the new column with `putImageData`
-    (one pixel column, mixed between neighbouring bands, coloured by a 256-step magma-like table that is clear at
-    silence, so it sits on any page). Speed 90 CSS px/s (45 in reduced motion), counted by time, not by frames: the
+    (one pixel column, mixed between neighbouring bands, the theme's ink at an opacity that rises with the level, 256 steps, clear at
+    silence, so it sits on any page and takes the theme; no hues of its own). Speed 90 CSS px/s (45 in reduced motion), counted by time, not by frames: the
     test scrolls 2 s at 24 to 240 Hz and 2x density and gets the same distance within a pixel. The picture is kept
     across messages but not across a resize or a look change. Canvas 2D is enough: no WebGL.
   - **Drawn at 30 fps** (`FPS` in `VizCanvas.tsx`, sent with the look; the worker's loop skips a tick that comes less than a
     period minus 3 ms after the last drawing): at the screen's 60 the bench showed 5 of 16 looks and sizes over the
     3 % budget (up to +4.6 points of the PC), at 30 all four looks run again were +1 to +1.9. The sound's own frames stay at
     60 Hz (the newest one is used, and the needles and bars are time-based). Numbers: `docs/performance.md`.
+  - **Silent frames are silence**: the twins send one all -120 frame when the sound stops or a window is all zeros
+    (a gap, a stalled buffer); `frameMessage` (`vizProtocol.ts`) turns it into the worker's `silence`, so the bars fall and
+    the loop stops at rest instead of redrawing a blank canvas. The native levels poll (`live.ts`) runs only for
+    processing or the moving cover (`LiveWish.levels`), not for the visualizer. In the visualizer's full screen, search,
+    settings and back / forward do nothing, the focus is dropped on open, and Esc leaves even from a field behind it.
   - **Everywhere**: all three obey reduced motion (`useCalm`) and the flash limiter (the spectrogram and the ring read
     the limited heights; the needles are not brightness). All eight looks are offered in the strip, Settings and the
     full screen; Radial says where it falls back (the Settings row). The e2e walk draws each, in Now Playing and full

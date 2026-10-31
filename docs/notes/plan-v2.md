@@ -249,6 +249,11 @@ signal, no beat, small. Plan: better data first, then a real renderer, then the 
 - [ ] Colours from the theme or the cover (`coverTint.ts`): gradient along frequency, by level, or the cover's palette.
       (2026-10-31: the theme's text colour as read where it is drawn, so Now Playing's cover tint applies; no colour
       choices yet.)
+- [x] Visualizer v2 review fixes (2026-10-31): the VU reads the frame's window RMS (the bands overlap under 300 Hz and
+      read 5 to 9 dB hot), a silent frame is silence (the loop stops), the native levels poll no longer runs for the
+      visualizer, search / settings / back do nothing behind the full screen and Esc leaves from a hidden field, a
+      `viz_start` from the page before a reload is dropped (`viz_page`), the spectrogram is the theme's ink with
+      opacity (no hues). Left: a multi-hue spectrogram look as an opt-in.
 - [x] Reduced motion: slower, no flashes (Windows' animation setting); a flash limit always (photosensitivity).
       (2026-10-31: `prefers-reduced-motion` and the app's Animations setting; the flash limiter is tested on a strobe.)
 
