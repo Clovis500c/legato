@@ -23,11 +23,29 @@ impl Gate {
 
 static GATE: Gate = Gate(AtomicBool::new(false));
 
+/// What started the deferred work. The log says it, so a walk (`pnpm e2e`) can tell the UI's ready from the timer.
+#[derive(Clone, Copy)]
+enum Cause {
+    Ready,
+    Timer,
+}
+
+impl Cause {
+    /// Our own words; e2e/smoke.mjs reads these two.
+    fn words(self) -> &'static str {
+        match self {
+            Cause::Ready => "deferred start by the UI ready signal",
+            Cause::Timer => "deferred start by the timer",
+        }
+    }
+}
+
 /// Starts the deferred work, once per run: a page reload says ready again, the timer too, nothing doubles.
-pub fn start(app: &AppHandle) {
+fn start(app: &AppHandle, cause: Cause) {
     if !GATE.open() {
         return;
     }
+    crate::diag::info("startup", cause.words(), "");
     crate::update::spawn(app.clone());
     crate::syncmode::spawn(app.clone());
     // Counts the cover folder and prunes it over its cap, on a thread of its own.
@@ -44,14 +62,14 @@ pub fn arm(app: &AppHandle) {
     let app = app.clone();
     tauri::async_runtime::spawn(async move {
         tokio::time::sleep(FALLBACK).await;
-        start(&app);
+        start(&app, Cause::Timer);
     });
 }
 
 /// The UI is up (library in, page mounted): the rest may start.
 #[tauri::command]
 pub async fn app_ready(app: AppHandle) {
-    start(&app);
+    start(&app, Cause::Ready);
 }
 
 #[cfg(test)]
@@ -64,5 +82,12 @@ mod tests {
         assert!(g.open());
         assert!(!g.open());
         assert!(!g.open());
+    }
+
+    #[test]
+    fn the_two_causes_say_different_words() {
+        // e2e/smoke.mjs fails a walk on the timer's words.
+        assert_ne!(Cause::Ready.words(), Cause::Timer.words());
+        assert!(Cause::Timer.words().contains("timer"));
     }
 }
