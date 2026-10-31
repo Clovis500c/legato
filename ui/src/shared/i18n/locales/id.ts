@@ -1604,6 +1604,8 @@ const id: Record<string, string> = {
   'Visualizer full screen on / off': 'Visualisasi layar penuh aktif / nonaktif',
   '← → move the lyrics · Esc leaves': '← → geser lirik · Esc untuk keluar',
   // Connect Spotify
+  'Its playlists and likes come in. Nothing goes back to Spotify; YouTube Music’s own direction decides what reaches it.': 'Playlist dan suka dari akun ini masuk ke sini. Tak ada yang kembali ke Spotify; arah milik YouTube Music menentukan apa yang sampai ke sana.',
+  'Sync direction is Off: nothing comes in (Settings › Accounts)': 'Arah sinkronisasi Nonaktif: tak ada yang masuk (Pengaturan › Akun)',
   'Exportify, a free open-source tool, reads your lists in a window. If Spotify’s page asks, sign in and accept: everything else happens by itself.': 'Exportify, alat gratis dan sumber terbuka, membaca daftar Anda di sebuah jendela. Jika halaman Spotify meminta, masuk dan setujui: sisanya berjalan sendiri.',
   'Waiting for your lists…': 'Menunggu daftar Anda…',
   'Read Spotify’s page instead': 'Baca halaman Spotify saja',

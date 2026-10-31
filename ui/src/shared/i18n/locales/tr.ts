@@ -1604,6 +1604,8 @@ const tr: Record<string, string> = {
   'Visualizer full screen on / off': 'Görselleştirici tam ekran açık / kapalı',
   '← → move the lyrics · Esc leaves': '← → sözleri kaydır · Esc çıkar',
   // Connect Spotify
+  'Its playlists and likes come in. Nothing goes back to Spotify; YouTube Music’s own direction decides what reaches it.': 'Çalma listeleri ve beğenileri buraya gelir. Spotify’a hiçbir şey geri gitmez; YouTube Music’e neyin ulaşacağını onun kendi yönü belirler.',
+  'Sync direction is Off: nothing comes in (Settings › Accounts)': 'Eşitleme yönü Kapalı: hiçbir şey gelmez (Ayarlar › Hesaplar)',
   'Exportify, a free open-source tool, reads your lists in a window. If Spotify’s page asks, sign in and accept: everything else happens by itself.': 'Ücretsiz ve açık kaynaklı bir araç olan Exportify, listelerini bir pencerede okur. Spotify’ın sayfası isterse oturum aç ve onayla: gerisi kendiliğinden olur.',
   'Waiting for your lists…': 'Listelerin bekleniyor…',
   'Read Spotify’s page instead': 'Bunun yerine Spotify’ın sayfasını oku',

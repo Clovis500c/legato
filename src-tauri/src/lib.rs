@@ -164,6 +164,11 @@ impl AppState {
         picked.iter().filter_map(|a| YouTubeMusic::new(&cookie).ok().map(|y| y.as_account(a))).collect()
     }
 
+    /// Connect Spotify is a pull: the account's direction has to allow it.
+    fn spotify_takes(&self) -> CmdResult<()> {
+        if self.direction("spotify").pulls() { Ok(()) } else { Err("Spotify: sync direction is Off (Settings › Accounts)".into()) }
+    }
+
     /// Account's sync direction (Settings › Accounts). Keys: "spotify", "youtube:<account key>".
     fn direction(&self, key: &str) -> Direction {
         service_sync::direction(self.lib().setting(DIRECTIONS).ok().flatten().as_ref(), key)

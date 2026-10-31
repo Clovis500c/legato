@@ -35,6 +35,9 @@ const directionHelp: Record<Direction, string> = {
   off: msg('Nothing comes in or goes out. What was imported stays.'),
 }
 
+/** Spotify: nothing comes back to it, so its likes go further by YouTube Music's direction only. */
+const pullOnly = msg('Its playlists and likes come in. Nothing goes back to Spotify; YouTube Music’s own direction decides what reaches it.')
+
 /** Spotify: playlists come in only (sending to Spotify isn't built: no Premium account to test it on). */
 function DirectionPicker({ service, value, onChange, receives = true }: { service: string; value: Direction; onChange: (d: Direction) => void; receives?: boolean }) {
   const all: { value: Direction; label: string }[] = [
@@ -48,7 +51,7 @@ function DirectionPicker({ service, value, onChange, receives = true }: { servic
   return (
     <div data-setting="Sync direction" className="flex flex-col gap-1.5">
       <Segmented label={tr('Sync direction')} value={shown} onChange={onChange} options={options} />
-      <p className="text-xs text-ink-2">{tr(directionHelp[shown], { service })}</p>
+      <p className="text-xs text-ink-2">{tr(!receives && shown === 'pull' ? pullOnly : directionHelp[shown], { service })}</p>
     </div>
   )
 }
@@ -87,9 +90,11 @@ function ServiceRow({ service }: { service: 'spotify' }) {
   )
 }
 
-/** Prototype: Spotify's official web player in a window, signed in on Spotify's page (no keys). Library import: Add music › Connect Spotify. */
+/** Prototype: Spotify's official web player in a window, signed in on Spotify's page (no keys). Library import: Add music › Connect Spotify, which follows the direction here. */
 function SpotifyWeb() {
   const [on, setOn] = useState<boolean>()
+  const [dirs, setDir] = useDirections()
+  const keyed = useStore((s) => s.status.spotify.connected)
   useEffect(() => {
     const check = () => void api.spotifyWebStatus().then(setOn, () => setOn(false))
     check()
@@ -97,19 +102,27 @@ function SpotifyWeb() {
     return () => window.removeEventListener('focus', check)
   }, [])
   return (
-    <div data-setting="Spotify web player" className="flex items-center gap-4 border-b border-line-soft px-4 py-3.5">
-      <Led on={!!on} />
-      <span className="grid size-9 place-items-center rounded-full border border-line text-ink-2">
-        <SourceIcon source="spotify" size={16} />
-      </span>
-      <div className="flex-1">
-        <p className="text-[0.8125rem] font-semibold">{tr('Spotify web player')} <span className="kicker">{tr('Preview')}</span></p>
-        <p className="text-xs text-ink-2">{tr('Spotify’s own player in a window, signed in on Spotify’s page. To import a public playlist, paste its link anywhere (Ctrl+V).')}</p>
+    <div data-setting="Spotify web player" className="flex flex-col gap-3 border-b border-line-soft px-4 py-3.5">
+      <div className="flex items-center gap-4">
+        <Led on={!!on} />
+        <span className="grid size-9 place-items-center rounded-full border border-line text-ink-2">
+          <SourceIcon source="spotify" size={16} />
+        </span>
+        <div className="flex-1">
+          <p className="text-[0.8125rem] font-semibold">{tr('Spotify web player')} <span className="kicker">{tr('Preview')}</span></p>
+          <p className="text-xs text-ink-2">{tr('Spotify’s own player in a window, signed in on Spotify’s page. To import a public playlist, paste its link anywhere (Ctrl+V).')}</p>
+        </div>
+        <span className="kicker">{on ? tr('Signed in') : tr('Not signed in')}</span>
+        <Button variant={on ? 'ghost' : undefined} onClick={() => api.spotifyWebOpen().catch((e) => useStore.setState({ error: String(e) }))}>
+          {tr('Open')}
+        </Button>
       </div>
-      <span className="kicker">{on ? tr('Signed in') : tr('Not signed in')}</span>
-      <Button variant={on ? 'ghost' : undefined} onClick={() => api.spotifyWebOpen().catch((e) => useStore.setState({ error: String(e) }))}>
-        {tr('Open')}
-      </Button>
+      {/* With a key the row above shows it. */}
+      {!keyed && (
+        <div className="ml-13">
+          <DirectionPicker service="Spotify" value={dirs.spotify ?? 'both'} onChange={(d) => setDir('spotify', d)} receives={false} />
+        </div>
+      )}
     </div>
   )
 }

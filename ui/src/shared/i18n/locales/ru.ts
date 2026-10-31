@@ -1604,6 +1604,8 @@ const ru: Record<string, string> = {
   'Visualizer full screen on / off': 'Визуализатор на весь экран вкл. / выкл.',
   '← → move the lyrics · Esc leaves': '← → сдвинуть текст · Esc — выход',
   // Connect Spotify
+  'Its playlists and likes come in. Nothing goes back to Spotify; YouTube Music’s own direction decides what reaches it.': 'Его плейлисты и лайки приходят сюда. В Spotify ничего не возвращается; что дойдёт до YouTube Music, решает его собственное направление.',
+  'Sync direction is Off: nothing comes in (Settings › Accounts)': 'Направление синхронизации выключено: ничего не приходит (Настройки › Аккаунты)',
   'Exportify, a free open-source tool, reads your lists in a window. If Spotify’s page asks, sign in and accept: everything else happens by itself.': 'Exportify, бесплатный инструмент с открытым кодом, читает ваши списки в окне. Если страница Spotify попросит, войдите и согласитесь: всё остальное произойдёт само.',
   'Waiting for your lists…': 'Ожидание ваших списков…',
   'Read Spotify’s page instead': 'Вместо этого прочитать страницу Spotify',

@@ -1604,6 +1604,8 @@ const vi: Record<string, string> = {
   'Visualizer full screen on / off': 'Trình hiển thị toàn màn hình bật / tắt',
   '← → move the lyrics · Esc leaves': '← → dịch lời bài hát · Esc để thoát',
   // Connect Spotify
+  'Its playlists and likes come in. Nothing goes back to Spotify; YouTube Music’s own direction decides what reaches it.': 'Danh sách phát và lượt thích của tài khoản về đây. Không gì quay lại Spotify; chiều đồng bộ của YouTube Music quyết định những gì đến được đó.',
+  'Sync direction is Off: nothing comes in (Settings › Accounts)': 'Chiều đồng bộ đang Tắt: không có gì về đây (Cài đặt › Tài khoản)',
   'Exportify, a free open-source tool, reads your lists in a window. If Spotify’s page asks, sign in and accept: everything else happens by itself.': 'Exportify, một công cụ miễn phí và mã nguồn mở, đọc danh sách của bạn trong một cửa sổ. Nếu trang của Spotify yêu cầu, hãy đăng nhập và chấp nhận: mọi việc còn lại tự diễn ra.',
   'Waiting for your lists…': 'Đang chờ danh sách của bạn…',
   'Read Spotify’s page instead': 'Thay vào đó, đọc trang của Spotify',

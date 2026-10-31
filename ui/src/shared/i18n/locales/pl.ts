@@ -1604,6 +1604,8 @@ const pl: Record<string, string> = {
   'Visualizer full screen on / off': 'Wizualizacja na pełnym ekranie włącz / wyłącz',
   '← → move the lyrics · Esc leaves': '← → przesuń tekst · Esc wychodzi',
   // Connect Spotify
+  'Its playlists and likes come in. Nothing goes back to Spotify; YouTube Music’s own direction decides what reaches it.': 'Jego playlisty i polubienia trafiają tutaj. Nic nie wraca do Spotify; to, co trafi do YouTube Music, zależy od jego własnego kierunku.',
+  'Sync direction is Off: nothing comes in (Settings › Accounts)': 'Kierunek synchronizacji jest wyłączony: nic nie przychodzi (Ustawienia › Konta)',
   'Exportify, a free open-source tool, reads your lists in a window. If Spotify’s page asks, sign in and accept: everything else happens by itself.': 'Exportify, darmowe narzędzie open source, odczytuje listy w oknie. Jeśli strona Spotify o to poprosi, zaloguj się i zaakceptuj: cała reszta wydarzy się sama.',
   'Waiting for your lists…': 'Oczekiwanie na listy…',
   'Read Spotify’s page instead': 'Zamiast tego odczytaj stronę Spotify',

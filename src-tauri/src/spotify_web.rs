@@ -116,7 +116,8 @@ pub struct SpotifyList {
 
 /// The playlists in the signed-in user's library. Liked Songs isn't one: the interface adds it.
 #[tauri::command]
-pub async fn spotify_lists(app: AppHandle) -> CmdResult<Vec<SpotifyList>> {
+pub async fn spotify_lists(app: AppHandle, state: State<'_, AppState>) -> CmdResult<Vec<SpotifyList>> {
+    state.spotify_takes()?;
     async {
         let mut rx = start(&app, "", "lists").await?;
         let mut all = Vec::new();

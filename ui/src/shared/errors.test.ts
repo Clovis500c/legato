@@ -12,6 +12,7 @@ describe('explain', () => {
   })
 
   it('leaves the app’s own words alone', () => {
+    expect(explain('Spotify: sync direction is Off (Settings › Accounts)').text).toBe('Spotify: Sync direction is Off: nothing comes in (Settings › Accounts)')
     expect(explain('Sign in to YouTube Music first (Settings › Accounts)')).toEqual({ text: 'Sign in to YouTube Music first (Settings › Accounts)' })
     expect(explain(new Error('Playlist not found'))).toEqual({ text: 'Playlist not found' })
     // A song title with a number in it isn't a status code.

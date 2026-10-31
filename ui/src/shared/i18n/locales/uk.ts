@@ -1604,6 +1604,8 @@ const uk: Record<string, string> = {
   'Visualizer full screen on / off': 'Візуалізатор на весь екран увімк. / вимк.',
   '← → move the lyrics · Esc leaves': '← → зсунути текст · Esc — вихід',
   // Connect Spotify
+  'Its playlists and likes come in. Nothing goes back to Spotify; YouTube Music’s own direction decides what reaches it.': 'Його плейлисти й вподобання надходять сюди. До Spotify нічого не повертається; що дійде до YouTube Music, вирішує його власний напрямок.',
+  'Sync direction is Off: nothing comes in (Settings › Accounts)': 'Напрямок синхронізації вимкнено: нічого не надходить (Налаштування › Облікові записи)',
   'Exportify, a free open-source tool, reads your lists in a window. If Spotify’s page asks, sign in and accept: everything else happens by itself.': 'Exportify, безкоштовний інструмент із відкритим кодом, читає ваші списки у вікні. Якщо сторінка Spotify попросить, увійдіть і погодьтеся: усе інше станеться само.',
   'Waiting for your lists…': 'Очікування ваших списків…',
   'Read Spotify’s page instead': 'Натомість прочитати сторінку Spotify',

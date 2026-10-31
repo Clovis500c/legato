@@ -75,7 +75,8 @@ fn on_download(wv: tauri::Webview, event: DownloadEvent<'_>) -> bool {
 
 /// Opens (or focuses) Exportify's page. The file comes back as `spotify-export`.
 #[tauri::command]
-pub async fn spotify_export_open(app: AppHandle) -> CmdResult<()> {
+pub async fn spotify_export_open(app: AppHandle, state: State<'_, AppState>) -> CmdResult<()> {
+    state.spotify_takes()?;
     if let Some(w) = app.get_webview_window(LABEL) {
         return w.set_focus().map_err(err);
     }

@@ -1604,6 +1604,8 @@ const sv: Record<string, string> = {
   'Visualizer full screen on / off': 'Visualiserare i helskärm på / av',
   '← → move the lyrics · Esc leaves': '← → flytta texten · Esc avslutar',
   // Connect Spotify
+  'Its playlists and likes come in. Nothing goes back to Spotify; YouTube Music’s own direction decides what reaches it.': 'Dess spellistor och gillningar kommer hit. Inget går tillbaka till Spotify; YouTube Musics egen riktning avgör vad som når dit.',
+  'Sync direction is Off: nothing comes in (Settings › Accounts)': 'Synkroniseringsriktningen är Av: inget kommer in (Inställningar › Konton)',
   'Exportify, a free open-source tool, reads your lists in a window. If Spotify’s page asks, sign in and accept: everything else happens by itself.': 'Exportify, ett gratis verktyg med öppen källkod, läser dina listor i ett fönster. Om Spotifys sida frågar loggar du in och godkänner: allt annat sker av sig självt.',
   'Waiting for your lists…': 'Väntar på dina listor…',
   'Read Spotify’s page instead': 'Läs Spotifys sida i stället',

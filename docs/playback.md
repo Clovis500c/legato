@@ -426,7 +426,10 @@ via the Web API Player endpoints. Audio comes out of the Spotify app; we only se
   by position. The same list imported again replaces its copy (id: the file's name). Liked Songs joins Liked Music,
   whatever the way in (`Library::add_likes`, user's choice 2026-10-31): no second list of likes. YouTube Music's Liked Music is
   rewritten by every sync, so a song not in it waits in your own, and at the next sync the ones with a YouTube version
-  are liked on the account (`push_own_likes`, one every 400 ms). An account set not to take changes keeps them yours.
+  are liked on the account (`push_own_likes`, one every 400 ms). Sync directions decide each hop: Spotify's (Settings › Accounts,
+  shown without a key too) has to bring things in, or Connect Spotify says so and stops; YouTube Music's has to send, or
+  the songs stay in your own list. Nothing goes to Spotify: Exportify only reads, and writing needs the official API, so a
+  key and Premium (`DirectionPicker` keeps Import only and Off).
   **Why not our own copy of it:** the code is the easy part, Legato already has PKCE. What it has is a key that serves
   everybody. A new app is in Development Mode (Premium owner, 5 allowlisted users), and extended quota is only for
   organizations with 250k monthly users. Its key stays in its page: Spotify only redirects to the addresses registered for

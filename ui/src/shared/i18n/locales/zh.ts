@@ -1604,6 +1604,8 @@ const zh: Record<string, string> = {
   'Visualizer full screen on / off': '可视化全屏 开 / 关',
   '← → move the lyrics · Esc leaves': '← → 调整歌词 · Esc 退出',
   // Connect Spotify
+  'Its playlists and likes come in. Nothing goes back to Spotify; YouTube Music’s own direction decides what reaches it.': '其播放列表和点赞会导入这里。不会有任何内容发回 Spotify；发送到 YouTube Music 的内容由它自己的同步方向决定。',
+  'Sync direction is Off: nothing comes in (Settings › Accounts)': '同步方向已关闭：不会导入任何内容（设置 › 账号）',
   'Exportify, a free open-source tool, reads your lists in a window. If Spotify’s page asks, sign in and accept: everything else happens by itself.': '免费开源工具 Exportify 会在窗口中读取你的列表。如果 Spotify 页面提示,请登录并同意,其余步骤都会自动完成。',
   'Waiting for your lists…': '正在等待你的列表…',
   'Read Spotify’s page instead': '改为读取 Spotify 页面',
