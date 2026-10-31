@@ -19,6 +19,7 @@ import { bindFrame, tailVolume, useNowTrack, usePlayer, useVideoSlot } from './s
 import { volumeWheelRef } from './volume'
 import { pop } from '../../shared/motion'
 import { embedUrl, parseYt, ytPost } from './youtube'
+import { useKaraoke } from './karaokeMode'
 import { closeWatch, cropWatch, placeWatch, sendWatch, useWatch, watchUpdate } from './watch'
 import { frameAround } from '../../shared/artbox'
 import { bindLiveFrame, sendLive } from './live'
@@ -51,6 +52,8 @@ function YouTubeFrame({ videoId, tail = false, idle = false }: { videoId: string
   const hidden = useVideoSlot((s) => s.hidden)
   const box = useVideoSlot((s) => s.box)
   const fill = useVideoSlot((s) => s.fill)
+  // Karaoke covers the window: the native watch page would stay above it.
+  const karaoke = useKaraoke((s) => s.open)
   // Embed refused this video: YouTube's watch page plays it in a webview over the same place (watch.ts).
   const watch = useWatch((s) => s.video)
   // Bars baked into the video: frame enlarged, only the picture shows.
@@ -108,11 +111,11 @@ function YouTubeFrame({ videoId, tail = false, idle = false }: { videoId: string
   // Watch page follows the slot (or this frame's own spot), hidden in cover mode. Gone with the last YouTube track.
   useEffect(() => {
     if (!watch || tail) return
-    const follow = () => placeWatch(hidden ? null : (rect ?? frame.current?.getBoundingClientRect() ?? null))
+    const follow = () => placeWatch(hidden || karaoke ? null : (rect ?? frame.current?.getBoundingClientRect() ?? null))
     follow()
     window.addEventListener('resize', follow)
     return () => window.removeEventListener('resize', follow)
-  }, [watch, rect, hidden, tail])
+  }, [watch, rect, hidden, karaoke, tail])
   useEffect(() => {
     if (watch && box && !tail) cropWatch(box)
   }, [watch, box, tail])

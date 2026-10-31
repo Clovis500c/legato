@@ -57,6 +57,13 @@ describe('karaoke keys', () => {
     expect(app).toHaveBeenCalledTimes(2)
   })
 
+  it('a menu open on top keeps the arrows too', () => {
+    const { moved, app, press } = setup(true)
+    expect(press('ArrowDown')).toBe(false)
+    expect(moved).not.toHaveBeenCalled()
+    expect(app).toHaveBeenCalledOnce()
+  })
+
   it('stops listening once cleaned up', () => {
     const { left, press, off } = setup()
     off()

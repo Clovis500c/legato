@@ -17,6 +17,32 @@ export const useKaraoke = create<{ open: boolean }>(() => ({ open: false }))
 let entered = false
 let unlisten: (() => void) | undefined
 let unkey: (() => void) | undefined
+// Bumped at each open and close: a slow enter that finds itself superseded does nothing more.
+let gen = 0
+
+// Kept in sessionStorage too: a page reload while open loses the module state, the window would stay full screen.
+const FLAG = 'karaoke-fullscreen'
+function mark(on: boolean) {
+  entered = on
+  try {
+    if (on) sessionStorage.setItem(FLAG, '1')
+    else sessionStorage.removeItem(FLAG)
+  } catch {
+    // No storage: only a reload while open stays full screen.
+  }
+}
+
+/** At start: full screen left by a page that reloaded with karaoke open is given back. */
+export function restoreScreen() {
+  try {
+    if (typeof sessionStorage === 'undefined' || !sessionStorage.getItem(FLAG)) return
+    sessionStorage.removeItem(FLAG)
+    void getCurrentWindow().setFullscreen(false).catch(() => {})
+  } catch {
+    // No storage: nothing to give back.
+  }
+}
+restoreScreen()
 
 /** Lyrics fix of the song playing now (the same one the lyrics panel shows, saved the same way). */
 export const nowFix = (): LyricsFix => {
@@ -33,24 +59,31 @@ export function nudgeLyrics(ms: number | null) {
 }
 
 async function enter() {
+  const mine = ++gen
   const w = getCurrentWindow()
+  // Superseded (closed, maybe opened again): closed for good = full screen given back, else the newer enter owns it.
+  const stale = () => {
+    if (mine === gen) return false
+    if (!useKaraoke.getState().open) leave()
+    return true
+  }
   try {
     if (!(await w.isFullscreen())) {
       await w.setFullscreen(true)
-      entered = true
+      mark(true)
     }
-    // Closed while the window was changing: give it back.
-    if (!useKaraoke.getState().open) return leave()
+    if (stale()) return
     const off = await w.onResized(() => {
       void w.isFullscreen().then((on) => {
         if (!on) {
-          entered = false
+          mark(false)
           closeKaraoke()
         }
       }, () => {})
     })
-    if (useKaraoke.getState().open) unlisten = off
-    else off()
+    if (stale()) return off()
+    unlisten?.()
+    unlisten = off
   } catch {
     // No full screen (a failure): the screen still covers the window.
   }
@@ -60,7 +93,7 @@ function leave() {
   unlisten?.()
   unlisten = undefined
   if (entered) {
-    entered = false
+    mark(false)
     void getCurrentWindow().setFullscreen(false).catch(() => {})
   }
 }
@@ -75,6 +108,7 @@ export function openKaraoke() {
 export function closeKaraoke() {
   if (!useKaraoke.getState().open) return
   useKaraoke.setState({ open: false })
+  gen++
   unkey?.()
   unkey = undefined
   leave()

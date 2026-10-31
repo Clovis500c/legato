@@ -91,7 +91,7 @@ export function startShortcuts(): () => void {
     const combo = comboOf(e)
     const id = combo && map.get(combo)
     if (!id || inText(e.target)) return
-    if (e.repeat && id === 'playPause') return
+    if (e.repeat && (id === 'playPause' || id === 'karaoke')) return
     if (/^(Shift\+)?Arrow/.test(combo) && ownsArrows(e.target)) return
     if (combo === 'Space' && ownsSpace(e.target)) return
     e.preventDefault()
