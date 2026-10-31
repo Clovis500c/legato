@@ -7,7 +7,7 @@ mod output;
 mod queue;
 pub mod silence;
 
-pub use music_dsp::{Effects, Levels, Live as LiveSettings};
+pub use music_dsp::{Effects, Levels, Live as LiveSettings, tap::Tap, viz};
 pub use queue::Queue;
 pub use silence::Trim;
 
@@ -116,6 +116,11 @@ impl Player {
     /// What plays now, as heard (meters, cover animation).
     pub fn levels(&self) -> Levels {
         self.control.levels()
+    }
+
+    /// A copy of what plays, for the visualizer (`music_dsp::viz`); empty until someone listens.
+    pub fn tap(&self) -> Arc<music_dsp::tap::Tap> {
+        self.control.tap().clone()
     }
 
     pub fn send(&self, cmd: Command) {
