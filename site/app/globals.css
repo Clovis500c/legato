@@ -31,6 +31,9 @@
   }
 }
 
+/* The scroll story's stage, wide screens with animations on (components/Story.tsx); elsewhere chapters stack. */
+@custom-variant pinned (@media (min-width: 1000px) and (prefers-reduced-motion: no-preference));
+
 @theme inline {
   --color-bg: var(--bg);
   --color-panel: var(--panel);

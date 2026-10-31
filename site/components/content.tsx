@@ -30,6 +30,12 @@ export const FEATURES: { icon: IconName; title: string; text: string }[] = [
   { icon: 'Translate', title: '18 languages', text: 'Following Windows, with its media keys, a tray icon and full screen.' },
 ]
 
+/** The scroll story, in order: what each chapter says, the demo's screen (site/demo/scenes.ts), where the window goes. */
+export const CHAPTERS = [
+  { scene: 'library', title: 'One library', text: 'The same song on several services is one track, wherever you saved it.', pose: { x: 0.2, y: 0.02, rx: 3, ry: -9, zoom: 1.08 } },
+  { scene: 'import', title: 'Your Spotify lists come over', text: 'Songs land one by one, every list counted. Each is then searched on YouTube, and the ones without a match are kept for later.', pose: { x: 0.3, y: 0.02, rx: 2, ry: -6, zoom: 1.16 } },
+]
+
 // Latest row of docs/performance.md (`pnpm bench`), copied as it is: change these with each new row.
 export const BENCH = { date: '2026-10-31', version: '1.0.0', os: 'Windows 11', pc: 'Ryzen 5 5500, 32 GB', songs: '10 000', ramPaused: '141', ramTray: '54', windowCold: '0.84', paintCold: '1.26' }
 
