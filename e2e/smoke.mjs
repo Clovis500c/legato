@@ -7,7 +7,8 @@
 //   play         a local song plays 3 s: the engine's position moves, sound goes through the live chain
 //   viz          the visualizer's stream (viz_start): ~60 frames a second of 1/6-octave bands, the song's own band lit, quiet after viz_stop
 //   pause-play   Pause freezes it, Play moves it again
-//   visualizer   the visualizer on: LED bars drawn by a worker under the cover (not blank), V takes it full screen, Esc leaves
+//   visualizer   the visualizer on: LED bars drawn by a worker under the cover (not blank), V takes it full screen, Esc leaves;
+//                then Radial, VU needles and Spectrogram the same way; frames come while it is open and stop when it closes
 //   karaoke      K opens the lyrics screen, Esc closes it
 //   search       typed text: suggestions, then YouTube, YouTube Music and Apple results, all from e2e/mock.mjs; the song plays on
 //   links        a pasted Deezer playlist (Add music) and Apple album (Ctrl+V): the progress toast, Cancel, the playlist made
@@ -93,7 +94,7 @@ export const flat = (s) => String(s).replace(/\s+/g, ' ').trim()
 
 /** The pictures the walk takes (`shot`) and its steps (`step`, named in FAIL-<step>.png): e2e.test.ts keeps both lists equal
  *  to the walk's own calls. */
-export const SHOTS = ['1-welcome', '2-library', '3-songs', '4-playing', '8-visualizer', '9-visualizer-full', '5-search', '5-imported', '6-settings', '7-relaunch']
+export const SHOTS = ['1-welcome', '2-library', '3-songs', '4-playing', '8-visualizer', '9-visualizer-full', '10-radial', '10-radial-full', '11-vu', '11-vu-full', '12-spectrogram', '12-spectrogram-full', '5-search', '5-imported', '6-settings', '7-relaunch']
 export const STEPS = ['launch', 'welcome', 'songs', 'play', 'viz', 'pause-play', 'visualizer', 'karaoke', 'search', 'links', 'quit', 'relaunch']
 
 /** What the app's log says started its deferred work (src-tauri/src/deferred.rs), once per launch. */
@@ -502,6 +503,10 @@ async function walk(o, dataDirs) {
       await page.press('Playback', { scope: 'page' })
       await page.press('Visualizer', { scope: 'page' })
       await app.cdp.waitFor(`document.querySelector('[aria-label="Visualizer"][role=switch]')?.getAttribute('aria-checked') === 'true'`, { timeout: 5000 })
+      // The engine's own count (viz_stats: workers alive, frames sent): the stream follows the view.
+      const frames = async () => (await page.invoke('viz_stats'))[1]
+      const workers = async () => (await page.invoke('viz_stats'))[0]
+      if ((await workers()) !== 0) throw new Error('a frame worker runs before the visualizer is open')
       await key('KeyF')
       const canvas = (scope) => `(() => { const c = document.querySelector('${scope} canvas'); const r = c?.getBoundingClientRect(); return r && r.width > 50 && r.height > 20 ? { x: r.x, y: r.y, width: r.width, height: r.height } : null })()`
       const strip = await app.cdp.waitFor(canvas('[role=dialog][aria-label="Now playing"]'), { timeout: 10000 }).catch(() => {
@@ -514,6 +519,10 @@ async function walk(o, dataDirs) {
         return share
       }
       await lit(strip, 'strip')
+      const seen = await frames()
+      await sleep(500)
+      const more = (await frames()) - seen
+      if (more < 15 || (await workers()) !== 1) throw new Error(`the visualizer is open but ${more} frames came in half a second, ${await workers()} workers`)
       await shot('8-visualizer')
       await key('KeyV')
       const full = await app.cdp.waitFor(canvas('[role=dialog][aria-label="Visualizer"]'), { timeout: 10000 }).catch(() => {
@@ -530,6 +539,56 @@ async function walk(o, dataDirs) {
       await sleep(800)
       await key('KeyF')
       await app.cdp.waitFor(`!document.querySelector('[role=dialog][aria-label="Now playing"]')`, { timeout: 5000 })
+      // The other looks, picked in Settings: Now Playing's own canvas (the strip, or Radial's ring around the cover where it
+      // fits), then the full screen. Held long enough for the spectrogram to draw a line of the tone across.
+      const show = async (label, ms) => {
+        await page.press(label, { scope: 'page' })
+        await key('KeyF')
+        await app.cdp.waitFor(canvas('[role=dialog][aria-label="Now playing"]'), { timeout: 10000 }).catch(() => {
+          throw new Error(`${label}: Now Playing shows no visualizer canvas`)
+        })
+        await sleep(ms)
+        // Asked again: Radial's ring replaces the strip once the stage is measured.
+        await lit(await app.cdp.evaluate(canvas('[role=dialog][aria-label="Now playing"]')), `${label} in Now Playing`)
+      }
+      const showFull = async (label, ms) => {
+        await key('KeyV')
+        await app.cdp.waitFor(canvas('[role=dialog][aria-label="Visualizer"]'), { timeout: 10000 }).catch(() => {
+          throw new Error(`${label}: V did not open the visualizer screen`)
+        })
+        await sleep(ms)
+        // Asked again: the window was still growing to full screen.
+        await lit(await app.cdp.evaluate(canvas('[role=dialog][aria-label="Visualizer"]')), `${label} full screen`)
+      }
+      const leave = async () => {
+        await key('Escape')
+        await app.cdp.waitFor(`!document.querySelector('[role=dialog][aria-label="Visualizer"]')`, { timeout: 5000 })
+        await sleep(300)
+        await key('KeyF')
+        await app.cdp.waitFor(`!document.querySelector('[role=dialog][aria-label="Now playing"]')`, { timeout: 5000 })
+      }
+      await show('Radial', 1500)
+      await shot('10-radial')
+      await showFull('Radial', 1500)
+      await shot('10-radial-full')
+      await leave()
+      await show('VU needles', 1500)
+      await shot('11-vu')
+      await showFull('VU needles', 1500)
+      await shot('11-vu-full')
+      await leave()
+      await show('Spectrogram', 2500)
+      await shot('12-spectrogram')
+      await showFull('Spectrogram', 2500)
+      await shot('12-spectrogram-full')
+      await leave()
+      // Closed: the stream stops. A frame already on its way may land; after that, none.
+      await sleep(500)
+      const closed = await frames()
+      await sleep(700)
+      if ((await frames()) !== closed || (await workers()) !== 0) throw new Error(`the stream kept going after the visualizer closed: ${closed} to ${await frames()} frames, ${await workers()} workers`)
+      // Put the default look back, so the next steps meet the app as it was.
+      await page.press('LED', { scope: 'page' })
       // Settings opens on the section it was left on: back to General, where the quit step looks.
       await page.press('General', { scope: 'page' })
     })
