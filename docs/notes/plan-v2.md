@@ -344,6 +344,9 @@ every session.
 - [x] Bundle: Home, Search, Add, Mixes, Stats, Smart, editor panel, Welcome and the YouTube shelves are lazy (Theme Studio, Sync
       Mode and Plugins live in Settings / Add-ons, already lazy); icons were already imported one by one (Phosphor).
       First-load JS 948 to 829 kB (gzip 279 to 255). Left: LyricsPanel, dialogs, NowPlaying are still in the first chunk.
+      Review fixes (2026-10-31): a failed chunk is caught by `PageBoundary` (retry), the deferred starts are independent,
+      cover temp files are unique per write, the Legal wording is true, Deezer links route by host, link requests time out
+      (20 s) and Apple's page is capped (8 MB). Left: no progress or cancel for the 3000-song YouTube matching.
 - [ ] Re-renders: profile the player bar, Up next and lyrics at 60 fps (`Progress.tsx`); Zustand selectors everywhere.
 - [ ] Library at scale: 50 000 songs, check every query with `EXPLAIN QUERY PLAN` (indexes for artist, album,
       plays, likes), search with FTS5, scans in the background with progress.
