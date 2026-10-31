@@ -1,4 +1,4 @@
-import { AppleLogo, CheckCircle, ShareNetwork, SpotifyLogo } from '@phosphor-icons/react'
+import { AppleLogo, CheckCircle, FileAudio, ShareNetwork, SpotifyLogo } from '@phosphor-icons/react'
 import { useEffect, useState } from 'react'
 import { useStore } from '../../app/store'
 import { api } from '../../shared/api'
@@ -12,7 +12,7 @@ import { card, secondsLeft, share, summary, timeLeft, waitLeft, type ImportKind,
 
 function Deck({ seen, kind }: { seen: Seen[]; kind: ImportKind }) {
   const newest = seen.at(-1)?.seq ?? 0
-  const Icon = kind === 'shared' ? ShareNetwork : kind === 'apple' ? AppleLogo : SpotifyLogo
+  const Icon = kind === 'shared' ? ShareNetwork : kind === 'apple' ? AppleLogo : kind === 'file' ? FileAudio : SpotifyLogo
   return (
     <div aria-hidden className="relative -mx-6 h-40 overflow-hidden">
       {seen.length === 0 && (
@@ -47,14 +47,14 @@ function Timing({ run }: { run: ImportRun }) {
   )
 }
 
-/** An import (Spotify's or Apple Music's lists, a shared list, the songs not found): songs landing one by one, every list counted. Hide leaves a toast and the app free. */
+/** An import (Spotify's or Apple Music's lists, a shared list, an app's library file, the songs not found): songs landing one by one, every list counted. Hide leaves a toast and the app free. */
 export function ImportScreen() {
   const run = useStore((s) => s.importRun)
   const notFound = useStore((s) => s.notFound.length)
   if (!run || run.hidden) return null
   const { hideImport, endImport, go } = useStore.getState()
   const { progress: p, result, kind } = run
-  const importing = kind === 'shared' ? tr('Importing a shared playlist') : kind === 'apple' ? tr('Importing from Apple Music') : tr('Importing from Spotify')
+  const importing = kind === 'shared' ? tr('Importing a shared playlist') : kind === 'apple' ? tr('Importing from Apple Music') : kind === 'file' ? tr('Importing a library file') : tr('Importing from Spotify')
   const open = () => {
     endImport()
     if (result?.playlistId != null) go({ name: 'playlist', id: result.playlistId })

@@ -131,7 +131,11 @@ What the services allow, read on 2026-10-31 (specs in [ideas/catch-up.md](ideas/
       is unconfirmed: needs a real export, also to write the tests from.
 - [ ] `M` Paste a SoundCloud link: imported as metadata and matched like a Deezer link (oEmbed, then the set's list); songs
       with no match are reported, nothing plays from SoundCloud.
-- [ ] `M` Onboarding import from other apps: MusicBee / iTunes library XML, Spotify / YouTube likes in one go.
+- [x] `M` Import from other apps: the iTunes / MusicBee library file (`iTunes Music Library.xml`, `music_core::itunes_xml`):
+      Add music › From iTunes or MusicBee, its playlists ticked (smart ones unticked; the whole library, its parts,
+      folders left out), then the import screen. A song the library has as a file comes as it is, the rest is found on
+      YouTube at its pace; each list becomes a playlist of yours. Not tried on a real file yet.
+- [ ] `S` Onboarding: Spotify / YouTube likes in one go, from the welcome.
 - [ ] `S` per service: public playlist links from more services (TIDAL, Qobuz, Amazon Music), same flow as Deezer. Nothing
       checked yet.
 - [ ] `L` SoundCloud playback in its official embedded widget (no audio taken). User's call first: see its terms above.

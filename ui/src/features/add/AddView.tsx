@@ -12,6 +12,7 @@ import { PageHeader } from '../../shared/ui/PageHeader'
 import { Card } from './Card'
 import { Detector } from './Detector'
 import { AppleConnect } from './AppleConnect'
+import { AppFileImport } from './AppFileImport'
 import { SpotifyConnect } from './SpotifyConnect'
 
 export const FIELD = 'h-9 min-w-0 rounded-md border border-line bg-raised px-3 text-[0.8125rem] placeholder:text-ink-3'
@@ -191,6 +192,7 @@ export function AddView() {
           <SpotifyConnect />
           <AppleConnect />
           <ImportList />
+          <AppFileImport />
           <ImportCode />
           <AddFolder />
         </div>

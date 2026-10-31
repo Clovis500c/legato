@@ -6,9 +6,9 @@ import { Button } from '../../shared/ui/Button'
 import { Cover } from '../../shared/ui/Cover'
 import { Dialog } from '../../shared/ui/Dialog'
 
-/** A service's lists read from its page, all ticked: the ones to import (Connect Spotify, Connect Apple Music). */
-export function ListPick({ title, lists, onClose, onStart }: { title: string; lists: SpotifyList[]; onClose: () => void; onStart: (picks: SpotifyPick[]) => void }) {
-  const [off, setOff] = useState<string[]>([])
+/** A service's lists read from its page (or an app's library file), ticked but for `unticked`: the ones to import (Connect Spotify, Connect Apple Music, From iTunes or MusicBee). */
+export function ListPick({ title, lists, unticked = [], onClose, onStart }: { title: string; lists: SpotifyList[]; unticked?: string[]; onClose: () => void; onStart: (picks: SpotifyPick[]) => void }) {
+  const [off, setOff] = useState<string[]>(unticked)
   const ticked = lists.filter((l) => !off.includes(l.id))
   return (
     <Dialog title={title} onClose={onClose}>

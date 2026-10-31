@@ -49,13 +49,13 @@ impl Format {
     }
 }
 
-fn clean(s: &str) -> Option<String> {
+pub(crate) fn clean(s: &str) -> Option<String> {
     let s = s.trim();
     (!s.is_empty() && s.chars().count() <= MAX_TEXT && !s.chars().any(char::is_control)).then(|| s.to_string())
 }
 
 /// A location worth keeping: a link or a path, one line, bounded.
-fn place(s: &str) -> Option<String> {
+pub(crate) fn place(s: &str) -> Option<String> {
     let s = s.trim();
     (!s.is_empty() && s.len() <= 2048 && !s.chars().any(char::is_control)).then(|| s.to_string())
 }
@@ -103,7 +103,7 @@ fn m3u(text: &str) -> Option<Vec<Entry>> {
 }
 
 /// "&amp;" → "&", numeric references too.
-fn unescape(s: &str) -> String {
+pub(crate) fn unescape(s: &str) -> String {
     let mut out = String::with_capacity(s.len());
     let mut rest = s;
     while let Some(at) = rest.find('&') {
@@ -214,8 +214,9 @@ fn percent_decode(s: &str) -> String {
 /// None for a link.
 pub fn file_path(location: &str, base: Option<&Path>) -> Option<PathBuf> {
     if let Some(uri) = location.strip_prefix("file://") {
-        // file:///C:/Music/a.mp3 (Windows), file:///home/me/a.mp3, file://server/share/a.mp3.
-        let path = percent_decode(uri);
+        // file:///C:/Music/a.mp3 (Windows), file:///home/me/a.mp3, file://server/share/a.mp3; iTunes writes
+        // file://localhost/C:/Music/a.mp3.
+        let path = percent_decode(uri.strip_prefix("localhost").filter(|p| p.starts_with('/')).unwrap_or(uri));
         let b = path.as_bytes();
         return Some(PathBuf::from(if b.len() > 3 && b[0] == b'/' && b[2] == b':' {
             path[1..].replace('/', "\\")
@@ -436,6 +437,7 @@ mod tests {
         assert_eq!(file_path("sub\\a.mp3", None), None);
         assert_eq!(file_path("file:///home/me/a%20b.mp3", None), Some(PathBuf::from("/home/me/a b.mp3")));
         assert_eq!(file_path("file://nas/music/a.mp3", None), Some(PathBuf::from("\\\\nas\\music\\a.mp3")));
+        assert_eq!(file_path("file://localhost/C:/Music/a%20b.m4a", None), Some(PathBuf::from("C:\\Music\\a b.m4a")));
     }
 
     #[test]

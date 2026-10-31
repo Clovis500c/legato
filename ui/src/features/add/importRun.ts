@@ -24,13 +24,13 @@ export interface ImportRun {
   next: number
   /** Hidden: a toast counts instead, the app stays free. */
   hidden: boolean
-  /** What runs: Spotify's or Apple Music's lists, the songs not found searched again (no list involved), or a list shared with Legato. */
+  /** What runs: Spotify's or Apple Music's lists, the songs not found searched again (no list involved), a list shared with Legato, or an app's library file. */
   kind: ImportKind
   /** The end, for the screen to say. */
   result?: SpotifyLibraryImport
 }
 
-export type ImportKind = 'spotify' | 'apple' | 'again' | 'shared'
+export type ImportKind = 'spotify' | 'apple' | 'again' | 'shared' | 'file'
 
 export const CARDS = 7
 /** Screen updates at most this often, whatever the pace of songs: every card gets to move. */

@@ -64,7 +64,7 @@ async fn resolve(state: &AppState, plan: Plan) -> Got {
 }
 
 /// The library's own files, by `playfile::path_key`.
-fn own_files(state: &AppState) -> CmdResult<HashMap<String, i64>> {
+pub(crate) fn own_files(state: &AppState) -> CmdResult<HashMap<String, i64>> {
     let tracks = state.lib().tracks().map_err(err)?;
     Ok(tracks.into_iter().filter_map(|t| t.track.ids.get(&Source::Local).map(|p| (playfile::path_key(Path::new(p)), t.id))).collect())
 }

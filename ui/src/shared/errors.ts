@@ -23,6 +23,9 @@ const KINDS: [RegExp, string][] = [
   [/^This playlist has no songs/, msg('This playlist has no songs')],
   [/^This Deezer link doesn't lead to a playlist or an album/, msg("This Deezer link doesn't lead to a playlist or an album")],
   [/^Deezer is busy right now/, msg('Deezer is busy right now: try again in a minute')],
+  // Add music › From iTunes or MusicBee (src-tauri libfile.rs).
+  [/^Not a library file: pick iTunes Music Library\.xml/, msg('Not a library file: pick iTunes Music Library.xml (from iTunes, or the copy MusicBee writes for other apps)')],
+  [/^No playlists in that library file/, msg('No playlists in that library file')],
   // Connect Spotify with the account set to Off (src-tauri lib.rs).
   [/^Spotify: sync direction is Off/, msg('Sync direction is Off: nothing comes in (Settings › Accounts)')],
   [/^Apple changed its page/, msg('Apple changed its page: paste the songs as text instead (Add music › Import a list of songs)')],

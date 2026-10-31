@@ -6,6 +6,7 @@ pub mod diag;
 pub mod local;
 pub mod lyrics;
 pub mod history;
+pub mod itunes_xml;
 pub mod matching;
 pub mod mixes;
 pub mod musicness;

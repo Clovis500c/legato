@@ -20,9 +20,18 @@ if the app closes, expires after 7 days). Rules on top of `CLAUDE.md`:
 Order: the plan's Platforms lines that need no account, then quick wins from Features › High, Optimisation and
 Workflow, then milestone 4 (Lyrics).
 
-Done in this run (newest last):
+Done in this run (newest last), none tried in the real app yet:
 
-- (nothing yet)
+- `a5e5f37` A hidden import's toast names what runs (Apple Music, a shared list, the search again), not always Spotify.
+- `144a6a0` A private Spotify playlist's link says Connect Spotify works, in the user's language.
+- `b758ddd` Exportify's local files come in as songs to find.
+- `bb2950e` Songs not found › Find this song: the version picked joins the song's own row (playlists play it).
+- `7438d6f` Playlists in and out as files: M3U / M3U8 / XSPF / CSV (Add music › Import a list; a playlist's menu ›
+  Save as file).
+
+- From iTunes or MusicBee: the library file's playlists ticked, then the import screen (Add music).
+
+Next in the run: Spotify's data export (`Playlist1.json`, `YourLibrary.json` or its ZIP) through Exportify's lists.
 
 ## Branches
 

@@ -19,7 +19,7 @@ export const FEATURES: { icon: IconName; title: string; text: string }[] = [
   { icon: 'Stack', title: 'One library', text: 'The same song on several services is one track, wherever you saved it.' },
   { icon: 'MagnifyingGlass', title: 'One search', text: 'Your library, YouTube Music, YouTube and Apple Music, in one place.' },
   { icon: 'PlayCircle', title: 'One player', text: 'Every source in one queue, with crossfade, lyrics and a visualizer (LED bars, a ring around the cover, VU needles, a spectrogram).' },
-  { icon: 'Playlist', title: 'Playlists', text: 'Import, create, export to YouTube Music, share by link or QR code.' },
+  { icon: 'Playlist', title: 'Playlists', text: 'Import from a service, a file (M3U, XSPF, CSV) or iTunes and MusicBee; create, save as a file, export to YouTube Music, share by link or QR code.' },
   { icon: 'Sparkle', title: 'Mixes made on your PC', text: 'Daily mixes and stats from what you play, Last.fm scrobbling if you want it.' },
   { icon: 'SlidersHorizontal', title: 'Live Editor', text: 'Speed, pitch, a 10-band EQ, reverb and 3D sound, changed as it plays.' },
   { icon: 'FolderSimple', title: 'Your own files', text: 'Gapless playback, and their title, artist, album and cover to edit.' },
@@ -75,6 +75,7 @@ export const SERVICES: [string, string][] = [
   ['Apple Music', 'Catalog search and 30-second previews, and public playlist or album links, no account. For your own playlists: Add music › Connect Apple Music.'],
   ['Deezer', 'Paste a public playlist or album link: its songs come in and play from YouTube. No account.'],
   ['Your files', 'Add your music folders; changes in them show up as they happen.'],
+  ['Other apps', "Playlist files (M3U, XSPF, CSV) and iTunes' or MusicBee's library file: songs on your PC come as they are, the others play from YouTube."],
 ]
 
 export const STEPS: [string, string][] = [
