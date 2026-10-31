@@ -172,7 +172,8 @@ function TopBar() {
 
 function Alerts() {
   const { lastSync, error, dismissError, view } = useStore(useShallow((s) => ({ lastSync: s.lastSync, error: s.error, dismissError: s.dismissError, view: s.view })))
-  const errors = lastSync?.report.errors ?? []
+  // The 15-minute sync refused by Google says nothing: it waits and tries later on its own.
+  const errors = lastSync && !(lastSync.auto && lastSync.report.refused) ? lastSync.report.errors : []
   // Wizard shows its own error.
   const shown = view.name === 'settings' && view.wizard ? undefined : error
   if (!shown && !errors.length) return null

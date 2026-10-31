@@ -2,6 +2,7 @@ import { ArrowsClockwise, FolderPlus, GoogleLogo, ShieldCheck, SignOut, UserPlus
 import { useShallow } from 'zustand/react/shallow'
 import { open } from '@tauri-apps/plugin-dialog'
 import { useEffect, useState } from 'react'
+import { useSettings } from '../../app/settings'
 import { useStore } from '../../app/store'
 import { SpotifyImport } from '../add/SpotifyConnect'
 import { accountKey, api, type Direction, type YtmAccount } from '../../shared/api'
@@ -204,6 +205,8 @@ function LastfmRow() {
 function GoogleAccounts() {
   const { refresh, sync, busy, lastSync } = useStore(useShallow(({ refresh, sync, busy, lastSync }) => ({ refresh, sync, busy, lastSync })))
   const { data, waiting, load, signIn } = useGoogleAccounts()
+  const autoSync = useSettings((s) => s.settings.autoSync)
+  const updateSettings = useSettings((s) => s.update)
   const [dirs, setDir] = useDirections()
   const toggle = async (a: YtmAccount, on: boolean) => {
     if (!data) return
@@ -272,6 +275,13 @@ function GoogleAccounts() {
             <Button disabled={busy || !data.picked.length} onClick={() => void sync()}>
               <ArrowsClockwise size={14} className={busy ? 'animate-spin' : ''} /> {tr('Import playlists now')}
             </Button>
+          </div>
+          <div data-setting="Update every 15 minutes" className="ml-13 flex items-center gap-3 px-3">
+            <div className="flex-1">
+              <p className="text-[0.8125rem] font-medium">{tr('Update every 15 minutes')}</p>
+              <p className="text-xs text-ink-2">{tr('While the app is open, your playlists and Liked Music come in again by themselves. If Google limits this PC, it waits longer.')}</p>
+            </div>
+            <Toggle label={tr('Update every 15 minutes')} checked={autoSync} onChange={(on) => updateSettings({ autoSync: on })} />
           </div>
           <div className="ml-13 flex gap-2">
             <Button variant="ghost" onClick={() => signIn(true)}>

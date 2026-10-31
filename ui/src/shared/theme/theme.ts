@@ -329,6 +329,8 @@ export interface Settings {
   reopen: boolean
   /** Closing the window keeps the app in the notification area (Rust reads it, background.rs). Quit really quits. */
   closeToTray: boolean
+  /** YouTube Music's lists brought in again every 15 min while the app is open (features/sources/autosync.ts). Off: by hand. */
+  autoSync: boolean
   /** Adaptive Sound: loud and quiet songs evened out as they play (crates/dsp, live.js). Target in LUFS. */
   adaptiveSound: boolean
   adaptiveLevel: AdaptiveLevel
@@ -437,6 +439,7 @@ export const DEFAULTS: Settings = {
   resume: true,
   reopen: true,
   closeToTray: true,
+  autoSync: false,
   adaptiveSound: false,
   adaptiveLevel: -14,
   coverPulse: false,
@@ -634,6 +637,7 @@ export function sanitize(raw: unknown): Settings {
     resume: typeof r.resume === 'boolean' ? r.resume : DEFAULTS.resume,
     reopen: typeof r.reopen === 'boolean' ? r.reopen : DEFAULTS.reopen,
     closeToTray: typeof r.closeToTray === 'boolean' ? r.closeToTray : DEFAULTS.closeToTray,
+    autoSync: r.autoSync === true,
     adaptiveSound: r.adaptiveSound === true,
     adaptiveLevel: ADAPTIVE_LEVELS.includes(r.adaptiveLevel as AdaptiveLevel) ? (r.adaptiveLevel as AdaptiveLevel) : DEFAULTS.adaptiveLevel,
     coverPulse: r.coverPulse === true,

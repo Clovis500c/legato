@@ -53,6 +53,8 @@ pub struct SyncReport {
     pub playlists: usize,
     pub matched: usize,
     pub errors: Vec<String>,
+    /// Google refused an account's requests: an automatic sync waits longer before the next one.
+    pub refused: bool,
 }
 
 /// Google refused this address (`searchpace::refused`): one line for the account, in words, not its HTML page.
@@ -71,6 +73,7 @@ pub async fn sync(lib: &Mutex<Library>, connectors: &[&dyn Connector], target: O
             Ok(p) => p,
             Err(e) => {
                 let said = format!("{e:#}");
+                report.refused |= refused(&said);
                 report.errors.push(if refused(&said) { refused_line(source) } else { format!("{}: {said}", source.as_str()) });
                 continue;
             }
@@ -84,6 +87,7 @@ pub async fn sync(lib: &Mutex<Library>, connectors: &[&dyn Connector], target: O
                 Ok(_) => report.playlists += 1,
                 Err(e) if refused(&format!("{e:#}")) => {
                     report.errors.push(refused_line(source));
+                    report.refused = true;
                     break;
                 }
                 Err(e) => report.errors.push(format!("{} \"{}\": {e:#}", source.as_str(), p.name)),
@@ -179,6 +183,7 @@ mod tests {
         // "b" not asked for: the block would only go on.
         assert_eq!(report.playlists, 1);
         assert_eq!(report.errors.len(), 1);
+        assert!(report.refused);
         assert!(report.errors[0].starts_with("youtube: Google is refusing") && !report.errors[0].contains("<html>"), "{:?}", report.errors);
     }
 

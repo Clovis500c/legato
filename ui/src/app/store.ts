@@ -90,7 +90,8 @@ interface State {
   error?: string
   /** Newest last, auto-cleared. */
   toasts: Toast[]
-  lastSync?: { at: number; report: SyncReport }
+  /** `auto`: run by the 15-minute timer (features/sources/autosync.ts), not by hand. */
+  lastSync?: { at: number; report: SyncReport; auto?: boolean }
   /** Playlist id → its track ids in order (covers). */
   orders: Record<number, number[]>
   /** Share code waiting for the import dialog. */
@@ -110,7 +111,8 @@ interface State {
   /** After an edit (like, add, playlist edit, removal, merge…): only the library rows written since come, patched in
    *  (the whole library when too many did). */
   refreshChanged: () => Promise<void>
-  sync: () => Promise<void>
+  /** `auto`: the timer's, quiet (no toast). */
+  sync: (o?: { auto?: boolean }) => Promise<void>
   connect: (source: Service, credentials: Credentials) => Promise<boolean>
   disconnect: (source: Service) => Promise<void>
   /** Returns new playlist id for create / duplicate. */
@@ -280,13 +282,13 @@ export const useStore = create<State>((set, get) => {
     refresh: () => inLane(readWhole),
     refreshChanged: () => inLane(readChanges),
 
-    async sync() {
+    async sync({ auto = false } = {}) {
       let report: SyncReport | undefined
       await run(async () => {
         report = await api.sync()
-        set({ lastSync: { at: Date.now(), report } })
+        set({ lastSync: { at: Date.now(), report, auto } })
       })
-      if (report && !report.errors.length) get().notify(tr('Playlists imported: {n}', { n: report.playlists }))
+      if (report && !report.errors.length && !auto) get().notify(tr('Playlists imported: {n}', { n: report.playlists }))
     },
     connect: (source, credentials) => run(() => api.connect(source, credentials)),
     disconnect: (source) => run(() => api.disconnect(source)).then(() => {}),
