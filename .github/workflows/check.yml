@@ -144,9 +144,12 @@ jobs:
         env:
           CARGO_PROFILE_DEV_DEBUG: 0
 
+      # Elevated, WebView2 starts without the DevTools port the walk needs: e2e/limited.ps1 drops the account's admin rights.
       - name: walk
         timeout-minutes: 5
-        run: pnpm e2e --skip-build
+        run: |
+          icacls target\e2e /grant "${env:USERNAME}:(OI)(CI)F" /T /Q
+          ./e2e/limited.ps1 pnpm e2e --skip-build
 
       - if: failure()
         uses: actions/upload-artifact@v4
