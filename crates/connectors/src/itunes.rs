@@ -1,6 +1,6 @@
 //! Apple Music catalog via the public iTunes Search API: no key, about 20 calls/min.
 
-use crate::linklist::{LinkList, MAX_TRACKS};
+use crate::linklist::{LinkList, MAX_TRACKS, REQUEST_TIMEOUT, capped_text};
 use anyhow::{Context, Result};
 use music_core::musicness::Musicness;
 use music_core::model::{Source, Track};
@@ -240,9 +240,9 @@ pub async fn link_list(page: &str, lookup: &str, text: &str) -> Result<LinkList>
         Some(AppleTarget::Album { storefront, id }) => album_list(lookup, &storefront, &id).await,
         Some(AppleTarget::Playlist { storefront, id }) => {
             // Any slug works: Apple answers with a redirect to the real one.
-            let res = crate::http().get(format!("{}/{storefront}/playlist/x/{id}", page.trim_end_matches('/'))).header("user-agent", crate::spotify_embed::UA).send().await?;
+            let res = crate::http().get(format!("{}/{storefront}/playlist/x/{id}", page.trim_end_matches('/'))).header("user-agent", crate::spotify_embed::UA).timeout(REQUEST_TIMEOUT).send().await?;
             anyhow::ensure!(res.status() != reqwest::StatusCode::NOT_FOUND, "This playlist is private or doesn't exist");
-            playlist_page(&res.error_for_status()?.text().await?)
+            playlist_page(&capped_text(res.error_for_status()?).await?)
         }
         Some(AppleTarget::Song) => anyhow::bail!("That link is a single song: paste a playlist or album link"),
         None => anyhow::bail!("Not an Apple Music playlist or album link"),
@@ -266,7 +266,7 @@ fn song(h: Hit) -> Option<Track> {
 
 async fn album_list(lookup: &str, storefront: &str, id: &str) -> Result<LinkList> {
     let url = Url::parse_with_params(lookup, &[("id", id), ("entity", "song"), ("country", storefront), ("limit", "200")])?;
-    let page: serde_json::Value = crate::http().get(url).send().await?.error_for_status()?.json().await?;
+    let page: serde_json::Value = crate::http().get(url).timeout(REQUEST_TIMEOUT).send().await?.error_for_status()?.json().await?;
     let results = page["results"].as_array().map_or(&[][..], Vec::as_slice);
     let head = results.iter().find(|r| r["wrapperType"] == "collection");
     let name = head.and_then(|h| h["collectionName"].as_str()).context("This album was removed, or isn't available in its store")?.to_string();

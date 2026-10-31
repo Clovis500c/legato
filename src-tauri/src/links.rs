@@ -28,7 +28,8 @@ pub struct LinkImport {
 /// Is it a Deezer link? Else an Apple Music one. Pasted text only picks the service; the hosts are ours.
 async fn read(url: &str) -> anyhow::Result<LinkList> {
     let h = hosts::get();
-    if deezer::target(url).is_some() {
+    // By host, not by a good path: a Deezer link with a typo says "Not a Deezer link", not an Apple Music error.
+    if deezer::is_deezer(url) {
         deezer::Deezer::with_urls(h.deezer, h.deezer_link).fetch(url).await
     } else {
         itunes::link_list(h.apple_page, h.itunes_lookup, url).await

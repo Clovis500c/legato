@@ -3,7 +3,7 @@
 //! Limit: 50 requests / 5 s. A page is 100 songs; the quota error comes as HTTP 200 with an `error` object, so the
 //! body is read, not only the status.
 
-use crate::linklist::{LinkList, MAX_TRACKS};
+use crate::linklist::{LinkList, MAX_TRACKS, REQUEST_TIMEOUT};
 use anyhow::{Context, Result};
 use music_core::model::Track;
 use music_core::musicness::Musicness;
@@ -50,13 +50,27 @@ fn locale(s: &str) -> bool {
     (b.len() == 2 && low(b)) || (b.len() == 5 && b[2] == b'-' && low(&b[..2]) && low(&b[3..]))
 }
 
-/// What a pasted text is: real Deezer hosts only (deezer.com, www.deezer.com, link.deezer.com), never another one.
-pub fn target(text: &str) -> Option<Target> {
+fn parse(text: &str) -> Option<Url> {
     let text = text.trim();
     if text.is_empty() || text.len() > 2048 || text.contains(char::is_whitespace) {
         return None;
     }
-    let url = Url::parse(text).ok().filter(|u| u.has_host()).or_else(|| Url::parse(&format!("https://{text}")).ok())?;
+    Url::parse(text).ok().filter(|u| u.has_host()).or_else(|| Url::parse(&format!("https://{text}")).ok())
+}
+
+fn deezer_host(host: &str) -> bool {
+    matches!(host, "deezer.com" | "www.deezer.com" | "link.deezer.com")
+}
+
+/// Does the pasted text name a Deezer host, whatever its path? Picks the service (and the words of the error) for a link
+/// `target` turns down, like one with an upper-case locale.
+pub fn is_deezer(text: &str) -> bool {
+    parse(text).and_then(|u| u.host_str().map(|h| deezer_host(&h.to_ascii_lowercase()))).unwrap_or(false)
+}
+
+/// What a pasted text is: real Deezer hosts only (deezer.com, www.deezer.com, link.deezer.com), never another one.
+pub fn target(text: &str) -> Option<Target> {
+    let url = parse(text)?;
     if !matches!(url.scheme(), "http" | "https") || url.port().is_some() || !url.username().is_empty() || url.password().is_some() {
         return None;
     }
@@ -114,7 +128,7 @@ impl Deezer {
     async fn get(&self, kind: Kind, path: &str) -> Result<Value> {
         let gone = || anyhow::anyhow!(if kind == Kind::Playlist { "This playlist is private or doesn't exist" } else { "This album was removed, or isn't available in its store" });
         for attempt in 1..=TRIES {
-            let res = crate::http().get(format!("{}{path}", self.api)).send().await?;
+            let res = crate::http().get(format!("{}{path}", self.api)).timeout(REQUEST_TIMEOUT).send().await?;
             let status = res.status();
             if status == StatusCode::NOT_FOUND {
                 return Err(gone());
@@ -139,7 +153,7 @@ impl Deezer {
 
     /// Short link → the list it leads to. One redirect, read here and followed only to a Deezer page.
     async fn resolve(&self, code: &str) -> Result<(Kind, u64)> {
-        let client = reqwest::Client::builder().redirect(reqwest::redirect::Policy::none()).build()?;
+        let client = reqwest::Client::builder().redirect(reqwest::redirect::Policy::none()).timeout(REQUEST_TIMEOUT).build()?;
         let res = client.get(format!("{}/s/{code}", self.link)).send().await?;
         let to = res.headers().get(reqwest::header::LOCATION).and_then(|v| v.to_str().ok()).filter(|_| res.status().is_redirection());
         let to = to.and_then(|l| Url::parse(&self.link).ok()?.join(l).ok());
@@ -256,6 +270,16 @@ mod tests {
             "https://open.spotify.com/playlist/37i9dQZF1DXcBWIGoYBM5M",
         ] {
             assert_eq!(target(bad), None, "{bad}");
+        }
+    }
+
+    #[test]
+    fn a_deezer_host_picks_the_service_even_when_the_path_is_turned_down() {
+        for yes in ["https://www.deezer.com/FR/playlist/12", "https://www.deezer.com/playlist/12abc", "WWW.DEEZER.COM/album/x", "https://link.deezer.com/s/a/b"] {
+            assert!(is_deezer(yes), "{yes}");
+        }
+        for no in ["", "daft punk", "https://music.apple.com/us/playlist/x/pl.1", "https://deezer.com.evil.example/playlist/12", "https://www.deezer.com@evil.example/playlist/12", "https://api.deezer.com/playlist/12"] {
+            assert!(!is_deezer(no), "{no}");
         }
     }
 
