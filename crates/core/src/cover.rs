@@ -52,7 +52,8 @@ pub fn encode(bytes: &[u8], crop: Option<Crop>, want: ImageFormat) -> Result<Vec
     Ok(out)
 }
 
-/// Write the cover. Type this build can't decode (WebP, GIF): written as is, extension fixed. Returns the file written.
+/// Write the cover. WebP, GIF: written as is, extension fixed (an animated one keeps its frames). Returns the file
+/// written.
 pub fn export(bytes: &[u8], crop: Option<Crop>, path: &Path) -> Result<PathBuf> {
     let want = wanted(path)?;
     let have = image::guess_format(bytes).ok();
@@ -107,7 +108,7 @@ mod tests {
         let dir = tempfile::tempdir()?;
         let path = export(&png(10, 10), None, &dir.path().join("cover.png"))?;
         assert_eq!(std::fs::read(path)?, png(10, 10));
-        // WebP can't be decoded here: kept as is, right extension.
+        // WebP: kept as is, right extension.
         let webp = b"RIFF\x1a\0\0\0WEBPVP8 ".to_vec();
         let out = export(&webp, None, &dir.path().join("cover.jpg"))?;
         assert_eq!(out.extension().unwrap(), "webp");

@@ -51,21 +51,28 @@ fn target(w: u32, h: u32, size: u32) -> Option<(u32, u32)> {
     Some((nw.round().max(1.0) as u32, nh.round().max(1.0) as u32))
 }
 
-/// Smaller copy of a picture (PNG stays PNG for transparency, the rest JPEG at 88) + its type.
-/// None = serve the original: already small, a type we can't read (GIF, WebP), or a failed decode.
+/// Smaller copy of a picture + its type: PNG for a PNG, and for a WebP or GIF with see-through parts (transparency
+/// kept); JPEG at 88 for the rest. An animated GIF or WebP gives its first frame: lists stay still, the full-screen
+/// cover (the original, no size asked) still moves.
+/// None = serve the original: already small, a type we can't read, or a failed decode.
 pub fn thumbnail(bytes: &[u8], size: u32) -> Option<(Vec<u8>, &'static str)> {
     let (w, h) = image::ImageReader::new(Cursor::new(bytes)).with_guessed_format().ok()?.into_dimensions().ok()?;
     let (nw, nh) = target(w, h, size)?;
-    let png = image::guess_format(bytes).ok()? == ImageFormat::Png;
+    let format = image::guess_format(bytes).ok()?;
     let small = image::load_from_memory(bytes).ok()?.resize_exact(nw, nh, FilterType::Triangle);
     let mut out = Vec::new();
-    if png {
+    if format == ImageFormat::Png || (matches!(format, ImageFormat::WebP | ImageFormat::Gif) && see_through(&small)) {
         small.write_to(&mut Cursor::new(&mut out), ImageFormat::Png).ok()?;
         Some((out, "image/png"))
     } else {
         JpegEncoder::new_with_quality(&mut out, 88).encode_image(&DynamicImage::ImageRgb8(small.to_rgb8())).ok()?;
         Some((out, "image/jpeg"))
     }
+}
+
+/// Some pixel not fully opaque. A GIF decodes with an alpha channel even when it has no transparent colour.
+fn see_through(img: &DynamicImage) -> bool {
+    img.color().has_alpha() && img.to_rgba8().pixels().any(|p| p.0[3] < u8::MAX)
 }
 
 /// True when a file last used `modified` is due its once-a-day touch.
@@ -154,6 +161,18 @@ mod tests {
         out
     }
 
+    fn webp(img: DynamicImage) -> Vec<u8> {
+        let mut out = Vec::new();
+        img.write_with_encoder(image::codecs::webp::WebPEncoder::new_lossless(&mut out)).unwrap();
+        out
+    }
+
+    fn gif(frames: Vec<image::RgbaImage>) -> Vec<u8> {
+        let mut out = Vec::new();
+        image::codecs::gif::GifEncoder::new(&mut out).encode_frames(frames.into_iter().map(image::Frame::new)).unwrap();
+        out
+    }
+
     fn dims(bytes: &[u8]) -> (u32, u32) {
         image::ImageReader::new(Cursor::new(bytes)).with_guessed_format().unwrap().into_dimensions().unwrap()
     }
@@ -220,6 +239,36 @@ mod tests {
         DynamicImage::ImageRgba8(image::RgbaImage::new(300, 300)).write_to(&mut Cursor::new(&mut png), ImageFormat::Png).unwrap();
         let (out, kind) = thumbnail(&png, 64).unwrap();
         assert_eq!((kind, dims(&out)), ("image/png", (64, 64)));
+    }
+
+    #[test]
+    fn webp_and_gif_get_thumbnails_too() {
+        // Opaque: JPEG like the rest.
+        let solid = webp(DynamicImage::ImageRgb8(image::RgbImage::from_pixel(300, 200, image::Rgb([200, 30, 30]))));
+        let (out, kind) = thumbnail(&solid, 64).unwrap();
+        assert_eq!((kind, dims(&out)), ("image/jpeg", (96, 64)));
+        // See-through top half: PNG, and it stays see-through.
+        let mut half = image::RgbaImage::from_pixel(300, 300, image::Rgba([0, 0, 255, 255]));
+        for y in 0..150 {
+            for x in 0..300 {
+                half.put_pixel(x, y, image::Rgba([0, 0, 0, 0]));
+            }
+        }
+        for bytes in [webp(DynamicImage::ImageRgba8(half.clone())), gif(vec![half])] {
+            let (out, kind) = thumbnail(&bytes, 64).unwrap();
+            assert_eq!((kind, dims(&out)), ("image/png", (64, 64)));
+            let small = image::load_from_memory(&out).unwrap().to_rgba8();
+            assert_eq!(small.get_pixel(32, 4).0[3], 0, "top see-through");
+            let p = small.get_pixel(32, 60).0;
+            assert!(p[3] == u8::MAX && p[2] > 240, "bottom blue: {p:?}");
+        }
+        // A GIF with no transparent colour: JPEG, though it decodes with alpha. Animated: its first frame.
+        let red = image::RgbaImage::from_pixel(300, 300, image::Rgba([220, 0, 0, 255]));
+        let green = image::RgbaImage::from_pixel(300, 300, image::Rgba([0, 200, 0, 255]));
+        let (out, kind) = thumbnail(&gif(vec![red, green]), 64).unwrap();
+        assert_eq!((kind, dims(&out)), ("image/jpeg", (64, 64)));
+        let px = image::load_from_memory(&out).unwrap().to_rgb8().get_pixel(32, 32).0;
+        assert!(px[0] > 180 && px[1] < 60, "first frame, red: {px:?}");
     }
 
     #[test]

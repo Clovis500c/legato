@@ -395,8 +395,10 @@ Most useful first; the tag is the effort.
       53 files instead of 38: icons shared with the lazy chunks come apart. Rolldown's `inlineCommonChunks` would merge
       them, but it is experimental and forces `strictExecutionOrder`: left out.
 - [ ] `S` Installer size: check what's in it (`cargo bloat`, features of big crates, adblock lists compressed).
-- [ ] `S` Cover thumbnails for WebP and GIF originals, served whole today (the `image` crate here has PNG and JPEG only; the
-      hosts send JPEG).
+- [x] `S` Cover thumbnails for WebP and GIF originals, served whole today (the `image` crate here has PNG and JPEG only; the
+      hosts send JPEG). The `image` crate reads WebP and GIF now (5 small pure-Rust crates, licenses checked): WebP
+      (YouTube's `vi_webp` frames) and GIF get thumbnails, PNG when they have see-through parts, JPEG otherwise; an
+      animated one gives its first frame. Saving a WebP or GIF cover still writes the original as it is.
 
 ## Check live in the real app (built and unit-tested, never driven for real)
 
