@@ -196,6 +196,7 @@ const sv: Record<string, string> = {
   'Instrumental': 'Instrumental',
   'Lyrics: {source}': 'Låttext: {source}',
   'Not synced': 'Inte synkad',
+  'Lyrics from the song’s own file': 'Låttext från låtens egen fil',
   // Hidden videos, music or not (features/library/HiddenVideos, edits markMusic, menus)
   '{songs} hidden: not music': '{songs} dolda: inte musik',
   '{songs} back with your music': '{songs} tillbaka bland din musik',

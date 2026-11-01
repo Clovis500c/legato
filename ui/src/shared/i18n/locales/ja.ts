@@ -196,6 +196,7 @@ const ja: Record<string, string> = {
   'Instrumental': 'インストゥルメンタル',
   'Lyrics: {source}': '歌詞：{source}',
   'Not synced': '同期なし',
+  'Lyrics from the song’s own file': '曲のファイルに入っている歌詞',
   // Hidden videos, music or not (features/library/HiddenVideos, edits markMusic, menus)
   '{songs} hidden: not music': '{songs}を非表示：音楽ではありません',
   '{songs} back with your music': '{songs}を音楽に戻しました',

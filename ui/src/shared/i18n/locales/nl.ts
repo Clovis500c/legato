@@ -196,6 +196,7 @@ const nl: Record<string, string> = {
   'Instrumental': 'Instrumentaal',
   'Lyrics: {source}': 'Songtekst: {source}',
   'Not synced': 'Niet gesynchroniseerd',
+  'Lyrics from the song’s own file': 'Songtekst uit het bestand van het nummer zelf',
   // Hidden videos, music or not (features/library/HiddenVideos, edits markMusic, menus)
   '{songs} hidden: not music': '{songs} verborgen: geen muziek',
   '{songs} back with your music': '{songs} terug bij je muziek',

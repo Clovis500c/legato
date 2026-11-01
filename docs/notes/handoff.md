@@ -52,7 +52,9 @@ Done in this run (newest last), none tried in the real app yet:
 - `42e3d4b` Cover thumbnails for WebP and GIF originals (lists no longer load them whole).
 - Installer size: the updater's unused rustls and ring left out, 0.55 MB less to download (check a real update).
 
-- Word-by-word lyrics from LRCLIB's Lyricsfile or enhanced LRC, in the panel and Karaoke.
+- `ac422e5` Word-by-word lyrics from LRCLIB's Lyricsfile or enhanced LRC, in the panel and Karaoke.
+
+- A local song's own lyrics (its tags, or an .lrc beside it) first: nothing sent for it.
 
 Next in the run: the rest of milestone 4 (Lyrics).
 

@@ -196,6 +196,7 @@ const es: Record<string, string> = {
   'Instrumental': 'Instrumental',
   'Lyrics: {source}': 'Letra: {source}',
   'Not synced': 'Sin sincronizar',
+  'Lyrics from the song’s own file': 'Letra del propio archivo de la canción',
   // Hidden videos, music or not (features/library/HiddenVideos, edits markMusic, menus)
   '{songs} hidden: not music': '{songs} ocultos: no es música',
   '{songs} back with your music': '{songs} de vuelta con tu música',

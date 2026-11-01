@@ -51,6 +51,9 @@ pub struct Lyrics {
     pub instrumental: bool,
     /// Where they come from, shown under them (LRCLIB, "Source: LyricFind"…).
     pub source: String,
+    /// From the song's own file (its tag, or the LRC beside it): `source` empty.
+    #[serde(default)]
+    pub own: bool,
 }
 
 /// A lyrics record from a service, before fitting.
@@ -346,7 +349,25 @@ pub fn build(record: Record, fit: Option<f32>, source: &str) -> Lyrics {
         None => Vec::new(),
     };
     let plain = record.plain.filter(|p| !p.trim().is_empty()).or_else(|| (!lines.is_empty()).then(|| lines.iter().map(|l| l.text.as_str()).collect::<Vec<_>>().join("\n")));
-    Lyrics { lines, plain, instrumental: record.instrumental, source: source.to_string() }
+    Lyrics { lines, plain, instrumental: record.instrumental, source: source.to_string(), own: false }
+}
+
+/// An LRC header tag (`[ar:…]`, `[ti:…]`, `[length:…]`…): not a lyric. Section names (`[Chorus]`) are.
+fn header_tag(line: &str) -> bool {
+    let tag = line.trim().strip_prefix('[').and_then(|t| t.strip_suffix(']')).and_then(|t| t.split_once(':'));
+    tag.is_some_and(|(k, _)| matches!(k.trim().to_ascii_lowercase().as_str(), "ar" | "al" | "ti" | "au" | "by" | "re" | "ve" | "length" | "offset" | "tool" | "#"))
+}
+
+/// The song's own lyrics (its tag, or the LRC beside it) → what Now Playing shows: timed when the text has stamps
+/// (enhanced LRC's word stamps too), plain otherwise, header tags left out. Never stretched: the file's timings are
+/// its own. None = no words in it.
+pub fn from_file(text: &str) -> Option<Lyrics> {
+    let lines = parse_lrc(text);
+    let plain = match lines.is_empty() {
+        true => text.lines().filter(|l| !header_tag(l)).collect::<Vec<_>>().join("\n").trim().to_string(),
+        false => lines.iter().map(|l| l.text.as_str()).filter(|t| !t.is_empty()).collect::<Vec<_>>().join("\n"),
+    };
+    (!plain.is_empty()).then(|| Lyrics { lines, plain: Some(plain), instrumental: false, source: String::new(), own: true })
 }
 
 /// Plain text cached: asked again after this (LRCLIB gains synced lines over time; a lookup may have failed).
@@ -381,7 +402,7 @@ mod tests {
 
     #[test]
     fn plain_lyrics_asked_again_after_a_day() {
-        let plain = Lyrics { lines: Vec::new(), plain: Some("la".into()), instrumental: false, source: "YouTube Music".into() };
+        let plain = Lyrics { lines: Vec::new(), plain: Some("la".into()), instrumental: false, source: "YouTube Music".into(), own: false };
         assert!(keep_cached(&plain, 3600) && !keep_cached(&plain, 2 * 86_400));
         let synced = Lyrics { lines: vec![Line { ms: 0, text: "la".into(), end_ms: None, words: None }], ..plain };
         assert!(keep_cached(&synced, 365 * 86_400));
@@ -399,7 +420,7 @@ mod tests {
 [00:03.00]c
 [00:04.00]d".into()), ..Default::default() }, Some(1.0), "LRCLIB");
         assert!(!too_thin(&real, Some(214.0)));
-        assert!(!too_thin(&Lyrics { lines: vec![], plain: None, instrumental: true, source: String::new() }, Some(200.0)));
+        assert!(!too_thin(&Lyrics { lines: vec![], plain: None, instrumental: true, source: String::new(), own: false }, Some(200.0)));
     }
 
     #[test]
@@ -413,6 +434,18 @@ mod tests {
             Line { ms: 119_500, text: "Chorus".into(), end_ms: None, words: None },
         ]);
         assert!(parse_lrc("no stamps here").is_empty());
+    }
+
+    #[test]
+    fn the_songs_own_lyrics_timed_or_plain() {
+        let timed = from_file("[ar:Someone]\n[00:01.00]One\n[00:03.50]\n[00:04.00]<00:04.00>Two <00:04.50>words").unwrap();
+        assert_eq!((timed.lines.len(), timed.plain.as_deref(), timed.own, timed.source.as_str()), (3, Some("One\nTwo words"), true, ""));
+        assert_eq!(timed.lines[2].words.as_ref().map(Vec::len), Some(2));
+        // No stamps: plain, its header tags out, its sections in.
+        let plain = from_file("[ti:Song]\r\n[Chorus]\r\nLa la\r\n[Chorus: Someone]\r\n").unwrap();
+        assert_eq!((plain.lines.len(), plain.plain.as_deref()), (0, Some("[Chorus]\nLa la\n[Chorus: Someone]")));
+        assert_eq!(from_file("[ar:Someone]\n[length: 03:20]\n \n"), None);
+        assert_eq!(from_file("[00:01.00]\n[00:02.00]"), None);
     }
 
     fn w(ms: u32, text: &str, end_ms: Option<u32>) -> Word {

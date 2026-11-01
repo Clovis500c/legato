@@ -196,6 +196,7 @@ const hi: Record<string, string> = {
   'Instrumental': 'इंस्ट्रुमेंटल',
   'Lyrics: {source}': 'बोल: {source}',
   'Not synced': 'सिंक नहीं हैं',
+  'Lyrics from the song’s own file': 'गाने की अपनी फ़ाइल से बोल',
   // Hidden videos, music or not (features/library/HiddenVideos, edits markMusic, menus)
   '{songs} hidden: not music': '{songs} छिपाए गए: संगीत नहीं',
   '{songs} back with your music': '{songs} आपके संगीत में वापस',

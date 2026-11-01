@@ -196,6 +196,7 @@ const id: Record<string, string> = {
   'Instrumental': 'Instrumental',
   'Lyrics: {source}': 'Lirik: {source}',
   'Not synced': 'Tidak tersinkron',
+  'Lyrics from the song’s own file': 'Lirik dari file lagu itu sendiri',
   // Hidden videos, music or not (features/library/HiddenVideos, edits markMusic, menus)
   '{songs} hidden: not music': '{songs} disembunyikan: bukan musik',
   '{songs} back with your music': '{songs} kembali bersama musikmu',

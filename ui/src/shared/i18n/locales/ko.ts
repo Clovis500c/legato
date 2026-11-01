@@ -196,6 +196,7 @@ const ko: Record<string, string> = {
   'Instrumental': '연주곡',
   'Lyrics: {source}': '가사: {source}',
   'Not synced': '동기화되지 않음',
+  'Lyrics from the song’s own file': '곡 파일에 들어 있는 가사',
   // Hidden videos, music or not (features/library/HiddenVideos, edits markMusic, menus)
   '{songs} hidden: not music': '{songs} 숨김: 음악 아님',
   '{songs} back with your music': '{songs}이(가) 음악으로 돌아왔습니다',

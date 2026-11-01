@@ -160,7 +160,7 @@ export function useNowLyrics() {
     let live = true
     setGot({ for: key })
     api
-      .lyrics({ title, artist, album: track?.album ?? null, durationMs, youtube: now?.youtubeId ?? track?.ids.youtube ?? null })
+      .lyrics({ title, artist, album: track?.album ?? null, durationMs, youtube: now?.youtubeId ?? track?.ids.youtube ?? null, trackId: now?.via === 'local' && track ? track.id : null })
       .then((lyrics) => live && setGot({ for: key, lyrics }))
       .catch((e) => live && setGot({ for: key, error: String(e) }))
     return () => {
@@ -281,7 +281,7 @@ export function LyricsPanel({ onHide, onUpNext, className = CARD, heading }: { o
       )}
       {l && (
         <p className="flex items-center gap-2 px-1 text-[0.6875rem] text-ink-3">
-          {tr('Lyrics: {source}', { source: l.source })}
+          {l.own ? tr('Lyrics from the song’s own file') : tr('Lyrics: {source}', { source: l.source })}
           {!l.lines.length && l.plain && (
             <span title={tr('No timings for this song: the text follows the song roughly.')} className="rounded-full border border-line px-1.5 py-px">
               {tr('Not synced')}

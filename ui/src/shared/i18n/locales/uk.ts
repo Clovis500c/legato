@@ -196,6 +196,7 @@ const uk: Record<string, string> = {
   'Instrumental': 'Інструментал',
   'Lyrics: {source}': 'Текст: {source}',
   'Not synced': 'Без синхронізації',
+  'Lyrics from the song’s own file': 'Текст із файлу самої пісні',
   // Hidden videos, music or not (features/library/HiddenVideos, edits markMusic, menus)
   '{songs} hidden: not music': 'Сховано — не музика: {songs}',
   '{songs} back with your music': 'Знову з твоєю музикою: {songs}',

@@ -7,4 +7,8 @@ export type LyricsAsk = { title: string, artist: string, album: string | null, d
 /**
  * Its YouTube video: YouTube Music's own lyrics when LRCLIB has none.
  */
-youtube: string | null, };
+youtube: string | null, 
+/**
+ * Its library row when its local file plays: the file's own lyrics first.
+ */
+trackId: number | null, };

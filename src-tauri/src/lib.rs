@@ -1677,18 +1677,32 @@ struct LyricsAsk {
     duration_ms: Option<u32>,
     /// Its YouTube video: YouTube Music's own lyrics when LRCLIB has none.
     youtube: Option<String>,
+    /// Its library row when its local file plays: the file's own lyrics first.
+    track_id: Option<i64>,
 }
 
 /// Nothing found: asked again after a week (LRCLIB fills gaps over time).
 const LYRICS_RETRY_S: i64 = 7 * 86_400;
 
-/// Now Playing › Lyrics: cache, then YouTube Music's timed lyrics when signed in, then LRCLIB (exact match, then search,
-/// timings fitted to slowed / sped up versions), then YouTube Music's plain text. Network failures are not cached.
+/// Now Playing › Lyrics: a local file's own (its tag, or the LRC beside it), then the cache, then YouTube Music's timed
+/// lyrics when signed in, then LRCLIB (exact match, then search, timings fitted to slowed / sped up versions), then
+/// YouTube Music's plain text. Network failures are not cached.
 #[tauri::command]
 async fn lyrics(state: State<'_, AppState>, ask: LyricsAsk) -> CmdResult<Option<Lyrics>> {
     // Trust boundary: text from the UI.
     if ask.title.trim().is_empty() || ask.title.len() > 400 || ask.artist.len() > 400 {
         return Ok(None);
+    }
+    // The file's own: nothing asked online. Not cached, the file may change.
+    let file = match ask.track_id {
+        Some(id) => state.lib().local_path(id).map_err(err)?,
+        None => None,
+    };
+    if let Some(path) = file {
+        let own = tauri::async_runtime::spawn_blocking(move || music_core::local::lyrics(std::path::Path::new(&path))).await.map_err(err)?;
+        if let Some(l) = own.as_deref().and_then(lyrics::from_file) {
+            return Ok(Some(l));
+        }
     }
     let key = lyrics::key(&ask.artist, &ask.title, ask.duration_ms);
     let now = unix_now();
@@ -1718,10 +1732,10 @@ async fn lyrics(state: State<'_, AppState>, ask: LyricsAsk) -> CmdResult<Option<
         let source = |s: String| if s.is_empty() { "YouTube Music".to_string() } else { format!("YouTube Music · {s}") };
         match yt.lyrics(id).await {
             Ok(Some(YtLyrics::Timed(lines, s))) if !speed => found = Some(Lyrics { plain: Some(lines.iter().map(|l| l.text.as_str()).filter(|t| !t.is_empty()).collect::<Vec<_>>().join("
-")), lines, instrumental: false, source: source(s) }),
+")), lines, instrumental: false, source: source(s), own: false }),
             Ok(Some(YtLyrics::Timed(lines, s))) => yt_plain = Some(Lyrics { lines: Vec::new(), plain: Some(lines.iter().map(|l| l.text.as_str()).filter(|t| !t.is_empty()).collect::<Vec<_>>().join("
-")), instrumental: false, source: source(s) }),
-            Ok(Some(YtLyrics::Plain(text, s))) => yt_plain = Some(Lyrics { lines: Vec::new(), plain: Some(text), instrumental: false, source: source(s) }),
+")), instrumental: false, source: source(s), own: false }),
+            Ok(Some(YtLyrics::Plain(text, s))) => yt_plain = Some(Lyrics { lines: Vec::new(), plain: Some(text), instrumental: false, source: source(s), own: false }),
             Ok(None) => {}
             Err(e) => failed = Some(e),
         }

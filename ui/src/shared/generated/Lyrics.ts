@@ -12,4 +12,8 @@ lines: Array<LyricLine>, plain: string | null, instrumental: boolean,
 /**
  * Where they come from, shown under them (LRCLIB, "Source: LyricFind"…).
  */
-source: string, };
+source: string, 
+/**
+ * From the song's own file (its tag, or the LRC beside it): `source` empty.
+ */
+own: boolean, };

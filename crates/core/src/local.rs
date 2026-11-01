@@ -187,6 +187,23 @@ pub fn picture(path: &Path) -> Option<(Vec<u8>, String)> {
     Some((pic.data().to_vec(), pic.mime_type().map_or("image/jpeg", |m| m.as_str()).to_string()))
 }
 
+/// Most a song's own lyrics may weigh here (an LRC is ~5 kB, a word-timed one ~30 kB).
+pub const LYRICS_MAX: usize = 256 * 1024;
+
+/// The song's own lyrics, as written: the LRC file beside it (same name), else its lyrics tag (ID3's USLT, Vorbis'
+/// LYRICS, MP4's ©lyr). None = neither, empty, or over `LYRICS_MAX`.
+pub fn lyrics(path: &Path) -> Option<String> {
+    let usable = |s: &str| Some(s.trim_start_matches('\u{feff}')).filter(|s| !s.trim().is_empty() && s.len() <= LYRICS_MAX).map(str::to_string);
+    let lrc = path.with_extension("lrc");
+    if std::fs::metadata(&lrc).is_ok_and(|m| m.is_file() && m.len() <= LYRICS_MAX as u64)
+        && let Some(text) = std::fs::read(&lrc).ok().and_then(|b| usable(&String::from_utf8_lossy(&b)))
+    {
+        return Some(text);
+    }
+    let file = tagged(path)?;
+    file.primary_tag().into_iter().chain(file.tags()).find_map(|t| t.get_string(ItemKey::Lyrics).or_else(|| t.get_string(ItemKey::UnsyncLyrics)).and_then(usable))
+}
+
 /// What the user rewrites in a local file's tags (right-click › Edit song info).
 #[derive(Debug, Clone, Default)]
 pub struct TagEdit {
@@ -398,6 +415,27 @@ pub(crate) mod tests {
         tag.push_picture(Picture::unchecked(b"front".to_vec()).pic_type(PictureType::CoverFront).mime_type(MimeType::Png).build());
         tag.save_to_path(&p, lofty::config::WriteOptions::default()).unwrap();
         assert_eq!(picture(&p), Some((b"front".to_vec(), "image/png".into())));
+    }
+
+    #[test]
+    fn reads_the_songs_own_lyrics() {
+        let dir = tempfile::tempdir().unwrap();
+        let p = dir.path().join("a.wav");
+        wav(&p);
+        assert_eq!(lyrics(&p), None);
+        // In its tag (ID3's USLT for a WAV).
+        let mut tag = lofty::tag::Tag::new(lofty::tag::TagType::Id3v2);
+        tag.insert_text(ItemKey::UnsyncLyrics, "[00:01.00]From the tag".into());
+        tag.save_to_path(&p, lofty::config::WriteOptions::default()).unwrap();
+        assert_eq!(lyrics(&p).as_deref(), Some("[00:01.00]From the tag"));
+        // An LRC beside it wins, its BOM dropped; an empty or oversized one doesn't count.
+        let lrc = dir.path().join("a.lrc");
+        std::fs::write(&lrc, "\u{feff}[00:02.00]Beside").unwrap();
+        assert_eq!(lyrics(&p).as_deref(), Some("[00:02.00]Beside"));
+        for skipped in [" \n".to_string(), "x".repeat(LYRICS_MAX + 1)] {
+            std::fs::write(&lrc, skipped).unwrap();
+            assert_eq!(lyrics(&p).as_deref(), Some("[00:01.00]From the tag"));
+        }
     }
 
     #[test]

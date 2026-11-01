@@ -196,6 +196,7 @@ const vi: Record<string, string> = {
   'Instrumental': 'Nhạc không lời',
   'Lyrics: {source}': 'Lời bài hát: {source}',
   'Not synced': 'Chưa đồng bộ',
+  'Lyrics from the song’s own file': 'Lời bài hát từ chính tệp của bài',
   // Hidden videos, music or not (features/library/HiddenVideos, edits markMusic, menus)
   '{songs} hidden: not music': 'Đã ẩn {songs}: không phải nhạc',
   '{songs} back with your music': '{songs} đã trở lại cùng nhạc của bạn',

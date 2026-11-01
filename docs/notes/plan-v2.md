@@ -289,6 +289,8 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
 - [ ] `S-M` Voice control beyond search: "next", "like this", "play my running playlist" (WinRT speech already there).
 - [ ] `M` Concerts near the user from followed artists (a public API with no account; privacy row).
 - [ ] `M` Lyrics saved into local files and editable (Guayadeque, MusicBee): fix a line, timing tapped live.
+      Read first (2026-11-01): a local song's own lyrics, the LRC beside it or its tag (USLT, LYRICS, ©lyr), come
+      before the cache and the network (`local::lyrics`, `lyrics::from_file`), labelled as the file's; not cached.
 - [ ] `M` A path between two artists (Plexamp's "Sonic Adventure"): a mix that walks from one to the other.
 - [ ] `M` Describe a playlist in words ("calm rainy Sunday, no lyrics"): matched against the library's tags and sonic
       features locally; an LLM only with the user's own key (like Last.fm's), privacy row first.

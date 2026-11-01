@@ -196,6 +196,7 @@ const tr: Record<string, string> = {
   'Instrumental': 'Enstrümantal',
   'Lyrics: {source}': 'Şarkı sözleri: {source}',
   'Not synced': 'Senkronize değil',
+  'Lyrics from the song’s own file': 'Şarkının kendi dosyasındaki sözler',
   // Hidden videos, music or not (features/library/HiddenVideos, edits markMusic, menus)
   '{songs} hidden: not music': '{songs} gizlendi: müzik değil',
   '{songs} back with your music': '{songs} yeniden müziğinin arasında',

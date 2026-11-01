@@ -196,6 +196,7 @@ const zh: Record<string, string> = {
   'Instrumental': '纯音乐',
   'Lyrics: {source}': '歌词：{source}',
   'Not synced': '未同步',
+  'Lyrics from the song’s own file': '歌曲文件自带的歌词',
   // Hidden videos, music or not (features/library/HiddenVideos, edits markMusic, menus)
   '{songs} hidden: not music': '已隐藏 {songs}：不是音乐',
   '{songs} back with your music': '{songs} 已回到你的音乐中',

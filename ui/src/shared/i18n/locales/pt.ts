@@ -196,6 +196,7 @@ const pt: Record<string, string> = {
   'Instrumental': 'Instrumental',
   'Lyrics: {source}': 'Letra: {source}',
   'Not synced': 'Não sincronizada',
+  'Lyrics from the song’s own file': 'Letra do próprio arquivo da música',
   // Hidden videos, music or not (features/library/HiddenVideos, edits markMusic, menus)
   '{songs} hidden: not music': '{songs} ocultos: não é música',
   '{songs} back with your music': '{songs} de volta com sua música',
