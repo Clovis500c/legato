@@ -1,6 +1,8 @@
 //! How hard an import searches YouTube. Its searches are unofficial and free: Google sets the speed, and a refusal
-//! ("Sorry…" page, 429) says too fast for now. Never around it: fewer at once, wait, the same song again later.
-//! What makes an import quicker is asking less: `Line`.
+//! ("Sorry…" page, 429) says too fast. Never around it. A refusal costs more than the import: Google then limits the
+//! whole address for hours, YouTube's own player too (2026-11-01: an import's 1840 searches, up to 8 at once, then a
+//! third of the songs refused at their start all evening). So one search at a time, spaced, more spaced after a refusal,
+//! which waits minutes. What makes an import quicker is asking less: `Line`.
 
 use crate::matching::{best_match, merge_tracks, normalize, primary_artist};
 use crate::model::{Source, Track};
@@ -8,13 +10,14 @@ use std::cmp::Reverse;
 use std::collections::{HashMap, VecDeque};
 use std::time::{Duration, Instant};
 
-const START: usize = 4;
-const MOST: usize = 8;
-/// Answers in a row before one more search at once.
-const GROW: usize = 12;
-const FIRST_WAIT: Duration = Duration::from_secs(5);
-const LONGEST_WAIT: Duration = Duration::from_secs(60);
-/// Refused this long, no answer: the rest waits for another import. A real block lasted 5 min (2026-10-31), and Hide leaves the app free.
+/// Between two searches' starts: 20 a minute at most (a song can ask twice: YouTube Music, then YouTube).
+const GAP: Duration = Duration::from_secs(3);
+/// Each refusal doubles the gap, up to this, for the rest of the run.
+const LONGEST_GAP: Duration = Duration::from_secs(15);
+/// After a refusal: a real block lasted 5 min (2026-10-31). Doubled by the next refusal with no answer between.
+const FIRST_WAIT: Duration = Duration::from_secs(5 * 60);
+/// Refused this long, no answer: the rest waits for another import (two searches into a block at most). Hide leaves the
+/// app free.
 const GIVE_UP: Duration = Duration::from_secs(15 * 60);
 
 /// Google's answer to too many requests from one address (its "Sorry…" page, or a 429): says nothing about the song
@@ -24,8 +27,9 @@ pub fn refused(error: &str) -> bool {
 }
 
 pub struct Pace {
-    width: usize,
-    clean: usize,
+    gap: Duration,
+    /// When the last search started.
+    last: Option<Instant>,
     wait: Duration,
     resume: Option<Instant>,
     /// First refusal since the last answer.
@@ -36,7 +40,7 @@ pub struct Pace {
 
 impl Default for Pace {
     fn default() -> Self {
-        Pace { width: START, clean: 0, wait: FIRST_WAIT, resume: None, since: None, refusals: 0 }
+        Pace { gap: GAP, last: None, wait: FIRST_WAIT, resume: None, since: None, refusals: 0 }
     }
 }
 
@@ -45,14 +49,19 @@ impl Pace {
         self.resume.is_some_and(|at| now < at)
     }
 
-    /// How long the searches still wait.
+    /// How long a refusal's wait still lasts.
     pub fn wait_left(&self, now: Instant) -> Duration {
         self.resume.map_or(Duration::ZERO, |at| at.saturating_duration_since(now))
     }
 
-    /// Searches allowed at once. 0: waiting.
-    pub fn width(&self, now: Instant) -> usize {
-        if self.waiting(now) { 0 } else { self.width }
+    /// May the next search start: no refusal's wait, the gap since the last one's start gone.
+    pub fn ready(&self, now: Instant) -> bool {
+        !self.waiting(now) && self.last.is_none_or(|at| now.saturating_duration_since(at) >= self.gap)
+    }
+
+    /// A search starts.
+    pub fn started(&mut self, now: Instant) {
+        self.last = Some(now);
     }
 
     pub fn answered(&mut self, now: Instant) {
@@ -61,22 +70,18 @@ impl Pace {
             return;
         }
         (self.wait, self.since) = (FIRST_WAIT, None);
-        self.clean += 1;
-        if self.clean >= GROW {
-            (self.width, self.clean) = ((self.width + 1).min(MOST), 0);
-        }
     }
 
     pub fn refused(&mut self, now: Instant) {
         self.refusals += 1;
-        // Same burst, already waiting.
+        // Already waiting.
         if self.waiting(now) {
             return;
         }
-        (self.width, self.clean) = ((self.width / 2).max(1), 0);
+        self.gap = (self.gap * 2).min(LONGEST_GAP);
         self.since.get_or_insert(now);
         self.resume = Some(now + self.wait);
-        self.wait = (self.wait * 2).min(LONGEST_WAIT);
+        self.wait = (self.wait * 2).min(GIVE_UP);
     }
 
     pub fn gave_up(&self, now: Instant) -> bool {
@@ -244,52 +249,69 @@ mod tests {
     }
 
     #[test]
-    fn grows_while_youtube_answers_never_past_the_limit() {
+    fn one_search_at_a_time_spaced_however_well_youtube_answers() {
         let (mut pace, now) = (Pace::default(), Instant::now());
-        assert_eq!(pace.width(now), START);
-        (0..GROW).for_each(|_| pace.answered(now));
-        assert_eq!(pace.width(now), START + 1);
-        (0..GROW * 20).for_each(|_| pace.answered(now));
-        assert_eq!(pace.width(now), MOST);
+        assert!(pace.ready(now));
+        pace.started(now);
+        pace.answered(now + SECOND);
+        assert!(!pace.ready(now + GAP - SECOND));
+        assert!(pace.ready(now + GAP));
+        // Regression guard: up to 8 at once got the address limited for hours (2026-11-01).
+        (0..500).for_each(|_| pace.answered(now + GAP));
+        pace.started(now + GAP);
+        assert!(!pace.ready(now + GAP * 2 - SECOND));
     }
 
     #[test]
-    fn a_refusal_halves_it_and_waits() {
+    fn a_refusal_waits_minutes_then_goes_on_more_spaced() {
         let (mut pace, now) = (Pace::default(), Instant::now());
-        pace.refused(now);
-        assert_eq!(pace.width(now), 0);
-        assert_eq!(pace.width(now + FIRST_WAIT - SECOND), 0);
-        assert_eq!(pace.width(now + FIRST_WAIT), START / 2);
+        pace.started(now);
+        pace.refused(now + SECOND);
+        let back = now + SECOND + FIRST_WAIT;
+        assert!(!pace.ready(back - SECOND));
+        assert!(pace.ready(back));
+        pace.started(back);
+        pace.answered(back + SECOND);
+        assert!(!pace.ready(back + GAP * 2 - SECOND));
+        assert!(pace.ready(back + GAP * 2));
     }
 
     #[test]
-    fn a_burst_of_refusals_counts_once() {
-        let (mut pace, now) = (Pace::default(), Instant::now());
-        (0..4).for_each(|_| pace.refused(now));
-        assert_eq!(pace.refusals, 4);
-        assert_eq!(pace.width(now + FIRST_WAIT), START / 2);
-        // Not doubled by the burst.
-        pace.refused(now + FIRST_WAIT);
-        assert_eq!(pace.width(now + FIRST_WAIT * 3 - SECOND), 0);
-        assert_eq!(pace.width(now + FIRST_WAIT * 3), 1);
+    fn each_refusal_spaces_them_more_up_to_a_limit() {
+        let (mut pace, mut now) = (Pace::default(), Instant::now());
+        for _ in 0..6 {
+            pace.refused(now);
+            now += pace.wait_left(now);
+            pace.answered(now);
+        }
+        pace.started(now);
+        assert!(!pace.ready(now + LONGEST_GAP - SECOND));
+        assert!(pace.ready(now + LONGEST_GAP));
     }
 
     #[test]
-    fn waits_longer_each_time_up_to_a_minute_then_gives_up() {
+    fn a_refusal_while_waiting_counts_once() {
+        let (mut pace, now) = (Pace::default(), Instant::now());
+        (0..3).for_each(|_| pace.refused(now));
+        assert_eq!(pace.refusals, 3);
+        assert!(pace.ready(now + FIRST_WAIT), "not doubled");
+    }
+
+    #[test]
+    fn refused_again_waits_longer_then_gives_up_two_searches_in() {
         let (mut pace, mut now) = (Pace::default(), Instant::now());
         let start = now;
-        let mut waits = Vec::new();
+        let mut tries = 0;
         while !pace.gave_up(now) {
+            pace.started(now);
             pace.refused(now);
-            let from = now;
-            while pace.width(now) == 0 {
+            tries += 1;
+            while !pace.ready(now) {
                 now += SECOND;
             }
-            waits.push((now - from).as_secs());
         }
-        assert_eq!(waits[..5], [5, 10, 20, 40, 60]);
-        assert!(waits.iter().all(|w| *w <= 60));
-        assert!(now - start >= GIVE_UP);
+        assert_eq!(tries, 2, "not dozens of searches into a block");
+        assert_eq!(now - start, FIRST_WAIT * 3);
     }
 
     #[test]
@@ -300,7 +322,7 @@ mod tests {
         pace.answered(later);
         pace.refused(later);
         assert!(!pace.gave_up(later + GIVE_UP - SECOND));
-        assert_eq!(pace.width(later + FIRST_WAIT), 1);
+        assert!(pace.ready(later + FIRST_WAIT), "back to the first wait");
     }
 
     #[test]

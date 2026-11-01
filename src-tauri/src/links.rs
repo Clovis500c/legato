@@ -122,7 +122,7 @@ pub fn fill_known(state: &AppState, tracks: &mut [Track]) {
 }
 
 /// Each song with its YouTube version when one exists, in order. What the library knows isn't searched: a list imported
-/// again, or sharing songs with another, takes seconds. As fast as YouTube allows (`Pace`): a song refused goes back in
+/// again, or sharing songs with another, takes seconds. One search at a time, spaced (`Pace`): a song refused goes back in
 /// line. Songs not found lately are left alone. `progress`: after each song. None: stopped.
 pub async fn find_on_youtube(app: &tauri::AppHandle, tracks: &[Track], progress: impl Fn(Searched)) -> Result<Option<Found>, String> {
     let state = app.state::<AppState>();
@@ -148,8 +148,11 @@ async fn search(app: &tauri::AppHandle, mut out: Vec<Track>, todo: Vec<usize>, p
         if pace.gave_up(now) {
             break;
         }
-        while running.len() < pace.width(now) {
-            let Some(i) = line.pop() else { break };
+        if running.is_empty()
+            && pace.ready(now)
+            && let Some(i) = line.pop()
+        {
+            pace.started(now);
             let (app, song) = (app.clone(), out[i].clone());
             running.spawn(async move { (i, youtube_version(&app.state::<AppState>(), &song).await) });
         }

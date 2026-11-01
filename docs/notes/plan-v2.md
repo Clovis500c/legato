@@ -531,7 +531,10 @@ Most useful first; the tag is the effort.
       "Google refused the video, loading it again"); refused again, stopped with "Too many requests", nothing blocked, no
       watch page, no other upload searched. The clock waits for a new song's first report (it ran, nothing playing). The
       stuck check stays for slow networks (26 s). Check when it happens again: the log line, the song on about 8 s in.
-      Open: an import pace that doesn't get the address limited (the owner's call: imports get slower).
+      Imports now search one at a time, 3 s apart, and wait 5 min on a refusal (`searchpace::Pace`, the owner's call: an
+      import of 1840 searches takes about 1.5 h instead of 30 min). Check on a real import: no `YouTube refused searches`
+      line, playback fine meanwhile. Still fast: a pasted song list (6 at a time, `songlist.rs`) and Find versions (150 in
+      a row, stops at the first refusal).
 - [ ] `pnpm bench` on a quiet PC: the full run on af27405 was disturbed (someone back at the PC: load 78 %, restart 1.91 s,
       tray 135 MB, the page awake again after its suspend), row not kept. The website's numbers come from d853980: confirm the
       54 MB in the tray after Visualizer v2, or find what wakes the page and fix the numbers.

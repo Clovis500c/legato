@@ -482,9 +482,12 @@ via the Web API Player endpoints. Audio comes out of the Spotify app; we only se
   the songs in line with no search of their own (`searchpace::Line`, the artists with the most songs first). The screen says
   the time left from the last 90 s up to now, so what YouTube holds back counts, and the wait under way on a line of its own.
   Google sets the speed: too many searches from one address get its "Sorry…" page (403, slow, seen at 5 to 9 s), which is
-  not a missing song. `music_core::searchpace::Pace` starts at 4 at once, grows to 8 while YouTube answers, halves and waits
-  (5 s to 60 s) on a refusal, the song goes back in line, and 15 min of nothing but refusals ends the search: an import later
-  finishes it. Never around a refusal: no other endpoint, no CAPTCHA, no faster retry. A song truly not found (a real
+  not a missing song. A refusal costs more than the import: Google then limits the whole address for hours, the YouTube
+  player's starts too (2026-11-01: 1840 searches up to 8 at once, then a third of the songs refused at their start all
+  evening). So `music_core::searchpace::Pace` runs one search at a time, 3 s apart (20 a minute at most); a refusal waits
+  5 min (10 min the next time), the song goes back in line, the gap doubles for the rest of the run (up to 15 s), and 15
+  min of nothing but refusals ends the search, two searches into a block at most: an import later finishes it. Never
+  around a refusal: no other endpoint, no CAPTCHA, no faster retry. A song truly not found (a real
   answer, no match) goes in `not_found` (schema v14, a cache, not synced): an import leaves it alone for 30 days, and Songs
   not found (`features/library/NotFoundView.tsx`, in the sidebar when there are some, and on the import's last screen) lists
   them, to find by hand or search again with the import's screen and pace. Liked Songs joins Liked Music,

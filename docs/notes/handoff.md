@@ -16,7 +16,8 @@ unused (now in `/release-check`). That evening, on the owner's word,
 two fixes from the owner's report went out as the next Beta: one Liked Music (`1b84e46`) and a YouTube video that never
 starts loaded again (`4a45d27`; plan › Check live). The owner saw it again on 1.1.570: its cause is Google's "Sorry…"
 page answering the embed's player request while it limits this PC after an import's searches; `refused.js` and the store
-now load the video again at once (committed on `platforms`, not pushed). Next: the owner's 1.1.557 updates to it by itself (the real update
+now load the video again at once (`dc270a8`, a Beta that evening). Imports then got slower on purpose, so the address
+isn't limited: one search at a time, 3 s apart, 5 min after a refusal (committed on `platforms`, not pushed). Next: the owner's 1.1.557 updates to it by itself (the real update
 from one Beta to the next: `3f50031` took rustls and ring out of the updater), the owner tries both fixes, then the
 Check live list, then Stable. The new website went out the same day, on the owner's word, before Stable. Rules the run kept, on top of `CLAUDE.md`:
 
