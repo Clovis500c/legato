@@ -279,6 +279,8 @@ export interface Settings {
   sidebarCounts: boolean
   /** Covers in track lists. */
   listCovers: boolean
+  /** Songs: artist and album panes above the list (MusicBee's column browser). Off by default: the list alone. */
+  columnBrowser: boolean
   /** A single click on a track row plays it, or a double-click does. */
   clickToPlay: 'single' | 'double'
   startView: (typeof START_VIEWS)[number]
@@ -428,6 +430,7 @@ export const DEFAULTS: Settings = {
   sidebarCounts: true,
   // Covers on every song row, compact too (user's pick 2026-10-29, over the mockup's coverless compact rows).
   listCovers: true,
+  columnBrowser: false,
   clickToPlay: 'single',
   startView: 'home',
   youtubeControls: false,
@@ -633,6 +636,7 @@ export function sanitize(raw: unknown): Settings {
     motion: typeof r.motion === 'boolean' ? r.motion : DEFAULTS.motion,
     sidebarCounts: typeof r.sidebarCounts === 'boolean' ? r.sidebarCounts : DEFAULTS.sidebarCounts,
     listCovers: typeof r.listCovers === 'boolean' ? r.listCovers : DEFAULTS.listCovers,
+    columnBrowser: typeof r.columnBrowser === 'boolean' ? r.columnBrowser : DEFAULTS.columnBrowser,
     clickToPlay: pick(r.clickToPlay, ['single', 'double'] as const, DEFAULTS.clickToPlay),
     startView: pick(r.startView, START_VIEWS, DEFAULTS.startView),
     youtubeControls: typeof r.youtubeControls === 'boolean' ? r.youtubeControls : DEFAULTS.youtubeControls,

@@ -20,7 +20,7 @@ import { clearRecent } from '../search/recent'
 import { AboutSection } from './AboutSection'
 import { ThemeStudio } from './ThemeStudio'
 import { FadeEditor } from './FadeEditor'
-import { CountsScene, CoverShapes, DensityScene, FadeScene, ListCoversScene, MiniPlayerScene, MixCoverScene, MotionScene, NowPlayingScene, SleepButtonScene, SourceIconScene, TunerScene, VolumeScene } from './previews'
+import { BrowserScene, CountsScene, CoverShapes, DensityScene, FadeScene, ListCoversScene, MiniPlayerScene, MixCoverScene, MotionScene, NowPlayingScene, SleepButtonScene, SourceIconScene, TunerScene, VolumeScene } from './previews'
 import { searchSettings, type SettingEntry } from './search'
 import { msg, tr } from '../../shared/i18n/i18n'
 import { LanguagePicker } from './LanguagePicker'
@@ -124,7 +124,7 @@ function Appearance() {
   const playing = usePlayer((p) => !!p.now)
   const col = (c: Column) => (s.columns.includes(c) ? s.columns.filter((x) => x !== c) : COLUMNS.filter((x) => x === c || s.columns.includes(x)))
   const labels: Record<Column, string> = { album: msg('Album'), sources: msg('Sources'), plays: msg('Plays'), rating: msg('Rating'), added: msg('Date added'), duration: msg('Duration') }
-  const reset: Partial<Settings> = { accent: DEFAULTS.accent, covers: DEFAULTS.covers, density: DEFAULTS.density, zoom: DEFAULTS.zoom, readout: DEFAULTS.readout, sleepButton: DEFAULTS.sleepButton, volume: DEFAULTS.volume, tuner: DEFAULTS.tuner, columns: DEFAULTS.columns, tint: DEFAULTS.tint, immersive: DEFAULTS.immersive, miniPlayer: DEFAULTS.miniPlayer, font: DEFAULTS.font, motion: DEFAULTS.motion, sidebarCounts: DEFAULTS.sidebarCounts, listCovers: DEFAULTS.listCovers, stage: DEFAULTS.stage, miniSpot: DEFAULTS.miniSpot, miniPlace: DEFAULTS.miniPlace, textSize: DEFAULTS.textSize }
+  const reset: Partial<Settings> = { accent: DEFAULTS.accent, covers: DEFAULTS.covers, density: DEFAULTS.density, zoom: DEFAULTS.zoom, readout: DEFAULTS.readout, sleepButton: DEFAULTS.sleepButton, volume: DEFAULTS.volume, tuner: DEFAULTS.tuner, columns: DEFAULTS.columns, tint: DEFAULTS.tint, immersive: DEFAULTS.immersive, miniPlayer: DEFAULTS.miniPlayer, font: DEFAULTS.font, motion: DEFAULTS.motion, sidebarCounts: DEFAULTS.sidebarCounts, listCovers: DEFAULTS.listCovers, columnBrowser: DEFAULTS.columnBrowser, stage: DEFAULTS.stage, miniSpot: DEFAULTS.miniSpot, miniPlace: DEFAULTS.miniPlace, textSize: DEFAULTS.textSize }
   return (
     <div className="flex flex-col gap-7">
       <div className="flex justify-end">
@@ -256,6 +256,9 @@ function Appearance() {
         <div className="rounded-xl border border-line bg-raised">
           <Row setting="listCovers" label={msg('Covers in lists')} preview={<ListCoversScene listCovers={s.listCovers} />}>
             <Toggle label={tr('Covers in lists')} checked={s.listCovers} onChange={(listCovers) => update({ listCovers })} />
+          </Row>
+          <Row setting="columnBrowser" label={msg('Column browser')} sub={tr('Artists and albums in two panes above Songs: pick one, the list shows its songs')} preview={<BrowserScene columnBrowser={s.columnBrowser} />}>
+            <Toggle label={tr('Column browser')} checked={s.columnBrowser} onChange={(columnBrowser) => update({ columnBrowser })} />
           </Row>
           <Row setting="sidebarCounts" label={msg('Counts in the sidebar')} sub={tr('Number of songs next to each entry')} preview={<CountsScene sidebarCounts={s.sidebarCounts} />}>
             <Toggle label={tr('Counts in the sidebar')} checked={s.sidebarCounts} onChange={(sidebarCounts) => update({ sidebarCounts })} />

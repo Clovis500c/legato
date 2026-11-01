@@ -39,8 +39,8 @@ const addedDate = (at?: number | null) => {
   const d = new Date(at * 1000)
   return d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: d.getFullYear() === new Date().getFullYear() ? undefined : 'numeric' })
 }
-/** Columns button and right-click on a list's header: columns, row size, covers. */
-export function columnsMenu(): MenuEntry[] {
+/** Columns button and right-click on a list's header: columns, row size, covers; `extra`: the page's own. */
+export function columnsMenu(extra: MenuEntry[] = []): MenuEntry[] {
   const { settings: s, update } = useSettings.getState()
   const toggle = (c: Column) => update({ columns: s.columns.includes(c) ? s.columns.filter((x) => x !== c) : COLUMNS.filter((x) => x === c || s.columns.includes(x)) })
   return [
@@ -51,6 +51,7 @@ export function columnsMenu(): MenuEntry[] {
       items: (['compact', 'comfort', 'airy'] as const).map((d) => ({ label: tr({ compact: 'Compact', comfort: 'Comfortable', airy: 'Airy' }[d]), checked: s.density === d, onSelect: () => update({ density: d }) })),
     },
     { label: tr('Covers in lists'), checked: s.listCovers, onSelect: () => update({ listCovers: !s.listCovers }) },
+    ...extra,
   ]
 }
 const headSorts: Partial<Record<Column | 'title', [Sort, Sort]>> = { title: ['title', 'title-desc'], album: ['album', 'album'], plays: ['most-played', 'most-played'], rating: ['rating', 'rating'], added: ['added-new', 'added-old'], duration: ['duration', 'duration-short'] }

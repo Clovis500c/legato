@@ -93,7 +93,7 @@ export function groupAlbums(tracks: LibraryTrack[]): AlbumGroup[] {
     const g = map.get(key) ?? map.set(key, { album: t.album, artist, tracks: [] }).get(key)!
     g.tracks.push(t)
   }
-  return [...map.values()].sort((a, b) => coll.compare(a.album, b.album))
+  return [...map.values()].sort((a, b) => coll.compare(a.album, b.album) || coll.compare(a.artist, b.artist))
 }
 
 export interface ArtistGroup {

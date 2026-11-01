@@ -216,6 +216,27 @@ export function ListCoversScene({ listCovers }: Pick<Settings, 'listCovers'>) {
   )
 }
 
+/** Two small panes (artists, albums) over the rows, or the rows alone. */
+export function BrowserScene({ columnBrowser }: Pick<Settings, 'columnBrowser'>) {
+  return (
+    <Frame label={tr('Column browser preview')} className="flex flex-col justify-center gap-2 px-2.5">
+      {columnBrowser && (
+        <div className="grid grid-cols-2 gap-1">
+          {['w-8', 'w-6'].map((w) => (
+            <span key={w} className="flex flex-col gap-[3px] rounded-[2px] border border-line p-1">
+              <span className={`h-[3px] rounded-full bg-ink ${w}`} />
+              <span className="h-[3px] w-5 rounded-full bg-ink-3" />
+            </span>
+          ))}
+        </div>
+      )}
+      {['w-12', 'w-9'].map((w) => (
+        <Lines key={w} w={w} />
+      ))}
+    </Frame>
+  )
+}
+
 /** Sidebar entries with or without their song count. */
 export function CountsScene({ sidebarCounts }: Pick<Settings, 'sidebarCounts'>) {
   return (

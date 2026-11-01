@@ -2,6 +2,7 @@ import { CaretDown, DotsThree, Info, MagnifyingGlass, MicrophoneStage, Play, Plu
 import { artistName } from '../../shared/artistName'
 import { useShallow } from 'zustand/react/shallow'
 import { useCallback, useMemo, useState } from 'react'
+import { useSettings } from '../../app/settings'
 import { pageQuery, useStore } from '../../app/store'
 import { api, type LibraryTrack } from '../../shared/api'
 import { formatCount } from '../../shared/format'
@@ -25,6 +26,8 @@ import { filterTracks, groupAlbums, groupArtists, groupStats, libraryStats, musi
 import { DuplicatesButton } from './dialogs'
 import { HiddenVideos } from './HiddenVideos'
 import { columnsMenu, TrackTable } from './TrackTable'
+import { browse, inPicks } from './browse'
+import { browserEntry, ColumnBrowser, useBrowse } from './ColumnBrowser'
 import { msg, tr, trn } from '../../shared/i18n/i18n'
 
 /** YouTube-like sort list, in groups. Manual only on playlists. */
@@ -67,10 +70,10 @@ export function ShuffleRound({ tracks }: { tracks: LibraryTrack[] }) {
   )
 }
 
-/** How the list shows: columns, row size, covers (settings, also in Appearance). Sliders: the old columns icon read as pause. */
-function ColumnsButton() {
+/** How the list shows: columns, row size, covers (settings, also in Appearance); `extra`: the page's own. Sliders: the old columns icon read as pause. */
+function ColumnsButton({ extra }: { extra?: () => MenuEntry[] }) {
   return (
-    <RoundButton label={tr('Display options')} kind="plain" size="sm" onClick={(e) => openMenu(e, columnsMenu(), { place: 'below' })}>
+    <RoundButton label={tr('Display options')} kind="plain" size="sm" onClick={(e) => openMenu(e, columnsMenu(extra?.()), { place: 'below' })}>
       <SlidersHorizontal size={16} />
     </RoundButton>
   )
@@ -240,11 +243,21 @@ function Playability({ tracks }: { tracks: LibraryTrack[] }) {
 export function SongsView() {
   const { tracks, filter, setFilter, sort, setSort, go, stats: plays, seed } = useStore(useShallow(({ tracks, filter, setFilter, sort, setSort, go, stats, seed }) => ({ tracks, filter, setFilter, sort, setSort, go, stats, seed })))
   const query = useStore(pageQuery)
+  const browser = useSettings((s) => s.settings.columnBrowser)
+  const picks = useBrowse()
   const stats = useMemo(() => libraryStats(tracks), [tracks])
   const music = useMemo(() => musicOnly(tracks), [tracks])
-  // The fold follows the search and the source chips too.
-  const hidden = useMemo(() => filterTracks(music.hidden, query, filter), [music, query, filter])
-  const shown = useMemo(() => sortTracks(filterTracks(music.kept, query, filter), sort, { stats: plays, seed }), [music, query, filter, sort, plays, seed])
+  const found = useMemo(() => filterTracks(music.kept, query, filter), [music, query, filter])
+  // Column browser: its panes over what the search and the chips found; the list = what they picked.
+  const browsed = useMemo(() => (browser && tracks.length ? browse(found, picks) : null), [browser, tracks.length, found, picks])
+  // The fold follows the search, the source chips and the panes too.
+  const hidden = useMemo(() => {
+    const h = filterTracks(music.hidden, query, filter)
+    return browsed ? inPicks(h, browsed) : h
+  }, [music, query, filter, browsed])
+  const shown = useMemo(() => sortTracks(browsed ? browsed.songs : found, sort, { stats: plays, seed }), [browsed, found, sort, plays, seed])
+  // A pane's double-click or Enter: its songs in the list's order.
+  const playSorted = useCallback((list: LibraryTrack[]) => usePlayer.getState().playTracks(sortTracks(list, sort, { stats: plays, seed }), 0), [sort, plays, seed])
 
   return (
     <>
@@ -260,9 +273,10 @@ export function SongsView() {
           <DuplicatesButton />
           <Playability tracks={shown} />
           <SortMenu />
-          <ColumnsButton />
+          <ColumnsButton extra={() => [browserEntry()]} />
         </div>
       </div>
+      {browsed && <ColumnBrowser b={browsed} play={playSorted} />}
       <HiddenVideos tracks={hidden} />
       <TrackTable
         tracks={shown}

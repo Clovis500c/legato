@@ -60,8 +60,8 @@ Done in this run (newest last), none tried in the real app yet:
 - `e77b4ec` Edit info of many local songs at once: album artist, genre, year, track and disc, numbered in the list's order.
 
 Milestone 4 (Lyrics) is done but for translation and finding a song by a line: the owner's calls, notes in
-[plan-v2.md](plan-v2.md). Next in the run: milestone 5 (Your own music), its lines that need no account: the column view,
-then ListenBrainz (mocked tests only).
+[plan-v2.md](plan-v2.md). Next in the run: milestone 5 (Your own music), its lines that need no account: ListenBrainz
+(mocked tests only).
 
 ## Branches
 

@@ -278,8 +278,15 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
 - [ ] `M` Credits and artist pages: who wrote / produced (MusicBrainz), a short bio (Wikipedia), links out.
 - [ ] `M` Sweet fades (Plexamp): crossfade length picked per pair from the songs' ends (loudness, silence, tempo).
 - [ ] `M` Picture-in-picture: the video or cover floating above other windows, small controls.
-- [ ] `M` Classic skins: a compact "mini" layout (Winamp-like) with the user's theme; a column view of the library with
-      chosen columns, sorts and groupings (foobar2000, MusicBee).
+- [ ] `M` Classic skins: a compact "mini" layout (Winamp-like) with the user's theme.
+- [x] `M` A column view of the library with chosen columns, sorts and groupings (foobar2000, MusicBee). Columns and
+      sorts were there (Display options, the headers); Songs › Display options (or Settings › Appearance) › Column
+      browser, off by default: Artists and Albums panes above the list, grouped as the Albums and Artists pages group
+      them, A to Z with their counts. A pick narrows the next pane and the list (the hidden videos' fold too), the
+      search and the source chips narrow the panes; Ctrl / Shift pick several, arrows, letters jump to a name (the
+      same letter again: the next one), Esc = All, double-click or Enter plays, right-click = the songs' menu, a drag
+      takes them to a playlist (`features/library/browse.ts`, `ColumnBrowser.tsx`). Waits for "Genre / year / BPM /
+      key tags stored": genre and year panes, album groups in the list in track order. Unseen in the real app.
 - [ ] `M` Long YouTube mixes and DJ sets split by their chapters (or timestamps in the description / pinned comment):
       each part a song in Up next, skip within the video; Music Detector names unlabelled parts on request.
 - [x] Local files follow Windows' default output: a new default (picked, or the speakers taking over) gets the song at
