@@ -1,4 +1,4 @@
-import { FIXES, GITHUB, PLAYBACK, PRIVACY, SERVICES, STEPS } from '@/components/content'
+import { FIXES, GITHUB, PLAYBACK, PRIVACY, ROADMAP, SERVICES, STEPS } from '@/components/content'
 import { Header } from '@/components/Header'
 import { Hero, Shot } from '@/components/Hero'
 import { Block, Faq, Features, Rows, Split, Steps, Why } from '@/components/Sections'
@@ -30,6 +30,21 @@ export default function Home() {
         <Block id="start" title="Get started" intro="About a minute, then your music is in one place.">
           <Steps steps={STEPS} />
         </Block>
+        <Split
+          id="next"
+          title="What's next"
+          intro={
+            <>
+              In this order, one release each, on the Beta channel first. No dates: each comes when it's ready. Missing something?{' '}
+              <a href={`${GITHUB}/issues/new?template=feature.yml`} className="text-ink underline decoration-line underline-offset-4 hover:decoration-ink">
+                Suggest it
+              </a>
+              .
+            </>
+          }
+        >
+          <Rows head={['Coming', 'What it brings']} rows={ROADMAP} />
+        </Split>
         <Split
           id="faq"
           title="Questions"

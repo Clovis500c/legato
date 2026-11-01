@@ -1,6 +1,7 @@
 # Contributing
 
-Legato is a personal, source-available project (see [LICENSE](LICENSE)). Issues and pull requests are welcome.
+Legato is a personal, source-available project (see [LICENSE](LICENSE)). Issues and pull requests are welcome; a bug
+report asks for Settings › About › Copy diagnostics (`.github/ISSUE_TEMPLATE`).
 For code changes, open an issue first so we can agree on the approach. You may fork the repository only to prepare a
 pull request; changing the code for any other purpose, or reusing it in another project, requires the author's written
 permission. By opening a pull request, you agree that your contribution may be used and published as part of Legato

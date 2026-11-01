@@ -369,8 +369,10 @@ Most useful first; the tag is the effort.
       command's name and arguments are still checked by eye.
 - [ ] `M` Diagnostics: a crash that ends the process without a Rust panic (a native fault, a kill) leaves no line; Windows'
       event log and minidumps are not read.
-- [ ] `S` Issue templates on GitHub (bug with diagnostics, feature idea) and a public roadmap page on the website from
-      this plan.
+- [x] `S` Issue templates on GitHub (bug with diagnostics, feature idea) and a public roadmap page on the website from
+      this plan. `.github/ISSUE_TEMPLATE` (bug: what happened, the source, Copy diagnostics; idea: links what's next,
+      says what can't be taken), the website's "What's next" (`#next`, `ROADMAP` in `content.tsx`: keep it in step with
+      the Roadmap table above, minus what shipped). Both show only after a push.
 - [ ] `S` `graphify hook install` (the user's go) so the graph stays fresh without asking; then drop the `.gitattributes`
       line it adds (the graph isn't tracked).
 

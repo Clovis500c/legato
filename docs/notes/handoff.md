@@ -46,10 +46,11 @@ Done in this run (newest last), none tried in the real app yet:
 - `c5647d4` Daylist mix: "Your Friday evenings", this weekday's time of day, on the Mixes page.
 - `cd0e783` Pause during calls (Windows' ducking notifications), off by default; plays on when the call ends.
 - `87fb992` The smoke test blocks `check` (it only runs on GitHub, after a push).
-- Now Playing, the lyrics panel and the dialogs load on first use: 51 kB less JS at launch.
+- `b1a99a1` Now Playing, the lyrics panel and the dialogs load on first use: 51 kB less JS at launch.
+- Issue templates (bug with diagnostics, feature idea) and the website's "What's next" from the roadmap.
 
-Next in the run: the rest of Optimisation and Workflow (issue templates, project skills, WebP / GIF thumbnails,
-installer size), then milestone 4 (Lyrics).
+Next in the run: the rest of Optimisation and Workflow (project skills, WebP / GIF thumbnails, installer size), then
+milestone 4 (Lyrics).
 
 ## Branches
 

@@ -1,0 +1,42 @@
+name: Bug
+description: Something in Legato doesn't work as it should.
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you did, what you expected, what you saw instead. One problem per issue.
+      placeholder: |
+        1. Opened a playlist imported from Spotify
+        2. Pressed Play on the third song
+        3. Nothing played, the bar stayed at 0:00
+    validations:
+      required: true
+  - type: dropdown
+    id: source
+    attributes:
+      label: Where the music came from
+      multiple: true
+      options:
+        - YouTube or YouTube Music
+        - Spotify
+        - Apple Music
+        - Files on this PC
+        - A link or a shared playlist
+        - Not about playing music
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Diagnostics
+      description: >-
+        In Legato: Settings › About › Copy diagnostics, then paste here. It holds the version, the Windows build, the
+        settings that matter and the latest errors; the app sends none of it by itself. Leave "Include details" off
+        unless asked: it adds song titles, account names and file paths. If the app doesn't open, the log is
+        `diagnostics.log` in `%APPDATA%\app.legato.desktop`.
+      render: text
+  - type: textarea
+    id: more
+    attributes:
+      label: Anything else
+      description: A screenshot, how often it happens, since which version.

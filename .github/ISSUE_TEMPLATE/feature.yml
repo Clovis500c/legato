@@ -1,0 +1,22 @@
+name: Feature idea
+description: Something Legato could do.
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: >-
+        Have a look at [what's next](https://clovis500c.github.io/legato/#next) first: it may already be planned.
+        Legato only plays music the legal way, so ideas that download, record or export a service's audio, or get
+        around DRM, can't be taken.
+  - type: textarea
+    id: idea
+    attributes:
+      label: The idea
+      description: What you'd like Legato to do, and what it would help you with.
+    validations:
+      required: true
+  - type: textarea
+    id: today
+    attributes:
+      label: How you do it today
+      description: Another app that does it, or how you get by without it.

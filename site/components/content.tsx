@@ -79,6 +79,16 @@ export const SERVICES: [string, string][] = [
   ['Other apps', "Playlist files (M3U, XSPF, CSV) and iTunes' or MusicBee's library file: songs on your PC come as they are, the others play from YouTube."],
 ]
 
+// Unlike every other list here, what isn't out yet: docs/notes/plan-v2.md › Roadmap, in its order, minus what shipped.
+export const ROADMAP: [string, string][] = [
+  ['Lyrics', 'Word-by-word lyrics where the source has them, a translation under each line, a song found from a line you remember, lyrics saved into your own files or timed by tapping along.'],
+  ['Your own music', 'Jellyfin, Navidrome and Subsonic servers, ReplayGain for an even loudness, a tag editor for many songs at once with MusicBrainz, ratings, a column view, ListenBrainz.'],
+  ['Smarter listening', 'Your songs analysed on your PC (tempo, energy, key) for radios and fades that fit, a path from one artist to another, an auto-DJ, a yearly recap to share.'],
+  ['Around the house', 'Your phone as a remote, speakers and TVs (DLNA, Chromecast), listening together on the same network, picking up on your other PC where you stopped.'],
+  ['Windows polish', 'A Jump List on the taskbar icon, an alarm that wakes you with a playlist, an overlay for OBS, a picture-in-picture player.'],
+  ['Mac and Linux', 'Builds for macOS and Linux, then an Android companion.'],
+]
+
 export const STEPS: [string, string][] = [
   ['Download', 'Run the installer, on Windows 10 or 11. New versions install themselves between two songs.'],
   ['Connect what you use', 'Settings › Accounts: YouTube Music, Spotify, Apple Music and your music folders.'],

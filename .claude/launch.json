@@ -24,6 +24,18 @@
       "env": {
         "WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS": "--remote-debugging-port=9333 --autoplay-policy=no-user-gesture-required"
       }
+    },
+    {
+      "name": "site",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "--dir",
+        "site",
+        "dev",
+        "--port",
+        "3100"
+      ],
+      "port": 3100
     }
   ]
 }

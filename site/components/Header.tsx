@@ -11,6 +11,7 @@ const LINKS = [
   ['Why Legato', '#why'],
   ['Features', '#features'],
   ['Privacy', '#privacy'],
+  ['Next', '#next'],
   ['FAQ', '#faq'],
   ['GitHub', GITHUB],
 ]
