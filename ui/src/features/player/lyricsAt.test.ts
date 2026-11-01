@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { NO_FIX, applyFix, fixFromTaps, lineAt, lineEnd, peekLine, withBreaks, wordTimes } from './lyricsAt'
+import { NO_FIX, applyFix, fixFromTaps, lineAt, lineEnd, peekLine, toLrc, withBreaks, wordTimes } from './lyricsAt'
 
 describe('lineAt', () => {
   const lines = [{ ms: 1000 }, { ms: 2000 }, { ms: 2000 }, { ms: 5000 }]
@@ -93,6 +93,15 @@ describe('timing fixed by hand', () => {
     const lines = [{ ms: 0, text: 'a', endMs: 1200 }, { ms: 6000, text: 'b' }]
     expect(lineEnd(lines, 0, null)).toBe(1200)
     expect(withBreaks(lines, null)).toEqual([lines[0], { ms: 1200, text: '' }, lines[1]])
+  })
+})
+
+describe('toLrc', () => {
+  it('writes lines and their words back as LRC', () => {
+    expect(toLrc([{ ms: 1500, text: 'One' }, { ms: 62_340, text: '' }, { ms: 6_000_000, text: 'Late' }])).toBe('[00:01.50]One\n[01:02.34]\n[100:00.00]Late')
+    const worded = [{ ms: 12_000, text: 'Hello world', words: [{ ms: 12_000, text: 'Hello ' }, { ms: 12_500, text: 'world', endMs: 13_100 }] }]
+    expect(toLrc(worded)).toBe('[00:12.00]<00:12.00>Hello <00:12.50>world<00:13.10>')
+    expect(toLrc([{ ms: 0, text: 'a', words: [{ ms: 5, text: 'a' }] }])).toBe('[00:00.00]<00:00.01>a')
   })
 })
 

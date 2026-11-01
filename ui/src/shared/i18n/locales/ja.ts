@@ -197,6 +197,10 @@ const ja: Record<string, string> = {
   'Lyrics: {source}': '歌詞：{source}',
   'Not synced': '同期なし',
   'Lyrics from the song’s own file': '曲のファイルに入っている歌詞',
+  'Edit lyrics': '歌詞を編集',
+  'Add lyrics': '歌詞を追加',
+  'Save into the file': 'ファイルに保存',
+  'A line starting with a time like [01:02.50] is synced to it.': '[01:02.50] のような時刻で始まる行は、その時刻に同期します。',
   // Hidden videos, music or not (features/library/HiddenVideos, edits markMusic, menus)
   '{songs} hidden: not music': '{songs}を非表示：音楽ではありません',
   '{songs} back with your music': '{songs}を音楽に戻しました',

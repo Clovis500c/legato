@@ -217,9 +217,8 @@ pub struct TagEdit {
 
 /// Rewrites the file's main tag in a copy next to it, then swaps the copy in: a failure leaves the original untouched.
 /// The audio itself is never rewritten.
-pub fn write_tags(path: &Path, edit: &TagEdit) -> anyhow::Result<()> {
+fn rewrite(path: &Path, change: impl FnOnce(&mut lofty::tag::Tag) -> anyhow::Result<()>) -> anyhow::Result<()> {
     use lofty::config::WriteOptions;
-    use lofty::picture::{MimeType, Picture};
     use lofty::tag::Tag;
     let mut tmp = path.as_os_str().to_owned();
     // Not an audio extension: the folder watcher ignores it.
@@ -230,6 +229,24 @@ pub fn write_tags(path: &Path, edit: &TagEdit) -> anyhow::Result<()> {
         let file = Probe::open(&tmp)?.guess_file_type()?.read()?;
         let kind = file.primary_tag_type();
         let mut tag = file.tag(kind).cloned().unwrap_or_else(|| Tag::new(kind));
+        change(&mut tag)?;
+        tag.save_to_path(&tmp, WriteOptions::default())?;
+        Ok(())
+    })();
+    match written {
+        Ok(()) => std::fs::rename(&tmp, path).inspect_err(|_| drop(std::fs::remove_file(&tmp)))?,
+        Err(e) => {
+            let _ = std::fs::remove_file(&tmp);
+            return Err(e);
+        }
+    }
+    Ok(())
+}
+
+/// Title, artist, album and front cover into the file's main tag (right-click › Edit song info).
+pub fn write_tags(path: &Path, edit: &TagEdit) -> anyhow::Result<()> {
+    use lofty::picture::{MimeType, Picture};
+    rewrite(path, |tag| {
         tag.set_title(edit.title.trim().to_string());
         tag.set_artist(edit.artist.trim().to_string());
         match edit.album.as_deref().map(str::trim).filter(|a| !a.is_empty()) {
@@ -249,17 +266,28 @@ pub fn write_tags(path: &Path, edit: &TagEdit) -> anyhow::Result<()> {
             };
             tag.push_picture(Picture::unchecked(bytes.clone()).pic_type(PictureType::CoverFront).mime_type(mime).build());
         }
-        tag.save_to_path(&tmp, WriteOptions::default())?;
         Ok(())
-    })();
-    match written {
-        Ok(()) => std::fs::rename(&tmp, path).inspect_err(|_| drop(std::fs::remove_file(&tmp)))?,
-        Err(e) => {
-            let _ = std::fs::remove_file(&tmp);
-            return Err(e);
-        }
+    })
+}
+
+/// Saves the song's lyrics (LRC text, or plain) where it keeps them: the LRC file beside it when there is one, else its
+/// main tag (ID3's USLT, Vorbis' LYRICS, MP4's ©lyr; MusicBee and foobar2000 read LRC text there too).
+pub fn write_lyrics(path: &Path, text: &str) -> anyhow::Result<()> {
+    let lrc = path.with_extension("lrc");
+    if lrc.is_file() {
+        // A copy written, then swapped in.
+        let tmp = lrc.with_extension("lrc.legato-tmp");
+        std::fs::write(&tmp, text)?;
+        return Ok(std::fs::rename(&tmp, &lrc).inspect_err(|_| drop(std::fs::remove_file(&tmp)))?);
     }
-    Ok(())
+    rewrite(path, |tag| {
+        // ID3 has no LYRICS item: USLT.
+        let key = if tag.tag_type() == lofty::tag::TagType::Id3v2 { ItemKey::UnsyncLyrics } else { ItemKey::Lyrics };
+        tag.remove_key(ItemKey::Lyrics);
+        tag.remove_key(ItemKey::UnsyncLyrics);
+        anyhow::ensure!(tag.insert_text(key, text.to_string()), "This kind of file can't hold lyrics");
+        Ok(())
+    })
 }
 
 #[cfg(test)]
@@ -436,6 +464,28 @@ pub(crate) mod tests {
             std::fs::write(&lrc, skipped).unwrap();
             assert_eq!(lyrics(&p).as_deref(), Some("[00:01.00]From the tag"));
         }
+    }
+
+    #[test]
+    fn saves_lyrics_where_the_song_keeps_them() {
+        let dir = tempfile::tempdir().unwrap();
+        let p = dir.path().join("a.wav");
+        wav(&p);
+        write_tags(&p, &TagEdit { title: "Kept".into(), artist: "Someone".into(), ..Default::default() }).unwrap();
+        let before = read(&p).duration_ms;
+        write_lyrics(&p, "[00:01.00]Saved").unwrap();
+        write_lyrics(&p, "[00:01.00]Saved again").unwrap();
+        let t = read(&p);
+        assert_eq!((lyrics(&p).as_deref(), t.title.as_str(), t.duration_ms), (Some("[00:01.00]Saved again"), "Kept", before));
+        // An LRC beside it: written there, the tag as it was.
+        let lrc = dir.path().join("a.lrc");
+        std::fs::write(&lrc, "old").unwrap();
+        write_lyrics(&p, "[00:02.00]Beside").unwrap();
+        assert_eq!(std::fs::read_to_string(&lrc).unwrap(), "[00:02.00]Beside");
+        std::fs::remove_file(&lrc).unwrap();
+        assert_eq!(lyrics(&p).as_deref(), Some("[00:01.00]Saved again"));
+        // No copy left behind.
+        assert_eq!(std::fs::read_dir(dir.path()).unwrap().count(), 1);
     }
 
     #[test]

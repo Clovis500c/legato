@@ -291,6 +291,11 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
 - [ ] `M` Lyrics saved into local files and editable (Guayadeque, MusicBee): fix a line, timing tapped live.
       Read first (2026-11-01): a local song's own lyrics, the LRC beside it or its tag (USLT, LYRICS, ©lyr), come
       before the cache and the network (`local::lyrics`, `lyrics::from_file`), labelled as the file's; not cached.
+      Saved too: Lyrics › Edit lyrics (a local song playing; Add lyrics when none were found) edits the text, LRC or
+      plain, and writes it where the song keeps it (the LRC beside it, else its main tag, `local::write_lyrics`, the
+      same copy-then-swap as Edit song info); Fix the timing › Save into the file writes the fixed timing, then the
+      fix is cleared (Sync Mode carries that to the other PCs, whose files didn't change). Left: plain lyrics timed
+      line by line by tapping along.
 - [ ] `M` A path between two artists (Plexamp's "Sonic Adventure"): a mix that walks from one to the other.
 - [ ] `M` Describe a playlist in words ("calm rainy Sunday, no lyrics"): matched against the library's tags and sonic
       features locally; an LLM only with the user's own key (like Last.fm's), privacy row first.

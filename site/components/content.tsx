@@ -24,7 +24,7 @@ export const FEATURES: { icon: IconName; title: string; text: string }[] = [
   { icon: 'SlidersHorizontal', title: 'Live Editor', text: 'Speed, pitch, a 10-band EQ, reverb and 3D sound, changed as it plays.' },
   { icon: 'FolderSimple', title: 'Your own files', text: 'Gapless playback, and their title, artist, album and cover to edit.' },
   { icon: 'Devices', title: 'Sync Mode', text: 'Your library on all your PCs, through a OneDrive folder or your network.' },
-  { icon: 'Quotes', title: 'Lyrics', text: 'Timed lyrics, word by word when LRCLIB has them, in a panel beside any page, big in Now Playing, or full screen in Karaoke mode (K).' },
+  { icon: 'Quotes', title: 'Lyrics', text: "Timed lyrics, word by word when LRCLIB has them, in a panel beside any page, big in Now Playing, or full screen in Karaoke mode (K). Your own files' lyrics come first, and you can edit them right into the file." },
   { icon: 'Palette', title: 'Themes', text: 'Colors, fonts, a picture or video background, your own CSS.' },
   { icon: 'PuzzlePiece', title: 'Add-ons and plugins', text: 'Plugins by others ask for what they need before they can do anything.' },
   { icon: 'Translate', title: '18 languages', text: 'Following Windows, with its media keys, a tray icon and full screen.' },
@@ -81,7 +81,7 @@ export const SERVICES: [string, string][] = [
 
 // Unlike every other list here, what isn't out yet: docs/notes/plan-v2.md › Roadmap, in its order, minus what shipped.
 export const ROADMAP: [string, string][] = [
-  ['Lyrics', 'A translation under each line, a song found from a line you remember, lyrics saved into your own files or timed by tapping along.'],
+  ['Lyrics', 'A translation under each line, a song found from a line you remember, plain lyrics timed by tapping along.'],
   ['Your own music', 'Jellyfin, Navidrome and Subsonic servers, ReplayGain for an even loudness, a tag editor for many songs at once with MusicBrainz, ratings, a column view, ListenBrainz.'],
   ['Smarter listening', 'Your songs analysed on your PC (tempo, energy, key) for radios and fades that fit, a path from one artist to another, an auto-DJ, a yearly recap to share.'],
   ['Around the house', 'Your phone as a remote, speakers and TVs (DLNA, Chromecast), listening together on the same network, picking up on your other PC where you stopped.'],

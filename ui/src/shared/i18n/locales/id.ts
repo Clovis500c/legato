@@ -197,6 +197,10 @@ const id: Record<string, string> = {
   'Lyrics: {source}': 'Lirik: {source}',
   'Not synced': 'Tidak tersinkron',
   'Lyrics from the song’s own file': 'Lirik dari file lagu itu sendiri',
+  'Edit lyrics': 'Edit lirik',
+  'Add lyrics': 'Tambahkan lirik',
+  'Save into the file': 'Simpan ke file',
+  'A line starting with a time like [01:02.50] is synced to it.': 'Baris yang diawali waktu seperti [01:02.50] disinkronkan ke waktu itu.',
   // Hidden videos, music or not (features/library/HiddenVideos, edits markMusic, menus)
   '{songs} hidden: not music': '{songs} disembunyikan: bukan musik',
   '{songs} back with your music': '{songs} kembali bersama musikmu',

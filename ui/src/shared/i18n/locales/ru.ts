@@ -197,6 +197,10 @@ const ru: Record<string, string> = {
   'Lyrics: {source}': 'Текст: {source}',
   'Not synced': 'Без синхронизации',
   'Lyrics from the song’s own file': 'Текст из файла самой песни',
+  'Edit lyrics': 'Изменить текст песни',
+  'Add lyrics': 'Добавить текст песни',
+  'Save into the file': 'Сохранить в файл',
+  'A line starting with a time like [01:02.50] is synced to it.': 'Строка, начинающаяся со времени вроде [01:02.50], синхронизируется с ним.',
   // Hidden videos, music or not (features/library/HiddenVideos, edits markMusic, menus)
   '{songs} hidden: not music': 'Скрыто — не музыка: {songs}',
   '{songs} back with your music': 'Снова с твоей музыкой: {songs}',

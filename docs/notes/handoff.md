@@ -54,7 +54,9 @@ Done in this run (newest last), none tried in the real app yet:
 
 - `ac422e5` Word-by-word lyrics from LRCLIB's Lyricsfile or enhanced LRC, in the panel and Karaoke.
 
-- A local song's own lyrics (its tags, or an .lrc beside it) first: nothing sent for it.
+- `89a48f4` A local song's own lyrics (its tags, or an .lrc beside it) first: nothing sent for it.
+
+- Lyrics edited and saved into a local song's file (its .lrc or its tags), the fixed timing too.
 
 Next in the run: the rest of milestone 4 (Lyrics).
 

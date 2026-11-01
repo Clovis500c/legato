@@ -197,6 +197,10 @@ const es: Record<string, string> = {
   'Lyrics: {source}': 'Letra: {source}',
   'Not synced': 'Sin sincronizar',
   'Lyrics from the song’s own file': 'Letra del propio archivo de la canción',
+  'Edit lyrics': 'Editar la letra',
+  'Add lyrics': 'Añadir letra',
+  'Save into the file': 'Guardar en el archivo',
+  'A line starting with a time like [01:02.50] is synced to it.': 'Una línea que empieza con un tiempo como [01:02.50] se sincroniza con él.',
   // Hidden videos, music or not (features/library/HiddenVideos, edits markMusic, menus)
   '{songs} hidden: not music': '{songs} ocultos: no es música',
   '{songs} back with your music': '{songs} de vuelta con tu música',

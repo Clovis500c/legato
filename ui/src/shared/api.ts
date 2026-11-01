@@ -89,6 +89,8 @@ export const api = {
   setMusic: (trackIds: number[], music: boolean | null) => invoke<void>('set_music', { trackIds, music }),
   /** Edit song info: a local file's tags rewritten (tags.rs). coverPath = new front cover; removeCover = none. */
   editTags: (trackId: number, tags: SongTags) => invoke<void>('edit_tags', { trackId, tags }),
+  /** A local song's lyrics (LRC or plain) saved into its file: the .lrc beside it, else its tags (tags.rs). */
+  writeLyrics: (trackId: number, text: string) => invoke<void>('write_lyrics', { trackId, text }),
   clearHistory: () => invoke<void>('clear_history'),
   /** Private YouTube playlist; same one updated on later exports. */
   exportYoutube: (id: number) => invoke<ExportReport>('export_youtube', { id }),

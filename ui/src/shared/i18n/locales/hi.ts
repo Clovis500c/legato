@@ -197,6 +197,10 @@ const hi: Record<string, string> = {
   'Lyrics: {source}': 'बोल: {source}',
   'Not synced': 'सिंक नहीं हैं',
   'Lyrics from the song’s own file': 'गाने की अपनी फ़ाइल से बोल',
+  'Edit lyrics': 'बोल संपादित करें',
+  'Add lyrics': 'बोल जोड़ें',
+  'Save into the file': 'फ़ाइल में सहेजें',
+  'A line starting with a time like [01:02.50] is synced to it.': '[01:02.50] जैसे समय से शुरू होने वाली पंक्ति उसी समय पर सिंक होती है।',
   // Hidden videos, music or not (features/library/HiddenVideos, edits markMusic, menus)
   '{songs} hidden: not music': '{songs} छिपाए गए: संगीत नहीं',
   '{songs} back with your music': '{songs} आपके संगीत में वापस',

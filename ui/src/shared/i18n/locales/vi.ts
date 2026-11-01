@@ -197,6 +197,10 @@ const vi: Record<string, string> = {
   'Lyrics: {source}': 'Lời bài hát: {source}',
   'Not synced': 'Chưa đồng bộ',
   'Lyrics from the song’s own file': 'Lời bài hát từ chính tệp của bài',
+  'Edit lyrics': 'Sửa lời bài hát',
+  'Add lyrics': 'Thêm lời bài hát',
+  'Save into the file': 'Lưu vào tệp',
+  'A line starting with a time like [01:02.50] is synced to it.': 'Dòng bắt đầu bằng thời điểm như [01:02.50] sẽ được đồng bộ theo thời điểm đó.',
   // Hidden videos, music or not (features/library/HiddenVideos, edits markMusic, menus)
   '{songs} hidden: not music': 'Đã ẩn {songs}: không phải nhạc',
   '{songs} back with your music': '{songs} đã trở lại cùng nhạc của bạn',

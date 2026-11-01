@@ -1,11 +1,14 @@
-import { ArrowCounterClockwise, CaretLeft, CaretRight, MicrophoneStage, MusicNotesSimple, Queue, Timer } from '@phosphor-icons/react'
+import { ArrowCounterClockwise, CaretLeft, CaretRight, MicrophoneStage, MusicNotesSimple, PencilSimple, Queue, Timer } from '@phosphor-icons/react'
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 import { useSettings } from '../../app/settings'
 import { useStore } from '../../app/store'
 import { api, type Lyrics } from '../../shared/api'
+import { Button } from '../../shared/ui/Button'
 import { RoundButton } from '../../shared/ui/controls'
+import { Dialog } from '../../shared/ui/Dialog'
 import { songKey } from './effects'
-import { applyFix, fixesWith, fixFromTaps, fixLabel, lineAt, lineEnd, NO_FIX, withBreaks, wordTimes, type LyricsFix, type TimedWord } from './lyricsAt'
+import { applyFix, fixesWith, fixFromTaps, fixLabel, lineAt, lineEnd, NO_FIX, toLrc, withBreaks, wordTimes, type LyricsFix, type TimedWord } from './lyricsAt'
 import { toggleKaraoke } from './karaokeMode'
 import { positionNow, usePosition } from './Progress'
 import { useNowTrack, usePlayer } from './store'
@@ -171,6 +174,40 @@ export function useNowLyrics() {
   return { mine, key, durationMs, retry: () => setRetry((n) => n + 1) }
 }
 
+/** A local song's lyrics, edited as text and saved into its file: lines starting with a stamp keep their timing. */
+function LyricsEditor({ text: first, onSave, onClose }: { text: string; onSave: (text: string) => Promise<boolean>; onClose: () => void }) {
+  const [text, setText] = useState(first)
+  const [busy, setBusy] = useState(false)
+  const save = async () => {
+    setBusy(true)
+    if (await onSave(text)) onClose()
+    else setBusy(false)
+  }
+  return (
+    <Dialog title={tr('Edit lyrics')} wide onClose={onClose}>
+      <textarea
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        spellCheck={false}
+        rows={16}
+        maxLength={80_000}
+        className="min-h-60 resize-y rounded-md border border-line bg-bg px-3 py-2 font-mono text-xs leading-relaxed outline-none focus:border-ink-3"
+      />
+      <p className="text-[0.6875rem] text-ink-3">
+        {tr('A line starting with a time like [01:02.50] is synced to it.')} {tr('Written into the file: other players see it too. The sound stays as it is.')}
+      </p>
+      <div className="flex justify-end gap-2">
+        <Button variant="ghost" onClick={onClose}>
+          {tr('Cancel')}
+        </Button>
+        <Button data-default disabled={busy || !text.trim()} onClick={() => void save()}>
+          {tr('Save')}
+        </Button>
+      </div>
+    </Dialog>
+  )
+}
+
 /**
  * Now Playing › Lyrics, beside the cover (Spotify-like). LRCLIB first (synced when it can be, stretched for slowed /
  * sped up versions), YouTube Music's own when signed in (src-tauri lyrics), cached on disk. heading = what heads the
@@ -180,6 +217,10 @@ export function LyricsPanel({ onHide, onUpNext, className = CARD, heading }: { o
   const now = usePlayer((s) => s.now)
   const signedIn = useStore((s) => s.status.youtube.connected)
   const { mine, key, durationMs, retry } = useNowLyrics()
+  // Its local file playing: lyrics edited and saved into it. The song is kept with the editor: it may end meanwhile.
+  const track = useNowTrack()
+  const fileId = now?.via === 'local' && track ? track.id : null
+  const [editing, setEditing] = useState<{ id: number; song: string | null; text: string } | null>(null)
 
   // Timing fixed by hand for this song (Settings, synced with the other PCs).
   const song = songKey(now)
@@ -190,8 +231,23 @@ export function LyricsPanel({ onHide, onUpNext, className = CARD, heading }: { o
     setTuning(false)
     taps.current = []
   }, [key])
-  const saveFix = (f: LyricsFix | null) => {
-    if (song) useSettings.getState().update({ lyricsSync: fixesWith(useSettings.getState().settings.lyricsSync, song, f) })
+  const saveFix = (f: LyricsFix | null, of = song) => {
+    if (of) useSettings.getState().update({ lyricsSync: fixesWith(useSettings.getState().settings.lyricsSync, of, f) })
+  }
+  // What shows, as text: LRC with the fixed timing when synced.
+  const shown = (l: Lyrics) => (l.lines.length ? toLrc(applyFix(l.lines, fix)) : (l.plain ?? ''))
+  const intoFile = async (id: number, of: string | null, text: string) => {
+    try {
+      await api.writeLyrics(id, text)
+      // The timing is the file's now.
+      if (of && useSettings.getState().settings.lyricsSync[of]) saveFix(null, of)
+      useStore.getState().notify(tr('Saved in the file'), { kind: 'ok' })
+      retry()
+      return true
+    } catch (e) {
+      useStore.getState().notify(String(e), { kind: 'error' })
+      return false
+    }
   }
   const tap = (lyric: number) => {
     taps.current = [...taps.current, { lyric, song: positionNow() - REACTION_MS }]
@@ -203,6 +259,11 @@ export function LyricsPanel({ onHide, onUpNext, className = CARD, heading }: { o
     <aside aria-label={tr('Lyrics')} className={`flex min-h-0 flex-col gap-2 ${className}`}>
       <div className="flex items-center gap-2 px-1">
         <span className="flex min-w-0 flex-1 items-center text-[0.8125rem] font-semibold">{heading ?? tr('Lyrics')}</span>
+        {fileId !== null && l && (
+          <RoundButton label={tr('Edit lyrics')} kind="plain" size="sm" onClick={() => setEditing({ id: fileId, song, text: shown(l) })}>
+            <PencilSimple size={14} />
+          </RoundButton>
+        )}
         {!!l?.lines.length && song && (
           <RoundButton
             label={tr('Fix the timing')}
@@ -240,7 +301,14 @@ export function LyricsPanel({ onHide, onUpNext, className = CARD, heading }: { o
           </button>
         </div>
       ) : !l ? (
-        <p className="m-auto max-w-64 text-center text-sm text-ink-2">{signedIn ? tr('No lyrics found for this song (searched LRCLIB and YouTube Music).') : tr('No lyrics found for this song (searched LRCLIB).')}</p>
+        <div className="m-auto flex max-w-64 flex-col items-center gap-3 text-center text-sm text-ink-2">
+          {signedIn ? tr('No lyrics found for this song (searched LRCLIB and YouTube Music).') : tr('No lyrics found for this song (searched LRCLIB).')}
+          {fileId !== null && (
+            <button onClick={() => setEditing({ id: fileId, song, text: '' })} className="flex items-center gap-1.5 rounded-full border border-line px-3 py-1 font-medium text-ink hover:bg-raised">
+              <PencilSimple size={13} /> {tr('Add lyrics')}
+            </button>
+          )}
+        </div>
       ) : l.instrumental && !l.lines.length && !l.plain ? (
         <p className="m-auto text-lg font-semibold text-ink-2">♪ {tr('Instrumental')}</p>
       ) : l.lines.length ? (
@@ -248,7 +316,7 @@ export function LyricsPanel({ onHide, onUpNext, className = CARD, heading }: { o
           {tuning && (
             <div className="flex flex-col gap-2 rounded-xl border border-line bg-raised p-2.5 text-xs">
               <p className="text-ink-2">{tr('Click each line the moment you hear it start. Two lines far apart fix the speed too.')}</p>
-              <div className="flex items-center gap-1.5">
+              <div className="flex flex-wrap items-center gap-1.5">
                 <RoundButton label={tr('Lyrics earlier')} size="sm" onClick={() => saveFix({ ...fix, offset: fix.offset - NUDGE_MS })}>
                   <CaretLeft size={13} />
                 </RoundButton>
@@ -268,6 +336,11 @@ export function LyricsPanel({ onHide, onUpNext, className = CARD, heading }: { o
                 >
                   {tr('Reset')}
                 </button>
+                {fileId !== null && (fix.offset !== 0 || fix.rate !== 1) && (
+                  <button onClick={() => void intoFile(fileId, song, shown(l)).then((ok) => ok && setTuning(false))} className="rounded-full px-2.5 py-1 font-medium text-ink-2 hover:bg-panel hover:text-ink">
+                    {tr('Save into the file')}
+                  </button>
+                )}
                 <button onClick={() => setTuning(false)} className="rounded-full bg-ink px-3 py-1 font-semibold text-bg">
                   {tr('Done')}
                 </button>
@@ -289,6 +362,7 @@ export function LyricsPanel({ onHide, onUpNext, className = CARD, heading }: { o
           )}
         </p>
       )}
+      {editing && createPortal(<LyricsEditor text={editing.text} onSave={(text) => intoFile(editing.id, editing.song, text)} onClose={() => setEditing(null)} />, document.body)}
     </aside>
   )
 }

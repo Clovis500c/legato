@@ -117,6 +117,25 @@ export function fixesWith(all: Record<string, LyricsFix>, song: string, fix: Lyr
   return out
 }
 
+/** `mm:ss.xx`: an LRC stamp. */
+function lrcStamp(ms: number): string {
+  const cs = Math.round(Math.max(0, ms) / 10)
+  const two = (n: number) => String(n).padStart(2, '0')
+  return `${two(Math.floor(cs / 6000))}:${two(Math.floor(cs / 100) % 60)}.${two(cs % 100)}`
+}
+
+/** Timed lines → LRC text the app reads back the same: words as enhanced LRC's `<mm:ss.xx>` stamps, the last word's
+ * end as a closing one. What goes into a song's own file. */
+export function toLrc(lines: Timed[]): string {
+  return lines
+    .map((l) => {
+      if (!l.words?.length) return `[${lrcStamp(l.ms)}]${l.text}`
+      const end = l.words[l.words.length - 1].endMs
+      return `[${lrcStamp(l.ms)}]${l.words.map((w) => `<${lrcStamp(w.ms)}>${w.text}`).join('')}${end == null ? '' : `<${lrcStamp(end)}>`}`
+    })
+    .join('\n')
+}
+
 /** "+0.5 s", with "· ×0.95" when the speed is fixed too. */
 export function fixLabel(fix: LyricsFix): string {
   return `${fix.offset >= 0 ? '+' : '−'}${(Math.abs(fix.offset) / 1000).toFixed(1)} s${fix.rate !== 1 ? ` · ×${fix.rate.toFixed(2)}` : ''}`

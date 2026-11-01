@@ -197,6 +197,10 @@ const nl: Record<string, string> = {
   'Lyrics: {source}': 'Songtekst: {source}',
   'Not synced': 'Niet gesynchroniseerd',
   'Lyrics from the song’s own file': 'Songtekst uit het bestand van het nummer zelf',
+  'Edit lyrics': 'Songtekst bewerken',
+  'Add lyrics': 'Songtekst toevoegen',
+  'Save into the file': 'Opslaan in het bestand',
+  'A line starting with a time like [01:02.50] is synced to it.': 'Een regel die begint met een tijd zoals [01:02.50] loopt daarop synchroon.',
   // Hidden videos, music or not (features/library/HiddenVideos, edits markMusic, menus)
   '{songs} hidden: not music': '{songs} verborgen: geen muziek',
   '{songs} back with your music': '{songs} terug bij je muziek',

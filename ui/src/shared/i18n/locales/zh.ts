@@ -197,6 +197,10 @@ const zh: Record<string, string> = {
   'Lyrics: {source}': '歌词：{source}',
   'Not synced': '未同步',
   'Lyrics from the song’s own file': '歌曲文件自带的歌词',
+  'Edit lyrics': '编辑歌词',
+  'Add lyrics': '添加歌词',
+  'Save into the file': '保存到文件',
+  'A line starting with a time like [01:02.50] is synced to it.': '以 [01:02.50] 这样的时间开头的行会按该时间同步。',
   // Hidden videos, music or not (features/library/HiddenVideos, edits markMusic, menus)
   '{songs} hidden: not music': '已隐藏 {songs}：不是音乐',
   '{songs} back with your music': '{songs} 已回到你的音乐中',

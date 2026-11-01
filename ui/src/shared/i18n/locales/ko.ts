@@ -197,6 +197,10 @@ const ko: Record<string, string> = {
   'Lyrics: {source}': '가사: {source}',
   'Not synced': '동기화되지 않음',
   'Lyrics from the song’s own file': '곡 파일에 들어 있는 가사',
+  'Edit lyrics': '가사 편집',
+  'Add lyrics': '가사 추가',
+  'Save into the file': '파일에 저장',
+  'A line starting with a time like [01:02.50] is synced to it.': '[01:02.50]처럼 시간으로 시작하는 줄은 그 시간에 맞춰집니다.',
   // Hidden videos, music or not (features/library/HiddenVideos, edits markMusic, menus)
   '{songs} hidden: not music': '{songs} 숨김: 음악 아님',
   '{songs} back with your music': '{songs}이(가) 음악으로 돌아왔습니다',
