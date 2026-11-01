@@ -54,7 +54,7 @@ Done in this run (newest last), none tried in the real app yet:
 - `ac422e5` Word-by-word lyrics from LRCLIB's Lyricsfile or enhanced LRC, in the panel and Karaoke.
 - `89a48f4` A local song's own lyrics (its tags, or an .lrc beside it) first: nothing sent for it.
 - `ef9c2cc` Lyrics edited and saved into a local song's file (its .lrc or its tags), the fixed timing too.
-- Plain lyrics of a local song timed by tapping along, saved into its file.
+- `7b9a7b4` Plain lyrics of a local song timed by tapping along, saved into its file.
 
 Milestone 4 (Lyrics) is done but for translation and finding a song by a line: the owner's calls, notes in
 [plan-v2.md](plan-v2.md). Next in the run: milestone 5 (Your own music), its lines that need no account: ReplayGain,
