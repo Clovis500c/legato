@@ -155,7 +155,7 @@ jobs:
 
       - if: failure()
         shell: bash
-        run: echo '::error title=e2e failed::The smoke test failed: the e2e-failure artifact and this job log say why.'
+        run: echo '::error title=e2e failed::The smoke test failed. The e2e-failure artifact and this job log say why.'
 
   # Third-party licenses (docs/licenses.md): interface packages, then every Rust crate on every platform.
   licenses:
