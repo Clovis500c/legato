@@ -47,6 +47,8 @@ interface PlayerState {
   added: number[]
   /** What the queue was started from (the page it was played on), for Up next's "Then from …". */
   from?: string
+  /** The queue is a radio (radio.ts): endless, songs like the last few come as Up next runs out, autoplay on or off. */
+  radio: boolean
   shuffle: boolean
   repeat: Repeat
   /** Fades between songs and on pause (Settings › Player, Advanced). */
@@ -395,6 +397,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
   index: 0,
   order: [],
   added: [],
+  radio: false,
   shuffle: false,
   repeat: 'off',
   fade: NO_FADE,
@@ -417,7 +420,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
   playTracks(list, index, via) {
     const i = list.findIndex((t, j) => j >= index && vias(t, spotifyOn()).length > 0)
     if (i < 0) return
-    set({ list, order: playOrder(list.length, i, get().shuffle), added: [], from: contextName() })
+    set({ list, order: playOrder(list.length, i, get().shuffle), added: [], from: contextName(), radio: false })
     void get().playAt(i, i === index ? via : undefined)
   },
 

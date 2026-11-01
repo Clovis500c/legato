@@ -36,10 +36,11 @@ Done in this run (newest last), none tried in the real app yet:
   plainly.
 - `31f0b01` Files and folders dropped from Explorer: folders watched, files kept on their own, the notice's Play.
 - `5119311` Library backup and restore in one file (Settings › General).
-- No fade within an album (Settings › Playback, on by default): an album's songs played in a row never dip.
+- `821b5bf` No fade within an album (Settings › Playback, on by default): an album's songs played in a row never dip.
+- Start radio from an album, an artist, a playlist or a selection; every radio endless.
 
-Next in the run: the rest of Features › High's quick wins (artist / album radio, playlist folders and covers, command
-palette), then Optimisation and Workflow, then milestone 4 (Lyrics).
+Next in the run: the rest of Features › High's quick wins (playlist folders and covers, command palette, headphones
+unplugged), then Optimisation and Workflow, then milestone 4 (Lyrics).
 
 ## Branches
 

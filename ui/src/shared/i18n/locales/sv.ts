@@ -1418,6 +1418,7 @@ const sv: Record<string, string> = {
   '{n} duplicate': '{n} dubblett',
   '{n} duplicates': '{n} dubbletter',
   'Start radio': 'Starta radio',
+  '{name} radio': '{name} Radio',
   'No similar songs found': 'Inga liknande låtar hittades',
   'Sleep timer': 'Insomningstimer',
   'End of song': 'Slutet av låten',

@@ -1418,6 +1418,7 @@ const ko: Record<string, string> = {
   '{n} duplicate': '중복 {n}개',
   '{n} duplicates': '중복 {n}개',
   'Start radio': '라디오 시작',
+  '{name} radio': '{name} 라디오',
   'No similar songs found': '비슷한 곡을 찾지 못했습니다',
   'Sleep timer': '수면 타이머',
   'End of song': '곡이 끝나면',

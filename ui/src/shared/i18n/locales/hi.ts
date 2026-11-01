@@ -1418,6 +1418,7 @@ const hi: Record<string, string> = {
   '{n} duplicate': '{n} डुप्लिकेट',
   '{n} duplicates': '{n} डुप्लिकेट',
   'Start radio': 'रेडियो शुरू करें',
+  '{name} radio': '{name} रेडियो',
   'No similar songs found': 'कोई मिलता-जुलता गाना नहीं मिला',
   'Sleep timer': 'स्लीप टाइमर',
   'End of song': 'गाने के अंत में',

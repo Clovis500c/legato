@@ -73,7 +73,7 @@ import { isFull, viaLabel, vias } from './player/sources'
 import { bypass, deletePreset, deleteVersion, playVersion, reset, useEditor } from './editor/editor'
 import { loadPlugins, pluginCommands, runCommand } from './plugins/host'
 import { isRemote, nowTrack, remoteTrack, usePlayer } from './player/store'
-import { startRadio } from './player/radio'
+import { startRadio, startRadioFrom } from './player/radio'
 import { sleepMenu } from './player/sleep'
 import { closeKaraoke, nowFix, nudgeLyrics, toggleKaraoke } from './player/karaokeMode'
 import { canVizFull, toggleVizFull, useVizFull } from './player/vizFull'
@@ -494,6 +494,7 @@ export function tracksMenu(tracks: LibraryTrack[], extra: MenuEntry[] = []): Men
     { label: tr('Shuffle play'), icon: <Shuffle size={16} />, disabled: !playable, onSelect: () => shufflePlay(tracks) },
     { label: tr('Play next'), icon: <Queue size={16} />, disabled: !playable, onSelect: () => player().enqueue(tracks, true) },
     { label: tr('Add to queue'), icon: <ListPlus size={16} />, disabled: !playable, onSelect: () => player().enqueue(tracks, false) },
+    { label: tr('Start radio'), icon: <Radio size={16} />, disabled: !playable, onSelect: () => void startRadioFrom(tracks) },
     '-',
     addTo(() => tracks),
     ...extra,
@@ -512,6 +513,7 @@ export function playlistMenu(p: LibraryPlaylist): MenuEntry[] {
     { label: tr('Shuffle play'), icon: <Shuffle size={16} />, disabled: !p.trackCount, onSelect: () => tracks().then(shufflePlay, fail) },
     { label: tr('Play next'), icon: <Queue size={16} />, disabled: !p.trackCount, onSelect: () => tracks().then((t) => player().enqueue(t, true), fail) },
     { label: tr('Add to queue'), icon: <ListPlus size={16} />, disabled: !p.trackCount, onSelect: () => tracks().then((t) => player().enqueue(t, false), fail) },
+    { label: tr('Start radio'), icon: <Radio size={16} />, disabled: !p.trackCount, onSelect: () => tracks().then((t) => startRadioFrom(t, p.name), fail) },
     '-',
     { label: tr('Open'), icon: <Playlist size={16} />, onSelect: () => go({ name: 'playlist', id: p.id }) },
     { label: tr('Find duplicates'), icon: <CopySimple size={16} />, disabled: p.trackCount < 2, onSelect: () => tracks().then((t) => findDuplicates({ name: p.name, ids: t.map((x) => x.id), playlistId: p.id }), fail) },

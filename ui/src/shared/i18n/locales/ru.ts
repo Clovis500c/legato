@@ -1418,6 +1418,7 @@ const ru: Record<string, string> = {
   '{n} duplicate': '{n} дубликат',
   '{n} duplicates': 'Дубликатов: {n}',
   'Start radio': 'Включить радио',
+  '{name} radio': 'Радио {name}',
   'No similar songs found': 'Похожие песни не найдены',
   'Sleep timer': 'Таймер сна',
   'End of song': 'Конец песни',

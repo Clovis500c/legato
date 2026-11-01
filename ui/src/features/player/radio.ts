@@ -2,6 +2,7 @@ import { useStore } from '../../app/store'
 import { api, type LibraryTrack } from '../../shared/api'
 import { tr } from '../../shared/i18n/i18n'
 import { songsThatFit } from '../library/fit'
+import { radioName, radioQueue, radioSeeds, shuffled } from './radioMix'
 import { remoteTrack, usePlayer } from './store'
 
 const keyOf = (t: LibraryTrack) => t.ids.youtube ?? `#${t.id}`
@@ -27,9 +28,29 @@ export async function similarTo(seed: LibraryTrack[], skip: Set<string>, max: nu
     .slice(0, max)
 }
 
+/** The radio plays, endless (autoplay.ts goes on with songs like the last few, whatever the setting). */
+function playRadio(list: LibraryTrack[], name: string | undefined) {
+  usePlayer.getState().playTracks(list, 0)
+  if (usePlayer.getState().list === list) usePlayer.setState({ radio: true, from: name ? tr('{name} radio', { name }) : tr('Radio') })
+}
+
 /** Right-click › Start radio: the song, then songs like it. */
 export async function startRadio(t: LibraryTrack) {
   const more = await similarTo([t], new Set([keyOf(t)]), 30)
   if (!more.length) return useStore.getState().notify(tr('No similar songs found'))
-  usePlayer.getState().playTracks([t, ...more], 0)
+  playRadio([t, ...more], t.title)
+}
+
+/**
+ * Radio from a set of songs (an album, an artist, a playlist, a selection): its most played song, then songs like its
+ * most played ones, with its own songs mixed in, one in three.
+ */
+export async function startRadioFrom(songs: LibraryTrack[], name = radioName(songs)) {
+  const { stats, notify } = useStore.getState()
+  const seeds = radioSeeds(songs, (t) => stats[t.id]?.[0] ?? 0)
+  const lead = seeds.at(-1)
+  if (!lead) return
+  const more = await similarTo(seeds, new Set(songs.map(keyOf)), 30)
+  if (!more.length) return notify(tr('No similar songs found'))
+  playRadio(radioQueue(lead, more, shuffled(songs.filter((t) => t !== lead))), name)
 }

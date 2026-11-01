@@ -1418,6 +1418,7 @@ const nl: Record<string, string> = {
   '{n} duplicate': '{n} dubbel nummer',
   '{n} duplicates': '{n} dubbele nummers',
   'Start radio': 'Radio starten',
+  '{name} radio': '{name} Radio',
   'No similar songs found': 'Geen vergelijkbare nummers gevonden',
   'Sleep timer': 'Slaaptimer',
   'End of song': 'Einde van nummer',

@@ -19,8 +19,8 @@ import { SourceIcon, sourceLabel } from '../../shared/ui/SourceIcon'
 import { PageBoundary } from '../../app/PageBoundary'
 import { YouTubeShelf } from '../../app/pages'
 import { trackMenu, tracksMenu } from '../menus'
-import { useMixes } from '../mixes/useMixes'
 import { toggleLike, useLikedIds } from '../player/like'
+import { startRadioFrom } from '../player/radio'
 import { remoteTrack, usePlayer } from '../player/store'
 import { vias } from '../player/sources'
 import { AddToPlaylist } from './AddToPlaylist'
@@ -290,27 +290,6 @@ export function AlbumView({ album, artist }: { album: string; artist: string }) 
   )
 }
 
-/** YouTube Music's radio from the artist's most played song (signed in), else the artist mixed with your mixes. */
-async function startRadio(songs: LibraryTrack[], mixes: { trackIds: number[] }[] | undefined, all: LibraryTrack[]) {
-  const { status, notify } = useStore.getState()
-  const play = usePlayer.getState().playTracks
-  const seed = songs.find((t) => t.ids.youtube)
-  if (status.youtube.connected && seed) {
-    const video = seed.ids.youtube!
-    try {
-      const radio = (await api.ytmList({ type: 'radio', videoId: video, playlistId: `RDAMVM${video}` })).map(remoteTrack)
-      if (radio.length) return play(radio, 0)
-    } catch (e) {
-      notify(String(e), { kind: 'error' })
-    }
-  }
-  const mine = new Set(songs.map((t) => t.id))
-  const byId = new Map(all.map((t) => [t.id, t]))
-  const near = (mixes ?? []).filter((m) => m.trackIds.some((id) => mine.has(id))).flatMap((m) => m.trackIds.flatMap((id) => (mine.has(id) ? [] : (byId.get(id) ?? []))))
-  const mixed = [...songs, ...new Map(near.map((t) => [t.id, t])).values()].sort(() => Math.random() - 0.5)
-  if (mixed.length) play(mixed, 0)
-}
-
 /** The artist's YouTube Music page (public, signed in or not). undefined = loading, null = none there. */
 function useYtmArtist(artist: string) {
   const [page, setPage] = useState<YtmArtist | null>()
@@ -332,7 +311,6 @@ function useYtmArtist(artist: string) {
  */
 export function ArtistView({ artist }: { artist: string }) {
   const { tracks, stats } = useStore(useShallow(({ tracks, stats }) => ({ tracks, stats })))
-  const { mixes } = useMixes()
   // Every song: yours, or YouTube Music's (its list, loaded on demand).
   const [all, setAll] = useState<'mine' | 'youtube' | null>(null)
   const [everySong, setEverySong] = useState<LibraryTrack[] | null>(null)
@@ -367,7 +345,7 @@ export function ArtistView({ artist }: { artist: string }) {
         <>
           <PlayAll tracks={playable} />
           <ShuffleRound tracks={playable} />
-          <Button variant="ghost" onClick={() => void startRadio(top.length ? top : playable, mixes, tracks)}>
+          <Button variant="ghost" onClick={() => void startRadioFrom(playable, artistName(artist))}>
             <Radio size={16} /> {tr('Radio')}
           </Button>
           <RoundButton label={tr('More')} kind="plain" onClick={(e) => openMenu(e, tracksMenu(playable))}>

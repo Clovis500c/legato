@@ -173,7 +173,11 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       them), plays on with no fade out, overlap or fade in (`songFade` in the store; the local engine's gapless move
       too). No track numbers kept: the list's order stands for the album's, a compilation still fades. Detecting a
       continuous boundary from the sound (any album) is not done.
-- [ ] `S` Artist / album / playlist radio and endless autoplay (song radio already there: `radio.ts`).
+- [x] `S` Artist / album / playlist radio and endless autoplay: Start radio on any set of songs (an album's, an artist's
+      or a selection's menu, a playlist's menu, the artist page's Radio). Its most played song first, then YouTube Music's
+      radio of it (signed in) or library songs that fit, its own songs one in three (`radio.ts` `startRadioFrom`, pure
+      parts `radioMix.ts`). A radio is endless: songs like the last few come as Up next runs out, autoplay setting on or
+      off (`radio` in the player store). Up next says "Then from Animals radio".
 - [ ] `S` Playlist folders, pinned playlists, generated playlist covers (a 2×2 of the songs' covers).
 - [x] `S` Backup / restore the whole library to one file (playlists, likes, edits, stats), outside Sync Mode: Settings ›
       General › Library backup. A `.legato` file is the library's consistent copy (`VACUUM INTO`, its own read
@@ -377,6 +381,8 @@ Most useful first; the tag is the effort.
       as saved, `library-before-restore.db` beside the library.
 - [ ] A folder and a few songs dropped from Explorer: the folder in Settings › Accounts › Local files, the songs in the
       library after a restart, the notice's Play; songs already there play at once; a QR picture still opens a shared list.
+- [ ] Start radio from an album, a playlist and the artist page, signed in to YouTube and signed out: its own songs one
+      in three, Up next naming the radio, more songs coming at its end with autoplay off.
 - [ ] An album played from its first song with a fade set: no dip between its songs (YouTube Music album and local
       files), a playlist of singles still fades, the sleep timer's last song still fades out.
 - [ ] "No sound could be taken" gone from the second YouTube video on (fix 51946d5).

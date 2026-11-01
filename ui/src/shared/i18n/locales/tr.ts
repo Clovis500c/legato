@@ -1418,6 +1418,7 @@ const tr: Record<string, string> = {
   '{n} duplicate': '{n} yinelenen',
   '{n} duplicates': '{n} yinelenen',
   'Start radio': 'Radyo başlat',
+  '{name} radio': '{name} Radyosu',
   'No similar songs found': 'Benzer şarkı bulunamadı',
   'Sleep timer': 'Uyku zamanlayıcısı',
   'End of song': 'Şarkının sonu',

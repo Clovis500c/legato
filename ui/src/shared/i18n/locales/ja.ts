@@ -1418,6 +1418,7 @@ const ja: Record<string, string> = {
   '{n} duplicate': '{n}件の重複',
   '{n} duplicates': '{n}件の重複',
   'Start radio': 'ラジオを開始',
+  '{name} radio': '{name} ラジオ',
   'No similar songs found': '似た曲は見つかりませんでした',
   'Sleep timer': 'スリープタイマー',
   'End of song': '曲の終わり',

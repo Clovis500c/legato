@@ -1418,6 +1418,7 @@ const vi: Record<string, string> = {
   '{n} duplicate': '{n} bài trùng lặp',
   '{n} duplicates': '{n} bài trùng lặp',
   'Start radio': 'Bắt đầu radio',
+  '{name} radio': 'Radio {name}',
   'No similar songs found': 'Không tìm thấy bài tương tự',
   'Sleep timer': 'Hẹn giờ tắt',
   'End of song': 'Hết bài',
