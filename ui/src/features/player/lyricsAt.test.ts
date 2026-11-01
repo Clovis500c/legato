@@ -48,6 +48,16 @@ describe('karaoke fill', () => {
       { word: 'bb', t0: 3000, t1: 5000 },
     ])
   })
+  it('fills each word at its own time when the source times them', () => {
+    const timed = [{ ms: 1000, text: 'Hello ' }, { ms: 1600, text: 'world', endMs: 2200 }]
+    expect(wordTimes('Hello world', 1000, 4000, timed)).toEqual([
+      { word: 'Hello ', t0: 1000, t1: 1600 },
+      { word: 'world', t0: 1600, t1: 2200 },
+    ])
+    // The last word with no end of its own: until the line's.
+    expect(wordTimes('Hi', 0, 900, [{ ms: 100, text: 'Hi' }])).toEqual([{ word: 'Hi', t0: 100, t1: 900 }])
+    expect(wordTimes('aa', 0, 900, [])).toEqual([{ word: 'aa', t0: 0, t1: 900 }])
+  })
   it('a line ends where the next starts, or after a guess from its length', () => {
     const lines = [{ ms: 0, text: 'short' }, { ms: 2000, text: 'x'.repeat(50) }]
     expect(lineEnd(lines, 0, null)).toBe(2000)
@@ -76,6 +86,8 @@ describe('timing fixed by hand', () => {
     const lines = [{ ms: 1000, text: 'a', endMs: 2000 }, { ms: 3000, text: 'b' }]
     expect(applyFix(lines, { offset: -1500, rate: 1 })).toEqual([{ ms: 0, text: 'a', endMs: 500 }, { ms: 1500, text: 'b', endMs: undefined }])
     expect(applyFix(lines, NO_FIX)).toBe(lines)
+    const worded = [{ ms: 1000, text: 'a b', words: [{ ms: 1000, text: 'a ' }, { ms: 1500, text: 'b', endMs: 1800 }] }]
+    expect(applyFix(worded, { offset: 500, rate: 2 })[0].words).toEqual([{ ms: 2500, text: 'a ', endMs: undefined }, { ms: 3500, text: 'b', endMs: 4100 }])
   })
   it('a line ends at its own end when the source gives one', () => {
     const lines = [{ ms: 0, text: 'a', endMs: 1200 }, { ms: 6000, text: 'b' }]

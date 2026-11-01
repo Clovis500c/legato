@@ -1,6 +1,7 @@
 //! Lyrics: LRC parsing, YouTube titles cleaned for lookup, best record picked, timings fitted to the version playing.
 //! "Slowed", "sped up", nightcore… are the same recording at another speed: synced lines are stretched by the ratio of
-//! the durations instead of being dropped.
+//! the durations instead of being dropped. Word timings when the source has them: enhanced LRC's `<mm:ss.xx>` stamps,
+//! LRCLIB's Lyricsfile (YAML, https://lrclib.net/lyricsfile).
 
 use serde::{Deserialize, Serialize};
 
@@ -14,6 +15,29 @@ pub struct Line {
     /// When the line ends, when the source says (YouTube Music); LRC gives starts only.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub end_ms: Option<u32>,
+    /// Its words with their times, when the source has them: each filled as it is sung.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub words: Option<Vec<Word>>,
+}
+
+/// One timed word (or part of one) of a line: its text with the spaces around it, when it starts.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ts_rs::TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, rename = "LyricWord")]
+pub struct Word {
+    pub ms: u32,
+    pub text: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub end_ms: Option<u32>,
+}
+
+impl Line {
+    /// Every time × `k` (a slowed or sped-up version playing).
+    fn stretched(self, k: f32) -> Line {
+        let at = |ms: u32| (ms as f32 * k).round() as u32;
+        let words = self.words.map(|ws| ws.into_iter().map(|w| Word { ms: at(w.ms), end_ms: w.end_ms.map(at), ..w }).collect());
+        Line { ms: at(self.ms), end_ms: self.end_ms.map(at), words, ..self }
+    }
 }
 
 /// What Now Playing shows.
@@ -38,9 +62,13 @@ pub struct Record {
     pub instrumental: bool,
     pub plain: Option<String>,
     pub synced: Option<String>,
+    /// A Lyricsfile with word timings (LRCLIB's, kept only when it says it has them).
+    pub lyricsfile: Option<String>,
 }
 
 /// `[mm:ss.xx] text` lines, several stamps per line allowed, `[offset:±ms]` applied, tags skipped. Sorted by time.
+/// Enhanced LRC's `<mm:ss.xx>` word stamps become the line's words (a line sung at several stamps keeps its text only:
+/// word stamps are absolute).
 pub fn parse_lrc(text: &str) -> Vec<Line> {
     let mut offset: i64 = 0;
     let mut out = Vec::new();
@@ -57,13 +85,103 @@ pub fn parse_lrc(text: &str) -> Vec<Line> {
                 stamps.push(ms);
             }
         }
+        // LRC offset: positive = lyrics come sooner.
+        let at = |ms: u32| (ms as i64 - offset).max(0) as u32;
+        let words = stamps.first().and_then(|&s| lrc_words(rest, s));
+        let text = match &words {
+            Some(ws) => ws.iter().map(|w| w.text.as_str()).collect::<String>().split_whitespace().collect::<Vec<_>>().join(" "),
+            None => rest.trim().to_string(),
+        };
+        let words = words.filter(|_| stamps.len() == 1).map(|ws| ws.into_iter().map(|w| Word { ms: at(w.ms), end_ms: w.end_ms.map(at), ..w }).collect::<Vec<_>>());
         for ms in stamps {
-            // LRC offset: positive = lyrics come sooner.
-            out.push(Line { ms: (ms as i64 - offset).max(0) as u32, text: rest.trim().to_string(), end_ms: None });
+            out.push(Line { ms: at(ms), text: text.clone(), end_ms: None, words: words.clone() });
         }
     }
     out.sort_by_key(|l| l.ms);
     out
+}
+
+/// A line's `<mm:ss.xx>` word stamps: each word from its stamp, the text before the first one from the line's `start`,
+/// a stamp after the last word its end. None = no word stamp (`<` in plain text stays text).
+fn lrc_words(rest: &str, start: u32) -> Option<Vec<Word>> {
+    let mut words: Vec<Word> = Vec::new();
+    let (mut from, mut at, mut seen) = (0, start, false);
+    let mut i = 0;
+    while let Some(open) = rest[i..].find('<').map(|o| o + i) {
+        let Some(close) = rest[open..].find('>').map(|c| c + open) else { break };
+        let Some(ms) = stamp(&rest[open + 1..close]) else {
+            i = open + 1;
+            continue;
+        };
+        let piece = &rest[from..open];
+        if !piece.trim().is_empty() {
+            words.push(Word { ms: at, text: piece.to_string(), end_ms: None });
+        }
+        (from, at, seen, i) = (close + 1, ms, true, close + 1);
+    }
+    if !seen {
+        return None;
+    }
+    let tail = &rest[from..];
+    if !tail.trim().is_empty() {
+        words.push(Word { ms: at, text: tail.to_string(), end_ms: None });
+    } else if let Some(last) = words.last_mut() {
+        last.end_ms = Some(at).filter(|&e| e >= last.ms);
+    }
+    (!words.is_empty()).then_some(words)
+}
+
+/// Most a Lyricsfile may weigh here: a long song's word-synced file is ~100 kB.
+const LYRICSFILE_MAX: usize = 512 * 1024;
+
+/// Lyricsfile 1.0, the parts read (unknown fields such as `metadata` and `plain` skipped).
+#[derive(Deserialize)]
+struct LyricsFile {
+    version: String,
+    #[serde(default)]
+    lines: Vec<FileLine>,
+}
+
+#[derive(Deserialize)]
+struct FileLine {
+    // Missing: from the words, or an instrumental gap.
+    #[serde(default)]
+    text: String,
+    start_ms: u32,
+    end_ms: Option<u32>,
+    #[serde(default)]
+    words: Vec<FileWord>,
+}
+
+#[derive(Deserialize)]
+struct FileWord {
+    text: String,
+    start_ms: u32,
+    end_ms: Option<u32>,
+}
+
+/// Synced lines of a Lyricsfile (draft 1.0, CC0), words kept. None = another version (the draft says not to guess),
+/// malformed, over `LYRICSFILE_MAX`, or no line. Sorted by start; overlapping lines stay (the format allows them).
+pub fn parse_lyricsfile(doc: &str) -> Option<Vec<Line>> {
+    if doc.len() > LYRICSFILE_MAX {
+        return None;
+    }
+    let file: LyricsFile = serde_saphyr::from_str(doc).ok()?;
+    if file.version != "1.0" {
+        return None;
+    }
+    let mut lines: Vec<Line> = file
+        .lines
+        .into_iter()
+        .map(|l| {
+            let mut words: Vec<Word> = l.words.into_iter().map(|w| Word { end_ms: w.end_ms.filter(|&e| e >= w.start_ms), ms: w.start_ms, text: w.text }).collect();
+            words.sort_by_key(|w| w.ms);
+            let text = if l.text.trim().is_empty() { words.iter().map(|w| w.text.as_str()).collect::<String>() } else { l.text };
+            Line { ms: l.start_ms, text: text.trim().to_string(), end_ms: l.end_ms.filter(|&e| e >= l.start_ms), words: (!words.is_empty()).then_some(words) }
+        })
+        .collect();
+    lines.sort_by_key(|l| l.ms);
+    (!lines.is_empty()).then_some(lines)
 }
 
 /// `mm:ss`, `mm:ss.x`, `mm:ss.xx`, `mm:ss.xxx` → ms.
@@ -202,28 +320,30 @@ pub fn stretch(record_s: Option<f32>, playing_s: Option<f32>, speed: bool) -> Op
     }
 }
 
-/// Best of several records: usable synced lyrics first, then the closest duration, then plain lyrics.
+/// Best of several records: usable synced lyrics first, word-synced ones before the rest, then the closest duration,
+/// then plain lyrics.
 pub fn pick(records: Vec<Record>, playing_s: Option<f32>, speed: bool) -> Option<(Record, Option<f32>)> {
     let score = |r: &Record| {
         let fit = stretch(r.duration_s, playing_s, speed);
-        let synced = r.synced.as_deref().is_some_and(|s| !s.trim().is_empty());
+        let worded = r.lyricsfile.as_deref().and_then(parse_lyricsfile).is_some();
+        let synced = worded || r.synced.as_deref().is_some_and(|s| !s.trim().is_empty());
         let gap = match (r.duration_s, playing_s) {
             (Some(a), Some(b)) => (a - b).abs(),
             _ => 0.0,
         };
         // Lower is better.
-        (!(synced && fit.is_some()), r.plain.is_none() && !r.instrumental, (gap * 10.0) as u32)
+        (!(synced && fit.is_some()), !worded, r.plain.is_none() && !r.instrumental, (gap * 10.0) as u32)
     };
     let best = records.into_iter().min_by_key(score)?;
     let fit = stretch(best.duration_s, playing_s, speed);
     Some((best, fit))
 }
 
-/// Record → what Now Playing shows.
+/// Record → what Now Playing shows. A Lyricsfile's word timings before the LRC's lines.
 pub fn build(record: Record, fit: Option<f32>, source: &str) -> Lyrics {
-    let lines = match (record.synced.as_deref(), fit) {
-        (Some(s), Some(k)) => parse_lrc(s).into_iter().map(|l| Line { ms: (l.ms as f32 * k).round() as u32, ..l }).collect(),
-        _ => Vec::new(),
+    let lines = match fit {
+        Some(k) => record.lyricsfile.as_deref().and_then(parse_lyricsfile).or_else(|| record.synced.as_deref().map(parse_lrc)).unwrap_or_default().into_iter().map(|l| l.stretched(k)).collect(),
+        None => Vec::new(),
     };
     let plain = record.plain.filter(|p| !p.trim().is_empty()).or_else(|| (!lines.is_empty()).then(|| lines.iter().map(|l| l.text.as_str()).collect::<Vec<_>>().join("\n")));
     Lyrics { lines, plain, instrumental: record.instrumental, source: source.to_string() }
@@ -252,7 +372,8 @@ pub fn key(artist: &str, title: &str, duration_ms: Option<u32>) -> String {
     // v2 (2026-10-22): slowed versions cached before stretching covered them come again. v3: plain-only results
     // asked again (looser durations, lead artist).
     // v4 (2026-10-24): YouTube Music's timed lyrics (line ends too) come first when signed in.
-    format!("v4|{}|{}|{}", norm(artist), norm(title), duration_ms.map(|d| d / 1000).unwrap_or(0))
+    // v5 (2026-11-01): word timings from LRCLIB's Lyricsfile.
+    format!("v5|{}|{}|{}", norm(artist), norm(title), duration_ms.map(|d| d / 1000).unwrap_or(0))
 }
 
 #[cfg(test)]
@@ -262,7 +383,7 @@ mod tests {
     fn plain_lyrics_asked_again_after_a_day() {
         let plain = Lyrics { lines: Vec::new(), plain: Some("la".into()), instrumental: false, source: "YouTube Music".into() };
         assert!(keep_cached(&plain, 3600) && !keep_cached(&plain, 2 * 86_400));
-        let synced = Lyrics { lines: vec![Line { ms: 0, text: "la".into(), end_ms: None }], ..plain };
+        let synced = Lyrics { lines: vec![Line { ms: 0, text: "la".into(), end_ms: None, words: None }], ..plain };
         assert!(keep_cached(&synced, 365 * 86_400));
     }
 
@@ -286,12 +407,64 @@ mod tests {
         let lrc = "[ar:Someone]\n[offset:+500]\n[00:12.34]First\n[01:02.5][02:00.00]Chorus\n[00:20.123]\n[bad]Nope\n";
         let l = parse_lrc(lrc);
         assert_eq!(l, vec![
-            Line { ms: 11_840, text: "First".into(), end_ms: None },
-            Line { ms: 19_623, text: "".into(), end_ms: None },
-            Line { ms: 62_000, text: "Chorus".into(), end_ms: None },
-            Line { ms: 119_500, text: "Chorus".into(), end_ms: None },
+            Line { ms: 11_840, text: "First".into(), end_ms: None, words: None },
+            Line { ms: 19_623, text: "".into(), end_ms: None, words: None },
+            Line { ms: 62_000, text: "Chorus".into(), end_ms: None, words: None },
+            Line { ms: 119_500, text: "Chorus".into(), end_ms: None, words: None },
         ]);
         assert!(parse_lrc("no stamps here").is_empty());
+    }
+
+    fn w(ms: u32, text: &str, end_ms: Option<u32>) -> Word {
+        Word { ms, text: text.into(), end_ms }
+    }
+
+    #[test]
+    fn reads_enhanced_lrc_word_stamps() {
+        let l = parse_lrc("[offset:+100]\n[00:12.00]<00:12.00>Hello <00:12.50>world<00:13.10>\n[00:20.00]Oh <00:20.60>yeah\n[00:30.00]I <3 you\n[00:40.00][00:50.00]<00:40.00>Twice <00:40.50>sung");
+        assert_eq!(l[0].text, "Hello world");
+        assert_eq!(l[0].words, Some(vec![w(11_900, "Hello ", None), w(12_400, "world", Some(13_000))]));
+        // Before the first stamp: from the line's start.
+        assert_eq!(l[1].words, Some(vec![w(19_900, "Oh ", None), w(20_500, "yeah", None)]));
+        // Not a stamp: text.
+        assert_eq!((l[2].text.as_str(), &l[2].words), ("I <3 you", &None));
+        // Sung at two stamps: absolute word times would be wrong for one of them.
+        assert_eq!((l[3].text.as_str(), &l[3].words, l[4].text.as_str()), ("Twice sung", &None, "Twice sung"));
+    }
+
+    const STILL_ALIVE: &str = "version: \"1.0\"\nmetadata:\n  title: Still Alive\n  duration_ms: 176457\nlines:\n  - text: This was a triumph.\n    words:\n      - text: \"This \"\n        start_ms: 290\n      - text: \"was \"\n        start_ms: 536\n      - text: triumph.\n        start_ms: 923\n        end_ms: 3000\n    start_ms: 290\n    end_ms: 3840\n  - text: 'Overlapping, no words'\n    start_ms: 3000\nplain: |\n  This was a triumph.\n";
+
+    #[test]
+    fn reads_a_lyricsfile_with_its_words() {
+        let lines = parse_lyricsfile(STILL_ALIVE).unwrap();
+        assert_eq!(lines.len(), 2);
+        assert_eq!((lines[0].ms, lines[0].end_ms, lines[0].text.as_str()), (290, Some(3840), "This was a triumph."));
+        assert_eq!(lines[0].words, Some(vec![w(290, "This ", None), w(536, "was ", None), w(923, "triumph.", Some(3000))]));
+        assert_eq!((lines[1].ms, lines[1].end_ms, &lines[1].words), (3000, None, &None));
+        // The version unquoted (a YAML number) reads the same.
+        assert_eq!(parse_lyricsfile(&STILL_ALIVE.replace("\"1.0\"", "1.0")), Some(lines));
+        // Another version, broken YAML, no lines, too big: not read.
+        assert!(parse_lyricsfile(&STILL_ALIVE.replace("\"1.0\"", "\"2.0\"")).is_none());
+        assert!(parse_lyricsfile("version: '1.0'\nlines: [").is_none());
+        assert!(parse_lyricsfile("version: '1.0'\nplain: la").is_none());
+        assert!(parse_lyricsfile(&format!("{STILL_ALIVE}#{}", "x".repeat(LYRICSFILE_MAX))).is_none());
+        // An alias storm stops at the parser's limits instead of filling the memory.
+        let mut storm = String::from("version: '1.0'\na: &a [x, x, x, x, x, x, x, x, x, x]\n");
+        for i in 1..12 {
+            storm.push_str(&format!("a{i}: &a{i} [*a{p}, *a{p}, *a{p}, *a{p}, *a{p}, *a{p}, *a{p}, *a{p}, *a{p}, *a{p}]\n", p = if i == 1 { String::new() } else { (i - 1).to_string() }));
+        }
+        assert!(parse_lyricsfile(&storm).is_none());
+    }
+
+    #[test]
+    fn a_lyricsfile_wins_and_stretches_with_its_words() {
+        let rec = Record { synced: Some("[00:00.29]This was a triumph.".into()), lyricsfile: Some(STILL_ALIVE.into()), ..Default::default() };
+        let l = build(rec.clone(), Some(2.0), "LRCLIB");
+        assert_eq!((l.lines[0].ms, l.lines[0].end_ms), (580, Some(7680)));
+        assert_eq!(l.lines[0].words.as_ref().unwrap()[2], w(1846, "triumph.", Some(6000)));
+        // A Lyricsfile that can't be read: the LRC.
+        let l = build(Record { lyricsfile: Some("version: '9'".into()), ..rec }, Some(1.0), "LRCLIB");
+        assert_eq!((l.lines.len(), &l.lines[0].words), (1, &None));
     }
 
     #[test]
@@ -358,6 +531,6 @@ mod tests {
         // Synced beats plain-only at the same fit.
         let plain_only = Record { synced: None, ..rec(200.0, false) };
         assert!(pick(vec![plain_only, rec(201.0, true)], Some(200.0), false).unwrap().0.synced.is_some());
-        assert_eq!(key("Daft  Punk", "One More Time", Some(320_500)), "v4|daft punk|one more time|320");
+        assert_eq!(key("Daft  Punk", "One More Time", Some(320_500)), "v5|daft punk|one more time|320");
     }
 }

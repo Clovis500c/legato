@@ -20,6 +20,8 @@ qrcode = { version = "0.14.1", default-features = false }
 rqrr = { version = "0.11.0", default-features = false }
 # WebP and GIF: read for cover thumbnails (YouTube's vi_webp frames, Apple and Google art), never written.
 image = { version = "0.25.10", default-features = false, features = ["png", "jpeg", "webp", "gif"] }
+# LRCLIB's Lyricsfile (YAML, word timings): reading only, panic-free, with limits for untrusted input.
+serde-saphyr = { version = "2.0.0", default-features = false, features = ["deserialize"] }
 argon2 = "0.6.0"
 chacha20poly1305 = "0.11.0"
 rand = "0.10.3"

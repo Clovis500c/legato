@@ -209,8 +209,14 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       notifications (every session's) → `audio-call`; `unplug.ts` pauses (with the pause fade) and plays on when the
       call ends, unless the music was played or changed meanwhile. Off by default: Windows already lowers it.
 - [ ] `S-M` Same loudness across sources: YouTube vs local vs Spotify levelled by the Adaptive Sound meter.
-- [ ] `M` Word-by-word lyrics when the source has them (enhanced LRC), background vocals apart, Apple-style animated lines
-      (Cider, Spicetify's Beautiful Lyrics).
+- [x] `M` Word-by-word lyrics when the source has them (enhanced LRC), background vocals apart, Apple-style animated lines
+      (Cider, Spicetify's Beautiful Lyrics). Word times from LRCLIB's Lyricsfile (YAML, read with `serde-saphyr` and
+      its limits, kept only when the record says `hasWordSync`) or an LRC's `<mm:ss.xx>` stamps (`music_core::lyrics`);
+      a word-synced record wins over a closer length; the panel and Karaoke fill each word at its own time (the
+      line's time shared by length otherwise, as before). Stretched for slowed versions, moved by the tapped fix.
+      Signed in to YouTube Music, its timed lines still come first (no words, but LRCLIB isn't asked then).
+      Background vocals apart: not done, the Lyricsfile has no role for them (its overlapping lines play one after
+      the other). Unseen: a real word-synced song (LRCLIB was overloaded when checked; few records have words).
 - [ ] `M` ReplayGain / loudness normalisation for local files (reads the tags, or measures once and stores it).
 - [ ] `M` Phone remote: a page served on the LAN (QR code) to pause, skip, see the queue (Plexamp-like).
 - [ ] `M` Accessibility pass: full keyboard, screen reader labels, contrast AA everywhere, reduced motion.

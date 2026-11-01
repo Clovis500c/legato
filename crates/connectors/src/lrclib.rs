@@ -20,11 +20,17 @@ struct Found {
     instrumental: bool,
     plain_lyrics: Option<String>,
     synced_lyrics: Option<String>,
+    /// `lines[].words` in its Lyricsfile (docs 2026-11-01: every record has a Lyricsfile, few have words).
+    #[serde(default)]
+    has_word_sync: bool,
+    lyricsfile: Option<String>,
 }
 
 impl From<Found> for Record {
     fn from(f: Found) -> Self {
-        Record { title: f.track_name.unwrap_or_default(), artist: f.artist_name.unwrap_or_default(), duration_s: f.duration, instrumental: f.instrumental, plain: f.plain_lyrics, synced: f.synced_lyrics }
+        // Without words its lines are the LRC's: not kept.
+        let lyricsfile = f.lyricsfile.filter(|_| f.has_word_sync);
+        Record { title: f.track_name.unwrap_or_default(), artist: f.artist_name.unwrap_or_default(), duration_s: f.duration, instrumental: f.instrumental, plain: f.plain_lyrics, synced: f.synced_lyrics, lyricsfile }
     }
 }
 
@@ -86,6 +92,14 @@ mod tests {
     use mockito::Matcher;
 
     const ONE: &str = r#"{"id":1,"name":"I Want to Live","trackName":"I Want to Live","artistName":"Borislav Slavov","albumName":"BG3","duration":233,"instrumental":false,"hasWordSync":false,"plainLyrics":"a\nb","syncedLyrics":"[00:01.00]a\n[00:02.00]b","lyricsfile":"x"}"#;
+
+    #[test]
+    fn keeps_the_lyricsfile_only_when_it_has_words() {
+        let words: Found = serde_json::from_str(&ONE.replace("\"hasWordSync\":false", "\"hasWordSync\":true")).unwrap();
+        assert_eq!(Record::from(words).lyricsfile.as_deref(), Some("x"));
+        let lines: Found = serde_json::from_str(ONE).unwrap();
+        assert_eq!(Record::from(lines).lyricsfile, None);
+    }
 
     #[tokio::test]
     async fn get_names_the_app_and_reads_the_record() {

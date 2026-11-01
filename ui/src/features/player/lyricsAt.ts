@@ -19,8 +19,11 @@ export function peekLine(lines: { ms: number; text: string }[], plain: string | 
   return plain?.split('\n').find((x) => x.trim()) ?? ''
 }
 
-/** A synced line; endMs when the source gives it (YouTube Music), else guessed. */
-export type Timed = { ms: number; text: string; endMs?: number | null }
+/** A timed word of a line (LRCLIB's Lyricsfile, enhanced LRC): its text with the spaces around it. */
+export type TimedWord = { ms: number; text: string; endMs?: number | null }
+
+/** A synced line; endMs when the source gives it (YouTube Music), else guessed; words when the source times them. */
+export type Timed = { ms: number; text: string; endMs?: number | null; words?: TimedWord[] | null }
 
 /** Timing fixed by hand: song time = lyric time × rate + offset (ms). */
 export type LyricsFix = { offset: number; rate: number }
@@ -30,7 +33,8 @@ export const NO_FIX: LyricsFix = { offset: 0, rate: 1 }
 export function applyFix<T extends Timed>(lines: T[], fix: LyricsFix): T[] {
   if (fix.offset === 0 && fix.rate === 1) return lines
   const at = (ms: number) => Math.max(0, Math.round(ms * fix.rate + fix.offset))
-  return lines.map((l) => ({ ...l, ms: at(l.ms), endMs: l.endMs == null ? l.endMs : at(l.endMs) }))
+  const move = <W extends { ms: number; endMs?: number | null }>(x: W): W => ({ ...x, ms: at(x.ms), endMs: x.endMs == null ? x.endMs : at(x.endMs) })
+  return lines.map((l) => ({ ...move(l), ...(l.words && { words: l.words.map(move) }) }))
 }
 
 /** Taps further apart than this (lyric time) also fix the speed; closer, only the offset moves. */
@@ -84,10 +88,17 @@ export function lineEnd(lines: Timed[], i: number, durationMs: number | null): n
 }
 
 /**
- * Karaoke timing of a line being sung: when each word fills. LRC has no word timings, so the line's time is shared by
- * length (a long word takes longer). Words = the text split on spaces, spaces kept.
+ * Karaoke timing of a line being sung: when each word fills. The source's own word times when it has them, each word
+ * until its end or the next one's start. Else (LRC has none) the line's time shared by length (a long word takes
+ * longer), the words being the text split on spaces, spaces kept.
  */
-export function wordTimes(text: string, start: number, end: number): { word: string; t0: number; t1: number }[] {
+export function wordTimes(text: string, start: number, end: number, timed?: TimedWord[] | null): { word: string; t0: number; t1: number }[] {
+  if (timed?.length) {
+    return timed.map((w, i) => {
+      const next = i + 1 < timed.length ? timed[i + 1].ms : end
+      return { word: w.text, t0: w.ms, t1: Math.max(w.ms + 1, w.endMs ?? next) }
+    })
+  }
   const words = text.split(/(\s+)/).filter(Boolean)
   const total = Math.max(1, text.length)
   let at = 0

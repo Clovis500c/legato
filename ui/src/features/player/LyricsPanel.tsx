@@ -5,7 +5,7 @@ import { useStore } from '../../app/store'
 import { api, type Lyrics } from '../../shared/api'
 import { RoundButton } from '../../shared/ui/controls'
 import { songKey } from './effects'
-import { applyFix, fixesWith, fixFromTaps, fixLabel, lineAt, lineEnd, NO_FIX, withBreaks, wordTimes, type LyricsFix } from './lyricsAt'
+import { applyFix, fixesWith, fixFromTaps, fixLabel, lineAt, lineEnd, NO_FIX, withBreaks, wordTimes, type LyricsFix, type TimedWord } from './lyricsAt'
 import { toggleKaraoke } from './karaokeMode'
 import { positionNow, usePosition } from './Progress'
 import { useNowTrack, usePlayer } from './store'
@@ -26,16 +26,17 @@ const NUDGE_MS = 500
 const RESYNC_MS = 250
 
 /**
- * The line being sung, filled word by word as the song goes (karaoke), softly glowing. One animation per word on the
+ * The line being sung, filled word by word as the song goes (karaoke), softly glowing; at the source's own word times
+ * when it has them (`timed`), else spread over the line. One animation per word on the
  * compositor's clock (smooth every frame); position reports only correct it when it's really off, never every tick
  * (that made it shake).
  */
-export function Sung({ text, start, end }: { text: string; start: number; end: number }) {
+export function Sung({ text, start, end, timed }: { text: string; start: number; end: number; timed?: TimedWord[] | null }) {
   const pos = usePosition(250)
   const playing = usePlayer((s) => s.playing)
   const box = useRef<HTMLSpanElement>(null)
   const anims = useRef<Animation[]>([])
-  const words = useMemo(() => wordTimes(text, start, end), [text, start, end])
+  const words = useMemo(() => wordTimes(text, start, end, timed), [text, start, end, timed])
   useEffect(() => {
     const spans = [...(box.current?.children ?? [])]
     anims.current = spans.map((el, i) =>
@@ -99,7 +100,7 @@ function Synced({ lines: sung, durationMs, fix, onTap }: { lines: Lyrics['lines'
           {!l.text ? (
             <MusicNotesSimple size={26} weight="bold" aria-label={tr('Instrumental')} className={i === at ? 'animate-pulse' : ''} />
           ) : i === at ? (
-            <Sung text={l.text} start={l.ms} end={lineEnd(lines, i, durationMs)} />
+            <Sung text={l.text} start={l.ms} end={lineEnd(lines, i, durationMs)} timed={l.words} />
           ) : (
             l.text
           )}
