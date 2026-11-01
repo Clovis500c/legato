@@ -1856,6 +1856,8 @@ const ru: Record<string, string> = {
   'Straight': 'Прямая',
   'Wavy': 'Волнистая',
   'seek bar squiggly wave line progress style': 'полоса прогресс волна волнистая линия стиль squiggly',
+  'End of this album': 'В конце этого альбома',
+  'End of album': 'Конец альбома',
 }
 
 export default ru

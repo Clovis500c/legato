@@ -1856,6 +1856,8 @@ const es: Record<string, string> = {
   'Straight': 'Recta',
   'Wavy': 'Ondulada',
   'seek bar squiggly wave line progress style': 'barra progreso onda ondulada línea estilo squiggly',
+  'End of this album': 'Al final de este álbum',
+  'End of album': 'Fin del álbum',
 }
 
 export default es

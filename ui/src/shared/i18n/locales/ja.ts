@@ -1856,6 +1856,8 @@ const ja: Record<string, string> = {
   'Straight': '直線',
   'Wavy': '波形',
   'seek bar squiggly wave line progress style': 'プログレスバー 波 直線 スタイル squiggly',
+  'End of this album': 'このアルバムの終わり',
+  'End of album': 'アルバムの終わり',
 }
 
 export default ja

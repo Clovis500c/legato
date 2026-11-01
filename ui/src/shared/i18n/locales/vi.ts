@@ -1856,6 +1856,8 @@ const vi: Record<string, string> = {
   'Straight': 'Thẳng',
   'Wavy': 'Gợn sóng',
   'seek bar squiggly wave line progress style': 'thanh tiến trình sóng gợn đường kẻ kiểu squiggly',
+  'End of this album': 'Hết album này',
+  'End of album': 'Hết album',
 }
 
 export default vi

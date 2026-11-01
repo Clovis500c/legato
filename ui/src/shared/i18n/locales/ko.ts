@@ -1856,6 +1856,8 @@ const ko: Record<string, string> = {
   'Straight': '직선',
   'Wavy': '물결',
   'seek bar squiggly wave line progress style': '진행 막대 물결 직선 스타일 squiggly',
+  'End of this album': '이 앨범이 끝나면',
+  'End of album': '앨범이 끝나면',
 }
 
 export default ko

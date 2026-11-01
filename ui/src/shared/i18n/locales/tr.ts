@@ -1856,6 +1856,8 @@ const tr: Record<string, string> = {
   'Straight': 'Düz',
   'Wavy': 'Dalgalı',
   'seek bar squiggly wave line progress style': 'ilerleme çubuk dalga dalgalı çizgi stil squiggly',
+  'End of this album': 'Bu albümün sonunda',
+  'End of album': 'Albümün sonu',
 }
 
 export default tr

@@ -1856,6 +1856,8 @@ const uk: Record<string, string> = {
   'Straight': 'Пряма',
   'Wavy': 'Хвиляста',
   'seek bar squiggly wave line progress style': 'смуга прогрес хвиля хвиляста лінія стиль squiggly',
+  'End of this album': 'Наприкінці цього альбому',
+  'End of album': 'Кінець альбому',
 }
 
 export default uk

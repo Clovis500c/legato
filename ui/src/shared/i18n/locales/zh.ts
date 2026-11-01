@@ -1856,6 +1856,8 @@ const zh: Record<string, string> = {
   'Straight': '直线',
   'Wavy': '波浪',
   'seek bar squiggly wave line progress style': '进度条 波浪 直线 样式 squiggly',
+  'End of this album': '这张专辑结束时',
+  'End of album': '专辑结束时',
 }
 
 export default zh

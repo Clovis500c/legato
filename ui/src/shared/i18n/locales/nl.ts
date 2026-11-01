@@ -1856,6 +1856,8 @@ const nl: Record<string, string> = {
   'Straight': 'Recht',
   'Wavy': 'Golvend',
   'seek bar squiggly wave line progress style': 'voortgang balk golf golvend lijn stijl squiggly',
+  'End of this album': 'Aan het einde van dit album',
+  'End of album': 'Einde van album',
 }
 
 export default nl

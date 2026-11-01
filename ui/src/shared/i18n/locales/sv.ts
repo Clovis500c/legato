@@ -1856,6 +1856,8 @@ const sv: Record<string, string> = {
   'Straight': 'Rak',
   'Wavy': 'Vågig',
   'seek bar squiggly wave line progress style': 'förlopp fält våg vågig linje stil squiggly',
+  'End of this album': 'I slutet av det här albumet',
+  'End of album': 'Slutet av albumet',
 }
 
 export default sv

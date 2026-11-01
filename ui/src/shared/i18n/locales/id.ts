@@ -1856,6 +1856,8 @@ const id: Record<string, string> = {
   'Straight': 'Lurus',
   'Wavy': 'Bergelombang',
   'seek bar squiggly wave line progress style': 'bilah progres gelombang garis gaya squiggly',
+  'End of this album': 'Di akhir album ini',
+  'End of album': 'Akhir album',
 }
 
 export default id

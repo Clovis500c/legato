@@ -324,7 +324,10 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
 - [ ] `S` Full cover display: the cover alone, huge, title and progress over it (Spicetify's Full App Display); a clock
       option, for a second screen.
 - [ ] `S` "Aural fixations": songs you played a lot at one time of your life, brought back (from our own history).
-- [ ] `S` Sleep timer "at the end of this album" ("this song" exists) and a fade over the last minutes.
+- [x] `S` Sleep timer "at the end of this album" ("this song" exists) and a fade over the last minutes. Done: End of this
+  album stops after the album's last song in play order (the next one is from another album or none; no wrap, songs
+  the queue passes over skipped), looked at again on each song and queue change; the timed fade lasts the last 3 minutes,
+  pauses whatever plays when it ends, and a pause during it fades down from where it got to.
 - [ ] `S` Share a song as a picture card (cover, title, a lyric line, the theme's colours) for social apps.
 - [ ] `S` Spotify previews.
 - [ ] `S-M` Alarm: wake up with a playlist (fade in), works from the tray.

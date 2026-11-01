@@ -1856,6 +1856,8 @@ const pl: Record<string, string> = {
   'Straight': 'Prosta',
   'Wavy': 'Falista',
   'seek bar squiggly wave line progress style': 'pasek postęp fala falista linia styl squiggly',
+  'End of this album': 'Na końcu tego albumu',
+  'End of album': 'Koniec albumu',
 }
 
 export default pl

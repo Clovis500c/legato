@@ -182,7 +182,7 @@ export const bindFrame = (el: HTMLIFrameElement | null) => void (frame = el)
 // Other embed stopped, kept for the next overlap.
 const stopTail = (t: PlayerState['tail']) => t && { ...t, done: true }
 // The queue passes over it: nothing to play it with, or longer than Skip long songs (known lengths only).
-const passOver = (t: LibraryTrack, longMin: number) => !vias(t, spotifyOn()).length || tooLong(t.durationMs, longMin)
+export const passOver = (t: LibraryTrack, longMin: number) => !vias(t, spotifyOn()).length || tooLong(t.durationMs, longMin)
 // List index i, next after the current song, carries on its album: no fades between them. The sleep timer's last song
 // still fades out.
 const albumGoesOnAt = (p: PlayerState, i: number | null) => p.gaplessAlbums && !stopAtEnd && i === p.index + 1 && albumGoesOn(p.list[p.index], p.list[i])
@@ -643,9 +643,11 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     }
     set({ playing: !playing, ...(playing && { tail: stopTail(get().tail) }) })
     pausedAt = playing ? Date.now() : 0
-    // Fade on pause: down, then pause. On play: play silent, then up. Spotify: no volume control fast enough.
+    // Fade on pause: down (from where a running fade, the sleep timer's, has got to), then pause. On play: play silent,
+    // then up. Spotify: no volume control fast enough.
     if (!fade.pause || now.via === 'spotify') return pause()
-    if (playing) return ramp((t) => 1 - t, fade.pause, pause)
+    const from = gainNow
+    if (playing) return ramp((t) => from * (1 - t), fade.pause, pause)
     gainNow = 0
     get().applyVolume(true)
     pause()
@@ -669,15 +671,9 @@ export const usePlayer = create<PlayerState>((set, get) => ({
   sleep(ms) {
     const { now, playing } = get()
     if (!now || !playing) return
-    const pause = () => {
-      if (!get().playing) return
-      set({ playing: false })
-      if (now.via === 'youtube') yt('pauseVideo')
-      else if (now.via === 'spotify') void spotify({ type: 'pause' })
-      else send({ type: 'toggle' })
-    }
-    if (now.via === 'spotify') return pause()
-    ramp((t) => (1 - t) ** 2, ms, pause)
+    // Paused at the end by what plays then: a fade of minutes outlasts the song it began on.
+    if (now.via === 'spotify') return get().pauseNow()
+    ramp((t) => (1 - t) ** 2, ms, () => get().pauseNow())
   },
 
   previewFade() {

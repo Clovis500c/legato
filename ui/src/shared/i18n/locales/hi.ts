@@ -1856,6 +1856,8 @@ const hi: Record<string, string> = {
   'Straight': 'सीधी',
   'Wavy': 'लहरदार',
   'seek bar squiggly wave line progress style': 'प्रोग्रेस बार लहर लाइन स्टाइल squiggly',
+  'End of this album': 'इस एल्बम के अंत में',
+  'End of album': 'एल्बम के अंत में',
 }
 
 export default hi
