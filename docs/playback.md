@@ -108,6 +108,10 @@ Status on 2026-10-16. YouTube, local files and Apple Music previews: done and te
   YouTube → YouTube overlap: as the fade out begins, the next song starts in a second embed; the old one plays on
   unseen as the tail (`tail` in the store), fading out to its song's end (`tail.end`, where the overlap was timed), then
   stopped there. Watch page, other sources: no overlap.
+  No fade within an album (Settings › Playback, on by default): the next song right after this one in the list, same
+  album and first artist (`albumGoesOn`), plays on with no fade out, overlap or fade in (`songFade` in the store), so a
+  live or continuous album never dips. No track numbers are kept: the list's order stands for the album's; a compilation
+  (artists differ) still fades.
   The tail is then stopped, never unmounted: removing an embed while the other plays stalls the other one's video
   decoder for ~15 s with data buffered (measured 2026-10-28, also with `about:blank`). The two embeds swap roles at
   each overlap; the next song loads into the stopped one. In the tray the first one is born in a hidden page, where

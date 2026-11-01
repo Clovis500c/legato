@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { FadeSettings } from '../../shared/theme/theme'
-import { curvePath, demoGain, demoLength, effectiveFade, fadeGain, NO_FADE, overlapDue, shape, type Fade } from './fade'
+import { albumGoesOn, curvePath, demoGain, demoLength, effectiveFade, fadeGain, NO_FADE, overlapDue, shape, type Fade } from './fade'
 
 const simple = (s: number): Fade => ({ ...NO_FADE, out: s, in: s })
 
@@ -84,4 +84,23 @@ it('curve path runs from start to end point', () => {
   const down = curvePath('linear', 10, 110, 100, 0, 4, true)
   expect(down.startsWith('M10.0,0.0')).toBe(true)
   expect(down.endsWith('110.0,100.0')).toBe(true)
+})
+
+describe('no fade within an album', () => {
+  const t = (album: string | null, artist = 'Pink Floyd') => ({ album, artist })
+
+  it('joins two songs of one album, as Albums groups them', () => {
+    expect(albumGoesOn(t('The Dark Side of the Moon'), t('the dark side of the moon '))).toBe(true)
+    // A guest, or YouTube's channel name, leaves the album's artist.
+    expect(albumGoesOn(t('Alive 2007', 'Daft Punk'), t('Alive 2007', 'Daft Punk feat. Pharrell Williams'))).toBe(true)
+    expect(albumGoesOn(t('Alive 2007', 'Daft Punk - Topic'), t('Alive 2007', 'Daft Punk'))).toBe(true)
+  })
+
+  it('still fades between albums, between a compilation’s artists and without an album', () => {
+    expect(albumGoesOn(t('Animals'), t('Wish You Were Here'))).toBe(false)
+    expect(albumGoesOn(t('Hits 2026', 'Someone'), t('Hits 2026', 'Someone else'))).toBe(false)
+    expect(albumGoesOn(t(null), t(null))).toBe(false)
+    expect(albumGoesOn(t(' '), t(' '))).toBe(false)
+    expect(albumGoesOn(undefined, t('Animals'))).toBe(false)
+  })
 })

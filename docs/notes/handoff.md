@@ -35,10 +35,11 @@ Done in this run (newest last), none tried in the real app yet:
 - `05c57d6` A SoundCloud song link pasted anywhere: named by SoundCloud's oEmbed, found on YouTube, added. Sets said
   plainly.
 - `31f0b01` Files and folders dropped from Explorer: folders watched, files kept on their own, the notice's Play.
-- Library backup and restore in one file (Settings › General).
+- `5119311` Library backup and restore in one file (Settings › General).
+- No fade within an album (Settings › Playback, on by default): an album's songs played in a row never dip.
 
-Next in the run: the rest of Features › High's quick wins (album-aware crossfade, artist / album radio, playlist
-folders and covers, command palette), then Optimisation and Workflow, then milestone 4 (Lyrics).
+Next in the run: the rest of Features › High's quick wins (artist / album radio, playlist folders and covers, command
+palette), then Optimisation and Workflow, then milestone 4 (Lyrics).
 
 ## Branches
 

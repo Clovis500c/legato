@@ -6,7 +6,7 @@ import { neutral } from './effects'
 import { overlapDue } from './fade'
 import { sendLive, setEnding, startLive } from './live'
 import { claimViz, useVizListeners } from './vizFrames'
-import { usePlayer } from './store'
+import { songFade, usePlayer } from './store'
 
 // Who plays now, for levels: the native engine (local files, previews) or YouTube. Spotify: its own app, none.
 const playing = () => {
@@ -28,7 +28,7 @@ export function useLiveSync() {
   useEffect(() => startEditor(), [])
   // Fade out under way: Adaptive Sound holds. Synchronous with the position, so the playing frame hears it before an
   // overlap hands the live link to the next song's embed.
-  useEffect(() => usePlayer.subscribe((s) => setEnding(overlapDue(s.positionMs, s.durationMs, s.fade))), [])
+  useEffect(() => usePlayer.subscribe((s) => setEnding(overlapDue(s.positionMs, s.durationMs, songFade(s)))), [])
   useEffect(() => {
     // Bypassed edits keep processing attached: A / B switches at once. Levels alone (moving cover, early ends) only listen.
     const process = adaptiveSound || !neutral({ ...effects, on: true })

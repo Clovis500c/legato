@@ -134,6 +134,58 @@ describe('song ends', () => {
   })
 })
 
+describe('no fade within an album', () => {
+  const post = vi.fn()
+  // Volumes sent to the embed, %.
+  const volumes = () => post.mock.calls.flatMap(([m]) => (JSON.parse(m as string).func === 'setVolume' ? [JSON.parse(m as string).args[0] as number] : []))
+  const track = (id: number, album: string | null): LibraryTrack => ({ ...song(id), album })
+  beforeEach(() => {
+    post.mockClear()
+    bindFrame({ contentWindow: { postMessage: post } } as unknown as HTMLIFrameElement)
+    usePlayer.setState({ repeat: 'off', volume: 1, gaplessAlbums: true, fade: { out: 8, in: 8, outCurve: 'linear', inCurve: 'linear', skip: false, pause: 0 } })
+  })
+  afterEach(() => {
+    bindFrame(null)
+    usePlayer.setState({ gaplessAlbums: true })
+  })
+
+  it('plays on into the album’s next song: no fade out, no overlap, no fade in; another album fades again', async () => {
+    usePlayer.getState().playTracks([track(51, 'Live at Pompeii'), track(52, 'Live at Pompeii'), track(53, 'Animals')], 0)
+    await settle()
+    usePlayer.getState().onYoutube({ state: 1, time: 1, duration: 200 })
+    usePlayer.getState().onYoutube({ time: 196 })
+    expect(usePlayer.getState().now?.youtubeId).toBe('video51')
+    expect(Math.min(...volumes())).toBe(100)
+    usePlayer.getState().onYoutube({ state: 0 })
+    await settle()
+    expect(usePlayer.getState().now?.youtubeId).toBe('video52')
+    expect(usePlayer.getState().fadeIn).toBe(0)
+    // Animals: the overlap again, the next song fading in.
+    usePlayer.getState().onYoutube({ state: 1, time: 1, duration: 200 })
+    usePlayer.getState().onYoutube({ time: 192.5 })
+    expect(usePlayer.getState().now?.youtubeId).toBe('video53')
+    expect(usePlayer.getState().fadeIn).toBe(8)
+  })
+
+  it('fades as before with the setting off, or when the album’s songs come out of the list’s order', async () => {
+    usePlayer.setState({ gaplessAlbums: false })
+    usePlayer.getState().playTracks([track(54, 'Live'), track(55, 'Live')], 0)
+    await settle()
+    usePlayer.getState().onYoutube({ state: 1, time: 1, duration: 200 })
+    usePlayer.getState().onYoutube({ time: 192.5 })
+    expect(usePlayer.getState().now?.youtubeId).toBe('video55')
+    usePlayer.setState({ gaplessAlbums: true })
+    // Shuffled: the album's other song comes next, but not as the list has it.
+    usePlayer.getState().playTracks([track(56, 'Live'), track(57, 'Animals'), track(58, 'Live')], 0)
+    usePlayer.setState({ order: [0, 2, 1] })
+    await settle()
+    usePlayer.getState().onYoutube({ state: 1, time: 1, duration: 200 })
+    usePlayer.getState().onYoutube({ time: 192.5 })
+    expect(usePlayer.getState().now?.youtubeId).toBe('video58')
+    expect(usePlayer.getState().fadeIn).toBe(8)
+  })
+})
+
 describe('resume', () => {
   it('brings back the songs the user queued with their order, not with a rebuilt one', () => {
     const list = [song(7), song(8), song(9)]

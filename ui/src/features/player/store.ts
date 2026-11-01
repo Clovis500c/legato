@@ -4,7 +4,7 @@ import { api, type LibraryTrack, type PlayerCommand, type PlayerStatus, type Spo
 import type { Box } from '../../shared/artbox'
 import { region } from '../../shared/format'
 import { endListen, progress, startListen } from './listens'
-import { demoGain, demoLength, fadeGain, NO_FADE, overlapDue, PICK_IN_S, type Fade } from './fade'
+import { albumGoesOn, demoGain, demoLength, fadeGain, NO_FADE, overlapDue, PICK_IN_S, type Fade } from './fade'
 import { insertAt, keepQueued, moveInOrder, moveToSlot, nextIndex, playOrder, queued, tooLong, type Repeat } from './queue'
 import { vias, type Via } from './sources'
 import { formatDuration } from '../../shared/format'
@@ -53,6 +53,8 @@ interface PlayerState {
   fade: Fade
   /** Settings › Playback › Skip long songs: minutes, 0 = off. */
   skipLong: number
+  /** Settings › Playback › No fade within an album: songs of one album played in a row, no fades between them. */
+  gaplessAlbums: boolean
   /** Settings › Playback › Early endings: a video ends where its song does (ends.ts). */
   earlyEnds: boolean
   /** Settings › Playback › Skip silence: songs start on the music and end where it ends (ends.ts, engine for local files). */
@@ -170,6 +172,19 @@ export const bindFrame = (el: HTMLIFrameElement | null) => void (frame = el)
 const stopTail = (t: PlayerState['tail']) => t && { ...t, done: true }
 // The queue passes over it: nothing to play it with, or longer than Skip long songs (known lengths only).
 const passOver = (t: LibraryTrack, longMin: number) => !vias(t, spotifyOn()).length || tooLong(t.durationMs, longMin)
+// List index i, next after the current song, carries on its album: no fades between them. The sleep timer's last song
+// still fades out.
+const albumGoesOnAt = (p: PlayerState, i: number | null) => p.gaplessAlbums && !stopAtEnd && i === p.index + 1 && albumGoesOn(p.list[p.index], p.list[i])
+
+/**
+ * The current song's fades: no fade out (so no overlap) when the next song carries on its album. Looked at once the
+ * fade out is due only: before it, the fade out doesn't touch the volume anyway.
+ */
+export function songFade(p: PlayerState): Fade {
+  if (!p.gaplessAlbums || !overlapDue(p.positionMs, p.durationMs, p.fade)) return p.fade
+  const i = nextIndex(p.order, p.index, 1, p.repeat, true, (j) => passOver(p.list[j], p.skipLong))
+  return albumGoesOnAt(p, i) ? { ...p.fade, out: 0 } : p.fade
+}
 
 // Engine status lags commands: until it reports one of these paths, statuses are stale. [] = ignore all.
 let expect: string[] | null = null
@@ -384,6 +399,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
   repeat: 'off',
   fade: NO_FADE,
   skipLong: 0,
+  gaplessAlbums: true,
   earlyEnds: true,
   skipSilence: false,
   skipNonMusic: false,
@@ -476,7 +492,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     const base: NowPlaying = { title: t.title, artist: t.artist, trackId: t.id, via: how }
     // Preview: 30 s from Apple, no resume point.
     const start = how === 'preview' ? 0 : from
-    set({ index, playId: get().playId + 1, playing: !hold, hold, positionMs: start, startAt: start, fadeFrom: 0, durationMs: t.durationMs, upcoming: [], tail: how === 'youtube' ? stopTail(get().tail) : null, fadeIn: auto ? get().fade.in : get().fade.skip ? Math.min(get().fade.in, PICK_IN_S) : 0 })
+    set({ index, playId: get().playId + 1, playing: !hold, hold, positionMs: start, startAt: start, fadeFrom: 0, durationMs: t.durationMs, upcoming: [], tail: how === 'youtube' ? stopTail(get().tail) : null, fadeIn: auto ? (albumGoesOnAt(get(), index) ? 0 : get().fade.in) : get().fade.skip ? Math.min(get().fade.in, PICK_IN_S) : 0 })
     sent = -1
     useSponsor.setState({ video: undefined, segs: [] })
     parts = { playId: get().playId, prev: start / 1000, done: new Set() }
@@ -656,7 +672,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
   },
 
   applyVolume(force = false) {
-    const { now, volume, positionMs, durationMs, fade, fadeIn, fadeFrom } = get()
+    const { now, volume, positionMs, durationMs, fadeIn, fadeFrom } = get()
     const via = now?.via
     if (via === 'spotify') {
       // Spotify Connect: rate-limited API, no fades.
@@ -664,7 +680,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
       if (force) volumeTimer = setTimeout(() => void spotify({ type: 'volume', percent: Math.round(volume * 100) }), 300)
       return
     }
-    const value = Math.round(volume * fadeGain(positionMs, durationMs, { ...fade, in: fadeIn }, true, fadeFrom) * gainNow * 100) / 100
+    const value = Math.round(volume * fadeGain(positionMs, durationMs, { ...songFade(get()), in: fadeIn }, true, fadeFrom) * gainNow * 100) / 100
     if (!force && value === sent) return
     sent = value
     if (via === 'youtube') yt('setVolume', Math.round(value * 100))
@@ -782,7 +798,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
       ...(jumped && { fadeFrom: s.positionMs }),
       upcoming: now?.trackId ? [] : s.upcoming,
       ...(songMs && { durationMs: songMs }),
-      ...(i > index && { index: i, playId: get().playId + 1, fadeIn: get().fade.in, fadeFrom: skip && s.positionMs > 600 ? s.positionMs : 0, now: { title: list[i].title, artist: list[i].artist, trackId: list[i].id, via: 'local', path: s.path! } }),
+      ...(i > index && { index: i, playId: get().playId + 1, fadeIn: albumGoesOnAt(get(), i) ? 0 : get().fade.in, fadeFrom: skip && s.positionMs > 600 ? s.positionMs : 0, now: { title: list[i].title, artist: list[i].artist, trackId: list[i].id, via: 'local', path: s.path! } }),
       ...(s.path && !now?.trackId && { now: { title: fileTitle(s.path), artist: tr('Local file'), path: s.path, via: 'local' }, ...(s.path !== now?.path && { playId: get().playId + 1 }) }),
     })
     if (s.path) get().applyVolume()
@@ -809,11 +825,12 @@ export const usePlayer = create<PlayerState>((set, get) => ({
 /**
  * YouTube → YouTube overlap (user's request 2026-10-26): as the fade out begins, the next song starts in a new embed
  * and the old one plays on as the tail (PlayerBar), fading out. Watch page, other sources, sleep timer: fade out, then in.
+ * The next song carries on the album: no overlap, the song plays to its end (`songFade`).
  */
 function overlap() {
   const p = usePlayer.getState()
   const { now, list, order, index, repeat } = p
-  if (p.tail?.done === false || !p.playing || ytFresh || stopAtEnd || now?.via !== 'youtube' || !now.youtubeId || watching() || !overlapDue(p.positionMs, p.durationMs, p.fade)) return
+  if (p.tail?.done === false || !p.playing || ytFresh || stopAtEnd || now?.via !== 'youtube' || !now.youtubeId || watching() || !overlapDue(p.positionMs, p.durationMs, songFade(p))) return
   const i = nextIndex(order, index, 1, repeat, true, (j) => passOver(list[j], p.skipLong))
   const next = i === null ? undefined : (useStore.getState().tracks.find((x) => x.id === list[i].id) ?? list[i])
   if (i === null || i === index || !next || vias(next, spotifyOn())[0] !== 'youtube' || next.ids.youtube === now.youtubeId) return

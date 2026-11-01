@@ -1,5 +1,8 @@
+import type { Track } from '../../shared/api'
+import { fold } from '../../shared/format'
 import type { FadeCurve, Settings } from '../../shared/theme/theme'
 import { msg } from '../../shared/i18n/i18n'
+import { primaryArtist } from '../library/filter'
 
 /** Fade the player applies: seconds each way, shapes, skip and pause fades. */
 export interface Fade {
@@ -66,6 +69,16 @@ export function fadeGain(positionMs: number, durationMs: number | null, f: Fade,
 }
 
 const fadesOut = (durationMs: number | null, f: Fade) => f.out > 0 && !!durationMs && durationMs > f.out * 1000 + Math.max(f.out, f.in) * 1000
+
+/**
+ * Settings › Playback › No fade within an album: `b`, right after `a` in the list, carries on its album (same name, same
+ * first artist: an album as Albums groups it). No fade out, overlap or fade in between them: a live or continuous album
+ * never dips. No track numbers kept: the list's order stands for the album's. A compilation's artists differ: it fades.
+ */
+export function albumGoesOn(a: Pick<Track, 'album' | 'artist'> | undefined, b: Pick<Track, 'album' | 'artist'> | undefined): boolean {
+  if (!a?.album?.trim() || !b?.album?.trim()) return false
+  return fold(a.album.trim()) === fold(b.album.trim()) && fold(primaryArtist(a.artist)) === fold(primaryArtist(b.artist))
+}
 
 /** Songs overlap (X shape): the next one starts as this one's fade out begins. */
 export const overlapDue = (positionMs: number, durationMs: number | null, f: Fade) => fadesOut(durationMs, f) && positionMs >= durationMs! - f.out * 1000

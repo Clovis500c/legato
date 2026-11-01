@@ -168,7 +168,11 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       one rescan. Songs new to the library wait for the notice's Play; songs it had play at once. Shift can't be read
       during an OS drop (the window has no key events then): the notice's button instead. A file kept on its own goes
       with Remove from library; Settings lists only the folders. Not tried with a real drop yet.
-- [ ] `S` Gapless + crossfade that knows albums (never crossfade inside a live or continuous album).
+- [x] `S` Gapless + crossfade that knows albums: Settings › Playback › No fade within an album (on by default). The next
+      song right after this one in the list, same album and first artist (`fade.ts` `albumGoesOn`, as Albums groups
+      them), plays on with no fade out, overlap or fade in (`songFade` in the store; the local engine's gapless move
+      too). No track numbers kept: the list's order stands for the album's, a compilation still fades. Detecting a
+      continuous boundary from the sound (any album) is not done.
 - [ ] `S` Artist / album / playlist radio and endless autoplay (song radio already there: `radio.ts`).
 - [ ] `S` Playlist folders, pinned playlists, generated playlist covers (a 2×2 of the songs' covers).
 - [x] `S` Backup / restore the whole library to one file (playlists, likes, edits, stats), outside Sync Mode: Settings ›
@@ -373,6 +377,8 @@ Most useful first; the tag is the effort.
       as saved, `library-before-restore.db` beside the library.
 - [ ] A folder and a few songs dropped from Explorer: the folder in Settings › Accounts › Local files, the songs in the
       library after a restart, the notice's Play; songs already there play at once; a QR picture still opens a shared list.
+- [ ] An album played from its first song with a fade set: no dip between its songs (YouTube Music album and local
+      files), a playlist of singles still fades, the sleep timer's last song still fades out.
 - [ ] "No sound could be taken" gone from the second YouTube video on (fix 51946d5).
 - [ ] A real update from 0.1 (user's PC): Legato installed, old folder and its shortcuts gone, library, sign-ins and Open
       at startup still there.
