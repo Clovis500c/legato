@@ -49,9 +49,10 @@ Done in this run (newest last), none tried in the real app yet:
 - `b1a99a1` Now Playing, the lyrics panel and the dialogs load on first use: 51 kB less JS at launch.
 - `91be1bd` Issue templates (bug with diagnostics, feature idea) and the website's "What's next" from the roadmap.
 - `ff94cf3` Project skills for Claude Code: add a setting, add a connector, release check (`.claude/skills`).
-- Cover thumbnails for WebP and GIF originals (lists no longer load them whole).
+- `42e3d4b` Cover thumbnails for WebP and GIF originals (lists no longer load them whole).
+- Installer size: the updater's unused rustls and ring left out, 0.55 MB less to download (check a real update).
 
-Next in the run: the installer size (Optimisation), then milestone 4 (Lyrics).
+Next in the run: milestone 4 (Lyrics).
 
 ## Branches
 

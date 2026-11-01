@@ -394,7 +394,15 @@ Most useful first; the tag is the effort.
       `features/library/dialogs.tsx`, `VideoSlot.tsx` apart). JS at launch 904 → 853 kB (281 → 270 kB gzip), in
       53 files instead of 38: icons shared with the lazy chunks come apart. Rolldown's `inlineCommonChunks` would merge
       them, but it is experimental and forces `strictExecutionOrder`: left out.
-- [ ] `S` Installer size: check what's in it (`cargo bloat`, features of big crates, adblock lists compressed).
+- [x] `S` Installer size: check what's in it (`cargo bloat`, features of big crates, adblock lists compressed).
+      The updater's default features pulled rustls and ring, never used (reqwest takes Windows' TLS for every client
+      once our crates ask for native-tls): off, 11 crates fewer. `legato.exe` 35.9 → 34.4 MB, 10.46 → 9.91 MB
+      compressed (xz -9, close to what NSIS' LZMA gives), 2026-11-01. Nothing else cheap: the adblock lists are
+      downloaded and cached, not built in; the interface is 3.6 MB of JS, each of the 17 languages loaded only when
+      used; `third-party-licenses.html` 0.5 MB; the release profile already has LTO, one codegen unit and strip.
+      Left alone: `opt-level = "s"` (slower code) and `panic = "abort"` (a panicking thread would end the app).
+      `cargo bloat` not installed (no tool installed without the owner). Unseen: a real update through it (same TLS
+      as before, but check the next Beta installs).
 - [x] `S` Cover thumbnails for WebP and GIF originals, served whole today (the `image` crate here has PNG and JPEG only; the
       hosts send JPEG). The `image` crate reads WebP and GIF now (5 small pure-Rust crates, licenses checked): WebP
       (YouTube's `vi_webp` frames) and GIF get thumbnails, PNG when they have see-through parts, JPEG otherwise; an
