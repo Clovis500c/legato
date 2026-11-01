@@ -29,6 +29,13 @@ export function Welcome({ onClose }: { onClose: () => void }) {
     useSettings.getState().update({ welcomed: true })
     onClose()
   }
+  // A card's import (Spotify's lists) has its own screen: the welcome steps aside for it.
+  const importing = useStore((s) => !!s.importRun && !s.importRun.hidden)
+  useEffect(() => {
+    if (!importing) return
+    useSettings.getState().update({ welcomed: true })
+    onClose()
+  }, [importing, onClose])
   // Each step's main button takes the focus (the one clicked is gone).
   useEffect(() => document.querySelector<HTMLElement>('[role=dialog] [data-default]')?.focus(), [step])
   return (

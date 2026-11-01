@@ -7,6 +7,7 @@ import { Led, RoundButton } from '../../shared/ui/controls'
 import { LinkBrand } from '../../shared/ui/SourceIcon'
 import { AddFolder, FIELD } from '../add/AddView'
 import { Card } from '../add/Card'
+import { SpotifyConnect } from '../add/SpotifyConnect'
 import { useGoogleAccounts } from '../sources/google'
 import { linkKind } from './firstRun'
 
@@ -65,11 +66,11 @@ function LinkCard({ onLeave }: { onLeave?: () => void }) {
   )
 }
 
-/** YouTube, YouTube Music and Apple Music at once: the results page, a song plays in one click. */
+/** YouTube, YouTube Music and Apple Music at once: the results page, a song plays in one click. A row of its own under the others. */
 function SearchCard({ onLeave }: { onLeave?: () => void }) {
   const [q, setQ] = useState('')
   return (
-    <Card icon={MagnifyingGlass} title={tr('Search and play')} sub={tr('YouTube, YouTube Music and Apple Music, no account needed.')}>
+    <Card icon={MagnifyingGlass} title={tr('Search and play')} sub={tr('YouTube, YouTube Music and Apple Music, no account needed.')} className="col-span-full">
       <form
         onSubmit={(e) => {
           e.preventDefault()
@@ -90,13 +91,15 @@ function SearchCard({ onLeave }: { onLeave?: () => void }) {
 
 /**
  * The ways music comes in, as cards (Add music has them all): the welcome, and Home while the library is empty.
+ * YouTube Music and Spotify side by side first: playlists and likes, each in one go.
  * onLeave: a card is about to open another page (the welcome closes first).
  */
 export function WaysIn({ onLeave }: { onLeave?: () => void }) {
   return (
     <div className="stagger grid grid-cols-[repeat(auto-fit,minmax(15rem,1fr))] gap-3">
-      <AddFolder />
       <GoogleCard />
+      <SpotifyConnect />
+      <AddFolder />
       <LinkCard onLeave={onLeave} />
       <SearchCard onLeave={onLeave} />
     </div>

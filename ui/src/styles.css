@@ -238,8 +238,9 @@ code {
   animation: pop-in 0.14s ease-out both;
   transform-origin: top left;
 }
+/* Backwards: an identity transform left after it would hold a dialog opened inside (a card's own, in the welcome). */
 .dialog-in {
-  animation: pop-in 0.18s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation: pop-in 0.18s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
 }
 .fade-in {
   animation: fade-in 0.3s ease-out both;

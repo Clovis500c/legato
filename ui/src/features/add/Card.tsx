@@ -2,9 +2,9 @@ import type { Icon } from '@phosphor-icons/react'
 import type { ReactNode } from 'react'
 
 /** One way to add music (Add music page): icon, name, what it does, then its controls (mt-auto keeps them low). */
-export function Card({ icon: Glyph, title, sub, children }: { icon: Icon; title: string; sub?: ReactNode; children: ReactNode }) {
+export function Card({ icon: Glyph, title, sub, className = '', children }: { icon: Icon; title: string; sub?: ReactNode; className?: string; children: ReactNode }) {
   return (
-    <section aria-label={title} className="flex flex-col gap-3 rounded-lg border border-line p-4">
+    <section aria-label={title} className={`flex flex-col gap-3 rounded-lg border border-line p-4 ${className}`}>
       <span className="grid size-10 place-items-center rounded-full bg-raised">
         <Glyph size={20} />
       </span>

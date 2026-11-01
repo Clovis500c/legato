@@ -21,6 +21,8 @@ export function Dialog({ title, kicker, onClose, wide = false, children }: { tit
     const body = all().filter((el) => !el.closest('header'))
     ;(body.find((el) => el.matches('input, select, textarea')) ?? body.find((el) => el.matches('[data-default]')) ?? body[0] ?? all()[0])?.focus()
     const onKey = (e: KeyboardEvent) => {
+      // One open inside another (a card's own, in the welcome): the last one takes the keys.
+      if ([...document.querySelectorAll('[data-modal]')].at(-1) !== box.current) return
       if (e.key === 'Escape') return close.current()
       if (e.key !== 'Tab') return
       const els = all()
@@ -38,7 +40,7 @@ export function Dialog({ title, kicker, onClose, wide = false, children }: { tit
   }, [])
   return (
     <div className="fade-in fixed inset-0 z-40 grid place-items-center bg-[var(--shadow)] p-6" onClick={onClose}>
-      <div ref={box} role="dialog" aria-modal aria-label={title} onClick={(e) => e.stopPropagation()} className={`dialog-in flex max-h-full w-full ${wide ? 'max-w-180' : 'max-w-120'} flex-col gap-5 overflow-y-auto rounded-xl border border-line bg-panel p-6 shadow-[0_24px_64px_var(--shadow)]`}>
+      <div ref={box} role="dialog" data-modal aria-modal aria-label={title} onClick={(e) => e.stopPropagation()} className={`dialog-in flex max-h-full w-full ${wide ? 'max-w-180' : 'max-w-120'} flex-col gap-5 overflow-y-auto rounded-xl border border-line bg-panel p-6 shadow-[0_24px_64px_var(--shadow)]`}>
         <header className="flex items-start justify-between gap-4">
           <div className="flex flex-col gap-1">
             {kicker && <p className="kicker">{kicker}</p>}

@@ -146,7 +146,10 @@ What the services allow, read on 2026-10-31 (specs in [ideas/catch-up.md](ideas/
       Add music › From iTunes or MusicBee, its playlists ticked (smart ones unticked; the whole library, its parts,
       folders left out), then the import screen. A song the library has as a file comes as it is, the rest is found on
       YouTube at its pace; each list becomes a playlist of yours. Not tried on a real file yet.
-- [ ] `S` Onboarding: Spotify / YouTube likes in one go, from the welcome.
+- [x] `S` Onboarding: Spotify / YouTube likes in one go, from the welcome. Connect Spotify sits beside YouTube Music in its
+      cards (Home's too, while the library is empty), and its import screen takes over from the welcome. A dialog opened
+      inside another gets the keys and the whole window (`.dialog-in` fills backwards). Not tried from the welcome with a
+      real account yet.
 - [ ] `S` per service: public playlist links from more services (TIDAL, Qobuz, Amazon Music), same flow as Deezer. Nothing
       checked yet.
 - [ ] `L` SoundCloud playback in its official embedded widget (no audio taken). User's call first: see its terms above.
