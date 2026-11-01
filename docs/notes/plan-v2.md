@@ -243,7 +243,9 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       chosen columns, sorts and groupings (foobar2000, MusicBee).
 - [ ] `M` Long YouTube mixes and DJ sets split by their chapters (or timestamps in the description / pinned comment):
       each part a song in Up next, skip within the video; Music Detector names unlabelled parts on request.
-- [ ] `M` Output devices: switch from the player bar, remember per device (volume, EQ preset), follow Windows' default.
+- [x] Local files follow Windows' default output: a new default (picked, or the speakers taking over) gets the song at
+      the same place, paused or not (`unplug.rs` watcher → engine `Command::Reopen`). WebView2 follows on its own.
+- [ ] `M` Output devices: switch from the player bar, remember per device (volume, EQ preset).
 - [ ] `M` Right-to-left languages (Arabic, Hebrew: mirrored layout) and community translations (Weblate), more languages.
 - [ ] `M-L` Listen together on the local network: one PC leads, the others follow (Sync Mode's code, no server).
 - [ ] `L` Cast: DLNA / UPnP speakers and Chromecast for local files and personal servers.
@@ -399,6 +401,8 @@ Most useful first; the tag is the effort.
 - [ ] The search bar's pages, actions and settings: "shuffle", "dark", "stats", Enter on each, in French too.
 - [ ] Headphones unplugged, then a Bluetooth headset turned off, each while a song plays (YouTube, a local file): paused
       at once, the notice's Play goes on; with the setting off it plays on through the speakers.
+- [ ] Windows' default output switched by hand while a local file plays, then while it's paused: it goes on (or waits)
+      on the new device at the same place.
 - [ ] An album played from its first song with a fade set: no dip between its songs (YouTube Music album and local
       files), a playlist of singles still fades, the sleep timer's last song still fades out.
 - [ ] "No sound could be taken" gone from the second YouTube video on (fix 51946d5).

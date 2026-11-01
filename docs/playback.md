@@ -55,8 +55,10 @@ Status on 2026-10-16. YouTube, local files and Apple Music previews: done and te
   default picked by hand, pauses nothing.
 - `features/player/unplug.ts`: setting `pauseOnUnplug` (Settings › Playback › Output device, on by default) and
   something playing → `pauseNow` (no pause fade: not a moment out of the speakers), notice with Play.
-- Limits: headphones and speakers on one endpoint (Realtek jack retasking) change no endpoint, so no event. Local
-  files: the engine keeps the device it opened.
+- A new default (picked by hand, or the speakers taking over) → engine `Command::Reopen`: the playing file reloaded
+  on the new device at the same place, paused or not (nothing playing: the next play opens it). WebView2 follows the
+  default on its own.
+- Limit: headphones and speakers on one endpoint (Realtek jack retasking) change no endpoint, so no event.
 
 ## Cover art
 

@@ -1,6 +1,7 @@
 //! Headphones unplugged, Bluetooth headset off or out of range: Windows moves the sound to the speakers. Its endpoint
 //! notifications (IMMNotificationClient) say when the default output leaves; the interface pauses (setting
-//! `pauseOnUnplug`). Event only: what to do is the interface's.
+//! `pauseOnUnplug`). A new default, picked or taking over, gets the native player's song (`Command::Reopen`); WebView2
+//! follows on its own.
 // Limit: headphones and speakers on one endpoint (Realtek jack retasking) change no endpoint: no event, no pause.
 
 use std::time::{Duration, Instant};
@@ -20,7 +21,17 @@ enum Change {
     Default(Option<String>),
 }
 
-/// When the output playing is lost. Pure: fed the changes in order.
+/// What a change means for the app.
+#[cfg_attr(not(windows), allow(dead_code))]
+#[derive(Debug, Default, PartialEq)]
+struct Heard {
+    /// The output playing is lost: pause.
+    lost: bool,
+    /// Another device is the default now: the native player moves to it.
+    moved: bool,
+}
+
+/// When the output playing is lost or replaced. Pure: fed the changes in order.
 #[cfg_attr(not(windows), allow(dead_code))]
 #[derive(Default)]
 struct Watch {
@@ -33,29 +44,29 @@ struct Watch {
 
 #[cfg_attr(not(windows), allow(dead_code))]
 impl Watch {
-    /// True when this change loses the output playing.
-    fn hear(&mut self, change: Change, at: Instant) -> bool {
+    fn hear(&mut self, change: Change, at: Instant) -> Heard {
         match change {
             Change::Default(id) => {
+                let moved = id.is_some() && id != self.now;
                 if let Some(old) = self.now.take().filter(|old| Some(old) != id.as_ref()) {
                     self.before = Some((old, at));
                 }
                 self.now = id;
-                false
+                Heard { moved, ..Heard::default() }
             }
             Change::Back(id) => {
                 if self.told.as_ref() == Some(&id) {
                     self.told = None;
                 }
-                false
+                Heard::default()
             }
             Change::Gone(id) => {
                 let was = self.before.as_ref().is_some_and(|(old, t)| *old == id && at.duration_since(*t) < GRACE);
                 if !(self.now.as_ref() == Some(&id) || was) || self.told.as_ref() == Some(&id) {
-                    return false;
+                    return Heard::default();
                 }
                 self.told = Some(id);
-                true
+                Heard { lost: true, ..Heard::default() }
             }
         }
     }
@@ -69,7 +80,7 @@ mod imp {
     use super::{Change, Watch};
     use std::sync::mpsc::{channel, Sender};
     use std::time::Instant;
-    use tauri::{AppHandle, Emitter};
+    use tauri::{AppHandle, Emitter, Manager};
     use windows::core::{implement, Result, PCWSTR};
     use windows::Win32::Foundation::PROPERTYKEY;
     use windows::Win32::Media::Audio::{eConsole, eRender, EDataFlow, ERole, IMMDeviceEnumerator, IMMNotificationClient, IMMNotificationClient_Impl, MMDeviceEnumerator, DEVICE_STATE, DEVICE_STATE_ACTIVE};
@@ -140,8 +151,14 @@ mod imp {
             let mut watch = Watch { now: default_id(&devices), ..Watch::default() };
             // Never ends: the client (holding the sender) stays registered.
             for change in rx {
-                if watch.hear(change, Instant::now()) {
+                let heard = watch.hear(change, Instant::now());
+                if heard.lost {
                     let _ = app.emit("audio-output-lost", ());
+                }
+                if heard.moved
+                    && let Some(state) = app.try_state::<crate::AppState>()
+                {
+                    state.player.send(music_player::Command::Reopen);
                 }
             }
         });
@@ -150,48 +167,54 @@ mod imp {
 
 #[cfg(test)]
 mod tests {
-    use super::{Change, Watch, GRACE};
+    use super::{Change, Heard, Watch, GRACE};
     use std::time::{Duration, Instant};
 
     fn s(id: &str) -> String {
         id.to_string()
     }
 
+    const LOST: Heard = Heard { lost: true, moved: false };
+    const MOVED: Heard = Heard { lost: false, moved: true };
+    const NOTHING: Heard = Heard { lost: false, moved: false };
+
     #[test]
     fn the_default_leaving_is_told_once_in_either_order() {
         let t = Instant::now();
         // Gone first, then the new default.
         let mut w = Watch { now: Some(s("phones")), ..Watch::default() };
-        assert!(w.hear(Change::Gone(s("phones")), t));
-        assert!(!w.hear(Change::Default(Some(s("speakers"))), t));
-        assert!(!w.hear(Change::Gone(s("phones")), t));
+        assert_eq!(w.hear(Change::Gone(s("phones")), t), LOST);
+        assert_eq!(w.hear(Change::Default(Some(s("speakers"))), t), MOVED);
+        assert_eq!(w.hear(Change::Gone(s("phones")), t), NOTHING);
         // New default first, then gone.
         let mut w = Watch { now: Some(s("phones")), ..Watch::default() };
-        assert!(!w.hear(Change::Default(Some(s("speakers"))), t));
-        assert!(w.hear(Change::Gone(s("phones")), t + Duration::from_millis(50)));
-        // Last output gone: no default at all.
+        assert_eq!(w.hear(Change::Default(Some(s("speakers"))), t), MOVED);
+        assert_eq!(w.hear(Change::Gone(s("phones")), t + Duration::from_millis(50)), LOST);
+        // Last output gone: no default at all, nowhere to move to.
         let mut w = Watch { now: Some(s("bt")), ..Watch::default() };
-        assert!(!w.hear(Change::Default(None), t));
-        assert!(w.hear(Change::Gone(s("bt")), t));
+        assert_eq!(w.hear(Change::Default(None), t), NOTHING);
+        assert_eq!(w.hear(Change::Gone(s("bt")), t), LOST);
     }
 
     #[test]
-    fn other_devices_and_a_picked_default_are_left_alone() {
+    fn other_devices_and_a_picked_default_pause_nothing() {
         let t = Instant::now();
         let mut w = Watch { now: Some(s("phones")), ..Watch::default() };
         // Another device leaves.
-        assert!(!w.hear(Change::Gone(s("hdmi")), t));
-        // The user picks the speakers; the headphones leave long after.
-        assert!(!w.hear(Change::Default(Some(s("speakers"))), t));
-        assert!(!w.hear(Change::Gone(s("phones")), t + GRACE));
+        assert_eq!(w.hear(Change::Gone(s("hdmi")), t), NOTHING);
+        // The user picks the speakers (the song moves there); the headphones leave long after.
+        assert_eq!(w.hear(Change::Default(Some(s("speakers"))), t), MOVED);
+        assert_eq!(w.hear(Change::Gone(s("phones")), t + GRACE), NOTHING);
+        // Windows says the same default again: nothing moves.
+        assert_eq!(w.hear(Change::Default(Some(s("speakers"))), t), NOTHING);
     }
 
     #[test]
     fn a_device_back_can_be_lost_again() {
         let t = Instant::now();
         let mut w = Watch { now: Some(s("bt")), ..Watch::default() };
-        assert!(w.hear(Change::Gone(s("bt")), t));
-        assert!(!w.hear(Change::Back(s("bt")), t));
-        assert!(w.hear(Change::Gone(s("bt")), t));
+        assert_eq!(w.hear(Change::Gone(s("bt")), t), LOST);
+        assert_eq!(w.hear(Change::Back(s("bt")), t), NOTHING);
+        assert_eq!(w.hear(Change::Gone(s("bt")), t), LOST);
     }
 }

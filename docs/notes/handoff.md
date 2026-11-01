@@ -40,10 +40,10 @@ Done in this run (newest last), none tried in the real app yet:
 - `16b22f3` Start radio from an album, an artist, a playlist or a selection; every radio endless.
 - `7734b5f` Pinned playlists and playlist folders in Your library.
 - `78338de` Command palette: the search bar (Ctrl+K) finds pages, actions and settings too.
-- Pause when headphones or a Bluetooth headset disconnect (Settings › Playback › Output device).
+- `40884cd` Pause when headphones or a Bluetooth headset disconnect (Settings › Playback › Output device).
+- Local files follow Windows' new default output, at the same place, paused or not.
 
-Next in the run: local files follow Windows' new default output (the engine keeps the device it opened), then the rest
-of Features › High's quick wins, then Optimisation and Workflow, then milestone 4 (Lyrics).
+Next in the run: the rest of Features › High's quick wins, then Optimisation and Workflow, then milestone 4 (Lyrics).
 
 ## Branches
 

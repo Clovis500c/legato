@@ -45,6 +45,9 @@ pub enum Command {
     /// Keep current file, drop the rest (shuffle turned on mid-run). Current plays on, no gap.
     Truncate,
     Stop,
+    /// Rust-side only: Windows' default output changed. What plays moves to it, same place, paused or not.
+    #[serde(skip)]
+    Reopen,
 }
 
 #[derive(Debug, Clone, Default, Serialize, ts_rs::TS)]
@@ -215,6 +218,29 @@ impl Engine {
                 }
                 self.durations.truncate(self.stops.len());
             }
+            Command::Reopen => {
+                let Some(old) = self.device.take() else { return Ok(()) };
+                // Nothing playing (stopped, queue over): the next play opens the new default.
+                if self.player.is_none() || self.queue.current().is_none() {
+                    return Ok(());
+                }
+                let at = self.control.position_ms();
+                let paused = self.player.as_ref().is_some_and(|p| p.is_paused());
+                // Old player and stream gone first: one stream at a time.
+                self.player = None;
+                let null = matches!(old, Output::Null(_));
+                drop(old);
+                self.device = Some(if null { Output::Null(output::Null::open()) } else { Output::open()? });
+                // Same file again: nothing counts as loaded in the new player.
+                self.queue.jump(0);
+                self.restart()?;
+                if let Some(p) = &self.player {
+                    if paused {
+                        p.pause();
+                    }
+                    let _ = p.try_seek(Duration::from_millis(at));
+                }
+            }
             Command::Stop => {
                 self.control.quiet();
                 self.player = None;
@@ -380,6 +406,36 @@ mod tests {
         let path = wav("none", 0, 3, 0);
         let on = played(&path, true, 300);
         assert!(on.position_ms < 1_000 && on.trim_end_ms.is_none(), "{on:?}");
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
+    fn a_new_default_output_takes_the_song_where_it_was_paused_or_not() {
+        let path = wav("reopen", 0, 8, 0);
+        let mut e = Engine { volume: 1.0, ..Default::default() };
+        e.device = Some(Output::Null(Null::open()));
+        e.handle(Command::Play { paths: vec![path.clone()], start: 0 }).unwrap();
+        e.handle(Command::Seek { ms: 3_000 }).unwrap();
+        e.handle(Command::Toggle).unwrap();
+        let before = e.status().position_ms;
+        e.handle(Command::Reopen).unwrap();
+        std::thread::sleep(Duration::from_millis(100));
+        e.tick();
+        let st = e.status();
+        assert!(st.paused && st.path.as_ref() == Some(&path), "{st:?}");
+        // The pause lands within a block of samples.
+        assert!(before >= 3_000 && (before..before + 100).contains(&st.position_ms), "{before} {}", st.position_ms);
+        // Playing: plays on from there.
+        e.handle(Command::Toggle).unwrap();
+        e.handle(Command::Reopen).unwrap();
+        std::thread::sleep(Duration::from_millis(200));
+        e.tick();
+        let st = e.status();
+        assert!(!st.paused && (3_000..4_000).contains(&st.position_ms), "{st:?}");
+        // Stopped: nothing to move, the next play opens the new default.
+        e.handle(Command::Stop).unwrap();
+        e.handle(Command::Reopen).unwrap();
+        assert!(e.device.is_none() && e.player.is_none());
         let _ = std::fs::remove_file(path);
     }
 
