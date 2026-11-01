@@ -328,6 +328,8 @@ let videoMs = 0
 let stuckTimer: ReturnType<typeof setTimeout> | undefined
 // Play whose video the stuck check loaded again (once per play).
 let reloaded = -1
+// Play whose start Google refused (its "Sorry…" page, refused.js), -1 = none.
+let refusedPlay = -1
 
 // No network (Windows says so): a video that won't start isn't refused. Nothing is blocked or skipped; playback pauses
 // and the song starts over in a new embed once the network is back (2026-10-30: a dropped Wi-Fi marked every song it
@@ -369,7 +371,9 @@ function watchForStuck(playId: number, wait = 6_000) {
     if (offline()) return waitForNetwork(playId)
     if (!watching(id)) {
       // As often a stall as a refusal: skipped away and back, the song played (2026-11-01). Loaded again once first.
-      if (reloaded !== playId) return reload(id, playId)
+      if (reloaded !== playId) return reload(id, playId, 'the video never started', ytState === undefined ? 'no report' : `state ${ytState}`)
+      // Google limits this network: the video isn't to blame, and its watch page is Google's too.
+      if (refusedPlay === playId) return tooMany()
       block(id)
       return playOnWatchPage(id, 0)
     }
@@ -378,14 +382,38 @@ function watchForStuck(playId: number, wait = 6_000) {
   stuckTimer = setTimeout(check, wait)
 }
 
-/** The video that never started, into the same embed again (what a skip away and back did), watched again. */
-function reload(video: string, playId: number) {
+/** The video that never started, into the same embed again (what a skip away and back did), watched again. `why` and
+ *  `detail`: the diagnostics line. */
+function reload(video: string, playId: number, why: string, detail: string) {
   reloaded = playId
-  report('info', 'playback', 'youtube: the video never started, loading it again', ytState === undefined ? 'no report' : `state ${ytState}`)
+  report('info', 'playback', `youtube: ${why}, loading it again`, detail)
   ytFresh = true
   usePlayer.getState().applyVolume(true)
   ytPost(frame, 'command', 'loadVideoById', [video, usePlayer.getState().startAt / 1000])
   watchForStuck(playId)
+}
+
+/** Google refused the player's request (its "Sorry…" page while it limits this network): the embed would wait, black,
+ *  for good. Loaded again at once, as a skip away and back did; refused again: stopped and said. Paused as it loaded:
+ *  loaded again when played (toggle). */
+function refused(status: number) {
+  const p = usePlayer.getState()
+  const id = p.now?.via === 'youtube' ? p.now.youtubeId : undefined
+  // A late answer to an older request (started since, moved on, on the watch page): nothing stuck.
+  if (!id || watching(id) || p.positionMs > p.startAt || ytState === 1 || ytState === 2) return
+  const again = refusedPlay === p.playId || reloaded === p.playId
+  refusedPlay = p.playId
+  if (p.hold || pausedAt) return void clearTimeout(stuckTimer)
+  if (again) return tooMany(`status ${status}`)
+  reload(id, p.playId, 'Google refused the video', `status ${status}`)
+}
+
+/** Refused again: stopped and said. Nothing more asked of Google for now: no other upload searched, no watch page. */
+function tooMany(detail?: string) {
+  clearTimeout(stuckTimer)
+  report('warn', 'playback', 'youtube: Google refused the video again, stopped', detail)
+  useStore.getState().notify(`YouTube: ${tr('Too many requests for now: wait a few minutes, then try again.')}`, { kind: 'error' })
+  usePlayer.setState({ playing: false })
 }
 
 /** `why` = the notice's words; `cause` = the same in English for the diagnostics log (no title, no name). */
@@ -662,8 +690,12 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     }
     set({ playing: !playing, ...(playing && { tail: stopTail(get().tail) }) })
     pausedAt = playing ? Date.now() : 0
-    // Played before its video started (restored paused, paused as it loaded): watched again.
-    if (!playing && now.via === 'youtube' && get().positionMs <= get().startAt) watchForStuck(get().playId)
+    // Played before its video started (restored paused, paused as it loaded): watched again. Refused by Google
+    // meanwhile: loaded again now, the press asks for it.
+    if (!playing && now.via === 'youtube' && get().positionMs <= get().startAt) {
+      if (refusedPlay === get().playId && now.youtubeId) reload(now.youtubeId, get().playId, 'played after a refusal', 'by the user')
+      else watchForStuck(get().playId)
+    }
     // Fade on pause: down (from where a running fade, the sleep timer's, has got to), then pause. On play: play silent,
     // then up. Spotify: no volume control fast enough.
     if (!fade.pause || now.via === 'spotify') return pause()
@@ -756,6 +788,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
 
   onYoutube(u) {
     const { now } = get()
+    if (u.refused !== undefined) return refused(u.refused)
     // Watch page can't play it either (region, age, removed): another upload of the song, else the next song.
     if (u.unplayable !== undefined) {
       if (now?.trackId && now.youtubeId) return void tryOtherUpload(now.trackId, now.youtubeId, tr('This video can’t play here ({reason})', { reason: u.unplayable }), 'unplayable on the watch page')

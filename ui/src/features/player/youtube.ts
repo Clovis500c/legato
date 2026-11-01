@@ -24,17 +24,20 @@ export interface YtUpdate {
   error?: number
   /** Watch page (blocked embeds): the video can't play at all here (region, age, removed). Why, in YouTube's words. */
   unplayable?: string
+  /** Google refused the player's request ("Sorry…" page while it limits this network; crates/shield refused.js): status. */
+  refused?: number
 }
 
 /** Embed message → update. Undefined if not from YouTube or not relevant. */
 export function parseYt(origin: string, data: unknown): YtUpdate | undefined {
   if (origin !== YT_ORIGIN || typeof data !== 'string') return
-  let msg: { event?: string; info?: unknown }
+  let msg: { event?: string; info?: unknown; musicApp?: string; status?: unknown }
   try {
     msg = JSON.parse(data)
   } catch {
     return
   }
+  if (msg.musicApp === 'refused') return typeof msg.status === 'number' ? { refused: msg.status } : undefined
   const info = msg.info as Record<string, unknown> | number | null
   switch (msg.event) {
     case 'initialDelivery':

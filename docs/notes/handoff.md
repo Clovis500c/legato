@@ -14,7 +14,9 @@ build), and `platforms` went to master that day, master's empty merge `0bc7866` 
 wanted two fixes the Windows-only local check can't see: a workflow line (`5834cc4`) and an import macOS found
 unused (now in `/release-check`). That evening, on the owner's word,
 two fixes from the owner's report went out as the next Beta: one Liked Music (`1b84e46`) and a YouTube video that never
-starts loaded again (`4a45d27`; plan › Check live). Next: the owner's 1.1.557 updates to it by itself (the real update
+starts loaded again (`4a45d27`; plan › Check live). The owner saw it again on 1.1.570: its cause is Google's "Sorry…"
+page answering the embed's player request while it limits this PC after an import's searches; `refused.js` and the store
+now load the video again at once (committed on `platforms`, not pushed). Next: the owner's 1.1.557 updates to it by itself (the real update
 from one Beta to the next: `3f50031` took rustls and ring out of the updater), the owner tries both fixes, then the
 Check live list, then Stable. The new website went out the same day, on the owner's word, before Stable. Rules the run kept, on top of `CLAUDE.md`:
 

@@ -1,5 +1,21 @@
-import { describe, expect, it } from 'vitest'
-import { extrapolate, quantize } from './Progress'
+import { describe, expect, it, vi } from 'vitest'
+import { extrapolate, positionNow, quantize } from './Progress'
+import { usePlayer } from './store'
+
+describe('positionNow', () => {
+  it('waits for the source at a new song’s start, then runs from its reports', () => {
+    let now = 1000
+    const clock = vi.spyOn(performance, 'now').mockImplementation(() => now)
+    usePlayer.setState((s) => ({ playId: s.playId + 1, positionMs: 0, playing: true, durationMs: 200_000 }))
+    now += 25_000
+    // Regression guard: a YouTube start Google refused showed 0:25, nothing playing (2026-11-01).
+    expect(positionNow()).toBe(0)
+    usePlayer.setState({ positionMs: 250 })
+    now += 500
+    expect(positionNow()).toBe(750)
+    clock.mockRestore()
+  })
+})
 
 describe('quantize', () => {
   it('steps down to what the display shows', () => {

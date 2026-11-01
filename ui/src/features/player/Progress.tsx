@@ -21,10 +21,12 @@ export function quantize(ms: number, step: number): number {
   return step > 1 ? Math.floor(ms / step) * step : Math.round(ms)
 }
 
-// Last source report (YouTube ~4/s, engine 4/s), stamped on arrival.
-let base = { ms: usePlayer.getState().positionMs, at: performance.now() }
+// Last source report (YouTube ~4/s, engine 4/s), stamped on arrival. A new song's start isn't one (live false): the
+// clock waits for its source (2026-11-01: a YouTube start Google refused ran the clock, nothing playing).
+let base = { ms: usePlayer.getState().positionMs, at: performance.now(), live: false }
 usePlayer.subscribe((s, prev) => {
-  if (s.positionMs !== prev.positionMs) base = { ms: s.positionMs, at: performance.now() }
+  if (s.playId !== prev.playId) base = { ms: s.positionMs, at: performance.now(), live: false }
+  else if (s.positionMs !== prev.positionMs) base = { ms: s.positionMs, at: performance.now(), live: true }
 })
 
 // One frame loop for every bar and clock on screen, only while something listens (playing).
@@ -59,7 +61,7 @@ const still = () => () => {}
 /** Position at this instant (a click), outside React. */
 export function positionNow(): number {
   const { playing, durationMs } = usePlayer.getState()
-  return extrapolate(base.ms, base.at, performance.now(), playing, durationMs)
+  return extrapolate(base.ms, base.at, performance.now(), playing && base.live, durationMs)
 }
 
 /**
@@ -71,7 +73,7 @@ export function usePosition(step = 1): number {
   const durationMs = usePlayer((s) => s.durationMs)
   // Reports re-render too: seeking while paused.
   usePlayer((s) => s.positionMs)
-  return useSyncExternalStore(playing ? onFrame : still, () => quantize(extrapolate(base.ms, base.at, frameAt, playing, durationMs), step))
+  return useSyncExternalStore(playing ? onFrame : still, () => quantize(extrapolate(base.ms, base.at, frameAt, playing && base.live, durationMs), step))
 }
 
 /**

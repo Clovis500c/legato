@@ -17,6 +17,8 @@ pub const LISTS: [(&str, &str); 2] = [
 pub const YOUTUBE_SCRIPT: &str = include_str!("youtube.js");
 /// Hides YouTube's overlays in bare embeds (controls=0). Inject into all frames, shield or not.
 pub const BARE_SCRIPT: &str = include_str!("bare.js");
+/// Tells the app when Google refuses an embed's player request (its "Sorry…" page). Inject into all frames, shield or not.
+pub const REFUSED_SCRIPT: &str = include_str!("refused.js");
 /// YouTube's watch page as a bare player, for videos that can't be embedded. Its own webview only, main frame.
 pub const WATCH_SCRIPT: &str = include_str!("watch.js");
 /// Reads the lists and songs Spotify's signed-in pages draw, when the app asks. The app's Spotify window only, main frame.

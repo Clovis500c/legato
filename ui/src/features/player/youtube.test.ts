@@ -23,6 +23,12 @@ describe('parseYt', () => {
   it('reports referrer error 153', () => {
     expect(parseYt(YT_ORIGIN, msg({ event: 'onError', info: 153 }))).toEqual({ error: 153 })
   })
+
+  it('reads a refusal said by refused.js, from YouTube only', () => {
+    expect(parseYt(YT_ORIGIN, msg({ musicApp: 'refused', status: 403 }))).toEqual({ refused: 403 })
+    expect(parseYt(YT_ORIGIN, msg({ musicApp: 'refused' }))).toBeUndefined()
+    expect(parseYt('https://evil.example', msg({ musicApp: 'refused', status: 403 }))).toBeUndefined()
+  })
 })
 
 describe('embedUrl', () => {

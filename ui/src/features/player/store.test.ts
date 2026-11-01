@@ -349,6 +349,42 @@ describe('a YouTube video that never starts', () => {
     expect(loads()).toEqual(['video76'])
   })
 
+  it('refused by Google: loaded again at once; refused again: stopped, nothing more asked of it', async () => {
+    const notify = vi.fn()
+    useStore.setState({ notify })
+    usePlayer.getState().playTracks([song(78), song(79)], 0)
+    usePlayer.getState().onYoutube({ state: 3 })
+    // Regression guard: waited on for 26 s, black and silent (2026-11-01).
+    usePlayer.getState().onYoutube({ refused: 403 })
+    expect(loads()).toEqual(['video78'])
+    usePlayer.getState().onYoutube({ refused: 403 })
+    expect(usePlayer.getState().playing).toBe(false)
+    expect(notify.mock.calls.map((c) => c[0])).toEqual(['YouTube: Too many requests for now: wait a few minutes, then try again.'])
+    // No watch page, no other upload, no next song: the video isn't to blame.
+    await vi.advanceTimersByTimeAsync(60_000)
+    expect(loads()).toEqual(['video78'])
+    expect(usePlayer.getState().now?.youtubeId).toBe('video78')
+    // Played by the user: asked once more.
+    usePlayer.getState().toggle()
+    expect(loads()).toEqual(['video78', 'video78'])
+  })
+
+  it('a refusal once started, or while paused, loads nothing until played', async () => {
+    usePlayer.getState().playTracks([song(80)], 0)
+    usePlayer.getState().onYoutube({ state: 1, time: 0.3 })
+    usePlayer.getState().onYoutube({ time: 2 })
+    // An older request's late answer.
+    usePlayer.getState().onYoutube({ refused: 403 })
+    expect(loads()).toEqual([])
+    usePlayer.getState().playTracks([song(81)], 0)
+    usePlayer.getState().toggle()
+    usePlayer.getState().onYoutube({ refused: 403 })
+    await vi.advanceTimersByTimeAsync(30_000)
+    expect(loads()).toEqual([])
+    usePlayer.getState().toggle()
+    expect(loads()).toEqual(['video81'])
+  })
+
   it('waits while paused by the user, and is watched again once played', async () => {
     usePlayer.getState().playTracks([song(77)], 0)
     usePlayer.getState().toggle()

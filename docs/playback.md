@@ -127,6 +127,12 @@ Songs started in the last 24 h (play stats) come after all the others, spread th
   errors isn't refused. Nothing is blocked (the refused list is kept between launches) or skipped: playback pauses with
   one message, and the song starts over in a new embed (`frameKey`) once the network is back (`waitForNetwork` in
   `store.ts`). Before, a dropped Wi-Fi marked every song it reached as refused, for good. The top bar shows Offline.
+- Google's limit (2026-11-01): while Google limits the PC's address (many requests from it, an import's searches), its
+  "Sorry…" page answers some of the embed's player requests (403 after about 7 s, or 429), and the embed then waits for
+  good, black and silent, with no event. `crates/shield/src/refused.js`, in every frame, reads the embed's resource
+  timings (YouTube's fetch untouched) and posts `{ musicApp: 'refused' }` to the app: the video is loaded again once, at
+  once; refused again, playback stops with one message. Nothing is blocked or searched and no watch page: the video
+  isn't to blame, and the watch page is Google's too. The clock waits for a new song's first report (`Progress.tsx`).
 - The stuck check arms when the video is set, not only when the play count moves: `playAt` counts the play before it
   sets what plays, so the first YouTube song of a session (or after a file) was never watched (2026-10-30).
 - Now Playing Auto mode: frames `1.jpg` / `2.jpg` / `3.jpg` (25 / 50 / 75 %) compared at 32×24 (`still.ts`); nearly the

@@ -2153,6 +2153,7 @@ pub fn run() {
                 window = window.initialization_script_for_all_frames(music_shield::YOUTUBE_SCRIPT);
             }
             window = window.initialization_script_for_all_frames(music_shield::BARE_SCRIPT);
+            window = window.initialization_script_for_all_frames(music_shield::REFUSED_SCRIPT);
             window = window.initialization_script_for_all_frames(music_shield::LIVE_SCRIPT);
             let window = window.build()?;
             // Close = back to the tray (setting closeToTray, on by default); Quit in the tray menu really quits.
