@@ -114,6 +114,9 @@ const uk: Record<string, string> = {
   'Previous': 'Попередній',
   'Pause': 'Пауза',
   'Play': 'Відтворити',
+  'Added {n} song': 'Додано {n} пісню',
+  'Added {n} songs': 'Додано пісень: {n}',
+  'Folder added': 'Теку додано',
   'Next': 'Наступний',
   'Shuffle': 'Перемішати',
   // Mini player

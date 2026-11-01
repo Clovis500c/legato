@@ -6,7 +6,7 @@ use lofty::file::TaggedFile;
 use lofty::picture::PictureType;
 use lofty::prelude::*;
 use lofty::probe::Probe;
-use std::collections::{BTreeMap, HashMap};
+use std::collections::{BTreeMap, HashMap, HashSet};
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{LazyLock, Mutex, PoisonError};
@@ -26,12 +26,24 @@ pub fn is_audio(path: &Path) -> bool {
     path.extension().and_then(|x| x.to_str()).is_some_and(|x| AUDIO.contains(&x.to_ascii_lowercase().as_str()))
 }
 
-/// All audio files under `dirs`, recursively. Symlinked dirs skipped (no loops).
-pub fn scan(dirs: &[PathBuf]) -> Vec<Track> {
+/// Most watched folders, and most files kept on their own (dropped outside them).
+pub const MAX_FOLDERS: usize = 50;
+pub const MAX_LOOSE: usize = 20_000;
+
+/// All audio files under `roots`, recursively; an audio file given as a root, as it is (dropped alone). Each file once.
+/// Symlinked dirs skipped (no loops).
+pub fn scan(roots: &[PathBuf]) -> Vec<Track> {
     let mut files = Vec::new();
-    for d in dirs {
-        walk(d, &mut files);
+    for r in roots {
+        if is_audio(r) && r.is_file() {
+            found(r.clone(), std::fs::metadata(r).ok(), &mut files);
+        } else {
+            walk(r, &mut files);
+        }
     }
+    // A dropped file a watched folder holds too.
+    let mut seen = HashSet::new();
+    files.retain(|(p, _)| seen.insert(p.clone()));
     let old = std::mem::take(&mut *KNOWN.lock().unwrap_or_else(PoisonError::into_inner));
     // No date known: read again.
     let kept = |path: &PathBuf, stamp: &Stamp| old.get(path).filter(|(s, _)| stamp.1.is_some() && s == stamp).map(|(_, t)| t.clone());
@@ -59,10 +71,33 @@ fn walk(dir: &Path, out: &mut Vec<(PathBuf, Stamp)>) {
         if kind.is_dir() {
             walk(&path, out);
         } else if kind.is_file() && is_audio(&path) {
-            let meta = e.metadata().ok();
-            out.push((path, (meta.as_ref().map_or(0, |m| m.len()), meta.and_then(|m| m.modified().ok()))));
+            found(path, e.metadata().ok(), out);
         }
     }
+}
+
+fn found(path: PathBuf, meta: Option<std::fs::Metadata>, out: &mut Vec<(PathBuf, Stamp)>) {
+    out.push((path, (meta.as_ref().map_or(0, |m| m.len()), meta.and_then(|m| m.modified().ok()))));
+}
+
+/// A drop from Explorer: a folder joins `folders` (unless one holds it already), an audio file outside them joins `loose`,
+/// each once; a file a new folder holds leaves `loose`. Returns the folders added.
+pub fn take_drop(dropped: &[PathBuf], folders: &mut Vec<String>, loose: &mut Vec<String>) -> usize {
+    let before = folders.len();
+    for d in dropped.iter().filter(|p| p.is_dir()) {
+        if folders.len() < MAX_FOLDERS && !folders.iter().any(|f| d.starts_with(f)) {
+            folders.push(d.to_string_lossy().into_owned());
+        }
+    }
+    let watched = |p: &Path| folders.iter().any(|f| p.starts_with(f));
+    loose.retain(|f| !watched(Path::new(f)));
+    for f in dropped.iter().filter(|p| is_audio(p) && p.is_file() && !watched(p)) {
+        let f = f.to_string_lossy().into_owned();
+        if loose.len() < MAX_LOOSE && !loose.contains(&f) {
+            loose.push(f);
+        }
+    }
+    folders.len() - before
 }
 
 /// Tags of `paths`, in order, read on a few threads: one file's disk wait overlaps another's parsing.
@@ -254,6 +289,44 @@ pub(crate) mod tests {
         assert_eq!((t.title.as_str(), t.artist.as_str()), ("Intro", "Unknown artist"));
         assert_eq!(t.duration_ms, Some(1000));
         assert!(t.ids[&Source::Local].ends_with("01 Intro.WAV"));
+    }
+
+    #[test]
+    fn a_file_dropped_alone_is_scanned_once() {
+        let dir = tempfile::tempdir().unwrap();
+        let (folder, alone) = (dir.path().join("Album"), dir.path().join("Alone.wav"));
+        std::fs::create_dir(&folder).unwrap();
+        wav(&folder.join("Song.wav"));
+        wav(&alone);
+        std::fs::write(dir.path().join("notes.txt"), b"x").unwrap();
+        // The folder, a file on its own, the folder's file again, a text file, a file gone.
+        let found = scan(&[folder.clone(), alone, folder.join("Song.wav"), dir.path().join("notes.txt"), dir.path().join("gone.mp3")]);
+        let mut titles: Vec<&str> = found.iter().map(|t| t.title.as_str()).collect();
+        titles.sort_unstable();
+        assert_eq!(titles, ["Alone", "Song"]);
+    }
+
+    #[test]
+    fn a_drop_adds_folders_and_keeps_files_outside_them() {
+        let dir = tempfile::tempdir().unwrap();
+        let at = |p: &str| dir.path().join(p);
+        for d in ["Watched", "Watched/Live", "New"] {
+            std::fs::create_dir(at(d)).unwrap();
+        }
+        for f in ["Watched/In.wav", "New/Old.wav", "Alone.wav"] {
+            wav(&at(f));
+        }
+        std::fs::write(at("cover.jpg"), b"x").unwrap();
+        let s = |p: PathBuf| p.to_string_lossy().into_owned();
+        let (mut folders, mut loose) = (vec![s(at("Watched"))], vec![s(at("New/Old.wav"))]);
+        // A folder a watched one holds, a new folder, a file of a watched folder, a file alone (twice), a picture.
+        let dropped = [at("Watched/Live"), at("New"), at("Watched/In.wav"), at("Alone.wav"), at("Alone.wav"), at("cover.jpg")];
+        assert_eq!(take_drop(&dropped, &mut folders, &mut loose), 1);
+        assert_eq!(folders, [s(at("Watched")), s(at("New"))]);
+        // New/Old.wav is the new folder's now.
+        assert_eq!(loose, [s(at("Alone.wav"))]);
+        assert_eq!(take_drop(&dropped, &mut folders, &mut loose), 0);
+        assert_eq!((folders.len(), loose.len()), (2, 1));
     }
 
     #[test]

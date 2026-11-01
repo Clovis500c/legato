@@ -75,7 +75,7 @@ export const SERVICES: [string, string][] = [
   ['Apple Music', 'Catalog search and 30-second previews, and public playlist or album links, no account. For your own playlists: Add music › Connect Apple Music.'],
   ['Deezer', 'Paste a public playlist or album link: its songs come in and play from YouTube. No account.'],
   ['SoundCloud', "Paste a song's link: it comes in and plays from YouTube. No account; SoundCloud shares a playlist's songs only with registered apps."],
-  ['Your files', 'Add your music folders; changes in them show up as they happen.'],
+  ['Your files', 'Add your music folders, or drop folders and songs from Explorer onto the window; changes in them show up as they happen.'],
   ['Other apps', "Playlist files (M3U, XSPF, CSV) and iTunes' or MusicBee's library file: songs on your PC come as they are, the others play from YouTube."],
 ]
 

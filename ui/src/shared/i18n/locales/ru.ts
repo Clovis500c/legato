@@ -114,6 +114,9 @@ const ru: Record<string, string> = {
   'Previous': 'Предыдущий',
   'Pause': 'Пауза',
   'Play': 'Воспроизвести',
+  'Added {n} song': 'Добавлена {n} песня',
+  'Added {n} songs': 'Добавлено песен: {n}',
+  'Folder added': 'Папка добавлена',
   'Next': 'Следующий',
   'Shuffle': 'Перемешать',
   // Mini player

@@ -32,7 +32,9 @@ Done in this run (newest last), none tried in the real app yet:
 - `051a07a` Spotify's own data export (`Playlist1.json`, `YourLibrary.json` or its ZIP), opened from Connect Spotify.
 - `da1d866` Spotify songs by paste: Ctrl+A then Ctrl+C in a list of Spotify's app, pasted in Add music › Import a list
   of songs; each song named from its public embed page, then the import screen.
-- A SoundCloud song link pasted anywhere: named by SoundCloud's oEmbed, found on YouTube, added. Sets said plainly.
+- `05c57d6` A SoundCloud song link pasted anywhere: named by SoundCloud's oEmbed, found on YouTube, added. Sets said
+  plainly.
+- Files and folders dropped from Explorer: folders watched, files kept on their own, the notice's Play.
 
 Next in the run: the quick wins of Features › High (drag files from Explorer, command palette, library backup…).
 

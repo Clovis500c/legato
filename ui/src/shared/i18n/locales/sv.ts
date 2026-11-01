@@ -114,6 +114,9 @@ const sv: Record<string, string> = {
   'Previous': 'Föregående',
   'Pause': 'Pausa',
   'Play': 'Spela',
+  'Added {n} song': '{n} låt tillagd',
+  'Added {n} songs': '{n} låtar tillagda',
+  'Folder added': 'Mapp tillagd',
   'Next': 'Nästa',
   'Shuffle': 'Blanda',
   // Mini player

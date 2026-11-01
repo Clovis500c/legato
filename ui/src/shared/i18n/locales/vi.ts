@@ -114,6 +114,9 @@ const vi: Record<string, string> = {
   'Previous': 'Trước',
   'Pause': 'Tạm dừng',
   'Play': 'Phát',
+  'Added {n} song': 'Đã thêm {n} bài hát',
+  'Added {n} songs': 'Đã thêm {n} bài hát',
+  'Folder added': 'Đã thêm thư mục',
   'Next': 'Tiếp',
   'Shuffle': 'Phát ngẫu nhiên',
   // Mini player

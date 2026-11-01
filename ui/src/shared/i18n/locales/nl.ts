@@ -114,6 +114,9 @@ const nl: Record<string, string> = {
   'Previous': 'Vorige',
   'Pause': 'Pauzeren',
   'Play': 'Afspelen',
+  'Added {n} song': '{n} nummer toegevoegd',
+  'Added {n} songs': '{n} nummers toegevoegd',
+  'Folder added': 'Map toegevoegd',
   'Next': 'Volgende',
   'Shuffle': 'Shuffle',
   // Mini player

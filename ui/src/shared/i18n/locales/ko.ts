@@ -114,6 +114,9 @@ const ko: Record<string, string> = {
   'Previous': '이전',
   'Pause': '일시정지',
   'Play': '재생',
+  'Added {n} song': '{n}곡을 추가했습니다',
+  'Added {n} songs': '{n}곡을 추가했습니다',
+  'Folder added': '폴더를 추가했습니다',
   'Next': '다음',
   'Shuffle': '셔플',
   // Mini player

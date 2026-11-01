@@ -114,6 +114,9 @@ const de: Record<string, string> = {
   'Previous': 'Zurück',
   'Pause': 'Pause',
   'Play': 'Abspielen',
+  'Added {n} song': '{n} Song hinzugefügt',
+  'Added {n} songs': '{n} Songs hinzugefügt',
+  'Folder added': 'Ordner hinzugefügt',
   'Next': 'Weiter',
   'Shuffle': 'Zufallswiedergabe',
   // Mini player

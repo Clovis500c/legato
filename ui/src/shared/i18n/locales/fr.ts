@@ -114,6 +114,9 @@ const fr: Record<string, string> = {
   'Previous': 'Précédent',
   'Pause': 'Pause',
   'Play': 'Lecture',
+  'Added {n} song': '{n} titre ajouté',
+  'Added {n} songs': '{n} titres ajoutés',
+  'Folder added': 'Dossier ajouté',
   'Next': 'Suivant',
   'Shuffle': 'Aléatoire',
   // Mini player

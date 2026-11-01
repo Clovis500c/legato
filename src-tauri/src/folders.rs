@@ -1,13 +1,15 @@
 //! Local music folders watched (Settings › Accounts › Local files): audio files added, removed or renamed there show
-//! up in the library on their own, 2 s after the last change (a copy of a whole album is one rescan).
+//! up in the library on their own, 2 s after the last change (a copy of a whole album is one rescan). Files and folders
+//! dropped from Explorer join them (`add_dropped`).
 
-use crate::AppState;
+use crate::{AppState, CmdResult, err};
+use music_core::model::Source;
 use notify::{RecommendedWatcher, RecursiveMode, Watcher};
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 use std::sync::mpsc::{RecvTimeoutError, channel};
 use std::time::Duration;
-use tauri::{Emitter, Manager};
+use tauri::{Emitter, Manager, State};
 
 /// Quiet this long after the last change: then one rescan.
 const SETTLE: Duration = Duration::from_secs(2);
@@ -63,6 +65,48 @@ pub fn watch(app: &tauri::AppHandle, dirs: &[String]) {
             }
         }
     });
+}
+
+#[derive(serde::Serialize, ts_rs::TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export)]
+pub struct Dropped {
+    /// Folders now watched.
+    folders: usize,
+    /// Songs new in the library.
+    added: usize,
+    /// The drop's songs in the library, its folders' too: what Play plays.
+    paths: Vec<String>,
+}
+
+/// Explorer's drop on the window: folders join the watched ones, audio files outside them are kept on their own
+/// (setting `files`), then one rescan.
+#[tauri::command]
+pub async fn add_dropped(app: tauri::AppHandle, state: State<'_, AppState>, paths: Vec<String>) -> CmdResult<Dropped> {
+    // Trust boundary: the OS's drop. Absolute paths only, bounded.
+    let dropped: Vec<PathBuf> = paths.into_iter().take(1000).map(PathBuf::from).filter(|p| p.is_absolute()).collect();
+    let known = crate::songlist::own_files(&state)?;
+    let (mut dirs, mut loose) = {
+        let lib = state.lib();
+        (crate::folders(&lib), crate::loose_files(&lib))
+    };
+    let folders = music_core::local::take_drop(&dropped, &mut dirs, &mut loose);
+    {
+        let lib = state.lib();
+        lib.set_setting("folders", &serde_json::json!(dirs)).map_err(err)?;
+        lib.set_setting("files", &serde_json::json!(loose)).map_err(err)?;
+    }
+    if folders > 0 {
+        watch(&app, &dirs);
+    }
+    crate::rescan(&state, dirs).await?;
+    let (mut added, mut paths) = (0, Vec::new());
+    for t in state.lib().tracks().map_err(err)? {
+        let Some(p) = t.track.ids.get(&Source::Local).filter(|p| dropped.iter().any(|d| Path::new(p).starts_with(d))) else { continue };
+        added += usize::from(!known.contains_key(&music_core::playfile::path_key(Path::new(p))));
+        paths.push(p.clone());
+    }
+    Ok(Dropped { folders, added, paths })
 }
 
 #[cfg(test)]

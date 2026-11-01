@@ -28,8 +28,8 @@ import { useLiveSync } from './liveSync'
 import { AdaptiveBar } from './AdaptiveBar'
 import { toggleLike, useLiked } from './like'
 import { tr } from '../../shared/i18n/i18n'
+import { takeDrop } from './drop'
 
-const AUDIO = /\.(mp3|flac|wav|ogg|m4a|aac)$/i
 export const clock = (ms: number | null) => formatDuration(ms) || '0:00'
 export const fileFormat = (path?: string) => path?.split('.').pop()?.toUpperCase()
 
@@ -252,7 +252,6 @@ export function PlayerBar() {
   const now = usePlayer((s) => s.now)
   const tail = usePlayer((s) => s.tail)
   const frameKey = usePlayer((s) => s.frameKey)
-  const playFiles = usePlayer((s) => s.playFiles)
   const onLocal = usePlayer((s) => s.onLocal)
   const onSpotify = usePlayer((s) => s.onSpotify)
   const setFull = usePlayer((s) => s.setFull)
@@ -264,21 +263,22 @@ export function PlayerBar() {
   const local = now && (now.via === 'local' || now.via === 'preview')
   const remote = now?.via === 'spotify'
 
-  // Drop audio files on window = play them as a queue. Drop an image = read a shared playlist QR code.
+  // Files or folders dropped from Explorer = added (takeDrop). An image alone = read a shared playlist QR code.
   useEffect(() => {
     const off = getCurrentWebview().onDragDropEvent((e) => {
       if (e.payload.type !== 'drop') return
-      const files = e.payload.paths.filter((p) => AUDIO.test(p)).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))
-      const image = e.payload.paths.find((p) => /\.(png|jpe?g)$/i.test(p))
-      if (files.length) playFiles(files)
-      else if (image)
-        api
-          .shareReadImage(image)
-          .then((incoming) => useStore.setState({ incoming }))
-          .catch((err) => useStore.setState({ error: String(err) }))
+      const { paths } = e.payload
+      const image = paths.find((p) => /\.(png|jpe?g)$/i.test(p))
+      void takeDrop(paths).then((took) => {
+        if (!took && image)
+          api
+            .shareReadImage(image)
+            .then((incoming) => useStore.setState({ incoming }))
+            .catch((err) => useStore.setState({ error: String(err) }))
+      })
     })
     return () => void off.then((f) => f())
-  }, [playFiles])
+  }, [])
 
   // shortcut: polls engine at 4 Hz. Switch to Tauri events if it shows in profiles.
   useEffect(() => {

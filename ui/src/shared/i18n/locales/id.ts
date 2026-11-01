@@ -114,6 +114,9 @@ const id: Record<string, string> = {
   'Previous': 'Sebelumnya',
   'Pause': 'Jeda',
   'Play': 'Putar',
+  'Added {n} song': '{n} lagu ditambahkan',
+  'Added {n} songs': '{n} lagu ditambahkan',
+  'Folder added': 'Folder ditambahkan',
   'Next': 'Berikutnya',
   'Shuffle': 'Acak',
   // Mini player

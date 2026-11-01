@@ -114,6 +114,9 @@ const tr: Record<string, string> = {
   'Previous': 'Önceki',
   'Pause': 'Duraklat',
   'Play': 'Çal',
+  'Added {n} song': '{n} şarkı eklendi',
+  'Added {n} songs': '{n} şarkı eklendi',
+  'Folder added': 'Klasör eklendi',
   'Next': 'Sonraki',
   'Shuffle': 'Karıştır',
   // Mini player

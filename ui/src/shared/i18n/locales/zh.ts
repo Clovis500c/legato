@@ -114,6 +114,9 @@ const zh: Record<string, string> = {
   'Previous': '上一首',
   'Pause': '暂停',
   'Play': '播放',
+  'Added {n} song': '已添加 {n} 首歌曲',
+  'Added {n} songs': '已添加 {n} 首歌曲',
+  'Folder added': '已添加文件夹',
   'Next': '下一首',
   'Shuffle': '随机播放',
   // Mini player

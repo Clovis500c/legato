@@ -163,8 +163,11 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
 - **Low**: niche or fun, for later.
 
 **High**
-- [ ] `S` Drag files or folders from Explorer onto the window: added (or played with Shift). Today dropped audio files play
-      as a queue (`PlayerBar.tsx`), nothing is added and folders do nothing.
+- [x] `S` Drag files or folders from Explorer onto the window: a folder joins the watched ones, an audio file outside them
+      is kept on its own (setting `files`, scanned with the folders: `local::take_drop`, `folders::add_dropped`), then
+      one rescan. Songs new to the library wait for the notice's Play; songs it had play at once. Shift can't be read
+      during an OS drop (the window has no key events then): the notice's button instead. A file kept on its own goes
+      with Remove from library; Settings lists only the folders. Not tried with a real drop yet.
 - [ ] `S` Gapless + crossfade that knows albums (never crossfade inside a live or continuous album).
 - [ ] `S` Artist / album / playlist radio and endless autoplay (song radio already there: `radio.ts`).
 - [ ] `S` Playlist folders, pinned playlists, generated playlist covers (a 2×2 of the songs' covers).
@@ -362,6 +365,8 @@ Most useful first; the tag is the effort.
 - [ ] A Legato link between two PCs: its videos come in named, no search.
 - [ ] A SoundCloud song link pasted, and an `on.soundcloud.com` short link from SoundCloud's phone app: named, found on
       YouTube, added; a set's link says why it can't.
+- [ ] A folder and a few songs dropped from Explorer: the folder in Settings › Accounts › Local files, the songs in the
+      library after a restart, the notice's Play; songs already there play at once; a QR picture still opens a shared list.
 - [ ] "No sound could be taken" gone from the second YouTube video on (fix 51946d5).
 - [ ] A real update from 0.1 (user's PC): Legato installed, old folder and its shortcuts gone, library, sign-ins and Open
       at startup still there.

@@ -114,6 +114,9 @@ const it: Record<string, string> = {
   'Previous': 'Precedente',
   'Pause': 'Pausa',
   'Play': 'Riproduci',
+  'Added {n} song': '{n} brano aggiunto',
+  'Added {n} songs': '{n} brani aggiunti',
+  'Folder added': 'Cartella aggiunta',
   'Next': 'Successivo',
   'Shuffle': 'Casuale',
   // Mini player

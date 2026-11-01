@@ -114,6 +114,9 @@ const hi: Record<string, string> = {
   'Previous': 'पिछला',
   'Pause': 'रोकें',
   'Play': 'चलाएं',
+  'Added {n} song': '{n} गाना जोड़ा गया',
+  'Added {n} songs': '{n} गाने जोड़े गए',
+  'Folder added': 'फ़ोल्डर जोड़ा गया',
   'Next': 'अगला',
   'Shuffle': 'शफ़ल',
   // Mini player

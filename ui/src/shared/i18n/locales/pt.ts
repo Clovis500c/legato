@@ -114,6 +114,9 @@ const pt: Record<string, string> = {
   'Previous': 'Anterior',
   'Pause': 'Pausar',
   'Play': 'Tocar',
+  'Added {n} song': '{n} música adicionada',
+  'Added {n} songs': '{n} músicas adicionadas',
+  'Folder added': 'Pasta adicionada',
   'Next': 'Próxima',
   'Shuffle': 'Aleatório',
   // Mini player

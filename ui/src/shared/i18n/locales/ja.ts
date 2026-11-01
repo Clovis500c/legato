@@ -114,6 +114,9 @@ const ja: Record<string, string> = {
   'Previous': '前へ',
   'Pause': '一時停止',
   'Play': '再生',
+  'Added {n} song': '{n} 曲を追加しました',
+  'Added {n} songs': '{n} 曲を追加しました',
+  'Folder added': 'フォルダーを追加しました',
   'Next': '次へ',
   'Shuffle': 'シャッフル',
   // Mini player
