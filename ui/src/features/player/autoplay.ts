@@ -1,4 +1,5 @@
 import { useSettings } from '../../app/settings'
+import { djMore } from './autoDj'
 import { similarTo } from './radio'
 import { onQueueEnd, usePlayer } from './store'
 
@@ -7,9 +8,10 @@ const MORE = 15
 
 /**
  * Up next ran out (setting autoplay, "Then, similar songs", or a radio playing): songs like the last few (radio.ts).
- * False = nothing to add.
+ * The Auto-DJ on: its own picks instead (autoDj.ts). False = nothing to add.
  */
 async function similarSongs(): Promise<boolean> {
+  if (usePlayer.getState().dj) return djMore()
   if (!useSettings.getState().settings.autoplay && !usePlayer.getState().radio) return false
   const { list, index, enqueue } = usePlayer.getState()
   const recent = list.slice(Math.max(0, index - 4), index + 1)

@@ -50,6 +50,8 @@ interface PlayerState {
   from?: string
   /** The queue is a radio (radio.ts): endless, songs like the last few come as Up next runs out, autoplay on or off. */
   radio: boolean
+  /** The queue is an Auto-DJ (autoDj.ts): songs of these library ids come by its rules as Up next runs out. */
+  dj?: number[]
   shuffle: boolean
   repeat: Repeat
   /** Fades between songs and on pause (Settings › Player, Advanced). */
@@ -450,7 +452,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
   playTracks(list, index, via) {
     const i = list.findIndex((t, j) => j >= index && vias(t, spotifyOn()).length > 0)
     if (i < 0) return
-    set({ list, order: shuffleOrder(get(), list, i, get().shuffle), added: [], from: contextName(), radio: false })
+    set({ list, order: shuffleOrder(get(), list, i, get().shuffle), added: [], from: contextName(), radio: false, dj: undefined })
     void get().playAt(i, i === index ? via : undefined)
   },
 

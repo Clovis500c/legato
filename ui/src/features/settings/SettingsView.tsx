@@ -5,7 +5,7 @@ import { useSettings } from '../../app/settings'
 import { useStore, type SettingsSection } from '../../app/store'
 import { api } from '../../shared/api'
 import { formatBytes, formatCount } from '../../shared/format'
-import { ACCENTS, ADAPTIVE_LEVELS, COLUMNS, COVER_CACHE_MB, DEFAULTS, VISUALIZER_STYLES, type AdaptiveLevel, type Column, type Settings } from '../../shared/theme/theme'
+import { ACCENTS, ADAPTIVE_LEVELS, COLUMNS, COVER_CACHE_MB, DEFAULTS, DJ_FRESH, DJ_GAPS, VISUALIZER_STYLES, type AdaptiveLevel, type Column, type Settings } from '../../shared/theme/theme'
 import { Button } from '../../shared/ui/Button'
 import { Led, Segmented, Toggle } from '../../shared/ui/controls'
 import { PageHeader } from '../../shared/ui/PageHeader'
@@ -591,6 +591,9 @@ function GeneralSection() {
   )
 }
 
+const freshLabels: Record<number, string> = { 0: msg('No wait'), 1: msg('A day'), 7: msg('A week'), 30: msg('A month') }
+const gapLabels: Record<number, string> = { 0: msg('Any time'), 3: msg('After 3 songs'), 10: msg('After 10 songs') }
+
 function PlaybackSection() {
   const { settings: s, update } = useSettings()
   return (
@@ -634,6 +637,19 @@ function PlaybackSection() {
           </Row>
           <Row setting="skipLong" label={msg('Skip long songs')} sub={s.skipLong ? tr('Songs over {n} min are skipped as the queue moves on', { n: s.skipLong }) : tr('Off')}>
             <input type="range" aria-label={tr('Skip long songs')} min={0} max={60} step={1} value={s.skipLong} onChange={(e) => update({ skipLong: +e.target.value })} className="bar w-40" style={{ backgroundImage: `linear-gradient(to right, var(--ink) ${(s.skipLong / 60) * 100}%, var(--line) 0)` }} />
+          </Row>
+        </div>
+      </Group>
+      <Group title={msg('Auto-DJ')}>
+        <div className="rounded-xl border border-line bg-raised">
+          <Row setting="djFresh" label={msg('Songs heard lately')} sub={tr('A song heard within this time waits until the others have played')}>
+            <Segmented label={tr('Songs heard lately')} value={String(s.djFresh)} onChange={(v) => update({ djFresh: +v })} options={DJ_FRESH.map((d) => ({ value: String(d), label: tr(freshLabels[d]) }))} />
+          </Row>
+          <Row setting="djRated" label={msg('Your ratings count')} sub={tr('Five stars come up four times as often as an unrated song, one star a quarter as often')}>
+            <Toggle label={tr('Your ratings count')} checked={s.djRated} onChange={(djRated) => update({ djRated })} />
+          </Row>
+          <Row setting="djGap" label={msg('Same artist again')} sub={tr('An artist waits this many songs before playing again, unless no one else is left')}>
+            <Segmented label={tr('Same artist again')} value={String(s.djGap)} onChange={(v) => update({ djGap: +v })} options={DJ_GAPS.map((n) => ({ value: String(n), label: tr(gapLabels[n]) }))} />
           </Row>
         </div>
       </Group>

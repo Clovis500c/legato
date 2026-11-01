@@ -1,4 +1,4 @@
-import { CaretDown, DotsThree, Info, MagnifyingGlass, MicrophoneStage, Play, Plus, ShareNetwork, Shuffle, SlidersHorizontal, SortAscending } from '@phosphor-icons/react'
+import { CaretDown, DotsThree, Info, MagnifyingGlass, MicrophoneStage, Play, Plus, ShareNetwork, Shuffle, SlidersHorizontal, SortAscending, VinylRecord } from '@phosphor-icons/react'
 import { artistName } from '../../shared/artistName'
 import { useShallow } from 'zustand/react/shallow'
 import { useCallback, useMemo, useState } from 'react'
@@ -17,6 +17,7 @@ import { Cover } from '../../shared/ui/Cover'
 import { playlistMenu, shufflePlay, tracksMenu } from '../menus'
 import { PageHeader } from '../../shared/ui/PageHeader'
 import { sourceLabel } from '../../shared/ui/SourceIcon'
+import { startAutoDj } from '../player/autoDj'
 import { isFull, vias } from '../player/sources'
 import { usePlayer } from '../player/store'
 import { SharePanel } from '../share/SharePanel'
@@ -66,6 +67,16 @@ export function ShuffleRound({ tracks }: { tracks: LibraryTrack[] }) {
   return (
     <RoundButton label={tr('Shuffle play')} kind="plain" onClick={() => shufflePlay(tracks)}>
       <Shuffle size={22} />
+    </RoundButton>
+  )
+}
+
+/** Auto-DJ from the list's songs (player autoDj.ts): picks by your rules, on and on. */
+function AutoDjRound({ tracks }: { tracks: LibraryTrack[] }) {
+  if (!tracks.length) return null
+  return (
+    <RoundButton label={tr('Auto-DJ')} kind="plain" onClick={() => startAutoDj(tracks)}>
+      <VinylRecord size={22} />
     </RoundButton>
   )
 }
@@ -267,6 +278,7 @@ export function SongsView() {
         <div className="flex flex-wrap items-center gap-3">
           <PlayAll tracks={shown} />
           <ShuffleRound tracks={shown} />
+          <AutoDjRound tracks={shown} />
           <SourceChips tracks={tracks} value={filter} onChange={setFilter} />
         </div>
         <div className="flex items-center gap-2">

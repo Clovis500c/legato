@@ -240,7 +240,11 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       service and a privacy row. Worth trying first by hand: a line typed in the search box, since YouTube Music's own
       search matches lyrics. AudD's humming terms not checked.
 - [ ] `S` Jump List (recent playlists, Shuffle all); thumbnail buttons already there (`thumbbar.rs`).
-- [ ] `S` Auto-DJ that keeps the queue going from the library with rules (MusicBee).
+- [x] `S` Auto-DJ that keeps the queue going from the library with rules (MusicBee). Songs' vinyl button, or Auto-DJ in an
+      album, artist, playlist or folder's menu: ten picks, ten more as Up next runs out (`player/autoDj.ts`, pure picks
+      `autoDjPick.ts`). Rules in Settings › Playback › Auto-DJ: a song heard lately waits (a week by default), ratings weigh
+      (five stars 4×, one star ¼), an artist kept 3 songs apart; each gives way rather than stop. Not kept across a restart,
+      like a radio.
 - [x] `S` Scrobble to ListenBrainz too (open, no key), beside Last.fm.
       Settings › Accounts › ListenBrainz: the user token from listenbrainz.org › Settings, checked there
       (`/1/validate-token`), kept in the keychain. What plays now, and each listen (half of the song or 4 minutes heard,

@@ -5,11 +5,13 @@ import { useSettings } from '../../app/settings'
 import { useStore } from '../../app/store'
 import { trackArt } from '../../shared/art'
 import { formatDuration } from '../../shared/format'
+import { Button } from '../../shared/ui/Button'
 import { onMenu, openMenu, type MenuEntry } from '../../shared/ui/ContextMenu'
 import { RoundButton, Toggle } from '../../shared/ui/controls'
 import { Cover } from '../../shared/ui/Cover'
 import { dragSource, useDrag, useDropTarget } from '../../shared/ui/drag'
 import { trackMenu } from '../menus'
+import { stopAutoDj } from './autoDj'
 import { fileFormat } from './PlayerBar'
 import { queueItems, queueRows, repeatsAhead, type QueueRow } from './queue'
 import { vias } from './sources'
@@ -96,6 +98,7 @@ export function UpNext({ onHide, className = CARD, heading }: { onHide: () => vo
   const nowArtist = usePlayer((s) => s.now?.artist ?? '')
   const track = useNowTrack()
   const autoplay = useSettings((s) => s.settings.autoplay)
+  const dj = usePlayer((s) => !!s.dj)
   const added = usePlayer((s) => s.added)
   const from = usePlayer((s) => s.from)
   const items = useMemo(() => queueItems(rows, added), [rows, added])
@@ -246,13 +249,31 @@ export function UpNext({ onHide, className = CARD, heading }: { onHide: () => vo
         </div>
         {next === 0 && <li className="py-6 text-center text-ink-3">{tr('Nothing after this track.')}</li>}
       </ol>
-      <label className="flex items-center justify-between gap-3 border-t border-line-soft px-2 pt-2.5">
-        <span className="flex flex-col">
-          <span className="text-xs font-semibold">{tr('Then, similar songs')}</span>
-          <span className="text-[0.6875rem] text-ink-3">{tr('When Up next runs out')}</span>
-        </span>
-        <Toggle label={tr('Then, similar songs')} checked={autoplay} onChange={(on) => useSettings.getState().update({ autoplay: on })} />
-      </label>
+      {/* Auto-DJ on: its picks come instead of similar songs, its rules one click away. */}
+      {dj ? (
+        <div className="flex items-center justify-between gap-3 border-t border-line-soft px-2 pt-2.5">
+          <span className="flex min-w-0 flex-col">
+            <span className="text-xs font-semibold">{tr('Auto-DJ')}</span>
+            <span className="text-[0.6875rem] text-ink-3">{tr('More songs by your rules as Up next runs out')}</span>
+          </span>
+          <span className="flex shrink-0 items-center gap-1.5">
+            <Button variant="ghost" className="px-3! py-1! text-xs!" onClick={() => useStore.getState().go({ name: 'settings', section: 'playback', focus: 'Auto-DJ' })}>
+              {tr('Rules')}
+            </Button>
+            <Button variant="ghost" className="px-3! py-1! text-xs!" onClick={stopAutoDj}>
+              {tr('Turn off')}
+            </Button>
+          </span>
+        </div>
+      ) : (
+        <label className="flex items-center justify-between gap-3 border-t border-line-soft px-2 pt-2.5">
+          <span className="flex flex-col">
+            <span className="text-xs font-semibold">{tr('Then, similar songs')}</span>
+            <span className="text-[0.6875rem] text-ink-3">{tr('When Up next runs out')}</span>
+          </span>
+          <Toggle label={tr('Then, similar songs')} checked={autoplay} onChange={(on) => useSettings.getState().update({ autoplay: on })} />
+        </label>
+      )}
     </aside>
   )
 }

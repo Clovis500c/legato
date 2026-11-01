@@ -18,7 +18,7 @@ export type IconName = 'SealCheck' | 'Feather' | 'Headphones' | 'Stack' | 'Magni
 export const FEATURES: { icon: IconName; title: string; text: string }[] = [
   { icon: 'Stack', title: 'One library', text: 'The same song on several services is one track, wherever you saved it. Browse it by artist and album in two panes, as in MusicBee.' },
   { icon: 'MagnifyingGlass', title: 'One search', text: 'Your library, YouTube Music, YouTube and Apple Music, in one place. Ctrl+K finds the app’s pages, actions and settings too.' },
-  { icon: 'PlayCircle', title: 'One player', text: 'Every source in one queue, with a shuffle that spreads artists, crossfade that leaves albums whole, endless radios, a pause when your headphones disconnect (or a call starts, if you want), lyrics and a visualizer (LED bars, a ring around the cover, VU needles, a spectrogram).' },
+  { icon: 'PlayCircle', title: 'One player', text: 'Every source in one queue, with a shuffle that spreads artists, crossfade that leaves albums whole, endless radios, an Auto-DJ that keeps your library playing by your rules, a pause when your headphones disconnect (or a call starts, if you want), lyrics and a visualizer (LED bars, a ring around the cover, VU needles, a spectrogram).' },
   { icon: 'Playlist', title: 'Playlists', text: 'Import from a service, a file (M3U, XSPF, CSV) or iTunes and MusicBee; create, pin, sort into folders, save as a file, export to YouTube Music, share by link or QR code. Smart playlists fill themselves from your plays and star ratings.' },
   { icon: 'Sparkle', title: 'Mixes made on your PC', text: 'Daily mixes, mixes for this time of day and this weekday, and stats from what you play, Last.fm or ListenBrainz scrobbling if you want it.' },
   { icon: 'SlidersHorizontal', title: 'Live Editor', text: 'Speed, pitch, a 10-band EQ, reverb and 3D sound, changed as it plays.' },
@@ -84,7 +84,7 @@ export const SERVICES: [string, string][] = [
 export const ROADMAP: [string, string][] = [
   ['Lyrics', 'A translation under each line, and a song found from a line you remember.'],
   ['Your own music', 'Jellyfin, Navidrome and Subsonic servers, MusicBrainz lookups for your tags.'],
-  ['Smarter listening', 'Your songs analysed on your PC (tempo, energy, key) for radios and fades that fit, a path from one artist to another, an auto-DJ, a yearly recap to share.'],
+  ['Smarter listening', 'Your songs analysed on your PC (tempo, energy, key) for radios and fades that fit, a path from one artist to another, a yearly recap to share.'],
   ['Around the house', 'Your phone as a remote, speakers and TVs (DLNA, Chromecast), listening together on the same network, picking up on your other PC where you stopped.'],
   ['Windows polish', 'A Jump List on the taskbar icon, an alarm that wakes you with a playlist, an overlay for OBS, a picture-in-picture player.'],
   ['Mac and Linux', 'Builds for macOS and Linux, then an Android companion.'],

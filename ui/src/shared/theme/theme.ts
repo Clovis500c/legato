@@ -169,6 +169,9 @@ export const VISUALIZER_STYLES = ['led', 'bars', 'mirror', 'peaks', 'wave', 'rad
 export type VisualizerStyle = (typeof VISUALIZER_STYLES)[number]
 /** Order the cover songs are taken in: the playlist's own, or a library sort. */
 export const COVER_ORDERS = ['playlist', 'recent', 'title', 'artist', 'album', 'duration'] as const
+/** Auto-DJ's choices (Settings › Playback): days a song heard waits, songs before the same artist again. */
+export const DJ_FRESH = [0, 1, 7, 30]
+export const DJ_GAPS = [0, 3, 10]
 export interface PlaylistCover {
   mode: (typeof COVER_MODES)[number]
   order: (typeof COVER_ORDERS)[number]
@@ -310,6 +313,12 @@ export interface Settings {
   pauseOnCall: boolean
   /** Shuffle spreads artists, songs heard lately last (player `shuffle.ts`). */
   smartShuffle: boolean
+  /** Auto-DJ (player `autoDj.ts`): a song heard in the last this many days waits for the others (0: no wait). */
+  djFresh: number
+  /** Auto-DJ: your ratings weigh in (five stars 4 times as often as unrated, one star a quarter). */
+  djRated: boolean
+  /** Auto-DJ: songs before the same artist again (0: any time). */
+  djGap: number
   /** YouTube subtitles (off: hidden even when the Google account turns them on). */
   subtitles: boolean
   /** Playlists left out of the sidebar and menus (playlistKey), still in the library. */
@@ -447,6 +456,9 @@ export const DEFAULTS: Settings = {
   pauseOnUnplug: true,
   pauseOnCall: false,
   smartShuffle: true,
+  djFresh: 7,
+  djRated: true,
+  djGap: 3,
   subtitles: false,
   hiddenPlaylists: [],
   pinnedPlaylists: [],
@@ -653,6 +665,9 @@ export function sanitize(raw: unknown): Settings {
     pauseOnUnplug: typeof r.pauseOnUnplug === 'boolean' ? r.pauseOnUnplug : DEFAULTS.pauseOnUnplug,
     pauseOnCall: typeof r.pauseOnCall === 'boolean' ? r.pauseOnCall : DEFAULTS.pauseOnCall,
     smartShuffle: typeof r.smartShuffle === 'boolean' ? r.smartShuffle : DEFAULTS.smartShuffle,
+    djFresh: typeof r.djFresh === 'number' && DJ_FRESH.includes(r.djFresh) ? r.djFresh : DEFAULTS.djFresh,
+    djRated: typeof r.djRated === 'boolean' ? r.djRated : DEFAULTS.djRated,
+    djGap: typeof r.djGap === 'number' && DJ_GAPS.includes(r.djGap) ? r.djGap : DEFAULTS.djGap,
     subtitles: typeof r.subtitles === 'boolean' ? r.subtitles : DEFAULTS.subtitles,
     homeSections: sanitizeHome(r.homeSections),
     smartLists: sanitizeSmart(r.smartLists),
