@@ -14,7 +14,10 @@ Run each step and report it in one line, in French for the owner, with what fail
 1. **Where things stand**: `git status` (nothing uncommitted that should go), the branch, and what would go out:
    `git log --oneline origin/master..HEAD`. A branch other than `master` is merged by the owner.
 2. **The suite**: `pnpm check` green (types written and committed: `git status` clean after it,
-   `ui/src/shared/generated` included). Long: run it in the background.
+   `ui/src/shared/generated` included). Long: run it in the background. It runs on Windows only; GitHub also builds the
+   shell on macOS (Linux: the crates only), where clippy denies warnings: a `src-tauri` import or function used only
+   under `#[cfg(windows)]` needs the gate too (a path in the gated block, or `cfg_attr(not(windows), allow(dead_code))`).
+   A changed workflow file: no `: ` in an unquoted value (GitHub refuses the whole file: no jobs, no beta).
 3. **The smoke test**: `pnpm e2e` when the commits touch playback, the welcome, search, the library scan, or how the app
    starts and ends (`docs/development.md`). It blocks `check` on GitHub since 2026-11-01, so a failure here holds the
    beta back.

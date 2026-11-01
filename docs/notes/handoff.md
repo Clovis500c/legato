@@ -10,7 +10,9 @@ Written 2026-11-01.
 The owner left the PC running and asked for as much of the plan as possible, without stopping, resuming by itself after
 the usage limits reset. The owner came back on 2026-11-01, asked for a report, then said to publish it as a Beta: the
 run stopped after `fd33cbd` (its recurring wake-up job deleted), `/release-check` passed (suite, smoke test, website
-build), and `platforms` went to master that day, master's empty merge `0bc7866` merged in first. Next: the owner tries
+build), and `platforms` went to master that day, master's empty merge `0bc7866` merged in first. GitHub's `check` then
+wanted two fixes the Windows-only local check can't see: a workflow line (`5834cc4`) and an import macOS found
+unused (now in `/release-check`). Next: the owner tries
 the Beta (a real update from it to the next Beta first: `3f50031` took rustls and ring out of the updater), then the
 Check live list, then Stable. Rules the run kept, on top of `CLAUDE.md`:
 
