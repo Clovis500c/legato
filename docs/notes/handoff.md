@@ -61,6 +61,7 @@ Done in this run (newest last), none tried in the real app yet:
 - `37b6ce4` Column browser on Songs (off by default): Artists and Albums panes above the list.
 - `944637b` ListenBrainz scrobbling with the user's token (Settings › Accounts): what plays now and each listen,
   waiting when offline or too fast.
+- `8a7ced9` Connect Spotify in the welcome, beside YouTube Music; a dialog inside another gets the keys and the window.
 
 Milestone 4 (Lyrics) is done but for translation and finding a song by a line: the owner's calls, notes in
 [plan-v2.md](plan-v2.md). Milestone 5's lines that need no account are done; Jellyfin / Navidrome wait for the owner's server. Next in the
