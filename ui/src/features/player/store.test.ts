@@ -297,3 +297,65 @@ describe('skip non-music parts', () => {
     expect(seeks()).toEqual([])
   })
 })
+
+describe('a YouTube video that never starts', () => {
+  const post = vi.fn()
+  // Videos loaded into the embed by the store (the embed's own first load is PlayerBar's, not mounted here).
+  const loads = () => post.mock.calls.flatMap(([m]) => (JSON.parse(m as string).func === 'loadVideoById' ? [JSON.parse(m as string).args[0] as string] : []))
+  beforeEach(() => {
+    vi.useFakeTimers()
+    post.mockClear()
+    // No video slot, no box: no room for the watch page.
+    bindFrame({ contentWindow: { postMessage: post }, getBoundingClientRect: () => null } as unknown as HTMLIFrameElement)
+    usePlayer.setState({ repeat: 'off', fade: NO_FADE, skipNonMusic: false })
+  })
+  afterEach(() => {
+    bindFrame(null)
+    vi.useRealTimers()
+  })
+
+  it('is loaded again after buffering too long, once', async () => {
+    usePlayer.getState().playTracks([song(71), song(72)], 0)
+    usePlayer.getState().onYoutube({ state: 3 })
+    // Regression guard: waited on for good while it buffered, black (2026-11-01).
+    await vi.advanceTimersByTimeAsync(25_000)
+    expect(loads()).toEqual([])
+    await vi.advanceTimersByTimeAsync(1_000)
+    expect(loads()).toEqual(['video71'])
+    // Starts this time: nothing more.
+    usePlayer.getState().onYoutube({ state: 1, time: 0.3 })
+    usePlayer.getState().onYoutube({ time: 2 })
+    await vi.advanceTimersByTimeAsync(60_000)
+    expect(loads()).toEqual(['video71'])
+    expect(usePlayer.getState().now?.youtubeId).toBe('video71')
+  })
+
+  it('stuck again once loaded again: refused, then the next song when nothing else can play it', async () => {
+    usePlayer.getState().playTracks([song(73), song(74)], 0)
+    await vi.advanceTimersByTimeAsync(6_000)
+    expect(loads()).toEqual(['video73'])
+    await vi.advanceTimersByTimeAsync(6_000)
+    expect(usePlayer.getState().now?.youtubeId).toBe('video74')
+  })
+
+  it('isn’t hidden by the last song’s “playing”', async () => {
+    usePlayer.getState().playTracks([song(75), song(76)], 0)
+    usePlayer.getState().onYoutube({ state: 1, time: 1 })
+    usePlayer.getState().onYoutube({ time: 100 })
+    usePlayer.getState().step(1)
+    // The old video's report, sent before the embed took the new one.
+    usePlayer.getState().onYoutube({ state: 1, time: 100.25 })
+    await vi.advanceTimersByTimeAsync(6_000)
+    expect(loads()).toEqual(['video76'])
+  })
+
+  it('waits while paused by the user, and is watched again once played', async () => {
+    usePlayer.getState().playTracks([song(77)], 0)
+    usePlayer.getState().toggle()
+    await vi.advanceTimersByTimeAsync(30_000)
+    expect(loads()).toEqual([])
+    usePlayer.getState().toggle()
+    await vi.advanceTimersByTimeAsync(6_000)
+    expect(loads()).toEqual(['video77'])
+  })
+})

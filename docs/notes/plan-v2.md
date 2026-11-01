@@ -524,6 +524,12 @@ Most useful first; the tag is the effort.
       likes wait for the YouTube account (its like refused here that day: 403), folded into the account's on every page
       (`features/library/likedMusic.ts`, the store's `raw` keeps both for the heart button and Remove from). Check: one
       entry in the sidebar, Home and search, the waiting songs on top of it, unliking one of them, a sync moving them over.
+- [ ] A YouTube song that stayed black and silent until skipped away and back (the owner's report, 2026-11-01; no log line
+      then). The stuck check now gives a buffering video 26 s, not forever, loads a video that never started once more
+      before it counts as refused (`playback` log: "the video never started, loading it again", with the state seen),
+      ignores the last song's "playing" sent after the switch, and watches again when Play follows a pause (or a restored
+      song). Check when it happens again: is the log line there, and does the song start on its own? Lead if it doesn't:
+      the dev launch config passes `--autoplay-policy=no-user-gesture-required`, the installed app doesn't.
 - [ ] `pnpm bench` on a quiet PC: the full run on af27405 was disturbed (someone back at the PC: load 78 %, restart 1.91 s,
       tray 135 MB, the page awake again after its suspend), row not kept. The website's numbers come from d853980: confirm the
       54 MB in the tray after Visualizer v2, or find what wakes the page and fix the numbers.

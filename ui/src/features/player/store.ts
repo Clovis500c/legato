@@ -305,8 +305,9 @@ let ytState: number | undefined
 // New video asked: the embed still reports the old one for a moment (late times, its duration). Ignored until a time
 // near the new start comes, else the fade in jumps to full volume (review 2026-10-23: skips started loud).
 let ytFresh = false
-// When the user last paused. YouTube ignores a pause while a video is still starting, then plays it anyway: a
-// "playing" that soon after is paused again (later, one from YouTube's own controls counts).
+// When the user last paused (0 = playing since, or a new song). YouTube ignores a pause while a video is still
+// starting, then plays it anyway: a "playing" that soon after is paused again (later, one from YouTube's own controls
+// counts).
 let pausedAt = 0
 const PAUSE_HOLD_MS = 5000
 // Play waits this long for a local file's silence scan and gain, then starts it as it is.
@@ -325,6 +326,8 @@ let reachedAuto = false
 // Length of the playing video, ms (0 = not known yet). YouTube sends it once, as the video loads: kept for the song.
 let videoMs = 0
 let stuckTimer: ReturnType<typeof setTimeout> | undefined
+// Play whose video the stuck check loaded again (once per play).
+let reloaded = -1
 
 // No network (Windows says so): a video that won't start isn't refused. Nothing is blocked or skipped; playback pauses
 // and the song starts over in a new embed once the network is back (2026-10-30: a dropped Wi-Fi marked every song it
@@ -355,20 +358,34 @@ function waitForNetwork(playId: number) {
 function watchForStuck(playId: number, wait = 6_000) {
   clearTimeout(stuckTimer)
   ytState = undefined
+  let waits = 2
   const check = () => {
     const p = usePlayer.getState()
     const id = p.now?.via === 'youtube' ? p.now.youtubeId : undefined
-    if (p.playId !== playId || p.hold || !id || p.positionMs > p.startAt || ytState === 1 || ytState === 2) return
-    // Slow network: give it longer.
-    if (ytState === 3) return void (stuckTimer = setTimeout(check, 10_000))
+    // Moved on, paused by the user (or restored paused), started, or paused there: nothing stuck.
+    if (p.playId !== playId || p.hold || pausedAt || !id || p.positionMs > p.startAt || ytState === 1 || ytState === 2) return
+    // Slow network: give it longer, twice (2026-11-01: a video buffering for good stayed black, waited on forever).
+    if (ytState === 3 && waits-- > 0) return void (stuckTimer = setTimeout(check, 10_000))
     if (offline()) return waitForNetwork(playId)
     if (!watching(id)) {
+      // As often a stall as a refusal: skipped away and back, the song played (2026-11-01). Loaded again once first.
+      if (reloaded !== playId) return reload(id, playId)
       block(id)
       return playOnWatchPage(id, 0)
     }
     void tryOtherUpload(p.now?.trackId ?? 0, id, tr('This video can’t play in apps'), 'the watch page never started')
   }
   stuckTimer = setTimeout(check, wait)
+}
+
+/** The video that never started, into the same embed again (what a skip away and back did), watched again. */
+function reload(video: string, playId: number) {
+  reloaded = playId
+  report('info', 'playback', 'youtube: the video never started, loading it again', ytState === undefined ? 'no report' : `state ${ytState}`)
+  ytFresh = true
+  usePlayer.getState().applyVolume(true)
+  ytPost(frame, 'command', 'loadVideoById', [video, usePlayer.getState().startAt / 1000])
+  watchForStuck(playId)
 }
 
 /** `why` = the notice's words; `cause` = the same in English for the diagnostics log (no title, no name). */
@@ -518,6 +535,8 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     if (!t || !how || !vias(t, spotifyOn()).includes(how)) return
     const mine = ++seq
     reachedAuto = auto
+    // The last song's pause isn't this one's.
+    pausedAt = 0
     // Watch page belongs to one video: anything else plays elsewhere.
     if (how !== 'youtube') closeWatch()
     // Leaving Spotify: pause the user's Spotify app.
@@ -643,6 +662,8 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     }
     set({ playing: !playing, ...(playing && { tail: stopTail(get().tail) }) })
     pausedAt = playing ? Date.now() : 0
+    // Played before its video started (restored paused, paused as it loaded): watched again.
+    if (!playing && now.via === 'youtube' && get().positionMs <= get().startAt) watchForStuck(get().playId)
     // Fade on pause: down (from where a running fade, the sleep timer's, has got to), then pause. On play: play silent,
     // then up. Spotify: no volume control fast enough.
     if (!fade.pause || now.via === 'spotify') return pause()
@@ -758,9 +779,10 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     }
     if (ytFresh) {
       if (u.time === undefined || u.time * 1000 > get().startAt + 3000) {
-        // Old video's last words: its time, duration and end don't count.
+        // Old video's last words: its time, duration and end don't count. Timed far from the new start, its state
+        // neither (2026-11-01: its "playing" kept the stuck check off a new video that never started).
         if (u.state === 0) return
-        u = { ...u, time: undefined, duration: undefined }
+        u = { ...u, time: undefined, duration: undefined, ...(u.time !== undefined && { state: undefined }) }
       } else ytFresh = false
     }
     if (u.state !== undefined) ytState = u.state
