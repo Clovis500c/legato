@@ -622,10 +622,13 @@ function PlaybackSection() {
           </Row>
         </div>
       </Group>
-      <Group title={msg('Output device')}>
+      <Group title={msg('Headphones and calls')}>
         <div className="rounded-xl border border-line bg-raised">
           <Row setting="pauseOnUnplug" label={msg('Pause when headphones disconnect')} sub={tr('Headphones unplugged, a Bluetooth headset or speaker turned off: the music pauses instead of going on through the speakers')}>
             <Toggle label={tr('Pause when headphones disconnect')} checked={s.pauseOnUnplug} onChange={(pauseOnUnplug) => update({ pauseOnUnplug })} />
+          </Row>
+          <Row setting="pauseOnCall" label={msg('Pause during calls')} sub={tr('A Teams or Skype call starts: the music pauses, and plays on when the call ends. Off: Windows lowers it, as set in its sound settings')}>
+            <Toggle label={tr('Pause during calls')} checked={s.pauseOnCall} onChange={(pauseOnCall) => update({ pauseOnCall })} />
           </Row>
         </div>
       </Group>

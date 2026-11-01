@@ -53,11 +53,17 @@ Status on 2026-10-16. YouTube, local files and Apple Music previews: done and te
   → `audio-output-lost`. Windows may move the default to the speakers before it says the old one left: the device that
   was the default up to 2 s before counts too. Told once per device until it comes back. Another device leaving, or a
   default picked by hand, pauses nothing.
-- `features/player/unplug.ts`: setting `pauseOnUnplug` (Settings › Playback › Output device, on by default) and
+- `features/player/unplug.ts`: setting `pauseOnUnplug` (Settings › Playback › Headphones and calls, on by default) and
   something playing → `pauseNow` (no pause fade: not a moment out of the speakers), notice with Play.
 - A new default (picked by hand, or the speakers taking over) → engine `Command::Reopen`: the playing file reloaded
   on the new device at the same place, paused or not (nothing playing: the next play opens it). WebView2 follows the
   default on its own.
+- Calls: the same thread registers for the default output's ducking notifications (`IAudioVolumeDuckNotification`,
+  every session's: none of ours changes) and moves them with the default. A communications stream opening (Teams,
+  Skype) → `audio-call` true, closing → false. Setting `pauseOnCall` (off by default: Windows already lowers the
+  music): paused with the pause fade, played on at the end unless the music was played or changed meanwhile.
+  Unchecked: whether Windows still says it with its Communications setting on Do nothing, or for a call on another
+  device.
 - Limit: headphones and speakers on one endpoint (Realtek jack retasking) change no endpoint, so no event.
 
 ## Smart shuffle (2026-11-01)

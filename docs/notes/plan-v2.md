@@ -203,9 +203,11 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       builds them. "sleep 30"-style arguments are not done.
 - [x] `S` Pause when headphones are unplugged or Bluetooth drops: `src-tauri/src/unplug.rs` (Windows' endpoint
       notifications: the default output leaving) → `features/player/unplug.ts` pauses at once (no pause fade), notice
-      with Play; Settings › Playback › Output device, on by default. Unseen: headphones and speakers on one endpoint
+      with Play; Settings › Playback › Headphones and calls, on by default. Unseen: headphones and speakers on one endpoint
       (Realtek jack retasking).
-- [ ] `S` Pause during a call (Windows' communication ducking).
+- [x] `S` Pause during a call (Windows' communication ducking): `unplug.rs` registers for the default output's ducking
+      notifications (every session's) → `audio-call`; `unplug.ts` pauses (with the pause fade) and plays on when the
+      call ends, unless the music was played or changed meanwhile. Off by default: Windows already lowers it.
 - [ ] `S-M` Same loudness across sources: YouTube vs local vs Spotify levelled by the Adaptive Sound meter.
 - [ ] `M` Word-by-word lyrics when the source has them (enhanced LRC), background vocals apart, Apple-style animated lines
       (Cider, Spicetify's Beautiful Lyrics).
@@ -411,6 +413,8 @@ Most useful first; the tag is the effort.
       on the new device at the same place.
 - [ ] Shuffle a playlist of a few artists: no artist twice in a row in Up next, the songs played today at the end.
 - [ ] Mixes page at an hour you listened at on the same weekday two weeks running: "Your Friday evenings", in French too.
+- [ ] A Teams test call with Pause during calls on, a song playing: paused as it starts, plays on as it ends. Also with
+      Windows' Communications set to Do nothing (does Windows still say it?), and a call on another device.
 - [ ] An album played from its first song with a fade set: no dip between its songs (YouTube Music album and local
       files), a playlist of singles still fades, the sleep timer's last song still fades out.
 - [ ] "No sound could be taken" gone from the second YouTube video on (fix 51946d5).

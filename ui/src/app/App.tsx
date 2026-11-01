@@ -13,7 +13,7 @@ import { startDeferred } from './deferred'
 import { PageBoundary } from './PageBoundary'
 import { startMedia } from '../features/player/media'
 import { resumeSession, startSessionSaving } from '../features/player/session'
-import { startUnplugPause } from '../features/player/unplug'
+import { startCallPause, startUnplugPause } from '../features/player/unplug'
 import { MiniPlayer } from '../features/player/MiniPlayer'
 import { VolumeHud } from '../features/player/VolumeHud'
 import { useKaraoke } from '../features/player/karaokeMode'
@@ -264,6 +264,7 @@ export function App() {
   useEffect(() => startClosingPlayerOnNavigate(), [])
   useEffect(() => startMedia(), [])
   useEffect(() => startUnplugPause(), [])
+  useEffect(() => startCallPause(), [])
   useEffect(() => startShortcuts(), [])
   useEffect(() => startUpdates(), [])
   // Watched local folders changed: the library shows it.
