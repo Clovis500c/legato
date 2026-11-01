@@ -3,13 +3,14 @@
 Where the work stands, for a session or an account with no history here. Read this, then `CLAUDE.md` (rules, map of the
 code), then [plan-v2.md](plan-v2.md) (open work). Rewrite it when a branch or the next step changes.
 
-Written 2026-10-31.
+Written 2026-11-01.
 
 ## Autonomous run (the owner's ask, 2026-10-31 evening)
 
 The owner left the PC running and asked for as much of the plan as possible, without stopping, resuming by itself after
-the usage limits reset. A recurring job in the Claude session wakes it every 30 minutes when idle (session-only, gone
-if the app closes, expires after 7 days). Rules on top of `CLAUDE.md`:
+the usage limits reset. The owner came back on 2026-11-01 and asked for a report: the run stopped after `fd33cbd`, its
+recurring wake-up job deleted. Next is the owner's word: carry on, or publish this version first (a push of `platforms`
+to master is a Beta; `/release-check` before). Rules the run kept, on top of `CLAUDE.md`:
 
 - Local commits on `platforms` only, one tested step each (`pnpm check` green). No push, no PR, no merge.
 - Nothing that needs a real account, a sign-in, a bulk real search or the owner's ear: those lines wait in
@@ -64,16 +65,17 @@ Done in this run (newest last), none tried in the real app yet:
 - `8a7ced9` Connect Spotify in the welcome, beside YouTube Music; a dialog inside another gets the keys and the window.
 - `21fe2dd` Auto-DJ from Songs or a menu: ten picks at a time by the rules in Settings › Playback.
 - `23898a1` Wavy progress bar (Settings › Appearance › Player), off by default.
+- `fd33cbd` Sleep timer: End of this album, and the timed fade over the last 3 minutes.
 
 Milestone 4 (Lyrics) is done but for translation and finding a song by a line: the owner's calls, notes in
-[plan-v2.md](plan-v2.md). Milestone 5's lines that need no account are done; Jellyfin / Navidrome wait for the owner's server. Next in the
-run: the open lines of plan-v2 that need no account, by size (`S` first).
+[plan-v2.md](plan-v2.md). Milestone 5's lines that need no account are done; Jellyfin / Navidrome wait for the owner's server. If the run goes
+on: the open lines of plan-v2 that need no account, by size (`S` first).
 
 ## Branches
 
 | Branch | State | Next |
 |---|---|---|
-| `platforms` | Work goes here: milestone 3 (Platforms) so far, on top of `11a69c9`. `pnpm check` green. | Carry on. It merges into master as it is: master's one commit past `11a69c9` is an empty merge. |
+| `platforms` | Work goes here: milestone 3 (Platforms) so far, on top of `11a69c9`. `pnpm check` green. | The owner's word: carry on, or push it to master (a Beta). It merges into master as it is: master's one commit past `11a69c9` is an empty merge. |
 | `claude/site-scroll-3d-aff654` | The new website home page, finished, in the worktree `.claude/worktrees/laughing-golick-d0fedf` (clean, about 10 GB of build output). | Waits for `platforms`: [plan-v2.md](plan-v2.md) › Website has the order. Its docs land with it (`CONTRIBUTING.md` › Website, `docs/design.md` › Website). `git worktree remove` is safe: the branch keeps everything. |
 | `master` | `0bc7866`, Stable v1.1.479. | Every push is a Beta, and a change in `site/` deploys the website: only on the owner's word. Stable is `promote`, by hand (`CONTRIBUTING.md` › Releasing). |
 
