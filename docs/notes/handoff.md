@@ -59,6 +59,8 @@ Done in this run (newest last), none tried in the real app yet:
 - `cf0abda` Ratings in half stars (column, menus, Alt+1…5, Highest rated sort, smart playlist rules), synced by Sync Mode.
 - `e77b4ec` Edit info of many local songs at once: album artist, genre, year, track and disc, numbered in the list's order.
 - `37b6ce4` Column browser on Songs (off by default): Artists and Albums panes above the list.
+- `944637b` ListenBrainz scrobbling with the user's token (Settings › Accounts): what plays now and each listen,
+  waiting when offline or too fast.
 
 Milestone 4 (Lyrics) is done but for translation and finding a song by a line: the owner's calls, notes in
 [plan-v2.md](plan-v2.md). Milestone 5's lines that need no account are done; Jellyfin / Navidrome wait for the owner's server. Next in the
