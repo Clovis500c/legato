@@ -13,34 +13,52 @@ export const FIXES: [string, string][] = [
   ['Lyrics hidden behind a tab', 'Timed lyrics beside any page, from YouTube Music or LRCLIB.'],
 ]
 
-export type IconName = 'SealCheck' | 'Feather' | 'Headphones' | 'Stack' | 'MagnifyingGlass' | 'PlayCircle' | 'Playlist' | 'Sparkle' | 'SlidersHorizontal' | 'FolderSimple' | 'Devices' | 'Quotes' | 'Palette' | 'PuzzlePiece' | 'Translate'
+export type IconName = 'Playlist' | 'Sparkle' | 'FolderSimple' | 'Devices' | 'PuzzlePiece' | 'Translate'
 
+/** What the scroll story doesn't show. */
 export const FEATURES: { icon: IconName; title: string; text: string }[] = [
-  { icon: 'Stack', title: 'One library', text: 'The same song on several services is one track, wherever you saved it. Browse it by artist and album in two panes, as in MusicBee.' },
-  { icon: 'MagnifyingGlass', title: 'One search', text: 'Your library, YouTube Music, YouTube and Apple Music, in one place. Ctrl+K finds the app’s pages, actions and settings too.' },
-  { icon: 'PlayCircle', title: 'One player', text: 'Every source in one queue, with a shuffle that spreads artists, crossfade that leaves albums whole, endless radios, an Auto-DJ that keeps your library playing by your rules, a pause when your headphones disconnect (or a call starts, if you want), lyrics and a visualizer (LED bars, a ring around the cover, VU needles, a spectrogram).' },
   { icon: 'Playlist', title: 'Playlists', text: 'Import from a service, a file (M3U, XSPF, CSV) or iTunes and MusicBee; create, pin, sort into folders, save as a file, export to YouTube Music, share by link or QR code. Smart playlists fill themselves from your plays and star ratings.' },
-  { icon: 'Sparkle', title: 'Mixes made on your PC', text: 'Daily mixes, mixes for this time of day and this weekday, and stats from what you play, Last.fm or ListenBrainz scrobbling if you want it.' },
-  { icon: 'SlidersHorizontal', title: 'Live Editor', text: 'Speed, pitch, a 10-band EQ, reverb and 3D sound, changed as it plays.' },
-  { icon: 'FolderSimple', title: 'Your own files', text: 'Gapless playback, as loud as your streamed songs (their ReplayGain tags, or measured), and their tags to edit, a whole album at once: artist, album, genre, year, track numbers, cover.' },
+  { icon: 'Sparkle', title: 'Mixes, radios and an Auto-DJ', text: 'Daily mixes, mixes for this time of day and this weekday, endless radios from a song, an album, an artist or a playlist, and an Auto-DJ that keeps your library playing by your rules. All made on your PC, with stats from what you play and Last.fm or ListenBrainz scrobbling if you want it.' },
+  { icon: 'FolderSimple', title: 'Your own files', text: 'Gapless playback, as loud as your streamed songs (their ReplayGain tags, or measured), and their tags to edit, a whole album at once: artist, album, genre, year, track numbers, cover. Their own lyrics come first: edit them, or time plain ones by tapping along.' },
   { icon: 'Devices', title: 'Sync Mode', text: 'Your library on all your PCs, through a OneDrive folder or your network.' },
-  { icon: 'Quotes', title: 'Lyrics', text: "Timed lyrics, word by word when LRCLIB has them, in a panel beside any page, big in Now Playing, or full screen in Karaoke mode (K). Your own files' lyrics come first: edit them, or time plain ones by tapping along, right into the file." },
-  { icon: 'Palette', title: 'Themes', text: 'Colors, fonts, a picture or video background, your own CSS.' },
   { icon: 'PuzzlePiece', title: 'Add-ons and plugins', text: 'Plugins by others ask for what they need before they can do anything.' },
-  { icon: 'Translate', title: '18 languages', text: 'Following Windows, with its media keys, a tray icon and full screen.' },
+  { icon: 'Translate', title: '18 languages', text: 'Following Windows, with its media keys, a tray icon and full screen. The music pauses when your headphones disconnect, or when a call starts if you want.' },
+]
+
+/** Where the window stands: x, y from the stage's middle (share of it), degrees, zoom on the fitted size. */
+export type Pose = { x: number; y: number; rx: number; ry: number; zoom: number }
+
+/** The scroll story, in order: what each chapter says, the demo's screen (site/demo/scenes.ts), where the window goes. Its text sits on the other side. */
+export const CHAPTERS: { scene: string; title: string; text: string; alt: string; pose: Pose; black?: boolean }[] = [
+  { scene: 'library', title: 'One library', text: 'The same song on several services is one track, wherever you saved it. Browse it by artist and album in two panes, as in MusicBee.', alt: "Legato's Songs page: your playlists on the left, one list of songs from every source, Up next on the right.", pose: { x: 0.2, y: 0.02, rx: 3, ry: -9, zoom: 1.08 } },
+  { scene: 'import', title: 'Your Spotify lists come over', text: 'Songs land one by one, every list counted. Each is then searched on YouTube, and the ones without a match are kept for later.', alt: 'The import screen: covers landing one by one, the list being read and the songs left.', pose: { x: 0.3, y: 0.02, rx: 2, ry: -6, zoom: 1.16 } },
+  { scene: 'search', title: 'One search', text: 'Your library, YouTube Music, YouTube and Apple Music, in one place. Ctrl+K finds the app’s pages, actions and settings too.', alt: 'Search results for one word: a top result, songs and videos, each with where it comes from.', pose: { x: -0.22, y: 0.03, rx: 3, ry: 11, zoom: 1.12 } },
+  { scene: 'player', title: 'One queue', text: 'Every source in one list, with crossfade that leaves albums whole and a shuffle that spreads artists. What you add plays next, in its own block, and comes back after a restart.', alt: 'Now Playing: a big cover, the song, its lyrics and the one that plays next.', pose: { x: -0.36, y: 0, rx: 1, ry: 12, zoom: 1.5 } },
+  { scene: 'karaoke', title: 'Press K for Karaoke', text: 'Timed lyrics, word by word when LRCLIB has them, in a panel beside any page, big in Now Playing, or full screen like here.', alt: 'Karaoke mode: big lyrics on a blurred cover, the line playing filling up word by word.', pose: { x: 0.17, y: 0, rx: 0, ry: -3, zoom: 1.02 } },
+  { scene: 'visualizer', title: 'Press V, lights off', text: 'LED bars, a ring around the cover, VU needles, a spectrogram, full screen.', alt: 'The visualizer full screen: columns of LED bars on a dark page.', pose: { x: 0.17, y: 0, rx: 0, ry: 0, zoom: 1.04 }, black: true },
+  { scene: 'editor', title: 'Change a song as it plays', text: 'Speed, pitch, a 10-band EQ, reverb and 3D sound, in the Live Editor.', alt: "The Live Editor beside a big cover: the song's versions, presets, speed and pitch.", pose: { x: -0.22, y: 0, rx: 2, ry: 8, zoom: 1.16 } },
+  { scene: 'themes', title: 'Make it look like yours', text: 'Colors, fonts, a picture or video background, your own CSS.', alt: "Legato's Songs page in another theme.", pose: { x: 0.16, y: 0, rx: 0, ry: -2, zoom: 1 } },
 ]
 
 // Latest row of docs/performance.md (`pnpm bench`), copied as it is: change these with each new row.
 export const BENCH = { date: '2026-10-31', version: '1.0.0', os: 'Windows 11', pc: 'Ryzen 5 5500, 32 GB', songs: '10 000', ramPaused: '141', ramTray: '54', windowCold: '0.84', paintCold: '1.26' }
 
-export const WHY: { icon: IconName; title: string; text: string }[] = [
-  { icon: 'SealCheck', title: 'Legal', text: "Songs play in the official players: YouTube's own, the Spotify app, and your files in Legato's own. No platform's audio is downloaded, recorded or extracted. The Music Detector listens only when you ask, and Apple's previews are Apple's own 30 s clips." },
-  { icon: 'Feather', title: 'Light', text: `${BENCH.ramPaused} MB of RAM with the app open and paused, ${BENCH.ramTray} MB after 10 minutes in the tray, silent. On a cold start the window shows in ${BENCH.windowCold} s and the first screen is painted at ${BENCH.paintCold} s.` },
-  { icon: 'Devices', title: 'Your PCs in sync', text: 'Sync Mode keeps your library on every PC through a OneDrive folder or your own network. No account of ours, no server.' },
-  { icon: 'Headphones', title: 'Your scrobbles', text: 'What you play, from any source, goes to your Last.fm profile with your own free API key, or to ListenBrainz with your token. Off until you connect one.' },
+export const WHY: { title: string; text: string }[] = [
+  { title: 'Legal', text: "Songs play in the official players: YouTube's own, the Spotify app, and your files in Legato's own. No platform's audio is downloaded, recorded or extracted. The Music Detector listens only when you ask, and Apple's previews are Apple's own 30 s clips." },
+  { title: 'Light', text: `${BENCH.ramPaused} MB of RAM with the app open and paused, ${BENCH.ramTray} MB after 10 minutes in the tray, silent. On a cold start the window shows in ${BENCH.windowCold} s and the first screen is painted at ${BENCH.paintCold} s.` },
+  { title: 'Your PCs in sync', text: 'Sync Mode keeps your library on every PC through a OneDrive folder or your own network. No account of ours, no server.' },
+  { title: 'Your scrobbles', text: 'What you play, from any source, goes to your Last.fm profile with your own free API key, or to ListenBrainz with your token. Off until you connect one.' },
 ]
 
-/** Under the cards: where the Light numbers come from. */
+/** The Light numbers, big. */
+export const FIGURES: [string, string][] = [
+  [`${BENCH.ramPaused} MB`, 'of RAM, open and paused'],
+  [`${BENCH.ramTray} MB`, 'after 10 minutes in the tray'],
+  [`${BENCH.windowCold} s`, 'to the window, cold start'],
+  [`${BENCH.paintCold} s`, 'to the first screen, cold start'],
+]
+
+/** Under them: where the numbers come from. */
 export const WHY_NOTE = `Measured ${BENCH.date} on ${BENCH.os} (${BENCH.pc}), Legato ${BENCH.version}, a library of ${BENCH.songs} songs. RAM is the app and its WebView2 processes together. Other apps were running during the measure, so another PC will differ.`
 
 export const PLAYBACK: [string, string][] = [

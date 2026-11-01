@@ -10,7 +10,7 @@ versions look for updates there, so never create a repo named `music-app` again.
 Desktop app (Tauri 2 + Rust + React/TS) that unifies Spotify / YouTube / Apple Music / local libraries. Overview: `docs/architecture.md`; where the work stands: `docs/notes/handoff.md` (read it first); open work: `docs/notes/plan-v2.md` (history in git).
 Repo docs: `README.md` (short, points to the website), `CONTRIBUTING.md`, `docs/` (for developers). What users read (features,
 playback, privacy, FAQ) is the website: `site/` (Next.js static export, GitHub Pages, copy in `site/components/content.tsx`).
-Keep its privacy rows true when the app starts sending something new.
+Keep its privacy rows true when the app starts sending something new. Its home page is a scroll story around the real `ui/`, run by `site/demo` over a fake Tauri (invented data, no sound, no network; see CONTRIBUTING).
 Design direction (v2): `docs/design.md`; mockups in the Figma file "Untitled" (to be renamed "Legato · Design"), every page in light and dark.
 
 ## Non-negotiable rules

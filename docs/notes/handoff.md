@@ -14,7 +14,7 @@ build), and `platforms` went to master that day, master's empty merge `0bc7866` 
 wanted two fixes the Windows-only local check can't see: a workflow line (`5834cc4`) and an import macOS found
 unused (now in `/release-check`). Next: the owner tries
 the Beta (a real update from it to the next Beta first: `3f50031` took rustls and ring out of the updater), then the
-Check live list, then Stable. Rules the run kept, on top of `CLAUDE.md`:
+Check live list, then Stable. The new website went out the same day, on the owner's word, before Stable. Rules the run kept, on top of `CLAUDE.md`:
 
 - Local commits on `platforms` only, one tested step each (`pnpm check` green). No push, no PR, no merge.
 - Nothing that needs a real account, a sign-in, a bulk real search or the owner's ear: those lines wait in
@@ -80,7 +80,7 @@ on: the open lines of plan-v2 that need no account, by size (`S` first).
 | Branch | State | Next |
 |---|---|---|
 | `platforms` | Work goes here. On master since 2026-11-01 (a Beta). `pnpm check` green. | Carry on when the owner says so; each push to master is a new Beta. |
-| `claude/site-scroll-3d-aff654` | The new website home page, finished, in the worktree `.claude/worktrees/laughing-golick-d0fedf` (clean, about 10 GB of build output). | Waits for `platforms`: [plan-v2.md](plan-v2.md) › Website has the order. Its docs land with it (`CONTRIBUTING.md` › Website, `docs/design.md` › Website). `git worktree remove` is safe: the branch keeps everything. |
+| `claude/site-scroll-3d-aff654` | The new website home page: merged into `platforms` and master on 2026-11-01, published. Its worktree `.claude/worktrees/laughing-golick-d0fedf` stays (about 10 GB of build output). | `git worktree remove` when the owner wants the space back: the branch is in master. |
 | `master` | `platforms` as of 2026-11-01, a Beta; Stable is still v1.1.479. | The owner tries the Beta, then promotes it. Every push is a Beta, and a change in `site/` deploys the website: only on the owner's word. Stable is `promote`, by hand (`CONTRIBUTING.md` › Releasing). |
 
 The owner keeps `platforms` and the site branch local, so a fresh clone has neither: `git branch -vv` says what is on

@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "next dev",
-    "build": "node scripts/notices.mjs && next build"
+    "build": "node scripts/notices.mjs && node scripts/demo.mjs && next build"
   },
   "dependencies": {
     "@phosphor-icons/react": "^2.1.10",

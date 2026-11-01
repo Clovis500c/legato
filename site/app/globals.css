@@ -11,6 +11,8 @@
   --ink-2: #565656;
   --ink-3: #606060;
   --on-ink: #ffffff;
+  --accent: #7cb8ff;
+  --on-accent: #0f0f0f;
   --shot-shadow: 0 32px 80px -32px rgb(23 22 20 / 0.35);
   --pad: clamp(16px, 5vw, 72px);
   color-scheme: light;
@@ -18,7 +20,7 @@
 @media (prefers-color-scheme: dark) {
   :root {
     --bg: #131313;
-    --panel: #1a1a1a;
+    --panel: #171717;
     --raised: #232323;
     --line: #2c2c2c;
     --line-soft: #1e1e1e;
@@ -31,6 +33,22 @@
   }
 }
 
+/* The visualizer's chapter: the page goes dark, whatever the system says. */
+[data-black] {
+  --bg: #131313;
+  --panel: #171717;
+  --raised: #232323;
+  --line: #2c2c2c;
+  --line-soft: #1e1e1e;
+  --ink: #f1f1f1;
+  --ink-2: #b3b3b3;
+  --ink-3: #8c8c8c;
+  --on-ink: #0f0f0f;
+}
+
+/* The scroll story's stage, wide screens with animations on (components/Story.tsx); elsewhere chapters stack. */
+@custom-variant pinned (@media (min-width: 1000px) and (prefers-reduced-motion: no-preference));
+
 @theme inline {
   --color-bg: var(--bg);
   --color-panel: var(--panel);
@@ -41,6 +59,8 @@
   --color-ink-2: var(--ink-2);
   --color-ink-3: var(--ink-3);
   --color-on-ink: var(--on-ink);
+  --color-accent: var(--accent);
+  --color-on-accent: var(--on-accent);
   --font-sans: var(--font-roboto), 'Segoe UI', system-ui, sans-serif;
 }
 

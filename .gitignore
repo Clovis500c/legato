@@ -9,5 +9,6 @@ dist
 /site/.next
 /site/next-env.d.ts
 /site/public/third-party-licenses.txt
+/site/public/demo
 /graphify-out
 /.claude/worktrees

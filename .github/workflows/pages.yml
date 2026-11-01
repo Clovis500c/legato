@@ -3,10 +3,11 @@ name: pages
 # The website (site/, Next.js exported to plain files): https://clovis500c.github.io/legato/. Built and deployed
 # when master's site changes, or by hand (Actions › pages › Run workflow). Needs Settings › Pages › Source: GitHub
 # Actions. A push to master is also an app release unless its first line says [skip release] (release.yml).
+# The site holds a demo of the app, built from ui/ (site/demo): hence the root packages and ui/** above.
 on:
   push:
     branches: [master]
-    paths: [site/**, .github/workflows/pages.yml]
+    paths: [site/**, ui/**, .github/workflows/pages.yml]
   workflow_dispatch:
 
 permissions:
@@ -36,8 +37,12 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
-          cache-dependency-path: site/pnpm-lock.yaml
+          cache-dependency-path: |
+            pnpm-lock.yaml
+            site/pnpm-lock.yaml
 
+      - run: pnpm install --frozen-lockfile
+        working-directory: .
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
 

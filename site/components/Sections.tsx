@@ -1,14 +1,14 @@
 'use client'
 
-import { Devices, Feather, FolderSimple, Headphones, MagnifyingGlass, Palette, PlayCircle, Playlist, Plus, PuzzlePiece, Quotes, SealCheck, SlidersHorizontal, Sparkle, Stack, Translate } from '@phosphor-icons/react'
+import { Devices, FolderSimple, Playlist, Plus, PuzzlePiece, Sparkle, Translate } from '@phosphor-icons/react'
 import { AnimatePresence, motion } from 'motion/react'
 import { useState, type ReactNode } from 'react'
-import { FAQ, FEATURES, GITHUB, WHY, WHY_NOTE, type IconName } from './content'
+import { FAQ, FEATURES, FIGURES, GITHUB, WHY, WHY_NOTE, type IconName } from './content'
 import { EASE, group, inView, item, Reveal } from './motion'
 
-const ICONS: Record<IconName, typeof Stack> = { SealCheck, Feather, Headphones, Stack, MagnifyingGlass, PlayCircle, Playlist, Sparkle, SlidersHorizontal, FolderSimple, Devices, Quotes, Palette, PuzzlePiece, Translate }
+const ICONS: Record<IconName, typeof Playlist> = { Playlist, Sparkle, FolderSimple, Devices, PuzzlePiece, Translate }
 
-const h2 = 'text-[clamp(26px,2.6vw,32px)] leading-tight font-bold tracking-[-0.01em]'
+const h2 = 'text-[clamp(26px,2.6vw,32px)] leading-tight font-black tracking-[-0.01em]'
 const section = 'mx-auto max-w-[1440px] px-(--pad) py-[clamp(56px,8vw,104px)]'
 
 /** Title and a line on the left (it stays while the rows scroll), rows on the right: the mockup's two tables. */
@@ -67,19 +67,19 @@ export function Rows({ head, caption, rows }: { head?: [string, string]; caption
   )
 }
 
-/** Cards in a grid, the app's own icons; the icon turns a little under the pointer. */
-function Cards({ list, grid }: { list: { icon: IconName; title: string; text: string }[]; grid: string }) {
+/** What the scroll story leaves out, a line each. */
+export function Features() {
   return (
-    <motion.ul {...inView} variants={group} className={`grid gap-3 ${grid}`}>
-      {list.map(({ icon, title, text }) => {
+    <motion.ul {...inView} variants={group} className="grid grid-cols-1 gap-x-10 gap-y-7 sm:grid-cols-2 lg:grid-cols-3">
+      {FEATURES.map(({ icon, title, text }) => {
         const Icon = ICONS[icon]
         return (
-          <motion.li key={title} variants={item} whileHover={{ y: -4 }} className="group flex flex-col gap-2 rounded-lg bg-panel p-6 transition-colors duration-200 hover:bg-raised">
-            <span className="mb-2 grid size-11 place-items-center rounded-full bg-bg transition-transform duration-400 ease-out group-hover:scale-110 group-hover:-rotate-8">
-              <Icon size={22} />
-            </span>
-            <h3 className="font-medium">{title}</h3>
-            <p className="text-sm text-ink-2">{text}</p>
+          <motion.li key={title} variants={item} className="border-t border-line pt-4">
+            <h3 className="flex items-center gap-2 font-medium">
+              <Icon size={18} aria-hidden />
+              {title}
+            </h3>
+            <p className="mt-1 text-sm text-ink-2">{text}</p>
           </motion.li>
         )
       })}
@@ -87,18 +87,30 @@ function Cards({ list, grid }: { list: { icon: IconName; title: string; text: st
   )
 }
 
-/** One card per feature. */
-export function Features() {
-  return <Cards list={FEATURES} grid="grid-cols-[repeat(auto-fill,minmax(260px,1fr))]" />
-}
-
-/** The four differences, and under them where the numbers come from. */
+/** A spec plate: the measures big, the four differences, where the numbers come from. */
 export function Why() {
   return (
     <>
-      <Cards list={WHY} grid="grid-cols-[repeat(auto-fill,minmax(260px,1fr))]" />
       <Reveal>
-        <p className="mt-5 max-w-[860px] text-[13px] text-ink-3">
+        <dl className="grid grid-cols-2 gap-x-6 gap-y-6 border-y border-line py-7 lg:grid-cols-4">
+          {FIGURES.map(([figure, label]) => (
+            <div key={label} className="flex flex-col-reverse gap-2">
+              <dt className="text-[13px] text-ink-3">{label}</dt>
+              <dd className="text-[clamp(32px,3.9vw,56px)] leading-none font-black tracking-[-0.015em] tabular-nums">{figure}</dd>
+            </div>
+          ))}
+        </dl>
+      </Reveal>
+      <motion.ul {...inView} variants={group} className="mt-8 grid grid-cols-1 gap-x-10 gap-y-7 sm:grid-cols-2 lg:grid-cols-4">
+        {WHY.map(({ title, text }) => (
+          <motion.li key={title} variants={item}>
+            <h3 className="font-medium">{title}</h3>
+            <p className="mt-1 text-sm text-ink-2">{text}</p>
+          </motion.li>
+        ))}
+      </motion.ul>
+      <Reveal>
+        <p className="mt-8 max-w-[860px] text-[13px] text-ink-3">
           {WHY_NOTE}{' '}
           <a href={`${GITHUB}/blob/master/docs/performance.md`} className="underline decoration-line underline-offset-4 hover:text-ink hover:decoration-ink">
             All the measures
@@ -110,13 +122,12 @@ export function Why() {
   )
 }
 
-/** Three numbered steps under a line of ink. */
+/** Three steps under a line of ink. */
 export function Steps({ steps }: { steps: [string, string][] }) {
   return (
     <motion.ol {...inView} variants={group} className="grid grid-cols-1 gap-3 md:grid-cols-3">
-      {steps.map(([title, text], i) => (
-        <motion.li key={title} variants={item} className="flex flex-col gap-2 border-t-2 border-ink px-6 pt-7 pb-6">
-          <span className="mb-3 text-[13px] font-medium text-ink-3 tabular-nums">{String(i + 1).padStart(2, '0')}</span>
+      {steps.map(([title, text]) => (
+        <motion.li key={title} variants={item} className="flex flex-col gap-2 border-t-2 border-ink pt-5 pb-6">
           <h3 className="font-medium">{title}</h3>
           <p className="text-sm text-ink-2">{text}</p>
         </motion.li>

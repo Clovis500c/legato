@@ -1,15 +1,12 @@
 'use client'
 
 import { ArrowRight, FolderSimple, WindowsLogo } from '@phosphor-icons/react'
-import { motion, useScroll, useTransform, type Variants } from 'motion/react'
-import { useRef } from 'react'
+import { motion, type Variants } from 'motion/react'
 import { siApplemusic, siSpotify, siYoutubemusic } from 'simple-icons'
-import dark from '@/assets/app-dark.png'
-import light from '@/assets/app-light.png'
 import { useLatest } from './latest'
 import { EASE } from './motion'
 
-const rise: Variants = { hidden: { opacity: 0, y: '0.35em' }, show: { opacity: 1, y: 0, transition: { duration: 0.7, ease: EASE } } }
+const rise: Variants = { hidden: { opacity: 0, y: '0.35em' }, show: { opacity: 1, y: 0, transition: { duration: 0.24, ease: EASE } } }
 
 const Brand = ({ path }: { path: string }) => (
   <svg viewBox="0 0 24 24" aria-hidden className="size-[15px] fill-current">
@@ -28,8 +25,8 @@ const WORKS = [
 export function Hero() {
   const { href, version } = useLatest()
   return (
-    <motion.div id="top" initial="hidden" animate="show" variants={{ show: { transition: { staggerChildren: 0.08 } } }} className="mx-auto flex max-w-[1440px] flex-col items-start gap-6 px-(--pad) pt-[clamp(32px,6vw,64px)] pb-12">
-      <h1 className="text-[clamp(44px,7.4vw,96px)] leading-none font-black tracking-[-0.03em]">
+    <motion.div id="top" initial="hidden" animate="show" variants={{ show: { transition: { staggerChildren: 0.08 } } }} className="flex flex-col items-start gap-6 px-(--pad) pt-[clamp(32px,6vw,64px)] pb-12 pinned:p-0">
+      <h1 className="text-[clamp(44px,7.4vw,96px)] leading-none font-black tracking-[-0.03em] pinned:text-[min(5.6vw,11vh)]">
         {['Your music lives', 'in four apps.', 'Play it from one.'].map((line) => (
           <motion.span key={line} variants={rise} className="block">
             {line}{' '}
@@ -40,9 +37,9 @@ export function Hero() {
         Legato puts YouTube Music, Spotify, Apple Music and the files on your PC into one library and one player, on Windows, with no account of ours.
       </motion.p>
       <motion.div variants={rise} className="flex flex-wrap items-center gap-x-6 gap-y-3">
-        <motion.a href={href} whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }} className="inline-flex items-center gap-2 rounded-full bg-ink px-6 py-3 text-[15px] font-medium text-on-ink shadow-[0_8px_24px_-12px_rgb(0_0_0/0.5)]">
+        <a href={href} className="inline-flex items-center gap-2 rounded-full bg-ink px-6 py-3 text-[15px] font-medium text-on-ink">
           <WindowsLogo size={18} weight="fill" /> Download for Windows
-        </motion.a>
+        </a>
         <a href="#privacy" className="group inline-flex items-center gap-1.5 text-[15px] font-medium">
           What leaves your PC <ArrowRight size={16} className="transition-transform duration-200 group-hover:translate-x-1" />
         </a>
@@ -65,19 +62,3 @@ export function Hero() {
   )
 }
 
-/** The app's Songs page (demo library: silent public-domain files, never real data), bleeding off the right edge; it drifts a little against the scroll. */
-export function Shot() {
-  const ref = useRef<HTMLDivElement>(null)
-  const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] })
-  const y = useTransform(scrollYProgress, [0, 1], [40, -40])
-  return (
-    <div ref={ref} className="overflow-hidden pb-6 pl-[max(var(--pad),calc((100vw-1440px)/2+312px))] max-[999px]:pr-(--pad)">
-      <motion.div style={{ y }}>
-        <motion.picture initial={{ opacity: 0, y: 64, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ duration: 1.1, ease: EASE, delay: 0.3 }} className="block">
-          <source srcSet={dark.src} media="(prefers-color-scheme: dark)" />
-          <img src={light.src} width={1128} height={640} alt="Legato's Songs page: your library on the left, songs from YouTube Music, Spotify, Apple Music and your folders in one list, Up next on the right." className="block h-auto w-full rounded-xl shadow-(--shot-shadow) min-[1000px]:w-[1128px] min-[1000px]:max-w-none" />
-        </motion.picture>
-      </motion.div>
-    </div>
-  )
-}

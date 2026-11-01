@@ -14,11 +14,12 @@ the order; a line leaves only when it ships or the user drops it.
 - [x] `M` Home page as a scroll story (user's choice 2026-10-31): the real interface in a 3D window (`site/demo`), eight
       chapters, the visitor takes it at the end; audit of the page's slop (`docs/design.md` › Website). Local, not
       published.
-- [ ] `S` Publish it with the next Stable (user's choice 2026-10-31), the one that gets what it shows and 1.1.479 hasn't:
-      Connect Spotify, the import screen, Songs not found, the "Then" heading in Up next. Before that: try it on a weak PC,
-      in Firefox and Safari. Order: `platforms` reaches master and Stable first, then branch `claude/site-scroll-3d-aff654`
-      (local only), `[skip release]` in the merge's first line: Pages publishes on that merge. It is also the demo's first
-      build on Linux; a red run leaves the old site up.
+- [x] `S` Publish it with the next Stable (user's choice 2026-10-31). Done earlier, on the owner's word (2026-11-01): Beta
+      1.1.557 out, Stable still 1.1.479, so the site shows a few things Stable hasn't yet (Connect Spotify, the import
+      screen). Branch `claude/site-scroll-3d-aff654` merged into `platforms` with `[skip release]`, then master; its cards
+      and chapters took platforms' new copy (radios and the Auto-DJ in the Mixes card, ListenBrainz, Ctrl+K, the column
+      browser, word-by-word lyrics). Not tried on a weak PC, in Firefox or Safari. Pages builds the demo on Linux now: a
+      red run leaves the old site up.
 
 ## Best in class (user's ask 2026-10-30)
 
