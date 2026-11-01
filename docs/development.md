@@ -118,8 +118,8 @@ walk as two steps, the walk held to 5 minutes. The port reaches WebView2 through
 e2e build reads (`background::browser_args`): on GitHub's runner `WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS` never shows on the
 browser's command line, with or without admin rights, while the same runtime (156.0.4314.50) takes it on a Windows 11 PC.
 Why is unknown. `pnpm bench` runs on a PC and keeps that variable. When no page attaches, the walk prints the browser's
-command line, the OS and the Edge policies. It is not blocking yet (`continue-on-error`, a warning on the run when it
-fails): first green on GitHub 2026-10-31, and `release.yml` waits for a green `check`. Delete that line after a few green runs.
+command line, the OS and the Edge policies. It blocks since 2026-11-01 (green on the 6 checks before): a failure turns
+`check` red, and `release.yml` waits for a green `check`, so no beta goes out until it passes again.
 Checked on 2026-10-30: with the click handler of the player's play button emptied, the walk fails at `pause-play`
 ("Pause did not pause"), exit code 1, screenshot and report left. Checked on 2026-10-31: with the Deezer link recogniser
 (`deezerLink`) broken, the walk fails at `links` ("the page never showed Importing from Deezer… 0 of 2").

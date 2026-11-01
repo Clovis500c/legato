@@ -352,7 +352,7 @@ Stable goes out by hand (`promote`); the smoke test runs on every push; `src-tau
 
 Most useful first; the tag is the effort.
 
-- [ ] `S` Make the smoke test blocking: delete `continue-on-error` in `check.yml` (green on the last 6 checks, 2026-10-31).
+- [x] `S` Make the smoke test blocking: delete `continue-on-error` in `check.yml` (green on the last 6 checks, 2026-10-31).
       Still outside it: the YouTube embed (needs the network) and a real audio device.
 - [ ] `S-M` Release notes grouped (feat / fix), in the user's words, shown in the app after an update. Today a flat list of
       commit subjects (`scripts/release.mjs`) on the update card.
