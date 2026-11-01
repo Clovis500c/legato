@@ -385,7 +385,11 @@ Most useful first; the tag is the effort.
 - [ ] `S-M` YouTube embeds: one player reused instead of one per song where the crossfade allows; unload the hidden one.
 - [ ] `S-M` Performance budget in CI: front-end bundle size and Rust startup time; fail on a large regression. (`pnpm bench`
       isn't in CI yet.)
-- [ ] `S` Bundle: LyricsPanel, dialogs and NowPlaying are still in the first chunk.
+- [x] `S` Bundle: LyricsPanel, dialogs and NowPlaying are still in the first chunk. Now lazy through `app/pages.ts`
+      (Now Playing and the lyrics panel preloaded when idle; the dialogs' openers and hosts in
+      `features/library/dialogs.tsx`, `VideoSlot.tsx` apart). JS at launch 904 → 853 kB (281 → 270 kB gzip), in
+      53 files instead of 38: icons shared with the lazy chunks come apart. Rolldown's `inlineCommonChunks` would merge
+      them, but it is experimental and forces `strictExecutionOrder`: left out.
 - [ ] `S` Installer size: check what's in it (`cargo bloat`, features of big crates, adblock lists compressed).
 - [ ] `S` Cover thumbnails for WebP and GIF originals, served whole today (the `image` crate here has PNG and JPEG only; the
       hosts send JPEG).

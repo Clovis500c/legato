@@ -1,7 +1,6 @@
 import { Image, Trash } from '@phosphor-icons/react'
 import { open } from '@tauri-apps/plugin-dialog'
 import { useState } from 'react'
-import { create } from 'zustand'
 import { useStore } from '../../app/store'
 import { api, type LibraryTrack } from '../../shared/api'
 import { coverRewritten, trackArt } from '../../shared/art'
@@ -10,21 +9,10 @@ import { Button } from '../../shared/ui/Button'
 import { Cover } from '../../shared/ui/Cover'
 import { Dialog } from '../../shared/ui/Dialog'
 
-const useEditInfo = create<{ track: LibraryTrack | null }>(() => ({ track: null }))
-
-/** Right-click › Edit song info, on a local file. */
-export const editInfo = (t: LibraryTrack) => useEditInfo.setState({ track: t })
-
-/** Mounted once in App. */
-export function EditInfoHost() {
-  const t = useEditInfo((s) => s.track)
-  return t && <EditInfo key={t.id} t={t} onClose={() => useEditInfo.setState({ track: null })} />
-}
-
 const field = 'rounded-md border border-line bg-bg px-3 py-2 text-sm outline-none focus:border-ink-3'
 
 /** Title, artist, album and front cover written into the file itself (other players see them too). */
-function EditInfo({ t, onClose }: { t: LibraryTrack; onClose: () => void }) {
+export function EditInfo({ t, onClose }: { t: LibraryTrack; onClose: () => void }) {
   const [title, setTitle] = useState(t.title)
   const [artist, setArtist] = useState(t.artist)
   const [album, setAlbum] = useState(t.album ?? '')

@@ -5,8 +5,9 @@ import { onMenu } from '../../shared/ui/ContextMenu'
 import { Cover } from '../../shared/ui/Cover'
 import { LedChip } from '../../shared/ui/controls'
 import { playerMenu } from '../menus'
-import { LyricsPanel } from './LyricsPanel'
-import { VideoSlot } from './NowPlaying'
+import { LyricsPanel } from '../../app/pages'
+import { PageBoundary } from '../../app/PageBoundary'
+import { VideoSlot } from './VideoSlot'
 import { useNowTrack, usePlayer } from './store'
 import { UpNext } from './UpNext'
 
@@ -65,7 +66,11 @@ export function SidePanel() {
     <div className="flex w-75 shrink-0 flex-col gap-2">
       {stage && <Stage />}
       {parked}
-      {panel === 'lyrics' && <LyricsPanel heading={tabs} onHide={() => update({ sidePanel: 'none' })} onUpNext={() => update({ sidePanel: 'upNext' })} className={look} />}
+      {panel === 'lyrics' && (
+        <PageBoundary fallback={null}>
+          <LyricsPanel heading={tabs} onHide={() => update({ sidePanel: 'none' })} onUpNext={() => update({ sidePanel: 'upNext' })} className={look} />
+        </PageBoundary>
+      )}
       {panel === 'upNext' && <UpNext heading={tabs} onHide={() => update({ sidePanel: 'none' })} className={look} />}
     </div>
   )

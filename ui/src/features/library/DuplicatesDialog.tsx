@@ -1,7 +1,5 @@
-import { Copy } from '@phosphor-icons/react'
 import { useShallow } from 'zustand/react/shallow'
 import { useMemo, useState } from 'react'
-import { create } from 'zustand'
 import { useStore } from '../../app/store'
 import { api, type LibraryTrack, type Source } from '../../shared/api'
 import { trackArt } from '../../shared/art'
@@ -12,6 +10,7 @@ import { Cover } from '../../shared/ui/Cover'
 import { Dialog } from '../../shared/ui/Dialog'
 import { SourceIcon } from '../../shared/ui/SourceIcon'
 import { bestCopy, duplicateGroups, repeatedRows } from './duplicates'
+import type { DupeScope } from './dialogs'
 import { removePositions } from './edits'
 
 /** One group: pick the copy to keep (the best one already picked), merge the others into it. */
@@ -43,25 +42,11 @@ function Group({ group, keep, onKeep, onMerge, busy }: { group: LibraryTrack[]; 
   )
 }
 
-/** What the finder looks at: the whole library, or some songs (a playlist, a list, a selection). */
-export interface DupeScope {
-  /** Where (dialog title): "Duplicates in Chill". */
-  name?: string
-  /** Songs looked at (library ids); none = the whole library. */
-  ids?: number[]
-  /** Custom playlist: the same song more than once in it can go too. */
-  playlistId?: number
-}
-
-const useDupes = create<{ scope: DupeScope | null }>(() => ({ scope: null }))
-/** Opens the duplicate finder (right-click on playlists, lists, selections: user's request 2026-10-23). */
-export const findDuplicates = (scope: DupeScope = {}) => useDupes.setState({ scope })
-
 /**
  * Songs that look like the same one (a video and the album track, an import twice): merged, they become one song
  * with every source, playlist spot and play. Live takes, remixes, slowed versions stay apart.
  */
-function DuplicatesDialog({ scope, onClose }: { scope: DupeScope; onClose: () => void }) {
+export function DuplicatesDialog({ scope, onClose }: { scope: DupeScope; onClose: () => void }) {
   const { tracks: all, stats, refreshChanged, notify, orders, playlists } = useStore(useShallow(({ tracks, stats, refreshChanged, notify, orders, playlists }) => ({ tracks, stats, refreshChanged, notify, orders, playlists })))
   const tracks = useMemo(() => {
     if (!scope.ids) return all
@@ -123,23 +108,5 @@ function DuplicatesDialog({ scope, onClose }: { scope: DupeScope; onClose: () =>
         !repeats.length && <p className="py-6 text-center text-ink-3">{scope.ids ? tr('No duplicates here.') : tr('No duplicates in your library.')}</p>
       )}
     </Dialog>
-  )
-}
-
-/** Mounted once (App): the finder wherever it was opened from. */
-export function DuplicatesHost() {
-  const scope = useDupes((s) => s.scope)
-  return scope && <DuplicatesDialog scope={scope} onClose={() => useDupes.setState({ scope: null })} />
-}
-
-/** Songs page button: shows only when the library has duplicates. */
-export function DuplicatesButton() {
-  const tracks = useStore((s) => s.tracks)
-  const count = useMemo(() => duplicateGroups(tracks).length, [tracks])
-  if (!count) return null
-  return (
-    <button type="button" onClick={() => findDuplicates()} className="flex h-8 items-center gap-1.5 rounded-full border border-line px-3 text-xs font-semibold text-ink-2 hover:bg-raised hover:text-ink">
-      <Copy size={14} /> {trn(count, '{n} duplicate', '{n} duplicates')}
-    </button>
   )
 }

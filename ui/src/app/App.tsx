@@ -2,7 +2,7 @@ import { ArrowsIn, ArrowsOut, CaretDown, CaretLeft, CaretRight, CopySimple, Gear
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { useEffect, useRef, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
-import { AddonsView, AddView, HomeView, Karaoke, MixesView, MixView, NotFoundView, preloadHome, SearchView, SettingsView, SmartView, StatsView, VizScreen, Welcome } from './pages'
+import { AddonsView, AddView, ConnectWizard, HomeView, ImportDialog, ImportScreen, Karaoke, MixesView, MixView, NotFoundView, NowPlaying, preloadHome, SearchView, SettingsView, SmartView, StatsView, VizScreen, Welcome } from './pages'
 // Up next running out: similar songs (registers itself with the player).
 import '../features/player/autoplay'
 import { AlbumView, ArtistView } from '../features/library/AlbumArtist'
@@ -18,14 +18,11 @@ import { MiniPlayer } from '../features/player/MiniPlayer'
 import { VolumeHud } from '../features/player/VolumeHud'
 import { useKaraoke } from '../features/player/karaokeMode'
 import { useVizFull } from '../features/player/vizFull'
-import { NowPlaying } from '../features/player/NowPlaying'
 import { useAmbient } from '../features/player/ambient'
 import { trackArt } from '../shared/art'
 import { PlayerBar } from '../features/player/PlayerBar'
 import { SidePanel } from '../features/player/SidePanel'
 import { useNowTrack, usePlayer } from '../features/player/store'
-import { ImportDialog } from '../features/share/ImportDialog'
-import { ConnectWizard } from '../features/sources/ConnectWizard'
 import { SearchBar } from '../features/search/SearchBar'
 import { VoiceSearch } from '../features/search/VoiceSearch'
 import { Sidebar } from '../features/sidebar/Sidebar'
@@ -34,7 +31,7 @@ import { explain } from '../shared/errors'
 import { useOnline } from '../shared/online'
 import { region } from '../shared/format'
 import { ContextMenuHost, onMenu } from '../shared/ui/ContextMenu'
-import { DuplicatesHost } from '../features/library/DuplicatesDialog'
+import { DuplicatesHost, EditInfoHost } from '../features/library/dialogs'
 import { linkKind, shouldWelcome } from '../features/welcome/firstRun'
 import { Logo } from '../shared/ui/Logo'
 import { searchShift, STAGE_ID } from './searchShift'
@@ -44,9 +41,7 @@ import { startShortcuts } from './shortcuts'
 import { useStore, type View } from './store'
 import { toggleFullscreen } from './fullscreen'
 import { Toasts } from './Toasts'
-import { ImportScreen } from '../features/add/ImportScreen'
 import { Asker } from '../shared/ui/Ask'
-import { EditInfoHost } from '../features/library/EditInfo'
 import { tr, trn, useLang } from '../shared/i18n/i18n'
 
 // Pages load on first visit (pages.ts), Home's download starts now, in parallel with the settings and the library.
@@ -219,6 +214,7 @@ const pageKey = (v: View) => ('id' in v ? `${v.name}:${v.id}` : 'album' in v ? `
 export function App() {
   const { view, go, refresh, incoming } = useStore(useShallow((s) => ({ view: s.view, go: s.go, refresh: s.refresh, incoming: s.incoming })))
   const full = usePlayer((s) => s.full)
+  const importing = useStore((s) => !!s.importRun && !s.importRun.hidden)
   const karaoke = useKaraoke((s) => s.open)
   const vizFull = useVizFull((s) => s.open)
   const tintOn = useSettings((s) => s.settings.appTint)
@@ -343,12 +339,20 @@ export function App() {
           </div>
         </main>
         <SidePanel />
-        {view.name === 'settings' && view.wizard && <ConnectWizard key={view.wizard} service={view.wizard} onClose={() => go({ name: 'settings', section: 'sources' })} />}
+        {view.name === 'settings' && view.wizard && (
+          <PageBoundary fallback={null}>
+            <ConnectWizard key={view.wizard} service={view.wizard} onClose={() => go({ name: 'settings', section: 'sources' })} />
+          </PageBoundary>
+        )}
       </div>
       <PlayerBar />
       <MiniPlayer />
       <VolumeHud />
-      {full && <NowPlaying />}
+      {full && (
+        <PageBoundary fallback={null}>
+          <NowPlaying />
+        </PageBoundary>
+      )}
       {karaoke && (
         <PageBoundary fallback={null}>
           <Karaoke />
@@ -359,13 +363,21 @@ export function App() {
           <VizScreen />
         </PageBoundary>
       )}
-      <ImportScreen />
+      {importing && (
+        <PageBoundary fallback={null}>
+          <ImportScreen />
+        </PageBoundary>
+      )}
       <Toasts />
       <Asker />
       <EditInfoHost />
       <ContextMenuHost fallback={appMenu} />
       <DuplicatesHost />
-      {incoming && <ImportDialog key={incoming} code={incoming} />}
+      {incoming && (
+        <PageBoundary fallback={null}>
+          <ImportDialog key={incoming} code={incoming} />
+        </PageBoundary>
+      )}
       {welcome && (
         <PageBoundary fallback={null}>
           <Welcome onClose={() => setWelcome(false)} />

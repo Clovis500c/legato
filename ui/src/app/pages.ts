@@ -1,6 +1,7 @@
 import { type ComponentType, createElement, lazy } from 'react'
 
-// Pages that load on their first visit, not at launch (the shell, sidebar and player stay in the first chunk).
+// Pages that load on their first visit, not at launch (the shell, sidebar and player bar stay in the first chunk); Now
+// Playing, the lyrics panel and the dialogs too.
 // `preloadPages` pulls them in when idle, so a click rarely waits. Home is asked for at once: it is the usual first screen.
 const load = {
   home: () => import('../features/home/HomeView').then((m) => ({ default: m.HomeView })),
@@ -18,6 +19,13 @@ const load = {
   karaoke: () => import('../features/player/Karaoke').then((m) => ({ default: m.Karaoke })),
   vizScreen: () => import('../features/player/VizScreen').then((m) => ({ default: m.VizScreen })),
   welcome: () => import('../features/welcome/Welcome').then((m) => ({ default: m.Welcome })),
+  nowPlaying: () => import('../features/player/NowPlaying').then((m) => ({ default: m.NowPlaying })),
+  lyrics: () => import('../features/player/LyricsPanel').then((m) => ({ default: m.LyricsPanel })),
+  importDialog: () => import('../features/share/ImportDialog').then((m) => ({ default: m.ImportDialog })),
+  importScreen: () => import('../features/add/ImportScreen').then((m) => ({ default: m.ImportScreen })),
+  connectWizard: () => import('../features/sources/ConnectWizard').then((m) => ({ default: m.ConnectWizard })),
+  duplicates: () => import('../features/library/DuplicatesDialog').then((m) => ({ default: m.DuplicatesDialog })),
+  editInfo: () => import('../features/library/EditInfo').then((m) => ({ default: m.EditInfo })),
 }
 
 type Load<P> = () => Promise<{ default: ComponentType<P> }>
@@ -58,13 +66,20 @@ export const YouTubeShelf = page(load.shelf)
 export const Karaoke = page(load.karaoke)
 export const VizScreen = page(load.vizScreen)
 export const Welcome = page(load.welcome)
+export const NowPlaying = page(load.nowPlaying)
+export const LyricsPanel = page(load.lyrics)
+export const ImportDialog = page(load.importDialog)
+export const ImportScreen = page(load.importScreen)
+export const ConnectWizard = page(load.connectWizard)
+export const DuplicatesDialog = page(load.duplicates)
+export const EditInfo = page(load.editInfo)
 
 /** Starts Home's download now (before the library is in), the likeliest first screen. */
 export const preloadHome = () => void load.home()
 
 /** The other pages, one per idle slice once the app is up. A failed fetch is retried by the page itself on its visit. */
 export function preloadPages() {
-  const next = [load.search, load.add, load.mixes, load.stats, load.smart, load.editor, load.settings, load.addons, load.karaoke, load.vizScreen]
+  const next = [load.nowPlaying, load.lyrics, load.search, load.add, load.mixes, load.stats, load.smart, load.editor, load.settings, load.addons, load.karaoke, load.vizScreen]
   const idle = window.requestIdleCallback ?? ((f: () => void) => window.setTimeout(f, 200))
   const step = () => {
     const f = next.shift()
