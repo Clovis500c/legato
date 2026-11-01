@@ -200,6 +200,9 @@ const nl: Record<string, string> = {
   'Edit lyrics': 'Songtekst bewerken',
   'Add lyrics': 'Songtekst toevoegen',
   'Save into the file': 'Opslaan in het bestand',
+  'Time them by tapping along': 'Timen door mee te tikken',
+  'Play the song from its start and tap Now as each line begins.': 'Speel het nummer vanaf het begin en tik op Nu zodra elke regel begint.',
+  'Line {n} of {total}': 'Regel {n} van {total}',
   'A line starting with a time like [01:02.50] is synced to it.': 'Een regel die begint met een tijd zoals [01:02.50] loopt daarop synchroon.',
   // Hidden videos, music or not (features/library/HiddenVideos, edits markMusic, menus)
   '{songs} hidden: not music': '{songs} verborgen: geen muziek',

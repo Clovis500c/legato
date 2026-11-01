@@ -200,6 +200,9 @@ const tr: Record<string, string> = {
   'Edit lyrics': 'Sözleri düzenle',
   'Add lyrics': 'Söz ekle',
   'Save into the file': 'Dosyaya kaydet',
+  'Time them by tapping along': 'Dokunarak zamanla',
+  'Play the song from its start and tap Now as each line begins.': 'Şarkıyı baştan çalın ve her satır başladığında Şimdi’ye dokunun.',
+  'Line {n} of {total}': 'Satır {n} / {total}',
   'A line starting with a time like [01:02.50] is synced to it.': '[01:02.50] gibi bir zamanla başlayan satır o zamana senkronlanır.',
   // Hidden videos, music or not (features/library/HiddenVideos, edits markMusic, menus)
   '{songs} hidden: not music': '{songs} gizlendi: müzik değil',

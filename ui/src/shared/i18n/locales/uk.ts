@@ -200,6 +200,9 @@ const uk: Record<string, string> = {
   'Edit lyrics': 'Редагувати текст пісні',
   'Add lyrics': 'Додати текст пісні',
   'Save into the file': 'Зберегти у файл',
+  'Time them by tapping along': 'Синхронізувати натисканнями',
+  'Play the song from its start and tap Now as each line begins.': 'Увімкніть пісню з початку й натискайте «Зараз», коли починається кожен рядок.',
+  'Line {n} of {total}': 'Рядок {n} з {total}',
   'A line starting with a time like [01:02.50] is synced to it.': 'Рядок, що починається з часу на кшталт [01:02.50], синхронізується з ним.',
   // Hidden videos, music or not (features/library/HiddenVideos, edits markMusic, menus)
   '{songs} hidden: not music': 'Сховано — не музика: {songs}',

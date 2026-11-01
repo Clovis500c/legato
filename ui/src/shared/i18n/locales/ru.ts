@@ -200,6 +200,9 @@ const ru: Record<string, string> = {
   'Edit lyrics': 'Изменить текст песни',
   'Add lyrics': 'Добавить текст песни',
   'Save into the file': 'Сохранить в файл',
+  'Time them by tapping along': 'Синхронизировать касаниями',
+  'Play the song from its start and tap Now as each line begins.': 'Включите песню с начала и нажимайте «Сейчас», когда начинается каждая строка.',
+  'Line {n} of {total}': 'Строка {n} из {total}',
   'A line starting with a time like [01:02.50] is synced to it.': 'Строка, начинающаяся со времени вроде [01:02.50], синхронизируется с ним.',
   // Hidden videos, music or not (features/library/HiddenVideos, edits markMusic, menus)
   '{songs} hidden: not music': 'Скрыто — не музыка: {songs}',

@@ -200,6 +200,9 @@ const id: Record<string, string> = {
   'Edit lyrics': 'Edit lirik',
   'Add lyrics': 'Tambahkan lirik',
   'Save into the file': 'Simpan ke file',
+  'Time them by tapping along': 'Atur waktunya dengan mengetuk',
+  'Play the song from its start and tap Now as each line begins.': 'Putar lagu dari awal dan ketuk Sekarang saat setiap baris dimulai.',
+  'Line {n} of {total}': 'Baris {n} dari {total}',
   'A line starting with a time like [01:02.50] is synced to it.': 'Baris yang diawali waktu seperti [01:02.50] disinkronkan ke waktu itu.',
   // Hidden videos, music or not (features/library/HiddenVideos, edits markMusic, menus)
   '{songs} hidden: not music': '{songs} disembunyikan: bukan musik',

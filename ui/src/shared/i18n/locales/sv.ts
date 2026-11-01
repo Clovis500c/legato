@@ -200,6 +200,9 @@ const sv: Record<string, string> = {
   'Edit lyrics': 'Redigera låttext',
   'Add lyrics': 'Lägg till låttext',
   'Save into the file': 'Spara i filen',
+  'Time them by tapping along': 'Tajma genom att trycka i takt',
+  'Play the song from its start and tap Now as each line begins.': 'Spela låten från början och tryck på Nu när varje rad börjar.',
+  'Line {n} of {total}': 'Rad {n} av {total}',
   'A line starting with a time like [01:02.50] is synced to it.': 'En rad som börjar med en tid som [01:02.50] synkas till den.',
   // Hidden videos, music or not (features/library/HiddenVideos, edits markMusic, menus)
   '{songs} hidden: not music': '{songs} dolda: inte musik',

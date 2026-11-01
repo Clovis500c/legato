@@ -200,6 +200,9 @@ const hi: Record<string, string> = {
   'Edit lyrics': 'बोल संपादित करें',
   'Add lyrics': 'बोल जोड़ें',
   'Save into the file': 'फ़ाइल में सहेजें',
+  'Time them by tapping along': 'साथ-साथ टैप करके समय तय करें',
+  'Play the song from its start and tap Now as each line begins.': 'गाना शुरू से चलाएँ और हर पंक्ति शुरू होते ही अभी पर टैप करें।',
+  'Line {n} of {total}': '{total} में से पंक्ति {n}',
   'A line starting with a time like [01:02.50] is synced to it.': '[01:02.50] जैसे समय से शुरू होने वाली पंक्ति उसी समय पर सिंक होती है।',
   // Hidden videos, music or not (features/library/HiddenVideos, edits markMusic, menus)
   '{songs} hidden: not music': '{songs} छिपाए गए: संगीत नहीं',

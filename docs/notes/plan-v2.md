@@ -227,6 +227,10 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
 
 **Medium**
 - [ ] `S` Find a song by a line of its lyrics (LRCLIB search), and hum to search if AudD's free tier allows it.
+      Owner's call (2026-11-01): LRCLIB's search (`q`) matches titles, artists and albums, not the words, so it can't
+      find a song by a line. A source that does (Genius' search with the user's own token, Musixmatch) is a new
+      service and a privacy row. Worth trying first by hand: a line typed in the search box, since YouTube Music's own
+      search matches lyrics. AudD's humming terms not checked.
 - [ ] `S` Jump List (recent playlists, Shuffle all); thumbnail buttons already there (`thumbbar.rs`).
 - [ ] `S` Auto-DJ that keeps the queue going from the library with rules (MusicBee).
 - [ ] `S` Scrobble to ListenBrainz too (open, no key), beside Last.fm.
@@ -241,6 +245,8 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
 - [ ] `S-M` Watch-page player: hide YouTube's own playlist panel (its RDMM "My Mix") and stop its autoplay into a Mix
       (`crates/shield/src/watch.js`).
 - [ ] `M` Lyrics translation in the panel (a service sends text: add the website's privacy row first).
+      Owner's call (2026-11-01): which service gets the lyrics (the user's own DeepL or Google key, a LibreTranslate
+      server); Windows gives apps no offline translator. The panel side is small once that's chosen.
 - [ ] `M` Tag editor (one file already: right-click › Edit song info, `src-tauri/src/tags.rs`): several files at once,
       track numbers, year, genre, MusicBrainz lookup that fills them.
 - [ ] `M` Equalizer presets per output device (headphones vs speakers) and AutoEQ profiles for known headphones.
@@ -288,14 +294,17 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
 - [ ] `S-M` Guest DJ-style picks between songs ("because you liked …"), local and explainable, no cloud.
 - [ ] `S-M` Voice control beyond search: "next", "like this", "play my running playlist" (WinRT speech already there).
 - [ ] `M` Concerts near the user from followed artists (a public API with no account; privacy row).
-- [ ] `M` Lyrics saved into local files and editable (Guayadeque, MusicBee): fix a line, timing tapped live.
+- [x] `M` Lyrics saved into local files and editable (Guayadeque, MusicBee): fix a line, timing tapped live.
       Read first (2026-11-01): a local song's own lyrics, the LRC beside it or its tag (USLT, LYRICS, ©lyr), come
       before the cache and the network (`local::lyrics`, `lyrics::from_file`), labelled as the file's; not cached.
       Saved too: Lyrics › Edit lyrics (a local song playing; Add lyrics when none were found) edits the text, LRC or
       plain, and writes it where the song keeps it (the LRC beside it, else its main tag, `local::write_lyrics`, the
       same copy-then-swap as Edit song info); Fix the timing › Save into the file writes the fixed timing, then the
-      fix is cleared (Sync Mode carries that to the other PCs, whose files didn't change). Left: plain lyrics timed
-      line by line by tapping along.
+      fix is cleared (Sync Mode carries that to the other PCs, whose files didn't change). Plain lyrics of a local
+      song: Time them by tapping along (the timer button) shows each line in turn, Now stamps it (reaction time
+      taken off, never before the line above), Back undoes one, then Save into the file writes the LRC. Other
+      services' songs have no file to keep it: not offered. Unseen: real files (MP3, FLAC, M4A, OGG; MusicBee
+      reading what we wrote), only tests on a WAV and the interface on fake data.
 - [ ] `M` A path between two artists (Plexamp's "Sonic Adventure"): a mix that walks from one to the other.
 - [ ] `M` Describe a playlist in words ("calm rainy Sunday, no lyrics"): matched against the library's tags and sonic
       features locally; an LLM only with the user's own key (like Last.fm's), privacy row first.

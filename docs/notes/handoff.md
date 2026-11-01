@@ -50,15 +50,15 @@ Done in this run (newest last), none tried in the real app yet:
 - `91be1bd` Issue templates (bug with diagnostics, feature idea) and the website's "What's next" from the roadmap.
 - `ff94cf3` Project skills for Claude Code: add a setting, add a connector, release check (`.claude/skills`).
 - `42e3d4b` Cover thumbnails for WebP and GIF originals (lists no longer load them whole).
-- Installer size: the updater's unused rustls and ring left out, 0.55 MB less to download (check a real update).
-
+- `3f50031` Installer size: the updater's unused rustls and ring left out, 0.55 MB less to download (check a real update).
 - `ac422e5` Word-by-word lyrics from LRCLIB's Lyricsfile or enhanced LRC, in the panel and Karaoke.
-
 - `89a48f4` A local song's own lyrics (its tags, or an .lrc beside it) first: nothing sent for it.
+- `ef9c2cc` Lyrics edited and saved into a local song's file (its .lrc or its tags), the fixed timing too.
+- Plain lyrics of a local song timed by tapping along, saved into its file.
 
-- Lyrics edited and saved into a local song's file (its .lrc or its tags), the fixed timing too.
-
-Next in the run: the rest of milestone 4 (Lyrics).
+Milestone 4 (Lyrics) is done but for translation and finding a song by a line: the owner's calls, notes in
+[plan-v2.md](plan-v2.md). Next in the run: milestone 5 (Your own music), its lines that need no account: ReplayGain,
+ratings, the tag editor for many files, the column view.
 
 ## Branches
 

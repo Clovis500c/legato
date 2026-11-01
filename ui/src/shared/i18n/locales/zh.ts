@@ -200,6 +200,9 @@ const zh: Record<string, string> = {
   'Edit lyrics': '编辑歌词',
   'Add lyrics': '添加歌词',
   'Save into the file': '保存到文件',
+  'Time them by tapping along': '跟着点按来对时',
+  'Play the song from its start and tap Now as each line begins.': '从头播放歌曲，每行开始时点按“此刻”。',
+  'Line {n} of {total}': '第 {n} 行，共 {total} 行',
   'A line starting with a time like [01:02.50] is synced to it.': '以 [01:02.50] 这样的时间开头的行会按该时间同步。',
   // Hidden videos, music or not (features/library/HiddenVideos, edits markMusic, menus)
   '{songs} hidden: not music': '已隐藏 {songs}：不是音乐',

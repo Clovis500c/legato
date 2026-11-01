@@ -200,6 +200,9 @@ const it: Record<string, string> = {
   'Edit lyrics': 'Modifica il testo',
   'Add lyrics': 'Aggiungi il testo',
   'Save into the file': 'Salva nel file',
+  'Time them by tapping along': 'Sincronizzalo toccando a tempo',
+  'Play the song from its start and tap Now as each line begins.': 'Riproduci il brano dall’inizio e tocca Adesso quando inizia ogni riga.',
+  'Line {n} of {total}': 'Riga {n} di {total}',
   'A line starting with a time like [01:02.50] is synced to it.': 'Una riga che inizia con un tempo come [01:02.50] è sincronizzata su di esso.',
   // Hidden videos, music or not (features/library/HiddenVideos, edits markMusic, menus)
   '{songs} hidden: not music': '{songs} nascosti: non è musica',

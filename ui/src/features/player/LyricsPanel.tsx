@@ -174,6 +174,44 @@ export function useNowLyrics() {
   return { mine, key, durationMs, retry: () => setRetry((n) => n + 1) }
 }
 
+/** Plain lyrics timed by tapping Now as each line starts, the song playing (a local song): saved into its file as LRC. */
+function TapTimer({ text, onSave, onClose }: { text: string; onSave: (lrc: string) => Promise<boolean>; onClose: () => void }) {
+  const lines = useMemo(() => text.split('\n').map((t) => t.trim()).filter(Boolean), [text])
+  const [taps, setTaps] = useState<number[]>([])
+  const [busy, setBusy] = useState(false)
+  const n = taps.length
+  // Never before the line above: a slip can't reorder them.
+  const tap = () => setTaps((t) => (t.length < lines.length ? [...t, Math.max(t[t.length - 1] ?? 0, Math.round(positionNow()) - REACTION_MS)] : t))
+  const save = async () => {
+    setBusy(true)
+    if (!(await onSave(toLrc(lines.map((line, i) => ({ ms: taps[i], text: line })))))) setBusy(false)
+  }
+  const quiet = 'rounded-full px-2.5 py-1 font-medium text-ink-2 hover:bg-raised hover:text-ink disabled:opacity-40'
+  return (
+    <div className="flex min-h-0 flex-1 flex-col gap-3 px-2 py-4">
+      <p className="text-xs text-ink-2">{tr('Play the song from its start and tap Now as each line begins.')}</p>
+      <p className="text-[0.6875rem] text-ink-3 tabular-nums">{tr('Line {n} of {total}', { n: Math.min(n + 1, lines.length), total: lines.length })}</p>
+      <p className="text-[1.25rem] leading-snug font-semibold">{lines[n] ?? '♪'}</p>
+      <p className="text-sm text-ink-2">{lines[n + 1] ?? ''}</p>
+      <div className="mt-auto flex flex-wrap items-center gap-1.5 text-xs">
+        <button onClick={tap} disabled={n >= lines.length} className="rounded-full bg-ink px-4 py-1.5 font-semibold text-bg disabled:opacity-40">
+          {tr('Now')}
+        </button>
+        <button onClick={() => setTaps((t) => t.slice(0, -1))} disabled={!n} className={quiet}>
+          {tr('Back')}
+        </button>
+        <span className="flex-1" />
+        <button onClick={onClose} className={quiet}>
+          {tr('Cancel')}
+        </button>
+        <button onClick={() => void save()} disabled={busy || n < lines.length} className="rounded-full bg-ink px-3 py-1 font-semibold text-bg disabled:opacity-40">
+          {tr('Save into the file')}
+        </button>
+      </div>
+    </div>
+  )
+}
+
 /** A local song's lyrics, edited as text and saved into its file: lines starting with a stamp keep their timing. */
 function LyricsEditor({ text: first, onSave, onClose }: { text: string; onSave: (text: string) => Promise<boolean>; onClose: () => void }) {
   const [text, setText] = useState(first)
@@ -221,6 +259,8 @@ export function LyricsPanel({ onHide, onUpNext, className = CARD, heading }: { o
   const track = useNowTrack()
   const fileId = now?.via === 'local' && track ? track.id : null
   const [editing, setEditing] = useState<{ id: number; song: string | null; text: string } | null>(null)
+  // Plain lyrics being timed by tapping along: this song only.
+  const [timing, setTiming] = useState<{ id: number; song: string | null } | null>(null)
 
   // Timing fixed by hand for this song (Settings, synced with the other PCs).
   const song = songKey(now)
@@ -229,6 +269,7 @@ export function LyricsPanel({ onHide, onUpNext, className = CARD, heading }: { o
   const taps = useRef<{ lyric: number; song: number }[]>([])
   useEffect(() => {
     setTuning(false)
+    setTiming(null)
     taps.current = []
   }, [key])
   const saveFix = (f: LyricsFix | null, of = song) => {
@@ -262,6 +303,18 @@ export function LyricsPanel({ onHide, onUpNext, className = CARD, heading }: { o
         {fileId !== null && l && (
           <RoundButton label={tr('Edit lyrics')} kind="plain" size="sm" onClick={() => setEditing({ id: fileId, song, text: shown(l) })}>
             <PencilSimple size={14} />
+          </RoundButton>
+        )}
+        {fileId !== null && l && !l.lines.length && !!l.plain && (
+          <RoundButton
+            label={tr('Time them by tapping along')}
+            kind="plain"
+            size="sm"
+            aria-pressed={!!timing}
+            className={timing ? 'bg-ink! text-bg!' : ''}
+            onClick={() => setTiming(timing ? null : { id: fileId, song })}
+          >
+            <Timer size={14} />
           </RoundButton>
         )}
         {!!l?.lines.length && song && (
@@ -349,6 +402,8 @@ export function LyricsPanel({ onHide, onUpNext, className = CARD, heading }: { o
           )}
           <Synced lines={l.lines} durationMs={durationMs} fix={fix} onTap={tuning ? tap : undefined} />
         </>
+      ) : timing ? (
+        <TapTimer text={l.plain ?? ''} onSave={(lrc) => intoFile(timing.id, timing.song, lrc).then((ok) => (ok && setTiming(null), ok))} onClose={() => setTiming(null)} />
       ) : (
         <Plain text={l.plain ?? ''} durationMs={durationMs} />
       )}

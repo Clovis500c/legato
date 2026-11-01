@@ -200,6 +200,9 @@ const ja: Record<string, string> = {
   'Edit lyrics': '歌詞を編集',
   'Add lyrics': '歌詞を追加',
   'Save into the file': 'ファイルに保存',
+  'Time them by tapping along': 'タップしてタイミングを付ける',
+  'Play the song from its start and tap Now as each line begins.': '曲を最初から再生し、各行が始まったら「今」をタップします。',
+  'Line {n} of {total}': '{total} 行中 {n} 行目',
   'A line starting with a time like [01:02.50] is synced to it.': '[01:02.50] のような時刻で始まる行は、その時刻に同期します。',
   // Hidden videos, music or not (features/library/HiddenVideos, edits markMusic, menus)
   '{songs} hidden: not music': '{songs}を非表示：音楽ではありません',

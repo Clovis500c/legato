@@ -200,6 +200,9 @@ const vi: Record<string, string> = {
   'Edit lyrics': 'Sửa lời bài hát',
   'Add lyrics': 'Thêm lời bài hát',
   'Save into the file': 'Lưu vào tệp',
+  'Time them by tapping along': 'Canh giờ bằng cách chạm theo',
+  'Play the song from its start and tap Now as each line begins.': 'Phát bài từ đầu và chạm Lúc này khi mỗi dòng bắt đầu.',
+  'Line {n} of {total}': 'Dòng {n}/{total}',
   'A line starting with a time like [01:02.50] is synced to it.': 'Dòng bắt đầu bằng thời điểm như [01:02.50] sẽ được đồng bộ theo thời điểm đó.',
   // Hidden videos, music or not (features/library/HiddenVideos, edits markMusic, menus)
   '{songs} hidden: not music': 'Đã ẩn {songs}: không phải nhạc',
