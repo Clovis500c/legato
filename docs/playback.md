@@ -214,7 +214,7 @@ We still pin the policy on the iframe: a meta tag or header added later can't br
 - Skip silence (2026-10-31, Settings › Playback, off by default: hidden tracks and gapless albums mean their silence).
   `crates/player/src/silence.rs` measures a file: RMS over 20 ms windows under −60 dBFS is silence; the music starts 50 ms
   before the first loud window, ends 200 ms after the last; under 0.3 s at the start or 1.5 s at the end is left alone.
-  Measured when a song is about to play, never at scan time: `silence_prepare` (`src-tauri/src/silence.rs`) looks up
+  Measured when a song is about to play, never at scan time: `local_prepare` (`src-tauri/src/prepare.rs`) looks up
   SQLite `silence` (by path and modified time, `Library::cached_silence`; the newest 20 000 rows kept), else finds the
   start of the playing file fast (the scan stops at the first loud window, 30 s of decoding at most), tells the engine (`Command::Trims`), and decodes the whole file once in the background for
   the end (4 files ahead per call, again when the gapless run moves on). Play waits 400 ms for the first scan at most;
@@ -225,6 +225,21 @@ We still pin the policy on the iframe: a meta tag or header added later can't br
   measured (failed, not yet): the song plays as it is. YouTube: `live.js` reports `lead` when the music began after 2 s
   or more of silence from the video's very start; kept per video (`ends.ts` `song-starts`), the next play seeks there
   once (never a loop). The first play of a video can't know.
+- Volume levelling (2026-11-01, Settings › Playback › Sound processing: Off / Song / Album, off by default: it changes
+  how the files sound). Each local file gets a gain to -14 LUFS, the level Spotify, YouTube and Tidal play at, so a
+  file sits with the streamed songs around it (ReplayGain's own -18 would leave it 4 dB quieter). From its ReplayGain
+  tags when a scanner wrote them (`music_core::local::replay_gain`: ID3 TXXX in any case, Vorbis, MP4 freeform, APE;
+  tag gain + 4 dB), else from its loudness measured once: `music_dsp::loudness` (BS.1770-4 integrated loudness with the
+  standard's own K-weighting, 400 ms blocks every 100 ms, gates at -70 LUFS and 10 LU under; mono counts as both
+  speakers), run in the same background decode as the silence scan (`music_player::level::analyse`), cached in SQLite
+  `loudness` by path and modified time. Album: the album gain of the tags, else the song's own (a measure has no album).
+  A boost stops before the peak passes -1 dBFS (never turned into a cut) and at +12 dB. `local_prepare` gets both jobs:
+  tags and caches answer before the song starts (play waits 400 ms at most), the rest after the background decode.
+  The engine (`Command::Level`, `Command::Gains`) gives each loaded file an atomic multiplier that `live.rs` applies
+  to decoded samples, before the live chain (its limiter sees the result): a song starts at its gain; a change glides
+  (0.15 s time constant). A gain that comes for the playing song after its first 3 s waits for the next play, unless
+  the setting moved in the last 5 s (so a first, untagged play is levelled only if its measure is quick). Unseen: real
+  tagged files from foobar2000 or MusicBee, a long file's measure time, how it sits next to YouTube by ear.
 
 ## Live processing (Adaptive Sound, moving cover; 2026-10-21)
 

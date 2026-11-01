@@ -7,12 +7,15 @@ use music_dsp::{Chain, Control, Effects, Processor, TimeStage};
 use rodio::source::SeekError;
 use rodio::{ChannelCount, SampleRate, Source};
 use std::sync::Arc;
+use std::sync::atomic::{AtomicU32, Ordering};
 use std::time::Duration;
 
 /// Frames per block: ~5 ms at 48 kHz, small enough that settings feel instant.
 const BLOCK: usize = 256;
 /// Frames read from the decoder at a time when the time stage wants more.
 const FEED: usize = 1024;
+/// A levelling gain that changes while the file plays: time constant of its glide (most of the way in 0.5 s).
+const GLIDE_S: f32 = 0.15;
 
 pub struct Live<S: Source> {
     inner: S,
@@ -29,6 +32,10 @@ pub struct Live<S: Source> {
     read: u64,
     channels: ChannelCount,
     rate: SampleRate,
+    /// Volume levelling: the engine's multiplier for this file (f32 bits), and the one applied to the last block (None
+    /// before the first: the song starts at its level, no glide from 1).
+    level: Option<Arc<AtomicU32>>,
+    gain: Option<f32>,
 }
 
 impl<S: Source> Live<S> {
@@ -49,7 +56,15 @@ impl<S: Source> Live<S> {
             read: 0,
             channels,
             rate,
+            level: None,
+            gain: None,
         }
+    }
+
+    /// Volume levelling: decoded samples times `level` (the engine may change it while the file plays).
+    pub fn levelled(mut self, level: Arc<AtomicU32>) -> Self {
+        self.level = Some(level);
+        self
     }
 
     /// Up to `frames` frames from the decoder into `out`; fewer = it ended.
@@ -64,7 +79,26 @@ impl<S: Source> Live<S> {
         }
         let got = (out.len() - start) / self.proc.channels();
         self.read += got as u64;
+        self.level_up(&mut out[start..], got);
         got
+    }
+
+    /// Levelling gain on fresh decoder samples. A change glides (eased per block, ramped within it): no click.
+    fn level_up(&mut self, samples: &mut [f32], frames: usize) {
+        let Some(level) = &self.level else { return };
+        let target = f32::from_bits(level.load(Ordering::Relaxed));
+        let from = *self.gain.get_or_insert(target);
+        let to = if (target - from).abs() < 1e-4 { target } else { from + (target - from) * (1.0 - (-(frames as f32) / (GLIDE_S * self.rate.get() as f32)).exp()) };
+        self.gain = Some(to);
+        if from == 1.0 && to == 1.0 {
+            return;
+        }
+        let ch = self.proc.channels();
+        let step = (to - from) / frames.max(1) as f32;
+        for (i, frame) in samples.chunks_mut(ch).enumerate() {
+            let g = from + step * i as f32;
+            frame.iter_mut().for_each(|x| *x *= g);
+        }
     }
 
     fn refill(&mut self) -> bool {
@@ -183,6 +217,22 @@ mod tests {
         let a: f32 = source(48_000 * 2 * 4).map(|x| x * x).sum();
         let b: f32 = Live::new(source(48_000 * 2 * 4), control).map(|x| x * x).sum();
         assert!(b < a * 0.8, "{b} vs {a}");
+    }
+
+    #[test]
+    fn levelled_from_the_first_sample_then_gliding_to_a_new_gain() {
+        let a: Vec<f32> = source(48_000 * 2).collect();
+        let level = Arc::new(AtomicU32::new(0.5f32.to_bits()));
+        let mut live = Live::new(source(48_000 * 2), Arc::new(Control::default())).levelled(level.clone());
+        let first: Vec<f32> = live.by_ref().take(4_800 * 2).collect();
+        assert!(first.iter().zip(&a).all(|(b, a)| (b - a * 0.5).abs() < 1e-6));
+        level.store(1.0f32.to_bits(), Ordering::Relaxed);
+        let rest: Vec<f32> = live.collect();
+        let a = &a[4_800 * 2..];
+        assert_eq!(rest.len(), a.len());
+        // No jump: the next 5 ms still near half; 0.8 s later, all the way.
+        assert!(rest[..480].iter().zip(a).all(|(b, a)| (b - a * 0.5).abs() < 0.01));
+        assert!(rest[rest.len() - 4_800..].iter().zip(&a[a.len() - 4_800..]).all(|(b, a)| (b - a).abs() < 1e-3));
     }
 
     #[test]

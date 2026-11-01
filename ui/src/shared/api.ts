@@ -172,7 +172,8 @@ export const api = {
   playerStatus: () => invoke<PlayerStatus>('player_status'),
   /** Live processing of local files (crates/dsp): applies from the next block, nothing restarts. */
   sponsorSegments: (video: string) => invoke<SponsorSegment[]>('sponsor_segments', { video }),
-  silencePrepare: (paths: string[]) => invoke<void>('silence_prepare', { paths }),
+  /** Local files about to play: their silences (`silence`) and levelling gains (`level`) go to the engine. */
+  localPrepare: (paths: string[], silence: boolean, level: boolean) => invoke<void>('local_prepare', { paths, silence, level }),
   playerLive: (settings: LiveSettings) => invoke<void>('player_live', { settings }),
   /** Live Editor: a song's saved edits (key from effects.ts songKey), or the presets (null). */
   edits: (song: string | null) => invoke<Edit[]>('edits', { song }),

@@ -1,12 +1,14 @@
 //! Local file playback. Engine thread owns audio device (cpal stream not Send everywhere).
 
 pub mod export;
+pub mod level;
 mod live;
 pub mod mic;
 mod output;
 mod queue;
 pub mod silence;
 
+pub use level::{Gain, Level};
 pub use music_dsp::{Effects, Levels, Live as LiveSettings, tap::Tap, viz};
 pub use queue::Queue;
 pub use silence::Trim;
@@ -19,10 +21,15 @@ use std::collections::{HashMap, VecDeque};
 use std::fs::File;
 use std::io::Cursor;
 use std::path::PathBuf;
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
 use std::sync::mpsc::{self, RecvTimeoutError, Sender};
 use std::sync::{Arc, Mutex};
-use std::time::Duration;
+use std::time::{Duration, Instant};
+
+/// A levelling gain for the playing song is still taken this far in (a measure just done), or this soon after the
+/// setting moved; later it waits for the next play: no level change mid-song nobody asked for.
+const LEVEL_EARLY_MS: u64 = 3_000;
+const LEVEL_MOVED: Duration = Duration::from_secs(5);
 
 #[derive(Debug, Deserialize, ts_rs::TS)]
 #[serde(tag = "type", rename_all = "camelCase")]
@@ -37,6 +44,11 @@ pub enum Command {
     /// Rust-side only: measured silence of files (cache or fresh), used when they play.
     #[serde(skip)]
     Trims { list: Vec<(PathBuf, Trim)> },
+    /// Volume levelling (Settings › Playback): which gain plays, from the next block (gliding).
+    Level { mode: Level },
+    /// Rust-side only: files' levelling gains (tags or a measure), used when they play.
+    #[serde(skip)]
+    Gains { list: Vec<(PathBuf, Gain)> },
     Toggle,
     Seek { ms: u64 },
     Next,
@@ -156,6 +168,13 @@ struct Engine {
     skip_silence: bool,
     /// Silence measured per file (set by the shell before a song plays).
     trims: HashMap<PathBuf, Trim>,
+    level: Level,
+    /// When the levelling setting last moved.
+    level_moved: Option<Instant>,
+    /// Levelling gains per file (set by the shell before a song plays).
+    gains: HashMap<PathBuf, Gain>,
+    /// Levelling multiplier per loaded item (same order as `stops`), read by its source block by block.
+    levels: VecDeque<Arc<AtomicU32>>,
 }
 
 impl Engine {
@@ -184,6 +203,18 @@ impl Engine {
                 {
                     let _ = p.try_seek(Duration::from_millis(ms));
                 }
+            }
+            Command::Level { mode } => {
+                self.level = mode;
+                self.level_moved = Some(Instant::now());
+                self.relevel();
+            }
+            Command::Gains { list } => {
+                if self.gains.len() > 500 {
+                    self.gains.clear();
+                }
+                self.gains.extend(list);
+                self.relevel();
             }
             Command::Toggle => {
                 if let Some(p) = &self.player {
@@ -217,6 +248,7 @@ impl Engine {
                     stop.store(true, Ordering::Relaxed);
                 }
                 self.durations.truncate(self.stops.len());
+                self.levels.truncate(self.stops.len());
             }
             Command::Reopen => {
                 let Some(old) = self.device.take() else { return Ok(()) };
@@ -248,9 +280,26 @@ impl Engine {
                 self.queue = Queue::default();
                 self.durations.clear();
                 self.stops.clear();
+                self.levels.clear();
             }
         }
         Ok(())
+    }
+
+    /// Multiplier for `path` now (1 without a known gain).
+    fn factor(&self, path: &std::path::Path) -> f32 {
+        self.gains.get(path).map_or(1.0, |g| g.factor(self.level))
+    }
+
+    /// Loaded files take their gain now: the next ones always, the playing one only early on or right after the setting
+    /// moved.
+    fn relevel(&self) {
+        let early = self.control.position_ms() < LEVEL_EARLY_MS || self.level_moved.is_some_and(|t| t.elapsed() < LEVEL_MOVED);
+        for (i, (path, level)) in self.queue.loaded().iter().zip(&self.levels).enumerate() {
+            if i > 0 || early {
+                level.store(self.factor(path).to_bits(), Ordering::Relaxed);
+            }
+        }
     }
 
     /// Fresh rodio player at queue position. Dropping old one stops it.
@@ -264,6 +313,7 @@ impl Engine {
         self.player = Some(p);
         self.durations.clear();
         self.stops.clear();
+        self.levels.clear();
         self.fill();
         self.skip_start();
         Ok(())
@@ -281,10 +331,10 @@ impl Engine {
     fn fill(&mut self) {
         let Some(p) = &self.player else { return };
         let control = self.control.clone();
-        let append = |p: &rodio::Player, src: Box<dyn Source + Send>, stop: Arc<AtomicBool>| -> Option<u64> {
+        let append = |p: &rodio::Player, src: Box<dyn Source + Send>, stop: Arc<AtomicBool>, level: Arc<AtomicU32>| -> Option<u64> {
             let ms = src.total_duration().map(|d| d.as_millis() as u64);
             // Through the live chain. Checked from first sample on: a source dropped before it starts never plays.
-            p.append(live::Live::new(src, control.clone()).stoppable().periodic_access(Duration::from_millis(20), move |s| {
+            p.append(live::Live::new(src, control.clone()).levelled(level).stoppable().periodic_access(Duration::from_millis(20), move |s| {
                 if stop.load(Ordering::Relaxed) {
                     s.stop()
                 }
@@ -294,11 +344,14 @@ impl Engine {
         for path in self.queue.to_load() {
             let stop = Arc::new(AtomicBool::new(false));
             let flag = stop.clone();
+            let level = Arc::new(AtomicU32::new(self.factor(&path).to_bits()));
+            let gain = level.clone();
             let added = match &self.memory {
-                Some((label, bytes)) if *label == path => Decoder::try_from(Cursor::new(bytes.clone())).map(|d| append(p, Box::new(d), flag)).map_err(anyhow::Error::from),
-                _ => File::open(&path).map_err(anyhow::Error::from).and_then(|f| Ok(append(p, Box::new(Decoder::try_from(f)?), flag))),
+                Some((label, bytes)) if *label == path => Decoder::try_from(Cursor::new(bytes.clone())).map(|d| append(p, Box::new(d), flag, gain)).map_err(anyhow::Error::from),
+                _ => File::open(&path).map_err(anyhow::Error::from).and_then(|f| Ok(append(p, Box::new(Decoder::try_from(f)?), flag, gain))),
             };
             self.stops.push_back(stop);
+            self.levels.push_back(level);
             match added {
                 Ok(ms) => self.durations.push_back(ms),
                 Err(e) => {
@@ -314,6 +367,7 @@ impl Engine {
         let done = self.queue.sync(p.len());
         self.durations.drain(..done);
         self.stops.drain(..done);
+        self.levels.drain(..done);
         self.fill();
         // Gapless hand-over to the next file: it starts on its music too.
         if done > 0 {
@@ -437,6 +491,29 @@ mod tests {
         e.handle(Command::Reopen).unwrap();
         assert!(e.device.is_none() && e.player.is_none());
         let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
+    fn a_song_plays_at_its_levelling_gain_and_a_late_one_waits_for_the_next_play() {
+        let (a, b) = (wav("level-a", 0, 8, 0), wav("level-b", 0, 2, 0));
+        let mut e = Engine { volume: 1.0, ..Default::default() };
+        e.device = Some(Output::Null(Null::open()));
+        let half = Gain { track_db: -6.0206, track_peak: 1.0, album: None };
+        e.handle(Command::Level { mode: Level::Track }).unwrap();
+        e.handle(Command::Gains { list: vec![(a.clone(), half)] }).unwrap();
+        e.handle(Command::Play { paths: vec![a.clone(), b.clone()], start: 0 }).unwrap();
+        let now = |e: &Engine, i: usize| f32::from_bits(e.levels[i].load(Ordering::Relaxed));
+        assert!((now(&e, 0) - 0.5).abs() < 1e-3 && now(&e, 1) == 1.0);
+        // 4 s in, the setting moved long ago: a new gain for the playing song waits; the next song takes its own.
+        e.level_moved = None;
+        e.handle(Command::Seek { ms: 4_000 }).unwrap();
+        e.handle(Command::Gains { list: vec![(a.clone(), Gain { track_db: -12.0, ..half }), (b.clone(), half)] }).unwrap();
+        assert!((now(&e, 0) - 0.5).abs() < 1e-3 && (now(&e, 1) - 0.5).abs() < 1e-3);
+        // The setting turned off: at once, the playing song too.
+        e.handle(Command::Level { mode: Level::Off }).unwrap();
+        assert_eq!((now(&e, 0), now(&e, 1)), (1.0, 1.0));
+        e.handle(Command::Stop).unwrap();
+        let _ = (std::fs::remove_file(a), std::fs::remove_file(b));
     }
 
     #[test]

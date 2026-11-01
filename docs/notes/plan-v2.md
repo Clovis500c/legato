@@ -217,7 +217,12 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       Signed in to YouTube Music, its timed lines still come first (no words, but LRCLIB isn't asked then).
       Background vocals apart: not done, the Lyricsfile has no role for them (its overlapping lines play one after
       the other). Unseen: a real word-synced song (LRCLIB was overloaded when checked; few records have words).
-- [ ] `M` ReplayGain / loudness normalisation for local files (reads the tags, or measures once and stores it).
+- [x] `M` ReplayGain / loudness normalisation for local files (reads the tags, or measures once and stores it).
+      Settings › Playback › Volume levelling (Off / Song / Album, off by default): a gain to -14 LUFS (the streaming
+      level, so local songs sit with streamed ones), from ReplayGain tags (+4 dB) or BS.1770-4 measured once in the
+      silence scan's decode (`music_dsp::loudness`, SQLite `loudness`), applied before the live chain, peak-safe. Album
+      without tags = the song's gain. See docs/playback.md › Local files. Unseen: real tagged files, by ear beside
+      YouTube; off by default until the owner tries it (worth turning on by default then?).
 - [ ] `M` Phone remote: a page served on the LAN (QR code) to pause, skip, see the queue (Plexamp-like).
 - [ ] `M` Accessibility pass: full keyboard, screen reader labels, contrast AA everywhere, reduced motion.
 - [ ] `M` Library health: missing files, YouTube videos gone private (with "Find another version", `alternative_videos`),

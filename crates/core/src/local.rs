@@ -123,6 +123,32 @@ fn read_all(paths: &[&Path]) -> Vec<Track> {
     got.into_iter().map(|(_, t)| t).collect()
 }
 
+/// ReplayGain a scanner wrote in a file (foobar2000, MusicBee, rsgain…): the track's gain to -18 LUFS (dB) and peak
+/// (1.0 = full scale), the album's when there.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct ReplayGain {
+    pub track_db: f32,
+    pub track_peak: Option<f32>,
+    pub album: Option<(f32, Option<f32>)>,
+}
+
+/// A file's ReplayGain tags (ID3's TXXX, Vorbis comments, MP4 freeform, APE: names in any case). None without a
+/// track gain.
+pub fn replay_gain(path: &Path) -> Option<ReplayGain> {
+    let file = tagged(path)?;
+    let value = |key: ItemKey, range: std::ops::RangeInclusive<f32>| {
+        // "-6.54 dB", "+2.10 dB", "0.988251".
+        let num = |s: &str| s.trim().trim_end_matches(|c: char| c.is_ascii_alphabetic()).trim().parse::<f32>().ok().filter(|v| range.contains(v));
+        file.primary_tag().into_iter().chain(file.tags()).find_map(|t| t.get_string(key).and_then(num))
+    };
+    let peak = |key| value(key, 0.000_01..=10.0);
+    Some(ReplayGain {
+        track_db: value(ItemKey::ReplayGainTrackGain, -60.0..=60.0)?,
+        track_peak: peak(ItemKey::ReplayGainTrackPeak),
+        album: value(ItemKey::ReplayGainAlbumGain, -60.0..=60.0).map(|db| (db, peak(ItemKey::ReplayGainAlbumPeak))),
+    })
+}
+
 /// The file's tags and properties, covers left out (read() never shows them; picture() reads them on demand).
 fn tagged(path: &Path) -> Option<TaggedFile> {
     Probe::open(path).ok()?.options(ParseOptions::new().read_cover_art(false)).read().ok()
@@ -464,6 +490,26 @@ pub(crate) mod tests {
             std::fs::write(&lrc, skipped).unwrap();
             assert_eq!(lyrics(&p).as_deref(), Some("[00:01.00]From the tag"));
         }
+    }
+
+    #[test]
+    fn reads_replaygain_tags_whatever_their_case() {
+        let dir = tempfile::tempdir().unwrap();
+        let p = dir.path().join("a.wav");
+        wav(&p);
+        assert_eq!(replay_gain(&p), None);
+        let mut tag = lofty::tag::Tag::new(lofty::tag::TagType::Id3v2);
+        tag.insert_text(ItemKey::ReplayGainTrackGain, "-6.54 dB".into());
+        tag.insert_text(ItemKey::ReplayGainTrackPeak, "0.988251".into());
+        tag.save_to_path(&p, lofty::config::WriteOptions::default()).unwrap();
+        assert_eq!(replay_gain(&p), Some(ReplayGain { track_db: -6.54, track_peak: Some(0.988_251), album: None }));
+        // foobar2000 writes ID3's names in lower case; an album gain without its peak; nonsense left out.
+        let mut id3 = lofty::id3::v2::Id3v2Tag::new();
+        for (name, value) in [("replaygain_track_gain", "+2.10 dB"), ("replaygain_track_peak", "lots"), ("replaygain_album_gain", "-1.5 dB")] {
+            id3.insert(lofty::id3::v2::Frame::UserText(lofty::id3::v2::ExtendedTextFrame::new(lofty::TextEncoding::UTF8, name, value)));
+        }
+        id3.save_to_path(&p, lofty::config::WriteOptions::default()).unwrap();
+        assert_eq!(replay_gain(&p), Some(ReplayGain { track_db: 2.1, track_peak: None, album: Some((-1.5, None)) }));
     }
 
     #[test]

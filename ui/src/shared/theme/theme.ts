@@ -3,6 +3,7 @@ import { LANGUAGES, msg, tr } from '../i18n/i18n'
 import { ACTIONS, validCombo, type Custom } from '../../app/keys'
 import { cleanCss } from '../css'
 import type { GroupSort, Sort } from '../../features/library/filter'
+import type { Levelling } from '../generated/Levelling'
 import type { SystemAccent } from '../generated/SystemAccent'
 
 export const PALETTE_KEYS = ['bg', 'panel', 'raised', 'recess', 'line', 'lineSoft', 'ink', 'ink2', 'ink3', 'ink4', 'accent', 'onAccent', 'ledOff'] as const
@@ -362,6 +363,8 @@ export interface Settings {
   earlyEnds: boolean
   /** Songs start on the music and end where it ends: silence at the start and end skipped (local: measured; YouTube: learned). */
   skipSilence: boolean
+  /** Local files at the level streams play at (ReplayGain tags, or measured once): off by default, it changes how they sound. */
+  levelling: Levelling
   /** Music videos: intros, skits and outros marked by SponsorBlock's community skipped (a hash prefix of each video id goes to sponsor.ajay.app). */
   skipNonMusic: boolean
   /** YouTube's sound may go through the processing above (off: untouched, features work on local files only). */
@@ -472,6 +475,7 @@ export const DEFAULTS: Settings = {
   visualizerStyle: 'led',
   earlyEnds: true,
   skipSilence: false,
+  levelling: 'off',
   skipNonMusic: false,
   liveYoutube: true,
   voiceSearch: false,
@@ -676,6 +680,7 @@ export function sanitize(raw: unknown): Settings {
     visualizerStyle: pick(r.visualizerStyle, VISUALIZER_STYLES, DEFAULTS.visualizerStyle),
     earlyEnds: r.earlyEnds !== false,
     skipSilence: r.skipSilence === true,
+    levelling: pick(r.levelling, ['off', 'track', 'album'] as const, DEFAULTS.levelling),
     skipNonMusic: r.skipNonMusic === true,
     liveYoutube: typeof r.liveYoutube === 'boolean' ? r.liveYoutube : DEFAULTS.liveYoutube,
     voiceSearch: r.voiceSearch === true,

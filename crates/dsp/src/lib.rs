@@ -9,6 +9,7 @@ mod biquad;
 pub mod chain;
 mod control;
 pub mod effects;
+pub mod loudness;
 mod meter;
 mod processor;
 pub mod reverb;

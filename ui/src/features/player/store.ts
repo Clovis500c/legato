@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { useStore } from '../../app/store'
-import { api, type LibraryTrack, type PlayerCommand, type PlayerStatus, type SpotifyCommand, type SpotifyPlayback, type Track } from '../../shared/api'
+import { api, type Levelling, type LibraryTrack, type PlayerCommand, type PlayerStatus, type SpotifyCommand, type SpotifyPlayback, type Track } from '../../shared/api'
 import type { Box } from '../../shared/artbox'
 import { region } from '../../shared/format'
 import { endListen, progress, startListen } from './listens'
@@ -64,6 +64,8 @@ interface PlayerState {
   earlyEnds: boolean
   /** Settings › Playback › Skip silence: songs start on the music and end where it ends (ends.ts, engine for local files). */
   skipSilence: boolean
+  /** Settings › Playback › Volume levelling: local files' gain (engine). */
+  levelling: Levelling
   /** Settings › Playback › Skip non-music parts: SponsorBlock's marked intros, skits, outros (sponsor.ts). */
   skipNonMusic: boolean
   /** Fade in of the current track, s: full after the previous one, short after a skip (if asked), 0 = none. */
@@ -305,8 +307,17 @@ let ytFresh = false
 // "playing" that soon after is paused again (later, one from YouTube's own controls counts).
 let pausedAt = 0
 const PAUSE_HOLD_MS = 5000
-// Play waits this long for the silence scan of a local file, then starts it as it is.
+// Play waits this long for a local file's silence scan and gain, then starts it as it is.
 const SILENCE_WAIT_MS = 400
+
+const localPaths = (tracks: LibraryTrack[]) => tracks.flatMap((x) => (x.ids.local ? [x.ids.local] : []))
+
+/** The engine learns what it needs of local files about to play (cached): their silences, their levelling gains. */
+function prepareLocal(paths: string[]): Promise<void> {
+  const { skipSilence, levelling } = usePlayer.getState()
+  if (!paths.length || (!skipSilence && levelling === 'off')) return Promise.resolve()
+  return api.localPrepare(paths, skipSilence, levelling !== 'off').catch(() => {})
+}
 // Current song came by the queue moving on (song ended): Skip long songs applies once its length is known.
 let reachedAuto = false
 // Length of the playing video, ms (0 = not known yet). YouTube sends it once, as the video loads: kept for the song.
@@ -423,6 +434,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
   smartShuffle: true,
   earlyEnds: true,
   skipSilence: false,
+  levelling: 'off',
   skipNonMusic: false,
   fadeIn: 0,
   startAt: 0,
@@ -558,10 +570,11 @@ export const usePlayer = create<PlayerState>((set, get) => ({
       let end = index + 1
       while (!get().shuffle && get().repeat !== 'one' && end < list.length && vias(list[end])[0] === 'local') end++
       const paths = list.slice(index, end).map((x) => x.ids.local!)
-      // Skip silence: the engine learns where the music starts before the song does (cached). A scan not done in time
-      // or failed plays the song as it is: the engine seeks past the silence when the answer comes late.
-      if (get().skipSilence) {
-        await Promise.race([api.silencePrepare(paths).catch(() => {}), new Promise((done) => setTimeout(done, SILENCE_WAIT_MS))])
+      // Skip silence, levelling: the engine learns where the music starts and how loud each file is before the song
+      // plays (cached, or tags). An answer not there in time plays the song as it is: the engine seeks past the silence
+      // when it comes late, and takes a late gain in the first seconds only.
+      if (get().skipSilence || get().levelling !== 'off') {
+        await Promise.race([prepareLocal(paths), new Promise((done) => setTimeout(done, SILENCE_WAIT_MS))])
         if (mine !== seq) return
       }
       expect = paths
@@ -815,8 +828,8 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     if (i > index) {
       endListen(true)
       startListen(list[i].id, s.durationMs)
-      // The run moved on: the engine learns the silences of the songs now ahead of it.
-      if (get().skipSilence) void api.silencePrepare(list.slice(i, i + 4).flatMap((x) => (x.ids.local ? [x.ids.local] : []))).catch(() => {})
+      // The run moved on: the engine learns the silences and gains of the songs now ahead of it.
+      void prepareLocal(localPaths(list.slice(i, i + 4)))
     }
     // Skip silence: the engine says where the music of this file ends; from there it is a video with an early end.
     const skip = get().skipSilence
@@ -985,6 +998,14 @@ onEndHeard((end, tail) => {
 // Skip silence on / off: the engine skips the starts it knows (and says where music ends) only when asked.
 usePlayer.subscribe((s, prev) => {
   if (s.skipSilence !== prev.skipSilence) send({ type: 'skipSilence', on: s.skipSilence })
+})
+
+// Volume levelling moved: the engine applies it at once, gliding (the playing song too). Turned on: the files of the run
+// learn their gains, never asked while it was off.
+usePlayer.subscribe((s, prev) => {
+  if (s.levelling === prev.levelling) return
+  send({ type: 'level', mode: s.levelling })
+  if (prev.levelling === 'off' && s.now?.via === 'local') void prepareLocal(localPaths(s.list.slice(s.index, s.index + 4)))
 })
 
 // Late start heard (live.js: 2 s or more of silence from the start, then music): kept for the next plays of the video,

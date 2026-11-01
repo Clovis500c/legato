@@ -52,7 +52,7 @@ CREATE TABLE IF NOT EXISTS settings (
 ";
 
 /// Schema version this code writes (user_version after migrations).
-pub const SCHEMA_VERSION: i64 = 14;
+pub const SCHEMA_VERSION: i64 = 15;
 
 /// The library was made by a newer version of the app.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -339,7 +339,7 @@ pub fn back_up(path: &Path, to: &Path) -> Result<()> {
 
 const NOT_A_BACKUP: &str = "Not a Legato library backup";
 
-/// Silence rows kept (a cache by path), and how long a SponsorBlock answer stays in its table, s.
+/// Silence and loudness rows kept (caches by path), and how long a SponsorBlock answer stays in its table, s.
 const SILENCE_KEEP: i64 = 20_000;
 const SPONSOR_KEEP_S: i64 = 30 * 86_400;
 
@@ -454,6 +454,11 @@ impl Library {
         if lib.db.query_row("PRAGMA user_version", [], |r| r.get::<_, i64>(0))? < 14 {
             // v14: songs searched on YouTube, no version, with when (a cache, not synced: another PC can search for itself).
             lib.db.execute_batch("BEGIN; CREATE TABLE IF NOT EXISTS not_found (track_id INTEGER PRIMARY KEY REFERENCES tracks(id) ON DELETE CASCADE, searched INTEGER NOT NULL); PRAGMA user_version = 14; COMMIT;")?;
+        }
+        if lib.db.query_row("PRAGMA user_version", [], |r| r.get::<_, i64>(0))? < 15 {
+            // v15: loudness measured in local files (volume levelling), by path and modified time; lufs null = silent
+            // throughout (a cache, not synced).
+            lib.db.execute_batch("BEGIN; CREATE TABLE IF NOT EXISTS loudness (path TEXT PRIMARY KEY, modified INTEGER NOT NULL, lufs REAL, peak REAL NOT NULL); PRAGMA user_version = 15; COMMIT;")?;
         }
         lib.db.execute_batch(CHANGE_LOG)?;
         // Statements on logged tables compile their triggers too: kept, not rebuilt per call.
@@ -1179,6 +1184,21 @@ impl Library {
         )?;
         // A cache: the oldest rows (files long gone, mostly) go past this many.
         self.db.execute("DELETE FROM silence WHERE rowid <= (SELECT MAX(rowid) FROM silence) - ?1", [SILENCE_KEEP])?;
+        Ok(())
+    }
+
+    /// Loudness measured in a local file: Some((LUFS, sample peak)) when it was measured with this `modified` time.
+    /// LUFS None = silent throughout.
+    pub fn cached_loudness(&self, path: &str, modified: i64) -> Result<Option<(Option<f32>, f32)>> {
+        Ok(self.db.query_row("SELECT lufs, peak FROM loudness WHERE path = ?1 AND modified = ?2", params![path, modified], |r| Ok((r.get::<_, Option<f64>>(0)?.map(|l| l as f32), r.get::<_, f64>(1)? as f32))).optional()?)
+    }
+
+    pub fn save_loudness(&self, path: &str, modified: i64, lufs: Option<f32>, peak: f32) -> Result<()> {
+        self.db.execute(
+            "INSERT INTO loudness (path, modified, lufs, peak) VALUES (?1, ?2, ?3, ?4) ON CONFLICT (path) DO UPDATE SET modified = excluded.modified, lufs = excluded.lufs, peak = excluded.peak",
+            params![path, modified, lufs.map(f64::from), peak as f64],
+        )?;
+        self.db.execute("DELETE FROM loudness WHERE rowid <= (SELECT MAX(rowid) FROM loudness) - ?1", [SILENCE_KEEP])?;
         Ok(())
     }
 
@@ -2060,6 +2080,19 @@ mod tests {
         assert_eq!(lib.cached_sponsor("aaaaaaaaaaa")?, Some(("[]".into(), 10)));
         lib.save_sponsor("aaaaaaaaaaa", r#"[{"startS":0,"endS":12}]"#, 20)?;
         assert_eq!(lib.cached_sponsor("aaaaaaaaaaa")?.map(|c| c.1), Some(20));
+        Ok(())
+    }
+
+    #[test]
+    fn loudness_cache_is_by_path_and_modified_time() -> Result<()> {
+        let lib = Library::in_memory()?;
+        assert_eq!(lib.cached_loudness("a.flac", 5)?, None);
+        lib.save_loudness("a.flac", 5, Some(-9.25), 0.98)?;
+        assert_eq!(lib.cached_loudness("a.flac", 5)?, Some((Some(-9.25), 0.98)));
+        // Changed file: measured again. Silent throughout: kept as such, not measured every time.
+        assert_eq!(lib.cached_loudness("a.flac", 6)?, None);
+        lib.save_loudness("a.flac", 6, None, 0.0)?;
+        assert_eq!(lib.cached_loudness("a.flac", 6)?, Some((None, 0.0)));
         Ok(())
     }
 

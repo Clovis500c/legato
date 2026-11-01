@@ -22,7 +22,7 @@ export const FEATURES: { icon: IconName; title: string; text: string }[] = [
   { icon: 'Playlist', title: 'Playlists', text: 'Import from a service, a file (M3U, XSPF, CSV) or iTunes and MusicBee; create, pin, sort into folders, save as a file, export to YouTube Music, share by link or QR code.' },
   { icon: 'Sparkle', title: 'Mixes made on your PC', text: 'Daily mixes, mixes for this time of day and this weekday, and stats from what you play, Last.fm scrobbling if you want it.' },
   { icon: 'SlidersHorizontal', title: 'Live Editor', text: 'Speed, pitch, a 10-band EQ, reverb and 3D sound, changed as it plays.' },
-  { icon: 'FolderSimple', title: 'Your own files', text: 'Gapless playback, and their title, artist, album and cover to edit.' },
+  { icon: 'FolderSimple', title: 'Your own files', text: 'Gapless playback, as loud as your streamed songs (their ReplayGain tags, or measured), and their title, artist, album and cover to edit.' },
   { icon: 'Devices', title: 'Sync Mode', text: 'Your library on all your PCs, through a OneDrive folder or your network.' },
   { icon: 'Quotes', title: 'Lyrics', text: "Timed lyrics, word by word when LRCLIB has them, in a panel beside any page, big in Now Playing, or full screen in Karaoke mode (K). Your own files' lyrics come first: edit them, or time plain ones by tapping along, right into the file." },
   { icon: 'Palette', title: 'Themes', text: 'Colors, fonts, a picture or video background, your own CSS.' },
@@ -82,7 +82,7 @@ export const SERVICES: [string, string][] = [
 // Unlike every other list here, what isn't out yet: docs/notes/plan-v2.md › Roadmap, in its order, minus what shipped.
 export const ROADMAP: [string, string][] = [
   ['Lyrics', 'A translation under each line, and a song found from a line you remember.'],
-  ['Your own music', 'Jellyfin, Navidrome and Subsonic servers, ReplayGain for an even loudness, a tag editor for many songs at once with MusicBrainz, ratings, a column view, ListenBrainz.'],
+  ['Your own music', 'Jellyfin, Navidrome and Subsonic servers, a tag editor for many songs at once with MusicBrainz, ratings, a column view, ListenBrainz.'],
   ['Smarter listening', 'Your songs analysed on your PC (tempo, energy, key) for radios and fades that fit, a path from one artist to another, an auto-DJ, a yearly recap to share.'],
   ['Around the house', 'Your phone as a remote, speakers and TVs (DLNA, Chromecast), listening together on the same network, picking up on your other PC where you stopped.'],
   ['Windows polish', 'A Jump List on the taskbar icon, an alarm that wakes you with a playlist, an overlay for OBS, a picture-in-picture player.'],

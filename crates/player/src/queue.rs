@@ -18,6 +18,11 @@ impl Queue {
         self.items.get(self.pos)
     }
 
+    /// Items in the audio sink, current first.
+    pub fn loaded(&self) -> &[PathBuf] {
+        &self.items[self.pos..self.pos + self.loaded]
+    }
+
     /// Items after current, for queue display.
     pub fn upcoming(&self) -> &[PathBuf] {
         self.items.get(self.pos + 1..).unwrap_or(&[])

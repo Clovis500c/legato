@@ -391,6 +391,18 @@ function SoundGroup() {
             />
           </Row>
         )}
+        <Row setting="levelling" label={msg('Volume levelling')} sub={tr('Your own files play as loud as streamed songs: from their ReplayGain tags, or measured the first time they play. Album keeps an album’s quiet songs quiet, when its tags have an album gain')}>
+          <Segmented
+            label={tr('Volume levelling')}
+            value={s.levelling}
+            onChange={(levelling) => update({ levelling })}
+            options={[
+              { value: 'off', label: tr('Off') },
+              { value: 'track', label: tr('Song') },
+              { value: 'album', label: tr('Album') },
+            ]}
+          />
+        </Row>
         <Row setting="coverPulse" label={msg('Moving cover')} sub={s.motion ? tr('In Now Playing, the cover swells and settles with the music') : tr('Needs Animations on (Appearance)')}>
           <Toggle label={tr('Moving cover')} checked={s.coverPulse} onChange={(coverPulse) => update({ coverPulse })} />
         </Row>
