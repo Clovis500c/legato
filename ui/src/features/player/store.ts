@@ -114,6 +114,8 @@ interface PlayerState {
   applyVolume: (force?: boolean) => void
   playFiles: (paths: string[]) => void
   toggle: () => void
+  /** Pause at once, no fade (headphones unplugged: not a moment out of the speakers). */
+  pauseNow: () => void
   /** Sleep timer: volume down over `ms`, then pause (volume back for next time). */
   sleep: (ms: number) => void
   seek: (ms: number) => void
@@ -617,6 +619,20 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     get().applyVolume(true)
     pause()
     ramp((t) => t, fade.pause)
+  },
+
+  pauseNow() {
+    const { now, playing } = get()
+    if (!now || !playing) return
+    // A fade running (play's, the sleep timer's) stops here.
+    clearInterval(rampTimer)
+    gainNow = 1
+    set({ hold: false, playing: false, tail: stopTail(get().tail) })
+    pausedAt = Date.now()
+    if (now.via === 'youtube') yt('pauseVideo')
+    else if (now.via === 'spotify') void spotify({ type: 'pause' })
+    else if (!enginePaused) send({ type: 'toggle' })
+    get().applyVolume(true)
   },
 
   sleep(ms) {

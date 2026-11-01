@@ -299,6 +299,8 @@ export interface Settings {
   fade: FadeSettings
   /** No fade between songs of one album played in a row (live and continuous albums never dip). */
   gaplessAlbums: boolean
+  /** Headphones unplugged or Bluetooth off: pause (src-tauri `unplug.rs`). */
+  pauseOnUnplug: boolean
   /** YouTube subtitles (off: hidden even when the Google account turns them on). */
   subtitles: boolean
   /** Playlists left out of the sidebar and menus (playlistKey), still in the library. */
@@ -431,6 +433,7 @@ export const DEFAULTS: Settings = {
   skipLong: 0,
   fade: { advanced: false, out: 2, in: 2, outCurve: 'scurve', inCurve: 'scurve', skip: true, pause: 0 },
   gaplessAlbums: true,
+  pauseOnUnplug: true,
   subtitles: false,
   hiddenPlaylists: [],
   pinnedPlaylists: [],
@@ -632,6 +635,7 @@ export function sanitize(raw: unknown): Settings {
     skipLong: typeof r.skipLong === 'number' && Number.isFinite(r.skipLong) ? Math.min(60, Math.max(0, Math.round(r.skipLong))) : DEFAULTS.skipLong,
     fade: sanitizeFade(r.fade),
     gaplessAlbums: typeof r.gaplessAlbums === 'boolean' ? r.gaplessAlbums : DEFAULTS.gaplessAlbums,
+    pauseOnUnplug: typeof r.pauseOnUnplug === 'boolean' ? r.pauseOnUnplug : DEFAULTS.pauseOnUnplug,
     subtitles: typeof r.subtitles === 'boolean' ? r.subtitles : DEFAULTS.subtitles,
     homeSections: sanitizeHome(r.homeSections),
     smartLists: sanitizeSmart(r.smartLists),

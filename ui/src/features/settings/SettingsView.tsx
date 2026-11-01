@@ -619,6 +619,13 @@ function PlaybackSection() {
           </Row>
         </div>
       </Group>
+      <Group title={msg('Output device')}>
+        <div className="rounded-xl border border-line bg-raised">
+          <Row setting="pauseOnUnplug" label={msg('Pause when headphones disconnect')} sub={tr('Headphones unplugged, a Bluetooth headset or speaker turned off: the music pauses instead of going on through the speakers')}>
+            <Toggle label={tr('Pause when headphones disconnect')} checked={s.pauseOnUnplug} onChange={(pauseOnUnplug) => update({ pauseOnUnplug })} />
+          </Row>
+        </div>
+      </Group>
       <SoundGroup />
       <Group title={msg('YouTube videos')}>
         <div className="rounded-xl border border-line bg-raised">

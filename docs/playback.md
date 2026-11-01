@@ -46,6 +46,18 @@ Status on 2026-10-16. YouTube, local files and Apple Music previews: done and te
   resumes the app. Timeline: position and length go with each play state (`set_state`, Windows moves the bar while
   playing); a seek in the panel comes back as `media-seek`.
 
+## Headphones unplugged (2026-11-01)
+
+- `src-tauri/src/unplug.rs`: Windows' endpoint notifications (`IMMNotificationClient`, registered once on its own
+  thread). The default output (console role: what cpal and WebView2 open) leaving, unplugged, turned off or disabled,
+  → `audio-output-lost`. Windows may move the default to the speakers before it says the old one left: the device that
+  was the default up to 2 s before counts too. Told once per device until it comes back. Another device leaving, or a
+  default picked by hand, pauses nothing.
+- `features/player/unplug.ts`: setting `pauseOnUnplug` (Settings › Playback › Output device, on by default) and
+  something playing → `pauseNow` (no pause fade: not a moment out of the speakers), notice with Play.
+- Limits: headphones and speakers on one endpoint (Realtek jack retasking) change no endpoint, so no event. Local
+  files: the engine keeps the device it opened.
+
 ## Cover art
 
 - `tracks.art` holds an https URL; local files' covers are read from their tags on demand (`local::picture`).

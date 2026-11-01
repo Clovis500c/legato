@@ -2750,6 +2750,7 @@ dependencies = [
  "ts-rs",
  "webview2-com",
  "windows",
+ "windows-core",
  "windows-registry",
 ]
 

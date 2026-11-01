@@ -37,6 +37,7 @@ mod spotify_web;
 mod thumbbar;
 mod themes;
 mod tray;
+mod unplug;
 mod update;
 mod window_bg;
 mod window_place;
@@ -2149,6 +2150,9 @@ pub fn run() {
             // Volume mixer: YouTube's WebView2 sound listed as Legato.
             #[cfg(windows)]
             mixer::spawn();
+            // Headphones unplugged, Bluetooth off: the interface pauses.
+            #[cfg(windows)]
+            unplug::spawn(app.handle().clone());
             #[cfg(windows)]
             shield::install(window.as_ref(), shield.clone())?;
             #[cfg(windows)]

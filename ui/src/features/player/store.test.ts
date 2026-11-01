@@ -212,6 +212,33 @@ describe('pause while a YouTube video starts', () => {
   })
 })
 
+describe('pause at once (headphones unplugged)', () => {
+  const post = vi.fn()
+  // Embed functions called.
+  const calls = () => post.mock.calls.map(([m]) => JSON.parse(m as string).func as string)
+  beforeEach(() => {
+    post.mockClear()
+    bindFrame({ contentWindow: { postMessage: post } } as unknown as HTMLIFrameElement)
+    usePlayer.setState({ repeat: 'off', fade: { ...NO_FADE, pause: 2000 } })
+  })
+  afterEach(() => bindFrame(null))
+
+  it('pauses now past a pause fade, stays paused when YouTube plays on, and does nothing more when paused', async () => {
+    usePlayer.getState().playTracks([song(61)], 0)
+    await settle()
+    usePlayer.getState().onYoutube({ state: 1, time: 1 })
+    post.mockClear()
+    usePlayer.getState().pauseNow()
+    expect(usePlayer.getState().playing).toBe(false)
+    expect(calls()).toContain('pauseVideo')
+    usePlayer.getState().onYoutube({ state: 1, time: 1.1 })
+    expect(usePlayer.getState().playing).toBe(false)
+    post.mockClear()
+    usePlayer.getState().pauseNow()
+    expect(calls()).toEqual([])
+  })
+})
+
 // SponsorBlock's marked parts (sponsor.ts); the answer comes from Rust, here it is put in by hand.
 describe('skip non-music parts', () => {
   const notify = vi.fn()

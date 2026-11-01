@@ -195,7 +195,11 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       (run by `RUN`), every row of the settings index (opened and highlighted). `search/commands.ts` ranks them
       (label start, label words, keywords; English and the interface's language; CJK by substring), `commandList.ts`
       builds them. "sleep 30"-style arguments are not done.
-- [ ] `S-M` Pause when headphones are unplugged or Bluetooth drops; pause during a call (Windows' communication ducking).
+- [x] `S` Pause when headphones are unplugged or Bluetooth drops: `src-tauri/src/unplug.rs` (Windows' endpoint
+      notifications: the default output leaving) → `features/player/unplug.ts` pauses at once (no pause fade), notice
+      with Play; Settings › Playback › Output device, on by default. Unseen: headphones and speakers on one endpoint
+      (Realtek jack retasking).
+- [ ] `S` Pause during a call (Windows' communication ducking).
 - [ ] `S-M` Same loudness across sources: YouTube vs local vs Spotify levelled by the Adaptive Sound meter.
 - [ ] `M` Word-by-word lyrics when the source has them (enhanced LRC), background vocals apart, Apple-style animated lines
       (Cider, Spicetify's Beautiful Lyrics).
@@ -393,6 +397,8 @@ Most useful first; the tag is the effort.
 - [ ] Start radio from an album, a playlist and the artist page, signed in to YouTube and signed out: its own songs one
       in three, Up next naming the radio, more songs coming at its end with autoplay off.
 - [ ] The search bar's pages, actions and settings: "shuffle", "dark", "stats", Enter on each, in French too.
+- [ ] Headphones unplugged, then a Bluetooth headset turned off, each while a song plays (YouTube, a local file): paused
+      at once, the notice's Play goes on; with the setting off it plays on through the speakers.
 - [ ] An album played from its first song with a fade set: no dip between its songs (YouTube Music album and local
       files), a playlist of singles still fades, the sleep timer's last song still fades out.
 - [ ] "No sound could be taken" gone from the second YouTube video on (fix 51946d5).
