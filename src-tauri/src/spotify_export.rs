@@ -15,7 +15,7 @@ use std::time::Duration;
 use tauri::webview::DownloadEvent;
 use tauri::{AppHandle, Emitter, Manager, State, Url, WebviewUrl, WebviewWindowBuilder};
 use tokio::sync::mpsc::error::TryRecvError;
-use tokio::sync::mpsc::{UnboundedReceiver, UnboundedSender, unbounded_channel};
+use tokio::sync::mpsc::{UnboundedReceiver, UnboundedSender};
 
 const PAGE: &str = "https://exportify.app/";
 const LABEL: &str = "exportify";
@@ -134,7 +134,7 @@ pub async fn spotify_export_open(app: AppHandle, state: State<'_, AppState>) -> 
     // No channel, no signals: elsewhere nothing to tell a silent page from a working one.
     #[cfg(windows)]
     if let Some(wv) = app.get_webview(LABEL) {
-        let (tx, rx) = unbounded_channel();
+        let (tx, rx) = tokio::sync::mpsc::unbounded_channel();
         *SIGNALS.lock().unwrap() = Some(tx);
         crate::ytwatch::on_message(&wv, |source, message| {
             if let Some(s) = spotify_export::signal(source, message)
