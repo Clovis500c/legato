@@ -57,6 +57,7 @@ Done in this run (newest last), none tried in the real app yet:
 - `7b9a7b4` Plain lyrics of a local song timed by tapping along, saved into its file.
 - `082ad0b` Volume levelling for local files (Off / Song / Album, off by default): ReplayGain tags or measured once, to -14 LUFS.
 - `cf0abda` Ratings in half stars (column, menus, Alt+1…5, Highest rated sort, smart playlist rules), synced by Sync Mode.
+- `e77b4ec` Edit info of many local songs at once: album artist, genre, year, track and disc, numbered in the list's order.
 
 Milestone 4 (Lyrics) is done but for translation and finding a song by a line: the owner's calls, notes in
 [plan-v2.md](plan-v2.md). Next in the run: milestone 5 (Your own music), its lines that need no account: the column view,
