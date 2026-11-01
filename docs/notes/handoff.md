@@ -55,10 +55,11 @@ Done in this run (newest last), none tried in the real app yet:
 - `89a48f4` A local song's own lyrics (its tags, or an .lrc beside it) first: nothing sent for it.
 - `ef9c2cc` Lyrics edited and saved into a local song's file (its .lrc or its tags), the fixed timing too.
 - `7b9a7b4` Plain lyrics of a local song timed by tapping along, saved into its file.
+- `082ad0b` Volume levelling for local files (Off / Song / Album, off by default): ReplayGain tags or measured once, to -14 LUFS.
 
 Milestone 4 (Lyrics) is done but for translation and finding a song by a line: the owner's calls, notes in
-[plan-v2.md](plan-v2.md). Next in the run: milestone 5 (Your own music), its lines that need no account: ReplayGain,
-ratings, the tag editor for many files, the column view.
+[plan-v2.md](plan-v2.md). Next in the run: milestone 5 (Your own music), its lines that need no account: ratings (and
+smart playlists on them), the tag editor for many files, the column view.
 
 ## Branches
 
