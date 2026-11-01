@@ -42,7 +42,8 @@ Done in this run (newest last), none tried in the real app yet:
 - `78338de` Command palette: the search bar (Ctrl+K) finds pages, actions and settings too.
 - `40884cd` Pause when headphones or a Bluetooth headset disconnect (Settings › Playback › Output device).
 - `bfa1122` Local files follow Windows' new default output, at the same place, paused or not.
-- Smart shuffle: artists spread through the queue, songs heard in the last day last.
+- `3a5b2e2` Smart shuffle: artists spread through the queue, songs heard in the last day last.
+- Daylist mix: "Your Friday evenings", this weekday's time of day, on the Mixes page.
 
 Next in the run: the rest of Features › High's quick wins, then Optimisation and Workflow, then milestone 4 (Lyrics).
 

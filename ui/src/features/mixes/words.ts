@@ -12,6 +12,14 @@ const SLOTS = {
   night: { title: msg('Your nights'), reason: msg('What you usually play at night') },
 }
 
+// Daylist: this weekday's time of day.
+const DAYLIST = {
+  morning: { title: msg('Your {day} mornings'), reason: msg('What you play on {day} mornings') },
+  afternoon: { title: msg('Your {day} afternoons'), reason: msg('What you play on {day} afternoons') },
+  evening: { title: msg('Your {day} evenings'), reason: msg('What you play on {day} evenings') },
+  night: { title: msg('Your {day} nights'), reason: msg('What you play on {day} nights') },
+}
+
 const FIXED: Record<string, { title: string; reason: string }> = {
   repeat: { title: msg('On Repeat'), reason: msg('The songs you keep coming back to lately') },
   fresh: { title: msg('Fresh in your library'), reason: msg('Just added, barely played yet') },
@@ -29,6 +37,7 @@ export const weekdayName = (day: number, width: 'long' | 'short' = 'long') => ne
 export function mixTitle(m: Mix): string {
   const w = m.words ?? {}
   if (m.id === 'now' && w.slot) return tr(SLOTS[w.slot].title)
+  if (m.id === 'daylist' && w.slot && w.day !== undefined) return tr(DAYLIST[w.slot].title, { day: weekdayName(w.day) })
   if (m.id === 'weekday' && w.day !== undefined) return tr('Your {day}s', { day: weekdayName(w.day) })
   if (m.id.startsWith('daily-') && w.number) return tr('Daily Mix {n}', { n: w.number })
   if (m.id.startsWith('artist-') && w.name) return tr('{name} Mix', { name: w.name })
@@ -40,6 +49,7 @@ export function mixReason(m: Mix): string {
   const w = m.words ?? {}
   const names = w.names ?? []
   if (m.id === 'now' && w.slot) return tr(SLOTS[w.slot].reason)
+  if (m.id === 'daylist' && w.slot && w.day !== undefined) return tr(DAYLIST[w.slot].reason, { day: weekdayName(w.day) })
   if (m.id === 'weekday' && w.day !== undefined) return tr('What you play on {day}s', { day: weekdayName(w.day) })
   if (m.id.startsWith('daily-') && names.length) return tr('Because you listen to {names}', { names: listOf(names) })
   if (m.id.startsWith('artist-') && w.name) return names.length ? tr('{name}, with {names}', { name: w.name, names: listOf(names) }) : tr('All {name}, your way', { name: w.name })

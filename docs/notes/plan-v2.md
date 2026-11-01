@@ -192,7 +192,10 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
 - [x] `S` Smart shuffle (skips recently played, spreads artists): `player/shuffle.ts`, each artist's songs spread
       through the queue, no artist twice in a row while others are left, songs heard in the last day after the
       others. Settings › Playback › Up next, on by default (off: plain random).
-- [ ] `S` "Daylist"-style mixes by time of day.
+- [x] `S` "Daylist"-style mixes by time of day. Already there: "Your evenings" (this time of day) and "Your Fridays"
+      (this weekday). Added: "Your Friday evenings" (`crates/core` `mixes.rs` id `daylist`), this weekday's time of day
+      from two past weeks at least, first in its section; it changes through the day and the week (the page reloads
+      its mixes on each visit). A plainer mix with the same songs steps aside.
 - [x] `S-M` Command palette (Ctrl+K): any song, page, setting or action in one box. The search bar's list (Ctrl+K
       already focused it) gains "Pages, actions and settings": every page, every action of `app/keys.ts` with its keys
       (run by `RUN`), every row of the settings index (opened and highlighted). `search/commands.ts` ranks them
@@ -407,6 +410,7 @@ Most useful first; the tag is the effort.
 - [ ] Windows' default output switched by hand while a local file plays, then while it's paused: it goes on (or waits)
       on the new device at the same place.
 - [ ] Shuffle a playlist of a few artists: no artist twice in a row in Up next, the songs played today at the end.
+- [ ] Mixes page at an hour you listened at on the same weekday two weeks running: "Your Friday evenings", in French too.
 - [ ] An album played from its first song with a fade set: no dip between its songs (YouTube Music album and local
       files), a playlist of singles still fades, the sleep timer's last song still fades out.
 - [ ] "No sound could be taken" gone from the second YouTube video on (fix 51946d5).

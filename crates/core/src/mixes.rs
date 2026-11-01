@@ -546,12 +546,29 @@ pub fn mixes(input: &Input) -> Vec<Mix> {
     // Time of day: what you play in this slot.
     let local_hour = |t: i64| (t + input.utc_offset).rem_euclid(DAY) / 3600;
     let now_slot = slot(local_hour(input.now));
+    let weekday = |t: i64| (local_day(t) + 4).rem_euclid(7) as usize;
+    let today = weekday(input.now);
+
+    // Daylist: this slot of this weekday (Friday evenings), other weeks; it changes through the day and the week.
+    let mut in_day_slot: HashMap<i64, f64> = HashMap::new();
+    let mut weeks = HashSet::new();
+    for p in good.iter().filter(|p| weekday(p.started_at) == today && slot(local_hour(p.started_at)) == now_slot && local_day(p.started_at) != local_day(input.now)) {
+        *in_day_slot.entry(p.track_id).or_default() += play_weight(p) * decay(input.now - p.started_at);
+        weeks.insert(local_day(p.started_at));
+    }
+    let ids = taste.pick(in_day_slot.into_iter(), Opts::default());
+    if weeks.len() >= 2 && ids.len() >= MIN_LEN {
+        let d = WEEKDAYS[today];
+        let words = Words { slot: Some(now_slot), day: Some(today), ..Words::default() };
+        out.push(Mix { id: "daylist".into(), title: format!("Your {d} {now_slot}s"), reason: format!("What you play on {d} {now_slot}s"), track_ids: ids, kind: "moment", words, found: Vec::new() });
+    }
+
     let mut in_slot: HashMap<i64, f64> = HashMap::new();
     for p in good.iter().filter(|p| slot(local_hour(p.started_at)) == now_slot) {
         *in_slot.entry(p.track_id).or_default() += play_weight(p) * decay(input.now - p.started_at);
     }
     let ids = taste.pick(in_slot.into_iter(), Opts::default());
-    if ids.len() >= MIN_LEN {
+    if ids.len() >= MIN_LEN && new_enough(&out, &ids) {
         let when = if now_slot == "night" { "at night".to_string() } else { format!("in the {now_slot}") };
         let words = Words { slot: Some(now_slot), ..Words::default() };
         out.push(Mix { id: "now".into(), title: format!("Your {now_slot}s"), reason: format!("What you usually play {when}"), track_ids: ids, kind: "moment", words, found: Vec::new() });
@@ -628,8 +645,6 @@ pub fn mixes(input: &Input) -> Vec<Mix> {
     }
 
     // This weekday: what you play on, say, Fridays (other Fridays, not today).
-    let weekday = |t: i64| (local_day(t) + 4).rem_euclid(7) as usize;
-    let today = weekday(input.now);
     let mut on_day: HashMap<i64, f64> = HashMap::new();
     let mut days = HashSet::new();
     for p in good.iter().filter(|p| weekday(p.started_at) == today && local_day(p.started_at) != local_day(input.now)) {
@@ -943,10 +958,29 @@ mod tests {
     }
 
     #[test]
-    fn weekday_mix_needs_two_past_weeks() {
-        // 1..=10 only ever on Fridays (one and two weeks ago); 11..=40 twice on other days.
+    fn daylist_is_this_weekday_s_time_of_day_from_two_past_weeks() {
+        // 1..=10 on Friday mornings, one and two weeks ago (NOW: a Friday at 8); 11..=40 on other days.
         let tracks = library_of(40, &["A", "B"]);
         let mut plays: Vec<Play> = (1..=10).map(|i| play(i, NOW - if i % 2 == 0 { 7 } else { 14 } * DAY + i * 60, true)).collect();
+        for d in 1..=6 {
+            plays.extend((11..=40).filter(|i| i % 6 == d % 6).flat_map(|i| [play(i, NOW - d * DAY + i * 60, true), play(i, NOW - d * DAY + 3000 + i * 60, true)]));
+        }
+        plays.sort_by_key(|p| p.started_at);
+        let out = run(&tracks, &plays, &HashMap::new(), 1);
+        let m = out.iter().find(|m| m.id == "daylist").unwrap_or_else(|| panic!("{out:?}"));
+        assert_eq!((m.title.as_str(), m.kind, m.words.slot, m.words.day), ("Your Friday mornings", "moment", Some("morning"), Some(5)));
+        assert!(m.track_ids.iter().all(|id| *id <= 10), "{m:?}");
+        // The same songs as Fridays: no second mix of them.
+        assert!(out.iter().all(|m| m.id != "weekday"), "{out:?}");
+        let once: Vec<Play> = plays.iter().copied().filter(|p| p.track_id > 10 || p.track_id % 2 == 0).collect();
+        assert!(run(&tracks, &once, &HashMap::new(), 1).iter().all(|m| m.id != "daylist"));
+    }
+
+    #[test]
+    fn weekday_mix_needs_two_past_weeks() {
+        // 1..=10 only ever on Friday afternoons (one and two weeks ago; NOW is a Friday morning); 11..=40 twice on other days.
+        let tracks = library_of(40, &["A", "B"]);
+        let mut plays: Vec<Play> = (1..=10).map(|i| play(i, NOW - if i % 2 == 0 { 7 } else { 14 } * DAY + 6 * 3600 + i * 60, true)).collect();
         for d in 1..=6 {
             plays.extend((11..=40).filter(|i| i % 6 == d % 6).flat_map(|i| [play(i, NOW - d * DAY + i * 60, true), play(i, NOW - d * DAY + 3000 + i * 60, true)]));
         }
