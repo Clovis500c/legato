@@ -617,7 +617,8 @@ export function folderMenu(f: PlaylistFolder, playlists: LibraryPlaylist[]): Men
   ]
 }
 
-const SECTIONS: [SettingsSection, string][] = [
+/** Settings' sections and their names (the search bar's commands name them too). */
+export const SETTINGS_SECTIONS: [SettingsSection, string][] = [
   ['general', msg('General')],
   ['playback', msg('Playback')],
   ['appearance', msg('Appearance')],
@@ -634,7 +635,7 @@ export function navMenu(to: View, tracks?: LibraryTrack[]): MenuEntry[] {
   const { settings, update } = useSettings.getState()
   return [
     { label: tr('Open'), icon: <ArrowSquareOut size={16} />, onSelect: () => go(to) },
-    to.name === 'settings' && { label: tr('Go to'), icon: <Gear size={16} />, items: SECTIONS.map(([section, label]) => ({ label: tr(label), onSelect: () => go({ name: 'settings', section }) })) },
+    to.name === 'settings' && { label: tr('Go to'), icon: <Gear size={16} />, items: SETTINGS_SECTIONS.map(([section, label]) => ({ label: tr(label), onSelect: () => go({ name: 'settings', section }) })) },
     '-',
     ...(tracks?.length ? tracksMenu(tracks) : []),
     '-',

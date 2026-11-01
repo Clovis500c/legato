@@ -1,4 +1,4 @@
-import { ArrowUpLeft, ClockCounterClockwise, GlobeSimple, LockSimple, MagnifyingGlass, MicrophoneStage, MusicNotes, Playlist, VinylRecord, X } from '@phosphor-icons/react'
+import { ArrowSquareIn, ArrowUpLeft, ClockCounterClockwise, GearSix, GlobeSimple, Lightning, LockSimple, MagnifyingGlass, MicrophoneStage, MusicNotes, Playlist, VinylRecord, X } from '@phosphor-icons/react'
 import { artistName } from '../../shared/artistName'
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { bindings, comboLabel } from '../../app/keys'
@@ -12,6 +12,8 @@ import { Cover } from '../../shared/ui/Cover'
 import { groupAlbums, groupArtists } from '../library/filter'
 import { PlaylistCover } from '../library/PlaylistCover'
 import { usePlayer } from '../player/store'
+import { commandList } from './commandList'
+import { matchCommands } from './commands'
 import { clearRecent, forgetRecent, useRecent } from './recent'
 import { libraryMatches } from './results'
 
@@ -51,7 +53,8 @@ function Suggested({ s, typed }: { s: string; typed: string }) {
  * The only search field, in the top bar (like YouTube's): one pill, its shortcut on keycaps, the mic inside. On a
  * library page a token ("In Songs") says typing filters that list; Backspace removes it and the bar searches everywhere.
  * Focused, a list opens under it without leaving the page: recent searches, then as you type the library's matches,
- * YouTube's suggestions and "Search everywhere" (Enter, the Search page). ↑ ↓ move, Esc closes.
+ * the app's pages, actions and settings rows (a command palette: "shuffle", "dark theme"), YouTube's suggestions and
+ * "Search everywhere" (Enter, the Search page). ↑ ↓ move, Esc closes.
  */
 export function SearchBar({ children }: { children?: ReactNode }) {
   const query = useStore((s) => s.query)
@@ -114,6 +117,9 @@ export function SearchBar({ children }: { children?: ReactNode }) {
   const wantLibrary = open && !scope && !!text
   const groups = useMemo(() => (wantLibrary ? { artists: groupArtists(tracks), albums: groupAlbums(tracks) } : null), [tracks, wantLibrary])
   const lib = useMemo(() => (groups ? libraryMatches(tracks, playlists, text, groups) : null), [tracks, playlists, text, groups])
+  // Pages, actions and settings: made as the list opens (the keys bound and the language then).
+  const commands = useMemo(() => (wantLibrary ? commandList() : []), [wantLibrary])
+  const doable = useMemo(() => matchCommands(commands, text), [commands, text])
 
   const sections: { label?: ReactNode; items: Item[] }[] = []
   if (!text) {
@@ -161,6 +167,34 @@ export function SearchBar({ children }: { children?: ReactNode }) {
     for (const a of lib.albums.slice(0, 1)) items.push({ key: `b:${a.album}\u0000${a.artist}`, run: pick(() => go({ name: 'album', album: a.album, artist: a.artist })), node: row(<Cover title={a.album} art={trackArt(a.tracks[0])} size={36} />, a.album, `${tr('Album')} · ${artistName(a.artist)}`) })
     for (const p of lib.playlists.slice(0, 1)) items.push({ key: `p:${p.id}`, run: pick(() => go({ name: 'playlist', id: p.id })), node: row(<PlaylistCover p={p} size={36} />, p.name, `${tr('Playlist')} · ${trn(p.trackCount, '{n} song', '{n} songs')}`) })
     if (items.length) sections.push({ label: tr('In your library'), items })
+    const icons = { page: ArrowSquareIn, action: Lightning, setting: GearSix }
+    if (doable.length)
+      sections.push({
+        label: tr('Pages, actions and settings'),
+        items: doable.map((c) => {
+          const Icon = icons[c.kind]
+          return {
+            key: c.key,
+            run: pick(c.run),
+            node: row(
+              <span className="grid size-9 shrink-0 place-items-center rounded-md bg-raised text-ink-2">
+                <Icon size={18} />
+              </span>,
+              c.label,
+              c.sub,
+              c.keys && (
+                <span className="flex shrink-0 gap-1">
+                  {c.keys.map((k) => (
+                    <kbd key={k} className="rounded border border-line px-1.5 py-px font-sans text-[0.6875rem] text-ink-3">
+                      {k}
+                    </kbd>
+                  ))}
+                </span>
+              ),
+            ),
+          }
+        }),
+      })
     const ideas = suggested?.q === text ? suggested.list.filter((s) => s.toLowerCase() !== text.toLowerCase()).slice(0, 4) : []
     if (ideas.length)
       sections.push({

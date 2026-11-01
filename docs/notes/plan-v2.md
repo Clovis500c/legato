@@ -190,7 +190,11 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       `library-before-restore.db`, copies the backup in page by page (SQLite's backup API), then restarts the app (an
       older backup migrates at that open). Sign-ins stay in the keychain, out of the file. Not tried in the real app yet.
 - [ ] `S-M` Smart shuffle (skips recently played, spreads artists) and "Daylist"-style mixes by time of day.
-- [ ] `S-M` Command palette (Ctrl+K): any song, page, setting or action in one box.
+- [x] `S-M` Command palette (Ctrl+K): any song, page, setting or action in one box. The search bar's list (Ctrl+K
+      already focused it) gains "Pages, actions and settings": every page, every action of `app/keys.ts` with its keys
+      (run by `RUN`), every row of the settings index (opened and highlighted). `search/commands.ts` ranks them
+      (label start, label words, keywords; English and the interface's language; CJK by substring), `commandList.ts`
+      builds them. "sleep 30"-style arguments are not done.
 - [ ] `S-M` Pause when headphones are unplugged or Bluetooth drops; pause during a call (Windows' communication ducking).
 - [ ] `S-M` Same loudness across sources: YouTube vs local vs Spotify levelled by the Adaptive Sound meter.
 - [ ] `M` Word-by-word lyrics when the source has them (enhanced LRC), background vocals apart, Apple-style animated lines
@@ -388,6 +392,7 @@ Most useful first; the tag is the effort.
       library after a restart, the notice's Play; songs already there play at once; a QR picture still opens a shared list.
 - [ ] Start radio from an album, a playlist and the artist page, signed in to YouTube and signed out: its own songs one
       in three, Up next naming the radio, more songs coming at its end with autoplay off.
+- [ ] The search bar's pages, actions and settings: "shuffle", "dark", "stats", Enter on each, in French too.
 - [ ] An album played from its first song with a fade set: no dip between its songs (YouTube Music album and local
       files), a playlist of singles still fades, the sleep timer's last song still fades out.
 - [ ] "No sound could be taken" gone from the second YouTube video on (fix 51946d5).

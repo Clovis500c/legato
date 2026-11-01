@@ -38,9 +38,10 @@ Done in this run (newest last), none tried in the real app yet:
 - `5119311` Library backup and restore in one file (Settings › General).
 - `821b5bf` No fade within an album (Settings › Playback, on by default): an album's songs played in a row never dip.
 - `16b22f3` Start radio from an album, an artist, a playlist or a selection; every radio endless.
-- Pinned playlists and playlist folders in Your library.
+- `7734b5f` Pinned playlists and playlist folders in Your library.
+- Command palette: the search bar (Ctrl+K) finds pages, actions and settings too.
 
-Next in the run: the rest of Features › High's quick wins (command palette, headphones unplugged), then Optimisation and Workflow, then milestone 4 (Lyrics).
+Next in the run: the rest of Features › High's quick wins (headphones unplugged), then Optimisation and Workflow, then milestone 4 (Lyrics).
 
 ## Branches
 
