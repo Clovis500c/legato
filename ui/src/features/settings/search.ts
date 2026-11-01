@@ -37,6 +37,7 @@ export const SETTINGS_INDEX: SettingEntry[] = [
   { section: 'appearance', label: msg('Cover tint'), keywords: msg('ambient background color now playing') },
   { section: 'appearance', label: msg('Mini player'), keywords: msg('floating card video') },
   { section: 'appearance', label: msg('Mini player place'), keywords: msg('sidebar docked floating video corner') },
+  { section: 'appearance', label: msg('Progress bar'), keywords: msg('seek bar squiggly wave line progress style') },
   { section: 'appearance', label: msg('Covers in lists'), keywords: msg('thumbnails artwork rows') },
   { section: 'appearance', label: msg('Column browser'), keywords: msg('artists albums panes filter') },
   { section: 'appearance', label: msg('Whole app in the cover’s color'), keywords: msg('tint ambient background color theme cover everywhere') },

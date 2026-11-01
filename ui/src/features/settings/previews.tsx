@@ -261,6 +261,21 @@ export function MotionScene({ motion }: Pick<Settings, 'motion'>) {
   )
 }
 
+/** The seek bar's played part: a line, or the moving wave (the real bar's CSS). Narrow windows: the choices alone. */
+export function ProgressScene({ progressStyle }: Pick<Settings, 'progressStyle'>) {
+  const wave = progressStyle === 'wave'
+  return (
+    <Frame label={tr('Progress bar preview')} className={`hidden items-center px-3 xl:flex ${wave ? 'wave-progress' : ''}`}>
+      <span className="relative flex h-2.5 w-full items-center">
+        <span aria-hidden className="squiggle w-3/5">
+          <span />
+        </span>
+        <span className="h-[3px] w-full rounded-full" style={{ backgroundImage: `linear-gradient(to right, ${wave ? 'transparent' : 'var(--ink)'} 60%, var(--line) 60%)` }} />
+      </span>
+    </Frame>
+  )
+}
+
 /** Simple fade: both songs' volume around the change. */
 export function FadeScene({ crossfade }: Pick<Settings, 'crossfade'>) {
   // 12 s over 46 units; songs overlap (X) around the middle.

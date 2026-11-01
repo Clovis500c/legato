@@ -111,7 +111,7 @@ export function Bar({ label, value, max, onChange, className = '', seek = false 
       onChange={(e) => onChange(+e.target.value)}
       className={`bar ${seek ? 'seek' : ''} ${className}`}
       // backgroundImage, not background: the shorthand would reset the seek bar's size and position.
-      style={{ backgroundImage: `linear-gradient(to right, ${fill} ${pct}%, var(--line) ${pct}%)` }}
+      style={{ backgroundImage: `linear-gradient(to right, ${fill} ${pct}%, var(--line) ${pct}%)`, ['--played' as string]: `${pct}%` }}
     />
   )
 }

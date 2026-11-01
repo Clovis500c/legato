@@ -409,6 +409,37 @@ code {
 .bar.seek::-webkit-slider-thumb {
   @apply size-3.5 bg-ink;
 }
+/* Settings › Appearance › Progress bar, Wavy: the played part is a wave (a mask over the ink) moving forward while the
+   song plays, the bar's own fill clear under it (--played: Bar's). Hidden otherwise. */
+.squiggle {
+  display: none;
+}
+.wave-progress .squiggle {
+  @apply pointer-events-none absolute top-1/2 left-0 block h-2.5 -translate-y-1/2 overflow-hidden;
+}
+.squiggle > span {
+  @apply -ml-4 block h-full bg-ink;
+  width: calc(100% + 1rem);
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='10'%3E%3Cpath d='M0 5Q4 1.5 8 5T16 5' fill='none' stroke='%23000' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E")
+    left center / 1rem 0.625rem repeat-x;
+  animation: squiggle 1.1s linear infinite;
+}
+.squiggle > span[data-moving='false'] {
+  animation-play-state: paused;
+}
+@keyframes squiggle {
+  to {
+    translate: 1rem 0;
+  }
+}
+.wave-progress .bar.seek {
+  background-image: linear-gradient(to right, transparent var(--played), var(--line) var(--played)) !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .squiggle > span {
+    animation: none;
+  }
+}
 
 /* Controls over a picture (Now Playing's backdrop): the theme's own background behind them, blurred, so their text
    reads on any cover, light or dark. */

@@ -1851,6 +1851,11 @@ const pt: Record<string, string> = {
   'auto-dj autodj recently played wait days week month': 'auto-dj autodj ouvido recentemente esperar dias semana mês',
   'auto-dj autodj stars rating favourite weight': 'auto-dj autodj estrelas avaliação favorito peso',
   'auto-dj autodj artist repeat spread apart': 'auto-dj autodj artista repetir espalhar separar',
+  'Progress bar': 'Barra de progresso',
+  'The played part of the seek bar: a line, or a wave that moves while the song plays': 'A parte já tocada da barra: uma linha ou uma onda que se move enquanto a música toca',
+  'Straight': 'Reta',
+  'Wavy': 'Ondulada',
+  'seek bar squiggly wave line progress style': 'barra progresso onda ondulada linha estilo squiggly',
 }
 
 export default pt

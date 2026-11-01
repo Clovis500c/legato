@@ -1851,6 +1851,11 @@ const ru: Record<string, string> = {
   'auto-dj autodj recently played wait days week month': 'auto-dj автодиджей недавно прослушано ждать дни неделя месяц',
   'auto-dj autodj stars rating favourite weight': 'auto-dj автодиджей звёзды оценка любимое вес',
   'auto-dj autodj artist repeat spread apart': 'auto-dj автодиджей исполнитель повтор распределить интервал',
+  'Progress bar': 'Полоса прогресса',
+  'The played part of the seek bar: a line, or a wave that moves while the song plays': 'Проигранная часть полосы: линия или волна, которая движется, пока играет песня',
+  'Straight': 'Прямая',
+  'Wavy': 'Волнистая',
+  'seek bar squiggly wave line progress style': 'полоса прогресс волна волнистая линия стиль squiggly',
 }
 
 export default ru

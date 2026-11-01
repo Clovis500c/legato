@@ -1851,6 +1851,11 @@ const hi: Record<string, string> = {
   'auto-dj autodj recently played wait days week month': 'auto-dj ऑटो-DJ हाल में सुना रुकना दिन हफ़्ता महीना',
   'auto-dj autodj stars rating favourite weight': 'auto-dj ऑटो-DJ स्टार रेटिंग पसंदीदा वज़न',
   'auto-dj autodj artist repeat spread apart': 'auto-dj ऑटो-DJ कलाकार दोहराना फैलाना दूरी',
+  'Progress bar': 'प्रोग्रेस बार',
+  'The played part of the seek bar: a line, or a wave that moves while the song plays': 'बार का चला हुआ हिस्सा: एक सीधी लाइन, या गाना चलते समय हिलती लहर',
+  'Straight': 'सीधी',
+  'Wavy': 'लहरदार',
+  'seek bar squiggly wave line progress style': 'प्रोग्रेस बार लहर लाइन स्टाइल squiggly',
 }
 
 export default hi

@@ -1851,6 +1851,11 @@ const tr: Record<string, string> = {
   'auto-dj autodj recently played wait days week month': 'auto-dj otomatik dj yakın zamanda dinlenen bekle gün hafta ay',
   'auto-dj autodj stars rating favourite weight': 'auto-dj otomatik dj yıldız puan favori ağırlık',
   'auto-dj autodj artist repeat spread apart': 'auto-dj otomatik dj sanatçı tekrar dağıt aralık',
+  'Progress bar': 'İlerleme çubuğu',
+  'The played part of the seek bar: a line, or a wave that moves while the song plays': 'Çubuğun çalınan kısmı: düz bir çizgi ya da şarkı çalarken hareket eden bir dalga',
+  'Straight': 'Düz',
+  'Wavy': 'Dalgalı',
+  'seek bar squiggly wave line progress style': 'ilerleme çubuk dalga dalgalı çizgi stil squiggly',
 }
 
 export default tr

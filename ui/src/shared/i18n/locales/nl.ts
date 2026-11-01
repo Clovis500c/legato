@@ -1851,6 +1851,11 @@ const nl: Record<string, string> = {
   'auto-dj autodj recently played wait days week month': 'auto-dj autodj onlangs gespeeld wachten dagen week maand',
   'auto-dj autodj stars rating favourite weight': 'auto-dj autodj sterren beoordeling favoriet gewicht',
   'auto-dj autodj artist repeat spread apart': 'auto-dj autodj artiest herhalen spreiden afstand',
+  'Progress bar': 'Voortgangsbalk',
+  'The played part of the seek bar: a line, or a wave that moves while the song plays': 'Het afgespeelde deel van de balk: een lijn, of een golf die beweegt terwijl het nummer speelt',
+  'Straight': 'Recht',
+  'Wavy': 'Golvend',
+  'seek bar squiggly wave line progress style': 'voortgang balk golf golvend lijn stijl squiggly',
 }
 
 export default nl

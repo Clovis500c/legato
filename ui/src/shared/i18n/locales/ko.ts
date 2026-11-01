@@ -1851,6 +1851,11 @@ const ko: Record<string, string> = {
   'auto-dj autodj recently played wait days week month': 'auto-dj 자동 DJ 최근 재생 대기 일 주 월',
   'auto-dj autodj stars rating favourite weight': 'auto-dj 자동 DJ 별 평점 즐겨찾기 가중치',
   'auto-dj autodj artist repeat spread apart': 'auto-dj 자동 DJ 아티스트 반복 분산 간격',
+  'Progress bar': '진행 막대',
+  'The played part of the seek bar: a line, or a wave that moves while the song plays': '재생된 부분: 직선, 또는 곡이 재생되는 동안 움직이는 물결',
+  'Straight': '직선',
+  'Wavy': '물결',
+  'seek bar squiggly wave line progress style': '진행 막대 물결 직선 스타일 squiggly',
 }
 
 export default ko

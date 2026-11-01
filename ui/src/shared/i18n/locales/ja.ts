@@ -1851,6 +1851,11 @@ const ja: Record<string, string> = {
   'auto-dj autodj recently played wait days week month': 'auto-dj オートDJ 最近 再生 待つ 日 週 月',
   'auto-dj autodj stars rating favourite weight': 'auto-dj オートDJ 星 評価 お気に入り 重み',
   'auto-dj autodj artist repeat spread apart': 'auto-dj オートDJ アーティスト 繰り返し 分散 間隔',
+  'Progress bar': 'プログレスバー',
+  'The played part of the seek bar: a line, or a wave that moves while the song plays': '再生済みの部分：直線か、曲の再生中に動く波',
+  'Straight': '直線',
+  'Wavy': '波形',
+  'seek bar squiggly wave line progress style': 'プログレスバー 波 直線 スタイル squiggly',
 }
 
 export default ja

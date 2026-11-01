@@ -1851,6 +1851,11 @@ const uk: Record<string, string> = {
   'auto-dj autodj recently played wait days week month': 'auto-dj автодиджей нещодавно прослухане чекати дні тиждень місяць',
   'auto-dj autodj stars rating favourite weight': 'auto-dj автодиджей зірки оцінка улюблене вага',
   'auto-dj autodj artist repeat spread apart': 'auto-dj автодиджей виконавець повтор розподілити інтервал',
+  'Progress bar': 'Смуга прогресу',
+  'The played part of the seek bar: a line, or a wave that moves while the song plays': 'Програна частина смуги: лінія або хвиля, що рухається, поки грає пісня',
+  'Straight': 'Пряма',
+  'Wavy': 'Хвиляста',
+  'seek bar squiggly wave line progress style': 'смуга прогрес хвиля хвиляста лінія стиль squiggly',
 }
 
 export default uk

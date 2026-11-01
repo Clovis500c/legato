@@ -1851,6 +1851,11 @@ const id: Record<string, string> = {
   'auto-dj autodj recently played wait days week month': 'auto-dj autodj baru didengar tunggu hari minggu bulan',
   'auto-dj autodj stars rating favourite weight': 'auto-dj autodj bintang rating favorit bobot',
   'auto-dj autodj artist repeat spread apart': 'auto-dj autodj artis ulang sebar jarak',
+  'Progress bar': 'Bilah progres',
+  'The played part of the seek bar: a line, or a wave that moves while the song plays': 'Bagian bilah yang sudah diputar: garis, atau gelombang yang bergerak selama lagu diputar',
+  'Straight': 'Lurus',
+  'Wavy': 'Bergelombang',
+  'seek bar squiggly wave line progress style': 'bilah progres gelombang garis gaya squiggly',
 }
 
 export default id

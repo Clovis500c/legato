@@ -313,7 +313,10 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
 - [ ] `L` Mobile companion (Android first): the library from Sync Mode's folder, remote control.
 
 **Low**
-- [ ] `S` Squiggly / waveform progress bar as a progress style choice.
+- [x] `S` Squiggly / waveform progress bar as a progress style choice. Settings › Appearance › Player › Progress bar,
+      Wavy: the played part is a wave moving while the song plays (a CSS mask, `.wave-progress`; still when paused or with
+      Animations off).
+- [ ] `S` Waveform progress bar for local files: their levels, read once by the engine and kept (YouTube gives none).
 - [ ] `S` Focus / workout sessions: a timer, no-lyrics or high-BPM mix, a summary after.
 - [ ] `S` Now-playing overlay for streamers (a local page OBS can show, the app's theme).
 - [ ] `S` Hide explicit songs (a filter, YouTube Music's flag when there is one).

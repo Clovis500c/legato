@@ -1851,6 +1851,11 @@ const de: Record<string, string> = {
   'auto-dj autodj recently played wait days week month': 'auto-dj autodj zuletzt gehört warten tage woche monat',
   'auto-dj autodj stars rating favourite weight': 'auto-dj autodj sterne bewertung favorit gewicht',
   'auto-dj autodj artist repeat spread apart': 'auto-dj autodj künstler wiederholen verteilen abstand',
+  'Progress bar': 'Fortschrittsbalken',
+  'The played part of the seek bar: a line, or a wave that moves while the song plays': 'Der gespielte Teil der Leiste: eine Linie oder eine Welle, die sich bewegt, während der Song läuft',
+  'Straight': 'Gerade',
+  'Wavy': 'Wellig',
+  'seek bar squiggly wave line progress style': 'fortschritt leiste welle wellig linie stil squiggly',
 }
 
 export default de

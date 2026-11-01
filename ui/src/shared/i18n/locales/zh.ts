@@ -1851,6 +1851,11 @@ const zh: Record<string, string> = {
   'auto-dj autodj recently played wait days week month': 'auto-dj 自动 DJ 最近 听过 等待 天 周 月',
   'auto-dj autodj stars rating favourite weight': 'auto-dj 自动 DJ 星级 评分 喜爱 权重',
   'auto-dj autodj artist repeat spread apart': 'auto-dj 自动 DJ 艺人 重复 分散 间隔',
+  'Progress bar': '进度条',
+  'The played part of the seek bar: a line, or a wave that moves while the song plays': '已播放部分：一条直线，或随歌曲播放而流动的波浪',
+  'Straight': '直线',
+  'Wavy': '波浪',
+  'seek bar squiggly wave line progress style': '进度条 波浪 直线 样式 squiggly',
 }
 
 export default zh

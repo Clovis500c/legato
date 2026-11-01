@@ -83,6 +83,7 @@ export function SeekBar({ className = '' }: { className?: string }) {
   const seek = usePlayer((s) => s.seek)
   const track = String(usePlayer((s) => s.playId))
   const pos = usePosition(durationMs ? durationMs / BAR_STEPS : 1000)
+  const playing = usePlayer((s) => s.playing)
   const [drag, setDrag] = useState<Drag>(null)
   // Ref too: input events can arrive before React re-renders after pointerdown.
   const live = useRef<Drag>(null)
@@ -116,6 +117,10 @@ export function SeekBar({ className = '' }: { className?: string }) {
         }
       }}
     >
+      {/* Settings › Appearance › Progress bar, Wavy: the played part as a wave (styles.css; hidden otherwise). Under the bar. */}
+      <span aria-hidden className="squiggle" style={{ width: `${durationMs ? Math.min(100, (shown(drag, track, pos) / durationMs) * 100) : 0}%` }}>
+        <span data-moving={playing} />
+      </span>
       <Bar
         label={tr('Position')}
         seek
@@ -126,7 +131,7 @@ export function SeekBar({ className = '' }: { className?: string }) {
           put(r.drag)
           if (r.seek !== null) seek(r.seek)
         }}
-        className="w-full"
+        className="relative w-full"
       />
       <PartMarks />
     </span>

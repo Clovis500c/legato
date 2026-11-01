@@ -90,6 +90,7 @@ function apply(s: Settings) {
     // Storage off: no first-paint cache.
   }
   document.documentElement.classList.toggle('still', !s.motion)
+  document.documentElement.classList.toggle('wave-progress', s.progressStyle === 'wave')
   const lang = resolveLang(s.language, navigator.languages)
   if (wanted !== lang) {
     wanted = lang

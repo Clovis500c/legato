@@ -1851,6 +1851,11 @@ const vi: Record<string, string> = {
   'auto-dj autodj recently played wait days week month': 'auto-dj autodj nghe gần đây chờ ngày tuần tháng',
   'auto-dj autodj stars rating favourite weight': 'auto-dj autodj sao đánh giá yêu thích trọng số',
   'auto-dj autodj artist repeat spread apart': 'auto-dj autodj nghệ sĩ lặp lại rải giãn cách',
+  'Progress bar': 'Thanh tiến trình',
+  'The played part of the seek bar: a line, or a wave that moves while the song plays': 'Phần đã phát của thanh: một đường thẳng, hoặc một làn sóng chuyển động khi bài hát đang phát',
+  'Straight': 'Thẳng',
+  'Wavy': 'Gợn sóng',
+  'seek bar squiggly wave line progress style': 'thanh tiến trình sóng gợn đường kẻ kiểu squiggly',
 }
 
 export default vi

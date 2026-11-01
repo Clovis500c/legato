@@ -1851,6 +1851,11 @@ const sv: Record<string, string> = {
   'auto-dj autodj recently played wait days week month': 'auto-dj autodj nyss hört vänta dagar vecka månad',
   'auto-dj autodj stars rating favourite weight': 'auto-dj autodj stjärnor betyg favorit vikt',
   'auto-dj autodj artist repeat spread apart': 'auto-dj autodj artist upprepa sprida avstånd',
+  'Progress bar': 'Förloppsindikator',
+  'The played part of the seek bar: a line, or a wave that moves while the song plays': 'Den spelade delen av fältet: en linje, eller en våg som rör sig medan låten spelas',
+  'Straight': 'Rak',
+  'Wavy': 'Vågig',
+  'seek bar squiggly wave line progress style': 'förlopp fält våg vågig linje stil squiggly',
 }
 
 export default sv

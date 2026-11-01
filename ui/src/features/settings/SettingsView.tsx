@@ -20,7 +20,7 @@ import { clearRecent } from '../search/recent'
 import { AboutSection } from './AboutSection'
 import { ThemeStudio } from './ThemeStudio'
 import { FadeEditor } from './FadeEditor'
-import { BrowserScene, CountsScene, CoverShapes, DensityScene, FadeScene, ListCoversScene, MiniPlayerScene, MixCoverScene, MotionScene, NowPlayingScene, SleepButtonScene, SourceIconScene, TunerScene, VolumeScene } from './previews'
+import { BrowserScene, CountsScene, CoverShapes, DensityScene, FadeScene, ListCoversScene, MiniPlayerScene, MixCoverScene, MotionScene, NowPlayingScene, ProgressScene, SleepButtonScene, SourceIconScene, TunerScene, VolumeScene } from './previews'
 import { searchSettings, type SettingEntry } from './search'
 import { msg, tr } from '../../shared/i18n/i18n'
 import { LanguagePicker } from './LanguagePicker'
@@ -204,6 +204,17 @@ function Appearance() {
                 { value: 'panel', label: tr('In the right panel') },
                 { value: 'sidebar', label: tr('In the sidebar') },
                 { value: 'float', label: tr('Floating') },
+              ]}
+            />
+          </Row>
+          <Row setting="progressStyle" label={msg('Progress bar')} sub={tr('The played part of the seek bar: a line, or a wave that moves while the song plays')} preview={<ProgressScene progressStyle={s.progressStyle} />}>
+            <Segmented
+              label={tr('Progress bar')}
+              value={s.progressStyle}
+              onChange={(progressStyle) => update({ progressStyle })}
+              options={[
+                { value: 'line', label: tr('Straight') },
+                { value: 'wave', label: tr('Wavy') },
               ]}
             />
           </Row>

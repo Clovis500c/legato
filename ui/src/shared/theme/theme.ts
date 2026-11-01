@@ -294,6 +294,8 @@ export interface Settings {
   miniSpot: Spot
   /** Where the mini player sits: top of the right panel, bottom of the sidebar (neither over the content) or floating. */
   miniPlace: 'panel' | 'sidebar' | 'float'
+  /** Seek bar's played part: a line, or a wave moving while the song plays (`.wave-progress`, styles.css). */
+  progressStyle: 'line' | 'wave'
   /** Mini player width, px (video 16:9 below it, 200 px tall at least). */
   miniWidth: number
   /** Sidebar width, px (dragged by its edge). */
@@ -446,6 +448,7 @@ export const DEFAULTS: Settings = {
   stage: 'auto',
   miniSpot: 'br',
   miniPlace: 'panel',
+  progressStyle: 'line',
   miniWidth: 356,
   sidebarWidth: 264,
   libraryWide: false,
@@ -655,6 +658,7 @@ export function sanitize(raw: unknown): Settings {
     stage: pick(r.stage, ['auto', 'video', 'cover'] as const, DEFAULTS.stage),
     miniSpot: pick(r.miniSpot, SPOTS, DEFAULTS.miniSpot),
     miniPlace: pick(r.miniPlace, ['panel', 'sidebar', 'float'] as const, DEFAULTS.miniPlace),
+    progressStyle: pick(r.progressStyle, ['line', 'wave'] as const, DEFAULTS.progressStyle),
     sidebarWidth: num(r.sidebarWidth, SIDEBAR_MIN, SIDEBAR_MAX, DEFAULTS.sidebarWidth),
     libraryWide: r.libraryWide === true,
     miniWidth: typeof r.miniWidth === 'number' && Number.isFinite(r.miniWidth) ? Math.min(960, Math.max(356, Math.round(r.miniWidth))) : DEFAULTS.miniWidth,
