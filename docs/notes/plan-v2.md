@@ -258,8 +258,16 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
 - [ ] `M` Lyrics translation in the panel (a service sends text: add the website's privacy row first).
       Owner's call (2026-11-01): which service gets the lyrics (the user's own DeepL or Google key, a LibreTranslate
       server); Windows gives apps no offline translator. The panel side is small once that's chosen.
-- [ ] `M` Tag editor (one file already: right-click › Edit song info, `src-tauri/src/tags.rs`): several files at once,
-      track numbers, year, genre, MusicBrainz lookup that fills them.
+- [x] `M` Tag editor (one file already: right-click › Edit song info, `src-tauri/src/tags.rs`): several files at once,
+      track numbers, year, genre. Edit info of N songs in the menu of a selection, an album, an artist or a playlist
+      (local songs only): album artist, genre, year, track and disc beside title, artist, album and cover; a field the
+      songs share starts with its value, one that differs starts empty and stays as each file has it unless typed in;
+      emptied = taken off; Number them 1 to N in this order (the list's order, N as the total). `read_tags` /
+      `edit_tags` (`music_core::local` `file_tags` / `write_tags`), 5 000 songs at most, each file read back into the
+      library. Unseen: real MP3 / FLAC / M4A files, a read-only or locked one, MusicBee or foobar2000 reading the year,
+      genre and numbers.
+- [ ] `M` MusicBrainz lookup that fills Edit song info (album, year, numbers from a release): a new host, the website's
+      privacy row first.
 - [ ] `M` Equalizer presets per output device (headphones vs speakers) and AutoEQ profiles for known headphones.
 - [ ] `M` "Wrapped": a yearly / monthly recap from our stats, shareable as a picture.
 - [ ] `M` Genre / year / BPM / key tags stored (mixes, smart playlists, DJ-like transitions by BPM).

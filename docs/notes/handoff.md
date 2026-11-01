@@ -59,8 +59,8 @@ Done in this run (newest last), none tried in the real app yet:
 - `cf0abda` Ratings in half stars (column, menus, Alt+1…5, Highest rated sort, smart playlist rules), synced by Sync Mode.
 
 Milestone 4 (Lyrics) is done but for translation and finding a song by a line: the owner's calls, notes in
-[plan-v2.md](plan-v2.md). Next in the run: milestone 5 (Your own music), its lines that need no account: the tag editor
-for many files (local part), the column view, ListenBrainz (mocked tests only).
+[plan-v2.md](plan-v2.md). Next in the run: milestone 5 (Your own music), its lines that need no account: the column view,
+then ListenBrainz (mocked tests only).
 
 ## Branches
 

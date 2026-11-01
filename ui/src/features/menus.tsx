@@ -446,7 +446,7 @@ export function trackMenu(t: LibraryTrack, ctx: { list?: LibraryTrack[]; index?:
     { label: tr('Copy title and artist'), icon: <Copy size={16} />, onSelect: () => copy(`${t.artist} – ${t.title}`, tr('Title and artist copied')) },
     saveCoverItem(t),
     ...pages(t).map((p) => ({ label: tr('Open in {service}', { service: p.label }), icon: <ArrowSquareOut size={16} />, onSelect: () => openUrl(p.url).catch(fail) })),
-    t.ids.local && { label: tr('Edit song info…'), icon: <PencilSimple size={16} />, onSelect: () => editInfo(t) },
+    t.ids.local && { label: tr('Edit song info…'), icon: <PencilSimple size={16} />, onSelect: () => editInfo([t]) },
     t.ids.local && { label: tr('Show in folder'), icon: <FolderOpen size={16} />, onSelect: () => revealItemInDir(t.ids.local!).catch(fail) },
     list.length > 1 && {
       label: tr('This list'),
@@ -506,6 +506,13 @@ export function hitMenu(hit: SearchHit, add: () => void, busy: boolean, play: ()
 }
 
 /** Several tracks at once (album, artist, mix). */
+/** Edit song info for the local files among these songs (an album, a selection), in their order. */
+function editAll(tracks: LibraryTrack[]): MenuEntry {
+  const own = tracks.filter((t) => t.ids.local)
+  if (!own.length) return null
+  return { label: own.length === 1 ? tr('Edit song info…') : trn(own.length, 'Edit info of {n} song…', 'Edit info of {n} songs…'), icon: <PencilSimple size={16} />, onSelect: () => editInfo(own) }
+}
+
 export function tracksMenu(tracks: LibraryTrack[], extra: MenuEntry[] = []): MenuEntry[] {
   const playable = tracks.some((t) => vias(t, sp()).length > 0)
   return [
@@ -516,6 +523,7 @@ export function tracksMenu(tracks: LibraryTrack[], extra: MenuEntry[] = []): Men
     { label: tr('Start radio'), icon: <Radio size={16} />, disabled: !playable, onSelect: () => void startRadioFrom(tracks) },
     '-',
     addTo(() => tracks),
+    editAll(tracks),
     ...extra,
     '-',
     ...listTools(tracks),

@@ -1,7 +1,7 @@
 import { Channel, invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 import type { Box } from './artbox'
-import type { AddReport, AlbumInfo, CacheStats, Credentials, DetectInput, Detection, Direction, DiscordStatus, Dropped, Edit, EditDraft, Effects, ExportReport, FileList, FindReport, Heard, LastfmStatus, LibraryChanges, LibraryData, LibraryPlaylist, LibraryTrack, ListImport, LinkImport, ListRef, LiveReport, LiveSettings, Lyrics, LyricsAsk, MediaNow, Merged, Mix, NearbyState, Play, PlayerCommand, PlayerLevels, PlayerStatus, PlaylistEdit, PluginCall, PluginInfo, PluginInspect, Pref, Presence, PushFailed, Scrobble, SearchResults, ShareCode, SharePreview, ShieldStatus, ShortcutEntry, SongTags, Source, SourceStatus, SpotifyCommand, SpotifyExport, SpotifyImport, SpotifyLibraryImport, SpotifyList, SpotifyPick, SpotifyPlayback, SpotifyProgress, SponsorSegment, SyncOffer, SyncProbe, SyncReport, SyncStatus, SystemAccent, Track, UpdateStatus, WatchCmd, WatchRect, WatchReport, YtmAccount, YtmAccounts, YtmArtist, YtmHome } from './generated'
+import type { AddReport, AlbumInfo, CacheStats, Credentials, DetectInput, Detection, Direction, DiscordStatus, Dropped, Edit, EditDraft, Effects, ExportReport, FileList, FileTags, FindReport, Heard, LastfmStatus, LibraryChanges, LibraryData, LibraryPlaylist, LibraryTrack, ListImport, LinkImport, ListRef, LiveReport, LiveSettings, Lyrics, LyricsAsk, MediaNow, Merged, Mix, NearbyState, Play, PlayerCommand, PlayerLevels, PlayerStatus, PlaylistEdit, PluginCall, PluginInfo, PluginInspect, Pref, Presence, PushFailed, Scrobble, SearchResults, ShareCode, SharePreview, ShieldStatus, ShortcutEntry, SongTags, Source, SourceStatus, SpotifyCommand, SpotifyExport, SpotifyImport, SpotifyLibraryImport, SpotifyList, SpotifyPick, SpotifyPlayback, SpotifyProgress, SponsorSegment, SyncOffer, SyncProbe, SyncReport, SyncStatus, SystemAccent, TagsSaved, Track, UpdateStatus, WatchCmd, WatchRect, WatchReport, YtmAccount, YtmAccounts, YtmArtist, YtmHome } from './generated'
 
 // Every type the commands and events carry is a Rust type: `pnpm types` (ts-rs) writes it into ./generated, never by hand.
 // Re-exported here, so features import them from the api.
@@ -90,7 +90,10 @@ export const api = {
   /** The user's word: music (true), not music (false), null = the app's guess again. */
   setMusic: (trackIds: number[], music: boolean | null) => invoke<void>('set_music', { trackIds, music }),
   /** Edit song info: a local file's tags rewritten (tags.rs). coverPath = new front cover; removeCover = none. */
-  editTags: (trackId: number, tags: SongTags) => invoke<void>('edit_tags', { trackId, tags }),
+  /** Edit song info: local songs' tags rewritten in their files (one or several, in this order), only what's given. */
+  editTags: (trackIds: number[], tags: SongTags) => invoke<TagsSaved>('edit_tags', { trackIds, tags }),
+  /** Each local song's tags, for Edit song info to start from. */
+  readTags: (trackIds: number[]) => invoke<FileTags[]>('read_tags', { trackIds }),
   /** A local song's lyrics (LRC or plain) saved into its file: the .lrc beside it, else its tags (tags.rs). */
   writeLyrics: (trackId: number, text: string) => invoke<void>('write_lyrics', { trackId, text }),
   clearHistory: () => invoke<void>('clear_history'),

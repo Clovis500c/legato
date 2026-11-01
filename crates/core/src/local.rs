@@ -230,12 +230,59 @@ pub fn lyrics(path: &Path) -> Option<String> {
     file.primary_tag().into_iter().chain(file.tags()).find_map(|t| t.get_string(ItemKey::Lyrics).or_else(|| t.get_string(ItemKey::UnsyncLyrics)).and_then(usable))
 }
 
-/// What the user rewrites in a local file's tags (right-click › Edit song info).
+/// A local file's tags as Edit song info shows them; None = not there.
+#[derive(Debug, Clone, Default, PartialEq, Eq, serde::Serialize, ts_rs::TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export)]
+pub struct FileTags {
+    pub title: Option<String>,
+    pub artist: Option<String>,
+    pub album: Option<String>,
+    pub album_artist: Option<String>,
+    pub genre: Option<String>,
+    pub year: Option<u32>,
+    pub track: Option<u32>,
+    pub track_total: Option<u32>,
+    pub disc: Option<u32>,
+}
+
+/// The file's main tag, read for the editor (like `read`: its first tag when the main kind is absent).
+pub fn file_tags(path: &Path) -> FileTags {
+    let Some(file) = tagged(path) else { return FileTags::default() };
+    let Some(tag) = file.primary_tag().or_else(|| file.first_tag()) else { return FileTags::default() };
+    let text = |v: Option<&str>| v.map(|s| s.trim().to_string()).filter(|s| !s.is_empty());
+    FileTags {
+        title: text(tag.get_string(ItemKey::TrackTitle)),
+        artist: text(tag.get_string(ItemKey::TrackArtist)),
+        album: text(tag.get_string(ItemKey::AlbumTitle)),
+        album_artist: text(tag.get_string(ItemKey::AlbumArtist)),
+        genre: text(tag.get_string(ItemKey::Genre)),
+        year: tag.get_string(ItemKey::RecordingDate).and_then(year_of),
+        track: tag.track(),
+        track_total: tag.track_total(),
+        disc: tag.disk(),
+    }
+}
+
+/// "2019", "2019-05-02", "2019/05": the year. Anything else: none.
+fn year_of(date: &str) -> Option<u32> {
+    let y = date.trim().get(..4)?;
+    y.bytes().all(|b| b.is_ascii_digit()).then(|| y.parse().ok()).flatten().filter(|y| *y > 0)
+}
+
+/// What the user rewrites in local files' tags (right-click › Edit song info, one song or several). None = as it is;
+/// empty text or 0 = taken off.
 #[derive(Debug, Clone, Default)]
 pub struct TagEdit {
-    pub title: String,
-    pub artist: String,
+    pub title: Option<String>,
+    pub artist: Option<String>,
     pub album: Option<String>,
+    pub album_artist: Option<String>,
+    pub genre: Option<String>,
+    pub year: Option<u32>,
+    pub track: Option<u32>,
+    pub track_total: Option<u32>,
+    pub disc: Option<u32>,
     /// New front cover (PNG / JPEG / WebP / GIF bytes); None = the one there stays.
     pub cover: Option<Vec<u8>>,
     pub remove_cover: bool,
@@ -269,16 +316,38 @@ fn rewrite(path: &Path, change: impl FnOnce(&mut lofty::tag::Tag) -> anyhow::Res
     Ok(())
 }
 
-/// Title, artist, album and front cover into the file's main tag (right-click › Edit song info).
+/// What's asked into the file's main tag, the rest as it was (right-click › Edit song info).
 pub fn write_tags(path: &Path, edit: &TagEdit) -> anyhow::Result<()> {
     use lofty::picture::{MimeType, Picture};
     rewrite(path, |tag| {
-        tag.set_title(edit.title.trim().to_string());
-        tag.set_artist(edit.artist.trim().to_string());
-        match edit.album.as_deref().map(str::trim).filter(|a| !a.is_empty()) {
-            Some(a) => tag.set_album(a.to_string()),
-            None => tag.remove_album(),
+        let texts = [
+            (ItemKey::TrackTitle, edit.title.as_deref()),
+            (ItemKey::TrackArtist, edit.artist.as_deref()),
+            (ItemKey::AlbumTitle, edit.album.as_deref()),
+            (ItemKey::AlbumArtist, edit.album_artist.as_deref()),
+            (ItemKey::Genre, edit.genre.as_deref()),
+        ];
+        for (key, value) in texts {
+            match value.map(str::trim) {
+                None => {}
+                Some("") => tag.remove_key(key),
+                Some(v) => drop(tag.insert_text(key, v.to_string())),
+            }
         }
+        match edit.year {
+            None => {}
+            Some(0) => tag.remove_key(ItemKey::RecordingDate),
+            Some(y) => drop(tag.insert_text(ItemKey::RecordingDate, y.to_string())),
+        }
+        use lofty::tag::Tag;
+        let number = |tag: &mut Tag, value: Option<u32>, set: fn(&mut Tag, u32), remove: fn(&mut Tag)| match value {
+            None => {}
+            Some(0) => remove(tag),
+            Some(n) => set(tag, n),
+        };
+        number(tag, edit.track, Tag::set_track, Tag::remove_track);
+        number(tag, edit.track_total, Tag::set_track_total, Tag::remove_track_total);
+        number(tag, edit.disc, Tag::set_disk, Tag::remove_disk);
         if edit.remove_cover || edit.cover.is_some() {
             tag.remove_picture_type(PictureType::CoverFront);
         }
@@ -517,7 +586,7 @@ pub(crate) mod tests {
         let dir = tempfile::tempdir().unwrap();
         let p = dir.path().join("a.wav");
         wav(&p);
-        write_tags(&p, &TagEdit { title: "Kept".into(), artist: "Someone".into(), ..Default::default() }).unwrap();
+        write_tags(&p, &TagEdit { title: Some("Kept".into()), artist: Some("Someone".into()), ..Default::default() }).unwrap();
         let before = read(&p).duration_ms;
         write_lyrics(&p, "[00:01.00]Saved").unwrap();
         write_lyrics(&p, "[00:01.00]Saved again").unwrap();
@@ -542,19 +611,47 @@ pub(crate) mod tests {
         let sound = |p: &Path| read(p).duration_ms;
         let before = sound(&p);
         let png = vec![0x89, b'P', b'N', b'G', 1, 2, 3];
-        write_tags(&p, &TagEdit { title: " New title ".into(), artist: "Someone".into(), album: Some("Record".into()), cover: Some(png.clone()), remove_cover: false }).unwrap();
+        write_tags(&p, &TagEdit { title: Some(" New title ".into()), artist: Some("Someone".into()), album: Some("Record".into()), cover: Some(png.clone()), ..Default::default() }).unwrap();
         let t = read(&p);
         assert_eq!((t.title.as_str(), t.artist.as_str(), t.album.as_deref(), t.duration_ms), ("New title", "Someone", Some("Record"), before));
         assert_eq!(picture(&p), Some((png, "image/png".into())));
         // Album emptied, cover taken off; no copy left behind.
-        write_tags(&p, &TagEdit { title: "New title".into(), artist: "Someone".into(), album: None, cover: None, remove_cover: true }).unwrap();
+        write_tags(&p, &TagEdit { album: Some(String::new()), remove_cover: true, ..Default::default() }).unwrap();
         assert_eq!((read(&p).album, picture(&p)), (None, None));
         assert_eq!(std::fs::read_dir(dir.path()).unwrap().count(), 1);
         // Not a picture: refused, file as it was.
         let kept = std::fs::read(&p).unwrap();
-        assert!(write_tags(&p, &TagEdit { title: "x".into(), artist: "y".into(), cover: Some(b"MZ".to_vec()), ..Default::default() }).is_err());
+        assert!(write_tags(&p, &TagEdit { title: Some("x".into()), cover: Some(b"MZ".to_vec()), ..Default::default() }).is_err());
         assert_eq!(std::fs::read(&p).unwrap(), kept);
         assert_eq!(std::fs::read_dir(dir.path()).unwrap().count(), 1);
+    }
+
+    #[test]
+    fn writes_numbers_year_and_genre_only_what_is_asked() {
+        let dir = tempfile::tempdir().unwrap();
+        let p = dir.path().join("a.wav");
+        wav(&p);
+        assert_eq!(file_tags(&p), FileTags::default());
+        let all = TagEdit {
+            title: Some("One".into()),
+            artist: Some("Band".into()),
+            album: Some("Record".into()),
+            album_artist: Some("Various".into()),
+            genre: Some("Rock".into()),
+            year: Some(1999),
+            track: Some(3),
+            track_total: Some(12),
+            disc: Some(2),
+            ..Default::default()
+        };
+        write_tags(&p, &all).unwrap();
+        let s = |v: &str| Some(v.to_string());
+        let want = FileTags { title: s("One"), artist: s("Band"), album: s("Record"), album_artist: s("Various"), genre: s("Rock"), year: Some(1999), track: Some(3), track_total: Some(12), disc: Some(2) };
+        assert_eq!(file_tags(&p), want);
+        // Several songs: what isn't asked stays; empty text and 0 take a field off.
+        write_tags(&p, &TagEdit { genre: Some(" ".into()), year: Some(0), track: Some(4), ..Default::default() }).unwrap();
+        assert_eq!(file_tags(&p), FileTags { genre: None, year: None, track: Some(4), ..want });
+        assert_eq!((year_of("2019-05-02"), year_of(" 1987"), year_of("87"), year_of("0000"), year_of("May 2019")), (Some(2019), Some(1987), None, None, None));
     }
 }
 

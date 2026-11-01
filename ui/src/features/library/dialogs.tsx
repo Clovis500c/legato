@@ -49,18 +49,18 @@ export function DuplicatesButton() {
   )
 }
 
-const useEditInfo = create<{ track: LibraryTrack | null }>(() => ({ track: null }))
+const useEditInfo = create<{ tracks: LibraryTrack[] | null }>(() => ({ tracks: null }))
 
-/** Right-click › Edit song info, on a local file. */
-export const editInfo = (t: LibraryTrack) => useEditInfo.setState({ track: t })
+/** Right-click › Edit song info, on local files: one song, or several (an album, a selection) in their order. */
+export const editInfo = (tracks: LibraryTrack[]) => useEditInfo.setState({ tracks })
 
 /** Mounted once in App. */
 export function EditInfoHost() {
-  const t = useEditInfo((s) => s.track)
+  const tracks = useEditInfo((s) => s.tracks)
   return (
-    t && (
+    tracks && (
       <PageBoundary fallback={null}>
-        <EditInfo key={t.id} t={t} onClose={() => useEditInfo.setState({ track: null })} />
+        <EditInfo tracks={tracks} onClose={() => useEditInfo.setState({ tracks: null })} />
       </PageBoundary>
     )
   )
