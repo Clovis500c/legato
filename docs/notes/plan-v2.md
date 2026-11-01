@@ -189,7 +189,10 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       connection, like the daily copy); a restore checks it's a library this version knows, keeps the current one as
       `library-before-restore.db`, copies the backup in page by page (SQLite's backup API), then restarts the app (an
       older backup migrates at that open). Sign-ins stay in the keychain, out of the file. Not tried in the real app yet.
-- [ ] `S-M` Smart shuffle (skips recently played, spreads artists) and "Daylist"-style mixes by time of day.
+- [x] `S` Smart shuffle (skips recently played, spreads artists): `player/shuffle.ts`, each artist's songs spread
+      through the queue, no artist twice in a row while others are left, songs heard in the last day after the
+      others. Settings › Playback › Up next, on by default (off: plain random).
+- [ ] `S` "Daylist"-style mixes by time of day.
 - [x] `S-M` Command palette (Ctrl+K): any song, page, setting or action in one box. The search bar's list (Ctrl+K
       already focused it) gains "Pages, actions and settings": every page, every action of `app/keys.ts` with its keys
       (run by `RUN`), every row of the settings index (opened and highlighted). `search/commands.ts` ranks them
@@ -403,6 +406,7 @@ Most useful first; the tag is the effort.
       at once, the notice's Play goes on; with the setting off it plays on through the speakers.
 - [ ] Windows' default output switched by hand while a local file plays, then while it's paused: it goes on (or waits)
       on the new device at the same place.
+- [ ] Shuffle a playlist of a few artists: no artist twice in a row in Up next, the songs played today at the end.
 - [ ] An album played from its first song with a fade set: no dip between its songs (YouTube Music album and local
       files), a playlist of singles still fades, the sleep timer's last song still fades out.
 - [ ] "No sound could be taken" gone from the second YouTube video on (fix 51946d5).

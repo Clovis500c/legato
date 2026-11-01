@@ -65,6 +65,7 @@ export const SETTINGS_INDEX: SettingEntry[] = [
   { section: 'about', label: msg('About'), keywords: msg('version license github source privacy') },
   { section: 'about', label: msg('Third-party licenses'), keywords: msg('open source credits notices attribution copyright mit apache mpl fonts') },
   { section: 'about', label: msg('Copy diagnostics'), keywords: msg('diagnostics log errors crash bug report support debug clipboard') },
+  { section: 'playback', label: msg('Smart shuffle'), keywords: msg('shuffle random artist spread same artist twice recently played repeat') },
   { section: 'playback', label: msg('Pause when headphones disconnect'), keywords: msg('headphones unplug bluetooth headset speaker disconnect jack output device pause') },
   { section: 'playback', label: msg('No fade within an album'), keywords: msg('album gapless crossfade fade live continuous concert mix dip') },
   { section: 'playback', label: msg('Advanced fade'), keywords: msg('fade curve crossfade graph volume shape equal power exponential logarithmic s-curve dj') },

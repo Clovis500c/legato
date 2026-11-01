@@ -301,6 +301,8 @@ export interface Settings {
   gaplessAlbums: boolean
   /** Headphones unplugged or Bluetooth off: pause (src-tauri `unplug.rs`). */
   pauseOnUnplug: boolean
+  /** Shuffle spreads artists, songs heard lately last (player `shuffle.ts`). */
+  smartShuffle: boolean
   /** YouTube subtitles (off: hidden even when the Google account turns them on). */
   subtitles: boolean
   /** Playlists left out of the sidebar and menus (playlistKey), still in the library. */
@@ -434,6 +436,7 @@ export const DEFAULTS: Settings = {
   fade: { advanced: false, out: 2, in: 2, outCurve: 'scurve', inCurve: 'scurve', skip: true, pause: 0 },
   gaplessAlbums: true,
   pauseOnUnplug: true,
+  smartShuffle: true,
   subtitles: false,
   hiddenPlaylists: [],
   pinnedPlaylists: [],
@@ -636,6 +639,7 @@ export function sanitize(raw: unknown): Settings {
     fade: sanitizeFade(r.fade),
     gaplessAlbums: typeof r.gaplessAlbums === 'boolean' ? r.gaplessAlbums : DEFAULTS.gaplessAlbums,
     pauseOnUnplug: typeof r.pauseOnUnplug === 'boolean' ? r.pauseOnUnplug : DEFAULTS.pauseOnUnplug,
+    smartShuffle: typeof r.smartShuffle === 'boolean' ? r.smartShuffle : DEFAULTS.smartShuffle,
     subtitles: typeof r.subtitles === 'boolean' ? r.subtitles : DEFAULTS.subtitles,
     homeSections: sanitizeHome(r.homeSections),
     smartLists: sanitizeSmart(r.smartLists),

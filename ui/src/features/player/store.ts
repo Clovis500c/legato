@@ -6,6 +6,7 @@ import { region } from '../../shared/format'
 import { endListen, progress, startListen } from './listens'
 import { albumGoesOn, demoGain, demoLength, fadeGain, NO_FADE, overlapDue, PICK_IN_S, type Fade } from './fade'
 import { insertAt, keepQueued, moveInOrder, moveToSlot, nextIndex, playOrder, queued, tooLong, type Repeat } from './queue'
+import { RECENT_S, smartOrder } from './shuffle'
 import { vias, type Via } from './sources'
 import { formatDuration } from '../../shared/format'
 import { endCut, isUndone, landed, rememberUndone, toSkip, useSponsor } from './sponsor'
@@ -57,6 +58,8 @@ interface PlayerState {
   skipLong: number
   /** Settings › Playback › No fade within an album: songs of one album played in a row, no fades between them. */
   gaplessAlbums: boolean
+  /** Settings › Playback › Smart shuffle: artists spread, songs heard lately last (shuffle.ts). */
+  smartShuffle: boolean
   /** Settings › Playback › Early endings: a video ends where its song does (ends.ts). */
   earlyEnds: boolean
   /** Settings › Playback › Skip silence: songs start on the music and end where it ends (ends.ts, engine for local files). */
@@ -209,6 +212,18 @@ const endRun = () => {
 }
 // Knob drags fire many changes: one Spotify call per pause.
 let volumeTimer: ReturnType<typeof setTimeout> | undefined
+/** Play order for `list` from `current`: smart shuffle's (artists spread, songs heard in the last day last) unless off. */
+function shuffleOrder(p: PlayerState, list: LibraryTrack[], current: number, shuffle: boolean): number[] {
+  if (!shuffle || !p.smartShuffle) return playOrder(list.length, current, shuffle)
+  const { stats } = useStore.getState()
+  const since = Date.now() / 1000 - RECENT_S
+  return smartOrder(
+    list.map((t) => t.artist),
+    current,
+    (i) => (stats[list[i].id]?.[1] ?? 0) >= since,
+  )
+}
+
 // Last volume sent to the playing source (fades send many).
 let sent = -1
 
@@ -405,6 +420,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
   fade: NO_FADE,
   skipLong: 0,
   gaplessAlbums: true,
+  smartShuffle: true,
   earlyEnds: true,
   skipSilence: false,
   skipNonMusic: false,
@@ -422,7 +438,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
   playTracks(list, index, via) {
     const i = list.findIndex((t, j) => j >= index && vias(t, spotifyOn()).length > 0)
     if (i < 0) return
-    set({ list, order: playOrder(list.length, i, get().shuffle), added: [], from: contextName(), radio: false })
+    set({ list, order: shuffleOrder(get(), list, i, get().shuffle), added: [], from: contextName(), radio: false })
     void get().playAt(i, i === index ? via : undefined)
   },
 
@@ -464,7 +480,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     const { shuffle, list, index, order, added } = get()
     // Gapless local run queued in list order: engine keeps current only, store picks what's next.
     if (!shuffle) endRun()
-    set({ shuffle: !shuffle, order: keepQueued(playOrder(list.length, index, !shuffle), order, index, added) })
+    set({ shuffle: !shuffle, order: keepQueued(shuffleOrder(get(), list, index, !shuffle), order, index, added) })
   },
 
   cycleRepeat() {
@@ -476,7 +492,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
   resume({ list, index, order, added = [], shuffle, repeat, positionMs, via, paused = false }) {
     const valid = order.length === list.length && order.includes(index)
     // Queued songs come back with their order (session.ts); a rebuilt order makes them part of the list again.
-    set({ list, shuffle, repeat, order: valid ? order : playOrder(list.length, index, shuffle), added: valid ? added : [], from: undefined })
+    set({ list, shuffle, repeat, order: valid ? order : shuffleOrder(get(), list, index, shuffle), added: valid ? added : [], from: undefined })
     void get().playAt(index, via, { from: positionMs, hold: paused })
   },
 

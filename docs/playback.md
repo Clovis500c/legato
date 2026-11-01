@@ -60,6 +60,13 @@ Status on 2026-10-16. YouTube, local files and Apple Music previews: done and te
   default on its own.
 - Limit: headphones and speakers on one endpoint (Realtek jack retasking) change no endpoint, so no event.
 
+## Smart shuffle (2026-11-01)
+
+`features/player/shuffle.ts`, on by default (Settings › Playback › Up next; off: plain Fisher–Yates). Each artist
+(first credited, as Albums group them) gets a random offset and one song every 1/k of the way with a little jitter;
+a pass then swaps in a song a little further on wherever an artist plays twice in a row while someone else is left.
+Songs started in the last 24 h (play stats) come after all the others, spread the same way.
+
 ## Cover art
 
 - `tracks.art` holds an https URL; local files' covers are read from their tags on demand (`local::picture`).
