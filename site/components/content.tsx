@@ -20,7 +20,7 @@ export const FEATURES: { icon: IconName; title: string; text: string }[] = [
   { icon: 'MagnifyingGlass', title: 'One search', text: 'Your library, YouTube Music, YouTube and Apple Music, in one place. Ctrl+K finds the app’s pages, actions and settings too.' },
   { icon: 'PlayCircle', title: 'One player', text: 'Every source in one queue, with a shuffle that spreads artists, crossfade that leaves albums whole, endless radios, a pause when your headphones disconnect (or a call starts, if you want), lyrics and a visualizer (LED bars, a ring around the cover, VU needles, a spectrogram).' },
   { icon: 'Playlist', title: 'Playlists', text: 'Import from a service, a file (M3U, XSPF, CSV) or iTunes and MusicBee; create, pin, sort into folders, save as a file, export to YouTube Music, share by link or QR code. Smart playlists fill themselves from your plays and star ratings.' },
-  { icon: 'Sparkle', title: 'Mixes made on your PC', text: 'Daily mixes, mixes for this time of day and this weekday, and stats from what you play, Last.fm scrobbling if you want it.' },
+  { icon: 'Sparkle', title: 'Mixes made on your PC', text: 'Daily mixes, mixes for this time of day and this weekday, and stats from what you play, Last.fm or ListenBrainz scrobbling if you want it.' },
   { icon: 'SlidersHorizontal', title: 'Live Editor', text: 'Speed, pitch, a 10-band EQ, reverb and 3D sound, changed as it plays.' },
   { icon: 'FolderSimple', title: 'Your own files', text: 'Gapless playback, as loud as your streamed songs (their ReplayGain tags, or measured), and their tags to edit, a whole album at once: artist, album, genre, year, track numbers, cover.' },
   { icon: 'Devices', title: 'Sync Mode', text: 'Your library on all your PCs, through a OneDrive folder or your network.' },
@@ -37,7 +37,7 @@ export const WHY: { icon: IconName; title: string; text: string }[] = [
   { icon: 'SealCheck', title: 'Legal', text: "Songs play in the official players: YouTube's own, the Spotify app, and your files in Legato's own. No platform's audio is downloaded, recorded or extracted. The Music Detector listens only when you ask, and Apple's previews are Apple's own 30 s clips." },
   { icon: 'Feather', title: 'Light', text: `${BENCH.ramPaused} MB of RAM with the app open and paused, ${BENCH.ramTray} MB after 10 minutes in the tray, silent. On a cold start the window shows in ${BENCH.windowCold} s and the first screen is painted at ${BENCH.paintCold} s.` },
   { icon: 'Devices', title: 'Your PCs in sync', text: 'Sync Mode keeps your library on every PC through a OneDrive folder or your own network. No account of ours, no server.' },
-  { icon: 'Headphones', title: 'Your scrobbles', text: 'What you play, from any source, goes to your Last.fm profile with your own free API key. Off until you connect it.' },
+  { icon: 'Headphones', title: 'Your scrobbles', text: 'What you play, from any source, goes to your Last.fm profile with your own free API key, or to ListenBrainz with your token. Off until you connect one.' },
 ]
 
 /** Under the cards: where the Light numbers come from. */
@@ -61,6 +61,7 @@ export const PRIVACY: [string, string][] = [
   ['Pasted playlist links', "A public Spotify, Deezer or Apple Music playlist or album link makes the app ask that service for the list: open.spotify.com, api.deezer.com (link.deezer.com for its short links), music.apple.com and itunes.apple.com. Spotify song links copied from its app make it ask open.spotify.com for each song's page, and a SoundCloud song link asks soundcloud.com's public oEmbed for that song's title and artwork. No account; only titles, artists, lengths and covers come back, then each song is searched on YouTube. Cover pictures load from the image hosts of those services."],
   ['Lyrics', "When you open them. A file of yours that carries its own lyrics (in its tags, or an .lrc file beside it) sends nothing. Otherwise YouTube Music's timed lyrics first if you're signed in, then the song's title, artist, album and length go to LRCLIB. Answers stay on your PC."],
   ['Skip non-music parts', "Off until you turn it on. For each YouTube video that plays, the first 4 characters of its id's hash (never the id) go to SponsorBlock, sponsor.ajay.app, to learn the community's marked intros, skits and outros. The answer is kept a week on this PC."],
+  ['Scrobbling', "Off until you connect it in Settings › Accounts. Then what plays now and each song you listened to (title, artist, album, length, when) go to Last.fm (ws.audioscrobbler.com) or ListenBrainz (api.listenbrainz.org); ListenBrainz also gets the song's ISRC and the YouTube or Spotify page it played from. Your key or token stays in the Windows Credential Manager."],
   ['Voice search', "Off until you allow it. While it listens, your voice goes to Microsoft through Windows' own speech recognition. The app keeps nothing."],
   ['Music Detector', 'Off until you allow it. 10 seconds of sound, from the microphone or what this PC plays, go once to AudD to name the song. Nothing is saved.'],
   ['Sync Mode', 'Off until you set it up. One file per PC in a folder you pick (OneDrive by default), sealed with your password if you set one. Over your network, a 6-digit code seals the exchange.'],
@@ -82,7 +83,7 @@ export const SERVICES: [string, string][] = [
 // Unlike every other list here, what isn't out yet: docs/notes/plan-v2.md › Roadmap, in its order, minus what shipped.
 export const ROADMAP: [string, string][] = [
   ['Lyrics', 'A translation under each line, and a song found from a line you remember.'],
-  ['Your own music', 'Jellyfin, Navidrome and Subsonic servers, MusicBrainz lookups for your tags, ListenBrainz.'],
+  ['Your own music', 'Jellyfin, Navidrome and Subsonic servers, MusicBrainz lookups for your tags.'],
   ['Smarter listening', 'Your songs analysed on your PC (tempo, energy, key) for radios and fades that fit, a path from one artist to another, an auto-DJ, a yearly recap to share.'],
   ['Around the house', 'Your phone as a remote, speakers and TVs (DLNA, Chromecast), listening together on the same network, picking up on your other PC where you stopped.'],
   ['Windows polish', 'A Jump List on the taskbar icon, an alarm that wakes you with a playlist, an overlay for OBS, a picture-in-picture player.'],

@@ -3,7 +3,7 @@ import { reportError } from '../shared/diag'
 import { preloadPages } from './pages'
 
 /**
- * What waits for the first screen (Rust side: src-tauri/src/deferred.rs): Discord's presence, Last.fm, Sync Mode's
+ * What waits for the first screen (Rust side: src-tauri/src/deferred.rs): Discord's presence, Last.fm, ListenBrainz, Sync Mode's
  * messages, plugins, YouTube Music's 15-minute sync, then the other pages preloaded when idle. Loaded now, not at launch. Their listeners are in before the ready signal, so a plugin that starts
  * right after it misses no call. The signal goes whatever happens here: a broken module must not hold the update rounds
  * (Rust also starts them after a few seconds). Returns cleanup.
@@ -15,6 +15,7 @@ export function startDeferred(): () => void {
   const starts: Array<[string, () => Promise<() => void>]> = [
     ['Discord', () => import('../features/addons/discord').then((m) => m.startDiscord())],
     ['Last.fm', () => import('../features/sources/lastfm').then((m) => m.startLastfm())],
+    ['ListenBrainz', () => import('../features/sources/listenbrainz').then((m) => m.startListenbrainz())],
     ['Sync Mode', () => import('../features/syncmode/syncmode').then((m) => m.startSyncMode())],
     ['Plugins', () => import('../features/plugins/host').then((m) => m.startPlugins())],
     ['Auto sync', () => import('../features/sources/autosync').then((m) => m.startAutoSync())],

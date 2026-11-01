@@ -6,6 +6,7 @@ pub mod discord;
 pub mod itunes;
 pub mod lastfm;
 pub mod linklist;
+pub mod listenbrainz;
 pub mod lrclib;
 pub mod nearby;
 pub mod oauth;

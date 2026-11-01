@@ -19,6 +19,7 @@ import { msg, tr, trn } from '../../shared/i18n/i18n'
 import { ask } from '../../shared/ui/Ask'
 import { openUrl } from '@tauri-apps/plugin-opener'
 import { useLastfm } from './lastfm'
+import { useListenbrainz } from './listenbrainz'
 
 /** Each account's sync direction (user's request 2026-10-29), kept in Rust (music_core::sync). */
 function useDirections() {
@@ -227,6 +228,70 @@ function LastfmRow() {
   )
 }
 
+/** ListenBrainz: the user's token from its settings page, checked there; no key, no sign-in window. */
+function ListenbrainzRow() {
+  const { user, waiting, refresh } = useListenbrainz()
+  const [form, setForm] = useState(false)
+  const [token, setToken] = useState('')
+  const [busy, setBusy] = useState(false)
+  const connect = async () => {
+    setBusy(true)
+    try {
+      const name = await api.listenbrainzConnect(token)
+      setForm(false)
+      setToken('')
+      useStore.getState().notify(tr('Sending your listens to ListenBrainz as {user}', { user: name }))
+    } catch (e) {
+      useStore.setState({ error: String(e) })
+    } finally {
+      setBusy(false)
+      void refresh()
+    }
+  }
+  const disconnect = async () => {
+    if (!(await ask({ title: tr('Stop sending listens to ListenBrainz?'), body: tr('The token is removed from this PC. Your ListenBrainz profile keeps what was sent.'), ok: tr('Disconnect') }))) return
+    await api.listenbrainzDisconnect().catch(() => {})
+    void refresh()
+  }
+  return (
+    <div data-setting="ListenBrainz" className="flex flex-col gap-3 border-b border-line-soft px-4 py-3.5">
+      <div className="flex items-center gap-4">
+        <Led on={!!user} />
+        <span className="grid size-9 place-items-center rounded-full border border-line text-xs font-bold text-ink-2">LB</span>
+        <div className="flex-1">
+          <p className="text-[0.8125rem] font-semibold">ListenBrainz</p>
+          <p className="text-xs text-ink-2">{user ? tr('Every song you listen to goes to your profile (half of it or 4 minutes heard)') : tr('Your listens on your ListenBrainz profile, from every source. Free and open, with your own token')}</p>
+        </div>
+        <span className="kicker">{user ? (waiting ? tr('{user} · {n} waiting', { user, n: waiting }) : user) : tr('Not connected')}</span>
+        {user ? (
+          <Button variant="ghost" onClick={() => void disconnect()}>
+            {tr('Disconnect')}
+          </Button>
+        ) : (
+          <Button onClick={() => setForm((f) => !f)}>{tr('Connect')}</Button>
+        )}
+      </div>
+      {form && !user && (
+        <div className="ml-13 flex flex-col gap-2 rounded-lg border border-line bg-bg p-3 text-xs">
+          <p className="text-ink-2">
+            {tr('Sign in on listenbrainz.org (free), copy the user token from its settings and paste it here.')}{' '}
+            <button type="button" className="font-semibold text-ink underline" onClick={() => void openUrl('https://listenbrainz.org/settings/')}>
+              listenbrainz.org/settings
+            </button>
+          </p>
+          <label className="flex flex-col gap-1">
+            <span className="text-ink-2">{tr('User token')}</span>
+            <input value={token} onChange={(e) => setToken(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && !busy && token.trim().length >= 16 && void connect()} spellCheck={false} type="password" className="h-8 w-full rounded-md border border-line bg-bg px-2 font-mono text-xs" />
+          </label>
+          <Button className="w-fit" disabled={busy || token.trim().length < 16} onClick={() => void connect()}>
+            {busy ? tr('Checking with ListenBrainz…') : tr('Connect')}
+          </Button>
+        </div>
+      )}
+    </div>
+  )
+}
+
 /** YouTube Music through a normal Google sign-in (like Pear Desktop): no keys. Several Google accounts / channels, pick which to sync. */
 function GoogleAccounts() {
   const { refresh, sync, busy, lastSync } = useStore(useShallow(({ refresh, sync, busy, lastSync }) => ({ refresh, sync, busy, lastSync })))
@@ -398,6 +463,7 @@ export function SourcesView() {
         <ServiceRow service="spotify" />
         <AppleWeb />
         <LastfmRow />
+        <ListenbrainzRow />
         <LocalFolders />
       </div>
       <p className="flex w-fit items-center gap-2.5 text-xs text-ink-2">

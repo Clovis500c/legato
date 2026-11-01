@@ -20,9 +20,13 @@ export function toPlay(l: Listen, ended: boolean): Play | null {
   return { trackId: l.trackId, startedAt: l.startedAt, listenedMs: Math.round(l.heardMs), completed }
 }
 
-/** Someone else wants finished listens too (Last.fm), with the song's length. */
-let listener: ((play: Play, durationMs: number | null) => void) | null = null
-export const onListenEnd = (f: typeof listener) => void (listener = f)
+/** Others want finished listens too (Last.fm, ListenBrainz), with the song's length. Returns the way out. */
+type Listener = (play: Play, durationMs: number | null) => void
+const listeners = new Set<Listener>()
+export const onListenEnd = (f: Listener) => {
+  listeners.add(f)
+  return () => void listeners.delete(f)
+}
 
 export function endListen(ended: boolean) {
   const play = cur && toPlay(cur, ended)
@@ -30,7 +34,7 @@ export function endListen(ended: boolean) {
   cur = null
   if (!play) return
   api.recordPlay(play).catch(() => {})
-  listener?.(play, durationMs)
+  for (const f of listeners) f(play, durationMs)
 }
 
 /** Ends the previous listen (not completed), starts one for `trackId` (none = dropped file, untracked). */

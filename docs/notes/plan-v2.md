@@ -238,7 +238,12 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       search matches lyrics. AudD's humming terms not checked.
 - [ ] `S` Jump List (recent playlists, Shuffle all); thumbnail buttons already there (`thumbbar.rs`).
 - [ ] `S` Auto-DJ that keeps the queue going from the library with rules (MusicBee).
-- [ ] `S` Scrobble to ListenBrainz too (open, no key), beside Last.fm.
+- [x] `S` Scrobble to ListenBrainz too (open, no key), beside Last.fm.
+      Settings › Accounts › ListenBrainz: the user token from listenbrainz.org › Settings, checked there
+      (`/1/validate-token`), kept in the keychain. What plays now, and each listen (half of the song or 4 minutes heard,
+      no 30 s floor) with its ISRC and the YouTube video or Spotify track it played from; offline or refused (429) it
+      waits in memory for the next one, a 401 forgets the token (`connectors::listenbrainz`, mocked tests only). Not
+      synced by Sync Mode, like Last.fm. Unseen: a real account.
 - [ ] `S` Community: a Discord server or GitHub Discussions linked from About, "good first issue" labels, a showcase of
       themes on the website.
 - [ ] `S-M` Pick up on the other PC: Sync Mode carries "now playing + position", one click resumes there.

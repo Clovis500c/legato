@@ -18,7 +18,7 @@ export function startLastfm() {
   void useLastfm.getState().refresh()
   const on = () => !!useLastfm.getState().user
   const trackOf = (id: number) => usePlayer.getState().list.find((t) => t.id === id) ?? useStore.getState().tracks.find((t) => t.id === id)
-  onListenEnd((play, durationMs) => {
+  const offEnd = onListenEnd((play, durationMs) => {
     const t = trackOf(play.trackId)
     if (!on() || !t || !scrobbles(durationMs ?? t.durationMs, play.listenedMs)) return
     api.lastfmScrobble(toScrobble(t, play.startedAt)).then(
@@ -36,6 +36,6 @@ export function startLastfm() {
   })
   return () => {
     off()
-    onListenEnd(null)
+    offEnd()
   }
 }

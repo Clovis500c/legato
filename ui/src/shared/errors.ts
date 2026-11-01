@@ -34,6 +34,10 @@ const KINDS: [RegExp, string][] = [
   [/^This SoundCloud link doesn't exist/, msg("This SoundCloud link doesn't exist")],
   [/^This SoundCloud song is private or doesn't exist/, msg("This SoundCloud song is private or doesn't exist")],
   [/^This song wasn't found on YouTube/, msg("This song wasn't found on YouTube: nothing to play it from")],
+  // Settings › Accounts › ListenBrainz (src-tauri listenbrainz.rs).
+  [/^A ListenBrainz token is the long code/, msg('A ListenBrainz token is the long code under Settings › User token on listenbrainz.org')],
+  [/^ListenBrainz does not know this token/, msg('ListenBrainz does not know this token: copy it again from listenbrainz.org › Settings')],
+  [/^ListenBrainz refused your token/, msg('ListenBrainz refused your token: paste it again in Settings › Accounts')],
   // Settings › General › Restore a backup (crates/core library.rs).
   [/^Not a Legato library backup/, msg('Not a Legato library backup')],
   [/^This library was made by a newer version of Legato/, msg('This backup was made by a newer version of Legato: update the app first')],

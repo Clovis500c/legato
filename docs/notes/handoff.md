@@ -61,8 +61,8 @@ Done in this run (newest last), none tried in the real app yet:
 - `37b6ce4` Column browser on Songs (off by default): Artists and Albums panes above the list.
 
 Milestone 4 (Lyrics) is done but for translation and finding a song by a line: the owner's calls, notes in
-[plan-v2.md](plan-v2.md). Next in the run: milestone 5 (Your own music), its lines that need no account: ListenBrainz
-(mocked tests only).
+[plan-v2.md](plan-v2.md). Milestone 5's lines that need no account are done; Jellyfin / Navidrome wait for the owner's server. Next in the
+run: the open lines of plan-v2 that need no account, by size (`S` first).
 
 ## Branches
 
