@@ -52,7 +52,7 @@ CREATE TABLE IF NOT EXISTS settings (
 ";
 
 /// Schema version this code writes (user_version after migrations).
-pub const SCHEMA_VERSION: i64 = 15;
+pub const SCHEMA_VERSION: i64 = 16;
 
 /// The library was made by a newer version of the app.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -460,6 +460,10 @@ impl Library {
             // throughout (a cache, not synced).
             lib.db.execute_batch("BEGIN; CREATE TABLE IF NOT EXISTS loudness (path TEXT PRIMARY KEY, modified INTEGER NOT NULL, lufs REAL, peak REAL NOT NULL); PRAGMA user_version = 15; COMMIT;")?;
         }
+        if lib.db.query_row("PRAGMA user_version", [], |r| r.get::<_, i64>(0))? < 16 {
+            // v16: your rating of a song, in half stars (1..=10; 0 = taken off, kept with its time for Sync Mode).
+            lib.db.execute_batch("BEGIN; CREATE TABLE IF NOT EXISTS track_ratings (track_id INTEGER PRIMARY KEY REFERENCES tracks(id) ON DELETE CASCADE, stars INTEGER NOT NULL, at INTEGER NOT NULL); PRAGMA user_version = 16; COMMIT;")?;
+        }
         lib.db.execute_batch(CHANGE_LOG)?;
         // Statements on logged tables compile their triggers too: kept, not rebuilt per call.
         lib.db.set_prepared_statement_cache_capacity(64);
@@ -588,6 +592,7 @@ impl Library {
         self.db.execute("UPDATE playlist_tracks SET track_id = ?1 WHERE track_id = ?2", [keep, dupe])?;
         self.db.execute("UPDATE plays SET track_id = ?1 WHERE track_id = ?2", [keep, dupe])?;
         self.db.execute("UPDATE OR IGNORE track_prefs SET track_id = ?1 WHERE track_id = ?2", [keep, dupe])?;
+        self.db.execute("UPDATE OR IGNORE track_ratings SET track_id = ?1 WHERE track_id = ?2", [keep, dupe])?;
         self.db.execute("UPDATE OR IGNORE not_found SET track_id = ?1 WHERE track_id = ?2", [keep, dupe])?;
         self.db.execute(
             "UPDATE tracks SET added = min(added, (SELECT added FROM tracks WHERE id = ?2)),

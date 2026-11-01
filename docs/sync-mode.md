@@ -10,7 +10,7 @@ Everything the user made, from one PC to the others:
 
 - playlists made in the app and imported ones (name, songs, order), songs added by hand, songs removed from the
   library;
-- listening history and mix preferences (Less / Never);
+- listening history, mix preferences (Less / Never) and star ratings (the latest one wins, a rating taken off too);
 - Live Editor versions and presets (songs found by their ids on the other side);
 - settings, key by key, except this PC's own: interface size, mini player spot and width, update channel, defaults version;
 - the YouTube Music accounts picked for sync;
@@ -69,7 +69,7 @@ Settings naming playlists by row id (`hiddenPlaylists`, `playlistCovers`) are tr
 ## Code
 
 - `crates/core` `syncmode.rs`: snapshot, merge, sealing, manifest, OneDrive folders; `library.rs` v10 (change times,
-  `sync_gone`, random custom ids, edit uids); `history.rs` (preference times, history clears remembered).
+  `sync_gone`, random custom ids, edit uids); `history.rs` (preference and rating times, history clears remembered).
 - `crates/connectors` `nearby.rs`: `sync_serve` / `sync_join`.
 - `src-tauri` `syncmode.rs`: config (`sync` row: PC id, folder, asked), keychain key, minute timer, commands, events
   `sync` (merged: the UI reloads) and `sync-offer`. Snapshots read WebView2 cookies: async commands only.
@@ -78,7 +78,7 @@ Settings naming playlists by row id (`hiddenPlaylists`, `playlistCovers`) are tr
 
 ## Tested
 
-Unit: merge both ways, newest wins and deletions spread, removed songs / preferences / cleared history, Live Editor
+Unit: merge both ways, newest wins and deletions spread, removed songs / preferences / ratings / cleared history, Live Editor
 versions across different row ids, settings per key with this PC's own kept, playlist keys translated, sealing and
 wrong password and downgrade, OneDrive variables, network swap and wrong code. Live (2026-10-21, the user's library
 of 2,944 songs): protected folder set up in 1.1 s, snapshot 287 KB sealed, a round 0.2 s; another PC's identical file

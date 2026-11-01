@@ -20,6 +20,11 @@ export type ActionId =
   | 'mute'
   | 'shuffle'
   | 'repeat'
+  | 'rate1'
+  | 'rate2'
+  | 'rate3'
+  | 'rate4'
+  | 'rate5'
   | 'nowPlaying'
   | 'fullscreen'
   | 'karaoke'
@@ -57,6 +62,11 @@ export const ACTIONS: ActionInfo[] = [
   { id: 'mute', label: msg('Mute / unmute'), keys: 'Ctrl+KeyM', global: null },
   { id: 'shuffle', label: msg('Shuffle on / off'), keys: 'Ctrl+KeyS', global: null },
   { id: 'repeat', label: msg('Repeat: off, queue, track'), keys: 'Ctrl+KeyR', global: null },
+  { id: 'rate1', label: msg('Rate the song playing: 1 star'), keys: 'Alt+Digit1', global: null },
+  { id: 'rate2', label: msg('Rate the song playing: 2 stars'), keys: 'Alt+Digit2', global: null },
+  { id: 'rate3', label: msg('Rate the song playing: 3 stars'), keys: 'Alt+Digit3', global: null },
+  { id: 'rate4', label: msg('Rate the song playing: 4 stars'), keys: 'Alt+Digit4', global: null },
+  { id: 'rate5', label: msg('Rate the song playing: 5 stars'), keys: 'Alt+Digit5', global: null },
   { id: 'nowPlaying', label: msg('Open / close Now Playing'), keys: 'KeyF', global: null }, // F (user's choice 2026-10-23), was Ctrl+P.
   { id: 'fullscreen', label: msg('Full screen on / off'), keys: 'F11', global: null },
   { id: 'karaoke', label: msg('Karaoke on / off'), keys: 'KeyK', global: null },

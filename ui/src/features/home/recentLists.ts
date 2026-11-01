@@ -70,7 +70,7 @@ export function noteList(v: View) {
  * the songs played lately, then your playlists, to fill the grid. mixIds = today's mixes (undefined while loading:
  * opened mixes kept).
  */
-export function jumpLists(opened: OpenedList[], { tracks, stats, playlists, mixIds }: { tracks: LibraryTrack[]; stats: Record<number, [number, number]>; playlists: LibraryPlaylist[]; mixIds?: string[] }): OpenedList[] {
+export function jumpLists(opened: OpenedList[], { tracks, stats, playlists, mixIds }: { tracks: LibraryTrack[]; stats: Record<number, [number, number, number?]>; playlists: LibraryPlaylist[]; mixIds?: string[] }): OpenedList[] {
   const albums = new Set(tracks.flatMap((t) => (t.album ? [`${t.album}\u0000${primaryArtist(t.artist)}`] : [])))
   const artists = new Set(tracks.map((t) => primaryArtist(t.artist)))
   const exists = (l: OpenedList) =>

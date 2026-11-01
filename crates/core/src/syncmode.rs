@@ -137,6 +137,9 @@ pub struct Snapshot {
     pub removed: Vec<Removed>,
     /// [track index, pref, at].
     pub prefs: Vec<(u32, String, i64)>,
+    /// [track index, half stars (0 = taken off), at]. Absent from older apps' files.
+    #[serde(default)]
+    pub ratings: Vec<(u32, u8, i64)>,
     /// [track index, started (unix s), listened ms, completed].
     pub plays: Vec<(u32, i64, u32, bool)>,
     pub edits: Vec<EditSnap>,
@@ -289,6 +292,8 @@ impl Library {
             .collect();
         let prefs_rows: Vec<(i64, String, i64)> = self.db.prepare("SELECT track_id, pref, at FROM track_prefs")?.query_map([], |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?)))?.collect::<rusqlite::Result<_>>()?;
         let prefs = prefs_rows.into_iter().map(|(t, p, at)| Ok((refs.of(self, t)?, p, at))).collect::<Result<_>>()?;
+        let rating_rows: Vec<(i64, u8, i64)> = self.db.prepare("SELECT track_id, stars, at FROM track_ratings")?.query_map([], |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?)))?.collect::<rusqlite::Result<_>>()?;
+        let ratings = rating_rows.into_iter().map(|(t, s, at)| Ok((refs.of(self, t)?, s, at))).collect::<Result<_>>()?;
         let play_rows: Vec<(i64, i64, u32, bool)> =
             self.db.prepare("SELECT track_id, started_at, listened_ms, completed FROM plays ORDER BY started_at")?.query_map([], |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?, r.get(3)?)))?.collect::<rusqlite::Result<_>>()?;
         let plays = play_rows.into_iter().map(|(t, s, l, c)| Ok((refs.of(self, t)?, s, l, c))).collect::<Result<_>>()?;
@@ -335,6 +340,7 @@ impl Library {
             gone,
             removed,
             prefs,
+            ratings,
             plays,
             edits,
             settings,
@@ -475,6 +481,18 @@ impl Library {
             let here: Option<i64> = self.db.query_row("SELECT at FROM track_prefs WHERE track_id = ?1", [t], |r| r.get(0)).optional()?;
             if here.is_none_or(|h| h < *at) {
                 self.db.execute("INSERT INTO track_prefs (track_id, pref, at) VALUES (?1, ?2, ?3) ON CONFLICT (track_id) DO UPDATE SET pref = excluded.pref, at = excluded.at", params![t, pref, at])?;
+            }
+        }
+
+        // 5b. Ratings: the latest one wins, a rating taken off too.
+        for (i, stars, at) in &s.ratings {
+            if *stars > 10 {
+                continue;
+            }
+            let Some(t) = row(*i, &mut m)? else { continue };
+            let here: Option<i64> = self.db.query_row("SELECT at FROM track_ratings WHERE track_id = ?1", [t], |r| r.get(0)).optional()?;
+            if here.is_none_or(|h| h < *at) {
+                self.db.execute("INSERT INTO track_ratings (track_id, stars, at) VALUES (?1, ?2, ?3) ON CONFLICT (track_id) DO UPDATE SET stars = excluded.stars, at = excluded.at", params![t, stars, at])?;
             }
         }
 
@@ -814,6 +832,33 @@ mod tests {
         a.clear_history()?;
         b.merge(&snap(&a))?;
         assert!(b.plays()?.is_empty());
+        Ok(())
+    }
+
+    #[test]
+    fn ratings_go_both_ways_the_latest_winning() -> Result<()> {
+        let a = Library::in_memory()?;
+        let b = Library::in_memory()?;
+        let x = a.upsert_track(&song("X", "x1"))?;
+        a.set_rating(x, 8)?;
+        b.merge(&snap(&a))?;
+        let xb = b.tracks()?[0].id;
+        assert_eq!(b.play_stats()?[&xb].2, 8);
+        // Changed on B later: A takes it; A's older value doesn't come back.
+        std::thread::sleep(std::time::Duration::from_millis(5));
+        b.set_rating(xb, 3)?;
+        a.merge(&snap(&b))?;
+        b.merge(&snap(&a))?;
+        assert_eq!((a.play_stats()?[&x].2, b.play_stats()?[&xb].2), (3, 3));
+        // Taken off on A: off on B.
+        std::thread::sleep(std::time::Duration::from_millis(5));
+        a.set_rating(x, 0)?;
+        b.merge(&snap(&a))?;
+        assert!(!b.play_stats()?.contains_key(&xb));
+        // An older app's file has no ratings: nothing changes.
+        let mut old: Snapshot = serde_json::from_value(serde_json::to_value(snap(&a))?)?;
+        old.ratings.clear();
+        assert!(serde_json::from_str::<Snapshot>(&serde_json::to_string(&old)?.replace(",\"ratings\":[]", "")).is_ok());
         Ok(())
     }
 

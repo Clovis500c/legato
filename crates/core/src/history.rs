@@ -74,9 +74,26 @@ impl Library {
     }
 
     /// Per track: listens (full ones, or 30 s heard) and the last start. For "Most played" / "Recently played" sorts.
-    pub fn play_stats(&self) -> Result<HashMap<i64, (u32, i64)>> {
+    /// Per song: listens, last start (unix s, 0 = never), your rating in half stars (0 = none).
+    pub fn play_stats(&self) -> Result<HashMap<i64, (u32, i64, u8)>> {
         let mut stmt = self.db.prepare_cached("SELECT track_id, SUM(completed OR listened_ms >= 30000), MAX(started_at) FROM plays GROUP BY track_id")?;
-        Ok(stmt.query_map([], |r| Ok((r.get::<_, i64>(0)?, (r.get::<_, u32>(1)?, r.get::<_, i64>(2)?))))?.collect::<rusqlite::Result<_>>()?)
+        let mut out: HashMap<i64, (u32, i64, u8)> = stmt.query_map([], |r| Ok((r.get::<_, i64>(0)?, (r.get::<_, u32>(1)?, r.get::<_, i64>(2)?, 0))))?.collect::<rusqlite::Result<_>>()?;
+        let mut stmt = self.db.prepare_cached("SELECT track_id, stars FROM track_ratings WHERE stars > 0")?;
+        for row in stmt.query_map([], |r| Ok((r.get::<_, i64>(0)?, r.get::<_, u8>(1)?)))? {
+            let (id, stars) = row?;
+            out.entry(id).or_default().2 = stars;
+        }
+        Ok(out)
+    }
+
+    /// Your rating of a song in half stars, 1..=10; 0 takes it off (kept with its time: Sync Mode carries it).
+    pub fn set_rating(&self, track_id: i64, stars: u8) -> Result<()> {
+        anyhow::ensure!(stars <= 10, "A rating is 0 to 5 stars");
+        self.db.execute(
+            "INSERT INTO track_ratings (track_id, stars, at) VALUES (?1, ?2, ?3) ON CONFLICT (track_id) DO UPDATE SET stars = excluded.stars, at = excluded.at",
+            params![track_id, stars, crate::library::now_ms()],
+        )?;
+        Ok(())
     }
 
     /// None clears the preference.
@@ -171,7 +188,7 @@ mod tests {
         assert_eq!(lib.plays()?.iter().map(|p| p.started_at).collect::<Vec<_>>(), [10, 20]);
         assert_eq!(lib.plays_since(15)?.iter().map(|p| p.started_at).collect::<Vec<_>>(), [20]);
         // 1 s listen doesn't count, the full one does; last start is the latest.
-        assert_eq!(lib.play_stats()?[&a], (1, 20));
+        assert_eq!(lib.play_stats()?[&a], (1, 20, 0));
         lib.set_pref(a, Some(Pref::Less))?;
         lib.set_pref(a, Some(Pref::Never))?;
         assert_eq!(lib.prefs()?[&a], Pref::Never);
@@ -180,6 +197,24 @@ mod tests {
         assert!(lib.record_play(&Play { track_id: 999, started_at: 1, listened_ms: 1, completed: true }).is_err(), "unknown track");
         lib.clear_history()?;
         assert!(lib.plays()?.is_empty());
+        Ok(())
+    }
+
+    #[test]
+    fn ratings_come_with_the_stats_and_outlive_cleared_history() -> Result<()> {
+        let lib = Library::in_memory()?;
+        let (a, b) = (track(&lib, "A", Source::Youtube, "a"), track(&lib, "B", Source::Youtube, "b"));
+        lib.record_play(&Play { track_id: a, started_at: 20, listened_ms: 200_000, completed: true })?;
+        lib.set_rating(a, 9)?;
+        lib.set_rating(b, 4)?;
+        let stats = lib.play_stats()?;
+        assert_eq!((stats[&a], stats[&b]), ((1, 20, 9), (0, 0, 4)), "rated, never played");
+        assert!(lib.set_rating(a, 11).is_err());
+        // Not history: clearing it keeps them. Taken off: out of the stats.
+        lib.clear_history()?;
+        assert_eq!(lib.play_stats()?[&a], (0, 0, 9));
+        lib.set_rating(b, 0)?;
+        assert!(!lib.play_stats()?.contains_key(&b));
         Ok(())
     }
 

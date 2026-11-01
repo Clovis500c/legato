@@ -3,6 +3,7 @@ import { useShallow } from 'zustand/react/shallow'
 import { useMemo, useState } from 'react'
 import { useStore } from '../../app/store'
 import { type Source } from '../../shared/api'
+import { starsText } from '../../shared/format'
 import { msg, tr, trn } from '../../shared/i18n/i18n'
 import { Button } from '../../shared/ui/Button'
 import { onMenu, openMenu } from '../../shared/ui/ContextMenu'
@@ -15,7 +16,7 @@ import { TrackTable } from '../library/TrackTable'
 import { smartTracks } from './rules'
 import { saveSmart, smartMenu, useSmartList } from './actions'
 
-const FIELD_LABEL: Record<SmartField, string> = { artist: msg('Artist'), album: msg('Album'), title: msg('Title'), source: msg('Source'), plays: msg('Plays'), played: msg('Last played'), added: msg('Added') }
+const FIELD_LABEL: Record<SmartField, string> = { artist: msg('Artist'), album: msg('Album'), title: msg('Title'), source: msg('Source'), plays: msg('Plays'), played: msg('Last played'), rating: msg('Rating'), added: msg('Added') }
 const OPS: Record<SmartField, { value: string; label: string }[]> = {
   artist: [{ value: 'has', label: msg('contains') }, { value: 'is', label: msg('is') }, { value: 'not', label: msg('doesn’t contain') }],
   album: [{ value: 'has', label: msg('contains') }, { value: 'is', label: msg('is') }, { value: 'not', label: msg('doesn’t contain') }],
@@ -23,10 +24,11 @@ const OPS: Record<SmartField, { value: string; label: string }[]> = {
   source: [{ value: 'is', label: msg('is') }, { value: 'not', label: msg('isn’t') }],
   plays: [{ value: 'atLeast', label: msg('at least') }, { value: 'atMost', label: msg('at most') }],
   played: [{ value: 'within', label: msg('in the last (days)') }, { value: 'notWithin', label: msg('not in the last (days)') }],
+  rating: [{ value: 'atLeast', label: msg('at least') }, { value: 'atMost', label: msg('at most') }, { value: 'none', label: msg('none yet') }],
   added: [{ value: 'last', label: msg('among the newest') }],
 }
 const SOURCES: { value: Source; label: string }[] = [{ value: 'youtube', label: msg('YouTube') }, { value: 'spotify', label: msg('Spotify') }, { value: 'apple', label: msg('Apple Music') }, { value: 'local', label: msg('Local files') }]
-const SORT_LABEL: Record<SmartList['sort'], string> = { plays: msg('Most played'), recent: msg('Recently played'), added: msg('Recently added'), title: msg('Title'), artist: msg('Artist'), random: msg('Random') }
+const SORT_LABEL: Record<SmartList['sort'], string> = { plays: msg('Most played'), recent: msg('Recently played'), rating: msg('Highest rated'), added: msg('Recently added'), title: msg('Title'), artist: msg('Artist'), random: msg('Random') }
 const DEFAULT_RULE: Record<SmartField, SmartRule> = {
   artist: { field: 'artist', op: 'has', value: '' },
   album: { field: 'album', op: 'has', value: '' },
@@ -34,10 +36,13 @@ const DEFAULT_RULE: Record<SmartField, SmartRule> = {
   source: { field: 'source', op: 'is', value: 'youtube' },
   plays: { field: 'plays', op: 'atLeast', value: '5' },
   played: { field: 'played', op: 'within', value: '30' },
+  rating: { field: 'rating', op: 'atLeast', value: '4' },
   added: { field: 'added', op: 'last', value: '50' },
 }
 
 const field = 'h-8 rounded-md border border-line bg-bg px-2 text-[0.8125rem]'
+// Rating rule values: half a star to five.
+const STARS = Array.from({ length: 10 }, (_, i) => String((i + 1) / 2))
 
 
 function RuleRow({ rule, onChange, onRemove }: { rule: SmartRule; onChange: (r: SmartRule) => void; onRemove: () => void }) {
@@ -65,6 +70,16 @@ function RuleRow({ rule, onChange, onRemove }: { rule: SmartRule; onChange: (r: 
             </option>
           ))}
         </select>
+      ) : rule.field === 'rating' ? (
+        rule.op !== 'none' && (
+          <select aria-label={tr('Value')} value={rule.value} onChange={(e) => onChange({ ...rule, value: e.target.value })} className={field}>
+            {STARS.map((v) => (
+              <option key={v} value={v}>
+                {starsText(Number(v) * 2)}
+              </option>
+            ))}
+          </select>
+        )
       ) : (
         <input aria-label={tr('Value')} value={rule.value} inputMode={['plays', 'played', 'added'].includes(rule.field) ? 'numeric' : undefined} onChange={(e) => onChange({ ...rule, value: e.target.value })} className={`${field} w-48`} />
       )}

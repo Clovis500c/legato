@@ -14,6 +14,7 @@ import { onMenu, openMenu, type MenuEntry } from '../../shared/ui/ContextMenu'
 import { trackMenu, tracksMenu } from '../menus'
 import { Cover } from '../../shared/ui/Cover'
 import { SourceIcon } from '../../shared/ui/SourceIcon'
+import { Stars } from '../../shared/ui/Stars'
 import { useStore } from '../../app/store'
 import { isFull, vias } from '../player/sources'
 import { usePlayer } from '../player/store'
@@ -27,10 +28,10 @@ import { pop } from '../../shared/motion'
 
 const ROW = { compact: 40, comfort: 52, airy: 64 }
 const order: Source[] = ['spotify', 'youtube', 'apple', 'local']
-const onControl = (e: React.MouseEvent) => e.target instanceof Element && !!e.target.closest('button, a, input, [role="menu"]')
+const onControl = (e: React.MouseEvent) => e.target instanceof Element && !!e.target.closest('button, a, input, [role="menu"], [role="slider"]')
 // Title, artist and album share the room 2:1:1, so a narrow window never squeezes the title out.
-const width: Record<Column, string> = { album: 'minmax(0,1fr)', sources: '76px', plays: '52px', added: '92px', duration: '52px' }
-const head: Record<Column, string> = { album: msg('Album'), sources: msg('Sources'), plays: msg('Plays'), added: msg('Date added'), duration: msg('Duration') }
+const width: Record<Column, string> = { album: 'minmax(0,1fr)', sources: '76px', plays: '52px', rating: '72px', added: '92px', duration: '52px' }
+const head: Record<Column, string> = { album: msg('Album'), sources: msg('Sources'), plays: msg('Plays'), rating: msg('Rating'), added: msg('Date added'), duration: msg('Duration') }
 /** Header click sorts: first click → first sort, again → the second (reverse). Sources can't sort. */
 /** "23 Oct", "12 Mar 2025"; nothing when unknown (added before the app kept dates). */
 const addedDate = (at?: number | null) => {
@@ -52,7 +53,7 @@ export function columnsMenu(): MenuEntry[] {
     { label: tr('Covers in lists'), checked: s.listCovers, onSelect: () => update({ listCovers: !s.listCovers }) },
   ]
 }
-const headSorts: Partial<Record<Column | 'title', [Sort, Sort]>> = { title: ['title', 'title-desc'], album: ['album', 'album'], plays: ['most-played', 'most-played'], added: ['added-new', 'added-old'], duration: ['duration', 'duration-short'] }
+const headSorts: Partial<Record<Column | 'title', [Sort, Sort]>> = { title: ['title', 'title-desc'], album: ['album', 'album'], plays: ['most-played', 'most-played'], rating: ['rating', 'rating'], added: ['added-new', 'added-old'], duration: ['duration', 'duration-short'] }
 
 /**
  * Virtualized: only visible rows hit the DOM, so 50k tracks stay smooth. editId = custom playlist shown unfiltered
@@ -69,6 +70,7 @@ export function TrackTable({ tracks, empty, editId, rowActions, sort, onSort, fo
   const playingId = usePlayer((s) => s.now?.trackId)
   const sp = useStore((s) => s.status.spotify.connected)
   const stats = useStore((s) => s.stats)
+  const rate = useStore((s) => s.rate)
   const row = ROW[density]
   const liked = useLikedIds()
   // Compact: artist in its own column (what listeners ask, docs/design.md); taller rows keep it under the title.
@@ -129,6 +131,11 @@ export function TrackTable({ tracks, empty, editId, rowActions, sort, onSort, fo
     ) : c === 'plays' ? (
       <span key={c} role="gridcell" className="text-right text-xs text-ink-3 tabular-nums">
         {stats[t.id]?.[0] ? formatCount(stats[t.id][0]) : ''}
+      </span>
+    ) : c === 'rating' ? (
+      // Unrated: shown on hover, like the heart.
+      <span key={c} role="gridcell" className="flex items-center">
+        <Stars value={stats[t.id]?.[2] ?? 0} onChange={(half) => void rate(t.id, half)} size={13} className={stats[t.id]?.[2] ? '' : 'opacity-0 group-hover:opacity-100 focus-visible:opacity-100'} />
       </span>
     ) : c === 'added' ? (
       <span key={c} role="gridcell" className="text-right text-xs text-ink-3 tabular-nums">

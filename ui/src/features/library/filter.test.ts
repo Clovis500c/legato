@@ -111,6 +111,9 @@ describe('albums and artists', () => {
     const stats = { 3: [5, 100], 1: [5, 200], 2: [1, 900] } as Record<number, [number, number]>
     expect(ids('most-played', { stats })).toEqual([1, 3, 2, 4])
     expect(ids('recently-played', { stats })).toEqual([2, 1, 3, 4])
+    // Rated first, highest on top; a tie goes to the most played; unrated last.
+    const rated = { 1: [5, 200, 6], 2: [1, 900, 9], 3: [9, 100, 6] } as Record<number, [number, number, number?]>
+    expect(ids('rating', { stats: rated })).toEqual([2, 3, 1, 4])
     expect(sortTracks(lib, 'title-desc').map((x) => x.title)).toEqual(sortTracks(lib, 'title').map((x) => x.title).reverse())
     // Unknown length last.
     expect(ids('duration-short')).toEqual([3, 2, 1, 4])

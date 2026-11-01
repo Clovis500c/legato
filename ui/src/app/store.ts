@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import { api, type Credentials, type LibraryPlaylist, type LibraryTrack, type PlaylistEdit, type Service, type SourceStatus, type SpotifyProgress, type SpotifyLibraryImport, type SyncReport, type Track } from '../shared/api'
 import type { Filter, GroupSize, GroupSort, PlayStats, Sort } from '../features/library/filter'
 import { explain } from '../shared/errors'
-import { soundcloudLink } from '../shared/format'
+import { soundcloudLink, starsText } from '../shared/format'
 import { tr, trn } from '../shared/i18n/i18n'
 import { noteList } from '../features/home/recentLists'
 import { advance, BEAT, newRun, summary, type ImportKind, type ImportRun } from '../features/add/importRun'
@@ -88,6 +88,8 @@ interface State {
   /** Random sort order; new pick = new seed. */
   seed: number
   stats: PlayStats
+  /** Your rating of a song in half stars (0 takes it off): shown at once, saved behind. `say`: a toast tells it. */
+  rate: (trackId: number, stars: number, say?: boolean) => Promise<void>
   busy: boolean
   error?: string
   /** Newest last, auto-cleared. */
@@ -445,6 +447,23 @@ export const useStore = create<State>((set, get) => {
       return id
     },
     dismissToast: (id) => set({ toasts: get().toasts.filter((t) => t.id !== id) }),
+    async rate(trackId, stars, say) {
+      const before = get().stats[trackId]
+      const put = (v: PlayStats[number] | undefined) => {
+        const next = { ...get().stats }
+        if (v) next[trackId] = v
+        else delete next[trackId]
+        set({ stats: next })
+      }
+      put([before?.[0] ?? 0, before?.[1] ?? 0, stars])
+      try {
+        await api.setRating(trackId, stars)
+        if (say) get().notify(stars ? tr('Rated: {stars}', { stars: starsText(stars) }) : tr('Rating removed'))
+      } catch (e) {
+        put(before)
+        get().notify(String(e), { kind: 'error' })
+      }
+    },
     async editPlaylist(edit) {
       let id: number | null = null
       // The open playlist comes again with the changes when it is the one edited.

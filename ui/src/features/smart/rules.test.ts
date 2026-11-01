@@ -21,6 +21,15 @@ describe('smart playlists', () => {
     expect(ids(list({ rules: [{ field: 'added', op: 'last', value: '2' }], sort: 'added' }))).toEqual([4, 3])
   })
 
+  it('filters and sorts by rating, unrated songs being no rating', () => {
+    const rated: Record<number, [number, number, number?]> = { ...stats, 1: [12, now - 3600, 9], 2: [3, now, 4], 4: [0, 0, 8] }
+    const by = (l: SmartList) => smartTracks(l, tracks, rated, now).map((x) => x.id)
+    expect(by(list({ rules: [{ field: 'rating', op: 'atLeast', value: '4' }] }))).toEqual([1, 4])
+    expect(by(list({ rules: [{ field: 'rating', op: 'atMost', value: '2' }] }))).toEqual([2])
+    expect(by(list({ rules: [{ field: 'rating', op: 'none', value: '' }] }))).toEqual([3])
+    expect(by(list({ sort: 'rating' }))).toEqual([1, 4, 2, 3])
+  })
+
   it('matches all or any rule, sorts and limits', () => {
     const rules = [
       { field: 'artist' as const, op: 'is', value: 'kavinsky' },

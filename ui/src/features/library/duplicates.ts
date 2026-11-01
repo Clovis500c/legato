@@ -32,7 +32,7 @@ export function duplicateGroups(tracks: LibraryTrack[]): LibraryTrack[][] {
 }
 
 /** Which copy to keep: most plays, then most sources, then an album, then the oldest. */
-export function bestCopy(group: LibraryTrack[], stats: Record<number, [number, number]>): LibraryTrack {
+export function bestCopy(group: LibraryTrack[], stats: Record<number, [number, number, number?]>): LibraryTrack {
   const score = (t: LibraryTrack) => [stats[t.id]?.[0] ?? 0, Object.keys(t.ids).length, t.album ? 1 : 0, -t.added]
   return [...group].sort((a, b) => {
     const [x, y] = [score(a), score(b)]

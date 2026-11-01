@@ -2,8 +2,8 @@ import type { LibraryTrack, Source } from '../../shared/api'
 import { fold } from '../../shared/format'
 import type { SmartList, SmartRule } from '../../shared/theme/theme'
 
-/** Library play stats: track id → [listens, last start (unix s)]. */
-type Stats = Record<number, [number, number]>
+/** Library play stats: track id → [listens, last start (unix s), your rating in half stars]. */
+type Stats = Record<number, [number, number, number?]>
 
 const DAY = 86_400
 
@@ -34,6 +34,13 @@ export function passes(r: SmartRule, t: LibraryTrack, stats: Stats, newest: Set<
       const recent = last !== undefined && last >= now - n * DAY
       return r.op === 'notWithin' ? !recent : recent
     }
+    case 'rating': {
+      const stars = (stats[t.id]?.[2] ?? 0) / 2
+      if (r.op === 'none') return stars === 0
+      if (r.value.trim() === '' || !Number.isFinite(n)) return true
+      // No rating isn't a low one: at most 2 stars = songs you rated low.
+      return stars > 0 && (r.op === 'atMost' ? stars <= n : stars >= n)
+    }
     case 'added':
       return !newest || newest.has(t.id)
   }
@@ -58,10 +65,12 @@ export function smartTracks(list: SmartList, tracks: LibraryTrack[], stats: Stat
   const out = tracks.filter(test)
   const plays = (t: LibraryTrack) => stats[t.id]?.[0] ?? 0
   const last = (t: LibraryTrack) => stats[t.id]?.[1] ?? 0
+  const stars = (t: LibraryTrack) => stats[t.id]?.[2] ?? 0
   const salt = JSON.stringify(list.rules) + list.id
   const by: Record<SmartList['sort'], (a: LibraryTrack, b: LibraryTrack) => number> = {
     plays: (a, b) => plays(b) - plays(a) || last(b) - last(a),
     recent: (a, b) => last(b) - last(a),
+    rating: (a, b) => stars(b) - stars(a) || plays(b) - plays(a),
     added: (a, b) => b.added - a.added,
     title: (a, b) => a.title.localeCompare(b.title),
     artist: (a, b) => a.artist.localeCompare(b.artist) || a.title.localeCompare(b.title),

@@ -11,7 +11,7 @@ export interface Fit {
  * Songs of your library that fit a playlist, none already in it: today's mixes that share songs with it first (they
  * know your taste), then the playlist's artists, most played first.
  */
-export function songsThatFit(playlist: LibraryTrack[], tracks: LibraryTrack[], { stats, mixes = [] }: { stats: Record<number, [number, number]>; mixes?: { id: string; trackIds: number[] }[] }, max = 5): Fit[] {
+export function songsThatFit(playlist: LibraryTrack[], tracks: LibraryTrack[], { stats, mixes = [] }: { stats: Record<number, [number, number, number?]>; mixes?: { id: string; trackIds: number[] }[] }, max = 5): Fit[] {
   const inside = new Set(playlist.map((t) => t.id))
   const byId = new Map(tracks.map((t) => [t.id, t]))
   const out: Fit[] = []

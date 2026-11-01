@@ -1,4 +1,4 @@
-import { locale, tr } from './i18n/i18n'
+import { locale, tr, trn } from './i18n/i18n'
 export function formatDuration(ms: number | null): string {
   if (!ms) return ''
   const s = Math.round(ms / 1000)
@@ -26,6 +26,9 @@ export function formatBytes(n: number): string {
 
 /** Thousands separator, the language's: 1,674 / 1 674. */
 export const formatCount = (n: number) => n.toLocaleString(locale())
+
+/** A rating in half stars (0..10) in words: "4.5 stars", "No rating". */
+export const starsText = (half: number) => (half ? trn(half / 2, '{n} star', '{n} stars') : tr('No rating'))
 
 /** Spotify playlist or album link / URI (same rule as Rust spotify_embed::parse_link). */
 export const spotifyList = (text: string) => /(open\.spotify\.com\/(intl-[a-z-]+\/)?(embed\/)?|spotify:)(playlist|album)[/:][A-Za-z0-9]{22}/.test(text)

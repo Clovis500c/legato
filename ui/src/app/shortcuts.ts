@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { usePlayer } from '../features/player/store'
+import { isRemote, nowTrack, usePlayer } from '../features/player/store'
 import { toggleKaraoke } from '../features/player/karaokeMode'
 import { toggleVizFull, useVizFull } from '../features/player/vizFull'
 import { nudgeVolume } from '../features/player/volume'
@@ -13,6 +13,14 @@ const player = () => usePlayer.getState()
 const seekBy = (ms: number) => {
   const { now, positionMs, durationMs, seek } = player()
   if (now) seek(Math.max(0, Math.min(positionMs + ms, durationMs ?? Infinity)))
+}
+
+// The song playing, rated (a library song only); its own rating again takes it off.
+const rateNow = (stars: number) => {
+  const t = nowTrack()
+  if (!t || isRemote(t)) return
+  const was = useStore.getState().stats[t.id]?.[2] ?? 0
+  void useStore.getState().rate(t.id, was === stars ? 0 : stars, true)
 }
 
 /** What each action does. One table with keys.ts (labels, default keys): Settings › Shortcuts lists both. */
@@ -31,6 +39,11 @@ export const RUN: Record<ActionId, () => void> = {
   mute: () => player().toggleMute(),
   shuffle: () => player().toggleShuffle(),
   repeat: () => player().cycleRepeat(),
+  rate1: () => rateNow(2),
+  rate2: () => rateNow(4),
+  rate3: () => rateNow(6),
+  rate4: () => rateNow(8),
+  rate5: () => rateNow(10),
   // The visualizer's screen is on top: Now Playing, karaoke, search and navigation wait for Esc (karaoke's full screen would clash with it).
   nowPlaying: () => !useVizFull.getState().open && player().now && player().setFull(!player().full),
   fullscreen: () => void toggleFullscreen(),

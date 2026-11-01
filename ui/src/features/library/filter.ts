@@ -3,10 +3,10 @@ import { fold } from '../../shared/format'
 
 export type Filter = 'all' | Source | 'unlinked'
 /** recent = added-new (playlist covers keep the old name). manual = playlist order. */
-export type Sort = 'manual' | 'added-new' | 'added-old' | 'most-played' | 'recently-played' | 'title' | 'title-desc' | 'artist' | 'album' | 'duration' | 'duration-short' | 'random' | 'recent'
+export type Sort = 'manual' | 'added-new' | 'added-old' | 'most-played' | 'recently-played' | 'rating' | 'title' | 'title-desc' | 'artist' | 'album' | 'duration' | 'duration-short' | 'random' | 'recent'
 
-/** Track id → [listens, last start] (history), for the play sorts. */
-export type PlayStats = Record<number, [number, number]>
+/** Track id → [listens, last start, your rating in half stars] (history), for the play and rating sorts. */
+export type PlayStats = Record<number, [plays: number, last: number, stars?: number]>
 
 const sourceCount = (t: LibraryTrack) => Object.keys(t.ids).length
 
@@ -47,6 +47,7 @@ export function sortTracks(
   }
   const plays = (t: LibraryTrack) => stats[t.id]?.[0] ?? 0
   const last = (t: LibraryTrack) => stats[t.id]?.[1] ?? 0
+  const stars = (t: LibraryTrack) => stats[t.id]?.[2] ?? 0
   type By = (a: LibraryTrack, b: LibraryTrack) => number
   const title: By = (a, b) => coll.compare(a.title, b.title)
   const by: Record<Exclude<Sort, 'manual'>, By> = {
@@ -55,6 +56,7 @@ export function sortTracks(
     'added-old': (a, b) => a.added - b.added,
     'most-played': (a, b) => plays(b) - plays(a) || last(b) - last(a) || title(a, b),
     'recently-played': (a, b) => last(b) - last(a),
+    rating: (a, b) => stars(b) - stars(a) || plays(b) - plays(a) || title(a, b),
     title,
     'title-desc': (a, b) => title(b, a),
     artist: (a, b) => coll.compare(a.artist, b.artist) || title(a, b),

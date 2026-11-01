@@ -37,6 +37,7 @@ const sortGroups: { id: Sort; label: string }[][] = [
   [
     { id: 'most-played', label: msg('Most played') },
     { id: 'recently-played', label: msg('Recently played') },
+    { id: 'rating', label: msg('Highest rated') },
   ],
   [
     { id: 'title', label: msg('Title (A–Z)') },

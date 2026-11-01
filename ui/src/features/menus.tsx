@@ -46,6 +46,7 @@ import {
   ShareNetwork,
   Shuffle,
   SlidersHorizontal,
+  Star,
   SortAscending,
   SkipBack,
   SkipForward,
@@ -61,7 +62,7 @@ import { useStore, type SettingsSection, type View } from '../app/store'
 import { api, playlistKey, type Edit, type LibraryPlaylist, type PluginInfo, type LibraryTrack, type SearchHit } from '../shared/api'
 import { bigTrackArt } from '../shared/art'
 import { loadFit } from '../shared/artfit'
-import { fileName } from '../shared/format'
+import { fileName, starsText } from '../shared/format'
 import { COVER_ORDERS, VISUALIZER_STYLES, type PlaylistCover, type PlaylistFolder } from '../shared/theme/theme'
 import type { MenuEntry } from '../shared/ui/ContextMenu'
 import { SourceIcon } from '../shared/ui/SourceIcon'
@@ -377,6 +378,19 @@ function removeFrom(t: LibraryTrack): MenuEntry {
 }
 
 /** ctx.list / index = where it sits (play from there). playlistId + position = custom playlist row. queueIndex = row of the Up next panel. */
+/** Your rating: whole stars here (halves in a list's Rating column); the one it has, picked again, takes it off. */
+function rateItem(t: LibraryTrack): MenuEntry {
+  const was = app().stats[t.id]?.[2] ?? 0
+  return {
+    label: tr('Rating'),
+    icon: <Star size={16} />,
+    items: [
+      ...[2, 4, 6, 8, 10].map((n) => ({ label: starsText(n), checked: was === n, onSelect: () => void app().rate(t.id, was === n ? 0 : n, true) })),
+      { label: tr('No rating'), disabled: !was, onSelect: () => void app().rate(t.id, 0, true) },
+    ],
+  }
+}
+
 export function trackMenu(t: LibraryTrack, ctx: { list?: LibraryTrack[]; index?: number; playlistId?: number; position?: number; queueIndex?: number } = {}): MenuEntry[] {
   const list = ctx.list ?? [t]
   const index = ctx.index ?? 0
@@ -413,6 +427,7 @@ export function trackMenu(t: LibraryTrack, ctx: { list?: LibraryTrack[]; index?:
             .catch(fail),
       },
     '-',
+    rateItem(t),
     {
       label: tr('Mixes'),
       icon: <ThumbsDown size={16} />,
@@ -669,6 +684,7 @@ export function playerMenu(): MenuEntry[] {
     '-',
     t && playVia(t, list, index),
     t && addTo(() => [t]),
+    t && rateItem(t),
     t?.album && { label: tr('Go to album'), icon: <Disc size={16} />, onSelect: () => (setFull(false), app().go({ name: 'album', album: t.album!, artist: primaryArtist(t.artist) })) },
     t && { label: tr('Go to artist'), icon: <MicrophoneStage size={16} />, onSelect: () => (setFull(false), app().go({ name: 'artist', artist: primaryArtist(t.artist) })) },
     lib && saveCoverItem(lib),

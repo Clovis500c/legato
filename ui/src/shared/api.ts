@@ -85,6 +85,8 @@ export const api = {
   mixes: () => invoke<Mix[]>('mixes', { utcOffset: -new Date().getTimezoneOffset() * 60 }),
   /** less = ranked lower in mixes, never = left out, null = back to normal. */
   setTrackPref: (trackId: number, pref: Pref | null) => invoke<void>('set_track_pref', { trackId, pref }),
+  /** Your rating of a song in half stars (1..=10); 0 takes it off. */
+  setRating: (trackId: number, stars: number) => invoke<void>('set_rating', { trackId, stars }),
   /** The user's word: music (true), not music (false), null = the app's guess again. */
   setMusic: (trackIds: number[], music: boolean | null) => invoke<void>('set_music', { trackIds, music }),
   /** Edit song info: a local file's tags rewritten (tags.rs). coverPath = new front cover; removeCover = none. */
@@ -280,7 +282,7 @@ export const api = {
   /** Of these videos, those whose owner turned embedding off (oEmbed, cached a day): straight to their watch page. */
   embedRefused: (videos: string[]) => invoke<string[]>('embed_refused', { videos }),
   /** Track id → [listens, last start]: Most played / Recently played. */
-  playStats: () => invoke<Record<number, [number, number]>>('play_stats'),
+  playStats: () => invoke<Record<number, [number, number, number]>>('play_stats'),
   /** Plays since `since` (unix s, two weeks at most), oldest first. */
   recentPlays: (since: number) => invoke<Play[]>('recent_plays', { since }),
   /** Every play since `since` (unix s, 0 = all), oldest first: the Stats page. */

@@ -242,7 +242,13 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
 - [ ] `S` Community: a Discord server or GitHub Discussions linked from About, "good first issue" labels, a showcase of
       themes on the website.
 - [ ] `S-M` Pick up on the other PC: Sync Mode carries "now playing + position", one click resumes there.
-- [ ] `S-M` Rating with stars or half stars (local and synced), smart playlists on it.
+- [x] `S-M` Rating with stars or half stars (local and synced), smart playlists on it.
+      Half stars in SQLite `track_ratings` (schema 16; 0 = taken off, kept with its time), carried with the play stats,
+      Sync Mode's snapshot `ratings` (latest wins, older apps' files have none). A Rating column (off by default: lists
+      › Columns; a star's left half = half a star, the same rating again takes it off, a slider for the keyboard), a
+      Rating submenu on a song and in the player's menu, Alt+1…5 rate the song playing (Settings › Shortcuts), the
+      Highest rated sort, smart playlist rule Rating at least / at most (rated songs only) / none yet and its sort.
+      Not written into the files' tags (POPM / RATING): a choice for the owner, with the tag editor.
 - [ ] `S-M` Discovery from open sources: new releases of followed artists, community picks (r/listentothis' public JSON),
       shown as cards to play from YouTube.
 - [ ] `S-M` Privacy page in the app: every host Legato talked to today and why (from the Rust gateway's log), matching the

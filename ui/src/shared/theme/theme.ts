@@ -70,9 +70,9 @@ export const PRESETS: Theme[] = [
 
 export const ACCENTS = ['#FF5A1F', '#E5383B', '#F2B705', '#2E8B57', '#2F6FEB', '#171614']
 
-export const COLUMNS = ['album', 'sources', 'plays', 'added', 'duration'] as const
+export const COLUMNS = ['album', 'sources', 'plays', 'rating', 'added', 'duration'] as const
 /** List sorts (features/library/filter): checked on load. */
-const SORTS: readonly Sort[] = ['manual', 'added-new', 'added-old', 'most-played', 'recently-played', 'title', 'title-desc', 'artist', 'album', 'duration', 'duration-short', 'random', 'recent']
+const SORTS: readonly Sort[] = ['manual', 'added-new', 'added-old', 'most-played', 'recently-played', 'rating', 'title', 'title-desc', 'artist', 'album', 'duration', 'duration-short', 'random', 'recent']
 const GROUP_SORTS: readonly GroupSort[] = ['name', 'name-desc', 'artist', 'songs', 'albums', 'added-new', 'added-old', 'most-played', 'recently-played', 'length', 'random']
 
 /** Home's sections, default order. */
@@ -92,15 +92,15 @@ export interface HomeSection {
 
 /** Saved Home layout → every known section once, in the saved order, ones added since at their default place. */
 /** Smart playlist rule: a song field, a test, a value (numbers as text, like a form field). */
-export const SMART_FIELDS = ['artist', 'album', 'title', 'source', 'plays', 'played', 'added'] as const
+export const SMART_FIELDS = ['artist', 'album', 'title', 'source', 'plays', 'played', 'rating', 'added'] as const
 export type SmartField = (typeof SMART_FIELDS)[number]
 export interface SmartRule {
   field: SmartField
-  /** artist / album / title: has, is, not · source: is, not · plays: atLeast, atMost · played: within, notWithin · added: last */
+  /** artist / album / title: has, is, not · source: is, not · plays: atLeast, atMost · played: within, notWithin · rating: atLeast, atMost (stars, rated songs only), none · added: last */
   op: string
   value: string
 }
-export const SMART_SORTS = ['plays', 'recent', 'added', 'title', 'artist', 'random'] as const
+export const SMART_SORTS = ['plays', 'recent', 'rating', 'added', 'title', 'artist', 'random'] as const
 /** A playlist that fills itself from rules (kept in settings: synced with Sync Mode, nothing in the library). */
 export interface SmartList {
   id: string
@@ -153,6 +153,8 @@ export function placeHome(list: HomeSection[], id: HomeSectionId, slot: number):
   return out
 }
 export type Column = (typeof COLUMNS)[number]
+// Date added and Rating on demand (no date for songs added before 2026-10-23; ratings begin empty).
+const DEFAULT_COLUMNS: Column[] = ['album', 'sources', 'plays', 'duration']
 
 export const START_VIEWS = ['home', 'songs', 'mixes', 'albums', 'artists'] as const
 /** Where notifications show: above the player bar (centered or right), or under the top bar. */
@@ -408,8 +410,7 @@ export const DEFAULTS: Settings = {
   sleepButton: true,
   volume: 'bar',
   tuner: false,
-  // Date added on demand (unknown for songs added before 2026-10-23).
-  columns: COLUMNS.filter((c) => c !== 'added'),
+  columns: DEFAULT_COLUMNS,
   songSort: 'artist',
   playlistSort: 'manual',
   albumSort: 'name',
@@ -702,7 +703,7 @@ export function sanitize(raw: unknown): Settings {
     ...(saved < 4 ? V4 : {}),
     ...(saved < 5 ? v5(r) : {}),
     // v7 (app v4, 2026-10-23): a Plays column, for those who kept the old default columns.
-    ...(saved < 7 && Array.isArray(r.columns) && r.columns.join() === 'album,sources,duration' ? { columns: COLUMNS.filter((c) => c !== 'added') } : {}),
+    ...(saved < 7 && Array.isArray(r.columns) && r.columns.join() === 'album,sources,duration' ? { columns: DEFAULT_COLUMNS } : {}),
     // v8 (app v2, 2026-10-29): the theme's sky blue, compact rows without covers, square covers, flat tint.
     ...(saved < 8 ? v8(r) : {}),
     // v9 (visualizer v2, 2026-10-31): the LED look is the new default; the other looks are still there, picks of their own stay.

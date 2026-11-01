@@ -25,7 +25,7 @@ pub enum Data {
 pub fn data_of(table: &str) -> Data {
     match table {
         "tracks" | "track_ids" | "playlists" | "playlist_tracks" => Data::Library,
-        "plays" | "track_prefs" => Data::History,
+        "plays" | "track_prefs" | "track_ratings" => Data::History,
         _ => Data::Other,
     }
 }
