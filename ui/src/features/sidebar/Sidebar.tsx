@@ -1,4 +1,4 @@
-import { ArrowDownLeft, ArrowUpRight, ChartBar, Disc, House, Lightning, MagnifyingGlass, MusicNotes, Plus, PlusCircle, SortAscending } from '@phosphor-icons/react'
+import { ArrowDownLeft, ArrowUpRight, ChartBar, Disc, FolderSimple, FolderSimpleDashed, FolderSimplePlus, House, Lightning, MagnifyingGlass, MusicNotes, Plus, PlusCircle, PushPin, SortAscending } from '@phosphor-icons/react'
 import { artistName } from '../../shared/artistName'
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useShallow } from 'zustand/react/shallow'
@@ -15,7 +15,9 @@ import { VirtualList } from '../../shared/ui/VirtualList'
 import { DEFAULTS, SIDEBAR_MAX, SIDEBAR_MIN, type PlaylistOrder } from '../../shared/theme/theme'
 import { byOpened, useOpenedLists } from '../home/recentLists'
 import { PlaylistCover } from '../library/PlaylistCover'
-import { canDropOn, dropOn, navMenu, playlistMenu, playlistsMenu } from '../menus'
+import { canDropOn, dropOn, folderMenu, navMenu, playlistMenu, playlistsMenu } from '../menus'
+import { arrange, type PlaylistRow } from './arrange'
+import { newFolder, toggleFolder } from './folderActions'
 import { useDrag, useDropTarget } from '../../shared/ui/drag'
 import { usePlayer } from '../player/store'
 import { groupAlbums, groupArtists } from '../library/filter'
@@ -34,7 +36,7 @@ function NavItem({ on, icon: Icon, label, onClick, onContextMenu }: { on: boolea
   )
 }
 
-/** One row of Your library: everything it needs to draw and open. */
+/** One row of Your library: everything it needs to draw and open (a page, or a folder opening and closing). */
 interface Entry {
   key: string
   on: boolean
@@ -42,14 +44,20 @@ interface Entry {
   label: string
   sub: string
   round?: boolean
-  to: View
+  to: View | (() => void)
   menu: () => MenuEntry[]
   playlist?: LibraryPlaylist
+  /** Inside a folder. */
+  depth?: number
+  pinned?: boolean
+  /** A folder's state. */
+  open?: boolean
 }
+
+const openEntry = (e: Entry) => (typeof e.to === 'function' ? e.to() : useStore.getState().go(e.to))
 
 /** Your library row: cover, name, kind and count. A playlist takes songs dragged from a list or Up next. */
 function LibItem({ e }: { e: Entry }) {
-  const go = useStore((s) => s.go)
   const target = e.playlist ? `playlist-${e.playlist.id}` : e.key
   const p = e.playlist && canDropOn(e.playlist) ? e.playlist : null
   useDropTarget(
@@ -66,11 +74,14 @@ function LibItem({ e }: { e: Entry }) {
   )
   const over = useDrag((s) => s.target === target)
   return (
-    <button aria-current={e.on ? 'page' : undefined} onClick={() => go(e.to)} onContextMenu={onMenu(e.menu)} data-drop={p ? target : undefined} className={`flex h-full w-full items-center gap-3 rounded-md px-2 text-left transition ${e.on || over ? 'bg-raised' : 'hover:bg-raised'} ${over ? 'ring-2 ring-ink' : ''}`}>
+    <button aria-current={e.on ? 'page' : undefined} aria-expanded={e.open} onClick={() => openEntry(e)} onContextMenu={onMenu(e.menu)} data-drop={p ? target : undefined} className={`flex h-full w-full items-center gap-3 rounded-md text-left transition ${e.depth ? 'pr-2 pl-6' : 'px-2'} ${e.on || over ? 'bg-raised' : 'hover:bg-raised'} ${over ? 'ring-2 ring-ink' : ''}`}>
       <span className={`grid size-12 shrink-0 place-items-center overflow-hidden ${e.round ? 'rounded-full' : 'rounded-cover'}`}>{e.art}</span>
       <span className="min-w-0 flex-1">
         <span className="block truncate text-sm font-medium text-ink">{e.label}</span>
-        <span className="block truncate text-[0.8125rem] text-ink-2">{e.sub}</span>
+        <span className="flex items-center gap-1 text-[0.8125rem] text-ink-2">
+          {e.pinned && <PushPin size={12} weight="fill" aria-label={tr('Pinned')} className="shrink-0" />}
+          <span className="truncate">{e.sub}</span>
+        </span>
       </span>
     </button>
   )
@@ -78,13 +89,15 @@ function LibItem({ e }: { e: Entry }) {
 
 /** Your library open wide: a card per entry, cover above (opening one brings its page back). */
 function LibCard({ e }: { e: Entry }) {
-  const go = useStore((s) => s.go)
   return (
-    <button onClick={() => go(e.to)} onContextMenu={onMenu(e.menu)} className="flex w-full flex-col gap-2.5 rounded-lg p-3 text-left transition-colors hover:bg-raised">
+    <button aria-expanded={e.open} onClick={() => openEntry(e)} onContextMenu={onMenu(e.menu)} className="flex w-full flex-col gap-2.5 rounded-lg p-3 text-left transition-colors hover:bg-raised">
       <span className={`grid size-44 place-items-center overflow-hidden ${e.round ? 'rounded-full' : 'rounded-cover'}`}>{e.art}</span>
       <span className="min-w-0">
         <span className="block truncate text-base font-medium">{e.label}</span>
-        <span className="block truncate text-[0.8125rem] text-ink-3">{e.sub}</span>
+        <span className="flex items-center gap-1 text-[0.8125rem] text-ink-3">
+          {e.pinned && <PushPin size={12} weight="fill" aria-label={tr('Pinned')} className="shrink-0" />}
+          <span className="truncate">{e.sub}</span>
+        </span>
       </span>
     </button>
   )
@@ -125,6 +138,9 @@ export function Sidebar() {
     if (order === 'songs') return [...list].sort((a, b) => b.trackCount - a.trackCount)
     return order === 'opened' ? byOpened(list, opened) : list
   }, [playlists, hiddenKeys, order, opened])
+  const pinned = useSettings((s) => s.settings.pinnedPlaylists)
+  const folders = useSettings((s) => s.settings.playlistFolders)
+  const rows = useMemo(() => arrange(shown, playlistKey, pinned, order === 'name' ? [...folders].sort((a, b) => coll.compare(a.name, b.name)) : folders), [shown, pinned, folders, order])
   const create = async () => {
     const id = await editPlaylist({ type: 'create', name: tr('New playlist') })
     if (id !== null) go({ name: 'playlist', id })
@@ -171,7 +187,16 @@ export function Sidebar() {
           })
         : [
             ...(kind ? [] : [{ key: 'songs', on: is('songs'), art: tile(<MusicNotes size={wide ? 64 : 22} weight="fill" />, 'bg-ink text-bg'), label: tr('Songs'), sub: dot(tr('All your songs'), counts ? formatCount(tracks.length) : ''), to: { name: 'songs' } as View, menu: () => navMenu({ name: 'songs' }, useStore.getState().tracks) }]),
-            ...shown.map((p) => ({ key: `pl-${p.id}`, on: view.name === 'playlist' && view.id === p.id, art: <PlaylistCover p={p} size={art} big />, label: p.name, sub: dot(tr('Playlist'), songs(p.trackCount)), to: { name: 'playlist', id: p.id } as View, menu: () => playlistMenu(p), playlist: p })),
+            ...rows.map((r: PlaylistRow<LibraryPlaylist>): Entry => {
+              if (r.kind === 'folder') {
+                const f = r.folder
+                const inside = shown.filter((p) => f.keys.includes(playlistKey(p)))
+                const icon = r.count ? <FolderSimple size={wide ? 64 : 22} weight={f.open ? 'regular' : 'fill'} /> : <FolderSimpleDashed size={wide ? 64 : 22} />
+                return { key: `fo-${f.id}`, on: false, art: tile(icon, 'bg-raised text-ink'), label: f.name || tr('Folder'), sub: dot(tr('Folder'), trn(r.count, '{n} playlist', '{n} playlists')), to: () => toggleFolder(f.id), open: f.open, menu: () => folderMenu(f, inside) }
+              }
+              const p = r.p
+              return { key: `pl-${p.id}`, on: view.name === 'playlist' && view.id === p.id, art: <PlaylistCover p={p} size={art} big />, label: p.name, sub: dot(tr('Playlist'), songs(p.trackCount)), to: { name: 'playlist', id: p.id }, menu: () => playlistMenu(p), playlist: p, depth: r.depth, pinned: r.pinned }
+            }),
             ...smart.map((l) => ({ key: `sm-${l.id}`, on: view.name === 'smart' && view.id === l.id, art: tile(<Lightning size={wide ? 64 : 22} weight="fill" />, 'bg-raised text-ink'), label: l.name || tr('Smart playlist'), sub: dot(tr('Smart playlist'), songs(smartSongs.get(l.id)?.length ?? 0)), to: { name: 'smart', id: l.id } as View, menu: () => smartMenu(l, smartSongs.get(l.id) ?? []) })),
             ...(!kind && notFound ? [{ key: 'not-found', on: is('notFound'), art: tile(<MagnifyingGlass size={wide ? 64 : 22} weight="bold" />, 'bg-raised text-ink-2'), label: tr('Songs not found'), sub: dot(tr('YouTube'), songs(notFound)), to: { name: 'notFound' } as View, menu: () => navMenu({ name: 'notFound' }) }] : []),
           ]
@@ -195,7 +220,7 @@ export function Sidebar() {
           <RoundButton label={tr('Sort playlists')} kind="plain" size="sm" onClick={(e) => openMenu(e, ORDERS.map((o) => ({ label: tr(o.label), checked: order === o.id, onSelect: () => useSettings.getState().update({ playlistOrder: o.id }) })))}>
             <SortAscending size={18} />
           </RoundButton>
-          <RoundButton label={tr('New playlist')} kind="plain" size="sm" onClick={(e) => openMenu(e, [{ label: tr('New playlist'), icon: <Plus size={16} />, onSelect: () => void create() }, { label: tr('New smart playlist'), icon: <Lightning size={16} />, onSelect: createSmart }])}>
+          <RoundButton label={tr('New playlist')} kind="plain" size="sm" onClick={(e) => openMenu(e, [{ label: tr('New playlist'), icon: <Plus size={16} />, onSelect: () => void create() }, { label: tr('New smart playlist'), icon: <Lightning size={16} />, onSelect: createSmart }, { label: tr('New folder'), icon: <FolderSimplePlus size={16} />, onSelect: () => void newFolder() }])}>
             <Plus size={18} />
           </RoundButton>
         </div>

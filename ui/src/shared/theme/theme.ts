@@ -207,6 +207,14 @@ export type AdaptiveLevel = (typeof ADAPTIVE_LEVELS)[number]
 export const FADE_CURVES = ['scurve', 'linear', 'equal', 'exp', 'log'] as const
 export type FadeCurve = (typeof FADE_CURVES)[number]
 
+/** A folder of Your library's playlists (sidebar): its playlists by playlistKey, one folder each; open or closed. */
+export interface PlaylistFolder {
+  id: string
+  name: string
+  keys: string[]
+  open: boolean
+}
+
 /** Advanced fade (Settings › Advanced). Off: the simple "Fade between songs" seconds, S-curve both ways. */
 export interface FadeSettings {
   advanced: boolean
@@ -295,6 +303,9 @@ export interface Settings {
   subtitles: boolean
   /** Playlists left out of the sidebar and menus (playlistKey), still in the library. */
   hiddenPlaylists: string[]
+  /** Playlists on top of Your library (playlistKey), in the order pinned. */
+  pinnedPlaylists: string[]
+  playlistFolders: PlaylistFolder[]
   /** Lyrics timing fixed by hand, per song (effects.ts songKey): song time = lyric time × rate + offset (ms). */
   lyricsSync: Record<string, { offset: number; rate: number }>
   /** Sidebar's playlist order: as imported / made, A–Z, most songs, opened lately (remembered). */
@@ -422,6 +433,8 @@ export const DEFAULTS: Settings = {
   gaplessAlbums: true,
   subtitles: false,
   hiddenPlaylists: [],
+  pinnedPlaylists: [],
+  playlistFolders: [],
   lyricsSync: {},
   playlistOrder: 'custom',
   homeSections: HOME_SECTIONS.map((id) => ({ id, on: !HOME_OFF.includes(id) })),
@@ -625,6 +638,8 @@ export function sanitize(raw: unknown): Settings {
     homeFilter: pick(r.homeFilter, HOME_FILTERS, DEFAULTS.homeFilter),
     playlistOrder: pick(r.playlistOrder, PLAYLIST_ORDERS, DEFAULTS.playlistOrder),
     hiddenPlaylists: Array.isArray(r.hiddenPlaylists) ? [...new Set(r.hiddenPlaylists.filter((k): k is string => typeof k === 'string' && k.length <= 200))].slice(0, 500) : [],
+    pinnedPlaylists: Array.isArray(r.pinnedPlaylists) ? [...new Set(r.pinnedPlaylists.filter((k): k is string => typeof k === 'string' && k.length <= 200))].slice(0, 200) : [],
+    playlistFolders: sanitizeFolders(r.playlistFolders),
     lyricsSync: sanitizeLyricsSync(r.lyricsSync),
     playlistCovers: sanitizeCovers(r.playlistCovers),
     mixCovers: pick(r.mixCovers, ['grid', 'single', 'template'] as const, DEFAULTS.mixCovers),
@@ -718,6 +733,23 @@ function sanitizeLyricsSync(v: unknown): Settings['lyricsSync'] {
     const { offset, rate } = (f ?? {}) as { offset?: unknown; rate?: unknown }
     if (k.length > 300 || typeof offset !== 'number' || typeof rate !== 'number' || !Number.isFinite(offset) || !Number.isFinite(rate)) continue
     out[k] = { offset: Math.round(Math.min(600_000, Math.max(-600_000, offset))), rate: Math.min(2, Math.max(0.5, rate)) }
+  }
+  return out
+}
+
+/** One folder per playlist: a key found twice stays in the first folder. */
+function sanitizeFolders(raw: unknown): PlaylistFolder[] {
+  if (!Array.isArray(raw)) return []
+  const ids = new Set<string>()
+  const filed = new Set<string>()
+  const out: PlaylistFolder[] = []
+  for (const v of raw.slice(0, 100)) {
+    if (!v || typeof v !== 'object') continue
+    const f = v as Record<string, unknown>
+    if (typeof f.id !== 'string' || !/^[\w-]{1,40}$/.test(f.id) || ids.has(f.id)) continue
+    ids.add(f.id)
+    const keys = (Array.isArray(f.keys) ? f.keys : []).filter((k): k is string => typeof k === 'string' && k.length <= 200 && !filed.has(k) && !!filed.add(k)).slice(0, 1000)
+    out.push({ id: f.id, name: typeof f.name === 'string' ? f.name.slice(0, 100) : '', keys, open: f.open !== false })
   }
   return out
 }

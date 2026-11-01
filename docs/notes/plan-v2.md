@@ -178,7 +178,12 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       radio of it (signed in) or library songs that fit, its own songs one in three (`radio.ts` `startRadioFrom`, pure
       parts `radioMix.ts`). A radio is endless: songs like the last few come as Up next runs out, autoplay setting on or
       off (`radio` in the player store). Up next says "Then from Animals radio".
-- [ ] `S` Playlist folders, pinned playlists, generated playlist covers (a 2×2 of the songs' covers).
+- [x] `S` Playlist folders, pinned playlists, generated playlist covers (a 2×2 of the songs' covers). Covers were there
+      (right-click › Cover › grid of 4). A playlist's menu: Pin to top, Move to folder (its folders, New folder…);
+      the sidebar's + makes a folder too. Pinned ones on top, then folders (open or closed, their playlists indented),
+      then the others, each part in the order picked (`sidebar/arrange.ts`; settings `pinnedPlaylists`,
+      `playlistFolders`, keyed by `playlistKey`). A folder's menu: play its playlists' songs, radio, rename, delete
+      (its playlists stay, the notice's Undo). Driven in the interface alone (fake Tauri), not in the app.
 - [x] `S` Backup / restore the whole library to one file (playlists, likes, edits, stats), outside Sync Mode: Settings ›
       General › Library backup. A `.legato` file is the library's consistent copy (`VACUUM INTO`, its own read
       connection, like the daily copy); a restore checks it's a library this version knows, keeps the current one as

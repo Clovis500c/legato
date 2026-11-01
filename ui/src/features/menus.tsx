@@ -16,6 +16,10 @@ import {
   EyeSlash,
   MusicNotesSimple,
   FolderOpen,
+  FolderSimple,
+  FolderSimplePlus,
+  PushPin,
+  PushPinSlash,
   Info,
   Power,
   ImageSquare,
@@ -58,7 +62,7 @@ import { api, playlistKey, type Edit, type LibraryPlaylist, type PluginInfo, typ
 import { bigTrackArt } from '../shared/art'
 import { loadFit } from '../shared/artfit'
 import { fileName } from '../shared/format'
-import { COVER_ORDERS, VISUALIZER_STYLES, type PlaylistCover } from '../shared/theme/theme'
+import { COVER_ORDERS, VISUALIZER_STYLES, type PlaylistCover, type PlaylistFolder } from '../shared/theme/theme'
 import type { MenuEntry } from '../shared/ui/ContextMenu'
 import { SourceIcon } from '../shared/ui/SourceIcon'
 import type { Addon } from './addons/registry'
@@ -75,6 +79,7 @@ import { loadPlugins, pluginCommands, runCommand } from './plugins/host'
 import { isRemote, nowTrack, remoteTrack, usePlayer } from './player/store'
 import { startRadio, startRadioFrom } from './player/radio'
 import { sleepMenu } from './player/sleep'
+import { deleteFolder, newFolder, renameFolder, setFolder, togglePinned } from './sidebar/folderActions'
 import { closeKaraoke, nowFix, nudgeLyrics, toggleKaraoke } from './player/karaokeMode'
 import { canVizFull, toggleVizFull, useVizFull } from './player/vizFull'
 import { VISUALIZER_LABELS } from './player/vizLooks'
@@ -507,6 +512,9 @@ export function playlistMenu(p: LibraryPlaylist): MenuEntry[] {
   const { go, editPlaylist, notify, status } = app()
   const tracks = () => api.playlistTracks(p.id)
   const ytImport = p.source === 'youtube' && !p.custom
+  const key = playlistKey(p)
+  const { pinnedPlaylists, playlistFolders: folders } = useSettings.getState().settings
+  const pinned = pinnedPlaylists.includes(key)
   const remote = ytImport && `https://music.youtube.com/playlist?list=${p.sourceId.split('~')[0]}`
   return [
     { label: tr('Play'), icon: <Play size={16} />, disabled: !p.trackCount, onSelect: () => tracks().then((t) => player().playTracks(t, 0), fail) },
@@ -516,6 +524,17 @@ export function playlistMenu(p: LibraryPlaylist): MenuEntry[] {
     { label: tr('Start radio'), icon: <Radio size={16} />, disabled: !p.trackCount, onSelect: () => tracks().then((t) => startRadioFrom(t, p.name), fail) },
     '-',
     { label: tr('Open'), icon: <Playlist size={16} />, onSelect: () => go({ name: 'playlist', id: p.id }) },
+    pinned ? { label: tr('Unpin'), icon: <PushPinSlash size={16} />, onSelect: () => togglePinned(key) } : { label: tr('Pin to top'), icon: <PushPin size={16} />, onSelect: () => togglePinned(key) },
+    {
+      label: tr('Move to folder'),
+      icon: <FolderSimple size={16} />,
+      items: [
+        // The folder it's in, checked: picked again, the playlist leaves it.
+        ...folders.map((f) => ({ label: f.name || tr('Folder'), checked: f.keys.includes(key), onSelect: () => setFolder(key, f.keys.includes(key) ? null : f.id) })),
+        folders.length > 0 && '-',
+        { label: tr('New folder…'), icon: <FolderSimplePlus size={16} />, onSelect: () => void newFolder(key) },
+      ],
+    },
     { label: tr('Find duplicates'), icon: <CopySimple size={16} />, disabled: p.trackCount < 2, onSelect: () => tracks().then((t) => findDuplicates({ name: p.name, ids: t.map((x) => x.id), playlistId: p.id }), fail) },
     p.custom &&
       repeatedRows(app().orders[p.id] ?? []).length > 0 && {
@@ -580,6 +599,21 @@ export function playlistMenu(p: LibraryPlaylist): MenuEntry[] {
       },
     },
     ...pluginItems('playlist', { playlistId: p.id, name: p.name }),
+  ]
+}
+
+/** A folder of Your library: its playlists' songs together, rename, delete (its playlists stay). */
+export function folderMenu(f: PlaylistFolder, playlists: LibraryPlaylist[]): MenuEntry[] {
+  const some = playlists.some((p) => p.trackCount > 0)
+  // Each song once, in the folder's order.
+  const songs = () => Promise.all(playlists.map((p) => api.playlistTracks(p.id))).then((lists) => [...new Map(lists.flat().map((t) => [t.id, t])).values()])
+  return [
+    { label: tr('Play'), icon: <Play size={16} />, disabled: !some, onSelect: () => songs().then((t) => player().playTracks(t, 0), fail) },
+    { label: tr('Shuffle play'), icon: <Shuffle size={16} />, disabled: !some, onSelect: () => songs().then(shufflePlay, fail) },
+    { label: tr('Start radio'), icon: <Radio size={16} />, disabled: !some, onSelect: () => songs().then((t) => startRadioFrom(t, f.name), fail) },
+    '-',
+    { label: tr('Rename…'), icon: <PencilSimple size={16} />, onSelect: () => void renameFolder(f) },
+    { label: tr('Delete folder'), icon: <Trash size={16} />, danger: true, onSelect: () => deleteFolder(f.id) },
   ]
 }
 

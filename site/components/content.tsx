@@ -19,7 +19,7 @@ export const FEATURES: { icon: IconName; title: string; text: string }[] = [
   { icon: 'Stack', title: 'One library', text: 'The same song on several services is one track, wherever you saved it.' },
   { icon: 'MagnifyingGlass', title: 'One search', text: 'Your library, YouTube Music, YouTube and Apple Music, in one place.' },
   { icon: 'PlayCircle', title: 'One player', text: 'Every source in one queue, with crossfade that leaves albums whole, endless radios, lyrics and a visualizer (LED bars, a ring around the cover, VU needles, a spectrogram).' },
-  { icon: 'Playlist', title: 'Playlists', text: 'Import from a service, a file (M3U, XSPF, CSV) or iTunes and MusicBee; create, save as a file, export to YouTube Music, share by link or QR code.' },
+  { icon: 'Playlist', title: 'Playlists', text: 'Import from a service, a file (M3U, XSPF, CSV) or iTunes and MusicBee; create, pin, sort into folders, save as a file, export to YouTube Music, share by link or QR code.' },
   { icon: 'Sparkle', title: 'Mixes made on your PC', text: 'Daily mixes and stats from what you play, Last.fm scrobbling if you want it.' },
   { icon: 'SlidersHorizontal', title: 'Live Editor', text: 'Speed, pitch, a 10-band EQ, reverb and 3D sound, changed as it plays.' },
   { icon: 'FolderSimple', title: 'Your own files', text: 'Gapless playback, and their title, artist, album and cover to edit.' },
