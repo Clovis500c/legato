@@ -361,8 +361,10 @@ Most useful first; the tag is the effort.
 - [ ] `S` Faster CI: run the macOS job only on pushes that touch Rust or `src-tauri`, `cargo nextest`, `sccache`; Linux
       job stays crates only.
 - [ ] `S` Trim CLAUDE.md to rules + pointers (structure details move to `docs/architecture.md`): cheaper sessions.
-- [ ] `S` Project skills for Claude Code: "release check", "add a setting" (schema, DEFAULTS_VERSION, search index, i18n),
+- [x] `S` Project skills for Claude Code: "release check", "add a setting" (schema, DEFAULTS_VERSION, search index, i18n),
       "add a connector" (module, mockito tests, privacy row): the repeated recipes written once.
+      `.claude/skills/{add-setting,add-connector,release-check}/SKILL.md`, from what past commits touched; keep them
+      in step when a recipe changes (a new place every setting must reach, a new check before a push).
 - [ ] `M` Split `src-tauri/src/lib.rs` by feature (library, player, accounts, sources) like `detector.rs` / `editor.rs`;
       same for `crates/core/src/library.rs` (queries per table).
 - [ ] `M` Typed `invoke` wrappers: the types are generated, the wrappers in `api.ts` stay by hand (no `tauri-specta`), so a

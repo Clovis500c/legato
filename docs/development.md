@@ -19,6 +19,10 @@ Windows is the app's platform. In CI, macOS builds the whole app and passes ever
 only (no WebKitGTK download from slow mirrors). The app has never been driven on either:
 the media panel, the ad shield's network hook and the system accent are Windows only.
 
+**Claude Code.** The recipes that kept coming back are project skills in `.claude/skills/`: `add-setting`,
+`add-connector` and `release-check` (`/release-check` before a push: it reports, never pushes). `.claude/launch.json`
+names the dev servers its preview can start: `ui-vite`, `app` (the whole app) and `site` (the website, port 3100).
+
 ## Your dev build has its own data
 
 `pnpm dev` runs as `app.legato.desktop.devbuild` (`src-tauri/tauri.dev.conf.json`): its own library, keychain entries
