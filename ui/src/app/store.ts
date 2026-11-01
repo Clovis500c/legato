@@ -7,6 +7,7 @@ import { tr, trn } from '../shared/i18n/i18n'
 import { noteList } from '../features/home/recentLists'
 import { advance, BEAT, newRun, summary, type ImportKind, type ImportRun } from '../features/add/importRun'
 import { patchLibrary } from './libraryPatch'
+import { fold, oneLiked, ownLiked, shownIds, youtubeLiked, type Lists } from '../features/library/likedMusic'
 
 export type SettingsSection = 'general' | 'playback' | 'appearance' | 'sources' | 'sync' | 'shield' | 'shortcuts' | 'about'
 
@@ -63,6 +64,8 @@ interface State {
   fwd: View[]
   status: Record<Service, SourceStatus>
   tracks: LibraryTrack[]
+  /** Playlists and orders as Rust sent them; `playlists` and `orders` are what pages show (one Liked Music). */
+  raw: Lists
   playlists: LibraryPlaylist[]
   playlistTracks: LibraryTrack[]
   /** Top bar text. Library pages filter by it while scoped (see pageQuery). */
@@ -192,7 +195,7 @@ export const useStore = create<State>((set, get) => {
   let shown = 0
   function loadPlaylist(id: number) {
     const mine = ++shown
-    return api.playlistTracks(id).then((playlistTracks) => void (mine === shown && get().view.name === 'playlist' && set({ playlistTracks })), () => {})
+    return playlistSongs(id).then((playlistTracks) => void (mine === shown && get().view.name === 'playlist' && set({ playlistTracks })), () => {})
   }
 
   // One library read at a time: each empties Rust's change log, so an answer landing after a newer one would undo it.
@@ -204,8 +207,8 @@ export const useStore = create<State>((set, get) => {
   }
 
   async function readWhole() {
-    const [status, lib, stats, notFound] = await Promise.all([api.sourcesStatus(), api.library(), api.playStats().catch(() => ({})), api.notFound().catch(() => [])])
-    set({ status, ...lib, stats, notFound })
+    const [status, { tracks, playlists, orders }, stats, notFound] = await Promise.all([api.sourcesStatus(), api.library(), api.playStats().catch(() => ({})), api.notFound().catch(() => [])])
+    set({ status, tracks, ...lists({ playlists, orders }), stats, notFound })
     // The open playlist follows (sync, Find versions, add to YouTube, removals).
     const v = get().view
     if (v.name === 'playlist') void loadPlaylist(v.id)
@@ -215,17 +218,27 @@ export const useStore = create<State>((set, get) => {
     const c = await api.libraryChanges()
     if (!c) return readWhole()
     const before = get()
-    const lists = patchLibrary(before, c)
-    set({ ...lists, notFound: await api.notFound().catch(() => before.notFound) })
+    const { tracks, playlists, orders } = patchLibrary({ tracks: before.tracks, ...before.raw }, c)
+    set({ tracks, ...lists({ playlists, orders }), notFound: await api.notFound().catch(() => before.notFound) })
     if (c.history) set({ stats: await api.playStats().catch(() => get().stats) })
     // The open playlist again only when it changed: its own rows, or one of its songs (rows without a source too).
     const v = get().view
     if (v.name !== 'playlist') return
     const touched = new Set([...c.gone, ...c.tracks.map((t) => t.id)])
-    if (v.id in c.orders || c.playlistsGone.includes(v.id) || before.playlistTracks.some((t) => touched.has(t.id))) await loadPlaylist(v.id)
+    if (shownIds(v.id, before.raw.playlists).some((id) => id in c.orders) || c.playlistsGone.includes(v.id) || before.playlistTracks.some((t) => touched.has(t.id))) await loadPlaylist(v.id)
+  }
+
+  // Same lists in, same objects out: memoized pages stay as they are.
+  let folded: { raw: Lists; shown: Lists } | undefined
+  function lists(raw: Lists) {
+    if (folded?.raw.playlists !== raw.playlists || folded.raw.orders !== raw.orders) folded = { raw, shown: oneLiked(raw) }
+    return { raw, ...folded.shown }
   }
 
   function show(view: View) {
+    // Your Liked Music beside YouTube Music's: shown as that one.
+    const raw = get().raw.playlists
+    if (view.name === 'playlist' && view.id === ownLiked(raw)?.id) view = { name: 'playlist', id: youtubeLiked(raw)?.id ?? view.id }
     // Another playlist: its rows, not the last one's, while they load.
     if (view.name === 'playlist' && (get().view.name !== 'playlist' || (get().view as { id: number }).id !== view.id)) set({ playlistTracks: [] })
     // Leaving the Search page: its text must not filter the next list. Each page gets its token back.
@@ -245,6 +258,7 @@ export const useStore = create<State>((set, get) => {
     fwd: [],
     status: { spotify: offline, youtube: offline },
     tracks: [],
+    raw: { playlists: [], orders: {} },
     playlists: [],
     playlistTracks: [],
     orders: {},
@@ -472,3 +486,11 @@ export const useStore = create<State>((set, get) => {
     },
   }
 })
+
+/** A playlist's songs as its page shows them: the account's Liked Music with yours folded in. */
+export async function playlistSongs(id: number): Promise<LibraryTrack[]> {
+  const ids = shownIds(id, useStore.getState().raw.playlists)
+  if (ids.length === 1) return api.playlistTracks(id)
+  const [own, account] = await Promise.all(ids.map((i) => api.playlistTracks(i)))
+  return fold(own, account, (t) => t.id)
+}

@@ -1,16 +1,14 @@
 import { useMemo } from 'react'
 import { useStore } from '../../app/store'
 import { api, type LibraryPlaylist, type LibraryTrack } from '../../shared/api'
+import { LIKED as NAME, ownLiked, youtubeLiked } from '../library/likedMusic'
 import { tr } from '../../shared/i18n/i18n'
 import { isRemote, usePlayer } from './store'
 
 // Like button (user's request 2026-10-26): song into the library and Liked Music. Signed in to YouTube Music = the
 // account's own Liked Music (a real like there); else, or no YouTube version, a playlist of yours by that name.
-const NAME = 'Liked Music'
+// Both lists as Rust has them (raw): pages show yours folded into the account's.
 const app = () => useStore.getState()
-
-const youtubeLiked = (playlists: LibraryPlaylist[]) => playlists.find((p) => p.source === 'youtube' && !p.custom && p.sourceId === 'LM')
-const ownLiked = (playlists: LibraryPlaylist[]) => playlists.find((p) => p.custom && p.name === NAME)
 
 /** Library row id of a song; a recommendation once added shows up by its video. */
 function libraryId(t: LibraryTrack, tracks: LibraryTrack[]) {
@@ -20,7 +18,7 @@ function libraryId(t: LibraryTrack, tracks: LibraryTrack[]) {
 
 /** Liked Music playlists holding the song. */
 function holding(t: LibraryTrack) {
-  const { playlists, orders, tracks } = app()
+  const { raw: { playlists, orders }, tracks } = app()
   const id = libraryId(t, tracks)
   if (id === undefined) return []
   return [youtubeLiked(playlists), ownLiked(playlists)].filter((p): p is LibraryPlaylist => !!p && !!orders[p.id]?.includes(id))
@@ -28,15 +26,14 @@ function holding(t: LibraryTrack) {
 
 export function useLiked(t: LibraryTrack | undefined) {
   // Re-run on library or playlist changes.
-  useStore((s) => s.orders)
+  useStore((s) => s.raw)
   useStore((s) => s.tracks)
   return !!t && holding(t).length > 0
 }
 
 /** Library ids in Liked Music, for long lists (one lookup per row). */
 export function useLikedIds(): Set<number> {
-  const playlists = useStore((s) => s.playlists)
-  const orders = useStore((s) => s.orders)
+  const { playlists, orders } = useStore((s) => s.raw)
   return useMemo(() => new Set([youtubeLiked(playlists), ownLiked(playlists)].flatMap((p) => (p ? (orders[p.id] ?? []) : []))), [playlists, orders])
 }
 
@@ -65,7 +62,7 @@ export async function toggleLike(t: LibraryTrack) {
     await app().refreshChanged()
     // Account set not to take changes (Settings › Accounts › Sync): your own list, no error.
     const sends = await api.syncDirections().then((d) => !['pull', 'off'].includes(d['youtube:0'] ?? 'both'), () => true)
-    const yt = sends && app().status.youtube.connected && t.ids.youtube ? youtubeLiked(app().playlists) : undefined
+    const yt = sends && app().status.youtube.connected && t.ids.youtube ? youtubeLiked(app().raw.playlists) : undefined
     // Refused by YouTube Music (signed out): kept in your own list, liked there at the next sync (sync_all).
     let refused: unknown = null
     if (yt)
@@ -73,7 +70,7 @@ export async function toggleLike(t: LibraryTrack) {
         refused = e
       })
     if (!yt || refused) {
-      const own = ownLiked(app().playlists)?.id ?? (await app().editPlaylist({ type: 'create', name: NAME }))
+      const own = ownLiked(app().raw.playlists)?.id ?? (await app().editPlaylist({ type: 'create', name: NAME }))
       if (own === null) return
       await app().editPlaylist({ type: 'add', id: own, trackIds: [id] })
     }

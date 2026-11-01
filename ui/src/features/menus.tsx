@@ -59,7 +59,7 @@ import {
 import { open, save } from '@tauri-apps/plugin-dialog'
 import { openUrl, revealItemInDir } from '@tauri-apps/plugin-opener'
 import { useSettings } from '../app/settings'
-import { useStore, type SettingsSection, type View } from '../app/store'
+import { playlistSongs, useStore, type SettingsSection, type View } from '../app/store'
 import { api, playlistKey, type Edit, type LibraryPlaylist, type PluginInfo, type LibraryTrack, type SearchHit } from '../shared/api'
 import { bigTrackArt } from '../shared/art'
 import { loadFit } from '../shared/artfit'
@@ -70,6 +70,7 @@ import { SourceIcon } from '../shared/ui/SourceIcon'
 import type { Addon } from './addons/registry'
 import { isOn, setAddon } from './addons/state'
 import { addToPlaylist, markMusic, removeFromPlaylist, removePositions, removeTrackFromPlaylist, songs } from './library/edits'
+import { ownLiked, youtubeLiked } from './library/likedMusic'
 import { editInfo, findDuplicates } from './library/dialogs'
 import { repeatedRows } from './library/duplicates'
 import { PlaylistCover as PlaylistIcon } from './library/PlaylistCover'
@@ -337,11 +338,16 @@ function remoteMenu(t: LibraryTrack, list: LibraryTrack[], index: number): MenuE
  * like goes; Spotify imports are read-only), then the whole library.
  */
 function removeFrom(t: LibraryTrack): MenuEntry {
-  const { playlists, orders, status } = app()
+  const { playlists, orders, status, raw } = app()
   const holding = playlists.filter((p) => orders[p.id]?.includes(t.id))
+  // Liked Music shows yours folded in: a song only there leaves yours, one on the account leaves both.
+  const own = ownLiked(raw.playlists)
+  const onAccount = (p: LibraryPlaylist) => !!raw.orders[p.id]?.includes(t.id)
+  const mineToo = own && youtubeLiked(raw.playlists) && raw.orders[own.id]?.includes(t.id) ? own : undefined
   const fromYoutube = async (p: LibraryPlaylist) => {
     try {
       await api.removeFromPlaylist(p.id, t.id)
+      if (mineToo && p.id === youtubeLiked(raw.playlists)?.id) await app().editPlaylist({ type: 'removeTrack', id: mineToo.id, trackId: t.id })
       await app().refreshChanged()
       const undo = () => void api.addToYoutube(p.id, [t.id]).then(() => app().refreshChanged()).catch(fail)
       app().notify(tr('Removed from {name} on YouTube Music: {songs}', { name: p.name, songs: songs([t.id]) }), { kind: 'removed', action: { label: tr('Undo'), run: undo } })
@@ -369,8 +375,8 @@ function removeFrom(t: LibraryTrack): MenuEntry {
         return {
           label: p.custom || youtube ? p.name : tr('{name} (read-only)', { name: p.name }),
           icon: <PlaylistIcon p={p} size={16} />,
-          disabled: !p.custom && (!youtube || !status.youtube.connected),
-          onSelect: () => void (p.custom ? removeTrackFromPlaylist(p.id, t.id) : fromYoutube(p)),
+          disabled: !p.custom && onAccount(p) && (!youtube || !status.youtube.connected),
+          onSelect: () => void (p.custom ? removeTrackFromPlaylist(p.id, t.id) : !onAccount(p) && mineToo ? removeTrackFromPlaylist(mineToo.id, t.id) : fromYoutube(p)),
         }
       }),
       holding.length > 0 && '-',
@@ -535,7 +541,7 @@ export function tracksMenu(tracks: LibraryTrack[], extra: MenuEntry[] = []): Men
 
 export function playlistMenu(p: LibraryPlaylist): MenuEntry[] {
   const { go, editPlaylist, notify, status } = app()
-  const tracks = () => api.playlistTracks(p.id)
+  const tracks = () => playlistSongs(p.id)
   const ytImport = p.source === 'youtube' && !p.custom
   const key = playlistKey(p)
   const { pinnedPlaylists, playlistFolders: folders } = useSettings.getState().settings
@@ -632,7 +638,7 @@ export function playlistMenu(p: LibraryPlaylist): MenuEntry[] {
 export function folderMenu(f: PlaylistFolder, playlists: LibraryPlaylist[]): MenuEntry[] {
   const some = playlists.some((p) => p.trackCount > 0)
   // Each song once, in the folder's order.
-  const songs = () => Promise.all(playlists.map((p) => api.playlistTracks(p.id))).then((lists) => [...new Map(lists.flat().map((t) => [t.id, t])).values()])
+  const songs = () => Promise.all(playlists.map((p) => playlistSongs(p.id))).then((lists) => [...new Map(lists.flat().map((t) => [t.id, t])).values()])
   return [
     { label: tr('Play'), icon: <Play size={16} />, disabled: !some, onSelect: () => songs().then((t) => player().playTracks(t, 0), fail) },
     { label: tr('Shuffle play'), icon: <Shuffle size={16} />, disabled: !some, onSelect: () => songs().then(shufflePlay, fail) },

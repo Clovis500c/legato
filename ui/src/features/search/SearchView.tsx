@@ -3,7 +3,7 @@ import { artistName } from '../../shared/artistName'
 import { useShallow } from 'zustand/react/shallow'
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useSettings } from '../../app/settings'
-import { useStore, type VersionPick } from '../../app/store'
+import { playlistSongs, useStore, type VersionPick } from '../../app/store'
 import { api, type LibraryTrack, type Origin, type SearchHit, type SearchResults, type Track } from '../../shared/api'
 import { trackArt } from '../../shared/art'
 import { formatCount, formatDuration, region } from '../../shared/format'
@@ -307,7 +307,7 @@ export function SearchView() {
   const mine = only ? NONE : lib
   const artistCard = (a: ArtistGroup) => <MediaCard key={a.artist} round title={artistName(a.artist)} sub={trn(a.count, '{n} song', '{n} songs')} art={<Cover title={a.artist} art={trackArt(a.cover)} size={176} className="rounded-full!" />} onOpen={() => go({ name: 'artist', artist: a.artist })} onPlay={() => play(a.tracks, 0)} menu={() => tracksMenu(a.tracks)} />
   const albumCard = (a: AlbumGroup) => <MediaCard key={`${a.album}\u0000${a.artist}`} title={a.album} sub={artistName(a.artist)} art={<Cover title={a.album} art={trackArt(a.tracks[0])} size={176} />} onOpen={() => go({ name: 'album', album: a.album, artist: a.artist })} onPlay={() => play(a.tracks, 0)} menu={() => tracksMenu(a.tracks)} />
-  const playlistCards = mine.playlists.map((p) => <MediaCard key={p.id} title={p.name} sub={trn(p.trackCount, '{n} song', '{n} songs')} art={<PlaylistCover p={p} size={176} big />} onOpen={() => go({ name: 'playlist', id: p.id })} onPlay={() => void api.playlistTracks(p.id).then((t) => play(t, 0))} menu={() => playlistMenu(p)} />)
+  const playlistCards = mine.playlists.map((p) => <MediaCard key={p.id} title={p.name} sub={trn(p.trackCount, '{n} song', '{n} songs')} art={<PlaylistCover p={p} size={176} big />} onOpen={() => go({ name: 'playlist', id: p.id })} onPlay={() => void playlistSongs(p.id).then((t) => play(t, 0))} menu={() => playlistMenu(p)} />)
   // Library page filtered by the same text (its own token on).
   const openPage = (name: 'songs' | 'albums' | 'artists') => {
     go({ name })

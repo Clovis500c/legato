@@ -4,7 +4,7 @@ import { useShallow } from 'zustand/react/shallow'
 import { openUrl } from '@tauri-apps/plugin-opener'
 import { Fragment, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useSettings } from '../../app/settings'
-import { useStore } from '../../app/store'
+import { playlistSongs, useStore } from '../../app/store'
 import { api, playlistKey, type HomeItem, type LibraryTrack, type ListRef, type Mix, type Play as PlayRow, type Shelf, type YtmHome } from '../../shared/api'
 import { remoteArt, trackArt } from '../../shared/art'
 import { locale, msg, tr, trn } from '../../shared/i18n/i18n'
@@ -101,7 +101,7 @@ function Shortcuts({ mixes }: { mixes?: Mix[] }) {
   const tile = (l: OpenedList) => {
     if (l.kind === 'playlist') {
       const p = playlists.find((x) => x.id === l.id)!
-      const playIt = () => void api.playlistTracks(p.id).then((t) => play(t, 0))
+      const playIt = () => void playlistSongs(p.id).then((t) => play(t, 0))
       const openIt = () => go({ name: 'playlist', id: p.id })
       return <JumpTile key={`p${p.id}`} art={<PlaylistCover p={p} size={56} />} title={p.name} onOpen={openIt} onPlay={playIt} menu={() => [{ label: tr('Play'), icon: <Play size={16} />, onSelect: playIt }, { label: tr('Open'), icon: <ArrowRight size={16} />, onSelect: openIt }]} />
     }
@@ -483,7 +483,7 @@ export function HomeView() {
         <Section title={tr('Your playlists')} sub={tr(sectionHints.playlists)} menu={menuFor('playlists')}>
           <CardRow>
             {shown.map((p) => (
-              <MediaCard key={p.id} title={p.name} sub={trn(p.trackCount, '{n} song', '{n} songs')} art={<PlaylistCover p={p} size={176} big />} onOpen={() => go({ name: 'playlist', id: p.id })} onPlay={() => void api.playlistTracks(p.id).then((t) => usePlayer.getState().playTracks(t, 0))} menu={() => playlistMenu(p)} />
+              <MediaCard key={p.id} title={p.name} sub={trn(p.trackCount, '{n} song', '{n} songs')} art={<PlaylistCover p={p} size={176} big />} onOpen={() => go({ name: 'playlist', id: p.id })} onPlay={() => void playlistSongs(p.id).then((t) => usePlayer.getState().playTracks(t, 0))} menu={() => playlistMenu(p)} />
             ))}
           </CardRow>
         </Section>

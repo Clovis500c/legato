@@ -520,6 +520,10 @@ Most useful first; the tag is the effort.
       the volume number, SponsorBlock turned on (a real intro skipped, Undo, marks on the progress bar), Skip silence across
       real crossfades, Karaoke on plain lyrics, with animations off, over a video in the watch page and at 60 fps on a long
       song (bench PC), a 10 000-song scroll asking only 64 px covers.
+- [ ] One Liked Music (the owner's report, 2026-11-01: two in the sidebar after a Spotify import): yours, where imported
+      likes wait for the YouTube account (its like refused here that day: 403), folded into the account's on every page
+      (`features/library/likedMusic.ts`, the store's `raw` keeps both for the heart button and Remove from). Check: one
+      entry in the sidebar, Home and search, the waiting songs on top of it, unliking one of them, a sync moving them over.
 - [ ] `pnpm bench` on a quiet PC: the full run on af27405 was disturbed (someone back at the PC: load 78 %, restart 1.91 s,
       tray 135 MB, the page awake again after its suspend), row not kept. The website's numbers come from d853980: confirm the
       54 MB in the tray after Visualizer v2, or find what wakes the page and fix the numbers.
