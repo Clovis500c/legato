@@ -101,6 +101,10 @@ export const api = {
   /** Public Spotify playlist / album link → imported playlist (no account); tracks get their YouTube version. */
   importSpotifyLink: (url: string) => invoke<SpotifyImport>('import_spotify_link', { url }),
   /** Deezer or Apple Music playlist / album link → a playlist of yours (no account); songs found on YouTube. */
+  /** Settings › General › Library backup: the whole library in one file (sign-ins stay out). */
+  libraryBackup: (path: string) => invoke<void>('library_backup', { path }),
+  /** A backup replaces the library, then the app restarts on it (no answer on success). */
+  libraryRestore: (path: string) => invoke<void>('library_restore', { path }),
   /** Explorer's drop: folders watched, audio files outside them kept, one rescan. */
   addDropped: (paths: string[]) => invoke<Dropped>('add_dropped', { paths }),
   importLink: (url: string) => invoke<LinkImport>('import_link', { url }),

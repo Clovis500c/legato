@@ -171,7 +171,11 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
 - [ ] `S` Gapless + crossfade that knows albums (never crossfade inside a live or continuous album).
 - [ ] `S` Artist / album / playlist radio and endless autoplay (song radio already there: `radio.ts`).
 - [ ] `S` Playlist folders, pinned playlists, generated playlist covers (a 2×2 of the songs' covers).
-- [ ] `S` Backup / restore the whole library to one file (playlists, likes, edits, stats), outside Sync Mode.
+- [x] `S` Backup / restore the whole library to one file (playlists, likes, edits, stats), outside Sync Mode: Settings ›
+      General › Library backup. A `.legato` file is the library's consistent copy (`VACUUM INTO`, its own read
+      connection, like the daily copy); a restore checks it's a library this version knows, keeps the current one as
+      `library-before-restore.db`, copies the backup in page by page (SQLite's backup API), then restarts the app (an
+      older backup migrates at that open). Sign-ins stay in the keychain, out of the file. Not tried in the real app yet.
 - [ ] `S-M` Smart shuffle (skips recently played, spreads artists) and "Daylist"-style mixes by time of day.
 - [ ] `S-M` Command palette (Ctrl+K): any song, page, setting or action in one box.
 - [ ] `S-M` Pause when headphones are unplugged or Bluetooth drops; pause during a call (Windows' communication ducking).
@@ -365,6 +369,8 @@ Most useful first; the tag is the effort.
 - [ ] A Legato link between two PCs: its videos come in named, no search.
 - [ ] A SoundCloud song link pasted, and an `on.soundcloud.com` short link from SoundCloud's phone app: named, found on
       YouTube, added; a set's link says why it can't.
+- [ ] Settings › General › Back up your library, then Restore a backup: the app restarts on it, playlists and history
+      as saved, `library-before-restore.db` beside the library.
 - [ ] A folder and a few songs dropped from Explorer: the folder in Settings › Accounts › Local files, the songs in the
       library after a restart, the notice's Play; songs already there play at once; a QR picture still opens a shared list.
 - [ ] "No sound could be taken" gone from the second YouTube video on (fix 51946d5).

@@ -51,7 +51,7 @@ export const PLAYBACK: [string, string][] = [
 ]
 
 export const PRIVACY: [string, string][] = [
-  ['Library and settings', 'Stay on this PC, in a local database.'],
+  ['Library and settings', 'Stay on this PC, in a local database. A backup you make in Settings › General is one file, saved where you choose; sign-ins stay out of it.'],
   ['Sign-ins and keys', 'Stay in the Windows Credential Manager.'],
   ['Requests', "Go out through the app's core only: the interface never calls the network by itself."],
   ['Search', "What you search for goes to YouTube, YouTube Music and Apple Music, signed in or not, and to YouTube's suggestions as you type (Settings › General turns them off). Recent searches stay on this PC."],
@@ -97,6 +97,7 @@ export const FAQ: { q: string; a: ReactNode }[] = [
   { q: 'Does it download music?', a: "No. Music plays in each service's own player or from your files. No platform's audio is downloaded, recorded or extracted; only the Music Detector listens, when you ask it to." },
   { q: 'Why does Spotify need Premium and a key?', a: 'Spotify lets other apps play only through its own app, for Premium accounts, and every app needs a free key from its developer dashboard. Without them, paste a public playlist link, or use Connect Spotify in Add music for your private lists and Liked Songs (read what it says first: the rules of Spotify forbid it): the songs play from YouTube when the app finds them there.' },
   { q: 'Mac or Linux?', a: 'Windows 10 and 11 only, for now.' },
+  { q: 'How do I move to a new PC?', a: 'Sync Mode keeps several PCs alike. For a one-time move: Settings › General › Back up your library, then Restore a backup on the new PC, and sign in to your accounts again.' },
   { q: 'How do updates work?', a: 'The app checks GitHub at launch and installs a new version between two songs, or while nothing plays. You get the versions that were tried first (Stable); Settings › General has a Beta channel that brings every change first, and may break.' },
   { q: 'Can I write a plugin?', a: <>Yes: a folder with a manifest and a script, which asks for its permissions when someone installs it. The guide: {link(`${GITHUB}/blob/master/docs/plugins.md`, 'docs/plugins.md')}.</> },
 ]

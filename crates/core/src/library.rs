@@ -331,6 +331,14 @@ pub fn keep_daily_copy(path: &Path) -> Result<bool> {
     Ok(true)
 }
 
+/// Settings › General › Library backup: the whole library in one file (playlists, likes, history, Live Editor versions,
+/// settings; sign-ins stay in the keychain). Its own read connection, like the daily copy.
+pub fn back_up(path: &Path, to: &Path) -> Result<()> {
+    copy_to(&Connection::open_with_flags(path, rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY)?, to)
+}
+
+const NOT_A_BACKUP: &str = "Not a Legato library backup";
+
 /// Silence rows kept (a cache by path), and how long a SponsorBlock answer stays in its table, s.
 const SILENCE_KEEP: i64 = 20_000;
 const SPONSOR_KEEP_S: i64 = 30 * 86_400;
@@ -348,6 +356,22 @@ impl Library {
             copy_to(&db, &copy)?;
         }
         Self::init(db)
+    }
+
+    /// A backup replaces this library, page by page (SQLite's backup), once it proves to be one: its tables, a schema
+    /// this app knows. This one is kept beside it first (`library-before-restore.db`). Restart after: an older backup's
+    /// migrations run at the next open, and nothing cached knows the new rows.
+    pub fn restore(&mut self, from: &Path) -> Result<()> {
+        let src = Connection::open_with_flags(from, rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY)?;
+        let tables: i64 = src.query_row("SELECT count(*) FROM sqlite_master WHERE type = 'table' AND name IN ('tracks', 'playlists', 'settings')", [], |r| r.get(0)).context(NOT_A_BACKUP)?;
+        anyhow::ensure!(tables == 3, NOT_A_BACKUP);
+        let found: i64 = src.query_row("PRAGMA user_version", [], |r| r.get(0))?;
+        anyhow::ensure!(found <= SCHEMA_VERSION, NewerLibrary(found));
+        if let Some(path) = self.db.path().filter(|p| !p.is_empty()) {
+            copy_to(&self.db, &Path::new(path).with_file_name("library-before-restore.db"))?;
+        }
+        rusqlite::backup::Backup::new(&src, &mut self.db)?.run_to_completion(1024, std::time::Duration::ZERO, None)?;
+        Ok(())
     }
 
     pub fn in_memory() -> Result<Self> {
@@ -1952,6 +1976,33 @@ mod tests {
         assert!(keep_daily_copy(&path)?);
         assert!(!keep_daily_copy(&path)?);
         assert_eq!(Connection::open(dir.path().join("library-daily.db"))?.query_row("SELECT count(*) FROM tracks", [], |r| r.get::<_, i64>(0))?, 1);
+        Ok(())
+    }
+
+    #[test]
+    fn a_backup_comes_back_whole_and_only_a_library_is_taken() -> Result<()> {
+        let dir = tempfile::tempdir()?;
+        let at = |name: &str| dir.path().join(name);
+        let (path, file) = (at("library.db"), at("Legato 2026-11-01.legato"));
+        let mut lib = Library::open(&path)?;
+        lib.upsert_track(&song(1))?;
+        lib.set_setting("ui", &serde_json::json!({ "theme": "dark" }))?;
+        back_up(&path, &file)?;
+        lib.upsert_track(&song(2))?;
+        lib.restore(&file)?;
+        assert_eq!(lib.tracks()?.len(), 1);
+        assert_eq!(lib.setting("ui")?, Some(serde_json::json!({ "theme": "dark" })));
+        // The library as it was, beside it.
+        assert_eq!(Connection::open(at("library-before-restore.db"))?.query_row("SELECT count(*) FROM tracks", [], |r| r.get::<_, i64>(0))?, 2);
+        // A text file, another database, a newer app's library: refused, nothing changed.
+        std::fs::write(at("notes.txt"), "hello")?;
+        Connection::open(at("other.db"))?.execute_batch("CREATE TABLE notes (x TEXT);")?;
+        Connection::open(at("newer.db"))?.execute_batch("CREATE TABLE tracks (x); CREATE TABLE playlists (x); CREATE TABLE settings (x); PRAGMA user_version = 999;")?;
+        for bad in ["notes.txt", "other.db"] {
+            assert_eq!(lib.restore(&at(bad)).unwrap_err().to_string(), NOT_A_BACKUP, "{bad}");
+        }
+        assert!(lib.restore(&at("newer.db")).unwrap_err().is::<NewerLibrary>());
+        assert_eq!(lib.tracks()?.len(), 1);
         Ok(())
     }
 

@@ -34,6 +34,9 @@ const KINDS: [RegExp, string][] = [
   [/^This SoundCloud link doesn't exist/, msg("This SoundCloud link doesn't exist")],
   [/^This SoundCloud song is private or doesn't exist/, msg("This SoundCloud song is private or doesn't exist")],
   [/^This song wasn't found on YouTube/, msg("This song wasn't found on YouTube: nothing to play it from")],
+  // Settings › General › Restore a backup (crates/core library.rs).
+  [/^Not a Legato library backup/, msg('Not a Legato library backup')],
+  [/^This library was made by a newer version of Legato/, msg('This backup was made by a newer version of Legato: update the app first')],
   // Add music › From iTunes or MusicBee (src-tauri libfile.rs).
   [/^Not a library file: pick iTunes Music Library\.xml/, msg('Not a library file: pick iTunes Music Library.xml (from iTunes, or the copy MusicBee writes for other apps)')],
   [/^No playlists in that library file/, msg('No playlists in that library file')],

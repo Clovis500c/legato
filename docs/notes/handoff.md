@@ -34,9 +34,11 @@ Done in this run (newest last), none tried in the real app yet:
   of songs; each song named from its public embed page, then the import screen.
 - `05c57d6` A SoundCloud song link pasted anywhere: named by SoundCloud's oEmbed, found on YouTube, added. Sets said
   plainly.
-- Files and folders dropped from Explorer: folders watched, files kept on their own, the notice's Play.
+- `31f0b01` Files and folders dropped from Explorer: folders watched, files kept on their own, the notice's Play.
+- Library backup and restore in one file (Settings › General).
 
-Next in the run: the quick wins of Features › High (drag files from Explorer, command palette, library backup…).
+Next in the run: the rest of Features › High's quick wins (album-aware crossfade, artist / album radio, playlist
+folders and covers, command palette), then Optimisation and Workflow, then milestone 4 (Lyrics).
 
 ## Branches
 

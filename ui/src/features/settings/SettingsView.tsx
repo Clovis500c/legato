@@ -25,6 +25,7 @@ import { searchSettings, type SettingEntry } from './search'
 import { msg, tr } from '../../shared/i18n/i18n'
 import { LanguagePicker } from './LanguagePicker'
 import { ask } from '../../shared/ui/Ask'
+import { open, save } from '@tauri-apps/plugin-dialog'
 
 const sections: { id: SettingsSection; label: string; icon: ReactNode }[] = [
   { id: 'general', label: msg('General'), icon: <GearSix size={15} /> },
@@ -452,6 +453,52 @@ function CoverCacheRows() {
     </div>
   )
 }
+/** The whole library in one file, and back: the app restarts on a restored one. */
+function BackupRows() {
+  const [busy, setBusy] = useState(false)
+  const filters = [{ name: tr('Legato library backup'), extensions: ['legato'] }]
+  const backUp = async () => {
+    const path = await save({ title: tr('Back up your library'), defaultPath: `Legato ${new Date().toISOString().slice(0, 10)}.legato`, filters })
+    if (!path) return
+    setBusy(true)
+    try {
+      await api.libraryBackup(path)
+      useStore.getState().notify(tr('Library saved: {file}', { file: path.split(/[\\/]/).pop() ?? '' }))
+    } catch (e) {
+      useStore.setState({ error: String(e) })
+    } finally {
+      setBusy(false)
+    }
+  }
+  const restore = async () => {
+    // A daily or pre-update copy (library-*.db) restores too.
+    const path = await open({ title: tr('Restore a backup'), filters: [{ ...filters[0], extensions: ['legato', 'db'] }] })
+    if (typeof path !== 'string') return
+    if (!(await ask({ title: tr('Replace your library with this backup?'), body: tr('Your playlists, likes, history and settings become the backup’s, then Legato restarts.'), ok: tr('Restore') }))) return
+    setBusy(true)
+    try {
+      await api.libraryRestore(path)
+    } catch (e) {
+      useStore.setState({ error: String(e) })
+      setBusy(false)
+    }
+  }
+  return (
+    <div className="rounded-xl border border-line bg-raised">
+      <Row label={msg('Back up your library')} sub={tr('Playlists, likes, history, Live Editor versions and settings in one file, for another PC or for later. Sign-ins stay out.')}>
+        <Button variant="ghost" disabled={busy} onClick={() => void backUp()}>
+          {tr('Back up…')}
+        </Button>
+      </Row>
+      <Row label={msg('Restore a backup')} sub={tr('Replaces this library with the file’s, then Legato restarts. The library you have now is kept beside it first.')}>
+        <Button variant="ghost" disabled={busy} onClick={() => void restore()}>
+          {tr('Restore…')}
+        </Button>
+      </Row>
+    </div>
+  )
+}
+
 function GeneralSection() {
   const { settings: s, update } = useSettings()
   return (
@@ -485,6 +532,9 @@ function GeneralSection() {
       </Group>
       <Group title={msg('Cover cache')}>
         <CoverCacheRows />
+      </Group>
+      <Group title={msg('Library backup')}>
+        <BackupRows />
       </Group>
       <Group title={msg('Notifications')}>
         <div className="rounded-xl border border-line bg-raised">
