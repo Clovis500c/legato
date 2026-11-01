@@ -31,4 +31,12 @@ describe('welcome', () => {
     // Another host, an artist page, a link inside a sentence: not an import.
     for (const text of ['https://evil.example/deezer.com/playlist/12', 'https://deezer.com.evil.example/playlist/12', 'https://www.deezer.com/fr/artist/27', 'listen https://www.deezer.com/playlist/12 now', 'https://music.apple.com/us/artist/drake/271256', 'https://itunes.apple.com/us/album/x/12']) expect(linkKind(text), text).toBeNull()
   })
+
+  it('takes any SoundCloud link as one song, Rust saying what isn’t one', () => {
+    for (const text of ['https://soundcloud.com/forss/flickermood', ' soundcloud.com/forss/flickermood?si=abc ', 'https://m.soundcloud.com/forss/flickermood', 'https://on.soundcloud.com/7uSHpQx2', 'https://soundcloud.com/forss/sets/soulhack']) expect(linkKind(text), text).toBe('soundcloud')
+    expect(isListLink('https://soundcloud.com/forss/flickermood')).toBe(false)
+    // Not SoundCloud's host, or a link inside a sentence; a YouTube word in a SoundCloud slug stays SoundCloud's.
+    for (const text of ['https://evil.example/soundcloud.com/a/b', 'https://soundcloud.com.evil.example/a/b', 'hear soundcloud.com/forss/flickermood']) expect(linkKind(text), text).toBeNull()
+    expect(linkKind('https://soundcloud.com/someone/youtube-remix')).toBe('soundcloud')
+  })
 })

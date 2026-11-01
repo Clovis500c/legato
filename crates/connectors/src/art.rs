@@ -14,13 +14,13 @@ use url::Url;
 /// One image at most (animated avatars included).
 const MAX_IMAGE: usize = 5 << 20;
 
-/// Image hosts of YouTube, Google accounts, Apple, Spotify and Deezer (exact names), and YouTube Music's own art paths (Liked Music's cover on
+/// Image hosts of YouTube, Google accounts, Apple, Spotify, Deezer and SoundCloud (exact names), and YouTube Music's own art paths (Liked Music's cover on
 /// gstatic, My Mix covers drawn by music.youtube.com): both load without a session.
 pub fn allowed(url: &str) -> bool {
     Url::parse(url).is_ok_and(|u| {
         u.scheme() == "https"
             && u.host_str().is_some_and(|h| {
-                ["i.ytimg.com", "yt3.ggpht.com", "i.scdn.co", "mosaic.scdn.co", "cdn-images.dzcdn.net", "e-cdns-images.dzcdn.net"].contains(&h)
+                ["i.ytimg.com", "yt3.ggpht.com", "i.scdn.co", "mosaic.scdn.co", "cdn-images.dzcdn.net", "e-cdns-images.dzcdn.net", "i1.sndcdn.com", "i2.sndcdn.com", "i3.sndcdn.com", "i4.sndcdn.com"].contains(&h)
                     || [".googleusercontent.com", ".mzstatic.com", ".spotifycdn.com"].iter().any(|d| h.ends_with(d))
                     || (h == "www.gstatic.com" && u.path().starts_with("/youtube/media/ytm/"))
                     || (h == "music.youtube.com" && u.path().starts_with("/image/"))
@@ -228,10 +228,10 @@ mod tests {
 
     #[test]
     fn allows_service_image_hosts_only() {
-        for ok in ["https://mosaic.scdn.co/60/ab", "https://image-cdn-ak.spotifycdn.com/image/ab", "https://i.ytimg.com/vi/x/hqdefault.jpg", "https://lh3.googleusercontent.com/a=w544-h544", "https://yt3.ggpht.com/p=s88", "https://is1-ssl.mzstatic.com/image/a/600x600bb.jpg", "https://i.scdn.co/image/ab", "https://cdn-images.dzcdn.net/images/cover/a91071665368a95007d4c40288e2074e/500x500-000000-80-0-0.jpg", "https://e-cdns-images.dzcdn.net/images/cover/x/250x250.jpg", "https://www.gstatic.com/youtube/media/ytm/images/pbg/liked-songs-delhi-576.png", "https://music.youtube.com/image/mixart?r=EN"] {
+        for ok in ["https://mosaic.scdn.co/60/ab", "https://image-cdn-ak.spotifycdn.com/image/ab", "https://i.ytimg.com/vi/x/hqdefault.jpg", "https://lh3.googleusercontent.com/a=w544-h544", "https://yt3.ggpht.com/p=s88", "https://is1-ssl.mzstatic.com/image/a/600x600bb.jpg", "https://i.scdn.co/image/ab", "https://cdn-images.dzcdn.net/images/cover/a91071665368a95007d4c40288e2074e/500x500-000000-80-0-0.jpg", "https://e-cdns-images.dzcdn.net/images/cover/x/250x250.jpg", "https://i1.sndcdn.com/artworks-000067273316-smsiqx-t500x500.jpg", "https://www.gstatic.com/youtube/media/ytm/images/pbg/liked-songs-delhi-576.png", "https://music.youtube.com/image/mixart?r=EN"] {
             assert!(allowed(ok), "{ok}");
         }
-        for bad in ["https://spotifycdn.com.evil.example/x", "http://i.ytimg.com/x", "https://evil.example/x.jpg", "https://googleusercontent.com.evil.example/x", "https://dzcdn.net/x.jpg", "https://evil.dzcdn.net/x.jpg", "https://api.deezer.com/album/1/image", "file:///C:/x.jpg", "https://127.0.0.1/x", "https://www.gstatic.com/other/x.png", "https://music.youtube.com/watch?v=x"] {
+        for bad in ["https://spotifycdn.com.evil.example/x", "http://i.ytimg.com/x", "https://evil.example/x.jpg", "https://googleusercontent.com.evil.example/x", "https://dzcdn.net/x.jpg", "https://evil.dzcdn.net/x.jpg", "https://sndcdn.com/x.jpg", "https://evil.sndcdn.com/x.jpg", "https://api.deezer.com/album/1/image", "file:///C:/x.jpg", "https://127.0.0.1/x", "https://www.gstatic.com/other/x.png", "https://music.youtube.com/watch?v=x"] {
             assert!(!allowed(bad), "{bad}");
         }
     }

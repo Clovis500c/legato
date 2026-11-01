@@ -435,14 +435,19 @@ async fn rescan_local(state: State<'_, AppState>) -> CmdResult<usize> {
     rescan(&state, dirs).await
 }
 
-/// Pasted link → library track. Returns "Artist – Title" for the notice.
+/// Pasted link → library track: a YouTube video, or a SoundCloud song found on YouTube. Returns "Artist – Title" for
+/// the notice.
 #[tauri::command]
 async fn add_link(state: State<'_, AppState>, url: String) -> CmdResult<String> {
     // Trust boundary: clipboard text.
     if url.len() > 2048 {
         return Err("Link too long".into());
     }
-    let t = music_connectors::youtube::track_from_link(url.trim(), music_connectors::youtube::OEMBED).await.map_err(err)?;
+    let url = url.trim();
+    let t = match links::song_link(&state, url).await? {
+        Some(t) => t,
+        None => music_connectors::youtube::track_from_link(url, music_connectors::youtube::OEMBED).await.map_err(err)?,
+    };
     {
         // Added by hand: a song removed earlier comes back.
         let lib = state.lib();

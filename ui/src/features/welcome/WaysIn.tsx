@@ -29,13 +29,13 @@ function GoogleCard() {
   )
 }
 
-/** A public Spotify, Deezer or Apple Music playlist or album (imported whole, played from YouTube), or a YouTube song. */
+/** A public Spotify, Deezer or Apple Music playlist or album (imported whole, played from YouTube), or a YouTube or SoundCloud song. */
 function LinkCard({ onLeave }: { onLeave?: () => void }) {
   const [text, setText] = useState('')
   const link = text.trim()
   const kind = linkKind(link)
   return (
-    <Card icon={LinkSimple} title={tr('Paste a link')} sub={tr('A public playlist or album from Spotify, Deezer or Apple Music comes in whole; a YouTube link adds its song.')}>
+    <Card icon={LinkSimple} title={tr('Paste a link')} sub={tr('A public playlist or album from Spotify, Deezer or Apple Music comes in whole; a YouTube or SoundCloud link adds its song.')}>
       <form
         onSubmit={(e) => {
           e.preventDefault()
@@ -49,7 +49,7 @@ function LinkCard({ onLeave }: { onLeave?: () => void }) {
         className="mt-auto flex gap-2"
       >
         <div className="relative min-w-0 flex-1">
-          <input value={text} onChange={(e) => setText(e.target.value)} placeholder={tr('Spotify, Deezer, Apple Music or YouTube link')} aria-label={tr('Paste a link')} spellCheck={false} className={`${FIELD} w-full`} style={kind ? { paddingRight: '2.25rem' } : undefined} />
+          <input value={text} onChange={(e) => setText(e.target.value)} placeholder={tr('Spotify, Deezer, Apple Music, YouTube or SoundCloud link')} aria-label={tr('Paste a link')} spellCheck={false} className={`${FIELD} w-full`} style={kind ? { paddingRight: '2.25rem' } : undefined} />
           {/* The service the pasted link comes from. */}
           {kind && (
             <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-ink-2">

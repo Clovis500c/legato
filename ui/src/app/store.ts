@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { api, type Credentials, type LibraryPlaylist, type LibraryTrack, type PlaylistEdit, type Service, type SourceStatus, type SpotifyProgress, type SpotifyLibraryImport, type SyncReport, type Track } from '../shared/api'
 import type { Filter, GroupSize, GroupSort, PlayStats, Sort } from '../features/library/filter'
 import { explain } from '../shared/errors'
+import { soundcloudLink } from '../shared/format'
 import { tr, trn } from '../shared/i18n/i18n'
 import { noteList } from '../features/home/recentLists'
 import { advance, BEAT, newRun, summary, type ImportKind, type ImportRun } from '../features/add/importRun'
@@ -308,6 +309,8 @@ export const useStore = create<State>((set, get) => {
     disconnect: (source) => run(() => api.disconnect(source)).then(() => {}),
     async addLink(url) {
       let added = ''
+      // A SoundCloud song is found on YouTube first: a few seconds.
+      if (soundcloudLink(url)) get().notify(tr('Finding this song on YouTube…'))
       if (await run(async () => (added = await api.addLink(url)), false)) get().notify(tr('Added: {title}', { title: added }))
     },
     async importSongList(name, text, path) {

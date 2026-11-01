@@ -1,9 +1,10 @@
 //! Pasted Deezer and Apple Music playlist / album links: the connectors read a name, a cover and the songs (metadata
 //! only), then each song gets its YouTube version like a Spotify import, and the ones found go in a new playlist.
+//! A SoundCloud song link: one song, named the same way (`song_link`).
 
 use crate::spotify_web::{SpotifyLibraryImport, SpotifyProgress, SpotifySong};
 use crate::{AppState, CmdResult, err, hosts, youtube_version};
-use music_connectors::{deezer, itunes, linklist::LinkList};
+use music_connectors::{deezer, itunes, linklist::LinkList, soundcloud};
 use music_core::library::PlaylistEdit;
 use music_core::model::{Source, Track};
 use music_core::searchpace::{Line, Pace};
@@ -39,6 +40,21 @@ async fn read(url: &str) -> anyhow::Result<LinkList> {
     } else {
         itunes::link_list(h.apple_page, h.itunes_lookup, url).await
     }
+}
+
+/// A SoundCloud song link, named by its oEmbed, then its YouTube version (one search, two at most). None: not one (a
+/// YouTube link, for `add_link`).
+pub async fn song_link(state: &AppState, url: &str) -> CmdResult<Option<Track>> {
+    if !soundcloud::is_soundcloud(url) {
+        return Ok(None);
+    }
+    let named = soundcloud::song(soundcloud::OEMBED, soundcloud::SHORT, url).await.map_err(err)?;
+    // None: Google refused the search. Said like any refusal, never routed around.
+    let answer = youtube_version(state, &named).await.ok_or("YouTube: Too Many Requests")?;
+    if !has_version(&answer.song) {
+        return Err("This song wasn't found on YouTube: nothing to play it from".into());
+    }
+    Ok(Some(answer.song))
 }
 
 /// One import at a time (the stop flag is shared).

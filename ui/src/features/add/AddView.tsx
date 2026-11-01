@@ -55,7 +55,7 @@ function SearchHero() {
         <p className="flex items-center gap-2">
           <ClipboardText size={15} className="shrink-0" />
           <span>
-            <span className="font-medium text-ink">{tr('Paste a YouTube link')}</span> {tr('anywhere (Ctrl+V): the track is added right away.')}
+            <span className="font-medium text-ink">{tr('Paste a YouTube or SoundCloud link')}</span> {tr('anywhere (Ctrl+V): the track is added right away.')}
           </span>
         </p>
       </div>

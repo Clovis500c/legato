@@ -233,6 +233,7 @@ export function SearchView() {
     const link = linkKind(request.q)
     if (link === 'spotify') return void useStore.getState().importSpotify(request.q.trim())
     if (link === 'deezer' || link === 'apple') return void useStore.getState().importLink(request.q.trim(), link)
+    if (link === 'soundcloud') return void useStore.getState().addLink(request.q.trim())
     // A song named by the Music Detector isn't something you typed.
     if (rememberSearches && !t) addRecent(request.q)
     if (everywhere) void run(request.q)

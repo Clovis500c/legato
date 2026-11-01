@@ -9,6 +9,7 @@ pub mod linklist;
 pub mod lrclib;
 pub mod nearby;
 pub mod oauth;
+pub mod soundcloud;
 pub mod spotify;
 pub mod spotify_embed;
 pub mod spotify_page;

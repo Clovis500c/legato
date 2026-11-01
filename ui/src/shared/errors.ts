@@ -28,6 +28,12 @@ const KINDS: [RegExp, string][] = [
   // Spotify's copied song links (src-tauri spotify_paste.rs).
   [/^No Spotify song links in that text/, msg('No Spotify song links in that text')],
   [/^Spotify's pages didn't answer/, msg("Spotify's pages didn't answer: try again later")],
+  // Pasted SoundCloud song links (crates/connectors soundcloud.rs, src-tauri links.rs song_link).
+  [/^SoundCloud shares a playlist's songs only with registered apps/, msg("SoundCloud shares a playlist's songs only with registered apps: paste one song's link at a time")],
+  [/^This SoundCloud link doesn't lead to a song/, msg("This SoundCloud link doesn't lead to a song")],
+  [/^This SoundCloud link doesn't exist/, msg("This SoundCloud link doesn't exist")],
+  [/^This SoundCloud song is private or doesn't exist/, msg("This SoundCloud song is private or doesn't exist")],
+  [/^This song wasn't found on YouTube/, msg("This song wasn't found on YouTube: nothing to play it from")],
   // Add music › From iTunes or MusicBee (src-tauri libfile.rs).
   [/^Not a library file: pick iTunes Music Library\.xml/, msg('Not a library file: pick iTunes Music Library.xml (from iTunes, or the copy MusicBee writes for other apps)')],
   [/^No playlists in that library file/, msg('No playlists in that library file')],

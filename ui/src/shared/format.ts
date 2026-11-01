@@ -36,6 +36,9 @@ export const deezerLink = (text: string) => /^\s*(https?:\/\/)?((www\.)?deezer\.
 /** Apple Music album / playlist link (a song's too, said plain by Rust): same rule as Rust itunes::apple_target, the link alone. */
 export const appleLink = (text: string) => /^\s*(https?:\/\/)?music\.apple\.com\/([a-z]{2}\/)?(album|playlist|song)\/\S+\s*$/i.test(text)
 
+/** SoundCloud link, the link alone (a song's is added, Rust says plainly what isn't one): same rule as Rust soundcloud::is_soundcloud. */
+export const soundcloudLink = (text: string) => /^\s*(https?:\/\/)?((www|m|on)\.)?soundcloud\.com\/\S+\s*$/i.test(text)
+
 /** Store country for catalogs, from UI locale. */
 export const region = () => new Intl.Locale(navigator.language).maximize().region ?? 'US'
 

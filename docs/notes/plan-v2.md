@@ -136,8 +136,12 @@ What the services allow, read on 2026-10-31 (specs in [ideas/catch-up.md](ideas/
       lists ticked, then Exportify's import. A list keeps Exportify's id, so either route refreshes it and the export
       brings the real name. Written from the format as documented: not tried on a real export yet, and whether private
       playlists are in it is still unconfirmed.
-- [ ] `M` Paste a SoundCloud link: imported as metadata and matched like a Deezer link (oEmbed, then the set's list); songs
-      with no match are reported, nothing plays from SoundCloud.
+- [x] `M` Paste a SoundCloud link: a song's link (soundcloud.com, m., the app's on.soundcloud.com short links, a private
+      song's secret link) is named by SoundCloud's public oEmbed (`connectors::soundcloud`), then found on YouTube and
+      added like a YouTube link (`add_link`, paste anywhere, the welcome, search); not found says so, nothing plays from
+      SoundCloud. A set's songs aren't read: oEmbed names only the set and its list needs the API (a registered app,
+      scraping barred), so the app says it plainly. oEmbed checked on SoundCloud's own example (a song, a set); short
+      links written from their redirect, not tried on a real one.
 - [x] `M` Import from other apps: the iTunes / MusicBee library file (`iTunes Music Library.xml`, `music_core::itunes_xml`):
       Add music › From iTunes or MusicBee, its playlists ticked (smart ones unticked; the whole library, its parts,
       folders left out), then the import screen. A song the library has as a file comes as it is, the rest is found on
@@ -356,6 +360,8 @@ Most useful first; the tag is the effort.
       public playlist page was seen).
 - [ ] YouTube Music every 15 minutes: offered after a Google sign-in, runs while the app is open, silent on a refusal.
 - [ ] A Legato link between two PCs: its videos come in named, no search.
+- [ ] A SoundCloud song link pasted, and an `on.soundcloud.com` short link from SoundCloud's phone app: named, found on
+      YouTube, added; a set's link says why it can't.
 - [ ] "No sound could be taken" gone from the second YouTube video on (fix 51946d5).
 - [ ] A real update from 0.1 (user's PC): Legato installed, old folder and its shortcuts gone, library, sign-ins and Open
       at startup still there.

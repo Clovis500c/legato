@@ -30,10 +30,11 @@ Done in this run (newest last), none tried in the real app yet:
   Save as file).
 - `a190d0f` From iTunes or MusicBee: the library file's playlists ticked, then the import screen (Add music).
 - `051a07a` Spotify's own data export (`Playlist1.json`, `YourLibrary.json` or its ZIP), opened from Connect Spotify.
-- Spotify songs by paste: Ctrl+A then Ctrl+C in a list of Spotify's app, pasted in Add music › Import a list of songs;
-  each song named from its public embed page, then the import screen.
+- `da1d866` Spotify songs by paste: Ctrl+A then Ctrl+C in a list of Spotify's app, pasted in Add music › Import a list
+  of songs; each song named from its public embed page, then the import screen.
+- A SoundCloud song link pasted anywhere: named by SoundCloud's oEmbed, found on YouTube, added. Sets said plainly.
 
-Next in the run: a SoundCloud track link (oEmbed), then the quick wins of Features › High.
+Next in the run: the quick wins of Features › High (drag files from Explorer, command palette, library backup…).
 
 ## Branches
 

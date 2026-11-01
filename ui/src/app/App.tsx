@@ -289,7 +289,8 @@ export function App() {
   // Settings and library in (or failed), page mounted: the rest starts. Not on a paint: a hidden start has none.
   useEffect(() => (up ? startDeferred() : undefined), [up])
 
-  // Ctrl+V outside text fields: share code → import, Spotify / Deezer / Apple Music playlist or album → import, YouTube link → library.
+  // Ctrl+V outside text fields: share code → import, Spotify / Deezer / Apple Music playlist or album → import, YouTube or SoundCloud
+  // song → library.
   useEffect(() => {
     const onPaste = (e: ClipboardEvent) => {
       // Target may be document itself (nothing focused): not an Element.
@@ -299,7 +300,7 @@ export function App() {
       if (/^(musicapp:\/\/|MA1:)/i.test(text)) useStore.setState({ incoming: text })
       else if (kind === 'spotify') void useStore.getState().importSpotify(text)
       else if (kind === 'deezer' || kind === 'apple') void useStore.getState().importLink(text, kind)
-      else if (kind === 'youtube') void useStore.getState().addLink(text)
+      else if (kind === 'youtube' || kind === 'soundcloud') void useStore.getState().addLink(text)
     }
     document.addEventListener('paste', onPaste)
     return () => document.removeEventListener('paste', onPaste)
