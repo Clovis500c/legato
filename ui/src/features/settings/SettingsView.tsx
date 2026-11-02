@@ -27,6 +27,7 @@ import { FadeEditor } from './FadeEditor'
 import { BrowserScene, CountsScene, CoverShapes, DensityScene, FadeScene, ListCoversScene, MiniPlayerScene, MixCoverScene, MotionScene, NowPlayingScene, ProgressScene, SleepButtonScene, SourceIconScene, TunerScene, VolumeScene } from './previews'
 import { searchSettings, type SettingEntry } from './search'
 import { msg, tr } from '../../shared/i18n/i18n'
+import { phoneApp } from '../../shared/platform'
 import { LanguagePicker } from './LanguagePicker'
 import { ask } from '../../shared/ui/Ask'
 import { open, save } from '@tauri-apps/plugin-dialog'
@@ -379,7 +380,7 @@ function PrivacySection() {
       <div className="flex flex-col items-start gap-3">
         <p className="text-[0.8125rem] text-ink-2">{tr('Every host Legato talked to today, and why: the app itself, its windows (YouTube’s player, sign-in pages) and plugins. Kept in memory on this PC only.')}</p>
         <Button variant="ghost" onClick={() => void openUrl(PRIVACY_PAGE).catch(() => {})}>
-          <ArrowSquareOut size={14} /> {tr('What leaves your PC')}
+          <ArrowSquareOut size={14} /> {phoneApp ? tr('What leaves your phone') : tr('What leaves your PC')}
         </Button>
       </div>
       {contacts && !groups.length && <p className="text-[0.8125rem] text-ink-2">{tr('Nothing yet today.')}</p>}

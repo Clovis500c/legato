@@ -13,6 +13,7 @@ import { groupAlbums, groupArtists } from '../library/filter'
 import { ReleaseNotes } from '../update/ReleaseNotes'
 import { installUpdate, useUpdate } from '../update/updates'
 import { msg, tr, trn } from '../../shared/i18n/i18n'
+import { phoneApp } from '../../shared/platform'
 import { PRIVACY_PAGE, REPO } from '../../shared/links'
 
 // Status colors keep their meaning whatever the theme.
@@ -183,9 +184,9 @@ export function AboutSection() {
               <ArrowSquareOut size={14} /> {tr('Open')}
             </Button>
           </Row>
-          <Row label={msg('Privacy')} sub={tr('No server, no account of ours: your library, history and settings stay on this PC.')}>
+          <Row label={msg('Privacy')} sub={phoneApp ? tr('No server, no account of ours: your library, history and settings stay on this phone.') : tr('No server, no account of ours: your library, history and settings stay on this PC.')}>
             <Button variant="ghost" onClick={() => void openUrl(PRIVACY_PAGE).catch(() => {})}>
-              <ArrowSquareOut size={14} /> {tr('What leaves your PC')}
+              <ArrowSquareOut size={14} /> {phoneApp ? tr('What leaves your phone') : tr('What leaves your PC')}
             </Button>
           </Row>
           <Row label={msg('Copy diagnostics')} sub={tr('Versions, the settings that matter and the latest errors, as text for a bug report. Nothing is sent: the log stays on this PC. “Include details” adds song titles, account names and file paths.')}>

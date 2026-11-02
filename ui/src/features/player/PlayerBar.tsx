@@ -30,6 +30,7 @@ import { useLiveSync } from './liveSync'
 import { AdaptiveBar } from './AdaptiveBar'
 import { toggleLike, useLiked } from './like'
 import { tr } from '../../shared/i18n/i18n'
+import { phoneApp } from '../../shared/platform'
 import { takeDrop } from './drop'
 import { pickUp, usePickup } from '../syncmode/pickup'
 
@@ -344,7 +345,7 @@ export function PlayerBar() {
               {tr('Resume “{title}” from {device}', { title: offer.track.title, device: offer.deviceName })}
             </button>
           ) : (
-            <span className="truncate text-[0.8125rem] text-ink-2">{tr('Play a YouTube track or drop audio files here')}</span>
+            <span className="truncate text-[0.8125rem] text-ink-2">{phoneApp ? tr('Search for a song to play') : tr('Play a YouTube track or drop audio files here')}</span>
           )}
         </span>
         <LikeButton />

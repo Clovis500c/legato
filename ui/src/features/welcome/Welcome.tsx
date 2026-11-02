@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useSettings } from '../../app/settings'
 import { useStore } from '../../app/store'
 import { msg, tr, trn } from '../../shared/i18n/i18n'
+import { phoneApp } from '../../shared/platform'
 import { PRIVACY_PAGE } from '../../shared/links'
 import { Button } from '../../shared/ui/Button'
 import { Dialog } from '../../shared/ui/Dialog'
@@ -13,8 +14,9 @@ import { WaysIn } from './WaysIn'
 /** What the app does and keeps to itself, before it asks for anything (the same words as Settings › About and Accounts). */
 const PROMISES: { icon: Icon; title: string; text: string }[] = [
   { icon: MusicNotes, title: msg('Every source, one queue'), text: msg('Local file first, then the official YouTube player, then the Apple Music preview.') },
-  { icon: ShieldCheck, title: msg('Private by design'), text: msg('No server, no account of ours: your library, history and settings stay on this PC.') },
-  { icon: Key, title: msg('Your sign-ins stay yours'), text: msg('You type your password on Google’s own page, never in Legato. The session stays in the app’s browser storage on this PC, like in a browser.') },
+  { icon: ShieldCheck, title: msg('Private by design'), text: phoneApp ? msg('No server, no account of ours: your library, history and settings stay on this phone.') : msg('No server, no account of ours: your library, history and settings stay on this PC.') },
+  // Phone: no Google sign-in window there.
+  ...(phoneApp ? [] : [{ icon: Key, title: msg('Your sign-ins stay yours'), text: msg('You type your password on Google’s own page, never in Legato. The session stays in the app’s browser storage on this PC, like in a browser.') }]),
   { icon: MagnifyingGlass, title: msg('Nothing to set up'), text: msg('Search and play right away: signing in only brings your own playlists in.') },
 ]
 
@@ -63,7 +65,7 @@ export function Welcome({ onClose }: { onClose: () => void }) {
           </ul>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <Button variant="link" onClick={() => void openUrl(PRIVACY_PAGE).catch(() => {})}>
-              <ArrowSquareOut size={14} /> {tr('What leaves your PC')}
+              <ArrowSquareOut size={14} /> {phoneApp ? tr('What leaves your phone') : tr('What leaves your PC')}
             </Button>
             <Button data-default onClick={() => setStep('music')}>
               {tr('Get started')} <ArrowRight size={14} />
