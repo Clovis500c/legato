@@ -1907,6 +1907,11 @@ const pl: Record<string, string> = {
   'Every host Legato talked to today, and why: the app itself, its windows (YouTube’s player, sign-in pages) and plugins. Kept in memory on this PC only.': 'Każdy host, z którym Legato łączył się dziś, i dlaczego: sama aplikacja, jej okna (odtwarzacz YouTube, strony logowania) i wtyczki. Tylko w pamięci tego komputera.',
   'privacy network hosts servers connections today': 'prywatność sieć hosty serwery połączenia dziś',
   'privacy network hosts requests blocked pages': 'prywatność sieć hosty żądania zablokowane strony',
+  'Streaming overlay': 'Nakładka do streamingu',
+  'The song playing, its cover and progress on a page for OBS or another streaming app on this PC. This PC only. Off by default': 'Odtwarzany utwór, jego okładka i postęp na stronie dla OBS lub innej aplikacji do streamingu na tym komputerze. Tylko ten komputer. Domyślnie wyłączone',
+  'The streaming overlay could not start: another app may be using its port. Turn it off and on again.': 'Nie udało się uruchomić nakładki do streamingu: inna aplikacja może używać jej portu. Wyłącz ją i włącz ponownie.',
+  'In OBS: Sources › Add › Browser, then paste this link. Its Custom CSS restyles the card.': 'W OBS: Źródła › Dodaj › Przeglądarka, potem wklej ten link. Jego własny CSS zmienia wygląd karty.',
+  'obs stream streaming twitch browser source now playing overlay': 'obs stream streaming twitch źródło przeglądarki teraz gra nakładka',
 }
 
 export default pl

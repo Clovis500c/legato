@@ -1907,6 +1907,11 @@ const id: Record<string, string> = {
   'Every host Legato talked to today, and why: the app itself, its windows (YouTube’s player, sign-in pages) and plugins. Kept in memory on this PC only.': 'Setiap host yang dihubungi Legato hari ini, dan alasannya: aplikasi itu sendiri, jendelanya (pemutar YouTube, halaman masuk), dan plugin. Hanya disimpan di memori PC ini.',
   'privacy network hosts servers connections today': 'privasi jaringan host server koneksi hari ini',
   'privacy network hosts requests blocked pages': 'privasi jaringan host permintaan diblokir halaman',
+  'Streaming overlay': 'Overlay streaming',
+  'The song playing, its cover and progress on a page for OBS or another streaming app on this PC. This PC only. Off by default': 'Lagu yang sedang diputar, sampul, dan progresnya di halaman untuk OBS atau aplikasi streaming lain di PC ini. Hanya PC ini. Nonaktif secara default',
+  'The streaming overlay could not start: another app may be using its port. Turn it off and on again.': 'Overlay streaming tidak bisa dimulai: aplikasi lain mungkin memakai port-nya. Matikan lalu nyalakan lagi.',
+  'In OBS: Sources › Add › Browser, then paste this link. Its Custom CSS restyles the card.': 'Di OBS: Sumber › Tambah › Peramban, lalu tempel tautan ini. CSS Kustom-nya mengubah gaya kartu.',
+  'obs stream streaming twitch browser source now playing overlay': 'obs stream streaming twitch sumber peramban sedang diputar overlay',
 }
 
 export default id

@@ -351,6 +351,9 @@ export const api = {
   /** Phone remote: `labels` = the page's words in the interface's language, keyed by the English text. */
   remoteStart: (labels: Record<string, string>, fresh: boolean) => invoke<RemoteLink>('remote_start', { labels, fresh }),
   remoteStop: () => invoke<void>('remote_stop'),
+  /** Streaming overlay: the phone remote's server (this PC only when alone); returns its link for OBS. */
+  overlayStart: () => invoke<string>('overlay_start'),
+  overlayStop: () => invoke<void>('overlay_stop'),
   remoteQueue: (next: RemoteSong[]) => invoke<void>('remote_queue', { next }),
   /** One line in the local diagnostics log (shared/diag.ts). message = our words; detail = what an error said, shown only with Include details. */
   diagLog: (level: 'info' | 'warn' | 'error', area: string, message: string, detail?: string) => invoke<void>('diag_log', { level, area, message, detail }),

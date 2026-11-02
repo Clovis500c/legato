@@ -1907,6 +1907,11 @@ const nl: Record<string, string> = {
   'Every host Legato talked to today, and why: the app itself, its windows (YouTube’s player, sign-in pages) and plugins. Kept in memory on this PC only.': 'Elke host waarmee Legato vandaag contact had, en waarom: de app zelf, haar vensters (de speler van YouTube, inlogpagina’s) en plug-ins. Alleen in het geheugen van deze pc.',
   'privacy network hosts servers connections today': 'privacy netwerk hosts servers verbindingen vandaag',
   'privacy network hosts requests blocked pages': 'privacy netwerk hosts verzoeken geblokkeerd pagina’s',
+  'Streaming overlay': 'Streamingoverlay',
+  'The song playing, its cover and progress on a page for OBS or another streaming app on this PC. This PC only. Off by default': 'Het nummer dat speelt, de hoes en de voortgang op een pagina voor OBS of een andere streaming-app op deze pc. Alleen deze pc. Standaard uit',
+  'The streaming overlay could not start: another app may be using its port. Turn it off and on again.': 'De streamingoverlay kon niet starten: een andere app gebruikt misschien de poort. Zet hem uit en weer aan.',
+  'In OBS: Sources › Add › Browser, then paste this link. Its Custom CSS restyles the card.': 'In OBS: Bronnen › Toevoegen › Browser, plak dan deze link. Met de aangepaste CSS daarvan verander je de kaart.',
+  'obs stream streaming twitch browser source now playing overlay': 'obs stream streaming twitch browserbron speelt nu overlay',
 }
 
 export default nl

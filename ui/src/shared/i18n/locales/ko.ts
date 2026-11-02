@@ -1907,6 +1907,11 @@ const ko: Record<string, string> = {
   'Every host Legato talked to today, and why: the app itself, its windows (YouTube’s player, sign-in pages) and plugins. Kept in memory on this PC only.': '오늘 Legato가 통신한 모든 호스트와 그 이유: 앱 자체, 앱의 창(YouTube 플레이어, 로그인 페이지), 플러그인. 이 PC의 메모리에만 보관됩니다.',
   'privacy network hosts servers connections today': '개인정보 네트워크 호스트 서버 연결 오늘',
   'privacy network hosts requests blocked pages': '개인정보 네트워크 호스트 요청 차단 페이지',
+  'Streaming overlay': '방송용 오버레이',
+  'The song playing, its cover and progress on a page for OBS or another streaming app on this PC. This PC only. Off by default': '재생 중인 곡, 커버, 진행 상황을 이 PC의 OBS나 다른 방송 앱용 페이지에 표시합니다. 이 PC 전용. 기본값은 꺼짐',
+  'The streaming overlay could not start: another app may be using its port. Turn it off and on again.': '방송용 오버레이를 시작할 수 없습니다. 다른 앱이 포트를 사용 중일 수 있습니다. 껐다가 다시 켜세요.',
+  'In OBS: Sources › Add › Browser, then paste this link. Its Custom CSS restyles the card.': 'OBS에서 소스 › 추가 › 브라우저를 선택하고 이 링크를 붙여 넣으세요. 사용자 지정 CSS로 카드 모양을 바꿀 수 있습니다.',
+  'obs stream streaming twitch browser source now playing overlay': 'obs 방송 스트리밍 twitch 브라우저 소스 재생 중 오버레이',
 }
 
 export default ko

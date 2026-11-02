@@ -20,6 +20,7 @@ export function startDeferred(): () => void {
     ['Plugins', () => import('../features/plugins/host').then((m) => m.startPlugins())],
     ['Auto sync', () => import('../features/sources/autosync').then((m) => m.startAutoSync())],
     ['Phone remote', () => import('../features/remote/remote').then((m) => m.startRemote())],
+    ['Streaming overlay', () => import('../features/remote/remote').then((m) => m.startOverlay())],
   ]
   void Promise.allSettled(
     starts.map(async ([name, start]) => {

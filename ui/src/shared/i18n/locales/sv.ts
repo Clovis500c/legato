@@ -1907,6 +1907,11 @@ const sv: Record<string, string> = {
   'Every host Legato talked to today, and why: the app itself, its windows (YouTube’s player, sign-in pages) and plugins. Kept in memory on this PC only.': 'Varje värd som Legato kontaktade i dag, och varför: appen själv, dess fönster (YouTubes spelare, inloggningssidor) och tillägg. Sparas bara i den här datorns minne.',
   'privacy network hosts servers connections today': 'integritet nätverk värdar servrar anslutningar i dag',
   'privacy network hosts requests blocked pages': 'integritet nätverk värdar förfrågningar blockerade sidor',
+  'Streaming overlay': 'Streamingöverlägg',
+  'The song playing, its cover and progress on a page for OBS or another streaming app on this PC. This PC only. Off by default': 'Låten som spelas, dess omslag och förlopp på en sida för OBS eller en annan streamingapp på den här datorn. Bara den här datorn. Av som standard',
+  'The streaming overlay could not start: another app may be using its port. Turn it off and on again.': 'Streamingöverlägget kunde inte starta: en annan app kanske använder dess port. Stäng av det och slå på igen.',
+  'In OBS: Sources › Add › Browser, then paste this link. Its Custom CSS restyles the card.': 'I OBS: Källor › Lägg till › Webbläsare, klistra sedan in den här länken. Dess anpassade CSS ändrar kortets stil.',
+  'obs stream streaming twitch browser source now playing overlay': 'obs stream streaming twitch webbläsarkälla spelas nu överlägg',
 }
 
 export default sv

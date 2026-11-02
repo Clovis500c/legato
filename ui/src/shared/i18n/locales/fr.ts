@@ -1907,6 +1907,11 @@ const fr: Record<string, string> = {
   'Every host Legato talked to today, and why: the app itself, its windows (YouTube’s player, sign-in pages) and plugins. Kept in memory on this PC only.': 'Chaque hôte contacté par Legato aujourd’hui, et pourquoi : l’application elle-même, ses fenêtres (le lecteur de YouTube, les pages de connexion) et les plugins. Gardé en mémoire sur ce PC uniquement.',
   'privacy network hosts servers connections today': 'confidentialité vie privée réseau hôtes serveurs connexions aujourd’hui',
   'privacy network hosts requests blocked pages': 'confidentialité vie privée réseau hôtes requêtes bloquées pages',
+  'Streaming overlay': 'Incrustation pour le streaming',
+  'The song playing, its cover and progress on a page for OBS or another streaming app on this PC. This PC only. Off by default': 'Le morceau en cours, sa pochette et sa progression sur une page pour OBS ou une autre application de streaming de ce PC. Ce PC uniquement. Désactivé par défaut',
+  'The streaming overlay could not start: another app may be using its port. Turn it off and on again.': 'L’incrustation pour le streaming n’a pas pu démarrer : une autre application utilise peut-être son port. Désactivez-la puis réactivez-la.',
+  'In OBS: Sources › Add › Browser, then paste this link. Its Custom CSS restyles the card.': 'Dans OBS : Sources › Ajouter › Navigateur, puis collez ce lien. Son CSS personnalisé change le style de la carte.',
+  'obs stream streaming twitch browser source now playing overlay': 'obs stream streaming twitch source navigateur en cours de lecture incrustation overlay',
 }
 
 export default fr

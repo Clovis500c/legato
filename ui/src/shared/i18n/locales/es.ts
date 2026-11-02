@@ -1907,6 +1907,11 @@ const es: Record<string, string> = {
   'Every host Legato talked to today, and why: the app itself, its windows (YouTube’s player, sign-in pages) and plugins. Kept in memory on this PC only.': 'Cada servidor con el que Legato habló hoy, y por qué: la propia app, sus ventanas (el reproductor de YouTube, páginas de inicio de sesión) y los plugins. Solo en la memoria de este PC.',
   'privacy network hosts servers connections today': 'privacidad red hosts servidores conexiones hoy',
   'privacy network hosts requests blocked pages': 'privacidad red hosts solicitudes bloqueadas páginas',
+  'Streaming overlay': 'Superposición para streaming',
+  'The song playing, its cover and progress on a page for OBS or another streaming app on this PC. This PC only. Off by default': 'La canción que suena, su portada y su progreso en una página para OBS u otra app de streaming de este PC. Solo este PC. Desactivado por defecto',
+  'The streaming overlay could not start: another app may be using its port. Turn it off and on again.': 'La superposición para streaming no pudo iniciarse: puede que otra app use su puerto. Desactívala y vuelve a activarla.',
+  'In OBS: Sources › Add › Browser, then paste this link. Its Custom CSS restyles the card.': 'En OBS: Fuentes › Añadir › Navegador y pega este enlace. Su CSS personalizado cambia el estilo de la tarjeta.',
+  'obs stream streaming twitch browser source now playing overlay': 'obs stream streaming twitch fuente de navegador sonando ahora superposición',
 }
 
 export default es

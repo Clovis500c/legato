@@ -1907,6 +1907,11 @@ const ru: Record<string, string> = {
   'Every host Legato talked to today, and why: the app itself, its windows (YouTube’s player, sign-in pages) and plugins. Kept in memory on this PC only.': 'Каждый хост, с которым Legato связывался сегодня, и зачем: само приложение, его окна (плеер YouTube, страницы входа) и плагины. Хранится только в памяти этого ПК.',
   'privacy network hosts servers connections today': 'конфиденциальность сеть хосты серверы подключения сегодня',
   'privacy network hosts requests blocked pages': 'конфиденциальность сеть хосты запросы заблокировано страницы',
+  'Streaming overlay': 'Оверлей для стримов',
+  'The song playing, its cover and progress on a page for OBS or another streaming app on this PC. This PC only. Off by default': 'Играющая песня, её обложка и прогресс на странице для OBS или другого приложения для стримов на этом ПК. Только этот ПК. По умолчанию выключено',
+  'The streaming overlay could not start: another app may be using its port. Turn it off and on again.': 'Не удалось запустить оверлей для стримов: возможно, его порт занят другим приложением. Выключите и снова включите его.',
+  'In OBS: Sources › Add › Browser, then paste this link. Its Custom CSS restyles the card.': 'В OBS: Источники › Добавить › Браузер, затем вставьте эту ссылку. Пользовательский CSS источника меняет вид карточки.',
+  'obs stream streaming twitch browser source now playing overlay': 'obs стрим стриминг twitch источник браузер сейчас играет оверлей',
 }
 
 export default ru

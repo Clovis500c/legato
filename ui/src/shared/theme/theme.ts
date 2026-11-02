@@ -394,6 +394,8 @@ export interface Settings {
   searchSuggestions: boolean
   /** Phone remote: a page this PC serves on its network (`features/remote/`). This PC's own: Sync Mode leaves it. */
   phoneRemote: boolean
+  /** Streaming overlay (OBS on this PC), this PC's own. */
+  streamOverlay: boolean
   /** Now Playing: the top bar's search sits over the cover / video, not the window's middle. */
   searchOnCover: boolean
   /** Music Detector agreed to (microphone, 10 s clips sent to AudD to name the song). */
@@ -504,6 +506,7 @@ export const DEFAULTS: Settings = {
   rememberSearches: true,
   searchSuggestions: true,
   phoneRemote: false,
+  streamOverlay: false,
   searchOnCover: true,
   detector: false,
   detectorInput: 'mic',
@@ -715,6 +718,7 @@ export function sanitize(raw: unknown): Settings {
     rememberSearches: r.rememberSearches !== false,
     searchSuggestions: r.searchSuggestions !== false,
     phoneRemote: r.phoneRemote === true,
+    streamOverlay: r.streamOverlay === true,
     searchOnCover: r.searchOnCover !== false,
     detector: r.detector === true,
     detectorInput: pick(r.detectorInput, ['mic', 'pc'] as const, DEFAULTS.detectorInput),

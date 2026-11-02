@@ -1907,6 +1907,11 @@ const ja: Record<string, string> = {
   'Every host Legato talked to today, and why: the app itself, its windows (YouTube’s player, sign-in pages) and plugins. Kept in memory on this PC only.': '今日 Legato が通信したすべてのホストとその理由：アプリ本体、アプリのウィンドウ（YouTube のプレーヤー、ログインページ）、プラグイン。この PC のメモリにのみ保持されます。',
   'privacy network hosts servers connections today': 'プライバシー ネットワーク ホスト サーバー 接続 今日',
   'privacy network hosts requests blocked pages': 'プライバシー ネットワーク ホスト リクエスト ブロック ページ',
+  'Streaming overlay': '配信用オーバーレイ',
+  'The song playing, its cover and progress on a page for OBS or another streaming app on this PC. This PC only. Off by default': '再生中の曲、カバー、進行状況を、この PC の OBS などの配信アプリ用ページに表示します。この PC のみ。既定ではオフ',
+  'The streaming overlay could not start: another app may be using its port. Turn it off and on again.': '配信用オーバーレイを開始できませんでした。別のアプリがポートを使用している可能性があります。オフにしてから再びオンにしてください。',
+  'In OBS: Sources › Add › Browser, then paste this link. Its Custom CSS restyles the card.': 'OBS で「ソース › 追加 › ブラウザ」を選び、このリンクを貼り付けます。カスタム CSS でカードの見た目を変えられます。',
+  'obs stream streaming twitch browser source now playing overlay': 'obs 配信 ストリーミング twitch ブラウザソース 再生中 オーバーレイ',
 }
 
 export default ja

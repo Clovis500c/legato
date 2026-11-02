@@ -1907,6 +1907,11 @@ const tr: Record<string, string> = {
   'Every host Legato talked to today, and why: the app itself, its windows (YouTube’s player, sign-in pages) and plugins. Kept in memory on this PC only.': 'Legato’nun bugün iletişim kurduğu her sunucu ve nedeni: uygulamanın kendisi, pencereleri (YouTube oynatıcısı, oturum açma sayfaları) ve eklentiler. Yalnızca bu bilgisayarın belleğinde tutulur.',
   'privacy network hosts servers connections today': 'gizlilik ağ sunucular bağlantılar bugün',
   'privacy network hosts requests blocked pages': 'gizlilik ağ sunucular istekler engellenen sayfalar',
+  'Streaming overlay': 'Yayın katmanı',
+  'The song playing, its cover and progress on a page for OBS or another streaming app on this PC. This PC only. Off by default': 'Çalan şarkı, kapağı ve ilerlemesi, bu bilgisayardaki OBS veya başka bir yayın uygulaması için bir sayfada. Yalnızca bu bilgisayar. Varsayılan olarak kapalı',
+  'The streaming overlay could not start: another app may be using its port. Turn it off and on again.': 'Yayın katmanı başlatılamadı: portunu başka bir uygulama kullanıyor olabilir. Kapatıp yeniden açın.',
+  'In OBS: Sources › Add › Browser, then paste this link. Its Custom CSS restyles the card.': 'OBS’de: Kaynaklar › Ekle › Tarayıcı, ardından bu bağlantıyı yapıştırın. Özel CSS’i kartın görünümünü değiştirir.',
+  'obs stream streaming twitch browser source now playing overlay': 'obs yayın streaming twitch tarayıcı kaynağı şimdi çalan katman',
 }
 
 export default tr

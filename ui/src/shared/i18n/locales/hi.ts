@@ -1907,6 +1907,11 @@ const hi: Record<string, string> = {
   'Every host Legato talked to today, and why: the app itself, its windows (YouTube’s player, sign-in pages) and plugins. Kept in memory on this PC only.': 'आज Legato ने जिन होस्ट से बात की, और क्यों: ऐप ख़ुद, उसकी विंडो (YouTube का प्लेयर, साइन-इन पेज) और प्लगइन। सिर्फ़ इसी PC की मेमोरी में रखा जाता है।',
   'privacy network hosts servers connections today': 'गोपनीयता नेटवर्क होस्ट सर्वर कनेक्शन आज',
   'privacy network hosts requests blocked pages': 'गोपनीयता नेटवर्क होस्ट अनुरोध ब्लॉक पेज',
+  'Streaming overlay': 'स्ट्रीमिंग ओवरले',
+  'The song playing, its cover and progress on a page for OBS or another streaming app on this PC. This PC only. Off by default': 'चल रहा गाना, उसका कवर और प्रगति, इस PC पर OBS या किसी दूसरे स्ट्रीमिंग ऐप के लिए एक पेज पर। सिर्फ़ यही PC। डिफ़ॉल्ट रूप से बंद',
+  'The streaming overlay could not start: another app may be using its port. Turn it off and on again.': 'स्ट्रीमिंग ओवरले शुरू नहीं हो सका: शायद कोई दूसरा ऐप उसका पोर्ट इस्तेमाल कर रहा है। इसे बंद करके फिर चालू करें।',
+  'In OBS: Sources › Add › Browser, then paste this link. Its Custom CSS restyles the card.': 'OBS में: Sources › Add › Browser, फिर यह लिंक चिपकाएँ। उसका Custom CSS कार्ड का रूप बदलता है।',
+  'obs stream streaming twitch browser source now playing overlay': 'obs स्ट्रीम स्ट्रीमिंग twitch ब्राउज़र सोर्स अभी चल रहा ओवरले',
 }
 
 export default hi

@@ -37,6 +37,8 @@ pub enum Route {
     Key(&'static str),
     /// Seek to this many ms.
     Seek(u64),
+    /// The streaming overlay's page (OBS's Browser Source on this PC).
+    Overlay,
     /// Refused, with its HTTP status.
     No(u16),
 }
@@ -73,6 +75,7 @@ pub fn route(head: &str, token: &str) -> Route {
         ("GET", "/") => Route::Page,
         ("GET", "/state") => Route::State,
         ("GET", "/cover") => Route::Cover,
+        ("GET", "/overlay") => Route::Overlay,
         ("POST", "/key") => match query.get("k").map(String::as_str) {
             Some("toggle") => Route::Key("toggle"),
             Some("next") => Route::Key("next"),
@@ -85,9 +88,34 @@ pub fn route(head: &str, token: &str) -> Route {
     }
 }
 
+/// Who may ask what: the phone remote's routes while it's on; the overlay's (its page, what plays, the cover) from this PC
+/// while the overlay is on. The server runs for either; on this PC only (127.0.0.1) for the overlay alone.
+pub fn allowed(route: &Route, phone: bool, overlay: bool, this_pc: bool) -> bool {
+    match route {
+        Route::No(_) => true,
+        Route::Overlay => overlay && this_pc,
+        Route::State | Route::Cover => phone || (overlay && this_pc),
+        Route::Page | Route::Key(_) | Route::Seek(_) => phone,
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn the_overlay_answers_this_pc_only() {
+        assert_eq!(route(&format!("GET /overlay?t={T} HTTP/1.1"), T), Route::Overlay);
+        assert!(allowed(&Route::Overlay, false, true, true));
+        assert!(!allowed(&Route::Overlay, true, true, false));
+        assert!(!allowed(&Route::Overlay, true, false, true));
+        assert!(allowed(&Route::State, false, true, true));
+        assert!(!allowed(&Route::State, false, true, false));
+        // The overlay alone never drives playback.
+        assert!(!allowed(&Route::Key("next"), false, true, true));
+        assert!(!allowed(&Route::Page, false, true, true));
+        assert!(allowed(&Route::Seek(1), true, false, false));
+    }
 
     const T: &str = "0123456789abcdef0123456789abcdef";
 

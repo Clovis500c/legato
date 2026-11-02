@@ -25,6 +25,8 @@ const words = (): Record<string, string> => ({
 export async function remoteLink(fresh: boolean): Promise<void> {
   try {
     useRemote.setState({ link: await api.remoteStart(words(), fresh), failed: false })
+    // Same secret: the overlay's link changes with it.
+    if (fresh && useOverlay.getState().url) void overlayLink()
   } catch (e) {
     useRemote.setState({ link: null, failed: true })
     reportError('remote', e, 'Phone remote did not start')
@@ -70,5 +72,43 @@ export function startRemote(): () => void {
     offSettings()
     offLang()
     if (on) stop()
+  }
+}
+
+/** Streaming overlay (Settings › Playback): its link for OBS, null while off or starting. */
+export const useOverlay = create<{ url: string | null; failed: boolean }>(() => ({ url: null, failed: false }))
+
+async function overlayLink(): Promise<void> {
+  try {
+    useOverlay.setState({ url: await api.overlayStart(), failed: false })
+  } catch (e) {
+    useOverlay.setState({ url: null, failed: true })
+    reportError('remote', e, 'Streaming overlay did not start')
+  }
+}
+
+/** Runs the overlay's server while its setting is on (this PC's own); its link again when the phone remote moves the
+ *  server (on or off). Returns cleanup. */
+export function startOverlay(): () => void {
+  let on = false
+  let phone = useSettings.getState().settings.phoneRemote
+  const apply = () => {
+    const { streamOverlay: want, phoneRemote } = useSettings.getState().settings
+    const moved = phoneRemote !== phone
+    phone = phoneRemote
+    if (want && (!on || moved)) {
+      on = true
+      void overlayLink()
+    } else if (!want && on) {
+      on = false
+      useOverlay.setState({ url: null, failed: false })
+      void api.overlayStop().catch(() => {})
+    }
+  }
+  const off = useSettings.subscribe(apply)
+  apply()
+  return () => {
+    off()
+    if (on) void api.overlayStop().catch(() => {})
   }
 }

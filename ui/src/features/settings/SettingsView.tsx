@@ -19,7 +19,7 @@ import { useLive } from '../player/live'
 import { VISUALIZER_LABELS } from '../player/vizLooks'
 import { SourcesView } from '../sources/SourcesView'
 import { SyncSection } from '../syncmode/SyncSection'
-import { RemotePanel } from '../remote/RemotePanel'
+import { OverlayPanel, RemotePanel } from '../remote/RemotePanel'
 import { clearRecent } from '../search/recent'
 import { AboutSection } from './AboutSection'
 import { ThemeStudio } from './ThemeStudio'
@@ -732,6 +732,14 @@ function PlaybackSection() {
             <Toggle label={tr('Phone remote')} checked={s.phoneRemote} onChange={(phoneRemote) => update({ phoneRemote })} />
           </Row>
           {s.phoneRemote && <RemotePanel />}
+        </div>
+      </Group>
+      <Group title={msg('Streaming overlay')}>
+        <div className="rounded-xl border border-line bg-raised">
+          <Row setting="streamOverlay" label={msg('Streaming overlay')} sub={tr('The song playing, its cover and progress on a page for OBS or another streaming app on this PC. This PC only. Off by default')}>
+            <Toggle label={tr('Streaming overlay')} checked={s.streamOverlay} onChange={(streamOverlay) => update({ streamOverlay })} />
+          </Row>
+          {s.streamOverlay && <OverlayPanel />}
         </div>
       </Group>
       <SoundGroup />

@@ -1907,6 +1907,11 @@ const zh: Record<string, string> = {
   'Every host Legato talked to today, and why: the app itself, its windows (YouTube’s player, sign-in pages) and plugins. Kept in memory on this PC only.': 'Legato 今天联系过的每个主机及原因：应用本身、它的窗口（YouTube 播放器、登录页面）和插件。仅保存在这台电脑的内存中。',
   'privacy network hosts servers connections today': '隐私 网络 主机 服务器 连接 今天',
   'privacy network hosts requests blocked pages': '隐私 网络 主机 请求 已拦截 页面',
+  'Streaming overlay': '直播叠加层',
+  'The song playing, its cover and progress on a page for OBS or another streaming app on this PC. This PC only. Off by default': '正在播放的歌曲、封面和进度，显示在本机 OBS 或其他直播软件可用的页面上。仅限本机。默认关闭',
+  'The streaming overlay could not start: another app may be using its port. Turn it off and on again.': '直播叠加层无法启动：其端口可能被其他应用占用。请关闭后再打开。',
+  'In OBS: Sources › Add › Browser, then paste this link. Its Custom CSS restyles the card.': '在 OBS 中：来源 › 添加 › 浏览器，然后粘贴此链接。其自定义 CSS 可改变卡片样式。',
+  'obs stream streaming twitch browser source now playing overlay': 'obs 直播 推流 twitch 浏览器源 正在播放 叠加层',
 }
 
 export default zh

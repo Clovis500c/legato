@@ -75,6 +75,8 @@ Each one small; together a reason to keep Legato open all day.
 
 ## OBS overlay for streamers
 
+Done 2026-11-02 (Settings › Playback › Streaming overlay): polling `/state` once a second rather than a WebSocket.
+
 - **Sees**: Settings › Streaming overlay: a local URL to add as a Browser Source in OBS; shows cover, title, artist,
   progress, in the app's theme or a few layouts; transparent background.
 - **How**: same LAN server as the phone remote (bound to 127.0.0.1 for this), a page receiving now-playing over a

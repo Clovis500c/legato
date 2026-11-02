@@ -24,7 +24,7 @@ use std::path::PathBuf;
 pub const FORMAT: u32 = 1;
 /// Settings that describe this PC, not the user: never synced (the update channel too: one PC can be the Beta one; the
 /// phone remote: a server on this PC's network).
-pub const LOCAL_SETTINGS: [&str; 7] = ["zoom", "miniSpot", "miniWidth", "defaultsVersion", "updateChannel", "coverCacheMb", "phoneRemote"];
+pub const LOCAL_SETTINGS: [&str; 8] = ["zoom", "miniSpot", "miniWidth", "defaultsVersion", "updateChannel", "coverCacheMb", "phoneRemote", "streamOverlay"];
 /// Library settings row holding when each interface setting last changed (unix ms).
 const TIMES: &str = "sync_times";
 /// Other library settings rows that travel (key → its stamp in TIMES).

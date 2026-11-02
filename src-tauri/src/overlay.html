@@ -1,0 +1,156 @@
+<!doctype html>
+<!-- Streaming overlay (src-tauri/src/remote.rs): what plays, for OBS's Browser Source on this PC. Transparent page; restyle
+     from the Browser Source's own Custom CSS (.card, .cover, .title, .artist, .bar, .fill). -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Legato · Overlay</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        background: transparent;
+        overflow: hidden;
+      }
+      body {
+        font-family: Roboto, 'Segoe UI', system-ui, sans-serif;
+        color: #fff;
+      }
+      .card {
+        position: fixed;
+        left: 24px;
+        bottom: 24px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        width: min(520px, calc(100vw - 48px));
+        box-sizing: border-box;
+        padding: 12px 18px 12px 12px;
+        border-radius: 16px;
+        background: rgba(12, 12, 12, 0.78);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+        transition:
+          opacity 0.5s ease,
+          transform 0.5s ease;
+      }
+      .card.off {
+        opacity: 0;
+        transform: translateY(16px);
+      }
+      .cover {
+        width: 64px;
+        height: 64px;
+        flex: none;
+        border-radius: 10px;
+        object-fit: cover;
+        background: #2a2a2a;
+      }
+      .text {
+        min-width: 0;
+        flex: 1;
+      }
+      .title,
+      .artist {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .title {
+        font-size: 18px;
+        font-weight: 600;
+      }
+      .artist {
+        margin-top: 2px;
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.72);
+      }
+      .bar {
+        height: 4px;
+        margin-top: 10px;
+        border-radius: 2px;
+        background: rgba(255, 255, 255, 0.18);
+        overflow: hidden;
+      }
+      .fill {
+        height: 100%;
+        width: 0;
+        background: #7cb8ff;
+      }
+      .swap {
+        animation: swap 0.5s ease;
+      }
+      @keyframes swap {
+        from {
+          opacity: 0;
+          transform: translateY(6px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card off" id="card">
+      <img class="cover" id="cover" alt="" />
+      <div class="text" id="text">
+        <div class="title" id="title"></div>
+        <div class="artist" id="artist"></div>
+        <div class="bar"><div class="fill" id="fill"></div></div>
+      </div>
+    </div>
+    <script>
+      const $ = (id) => document.getElementById(id)
+      const t = new URLSearchParams(location.search).get('t') || ''
+      const url = (path, more = '') => `${path}?t=${t}${more}`
+      let now = null
+      let at = 0
+      let key = ''
+      let cover = null
+      const pos = () => (now ? Math.min(now.positionMs + (now.playing ? performance.now() - at : 0), now.durationMs ?? Infinity) : 0)
+      const tick = () => {
+        const d = now?.durationMs
+        $('fill').style.width = d ? `${Math.min(100, (pos() / d) * 100)}%` : '0'
+      }
+      const show = () => {
+        $('card').classList.toggle('off', !now)
+        if (!now) return
+        // New song: its words and cover slide in.
+        const k = `${now.title}\u0000${now.artist}`
+        if (k !== key) {
+          key = k
+          $('title').textContent = now.title
+          $('artist').textContent = now.artist
+          for (const el of [$('text'), $('cover')]) {
+            el.classList.remove('swap')
+            void el.offsetWidth
+            el.classList.add('swap')
+          }
+        }
+        if (now.cover !== cover) {
+          cover = now.cover
+          if (cover) $('cover').src = url('/cover', `&v=${cover}`)
+          else $('cover').removeAttribute('src')
+        }
+        tick()
+      }
+      $('cover').onerror = () => $('cover').removeAttribute('src')
+      // Overlay turned off, Legato closed: the card fades out.
+      async function poll() {
+        try {
+          const r = await fetch(url('/state'), { cache: 'no-store' })
+          now = r.ok ? await r.json() : null
+        } catch {
+          now = null
+        }
+        at = performance.now()
+        show()
+      }
+      poll()
+      setInterval(poll, 1000)
+      setInterval(() => now?.playing && tick(), 250)
+    </script>
+  </body>
+</html>

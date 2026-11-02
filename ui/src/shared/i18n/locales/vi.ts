@@ -1907,6 +1907,11 @@ const vi: Record<string, string> = {
   'Every host Legato talked to today, and why: the app itself, its windows (YouTube’s player, sign-in pages) and plugins. Kept in memory on this PC only.': 'Mọi máy chủ Legato đã liên lạc hôm nay, và lý do: chính ứng dụng, các cửa sổ của nó (trình phát YouTube, trang đăng nhập) và plugin. Chỉ lưu trong bộ nhớ của PC này.',
   'privacy network hosts servers connections today': 'quyền riêng tư mạng máy chủ kết nối hôm nay',
   'privacy network hosts requests blocked pages': 'quyền riêng tư mạng máy chủ yêu cầu bị chặn trang',
+  'Streaming overlay': 'Lớp phủ phát trực tiếp',
+  'The song playing, its cover and progress on a page for OBS or another streaming app on this PC. This PC only. Off by default': 'Bài đang phát, ảnh bìa và tiến trình trên một trang cho OBS hoặc ứng dụng phát trực tiếp khác trên PC này. Chỉ PC này. Mặc định tắt',
+  'The streaming overlay could not start: another app may be using its port. Turn it off and on again.': 'Không thể khởi động lớp phủ phát trực tiếp: có thể ứng dụng khác đang dùng cổng của nó. Hãy tắt rồi bật lại.',
+  'In OBS: Sources › Add › Browser, then paste this link. Its Custom CSS restyles the card.': 'Trong OBS: Nguồn › Thêm › Trình duyệt, rồi dán liên kết này. CSS tùy chỉnh của nó đổi kiểu thẻ.',
+  'obs stream streaming twitch browser source now playing overlay': 'obs phát trực tiếp streaming twitch nguồn trình duyệt đang phát lớp phủ',
 }
 
 export default vi

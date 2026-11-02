@@ -2,6 +2,8 @@
 //! phone from a QR code, to play, pause, skip, seek and see what plays and what's next. Routes, token and addresses:
 //! `music_core::remote`. Keys and seeks reach the interface as the media panel's `media-key` / `media-seek` events; what
 //! plays comes from `media_update`, the queue from `remote_queue` (sent only while the remote is on).
+//! The streaming overlay (Settings › Playback, off by default) shares the server: `/overlay` for OBS on this PC; alone, the
+//! server listens on 127.0.0.1 only.
 
 use crate::{AppState, CmdResult, art, media::NowPlaying};
 use music_core::remote::{self, Route};
@@ -23,6 +25,10 @@ const MAX_OPEN: usize = 8;
 /// Songs of Up next shown on the phone.
 const MAX_NEXT: usize = 30;
 const PAGE: &str = include_str!("remote.html");
+const OVERLAY_PAGE: &str = include_str!("overlay.html");
+/// What the server runs for: the phone remote (the network), the overlay (this PC).
+static PHONE: AtomicBool = AtomicBool::new(false);
+static OVERLAY: AtomicBool = AtomicBool::new(false);
 const CSP: &str = "default-src 'none'; img-src 'self'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'";
 
 /// What plays, as the interface last said.
@@ -58,6 +64,9 @@ struct Server {
     port: u16,
     token: String,
     stop: Arc<AtomicBool>,
+    /// Listening on the network (the phone remote), else on 127.0.0.1.
+    lan: bool,
+    thread: Option<std::thread::JoinHandle<()>>,
 }
 
 /// `media_update`'s copy: kept even while the remote is off, so it starts with the song playing.
@@ -156,13 +165,16 @@ fn read_head(stream: &mut TcpStream) -> std::io::Result<String> {
     Ok(String::from_utf8_lossy(&head).into_owned())
 }
 
-fn answer(mut stream: TcpStream, app: &AppHandle, token: &str) -> std::io::Result<()> {
+fn answer(mut stream: TcpStream, app: &AppHandle, token: &str, this_pc: bool) -> std::io::Result<()> {
     stream.set_read_timeout(Some(Duration::from_secs(5)))?;
     stream.set_write_timeout(Some(Duration::from_secs(5)))?;
     let head = read_head(&mut stream)?;
     let none = || (204, String::new(), Vec::new());
-    let (status, kind, body) = match remote::route(&head, token) {
+    let route = remote::route(&head, token);
+    let route = if remote::allowed(&route, PHONE.load(Ordering::Relaxed), OVERLAY.load(Ordering::Relaxed), this_pc) { route } else { Route::No(403) };
+    let (status, kind, body) = match route {
         Route::Page => (200, "text/html; charset=utf-8".into(), PAGE_NOW.lock().unwrap().clone().into_bytes()),
+        Route::Overlay => (200, "text/html; charset=utf-8".into(), OVERLAY_PAGE.as_bytes().to_vec()),
         Route::State => (200, "application/json".into(), state_json().into_bytes()),
         Route::Cover => match tauri::async_runtime::block_on(cover(app)) {
             Some((bytes, kind)) => (200, kind, bytes),
@@ -210,13 +222,14 @@ fn serve(listener: TcpListener, app: AppHandle, token: String, stop: Arc<AtomicB
             continue;
         };
         // Other networks and a crowd of connections: closed unanswered.
-        if !stream.peer_addr().is_ok_and(|a| remote::private(a.ip())) || open.load(Ordering::Relaxed) >= MAX_OPEN {
+        let Some(peer) = stream.peer_addr().ok().map(|a| a.ip()).filter(|ip| remote::private(*ip)) else { continue };
+        if open.load(Ordering::Relaxed) >= MAX_OPEN {
             continue;
         }
         open.fetch_add(1, Ordering::Relaxed);
         let (app, token, done) = (app.clone(), token.clone(), open.clone());
         let spawned = std::thread::Builder::new().name("phone-remote-ask".into()).spawn(move || {
-            let _ = answer(stream, &app, &token);
+            let _ = answer(stream, &app, &token, peer.is_loopback());
             done.fetch_sub(1, Ordering::Relaxed);
         });
         if spawned.is_err() {
@@ -226,27 +239,34 @@ fn serve(listener: TcpListener, app: AppHandle, token: String, stop: Arc<AtomicB
 }
 
 fn stop_server() {
-    let Some(s) = SERVER.lock().unwrap().take() else { return };
+    let Some(mut s) = SERVER.lock().unwrap().take() else { return };
     s.stop.store(true, Ordering::Relaxed);
     // Wakes the waiting accept, which then sees the flag.
     let _ = TcpStream::connect_timeout(&SocketAddr::from((Ipv4Addr::LOCALHOST, s.port)), Duration::from_millis(300));
+    // Its port free again before a new server binds: the overlay's link in OBS keeps working.
+    if let Some(t) = s.thread.take() {
+        let _ = t.join();
+    }
 }
 
-/// The server for this token: the running one, else a new one on the first free port.
+/// The server for this token, on the network while the phone remote is on (else this PC only): the running one, else
+/// a new one on the first free port.
 fn serve_with(app: &AppHandle, token: &str) -> CmdResult<u16> {
+    let lan = PHONE.load(Ordering::Relaxed);
     let mut server = SERVER.lock().unwrap();
-    if let Some(s) = server.as_ref().filter(|s| s.token == token) {
+    if let Some(s) = server.as_ref().filter(|s| s.token == token && s.lan == lan) {
         return Ok(s.port);
     }
     drop(server);
     stop_server();
-    let listener = (PORT..PORT + 10).find_map(|p| TcpListener::bind((Ipv4Addr::UNSPECIFIED, p)).ok()).ok_or("No free port for the phone remote")?;
+    let ip = if lan { Ipv4Addr::UNSPECIFIED } else { Ipv4Addr::LOCALHOST };
+    let listener = (PORT..PORT + 10).find_map(|p| TcpListener::bind((ip, p)).ok()).ok_or("No free port for the phone remote")?;
     let port = listener.local_addr().map_err(|e| e.to_string())?.port();
     let stop = Arc::new(AtomicBool::new(false));
     let (app, token_in, stop_in) = (app.clone(), token.to_string(), stop.clone());
-    std::thread::Builder::new().name("phone-remote".into()).spawn(move || serve(listener, app, token_in, stop_in)).map_err(|e| e.to_string())?;
+    let thread = std::thread::Builder::new().name("phone-remote".into()).spawn(move || serve(listener, app, token_in, stop_in)).map_err(|e| e.to_string())?;
     server = SERVER.lock().unwrap();
-    *server = Some(Server { port, token: token.to_string(), stop });
+    *server = Some(Server { port, token: token.to_string(), stop, lan, thread: Some(thread) });
     Ok(port)
 }
 
@@ -278,25 +298,53 @@ pub struct RemoteLink {
 /// `fresh`: a new secret, so links given before stop working.
 #[tauri::command]
 pub async fn remote_start(app: AppHandle, state: State<'_, AppState>, labels: HashMap<String, String>, fresh: bool) -> CmdResult<RemoteLink> {
-    let token = match state.store.load::<String>(TOKEN).filter(|t| t.len() == 32 && !fresh) {
-        Some(t) => t,
-        None => {
-            let t = remote::new_token();
-            state.store.save(TOKEN, &t).map_err(|e| e.to_string())?;
-            t
-        }
-    };
+    let token = token(&state, fresh)?;
     *PAGE_NOW.lock().unwrap() = fill(PAGE, &labels);
+    PHONE.store(true, Ordering::Relaxed);
     let port = serve_with(&app, &token)?;
     let url = lan_ip().map(|ip| format!("http://{ip}:{port}/?t={token}"));
     let qr = url.as_deref().and_then(music_core::share::qr_modules).map(|(size, dark)| (size, dark.iter().map(|&d| if d { '1' } else { '0' }).collect()));
     Ok(RemoteLink { url, qr })
 }
 
+/// The link's secret, a new one when `fresh` (older links stop working, the overlay's too).
+fn token(state: &AppState, fresh: bool) -> CmdResult<String> {
+    if let Some(t) = state.store.load::<String>(TOKEN).filter(|t| t.len() == 32 && !fresh) {
+        return Ok(t);
+    }
+    let t = remote::new_token();
+    state.store.save(TOKEN, &t).map_err(|e| e.to_string())?;
+    Ok(t)
+}
+
 #[tauri::command]
-pub async fn remote_stop() {
-    stop_server();
+pub async fn remote_stop(app: AppHandle, state: State<'_, AppState>) -> CmdResult<()> {
+    PHONE.store(false, Ordering::Relaxed);
     NEXT.lock().unwrap().clear();
+    // The overlay still on: its server again, on this PC only.
+    if OVERLAY.load(Ordering::Relaxed) {
+        serve_with(&app, &token(&state, false)?)?;
+    } else {
+        stop_server();
+    }
+    Ok(())
+}
+
+/// Starts (or keeps) the server for the streaming overlay; its link, for OBS on this PC.
+#[tauri::command]
+pub async fn overlay_start(app: AppHandle, state: State<'_, AppState>) -> CmdResult<String> {
+    OVERLAY.store(true, Ordering::Relaxed);
+    let token = token(&state, false)?;
+    let port = serve_with(&app, &token)?;
+    Ok(format!("http://127.0.0.1:{port}/overlay?t={token}"))
+}
+
+#[tauri::command]
+pub async fn overlay_stop() {
+    OVERLAY.store(false, Ordering::Relaxed);
+    if !PHONE.load(Ordering::Relaxed) {
+        stop_server();
+    }
 }
 
 /// Up next as the interface shows it (first songs only).

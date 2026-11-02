@@ -335,7 +335,8 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       Animations off).
 - [ ] `S` Waveform progress bar for local files: their levels, read once by the engine and kept (YouTube gives none).
 - [ ] `S` Focus / workout sessions: a timer, no-lyrics or high-BPM mix, a summary after.
-- [ ] `S` Now-playing overlay for streamers (a local page OBS can show, the app's theme).
+- [x] `S` Now-playing overlay for streamers (a local page OBS can show, the app's theme). (2026-11-02: Settings › Playback ›
+      Streaming overlay, `/overlay` on the phone remote's server, 127.0.0.1 only when alone; OBS's Custom CSS restyles it.)
 - [ ] `S` Hide explicit songs (a filter, YouTube Music's flag when there is one).
 - [ ] `S` Bookmarks inside a song (a moment to come back to, a note), Spicetify's Bookmark.
 - [ ] `S` Full cover display: the cover alone, huge, title and progress over it (Spicetify's Full App Display); a clock
