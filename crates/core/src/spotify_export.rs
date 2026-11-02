@@ -9,7 +9,7 @@ use crate::model::{Source, Track};
 use crate::songlist::cells;
 use anyhow::{Context, bail};
 use serde::{Deserialize, Serialize};
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::io::{Cursor, Read, Seek};
 use std::path::Path;
 use std::time::Duration;
@@ -53,6 +53,12 @@ pub fn signal(source: &str, message: &str) -> Option<Signal> {
         "refused" => Some(Signal::Refused),
         _ => None,
     }
+}
+
+/// A line of Exportify's progress bar as it exports ("Exporting Cool Music...", in the page's language), only from its page.
+pub fn label(source: &str, message: &str) -> Option<String> {
+    let text = message.strip_prefix(SIGNAL)?.strip_prefix("name:")?;
+    (source.starts_with(PAGE) && !text.trim().is_empty()).then(|| text.chars().take(MAX_TEXT).collect())
 }
 
 /// Why no lists came.
@@ -223,6 +229,80 @@ pub fn list(file: &str, text: &str) -> Option<ExportedList> {
     Some(ExportedList { id, name: list_name(stem), tracks })
 }
 
+/// Exportify's file name for a list (`PlaylistExporter.fileName`): each run of these characters one "_", then lowered.
+fn file_stem(name: &str) -> String {
+    let mut out = String::with_capacity(name.len());
+    let mut run = false;
+    for c in name.chars() {
+        let cut = c.is_ascii_control() || "/\\<>:;\"|=,.?*[] ".contains(c);
+        if !cut {
+            out.push(c);
+        } else if !run {
+            out.push('_');
+        }
+        run = cut;
+    }
+    out.to_lowercase()
+}
+
+/// A file's list ("cool_music (1)", Exportify's second list of that name): its file name, and which one in export order.
+fn stem_of(id: &str) -> Option<(&str, usize)> {
+    let stem = id.strip_prefix("export:")?;
+    if let Some((base, n)) = stem.strip_suffix(')').and_then(|s| s.rsplit_once(" ("))
+        && let Ok(n) = n.parse()
+    {
+        return Some((base, n));
+    }
+    Some((stem, 0))
+}
+
+/// The real names of an Exportify file's lists, from its progress bar's lines as the page exported them. Each line is the
+/// same words around a name (the page's language): the cut most lines agree on gives the names (one line: its shortest
+/// name). A list no line names keeps its file's name.
+pub fn name_lists(lists: &mut [ExportedList], labels: &[String]) {
+    let stems: HashSet<&str> = lists.iter().filter_map(|l| stem_of(&l.id)).map(|(s, _)| s).collect();
+    let longest = stems.iter().map(|s| s.chars().count()).max().unwrap_or(0);
+    // Per line: each cut (chars before, chars after) that leaves a list's file name, and that name.
+    let cuts: Vec<Vec<(usize, usize, String)>> = labels
+        .iter()
+        .take(MAX_LISTS * 2)
+        .map(|label| {
+            let chars: Vec<char> = label.chars().take(MAX_TEXT).collect();
+            let mut found = Vec::new();
+            for a in 0..chars.len() {
+                for b in a + 1..=chars.len() {
+                    let name: String = chars[a..b].iter().collect();
+                    let stem = file_stem(&name);
+                    if stem.chars().count() > longest {
+                        break;
+                    }
+                    if stems.contains(stem.as_str()) {
+                        found.push((a, chars.len() - b, name));
+                    }
+                }
+            }
+            found
+        })
+        .collect();
+    let mut votes: HashMap<(usize, usize), usize> = HashMap::new();
+    for (a, after, _) in cuts.iter().flatten() {
+        *votes.entry((*a, *after)).or_default() += 1;
+    }
+    let Some(cut) = votes.into_iter().max_by_key(|&((a, after), n)| (n, a, after)).map(|(c, _)| c) else { return };
+    let mut names: HashMap<String, Vec<String>> = HashMap::new();
+    for (_, _, name) in cuts.into_iter().flatten().filter(|(a, after, _)| (*a, *after) == cut) {
+        names.entry(file_stem(&name)).or_default().push(name.trim().to_string());
+    }
+    for l in lists {
+        if let Some((stem, n)) = stem_of(&l.id)
+            && let Some(name) = names.get(stem).and_then(|v| v.get(n))
+            && !name.is_empty()
+        {
+            l.name = name.clone();
+        }
+    }
+}
+
 // Spotify's own data export (account › Privacy settings › Download your data, days to come): `Playlist1.json` (2, 3…
 // for many lists), `YourLibrary.json` for Liked Songs, in a ZIP with the account's other files (never opened). Names and
 // ids only: lengths and covers come with the versions found.
@@ -302,7 +382,7 @@ fn data_local(uri: &str) -> Option<Track> {
 
 /// Exportify's id for the same list ("cool_music"): either route refreshes it, and this one brings the real name.
 fn data_id(name: &str) -> String {
-    format!("export:{}", name.to_lowercase().split_whitespace().collect::<Vec<_>>().join("_").chars().take(100).collect::<String>())
+    format!("export:{}", file_stem(name).chars().take(100).collect::<String>())
 }
 
 /// The lists of one data export file (by its text: a downloaded copy may be renamed). Episodes left out.
@@ -418,6 +498,51 @@ mod tests {
             zip.write_all(text.as_bytes()).unwrap();
         }
         zip.finish().unwrap().into_inner()
+    }
+
+    fn exported(stems: &[&str]) -> Vec<ExportedList> {
+        stems.iter().map(|s| ExportedList { id: format!("export:{s}"), name: list_name(s), tracks: Vec::new() }).collect()
+    }
+
+    #[test]
+    fn names_files_as_exportify_does() {
+        assert_eq!(file_stem("Cool Music 🎶"), "cool_music_🎶");
+        assert_eq!(file_stem("Chill, vibes: 2024 / remix?"), "chill_vibes_2024_remix_");
+        assert_eq!(file_stem("Rock & Roll"), "rock_&_roll");
+        assert_eq!(file_stem("a\tb__c"), "a_b__c");
+        assert_eq!(data_id("Chill, Vibes"), "export:chill_vibes");
+    }
+
+    #[test]
+    fn takes_the_real_names_from_the_progress_bar() {
+        let mut lists = exported(&["cool_music_🎶", "chill_vibes_2024", "rock", "rock (1)", "not_named"]);
+        lists.insert(0, ExportedList { id: LIKED.to_string(), name: "Liked Songs".to_string(), tracks: Vec::new() });
+        let labels = [
+            "Chargement des playlists 1-20 sur 45...",
+            "Exportation de Liked Songs...",
+            "Exportation de Cool Music 🎶...",
+            "Exportation de Chill, Vibes 2024...",
+            "Exportation de Rock...",
+            "Exportation de ROCK...",
+            "Terminé!",
+        ]
+        .map(String::from);
+        name_lists(&mut lists, &labels);
+        let names: Vec<_> = lists.iter().map(|l| l.name.as_str()).collect();
+        assert_eq!(names, ["Liked Songs", "Cool Music 🎶", "Chill, Vibes 2024", "Rock", "ROCK", "Not named"]);
+    }
+
+    #[test]
+    fn one_line_gives_its_shortest_name() {
+        let mut lists = exported(&["rock_"]);
+        name_lists(&mut lists, &["Exporting Rock....".to_string()]);
+        assert_eq!(lists[0].name, "Rock.");
+        let mut lists = exported(&["cool_music"]);
+        name_lists(&mut lists, &[]);
+        assert_eq!(lists[0].name, "Cool music");
+        assert_eq!(label("https://exportify.app/?code=x", "legato-exportify:name:Exporting Rock..."), Some("Exporting Rock...".to_string()));
+        assert_eq!(label("https://exportify.app.evil.com/", "legato-exportify:name:Exporting Rock..."), None);
+        assert_eq!(label("https://exportify.app/", "legato-exportify:name: "), None);
     }
 
     #[test]

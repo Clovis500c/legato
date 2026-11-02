@@ -3,7 +3,34 @@
 Where the work stands, for a session or an account with no history here. Read this, then `CLAUDE.md` (rules, map of the
 code), then [plan-v2.md](plan-v2.md) (open work). Rewrite it when a branch or the next step changes.
 
-Written 2026-11-01.
+Written 2026-11-01, run section 2026-11-02.
+
+## Autonomous run 2026-11-02 (in progress)
+
+The owner's ask (2026-11-02 morning, away from the PC, no question can be answered): the whole plan, most important
+first, alone; stop at 95 % of the weekly limit (wrap up from 90 %, to leave room for the release); resume alone after
+each 5-hour limit; then a report and the Beta pushed (the owner tries it, Stable later). Started at 64 % of the week.
+A recurring job of this session (`CronCreate`, every 20 min, session-only) resumes the run after a limit; it reads this
+section. Same rules as the run below, except the push at the end, which the owner asked for.
+
+Order (each step: code, tests, `pnpm check` green, one commit on `platforms`, line ticked in plan-v2):
+
+1. Platforms: Exportify's real playlist names (read from its progress bar as it exports).
+2. Features › High: library health page; same loudness across sources; accessibility pass; phone remote.
+3. Workflow: release notes grouped, shown after an update.
+4. Features › Medium `S`/`S-M`: Jump List, pick up on the other PC, privacy page; then `M` ones without a new
+   account (Wrapped, …).
+5. Visualizer v2 › High `S` lines, then Optimisation, then Low.
+
+Wrap-up (at 90 % of the week, or when nothing is left): finish or drop the step in progress; rewrite this section as
+done; `/release-check`; `git fetch` and merge `origin/master` if it moved; `git push origin platforms:master` (a Beta;
+a change in `site/` deploys the website too); watch `check` then `release` on GitHub (`gh run list`), fix a red run;
+the report to the owner in French (in the chat and `docs/notes/report-2026-11-02.md`, not committed), sent with
+`SendUserFile`; `CronDelete` the run's jobs (`CronList`).
+
+Done in this run (newest last; `git log` has the hashes), none tried in the real app yet:
+
+- Exportify's lists keep their real names (its progress bar's lines, any language), not "Cool music".
 
 ## Autonomous run (the owner's ask, 2026-10-31 evening)
 

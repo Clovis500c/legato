@@ -11,7 +11,16 @@
   // Any change on the page while it reads, its progress bar first. No count: silence is the only sign.
   const watchReading = () => {
     let sent = 0
+    let line = ''
     const busy = () => {
+      // "Exporting Cool Music...": the list's real name, its file's is lowered with underscores. Once per list.
+      const bar = document.querySelector('.progress-bar')
+      const now = bar?.textContent?.trim().slice(0, 300) ?? ''
+      const key = `${bar?.getAttribute('aria-valuenow')}|${now}`
+      if (now && key !== line) {
+        line = key
+        post(`name:${now}`)
+      }
       if (Date.now() - sent < 5000) return
       sent = Date.now()
       post('busy')

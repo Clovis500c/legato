@@ -27,6 +27,8 @@ static HELD: Mutex<Vec<ExportedList>> = Mutex::new(Vec::new());
 static SAVING: Mutex<Option<PathBuf>> = Mutex::new(None);
 /// The page's signals. A new window replaces it, which ends the last one's watch.
 static SIGNALS: Mutex<Option<UnboundedSender<Signal>>> = Mutex::new(None);
+/// Its progress bar's lines while it exports: the lists' real names (its files have them lowered, with underscores).
+static NAMES: Mutex<Vec<String>> = Mutex::new(Vec::new());
 
 /// Exportify's window ended: its lists, or why not.
 #[derive(Clone, Serialize, ts_rs::TS)]
@@ -79,9 +81,10 @@ async fn watch(app: AppHandle, mut signals: UnboundedReceiver<Signal>) {
     }
 }
 
-/// Read and held; what the interface shows of it.
-fn hold(path: &Path) -> anyhow::Result<Vec<SpotifyList>> {
-    let lists = spotify_export::read(path)?;
+/// Read and held; what the interface shows of it. `labels`: the page's lines naming its lists.
+fn hold(path: &Path, labels: &[String]) -> anyhow::Result<Vec<SpotifyList>> {
+    let mut lists = spotify_export::read(path)?;
+    spotify_export::name_lists(&mut lists, labels);
     let shown = lists.iter().map(|l| SpotifyList { id: l.id.clone(), name: l.name.clone(), cover: l.cover().map(str::to_string), songs: Some(l.tracks.len() as u32) }).collect();
     *HELD.lock().unwrap() = lists;
     Ok(shown)
@@ -102,11 +105,12 @@ fn on_download(wv: tauri::Webview, event: DownloadEvent<'_>) -> bool {
         }
         DownloadEvent::Finished { success, .. } => {
             let path = SAVING.lock().unwrap().take();
+            let labels = std::mem::take(&mut *NAMES.lock().unwrap());
             let app = wv.app_handle().clone();
             tauri::async_runtime::spawn(async move {
                 let Some(path) = path else { return };
                 let read = path.clone();
-                let got = tauri::async_runtime::spawn_blocking(move || if success { hold(&read) } else { anyhow::bail!("download failed") }).await;
+                let got = tauri::async_runtime::spawn_blocking(move || if success { hold(&read, &labels) } else { anyhow::bail!("download failed") }).await;
                 let _ = std::fs::remove_file(path);
                 match got.map_err(anyhow::Error::from).and_then(|r| r) {
                     Ok(lists) => report(&app, lists, None),
@@ -136,8 +140,14 @@ pub async fn spotify_export_open(app: AppHandle, state: State<'_, AppState>) -> 
     if let Some(wv) = app.get_webview(LABEL) {
         let (tx, rx) = tokio::sync::mpsc::unbounded_channel();
         *SIGNALS.lock().unwrap() = Some(tx);
+        NAMES.lock().unwrap().clear();
         crate::ytwatch::on_message(&wv, |source, message| {
-            if let Some(s) = spotify_export::signal(source, message)
+            if let Some(line) = spotify_export::label(source, message) {
+                let mut names = NAMES.lock().unwrap();
+                if names.len() < 1000 {
+                    names.push(line);
+                }
+            } else if let Some(s) = spotify_export::signal(source, message)
                 && let Some(signals) = SIGNALS.lock().unwrap().as_ref()
             {
                 let _ = signals.send(s);
@@ -154,7 +164,7 @@ pub async fn spotify_export_open(app: AppHandle, state: State<'_, AppState>) -> 
 #[tauri::command]
 pub async fn spotify_export_file(state: State<'_, AppState>, path: String) -> CmdResult<Vec<SpotifyList>> {
     state.spotify_takes()?;
-    tauri::async_runtime::spawn_blocking(move || hold(Path::new(&path))).await.map_err(err)?.map_err(err)
+    tauri::async_runtime::spawn_blocking(move || hold(Path::new(&path), &[])).await.map_err(err)?.map_err(err)
 }
 
 /// The dialog is gone: its window and the lists go too.

@@ -99,8 +99,12 @@ What the services allow, read on 2026-10-31 (specs in [ideas/catch-up.md](ideas/
 - [x] `M` Import under YouTube's limit (user's ask 2026-10-31): a line for the time left, one for the limit with its countdown,
       held-back time counted in the estimate, one search settling every song in line it brought back. Measured on an address
       already limited: 44 searches, then blocked 5 min, then about one every 15 s. The gain from `Line` isn't measured yet.
-- [ ] `S` Exportify's file names are lowered, with underscores ("Cool music" for "Cool Music"): a real name needs its
-      playlist column ([exportify#194](https://github.com/watsonbox/exportify/issues/194)) or the first way's names.
+- [x] `S` Exportify's file names are lowered, with underscores ("Cool music" for "Cool Music"): the real names now come
+      from its progress bar as it exports ("Exporting Cool Music...", any language: `exportify.js` sends each line, the
+      cut most lines agree on gives the names, matched to the files by Exportify's own file-name rule,
+      `spotify_export::name_lists`). Spotify's data export ids follow that rule too. Its playlist column
+      ([exportify#194](https://github.com/watsonbox/exportify/issues/194)) would be simpler. Not seen on the real page
+      yet (the owner's account).
 - [x] `S` Spotify's `spotify_export::list` drops local files (8 in the user's export): they come as songs to find, named
       from their columns or their form-encoded URI, searched on YouTube. Not tried on the user's export yet.
 - [x] `S` Spotify's "private or doesn't exist" message says what works instead: Connect Spotify, in the user's language
