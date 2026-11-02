@@ -57,6 +57,49 @@ Why this rather than an export file: both directions in one step instead of a fi
 stick or in a mail; the code seals everything, secrets included; no stale copy to import by mistake. A file still
 works for those who want it: any folder (USB stick, NAS) can be the sync folder.
 
+## Your devices on the same network (v2, 2026-11-02)
+
+The owner's ask (2026-11-02): a phone with a PC as well as two PCs, either way round, with a code or a QR code; the
+devices listed with their kind and whether they are here; trusted devices that never ask for the code again; a sync
+each time two of them share a network. In the interface this replaces the one-off swap above, which still answers an
+older Legato's code ("Enter a code" falls back to it when no new device offers one).
+
+- **Sync over the network** (per device, off until used): the device announces itself on the local network (mDNS
+  `_legato._tcp`: its random sync id, name, system and form, a stamp; nothing else), listens on TCP 47822 (another
+  port when taken) and lists the other Legato devices it hears. Off: nothing announced, nothing listening.
+- **Pairing**: one device shows a 6-digit code and its QR code (`legato://pair?c=<code>&h=<ip:port>,…&i=<id>`); the
+  other types the code (offers found by mDNS, flag `c=1`) or scans the QR (a phone: no mDNS needed, the addresses are
+  in it). SPAKE2 from the code as before: 5 wrong codes or 10 minutes and the offer closes. Each side says whether it
+  trusts the other ("Trust this device", on by default); when both do, both keep a pair key (SHA-256 of a label and the
+  session key: 256 bits) in the keychain (`sync_peer_<id>`). Then the snapshots are swapped, secrets included (the
+  channel is sealed).
+- **Trusted devices**: later syncs need no code: SPAKE2 keyed by the pair key, its identity bound to both ids (nothing
+  to guess, a fresh session key each time). "Forget" deletes the key here; the other side's next try fails and shows
+  "Pair again".
+- **Sync automatically** (per device, on by default): every minute, and as soon as a trusted device shows up, its stamp
+  (TXT `s`: 12 hex of SHA-256 of its snapshot without its time) is compared: a sync runs when the other's stamp
+  changed since the last merge, or this one's since the last send. When both sync automatically, the smaller id starts.
+  Off: "Sync now" only. Every 10 minutes a sync runs anyway when a stamp can't be heard.
+- **Here or not**: on this network = resolved by mDNS and not withdrawn, or reached in the last 3 minutes; else "Not on
+  this network" with the last sync. The last addresses are kept per device and tried when mDNS hears nothing (Wi-Fi
+  that drops multicast, Android without its multicast lock).
+- **Wire**: frames of a 4-byte length and bytes. A hello in clear (1 KB at most): `{"v":2,"op":"pair"}` or
+  `{"v":2,"op":"sync","from":<id>,"to":<id>}`. After the handshake every message is sealed (ChaCha20-Poly1305, a
+  counter nonce per direction). The server's intro first (id, name, system, form, port, trust; 4 KB at most), then the
+  client's; snapshots (64 MB at most) flow only once both intros opened, so nobody without the code gets a big buffer.
+  Then an ack.
+- **Only this network**: connections from private, link-local or loopback addresses (`remote::private`), 4 at a time,
+  a timeout on every step.
+- **Kinds**: system `windows | macos | linux | android | ios`, form `tower | laptop | desktop | phone | tablet`.
+  Windows: a laptop when it has a system battery (`GetSystemPowerStatus`), else a tower. The list draws the form with
+  the system's logo as a badge, and a dot with words for "on this network".
+- **Never**: a pair key, a code or a snapshot in the log; nothing through the internet; a device heard but never paired
+  gets nothing.
+
+Code: `crates/core` `devices.rs` (kinds, the QR link, who starts), `crates/connectors` `devices.rs` (wire, pairing,
+trusted sync, presence), `src-tauri` `devices.rs` (listener, presence, the auto timer, keychain, commands),
+`ui/src/features/syncmode/Devices.tsx`.
+
 ## Conflicts
 
 Newest change wins, per item: a whole playlist (its `updated`), a setting key, a removed song, a preference, a Live
