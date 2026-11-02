@@ -270,9 +270,10 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
   - [x] Android in every Beta (2026-11-02): `release.yml` builds and signs the APK (Actions secrets
         `ANDROID_KEYSTORE` + `ANDROID_KEYSTORE_PASSWORD`) and attaches it to the release; the welcome, About, Privacy
         and the player bar say phone instead of PC on the phone.
-  - [ ] Android: the music goes on when the app leaves the screen or is closed with Back, like YouTube Premium (the
-        owner's request, 2026-11-03; against YouTube's terms, said): Back → background, a `mediaPlayback` foreground
-        service with its media notification, the WebView kept awake and YouTube's player told it's visible.
+  - [x] Android: the music goes on when the app leaves the screen, like YouTube Premium (the owner's request,
+        2026-11-03; against YouTube's terms, said): a `mediaPlayback` foreground service while it plays, the WebView
+        kept awake and YouTube's frames told they're visible. Try it on the owner's phone.
+  - [ ] Android: play / pause / next in the playback notification (a MediaSession), Back on Android 8 to 11.
   - [ ] Device sync carries every setting (the owner's test, 2026-11-03, phone and PC on v1.1.603: not all came
         across), except what belongs to one device (the window, start with Windows, global keys, the update
         channel…), listed in one place; the phone keeps desktop-only ones without showing them.

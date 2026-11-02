@@ -56,17 +56,17 @@ every Beta: `release.yml`'s last step builds it on the Windows runner (the runne
 holds the Windows Beta back. First one: v1.1.603 (2026-11-02), signed with the same key as the APK built on this
 PC (it installs over it); Android's own third-party notices from the next Beta on (`notices.mjs aarch64-linux-android`).
 
-First next, the owner's request (2026-11-03): on the phone the music goes on when the app leaves the screen (home,
-another app, screen off) or is closed with Back, like YouTube Premium. Against YouTube's terms (background play is a
-Premium feature), said to the owner. The parts: Back on the home screen → `moveTaskToBack(true)` in `MainActivity.kt`
-instead of finishing; a foreground service (type `mediaPlayback`: permissions `FOREGROUND_SERVICE` and
-`FOREGROUND_SERVICE_MEDIA_PLAYBACK`, Android 13's `POST_NOTIFICATIONS`) while something plays, with a MediaSession
-notification (play / pause / next: the Android twin of `media.rs`); the WebView never paused when the activity stops,
-and YouTube's player told the page is visible (`document.hidden`, `visibilityState`, no `visibilitychange`; first find
-how the player is embedded on Android). Swiping the app away from the recent apps kills its WebView: YouTube stops
-there, only the native player (local files) could go on in the service. Try it on the owner's phone.
+Background play on the phone (2026-11-03, the owner's request; against YouTube's terms, background play being a
+Premium feature, said): `PlaybackService.kt`, a `mediaPlayback` foreground service started by `MainActivity` while on
+screen, stops itself within a minute once off screen and silent (`AudioManager.isMusicActive`), so the process is
+neither frozen nor killed; `MainActivity` undoes wry's `WebView.onPause()` and, with androidx.webkit's document-start
+script in YouTube's frames only, keeps `document.hidden` false and swallows `visibilitychange`. Back at the root
+already sends the app to the background on Android 12+ (8 to 11 still close it). Checked on the emulator: the service
+runs on screen and after Home, then stops in silence; the music itself behind other apps is for the owner's phone.
+Swiping the app away from the recent apps stops everything (`stopWithTask`). Still to do: play / pause / next in the
+notification (a MediaSession, the Android twin of `media.rs`), Back on Android 8 to 11.
 
-Then, the owner's test (2026-11-03, phone and PC on Beta v1.1.603): the sync between them runs, but not every setting comes
+First next, the owner's test (2026-11-03, phone and PC on Beta v1.1.603): the sync between them runs, but not every setting comes
 across. To do: the device sync carries every setting, except what belongs to one device (the window, start with
 Windows, global keys, the update channel…: listed in one place, with a test), and the phone keeps the desktop-only
 ones without showing them. Look at what `music_core::syncmode`'s snapshot takes from the settings and what the UI's
