@@ -265,8 +265,10 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
         NDK_HOME). Checked: a hello-world built for ARM64 by NDK r30.
   - [x] Android, first run (2026-11-02): Tauri's Android project, rustls on Android, desktop-only parts gated, the
         multicast lock, the phone's name; a debug APK starts on the emulator with the phone layout.
-  - [ ] Android, still: the phone's texts and screens, a keychain on Android, the QR scanner, playback in the
-        background, pairing tried with a real phone, a signed release APK.
+  - [x] Android release APK (2026-11-02): arm64, signed from a local keystore (`keystore.properties`, out of git),
+        secrets in a private file on the phone (`secrets::FileStore`); starts on the emulator, sent to the owner.
+  - [ ] Android, still: the phone's texts and screens, the QR scanner, playback in the background, pairing tried with
+        a real phone, secrets in Android's Keystore, a CI job for the signed APK (keystore secret: owner's OK), the Beta.
   - [ ] Beta with the APK (CI builds and signs it).
   - [ ] iPhone: waits for the owner's signing choice (Apple Developer Program, or an unsigned .ipa).
 

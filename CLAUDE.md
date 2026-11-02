@@ -53,7 +53,8 @@ Design direction (v2): `docs/design.md`; mockups in the Figma file "Untitled" (t
 - `pnpm test` / `cargo test --workspace` separately
 - `pnpm e2e`: smoke test of the built app (Windows; `e2e/`, `docs/development.md`). Its cargo feature `e2e` stays off in every normal build: only there may an env var move the network (`src-tauri/src/hosts.rs`)
 - `pnpm build`: installer
-- Android: `. C:\dev\android\env.ps1; pnpm tauri android build --debug --target x86_64 --apk` (emulator AVD `legato36`).
+- Android: `. C:\dev\android\env.ps1; pnpm tauri android build --debug --target x86_64 --apk` (emulator AVD `legato36`);
+  a phone's APK: `--target aarch64 --apk`, signed when `src-tauri/gen/android/keystore.properties` exists (never in git).
 - `pnpm bench`: start time, RAM and CPU of the release build on 10 000 songs, under its own identifier `app.legato.desktop.bench`
   and data (`--quick` for a short run; a full run adds its row to `docs/performance.md`). Details: `docs/performance.md`.
 

@@ -38,12 +38,21 @@ cookie and aborted the app); `MainActivity.kt`: the multicast lock (mDNS) and th
 the phone's name from its system properties. Build: `. C:\dev\android\env.ps1; pnpm tauri android build --debug --target
 x86_64 --apk`, then `adb install -r src-tauri/gen/android/app/build/outputs/apk/universal/debug/app-universal-debug.apk`.
 
+Release APK (2026-11-02 night): `. C:\dev\android\env.ps1; pnpm tauri android build --target aarch64 --apk` →
+`src-tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release.apk` (25.5 MB, arm64 only), signed
+when `src-tauri/gen/android/keystore.properties` exists (out of git: `storeFile`, `password`, `keyAlias`). The
+keystore is `C:\dev\android\signing\legato-release.jks` (alias `legato`, a copy of its properties beside it): lost,
+and phones can't take a later APK without uninstalling, so the owner backs it up. No updater on phones (desktop only):
+a new APK installs over the old one. Secrets on Android: `secrets::FileStore`, one `secrets.json` in the app's private
+data folder. The signed APK starts on the emulator (arm64 under translation) and shows the welcome; sent to the owner
+to try on their phone, never run on a real one yet.
+
 Next, in order: the phone's texts and screens (the welcome and empty states speak of a PC, desktop-only Settings rows
-shown), secrets on Android (`keyring` has no store there: Android's Keystore), the QR scanner
-(`tauri-plugin-barcode-scanner`, reads `legato://pair?`), playback in the background (foreground service, media
-notification), pairing tried with a real phone on the same Wi-Fi (the emulator sits behind its own NAT), a release APK
-(arm64, signed: a keystore as a GitHub secret needs the owner's OK) and its CI job, then the Beta. Workflows after the
-weekly reset (2026-11-04 08:00 Paris), per the owner's choice.
+shown), the QR scanner (`tauri-plugin-barcode-scanner`, reads `legato://pair?`), playback in the background
+(foreground service, media notification), pairing tried with a real phone on the same Wi-Fi (the emulator sits behind
+its own NAT), secrets in Android's Keystore, a CI job building the signed APK (the keystore as a GitHub secret needs
+the owner's OK), then the Beta with the APK. Workflows after the weekly reset (2026-11-04 08:00 Paris), per the owner's
+choice.
 
 ## Autonomous run 2026-11-02 (done)
 
