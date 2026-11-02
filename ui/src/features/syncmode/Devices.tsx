@@ -36,7 +36,7 @@ function Row({ r, busy, onSync, onPair, onForget }: { r: SyncDeviceRow; busy: bo
           <span className="truncate">{r.name}</span>
           {ok && <ShieldCheck size={13} weight="fill" className="shrink-0 text-ink-3" aria-hidden />}
         </span>
-        <span className="truncate text-xs text-ink-2">
+        <span className="line-clamp-2 text-xs text-ink-2">
           {kind} · {rowNote(r, timeAgo)}
         </span>
       </span>
@@ -84,6 +84,7 @@ function AddDevice({ mode: first, name, onClose }: { mode: 'show' | 'enter'; nam
       (o) => {
         if (live) {
           code = o.code
+          setNow(Date.now())
           setOffer(o)
         } else void api.deviceOfferStop(o.code)
       },
@@ -226,7 +227,7 @@ export function Devices() {
           <DeviceIcon os={s.os} form={s.form} label={kind} />
           <span className="flex min-w-0 flex-1 flex-col gap-0.5">
             <span className="truncate text-[0.8125rem] font-medium">{s.name}</span>
-            <span className="truncate text-xs text-ink-2">
+            <span className="line-clamp-2 text-xs text-ink-2">
               {tr('This device')} · {kind}
             </span>
           </span>
