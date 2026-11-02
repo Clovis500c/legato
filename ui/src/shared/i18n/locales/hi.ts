@@ -1874,6 +1874,10 @@ const hi: Record<string, string> = {
   'Nothing to fix': 'ठीक करने को कुछ नहीं',
   'Find another version': 'दूसरा संस्करण ढूँढें',
   'It plays now': 'अब चलता है',
+  'Fixed': 'ठीक किया गया',
+  'Faster': 'और तेज़',
+  'Small fixes and improvements.': 'छोटे सुधार और बेहतरी।',
+  'And {n} more': 'और {n} अन्य',
 }
 
 export default hi

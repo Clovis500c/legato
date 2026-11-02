@@ -1874,6 +1874,10 @@ const ru: Record<string, string> = {
   'Nothing to fix': 'Исправлять нечего',
   'Find another version': 'Найти другую версию',
   'It plays now': 'Теперь играет',
+  'Fixed': 'Исправлено',
+  'Faster': 'Быстрее',
+  'Small fixes and improvements.': 'Небольшие исправления и улучшения.',
+  'And {n} more': 'И ещё {n}',
 }
 
 export default ru

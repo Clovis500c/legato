@@ -1874,6 +1874,10 @@ const id: Record<string, string> = {
   'Nothing to fix': 'Tidak ada yang perlu diperbaiki',
   'Find another version': 'Cari versi lain',
   'It plays now': 'Sekarang bisa diputar',
+  'Fixed': 'Diperbaiki',
+  'Faster': 'Lebih cepat',
+  'Small fixes and improvements.': 'Perbaikan dan peningkatan kecil.',
+  'And {n} more': 'Dan {n} lainnya',
 }
 
 export default id

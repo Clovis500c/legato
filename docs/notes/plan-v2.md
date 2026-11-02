@@ -433,8 +433,11 @@ Most useful first; the tag is the effort.
 
 - [x] `S` Make the smoke test blocking: delete `continue-on-error` in `check.yml` (green on the last 6 checks, 2026-10-31).
       Still outside it: the YouTube embed (needs the network) and a real audio device.
-- [ ] `S-M` Release notes grouped (feat / fix), in the user's words, shown in the app after an update. Today a flat list of
-      commit subjects (`scripts/release.mjs`) on the update card.
+- [x] `S-M` Release notes grouped (feat / fix), in the user's words, shown in the app after an update. `notesFrom`
+      (`scripts/notes.mjs`) writes "### New", "### Fixed", "### Faster" over the subjects (GitHub shows them as headers);
+      the app's What's new (the notice after an update, Settings › About) shows them as lists, headers in the user's
+      language (`features/update/notes.ts`, `ReleaseNotes.tsx`); older flat notes still read. The lines stay the commit
+      subjects in English: written for listeners already. Seen in the next Beta's update card first.
 - [ ] `M` The "Check live in the real app" list as a scripted checklist (a dev-only page that drives each step and logs the
       result), so a pass takes minutes, not a session.
 - [ ] `S` Faster CI: run the macOS job only on pushes that touch Rust or `src-tauri`, `cargo nextest`, `sccache`; Linux

@@ -1874,6 +1874,10 @@ const uk: Record<string, string> = {
   'Nothing to fix': 'Нічого виправляти',
   'Find another version': 'Знайти іншу версію',
   'It plays now': 'Тепер грає',
+  'Fixed': 'Виправлено',
+  'Faster': 'Швидше',
+  'Small fixes and improvements.': 'Дрібні виправлення та покращення.',
+  'And {n} more': 'І ще {n}',
 }
 
 export default uk

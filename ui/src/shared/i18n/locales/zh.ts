@@ -1874,6 +1874,10 @@ const zh: Record<string, string> = {
   'Nothing to fix': '没有需要修复的',
   'Find another version': '查找其他版本',
   'It plays now': '现在可以播放了',
+  'Fixed': '修复',
+  'Faster': '更快',
+  'Small fixes and improvements.': '小修复与改进。',
+  'And {n} more': '还有 {n} 项',
 }
 
 export default zh

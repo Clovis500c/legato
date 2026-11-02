@@ -1874,6 +1874,10 @@ const tr: Record<string, string> = {
   'Nothing to fix': 'Düzeltilecek bir şey yok',
   'Find another version': 'Başka bir sürüm bul',
   'It plays now': 'Artık çalıyor',
+  'Fixed': 'Düzeltildi',
+  'Faster': 'Daha hızlı',
+  'Small fixes and improvements.': 'Küçük düzeltmeler ve iyileştirmeler.',
+  'And {n} more': 'Ve {n} tane daha',
 }
 
 export default tr

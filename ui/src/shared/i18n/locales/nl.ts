@@ -1874,6 +1874,10 @@ const nl: Record<string, string> = {
   'Nothing to fix': 'Niets te herstellen',
   'Find another version': 'Andere versie zoeken',
   'It plays now': 'Speelt nu af',
+  'Fixed': 'Opgelost',
+  'Faster': 'Sneller',
+  'Small fixes and improvements.': 'Kleine reparaties en verbeteringen.',
+  'And {n} more': 'En nog {n}',
 }
 
 export default nl

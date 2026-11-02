@@ -1874,6 +1874,10 @@ const ja: Record<string, string> = {
   'Nothing to fix': '直すものはありません',
   'Find another version': '別のバージョンを探す',
   'It plays now': '今は再生できる',
+  'Fixed': '修正',
+  'Faster': '高速化',
+  'Small fixes and improvements.': '細かな修正と改善。',
+  'And {n} more': 'ほか {n} 件',
 }
 
 export default ja

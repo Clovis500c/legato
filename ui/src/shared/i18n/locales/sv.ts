@@ -1874,6 +1874,10 @@ const sv: Record<string, string> = {
   'Nothing to fix': 'Inget att fixa',
   'Find another version': 'Hitta en annan version',
   'It plays now': 'Spelas nu',
+  'Fixed': 'Åtgärdat',
+  'Faster': 'Snabbare',
+  'Small fixes and improvements.': 'Små rättelser och förbättringar.',
+  'And {n} more': 'Och {n} till',
 }
 
 export default sv

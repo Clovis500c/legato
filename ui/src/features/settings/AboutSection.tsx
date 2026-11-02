@@ -10,6 +10,7 @@ import { formatBytes, formatCount, timeAgo } from '../../shared/format'
 import { Button } from '../../shared/ui/Button'
 import { Toggle } from '../../shared/ui/controls'
 import { groupAlbums, groupArtists } from '../library/filter'
+import { ReleaseNotes } from '../update/ReleaseNotes'
 import { installUpdate, useUpdate } from '../update/updates'
 import { msg, tr, trn } from '../../shared/i18n/i18n'
 import { PRIVACY_PAGE, REPO } from '../../shared/links'
@@ -145,10 +146,10 @@ export function AboutSection() {
           <Row label={msg('Last check')} sub={status?.lastCheck ? timeAgo(status.lastCheck * 1000) : tr('Not this session')} />
           {status?.state === 'error' && <Row label={msg('Error')} sub={<span className="break-words">{status.message}</span>} />}
           {(status?.state === 'ready' || status?.state === 'available') && status.notes && (
-            <Row label={tr('What’s new in {version}', { version: status.version })} sub={<span className="whitespace-pre-wrap">{status.notes}</span>} />
+            <Row label={tr('What’s new in {version}', { version: status.version })} sub={<ReleaseNotes text={status.notes} />} />
           )}
           {status?.state !== 'ready' && status?.state !== 'available' && status?.lastUpdate?.notes && (
-            <Row label={tr('What’s new in {version}', { version: status.lastUpdate.to })} sub={<span className="whitespace-pre-wrap">{status.lastUpdate.notes}</span>} />
+            <Row label={tr('What’s new in {version}', { version: status.lastUpdate.to })} sub={<ReleaseNotes text={status.lastUpdate.notes} />} />
           )}
         </div>
       </section>

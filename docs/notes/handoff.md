@@ -15,12 +15,12 @@ section. Same rules as the run below, except the push at the end, which the owne
 
 Order (each step: code, tests, `pnpm check` green, one commit on `platforms`, line ticked in plan-v2):
 
-1. Platforms: Exportify's real playlist names (read from its progress bar as it exports).
-2. Features › High: library health page; same loudness across sources; accessibility pass; phone remote.
-3. Workflow: release notes grouped, shown after an update.
-4. Features › Medium `S`/`S-M`: Jump List, pick up on the other PC, privacy page; then `M` ones without a new
-   account (Wrapped, …).
-5. Visualizer v2 › High `S` lines, then Optimisation, then Low.
+1. Done: Exportify's real playlist names; library health page; the mobile spec.
+2. Next, what the owner sees in the Beta first: release notes grouped and shown after an update (Workflow); Jump List;
+   phone remote (Features › High); mobile phase 1, the phone layout (only below 640 px: the desktop window's minimum
+   is 960, so nothing changes there); privacy page in the app; pick up on the other PC; accessibility pass.
+3. Then Features › Medium without a new account, Visualizer v2 › High `S` lines, Optimisation, Low.
+4. Left for the owner's ears: same loudness across sources (by ear beside YouTube, like Volume levelling).
 
 Wrap-up (at 90 % of the week, or when nothing is left): finish or drop the step in progress; rewrite this section as
 done; `/release-check`; `git fetch` and merge `origin/master` if it moved; `git push origin platforms:master` (a Beta;
@@ -32,6 +32,7 @@ Done in this run (newest last; `git log` has the hashes), none tried in the real
 
 - Exportify's lists keep their real names (its progress bar's lines, any language), not "Cool music".
 - Library health page (Settings › General, the search bar): files gone, videos that can't play, no cover, missing info.
+- Release notes grouped (New, Fixed, Faster), shown as lists in What's new, headers in the user's language.
 - The owner's new ask mid-run (2026-11-02): a mobile version, Rust reused. Spec and phases in
   [ideas/mobile.md](ideas/mobile.md); no Android SDK / NDK / JDK on this PC, so phase 1 (phone layout in `ui/`) only.
 

@@ -1874,6 +1874,10 @@ const ko: Record<string, string> = {
   'Nothing to fix': '고칠 것이 없습니다',
   'Find another version': '다른 버전 찾기',
   'It plays now': '이제 재생됨',
+  'Fixed': '수정됨',
+  'Faster': '더 빨라짐',
+  'Small fixes and improvements.': '작은 수정과 개선.',
+  'And {n} more': '외 {n}개',
 }
 
 export default ko

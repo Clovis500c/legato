@@ -1874,6 +1874,10 @@ const it: Record<string, string> = {
   'Nothing to fix': 'Niente da sistemare',
   'Find another version': 'Trova un’altra versione',
   'It plays now': 'Ora si riproduce',
+  'Fixed': 'Corretto',
+  'Faster': 'Più veloce',
+  'Small fixes and improvements.': 'Piccole correzioni e miglioramenti.',
+  'And {n} more': 'E altri {n}',
 }
 
 export default it

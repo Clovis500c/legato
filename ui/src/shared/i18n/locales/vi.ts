@@ -1874,6 +1874,10 @@ const vi: Record<string, string> = {
   'Nothing to fix': 'Không có gì cần sửa',
   'Find another version': 'Tìm phiên bản khác',
   'It plays now': 'Giờ đã phát được',
+  'Fixed': 'Đã sửa',
+  'Faster': 'Nhanh hơn',
+  'Small fixes and improvements.': 'Sửa lỗi và cải thiện nhỏ.',
+  'And {n} more': 'Và {n} mục khác',
 }
 
 export default vi
