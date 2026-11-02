@@ -223,6 +223,9 @@ function Appearance() {
               ]}
             />
           </Row>
+          <Row setting="coverClock" label={msg('Clock on the cover display')} sub={tr('The cover display (Now Playing, beside Karaoke) shows the time and the day in a corner, for a second screen')}>
+            <Toggle label={tr('Clock on the cover display')} checked={s.coverClock} onChange={(coverClock) => update({ coverClock })} />
+          </Row>
         </div>
       </Group>
       <Group title={msg('Immersive player')}>

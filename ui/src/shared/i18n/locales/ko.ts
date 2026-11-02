@@ -1912,6 +1912,13 @@ const ko: Record<string, string> = {
   'The streaming overlay could not start: another app may be using its port. Turn it off and on again.': '방송용 오버레이를 시작할 수 없습니다. 다른 앱이 포트를 사용 중일 수 있습니다. 껐다가 다시 켜세요.',
   'In OBS: Sources › Add › Browser, then paste this link. Its Custom CSS restyles the card.': 'OBS에서 소스 › 추가 › 브라우저를 선택하고 이 링크를 붙여 넣으세요. 사용자 지정 CSS로 카드 모양을 바꿀 수 있습니다.',
   'obs stream streaming twitch browser source now playing overlay': 'obs 방송 스트리밍 twitch 브라우저 소스 재생 중 오버레이',
+  'Cover display': '커버 화면',
+  'Leave the cover display (Esc)': '커버 화면 나가기 (Esc)',
+  'Clock': '시계',
+  'Cover display on / off': '커버 화면 켜기 / 끄기',
+  'Clock on the cover display': '커버 화면의 시계',
+  'The cover display (Now Playing, beside Karaoke) shows the time and the day in a corner, for a second screen': '커버 화면(지금 재생 중, 노래방 옆)에서 모서리에 시간과 날짜를 표시합니다. 보조 화면용',
+  'clock time hour day second screen monitor full screen big cover display': '시계 시간 날짜 보조 화면 모니터 전체 화면 큰 커버 표시',
 }
 
 export default ko

@@ -1,4 +1,4 @@
-import { ArrowSquareOut, Heart, MicrophoneStage, Queue, Quotes, SlidersHorizontal, ThumbsDown } from '@phosphor-icons/react'
+import { ArrowSquareOut, FrameCorners, Heart, MicrophoneStage, Queue, Quotes, SlidersHorizontal, ThumbsDown } from '@phosphor-icons/react'
 import { artistName } from '../../shared/artistName'
 import { STAGE_ID } from '../../app/searchShift'
 import { pop } from '../../shared/motion'
@@ -19,6 +19,7 @@ import { SourceIcon } from '../../shared/ui/SourceIcon'
 import { playerMenu, vizMenu } from '../menus'
 import { useAmbient } from './ambient'
 import { useBackdrop } from './immersive'
+import { openCoverFull } from './coverFull'
 import { toggleKaraoke } from './karaokeMode'
 import { VolumeControl } from './PlayerBar'
 import { SeekBar, TimeText, usePosition } from './Progress'
@@ -376,6 +377,10 @@ export function NowPlaying() {
             <PanelToggle id="editor" label={tr('Sound')} icon={SlidersHorizontal} active={panel} />
             <RoundButton label={tr('Karaoke')} kind="plain" size="md" onClick={(e) => (toggleKaraoke(), pop(e.currentTarget))}>
               <MicrophoneStage size={22} />
+            </RoundButton>
+            {/* A second screen's picture: not on a phone. */}
+            <RoundButton label={tr('Cover display')} kind="plain" size="md" className="phone:hidden" onClick={openCoverFull}>
+              <FrameCorners size={22} />
             </RoundButton>
             <span className="flex min-w-0 flex-col items-end gap-1 phone:hidden">
               <VolumeControl big />

@@ -1912,6 +1912,13 @@ const de: Record<string, string> = {
   'The streaming overlay could not start: another app may be using its port. Turn it off and on again.': 'Das Streaming-Overlay konnte nicht starten: Eine andere App nutzt vielleicht seinen Port. Schalten Sie es aus und wieder ein.',
   'In OBS: Sources › Add › Browser, then paste this link. Its Custom CSS restyles the card.': 'In OBS: Quellen › Hinzufügen › Browser, dann diesen Link einfügen. Mit dessen benutzerdefiniertem CSS lässt sich die Karte umgestalten.',
   'obs stream streaming twitch browser source now playing overlay': 'obs stream streaming twitch browserquelle läuft gerade overlay',
+  'Cover display': 'Cover-Anzeige',
+  'Leave the cover display (Esc)': 'Cover-Anzeige verlassen (Esc)',
+  'Clock': 'Uhr',
+  'Cover display on / off': 'Cover-Anzeige ein / aus',
+  'Clock on the cover display': 'Uhr in der Cover-Anzeige',
+  'The cover display (Now Playing, beside Karaoke) shows the time and the day in a corner, for a second screen': 'Die Cover-Anzeige (Aktuelle Wiedergabe, neben Karaoke) zeigt Uhrzeit und Tag in einer Ecke, für einen zweiten Bildschirm',
+  'clock time hour day second screen monitor full screen big cover display': 'uhr zeit stunde tag zweiter bildschirm monitor vollbild großes cover anzeige',
 }
 
 export default de

@@ -274,6 +274,8 @@ export interface Settings {
   backdropBlur: number
   backdropDim: number
   backdropMotion: boolean
+  /** Cover display (C): the time and the day in a corner, for a second screen. Off: the cover alone. */
+  coverClock: boolean
   /** 'theme' = the theme's own font. */
   font: 'theme' | Font
   /** Transitions and animations. */
@@ -440,6 +442,7 @@ export const DEFAULTS: Settings = {
   backdropBlur: 24,
   backdropDim: 40,
   backdropMotion: true,
+  coverClock: false,
   font: 'theme',
   motion: true,
   sidebarCounts: true,
@@ -653,6 +656,7 @@ export function sanitize(raw: unknown): Settings {
     backdropBlur: num(r.backdropBlur, 0, 80, DEFAULTS.backdropBlur),
     backdropDim: num(r.backdropDim, 0, 80, DEFAULTS.backdropDim),
     backdropMotion: typeof r.backdropMotion === 'boolean' ? r.backdropMotion : DEFAULTS.backdropMotion,
+    coverClock: r.coverClock === true,
     font: pick(r.font, ['theme', ...FONTS] as const, DEFAULTS.font),
     motion: typeof r.motion === 'boolean' ? r.motion : DEFAULTS.motion,
     sidebarCounts: typeof r.sidebarCounts === 'boolean' ? r.sidebarCounts : DEFAULTS.sidebarCounts,

@@ -164,6 +164,9 @@ Detailed in [catch-up.md](catch-up.md) › App colours from the cover.
 
 ## Full cover display
 
+Done 2026-11-02 (C, or Now Playing's button): full screen in the app's own window, so it goes on the second monitor with
+the window. Not done: its own window, the app staying on the first monitor.
+
 - **Sees**: View › Cover: the cover huge, title, artist and a thin progress over it, optional clock; ideal on a second
   screen.
 - **How**: a Now Playing variant (immersive backdrop exists), its own window option for a second monitor.

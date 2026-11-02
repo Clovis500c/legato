@@ -1912,6 +1912,13 @@ const zh: Record<string, string> = {
   'The streaming overlay could not start: another app may be using its port. Turn it off and on again.': '直播叠加层无法启动：其端口可能被其他应用占用。请关闭后再打开。',
   'In OBS: Sources › Add › Browser, then paste this link. Its Custom CSS restyles the card.': '在 OBS 中：来源 › 添加 › 浏览器，然后粘贴此链接。其自定义 CSS 可改变卡片样式。',
   'obs stream streaming twitch browser source now playing overlay': 'obs 直播 推流 twitch 浏览器源 正在播放 叠加层',
+  'Cover display': '封面展示',
+  'Leave the cover display (Esc)': '退出封面展示 (Esc)',
+  'Clock': '时钟',
+  'Cover display on / off': '封面展示 开 / 关',
+  'Clock on the cover display': '封面展示中的时钟',
+  'The cover display (Now Playing, beside Karaoke) shows the time and the day in a corner, for a second screen': '封面展示（正在播放，卡拉OK 旁边）会在角落显示时间和日期，适合第二块屏幕',
+  'clock time hour day second screen monitor full screen big cover display': '时钟 时间 日期 第二屏幕 显示器 全屏 大封面 展示',
 }
 
 export default zh

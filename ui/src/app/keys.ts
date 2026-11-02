@@ -29,6 +29,7 @@ export type ActionId =
   | 'fullscreen'
   | 'karaoke'
   | 'vizFull'
+  | 'coverFull'
   | 'search'
   | 'settings'
   | 'goBack'
@@ -71,6 +72,7 @@ export const ACTIONS: ActionInfo[] = [
   { id: 'fullscreen', label: msg('Full screen on / off'), keys: 'F11', global: null },
   { id: 'karaoke', label: msg('Karaoke on / off'), keys: 'KeyK', global: null },
   { id: 'vizFull', label: msg('Visualizer full screen on / off'), keys: 'KeyV', global: null },
+  { id: 'coverFull', label: msg('Cover display on / off'), keys: 'KeyC', global: null },
   { id: 'search', label: msg('Search'), keys: 'Ctrl+KeyK', global: null },
   { id: 'settings', label: msg('Settings'), keys: 'Ctrl+Comma', global: null },
   { id: 'goBack', label: msg('Back'), keys: 'Alt+ArrowLeft', global: null },

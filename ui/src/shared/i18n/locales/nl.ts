@@ -1912,6 +1912,13 @@ const nl: Record<string, string> = {
   'The streaming overlay could not start: another app may be using its port. Turn it off and on again.': 'De streamingoverlay kon niet starten: een andere app gebruikt misschien de poort. Zet hem uit en weer aan.',
   'In OBS: Sources › Add › Browser, then paste this link. Its Custom CSS restyles the card.': 'In OBS: Bronnen › Toevoegen › Browser, plak dan deze link. Met de aangepaste CSS daarvan verander je de kaart.',
   'obs stream streaming twitch browser source now playing overlay': 'obs stream streaming twitch browserbron speelt nu overlay',
+  'Cover display': 'Hoesweergave',
+  'Leave the cover display (Esc)': 'Hoesweergave verlaten (Esc)',
+  'Clock': 'Klok',
+  'Cover display on / off': 'Hoesweergave aan / uit',
+  'Clock on the cover display': 'Klok op de hoesweergave',
+  'The cover display (Now Playing, beside Karaoke) shows the time and the day in a corner, for a second screen': 'De hoesweergave (Nu aan het afspelen, naast Karaoke) toont de tijd en de dag in een hoek, voor een tweede scherm',
+  'clock time hour day second screen monitor full screen big cover display': 'klok tijd uur dag tweede scherm monitor volledig scherm grote hoes weergave',
 }
 
 export default nl

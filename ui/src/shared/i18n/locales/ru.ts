@@ -1912,6 +1912,13 @@ const ru: Record<string, string> = {
   'The streaming overlay could not start: another app may be using its port. Turn it off and on again.': 'Не удалось запустить оверлей для стримов: возможно, его порт занят другим приложением. Выключите и снова включите его.',
   'In OBS: Sources › Add › Browser, then paste this link. Its Custom CSS restyles the card.': 'В OBS: Источники › Добавить › Браузер, затем вставьте эту ссылку. Пользовательский CSS источника меняет вид карточки.',
   'obs stream streaming twitch browser source now playing overlay': 'obs стрим стриминг twitch источник браузер сейчас играет оверлей',
+  'Cover display': 'Обложка на весь экран',
+  'Leave the cover display (Esc)': 'Выйти из обложки на весь экран (Esc)',
+  'Clock': 'Часы',
+  'Cover display on / off': 'Обложка на весь экран вкл. / выкл.',
+  'Clock on the cover display': 'Часы на обложке на весь экран',
+  'The cover display (Now Playing, beside Karaoke) shows the time and the day in a corner, for a second screen': 'Обложка на весь экран (Сейчас играет, рядом с караоке) показывает время и день в углу, для второго экрана',
+  'clock time hour day second screen monitor full screen big cover display': 'часы время день второй экран монитор полный экран большая обложка',
 }
 
 export default ru

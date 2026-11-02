@@ -1912,6 +1912,13 @@ const sv: Record<string, string> = {
   'The streaming overlay could not start: another app may be using its port. Turn it off and on again.': 'Streamingöverlägget kunde inte starta: en annan app kanske använder dess port. Stäng av det och slå på igen.',
   'In OBS: Sources › Add › Browser, then paste this link. Its Custom CSS restyles the card.': 'I OBS: Källor › Lägg till › Webbläsare, klistra sedan in den här länken. Dess anpassade CSS ändrar kortets stil.',
   'obs stream streaming twitch browser source now playing overlay': 'obs stream streaming twitch webbläsarkälla spelas nu överlägg',
+  'Cover display': 'Omslagsvisning',
+  'Leave the cover display (Esc)': 'Lämna omslagsvisningen (Esc)',
+  'Clock': 'Klocka',
+  'Cover display on / off': 'Omslagsvisning på / av',
+  'Clock on the cover display': 'Klocka i omslagsvisningen',
+  'The cover display (Now Playing, beside Karaoke) shows the time and the day in a corner, for a second screen': 'Omslagsvisningen (Spelas nu, bredvid Karaoke) visar tid och dag i ett hörn, för en andra skärm',
+  'clock time hour day second screen monitor full screen big cover display': 'klocka tid timme dag andra skärm bildskärm helskärm stort omslag visning',
 }
 
 export default sv

@@ -1912,6 +1912,13 @@ const ja: Record<string, string> = {
   'The streaming overlay could not start: another app may be using its port. Turn it off and on again.': '配信用オーバーレイを開始できませんでした。別のアプリがポートを使用している可能性があります。オフにしてから再びオンにしてください。',
   'In OBS: Sources › Add › Browser, then paste this link. Its Custom CSS restyles the card.': 'OBS で「ソース › 追加 › ブラウザ」を選び、このリンクを貼り付けます。カスタム CSS でカードの見た目を変えられます。',
   'obs stream streaming twitch browser source now playing overlay': 'obs 配信 ストリーミング twitch ブラウザソース 再生中 オーバーレイ',
+  'Cover display': 'カバー表示',
+  'Leave the cover display (Esc)': 'カバー表示を終了 (Esc)',
+  'Clock': '時計',
+  'Cover display on / off': 'カバー表示 オン / オフ',
+  'Clock on the cover display': 'カバー表示の時計',
+  'The cover display (Now Playing, beside Karaoke) shows the time and the day in a corner, for a second screen': 'カバー表示（再生中画面のカラオケの隣）では、隅に時刻と日付を表示します。セカンドスクリーン向け',
+  'clock time hour day second screen monitor full screen big cover display': '時計 時刻 日付 セカンドスクリーン モニター 全画面 大きなカバー 表示',
 }
 
 export default ja

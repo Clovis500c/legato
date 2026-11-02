@@ -4,6 +4,7 @@ import { onMenu } from '../../shared/ui/ContextMenu'
 import { vizMenu } from '../menus'
 import { useLive } from './live'
 import { usePlayer } from './store'
+import { useCoverFull } from './coverFull'
 import { openVizFull, useVizFull } from './vizFull'
 import { VizCanvas } from './VizCanvas'
 
@@ -16,6 +17,7 @@ export function Visualizer() {
   // Radial goes around a big cover (Stage, NowPlaying.tsx); the strip is too small for it.
   const look = picked === 'radial' ? 'bars' : picked
   const full = useVizFull((s) => s.open)
+  const covered = useCoverFull((s) => s.open)
   // YouTube's sound can't be heard here (setting off, capture refused): said under the bars rather than a flat line.
   const youtube = usePlayer((s) => s.now?.via === 'youtube')
   const liveYoutube = useSettings((s) => s.settings.liveYoutube)
@@ -24,15 +26,16 @@ export function Visualizer() {
   return (
     <div className="flex w-full max-w-md flex-col items-center gap-1.5">
       <div onDoubleClick={openVizFull} onContextMenu={onMenu(vizMenu)} className="h-12 w-full">
-        <VizCanvas look={look} listen={!full} />
+        <VizCanvas look={look} listen={!full && !covered} />
       </div>
       {why && <p className="text-center text-[0.6875rem] text-ink-3">{why}</p>}
     </div>
   )
 }
 
-/** The Radial look behind a big cover (Stage in NowPlaying.tsx): fills its parent, a square; quiet while the full screen is up. */
+/** The Radial look behind a big cover (Stage in NowPlaying.tsx): fills its parent, a square; quiet while a full screen is up. */
 export function RadialRing() {
   const full = useVizFull((s) => s.open)
-  return <VizCanvas look="radial" listen={!full} />
+  const covered = useCoverFull((s) => s.open)
+  return <VizCanvas look="radial" listen={!full && !covered} />
 }

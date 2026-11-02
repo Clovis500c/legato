@@ -20,6 +20,7 @@ import { bindFrame, tailVolume, useNowTrack, usePlayer, useVideoSlot } from './s
 import { volumeWheelRef } from './volume'
 import { pop } from '../../shared/motion'
 import { embedUrl, parseYt, ytPost } from './youtube'
+import { useCoverFull } from './coverFull'
 import { useKaraoke } from './karaokeMode'
 import { useVizFull } from './vizFull'
 import { closeWatch, cropWatch, placeWatch, sendWatch, useWatch, watchUpdate } from './watch'
@@ -59,7 +60,8 @@ function YouTubeFrame({ videoId, tail = false, idle = false }: { videoId: string
   // Both hooks every render (no `||` between them): one skipped changed the hook count and crashed the player on K.
   const karaokeOpen = useKaraoke((s) => s.open)
   const vizOpen = useVizFull((s) => s.open)
-  const karaoke = karaokeOpen || vizOpen
+  const coverOpen = useCoverFull((s) => s.open)
+  const karaoke = karaokeOpen || vizOpen || coverOpen
   // Embed refused this video: YouTube's watch page plays it in a webview over the same place (watch.ts).
   const watch = useWatch((s) => s.video)
   // Bars baked into the video: frame enlarged, only the picture shows.

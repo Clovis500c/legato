@@ -1912,6 +1912,13 @@ const id: Record<string, string> = {
   'The streaming overlay could not start: another app may be using its port. Turn it off and on again.': 'Overlay streaming tidak bisa dimulai: aplikasi lain mungkin memakai port-nya. Matikan lalu nyalakan lagi.',
   'In OBS: Sources › Add › Browser, then paste this link. Its Custom CSS restyles the card.': 'Di OBS: Sumber › Tambah › Peramban, lalu tempel tautan ini. CSS Kustom-nya mengubah gaya kartu.',
   'obs stream streaming twitch browser source now playing overlay': 'obs stream streaming twitch sumber peramban sedang diputar overlay',
+  'Cover display': 'Tampilan sampul',
+  'Leave the cover display (Esc)': 'Keluar dari tampilan sampul (Esc)',
+  'Clock': 'Jam',
+  'Cover display on / off': 'Tampilan sampul hidup / mati',
+  'Clock on the cover display': 'Jam di tampilan sampul',
+  'The cover display (Now Playing, beside Karaoke) shows the time and the day in a corner, for a second screen': 'Tampilan sampul (Sedang diputar, di sebelah Karaoke) menampilkan jam dan hari di sudut, untuk layar kedua',
+  'clock time hour day second screen monitor full screen big cover display': 'jam waktu hari layar kedua monitor layar penuh sampul besar tampilan',
 }
 
 export default id

@@ -339,8 +339,10 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       Streaming overlay, `/overlay` on the phone remote's server, 127.0.0.1 only when alone; OBS's Custom CSS restyles it.)
 - [ ] `S` Hide explicit songs (a filter, YouTube Music's flag when there is one).
 - [ ] `S` Bookmarks inside a song (a moment to come back to, a note), Spicetify's Bookmark.
-- [ ] `S` Full cover display: the cover alone, huge, title and progress over it (Spicetify's Full App Display); a clock
-      option, for a second screen.
+- [x] `S` Full cover display: the cover alone, huge, title and progress over it (Spicetify's Full App Display); a clock
+      option, for a second screen. (2026-11-02: C or Now Playing's button; clock from its right-click or Settings ›
+      Appearance › Player; keeps the display awake. Checked over the demo in four window shapes; not on a real second
+      screen.)
 - [ ] `S` "Aural fixations": songs you played a lot at one time of your life, brought back (from our own history).
 - [x] `S` Sleep timer "at the end of this album" ("this song" exists) and a fade over the last minutes. Done: End of this
   album stops after the album's last song in play order (the next one is from another album or none; no wrap, songs

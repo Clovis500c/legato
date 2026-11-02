@@ -1912,6 +1912,13 @@ const tr: Record<string, string> = {
   'The streaming overlay could not start: another app may be using its port. Turn it off and on again.': 'Yayın katmanı başlatılamadı: portunu başka bir uygulama kullanıyor olabilir. Kapatıp yeniden açın.',
   'In OBS: Sources › Add › Browser, then paste this link. Its Custom CSS restyles the card.': 'OBS’de: Kaynaklar › Ekle › Tarayıcı, ardından bu bağlantıyı yapıştırın. Özel CSS’i kartın görünümünü değiştirir.',
   'obs stream streaming twitch browser source now playing overlay': 'obs yayın streaming twitch tarayıcı kaynağı şimdi çalan katman',
+  'Cover display': 'Büyük kapak',
+  'Leave the cover display (Esc)': 'Büyük kapaktan çık (Esc)',
+  'Clock': 'Saat',
+  'Cover display on / off': 'Büyük kapak açık / kapalı',
+  'Clock on the cover display': 'Büyük kapakta saat',
+  'The cover display (Now Playing, beside Karaoke) shows the time and the day in a corner, for a second screen': 'Büyük kapak (Şimdi çalıyor, Karaoke’nin yanında) bir köşede saati ve günü gösterir, ikinci bir ekran için',
+  'clock time hour day second screen monitor full screen big cover display': 'saat zaman gün ikinci ekran monitör tam ekran büyük kapak',
 }
 
 export default tr

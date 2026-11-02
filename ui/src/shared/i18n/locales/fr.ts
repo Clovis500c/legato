@@ -1912,6 +1912,13 @@ const fr: Record<string, string> = {
   'The streaming overlay could not start: another app may be using its port. Turn it off and on again.': 'L’incrustation pour le streaming n’a pas pu démarrer : une autre application utilise peut-être son port. Désactivez-la puis réactivez-la.',
   'In OBS: Sources › Add › Browser, then paste this link. Its Custom CSS restyles the card.': 'Dans OBS : Sources › Ajouter › Navigateur, puis collez ce lien. Son CSS personnalisé change le style de la carte.',
   'obs stream streaming twitch browser source now playing overlay': 'obs stream streaming twitch source navigateur en cours de lecture incrustation overlay',
+  'Cover display': 'Pochette en grand',
+  'Leave the cover display (Esc)': 'Quitter la pochette en grand (Échap)',
+  'Clock': 'Horloge',
+  'Cover display on / off': 'Pochette en grand activée / désactivée',
+  'Clock on the cover display': 'Horloge sur la pochette en grand',
+  'The cover display (Now Playing, beside Karaoke) shows the time and the day in a corner, for a second screen': 'La pochette en grand (Lecture en cours, à côté de Karaoké) affiche l’heure et le jour dans un coin, pour un second écran',
+  'clock time hour day second screen monitor full screen big cover display': 'horloge heure jour second écran moniteur plein écran grande pochette affichage',
 }
 
 export default fr

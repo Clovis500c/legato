@@ -1912,6 +1912,13 @@ const hi: Record<string, string> = {
   'The streaming overlay could not start: another app may be using its port. Turn it off and on again.': 'स्ट्रीमिंग ओवरले शुरू नहीं हो सका: शायद कोई दूसरा ऐप उसका पोर्ट इस्तेमाल कर रहा है। इसे बंद करके फिर चालू करें।',
   'In OBS: Sources › Add › Browser, then paste this link. Its Custom CSS restyles the card.': 'OBS में: Sources › Add › Browser, फिर यह लिंक चिपकाएँ। उसका Custom CSS कार्ड का रूप बदलता है।',
   'obs stream streaming twitch browser source now playing overlay': 'obs स्ट्रीम स्ट्रीमिंग twitch ब्राउज़र सोर्स अभी चल रहा ओवरले',
+  'Cover display': 'बड़ा कवर',
+  'Leave the cover display (Esc)': 'बड़े कवर से बाहर निकलें (Esc)',
+  'Clock': 'घड़ी',
+  'Cover display on / off': 'बड़ा कवर चालू / बंद',
+  'Clock on the cover display': 'बड़े कवर पर घड़ी',
+  'The cover display (Now Playing, beside Karaoke) shows the time and the day in a corner, for a second screen': 'बड़ा कवर (अभी चल रहा, कराओके के पास) एक कोने में समय और दिन दिखाता है, दूसरी स्क्रीन के लिए',
+  'clock time hour day second screen monitor full screen big cover display': 'घड़ी समय घंटा दिन दूसरी स्क्रीन मॉनिटर फ़ुल स्क्रीन बड़ा कवर',
 }
 
 export default hi

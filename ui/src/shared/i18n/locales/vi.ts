@@ -1912,6 +1912,13 @@ const vi: Record<string, string> = {
   'The streaming overlay could not start: another app may be using its port. Turn it off and on again.': 'Không thể khởi động lớp phủ phát trực tiếp: có thể ứng dụng khác đang dùng cổng của nó. Hãy tắt rồi bật lại.',
   'In OBS: Sources › Add › Browser, then paste this link. Its Custom CSS restyles the card.': 'Trong OBS: Nguồn › Thêm › Trình duyệt, rồi dán liên kết này. CSS tùy chỉnh của nó đổi kiểu thẻ.',
   'obs stream streaming twitch browser source now playing overlay': 'obs phát trực tiếp streaming twitch nguồn trình duyệt đang phát lớp phủ',
+  'Cover display': 'Hiển thị ảnh bìa',
+  'Leave the cover display (Esc)': 'Thoát hiển thị ảnh bìa (Esc)',
+  'Clock': 'Đồng hồ',
+  'Cover display on / off': 'Bật / tắt hiển thị ảnh bìa',
+  'Clock on the cover display': 'Đồng hồ khi hiển thị ảnh bìa',
+  'The cover display (Now Playing, beside Karaoke) shows the time and the day in a corner, for a second screen': 'Hiển thị ảnh bìa (Đang phát, cạnh Karaoke) hiện giờ và ngày ở một góc, cho màn hình thứ hai',
+  'clock time hour day second screen monitor full screen big cover display': 'đồng hồ giờ ngày màn hình thứ hai màn hình toàn màn hình ảnh bìa lớn',
 }
 
 export default vi

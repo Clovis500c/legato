@@ -18,6 +18,7 @@ import {
   FolderOpen,
   FolderSimple,
   FolderSimplePlus,
+  FrameCorners,
   PushPin,
   PushPinSlash,
   Info,
@@ -85,6 +86,7 @@ import { sleepMenu } from './player/sleep'
 import { deleteFolder, newFolder, renameFolder, setFolder, togglePinned } from './sidebar/folderActions'
 import { closeKaraoke, nowFix, nudgeLyrics, toggleKaraoke } from './player/karaokeMode'
 import { canVizFull, toggleVizFull, useVizFull } from './player/vizFull'
+import { closeCoverFull, toggleCoverFull } from './player/coverFull'
 import { VISUALIZER_LABELS } from './player/vizLooks'
 import { msg, tr, trn } from '../shared/i18n/i18n'
 import { ask, askText } from '../shared/ui/Ask'
@@ -697,6 +699,7 @@ export function playerMenu(): MenuEntry[] {
     '-',
     { label: full ? tr('Leave full screen') : tr('Full screen'), icon: <ArrowsOutSimple size={16} />, onSelect: () => setFull(!full) },
     { label: tr('Karaoke'), icon: <MicrophoneStage size={16} />, onSelect: toggleKaraoke },
+    { label: tr('Cover display'), icon: <FrameCorners size={16} />, onSelect: toggleCoverFull },
     { label: tr('Live Editor'), icon: <SlidersHorizontal size={16} />, onSelect: () => (useSettings.getState().update({ editor: true }), setFull(true)) },
     { label: tr('Sleep timer'), icon: <Moon size={16} />, items: sleepMenu() },
     { label: tr('Mini player'), icon: <PictureInPicture size={16} />, checked: mini || !!video, disabled: !!video, onSelect: () => useSettings.getState().update({ miniPlayer: !mini }) },
@@ -746,6 +749,21 @@ export function karaokeMenu(): MenuEntry[] {
     { label: tr('Reset'), icon: <ArrowCounterClockwise size={16} />, disabled: fix.offset === 0 && fix.rate === 1, onSelect: () => nudgeLyrics(null) },
     '-',
     { label: tr('Leave Karaoke (Esc)'), icon: <MicrophoneStage size={16} />, onSelect: closeKaraoke },
+  ]
+}
+
+/** Cover display: the player's basics, its clock, leave. */
+export function coverScreenMenu(): MenuEntry[] {
+  const { playing, toggle, step } = player()
+  const clock = useSettings.getState().settings.coverClock
+  return [
+    { label: playing ? tr('Pause') : tr('Play'), icon: playing ? <Pause size={16} /> : <Play size={16} />, onSelect: toggle },
+    { label: tr('Previous'), icon: <SkipBack size={16} />, onSelect: () => step(-1) },
+    { label: tr('Next'), icon: <SkipForward size={16} />, onSelect: () => step(1) },
+    '-',
+    { label: tr('Clock'), checked: clock, onSelect: () => useSettings.getState().update({ coverClock: !clock }) },
+    '-',
+    { label: tr('Leave the cover display (Esc)'), icon: <FrameCorners size={16} />, onSelect: closeCoverFull },
   ]
 }
 
