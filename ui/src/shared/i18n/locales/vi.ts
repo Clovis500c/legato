@@ -1919,6 +1919,17 @@ const vi: Record<string, string> = {
   'Clock on the cover display': 'Đồng hồ khi hiển thị ảnh bìa',
   'The cover display (Now Playing, beside Karaoke) shows the time and the day in a corner, for a second screen': 'Hiển thị ảnh bìa (Đang phát, cạnh Karaoke) hiện giờ và ngày ở một góc, cho màn hình thứ hai',
   'clock time hour day second screen monitor full screen big cover display': 'đồng hồ giờ ngày màn hình thứ hai màn hình toàn màn hình ảnh bìa lớn',
+  'Share as a picture…': 'Chia sẻ dạng ảnh…',
+  'Share as a picture': 'Chia sẻ dạng ảnh',
+  'Lyric line': 'Dòng lời bài hát',
+  'Previous line': 'Dòng trước',
+  'Next line': 'Dòng sau',
+  'Save picture…': 'Lưu ảnh…',
+  'Save picture': 'Lưu ảnh',
+  'Copy picture': 'Sao chép ảnh',
+  'Picture copied': 'Đã sao chép ảnh',
+  'The picture could not be copied': 'Không thể sao chép ảnh',
+  'Picture saved: {file}': 'Đã lưu ảnh: {file}',
 }
 
 export default vi

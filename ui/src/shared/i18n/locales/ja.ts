@@ -1919,6 +1919,17 @@ const ja: Record<string, string> = {
   'Clock on the cover display': 'カバー表示の時計',
   'The cover display (Now Playing, beside Karaoke) shows the time and the day in a corner, for a second screen': 'カバー表示（再生中画面のカラオケの隣）では、隅に時刻と日付を表示します。セカンドスクリーン向け',
   'clock time hour day second screen monitor full screen big cover display': '時計 時刻 日付 セカンドスクリーン モニター 全画面 大きなカバー 表示',
+  'Share as a picture…': '画像で共有…',
+  'Share as a picture': '画像で共有',
+  'Lyric line': '歌詞の行',
+  'Previous line': '前の行',
+  'Next line': '次の行',
+  'Save picture…': '画像を保存…',
+  'Save picture': '画像を保存',
+  'Copy picture': '画像をコピー',
+  'Picture copied': '画像をコピーしました',
+  'The picture could not be copied': '画像をコピーできませんでした',
+  'Picture saved: {file}': '画像を保存しました：{file}',
 }
 
 export default ja

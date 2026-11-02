@@ -2,7 +2,7 @@ import { ArrowsIn, ArrowsOut, CaretDown, CaretLeft, CaretRight, CopySimple, Gear
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { useEffect, useRef, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
-import { AddonsView, AddView, ConnectWizard, CoverScreen, HealthView, HomeView, ImportDialog, ImportScreen, Karaoke, MixesView, MixView, NotFoundView, NowPlaying, preloadHome, SearchView, SettingsView, SmartView, StatsView, VizScreen, Welcome } from './pages'
+import { AddonsView, AddView, ConnectWizard, CoverScreen, HealthView, HomeView, ImportDialog, ImportScreen, Karaoke, MixesView, MixView, NotFoundView, NowPlaying, preloadHome, SearchView, SettingsView, ShareDialog, SmartView, StatsView, VizScreen, Welcome } from './pages'
 // Up next running out: similar songs (registers itself with the player).
 import '../features/player/autoplay'
 import { AlbumView, ArtistView } from '../features/library/AlbumArtist'
@@ -19,6 +19,7 @@ import { VolumeHud } from '../features/player/VolumeHud'
 import { useKaraoke } from '../features/player/karaokeMode'
 import { useVizFull } from '../features/player/vizFull'
 import { useCoverFull } from '../features/player/coverFull'
+import { useShare } from '../features/share/share'
 import { useAmbient } from '../features/player/ambient'
 import { trackArt } from '../shared/art'
 import { PlayerBar } from '../features/player/PlayerBar'
@@ -220,6 +221,7 @@ export function App() {
   const karaoke = useKaraoke((s) => s.open)
   const vizFull = useVizFull((s) => s.open)
   const coverFull = useCoverFull((s) => s.open)
+  const share = useShare((s) => s.open)
   const tintOn = useSettings((s) => s.settings.appTint)
   const libraryWide = useSettings((s) => s.settings.libraryWide)
   // Re-rendered when the theme, accent or Windows' light / dark change (current() below).
@@ -371,6 +373,11 @@ export function App() {
       {coverFull && (
         <PageBoundary fallback={null}>
           <CoverScreen />
+        </PageBoundary>
+      )}
+      {share && (
+        <PageBoundary fallback={null}>
+          <ShareDialog />
         </PageBoundary>
       )}
       {importing && (

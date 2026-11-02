@@ -1919,6 +1919,17 @@ const uk: Record<string, string> = {
   'Clock on the cover display': 'Годинник на обкладинці на весь екран',
   'The cover display (Now Playing, beside Karaoke) shows the time and the day in a corner, for a second screen': 'Обкладинка на весь екран (Зараз грає, поруч із караоке) показує час і день у кутку, для другого екрана',
   'clock time hour day second screen monitor full screen big cover display': 'годинник час день другий екран монітор повний екран велика обкладинка',
+  'Share as a picture…': 'Поділитися картинкою…',
+  'Share as a picture': 'Поділитися картинкою',
+  'Lyric line': 'Рядок тексту',
+  'Previous line': 'Попередній рядок',
+  'Next line': 'Наступний рядок',
+  'Save picture…': 'Зберегти картинку…',
+  'Save picture': 'Зберегти картинку',
+  'Copy picture': 'Копіювати картинку',
+  'Picture copied': 'Картинку скопійовано',
+  'The picture could not be copied': 'Не вдалося скопіювати картинку',
+  'Picture saved: {file}': 'Картинку збережено: {file}',
 }
 
 export default uk

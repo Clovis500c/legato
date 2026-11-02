@@ -1919,6 +1919,17 @@ const nl: Record<string, string> = {
   'Clock on the cover display': 'Klok op de hoesweergave',
   'The cover display (Now Playing, beside Karaoke) shows the time and the day in a corner, for a second screen': 'De hoesweergave (Nu aan het afspelen, naast Karaoke) toont de tijd en de dag in een hoek, voor een tweede scherm',
   'clock time hour day second screen monitor full screen big cover display': 'klok tijd uur dag tweede scherm monitor volledig scherm grote hoes weergave',
+  'Share as a picture…': 'Delen als afbeelding…',
+  'Share as a picture': 'Delen als afbeelding',
+  'Lyric line': 'Songtekstregel',
+  'Previous line': 'Vorige regel',
+  'Next line': 'Volgende regel',
+  'Save picture…': 'Afbeelding opslaan…',
+  'Save picture': 'Afbeelding opslaan',
+  'Copy picture': 'Afbeelding kopiëren',
+  'Picture copied': 'Afbeelding gekopieerd',
+  'The picture could not be copied': 'De afbeelding kon niet worden gekopieerd',
+  'Picture saved: {file}': 'Afbeelding opgeslagen: {file}',
 }
 
 export default nl

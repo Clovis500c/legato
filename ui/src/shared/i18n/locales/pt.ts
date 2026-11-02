@@ -1919,6 +1919,17 @@ const pt: Record<string, string> = {
   'Clock on the cover display': 'Relógio na capa em tela cheia',
   'The cover display (Now Playing, beside Karaoke) shows the time and the day in a corner, for a second screen': 'A capa em tela cheia (Tocando agora, ao lado do Karaokê) mostra a hora e o dia num canto, para uma segunda tela',
   'clock time hour day second screen monitor full screen big cover display': 'relógio hora dia segunda tela monitor tela cheia capa grande',
+  'Share as a picture…': 'Compartilhar como imagem…',
+  'Share as a picture': 'Compartilhar como imagem',
+  'Lyric line': 'Verso da letra',
+  'Previous line': 'Verso anterior',
+  'Next line': 'Próximo verso',
+  'Save picture…': 'Salvar imagem…',
+  'Save picture': 'Salvar imagem',
+  'Copy picture': 'Copiar imagem',
+  'Picture copied': 'Imagem copiada',
+  'The picture could not be copied': 'Não foi possível copiar a imagem',
+  'Picture saved: {file}': 'Imagem salva: {file}',
 }
 
 export default pt

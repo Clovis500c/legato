@@ -18,9 +18,9 @@ Order (each step: code, tests, `pnpm check` green, one commit on `platforms`, li
 
 1. Done: Exportify's real playlist names; library health page; the mobile spec; release notes grouped; phone remote;
    mobile phase 1 (the phone layout); pick up on the other PC; the privacy page in the app; the OBS overlay; the cover
-   display. Jump List dropped for this run (installed app only, can't be checked here).
-2. Next: another `S` line without a new host (plan-v2 "Small, high value": bookmarks inside a song, hide explicit,
-   focus sessions…), or the wrap-up from 88 % weekly. The
+   display; the share card. Jump List dropped for this run (installed app only, can't be checked here).
+2. Next (81 % weekly at 13:35 UTC, a step costs about 2 points): another `S` line without a new host (plan-v2 "Small,
+   high value": bookmarks inside a song, "aural fixations", focus sessions…), or the wrap-up from 88 % weekly. The
    accessibility pass (`M`) is mostly in place already (labels: no unnamed control found in the demo; contrast tuned;
    reduced motion honoured): a screen reader test needs the owner.
 3. Then Features › Medium without a new account, Visualizer v2 › High `S` lines, Optimisation, Low.
@@ -39,6 +39,7 @@ Done in this run (newest last; `git log` has the hashes), none tried in the real
 - Release notes grouped (New, Fixed, Faster), shown as lists in What's new, headers in the user's language.
 - Phone remote (Settings › Playback, off, per PC): a page this PC serves on its network (QR code, secret in the link, private addresses only): cover, title, play / pause, skip, seek, Up next. Not tried on a real phone: the Windows firewall asks once.
 - Streaming overlay (Settings › Playback, off, per PC): `/overlay` on the phone remote's server for OBS's Browser Source; alone, the server listens on 127.0.0.1 only, and the overlay's routes answer this PC only (`remote::allowed`). Page checked in a browser with a faked `/state`; not tried in OBS.
+- Share as a picture (the player's right-click): a card with the cover, title, artist and a lyric line, in the cover's colours or the theme's; copied for a chat or saved as PNG / JPEG (`save_picture`, `music_core::cover::export`). Esc over Now Playing now closes only the dialog on top. Checked over the demo (the save faked); a real paste not tried.
 - Cover display (C, or the button beside Karaoke in Now Playing): the cover huge over its blurred copy, title and progress on it, a clock from its right-click (setting `coverClock`), the display kept awake. Checked over the demo (light, dark, 16:10, 16:9, portrait, square); not on a real second screen.
 - Settings › Privacy: every host the app, its windows and plugins talked to today, and why (`music_core::netlog`: the connectors' resolver `Noted`, the WebView2 hook on every window, `shield::watch` observing sign-in windows without blocking). Checked over the demo with invented rows; the real log not seen in the running app.
 - Pick up on the other PC (Sync Mode): the snapshot carries the saved session's song, position and save time (`now`); another PC where nothing plays offers it when newer than its own (a toast once, then "Resume … from …" in the idle player bar). Not tried between two real PCs.

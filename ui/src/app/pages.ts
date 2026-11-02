@@ -20,6 +20,7 @@ const load = {
   karaoke: () => import('../features/player/Karaoke').then((m) => ({ default: m.Karaoke })),
   vizScreen: () => import('../features/player/VizScreen').then((m) => ({ default: m.VizScreen })),
   coverScreen: () => import('../features/player/CoverScreen').then((m) => ({ default: m.CoverScreen })),
+  share: () => import('../features/share/ShareDialog').then((m) => ({ default: m.ShareDialog })),
   welcome: () => import('../features/welcome/Welcome').then((m) => ({ default: m.Welcome })),
   nowPlaying: () => import('../features/player/NowPlaying').then((m) => ({ default: m.NowPlaying })),
   lyrics: () => import('../features/player/LyricsPanel').then((m) => ({ default: m.LyricsPanel })),
@@ -69,6 +70,7 @@ export const YouTubeShelf = page(load.shelf)
 export const Karaoke = page(load.karaoke)
 export const VizScreen = page(load.vizScreen)
 export const CoverScreen = page(load.coverScreen)
+export const ShareDialog = page(load.share)
 export const Welcome = page(load.welcome)
 export const NowPlaying = page(load.nowPlaying)
 export const LyricsPanel = page(load.lyrics)

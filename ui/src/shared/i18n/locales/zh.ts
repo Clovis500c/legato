@@ -1919,6 +1919,17 @@ const zh: Record<string, string> = {
   'Clock on the cover display': '封面展示中的时钟',
   'The cover display (Now Playing, beside Karaoke) shows the time and the day in a corner, for a second screen': '封面展示（正在播放，卡拉OK 旁边）会在角落显示时间和日期，适合第二块屏幕',
   'clock time hour day second screen monitor full screen big cover display': '时钟 时间 日期 第二屏幕 显示器 全屏 大封面 展示',
+  'Share as a picture…': '分享为图片…',
+  'Share as a picture': '分享为图片',
+  'Lyric line': '歌词行',
+  'Previous line': '上一行',
+  'Next line': '下一行',
+  'Save picture…': '保存图片…',
+  'Save picture': '保存图片',
+  'Copy picture': '复制图片',
+  'Picture copied': '图片已复制',
+  'The picture could not be copied': '无法复制图片',
+  'Picture saved: {file}': '已保存图片：{file}',
 }
 
 export default zh

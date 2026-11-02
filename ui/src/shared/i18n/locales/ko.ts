@@ -1919,6 +1919,17 @@ const ko: Record<string, string> = {
   'Clock on the cover display': '커버 화면의 시계',
   'The cover display (Now Playing, beside Karaoke) shows the time and the day in a corner, for a second screen': '커버 화면(지금 재생 중, 노래방 옆)에서 모서리에 시간과 날짜를 표시합니다. 보조 화면용',
   'clock time hour day second screen monitor full screen big cover display': '시계 시간 날짜 보조 화면 모니터 전체 화면 큰 커버 표시',
+  'Share as a picture…': '이미지로 공유…',
+  'Share as a picture': '이미지로 공유',
+  'Lyric line': '가사 한 줄',
+  'Previous line': '이전 줄',
+  'Next line': '다음 줄',
+  'Save picture…': '이미지 저장…',
+  'Save picture': '이미지 저장',
+  'Copy picture': '이미지 복사',
+  'Picture copied': '이미지를 복사했습니다',
+  'The picture could not be copied': '이미지를 복사할 수 없습니다',
+  'Picture saved: {file}': '이미지 저장됨: {file}',
 }
 
 export default ko

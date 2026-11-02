@@ -1919,6 +1919,17 @@ const hi: Record<string, string> = {
   'Clock on the cover display': 'बड़े कवर पर घड़ी',
   'The cover display (Now Playing, beside Karaoke) shows the time and the day in a corner, for a second screen': 'बड़ा कवर (अभी चल रहा, कराओके के पास) एक कोने में समय और दिन दिखाता है, दूसरी स्क्रीन के लिए',
   'clock time hour day second screen monitor full screen big cover display': 'घड़ी समय घंटा दिन दूसरी स्क्रीन मॉनिटर फ़ुल स्क्रीन बड़ा कवर',
+  'Share as a picture…': 'तस्वीर के रूप में शेयर करें…',
+  'Share as a picture': 'तस्वीर के रूप में शेयर करें',
+  'Lyric line': 'बोल की पंक्ति',
+  'Previous line': 'पिछली पंक्ति',
+  'Next line': 'अगली पंक्ति',
+  'Save picture…': 'तस्वीर सहेजें…',
+  'Save picture': 'तस्वीर सहेजें',
+  'Copy picture': 'तस्वीर कॉपी करें',
+  'Picture copied': 'तस्वीर कॉपी हो गई',
+  'The picture could not be copied': 'तस्वीर कॉपी नहीं हो सकी',
+  'Picture saved: {file}': 'तस्वीर सहेजी गई: {file}',
 }
 
 export default hi

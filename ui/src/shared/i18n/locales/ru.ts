@@ -1919,6 +1919,17 @@ const ru: Record<string, string> = {
   'Clock on the cover display': 'Часы на обложке на весь экран',
   'The cover display (Now Playing, beside Karaoke) shows the time and the day in a corner, for a second screen': 'Обложка на весь экран (Сейчас играет, рядом с караоке) показывает время и день в углу, для второго экрана',
   'clock time hour day second screen monitor full screen big cover display': 'часы время день второй экран монитор полный экран большая обложка',
+  'Share as a picture…': 'Поделиться картинкой…',
+  'Share as a picture': 'Поделиться картинкой',
+  'Lyric line': 'Строка текста',
+  'Previous line': 'Предыдущая строка',
+  'Next line': 'Следующая строка',
+  'Save picture…': 'Сохранить картинку…',
+  'Save picture': 'Сохранить картинку',
+  'Copy picture': 'Копировать картинку',
+  'Picture copied': 'Картинка скопирована',
+  'The picture could not be copied': 'Не удалось скопировать картинку',
+  'Picture saved: {file}': 'Картинка сохранена: {file}',
 }
 
 export default ru

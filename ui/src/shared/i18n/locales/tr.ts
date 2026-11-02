@@ -1919,6 +1919,17 @@ const tr: Record<string, string> = {
   'Clock on the cover display': 'Büyük kapakta saat',
   'The cover display (Now Playing, beside Karaoke) shows the time and the day in a corner, for a second screen': 'Büyük kapak (Şimdi çalıyor, Karaoke’nin yanında) bir köşede saati ve günü gösterir, ikinci bir ekran için',
   'clock time hour day second screen monitor full screen big cover display': 'saat zaman gün ikinci ekran monitör tam ekran büyük kapak',
+  'Share as a picture…': 'Görsel olarak paylaş…',
+  'Share as a picture': 'Görsel olarak paylaş',
+  'Lyric line': 'Şarkı sözü satırı',
+  'Previous line': 'Önceki satır',
+  'Next line': 'Sonraki satır',
+  'Save picture…': 'Görseli kaydet…',
+  'Save picture': 'Görseli kaydet',
+  'Copy picture': 'Görseli kopyala',
+  'Picture copied': 'Görsel kopyalandı',
+  'The picture could not be copied': 'Görsel kopyalanamadı',
+  'Picture saved: {file}': 'Görsel kaydedildi: {file}',
 }
 
 export default tr

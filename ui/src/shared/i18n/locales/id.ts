@@ -1919,6 +1919,17 @@ const id: Record<string, string> = {
   'Clock on the cover display': 'Jam di tampilan sampul',
   'The cover display (Now Playing, beside Karaoke) shows the time and the day in a corner, for a second screen': 'Tampilan sampul (Sedang diputar, di sebelah Karaoke) menampilkan jam dan hari di sudut, untuk layar kedua',
   'clock time hour day second screen monitor full screen big cover display': 'jam waktu hari layar kedua monitor layar penuh sampul besar tampilan',
+  'Share as a picture…': 'Bagikan sebagai gambar…',
+  'Share as a picture': 'Bagikan sebagai gambar',
+  'Lyric line': 'Baris lirik',
+  'Previous line': 'Baris sebelumnya',
+  'Next line': 'Baris berikutnya',
+  'Save picture…': 'Simpan gambar…',
+  'Save picture': 'Simpan gambar',
+  'Copy picture': 'Salin gambar',
+  'Picture copied': 'Gambar disalin',
+  'The picture could not be copied': 'Gambar tidak bisa disalin',
+  'Picture saved: {file}': 'Gambar disimpan: {file}',
 }
 
 export default id

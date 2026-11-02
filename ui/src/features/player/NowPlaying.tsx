@@ -262,7 +262,8 @@ export function NowPlaying() {
   const backdrop = useBackdrop(immersive && track ? trackArt(track)[0] : undefined, backdropBlur)
 
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setFull(false)
+    // A dialog or a menu on top (share card, add to playlist…) takes this Esc: Now Playing stays.
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && !document.querySelector('[data-modal], [role="menu"]') && setFull(false)
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [setFull])

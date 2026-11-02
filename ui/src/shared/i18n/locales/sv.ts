@@ -1919,6 +1919,17 @@ const sv: Record<string, string> = {
   'Clock on the cover display': 'Klocka i omslagsvisningen',
   'The cover display (Now Playing, beside Karaoke) shows the time and the day in a corner, for a second screen': 'Omslagsvisningen (Spelas nu, bredvid Karaoke) visar tid och dag i ett hörn, för en andra skärm',
   'clock time hour day second screen monitor full screen big cover display': 'klocka tid timme dag andra skärm bildskärm helskärm stort omslag visning',
+  'Share as a picture…': 'Dela som bild…',
+  'Share as a picture': 'Dela som bild',
+  'Lyric line': 'Textrad',
+  'Previous line': 'Föregående rad',
+  'Next line': 'Nästa rad',
+  'Save picture…': 'Spara bild…',
+  'Save picture': 'Spara bild',
+  'Copy picture': 'Kopiera bild',
+  'Picture copied': 'Bilden kopierades',
+  'The picture could not be copied': 'Bilden kunde inte kopieras',
+  'Picture saved: {file}': 'Bilden sparades: {file}',
 }
 
 export default sv

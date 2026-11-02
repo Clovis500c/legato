@@ -87,6 +87,7 @@ import { deleteFolder, newFolder, renameFolder, setFolder, togglePinned } from '
 import { closeKaraoke, nowFix, nudgeLyrics, toggleKaraoke } from './player/karaokeMode'
 import { canVizFull, toggleVizFull, useVizFull } from './player/vizFull'
 import { closeCoverFull, toggleCoverFull } from './player/coverFull'
+import { openShare } from './share/share'
 import { VISUALIZER_LABELS } from './player/vizLooks'
 import { msg, tr, trn } from '../shared/i18n/i18n'
 import { ask, askText } from '../shared/ui/Ask'
@@ -700,6 +701,7 @@ export function playerMenu(): MenuEntry[] {
     { label: full ? tr('Leave full screen') : tr('Full screen'), icon: <ArrowsOutSimple size={16} />, onSelect: () => setFull(!full) },
     { label: tr('Karaoke'), icon: <MicrophoneStage size={16} />, onSelect: toggleKaraoke },
     { label: tr('Cover display'), icon: <FrameCorners size={16} />, onSelect: toggleCoverFull },
+    { label: tr('Share as a picture…'), icon: <ImageSquare size={16} />, onSelect: openShare },
     { label: tr('Live Editor'), icon: <SlidersHorizontal size={16} />, onSelect: () => (useSettings.getState().update({ editor: true }), setFull(true)) },
     { label: tr('Sleep timer'), icon: <Moon size={16} />, items: sleepMenu() },
     { label: tr('Mini player'), icon: <PictureInPicture size={16} />, checked: mini || !!video, disabled: !!video, onSelect: () => useSettings.getState().update({ miniPlayer: !mini }) },
