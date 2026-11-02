@@ -17,7 +17,7 @@ const atLaunch: unknown = (() => {
     return null
   }
 })()
-const VIEWS = ['home', 'add', 'addons', 'mixes', 'mix', 'stats', 'smart', 'notFound', 'songs', 'albums', 'album', 'artists', 'artist', 'playlist', 'settings'] as const
+const VIEWS = ['home', 'add', 'addons', 'mixes', 'mix', 'stats', 'smart', 'notFound', 'health', 'songs', 'albums', 'album', 'artists', 'artist', 'playlist', 'settings'] as const
 
 /** Stored screen → view still valid today (playlist deleted since: no). */
 export function validScreen(raw: unknown, playlistIds: number[]): Screen | null {

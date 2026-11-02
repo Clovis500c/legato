@@ -1858,6 +1858,22 @@ const sv: Record<string, string> = {
   'seek bar squiggly wave line progress style': 'förlopp fält våg vågig linje stil squiggly',
   'End of this album': 'I slutet av det här albumet',
   'End of album': 'Slutet av albumet',
+  'Library health': 'Bibliotekets skick',
+  'missing files broken videos covers tags duplicates fix': 'saknade filer trasiga videor omslag taggar dubbletter fixa',
+  'Songs that can’t play, files gone, songs with no cover or missing their artist or album: one page to fix them.': 'Låtar som inte spelas, försvunna filer, låtar utan omslag, artist eller album: en sida för att fixa dem.',
+  'Files gone': 'Filer borta',
+  'Can’t play': 'Spelas inte',
+  'Missing info': 'Info saknas',
+  'Moved or deleted, still in a playlist: find them on YouTube, or put the files back in a watched folder.': 'Flyttade eller raderade, fortfarande i en spellista: hitta dem på YouTube eller lägg tillbaka filerna i en bevakad mapp.',
+  'YouTube says their video can’t play (removed, private, not in your country): pick another version.': 'YouTube säger att deras video inte kan spelas (borttagen, privat, inte i ditt land): välj en annan version.',
+  'Local files with no picture inside: Edit song info adds one.': 'Lokala filer utan inbäddad bild: Redigera låtinfo lägger till en.',
+  'Local files without an artist or an album: Edit song info fills them in, many at once.': 'Lokala filer utan artist eller album: Redigera låtinfo fyller i dem, många på en gång.',
+  'Looking through your library…': 'Går igenom ditt bibliotek…',
+  '{n} song to look at': '{n} låt att titta på',
+  '{n} songs to look at': '{n} låtar att titta på',
+  'Nothing to fix': 'Inget att fixa',
+  'Find another version': 'Hitta en annan version',
+  'It plays now': 'Spelas nu',
 }
 
 export default sv

@@ -46,7 +46,7 @@ sight) shipped together as Stable 1.1.
 | 6 | Smart (1.5) | Local sonic analysis, song / artist radio, sweet fades, path between artists, auto-DJ, smart shuffle, Wrapped | L | What no free desktop app does without a server |
 | 7 | Around the house (1.6) | Phone remote, cast (DLNA / Chromecast), listen together on the LAN, pick up on the other PC | L | Turns a player into a home system |
 | 8 | Windows polish (1.7) | Command palette, taskbar buttons + Jump List, headphones / call pause, alarm, OBS overlay, PiP, drag from Explorer | M | Small, many, each a reason to stay |
-| 9 | Everywhere (2.0) | macOS and Linux builds, Android companion | L | Riff's one platform lead |
+| 9 | Everywhere (2.0) | The mobile version (Android, then iPhone: the owner's ask 2026-11-02, [ideas/mobile.md](ideas/mobile.md)), macOS and Linux builds | L | Riff's one platform lead; the owner wants Legato on the phone |
 
 Kept apart (need the user's call or an outside step): Spotify playback paths, Spotify's web session, LLM playlists with a
 user key, SoundCloud playback and search (its terms), concerts (an API's terms), trademark search.
@@ -233,10 +233,19 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       YouTube; off by default until the owner tries it (worth turning on by default then?).
 - [ ] `M` Phone remote: a page served on the LAN (QR code) to pause, skip, see the queue (Plexamp-like).
 - [ ] `M` Accessibility pass: full keyboard, screen reader labels, contrast AA everywhere, reduced motion.
-- [ ] `M` Library health: missing files, YouTube videos gone private (with "Find another version", `alternative_videos`),
-      songs without covers or tags, one page to fix them.
+- [x] `M` Library health: missing files, YouTube videos gone private (with "Find another version", `alternative_videos`),
+      songs without covers or tags, one page to fix them. Settings › General › Library health, or the search bar:
+      Files gone (songs a playlist still holds whose file vanished, `Library::sourceless`), Can't play (videos the watch
+      page said can't play, on this PC: `features/library/broken.ts`), No cover (local files with no picture inside,
+      read at each visit: `health.rs`), Missing info (local files without artist or album); Songs not found and
+      Duplicates linked. Find this song (pick mode), Edit song info (one or all). Not done: checking every YouTube
+      video ahead (a request per video to Google: the owner's call). Unseen in the real app.
 - [ ] `L` Personal servers: Jellyfin, Navidrome / Subsonic, Plex (the user's own music, streamed legally, keychain login).
 - [ ] `L` macOS and Linux builds (media panel, detector, tray per OS).
+- [ ] `L+` Mobile version, well optimised, the Rust code reused (the owner's ask 2026-11-02): Tauri 2's Android target
+      with the same crates and `ui/`, Android first, iPhone after. Spec, seven phases, what stays desktop-only and the
+      owner's calls (Android SDK / NDK on this PC, a phone, GitHub or Play Store, YouTube sign-in in a WebView):
+      [ideas/mobile.md](ideas/mobile.md). Phase 1, the phone layout in `ui/`, needs no new tool.
 
 **Medium**
 - [ ] `S` Find a song by a line of its lyrics (LRCLIB search), and hum to search if AudD's free tier allows it.
@@ -315,7 +324,6 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
 - [ ] `L` Sonic analysis, ours and local: features (tempo, key, energy, brightness, mood) computed from local files, and
       from what plays live for streams (the meter already listens; measured, not extracted), stored per song. Feeds
       "similar songs", song radio, sweet fades, the path between artists (Plexamp's Sonic Analysis needs a server).
-- [ ] `L` Mobile companion (Android first): the library from Sync Mode's folder, remote control.
 
 **Low**
 - [x] `S` Squiggly / waveform progress bar as a progress style choice. Settings › Appearance › Player › Progress bar,

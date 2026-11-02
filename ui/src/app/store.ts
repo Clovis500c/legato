@@ -20,6 +20,7 @@ export type View =
   | { name: 'stats' }
   | { name: 'smart'; id: string }
   | { name: 'notFound' }
+  | { name: 'health' }
   | { name: 'mix'; id: string }
   | { name: 'songs' }
   | { name: 'albums' }

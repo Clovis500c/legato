@@ -36,7 +36,7 @@ export function watchCommand(func: string, args: unknown[]): WatchCmd | null {
 /** Watch page report → the embed's update. Reports for another video (late, from the page before) are dropped. */
 export function watchUpdate(r: WatchReport, video: string): YtUpdate | null {
   if (r.error === 'CONSENT') return { unplayable: tr('YouTube is waiting for a cookie choice; signing in to YouTube Music (Settings › Accounts) usually clears it') }
-  if (r.error) return { unplayable: r.reason || r.error }
+  if (r.error) return { unplayable: r.reason || r.error, lost: true }
   if (r.videoId && r.videoId !== video) return null
   return { state: r.state ?? undefined, time: r.time ?? undefined, duration: r.duration || undefined }
 }

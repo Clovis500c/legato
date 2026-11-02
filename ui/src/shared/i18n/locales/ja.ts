@@ -1858,6 +1858,22 @@ const ja: Record<string, string> = {
   'seek bar squiggly wave line progress style': 'プログレスバー 波 直線 スタイル squiggly',
   'End of this album': 'このアルバムの終わり',
   'End of album': 'アルバムの終わり',
+  'Library health': 'ライブラリの状態',
+  'missing files broken videos covers tags duplicates fix': '見つからないファイル 再生できない動画 カバー タグ 重複 修正',
+  'Songs that can’t play, files gone, songs with no cover or missing their artist or album: one page to fix them.': '再生できない曲、消えたファイル、カバー・アーティスト・アルバムのない曲を1ページで直せます。',
+  'Files gone': '消えたファイル',
+  'Can’t play': '再生できない',
+  'Missing info': '情報が足りない',
+  'Moved or deleted, still in a playlist: find them on YouTube, or put the files back in a watched folder.': '移動・削除されたのにプレイリストに残っている曲です。YouTubeで探すか、ファイルを監視フォルダーに戻してください。',
+  'YouTube says their video can’t play (removed, private, not in your country): pick another version.': 'YouTubeによると動画を再生できません（削除、非公開、お住まいの国では利用不可）。別のバージョンを選んでください。',
+  'Local files with no picture inside: Edit song info adds one.': '画像が埋め込まれていないローカルファイルです。「曲の情報を編集」で追加できます。',
+  'Local files without an artist or an album: Edit song info fills them in, many at once.': 'アーティストやアルバムのないローカルファイルです。「曲の情報を編集」でまとめて入力できます。',
+  'Looking through your library…': 'ライブラリを確認しています…',
+  '{n} song to look at': '確認が必要な曲 {n} 曲',
+  '{n} songs to look at': '確認が必要な曲 {n} 曲',
+  'Nothing to fix': '直すものはありません',
+  'Find another version': '別のバージョンを探す',
+  'It plays now': '今は再生できる',
 }
 
 export default ja

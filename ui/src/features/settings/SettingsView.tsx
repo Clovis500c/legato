@@ -516,6 +516,11 @@ function BackupRows() {
           {tr('Back up…')}
         </Button>
       </Row>
+      <Row label={msg('Library health')} sub={tr('Songs that can’t play, files gone, songs with no cover or missing their artist or album: one page to fix them.')}>
+        <Button variant="ghost" onClick={() => useStore.getState().go({ name: 'health' })}>
+          {tr('Open')}
+        </Button>
+      </Row>
       <Row label={msg('Restore a backup')} sub={tr('Replaces this library with the file’s, then Legato restarts. The library you have now is kept beside it first.')}>
         <Button variant="ghost" disabled={busy} onClick={() => void restore()}>
           {tr('Restore…')}

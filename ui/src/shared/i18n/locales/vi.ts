@@ -1858,6 +1858,22 @@ const vi: Record<string, string> = {
   'seek bar squiggly wave line progress style': 'thanh tiến trình sóng gợn đường kẻ kiểu squiggly',
   'End of this album': 'Hết album này',
   'End of album': 'Hết album',
+  'Library health': 'Tình trạng thư viện',
+  'missing files broken videos covers tags duplicates fix': 'tệp bị thiếu video hỏng ảnh bìa thẻ trùng lặp sửa',
+  'Songs that can’t play, files gone, songs with no cover or missing their artist or album: one page to fix them.': 'Bài hát không phát được, tệp đã mất, bài hát thiếu ảnh bìa, nghệ sĩ hoặc album: một trang để sửa chúng.',
+  'Files gone': 'Tệp đã mất',
+  'Can’t play': 'Không phát được',
+  'Missing info': 'Thiếu thông tin',
+  'Moved or deleted, still in a playlist: find them on YouTube, or put the files back in a watched folder.': 'Đã bị chuyển hoặc xóa nhưng vẫn trong playlist: tìm chúng trên YouTube, hoặc đặt tệp lại vào thư mục đang theo dõi.',
+  'YouTube says their video can’t play (removed, private, not in your country): pick another version.': 'YouTube cho biết video của chúng không phát được (đã xóa, riêng tư, không có ở quốc gia của bạn): hãy chọn phiên bản khác.',
+  'Local files with no picture inside: Edit song info adds one.': 'Tệp cục bộ không có ảnh bên trong: Sửa thông tin bài hát để thêm ảnh.',
+  'Local files without an artist or an album: Edit song info fills them in, many at once.': 'Tệp cục bộ thiếu nghệ sĩ hoặc album: Sửa thông tin bài hát để điền, nhiều bài cùng lúc.',
+  'Looking through your library…': 'Đang xem qua thư viện của bạn…',
+  '{n} song to look at': '{n} bài hát cần xem lại',
+  '{n} songs to look at': '{n} bài hát cần xem lại',
+  'Nothing to fix': 'Không có gì cần sửa',
+  'Find another version': 'Tìm phiên bản khác',
+  'It plays now': 'Giờ đã phát được',
 }
 
 export default vi

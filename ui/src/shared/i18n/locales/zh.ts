@@ -1858,6 +1858,22 @@ const zh: Record<string, string> = {
   'seek bar squiggly wave line progress style': '进度条 波浪 直线 样式 squiggly',
   'End of this album': '这张专辑结束时',
   'End of album': '专辑结束时',
+  'Library health': '音乐库状况',
+  'missing files broken videos covers tags duplicates fix': '缺失文件 失效视频 封面 标签 重复 修复',
+  'Songs that can’t play, files gone, songs with no cover or missing their artist or album: one page to fix them.': '无法播放的歌曲、丢失的文件、缺少封面、艺人或专辑的歌曲：在一个页面里修复。',
+  'Files gone': '文件丢失',
+  'Can’t play': '无法播放',
+  'Missing info': '信息缺失',
+  'Moved or deleted, still in a playlist: find them on YouTube, or put the files back in a watched folder.': '已移动或删除，但仍在播放列表中：在 YouTube 上找到它们，或把文件放回受监视的文件夹。',
+  'YouTube says their video can’t play (removed, private, not in your country): pick another version.': 'YouTube 表示其视频无法播放（已删除、私享或在你所在的国家不可用）：请选择其他版本。',
+  'Local files with no picture inside: Edit song info adds one.': '没有内嵌图片的本地文件：用“编辑歌曲信息”添加一张。',
+  'Local files without an artist or an album: Edit song info fills them in, many at once.': '缺少艺人或专辑的本地文件：用“编辑歌曲信息”补全，可一次改多首。',
+  'Looking through your library…': '正在检查你的音乐库…',
+  '{n} song to look at': '{n} 首歌曲需要处理',
+  '{n} songs to look at': '{n} 首歌曲需要处理',
+  'Nothing to fix': '没有需要修复的',
+  'Find another version': '查找其他版本',
+  'It plays now': '现在可以播放了',
 }
 
 export default zh

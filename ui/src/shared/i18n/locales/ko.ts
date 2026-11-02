@@ -1858,6 +1858,22 @@ const ko: Record<string, string> = {
   'seek bar squiggly wave line progress style': '진행 막대 물결 직선 스타일 squiggly',
   'End of this album': '이 앨범이 끝나면',
   'End of album': '앨범이 끝나면',
+  'Library health': '라이브러리 상태',
+  'missing files broken videos covers tags duplicates fix': '누락 파일 깨진 동영상 커버 태그 중복 수정',
+  'Songs that can’t play, files gone, songs with no cover or missing their artist or album: one page to fix them.': '재생되지 않는 곡, 사라진 파일, 커버·아티스트·앨범이 없는 곡을 한 페이지에서 고칩니다.',
+  'Files gone': '사라진 파일',
+  'Can’t play': '재생 불가',
+  'Missing info': '정보 누락',
+  'Moved or deleted, still in a playlist: find them on YouTube, or put the files back in a watched folder.': '옮겨지거나 삭제됐지만 재생목록에 남아 있는 곡입니다. YouTube에서 찾거나 파일을 감시 폴더에 다시 넣으세요.',
+  'YouTube says their video can’t play (removed, private, not in your country): pick another version.': 'YouTube에 따르면 동영상을 재생할 수 없습니다(삭제됨, 비공개, 내 국가에서 이용 불가). 다른 버전을 고르세요.',
+  'Local files with no picture inside: Edit song info adds one.': '이미지가 들어 있지 않은 로컬 파일입니다. 곡 정보 편집에서 추가할 수 있습니다.',
+  'Local files without an artist or an album: Edit song info fills them in, many at once.': '아티스트나 앨범이 없는 로컬 파일입니다. 곡 정보 편집에서 여러 곡을 한 번에 채울 수 있습니다.',
+  'Looking through your library…': '라이브러리를 살펴보는 중…',
+  '{n} song to look at': '확인할 곡 {n}곡',
+  '{n} songs to look at': '확인할 곡 {n}곡',
+  'Nothing to fix': '고칠 것이 없습니다',
+  'Find another version': '다른 버전 찾기',
+  'It plays now': '이제 재생됨',
 }
 
 export default ko

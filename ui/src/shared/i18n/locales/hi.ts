@@ -1858,6 +1858,22 @@ const hi: Record<string, string> = {
   'seek bar squiggly wave line progress style': 'प्रोग्रेस बार लहर लाइन स्टाइल squiggly',
   'End of this album': 'इस एल्बम के अंत में',
   'End of album': 'एल्बम के अंत में',
+  'Library health': 'लाइब्रेरी की सेहत',
+  'missing files broken videos covers tags duplicates fix': 'गायब फ़ाइलें ख़राब वीडियो कवर टैग डुप्लिकेट ठीक',
+  'Songs that can’t play, files gone, songs with no cover or missing their artist or album: one page to fix them.': 'जो गाने नहीं चलते, गायब फ़ाइलें, बिना कवर, कलाकार या एल्बम वाले गाने: उन्हें ठीक करने के लिए एक पेज।',
+  'Files gone': 'गायब फ़ाइलें',
+  'Can’t play': 'नहीं चलते',
+  'Missing info': 'अधूरी जानकारी',
+  'Moved or deleted, still in a playlist: find them on YouTube, or put the files back in a watched folder.': 'हटाए या मिटाए गए, फिर भी किसी प्लेलिस्ट में: उन्हें YouTube पर ढूँढें, या फ़ाइलें किसी निगरानी वाले फ़ोल्डर में वापस रखें।',
+  'YouTube says their video can’t play (removed, private, not in your country): pick another version.': 'YouTube के अनुसार इनका वीडियो नहीं चल सकता (हटाया गया, निजी, आपके देश में उपलब्ध नहीं): कोई दूसरा संस्करण चुनें।',
+  'Local files with no picture inside: Edit song info adds one.': 'लोकल फ़ाइलें जिनमें कोई तस्वीर नहीं: गाने की जानकारी बदलें से एक जोड़ें।',
+  'Local files without an artist or an album: Edit song info fills them in, many at once.': 'बिना कलाकार या एल्बम वाली लोकल फ़ाइलें: गाने की जानकारी बदलें से इन्हें भरें, कई एक साथ।',
+  'Looking through your library…': 'आपकी लाइब्रेरी देखी जा रही है…',
+  '{n} song to look at': 'देखने के लिए {n} गाना',
+  '{n} songs to look at': 'देखने के लिए {n} गाने',
+  'Nothing to fix': 'ठीक करने को कुछ नहीं',
+  'Find another version': 'दूसरा संस्करण ढूँढें',
+  'It plays now': 'अब चलता है',
 }
 
 export default hi

@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { useStore } from '../../app/store'
 import { api, type Levelling, type LibraryTrack, type PlayerCommand, type PlayerStatus, type SpotifyCommand, type SpotifyPlayback, type Track } from '../../shared/api'
+import { markBroken } from '../library/broken'
 import type { Box } from '../../shared/artbox'
 import { region } from '../../shared/format'
 import { endListen, progress, startListen } from './listens'
@@ -791,6 +792,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     if (u.refused !== undefined) return refused(u.refused)
     // Watch page can't play it either (region, age, removed): another upload of the song, else the next song.
     if (u.unplayable !== undefined) {
+      if (u.lost && now?.youtubeId) markBroken(now.youtubeId, u.unplayable)
       if (now?.trackId && now.youtubeId) return void tryOtherUpload(now.trackId, now.youtubeId, tr('This video can’t play here ({reason})', { reason: u.unplayable }), 'unplayable on the watch page')
       useStore.getState().notify(tr('This video can’t play here ({reason}): skipped', { reason: u.unplayable }), { kind: 'error' })
       return get().step(1)

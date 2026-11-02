@@ -1858,6 +1858,22 @@ const id: Record<string, string> = {
   'seek bar squiggly wave line progress style': 'bilah progres gelombang garis gaya squiggly',
   'End of this album': 'Di akhir album ini',
   'End of album': 'Akhir album',
+  'Library health': 'Kesehatan pustaka',
+  'missing files broken videos covers tags duplicates fix': 'file hilang video rusak sampul tag duplikat perbaiki',
+  'Songs that can’t play, files gone, songs with no cover or missing their artist or album: one page to fix them.': 'Lagu yang tidak bisa diputar, file yang hilang, lagu tanpa sampul, artis, atau album: satu halaman untuk memperbaikinya.',
+  'Files gone': 'File hilang',
+  'Can’t play': 'Tidak bisa diputar',
+  'Missing info': 'Info kurang',
+  'Moved or deleted, still in a playlist: find them on YouTube, or put the files back in a watched folder.': 'Dipindah atau dihapus, masih ada di playlist: cari di YouTube, atau kembalikan file ke folder yang dipantau.',
+  'YouTube says their video can’t play (removed, private, not in your country): pick another version.': 'YouTube bilang videonya tidak bisa diputar (dihapus, pribadi, tidak tersedia di negaramu): pilih versi lain.',
+  'Local files with no picture inside: Edit song info adds one.': 'File lokal tanpa gambar di dalamnya: Ubah info lagu bisa menambahkannya.',
+  'Local files without an artist or an album: Edit song info fills them in, many at once.': 'File lokal tanpa artis atau album: Ubah info lagu mengisinya, banyak sekaligus.',
+  'Looking through your library…': 'Memeriksa pustakamu…',
+  '{n} song to look at': '{n} lagu perlu dicek',
+  '{n} songs to look at': '{n} lagu perlu dicek',
+  'Nothing to fix': 'Tidak ada yang perlu diperbaiki',
+  'Find another version': 'Cari versi lain',
+  'It plays now': 'Sekarang bisa diputar',
 }
 
 export default id

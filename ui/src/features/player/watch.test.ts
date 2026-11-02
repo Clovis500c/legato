@@ -21,8 +21,8 @@ describe('watch page (blocked embeds)', () => {
     expect(watchUpdate(report({ state: 1, time: 12, videoId: 'otherotherx' }), 'abcdefghijk')).toBeNull()
     // Cookie choice pending on the watch page: said plainly, never a silent pause.
     expect(watchUpdate(report({ error: 'CONSENT' }), 'abcdefghijk')).toEqual({ unplayable: expect.stringContaining('cookie choice') })
-    expect(watchUpdate(report({ error: 'UNPLAYABLE', reason: 'Not available in your country' }), 'abcdefghijk')).toEqual({ unplayable: 'Not available in your country' })
-    expect(watchUpdate(report({ error: 'LOGIN_REQUIRED' }), 'abcdefghijk')).toEqual({ unplayable: 'LOGIN_REQUIRED' })
+    expect(watchUpdate(report({ error: 'UNPLAYABLE', reason: 'Not available in your country' }), 'abcdefghijk')).toEqual({ unplayable: 'Not available in your country', lost: true })
+    expect(watchUpdate(report({ error: 'LOGIN_REQUIRED' }), 'abcdefghijk')).toEqual({ unplayable: 'LOGIN_REQUIRED', lost: true })
   })
 
   it('places the webview in physical pixels', () => {

@@ -31,6 +31,9 @@ the report to the owner in French (in the chat and `docs/notes/report-2026-11-02
 Done in this run (newest last; `git log` has the hashes), none tried in the real app yet:
 
 - Exportify's lists keep their real names (its progress bar's lines, any language), not "Cool music".
+- Library health page (Settings › General, the search bar): files gone, videos that can't play, no cover, missing info.
+- The owner's new ask mid-run (2026-11-02): a mobile version, Rust reused. Spec and phases in
+  [ideas/mobile.md](ideas/mobile.md); no Android SDK / NDK / JDK on this PC, so phase 1 (phone layout in `ui/`) only.
 
 ## Autonomous run (the owner's ask, 2026-10-31 evening)
 

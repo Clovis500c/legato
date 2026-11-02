@@ -1858,6 +1858,22 @@ const tr: Record<string, string> = {
   'seek bar squiggly wave line progress style': 'ilerleme çubuk dalga dalgalı çizgi stil squiggly',
   'End of this album': 'Bu albümün sonunda',
   'End of album': 'Albümün sonu',
+  'Library health': 'Kitaplık sağlığı',
+  'missing files broken videos covers tags duplicates fix': 'eksik dosyalar bozuk videolar kapaklar etiketler kopyalar düzelt',
+  'Songs that can’t play, files gone, songs with no cover or missing their artist or album: one page to fix them.': 'Çalmayan şarkılar, kaybolan dosyalar, kapağı, sanatçısı ya da albümü olmayan şarkılar: hepsini düzeltmek için tek sayfa.',
+  'Files gone': 'Kayıp dosyalar',
+  'Can’t play': 'Çalmıyor',
+  'Missing info': 'Eksik bilgi',
+  'Moved or deleted, still in a playlist: find them on YouTube, or put the files back in a watched folder.': 'Taşınmış ya da silinmiş, hâlâ bir çalma listesinde: onları YouTube’da bul ya da dosyaları izlenen bir klasöre geri koy.',
+  'YouTube says their video can’t play (removed, private, not in your country): pick another version.': 'YouTube videolarının oynatılamadığını söylüyor (kaldırılmış, gizli, ülkende yok): başka bir sürüm seç.',
+  'Local files with no picture inside: Edit song info adds one.': 'İçinde resim olmayan yerel dosyalar: Şarkı bilgilerini düzenle ile bir tane ekle.',
+  'Local files without an artist or an album: Edit song info fills them in, many at once.': 'Sanatçısı ya da albümü olmayan yerel dosyalar: Şarkı bilgilerini düzenle ile hepsini birden doldur.',
+  'Looking through your library…': 'Kitaplığın inceleniyor…',
+  '{n} song to look at': 'Bakılacak {n} şarkı',
+  '{n} songs to look at': 'Bakılacak {n} şarkı',
+  'Nothing to fix': 'Düzeltilecek bir şey yok',
+  'Find another version': 'Başka bir sürüm bul',
+  'It plays now': 'Artık çalıyor',
 }
 
 export default tr

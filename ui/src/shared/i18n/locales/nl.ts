@@ -1858,6 +1858,22 @@ const nl: Record<string, string> = {
   'seek bar squiggly wave line progress style': 'voortgang balk golf golvend lijn stijl squiggly',
   'End of this album': 'Aan het einde van dit album',
   'End of album': 'Einde van album',
+  'Library health': 'Staat van de bibliotheek',
+  'missing files broken videos covers tags duplicates fix': 'ontbrekende bestanden kapotte video\'s hoezen tags dubbele herstellen',
+  'Songs that can’t play, files gone, songs with no cover or missing their artist or album: one page to fix them.': 'Nummers die niet afspelen, verdwenen bestanden, nummers zonder hoes, artiest of album: één pagina om ze te herstellen.',
+  'Files gone': 'Bestanden weg',
+  'Can’t play': 'Speelt niet af',
+  'Missing info': 'Info ontbreekt',
+  'Moved or deleted, still in a playlist: find them on YouTube, or put the files back in a watched folder.': 'Verplaatst of verwijderd, nog in een playlist: zoek ze op YouTube of zet de bestanden terug in een gevolgde map.',
+  'YouTube says their video can’t play (removed, private, not in your country): pick another version.': 'YouTube zegt dat hun video niet kan afspelen (verwijderd, privé, niet in jouw land): kies een andere versie.',
+  'Local files with no picture inside: Edit song info adds one.': 'Lokale bestanden zonder ingesloten afbeelding: Nummerinfo bewerken voegt er een toe.',
+  'Local files without an artist or an album: Edit song info fills them in, many at once.': 'Lokale bestanden zonder artiest of album: Nummerinfo bewerken vult ze aan, veel tegelijk.',
+  'Looking through your library…': 'Je bibliotheek wordt doorgenomen…',
+  '{n} song to look at': '{n} nummer om na te kijken',
+  '{n} songs to look at': '{n} nummers om na te kijken',
+  'Nothing to fix': 'Niets te herstellen',
+  'Find another version': 'Andere versie zoeken',
+  'It plays now': 'Speelt nu af',
 }
 
 export default nl

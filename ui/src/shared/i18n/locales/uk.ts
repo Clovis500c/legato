@@ -1858,6 +1858,22 @@ const uk: Record<string, string> = {
   'seek bar squiggly wave line progress style': 'смуга прогрес хвиля хвиляста лінія стиль squiggly',
   'End of this album': 'Наприкінці цього альбому',
   'End of album': 'Кінець альбому',
+  'Library health': 'Стан медіатеки',
+  'missing files broken videos covers tags duplicates fix': 'зниклі файли биті відео обкладинки теги дублікати виправити',
+  'Songs that can’t play, files gone, songs with no cover or missing their artist or album: one page to fix them.': 'Пісні, що не грають, зниклі файли, пісні без обкладинки, виконавця чи альбому: одна сторінка, щоб усе виправити.',
+  'Files gone': 'Зниклі файли',
+  'Can’t play': 'Не грають',
+  'Missing info': 'Бракує даних',
+  'Moved or deleted, still in a playlist: find them on YouTube, or put the files back in a watched folder.': 'Переміщені або видалені, але ще в плейлисті: знайди їх на YouTube або поверни файли в теку, за якою стежить застосунок.',
+  'YouTube says their video can’t play (removed, private, not in your country): pick another version.': 'YouTube каже, що їхнє відео не грає (видалене, приватне, недоступне у твоїй країні): обери іншу версію.',
+  'Local files with no picture inside: Edit song info adds one.': 'Локальні файли без вбудованого зображення: «Змінити дані пісні» його додасть.',
+  'Local files without an artist or an album: Edit song info fills them in, many at once.': 'Локальні файли без виконавця чи альбому: «Змінити дані пісні» заповнить їх, одразу для багатьох.',
+  'Looking through your library…': 'Переглядаю медіатеку…',
+  '{n} song to look at': '{n} пісня потребує уваги',
+  '{n} songs to look at': 'Пісень, що потребують уваги: {n}',
+  'Nothing to fix': 'Нічого виправляти',
+  'Find another version': 'Знайти іншу версію',
+  'It plays now': 'Тепер грає',
 }
 
 export default uk

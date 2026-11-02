@@ -1858,6 +1858,22 @@ const fr: Record<string, string> = {
   'seek bar squiggly wave line progress style': 'barre progression onde ondulée ligne style squiggly',
   'End of this album': 'À la fin de cet album',
   'End of album': 'Fin de l’album',
+  'Library health': 'Santé de la bibliothèque',
+  'missing files broken videos covers tags duplicates fix': 'fichiers manquants vidéos cassées pochettes tags doublons réparer santé',
+  'Songs that can’t play, files gone, songs with no cover or missing their artist or album: one page to fix them.': 'Titres illisibles, fichiers disparus, titres sans pochette, sans artiste ou sans album : une page pour les réparer.',
+  'Files gone': 'Fichiers disparus',
+  'Can’t play': 'Illisibles',
+  'Missing info': 'Infos manquantes',
+  'Moved or deleted, still in a playlist: find them on YouTube, or put the files back in a watched folder.': 'Déplacés ou supprimés, encore dans une playlist : retrouvez-les sur YouTube, ou remettez les fichiers dans un dossier surveillé.',
+  'YouTube says their video can’t play (removed, private, not in your country): pick another version.': 'YouTube dit que leur vidéo ne peut pas être lue (supprimée, privée, indisponible dans votre pays) : choisissez une autre version.',
+  'Local files with no picture inside: Edit song info adds one.': 'Fichiers locaux sans image intégrée : Modifier les infos du titre en ajoute une.',
+  'Local files without an artist or an album: Edit song info fills them in, many at once.': 'Fichiers locaux sans artiste ou sans album : Modifier les infos du titre les complète, plusieurs à la fois.',
+  'Looking through your library…': 'Examen de votre bibliothèque…',
+  '{n} song to look at': '{n} titre à revoir',
+  '{n} songs to look at': '{n} titres à revoir',
+  'Nothing to fix': 'Rien à réparer',
+  'Find another version': 'Trouver une autre version',
+  'It plays now': 'Il se lit maintenant',
 }
 
 export default fr

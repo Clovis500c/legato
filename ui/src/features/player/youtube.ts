@@ -24,6 +24,8 @@ export interface YtUpdate {
   error?: number
   /** Watch page (blocked embeds): the video can't play at all here (region, age, removed). Why, in YouTube's words. */
   unplayable?: string
+  /** With `unplayable`: the video itself is to blame (not a cookie wall), so the library health page lists its song. */
+  lost?: boolean
   /** Google refused the player's request ("Sorry…" page while it limits this network; crates/shield refused.js): status. */
   refused?: number
 }

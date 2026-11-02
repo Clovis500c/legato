@@ -1858,6 +1858,22 @@ const pt: Record<string, string> = {
   'seek bar squiggly wave line progress style': 'barra progresso onda ondulada linha estilo squiggly',
   'End of this album': 'No fim deste álbum',
   'End of album': 'Fim do álbum',
+  'Library health': 'Saúde da biblioteca',
+  'missing files broken videos covers tags duplicates fix': 'arquivos em falta vídeos quebrados capas etiquetas duplicados corrigir',
+  'Songs that can’t play, files gone, songs with no cover or missing their artist or album: one page to fix them.': 'Músicas que não tocam, arquivos desaparecidos, músicas sem capa, artista ou álbum: uma página para corrigi-las.',
+  'Files gone': 'Arquivos perdidos',
+  'Can’t play': 'Não tocam',
+  'Missing info': 'Informação em falta',
+  'Moved or deleted, still in a playlist: find them on YouTube, or put the files back in a watched folder.': 'Movidas ou apagadas, ainda numa playlist: encontre-as no YouTube ou coloque os arquivos de volta numa pasta monitorada.',
+  'YouTube says their video can’t play (removed, private, not in your country): pick another version.': 'O YouTube diz que o vídeo delas não pode tocar (removido, privado, indisponível no seu país): escolha outra versão.',
+  'Local files with no picture inside: Edit song info adds one.': 'Arquivos locais sem imagem dentro: Editar a informação da música adiciona uma.',
+  'Local files without an artist or an album: Edit song info fills them in, many at once.': 'Arquivos locais sem artista ou álbum: Editar a informação da música os completa, vários de uma vez.',
+  'Looking through your library…': 'Verificando sua biblioteca…',
+  '{n} song to look at': '{n} música para rever',
+  '{n} songs to look at': '{n} músicas para rever',
+  'Nothing to fix': 'Nada para corrigir',
+  'Find another version': 'Encontrar outra versão',
+  'It plays now': 'Agora toca',
 }
 
 export default pt

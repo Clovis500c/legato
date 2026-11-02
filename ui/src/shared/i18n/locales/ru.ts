@@ -1858,6 +1858,22 @@ const ru: Record<string, string> = {
   'seek bar squiggly wave line progress style': 'полоса прогресс волна волнистая линия стиль squiggly',
   'End of this album': 'В конце этого альбома',
   'End of album': 'Конец альбома',
+  'Library health': 'Состояние медиатеки',
+  'missing files broken videos covers tags duplicates fix': 'пропавшие файлы битые видео обложки теги дубликаты исправить',
+  'Songs that can’t play, files gone, songs with no cover or missing their artist or album: one page to fix them.': 'Треки, которые не играют, пропавшие файлы, треки без обложки, исполнителя или альбома: одна страница, чтобы всё исправить.',
+  'Files gone': 'Пропавшие файлы',
+  'Can’t play': 'Не играют',
+  'Missing info': 'Нет данных',
+  'Moved or deleted, still in a playlist: find them on YouTube, or put the files back in a watched folder.': 'Перемещены или удалены, но остались в плейлисте: найди их на YouTube или верни файлы в отслеживаемую папку.',
+  'YouTube says their video can’t play (removed, private, not in your country): pick another version.': 'YouTube говорит, что их видео не воспроизводится (удалено, скрыто, недоступно в твоей стране): выбери другую версию.',
+  'Local files with no picture inside: Edit song info adds one.': 'Локальные файлы без встроенной картинки: «Изменить данные трека» её добавит.',
+  'Local files without an artist or an album: Edit song info fills them in, many at once.': 'Локальные файлы без исполнителя или альбома: «Изменить данные трека» заполнит их, сразу для многих.',
+  'Looking through your library…': 'Просматриваю медиатеку…',
+  '{n} song to look at': '{n} трек требует внимания',
+  '{n} songs to look at': 'Треков, требующих внимания: {n}',
+  'Nothing to fix': 'Исправлять нечего',
+  'Find another version': 'Найти другую версию',
+  'It plays now': 'Теперь играет',
 }
 
 export default ru

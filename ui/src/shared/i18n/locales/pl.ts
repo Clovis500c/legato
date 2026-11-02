@@ -1858,6 +1858,22 @@ const pl: Record<string, string> = {
   'seek bar squiggly wave line progress style': 'pasek postęp fala falista linia styl squiggly',
   'End of this album': 'Na końcu tego albumu',
   'End of album': 'Koniec albumu',
+  'Library health': 'Stan biblioteki',
+  'missing files broken videos covers tags duplicates fix': 'brakujące pliki uszkodzone filmy okładki tagi duplikaty naprawa',
+  'Songs that can’t play, files gone, songs with no cover or missing their artist or album: one page to fix them.': 'Utwory, które się nie odtwarzają, zniknięte pliki, utwory bez okładki, wykonawcy lub albumu: jedna strona, by je naprawić.',
+  'Files gone': 'Zniknięte pliki',
+  'Can’t play': 'Nie grają',
+  'Missing info': 'Brak informacji',
+  'Moved or deleted, still in a playlist: find them on YouTube, or put the files back in a watched folder.': 'Przeniesione lub usunięte, wciąż na playliście: znajdź je na YouTube albo przywróć pliki do obserwowanego folderu.',
+  'YouTube says their video can’t play (removed, private, not in your country): pick another version.': 'YouTube mówi, że ich film nie może być odtworzony (usunięty, prywatny, niedostępny w twoim kraju): wybierz inną wersję.',
+  'Local files with no picture inside: Edit song info adds one.': 'Pliki lokalne bez obrazka w środku: Edytuj informacje o utworze go doda.',
+  'Local files without an artist or an album: Edit song info fills them in, many at once.': 'Pliki lokalne bez wykonawcy lub albumu: Edytuj informacje o utworze je uzupełni, wiele naraz.',
+  'Looking through your library…': 'Przeglądanie biblioteki…',
+  '{n} song to look at': '{n} utwór do sprawdzenia',
+  '{n} songs to look at': 'Utwory do sprawdzenia: {n}',
+  'Nothing to fix': 'Nie ma nic do naprawy',
+  'Find another version': 'Znajdź inną wersję',
+  'It plays now': 'Teraz gra',
 }
 
 export default pl

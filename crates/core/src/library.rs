@@ -1300,6 +1300,22 @@ impl Library {
         Ok(self.db.query_row("SELECT source_id FROM track_ids WHERE source = 'local' AND track_id = ?1", [track_id], |r| r.get(0)).optional()?)
     }
 
+    /// Songs a playlist still holds whose every source is gone (a local file moved or deleted): they can't play.
+    pub fn sourceless(&self) -> Result<Vec<LibraryTrack>> {
+        let mut stmt = self.db.prepare(&format!(
+            "SELECT {TRACK_COLS}, NULL FROM tracks t
+             WHERE NOT EXISTS (SELECT 1 FROM track_ids WHERE track_id = t.id) AND EXISTS (SELECT 1 FROM playlist_tracks WHERE track_id = t.id)
+             ORDER BY t.artist COLLATE NOCASE, t.title COLLATE NOCASE, t.id"
+        ))?;
+        Ok(stmt.query_map([], to_track)?.collect::<rusqlite::Result<_>>()?)
+    }
+
+    /// Local songs: id, file, and whether a cover is stored for it.
+    pub fn local_files(&self) -> Result<Vec<(i64, String, bool)>> {
+        let mut stmt = self.db.prepare("SELECT i.track_id, i.source_id, t.art IS NOT NULL FROM track_ids i JOIN tracks t ON t.id = i.track_id WHERE i.source = 'local'")?;
+        Ok(stmt.query_map([], |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?)))?.collect::<rusqlite::Result<_>>()?)
+    }
+
     // Savepoints = nestable tx (save_playlist calls upsert_track).
     pub(crate) fn tx<T>(&self, f: impl FnOnce() -> Result<T>) -> Result<T> {
         self.db.execute_batch("SAVEPOINT tx")?;
@@ -1645,6 +1661,24 @@ mod tests {
         lib.unremove(&song(1))?;
         lib.save_playlist(Source::Youtube, "PL1", "Mix", &[song(1), song(2)])?;
         assert_eq!(lib.playlist_tracks(pid)?.len(), 2);
+        Ok(())
+    }
+
+    #[test]
+    fn a_vanished_file_held_by_a_playlist_is_sourceless() -> Result<()> {
+        let lib = Library::in_memory()?;
+        let file = |n: u32| Track { ids: [(Source::Local, format!("C:/Music/{n}.mp3"))].into(), ..song(n) };
+        lib.replace_local(&[file(1), file(2)])?;
+        let kept = lib.tracks()?.into_iter().find(|t| t.track.title == "Song 1").unwrap().id;
+        let id = lib.edit_playlist(PlaylistEdit::Create { name: "Mine".into() })?.unwrap();
+        lib.edit_playlist(PlaylistEdit::Add { id, track_ids: vec![kept] })?;
+        assert!(lib.sourceless()?.is_empty());
+        assert_eq!(lib.local_files()?.iter().map(|(_, p, art)| (p.as_str(), *art)).collect::<Vec<_>>(), [("C:/Music/1.mp3", false), ("C:/Music/2.mp3", false)]);
+        // Both files gone: the one a playlist holds stays, sourceless; the other leaves.
+        lib.replace_local(&[])?;
+        let gone = lib.sourceless()?;
+        assert_eq!((gone.len(), gone[0].id, gone[0].track.ids.is_empty()), (1, kept, true));
+        assert!(lib.local_files()?.is_empty());
         Ok(())
     }
 
