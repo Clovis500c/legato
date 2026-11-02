@@ -2,6 +2,7 @@
 # Same licenses as deny.toml › licenses.allow: pnpm check:licenses fails if they differ.
 # Order = pick when a crate offers a choice: fewest duties first.
 accepted = [
+    "CDLA-Permissive-2.0",
     "MIT-0",
     "0BSD",
     "Unlicense",
