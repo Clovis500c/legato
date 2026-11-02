@@ -14,10 +14,14 @@ Everything the user made, from one PC to the others:
 - Live Editor versions and presets (songs found by their ids on the other side);
 - settings, key by key, except this PC's own: interface size, mini player spot and width, update channel, cover cache size, phone remote, defaults version;
 - the YouTube Music accounts picked for sync;
-- the list of connected services ("Signed in there, not here", with a button to Accounts).
+- the list of connected services ("Signed in there, not here", with a button to Accounts);
+- the song played last and where it stopped (2026-11-02, `now`: the saved session's current song and position, with its
+  time). Another PC where nothing plays offers it when it is newer than its own: a toast once, then "Resume … from …" in
+  the idle player bar; the song is this library's row when found, else played from its YouTube id. A playing song's
+  position alone never rewrites the file (`hash` leaves it out unless paused): a new song or a pause does.
 
 Never: local file paths (each PC scans its own folders; their songs are matched by title, artist and length), the
-playback session, lyrics cache, updater state, WebView2 cookies (YouTube sign-in) or service tokens.
+rest of the playback session (queue, shuffle, volume), lyrics cache, updater state, WebView2 cookies (YouTube sign-in) or service tokens.
 
 ## Secrets
 
@@ -72,8 +76,10 @@ Settings naming playlists by row id (`hiddenPlaylists`, `playlistCovers`) are tr
   `sync_gone`, random custom ids, edit uids); `history.rs` (preference and rating times, history clears remembered).
 - `crates/connectors` `nearby.rs`: `sync_serve` / `sync_join`.
 - `src-tauri` `syncmode.rs`: config (`sync` row: PC id, folder, asked), keychain key, minute timer, commands, events
-  `sync` (merged: the UI reloads) and `sync-offer`. Snapshots read WebView2 cookies: async commands only.
-- `ui/src/features/syncmode/`: `syncmode.ts` (reload on merge, the OneDrive question), `SyncSection.tsx`
+  `sync` (merged: the UI reloads), `sync-offer` and `sync-pickup` (another PC's last song; `sync_pickup` for one that came
+  before the interface listened). Snapshots read WebView2 cookies: async commands only.
+- `ui/src/features/syncmode/`: `syncmode.ts` (reload on merge, the OneDrive question), `pickup.ts` + pure
+  `pickupOffer.ts` (pick up on another PC), `SyncSection.tsx`
   (Settings › Sync Mode).
 
 ## Tested

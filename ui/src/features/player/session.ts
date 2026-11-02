@@ -20,7 +20,12 @@ export interface Session {
   volume: number
   /** Saved while paused: an update relaunch comes back paused. */
   paused?: boolean
+  /** When it was saved (unix ms): Sync Mode's other PCs offer the newest (pick up on another PC). */
+  at?: number
 }
+
+/** Saved with its time. */
+const put = (s: Session) => api.saveSession({ ...s, at: Date.now() })
 
 const MAX_IDS = 10_000
 const MAX_REMOTE = 150
@@ -100,14 +105,14 @@ export async function saveSessionAtNext(index: number) {
   const p = usePlayer.getState()
   const s = snapshot({ ...p, index, positionMs: 0, playing: true })
   // Its own best source: the one that ended may not suit it.
-  if (s) await api.saveSession({ ...s, via: undefined }).catch(() => {})
+  if (s) await put({ ...s, via: undefined }).catch(() => {})
 }
 
 /** Right now (before an update closes the app). */
 export async function saveSessionNow() {
   frozen = true
   const s = snapshot(usePlayer.getState())
-  if (s) await api.saveSession(s).catch(() => {})
+  if (s) await put(s).catch(() => {})
 }
 
 /**
@@ -123,7 +128,7 @@ export function startSessionSaving(): () => void {
     const s = snapshot(usePlayer.getState())
     if (!s || frozen) return
     at = Date.now()
-    void api.saveSession(s).catch(() => {})
+    void put(s).catch(() => {})
   }
   const unsub = usePlayer.subscribe((s, prev) => {
     if (s.now !== prev.now || s.playing !== prev.playing || Math.abs(s.positionMs - prev.positionMs) > 3000) save()

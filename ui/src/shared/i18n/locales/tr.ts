@@ -1889,6 +1889,9 @@ const tr: Record<string, string> = {
   'Phones that have the old link lose the remote': 'Eski bağlantıya sahip telefonlar kumandayı kaybeder',
   'New link': 'Yeni bağlantı',
   'Pages': 'Sayfalar',
+  '{device} was playing “{title}”': '{device} cihazında “{title}” çalıyordu',
+  'Resume here': 'Burada devam et',
+  'Resume “{title}” from {device}': '{device} cihazından “{title}” ile devam et',
 }
 
 export default tr

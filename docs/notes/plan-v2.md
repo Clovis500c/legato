@@ -268,7 +268,8 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       synced by Sync Mode, like Last.fm. Unseen: a real account.
 - [ ] `S` Community: a Discord server or GitHub Discussions linked from About, "good first issue" labels, a showcase of
       themes on the website.
-- [ ] `S-M` Pick up on the other PC: Sync Mode carries "now playing + position", one click resumes there.
+- [x] `S-M` Pick up on the other PC: Sync Mode carries "now playing + position", one click resumes there. (2026-11-02: the
+  file's `now`; a toast once, then "Resume … from …" in the idle player bar.)
 - [x] `S-M` Rating with stars or half stars (local and synced), smart playlists on it.
       Half stars in SQLite `track_ratings` (schema 16; 0 = taken off, kept with its time), carried with the play stats,
       Sync Mode's snapshot `ratings` (latest wins, older apps' files have none). A Rating column (off by default: lists

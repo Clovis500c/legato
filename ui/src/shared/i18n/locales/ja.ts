@@ -1889,6 +1889,9 @@ const ja: Record<string, string> = {
   'Phones that have the old link lose the remote': '古いリンクを持つスマホはリモコンを使えなくなります',
   'New link': '新しいリンク',
   'Pages': 'ページ',
+  '{device} was playing “{title}”': '{device} で「{title}」を再生していました',
+  'Resume here': 'ここで再開',
+  'Resume “{title}” from {device}': '{device} の「{title}」を続きから再生',
 }
 
 export default ja

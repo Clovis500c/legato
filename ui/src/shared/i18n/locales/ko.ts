@@ -1889,6 +1889,9 @@ const ko: Record<string, string> = {
   'Phones that have the old link lose the remote': '이전 링크를 가진 휴대폰은 리모컨을 쓸 수 없게 됩니다',
   'New link': '새 링크',
   'Pages': '페이지',
+  '{device} was playing “{title}”': '{device}에서 “{title}”을(를) 재생하고 있었습니다',
+  'Resume here': '여기서 이어 듣기',
+  'Resume “{title}” from {device}': '{device}의 “{title}” 이어 듣기',
 }
 
 export default ko

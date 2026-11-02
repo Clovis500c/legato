@@ -1889,6 +1889,9 @@ const vi: Record<string, string> = {
   'Phones that have the old link lose the remote': 'Điện thoại có liên kết cũ sẽ mất quyền điều khiển',
   'New link': 'Liên kết mới',
   'Pages': 'Trang',
+  '{device} was playing “{title}”': '{device} đang phát “{title}”',
+  'Resume here': 'Tiếp tục tại đây',
+  'Resume “{title}” from {device}': 'Tiếp tục “{title}” từ {device}',
 }
 
 export default vi

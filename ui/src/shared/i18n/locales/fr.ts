@@ -1889,6 +1889,9 @@ const fr: Record<string, string> = {
   'Phones that have the old link lose the remote': 'Les téléphones qui ont l’ancien lien perdent la télécommande',
   'New link': 'Nouveau lien',
   'Pages': 'Pages',
+  '{device} was playing “{title}”': '{device} jouait « {title} »',
+  'Resume here': 'Reprendre ici',
+  'Resume “{title}” from {device}': 'Reprendre « {title} » depuis {device}',
 }
 
 export default fr

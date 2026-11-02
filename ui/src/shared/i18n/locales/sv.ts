@@ -1889,6 +1889,9 @@ const sv: Record<string, string> = {
   'Phones that have the old link lose the remote': 'Mobiler med den gamla länken förlorar fjärrkontrollen',
   'New link': 'Ny länk',
   'Pages': 'Sidor',
+  '{device} was playing “{title}”': '{device} spelade ”{title}”',
+  'Resume here': 'Fortsätt här',
+  'Resume “{title}” from {device}': 'Fortsätt ”{title}” från {device}',
 }
 
 export default sv

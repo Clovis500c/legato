@@ -1889,6 +1889,9 @@ const hi: Record<string, string> = {
   'Phones that have the old link lose the remote': 'पुराने लिंक वाले फ़ोन रिमोट खो देंगे',
   'New link': 'नया लिंक',
   'Pages': 'पेज',
+  '{device} was playing “{title}”': '{device} पर “{title}” चल रहा था',
+  'Resume here': 'यहाँ जारी रखें',
+  'Resume “{title}” from {device}': '{device} से “{title}” जारी रखें',
 }
 
 export default hi

@@ -100,6 +100,28 @@ struct Inner {
     devices: HashMap<String, Device>,
     last: Option<i64>,
     error: Option<String>,
+    /// The newest last song another PC brought (pick up on another PC).
+    pickup: Option<Pickup>,
+}
+
+/// Another PC's last song: the interface offers it when this PC's own is older and nothing plays here.
+#[derive(Clone, Serialize, ts_rs::TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export)]
+pub struct Pickup {
+    device_name: String,
+    /// Its row in this library; None: `track` plays from outside it.
+    track_id: Option<i64>,
+    track: music_core::model::Track,
+    position_ms: u64,
+    /// When that PC saved it (unix ms).
+    at: i64,
+}
+
+/// Another PC's last song, if one came in since launch.
+#[tauri::command]
+pub async fn sync_pickup(sync: State<'_, SyncMode>) -> CmdResult<Option<Pickup>> {
+    Ok(sync.inner.lock().unwrap().pickup.clone())
 }
 
 impl Inner {
@@ -186,6 +208,12 @@ fn take(app: &AppHandle, s: &Snapshot) -> anyhow::Result<Merged> {
     }
     let sync = app.state::<SyncMode>();
     sync.inner.lock().unwrap().devices.insert(s.device.clone(), Device { name: s.device_name.chars().take(60).collect(), at: s.at, accounts: s.accounts.clone() });
+    let newer = s.now.as_ref().filter(|n| sync.inner.lock().unwrap().pickup.as_ref().is_none_or(|p| p.at < n.at));
+    if let Some(n) = newer {
+        let pickup = Pickup { device_name: s.device_name.chars().take(60).collect(), track_id: state.lib().pickup_row(n)?, track: n.track.track(), position_ms: n.position_ms, at: n.at };
+        sync.inner.lock().unwrap().pickup = Some(pickup.clone());
+        let _ = app.emit_to("main", "sync-pickup", &pickup);
+    }
     if merged.any() {
         let _ = app.emit_to("main", "sync", &merged);
     }
@@ -194,7 +222,10 @@ fn take(app: &AppHandle, s: &Snapshot) -> anyhow::Result<Merged> {
 
 fn hash(s: &Snapshot) -> u64 {
     let mut h = std::collections::hash_map::DefaultHasher::new();
-    serde_json::to_string(&Snapshot { at: 0, ..s.clone() }).unwrap_or_default().hash(&mut h);
+    // Time left out, and a playing song's position (saved every few seconds): written again for a new song or a pause,
+    // not every minute of music.
+    let now = s.now.clone().map(|n| if n.paused { n } else { sm::NowSnap { position_ms: 0, at: 0, ..n } });
+    serde_json::to_string(&Snapshot { at: 0, now, ..s.clone() }).unwrap_or_default().hash(&mut h);
     h.finish()
 }
 

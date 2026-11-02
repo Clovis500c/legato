@@ -1889,6 +1889,9 @@ const nl: Record<string, string> = {
   'Phones that have the old link lose the remote': 'Telefoons met de oude link verliezen de afstandsbediening',
   'New link': 'Nieuwe link',
   'Pages': 'Pagina\'s',
+  '{device} was playing “{title}”': '{device} speelde ‘{title}’',
+  'Resume here': 'Hier verdergaan',
+  'Resume “{title}” from {device}': '‘{title}’ van {device} hervatten',
 }
 
 export default nl

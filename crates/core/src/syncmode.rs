@@ -51,6 +51,26 @@ pub struct TrackRef {
     pub art: Option<String>,
 }
 
+impl TrackRef {
+    /// As a song (no musicness: the receiving PC's own rules decide).
+    pub fn track(&self) -> Track {
+        Track { title: self.title.clone(), artist: self.artist.clone(), album: self.album.clone(), duration_ms: self.duration_ms, isrc: self.isrc.clone(), ids: self.ids.clone(), art: self.art.clone(), musicness: None }
+    }
+}
+
+/// What a PC played last (its saved session): the others offer to go on from there (pick up on another PC).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct NowSnap {
+    pub track: TrackRef,
+    pub position_ms: u64,
+    /// When that PC saved it (unix ms).
+    pub at: i64,
+    /// Saved paused: its position is final (a playing one's moves on).
+    #[serde(default)]
+    pub paused: bool,
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PlaylistSnap {
@@ -148,6 +168,9 @@ pub struct Snapshot {
     pub accounts: Accounts,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub secrets: Option<Secrets>,
+    /// Absent from older apps' files, and from a session saved without its time.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub now: Option<NowSnap>,
 }
 
 /// What a merge changed here.
@@ -265,6 +288,32 @@ impl Library {
         Ok(stmt.query_map([], |r| Ok((r.get(0)?, r.get(1)?)))?.collect::<rusqlite::Result<_>>()?)
     }
 
+    /// The saved session's song (`features/player/session.ts`): a library song by its row, one from outside the library
+    /// (search, radio) as the session keeps it. None for a session saved without its time (an older app).
+    fn now_snap(&self, refs: &mut Refs) -> Result<Option<NowSnap>> {
+        let Some(s) = self.setting("session")? else { return Ok(None) };
+        let id = s["index"].as_u64().and_then(|i| s["ids"].get(i as usize)).and_then(Value::as_i64);
+        let (Some(at), Some(id)) = (s["at"].as_i64(), id) else { return Ok(None) };
+        let track = if id > 0 {
+            let Ok(i) = refs.of(self, id) else { return Ok(None) };
+            refs.tracks[i as usize].clone()
+        } else {
+            let saved = s["remote"].as_array().and_then(|r| r.iter().find(|t| t["id"].as_i64() == Some(id)));
+            let Some(t) = saved.and_then(|t| serde_json::from_value::<Track>(t.clone()).ok()) else { return Ok(None) };
+            TrackRef { title: t.title, artist: t.artist, album: t.album, duration_ms: t.duration_ms, isrc: t.isrc, ids: t.ids.into_iter().filter(|(s, _)| *s != Source::Local).collect(), art: t.art }
+        };
+        Ok(Some(NowSnap { track, position_ms: s["positionMs"].as_u64().unwrap_or(0), at, paused: s["paused"].as_bool().unwrap_or(false) }))
+    }
+
+    /// Another PC's last song here: its library row, None when it isn't in this library (it plays from outside it).
+    pub fn pickup_row(&self, now: &NowSnap) -> Result<Option<i64>> {
+        let t = now.track.track();
+        if t.title.trim().is_empty() {
+            return Ok(None);
+        }
+        self.find(&t)
+    }
+
     /// Everything this PC holds that other PCs should get.
     pub fn snapshot(&self, device: &str, device_name: &str, accounts: Accounts, secrets: Option<Secrets>) -> Result<Snapshot> {
         let mut refs = Refs::default();
@@ -330,11 +379,13 @@ impl Library {
                 settings.insert(k.to_string(), Stamped { value, at: times.get(k).and_then(Value::as_i64).unwrap_or(0) });
             }
         }
+        let now = self.now_snap(&mut refs)?;
         Ok(Snapshot {
             format: FORMAT,
             device: device.into(),
             device_name: device_name.into(),
             at: now_ms(),
+            now,
             tracks: refs.tracks,
             library,
             playlists,
@@ -415,7 +466,7 @@ impl Library {
                 return Ok(*id);
             }
             let r = track_ref(i)?;
-            let t = Track { title: r.title.clone(), artist: r.artist.clone(), album: r.album.clone(), duration_ms: r.duration_ms, isrc: r.isrc.clone(), ids: r.ids.clone(), art: r.art.clone(), musicness: None };
+            let t = r.track();
             // Known with all these ids: nothing written (a merge that changes nothing writes nothing).
             let id = if t.title.trim().is_empty() || self.is_removed(&t)? {
                 None
@@ -754,6 +805,29 @@ mod tests {
         let mut v: Vec<String> = lib.playlists().unwrap().into_iter().map(|p| p.name).collect();
         v.sort();
         v
+    }
+
+    #[test]
+    fn the_last_song_travels_for_pick_up() -> Result<()> {
+        let a = Library::in_memory()?;
+        let b = Library::in_memory()?;
+        let x = a.upsert_track(&song("X", "x1"))?;
+        // Saved by an older app (no time): nothing offered.
+        a.set_setting("session", &serde_json::json!({ "ids": [x], "index": 0, "positionMs": 61_000 }))?;
+        assert_eq!(snap(&a).now, None);
+        a.set_setting("session", &serde_json::json!({ "ids": [5, x], "index": 1, "positionMs": 61_000, "at": 1_700 }))?;
+        let now = snap(&a).now.unwrap();
+        assert_eq!((now.track.title.as_str(), now.position_ms, now.at), ("X", 61_000, 1_700));
+        // The other PC after a merge: its own row. A song from outside the library: as saved, no file path, no row.
+        b.merge(&snap(&a))?;
+        assert!(b.pickup_row(&now)?.is_some());
+        assert_eq!(b.pickup_row(&now)?, b.find(&song("X", "x1"))?);
+        let radio = serde_json::json!({ "id": -3, "title": "R", "artist": "Artist", "album": null, "durationMs": 1000, "isrc": null, "ids": { "youtube": "r1", "local": "C:/r.mp3" } });
+        a.set_setting("session", &serde_json::json!({ "ids": [-3], "remote": [radio], "index": 0, "positionMs": 0, "at": 1_800 }))?;
+        let now = snap(&a).now.unwrap();
+        assert_eq!(now.track.ids, BTreeMap::from([(Source::Youtube, "r1".to_string())]));
+        assert_eq!(b.pickup_row(&now)?, None);
+        Ok(())
     }
 
     #[test]

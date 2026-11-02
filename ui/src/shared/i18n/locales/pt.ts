@@ -1889,6 +1889,9 @@ const pt: Record<string, string> = {
   'Phones that have the old link lose the remote': 'Celulares com o link antigo perdem o controle',
   'New link': 'Novo link',
   'Pages': 'Páginas',
+  '{device} was playing “{title}”': '{device} estava tocando “{title}”',
+  'Resume here': 'Continuar aqui',
+  'Resume “{title}” from {device}': 'Continuar “{title}” de {device}',
 }
 
 export default pt

@@ -30,6 +30,7 @@ import { AdaptiveBar } from './AdaptiveBar'
 import { toggleLike, useLiked } from './like'
 import { tr } from '../../shared/i18n/i18n'
 import { takeDrop } from './drop'
+import { pickUp, usePickup } from '../syncmode/pickup'
 
 export const clock = (ms: number | null) => formatDuration(ms) || '0:00'
 export const fileFormat = (path?: string) => path?.split('.').pop()?.toUpperCase()
@@ -260,6 +261,7 @@ export function PlayerBar() {
   const sleepButton = useSettings((s) => s.settings.sleepButton)
   const phone = usePhone()
   const track = useNowTrack()
+  const offer = usePickup((s) => s.offer)
   useLiveSync()
   // Engine plays local files and previews: poll it. Spotify Connect: poll its API, slower (rate limits).
   const local = now && (now.via === 'local' || now.via === 'preview')
@@ -334,6 +336,11 @@ export function PlayerBar() {
                 </span>
               )}
             </span>
+          ) : offer ? (
+            // Sync Mode: what another PC played last, one click goes on from there.
+            <button onClick={pickUp} title={`${offer.track.title} · ${offer.track.artist}`} className="max-w-full truncate text-left text-[0.8125rem] text-ink-2 hover:text-ink hover:underline">
+              {tr('Resume “{title}” from {device}', { title: offer.track.title, device: offer.deviceName })}
+            </button>
           ) : (
             <span className="truncate text-[0.8125rem] text-ink-2">{tr('Play a YouTube track or drop audio files here')}</span>
           )}

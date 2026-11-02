@@ -1889,6 +1889,9 @@ const zh: Record<string, string> = {
   'Phones that have the old link lose the remote': '持有旧链接的手机将无法再遥控',
   'New link': '新链接',
   'Pages': '页面',
+  '{device} was playing “{title}”': '{device} 上次播放的是“{title}”',
+  'Resume here': '在此继续',
+  'Resume “{title}” from {device}': '继续播放 {device} 上的“{title}”',
 }
 
 export default zh

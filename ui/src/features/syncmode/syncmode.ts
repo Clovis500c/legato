@@ -4,6 +4,7 @@ import { api } from '../../shared/api'
 import { tr } from '../../shared/i18n/i18n'
 import { loadSong, useEditor } from '../editor/editor'
 import { mergedText } from './merged'
+import { startPickup } from './pickup'
 
 /**
  * Sync Mode in the interface (mounted once): another PC's changes reload what they touched. OneDrive on this PC and
@@ -25,5 +26,9 @@ export function startSyncMode(): () => void {
       useStore.getState().notify(tr('OneDrive is on this PC: sync your library and settings with your other PCs?'), { kind: 'info', action: { label: tr('Set up'), run: () => useStore.getState().go({ name: 'settings', section: 'sync' }) } })
     })
     .catch(() => {})
-  return () => void off.then((f) => f())
+  const pickup = startPickup()
+  return () => {
+    pickup()
+    void off.then((f) => f())
+  }
 }

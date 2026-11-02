@@ -1889,6 +1889,9 @@ const id: Record<string, string> = {
   'Phones that have the old link lose the remote': 'Ponsel dengan tautan lama kehilangan remote',
   'New link': 'Tautan baru',
   'Pages': 'Halaman',
+  '{device} was playing “{title}”': '{device} sedang memutar “{title}”',
+  'Resume here': 'Lanjutkan di sini',
+  'Resume “{title}” from {device}': 'Lanjutkan “{title}” dari {device}',
 }
 
 export default id
