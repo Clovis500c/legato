@@ -9,7 +9,7 @@ import { RoundButton } from '../../shared/ui/controls'
 import { playerMenu } from '../menus'
 import { averageColor, type Rgb } from './ambient'
 import { VideoSlot } from './VideoSlot'
-import { usePosition } from './Progress'
+import { ProgressLine } from './Progress'
 import { ArtistLink } from './ArtistLink'
 import { useNowTrack, usePlayer } from './store'
 import { volumeWheelRef } from './volume'
@@ -29,18 +29,6 @@ function useGlow(src: string | undefined): Rgb | null {
     }
   }, [src])
   return glow && glow.src === src ? glow.rgb : null
-}
-
-/** Thin line of the song's progress along the card's bottom (the bar below seeks). */
-function ProgressLine() {
-  const durationMs = usePlayer((s) => s.durationMs)
-  const pos = usePosition(durationMs ? durationMs / 500 : 1000)
-  const k = durationMs ? Math.min(1, pos / durationMs) : 0
-  return (
-    <span aria-hidden className="absolute inset-x-0 bottom-0 h-0.5 bg-line-soft">
-      <span className="absolute inset-0 origin-left bg-accent" style={{ transform: `scaleX(${k})` }} />
-    </span>
-  )
 }
 
 /**

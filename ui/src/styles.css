@@ -3,6 +3,14 @@
 @import '@fontsource-variable/geist-mono';
 @import '@fontsource-variable/roboto';
 
+/* Phone layout (the mobile version, docs/notes/ideas/mobile.md): narrower than 640 px, never a desktop window (960 px
+   at least, 768 at the biggest interface size). `usePhone()` (shared/phone.ts) is the same width. */
+@custom-variant phone {
+  @media (width < 640px) {
+    @slot;
+  }
+}
+
 /* Colors come from CSS variables set by app/settings.ts (shared/theme). Defaults = System (Modern / Modern Dark), for first paint. */
 @theme inline {
   --font-sans: var(--font-ui);

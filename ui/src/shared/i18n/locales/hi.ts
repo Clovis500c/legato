@@ -1888,6 +1888,7 @@ const hi: Record<string, string> = {
   'Scan it with the phone’s camera; the phone must be on the same network as this PC. Windows may ask once to let Legato on private networks: allow it.': 'इसे फ़ोन के कैमरे से स्कैन करें; फ़ोन इसी PC वाले नेटवर्क पर होना चाहिए। Windows एक बार Legato को निजी नेटवर्क पर अनुमति देने के लिए पूछ सकता है: अनुमति दें।',
   'Phones that have the old link lose the remote': 'पुराने लिंक वाले फ़ोन रिमोट खो देंगे',
   'New link': 'नया लिंक',
+  'Pages': 'पेज',
 }
 
 export default hi

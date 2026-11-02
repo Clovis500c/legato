@@ -63,7 +63,8 @@ export function SidePanel() {
   )
   const look = `slide-in min-h-0 flex-1 ${LOOK}`
   return (
-    <div className="flex w-75 shrink-0 flex-col gap-2">
+    // Phone layout: none (Now Playing has Up next and the lyrics).
+    <div className="flex w-75 shrink-0 flex-col gap-2 phone:hidden">
       {stage && <Stage />}
       {parked}
       {panel === 'lyrics' && (

@@ -1888,6 +1888,7 @@ const ko: Record<string, string> = {
   'Scan it with the phone’s camera; the phone must be on the same network as this PC. Windows may ask once to let Legato on private networks: allow it.': '휴대폰 카메라로 스캔하세요. 휴대폰은 이 PC와 같은 네트워크에 있어야 합니다. Windows가 개인 네트워크에서 Legato를 허용할지 한 번 물을 수 있습니다. 허용하세요.',
   'Phones that have the old link lose the remote': '이전 링크를 가진 휴대폰은 리모컨을 쓸 수 없게 됩니다',
   'New link': '새 링크',
+  'Pages': '페이지',
 }
 
 export default ko

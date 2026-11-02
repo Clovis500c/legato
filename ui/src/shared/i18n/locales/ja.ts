@@ -1888,6 +1888,7 @@ const ja: Record<string, string> = {
   'Scan it with the phone’s camera; the phone must be on the same network as this PC. Windows may ask once to let Legato on private networks: allow it.': 'スマホのカメラで読み取ってください。スマホはこの PC と同じネットワークにある必要があります。Windows がプライベート ネットワークでの Legato の許可を一度求めることがあります。許可してください。',
   'Phones that have the old link lose the remote': '古いリンクを持つスマホはリモコンを使えなくなります',
   'New link': '新しいリンク',
+  'Pages': 'ページ',
 }
 
 export default ja

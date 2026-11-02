@@ -25,6 +25,7 @@ import { dragSource, landing, useDrag, useDropTarget } from '../../shared/ui/dra
 import { all, NONE, pick, picked, pickedRows, step, type Selection } from './selection'
 import { msg, tr, trn } from '../../shared/i18n/i18n'
 import { pop } from '../../shared/motion'
+import { usePhone } from '../../shared/phone'
 
 const ROW = { compact: 40, comfort: 52, airy: 64 }
 const order: Source[] = ['spotify', 'youtube', 'apple', 'local']
@@ -74,8 +75,11 @@ export function TrackTable({ tracks, empty, editId, rowActions, sort, onSort, fo
   const rate = useStore((s) => s.rate)
   const row = ROW[density]
   const liked = useLikedIds()
+  // Phone layout: the song, its artist under it and More, no header; one tap plays (no hover, no double click).
+  const phone = usePhone()
+  const single = clickToPlay === 'single' || phone
   // Compact: artist in its own column (what listeners ask, docs/design.md); taller rows keep it under the title.
-  const artistCol = density === 'compact'
+  const artistCol = density === 'compact' && !phone
   const virtual = useVirtualizer({ count: tracks.length, getScrollElement: () => scroller.current, estimateSize: () => row, overscan: 12 })
   // Selection belongs to the list it was made in: a new list (filter, sort, other page) starts with none.
   const [held, setHeld] = useState<{ list: LibraryTrack[]; sel: Selection }>({ list: tracks, sel: NONE })
@@ -120,9 +124,9 @@ export function TrackTable({ tracks, empty, editId, rowActions, sort, onSort, fo
     if (e.key === 'Delete' && editId !== undefined && sel.ids.size) removeChosen()
   }
   // Mockup order: the hover actions and the heart sit right before the time (last column).
-  const lead = columns.filter((c) => c !== 'duration')
-  const tail = columns.includes('duration') ? (['duration'] as const) : []
-  const grid = { gridTemplateColumns: ['32px', 'minmax(0,2fr)', ...(artistCol ? ['minmax(0,1fr)'] : []), ...lead.map((c) => width[c]), editId ? '188px' : rowActions ? 'max-content' : '96px', ...tail.map((c) => width[c])].join(' ') }
+  const lead = phone ? [] : columns.filter((c) => c !== 'duration')
+  const tail = !phone && columns.includes('duration') ? (['duration'] as const) : []
+  const grid = { gridTemplateColumns: phone ? '24px minmax(0,1fr) max-content' : ['32px', 'minmax(0,2fr)', ...(artistCol ? ['minmax(0,1fr)'] : []), ...lead.map((c) => width[c]), editId ? '188px' : rowActions ? 'max-content' : '96px', ...tail.map((c) => width[c])].join(' ') }
   const cover = density === 'compact' ? 28 : density === 'comfort' ? 36 : 46
   const cell = (t: LibraryTrack, c: Column) =>
     c === 'album' ? (
@@ -179,7 +183,7 @@ export function TrackTable({ tracks, empty, editId, rowActions, sort, onSort, fo
           </button>
         </div>
       )}
-      <div role="row" onContextMenu={onMenu(columnsMenu)} className="mb-2 grid h-9 shrink-0 items-center gap-4 border-b border-line px-2" style={grid}>
+      <div role="row" onContextMenu={onMenu(columnsMenu)} className="mb-2 grid h-9 shrink-0 items-center gap-4 border-b border-line px-2 phone:hidden" style={grid}>
         <span role="columnheader" className="text-right text-xs text-ink-3">#</span>
         <Head label={tr('Title')} sorts={headSorts.title} sort={sort} onSort={onSort} />
         {artistCol && <Head label={tr('Artist')} sorts={['artist', 'artist']} sort={sort} onSort={onSort} />}
@@ -227,9 +231,9 @@ export function TrackTable({ tracks, empty, editId, rowActions, sort, onSort, fo
                     if (e.ctrlKey || e.metaKey) return choose(pick(sel, tracks, v.index, 'toggle'))
                     if (e.shiftKey) return choose(pick(sel, tracks, v.index, 'range'))
                     choose(pick(sel, tracks, v.index, 'only'))
-                    if (clickToPlay === 'single' && playable) play(tracks, v.index)
+                    if (single && playable) play(tracks, v.index)
                   }}
-                  onDoubleClick={(e) => clickToPlay === 'double' && playable && !onControl(e) && !e.ctrlKey && !e.shiftKey && play(tracks, v.index)}
+                  onDoubleClick={(e) => !single && playable && !onControl(e) && !e.ctrlKey && !e.shiftKey && play(tracks, v.index)}
                   onContextMenu={onMenu(() =>
                     isPicked && chosen.length > 1
                       ? tracksMenu(chosen, editId !== undefined ? ['-', { label: trn(chosen.length, 'Remove {n} song from playlist', 'Remove {n} songs from playlist'), icon: <X size={16} />, danger: true, onSelect: removeChosen }] : [])
@@ -240,7 +244,7 @@ export function TrackTable({ tracks, empty, editId, rowActions, sort, onSort, fo
                     () => ({ kind: 'tracks', ids: isPicked && chosen.length > 1 ? chosen.map((x) => x.id) : [t.id], from: editId !== undefined && !(isPicked && chosen.length > 1) ? { playlist: editId, row: v.index } : undefined }),
                     () => (isPicked && chosen.length > 1 ? trn(chosen.length, '{n} song', '{n} songs') : t.title),
                   )}
-                  className={`group absolute inset-x-0 grid items-center gap-4 rounded-md px-2 ${playable && clickToPlay === 'single' ? 'cursor-pointer' : ''} ${isPicked ? 'bg-line' : 'hover:bg-raised'} ${dropAt === v.index ? 'shadow-[inset_0_2px_0_var(--ink)]' : dropAt === v.index + 1 && v.index === tracks.length - 1 ? 'shadow-[inset_0_-2px_0_var(--ink)]' : ''} ${draggedRow === v.index ? 'opacity-40' : ''}`}
+                  className={`group absolute inset-x-0 grid items-center gap-4 rounded-md px-2 phone:gap-2 phone:px-0 ${playable && single ? 'cursor-pointer' : ''} ${isPicked ? 'bg-line' : 'hover:bg-raised'} ${dropAt === v.index ? 'shadow-[inset_0_2px_0_var(--ink)]' : dropAt === v.index + 1 && v.index === tracks.length - 1 ? 'shadow-[inset_0_-2px_0_var(--ink)]' : ''} ${draggedRow === v.index ? 'opacity-40' : ''}`}
                   style={{ ...grid, height: row, transform: `translateY(${v.start}px)` }}
                 >
                   {/* Number, or the sky blue mark of the song playing; hovered: its play button. */}
@@ -280,32 +284,40 @@ export function TrackTable({ tracks, empty, editId, rowActions, sort, onSort, fo
                     </span>
                   )}
                   {lead.map((c) => cell(t, c))}
-                  <span role="gridcell" className="flex items-center justify-end gap-0.5">
-                    <span className="flex gap-0.5 opacity-0 group-hover:opacity-100 focus-within:opacity-100">
-                    {editId !== undefined && (
-                      <>
-                        <RoundButton label={tr('Move up')} kind="plain" size="xs" disabled={v.index === 0} onClick={() => editPlaylist({ type: 'move', id: editId, from: v.index, to: v.index - 1 })}>
-                          <ArrowUp size={13} />
-                        </RoundButton>
-                        <RoundButton label={tr('Move down')} kind="plain" size="xs" disabled={v.index === tracks.length - 1} onClick={() => editPlaylist({ type: 'move', id: editId, from: v.index, to: v.index + 1 })}>
-                          <ArrowDown size={13} />
-                        </RoundButton>
-                        <RoundButton label={tr('Remove from playlist')} kind="plain" size="xs" onClick={() => void removeFromPlaylist(editId, v.index)}>
-                          <X size={13} />
-                        </RoundButton>
-                      </>
-                    )}
-                    {rowActions?.(t)}
-                    <AddToPlaylist trackIds={[t.id]} label={tr('Add {title} to a playlist', { title: t.title })} />
-                    <RoundButton label={tr('More')} kind="plain" size="xs" onClick={(e) => openMenu(e, trackMenu(t, { list: tracks, index: v.index, playlistId: editId, position: v.index }))}>
-                      <DotsThreeVertical size={14} weight="bold" />
-                    </RoundButton>
+                  {phone ? (
+                    <span role="gridcell" className="flex items-center">
+                      <RoundButton label={tr('More')} kind="plain" size="md" onClick={(e) => openMenu(e, trackMenu(t, { list: tracks, index: v.index, playlistId: editId, position: v.index }))}>
+                        <DotsThreeVertical size={18} weight="bold" />
+                      </RoundButton>
                     </span>
-                    {/* Saving a song stays one click, on the row (docs/design.md): shown when liked, else on hover. */}
-                    <RoundButton label={liked.has(t.id) ? tr('Remove from Liked Music') : tr('Add to Liked Music')} aria-pressed={liked.has(t.id)} kind="plain" size="xs" className={liked.has(t.id) ? 'text-ink!' : 'opacity-0 group-hover:opacity-100 focus:opacity-100'} onClick={(e) => (void toggleLike(t), pop(e.currentTarget))}>
-                      <Heart size={15} weight={liked.has(t.id) ? 'fill' : 'regular'} />
-                    </RoundButton>
-                  </span>
+                  ) : (
+                    <span role="gridcell" className="flex items-center justify-end gap-0.5">
+                      <span className="flex gap-0.5 opacity-0 group-hover:opacity-100 focus-within:opacity-100">
+                      {editId !== undefined && (
+                        <>
+                          <RoundButton label={tr('Move up')} kind="plain" size="xs" disabled={v.index === 0} onClick={() => editPlaylist({ type: 'move', id: editId, from: v.index, to: v.index - 1 })}>
+                            <ArrowUp size={13} />
+                          </RoundButton>
+                          <RoundButton label={tr('Move down')} kind="plain" size="xs" disabled={v.index === tracks.length - 1} onClick={() => editPlaylist({ type: 'move', id: editId, from: v.index, to: v.index + 1 })}>
+                            <ArrowDown size={13} />
+                          </RoundButton>
+                          <RoundButton label={tr('Remove from playlist')} kind="plain" size="xs" onClick={() => void removeFromPlaylist(editId, v.index)}>
+                            <X size={13} />
+                          </RoundButton>
+                        </>
+                      )}
+                      {rowActions?.(t)}
+                      <AddToPlaylist trackIds={[t.id]} label={tr('Add {title} to a playlist', { title: t.title })} />
+                      <RoundButton label={tr('More')} kind="plain" size="xs" onClick={(e) => openMenu(e, trackMenu(t, { list: tracks, index: v.index, playlistId: editId, position: v.index }))}>
+                        <DotsThreeVertical size={14} weight="bold" />
+                      </RoundButton>
+                      </span>
+                      {/* Saving a song stays one click, on the row (docs/design.md): shown when liked, else on hover. */}
+                      <RoundButton label={liked.has(t.id) ? tr('Remove from Liked Music') : tr('Add to Liked Music')} aria-pressed={liked.has(t.id)} kind="plain" size="xs" className={liked.has(t.id) ? 'text-ink!' : 'opacity-0 group-hover:opacity-100 focus:opacity-100'} onClick={(e) => (void toggleLike(t), pop(e.currentTarget))}>
+                        <Heart size={15} weight={liked.has(t.id) ? 'fill' : 'regular'} />
+                      </RoundButton>
+                    </span>
+                  )}
                   {tail.map((c) => cell(t, c))}
                 </div>
               )

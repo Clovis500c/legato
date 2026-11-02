@@ -9,6 +9,7 @@ import { trackArt } from '../../shared/art'
 import { formatCount } from '../../shared/format'
 import { RoundButton } from '../../shared/ui/controls'
 import { Cover } from '../../shared/ui/Cover'
+import { usePhone } from '../../shared/phone'
 import { onMenu, openMenu, type MenuEntry } from '../../shared/ui/ContextMenu'
 import { VirtualGrid } from '../../shared/ui/VirtualGrid'
 import { VirtualList } from '../../shared/ui/VirtualList'
@@ -160,12 +161,15 @@ export function Sidebar() {
   const tile = (icon: ReactNode, look: string) => <span className={`grid size-full place-items-center ${look}`}>{icon}</span>
   const update = useSettings((s) => s.update)
   const wide = useSettings((s) => s.settings.libraryWide)
+  // Phone layout: open wide, it is the Your library tab (app/PhoneTabs.tsx), a list rather than big covers.
+  const phone = usePhone()
+  const grid = wide && !phone
   const saved = useSettings((s) => s.settings.sidebarWidth)
   const [drag, setDrag] = useState<number | null>(null)
   const start = useRef<{ x: number; w: number } | null>(null)
   const width = drag ?? saved
   const fit = (w: number) => Math.min(SIDEBAR_MAX, Math.max(SIDEBAR_MIN, Math.round(w)))
-  const art = wide ? 176 : 48
+  const art = grid ? 176 : 48
   // Open wide, it stands in for the page: whatever opens a page closes it.
   const seen = useRef(view)
   useEffect(() => {
@@ -186,23 +190,23 @@ export function Sidebar() {
             return { key: `ar-${g.artist}`, on: view.name === 'artist' && view.artist === g.artist, art: <Cover title={g.artist} art={trackArt(g.cover)} size={art} className="rounded-full! border-0" />, label: artistName(g.artist), sub: dot(tr('Artist'), songs(g.count)), round: true, to, menu: () => navMenu(to, g.tracks) }
           })
         : [
-            ...(kind ? [] : [{ key: 'songs', on: is('songs'), art: tile(<MusicNotes size={wide ? 64 : 22} weight="fill" />, 'bg-ink text-bg'), label: tr('Songs'), sub: dot(tr('All your songs'), counts ? formatCount(tracks.length) : ''), to: { name: 'songs' } as View, menu: () => navMenu({ name: 'songs' }, useStore.getState().tracks) }]),
+            ...(kind ? [] : [{ key: 'songs', on: is('songs'), art: tile(<MusicNotes size={grid ? 64 : 22} weight="fill" />, 'bg-ink text-bg'), label: tr('Songs'), sub: dot(tr('All your songs'), counts ? formatCount(tracks.length) : ''), to: { name: 'songs' } as View, menu: () => navMenu({ name: 'songs' }, useStore.getState().tracks) }]),
             ...rows.map((r: PlaylistRow<LibraryPlaylist>): Entry => {
               if (r.kind === 'folder') {
                 const f = r.folder
                 const inside = shown.filter((p) => f.keys.includes(playlistKey(p)))
-                const icon = r.count ? <FolderSimple size={wide ? 64 : 22} weight={f.open ? 'regular' : 'fill'} /> : <FolderSimpleDashed size={wide ? 64 : 22} />
+                const icon = r.count ? <FolderSimple size={grid ? 64 : 22} weight={f.open ? 'regular' : 'fill'} /> : <FolderSimpleDashed size={grid ? 64 : 22} />
                 return { key: `fo-${f.id}`, on: false, art: tile(icon, 'bg-raised text-ink'), label: f.name || tr('Folder'), sub: dot(tr('Folder'), trn(r.count, '{n} playlist', '{n} playlists')), to: () => toggleFolder(f.id), open: f.open, menu: () => folderMenu(f, inside) }
               }
               const p = r.p
               return { key: `pl-${p.id}`, on: view.name === 'playlist' && view.id === p.id, art: <PlaylistCover p={p} size={art} big />, label: p.name, sub: dot(tr('Playlist'), songs(p.trackCount)), to: { name: 'playlist', id: p.id }, menu: () => playlistMenu(p), playlist: p, depth: r.depth, pinned: r.pinned }
             }),
-            ...smart.map((l) => ({ key: `sm-${l.id}`, on: view.name === 'smart' && view.id === l.id, art: tile(<Lightning size={wide ? 64 : 22} weight="fill" />, 'bg-raised text-ink'), label: l.name || tr('Smart playlist'), sub: dot(tr('Smart playlist'), songs(smartSongs.get(l.id)?.length ?? 0)), to: { name: 'smart', id: l.id } as View, menu: () => smartMenu(l, smartSongs.get(l.id) ?? []) })),
-            ...(!kind && notFound ? [{ key: 'not-found', on: is('notFound'), art: tile(<MagnifyingGlass size={wide ? 64 : 22} weight="bold" />, 'bg-raised text-ink-2'), label: tr('Songs not found'), sub: dot(tr('YouTube'), songs(notFound)), to: { name: 'notFound' } as View, menu: () => navMenu({ name: 'notFound' }) }] : []),
+            ...smart.map((l) => ({ key: `sm-${l.id}`, on: view.name === 'smart' && view.id === l.id, art: tile(<Lightning size={grid ? 64 : 22} weight="fill" />, 'bg-raised text-ink'), label: l.name || tr('Smart playlist'), sub: dot(tr('Smart playlist'), songs(smartSongs.get(l.id)?.length ?? 0)), to: { name: 'smart', id: l.id } as View, menu: () => smartMenu(l, smartSongs.get(l.id) ?? []) })),
+            ...(!kind && notFound ? [{ key: 'not-found', on: is('notFound'), art: tile(<MagnifyingGlass size={grid ? 64 : 22} weight="bold" />, 'bg-raised text-ink-2'), label: tr('Songs not found'), sub: dot(tr('YouTube'), songs(notFound)), to: { name: 'notFound' } as View, menu: () => navMenu({ name: 'notFound' }) }] : []),
           ]
 
   return (
-    <aside className={`relative flex flex-col gap-2 ${wide ? 'min-w-0 flex-1' : 'shrink-0'}`} style={wide ? undefined : { width }}>
+    <aside className={`relative flex flex-col gap-2 ${wide ? 'min-w-0 flex-1' : 'shrink-0 phone:hidden'}`} style={wide ? undefined : { width }}>
       <nav className="flex shrink-0 flex-col rounded-lg bg-panel p-2">
         <NavItem on={is('home')} icon={House} label={tr('Home')} onClick={() => go({ name: 'home' })} onContextMenu={onMenu(() => navMenu({ name: 'home' }))} />
         <NavItem on={is('mixes') || is('mix')} icon={Disc} label={tr('Mixes')} onClick={() => go({ name: 'mixes' })} onContextMenu={onMenu(() => navMenu({ name: 'mixes' }))} />
@@ -232,7 +236,7 @@ export function Sidebar() {
             </button>
           ))}
         </div>
-        {wide ? (
+        {grid ? (
           <VirtualGrid items={entries} itemKey={(e) => e.key} render={(e) => <LibCard e={e} />} min={200} gapX={0} gapY={0} className="scroll-quiet px-2 pb-2" />
         ) : (
           <VirtualList items={entries} rowHeight={64} className="scroll-quiet px-2 pb-2">

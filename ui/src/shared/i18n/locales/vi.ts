@@ -1888,6 +1888,7 @@ const vi: Record<string, string> = {
   'Scan it with the phone’s camera; the phone must be on the same network as this PC. Windows may ask once to let Legato on private networks: allow it.': 'Quét bằng camera điện thoại; điện thoại phải cùng mạng với PC này. Windows có thể hỏi một lần để cho phép Legato trên mạng riêng: hãy cho phép.',
   'Phones that have the old link lose the remote': 'Điện thoại có liên kết cũ sẽ mất quyền điều khiển',
   'New link': 'Liên kết mới',
+  'Pages': 'Trang',
 }
 
 export default vi

@@ -7,7 +7,8 @@ import { api, type Source } from '../../shared/api'
 import { formatDuration } from '../../shared/format'
 import { Bar, Knob, RoundButton } from '../../shared/ui/controls'
 import { SourceIcon, sourceLabel } from '../../shared/ui/SourceIcon'
-import { SeekBar, TimeText } from './Progress'
+import { ProgressLine, SeekBar, TimeText } from './Progress'
+import { usePhone } from '../../shared/phone'
 import { Transport } from './Transport'
 import { onMenu, openMenu } from '../../shared/ui/ContextMenu'
 import { sleepLabel, sleepMenu, useSleep } from './sleep'
@@ -172,7 +173,7 @@ function YouTubeFrame({ videoId, tail = false, idle = false }: { videoId: string
       // Hidden (cover shown instead): YouTube's minimum size, so it streams a low resolution nobody sees.
       style={tail ? undefined : (crop ?? (rect ? { left: rect.left, top: rect.top, width: hidden ? 200 : rect.width, height: hidden ? 200 : rect.height } : undefined))}
       // Bare video: no pointer on it, so YouTube's hover overlay never shows; our controls drive it.
-      className={`fixed z-30 bg-black ${crop ? '' : 'rounded-lg border border-line'} ${src.controls && !hidden && !watch && !tail ? '' : 'pointer-events-none'} ${hidden || watch || tail ? 'opacity-0' : ''} ${rect && !tail ? '' : 'right-6 bottom-[100px] h-50 w-89 shadow-[0_12px_32px_var(--shadow)]'}`}
+      className={`fixed z-30 bg-black ${crop ? '' : 'rounded-lg border border-line'} ${src.controls && !hidden && !watch && !tail ? '' : 'pointer-events-none'} ${hidden || watch || tail ? 'opacity-0' : ''} ${rect && !tail ? '' : 'right-6 bottom-[100px] h-50 w-89 shadow-[0_12px_32px_var(--shadow)] phone:right-2 phone:bottom-[136px] phone:w-[calc(100vw-1rem)]'}`}
     />
   )
 }
@@ -257,6 +258,7 @@ export function PlayerBar() {
   const setFull = usePlayer((s) => s.setFull)
   const readout = useSettings((s) => s.settings.readout)
   const sleepButton = useSettings((s) => s.settings.sleepButton)
+  const phone = usePhone()
   const track = useNowTrack()
   useLiveSync()
   // Engine plays local files and previews: poll it. Spotify Connect: poll its API, slower (rate limits).
@@ -302,17 +304,19 @@ export function PlayerBar() {
 
   return (
     // On the window's background, under the panels (docs/design.md).
-    <footer ref={volumeWheelRef} onContextMenu={onMenu(playerMenu)} className="flex h-22 shrink-0 items-center justify-between gap-6 px-4">
+    // Phone layout: a mini player (cover, song, like, previous / play / next, a progress line); Now Playing has the rest.
+    <footer ref={volumeWheelRef} onContextMenu={onMenu(playerMenu)} className="relative flex h-22 shrink-0 items-center justify-between gap-6 px-4 phone:h-16 phone:gap-2 phone:px-3">
       {/* In key order: each iframe keeps its place as the two swap roles (a moved iframe reloads). */}
       {now?.youtubeId &&
         [...(tail ? [tail] : []), { key: frameKey, videoId: now.youtubeId }]
           .sort((a, b) => a.key - b.key)
           .map((f) => <YouTubeFrame key={f.key} videoId={f.videoId} tail={f === tail} idle={f === tail && !!tail?.done} />)}
+      {phone && now && <ProgressLine className="absolute inset-x-3 top-0" />}
 
-      <div className="flex w-85 min-w-0 items-center gap-3">
+      <div className="flex w-85 min-w-0 items-center gap-3 phone:w-auto phone:flex-1">
         <button disabled={!now} onClick={() => setFull(true)} title={now ? tr('Open Now Playing') : undefined} className="shrink-0">
           {/* New song: its cover fades in. */}
-          <Cover key={now?.trackId ?? now?.title} className="fade-in" title={now?.title ?? ''} art={track && trackArt(track)} size={56} />
+          <Cover key={now?.trackId ?? now?.title} className="fade-in" title={now?.title ?? ''} art={track && trackArt(track)} size={phone ? 44 : 56} />
         </button>
         <span key={now?.trackId ?? now?.title} className="swap-in flex min-w-0 flex-col items-start gap-1">
           <button disabled={!now} onClick={() => setFull(true)} title={now ? tr('Open Now Playing') : undefined} className="max-w-full truncate text-left text-sm font-medium">
@@ -337,24 +341,30 @@ export function PlayerBar() {
         <LikeButton />
       </div>
 
-      <div className="flex w-140 min-w-0 flex-col items-center gap-1">
-        <Transport />
-        <div className="flex w-full items-center gap-3 text-xs text-ink-2 tabular-nums">
-          <TimeText part="elapsed" />
-          <SeekBar className="flex-1" />
-          <TimeText part="total" />
-        </div>
-      </div>
+      {phone ? (
+        <Transport size="sm" compact />
+      ) : (
+        <>
+          <div className="flex w-140 min-w-0 flex-col items-center gap-1">
+            <Transport />
+            <div className="flex w-full items-center gap-3 text-xs text-ink-2 tabular-nums">
+              <TimeText part="elapsed" />
+              <SeekBar className="flex-1" />
+              <TimeText part="total" />
+            </div>
+          </div>
 
-      <div className="flex w-85 items-center justify-end gap-2">
-        {sleepButton && <SleepButton />}
-        <PanelButton panel="lyrics" label={tr('Lyrics')} icon={Quotes} />
-        <PanelButton panel="upNext" label={tr('Up next')} icon={Queue} />
-        <VolumeControl />
-        <RoundButton label={tr('Now playing, full screen')} kind="plain" size="sm" disabled={!now} onClick={() => setFull(true)}>
-          <ArrowsOutSimple size={18} />
-        </RoundButton>
-      </div>
+          <div className="flex w-85 items-center justify-end gap-2">
+            {sleepButton && <SleepButton />}
+            <PanelButton panel="lyrics" label={tr('Lyrics')} icon={Quotes} />
+            <PanelButton panel="upNext" label={tr('Up next')} icon={Queue} />
+            <VolumeControl />
+            <RoundButton label={tr('Now playing, full screen')} kind="plain" size="sm" disabled={!now} onClick={() => setFull(true)}>
+              <ArrowsOutSimple size={18} />
+            </RoundButton>
+          </div>
+        </>
+      )}
     </footer>
   )
 }

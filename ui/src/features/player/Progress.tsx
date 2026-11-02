@@ -76,6 +76,18 @@ export function usePosition(step = 1): number {
   return useSyncExternalStore(playing ? onFrame : still, () => quantize(extrapolate(base.ms, base.at, frameAt, playing && base.live, durationMs), step))
 }
 
+/** Thin line of the song's progress along a card's edge (docked and phone mini players): ~500 steps a song, not 60 fps. */
+export function ProgressLine({ className = 'absolute inset-x-0 bottom-0' }: { className?: string }) {
+  const durationMs = usePlayer((s) => s.durationMs)
+  const pos = usePosition(durationMs ? durationMs / 500 : 1000)
+  const k = durationMs ? Math.min(1, pos / durationMs) : 0
+  return (
+    <span aria-hidden className={`h-0.5 bg-line-soft ${className}`}>
+      <span className="absolute inset-0 origin-left bg-accent" style={{ transform: `scaleX(${k})` }} />
+    </span>
+  )
+}
+
 /**
  * YouTube-like seek bar fed by the smooth position. While a pointer drags it, it shows the pointer and seeks on release;
  * arrow keys seek at once. A drag never outlives its song (`seekDrag.ts`).

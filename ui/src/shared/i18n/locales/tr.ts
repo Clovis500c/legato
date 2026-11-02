@@ -1888,6 +1888,7 @@ const tr: Record<string, string> = {
   'Scan it with the phone’s camera; the phone must be on the same network as this PC. Windows may ask once to let Legato on private networks: allow it.': 'Telefonun kamerasıyla tara; telefon bu bilgisayarla aynı ağda olmalı. Windows bir kez Legato’ya özel ağlarda izin verilip verilmeyeceğini sorabilir: izin ver.',
   'Phones that have the old link lose the remote': 'Eski bağlantıya sahip telefonlar kumandayı kaybeder',
   'New link': 'Yeni bağlantı',
+  'Pages': 'Sayfalar',
 }
 
 export default tr

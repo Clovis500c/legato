@@ -1888,6 +1888,7 @@ const nl: Record<string, string> = {
   'Scan it with the phone’s camera; the phone must be on the same network as this PC. Windows may ask once to let Legato on private networks: allow it.': 'Scan hem met de camera van je telefoon; de telefoon moet op hetzelfde netwerk zitten als deze pc. Windows kan één keer vragen om Legato op privénetwerken toe te staan: sta het toe.',
   'Phones that have the old link lose the remote': 'Telefoons met de oude link verliezen de afstandsbediening',
   'New link': 'Nieuwe link',
+  'Pages': 'Pagina\'s',
 }
 
 export default nl

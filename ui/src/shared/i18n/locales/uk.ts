@@ -1888,6 +1888,7 @@ const uk: Record<string, string> = {
   'Scan it with the phone’s camera; the phone must be on the same network as this PC. Windows may ask once to let Legato on private networks: allow it.': 'Відскануй його камерою телефона; телефон має бути в тій самій мережі, що й цей ПК. Windows може один раз запитати, чи дозволити Legato приватні мережі: дозволь.',
   'Phones that have the old link lose the remote': 'Телефони зі старим посиланням втратять пульт',
   'New link': 'Нове посилання',
+  'Pages': 'Сторінки',
 }
 
 export default uk

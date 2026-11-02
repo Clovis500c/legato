@@ -1888,6 +1888,7 @@ const id: Record<string, string> = {
   'Scan it with the phone’s camera; the phone must be on the same network as this PC. Windows may ask once to let Legato on private networks: allow it.': 'Pindai dengan kamera ponsel; ponsel harus di jaringan yang sama dengan PC ini. Windows mungkin bertanya sekali untuk mengizinkan Legato di jaringan pribadi: izinkan.',
   'Phones that have the old link lose the remote': 'Ponsel dengan tautan lama kehilangan remote',
   'New link': 'Tautan baru',
+  'Pages': 'Halaman',
 }
 
 export default id

@@ -1888,6 +1888,7 @@ const pl: Record<string, string> = {
   'Scan it with the phone’s camera; the phone must be on the same network as this PC. Windows may ask once to let Legato on private networks: allow it.': 'Zeskanuj go aparatem telefonu; telefon musi być w tej samej sieci co ten komputer. Windows może raz zapytać o zgodę dla Legato w sieciach prywatnych: zezwól.',
   'Phones that have the old link lose the remote': 'Telefony ze starym linkiem tracą pilota',
   'New link': 'Nowy link',
+  'Pages': 'Strony',
 }
 
 export default pl

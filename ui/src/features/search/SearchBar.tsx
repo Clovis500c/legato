@@ -303,7 +303,7 @@ export function SearchBar({ children }: { children?: ReactNode }) {
           </button>
         )}
         {!focused && !query && keys && (
-          <span className="flex shrink-0 gap-1" aria-hidden>
+          <span className="flex shrink-0 gap-1 phone:hidden" aria-hidden>
             {keys.map((k) => (
               <kbd key={k} className="rounded border border-line px-1.5 py-px font-sans text-[0.6875rem] font-medium text-ink-3">
                 {k}

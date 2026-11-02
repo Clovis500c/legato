@@ -41,6 +41,7 @@ import { startShortcuts } from './shortcuts'
 import { useStore, type View } from './store'
 import { toggleFullscreen } from './fullscreen'
 import { Toasts } from './Toasts'
+import { PhoneTabs } from './PhoneTabs'
 import { Asker } from '../shared/ui/Ask'
 import { tr, trn, useLang } from '../shared/i18n/i18n'
 
@@ -108,10 +109,10 @@ function TopBar() {
   }, [])
   return (
     // Over Now Playing: a veil from the top keeps logo, Close player and window buttons readable on any cover.
-    <header data-tauri-drag-region className={`relative z-30 flex h-13 shrink-0 items-center gap-3 pr-2 pl-5 ${full ? 'bg-[linear-gradient(to_bottom,color-mix(in_srgb,var(--bg)_80%,transparent),transparent)]' : ''}`}>
+    <header data-tauri-drag-region className={`relative z-30 flex h-13 shrink-0 items-center gap-3 pr-2 pl-5 phone:gap-1 phone:pr-2 phone:pl-1 ${full ? 'bg-[linear-gradient(to_bottom,color-mix(in_srgb,var(--bg)_80%,transparent),transparent)]' : ''}`}>
       <button data-brand onClick={() => go({ name: 'home' })} title={tr('Home')} className="flex items-center gap-2.5 rounded-md px-2 py-1">
         <Logo />
-        <span data-brand-name className="text-[0.9375rem] font-bold tracking-tight">Legato</span>
+        <span data-brand-name className="text-[0.9375rem] font-bold tracking-tight phone:hidden">Legato</span>
       </button>
       {full ? (
         <button onClick={() => setFull(false)} title={tr('Close Now Playing (Esc)')} className="glass flex items-center gap-1.5 rounded-full border border-line px-3 py-1 text-xs font-medium text-ink transition hover:bg-raised">
@@ -123,12 +124,12 @@ function TopBar() {
           <button className={`${navBtn} nudge-l`} aria-label={tr('Back')} title={tr('Back')} disabled={!canBack} onClick={goBack}>
             <CaretLeft size={16} />
           </button>
-          <button className={`${navBtn} nudge-r`} aria-label={tr('Forward')} title={tr('Forward')} disabled={!canForward} onClick={goForward}>
+          <button className={`${navBtn} nudge-r phone:hidden`} aria-label={tr('Forward')} title={tr('Forward')} disabled={!canForward} onClick={goForward}>
             <CaretRight size={16} />
           </button>
         </span>
       )}
-      <div ref={searchBox} data-tauri-drag-region className="flex h-full min-w-0 flex-1 items-center justify-center px-4 *:translate-x-(--shift) *:transition-[translate] *:duration-300" style={{ ['--shift' as string]: `${shift}px` }}>
+      <div ref={searchBox} data-tauri-drag-region className="flex h-full min-w-0 flex-1 items-center justify-center px-4 phone:px-1 *:translate-x-(--shift) *:transition-[translate] *:duration-300" style={{ ['--shift' as string]: `${shift}px` }}>
         <SearchBar>
           <VoiceSearch />
         </SearchBar>
@@ -140,7 +141,7 @@ function TopBar() {
       )}
       {!full && (
         <span className="flex items-center gap-1 pr-2">
-          <button className={`${winBtn} rounded-full! ${page === 'addons' ? 'bg-raised' : ''}`} aria-label={tr('Add-ons')} title={tr('Add-ons')} onClick={() => go({ name: 'addons' })} onContextMenu={onMenu(() => navMenu({ name: 'addons' }))}>
+          <button className={`${winBtn} rounded-full! phone:hidden ${page === 'addons' ? 'bg-raised' : ''}`} aria-label={tr('Add-ons')} title={tr('Add-ons')} onClick={() => go({ name: 'addons' })} onContextMenu={onMenu(() => navMenu({ name: 'addons' }))}>
             <PuzzlePiece size={18} weight={page === 'addons' ? 'fill' : 'regular'} />
           </button>
           <button className={`${winBtn} turn rounded-full! ${page === 'settings' ? 'bg-raised' : ''}`} aria-label={tr('Settings')} title={tr('Settings')} onClick={() => go({ name: 'settings', section: 'general' })} onContextMenu={onMenu(() => navMenu({ name: 'settings', section: 'general' }))}>
@@ -148,7 +149,7 @@ function TopBar() {
           </button>
         </span>
       )}
-      <span className={`flex items-center ${full ? 'glass rounded-lg' : ''}`}>
+      <span className={`flex items-center phone:hidden ${full ? 'glass rounded-lg' : ''}`}>
         <button className={winBtn} aria-label={fullscreen ? tr('Exit full screen (F11)') : tr('Full screen (F11)')} title={fullscreen ? tr('Exit full screen (F11)') : tr('Full screen (F11)')} onClick={() => void toggleFullscreen()}>
           {fullscreen ? <ArrowsIn size={15} /> : <ArrowsOut size={15} />}
         </button>
@@ -310,10 +311,10 @@ export function App() {
     // Layered panels on the window's background (docs/design.md): sidebar, page, right panel; the player bar below.
     <div className="flex h-full flex-col bg-recess transition-colors duration-700" style={appTint}>
       <TopBar />
-      <div className="flex min-h-0 flex-1 gap-2 px-2">
+      <div className="flex min-h-0 flex-1 gap-2 px-2 phone:px-0">
         <Sidebar />
         {/* Your library open wide takes the page's place (kept, hidden: it comes back as it was). */}
-        <main className={`flex min-w-0 flex-1 flex-col overflow-hidden rounded-lg bg-bg ${libraryWide ? 'hidden' : ''}`}>
+        <main className={`flex min-w-0 flex-1 flex-col overflow-hidden rounded-lg bg-bg phone:rounded-none ${libraryWide ? 'hidden' : ''}`}>
           <Alerts />
           {/* New page: a short rise (styles.css .page-in), not when only its details change. Its padding is what a
               page band undoes to reach the pane's edges (PageHeader). */}
@@ -347,6 +348,7 @@ export function App() {
         )}
       </div>
       <PlayerBar />
+      <PhoneTabs />
       <MiniPlayer />
       <VolumeHud />
       {full && (

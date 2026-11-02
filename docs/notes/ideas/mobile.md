@@ -49,7 +49,12 @@ companion: replaces "Mobile companion" in [best-overall.md](best-overall.md). An
 
 ## Phases (each one a Beta)
 
-1. `S-M` Phone layout in `ui/`, by width, checked in a browser at 375 × 812 over the fake Tauri (`site/demo`).
+1. `S-M` Phone layout in `ui/`, by width, checked in a browser at 375 × 812 over the fake Tauri (`site/demo`). Done
+   2026-11-02: the `phone:` variant and `usePhone()` (below 640 px), bottom tabs (`app/PhoneTabs.tsx`), the player bar as
+   a mini player, Your library = the sidebar open wide (a list), song rows with title, artist and More (one tap plays),
+   page headers stacked, Now Playing in one column (an open panel takes the cover's place). Left for a real phone
+   (phase 3): where the YouTube video shows (the right panel is hidden, the floating card spans the width), long press
+   for menus, bottom sheets, a song list that scrolls with its page header, Home's quick picks.
 2. `M` Portable shell: desktop-only modules behind `cfg(desktop)`, the mobile entry point, `SecretStore` on Android,
    rustls on Android; `cargo check --target aarch64-linux-android` in CI.
 3. `M-L` `tauri android init`, a first APK: local files and the YouTube embed, the library from a backup file or the

@@ -1888,6 +1888,7 @@ const sv: Record<string, string> = {
   'Scan it with the phone’s camera; the phone must be on the same network as this PC. Windows may ask once to let Legato on private networks: allow it.': 'Skanna den med mobilens kamera; mobilen måste vara i samma nätverk som den här datorn. Windows kan fråga en gång om Legato får använda privata nätverk: tillåt det.',
   'Phones that have the old link lose the remote': 'Mobiler med den gamla länken förlorar fjärrkontrollen',
   'New link': 'Ny länk',
+  'Pages': 'Sidor',
 }
 
 export default sv

@@ -283,11 +283,12 @@ export function NowPlaying() {
 
   return (
     // Whole window, under the see-through top bar (logo, Close player and window buttons stay on top, z-30).
-    <div role="dialog" aria-label={tr('Now playing')} onContextMenu={onMenu(playerMenu)} className="np-in fixed inset-0 z-20 isolate flex flex-col overflow-hidden bg-bg px-10 pt-17 pb-7 text-ink transition-colors duration-500" style={ambient}>
+    <div role="dialog" aria-label={tr('Now playing')} onContextMenu={onMenu(playerMenu)} className="np-in fixed inset-0 z-20 isolate flex flex-col overflow-hidden bg-bg px-10 pt-17 pb-7 text-ink transition-colors duration-500 phone:px-5 phone:pt-15 phone:pb-[max(1rem,env(safe-area-inset-bottom))]" style={ambient}>
       {immersive && <Backdrop url={backdrop} dim={backdropDim} motion={backdropMotion} />}
 
-      <div className={`grid min-h-0 flex-1 gap-12 ${panel === 'editor' ? 'grid-cols-[minmax(0,1fr)_400px]' : panel === 'upNext' ? 'grid-cols-[minmax(0,1fr)_360px]' : 'grid-cols-[minmax(0,1fr)_minmax(0,1fr)]'}`}>
-        <section id={STAGE_ID} className="flex min-h-0 min-w-0 flex-col items-center gap-4">
+      {/* Phone layout: one column, the cover over the song; an open panel (lyrics, Up next, sound) takes the cover's place. */}
+      <div className={`grid min-h-0 flex-1 gap-12 phone:grid-cols-1 phone:gap-4 ${panel ? 'phone:grid-rows-1' : 'phone:grid-rows-[minmax(0,1fr)_auto]'} ${panel === 'editor' ? 'grid-cols-[minmax(0,1fr)_400px]' : panel === 'upNext' ? 'grid-cols-[minmax(0,1fr)_360px]' : 'grid-cols-[minmax(0,1fr)_minmax(0,1fr)]'}`}>
+        <section id={STAGE_ID} className={`flex min-h-0 min-w-0 flex-col items-center gap-4 ${panel ? 'phone:hidden' : ''}`}>
           {/* Every song (user's pick 2026-10-23): Video on a file or a preview switches to its YouTube version, same spot. */}
           <Segmented
             className="glass"
@@ -324,10 +325,10 @@ export function NowPlaying() {
           <UpNext onHide={() => update({ upNext: false })} />
         ) : (
           // Display XL (docs/design.md), smaller in a small window; long video titles wrap to two lines.
-          <div className="flex min-w-0 flex-col justify-center gap-4 pb-8">
+          <div className="flex min-w-0 flex-col justify-center gap-4 pb-8 phone:gap-2 phone:pb-0">
             {from && <p className="kicker truncate">{tr('Playing from {list}', { list: from })}</p>}
-            <h2 className="line-clamp-2 pb-1 text-[clamp(2.5rem,5.5vw,5.5rem)] leading-[1.05] font-black tracking-[-0.02em] break-words">{now.title}</h2>
-            <ArtistLink now={now} className="w-fit max-w-full truncate text-[1.375rem] leading-7 font-bold" />
+            <h2 className="line-clamp-2 pb-1 text-[clamp(2.5rem,5.5vw,5.5rem)] leading-[1.05] font-black tracking-[-0.02em] break-words phone:text-[1.75rem]">{now.title}</h2>
+            <ArtistLink now={now} className="w-fit max-w-full truncate text-[1.375rem] leading-7 font-bold phone:text-lg" />
             {track?.album && <p className="truncate text-sm">{track.album}</p>}
             {readout && source}
             <hr className="border-line" />
@@ -350,7 +351,8 @@ export function NowPlaying() {
           <TimeText part="total" className="w-10 text-right" />
         </div>
         {/* Side columns may shrink (small window): the volume bar narrows instead of running into the transport. */}
-        <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center">
+        {/* Phone layout: the transport on its own row first, the rest under it; no volume (the phone's buttons). */}
+        <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center phone:grid-cols-2 phone:gap-y-2">
           <span className="flex min-w-0 items-center gap-1">
             {track && (
               <RoundButton label={liked ? tr('Remove from Liked Music') : tr('Add to Liked Music')} aria-pressed={liked} kind="plain" size="md" onClick={(e) => (void toggleLike(track), pop(e.currentTarget))} className={liked ? 'text-ink!' : ''}>
@@ -365,7 +367,9 @@ export function NowPlaying() {
             )}
             {readout && panel && <SourceBadge via={now.via} />}
           </span>
-          <Transport size="lg" />
+          <span className="phone:order-first phone:col-span-2 phone:justify-self-center">
+            <Transport size="lg" />
+          </span>
           <div className="flex min-w-0 items-center justify-end gap-1">
             <PanelToggle id="lyrics" label={tr('Lyrics')} icon={Quotes} active={panel} />
             <PanelToggle id="upNext" label={tr('Up next')} icon={Queue} active={panel} />
@@ -373,7 +377,7 @@ export function NowPlaying() {
             <RoundButton label={tr('Karaoke')} kind="plain" size="md" onClick={(e) => (toggleKaraoke(), pop(e.currentTarget))}>
               <MicrophoneStage size={22} />
             </RoundButton>
-            <span className="flex min-w-0 flex-col items-end gap-1">
+            <span className="flex min-w-0 flex-col items-end gap-1 phone:hidden">
               <VolumeControl big />
               {volumeMode === 'knob' && <span className="kicker">{tr('Volume')}</span>}
             </span>

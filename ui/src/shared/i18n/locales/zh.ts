@@ -1888,6 +1888,7 @@ const zh: Record<string, string> = {
   'Scan it with the phone’s camera; the phone must be on the same network as this PC. Windows may ask once to let Legato on private networks: allow it.': '用手机相机扫描；手机必须与这台电脑在同一网络。Windows 可能会询问一次是否允许 Legato 使用专用网络：请允许。',
   'Phones that have the old link lose the remote': '持有旧链接的手机将无法再遥控',
   'New link': '新链接',
+  'Pages': '页面',
 }
 
 export default zh

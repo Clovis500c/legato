@@ -245,7 +245,8 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
 - [ ] `L+` Mobile version, well optimised, the Rust code reused (the owner's ask 2026-11-02): Tauri 2's Android target
       with the same crates and `ui/`, Android first, iPhone after. Spec, seven phases, what stays desktop-only and the
       owner's calls (Android SDK / NDK on this PC, a phone, GitHub or Play Store, YouTube sign-in in a WebView):
-      [ideas/mobile.md](ideas/mobile.md). Phase 1, the phone layout in `ui/`, needs no new tool.
+      [ideas/mobile.md](ideas/mobile.md). Phase 1, the phone layout in `ui/`, done 2026-11-02; phase 2 needs the owner's
+      Android tools.
 
 **Medium**
 - [ ] `S` Find a song by a line of its lyrics (LRCLIB search), and hum to search if AudD's free tier allows it.

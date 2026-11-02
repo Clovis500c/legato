@@ -49,7 +49,8 @@ sending something new.
 
 The window on the home page is the app: `site/demo` starts `ui/` as it is, over a fake Tauri (`tauri.ts`), invented data
 and answers (`data.ts`), and screens picked by the page's scroll (`scenes.ts`). `pnpm build` makes it into `public/demo`,
-so `pnpm dev` shows the pictures until a build has run. A screen that needs a new command at load may need an answer in
+so `pnpm dev` shows the pictures until a build has run; `demo` in `.claude/launch.json` serves it alone with hot reload
+(port 5190: the phone layout is checked there at 375 × 812). A screen that needs a new command at load may need an answer in
 `data.ts`; what needs an account, the network or the PC goes in its refused list. `pnpm typecheck` at the root covers it.
 
 `site/public/shots` holds those pictures: phones, reduced motion, and the window before the demo is up. Taken from the
