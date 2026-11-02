@@ -5,6 +5,27 @@ code), then [plan-v2.md](plan-v2.md) (open work). Rewrite it when a branch or th
 
 Written 2026-11-01, run section 2026-11-02.
 
+## Mobile app and devices sync (the owner's ask, 2026-11-02 afternoon; in progress)
+
+The ask: the mobile app working completely; phone and PC synced over Wi-Fi both ways (code or QR code, either device
+first), devices listed with icons and here-or-not, trusted devices (no code again), sync automatically; then a Beta
+with the APK (and the iPhone build). The owner's choices (2026-11-02): alone until 95 % of the week, then workflows after
+the weekly reset (2026-11-04 08:00 Paris): one agent at a time, effort high, the price first, under 30 % of the 5-hour
+window; Android first, the iPhone once the owner picks its signing (Apple Developer Program or an unsigned .ipa); the
+Android SDK / NDK / JDK 17 on this PC (the owner's OK, about 10 GB) to test on an emulator; YouTube signed out on the
+phone, the library from the PC by sync.
+
+Done on `platforms` (not pushed): the spec ([sync-mode.md](../sync-mode.md) › Your devices on the same network), the core
+and the wire (`cd62b11`), the shell `src-tauri/src/devices.rs` and Settings › Sync Mode › Your devices (`Devices.tsx`),
+the one-off swap's commands gone (`syncmode::join` stays as the fallback for an older Legato's code). Unit-tested; never
+run between two real devices, nor seen in the real app (Windows will ask once about the firewall for TCP 47822).
+
+Next, in order: [plan-v2.md](plan-v2.md) › the mobile line's sub-steps: Android tools (winget: Microsoft.OpenJDK.17,
+the SDK command-line tools, NDK), `pnpm tauri android init`, Windows-only parts gated off Android (WebView2, WASAPI,
+SMTC, tray, hotkeys, Run key, `keyring`: a store for Android), the multicast lock (mDNS on Android), a QR scanner
+(`tauri-plugin-barcode-scanner`, reads `legato://pair?`), the device's name and form on Android, playback in the
+background, a CI job building and signing the APK (a keystore as a GitHub secret: the owner's OK), then the Beta.
+
 ## Autonomous run 2026-11-02 (done)
 
 The owner's ask (2026-11-02 morning, away from the PC, no question could be answered): the whole plan, most important

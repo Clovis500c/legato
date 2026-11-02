@@ -272,7 +272,7 @@ fn serve_with(app: &AppHandle, token: &str) -> CmdResult<u16> {
 
 /// This PC's address on its network: the one its default route uses (a UDP connect sends nothing), else the first
 /// private one.
-fn lan_ip() -> Option<IpAddr> {
+pub(crate) fn lan_ip() -> Option<IpAddr> {
     let routed = UdpSocket::bind((Ipv4Addr::UNSPECIFIED, 0))
         .and_then(|s| {
             s.connect((Ipv4Addr::new(192, 0, 2, 1), 9))?;

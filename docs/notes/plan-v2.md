@@ -253,10 +253,11 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       signing; Android SDK / NDK / JDK 17 on this PC (the owner's OK) to test on an emulator; YouTube signed out on the
       phone, the library from the PC by sync.
   - [x] Spec of the devices sync: [sync-mode.md](../sync-mode.md) › Your devices on the same network.
-  - [ ] Core: kinds, the QR link, who starts (`crates/core` `devices.rs`).
-  - [ ] Wire: pairing, trusted sync, presence (`crates/connectors` `devices.rs`).
-  - [ ] Shell: listener, presence, auto-sync, keychain, commands (`src-tauri` `devices.rs`).
-  - [ ] Settings › Sync Mode: the devices list (icons, here or not), Add a device (code, QR), trust, sync automatically.
+  - [x] Core: kinds, the QR link, who starts (`crates/core` `devices.rs`).
+  - [x] Wire: pairing, trusted sync, presence (`crates/connectors` `devices.rs`).
+  - [x] Shell: listener, presence, auto-sync, keychain, commands (`src-tauri` `devices.rs`).
+  - [x] Settings › Sync Mode: the devices list (icons, here or not), Add a device (code, QR), trust, sync automatically.
+        (2026-11-02: unit-tested and type-checked; never run between two real devices, nor seen in the real app.)
   - [ ] Android: tools on this PC, Tauri's Android target, Windows-only parts gated, a keychain on Android, the
         multicast lock, a QR scanner, playback in the background.
   - [ ] Beta with the APK (CI builds and signs it).

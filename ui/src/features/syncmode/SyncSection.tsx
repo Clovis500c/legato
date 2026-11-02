@@ -1,4 +1,4 @@
-import { ArrowsClockwise, Cloud, Copy, Desktop, Eye, EyeSlash, FolderOpen, Sparkle, LockSimple, LockSimpleOpen, WifiHigh } from '@phosphor-icons/react'
+import { ArrowsClockwise, Cloud, Copy, Desktop, Eye, EyeSlash, FolderOpen, Sparkle, LockSimple, LockSimpleOpen } from '@phosphor-icons/react'
 import { open } from '@tauri-apps/plugin-dialog'
 import { useEffect, useState, type ReactNode } from 'react'
 import { useStore } from '../../app/store'
@@ -7,6 +7,7 @@ import { timeAgo } from '../../shared/format'
 import { tr } from '../../shared/i18n/i18n'
 import { Button } from '../../shared/ui/Button'
 import { Dialog } from '../../shared/ui/Dialog'
+import { Devices } from './Devices'
 import { mergedText } from './merged'
 import { passphrase, strength, type Hint } from './strength'
 
@@ -186,88 +187,6 @@ function Setup({ folder, onClose, onDone }: { folder: string; onClose: () => voi
   )
 }
 
-/** Local network: one PC shows a code, the other types it; both end up with everything. */
-function Network({ onDone }: { onDone: () => void }) {
-  const [code, setCode] = useState<string | null>(null)
-  const [typing, setTyping] = useState(false)
-  const [typed, setTyped] = useState('')
-  const [busy, setBusy] = useState(false)
-  const [error, setError] = useState<string>()
-  useEffect(() => {
-    if (!code) return
-    const off = api.onSyncOffer((r) => {
-      setCode(null)
-      if ('Ok' in r) {
-        done(r.Ok)
-        onDone()
-      } else setError(r.Err)
-    })
-    return () => void off.then((f) => f())
-  }, [code, onDone])
-  const show = async () => {
-    setError(undefined)
-    try {
-      setCode(await api.syncOffer())
-    } catch (e) {
-      setError(String(e))
-    }
-  }
-  const join = async () => {
-    setBusy(true)
-    setError(undefined)
-    try {
-      done(await api.syncJoin(typed))
-      setTyping(false)
-      setTyped('')
-      onDone()
-    } catch (e) {
-      setError(String(e))
-    } finally {
-      setBusy(false)
-    }
-  }
-  return (
-    <Card setting="Sync over the network" title={tr('Sync over the network')} icon={<WifiHigh size={16} />}>
-      {note(tr('Two PCs on the same network swap everything at once, sealed with a 6-digit code. Nothing goes through the internet.'))}
-      {code ? (
-        <div className="flex items-center gap-4">
-          <span className="font-mono text-3xl tracking-[0.2em] tabular-nums">{code}</span>
-          <span className="flex-1 text-xs text-ink-2">{tr('Type this code on your other PC (Settings › Sync Mode). Waiting for it…')}</span>
-          <Button variant="ghost" onClick={() => void api.syncOfferStop().then(() => setCode(null))}>
-            {tr('Cancel')}
-          </Button>
-        </div>
-      ) : typing ? (
-        <form
-          className="flex items-center gap-2"
-          onSubmit={(e) => {
-            e.preventDefault()
-            void join()
-          }}
-        >
-          <input autoFocus inputMode="numeric" maxLength={6} aria-label={tr('Code from the other PC')} placeholder="000000" value={typed} onChange={(e) => setTyped(e.target.value.replace(/\D/g, ''))} className="w-32 rounded-md border border-line bg-bg px-3 py-2 font-mono text-lg tracking-[0.2em] outline-none focus:border-ink-3" />
-          <Button type="submit" disabled={typed.length !== 6 || busy}>
-            {busy ? tr('Syncing…') : tr('Sync')}
-          </Button>
-          <Button variant="ghost" type="button" onClick={() => setTyping(false)}>
-            {tr('Cancel')}
-          </Button>
-        </form>
-      ) : (
-        <div className="flex gap-2">
-          <Button variant="ghost" onClick={() => void show()}>
-            {tr('Show a code')}
-          </Button>
-          <Button variant="ghost" onClick={() => setTyping(true)}>
-            {tr('Enter a code')}
-          </Button>
-        </div>
-      )}
-      {error && <p className="text-xs text-[#F23F43]">{error}</p>}
-    </Card>
-  )
-}
-
 /** Settings › Sync. */
 export function SyncSection() {
   const [s, setS] = useState<SyncStatus | null>(null)
@@ -304,6 +223,7 @@ export function SyncSection() {
   return (
     <div className="flex flex-col gap-4">
       <p className="text-sm text-ink-2">{tr('Your playlists, songs, listening history, Live Editor versions and settings on all your PCs, without an account or a server.')}</p>
+      <Devices />
       <Card setting="OneDrive" title={s.folder && !s.onedrive.some((o) => s.folder!.toLowerCase().startsWith(o.toLowerCase())) ? tr('Shared folder') : 'OneDrive'} icon={<Cloud size={16} />}>
         {s.folder ? (
           <>
@@ -340,7 +260,6 @@ export function SyncSection() {
           </>
         )}
       </Card>
-      <Network onDone={refresh} />
       {s.devices.length > 0 && (
         <Card setting="Your other PCs" title={tr('Your other PCs')} icon={<Desktop size={16} />}>
           {s.devices.map((d) => {

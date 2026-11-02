@@ -48,6 +48,7 @@ fn start(app: &AppHandle, cause: Cause) {
     crate::diag::info("startup", cause.words(), "");
     crate::update::spawn(app.clone());
     crate::syncmode::spawn(app.clone());
+    crate::devices::spawn(app.clone());
     // Counts the cover folder and prunes it over its cap, on a thread of its own.
     if let Some(state) = app.try_state::<crate::AppState>() {
         state.art.prune_later();

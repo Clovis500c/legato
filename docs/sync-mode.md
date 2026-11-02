@@ -117,13 +117,17 @@ Settings naming playlists by row id (`hiddenPlaylists`, `playlistCovers`) are tr
 
 - `crates/core` `syncmode.rs`: snapshot, merge, sealing, manifest, OneDrive folders; `library.rs` v10 (change times,
   `sync_gone`, random custom ids, edit uids); `history.rs` (preference and rating times, history clears remembered).
-- `crates/connectors` `nearby.rs`: `sync_serve` / `sync_join`.
+- `crates/connectors` `nearby.rs`: `sync_serve` / `sync_join` (the one-off swap; an older Legato's code); `devices.rs`:
+  the devices sync's wire and mDNS presence. `crates/core` `devices.rs`: kinds, the QR link, who starts, the rows.
 - `src-tauri` `syncmode.rs`: config (`sync` row: PC id, folder, asked), keychain key, minute timer, commands, events
-  `sync` (merged: the UI reloads), `sync-offer` and `sync-pickup` (another PC's last song; `sync_pickup` for one that came
-  before the interface listened). Snapshots read WebView2 cookies: async commands only.
+  `sync` (merged: the UI reloads) and `sync-pickup` (another PC's last song; `sync_pickup` for one that came
+  before the interface listened). Snapshots read WebView2 cookies: async commands only. Its config row also holds the
+  devices sync's switches and trusted devices.
+- `src-tauri` `devices.rs`: the listener (TCP 47822), presence, the code shown, pairing, the automatic round, pair keys
+  in the keychain; events `devices` (the list changed) and `device-offer` (a pairing on the side showing the code).
 - `ui/src/features/syncmode/`: `syncmode.ts` (reload on merge, the OneDrive question), `pickup.ts` + pure
   `pickupOffer.ts` (pick up on another PC), `SyncSection.tsx`
-  (Settings › Sync Mode).
+  (Settings › Sync Mode), `Devices.tsx` (Your devices, Add a device) with `DeviceIcon.tsx` and pure `devicesView.ts`.
 
 ## Tested
 

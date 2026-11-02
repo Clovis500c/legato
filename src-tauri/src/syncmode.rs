@@ -36,15 +36,24 @@ fn sync_dir(folder: &Path) -> PathBuf {
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-struct Config {
+pub(crate) struct Config {
     #[serde(default)]
-    device: String,
+    pub(crate) device: String,
     /// Folder holding `Legato Sync` (or Music App's). None = off.
     #[serde(default)]
-    folder: Option<String>,
+    pub(crate) folder: Option<String>,
     /// The OneDrive question was answered (set up, or not now).
     #[serde(default)]
-    asked: bool,
+    pub(crate) asked: bool,
+    /// Sync over the network (`devices.rs`): announced, listening.
+    #[serde(default)]
+    pub(crate) network: bool,
+    /// Devices sync on "Sync now" only.
+    #[serde(default)]
+    pub(crate) manual: bool,
+    /// Trusted devices (their pair keys: keychain).
+    #[serde(default)]
+    pub(crate) peers: Vec<music_core::devices::Peer>,
 }
 
 #[derive(Debug, Clone, Serialize, ts_rs::TS)]
@@ -88,7 +97,6 @@ pub struct SyncMode {
     inner: Mutex<Inner>,
     /// One round at a time (timer, button, network).
     running: tokio::sync::Mutex<()>,
-    offer: Mutex<Option<tauri::async_runtime::JoinHandle<()>>>,
 }
 
 #[derive(Default)]
@@ -136,11 +144,11 @@ impl Inner {
     }
 }
 
-fn device_name() -> String {
+pub(crate) fn device_name() -> String {
     std::env::var("COMPUTERNAME").ok().filter(|n| !n.is_empty()).unwrap_or_else(|| "PC".into())
 }
 
-fn config(state: &AppState) -> Config {
+pub(crate) fn config(state: &AppState) -> Config {
     let lib = state.lib();
     let mut c: Config = lib.setting(CONFIG).ok().flatten().and_then(|v| serde_json::from_value(v).ok()).unwrap_or_default();
     if sm::device_file(&c.device).is_none() {
@@ -150,7 +158,7 @@ fn config(state: &AppState) -> Config {
     c
 }
 
-fn save_config(state: &AppState, c: &Config) -> CmdResult<()> {
+pub(crate) fn save_config(state: &AppState, c: &Config) -> CmdResult<()> {
     state.lib().set_setting(CONFIG, &serde_json::json!(c)).map_err(err)
 }
 
@@ -181,14 +189,14 @@ fn others(dir: &Path, me: &str) -> Vec<PathBuf> {
 
 /// This PC's snapshot. Secrets only when `sealed` (protected file, or the network's code-keyed channel).
 /// Never from a sync command: `ytm::session` needs the main thread free.
-fn snapshot(state: &AppState, device: &str, sealed: bool) -> anyhow::Result<Snapshot> {
+pub(crate) fn snapshot(state: &AppState, device: &str, sealed: bool) -> anyhow::Result<Snapshot> {
     let accounts = Accounts { spotify: state.spotify().is_some_and(|s| s.is_connected()), youtube: ytm::session(&state.app).is_some() };
     let secrets = sealed.then(|| Secrets { spotify_client_id: state.credentials().spotify_client_id, audd_token: state.store.load(AUDD_TOKEN) });
     state.lib().snapshot(device, &device_name(), accounts, secrets)
 }
 
 /// What another PC brought: merged in, its secrets fill what's missing here (never replace), the UI reloads.
-fn take(app: &AppHandle, s: &Snapshot) -> anyhow::Result<Merged> {
+pub(crate) fn take(app: &AppHandle, s: &Snapshot) -> anyhow::Result<Merged> {
     let state = app.state::<AppState>();
     let merged = state.lib().merge(s)?;
     if let Some(secrets) = &s.secrets {
@@ -220,12 +228,16 @@ fn take(app: &AppHandle, s: &Snapshot) -> anyhow::Result<Merged> {
     Ok(merged)
 }
 
+/// A snapshot without its time and a playing song's position (saved every few seconds): what says it changed. Written
+/// again for a new song or a pause, not every minute of music.
+pub(crate) fn stable_json(s: &Snapshot) -> Vec<u8> {
+    let now = s.now.clone().map(|n| if n.paused { n } else { sm::NowSnap { position_ms: 0, at: 0, ..n } });
+    serde_json::to_vec(&Snapshot { at: 0, now, ..s.clone() }).unwrap_or_default()
+}
+
 fn hash(s: &Snapshot) -> u64 {
     let mut h = std::collections::hash_map::DefaultHasher::new();
-    // Time left out, and a playing song's position (saved every few seconds): written again for a new song or a pause,
-    // not every minute of music.
-    let now = s.now.clone().map(|n| if n.paused { n } else { sm::NowSnap { position_ms: 0, at: 0, ..n } });
-    serde_json::to_string(&Snapshot { at: 0, now, ..s.clone() }).unwrap_or_default().hash(&mut h);
+    stable_json(s).hash(&mut h);
     h.finish()
 }
 
@@ -285,7 +297,7 @@ async fn round(app: &AppHandle) -> CmdResult<Merged> {
 
 /// A failed exchange (`kind` = folder, offering or joining) in the diagnostics log: no device name or path in the
 /// message, the text as the detail. The result goes on unchanged.
-fn logged<T>(kind: &str, result: CmdResult<T>) -> CmdResult<T> {
+pub(crate) fn logged<T>(kind: &str, result: CmdResult<T>) -> CmdResult<T> {
     if let Err(e) = &result {
         crate::diag::warn("syncmode", &format!("{kind} sync failed"), e);
     }
@@ -405,54 +417,8 @@ pub async fn sync_dismiss(state: State<'_, AppState>) -> CmdResult<()> {
     save_config(&state, &c)
 }
 
-/// Network, offering side: a code to type on the other PC. Done (or failed): "sync-offer" event.
-/// Async: the snapshot reads WebView2's cookies (YouTube signed in?), which deadlocks on the main thread.
-#[tauri::command]
-pub async fn sync_offer(app: AppHandle, state: State<'_, AppState>, sync: State<'_, SyncMode>) -> CmdResult<String> {
-    // The PC showing the code is the reference for settings never synced before.
-    {
-        let lib = state.lib();
-        if lib.settings_unstamped().map_err(err)? {
-            lib.stamp_all_settings(now_ms()).map_err(err)?;
-        }
-    }
-    let mine = sm::pack(&snapshot(&state, &config(&state).device, true).map_err(err)?).map_err(err)?;
-    let code = nearby::new_code();
-    let c = code.clone();
-    let a = app.clone();
-    let task = tauri::async_runtime::spawn(async move {
-        let out = match nearby::sync_serve(&c, &mine).await {
-            Ok(theirs) => sm::unpack(&theirs).and_then(|s| take(&a, &s)).map_err(|e| e.to_string()),
-            Err(e) => Err(e.to_string()),
-        };
-        let _ = a.emit_to("main", "sync-offer", logged("offering", out));
-    });
-    if let Some(old) = sync.offer.lock().unwrap().replace(task) {
-        old.abort();
-    }
-    Ok(code)
-}
-
-/// "sync-offer" event: the other PC joined with the code (Ok), or the exchange failed (Err). Only writes the type.
-#[cfg(test)]
-#[derive(ts_rs::TS)]
-#[ts(export, rename = "SyncOffer", as = "Result<Merged, String>")]
-struct SyncOfferEvent;
-
-#[tauri::command]
-pub fn sync_offer_stop(sync: State<SyncMode>) {
-    if let Some(t) = sync.offer.lock().unwrap().take() {
-        t.abort();
-    }
-}
-
-/// Network, joining side: the code shown on the other PC.
-#[tauri::command]
-pub async fn sync_join(app: AppHandle, state: State<'_, AppState>, code: String) -> CmdResult<Merged> {
-    logged("joining", join(app, &state, code).await)
-}
-
-async fn join(app: AppHandle, state: &AppState, code: String) -> CmdResult<Merged> {
+/// An older Legato's code (the one-off swap): `devices.rs` falls back to it when no new device shows one.
+pub(crate) async fn join(app: AppHandle, state: &AppState, code: String) -> CmdResult<Merged> {
     let mine = sm::pack(&snapshot(state, &config(state).device, true).map_err(err)?).map_err(err)?;
     let theirs = nearby::sync_join(code.trim(), &mine).await.map_err(err)?;
     tauri::async_runtime::spawn_blocking(move || sm::unpack(&theirs).and_then(|s| take(&app, &s))).await.map_err(err)?.map_err(err)

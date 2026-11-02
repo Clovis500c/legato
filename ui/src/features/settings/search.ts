@@ -57,7 +57,7 @@ export const SETTINGS_INDEX: SettingEntry[] = [
   { section: 'sources', label: msg('Sync direction'), keywords: msg('two way one way both import only send only push pull upload download off account') },
   { section: 'sources', label: 'Spotify', keywords: msg('client id key premium connect') },
   { section: 'sync', label: 'OneDrive', keywords: msg('sync other pc computer cloud password encrypted backup') },
-  { section: 'sync', label: msg('Sync over the network'), keywords: msg('code local wifi other pc computer') },
+  { section: 'sync', label: msg('Your devices'), keywords: msg('phone mobile android iphone pair qr code wifi network trusted automatic other pc computer laptop') },
   { section: 'sources', label: msg('Spotify web player'), keywords: msg('sign in') },
   { section: 'sources', label: msg('Apple Music'), keywords: msg('apple itunes import playlists favorite songs sign in') },
   { section: 'sources', label: msg('Local files'), keywords: msg('music folder mp3 flac scan') },

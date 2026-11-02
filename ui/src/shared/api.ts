@@ -1,7 +1,7 @@
 import { Channel, invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 import type { Box } from './artbox'
-import type { AddReport, AlbumInfo, CacheStats, Contact, Credentials, DetectInput, Detection, Direction, DiscordStatus, Dropped, Edit, EditDraft, Effects, ExportReport, FileList, FileTags, FindReport, Heard, LastfmStatus, LibraryChanges, LibraryData, LibraryHealth, LibraryPlaylist, LibraryTrack, ListImport, LinkImport, Listen, ListenbrainzStatus, ListRef, LiveReport, LiveSettings, Lyrics, LyricsAsk, MediaNow, Merged, Mix, NearbyState, Pickup, Play, PlayerCommand, PlayerLevels, PlayerStatus, PlaylistEdit, PluginCall, PluginInfo, PluginInspect, Pref, Presence, PushFailed, RemoteLink, RemoteSong, Scrobble, SearchResults, ShareCode, SharePreview, ShieldStatus, ShortcutEntry, SongTags, Source, SourceStatus, SpotifyCommand, SpotifyExport, SpotifyImport, SpotifyLibraryImport, SpotifyList, SpotifyPick, SpotifyPlayback, SpotifyProgress, SponsorSegment, SyncOffer, SyncProbe, SyncReport, SyncStatus, SystemAccent, TagsSaved, Track, UpdateStatus, WatchCmd, WatchRect, WatchReport, YtmAccount, YtmAccounts, YtmArtist, YtmHome } from './generated'
+import type { AddReport, AlbumInfo, DeviceOffer, DeviceOfferEvent, DevicesStatus, CacheStats, Contact, Credentials, DetectInput, Detection, Direction, DiscordStatus, Dropped, Edit, EditDraft, Effects, ExportReport, FileList, FileTags, FindReport, Heard, LastfmStatus, LibraryChanges, LibraryData, LibraryHealth, LibraryPlaylist, LibraryTrack, ListImport, LinkImport, Listen, ListenbrainzStatus, ListRef, LiveReport, LiveSettings, Lyrics, LyricsAsk, MediaNow, Merged, Mix, NearbyState, Pickup, Play, PlayerCommand, PlayerLevels, PlayerStatus, PlaylistEdit, PluginCall, PluginInfo, PluginInspect, Pref, Presence, PushFailed, RemoteLink, RemoteSong, Scrobble, SearchResults, ShareCode, SharePreview, ShieldStatus, ShortcutEntry, SongTags, Source, SourceStatus, SpotifyCommand, SpotifyExport, SpotifyImport, SpotifyLibraryImport, SpotifyList, SpotifyPick, SpotifyPlayback, SpotifyProgress, SponsorSegment, SyncProbe, SyncReport, SyncStatus, SystemAccent, TagsSaved, Track, UpdateStatus, WatchCmd, WatchRect, WatchReport, YtmAccount, YtmAccounts, YtmArtist, YtmHome } from './generated'
 
 // Every type the commands and events carry is a Rust type: `pnpm types` (ts-rs) writes it into ./generated, never by hand.
 // Re-exported here, so features import them from the api.
@@ -211,15 +211,23 @@ export const api = {
   syncStop: () => invoke<void>('sync_stop'),
   syncNow: () => invoke<Merged>('sync_now'),
   syncDismiss: () => invoke<void>('sync_dismiss'),
-  /** Local network: a code for the other PC; the result comes as a "sync-offer" event. */
-  syncOffer: () => invoke<string>('sync_offer'),
-  syncOfferStop: () => invoke<void>('sync_offer_stop'),
-  syncJoin: (code: string) => invoke<Merged>('sync_join', { code }),
+  /** Your devices (devices.rs): this one, trusted and nearby ones, the code shown. */
+  devicesStatus: () => invoke<DevicesStatus>('devices_status'),
+  devicesNetwork: (on: boolean) => invoke<void>('devices_network', { on }),
+  devicesAuto: (on: boolean) => invoke<void>('devices_auto', { on }),
+  /** A code and its QR code for another device; the pairing's end comes as a "device-offer" event. */
+  deviceOffer: (trust: boolean) => invoke<DeviceOffer>('device_offer', { trust }),
+  deviceOfferStop: (code: string) => invoke<void>('device_offer_stop', { code }),
+  /** The code another device shows, or the link of its QR code. */
+  devicePair: (code: string, link: string | null, trust: boolean) => invoke<Merged>('device_pair', { code, link, trust }),
+  deviceSync: (id: string) => invoke<Merged>('device_sync', { id }),
+  deviceForget: (id: string) => invoke<void>('device_forget', { id }),
   /** Another PC's last song, if one came in since launch (pick up on another PC). */
   syncPickup: () => invoke<Pickup | null>('sync_pickup'),
   /** Another PC's changes were merged here: reload. */
   onSync: (cb: (m: Merged) => void) => listen<Merged>('sync', (e) => cb(e.payload)),
-  onSyncOffer: (cb: (r: SyncOffer) => void) => listen<SyncOffer>('sync-offer', (e) => cb(e.payload)),
+  onDevices: (cb: () => void) => listen('devices', () => cb()),
+  onDeviceOffer: (cb: (r: DeviceOfferEvent) => void) => listen<DeviceOfferEvent>('device-offer', (e) => cb(e.payload)),
   onSyncPickup: (cb: (p: Pickup) => void) => listen<Pickup>('sync-pickup', (e) => cb(e.payload)),
   /** A picture for a theme's background, copied in by content. Returns its name (shared/art coverImage). */
   saveBackground: (path: string) => invoke<string>('save_background', { path }),
