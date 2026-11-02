@@ -18,13 +18,20 @@ phone, the library from the PC by sync.
 Done on `platforms` (not pushed): the spec ([sync-mode.md](../sync-mode.md) › Your devices on the same network), the core
 and the wire (`cd62b11`), the shell `src-tauri/src/devices.rs` and Settings › Sync Mode › Your devices (`Devices.tsx`),
 the one-off swap's commands gone (`syncmode::join` stays as the fallback for an older Legato's code). Unit-tested; never
-run between two real devices, nor seen in the real app (Windows will ask once about the firewall for TCP 47822).
+run between two real devices, nor seen in the real app (Windows will ask once about the firewall for TCP 47822). Seen in
+the demo at phone width with invented devices (`dd048dc`: the notes wrap, the countdown starts at 10:00).
 
-Next, in order: [plan-v2.md](plan-v2.md) › the mobile line's sub-steps: Android tools (winget: Microsoft.OpenJDK.17,
-the SDK command-line tools, NDK), `pnpm tauri android init`, Windows-only parts gated off Android (WebView2, WASAPI,
-SMTC, tray, hotkeys, Run key, `keyring`: a store for Android), the multicast lock (mDNS on Android), a QR scanner
-(`tauri-plugin-barcode-scanner`, reads `legato://pair?`), the device's name and form on Android, playback in the
-background, a CI job building and signing the APK (a keystore as a GitHub secret: the owner's OK), then the Beta.
+Android tools, done (2026-11-02 evening): `C:\dev\android`, about 8 GB (JDK 17, SDK, NDK r30, emulator and an API 36
+image, versions in plan-v2), Rust's Android targets; installing them accepted the Android SDK licence. The JDK came as
+Microsoft's zip rather than winget's MSI: no admin prompt, no PATH change. Outside AppData because Claude's shell sees a
+virtualized one. Nothing persistent: dot-source `C:\dev\android\env.ps1` before an Android build. A hypervisor runs on
+this PC (Ryzen 5 5500, 32 GB), so the emulator should start; not tried yet.
+
+Next, in order: [plan-v2.md](plan-v2.md) › the mobile line's sub-steps: `pnpm tauri android init`, Windows-only parts
+gated off Android (WebView2, WASAPI, SMTC, tray, hotkeys, Run key, `keyring`: a store for Android), the multicast lock
+(mDNS on Android), a QR scanner (`tauri-plugin-barcode-scanner`, reads `legato://pair?`), the device's name and form on
+Android, playback in the background, a CI job building and signing the APK (a keystore as a GitHub secret: the owner's
+OK), then the Beta. Started after the weekly reset (2026-11-04 08:00 Paris), with workflows, per the owner's choice.
 
 ## Autonomous run 2026-11-02 (done)
 

@@ -257,9 +257,14 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
   - [x] Wire: pairing, trusted sync, presence (`crates/connectors` `devices.rs`).
   - [x] Shell: listener, presence, auto-sync, keychain, commands (`src-tauri` `devices.rs`).
   - [x] Settings › Sync Mode: the devices list (icons, here or not), Add a device (code, QR), trust, sync automatically.
-        (2026-11-02: unit-tested and type-checked; never run between two real devices, nor seen in the real app.)
-  - [ ] Android: tools on this PC, Tauri's Android target, Windows-only parts gated, a keychain on Android, the
-        multicast lock, a QR scanner, playback in the background.
+        (2026-11-02: unit-tested and type-checked, seen in the demo at phone width with invented devices; never run
+        between two real devices, nor seen in the real app.)
+  - [x] Android tools on this PC (2026-11-02): `C:\dev\android` (Microsoft JDK 17.0.21 zip, SDK command-line tools 23,
+        platform 36, build-tools 37.0.0, NDK r30 30.0.16248370, emulator + an API 36 Google APIs x86_64 image) and
+        Rust's four Android targets. Nothing persistent: dot-source `C:\dev\android\env.ps1` (JAVA_HOME, ANDROID_HOME,
+        NDK_HOME). Checked: a hello-world built for ARM64 by NDK r30.
+  - [ ] Android: Tauri's Android target, Windows-only parts gated, a keychain on Android, the multicast lock, a QR
+        scanner, playback in the background.
   - [ ] Beta with the APK (CI builds and signs it).
   - [ ] iPhone: waits for the owner's signing choice (Apple Developer Program, or an unsigned .ipa).
 
