@@ -1,9 +1,9 @@
 name: release
 
-# Every push to master that passes `check` is released as a BETA: signed Windows installer + latest.json on a GitHub
-# prerelease. Version = MAJOR.MINOR from tauri.conf.json + patch = commits on master (scripts/release.mjs): 1.1.0 in the
-# file, 1.1.<commits> released. "[skip release]" in the commit's first line: no release for that push. Run by hand:
-# Actions › release › Run workflow.
+# Every push to master that passes `check` is released as a BETA: signed Windows installer + latest.json, then the signed
+# Android APK (last step), on a GitHub prerelease. Version = MAJOR.MINOR from tauri.conf.json + patch = commits on master
+# (scripts/release.mjs): 1.1.0 in the file, 1.1.<commits> released. "[skip release]" in the commit's first line: no
+# release for that push. Run by hand: Actions › release › Run workflow.
 # Two channels (Settings › General › Updates), two files (src-tauri/src/update.rs):
 # - Beta reads releases/download/beta/latest.json: the rolling `beta` release, whose latest.json is copied here from
 #   each new release (last step).
@@ -50,7 +50,8 @@ jobs:
     needs: gate
     if: needs.gate.outputs.go == 'true'
     runs-on: windows-latest
-    timeout-minutes: 45
+    # Windows installer, then the APK.
+    timeout-minutes: 90
     env:
       # The commit `check` passed on (not master's tip if another push landed since).
       SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
@@ -82,6 +83,9 @@ jobs:
           cache: pnpm
 
       - uses: dtolnay/rust-toolchain@stable
+        with:
+          # The APK's (last step).
+          targets: aarch64-linux-android
 
       - uses: Swatinem/rust-cache@v2
 
@@ -144,3 +148,38 @@ jobs:
               --notes "Only latest.json, which the app's Beta channel reads. Moves with every release; the installers are on the versioned releases."
           fi
           gh release upload beta "$dir/latest.json" --clobber
+
+      # Android: the signed APK, one more file on the versioned release. After the Beta pointer, so a failure here never
+      # holds the Windows Beta back. Keystore: repository secrets ANDROID_KEYSTORE (the .jks in base64) and
+      # ANDROID_KEYSTORE_PASSWORD (store and key), alias `legato`. SDK and NDK: the runner's own.
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Android APK
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          VERSION: ${{ steps.release.outputs.version }}
+          KEYSTORE: ${{ secrets.ANDROID_KEYSTORE }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+        run: |
+          if [ -z "$KEYSTORE" ] || [ -z "$KEYSTORE_PASSWORD" ]; then
+            echo "::error::Repository secrets ANDROID_KEYSTORE and ANDROID_KEYSTORE_PASSWORD are missing: no APK"
+            exit 1
+          fi
+          export NDK_HOME="${ANDROID_NDK_LATEST_HOME:-$ANDROID_NDK_HOME}"
+          if [ -z "$NDK_HOME" ]; then
+            echo "::error::No Android NDK on this runner"
+            exit 1
+          fi
+          # Java's properties read a backslash as an escape: forward slashes.
+          tmp="${RUNNER_TEMP//\\//}"
+          printf '%s' "$KEYSTORE" | base64 -d > "$tmp/legato-release.jks"
+          printf 'storeFile=%s\npassword=%s\nkeyAlias=legato\n' "$tmp/legato-release.jks" "$KEYSTORE_PASSWORD" > src-tauri/gen/android/keystore.properties
+          pnpm tauri android build --target aarch64 --apk
+          apk="$tmp/Legato_${VERSION}_android-arm64.apk"
+          cp src-tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release.apk "$apk"
+          gh release upload "v$VERSION" "$apk" --clobber
