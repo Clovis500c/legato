@@ -47,13 +47,19 @@ a new APK installs over the old one. Secrets on Android: `secrets::FileStore`, o
 data folder. The signed APK starts on the emulator (arm64 under translation) and shows the welcome; sent to the owner
 to try on their phone, never run on a real one yet.
 
-Next, in order: the phone's texts and screens (the welcome and empty states speak of a PC, desktop-only Settings rows
-shown), the QR scanner (`tauri-plugin-barcode-scanner`, reads `legato://pair?`), playback in the background
-(foreground service, media notification), pairing tried with a real phone on the same Wi-Fi (the emulator sits behind
-its own NAT), secrets in Android's Keystore, a CI job building the signed APK (the keystore is in the repo's Actions
-secrets since 2026-11-02, the owner's OK: `ANDROID_KEYSTORE`, the .jks in base64, and `ANDROID_KEYSTORE_PASSWORD`, for
-the store and the key; alias `legato`), then the Beta with the APK. Workflows after the weekly reset (2026-11-04 08:00
-Paris), per the owner's choice.
+Phone texts (2026-11-02): `shared/platform.ts` `phone` (the WebView's user agent); the welcome, Settings › About and
+Privacy and the player bar say phone instead of PC there, and the welcome hides its Google sign-in promise. The APK in
+every Beta: `release.yml`'s last step builds it on the Windows runner (the runner's SDK and NDK,
+`ANDROID_NDK_LATEST_HOME`), signs it with the repo's Actions secrets `ANDROID_KEYSTORE` (the .jks in base64) and
+`ANDROID_KEYSTORE_PASSWORD` (store and key; alias `legato`; the owner's OK, 2026-11-02) and attaches
+`Legato_<version>_android-arm64.apk` to the versioned release. It runs after the Beta pointer, so a failure there never
+holds the Windows Beta back. First run: the push of 2026-11-02 night; check its log if the APK is missing.
+
+Next, in order: the phone's other texts and screens (desktop-only Settings rows shown, other strings that say PC), the
+QR scanner (`tauri-plugin-barcode-scanner`, reads `legato://pair?`), playback in the background (foreground service,
+media notification), pairing tried with a real phone on the same Wi-Fi (the emulator sits behind its own NAT), secrets
+in Android's Keystore, an Android download on the website. Workflows after the weekly reset (2026-11-04 08:00 Paris),
+per the owner's choice.
 
 ## Autonomous run 2026-11-02 (done)
 

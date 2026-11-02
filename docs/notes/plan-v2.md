@@ -267,9 +267,11 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
         multicast lock, the phone's name; a debug APK starts on the emulator with the phone layout.
   - [x] Android release APK (2026-11-02): arm64, signed from a local keystore (`keystore.properties`, out of git),
         secrets in a private file on the phone (`secrets::FileStore`); starts on the emulator, sent to the owner.
-  - [ ] Android, still: the phone's texts and screens, the QR scanner, playback in the background, pairing tried with
-        a real phone, secrets in Android's Keystore, a CI job for the signed APK (keystore in Actions secrets
-        `ANDROID_KEYSTORE` + `ANDROID_KEYSTORE_PASSWORD`), the Beta.
+  - [x] Android in every Beta (2026-11-02): `release.yml` builds and signs the APK (Actions secrets
+        `ANDROID_KEYSTORE` + `ANDROID_KEYSTORE_PASSWORD`) and attaches it to the release; the welcome, About, Privacy
+        and the player bar say phone instead of PC on the phone.
+  - [ ] Android, still: the phone's other texts and screens (desktop-only Settings rows), the QR scanner, playback in
+        the background, pairing tried with a real phone, secrets in Android's Keystore, an Android download on the site.
   - [ ] Beta with the APK (CI builds and signs it).
   - [ ] iPhone: waits for the owner's signing choice (Apple Developer Program, or an unsigned .ipa).
 
