@@ -1932,6 +1932,13 @@ const hi: Record<string, string> = {
   'Picture saved: {file}': 'तस्वीर सहेजी गई: {file}',
   'Back to {month}': 'फिर से {month}',
   'Played a lot in {month}, hardly since': 'वे गाने जो आपने {month} में खूब सुने, तब से बहुत कम',
+  'Visualizer weighting': 'विज़ुअलाइज़र भारांकन',
+  'Lows against highs: as measured, the highs lifted 3 dB per octave, or as the ear hears them': 'निचले बनाम ऊँचे स्वर: जैसे मापे गए, ऊँचे स्वर हर ऑक्टेव 3 dB ऊपर, या जैसे कान उन्हें सुनता है',
+  'tilt slope bass treble highs lows balance hearing curve a-weighting itu 468': 'झुकाव ढलान बास ट्रेबल ऊँचे निचले संतुलन श्रवण वक्र a-भारांकन itu 468',
+  'As measured': 'जैसा मापा गया',
+  '+3 dB per octave': '+3 dB प्रति ऑक्टेव',
+  'A-weighting': 'A-भारांकन',
+  'ITU-R 468': 'ITU-R 468',
 }
 
 export default hi

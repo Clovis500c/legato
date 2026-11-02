@@ -1,9 +1,10 @@
-import type { VisualizerStyle } from '../../shared/theme/theme'
+import type { VisualizerStyle, VizWeighting } from '../../shared/theme/theme'
 import { capSegment, litSegments } from './ledBars'
 import { columnSpans, columnsFor, dialGeometry, ledRows, ringBars, wavePath, type Dial, type LedRows, type Ring } from './vizDraw'
 import { createScene } from './vizScene'
 import { colorMap, fillColumn, rowMix, SCROLL, SCROLL_CALM, scrollBy } from './vizSpectro'
 import { createVu, vuPos, VU_MARKS } from './vizVu'
+import { weightsOf } from './vizWeigh'
 
 /** Lowest bar, as a fraction of the box (a bar never vanishes). */
 const FLOOR = 0.04
@@ -33,6 +34,8 @@ export function createPainter(canvas: OffscreenCanvas) {
   let dpr = 1
   let look: VisualizerStyle = 'led'
   let calm = false
+  let weighting: VizWeighting = 'flat'
+  let weighs = weightsOf('flat')
   let ink = '#888'
   let inkRgb: [number, number, number] | null = null
   let warn = WARN
@@ -72,7 +75,7 @@ export function createPainter(canvas: OffscreenCanvas) {
     const n = columnsFor(cssW)
     if (n !== cols) {
       cols = n
-      scene = createScene(n, calm)
+      scene = createScene(n, calm, weighs)
     }
     const gap = Math.max(1, Math.round((w / n) * 0.2))
     spans = columnSpans(w, n, gap)
@@ -309,8 +312,11 @@ export function createPainter(canvas: OffscreenCanvas) {
       dpr = ratio
       layout()
     },
-    set(next: VisualizerStyle, calmer: boolean, color: string, alarm = WARN) {
-      const restart = calmer !== calm
+    set(next: VisualizerStyle, calmer: boolean, color: string, alarm = WARN, weigh: VizWeighting = 'flat') {
+      // Reduced motion or the weighting changed: a new scene (and needles).
+      const restart = calmer !== calm || weigh !== weighting
+      weighting = weigh
+      weighs = weightsOf(weigh)
       // Another look: a clean canvas (the waterfall keeps its picture otherwise).
       if (next !== look && ctx) ctx.clearRect(0, 0, canvas.width, canvas.height)
       look = next

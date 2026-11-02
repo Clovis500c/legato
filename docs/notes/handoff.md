@@ -18,7 +18,7 @@ Order (each step: code, tests, `pnpm check` green, one commit on `platforms`, li
 
 1. Done: Exportify's real playlist names; library health page; the mobile spec; release notes grouped; phone remote;
    mobile phase 1 (the phone layout); pick up on the other PC; the privacy page in the app; the OBS overlay; the cover
-   display; the share card; aural fixations (the "Back to {month}" mix). Jump List dropped for this run (installed app only, can't be checked here).
+   display; the share card; aural fixations (the "Back to {month}" mix); the visualizer's weighting. Jump List dropped for this run (installed app only, can't be checked here).
 2. Next (81 % weekly at 13:40 UTC, all committed up to `046520f`, a step costs about 2 points): "Aural fixations"
    (`S`, plan-v2 "Small, high value": songs played a lot in one past month, little since, brought back as a Home
    shelf; a pure query on our own plays in `crates/core` with a test, then the shelf), or the wrap-up from 88 % weekly. The

@@ -1932,6 +1932,13 @@ const id: Record<string, string> = {
   'Picture saved: {file}': 'Gambar disimpan: {file}',
   'Back to {month}': 'Kembali ke {month}',
   'Played a lot in {month}, hardly since': 'Sering kamu putar pada {month}, jarang sejak itu',
+  'Visualizer weighting': 'Pembobotan visualizer',
+  'Lows against highs: as measured, the highs lifted 3 dB per octave, or as the ear hears them': 'Nada rendah terhadap tinggi: apa adanya, nada tinggi dinaikkan 3 dB per oktaf, atau seperti yang didengar telinga',
+  'tilt slope bass treble highs lows balance hearing curve a-weighting itu 468': 'kemiringan lereng bass treble tinggi rendah keseimbangan pendengaran kurva pembobotan a itu 468',
+  'As measured': 'Apa adanya',
+  '+3 dB per octave': '+3 dB per oktaf',
+  'A-weighting': 'Pembobotan A',
+  'ITU-R 468': 'ITU-R 468',
 }
 
 export default id

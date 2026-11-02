@@ -1932,6 +1932,13 @@ const vi: Record<string, string> = {
   'Picture saved: {file}': 'Đã lưu ảnh: {file}',
   'Back to {month}': 'Trở lại {month}',
   'Played a lot in {month}, hardly since': 'Những bài bạn nghe nhiều vào {month}, từ đó hầu như không nghe',
+  'Visualizer weighting': 'Trọng số của trình hiển thị',
+  'Lows against highs: as measured, the highs lifted 3 dB per octave, or as the ear hears them': 'Âm trầm so với âm cao: đúng như đo được, âm cao nâng 3 dB mỗi quãng tám, hoặc như tai nghe thấy',
+  'tilt slope bass treble highs lows balance hearing curve a-weighting itu 468': 'độ nghiêng dốc trầm cao cân bằng thính giác đường cong trọng số a itu 468',
+  'As measured': 'Đúng như đo',
+  '+3 dB per octave': '+3 dB mỗi quãng tám',
+  'A-weighting': 'Trọng số A',
+  'ITU-R 468': 'ITU-R 468',
 }
 
 export default vi

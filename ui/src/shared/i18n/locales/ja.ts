@@ -1932,6 +1932,13 @@ const ja: Record<string, string> = {
   'Picture saved: {file}': '画像を保存しました：{file}',
   'Back to {month}': '{month}をもう一度',
   'Played a lot in {month}, hardly since': '{month}によく聴いて、それ以来ほとんど聴いていない曲',
+  'Visualizer weighting': 'ビジュアライザーの重み付け',
+  'Lows against highs: as measured, the highs lifted 3 dB per octave, or as the ear hears them': '低音と高音の比べ方：測定どおり、高音を1オクターブごとに3 dB持ち上げる、または耳の聞こえ方に合わせる',
+  'tilt slope bass treble highs lows balance hearing curve a-weighting itu 468': '傾き スロープ 低音 高音 バランス 聴感 カーブ a特性 itu 468',
+  'As measured': '測定どおり',
+  '+3 dB per octave': '1オクターブごとに +3 dB',
+  'A-weighting': 'A特性',
+  'ITU-R 468': 'ITU-R 468',
 }
 
 export default ja

@@ -1932,6 +1932,13 @@ const it: Record<string, string> = {
   'Picture saved: {file}': 'Immagine salvata: {file}',
   'Back to {month}': 'Di nuovo {month}',
   'Played a lot in {month}, hardly since': 'Brani che ascoltavi tanto in {month}, quasi mai da allora',
+  'Visualizer weighting': 'Ponderazione del visualizzatore',
+  'Lows against highs: as measured, the highs lifted 3 dB per octave, or as the ear hears them': 'Bassi contro acuti: come misurati, gli acuti alzati di 3 dB per ottava, o come li sente l\'orecchio',
+  'tilt slope bass treble highs lows balance hearing curve a-weighting itu 468': 'inclinazione pendenza bassi acuti equilibrio udito curva ponderazione a uit itu 468',
+  'As measured': 'Come misurato',
+  '+3 dB per octave': '+3 dB per ottava',
+  'A-weighting': 'Ponderazione A',
+  'ITU-R 468': 'UIT-R 468',
 }
 
 export default it

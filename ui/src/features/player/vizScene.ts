@@ -6,9 +6,9 @@ import { VIZ_BANDS } from './vizUnpack'
 /**
  * What the visualizer shows at each drawn frame (runs in the worker, pure): the newest frame's bands folded into
  * columns, heights with their ballistics and held peaks, the flash limiter over the whole. `calm` = reduced motion:
- * slower and at most one flash a second (3 otherwise, always).
+ * slower and at most one flash a second (3 otherwise, always). `weighs`: dB added to each band first (vizWeigh.ts).
  */
-export function createScene(columns: number, calm: boolean) {
+export function createScene(columns: number, calm: boolean, weighs?: ArrayLike<number>) {
   const bal = calm ? CALM : NORMAL
   const bars = newBars(columns)
   const mono = new Float32Array(VIZ_BANDS).fill(-120)
@@ -22,6 +22,7 @@ export function createScene(columns: number, calm: boolean) {
     /** The newest frame (both sides, dB). */
     frame(left: ArrayLike<number>, right: ArrayLike<number>) {
       monoDb(left, right, mono)
+      if (weighs) for (let i = 0; i < VIZ_BANDS; i++) mono[i] += weighs[i] ?? 0
       toColumns(mono, cols)
       for (let i = 0; i < columns; i++) target[i] = levelOf(cols[i])
       silent = false

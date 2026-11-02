@@ -1932,6 +1932,13 @@ const ru: Record<string, string> = {
   'Picture saved: {file}': 'Картинка сохранена: {file}',
   'Back to {month}': 'Снова {month}',
   'Played a lot in {month}, hardly since': 'Часто звучали в период «{month}», с тех пор почти нет',
+  'Visualizer weighting': 'Взвешивание визуализатора',
+  'Lows against highs: as measured, the highs lifted 3 dB per octave, or as the ear hears them': 'Низкие против высоких: как измерено, высокие подняты на 3 дБ на октаву или как их слышит ухо',
+  'tilt slope bass treble highs lows balance hearing curve a-weighting itu 468': 'наклон бас высокие низкие баланс слух кривая a-взвешивание мсэ itu 468',
+  'As measured': 'Как измерено',
+  '+3 dB per octave': '+3 дБ на октаву',
+  'A-weighting': 'A-взвешивание',
+  'ITU-R 468': 'МСЭ-R 468',
 }
 
 export default ru

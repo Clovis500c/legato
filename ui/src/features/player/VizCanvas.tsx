@@ -45,6 +45,7 @@ export function VizCanvas({ look, listen = true }: { look: VisualizerStyle; list
   const [onScreen, setOnScreen] = useState(true)
   const shown = usePageVisible()
   const calm = useCalm()
+  const weighting = useSettings((s) => s.settings.visualizerWeighting)
   const playing = usePlayer((s) => s.playing)
   const theme = useSettings((s) => s.settings.theme)
   const accent = useSettings((s) => s.settings.accent)
@@ -97,11 +98,11 @@ export function VizCanvas({ look, listen = true }: { look: VisualizerStyle; list
     const el = box.current
     const w = worker.current
     if (!el || !w) return
-    const send = () => w.postMessage({ t: 'look', look, calm, ink: getComputedStyle(el).color, warn: getComputedStyle(el).getPropertyValue('--color-danger').trim(), fps: FPS } satisfies ToWorker)
+    const send = () => w.postMessage({ t: 'look', look, calm, weighting, ink: getComputedStyle(el).color, warn: getComputedStyle(el).getPropertyValue('--color-danger').trim(), fps: FPS } satisfies ToWorker)
     send()
     const late = setTimeout(send, 700)
     return () => clearTimeout(late)
-  }, [ready, look, calm, theme, accent, dark, song])
+  }, [ready, look, calm, weighting, theme, accent, dark, song])
 
   // Something draws: loop and frames. Nothing does: no loop, no subscription.
   useEffect(() => {

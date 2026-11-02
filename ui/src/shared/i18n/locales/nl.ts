@@ -1932,6 +1932,13 @@ const nl: Record<string, string> = {
   'Picture saved: {file}': 'Afbeelding opgeslagen: {file}',
   'Back to {month}': 'Terug naar {month}',
   'Played a lot in {month}, hardly since': 'Veel gedraaid in {month}, sindsdien nauwelijks',
+  'Visualizer weighting': 'Weging van de visualizer',
+  'Lows against highs: as measured, the highs lifted 3 dB per octave, or as the ear hears them': 'Lage tegen hoge tonen: zoals gemeten, de hoge 3 dB per octaaf omhoog, of zoals het oor ze hoort',
+  'tilt slope bass treble highs lows balance hearing curve a-weighting itu 468': 'kanteling helling bas hoog laag balans gehoor curve a-weging itu 468',
+  'As measured': 'Zoals gemeten',
+  '+3 dB per octave': '+3 dB per octaaf',
+  'A-weighting': 'A-weging',
+  'ITU-R 468': 'ITU-R 468',
 }
 
 export default nl

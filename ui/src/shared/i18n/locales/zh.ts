@@ -1932,6 +1932,13 @@ const zh: Record<string, string> = {
   'Picture saved: {file}': '已保存图片：{file}',
   'Back to {month}': '重温{month}',
   'Played a lot in {month}, hardly since': '你在{month}常听、之后几乎没再听的歌',
+  'Visualizer weighting': '可视化频率加权',
+  'Lows against highs: as measured, the highs lifted 3 dB per octave, or as the ear hears them': '低音与高音的对比：按测量值、高音每倍频程提升 3 dB，或按人耳的听感',
+  'tilt slope bass treble highs lows balance hearing curve a-weighting itu 468': '倾斜 斜率 低音 高音 平衡 听感 曲线 a计权 itu 468',
+  'As measured': '按测量值',
+  '+3 dB per octave': '每倍频程 +3 dB',
+  'A-weighting': 'A 计权',
+  'ITU-R 468': 'ITU-R 468',
 }
 
 export default zh

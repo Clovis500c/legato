@@ -167,6 +167,9 @@ export const COVER_MODES = ['source', 'first', 'grid', 'image'] as const
 /** Visualizer looks (VizCanvas.tsx): LED segments with held peaks, bars from the bottom, mirrored from the middle, bars with falling peaks, a wave; a ring around the cover, two VU needles, a scrolling spectrogram. */
 export const VISUALIZER_STYLES = ['led', 'bars', 'mirror', 'peaks', 'wave', 'radial', 'vu', 'spectrogram'] as const
 export type VisualizerStyle = (typeof VISUALIZER_STYLES)[number]
+/** Visualizer weighting (vizWeigh.ts): the bands as measured, tilted 3 dB per octave toward the highs, or a hearing curve. */
+export const VIZ_WEIGHTINGS = ['flat', 'tilt', 'a', 'itu468'] as const
+export type VizWeighting = (typeof VIZ_WEIGHTINGS)[number]
 /** Order the cover songs are taken in: the playlist's own, or a library sort. */
 export const COVER_ORDERS = ['playlist', 'recent', 'title', 'artist', 'album', 'duration'] as const
 /** Auto-DJ's choices (Settings › Playback): days a song heard waits, songs before the same artist again. */
@@ -376,6 +379,8 @@ export interface Settings {
   /** Now Playing shows the music as moving bars (1/6-octave bands, crates/dsp viz.rs). */
   visualizer: boolean
   visualizerStyle: VisualizerStyle
+  /** How the visualizer weighs highs against lows. As measured by default: the tilt and the curves change the picture, a choice. */
+  visualizerWeighting: VizWeighting
   /** Videos whose song ends before the video (silence, end screen): the next song starts at the song's end (ends.ts). */
   earlyEnds: boolean
   /** Songs start on the music and end where it ends: silence at the start and end skipped (local: measured; YouTube: learned). */
@@ -499,6 +504,7 @@ export const DEFAULTS: Settings = {
   coverPulse: false,
   visualizer: false,
   visualizerStyle: 'led',
+  visualizerWeighting: 'flat',
   earlyEnds: true,
   skipSilence: false,
   levelling: 'off',
@@ -712,6 +718,7 @@ export function sanitize(raw: unknown): Settings {
     coverPulse: r.coverPulse === true,
     visualizer: r.visualizer === true,
     visualizerStyle: pick(r.visualizerStyle, VISUALIZER_STYLES, DEFAULTS.visualizerStyle),
+    visualizerWeighting: pick(r.visualizerWeighting, VIZ_WEIGHTINGS, DEFAULTS.visualizerWeighting),
     earlyEnds: r.earlyEnds !== false,
     skipSilence: r.skipSilence === true,
     levelling: pick(r.levelling, ['off', 'track', 'album'] as const, DEFAULTS.levelling),

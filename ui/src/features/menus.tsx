@@ -44,6 +44,7 @@ import {
   Queue,
   Radio,
   Repeat,
+  Scales,
   ShareNetwork,
   Shuffle,
   SlidersHorizontal,
@@ -65,7 +66,7 @@ import { api, playlistKey, type Edit, type LibraryPlaylist, type PluginInfo, typ
 import { bigTrackArt } from '../shared/art'
 import { loadFit } from '../shared/artfit'
 import { fileName, starsText } from '../shared/format'
-import { COVER_ORDERS, VISUALIZER_STYLES, type PlaylistCover, type PlaylistFolder } from '../shared/theme/theme'
+import { COVER_ORDERS, VISUALIZER_STYLES, VIZ_WEIGHTINGS, type PlaylistCover, type PlaylistFolder } from '../shared/theme/theme'
 import type { MenuEntry } from '../shared/ui/ContextMenu'
 import { SourceIcon } from '../shared/ui/SourceIcon'
 import type { Addon } from './addons/registry'
@@ -88,7 +89,7 @@ import { closeKaraoke, nowFix, nudgeLyrics, toggleKaraoke } from './player/karao
 import { canVizFull, toggleVizFull, useVizFull } from './player/vizFull'
 import { closeCoverFull, toggleCoverFull } from './player/coverFull'
 import { openShare } from './share/share'
-import { VISUALIZER_LABELS } from './player/vizLooks'
+import { VISUALIZER_LABELS, VIZ_WEIGHTING_LABELS } from './player/vizLooks'
 import { msg, tr, trn } from '../shared/i18n/i18n'
 import { ask, askText } from '../shared/ui/Ask'
 
@@ -725,13 +726,18 @@ export function playerMenu(): MenuEntry[] {
 
 /** The visualizer (the strip under the cover, its full screen): the look, full screen. */
 export function vizMenu(): MenuEntry[] {
-  const look = useSettings.getState().settings.visualizerStyle
+  const { visualizerStyle: look, visualizerWeighting: weighting } = useSettings.getState().settings
   const open = useVizFull.getState().open
   return [
     {
       label: tr('Visualizer style'),
       icon: <ChartBar size={16} />,
       items: VISUALIZER_STYLES.map((v) => ({ label: tr(VISUALIZER_LABELS[v]), checked: look === v, onSelect: () => useSettings.getState().update({ visualizerStyle: v }) })),
+    },
+    {
+      label: tr('Visualizer weighting'),
+      icon: <Scales size={16} />,
+      items: VIZ_WEIGHTINGS.map((v) => ({ label: tr(VIZ_WEIGHTING_LABELS[v]), checked: weighting === v, onSelect: () => useSettings.getState().update({ visualizerWeighting: v }) })),
     },
     { label: open ? tr('Leave full screen') : tr('Full screen'), icon: <ArrowsOutSimple size={16} />, disabled: !open && !canVizFull(), onSelect: toggleVizFull },
   ]

@@ -404,7 +404,10 @@ and `live.js`), and a look waits for the data it needs. Each look has a few sett
 colours, mirror, reflection.
 
 **High**
-- [ ] `S` Weighting (A or ITU-R 468) and a +3 dB/octave tilt option, so music looks level instead of bass-heavy.
+- [x] `S` Weighting (A or ITU-R 468) and a +3 dB/octave tilt option, so music looks level instead of bass-heavy.
+      (2026-11-02: Settings › Playback › Visualizer weighting or the right-click, `vizWeigh.ts`: As measured (default), +3 dB per octave,
+      A-weighting, ITU-R 468, added per band in the worker's scene, both twins alike. Tested against the A and 468
+      tables; over the demo the tilt lowers the bass third and lifts the treble third. Not judged by eye on real music.)
 - [ ] `S` Spectrum bars, realistic: 1/3 and 1/12 octave, reflection on a glossy floor, frequency and dB scales on hover. (LED
       segments with held, falling caps are in, 1/6 octave.)
 - [ ] `S` Colours from the theme or the cover (`coverTint.ts`): gradient along frequency, by level, or the cover's palette.

@@ -344,6 +344,11 @@ never: downloading, extracting, recording or exporting a platform's audio, or to
     bands). Both sides become one by power. Height = -78 dB (nothing) to -10 dB (full). Colour: the theme's text colour
     with an opacity per shade (never the accent, which is for playback), read from where it is drawn (Now Playing
     tints it with the cover). A saved `bars` look moves to `led` once (`DEFAULTS_VERSION` 9); the other looks stay.
+  - **Weighting** (Settings › Playback › Visualizer weighting, or the visualizer's right-click, 2026-11-02;
+    `vizWeigh.ts`, pure): dB added to each band before the columns, in the worker's scene. As measured (default: the
+    bands are energies, pink noise reads flat, so music's lows stand taller), +3 dB per octave around 1 kHz, IEC
+    A-weighting or ITU-R 468 (both 0 dB at 1 kHz). Over the demo's frames the tilt took the low third of the bars from
+    27 % lit to 18 % and the high third from 20 % to 22 %, the middle unchanged; not judged by eye on real music yet.
   - **Comfort**: `prefers-reduced-motion` or Animations off (`useCalm`): slower attack and release, a cap that sinks
     gently, one flash a second. Always: `flash.ts` limits the mean brightness of the bars to 3 flashes a second (a flash
     = a rise and a fall of at least 10 % of the range; past the budget the brightness may not turn back by 10 % until

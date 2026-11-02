@@ -1932,6 +1932,13 @@ const sv: Record<string, string> = {
   'Picture saved: {file}': 'Bilden sparades: {file}',
   'Back to {month}': 'Tillbaka till {month}',
   'Played a lot in {month}, hardly since': 'Mycket spelade i {month}, knappt sedan dess',
+  'Visualizer weighting': 'Visualiserarens viktning',
+  'Lows against highs: as measured, the highs lifted 3 dB per octave, or as the ear hears them': 'Bas mot diskant: som uppmätt, diskanten höjd 3 dB per oktav, eller som örat hör dem',
+  'tilt slope bass treble highs lows balance hearing curve a-weighting itu 468': 'lutning bas diskant höga låga balans hörsel kurva a-vägning itu 468',
+  'As measured': 'Som uppmätt',
+  '+3 dB per octave': '+3 dB per oktav',
+  'A-weighting': 'A-vägning',
+  'ITU-R 468': 'ITU-R 468',
 }
 
 export default sv

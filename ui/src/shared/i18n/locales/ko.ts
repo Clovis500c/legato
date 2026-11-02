@@ -1932,6 +1932,13 @@ const ko: Record<string, string> = {
   'Picture saved: {file}': '이미지 저장됨: {file}',
   'Back to {month}': '{month}로 돌아가기',
   'Played a lot in {month}, hardly since': '{month}에 자주 들었지만 그 후로 거의 듣지 않은 곡',
+  'Visualizer weighting': '비주얼라이저 가중치',
+  'Lows against highs: as measured, the highs lifted 3 dB per octave, or as the ear hears them': '저음과 고음 비교: 측정한 그대로, 고음을 옥타브마다 3 dB 올리기, 또는 귀에 들리는 대로',
+  'tilt slope bass treble highs lows balance hearing curve a-weighting itu 468': '기울기 슬로프 저음 고음 균형 청감 곡선 a 가중 itu 468',
+  'As measured': '측정 그대로',
+  '+3 dB per octave': '옥타브당 +3 dB',
+  'A-weighting': 'A 가중',
+  'ITU-R 468': 'ITU-R 468',
 }
 
 export default ko

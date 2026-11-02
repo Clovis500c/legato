@@ -8,7 +8,7 @@ import { api, type Contact } from '../../shared/api'
 import { formatBytes, formatCount, timeAgo } from '../../shared/format'
 import { PRIVACY_PAGE } from '../../shared/links'
 import { byVia, countText, VIA_LABELS, WHY_LABELS } from './privacy'
-import { ACCENTS, ADAPTIVE_LEVELS, COLUMNS, COVER_CACHE_MB, DEFAULTS, DJ_FRESH, DJ_GAPS, VISUALIZER_STYLES, type AdaptiveLevel, type Column, type Settings } from '../../shared/theme/theme'
+import { ACCENTS, ADAPTIVE_LEVELS, COLUMNS, COVER_CACHE_MB, DEFAULTS, DJ_FRESH, DJ_GAPS, VISUALIZER_STYLES, VIZ_WEIGHTINGS, type AdaptiveLevel, type Column, type Settings } from '../../shared/theme/theme'
 import { Button } from '../../shared/ui/Button'
 import { Led, Segmented, Toggle } from '../../shared/ui/controls'
 import { PageHeader } from '../../shared/ui/PageHeader'
@@ -16,7 +16,7 @@ import { onMenu } from '../../shared/ui/ContextMenu'
 import { curveLabels } from '../player/fade'
 import { usePlayer } from '../player/store'
 import { useLive } from '../player/live'
-import { VISUALIZER_LABELS } from '../player/vizLooks'
+import { VISUALIZER_LABELS, VIZ_WEIGHTING_LABELS } from '../player/vizLooks'
 import { SourcesView } from '../sources/SourcesView'
 import { SyncSection } from '../syncmode/SyncSection'
 import { OverlayPanel, RemotePanel } from '../remote/RemotePanel'
@@ -481,6 +481,17 @@ function SoundGroup() {
               value={s.visualizerStyle}
               onChange={(visualizerStyle) => update({ visualizerStyle })}
               options={VISUALIZER_STYLES.map((v) => ({ value: v, label: tr(VISUALIZER_LABELS[v]) }))}
+            />
+          </Row>
+        )}
+        {s.visualizer && (
+          <Row setting="visualizerWeighting" label={msg('Visualizer weighting')} sub={tr('Lows against highs: as measured, the highs lifted 3 dB per octave, or as the ear hears them')}>
+            <Segmented
+              label={tr('Visualizer weighting')}
+              className="max-w-md flex-wrap rounded-3xl!"
+              value={s.visualizerWeighting}
+              onChange={(visualizerWeighting) => update({ visualizerWeighting })}
+              options={VIZ_WEIGHTINGS.map((v) => ({ value: v, label: tr(VIZ_WEIGHTING_LABELS[v]) }))}
             />
           </Row>
         )}

@@ -1932,6 +1932,13 @@ const fr: Record<string, string> = {
   'Picture saved: {file}': 'Image enregistrée : {file}',
   'Back to {month}': 'Retour en {month}',
   'Played a lot in {month}, hardly since': 'Des titres très écoutés en {month}, presque plus depuis',
+  'Visualizer weighting': 'Pondération du visualiseur',
+  'Lows against highs: as measured, the highs lifted 3 dB per octave, or as the ear hears them': 'Les graves face aux aigus : tels que mesurés, les aigus relevés de 3 dB par octave, ou tels que l\'oreille les entend',
+  'tilt slope bass treble highs lows balance hearing curve a-weighting itu 468': 'inclinaison pente graves aigus équilibre oreille courbe pondération a uit itu 468',
+  'As measured': 'Tel que mesuré',
+  '+3 dB per octave': '+3 dB par octave',
+  'A-weighting': 'Pondération A',
+  'ITU-R 468': 'UIT-R 468',
 }
 
 export default fr

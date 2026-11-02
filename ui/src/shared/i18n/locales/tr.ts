@@ -1932,6 +1932,13 @@ const tr: Record<string, string> = {
   'Picture saved: {file}': 'Görsel kaydedildi: {file}',
   'Back to {month}': 'Yeniden {month}',
   'Played a lot in {month}, hardly since': '{month} döneminde çok dinlediğin, sonra pek çalmadığın şarkılar',
+  'Visualizer weighting': 'Görselleştirici ağırlıklandırması',
+  'Lows against highs: as measured, the highs lifted 3 dB per octave, or as the ear hears them': 'Basa karşı tiz: ölçüldüğü gibi, tizler oktav başına 3 dB yükseltilmiş ya da kulağın duyduğu gibi',
+  'tilt slope bass treble highs lows balance hearing curve a-weighting itu 468': 'eğim bas tiz yüksek alçak denge işitme eğrisi a ağırlıklı itu 468',
+  'As measured': 'Ölçüldüğü gibi',
+  '+3 dB per octave': 'Oktav başına +3 dB',
+  'A-weighting': 'A ağırlıklı',
+  'ITU-R 468': 'ITU-R 468',
 }
 
 export default tr
