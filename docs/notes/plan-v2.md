@@ -263,8 +263,10 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
         platform 36, build-tools 37.0.0, NDK r30 30.0.16248370, emulator + an API 36 Google APIs x86_64 image) and
         Rust's four Android targets. Nothing persistent: dot-source `C:\dev\android\env.ps1` (JAVA_HOME, ANDROID_HOME,
         NDK_HOME). Checked: a hello-world built for ARM64 by NDK r30.
-  - [ ] Android: Tauri's Android target, Windows-only parts gated, a keychain on Android, the multicast lock, a QR
-        scanner, playback in the background.
+  - [x] Android, first run (2026-11-02): Tauri's Android project, rustls on Android, desktop-only parts gated, the
+        multicast lock, the phone's name; a debug APK starts on the emulator with the phone layout.
+  - [ ] Android, still: the phone's texts and screens, a keychain on Android, the QR scanner, playback in the
+        background, pairing tried with a real phone, a signed release APK.
   - [ ] Beta with the APK (CI builds and signs it).
   - [ ] iPhone: waits for the owner's signing choice (Apple Developer Program, or an unsigned .ipa).
 

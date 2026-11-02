@@ -27,11 +27,23 @@ Microsoft's zip rather than winget's MSI: no admin prompt, no PATH change. Outsi
 virtualized one. Nothing persistent: dot-source `C:\dev\android\env.ps1` before an Android build. A hypervisor runs on
 this PC (Ryzen 5 5500, 32 GB), so the emulator should start; not tried yet.
 
-Next, in order: [plan-v2.md](plan-v2.md) › the mobile line's sub-steps: `pnpm tauri android init`, Windows-only parts
-gated off Android (WebView2, WASAPI, SMTC, tray, hotkeys, Run key, `keyring`: a store for Android), the multicast lock
-(mDNS on Android), a QR scanner (`tauri-plugin-barcode-scanner`, reads `legato://pair?`), the device's name and form on
-Android, playback in the background, a CI job building and signing the APK (a keystore as a GitHub secret: the owner's
-OK), then the Beta. Started after the weekly reset (2026-11-04 08:00 Paris), with workflows, per the owner's choice.
+Android, first run (2026-11-02 evening, the owner asked for it now): `src-tauri/gen/android` (Tauri's project; identifier
+`app.legato.mobile` and Android 8+ for AAudio in `tauri.android.conf.json`), a debug APK that starts on the emulator and
+shows the phone layout (AVD `legato36`, Android 16; headless: `emulator -avd legato36 -no-window -gpu
+swiftshader_indirect`). What it took: reqwest on rustls + ring + Mozilla's roots on Android (`tls()` in connectors,
+plugins and shield; native-tls elsewhere); desktop-only shell parts behind `#[cfg(desktop)]` (updates, single instance,
+window place, global keys, tray, the watch page), phone twins in `src-tauri/src/mobile/`; third-party plugins desktop
+only (rquickjs ships no Android bindings); no WebView cookie read on phones (Android's WebView threw on a page with no
+cookie and aborted the app); `MainActivity.kt`: the multicast lock (mDNS) and the page kept clear of the system bars;
+the phone's name from its system properties. Build: `. C:\dev\android\env.ps1; pnpm tauri android build --debug --target
+x86_64 --apk`, then `adb install -r src-tauri/gen/android/app/build/outputs/apk/universal/debug/app-universal-debug.apk`.
+
+Next, in order: the phone's texts and screens (the welcome and empty states speak of a PC, desktop-only Settings rows
+shown), secrets on Android (`keyring` has no store there: Android's Keystore), the QR scanner
+(`tauri-plugin-barcode-scanner`, reads `legato://pair?`), playback in the background (foreground service, media
+notification), pairing tried with a real phone on the same Wi-Fi (the emulator sits behind its own NAT), a release APK
+(arm64, signed: a keystore as a GitHub secret needs the owner's OK) and its CI job, then the Beta. Workflows after the
+weekly reset (2026-11-04 08:00 Paris), per the owner's choice.
 
 ## Autonomous run 2026-11-02 (done)
 
