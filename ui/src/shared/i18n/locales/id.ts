@@ -1892,6 +1892,21 @@ const id: Record<string, string> = {
   '{device} was playing “{title}”': '{device} sedang memutar “{title}”',
   'Resume here': 'Lanjutkan di sini',
   'Resume “{title}” from {device}': 'Lanjutkan “{title}” dari {device}',
+  'Google sign-in': 'Masuk dengan Google',
+  'Scrobbling': 'Scrobbling',
+  'Ad and tracker lists': 'Daftar iklan dan pelacak',
+  'Other': 'Lainnya',
+  'The app': 'Aplikasi',
+  'App windows': 'Jendela aplikasi',
+  '{n} connection': '{n} koneksi',
+  '{n} connections': '{n} koneksi',
+  '{n} request': '{n} permintaan',
+  '{n} requests': '{n} permintaan',
+  'Blocked: {n}': 'Diblokir: {n}',
+  'Nothing yet today.': 'Belum ada hari ini.',
+  'Every host Legato talked to today, and why: the app itself, its windows (YouTube’s player, sign-in pages) and plugins. Kept in memory on this PC only.': 'Setiap host yang dihubungi Legato hari ini, dan alasannya: aplikasi itu sendiri, jendelanya (pemutar YouTube, halaman masuk), dan plugin. Hanya disimpan di memori PC ini.',
+  'privacy network hosts servers connections today': 'privasi jaringan host server koneksi hari ini',
+  'privacy network hosts requests blocked pages': 'privasi jaringan host permintaan diblokir halaman',
 }
 
 export default id

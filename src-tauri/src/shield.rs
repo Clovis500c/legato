@@ -22,6 +22,15 @@ pub fn browser_keys_off(webview: &tauri::Webview) -> tauri::Result<()> {
 }
 
 pub fn install(webview: &tauri::Webview, shield: Arc<Shield>) -> tauri::Result<()> {
+    hook(webview, Some(shield))
+}
+
+/// A sign-in or Connect window: its requests noted (Settings › Privacy), none blocked (their pages stay as they are).
+pub fn watch(webview: &tauri::Webview) -> tauri::Result<()> {
+    hook(webview, None)
+}
+
+fn hook(webview: &tauri::Webview, shield: Option<Arc<Shield>>) -> tauri::Result<()> {
     webview.with_webview(move |wv| unsafe {
         let Ok(core) = wv.controller().CoreWebView2() else { return };
         let Ok(env) = core.cast::<ICoreWebView2_2>().and_then(|c| c.Environment()) else { return };
@@ -42,9 +51,16 @@ pub fn install(webview: &tauri::Webview, shield: Arc<Shield>) -> tauri::Result<(
             let uri = take_pwstr(uri);
             let mut ctx = COREWEBVIEW2_WEB_RESOURCE_CONTEXT::default();
             args.ResourceContext(&mut ctx)?;
-            let mut referer = PWSTR::null();
-            let referer = req.Headers()?.GetHeader(&HSTRING::from("Referer"), &mut referer).map(|_| take_pwstr(referer)).unwrap_or_default();
-            if shield.should_block(&uri, &referer, kind(ctx)) {
+            let blocked = match &shield {
+                Some(shield) => {
+                    let mut referer = PWSTR::null();
+                    let referer = req.Headers()?.GetHeader(&HSTRING::from("Referer"), &mut referer).map(|_| take_pwstr(referer)).unwrap_or_default();
+                    shield.should_block(&uri, &referer, kind(ctx))
+                }
+                None => false,
+            };
+            music_core::netlog::note_url(&uri, music_core::netlog::Via::Window, blocked);
+            if blocked {
                 args.SetResponse(&env.CreateWebResourceResponse(None, 403, &HSTRING::from("Blocked"), &HSTRING::new())?)?;
             }
             Ok(())

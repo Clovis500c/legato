@@ -72,7 +72,7 @@ impl ArtCache {
     pub fn new(dir: PathBuf, cap: u64) -> Self {
         let _ = std::fs::create_dir_all(&dir);
         // Redirects stay on image hosts too.
-        let http = reqwest::Client::builder().redirect(reqwest::redirect::Policy::custom(|a| if allowed(a.url().as_str()) { a.follow() } else { a.stop() })).build().unwrap_or_default();
+        let http = reqwest::Client::builder().dns_resolver(crate::Noted).redirect(reqwest::redirect::Policy::custom(|a| if allowed(a.url().as_str()) { a.follow() } else { a.stop() })).build().unwrap_or_default();
         Self { dir, cap: Arc::new(cap.into()), used: Arc::default(), pruning: Arc::default(), http, hot: Lru::new(HOT_BUDGET), inflight: Mutex::default(), resizers: Semaphore::new(RESIZERS) }
     }
 

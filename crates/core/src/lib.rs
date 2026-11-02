@@ -19,5 +19,6 @@ pub mod songlist;
 pub mod spotify_export;
 pub mod sync;
 pub mod syncmode;
+pub mod netlog;
 pub mod remote;
 pub mod themefile;

@@ -1892,6 +1892,21 @@ const nl: Record<string, string> = {
   '{device} was playing “{title}”': '{device} speelde ‘{title}’',
   'Resume here': 'Hier verdergaan',
   'Resume “{title}” from {device}': '‘{title}’ van {device} hervatten',
+  'Google sign-in': 'Inloggen bij Google',
+  'Scrobbling': 'Scrobbelen',
+  'Ad and tracker lists': 'Advertentie- en trackerlijsten',
+  'Other': 'Overig',
+  'The app': 'De app',
+  'App windows': 'App-vensters',
+  '{n} connection': '{n} verbinding',
+  '{n} connections': '{n} verbindingen',
+  '{n} request': '{n} verzoek',
+  '{n} requests': '{n} verzoeken',
+  'Blocked: {n}': 'Geblokkeerd: {n}',
+  'Nothing yet today.': 'Vandaag nog niets.',
+  'Every host Legato talked to today, and why: the app itself, its windows (YouTube’s player, sign-in pages) and plugins. Kept in memory on this PC only.': 'Elke host waarmee Legato vandaag contact had, en waarom: de app zelf, haar vensters (de speler van YouTube, inlogpagina’s) en plug-ins. Alleen in het geheugen van deze pc.',
+  'privacy network hosts servers connections today': 'privacy netwerk hosts servers verbindingen vandaag',
+  'privacy network hosts requests blocked pages': 'privacy netwerk hosts verzoeken geblokkeerd pagina’s',
 }
 
 export default nl

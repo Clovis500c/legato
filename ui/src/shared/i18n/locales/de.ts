@@ -1892,6 +1892,21 @@ const de: Record<string, string> = {
   '{device} was playing “{title}”': '{device} spielte „{title}“',
   'Resume here': 'Hier fortsetzen',
   'Resume “{title}” from {device}': '„{title}“ von {device} fortsetzen',
+  'Google sign-in': 'Google-Anmeldung',
+  'Scrobbling': 'Scrobbling',
+  'Ad and tracker lists': 'Werbe- und Trackerlisten',
+  'Other': 'Sonstige',
+  'The app': 'Die App',
+  'App windows': 'App-Fenster',
+  '{n} connection': '{n} Verbindung',
+  '{n} connections': '{n} Verbindungen',
+  '{n} request': '{n} Anfrage',
+  '{n} requests': '{n} Anfragen',
+  'Blocked: {n}': 'Blockiert: {n}',
+  'Nothing yet today.': 'Heute noch nichts.',
+  'Every host Legato talked to today, and why: the app itself, its windows (YouTube’s player, sign-in pages) and plugins. Kept in memory on this PC only.': 'Jeder Host, mit dem Legato heute gesprochen hat, und warum: die App selbst, ihre Fenster (YouTubes Player, Anmeldeseiten) und Plugins. Nur im Arbeitsspeicher dieses PCs.',
+  'privacy network hosts servers connections today': 'Datenschutz Netzwerk Hosts Server Verbindungen heute',
+  'privacy network hosts requests blocked pages': 'Datenschutz Netzwerk Hosts Anfragen blockiert Seiten',
 }
 
 export default de

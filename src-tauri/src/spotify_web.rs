@@ -48,6 +48,7 @@ pub fn open(app: &AppHandle) -> tauri::Result<()> {
     WebviewWindowBuilder::new(app, LABEL, WebviewUrl::External(Url::parse(page).expect("valid url"))).additional_browser_args(&crate::background::browser_args()).title("Spotify").inner_size(1100.0, 760.0).initialization_script(music_shield::SPOTIFY_SCRIPT).build()?;
     #[cfg(windows)]
     if let Some(wv) = app.get_webview(LABEL) {
+        let _ = crate::shield::watch(&wv);
         crate::ytwatch::on_message(&wv, |source, message| {
             if let Some(m) = spotify_page::parse(source, message)
                 && let Some(inbox) = INBOX.lock().unwrap().as_ref()

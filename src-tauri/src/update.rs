@@ -187,6 +187,8 @@ impl Updater {
     /// One pass on one channel; ends with the state it reached (up to date, available, ready or error).
     async fn run(&self, app: &AppHandle, download: bool, channel: Channel) {
         self.set(app, State::Checking);
+        // The updater's own client: noted here (Settings › Privacy).
+        music_core::netlog::note("github.com", music_core::netlog::Via::App, false);
         let found = match updater_for(app, channel) {
             Ok(u) => u.check().await,
             Err(e) => Err(e),
@@ -202,6 +204,7 @@ impl Updater {
         }
         self.set(app, State::Downloading { version: version.clone(), percent: 0 });
         let (mut got, mut shown) = (0usize, 0u8);
+        music_core::netlog::note("github.com", music_core::netlog::Via::App, false);
         let bytes = update
             .download(
                 |chunk, total| {

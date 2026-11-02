@@ -1892,6 +1892,21 @@ const it: Record<string, string> = {
   '{device} was playing “{title}”': '{device} stava riproducendo «{title}»',
   'Resume here': 'Riprendi qui',
   'Resume “{title}” from {device}': 'Riprendi «{title}» da {device}',
+  'Google sign-in': 'Accesso Google',
+  'Scrobbling': 'Scrobbling',
+  'Ad and tracker lists': 'Elenchi di annunci e tracker',
+  'Other': 'Altro',
+  'The app': 'L’app',
+  'App windows': 'Finestre dell’app',
+  '{n} connection': '{n} connessione',
+  '{n} connections': '{n} connessioni',
+  '{n} request': '{n} richiesta',
+  '{n} requests': '{n} richieste',
+  'Blocked: {n}': 'Bloccate: {n}',
+  'Nothing yet today.': 'Ancora niente oggi.',
+  'Every host Legato talked to today, and why: the app itself, its windows (YouTube’s player, sign-in pages) and plugins. Kept in memory on this PC only.': 'Ogni host con cui Legato ha parlato oggi, e perché: l’app stessa, le sue finestre (il player di YouTube, le pagine di accesso) e i plugin. Tenuto solo nella memoria di questo PC.',
+  'privacy network hosts servers connections today': 'privacy rete host server connessioni oggi',
+  'privacy network hosts requests blocked pages': 'privacy rete host richieste bloccate pagine',
 }
 
 export default it

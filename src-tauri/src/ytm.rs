@@ -29,6 +29,10 @@ pub fn open(app: &AppHandle, add_account: bool) -> tauri::Result<()> {
     }
     let url = Url::parse(if add_account { ADD_ACCOUNT } else { SIGN_IN }).expect("valid url");
     WebviewWindowBuilder::new(app, LABEL, WebviewUrl::External(url)).additional_browser_args(&crate::background::browser_args()).title("Sign in with Google · YouTube Music").inner_size(520.0, 720.0).build()?;
+    #[cfg(windows)]
+    if let Some(wv) = app.get_webview(LABEL) {
+        let _ = crate::shield::watch(&wv);
+    }
     let app = app.clone();
     std::thread::spawn(move || {
         while let Some(w) = app.get_webview_window(LABEL) {
@@ -55,6 +59,8 @@ pub async fn refresh(app: &AppHandle) -> bool {
     }
     let url = Url::parse(SIGN_IN).expect("valid url");
     let Ok(w) = WebviewWindowBuilder::new(app, REFRESH, WebviewUrl::External(url)).additional_browser_args(&crate::background::browser_args()).visible(false).build() else { return false };
+    #[cfg(windows)]
+    let _ = crate::shield::watch(w.as_ref());
     let mut back = false;
     for _ in 0..15 {
         tokio::time::sleep(Duration::from_secs(2)).await;

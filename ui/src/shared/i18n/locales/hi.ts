@@ -1892,6 +1892,21 @@ const hi: Record<string, string> = {
   '{device} was playing “{title}”': '{device} पर “{title}” चल रहा था',
   'Resume here': 'यहाँ जारी रखें',
   'Resume “{title}” from {device}': '{device} से “{title}” जारी रखें',
+  'Google sign-in': 'Google साइन-इन',
+  'Scrobbling': 'स्क्रॉबलिंग',
+  'Ad and tracker lists': 'विज्ञापन और ट्रैकर सूचियाँ',
+  'Other': 'अन्य',
+  'The app': 'ऐप',
+  'App windows': 'ऐप की विंडो',
+  '{n} connection': '{n} कनेक्शन',
+  '{n} connections': '{n} कनेक्शन',
+  '{n} request': '{n} अनुरोध',
+  '{n} requests': '{n} अनुरोध',
+  'Blocked: {n}': 'ब्लॉक किए गए: {n}',
+  'Nothing yet today.': 'आज अभी तक कुछ नहीं।',
+  'Every host Legato talked to today, and why: the app itself, its windows (YouTube’s player, sign-in pages) and plugins. Kept in memory on this PC only.': 'आज Legato ने जिन होस्ट से बात की, और क्यों: ऐप ख़ुद, उसकी विंडो (YouTube का प्लेयर, साइन-इन पेज) और प्लगइन। सिर्फ़ इसी PC की मेमोरी में रखा जाता है।',
+  'privacy network hosts servers connections today': 'गोपनीयता नेटवर्क होस्ट सर्वर कनेक्शन आज',
+  'privacy network hosts requests blocked pages': 'गोपनीयता नेटवर्क होस्ट अनुरोध ब्लॉक पेज',
 }
 
 export default hi

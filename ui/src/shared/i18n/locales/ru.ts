@@ -1892,6 +1892,21 @@ const ru: Record<string, string> = {
   '{device} was playing “{title}”': 'На {device} играло «{title}»',
   'Resume here': 'Продолжить здесь',
   'Resume “{title}” from {device}': 'Продолжить «{title}» с {device}',
+  'Google sign-in': 'Вход в Google',
+  'Scrobbling': 'Скробблинг',
+  'Ad and tracker lists': 'Списки рекламы и трекеров',
+  'Other': 'Другое',
+  'The app': 'Приложение',
+  'App windows': 'Окна приложения',
+  '{n} connection': '{n} подключение',
+  '{n} connections': 'Подключений: {n}',
+  '{n} request': '{n} запрос',
+  '{n} requests': 'Запросов: {n}',
+  'Blocked: {n}': 'Заблокировано: {n}',
+  'Nothing yet today.': 'Сегодня пока ничего.',
+  'Every host Legato talked to today, and why: the app itself, its windows (YouTube’s player, sign-in pages) and plugins. Kept in memory on this PC only.': 'Каждый хост, с которым Legato связывался сегодня, и зачем: само приложение, его окна (плеер YouTube, страницы входа) и плагины. Хранится только в памяти этого ПК.',
+  'privacy network hosts servers connections today': 'конфиденциальность сеть хосты серверы подключения сегодня',
+  'privacy network hosts requests blocked pages': 'конфиденциальность сеть хосты запросы заблокировано страницы',
 }
 
 export default ru

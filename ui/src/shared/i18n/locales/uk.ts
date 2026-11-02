@@ -1892,6 +1892,21 @@ const uk: Record<string, string> = {
   '{device} was playing “{title}”': 'На {device} грало «{title}»',
   'Resume here': 'Продовжити тут',
   'Resume “{title}” from {device}': 'Продовжити «{title}» з {device}',
+  'Google sign-in': 'Вхід у Google',
+  'Scrobbling': 'Скроблінг',
+  'Ad and tracker lists': 'Списки реклами й трекерів',
+  'Other': 'Інше',
+  'The app': 'Застосунок',
+  'App windows': 'Вікна застосунку',
+  '{n} connection': '{n} з’єднання',
+  '{n} connections': 'З’єднань: {n}',
+  '{n} request': '{n} запит',
+  '{n} requests': 'Запитів: {n}',
+  'Blocked: {n}': 'Заблоковано: {n}',
+  'Nothing yet today.': 'Сьогодні поки нічого.',
+  'Every host Legato talked to today, and why: the app itself, its windows (YouTube’s player, sign-in pages) and plugins. Kept in memory on this PC only.': 'Кожен хост, з яким Legato зв’язувався сьогодні, і навіщо: сам застосунок, його вікна (плеєр YouTube, сторінки входу) і плагіни. Зберігається лише в пам’яті цього ПК.',
+  'privacy network hosts servers connections today': 'приватність мережа хости сервери з’єднання сьогодні',
+  'privacy network hosts requests blocked pages': 'приватність мережа хости запити заблоковано сторінки',
 }
 
 export default uk

@@ -61,6 +61,8 @@ export const SETTINGS_INDEX: SettingEntry[] = [
   { section: 'sources', label: msg('Apple Music'), keywords: msg('apple itunes import playlists favorite songs sign in') },
   { section: 'sources', label: msg('Local files'), keywords: msg('music folder mp3 flac scan') },
   { section: 'shield', label: msg('Block ads and trackers'), keywords: msg('adblock shield easylist privacy') },
+  { section: 'privacy', label: msg('The app'), keywords: msg('privacy network hosts servers connections today') },
+  { section: 'privacy', label: msg('App windows'), keywords: msg('privacy network hosts requests blocked pages') },
   ...ACTIONS.map((a): SettingEntry => ({ section: 'shortcuts', label: a.label, keywords: msg('keyboard shortcut hotkey global background'), extra: a.keys ? comboLabel(a.keys) : undefined })),
   { section: 'about', label: msg('Automatic updates'), keywords: msg('update version upgrade install new release') },
   { section: 'about', label: msg('App status'), keywords: msg('stats cache memory songs playlists listens') },

@@ -153,7 +153,7 @@ impl Deezer {
 
     /// Short link → the list it leads to. One redirect, read here and followed only to a Deezer page.
     async fn resolve(&self, code: &str) -> Result<(Kind, u64)> {
-        let client = reqwest::Client::builder().redirect(reqwest::redirect::Policy::none()).timeout(REQUEST_TIMEOUT).build()?;
+        let client = reqwest::Client::builder().dns_resolver(crate::Noted).redirect(reqwest::redirect::Policy::none()).timeout(REQUEST_TIMEOUT).build()?;
         let res = client.get(format!("{}/s/{code}", self.link)).send().await?;
         let to = res.headers().get(reqwest::header::LOCATION).and_then(|v| v.to_str().ok()).filter(|_| res.status().is_redirection());
         let to = to.and_then(|l| Url::parse(&self.link).ok()?.join(l).ok());

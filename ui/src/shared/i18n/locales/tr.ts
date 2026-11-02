@@ -1892,6 +1892,21 @@ const tr: Record<string, string> = {
   '{device} was playing “{title}”': '{device} cihazında “{title}” çalıyordu',
   'Resume here': 'Burada devam et',
   'Resume “{title}” from {device}': '{device} cihazından “{title}” ile devam et',
+  'Google sign-in': 'Google ile oturum açma',
+  'Scrobbling': 'Scrobbling',
+  'Ad and tracker lists': 'Reklam ve izleyici listeleri',
+  'Other': 'Diğer',
+  'The app': 'Uygulama',
+  'App windows': 'Uygulama pencereleri',
+  '{n} connection': '{n} bağlantı',
+  '{n} connections': '{n} bağlantı',
+  '{n} request': '{n} istek',
+  '{n} requests': '{n} istek',
+  'Blocked: {n}': 'Engellenen: {n}',
+  'Nothing yet today.': 'Bugün henüz bir şey yok.',
+  'Every host Legato talked to today, and why: the app itself, its windows (YouTube’s player, sign-in pages) and plugins. Kept in memory on this PC only.': 'Legato’nun bugün iletişim kurduğu her sunucu ve nedeni: uygulamanın kendisi, pencereleri (YouTube oynatıcısı, oturum açma sayfaları) ve eklentiler. Yalnızca bu bilgisayarın belleğinde tutulur.',
+  'privacy network hosts servers connections today': 'gizlilik ağ sunucular bağlantılar bugün',
+  'privacy network hosts requests blocked pages': 'gizlilik ağ sunucular istekler engellenen sayfalar',
 }
 
 export default tr

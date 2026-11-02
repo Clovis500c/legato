@@ -1,10 +1,13 @@
 import { ShortcutsSection } from './ShortcutsSection'
-import { ArrowCounterClockwise, ArrowsClockwise, CaretDown, Check, Copy, GearSix, Info, Keyboard, MagnifyingGlass, PaintBrush, Plugs, Plus, ShieldCheck, SpeakerHigh } from '@phosphor-icons/react'
+import { ArrowCounterClockwise, ArrowSquareOut, ArrowsClockwise, CaretDown, Check, Copy, Fingerprint, GearSix, Info, Keyboard, MagnifyingGlass, PaintBrush, Plugs, Plus, ShieldCheck, SpeakerHigh } from '@phosphor-icons/react'
+import { openUrl } from '@tauri-apps/plugin-opener'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { useSettings } from '../../app/settings'
 import { useStore, type SettingsSection } from '../../app/store'
-import { api } from '../../shared/api'
-import { formatBytes, formatCount } from '../../shared/format'
+import { api, type Contact } from '../../shared/api'
+import { formatBytes, formatCount, timeAgo } from '../../shared/format'
+import { PRIVACY_PAGE } from '../../shared/links'
+import { byVia, countText, VIA_LABELS, WHY_LABELS } from './privacy'
 import { ACCENTS, ADAPTIVE_LEVELS, COLUMNS, COVER_CACHE_MB, DEFAULTS, DJ_FRESH, DJ_GAPS, VISUALIZER_STYLES, type AdaptiveLevel, type Column, type Settings } from '../../shared/theme/theme'
 import { Button } from '../../shared/ui/Button'
 import { Led, Segmented, Toggle } from '../../shared/ui/controls'
@@ -35,6 +38,7 @@ const sections: { id: SettingsSection; label: string; icon: ReactNode }[] = [
   { id: 'sources', label: msg('Accounts'), icon: <Plugs size={15} /> },
   { id: 'sync', label: msg('Sync Mode'), icon: <ArrowsClockwise size={15} /> },
   { id: 'shield', label: msg('Shield'), icon: <ShieldCheck size={15} /> },
+  { id: 'privacy', label: msg('Privacy'), icon: <Fingerprint size={15} /> },
   { id: 'shortcuts', label: msg('Shortcuts'), icon: <Keyboard size={15} /> },
   { id: 'about', label: msg('About'), icon: <Info size={15} /> },
 ]
@@ -353,6 +357,48 @@ function ShieldSection() {
         </div>
       )}
       <p className="text-xs text-ink-2">{tr('Note: YouTube’s terms forbid blocking ads in its player. Risks: YouTube may restrict your account, and playback breaks when YouTube changes its player. YouTube Premium removes ads without this risk.')}</p>
+    </div>
+  )
+}
+
+/** Every host talked to today (music_core::netlog), refreshed while open. */
+function PrivacySection() {
+  const [contacts, setContacts] = useState<Contact[] | null>(null)
+  useEffect(() => {
+    const tick = () => api.netToday(-new Date().getTimezoneOffset() * 60).then(setContacts, () => setContacts([]))
+    void tick()
+    const id = setInterval(tick, 3000)
+    return () => clearInterval(id)
+  }, [])
+  const groups = byVia(contacts ?? [])
+  return (
+    <div className="flex max-w-190 flex-col gap-6">
+      <div className="flex flex-col items-start gap-3">
+        <p className="text-[0.8125rem] text-ink-2">{tr('Every host Legato talked to today, and why: the app itself, its windows (YouTube’s player, sign-in pages) and plugins. Kept in memory on this PC only.')}</p>
+        <Button variant="ghost" onClick={() => void openUrl(PRIVACY_PAGE).catch(() => {})}>
+          <ArrowSquareOut size={14} /> {tr('What leaves your PC')}
+        </Button>
+      </div>
+      {contacts && !groups.length && <p className="text-[0.8125rem] text-ink-2">{tr('Nothing yet today.')}</p>}
+      {groups.map((g) => (
+        <Group key={g.via} title={VIA_LABELS[g.via]} count={g.rows.length}>
+          <div className="divide-y divide-line rounded-xl border border-line bg-raised">
+            {g.rows.map((c) => (
+              <div key={c.host + c.why} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-0.5 px-4 py-2.5 text-[0.8125rem]">
+                <span title={c.host} className="truncate font-mono">
+                  {c.host}
+                </span>
+                <span className="text-right text-ink-2 tabular-nums">{countText(c)}</span>
+                <span className="truncate text-ink-2">
+                  {tr(WHY_LABELS[c.why])}
+                  {c.blocked > 0 && ` · ${tr('Blocked: {n}', { n: formatCount(c.blocked) })}`}
+                </span>
+                <span className="text-right text-xs text-ink-3">{timeAgo(c.last)}</span>
+              </div>
+            ))}
+          </div>
+        </Group>
+      ))}
     </div>
   )
 }
@@ -774,6 +820,7 @@ export function SettingsView({ section }: { section: SettingsSection }) {
           {section === 'sources' && <SourcesView />}
           {section === 'sync' && <SyncSection />}
           {section === 'shield' && <ShieldSection />}
+          {section === 'privacy' && <PrivacySection />}
           {section === 'shortcuts' && <ShortcutsSection />}
           {section === 'about' && <AboutSection />}
         </div>

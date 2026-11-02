@@ -1892,6 +1892,21 @@ const sv: Record<string, string> = {
   '{device} was playing “{title}”': '{device} spelade ”{title}”',
   'Resume here': 'Fortsätt här',
   'Resume “{title}” from {device}': 'Fortsätt ”{title}” från {device}',
+  'Google sign-in': 'Google-inloggning',
+  'Scrobbling': 'Scrobbling',
+  'Ad and tracker lists': 'Listor över annonser och spårare',
+  'Other': 'Övrigt',
+  'The app': 'Appen',
+  'App windows': 'Appens fönster',
+  '{n} connection': '{n} anslutning',
+  '{n} connections': '{n} anslutningar',
+  '{n} request': '{n} förfrågan',
+  '{n} requests': '{n} förfrågningar',
+  'Blocked: {n}': 'Blockerade: {n}',
+  'Nothing yet today.': 'Inget ännu i dag.',
+  'Every host Legato talked to today, and why: the app itself, its windows (YouTube’s player, sign-in pages) and plugins. Kept in memory on this PC only.': 'Varje värd som Legato kontaktade i dag, och varför: appen själv, dess fönster (YouTubes spelare, inloggningssidor) och tillägg. Sparas bara i den här datorns minne.',
+  'privacy network hosts servers connections today': 'integritet nätverk värdar servrar anslutningar i dag',
+  'privacy network hosts requests blocked pages': 'integritet nätverk värdar förfrågningar blockerade sidor',
 }
 
 export default sv

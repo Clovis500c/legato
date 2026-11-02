@@ -138,6 +138,7 @@ pub async fn spotify_export_open(app: AppHandle, state: State<'_, AppState>) -> 
     // No channel, no signals: elsewhere nothing to tell a silent page from a working one.
     #[cfg(windows)]
     if let Some(wv) = app.get_webview(LABEL) {
+        let _ = crate::shield::watch(&wv);
         let (tx, rx) = tokio::sync::mpsc::unbounded_channel();
         *SIGNALS.lock().unwrap() = Some(tx);
         NAMES.lock().unwrap().clear();

@@ -1892,6 +1892,21 @@ const zh: Record<string, string> = {
   '{device} was playing “{title}”': '{device} 上次播放的是“{title}”',
   'Resume here': '在此继续',
   'Resume “{title}” from {device}': '继续播放 {device} 上的“{title}”',
+  'Google sign-in': 'Google 登录',
+  'Scrobbling': '听歌记录同步',
+  'Ad and tracker lists': '广告与跟踪器列表',
+  'Other': '其他',
+  'The app': '应用本身',
+  'App windows': '应用窗口',
+  '{n} connection': '{n} 个连接',
+  '{n} connections': '{n} 个连接',
+  '{n} request': '{n} 个请求',
+  '{n} requests': '{n} 个请求',
+  'Blocked: {n}': '已拦截：{n}',
+  'Nothing yet today.': '今天还没有。',
+  'Every host Legato talked to today, and why: the app itself, its windows (YouTube’s player, sign-in pages) and plugins. Kept in memory on this PC only.': 'Legato 今天联系过的每个主机及原因：应用本身、它的窗口（YouTube 播放器、登录页面）和插件。仅保存在这台电脑的内存中。',
+  'privacy network hosts servers connections today': '隐私 网络 主机 服务器 连接 今天',
+  'privacy network hosts requests blocked pages': '隐私 网络 主机 请求 已拦截 页面',
 }
 
 export default zh

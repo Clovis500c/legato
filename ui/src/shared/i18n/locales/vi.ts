@@ -1892,6 +1892,21 @@ const vi: Record<string, string> = {
   '{device} was playing “{title}”': '{device} đang phát “{title}”',
   'Resume here': 'Tiếp tục tại đây',
   'Resume “{title}” from {device}': 'Tiếp tục “{title}” từ {device}',
+  'Google sign-in': 'Đăng nhập Google',
+  'Scrobbling': 'Scrobble',
+  'Ad and tracker lists': 'Danh sách quảng cáo và trình theo dõi',
+  'Other': 'Khác',
+  'The app': 'Ứng dụng',
+  'App windows': 'Cửa sổ ứng dụng',
+  '{n} connection': '{n} kết nối',
+  '{n} connections': '{n} kết nối',
+  '{n} request': '{n} yêu cầu',
+  '{n} requests': '{n} yêu cầu',
+  'Blocked: {n}': 'Đã chặn: {n}',
+  'Nothing yet today.': 'Hôm nay chưa có gì.',
+  'Every host Legato talked to today, and why: the app itself, its windows (YouTube’s player, sign-in pages) and plugins. Kept in memory on this PC only.': 'Mọi máy chủ Legato đã liên lạc hôm nay, và lý do: chính ứng dụng, các cửa sổ của nó (trình phát YouTube, trang đăng nhập) và plugin. Chỉ lưu trong bộ nhớ của PC này.',
+  'privacy network hosts servers connections today': 'quyền riêng tư mạng máy chủ kết nối hôm nay',
+  'privacy network hosts requests blocked pages': 'quyền riêng tư mạng máy chủ yêu cầu bị chặn trang',
 }
 
 export default vi

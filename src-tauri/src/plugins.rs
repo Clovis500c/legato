@@ -202,7 +202,12 @@ async fn shell_call(app: &AppHandle, call: &Call) -> Result<Value, String> {
         }
         "net.fetch" => {
             let req: Request = serde_json::from_value(a.clone()).map_err(|_| "net.fetch: bad request".to_string())?;
-            app.state::<Plugins>().gateway.fetch(&req).await.map(|r| json!(r)).map_err(|e| e.to_string())
+            let r = app.state::<Plugins>().gateway.fetch(&req).await.map(|r| json!(r)).map_err(|e| e.to_string());
+            // Answered: the host was reached (a refused one never was). Settings › Privacy.
+            if r.is_ok() {
+                music_core::netlog::note_url(&req.url, music_core::netlog::Via::Plugin, false);
+            }
+            r
         }
         m => Err(format!("Unknown method: {m}")),
     }

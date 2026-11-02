@@ -16,8 +16,8 @@ section. Same rules as the run below, except the push at the end, which the owne
 Order (each step: code, tests, `pnpm check` green, one commit on `platforms`, line ticked in plan-v2):
 
 1. Done: Exportify's real playlist names; library health page; the mobile spec; release notes grouped; phone remote;
-   mobile phase 1 (the phone layout); pick up on the other PC. Jump List dropped for this run (installed app only, can't be checked here).
-2. Next (from 73 % weekly at 11:15): the privacy page in the app; accessibility pass.
+   mobile phase 1 (the phone layout); pick up on the other PC; the privacy page in the app. Jump List dropped for this run (installed app only, can't be checked here).
+2. Next: accessibility pass (`M`), or smaller lines first if the week is short.
 3. Then Features › Medium without a new account, Visualizer v2 › High `S` lines, Optimisation, Low.
 4. Left for the owner's ears: same loudness across sources (by ear beside YouTube, like Volume levelling).
 
@@ -33,6 +33,7 @@ Done in this run (newest last; `git log` has the hashes), none tried in the real
 - Library health page (Settings › General, the search bar): files gone, videos that can't play, no cover, missing info.
 - Release notes grouped (New, Fixed, Faster), shown as lists in What's new, headers in the user's language.
 - Phone remote (Settings › Playback, off, per PC): a page this PC serves on its network (QR code, secret in the link, private addresses only): cover, title, play / pause, skip, seek, Up next. Not tried on a real phone: the Windows firewall asks once.
+- Settings › Privacy: every host the app, its windows and plugins talked to today, and why (`music_core::netlog`: the connectors' resolver `Noted`, the WebView2 hook on every window, `shield::watch` observing sign-in windows without blocking). Checked over the demo with invented rows; the real log not seen in the running app.
 - Pick up on the other PC (Sync Mode): the snapshot carries the saved session's song, position and save time (`now`); another PC where nothing plays offers it when newer than its own (a toast once, then "Resume … from …" in the idle player bar). Not tried between two real PCs.
 - Mobile phase 1, the phone layout (below 640 px only: no desktop window gets it): bottom tabs, mini player, Your library tab, one-column Now Playing. Checked over the demo at 375 × 812 (`demo` in .claude/launch.json).
 - The owner's new ask mid-run (2026-11-02): a mobile version, Rust reused. Spec and phases in

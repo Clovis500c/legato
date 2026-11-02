@@ -1892,6 +1892,21 @@ const ko: Record<string, string> = {
   '{device} was playing “{title}”': '{device}에서 “{title}”을(를) 재생하고 있었습니다',
   'Resume here': '여기서 이어 듣기',
   'Resume “{title}” from {device}': '{device}의 “{title}” 이어 듣기',
+  'Google sign-in': 'Google 로그인',
+  'Scrobbling': '스크로블링',
+  'Ad and tracker lists': '광고 및 추적기 목록',
+  'Other': '기타',
+  'The app': '앱',
+  'App windows': '앱 창',
+  '{n} connection': '연결 {n}개',
+  '{n} connections': '연결 {n}개',
+  '{n} request': '요청 {n}개',
+  '{n} requests': '요청 {n}개',
+  'Blocked: {n}': '차단됨: {n}',
+  'Nothing yet today.': '오늘은 아직 없습니다.',
+  'Every host Legato talked to today, and why: the app itself, its windows (YouTube’s player, sign-in pages) and plugins. Kept in memory on this PC only.': '오늘 Legato가 통신한 모든 호스트와 그 이유: 앱 자체, 앱의 창(YouTube 플레이어, 로그인 페이지), 플러그인. 이 PC의 메모리에만 보관됩니다.',
+  'privacy network hosts servers connections today': '개인정보 네트워크 호스트 서버 연결 오늘',
+  'privacy network hosts requests blocked pages': '개인정보 네트워크 호스트 요청 차단 페이지',
 }
 
 export default ko

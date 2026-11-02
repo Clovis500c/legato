@@ -1892,6 +1892,21 @@ const ja: Record<string, string> = {
   '{device} was playing “{title}”': '{device} で「{title}」を再生していました',
   'Resume here': 'ここで再開',
   'Resume “{title}” from {device}': '{device} の「{title}」を続きから再生',
+  'Google sign-in': 'Google ログイン',
+  'Scrobbling': 'Scrobble',
+  'Ad and tracker lists': '広告・トラッカーのリスト',
+  'Other': 'その他',
+  'The app': 'アプリ',
+  'App windows': 'アプリのウィンドウ',
+  '{n} connection': '{n} 件の接続',
+  '{n} connections': '{n} 件の接続',
+  '{n} request': '{n} 件のリクエスト',
+  '{n} requests': '{n} 件のリクエスト',
+  'Blocked: {n}': 'ブロック: {n}',
+  'Nothing yet today.': '今日はまだありません。',
+  'Every host Legato talked to today, and why: the app itself, its windows (YouTube’s player, sign-in pages) and plugins. Kept in memory on this PC only.': '今日 Legato が通信したすべてのホストとその理由：アプリ本体、アプリのウィンドウ（YouTube のプレーヤー、ログインページ）、プラグイン。この PC のメモリにのみ保持されます。',
+  'privacy network hosts servers connections today': 'プライバシー ネットワーク ホスト サーバー 接続 今日',
+  'privacy network hosts requests blocked pages': 'プライバシー ネットワーク ホスト リクエスト ブロック ページ',
 }
 
 export default ja
