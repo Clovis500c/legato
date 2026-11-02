@@ -2258,7 +2258,7 @@ pub fn run() {
                 }
             });
 
-            app.manage(AppState { app: app.handle().clone(), lib: Mutex::new(lib), store: Arc::new(secrets::KeyringStore::new(&app.config().identifier)), open, player: Player::spawn(), shield, art: music_connectors::art::ArtCache::new(dir.join("art"), 500 << 20), cache: Caches::default(), nearby: Arc::new(Mutex::new(NearbyState::Idle)), nearby_task: Mutex::default(), media, media_last: Mutex::default(), tray, discord: discord::Discord::spawn() });
+            app.manage(AppState { app: app.handle().clone(), lib: Mutex::new(lib), store: secrets::store(&app.config().identifier, &dir), open, player: Player::spawn(), shield, art: music_connectors::art::ArtCache::new(dir.join("art"), 500 << 20), cache: Caches::default(), nearby: Arc::new(Mutex::new(NearbyState::Idle)), nearby_task: Mutex::default(), media, media_last: Mutex::default(), tray, discord: discord::Discord::spawn() });
             // Reads the library's settings: after AppState.
             #[cfg(desktop)]
             app.manage(update::Updater::new(app.handle()));
