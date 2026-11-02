@@ -50,9 +50,10 @@ to try on their phone, never run on a real one yet.
 Next, in order: the phone's texts and screens (the welcome and empty states speak of a PC, desktop-only Settings rows
 shown), the QR scanner (`tauri-plugin-barcode-scanner`, reads `legato://pair?`), playback in the background
 (foreground service, media notification), pairing tried with a real phone on the same Wi-Fi (the emulator sits behind
-its own NAT), secrets in Android's Keystore, a CI job building the signed APK (the keystore as a GitHub secret needs
-the owner's OK), then the Beta with the APK. Workflows after the weekly reset (2026-11-04 08:00 Paris), per the owner's
-choice.
+its own NAT), secrets in Android's Keystore, a CI job building the signed APK (the keystore is in the repo's Actions
+secrets since 2026-11-02, the owner's OK: `ANDROID_KEYSTORE`, the .jks in base64, and `ANDROID_KEYSTORE_PASSWORD`, for
+the store and the key; alias `legato`), then the Beta with the APK. Workflows after the weekly reset (2026-11-04 08:00
+Paris), per the owner's choice.
 
 ## Autonomous run 2026-11-02 (done)
 
