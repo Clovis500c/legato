@@ -56,10 +56,15 @@ every Beta: `release.yml`'s last step builds it on the Windows runner (the runne
 holds the Windows Beta back. First one: v1.1.603 (2026-11-02), signed with the same key as the APK built on this
 PC (it installs over it); Android's own third-party notices from the next Beta on (`notices.mjs aarch64-linux-android`).
 
-Next, in order: the phone's other texts and screens (desktop-only Settings rows shown, other strings that say PC), the
+The owner's test (2026-11-03, phone and PC on Beta v1.1.603): the sync between them runs, but not every setting comes
+across. First next: the device sync carries every setting, except what belongs to one device (the window, start with
+Windows, global keys, the update channel…: listed in one place, with a test), and the phone keeps the desktop-only
+ones without showing them. Look at what `music_core::syncmode`'s snapshot takes from the settings and what the UI's
+settings store applies when a snapshot arrives; compare the two devices' settings after a sync to list what's missing.
+
+Then, in order: the phone's other texts and screens (desktop-only Settings rows shown, other strings that say PC), the
 QR scanner (`tauri-plugin-barcode-scanner`, reads `legato://pair?`), playback in the background (foreground service,
-media notification), pairing tried with a real phone on the same Wi-Fi (the emulator sits behind its own NAT), secrets
-in Android's Keystore, an Android download on the website. Workflows after the weekly reset (2026-11-04 08:00 Paris),
+media notification), secrets in Android's Keystore, an Android download on the website. Workflows after the weekly reset (2026-11-04 08:00 Paris),
 per the owner's choice.
 
 ## Autonomous run 2026-11-02 (done)
