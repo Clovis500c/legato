@@ -157,6 +157,11 @@ jobs:
           distribution: temurin
           java-version: 17
 
+      # The APK's own notices (next step): installed again when the Windows ones came from the cache.
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-about@0.9.2
+
       - name: Android APK
         shell: bash
         env:
@@ -179,6 +184,8 @@ jobs:
           tmp="${RUNNER_TEMP//\\//}"
           printf '%s' "$KEYSTORE" | base64 -d > "$tmp/legato-release.jks"
           printf 'storeFile=%s\npassword=%s\nkeyAlias=legato\n' "$tmp/legato-release.jks" "$KEYSTORE_PASSWORD" > src-tauri/gen/android/keystore.properties
+          # Android's crates (rustls, ring, Mozilla's roots) instead of Windows': the installer above already has its own.
+          node scripts/notices.mjs aarch64-linux-android
           pnpm tauri android build --target aarch64 --apk
           apk="$tmp/Legato_${VERSION}_android-arm64.apk"
           cp src-tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release.apk "$apk"
