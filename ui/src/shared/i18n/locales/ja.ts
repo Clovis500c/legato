@@ -1939,6 +1939,11 @@ const ja: Record<string, string> = {
   '+3 dB per octave': '1オクターブごとに +3 dB',
   'A-weighting': 'A特性',
   'ITU-R 468': 'ITU-R 468',
+  'Visualizer color': 'ビジュアライザーの色',
+  'The theme\'s text color, its accent, or the cover\'s color made bright enough to read': 'テーマの文字色、アクセントカラー、または読みやすい明るさにしたカバーの色',
+  'colour tint hue palette accent cover album art': '色 色合い 色相 パレット アクセント カバー アルバムアート',
+  'Text color': '文字色',
+  'Cover\'s color': 'カバーの色',
 }
 
 export default ja

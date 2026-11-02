@@ -1939,6 +1939,11 @@ const de: Record<string, string> = {
   '+3 dB per octave': '+3 dB pro Oktave',
   'A-weighting': 'A-Bewertung',
   'ITU-R 468': 'ITU-R 468',
+  'Visualizer color': 'Farbe des Visualizers',
+  'The theme\'s text color, its accent, or the cover\'s color made bright enough to read': 'Die Textfarbe des Designs, seine Akzentfarbe oder die Farbe des Covers, hell genug, um lesbar zu sein',
+  'colour tint hue palette accent cover album art': 'farbe tönung farbton palette akzent cover albumcover',
+  'Text color': 'Textfarbe',
+  'Cover\'s color': 'Farbe des Covers',
 }
 
 export default de

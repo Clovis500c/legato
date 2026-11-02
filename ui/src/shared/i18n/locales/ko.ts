@@ -1939,6 +1939,11 @@ const ko: Record<string, string> = {
   '+3 dB per octave': '옥타브당 +3 dB',
   'A-weighting': 'A 가중',
   'ITU-R 468': 'ITU-R 468',
+  'Visualizer color': '비주얼라이저 색상',
+  'The theme\'s text color, its accent, or the cover\'s color made bright enough to read': '테마의 글자색, 강조 색상, 또는 잘 보이도록 밝힌 커버의 색',
+  'colour tint hue palette accent cover album art': '색 색조 색상 팔레트 강조 커버 앨범 아트',
+  'Text color': '글자색',
+  'Cover\'s color': '커버 색상',
 }
 
 export default ko

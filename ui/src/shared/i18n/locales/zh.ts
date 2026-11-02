@@ -1939,6 +1939,11 @@ const zh: Record<string, string> = {
   '+3 dB per octave': '每倍频程 +3 dB',
   'A-weighting': 'A 计权',
   'ITU-R 468': 'ITU-R 468',
+  'Visualizer color': '可视化颜色',
+  'The theme\'s text color, its accent, or the cover\'s color made bright enough to read': '主题的文字颜色、强调色，或调亮到清晰可见的封面颜色',
+  'colour tint hue palette accent cover album art': '颜色 色调 色相 调色板 强调色 封面 专辑封面',
+  'Text color': '文字颜色',
+  'Cover\'s color': '封面颜色',
 }
 
 export default zh

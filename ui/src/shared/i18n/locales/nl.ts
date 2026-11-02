@@ -1939,6 +1939,11 @@ const nl: Record<string, string> = {
   '+3 dB per octave': '+3 dB per octaaf',
   'A-weighting': 'A-weging',
   'ITU-R 468': 'ITU-R 468',
+  'Visualizer color': 'Kleur van de visualizer',
+  'The theme\'s text color, its accent, or the cover\'s color made bright enough to read': 'De tekstkleur van het thema, de accentkleur, of de kleur van de hoes, helder genoeg om te lezen',
+  'colour tint hue palette accent cover album art': 'kleur tint palet accent hoes albumhoes',
+  'Text color': 'Tekstkleur',
+  'Cover\'s color': 'Kleur van de hoes',
 }
 
 export default nl

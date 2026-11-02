@@ -170,6 +170,9 @@ export type VisualizerStyle = (typeof VISUALIZER_STYLES)[number]
 /** Visualizer weighting (vizWeigh.ts): the bands as measured, tilted 3 dB per octave toward the highs, or a hearing curve. */
 export const VIZ_WEIGHTINGS = ['flat', 'tilt', 'a', 'itu468'] as const
 export type VizWeighting = (typeof VIZ_WEIGHTINGS)[number]
+/** Visualizer colour (VizCanvas.tsx): the theme's text colour where it is drawn, the accent, or the cover's hue made vivid. */
+export const VIZ_COLORS = ['text', 'accent', 'cover'] as const
+export type VizColor = (typeof VIZ_COLORS)[number]
 /** Order the cover songs are taken in: the playlist's own, or a library sort. */
 export const COVER_ORDERS = ['playlist', 'recent', 'title', 'artist', 'album', 'duration'] as const
 /** Auto-DJ's choices (Settings › Playback): days a song heard waits, songs before the same artist again. */
@@ -381,6 +384,8 @@ export interface Settings {
   visualizerStyle: VisualizerStyle
   /** How the visualizer weighs highs against lows. As measured by default: the tilt and the curves change the picture, a choice. */
   visualizerWeighting: VizWeighting
+  /** The visualizer's colour. The text colour by default (docs/design.md: ink and greys, the accent for playback). */
+  visualizerColor: VizColor
   /** Videos whose song ends before the video (silence, end screen): the next song starts at the song's end (ends.ts). */
   earlyEnds: boolean
   /** Songs start on the music and end where it ends: silence at the start and end skipped (local: measured; YouTube: learned). */
@@ -505,6 +510,7 @@ export const DEFAULTS: Settings = {
   visualizer: false,
   visualizerStyle: 'led',
   visualizerWeighting: 'flat',
+  visualizerColor: 'text',
   earlyEnds: true,
   skipSilence: false,
   levelling: 'off',
@@ -719,6 +725,7 @@ export function sanitize(raw: unknown): Settings {
     visualizer: r.visualizer === true,
     visualizerStyle: pick(r.visualizerStyle, VISUALIZER_STYLES, DEFAULTS.visualizerStyle),
     visualizerWeighting: pick(r.visualizerWeighting, VIZ_WEIGHTINGS, DEFAULTS.visualizerWeighting),
+    visualizerColor: pick(r.visualizerColor, VIZ_COLORS, DEFAULTS.visualizerColor),
     earlyEnds: r.earlyEnds !== false,
     skipSilence: r.skipSilence === true,
     levelling: pick(r.levelling, ['off', 'track', 'album'] as const, DEFAULTS.levelling),

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { contrastReport, PRESETS } from '../../shared/theme/theme'
-import { tintPalette, type Rgb } from './ambient'
+import { contrast, contrastReport, PRESETS } from '../../shared/theme/theme'
+import { tintPalette, vivid, type Rgb } from './ambient'
 
 describe('tintPalette', () => {
   it('keeps every theme text readable on any cover tint', () => {
@@ -16,5 +16,17 @@ describe('tintPalette', () => {
     const [graphite, paper] = ['graphite', 'paper'].map((id) => PRESETS.find((t) => t.id === id)!)
     expect(tintPalette([255, 0, 0], graphite).bg).toBe('#290F0F')
     expect(tintPalette([128, 128, 128], paper).bg).toBe('#F7F7F7')
+  })
+})
+
+describe('vivid cover color', () => {
+  it('keeps the hue, readable on the theme', () => {
+    const red = vivid([180, 40, 40], false) ?? ''
+    expect(red).toMatch(/^#[0-9A-F]{6}$/)
+    expect(contrast(red, '#FFFFFF')).toBeGreaterThanOrEqual(3)
+    // Yellow on white: darkened until it reads.
+    expect(contrast(vivid([230, 220, 40], false) ?? '', '#FFFFFF')).toBeGreaterThanOrEqual(3)
+    expect(contrast(vivid([20, 30, 120], true) ?? '', '#121212')).toBeGreaterThanOrEqual(3)
+    expect(vivid([120, 122, 125], true)).toBeNull()
   })
 })

@@ -1939,6 +1939,11 @@ const uk: Record<string, string> = {
   '+3 dB per octave': '+3 дБ на октаву',
   'A-weighting': 'A-зважування',
   'ITU-R 468': 'МСЕ-R 468',
+  'Visualizer color': 'Колір візуалізатора',
+  'The theme\'s text color, its accent, or the cover\'s color made bright enough to read': 'Колір тексту теми, її акцентний колір або колір обкладинки, достатньо яскравий',
+  'colour tint hue palette accent cover album art': 'колір відтінок тон палітра акцент обкладинка',
+  'Text color': 'Колір тексту',
+  'Cover\'s color': 'Колір обкладинки',
 }
 
 export default uk

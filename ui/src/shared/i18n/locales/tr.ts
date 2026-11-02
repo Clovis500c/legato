@@ -1939,6 +1939,11 @@ const tr: Record<string, string> = {
   '+3 dB per octave': 'Oktav başına +3 dB',
   'A-weighting': 'A ağırlıklı',
   'ITU-R 468': 'ITU-R 468',
+  'Visualizer color': 'Görselleştirici rengi',
+  'The theme\'s text color, its accent, or the cover\'s color made bright enough to read': 'Temanın metin rengi, vurgu rengi ya da okunacak kadar canlandırılmış kapak rengi',
+  'colour tint hue palette accent cover album art': 'renk ton palet vurgu kapak albüm kapağı',
+  'Text color': 'Metin rengi',
+  'Cover\'s color': 'Kapak rengi',
 }
 
 export default tr

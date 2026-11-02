@@ -1939,6 +1939,11 @@ const pt: Record<string, string> = {
   '+3 dB per octave': '+3 dB por oitava',
   'A-weighting': 'Ponderação A',
   'ITU-R 468': 'UIT-R 468',
+  'Visualizer color': 'Cor do visualizador',
+  'The theme\'s text color, its accent, or the cover\'s color made bright enough to read': 'A cor do texto do tema, a cor de destaque ou a cor da capa, viva o bastante para se ler',
+  'colour tint hue palette accent cover album art': 'cor tom matiz paleta destaque capa',
+  'Text color': 'Cor do texto',
+  'Cover\'s color': 'Cor da capa',
 }
 
 export default pt

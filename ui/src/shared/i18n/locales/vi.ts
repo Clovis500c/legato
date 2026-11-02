@@ -1939,6 +1939,11 @@ const vi: Record<string, string> = {
   '+3 dB per octave': '+3 dB mỗi quãng tám',
   'A-weighting': 'Trọng số A',
   'ITU-R 468': 'ITU-R 468',
+  'Visualizer color': 'Màu của trình hiển thị',
+  'The theme\'s text color, its accent, or the cover\'s color made bright enough to read': 'Màu chữ của chủ đề, màu nhấn, hoặc màu của ảnh bìa được làm đủ sáng để dễ nhìn',
+  'colour tint hue palette accent cover album art': 'màu sắc tông palette nhấn bìa ảnh album',
+  'Text color': 'Màu chữ',
+  'Cover\'s color': 'Màu ảnh bìa',
 }
 
 export default vi

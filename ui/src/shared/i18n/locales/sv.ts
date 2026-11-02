@@ -1939,6 +1939,11 @@ const sv: Record<string, string> = {
   '+3 dB per octave': '+3 dB per oktav',
   'A-weighting': 'A-vägning',
   'ITU-R 468': 'ITU-R 468',
+  'Visualizer color': 'Visualiserarens färg',
+  'The theme\'s text color, its accent, or the cover\'s color made bright enough to read': 'Temats textfärg, dess accentfärg eller omslagets färg, ljus nog att synas',
+  'colour tint hue palette accent cover album art': 'färg ton nyans palett accent omslag skivomslag',
+  'Text color': 'Textfärg',
+  'Cover\'s color': 'Omslagets färg',
 }
 
 export default sv

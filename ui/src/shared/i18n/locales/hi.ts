@@ -1939,6 +1939,11 @@ const hi: Record<string, string> = {
   '+3 dB per octave': '+3 dB प्रति ऑक्टेव',
   'A-weighting': 'A-भारांकन',
   'ITU-R 468': 'ITU-R 468',
+  'Visualizer color': 'विज़ुअलाइज़र का रंग',
+  'The theme\'s text color, its accent, or the cover\'s color made bright enough to read': 'थीम के टेक्स्ट का रंग, उसका एक्सेंट रंग, या कवर का रंग, पढ़ने लायक चमकीला',
+  'colour tint hue palette accent cover album art': 'रंग टिंट ह्यू पैलेट एक्सेंट कवर एल्बम आर्ट',
+  'Text color': 'टेक्स्ट का रंग',
+  'Cover\'s color': 'कवर का रंग',
 }
 
 export default hi

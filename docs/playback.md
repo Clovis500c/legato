@@ -349,6 +349,10 @@ never: downloading, extracting, recording or exporting a platform's audio, or to
     bands are energies, pink noise reads flat, so music's lows stand taller), +3 dB per octave around 1 kHz, IEC
     A-weighting or ITU-R 468 (both 0 dB at 1 kHz). Over the demo's frames the tilt took the low third of the bars from
     27 % lit to 18 % and the high third from 20 % to 22 %, the middle unchanged; not judged by eye on real music yet.
+  - **Colour** (Settings › Playback › Visualizer color, or the right-click, 2026-11-02): the text colour where it is
+    drawn (default, as above), the theme's accent, or the playing cover's hue made vivid (`ambient.ts` `vivid`: its
+    average colour's hue, saturation 0.5 to 0.8, lightness moved until it reads 3:1 on the theme's background; a grey
+    cover keeps the text colour). `VizCanvas.tsx` sends it as the `ink` of the `look` message: the worker is unchanged.
   - **Comfort**: `prefers-reduced-motion` or Animations off (`useCalm`): slower attack and release, a cap that sinks
     gently, one flash a second. Always: `flash.ts` limits the mean brightness of the bars to 3 flashes a second (a flash
     = a rise and a fall of at least 10 % of the range; past the budget the brightness may not turn back by 10 % until

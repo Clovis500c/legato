@@ -1939,6 +1939,11 @@ const id: Record<string, string> = {
   '+3 dB per octave': '+3 dB per oktaf',
   'A-weighting': 'Pembobotan A',
   'ITU-R 468': 'ITU-R 468',
+  'Visualizer color': 'Warna visualizer',
+  'The theme\'s text color, its accent, or the cover\'s color made bright enough to read': 'Warna teks tema, warna aksennya, atau warna sampul yang dibuat cukup terang agar terbaca',
+  'colour tint hue palette accent cover album art': 'warna rona palet aksen sampul gambar album',
+  'Text color': 'Warna teks',
+  'Cover\'s color': 'Warna sampul',
 }
 
 export default id

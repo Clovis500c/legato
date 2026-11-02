@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { useSettings } from '../../app/settings'
-import type { VisualizerStyle } from '../../shared/theme/theme'
-import { usePlayer } from './store'
+import { trackArt } from '../../shared/art'
+import type { VisualizerStyle, VizColor } from '../../shared/theme/theme'
+import { averageColor, vivid } from './ambient'
+import { useNowTrack, usePlayer } from './store'
 import { viz } from './vizFrames'
 import { frameMessage, type ToWorker } from './vizProtocol'
 
@@ -46,6 +48,8 @@ export function VizCanvas({ look, listen = true }: { look: VisualizerStyle; list
   const shown = usePageVisible()
   const calm = useCalm()
   const weighting = useSettings((s) => s.settings.visualizerWeighting)
+  const color = useSettings((s) => s.settings.visualizerColor)
+  const coverInk = useCoverInk(color === 'cover')
   const playing = usePlayer((s) => s.playing)
   const theme = useSettings((s) => s.settings.theme)
   const accent = useSettings((s) => s.settings.accent)
@@ -98,11 +102,11 @@ export function VizCanvas({ look, listen = true }: { look: VisualizerStyle; list
     const el = box.current
     const w = worker.current
     if (!el || !w) return
-    const send = () => w.postMessage({ t: 'look', look, calm, weighting, ink: getComputedStyle(el).color, warn: getComputedStyle(el).getPropertyValue('--color-danger').trim(), fps: FPS } satisfies ToWorker)
+    const send = () => w.postMessage({ t: 'look', look, calm, weighting, ink: inkOf(el, color, coverInk), warn: getComputedStyle(el).getPropertyValue('--color-danger').trim(), fps: FPS } satisfies ToWorker)
     send()
     const late = setTimeout(send, 700)
     return () => clearTimeout(late)
-  }, [ready, look, calm, weighting, theme, accent, dark, song])
+  }, [ready, look, calm, weighting, color, coverInk, theme, accent, dark, song])
 
   // Something draws: loop and frames. Nothing does: no loop, no subscription.
   useEffect(() => {
@@ -118,4 +122,29 @@ export function VizCanvas({ look, listen = true }: { look: VisualizerStyle; list
   }, [ready, drawing, live])
 
   return <div ref={box} aria-hidden className="size-full text-ink" />
+}
+
+/** The visualizer's colour: the text colour where it is drawn, the theme's accent, or the cover's (text until known). */
+function inkOf(el: HTMLElement, color: VizColor, cover: string | null): string {
+  const css = getComputedStyle(el)
+  if (color === 'accent') return css.getPropertyValue('--color-accent').trim() || css.color
+  return (color === 'cover' && cover) || css.color
+}
+
+/** The playing song's cover hue, vivid for the theme; null when off, coverless or grey. */
+function useCoverInk(on: boolean): string | null {
+  const track = useNowTrack()
+  const src = on && track ? trackArt(track)[0] : undefined
+  const dark = useSettings((s) => s.current().dark)
+  const [got, setGot] = useState<{ key: string; ink: string | null }>()
+  const key = `${src}|${dark}`
+  useEffect(() => {
+    if (!src) return
+    let live = true
+    void averageColor(src).then((rgb) => live && setGot({ key: `${src}|${dark}`, ink: rgb ? vivid(rgb, dark) : null }))
+    return () => {
+      live = false
+    }
+  }, [src, dark])
+  return src && got?.key === key ? got.ink : null
 }

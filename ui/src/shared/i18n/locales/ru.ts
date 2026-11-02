@@ -1939,6 +1939,11 @@ const ru: Record<string, string> = {
   '+3 dB per octave': '+3 дБ на октаву',
   'A-weighting': 'A-взвешивание',
   'ITU-R 468': 'МСЭ-R 468',
+  'Visualizer color': 'Цвет визуализатора',
+  'The theme\'s text color, its accent, or the cover\'s color made bright enough to read': 'Цвет текста темы, её акцентный цвет или цвет обложки, сделанный достаточно ярким',
+  'colour tint hue palette accent cover album art': 'цвет оттенок тон палитра акцент обложка',
+  'Text color': 'Цвет текста',
+  'Cover\'s color': 'Цвет обложки',
 }
 
 export default ru

@@ -410,8 +410,13 @@ colours, mirror, reflection.
       tables; over the demo the tilt lowers the bass third and lifts the treble third. Not judged by eye on real music.)
 - [ ] `S` Spectrum bars, realistic: 1/3 and 1/12 octave, reflection on a glossy floor, frequency and dB scales on hover. (LED
       segments with held, falling caps are in, 1/6 octave.)
-- [ ] `S` Colours from the theme or the cover (`coverTint.ts`): gradient along frequency, by level, or the cover's palette.
-      (Today the theme's text colour as read where it is drawn, so Now Playing's cover tint applies; no colour choices.)
+- [x] `S` Colours from the theme or the cover (`coverTint.ts`): gradient along frequency, by level, or the cover's palette.
+      (2026-11-02: Settings › Playback › Visualizer color or the right-click: the text colour (default), the theme's
+      accent, or the playing cover's hue made vivid (`ambient.ts` `vivid`, 3:1 at least on the theme's background; a
+      grey cover keeps the text colour). One colour per look, the painter unchanged. Checked over the demo: the accent
+      draws; the demo's SVG covers average to grey, so the cover's colour was checked on a raster picture.)
+- [ ] `S` Visualizer gradients: along frequency or by level (the painter draws one colour; a `source-atop` gradient fill
+      after the bars would recolour every straight look in one pass).
 - [ ] `S` Sizes left: a big backdrop behind Now Playing, the mini player, the OBS overlay page. A click on the visualizer
       could cycle its look (today right-click picks it, a click does nothing).
 - [ ] `S-M` 1/3 and 1/12 octave bands (31 and 120, ANSI centers) beside today's 1/6 (61 bands).

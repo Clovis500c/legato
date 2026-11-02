@@ -60,6 +60,17 @@ function hex(h: number, s: number, l: number): string {
   return `#${f(0)}${f(8)}${f(4)}`.toUpperCase()
 }
 
+/** The cover's hue, vivid, at least 3:1 on the theme's background (the visualizer's "Cover's color"); null for a grey cover. */
+export function vivid(rgb: Rgb, dark: boolean): string | null {
+  if ((Math.max(...rgb) - Math.min(...rgb)) / 255 < 0.08) return null
+  const [h, s] = hue(rgb)
+  const sat = Math.min(0.8, Math.max(0.5, s))
+  const back = dark ? '#121212' : '#FFFFFF'
+  let l = dark ? 0.62 : 0.45
+  while (contrast(hex(h, sat, l), back) < 3 && l > 0.05 && l < 0.95) l += dark ? 0.02 : -0.02
+  return hex(h, sat, l)
+}
+
 /** Surfaces tinted by the cover, flat, in the theme's brightness family. Text colors stay the theme's. */
 export function tintPalette(rgb: Rgb, theme: Pick<Theme, 'dark' | 'ink3'>): Partial<Palette> {
   const [h, s] = hue(rgb)
