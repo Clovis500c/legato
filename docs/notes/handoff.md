@@ -53,7 +53,8 @@ every Beta: `release.yml`'s last step builds it on the Windows runner (the runne
 `ANDROID_NDK_LATEST_HOME`), signs it with the repo's Actions secrets `ANDROID_KEYSTORE` (the .jks in base64) and
 `ANDROID_KEYSTORE_PASSWORD` (store and key; alias `legato`; the owner's OK, 2026-11-02) and attaches
 `Legato_<version>_android-arm64.apk` to the versioned release. It runs after the Beta pointer, so a failure there never
-holds the Windows Beta back. First run: the push of 2026-11-02 night; check its log if the APK is missing.
+holds the Windows Beta back. First one: v1.1.603 (2026-11-02), signed with the same key as the APK built on this
+PC (it installs over it); Android's own third-party notices from the next Beta on (`notices.mjs aarch64-linux-android`).
 
 Next, in order: the phone's other texts and screens (desktop-only Settings rows shown, other strings that say PC), the
 QR scanner (`tauri-plugin-barcode-scanner`, reads `legato://pair?`), playback in the background (foreground service,
