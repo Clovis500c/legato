@@ -1930,6 +1930,8 @@ const sv: Record<string, string> = {
   'Picture copied': 'Bilden kopierades',
   'The picture could not be copied': 'Bilden kunde inte kopieras',
   'Picture saved: {file}': 'Bilden sparades: {file}',
+  'Back to {month}': 'Tillbaka till {month}',
+  'Played a lot in {month}, hardly since': 'Mycket spelade i {month}, knappt sedan dess',
 }
 
 export default sv

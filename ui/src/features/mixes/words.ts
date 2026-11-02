@@ -34,11 +34,19 @@ export const listOf = (names: string[]) => new Intl.ListFormat(locale(), { style
 /** Day name, 0 = Sunday ("Friday" / "vendredi"). */
 export const weekdayName = (day: number, width: 'long' | 'short' = 'long') => new Intl.DateTimeFormat(locale(), { weekday: width, timeZone: 'UTC' }).format(new Date(Date.UTC(2023, 0, 1 + day)))
 
+/** A "2024-03" month: "March 2024" / "mars 2024"; `short`, the month alone ("Mar"). */
+export function monthName(ym: string, width: 'long' | 'short' = 'long'): string {
+  const [y, m] = ym.split('-').map(Number)
+  const opts: Intl.DateTimeFormatOptions = width === 'long' ? { month: 'long', year: 'numeric' } : { month: 'short' }
+  return new Intl.DateTimeFormat(locale(), { ...opts, timeZone: 'UTC' }).format(new Date(Date.UTC(y, m - 1, 1)))
+}
+
 export function mixTitle(m: Mix): string {
   const w = m.words ?? {}
   if (m.id === 'now' && w.slot) return tr(SLOTS[w.slot].title)
   if (m.id === 'daylist' && w.slot && w.day !== undefined) return tr(DAYLIST[w.slot].title, { day: weekdayName(w.day) })
   if (m.id === 'weekday' && w.day !== undefined) return tr('Your {day}s', { day: weekdayName(w.day) })
+  if (m.id === 'fixation' && w.month) return tr('Back to {month}', { month: monthName(w.month) })
   if (m.id.startsWith('daily-') && w.number) return tr('Daily Mix {n}', { n: w.number })
   if (m.id.startsWith('artist-') && w.name) return tr('{name} Mix', { name: w.name })
   if (m.id === 'supermix') return tr('Supermix')
@@ -51,6 +59,7 @@ export function mixReason(m: Mix): string {
   if (m.id === 'now' && w.slot) return tr(SLOTS[w.slot].reason)
   if (m.id === 'daylist' && w.slot && w.day !== undefined) return tr(DAYLIST[w.slot].reason, { day: weekdayName(w.day) })
   if (m.id === 'weekday' && w.day !== undefined) return tr('What you play on {day}s', { day: weekdayName(w.day) })
+  if (m.id === 'fixation' && w.month) return tr('Played a lot in {month}, hardly since', { month: monthName(w.month) })
   if (m.id.startsWith('daily-') && names.length) return tr('Because you listen to {names}', { names: listOf(names) })
   if (m.id.startsWith('artist-') && w.name) return names.length ? tr('{name}, with {names}', { name: w.name, names: listOf(names) }) : tr('All {name}, your way', { name: w.name })
   if (m.id === 'supermix') return m.found?.length ? tr('Your favorites over the months, and new songs like them') : tr('Your favorites over the months')

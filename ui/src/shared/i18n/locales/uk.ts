@@ -1930,6 +1930,8 @@ const uk: Record<string, string> = {
   'Picture copied': 'Картинку скопійовано',
   'The picture could not be copied': 'Не вдалося скопіювати картинку',
   'Picture saved: {file}': 'Картинку збережено: {file}',
+  'Back to {month}': 'Знову {month}',
+  'Played a lot in {month}, hardly since': 'Часто звучали в період «{month}», відтоді майже ні',
 }
 
 export default uk

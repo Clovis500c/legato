@@ -1930,6 +1930,8 @@ const ko: Record<string, string> = {
   'Picture copied': '이미지를 복사했습니다',
   'The picture could not be copied': '이미지를 복사할 수 없습니다',
   'Picture saved: {file}': '이미지 저장됨: {file}',
+  'Back to {month}': '{month}로 돌아가기',
+  'Played a lot in {month}, hardly since': '{month}에 자주 들었지만 그 후로 거의 듣지 않은 곡',
 }
 
 export default ko

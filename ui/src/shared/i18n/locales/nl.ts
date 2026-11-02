@@ -1930,6 +1930,8 @@ const nl: Record<string, string> = {
   'Picture copied': 'Afbeelding gekopieerd',
   'The picture could not be copied': 'De afbeelding kon niet worden gekopieerd',
   'Picture saved: {file}': 'Afbeelding opgeslagen: {file}',
+  'Back to {month}': 'Terug naar {month}',
+  'Played a lot in {month}, hardly since': 'Veel gedraaid in {month}, sindsdien nauwelijks',
 }
 
 export default nl

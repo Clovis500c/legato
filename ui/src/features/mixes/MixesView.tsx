@@ -18,7 +18,7 @@ import { tracksMenu } from '../menus'
 import { isRemote, remoteTrack, usePlayer } from '../player/store'
 import { msg, tr, trn } from '../../shared/i18n/i18n'
 import { useMixes } from './useMixes'
-import { mixReason, mixTitle, weekdayName } from './words'
+import { mixReason, mixTitle, monthName, weekdayName } from './words'
 import { ask } from '../../shared/ui/Ask'
 
 /** A mix's songs in order: library songs, songs new to you slotted at their place. */
@@ -46,6 +46,8 @@ function mixMark(mix: Mix): { label: string; mark: string } {
     fresh: { label: tr('New'), mark: '+' },
     gems: { label: tr('Gems'), mark: '◇' },
     rediscover: { label: tr('Again'), mark: '↺' },
+    // The year on top, the month big.
+    fixation: mix.words?.month ? { label: mix.words.month.slice(0, 4), mark: monthName(mix.words.month, 'short').replace('.', '').slice(0, 3).toUpperCase() } : { label: tr('Again'), mark: '↺' },
     supermix: { label: tr('Mix'), mark: '★' },
     discover: { label: tr('Discover'), mark: '✦' },
   }

@@ -183,6 +183,9 @@ the window. Not done: its own window, the app staying on the first monitor.
 
 ## Aural fixations
 
+Done 2026-11-02: the "Back to {month}" mix (Your mixes on Home, Mixes › Explore), from our own plays only. Not done:
+seeding it from a Last.fm import.
+
 - **Sees**: Home card: "You played this a lot in March 2024" with the songs of that period you no longer play.
 - **How**: history bucketed by month; songs with a strong peak then silence; pure in `mixes.rs` or a new
   `history` helper, tested.

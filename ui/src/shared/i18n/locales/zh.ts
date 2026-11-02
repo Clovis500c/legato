@@ -1930,6 +1930,8 @@ const zh: Record<string, string> = {
   'Picture copied': '图片已复制',
   'The picture could not be copied': '无法复制图片',
   'Picture saved: {file}': '已保存图片：{file}',
+  'Back to {month}': '重温{month}',
+  'Played a lot in {month}, hardly since': '你在{month}常听、之后几乎没再听的歌',
 }
 
 export default zh

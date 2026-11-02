@@ -18,6 +18,10 @@ number?: number,
  */
 name?: string, 
 /**
+ * The month a mix looks back on, "2024-03".
+ */
+month?: string, 
+/**
  * Artists named in the reason, best first.
  */
 names?: Array<string>, };

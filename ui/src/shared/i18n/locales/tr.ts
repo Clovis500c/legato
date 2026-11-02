@@ -1930,6 +1930,8 @@ const tr: Record<string, string> = {
   'Picture copied': 'Görsel kopyalandı',
   'The picture could not be copied': 'Görsel kopyalanamadı',
   'Picture saved: {file}': 'Görsel kaydedildi: {file}',
+  'Back to {month}': 'Yeniden {month}',
+  'Played a lot in {month}, hardly since': '{month} döneminde çok dinlediğin, sonra pek çalmadığın şarkılar',
 }
 
 export default tr

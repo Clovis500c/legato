@@ -1930,6 +1930,8 @@ const id: Record<string, string> = {
   'Picture copied': 'Gambar disalin',
   'The picture could not be copied': 'Gambar tidak bisa disalin',
   'Picture saved: {file}': 'Gambar disimpan: {file}',
+  'Back to {month}': 'Kembali ke {month}',
+  'Played a lot in {month}, hardly since': 'Sering kamu putar pada {month}, jarang sejak itu',
 }
 
 export default id

@@ -8,6 +8,7 @@
 //! Discoveries: YouTube Music's radio of each mix's leading song (fetched by the shell for `seeds`), songs not in the
 //! library in any version; a third of a daily mix, a quarter of an artist mix or the Supermix, all of the Discover Mix.
 
+use crate::diag::civil;
 use crate::history::{Play, Pref};
 use crate::library::LibraryTrack;
 use crate::matching::{first_artist, normalize, primary_artist};
@@ -42,6 +43,12 @@ const PER_ARTIST: usize = 4;
 const DAILY_MIXES: usize = 6;
 const ARTIST_MIXES: usize = 3;
 const REDISCOVER_AFTER: i64 = 60 * DAY;
+/// Aural fixation: this much in one month (full listens' worth), at least FIXATION_SHARE of all its plays, at most
+/// FIXATION_SINCE after it; the month FIXATION_MONTHS back or more (this one = 0).
+const FIXATION_PLAYS: f64 = 4.0;
+const FIXATION_SHARE: f64 = 0.5;
+const FIXATION_SINCE: f64 = 1.0;
+const FIXATION_MONTHS: i64 = 3;
 /// Groups bigger than this only link their first artists (pairs grow quadratically).
 const GROUP_CAP: usize = 60;
 /// Big playlists: songs this close in the list count as related (added around the same time).
@@ -59,6 +66,7 @@ const SEEDS: usize = 10;
 /// Discoveries by one artist in a mix.
 const NEW_PER_ARTIST: usize = 2;
 const WEEKDAYS: [&str; 7] = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+const MONTHS: [&str; 12] = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
 pub struct Input<'a> {
     pub tracks: &'a [LibraryTrack],
@@ -126,6 +134,9 @@ pub struct Words {
     /// The artist an artist mix is about.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
+    /// The month a mix looks back on, "2024-03".
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub month: Option<String>,
     /// Artists named in the reason, best first.
     // default: as `Mix::found`.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
@@ -679,6 +690,41 @@ pub fn mixes(input: &Input) -> Vec<Mix> {
         out.push(Mix { id: "gems".into(), title: "Hidden gems".into(), reason: "Saved but never played here, by artists you like".into(), track_ids: ids, kind: "explore", words: Words::default(), found: Vec::new() });
     }
 
+    // Aural fixation: songs played a lot in one past month, hardly since. Several such months: the day's seed picks.
+    let month_of = |t: i64| {
+        let (y, m, _) = civil(local_day(t));
+        y * 12 + i64::from(m) - 1
+    };
+    let mut per_month: HashMap<i64, BTreeMap<i64, f64>> = HashMap::new();
+    for p in &plays {
+        let w = play_weight(p);
+        if w > 0.0 {
+            *per_month.entry(p.track_id).or_default().entry(month_of(p.started_at)).or_default() += w;
+        }
+    }
+    let last_month = month_of(input.now) - FIXATION_MONTHS;
+    let mut months: BTreeMap<i64, Vec<(i64, f64)>> = BTreeMap::new();
+    for (id, per) in &per_month {
+        let total: f64 = per.values().sum();
+        // Newest first: `since` = played after this month.
+        let mut since = 0.0;
+        for (&m, &w) in per.iter().rev() {
+            if m <= last_month && w >= FIXATION_PLAYS && w >= FIXATION_SHARE * total && since <= FIXATION_SINCE {
+                months.entry(m).or_default().push((*id, w));
+            }
+            since += w;
+        }
+    }
+    let rich: Vec<(&i64, &Vec<(i64, f64)>)> = months.iter().filter(|(_, songs)| songs.len() >= MIN_LEN).collect();
+    let start = (input.seed % rich.len().max(1) as u64) as usize;
+    let fixation = (0..rich.len()).find_map(|k| {
+        let (m, songs) = rich[(start + k) % rich.len()];
+        let ids = taste.pick(songs.iter().copied(), Opts::default());
+        (ids.len() >= MIN_LEN).then_some((*m, ids))
+    });
+    // Its songs: not in Rediscover too.
+    let fixed: HashSet<i64> = fixation.iter().flat_map(|(_, ids)| ids.iter().copied()).collect();
+
     // Rediscover: loved before (2+ full listens' worth), silent for 60 days.
     let mut past: HashMap<i64, f64> = HashMap::new();
     let mut last_play: HashMap<i64, i64> = HashMap::new();
@@ -686,9 +732,15 @@ pub fn mixes(input: &Input) -> Vec<Mix> {
         *past.entry(p.track_id).or_default() += play_weight(p);
         last_play.insert(p.track_id, p.started_at);
     }
-    let ids = taste.pick(past.into_iter().filter(|(id, s)| *s >= 2.0 && input.now - last_play[id] > REDISCOVER_AFTER), Opts::default());
+    let ids = taste.pick(past.into_iter().filter(|(id, s)| *s >= 2.0 && input.now - last_play[id] > REDISCOVER_AFTER && !fixed.contains(id)), Opts::default());
     if ids.len() >= MIN_LEN {
         out.push(Mix { id: "rediscover".into(), title: "Rediscover".into(), reason: "Tracks you loved, not played for two months".into(), track_ids: ids, kind: "explore", words: Words::default(), found: Vec::new() });
+    }
+    if let Some((m, ids)) = fixation {
+        let (year, month) = (m.div_euclid(12), m.rem_euclid(12) as usize);
+        let name = format!("{} {year}", MONTHS[month]);
+        let words = Words { month: Some(format!("{year:04}-{:02}", month + 1)), ..Words::default() };
+        out.push(Mix { id: "fixation".into(), title: format!("Back to {name}"), reason: format!("Played a lot in {name}, hardly since"), track_ids: ids, kind: "explore", words, found: Vec::new() });
     }
 
     // Discoveries last: library picks above stay as `seeds` saw them. Each into the mix its radio came from, once.
@@ -836,6 +888,27 @@ mod tests {
         let out = run(&tracks, &plays, &HashMap::new(), 1);
         let r = out.iter().find(|m| m.id == "rediscover").expect("rediscover mix");
         assert_eq!(r.track_ids.iter().copied().collect::<BTreeSet<_>>(), (1..=6).collect());
+    }
+
+    #[test]
+    fn fixation_brings_back_a_past_month() {
+        let tracks: Vec<LibraryTrack> = (1..=7).map(|i| t(i, &format!("Artist {i}"))).collect();
+        // NOW = 2027-01-15. Four plays each from 18 August 2026, an hour apart; 7 played again last week.
+        let aug = NOW - 150 * DAY;
+        let mut plays: Vec<Play> = (1..=7).flat_map(|i| (0..4).map(move |k| play(i, aug + k * DAY + i * 3600, true))).collect();
+        plays.extend((0..3).map(|k| play(7, NOW - 7 * DAY + k * 3600, true)));
+        plays.sort_by_key(|p| p.started_at);
+        let out = run(&tracks, &plays, &HashMap::new(), 1);
+        let f = out.iter().find(|m| m.id == "fixation").expect("fixation mix");
+        assert_eq!(f.words.month.as_deref(), Some("2026-08"));
+        assert_eq!(f.title, "Back to August 2026");
+        assert_eq!(f.track_ids.iter().copied().collect::<BTreeSet<_>>(), (1..=6).collect());
+        // Not in Rediscover too.
+        assert!(out.iter().filter(|m| m.id == "rediscover").all(|m| m.track_ids.iter().all(|id| *id == 7)));
+        // Last month's: too recent.
+        let mut recent: Vec<Play> = (1..=6).flat_map(|i| (0..4).map(move |k| play(i, NOW - 40 * DAY + k * DAY + i * 3600, true))).collect();
+        recent.sort_by_key(|p| p.started_at);
+        assert!(run(&tracks, &recent, &HashMap::new(), 1).iter().all(|m| m.id != "fixation"));
     }
 
     #[test]

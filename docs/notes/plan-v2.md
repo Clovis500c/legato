@@ -343,7 +343,11 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       option, for a second screen. (2026-11-02: C or Now Playing's button; clock from its right-click or Settings ›
       Appearance › Player; keeps the display awake. Checked over the demo in four window shapes; not on a real second
       screen.)
-- [ ] `S` "Aural fixations": songs you played a lot at one time of your life, brought back (from our own history).
+- [x] `S` "Aural fixations": songs you played a lot at one time of your life, brought back (from our own history).
+      (2026-11-02: the "Back to {month}" mix, `fixation` in `crates/core/src/mixes.rs`: 4+ full listens' worth in one
+      month at least three months back, half of all its plays, at most one since; several such months, the day's seed
+      picks one. Its songs leave Rediscover. In Your mixes on Home and Mixes › Explore. Unit test, and the card checked
+      over the demo with a faked mix; real history needs a few months first.)
 - [x] `S` Sleep timer "at the end of this album" ("this song" exists) and a fade over the last minutes. Done: End of this
   album stops after the album's last song in play order (the next one is from another album or none; no wrap, songs
   the queue passes over skipped), looked at again on each song and queue change; the timed fade lasts the last 3 minutes,

@@ -1930,6 +1930,8 @@ const ja: Record<string, string> = {
   'Picture copied': '画像をコピーしました',
   'The picture could not be copied': '画像をコピーできませんでした',
   'Picture saved: {file}': '画像を保存しました：{file}',
+  'Back to {month}': '{month}をもう一度',
+  'Played a lot in {month}, hardly since': '{month}によく聴いて、それ以来ほとんど聴いていない曲',
 }
 
 export default ja

@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from 'vitest'
 import type { Mix } from '../../shared/api'
 import { loadLang, useLang } from '../../shared/i18n/i18n'
-import { mixReason, mixTitle, weekdayName } from './words'
+import { mixReason, mixTitle, monthName, weekdayName } from './words'
 
 const mix = (id: string, words: Mix['words'], title = 'T', reason = 'R'): Mix => ({ id, title, reason, trackIds: [], kind: 'daily', words })
 
@@ -16,6 +16,9 @@ describe('mix words', () => {
     expect(mixTitle(mix('now', { slot: 'night' }))).toBe('Your nights')
     expect(mixTitle(mix('daylist', { slot: 'evening', day: 5 }))).toBe('Your Friday evenings')
     expect(mixReason(mix('daylist', { slot: 'morning', day: 1 }))).toBe('What you play on Monday mornings')
+    expect(mixTitle(mix('fixation', { month: '2024-03' }))).toBe('Back to March 2024')
+    expect(mixReason(mix('fixation', { month: '2024-03' }))).toBe('Played a lot in March 2024, hardly since')
+    expect(monthName('2024-12', 'short')).toBe('Dec')
     // Unknown to the UI: Rust's own words.
     expect(mixTitle(mix('future-kind', {}, 'Something new'))).toBe('Something new')
   })
@@ -28,6 +31,7 @@ describe('mix words', () => {
     expect(mixTitle(mix('daylist', { slot: 'evening', day: 5 }))).toBe('Vos vendredis soir')
     expect(mixTitle(mix('artist-1', { name: 'Daft Punk' }))).toBe('Mix Daft Punk')
     expect(weekdayName(0)).toBe('dimanche')
+    expect(mixTitle(mix('fixation', { month: '2026-08' }))).toBe('Retour en août 2026')
     // Supermix says so when it brings new songs.
     expect(mixReason(mix('supermix', {}))).toBe('Vos favoris au fil des mois')
     expect(mixReason({ ...mix('supermix', {}), found: [{ at: 2, track: { title: 'S', artist: 'A', ids: {} } as never }] })).toBe('Vos favoris au fil des mois, et des nouveautés dans le même genre')

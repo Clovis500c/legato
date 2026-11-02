@@ -1930,6 +1930,8 @@ const hi: Record<string, string> = {
   'Picture copied': 'तस्वीर कॉपी हो गई',
   'The picture could not be copied': 'तस्वीर कॉपी नहीं हो सकी',
   'Picture saved: {file}': 'तस्वीर सहेजी गई: {file}',
+  'Back to {month}': 'फिर से {month}',
+  'Played a lot in {month}, hardly since': 'वे गाने जो आपने {month} में खूब सुने, तब से बहुत कम',
 }
 
 export default hi

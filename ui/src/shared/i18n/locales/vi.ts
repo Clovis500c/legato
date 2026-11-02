@@ -1930,6 +1930,8 @@ const vi: Record<string, string> = {
   'Picture copied': 'Đã sao chép ảnh',
   'The picture could not be copied': 'Không thể sao chép ảnh',
   'Picture saved: {file}': 'Đã lưu ảnh: {file}',
+  'Back to {month}': 'Trở lại {month}',
+  'Played a lot in {month}, hardly since': 'Những bài bạn nghe nhiều vào {month}, từ đó hầu như không nghe',
 }
 
 export default vi

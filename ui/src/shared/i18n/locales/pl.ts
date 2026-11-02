@@ -1930,6 +1930,8 @@ const pl: Record<string, string> = {
   'Picture copied': 'Obraz skopiowany',
   'The picture could not be copied': 'Nie udało się skopiować obrazu',
   'Picture saved: {file}': 'Obraz zapisany: {file}',
+  'Back to {month}': 'Znów {month}',
+  'Played a lot in {month}, hardly since': '{month}: często słuchane, od tamtej pory prawie wcale',
 }
 
 export default pl
