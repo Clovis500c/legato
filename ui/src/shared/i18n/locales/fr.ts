@@ -1878,6 +1878,16 @@ const fr: Record<string, string> = {
   'Faster': 'Plus rapide',
   'Small fixes and improvements.': 'Petites corrections et améliorations.',
   'And {n} more': 'Et {n} de plus',
+  'Phone remote': 'Télécommande sur téléphone',
+  'Play, pause, skip and see what’s next from a phone on the same network. The page comes from this PC: nothing goes through the internet. Off by default': 'Lire, mettre en pause, passer et voir la suite depuis un téléphone sur le même réseau. La page vient de ce PC : rien ne passe par Internet. Désactivé par défaut',
+  'phone mobile remote control qr code wifi network lan couch': 'téléphone mobile portable télécommande contrôle qr code wifi réseau lan canapé',
+  'No answer from Legato. Is it open on the PC, and this phone on the same network?': 'Legato ne répond pas. Est-il ouvert sur le PC, et ce téléphone sur le même réseau ?',
+  'The phone remote could not start: another app may be using its port. Turn it off and on again.': 'La télécommande n’a pas pu démarrer : une autre application utilise peut-être son port. Désactivez-la puis réactivez-la.',
+  'This PC is not on a network. Connect it to the Wi-Fi or a cable, then turn the remote off and on.': 'Ce PC n’est connecté à aucun réseau. Connectez-le au Wi-Fi ou par câble, puis désactivez et réactivez la télécommande.',
+  'QR code of the phone remote': 'QR code de la télécommande',
+  'Scan it with the phone’s camera; the phone must be on the same network as this PC. Windows may ask once to let Legato on private networks: allow it.': 'Scannez-le avec l’appareil photo du téléphone ; le téléphone doit être sur le même réseau que ce PC. Windows peut demander une fois d’autoriser Legato sur les réseaux privés : autorisez-le.',
+  'Phones that have the old link lose the remote': 'Les téléphones qui ont l’ancien lien perdent la télécommande',
+  'New link': 'Nouveau lien',
 }
 
 export default fr

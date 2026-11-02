@@ -2784,6 +2784,7 @@ name = "legato"
 version = "1.1.0"
 dependencies = [
  "anyhow",
+ "if-addrs",
  "keyring",
  "music-connectors",
  "music-core",

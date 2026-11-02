@@ -1878,6 +1878,16 @@ const es: Record<string, string> = {
   'Faster': 'Más rápido',
   'Small fixes and improvements.': 'Pequeñas correcciones y mejoras.',
   'And {n} more': 'Y {n} más',
+  'Phone remote': 'Mando en el móvil',
+  'Play, pause, skip and see what’s next from a phone on the same network. The page comes from this PC: nothing goes through the internet. Off by default': 'Reproduce, pausa, salta y mira lo que sigue desde un móvil en la misma red. La página viene de este PC: nada pasa por internet. Desactivado por defecto',
+  'phone mobile remote control qr code wifi network lan couch': 'móvil teléfono celular mando control remoto código qr wifi red lan sofá',
+  'No answer from Legato. Is it open on the PC, and this phone on the same network?': 'Legato no responde. ¿Está abierto en el PC y este móvil en la misma red?',
+  'The phone remote could not start: another app may be using its port. Turn it off and on again.': 'El mando en el móvil no pudo iniciarse: puede que otra app use su puerto. Desactívalo y vuelve a activarlo.',
+  'This PC is not on a network. Connect it to the Wi-Fi or a cable, then turn the remote off and on.': 'Este PC no está conectado a ninguna red. Conéctalo al wifi o por cable y luego desactiva y vuelve a activar el mando.',
+  'QR code of the phone remote': 'Código QR del mando en el móvil',
+  'Scan it with the phone’s camera; the phone must be on the same network as this PC. Windows may ask once to let Legato on private networks: allow it.': 'Escanéalo con la cámara del móvil; el móvil debe estar en la misma red que este PC. Puede que Windows pregunte una vez si Legato puede usar redes privadas: permítelo.',
+  'Phones that have the old link lose the remote': 'Los móviles con el enlace antiguo pierden el mando',
+  'New link': 'Nuevo enlace',
 }
 
 export default es

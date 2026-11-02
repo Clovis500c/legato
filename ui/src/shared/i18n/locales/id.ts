@@ -1878,6 +1878,16 @@ const id: Record<string, string> = {
   'Faster': 'Lebih cepat',
   'Small fixes and improvements.': 'Perbaikan dan peningkatan kecil.',
   'And {n} more': 'Dan {n} lainnya',
+  'Phone remote': 'Remote ponsel',
+  'Play, pause, skip and see what’s next from a phone on the same network. The page comes from this PC: nothing goes through the internet. Off by default': 'Putar, jeda, lewati, dan lihat lagu berikutnya dari ponsel di jaringan yang sama. Halamannya berasal dari PC ini: tidak ada yang lewat internet. Mati secara bawaan',
+  'phone mobile remote control qr code wifi network lan couch': 'ponsel hp telepon remote kontrol kode qr wifi jaringan lan sofa',
+  'No answer from Legato. Is it open on the PC, and this phone on the same network?': 'Tidak ada jawaban dari Legato. Apakah masih terbuka di PC, dan ponsel ini di jaringan yang sama?',
+  'The phone remote could not start: another app may be using its port. Turn it off and on again.': 'Remote ponsel tidak bisa dimulai: mungkin aplikasi lain memakai port-nya. Matikan lalu nyalakan lagi.',
+  'This PC is not on a network. Connect it to the Wi-Fi or a cable, then turn the remote off and on.': 'PC ini tidak terhubung ke jaringan. Sambungkan ke Wi-Fi atau kabel, lalu matikan dan nyalakan lagi remote-nya.',
+  'QR code of the phone remote': 'Kode QR remote ponsel',
+  'Scan it with the phone’s camera; the phone must be on the same network as this PC. Windows may ask once to let Legato on private networks: allow it.': 'Pindai dengan kamera ponsel; ponsel harus di jaringan yang sama dengan PC ini. Windows mungkin bertanya sekali untuk mengizinkan Legato di jaringan pribadi: izinkan.',
+  'Phones that have the old link lose the remote': 'Ponsel dengan tautan lama kehilangan remote',
+  'New link': 'Tautan baru',
 }
 
 export default id

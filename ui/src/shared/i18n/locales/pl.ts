@@ -1878,6 +1878,16 @@ const pl: Record<string, string> = {
   'Faster': 'Szybciej',
   'Small fixes and improvements.': 'Drobne poprawki i ulepszenia.',
   'And {n} more': 'I {n} więcej',
+  'Phone remote': 'Pilot w telefonie',
+  'Play, pause, skip and see what’s next from a phone on the same network. The page comes from this PC: nothing goes through the internet. Off by default': 'Odtwarzaj, wstrzymuj, przełączaj i zobacz, co dalej, z telefonu w tej samej sieci. Strona pochodzi z tego komputera: nic nie idzie przez internet. Domyślnie wyłączone',
+  'phone mobile remote control qr code wifi network lan couch': 'telefon komórka smartfon pilot sterowanie kod qr wifi sieć lan kanapa',
+  'No answer from Legato. Is it open on the PC, and this phone on the same network?': 'Brak odpowiedzi od Legato. Czy jest otwarte na komputerze, a ten telefon w tej samej sieci?',
+  'The phone remote could not start: another app may be using its port. Turn it off and on again.': 'Nie udało się uruchomić pilota: być może inna aplikacja używa jego portu. Wyłącz go i włącz ponownie.',
+  'This PC is not on a network. Connect it to the Wi-Fi or a cable, then turn the remote off and on.': 'Ten komputer nie jest połączony z żadną siecią. Połącz go z Wi-Fi lub kablem, a potem wyłącz i włącz pilota.',
+  'QR code of the phone remote': 'Kod QR pilota w telefonie',
+  'Scan it with the phone’s camera; the phone must be on the same network as this PC. Windows may ask once to let Legato on private networks: allow it.': 'Zeskanuj go aparatem telefonu; telefon musi być w tej samej sieci co ten komputer. Windows może raz zapytać o zgodę dla Legato w sieciach prywatnych: zezwól.',
+  'Phones that have the old link lose the remote': 'Telefony ze starym linkiem tracą pilota',
+  'New link': 'Nowy link',
 }
 
 export default pl

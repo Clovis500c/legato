@@ -12,7 +12,7 @@ Everything the user made, from one PC to the others:
   library;
 - listening history, mix preferences (Less / Never) and star ratings (the latest one wins, a rating taken off too);
 - Live Editor versions and presets (songs found by their ids on the other side);
-- settings, key by key, except this PC's own: interface size, mini player spot and width, update channel, defaults version;
+- settings, key by key, except this PC's own: interface size, mini player spot and width, update channel, cover cache size, phone remote, defaults version;
 - the YouTube Music accounts picked for sync;
 - the list of connected services ("Signed in there, not here", with a button to Accounts).
 

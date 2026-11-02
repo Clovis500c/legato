@@ -1878,6 +1878,16 @@ const uk: Record<string, string> = {
   'Faster': 'Швидше',
   'Small fixes and improvements.': 'Дрібні виправлення та покращення.',
   'And {n} more': 'І ще {n}',
+  'Phone remote': 'Пульт на телефоні',
+  'Play, pause, skip and see what’s next from a phone on the same network. The page comes from this PC: nothing goes through the internet. Off by default': 'Вмикай, став на паузу, перемикай і дивись, що далі, з телефона в тій самій мережі. Сторінка йде з цього ПК: нічого не проходить через інтернет. Типово вимкнено',
+  'phone mobile remote control qr code wifi network lan couch': 'телефон смартфон мобільний пульт керування qr код wifi мережа lan диван',
+  'No answer from Legato. Is it open on the PC, and this phone on the same network?': 'Legato не відповідає. Він відкритий на ПК, а цей телефон у тій самій мережі?',
+  'The phone remote could not start: another app may be using its port. Turn it off and on again.': 'Не вдалося запустити пульт: можливо, його порт зайняв інший застосунок. Вимкни й знову ввімкни його.',
+  'This PC is not on a network. Connect it to the Wi-Fi or a cable, then turn the remote off and on.': 'Цей ПК не підключений до мережі. Підключи його до Wi-Fi або кабелем, потім вимкни й знову ввімкни пульт.',
+  'QR code of the phone remote': 'QR-код пульта на телефоні',
+  'Scan it with the phone’s camera; the phone must be on the same network as this PC. Windows may ask once to let Legato on private networks: allow it.': 'Відскануй його камерою телефона; телефон має бути в тій самій мережі, що й цей ПК. Windows може один раз запитати, чи дозволити Legato приватні мережі: дозволь.',
+  'Phones that have the old link lose the remote': 'Телефони зі старим посиланням втратять пульт',
+  'New link': 'Нове посилання',
 }
 
 export default uk

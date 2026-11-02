@@ -1878,6 +1878,16 @@ const hi: Record<string, string> = {
   'Faster': 'और तेज़',
   'Small fixes and improvements.': 'छोटे सुधार और बेहतरी।',
   'And {n} more': 'और {n} अन्य',
+  'Phone remote': 'फ़ोन रिमोट',
+  'Play, pause, skip and see what’s next from a phone on the same network. The page comes from this PC: nothing goes through the internet. Off by default': 'उसी नेटवर्क पर मौजूद फ़ोन से चलाएँ, रोकें, आगे बढ़ें और देखें कि आगे क्या है। पेज इसी PC से आता है: कुछ भी इंटरनेट से नहीं जाता। डिफ़ॉल्ट रूप से बंद',
+  'phone mobile remote control qr code wifi network lan couch': 'फ़ोन मोबाइल रिमोट कंट्रोल qr कोड wifi नेटवर्क lan',
+  'No answer from Legato. Is it open on the PC, and this phone on the same network?': 'Legato से कोई जवाब नहीं। क्या यह PC पर खुला है, और यह फ़ोन उसी नेटवर्क पर है?',
+  'The phone remote could not start: another app may be using its port. Turn it off and on again.': 'फ़ोन रिमोट शुरू नहीं हो सका: शायद कोई दूसरा ऐप उसका पोर्ट इस्तेमाल कर रहा है। इसे बंद करके फिर चालू करें।',
+  'This PC is not on a network. Connect it to the Wi-Fi or a cable, then turn the remote off and on.': 'यह PC किसी नेटवर्क से जुड़ा नहीं है। इसे Wi-Fi या केबल से जोड़ें, फिर रिमोट को बंद करके चालू करें।',
+  'QR code of the phone remote': 'फ़ोन रिमोट का QR कोड',
+  'Scan it with the phone’s camera; the phone must be on the same network as this PC. Windows may ask once to let Legato on private networks: allow it.': 'इसे फ़ोन के कैमरे से स्कैन करें; फ़ोन इसी PC वाले नेटवर्क पर होना चाहिए। Windows एक बार Legato को निजी नेटवर्क पर अनुमति देने के लिए पूछ सकता है: अनुमति दें।',
+  'Phones that have the old link lose the remote': 'पुराने लिंक वाले फ़ोन रिमोट खो देंगे',
+  'New link': 'नया लिंक',
 }
 
 export default hi

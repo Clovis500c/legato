@@ -1,7 +1,7 @@
 import { Channel, invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 import type { Box } from './artbox'
-import type { AddReport, AlbumInfo, CacheStats, Credentials, DetectInput, Detection, Direction, DiscordStatus, Dropped, Edit, EditDraft, Effects, ExportReport, FileList, FileTags, FindReport, Heard, LastfmStatus, LibraryChanges, LibraryData, LibraryHealth, LibraryPlaylist, LibraryTrack, ListImport, LinkImport, Listen, ListenbrainzStatus, ListRef, LiveReport, LiveSettings, Lyrics, LyricsAsk, MediaNow, Merged, Mix, NearbyState, Play, PlayerCommand, PlayerLevels, PlayerStatus, PlaylistEdit, PluginCall, PluginInfo, PluginInspect, Pref, Presence, PushFailed, Scrobble, SearchResults, ShareCode, SharePreview, ShieldStatus, ShortcutEntry, SongTags, Source, SourceStatus, SpotifyCommand, SpotifyExport, SpotifyImport, SpotifyLibraryImport, SpotifyList, SpotifyPick, SpotifyPlayback, SpotifyProgress, SponsorSegment, SyncOffer, SyncProbe, SyncReport, SyncStatus, SystemAccent, TagsSaved, Track, UpdateStatus, WatchCmd, WatchRect, WatchReport, YtmAccount, YtmAccounts, YtmArtist, YtmHome } from './generated'
+import type { AddReport, AlbumInfo, CacheStats, Credentials, DetectInput, Detection, Direction, DiscordStatus, Dropped, Edit, EditDraft, Effects, ExportReport, FileList, FileTags, FindReport, Heard, LastfmStatus, LibraryChanges, LibraryData, LibraryHealth, LibraryPlaylist, LibraryTrack, ListImport, LinkImport, Listen, ListenbrainzStatus, ListRef, LiveReport, LiveSettings, Lyrics, LyricsAsk, MediaNow, Merged, Mix, NearbyState, Play, PlayerCommand, PlayerLevels, PlayerStatus, PlaylistEdit, PluginCall, PluginInfo, PluginInspect, Pref, Presence, PushFailed, RemoteLink, RemoteSong, Scrobble, SearchResults, ShareCode, SharePreview, ShieldStatus, ShortcutEntry, SongTags, Source, SourceStatus, SpotifyCommand, SpotifyExport, SpotifyImport, SpotifyLibraryImport, SpotifyList, SpotifyPick, SpotifyPlayback, SpotifyProgress, SponsorSegment, SyncOffer, SyncProbe, SyncReport, SyncStatus, SystemAccent, TagsSaved, Track, UpdateStatus, WatchCmd, WatchRect, WatchReport, YtmAccount, YtmAccounts, YtmArtist, YtmHome } from './generated'
 
 // Every type the commands and events carry is a Rust type: `pnpm types` (ts-rs) writes it into ./generated, never by hand.
 // Re-exported here, so features import them from the api.
@@ -343,6 +343,10 @@ export const api = {
   holdPage: () => invoke<void>('hold_page'),
   /** Windows media panel; null = nothing playing. Cover: local file's (trackId), else `art` URL. */
   mediaUpdate: (now: MediaNow | null, trackId: number | null, art: string | null) => invoke<void>('media_update', { now, trackId, art }),
+  /** Phone remote: `labels` = the page's words in the interface's language, keyed by the English text. */
+  remoteStart: (labels: Record<string, string>, fresh: boolean) => invoke<RemoteLink>('remote_start', { labels, fresh }),
+  remoteStop: () => invoke<void>('remote_stop'),
+  remoteQueue: (next: RemoteSong[]) => invoke<void>('remote_queue', { next }),
   /** One line in the local diagnostics log (shared/diag.ts). message = our words; detail = what an error said, shown only with Include details. */
   diagLog: (level: 'info' | 'warn' | 'error', area: string, message: string, detail?: string) => invoke<void>('diag_log', { level, area, message, detail }),
   /** Settings › About › Copy diagnostics: the text for a bug report. details = song titles, account names and paths too. */

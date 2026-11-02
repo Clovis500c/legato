@@ -44,7 +44,7 @@ sight) shipped together as Stable 1.1.
 | 4 | Lyrics (1.3) | Word-by-word lyrics, translation, find by a line, lyrics saved into files and tapped live | M | Riff and Cider's most loved screen |
 | 5 | Your own music (1.4) | Jellyfin / Navidrome / Subsonic, ReplayGain, batch tag editor + MusicBrainz, ratings, column view, ListenBrainz, playlist folders | L | MusicBee / foobar / Plexamp users switch for this |
 | 6 | Smart (1.5) | Local sonic analysis, song / artist radio, sweet fades, path between artists, auto-DJ, smart shuffle, Wrapped | L | What no free desktop app does without a server |
-| 7 | Around the house (1.6) | Phone remote, cast (DLNA / Chromecast), listen together on the LAN, pick up on the other PC | L | Turns a player into a home system |
+| 7 | Around the house (1.6) | ~~Phone remote~~ (done 2026-11-02), cast (DLNA / Chromecast), listen together on the LAN, pick up on the other PC | L | Turns a player into a home system |
 | 8 | Windows polish (1.7) | Command palette, taskbar buttons + Jump List, headphones / call pause, alarm, OBS overlay, PiP, drag from Explorer | M | Small, many, each a reason to stay |
 | 9 | Everywhere (2.0) | The mobile version (Android, then iPhone: the owner's ask 2026-11-02, [ideas/mobile.md](ideas/mobile.md)), macOS and Linux builds | L | Riff's one platform lead; the owner wants Legato on the phone |
 
@@ -231,7 +231,7 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       silence scan's decode (`music_dsp::loudness`, SQLite `loudness`), applied before the live chain, peak-safe. Album
       without tags = the song's gain. See docs/playback.md › Local files. Unseen: real tagged files, by ear beside
       YouTube; off by default until the owner tries it (worth turning on by default then?).
-- [ ] `M` Phone remote: a page served on the LAN (QR code) to pause, skip, see the queue (Plexamp-like).
+- [x] `M` Phone remote: a page served on the LAN (QR code) to pause, skip, see the queue (Plexamp-like). Settings › Playback, off by default, per PC; `src-tauri/src/remote.rs` + `remote.html`, pure part `crates/core/src/remote.rs`, `features/remote/`.
 - [ ] `M` Accessibility pass: full keyboard, screen reader labels, contrast AA everywhere, reduced motion.
 - [x] `M` Library health: missing files, YouTube videos gone private (with "Find another version", `alternative_videos`),
       songs without covers or tags, one page to fix them. Settings › General › Library health, or the search bar:

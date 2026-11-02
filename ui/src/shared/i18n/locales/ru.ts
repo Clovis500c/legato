@@ -1878,6 +1878,16 @@ const ru: Record<string, string> = {
   'Faster': 'Быстрее',
   'Small fixes and improvements.': 'Небольшие исправления и улучшения.',
   'And {n} more': 'И ещё {n}',
+  'Phone remote': 'Пульт на телефоне',
+  'Play, pause, skip and see what’s next from a phone on the same network. The page comes from this PC: nothing goes through the internet. Off by default': 'Включай, ставь на паузу, переключай и смотри, что дальше, с телефона в той же сети. Страница идёт с этого ПК: ничего не проходит через интернет. По умолчанию выключено',
+  'phone mobile remote control qr code wifi network lan couch': 'телефон смартфон мобильный пульт управление qr код wifi сеть lan диван',
+  'No answer from Legato. Is it open on the PC, and this phone on the same network?': 'Legato не отвечает. Он открыт на ПК, а этот телефон в той же сети?',
+  'The phone remote could not start: another app may be using its port. Turn it off and on again.': 'Не удалось запустить пульт: возможно, его порт занят другим приложением. Выключи и снова включи его.',
+  'This PC is not on a network. Connect it to the Wi-Fi or a cable, then turn the remote off and on.': 'Этот ПК не подключён к сети. Подключи его к Wi-Fi или кабелем, затем выключи и снова включи пульт.',
+  'QR code of the phone remote': 'QR-код пульта на телефоне',
+  'Scan it with the phone’s camera; the phone must be on the same network as this PC. Windows may ask once to let Legato on private networks: allow it.': 'Отсканируй его камерой телефона; телефон должен быть в той же сети, что и этот ПК. Windows может один раз спросить, разрешить ли Legato доступ к частным сетям: разреши.',
+  'Phones that have the old link lose the remote': 'Телефоны со старой ссылкой потеряют пульт',
+  'New link': 'Новая ссылка',
 }
 
 export default ru

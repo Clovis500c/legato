@@ -22,7 +22,7 @@ export const FEATURES: { icon: IconName; title: string; text: string }[] = [
   { icon: 'FolderSimple', title: 'Your own files', text: 'Gapless playback, as loud as your streamed songs (their ReplayGain tags, or measured), and their tags to edit, a whole album at once: artist, album, genre, year, track numbers, cover. Their own lyrics come first: edit them, or time plain ones by tapping along.' },
   { icon: 'Devices', title: 'Sync Mode', text: 'Your library on all your PCs, through a OneDrive folder or your network.' },
   { icon: 'PuzzlePiece', title: 'Add-ons and plugins', text: 'Plugins by others ask for what they need before they can do anything.' },
-  { icon: 'Translate', title: '18 languages', text: 'Following Windows, with its media keys, a tray icon and full screen. The music pauses when your headphones disconnect, or when a call starts if you want.' },
+  { icon: 'Translate', title: '18 languages', text: 'Following Windows, with its media keys, a tray icon and full screen. The music pauses when your headphones disconnect, or when a call starts if you want, and your phone can be the remote.' },
 ]
 
 /** Where the window stands: x, y from the stage's middle (share of it), degrees, zoom on the fitted size. */
@@ -83,6 +83,7 @@ export const PRIVACY: [string, string][] = [
   ['Voice search', "Off until you allow it. While it listens, your voice goes to Microsoft through Windows' own speech recognition. The app keeps nothing."],
   ['Music Detector', 'Off until you allow it. 10 seconds of sound, from the microphone or what this PC plays, go once to AudD to name the song. Nothing is saved.'],
   ['Sync Mode', 'Off until you set it up. One file per PC in a folder you pick (OneDrive by default), sealed with your password if you set one. Over your network, a 6-digit code seals the exchange.'],
+  ['Phone remote', "Off until you turn it on in Settings › Playback. Then this PC answers, on its own network only, the phones that have its link (a secret in its QR code): what plays, its cover and what's next go to them, and their taps come back. Nothing goes through the internet, and a new link ends the old one."],
   ['YouTube embedding check', "When a YouTube song starts, its video id (and the next two) goes to YouTube's oEmbed, to learn whether its owner allows embedding. The answer is kept a day."],
   ['Updates', 'At launch, the app asks GitHub whether a newer version exists, and installs it between two songs.'],
   ['Error log', 'Errors and playback switches are noted in a small log on this PC (5 MB at most). Nothing sends it: Settings › About › Copy diagnostics puts a summary in your clipboard for a bug report, without song titles or account names unless you ask.'],
@@ -103,7 +104,7 @@ export const ROADMAP: [string, string][] = [
   ['Lyrics', 'A translation under each line, and a song found from a line you remember.'],
   ['Your own music', 'Jellyfin, Navidrome and Subsonic servers, MusicBrainz lookups for your tags.'],
   ['Smarter listening', 'Your songs analysed on your PC (tempo, energy, key) for radios and fades that fit, a path from one artist to another, a yearly recap to share.'],
-  ['Around the house', 'Your phone as a remote, speakers and TVs (DLNA, Chromecast), listening together on the same network, picking up on your other PC where you stopped.'],
+  ['Around the house', 'Speakers and TVs (DLNA, Chromecast), listening together on the same network, picking up on your other PC where you stopped.'],
   ['Windows polish', 'A Jump List on the taskbar icon, an alarm that wakes you with a playlist, an overlay for OBS, a picture-in-picture player.'],
   ['Phones, Mac and Linux', 'A mobile version, Android first, on the same Rust core; builds for macOS and Linux.'],
 ]

@@ -1878,6 +1878,16 @@ const tr: Record<string, string> = {
   'Faster': 'Daha hızlı',
   'Small fixes and improvements.': 'Küçük düzeltmeler ve iyileştirmeler.',
   'And {n} more': 'Ve {n} tane daha',
+  'Phone remote': 'Telefondan kumanda',
+  'Play, pause, skip and see what’s next from a phone on the same network. The page comes from this PC: nothing goes through the internet. Off by default': 'Aynı ağdaki bir telefondan çal, duraklat, atla ve sırada ne olduğunu gör. Sayfa bu bilgisayardan gelir: hiçbir şey internetten geçmez. Varsayılan olarak kapalı',
+  'phone mobile remote control qr code wifi network lan couch': 'telefon cep mobil kumanda uzaktan kontrol qr kod wifi ağ lan kanepe',
+  'No answer from Legato. Is it open on the PC, and this phone on the same network?': 'Legato yanıt vermiyor. Bilgisayarda açık mı, bu telefon da aynı ağda mı?',
+  'The phone remote could not start: another app may be using its port. Turn it off and on again.': 'Telefondan kumanda başlatılamadı: başka bir uygulama portunu kullanıyor olabilir. Kapatıp yeniden aç.',
+  'This PC is not on a network. Connect it to the Wi-Fi or a cable, then turn the remote off and on.': 'Bu bilgisayar bir ağa bağlı değil. Wi-Fi’ye ya da kabloyla bağla, sonra kumandayı kapatıp yeniden aç.',
+  'QR code of the phone remote': 'Telefondan kumandanın QR kodu',
+  'Scan it with the phone’s camera; the phone must be on the same network as this PC. Windows may ask once to let Legato on private networks: allow it.': 'Telefonun kamerasıyla tara; telefon bu bilgisayarla aynı ağda olmalı. Windows bir kez Legato’ya özel ağlarda izin verilip verilmeyeceğini sorabilir: izin ver.',
+  'Phones that have the old link lose the remote': 'Eski bağlantıya sahip telefonlar kumandayı kaybeder',
+  'New link': 'Yeni bağlantı',
 }
 
 export default tr

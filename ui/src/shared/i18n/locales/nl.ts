@@ -1878,6 +1878,16 @@ const nl: Record<string, string> = {
   'Faster': 'Sneller',
   'Small fixes and improvements.': 'Kleine reparaties en verbeteringen.',
   'And {n} more': 'En nog {n}',
+  'Phone remote': 'Telefoonafstandsbediening',
+  'Play, pause, skip and see what’s next from a phone on the same network. The page comes from this PC: nothing goes through the internet. Off by default': 'Afspelen, pauzeren, overslaan en zien wat er komt vanaf een telefoon op hetzelfde netwerk. De pagina komt van deze pc: niets gaat via internet. Standaard uit',
+  'phone mobile remote control qr code wifi network lan couch': 'telefoon mobiel afstandsbediening bediening qr code wifi netwerk lan bank',
+  'No answer from Legato. Is it open on the PC, and this phone on the same network?': 'Geen antwoord van Legato. Is het open op de pc, en zit deze telefoon op hetzelfde netwerk?',
+  'The phone remote could not start: another app may be using its port. Turn it off and on again.': 'De telefoonafstandsbediening kon niet starten: misschien gebruikt een andere app de poort. Zet hem uit en weer aan.',
+  'This PC is not on a network. Connect it to the Wi-Fi or a cable, then turn the remote off and on.': 'Deze pc is niet verbonden met een netwerk. Verbind hem met wifi of een kabel en zet de afstandsbediening daarna uit en weer aan.',
+  'QR code of the phone remote': 'QR-code van de telefoonafstandsbediening',
+  'Scan it with the phone’s camera; the phone must be on the same network as this PC. Windows may ask once to let Legato on private networks: allow it.': 'Scan hem met de camera van je telefoon; de telefoon moet op hetzelfde netwerk zitten als deze pc. Windows kan één keer vragen om Legato op privénetwerken toe te staan: sta het toe.',
+  'Phones that have the old link lose the remote': 'Telefoons met de oude link verliezen de afstandsbediening',
+  'New link': 'Nieuwe link',
 }
 
 export default nl

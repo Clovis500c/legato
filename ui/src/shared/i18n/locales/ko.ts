@@ -1878,6 +1878,16 @@ const ko: Record<string, string> = {
   'Faster': '더 빨라짐',
   'Small fixes and improvements.': '작은 수정과 개선.',
   'And {n} more': '외 {n}개',
+  'Phone remote': '휴대폰 리모컨',
+  'Play, pause, skip and see what’s next from a phone on the same network. The page comes from this PC: nothing goes through the internet. Off by default': '같은 네트워크의 휴대폰에서 재생, 일시정지, 건너뛰기를 하고 다음 곡을 볼 수 있습니다. 페이지는 이 PC에서 제공되며 인터넷을 거치지 않습니다. 기본값은 꺼짐',
+  'phone mobile remote control qr code wifi network lan couch': '휴대폰 모바일 폰 리모컨 원격 제어 qr 코드 wifi 와이파이 네트워크 lan',
+  'No answer from Legato. Is it open on the PC, and this phone on the same network?': 'Legato가 응답하지 않습니다. PC에서 열려 있고 이 휴대폰이 같은 네트워크에 있나요?',
+  'The phone remote could not start: another app may be using its port. Turn it off and on again.': '휴대폰 리모컨을 시작할 수 없습니다. 다른 앱이 포트를 사용 중일 수 있습니다. 껐다가 다시 켜세요.',
+  'This PC is not on a network. Connect it to the Wi-Fi or a cable, then turn the remote off and on.': '이 PC가 네트워크에 연결되어 있지 않습니다. Wi-Fi나 케이블로 연결한 다음 리모컨을 껐다가 다시 켜세요.',
+  'QR code of the phone remote': '휴대폰 리모컨 QR 코드',
+  'Scan it with the phone’s camera; the phone must be on the same network as this PC. Windows may ask once to let Legato on private networks: allow it.': '휴대폰 카메라로 스캔하세요. 휴대폰은 이 PC와 같은 네트워크에 있어야 합니다. Windows가 개인 네트워크에서 Legato를 허용할지 한 번 물을 수 있습니다. 허용하세요.',
+  'Phones that have the old link lose the remote': '이전 링크를 가진 휴대폰은 리모컨을 쓸 수 없게 됩니다',
+  'New link': '새 링크',
 }
 
 export default ko

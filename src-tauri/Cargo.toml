@@ -15,6 +15,8 @@ e2e = ["music-player/null-output"]
 
 [dependencies]
 anyhow = "1.0.104"
+# Already in the build (mdns-sd's): the phone remote's address when the default route has none.
+if-addrs = "0.15.0"
 keyring = "4.2.0"
 music-connectors = { version = "1.1.0", path = "../crates/connectors" }
 music-core = { version = "1.1.0", path = "../crates/core" }

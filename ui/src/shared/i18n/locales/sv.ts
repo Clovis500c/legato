@@ -1878,6 +1878,16 @@ const sv: Record<string, string> = {
   'Faster': 'Snabbare',
   'Small fixes and improvements.': 'Små rättelser och förbättringar.',
   'And {n} more': 'Och {n} till',
+  'Phone remote': 'Fjärrkontroll i mobilen',
+  'Play, pause, skip and see what’s next from a phone on the same network. The page comes from this PC: nothing goes through the internet. Off by default': 'Spela, pausa, hoppa över och se vad som kommer härnäst från en mobil i samma nätverk. Sidan kommer från den här datorn: inget går via internet. Av som standard',
+  'phone mobile remote control qr code wifi network lan couch': 'mobil telefon fjärrkontroll styrning qr kod wifi nätverk lan soffa',
+  'No answer from Legato. Is it open on the PC, and this phone on the same network?': 'Inget svar från Legato. Är det öppet på datorn, och är den här mobilen i samma nätverk?',
+  'The phone remote could not start: another app may be using its port. Turn it off and on again.': 'Fjärrkontrollen kunde inte starta: en annan app kanske använder dess port. Stäng av den och slå på den igen.',
+  'This PC is not on a network. Connect it to the Wi-Fi or a cable, then turn the remote off and on.': 'Den här datorn är inte ansluten till något nätverk. Anslut den till wifi eller med kabel och stäng sedan av och slå på fjärrkontrollen.',
+  'QR code of the phone remote': 'QR-kod för fjärrkontrollen i mobilen',
+  'Scan it with the phone’s camera; the phone must be on the same network as this PC. Windows may ask once to let Legato on private networks: allow it.': 'Skanna den med mobilens kamera; mobilen måste vara i samma nätverk som den här datorn. Windows kan fråga en gång om Legato får använda privata nätverk: tillåt det.',
+  'Phones that have the old link lose the remote': 'Mobiler med den gamla länken förlorar fjärrkontrollen',
+  'New link': 'Ny länk',
 }
 
 export default sv

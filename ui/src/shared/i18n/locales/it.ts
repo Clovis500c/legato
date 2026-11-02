@@ -1878,6 +1878,16 @@ const it: Record<string, string> = {
   'Faster': 'Più veloce',
   'Small fixes and improvements.': 'Piccole correzioni e miglioramenti.',
   'And {n} more': 'E altri {n}',
+  'Phone remote': 'Telecomando dal telefono',
+  'Play, pause, skip and see what’s next from a phone on the same network. The page comes from this PC: nothing goes through the internet. Off by default': 'Riproduci, metti in pausa, salta e guarda cosa viene dopo da un telefono sulla stessa rete. La pagina arriva da questo PC: niente passa da internet. Disattivato di default',
+  'phone mobile remote control qr code wifi network lan couch': 'telefono cellulare smartphone telecomando controllo codice qr wifi rete lan divano',
+  'No answer from Legato. Is it open on the PC, and this phone on the same network?': 'Nessuna risposta da Legato. È aperto sul PC, e questo telefono è sulla stessa rete?',
+  'The phone remote could not start: another app may be using its port. Turn it off and on again.': 'Il telecomando non è partito: forse un’altra app usa la sua porta. Disattivalo e riattivalo.',
+  'This PC is not on a network. Connect it to the Wi-Fi or a cable, then turn the remote off and on.': 'Questo PC non è connesso a nessuna rete. Collegalo al Wi-Fi o con un cavo, poi disattiva e riattiva il telecomando.',
+  'QR code of the phone remote': 'Codice QR del telecomando',
+  'Scan it with the phone’s camera; the phone must be on the same network as this PC. Windows may ask once to let Legato on private networks: allow it.': 'Scansionalo con la fotocamera del telefono; il telefono deve essere sulla stessa rete di questo PC. Windows potrebbe chiedere una volta di consentire Legato sulle reti private: consentilo.',
+  'Phones that have the old link lose the remote': 'I telefoni con il vecchio link perdono il telecomando',
+  'New link': 'Nuovo link',
 }
 
 export default it

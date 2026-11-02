@@ -16,6 +16,7 @@ import { useLive } from '../player/live'
 import { VISUALIZER_LABELS } from '../player/vizLooks'
 import { SourcesView } from '../sources/SourcesView'
 import { SyncSection } from '../syncmode/SyncSection'
+import { RemotePanel } from '../remote/RemotePanel'
 import { clearRecent } from '../search/recent'
 import { AboutSection } from './AboutSection'
 import { ThemeStudio } from './ThemeStudio'
@@ -677,6 +678,14 @@ function PlaybackSection() {
           <Row setting="pauseOnCall" label={msg('Pause during calls')} sub={tr('A Teams or Skype call starts: the music pauses, and plays on when the call ends. Off: Windows lowers it, as set in its sound settings')}>
             <Toggle label={tr('Pause during calls')} checked={s.pauseOnCall} onChange={(pauseOnCall) => update({ pauseOnCall })} />
           </Row>
+        </div>
+      </Group>
+      <Group title={msg('Phone remote')}>
+        <div className="rounded-xl border border-line bg-raised">
+          <Row setting="phoneRemote" label={msg('Phone remote')} sub={tr('Play, pause, skip and see what’s next from a phone on the same network. The page comes from this PC: nothing goes through the internet. Off by default')}>
+            <Toggle label={tr('Phone remote')} checked={s.phoneRemote} onChange={(phoneRemote) => update({ phoneRemote })} />
+          </Row>
+          {s.phoneRemote && <RemotePanel />}
         </div>
       </Group>
       <SoundGroup />

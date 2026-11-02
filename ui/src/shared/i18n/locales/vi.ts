@@ -1878,6 +1878,16 @@ const vi: Record<string, string> = {
   'Faster': 'Nhanh hơn',
   'Small fixes and improvements.': 'Sửa lỗi và cải thiện nhỏ.',
   'And {n} more': 'Và {n} mục khác',
+  'Phone remote': 'Điều khiển bằng điện thoại',
+  'Play, pause, skip and see what’s next from a phone on the same network. The page comes from this PC: nothing goes through the internet. Off by default': 'Phát, tạm dừng, chuyển bài và xem bài tiếp theo từ điện thoại trong cùng mạng. Trang đến từ PC này: không có gì đi qua internet. Mặc định tắt',
+  'phone mobile remote control qr code wifi network lan couch': 'điện thoại di động điều khiển từ xa mã qr wifi mạng lan',
+  'No answer from Legato. Is it open on the PC, and this phone on the same network?': 'Legato không phản hồi. Ứng dụng có đang mở trên PC và điện thoại này có cùng mạng không?',
+  'The phone remote could not start: another app may be using its port. Turn it off and on again.': 'Không thể khởi động điều khiển bằng điện thoại: có thể một ứng dụng khác đang dùng cổng của nó. Hãy tắt rồi bật lại.',
+  'This PC is not on a network. Connect it to the Wi-Fi or a cable, then turn the remote off and on.': 'PC này chưa kết nối mạng. Hãy kết nối Wi-Fi hoặc cáp, rồi tắt và bật lại điều khiển.',
+  'QR code of the phone remote': 'Mã QR của điều khiển bằng điện thoại',
+  'Scan it with the phone’s camera; the phone must be on the same network as this PC. Windows may ask once to let Legato on private networks: allow it.': 'Quét bằng camera điện thoại; điện thoại phải cùng mạng với PC này. Windows có thể hỏi một lần để cho phép Legato trên mạng riêng: hãy cho phép.',
+  'Phones that have the old link lose the remote': 'Điện thoại có liên kết cũ sẽ mất quyền điều khiển',
+  'New link': 'Liên kết mới',
 }
 
 export default vi

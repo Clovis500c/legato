@@ -72,6 +72,7 @@ export const SETTINGS_INDEX: SettingEntry[] = [
   { section: 'playback', label: msg('Your ratings count'), keywords: msg('auto-dj autodj stars rating favourite weight') },
   { section: 'playback', label: msg('Same artist again'), keywords: msg('auto-dj autodj artist repeat spread apart') },
   { section: 'playback', label: msg('Pause during calls'), keywords: msg('call teams skype meeting communications ducking lower volume pause') },
+  { section: 'playback', label: msg('Phone remote'), keywords: msg('phone mobile remote control qr code wifi network lan couch') },
   { section: 'playback', label: msg('Pause when headphones disconnect'), keywords: msg('headphones unplug bluetooth headset speaker disconnect jack output device pause') },
   { section: 'playback', label: msg('No fade within an album'), keywords: msg('album gapless crossfade fade live continuous concert mix dip') },
   { section: 'playback', label: msg('Advanced fade'), keywords: msg('fade curve crossfade graph volume shape equal power exponential logarithmic s-curve dj') },

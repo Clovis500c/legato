@@ -1,0 +1,149 @@
+<!doctype html>
+<!-- Phone remote's page (src-tauri/src/remote.rs). Double-braced words: the app's, in its language, filled in at start. -->
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="referrer" content="no-referrer">
+<link rel="icon" href="data:,">
+<title>Legato</title>
+<style>
+:root{--bg:#fff;--panel:#f7f7f5;--line:#dededa;--ink:#0f0f0f;--ink2:#565656;--accent:#7cb8ff;--on-accent:#0f0f0f}
+@media (prefers-color-scheme:dark){:root{--bg:#131313;--panel:#171717;--line:#2c2c2c;--ink:#f1f1f1;--ink2:#b3b3b3}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 Roboto,system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:440px;margin:0 auto;padding:max(24px,env(safe-area-inset-top)) 20px max(24px,env(safe-area-inset-bottom));display:flex;flex-direction:column;align-items:center;gap:18px}
+.cover{width:min(80vw,340px);aspect-ratio:1;border-radius:12px;background:var(--panel);object-fit:cover;border:1px solid var(--line)}
+.meta{width:100%;text-align:center;min-height:52px}
+.title{font-size:20px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.artist{color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.seek{width:100%}
+.track{height:28px;display:flex;align-items:center;cursor:pointer;touch-action:manipulation}
+.track>div{height:4px;width:100%;border-radius:2px;background:var(--line);overflow:hidden}
+.bar{height:100%;width:0;background:var(--ink)}
+.times{display:flex;justify-content:space-between;color:var(--ink2);font-size:13px;font-variant-numeric:tabular-nums;min-height:18px}
+.controls{display:flex;align-items:center;gap:28px}
+button{border:0;background:none;color:var(--ink);width:56px;height:56px;border-radius:50%;display:grid;place-items:center;cursor:pointer;touch-action:manipulation}
+button:active{background:var(--panel)}
+button svg{width:30px;height:30px;fill:currentColor}
+#toggle{width:72px;height:72px;background:var(--accent);color:var(--on-accent)}
+#toggle svg{width:36px;height:36px}
+.idle .controls,.idle .seek,.lost main>:not(#off){opacity:.4;pointer-events:none}
+#off{color:var(--ink2);text-align:center;margin:0}
+#queue{width:100%}
+#queue h2{font-size:14px;font-weight:600;color:var(--ink2);margin:8px 0}
+#list{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+#list li{padding:10px 0;border-bottom:1px solid var(--line);display:flex;flex-direction:column;min-width:0}
+#list b,#list span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#list b{font-weight:500}
+#list span{color:var(--ink2);font-size:14px}
+</style>
+</head>
+<body data-play="{{Play}}" data-pause="{{Pause}}" data-nothing="{{Nothing playing}}">
+<main>
+<img id="cover" class="cover" alt="">
+<div class="meta"><div id="title" class="title"></div><div id="artist" class="artist"></div></div>
+<div class="seek">
+<div id="track" class="track" role="slider" aria-label="{{Position}}" aria-valuemin="0"><div><div id="bar" class="bar"></div></div></div>
+<div class="times"><span id="at"></span><span id="len"></span></div>
+</div>
+<div class="controls">
+<button id="previous" aria-label="{{Previous}}"><svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zM18 6l-8.5 6 8.5 6z"/></svg></button>
+<button id="toggle" aria-label="{{Play}}"><svg id="play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg><svg id="pause" viewBox="0 0 24 24" style="display:none"><path d="M6 5h4v14H6zm8 0h4v14h-4z"/></svg></button>
+<button id="next" aria-label="{{Next}}"><svg viewBox="0 0 24 24"><path d="M16 6h2v12h-2zM6 6l8.5 6L6 18z"/></svg></button>
+</div>
+<p id="off" hidden>{{No answer from Legato. Is it open on the PC, and this phone on the same network?}}</p>
+<section id="queue" hidden><h2>{{Up next}}</h2><ol id="list"></ol></section>
+</main>
+<script>
+const T = new URLSearchParams(location.search).get('t') || ''
+const W = document.body.dataset
+const $ = (id) => document.getElementById(id)
+const url = (path, q = '') => `${path}?t=${T}${q}`
+let now = null, at = 0, cover = 0, timer = 0, queue = ''
+const time = (ms) => { const s = Math.floor(ms / 1000); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}` }
+const pos = () => (now ? Math.min(now.positionMs + (now.playing ? performance.now() - at : 0), now.durationMs ?? Infinity) : 0)
+function tick() {
+  const d = now?.durationMs
+  $('bar').style.width = d ? `${(pos() / d) * 100}%` : '0'
+  $('at').textContent = d ? time(pos()) : ''
+  $('len').textContent = d ? time(d) : ''
+  $('track').setAttribute('aria-valuemax', String(Math.round((d ?? 0) / 1000)))
+  $('track').setAttribute('aria-valuenow', String(Math.round(pos() / 1000)))
+}
+function show() {
+  document.body.classList.toggle('idle', !now)
+  $('title').textContent = now ? now.title : W.nothing
+  $('artist').textContent = now ? now.artist : ''
+  const playing = !!now?.playing
+  $('play').style.display = playing ? 'none' : ''
+  $('pause').style.display = playing ? '' : 'none'
+  $('toggle').setAttribute('aria-label', playing ? W.pause : W.play)
+  const c = now?.cover ?? 0
+  if (c !== cover) {
+    cover = c
+    if (c) $('cover').src = url('/cover', `&v=${c}`)
+    else $('cover').removeAttribute('src')
+  }
+  const next = now?.next ?? []
+  const key = JSON.stringify(next)
+  if (key !== queue) {
+    queue = key
+    $('queue').hidden = !next.length
+    $('list').replaceChildren(...next.map((s) => {
+      const li = document.createElement('li'), b = document.createElement('b'), span = document.createElement('span')
+      b.textContent = s.title
+      span.textContent = s.artist
+      li.append(b, span)
+      return li
+    }))
+  }
+  tick()
+}
+// Asks once a second while the page is in sight; nothing while the phone is locked or the tab hidden.
+async function poll() {
+  clearTimeout(timer)
+  if (document.hidden) return
+  try {
+    const r = await fetch(url('/state'), { cache: 'no-store' })
+    if (!r.ok) throw new Error(String(r.status))
+    now = await r.json()
+    at = performance.now()
+    $('off').hidden = true
+    document.body.classList.remove('lost')
+    show()
+  } catch {
+    $('off').hidden = false
+    document.body.classList.add('lost')
+  }
+  timer = setTimeout(poll, 1000)
+}
+async function send(path, q) {
+  try { await fetch(url(path, q), { method: 'POST', cache: 'no-store' }) } catch {}
+  setTimeout(poll, 300)
+}
+// No cover after all (gone from the cache, a host refused): the empty square, never a broken image.
+$('cover').onerror = () => $('cover').removeAttribute('src')
+$('previous').onclick = () => send('/key', '&k=previous')
+$('next').onclick = () => send('/key', '&k=next')
+$('toggle').onclick = () => {
+  if (now) { now.positionMs = pos(); at = performance.now(); now.playing = !now.playing; show() }
+  send('/key', '&k=toggle')
+}
+$('track').onclick = (e) => {
+  const d = now?.durationMs
+  if (!d) return
+  const r = e.currentTarget.getBoundingClientRect()
+  const ms = Math.round(Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * d)
+  now.positionMs = ms
+  at = performance.now()
+  tick()
+  send('/seek', `&ms=${ms}`)
+}
+document.addEventListener('visibilitychange', () => { if (!document.hidden) poll() })
+setInterval(() => { if (now?.playing && !document.hidden) tick() }, 250)
+poll()
+</script>
+</body>
+</html>

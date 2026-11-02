@@ -1878,6 +1878,16 @@ const de: Record<string, string> = {
   'Faster': 'Schneller',
   'Small fixes and improvements.': 'Kleine Korrekturen und Verbesserungen.',
   'And {n} more': 'Und {n} weitere',
+  'Phone remote': 'Handy-Fernbedienung',
+  'Play, pause, skip and see what’s next from a phone on the same network. The page comes from this PC: nothing goes through the internet. Off by default': 'Abspielen, pausieren, überspringen und sehen, was als Nächstes kommt – vom Handy im selben Netzwerk. Die Seite kommt von diesem PC: Nichts geht über das Internet. Standardmäßig aus',
+  'phone mobile remote control qr code wifi network lan couch': 'handy telefon mobil fernbedienung steuerung qr code wlan netzwerk lan sofa',
+  'No answer from Legato. Is it open on the PC, and this phone on the same network?': 'Keine Antwort von Legato. Ist es auf dem PC geöffnet und dieses Handy im selben Netzwerk?',
+  'The phone remote could not start: another app may be using its port. Turn it off and on again.': 'Die Handy-Fernbedienung konnte nicht starten: Eine andere App nutzt vielleicht ihren Port. Schalte sie aus und wieder ein.',
+  'This PC is not on a network. Connect it to the Wi-Fi or a cable, then turn the remote off and on.': 'Dieser PC ist mit keinem Netzwerk verbunden. Verbinde ihn mit dem WLAN oder per Kabel und schalte die Fernbedienung dann aus und wieder ein.',
+  'QR code of the phone remote': 'QR-Code der Handy-Fernbedienung',
+  'Scan it with the phone’s camera; the phone must be on the same network as this PC. Windows may ask once to let Legato on private networks: allow it.': 'Scanne ihn mit der Handykamera; das Handy muss im selben Netzwerk sein wie dieser PC. Windows fragt eventuell einmal, ob Legato private Netzwerke nutzen darf: Erlaube es.',
+  'Phones that have the old link lose the remote': 'Handys mit dem alten Link verlieren die Fernbedienung',
+  'New link': 'Neuer Link',
 }
 
 export default de

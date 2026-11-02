@@ -1878,6 +1878,16 @@ const ja: Record<string, string> = {
   'Faster': '高速化',
   'Small fixes and improvements.': '細かな修正と改善。',
   'And {n} more': 'ほか {n} 件',
+  'Phone remote': 'スマホリモコン',
+  'Play, pause, skip and see what’s next from a phone on the same network. The page comes from this PC: nothing goes through the internet. Off by default': '同じネットワーク上のスマホから再生、一時停止、スキップ、次の曲の確認ができます。ページはこの PC から配信され、インターネットは経由しません。初期設定はオフ',
+  'phone mobile remote control qr code wifi network lan couch': 'スマホ 携帯 電話 リモコン 操作 qr コード wifi ネットワーク lan',
+  'No answer from Legato. Is it open on the PC, and this phone on the same network?': 'Legato から応答がありません。PC で開いていて、このスマホが同じネットワークにありますか？',
+  'The phone remote could not start: another app may be using its port. Turn it off and on again.': 'スマホリモコンを開始できませんでした。別のアプリがポートを使っている可能性があります。オフにしてから再度オンにしてください。',
+  'This PC is not on a network. Connect it to the Wi-Fi or a cable, then turn the remote off and on.': 'この PC はネットワークに接続されていません。Wi-Fi またはケーブルで接続してから、リモコンをオフにして再度オンにしてください。',
+  'QR code of the phone remote': 'スマホリモコンの QR コード',
+  'Scan it with the phone’s camera; the phone must be on the same network as this PC. Windows may ask once to let Legato on private networks: allow it.': 'スマホのカメラで読み取ってください。スマホはこの PC と同じネットワークにある必要があります。Windows がプライベート ネットワークでの Legato の許可を一度求めることがあります。許可してください。',
+  'Phones that have the old link lose the remote': '古いリンクを持つスマホはリモコンを使えなくなります',
+  'New link': '新しいリンク',
 }
 
 export default ja

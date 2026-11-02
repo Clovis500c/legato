@@ -1878,6 +1878,16 @@ const pt: Record<string, string> = {
   'Faster': 'Mais rápido',
   'Small fixes and improvements.': 'Pequenas correções e melhorias.',
   'And {n} more': 'E mais {n}',
+  'Phone remote': 'Controle pelo celular',
+  'Play, pause, skip and see what’s next from a phone on the same network. The page comes from this PC: nothing goes through the internet. Off by default': 'Toque, pause, pule e veja o que vem a seguir de um celular na mesma rede. A página vem deste PC: nada passa pela internet. Desativado por padrão',
+  'phone mobile remote control qr code wifi network lan couch': 'celular telefone móvel controle remoto código qr wifi rede lan sofá',
+  'No answer from Legato. Is it open on the PC, and this phone on the same network?': 'Sem resposta do Legato. Ele está aberto no PC, e este celular na mesma rede?',
+  'The phone remote could not start: another app may be using its port. Turn it off and on again.': 'Não foi possível iniciar o controle pelo celular: talvez outro app esteja usando a porta dele. Desative e ative de novo.',
+  'This PC is not on a network. Connect it to the Wi-Fi or a cable, then turn the remote off and on.': 'Este PC não está conectado a nenhuma rede. Conecte-o ao Wi-Fi ou a um cabo e depois desative e ative o controle.',
+  'QR code of the phone remote': 'Código QR do controle pelo celular',
+  'Scan it with the phone’s camera; the phone must be on the same network as this PC. Windows may ask once to let Legato on private networks: allow it.': 'Escaneie com a câmera do celular; o celular precisa estar na mesma rede que este PC. O Windows pode perguntar uma vez se o Legato pode usar redes privadas: permita.',
+  'Phones that have the old link lose the remote': 'Celulares com o link antigo perdem o controle',
+  'New link': 'Novo link',
 }
 
 export default pt

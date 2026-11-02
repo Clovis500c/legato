@@ -392,6 +392,8 @@ export interface Settings {
   rememberSearches: boolean
   /** Top bar asks YouTube's suggestions as you type (the text goes to Google). */
   searchSuggestions: boolean
+  /** Phone remote: a page this PC serves on its network (`features/remote/`). This PC's own: Sync Mode leaves it. */
+  phoneRemote: boolean
   /** Now Playing: the top bar's search sits over the cover / video, not the window's middle. */
   searchOnCover: boolean
   /** Music Detector agreed to (microphone, 10 s clips sent to AudD to name the song). */
@@ -501,6 +503,7 @@ export const DEFAULTS: Settings = {
   autoplay: true,
   rememberSearches: true,
   searchSuggestions: true,
+  phoneRemote: false,
   searchOnCover: true,
   detector: false,
   detectorInput: 'mic',
@@ -711,6 +714,7 @@ export function sanitize(raw: unknown): Settings {
     autoplay: r.autoplay !== false,
     rememberSearches: r.rememberSearches !== false,
     searchSuggestions: r.searchSuggestions !== false,
+    phoneRemote: r.phoneRemote === true,
     searchOnCover: r.searchOnCover !== false,
     detector: r.detector === true,
     detectorInput: pick(r.detectorInput, ['mic', 'pc'] as const, DEFAULTS.detectorInput),

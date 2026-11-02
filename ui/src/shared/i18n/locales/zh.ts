@@ -1878,6 +1878,16 @@ const zh: Record<string, string> = {
   'Faster': '更快',
   'Small fixes and improvements.': '小修复与改进。',
   'And {n} more': '还有 {n} 项',
+  'Phone remote': '手机遥控',
+  'Play, pause, skip and see what’s next from a phone on the same network. The page comes from this PC: nothing goes through the internet. Off by default': '在同一网络的手机上播放、暂停、切歌并查看接下来的歌曲。页面来自这台电脑：不经过互联网。默认关闭',
+  'phone mobile remote control qr code wifi network lan couch': '手机 移动 遥控 控制 二维码 qr wifi 网络 局域网 lan',
+  'No answer from Legato. Is it open on the PC, and this phone on the same network?': 'Legato 没有响应。它是否在电脑上打开，且这部手机在同一网络中？',
+  'The phone remote could not start: another app may be using its port. Turn it off and on again.': '手机遥控无法启动：可能有其他应用占用了它的端口。请关闭后再打开。',
+  'This PC is not on a network. Connect it to the Wi-Fi or a cable, then turn the remote off and on.': '这台电脑未连接任何网络。请连接 Wi-Fi 或网线，然后关闭再打开遥控。',
+  'QR code of the phone remote': '手机遥控的二维码',
+  'Scan it with the phone’s camera; the phone must be on the same network as this PC. Windows may ask once to let Legato on private networks: allow it.': '用手机相机扫描；手机必须与这台电脑在同一网络。Windows 可能会询问一次是否允许 Legato 使用专用网络：请允许。',
+  'Phones that have the old link lose the remote': '持有旧链接的手机将无法再遥控',
+  'New link': '新链接',
 }
 
 export default zh
