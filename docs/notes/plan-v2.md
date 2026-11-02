@@ -575,6 +575,15 @@ Most useful first; the tag is the effort.
 - [ ] `pnpm bench` on a quiet PC: the full run on af27405 was disturbed (someone back at the PC: load 78 %, restart 1.91 s,
       tray 135 MB, the page awake again after its suspend), row not kept. The website's numbers come from d853980: confirm the
       54 MB in the tray after Visualizer v2, or find what wakes the page and fix the numbers.
+- [ ] The 2026-11-02 run (Beta 1.1.587), checked only by tests and over the demo:
+      - Phone remote on a real phone (Settings › Playback): the QR code, the page, taps; Windows' firewall asks once.
+      - OBS overlay in a real Browser Source; Settings › Privacy's real log of the day.
+      - Pick up on the other PC (two PCs with Sync Mode): the toast once, then Resume in the idle player bar.
+      - Cover display (C) on a real second screen; the display kept awake (WebView2's wake lock).
+      - Share as a picture: a real paste into a chat app, a real save as PNG / JPEG.
+      - Visualizer weighting and colour, by eye on real music (defaults unchanged); the cover's colour on real covers.
+      - Library health page on the real library; Exportify's real names on a real export; the phone layout (a window
+        under 640 px). Back to {month} shows only with months of history.
 
 ## Waiting on the user (outside the code)
 
