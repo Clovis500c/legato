@@ -204,6 +204,17 @@ pub fn open(app: &AppHandle, video: &str, start_s: f64, rect: Option<Rect>, shie
         apply(&wv)?;
         return Ok(());
     }
+    make(app, url, rect, shield)
+}
+
+/// Phones: one webview per window (Tauri mobile), no watch page.
+#[cfg(mobile)]
+fn make(_: &AppHandle, _: Url, _: Option<Rect>, _: Arc<music_shield::Shield>) -> anyhow::Result<()> {
+    anyhow::bail!("No watch page on phones")
+}
+
+#[cfg(desktop)]
+fn make(app: &AppHandle, url: Url, rect: Option<Rect>, shield: Arc<music_shield::Shield>) -> anyhow::Result<()> {
     let window = app.get_window("main").ok_or_else(|| anyhow::anyhow!("No main window"))?;
     let mut builder = WebviewBuilder::new(LABEL, WebviewUrl::External(url)).additional_browser_args(&crate::background::browser_args()).initialization_script(music_shield::WATCH_SCRIPT).initialization_script(music_shield::LIVE_SCRIPT).on_navigation(allowed).background_color(tauri::window::Color(0, 0, 0, 255));
     if shield.enabled.load(std::sync::atomic::Ordering::Relaxed) {
@@ -225,6 +236,12 @@ pub fn open(app: &AppHandle, video: &str, start_s: f64, rect: Option<Rect>, shie
 /// (a watch page made hidden stayed buffering at 0:00, 2026-10-21).
 const UNSEEN: Rect = Rect { x: 0.0, y: 0.0, width: 1.0, height: 1.0 };
 
+#[cfg(mobile)]
+fn apply(_: &tauri::Webview) -> tauri::Result<()> {
+    Ok(())
+}
+
+#[cfg(desktop)]
 fn apply(wv: &tauri::Webview) -> tauri::Result<()> {
     let r = WANTED.lock().unwrap().unwrap_or(UNSEEN);
     wv.set_position(r.position())?;
@@ -251,8 +268,9 @@ pub fn command(app: &AppHandle, cmd: Cmd) -> tauri::Result<()> {
 /// Back to the embed: the watch page goes away (memory, and no second player).
 pub fn close(app: &AppHandle) -> tauri::Result<()> {
     match app.get_webview(LABEL) {
+        #[cfg(desktop)]
         Some(wv) => wv.close(),
-        None => Ok(()),
+        _ => Ok(()),
     }
 }
 

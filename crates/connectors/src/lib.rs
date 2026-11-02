@@ -25,8 +25,31 @@ pub use music_core::searchpace::refused;
 /// One HTTP client for every service: connections and TLS sessions are kept and reused. A client per call (or per
 /// command: the YouTube Music handle is made for each one) opened a new TCP + TLS connection for every request.
 pub(crate) fn http() -> reqwest::Client {
-    static HTTP: std::sync::LazyLock<reqwest::Client> = std::sync::LazyLock::new(|| reqwest::Client::builder().dns_resolver(Noted).build().unwrap_or_default());
+    static HTTP: std::sync::LazyLock<reqwest::Client> = std::sync::LazyLock::new(|| builder().build().unwrap_or_default());
     HTTP.clone()
+}
+
+/// A client builder with what every client gets: `Noted`, and Android's TLS.
+pub(crate) fn builder() -> reqwest::ClientBuilder {
+    tls(reqwest::Client::builder().dns_resolver(Noted))
+}
+
+/// Android has no OpenSSL to link: rustls with ring and Mozilla's roots (webpki-roots); elsewhere the system's TLS.
+/// Twins in `music-plugins` (net.rs) and `music-shield`.
+#[cfg(target_os = "android")]
+pub(crate) fn tls(b: reqwest::ClientBuilder) -> reqwest::ClientBuilder {
+    let roots = rustls::RootCertStore::from_iter(webpki_roots::TLS_SERVER_ROOTS.iter().cloned());
+    let config = rustls::ClientConfig::builder_with_provider(std::sync::Arc::new(rustls::crypto::ring::default_provider()))
+        .with_safe_default_protocol_versions()
+        .expect("ring: TLS 1.2 and 1.3")
+        .with_root_certificates(roots)
+        .with_no_client_auth();
+    b.use_preconfigured_tls(config)
+}
+
+#[cfg(not(target_os = "android"))]
+pub(crate) fn tls(b: reqwest::ClientBuilder) -> reqwest::ClientBuilder {
+    b
 }
 
 /// The system's resolver, like reqwest's own, noting each host it's asked for (Settings › Privacy, `music_core::netlog`):

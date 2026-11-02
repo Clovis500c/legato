@@ -6,12 +6,20 @@ publish.workspace = true
 
 [dependencies]
 anyhow = "1.0.104"
-reqwest = { version = "0.13.5", default-features = false, features = ["native-tls"] }
 rquickjs = "0.14.0"
 serde = { version = "1.0.229", features = ["derive"] }
 serde_json = "1.0.154"
 tokio = { version = "1.53.3", features = ["net"] }
 ts-rs.workspace = true
+
+# Android has no OpenSSL to link: rustls with ring and Mozilla's roots there (`tls()`), the system's TLS elsewhere.
+[target.'cfg(not(target_os = "android"))'.dependencies]
+reqwest = { version = "0.13.5", default-features = false, features = ["native-tls"] }
+
+[target.'cfg(target_os = "android")'.dependencies]
+reqwest = { version = "0.13.5", default-features = false, features = ["rustls-no-provider"] }
+rustls = { version = "0.23.41", default-features = false, features = ["ring", "std", "tls12"] }
+webpki-roots = "1"
 
 [dev-dependencies]
 tokio = { version = "1.53.3", features = ["macros", "rt", "net"] }

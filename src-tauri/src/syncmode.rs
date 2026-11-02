@@ -144,8 +144,25 @@ impl Inner {
     }
 }
 
+#[cfg(not(target_os = "android"))]
 pub(crate) fn device_name() -> String {
     std::env::var("COMPUTERNAME").ok().filter(|n| !n.is_empty()).unwrap_or_else(|| "PC".into())
+}
+
+/// Android: the phone's market name when it has one ("Galaxy S23"), else its model ("Pixel 8").
+#[cfg(target_os = "android")]
+pub(crate) fn device_name() -> String {
+    ["ro.product.marketname", "ro.config.marketing_name", "ro.product.model"].iter().find_map(|k| system_property(k)).unwrap_or_else(|| "Android".into())
+}
+
+#[cfg(target_os = "android")]
+fn system_property(key: &str) -> Option<String> {
+    let key = std::ffi::CString::new(key).ok()?;
+    let mut buf = [0 as libc::c_char; libc::PROP_VALUE_MAX as usize];
+    // Safety: buf holds PROP_VALUE_MAX bytes, the most the call writes (NUL included).
+    let n = unsafe { libc::__system_property_get(key.as_ptr(), buf.as_mut_ptr()) };
+    let value = (n > 0).then(|| unsafe { std::ffi::CStr::from_ptr(buf.as_ptr()) }.to_string_lossy().trim().to_string())?;
+    (!value.is_empty()).then_some(value)
 }
 
 pub(crate) fn config(state: &AppState) -> Config {

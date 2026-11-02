@@ -97,10 +97,28 @@ pub fn lists_stale(dir: &Path) -> bool {
     })
 }
 
+/// Android has no OpenSSL to link: rustls with ring and Mozilla's roots (webpki-roots); elsewhere the system's TLS.
+/// Twin of `music_connectors::tls`.
+#[cfg(target_os = "android")]
+pub(crate) fn tls(b: reqwest::ClientBuilder) -> reqwest::ClientBuilder {
+    let roots = rustls::RootCertStore::from_iter(webpki_roots::TLS_SERVER_ROOTS.iter().cloned());
+    let config = rustls::ClientConfig::builder_with_provider(std::sync::Arc::new(rustls::crypto::ring::default_provider()))
+        .with_safe_default_protocol_versions()
+        .expect("ring: TLS 1.2 and 1.3")
+        .with_root_certificates(roots)
+        .with_no_client_auth();
+    b.use_preconfigured_tls(config)
+}
+
+#[cfg(not(target_os = "android"))]
+pub(crate) fn tls(b: reqwest::ClientBuilder) -> reqwest::ClientBuilder {
+    b
+}
+
 /// Download lists into `dir`, return concatenated text. Keeps old file on failure.
 pub async fn download_lists(dir: &Path) -> Result<String> {
     std::fs::create_dir_all(dir)?;
-    let http = reqwest::Client::new();
+    let http = tls(reqwest::Client::builder()).build()?;
     for (file, url) in LISTS {
         let text = http.get(url).send().await?.error_for_status()?.text().await?;
         // Trust boundary: an HTML error page is not a filter list.

@@ -95,7 +95,7 @@ impl Gateway {
         ensure!(req.body.as_ref().is_none_or(|b| b.len() <= MAX_SENT), "Request body over 1 MB");
         ensure!(req.headers.len() <= 32, "Too many headers");
         let same_host = host.clone();
-        let mut client = reqwest::Client::builder()
+        let mut client = tls(reqwest::Client::builder())
             .timeout(TIMEOUT)
             .no_proxy()
             .redirect(reqwest::redirect::Policy::custom(move |a| {
@@ -135,6 +135,24 @@ impl Default for Gateway {
     fn default() -> Self {
         Self::new()
     }
+}
+
+/// Android has no OpenSSL to link: rustls with ring and Mozilla's roots (webpki-roots); elsewhere the system's TLS.
+/// Twin of `music_connectors::tls`.
+#[cfg(target_os = "android")]
+pub(crate) fn tls(b: reqwest::ClientBuilder) -> reqwest::ClientBuilder {
+    let roots = rustls::RootCertStore::from_iter(webpki_roots::TLS_SERVER_ROOTS.iter().cloned());
+    let config = rustls::ClientConfig::builder_with_provider(std::sync::Arc::new(rustls::crypto::ring::default_provider()))
+        .with_safe_default_protocol_versions()
+        .expect("ring: TLS 1.2 and 1.3")
+        .with_root_certificates(roots)
+        .with_no_client_auth();
+    b.use_preconfigured_tls(config)
+}
+
+#[cfg(not(target_os = "android"))]
+pub(crate) fn tls(b: reqwest::ClientBuilder) -> reqwest::ClientBuilder {
+    b
 }
 
 #[cfg(test)]

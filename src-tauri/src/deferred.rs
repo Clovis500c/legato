@@ -46,6 +46,7 @@ fn start(app: &AppHandle, cause: Cause) {
         return;
     }
     crate::diag::info("startup", cause.words(), "");
+    #[cfg(desktop)]
     crate::update::spawn(app.clone());
     crate::syncmode::spawn(app.clone());
     crate::devices::spawn(app.clone());
@@ -54,8 +55,11 @@ fn start(app: &AppHandle, cause: Cause) {
         state.art.prune_later();
     }
     // Each plugin opens a QuickJS runtime and a thread: off the async workers' way.
-    let app = app.clone();
-    tauri::async_runtime::spawn_blocking(move || crate::plugins::start_all(&app));
+    #[cfg(desktop)]
+    {
+        let app = app.clone();
+        tauri::async_runtime::spawn_blocking(move || crate::plugins::start_all(&app));
+    }
 }
 
 /// At the end of setup: the timer that covers a page that never says ready.

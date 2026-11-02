@@ -106,10 +106,12 @@ pub fn show(app: &AppHandle) {
         let _ = crate::window_place::restore(&w);
     }
     if let Some(w) = app.get_window("main") {
+        #[cfg(desktop)]
         let _ = w.unminimize();
         let _ = w.show();
         let _ = w.set_focus();
     }
+    #[cfg(desktop)]
     crate::update::check_if_stale(app);
 }
 

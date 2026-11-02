@@ -91,7 +91,7 @@ fn parse(o: OEmbed) -> Result<Track> {
 
 /// Short link → the song's own. One redirect, read here, kept only when it leads to a song on SoundCloud.
 async fn resolve(short: &str, code: &str) -> Result<String> {
-    let client = reqwest::Client::builder().dns_resolver(crate::Noted).redirect(reqwest::redirect::Policy::none()).timeout(REQUEST_TIMEOUT).build()?;
+    let client = crate::builder().redirect(reqwest::redirect::Policy::none()).timeout(REQUEST_TIMEOUT).build()?;
     let res = client.get(format!("{short}/{code}")).send().await?;
     ensure!(res.status() != StatusCode::NOT_FOUND, "This SoundCloud link doesn't exist");
     let to = res.headers().get(reqwest::header::LOCATION).and_then(|v| v.to_str().ok()).filter(|_| res.status().is_redirection());

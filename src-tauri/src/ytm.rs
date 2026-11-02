@@ -15,6 +15,11 @@ const ADD_ACCOUNT: &str = "https://accounts.google.com/AddSession?service=youtub
 /// Cookie header for music.youtube.com; None = signed out.
 /// WebView2: call from async commands or threads only (sync = deadlock).
 pub fn session(app: &AppHandle) -> Option<String> {
+    // Phones: no Spotify, Apple or Google sign-in (one webview, signed out). Android's WebView also throws on a page
+    // with no cookie yet (wry 0.57: getCookie(...) must not be null), which aborts the app.
+    if cfg!(mobile) {
+        return None;
+    }
     // The webview, not the "webview window": with the watch-page child (ytwatch.rs) there is none.
     let main = app.get_webview("main")?;
     let cookies = main.cookies_for_url(Url::parse(SITE).ok()?).ok()?;

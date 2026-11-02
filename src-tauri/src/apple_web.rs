@@ -31,6 +31,11 @@ static INBOX: Mutex<Option<UnboundedSender<Message>>> = Mutex::new(None);
 /// Signed in to the web player (media-user-token = Apple Music web session cookie). Profile shared with the main window.
 /// WebView2: call from async commands or threads only (sync = deadlock).
 pub fn signed_in(app: &AppHandle) -> bool {
+    // Phones: no Spotify, Apple or Google sign-in (one webview, signed out). Android's WebView also throws on a page
+    // with no cookie yet (wry 0.57: getCookie(...) must not be null), which aborts the app.
+    if cfg!(mobile) {
+        return false;
+    }
     let Some(main) = app.get_webview("main") else { return false };
     let Ok(url) = Url::parse(PLAYER) else { return false };
     main.cookies_for_url(url).is_ok_and(|c| c.iter().any(|c| c.name() == "media-user-token" && !c.value().is_empty()))
@@ -141,6 +146,7 @@ pub async fn apple_import(app: AppHandle, state: State<'_, AppState>, picks: Vec
     let _running = links::begin()?;
     let window = app.get_webview_window(LABEL).ok_or("Apple Music's window was closed")?;
     // Chromium stops drawing a window hidden behind others, and the list draws its rows as it goes.
+    #[cfg(desktop)]
     let _ = window.set_always_on_top(true);
     let lists = picks.len();
     let mut report = SpotifyLibraryImport { playlist_id: None, lists: 0, songs: 0, playable: 0, failed: Vec::new(), unsearched: 0 };
