@@ -105,7 +105,7 @@ export const ROADMAP: [string, string][] = [
   ['Smarter listening', 'Your songs analysed on your PC (tempo, energy, key) for radios and fades that fit, a path from one artist to another, a yearly recap to share.'],
   ['Around the house', 'Your phone as a remote, speakers and TVs (DLNA, Chromecast), listening together on the same network, picking up on your other PC where you stopped.'],
   ['Windows polish', 'A Jump List on the taskbar icon, an alarm that wakes you with a playlist, an overlay for OBS, a picture-in-picture player.'],
-  ['Mac and Linux', 'Builds for macOS and Linux, then an Android companion.'],
+  ['Phones, Mac and Linux', 'A mobile version, Android first, on the same Rust core; builds for macOS and Linux.'],
 ]
 
 export const STEPS: [string, string][] = [

@@ -98,17 +98,10 @@ What Spotify, Apple Music, YouTube Music, Plexamp and MusicBee users expect, don
 - **Effort**: M. **Risk**: API terms.
 - **Done when**: user's go on the API, a city set, concerts listed with ticket links.
 
-## Mobile companion (Android first)
+## Mobile version (Android first)
 
-- **Sees**: an Android app: the same library and playlists (from Sync Mode's folder or the LAN code), YouTube songs
-  played in YouTube's embed, local files on the phone, the phone remote for the PC, Last.fm.
-- **How**: Tauri 2 mobile (Android target) reusing `crates/core` and `connectors`; UI from `ui/` with a phone layout.
-  Sync: OneDrive folder via Android's document provider, or the LAN.
-- **Rules**: all of CLAUDE.md applies; Play Store policy on YouTube embeds (background play forbidden by YouTube's
-  terms: foreground only).
-- **Needs**: macOS / Linux groundwork (platform abstractions), a phone design pass in Figma.
-- **Effort**: L+. **Risk**: the biggest item on the list; do last.
-- **Done when**: an APK plays the synced library on a real phone.
+A whole app now, not a companion (the owner's ask, 2026-11-02): spec, phases and the owner's calls in
+[mobile.md](mobile.md).
 
 ## macOS and Linux builds
 
