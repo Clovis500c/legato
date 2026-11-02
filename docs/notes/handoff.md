@@ -5,33 +5,20 @@ code), then [plan-v2.md](plan-v2.md) (open work). Rewrite it when a branch or th
 
 Written 2026-11-01, run section 2026-11-02.
 
-## Autonomous run 2026-11-02 (in progress)
+## Autonomous run 2026-11-02 (done)
 
-The owner's ask (2026-11-02 morning, away from the PC, no question can be answered): the whole plan, most important
-first, alone; stop at 95 % of the weekly limit (wrap up from 90 %, to leave room for the release); resume alone after
-each 5-hour limit; then a report and the Beta pushed (the owner tries it, Stable later). Started at 64 % of the week.
-A recurring job of this session (`CronCreate`, every 20 min, session-only) resumes the run after a limit; it reads this
-section. A wake with the 5-hour window at 90 % or more (`get_usage`): end the turn at once, nothing else (the window
-resets 2026-11-02 12:50 UTC; a step started that late gets cut). Same rules as the run below, except the push at the end, which the owner asked for.
+The owner's ask (2026-11-02 morning, away from the PC, no question could be answered): the whole plan, most important
+first, alone; stop at 95 % of the weekly limit, wrap up from 88 to 90 %; resume alone after each 5-hour limit; then a
+report and the Beta pushed (the owner tries it, Stable later). Started at 64 % of the week, wrapped up at 84 %: 14
+steps, each one commit on `platforms` with `pnpm check` green, then `/release-check`, the push to master (a Beta) and
+its CI watched. The run's wake-up job is deleted. The report to the owner, in French: `docs/notes/report-2026-11-02.md`
+(not committed).
 
-Order (each step: code, tests, `pnpm check` green, one commit on `platforms`, line ticked in plan-v2):
-
-1. Done: Exportify's real playlist names; library health page; the mobile spec; release notes grouped; phone remote;
-   mobile phase 1 (the phone layout); pick up on the other PC; the privacy page in the app; the OBS overlay; the cover
-   display; the share card; aural fixations (the "Back to {month}" mix); the visualizer's weighting and colour. Jump List dropped for this run (installed app only, can't be checked here).
-2. Next (81 % weekly at 13:40 UTC, all committed up to `046520f`, a step costs about 2 points): "Aural fixations"
-   (`S`, plan-v2 "Small, high value": songs played a lot in one past month, little since, brought back as a Home
-   shelf; a pure query on our own plays in `crates/core` with a test, then the shelf), or the wrap-up from 88 % weekly. The
-   accessibility pass (`M`) is mostly in place already (labels: no unnamed control found in the demo; contrast tuned;
-   reduced motion honoured): a screen reader test needs the owner.
-3. Then Features › Medium without a new account, Visualizer v2 › High `S` lines, Optimisation, Low.
-4. Left for the owner's ears: same loudness across sources (by ear beside YouTube, like Volume levelling).
-
-Wrap-up (at 90 % of the week, or when nothing is left): finish or drop the step in progress; rewrite this section as
-done; `/release-check`; `git fetch` and merge `origin/master` if it moved; `git push origin platforms:master` (a Beta;
-a change in `site/` deploys the website too); watch `check` then `release` on GitHub (`gh run list`), fix a red run;
-the report to the owner in French (in the chat and `docs/notes/report-2026-11-02.md`, not committed), sent with
-`SendUserFile`; `CronDelete` the run's jobs (`CronList`).
+Next: the owner tries the Beta (the report's list, and [plan-v2.md](plan-v2.md) › Check live), then Stable
+(`promote.yml`). Left from the plan, in order: Features › Medium without a new account; Visualizer v2 › High `S` lines
+(spectrum bars, sizes left, gradients); Optimisation; Low. Waiting on the owner: same loudness across sources (by ear);
+the accessibility pass's screen reader test (labels, contrast and reduced motion are in place); mobile phases 2 and
+later (Android SDK, NDK, JDK 17, a phone: [ideas/mobile.md](ideas/mobile.md)); the Jump List (installed app only).
 
 Done in this run (newest last; `git log` has the hashes), none tried in the real app yet:
 
@@ -47,6 +34,9 @@ Done in this run (newest last; `git log` has the hashes), none tried in the real
 - Mobile phase 1, the phone layout (below 640 px only: no desktop window gets it): bottom tabs, mini player, Your library tab, one-column Now Playing. Checked over the demo at 375 × 812 (`demo` in .claude/launch.json).
 - The owner's new ask mid-run (2026-11-02): a mobile version, Rust reused. Spec and phases in
   [ideas/mobile.md](ideas/mobile.md); no Android SDK / NDK / JDK on this PC, so phase 1 (phone layout in `ui/`) only.
+- Back to a month (Home's Your mixes, Mixes › Explore): songs played a lot in one past month, at least three months back, and hardly since (`fixation` in `crates/core` mixes; its songs leave Rediscover). Unit test; the card checked over the demo with a faked mix. Needs a few months of real history before it shows.
+- Visualizer weighting (Settings › Playback, or the visualizer's right-click): as measured (default), +3 dB per octave, A-weighting, ITU-R 468. Tested against the A and 468 tables; over the demo the tilt lowers the bass third and lifts the treble third. Not judged by eye on real music.
+- Visualizer colour (same places): the text colour (default), the accent, or the playing cover's hue made vivid (3:1 at least). Checked over the demo; the cover's colour on a raster picture (the demo's SVG covers average to grey).
 
 ## Autonomous run (the owner's ask, 2026-10-31 evening)
 
