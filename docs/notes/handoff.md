@@ -3,7 +3,50 @@
 Where the work stands, for a session or an account with no history here. Read this, then `CLAUDE.md` (rules, map of the
 code), then [plan-v2.md](plan-v2.md) (open work). Rewrite it when a branch or the next step changes.
 
-Written 2026-11-01, run section 2026-11-02.
+Written 2026-11-01, run section 2026-11-02, autopilot 2026-11-03.
+
+## Autopilot from 2026-11-04 (the owner away: read this first)
+
+The owner's ask (2026-11-03 evening): carry on with the plan and the Android app, a lot to do, alone from the weekly
+reset (2026-11-04 08:00 Paris), resuming alone after each 5-hour limit; no question can be answered. The desktop app's
+scheduled task `legato-autopilot` opens the session once (08:06); that session keeps itself going with a CronCreate
+wake-up every 20 minutes (session-only: an app restart ends the run until the owner is back).
+
+Rules on top of `CLAUDE.md` (the 2026-11-02 run's, which worked):
+
+- Never a question, never a wait. A choice that's the project's: take the option easiest to undo and write it in its
+  plan line, "decided alone (date): what, why". What only the owner can do goes under Waiting below; then the next step.
+- One step = code and tests, `pnpm check` green, one local commit on `platforms`, its plan line ticked with what wasn't
+  tried for real, a line in the log below, then `get_usage`. No push, PR, merge, release or website deploy.
+- Alone: no subagents, no workflows (the owner's 2026-11-02 choice wanted their price said first; nobody can hear it).
+- Weekly limit: from 90 % no new step, finish the one in hand, then the end; 95 % at the latest. 5-hour limit: work on,
+  the wake-up resumes after its reset. A cut leaves at most one step's edits: finish them or stash them, never drop.
+- Untracked `docs/notes/report-*.md` are the owner's reports: never committed.
+- Android: `. C:\dev\android\env.ps1` first; emulator `legato36` headless (`-no-window -gpu swiftshader_indirect`),
+  stopped once the test is done. Between the emulator and the dev app: `adb reverse` over loopback. Never answer
+  Windows' firewall or any system prompt. No Google sign-in or consent page anywhere; YouTube signed out, a few plays.
+- The end (the order done but the owner's lines, or 90 % of the week): `docs/notes/report-<date>.md` in French (tu, like
+  `report-2026-11-02.md`: done, to try, waiting for the owner, how it went), this file rewritten, the wake-up deleted
+  (CronDelete), the report sent with SendUserFile (proactive).
+
+Order (the owner's latest asks first; Mobile below has the details):
+
+1. The device sync carries every setting but each device's own (Mobile › First next).
+2. The phone's other texts and screens: desktop-only Settings rows hidden there, strings that still say PC.
+3. Controls in the notification and on the lock screen: a MediaSession (play / pause / next / previous, cover, title),
+   the Android twin of `media.rs`; Back on Android 8 to 11 sends the app to the background.
+4. The QR scanner (`tauri-plugin-barcode-scanner` reading `legato://pair?`; its licence and version checked first).
+5. Secrets in Android's Keystore, moved once from `secrets.json`.
+6. An Android download on the website (`site/`, the latest Beta's APK, privacy rows kept true): local, a push deploys it.
+7. Then plan-v2's open lines that need no account: Features › Medium, Visualizer v2 › High `S` lines, Optimisation, Low.
+
+Waiting for the owner: background play behind other apps on their phone; the phone and PC sync once step 1 lands; the
+iPhone's signing (Apple Developer Program or an unsigned .ipa); Play Store or not; a backup of `C:\dev\android\signing`;
+the next Beta (a push).
+
+Log (newest last):
+
+- 2026-11-03: set up (this section, the scheduled task); nothing run yet.
 
 ## Mobile app and devices sync (the owner's ask, 2026-11-02 afternoon; in progress)
 
@@ -74,8 +117,8 @@ settings store applies when a snapshot arrives; compare the two devices' setting
 
 Then, in order: the phone's other texts and screens (desktop-only Settings rows shown, other strings that say PC), the
 QR scanner (`tauri-plugin-barcode-scanner`, reads `legato://pair?`), secrets in Android's Keystore,
-an Android download on the website. Workflows after the weekly reset (2026-11-04 08:00 Paris),
-per the owner's choice.
+an Android download on the website. From the weekly reset (2026-11-04 08:00 Paris): the Autopilot section
+above, alone (no workflows).
 
 ## Autonomous run 2026-11-02 (done)
 
