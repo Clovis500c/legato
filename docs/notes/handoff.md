@@ -47,6 +47,10 @@ the next Beta (a push).
 Log (newest last):
 
 - 2026-11-03: set up (this section, the scheduled task); nothing run yet.
+- 2026-11-04: step 1 (device sync and settings). Cause found by reading: a PC with one stamped setting never stamped the
+  rest (`settings_unstamped` looked at an empty table), so its other settings travelled as time 0 and no device took
+  them. Now any unstamped key counts; more per-device keys in `LOCAL_SETTINGS`. Unit-tested; not seen between two
+  real devices.
 
 ## Mobile app and devices sync (the owner's ask, 2026-11-02 afternoon; in progress)
 

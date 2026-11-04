@@ -24,7 +24,11 @@ use std::path::PathBuf;
 pub const FORMAT: u32 = 1;
 /// Settings that describe this PC, not the user: never synced (the update channel too: one PC can be the Beta one; the
 /// phone remote: a server on this PC's network).
-pub const LOCAL_SETTINGS: [&str; 8] = ["zoom", "miniSpot", "miniWidth", "defaultsVersion", "updateChannel", "coverCacheMb", "phoneRemote", "streamOverlay"];
+/// Also the window and tray, global keys, microphone and Discord: one device's own.
+pub const LOCAL_SETTINGS: [&str; 18] = [
+    "zoom", "miniSpot", "miniWidth", "defaultsVersion", "updateChannel", "coverCacheMb", "phoneRemote", "streamOverlay", "miniPlace",
+    "sidebarWidth", "closeToTray", "autoUpdate", "shortcuts", "welcomed", "reopen", "detectorInput", "detectorPc", "discord",
+];
 /// Library settings row holding when each interface setting last changed (unix ms).
 const TIMES: &str = "sync_times";
 /// Other library settings rows that travel (key → its stamp in TIMES).
@@ -278,9 +282,14 @@ impl Library {
         self.set_setting(TIMES, &Value::Object(times))
     }
 
-    /// Settings were never stamped here (never changed since Sync Mode exists, never synced).
+    /// Some setting was never stamped here (never changed since Sync Mode exists, never synced). One stamped key must not
+    /// hide the rest: an unstamped key travels as 0 and no other device would take it.
     pub fn settings_unstamped(&self) -> Result<bool> {
-        Ok(self.times()?.is_empty())
+        let times = self.times()?;
+        let ui = self.setting("ui")?;
+        let ui_open = ui.as_ref().and_then(Value::as_object).is_some_and(|o| o.keys().any(|k| !LOCAL_SETTINGS.contains(&k.as_str()) && !times.contains_key(&format!("ui.{k}"))));
+        let rows_open = SHARED_ROWS.iter().any(|k| !times.contains_key(*k) && self.setting(k).ok().flatten().is_some());
+        Ok(ui_open || rows_open)
     }
 
     fn playlist_keys(&self) -> Result<Vec<(i64, String)>> {
@@ -955,6 +964,19 @@ mod tests {
         a.delete_edit(v)?;
         b.merge(&snap(&a))?;
         assert!(b.edits(Some(&format!("t:{xb}")))?.is_empty());
+        Ok(())
+    }
+
+    #[test]
+    fn one_stamped_key_does_not_hide_the_others() -> Result<()> {
+        let a = Library::in_memory()?;
+        a.save_ui_settings(&serde_json::json!({ "theme": "dark" }), 10)?;
+        a.set_setting("ui", &serde_json::json!({ "theme": "dark", "crossfade": 4, "zoom": 110 }))?;
+        assert!(a.settings_unstamped()?);
+        a.stamp_all_settings(50)?;
+        assert!(!a.settings_unstamped()?);
+        assert_eq!(a.times()?.get("ui.theme").and_then(Value::as_i64), Some(10));
+        assert_eq!(a.times()?.get("ui.crossfade").and_then(Value::as_i64), Some(50));
         Ok(())
     }
 
