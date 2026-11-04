@@ -3,7 +3,7 @@
 import { ArrowRight, FolderSimple, WindowsLogo } from '@phosphor-icons/react'
 import { motion, type Variants } from 'motion/react'
 import { siApplemusic, siSpotify, siYoutubemusic } from 'simple-icons'
-import { useLatest } from './latest'
+import { useAndroid, useLatest } from './latest'
 import { EASE } from './motion'
 
 const rise: Variants = { hidden: { opacity: 0, y: '0.35em' }, show: { opacity: 1, y: 0, transition: { duration: 0.24, ease: EASE } } }
@@ -24,6 +24,7 @@ const WORKS = [
 /** The mockup's hero: the headline is the picture, line by line. */
 export function Hero() {
   const { href, version } = useLatest()
+  const android = useAndroid()
   return (
     <motion.div id="top" initial="hidden" animate="show" variants={{ show: { transition: { staggerChildren: 0.08 } } }} className="flex flex-col items-start gap-6 px-(--pad) pt-[clamp(32px,6vw,64px)] pb-12 pinned:p-0">
       <h1 className="text-[clamp(44px,7.4vw,96px)] leading-none font-black tracking-[-0.03em] pinned:text-[min(5.6vw,11vh)]">
@@ -46,6 +47,10 @@ export function Hero() {
       </motion.div>
       <motion.p variants={rise} className="-mt-2 text-[13px] text-ink-3">
         Free · Windows 10 and 11{version && ` · Version ${version}`}
+        {' · '}
+        <a href={android.href} className="underline decoration-line underline-offset-4 hover:text-ink hover:decoration-ink">
+          Android beta (APK{android.version && `, ${android.version}`})
+        </a>
       </motion.p>
       <motion.ul variants={rise} aria-label="Works with" className="mt-2 flex flex-wrap items-center gap-x-5 gap-y-2.5 text-[13px] text-ink-2">
         <li aria-hidden className="text-ink-3">

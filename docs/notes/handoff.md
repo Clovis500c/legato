@@ -68,6 +68,9 @@ Log (newest last):
   `mobile/keystore.rs`, R8 keep rule): `secrets.bin`, the old plain `secrets.json` sealed and removed at launch (kept if
   the Keystore refuses). Checked on the emulator: a planted JSON became a 54-byte sealed file, no plain text, stable over
   a restart. Not tried: a real phone, a restored backup (key gone: sign-ins asked again).
+- 2026-11-04: step 6. Website: "Android beta (APK, version)" beside the Windows version line in the hero (`useAndroid`:
+  the newest of the last 10 GitHub releases with a `_android-arm64.apk`, else the releases page) and an FAQ answer
+  (Android 8+, 64-bit, no store, no updater, iPhone not yet). `next build` passes; a push deploys it, the owner's call.
 
 ## Mobile app and devices sync (the owner's ask, 2026-11-02 afternoon; in progress)
 
