@@ -1990,6 +1990,8 @@ const hi: Record<string, string> = {
   'From your other device: {changes}': 'आपके दूसरे डिवाइस से: {changes}',
   'Your playlists, songs, listening history, Live Editor versions and settings on all your devices, without an account or a server.': 'आपकी प्लेलिस्ट, गाने, सुनने की हिस्ट्री, Live Editor वर्शन और सेटिंग आपके सभी डिवाइस पर, बिना अकाउंट या सर्वर के।',
   'When the same thing changed on two devices, the most recent change wins. Deleted things stay deleted everywhere. Local files stay on each device: their songs are matched by title, artist and length.': 'जब एक ही चीज़ दो डिवाइस पर बदली हो, तो सबसे नया बदलाव जीतता है। मिटाई गई चीज़ें हर जगह मिटी रहती हैं। लोकल फ़ाइलें हर डिवाइस पर रहती हैं: उनके गाने टाइटल, कलाकार और लंबाई से मिलाए जाते हैं।',
+  'Android keeps Legato away from the microphone. Allow it in Legato’s app info › Permissions › Microphone.': 'Android, Legato को माइक्रोफ़ोन से दूर रखता है। इसे Legato की ऐप्लिकेशन की जानकारी › अनुमतियां › माइक्रोफ़ोन में अनुमति दें।',
+  'Open app info': 'ऐप्लिकेशन की जानकारी खोलें',
 }
 
 export default hi

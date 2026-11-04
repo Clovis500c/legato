@@ -1990,6 +1990,8 @@ const vi: Record<string, string> = {
   'From your other device: {changes}': 'Từ thiết bị khác của bạn: {changes}',
   'Your playlists, songs, listening history, Live Editor versions and settings on all your devices, without an account or a server.': 'Danh sách phát, bài hát, lịch sử nghe, phiên bản Live Editor và cài đặt trên mọi thiết bị của bạn, không cần tài khoản hay máy chủ.',
   'When the same thing changed on two devices, the most recent change wins. Deleted things stay deleted everywhere. Local files stay on each device: their songs are matched by title, artist and length.': 'Khi cùng một thứ bị thay đổi trên hai thiết bị, thay đổi mới nhất được giữ. Những gì đã xóa sẽ bị xóa ở mọi nơi. Tệp trên máy ở lại trên từng thiết bị: bài hát của chúng được khớp theo tiêu đề, nghệ sĩ và độ dài.',
+  'Android keeps Legato away from the microphone. Allow it in Legato’s app info › Permissions › Microphone.': 'Android đang chặn Legato dùng micrô. Hãy cho phép trong Thông tin ứng dụng của Legato › Quyền › Micrô.',
+  'Open app info': 'Mở Thông tin ứng dụng',
 }
 
 export default vi

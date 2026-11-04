@@ -104,6 +104,10 @@ Relaunch log (newest last):
   Also fixed: French phone texts of the first run said « tu » and « Réglages » (the interface says « vous »,
   « Paramètres »). The Detector on the phone: microphone only, no Windows settings link. Still no `RECORD_AUDIO` in
   the manifest: the Detector can't hear on the phone yet (next step).
+- 2026-11-04: the Detector hears on the phone: `RECORD_AUDIO` in the manifest, a `LegatoMic` web message listener in
+  `MainActivity.kt` ("ask" → Android's dialog, "yes" / "no"; "settings" → Legato's app info), `phoneMic.ts` asks before
+  each listen. Driven on the emulator over DevTools (`click.mjs` clicks by text): refusal, app info, one-time grant,
+  recording started and stopped. The emulator's host microphone stays off: never turn it on (it would hear the room).
 
 ## Mobile app and devices sync (the owner's ask, 2026-11-02 afternoon; in progress)
 

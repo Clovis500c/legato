@@ -1990,6 +1990,8 @@ const fr: Record<string, string> = {
   'From your other device: {changes}': 'Depuis votre autre appareil : {changes}',
   'Your playlists, songs, listening history, Live Editor versions and settings on all your devices, without an account or a server.': 'Vos playlists, titres, historique d’écoute, versions du Live Editor et réglages sur tous vos appareils, sans compte ni serveur.',
   'When the same thing changed on two devices, the most recent change wins. Deleted things stay deleted everywhere. Local files stay on each device: their songs are matched by title, artist and length.': 'Quand la même chose a changé sur deux appareils, la modification la plus récente l’emporte. Ce qui est supprimé reste supprimé partout. Les fichiers locaux restent sur chaque appareil : leurs titres sont reconnus par titre, artiste et durée.',
+  'Android keeps Legato away from the microphone. Allow it in Legato’s app info › Permissions › Microphone.': 'Android bloque le microphone pour Legato. Autorisez-le dans Infos sur l’appli Legato › Autorisations › Micro.',
+  'Open app info': 'Ouvrir les infos sur l’appli',
 }
 
 export default fr

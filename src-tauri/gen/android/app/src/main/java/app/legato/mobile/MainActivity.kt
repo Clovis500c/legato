@@ -1,10 +1,14 @@
 package app.legato.mobile
 
+import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.net.Uri
 import android.net.wifi.WifiManager
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.webkit.WebView
 import androidx.activity.enableEdgeToEdge
 import androidx.core.view.ViewCompat
@@ -46,6 +50,15 @@ class MainActivity : TauriActivity() {
       if (WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_LISTENER)) {
         WebViewCompat.addWebMessageListener(webView, "LegatoMedia", APP) { _, message, _, _, reply ->
           message.data?.let { MediaState.fromPage(it, reply) }
+        }
+        // Music Detector: Android's microphone permission, asked as it first listens; Legato's app info for a refusal.
+        WebViewCompat.addWebMessageListener(webView, "LegatoMic", APP) { _, message, _, _, reply ->
+          when (message.data) {
+            "ask" ->
+              if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) reply.postMessage("yes")
+              else requestPermissions(arrayOf(Manifest.permission.RECORD_AUDIO)) { granted -> reply.postMessage(if (granted == true) "yes" else "no") }
+            "settings" -> startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", packageName, null)))
+          }
         }
       }
     }

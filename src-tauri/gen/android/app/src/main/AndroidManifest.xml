@@ -5,6 +5,8 @@
     <!-- Music behind other apps: PlaybackService. -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+    <!-- Music Detector: 10 s from the microphone, asked at its first listen (MainActivity's LegatoMic). -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
     <!-- AndroidTV support -->
     <uses-feature android:name="android.software.leanback" android:required="false" />

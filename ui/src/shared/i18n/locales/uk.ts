@@ -1990,6 +1990,8 @@ const uk: Record<string, string> = {
   'From your other device: {changes}': 'З іншого пристрою: {changes}',
   'Your playlists, songs, listening history, Live Editor versions and settings on all your devices, without an account or a server.': 'Плейлисти, пісні, історія прослуховувань, версії Live Editor і налаштування на всіх твоїх пристроях — без облікового запису й сервера.',
   'When the same thing changed on two devices, the most recent change wins. Deleted things stay deleted everywhere. Local files stay on each device: their songs are matched by title, artist and length.': 'Якщо те саме змінилося на двох пристроях, перемагає остання зміна. Видалене залишається видаленим усюди. Локальні файли залишаються на кожному пристрої: їхні пісні зіставляються за назвою, виконавцем і тривалістю.',
+  'Android keeps Legato away from the microphone. Allow it in Legato’s app info › Permissions › Microphone.': 'Android не дає Legato доступу до мікрофона. Дозволь його в Про додаток Legato › Дозволи › Мікрофон.',
+  'Open app info': 'Відкрити інформацію про додаток',
 }
 
 export default uk

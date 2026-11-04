@@ -1990,6 +1990,8 @@ const ko: Record<string, string> = {
   'From your other device: {changes}': '다른 기기에서: {changes}',
   'Your playlists, songs, listening history, Live Editor versions and settings on all your devices, without an account or a server.': '플레이리스트, 노래, 재생 기록, Live Editor 버전, 설정을 모든 기기에서. 계정도 서버도 필요 없습니다.',
   'When the same thing changed on two devices, the most recent change wins. Deleted things stay deleted everywhere. Local files stay on each device: their songs are matched by title, artist and length.': '같은 항목이 두 기기에서 바뀌면 가장 최근 변경이 적용됩니다. 삭제한 항목은 모든 곳에서 삭제된 상태로 남습니다. 로컬 파일은 각 기기에 남으며, 곡은 제목, 아티스트, 길이로 맞춥니다.',
+  'Android keeps Legato away from the microphone. Allow it in Legato’s app info › Permissions › Microphone.': 'Android가 Legato의 마이크 사용을 막고 있습니다. Legato의 앱 정보 › 권한 › 마이크에서 허용하세요.',
+  'Open app info': '앱 정보 열기',
 }
 
 export default ko

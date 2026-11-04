@@ -1990,6 +1990,8 @@ const tr: Record<string, string> = {
   'From your other device: {changes}': 'Diğer cihazından: {changes}',
   'Your playlists, songs, listening history, Live Editor versions and settings on all your devices, without an account or a server.': 'Çalma listelerin, şarkıların, dinleme geçmişin, Live Editor sürümlerin ve ayarların tüm cihazlarında, hesap veya sunucu olmadan.',
   'When the same thing changed on two devices, the most recent change wins. Deleted things stay deleted everywhere. Local files stay on each device: their songs are matched by title, artist and length.': 'Aynı şey iki cihazda değiştiğinde en son değişiklik kazanır. Silinenler her yerde silinmiş kalır. Yerel dosyalar her cihazda kalır: şarkıları başlık, sanatçı ve süreye göre eşleştirilir.',
+  'Android keeps Legato away from the microphone. Allow it in Legato’s app info › Permissions › Microphone.': 'Android, Legato’nun mikrofonu kullanmasına izin vermiyor. Legato’nun Uygulama bilgileri › İzinler › Mikrofon bölümünden izin ver.',
+  'Open app info': 'Uygulama bilgilerini aç',
 }
 
 export default tr

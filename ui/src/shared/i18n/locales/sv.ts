@@ -1990,6 +1990,8 @@ const sv: Record<string, string> = {
   'From your other device: {changes}': 'Från din andra enhet: {changes}',
   'Your playlists, songs, listening history, Live Editor versions and settings on all your devices, without an account or a server.': 'Dina spellistor, låtar, lyssningshistorik, versioner från Live Editor och inställningar på alla dina enheter, utan konto eller server.',
   'When the same thing changed on two devices, the most recent change wins. Deleted things stay deleted everywhere. Local files stay on each device: their songs are matched by title, artist and length.': 'När samma sak ändrats på två enheter vinner den senaste ändringen. Det som tagits bort förblir borttaget överallt. Lokala filer stannar på varje enhet: deras låtar matchas efter titel, artist och längd.',
+  'Android keeps Legato away from the microphone. Allow it in Legato’s app info › Permissions › Microphone.': 'Android hindrar Legato från att använda mikrofonen. Tillåt det i Appinfo för Legato › Behörigheter › Mikrofon.',
+  'Open app info': 'Öppna Appinfo',
 }
 
 export default sv

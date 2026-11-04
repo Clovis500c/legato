@@ -12,6 +12,7 @@ import { usePlayer } from '../player/store'
 import { Card } from './Card'
 import { msg, tr } from '../../shared/i18n/i18n'
 import { phoneApp } from '../../shared/platform'
+import { askMic, openAppInfo } from './phoneMic'
 
 const DASHBOARD = 'https://dashboard.audd.io/'
 const SECONDS = 10
@@ -30,6 +31,9 @@ const MISSES: Record<DetectMiss, string> = {
   offline: msg('AudD can’t be reached. Check your internet connection.'),
   failed: msg('Recognition didn’t work this time.'),
 }
+/** The phone's own refusal (Android's permission). */
+const PHONE_BLOCKED = msg('Android keeps Legato away from the microphone. Allow it in Legato’s app info › Permissions › Microphone.')
+const missText = (miss: DetectMiss) => (miss === 'micBlocked' && phoneApp ? PHONE_BLOCKED : MISSES[miss])
 
 type Input = 'mic' | 'pc'
 type Phase = { name: 'idle' } | { name: 'consent'; input: Input } | { name: 'listening'; seconds: number; level: number } | { name: 'note'; text: string; mic?: boolean }
@@ -110,6 +114,11 @@ export function Detector({ onFound }: { onFound: (t: Track) => void }) {
     const from = phoneApp ? 'mic' : useSettings.getState().settings.detectorInput
     if (!allowed(from)) return setPhase({ name: 'consent', input: from })
     busy.current = true
+    // Android's dialog, once.
+    if (phoneApp && !(await askMic())) {
+      busy.current = false
+      return setPhase({ name: 'note', text: tr(PHONE_BLOCKED), mic: true })
+    }
     // Our own music would be what it hears.
     const resume = usePlayer.getState().playing
     if (resume) usePlayer.getState().toggle()
@@ -124,7 +133,7 @@ export function Detector({ onFound }: { onFound: (t: Track) => void }) {
       else if (r.miss === 'canceled') setPhase({ name: 'idle' })
       else {
         if (r.miss === 'badToken' || r.miss === 'freeLimit') setEditing(true)
-        const text = r.miss === 'silent' && from === 'pc' ? tr('Nothing is playing on this PC (Legato pauses its own music while it listens).') : tr(MISSES[r.miss])
+        const text = r.miss === 'silent' && from === 'pc' ? tr('Nothing is playing on this PC (Legato pauses its own music while it listens).') : tr(missText(r.miss))
         setPhase({ name: 'note', text: text + (r.detail ? ` (${r.detail})` : ''), mic: r.miss === 'micBlocked' })
       }
     } catch (e) {
@@ -185,6 +194,11 @@ export function Detector({ onFound }: { onFound: (t: Track) => void }) {
               {phase.mic && !phoneApp && (
                 <button onClick={() => void api.openWindowsSettings('microphone')} className="font-medium underline-offset-2 hover:underline">
                   {tr('Open Windows settings')}
+                </button>
+              )}
+              {phase.mic && phoneApp && (
+                <button onClick={() => openAppInfo()} className="font-medium underline-offset-2 hover:underline">
+                  {tr('Open app info')}
                 </button>
               )}
             </p>

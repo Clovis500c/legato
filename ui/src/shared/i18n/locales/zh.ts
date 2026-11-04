@@ -1990,6 +1990,8 @@ const zh: Record<string, string> = {
   'From your other device: {changes}': '来自你的另一台设备：{changes}',
   'Your playlists, songs, listening history, Live Editor versions and settings on all your devices, without an account or a server.': '在你所有的设备上同步歌单、歌曲、收听历史、Live Editor 版本和设置，无需账号或服务器。',
   'When the same thing changed on two devices, the most recent change wins. Deleted things stay deleted everywhere. Local files stay on each device: their songs are matched by title, artist and length.': '当同一项内容在两台设备上都被更改时，以最新的更改为准。已删除的内容在所有地方都保持删除。本地文件保留在各自的设备上：其中的歌曲按标题、艺人和时长匹配。',
+  'Android keeps Legato away from the microphone. Allow it in Legato’s app info › Permissions › Microphone.': 'Android 阻止 Legato 访问麦克风。请在 Legato 的应用信息 › 权限 › 麦克风 中允许。',
+  'Open app info': '打开应用信息',
 }
 
 export default zh
