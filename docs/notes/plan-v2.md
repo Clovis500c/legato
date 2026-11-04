@@ -273,12 +273,17 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
   - [x] Android: the music goes on when the app leaves the screen, like YouTube Premium (the owner's request,
         2026-11-03; against YouTube's terms, said): a `mediaPlayback` foreground service while it plays, the WebView
         kept awake and YouTube's frames told they're visible. Try it on the owner's phone.
-  - [ ] Android: play / pause / next in the playback notification (a MediaSession), Back on Android 8 to 11.
-  - [ ] Device sync carries every setting (the owner's test, 2026-11-03, phone and PC on v1.1.603: not all came
-        across), except what belongs to one device (the window, start with Windows, global keys, the update
-        channel…), listed in one place; the phone keeps desktop-only ones without showing them.
-  - [ ] Android, still: the phone's other texts and screens (desktop-only Settings rows), the QR scanner, secrets in
-        Android's Keystore, an Android download on the site.
+  - [x] Android: previous / play-pause / next in the notification and on the lock screen (a MediaSession fed by the page
+        through a web message listener limited to the app's own origin), Back on Android 8 to 11 goes to the background
+        (2026-11-04). Starts on the emulator; the buttons and a real song not tried. No cover in the notification yet.
+  - [x] Device sync carries every setting (2026-11-04): a PC with one stamped setting never stamped the rest, so they
+        travelled as time 0 and no device took them; any unstamped key counts now, and more per-device keys stay local.
+        Unit-tested, not tried between two real devices. Desktop-only rows and Shortcuts hidden on the phone.
+  - [x] The phone's wording for the texts that said PC (2026-11-04): Stats, Mixes, search history, cover cache, offline
+        notice, Sync Mode's shared-folder card hidden. Left: Sync Mode's remaining PC wording, Music Detector's, plugins'.
+  - [x] QR scanner for pairing (2026-11-04, `tauri-plugin-barcode-scanner` 2.x): never scanned a real code.
+  - [x] Secrets sealed by Android's Keystore (2026-11-04), moved once from `secrets.json`: checked on the emulator.
+  - [x] Android download on the website (2026-11-04): hero link and FAQ; a push deploys it (the owner's call).
   - [ ] Beta with the APK (CI builds and signs it).
   - [ ] iPhone: waits for the owner's signing choice (Apple Developer Program, or an unsigned .ipa).
 
