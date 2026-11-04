@@ -44,9 +44,18 @@ interface Fixture {
 }
 const fixture = JSON.parse(readFileSync(new URL('../../dsp/fixtures/viz.json', import.meta.url), 'utf8')) as Fixture
 
+/** Twiddles by FFT size: cos and sin of -2πk/n. */
+const twiddles = new Map<number, [Float64Array, Float64Array]>()
+
 /** In-place radix-2 FFT. */
 function fft(re: Float64Array, im: Float64Array) {
   const n = re.length
+  let tw = twiddles.get(n)
+  if (!tw) {
+    tw = [Float64Array.from({ length: n / 2 }, (_, k) => Math.cos((-2 * Math.PI * k) / n)), Float64Array.from({ length: n / 2 }, (_, k) => Math.sin((-2 * Math.PI * k) / n))]
+    twiddles.set(n, tw)
+  }
+  const [cos, sin] = tw
   for (let i = 1, j = 0; i < n; i++) {
     let bit = n >> 1
     for (; j & bit; bit >>= 1) j ^= bit
@@ -57,11 +66,11 @@ function fft(re: Float64Array, im: Float64Array) {
     }
   }
   for (let len = 2; len <= n; len <<= 1) {
-    const ang = (-2 * Math.PI) / len
+    const step = n / len
     for (let i = 0; i < n; i += len) {
       for (let k = 0; k < len / 2; k++) {
-        const wr = Math.cos(ang * k)
-        const wi = Math.sin(ang * k)
+        const wr = cos[k * step]
+        const wi = sin[k * step]
         const a = i + k
         const b = a + len / 2
         const tr = re[b] * wr - im[b] * wi
@@ -75,14 +84,16 @@ function fft(re: Float64Array, im: Float64Array) {
   }
 }
 
+/** Blackman windows by size. */
+const blackman = new Map<number, Float64Array>()
+
 /** What AnalyserNode.getFloatFrequencyData gives for the last n samples (fftSize n, smoothing 0): dB per bin. */
 function analyser(x: ArrayLike<number>, n: number): Float32Array {
+  let w = blackman.get(n)
+  if (!w) blackman.set(n, (w = Float64Array.from({ length: n }, (_, i) => 0.42 - 0.5 * Math.cos((2 * Math.PI * i) / n) + 0.08 * Math.cos((4 * Math.PI * i) / n))))
   const re = new Float64Array(n)
   const im = new Float64Array(n)
-  for (let i = 0; i < n; i++) {
-    const w = 0.42 - 0.5 * Math.cos((2 * Math.PI * i) / n) + 0.08 * Math.cos((4 * Math.PI * i) / n)
-    re[i] = Math.fround(x[i]) * w
-  }
+  for (let i = 0; i < n; i++) re[i] = Math.fround(x[i]) * w[i]
   fft(re, im)
   const out = new Float32Array(n / 2)
   for (let k = 0; k < n / 2; k++) out[k] = 20 * Math.log10(Math.hypot(re[k], im[k]) / n)
@@ -232,7 +243,8 @@ describe('the twins', () => {
       for (const [i, rise] of rises.entries()) expect(Math.abs(rise - 3.01), `${k.name}, octave from band ${from + i}: ${rise}`).toBeLessThan(0.5)
       expect(Math.abs(rises.reduce((a, b) => a + b, 0) / rises.length - 3.01), k.name).toBeLessThan(0.1)
     }
-  })
+    // About a second alone; the whole suite at once can make it several.
+  }, 30_000)
 })
 
 describe('frames', () => {
