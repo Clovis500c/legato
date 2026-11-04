@@ -60,11 +60,11 @@ import {
   UploadSimple,
   VinylRecord,
 } from '@phosphor-icons/react'
-import { open, save } from '@tauri-apps/plugin-dialog'
 import { openUrl, revealItemInDir } from '@tauri-apps/plugin-opener'
 import { useSettings } from '../app/settings'
 import { playlistSongs, useStore, type SettingsSection, type View } from '../app/store'
 import { api, playlistKey, type Edit, type LibraryPlaylist, type PluginInfo, type LibraryTrack, type SearchHit } from '../shared/api'
+import { pickFile, saveFile } from '../shared/files'
 import { bigTrackArt } from '../shared/art'
 import { loadFit } from '../shared/artfit'
 import { fileName, starsText } from '../shared/format'
@@ -116,35 +116,38 @@ async function saveCover(t: LibraryTrack) {
     }
   }
   if (!found) throw new Error(tr('No cover for this song'))
-  const path = await save({
-    title: tr('Save cover'),
-    defaultPath: `${fileName(`${t.artist} - ${t.title}`)}.jpg`,
-    filters: [
-      { name: tr('JPEG image'), extensions: ['jpg'] },
-      { name: tr('PNG image'), extensions: ['png'] },
-    ],
-  })
-  if (!path) return
-  const written = await api.exportCover(new URL(found.src).pathname, found.box, path)
-  app().notify(tr('Cover saved: {file}', { file: written.split(/[\\/]/).pop() ?? '' }))
+  const { src, box } = found
+  const name = await saveFile(
+    {
+      title: tr('Save cover'),
+      defaultPath: `${fileName(`${t.artist} - ${t.title}`)}.jpg`,
+      filters: [
+        { name: tr('JPEG image'), extensions: ['jpg'] },
+        { name: tr('PNG image'), extensions: ['png'] },
+      ],
+    },
+    (path) => api.exportCover(new URL(src).pathname, box, path),
+  )
+  if (name) app().notify(tr('Cover saved: {file}', { file: name }))
 }
 
 const saveCoverItem = (t: LibraryTrack) => bigTrackArt(t).length > 0 && { label: tr('Save cover…'), icon: <DownloadSimple size={16} />, onSelect: () => void saveCover(t).catch(fail) }
 
 /** A playlist as an M3U8 / XSPF / CSV file: local songs by path, the others by their page. */
 async function savePlaylistFile(p: LibraryPlaylist) {
-  const path = await save({
-    title: tr('Save playlist as a file'),
-    defaultPath: `${fileName(p.name)}.m3u8`,
-    filters: [
-      { name: tr('M3U playlist'), extensions: ['m3u8', 'm3u'] },
-      { name: tr('XSPF playlist'), extensions: ['xspf'] },
-      { name: tr('CSV table'), extensions: ['csv'] },
-    ],
-  })
-  if (!path) return
-  await api.exportPlaylistFile(p.id, path)
-  app().notify(tr('Playlist saved: {file}', { file: path.split(/[\\/]/).pop() ?? '' }))
+  const name = await saveFile(
+    {
+      title: tr('Save playlist as a file'),
+      defaultPath: `${fileName(p.name)}.m3u8`,
+      filters: [
+        { name: tr('M3U playlist'), extensions: ['m3u8', 'm3u'] },
+        { name: tr('XSPF playlist'), extensions: ['xspf'] },
+        { name: tr('CSV table'), extensions: ['csv'] },
+      ],
+    },
+    (path) => api.exportPlaylistFile(p.id, path),
+  )
+  if (name) app().notify(tr('Playlist saved: {file}', { file: name }))
 }
 
 /** Track page on its service, best first. */
@@ -261,8 +264,8 @@ function coverMenu(p: LibraryPlaylist): MenuEntry {
         label: cur.image ? tr('Custom image (change…)') : tr('Custom image…'),
         checked: cur.mode === 'image',
         onSelect: async () => {
-          const path = await open({ title: tr('Playlist cover'), filters: [{ name: tr('Images'), extensions: ['png', 'jpg', 'jpeg', 'webp', 'gif'] }] })
-          if (typeof path !== 'string') return
+          const path = await pickFile({ title: tr('Playlist cover'), filters: [{ name: tr('Images'), extensions: ['png', 'jpg', 'jpeg', 'webp', 'gif'] }] }).catch((e) => void fail(e))
+          if (!path) return
           api.saveCover(p.id, path).then((image) => set({ mode: 'image', image }), fail)
         },
       },

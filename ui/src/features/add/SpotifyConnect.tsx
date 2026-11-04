@@ -1,8 +1,8 @@
 import { SpotifyLogo } from '@phosphor-icons/react'
-import { open } from '@tauri-apps/plugin-dialog'
 import { useEffect, useState } from 'react'
 import { useStore } from '../../app/store'
 import { api, type ExportTrouble, type SpotifyList, type SpotifyPick } from '../../shared/api'
+import { pickFile } from '../../shared/files'
 import { msg, tr } from '../../shared/i18n/i18n'
 import { phoneApp } from '../../shared/platform'
 import { Button } from '../../shared/ui/Button'
@@ -196,8 +196,8 @@ function SpotifyFile() {
     void api.spotifyExportClose().catch(() => {})
   }
   const pick = async () => {
-    const path = await open({ title: tr('Spotify data export'), filters: [{ name: tr('Spotify data export'), extensions: ['zip', 'json', 'csv'] }] })
-    if (typeof path !== 'string') return
+    const path = await pickFile({ title: tr('Spotify data export'), filters: [{ name: tr('Spotify data export'), extensions: ['zip', 'json', 'csv'] }] }).catch((e) => void useStore.setState({ error: String(e) }))
+    if (!path) return
     setBusy(true)
     try {
       const found = await api.spotifyExportFile(path)

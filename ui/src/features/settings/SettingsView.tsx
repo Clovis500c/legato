@@ -5,6 +5,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { useSettings } from '../../app/settings'
 import { useStore, type SettingsSection } from '../../app/store'
 import { api, type Contact } from '../../shared/api'
+import { pickFile, saveFile } from '../../shared/files'
 import { formatBytes, formatCount, timeAgo } from '../../shared/format'
 import { PRIVACY_PAGE } from '../../shared/links'
 import { byVia, countText, VIA_LABELS, WHY_LABELS } from './privacy'
@@ -31,7 +32,6 @@ import { phoneApp } from '../../shared/platform'
 import { DESKTOP_ONLY, DESKTOP_ONLY_SECTIONS } from './desktopOnly'
 import { LanguagePicker } from './LanguagePicker'
 import { ask } from '../../shared/ui/Ask'
-import { open, save } from '@tauri-apps/plugin-dialog'
 
 const sections: { id: SettingsSection; label: string; icon: ReactNode }[] = [
   { id: 'general', label: msg('General'), icon: <GearSix size={15} /> },
@@ -576,12 +576,9 @@ function BackupRows() {
   const [busy, setBusy] = useState(false)
   const filters = [{ name: tr('Legato library backup'), extensions: ['legato'] }]
   const backUp = async () => {
-    const path = await save({ title: tr('Back up your library'), defaultPath: `Legato ${new Date().toISOString().slice(0, 10)}.legato`, filters })
-    if (!path) return
-    setBusy(true)
     try {
-      await api.libraryBackup(path)
-      useStore.getState().notify(tr('Library saved: {file}', { file: path.split(/[\\/]/).pop() ?? '' }))
+      const name = await saveFile({ title: tr('Back up your library'), defaultPath: `Legato ${new Date().toISOString().slice(0, 10)}.legato`, filters }, (path) => (setBusy(true), api.libraryBackup(path)))
+      if (name) useStore.getState().notify(tr('Library saved: {file}', { file: name }))
     } catch (e) {
       useStore.setState({ error: String(e) })
     } finally {
@@ -590,8 +587,8 @@ function BackupRows() {
   }
   const restore = async () => {
     // A daily or pre-update copy (library-*.db) restores too.
-    const path = await open({ title: tr('Restore a backup'), filters: [{ ...filters[0], extensions: ['legato', 'db'] }] })
-    if (typeof path !== 'string') return
+    const path = await pickFile({ title: tr('Restore a backup'), filters: [{ ...filters[0], extensions: ['legato', 'db'] }] }).catch((e) => void useStore.setState({ error: String(e) }))
+    if (!path) return
     if (!(await ask({ title: tr('Replace your library with this backup?'), body: tr('Your playlists, likes, history and settings become the backup’s, then Legato restarts.'), ok: tr('Restore') }))) return
     setBusy(true)
     try {

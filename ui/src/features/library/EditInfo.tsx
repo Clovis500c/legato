@@ -1,9 +1,9 @@
 import { Image, Trash } from '@phosphor-icons/react'
-import { open } from '@tauri-apps/plugin-dialog'
 import { useEffect, useState } from 'react'
 import { useStore } from '../../app/store'
 import { api, type LibraryTrack } from '../../shared/api'
 import { coverRewritten, trackArt } from '../../shared/art'
+import { pickFile } from '../../shared/files'
 import { tr, trn } from '../../shared/i18n/i18n'
 import { Button } from '../../shared/ui/Button'
 import { Cover } from '../../shared/ui/Cover'
@@ -43,8 +43,8 @@ export function EditInfo({ tracks, onClose }: { tracks: LibraryTrack[]; onClose:
     }
   }, [tracks])
   const pick = async () => {
-    const file = await open({ filters: [{ name: tr('Pictures'), extensions: ['png', 'jpg', 'jpeg', 'webp', 'gif'] }] })
-    if (typeof file === 'string') setCover(file)
+    const file = await pickFile({ filters: [{ name: tr('Pictures'), extensions: ['png', 'jpg', 'jpeg', 'webp', 'gif'] }] }).catch((e) => void useStore.setState({ error: String(e) }))
+    if (file) setCover(file)
   }
   const ok = !!form && !!start && canSave(form, start, one)
   const save = async () => {

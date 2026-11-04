@@ -1,8 +1,8 @@
 import { FileAudio } from '@phosphor-icons/react'
-import { open } from '@tauri-apps/plugin-dialog'
 import { useState } from 'react'
 import { useStore } from '../../app/store'
 import { api, type SpotifyList, type SpotifyPick } from '../../shared/api'
+import { pickFile } from '../../shared/files'
 import { tr } from '../../shared/i18n/i18n'
 import { Button } from '../../shared/ui/Button'
 import { Card } from './Card'
@@ -20,8 +20,8 @@ export function AppFileImport() {
   const [file, setFile] = useState<Read>()
   const [busy, setBusy] = useState(false)
   const pick = async () => {
-    const path = await open({ title: tr('Library file'), filters: [{ name: tr('iTunes library file'), extensions: ['xml'] }] })
-    if (typeof path !== 'string') return
+    const path = await pickFile({ title: tr('Library file'), filters: [{ name: tr('iTunes library file'), extensions: ['xml'] }] }).catch((e) => void useStore.setState({ error: String(e) }))
+    if (!path) return
     setBusy(true)
     try {
       const found = await api.libraryFileLists(path)

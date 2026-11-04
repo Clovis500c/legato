@@ -1,8 +1,8 @@
 import { CaretLeft, CaretRight } from '@phosphor-icons/react'
-import { save } from '@tauri-apps/plugin-dialog'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useStore } from '../../app/store'
 import { api } from '../../shared/api'
+import { saveFile } from '../../shared/files'
 import { artistName } from '../../shared/artistName'
 import { bigTrackArt } from '../../shared/art'
 import { fileName } from '../../shared/format'
@@ -75,19 +75,20 @@ export function ShareDialog() {
     }
   }
   const keep = async () => {
-    const path = await save({
-      title: tr('Save picture'),
-      defaultPath: `${fileName(`${artist} - ${title}`)}.png`,
-      filters: [
-        { name: tr('PNG image'), extensions: ['png'] },
-        { name: tr('JPEG image'), extensions: ['jpg'] },
-      ],
-    })
-    if (!path) return
     try {
       const bytes = new Uint8Array(await (await cardBlob(canvas.current!)).arrayBuffer())
-      const written = await api.savePicture(bytes, path)
-      notify(tr('Picture saved: {file}', { file: written.split(/[\\/]/).pop() ?? '' }))
+      const name = await saveFile(
+        {
+          title: tr('Save picture'),
+          defaultPath: `${fileName(`${artist} - ${title}`)}.png`,
+          filters: [
+            { name: tr('PNG image'), extensions: ['png'] },
+            { name: tr('JPEG image'), extensions: ['jpg'] },
+          ],
+        },
+        (path) => api.savePicture(bytes, path),
+      )
+      if (name) notify(tr('Picture saved: {file}', { file: name }))
     } catch (e) {
       notify(String(e))
     }

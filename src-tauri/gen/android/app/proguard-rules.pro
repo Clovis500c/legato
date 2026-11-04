@@ -21,3 +21,6 @@
 #-renamesourcefileattribute SourceFile
 # Called by name from Rust over JNI (src-tauri/src/mobile/keystore.rs).
 -keep class app.legato.mobile.KeystoreCrypto { *; }
+
+# Called by name from Rust over JNI (src-tauri/src/mobile/picked.rs).
+-keep class app.legato.mobile.PickedFile { *; }

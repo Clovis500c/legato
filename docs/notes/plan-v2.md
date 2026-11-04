@@ -311,10 +311,12 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
         Apple's sign-in windows (Exportify's page covered the app with no way back) and the folder picker (none on
         Android); Accounts' Spotify web player and Local files rows hidden there. Not seen on a real phone, nor at 360 px
         (two of Settings' choice rows scroll sideways under 390 px).
-  - [ ] `M` Android: files picked or saved through Android's own picker. It gives `content://` addresses, and every
+  - [x] `M` Android: files picked or saved through Android's own picker. It gives `content://` addresses, and every
         command reads or writes a path: song lists, Spotify's export, iTunes files, pictures (theme, covers), backups,
-        themes, exports and reports all fail on the phone. A copy in the app's cache on the way in, out to the address
-        on the way out.
+        themes, exports and reports all failed on the phone. Done (2026-11-04): `shared/files.ts` (`pickFile`,
+        `saveFile`) for every file dialog; a picked address is copied into the cache, a saved file written there and
+        copied out (`src-tauri/src/picked.rs`, `PickedFile.kt` over JNI); on the phone the picker filters by media
+        types only (a .theme or .legato file has no type Android knows). Seen on the emulator (API 36): a theme saved to Downloads through Android's save screen, then opened back from it (copied in under its own name); the other dialogs not driven one by one, nor a real phone.
   - [ ] `M` Android: music on this phone (local files). No folder picker on Android (`tauri-plugin-dialog`
         refuses folders on mobile): `READ_MEDIA_AUDIO` and a scan of the phone's Music and Download folders, played by
         the Rust engine in the background with the notification (docs/notes/ideas/mobile.md, phase 3).

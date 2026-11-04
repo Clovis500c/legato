@@ -119,6 +119,12 @@ export const api = {
   libraryBackup: (path: string) => invoke<void>('library_backup', { path }),
   /** A backup replaces the library, then the app restarts on it (no answer on success). */
   libraryRestore: (path: string) => invoke<void>('library_restore', { path }),
+  /** Android's picker addresses (shared/files.ts): a picked file copied into the cache, its path. A path stays. */
+  pickedIn: (address: string) => invoke<string>('picked_in', { address }),
+  /** Where to write a file that goes out to an address: name in the cache. */
+  pickedTemp: (name: string) => invoke<string>('picked_temp', { name }),
+  /** The file at path copied out to the address the user picked; its name there. */
+  pickedOut: (path: string, address: string) => invoke<string>('picked_out', { path, address }),
   /** Explorer's drop: folders watched, audio files outside them kept, one rescan. */
   addDropped: (paths: string[]) => invoke<Dropped>('add_dropped', { paths }),
   importLink: (url: string) => invoke<LinkImport>('import_link', { url }),

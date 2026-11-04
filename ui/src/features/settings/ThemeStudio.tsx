@@ -1,9 +1,9 @@
 import { Check, CheckCircle, ClipboardText, Copy, DownloadSimple, Image, MagicWand, Plus, Trash, UploadSimple, WarningCircle, X } from '@phosphor-icons/react'
-import { open, save as saveDialog } from '@tauri-apps/plugin-dialog'
 import { useState } from 'react'
 import { useSettings } from '../../app/settings'
 import { useStore } from '../../app/store'
 import { api } from '../../shared/api'
+import { pickFile, saveFile } from '../../shared/files'
 import { coverImage } from '../../shared/art'
 import { msg, tr } from '../../shared/i18n/i18n'
 import { phoneApp } from '../../shared/platform'
@@ -140,8 +140,8 @@ function ThemeEditor({ id, onClose }: { id: string; onClose: () => void }) {
   }
   const bg = (patch: Partial<Background>) => t.background && save({ background: { ...t.background, ...patch } })
   const pickPicture = async () => {
-    const file = await open({ filters: [{ name: tr('Pictures and videos'), extensions: ['png', 'jpg', 'jpeg', 'webp', 'gif', 'mp4', 'webm'] }] })
-    if (typeof file !== 'string') return
+    const file = await pickFile({ filters: [{ name: tr('Pictures and videos'), extensions: ['png', 'jpg', 'jpeg', 'webp', 'gif', 'mp4', 'webm'] }] }).catch((e) => void fail(e))
+    if (!file) return
     try {
       const image = await api.saveBackground(file)
       save({ background: { image, fit: t.background?.fit ?? 'cover', dim: t.background?.dim ?? 35, blur: t.background?.blur ?? 0, panels: t.background?.panels ?? 80 } })
@@ -150,8 +150,7 @@ function ThemeEditor({ id, onClose }: { id: string; onClose: () => void }) {
     }
   }
   const exportFile = async () => {
-    const path = await saveDialog({ defaultPath: `${t.name}.theme`, filters: [{ name: 'Legato theme', extensions: ['theme'] }] })
-    if (path) await api.exportTheme(path, t).then(() => useStore.getState().notify(tr('Theme saved'), { kind: 'ok' }), fail)
+    await saveFile({ defaultPath: `${t.name}.theme`, filters: [{ name: 'Legato theme', extensions: ['theme'] }] }, (path) => api.exportTheme(path, t)).then((name) => name && useStore.getState().notify(tr('Theme saved'), { kind: 'ok' }), fail)
   }
   const report = contrastReport(t)
   return (
@@ -328,8 +327,8 @@ export function ThemeStudio() {
   }
   const fresh = (t: Partial<Theme>) => sanitizeTheme({ ...current(), ...t, id: undefined })
   const importFile = async () => {
-    const file = await open({ filters: [{ name: 'Legato theme', extensions: ['theme', 'json'] }] })
-    if (typeof file !== 'string') return
+    const file = await pickFile({ filters: [{ name: 'Legato theme', extensions: ['theme', 'json'] }] }).catch((e) => void fail(e))
+    if (!file) return
     try {
       const t = sanitizeTheme({ ...((await api.importTheme(file)) as object), id: undefined })
       if (!t) throw new Error(tr('Invalid theme: all 13 colors are needed, as #RRGGBB.'))

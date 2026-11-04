@@ -137,6 +137,8 @@ Relaunch log (newest last):
   (`am force-stop` was the only exit), so on the phone Spotify's, Apple's and Google's sign-ins and the folder give way
   to a From your PC card. Found, next: every file picked or saved on the phone fails (`content://` addresses), and
   local music needs its own path (plan-v2, two new Android lines).
+- 2026-11-04: files on the phone: every file dialog through `shared/files.ts`, Android's `content://` addresses copied
+  through the app's cache (`picked.rs`, `PickedFile.kt`). Seen on the emulator (API 36): a theme saved to Downloads through Android's save screen, then opened back from it (copied in under its own name); the other dialogs not driven one by one, nor a real phone.
 
 ## Mobile app and devices sync (the owner's ask, 2026-11-02 afternoon; in progress)
 

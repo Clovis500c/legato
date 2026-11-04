@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import { useStore } from '../../app/store'
 import { api, type Track } from '../../shared/api'
+import { pickFile } from '../../shared/files'
 import { tr } from '../../shared/i18n/i18n'
 import { phoneApp } from '../../shared/platform'
 import { Button } from '../../shared/ui/Button'
@@ -120,8 +121,8 @@ function ImportList() {
     }
   }
   const openFile = async () => {
-    const file = await open({ filters: [{ name: tr('Song lists'), extensions: ['txt', 'csv', 'tsv', 'm3u', 'm3u8', 'xspf'] }] })
-    if (typeof file === 'string') void run(file)
+    const file = await pickFile({ filters: [{ name: tr('Song lists'), extensions: ['txt', 'csv', 'tsv', 'm3u', 'm3u8', 'xspf'] }] }).catch((e) => void useStore.setState({ error: String(e) }))
+    if (file) void run(file)
   }
   return (
     <Card icon={ListPlus} title={tr('Import a list of songs')} sub={tr('One song per line from SoundCloud, Deezer or anywhere, or an M3U / XSPF playlist file. Songs not in your library are found on YouTube.')}>
