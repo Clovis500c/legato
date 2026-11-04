@@ -28,6 +28,7 @@ import { BrowserScene, CountsScene, CoverShapes, DensityScene, FadeScene, ListCo
 import { searchSettings, type SettingEntry } from './search'
 import { msg, tr } from '../../shared/i18n/i18n'
 import { phoneApp } from '../../shared/platform'
+import { DESKTOP_ONLY, DESKTOP_ONLY_SECTIONS } from './desktopOnly'
 import { LanguagePicker } from './LanguagePicker'
 import { ask } from '../../shared/ui/Ask'
 import { open, save } from '@tauri-apps/plugin-dialog'
@@ -66,6 +67,7 @@ function Group({ title, count, hint, children }: { title: string; count?: number
  */
 function Row({ label, sub, children, preview, setting }: { label: string; sub?: string; children: ReactNode; preview?: ReactNode; setting?: keyof Settings }) {
   const changed = useSettings((st) => !!setting && JSON.stringify(st.settings[setting]) !== JSON.stringify(DEFAULTS[setting]))
+  if (phoneApp && DESKTOP_ONLY.has(label)) return null
   return (
     <div
       data-setting={label}
@@ -786,7 +788,7 @@ function PlaybackSection() {
 /** Search box over the section list: results replace it while typing, Enter opens the first. */
 function SettingsSearch({ onPick }: { onPick: (e: SettingEntry) => void }) {
   const [q, setQ] = useState('')
-  const hits = searchSettings(q).slice(0, 12)
+  const hits = searchSettings(q).filter((e) => !phoneApp || !(DESKTOP_ONLY.has(e.label) || DESKTOP_ONLY_SECTIONS.has(e.section))).slice(0, 12)
   const pick = (e: SettingEntry) => {
     setQ('')
     onPick(e)
@@ -840,7 +842,7 @@ export function SettingsView({ section }: { section: SettingsSection }) {
       <div className="flex min-h-0 flex-1 flex-col gap-4 @2xl:flex-row @2xl:gap-9">
         <nav className="flex shrink-0 flex-wrap gap-px @2xl:w-52 @2xl:flex-col @2xl:flex-nowrap">
           <SettingsSearch onPick={(e) => go({ name: 'settings', section: e.section, focus: e.label })} />
-          {sections.map((s) => (
+          {sections.filter((s) => !phoneApp || !DESKTOP_ONLY_SECTIONS.has(s.id)).map((s) => (
             <button key={s.id} aria-current={s.id === section ? 'page' : undefined} onClick={() => go({ name: 'settings', section: s.id })} className={`flex items-center gap-3 rounded-lg px-3 py-2 text-left ${s.id === section ? 'bg-raised font-semibold' : 'text-ink-2 hover:text-ink'}`}>
               {s.icon} <span className="flex-1">{tr(s.label)}</span>
               {s.id === 'sources' && signIn && <span title={tr('A service needs you to sign in again')} className="size-2 rounded-full bg-danger" />}

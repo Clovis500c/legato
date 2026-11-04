@@ -14,6 +14,7 @@ import { ReleaseNotes } from '../update/ReleaseNotes'
 import { installUpdate, useUpdate } from '../update/updates'
 import { msg, tr, trn } from '../../shared/i18n/i18n'
 import { phoneApp } from '../../shared/platform'
+import { DESKTOP_ONLY } from './desktopOnly'
 import { PRIVACY_PAGE, REPO } from '../../shared/links'
 
 // Status colors keep their meaning whatever the theme.
@@ -51,6 +52,7 @@ function label(s: UpdateStatus | null): string {
 }
 
 function Row({ label: name, sub, children }: { label: string; sub?: ReactNode; children?: ReactNode }) {
+  if (phoneApp && DESKTOP_ONLY.has(name)) return null
   return (
     <div data-setting={name} className="flex items-center gap-4 border-b border-line-soft px-4 py-3 last:border-0">
       <div className="min-w-0 flex-1">

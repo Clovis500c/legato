@@ -51,6 +51,9 @@ Log (newest last):
   rest (`settings_unstamped` looked at an empty table), so its other settings travelled as time 0 and no device took
   them. Now any unstamped key counts; more per-device keys in `LOCAL_SETTINGS`. Unit-tested; not seen between two
   real devices.
+- 2026-11-04: step 2 half (phone screens). Desktop-only Settings rows and the Shortcuts section hidden on the phone
+  (`features/settings/desktopOnly.ts`, also out of the search). Strings that still say PC (player offline notice, Stats,
+  Mixes, Sync Mode texts…) left: each phone variant needs 17 translations. Decided alone: later, with step 7.
 
 ## Mobile app and devices sync (the owner's ask, 2026-11-02 afternoon; in progress)
 
