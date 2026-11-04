@@ -2000,6 +2000,7 @@ const sv: Record<string, string> = {
   'By level': 'Efter nivå',
   'Along frequency': 'Längs frekvensen',
   'rainbow prism spectrum meter red top warm colours': 'regnbåge prisma spektrum mätare röd topp varm färger',
+  'Search this list': 'Sök i den här listan',
 }
 
 export default sv

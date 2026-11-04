@@ -2000,6 +2000,7 @@ const it: Record<string, string> = {
   'By level': 'Per livello',
   'Along frequency': 'Lungo la frequenza',
   'rainbow prism spectrum meter red top warm colours': 'arcobaleno prisma spettro misuratore rosso alto caldo colori',
+  'Search this list': 'Filtra questo elenco',
 }
 
 export default it

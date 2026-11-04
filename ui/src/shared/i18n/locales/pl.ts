@@ -2000,6 +2000,7 @@ const pl: Record<string, string> = {
   'By level': 'Według poziomu',
   'Along frequency': 'Wzdłuż częstotliwości',
   'rainbow prism spectrum meter red top warm colours': 'tęcza pryzmat widmo miernik czerwony góra ciepły kolory',
+  'Search this list': 'Filtruj tę listę',
 }
 
 export default pl

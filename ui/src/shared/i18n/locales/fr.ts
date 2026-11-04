@@ -2000,6 +2000,7 @@ const fr: Record<string, string> = {
   'By level': 'Selon le niveau',
   'Along frequency': 'Selon la fréquence',
   'rainbow prism spectrum meter red top warm colours': 'arc-en-ciel prisme spectre vumètre rouge haut chaud couleurs',
+  'Search this list': 'Filtrer cette liste',
 }
 
 export default fr

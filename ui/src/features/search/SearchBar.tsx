@@ -17,6 +17,7 @@ import { matchCommands } from './commands'
 import { clearRecent, forgetRecent, useRecent } from './recent'
 import { libraryMatches } from './results'
 import { phoneApp } from '../../shared/platform'
+import { usePhone } from '../../shared/phone'
 
 // Pages that filter their own list as you type.
 const FILTERS = ['songs', 'playlist', 'albums', 'artists']
@@ -70,6 +71,7 @@ export function SearchBar({ children }: { children?: ReactNode }) {
   const [active, setActive] = useState(-1)
   const [suggested, setSuggested] = useState<{ q: string; list: string[] }>()
   const input = useRef<HTMLInputElement>(null)
+  const phone = usePhone()
 
   const scope = scoped && FILTERS.includes(view.name) ? scopeOf(view, playlists) : null
   const text = query.trim()
@@ -294,7 +296,8 @@ export function SearchBar({ children }: { children?: ReactNode }) {
           // The list keeps the focus here (its lines don't take it); the mic or a button next to the field closes it.
           onFocus={() => (setFocused(true), setOpen(true))}
           onBlur={() => (setFocused(false), close())}
-          placeholder={scope ? tr('Search this list, or press Enter to search everywhere') : tr('What do you want to play?')}
+          // The phone's field is narrow: short words (Enter there is the keyboard's search key).
+          placeholder={scope ? (phone ? tr('Search this list') : tr('Search this list, or press Enter to search everywhere')) : phone ? tr('Search') : tr('What do you want to play?')}
           aria-label={tr('Search')}
           className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-ink-3"
         />

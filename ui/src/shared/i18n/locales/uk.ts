@@ -2000,6 +2000,7 @@ const uk: Record<string, string> = {
   'By level': 'За рівнем',
   'Along frequency': 'За частотою',
   'rainbow prism spectrum meter red top warm colours': 'веселка призма спектр індикатор червоний верх теплий кольори',
+  'Search this list': 'Шукати в цьому списку',
 }
 
 export default uk

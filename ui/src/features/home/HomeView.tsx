@@ -46,8 +46,9 @@ const MOODS: Record<string, string> = {
 
 function PlayAll({ tracks }: { tracks: LibraryTrack[] }) {
   return (
-    <button onClick={() => usePlayer.getState().playTracks(tracks, 0)} className="flex items-center gap-1.5 rounded-full border border-line px-3.5 py-1.5 text-[0.8125rem] font-medium transition hover:bg-raised">
-      <Play size={12} weight="fill" /> {tr('Play all')}
+    // The phone keeps the icon: the section's title needs the room.
+    <button onClick={() => usePlayer.getState().playTracks(tracks, 0)} className="flex items-center gap-1.5 rounded-full border border-line px-3.5 py-1.5 text-[0.8125rem] font-medium transition hover:bg-raised phone:p-2">
+      <Play size={12} weight="fill" /> <span className="phone:sr-only">{tr('Play all')}</span>
     </button>
   )
 }
@@ -77,15 +78,16 @@ function SongList({ tracks }: { tracks: LibraryTrack[] }) {
   )
 }
 
-/** Shortcut tile (Media/Tile): cover left, name; play button on hover. */
+/** Shortcut tile (Media/Tile): cover left, name; play button on hover. The phone has no hover: the name takes its room
+ * and two lines (a press and hold gives Play). */
 function JumpTile({ art, title, onOpen, onPlay, menu }: { art: ReactNode; title: string; onOpen: () => void; onPlay: () => void; menu: () => MenuEntry[] }) {
   return (
-    <div onContextMenu={onMenu(menu)} className="group flex h-14 items-center gap-3 overflow-hidden rounded-md bg-raised pr-2 transition-colors hover:bg-line">
-      <button onClick={onOpen} className="flex h-full min-w-0 flex-1 items-center gap-3 text-left">
+    <div onContextMenu={onMenu(menu)} className="group flex h-14 items-center gap-3 overflow-hidden rounded-md bg-raised pr-2 transition-colors hover:bg-line phone:gap-2">
+      <button onClick={onOpen} className="flex h-full min-w-0 flex-1 items-center gap-3 text-left phone:gap-2.5">
         <span className="grid size-14 shrink-0 place-items-center overflow-hidden">{art}</span>
-        <span className="truncate text-sm font-medium">{title}</span>
+        <span className="truncate text-sm font-medium phone:line-clamp-2 phone:text-[0.8125rem] phone:leading-4 phone:whitespace-normal">{title}</span>
       </button>
-      <RoundButton label={tr('Play {title}', { title })} kind="primary" size="sm" className="opacity-0 group-hover:opacity-100 focus:opacity-100" onClick={onPlay}>
+      <RoundButton label={tr('Play {title}', { title })} kind="primary" size="sm" className="opacity-0 group-hover:opacity-100 focus:opacity-100 phone:hidden" onClick={onPlay}>
         <Play weight="fill" size={14} />
       </RoundButton>
     </div>

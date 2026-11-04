@@ -2000,6 +2000,7 @@ const tr: Record<string, string> = {
   'By level': 'Seviyeye göre',
   'Along frequency': 'Frekans boyunca',
   'rainbow prism spectrum meter red top warm colours': 'gökkuşağı prizma spektrum gösterge kırmızı üst sıcak renkler',
+  'Search this list': 'Bu listede ara',
 }
 
 export default tr

@@ -2000,6 +2000,7 @@ const de: Record<string, string> = {
   'By level': 'Nach Pegel',
   'Along frequency': 'Entlang der Frequenz',
   'rainbow prism spectrum meter red top warm colours': 'regenbogen prisma spektrum pegel rot oben warm farben',
+  'Search this list': 'Diese Liste filtern',
 }
 
 export default de

@@ -2000,6 +2000,7 @@ const pt: Record<string, string> = {
   'By level': 'Por nível',
   'Along frequency': 'Ao longo da frequência',
   'rainbow prism spectrum meter red top warm colours': 'arco-íris prisma espectro medidor vermelho topo quente cores',
+  'Search this list': 'Filtrar esta lista',
 }
 
 export default pt

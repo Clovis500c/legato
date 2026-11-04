@@ -2000,6 +2000,7 @@ const ru: Record<string, string> = {
   'By level': 'По уровню',
   'Along frequency': 'По частоте',
   'rainbow prism spectrum meter red top warm colours': 'радуга призма спектр индикатор красный верх тёплый цвета',
+  'Search this list': 'Поиск в этом списке',
 }
 
 export default ru

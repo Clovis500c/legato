@@ -2000,6 +2000,7 @@ const id: Record<string, string> = {
   'By level': 'Menurut level',
   'Along frequency': 'Sepanjang frekuensi',
   'rainbow prism spectrum meter red top warm colours': 'pelangi prisma spektrum meter merah atas hangat warna',
+  'Search this list': 'Cari di daftar ini',
 }
 
 export default id

@@ -2000,6 +2000,7 @@ const ko: Record<string, string> = {
   'By level': '레벨별',
   'Along frequency': '주파수를 따라',
   'rainbow prism spectrum meter red top warm colours': '무지개 프리즘 스펙트럼 미터 빨강 위 따뜻한 색',
+  'Search this list': '이 목록에서 검색',
 }
 
 export default ko

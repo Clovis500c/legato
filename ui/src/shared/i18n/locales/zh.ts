@@ -2000,6 +2000,7 @@ const zh: Record<string, string> = {
   'By level': '按电平',
   'Along frequency': '沿频率',
   'rainbow prism spectrum meter red top warm colours': '彩虹 棱镜 频谱 电平表 红色 顶部 暖色 颜色',
+  'Search this list': '搜索此列表',
 }
 
 export default zh

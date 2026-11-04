@@ -13,8 +13,9 @@ export function Section({ title, sub, onAll, action, menu, className = '', child
     <section className={`flex flex-col gap-3 ${className}`}>
       <div onContextMenu={menu && onMenu(menu)} className="flex items-end justify-between gap-4">
         <div className="flex min-w-0 flex-col gap-0.5">
-          <h2 className="truncate text-[1.375rem] leading-7 font-bold">{title}</h2>
-          {sub && <p className="flex items-center gap-1.5 truncate text-[0.8125rem] text-ink-2">{sub}</p>}
+          {/* The phone wraps the title and the line under it (two lines at most) instead of cutting them. */}
+          <h2 className="truncate text-[1.375rem] leading-7 font-bold phone:line-clamp-2 phone:text-xl phone:whitespace-normal">{title}</h2>
+          {sub && <p className="flex items-center gap-1.5 truncate text-[0.8125rem] text-ink-2 phone:line-clamp-2 phone:whitespace-normal">{sub}</p>}
         </div>
         <div className="flex shrink-0 items-center gap-3">
           {action}

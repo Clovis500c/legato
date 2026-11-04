@@ -2000,6 +2000,7 @@ const vi: Record<string, string> = {
   'By level': 'Theo mức',
   'Along frequency': 'Theo tần số',
   'rainbow prism spectrum meter red top warm colours': 'cầu vồng lăng kính phổ đồng hồ đỏ trên ấm màu sắc',
+  'Search this list': 'Tìm trong danh sách này',
 }
 
 export default vi

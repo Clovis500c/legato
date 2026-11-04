@@ -2000,6 +2000,7 @@ const hi: Record<string, string> = {
   'By level': 'स्तर के अनुसार',
   'Along frequency': 'आवृत्ति के साथ',
   'rainbow prism spectrum meter red top warm colours': 'इंद्रधनुष प्रिज़्म स्पेक्ट्रम मीटर लाल ऊपर गर्म रंग',
+  'Search this list': 'इस सूची में खोजें',
 }
 
 export default hi

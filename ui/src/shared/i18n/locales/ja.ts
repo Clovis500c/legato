@@ -2000,6 +2000,7 @@ const ja: Record<string, string> = {
   'By level': 'レベル別',
   'Along frequency': '周波数に沿って',
   'rainbow prism spectrum meter red top warm colours': '虹 プリズム スペクトラム メーター 赤 上 暖色 色',
+  'Search this list': 'このリストを検索',
 }
 
 export default ja

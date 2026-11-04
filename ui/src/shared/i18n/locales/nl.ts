@@ -2000,6 +2000,7 @@ const nl: Record<string, string> = {
   'By level': 'Op niveau',
   'Along frequency': 'Langs de frequentie',
   'rainbow prism spectrum meter red top warm colours': 'regenboog prisma spectrum meter rood boven warm kleuren',
+  'Search this list': 'Filter deze lijst',
 }
 
 export default nl
