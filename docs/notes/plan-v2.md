@@ -525,7 +525,12 @@ colours, mirror, reflection.
       default, the bottom half at 20 % behind the song; seen over the demo), and the mini player (Visualizer in the mini
       player, off by default: a thin strip under the song; seen in the floating one over the demo, the right panel's
       and the sidebar's not looked at). Left: the OBS overlay page.
-- [ ] `S-M` 1/3 and 1/12 octave bands (31 and 120, ANSI centers) beside today's 1/6 (61 bands).
+- [x] `S-M` 1/3 and 1/12 octave bands (31 and 120, ANSI centers) beside today's 1/6 (61 bands).
+      (1/3 is in, folded from the sixths. 2026-11-04, decided alone: 1/12 = 121 bands on the sixths' base-10 scale,
+      both ends in as the 61 are, from an 8192-point window in both twins so they resolve as the sixths do; Settings ›
+      Playback › Visualizer bands › 1/12 octave, the engine's stream and YouTube's analysers start again on a switch.
+      Tested: a sine lights its twelfth in both twins, the shared fixture in twelfths, the frames. Seen over the demo;
+      not tried on real music, nor in the watch page.)
 - [ ] `M` Beat and onset detection (spectral flux on low and mid bands, tempo estimate): kicks drive pulses, flashes, camera.
       The radial ring's pulse is Moving cover's own until then.
 
@@ -545,7 +550,7 @@ colours, mirror, reflection.
 - [ ] `S` Oscilloscope: the waveform, triggered on zero crossings so it stands still, phosphor afterglow.
 - [ ] `S` Vectorscope / goniometer (left vs right, Lissajous) with a correlation meter: stereo width at a glance.
 - [ ] `S` Unit tests: a sine lights its 1/12-octave band, a pink noise reads flat with the tilt, a click track gives its BPM.
-      (The 1/6-octave sine, left-only, the twins' shared fixture and the 10 Hz strobe are in.)
+      (The 1/6- and 1/12-octave sines, left-only, the twins' shared fixture and the 10 Hz strobe are in.)
 - [ ] `S-M` Time-domain blocks in the frames (L/R, 1024 samples, as i16) for scope and vectorscope. Left / right bands, rms and
       peak are in.
 - [ ] `M` Particles on the beat (from the cover's colours), with the cover's blur behind (Plexamp-like backdrop).

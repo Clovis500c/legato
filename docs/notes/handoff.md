@@ -169,6 +169,9 @@ Relaunch log (newest last):
   screen and the strip. An edit to `liveSync.ts` hot-reloads the player bar with a "change in the order of Hooks"
   error: Vite's hot reload, gone after a reload of the page. The OBS overlay's visualizer waits: it needs a frame
   stream to the overlay page (SSE from `remote.rs`, YouTube's frames forwarded), more than an `S`.
+- 2026-11-04: 1/12-octave bands (Visualizer bands › 1/12 octave, 121 bars): both twins measure them over 8192 points,
+  the fixture holds them (`fineLeft`, `fineRight`), frames carry their count. Seen over the demo, full screen, switched
+  1/6 → 1/12 → 1/3; not on real music, nor in the watch page (its frames are now up to 400 characters).
 
 ## Mobile app and devices sync (the owner's ask, 2026-11-02 afternoon; in progress)
 

@@ -527,7 +527,7 @@ function SoundGroup() {
           </Row>
         )}
         {s.visualizer && (
-          <Row setting="visualizerBands" label={msg('Visualizer bands')} sub={tr('1/6 octave as measured, or 1/3 octave: fewer, wider bars, like a hi-fi analyzer. Point at a big visualizer for its Hz and dB scales')}>
+          <Row setting="visualizerBands" label={msg('Visualizer bands')} sub={tr('1/6 octave as measured, 1/3 octave: fewer, wider bars, like a hi-fi analyzer, or 1/12 octave: twice the detail, for a wide visualizer. Point at a big visualizer for its Hz and dB scales')}>
             <Segmented
               label={tr('Visualizer bands')}
               className="max-w-md flex-wrap rounded-3xl!"

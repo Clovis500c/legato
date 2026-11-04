@@ -2016,9 +2016,7 @@ const hi: Record<string, string> = {
   'Visualizer reflection': 'विज़ुअलाइज़र प्रतिबिंब',
   '1/6 octave (61 bands)': '1/6 ऑक्टेव (61 बैंड)',
   '1/3 octave (31 bands)': '1/3 ऑक्टेव (31 बैंड)',
-  '1/6 octave as measured, or 1/3 octave: fewer, wider bars, like a hi-fi analyzer. Point at a big visualizer for its Hz and dB scales': 'मापा गया 1/6 ऑक्टेव, या 1/3 ऑक्टेव: हाई-फ़ाई एनालाइज़र की तरह कम और चौड़ी बार। Hz और dB स्केल देखने के लिए बड़े विज़ुअलाइज़र पर पॉइंटर ले जाएं',
   'The bars stand on a glossy floor that reflects them': 'बार एक चमकदार फ़र्श पर खड़ी होती हैं जो उनका प्रतिबिंब दिखाता है',
-  'octave third sixth analyzer resolution hertz decibel scale': 'ऑक्टेव तिहाई छठा एनालाइज़र रिज़ॉल्यूशन हर्ट्ज़ डेसिबल स्केल',
   'glossy floor mirror shine': 'चमकदार फ़र्श दर्पण चमक',
   'Visualizer behind Now Playing': 'अभी चल रहा के पीछे विज़ुअलाइज़र',
   'Big and faint across the bottom of Now Playing, behind the song': 'अभी चल रहा के निचले हिस्से में, गाने के पीछे, बड़ा और हल्का',
@@ -2033,6 +2031,9 @@ const hi: Record<string, string> = {
   'Integrated': 'एकीकृत',
   'Loudness range': 'लाउडनेस रेंज',
   'Peak': 'पीक',
+  '1/12 octave (121 bands)': '1/12 ऑक्टेव (121 बैंड)',
+  '1/6 octave as measured, 1/3 octave: fewer, wider bars, like a hi-fi analyzer, or 1/12 octave: twice the detail, for a wide visualizer. Point at a big visualizer for its Hz and dB scales': 'मापा गया 1/6 ऑक्टेव, 1/3 ऑक्टेव: हाई-फ़ाई एनालाइज़र की तरह कम और चौड़ी बार, या 1/12 ऑक्टेव: दोगुना बारीक, चौड़े विज़ुअलाइज़र के लिए। Hz और dB स्केल देखने के लिए बड़े विज़ुअलाइज़र पर पॉइंटर ले जाएं',
+  'octave third sixth twelfth analyzer resolution detail hertz decibel scale': 'ऑक्टेव तिहाई छठा बारहवां एनालाइज़र रिज़ॉल्यूशन बारीकी हर्ट्ज़ डेसिबल स्केल',
 }
 
 export default hi

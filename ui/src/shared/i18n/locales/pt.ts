@@ -2016,9 +2016,7 @@ const pt: Record<string, string> = {
   'Visualizer reflection': 'Reflexo do visualizador',
   '1/6 octave (61 bands)': '1/6 de oitava (61 bandas)',
   '1/3 octave (31 bands)': '1/3 de oitava (31 bandas)',
-  '1/6 octave as measured, or 1/3 octave: fewer, wider bars, like a hi-fi analyzer. Point at a big visualizer for its Hz and dB scales': '1/6 de oitava como medido, ou 1/3 de oitava: menos barras, mais largas, como um analisador hi-fi. Aponte para um visualizador grande para ver as escalas de Hz e dB',
   'The bars stand on a glossy floor that reflects them': 'As barras ficam sobre um piso brilhante que as reflete',
-  'octave third sixth analyzer resolution hertz decibel scale': 'oitava terço sexto analisador resolução hertz decibel escala',
   'glossy floor mirror shine': 'brilhante piso espelho brilho',
   'Visualizer behind Now Playing': 'Visualizador atrás de Tocando agora',
   'Big and faint across the bottom of Now Playing, behind the song': 'Grande e suave na parte de baixo de Tocando agora, atrás da música',
@@ -2033,6 +2031,9 @@ const pt: Record<string, string> = {
   'Integrated': 'Integrada',
   'Loudness range': 'Faixa de loudness',
   'Peak': 'Pico',
+  '1/12 octave (121 bands)': '1/12 de oitava (121 bandas)',
+  '1/6 octave as measured, 1/3 octave: fewer, wider bars, like a hi-fi analyzer, or 1/12 octave: twice the detail, for a wide visualizer. Point at a big visualizer for its Hz and dB scales': '1/6 de oitava como medido, 1/3 de oitava: menos barras, mais largas, como um analisador hi-fi, ou 1/12 de oitava: o dobro do detalhe, para um visualizador largo. Aponte para um visualizador grande para ver as escalas de Hz e dB',
+  'octave third sixth twelfth analyzer resolution detail hertz decibel scale': 'oitava terço sexto doze avos analisador resolução detalhe hertz decibel escala',
 }
 
 export default pt

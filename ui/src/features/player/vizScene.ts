@@ -1,20 +1,20 @@
 import type { VizBanding } from '../../shared/theme/theme'
 import { createFlashLimiter } from './flash'
 import { atRest, CALM, levelOf, newBars, NORMAL, stepBars } from './ledBars'
-import { THIRDS, toThirds } from './vizBands'
+import { framesFor, THIRDS, toThirds } from './vizBands'
 import { monoDb, toColumns } from './vizDraw'
-import { VIZ_BANDS } from './vizUnpack'
 
 /**
  * What the visualizer shows at each drawn frame (runs in the worker, pure): the newest frame's bands folded into
  * columns, heights with their ballistics and held peaks, the flash limiter over the whole. `calm` = reduced motion:
  * slower and at most one flash a second (3 otherwise, always). `weighs`: dB added to each band first (vizWeigh.ts).
- * `banding`: the 1/6-octave bands as they come, or folded into 1/3 octave (vizBands.ts) after the weighing.
+ * `banding`: the 1/6-octave bands as they come, folded into 1/3 octave (vizBands.ts) after the weighing, or the
+ * frames' own 1/12 (`weighs` then holds 121). A frame of another size (sent before a switch) is skipped.
  */
 export function createScene(columns: number, calm: boolean, weighs?: ArrayLike<number>, banding: VizBanding = 'sixth') {
   const bal = calm ? CALM : NORMAL
   const bars = newBars(columns)
-  const mono = new Float32Array(VIZ_BANDS).fill(-120)
+  const mono = new Float32Array(framesFor(banding)).fill(-120)
   const thirds = banding === 'third' ? new Float32Array(THIRDS) : null
   const cols = new Float32Array(columns)
   const target = new Float32Array(columns)
@@ -25,8 +25,9 @@ export function createScene(columns: number, calm: boolean, weighs?: ArrayLike<n
   return {
     /** The newest frame (both sides, dB). */
     frame(left: ArrayLike<number>, right: ArrayLike<number>) {
+      if (left.length !== mono.length) return
       monoDb(left, right, mono)
-      if (weighs) for (let i = 0; i < VIZ_BANDS; i++) mono[i] += weighs[i] ?? 0
+      if (weighs) for (let i = 0; i < mono.length; i++) mono[i] += weighs[i] ?? 0
       toColumns(thirds ? toThirds(mono, thirds) : mono, cols)
       for (let i = 0; i < columns; i++) target[i] = levelOf(cols[i])
       silent = false

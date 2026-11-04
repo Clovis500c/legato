@@ -2,13 +2,13 @@ import type { VizWeighting } from '../../shared/theme/theme'
 import { bandHz, VIZ_BANDS } from './vizUnpack'
 
 /**
- * Visualizer weighting, pure: dB added to each band before the columns (vizScene.ts). The bands are energies (pink
+ * Visualizer weighting, pure: dB added to each of the frames' `n` bands before the columns (vizScene.ts). The bands are energies (pink
  * noise reads flat), so music's lows stand taller than its highs; the tilt lifts the highs 3 dB per octave around
  * 1 kHz, the A and ITU-R 468 curves weigh by what the ear hears (both 0 dB at 1 kHz).
  */
-export function weightsOf(kind: VizWeighting): Float32Array {
+export function weightsOf(kind: VizWeighting, n = VIZ_BANDS): Float32Array {
   const at = kind === 'tilt' ? tilt : kind === 'a' ? aWeight : kind === 'itu468' ? itu468 : () => 0
-  return Float32Array.from({ length: VIZ_BANDS }, (_, i) => at(bandHz(i)))
+  return Float32Array.from({ length: n }, (_, i) => at(bandHz(i, n)))
 }
 
 const tilt = (f: number) => 3 * Math.log2(f / 1000)

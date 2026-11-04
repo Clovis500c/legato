@@ -332,7 +332,7 @@
   // listen = levels only (cover pulse, early ends): the element plays its own sound, untouched, and this only listens.
   // ending = the app fades the song out (the gain holds); gain = where a new song's gain starts (the app's last song,
   // which may have played in the other embed), null = this frame's own.
-  let settings = { on: false, listen: false, adaptive: false, targetLufs: -14, ending: false, viz: false, gain: null }
+  let settings = { on: false, listen: false, adaptive: false, targetLufs: -14, ending: false, viz: false, fine: false, gain: null }
   let effects = cleanFx(null)
   // { ctx, video, stream, track, src, full, gain, limiter, fx, raw, k, wanted, … } while attached; full = the sound
   // comes out of here (gain, limiter, fx), else they are null.
@@ -556,27 +556,31 @@
   }
 
   // viz:begin
-  // Visualizer v2 maths, pure (viz.test.ts runs this block). Twin of crates/dsp viz.rs: the same 61 bands of 1/6
-  // octave (base 10, 19.95 Hz to 19.95 kHz), the same bin-to-band mapping and dB scale (a sine of amplitude 1 reads
-  // 0 dB). Chromium's analyser windows with Blackman and scales its FFT by 1/N: vizNorm undoes both by the window's
-  // energy. Frame = 8 bytes (version, band count, 2 reserved, rms L R, peak L R)
-  // + 61 bands L + 61 bands R, every dB value one byte, (dB + 120) * 2.
+  // Visualizer v2 maths, pure (viz.test.ts runs this block). Twin of crates/dsp viz.rs: the same bands, 61 of 1/6
+  // octave or 121 of 1/12 (base 10, 19.95 Hz to 19.95 kHz), the same bin-to-band mapping and dB scale (a sine of
+  // amplitude 1 reads 0 dB). Chromium's analyser windows with Blackman and scales its FFT by 1/N: vizNorm undoes both
+  // by the window's energy. Frame = 8 bytes (version, band count, 2 reserved, rms L R, peak L R)
+  // + the bands L + the bands R, every dB value one byte, (dB + 120) * 2.
   const VIZ_N = 4096
+  // Twelfths: a window twice as long, so their bands resolve from ~300 Hz as the sixths do at 4096.
+  const VIZ_N_FINE = 8192
   const VIZ_BANDS = 61
+  const VIZ_FINE = 121
   // Narrowest a band reads, in bins (Hann and Blackman both hold 97 % of a sine in 3).
   const VIZ_MIN_WIDTH = 3
-  const vizCentre = (i) => 1000 * 10 ** ((i - 34) / 20)
+  // Band i's centre among `count` bands: 1 kHz is band 34 (68), 20 (40) bands a decade.
+  const vizCentre = (i, count = VIZ_BANDS) => 1000 * 10 ** ((i - ((count - 1) * 17) / 30) / ((count - 1) / 3))
   const vizDb = (e) => (e < 1e-12 ? -120 : 10 * Math.log10(e))
   const vizQ = (v) => Math.min(255, Math.max(0, Math.round((v + 120) * 2)))
 
   /** Per band: [first bin, share of each bin from there] (a bin owns [k - 0.5, k + 0.5] bins of frequency). */
-  function vizMap(rate) {
-    const df = rate / VIZ_N
-    const half = VIZ_N / 2
-    const edge = 10 ** 0.025
+  function vizMap(rate, count = VIZ_BANDS, n = VIZ_N) {
+    const df = rate / n
+    const half = n / 2
+    const edge = 10 ** (0.5 / ((count - 1) / 3))
     const map = []
-    for (let i = 0; i < VIZ_BANDS; i++) {
-      const c = vizCentre(i) / df
+    for (let i = 0; i < count; i++) {
+      const c = vizCentre(i, count) / df
       let lo = c / edge
       let hi = c * edge
       if (hi - lo < VIZ_MIN_WIDTH) {
@@ -598,16 +602,16 @@
   }
 
   /** 4N / Σ w² over Chromium's Blackman window: a sine of amplitude A through its 1/N scaled FFT sums to A² / norm. */
-  function vizNorm() {
+  function vizNorm(size = VIZ_N) {
     let e = 0
-    for (let n = 0; n < VIZ_N; n++) {
-      const w = 0.42 - 0.5 * Math.cos((2 * Math.PI * n) / VIZ_N) + 0.08 * Math.cos((4 * Math.PI * n) / VIZ_N)
+    for (let n = 0; n < size; n++) {
+      const w = 0.42 - 0.5 * Math.cos((2 * Math.PI * n) / size) + 0.08 * Math.cos((4 * Math.PI * n) / size)
       e += w * w
     }
-    return (4 * VIZ_N) / e
+    return (4 * size) / e
   }
 
-  /** The analyser's dB per bin (getFloatFrequencyData) → the 61 bands, dB. */
+  /** The analyser's dB per bin (getFloatFrequencyData) → the bands (map's count), dB. */
   function vizBands(map, norm, bins) {
     return map.map(([first, shares]) => {
       let e = 0
@@ -616,45 +620,53 @@
     })
   }
 
-  /** rms (whole window) and peak (last `hop` samples) of one channel, dB; any = some sample is not zero. */
-  function vizLevels(x, hop) {
+  /** rms (the last `last` samples: the needles read alike at either banding) and peak (last `hop` samples) of one channel, dB; any = some sample is not zero. */
+  function vizLevels(x, hop, last = x.length) {
     let sum = 0
     let any = false
+    const from = Math.max(0, x.length - last)
     for (let i = 0; i < x.length; i++) {
-      sum += x[i] * x[i]
+      if (i >= from) sum += x[i] * x[i]
       if (x[i] !== 0) any = true
     }
     let peak = 0
     for (let i = Math.max(0, x.length - hop); i < x.length; i++) peak = Math.max(peak, Math.abs(x[i]))
-    return { rms: vizDb(sum / x.length), peak: vizDb(peak * peak), any }
+    return { rms: vizDb(sum / (x.length - from)), peak: vizDb(peak * peak), any }
   }
 
   function vizPack(rms, peak, left, right) {
-    const out = new Uint8Array(8 + 2 * VIZ_BANDS)
-    out.set([1, VIZ_BANDS, 0, 0, ...rms.map(vizQ), ...peak.map(vizQ)])
+    const count = left.length
+    const out = new Uint8Array(8 + 2 * count)
+    out.set([1, count, 0, 0, ...rms.map(vizQ), ...peak.map(vizQ)])
     out.set(left.map(vizQ), 8)
-    out.set(right.map(vizQ), 8 + VIZ_BANDS)
+    out.set(right.map(vizQ), 8 + count)
     return out
   }
   // viz:end
 
-  const vizSilent = () => vizPack([-120, -120], [-120, -120], new Array(VIZ_BANDS).fill(-120), new Array(VIZ_BANDS).fill(-120))
+  const vizSilent = (count) => vizPack([-120, -120], [-120, -120], new Array(count).fill(-120), new Array(count).fill(-120))
   const vizSend = (bytes) => send({ viz: btoa(String.fromCharCode(...bytes)) })
   // Ticks without news before the silent frame (~100 ms), as crates/dsp viz.rs.
   const VIZ_STILL = 6
 
   // Frames for the visualizer, 60 per second, only while the app asks (settings.viz): two analysers with the FFT size
-  // of the frame, made now and dropped when it stops, so nothing runs for a page that shows no visualizer.
+  // of the frame, made now and dropped when it stops, so nothing runs for a page that shows no visualizer. Twelfths
+  // (settings.fine): analysers twice the size.
   function vizStart() {
-    if (!g || g.viz) return
+    if (!g) return
+    if (g.viz && g.viz.fine !== settings.fine) vizStop()
+    if (g.viz) return
+    const fine = settings.fine
+    const n = fine ? VIZ_N_FINE : VIZ_N
+    const count = fine ? VIZ_FINE : VIZ_BANDS
     const split = g.ctx.createChannelSplitter(2)
     g.tap.connect(split)
     const an = [0, 1].map((c) => {
-      const a = new AnalyserNode(g.ctx, { fftSize: VIZ_N, smoothingTimeConstant: 0 })
+      const a = new AnalyserNode(g.ctx, { fftSize: n, smoothingTimeConstant: 0 })
       split.connect(a, c)
       return a
     })
-    g.viz = { split, an, t: new Float32Array(VIZ_N), f: new Float32Array(VIZ_N / 2), map: vizMap(g.ctx.sampleRate), norm: vizNorm(), idle: false, still: 0, timer: setInterval(vizTick, 16) }
+    g.viz = { split, an, fine, count, t: new Float32Array(n), f: new Float32Array(n / 2), map: vizMap(g.ctx.sampleRate, count, n), norm: vizNorm(n), idle: false, still: 0, timer: setInterval(vizTick, 16) }
   }
 
   function vizStop() {
@@ -671,7 +683,7 @@
     const v = g?.viz
     if (!v) return
     const quiet = () => {
-      if (!v.idle) vizSend(vizSilent())
+      if (!v.idle) vizSend(vizSilent(v.count))
       v.idle = true
     }
     // Paused: a moment later one silent frame, then nothing until it plays again.
@@ -685,7 +697,7 @@
     const bands = []
     for (const a of v.an) {
       a.getFloatTimeDomainData(v.t)
-      lv.push(vizLevels(v.t, hop))
+      lv.push(vizLevels(v.t, hop, VIZ_N))
       a.getFloatFrequencyData(v.f)
       bands.push(vizBands(v.map, v.norm, v.f))
     }
@@ -782,7 +794,7 @@
     }
     const t = Number(next.targetLufs)
     // A start gain waits for its song (the next track): later messages without one keep it.
-    settings = { on: next.on === true, listen: next.listen === true, adaptive: next.adaptive === true, targetLufs: Number.isFinite(t) ? Math.min(-6, Math.max(-30, t)) : -14, ending: next.ending === true, viz: next.viz === true, gain: num(next.gain, MAX_CUT, MAX_BOOST, settings.gain) }
+    settings = { on: next.on === true, listen: next.listen === true, adaptive: next.adaptive === true, targetLufs: Number.isFinite(t) ? Math.min(-6, Math.max(-30, t)) : -14, ending: next.ending === true, viz: next.viz === true, fine: next.fine === true, gain: num(next.gain, MAX_CUT, MAX_BOOST, settings.gain) }
     if (!settings.on) {
       clearInterval(retry)
       retry = 0

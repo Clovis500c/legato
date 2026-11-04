@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { createViz, type VizSource } from './vizFrames'
-import { bandHz, fromBase64, isSilent, silentViz, toBytes, unpackViz, VIZ_BANDS } from './vizUnpack'
+import { bandHz, fromBase64, isSilent, silentViz, toBytes, unpackViz, VIZ_BANDS, VIZ_FINE } from './vizUnpack'
 
 /** A packed frame the way crates/dsp `Frame::pack` writes it: rms L R, peak L R in bytes, then the bands. */
 function pack(rms: [number, number], peak: [number, number], left: number[], right: number[] = left): Uint8Array {
@@ -49,6 +49,20 @@ describe('visualizer frame bytes', () => {
     expect(isSilent(silentViz())).toBe(true)
     expect(isSilent({ ...silentViz(), rms: [-3, -120] })).toBe(false)
   })
+
+  it('unpacks twelfths: 121 bands, two to a sixth', () => {
+    const b = new Uint8Array(8 + 2 * VIZ_FINE)
+    b.set([1, VIZ_FINE, 0, 0, 234, 0, 240, 255])
+    b[8 + VIZ_FINE + 120] = 239
+    const f = unpackViz(b)!
+    expect(f.left).toHaveLength(VIZ_FINE)
+    expect(f.right[120]).toBe(-0.5)
+    // The count must match the size.
+    expect(unpackViz(Uint8Array.from(b, (v, i) => (i === 1 ? VIZ_BANDS : v)))).toBeNull()
+    expect(bandHz(68, VIZ_FINE)).toBe(1000)
+    for (let i = 0; i < VIZ_BANDS; i++) expect(bandHz(2 * i, VIZ_FINE)).toBeCloseTo(bandHz(i), 6)
+    expect(silentViz(VIZ_FINE).left).toHaveLength(VIZ_FINE)
+  })
 })
 
 describe('visualizer frame source', () => {
@@ -63,8 +77,8 @@ describe('visualizer frame source', () => {
     const counts: number[] = []
     const v = createViz(
       {
-        start: async (onBytes) => {
-          calls.push('start')
+        start: async (onBytes, fine) => {
+          calls.push(fine ? 'start fine' : 'start')
           push = onBytes
           return () => void calls.push('release')
         },
@@ -126,6 +140,34 @@ describe('visualizer frame source', () => {
     play('native')
     native(new Uint8Array(5).buffer)
     expect(isSilent(v.latest()!)).toBe(true)
+  })
+
+  it('starts the stream again in twelfths while it runs, else waits for the next listener', async () => {
+    const { v, calls } = setup('native')
+    v.setFine(true)
+    v.setFine(true)
+    await wait()
+    expect(calls).toEqual([])
+    const off = v.subscribe(() => {})
+    await wait()
+    expect(calls).toEqual(['start fine'])
+    v.setFine(false)
+    await wait()
+    expect(calls).toEqual(['start fine', 'release', 'start'])
+    off()
+    await wait()
+    expect(calls.slice(3)).toEqual(['release', 'stop'])
+  })
+
+  it('passes frames in twelfths on as they come', async () => {
+    const { v, native } = setup('native')
+    const got: number[] = []
+    v.subscribe((f) => got.push(f.left.length))
+    await wait()
+    const fine = new Uint8Array(8 + 2 * VIZ_FINE)
+    fine.set([1, VIZ_FINE, 0, 0, 200, 200, 220, 220])
+    native(fine.buffer)
+    expect(got).toEqual([VIZ_FINE])
   })
 
   it('survives an engine that cannot start', async () => {

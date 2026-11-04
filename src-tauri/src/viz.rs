@@ -3,7 +3,7 @@
 //! listening: no thread, and the audio thread copies nothing. The maths and the frame layout are in `crates/dsp/src/viz.rs`.
 
 use crate::AppState;
-use music_player::viz::{FPS, Pump};
+use music_player::viz::{Bands, FPS, Pump};
 use music_player::Tap;
 use std::sync::atomic::{AtomicBool, AtomicU64, AtomicUsize, Ordering::Relaxed};
 use std::sync::{Arc, Mutex, PoisonError};
@@ -54,14 +54,14 @@ fn owns(page: Option<&str>) -> bool {
     page.is_none_or(|p| *PAGE.lock().unwrap_or_else(PoisonError::into_inner) == p)
 }
 
-fn start(tap: Arc<Tap>, frames: Channel<InvokeResponseBody>) {
+fn start(tap: Arc<Tap>, frames: Channel<InvokeResponseBody>, bands: Bands) {
     stop();
     let flag = Arc::new(AtomicBool::new(false));
     *RUNNING.lock().unwrap_or_else(PoisonError::into_inner) = Some(flag.clone());
     let alive = Alive::new();
     let worker = move || {
         let _alive = alive;
-        let mut pump = Pump::new(tap.listen());
+        let mut pump = Pump::with(tap.listen(), bands);
         let period = Duration::from_micros(1_000_000 / FPS as u64);
         let mut next = Instant::now();
         while !flag.load(Relaxed) {
@@ -86,11 +86,11 @@ fn start(tap: Arc<Tap>, frames: Channel<InvokeResponseBody>) {
 }
 
 /// The visualizer opened: packed frames (`music_dsp::viz::Frame::pack`) go to `frames` until `viz_stop`, a new
-/// `viz_start` or a reload.
+/// `viz_start` or a reload. `fine`: 1/12-octave bands (Settings › Playback › Visualizer bands), else 1/6.
 #[tauri::command]
-pub async fn viz_start(state: State<'_, AppState>, page: Option<String>, frames: Channel<InvokeResponseBody>) -> Result<(), String> {
+pub async fn viz_start(state: State<'_, AppState>, page: Option<String>, frames: Channel<InvokeResponseBody>, fine: Option<bool>) -> Result<(), String> {
     if owns(page.as_deref()) {
-        start(state.player.tap(), frames);
+        start(state.player.tap(), frames, if fine == Some(true) { Bands::Twelfth } else { Bands::Sixth });
     }
     Ok(())
 }

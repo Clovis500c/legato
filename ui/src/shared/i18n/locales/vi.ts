@@ -2016,9 +2016,7 @@ const vi: Record<string, string> = {
   'Visualizer reflection': 'Phản chiếu của trình hiển thị',
   '1/6 octave (61 bands)': '1/6 quãng tám (61 dải)',
   '1/3 octave (31 bands)': '1/3 quãng tám (31 dải)',
-  '1/6 octave as measured, or 1/3 octave: fewer, wider bars, like a hi-fi analyzer. Point at a big visualizer for its Hz and dB scales': '1/6 quãng tám như đo được, hoặc 1/3 quãng tám: ít thanh hơn và rộng hơn, như máy phân tích hi-fi. Trỏ vào trình hiển thị lớn để xem thang Hz và dB',
   'The bars stand on a glossy floor that reflects them': 'Các thanh đứng trên một mặt sàn bóng phản chiếu chúng',
-  'octave third sixth analyzer resolution hertz decibel scale': 'quãng tám một phần ba một phần sáu máy phân tích độ phân giải hertz decibel thang',
   'glossy floor mirror shine': 'bóng sàn gương lấp lánh',
   'Visualizer behind Now Playing': 'Trình hiển thị phía sau Đang phát',
   'Big and faint across the bottom of Now Playing, behind the song': 'To và mờ ở phần dưới màn hình Đang phát, phía sau bài hát',
@@ -2033,6 +2031,9 @@ const vi: Record<string, string> = {
   'Integrated': 'Tích hợp',
   'Loudness range': 'Dải độ lớn',
   'Peak': 'Đỉnh',
+  '1/12 octave (121 bands)': '1/12 quãng tám (121 dải)',
+  '1/6 octave as measured, 1/3 octave: fewer, wider bars, like a hi-fi analyzer, or 1/12 octave: twice the detail, for a wide visualizer. Point at a big visualizer for its Hz and dB scales': '1/6 quãng tám như đo được, 1/3 quãng tám: ít thanh hơn và rộng hơn, như máy phân tích hi-fi, hoặc 1/12 quãng tám: chi tiết gấp đôi, cho trình hiển thị rộng. Trỏ vào trình hiển thị lớn để xem thang Hz và dB',
+  'octave third sixth twelfth analyzer resolution detail hertz decibel scale': 'quãng tám một phần ba một phần sáu một phần mười hai máy phân tích độ phân giải chi tiết hertz decibel thang',
 }
 
 export default vi

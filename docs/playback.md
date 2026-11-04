@@ -304,9 +304,16 @@ never: downloading, extracting, recording or exporting a platform's audio, or to
   `viz:begin` and `viz:end` in `live.js`; `crates/dsp/fixtures/viz.json` is the shared signals with what Rust reads
   (`UPDATE_VIZ_FIXTURE=1 cargo test -p music-dsp viz_fixture` rewrites it), `crates/shield/src/viz.test.ts` runs the
   JS block on them through a model of Chromium's analyser (checked once against the real one in WebView2's engine: a
-  sine reads 0.00 dB). Twins agree within 2 dB on the bands that carry sound from 320 Hz up, 4 dB below (Blackman's
+  sine reads 0.00 dB). Twins agree within 2 dB on the bands that carry sound from 450 Hz up, 4 dB below (Blackman's
   lobe is wider than Hann's, and sines closer than a lobe interfere differently).
-  - **Native**: hann 4096-point FFT (`realfft`), hop = rate / 60, any sample rate (44.1 and 96 kHz tested). The audio
+  - **Twelfths** (2026-11-04, Settings › Playback › Visualizer bands › 1/12 octave): 121 bands on the same scale (every
+    other one a sixth's center), from a window twice as long in both twins (8192 points: `Bands::Twelfth`, live.js
+    `VIZ_N_FINE`), so they widen to 3 bins under the same ~320 Hz; the fixture holds them too (`fineLeft`,
+    `fineRight`). A frame carries its count in byte 1 (250 bytes; the watch page's text up to 400 characters); rms
+    stays over the last 4096 samples, so the needles read alike. `viz_start(fine)` and the live wish's `fine` ask for
+    them: `vizFrames.ts` `setFine` starts the engine's stream again, live.js makes its analysers again, and the scene
+    skips a frame of the other size while the switch goes through. Not tried on real music yet.
+  - **Native**: hann 4096-point FFT (8192 in twelfths; `realfft`), hop = rate / 60, any sample rate (44.1 and 96 kHz tested). The audio
     thread only copies: `Processor::process` pushes its output (as heard: after gain and limiter, before the volume
     knob) into `tap.rs`, a ring of atomics, when `Tap::listen()` has a listener (one relaxed load otherwise; no lock, no
     allocation). The FFT runs in `src-tauri/src/viz.rs`: a worker thread alive only between `viz_start(frames)` and
@@ -314,7 +321,7 @@ never: downloading, extracting, recording or exporting a platform's audio, or to
     audio came, one silent frame after ~100 ms of no new audio or digital silence, then nothing (a third of the
     wake-ups while idle). Frames go over a Tauri `Channel<InvokeResponseBody>` as raw bytes. Where the device hands
     sound over in bursts the rate is that of the bursts (the e2e build: every 20 ms, 50 a second).
-  - **YouTube**: `live.js` `vizStart` (only while `settings.viz`): a second pair of analysers at fftSize 4096 behind a
+  - **YouTube**: `live.js` `vizStart` (only while `settings.viz`): a second pair of analysers at fftSize 4096 (8192 in twelfths) behind a
     ChannelSplitter, made then and dropped when it stops, so the chain costs nothing more with no visualizer; the older
     2048 pair keeps feeding the loudness. A 16 ms timer sends the same frame as base64 text
     (`{viz}` in the report, by the existing postMessage path, or the watch page's `musicapp-live:` string, checked in
@@ -361,13 +368,13 @@ never: downloading, extracting, recording or exporting a platform's audio, or to
     middle out, the ring from the cover out (radial) or clockwise from the bottom (conic). VU needles and the
     spectrogram keep their own colours.
   - **Bands, floor, scales** (Settings › Playback › Visualizer bands and Visualizer reflection, or the right-click,
-    2026-11-04): 1/6 octave as the frames carry it (61) or folded into 1/3 octave (31: `vizBands.ts` `toThirds`, powers,
-    a sixth and half of each neighbour, the end bands scaled so a flat spectrum stays flat), after the weighing; every
+    2026-11-04): 1/6 octave as the frames carry it (61), folded into 1/3 octave (31: `vizBands.ts` `toThirds`, powers,
+    a sixth and half of each neighbour, the end bands scaled so a flat spectrum stays flat), after the weighing, or the
+    twelfths' own frames (121, above; the weighing per twelfth); every
     look but the needles. The reflection (off by default): LED, bars, peaks and wave stand on the top 76 % of the box,
     the canvas copies that part upside down below at 40 % and wipes it out toward the bottom (`destination-out`). The
     pointer over a visualizer at least 120 px high: frequency marks along the top (50 Hz to 10 kHz, `freqAt`) and a
-    dB grid (−20, −40, −60) on the right, not for the mirror; `hover` messages to the worker. 1/12 octave needs finer
-    bands from both twins (plan-v2 › Visualizer v2).
+    dB grid (−20, −40, −60) on the right, not for the mirror; `hover` messages to the worker.
   - **Behind Now Playing** (Settings › Playback › Visualizer behind Now Playing, 2026-11-04, off by default):
     `VizBackdrop` in `Visualizer.tsx`, a second canvas across the bottom half of Now Playing at 20 % behind everything
     (`-z-10`, no pointer events), the look picked (bars for Radial); quiet under a full screen like the strip.

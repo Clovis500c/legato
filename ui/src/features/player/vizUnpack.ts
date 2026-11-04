@@ -1,9 +1,11 @@
 /**
  * Visualizer frames (Visualizer v2), pure. One frame = what crates/dsp `viz::Frame::pack` and live.js `vizPack` write:
- * 8 bytes (version, band count, 2 reserved, rms L R, peak L R) + 61 bands left + 61 bands right, every dB value one byte,
- * (dB + 120) / 2 steps of 0.5 dB, 0 = -120 dB (silence). Bands are 1/6 octave, 19.95 Hz to 19.95 kHz.
+ * 8 bytes (version, band count, 2 reserved, rms L R, peak L R) + the bands left + the bands right, every dB value one
+ * byte, (dB + 120) / 2 steps of 0.5 dB, 0 = -120 dB (silence). Bands are 1/6 octave (61), or 1/12 (121) when the
+ * visualizer asks for twelfths (Settings › Visualizer bands), 19.95 Hz to 19.95 kHz.
  */
 export const VIZ_BANDS = 61
+export const VIZ_FINE = 121
 export const VIZ_FORMAT = 1
 const HEADER = 8
 
@@ -17,16 +19,17 @@ export interface VizFrame {
   right: Float32Array
 }
 
-/** Band center, Hz: 1 kHz · 10^((i - 34) / 20). */
-export const bandHz = (i: number) => 1000 * 10 ** ((i - 34) / 20)
+/** Band center among `n` bands, Hz: 1 kHz is band 34 (68 in twelfths), 20 bands a decade (40). */
+export const bandHz = (i: number, n = VIZ_BANDS) => 1000 * 10 ** ((i - ((n - 1) * 17) / 30) / ((n - 1) / 3))
 
 const db = (q: number) => q / 2 - 120
 
 /** A frame from its bytes, or null if they are not one (wrong size, version or band count). */
 export function unpackViz(bytes: Uint8Array): VizFrame | null {
-  if (bytes.length !== HEADER + 2 * VIZ_BANDS || bytes[0] !== VIZ_FORMAT || bytes[1] !== VIZ_BANDS) return null
-  const side = (from: number) => Float32Array.from({ length: VIZ_BANDS }, (_, i) => db(bytes[from + i]))
-  return { rms: [db(bytes[4]), db(bytes[5])], peak: [db(bytes[6]), db(bytes[7])], left: side(HEADER), right: side(HEADER + VIZ_BANDS) }
+  const n = bytes[1]
+  if ((n !== VIZ_BANDS && n !== VIZ_FINE) || bytes.length !== HEADER + 2 * n || bytes[0] !== VIZ_FORMAT) return null
+  const side = (from: number) => Float32Array.from({ length: n }, (_, i) => db(bytes[from + i]))
+  return { rms: [db(bytes[4]), db(bytes[5])], peak: [db(bytes[6]), db(bytes[7])], left: side(HEADER), right: side(HEADER + n) }
 }
 
 /** Bytes from what a channel hands over (an ArrayBuffer; a number array if the transport ever sends JSON). */
@@ -46,7 +49,7 @@ export function fromBase64(text: string): Uint8Array | null {
   }
 }
 
-export const silentViz = (): VizFrame => ({ rms: [-120, -120], peak: [-120, -120], left: new Float32Array(VIZ_BANDS).fill(-120), right: new Float32Array(VIZ_BANDS).fill(-120) })
+export const silentViz = (n = VIZ_BANDS): VizFrame => ({ rms: [-120, -120], peak: [-120, -120], left: new Float32Array(n).fill(-120), right: new Float32Array(n).fill(-120) })
 
 /** Nothing sounds: every level at the floor. */
 export const isSilent = (f: VizFrame) => f.rms[0] === -120 && f.rms[1] === -120 && f.left.every((v) => v === -120) && f.right.every((v) => v === -120)

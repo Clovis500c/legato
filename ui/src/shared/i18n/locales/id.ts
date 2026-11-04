@@ -2016,9 +2016,7 @@ const id: Record<string, string> = {
   'Visualizer reflection': 'Pantulan visualizer',
   '1/6 octave (61 bands)': '1/6 oktaf (61 pita)',
   '1/3 octave (31 bands)': '1/3 oktaf (31 pita)',
-  '1/6 octave as measured, or 1/3 octave: fewer, wider bars, like a hi-fi analyzer. Point at a big visualizer for its Hz and dB scales': '1/6 oktaf sesuai ukuran, atau 1/3 oktaf: batang lebih sedikit dan lebih lebar, seperti penganalisis hi-fi. Arahkan ke visualizer besar untuk melihat skala Hz dan dB-nya',
   'The bars stand on a glossy floor that reflects them': 'Batang berdiri di atas lantai mengilap yang memantulkannya',
-  'octave third sixth analyzer resolution hertz decibel scale': 'oktaf pertiga perenam penganalisis resolusi hertz desibel skala',
   'glossy floor mirror shine': 'mengilap lantai cermin kilau',
   'Visualizer behind Now Playing': 'Visualizer di belakang Sedang diputar',
   'Big and faint across the bottom of Now Playing, behind the song': 'Besar dan samar di bagian bawah Sedang diputar, di belakang lagu',
@@ -2033,6 +2031,9 @@ const id: Record<string, string> = {
   'Integrated': 'Terintegrasi',
   'Loudness range': 'Rentang kenyaringan',
   'Peak': 'Puncak',
+  '1/12 octave (121 bands)': '1/12 oktaf (121 pita)',
+  '1/6 octave as measured, 1/3 octave: fewer, wider bars, like a hi-fi analyzer, or 1/12 octave: twice the detail, for a wide visualizer. Point at a big visualizer for its Hz and dB scales': '1/6 oktaf sesuai ukuran, 1/3 oktaf: batang lebih sedikit dan lebih lebar, seperti penganalisis hi-fi, atau 1/12 oktaf: detail dua kali lipat, untuk visualizer yang lebar. Arahkan ke visualizer besar untuk melihat skala Hz dan dB-nya',
+  'octave third sixth twelfth analyzer resolution detail hertz decibel scale': 'oktaf pertiga perenam perdua belas penganalisis resolusi detail hertz desibel skala',
 }
 
 export default id

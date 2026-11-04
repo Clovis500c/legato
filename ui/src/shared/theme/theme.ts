@@ -176,8 +176,8 @@ export type VizColor = (typeof VIZ_COLORS)[number]
 /** Visualizer gradient (vizFill.ts, vizStops.ts): one colour, warming to red near the top like a meter, or a prism along frequency. */
 export const VIZ_GRADIENTS = ['none', 'level', 'frequency'] as const
 export type VizGradient = (typeof VIZ_GRADIENTS)[number]
-/** Visualizer bands (vizBands.ts): 1/6 octave as the frames carry them (61), or folded into 1/3 octave (31), a hi-fi analyser's. */
-export const VIZ_BANDINGS = ['sixth', 'third'] as const
+/** Visualizer bands (vizBands.ts): folded into 1/3 octave (31), a hi-fi analyser's; 1/6 octave as the frames carry them (61); or 1/12 (121), frames measured over a window twice as long. */
+export const VIZ_BANDINGS = ['third', 'sixth', 'twelfth'] as const
 export type VizBanding = (typeof VIZ_BANDINGS)[number]
 /** Order the cover songs are taken in: the playlist's own, or a library sort. */
 export const COVER_ORDERS = ['playlist', 'recent', 'title', 'artist', 'album', 'duration'] as const
@@ -394,7 +394,7 @@ export interface Settings {
   visualizerColor: VizColor
   /** A gradient over the visualizer's colour. None by default: a look the owner hasn't judged yet (2026-11-04). */
   visualizerGradient: VizGradient
-  /** The visualizer's bands. 1/6 octave by default (today's look); 1/3 = fewer, wider bars, a hi-fi analyser's. */
+  /** The visualizer's bands. 1/6 octave by default (today's look); 1/3 = fewer, wider bars, a hi-fi analyser's; 1/12 = twice the detail, for a wide visualizer. */
   visualizerBands: VizBanding
   /** A glossy floor under the bars, their reflection fading. Off by default: a look the owner hasn't judged yet (2026-11-04). */
   visualizerFloor: boolean

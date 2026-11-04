@@ -2016,9 +2016,7 @@ const sv: Record<string, string> = {
   'Visualizer reflection': 'Visualiserarens spegling',
   '1/6 octave (61 bands)': '1/6 oktav (61 band)',
   '1/3 octave (31 bands)': '1/3 oktav (31 band)',
-  '1/6 octave as measured, or 1/3 octave: fewer, wider bars, like a hi-fi analyzer. Point at a big visualizer for its Hz and dB scales': '1/6 oktav som uppmätt, eller 1/3 oktav: färre, bredare staplar, som en hifi-analysator. Peka på en stor visualiserare för att se dess Hz- och dB-skalor',
   'The bars stand on a glossy floor that reflects them': 'Staplarna står på ett blankt golv som speglar dem',
-  'octave third sixth analyzer resolution hertz decibel scale': 'oktav tredjedel sjättedel analysator upplösning hertz decibel skala',
   'glossy floor mirror shine': 'blankt golv spegel glans',
   'Visualizer behind Now Playing': 'Visualiserare bakom Spelas nu',
   'Big and faint across the bottom of Now Playing, behind the song': 'Stor och svag längs nederkanten av Spelas nu, bakom låten',
@@ -2033,6 +2031,9 @@ const sv: Record<string, string> = {
   'Integrated': 'Integrerad',
   'Loudness range': 'Ljudstyrkeomfång',
   'Peak': 'Topp',
+  '1/12 octave (121 bands)': '1/12 oktav (121 band)',
+  '1/6 octave as measured, 1/3 octave: fewer, wider bars, like a hi-fi analyzer, or 1/12 octave: twice the detail, for a wide visualizer. Point at a big visualizer for its Hz and dB scales': '1/6 oktav som uppmätt, 1/3 oktav: färre, bredare staplar, som en hifi-analysator, eller 1/12 oktav: dubbelt så detaljerat, för en bred visualiserare. Peka på en stor visualiserare för att se dess Hz- och dB-skalor',
+  'octave third sixth twelfth analyzer resolution detail hertz decibel scale': 'oktav tredjedel sjättedel tolftedel analysator upplösning detalj hertz decibel skala',
 }
 
 export default sv

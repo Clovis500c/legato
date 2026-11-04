@@ -2,10 +2,10 @@
 
 export type Frames = { onmessage: (bytes: ArrayBuffer) => void }
 
-const BANDS = 61
 const HEADER = 8
 const level = (db: number) => Math.max(0, Math.min(255, Math.round((db + 120) * 2)))
 
+/** Sixth i's level (a twelfth is half a sixth: i in halves). */
 function band(i: number, t: number, kick: number, snare: number, hat: number) {
   const tilt = -44 - i * 0.34
   const drift = 12 * Math.sin(i * 0.33 + t * 1.7) * Math.sin(i * 0.1 - t * 0.6)
@@ -17,16 +17,19 @@ function band(i: number, t: number, kick: number, snare: number, hat: number) {
   return tilt + drift + grain + low + mid + high
 }
 
-function frame(t: number) {
+/** 61 bands of 1/6 octave, or 121 of 1/12 (`fine`, Settings › Visualizer bands). */
+function frame(t: number, fine: boolean) {
+  const n = fine ? 121 : 61
+  const step = fine ? 0.5 : 1
   const beat = (t * 2) % 1
   const kick = Math.exp(-7 * beat)
   const snare = Math.exp(-9 * ((t + 0.5) % 1))
   const hat = Math.exp(-14 * ((t * 4) % 1))
-  const bytes = new Uint8Array(HEADER + 2 * BANDS)
-  bytes.set([1, BANDS, 0, 0, level(-20 + 9 * kick), level(-21 + 9 * kick), level(-12 + 9 * kick), level(-13 + 9 * kick)])
-  for (let i = 0; i < BANDS; i++) {
-    bytes[HEADER + i] = level(band(i, t, kick, snare, hat))
-    bytes[HEADER + BANDS + i] = level(band(i, t + 0.4, kick, snare, hat))
+  const bytes = new Uint8Array(HEADER + 2 * n)
+  bytes.set([1, n, 0, 0, level(-20 + 9 * kick), level(-21 + 9 * kick), level(-12 + 9 * kick), level(-13 + 9 * kick)])
+  for (let i = 0; i < n; i++) {
+    bytes[HEADER + i] = level(band(i * step, t, kick, snare, hat))
+    bytes[HEADER + n + i] = level(band(i * step, t + 0.4, kick, snare, hat))
   }
   return bytes.buffer
 }
@@ -42,10 +45,10 @@ export function levels() {
 
 let timer: ReturnType<typeof setInterval> | undefined
 
-export function startFrames(frames: Frames) {
+export function startFrames(frames: Frames, fine = false) {
   clearInterval(timer)
   const from = performance.now()
-  timer = setInterval(() => frames.onmessage(frame((performance.now() - from) / 1000)), 1000 / 60)
+  timer = setInterval(() => frames.onmessage(frame((performance.now() - from) / 1000, fine)), 1000 / 60)
   return null
 }
 

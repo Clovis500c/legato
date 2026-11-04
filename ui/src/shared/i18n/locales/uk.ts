@@ -2016,9 +2016,7 @@ const uk: Record<string, string> = {
   'Visualizer reflection': 'Відображення візуалізатора',
   '1/6 octave (61 bands)': '1/6 октави (61 смуга)',
   '1/3 octave (31 bands)': '1/3 октави (31 смуга)',
-  '1/6 octave as measured, or 1/3 octave: fewer, wider bars, like a hi-fi analyzer. Point at a big visualizer for its Hz and dB scales': '1/6 октави, як виміряно, або 1/3 октави: менше стовпчиків, вони ширші, як у Hi-Fi-аналізатора. Наведіть вказівник на великий візуалізатор, щоб побачити шкали Гц і дБ',
   'The bars stand on a glossy floor that reflects them': 'Стовпчики стоять на глянцевій підлозі, яка їх відображає',
-  'octave third sixth analyzer resolution hertz decibel scale': 'октава третина шоста аналізатор роздільність герц децибел шкала',
   'glossy floor mirror shine': 'глянцева підлога дзеркало блиск',
   'Visualizer behind Now Playing': 'Візуалізатор за екраном «Зараз грає»',
   'Big and faint across the bottom of Now Playing, behind the song': 'Великий і блідий унизу екрана «Зараз грає», за піснею',
@@ -2033,6 +2031,9 @@ const uk: Record<string, string> = {
   'Integrated': 'Інтегральна',
   'Loudness range': 'Діапазон гучності',
   'Peak': 'Пік',
+  '1/12 octave (121 bands)': '1/12 октави (121 смуга)',
+  '1/6 octave as measured, 1/3 octave: fewer, wider bars, like a hi-fi analyzer, or 1/12 octave: twice the detail, for a wide visualizer. Point at a big visualizer for its Hz and dB scales': '1/6 октави, як виміряно, 1/3 октави: менше стовпчиків, вони ширші, як у Hi-Fi-аналізатора, або 1/12 октави: удвічі детальніше, для широкого візуалізатора. Наведіть вказівник на великий візуалізатор, щоб побачити шкали Гц і дБ',
+  'octave third sixth twelfth analyzer resolution detail hertz decibel scale': 'октава третина шоста дванадцята аналізатор роздільність деталі герц децибел шкала',
 }
 
 export default uk

@@ -2016,9 +2016,7 @@ const ko: Record<string, string> = {
   'Visualizer reflection': '시각화 반사',
   '1/6 octave (61 bands)': '1/6 옥타브(61개 밴드)',
   '1/3 octave (31 bands)': '1/3 옥타브(31개 밴드)',
-  '1/6 octave as measured, or 1/3 octave: fewer, wider bars, like a hi-fi analyzer. Point at a big visualizer for its Hz and dB scales': '측정된 그대로의 1/6 옥타브 또는 1/3 옥타브: 하이파이 분석기처럼 더 적고 넓은 막대. 큰 시각화 위에 포인터를 올리면 Hz와 dB 눈금이 표시됩니다',
   'The bars stand on a glossy floor that reflects them': '막대가 광택 있는 바닥 위에 서서 바닥에 비칩니다',
-  'octave third sixth analyzer resolution hertz decibel scale': '옥타브 3분의1 6분의1 분석기 해상도 헤르츠 데시벨 눈금',
   'glossy floor mirror shine': '광택 바닥 거울 반사',
   'Visualizer behind Now Playing': '지금 재생 중 뒤의 시각화',
   'Big and faint across the bottom of Now Playing, behind the song': '지금 재생 중 화면 아래쪽에 노래 뒤로 크고 흐리게 표시',
@@ -2033,6 +2031,9 @@ const ko: Record<string, string> = {
   'Integrated': '통합',
   'Loudness range': '라우드니스 범위',
   'Peak': '피크',
+  '1/12 octave (121 bands)': '1/12 옥타브(121개 밴드)',
+  '1/6 octave as measured, 1/3 octave: fewer, wider bars, like a hi-fi analyzer, or 1/12 octave: twice the detail, for a wide visualizer. Point at a big visualizer for its Hz and dB scales': '측정된 그대로의 1/6 옥타브, 1/3 옥타브: 하이파이 분석기처럼 더 적고 넓은 막대, 또는 1/12 옥타브: 두 배 더 세밀하며 넓은 시각화에 적합. 큰 시각화 위에 포인터를 올리면 Hz와 dB 눈금이 표시됩니다',
+  'octave third sixth twelfth analyzer resolution detail hertz decibel scale': '옥타브 3분의1 6분의1 12분의1 분석기 해상도 세밀 헤르츠 데시벨 눈금',
 }
 
 export default ko

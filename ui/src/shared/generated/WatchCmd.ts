@@ -18,6 +18,10 @@ ending: boolean,
  */
 viz: boolean, 
 /**
+ * Those frames in 1/12-octave bands (121), else 1/6 (61).
+ */
+fine: boolean, 
+/**
  * Adaptive Sound gain a new song starts from, dB (the last song's).
  */
 gain: number | null, 

@@ -11,6 +11,11 @@ describe('visualizer weighting', () => {
     expect(w[40]).toBeCloseTo(3, 1)
     expect(w[28]).toBeCloseTo(-3, 1)
     expect(weightsOf('flat').every((v) => v === 0)).toBe(true)
+    // Twelfths: band 68 = 1 kHz, 12 bands an octave.
+    const fine = weightsOf('tilt', 121)
+    expect(fine).toHaveLength(121)
+    expect(fine[68]).toBeCloseTo(0, 5)
+    expect(fine[80]).toBeCloseTo(3, 1)
   })
 
   it('follows the A and ITU-R 468 tables', () => {

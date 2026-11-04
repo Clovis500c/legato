@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { bandCount, freqAt, THIRDS, toThirds } from './vizBands'
+import { bandCount, framesFor, freqAt, THIRDS, toThirds } from './vizBands'
 import { VIZ_BANDS } from './vizUnpack'
 
 const sixths = (fill: number, at: Record<number, number> = {}) => {
@@ -13,6 +13,9 @@ describe('toThirds', () => {
     expect(THIRDS).toBe(31)
     expect(bandCount('third')).toBe(31)
     expect(bandCount('sixth')).toBe(61)
+    // Twelfths come as such; thirds are folded from the sixths' frames.
+    expect(bandCount('twelfth')).toBe(121)
+    expect([framesFor('third'), framesFor('sixth'), framesFor('twelfth')]).toEqual([61, 61, 121])
   })
 
   it('keeps a sine at a third’s center, splits one on its edge', () => {
@@ -34,7 +37,8 @@ describe('freqAt', () => {
   it('puts 1 kHz on its band’s column, the marks in order inside the box', () => {
     expect(freqAt(1000, 'sixth')).toBeCloseTo(34.5 / 61, 6)
     expect(freqAt(1000, 'third')).toBeCloseTo(17.5 / 31, 6)
-    for (const banding of ['sixth', 'third'] as const) {
+    expect(freqAt(1000, 'twelfth')).toBeCloseTo(68.5 / 121, 6)
+    for (const banding of ['sixth', 'third', 'twelfth'] as const) {
       const xs = [50, 100, 1000, 10000].map((hz) => freqAt(hz, banding))
       expect(xs).toEqual([...xs].sort((a, b) => a - b))
       expect(xs[0]).toBeGreaterThan(0)

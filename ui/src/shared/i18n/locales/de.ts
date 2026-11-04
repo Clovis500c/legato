@@ -2016,9 +2016,7 @@ const de: Record<string, string> = {
   'Visualizer reflection': 'Visualizer-Spiegelung',
   '1/6 octave (61 bands)': '1/6 Oktave (61 Bänder)',
   '1/3 octave (31 bands)': '1/3 Oktave (31 Bänder)',
-  '1/6 octave as measured, or 1/3 octave: fewer, wider bars, like a hi-fi analyzer. Point at a big visualizer for its Hz and dB scales': '1/6 Oktave wie gemessen oder 1/3 Oktave: weniger, breitere Balken wie bei einem HiFi-Analyzer. Zeige auf einen großen Visualizer, um seine Hz- und dB-Skalen zu sehen',
   'The bars stand on a glossy floor that reflects them': 'Die Balken stehen auf einem glänzenden Boden, der sie spiegelt',
-  'octave third sixth analyzer resolution hertz decibel scale': 'oktave terz sechstel analyzer auflösung hertz dezibel skala',
   'glossy floor mirror shine': 'glänzend boden spiegel glanz',
   'Visualizer behind Now Playing': 'Visualizer hinter „Aktuelle Wiedergabe“',
   'Big and faint across the bottom of Now Playing, behind the song': 'Groß und blass über den unteren Teil von „Aktuelle Wiedergabe“, hinter dem Song',
@@ -2033,6 +2031,9 @@ const de: Record<string, string> = {
   'Integrated': 'Integriert',
   'Loudness range': 'Lautheitsbereich',
   'Peak': 'Spitze',
+  '1/12 octave (121 bands)': '1/12 Oktave (121 Bänder)',
+  '1/6 octave as measured, 1/3 octave: fewer, wider bars, like a hi-fi analyzer, or 1/12 octave: twice the detail, for a wide visualizer. Point at a big visualizer for its Hz and dB scales': '1/6 Oktave wie gemessen, 1/3 Oktave: weniger, breitere Balken wie bei einem HiFi-Analyzer, oder 1/12 Oktave: doppelt so fein, für einen breiten Visualizer. Zeige auf einen großen Visualizer, um seine Hz- und dB-Skalen zu sehen',
+  'octave third sixth twelfth analyzer resolution detail hertz decibel scale': 'oktave terz sechstel zwölftel analyzer auflösung detail hertz dezibel skala',
 }
 
 export default de

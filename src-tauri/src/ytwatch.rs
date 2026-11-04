@@ -117,8 +117,8 @@ pub fn parse_live(source: &str, message: &str) -> Option<LiveReport> {
     let r: LiveReport = serde_json::from_str(message.strip_prefix("musicapp-live:")?).ok()?;
     let ok_levels = r.levels.is_none_or(|l| [l.fast, l.momentary, l.short, l.gain].iter().all(|v| v.is_finite() && (-200.0..=60.0).contains(v)) && l.peak.is_finite() && (0.0..=16.0).contains(&l.peak));
     let ok_end = [r.end, r.lead].iter().flatten().all(|e| e.is_finite() && (0.0..=86_400.0).contains(e));
-    // A frame is 130 bytes: 176 characters of base64.
-    let ok_viz = r.viz.as_ref().is_none_or(|v| v.len() <= 200 && v.bytes().all(|b| b.is_ascii_alphanumeric() || matches!(b, b'+' | b'/' | b'=')));
+    // A frame is 130 bytes (250 in twelfths): 176 characters of base64 (336).
+    let ok_viz = r.viz.as_ref().is_none_or(|v| v.len() <= 400 && v.bytes().all(|b| b.is_ascii_alphanumeric() || matches!(b, b'+' | b'/' | b'=')));
     (ok_levels && ok_end && ok_viz && r.error.as_ref().is_none_or(|e| e.chars().count() <= 200)).then_some(r)
 }
 
@@ -155,6 +155,9 @@ pub enum Cmd {
         /// The 60 Hz visualizer frames wanted (`LiveReport::viz`).
         #[serde(default)]
         viz: bool,
+        /// Those frames in 1/12-octave bands (121), else 1/6 (61).
+        #[serde(default)]
+        fine: bool,
         /// Adaptive Sound gain a new song starts from, dB (the last song's).
         #[serde(default)]
         gain: Option<f64>,
@@ -172,12 +175,12 @@ pub fn script(cmd: Cmd) -> String {
         Cmd::Pause => call("pause", 0.0),
         Cmd::Seek { seconds } => call("seek", if seconds.is_finite() { seconds.max(0.0) } else { 0.0 }),
         Cmd::Volume { percent } => call("volume", if percent.is_finite() { percent.clamp(0.0, 100.0).round() } else { 100.0 }),
-        Cmd::Live { on, listen, adaptive, target_lufs, ending, viz, gain, effects } => {
+        Cmd::Live { on, listen, adaptive, target_lufs, ending, viz, fine, gain, effects } => {
             let t = if target_lufs.is_finite() { target_lufs.clamp(-30.0, -6.0) } else { -14.0 };
             let gain = gain.filter(|g| g.is_finite()).map_or_else(|| "null".into(), |g| g.clamp(-12.0, 9.0).to_string());
             // Clamped, then JSON of numbers and booleans only: nothing to inject.
             let fx = effects.map(|e| serde_json::to_string(&e.clamped()).unwrap_or_else(|_| "undefined".into())).unwrap_or_else(|| "undefined".into());
-            format!("window.__musicAppLive && window.__musicAppLive.set({{ on: {on}, listen: {listen}, adaptive: {adaptive}, targetLufs: {t}, ending: {ending}, viz: {viz}, gain: {gain} }}, {fx})")
+            format!("window.__musicAppLive && window.__musicAppLive.set({{ on: {on}, listen: {listen}, adaptive: {adaptive}, targetLufs: {t}, ending: {ending}, viz: {viz}, fine: {fine}, gain: {gain} }}, {fx})")
         }
         Cmd::Crop { x, y, w, h } => {
             let f = |v: f64, lo: f64| if v.is_finite() { v.clamp(lo, 1.0) } else { lo };
@@ -340,20 +343,22 @@ mod tests {
         assert!(parse_live("https://x.example/", r#"musicapp-live:{"attached":true}"#).is_none());
         assert!(parse_live(YT, r#"musicapp-ytwatch:{"state":1}"#).is_none());
         assert_eq!(parse_live(YT, r#"musicapp-live:{"viz":"AQ0AAAA="}"#).unwrap().viz.as_deref(), Some("AQ0AAAA="));
+        // A frame in twelfths (250 bytes, 336 characters) passes; much longer is no frame.
+        let frame = |n: usize| format!(r#"musicapp-live:{{"viz":"{}"}}"#, "A".repeat(n));
+        assert!(parse_live(YT, &frame(336)).is_some() && parse_live(YT, &frame(401)).is_none());
         assert!(parse_live(YT, r#"musicapp-live:{"viz":"<script>"}"#).is_none());
-        assert!(parse_live(YT, &format!(r#"musicapp-live:{{"viz":"{}"}}"#, "A".repeat(201))).is_none());
         assert_eq!(parse_live(YT, r#"musicapp-live:{"end":212.4}"#).unwrap().end, Some(212.4));
         assert!(parse_live(YT, r#"musicapp-live:{"end":-1}"#).is_none());
         assert_eq!(parse_live(YT, r#"musicapp-live:{"lead":5.2}"#).unwrap().lead, Some(5.2));
         assert!(parse_live(YT, r#"musicapp-live:{"lead":1e9}"#).is_none());
-        assert_eq!(script(Cmd::Live { on: true, listen: false, adaptive: false, target_lufs: -99.0, ending: false, viz: false, gain: None, effects: None }), "window.__musicAppLive && window.__musicAppLive.set({ on: true, listen: false, adaptive: false, targetLufs: -30, ending: false, viz: false, gain: null }, undefined)");
-        assert!(script(Cmd::Live { on: true, listen: false, adaptive: true, target_lufs: -14.0, ending: true, viz: false, gain: Some(40.0), effects: None }).contains("ending: true, viz: false, gain: 9 }"));
-        assert!(script(Cmd::Live { on: true, listen: false, adaptive: true, target_lufs: -14.0, ending: false, viz: false, gain: Some(f64::NAN), effects: None }).contains("gain: null }"));
-        let with = script(Cmd::Live { on: true, listen: true, adaptive: false, target_lufs: -14.0, ending: false, viz: false, gain: None, effects: Some(music_player::Effects { speed: 9.0, ..Default::default() }) });
+        assert_eq!(script(Cmd::Live { on: true, listen: false, adaptive: false, target_lufs: -99.0, ending: false, viz: false, fine: false, gain: None, effects: None }), "window.__musicAppLive && window.__musicAppLive.set({ on: true, listen: false, adaptive: false, targetLufs: -30, ending: false, viz: false, fine: false, gain: null }, undefined)");
+        assert!(script(Cmd::Live { on: true, listen: false, adaptive: true, target_lufs: -14.0, ending: true, viz: false, fine: false, gain: Some(40.0), effects: None }).contains("ending: true, viz: false, fine: false, gain: 9 }"));
+        assert!(script(Cmd::Live { on: true, listen: false, adaptive: true, target_lufs: -14.0, ending: false, viz: false, fine: false, gain: Some(f64::NAN), effects: None }).contains("gain: null }"));
+        let with = script(Cmd::Live { on: true, listen: true, adaptive: false, target_lufs: -14.0, ending: false, viz: false, fine: false, gain: None, effects: Some(music_player::Effects { speed: 9.0, ..Default::default() }) });
         assert!(with.contains("\"speed\":2.5") && with.contains("listen: true") && with.ends_with("})"), "{with}");
         // The UI's shape (api.ts WatchCmd).
         let cmd: Cmd = serde_json::from_str(r#"{"type":"live","on":true,"adaptive":true,"targetLufs":-16}"#).unwrap();
-        assert!(matches!(cmd, Cmd::Live { on: true, listen: false, adaptive: true, target_lufs, ending: false, viz: false, gain: None, effects: None } if target_lufs == -16.0));
+        assert!(matches!(cmd, Cmd::Live { on: true, listen: false, adaptive: true, target_lufs, ending: false, viz: false, fine: false, gain: None, effects: None } if target_lufs == -16.0));
         let cmd: Cmd = serde_json::from_str(r#"{"type":"live","on":true,"adaptive":true,"targetLufs":-16,"ending":true,"gain":-3.5}"#).unwrap();
         assert!(matches!(cmd, Cmd::Live { ending: true, gain: Some(g), .. } if g == -3.5));
     }

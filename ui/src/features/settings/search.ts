@@ -92,7 +92,7 @@ export const SETTINGS_INDEX: SettingEntry[] = [
   { section: 'playback', label: msg('Visualizer weighting'), keywords: msg('tilt slope bass treble highs lows balance hearing curve a-weighting itu 468') },
   { section: 'playback', label: msg('Visualizer color'), keywords: msg('colour tint hue palette accent cover album art') },
   { section: 'playback', label: msg('Visualizer gradient'), keywords: msg('rainbow prism spectrum meter red top warm colours') },
-  { section: 'playback', label: msg('Visualizer bands'), keywords: msg('octave third sixth analyzer resolution hertz decibel scale') },
+  { section: 'playback', label: msg('Visualizer bands'), keywords: msg('octave third sixth twelfth analyzer resolution detail hertz decibel scale') },
   { section: 'playback', label: msg('Visualizer reflection'), keywords: msg('glossy floor mirror shine') },
   { section: 'playback', label: msg('Visualizer behind Now Playing'), keywords: msg('backdrop background big wall faint') },
   { section: 'playback', label: msg('Visualizer in the mini player'), keywords: msg('small strip corner panel sidebar') },

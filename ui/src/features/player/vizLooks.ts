@@ -14,7 +14,7 @@ export const VIZ_COLOR_LABELS: Record<VizColor, string> = { text: msg('Text colo
 export const VIZ_GRADIENT_LABELS: Record<VizGradient, string> = { none: msg('No gradient'), level: msg('By level'), frequency: msg('Along frequency') }
 
 /** The visualizer's bands by name (Settings, its right-click); show with `tr`. */
-export const VIZ_BANDING_LABELS: Record<VizBanding, string> = { sixth: msg('1/6 octave (61 bands)'), third: msg('1/3 octave (31 bands)') }
+export const VIZ_BANDING_LABELS: Record<VizBanding, string> = { third: msg('1/3 octave (31 bands)'), sixth: msg('1/6 octave (61 bands)'), twelfth: msg('1/12 octave (121 bands)') }
 
 /** The look after this one, round to the first (a click on the visualizer). */
 export const nextLook = (look: VisualizerStyle): VisualizerStyle => VISUALIZER_STYLES[(VISUALIZER_STYLES.indexOf(look) + 1) % VISUALIZER_STYLES.length]

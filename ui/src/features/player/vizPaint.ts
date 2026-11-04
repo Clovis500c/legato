@@ -1,6 +1,6 @@
 import type { VisualizerStyle, VizBanding, VizGradient, VizWeighting } from '../../shared/theme/theme'
 import { capSegment, levelOf, litSegments } from './ledBars'
-import { bandCount, DB_MARKS, FREQ_MARKS, freqAt } from './vizBands'
+import { bandCount, DB_MARKS, FREQ_MARKS, framesFor, freqAt } from './vizBands'
 import { columnSpans, columnsFor, dialGeometry, ledRows, ringBars, wavePath, type Dial, type LedRows, type Ring } from './vizDraw'
 import { fillFor, type Stops } from './vizFill'
 import { LOUD_MARKS, LOUD_WORDS, loudPos, loudText, type LoudReading, type LoudWords } from './vizLoud'
@@ -540,7 +540,7 @@ export function createPainter(canvas: OffscreenCanvas) {
       const restart = calmer !== calm || weigh !== weighting || bands !== banding
       weighting = weigh
       banding = bands
-      weighs = weightsOf(weigh)
+      weighs = weightsOf(weigh, framesFor(bands))
       // Another look: a clean canvas (the waterfall keeps its picture otherwise).
       if (next !== look && ctx) ctx.clearRect(0, 0, canvas.width, canvas.height)
       look = next

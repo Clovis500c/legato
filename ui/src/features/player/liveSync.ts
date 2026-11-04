@@ -6,7 +6,7 @@ import { neutral } from './effects'
 import { overlapDue } from './fade'
 import { sendLive, setEnding, startLive } from './live'
 import { useLoudListeners } from './loudFeed'
-import { claimViz, useVizListeners } from './vizFrames'
+import { claimViz, useVizListeners, viz as frames } from './vizFrames'
 import { songFade, usePlayer } from './store'
 
 // Who plays now, for levels: the native engine (local files, previews) or YouTube. Spotify: its own app, none.
@@ -17,8 +17,8 @@ const playing = () => {
 
 /** Live processing follows the settings (Settings › Advanced › Sound) and the Live Editor. Mounted once, by the player bar. */
 export function useLiveSync() {
-  const { adaptiveSound, adaptiveLevel, coverPulse, earlyEnds, skipSilence, liveYoutube } = useSettings(
-    useShallow(({ settings: s }) => ({ adaptiveSound: s.adaptiveSound, adaptiveLevel: s.adaptiveLevel, coverPulse: s.coverPulse, earlyEnds: s.earlyEnds, skipSilence: s.skipSilence, liveYoutube: s.liveYoutube })),
+  const { adaptiveSound, adaptiveLevel, coverPulse, earlyEnds, skipSilence, liveYoutube, fine } = useSettings(
+    useShallow(({ settings: s }) => ({ adaptiveSound: s.adaptiveSound, adaptiveLevel: s.adaptiveLevel, coverPulse: s.coverPulse, earlyEnds: s.earlyEnds, skipSilence: s.skipSilence, liveYoutube: s.liveYoutube, fine: s.visualizerBands === 'twelfth' })),
   )
   // The 60 Hz frames (Visualizer v2): YouTube's side makes them only while a view listens.
   const viz = useVizListeners((s) => s.n > 0)
@@ -27,6 +27,8 @@ export function useLiveSync() {
   const effects = useEditor((s) => s.effects)
   // This page owns the visualizer stream from the start: a worker left by a page before a reload is stopped.
   useEffect(() => claimViz(), [])
+  // Twelfths: the engine's frames in 121 bands (YouTube's through the wish below).
+  useEffect(() => frames.setFine(fine), [fine])
   useEffect(() => startLive(playing), [])
   useEffect(() => startEditor(), [])
   // Fade out under way: Adaptive Sound holds. Synchronous with the position, so the playing frame hears it before an
@@ -35,6 +37,6 @@ export function useLiveSync() {
   useEffect(() => {
     // Bypassed edits keep processing attached: A / B switches at once. Levels alone (moving cover, early ends) only listen.
     const process = adaptiveSound || !neutral({ ...effects, on: true })
-    sendLive({ on: process || coverPulse || viz || meter, levels: process || coverPulse || meter, ends: earlyEnds || skipSilence, listen: !process, adaptive: adaptiveSound, targetLufs: adaptiveLevel, viz, youtube: liveYoutube, effects })
-  }, [adaptiveSound, adaptiveLevel, coverPulse, earlyEnds, skipSilence, liveYoutube, effects, viz, meter])
+    sendLive({ on: process || coverPulse || viz || meter, levels: process || coverPulse || meter, ends: earlyEnds || skipSilence, listen: !process, adaptive: adaptiveSound, targetLufs: adaptiveLevel, viz, fine, youtube: liveYoutube, effects })
+  }, [adaptiveSound, adaptiveLevel, coverPulse, earlyEnds, skipSilence, liveYoutube, effects, viz, meter, fine])
 }

@@ -272,11 +272,12 @@ export const api = {
   playerLevels: () => invoke<PlayerLevels>('player_levels'),
   /**
    * Visualizer frames from the native engine: packed bytes (crates/dsp `viz::Frame::pack`) at 60 Hz until vizStop,
-   * one silent frame when the sound stops. Resolves with a function that drops the handler.
+   * one silent frame when the sound stops. `fine`: in 1/12-octave bands (121), else 1/6 (61). Resolves with a function
+   * that drops the handler.
    */
-  vizStart: async (onFrame: (bytes: unknown) => void) => {
+  vizStart: async (onFrame: (bytes: unknown) => void, fine = false) => {
     const frames = new Channel<unknown>(onFrame)
-    await invoke<void>('viz_start', { page: vizPageId, frames })
+    await invoke<void>('viz_start', { page: vizPageId, frames, fine })
     return () => void (frames.onmessage = () => {})
   },
   vizStop: () => invoke<void>('viz_stop'),

@@ -45,6 +45,19 @@ describe('visualizer scene', () => {
     expect(swingsPerSecond(shown, 60)).toBeLessThanOrEqual(6)
   })
 
+  it('in twelfths reads 121-band frames and skips the sixths still on their way', () => {
+    const scene = createScene(121, false, undefined, 'twelfth')
+    const old = bands(-10)
+    scene.frame(old, old)
+    expect(scene.step(1 / 60).resting).toBe(true)
+    const f = Float32Array.from({ length: 121 }, (_, i) => (i === 68 ? -10 : -120))
+    scene.frame(f, f)
+    let out = scene.step(1 / 60)
+    for (let i = 0; i < 20; i++) out = scene.step(1 / 60)
+    expect(out.levels[68]).toBeGreaterThan(0.9)
+    expect(out.levels[34]).toBe(0)
+  })
+
   it('reduced motion moves slower', () => {
     const calm = createScene(10, true)
     const normal = createScene(10, false)
