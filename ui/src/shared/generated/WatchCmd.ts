@@ -22,6 +22,10 @@ viz: boolean,
  */
 fine: boolean, 
 /**
+ * Those frames with the wave blocks (the Oscilloscope look).
+ */
+wave: boolean, 
+/**
  * Adaptive Sound gain a new song starts from, dB (the last song's).
  */
 gain: number | null, 

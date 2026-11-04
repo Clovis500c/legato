@@ -1605,7 +1605,7 @@ const ko: Record<string, string> = {
   'VU needles': 'VU 바늘',
   'Spectrogram': '스펙트로그램',
   'Radial goes around a big cover; where the cover is small it shows bars': '방사형은 큰 커버 둘레에 표시되며, 커버가 작으면 막대로 표시됩니다',
-  'bars mirror peaks wave radial circle vu needles meter spectrogram waterfall look': '막대 미러 피크 웨이브 모양 bars mirror peaks wave 방사형 원 vu 바늘 미터 스펙트로그램 radial circle needles meter spectrogram waterfall',
+  'bars mirror peaks wave curve radial circle vu needles meter spectrogram waterfall oscilloscope scope loudness lufs look': '막대 미러 피크 웨이브 모양 bars mirror peaks wave 방사형 원 vu 바늘 미터 스펙트로그램 radial circle needles meter spectrogram waterfall 곡선 오실로스코프 라우드니스 curve oscilloscope scope loudness lufs',
   // v2 redesign
   'Playing': '재생 중',
   'All your songs': '내 모든 노래',
@@ -2034,6 +2034,7 @@ const ko: Record<string, string> = {
   '1/6 octave as measured, 1/3 octave: fewer, wider bars, like a hi-fi analyzer, or 1/12 octave: twice the detail, for a wide visualizer. Point at a big visualizer for its Hz and dB scales': '측정된 그대로의 1/6 옥타브, 1/3 옥타브: 하이파이 분석기처럼 더 적고 넓은 막대, 또는 1/12 옥타브: 두 배 더 세밀하며 넓은 시각화에 적합. 큰 시각화 위에 포인터를 올리면 Hz와 dB 눈금이 표시됩니다',
   'octave third sixth twelfth analyzer resolution detail hertz decibel scale': '옥타브 3분의1 6분의1 12분의1 분석기 해상도 세밀 헤르츠 데시벨 눈금',
   'True peak': '트루 피크',
+  'Oscilloscope': '오실로스코프',
 }
 
 export default ko

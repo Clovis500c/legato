@@ -332,7 +332,7 @@
   // listen = levels only (cover pulse, early ends): the element plays its own sound, untouched, and this only listens.
   // ending = the app fades the song out (the gain holds); gain = where a new song's gain starts (the app's last song,
   // which may have played in the other embed), null = this frame's own.
-  let settings = { on: false, listen: false, adaptive: false, targetLufs: -14, ending: false, viz: false, fine: false, gain: null }
+  let settings = { on: false, listen: false, adaptive: false, targetLufs: -14, ending: false, viz: false, fine: false, wave: false, gain: null }
   let effects = cleanFx(null)
   // { ctx, video, stream, track, src, full, gain, limiter, fx, raw, k, wanted, … } while attached; full = the sound
   // comes out of here (gain, limiter, fx), else they are null.
@@ -587,13 +587,15 @@
   // Visualizer v2 maths, pure (viz.test.ts runs this block). Twin of crates/dsp viz.rs: the same bands, 61 of 1/6
   // octave or 121 of 1/12 (base 10, 19.95 Hz to 19.95 kHz), the same bin-to-band mapping and dB scale (a sine of
   // amplitude 1 reads 0 dB). Chromium's analyser windows with Blackman and scales its FFT by 1/N: vizNorm undoes both
-  // by the window's energy. Frame = 8 bytes (version, band count, 2 reserved, rms L R, peak L R)
-  // + the bands L + the bands R, every dB value one byte, (dB + 120) * 2.
+  // by the window's energy. Frame = 8 bytes (version, band count, flags, reserved, rms L R, peak L R)
+  // + the bands L + the bands R, every dB value one byte, (dB + 120) * 2; flags 1: + the wave blocks, VIZ_WAVE samples
+  // a side (the last 1024, every two averaged) as i16 little-endian.
   const VIZ_N = 4096
   // Twelfths: a window twice as long, so their bands resolve from ~300 Hz as the sixths do at 4096.
   const VIZ_N_FINE = 8192
   const VIZ_BANDS = 61
   const VIZ_FINE = 121
+  const VIZ_WAVE = 512
   // Narrowest a band reads, in bins (Hann and Blackman both hold 97 % of a sine in 3).
   const VIZ_MIN_WIDTH = 3
   // Band i's centre among `count` bands: 1 kHz is band 34 (68), 20 (40) bands a decade.
@@ -662,12 +664,26 @@
     return { rms: vizDb(sum / (x.length - from)), peak: vizDb(peak * peak), any }
   }
 
-  function vizPack(rms, peak, left, right) {
+  /** The last 2 · VIZ_WAVE samples of `x`, every two averaged: a side's wave block (silence before a shorter input). */
+  function vizWave(x) {
+    const out = new Float32Array(VIZ_WAVE)
+    const pairs = Math.min(VIZ_WAVE, Math.floor(x.length / 2))
+    const from = x.length - 2 * pairs
+    for (let i = 0; i < pairs; i++) out[VIZ_WAVE - pairs + i] = (x[from + 2 * i] + x[from + 2 * i + 1]) / 2
+    return out
+  }
+
+  /** `wave`: the two sides' wave blocks, or none. */
+  function vizPack(rms, peak, left, right, wave) {
     const count = left.length
-    const out = new Uint8Array(8 + 2 * count)
-    out.set([1, count, 0, 0, ...rms.map(vizQ), ...peak.map(vizQ)])
+    const out = new Uint8Array(8 + 2 * count + (wave ? 4 * VIZ_WAVE : 0))
+    out.set([1, count, wave ? 1 : 0, 0, ...rms.map(vizQ), ...peak.map(vizQ)])
     out.set(left.map(vizQ), 8)
     out.set(right.map(vizQ), 8 + count)
+    if (wave) {
+      const view = new DataView(out.buffer, 8 + 2 * count)
+      wave.forEach((side, c) => side.forEach((v, i) => view.setInt16(2 * (c * VIZ_WAVE + i), Math.round(Math.min(1, Math.max(-1, v)) * 32767), true)))
+    }
     return out
   }
   // viz:end
@@ -723,15 +739,18 @@
     const hop = Math.round(g.ctx.sampleRate / 60)
     const lv = []
     const bands = []
+    // The scopes' blocks, only while one is drawn.
+    const wave = settings.wave ? [] : null
     for (const a of v.an) {
       a.getFloatTimeDomainData(v.t)
       lv.push(vizLevels(v.t, hop, VIZ_N))
+      wave?.push(vizWave(v.t))
       a.getFloatFrequencyData(v.f)
       bands.push(vizBands(v.map, v.norm, v.f))
     }
     if (!lv.some((l) => l.any)) return quiet()
     v.idle = false
-    vizSend(vizPack(lv.map((l) => l.rms), lv.map((l) => l.peak), bands[0], bands[1]))
+    vizSend(vizPack(lv.map((l) => l.rms), lv.map((l) => l.peak), bands[0], bands[1], wave))
   }
 
   function tick() {
@@ -822,7 +841,7 @@
     }
     const t = Number(next.targetLufs)
     // A start gain waits for its song (the next track): later messages without one keep it.
-    settings = { on: next.on === true, listen: next.listen === true, adaptive: next.adaptive === true, targetLufs: Number.isFinite(t) ? Math.min(-6, Math.max(-30, t)) : -14, ending: next.ending === true, viz: next.viz === true, fine: next.fine === true, gain: num(next.gain, MAX_CUT, MAX_BOOST, settings.gain) }
+    settings = { on: next.on === true, listen: next.listen === true, adaptive: next.adaptive === true, targetLufs: Number.isFinite(t) ? Math.min(-6, Math.max(-30, t)) : -14, ending: next.ending === true, viz: next.viz === true, fine: next.fine === true, wave: next.wave === true, gain: num(next.gain, MAX_CUT, MAX_BOOST, settings.gain) }
     if (!settings.on) {
       clearInterval(retry)
       retry = 0

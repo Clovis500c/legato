@@ -550,12 +550,19 @@ colours, mirror, reflection.
 - [x] `S` Smooth spectrum curve (filled area, glow), stereo overlay (left and right in two colours). (2026-11-04: the
       Curve look, left in the visualizer's colour, right in the accent, a glow off with reduced motion; seen over the
       demo.)
-- [ ] `S` Oscilloscope: the waveform, triggered on zero crossings so it stands still, phosphor afterglow.
+- [x] `S` Oscilloscope: the waveform, triggered on zero crossings so it stands still, phosphor afterglow.
+      (2026-11-04: the Oscilloscope look, `vizScope.ts`: both sides as one, 256 samples (10.7 ms) from a rising zero
+      crossing of the smoothed wave, an afterglow of 50 ms (three times it with reduced motion); it asks for the wave
+      blocks only while it is the look. Decided alone: mono, the length, the glow. Seen over the demo; not on real
+      music.)
 - [ ] `S` Vectorscope / goniometer (left vs right, Lissajous) with a correlation meter: stereo width at a glance.
 - [ ] `S` Unit tests: a sine lights its 1/12-octave band, a pink noise reads flat with the tilt, a click track gives its BPM.
       (The 1/6- and 1/12-octave sines, left-only, the twins' shared fixture and the 10 Hz strobe are in.)
-- [ ] `S-M` Time-domain blocks in the frames (L/R, 1024 samples, as i16) for scope and vectorscope. Left / right bands, rms and
-      peak are in.
+- [x] `S-M` Time-domain blocks in the frames (L/R, 1024 samples, as i16) for scope and vectorscope. Left / right bands, rms and
+      peak are in. (2026-11-04: the last 1024 samples of each side averaged in pairs, 512 a side at 24 kHz, as i16
+      after the bands, flag 1 in byte 2, in both twins and only when asked: `viz_start(wave)`, the live wish's `wave`.
+      Decided alone: half the samples keep a frame at 2.3 KB and a watch-page message under 3300 characters. Tested
+      on packed and unpacked blocks; not on real music.)
 - [ ] `M` Particles on the beat (from the cover's colours), with the cover's blur behind (Plexamp-like backdrop).
 - [ ] `M` Song waveform on the progress bar for local files (computed once from the file, cached; not for streams).
 

@@ -138,7 +138,7 @@ const ANSWERS: Record<string, (args: Record<string, unknown>) => unknown> = {
   player_status: status,
   search_catalogs: search,
   lyrics,
-  viz_start: ({ frames, fine }) => startFrames(frames as Frames, fine === true),
+  viz_start: ({ frames, fine, wave }) => startFrames(frames as Frames, fine === true, wave === true),
   player_levels: levels,
   viz_stop: stopFrames,
   play_stats: () => Object.fromEntries(PLAYS.map((p) => [p.trackId, [PLAYS.filter((x) => x.trackId === p.trackId).length, p.startedAt]])),

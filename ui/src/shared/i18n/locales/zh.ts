@@ -1605,7 +1605,7 @@ const zh: Record<string, string> = {
   'VU needles': 'VU 指针',
   'Spectrogram': '频谱图',
   'Radial goes around a big cover; where the cover is small it shows bars': '环形围绕较大的封面显示；封面较小时显示条形',
-  'bars mirror peaks wave radial circle vu needles meter spectrogram waterfall look': '条形 镜像 峰值 波形 外观 bars mirror peaks wave 环形 圆 vu 指针 表 频谱图 瀑布 radial circle needles meter spectrogram waterfall',
+  'bars mirror peaks wave curve radial circle vu needles meter spectrogram waterfall oscilloscope scope loudness lufs look': '条形 镜像 峰值 波形 外观 bars mirror peaks wave 环形 圆 vu 指针 表 频谱图 瀑布 radial circle needles meter spectrogram waterfall 曲线 示波器 响度 curve oscilloscope scope loudness lufs',
   // v2 redesign
   'Playing': '正在播放',
   'All your songs': '你的所有歌曲',
@@ -2034,6 +2034,7 @@ const zh: Record<string, string> = {
   '1/6 octave as measured, 1/3 octave: fewer, wider bars, like a hi-fi analyzer, or 1/12 octave: twice the detail, for a wide visualizer. Point at a big visualizer for its Hz and dB scales': '按测量的 1/6 倍频程，1/3 倍频程：像高保真分析仪一样，柱条更少、更宽，或 1/12 倍频程：细节加倍，适合宽的可视化。将指针移到大的可视化上可显示 Hz 和 dB 刻度',
   'octave third sixth twelfth analyzer resolution detail hertz decibel scale': '倍频程 三分之一 六分之一 十二分之一 分析仪 分辨率 细节 赫兹 分贝 刻度',
   'True peak': '真峰值',
+  'Oscilloscope': '示波器',
 }
 
 export default zh

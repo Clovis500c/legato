@@ -16,11 +16,12 @@ export type ToWorker =
   | { t: 'loud'; v: LoudReading }
   /** The pointer over the visualizer (its frequency and dB scales shown) or gone. */
   | { t: 'hover'; on: boolean }
-  | { t: 'frame'; l: Float32Array; r: Float32Array; rms: [number, number] }
+  /** `w`: the wave blocks, when the Oscilloscope asked for them. */
+  | { t: 'frame'; l: Float32Array; r: Float32Array; rms: [number, number]; w?: [Float32Array, Float32Array] }
   /** Nothing sounds: the bars fall to rest. */
   | { t: 'silence' }
   /** Drawing on or off: off = no animation loop at all (page hidden, element off screen, visualizer off). */
   | { t: 'run'; on: boolean }
 
 /** What a frame means to the worker: a silent one (a gap, a stalled buffer, a stop) is silence, so the loop can stop at rest. */
-export const frameMessage = (f: VizFrame): ToWorker => (isSilent(f) ? { t: 'silence' } : { t: 'frame', l: f.left, r: f.right, rms: f.rms })
+export const frameMessage = (f: VizFrame): ToWorker => (isSilent(f) ? { t: 'silence' } : { t: 'frame', l: f.left, r: f.right, rms: f.rms, w: f.wave })

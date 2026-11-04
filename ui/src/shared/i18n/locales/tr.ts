@@ -1605,7 +1605,7 @@ const tr: Record<string, string> = {
   'VU needles': 'VU ibreleri',
   'Spectrogram': 'Spektrogram',
   'Radial goes around a big cover; where the cover is small it shows bars': 'Dairesel büyük bir kapağın çevresine çizilir; kapak küçükse çubuk gösterir',
-  'bars mirror peaks wave radial circle vu needles meter spectrogram waterfall look': 'çubuklar ayna tepeler dalga görünüm dairesel daire vu ibre ölçer spektrogram şelale',
+  'bars mirror peaks wave curve radial circle vu needles meter spectrogram waterfall oscilloscope scope loudness lufs look': 'çubuklar ayna tepeler dalga görünüm dairesel daire vu ibre ölçer spektrogram şelale eğri osiloskop ses yüksekliği lufs',
   // v2 redesign
   'Playing': 'Çalıyor',
   'All your songs': 'Tüm şarkıların',
@@ -2034,6 +2034,7 @@ const tr: Record<string, string> = {
   '1/6 octave as measured, 1/3 octave: fewer, wider bars, like a hi-fi analyzer, or 1/12 octave: twice the detail, for a wide visualizer. Point at a big visualizer for its Hz and dB scales': 'Ölçüldüğü gibi 1/6 oktav, 1/3 oktav: bir hi-fi analizör gibi daha az ve daha geniş çubuklar ya da 1/12 oktav: iki kat ayrıntı, geniş bir görselleştirici için. Hz ve dB ölçeklerini görmek için büyük bir görselleştiricinin üzerine gelin',
   'octave third sixth twelfth analyzer resolution detail hertz decibel scale': 'oktav üçte bir altıda bir on ikide bir analizör çözünürlük ayrıntı hertz desibel ölçek',
   'True peak': 'Gerçek tepe',
+  'Oscilloscope': 'Osiloskop',
 }
 
 export default tr

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { createViz, type VizSource } from './vizFrames'
-import { bandHz, fromBase64, isSilent, silentViz, toBytes, unpackViz, VIZ_BANDS, VIZ_FINE } from './vizUnpack'
+import { bandHz, fromBase64, isSilent, silentViz, toBytes, unpackViz, VIZ_BANDS, VIZ_FINE, VIZ_WAVE } from './vizUnpack'
 
 /** A packed frame the way crates/dsp `Frame::pack` writes it: rms L R, peak L R in bytes, then the bands. */
 function pack(rms: [number, number], peak: [number, number], left: number[], right: number[] = left): Uint8Array {
@@ -63,6 +63,25 @@ describe('visualizer frame bytes', () => {
     for (let i = 0; i < VIZ_BANDS; i++) expect(bandHz(2 * i, VIZ_FINE)).toBeCloseTo(bandHz(i), 6)
     expect(silentViz(VIZ_FINE).left).toHaveLength(VIZ_FINE)
   })
+
+  it('unpacks the wave blocks after the bands when flag 1 says so, i16 little-endian', () => {
+    const b = new Uint8Array(8 + 2 * VIZ_BANDS + 4 * VIZ_WAVE)
+    b.set([1, VIZ_BANDS, 1, 0])
+    const wave = new DataView(b.buffer, 8 + 2 * VIZ_BANDS)
+    wave.setInt16(0, 32767, true)
+    wave.setInt16(2 * (VIZ_WAVE - 1), -32767, true)
+    wave.setInt16(2 * (VIZ_WAVE + 3), 16384, true)
+    const f = unpackViz(b)!
+    expect(f.left).toHaveLength(VIZ_BANDS)
+    expect(f.wave![0][0]).toBe(1)
+    expect(f.wave![0][VIZ_WAVE - 1]).toBe(-1)
+    expect(f.wave![1][3]).toBeCloseTo(0.5, 4)
+    expect(f.wave![1]).toHaveLength(VIZ_WAVE)
+    // The flag and the size go together; a frame without it has none.
+    expect(unpackViz(b.slice(0, 8 + 2 * VIZ_BANDS))).toBeNull()
+    expect(unpackViz(Uint8Array.from(b, (v, i) => (i === 2 ? 0 : v)))).toBeNull()
+    expect(unpackViz(pack([0, 0], [0, 0], bands({})))!.wave).toBeUndefined()
+  })
 })
 
 describe('visualizer frame source', () => {
@@ -77,8 +96,8 @@ describe('visualizer frame source', () => {
     const counts: number[] = []
     const v = createViz(
       {
-        start: async (onBytes, fine) => {
-          calls.push(fine ? 'start fine' : 'start')
+        start: async (onBytes, ask) => {
+          calls.push(['start', ask.fine && 'fine', ask.wave && 'wave'].filter(Boolean).join(' '))
           push = onBytes
           return () => void calls.push('release')
         },
@@ -142,18 +161,19 @@ describe('visualizer frame source', () => {
     expect(isSilent(v.latest()!)).toBe(true)
   })
 
-  it('starts the stream again in twelfths while it runs, else waits for the next listener', async () => {
+  it('starts the stream again in twelfths or with waves while it runs, else waits for the next listener', async () => {
     const { v, calls } = setup('native')
-    v.setFine(true)
-    v.setFine(true)
+    v.setAsk({ fine: true, wave: false })
+    v.setAsk({ fine: true, wave: false })
     await wait()
     expect(calls).toEqual([])
     const off = v.subscribe(() => {})
     await wait()
     expect(calls).toEqual(['start fine'])
-    v.setFine(false)
+    v.setAsk({ fine: false, wave: true })
+    v.setAsk({ fine: false, wave: true })
     await wait()
-    expect(calls).toEqual(['start fine', 'release', 'start'])
+    expect(calls).toEqual(['start fine', 'release', 'start wave'])
     off()
     await wait()
     expect(calls.slice(3)).toEqual(['release', 'stop'])

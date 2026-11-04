@@ -6,17 +6,19 @@ import { describe, expect, it } from 'vitest'
 // `crates/dsp/fixtures/viz.json` holds the signals and what the Rust side reads from them, in sixths and twelfths.
 const src = readFileSync(new URL('./live.js', import.meta.url), 'utf8')
 const block = src.slice(src.indexOf('// viz:begin'), src.indexOf('// viz:end'))
-const viz = new Function(`${block}; return { vizMap, vizNorm, vizBands, vizLevels, vizPack, vizCentre, VIZ_N, VIZ_N_FINE, VIZ_BANDS, VIZ_FINE }`)() as {
+const viz = new Function(`${block}; return { vizMap, vizNorm, vizBands, vizLevels, vizPack, vizWave, vizCentre, VIZ_N, VIZ_N_FINE, VIZ_BANDS, VIZ_FINE, VIZ_WAVE }`)() as {
   vizMap: (rate: number, count?: number, n?: number) => [number, number[]][]
   vizNorm: (size?: number) => number
   vizBands: (map: [number, number[]][], norm: number, bins: Float32Array) => number[]
   vizLevels: (x: Float32Array, hop: number, last?: number) => { rms: number; peak: number; any: boolean }
-  vizPack: (rms: number[], peak: number[], left: number[], right: number[]) => Uint8Array
+  vizPack: (rms: number[], peak: number[], left: number[], right: number[], wave?: Float32Array[] | null) => Uint8Array
+  vizWave: (x: ArrayLike<number>) => Float32Array
   vizCentre: (i: number, count?: number) => number
   VIZ_N: number
   VIZ_N_FINE: number
   VIZ_BANDS: number
   VIZ_FINE: number
+  VIZ_WAVE: number
 }
 const N = viz.VIZ_N
 const BANDS = viz.VIZ_BANDS
@@ -213,6 +215,23 @@ describe('frames', () => {
     expect(b).toHaveLength(8 + 2 * FINE)
     expect([b[0], b[1]]).toEqual([1, 121])
     expect(b[8 + 2 * FINE - 1]).toBe(240)
+  })
+
+  it('pack wave blocks after the bands when asked: 512 samples a side, every two averaged, as i16', () => {
+    const silent = new Array(BANDS).fill(-120)
+    const x = Float32Array.from({ length: N }, (_, i) => (i % 2 ? 0.5 : 0.25))
+    const w = viz.vizWave(x)
+    expect(w).toHaveLength(viz.VIZ_WAVE)
+    expect(w[0]).toBeCloseTo(0.375, 6)
+    const b = viz.vizPack([-120, -120], [-120, -120], silent, silent, [w, new Float32Array(viz.VIZ_WAVE).fill(-1)])
+    expect(b).toHaveLength(8 + 2 * BANDS + 4 * viz.VIZ_WAVE)
+    expect(b[2]).toBe(1)
+    const view = new DataView(b.buffer, 8 + 2 * BANDS)
+    expect(view.getInt16(0, true)).toBe(Math.round(0.375 * 32767))
+    expect(view.getInt16(2 * viz.VIZ_WAVE, true)).toBe(-32767)
+    expect(viz.vizPack([-120, -120], [-120, -120], silent, silent, null)[2]).toBe(0)
+    // Shorter than a block: silence before it (as crates/dsp `wave_of`).
+    expect([...viz.vizWave(Float32Array.of(0.25, 0.75, 1, 1)).slice(viz.VIZ_WAVE - 3)]).toEqual([0, 0.5, 1])
   })
 
   it('levels: rms over the window, peak over the last hop, silence is zero', () => {

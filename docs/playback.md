@@ -295,7 +295,7 @@ never: downloading, extracting, recording or exporting a platform's audio, or to
   Settings › Playback › Sound processing; "Process YouTube's sound" turns the YouTube side off.
 - **Visualizer data, 60 Hz** (Visualizer v2 step 1, 2026-10-31; spec `docs/notes/ideas/visualizer.md`). 61 bands of 1/6
   octave (base 10, 19.95 Hz to 19.95 kHz), left and right, plus left / right rms and peak, in a packed frame: 8 bytes
-  (version 1, band count, 2 reserved, rms L R, peak L R) + 61 bands L + 61 bands R, every dB value one byte, `(dB + 120)
+  (version 1, band count, flags, 1 reserved, rms L R, peak L R) + 61 bands L + 61 bands R, every dB value one byte, `(dB + 120)
   · 2` (0.5 dB steps, floor -120). A sine of amplitude 1 reads 0 dB in its band; bands are energy sums (Parseval), so
   the window does not matter for noise. Bands narrower than 3 bins (under ~320 Hz at 48 kHz) widen to 3 bins around
   their center: a sine reads right (within 0.5 dB), the neighbours of the lowest bands read nearly as much (the 4096
@@ -311,8 +311,13 @@ never: downloading, extracting, recording or exporting a platform's audio, or to
     `VIZ_N_FINE`), so they widen to 3 bins under the same ~320 Hz; the fixture holds them too (`fineLeft`,
     `fineRight`). A frame carries its count in byte 1 (250 bytes; the watch page's text up to 400 characters); rms
     stays over the last 4096 samples, so the needles read alike. `viz_start(fine)` and the live wish's `fine` ask for
-    them: `vizFrames.ts` `setFine` starts the engine's stream again, live.js makes its analysers again, and the scene
+    them: `vizFrames.ts` `setAsk` starts the engine's stream again, live.js makes its analysers again, and the scene
     skips a frame of the other size while the switch goes through. Not tried on real music yet.
+  - **Wave blocks** (2026-11-04, for the Oscilloscope): flag 1 in byte 2 adds, after the bands, the last 1024 samples
+    of each side averaged in pairs (512 a side, 24 kHz, about 21 ms) as i16 little-endian (32767 = full scale): 2 KB
+    more a frame, and the watch page's text up to 3100 characters (`ok_viz`). Only when asked: `viz_start(wave)`
+    (`Pump::waves`, `viz::wave_of`) and the live wish's `wave` (live.js `vizWave` after each read of the analysers'
+    time data); `vizFrames.ts` `setAsk({ fine, wave })` starts the engine's stream again, as for twelfths.
   - **Native**: hann 4096-point FFT (8192 in twelfths; `realfft`), hop = rate / 60, any sample rate (44.1 and 96 kHz tested). The audio
     thread only copies: `Processor::process` pushes its output (as heard: after gain and limiter, before the volume
     knob) into `tap.rs`, a ring of atomics, when `Tap::listen()` has a listener (one relaxed load otherwise; no lock, no
@@ -395,14 +400,21 @@ never: downloading, extracting, recording or exporting a platform's audio, or to
     strip three bars, M S I, with their numbers; 120 px high and more, the words, the true peak (now, and a mark at the
     song's highest, in the alarm colour over −1 dBTP, EBU R128's ceiling), a −48 to 0 scale and the range.
     Approximations: the engine's momentary is a 400 ms exponential mean (smoother than the standard's window), and the
-    integrated covers what the meter heard of the song.
+    integrated covers what the meter heard of the song. The backdrop and the mini player show bars instead.
+  - **Oscilloscope** (a look, 2026-11-04): the wave blocks as one side (the mean of both), 256 samples (10.7 ms) across
+    the box from a rising zero crossing of their smoothed shape (`vizScope.ts` `trigger`, 9 samples: the low end sets
+    the period, hiss does not trip it; none in the first half of the block: from its start), so a steady note stands
+    still; full scale at the edges, the visualizer's colour, no gradient, reflection or scales. Phosphor afterglow: the
+    canvas is not cleared while sound comes, its alpha cut each frame (`destination-out`, a 50 ms time constant, three
+    times it with reduced motion); at rest the last 8-bit traces go. `liveSync.ts` asks for the wave blocks only
+    while it is the look. Seen over the demo (a 110 Hz note); not on real music.
   - **True peak** (2026-11-04): BS.1770-4 annex 2 in both twins' meters, so the levels' `peak` is a true peak: the
     standard's 48-tap filter upsamples 4x (4 phases of 12 taps, its table digit for digit: passband ±0.1 dB to 20 kHz,
     −40 dB from 28 kHz), the highest |value| of the 4 points and the sample itself (never under the sample peak, as
     libebur128 reads it). Native: `meter.rs` `Oversampler` per channel, sample by sample (48 multiply-adds a sample on
     the audio thread). YouTube: live.js `truePeak` (`tp:begin` … `tp:end`, `truepeak.test.ts`, which also checks
     its table against the Rust one) over each 2048-sample read of the raw pair, every 33 ms. A quarter-rate sine 45° off
-    reads its crest (samples at 0.707 of it) within 0.5 %; a full-scale one shows an intersample over (+3 dB). The backdrop and the mini player show bars instead.
+    reads its crest (samples at 0.707 of it) within 0.5 %; a full-scale one shows an intersample over (+3 dB).
   - **Comfort**: `prefers-reduced-motion` or Animations off (`useCalm`): slower attack and release, a cap that sinks
     gently, one flash a second. Always: `flash.ts` limits the mean brightness of the bars to 3 flashes a second (a flash
     = a rise and a fall of at least 10 % of the range; past the budget the brightness may not turn back by 10 % until

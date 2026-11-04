@@ -1,11 +1,14 @@
 /**
  * Visualizer frames (Visualizer v2), pure. One frame = what crates/dsp `viz::Frame::pack` and live.js `vizPack` write:
- * 8 bytes (version, band count, 2 reserved, rms L R, peak L R) + the bands left + the bands right, every dB value one
- * byte, (dB + 120) / 2 steps of 0.5 dB, 0 = -120 dB (silence). Bands are 1/6 octave (61), or 1/12 (121) when the
- * visualizer asks for twelfths (Settings › Visualizer bands), 19.95 Hz to 19.95 kHz.
+ * 8 bytes (version, band count, flags, reserved, rms L R, peak L R) + the bands left + the bands right, every dB value
+ * one byte, (dB + 120) / 2 steps of 0.5 dB, 0 = -120 dB (silence). Bands are 1/6 octave (61), or 1/12 (121) when the
+ * visualizer asks for twelfths (Settings › Visualizer bands), 19.95 Hz to 19.95 kHz. Flags 1: the wave blocks follow
+ * (asked by the Oscilloscope look), VIZ_WAVE samples a side as i16 little-endian.
  */
 export const VIZ_BANDS = 61
 export const VIZ_FINE = 121
+/** Samples a side in a wave block: the last 1024, every two averaged (21 ms at 48 kHz). */
+export const VIZ_WAVE = 512
 export const VIZ_FORMAT = 1
 const HEADER = 8
 
@@ -17,6 +20,8 @@ export interface VizFrame {
   /** Band levels per side, dB (a sine of amplitude 1 in a band reads 0). */
   left: Float32Array
   right: Float32Array
+  /** The wave blocks when asked: VIZ_WAVE samples a side, -1 to 1. */
+  wave?: [Float32Array, Float32Array]
 }
 
 /** Band center among `n` bands, Hz: 1 kHz is band 34 (68 in twelfths), 20 bands a decade (40). */
@@ -27,9 +32,16 @@ const db = (q: number) => q / 2 - 120
 /** A frame from its bytes, or null if they are not one (wrong size, version or band count). */
 export function unpackViz(bytes: Uint8Array): VizFrame | null {
   const n = bytes[1]
-  if ((n !== VIZ_BANDS && n !== VIZ_FINE) || bytes.length !== HEADER + 2 * n || bytes[0] !== VIZ_FORMAT) return null
+  const waves = (bytes[2] & 1) === 1
+  if ((n !== VIZ_BANDS && n !== VIZ_FINE) || bytes.length !== HEADER + 2 * n + (waves ? 4 * VIZ_WAVE : 0) || bytes[0] !== VIZ_FORMAT) return null
   const side = (from: number) => Float32Array.from({ length: n }, (_, i) => db(bytes[from + i]))
-  return { rms: [db(bytes[4]), db(bytes[5])], peak: [db(bytes[6]), db(bytes[7])], left: side(HEADER), right: side(HEADER + n) }
+  const frame: VizFrame = { rms: [db(bytes[4]), db(bytes[5])], peak: [db(bytes[6]), db(bytes[7])], left: side(HEADER), right: side(HEADER + n) }
+  if (waves) {
+    const view = new DataView(bytes.buffer, bytes.byteOffset + HEADER + 2 * n, 4 * VIZ_WAVE)
+    const wave = (c: number) => Float32Array.from({ length: VIZ_WAVE }, (_, i) => view.getInt16(2 * (c * VIZ_WAVE + i), true) / 32767)
+    frame.wave = [wave(0), wave(1)]
+  }
+  return frame
 }
 
 /** Bytes from what a channel hands over (an ArrayBuffer; a number array if the transport ever sends JSON). */

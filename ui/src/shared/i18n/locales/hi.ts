@@ -1605,7 +1605,7 @@ const hi: Record<string, string> = {
   'VU needles': 'VU सुइयाँ',
   'Spectrogram': 'स्पेक्ट्रोग्राम',
   'Radial goes around a big cover; where the cover is small it shows bars': 'रेडियल बड़े कवर के चारों ओर बनता है; कवर छोटा हो तो पट्टियाँ दिखती हैं',
-  'bars mirror peaks wave radial circle vu needles meter spectrogram waterfall look': 'पट्टियाँ दर्पण शिखर तरंग रूप bars mirror peaks wave रेडियल गोला vu सुई मीटर स्पेक्ट्रोग्राम झरना radial circle needles meter spectrogram waterfall',
+  'bars mirror peaks wave curve radial circle vu needles meter spectrogram waterfall oscilloscope scope loudness lufs look': 'पट्टियाँ दर्पण शिखर तरंग रूप bars mirror peaks wave रेडियल गोला vu सुई मीटर स्पेक्ट्रोग्राम झरना radial circle needles meter spectrogram waterfall वक्र ऑसिलोस्कोप लाउडनेस curve oscilloscope scope loudness lufs',
   // v2 redesign
   'Playing': 'चल रहा है',
   'All your songs': 'आपके सभी गाने',
@@ -2034,6 +2034,7 @@ const hi: Record<string, string> = {
   '1/6 octave as measured, 1/3 octave: fewer, wider bars, like a hi-fi analyzer, or 1/12 octave: twice the detail, for a wide visualizer. Point at a big visualizer for its Hz and dB scales': 'मापा गया 1/6 ऑक्टेव, 1/3 ऑक्टेव: हाई-फ़ाई एनालाइज़र की तरह कम और चौड़ी बार, या 1/12 ऑक्टेव: दोगुना बारीक, चौड़े विज़ुअलाइज़र के लिए। Hz और dB स्केल देखने के लिए बड़े विज़ुअलाइज़र पर पॉइंटर ले जाएं',
   'octave third sixth twelfth analyzer resolution detail hertz decibel scale': 'ऑक्टेव तिहाई छठा बारहवां एनालाइज़र रिज़ॉल्यूशन बारीकी हर्ट्ज़ डेसिबल स्केल',
   'True peak': 'ट्रू पीक',
+  'Oscilloscope': 'ऑसिलोस्कोप',
 }
 
 export default hi

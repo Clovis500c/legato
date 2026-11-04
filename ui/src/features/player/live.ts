@@ -27,6 +27,8 @@ export interface LiveWish {
   viz: boolean
   /** Those frames in 1/12-octave bands (Settings › Visualizer bands), else 1/6. */
   fine: boolean
+  /** Those frames with their wave blocks (the Oscilloscope look). */
+  wave: boolean
   /** YouTube's sound may be processed (Settings › Advanced). */
   youtube: boolean
   /** Live Editor settings (neutral = untouched). */
@@ -47,7 +49,7 @@ export function punch(l: LiveLevels | null): number {
 
 /** What the YouTube player gets. */
 export function frameSettings(w: LiveWish) {
-  return { on: (w.on || w.ends) && w.youtube, listen: w.listen, adaptive: w.adaptive, targetLufs: w.targetLufs, viz: w.viz, fine: w.fine }
+  return { on: (w.on || w.ends) && w.youtube, listen: w.listen, adaptive: w.adaptive, targetLufs: w.targetLufs, viz: w.viz, fine: w.fine, wave: w.wave }
 }
 
 /** end = the song ended there (s of the video), silence after it; lead = the music began there, silence before it (live.js, ends.ts). */
@@ -64,7 +66,7 @@ export function parseLive(origin: string, data: unknown): Report | null {
   }
 }
 
-let wish: LiveWish = { on: false, levels: false, ends: false, listen: false, adaptive: false, targetLufs: -14, viz: false, fine: false, youtube: true, effects: NEUTRAL }
+let wish: LiveWish = { on: false, levels: false, ends: false, listen: false, adaptive: false, targetLufs: -14, viz: false, fine: false, wave: false, youtube: true, effects: NEUTRAL }
 // Early end heard (the store's): tail = from the overlap's fading-out embed, not what plays now.
 let ended: ((end: number, tail: boolean) => void) | null = null
 export const onEndHeard = (f: (end: number, tail: boolean) => void) => void (ended = f)

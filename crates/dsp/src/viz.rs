@@ -23,11 +23,16 @@ pub const FINE_FFT: usize = 8192;
 pub const FPS: u32 = 60;
 /// Narrowest a band reads, FFT bins (3 bins hold 98 % of a Hann sine, 97 % of a Blackman one).
 const MIN_WIDTH: f64 = 3.0;
-/// Frame layout: version, band count, two reserved, rms L, rms R, peak L, peak R, bands L, bands R. Every dB value is one
-/// byte, (dB + 120) · 2: 0.5 dB steps from -120 up to +7.5.
+/// Frame layout: version, band count, flags, reserved, rms L, rms R, peak L, peak R, bands L, bands R, then the wave
+/// blocks if flagged. Every dB value is one byte, (dB + 120) · 2: 0.5 dB steps from -120 up to +7.5.
 pub const FORMAT: u8 = 1;
 pub const HEADER: usize = 8;
 pub const FRAME_BYTES: usize = HEADER + 2 * BANDS;
+/// Flags byte: the frame ends with wave blocks.
+const HAS_WAVE: u8 = 1;
+/// Samples per side in a wave block (the scopes, asked only while one is drawn): the last 1024 frames, every two
+/// averaged (21 ms at 48 kHz), as i16 little-endian (32767 = full scale). 2 KB a frame.
+pub const WAVE: usize = 512;
 /// Ticks without news before a silent frame is sent (~100 ms).
 const STILL_TICKS: u32 = 6;
 
@@ -144,12 +149,24 @@ impl BandMap {
 }
 
 /// One moment of the music: levels in dB (0 = full scale; a full-scale sine's rms reads -3), bands in dB (61 or 121
-/// per side).
+/// per side), the wave blocks when asked (`WAVE` samples per side, -1 to 1).
 #[derive(Debug, Clone, PartialEq)]
 pub struct Frame {
     pub rms: [f32; 2],
     pub peak: [f32; 2],
     pub bands: [Vec<f32>; 2],
+    pub wave: Option<[Vec<f32>; 2]>,
+}
+
+/// The last `2 · WAVE` samples, every two averaged: a side's wave block (silence before a shorter input).
+pub fn wave_of(x: &[f32]) -> Vec<f32> {
+    let mut out = vec![0.0; WAVE.saturating_sub(x.len() / 2)];
+    out.extend(x[x.len().saturating_sub(2 * WAVE)..].as_chunks::<2>().0.iter().map(|[a, b]| (a + b) / 2.0));
+    out
+}
+
+fn sample16(s: f32) -> i16 {
+    (s.clamp(-1.0, 1.0) * 32767.0).round() as i16
 }
 
 impl Frame {
@@ -159,26 +176,33 @@ impl Frame {
 
     /// Nothing sounds, in these bands.
     pub fn quiet(bands: Bands) -> Self {
-        Self { rms: [-120.0; 2], peak: [-120.0; 2], bands: [vec![-120.0; bands.count()], vec![-120.0; bands.count()]] }
+        Self { rms: [-120.0; 2], peak: [-120.0; 2], bands: [vec![-120.0; bands.count()], vec![-120.0; bands.count()]], wave: None }
     }
 
     pub fn pack(&self) -> Vec<u8> {
-        let mut out = Vec::with_capacity(HEADER + 2 * self.bands[0].len());
-        out.extend([FORMAT, self.bands[0].len() as u8, 0, 0]);
+        let n = self.bands[0].len();
+        let mut out = Vec::with_capacity(HEADER + 2 * n + if self.wave.is_some() { 4 * WAVE } else { 0 });
+        out.extend([FORMAT, n as u8, if self.wave.is_some() { HAS_WAVE } else { 0 }, 0]);
         out.extend(self.rms.iter().chain(&self.peak).map(|&v| quantize(v)));
         out.extend(self.bands.iter().flatten().map(|&v| quantize(v)));
+        if let Some(w) = &self.wave {
+            out.extend(w.iter().flat_map(|side| (0..WAVE).map(|i| side.get(i).copied().unwrap_or(0.0))).flat_map(|s| sample16(s).to_le_bytes()));
+        }
         out
     }
 
     /// Back from bytes (tests, and the contract the front end's `vizFrames.ts` unpacks): `None` if not a frame.
     pub fn unpack(b: &[u8]) -> Option<Self> {
         let n = *b.get(1)? as usize;
-        if b[0] != FORMAT || (n != BANDS && n != FINE_BANDS) || b.len() != HEADER + 2 * n {
+        let waves = b.get(2)? & HAS_WAVE != 0;
+        if b[0] != FORMAT || (n != BANDS && n != FINE_BANDS) || b.len() != HEADER + 2 * n + if waves { 4 * WAVE } else { 0 } {
             return None;
         }
         let d = |i: usize| dequantize(b[i]);
         let side = |c: usize| (0..n).map(|i| d(HEADER + c * n + i)).collect();
-        Some(Self { rms: [d(4), d(5)], peak: [d(6), d(7)], bands: [side(0), side(1)] })
+        let at = HEADER + 2 * n;
+        let wave = |c: usize| (0..WAVE).map(|i| i16::from_le_bytes([b[at + 2 * (c * WAVE + i)], b[at + 2 * (c * WAVE + i) + 1]]) as f32 / 32767.0).collect();
+        Some(Self { rms: [d(4), d(5)], peak: [d(6), d(7)], bands: [side(0), side(1)], wave: waves.then(|| [wave(0), wave(1)]) })
     }
 }
 
@@ -237,7 +261,7 @@ impl Analyzer {
             (db(rms * rms), db((peak as f64) * (peak as f64)))
         };
         let ((rl, pl), (rr, pr)) = (level(left), level(right));
-        Frame { rms: [rl, rr], peak: [pl, pr], bands: [self.read(left), self.read(right)] }
+        Frame { rms: [rl, rr], peak: [pl, pr], bands: [self.read(left), self.read(right)], wave: None }
     }
 }
 
@@ -260,6 +284,8 @@ pub struct Pump {
     idle: bool,
     /// The silent frame, in these bands.
     silent: Vec<u8>,
+    /// Frames carry the wave blocks (a scope is drawn).
+    waves: bool,
 }
 
 impl Pump {
@@ -269,7 +295,13 @@ impl Pump {
 
     pub fn with(listener: Listener, bands: Bands) -> Self {
         let n = bands.fft();
-        Self { seen: listener.head(), listener, analyzer: Analyzer::with(bands), left: vec![0.0; n], right: vec![0.0; n], still: 0, idle: false, silent: Frame::quiet(bands).pack() }
+        Self { seen: listener.head(), listener, analyzer: Analyzer::with(bands), left: vec![0.0; n], right: vec![0.0; n], still: 0, idle: false, silent: Frame::quiet(bands).pack(), waves: false }
+    }
+
+    /// Frames with the wave blocks (`WAVE` samples a side) or without. The silent frame never has them.
+    pub fn waves(mut self, on: bool) -> Self {
+        self.waves = on;
+        self
     }
 
     /// The silent frame went out and nothing plays: the caller may look less often.
@@ -293,7 +325,11 @@ impl Pump {
         }
         self.idle = false;
         let rate = self.listener.rate();
-        Some(self.analyzer.analyze(&self.left, &self.right, rate, (rate / FPS) as usize).pack())
+        let mut frame = self.analyzer.analyze(&self.left, &self.right, rate, (rate / FPS) as usize);
+        if self.waves {
+            frame.wave = Some([wave_of(&self.left), wave_of(&self.right)]);
+        }
+        Some(frame.pack())
     }
 }
 
@@ -464,6 +500,28 @@ mod tests {
         tap.push(&block, 2, 48_000);
         let f = Frame::unpack(&pump.step().unwrap()).unwrap();
         assert!((f.bands[0][68] + 6.0).abs() < 0.6, "{}", f.bands[0][68]);
+        assert!(f.wave.is_none());
+    }
+
+    #[test]
+    fn wave_blocks_come_when_asked_left_and_right_apart() {
+        let tap = Arc::new(Tap::default());
+        let mut pump = Pump::with(tap.listen(), Bands::Sixth).waves(true);
+        // A left-only 1 kHz sine at 0.5: its last 1024 samples, every two averaged, on the left; the right silent.
+        let left = sine(1000.0, 0.5, 48_000, FFT);
+        let block: Vec<f32> = left.iter().flat_map(|&x| [x, 0.0]).collect();
+        tap.push(&block, 2, 48_000);
+        let b = pump.step().unwrap();
+        assert_eq!((b.len(), b[2]), (FRAME_BYTES + 4 * WAVE, 1));
+        let w = Frame::unpack(&b).unwrap().wave.unwrap();
+        assert_eq!((w[0].len(), w[1].len()), (WAVE, WAVE));
+        let want = wave_of(&left);
+        assert!(w[0].iter().zip(&want).all(|(a, b)| (a - b).abs() < 1e-4));
+        assert!(w[0].iter().fold(0f32, |m, v| m.max(v.abs())) > 0.45 && w[1].iter().all(|&v| v == 0.0));
+        // The silent frame carries none; a frame cut short is no frame.
+        assert!(Frame::unpack(&b[..b.len() - 2]).is_none());
+        assert_eq!(wave_of(&[0.5; 10]).len(), WAVE);
+        assert_eq!(wave_of(&[0.25, 0.75, 1.0, 1.0])[WAVE - 2..], [0.5, 1.0]);
     }
 
     #[test]

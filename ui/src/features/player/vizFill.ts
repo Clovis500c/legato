@@ -19,10 +19,10 @@ const inward = (stops: Stops): Stops => sorted(stops.flatMap(([p, c]): Stops => 
  * The gradient laid over a look's bars (`source-atop`: their shapes and opacities, its colours). By level: from the
  * bottom up, from the middle out for the mirror, from the cover out for the ring. Along frequency: left to right; the
  * ring's lows sit at the bottom and rise up both sides (`ringBars`), so clockwise from the bottom, up and back down.
- * VU needles, the spectrogram and the loudness meter keep their own colours: null, like no gradient.
+ * VU needles, the spectrogram, the oscilloscope and the loudness meter keep their own colours: null, like no gradient.
  */
 export function fillFor(kind: VizGradient, look: VisualizerStyle, W: number, H: number, stops: Stops, ring?: { r0: number; len: number }): Fill | null {
-  if (kind === 'none' || stops.length < 2 || look === 'vu' || look === 'spectrogram' || look === 'loudness') return null
+  if (kind === 'none' || stops.length < 2 || look === 'vu' || look === 'spectrogram' || look === 'scope' || look === 'loudness') return null
   if (look === 'radial') {
     if (!ring) return null
     const at = { x: W / 2, y: H / 2 }

@@ -1605,7 +1605,7 @@ const ru: Record<string, string> = {
   'VU needles': 'Стрелки VU',
   'Spectrogram': 'Спектрограмма',
   'Radial goes around a big cover; where the cover is small it shows bars': 'Круговой вид окружает большую обложку; если она мала, показываются полосы',
-  'bars mirror peaks wave radial circle vu needles meter spectrogram waterfall look': 'полосы зеркало пики волна вид круговой круг vu стрелки индикатор спектрограмма водопад',
+  'bars mirror peaks wave curve radial circle vu needles meter spectrogram waterfall oscilloscope scope loudness lufs look': 'полосы зеркало пики волна вид круговой круг vu стрелки индикатор спектрограмма водопад кривая осциллограф громкость lufs',
   // v2 redesign
   'Playing': 'Играет',
   'All your songs': 'Все ваши треки',
@@ -2034,6 +2034,7 @@ const ru: Record<string, string> = {
   '1/6 octave as measured, 1/3 octave: fewer, wider bars, like a hi-fi analyzer, or 1/12 octave: twice the detail, for a wide visualizer. Point at a big visualizer for its Hz and dB scales': '1/6 октавы как измерено, 1/3 октавы: меньше столбиков, они шире, как у Hi-Fi-анализатора, или 1/12 октавы: вдвое подробнее, для широкого визуализатора. Наведите указатель на большой визуализатор, чтобы увидеть шкалы Гц и дБ',
   'octave third sixth twelfth analyzer resolution detail hertz decibel scale': 'октава треть шестая двенадцатая анализатор разрешение детали герц децибел шкала',
   'True peak': 'Истинный пик',
+  'Oscilloscope': 'Осциллограф',
 }
 
 export default ru

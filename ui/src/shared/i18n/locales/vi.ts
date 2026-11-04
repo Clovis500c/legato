@@ -1605,7 +1605,7 @@ const vi: Record<string, string> = {
   'VU needles': 'Kim VU',
   'Spectrogram': 'Phổ đồ',
   'Radial goes around a big cover; where the cover is small it shows bars': 'Vòng tròn bao quanh bìa lớn; bìa nhỏ thì hiện thanh',
-  'bars mirror peaks wave radial circle vu needles meter spectrogram waterfall look': 'thanh gương đỉnh sóng giao diện vòng tròn vu kim đồng hồ phổ đồ thác',
+  'bars mirror peaks wave curve radial circle vu needles meter spectrogram waterfall oscilloscope scope loudness lufs look': 'thanh gương đỉnh sóng giao diện vòng tròn vu kim đồng hồ phổ đồ thác đường cong máy hiện sóng độ lớn lufs',
   // v2 redesign
   'Playing': 'Đang phát',
   'All your songs': 'Tất cả bài hát của bạn',
@@ -2034,6 +2034,7 @@ const vi: Record<string, string> = {
   '1/6 octave as measured, 1/3 octave: fewer, wider bars, like a hi-fi analyzer, or 1/12 octave: twice the detail, for a wide visualizer. Point at a big visualizer for its Hz and dB scales': '1/6 quãng tám như đo được, 1/3 quãng tám: ít thanh hơn và rộng hơn, như máy phân tích hi-fi, hoặc 1/12 quãng tám: chi tiết gấp đôi, cho trình hiển thị rộng. Trỏ vào trình hiển thị lớn để xem thang Hz và dB',
   'octave third sixth twelfth analyzer resolution detail hertz decibel scale': 'quãng tám một phần ba một phần sáu một phần mười hai máy phân tích độ phân giải chi tiết hertz decibel thang',
   'True peak': 'Đỉnh thực',
+  'Oscilloscope': 'Máy hiện sóng',
 }
 
 export default vi

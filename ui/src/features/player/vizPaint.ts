@@ -5,8 +5,10 @@ import { columnSpans, columnsFor, dialGeometry, ledRows, ringBars, wavePath, typ
 import { fillFor, type Stops } from './vizFill'
 import { LOUD_MARKS, LOUD_WORDS, loudPos, loudText, type LoudReading, type LoudWords } from './vizLoud'
 import { createScene } from './vizScene'
+import { monoWave, SPAN, trigger } from './vizScope'
 import { colorMap, fillColumn, rowMix, SCROLL, SCROLL_CALM, scrollBy } from './vizSpectro'
 import { createVu, vuPos, VU_MARKS } from './vizVu'
+import { VIZ_WAVE } from './vizUnpack'
 import { weightsOf } from './vizWeigh'
 
 /** Lowest bar, as a fraction of the box (a bar never vanishes). */
@@ -30,6 +32,8 @@ const SCALED = new Set<VisualizerStyle>(['led', 'bars', 'peaks', 'mirror', 'wave
 const SCALE_MIN_H = 120
 /** The loudness meter in words, with the peak, its scale and the range, in a box this tall (CSS px); letters and three bars below. */
 const LOUD_BIG_H = 120
+/** Oscilloscope: the phosphor's afterglow, s (what was drawn fades to a third in this long; three times it when calm). */
+const GLOW_S = 0.05
 
 interface Sprites {
   off: OffscreenCanvas
@@ -80,6 +84,9 @@ export function createPainter(canvas: OffscreenCanvas) {
   // Loudness meter: its words and its latest numbers.
   let words: LoudWords = LOUD_WORDS
   let loudNow: LoudReading = { momentary: -120, short: -120, integrated: null, range: null, peak: -120, top: -120 }
+  // Oscilloscope: the newest wave block, both sides as one; null while nothing sounds.
+  const scopeWave = new Float32Array(VIZ_WAVE)
+  let waveNow: Float32Array | null = null
 
   /** A CSS colour as [r, g, b] (the canvas parses it). */
   function rgbOf(color: string): [number, number, number] {
@@ -529,6 +536,38 @@ export function createPainter(canvas: OffscreenCanvas) {
     ctx.fillText(`${words.range}  ${say(v.range, 'LU')}`, left, y + tick + small + Math.round(font * 0.9))
   }
 
+  /**
+   * Oscilloscope: the newest wave block from its trigger (vizScope.ts), `SPAN` samples across the box, full scale at the
+   * edges, over the pictures before fading out (a phosphor's afterglow: their alpha cut each frame, never cleared).
+   */
+  function scope(W: number, H: number, dt: number, resting: boolean) {
+    if (!ctx) return
+    ctx.globalCompositeOperation = 'destination-out'
+    ctx.globalAlpha = 1 - Math.exp(-dt / (calm ? 3 * GLOW_S : GLOW_S))
+    ctx.fillRect(0, 0, W, H)
+    ctx.globalCompositeOperation = 'source-over'
+    ctx.globalAlpha = 1
+    // Nothing sounds: the glow fades, and its last 8-bit traces (a fade never takes them) go once at rest.
+    if (!waveNow) {
+      if (resting) ctx.clearRect(0, 0, W, H)
+      return
+    }
+    const from = trigger(waveNow)
+    const mid = H / 2
+    const amp = mid * 0.95
+    ctx.beginPath()
+    for (let i = 0; i < SPAN; i++) {
+      const x = (i / (SPAN - 1)) * W
+      const y = mid - waveNow[from + i] * amp
+      if (i) ctx.lineTo(x, y)
+      else ctx.moveTo(x, y)
+    }
+    ctx.lineWidth = Math.max(1, 1.5 * dpr)
+    ctx.lineJoin = 'round'
+    ctx.strokeStyle = ink
+    ctx.stroke()
+  }
+
   return {
     size(w: number, h: number, ratio: number) {
       cssW = w
@@ -549,6 +588,8 @@ export function createPainter(canvas: OffscreenCanvas) {
       weighs = weightsOf(weigh, framesFor(bands))
       // Another look: a clean canvas (the waterfall keeps its picture otherwise).
       if (next !== look && ctx) ctx.clearRect(0, 0, canvas.width, canvas.height)
+      // Back to the Oscilloscope: no stale trace before its frames come.
+      if (next !== look) waveNow = null
       look = next
       calm = calmer
       if ((color || '#888') !== ink || !inkRgb) {
@@ -563,7 +604,9 @@ export function createPainter(canvas: OffscreenCanvas) {
       }
       layout()
     },
-    frame(l: ArrayLike<number>, r: ArrayLike<number>, rms: ArrayLike<number>) {
+    frame(l: ArrayLike<number>, r: ArrayLike<number>, rms: ArrayLike<number>, w?: [ArrayLike<number>, ArrayLike<number>]) {
+      // A frame without its wave blocks (a stream starting again, the silence after a stop): no trace.
+      waveNow = w ? monoWave(w[0], w[1], scopeWave) : null
       if (look === 'vu') vu.frame(rms)
       else if (sceneR) {
         // Curve: each side on its own.
@@ -572,6 +615,7 @@ export function createPainter(canvas: OffscreenCanvas) {
       } else scene.frame(l, r)
     },
     silence() {
+      waveNow = null
       scene.silence()
       sceneR?.silence()
       vu.silence()
@@ -608,6 +652,11 @@ export function createPainter(canvas: OffscreenCanvas) {
       ctx.globalAlpha = 1
       if (look === 'spectrogram') {
         waterfall(levels, dt)
+        return resting
+      }
+      // The trace over its afterglow, while the bars fall (no reflection, no scales: no bands).
+      if (look === 'scope') {
+        scope(W, H, dt, resting)
         return resting
       }
       ctx.clearRect(0, 0, W, H)

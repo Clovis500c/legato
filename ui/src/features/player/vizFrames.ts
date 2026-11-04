@@ -8,13 +8,21 @@ import { fromBase64, isSilent, toBytes, unpackViz, type VizFrame } from './vizUn
  * asks for it: live.ts `viz`). Same shape either way; `latest()` is the newest frame as it came, no smoothing and no
  * interpolation (the renderer's). A twin that does not play is ignored; both send one silent frame when their sound
  * stops, and then nothing, so `latest()` keeps the last frame (silent after a stop) until sound moves again. Frames
- * carry 61 bands, or 121 once `setFine` asks for twelfths (the engine's stream starts again; YouTube's follows the
- * wish, live.ts `fine`).
+ * carry 61 bands, or 121 once `setAsk` asks for twelfths, and the wave blocks once it asks for them (the engine's
+ * stream starts again; YouTube's follows the wish, live.ts `fine` and `wave`).
  */
 export type VizSource = 'native' | 'youtube' | null
 
+/** What the frames carry. */
+export interface VizAsk {
+  /** 1/12-octave bands (121), else 1/6 (61). */
+  fine: boolean
+  /** The wave blocks (the Oscilloscope look). */
+  wave: boolean
+}
+
 interface Io {
-  start: (onBytes: (b: unknown) => void, fine: boolean) => Promise<() => void>
+  start: (onBytes: (b: unknown) => void, ask: VizAsk) => Promise<() => void>
   stop: () => Promise<void>
   /** Who plays now. */
   source: () => VizSource
@@ -26,12 +34,12 @@ export function createViz(io: Io, counted?: (n: number) => void) {
   // start / stop one after the other: the engine may run two commands in either order.
   let chain: Promise<unknown> = Promise.resolve()
   let release: (() => void) | null = null
-  let fine = false
+  let ask: VizAsk = { fine: false, wave: false }
   const queue = (f: () => Promise<unknown>) => void (chain = chain.then(f).catch(() => {}))
-  // The engine's stream, in the bands asked now (a start there replaces the stream before it).
+  // The engine's stream, as asked now (a start there replaces the stream before it).
   const open = async () => {
     release?.()
-    release = await io.start((b) => take('native', toBytes(b)), fine)
+    release = await io.start((b) => take('native', toBytes(b)), ask)
   }
 
   function take(from: 'native' | 'youtube', bytes: Uint8Array | null) {
@@ -66,10 +74,10 @@ export function createViz(io: Io, counted?: (n: number) => void) {
     latest: () => newest,
     /** A frame from live.js (base64). */
     fromYoutube: (text: string) => take('youtube', fromBase64(text)),
-    /** Twelfths (121 bands) or sixths from now on: a running stream starts again in them. */
-    setFine(on: boolean) {
-      if (on === fine) return
-      fine = on
+    /** Twelfths or sixths, wave blocks or none, from now on: a running stream starts again so. */
+    setAsk(next: VizAsk) {
+      if (next.fine === ask.fine && next.wave === ask.wave) return
+      ask = { ...next }
       if (subs.size > 0) queue(open)
     },
     /** Subscribers now. */
@@ -86,7 +94,7 @@ export const useVizListeners = create<{ n: number }>(() => ({ n: 0 }))
 
 export const viz = createViz(
   {
-    start: (onBytes, fine) => api.vizStart(onBytes, fine),
+    start: (onBytes, ask) => api.vizStart(onBytes, ask),
     stop: () => api.vizStop(),
     source: () => source(),
   },

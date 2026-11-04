@@ -54,14 +54,14 @@ fn owns(page: Option<&str>) -> bool {
     page.is_none_or(|p| *PAGE.lock().unwrap_or_else(PoisonError::into_inner) == p)
 }
 
-fn start(tap: Arc<Tap>, frames: Channel<InvokeResponseBody>, bands: Bands) {
+fn start(tap: Arc<Tap>, frames: Channel<InvokeResponseBody>, bands: Bands, waves: bool) {
     stop();
     let flag = Arc::new(AtomicBool::new(false));
     *RUNNING.lock().unwrap_or_else(PoisonError::into_inner) = Some(flag.clone());
     let alive = Alive::new();
     let worker = move || {
         let _alive = alive;
-        let mut pump = Pump::with(tap.listen(), bands);
+        let mut pump = Pump::with(tap.listen(), bands).waves(waves);
         let period = Duration::from_micros(1_000_000 / FPS as u64);
         let mut next = Instant::now();
         while !flag.load(Relaxed) {
@@ -86,11 +86,12 @@ fn start(tap: Arc<Tap>, frames: Channel<InvokeResponseBody>, bands: Bands) {
 }
 
 /// The visualizer opened: packed frames (`music_dsp::viz::Frame::pack`) go to `frames` until `viz_stop`, a new
-/// `viz_start` or a reload. `fine`: 1/12-octave bands (Settings › Playback › Visualizer bands), else 1/6.
+/// `viz_start` or a reload. `fine`: 1/12-octave bands (Settings › Playback › Visualizer bands), else 1/6. `wave`: with the
+/// wave blocks (the Oscilloscope look).
 #[tauri::command]
-pub async fn viz_start(state: State<'_, AppState>, page: Option<String>, frames: Channel<InvokeResponseBody>, fine: Option<bool>) -> Result<(), String> {
+pub async fn viz_start(state: State<'_, AppState>, page: Option<String>, frames: Channel<InvokeResponseBody>, fine: Option<bool>, wave: Option<bool>) -> Result<(), String> {
     if owns(page.as_deref()) {
-        start(state.player.tap(), frames, if fine == Some(true) { Bands::Twelfth } else { Bands::Sixth });
+        start(state.player.tap(), frames, if fine == Some(true) { Bands::Twelfth } else { Bands::Sixth }, wave == Some(true));
     }
     Ok(())
 }

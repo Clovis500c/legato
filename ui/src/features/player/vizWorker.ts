@@ -58,7 +58,7 @@ scope.onmessage = (e) => {
       wake()
       break
     case 'frame':
-      painter?.frame(m.l, m.r, m.rms)
+      painter?.frame(m.l, m.r, m.rms, m.w)
       wake()
       break
     case 'hover':

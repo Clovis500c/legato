@@ -1605,7 +1605,7 @@ const es: Record<string, string> = {
   'VU needles': 'Agujas VU',
   'Spectrogram': 'Espectrograma',
   'Radial goes around a big cover; where the cover is small it shows bars': 'Radial rodea una carátula grande; si es pequeña, muestra barras',
-  'bars mirror peaks wave radial circle vu needles meter spectrogram waterfall look': 'barras espejo picos onda aspecto radial círculo vu agujas medidor espectrograma cascada',
+  'bars mirror peaks wave curve radial circle vu needles meter spectrogram waterfall oscilloscope scope loudness lufs look': 'barras espejo picos onda aspecto radial círculo vu agujas medidor espectrograma cascada curva osciloscopio sonoridad lufs',
   // v2 redesign
   'Playing': 'Sonando',
   'All your songs': 'Todas tus canciones',
@@ -2034,6 +2034,7 @@ const es: Record<string, string> = {
   '1/6 octave as measured, 1/3 octave: fewer, wider bars, like a hi-fi analyzer, or 1/12 octave: twice the detail, for a wide visualizer. Point at a big visualizer for its Hz and dB scales': '1/6 de octava tal como se mide, 1/3 de octava: menos barras y más anchas, como un analizador de alta fidelidad, o 1/12 de octava: el doble de detalle, para un visualizador ancho. Apunta a un visualizador grande para ver sus escalas de Hz y dB',
   'octave third sixth twelfth analyzer resolution detail hertz decibel scale': 'octava tercio sexto doceavo analizador resolución detalle hercios decibelios escala',
   'True peak': 'Pico real',
+  'Oscilloscope': 'Osciloscopio',
 }
 
 export default es

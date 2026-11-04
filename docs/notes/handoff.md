@@ -174,6 +174,9 @@ Relaunch log (newest last):
   1/6 → 1/12 → 1/3; not on real music, nor in the watch page (its frames are now up to 400 characters).
 - 2026-11-04: true peak (BS.1770-4 annex 2) in both twins' meters: the levels' `peak` is one now; the loudness meter
   says True peak in dBTP, its highest in the alarm colour over −1 dBTP. A test holds the two tap tables equal.
+- 2026-11-04: wave blocks in the frames (flag 1: 512 samples a side, i16, only when asked) and the Oscilloscope look
+  (`vizScope.ts`: a smoothed rising zero crossing, an afterglow). Seen over the demo (its fake engine sends a 110 Hz
+  note); not on real music, nor in the watch page (its frames are now up to 3100 characters with the blocks).
 
 ## Mobile app and devices sync (the owner's ask, 2026-11-02 afternoon; in progress)
 
