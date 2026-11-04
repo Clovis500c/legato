@@ -304,8 +304,9 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
         Stats, Now Playing's top bar, every Settings section (rows wrap in a narrow pane by a container query, Accounts
         one line per service, the phone says phone: language, accent, font). A window under 1200 px: the right panel
         steps aside (its mini player floats, Lyrics / Up next open Now Playing), the song list drops its least needed
-        columns to fit (`fitColumns`). Left: Search results, album and artist pages, Now Playing's panels on the phone,
-        Add music, then the same screens on the emulator.
+        columns to fit (`fitColumns`). Then the phone's search results (chips in one sideways row, rows without
+        sources and time) and the album / artist song rows (title room, a tap plays). Left: Now Playing's panels on the
+        phone, Add music, then the same screens on the emulator.
   - [x] QR scanner for pairing (2026-11-04, `tauri-plugin-barcode-scanner` 2.x): never scanned a real code.
   - [x] Secrets sealed by Android's Keystore (2026-11-04), moved once from `secrets.json`: checked on the emulator.
   - [x] Android download on the website (2026-11-04): hero link and FAQ; a push deploys it (the owner's call).

@@ -129,7 +129,8 @@ Relaunch log (newest last):
   at every size), five commits: the phone's Home, lists, Mixes, Stats, Settings and Accounts; a desktop window under
   1200 px (right panel aside, song columns fitted). Checked in the demo (`demo` in launch.json, the pane's mobile
   preset for 375 × 812, a custom size for a narrow window; reload after a size change, `phoneApp` is read at load).
-  Next in it: Search results, album and artist pages, Now Playing's panels, Add music, then the emulator.
+  Then search results and the album / artist song rows on the phone (two more commits). Next in it: Now Playing's
+  panels on the phone, Add music, then the emulator.
 
 ## Mobile app and devices sync (the owner's ask, 2026-11-02 afternoon; in progress)
 
