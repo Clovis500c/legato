@@ -2002,6 +2002,9 @@ const ru: Record<string, string> = {
   'rainbow prism spectrum meter red top warm colours': 'радуга призма спектр индикатор красный верх тёплый цвета',
   'Search this list': 'Поиск в этом списке',
   'Built from your plays (full listens count more, skips count against), your playlists, your saves on YouTube Music and Spotify, what you play back to back and the time of day. To find new songs, a few of your favorites go to YouTube Music for their radio; your history stays on this phone. On a mix, use “Less like this” or “Never in mixes” to steer it.': 'Собраны из твоих прослушиваний (полные прослушивания весят больше, пропуски — против), плейлистов, сохранённого в YouTube Music и Spotify, того, что ты слушаешь подряд, и времени суток. Чтобы найти новые песни, несколько твоих любимых отправляются в YouTube Music за их радио; история прослушиваний остаётся на этом телефоне. В миксе используй «Меньше такого» или «Никогда в миксах», чтобы направить его.',
+  'Match this phone': 'Как на этом телефоне',
+  'This phone ({language})': 'Этот телефон ({language})',
+  'Which account is connected to which service. Nothing goes through a server of ours: everything stays on your phone.': 'Какой аккаунт к какому сервису подключён. Ничего не идёт через наш сервер: всё остаётся на твоём телефоне.',
 }
 
 export default ru

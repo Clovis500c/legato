@@ -38,9 +38,9 @@ export function Toggle({ checked, onChange, label }: { checked: boolean; onChang
 
 export function Segmented<T extends string>({ value, options, onChange, label, className = '' }: { value: T; options: { value: T; label: string }[]; onChange: (v: T) => void; label: string; className?: string }) {
   return (
-    <div role="radiogroup" aria-label={label} className={`flex w-fit gap-0.5 rounded-full border border-line p-[3px] ${className}`}>
+    <div role="radiogroup" aria-label={label} className={`no-scrollbar flex w-fit max-w-full gap-0.5 overflow-x-auto rounded-full border border-line p-[3px] ${className}`}>
       {options.map((o) => (
-        <button key={o.value} role="radio" aria-checked={o.value === value} onClick={() => onChange(o.value)} className={`rounded-full px-3 py-1 text-xs font-medium transition ${o.value === value ? 'bg-ink text-bg' : 'text-ink-2 hover:text-ink'}`}>
+        <button key={o.value} role="radio" aria-checked={o.value === value} onClick={() => onChange(o.value)} className={`shrink-0 rounded-full px-3 py-1 text-xs font-medium whitespace-nowrap transition phone:px-2.5 ${o.value === value ? 'bg-ink text-bg' : 'text-ink-2 hover:text-ink'}`}>
           {o.label}
         </button>
       ))}

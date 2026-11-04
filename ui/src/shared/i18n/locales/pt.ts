@@ -2002,6 +2002,9 @@ const pt: Record<string, string> = {
   'rainbow prism spectrum meter red top warm colours': 'arco-íris prisma espectro medidor vermelho topo quente cores',
   'Search this list': 'Filtrar esta lista',
   'Built from your plays (full listens count more, skips count against), your playlists, your saves on YouTube Music and Spotify, what you play back to back and the time of day. To find new songs, a few of your favorites go to YouTube Music for their radio; your history stays on this phone. On a mix, use “Less like this” or “Never in mixes” to steer it.': 'Feitos com suas reproduções (as completas contam mais, as puladas contam contra), suas playlists, o que você salva no YouTube Music e no Spotify, o que você ouve em sequência e a hora do dia. Para encontrar músicas novas, algumas das suas favoritas vão para o YouTube Music buscar a rádio delas; seu histórico fica neste celular. Em um mix, use “Menos como esta” ou “Nunca nos mixes” para ajustá-lo.',
+  'Match this phone': 'Igual ao celular',
+  'This phone ({language})': 'Este celular ({language})',
+  'Which account is connected to which service. Nothing goes through a server of ours: everything stays on your phone.': 'Qual conta está conectada a qual serviço. Nada passa por um servidor nosso: tudo fica no seu celular.',
 }
 
 export default pt

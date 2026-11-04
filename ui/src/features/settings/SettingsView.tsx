@@ -47,6 +47,7 @@ const sections: { id: SettingsSection; label: string; icon: ReactNode }[] = [
 
 /** title: English, the setting's id (search, data-setting); shown translated. */
 function Group({ title, count, hint, children }: { title: string; count?: number; hint?: string; children: ReactNode }) {
+  if (phoneApp && DESKTOP_ONLY.has(title)) return null
   return (
     <section data-setting={title} className="flex flex-col gap-2.5 rounded-lg">
       <div className="flex items-center justify-between">
@@ -75,9 +76,10 @@ function Row({ label, sub, children, preview, setting }: { label: string; sub?: 
         setting && { label: tr('Back to the default'), icon: <ArrowCounterClockwise size={16} />, disabled: !changed, onSelect: () => useSettings.getState().update({ [setting]: DEFAULTS[setting] }) },
         { label: tr('Copy name'), icon: <Copy size={16} />, onSelect: () => void navigator.clipboard.writeText(tr(label)) },
       ])}
-      className="flex items-center gap-4 border-b border-line-soft px-4 py-3 last:border-0"
+      // A narrow pane (the phone, a small window) keeps the words at least half the row: a wide control goes under them.
+      className="flex items-center gap-4 border-b border-line-soft px-4 py-3 last:border-0 @max-lg:flex-wrap @max-lg:gap-y-2.5"
     >
-      <div className="flex-1">
+      <div className="flex-1 @max-lg:min-w-[55%]">
         <p className="flex items-center gap-2 text-[0.8125rem] font-medium">
           {tr(label)}
           {changed && (
@@ -122,9 +124,10 @@ function InterfaceSize() {
 
 const fonts: { value: Settings['font']; label: string }[] = [
   { value: 'theme', label: msg('Theme') },
-  { value: 'modern', label: tr('Modern') },
-  { value: 'hifi', label: tr('Hi-Fi') },
-  { value: 'neutral', label: tr('Windows') },
+  { value: 'modern', label: msg('Modern') },
+  { value: 'hifi', label: msg('Hi-Fi') },
+  // Segoe UI: off Windows, the system's own font.
+  { value: 'neutral', label: phoneApp ? msg('System') : msg('Windows') },
 ]
 
 function Appearance() {
@@ -141,9 +144,10 @@ function Appearance() {
         </Button>
       </div>
       <ThemeStudio />
-      <Group title={msg('Accent color')} hint={s.accent === 'system' ? tr('from Windows') : (s.accent ?? tr('from theme'))}>
+      {/* Only Windows gives an accent to read: no Windows chip on the phone, and one synced from a PC shows the theme's. */}
+      <Group title={msg('Accent color')} hint={s.accent === 'system' && !phoneApp ? tr('from Windows') : s.accent && s.accent !== 'system' ? s.accent : tr('from theme')}>
         <div className="flex flex-wrap items-center gap-2">
-          {([['system', 'Windows'], [null, msg('Theme')]] as const).map(([value, label]) => (
+          {([['system', 'Windows'], [null, msg('Theme')]] as const).filter(([value]) => !phoneApp || value !== 'system').map(([value, label]) => (
             <button key={label} onClick={() => update({ accent: value })} aria-pressed={s.accent === value} className={`rounded-full px-3 py-1.5 text-xs font-medium ${s.accent === value ? 'bg-ink text-bg' : 'border border-line'}`}>
               {tr(label)}
             </button>
@@ -162,7 +166,8 @@ function Appearance() {
       <Group title={msg('Font')} hint={s.font === 'theme' ? tr('theme: {font}', { font: current().font }) : undefined}>
         <Segmented label={tr('Font')} value={s.font} onChange={(font) => update({ font })} options={fonts.map((f) => ({ ...f, label: tr(f.label) }))} />
       </Group>
-      <div className="grid grid-cols-2 gap-6">
+      {/* A narrow pane stacks them: side by side, their choices were cut. */}
+      <div className="grid grid-cols-2 gap-6 @max-lg:grid-cols-1">
         <Group title={msg('Covers')}>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <Segmented label={tr('Cover shape')} value={s.covers} onChange={(covers) => update({ covers })} options={[{ value: 'net', label: tr('Sharp') }, { value: 'rounded', label: tr('Rounded') }, { value: 'vinyl', label: tr('Vinyl') }]} />
@@ -233,9 +238,10 @@ function Appearance() {
       </Group>
       <Group title={msg('Immersive player')}>
         <div className="rounded-xl border border-line bg-raised">
-          <div className="flex items-center gap-5 border-b border-line-soft p-4">
+          {/* A narrow pane puts the words under the picture: beside it, they went off the screen. */}
+          <div className="flex items-center gap-5 border-b border-line-soft p-4 @max-lg:flex-col @max-lg:items-stretch @max-lg:gap-3">
             <NowPlayingScene s={{ ...s, immersive: true }} big />
-            <p className="max-w-48 text-xs text-ink-2">
+            <p className="max-w-48 text-xs text-ink-2 @max-lg:max-w-none">
               {s.immersive ? tr('Live preview: move the sliders and watch the background change.') : tr('Immersive player is off (Appearance › Player): this is how it would look.')}
               {playing ? '' : ` ${tr('Play a song to see it with its own cover.')}`}
             </p>
@@ -640,13 +646,16 @@ function GeneralSection() {
           </Row>
         </div>
       </Group>
-      <Group title={msg('Updates')}>
-        <div className="rounded-xl border border-line bg-raised">
-          <Row setting="updateChannel" label={msg('Update channel')} sub={s.updateChannel === 'beta' ? tr('Every change first, so it may break. Back on Stable, the app waits for a Stable version newer than this one: it never goes back to an older one') : tr('Versions already tried on Beta. Pick Beta to get every change first')}>
-            <Segmented label={tr('Update channel')} value={s.updateChannel} onChange={(updateChannel) => update({ updateChannel })} options={[{ value: 'stable', label: tr('Stable') }, { value: 'beta', label: tr('Beta') }]} />
-          </Row>
-        </div>
-      </Group>
+      {/* The phone's app doesn't update itself (its row is desktop only): no empty group. */}
+      {!phoneApp && (
+        <Group title={msg('Updates')}>
+          <div className="rounded-xl border border-line bg-raised">
+            <Row setting="updateChannel" label={msg('Update channel')} sub={s.updateChannel === 'beta' ? tr('Every change first, so it may break. Back on Stable, the app waits for a Stable version newer than this one: it never goes back to an older one') : tr('Versions already tried on Beta. Pick Beta to get every change first')}>
+              <Segmented label={tr('Update channel')} value={s.updateChannel} onChange={(updateChannel) => update({ updateChannel })} options={[{ value: 'stable', label: tr('Stable') }, { value: 'beta', label: tr('Beta') }]} />
+            </Row>
+          </div>
+        </Group>
+      )}
       <Group title={msg('Cover cache')}>
         <CoverCacheRows />
       </Group>
@@ -850,7 +859,9 @@ export function SettingsView({ section }: { section: SettingsSection }) {
       {/* Narrow (small window, or the connect wizard beside it): sections in rows above the page, not a squeezed column.
           The container is a wrapper: an element can't query its own width. */}
       <div className="@container flex min-h-0 flex-1 flex-col">
-      <div className="flex min-h-0 flex-1 flex-col gap-4 @2xl:flex-row @2xl:gap-9">
+      {/* The phone scrolls the sections' row with the page: fixed, it took half the screen. The page's bleed (room for
+          focus rings) moves here: on the content it overflowed sideways, and the row shifted under the left edge. */}
+      <div className="flex min-h-0 flex-1 flex-col gap-4 @2xl:flex-row @2xl:gap-9 phone:-mx-2 phone:overflow-y-auto phone:px-2">
         <nav className="flex shrink-0 flex-wrap gap-px @2xl:w-52 @2xl:flex-col @2xl:flex-nowrap">
           <SettingsSearch onPick={(e) => go({ name: 'settings', section: e.section, focus: e.label })} />
           {sections.filter((s) => !phoneApp || !DESKTOP_ONLY_SECTIONS.has(s.id)).map((s) => (
@@ -860,7 +871,8 @@ export function SettingsView({ section }: { section: SettingsSection }) {
             </button>
           ))}
         </nav>
-        <div ref={content} className="-mx-2 min-h-0 flex-1 overflow-y-auto px-2 pb-8">
+        {/* Its own width decides the rows' layout (@max-lg): the phone, a small window or the sections' column beside it. */}
+        <div ref={content} className="@container -mx-2 min-h-0 flex-1 overflow-y-auto px-2 pb-8 phone:mx-0 phone:flex-none phone:overflow-visible phone:px-0">
           {section === 'general' && <GeneralSection />}
           {section === 'playback' && <PlaybackSection />}
           {section === 'appearance' && <Appearance />}

@@ -72,8 +72,8 @@ export function NowPlayingScene({ s, big = false }: { s: Pick<Settings, 'immersi
         <div className={`flex min-w-0 flex-1 flex-col ${big ? 'gap-3' : 'gap-1.5'}`}>
           {big ? (
             <>
-              <span className="h-2.5 w-40 rounded-full bg-ink" />
-              <span className="h-2 w-24 rounded-full bg-ink-2" />
+              <span className="h-2.5 w-40 max-w-full rounded-full bg-ink" />
+              <span className="h-2 w-24 max-w-full rounded-full bg-ink-2" />
               <span className="mt-2 h-1 w-full rounded-full bg-ink-4">
                 <span className="block h-full w-2/5 rounded-full bg-ink" />
               </span>

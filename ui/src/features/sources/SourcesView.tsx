@@ -1,7 +1,7 @@
 import { ArrowsClockwise, FolderPlus, GoogleLogo, ShieldCheck, SignOut, UserPlus, X } from '@phosphor-icons/react'
 import { useShallow } from 'zustand/react/shallow'
 import { open } from '@tauri-apps/plugin-dialog'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { useSettings } from '../../app/settings'
 import { useStore } from '../../app/store'
 import { AppleImport } from '../add/AppleConnect'
@@ -61,6 +61,27 @@ function DirectionPicker({ service, value, onChange, receives = true }: { servic
   )
 }
 
+/**
+ * An account's first line: its light and icon, its name and what it does, then its state and buttons. A narrow pane (the
+ * phone, a small window) puts the state and buttons under the words: beside them, the words got one per line.
+ */
+function AccountLine({ on, icon, title, pitch, state, children }: { on: boolean; icon: ReactNode; title: ReactNode; pitch: ReactNode; state: ReactNode; children?: ReactNode }) {
+  return (
+    <div className="flex items-center gap-4 @max-lg:flex-wrap @max-lg:gap-x-3 @max-lg:gap-y-2">
+      <Led on={on} />
+      <span className="grid size-9 shrink-0 place-items-center rounded-full border border-line text-ink-2">{icon}</span>
+      <div className="flex-1">
+        <p className="text-[0.8125rem] font-semibold">{title}</p>
+        <p className="text-xs text-ink-2">{pitch}</p>
+      </div>
+      <div className="flex items-center gap-4 @max-lg:w-full @max-lg:flex-wrap @max-lg:gap-x-3 @max-lg:gap-y-2 @max-lg:pl-[4.125rem]">
+        <span className="kicker">{state}</span>
+        {children}
+      </div>
+    </div>
+  )
+}
+
 function ServiceRow({ service }: { service: 'spotify' }) {
   const { status, disconnect, busy, go, view } = useStore(useShallow(({ status, disconnect, busy, go, view }) => ({ status, disconnect, busy, go, view })))
   const { connected } = status[service]
@@ -68,16 +89,7 @@ function ServiceRow({ service }: { service: 'spotify' }) {
   const [dirs, setDir] = useDirections()
   return (
     <div data-setting={sourceLabel[service]} className={`flex flex-col gap-3 border-b border-line-soft px-4 py-3.5 ${selected ? 'bg-bg' : ''}`}>
-      <div className="flex items-center gap-4">
-        <Led on={connected} />
-        <span className="grid size-9 place-items-center rounded-full border border-line text-ink-2">
-          <SourceIcon source={service} size={16} />
-        </span>
-        <div className="flex-1">
-          <p className="text-[0.8125rem] font-semibold">{sourceLabel[service]}</p>
-          <p className="text-xs text-ink-2">{tr(guides[service].pitch)}</p>
-        </div>
-        <span className="kicker">{connected ? tr('Connected') : tr('Not connected')}</span>
+      <AccountLine on={connected} icon={<SourceIcon source={service} size={16} />} title={sourceLabel[service]} pitch={tr(guides[service].pitch)} state={connected ? tr('Connected') : tr('Not connected')}>
         {connected ? (
           <Button variant="ghost" disabled={busy} onClick={() => disconnect(service)}>
             {tr('Disconnect')}
@@ -85,9 +97,9 @@ function ServiceRow({ service }: { service: 'spotify' }) {
         ) : (
           <Button onClick={() => go({ name: 'settings', section: 'sources', wizard: service })}>{tr('Connect')}</Button>
         )}
-      </div>
+      </AccountLine>
       {connected && (
-        <div className="ml-13">
+        <div className="ml-13 @max-lg:ml-0">
           <DirectionPicker service={sourceLabel[service]} value={dirs.spotify ?? 'both'} onChange={(d) => setDir('spotify', d)} receives={false} />
         </div>
       )}
@@ -108,24 +120,25 @@ function SpotifyWeb() {
   }, [])
   return (
     <div data-setting="Spotify web player" className="flex flex-col gap-3 border-b border-line-soft px-4 py-3.5">
-      <div className="flex items-center gap-4">
-        <Led on={!!on} />
-        <span className="grid size-9 place-items-center rounded-full border border-line text-ink-2">
-          <SourceIcon source="spotify" size={16} />
-        </span>
-        <div className="flex-1">
-          <p className="text-[0.8125rem] font-semibold">{tr('Spotify web player')} <span className="kicker">{tr('Preview')}</span></p>
-          <p className="text-xs text-ink-2">{tr('Spotify’s own player in a window, signed in on Spotify’s page. Open only plays it: to bring your lists in, use Import my lists.')}</p>
-        </div>
-        <span className="kicker">{on ? tr('Signed in') : tr('Not signed in')}</span>
+      <AccountLine
+        on={!!on}
+        icon={<SourceIcon source="spotify" size={16} />}
+        title={
+          <>
+            {tr('Spotify web player')} <span className="kicker">{tr('Preview')}</span>
+          </>
+        }
+        pitch={tr('Spotify’s own player in a window, signed in on Spotify’s page. Open only plays it: to bring your lists in, use Import my lists.')}
+        state={on ? tr('Signed in') : tr('Not signed in')}
+      >
         <Button variant="ghost" onClick={() => api.spotifyWebOpen().catch((e) => useStore.setState({ error: String(e) }))}>
           {tr('Open')}
         </Button>
         <SpotifyImport label={tr('Import my lists')} />
-      </div>
+      </AccountLine>
       {/* With a key the row above shows it. */}
       {!keyed && (
-        <div className="ml-13">
+        <div className="ml-13 @max-lg:ml-0">
           <DirectionPicker service="Spotify" value={dirs.spotify ?? 'both'} onChange={(d) => setDir('spotify', d)} receives={false} />
         </div>
       )}
@@ -144,17 +157,10 @@ function AppleWeb() {
     return () => window.removeEventListener('focus', check)
   }, [])
   return (
-    <div data-setting="Apple Music" className="flex items-center gap-4 border-b border-line-soft px-4 py-3.5">
-      <Led on={!!on} />
-      <span className="grid size-9 place-items-center rounded-full border border-line text-ink-2">
-        <SourceIcon source="apple" size={16} />
-      </span>
-      <div className="flex-1">
-        <p className="text-[0.8125rem] font-semibold">{tr('Apple Music')}</p>
-        <p className="text-xs text-ink-2">{tr('Your playlists are read on Apple Music’s own page, signed in there, and their songs play through YouTube.')}</p>
-      </div>
-      <span className="kicker">{on ? tr('Signed in') : tr('Not signed in')}</span>
-      <AppleImport label={tr('Import my lists')} />
+    <div data-setting="Apple Music" className="border-b border-line-soft px-4 py-3.5">
+      <AccountLine on={!!on} icon={<SourceIcon source="apple" size={16} />} title={tr('Apple Music')} pitch={tr('Your playlists are read on Apple Music’s own page, signed in there, and their songs play through YouTube.')} state={on ? tr('Signed in') : tr('Not signed in')}>
+        <AppleImport label={tr('Import my lists')} />
+      </AccountLine>
     </div>
   )
 }
@@ -188,14 +194,13 @@ function LastfmRow() {
   const field = 'h-8 w-full rounded-md border border-line bg-bg px-2 font-mono text-xs'
   return (
     <div data-setting="Last.fm" className="flex flex-col gap-3 border-b border-line-soft px-4 py-3.5">
-      <div className="flex items-center gap-4">
-        <Led on={!!user} />
-        <span className="grid size-9 place-items-center rounded-full border border-line text-xs font-bold text-ink-2">fm</span>
-        <div className="flex-1">
-          <p className="text-[0.8125rem] font-semibold">Last.fm</p>
-          <p className="text-xs text-ink-2">{user ? tr('Every song you listen to goes to your profile (half of it or 4 minutes heard)') : tr('Scrobbling: your listens on your Last.fm profile, from every source. Free, with your own API key')}</p>
-        </div>
-        <span className="kicker">{user ? (waiting ? tr('{user} · {n} waiting', { user, n: waiting }) : user) : configured ? tr('Signed out') : tr('Not connected')}</span>
+      <AccountLine
+        on={!!user}
+        icon={<span className="text-xs font-bold">fm</span>}
+        title="Last.fm"
+        pitch={user ? tr('Every song you listen to goes to your profile (half of it or 4 minutes heard)') : tr('Scrobbling: your listens on your Last.fm profile, from every source. Free, with your own API key')}
+        state={user ? (waiting ? tr('{user} · {n} waiting', { user, n: waiting }) : user) : configured ? tr('Signed out') : tr('Not connected')}
+      >
         {user ? (
           <Button variant="ghost" onClick={() => void disconnect()}>
             {tr('Disconnect')}
@@ -203,9 +208,9 @@ function LastfmRow() {
         ) : (
           <Button onClick={() => setForm((f) => !f)}>{tr('Connect')}</Button>
         )}
-      </div>
+      </AccountLine>
       {form && !user && (
-        <div className="ml-13 flex flex-col gap-2 rounded-lg border border-line bg-bg p-3 text-xs">
+        <div className="ml-13 @max-lg:ml-0 flex flex-col gap-2 rounded-lg border border-line bg-bg p-3 text-xs">
           <p className="text-ink-2">
             {tr('1. Create a free API account on last.fm (any name, no callback needed). 2. Paste its API key and shared secret. 3. Allow Legato on the page that opens.')}{' '}
             <button type="button" className="font-semibold text-ink underline" onClick={() => void openUrl('https://www.last.fm/api/account/create')}>
@@ -256,14 +261,13 @@ function ListenbrainzRow() {
   }
   return (
     <div data-setting="ListenBrainz" className="flex flex-col gap-3 border-b border-line-soft px-4 py-3.5">
-      <div className="flex items-center gap-4">
-        <Led on={!!user} />
-        <span className="grid size-9 place-items-center rounded-full border border-line text-xs font-bold text-ink-2">LB</span>
-        <div className="flex-1">
-          <p className="text-[0.8125rem] font-semibold">ListenBrainz</p>
-          <p className="text-xs text-ink-2">{user ? tr('Every song you listen to goes to your profile (half of it or 4 minutes heard)') : tr('Your listens on your ListenBrainz profile, from every source. Free and open, with your own token')}</p>
-        </div>
-        <span className="kicker">{user ? (waiting ? tr('{user} · {n} waiting', { user, n: waiting }) : user) : tr('Not connected')}</span>
+      <AccountLine
+        on={!!user}
+        icon={<span className="text-xs font-bold">LB</span>}
+        title="ListenBrainz"
+        pitch={user ? tr('Every song you listen to goes to your profile (half of it or 4 minutes heard)') : tr('Your listens on your ListenBrainz profile, from every source. Free and open, with your own token')}
+        state={user ? (waiting ? tr('{user} · {n} waiting', { user, n: waiting }) : user) : tr('Not connected')}
+      >
         {user ? (
           <Button variant="ghost" onClick={() => void disconnect()}>
             {tr('Disconnect')}
@@ -271,9 +275,9 @@ function ListenbrainzRow() {
         ) : (
           <Button onClick={() => setForm((f) => !f)}>{tr('Connect')}</Button>
         )}
-      </div>
+      </AccountLine>
       {form && !user && (
-        <div className="ml-13 flex flex-col gap-2 rounded-lg border border-line bg-bg p-3 text-xs">
+        <div className="ml-13 @max-lg:ml-0 flex flex-col gap-2 rounded-lg border border-line bg-bg p-3 text-xs">
           <p className="text-ink-2">
             {tr('Sign in on listenbrainz.org (free), copy the user token from its settings and paste it here.')}{' '}
             <button type="button" className="font-semibold text-ink underline" onClick={() => void openUrl('https://listenbrainz.org/settings/')}>
@@ -315,25 +319,22 @@ function GoogleAccounts() {
 
   return (
     <div data-setting="YouTube Music" className="flex flex-col gap-3 border-b border-line-soft px-4 py-3.5">
-      <div className="flex items-center gap-4">
-        <Led on={!!data?.signedIn} />
-        <span className="grid size-9 place-items-center rounded-full border border-line text-ink-2">
-          <SourceIcon source="youtube" size={16} />
-        </span>
-        <div className="flex-1">
-          <p className="text-[0.8125rem] font-semibold">YouTube Music</p>
-          <p className="text-xs text-ink-2">{data?.signedIn ? tr('Your playlists, search and export. No keys, no daily limit.') : phoneApp ? tr('Google refuses sign-ins inside phone apps: sign in in Legato on your PC, and your playlists come here when your devices sync.') : tr('Sign in with Google to import your YouTube Music playlists and Liked Music. No keys.')}</p>
-        </div>
-        <span className="kicker">{data?.signedIn ? trn(data.accounts.length, '{n} account', '{n} accounts') : waiting ? tr('Waiting for Google…') : tr('Not signed in')}</span>
+      <AccountLine
+        on={!!data?.signedIn}
+        icon={<SourceIcon source="youtube" size={16} />}
+        title="YouTube Music"
+        pitch={data?.signedIn ? tr('Your playlists, search and export. No keys, no daily limit.') : phoneApp ? tr('Google refuses sign-ins inside phone apps: sign in in Legato on your PC, and your playlists come here when your devices sync.') : tr('Sign in with Google to import your YouTube Music playlists and Liked Music. No keys.')}
+        state={data?.signedIn ? trn(data.accounts.length, '{n} account', '{n} accounts') : waiting ? tr('Waiting for Google…') : tr('Not signed in')}
+      >
         {!data?.signedIn && !phoneApp && (
           <Button onClick={() => signIn(false)}>
             <GoogleLogo size={14} weight="bold" /> {tr('Sign in with Google')}
           </Button>
         )}
-      </div>
+      </AccountLine>
       {data?.signedIn && (
         <>
-          <ul className="ml-13 flex flex-col rounded-lg border border-line-soft">
+          <ul className="ml-13 @max-lg:ml-0 flex flex-col rounded-lg border border-line-soft">
             {data.accounts.map((a) => {
               const on = data.picked.includes(accountKey(a))
               const first = data.picked[0] === accountKey(a)
@@ -351,7 +352,7 @@ function GoogleAccounts() {
                     <Toggle label={tr('Sync {name}', { name: a.name })} checked={on} onChange={(v) => toggle(a, v)} />
                   </div>
                   {on && (
-                    <div className="ml-[42px]">
+                    <div className="ml-[42px] @max-lg:ml-0">
                       <DirectionPicker service="YouTube Music" value={dirs[`youtube:${accountKey(a)}`] ?? 'both'} onChange={(d) => setDir(`youtube:${accountKey(a)}`, d)} />
                     </div>
                   )}
@@ -359,7 +360,7 @@ function GoogleAccounts() {
               )
             })}
           </ul>
-          <div className="ml-13 flex items-center gap-3 rounded-lg bg-recess px-3 py-2.5">
+          <div className="ml-13 @max-lg:ml-0 flex items-center gap-3 rounded-lg bg-recess px-3 py-2.5">
             <div className="flex-1">
               <p className="text-[0.8125rem] font-medium">{tr('Playlists and Liked Music')}</p>
               <p className="text-xs text-ink-2">{busy ? tr('Importing…') : lastSync ? tr('Last import {when}: {n} playlists', { when: timeAgo(lastSync.at), n: lastSync.report.playlists }) : tr('Imported when you sign in. Import again any time to pick up changes.')}</p>
@@ -368,14 +369,14 @@ function GoogleAccounts() {
               <ArrowsClockwise size={14} className={busy ? 'animate-spin' : ''} /> {tr('Import playlists now')}
             </Button>
           </div>
-          <div data-setting="Update every 15 minutes" className="ml-13 flex items-center gap-3 px-3">
+          <div data-setting="Update every 15 minutes" className="ml-13 @max-lg:ml-0 flex items-center gap-3 px-3">
             <div className="flex-1">
               <p className="text-[0.8125rem] font-medium">{tr('Update every 15 minutes')}</p>
               <p className="text-xs text-ink-2">{tr('While the app is open, your playlists and Liked Music come in again by themselves. If Google limits this PC, it waits longer.')}</p>
             </div>
             <Toggle label={tr('Update every 15 minutes')} checked={autoSync} onChange={(on) => updateSettings({ autoSync: on })} />
           </div>
-          <div className="ml-13 flex gap-2">
+          <div className="ml-13 @max-lg:ml-0 flex gap-2">
             <Button variant="ghost" onClick={() => signIn(true)}>
               <UserPlus size={14} /> {waiting ? tr('Waiting for Google…') : tr('Add another Google account')}
             </Button>
@@ -383,7 +384,7 @@ function GoogleAccounts() {
               <SignOut size={14} /> {tr('Sign out')}
             </Button>
           </div>
-          <p className="ml-13 text-xs text-ink-2">{tr('Synced accounts bring their playlists and Liked Music into your library. YouTube Music doesn’t offer an official way in without keys: this uses the site’s own access, like Pear Desktop, and may break if YouTube changes it.')}</p>
+          <p className="ml-13 @max-lg:ml-0 text-xs text-ink-2">{tr('Synced accounts bring their playlists and Liked Music into your library. YouTube Music doesn’t offer an official way in without keys: this uses the site’s own access, like Pear Desktop, and may break if YouTube changes it.')}</p>
         </>
       )}
     </div>
@@ -417,19 +418,9 @@ function LocalFolders() {
 
   return (
     <div data-setting="Local files" className="flex flex-col gap-3 px-4 py-3.5">
-      <div className="flex items-center gap-4">
-        <Led on={folders.length > 0} />
-        <span className="grid size-9 place-items-center rounded-full border border-line text-ink-2">
-          <SourceIcon source="local" size={16} />
-        </span>
-        <div className="flex-1">
-          <p className="text-[0.8125rem] font-semibold">{tr('Local files')}</p>
-          <p className="text-xs text-ink-2">{tr('MP3, FLAC, WAV, OGG, M4A. Linked to your YouTube and Spotify tracks and played first, gapless.')}</p>
-        </div>
-        <span className="kicker">{busy ? tr('Scanning…') : trn(files, '{n} file', '{n} files')}</span>
-      </div>
+      <AccountLine on={folders.length > 0} icon={<SourceIcon source="local" size={16} />} title={tr('Local files')} pitch={tr('MP3, FLAC, WAV, OGG, M4A. Linked to your YouTube and Spotify tracks and played first, gapless.')} state={busy ? tr('Scanning…') : trn(files, '{n} file', '{n} files')} />
       {folders.length > 0 && (
-        <ul className="ml-13 flex flex-col rounded-lg border border-line-soft">
+        <ul className="ml-13 @max-lg:ml-0 flex flex-col rounded-lg border border-line-soft">
           {folders.map((f) => (
             <li key={f} className="flex items-center gap-2 border-b border-line-soft py-1 pr-1 pl-3 last:border-0">
               <span className="flex-1 truncate font-mono text-[0.6875rem]">{f}</span>
@@ -440,7 +431,7 @@ function LocalFolders() {
           ))}
         </ul>
       )}
-      <div className="ml-13 flex gap-2">
+      <div className="ml-13 @max-lg:ml-0 flex gap-2">
         <Button disabled={busy} onClick={add}>
           <FolderPlus size={14} /> {tr('Add folder')}
         </Button>
@@ -457,7 +448,7 @@ function LocalFolders() {
 export function SourcesView() {
   return (
     <div className="flex max-w-190 flex-col gap-6">
-      <p className="text-[0.8125rem] text-ink-2">{tr('Which account is connected to which service. Nothing goes through a server of ours: everything stays on your computer.')}</p>
+      <p className="text-[0.8125rem] text-ink-2">{phoneApp ? tr('Which account is connected to which service. Nothing goes through a server of ours: everything stays on your phone.') : tr('Which account is connected to which service. Nothing goes through a server of ours: everything stays on your computer.')}</p>
       <div className="rounded-xl border border-line bg-raised">
         <GoogleAccounts />
         <SpotifyWeb />
@@ -467,9 +458,12 @@ export function SourcesView() {
         <ListenbrainzRow />
         <LocalFolders />
       </div>
-      <p className="flex w-fit items-center gap-2.5 text-xs text-ink-2">
-        <ShieldCheck size={16} /> {tr('You type your password on Google’s own page, never in Legato. The session stays in the app’s browser storage on this PC, like in a browser.')}
-      </p>
+      {/* Google's sign-in is the PC's only (it refuses phone apps). */}
+      {!phoneApp && (
+        <p className="flex w-fit items-center gap-2.5 text-xs text-ink-2">
+          <ShieldCheck size={16} /> {tr('You type your password on Google’s own page, never in Legato. The session stays in the app’s browser storage on this PC, like in a browser.')}
+        </p>
+      )}
     </div>
   )
 }

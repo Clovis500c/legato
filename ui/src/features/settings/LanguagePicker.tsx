@@ -1,7 +1,8 @@
-import { CaretDown, Check, Desktop, MagnifyingGlass } from '@phosphor-icons/react'
+import { CaretDown, Check, Desktop, DeviceMobile, MagnifyingGlass } from '@phosphor-icons/react'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { CATALOG, LANGUAGES, locale, resolveLang, tr } from '../../shared/i18n/i18n'
+import { phoneApp } from '../../shared/platform'
 
 // Noto Emoji's waving flags (Google, Apache-2.0; flag art public domain), 72 px: Windows draws flag emoji as two
 // letters and Apple's set can't ship. One file per catalogue country in shared/flags.
@@ -11,6 +12,9 @@ export function Flag({ country, className = '' }: { country: string; className?:
   const src = FLAGS[`../../shared/flags/${country}.png`]
   return src ? <img src={src} alt="" aria-hidden draggable={false} className={`h-6 w-6 shrink-0 ${className}`} /> : <span className={`w-6 shrink-0 ${className}`} />
 }
+
+// The phone follows its own language: said so there, with its icon.
+const Here = phoneApp ? DeviceMobile : Desktop
 
 type Row = { value: string; name: string; sub?: string; country?: string; search: string }
 
@@ -27,7 +31,7 @@ export function LanguagePicker({ value, onChange }: { value: string; onChange: (
   const here = new Intl.DisplayNames([locale()], { type: 'language' })
   const english = new Intl.DisplayNames(['en'], { type: 'language' })
   const rows: Row[] = [
-    { value: 'system', name: tr('Match Windows'), sub: system.name, search: `windows system ${tr('Match Windows')}` },
+    { value: 'system', name: phoneApp ? tr('Match this phone') : tr('Match Windows'), sub: system.name, search: `windows phone system ${phoneApp ? tr('Match this phone') : tr('Match Windows')}` },
     ...LANGUAGES.map((l) => {
       const local = here.of(l.code === 'pt' ? 'pt-BR' : l.code)
       return { value: l.code, name: l.name, sub: local && local.toLowerCase() !== l.name.toLowerCase() ? local : undefined, country: l.country, search: `${l.name} ${local} ${english.of(l.code)} ${l.code}` }
@@ -82,8 +86,8 @@ export function LanguagePicker({ value, onChange }: { value: string; onChange: (
   return (
     <>
       <button ref={button} type="button" aria-haspopup="listbox" aria-expanded={open} aria-label={tr('Language')} onClick={() => setOpen(!open)} className="flex h-9 w-fit min-w-64 items-center gap-2.5 rounded-full border border-line bg-raised px-3.5 text-[0.8125rem] font-medium hover:bg-panel">
-        {current.country ? <Flag country={current.country} /> : <Desktop size={16} className="text-ink-2" />}
-        <span className="flex-1 text-left">{value === 'system' ? tr('Windows ({language})', { language: system.name }) : current.name}</span>
+        {current.country ? <Flag country={current.country} /> : <Here size={16} className="text-ink-2" />}
+        <span className="flex-1 text-left">{value === 'system' ? (phoneApp ? tr('This phone ({language})', { language: system.name }) : tr('Windows ({language})', { language: system.name })) : current.name}</span>
         <CaretDown size={12} weight="bold" className={`text-ink-3 transition ${open ? 'rotate-180' : ''}`} />
       </button>
       {open &&
@@ -117,7 +121,7 @@ export function LanguagePicker({ value, onChange }: { value: string; onChange: (
                   onClick={() => pick(r)}
                   className={`flex h-11 shrink-0 cursor-default items-center gap-3 rounded-lg px-2.5 ${i === active ? 'bg-panel' : ''} ${r.value === 'system' && !q ? 'mb-1' : ''}`}
                 >
-                  {r.country ? <Flag country={r.country} /> : <Desktop size={18} className="w-6 shrink-0 text-ink-2" />}
+                  {r.country ? <Flag country={r.country} /> : <Here size={18} className="w-6 shrink-0 text-ink-2" />}
                   <span className="flex min-w-0 flex-1 flex-col leading-tight">
                     <span className="truncate text-[0.8125rem] font-medium">{r.name}</span>
                     {r.sub && <span className="truncate text-xs text-ink-2">{r.sub}</span>}

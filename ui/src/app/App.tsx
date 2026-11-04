@@ -31,6 +31,7 @@ import { Sidebar } from '../features/sidebar/Sidebar'
 import { api } from '../shared/api'
 import { explain } from '../shared/errors'
 import { useOnline } from '../shared/online'
+import { usePhone } from '../shared/phone'
 import { region } from '../shared/format'
 import { ContextMenuHost, onMenu } from '../shared/ui/ContextMenu'
 import { DuplicatesHost, EditInfoHost } from '../features/library/dialogs'
@@ -92,7 +93,9 @@ function TopBar() {
   const full = usePlayer((s) => s.full)
   const searchBox = useRef<HTMLDivElement>(null)
   const onCover = useSettings((s) => s.settings.searchOnCover)
-  const shift = useSearchOverCover(searchBox, full && onCover)
+  // The phone's bar has no room to move the search: it stays put.
+  const phone = usePhone()
+  const shift = useSearchOverCover(searchBox, full && onCover && !phone)
   const setFull = usePlayer((s) => s.setFull)
   const go = useStore((s) => s.go)
   const page = useStore((s) => s.view.name)

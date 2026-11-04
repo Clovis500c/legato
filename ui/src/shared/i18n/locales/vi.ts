@@ -2002,6 +2002,9 @@ const vi: Record<string, string> = {
   'rainbow prism spectrum meter red top warm colours': 'cầu vồng lăng kính phổ đồng hồ đỏ trên ấm màu sắc',
   'Search this list': 'Tìm trong danh sách này',
   'Built from your plays (full listens count more, skips count against), your playlists, your saves on YouTube Music and Spotify, what you play back to back and the time of day. To find new songs, a few of your favorites go to YouTube Music for their radio; your history stays on this phone. On a mix, use “Less like this” or “Never in mixes” to steer it.': 'Được tạo từ lượt phát của bạn (nghe hết được tính nhiều hơn, bỏ qua bị trừ điểm), danh sách phát, các bài bạn lưu trên YouTube Music và Spotify, các bài bạn nghe liền nhau và thời điểm trong ngày. Để tìm bài mới, một vài bài yêu thích của bạn được gửi đến YouTube Music để lấy radio; lịch sử nghe vẫn ở trên điện thoại này. Trên một bản phối, dùng “Ít bài như thế này hơn” hoặc “Không bao giờ trong bản phối” để điều chỉnh.',
+  'Match this phone': 'Theo điện thoại này',
+  'This phone ({language})': 'Điện thoại này ({language})',
+  'Which account is connected to which service. Nothing goes through a server of ours: everything stays on your phone.': 'Tài khoản nào đang kết nối với dịch vụ nào. Không có gì đi qua máy chủ của chúng tôi: mọi thứ ở lại trên điện thoại của bạn.',
 }
 
 export default vi

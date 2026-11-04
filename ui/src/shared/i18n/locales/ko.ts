@@ -2002,6 +2002,9 @@ const ko: Record<string, string> = {
   'rainbow prism spectrum meter red top warm colours': '무지개 프리즘 스펙트럼 미터 빨강 위 따뜻한 색',
   'Search this list': '이 목록에서 검색',
   'Built from your plays (full listens count more, skips count against), your playlists, your saves on YouTube Music and Spotify, what you play back to back and the time of day. To find new songs, a few of your favorites go to YouTube Music for their radio; your history stays on this phone. On a mix, use “Less like this” or “Never in mixes” to steer it.': '재생 기록(끝까지 들으면 더 반영, 건너뛰면 덜 반영), 플레이리스트, YouTube Music과 Spotify에 저장한 곡, 연달아 듣는 곡, 시간대를 바탕으로 만들어집니다. 새 곡을 찾기 위해 좋아하는 곡 일부를 YouTube Music에 보내 라디오를 가져옵니다. 재생 기록은 이 휴대폰에 남습니다. 믹스에서 \'이런 곡 덜 보기\' 또는 \'믹스에서 제외\'를 사용해 조정하세요.',
+  'Match this phone': '이 휴대폰과 동일',
+  'This phone ({language})': '이 휴대폰 ({language})',
+  'Which account is connected to which service. Nothing goes through a server of ours: everything stays on your phone.': '어떤 계정이 어떤 서비스에 연결되어 있는지 보여 줍니다. 저희 서버를 거치는 것은 없으며, 모든 것이 내 휴대폰에 남습니다.',
 }
 
 export default ko

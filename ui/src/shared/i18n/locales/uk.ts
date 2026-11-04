@@ -2002,6 +2002,9 @@ const uk: Record<string, string> = {
   'rainbow prism spectrum meter red top warm colours': 'веселка призма спектр індикатор червоний верх теплий кольори',
   'Search this list': 'Шукати в цьому списку',
   'Built from your plays (full listens count more, skips count against), your playlists, your saves on YouTube Music and Spotify, what you play back to back and the time of day. To find new songs, a few of your favorites go to YouTube Music for their radio; your history stays on this phone. On a mix, use “Less like this” or “Never in mixes” to steer it.': 'Зібрано з твоїх прослуховувань (повні важать більше, пропуски — проти), плейлистів, збереженого в YouTube Music і Spotify, того, що ти слухаєш поспіль, і часу доби. Щоб знайти нові пісні, кілька твоїх улюблених надсилаються в YouTube Music по їхнє радіо; історія прослуховувань лишається на цьому телефоні. У міксі використовуй «Менше такого» або «Ніколи в міксах», щоб спрямувати його.',
+  'Match this phone': 'Як на цьому телефоні',
+  'This phone ({language})': 'Цей телефон ({language})',
+  'Which account is connected to which service. Nothing goes through a server of ours: everything stays on your phone.': 'Який обліковий запис до якого сервісу підключено. Ніщо не йде через наш сервер: усе залишається на твоєму телефоні.',
 }
 
 export default uk

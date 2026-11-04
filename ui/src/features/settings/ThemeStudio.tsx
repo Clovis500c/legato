@@ -267,7 +267,7 @@ function ThemeEditor({ id, onClose }: { id: string; onClose: () => void }) {
           </div>
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium">{tr('Font')}</span>
-            <Segmented label={tr('Font')} value={t.font} onChange={(font) => save({ font })} options={FONTS.map((f) => ({ value: f, label: tr({ modern: msg('Modern'), hifi: msg('Hi-Fi'), neutral: msg('Windows') }[f]) }))} />
+            <Segmented label={tr('Font')} value={t.font} onChange={(font) => save({ font })} options={FONTS.map((f) => ({ value: f, label: tr({ modern: msg('Modern'), hifi: msg('Hi-Fi'), neutral: phoneApp ? msg('System') : msg('Windows') }[f]) }))} />
           </div>
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium">{tr('LED glow')}</span>
