@@ -531,8 +531,13 @@ colours, mirror, reflection.
       Playback › Visualizer bands › 1/12 octave, the engine's stream and YouTube's analysers start again on a switch.
       Tested: a sine lights its twelfth in both twins, the shared fixture in twelfths, the frames. Seen over the demo;
       not tried on real music, nor in the watch page.)
-- [ ] `M` Beat and onset detection (spectral flux on low and mid bands, tempo estimate): kicks drive pulses, flashes, camera.
-      The radial ring's pulse is Moving cover's own until then.
+- [x] `M` Beat and onset detection (spectral flux on low and mid bands, tempo estimate): kicks drive pulses, flashes, camera.
+      (2026-11-04: `vizBeat.ts` in the worker: onsets from the rise of the lows (40 to 160 Hz) and half the mids' (to
+      2.5 kHz), over 1.5 times their last half second's mean plus 1.5 dB, 100 ms apart; the tempo from 8 s of that
+      strength, 60 to 200 BPM leaning to 120. The Radial ring steps out 4 % on a kick (not with reduced motion).
+      Decided alone: the bands, the threshold, the step's size. Waiting for their looks: flashes (under the flash
+      limit), the camera (Spectrum 3D), the tempo shown. Counted on click tracks and on the demo's frames (19 kicks in
+      10 s, 119.9 BPM); the ring's step not watched moving, not tried on real music.)
 
 **Medium**
 - [x] `S` Loudness stream (momentary / short-term LUFS, true peak) already measured by Adaptive Sound: exposed for meters.
@@ -565,7 +570,9 @@ colours, mirror, reflection.
       pink noise reads flat as measured in both twins and white noise rises 3 dB an octave, 256 random-phase takes
       averaged, from 450 Hz up, sixths and twelfths. Bands sum energy, so pink noise is flat without the tilt, which
       makes it rise. Not seen in the app with a real pink noise.)
-- [ ] `S` A click track gives its BPM: the test of the beat detection above, when it lands.
+- [x] `S` A click track gives its BPM: the test of the beat detection above, when it lands. (2026-11-04:
+      `vizBeat.test.ts`: 120, 93 and 128 BPM in sixths and twelfths, every click heard within a frame, the tempo within
+      1.5 BPM, frames 8 ms uneven within 2; hiss and silence give none.)
 - [x] `S-M` Time-domain blocks in the frames (L/R, 1024 samples, as i16) for scope and vectorscope. Left / right bands, rms and
       peak are in. (2026-11-04: the last 1024 samples of each side averaged in pairs, 512 a side at 24 kHz, as i16
       after the bands, flag 1 in byte 2, in both twins and only when asked: `viz_start(wave)`, the live wish's `wave`.

@@ -1,6 +1,7 @@
 import type { VisualizerStyle, VizBanding, VizGradient, VizWeighting } from '../../shared/theme/theme'
 import { capSegment, levelOf, litSegments } from './ledBars'
 import { bandCount, DB_MARKS, FREQ_MARKS, framesFor, freqAt } from './vizBands'
+import { createBeat } from './vizBeat'
 import { columnSpans, columnsFor, dialGeometry, ledRows, ringBars, wavePath, type Dial, type LedRows, type Ring } from './vizDraw'
 import { fillFor, type Stops } from './vizFill'
 import { LOUD_MARKS, LOUD_WORDS, loudPos, loudText, type LoudReading, type LoudWords } from './vizLoud'
@@ -37,6 +38,9 @@ const LOUD_BIG_H = 120
 const GLOW_S = 0.05
 /** Vectorscope: from this height (CSS px) the meter goes under the square, else beside it. */
 const VECTOR_BIG_H = 120
+/** Radial: how much the ring steps out on a kick (of its radius), and how fast it settles (s). */
+const KICK_GROW = 0.04
+const KICK_S = 0.12
 
 interface Sprites {
   off: OffscreenCanvas
@@ -97,6 +101,10 @@ export function createPainter(canvas: OffscreenCanvas) {
   let trail: OffscreenCanvas | null = null
   let corrNow: number | null = null
   let corrShown = 0
+  // Beats (vizBeat.ts): both sides' bands as one, and the last kick (1 on it, settling).
+  const beat = createBeat()
+  let both = new Float32Array(0)
+  let kick = 0
 
   /** A CSS colour as [r, g, b] (the canvas parses it). */
   function rgbOf(color: string): [number, number, number] {
@@ -379,7 +387,8 @@ export function createPainter(canvas: OffscreenCanvas) {
     const room = ring.len - lw
     const cx = W / 2
     const cy = H / 2
-    const r0 = ring.r0 + lw / 2
+    // A kick: the ring steps out a little and settles (not when calm).
+    const r0 = ring.r0 * (calm ? 1 : 1 + KICK_GROW * kick) + lw / 2
     ctx.strokeStyle = ink
     ctx.globalAlpha = BAR
     ctx.lineWidth = lw
@@ -710,6 +719,9 @@ export function createPainter(canvas: OffscreenCanvas) {
     },
     frame(l: ArrayLike<number>, r: ArrayLike<number>, rms: ArrayLike<number>, w?: [ArrayLike<number>, ArrayLike<number>]) {
       // A frame without its wave blocks (a stream starting again, the silence after a stop): no trace.
+      if (both.length !== l.length) both = new Float32Array(l.length)
+      for (let i = 0; i < l.length; i++) both[i] = (l[i] + r[i]) / 2
+      if (beat.push(both, performance.now() / 1000).onset) kick = 1
       hasWave = w !== undefined
       if (w) {
         waveL.set(w[0])
@@ -724,6 +736,9 @@ export function createPainter(canvas: OffscreenCanvas) {
       } else scene.frame(l, r)
     },
     silence() {
+      // A pause breaks the beat's history: it starts over.
+      beat.reset()
+      kick = 0
       hasWave = false
       scene.silence()
       sceneR?.silence()
@@ -740,6 +755,7 @@ export function createPainter(canvas: OffscreenCanvas) {
     /** Draws a frame, `dt` seconds after the last. True = at rest (the caller may stop its loop). */
     draw(dt: number): boolean {
       if (!ctx || !cssW || !cssH) return true
+      kick *= Math.exp(-dt / KICK_S)
       if (look === 'vu') {
         ctx.globalAlpha = 1
         ctx.clearRect(0, 0, canvas.width, canvas.height)

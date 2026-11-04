@@ -181,6 +181,9 @@ Relaunch log (newest last):
   screen and in the strip under the cover (the meter beside the square there). The settings search finds both scopes.
 - 2026-11-04: noise tests in both twins: pink noise reads flat as measured, white noise rises 3 dB an octave (256
   random-phase takes averaged; one take scatters by dB in the narrow bands). The click track's BPM waits for beats.
+- 2026-11-04: beats (`vizBeat.ts`: spectral flux of the lows and half the mids, tempo by autocorrelation leaning to
+  120 BPM); the Radial ring steps out 4 % on a kick. Click tracks tested; the demo's frames counted (19 kicks in 10 s,
+  119.9 BPM), the ring not watched moving (the browser pane was hidden); not on real music.
 
 ## Mobile app and devices sync (the owner's ask, 2026-11-02 afternoon; in progress)
 

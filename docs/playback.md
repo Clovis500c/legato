@@ -425,6 +425,16 @@ never: downloading, extracting, recording or exporting a platform's audio, or to
     the audio thread). YouTube: live.js `truePeak` (`tp:begin` … `tp:end`, `truepeak.test.ts`, which also checks
     its table against the Rust one) over each 2048-sample read of the raw pair, every 33 ms. A quarter-rate sine 45° off
     reads its crest (samples at 0.707 of it) within 0.5 %; a full-scale one shows an intersample over (+3 dB).
+  - **Beats** (2026-11-04): `vizBeat.ts` (pure, tested), in the worker, from the frames every look already gets (both
+    sides' bands averaged). Onsets by spectral flux: the rise in dB since the last frame of the lows (40 to 160 Hz,
+    kicks) plus half that of the mids (160 Hz to 2.5 kHz, snares), rises only; an onset when it passes 1.5 times its
+    mean over the last half second plus 1.5 dB (hiss never does), 100 ms after the last at least, none in the first
+    quarter second. Tempo: the autocorrelation of that strength over the last 8 s (resampled at 60 Hz), 60 to 200 BPM,
+    weighted toward 120 (a log-Gaussian 0.9 octave wide) so a doubled or halved tempo loses, the peak refined by a
+    parabola; none before 3 s. Used: the Radial ring steps out 4 % on an onset and settles over 120 ms, not with
+    reduced motion. The tempo is not shown yet. Tested on click tracks (120, 93 and 128 BPM, in sixths and twelfths,
+    frames 8 ms uneven: every click within a frame, the tempo within 2 BPM, nothing in hiss); the demo's frames give 19
+    onsets in 10 s, on its beats, and 119.9 BPM. The ring's step not watched moving; not on real music.
   - **Comfort**: `prefers-reduced-motion` or Animations off (`useCalm`): slower attack and release, a cap that sinks
     gently, one flash a second. Always: `flash.ts` limits the mean brightness of the bars to 3 flashes a second (a flash
     = a rise and a fall of at least 10 % of the range; past the budget the brightness may not turn back by 10 % until
@@ -444,8 +454,8 @@ never: downloading, extracting, recording or exporting a platform's audio, or to
     cover turns round and shrinks to 66 % of the stage's square, the canvas fills that square behind it, only when the
     stage is at least 330 CSS px, the art is square (within 6 %, so not a video frame with bars) and the song is not
     Spotify's; the strip under the cover then stays away (one worker, not two). Elsewhere the strip shows the bars
-    look. The full screen puts the round cover in the middle of the ring. The kick pulse is `pulse.ts`'s Moving cover
-    (a setting), which scales the cover element and so works with the ring unchanged; there is no pulse of its own.
+    look. The full screen puts the round cover in the middle of the ring. Moving cover (`pulse.ts`, a setting) scales
+    the cover element and so works with the ring unchanged; the ring's own step on a kick: Beats, above.
   - **VU needles**: two dials side by side, L and R, each a damped spring in closed form (`stepNeedle`: exact at any
     frame rate), natural frequency 13.52 rad/s and damping 0.813: a step reaches 99 % in 300 ms with 1.24 % overshoot
     (the VU standard: 300 ms, 1 to 1.5 %; the test steps it at 1 ms and checks both). 0 VU is a sine 14 dB under full
