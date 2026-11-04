@@ -43,11 +43,11 @@ const trackOf = (h: SearchHit): Track => ({ title: h.title, artist: h.artist, al
 
 /**
  * Media/SongRow (56 px): cover that plays on a click, title over artist · album, where it comes from, time, then
- * `right` (add, or in your library). Double-click plays too.
+ * `right` (add, or in your library). Double-click plays too. The phone keeps the title its room: no sources, no time.
  */
 function ResultRow({ title, sub, art, badges, sources, ms, onPlay, menu, right }: { title: string; sub: string; art: ReactNode; badges?: ReactNode; sources: ReactNode; ms: number | null; onPlay: () => void; menu: () => ReturnType<typeof tracksMenu>; right: ReactNode }) {
   return (
-    <li onContextMenu={onMenu(menu)} onDoubleClick={onPlay} className="group flex h-14 items-center gap-4 rounded-md px-4 transition-colors hover:bg-raised">
+    <li onContextMenu={onMenu(menu)} onDoubleClick={onPlay} className="group flex h-14 items-center gap-4 rounded-md px-4 transition-colors hover:bg-raised phone:gap-3 phone:px-0">
       <button aria-label={tr('Play {title}', { title })} title={tr('Play {title}', { title })} onClick={onPlay} className="relative shrink-0">
         {art}
         <span aria-hidden className="absolute inset-0 grid place-items-center rounded-cover bg-black/45 text-white opacity-0 group-hover:opacity-100">
@@ -60,8 +60,8 @@ function ResultRow({ title, sub, art, badges, sources, ms, onPlay, menu, right }
         </p>
         <p className="truncate text-[0.8125rem] text-ink-2">{sub}</p>
       </div>
-      <span className="flex items-center gap-2 text-ink-3">{sources}</span>
-      <span className="w-11 text-right text-sm text-ink-3 tabular-nums">{formatDuration(ms)}</span>
+      <span className="flex items-center gap-2 text-ink-3 phone:hidden">{sources}</span>
+      <span className="w-11 text-right text-sm text-ink-3 tabular-nums phone:hidden">{formatDuration(ms)}</span>
       {right}
     </li>
   )
@@ -464,8 +464,9 @@ export function SearchView() {
   // No page title (mockup): the text is in the search bar; chips pick where to look.
   return (
     <>
-      <div className="flex shrink-0 items-center justify-between gap-4 pb-4.5">
-        <div role="tablist" aria-label={tr('Search in')} className="flex flex-wrap items-center gap-2">
+      {/* The phone: the chips in one row scrolled sideways, the switch under them (they took four rows). */}
+      <div className="flex shrink-0 items-center justify-between gap-4 pb-4.5 phone:flex-col phone:items-stretch phone:gap-2.5 phone:pb-3">
+        <div role="tablist" aria-label={tr('Search in')} className="no-scrollbar flex flex-wrap items-center gap-2 phone:flex-nowrap phone:overflow-x-auto">
           <LedChip on={from === 'all'} label={tr('All')} onClick={() => pickFrom('all')} />
           <LedChip on={from === 'library'} label={tr('Your library')} count={formatCount(lib.songs.length)} onClick={() => pickFrom('library')} />
           {/* Signed out too: YouTube Music's public catalog (search_catalogs). */}
@@ -474,7 +475,7 @@ export function SearchView() {
           {chip('apple', 'Apple Music')}
         </div>
         {everywhere && (
-          <label className="flex shrink-0 items-center gap-2 text-xs text-ink-2">
+          <label className="flex shrink-0 items-center gap-2 text-xs text-ink-2 phone:justify-between">
             {tr('Hide covers and karaoke')} <Toggle label={tr('Hide covers and karaoke')} checked={hideCovers} onChange={setHideCovers} />
           </label>
         )}
