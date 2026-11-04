@@ -7,16 +7,23 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
 import android.content.pm.ServiceInfo
+import android.graphics.drawable.Icon
 import android.media.AudioManager
+import android.media.MediaMetadata
+import android.media.session.MediaSession
+import android.media.session.PlaybackState
 import android.os.Build
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
 
 // Music behind other apps: a media playback foreground service keeps the process alive (not frozen, not killed).
-// MainActivity starts it while on screen; off screen and silent, it stops within a minute. Its notification opens the app.
+// MainActivity starts it while on screen; off screen and silent, it stops within a minute. Its notification is a media
+// one (previous, play / pause, next, title and artist) and a MediaSession serves the lock screen and headset buttons:
+// every button goes back to the page (`MediaState`), which owns the queue.
 class PlaybackService : Service() {
   private val tick = Handler(Looper.getMainLooper())
+  private var session: MediaSession? = null
   private val check = object : Runnable {
     override fun run() {
       val audio = getSystemService(AudioManager::class.java)
@@ -27,16 +34,23 @@ class PlaybackService : Service() {
   override fun onBind(intent: Intent?): IBinder? = null
 
   override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+    intent?.getStringExtra(ACTION)?.let { MediaState.toPage(it) }
     getSystemService(NotificationManager::class.java)
       .createNotificationChannel(NotificationChannel(CHANNEL, getString(R.string.app_name), NotificationManager.IMPORTANCE_LOW))
-    val open = PendingIntent.getActivity(this, 0, Intent(this, MainActivity::class.java), PendingIntent.FLAG_IMMUTABLE)
-    val notification = Notification.Builder(this, CHANNEL)
-      .setSmallIcon(android.R.drawable.ic_media_play)
-      .setContentTitle(getString(R.string.app_name))
-      .setContentIntent(open)
-      .setOngoing(true)
-      .build()
+    if (session == null) {
+      session = MediaSession(this, "legato").apply {
+        setCallback(object : MediaSession.Callback() {
+          override fun onPlay() = MediaState.toPage("play")
+          override fun onPause() = MediaState.toPage("pause")
+          override fun onSkipToNext() = MediaState.toPage("next")
+          override fun onSkipToPrevious() = MediaState.toPage("previous")
+          override fun onSeekTo(pos: Long) = MediaState.toPage("seek:$pos")
+        })
+      }
+      MediaState.onChange = { tick.post { refresh() } }
+    }
     try {
+      val notification = build()
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) startForeground(1, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK)
       else startForeground(1, notification)
     } catch (e: Exception) {
@@ -48,12 +62,67 @@ class PlaybackService : Service() {
     return START_NOT_STICKY
   }
 
+  private fun refresh() {
+    try {
+      getSystemService(NotificationManager::class.java).notify(1, build())
+    } catch (e: Exception) {
+    }
+  }
+
+  private fun button(icon: Int, label: String, action: String, code: Int): Notification.Action {
+    val pi = PendingIntent.getService(this, code, Intent(this, PlaybackService::class.java).putExtra(ACTION, action), PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
+    return Notification.Action.Builder(Icon.createWithResource(this, icon), label, pi).build()
+  }
+
+  private fun build(): Notification {
+    val title = MediaState.title
+    val playing = MediaState.playing
+    val position = if (playing) MediaState.positionMs + (System.currentTimeMillis() - MediaState.stamp) else MediaState.positionMs
+    session?.let {
+      it.setMetadata(
+        MediaMetadata.Builder().apply {
+          putString(MediaMetadata.METADATA_KEY_TITLE, title ?: getString(R.string.app_name))
+          putString(MediaMetadata.METADATA_KEY_ARTIST, MediaState.artist ?: "")
+          if (MediaState.durationMs > 0) putLong(MediaMetadata.METADATA_KEY_DURATION, MediaState.durationMs)
+        }.build()
+      )
+      it.setPlaybackState(
+        PlaybackState.Builder()
+          .setActions(PlaybackState.ACTION_PLAY or PlaybackState.ACTION_PAUSE or PlaybackState.ACTION_PLAY_PAUSE or PlaybackState.ACTION_SKIP_TO_NEXT or PlaybackState.ACTION_SKIP_TO_PREVIOUS or PlaybackState.ACTION_SEEK_TO)
+          .setState(if (title == null) PlaybackState.STATE_NONE else if (playing) PlaybackState.STATE_PLAYING else PlaybackState.STATE_PAUSED, position, 1f)
+          .build()
+      )
+      it.isActive = title != null
+    }
+    val open = PendingIntent.getActivity(this, 0, Intent(this, MainActivity::class.java), PendingIntent.FLAG_IMMUTABLE)
+    val b = Notification.Builder(this, CHANNEL)
+      .setSmallIcon(android.R.drawable.ic_media_play)
+      .setContentTitle(title ?: getString(R.string.app_name))
+      .setContentIntent(open)
+      .setOngoing(true)
+      .setVisibility(Notification.VISIBILITY_PUBLIC)
+    if (title != null) {
+      b.setContentText(MediaState.artist ?: "")
+        .addAction(button(android.R.drawable.ic_media_previous, "Previous", "previous", 1))
+        .addAction(if (playing) button(android.R.drawable.ic_media_pause, "Pause", "pause", 2) else button(android.R.drawable.ic_media_play, "Play", "play", 3))
+        .addAction(button(android.R.drawable.ic_media_next, "Next", "next", 4))
+      val style = Notification.MediaStyle().setShowActionsInCompactView(0, 1, 2)
+      session?.let { style.setMediaSession(it.sessionToken) }
+      b.setStyle(style)
+    }
+    return b.build()
+  }
+
   override fun onDestroy() {
     tick.removeCallbacks(check)
+    MediaState.onChange = null
+    session?.release()
+    session = null
     super.onDestroy()
   }
 
   private companion object {
     const val CHANNEL = "playback"
+    const val ACTION = "legato.action"
   }
 }

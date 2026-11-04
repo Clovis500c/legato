@@ -3,6 +3,7 @@ package app.legato.mobile
 import android.content.Context
 import android.content.Intent
 import android.net.wifi.WifiManager
+import android.os.Build
 import android.os.Bundle
 import android.webkit.WebView
 import androidx.activity.enableEdgeToEdge
@@ -41,6 +42,12 @@ class MainActivity : TauriActivity() {
       if (WebViewFeature.isFeatureSupported(WebViewFeature.DOCUMENT_START_SCRIPT)) {
         WebViewCompat.addDocumentStartJavaScript(webView, VISIBLE, YOUTUBE)
       }
+      // The app's own page only (never YouTube's frames) tells what plays and takes the buttons back.
+      if (WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_LISTENER)) {
+        WebViewCompat.addWebMessageListener(webView, "LegatoMedia", APP) { _, message, _, _, reply ->
+          message.data?.let { MediaState.fromPage(it, reply) }
+        }
+      }
     }
   }
 
@@ -62,6 +69,12 @@ class MainActivity : TauriActivity() {
     web?.onResume()
   }
 
+  // Android 8 to 11: Back at the root would close the app and the music; 12 and later already send it to the background.
+  @Suppress("DEPRECATION")
+  override fun onBackPressed() {
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) moveTaskToBack(true) else super.onBackPressed()
+  }
+
   override fun onDestroy() {
     multicast?.release()
     super.onDestroy()
@@ -70,6 +83,7 @@ class MainActivity : TauriActivity() {
   companion object {
     // Read by PlaybackService.
     @Volatile var onScreen = false
+    private val APP = setOf("http://tauri.localhost", "https://tauri.localhost")
     private val YOUTUBE = setOf("https://www.youtube.com", "https://www.youtube-nocookie.com", "https://m.youtube.com", "https://music.youtube.com")
     private const val VISIBLE = """(() => {
   const say = (k, v) => { try { Object.defineProperty(Document.prototype, k, { configurable: true, get: () => v }) } catch (e) {} }

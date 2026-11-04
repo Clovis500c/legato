@@ -39,8 +39,30 @@ export function needsPush(last: Pushed | null, info: MediaNow | null, now: numbe
   return Math.abs(info.positionMs - expected) > 2000 || (info.playing && now - last.at > 10_000)
 }
 
+/** The phone's notification and lock screen (Android's MediaSession, `MainActivity.kt`): what plays, as JSON. */
+export function phoneMessage(info: MediaNow | null): string {
+  if (!info) return '{}'
+  return JSON.stringify({ title: info.title, artist: info.artist, playing: info.playing, positionMs: info.positionMs, durationMs: info.durationMs ?? -1 })
+}
+
+/** A button of the phone's notification: play, pause, next, previous or seek:<ms>. */
+export function phoneButton(text: string): { key: MediaKey } | { seek: number } | null {
+  if (text.startsWith('seek:')) {
+    const ms = Number(text.slice(5))
+    return Number.isFinite(ms) ? { seek: ms } : null
+  }
+  return ['play', 'pause', 'next', 'previous'].includes(text) ? { key: text as MediaKey } : null
+}
+
+/** The native side of the phone's media session, there only (Android's WebView). */
+interface PhoneBridge {
+  postMessage(text: string): void
+  onmessage: ((e: { data: unknown }) => void) | null
+}
+
 /** Media keys, tray and Windows media panel follow the player. Returns cleanup. */
 export function startMedia(): () => void {
+  const phone = (window as unknown as { LegatoMedia?: PhoneBridge }).LegatoMedia
   let last: Pushed | null = null
   let lastTrack: number | undefined
   const push = () => {
@@ -52,7 +74,8 @@ export function startMedia(): () => void {
     if (now?.trackId === lastTrack && !needsPush(last, info, at)) return
     last = { info, at }
     lastTrack = now?.trackId
-    void api.mediaUpdate(info, track?.ids.local ? track.id : null, track?.art ?? null).catch(() => {})
+    if (phone) phone.postMessage(phoneMessage(info))
+    else void api.mediaUpdate(info, track?.ids.local ? track.id : null, track?.art ?? null).catch(() => {})
   }
   const unsub = usePlayer.subscribe((s, prev) => {
     if (s.now !== prev.now || s.playing !== prev.playing || s.positionMs !== prev.positionMs || s.durationMs !== prev.durationMs) push()
@@ -66,7 +89,23 @@ export function startMedia(): () => void {
   const offSeek = listen<number>('media-seek', ({ payload }) => {
     if (usePlayer.getState().now) usePlayer.getState().seek(payload)
   })
+  if (phone) {
+    phone.onmessage = (e) => {
+      const b = typeof e.data === 'string' ? phoneButton(e.data) : null
+      const p = usePlayer.getState()
+      if (!b) return
+      if ('seek' in b) {
+        if (p.now) p.seek(b.seek)
+      } else {
+        const action = keyAction(b.key, p.playing)
+        if (action === 'toggle') p.toggle()
+        else if (action) p.step(action === 'next' ? 1 : -1)
+      }
+    }
+    push()
+  }
   return () => {
+    if (phone) phone.onmessage = null
     unsub()
     void offKey.then((f) => f())
     void offSeek.then((f) => f())

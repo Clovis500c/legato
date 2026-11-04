@@ -54,6 +54,12 @@ Log (newest last):
 - 2026-11-04: step 2 half (phone screens). Desktop-only Settings rows and the Shortcuts section hidden on the phone
   (`features/settings/desktopOnly.ts`, also out of the search). Strings that still say PC (player offline notice, Stats,
   Mixes, Sync Mode texts…) left: each phone variant needs 17 translations. Decided alone: later, with step 7.
+- 2026-11-04: step 3. Notification with previous / play-pause / next, title and artist, plus a MediaSession for the
+  lock screen and headset (`PlaybackService.kt`, `MediaState.kt`); the page talks to it through androidx.webkit's
+  web message listener `LegatoMedia`, allowed for `tauri.localhost` only (YouTube's frames can't reach it); page side in
+  `player/media.ts`. Back on Android 8 to 11 moves the app to the background. Built and started on the emulator
+  (session registered, no crash); buttons and a real playing song not tried. No cover in the notification yet (the
+  art scheme is the page's; native fetch would need the cover bytes pushed).
 
 ## Mobile app and devices sync (the owner's ask, 2026-11-02 afternoon; in progress)
 

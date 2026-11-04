@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { keyAction, mediaNow, needsPush } from './media'
+import { keyAction, mediaNow, needsPush, phoneButton, phoneMessage } from './media'
 
 describe('media keys', () => {
   it('play and pause only act when they change state', () => {
@@ -51,5 +51,14 @@ describe('when to push', () => {
     // Paused: position must stay put.
     expect(needsPush({ info: at(false, 5000), at: 0 }, at(false, 5000), 60_000)).toBe(false)
     expect(needsPush({ info: at(false, 5000), at: 0 }, at(false, 9000), 1000)).toBe(true)
+  })
+
+  it('the phone gets what plays as JSON and takes buttons back', () => {
+    expect(phoneMessage(null)).toBe('{}')
+    expect(JSON.parse(phoneMessage(at(true, 1200)!))).toMatchObject({ playing: true, positionMs: 1200 })
+    expect(phoneButton('next')).toEqual({ key: 'next' })
+    expect(phoneButton('seek:42000')).toEqual({ seek: 42000 })
+    expect(phoneButton('seek:x')).toBeNull()
+    expect(phoneButton('format')).toBeNull()
   })
 })
