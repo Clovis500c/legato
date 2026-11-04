@@ -1112,7 +1112,6 @@ const ko: Record<string, string> = {
   // Sync Mode (features/syncmode)
   'sync other pc computer cloud password encrypted backup': '동기화 다른 pc 컴퓨터 클라우드 비밀번호 암호화 백업 sync other pc computer cloud password encrypted backup',
   'Sync over the network': '네트워크로 동기화',
-  'From your other PC: {changes}': '다른 PC에서: {changes}',
   'OneDrive is on this PC: sync your library and settings with your other PCs?': '이 PC에 OneDrive가 있습니다: 보관함과 설정을 다른 PC와 동기화할까요?',
   'Set up': '설정하기',
   '{n} playlist': '플레이리스트 {n}개',
@@ -1167,7 +1166,6 @@ const ko: Record<string, string> = {
   'Show a code': '코드 표시',
   'Enter a code': '코드 입력',
   'A folder synced between your PCs': 'PC 간에 동기화되는 폴더',
-  'Your playlists, songs, listening history, Live Editor versions and settings on all your PCs, without an account or a server.': '플레이리스트, 노래, 재생 기록, Live Editor 버전, 설정을 모든 PC에서. 계정도 서버도 필요 없습니다.',
   'Syncing through {folder}': '{folder}(으)로 동기화 중',
   'No password': '비밀번호 없음',
   'Last checked {when}. Changes go out within a minute.': '마지막 확인 {when}. 변경 사항은 1분 안에 전송됩니다.',
@@ -1183,7 +1181,6 @@ const ko: Record<string, string> = {
   'changed {when}': '{when} 변경됨',
   'Signed in there, not here: {services}': '그곳에서는 로그인됨, 여기서는 아님: {services}',
   'Sign in here': '여기서 로그인',
-  'When the same thing changed on two PCs, the most recent change wins. Deleted things stay deleted everywhere. Local files stay on each PC: their songs are matched by title, artist and length.': '같은 항목이 두 PC에서 바뀌면 가장 최근 변경이 적용됩니다. 삭제한 항목은 모든 곳에서 삭제된 상태로 남습니다. 로컬 파일은 각 PC에 남으며, 곡은 제목, 아티스트, 길이로 맞춥니다.',
   'This PC: {name}. Its interface size and mini player spot stay its own.': '이 PC: {name}. 인터페이스 크기와 미니 플레이어 위치는 이 PC만의 설정으로 유지됩니다.',
   // Plugins (features/plugins)
   'Uninstall {name}': '{name} 제거',
@@ -1984,6 +1981,15 @@ const ko: Record<string, string> = {
   'Trust this device': '이 기기 신뢰',
   'No code next time: the two sync on their own whenever they share a network.': '다음부터 코드 없이: 같은 네트워크에 있으면 두 기기가 알아서 동기화합니다.',
   'phone mobile android iphone pair qr code wifi network trusted automatic other pc computer laptop': '휴대폰 모바일 android iphone 연결 qr 코드 wifi 네트워크 신뢰 자동 다른 pc 컴퓨터 노트북',
+  'The key, secret and session are removed from this phone. Your Last.fm profile keeps what was sent.': '키, 시크릿, 세션이 이 휴대폰에서 삭제됩니다. Last.fm 프로필에는 이미 전송된 기록이 남습니다.',
+  'The token is removed from this phone. Your ListenBrainz profile keeps what was sent.': '토큰이 이 휴대폰에서 삭제됩니다. ListenBrainz 프로필에는 보낸 기록이 남습니다.',
+  'Google refuses sign-ins inside phone apps: sign in in Legato on your PC, and your playlists come here when your devices sync.': 'Google은 휴대폰 앱 안에서의 로그인을 허용하지 않습니다. PC의 Legato에서 로그인하면 기기가 동기화될 때 플레이리스트가 여기로 옵니다.',
+  'Playlists, likes, history, Live Editor versions and settings in one file, for another device or for later. Sign-ins stay out.': '플레이리스트, 좋아요, 기록, Live Editor 버전, 설정을 파일 하나에 담아 다른 기기나 나중을 위해 보관합니다. 로그인 정보는 빠집니다.',
+  'The picture stays on this phone (copied into the app); a .theme file carries it along. Sync Mode carries the theme but not its picture.': '사진은 이 휴대폰에 남습니다 (앱에 복사됨). .theme 파일에는 사진도 함께 담깁니다. Sync Mode는 테마를 옮기지만 사진은 옮기지 않습니다.',
+  'Versions, the settings that matter and the latest errors, as text for a bug report. Nothing is sent: the log stays on this phone. “Include details” adds song titles, account names and file paths.': '버전, 중요한 설정, 최근 오류를 버그 신고용 텍스트로 만듭니다. 아무것도 전송되지 않으며, 로그는 이 휴대폰에만 남습니다. “세부 정보 포함”을 선택하면 노래 제목, 계정 이름, 파일 경로가 추가됩니다.',
+  'From your other device: {changes}': '다른 기기에서: {changes}',
+  'Your playlists, songs, listening history, Live Editor versions and settings on all your devices, without an account or a server.': '플레이리스트, 노래, 재생 기록, Live Editor 버전, 설정을 모든 기기에서. 계정도 서버도 필요 없습니다.',
+  'When the same thing changed on two devices, the most recent change wins. Deleted things stay deleted everywhere. Local files stay on each device: their songs are matched by title, artist and length.': '같은 항목이 두 기기에서 바뀌면 가장 최근 변경이 적용됩니다. 삭제한 항목은 모든 곳에서 삭제된 상태로 남습니다. 로컬 파일은 각 기기에 남으며, 곡은 제목, 아티스트, 길이로 맞춥니다.',
 }
 
 export default ko

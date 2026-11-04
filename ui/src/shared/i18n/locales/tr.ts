@@ -1112,7 +1112,6 @@ const tr: Record<string, string> = {
   // Sync Mode (features/syncmode)
   'sync other pc computer cloud password encrypted backup': 'eşitle eşitleme diğer pc bilgisayar bulut şifre şifreli yedek sync',
   'Sync over the network': 'Ağ üzerinden eşitle',
-  'From your other PC: {changes}': 'Diğer bilgisayarından: {changes}',
   'OneDrive is on this PC: sync your library and settings with your other PCs?': 'OneDrive bu bilgisayarda: kitaplığını ve ayarlarını diğer bilgisayarlarınla eşitlemek ister misin?',
   'Set up': 'Kur',
   '{n} playlist': '{n} çalma listesi',
@@ -1167,7 +1166,6 @@ const tr: Record<string, string> = {
   'Show a code': 'Bir kod göster',
   'Enter a code': 'Bir kod gir',
   'A folder synced between your PCs': 'Bilgisayarların arasında eşitlenen bir klasör',
-  'Your playlists, songs, listening history, Live Editor versions and settings on all your PCs, without an account or a server.': 'Çalma listelerin, şarkıların, dinleme geçmişin, Live Editor sürümlerin ve ayarların tüm bilgisayarlarında, hesap veya sunucu olmadan.',
   'Syncing through {folder}': 'Eşitleme klasörü: {folder}',
   'No password': 'Şifre yok',
   'Last checked {when}. Changes go out within a minute.': 'Son denetim {when}. Değişiklikler bir dakika içinde gönderilir.',
@@ -1183,7 +1181,6 @@ const tr: Record<string, string> = {
   'changed {when}': 'değişti: {when}',
   'Signed in there, not here: {services}': 'Orada oturum açık, burada değil: {services}',
   'Sign in here': 'Burada oturum aç',
-  'When the same thing changed on two PCs, the most recent change wins. Deleted things stay deleted everywhere. Local files stay on each PC: their songs are matched by title, artist and length.': 'Aynı şey iki bilgisayarda değiştiğinde en son değişiklik kazanır. Silinenler her yerde silinmiş kalır. Yerel dosyalar her bilgisayarda kalır: şarkıları başlık, sanatçı ve süreye göre eşleştirilir.',
   'This PC: {name}. Its interface size and mini player spot stay its own.': 'Bu bilgisayar: {name}. Arayüz boyutu ve mini oynatıcının yeri kendine özel kalır.',
   // Plugins (features/plugins)
   'Uninstall {name}': 'Kaldır: {name}',
@@ -1984,6 +1981,15 @@ const tr: Record<string, string> = {
   'Trust this device': 'Bu cihaza güven',
   'No code next time: the two sync on their own whenever they share a network.': 'Bir dahaki sefere kod yok: aynı ağda oldukları her an kendiliğinden eşitlenirler.',
   'phone mobile android iphone pair qr code wifi network trusted automatic other pc computer laptop': 'telefon mobil android iphone eşleştir qr kod wifi ağ güven otomatik diğer bilgisayar pc dizüstü',
+  'The key, secret and session are removed from this phone. Your Last.fm profile keeps what was sent.': 'Anahtar, gizli anahtar ve oturum bu telefondan kaldırılır. Last.fm profilin gönderilenleri korur.',
+  'The token is removed from this phone. Your ListenBrainz profile keeps what was sent.': 'Token bu telefondan kaldırılır. ListenBrainz profilin gönderilenleri saklar.',
+  'Google refuses sign-ins inside phone apps: sign in in Legato on your PC, and your playlists come here when your devices sync.': 'Google telefon uygulamalarının içinde oturum açmaya izin vermiyor: bilgisayarındaki Legato’da oturum aç, cihazların eşitlendiğinde çalma listelerin buraya gelir.',
+  'Playlists, likes, history, Live Editor versions and settings in one file, for another device or for later. Sign-ins stay out.': 'Çalma listeleri, beğeniler, geçmiş, Live Editor sürümleri ve ayarlar tek bir dosyada; başka bir cihaz ya da sonrası için. Oturum açma bilgileri dahil değil.',
+  'The picture stays on this phone (copied into the app); a .theme file carries it along. Sync Mode carries the theme but not its picture.': 'Resim bu telefonda kalır (uygulamaya kopyalanır); bir .theme dosyası onu yanında taşır. Eşitleme Modu temayı taşır ama resmini taşımaz.',
+  'Versions, the settings that matter and the latest errors, as text for a bug report. Nothing is sent: the log stays on this phone. “Include details” adds song titles, account names and file paths.': 'Sürümler, önemli ayarlar ve son hatalar, bir hata bildirimi için metin olarak. Hiçbir şey gönderilmez: günlük bu telefonda kalır. “Ayrıntıları ekle” şarkı adlarını, hesap adlarını ve dosya yollarını ekler.',
+  'From your other device: {changes}': 'Diğer cihazından: {changes}',
+  'Your playlists, songs, listening history, Live Editor versions and settings on all your devices, without an account or a server.': 'Çalma listelerin, şarkıların, dinleme geçmişin, Live Editor sürümlerin ve ayarların tüm cihazlarında, hesap veya sunucu olmadan.',
+  'When the same thing changed on two devices, the most recent change wins. Deleted things stay deleted everywhere. Local files stay on each device: their songs are matched by title, artist and length.': 'Aynı şey iki cihazda değiştiğinde en son değişiklik kazanır. Silinenler her yerde silinmiş kalır. Yerel dosyalar her cihazda kalır: şarkıları başlık, sanatçı ve süreye göre eşleştirilir.',
 }
 
 export default tr

@@ -100,6 +100,10 @@ Relaunch log (newest last):
   origin) and posts `{"cover": base64 JPEG}` after the state; `MediaState.kt` decodes it, a new title clears it;
   `PlaybackService.kt` puts it in the metadata and as the large icon. Seen on the emulator (API 36) with a title
   pushed over DevTools; a real song's path not driven.
+- 2026-11-04: (3) the phone's wording: 9 new texts in the 18 languages, 3 generic "device" ones in place of PC ones.
+  Also fixed: French phone texts of the first run said « tu » and « Réglages » (the interface says « vous »,
+  « Paramètres »). The Detector on the phone: microphone only, no Windows settings link. Still no `RECORD_AUDIO` in
+  the manifest: the Detector can't hear on the phone yet (next step).
 
 ## Mobile app and devices sync (the owner's ask, 2026-11-02 afternoon; in progress)
 

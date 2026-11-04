@@ -1112,7 +1112,6 @@ const ja: Record<string, string> = {
   // Sync Mode (features/syncmode)
   'sync other pc computer cloud password encrypted backup': '同期 他のpc コンピューター クラウド パスワード 暗号化 バックアップ sync other pc computer cloud password encrypted backup',
   'Sync over the network': 'ネットワークで同期',
-  'From your other PC: {changes}': '別のPCから：{changes}',
   'OneDrive is on this PC: sync your library and settings with your other PCs?': 'このPCにOneDriveがあります：ライブラリと設定を他のPCと同期しますか？',
   'Set up': '設定する',
   '{n} playlist': '{n}件のプレイリスト',
@@ -1167,7 +1166,6 @@ const ja: Record<string, string> = {
   'Show a code': 'コードを表示',
   'Enter a code': 'コードを入力',
   'A folder synced between your PCs': 'PC間で同期されるフォルダー',
-  'Your playlists, songs, listening history, Live Editor versions and settings on all your PCs, without an account or a server.': 'プレイリスト、曲、再生履歴、Live Editorのバージョン、設定をすべてのPCで。アカウントもサーバーも不要です。',
   'Syncing through {folder}': '{folder}で同期中',
   'No password': 'パスワードなし',
   'Last checked {when}. Changes go out within a minute.': '前回の確認 {when}。変更は1分以内に送信されます。',
@@ -1183,7 +1181,6 @@ const ja: Record<string, string> = {
   'changed {when}': '{when}に変更',
   'Signed in there, not here: {services}': 'そちらではログイン済み、こちらでは未ログイン：{services}',
   'Sign in here': 'ここでログイン',
-  'When the same thing changed on two PCs, the most recent change wins. Deleted things stay deleted everywhere. Local files stay on each PC: their songs are matched by title, artist and length.': '2台のPCで同じものが変更された場合は、最新の変更が優先されます。削除したものはすべてのPCで削除されたままです。ローカルファイルは各PCに残り、曲はタイトル、アーティスト、長さで照合されます。',
   'This PC: {name}. Its interface size and mini player spot stay its own.': 'このPC：{name}。インターフェースのサイズとミニプレーヤーの位置はこのPC独自のままです。',
   // Plugins (features/plugins)
   'Uninstall {name}': '{name}をアンインストール',
@@ -1984,6 +1981,15 @@ const ja: Record<string, string> = {
   'Trust this device': 'このデバイスを信頼する',
   'No code next time: the two sync on their own whenever they share a network.': '次回からコード不要：同じネットワークにいれば2台が自動で同期します。',
   'phone mobile android iphone pair qr code wifi network trusted automatic other pc computer laptop': 'スマートフォン 携帯 android iphone ペアリング qr コード wifi ネットワーク 信頼 自動 他のpc パソコン ノートpc',
+  'The key, secret and session are removed from this phone. Your Last.fm profile keeps what was sent.': 'キー、シークレット、セッションがこのスマートフォンから削除されます。Last.fmのプロフィールには送信済みの記録が残ります。',
+  'The token is removed from this phone. Your ListenBrainz profile keeps what was sent.': 'トークンはこのスマートフォンから削除されます。ListenBrainz のプロフィールには送信済みの再生が残ります。',
+  'Google refuses sign-ins inside phone apps: sign in in Legato on your PC, and your playlists come here when your devices sync.': 'Googleはスマートフォンのアプリ内でのログインを受け付けません。PCのLegatoでログインすると、デバイスの同期でプレイリストがここに届きます。',
+  'Playlists, likes, history, Live Editor versions and settings in one file, for another device or for later. Sign-ins stay out.': 'プレイリスト、お気に入り、履歴、Live Editor のバージョン、設定を 1 つのファイルに。別のデバイスや後で使えます。サインイン情報は含まれません。',
+  'The picture stays on this phone (copied into the app); a .theme file carries it along. Sync Mode carries the theme but not its picture.': '画像はこのスマートフォンに保存されます（アプリにコピー）。.themeファイルには画像も含まれます。Sync Modeはテーマを同期しますが、画像は同期しません。',
+  'Versions, the settings that matter and the latest errors, as text for a bug report. Nothing is sent: the log stays on this phone. “Include details” adds song titles, account names and file paths.': 'バージョン、主な設定、最新のエラーを、不具合報告用のテキストとして。何も送信されません。ログはこのスマートフォンにだけ残ります。「詳細を含める」を選ぶと、曲名、アカウント名、ファイルのパスが加わります。',
+  'From your other device: {changes}': '別のデバイスから：{changes}',
+  'Your playlists, songs, listening history, Live Editor versions and settings on all your devices, without an account or a server.': 'プレイリスト、曲、再生履歴、Live Editorのバージョン、設定をすべてのデバイスで。アカウントもサーバーも不要です。',
+  'When the same thing changed on two devices, the most recent change wins. Deleted things stay deleted everywhere. Local files stay on each device: their songs are matched by title, artist and length.': '2台のデバイスで同じものが変更された場合は、最新の変更が優先されます。削除したものはすべてのデバイスで削除されたままです。ローカルファイルは各デバイスに残り、曲はタイトル、アーティスト、長さで照合されます。',
 }
 
 export default ja

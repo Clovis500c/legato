@@ -1,7 +1,7 @@
 import type { Merged } from '../../shared/api'
 import { tr, trn } from '../../shared/i18n/i18n'
 
-/** What another PC brought, in a few words; null = nothing new. */
+/** What another device brought, in a few words; null = nothing new. */
 export function mergedText(m: Merged): string | null {
   const parts = [
     m.playlists && trn(m.playlists, '{n} playlist', '{n} playlists'),
@@ -11,5 +11,5 @@ export function mergedText(m: Merged): string | null {
     m.edits && trn(m.edits, '{n} Live Editor change', '{n} Live Editor changes'),
     m.settings && trn(m.settings, '{n} setting', '{n} settings'),
   ].filter(Boolean)
-  return parts.length ? tr('From your other PC: {changes}', { changes: parts.join(', ') }) : null
+  return parts.length ? tr('From your other device: {changes}', { changes: parts.join(', ') }) : null
 }

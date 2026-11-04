@@ -16,6 +16,7 @@ import { Cover } from '../../shared/ui/Cover'
 import { SourceIcon, sourceLabel } from '../../shared/ui/SourceIcon'
 import { guides } from './guides'
 import { msg, tr, trn } from '../../shared/i18n/i18n'
+import { phoneApp } from '../../shared/platform'
 import { ask } from '../../shared/ui/Ask'
 import { openUrl } from '@tauri-apps/plugin-opener'
 import { useLastfm } from './lastfm'
@@ -180,7 +181,7 @@ function LastfmRow() {
     }
   }
   const disconnect = async () => {
-    if (!(await ask({ title: tr('Stop scrobbling to Last.fm?'), body: tr('The key, secret and session are removed from this PC. Your Last.fm profile keeps what was sent.'), ok: tr('Disconnect') }))) return
+    if (!(await ask({ title: tr('Stop scrobbling to Last.fm?'), body: (phoneApp ? tr('The key, secret and session are removed from this phone. Your Last.fm profile keeps what was sent.') : tr('The key, secret and session are removed from this PC. Your Last.fm profile keeps what was sent.')), ok: tr('Disconnect') }))) return
     await api.lastfmDisconnect().catch(() => {})
     void refresh()
   }
@@ -249,7 +250,7 @@ function ListenbrainzRow() {
     }
   }
   const disconnect = async () => {
-    if (!(await ask({ title: tr('Stop sending listens to ListenBrainz?'), body: tr('The token is removed from this PC. Your ListenBrainz profile keeps what was sent.'), ok: tr('Disconnect') }))) return
+    if (!(await ask({ title: tr('Stop sending listens to ListenBrainz?'), body: (phoneApp ? tr('The token is removed from this phone. Your ListenBrainz profile keeps what was sent.') : tr('The token is removed from this PC. Your ListenBrainz profile keeps what was sent.')), ok: tr('Disconnect') }))) return
     await api.listenbrainzDisconnect().catch(() => {})
     void refresh()
   }
@@ -321,10 +322,10 @@ function GoogleAccounts() {
         </span>
         <div className="flex-1">
           <p className="text-[0.8125rem] font-semibold">YouTube Music</p>
-          <p className="text-xs text-ink-2">{data?.signedIn ? tr('Your playlists, search and export. No keys, no daily limit.') : tr('Sign in with Google to import your YouTube Music playlists and Liked Music. No keys.')}</p>
+          <p className="text-xs text-ink-2">{data?.signedIn ? tr('Your playlists, search and export. No keys, no daily limit.') : phoneApp ? tr('Google refuses sign-ins inside phone apps: sign in in Legato on your PC, and your playlists come here when your devices sync.') : tr('Sign in with Google to import your YouTube Music playlists and Liked Music. No keys.')}</p>
         </div>
         <span className="kicker">{data?.signedIn ? trn(data.accounts.length, '{n} account', '{n} accounts') : waiting ? tr('Waiting for Google…') : tr('Not signed in')}</span>
-        {!data?.signedIn && (
+        {!data?.signedIn && !phoneApp && (
           <Button onClick={() => signIn(false)}>
             <GoogleLogo size={14} weight="bold" /> {tr('Sign in with Google')}
           </Button>

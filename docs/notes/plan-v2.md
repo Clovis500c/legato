@@ -282,7 +282,10 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
         travelled as time 0 and no device took them; any unstamped key counts now, and more per-device keys stay local.
         Unit-tested, not tried between two real devices. Desktop-only rows and Shortcuts hidden on the phone.
   - [x] The phone's wording for the texts that said PC (2026-11-04): Stats, Mixes, search history, cover cache, offline
-        notice, Sync Mode's shared-folder card hidden. Left: Sync Mode's remaining PC wording, Music Detector's, plugins'.
+        notice, Sync Mode's shared-folder card hidden. Then (2026-11-04) Sync Mode's lines, Accounts (Google refuses
+        sign-ins inside phone apps: the phone says to sign in on the PC, its playlists come by sync), Last.fm and
+        ListenBrainz removal, backups, theme pictures, diagnostics; the Music Detector listens to the microphone only
+        (no PC sound to take). Left: the Discord add-on and the OneDrive prompt (desktop matters), plugins (desktop only).
   - [x] QR scanner for pairing (2026-11-04, `tauri-plugin-barcode-scanner` 2.x): never scanned a real code.
   - [x] Secrets sealed by Android's Keystore (2026-11-04), moved once from `secrets.json`: checked on the emulator.
   - [x] Android download on the website (2026-11-04): hero link and FAQ; a push deploys it (the owner's call).

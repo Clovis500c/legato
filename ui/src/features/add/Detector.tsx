@@ -11,6 +11,7 @@ import { Dialog } from '../../shared/ui/Dialog'
 import { usePlayer } from '../player/store'
 import { Card } from './Card'
 import { msg, tr } from '../../shared/i18n/i18n'
+import { phoneApp } from '../../shared/platform'
 
 const DASHBOARD = 'https://dashboard.audd.io/'
 const SECONDS = 10
@@ -101,10 +102,12 @@ export function Detector({ onFound }: { onFound: (t: Track) => void }) {
       .catch(() => setToken(false))
   }, [])
 
-  const input = useSettings((s) => s.settings.detectorInput)
+  // A phone listens through its microphone only (no loopback there).
+  const stored = useSettings((s) => s.settings.detectorInput)
+  const input = phoneApp ? 'mic' : stored
   const listen = async () => {
     if (busy.current) return
-    const from = useSettings.getState().settings.detectorInput
+    const from = phoneApp ? 'mic' : useSettings.getState().settings.detectorInput
     if (!allowed(from)) return setPhase({ name: 'consent', input: from })
     busy.current = true
     // Our own music would be what it hears.
@@ -179,7 +182,7 @@ export function Detector({ onFound }: { onFound: (t: Track) => void }) {
           {phase.name === 'note' && (
             <p className="text-xs text-ink">
               {phase.text}{' '}
-              {phase.mic && (
+              {phase.mic && !phoneApp && (
                 <button onClick={() => void api.openWindowsSettings('microphone')} className="font-medium underline-offset-2 hover:underline">
                   {tr('Open Windows settings')}
                 </button>
@@ -187,15 +190,17 @@ export function Detector({ onFound }: { onFound: (t: Track) => void }) {
             </p>
           )}
           <div className="mt-auto flex flex-col items-start gap-3">
-            <Segmented
-              label={tr('Listen to')}
-              value={input}
-              onChange={(detectorInput) => useSettings.getState().update({ detectorInput })}
-              options={[
-                { value: 'mic', label: tr('Microphone') },
-                { value: 'pc', label: tr('This PC') },
-              ]}
-            />
+            {!phoneApp && (
+              <Segmented
+                label={tr('Listen to')}
+                value={input}
+                onChange={(detectorInput) => useSettings.getState().update({ detectorInput })}
+                options={[
+                  { value: 'mic', label: tr('Microphone') },
+                  { value: 'pc', label: tr('This PC') },
+                ]}
+              />
+            )}
             <Button onClick={() => void listen()} disabled={token === null}>
               {input === 'mic' ? <Microphone size={15} weight="fill" /> : <Desktop size={15} weight="fill" />} {tr('Listen')}
             </Button>

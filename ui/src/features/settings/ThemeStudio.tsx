@@ -6,6 +6,7 @@ import { useStore } from '../../app/store'
 import { api } from '../../shared/api'
 import { coverImage } from '../../shared/art'
 import { msg, tr } from '../../shared/i18n/i18n'
+import { phoneApp } from '../../shared/platform'
 import { contrastReport, FITS, FONTS, isVideo, LOOK_KEYS, lookOf, MAX_THEME_CSS, paletteFrom, PALETTE_KEYS, PRESETS, RADII, sanitizeTheme, type Background, type Palette, type PaletteKey, type Theme } from '../../shared/theme/theme'
 import { Button } from '../../shared/ui/Button'
 import { Led, RoundButton, Segmented, Toggle } from '../../shared/ui/controls'
@@ -250,7 +251,7 @@ function ThemeEditor({ id, onClose }: { id: string; onClose: () => void }) {
               <Range label={tr('Color over it')} value={t.background.dim} min={0} max={90} unit="%" onChange={(dim) => bg({ dim })} />
               <Range label={tr('Blur')} value={t.background.blur} min={0} max={40} unit="px" onChange={(blur) => bg({ blur })} />
               <Range label={tr('Panels')} value={t.background.panels} min={40} max={100} unit="%" onChange={(panels) => bg({ panels })} />
-              <p className="text-[0.6875rem] text-ink-3">{tr('The picture stays on this PC (copied into the app); a .theme file carries it along. Sync Mode carries the theme but not its picture.')}</p>
+              <p className="text-[0.6875rem] text-ink-3">{(phoneApp ? tr('The picture stays on this phone (copied into the app); a .theme file carries it along. Sync Mode carries the theme but not its picture.') : tr('The picture stays on this PC (copied into the app); a .theme file carries it along. Sync Mode carries the theme but not its picture.'))}</p>
             </>
           ) : (
             <p className="text-xs text-ink-2">{tr('A picture behind the whole window; panels let it show through.')}</p>

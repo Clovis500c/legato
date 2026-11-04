@@ -586,7 +586,7 @@ function BackupRows() {
   }
   return (
     <div className="rounded-xl border border-line bg-raised">
-      <Row label={msg('Back up your library')} sub={tr('Playlists, likes, history, Live Editor versions and settings in one file, for another PC or for later. Sign-ins stay out.')}>
+      <Row label={msg('Back up your library')} sub={(phoneApp ? tr('Playlists, likes, history, Live Editor versions and settings in one file, for another device or for later. Sign-ins stay out.') : tr('Playlists, likes, history, Live Editor versions and settings in one file, for another PC or for later. Sign-ins stay out.'))}>
         <Button variant="ghost" disabled={busy} onClick={() => void backUp()}>
           {tr('Back up…')}
         </Button>

@@ -1112,7 +1112,6 @@ const de: Record<string, string> = {
   // Sync Mode (features/syncmode)
   'sync other pc computer cloud password encrypted backup': 'synchronisieren synchronisierung anderer pc computer cloud passwort verschlüsselt sicherung backup sync',
   'Sync over the network': 'Über das Netzwerk synchronisieren',
-  'From your other PC: {changes}': 'Von deinem anderen PC: {changes}',
   'OneDrive is on this PC: sync your library and settings with your other PCs?': 'OneDrive ist auf diesem PC: Deine Bibliothek und Einstellungen mit deinen anderen PCs synchronisieren?',
   'Set up': 'Einrichten',
   '{n} playlist': '{n} Playlist',
@@ -1167,7 +1166,6 @@ const de: Record<string, string> = {
   'Show a code': 'Code anzeigen',
   'Enter a code': 'Code eingeben',
   'A folder synced between your PCs': 'Ein Ordner, der zwischen deinen PCs synchronisiert wird',
-  'Your playlists, songs, listening history, Live Editor versions and settings on all your PCs, without an account or a server.': 'Deine Playlists, Songs, dein Hörverlauf, Live Editor-Versionen und Einstellungen auf all deinen PCs, ohne Konto und ohne Server.',
   'Syncing through {folder}': 'Synchronisierung über {folder}',
   'No password': 'Kein Passwort',
   'Last checked {when}. Changes go out within a minute.': 'Zuletzt geprüft {when}. Änderungen gehen innerhalb einer Minute raus.',
@@ -1183,7 +1181,6 @@ const de: Record<string, string> = {
   'changed {when}': 'geändert {when}',
   'Signed in there, not here: {services}': 'Dort angemeldet, hier nicht: {services}',
   'Sign in here': 'Hier anmelden',
-  'When the same thing changed on two PCs, the most recent change wins. Deleted things stay deleted everywhere. Local files stay on each PC: their songs are matched by title, artist and length.': 'Wenn sich dasselbe auf zwei PCs geändert hat, gewinnt die neueste Änderung. Gelöschtes bleibt überall gelöscht. Lokale Dateien bleiben auf jedem PC: Ihre Songs werden über Titel, Künstler und Länge zugeordnet.',
   'This PC: {name}. Its interface size and mini player spot stay its own.': 'Dieser PC: {name}. Größe der Oberfläche und Platz des Mini-Players bleiben seine eigenen.',
   // Plugins (features/plugins)
   'Uninstall {name}': '{name} deinstallieren',
@@ -1984,6 +1981,15 @@ const de: Record<string, string> = {
   'Trust this device': 'Diesem Gerät vertrauen',
   'No code next time: the two sync on their own whenever they share a network.': 'Beim nächsten Mal kein Code: Die beiden synchronisieren sich von selbst, sobald sie im selben Netzwerk sind.',
   'phone mobile android iphone pair qr code wifi network trusted automatic other pc computer laptop': 'handy telefon smartphone android iphone koppeln qr code wlan netzwerk vertrauen automatisch anderer pc computer laptop',
+  'The key, secret and session are removed from this phone. Your Last.fm profile keeps what was sent.': 'Schlüssel, Secret und Sitzung werden von diesem Handy entfernt. Dein Last.fm-Profil behält, was gesendet wurde.',
+  'The token is removed from this phone. Your ListenBrainz profile keeps what was sent.': 'Das Token wird von diesem Handy entfernt. Dein ListenBrainz-Profil behält, was gesendet wurde.',
+  'Google refuses sign-ins inside phone apps: sign in in Legato on your PC, and your playlists come here when your devices sync.': 'Google lässt keine Anmeldung in Handy-Apps zu: Melde dich in Legato auf deinem PC an, dann kommen deine Playlists beim Synchronisieren deiner Geräte hierher.',
+  'Playlists, likes, history, Live Editor versions and settings in one file, for another device or for later. Sign-ins stay out.': 'Playlists, Likes, Verlauf, Live-Editor-Versionen und Einstellungen in einer Datei, für ein anderes Gerät oder für später. Anmeldungen bleiben außen vor.',
+  'The picture stays on this phone (copied into the app); a .theme file carries it along. Sync Mode carries the theme but not its picture.': 'Das Bild bleibt auf diesem Handy (in die App kopiert); eine .theme-Datei nimmt es mit. Die Synchronisierung überträgt das Design, aber nicht sein Bild.',
+  'Versions, the settings that matter and the latest errors, as text for a bug report. Nothing is sent: the log stays on this phone. “Include details” adds song titles, account names and file paths.': 'Versionen, die wichtigen Einstellungen und die letzten Fehler als Text für einen Fehlerbericht. Es wird nichts gesendet: Das Protokoll bleibt auf diesem Handy. „Details einbeziehen“ fügt Songtitel, Kontonamen und Dateipfade hinzu.',
+  'From your other device: {changes}': 'Von deinem anderen Gerät: {changes}',
+  'Your playlists, songs, listening history, Live Editor versions and settings on all your devices, without an account or a server.': 'Deine Playlists, Songs, dein Hörverlauf, Live Editor-Versionen und Einstellungen auf all deinen Geräten, ohne Konto und ohne Server.',
+  'When the same thing changed on two devices, the most recent change wins. Deleted things stay deleted everywhere. Local files stay on each device: their songs are matched by title, artist and length.': 'Wenn sich dasselbe auf zwei Geräten geändert hat, gewinnt die neueste Änderung. Gelöschtes bleibt überall gelöscht. Lokale Dateien bleiben auf jedem Gerät: Ihre Songs werden über Titel, Künstler und Länge zugeordnet.',
 }
 
 export default de

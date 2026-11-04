@@ -223,7 +223,7 @@ export function SyncSection() {
   if (!s) return null
   return (
     <div className="flex flex-col gap-4">
-      <p className="text-sm text-ink-2">{tr('Your playlists, songs, listening history, Live Editor versions and settings on all your PCs, without an account or a server.')}</p>
+      <p className="text-sm text-ink-2">{tr('Your playlists, songs, listening history, Live Editor versions and settings on all your devices, without an account or a server.')}</p>
       <Devices />
       {/* A shared folder (OneDrive) is a PC's way; phones sync over Wi-Fi above. */}
       {(!phoneApp || s.folder) && (
@@ -284,7 +284,7 @@ export function SyncSection() {
           })}
         </Card>
       )}
-      {note(tr('When the same thing changed on two PCs, the most recent change wins. Deleted things stay deleted everywhere. Local files stay on each PC: their songs are matched by title, artist and length.'))}
+      {note(tr('When the same thing changed on two devices, the most recent change wins. Deleted things stay deleted everywhere. Local files stay on each device: their songs are matched by title, artist and length.'))}
       {!phoneApp && note(tr('This PC: {name}. Its interface size and mini player spot stay its own.', { name: s.deviceName }))}
       {setup && (
         <Setup

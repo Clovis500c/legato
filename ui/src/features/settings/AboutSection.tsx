@@ -191,7 +191,7 @@ export function AboutSection() {
               <ArrowSquareOut size={14} /> {phoneApp ? tr('What leaves your phone') : tr('What leaves your PC')}
             </Button>
           </Row>
-          <Row label={msg('Copy diagnostics')} sub={tr('Versions, the settings that matter and the latest errors, as text for a bug report. Nothing is sent: the log stays on this PC. “Include details” adds song titles, account names and file paths.')}>
+          <Row label={msg('Copy diagnostics')} sub={(phoneApp ? tr('Versions, the settings that matter and the latest errors, as text for a bug report. Nothing is sent: the log stays on this phone. “Include details” adds song titles, account names and file paths.') : tr('Versions, the settings that matter and the latest errors, as text for a bug report. Nothing is sent: the log stays on this PC. “Include details” adds song titles, account names and file paths.'))}>
             <label className="flex shrink-0 cursor-pointer items-center gap-2 text-xs text-ink-2">
               <input type="checkbox" className="size-3.5 accent-ink" checked={details} onChange={(e) => setDetails(e.target.checked)} />
               {tr('Include details')}

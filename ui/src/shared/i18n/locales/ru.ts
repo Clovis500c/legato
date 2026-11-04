@@ -1112,7 +1112,6 @@ const ru: Record<string, string> = {
   // Sync Mode (features/syncmode)
   'sync other pc computer cloud password encrypted backup': 'синхронизация синхронизировать другой пк компьютер облако пароль шифрование резервная копия sync',
   'Sync over the network': 'Синхронизация по сети',
-  'From your other PC: {changes}': 'С другого ПК: {changes}',
   'OneDrive is on this PC: sync your library and settings with your other PCs?': 'На этом ПК есть OneDrive: синхронизировать медиатеку и настройки с другими твоими ПК?',
   'Set up': 'Настроить',
   '{n} playlist': '{n} плейлист',
@@ -1167,7 +1166,6 @@ const ru: Record<string, string> = {
   'Show a code': 'Показать код',
   'Enter a code': 'Ввести код',
   'A folder synced between your PCs': 'Папка, синхронизируемая между твоими ПК',
-  'Your playlists, songs, listening history, Live Editor versions and settings on all your PCs, without an account or a server.': 'Плейлисты, песни, история прослушиваний, версии Live Editor и настройки на всех твоих ПК — без аккаунта и сервера.',
   'Syncing through {folder}': 'Синхронизация через {folder}',
   'No password': 'Без пароля',
   'Last checked {when}. Changes go out within a minute.': 'Последняя проверка {when}. Изменения уходят в течение минуты.',
@@ -1183,7 +1181,6 @@ const ru: Record<string, string> = {
   'changed {when}': 'изменено {when}',
   'Signed in there, not here: {services}': 'Вход выполнен там, но не здесь: {services}',
   'Sign in here': 'Войти здесь',
-  'When the same thing changed on two PCs, the most recent change wins. Deleted things stay deleted everywhere. Local files stay on each PC: their songs are matched by title, artist and length.': 'Если одно и то же изменилось на двух ПК, побеждает последнее изменение. Удалённое остаётся удалённым везде. Локальные файлы остаются на каждом ПК: их песни сопоставляются по названию, исполнителю и длительности.',
   'This PC: {name}. Its interface size and mini player spot stay its own.': 'Этот ПК: {name}. Размер интерфейса и место мини-плеера у него свои.',
   // Plugins (features/plugins)
   'Uninstall {name}': 'Удалить {name}',
@@ -1984,6 +1981,15 @@ const ru: Record<string, string> = {
   'Trust this device': 'Доверять этому устройству',
   'No code next time: the two sync on their own whenever they share a network.': 'В следующий раз без кода: оба синхронизируются сами, как только окажутся в одной сети.',
   'phone mobile android iphone pair qr code wifi network trusted automatic other pc computer laptop': 'телефон смартфон android iphone связать qr код wifi сеть доверие автоматически другой пк компьютер ноутбук',
+  'The key, secret and session are removed from this phone. Your Last.fm profile keeps what was sent.': 'Ключ, секрет и сессия удаляются с этого телефона. Твой профиль Last.fm сохранит то, что уже отправлено.',
+  'The token is removed from this phone. Your ListenBrainz profile keeps what was sent.': 'Токен удаляется с этого телефона. В профиле ListenBrainz остаётся то, что уже отправлено.',
+  'Google refuses sign-ins inside phone apps: sign in in Legato on your PC, and your playlists come here when your devices sync.': 'Google не разрешает входить в аккаунт внутри приложений на телефоне: войди в Legato на ПК, и плейлисты придут сюда, когда устройства синхронизируются.',
+  'Playlists, likes, history, Live Editor versions and settings in one file, for another device or for later. Sign-ins stay out.': 'Плейлисты, лайки, история, версии Live Editor и настройки в одном файле — для другого устройства или на потом. Входы в аккаунты туда не попадают.',
+  'The picture stays on this phone (copied into the app); a .theme file carries it along. Sync Mode carries the theme but not its picture.': 'Картинка остаётся на этом телефоне (копируется в приложение); файл .theme несёт её с собой. Синхронизация переносит тему, но не её картинку.',
+  'Versions, the settings that matter and the latest errors, as text for a bug report. Nothing is sent: the log stays on this phone. “Include details” adds song titles, account names and file paths.': 'Версии, важные настройки и последние ошибки в виде текста для отчёта об ошибке. Ничего не отправляется: журнал остаётся на этом телефоне. «Включить подробности» добавляет названия песен, имена аккаунтов и пути к файлам.',
+  'From your other device: {changes}': 'С другого устройства: {changes}',
+  'Your playlists, songs, listening history, Live Editor versions and settings on all your devices, without an account or a server.': 'Плейлисты, песни, история прослушиваний, версии Live Editor и настройки на всех твоих устройствах — без аккаунта и сервера.',
+  'When the same thing changed on two devices, the most recent change wins. Deleted things stay deleted everywhere. Local files stay on each device: their songs are matched by title, artist and length.': 'Если одно и то же изменилось на двух устройствах, побеждает последнее изменение. Удалённое остаётся удалённым везде. Локальные файлы остаются на каждом устройстве: их песни сопоставляются по названию, исполнителю и длительности.',
 }
 
 export default ru

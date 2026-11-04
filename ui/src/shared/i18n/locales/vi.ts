@@ -1112,7 +1112,6 @@ const vi: Record<string, string> = {
   // Sync Mode (features/syncmode)
   'sync other pc computer cloud password encrypted backup': 'đồng bộ pc khác máy tính đám mây mật khẩu mã hóa sao lưu sync other pc computer cloud password encrypted backup',
   'Sync over the network': 'Đồng bộ qua mạng',
-  'From your other PC: {changes}': 'Từ PC khác của bạn: {changes}',
   'OneDrive is on this PC: sync your library and settings with your other PCs?': 'PC này có OneDrive: đồng bộ thư viện và cài đặt với các PC khác của bạn?',
   'Set up': 'Thiết lập',
   '{n} playlist': '{n} danh sách phát',
@@ -1167,7 +1166,6 @@ const vi: Record<string, string> = {
   'Show a code': 'Hiện mã',
   'Enter a code': 'Nhập mã',
   'A folder synced between your PCs': 'Một thư mục được đồng bộ giữa các PC của bạn',
-  'Your playlists, songs, listening history, Live Editor versions and settings on all your PCs, without an account or a server.': 'Danh sách phát, bài hát, lịch sử nghe, phiên bản Live Editor và cài đặt trên mọi PC của bạn, không cần tài khoản hay máy chủ.',
   'Syncing through {folder}': 'Đang đồng bộ qua {folder}',
   'No password': 'Không có mật khẩu',
   'Last checked {when}. Changes go out within a minute.': 'Kiểm tra lần cuối {when}. Thay đổi được gửi đi trong vòng một phút.',
@@ -1183,7 +1181,6 @@ const vi: Record<string, string> = {
   'changed {when}': 'đã thay đổi {when}',
   'Signed in there, not here: {services}': 'Đã đăng nhập ở đó, chưa đăng nhập ở đây: {services}',
   'Sign in here': 'Đăng nhập ở đây',
-  'When the same thing changed on two PCs, the most recent change wins. Deleted things stay deleted everywhere. Local files stay on each PC: their songs are matched by title, artist and length.': 'Khi cùng một thứ bị thay đổi trên hai PC, thay đổi mới nhất được giữ. Những gì đã xóa sẽ bị xóa ở mọi nơi. Tệp trên máy ở lại trên từng PC: bài hát của chúng được khớp theo tiêu đề, nghệ sĩ và độ dài.',
   'This PC: {name}. Its interface size and mini player spot stay its own.': 'PC này: {name}. Kích thước giao diện và vị trí trình phát mini là riêng của nó.',
   // Plugins (features/plugins)
   'Uninstall {name}': 'Gỡ cài đặt {name}',
@@ -1984,6 +1981,15 @@ const vi: Record<string, string> = {
   'Trust this device': 'Tin cậy thiết bị này',
   'No code next time: the two sync on their own whenever they share a network.': 'Lần sau không cần mã: hai thiết bị tự đồng bộ mỗi khi ở chung mạng.',
   'phone mobile android iphone pair qr code wifi network trusted automatic other pc computer laptop': 'điện thoại di động android iphone ghép đôi qr mã wifi mạng tin cậy tự động pc khác máy tính laptop',
+  'The key, secret and session are removed from this phone. Your Last.fm profile keeps what was sent.': 'Khóa, mã bí mật và phiên sẽ bị xóa khỏi điện thoại này. Hồ sơ Last.fm của bạn vẫn giữ những gì đã gửi.',
+  'The token is removed from this phone. Your ListenBrainz profile keeps what was sent.': 'Token bị xóa khỏi điện thoại này. Hồ sơ ListenBrainz của bạn vẫn giữ những gì đã gửi.',
+  'Google refuses sign-ins inside phone apps: sign in in Legato on your PC, and your playlists come here when your devices sync.': 'Google không cho đăng nhập bên trong ứng dụng trên điện thoại: hãy đăng nhập Legato trên PC, danh sách phát sẽ về đây khi các thiết bị đồng bộ.',
+  'Playlists, likes, history, Live Editor versions and settings in one file, for another device or for later. Sign-ins stay out.': 'Danh sách phát, lượt thích, lịch sử, các phiên bản Live Editor và cài đặt trong một tệp, cho thiết bị khác hoặc để dùng sau. Thông tin đăng nhập không có trong đó.',
+  'The picture stays on this phone (copied into the app); a .theme file carries it along. Sync Mode carries the theme but not its picture.': 'Ảnh ở lại trên điện thoại này (được sao chép vào ứng dụng); tệp .theme mang ảnh theo. Sync Mode mang chủ đề nhưng không mang ảnh.',
+  'Versions, the settings that matter and the latest errors, as text for a bug report. Nothing is sent: the log stays on this phone. “Include details” adds song titles, account names and file paths.': 'Phiên bản, các cài đặt quan trọng và những lỗi gần nhất, dưới dạng văn bản cho báo cáo lỗi. Không có gì được gửi đi: nhật ký nằm lại trên điện thoại này. “Bao gồm chi tiết” thêm tên bài hát, tên tài khoản và đường dẫn tệp.',
+  'From your other device: {changes}': 'Từ thiết bị khác của bạn: {changes}',
+  'Your playlists, songs, listening history, Live Editor versions and settings on all your devices, without an account or a server.': 'Danh sách phát, bài hát, lịch sử nghe, phiên bản Live Editor và cài đặt trên mọi thiết bị của bạn, không cần tài khoản hay máy chủ.',
+  'When the same thing changed on two devices, the most recent change wins. Deleted things stay deleted everywhere. Local files stay on each device: their songs are matched by title, artist and length.': 'Khi cùng một thứ bị thay đổi trên hai thiết bị, thay đổi mới nhất được giữ. Những gì đã xóa sẽ bị xóa ở mọi nơi. Tệp trên máy ở lại trên từng thiết bị: bài hát của chúng được khớp theo tiêu đề, nghệ sĩ và độ dài.',
 }
 
 export default vi

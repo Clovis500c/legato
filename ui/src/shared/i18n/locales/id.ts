@@ -1112,7 +1112,6 @@ const id: Record<string, string> = {
   // Sync Mode (features/syncmode)
   'sync other pc computer cloud password encrypted backup': 'sinkron sinkronisasi pc lain komputer cloud kata sandi terenkripsi cadangan backup sync',
   'Sync over the network': 'Sinkronkan lewat jaringan',
-  'From your other PC: {changes}': 'Dari PC-mu yang lain: {changes}',
   'OneDrive is on this PC: sync your library and settings with your other PCs?': 'OneDrive ada di PC ini: sinkronkan koleksi dan pengaturanmu dengan PC-mu yang lain?',
   'Set up': 'Siapkan',
   '{n} playlist': '{n} playlist',
@@ -1167,7 +1166,6 @@ const id: Record<string, string> = {
   'Show a code': 'Tampilkan kode',
   'Enter a code': 'Masukkan kode',
   'A folder synced between your PCs': 'Folder yang disinkronkan di antara PC-mu',
-  'Your playlists, songs, listening history, Live Editor versions and settings on all your PCs, without an account or a server.': 'Playlist, lagu, riwayat mendengarkan, versi Live Editor, dan pengaturanmu di semua PC-mu, tanpa akun atau server.',
   'Syncing through {folder}': 'Menyinkronkan melalui {folder}',
   'No password': 'Tanpa kata sandi',
   'Last checked {when}. Changes go out within a minute.': 'Terakhir diperiksa {when}. Perubahan dikirim dalam satu menit.',
@@ -1183,7 +1181,6 @@ const id: Record<string, string> = {
   'changed {when}': 'diubah {when}',
   'Signed in there, not here: {services}': 'Sudah masuk di sana, tidak di sini: {services}',
   'Sign in here': 'Masuk di sini',
-  'When the same thing changed on two PCs, the most recent change wins. Deleted things stay deleted everywhere. Local files stay on each PC: their songs are matched by title, artist and length.': 'Saat hal yang sama berubah di dua PC, perubahan terbaru yang menang. Yang dihapus tetap terhapus di mana-mana. File lokal tetap di setiap PC: lagunya dicocokkan berdasarkan judul, artis, dan durasi.',
   'This PC: {name}. Its interface size and mini player spot stay its own.': 'PC ini: {name}. Ukuran antarmuka dan posisi pemutar mininya tetap miliknya sendiri.',
   // Plugins (features/plugins)
   'Uninstall {name}': 'Copot {name}',
@@ -1984,6 +1981,15 @@ const id: Record<string, string> = {
   'Trust this device': 'Percayai perangkat ini',
   'No code next time: the two sync on their own whenever they share a network.': 'Tanpa kode lain kali: keduanya sinkron sendiri setiap kali berada di jaringan yang sama.',
   'phone mobile android iphone pair qr code wifi network trusted automatic other pc computer laptop': 'ponsel hp android iphone pasangkan qr kode wifi jaringan percaya otomatis pc lain komputer laptop',
+  'The key, secret and session are removed from this phone. Your Last.fm profile keeps what was sent.': 'Kunci, rahasia, dan sesi dihapus dari ponsel ini. Profil Last.fm-mu tetap menyimpan yang sudah dikirim.',
+  'The token is removed from this phone. Your ListenBrainz profile keeps what was sent.': 'Token dihapus dari ponsel ini. Profil ListenBrainz-mu tetap menyimpan yang sudah terkirim.',
+  'Google refuses sign-ins inside phone apps: sign in in Legato on your PC, and your playlists come here when your devices sync.': 'Google menolak proses masuk di dalam aplikasi ponsel: masuk di Legato pada PC-mu, dan playlist-mu akan datang ke sini saat perangkatmu tersinkron.',
+  'Playlists, likes, history, Live Editor versions and settings in one file, for another device or for later. Sign-ins stay out.': 'Playlist, suka, riwayat, versi Live Editor, dan pengaturan dalam satu file, untuk perangkat lain atau untuk nanti. Info masuk tidak ikut.',
+  'The picture stays on this phone (copied into the app); a .theme file carries it along. Sync Mode carries the theme but not its picture.': 'Gambar tetap di ponsel ini (disalin ke aplikasi); file .theme ikut membawanya. Mode Sinkron membawa tema tapi tidak gambarnya.',
+  'Versions, the settings that matter and the latest errors, as text for a bug report. Nothing is sent: the log stays on this phone. “Include details” adds song titles, account names and file paths.': 'Versi, pengaturan yang penting, dan kesalahan terbaru, sebagai teks untuk laporan bug. Tidak ada yang dikirim: log tetap di ponsel ini. “Sertakan detail” menambahkan judul lagu, nama akun, dan jalur file.',
+  'From your other device: {changes}': 'Dari perangkatmu yang lain: {changes}',
+  'Your playlists, songs, listening history, Live Editor versions and settings on all your devices, without an account or a server.': 'Playlist, lagu, riwayat mendengarkan, versi Live Editor, dan pengaturanmu di semua perangkatmu, tanpa akun atau server.',
+  'When the same thing changed on two devices, the most recent change wins. Deleted things stay deleted everywhere. Local files stay on each device: their songs are matched by title, artist and length.': 'Saat hal yang sama berubah di dua perangkat, perubahan terbaru yang menang. Yang dihapus tetap terhapus di mana-mana. File lokal tetap di setiap perangkat: lagunya dicocokkan berdasarkan judul, artis, dan durasi.',
 }
 
 export default id

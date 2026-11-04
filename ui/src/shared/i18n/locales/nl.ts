@@ -1112,7 +1112,6 @@ const nl: Record<string, string> = {
   // Sync Mode (features/syncmode)
   'sync other pc computer cloud password encrypted backup': 'synchroniseren synchronisatie andere pc computer cloud wachtwoord versleuteld back-up backup sync',
   'Sync over the network': 'Synchroniseren via het netwerk',
-  'From your other PC: {changes}': 'Van je andere pc: {changes}',
   'OneDrive is on this PC: sync your library and settings with your other PCs?': 'OneDrive staat op deze pc: je bibliotheek en instellingen synchroniseren met je andere pc\'s?',
   'Set up': 'Instellen',
   '{n} playlist': '{n} playlist',
@@ -1167,7 +1166,6 @@ const nl: Record<string, string> = {
   'Show a code': 'Code tonen',
   'Enter a code': 'Code invoeren',
   'A folder synced between your PCs': 'Een map die tussen je pc\'s wordt gesynchroniseerd',
-  'Your playlists, songs, listening history, Live Editor versions and settings on all your PCs, without an account or a server.': 'Je playlists, nummers, luistergeschiedenis, Live Editor-versies en instellingen op al je pc\'s, zonder account of server.',
   'Syncing through {folder}': 'Synchroniseren via {folder}',
   'No password': 'Geen wachtwoord',
   'Last checked {when}. Changes go out within a minute.': 'Laatst gecontroleerd {when}. Wijzigingen gaan binnen een minuut de deur uit.',
@@ -1183,7 +1181,6 @@ const nl: Record<string, string> = {
   'changed {when}': 'gewijzigd {when}',
   'Signed in there, not here: {services}': 'Daar ingelogd, hier niet: {services}',
   'Sign in here': 'Hier inloggen',
-  'When the same thing changed on two PCs, the most recent change wins. Deleted things stay deleted everywhere. Local files stay on each PC: their songs are matched by title, artist and length.': 'Als hetzelfde op twee pc\'s is gewijzigd, wint de nieuwste wijziging. Wat verwijderd is, blijft overal verwijderd. Lokale bestanden blijven op elke pc: hun nummers worden gekoppeld op titel, artiest en lengte.',
   'This PC: {name}. Its interface size and mini player spot stay its own.': 'Deze pc: {name}. De interfacegrootte en de plek van de minispeler blijven van hem.',
   // Plugins (features/plugins)
   'Uninstall {name}': '{name} verwijderen',
@@ -1984,6 +1981,15 @@ const nl: Record<string, string> = {
   'Trust this device': 'Dit apparaat vertrouwen',
   'No code next time: the two sync on their own whenever they share a network.': 'Volgende keer geen code: de twee synchroniseren vanzelf zodra ze op hetzelfde netwerk zijn.',
   'phone mobile android iphone pair qr code wifi network trusted automatic other pc computer laptop': 'telefoon mobiel android iphone koppelen qr code wifi netwerk vertrouwen automatisch andere pc computer laptop',
+  'The key, secret and session are removed from this phone. Your Last.fm profile keeps what was sent.': 'De sleutel, het geheim en de sessie worden van deze telefoon verwijderd. Je Last.fm-profiel houdt wat al is verstuurd.',
+  'The token is removed from this phone. Your ListenBrainz profile keeps what was sent.': 'Het token wordt van deze telefoon verwijderd. Je ListenBrainz-profiel houdt wat al is verstuurd.',
+  'Google refuses sign-ins inside phone apps: sign in in Legato on your PC, and your playlists come here when your devices sync.': 'Google weigert aanmeldingen in telefoon-apps: meld je aan in Legato op je pc, dan komen je playlists hierheen zodra je apparaten synchroniseren.',
+  'Playlists, likes, history, Live Editor versions and settings in one file, for another device or for later. Sign-ins stay out.': 'Afspeellijsten, likes, geschiedenis, Live Editor-versies en instellingen in één bestand, voor een ander apparaat of voor later. Aanmeldingen gaan niet mee.',
+  'The picture stays on this phone (copied into the app); a .theme file carries it along. Sync Mode carries the theme but not its picture.': 'De afbeelding blijft op deze telefoon (gekopieerd in de app); een .theme-bestand neemt hem mee. Synchronisatie neemt het thema mee, maar niet de afbeelding.',
+  'Versions, the settings that matter and the latest errors, as text for a bug report. Nothing is sent: the log stays on this phone. “Include details” adds song titles, account names and file paths.': 'Versies, de belangrijke instellingen en de laatste fouten, als tekst voor een bugmelding. Er wordt niets verzonden: het logboek blijft op deze telefoon. “Details opnemen” voegt nummertitels, accountnamen en bestandspaden toe.',
+  'From your other device: {changes}': 'Van je andere apparaat: {changes}',
+  'Your playlists, songs, listening history, Live Editor versions and settings on all your devices, without an account or a server.': 'Je playlists, nummers, luistergeschiedenis, Live Editor-versies en instellingen op al je apparaten, zonder account of server.',
+  'When the same thing changed on two devices, the most recent change wins. Deleted things stay deleted everywhere. Local files stay on each device: their songs are matched by title, artist and length.': 'Als hetzelfde op twee apparaten is gewijzigd, wint de nieuwste wijziging. Wat verwijderd is, blijft overal verwijderd. Lokale bestanden blijven op elk apparaat: hun nummers worden gekoppeld op titel, artiest en lengte.',
 }
 
 export default nl

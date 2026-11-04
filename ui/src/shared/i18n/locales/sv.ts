@@ -1112,7 +1112,6 @@ const sv: Record<string, string> = {
   // Sync Mode (features/syncmode)
   'sync other pc computer cloud password encrypted backup': 'synka synkning annan pc dator moln lösenord krypterad säkerhetskopia sync',
   'Sync over the network': 'Synka över nätverket',
-  'From your other PC: {changes}': 'Från din andra dator: {changes}',
   'OneDrive is on this PC: sync your library and settings with your other PCs?': 'OneDrive finns på den här datorn: vill du synka ditt bibliotek och dina inställningar med dina andra datorer?',
   'Set up': 'Konfigurera',
   '{n} playlist': '{n} spellista',
@@ -1167,7 +1166,6 @@ const sv: Record<string, string> = {
   'Show a code': 'Visa en kod',
   'Enter a code': 'Ange en kod',
   'A folder synced between your PCs': 'En mapp som synkas mellan dina datorer',
-  'Your playlists, songs, listening history, Live Editor versions and settings on all your PCs, without an account or a server.': 'Dina spellistor, låtar, lyssningshistorik, versioner från Live Editor och inställningar på alla dina datorer, utan konto eller server.',
   'Syncing through {folder}': 'Synkar via {folder}',
   'No password': 'Inget lösenord',
   'Last checked {when}. Changes go out within a minute.': 'Senast kontrollerat {when}. Ändringar skickas inom en minut.',
@@ -1183,7 +1181,6 @@ const sv: Record<string, string> = {
   'changed {when}': 'ändrad {when}',
   'Signed in there, not here: {services}': 'Inloggad där, inte här: {services}',
   'Sign in here': 'Logga in här',
-  'When the same thing changed on two PCs, the most recent change wins. Deleted things stay deleted everywhere. Local files stay on each PC: their songs are matched by title, artist and length.': 'När samma sak ändrats på två datorer vinner den senaste ändringen. Det som tagits bort förblir borttaget överallt. Lokala filer stannar på varje dator: deras låtar matchas efter titel, artist och längd.',
   'This PC: {name}. Its interface size and mini player spot stay its own.': 'Den här datorn: {name}. Dess gränssnittsstorlek och minispelarens plats förblir dess egna.',
   // Plugins (features/plugins)
   'Uninstall {name}': 'Avinstallera {name}',
@@ -1984,6 +1981,15 @@ const sv: Record<string, string> = {
   'Trust this device': 'Lita på den här enheten',
   'No code next time: the two sync on their own whenever they share a network.': 'Ingen kod nästa gång: de två synkar av sig själva när de är på samma nätverk.',
   'phone mobile android iphone pair qr code wifi network trusted automatic other pc computer laptop': 'telefon mobil android iphone parkoppla qr kod wifi nätverk lita automatiskt annan dator pc bärbar',
+  'The key, secret and session are removed from this phone. Your Last.fm profile keeps what was sent.': 'Nyckeln, hemligheten och sessionen tas bort från den här telefonen. Din Last.fm-profil behåller det som redan skickats.',
+  'The token is removed from this phone. Your ListenBrainz profile keeps what was sent.': 'Token tas bort från den här telefonen. Din ListenBrainz-profil behåller det som skickats.',
+  'Google refuses sign-ins inside phone apps: sign in in Legato on your PC, and your playlists come here when your devices sync.': 'Google tillåter inte inloggning i telefonappar: logga in i Legato på din dator, så kommer dina spellistor hit när dina enheter synkas.',
+  'Playlists, likes, history, Live Editor versions and settings in one file, for another device or for later. Sign-ins stay out.': 'Spellistor, gillningar, historik, Live Editor-versioner och inställningar i en fil, för en annan enhet eller till senare. Inloggningar följer inte med.',
+  'The picture stays on this phone (copied into the app); a .theme file carries it along. Sync Mode carries the theme but not its picture.': 'Bilden stannar på den här telefonen (kopierad till appen); en .theme-fil tar den med sig. Synkläget tar med temat men inte dess bild.',
+  'Versions, the settings that matter and the latest errors, as text for a bug report. Nothing is sent: the log stays on this phone. “Include details” adds song titles, account names and file paths.': 'Versioner, de viktiga inställningarna och de senaste felen, som text för en felrapport. Inget skickas: loggen stannar på den här telefonen. ”Ta med detaljer” lägger till låttitlar, kontonamn och filsökvägar.',
+  'From your other device: {changes}': 'Från din andra enhet: {changes}',
+  'Your playlists, songs, listening history, Live Editor versions and settings on all your devices, without an account or a server.': 'Dina spellistor, låtar, lyssningshistorik, versioner från Live Editor och inställningar på alla dina enheter, utan konto eller server.',
+  'When the same thing changed on two devices, the most recent change wins. Deleted things stay deleted everywhere. Local files stay on each device: their songs are matched by title, artist and length.': 'När samma sak ändrats på två enheter vinner den senaste ändringen. Det som tagits bort förblir borttaget överallt. Lokala filer stannar på varje enhet: deras låtar matchas efter titel, artist och längd.',
 }
 
 export default sv

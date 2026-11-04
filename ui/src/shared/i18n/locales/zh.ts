@@ -1112,7 +1112,6 @@ const zh: Record<string, string> = {
   // Sync Mode (features/syncmode)
   'sync other pc computer cloud password encrypted backup': '同步 其他电脑 计算机 云 密码 加密 备份 sync other pc computer cloud password encrypted backup',
   'Sync over the network': '通过网络同步',
-  'From your other PC: {changes}': '来自你的另一台电脑：{changes}',
   'OneDrive is on this PC: sync your library and settings with your other PCs?': '此电脑上有 OneDrive：要与你的其他电脑同步音乐库和设置吗？',
   'Set up': '设置',
   '{n} playlist': '{n} 个歌单',
@@ -1167,7 +1166,6 @@ const zh: Record<string, string> = {
   'Show a code': '显示代码',
   'Enter a code': '输入代码',
   'A folder synced between your PCs': '在你的电脑之间同步的文件夹',
-  'Your playlists, songs, listening history, Live Editor versions and settings on all your PCs, without an account or a server.': '在你所有的电脑上同步歌单、歌曲、收听历史、Live Editor 版本和设置，无需账号或服务器。',
   'Syncing through {folder}': '正在通过 {folder} 同步',
   'No password': '无密码',
   'Last checked {when}. Changes go out within a minute.': '上次检查 {when}。更改会在一分钟内发出。',
@@ -1183,7 +1181,6 @@ const zh: Record<string, string> = {
   'changed {when}': '{when}更改',
   'Signed in there, not here: {services}': '在那里已登录，在这里未登录：{services}',
   'Sign in here': '在此登录',
-  'When the same thing changed on two PCs, the most recent change wins. Deleted things stay deleted everywhere. Local files stay on each PC: their songs are matched by title, artist and length.': '当同一项内容在两台电脑上都被更改时，以最新的更改为准。已删除的内容在所有地方都保持删除。本地文件保留在各自的电脑上：其中的歌曲按标题、艺人和时长匹配。',
   'This PC: {name}. Its interface size and mini player spot stay its own.': '此电脑：{name}。它的界面大小和迷你播放器位置保持独立。',
   // Plugins (features/plugins)
   'Uninstall {name}': '卸载 {name}',
@@ -1984,6 +1981,15 @@ const zh: Record<string, string> = {
   'Trust this device': '信任此设备',
   'No code next time: the two sync on their own whenever they share a network.': '下次无需代码：只要在同一网络上，两台设备会自动同步。',
   'phone mobile android iphone pair qr code wifi network trusted automatic other pc computer laptop': '手机 移动 android iphone 配对 二维码 代码 wifi 网络 信任 自动 其他电脑 电脑 笔记本',
+  'The key, secret and session are removed from this phone. Your Last.fm profile keeps what was sent.': '密钥、密码和会话将从这部手机中删除。你的 Last.fm 个人资料会保留已发送的内容。',
+  'The token is removed from this phone. Your ListenBrainz profile keeps what was sent.': '令牌将从这部手机上删除。你的 ListenBrainz 主页会保留已发送的记录。',
+  'Google refuses sign-ins inside phone apps: sign in in Legato on your PC, and your playlists come here when your devices sync.': 'Google 不允许在手机应用内登录：请在电脑上的 Legato 中登录，设备同步时你的歌单就会来到这里。',
+  'Playlists, likes, history, Live Editor versions and settings in one file, for another device or for later. Sign-ins stay out.': '播放列表、喜欢、历史记录、Live Editor 版本和设置都在一个文件里，可用于另一台设备或日后使用。登录信息不包含在内。',
+  'The picture stays on this phone (copied into the app); a .theme file carries it along. Sync Mode carries the theme but not its picture.': '图片保存在这部手机上（复制到应用中）；.theme 文件会把它一起带上。Sync Mode 会同步主题，但不同步其图片。',
+  'Versions, the settings that matter and the latest errors, as text for a bug report. Nothing is sent: the log stays on this phone. “Include details” adds song titles, account names and file paths.': '版本、重要设置和最近的错误，以文本形式用于错误报告。不会发送任何内容：日志只保存在这部手机上。“包含详细信息”会加入歌曲标题、账号名称和文件路径。',
+  'From your other device: {changes}': '来自你的另一台设备：{changes}',
+  'Your playlists, songs, listening history, Live Editor versions and settings on all your devices, without an account or a server.': '在你所有的设备上同步歌单、歌曲、收听历史、Live Editor 版本和设置，无需账号或服务器。',
+  'When the same thing changed on two devices, the most recent change wins. Deleted things stay deleted everywhere. Local files stay on each device: their songs are matched by title, artist and length.': '当同一项内容在两台设备上都被更改时，以最新的更改为准。已删除的内容在所有地方都保持删除。本地文件保留在各自的设备上：其中的歌曲按标题、艺人和时长匹配。',
 }
 
 export default zh

@@ -1112,7 +1112,6 @@ const hi: Record<string, string> = {
   // Sync Mode (features/syncmode)
   'sync other pc computer cloud password encrypted backup': 'सिंक दूसरा pc कंप्यूटर क्लाउड पासवर्ड एन्क्रिप्टेड बैकअप sync other pc computer cloud password encrypted backup',
   'Sync over the network': 'नेटवर्क पर सिंक करें',
-  'From your other PC: {changes}': 'आपके दूसरे PC से: {changes}',
   'OneDrive is on this PC: sync your library and settings with your other PCs?': 'इस PC पर OneDrive है: अपनी लाइब्रेरी और सेटिंग को अपने दूसरे PC के साथ सिंक करें?',
   'Set up': 'सेट अप करें',
   '{n} playlist': '{n} प्लेलिस्ट',
@@ -1167,7 +1166,6 @@ const hi: Record<string, string> = {
   'Show a code': 'कोड दिखाएं',
   'Enter a code': 'कोड डालें',
   'A folder synced between your PCs': 'आपके PC के बीच सिंक होने वाला फ़ोल्डर',
-  'Your playlists, songs, listening history, Live Editor versions and settings on all your PCs, without an account or a server.': 'आपकी प्लेलिस्ट, गाने, सुनने की हिस्ट्री, Live Editor वर्शन और सेटिंग आपके सभी PC पर, बिना अकाउंट या सर्वर के।',
   'Syncing through {folder}': '{folder} से सिंक हो रहा है',
   'No password': 'कोई पासवर्ड नहीं',
   'Last checked {when}. Changes go out within a minute.': 'आखिरी जांच {when}। बदलाव एक मिनट के अंदर भेजे जाते हैं।',
@@ -1183,7 +1181,6 @@ const hi: Record<string, string> = {
   'changed {when}': '{when} बदला',
   'Signed in there, not here: {services}': 'वहां साइन इन है, यहां नहीं: {services}',
   'Sign in here': 'यहां साइन इन करें',
-  'When the same thing changed on two PCs, the most recent change wins. Deleted things stay deleted everywhere. Local files stay on each PC: their songs are matched by title, artist and length.': 'जब एक ही चीज़ दो PC पर बदली हो, तो सबसे नया बदलाव जीतता है। मिटाई गई चीज़ें हर जगह मिटी रहती हैं। लोकल फ़ाइलें हर PC पर रहती हैं: उनके गाने टाइटल, कलाकार और लंबाई से मिलाए जाते हैं।',
   'This PC: {name}. Its interface size and mini player spot stay its own.': 'यह PC: {name}। इसका इंटरफ़ेस आकार और मिनी प्लेयर की जगह इसकी अपनी रहती है।',
   // Plugins (features/plugins)
   'Uninstall {name}': '{name} अनइंस्टॉल करें',
@@ -1984,6 +1981,15 @@ const hi: Record<string, string> = {
   'Trust this device': 'इस डिवाइस पर भरोसा करें',
   'No code next time: the two sync on their own whenever they share a network.': 'अगली बार कोई कोड नहीं: एक ही नेटवर्क पर होते ही दोनों अपने आप सिंक होंगे।',
   'phone mobile android iphone pair qr code wifi network trusted automatic other pc computer laptop': 'फ़ोन मोबाइल android iphone जोड़ें qr कोड wifi नेटवर्क भरोसा अपने आप दूसरा pc कंप्यूटर लैपटॉप',
+  'The key, secret and session are removed from this phone. Your Last.fm profile keeps what was sent.': 'की, सीक्रेट और सेशन इस फ़ोन से हटा दिए जाते हैं। आपकी Last.fm प्रोफ़ाइल में जो भेजा गया वह रहता है।',
+  'The token is removed from this phone. Your ListenBrainz profile keeps what was sent.': 'टोकन इस फ़ोन से हटा दिया जाता है। आपकी ListenBrainz प्रोफ़ाइल में भेजा गया सब रहता है।',
+  'Google refuses sign-ins inside phone apps: sign in in Legato on your PC, and your playlists come here when your devices sync.': 'Google फ़ोन ऐप के अंदर साइन इन नहीं होने देता: अपने PC पर Legato में साइन इन करें, डिवाइस सिंक होने पर आपकी प्लेलिस्ट यहाँ आ जाएँगी।',
+  'Playlists, likes, history, Live Editor versions and settings in one file, for another device or for later. Sign-ins stay out.': 'प्लेलिस्ट, पसंद, इतिहास, Live Editor के वर्शन और सेटिंग एक ही फ़ाइल में, दूसरे डिवाइस के लिए या बाद के लिए। साइन-इन इसमें नहीं होते।',
+  'The picture stays on this phone (copied into the app); a .theme file carries it along. Sync Mode carries the theme but not its picture.': 'तस्वीर इसी फ़ोन पर रहती है (ऐप में कॉपी होकर); .theme फ़ाइल उसे साथ ले जाती है। Sync Mode थीम ले जाता है पर उसकी तस्वीर नहीं।',
+  'Versions, the settings that matter and the latest errors, as text for a bug report. Nothing is sent: the log stays on this phone. “Include details” adds song titles, account names and file paths.': 'वर्शन, ज़रूरी सेटिंग और हाल की त्रुटियाँ, बग रिपोर्ट के लिए टेक्स्ट के रूप में। कुछ भी भेजा नहीं जाता: लॉग इसी फ़ोन पर रहता है। “विवरण शामिल करें” गानों के शीर्षक, अकाउंट के नाम और फ़ाइल पाथ जोड़ देता है।',
+  'From your other device: {changes}': 'आपके दूसरे डिवाइस से: {changes}',
+  'Your playlists, songs, listening history, Live Editor versions and settings on all your devices, without an account or a server.': 'आपकी प्लेलिस्ट, गाने, सुनने की हिस्ट्री, Live Editor वर्शन और सेटिंग आपके सभी डिवाइस पर, बिना अकाउंट या सर्वर के।',
+  'When the same thing changed on two devices, the most recent change wins. Deleted things stay deleted everywhere. Local files stay on each device: their songs are matched by title, artist and length.': 'जब एक ही चीज़ दो डिवाइस पर बदली हो, तो सबसे नया बदलाव जीतता है। मिटाई गई चीज़ें हर जगह मिटी रहती हैं। लोकल फ़ाइलें हर डिवाइस पर रहती हैं: उनके गाने टाइटल, कलाकार और लंबाई से मिलाए जाते हैं।',
 }
 
 export default hi

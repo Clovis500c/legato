@@ -9,6 +9,6 @@ describe('sync summary', () => {
   })
 
   it('names what came, counts in words', () => {
-    expect(mergedText({ ...none, playlists: 1, plays: 12, deleted: 1, removed: 2 })).toBe('From your other PC: 1 playlist, 3 deletions, 12 listens')
+    expect(mergedText({ ...none, playlists: 1, plays: 12, deleted: 1, removed: 2 })).toBe('From your other device: 1 playlist, 3 deletions, 12 listens')
   })
 })
