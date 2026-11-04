@@ -368,6 +368,9 @@ never: downloading, extracting, recording or exporting a platform's audio, or to
     pointer over a visualizer at least 120 px high: frequency marks along the top (50 Hz to 10 kHz, `freqAt`) and a
     dB grid (−20, −40, −60) on the right, not for the mirror; `hover` messages to the worker. 1/12 octave needs finer
     bands from both twins (plan-v2 › Visualizer v2).
+  - **Behind Now Playing** (Settings › Playback › Visualizer behind Now Playing, 2026-11-04, off by default):
+    `VizBackdrop` in `Visualizer.tsx`, a second canvas across the bottom half of Now Playing at 20 % behind everything
+    (`-z-10`, no pointer events), the look picked (bars for Radial); quiet under a full screen like the strip.
   - **Comfort**: `prefers-reduced-motion` or Animations off (`useCalm`): slower attack and release, a cap that sinks
     gently, one flash a second. Always: `flash.ts` limits the mean brightness of the bars to 3 flashes a second (a flash
     = a rise and a fall of at least 10 % of the range; past the budget the brightness may not turn back by 10 % until

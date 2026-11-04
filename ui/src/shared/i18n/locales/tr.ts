@@ -2020,6 +2020,9 @@ const tr: Record<string, string> = {
   'The bars stand on a glossy floor that reflects them': 'Çubuklar onları yansıtan parlak bir zeminin üzerinde durur',
   'octave third sixth analyzer resolution hertz decibel scale': 'oktav üçte bir altıda bir analizör çözünürlük hertz desibel ölçek',
   'glossy floor mirror shine': 'parlak zemin ayna parıltı',
+  'Visualizer behind Now Playing': 'Şimdi çalıyor arkasında görselleştirici',
+  'Big and faint across the bottom of Now Playing, behind the song': 'Şimdi çalıyor ekranının alt kısmında, şarkının arkasında büyük ve soluk',
+  'backdrop background big wall faint': 'arka plan fon büyük duvar soluk',
 }
 
 export default tr

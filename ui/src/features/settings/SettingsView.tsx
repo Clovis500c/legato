@@ -542,6 +542,11 @@ function SoundGroup() {
             <Toggle label={tr('Visualizer reflection')} checked={s.visualizerFloor} onChange={(visualizerFloor) => update({ visualizerFloor })} />
           </Row>
         )}
+        {s.visualizer && (
+          <Row setting="visualizerBackdrop" label={msg('Visualizer behind Now Playing')} sub={tr('Big and faint across the bottom of Now Playing, behind the song')}>
+            <Toggle label={tr('Visualizer behind Now Playing')} checked={s.visualizerBackdrop} onChange={(visualizerBackdrop) => update({ visualizerBackdrop })} />
+          </Row>
+        )}
         <Row
           label={msg("Process YouTube's sound")}
           sub={

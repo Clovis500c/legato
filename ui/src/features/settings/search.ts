@@ -94,6 +94,7 @@ export const SETTINGS_INDEX: SettingEntry[] = [
   { section: 'playback', label: msg('Visualizer gradient'), keywords: msg('rainbow prism spectrum meter red top warm colours') },
   { section: 'playback', label: msg('Visualizer bands'), keywords: msg('octave third sixth analyzer resolution hertz decibel scale') },
   { section: 'playback', label: msg('Visualizer reflection'), keywords: msg('glossy floor mirror shine') },
+  { section: 'playback', label: msg('Visualizer behind Now Playing'), keywords: msg('backdrop background big wall faint') },
   { section: 'playback', label: msg("Process YouTube's sound"), keywords: msg('audio live youtube video processing') },
   { section: 'appearance', label: msg('Background blur'), keywords: msg('immersive blurry flou sharp') },
   { section: 'appearance', label: msg('Background dimming'), keywords: msg('immersive dark veil brightness') },

@@ -2020,6 +2020,9 @@ const ja: Record<string, string> = {
   'The bars stand on a glossy floor that reflects them': 'バーが光沢のある床に立ち、床に映り込みます',
   'octave third sixth analyzer resolution hertz decibel scale': 'オクターブ 3分の1 6分の1 アナライザー 解像度 ヘルツ デシベル 目盛り',
   'glossy floor mirror shine': '光沢 床 鏡 反射',
+  'Visualizer behind Now Playing': '再生中画面の背景にビジュアライザー',
+  'Big and faint across the bottom of Now Playing, behind the song': '再生中画面の下部いっぱいに、曲の背後に大きく淡く表示します',
+  'backdrop background big wall faint': '背景 バックドロップ 大きい 壁 淡い',
 }
 
 export default ja

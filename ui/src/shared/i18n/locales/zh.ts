@@ -2020,6 +2020,9 @@ const zh: Record<string, string> = {
   'The bars stand on a glossy floor that reflects them': '柱条立在光亮的地面上，地面映出它们的倒影',
   'octave third sixth analyzer resolution hertz decibel scale': '倍频程 三分之一 六分之一 分析仪 分辨率 赫兹 分贝 刻度',
   'glossy floor mirror shine': '光亮 地面 镜面 反光',
+  'Visualizer behind Now Playing': '正在播放背后的可视化',
+  'Big and faint across the bottom of Now Playing, behind the song': '在正在播放页面的下半部分、歌曲背后，大而淡地显示',
+  'backdrop background big wall faint': '背景 衬底 大 墙 淡',
 }
 
 export default zh

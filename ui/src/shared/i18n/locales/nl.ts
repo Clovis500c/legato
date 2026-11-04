@@ -2020,6 +2020,9 @@ const nl: Record<string, string> = {
   'The bars stand on a glossy floor that reflects them': 'De balken staan op een glanzende vloer die ze weerspiegelt',
   'octave third sixth analyzer resolution hertz decibel scale': 'octaaf terts zesde analyzer resolutie hertz decibel schaal',
   'glossy floor mirror shine': 'glanzend vloer spiegel glans',
+  'Visualizer behind Now Playing': 'Visualizer achter Nu aan het afspelen',
+  'Big and faint across the bottom of Now Playing, behind the song': 'Groot en vaag onderaan Nu aan het afspelen, achter het nummer',
+  'backdrop background big wall faint': 'achtergrond decor groot wand vaag',
 }
 
 export default nl

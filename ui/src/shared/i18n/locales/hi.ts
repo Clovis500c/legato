@@ -2020,6 +2020,9 @@ const hi: Record<string, string> = {
   'The bars stand on a glossy floor that reflects them': 'बार एक चमकदार फ़र्श पर खड़ी होती हैं जो उनका प्रतिबिंब दिखाता है',
   'octave third sixth analyzer resolution hertz decibel scale': 'ऑक्टेव तिहाई छठा एनालाइज़र रिज़ॉल्यूशन हर्ट्ज़ डेसिबल स्केल',
   'glossy floor mirror shine': 'चमकदार फ़र्श दर्पण चमक',
+  'Visualizer behind Now Playing': 'अभी चल रहा के पीछे विज़ुअलाइज़र',
+  'Big and faint across the bottom of Now Playing, behind the song': 'अभी चल रहा के निचले हिस्से में, गाने के पीछे, बड़ा और हल्का',
+  'backdrop background big wall faint': 'पृष्ठभूमि बैकड्रॉप बड़ा दीवार हल्का',
 }
 
 export default hi

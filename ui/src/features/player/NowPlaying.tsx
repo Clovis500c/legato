@@ -41,7 +41,7 @@ import { VideoSlot } from './VideoSlot'
 import { usePulse } from './pulse'
 import { RING_COVER, RING_MIN } from './vizDraw'
 import { openVizFull } from './vizFull'
-import { RadialRing, Visualizer } from './Visualizer'
+import { RadialRing, VizBackdrop, Visualizer } from './Visualizer'
 import { tr } from '../../shared/i18n/i18n'
 
 /** Seek bar drawn like a tuner dial: ticks, major every 5, accent needle. */
@@ -250,6 +250,7 @@ export function NowPlaying() {
   )
   const update = useSettings((s) => s.update)
   const look = useSettings((s) => s.settings.visualizerStyle)
+  const vizBackdrop = useSettings((s) => s.settings.visualizerBackdrop)
   // The Radial look's ring is around the cover (Stage): then the strip under it stays away.
   const [ring, setRing] = useState(false)
   // Re-rendered when the theme or accent change (selected above).
@@ -287,6 +288,7 @@ export function NowPlaying() {
     // Whole window, under the see-through top bar (logo, Close player and window buttons stay on top, z-30).
     <div role="dialog" aria-label={tr('Now playing')} onContextMenu={onMenu(playerMenu)} className="np-in fixed inset-0 z-20 isolate flex flex-col overflow-hidden bg-bg px-10 pt-17 pb-7 text-ink transition-colors duration-500 phone:px-5 phone:pt-15 phone:pb-[max(1rem,env(safe-area-inset-bottom))]" style={ambient}>
       {immersive && <Backdrop url={backdrop} dim={backdropDim} motion={backdropMotion} />}
+      {visualizer && vizBackdrop && motion && now.via !== 'spotify' && <VizBackdrop />}
 
       {/* Phone layout: one column, the cover over the song; an open panel (lyrics, Up next, sound) takes the cover's place. */}
       <div className={`grid min-h-0 flex-1 gap-12 phone:grid-cols-1 phone:gap-4 ${panel ? 'phone:grid-rows-1' : 'phone:grid-rows-[minmax(0,1fr)_auto]'} ${panel === 'editor' ? 'grid-cols-[minmax(0,1fr)_400px]' : panel === 'upNext' ? 'grid-cols-[minmax(0,1fr)_360px]' : 'grid-cols-[minmax(0,1fr)_minmax(0,1fr)]'}`}>

@@ -2020,6 +2020,9 @@ const vi: Record<string, string> = {
   'The bars stand on a glossy floor that reflects them': 'Các thanh đứng trên một mặt sàn bóng phản chiếu chúng',
   'octave third sixth analyzer resolution hertz decibel scale': 'quãng tám một phần ba một phần sáu máy phân tích độ phân giải hertz decibel thang',
   'glossy floor mirror shine': 'bóng sàn gương lấp lánh',
+  'Visualizer behind Now Playing': 'Trình hiển thị phía sau Đang phát',
+  'Big and faint across the bottom of Now Playing, behind the song': 'To và mờ ở phần dưới màn hình Đang phát, phía sau bài hát',
+  'backdrop background big wall faint': 'nền phông nền lớn tường mờ',
 }
 
 export default vi

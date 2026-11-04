@@ -36,6 +36,21 @@ export function Visualizer() {
   )
 }
 
+/**
+ * The visualizer big and faint across the bottom of Now Playing, behind the song (Settings › Playback › Visualizer
+ * behind Now Playing): the look picked, bars for Radial (its ring stays around the cover). No clicks: they go through.
+ */
+export function VizBackdrop() {
+  const picked = useSettings((s) => s.settings.visualizerStyle)
+  const full = useVizFull((s) => s.open)
+  const covered = useCoverFull((s) => s.open)
+  return (
+    <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-1/2 opacity-20">
+      <VizCanvas look={picked === 'radial' ? 'bars' : picked} listen={!full && !covered} />
+    </div>
+  )
+}
+
 /** The Radial look behind a big cover (Stage in NowPlaying.tsx): fills its parent, a square; quiet while a full screen is up. */
 export function RadialRing() {
   const full = useVizFull((s) => s.open)

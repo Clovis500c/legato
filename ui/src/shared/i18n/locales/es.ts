@@ -2020,6 +2020,9 @@ const es: Record<string, string> = {
   'The bars stand on a glossy floor that reflects them': 'Las barras se apoyan en un suelo brillante que las refleja',
   'octave third sixth analyzer resolution hertz decibel scale': 'octava tercio sexto analizador resolución hercios decibelios escala',
   'glossy floor mirror shine': 'brillante suelo espejo brillo',
+  'Visualizer behind Now Playing': 'Visualizador detrás de Reproduciendo',
+  'Big and faint across the bottom of Now Playing, behind the song': 'Grande y tenue en la parte inferior de Reproduciendo, detrás de la canción',
+  'backdrop background big wall faint': 'fondo telón grande pared tenue',
 }
 
 export default es

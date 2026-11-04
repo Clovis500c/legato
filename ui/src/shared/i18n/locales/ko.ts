@@ -2020,6 +2020,9 @@ const ko: Record<string, string> = {
   'The bars stand on a glossy floor that reflects them': '막대가 광택 있는 바닥 위에 서서 바닥에 비칩니다',
   'octave third sixth analyzer resolution hertz decibel scale': '옥타브 3분의1 6분의1 분석기 해상도 헤르츠 데시벨 눈금',
   'glossy floor mirror shine': '광택 바닥 거울 반사',
+  'Visualizer behind Now Playing': '지금 재생 중 뒤의 시각화',
+  'Big and faint across the bottom of Now Playing, behind the song': '지금 재생 중 화면 아래쪽에 노래 뒤로 크고 흐리게 표시',
+  'backdrop background big wall faint': '배경 백드롭 큰 벽 흐린',
 }
 
 export default ko

@@ -2020,6 +2020,9 @@ const sv: Record<string, string> = {
   'The bars stand on a glossy floor that reflects them': 'Staplarna står på ett blankt golv som speglar dem',
   'octave third sixth analyzer resolution hertz decibel scale': 'oktav tredjedel sjättedel analysator upplösning hertz decibel skala',
   'glossy floor mirror shine': 'blankt golv spegel glans',
+  'Visualizer behind Now Playing': 'Visualiserare bakom Spelas nu',
+  'Big and faint across the bottom of Now Playing, behind the song': 'Stor och svag längs nederkanten av Spelas nu, bakom låten',
+  'backdrop background big wall faint': 'bakgrund fond stor vägg svag',
 }
 
 export default sv

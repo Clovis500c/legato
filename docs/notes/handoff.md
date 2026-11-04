@@ -158,6 +158,8 @@ Relaunch log (newest last):
 - 2026-11-04 (after the 5-hour reset): visualizer bands (1/6 or 1/3 octave, `vizBands.ts`), a reflection (off by
   default) and Hz / dB scales on hover. Seen over the demo; a change to `vizPaint.ts` reloads the demo and its
   settings go back to the defaults (pick them again from the right-click).
+- 2026-11-04: the visualizer behind Now Playing (off by default, `VizBackdrop`). Seen over the demo: Settings ›
+  Playback (turn Visualizer on first), then the mini cover opens Now Playing.
 
 ## Mobile app and devices sync (the owner's ask, 2026-11-02 afternoon; in progress)
 

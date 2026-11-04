@@ -2020,6 +2020,9 @@ const uk: Record<string, string> = {
   'The bars stand on a glossy floor that reflects them': 'Стовпчики стоять на глянцевій підлозі, яка їх відображає',
   'octave third sixth analyzer resolution hertz decibel scale': 'октава третина шоста аналізатор роздільність герц децибел шкала',
   'glossy floor mirror shine': 'глянцева підлога дзеркало блиск',
+  'Visualizer behind Now Playing': 'Візуалізатор за екраном «Зараз грає»',
+  'Big and faint across the bottom of Now Playing, behind the song': 'Великий і блідий унизу екрана «Зараз грає», за піснею',
+  'backdrop background big wall faint': 'тло задник великий стіна блідий',
 }
 
 export default uk

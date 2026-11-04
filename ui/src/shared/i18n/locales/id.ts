@@ -2020,6 +2020,9 @@ const id: Record<string, string> = {
   'The bars stand on a glossy floor that reflects them': 'Batang berdiri di atas lantai mengilap yang memantulkannya',
   'octave third sixth analyzer resolution hertz decibel scale': 'oktaf pertiga perenam penganalisis resolusi hertz desibel skala',
   'glossy floor mirror shine': 'mengilap lantai cermin kilau',
+  'Visualizer behind Now Playing': 'Visualizer di belakang Sedang diputar',
+  'Big and faint across the bottom of Now Playing, behind the song': 'Besar dan samar di bagian bawah Sedang diputar, di belakang lagu',
+  'backdrop background big wall faint': 'latar belakang besar dinding samar',
 }
 
 export default id
