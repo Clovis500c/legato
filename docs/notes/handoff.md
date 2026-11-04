@@ -3,9 +3,9 @@
 Where the work stands, for a session or an account with no history here. Read this, then `CLAUDE.md` (rules, map of the
 code), then [plan-v2.md](plan-v2.md) (open work). Rewrite it when a branch or the next step changes.
 
-Written 2026-11-01, run section 2026-11-02, autopilot 2026-11-03.
+Written 2026-11-01, run section 2026-11-02, autopilot 2026-11-03 and 2026-11-04.
 
-## Autopilot from 2026-11-04 (the owner away: read this first)
+## Autopilot from 2026-11-04 (done 2026-11-04; the report is docs/notes/report-2026-11-04.md)
 
 The owner's ask (2026-11-03 evening): carry on with the plan and the Android app, a lot to do, alone from the weekly
 reset (2026-11-04 08:00 Paris), resuming alone after each 5-hour limit; no question can be answered. The desktop app's
@@ -71,6 +71,8 @@ Log (newest last):
 - 2026-11-04: step 6. Website: "Android beta (APK, version)" beside the Windows version line in the hero (`useAndroid`:
   the newest of the last 10 GitHub releases with a `_android-arm64.apk`, else the releases page) and an FAQ answer
   (Android 8+, 64-bit, no store, no updater, iPhone not yet). `next build` passes; a push deploys it, the owner's call.
+
+End (2026-11-04, week at 2 %): steps 1 to 6 done; step 7 (plan-v2's open `S` lines) not started on purpose: they need the owner's eye (visualizer), a new service, or an account. Wake-up deleted. Next: the owner tries the phone items in the report; the Beta push would also deploy the site's Android link; then plan-v2's open lines by size.
 
 ## Mobile app and devices sync (the owner's ask, 2026-11-02 afternoon; in progress)
 
