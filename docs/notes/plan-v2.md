@@ -522,7 +522,9 @@ colours, mirror, reflection.
       cycles its look (2026-11-04, `vizClick.ts`: the strip and the full screen, held 300 ms so a double click still
       takes it full screen or back; seen over the demo, LED to Bars to Mirror, a double click left it as it was; the
       owner judges it). The backdrop is in (2026-11-04: Settings › Playback › Visualizer behind Now Playing, off by
-      default, the bottom half at 20 % behind the song; seen over the demo). Left: the mini player, the OBS overlay page.
+      default, the bottom half at 20 % behind the song; seen over the demo), and the mini player (Visualizer in the mini
+      player, off by default: a thin strip under the song; seen in the floating one over the demo, the right panel's
+      and the sidebar's not looked at). Left: the OBS overlay page.
 - [ ] `S-M` 1/3 and 1/12 octave bands (31 and 120, ANSI centers) beside today's 1/6 (61 bands).
 - [ ] `M` Beat and onset detection (spectral flux on low and mid bands, tempo estimate): kicks drive pulses, flashes, camera.
       The radial ring's pulse is Moving cover's own until then.

@@ -2023,6 +2023,9 @@ const tr: Record<string, string> = {
   'Visualizer behind Now Playing': 'Şimdi çalıyor arkasında görselleştirici',
   'Big and faint across the bottom of Now Playing, behind the song': 'Şimdi çalıyor ekranının alt kısmında, şarkının arkasında büyük ve soluk',
   'backdrop background big wall faint': 'arka plan fon büyük duvar soluk',
+  'Visualizer in the mini player': 'Mini oynatıcıda görselleştirici',
+  'A thin strip of it under the song in the mini player, wherever it sits': 'Mini oynatıcı nerede olursa olsun, şarkının altında ince bir şerit',
+  'small strip corner panel sidebar': 'küçük şerit köşe panel kenar çubuğu',
 }
 
 export default tr

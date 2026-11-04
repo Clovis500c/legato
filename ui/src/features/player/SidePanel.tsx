@@ -10,6 +10,7 @@ import { LyricsPanel } from '../../app/pages'
 import { PageBoundary } from '../../app/PageBoundary'
 import { VideoSlot } from './VideoSlot'
 import { useNowTrack, usePlayer } from './store'
+import { MiniViz } from './MiniViz'
 import { UpNext } from './UpNext'
 
 const LOOK = 'rounded-lg bg-panel p-3'
@@ -33,6 +34,7 @@ function Stage() {
           <Cover title={now.title} art={track ? trackArt(track) : undefined} size={276} />
         </button>
       )}
+      <MiniViz className="mt-2" />
     </section>
   )
 }

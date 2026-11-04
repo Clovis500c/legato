@@ -2023,6 +2023,9 @@ const vi: Record<string, string> = {
   'Visualizer behind Now Playing': 'Trình hiển thị phía sau Đang phát',
   'Big and faint across the bottom of Now Playing, behind the song': 'To và mờ ở phần dưới màn hình Đang phát, phía sau bài hát',
   'backdrop background big wall faint': 'nền phông nền lớn tường mờ',
+  'Visualizer in the mini player': 'Trình hiển thị trong trình phát mini',
+  'A thin strip of it under the song in the mini player, wherever it sits': 'Một dải mỏng dưới bài hát trong trình phát mini, dù nó ở đâu',
+  'small strip corner panel sidebar': 'nhỏ dải góc bảng thanh bên',
 }
 
 export default vi

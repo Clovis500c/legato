@@ -2023,6 +2023,9 @@ const id: Record<string, string> = {
   'Visualizer behind Now Playing': 'Visualizer di belakang Sedang diputar',
   'Big and faint across the bottom of Now Playing, behind the song': 'Besar dan samar di bagian bawah Sedang diputar, di belakang lagu',
   'backdrop background big wall faint': 'latar belakang besar dinding samar',
+  'Visualizer in the mini player': 'Visualizer di pemutar mini',
+  'A thin strip of it under the song in the mini player, wherever it sits': 'Strip tipis di bawah lagu pada pemutar mini, di mana pun letaknya',
+  'small strip corner panel sidebar': 'kecil strip sudut panel bilah samping',
 }
 
 export default id

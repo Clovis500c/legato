@@ -2023,6 +2023,9 @@ const zh: Record<string, string> = {
   'Visualizer behind Now Playing': '正在播放背后的可视化',
   'Big and faint across the bottom of Now Playing, behind the song': '在正在播放页面的下半部分、歌曲背后，大而淡地显示',
   'backdrop background big wall faint': '背景 衬底 大 墙 淡',
+  'Visualizer in the mini player': '迷你播放器中的可视化',
+  'A thin strip of it under the song in the mini player, wherever it sits': '在迷你播放器的歌曲下方显示一条细条，无论它在哪里',
+  'small strip corner panel sidebar': '小 细条 角落 面板 侧边栏',
 }
 
 export default zh

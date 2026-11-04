@@ -2023,6 +2023,9 @@ const uk: Record<string, string> = {
   'Visualizer behind Now Playing': 'Візуалізатор за екраном «Зараз грає»',
   'Big and faint across the bottom of Now Playing, behind the song': 'Великий і блідий унизу екрана «Зараз грає», за піснею',
   'backdrop background big wall faint': 'тло задник великий стіна блідий',
+  'Visualizer in the mini player': 'Візуалізатор у мініплеєрі',
+  'A thin strip of it under the song in the mini player, wherever it sits': 'Тонка смужка під піснею в мініплеєрі, де б він не був',
+  'small strip corner panel sidebar': 'маленький смужка кут панель бічна',
 }
 
 export default uk

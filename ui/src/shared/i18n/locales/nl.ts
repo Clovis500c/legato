@@ -2023,6 +2023,9 @@ const nl: Record<string, string> = {
   'Visualizer behind Now Playing': 'Visualizer achter Nu aan het afspelen',
   'Big and faint across the bottom of Now Playing, behind the song': 'Groot en vaag onderaan Nu aan het afspelen, achter het nummer',
   'backdrop background big wall faint': 'achtergrond decor groot wand vaag',
+  'Visualizer in the mini player': 'Visualizer in de minispeler',
+  'A thin strip of it under the song in the mini player, wherever it sits': 'Een smalle strook onder het nummer in de minispeler, waar die ook staat',
+  'small strip corner panel sidebar': 'klein strook hoek paneel zijbalk',
 }
 
 export default nl

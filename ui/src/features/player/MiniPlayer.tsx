@@ -11,6 +11,7 @@ import { VideoSlot } from './VideoSlot'
 import { gripCorner, nearestSpot, resized, spotPosition, type Point, type Size } from './snap'
 import { ArtistLink } from './ArtistLink'
 import { useNowTrack, usePlayer } from './store'
+import { MiniViz } from './MiniViz'
 import { volumeWheelRef } from './volume'
 import { Transport } from './Transport'
 import { tr } from '../../shared/i18n/i18n'
@@ -164,6 +165,7 @@ export function MiniPlayer() {
           <ArrowsOutSimple size={13} />
         </RoundButton>
       </div>
+      <MiniViz className="mx-3 mb-2" />
     </div>
   )
 

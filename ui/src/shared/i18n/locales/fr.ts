@@ -2023,6 +2023,9 @@ const fr: Record<string, string> = {
   'Visualizer behind Now Playing': 'Visualiseur derrière la lecture en cours',
   'Big and faint across the bottom of Now Playing, behind the song': 'Grand et discret en bas de la lecture en cours, derrière le titre',
   'backdrop background big wall faint': 'fond arrière-plan grand mur discret',
+  'Visualizer in the mini player': 'Visualiseur dans le mini-lecteur',
+  'A thin strip of it under the song in the mini player, wherever it sits': 'Une fine bande sous le titre dans le mini-lecteur, où qu’il soit',
+  'small strip corner panel sidebar': 'petit bande coin panneau barre latérale',
 }
 
 export default fr

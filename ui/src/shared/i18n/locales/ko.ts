@@ -2023,6 +2023,9 @@ const ko: Record<string, string> = {
   'Visualizer behind Now Playing': '지금 재생 중 뒤의 시각화',
   'Big and faint across the bottom of Now Playing, behind the song': '지금 재생 중 화면 아래쪽에 노래 뒤로 크고 흐리게 표시',
   'backdrop background big wall faint': '배경 백드롭 큰 벽 흐린',
+  'Visualizer in the mini player': '미니 플레이어의 시각화',
+  'A thin strip of it under the song in the mini player, wherever it sits': '미니 플레이어가 어디에 있든 노래 아래에 얇은 띠로 표시',
+  'small strip corner panel sidebar': '작은 띠 모서리 패널 사이드바',
 }
 
 export default ko

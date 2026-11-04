@@ -51,6 +51,15 @@ export function VizBackdrop() {
   )
 }
 
+/** The mini player's thin visualizer (MiniViz.tsx loads it): bars for Radial; quiet under Now Playing or a full screen. */
+export function MiniStrip() {
+  const picked = useSettings((s) => s.settings.visualizerStyle)
+  const nowPlaying = usePlayer((s) => s.full)
+  const full = useVizFull((s) => s.open)
+  const covered = useCoverFull((s) => s.open)
+  return <VizCanvas look={picked === 'radial' ? 'bars' : picked} listen={!nowPlaying && !full && !covered} />
+}
+
 /** The Radial look behind a big cover (Stage in NowPlaying.tsx): fills its parent, a square; quiet while a full screen is up. */
 export function RadialRing() {
   const full = useVizFull((s) => s.open)

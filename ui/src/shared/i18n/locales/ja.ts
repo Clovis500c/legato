@@ -2023,6 +2023,9 @@ const ja: Record<string, string> = {
   'Visualizer behind Now Playing': '再生中画面の背景にビジュアライザー',
   'Big and faint across the bottom of Now Playing, behind the song': '再生中画面の下部いっぱいに、曲の背後に大きく淡く表示します',
   'backdrop background big wall faint': '背景 バックドロップ 大きい 壁 淡い',
+  'Visualizer in the mini player': 'ミニプレーヤーにビジュアライザー',
+  'A thin strip of it under the song in the mini player, wherever it sits': 'ミニプレーヤーの曲の下に細い帯で表示します（置き場所を問わず）',
+  'small strip corner panel sidebar': '小さい 帯 隅 パネル サイドバー',
 }
 
 export default ja

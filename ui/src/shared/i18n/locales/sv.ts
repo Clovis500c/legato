@@ -2023,6 +2023,9 @@ const sv: Record<string, string> = {
   'Visualizer behind Now Playing': 'Visualiserare bakom Spelas nu',
   'Big and faint across the bottom of Now Playing, behind the song': 'Stor och svag längs nederkanten av Spelas nu, bakom låten',
   'backdrop background big wall faint': 'bakgrund fond stor vägg svag',
+  'Visualizer in the mini player': 'Visualiserare i minispelaren',
+  'A thin strip of it under the song in the mini player, wherever it sits': 'En smal remsa under låten i minispelaren, var den än sitter',
+  'small strip corner panel sidebar': 'liten remsa hörn panel sidofält',
 }
 
 export default sv

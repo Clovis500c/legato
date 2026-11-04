@@ -371,6 +371,9 @@ never: downloading, extracting, recording or exporting a platform's audio, or to
   - **Behind Now Playing** (Settings › Playback › Visualizer behind Now Playing, 2026-11-04, off by default):
     `VizBackdrop` in `Visualizer.tsx`, a second canvas across the bottom half of Now Playing at 20 % behind everything
     (`-z-10`, no pointer events), the look picked (bars for Radial); quiet under a full screen like the strip.
+  - **In the mini player** (Settings › Playback › Visualizer in the mini player, 2026-11-04, off by default): a 24 px
+    strip under the song, floating, in the right panel or in the sidebar (`MiniViz.tsx`, a shell file: it loads
+    `MiniStrip` from Now Playing's chunk by `lazy` only once shown); no pointer events, quiet under Now Playing.
   - **Comfort**: `prefers-reduced-motion` or Animations off (`useCalm`): slower attack and release, a cap that sinks
     gently, one flash a second. Always: `flash.ts` limits the mean brightness of the bars to 3 flashes a second (a flash
     = a rise and a fall of at least 10 % of the range; past the budget the brightness may not turn back by 10 % until

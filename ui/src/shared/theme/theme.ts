@@ -400,6 +400,8 @@ export interface Settings {
   visualizerFloor: boolean
   /** The visualizer big and faint behind Now Playing too. Off by default: a look the owner hasn't judged yet (2026-11-04). */
   visualizerBackdrop: boolean
+  /** A thin visualizer in the mini player too. Off by default: a look the owner hasn't judged yet (2026-11-04). */
+  visualizerMini: boolean
   /** Videos whose song ends before the video (silence, end screen): the next song starts at the song's end (ends.ts). */
   earlyEnds: boolean
   /** Songs start on the music and end where it ends: silence at the start and end skipped (local: measured; YouTube: learned). */
@@ -529,6 +531,7 @@ export const DEFAULTS: Settings = {
   visualizerBands: 'sixth',
   visualizerFloor: false,
   visualizerBackdrop: false,
+  visualizerMini: false,
   earlyEnds: true,
   skipSilence: false,
   levelling: 'off',
@@ -748,6 +751,7 @@ export function sanitize(raw: unknown): Settings {
     visualizerBands: pick(r.visualizerBands, VIZ_BANDINGS, DEFAULTS.visualizerBands),
     visualizerFloor: r.visualizerFloor === true,
     visualizerBackdrop: r.visualizerBackdrop === true,
+    visualizerMini: r.visualizerMini === true,
     earlyEnds: r.earlyEnds !== false,
     skipSilence: r.skipSilence === true,
     levelling: pick(r.levelling, ['off', 'track', 'album'] as const, DEFAULTS.levelling),

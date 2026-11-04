@@ -12,6 +12,7 @@ import { VideoSlot } from './VideoSlot'
 import { ProgressLine } from './Progress'
 import { ArtistLink } from './ArtistLink'
 import { useNowTrack, usePlayer } from './store'
+import { MiniViz } from './MiniViz'
 import { volumeWheelRef } from './volume'
 
 /** Art width inside the card: sidebar 252 px, card margins, border and padding. */
@@ -114,6 +115,7 @@ export function SidebarPlayer() {
           <ArrowsOutSimple size={13} />
         </RoundButton>
       </div>
+      <MiniViz className="mx-3 mb-1" />
       <ProgressLine />
     </section>
   )
