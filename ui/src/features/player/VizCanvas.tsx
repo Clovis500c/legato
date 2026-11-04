@@ -115,7 +115,7 @@ export function VizCanvas({ look, listen = true }: { look: VisualizerStyle; list
     const send = () => {
       const ink = inkOf(el, color, coverInk)
       const warn = getComputedStyle(el).getPropertyValue('--color-danger').trim() || '#d93a2b'
-      const words = { momentary: tr('Momentary'), short: tr('Short-term'), integrated: tr('Integrated'), range: tr('Loudness range'), peak: tr('Peak') }
+      const words = { momentary: tr('Momentary'), short: tr('Short-term'), integrated: tr('Integrated'), range: tr('Loudness range'), peak: tr('True peak') }
       w.postMessage({ t: 'look', look, calm, weighting, ink, ink2: secondOf(el, color), warn, gradient, stops: gradientStops(gradient, ink, warn, darkTheme), bands, floor, fps: FPS, words } satisfies ToWorker)
     }
     send()

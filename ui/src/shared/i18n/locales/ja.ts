@@ -2030,10 +2030,10 @@ const ja: Record<string, string> = {
   'Short-term': 'ショートターム',
   'Integrated': 'インテグレーテッド',
   'Loudness range': 'ラウドネスレンジ',
-  'Peak': 'ピーク',
   '1/12 octave (121 bands)': '1/12 オクターブ（121 バンド）',
   '1/6 octave as measured, 1/3 octave: fewer, wider bars, like a hi-fi analyzer, or 1/12 octave: twice the detail, for a wide visualizer. Point at a big visualizer for its Hz and dB scales': '測定どおりの 1/6 オクターブ、1/3 オクターブ：Hi-Fi アナライザーのように本数が少なく幅の広いバー、または 1/12 オクターブ：2 倍の細かさで、横に広いビジュアライザー向け。大きなビジュアライザーにポインターを合わせると Hz と dB の目盛りが表示されます',
   'octave third sixth twelfth analyzer resolution detail hertz decibel scale': 'オクターブ 3分の1 6分の1 12分の1 アナライザー 解像度 細かさ ヘルツ デシベル 目盛り',
+  'True peak': 'トゥルーピーク',
 }
 
 export default ja

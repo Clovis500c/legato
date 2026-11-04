@@ -2030,10 +2030,10 @@ const zh: Record<string, string> = {
   'Short-term': '短期',
   'Integrated': '综合',
   'Loudness range': '响度范围',
-  'Peak': '峰值',
   '1/12 octave (121 bands)': '1/12 倍频程（121 个频段）',
   '1/6 octave as measured, 1/3 octave: fewer, wider bars, like a hi-fi analyzer, or 1/12 octave: twice the detail, for a wide visualizer. Point at a big visualizer for its Hz and dB scales': '按测量的 1/6 倍频程，1/3 倍频程：像高保真分析仪一样，柱条更少、更宽，或 1/12 倍频程：细节加倍，适合宽的可视化。将指针移到大的可视化上可显示 Hz 和 dB 刻度',
   'octave third sixth twelfth analyzer resolution detail hertz decibel scale': '倍频程 三分之一 六分之一 十二分之一 分析仪 分辨率 细节 赫兹 分贝 刻度',
+  'True peak': '真峰值',
 }
 
 export default zh

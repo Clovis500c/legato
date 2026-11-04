@@ -2030,10 +2030,10 @@ const hi: Record<string, string> = {
   'Short-term': 'अल्पकालिक',
   'Integrated': 'एकीकृत',
   'Loudness range': 'लाउडनेस रेंज',
-  'Peak': 'पीक',
   '1/12 octave (121 bands)': '1/12 ऑक्टेव (121 बैंड)',
   '1/6 octave as measured, 1/3 octave: fewer, wider bars, like a hi-fi analyzer, or 1/12 octave: twice the detail, for a wide visualizer. Point at a big visualizer for its Hz and dB scales': 'मापा गया 1/6 ऑक्टेव, 1/3 ऑक्टेव: हाई-फ़ाई एनालाइज़र की तरह कम और चौड़ी बार, या 1/12 ऑक्टेव: दोगुना बारीक, चौड़े विज़ुअलाइज़र के लिए। Hz और dB स्केल देखने के लिए बड़े विज़ुअलाइज़र पर पॉइंटर ले जाएं',
   'octave third sixth twelfth analyzer resolution detail hertz decibel scale': 'ऑक्टेव तिहाई छठा बारहवां एनालाइज़र रिज़ॉल्यूशन बारीकी हर्ट्ज़ डेसिबल स्केल',
+  'True peak': 'ट्रू पीक',
 }
 
 export default hi

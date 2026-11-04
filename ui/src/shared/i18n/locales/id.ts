@@ -2030,10 +2030,10 @@ const id: Record<string, string> = {
   'Short-term': 'Jangka pendek',
   'Integrated': 'Terintegrasi',
   'Loudness range': 'Rentang kenyaringan',
-  'Peak': 'Puncak',
   '1/12 octave (121 bands)': '1/12 oktaf (121 pita)',
   '1/6 octave as measured, 1/3 octave: fewer, wider bars, like a hi-fi analyzer, or 1/12 octave: twice the detail, for a wide visualizer. Point at a big visualizer for its Hz and dB scales': '1/6 oktaf sesuai ukuran, 1/3 oktaf: batang lebih sedikit dan lebih lebar, seperti penganalisis hi-fi, atau 1/12 oktaf: detail dua kali lipat, untuk visualizer yang lebar. Arahkan ke visualizer besar untuk melihat skala Hz dan dB-nya',
   'octave third sixth twelfth analyzer resolution detail hertz decibel scale': 'oktaf pertiga perenam perdua belas penganalisis resolusi detail hertz desibel skala',
+  'True peak': 'Puncak sejati',
 }
 
 export default id

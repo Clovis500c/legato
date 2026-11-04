@@ -2030,10 +2030,10 @@ const ru: Record<string, string> = {
   'Short-term': 'Кратковременная',
   'Integrated': 'Интегральная',
   'Loudness range': 'Диапазон громкости',
-  'Peak': 'Пик',
   '1/12 octave (121 bands)': '1/12 октавы (121 полоса)',
   '1/6 octave as measured, 1/3 octave: fewer, wider bars, like a hi-fi analyzer, or 1/12 octave: twice the detail, for a wide visualizer. Point at a big visualizer for its Hz and dB scales': '1/6 октавы как измерено, 1/3 октавы: меньше столбиков, они шире, как у Hi-Fi-анализатора, или 1/12 октавы: вдвое подробнее, для широкого визуализатора. Наведите указатель на большой визуализатор, чтобы увидеть шкалы Гц и дБ',
   'octave third sixth twelfth analyzer resolution detail hertz decibel scale': 'октава треть шестая двенадцатая анализатор разрешение детали герц децибел шкала',
+  'True peak': 'Истинный пик',
 }
 
 export default ru

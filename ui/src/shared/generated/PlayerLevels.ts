@@ -17,7 +17,7 @@ momentary: number,
  */
 short: number, 
 /**
- * Sample peak, 0..1 (falls about 20 dB a second).
+ * True peak (BS.1770-4: 4x oversampled), 1 = full scale, above it an intersample over (falls about 20 dB a second).
  */
 peak: number, 
 /**

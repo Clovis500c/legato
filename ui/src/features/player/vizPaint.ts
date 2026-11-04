@@ -443,12 +443,13 @@ export function createPainter(canvas: OffscreenCanvas) {
     if (!ctx) return
     const v = loudNow
     const big = cssH >= LOUD_BIG_H
-    const rows: { label: string; value: number | null; bar: number | null; unit: string; held?: number }[] = [
+    const rows: { label: string; value: number | null; bar: number | null; unit: string; held?: number; alarm?: boolean }[] = [
       { label: big ? words.momentary : 'M', value: v.momentary, bar: v.momentary, unit: 'LUFS' },
       { label: big ? words.short : 'S', value: v.short, bar: v.short, unit: 'LUFS' },
       { label: big ? words.integrated : 'I', value: v.integrated, bar: v.integrated, unit: 'LUFS' },
     ]
-    if (big) rows.push({ label: words.peak, value: v.top, bar: v.peak, unit: 'dB', held: v.top })
+    // Over -1 dBTP (EBU R128's ceiling): the song's highest in the alarm colour.
+    if (big) rows.push({ label: words.peak, value: v.top, bar: v.peak, unit: 'dBTP', held: v.top, alarm: v.top > -1 })
     const n = rows.length
     // Small: the box shared by three rows. Big: rows of a readable size, centred, the scale and the range under them.
     const gap = big ? 0 : Math.max(1, Math.round(2 * dpr))
@@ -467,7 +468,7 @@ export function createPainter(canvas: OffscreenCanvas) {
       return big && t !== '—' ? `${t} ${unit}` : t
     }
     const labelW = text ? Math.max(...rows.map((r) => ctx.measureText(r.label).width)) + font * 0.8 : 0
-    const valueW = text ? ctx.measureText(big ? '−88.8 LUFS' : '−88.8').width + font * 0.8 : 0
+    const valueW = text ? Math.max(...(big ? ['−88.8 LUFS', '−88.8 dBTP'] : ['−88.8']).map((t) => ctx.measureText(t).width)) + font * 0.8 : 0
     const x0 = Math.round(left + labelW)
     const barW = Math.max(1, Math.round(right - valueW - x0))
     const top = big ? Math.round((H - (step * (n - 1) + rowH + font * 4.2)) / 2) : 0
@@ -491,15 +492,20 @@ export function createPainter(canvas: OffscreenCanvas) {
       if (row.held !== undefined && row.held > -120) {
         const lw = Math.max(2, Math.round(2 * dpr))
         ctx.globalAlpha = 1
+        if (row.alarm) ctx.fillStyle = warn
         ctx.fillRect(Math.round(x0 + loudPos(row.held) * (barW - lw)), y, lw, rowH)
+        ctx.fillStyle = ink
       }
-      if (!text) return
-      ctx.textAlign = 'left'
-      ctx.globalAlpha = 0.7
-      ctx.fillText(row.label, left, y + rowH / 2)
-      ctx.textAlign = 'right'
-      ctx.globalAlpha = 0.95
-      ctx.fillText(say(row.value, row.unit), right, y + rowH / 2)
+      if (text) {
+        ctx.textAlign = 'left'
+        ctx.globalAlpha = 0.7
+        ctx.fillText(row.label, left, y + rowH / 2)
+        ctx.textAlign = 'right'
+        ctx.globalAlpha = 0.95
+        if (row.alarm) ctx.fillStyle = warn
+        ctx.fillText(say(row.value, row.unit), right, y + rowH / 2)
+      }
+      ctx.fillStyle = ink
     })
     if (!big) return
     // The scale under the bars, every 6 dB, numbered every 12; then the range.

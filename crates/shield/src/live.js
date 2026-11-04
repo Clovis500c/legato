@@ -541,12 +541,40 @@
     if (Math.abs(g.video.playbackRate - time) > 1e-3) g.video.playbackRate = time
   }
 
-  // Sum of squares and peak of one analyser pair.
-  function read(pair) {
+  // tp:begin
+  // True peak (BS.1770-4 annex 2), pure (truepeak.test.ts runs this block). Twin of crates/dsp meter.rs `TRUE_PEAK`:
+  // the 48-tap filter that upsamples 4x, as its 4 phases of 12 taps (tap j takes the sample j back).
+  const TP = [
+    [0.001708984375, 0.010986328125, -0.0196533203125, 0.033203125, -0.0594482421875, 0.1373291015625, 0.97216796875, -0.102294921875, 0.047607421875, -0.026611328125, 0.014892578125, -0.00830078125],
+    [-0.0291748046875, 0.029296875, -0.0517578125, 0.089111328125, -0.16650390625, 0.465087890625, 0.77978515625, -0.2003173828125, 0.1015625, -0.0582275390625, 0.0330810546875, -0.0189208984375],
+    [-0.0189208984375, 0.0330810546875, -0.0582275390625, 0.1015625, -0.2003173828125, 0.77978515625, 0.465087890625, -0.16650390625, 0.089111328125, -0.0517578125, 0.029296875, -0.0291748046875],
+    [-0.00830078125, 0.014892578125, -0.026611328125, 0.047607421875, -0.102294921875, 0.97216796875, 0.1373291015625, -0.0594482421875, 0.033203125, -0.0196533203125, 0.010986328125, 0.001708984375],
+  ]
+
+  /** The highest |value| of `x` 4x oversampled, its samples too: never under the sample peak, as the native meter. */
+  function truePeak(x) {
+    let top = 0
+    for (let n = 0; n < x.length; n++) {
+      top = Math.max(top, Math.abs(x[n]))
+      // The first 11 count as samples only: what came before them is gone (the last read had them).
+      if (n < 11) continue
+      for (const taps of TP) {
+        let y = 0
+        for (let j = 0; j < 12; j++) y += taps[j] * x[n - j]
+        top = Math.max(top, Math.abs(y))
+      }
+    }
+    return top
+  }
+  // tp:end
+
+  // Sum of squares and peak of one analyser pair; `over`: the true peak (the levels' peak).
+  function read(pair, over = false) {
     let sum = 0
     let peak = 0
     for (const a of pair) {
       a.getFloatTimeDomainData(g.buf)
+      if (over) peak = Math.max(peak, truePeak(g.buf))
       for (const x of g.buf) {
         sum += x * x
         peak = Math.max(peak, Math.abs(x))
@@ -726,7 +754,7 @@
     if (g.video.paused && g.idle) return
     g.idle = g.video.paused
     const { ms } = read(g.k)
-    const { peak } = read(g.raw)
+    const { peak } = read(g.raw, true)
     // Sound captured: processing. Silent while playing: the element's own sound back after LOST_S; never any sound
     // for SILENT_SAY_S: said (the video plays as usual meanwhile).
     const v = g.video

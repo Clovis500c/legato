@@ -2030,10 +2030,10 @@ const ko: Record<string, string> = {
   'Short-term': '단기',
   'Integrated': '통합',
   'Loudness range': '라우드니스 범위',
-  'Peak': '피크',
   '1/12 octave (121 bands)': '1/12 옥타브(121개 밴드)',
   '1/6 octave as measured, 1/3 octave: fewer, wider bars, like a hi-fi analyzer, or 1/12 octave: twice the detail, for a wide visualizer. Point at a big visualizer for its Hz and dB scales': '측정된 그대로의 1/6 옥타브, 1/3 옥타브: 하이파이 분석기처럼 더 적고 넓은 막대, 또는 1/12 옥타브: 두 배 더 세밀하며 넓은 시각화에 적합. 큰 시각화 위에 포인터를 올리면 Hz와 dB 눈금이 표시됩니다',
   'octave third sixth twelfth analyzer resolution detail hertz decibel scale': '옥타브 3분의1 6분의1 12분의1 분석기 해상도 세밀 헤르츠 데시벨 눈금',
+  'True peak': '트루 피크',
 }
 
 export default ko

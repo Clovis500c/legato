@@ -2030,10 +2030,10 @@ const uk: Record<string, string> = {
   'Short-term': 'Короткочасна',
   'Integrated': 'Інтегральна',
   'Loudness range': 'Діапазон гучності',
-  'Peak': 'Пік',
   '1/12 octave (121 bands)': '1/12 октави (121 смуга)',
   '1/6 octave as measured, 1/3 octave: fewer, wider bars, like a hi-fi analyzer, or 1/12 octave: twice the detail, for a wide visualizer. Point at a big visualizer for its Hz and dB scales': '1/6 октави, як виміряно, 1/3 октави: менше стовпчиків, вони ширші, як у Hi-Fi-аналізатора, або 1/12 октави: удвічі детальніше, для широкого візуалізатора. Наведіть вказівник на великий візуалізатор, щоб побачити шкали Гц і дБ',
   'octave third sixth twelfth analyzer resolution detail hertz decibel scale': 'октава третина шоста дванадцята аналізатор роздільність деталі герц децибел шкала',
+  'True peak': 'Істинний пік',
 }
 
 export default uk

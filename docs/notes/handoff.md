@@ -172,6 +172,8 @@ Relaunch log (newest last):
 - 2026-11-04: 1/12-octave bands (Visualizer bands › 1/12 octave, 121 bars): both twins measure them over 8192 points,
   the fixture holds them (`fineLeft`, `fineRight`), frames carry their count. Seen over the demo, full screen, switched
   1/6 → 1/12 → 1/3; not on real music, nor in the watch page (its frames are now up to 400 characters).
+- 2026-11-04: true peak (BS.1770-4 annex 2) in both twins' meters: the levels' `peak` is one now; the loudness meter
+  says True peak in dBTP, its highest in the alarm colour over −1 dBTP. A test holds the two tap tables equal.
 
 ## Mobile app and devices sync (the owner's ask, 2026-11-02 afternoon; in progress)
 

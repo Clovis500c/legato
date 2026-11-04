@@ -2030,10 +2030,10 @@ const vi: Record<string, string> = {
   'Short-term': 'Ngắn hạn',
   'Integrated': 'Tích hợp',
   'Loudness range': 'Dải độ lớn',
-  'Peak': 'Đỉnh',
   '1/12 octave (121 bands)': '1/12 quãng tám (121 dải)',
   '1/6 octave as measured, 1/3 octave: fewer, wider bars, like a hi-fi analyzer, or 1/12 octave: twice the detail, for a wide visualizer. Point at a big visualizer for its Hz and dB scales': '1/6 quãng tám như đo được, 1/3 quãng tám: ít thanh hơn và rộng hơn, như máy phân tích hi-fi, hoặc 1/12 quãng tám: chi tiết gấp đôi, cho trình hiển thị rộng. Trỏ vào trình hiển thị lớn để xem thang Hz và dB',
   'octave third sixth twelfth analyzer resolution detail hertz decibel scale': 'quãng tám một phần ba một phần sáu một phần mười hai máy phân tích độ phân giải chi tiết hertz decibel thang',
+  'True peak': 'Đỉnh thực',
 }
 
 export default vi

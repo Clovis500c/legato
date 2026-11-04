@@ -2030,10 +2030,10 @@ const tr: Record<string, string> = {
   'Short-term': 'Kısa süreli',
   'Integrated': 'Bütünleşik',
   'Loudness range': 'Ses yüksekliği aralığı',
-  'Peak': 'Tepe',
   '1/12 octave (121 bands)': '1/12 oktav (121 bant)',
   '1/6 octave as measured, 1/3 octave: fewer, wider bars, like a hi-fi analyzer, or 1/12 octave: twice the detail, for a wide visualizer. Point at a big visualizer for its Hz and dB scales': 'Ölçüldüğü gibi 1/6 oktav, 1/3 oktav: bir hi-fi analizör gibi daha az ve daha geniş çubuklar ya da 1/12 oktav: iki kat ayrıntı, geniş bir görselleştirici için. Hz ve dB ölçeklerini görmek için büyük bir görselleştiricinin üzerine gelin',
   'octave third sixth twelfth analyzer resolution detail hertz decibel scale': 'oktav üçte bir altıda bir on ikide bir analizör çözünürlük ayrıntı hertz desibel ölçek',
+  'True peak': 'Gerçek tepe',
 }
 
 export default tr

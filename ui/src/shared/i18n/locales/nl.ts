@@ -2030,10 +2030,10 @@ const nl: Record<string, string> = {
   'Short-term': 'Korte termijn',
   'Integrated': 'Geïntegreerd',
   'Loudness range': 'Luidheidsbereik',
-  'Peak': 'Piek',
   '1/12 octave (121 bands)': '1/12 octaaf (121 banden)',
   '1/6 octave as measured, 1/3 octave: fewer, wider bars, like a hi-fi analyzer, or 1/12 octave: twice the detail, for a wide visualizer. Point at a big visualizer for its Hz and dB scales': '1/6 octaaf zoals gemeten, 1/3 octaaf: minder, bredere balken, zoals een hifi-analyzer, of 1/12 octaaf: twee keer zo gedetailleerd, voor een brede visualizer. Wijs een grote visualizer aan voor de Hz- en dB-schalen',
   'octave third sixth twelfth analyzer resolution detail hertz decibel scale': 'octaaf terts zesde twaalfde analyzer resolutie detail hertz decibel schaal',
+  'True peak': 'Echte piek',
 }
 
 export default nl

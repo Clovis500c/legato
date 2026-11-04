@@ -1,6 +1,6 @@
 /**
  * The loudness meter's numbers (the Loudness meter look), pure. EBU R128 over what the meter heard of the song, from the
- * levels Adaptive Sound already measures (live.ts: momentary loudness, K-weighted over 400 ms, and the sample peak), one
+ * levels Adaptive Sound already measures (live.ts: momentary loudness, K-weighted over 400 ms, and the true peak), one
  * value every 100 ms of play. Short-term = the last 3 s of them; integrated = all of them, gated at -70 LUFS then 10 LU
  * under their mean (BS.1770); loudness range = the short-term values, gated at -70 then 20 LU under their mean, 10th to
  * 95th percentile (EBU Tech 3342). Histograms of 0.1 LU: a three-hour mix costs what a song does.
@@ -17,7 +17,7 @@ const BIN = 0.1
 /** -70 to +10 LUFS. */
 const BINS = 800
 
-/** The bars' scale, LUFS (and dBFS for the peak): music sits in the top half. */
+/** The bars' scale, LUFS (and dBTP for the peak): music sits in the top half. */
 export const LOUD_MIN = -48
 export const LOUD_MAX = 0
 /** Marks along the scale. */
@@ -31,7 +31,7 @@ export interface LoudReading {
   integrated: number | null
   /** LU; null until a full 3 s window. */
   range: number | null
-  /** dBFS: now (falling about 20 dB a second), the song's highest so far. */
+  /** True peak (BS.1770-4: 4x oversampled, both twins), dBTP: now (falling about 20 dB a second), the song's highest so far. */
   peak: number
   top: number
 }
@@ -45,7 +45,7 @@ export interface LoudWords {
   peak: string
 }
 
-export const LOUD_WORDS: LoudWords = { momentary: 'Momentary', short: 'Short-term', integrated: 'Integrated', range: 'Loudness range', peak: 'Peak' }
+export const LOUD_WORDS: LoudWords = { momentary: 'Momentary', short: 'Short-term', integrated: 'Integrated', range: 'Loudness range', peak: 'True peak' }
 
 const power = (lufs: number) => 10 ** ((lufs + 0.691) / 10)
 const lufsOf = (p: number) => (p > 0 ? -0.691 + 10 * Math.log10(p) : -120)

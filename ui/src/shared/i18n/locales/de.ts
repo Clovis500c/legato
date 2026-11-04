@@ -2030,10 +2030,10 @@ const de: Record<string, string> = {
   'Short-term': 'Kurzzeit',
   'Integrated': 'Integriert',
   'Loudness range': 'Lautheitsbereich',
-  'Peak': 'Spitze',
   '1/12 octave (121 bands)': '1/12 Oktave (121 Bänder)',
   '1/6 octave as measured, 1/3 octave: fewer, wider bars, like a hi-fi analyzer, or 1/12 octave: twice the detail, for a wide visualizer. Point at a big visualizer for its Hz and dB scales': '1/6 Oktave wie gemessen, 1/3 Oktave: weniger, breitere Balken wie bei einem HiFi-Analyzer, oder 1/12 Oktave: doppelt so fein, für einen breiten Visualizer. Zeige auf einen großen Visualizer, um seine Hz- und dB-Skalen zu sehen',
   'octave third sixth twelfth analyzer resolution detail hertz decibel scale': 'oktave terz sechstel zwölftel analyzer auflösung detail hertz dezibel skala',
+  'True peak': 'True Peak',
 }
 
 export default de

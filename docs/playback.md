@@ -262,7 +262,7 @@ never: downloading, extracting, recording or exporting a platform's audio, or to
 
 - **Local files and previews**: `crates/dsp` (`music-dsp`, pure Rust) in the native engine. `crates/player` `live.rs`
   wraps every decoded file in a rodio `Source` that runs blocks of 256 frames through the `Processor`: BS.1770 meter
-  (K-weighting, momentary 400 ms, short-term 3 s, peak), Adaptive Sound gain, peak limiter. Settings and levels go
+  (K-weighting, momentary 400 ms, short-term 3 s, true peak), Adaptive Sound gain, peak limiter. Settings and levels go
   through one shared `Control` (mutex + version, `try_lock` on the audio thread: it never waits). IPC `player_live`,
   `player_levels`.
 - **YouTube**: `crates/shield` `live.js`, injected into the embed and the watch page. The video's sound is taken with
@@ -392,10 +392,17 @@ never: downloading, extracting, recording or exporting a platform's audio, or to
     (paused: shown, not counted; a gap counts 250 ms at most): short-term = the last 3 s of them, integrated = BS.1770's
     gates (-70 LUFS, then 10 LU under the mean), loudness range = EBU Tech 3342 (short-term values, -70 then 20 LU
     under, 10th to 95th percentile), histograms of 0.1 LU. The worker draws a picture per update, then rests: in the
-    strip three bars, M S I, with their numbers; 120 px high and more, the words, the peak (now, and a mark at the
-    song's highest), a −48 to 0 scale and the range. Approximations: the engine's momentary is a 400 ms exponential
-    mean (smoother than the standard's window), the peak is the sample peak (no oversampling for true peak yet), and
-    the integrated covers what the meter heard of the song. The backdrop and the mini player show bars instead.
+    strip three bars, M S I, with their numbers; 120 px high and more, the words, the true peak (now, and a mark at the
+    song's highest, in the alarm colour over −1 dBTP, EBU R128's ceiling), a −48 to 0 scale and the range.
+    Approximations: the engine's momentary is a 400 ms exponential mean (smoother than the standard's window), and the
+    integrated covers what the meter heard of the song.
+  - **True peak** (2026-11-04): BS.1770-4 annex 2 in both twins' meters, so the levels' `peak` is a true peak: the
+    standard's 48-tap filter upsamples 4x (4 phases of 12 taps, its table digit for digit: passband ±0.1 dB to 20 kHz,
+    −40 dB from 28 kHz), the highest |value| of the 4 points and the sample itself (never under the sample peak, as
+    libebur128 reads it). Native: `meter.rs` `Oversampler` per channel, sample by sample (48 multiply-adds a sample on
+    the audio thread). YouTube: live.js `truePeak` (`tp:begin` … `tp:end`, `truepeak.test.ts`, which also checks
+    its table against the Rust one) over each 2048-sample read of the raw pair, every 33 ms. A quarter-rate sine 45° off
+    reads its crest (samples at 0.707 of it) within 0.5 %; a full-scale one shows an intersample over (+3 dB). The backdrop and the mini player show bars instead.
   - **Comfort**: `prefers-reduced-motion` or Animations off (`useCalm`): slower attack and release, a cap that sinks
     gently, one flash a second. Always: `flash.ts` limits the mean brightness of the bars to 3 flashes a second (a flash
     = a rise and a fall of at least 10 % of the range; past the budget the brightness may not turn back by 10 % until
