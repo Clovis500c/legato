@@ -1994,6 +1994,12 @@ const tr: Record<string, string> = {
   'Open app info': 'Uygulama bilgilerini aç',
   'in the search box: the track is added right away.': 'arama kutusuna: şarkı hemen eklenir.',
   'Paste a legato:// link or type a 6-digit code from a nearby Legato.': 'Bir legato:// bağlantısı yapıştır veya yakındaki bir Legato’ten 6 haneli bir kod yaz.',
+  'Visualizer gradient': 'Görselleştirici renk geçişi',
+  'Over its color: warming to red near the top like a level meter, or a prism from red lows to violet highs': 'Rengin üzerine: seviye göstergesi gibi üste doğru kırmızıya dönen ya da kırmızı baslardan mor tizlere bir prizma',
+  'No gradient': 'Geçiş yok',
+  'By level': 'Seviyeye göre',
+  'Along frequency': 'Frekans boyunca',
+  'rainbow prism spectrum meter red top warm colours': 'gökkuşağı prizma spektrum gösterge kırmızı üst sıcak renkler',
 }
 
 export default tr

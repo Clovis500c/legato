@@ -1994,6 +1994,12 @@ const vi: Record<string, string> = {
   'Open app info': 'Mở Thông tin ứng dụng',
   'in the search box: the track is added right away.': 'vào ô tìm kiếm: bài hát được thêm ngay.',
   'Paste a legato:// link or type a 6-digit code from a nearby Legato.': 'Dán liên kết legato:// hoặc nhập mã 6 chữ số từ một Legato ở gần.',
+  'Visualizer gradient': 'Dải màu của trình hiển thị',
+  'Over its color: warming to red near the top like a level meter, or a prism from red lows to violet highs': 'Trên màu của nó: chuyển sang đỏ ở phía trên như đồng hồ mức, hoặc lăng kính từ âm trầm đỏ đến âm cao tím',
+  'No gradient': 'Không dải màu',
+  'By level': 'Theo mức',
+  'Along frequency': 'Theo tần số',
+  'rainbow prism spectrum meter red top warm colours': 'cầu vồng lăng kính phổ đồng hồ đỏ trên ấm màu sắc',
 }
 
 export default vi

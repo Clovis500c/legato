@@ -111,6 +111,12 @@ Relaunch log (newest last):
 - 2026-11-04: the phone's paste hint says the search box (`youtubeLink`: only a link, so "youtube rewind" stays a
   search), the shared-playlist card drops the QR screenshot drop, Discord never starts on a phone. Unit-tested, not
   driven on the emulator (a YouTube link would cost a real request).
+- 2026-11-04: the owner, mid-run: « faudrait vrm bien gérer les ui et leur texte et le responsive prcq la c pas ouf ».
+  Next after the visualizer gradient: a pass over every screen at phone size (the emulator, and the demo at 375 × 812)
+  and in a narrow window: cut texts, overflow, cramped rows, wording. Seen already: the phone's top search bar cuts its
+  placeholder ("What do you want to pl").
+- 2026-11-04: visualizer gradient (plan-v2 › Visualizer v2), off by default; seen over the demo (`demo` in launch.json,
+  `?shot=visualizer&p=0&theme=modern-dark`, right-click › Visualizer gradient).
 
 ## Mobile app and devices sync (the owner's ask, 2026-11-02 afternoon; in progress)
 

@@ -1994,6 +1994,12 @@ const ja: Record<string, string> = {
   'Open app info': 'アプリ情報を開く',
   'in the search box: the track is added right away.': '検索ボックスに：すぐに曲が追加されます。',
   'Paste a legato:// link or type a 6-digit code from a nearby Legato.': 'legato:// リンクを貼り付けるか、近くのLegatoに表示された6桁のコードを入力してください。',
+  'Visualizer gradient': 'ビジュアライザーのグラデーション',
+  'Over its color: warming to red near the top like a level meter, or a prism from red lows to violet highs': '色の上に重ねる：レベルメーターのように上ほど赤く、または低音の赤から高音の紫へのプリズム',
+  'No gradient': 'グラデーションなし',
+  'By level': 'レベル別',
+  'Along frequency': '周波数に沿って',
+  'rainbow prism spectrum meter red top warm colours': '虹 プリズム スペクトラム メーター 赤 上 暖色 色',
 }
 
 export default ja

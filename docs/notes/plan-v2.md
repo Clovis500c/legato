@@ -465,8 +465,12 @@ colours, mirror, reflection.
       accent, or the playing cover's hue made vivid (`ambient.ts` `vivid`, 3:1 at least on the theme's background; a
       grey cover keeps the text colour). One colour per look, the painter unchanged. Checked over the demo: the accent
       draws; the demo's SVG covers average to grey, so the cover's colour was checked on a raster picture.)
-- [ ] `S` Visualizer gradients: along frequency or by level (the painter draws one colour; a `source-atop` gradient fill
-      after the bars would recolour every straight look in one pass).
+- [x] `S` Visualizer gradients: along frequency or by level (the painter draws one colour; a `source-atop` gradient fill
+      after the bars would recolour every straight look in one pass). (2026-11-04: Settings › Playback › Visualizer
+      gradient or the right-click, off by default for the owner to judge: By level = the visualizer's colour, amber
+      from half height, the alarm red at the top, from the middle out for the mirror, from the cover out for the ring;
+      Along frequency = a prism, red lows to violet highs, the ring's from the bottom up both sides. Amber and the prism
+      made 3:1 on the background (`vivid`). VU needles and the spectrogram keep their colours. Seen over the demo, both.)
 - [ ] `S` Sizes left: a big backdrop behind Now Playing, the mini player, the OBS overlay page. A click on the visualizer
       could cycle its look (today right-click picks it, a click does nothing).
 - [ ] `S-M` 1/3 and 1/12 octave bands (31 and 120, ANSI centers) beside today's 1/6 (61 bands).

@@ -1994,6 +1994,12 @@ const hi: Record<string, string> = {
   'Open app info': 'ऐप्लिकेशन की जानकारी खोलें',
   'in the search box: the track is added right away.': 'खोज बॉक्स में: ट्रैक तुरंत जुड़ जाता है।',
   'Paste a legato:// link or type a 6-digit code from a nearby Legato.': 'legato:// लिंक पेस्ट करें या पास के Legato से 6 अंकों का कोड टाइप करें।',
+  'Visualizer gradient': 'विज़ुअलाइज़र का ग्रेडिएंट',
+  'Over its color: warming to red near the top like a level meter, or a prism from red lows to violet highs': 'उसके रंग के ऊपर: लेवल मीटर की तरह ऊपर की ओर लाल होता हुआ, या लाल निम्न से बैंगनी उच्च आवृत्तियों तक एक प्रिज़्म',
+  'No gradient': 'कोई ग्रेडिएंट नहीं',
+  'By level': 'स्तर के अनुसार',
+  'Along frequency': 'आवृत्ति के साथ',
+  'rainbow prism spectrum meter red top warm colours': 'इंद्रधनुष प्रिज़्म स्पेक्ट्रम मीटर लाल ऊपर गर्म रंग',
 }
 
 export default hi

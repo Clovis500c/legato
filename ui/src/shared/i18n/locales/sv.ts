@@ -1994,6 +1994,12 @@ const sv: Record<string, string> = {
   'Open app info': 'Öppna Appinfo',
   'in the search box: the track is added right away.': 'i sökrutan: låten läggs till direkt.',
   'Paste a legato:// link or type a 6-digit code from a nearby Legato.': 'Klistra in en legato://-länk eller skriv en 6-siffrig kod från en Legato i närheten.',
+  'Visualizer gradient': 'Visualiserarens toning',
+  'Over its color: warming to red near the top like a level meter, or a prism from red lows to violet highs': 'Över färgen: mot rött upptill som en nivåmätare, eller ett prisma från röd bas till violett diskant',
+  'No gradient': 'Ingen toning',
+  'By level': 'Efter nivå',
+  'Along frequency': 'Längs frekvensen',
+  'rainbow prism spectrum meter red top warm colours': 'regnbåge prisma spektrum mätare röd topp varm färger',
 }
 
 export default sv

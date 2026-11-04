@@ -6,6 +6,7 @@ import { averageColor, vivid } from './ambient'
 import { useNowTrack, usePlayer } from './store'
 import { viz } from './vizFrames'
 import { frameMessage, type ToWorker } from './vizProtocol'
+import { gradientStops } from './vizStops'
 
 /** Drawing rate, frames a second: the sound's own frames come at 60 (step 1), the picture is drawn at half of that. */
 const FPS = 30
@@ -50,6 +51,8 @@ export function VizCanvas({ look, listen = true }: { look: VisualizerStyle; list
   const weighting = useSettings((s) => s.settings.visualizerWeighting)
   const color = useSettings((s) => s.settings.visualizerColor)
   const coverInk = useCoverInk(color === 'cover')
+  const gradient = useSettings((s) => s.settings.visualizerGradient)
+  const darkTheme = useSettings((s) => s.current().dark)
   const playing = usePlayer((s) => s.playing)
   const theme = useSettings((s) => s.settings.theme)
   const accent = useSettings((s) => s.settings.accent)
@@ -102,11 +105,15 @@ export function VizCanvas({ look, listen = true }: { look: VisualizerStyle; list
     const el = box.current
     const w = worker.current
     if (!el || !w) return
-    const send = () => w.postMessage({ t: 'look', look, calm, weighting, ink: inkOf(el, color, coverInk), warn: getComputedStyle(el).getPropertyValue('--color-danger').trim(), fps: FPS } satisfies ToWorker)
+    const send = () => {
+      const ink = inkOf(el, color, coverInk)
+      const warn = getComputedStyle(el).getPropertyValue('--color-danger').trim() || '#d93a2b'
+      w.postMessage({ t: 'look', look, calm, weighting, ink, warn, gradient, stops: gradientStops(gradient, ink, warn, darkTheme), fps: FPS } satisfies ToWorker)
+    }
     send()
     const late = setTimeout(send, 700)
     return () => clearTimeout(late)
-  }, [ready, look, calm, weighting, color, coverInk, theme, accent, dark, song])
+  }, [ready, look, calm, weighting, color, coverInk, gradient, darkTheme, theme, accent, dark, song])
 
   // Something draws: loop and frames. Nothing does: no loop, no subscription.
   useEffect(() => {

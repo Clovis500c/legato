@@ -1994,6 +1994,12 @@ const ko: Record<string, string> = {
   'Open app info': '앱 정보 열기',
   'in the search box: the track is added right away.': '검색창에: 곡이 바로 추가됩니다.',
   'Paste a legato:// link or type a 6-digit code from a nearby Legato.': 'legato:// 링크를 붙여넣거나 근처 Legato의 6자리 코드를 입력하세요.',
+  'Visualizer gradient': '비주얼라이저 그라데이션',
+  'Over its color: warming to red near the top like a level meter, or a prism from red lows to violet highs': '색 위에: 레벨 미터처럼 위로 갈수록 붉게, 또는 빨간 저음에서 보라색 고음까지 프리즘',
+  'No gradient': '그라데이션 없음',
+  'By level': '레벨별',
+  'Along frequency': '주파수를 따라',
+  'rainbow prism spectrum meter red top warm colours': '무지개 프리즘 스펙트럼 미터 빨강 위 따뜻한 색',
 }
 
 export default ko

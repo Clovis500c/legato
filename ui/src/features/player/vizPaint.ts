@@ -1,6 +1,7 @@
-import type { VisualizerStyle, VizWeighting } from '../../shared/theme/theme'
+import type { VisualizerStyle, VizGradient, VizWeighting } from '../../shared/theme/theme'
 import { capSegment, litSegments } from './ledBars'
 import { columnSpans, columnsFor, dialGeometry, ledRows, ringBars, wavePath, type Dial, type LedRows, type Ring } from './vizDraw'
+import { fillFor, type Stops } from './vizFill'
 import { createScene } from './vizScene'
 import { colorMap, fillColumn, rowMix, SCROLL, SCROLL_CALM, scrollBy } from './vizSpectro'
 import { createVu, vuPos, VU_MARKS } from './vizVu'
@@ -51,6 +52,9 @@ export function createPainter(canvas: OffscreenCanvas) {
   let sprites: Sprites | null = null
   let spans = columnSpans(1, 1, 0)
   let cols = 0
+  let gradient: VizGradient = 'none'
+  let stops: Stops = []
+  let fill: CanvasGradient | null = null
 
   /** A CSS colour as [r, g, b] (the canvas parses it). */
   function rgbOf(color: string): [number, number, number] {
@@ -95,6 +99,21 @@ export function createPainter(canvas: OffscreenCanvas) {
     if (look === 'spectrogram') {
       const img = new ImageData(1, h)
       strip = { img, px: new Uint32Array(img.data.buffer), mix: rowMix(h, n) }
+    }
+    fill = makeFill(w, h)
+  }
+
+  /** The gradient over the bars for this size and look; null = the one colour. */
+  function makeFill(w: number, h: number): CanvasGradient | null {
+    const f = fillFor(gradient, look, w, h, stops, ring)
+    if (!ctx || !f) return null
+    try {
+      const g = f.kind === 'linear' ? ctx.createLinearGradient(f.x0, f.y0, f.x1, f.y1) : f.kind === 'radial' ? ctx.createRadialGradient(f.x, f.y, f.r0, f.x, f.y, f.r1) : ctx.createConicGradient(f.start, f.x, f.y)
+      for (const [at, color] of f.stops) g.addColorStop(at, color)
+      return g
+    } catch {
+      // A colour the canvas can't read: the bars keep theirs.
+      return null
     }
   }
 
@@ -312,7 +331,9 @@ export function createPainter(canvas: OffscreenCanvas) {
       dpr = ratio
       layout()
     },
-    set(next: VisualizerStyle, calmer: boolean, color: string, alarm = WARN, weigh: VizWeighting = 'flat') {
+    set(next: VisualizerStyle, calmer: boolean, color: string, alarm = WARN, weigh: VizWeighting = 'flat', grad: VizGradient = 'none', colors: Stops = []) {
+      gradient = grad
+      stops = colors
       // Reduced motion or the weighting changed: a new scene (and needles).
       const restart = calmer !== calm || weigh !== weighting
       weighting = weigh
@@ -363,6 +384,13 @@ export function createPainter(canvas: OffscreenCanvas) {
       else if (look === 'wave') wave(levels, W, H)
       else bars(levels, peaks, H)
       ctx.globalAlpha = 1
+      // The gradient takes the bars' place, their shapes and opacities kept.
+      if (fill) {
+        ctx.globalCompositeOperation = 'source-atop'
+        ctx.fillStyle = fill
+        ctx.fillRect(0, 0, W, H)
+        ctx.globalCompositeOperation = 'source-over'
+      }
       return resting
     },
   }

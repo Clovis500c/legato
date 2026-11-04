@@ -1994,6 +1994,12 @@ const pt: Record<string, string> = {
   'Open app info': 'Abrir informações do app',
   'in the search box: the track is added right away.': 'na caixa de pesquisa: a faixa é adicionada na hora.',
   'Paste a legato:// link or type a 6-digit code from a nearby Legato.': 'Cole um link legato:// ou digite um código de 6 dígitos de um Legato por perto.',
+  'Visualizer gradient': 'Degradê do visualizador',
+  'Over its color: warming to red near the top like a level meter, or a prism from red lows to violet highs': 'Sobre a cor: puxando para o vermelho no alto como um medidor de nível, ou um prisma de graves vermelhos a agudos violeta',
+  'No gradient': 'Sem degradê',
+  'By level': 'Por nível',
+  'Along frequency': 'Ao longo da frequência',
+  'rainbow prism spectrum meter red top warm colours': 'arco-íris prisma espectro medidor vermelho topo quente cores',
 }
 
 export default pt

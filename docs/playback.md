@@ -353,6 +353,13 @@ never: downloading, extracting, recording or exporting a platform's audio, or to
     drawn (default, as above), the theme's accent, or the playing cover's hue made vivid (`ambient.ts` `vivid`: its
     average colour's hue, saturation 0.5 to 0.8, lightness moved until it reads 3:1 on the theme's background; a grey
     cover keeps the text colour). `VizCanvas.tsx` sends it as the `ink` of the `look` message: the worker is unchanged.
+  - **Gradient** (Settings › Playback › Visualizer gradient, or the right-click, 2026-11-04; none by default): colours
+    laid over the bars after they are drawn (`source-atop`: their shapes and opacities, the gradient's colours), one
+    `fillRect` a frame. `vizStops.ts` (page side) picks the colours: by level, the visualizer's colour to half height,
+    amber, the alarm red at the top; along frequency, a seven-hue prism, red lows to violet highs; amber and the prism
+    made 3:1 on the background. `vizFill.ts` (worker side, pure) lays them per look: bottom up, the mirror from the
+    middle out, the ring from the cover out (radial) or clockwise from the bottom (conic). VU needles and the
+    spectrogram keep their own colours.
   - **Comfort**: `prefers-reduced-motion` or Animations off (`useCalm`): slower attack and release, a cap that sinks
     gently, one flash a second. Always: `flash.ts` limits the mean brightness of the bars to 3 flashes a second (a flash
     = a rise and a fall of at least 10 % of the range; past the budget the brightness may not turn back by 10 % until

@@ -1994,6 +1994,12 @@ const zh: Record<string, string> = {
   'Open app info': '打开应用信息',
   'in the search box: the track is added right away.': '到搜索框：歌曲会立即添加。',
   'Paste a legato:// link or type a 6-digit code from a nearby Legato.': '粘贴 legato:// 链接，或输入附近 Legato 显示的 6 位代码。',
+  'Visualizer gradient': '可视化渐变',
+  'Over its color: warming to red near the top like a level meter, or a prism from red lows to violet highs': '叠加在颜色上：像电平表一样越往上越红，或从红色低音到紫色高音的棱镜色',
+  'No gradient': '无渐变',
+  'By level': '按电平',
+  'Along frequency': '沿频率',
+  'rainbow prism spectrum meter red top warm colours': '彩虹 棱镜 频谱 电平表 红色 顶部 暖色 颜色',
 }
 
 export default zh

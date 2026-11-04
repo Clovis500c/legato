@@ -1994,6 +1994,12 @@ const ru: Record<string, string> = {
   'Open app info': 'Открыть сведения о приложении',
   'in the search box: the track is added right away.': 'в строку поиска: трек сразу добавится.',
   'Paste a legato:// link or type a 6-digit code from a nearby Legato.': 'Вставь ссылку legato:// или введи 6-значный код из Legato поблизости.',
+  'Visualizer gradient': 'Градиент визуализатора',
+  'Over its color: warming to red near the top like a level meter, or a prism from red lows to violet highs': 'Поверх цвета: к красному вверху, как индикатор уровня, или призма от красных низов до фиолетовых верхов',
+  'No gradient': 'Без градиента',
+  'By level': 'По уровню',
+  'Along frequency': 'По частоте',
+  'rainbow prism spectrum meter red top warm colours': 'радуга призма спектр индикатор красный верх тёплый цвета',
 }
 
 export default ru

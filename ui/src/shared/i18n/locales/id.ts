@@ -1994,6 +1994,12 @@ const id: Record<string, string> = {
   'Open app info': 'Buka Info aplikasi',
   'in the search box: the track is added right away.': 'di kotak pencarian: lagu langsung ditambahkan.',
   'Paste a legato:// link or type a 6-digit code from a nearby Legato.': 'Tempel link legato:// atau ketik kode 6 digit dari Legato di dekatmu.',
+  'Visualizer gradient': 'Gradien visualizer',
+  'Over its color: warming to red near the top like a level meter, or a prism from red lows to violet highs': 'Di atas warnanya: memerah di bagian atas seperti pengukur level, atau prisma dari nada rendah merah ke nada tinggi ungu',
+  'No gradient': 'Tanpa gradien',
+  'By level': 'Menurut level',
+  'Along frequency': 'Sepanjang frekuensi',
+  'rainbow prism spectrum meter red top warm colours': 'pelangi prisma spektrum meter merah atas hangat warna',
 }
 
 export default id

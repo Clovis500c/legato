@@ -1994,6 +1994,12 @@ const nl: Record<string, string> = {
   'Open app info': 'App-info openen',
   'in the search box: the track is added right away.': 'in het zoekvak: het nummer wordt meteen toegevoegd.',
   'Paste a legato:// link or type a 6-digit code from a nearby Legato.': 'Plak een legato://-link of typ een 6-cijferige code van een Legato in de buurt.',
+  'Visualizer gradient': 'Kleurverloop van de visualizer',
+  'Over its color: warming to red near the top like a level meter, or a prism from red lows to violet highs': 'Over de kleur: naar boven toe rood zoals een niveaumeter, of een prisma van rode lagen tot violette hogen',
+  'No gradient': 'Geen verloop',
+  'By level': 'Op niveau',
+  'Along frequency': 'Langs de frequentie',
+  'rainbow prism spectrum meter red top warm colours': 'regenboog prisma spectrum meter rood boven warm kleuren',
 }
 
 export default nl

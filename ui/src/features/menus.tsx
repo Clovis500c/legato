@@ -33,6 +33,7 @@ import {
   MinusCircle,
   Moon,
   Palette,
+  Gradient,
   Pause,
   PencilSimple,
   PictureInPicture,
@@ -67,7 +68,7 @@ import { api, playlistKey, type Edit, type LibraryPlaylist, type PluginInfo, typ
 import { bigTrackArt } from '../shared/art'
 import { loadFit } from '../shared/artfit'
 import { fileName, starsText } from '../shared/format'
-import { COVER_ORDERS, VISUALIZER_STYLES, VIZ_COLORS, VIZ_WEIGHTINGS, type PlaylistCover, type PlaylistFolder } from '../shared/theme/theme'
+import { COVER_ORDERS, VISUALIZER_STYLES, VIZ_COLORS, VIZ_GRADIENTS, VIZ_WEIGHTINGS, type PlaylistCover, type PlaylistFolder } from '../shared/theme/theme'
 import type { MenuEntry } from '../shared/ui/ContextMenu'
 import { SourceIcon } from '../shared/ui/SourceIcon'
 import type { Addon } from './addons/registry'
@@ -90,7 +91,7 @@ import { closeKaraoke, nowFix, nudgeLyrics, toggleKaraoke } from './player/karao
 import { canVizFull, toggleVizFull, useVizFull } from './player/vizFull'
 import { closeCoverFull, toggleCoverFull } from './player/coverFull'
 import { openShare } from './share/share'
-import { VISUALIZER_LABELS, VIZ_COLOR_LABELS, VIZ_WEIGHTING_LABELS } from './player/vizLooks'
+import { VISUALIZER_LABELS, VIZ_COLOR_LABELS, VIZ_GRADIENT_LABELS, VIZ_WEIGHTING_LABELS } from './player/vizLooks'
 import { msg, tr, trn } from '../shared/i18n/i18n'
 import { ask, askText } from '../shared/ui/Ask'
 
@@ -727,7 +728,7 @@ export function playerMenu(): MenuEntry[] {
 
 /** The visualizer (the strip under the cover, its full screen): the look, full screen. */
 export function vizMenu(): MenuEntry[] {
-  const { visualizerStyle: look, visualizerWeighting: weighting, visualizerColor: color } = useSettings.getState().settings
+  const { visualizerStyle: look, visualizerWeighting: weighting, visualizerColor: color, visualizerGradient: gradient } = useSettings.getState().settings
   const open = useVizFull.getState().open
   return [
     {
@@ -744,6 +745,11 @@ export function vizMenu(): MenuEntry[] {
       label: tr('Visualizer color'),
       icon: <Palette size={16} />,
       items: VIZ_COLORS.map((v) => ({ label: tr(VIZ_COLOR_LABELS[v]), checked: color === v, onSelect: () => useSettings.getState().update({ visualizerColor: v }) })),
+    },
+    {
+      label: tr('Visualizer gradient'),
+      icon: <Gradient size={16} />,
+      items: VIZ_GRADIENTS.map((v) => ({ label: tr(VIZ_GRADIENT_LABELS[v]), checked: gradient === v, onSelect: () => useSettings.getState().update({ visualizerGradient: v }) })),
     },
     { label: open ? tr('Leave full screen') : tr('Full screen'), icon: <ArrowsOutSimple size={16} />, disabled: !open && !canVizFull(), onSelect: toggleVizFull },
   ]

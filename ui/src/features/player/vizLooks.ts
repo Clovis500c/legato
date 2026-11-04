@@ -1,5 +1,5 @@
 import { msg } from '../../shared/i18n/i18n'
-import type { VisualizerStyle, VizColor, VizWeighting } from '../../shared/theme/theme'
+import type { VisualizerStyle, VizColor, VizGradient, VizWeighting } from '../../shared/theme/theme'
 
 /** The visualizer's looks by name (Settings, the visualizer's right-click menu); show with `tr`. */
 export const VISUALIZER_LABELS: Record<VisualizerStyle, string> = { led: msg('LED'), bars: msg('Bars'), mirror: msg('Mirror'), peaks: msg('Peaks'), wave: msg('Wave'), radial: msg('Radial'), vu: msg('VU needles'), spectrogram: msg('Spectrogram') }
@@ -9,3 +9,6 @@ export const VIZ_WEIGHTING_LABELS: Record<VizWeighting, string> = { flat: msg('A
 
 /** The visualizer's colours by name (Settings, its right-click); show with `tr`. */
 export const VIZ_COLOR_LABELS: Record<VizColor, string> = { text: msg('Text color'), accent: msg('Accent color'), cover: msg("Cover's color") }
+
+/** The visualizer's gradients by name (Settings, its right-click); show with `tr`. */
+export const VIZ_GRADIENT_LABELS: Record<VizGradient, string> = { none: msg('No gradient'), level: msg('By level'), frequency: msg('Along frequency') }
