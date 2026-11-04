@@ -150,6 +150,8 @@ Relaunch log (newest last):
   off 0.27 s. Cause: wry's `onPause` calls `WebView.onPause()`, and Chromium pauses the media then, before our resume.
   Fixed by emptying wry's private `mWebView` field (by type; `onPause`, `onResume` and its Back check
   `isInitialized`), Back by our own `OnBackPressedCallback`, the field put back for `onDestroy`. After: no event at all.
+- 2026-11-04: APK 1.1.641 (the phone's songs and that fix) signed and sent to the owner; its dex keeps wry's
+  `mWebView` (`apkanalyzer dex packages --defined-only`, cmdline-tools). The emulator stopped for the build.
 
 ## Mobile app and devices sync (the owner's ask, 2026-11-02 afternoon; in progress)
 
