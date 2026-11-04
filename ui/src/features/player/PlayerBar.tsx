@@ -8,7 +8,7 @@ import { formatDuration } from '../../shared/format'
 import { Bar, Knob, RoundButton } from '../../shared/ui/controls'
 import { SourceIcon, sourceLabel } from '../../shared/ui/SourceIcon'
 import { ProgressLine, SeekBar, TimeText } from './Progress'
-import { usePhone } from '../../shared/phone'
+import { useNarrow, usePhone } from '../../shared/phone'
 import { Transport } from './Transport'
 import { onMenu, openMenu } from '../../shared/ui/ContextMenu'
 import { sleepLabel, sleepMenu, useSleep } from './sleep'
@@ -230,12 +230,19 @@ export function VolumeControl({ big }: { big?: boolean }) {
   )
 }
 
-/** Right panel switch (Up next, lyrics): Fill when open, again closes it. */
+/** Right panel switch (Up next, lyrics): Fill when open, again closes it. A narrow window has none: Now Playing opens on it. */
 function PanelButton({ panel, label, icon: Icon }: { panel: 'upNext' | 'lyrics'; label: string; icon: typeof Queue }) {
-  const on = useSettings((s) => s.settings.sidePanel === panel)
+  const narrow = useNarrow()
+  const on = useSettings((s) => s.settings.sidePanel === panel) && !narrow
   const now = usePlayer((s) => !!s.now)
+  const open = () => {
+    const settings = useSettings.getState()
+    if (!narrow) return settings.update({ sidePanel: on ? 'none' : panel })
+    settings.update({ upNext: panel === 'upNext', lyrics: panel === 'lyrics', editor: false })
+    usePlayer.getState().setFull(true)
+  }
   return (
-    <RoundButton label={label} aria-pressed={on} kind="plain" size="sm" disabled={!now} className={on ? 'text-ink!' : ''} onClick={(e) => (useSettings.getState().update({ sidePanel: on ? 'none' : panel }), pop(e.currentTarget))}>
+    <RoundButton label={label} aria-pressed={on} kind="plain" size="sm" disabled={!now} className={on ? 'text-ink!' : ''} onClick={(e) => (open(), pop(e.currentTarget))}>
       <Icon size={19} weight={on ? 'fill' : 'regular'} />
     </RoundButton>
   )

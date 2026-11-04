@@ -2,7 +2,7 @@ import { ArrowDown, ArrowUp, CaretDown, CaretUp, Clock, DotsThreeVertical, Heart
 import { artistName } from '../../shared/artistName'
 import { useShallow } from 'zustand/react/shallow'
 import { useVirtualizer } from '@tanstack/react-virtual'
-import { useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useSettings } from '../../app/settings'
 import type { LibraryTrack, Source } from '../../shared/api'
 import { formatCount, formatDuration } from '../../shared/format'
@@ -26,6 +26,7 @@ import { all, NONE, pick, picked, pickedRows, step, type Selection } from './sel
 import { msg, tr, trn } from '../../shared/i18n/i18n'
 import { pop } from '../../shared/motion'
 import { usePhone } from '../../shared/phone'
+import { fitColumns } from './fitColumns'
 
 const ROW = { compact: 40, comfort: 52, airy: 64 }
 const PHONE_ROW = 60
@@ -77,12 +78,25 @@ export function TrackTable({ tracks, empty, editId, rowActions, sort, onSort, fo
   const liked = useLikedIds()
   // Phone layout: the song, its artist under it and More, no header; one tap plays (no hover, no double click).
   const phone = usePhone()
-  // A finger's row on the phone: two lines with room between songs, whatever the density.
-  const row = phone ? Math.max(ROW[density], PHONE_ROW) : ROW[density]
   const single = clickToPlay === 'single' || phone
+  // The list's own width: a narrow one (small window, a pane beside it) drops the least needed columns (fitColumns).
+  const [listWidth, setListWidth] = useState(0)
+  const measure = useCallback((el: HTMLDivElement | null) => {
+    if (!el) return
+    const seen = new ResizeObserver(([e]) => setListWidth(Math.round(e.contentRect.width)))
+    seen.observe(el)
+    return () => seen.disconnect()
+  }, [])
+  // Rows' own padding (px-2) off; edit mode's buttons take more room.
+  const fit = fitColumns(columns, density === 'compact', listWidth && listWidth - 16, editId ? 188 : 96)
   // Compact: artist in its own column (what listeners ask, docs/design.md); taller rows keep it under the title.
-  const artistCol = density === 'compact' && !phone
+  const artistCol = fit.artistCol && !phone
+  // A finger's row on the phone: two lines with room between songs, whatever the density. Compact with the artist under
+  // the title (a narrow list): comfort's height, room for both lines.
+  const row = phone ? Math.max(ROW[density], PHONE_ROW) : density === 'compact' && !artistCol ? ROW.comfort : ROW[density]
   const virtual = useVirtualizer({ count: tracks.length, getScrollElement: () => scroller.current, estimateSize: () => row, overscan: 12 })
+  // New row height (density, a list narrowed or widened): the rows are laid out again.
+  useEffect(() => virtual.measure(), [row, virtual])
   // Selection belongs to the list it was made in: a new list (filter, sort, other page) starts with none.
   const [held, setHeld] = useState<{ list: LibraryTrack[]; sel: Selection }>({ list: tracks, sel: NONE })
   const sel = held.list === tracks ? held.sel : NONE
@@ -126,8 +140,8 @@ export function TrackTable({ tracks, empty, editId, rowActions, sort, onSort, fo
     if (e.key === 'Delete' && editId !== undefined && sel.ids.size) removeChosen()
   }
   // Mockup order: the hover actions and the heart sit right before the time (last column).
-  const lead = phone ? [] : columns.filter((c) => c !== 'duration')
-  const tail = !phone && columns.includes('duration') ? (['duration'] as const) : []
+  const lead = phone ? [] : fit.columns.filter((c) => c !== 'duration')
+  const tail = !phone && fit.columns.includes('duration') ? (['duration'] as const) : []
   const grid = { gridTemplateColumns: phone ? '24px minmax(0,1fr) max-content' : ['32px', 'minmax(0,2fr)', ...(artistCol ? ['minmax(0,1fr)'] : []), ...lead.map((c) => width[c]), editId ? '188px' : rowActions ? 'max-content' : '96px', ...tail.map((c) => width[c])].join(' ') }
   const cover = density === 'compact' ? 28 : density === 'comfort' ? 36 : 46
   const cell = (t: LibraryTrack, c: Column) =>
@@ -161,7 +175,7 @@ export function TrackTable({ tracks, empty, editId, rowActions, sort, onSort, fo
     )
 
   return (
-    <div role="grid" aria-rowcount={tracks.length} aria-multiselectable className="flex min-h-0 flex-1 flex-col">
+    <div ref={measure} role="grid" aria-rowcount={tracks.length} aria-multiselectable className="flex min-h-0 flex-1 flex-col">
       {chosen.length > 0 && (
         <div className="mb-2 flex shrink-0 flex-wrap items-center gap-1.5 rounded-xl border border-line bg-raised px-3 py-1.5">
           <span className="mr-auto text-[0.8125rem] font-semibold">{trn(chosen.length, '{n} song selected', '{n} songs selected')}</span>

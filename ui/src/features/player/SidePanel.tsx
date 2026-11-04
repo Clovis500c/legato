@@ -1,4 +1,5 @@
 import { useSettings } from '../../app/settings'
+import { useNarrow } from '../../shared/phone'
 import { trackArt } from '../../shared/art'
 import { tr } from '../../shared/i18n/i18n'
 import { onMenu } from '../../shared/ui/ContextMenu'
@@ -48,7 +49,9 @@ export function SidePanel() {
   const here = useSettings((s) => s.settings.miniPlace === 'panel')
   const on = useSettings((s) => s.settings.miniPlayer)
   const update = useSettings((s) => s.update)
-  if (!now) return null
+  // A narrow window: the page keeps the room. Now Playing has Up next and the lyrics; the video floats (MiniPlayer).
+  const narrow = useNarrow()
+  if (!now || narrow) return null
   // Not under Now Playing: its own video slot takes the video. Nothing playing (paused, restored): no player here
   // (user's pick 2026-10-30).
   const stage = here && !full && playing && (now.via === 'youtube' || on)

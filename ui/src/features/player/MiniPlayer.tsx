@@ -1,6 +1,7 @@
 import { ArrowsOutSimple } from '@phosphor-icons/react'
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { useSettings } from '../../app/settings'
+import { useNarrow } from '../../shared/phone'
 import { trackArt } from '../../shared/art'
 import { RoundButton } from '../../shared/ui/controls'
 import { onMenu } from '../../shared/ui/ContextMenu'
@@ -35,7 +36,10 @@ export function MiniPlayer() {
   const full = usePlayer((s) => s.full)
   const setFull = usePlayer((s) => s.setFull)
   const on = useSettings((s) => s.settings.miniPlayer)
-  const docked = useSettings((s) => s.settings.miniPlace !== 'float')
+  const place = useSettings((s) => s.settings.miniPlace)
+  // A narrow window has no right panel (SidePanel): its mini player floats here.
+  const narrow = useNarrow()
+  const docked = place === 'sidebar' || (place === 'panel' && !narrow)
   const spot = useSettings((s) => s.settings.miniSpot)
   const miniWidth = useSettings((s) => s.settings.miniWidth)
   const update = useSettings((s) => s.update)
