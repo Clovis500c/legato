@@ -2008,6 +2008,10 @@ const ko: Record<string, string> = {
   'From your PC': 'PC에서',
   'Sign in to YouTube Music, Spotify or Apple Music in Legato on your PC: your playlists come to this phone when your devices sync.': 'PC의 Legato에서 YouTube Music, Spotify 또는 Apple Music에 로그인하세요. 기기가 동기화되면 플레이리스트가 이 휴대폰으로 옵니다.',
   'Connect it in Legato on your PC: your playlists come here when your devices sync.': 'PC의 Legato에서 연결하세요. 기기가 동기화되면 플레이리스트가 여기로 옵니다.',
+  'Music on this phone': '이 휴대폰의 음악',
+  'MP3, FLAC, WAV, OGG, M4A in your Music and Download folders. Linked to your YouTube and Spotify tracks and played first, gapless.': 'Music 및 Download 폴더의 MP3, FLAC, WAV, OGG, M4A. YouTube 및 Spotify 곡과 연결되어 먼저 재생되며, 끊김 없이 이어집니다.',
+  'Find my songs': '내 노래 찾기',
+  'Android keeps Legato away from your music. Allow it in Legato’s app info › Permissions.': 'Android가 Legato의 음악 접근을 막고 있습니다. Legato의 앱 정보 › 권한에서 허용하세요.',
 }
 
 export default ko

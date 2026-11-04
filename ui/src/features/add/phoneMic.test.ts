@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { askMic, type MicBridge, openAppInfo } from './phoneMic'
+import { askMic, type PhoneBridge, openAppInfo } from './phoneMic'
 
 /** Android's side, answering each message. */
 function phone(answer: string) {
   const sent: string[] = []
-  const mic: MicBridge = {
+  const mic: PhoneBridge = {
     onmessage: null,
     postMessage(text) {
       sent.push(text)

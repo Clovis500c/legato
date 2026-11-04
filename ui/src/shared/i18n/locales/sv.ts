@@ -2008,6 +2008,10 @@ const sv: Record<string, string> = {
   'From your PC': 'Från din dator',
   'Sign in to YouTube Music, Spotify or Apple Music in Legato on your PC: your playlists come to this phone when your devices sync.': 'Logga in på YouTube Music, Spotify eller Apple Music i Legato på din dator: dina spellistor kommer till den här telefonen när dina enheter synkas.',
   'Connect it in Legato on your PC: your playlists come here when your devices sync.': 'Anslut det i Legato på din dator: dina spellistor kommer hit när dina enheter synkas.',
+  'Music on this phone': 'Musik på den här telefonen',
+  'MP3, FLAC, WAV, OGG, M4A in your Music and Download folders. Linked to your YouTube and Spotify tracks and played first, gapless.': 'MP3, FLAC, WAV, OGG, M4A i dina mappar Music och Download. Länkas till dina låtar från YouTube och Spotify och spelas först, utan pauser.',
+  'Find my songs': 'Hitta mina låtar',
+  'Android keeps Legato away from your music. Allow it in Legato’s app info › Permissions.': 'Android hindrar Legato från att läsa din musik. Tillåt det i Appinfo för Legato › Behörigheter.',
 }
 
 export default sv

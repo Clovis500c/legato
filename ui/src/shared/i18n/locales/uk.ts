@@ -2008,6 +2008,10 @@ const uk: Record<string, string> = {
   'From your PC': 'З ПК',
   'Sign in to YouTube Music, Spotify or Apple Music in Legato on your PC: your playlists come to this phone when your devices sync.': 'Увійди в YouTube Music, Spotify або Apple Music у Legato на ПК: плейлисти прийдуть на цей телефон, коли пристрої синхронізуються.',
   'Connect it in Legato on your PC: your playlists come here when your devices sync.': 'Підключи його в Legato на ПК: плейлисти прийдуть сюди, коли пристрої синхронізуються.',
+  'Music on this phone': 'Музика на цьому телефоні',
+  'MP3, FLAC, WAV, OGG, M4A in your Music and Download folders. Linked to your YouTube and Spotify tracks and played first, gapless.': 'MP3, FLAC, WAV, OGG, M4A у твоїх теках Music і Download. Пов’язуються з твоїми треками YouTube і Spotify та грають першими, без пауз.',
+  'Find my songs': 'Знайти мої пісні',
+  'Android keeps Legato away from your music. Allow it in Legato’s app info › Permissions.': 'Android не дає Legato доступу до твоєї музики. Дозволь його в Про додаток Legato › Дозволи.',
 }
 
 export default uk

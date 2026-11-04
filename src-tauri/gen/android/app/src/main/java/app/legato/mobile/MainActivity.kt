@@ -6,7 +6,9 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.net.wifi.WifiManager
+import android.os.Build
 import android.os.Bundle
+import android.os.Environment
 import android.provider.Settings
 import android.view.View
 import android.webkit.WebView
@@ -16,6 +18,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.webkit.WebViewCompat
 import androidx.webkit.WebViewFeature
+import org.json.JSONArray
 
 class MainActivity : TauriActivity() {
   // Your devices on the same Wi-Fi (mDNS): Android drops multicast packets unless an app holds this lock.
@@ -65,9 +68,25 @@ class MainActivity : TauriActivity() {
             "settings" -> startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", packageName, null)))
           }
         }
+        // Music on this phone: Android's permission to read its songs (asked, or only checked at launch), then the
+        // folders they're kept in; "no" when refused.
+        WebViewCompat.addWebMessageListener(webView, "LegatoMusic", APP) { _, message, _, _, reply ->
+          val read = if (Build.VERSION.SDK_INT >= 33) Manifest.permission.READ_MEDIA_AUDIO else Manifest.permission.READ_EXTERNAL_STORAGE
+          val answer = { granted: Boolean -> reply.postMessage(if (granted) musicFolders() else "no") }
+          val has = checkSelfPermission(read) == PackageManager.PERMISSION_GRANTED
+          when (message.data) {
+            "check" -> answer(has)
+            "ask" -> if (has) answer(true) else requestPermissions(arrayOf(read)) { granted -> answer(granted == true) }
+          }
+        }
       }
     }
   }
+
+  // Where a phone keeps songs: its Music and Download folders, as a JSON list of paths (Rust drops a missing one).
+  @Suppress("DEPRECATION")
+  private fun musicFolders() =
+    JSONArray(listOf(Environment.DIRECTORY_MUSIC, Environment.DIRECTORY_DOWNLOADS).map { Environment.getExternalStoragePublicDirectory(it).absolutePath }).toString()
 
   // On screen: the playback service may start (Android 12 refuses it from the background); it stops itself once off
   // screen and silent.

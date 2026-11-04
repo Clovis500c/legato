@@ -317,9 +317,16 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
         `saveFile`) for every file dialog; a picked address is copied into the cache, a saved file written there and
         copied out (`src-tauri/src/picked.rs`, `PickedFile.kt` over JNI); on the phone the picker filters by media
         types only (a .theme or .legato file has no type Android knows). Seen on the emulator (API 36): a theme saved to Downloads through Android's save screen, then opened back from it (copied in under its own name); the other dialogs not driven one by one, nor a real phone.
-  - [ ] `M` Android: music on this phone (local files). No folder picker on Android (`tauri-plugin-dialog`
+  - [x] `M` Android: music on this phone (local files). No folder picker on Android (`tauri-plugin-dialog`
         refuses folders on mobile): `READ_MEDIA_AUDIO` and a scan of the phone's Music and Download folders, played by
-        the Rust engine in the background with the notification (docs/notes/ideas/mobile.md, phase 3).
+        the Rust engine in the background with the notification (docs/notes/ideas/mobile.md, phase 3). Done
+        (2026-11-04): a Music on this phone card (Add music, the welcome) and the Local files row ask Android's
+        permission (`READ_MEDIA_AUDIO`; 8 to 12: `READ_EXTERNAL_STORAGE`) through MainActivity's `LegatoMusic`, then
+        watch the phone's Music and Download folders like a PC's; scanned again at launch while Android still lets
+        Legato read them (`features/add/phoneMusic.ts`). Seen on the emulator (API 36): the dialog and a refusal (its
+        note, Legato's app info), a WAV found with its tags, a file pushed later found by the watcher, played by the
+        Rust engine behind other apps and with the screen off, the notification with its title. Not seen on a real
+        phone, nor Android 8 to 12, nor an SD card (not looked at).
   - [x] QR scanner for pairing (2026-11-04, `tauri-plugin-barcode-scanner` 2.x): never scanned a real code.
   - [x] Secrets sealed by Android's Keystore (2026-11-04), moved once from `secrets.json`: checked on the emulator.
   - [x] Android download on the website (2026-11-04): hero link and FAQ; a push deploys it (the owner's call).

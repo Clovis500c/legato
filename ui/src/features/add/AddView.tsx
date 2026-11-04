@@ -1,11 +1,11 @@
-import { ArrowRight, ClipboardText, Desktop, FolderPlus, ListPlus, MagnifyingGlass, Plus, QrCode } from '@phosphor-icons/react'
+import { ArrowRight, ClipboardText, Desktop, DeviceMobile, FolderPlus, ListPlus, MagnifyingGlass, Plus, QrCode } from '@phosphor-icons/react'
 import { open } from '@tauri-apps/plugin-dialog'
 import { useEffect, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import { useStore } from '../../app/store'
 import { api, type Track } from '../../shared/api'
 import { pickFile } from '../../shared/files'
-import { tr } from '../../shared/i18n/i18n'
+import { tr, trn } from '../../shared/i18n/i18n'
 import { phoneApp } from '../../shared/platform'
 import { Button } from '../../shared/ui/Button'
 import { Led, RoundButton } from '../../shared/ui/controls'
@@ -14,6 +14,8 @@ import { PageHeader } from '../../shared/ui/PageHeader'
 import { Card } from './Card'
 import { Detector } from './Detector'
 import { hasSpotifyTracks } from './pasted'
+import { openAppInfo } from './phoneMic'
+import { MUSIC_REFUSED, phoneFolders } from './phoneMusic'
 import { AppleConnect } from './AppleConnect'
 import { AppFileImport } from './AppFileImport'
 import { SpotifyConnect } from './SpotifyConnect'
@@ -156,8 +158,8 @@ function ImportList() {
 
 /**
  * The phone's way to its services' lists: signed in on the PC, they come by the devices' sync. Google refuses sign-ins
- * inside phone apps, Spotify's and Apple's pages open in a window the phone shows over the app with no way back, and
- * Android has no folder picker (docs/notes/ideas/mobile.md: imports stay on the PC).
+ * inside phone apps, Spotify's and Apple's pages open in a window the phone shows over the app with no way back
+ * (docs/notes/ideas/mobile.md: imports stay on the PC). The phone's own songs: PhoneMusic.
  */
 export function FromPc({ onLeave }: { onLeave?: () => void }) {
   const go = useStore((s) => s.go)
@@ -206,6 +208,58 @@ export function AddFolder() {
   )
 }
 
+/**
+ * The phone's own songs, AddFolder's twin: Android has no folder picker. Its permission (its dialog the first time), then
+ * its Music and Download folders watched (Settings › Accounts › Local files lists and removes them). Also in the welcome.
+ */
+export function PhoneMusic() {
+  const { refresh, tracks } = useStore(useShallow(({ refresh, tracks }) => ({ refresh, tracks })))
+  const [folders, setFolders] = useState<string[]>([])
+  const [busy, setBusy] = useState(false)
+  const [refused, setRefused] = useState(false)
+  const files = tracks.filter((t) => t.ids.local).length
+  useEffect(() => {
+    api.localFolders().then(setFolders, () => {})
+  }, [])
+  const find = async () => {
+    const phone = await phoneFolders()
+    setRefused(!phone)
+    if (!phone) return
+    setBusy(true)
+    try {
+      // Watched already: scanned again as they are (a folder removed in Settings stays out).
+      await (folders.length ? api.rescanLocal() : api.setLocalFolders(phone))
+      setFolders(await api.localFolders())
+      await refresh()
+    } catch (e) {
+      useStore.setState({ error: String(e) })
+    } finally {
+      setBusy(false)
+    }
+  }
+  return (
+    <Card icon={DeviceMobile} title={tr('Music on this phone')} sub={tr('MP3, FLAC, WAV, OGG, M4A in your Music and Download folders. Linked to your YouTube and Spotify tracks and played first, gapless.')}>
+      {refused ? (
+        <p className="text-xs text-ink">
+          {tr(MUSIC_REFUSED)}{' '}
+          <button onClick={() => openAppInfo()} className="font-medium underline-offset-2 hover:underline">
+            {tr('Open app info')}
+          </button>
+        </p>
+      ) : (
+        folders.length > 0 && (
+          <p title={folders.join('\n')} className="truncate text-xs text-ink-3">
+            {[...folders.map((f) => f.split('/').filter(Boolean).at(-1)), trn(files, '{n} file', '{n} files')].join(' · ')}
+          </p>
+        )
+      )}
+      <Button disabled={busy} onClick={() => void find()} className="mt-auto self-start">
+        {busy ? tr('Scanning…') : folders.length ? tr('Rescan') : tr('Find my songs')}
+      </Button>
+    </Card>
+  )
+}
+
 export function AddView() {
   // Music Detector's song: searched for, shown above the results.
   const onFound = (t: Track) => useStore.getState().searchFor(`${t.artist} ${t.title}`, t)
@@ -217,6 +271,7 @@ export function AddView() {
         <div className="stagger grid grid-cols-[repeat(auto-fit,minmax(280px,1fr))] gap-4">
           <Detector onFound={onFound} />
           {phoneApp && <FromPc />}
+          {phoneApp && <PhoneMusic />}
           <SpotifyConnect />
           {!phoneApp && <AppleConnect />}
           <ImportList />

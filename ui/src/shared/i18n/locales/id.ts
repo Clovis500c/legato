@@ -2008,6 +2008,10 @@ const id: Record<string, string> = {
   'From your PC': 'Dari PC-mu',
   'Sign in to YouTube Music, Spotify or Apple Music in Legato on your PC: your playlists come to this phone when your devices sync.': 'Masuk ke YouTube Music, Spotify, atau Apple Music di Legato pada PC-mu: playlist-mu akan datang ke ponsel ini saat perangkatmu tersinkron.',
   'Connect it in Legato on your PC: your playlists come here when your devices sync.': 'Hubungkan di Legato pada PC-mu: playlist-mu akan datang ke sini saat perangkatmu tersinkron.',
+  'Music on this phone': 'Musik di ponsel ini',
+  'MP3, FLAC, WAV, OGG, M4A in your Music and Download folders. Linked to your YouTube and Spotify tracks and played first, gapless.': 'MP3, FLAC, WAV, OGG, M4A di folder Music dan Download-mu. Ditautkan ke lagu YouTube dan Spotify-mu dan diputar lebih dulu, tanpa jeda.',
+  'Find my songs': 'Temukan laguku',
+  'Android keeps Legato away from your music. Allow it in Legato’s app info › Permissions.': 'Android tidak mengizinkan Legato membaca musikmu. Izinkan di Info aplikasi Legato › Izin.',
 }
 
 export default id

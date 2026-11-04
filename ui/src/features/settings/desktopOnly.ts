@@ -1,4 +1,4 @@
-/** Settings that mean nothing on a phone (a window, a tray, a keyboard, a PC's sound, a list's columns, a window's sign-in, a folder): hidden there, in the page and in the search. Ids are the rows' and groups' English labels (`data-setting`). */
+/** Settings that mean nothing on a phone (a window, a tray, a keyboard, a PC's sound, a list's columns, a window's sign-in): hidden there, in the page and in the search. Ids are the rows' and groups' English labels (`data-setting`). */
 export const DESKTOP_ONLY: ReadonlySet<string> = new Set([
   'Interface size',
   'List columns',
@@ -15,9 +15,8 @@ export const DESKTOP_ONLY: ReadonlySet<string> = new Set([
   'Music Detector',
   'Pause during calls',
   'Pause when headphones disconnect',
-  // Accounts: Spotify's player window, watched folders (FromPc says where they are).
+  // Accounts: Spotify's player window (FromPc says where it is).
   'Spotify web player',
-  'Local files',
 ])
 
 /** Whole sections with no phone use. */

@@ -6,7 +6,7 @@ import { phoneApp } from '../../shared/platform'
 import { Button } from '../../shared/ui/Button'
 import { Led, RoundButton } from '../../shared/ui/controls'
 import { LinkBrand } from '../../shared/ui/SourceIcon'
-import { AddFolder, FIELD, FromPc } from '../add/AddView'
+import { AddFolder, FIELD, FromPc, PhoneMusic } from '../add/AddView'
 import { Card } from '../add/Card'
 import { SpotifyConnect } from '../add/SpotifyConnect'
 import { useGoogleAccounts } from '../sources/google'
@@ -92,15 +92,18 @@ function SearchCard({ onLeave }: { onLeave?: () => void }) {
 
 /**
  * The ways music comes in, as cards (Add music has them all): the welcome, and Home while the library is empty.
- * YouTube Music and Spotify side by side first: playlists and likes, each in one go. The phone: their sign-ins and the
- * folder are the PC's (FromPc), a link and the search work there.
+ * YouTube Music and Spotify side by side first: playlists and likes, each in one go. The phone: their sign-ins are the
+ * PC's (FromPc), its own songs (PhoneMusic), a link and the search work there.
  * onLeave: a card is about to open another page (the welcome closes first).
  */
 export function WaysIn({ onLeave }: { onLeave?: () => void }) {
   return (
     <div className="stagger grid grid-cols-[repeat(auto-fit,minmax(15rem,1fr))] gap-3">
       {phoneApp ? (
-        <FromPc onLeave={onLeave} />
+        <>
+          <FromPc onLeave={onLeave} />
+          <PhoneMusic />
+        </>
       ) : (
         <>
           <GoogleCard />

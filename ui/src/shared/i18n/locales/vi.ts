@@ -2008,6 +2008,10 @@ const vi: Record<string, string> = {
   'From your PC': 'Từ PC của bạn',
   'Sign in to YouTube Music, Spotify or Apple Music in Legato on your PC: your playlists come to this phone when your devices sync.': 'Đăng nhập YouTube Music, Spotify hoặc Apple Music trong Legato trên PC: danh sách phát sẽ về điện thoại này khi các thiết bị đồng bộ.',
   'Connect it in Legato on your PC: your playlists come here when your devices sync.': 'Hãy kết nối trong Legato trên PC: danh sách phát sẽ về đây khi các thiết bị đồng bộ.',
+  'Music on this phone': 'Nhạc trên điện thoại này',
+  'MP3, FLAC, WAV, OGG, M4A in your Music and Download folders. Linked to your YouTube and Spotify tracks and played first, gapless.': 'MP3, FLAC, WAV, OGG, M4A trong thư mục Music và Download của bạn. Liên kết với các bài trên YouTube và Spotify và được phát trước, không ngắt quãng.',
+  'Find my songs': 'Tìm bài hát của tôi',
+  'Android keeps Legato away from your music. Allow it in Legato’s app info › Permissions.': 'Android đang chặn Legato đọc nhạc của bạn. Hãy cho phép trong Thông tin ứng dụng của Legato › Quyền.',
 }
 
 export default vi

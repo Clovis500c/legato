@@ -2008,6 +2008,10 @@ const zh: Record<string, string> = {
   'From your PC': '来自你的电脑',
   'Sign in to YouTube Music, Spotify or Apple Music in Legato on your PC: your playlists come to this phone when your devices sync.': '在电脑上的 Legato 中登录 YouTube Music、Spotify 或 Apple Music，设备同步时你的歌单就会来到这部手机。',
   'Connect it in Legato on your PC: your playlists come here when your devices sync.': '请在电脑上的 Legato 中连接，设备同步时你的歌单就会来到这里。',
+  'Music on this phone': '这部手机上的音乐',
+  'MP3, FLAC, WAV, OGG, M4A in your Music and Download folders. Linked to your YouTube and Spotify tracks and played first, gapless.': '你的 Music 和 Download 文件夹中的 MP3、FLAC、WAV、OGG、M4A。与你的 YouTube 和 Spotify 歌曲关联并优先播放，无缝衔接。',
+  'Find my songs': '查找我的歌曲',
+  'Android keeps Legato away from your music. Allow it in Legato’s app info › Permissions.': 'Android 阻止 Legato 读取你的音乐。请在 Legato 的应用信息 › 权限 中允许。',
 }
 
 export default zh

@@ -2008,6 +2008,10 @@ const pl: Record<string, string> = {
   'From your PC': 'Z komputera',
   'Sign in to YouTube Music, Spotify or Apple Music in Legato on your PC: your playlists come to this phone when your devices sync.': 'Zaloguj się do YouTube Music, Spotify lub Apple Music w Legato na komputerze: twoje playlisty trafią na ten telefon, gdy urządzenia się zsynchronizują.',
   'Connect it in Legato on your PC: your playlists come here when your devices sync.': 'Połącz je w Legato na komputerze: twoje playlisty trafią tutaj, gdy urządzenia się zsynchronizują.',
+  'Music on this phone': 'Muzyka na tym telefonie',
+  'MP3, FLAC, WAV, OGG, M4A in your Music and Download folders. Linked to your YouTube and Spotify tracks and played first, gapless.': 'MP3, FLAC, WAV, OGG, M4A w twoich folderach Music i Download. Powiązane z twoimi utworami z YouTube i Spotify i odtwarzane najpierw, bez przerw.',
+  'Find my songs': 'Znajdź moje utwory',
+  'Android keeps Legato away from your music. Allow it in Legato’s app info › Permissions.': 'Android blokuje Legato dostęp do twojej muzyki. Zezwól na niego w Informacje o aplikacji Legato › Uprawnienia.',
 }
 
 export default pl

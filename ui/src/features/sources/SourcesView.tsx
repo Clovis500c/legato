@@ -1,10 +1,12 @@
-import { ArrowsClockwise, FolderPlus, GoogleLogo, ShieldCheck, SignOut, UserPlus, X } from '@phosphor-icons/react'
+import { ArrowsClockwise, DeviceMobile, FolderPlus, GoogleLogo, ShieldCheck, SignOut, UserPlus, X } from '@phosphor-icons/react'
 import { useShallow } from 'zustand/react/shallow'
 import { open } from '@tauri-apps/plugin-dialog'
 import { useEffect, useState, type ReactNode } from 'react'
 import { useSettings } from '../../app/settings'
 import { useStore } from '../../app/store'
 import { AppleImport } from '../add/AppleConnect'
+import { openAppInfo } from '../add/phoneMic'
+import { MUSIC_REFUSED, phoneFolders, withPhone } from '../add/phoneMusic'
 import { SpotifyImport } from '../add/SpotifyConnect'
 import { accountKey, api, type Direction, type YtmAccount } from '../../shared/api'
 import { useGoogleAccounts } from './google'
@@ -393,11 +395,12 @@ function GoogleAccounts() {
   )
 }
 
-/** Music folders: scanned with tags, linked to tracks already known from other services. */
+/** Music folders: scanned with tags, linked to tracks already known from other services. A phone's: its Music and Download. */
 function LocalFolders() {
   const { refresh, tracks } = useStore(useShallow(({ refresh, tracks }) => ({ refresh, tracks })))
   const [folders, setFolders] = useState<string[]>([])
   const [busy, setBusy] = useState(false)
+  const [refused, setRefused] = useState(false)
   const files = tracks.filter((t) => t.ids.local).length
   useEffect(() => void api.localFolders().then(setFolders), [])
 
@@ -413,10 +416,18 @@ function LocalFolders() {
       setBusy(false)
     }
   }
+  // Phone: Android's permission first (its dialog the first time); a scan it can't read would empty the folders' songs.
+  const allowed = async (fn: (phone: string[]) => Promise<unknown>) => {
+    const phone = await phoneFolders()
+    setRefused(!phone)
+    if (phone) await run(() => fn(phone))
+  }
   const add = async () => {
+    if (phoneApp) return allowed((phone) => api.setLocalFolders(withPhone(folders, phone)))
     const dir = await open({ directory: true, title: tr('Music folder') })
     if (typeof dir === 'string' && !folders.includes(dir)) await run(() => api.setLocalFolders([...folders, dir]))
   }
+  const rescan = () => (phoneApp ? allowed(api.rescanLocal) : run(api.rescanLocal))
 
   return (
     <div data-setting="Local files" className="flex flex-col gap-3 px-4 py-3.5">
@@ -433,12 +444,20 @@ function LocalFolders() {
           ))}
         </ul>
       )}
+      {refused && (
+        <p className="ml-13 @max-lg:ml-0 text-xs text-ink">
+          {tr(MUSIC_REFUSED)}{' '}
+          <button onClick={() => openAppInfo()} className="font-medium underline-offset-2 hover:underline">
+            {tr('Open app info')}
+          </button>
+        </p>
+      )}
       <div className="ml-13 @max-lg:ml-0 flex gap-2">
-        <Button disabled={busy} onClick={add}>
-          <FolderPlus size={14} /> {tr('Add folder')}
+        <Button disabled={busy} onClick={() => void add()}>
+          {phoneApp ? <DeviceMobile size={14} /> : <FolderPlus size={14} />} {phoneApp ? tr('Find my songs') : tr('Add folder')}
         </Button>
         {folders.length > 0 && (
-          <Button variant="ghost" disabled={busy} onClick={() => run(api.rescanLocal)}>
+          <Button variant="ghost" disabled={busy} onClick={() => void rescan()}>
             {tr('Rescan')}
           </Button>
         )}
@@ -453,13 +472,13 @@ export function SourcesView() {
       <p className="text-[0.8125rem] text-ink-2">{phoneApp ? tr('Which account is connected to which service. Nothing goes through a server of ours: everything stays on your phone.') : tr('Which account is connected to which service. Nothing goes through a server of ours: everything stays on your computer.')}</p>
       <div className="rounded-xl border border-line bg-raised">
         <GoogleAccounts />
-        {/* A player and an import in windows, and folders: none on the phone (FromPc). */}
+        {/* A player and an import in windows: none on the phone (FromPc). */}
         {!phoneApp && <SpotifyWeb />}
         <ServiceRow service="spotify" />
         <AppleWeb />
         <LastfmRow />
         <ListenbrainzRow />
-        {!phoneApp && <LocalFolders />}
+        <LocalFolders />
       </div>
       {/* Google's sign-in is the PC's only (it refuses phone apps). */}
       {!phoneApp && (

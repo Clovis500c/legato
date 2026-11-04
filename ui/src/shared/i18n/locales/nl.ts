@@ -2008,6 +2008,10 @@ const nl: Record<string, string> = {
   'From your PC': 'Vanaf je pc',
   'Sign in to YouTube Music, Spotify or Apple Music in Legato on your PC: your playlists come to this phone when your devices sync.': 'Meld je in Legato op je pc aan bij YouTube Music, Spotify of Apple Music: je playlists komen naar deze telefoon zodra je apparaten synchroniseren.',
   'Connect it in Legato on your PC: your playlists come here when your devices sync.': 'Koppel het in Legato op je pc: je playlists komen hierheen zodra je apparaten synchroniseren.',
+  'Music on this phone': 'Muziek op deze telefoon',
+  'MP3, FLAC, WAV, OGG, M4A in your Music and Download folders. Linked to your YouTube and Spotify tracks and played first, gapless.': 'MP3, FLAC, WAV, OGG, M4A in je mappen Music en Download. Gekoppeld aan je YouTube- en Spotify-nummers en als eerste afgespeeld, zonder pauzes.',
+  'Find my songs': 'Mijn nummers zoeken',
+  'Android keeps Legato away from your music. Allow it in Legato’s app info › Permissions.': 'Android houdt Legato weg van je muziek. Sta het toe in App-info van Legato › Rechten.',
 }
 
 export default nl

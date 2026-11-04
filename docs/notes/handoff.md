@@ -139,6 +139,11 @@ Relaunch log (newest last):
   local music needs its own path (plan-v2, two new Android lines).
 - 2026-11-04: files on the phone: every file dialog through `shared/files.ts`, Android's `content://` addresses copied
   through the app's cache (`picked.rs`, `PickedFile.kt`). Seen on the emulator (API 36): a theme saved to Downloads through Android's save screen, then opened back from it (copied in under its own name); the other dialogs not driven one by one, nor a real phone.
+- 2026-11-04: the phone's own songs: `READ_MEDIA_AUDIO` (8 to 12: `READ_EXTERNAL_STORAGE`), a `LegatoMusic` listener
+  in `MainActivity.kt` ("ask" / "check" → the Music and Download folders as JSON, or "no"), `phoneMusic.ts` (a Music on
+  this phone card in Add music and the welcome, Local files' row finds them, scanned again at launch). Seen on the
+  emulator: the dialog, a refusal, a WAV pushed by `adb push` found with its tags, the watcher (about 6 s), the Rust
+  engine behind other apps and screen off. A silent file ends at once (`ends.ts`' silent end): test with a quiet tone.
 
 ## Mobile app and devices sync (the owner's ask, 2026-11-02 afternoon; in progress)
 

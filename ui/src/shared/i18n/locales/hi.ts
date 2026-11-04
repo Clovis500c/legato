@@ -2008,6 +2008,10 @@ const hi: Record<string, string> = {
   'From your PC': 'आपके PC से',
   'Sign in to YouTube Music, Spotify or Apple Music in Legato on your PC: your playlists come to this phone when your devices sync.': 'अपने PC पर Legato में YouTube Music, Spotify या Apple Music में साइन इन करें: डिवाइस सिंक होने पर आपकी प्लेलिस्ट इस फ़ोन पर आ जाएँगी।',
   'Connect it in Legato on your PC: your playlists come here when your devices sync.': 'इसे अपने PC पर Legato में कनेक्ट करें: डिवाइस सिंक होने पर आपकी प्लेलिस्ट यहाँ आ जाएँगी।',
+  'Music on this phone': 'इस फ़ोन पर संगीत',
+  'MP3, FLAC, WAV, OGG, M4A in your Music and Download folders. Linked to your YouTube and Spotify tracks and played first, gapless.': 'आपके Music और Download फ़ोल्डर में MP3, FLAC, WAV, OGG, M4A। आपके YouTube और Spotify ट्रैक से लिंक होकर पहले चलती हैं, बिना गैप के।',
+  'Find my songs': 'मेरे गाने ढूंढें',
+  'Android keeps Legato away from your music. Allow it in Legato’s app info › Permissions.': 'Android, Legato को आपके संगीत से दूर रखता है। इसे Legato की ऐप्लिकेशन की जानकारी › अनुमतियां में अनुमति दें।',
 }
 
 export default hi

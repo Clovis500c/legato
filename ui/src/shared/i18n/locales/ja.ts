@@ -2008,6 +2008,10 @@ const ja: Record<string, string> = {
   'From your PC': 'PCから',
   'Sign in to YouTube Music, Spotify or Apple Music in Legato on your PC: your playlists come to this phone when your devices sync.': 'PCのLegatoでYouTube Music、Spotify、Apple Musicにログインすると、デバイスの同期でプレイリストがこのスマートフォンに届きます。',
   'Connect it in Legato on your PC: your playlists come here when your devices sync.': 'PCのLegatoで接続すると、デバイスの同期でプレイリストがここに届きます。',
+  'Music on this phone': 'このスマートフォンの音楽',
+  'MP3, FLAC, WAV, OGG, M4A in your Music and Download folders. Linked to your YouTube and Spotify tracks and played first, gapless.': 'Music フォルダと Download フォルダの MP3、FLAC、WAV、OGG、M4A。YouTubeやSpotifyの曲とリンクされ、優先的にギャップレスで再生されます。',
+  'Find my songs': '曲を探す',
+  'Android keeps Legato away from your music. Allow it in Legato’s app info › Permissions.': 'AndroidがLegatoの音楽へのアクセスをブロックしています。Legatoのアプリ情報 › 権限 で許可してください。',
 }
 
 export default ja

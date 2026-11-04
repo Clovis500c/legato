@@ -1,10 +1,10 @@
-/** Android's side of the microphone (`MainActivity.kt`, the app's own page only). */
-export interface MicBridge {
+/** Android's side of a permission (`MainActivity.kt`, the app's own page only): the microphone here, songs in phoneMusic.ts. */
+export interface PhoneBridge {
   postMessage(text: string): void
   onmessage: ((e: { data: unknown }) => void) | null
 }
 
-const bridge = () => (globalThis as unknown as { LegatoMic?: MicBridge }).LegatoMic
+const bridge = () => (globalThis as unknown as { LegatoMic?: PhoneBridge }).LegatoMic
 
 /** May the phone record? Android's own dialog the first time. No bridge (a PC): true, Rust's error tells. */
 export function askMic(mic = bridge()): Promise<boolean> {

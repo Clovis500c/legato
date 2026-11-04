@@ -2008,6 +2008,10 @@ const tr: Record<string, string> = {
   'From your PC': 'Bilgisayarından',
   'Sign in to YouTube Music, Spotify or Apple Music in Legato on your PC: your playlists come to this phone when your devices sync.': 'Bilgisayarındaki Legato’da YouTube Music, Spotify veya Apple Music’e oturum aç: cihazların eşitlendiğinde çalma listelerin bu telefona gelir.',
   'Connect it in Legato on your PC: your playlists come here when your devices sync.': 'Bilgisayarındaki Legato’da bağla: cihazların eşitlendiğinde çalma listelerin buraya gelir.',
+  'Music on this phone': 'Bu telefondaki müzikler',
+  'MP3, FLAC, WAV, OGG, M4A in your Music and Download folders. Linked to your YouTube and Spotify tracks and played first, gapless.': 'Music ve Download klasörlerindeki MP3, FLAC, WAV, OGG, M4A. YouTube ve Spotify şarkılarına bağlanır ve önce, kesintisiz çalınır.',
+  'Find my songs': 'Şarkılarımı bul',
+  'Android keeps Legato away from your music. Allow it in Legato’s app info › Permissions.': 'Android, Legato’nun müziğini okumasına izin vermiyor. Legato’nun Uygulama bilgileri › İzinler bölümünden izin ver.',
 }
 
 export default tr
