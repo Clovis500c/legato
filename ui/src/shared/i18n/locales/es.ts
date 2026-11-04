@@ -1992,6 +1992,8 @@ const es: Record<string, string> = {
   'When the same thing changed on two devices, the most recent change wins. Deleted things stay deleted everywhere. Local files stay on each device: their songs are matched by title, artist and length.': 'Si lo mismo cambió en dos dispositivos, gana el cambio más reciente. Lo eliminado sigue eliminado en todas partes. Los archivos locales se quedan en cada dispositivo: sus canciones se emparejan por título, artista y duración.',
   'Android keeps Legato away from the microphone. Allow it in Legato’s app info › Permissions › Microphone.': 'Android impide que Legato use el micrófono. Permítelo en Información de la app de Legato › Permisos › Micrófono.',
   'Open app info': 'Abrir información de la app',
+  'in the search box: the track is added right away.': 'en el cuadro de búsqueda: la canción se añade al momento.',
+  'Paste a legato:// link or type a 6-digit code from a nearby Legato.': 'Pega un enlace legato:// o escribe un código de 6 dígitos de un Legato cercano.',
 }
 
 export default es

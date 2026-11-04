@@ -1992,6 +1992,8 @@ const tr: Record<string, string> = {
   'When the same thing changed on two devices, the most recent change wins. Deleted things stay deleted everywhere. Local files stay on each device: their songs are matched by title, artist and length.': 'Aynı şey iki cihazda değiştiğinde en son değişiklik kazanır. Silinenler her yerde silinmiş kalır. Yerel dosyalar her cihazda kalır: şarkıları başlık, sanatçı ve süreye göre eşleştirilir.',
   'Android keeps Legato away from the microphone. Allow it in Legato’s app info › Permissions › Microphone.': 'Android, Legato’nun mikrofonu kullanmasına izin vermiyor. Legato’nun Uygulama bilgileri › İzinler › Mikrofon bölümünden izin ver.',
   'Open app info': 'Uygulama bilgilerini aç',
+  'in the search box: the track is added right away.': 'arama kutusuna: şarkı hemen eklenir.',
+  'Paste a legato:// link or type a 6-digit code from a nearby Legato.': 'Bir legato:// bağlantısı yapıştır veya yakındaki bir Legato’ten 6 haneli bir kod yaz.',
 }
 
 export default tr

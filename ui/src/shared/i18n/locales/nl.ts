@@ -1992,6 +1992,8 @@ const nl: Record<string, string> = {
   'When the same thing changed on two devices, the most recent change wins. Deleted things stay deleted everywhere. Local files stay on each device: their songs are matched by title, artist and length.': 'Als hetzelfde op twee apparaten is gewijzigd, wint de nieuwste wijziging. Wat verwijderd is, blijft overal verwijderd. Lokale bestanden blijven op elk apparaat: hun nummers worden gekoppeld op titel, artiest en lengte.',
   'Android keeps Legato away from the microphone. Allow it in Legato’s app info › Permissions › Microphone.': 'Android houdt Legato weg van de microfoon. Sta het toe in App-info van Legato › Rechten › Microfoon.',
   'Open app info': 'App-info openen',
+  'in the search box: the track is added right away.': 'in het zoekvak: het nummer wordt meteen toegevoegd.',
+  'Paste a legato:// link or type a 6-digit code from a nearby Legato.': 'Plak een legato://-link of typ een 6-cijferige code van een Legato in de buurt.',
 }
 
 export default nl

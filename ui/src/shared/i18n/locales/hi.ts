@@ -1992,6 +1992,8 @@ const hi: Record<string, string> = {
   'When the same thing changed on two devices, the most recent change wins. Deleted things stay deleted everywhere. Local files stay on each device: their songs are matched by title, artist and length.': 'जब एक ही चीज़ दो डिवाइस पर बदली हो, तो सबसे नया बदलाव जीतता है। मिटाई गई चीज़ें हर जगह मिटी रहती हैं। लोकल फ़ाइलें हर डिवाइस पर रहती हैं: उनके गाने टाइटल, कलाकार और लंबाई से मिलाए जाते हैं।',
   'Android keeps Legato away from the microphone. Allow it in Legato’s app info › Permissions › Microphone.': 'Android, Legato को माइक्रोफ़ोन से दूर रखता है। इसे Legato की ऐप्लिकेशन की जानकारी › अनुमतियां › माइक्रोफ़ोन में अनुमति दें।',
   'Open app info': 'ऐप्लिकेशन की जानकारी खोलें',
+  'in the search box: the track is added right away.': 'खोज बॉक्स में: ट्रैक तुरंत जुड़ जाता है।',
+  'Paste a legato:// link or type a 6-digit code from a nearby Legato.': 'legato:// लिंक पेस्ट करें या पास के Legato से 6 अंकों का कोड टाइप करें।',
 }
 
 export default hi

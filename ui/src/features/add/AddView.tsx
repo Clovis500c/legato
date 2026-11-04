@@ -5,6 +5,7 @@ import { useShallow } from 'zustand/react/shallow'
 import { useStore } from '../../app/store'
 import { api, type Track } from '../../shared/api'
 import { tr } from '../../shared/i18n/i18n'
+import { phoneApp } from '../../shared/platform'
 import { Button } from '../../shared/ui/Button'
 import { Led, RoundButton } from '../../shared/ui/controls'
 import { Dialog } from '../../shared/ui/Dialog'
@@ -55,7 +56,7 @@ function SearchHero() {
         <p className="flex items-center gap-2">
           <ClipboardText size={15} className="shrink-0" />
           <span>
-            <span className="font-medium text-ink">{tr('Paste a YouTube or SoundCloud link')}</span> {tr('anywhere (Ctrl+V): the track is added right away.')}
+            <span className="font-medium text-ink">{tr('Paste a YouTube or SoundCloud link')}</span> {phoneApp ? tr('in the search box: the track is added right away.') : tr('anywhere (Ctrl+V): the track is added right away.')}
           </span>
         </p>
       </div>
@@ -69,7 +70,7 @@ function ImportCode() {
   const [busy, setBusy] = useState(false)
   const digits = /^\d{3}\s?\d{3}$/.test(text.trim())
   return (
-    <Card icon={QrCode} title={tr('Import a shared playlist')} sub={busy ? tr('Looking for the sender on this network…') : tr('Paste a legato:// link, type a 6-digit code from a nearby Legato, or drop a QR screenshot on the window.')}>
+    <Card icon={QrCode} title={tr('Import a shared playlist')} sub={busy ? tr('Looking for the sender on this network…') : phoneApp ? tr('Paste a legato:// link or type a 6-digit code from a nearby Legato.') : tr('Paste a legato:// link, type a 6-digit code from a nearby Legato, or drop a QR screenshot on the window.')}>
       <form
         onSubmit={async (e) => {
           e.preventDefault()

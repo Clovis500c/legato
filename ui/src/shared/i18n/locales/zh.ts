@@ -1992,6 +1992,8 @@ const zh: Record<string, string> = {
   'When the same thing changed on two devices, the most recent change wins. Deleted things stay deleted everywhere. Local files stay on each device: their songs are matched by title, artist and length.': '当同一项内容在两台设备上都被更改时，以最新的更改为准。已删除的内容在所有地方都保持删除。本地文件保留在各自的设备上：其中的歌曲按标题、艺人和时长匹配。',
   'Android keeps Legato away from the microphone. Allow it in Legato’s app info › Permissions › Microphone.': 'Android 阻止 Legato 访问麦克风。请在 Legato 的应用信息 › 权限 › 麦克风 中允许。',
   'Open app info': '打开应用信息',
+  'in the search box: the track is added right away.': '到搜索框：歌曲会立即添加。',
+  'Paste a legato:// link or type a 6-digit code from a nearby Legato.': '粘贴 legato:// 链接，或输入附近 Legato 显示的 6 位代码。',
 }
 
 export default zh

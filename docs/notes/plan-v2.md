@@ -285,7 +285,9 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
         notice, Sync Mode's shared-folder card hidden. Then (2026-11-04) Sync Mode's lines, Accounts (Google refuses
         sign-ins inside phone apps: the phone says to sign in on the PC, its playlists come by sync), Last.fm and
         ListenBrainz removal, backups, theme pictures, diagnostics; the Music Detector listens to the microphone only
-        (no PC sound to take). Left: the Discord add-on and the OneDrive prompt (desktop matters), plugins (desktop only).
+        (no PC sound to take). Then the paste hint (no Ctrl+V outside a field: a YouTube link in the search box is added
+        now, like a SoundCloud one) and the shared-playlist card; Discord stays off on phones (Add-ons are hidden there,
+        the switch still comes by sync). Left: the OneDrive prompt (unreachable there), plugins (desktop only).
   - [x] Music Detector on the phone (2026-11-04): `RECORD_AUDIO`, Android's dialog at the first listen (after Legato's
         own consent), a refusal says where to allow it with an Open app info button. On the emulator: the dialog, the
         refusal's note and button, the app info page, then a one-time grant: Android's mic indicator lit, the level

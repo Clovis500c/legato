@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { isListLink, linkKind, shouldWelcome } from './firstRun'
+import { isListLink, linkKind, shouldWelcome, youtubeLink } from './firstRun'
 
 describe('welcome', () => {
   it('shows once, on an empty library only', () => {
@@ -19,6 +19,11 @@ describe('welcome', () => {
     // A Spotify song isn't a list; plain words aren't links.
     expect(linkKind('https://open.spotify.com/track/4uLU6hMCjMI75M1A2tKUQC')).toBeNull()
     expect(linkKind('daft punk')).toBeNull()
+  })
+
+  it('takes a YouTube link typed in search, not words about YouTube', () => {
+    for (const text of ['https://www.youtube.com/watch?v=5NV6Rdv1a3I', ' youtu.be/5NV6Rdv1a3I ', 'https://music.youtube.com/watch?v=5NV6Rdv1a3I', 'm.youtube.com/watch?v=5NV6Rdv1a3I']) expect(youtubeLink(text)).toBe(true)
+    for (const text of ['youtube rewind 2019', 'best of youtube.com/watch?v=x', 'https://evil.example/youtube.com/watch?v=x', 'https://youtube.com.evil.example/watch?v=x']) expect(youtubeLink(text)).toBe(false)
   })
 
   it('knows Deezer and Apple Music lists, and what is not one', () => {

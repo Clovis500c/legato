@@ -108,6 +108,9 @@ Relaunch log (newest last):
   `MainActivity.kt` ("ask" → Android's dialog, "yes" / "no"; "settings" → Legato's app info), `phoneMic.ts` asks before
   each listen. Driven on the emulator over DevTools (`click.mjs` clicks by text): refusal, app info, one-time grant,
   recording started and stopped. The emulator's host microphone stays off: never turn it on (it would hear the room).
+- 2026-11-04: the phone's paste hint says the search box (`youtubeLink`: only a link, so "youtube rewind" stays a
+  search), the shared-playlist card drops the QR screenshot drop, Discord never starts on a phone. Unit-tested, not
+  driven on the emulator (a YouTube link would cost a real request).
 
 ## Mobile app and devices sync (the owner's ask, 2026-11-02 afternoon; in progress)
 

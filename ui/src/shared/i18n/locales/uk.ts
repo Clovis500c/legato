@@ -1992,6 +1992,8 @@ const uk: Record<string, string> = {
   'When the same thing changed on two devices, the most recent change wins. Deleted things stay deleted everywhere. Local files stay on each device: their songs are matched by title, artist and length.': 'Якщо те саме змінилося на двох пристроях, перемагає остання зміна. Видалене залишається видаленим усюди. Локальні файли залишаються на кожному пристрої: їхні пісні зіставляються за назвою, виконавцем і тривалістю.',
   'Android keeps Legato away from the microphone. Allow it in Legato’s app info › Permissions › Microphone.': 'Android не дає Legato доступу до мікрофона. Дозволь його в Про додаток Legato › Дозволи › Мікрофон.',
   'Open app info': 'Відкрити інформацію про додаток',
+  'in the search box: the track is added right away.': 'у рядок пошуку: трек одразу додасться.',
+  'Paste a legato:// link or type a 6-digit code from a nearby Legato.': 'Встав посилання legato:// або введи 6-значний код із Legato поблизу.',
 }
 
 export default uk

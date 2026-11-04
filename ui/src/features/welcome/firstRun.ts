@@ -15,5 +15,8 @@ export function linkKind(text: string): LinkKind | null {
   return /youtu\.?be/i.test(text) ? 'youtube' : null
 }
 
+/** Nothing but a YouTube link: "youtube rewind" typed in search stays a search. */
+export const youtubeLink = (text: string) => /^(https?:\/\/)?([\w-]+\.)?(youtube\.com|youtu\.be)\/\S+$/i.test(text.trim())
+
 /** A link that imports a whole playlist or album (not a single YouTube song). */
 export const isListLink = (text: string) => ['spotify', 'deezer', 'apple'].includes(linkKind(text) ?? '')

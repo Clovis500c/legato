@@ -23,7 +23,7 @@ import { PlaylistCover } from '../library/PlaylistCover'
 import { TrackTable } from '../library/TrackTable'
 import { hitMenu, playlistMenu, trackMenu, tracksMenu } from '../menus'
 import { remoteTrack, usePlayer } from '../player/store'
-import { isListLink, linkKind } from '../welcome/firstRun'
+import { isListLink, linkKind, youtubeLink } from '../welcome/firstRun'
 import { addRecent } from './recent'
 import { countBy, errorOf, isSong, isVideo, libraryMatches, type Kind, type LibraryMatches, type Scope } from './results'
 
@@ -233,7 +233,8 @@ export function SearchView() {
     const link = linkKind(request.q)
     if (link === 'spotify') return void useStore.getState().importSpotify(request.q.trim())
     if (link === 'deezer' || link === 'apple') return void useStore.getState().importLink(request.q.trim(), link)
-    if (link === 'soundcloud') return void useStore.getState().addLink(request.q.trim())
+    // A song's link is added, like pasted anywhere (the phone has no Ctrl+V outside a field).
+    if (link === 'soundcloud' || (link === 'youtube' && youtubeLink(request.q))) return void useStore.getState().addLink(request.q.trim())
     // A song named by the Music Detector isn't something you typed.
     if (rememberSearches && !t) addRecent(request.q)
     if (everywhere) void run(request.q)

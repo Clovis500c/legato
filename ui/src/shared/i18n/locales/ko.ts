@@ -1992,6 +1992,8 @@ const ko: Record<string, string> = {
   'When the same thing changed on two devices, the most recent change wins. Deleted things stay deleted everywhere. Local files stay on each device: their songs are matched by title, artist and length.': '같은 항목이 두 기기에서 바뀌면 가장 최근 변경이 적용됩니다. 삭제한 항목은 모든 곳에서 삭제된 상태로 남습니다. 로컬 파일은 각 기기에 남으며, 곡은 제목, 아티스트, 길이로 맞춥니다.',
   'Android keeps Legato away from the microphone. Allow it in Legato’s app info › Permissions › Microphone.': 'Android가 Legato의 마이크 사용을 막고 있습니다. Legato의 앱 정보 › 권한 › 마이크에서 허용하세요.',
   'Open app info': '앱 정보 열기',
+  'in the search box: the track is added right away.': '검색창에: 곡이 바로 추가됩니다.',
+  'Paste a legato:// link or type a 6-digit code from a nearby Legato.': 'legato:// 링크를 붙여넣거나 근처 Legato의 6자리 코드를 입력하세요.',
 }
 
 export default ko
