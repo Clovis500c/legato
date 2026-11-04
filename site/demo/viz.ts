@@ -20,13 +20,16 @@ function band(i: number, t: number, kick: number, snare: number, hat: number) {
   return tilt + drift + grain + low + mid + high
 }
 
-/** Side c's sound at s seconds, for the wave blocks: an A at 110 Hz and its first harmonics, louder on the beat. */
+/**
+ * Side c's sound at s seconds, for the wave blocks: an A at 110 Hz and its first harmonics, louder on the beat; the
+ * fifth harmonic's phase differs between the sides, so the Vectorscope has some width.
+ */
 function sample(s: number, c: number) {
   const a = 2 * Math.PI * 110 * s
   // The beat's place, 0 to 1 (s may be just below 0 at the start).
   const at = (((s * 2) % 1) + 1) % 1
   const beat = 0.55 + 0.45 * Math.exp(-7 * at)
-  return beat * (0.42 * Math.sin(a) + 0.12 * Math.sin(2 * a + 0.6 + c) + 0.07 * Math.sin(3 * a + 1.2))
+  return beat * (0.42 * Math.sin(a) + 0.12 * Math.sin(2 * a + 0.6 + c) + 0.07 * Math.sin(3 * a + 1.2) + 0.08 * Math.sin(5 * a + 2.4 * c))
 }
 
 /** 61 bands of 1/6 octave, or 121 of 1/12 (`fine`, Settings › Visualizer bands); the wave blocks after them (`wave`, the Oscilloscope). */

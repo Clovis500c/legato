@@ -1605,7 +1605,7 @@ const ko: Record<string, string> = {
   'VU needles': 'VU 바늘',
   'Spectrogram': '스펙트로그램',
   'Radial goes around a big cover; where the cover is small it shows bars': '방사형은 큰 커버 둘레에 표시되며, 커버가 작으면 막대로 표시됩니다',
-  'bars mirror peaks wave curve radial circle vu needles meter spectrogram waterfall oscilloscope scope loudness lufs look': '막대 미러 피크 웨이브 모양 bars mirror peaks wave 방사형 원 vu 바늘 미터 스펙트로그램 radial circle needles meter spectrogram waterfall 곡선 오실로스코프 라우드니스 curve oscilloscope scope loudness lufs',
+  'bars mirror peaks wave curve radial circle vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look': '막대 미러 피크 웨이브 모양 bars mirror peaks wave 방사형 원 vu 바늘 미터 스펙트로그램 radial circle needles meter spectrogram waterfall 곡선 오실로스코프 라우드니스 curve oscilloscope scope loudness lufs 벡터스코프 고니오미터 스테레오 위상 상관 vectorscope goniometer stereo phase correlation',
   // v2 redesign
   'Playing': '재생 중',
   'All your songs': '내 모든 노래',
@@ -2035,6 +2035,7 @@ const ko: Record<string, string> = {
   'octave third sixth twelfth analyzer resolution detail hertz decibel scale': '옥타브 3분의1 6분의1 12분의1 분석기 해상도 세밀 헤르츠 데시벨 눈금',
   'True peak': '트루 피크',
   'Oscilloscope': '오실로스코프',
+  'Vectorscope': '벡터스코프',
 }
 
 export default ko

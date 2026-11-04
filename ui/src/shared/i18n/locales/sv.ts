@@ -1605,7 +1605,7 @@ const sv: Record<string, string> = {
   'VU needles': 'VU-visare',
   'Spectrogram': 'Spektrogram',
   'Radial goes around a big cover; where the cover is small it shows bars': 'Radiell går runt ett stort omslag; är omslaget litet visas staplar',
-  'bars mirror peaks wave curve radial circle vu needles meter spectrogram waterfall oscilloscope scope loudness lufs look': 'staplar spegel toppar våg utseende radiell cirkel vu visare mätare spektrogram vattenfall kurva oskilloskop ljudstyrka lufs',
+  'bars mirror peaks wave curve radial circle vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look': 'staplar spegel toppar våg utseende radiell cirkel vu visare mätare spektrogram vattenfall kurva oskilloskop ljudstyrka lufs vektorskop goniometer stereo fas korrelation',
   // v2 redesign
   'Playing': 'Spelas',
   'All your songs': 'Alla dina låtar',
@@ -2035,6 +2035,7 @@ const sv: Record<string, string> = {
   'octave third sixth twelfth analyzer resolution detail hertz decibel scale': 'oktav tredjedel sjättedel tolftedel analysator upplösning detalj hertz decibel skala',
   'True peak': 'Sann topp',
   'Oscilloscope': 'Oskilloskop',
+  'Vectorscope': 'Vektorskop',
 }
 
 export default sv

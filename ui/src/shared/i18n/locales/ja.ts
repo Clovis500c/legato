@@ -1605,7 +1605,7 @@ const ja: Record<string, string> = {
   'VU needles': 'VUメーター',
   'Spectrogram': 'スペクトログラム',
   'Radial goes around a big cover; where the cover is small it shows bars': 'ラジアルは大きなジャケットの周りに表示され、小さいときはバーになります',
-  'bars mirror peaks wave curve radial circle vu needles meter spectrogram waterfall oscilloscope scope loudness lufs look': 'バー ミラー ピーク ウェーブ 見た目 bars mirror peaks wave ラジアル 円 vu 針 メーター スペクトログラム radial circle needles meter spectrogram waterfall カーブ オシロスコープ ラウドネス curve oscilloscope scope loudness lufs',
+  'bars mirror peaks wave curve radial circle vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look': 'バー ミラー ピーク ウェーブ 見た目 bars mirror peaks wave ラジアル 円 vu 針 メーター スペクトログラム radial circle needles meter spectrogram waterfall カーブ オシロスコープ ラウドネス curve oscilloscope scope loudness lufs ベクトルスコープ ゴニオメーター ステレオ 位相 相関 vectorscope goniometer stereo phase correlation',
   // v2 redesign
   'Playing': '再生中',
   'All your songs': 'すべての曲',
@@ -2035,6 +2035,7 @@ const ja: Record<string, string> = {
   'octave third sixth twelfth analyzer resolution detail hertz decibel scale': 'オクターブ 3分の1 6分の1 12分の1 アナライザー 解像度 細かさ ヘルツ デシベル 目盛り',
   'True peak': 'トゥルーピーク',
   'Oscilloscope': 'オシロスコープ',
+  'Vectorscope': 'ベクトルスコープ',
 }
 
 export default ja

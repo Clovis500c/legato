@@ -1605,7 +1605,7 @@ const pl: Record<string, string> = {
   'VU needles': 'Wskazówki VU',
   'Spectrogram': 'Spektrogram',
   'Radial goes around a big cover; where the cover is small it shows bars': 'Radialny otacza dużą okładkę; przy małej pokazuje słupki',
-  'bars mirror peaks wave curve radial circle vu needles meter spectrogram waterfall oscilloscope scope loudness lufs look': 'słupki lustro szczyty fala wygląd radialny koło vu wskazówki miernik spektrogram wodospad krzywa oscyloskop głośność lufs',
+  'bars mirror peaks wave curve radial circle vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look': 'słupki lustro szczyty fala wygląd radialny koło vu wskazówki miernik spektrogram wodospad krzywa oscyloskop głośność lufs wektoroskop goniometr stereo faza korelacja',
   // v2 redesign
   'Playing': 'Odtwarzane',
   'All your songs': 'Wszystkie twoje utwory',
@@ -2035,6 +2035,7 @@ const pl: Record<string, string> = {
   'octave third sixth twelfth analyzer resolution detail hertz decibel scale': 'oktawa tercja szósta dwunasta analizator rozdzielczość szczegóły herc decybel skala',
   'True peak': 'Szczyt rzeczywisty',
   'Oscilloscope': 'Oscyloskop',
+  'Vectorscope': 'Wektoroskop',
 }
 
 export default pl

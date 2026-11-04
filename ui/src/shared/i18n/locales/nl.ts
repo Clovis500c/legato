@@ -1605,7 +1605,7 @@ const nl: Record<string, string> = {
   'VU needles': 'VU-naalden',
   'Spectrogram': 'Spectrogram',
   'Radial goes around a big cover; where the cover is small it shows bars': 'Radiaal gaat rond een grote hoes; bij een kleine hoes toont het balken',
-  'bars mirror peaks wave curve radial circle vu needles meter spectrogram waterfall oscilloscope scope loudness lufs look': 'balken spiegel pieken golf uiterlijk radiaal cirkel vu naalden meter spectrogram waterval curve oscilloscoop luidheid lufs',
+  'bars mirror peaks wave curve radial circle vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look': 'balken spiegel pieken golf uiterlijk radiaal cirkel vu naalden meter spectrogram waterval curve oscilloscoop luidheid lufs vectorscoop goniometer stereo fase correlatie',
   // v2 redesign
   'Playing': 'Speelt nu',
   'All your songs': 'Al je nummers',
@@ -2035,6 +2035,7 @@ const nl: Record<string, string> = {
   'octave third sixth twelfth analyzer resolution detail hertz decibel scale': 'octaaf terts zesde twaalfde analyzer resolutie detail hertz decibel schaal',
   'True peak': 'Echte piek',
   'Oscilloscope': 'Oscilloscoop',
+  'Vectorscope': 'Vectorscoop',
 }
 
 export default nl

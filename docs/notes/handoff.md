@@ -177,6 +177,8 @@ Relaunch log (newest last):
 - 2026-11-04: wave blocks in the frames (flag 1: 512 samples a side, i16, only when asked) and the Oscilloscope look
   (`vizScope.ts`: a smoothed rising zero crossing, an afterglow). Seen over the demo (its fake engine sends a 110 Hz
   note); not on real music, nor in the watch page (its frames are now up to 3100 characters with the blocks).
+- 2026-11-04: the Vectorscope look (mid and side points, a correlation meter; `vizVector.ts`). Seen over the demo, full
+  screen and in the strip under the cover (the meter beside the square there). The settings search finds both scopes.
 
 ## Mobile app and devices sync (the owner's ask, 2026-11-02 afternoon; in progress)
 

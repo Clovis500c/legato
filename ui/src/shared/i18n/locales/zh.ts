@@ -1605,7 +1605,7 @@ const zh: Record<string, string> = {
   'VU needles': 'VU 指针',
   'Spectrogram': '频谱图',
   'Radial goes around a big cover; where the cover is small it shows bars': '环形围绕较大的封面显示；封面较小时显示条形',
-  'bars mirror peaks wave curve radial circle vu needles meter spectrogram waterfall oscilloscope scope loudness lufs look': '条形 镜像 峰值 波形 外观 bars mirror peaks wave 环形 圆 vu 指针 表 频谱图 瀑布 radial circle needles meter spectrogram waterfall 曲线 示波器 响度 curve oscilloscope scope loudness lufs',
+  'bars mirror peaks wave curve radial circle vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look': '条形 镜像 峰值 波形 外观 bars mirror peaks wave 环形 圆 vu 指针 表 频谱图 瀑布 radial circle needles meter spectrogram waterfall 曲线 示波器 响度 curve oscilloscope scope loudness lufs 矢量示波器 测角仪 立体声 相位 相关 vectorscope goniometer stereo phase correlation',
   // v2 redesign
   'Playing': '正在播放',
   'All your songs': '你的所有歌曲',
@@ -2035,6 +2035,7 @@ const zh: Record<string, string> = {
   'octave third sixth twelfth analyzer resolution detail hertz decibel scale': '倍频程 三分之一 六分之一 十二分之一 分析仪 分辨率 细节 赫兹 分贝 刻度',
   'True peak': '真峰值',
   'Oscilloscope': '示波器',
+  'Vectorscope': '矢量示波器',
 }
 
 export default zh

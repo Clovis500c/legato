@@ -7,6 +7,7 @@ import { overlapDue } from './fade'
 import { sendLive, setEnding, startLive } from './live'
 import { useLoudListeners } from './loudFeed'
 import { claimViz, useVizListeners, viz as frames } from './vizFrames'
+import { wantsWave } from './vizLooks'
 import { songFade, usePlayer } from './store'
 
 // Who plays now, for levels: the native engine (local files, previews) or YouTube. Spotify: its own app, none.
@@ -18,7 +19,7 @@ const playing = () => {
 /** Live processing follows the settings (Settings › Advanced › Sound) and the Live Editor. Mounted once, by the player bar. */
 export function useLiveSync() {
   const { adaptiveSound, adaptiveLevel, coverPulse, earlyEnds, skipSilence, liveYoutube, fine, wave } = useSettings(
-    useShallow(({ settings: s }) => ({ adaptiveSound: s.adaptiveSound, adaptiveLevel: s.adaptiveLevel, coverPulse: s.coverPulse, earlyEnds: s.earlyEnds, skipSilence: s.skipSilence, liveYoutube: s.liveYoutube, fine: s.visualizerBands === 'twelfth', wave: s.visualizerStyle === 'scope' })),
+    useShallow(({ settings: s }) => ({ adaptiveSound: s.adaptiveSound, adaptiveLevel: s.adaptiveLevel, coverPulse: s.coverPulse, earlyEnds: s.earlyEnds, skipSilence: s.skipSilence, liveYoutube: s.liveYoutube, fine: s.visualizerBands === 'twelfth', wave: wantsWave(s.visualizerStyle) })),
   )
   // The 60 Hz frames (Visualizer v2): YouTube's side makes them only while a view listens.
   const viz = useVizListeners((s) => s.n > 0)
@@ -27,7 +28,7 @@ export function useLiveSync() {
   const effects = useEditor((s) => s.effects)
   // This page owns the visualizer stream from the start: a worker left by a page before a reload is stopped.
   useEffect(() => claimViz(), [])
-  // Twelfths: the engine's frames in 121 bands; the Oscilloscope: with their wave blocks (YouTube's through the wish below).
+  // Twelfths: the engine's frames in 121 bands; the scopes: with their wave blocks (YouTube's through the wish below).
   useEffect(() => frames.setAsk({ fine, wave }), [fine, wave])
   useEffect(() => startLive(playing), [])
   useEffect(() => startEditor(), [])

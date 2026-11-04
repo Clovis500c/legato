@@ -1605,7 +1605,7 @@ const pt: Record<string, string> = {
   'VU needles': 'Ponteiros VU',
   'Spectrogram': 'Espectrograma',
   'Radial goes around a big cover; where the cover is small it shows bars': 'Radial envolve uma capa grande; se ela for pequena, mostra barras',
-  'bars mirror peaks wave curve radial circle vu needles meter spectrogram waterfall oscilloscope scope loudness lufs look': 'barras espelho picos onda aspeto radial círculo vu ponteiros medidor espectrograma cascata curva osciloscópio loudness lufs',
+  'bars mirror peaks wave curve radial circle vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look': 'barras espelho picos onda aspeto radial círculo vu ponteiros medidor espectrograma cascata curva osciloscópio loudness lufs vetorscópio goniómetro estéreo fase correlação',
   // v2 redesign
   'Playing': 'Tocando',
   'All your songs': 'Todas as suas músicas',
@@ -2035,6 +2035,7 @@ const pt: Record<string, string> = {
   'octave third sixth twelfth analyzer resolution detail hertz decibel scale': 'oitava terço sexto doze avos analisador resolução detalhe hertz decibel escala',
   'True peak': 'Pico real',
   'Oscilloscope': 'Osciloscópio',
+  'Vectorscope': 'Vetorscópio',
 }
 
 export default pt

@@ -37,8 +37,8 @@ export function Visualizer() {
   )
 }
 
-/** Bars in a backdrop or a thin strip for the looks that need room or read as numbers: the ring, the loudness meter. */
-const roomy = (look: VisualizerStyle): VisualizerStyle => (look === 'radial' || look === 'loudness' ? 'bars' : look)
+/** Bars in a backdrop or a thin strip for the looks that need room or read as numbers: the ring, the vectorscope, the loudness meter. */
+const roomy = (look: VisualizerStyle): VisualizerStyle => (look === 'radial' || look === 'vectorscope' || look === 'loudness' ? 'bars' : look)
 
 /**
  * The visualizer big and faint across the bottom of Now Playing, behind the song (Settings › Playback › Visualizer

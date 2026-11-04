@@ -164,8 +164,8 @@ export const COVER_CACHE_MB = [250, 500, 1000, 2000] as const
 /** Mini player resting spots: corners and edge middles (t = top, b = bottom, l = left, r = right). */
 /** Playlist icon: service logo, first song's cover, grid of the first 4, or a picked image. */
 export const COVER_MODES = ['source', 'first', 'grid', 'image'] as const
-/** Visualizer looks (VizCanvas.tsx): LED segments with held peaks, bars from the bottom, mirrored from the middle, bars with falling peaks, a wave, left and right as two glowing curves; a ring around the cover, two VU needles, a scrolling spectrogram, an oscilloscope's trace (vizScope.ts), a loudness meter (vizLoud.ts). */
-export const VISUALIZER_STYLES = ['led', 'bars', 'mirror', 'peaks', 'wave', 'curve', 'radial', 'vu', 'spectrogram', 'scope', 'loudness'] as const
+/** Visualizer looks (VizCanvas.tsx): LED segments with held peaks, bars from the bottom, mirrored from the middle, bars with falling peaks, a wave, left and right as two glowing curves; a ring around the cover, two VU needles, a scrolling spectrogram, an oscilloscope's trace (vizScope.ts), a vectorscope with its correlation meter (vizVector.ts), a loudness meter (vizLoud.ts). */
+export const VISUALIZER_STYLES = ['led', 'bars', 'mirror', 'peaks', 'wave', 'curve', 'radial', 'vu', 'spectrogram', 'scope', 'vectorscope', 'loudness'] as const
 export type VisualizerStyle = (typeof VISUALIZER_STYLES)[number]
 /** Visualizer weighting (vizWeigh.ts): the bands as measured, tilted 3 dB per octave toward the highs, or a hearing curve. */
 export const VIZ_WEIGHTINGS = ['flat', 'tilt', 'a', 'itu468'] as const

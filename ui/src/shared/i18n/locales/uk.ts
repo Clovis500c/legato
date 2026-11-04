@@ -1605,7 +1605,7 @@ const uk: Record<string, string> = {
   'VU needles': 'Стрілки VU',
   'Spectrogram': 'Спектрограма',
   'Radial goes around a big cover; where the cover is small it shows bars': 'Круговий вигляд обрамляє велику обкладинку; якщо вона мала, показуються смуги',
-  'bars mirror peaks wave curve radial circle vu needles meter spectrogram waterfall oscilloscope scope loudness lufs look': 'смуги дзеркало піки хвиля вигляд круговий коло vu стрілки індикатор спектрограма водоспад крива осцилограф гучність lufs',
+  'bars mirror peaks wave curve radial circle vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look': 'смуги дзеркало піки хвиля вигляд круговий коло vu стрілки індикатор спектрограма водоспад крива осцилограф гучність lufs векторскоп гоніометр стерео фаза кореляція',
   // v2 redesign
   'Playing': 'Грає',
   'All your songs': 'Усі ваші треки',
@@ -2035,6 +2035,7 @@ const uk: Record<string, string> = {
   'octave third sixth twelfth analyzer resolution detail hertz decibel scale': 'октава третина шоста дванадцята аналізатор роздільність деталі герц децибел шкала',
   'True peak': 'Істинний пік',
   'Oscilloscope': 'Осцилограф',
+  'Vectorscope': 'Векторскоп',
 }
 
 export default uk

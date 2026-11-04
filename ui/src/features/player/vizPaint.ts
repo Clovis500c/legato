@@ -9,6 +9,7 @@ import { monoWave, SPAN, trigger } from './vizScope'
 import { colorMap, fillColumn, rowMix, SCROLL, SCROLL_CALM, scrollBy } from './vizSpectro'
 import { createVu, vuPos, VU_MARKS } from './vizVu'
 import { VIZ_WAVE } from './vizUnpack'
+import { correlation, easeCorrelation, vectorPoints } from './vizVector'
 import { weightsOf } from './vizWeigh'
 
 /** Lowest bar, as a fraction of the box (a bar never vanishes). */
@@ -32,8 +33,10 @@ const SCALED = new Set<VisualizerStyle>(['led', 'bars', 'peaks', 'mirror', 'wave
 const SCALE_MIN_H = 120
 /** The loudness meter in words, with the peak, its scale and the range, in a box this tall (CSS px); letters and three bars below. */
 const LOUD_BIG_H = 120
-/** Oscilloscope: the phosphor's afterglow, s (what was drawn fades to a third in this long; three times it when calm). */
+/** Oscilloscope, Vectorscope: the phosphor's afterglow, s (what was drawn fades to a third in this long; three times it when calm). */
 const GLOW_S = 0.05
+/** Vectorscope: from this height (CSS px) the meter goes under the square, else beside it. */
+const VECTOR_BIG_H = 120
 
 interface Sprites {
   off: OffscreenCanvas
@@ -84,9 +87,16 @@ export function createPainter(canvas: OffscreenCanvas) {
   // Loudness meter: its words and its latest numbers.
   let words: LoudWords = LOUD_WORDS
   let loudNow: LoudReading = { momentary: -120, short: -120, integrated: null, range: null, peak: -120, top: -120 }
-  // Oscilloscope: the newest wave block, both sides as one; null while nothing sounds.
+  // Oscilloscope, Vectorscope: the newest wave blocks (none while nothing sounds), the scope's one side, the points.
+  const waveL = new Float32Array(VIZ_WAVE)
+  const waveR = new Float32Array(VIZ_WAVE)
   const scopeWave = new Float32Array(VIZ_WAVE)
-  let waveNow: Float32Array | null = null
+  const points = new Float32Array(2 * VIZ_WAVE)
+  let hasWave = false
+  // Vectorscope: the square its points fade in, and the correlation, as measured and as shown.
+  let trail: OffscreenCanvas | null = null
+  let corrNow: number | null = null
+  let corrShown = 0
 
   /** A CSS colour as [r, g, b] (the canvas parses it). */
   function rgbOf(color: string): [number, number, number] {
@@ -536,29 +546,36 @@ export function createPainter(canvas: OffscreenCanvas) {
     ctx.fillText(`${words.range}  ${say(v.range, 'LU')}`, left, y + tick + small + Math.round(font * 0.9))
   }
 
+  /** A phosphor's afterglow: what `c` holds fades, its alpha cut by the time passed (never cleared). */
+  function afterglow(c: OffscreenCanvasRenderingContext2D, w: number, h: number, dt: number) {
+    c.globalCompositeOperation = 'destination-out'
+    c.globalAlpha = 1 - Math.exp(-dt / (calm ? 3 * GLOW_S : GLOW_S))
+    c.fillStyle = '#000'
+    c.fillRect(0, 0, w, h)
+    c.globalCompositeOperation = 'source-over'
+    c.globalAlpha = 1
+  }
+
   /**
    * Oscilloscope: the newest wave block from its trigger (vizScope.ts), `SPAN` samples across the box, full scale at the
    * edges, over the pictures before fading out (a phosphor's afterglow: their alpha cut each frame, never cleared).
    */
   function scope(W: number, H: number, dt: number, resting: boolean) {
     if (!ctx) return
-    ctx.globalCompositeOperation = 'destination-out'
-    ctx.globalAlpha = 1 - Math.exp(-dt / (calm ? 3 * GLOW_S : GLOW_S))
-    ctx.fillRect(0, 0, W, H)
-    ctx.globalCompositeOperation = 'source-over'
-    ctx.globalAlpha = 1
+    afterglow(ctx, W, H, dt)
     // Nothing sounds: the glow fades, and its last 8-bit traces (a fade never takes them) go once at rest.
-    if (!waveNow) {
+    if (!hasWave) {
       if (resting) ctx.clearRect(0, 0, W, H)
       return
     }
-    const from = trigger(waveNow)
+    const wave = monoWave(waveL, waveR, scopeWave)
+    const from = trigger(wave)
     const mid = H / 2
     const amp = mid * 0.95
     ctx.beginPath()
     for (let i = 0; i < SPAN; i++) {
       const x = (i / (SPAN - 1)) * W
-      const y = mid - waveNow[from + i] * amp
+      const y = mid - wave[from + i] * amp
       if (i) ctx.lineTo(x, y)
       else ctx.moveTo(x, y)
     }
@@ -566,6 +583,88 @@ export function createPainter(canvas: OffscreenCanvas) {
     ctx.lineJoin = 'round'
     ctx.strokeStyle = ink
     ctx.stroke()
+  }
+
+  /** Vectorscope: its square and the correlation meter, device px: the meter under the square, beside it when short. */
+  function vectorBox(W: number, H: number) {
+    const bar = Math.max(2, Math.round(4 * dpr))
+    const gap = Math.round(12 * dpr)
+    if (cssH < VECTOR_BIG_H) {
+      const s = Math.min(W, H)
+      return { s, x: 0, y: Math.round((H - s) / 2), meter: { x: s + gap, y: Math.round((H - bar) / 2), w: W - s - gap, h: bar } }
+    }
+    const s = Math.max(0, Math.min(W, H - bar - gap))
+    const x = Math.round((W - s) / 2)
+    const y = Math.round((H - bar - gap - s) / 2)
+    return { s, x, y, meter: { x, y: y + s + gap, w: s, h: bar } }
+  }
+
+  /**
+   * Vectorscope (goniometer): the wave blocks as points, mid up and side across (vizVector.ts), in a square whose
+   * diamond is full scale, fading like the scope's trace but in a canvas of their own (the guides and the meter stay
+   * crisp). The correlation meter: −1 to +1 from the middle, in the alarm colour below 0 (a mono mix loses that sound).
+   */
+  function vectorscope(W: number, H: number, dt: number, resting: boolean) {
+    if (!ctx) return
+    const { s, x, y, meter } = vectorBox(W, H)
+    ctx.clearRect(0, 0, W, H)
+    if (s < 2) return
+    if (!trail || trail.width !== s) trail = new OffscreenCanvas(s, s)
+    const t = trail.getContext('2d')
+    if (!t) return
+    afterglow(t, s, s, dt)
+    if (hasWave) {
+      const half = s / 2
+      const d = Math.max(1, Math.round(1.5 * dpr))
+      vectorPoints(waveL, waveR, points)
+      t.globalAlpha = 0.6
+      t.fillStyle = ink
+      t.beginPath()
+      for (let i = 0; i < points.length; i += 2) t.rect(half + points[i] * half - d / 2, half - points[i + 1] * half - d / 2, d, d)
+      t.fill()
+      t.globalAlpha = 1
+    } else if (resting) t.clearRect(0, 0, s, s)
+    corrShown = easeCorrelation(corrShown, hasWave ? corrNow : null, dt)
+    // The guides, faint: the diamond, mid and side, left and right.
+    const cx = x + s / 2
+    const cy = y + s / 2
+    const q = s / 4
+    ctx.globalAlpha = 0.18
+    ctx.strokeStyle = ink
+    ctx.lineWidth = Math.max(1, dpr)
+    ctx.beginPath()
+    ctx.moveTo(cx, y)
+    ctx.lineTo(x + s, cy)
+    ctx.lineTo(cx, y + s)
+    ctx.lineTo(x, cy)
+    ctx.closePath()
+    ctx.moveTo(cx, y)
+    ctx.lineTo(cx, y + s)
+    ctx.moveTo(x, cy)
+    ctx.lineTo(x + s, cy)
+    ctx.moveTo(cx - q, cy - q)
+    ctx.lineTo(cx + q, cy + q)
+    ctx.moveTo(cx + q, cy - q)
+    ctx.lineTo(cx - q, cy + q)
+    ctx.stroke()
+    ctx.globalAlpha = 1
+    ctx.drawImage(trail, x, y)
+    // The meter: its track, the reading from the middle, a tick at 0.
+    if (meter.w < 4) return
+    const zero = meter.x + meter.w / 2
+    const at = zero + corrShown * (meter.w / 2)
+    ctx.fillStyle = ink
+    ctx.globalAlpha = 0.15
+    ctx.fillRect(meter.x, meter.y, meter.w, meter.h)
+    ctx.globalAlpha = 1
+    ctx.fillStyle = corrShown < 0 ? warn : ink
+    ctx.fillRect(Math.min(zero, at), meter.y, Math.abs(at - zero), meter.h)
+    const tick = Math.max(1, Math.round(dpr))
+    const reach = Math.round(3 * dpr)
+    ctx.globalAlpha = 0.5
+    ctx.fillStyle = ink
+    ctx.fillRect(Math.round(zero - tick / 2), meter.y - reach, tick, meter.h + 2 * reach)
+    ctx.globalAlpha = 1
   }
 
   return {
@@ -588,8 +687,13 @@ export function createPainter(canvas: OffscreenCanvas) {
       weighs = weightsOf(weigh, framesFor(bands))
       // Another look: a clean canvas (the waterfall keeps its picture otherwise).
       if (next !== look && ctx) ctx.clearRect(0, 0, canvas.width, canvas.height)
-      // Back to the Oscilloscope: no stale trace before its frames come.
-      if (next !== look) waveNow = null
+      // Back to the Oscilloscope or the Vectorscope: no stale trace before their frames come.
+      if (next !== look) {
+        hasWave = false
+        corrNow = null
+        corrShown = 0
+        trail = null
+      }
       look = next
       calm = calmer
       if ((color || '#888') !== ink || !inkRgb) {
@@ -606,7 +710,12 @@ export function createPainter(canvas: OffscreenCanvas) {
     },
     frame(l: ArrayLike<number>, r: ArrayLike<number>, rms: ArrayLike<number>, w?: [ArrayLike<number>, ArrayLike<number>]) {
       // A frame without its wave blocks (a stream starting again, the silence after a stop): no trace.
-      waveNow = w ? monoWave(w[0], w[1], scopeWave) : null
+      hasWave = w !== undefined
+      if (w) {
+        waveL.set(w[0])
+        waveR.set(w[1])
+        if (look === 'vectorscope') corrNow = correlation(waveL, waveR)
+      }
       if (look === 'vu') vu.frame(rms)
       else if (sceneR) {
         // Curve: each side on its own.
@@ -615,7 +724,7 @@ export function createPainter(canvas: OffscreenCanvas) {
       } else scene.frame(l, r)
     },
     silence() {
-      waveNow = null
+      hasWave = false
       scene.silence()
       sceneR?.silence()
       vu.silence()
@@ -654,9 +763,13 @@ export function createPainter(canvas: OffscreenCanvas) {
         waterfall(levels, dt)
         return resting
       }
-      // The trace over its afterglow, while the bars fall (no reflection, no scales: no bands).
+      // The traces over their afterglow, while the bars fall (no reflection, no scales: no bands).
       if (look === 'scope') {
         scope(W, H, dt, resting)
+        return resting
+      }
+      if (look === 'vectorscope') {
+        vectorscope(W, H, dt, resting)
         return resting
       }
       ctx.clearRect(0, 0, W, H)

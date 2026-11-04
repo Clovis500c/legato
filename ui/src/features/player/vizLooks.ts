@@ -2,7 +2,10 @@ import { msg } from '../../shared/i18n/i18n'
 import { VISUALIZER_STYLES, type VisualizerStyle, type VizBanding, type VizColor, type VizGradient, type VizWeighting } from '../../shared/theme/theme'
 
 /** The visualizer's looks by name (Settings, the visualizer's right-click menu); show with `tr`. */
-export const VISUALIZER_LABELS: Record<VisualizerStyle, string> = { led: msg('LED'), bars: msg('Bars'), mirror: msg('Mirror'), peaks: msg('Peaks'), wave: msg('Wave'), curve: msg('Curve'), radial: msg('Radial'), vu: msg('VU needles'), spectrogram: msg('Spectrogram'), scope: msg('Oscilloscope'), loudness: msg('Loudness meter') }
+export const VISUALIZER_LABELS: Record<VisualizerStyle, string> = { led: msg('LED'), bars: msg('Bars'), mirror: msg('Mirror'), peaks: msg('Peaks'), wave: msg('Wave'), curve: msg('Curve'), radial: msg('Radial'), vu: msg('VU needles'), spectrogram: msg('Spectrogram'), scope: msg('Oscilloscope'), vectorscope: msg('Vectorscope'), loudness: msg('Loudness meter') }
+
+/** Looks drawn from the frames' wave blocks: liveSync.ts asks for them only then. */
+export const wantsWave = (look: VisualizerStyle) => look === 'scope' || look === 'vectorscope'
 
 /** The visualizer's weightings by name (Settings); show with `tr`. */
 export const VIZ_WEIGHTING_LABELS: Record<VizWeighting, string> = { flat: msg('As measured'), tilt: msg('+3 dB per octave'), a: msg('A-weighting'), itu468: msg('ITU-R 468') }

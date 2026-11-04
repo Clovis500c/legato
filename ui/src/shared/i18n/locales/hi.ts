@@ -1605,7 +1605,7 @@ const hi: Record<string, string> = {
   'VU needles': 'VU सुइयाँ',
   'Spectrogram': 'स्पेक्ट्रोग्राम',
   'Radial goes around a big cover; where the cover is small it shows bars': 'रेडियल बड़े कवर के चारों ओर बनता है; कवर छोटा हो तो पट्टियाँ दिखती हैं',
-  'bars mirror peaks wave curve radial circle vu needles meter spectrogram waterfall oscilloscope scope loudness lufs look': 'पट्टियाँ दर्पण शिखर तरंग रूप bars mirror peaks wave रेडियल गोला vu सुई मीटर स्पेक्ट्रोग्राम झरना radial circle needles meter spectrogram waterfall वक्र ऑसिलोस्कोप लाउडनेस curve oscilloscope scope loudness lufs',
+  'bars mirror peaks wave curve radial circle vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look': 'पट्टियाँ दर्पण शिखर तरंग रूप bars mirror peaks wave रेडियल गोला vu सुई मीटर स्पेक्ट्रोग्राम झरना radial circle needles meter spectrogram waterfall वक्र ऑसिलोस्कोप लाउडनेस curve oscilloscope scope loudness lufs वेक्टरस्कोप गोनियोमीटर स्टीरियो फ़ेज़ सहसंबंध vectorscope goniometer stereo phase correlation',
   // v2 redesign
   'Playing': 'चल रहा है',
   'All your songs': 'आपके सभी गाने',
@@ -2035,6 +2035,7 @@ const hi: Record<string, string> = {
   'octave third sixth twelfth analyzer resolution detail hertz decibel scale': 'ऑक्टेव तिहाई छठा बारहवां एनालाइज़र रिज़ॉल्यूशन बारीकी हर्ट्ज़ डेसिबल स्केल',
   'True peak': 'ट्रू पीक',
   'Oscilloscope': 'ऑसिलोस्कोप',
+  'Vectorscope': 'वेक्टरस्कोप',
 }
 
 export default hi

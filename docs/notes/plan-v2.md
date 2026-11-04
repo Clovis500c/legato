@@ -555,7 +555,11 @@ colours, mirror, reflection.
       crossing of the smoothed wave, an afterglow of 50 ms (three times it with reduced motion); it asks for the wave
       blocks only while it is the look. Decided alone: mono, the length, the glow. Seen over the demo; not on real
       music.)
-- [ ] `S` Vectorscope / goniometer (left vs right, Lissajous) with a correlation meter: stereo width at a glance.
+- [x] `S` Vectorscope / goniometer (left vs right, Lissajous) with a correlation meter: stereo width at a glance.
+      (2026-11-04: the Vectorscope look, `vizVector.ts`: points of mid and side in a diamond, fading like the scope,
+      guides for mid, side, left and right; the correlation over each block eased over 300 ms, red below 0, under the
+      square or beside it in the strip. Decided alone: points rather than lines, halved scale (full scale = the
+      diamond, no auto gain). Seen over the demo; not on real music.)
 - [ ] `S` Unit tests: a sine lights its 1/12-octave band, a pink noise reads flat with the tilt, a click track gives its BPM.
       (The 1/6- and 1/12-octave sines, left-only, the twins' shared fixture and the 10 Hz strobe are in.)
 - [x] `S-M` Time-domain blocks in the frames (L/R, 1024 samples, as i16) for scope and vectorscope. Left / right bands, rms and

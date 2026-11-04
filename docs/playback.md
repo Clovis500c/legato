@@ -408,6 +408,15 @@ never: downloading, extracting, recording or exporting a platform's audio, or to
     canvas is not cleared while sound comes, its alpha cut each frame (`destination-out`, a 50 ms time constant, three
     times it with reduced motion); at rest the last 8-bit traces go. `liveSync.ts` asks for the wave blocks only
     while it is the look. Seen over the demo (a 110 Hz note); not on real music.
+  - **Vectorscope** (a look, 2026-11-04): a goniometer of the same blocks (`vizVector.ts`, pure, tested): each sample
+    pair a point, side (R − L) / 2 across and mid (L + R) / 2 up, so a mono sound stands as a vertical line, one side
+    alone leans 45°, opposite phases lie flat, and full scale draws the square's diamond (|x| + |y| is the larger
+    side), never past it. Faint guides: the diamond, mid and side, left and right. The points fade like the scope's
+    trace, in a canvas of their own so the guides and the meter stay crisp. The correlation meter under it (beside it
+    under 120 px high: the strip under the cover): Σ L·R / √(Σ L² · Σ R²) over each block, eased over 300 ms, −1 to +1
+    from the middle, in the alarm colour below 0 (what a mono mix loses); 0 when one side is silent, held through
+    silence. The backdrop and the mini player show bars. Seen over the demo (its fifth harmonic differs in phase
+    between the sides), full screen and in the strip; not on real music.
   - **True peak** (2026-11-04): BS.1770-4 annex 2 in both twins' meters, so the levels' `peak` is a true peak: the
     standard's 48-tap filter upsamples 4x (4 phases of 12 taps, its table digit for digit: passband ±0.1 dB to 20 kHz,
     −40 dB from 28 kHz), the highest |value| of the 4 points and the sample itself (never under the sample peak, as
