@@ -284,6 +284,13 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
         (`PlaybackService.hold`); Back always sends the app behind (from Android 12 it closed it unless opened from the
         home screen, and Tauri quits with it). On the emulator: 60 s behind Home, a song change screen off, 60 s of
         forced Doze, Back. Swiping the app away from the recent apps still stops the music.
+  - [x] Android: no cut in the music as the app leaves the screen or the phone sleeps (the owner's report, 2026-11-04:
+        « un petit délai »). wry paused the WebView in `onPause` and ours resumed it at once, but Chromium had already
+        paused YouTube's video: `pause` then `play` 0.3 to 0.8 s apart, plus a stall of the player (3 s on the
+        emulator). wry's own field for its WebView is now emptied once it's made (found by type, kept by
+        `proguard-rules.pro`), so wry never pauses it; Back goes through our own callback (the page's history, then
+        behind). On the emulator: no `pause` / `play` event and time running on with Home, the screen off, Back. Not
+        heard on a real phone, nor tried in a release (R8) build.
   - [x] Device sync carries every setting (2026-11-04): a PC with one stamped setting never stamped the rest, so they
         travelled as time 0 and no device took them; any unstamped key counts now, and more per-device keys stay local.
         Unit-tested, not tried between two real devices. Desktop-only rows and Shortcuts hidden on the phone.

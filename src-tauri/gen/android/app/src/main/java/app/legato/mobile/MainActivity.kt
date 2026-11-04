@@ -13,17 +13,28 @@ import android.provider.Settings
 import android.view.View
 import android.webkit.WebView
 import android.widget.FrameLayout
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.webkit.WebViewCompat
 import androidx.webkit.WebViewFeature
+import java.lang.reflect.Field
 import org.json.JSONArray
 
 class MainActivity : TauriActivity() {
   // Your devices on the same Wi-Fi (mDNS): Android drops multicast packets unless an app holds this lock.
   private var multicast: WifiManager.MulticastLock? = null
   private var web: WebView? = null
+
+  // wry's own field for its WebView (private), emptied once the WebView is made: wry then never pauses it as the app
+  // leaves the screen. Paused, Chromium paused YouTube's video; resumed at once, it still cut the music a moment (the
+  // owner's report, 2026-11-04). Null: a wry without that field, its pause undone at once (onPause).
+  private val wryWebView: Field? = WryActivity::class.java.declaredFields.firstOrNull { it.type == RustWebView::class.java }?.apply { isAccessible = true }
+
+  // wry's Back reads that field: the page's own (PageBack) while it's emptied.
+  override val handleBackNavigation: Boolean
+    get() = wryWebView == null
 
   override fun onCreate(savedInstanceState: Bundle?) {
     enableEdgeToEdge()
@@ -45,11 +56,16 @@ class MainActivity : TauriActivity() {
   override fun setContentView(view: View?) = super.setContentView(if (view is WebView) KeepVisible(this).apply { addView(view) } else view)
 
   // YouTube's player stops when its page is hidden, as the app leaves the screen: in YouTube's frames only, the page
-  // always says visible (the owner's choice, 2026-11-03, against YouTube's terms: background play is Premium's), and the
-  // WebView's window stays shown (setContentView), or Chromium pauses the video itself.
+  // always says visible (the owner's choice, 2026-11-03, against YouTube's terms: background play is Premium's), the
+  // WebView's window stays shown (setContentView) and wry never pauses the WebView (wryWebView), or Chromium pauses the
+  // video itself.
   override fun onWebViewCreate(webView: WebView) {
     super.onWebViewCreate(webView)
     web = webView
+    wryWebView?.let {
+      it.set(this, null)
+      onBackPressedDispatcher.addCallback(this, PageBack())
+    }
     runOnUiThread {
       if (WebViewFeature.isFeatureSupported(WebViewFeature.DOCUMENT_START_SCRIPT)) {
         WebViewCompat.addDocumentStartJavaScript(webView, VISIBLE, YOUTUBE)
@@ -99,11 +115,26 @@ class MainActivity : TauriActivity() {
     }
   }
 
-  // wry pauses the WebView here, its media with it: undone, the music goes on behind other apps.
+  // wry pauses no WebView here (wryWebView): the music goes on behind other apps. A wry whose field wasn't found pauses
+  // it, media with it: undone at once.
   override fun onPause() {
     super.onPause()
     onScreen = false
-    web?.onResume()
+    if (wryWebView == null) web?.onResume()
+  }
+
+  // Back: the page's history first, then onBackPressed (wry's own way, with its field emptied).
+  private inner class PageBack : OnBackPressedCallback(true) {
+    @Suppress("DEPRECATION")
+    override fun handleOnBackPressed() {
+      val view = web
+      if (view != null && view.canGoBack()) view.goBack()
+      else {
+        isEnabled = false
+        onBackPressed()
+        isEnabled = true
+      }
+    }
   }
 
   // Back at the root would close the app and the music (from Android 12 on, unless it was opened from the home screen):
@@ -115,6 +146,8 @@ class MainActivity : TauriActivity() {
 
   override fun onDestroy() {
     multicast?.release()
+    // wry's destroy hook names its WebView by that field.
+    web?.let { wryWebView?.set(this, it) }
     super.onDestroy()
   }
 

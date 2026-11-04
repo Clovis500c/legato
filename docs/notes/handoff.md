@@ -144,6 +144,12 @@ Relaunch log (newest last):
   this phone card in Add music and the welcome, Local files' row finds them, scanned again at launch). Seen on the
   emulator: the dialog, a refusal, a WAV pushed by `adb push` found with its tags, the watcher (about 6 s), the Rust
   engine behind other apps and screen off. A silent file ends at once (`ends.ts`' silent end): test with a quiet tone.
+- 2026-11-04: the owner, mid-run: « quand on ferme le tel ou qu'on le met en veille ya un petit délai pour que la music
+  se joue ». Measured with `gap.mjs` (scratchpad: the YouTube frame's `<video>` events over DevTools, kept in a DOM
+  attribute since isolated worlds don't share globals): Home gave `pause` → `play` 0.8 s apart and a 3 s stall, screen
+  off 0.27 s. Cause: wry's `onPause` calls `WebView.onPause()`, and Chromium pauses the media then, before our resume.
+  Fixed by emptying wry's private `mWebView` field (by type; `onPause`, `onResume` and its Back check
+  `isInitialized`), Back by our own `OnBackPressedCallback`, the field put back for `onDestroy`. After: no event at all.
 
 ## Mobile app and devices sync (the owner's ask, 2026-11-02 afternoon; in progress)
 
