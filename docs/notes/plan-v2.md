@@ -298,6 +298,14 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
         own consent), a refusal says where to allow it with an Open app info button. On the emulator: the dialog, the
         refusal's note and button, the app info page, then a one-time grant: Android's mic indicator lit, the level
         moving bar, Stop (nothing sent). A real song not recognized (the emulator's microphone is silent).
+  - [ ] The interface's texts and layout at every size (the owner, 2026-11-04: « faudrait vrm bien gérer les ui et leur
+        texte et le responsive »). Done, seen in the demo at 375 × 812, 800 × 600 and 1100 × 700: the phone's Songs
+        rows and toolbar, Home (search box, shortcut tiles, section heads), a list's toolbar and search scope, Mixes,
+        Stats, Now Playing's top bar, every Settings section (rows wrap in a narrow pane by a container query, Accounts
+        one line per service, the phone says phone: language, accent, font). A window under 1200 px: the right panel
+        steps aside (its mini player floats, Lyrics / Up next open Now Playing), the song list drops its least needed
+        columns to fit (`fitColumns`). Left: Search results, album and artist pages, Now Playing's panels on the phone,
+        Add music, then the same screens on the emulator.
   - [x] QR scanner for pairing (2026-11-04, `tauri-plugin-barcode-scanner` 2.x): never scanned a real code.
   - [x] Secrets sealed by Android's Keystore (2026-11-04), moved once from `secrets.json`: checked on the emulator.
   - [x] Android download on the website (2026-11-04): hero link and FAQ; a push deploys it (the owner's call).

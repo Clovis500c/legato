@@ -125,6 +125,11 @@ Relaunch log (newest last):
   the process exits with it). How to check it: the YouTube frame's `<video>` over DevTools (`Page.getFrameTree`, then
   `Page.createIsolatedWorld` on the frame and `currentTime`, `paused`); `dumpsys deviceidle force-idle` after
   `dumpsys battery unplug` for Doze (then `unforce`, `battery reset`).
+- 2026-11-04: APK 1.1.628 with that fix sent to the owner. Then the UI pass (plan-v2 › The interface's texts and layout
+  at every size), five commits: the phone's Home, lists, Mixes, Stats, Settings and Accounts; a desktop window under
+  1200 px (right panel aside, song columns fitted). Checked in the demo (`demo` in launch.json, the pane's mobile
+  preset for 375 × 812, a custom size for a narrow window; reload after a size change, `phoneApp` is read at load).
+  Next in it: Search results, album and artist pages, Now Playing's panels, Add music, then the emulator.
 
 ## Mobile app and devices sync (the owner's ask, 2026-11-02 afternoon; in progress)
 
