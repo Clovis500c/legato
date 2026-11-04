@@ -1,5 +1,6 @@
 import { listen } from '@tauri-apps/api/event'
 import { api, type LibraryTrack, type MediaNow } from '../../shared/api'
+import { sizedArt, trackArt } from '../../shared/art'
 import { nowTrack, type NowPlaying, usePlayer } from './store'
 
 /** Windows media panel / tray payload. Library row gives album and cover. */
@@ -54,6 +55,39 @@ export function phoneButton(text: string): { key: MediaKey } | { seek: number } 
   return ['play', 'pause', 'next', 'previous'].includes(text) ? { key: text as MediaKey } : null
 }
 
+/**
+ * A picture read back as JPEG base64 through a canvas; null = failed. The page's CSP keeps `fetch` off the art scheme,
+ * and its answers allow any origin, so the canvas stays readable.
+ */
+function jpeg(src: string): Promise<string | null> {
+  return new Promise((resolve) => {
+    const img = new Image()
+    img.crossOrigin = 'anonymous'
+    img.onload = () => {
+      try {
+        const c = document.createElement('canvas')
+        c.width = img.naturalWidth
+        c.height = img.naturalHeight
+        c.getContext('2d')?.drawImage(img, 0, 0)
+        resolve(c.toDataURL('image/jpeg', 0.9).split(',')[1] || null)
+      } catch {
+        resolve(null)
+      }
+    }
+    img.onerror = () => resolve(null)
+    img.src = src
+  })
+}
+
+/** The phone notification's cover: the first candidate the art scheme serves, as its 256 px thumbnail; '' = none. */
+export async function phoneCover(urls: string[], load: (src: string) => Promise<string | null> = jpeg): Promise<string> {
+  for (const url of urls) {
+    const data = await load(sizedArt(url, 256))
+    if (data) return data
+  }
+  return ''
+}
+
 /** The native side of the phone's media session, there only (Android's WebView). */
 interface PhoneBridge {
   postMessage(text: string): void
@@ -70,12 +104,23 @@ export function startMedia(): () => void {
     const track = nowTrack()
     const info = mediaNow(now, playing, track, positionMs, durationMs)
     const at = Date.now()
+    const fresh = now?.trackId !== lastTrack
     // New track: always (same title twice in a row is still a new item).
-    if (now?.trackId === lastTrack && !needsPush(last, info, at)) return
+    if (!fresh && !needsPush(last, info, at)) return
     last = { info, at }
     lastTrack = now?.trackId
-    if (phone) phone.postMessage(phoneMessage(info))
-    else void api.mediaUpdate(info, track?.ids.local ? track.id : null, track?.art ?? null).catch(() => {})
+    if (!phone) {
+      void api.mediaUpdate(info, track?.ids.local ? track.id : null, track?.art ?? null).catch(() => {})
+      return
+    }
+    phone.postMessage(phoneMessage(info))
+    // Its cover follows, unless another song came first.
+    if (fresh && info) {
+      const id = lastTrack
+      void phoneCover(track ? trackArt(track) : []).then((cover) => {
+        if (lastTrack === id) phone.postMessage(JSON.stringify({ cover }))
+      })
+    }
   }
   const unsub = usePlayer.subscribe((s, prev) => {
     if (s.now !== prev.now || s.playing !== prev.playing || s.positionMs !== prev.positionMs || s.durationMs !== prev.durationMs) push()

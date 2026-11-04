@@ -19,7 +19,7 @@ import android.os.Looper
 
 // Music behind other apps: a media playback foreground service keeps the process alive (not frozen, not killed).
 // MainActivity starts it while on screen; off screen and silent, it stops within a minute. Its notification is a media
-// one (previous, play / pause, next, title and artist) and a MediaSession serves the lock screen and headset buttons:
+// one (previous, play / pause, next, title, artist, cover) and a MediaSession serves the lock screen and headset buttons:
 // every button goes back to the page (`MediaState`), which owns the queue.
 class PlaybackService : Service() {
   private val tick = Handler(Looper.getMainLooper())
@@ -78,12 +78,14 @@ class PlaybackService : Service() {
     val title = MediaState.title
     val playing = MediaState.playing
     val position = if (playing) MediaState.positionMs + (System.currentTimeMillis() - MediaState.stamp) else MediaState.positionMs
+    val cover = MediaState.cover
     session?.let {
       it.setMetadata(
         MediaMetadata.Builder().apply {
           putString(MediaMetadata.METADATA_KEY_TITLE, title ?: getString(R.string.app_name))
           putString(MediaMetadata.METADATA_KEY_ARTIST, MediaState.artist ?: "")
           if (MediaState.durationMs > 0) putLong(MediaMetadata.METADATA_KEY_DURATION, MediaState.durationMs)
+          if (cover != null) putBitmap(MediaMetadata.METADATA_KEY_ALBUM_ART, cover)
         }.build()
       )
       it.setPlaybackState(
@@ -103,7 +105,8 @@ class PlaybackService : Service() {
       .setVisibility(Notification.VISIBILITY_PUBLIC)
     if (title != null) {
       b.setContentText(MediaState.artist ?: "")
-        .addAction(button(android.R.drawable.ic_media_previous, "Previous", "previous", 1))
+      if (cover != null) b.setLargeIcon(cover)
+      b.addAction(button(android.R.drawable.ic_media_previous, "Previous", "previous", 1))
         .addAction(if (playing) button(android.R.drawable.ic_media_pause, "Pause", "pause", 2) else button(android.R.drawable.ic_media_play, "Play", "play", 3))
         .addAction(button(android.R.drawable.ic_media_next, "Next", "next", 4))
       val style = Notification.MediaStyle().setShowActionsInCompactView(0, 1, 2)

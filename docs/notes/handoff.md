@@ -91,6 +91,16 @@ it installs over it, and below the next Beta (it counts master's commits); (2) t
 (3) the phone's texts that still say PC (Sync Mode, Music Detector, plugins); (4) plan-v2's open lines: the roadmap's
 order, then `S` before `M` before `L`, phone and visualizer first.
 
+Relaunch log (newest last):
+
+- 2026-11-04: (1) APK 1.1.621 signed (`--config` file with the version: PowerShell 5.1 mangles inline JSON), sent to
+  the owner. `tauri.properties` is rewritten by the build: restored after.
+- 2026-11-04: (2) the cover in the notification and on the lock screen. The page's `fetch` to `art.localhost` fails on
+  Android (the CSP), an `<img>` loads: `phoneCover` draws the 256 px thumbnail on a canvas (the scheme allows any
+  origin) and posts `{"cover": base64 JPEG}` after the state; `MediaState.kt` decodes it, a new title clears it;
+  `PlaybackService.kt` puts it in the metadata and as the large icon. Seen on the emulator (API 36) with a title
+  pushed over DevTools; a real song's path not driven.
+
 ## Mobile app and devices sync (the owner's ask, 2026-11-02 afternoon; in progress)
 
 The ask: the mobile app working completely; phone and PC synced over Wi-Fi both ways (code or QR code, either device

@@ -1,5 +1,20 @@
 import { describe, expect, it } from 'vitest'
-import { keyAction, mediaNow, needsPush, phoneButton, phoneMessage } from './media'
+import { keyAction, mediaNow, needsPush, phoneButton, phoneCover, phoneMessage } from './media'
+
+describe('phone cover', () => {
+  it('takes the first cover the art scheme serves, as its 256 px thumbnail', async () => {
+    const asked: string[] = []
+    const load = async (src: string) => {
+      asked.push(src)
+      return src.includes('local%2F') ? null : '/9j/AA=='
+    }
+    const local = 'http://art.localhost/local%2F7'
+    const remote = 'http://art.localhost/https%3A%2F%2Fi.ytimg.com%2Fvi%2Fx%2Fhqdefault.jpg'
+    expect(await phoneCover([local, remote], load)).toBe('/9j/AA==')
+    expect(asked).toEqual([`${local}?s=256`, `${remote}?s=256`])
+    expect(await phoneCover([], load)).toBe('')
+  })
+})
 
 describe('media keys', () => {
   it('play and pause only act when they change state', () => {

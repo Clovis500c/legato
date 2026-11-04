@@ -275,7 +275,9 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
         kept awake and YouTube's frames told they're visible. Try it on the owner's phone.
   - [x] Android: previous / play-pause / next in the notification and on the lock screen (a MediaSession fed by the page
         through a web message listener limited to the app's own origin), Back on Android 8 to 11 goes to the background
-        (2026-11-04). Starts on the emulator; the buttons and a real song not tried. No cover in the notification yet.
+        (2026-11-04). Starts on the emulator; the buttons and a real song not tried. The song's cover there too
+        (2026-11-04): the page reads its 256 px thumbnail back through a canvas and posts it after the state; seen on
+        the emulator with a title pushed by hand, a real song's path not driven.
   - [x] Device sync carries every setting (2026-11-04): a PC with one stamped setting never stamped the rest, so they
         travelled as time 0 and no device took them; any unstamped key counts now, and more per-device keys stay local.
         Unit-tested, not tried between two real devices. Desktop-only rows and Shortcuts hidden on the phone.
