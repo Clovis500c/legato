@@ -5,7 +5,7 @@ code), then [plan-v2.md](plan-v2.md) (open work). Rewrite it when a branch or th
 
 Written 2026-11-01, run section 2026-11-02, autopilot 2026-11-03 and 2026-11-04.
 
-## Autopilot from 2026-11-04 (done 2026-11-04; the report is docs/notes/report-2026-11-04.md)
+## Autopilot from 2026-11-04 (relaunched by the owner the same morning: read this first)
 
 The owner's ask (2026-11-03 evening): carry on with the plan and the Android app, a lot to do, alone from the weekly
 reset (2026-11-04 08:00 Paris), resuming alone after each 5-hour limit; no question can be answered. The desktop app's
@@ -72,7 +72,24 @@ Log (newest last):
   the newest of the last 10 GitHub releases with a `_android-arm64.apk`, else the releases page) and an FAQ answer
   (Android 8+, 64-bit, no store, no updater, iPhone not yet). `next build` passes; a push deploys it, the owner's call.
 
-End (2026-11-04, week at 2 %): steps 1 to 6 done; step 7 (plan-v2's open `S` lines) not started on purpose: they need the owner's eye (visualizer), a new service, or an account. Wake-up deleted. Next: the owner tries the phone items in the report; the Beta push would also deploy the site's Android link; then plan-v2's open lines by size.
+First end (2026-11-04 08:48, week at 2 %): steps 1 to 6 done; step 7 not started (its lines seemed to need the owner's
+eye, a new service or an account); report `report-2026-11-04.md`.
+
+Relaunch (2026-11-04 morning, the owner on the phone: « Tu relance tout faut faire le max »): everything that can be
+built and checked alone, until 90 % of the week, in the owner's own session (followed over Remote Control), same rules,
+same 20-minute wake-up. What the first end left is in scope now:
+
+- A line that needs the owner's eye or taste: built behind a setting that's off, or a default that changes nothing, so
+  the owner judges it later (the plan line says which).
+- A new service (a new host): opt-in, by `.claude/skills/add-connector` (mock tests, the website's privacy row); a few
+  real requests to check its endpoint, never bulk.
+- Only what truly needs the owner waits: a real account or sign-in, their phone, ear or PC's hardware, a push, a paid
+  program.
+
+Relaunch order: (1) a signed APK of `platforms` sent to the owner, version 1.1.(commits in HEAD), above Beta 1.1.609 so
+it installs over it, and below the next Beta (it counts master's commits); (2) the cover in the phone's notification;
+(3) the phone's texts that still say PC (Sync Mode, Music Detector, plugins); (4) plan-v2's open lines: the roadmap's
+order, then `S` before `M` before `L`, phone and visualizer first.
 
 ## Mobile app and devices sync (the owner's ask, 2026-11-02 afternoon; in progress)
 
