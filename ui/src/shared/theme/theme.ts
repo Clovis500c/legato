@@ -424,6 +424,8 @@ export interface Settings {
   phoneRemote: boolean
   /** Streaming overlay (OBS on this PC), this PC's own. */
   streamOverlay: boolean
+  /** The overlay's visualizer: bars under the song, measured only while OBS shows the page. Off by default; this PC's own. */
+  visualizerOverlay: boolean
   /** Now Playing: the top bar's search sits over the cover / video, not the window's middle. */
   searchOnCover: boolean
   /** Music Detector agreed to (microphone, 10 s clips sent to AudD to name the song). */
@@ -543,6 +545,7 @@ export const DEFAULTS: Settings = {
   searchSuggestions: true,
   phoneRemote: false,
   streamOverlay: false,
+  visualizerOverlay: false,
   searchOnCover: true,
   detector: false,
   detectorInput: 'mic',
@@ -763,6 +766,7 @@ export function sanitize(raw: unknown): Settings {
     searchSuggestions: r.searchSuggestions !== false,
     phoneRemote: r.phoneRemote === true,
     streamOverlay: r.streamOverlay === true,
+    visualizerOverlay: r.visualizerOverlay === true,
     searchOnCover: r.searchOnCover !== false,
     detector: r.detector === true,
     detectorInput: pick(r.detectorInput, ['mic', 'pc'] as const, DEFAULTS.detectorInput),

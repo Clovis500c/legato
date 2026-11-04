@@ -2038,6 +2038,9 @@ const it: Record<string, string> = {
   'Vectorscope': 'Vettorscopio',
   'Particles': 'Particelle',
   'Song’s shape': 'Forma del brano',
+  'Visualizer on the overlay': 'Visualizzatore nell’overlay',
+  'Bars under the song that move with the music, measured only while OBS shows the page': 'Barre sotto il brano che si muovono con la musica, misurate solo mentre OBS mostra la pagina',
+  'obs stream bars spectrum equalizer': 'obs stream barre spettro equalizzatore',
 }
 
 export default it

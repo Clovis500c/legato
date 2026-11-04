@@ -3,7 +3,8 @@
 //! `music_core::remote`. Keys and seeks reach the interface as the media panel's `media-key` / `media-seek` events; what
 //! plays comes from `media_update`, the queue from `remote_queue` (sent only while the remote is on).
 //! The streaming overlay (Settings › Playback, off by default) shares the server: `/overlay` for OBS on this PC; alone, the
-//! server listens on 127.0.0.1 only.
+//! server listens on 127.0.0.1 only. Its visualizer (off by default) streams the interface's bars to `/frames` while OBS
+//! shows the page: the interface sends them only then (`overlay-viz` events, `overlay_bars`).
 
 use crate::{AppState, CmdResult, art, media::NowPlaying};
 use music_core::remote::{self, Route};
@@ -12,7 +13,7 @@ use std::collections::HashMap;
 use std::io::{Read, Write};
 use std::net::{IpAddr, Ipv4Addr, SocketAddr, TcpListener, TcpStream, UdpSocket};
 use std::sync::atomic::{AtomicBool, AtomicU32, AtomicUsize, Ordering};
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Condvar, Mutex};
 use std::time::{Duration, Instant};
 use tauri::{AppHandle, Emitter, State};
 
@@ -29,6 +30,15 @@ const OVERLAY_PAGE: &str = include_str!("overlay.html");
 /// What the server runs for: the phone remote (the network), the overlay (this PC).
 static PHONE: AtomicBool = AtomicBool::new(false);
 static OVERLAY: AtomicBool = AtomicBool::new(false);
+/// The overlay's visualizer: on or not, the interface's newest bars (how many sent, their levels), the streams waiting.
+static VIZ_ON: AtomicBool = AtomicBool::new(false);
+static BARS: Mutex<(u64, Vec<u8>)> = Mutex::new((0, Vec::new()));
+static NEW_BARS: Condvar = Condvar::new();
+static STREAMS: AtomicUsize = AtomicUsize::new(0);
+/// OBS sources showing the bars at once: each holds a thread (of `MAX_OPEN`) while it reads.
+const MAX_STREAMS: usize = 2;
+/// Nothing to send this long: a comment checks OBS still reads, and the interface is asked again (a reload forgets).
+const QUIET: Duration = Duration::from_secs(2);
 const CSP: &str = "default-src 'none'; img-src 'self'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'";
 
 /// What plays, as the interface last said.
@@ -93,6 +103,8 @@ struct StateJson<'a> {
     /// None = no cover to ask for.
     cover: Option<u32>,
     next: &'a [Song],
+    /// The overlay shows its visualizer.
+    viz: bool,
 }
 
 /// What plays now: the position moved on by the time since the interface said it.
@@ -109,6 +121,7 @@ fn state_json() -> String {
         duration_ms: p.duration_ms,
         cover: (p.track_id.is_some() || p.art.is_some()).then_some(p.cover),
         next: &next,
+        viz: OVERLAY.load(Ordering::Relaxed) && VIZ_ON.load(Ordering::Relaxed),
     };
     serde_json::to_string(&json).unwrap_or_else(|_| "null".into())
 }
@@ -165,7 +178,49 @@ fn read_head(stream: &mut TcpStream) -> std::io::Result<String> {
     Ok(String::from_utf8_lossy(&head).into_owned())
 }
 
-fn answer(mut stream: TcpStream, app: &AppHandle, token: &str, this_pc: bool) -> std::io::Result<()> {
+/// Counts a stream of the overlay's bars while it lasts; the last one gone, the interface stops sending them.
+struct Streaming<'a>(&'a dyn Fn(bool));
+impl Drop for Streaming<'_> {
+    fn drop(&mut self) {
+        if STREAMS.fetch_sub(1, Ordering::Relaxed) == 1 {
+            (self.0)(false);
+        }
+    }
+}
+
+/// The overlay's bars as server-sent events, while OBS reads them with the overlay and its visualizer on. `ask`: tells
+/// the interface to send them (true) or stop (false), the `overlay-viz` event.
+fn frames(mut stream: TcpStream, ask: &dyn Fn(bool), stop: &AtomicBool) -> std::io::Result<()> {
+    if STREAMS.fetch_add(1, Ordering::Relaxed) >= MAX_STREAMS {
+        STREAMS.fetch_sub(1, Ordering::Relaxed);
+        return stream.write_all(b"HTTP/1.1 503 Service Unavailable\r\nContent-Length: 0\r\nConnection: close\r\n\r\n");
+    }
+    let _streaming = Streaming(ask);
+    write!(stream, "HTTP/1.1 200 OK\r\nContent-Type: text/event-stream\r\nCache-Control: no-store\r\nX-Content-Type-Options: nosniff\r\nContent-Security-Policy: {CSP}\r\nConnection: close\r\n\r\nretry: 2000\n\n")?;
+    stream.flush()?;
+    ask(true);
+    let mut seen = BARS.lock().unwrap().0;
+    let mut quiet = Instant::now();
+    while !stop.load(Ordering::Relaxed) && OVERLAY.load(Ordering::Relaxed) && VIZ_ON.load(Ordering::Relaxed) {
+        let (bars, _) = NEW_BARS.wait_timeout(BARS.lock().unwrap(), Duration::from_millis(250)).unwrap();
+        let event = (bars.0 != seen).then(|| remote::frame_event(&bars.1));
+        seen = bars.0;
+        drop(bars);
+        if let Some(event) = event {
+            stream.write_all(event.as_bytes())?;
+            stream.flush()?;
+            quiet = Instant::now();
+        } else if quiet.elapsed() >= QUIET {
+            stream.write_all(b": quiet\n\n")?;
+            stream.flush()?;
+            ask(true);
+            quiet = Instant::now();
+        }
+    }
+    Ok(())
+}
+
+fn answer(mut stream: TcpStream, app: &AppHandle, token: &str, this_pc: bool, stop: &AtomicBool) -> std::io::Result<()> {
     stream.set_read_timeout(Some(Duration::from_secs(5)))?;
     stream.set_write_timeout(Some(Duration::from_secs(5)))?;
     let head = read_head(&mut stream)?;
@@ -175,6 +230,14 @@ fn answer(mut stream: TcpStream, app: &AppHandle, token: &str, this_pc: bool) ->
     let (status, kind, body) = match route {
         Route::Page => (200, "text/html; charset=utf-8".into(), PAGE_NOW.lock().unwrap().clone().into_bytes()),
         Route::Overlay => (200, "text/html; charset=utf-8".into(), OVERLAY_PAGE.as_bytes().to_vec()),
+        Route::Frames if VIZ_ON.load(Ordering::Relaxed) => {
+            let ask = |on: bool| {
+                let _ = app.emit_to("main", "overlay-viz", on);
+            };
+            return frames(stream, &ask, stop);
+        }
+        // Its visualizer off: refused, so the page's event source gives up until the state says it is on.
+        Route::Frames => (404, String::new(), Vec::new()),
         Route::State => (200, "application/json".into(), state_json().into_bytes()),
         Route::Cover => match tauri::async_runtime::block_on(cover(app)) {
             Some((bytes, kind)) => (200, kind, bytes),
@@ -227,9 +290,9 @@ fn serve(listener: TcpListener, app: AppHandle, token: String, stop: Arc<AtomicB
             continue;
         }
         open.fetch_add(1, Ordering::Relaxed);
-        let (app, token, done) = (app.clone(), token.clone(), open.clone());
+        let (app, token, done, stop) = (app.clone(), token.clone(), open.clone(), stop.clone());
         let spawned = std::thread::Builder::new().name("phone-remote-ask".into()).spawn(move || {
-            let _ = answer(stream, &app, &token, peer.is_loopback());
+            let _ = answer(stream, &app, &token, peer.is_loopback(), &stop);
             done.fetch_sub(1, Ordering::Relaxed);
         });
         if spawned.is_err() {
@@ -241,6 +304,8 @@ fn serve(listener: TcpListener, app: AppHandle, token: String, stop: Arc<AtomicB
 fn stop_server() {
     let Some(mut s) = SERVER.lock().unwrap().take() else { return };
     s.stop.store(true, Ordering::Relaxed);
+    // The overlay's streams see it at once.
+    NEW_BARS.notify_all();
     // Wakes the waiting accept, which then sees the flag.
     let _ = TcpStream::connect_timeout(&SocketAddr::from((Ipv4Addr::LOCALHOST, s.port)), Duration::from_millis(300));
     // Its port free again before a new server binds: the overlay's link in OBS keeps working.
@@ -330,10 +395,12 @@ pub async fn remote_stop(app: AppHandle, state: State<'_, AppState>) -> CmdResul
     Ok(())
 }
 
-/// Starts (or keeps) the server for the streaming overlay; its link, for OBS on this PC.
+/// Starts (or keeps) the server for the streaming overlay; its link, for OBS on this PC. `viz`: with its visualizer.
 #[tauri::command]
-pub async fn overlay_start(app: AppHandle, state: State<'_, AppState>) -> CmdResult<String> {
+pub async fn overlay_start(app: AppHandle, state: State<'_, AppState>, viz: bool) -> CmdResult<String> {
     OVERLAY.store(true, Ordering::Relaxed);
+    VIZ_ON.store(viz, Ordering::Relaxed);
+    NEW_BARS.notify_all();
     let token = token(&state, false)?;
     let port = serve_with(&app, &token)?;
     Ok(format!("http://127.0.0.1:{port}/overlay?t={token}"))
@@ -342,9 +409,28 @@ pub async fn overlay_start(app: AppHandle, state: State<'_, AppState>) -> CmdRes
 #[tauri::command]
 pub async fn overlay_stop() {
     OVERLAY.store(false, Ordering::Relaxed);
+    NEW_BARS.notify_all();
     if !PHONE.load(Ordering::Relaxed) {
         stop_server();
     }
+}
+
+/// The overlay's visualizer: the interface's newest bars (0 to 255, low notes first). False = no page reads them: it
+/// stops sending.
+#[tauri::command]
+pub async fn overlay_bars(levels: Vec<u8>) -> bool {
+    push_bars(levels)
+}
+
+fn push_bars(levels: Vec<u8>) -> bool {
+    let open = STREAMS.load(Ordering::Relaxed) > 0;
+    if open {
+        let mut bars = BARS.lock().unwrap();
+        bars.0 += 1;
+        bars.1 = levels.into_iter().take(remote::MAX_BARS).collect();
+        NEW_BARS.notify_all();
+    }
+    open
 }
 
 /// Up next as the interface shows it (first songs only).
@@ -379,5 +465,43 @@ mod tests {
         assert!(other["cover"].is_null());
         set_now(None, None, None);
         assert_eq!(state_json(), "null");
+    }
+
+    #[test]
+    fn the_overlay_bars_stream_while_a_page_reads() {
+        let listener = TcpListener::bind((Ipv4Addr::LOCALHOST, 0)).unwrap();
+        let mut page = TcpStream::connect(listener.local_addr().unwrap()).unwrap();
+        let (served, _) = listener.accept().unwrap();
+        OVERLAY.store(true, Ordering::Relaxed);
+        VIZ_ON.store(true, Ordering::Relaxed);
+        assert!(!push_bars(vec![9]), "no page reads yet");
+        let asked = Arc::new(Mutex::new(Vec::new()));
+        let stop = Arc::new(AtomicBool::new(false));
+        let server = {
+            let (asked, stop) = (asked.clone(), stop.clone());
+            std::thread::spawn(move || {
+                let ask = |on: bool| asked.lock().unwrap().push(on);
+                frames(served, &ask, &stop).unwrap();
+            })
+        };
+        while STREAMS.load(Ordering::Relaxed) == 0 {
+            std::thread::sleep(Duration::from_millis(5));
+        }
+        assert!(push_bars(vec![0, 15, 255]));
+        page.set_read_timeout(Some(Duration::from_secs(5))).unwrap();
+        let mut got = String::new();
+        let mut chunk = [0u8; 512];
+        while !got.contains("data: 000fff\n\n") {
+            let n = page.read(&mut chunk).unwrap();
+            assert!(n > 0, "stream closed early: {got}");
+            got.push_str(&String::from_utf8_lossy(&chunk[..n]));
+        }
+        assert!(got.starts_with("HTTP/1.1 200 OK\r\nContent-Type: text/event-stream\r\n"));
+        // The server stops: the stream ends, the interface is told to stop sending.
+        stop.store(true, Ordering::Relaxed);
+        NEW_BARS.notify_all();
+        server.join().unwrap();
+        assert_eq!(*asked.lock().unwrap(), vec![true, false]);
+        assert!(!push_bars(vec![1]));
     }
 }

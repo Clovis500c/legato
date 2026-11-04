@@ -519,13 +519,16 @@ colours, mirror, reflection.
       from half height, the alarm red at the top, from the middle out for the mirror, from the cover out for the ring;
       Along frequency = a prism, red lows to violet highs, the ring's from the bottom up both sides. Amber and the prism
       made 3:1 on the background (`vivid`). VU needles and the spectrogram keep their colours. Seen over the demo, both.)
-- [ ] `S` Sizes left: a big backdrop behind Now Playing, the mini player, the OBS overlay page. A click on the visualizer
+- [x] `S` Sizes left: a big backdrop behind Now Playing, the mini player, the OBS overlay page. A click on the visualizer
       cycles its look (2026-11-04, `vizClick.ts`: the strip and the full screen, held 300 ms so a double click still
       takes it full screen or back; seen over the demo, LED to Bars to Mirror, a double click left it as it was; the
       owner judges it). The backdrop is in (2026-11-04: Settings › Playback › Visualizer behind Now Playing, off by
       default, the bottom half at 20 % behind the song; seen over the demo), and the mini player (Visualizer in the mini
       player, off by default: a thin strip under the song; seen in the floating one over the demo, the right panel's
-      and the sidebar's not looked at). Left: the OBS overlay page.
+      and the sidebar's not looked at). Left: the OBS overlay page. (2026-11-05: Settings › Playback › Visualizer on the
+      overlay, off by default: 31 bars under the song, sent by server-sent events only while OBS shows the page.
+      Decided alone: thirds of an octave, a strip rather than a backdrop in the card, the app's visualizer not needed.
+      Tested on a socket and over a stand-in server; not in OBS.)
 - [x] `S-M` 1/3 and 1/12 octave bands (31 and 120, ANSI centers) beside today's 1/6 (61 bands).
       (1/3 is in, folded from the sixths. 2026-11-04, decided alone: 1/12 = 121 bands on the sixths' base-10 scale,
       both ends in as the 61 are, from an 8192-point window in both twins so they resolve as the sixths do; Settings ›

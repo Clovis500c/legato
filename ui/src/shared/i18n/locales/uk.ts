@@ -2038,6 +2038,9 @@ const uk: Record<string, string> = {
   'Vectorscope': 'Векторскоп',
   'Particles': 'Частинки',
   'Song’s shape': 'Форма пісні',
+  'Visualizer on the overlay': 'Візуалізатор в оверлеї',
+  'Bars under the song that move with the music, measured only while OBS shows the page': 'Смужки під піснею, що рухаються з музикою; вимірюються, лише поки OBS показує сторінку',
+  'obs stream bars spectrum equalizer': 'obs стрим смужки спектр еквалайзер stream bars spectrum',
 }
 
 export default uk

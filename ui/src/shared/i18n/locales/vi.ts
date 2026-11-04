@@ -2038,6 +2038,9 @@ const vi: Record<string, string> = {
   'Vectorscope': 'Máy hiện vectơ',
   'Particles': 'Hạt',
   'Song’s shape': 'Hình dạng bài hát',
+  'Visualizer on the overlay': 'Trình hiển thị trên lớp phủ',
+  'Bars under the song that move with the music, measured only while OBS shows the page': 'Các thanh dưới bài hát chuyển động theo nhạc, chỉ đo khi OBS đang hiện trang',
+  'obs stream bars spectrum equalizer': 'obs phát trực tiếp thanh phổ bộ cân bằng stream bars spectrum',
 }
 
 export default vi

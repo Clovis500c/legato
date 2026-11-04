@@ -811,6 +811,11 @@ function PlaybackSection() {
           <Row setting="streamOverlay" label={msg('Streaming overlay')} sub={tr('The song playing, its cover and progress on a page for OBS or another streaming app on this PC. This PC only. Off by default')}>
             <Toggle label={tr('Streaming overlay')} checked={s.streamOverlay} onChange={(streamOverlay) => update({ streamOverlay })} />
           </Row>
+          {s.streamOverlay && (
+            <Row setting="visualizerOverlay" label={msg('Visualizer on the overlay')} sub={tr('Bars under the song that move with the music, measured only while OBS shows the page')}>
+              <Toggle label={tr('Visualizer on the overlay')} checked={s.visualizerOverlay} onChange={(visualizerOverlay) => update({ visualizerOverlay })} />
+            </Row>
+          )}
           {s.streamOverlay && <OverlayPanel />}
         </div>
       </Group>

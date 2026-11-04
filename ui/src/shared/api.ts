@@ -378,8 +378,10 @@ export const api = {
   remoteStart: (labels: Record<string, string>, fresh: boolean) => invoke<RemoteLink>('remote_start', { labels, fresh }),
   remoteStop: () => invoke<void>('remote_stop'),
   /** Streaming overlay: the phone remote's server (this PC only when alone); returns its link for OBS. */
-  overlayStart: () => invoke<string>('overlay_start'),
+  overlayStart: (viz: boolean) => invoke<string>('overlay_start', { viz }),
   overlayStop: () => invoke<void>('overlay_stop'),
+  /** The overlay's visualizer bars (0 to 255); false = no page reads them. */
+  overlayBars: (levels: number[]) => invoke<boolean>('overlay_bars', { levels }),
   remoteQueue: (next: RemoteSong[]) => invoke<void>('remote_queue', { next }),
   /** One line in the local diagnostics log (shared/diag.ts). message = our words; detail = what an error said, shown only with Include details. */
   diagLog: (level: 'info' | 'warn' | 'error', area: string, message: string, detail?: string) => invoke<void>('diag_log', { level, area, message, detail }),

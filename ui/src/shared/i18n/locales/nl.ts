@@ -2038,6 +2038,9 @@ const nl: Record<string, string> = {
   'Vectorscope': 'Vectorscoop',
   'Particles': 'Deeltjes',
   'Song’s shape': 'Vorm van het nummer',
+  'Visualizer on the overlay': 'Visualizer op de overlay',
+  'Bars under the song that move with the music, measured only while OBS shows the page': 'Balken onder het nummer die met de muziek bewegen, alleen gemeten terwijl OBS de pagina toont',
+  'obs stream bars spectrum equalizer': 'obs stream balken spectrum equalizer',
 }
 
 export default nl

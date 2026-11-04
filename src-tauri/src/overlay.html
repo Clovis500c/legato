@@ -1,6 +1,7 @@
 <!doctype html>
 <!-- Streaming overlay (src-tauri/src/remote.rs): what plays, for OBS's Browser Source on this PC. Transparent page; restyle
-     from the Browser Source's own Custom CSS (.card, .cover, .title, .artist, .bar, .fill). -->
+     from the Browser Source's own Custom CSS (.card, .cover, .title, .artist, .viz, .bar, .fill; the bars take .viz's
+     color). -->
 <html lang="en">
   <head>
     <meta charset="utf-8" />
@@ -65,6 +66,19 @@
         font-size: 14px;
         color: rgba(255, 255, 255, 0.72);
       }
+      .viz {
+        display: block;
+        width: 100%;
+        height: 22px;
+        margin-top: 8px;
+        color: rgba(255, 255, 255, 0.78);
+      }
+      .viz[hidden] {
+        display: none;
+      }
+      .viz:not([hidden]) + .bar {
+        margin-top: 6px;
+      }
       .bar {
         height: 4px;
         margin-top: 10px;
@@ -98,6 +112,7 @@
       <div class="text" id="text">
         <div class="title" id="title"></div>
         <div class="artist" id="artist"></div>
+        <canvas class="viz" id="viz" hidden></canvas>
         <div class="bar"><div class="fill" id="fill"></div></div>
       </div>
     </div>
@@ -114,8 +129,94 @@
         const d = now?.durationMs
         $('fill').style.width = d ? `${Math.min(100, (pos() / d) * 100)}%` : '0'
       }
+
+      // The visualizer (Settings › Playback › Visualizer on the overlay): the bars' levels (hex, 0 to 255, low notes
+      // first) from `/frames` while the state says so, drawn with the app's ballistics: quick up, slower down, and down
+      // to rest when no frame comes (paused).
+      const viz = $('viz')
+      const FLOOR = 0.04
+      const calm = matchMedia('(prefers-reduced-motion: reduce)').matches
+      const ATTACK = calm ? 0.12 : 0.03
+      const RELEASE = calm ? 0.5 : 0.18
+      let source = null
+      let target = new Float32Array(0)
+      let level = new Float32Array(0)
+      let heard = 0
+      let frame = 0
+      let prev = 0
+      const wake = () => {
+        if (!frame) frame = requestAnimationFrame(draw)
+      }
+      const listen = (on) => {
+        viz.hidden = !on
+        if (!on) {
+          source?.close()
+          source = null
+          return
+        }
+        // Refused or gone for good: asked again at the next poll; dropped, the event source comes back by itself.
+        if (source && source.readyState !== EventSource.CLOSED) return
+        source = new EventSource(url('/frames'))
+        source.onmessage = (e) => {
+          const n = e.data.length >> 1
+          if (target.length !== n) {
+            target = new Float32Array(n)
+            level = new Float32Array(n)
+          }
+          for (let i = 0; i < n; i++) target[i] = parseInt(e.data.substr(2 * i, 2), 16) / 255
+          heard = performance.now()
+          wake()
+        }
+        wake()
+      }
+      function draw(time) {
+        frame = 0
+        const dt = Math.min(0.1, prev ? (time - prev) / 1000 : 1 / 60)
+        prev = time
+        const fresh = time - heard < 250
+        const up = 1 - Math.exp(-dt / ATTACK)
+        const down = 1 - Math.exp(-dt / RELEASE)
+        let moving = false
+        for (let i = 0; i < level.length; i++) {
+          const to = fresh ? target[i] : 0
+          level[i] += (to - level[i]) * (to > level[i] ? up : down)
+          if (level[i] > 0.002) moving = true
+        }
+        paint()
+        if (fresh || moving) wake()
+        else prev = 0
+      }
+      function paint() {
+        const dpr = devicePixelRatio || 1
+        const w = Math.round(viz.clientWidth * dpr)
+        const h = Math.round(viz.clientHeight * dpr)
+        if (!w || !h) return
+        if (viz.width !== w || viz.height !== h) {
+          viz.width = w
+          viz.height = h
+        }
+        const ctx = viz.getContext('2d')
+        ctx.clearRect(0, 0, w, h)
+        // A narrow card: fewer, wider bars, each the loudest of its share.
+        const n = Math.min(level.length || 31, Math.max(8, Math.floor(viz.clientWidth / 6)))
+        const gap = Math.max(1, Math.round(2 * dpr))
+        const bw = (w - gap * (n - 1)) / n
+        ctx.fillStyle = getComputedStyle(viz).color
+        for (let c = 0; c < n; c++) {
+          let v = 0
+          if (level.length) {
+            const from = Math.floor((c * level.length) / n)
+            const to = Math.max(from + 1, Math.floor(((c + 1) * level.length) / n))
+            for (let i = from; i < to; i++) v = Math.max(v, level[i])
+          }
+          const bh = Math.max(1, Math.round(Math.max(FLOOR, Math.min(1, v)) * h))
+          ctx.fillRect(Math.round(c * (bw + gap)), h - bh, Math.max(1, Math.round(bw)), bh)
+        }
+      }
+
       const show = () => {
         $('card').classList.toggle('off', !now)
+        listen(Boolean(now?.viz))
         if (!now) return
         // New song: its words and cover slide in.
         const k = `${now.title}\u0000${now.artist}`

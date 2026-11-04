@@ -2038,6 +2038,9 @@ const tr: Record<string, string> = {
   'Vectorscope': 'Vektörskop',
   'Particles': 'Parçacıklar',
   'Song’s shape': 'Şarkının şekli',
+  'Visualizer on the overlay': 'Katmanda görselleştirici',
+  'Bars under the song that move with the music, measured only while OBS shows the page': 'Şarkının altında müzikle hareket eden çubuklar, yalnızca OBS sayfayı gösterirken ölçülür',
+  'obs stream bars spectrum equalizer': 'obs yayın çubuklar spektrum ekolayzer stream bars spectrum',
 }
 
 export default tr

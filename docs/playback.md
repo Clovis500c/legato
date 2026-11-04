@@ -396,6 +396,14 @@ never: downloading, extracting, recording or exporting a platform's audio, or to
   - **In the mini player** (Settings › Playback › Visualizer in the mini player, 2026-11-04, off by default): a 24 px
     strip under the song, floating, in the right panel or in the sidebar (`MiniViz.tsx`, a shell file: it loads
     `MiniStrip` from Now Playing's chunk by `lazy` only once shown); no pointer events, quiet under Now Playing.
+  - **On the streaming overlay** (Settings › Playback › Visualizer on the overlay, 2026-11-05, off by default, this
+    PC's own): 31 bars (thirds of an octave, weighed as the visualizer, `overlayBars.ts`) under the song on the OBS
+    page (`overlay.html`, its own ballistics, the bars in `.viz`'s colour for Custom CSS). Measured only while a page
+    reads them: the page opens `/frames` (server-sent events, this PC only, two at once) while `/state` says `viz`; the
+    server asks the interface (`overlay-viz` events) and `overlayViz.ts` subscribes to the frames, 30 bars a second at
+    most to `overlay_bars`, until it answers that no page reads (the last one gone, or the setting off). The app's own
+    visualizer can stay off; YouTube's bars need its sound processing on, as the visualizer's. Checked by a socket test
+    and over a stand-in server with made-up bars (moving, at rest when paused, hidden and back); not in OBS itself.
   - **Curve** (a look, 2026-11-04): left and right as two smooth lines (`wavePath`) with a soft glow (`shadowBlur`,
     none with reduced motion) and faint areas, left in the visualizer's colour, right in the accent (the text colour
     when the visualizer is the accent: `ink2`, `secondOf` in `VizCanvas.tsx`); each side its own scene (`sceneR`).

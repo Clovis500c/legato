@@ -2038,6 +2038,9 @@ const zh: Record<string, string> = {
   'Vectorscope': '矢量示波器',
   'Particles': '粒子',
   'Song’s shape': '歌曲波形',
+  'Visualizer on the overlay': '叠加层上的可视化',
+  'Bars under the song that move with the music, measured only while OBS shows the page': '歌曲下方随音乐跳动的条形，仅在 OBS 显示该页面时测量',
+  'obs stream bars spectrum equalizer': 'obs 直播 条形 频谱 均衡器 stream bars spectrum',
 }
 
 export default zh

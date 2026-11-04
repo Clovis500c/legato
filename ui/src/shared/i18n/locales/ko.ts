@@ -2038,6 +2038,9 @@ const ko: Record<string, string> = {
   'Vectorscope': '벡터스코프',
   'Particles': '파티클',
   'Song’s shape': '곡의 모양',
+  'Visualizer on the overlay': '오버레이의 시각화',
+  'Bars under the song that move with the music, measured only while OBS shows the page': '노래 아래에서 음악에 맞춰 움직이는 막대. OBS가 페이지를 보여 주는 동안에만 측정',
+  'obs stream bars spectrum equalizer': 'obs 방송 막대 스펙트럼 이퀄라이저 stream bars spectrum',
 }
 
 export default ko

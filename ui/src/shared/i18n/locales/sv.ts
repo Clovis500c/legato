@@ -2038,6 +2038,9 @@ const sv: Record<string, string> = {
   'Vectorscope': 'Vektorskop',
   'Particles': 'Partiklar',
   'Song’s shape': 'Låtens form',
+  'Visualizer on the overlay': 'Visualiserare i överlägget',
+  'Bars under the song that move with the music, measured only while OBS shows the page': 'Staplar under låten som rör sig med musiken, mäts bara medan OBS visar sidan',
+  'obs stream bars spectrum equalizer': 'obs stream staplar spektrum equalizer',
 }
 
 export default sv

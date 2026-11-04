@@ -2038,6 +2038,9 @@ const id: Record<string, string> = {
   'Vectorscope': 'Vektorskop',
   'Particles': 'Partikel',
   'Song’s shape': 'Bentuk lagu',
+  'Visualizer on the overlay': 'Visualizer di overlay',
+  'Bars under the song that move with the music, measured only while OBS shows the page': 'Bilah di bawah lagu yang bergerak mengikuti musik, diukur hanya saat OBS menampilkan halamannya',
+  'obs stream bars spectrum equalizer': 'obs stream bilah spektrum equalizer',
 }
 
 export default id

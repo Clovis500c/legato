@@ -188,6 +188,9 @@ Relaunch log (newest last):
   cover's colours from `coverPalette.ts`; full screen over the blurred cover). Seen over the demo in both themes.
 - 2026-11-05: Song's shape on the seek bar for local files (Progress bar › Song's shape): `music_player::shape` in the
   levelling's decode, SQLite `waveform` (schema 17), `local_waveform`. Seen over the demo; not on real files in the app.
+- 2026-11-05: the visualizer on the OBS overlay (Settings › Playback › Visualizer on the overlay): `/frames` server-sent
+  events while a page reads, `overlay-viz` / `overlay_bars`, `overlayViz.ts`. A socket test, and the page over a stand-in
+  server (scratchpad `overlay-mock.cjs`); not in OBS.
 
 ## Mobile app and devices sync (the owner's ask, 2026-11-02 afternoon; in progress)
 

@@ -39,6 +39,8 @@ pub enum Route {
     Seek(u64),
     /// The streaming overlay's page (OBS's Browser Source on this PC).
     Overlay,
+    /// The overlay's visualizer: its bars' levels as a stream of server-sent events.
+    Frames,
     /// Refused, with its HTTP status.
     No(u16),
 }
@@ -76,6 +78,7 @@ pub fn route(head: &str, token: &str) -> Route {
         ("GET", "/state") => Route::State,
         ("GET", "/cover") => Route::Cover,
         ("GET", "/overlay") => Route::Overlay,
+        ("GET", "/frames") => Route::Frames,
         ("POST", "/key") => match query.get("k").map(String::as_str) {
             Some("toggle") => Route::Key("toggle"),
             Some("next") => Route::Key("next"),
@@ -93,10 +96,24 @@ pub fn route(head: &str, token: &str) -> Route {
 pub fn allowed(route: &Route, phone: bool, overlay: bool, this_pc: bool) -> bool {
     match route {
         Route::No(_) => true,
-        Route::Overlay => overlay && this_pc,
+        Route::Overlay | Route::Frames => overlay && this_pc,
         Route::State | Route::Cover => phone || (overlay && this_pc),
         Route::Page | Route::Key(_) | Route::Seek(_) => phone,
     }
+}
+
+/// Bars a frame of the overlay's visualizer carries at most.
+pub const MAX_BARS: usize = 64;
+
+/// One frame of the overlay's visualizer as a server-sent event: its bars' levels (0 to 255) in hex, two digits each.
+pub fn frame_event(levels: &[u8]) -> String {
+    let mut out = String::with_capacity(8 + 2 * levels.len().min(MAX_BARS));
+    out.push_str("data: ");
+    for b in levels.iter().take(MAX_BARS) {
+        out.push_str(&format!("{b:02x}"));
+    }
+    out.push_str("\n\n");
+    out
 }
 
 #[cfg(test)]
@@ -115,6 +132,17 @@ mod tests {
         assert!(!allowed(&Route::Key("next"), false, true, true));
         assert!(!allowed(&Route::Page, false, true, true));
         assert!(allowed(&Route::Seek(1), true, false, false));
+    }
+
+    #[test]
+    fn the_overlay_visualizer_streams_to_this_pc_only() {
+        assert_eq!(route(&format!("GET /frames?t={T} HTTP/1.1"), T), Route::Frames);
+        assert_eq!(route("GET /frames?t=nope HTTP/1.1", T), Route::No(403));
+        assert!(allowed(&Route::Frames, false, true, true));
+        assert!(!allowed(&Route::Frames, true, true, false));
+        assert!(!allowed(&Route::Frames, true, false, true));
+        assert_eq!(frame_event(&[0, 15, 255]), "data: 000fff\n\n");
+        assert_eq!(frame_event(&[1; 80]).len(), 8 + 2 * MAX_BARS);
     }
 
     const T: &str = "0123456789abcdef0123456789abcdef";

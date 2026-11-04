@@ -6,6 +6,7 @@ export const DESKTOP_ONLY: ReadonlySet<string> = new Set([
   'Mini player place',
   'Phone remote',
   'Streaming overlay',
+  'Visualizer on the overlay',
   'Update channel',
   'Automatic updates',
   'Open at startup',

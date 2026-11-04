@@ -2038,6 +2038,9 @@ const ja: Record<string, string> = {
   'Vectorscope': 'ベクトルスコープ',
   'Particles': 'パーティクル',
   'Song’s shape': '曲の形',
+  'Visualizer on the overlay': 'オーバーレイにビジュアライザー',
+  'Bars under the song that move with the music, measured only while OBS shows the page': '曲の下で音楽に合わせて動くバー。OBS がページを表示している間だけ測定します',
+  'obs stream bars spectrum equalizer': 'obs 配信 バー スペクトラム イコライザー stream bars spectrum',
 }
 
 export default ja

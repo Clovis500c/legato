@@ -2038,6 +2038,9 @@ const hi: Record<string, string> = {
   'Vectorscope': 'वेक्टरस्कोप',
   'Particles': 'कण',
   'Song’s shape': 'गाने का आकार',
+  'Visualizer on the overlay': 'ओवरले पर विज़ुअलाइज़र',
+  'Bars under the song that move with the music, measured only while OBS shows the page': 'गाने के नीचे संगीत के साथ हिलती पट्टियां, सिर्फ़ तब मापी जाती हैं जब OBS पेज दिखा रहा हो',
+  'obs stream bars spectrum equalizer': 'obs स्ट्रीम पट्टियां स्पेक्ट्रम इक्वलाइज़र stream bars spectrum',
 }
 
 export default hi
