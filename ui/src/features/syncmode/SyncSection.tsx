@@ -10,6 +10,7 @@ import { Dialog } from '../../shared/ui/Dialog'
 import { Devices } from './Devices'
 import { mergedText } from './merged'
 import { passphrase, strength, type Hint } from './strength'
+import { phoneApp } from '../../shared/platform'
 
 const MIN_PASSWORD = 10
 
@@ -224,6 +225,8 @@ export function SyncSection() {
     <div className="flex flex-col gap-4">
       <p className="text-sm text-ink-2">{tr('Your playlists, songs, listening history, Live Editor versions and settings on all your PCs, without an account or a server.')}</p>
       <Devices />
+      {/* A shared folder (OneDrive) is a PC's way; phones sync over Wi-Fi above. */}
+      {(!phoneApp || s.folder) && (
       <Card setting="OneDrive" title={s.folder && !s.onedrive.some((o) => s.folder!.toLowerCase().startsWith(o.toLowerCase())) ? tr('Shared folder') : 'OneDrive'} icon={<Cloud size={16} />}>
         {s.folder ? (
           <>
@@ -260,6 +263,7 @@ export function SyncSection() {
           </>
         )}
       </Card>
+      )}
       {s.devices.length > 0 && (
         <Card setting="Your other PCs" title={tr('Your other PCs')} icon={<Desktop size={16} />}>
           {s.devices.map((d) => {
@@ -281,7 +285,7 @@ export function SyncSection() {
         </Card>
       )}
       {note(tr('When the same thing changed on two PCs, the most recent change wins. Deleted things stay deleted everywhere. Local files stay on each PC: their songs are matched by title, artist and length.'))}
-      {note(tr('This PC: {name}. Its interface size and mini player spot stay its own.', { name: s.deviceName }))}
+      {!phoneApp && note(tr('This PC: {name}. Its interface size and mini player spot stay its own.', { name: s.deviceName }))}
       {setup && (
         <Setup
           folder={setup}
