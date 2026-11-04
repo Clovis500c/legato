@@ -3,6 +3,7 @@ import { artistName } from '../../shared/artistName'
 import { useShallow } from 'zustand/react/shallow'
 import { Fragment, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useStore } from '../../app/store'
+import { usePhone } from '../../shared/phone'
 import { api, type AlbumInfo, type LibraryTrack, type ListRef, type Source, type Track, type YtmArtist } from '../../shared/api'
 import { firstArt, remoteArt, trackArt } from '../../shared/art'
 import { useCoverTint } from '../player/coverTint'
@@ -57,13 +58,15 @@ function AlbumCard({ a, sub }: { a: AlbumGroup; sub: string }) {
   return <MediaCard title={a.album} sub={sub} art={<Cover title={a.album} art={firstArt(a.tracks)} size={176} />} onOpen={() => go({ name: 'album', album: a.album, artist: a.artist })} onPlay={() => usePlayer.getState().playTracks(a.tracks, 0)} menu={() => tracksMenu(a.tracks)} />
 }
 
-// Album page columns, TrackTable's look (docs/design.md): #, title, artist, sources, plays, heart, time.
+// Album page columns, TrackTable's look (docs/design.md): #, title, artist, sources, plays, heart, time. The phone keeps
+// #, title, heart and time (PHONE_GRID: the others left the title no room), a finger's row height, and a tap plays.
 const ALBUM_GRID = { gridTemplateColumns: '32px minmax(0,2fr) minmax(0,1fr) 76px 52px 32px 52px' }
+const PHONE_GRID = 'phone:h-12 phone:gap-2 phone:px-0 phone:grid-cols-[24px_minmax(0,1fr)_32px_44px]!'
 const SOURCES: Source[] = ['spotify', 'youtube', 'apple', 'local']
 
 function AlbumHead() {
   return (
-    <div role="row" className="mb-1 grid h-9 items-center gap-4 border-b border-line px-2 text-xs text-ink-3" style={ALBUM_GRID}>
+    <div role="row" className="mb-1 grid h-9 items-center gap-4 border-b border-line px-2 text-xs text-ink-3 phone:hidden" style={ALBUM_GRID}>
       <span className="text-right">#</span>
       <span>{tr('Title')}</span>
       <span>{tr('Artist')}</span>
@@ -86,8 +89,9 @@ function AlbumRow({ list, i, number }: { list: LibraryTrack[]; i: number; number
   const plays = useStore((s) => s.stats[t.id]?.[0])
   const liked = useLikedIds().has(t.id)
   const playable = vias(t, sp).length > 0
+  const phone = usePhone()
   return (
-    <li onContextMenu={onMenu(() => trackMenu(t, { list, index: i }))} onDoubleClick={() => playable && play(list, i)} className="group grid h-10 items-center gap-4 rounded-md px-2 hover:bg-raised" style={ALBUM_GRID}>
+    <li onContextMenu={onMenu(() => trackMenu(t, { list, index: i }))} onClick={() => phone && playable && play(list, i)} onDoubleClick={() => playable && play(list, i)} className={`group grid h-10 items-center gap-4 rounded-md px-2 hover:bg-raised ${PHONE_GRID}`} style={ALBUM_GRID}>
       <span className="flex justify-end text-[0.8125rem] text-ink-3 tabular-nums">
         <span className={playable ? 'group-hover:hidden' : ''}>
           {on ? (
@@ -105,14 +109,15 @@ function AlbumRow({ list, i, number }: { list: LibraryTrack[]; i: number; number
         )}
       </span>
       <span className="truncate text-sm font-medium">{t.title}</span>
-      <span className="truncate text-sm text-ink-2">{artistName(t.artist)}</span>
-      <span className="flex items-center gap-2 text-ink-3">
+      <span className="truncate text-sm text-ink-2 phone:hidden">{artistName(t.artist)}</span>
+      <span className="flex items-center gap-2 text-ink-3 phone:hidden">
         {SOURCES.filter((s) => t.ids[s]).map((s) => (
           <SourceIcon key={s} source={s} size={13} />
         ))}
       </span>
-      <span className="text-right text-xs text-ink-3 tabular-nums">{plays ? formatCount(plays) : ''}</span>
-      <RoundButton label={liked ? tr('Remove from Liked Music') : tr('Add to Liked Music')} aria-pressed={liked} kind="plain" size="xs" className={liked ? 'text-ink!' : 'opacity-0 group-hover:opacity-100 focus:opacity-100'} onClick={(e) => (void toggleLike(t), pop(e.currentTarget))}>
+      <span className="text-right text-xs text-ink-3 tabular-nums phone:hidden">{plays ? formatCount(plays) : ''}</span>
+      {/* No hover on the phone: an unliked heart stays out of a finger's way (the menu likes it). */}
+      <RoundButton label={liked ? tr('Remove from Liked Music') : tr('Add to Liked Music')} aria-pressed={liked} kind="plain" size="xs" className={liked ? 'text-ink!' : 'opacity-0 group-hover:opacity-100 focus:opacity-100 phone:invisible'} onClick={(e) => (e.stopPropagation(), void toggleLike(t), pop(e.currentTarget))}>
         <Heart size={15} weight={liked ? 'fill' : 'regular'} />
       </RoundButton>
       <span className="text-right text-[0.8125rem] text-ink-2 tabular-nums">{formatDuration(t.durationMs)}</span>
@@ -127,8 +132,9 @@ function SongRow({ list, i, cover, extra, sub, number }: { list: LibraryTrack[];
   const on = usePlayer((s) => s.now?.trackId === t.id)
   const sp = useStore((s) => s.status.spotify.connected)
   const playable = vias(t, sp).length > 0
+  const phone = usePhone()
   return (
-    <li onContextMenu={onMenu(() => trackMenu(t, { list, index: i }))} onDoubleClick={() => playable && play(list, i)} className="group flex h-13 items-center gap-4 rounded-md px-3 hover:bg-raised">
+    <li onContextMenu={onMenu(() => trackMenu(t, { list, index: i }))} onClick={() => phone && playable && play(list, i)} onDoubleClick={() => playable && play(list, i)} className="group flex h-13 items-center gap-4 rounded-md px-3 hover:bg-raised phone:gap-3 phone:px-0">
       <span className="flex w-6 shrink-0 justify-end text-xs text-ink-3 tabular-nums">
         <span className={playable ? 'group-hover:hidden' : ''}>{on ? <Waveform size={14} className="text-accent-ink" /> : (number ?? i + 1)}</span>
         {playable && (
@@ -163,8 +169,9 @@ function MissingRow({ track, number }: { track: Track; number: number }) {
       setBusy(false)
     }
   }
+  const phone = usePhone()
   return (
-    <li onDoubleClick={() => void play()} className="group grid h-10 items-center gap-4 rounded-md px-2 text-ink-3 hover:bg-raised" style={ALBUM_GRID}>
+    <li onClick={() => phone && void play()} onDoubleClick={() => void play()} className={`group grid h-10 items-center gap-4 rounded-md px-2 text-ink-3 hover:bg-raised ${PHONE_GRID}`} style={ALBUM_GRID}>
       <span className="flex justify-end text-[0.8125rem] tabular-nums">
         <span className="group-hover:hidden">{number}</span>
         <RoundButton label={tr('Play {title}', { title: track.title })} kind="plain" size="xs" className="-my-1 -mr-1.5 hidden text-ink! group-hover:grid" onClick={() => void play()}>
@@ -172,9 +179,9 @@ function MissingRow({ track, number }: { track: Track; number: number }) {
         </RoundButton>
       </span>
       <span className="truncate text-sm font-medium">{track.title}</span>
-      <span className="truncate text-sm">{artistName(track.artist)}</span>
-      <span className="col-span-2 truncate text-xs">{tr('Not in your library')}</span>
-      <RoundButton label={tr('Add {title}', { title: track.title })} kind="plain" size="xs" disabled={busy} onClick={() => void add()}>
+      <span className="truncate text-sm phone:hidden">{artistName(track.artist)}</span>
+      <span className="col-span-2 truncate text-xs phone:hidden">{tr('Not in your library')}</span>
+      <RoundButton label={tr('Add {title}', { title: track.title })} kind="plain" size="xs" disabled={busy} onClick={(e) => (e.stopPropagation(), void add())}>
         <Plus size={14} />
       </RoundButton>
       <span className="text-right text-[0.8125rem] tabular-nums">{formatDuration(track.durationMs)}</span>
