@@ -176,6 +176,9 @@ export type VizColor = (typeof VIZ_COLORS)[number]
 /** Visualizer gradient (vizFill.ts, vizStops.ts): one colour, warming to red near the top like a meter, or a prism along frequency. */
 export const VIZ_GRADIENTS = ['none', 'level', 'frequency'] as const
 export type VizGradient = (typeof VIZ_GRADIENTS)[number]
+/** Visualizer bands (vizBands.ts): 1/6 octave as the frames carry them (61), or folded into 1/3 octave (31), a hi-fi analyser's. */
+export const VIZ_BANDINGS = ['sixth', 'third'] as const
+export type VizBanding = (typeof VIZ_BANDINGS)[number]
 /** Order the cover songs are taken in: the playlist's own, or a library sort. */
 export const COVER_ORDERS = ['playlist', 'recent', 'title', 'artist', 'album', 'duration'] as const
 /** Auto-DJ's choices (Settings › Playback): days a song heard waits, songs before the same artist again. */
@@ -391,6 +394,10 @@ export interface Settings {
   visualizerColor: VizColor
   /** A gradient over the visualizer's colour. None by default: a look the owner hasn't judged yet (2026-11-04). */
   visualizerGradient: VizGradient
+  /** The visualizer's bands. 1/6 octave by default (today's look); 1/3 = fewer, wider bars, a hi-fi analyser's. */
+  visualizerBands: VizBanding
+  /** A glossy floor under the bars, their reflection fading. Off by default: a look the owner hasn't judged yet (2026-11-04). */
+  visualizerFloor: boolean
   /** Videos whose song ends before the video (silence, end screen): the next song starts at the song's end (ends.ts). */
   earlyEnds: boolean
   /** Songs start on the music and end where it ends: silence at the start and end skipped (local: measured; YouTube: learned). */
@@ -517,6 +524,8 @@ export const DEFAULTS: Settings = {
   visualizerWeighting: 'flat',
   visualizerColor: 'text',
   visualizerGradient: 'none',
+  visualizerBands: 'sixth',
+  visualizerFloor: false,
   earlyEnds: true,
   skipSilence: false,
   levelling: 'off',
@@ -733,6 +742,8 @@ export function sanitize(raw: unknown): Settings {
     visualizerWeighting: pick(r.visualizerWeighting, VIZ_WEIGHTINGS, DEFAULTS.visualizerWeighting),
     visualizerColor: pick(r.visualizerColor, VIZ_COLORS, DEFAULTS.visualizerColor),
     visualizerGradient: pick(r.visualizerGradient, VIZ_GRADIENTS, DEFAULTS.visualizerGradient),
+    visualizerBands: pick(r.visualizerBands, VIZ_BANDINGS, DEFAULTS.visualizerBands),
+    visualizerFloor: r.visualizerFloor === true,
     earlyEnds: r.earlyEnds !== false,
     skipSilence: r.skipSilence === true,
     levelling: pick(r.levelling, ['off', 'track', 'album'] as const, DEFAULTS.levelling),

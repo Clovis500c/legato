@@ -9,7 +9,7 @@ import { pickFile, saveFile } from '../../shared/files'
 import { formatBytes, formatCount, timeAgo } from '../../shared/format'
 import { PRIVACY_PAGE } from '../../shared/links'
 import { byVia, countText, VIA_LABELS, WHY_LABELS } from './privacy'
-import { ACCENTS, ADAPTIVE_LEVELS, COLUMNS, COVER_CACHE_MB, DEFAULTS, DJ_FRESH, DJ_GAPS, VISUALIZER_STYLES, VIZ_COLORS, VIZ_GRADIENTS, VIZ_WEIGHTINGS, type AdaptiveLevel, type Column, type Settings } from '../../shared/theme/theme'
+import { ACCENTS, ADAPTIVE_LEVELS, COLUMNS, COVER_CACHE_MB, DEFAULTS, DJ_FRESH, DJ_GAPS, VISUALIZER_STYLES, VIZ_BANDINGS, VIZ_COLORS, VIZ_GRADIENTS, VIZ_WEIGHTINGS, type AdaptiveLevel, type Column, type Settings } from '../../shared/theme/theme'
 import { Button } from '../../shared/ui/Button'
 import { Led, Segmented, Toggle } from '../../shared/ui/controls'
 import { PageHeader } from '../../shared/ui/PageHeader'
@@ -17,7 +17,7 @@ import { onMenu } from '../../shared/ui/ContextMenu'
 import { curveLabels } from '../player/fade'
 import { usePlayer } from '../player/store'
 import { useLive } from '../player/live'
-import { VISUALIZER_LABELS, VIZ_COLOR_LABELS, VIZ_GRADIENT_LABELS, VIZ_WEIGHTING_LABELS } from '../player/vizLooks'
+import { VISUALIZER_LABELS, VIZ_BANDING_LABELS, VIZ_COLOR_LABELS, VIZ_GRADIENT_LABELS, VIZ_WEIGHTING_LABELS } from '../player/vizLooks'
 import { SourcesView } from '../sources/SourcesView'
 import { SyncSection } from '../syncmode/SyncSection'
 import { OverlayPanel, RemotePanel } from '../remote/RemotePanel'
@@ -524,6 +524,22 @@ function SoundGroup() {
               onChange={(visualizerGradient) => update({ visualizerGradient })}
               options={VIZ_GRADIENTS.map((v) => ({ value: v, label: tr(VIZ_GRADIENT_LABELS[v]) }))}
             />
+          </Row>
+        )}
+        {s.visualizer && (
+          <Row setting="visualizerBands" label={msg('Visualizer bands')} sub={tr('1/6 octave as measured, or 1/3 octave: fewer, wider bars, like a hi-fi analyzer. Point at a big visualizer for its Hz and dB scales')}>
+            <Segmented
+              label={tr('Visualizer bands')}
+              className="max-w-md flex-wrap rounded-3xl!"
+              value={s.visualizerBands}
+              onChange={(visualizerBands) => update({ visualizerBands })}
+              options={VIZ_BANDINGS.map((v) => ({ value: v, label: tr(VIZ_BANDING_LABELS[v]) }))}
+            />
+          </Row>
+        )}
+        {s.visualizer && (
+          <Row setting="visualizerFloor" label={msg('Visualizer reflection')} sub={tr('The bars stand on a glossy floor that reflects them')}>
+            <Toggle label={tr('Visualizer reflection')} checked={s.visualizerFloor} onChange={(visualizerFloor) => update({ visualizerFloor })} />
           </Row>
         )}
         <Row

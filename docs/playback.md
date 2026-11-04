@@ -360,6 +360,14 @@ never: downloading, extracting, recording or exporting a platform's audio, or to
     made 3:1 on the background. `vizFill.ts` (worker side, pure) lays them per look: bottom up, the mirror from the
     middle out, the ring from the cover out (radial) or clockwise from the bottom (conic). VU needles and the
     spectrogram keep their own colours.
+  - **Bands, floor, scales** (Settings › Playback › Visualizer bands and Visualizer reflection, or the right-click,
+    2026-11-04): 1/6 octave as the frames carry it (61) or folded into 1/3 octave (31: `vizBands.ts` `toThirds`, powers,
+    a sixth and half of each neighbour, the end bands scaled so a flat spectrum stays flat), after the weighing; every
+    look but the needles. The reflection (off by default): LED, bars, peaks and wave stand on the top 76 % of the box,
+    the canvas copies that part upside down below at 40 % and wipes it out toward the bottom (`destination-out`). The
+    pointer over a visualizer at least 120 px high: frequency marks along the top (50 Hz to 10 kHz, `freqAt`) and a
+    dB grid (−20, −40, −60) on the right, not for the mirror; `hover` messages to the worker. 1/12 octave needs finer
+    bands from both twins (plan-v2 › Visualizer v2).
   - **Comfort**: `prefers-reduced-motion` or Animations off (`useCalm`): slower attack and release, a cap that sinks
     gently, one flash a second. Always: `flash.ts` limits the mean brightness of the bars to 3 flashes a second (a flash
     = a rise and a fall of at least 10 % of the range; past the budget the brightness may not turn back by 10 % until

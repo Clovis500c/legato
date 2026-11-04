@@ -1,4 +1,4 @@
-import type { VisualizerStyle, VizGradient, VizWeighting } from '../../shared/theme/theme'
+import type { VisualizerStyle, VizBanding, VizGradient, VizWeighting } from '../../shared/theme/theme'
 import type { Stops } from './vizFill'
 import { isSilent, type VizFrame } from './vizUnpack'
 
@@ -8,7 +8,10 @@ export type ToWorker =
   | { t: 'size'; w: number; h: number; dpr: number }
   /** `ink`: any CSS colour (the theme's text colour here); every shade is that colour with an opacity. `warn`: the VU dial's red end and lit LED. */
   /** `gradient` + `stops`: colours over the bars (vizStops.ts), laid out per look by the worker (vizFill.ts). */
-  | { t: 'look'; look: VisualizerStyle; calm: boolean; weighting: VizWeighting; ink: string; warn: string; gradient: VizGradient; stops: Stops; fps: number }
+  /** `bands`: 1/6 or 1/3 octave (vizBands.ts). `floor`: a glossy floor reflecting the looks that stand on the bottom edge. */
+  | { t: 'look'; look: VisualizerStyle; calm: boolean; weighting: VizWeighting; ink: string; warn: string; gradient: VizGradient; stops: Stops; bands: VizBanding; floor: boolean; fps: number }
+  /** The pointer over the visualizer (its frequency and dB scales shown) or gone. */
+  | { t: 'hover'; on: boolean }
   | { t: 'frame'; l: Float32Array; r: Float32Array; rms: [number, number] }
   /** Nothing sounds: the bars fall to rest. */
   | { t: 'silence' }

@@ -2012,6 +2012,14 @@ const tr: Record<string, string> = {
   'MP3, FLAC, WAV, OGG, M4A in your Music and Download folders. Linked to your YouTube and Spotify tracks and played first, gapless.': 'Music ve Download klasörlerindeki MP3, FLAC, WAV, OGG, M4A. YouTube ve Spotify şarkılarına bağlanır ve önce, kesintisiz çalınır.',
   'Find my songs': 'Şarkılarımı bul',
   'Android keeps Legato away from your music. Allow it in Legato’s app info › Permissions.': 'Android, Legato’nun müziğini okumasına izin vermiyor. Legato’nun Uygulama bilgileri › İzinler bölümünden izin ver.',
+  'Visualizer bands': 'Görselleştirici bantları',
+  'Visualizer reflection': 'Görselleştirici yansıması',
+  '1/6 octave (61 bands)': '1/6 oktav (61 bant)',
+  '1/3 octave (31 bands)': '1/3 oktav (31 bant)',
+  '1/6 octave as measured, or 1/3 octave: fewer, wider bars, like a hi-fi analyzer. Point at a big visualizer for its Hz and dB scales': 'Ölçüldüğü gibi 1/6 oktav ya da 1/3 oktav: bir hi-fi analizör gibi daha az ve daha geniş çubuklar. Hz ve dB ölçeklerini görmek için büyük bir görselleştiricinin üzerine gelin',
+  'The bars stand on a glossy floor that reflects them': 'Çubuklar onları yansıtan parlak bir zeminin üzerinde durur',
+  'octave third sixth analyzer resolution hertz decibel scale': 'oktav üçte bir altıda bir analizör çözünürlük hertz desibel ölçek',
+  'glossy floor mirror shine': 'parlak zemin ayna parıltı',
 }
 
 export default tr

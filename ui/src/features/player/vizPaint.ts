@@ -1,5 +1,6 @@
-import type { VisualizerStyle, VizGradient, VizWeighting } from '../../shared/theme/theme'
-import { capSegment, litSegments } from './ledBars'
+import type { VisualizerStyle, VizBanding, VizGradient, VizWeighting } from '../../shared/theme/theme'
+import { capSegment, levelOf, litSegments } from './ledBars'
+import { bandCount, DB_MARKS, FREQ_MARKS, freqAt } from './vizBands'
 import { columnSpans, columnsFor, dialGeometry, ledRows, ringBars, wavePath, type Dial, type LedRows, type Ring } from './vizDraw'
 import { fillFor, type Stops } from './vizFill'
 import { createScene } from './vizScene'
@@ -17,6 +18,15 @@ const BAR = 0.85
 
 /** The VU dial's alarm colour when the caller sends none (the theme's danger red). */
 const WARN = '#d93a2b'
+
+/** Glossy floor: the bars' share of the box (their reflection fades below), its opacity at the floor. */
+const GROUND = 0.76
+const SHINE = 0.4
+/** Looks standing on the bottom edge: the floor reflects them. Looks along frequency: the scales on hover. */
+const REFLECTED = new Set<VisualizerStyle>(['led', 'bars', 'peaks', 'wave'])
+const SCALED = new Set<VisualizerStyle>(['led', 'bars', 'peaks', 'mirror', 'wave'])
+/** Scales only in a box this tall, CSS px (the strip under the cover has no room). */
+const SCALE_MIN_H = 120
 
 interface Sprites {
   off: OffscreenCanvas
@@ -55,6 +65,12 @@ export function createPainter(canvas: OffscreenCanvas) {
   let gradient: VizGradient = 'none'
   let stops: Stops = []
   let fill: CanvasGradient | null = null
+  let banding: VizBanding = 'sixth'
+  let floor = false
+  let hover = false
+  // The bars' height, device px: the whole box, or above the floor.
+  let barH = 0
+  let fade: CanvasGradient | null = null
 
   /** A CSS colour as [r, g, b] (the canvas parses it). */
   function rgbOf(color: string): [number, number, number] {
@@ -76,17 +92,26 @@ export function createPainter(canvas: OffscreenCanvas) {
       canvas.width = w
       canvas.height = h
     }
-    const n = columnsFor(cssW)
+    const n = columnsFor(cssW, bandCount(banding))
     if (n !== cols) {
       cols = n
-      scene = createScene(n, calm, weighs)
+      scene = createScene(n, calm, weighs, banding)
     }
     const gap = Math.max(1, Math.round((w / n) * 0.2))
     spans = columnSpans(w, n, gap)
+    const reflects = floor && REFLECTED.has(look)
+    barH = reflects ? Math.round(h * GROUND) : h
+    fade = null
+    if (reflects) {
+      // Wipes the reflection out toward the bottom (destination-out): nothing at the floor, all of it at the edge.
+      fade = ctx.createLinearGradient(0, barH, 0, h)
+      fade.addColorStop(0, 'rgba(0,0,0,0)')
+      fade.addColorStop(1, 'rgba(0,0,0,1)')
+    }
     sprites = null
     if (look === 'led') {
-      rows = ledRows(h, dpr)
-      sprites = makeSprites(Math.max(...spans.w), h)
+      rows = ledRows(barH, dpr)
+      sprites = makeSprites(Math.max(...spans.w), barH)
     }
     if (look === 'radial') ring = ringBars(Math.min(w, h), n)
     dialMap = null
@@ -100,7 +125,53 @@ export function createPainter(canvas: OffscreenCanvas) {
       const img = new ImageData(1, h)
       strip = { img, px: new Uint32Array(img.data.buffer), mix: rowMix(h, n) }
     }
-    fill = makeFill(w, h)
+    fill = makeFill(w, barH)
+  }
+
+  /** The bars upside down below the floor, faint and fading: the box's top part copied flipped. */
+  function reflect(W: number, H: number) {
+    if (!ctx || !fade) return
+    const r = H - barH
+    ctx.save()
+    ctx.globalAlpha = SHINE
+    // y → 2·floor − y: the rows just above the floor land just below it.
+    ctx.setTransform(1, 0, 0, -1, 0, 2 * barH)
+    ctx.drawImage(canvas, 0, barH - r, W, r, 0, barH - r, W, r)
+    ctx.restore()
+    ctx.globalCompositeOperation = 'destination-out'
+    ctx.fillStyle = fade
+    ctx.fillRect(0, barH, W, r)
+    ctx.globalCompositeOperation = 'source-over'
+  }
+
+  /** Hover: the frequency marks along the top, the dB grid with its numbers on the right (not for the mirror). */
+  function scales(W: number) {
+    if (!ctx || !hover || cssH < SCALE_MIN_H || !SCALED.has(look)) return
+    const size = Math.round(10 * dpr)
+    ctx.save()
+    ctx.fillStyle = ink
+    ctx.strokeStyle = ink
+    ctx.font = `${size}px system-ui, sans-serif`
+    ctx.textBaseline = 'top'
+    ctx.textAlign = 'center'
+    ctx.globalAlpha = 0.7
+    for (const [hz, label] of FREQ_MARKS) ctx.fillText(label, Math.round(freqAt(hz, banding) * W), Math.round(4 * dpr))
+    if (look !== 'mirror') {
+      ctx.textAlign = 'right'
+      ctx.textBaseline = 'bottom'
+      ctx.lineWidth = Math.max(1, Math.round(dpr))
+      for (const db of DB_MARKS) {
+        const y = Math.round(barH - levelOf(db) * barH) + 0.5
+        ctx.globalAlpha = 0.18
+        ctx.beginPath()
+        ctx.moveTo(0, y)
+        ctx.lineTo(W, y)
+        ctx.stroke()
+        ctx.globalAlpha = 0.7
+        ctx.fillText(`−${-db} dB`, W - Math.round(4 * dpr), y - Math.round(2 * dpr))
+      }
+    }
+    ctx.restore()
   }
 
   /** The gradient over the bars for this size and look; null = the one colour. */
@@ -331,12 +402,14 @@ export function createPainter(canvas: OffscreenCanvas) {
       dpr = ratio
       layout()
     },
-    set(next: VisualizerStyle, calmer: boolean, color: string, alarm = WARN, weigh: VizWeighting = 'flat', grad: VizGradient = 'none', colors: Stops = []) {
+    set(next: VisualizerStyle, calmer: boolean, color: string, alarm = WARN, weigh: VizWeighting = 'flat', grad: VizGradient = 'none', colors: Stops = [], bands: VizBanding = 'sixth', glossy = false) {
       gradient = grad
       stops = colors
-      // Reduced motion or the weighting changed: a new scene (and needles).
-      const restart = calmer !== calm || weigh !== weighting
+      floor = glossy
+      // Reduced motion, the weighting or the bands changed: a new scene (and needles).
+      const restart = calmer !== calm || weigh !== weighting || bands !== banding
       weighting = weigh
+      banding = bands
       weighs = weightsOf(weigh)
       // Another look: a clean canvas (the waterfall keeps its picture otherwise).
       if (next !== look && ctx) ctx.clearRect(0, 0, canvas.width, canvas.height)
@@ -362,6 +435,10 @@ export function createPainter(canvas: OffscreenCanvas) {
       scene.silence()
       vu.silence()
     },
+    /** The pointer over the visualizer: its scales shown. */
+    hover(on: boolean) {
+      hover = on
+    },
     /** Draws a frame, `dt` seconds after the last. True = at rest (the caller may stop its loop). */
     draw(dt: number): boolean {
       if (!ctx || !cssW || !cssH) return true
@@ -379,10 +456,11 @@ export function createPainter(canvas: OffscreenCanvas) {
         return resting
       }
       ctx.clearRect(0, 0, W, H)
+      // Standing on the floor when there is one (barH < H): the bars' box is above it.
       if (look === 'radial') radial(levels, W, H)
-      else if (look === 'led') led(levels, peaks, H)
-      else if (look === 'wave') wave(levels, W, H)
-      else bars(levels, peaks, H)
+      else if (look === 'led') led(levels, peaks, barH)
+      else if (look === 'wave') wave(levels, W, barH)
+      else bars(levels, peaks, barH)
       ctx.globalAlpha = 1
       // The gradient takes the bars' place, their shapes and opacities kept.
       if (fill) {
@@ -391,6 +469,8 @@ export function createPainter(canvas: OffscreenCanvas) {
         ctx.fillRect(0, 0, W, H)
         ctx.globalCompositeOperation = 'source-over'
       }
+      reflect(W, H)
+      scales(W)
       return resting
     },
   }

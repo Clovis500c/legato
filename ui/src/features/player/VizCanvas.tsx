@@ -52,6 +52,8 @@ export function VizCanvas({ look, listen = true }: { look: VisualizerStyle; list
   const color = useSettings((s) => s.settings.visualizerColor)
   const coverInk = useCoverInk(color === 'cover')
   const gradient = useSettings((s) => s.settings.visualizerGradient)
+  const bands = useSettings((s) => s.settings.visualizerBands)
+  const floor = useSettings((s) => s.settings.visualizerFloor)
   const darkTheme = useSettings((s) => s.current().dark)
   const playing = usePlayer((s) => s.playing)
   const theme = useSettings((s) => s.settings.theme)
@@ -108,12 +110,12 @@ export function VizCanvas({ look, listen = true }: { look: VisualizerStyle; list
     const send = () => {
       const ink = inkOf(el, color, coverInk)
       const warn = getComputedStyle(el).getPropertyValue('--color-danger').trim() || '#d93a2b'
-      w.postMessage({ t: 'look', look, calm, weighting, ink, warn, gradient, stops: gradientStops(gradient, ink, warn, darkTheme), fps: FPS } satisfies ToWorker)
+      w.postMessage({ t: 'look', look, calm, weighting, ink, warn, gradient, stops: gradientStops(gradient, ink, warn, darkTheme), bands, floor, fps: FPS } satisfies ToWorker)
     }
     send()
     const late = setTimeout(send, 700)
     return () => clearTimeout(late)
-  }, [ready, look, calm, weighting, color, coverInk, gradient, darkTheme, theme, accent, dark, song])
+  }, [ready, look, calm, weighting, color, coverInk, gradient, bands, floor, darkTheme, theme, accent, dark, song])
 
   // Something draws: loop and frames. Nothing does: no loop, no subscription.
   useEffect(() => {
@@ -128,7 +130,9 @@ export function VizCanvas({ look, listen = true }: { look: VisualizerStyle; list
     return viz.subscribe((f) => w.postMessage(frameMessage(f)))
   }, [ready, drawing, live])
 
-  return <div ref={box} aria-hidden className="size-full text-ink" />
+  // The pointer over it: the worker shows its frequency and dB scales (a big enough box only).
+  const hover = (on: boolean) => () => worker.current?.postMessage({ t: 'hover', on } satisfies ToWorker)
+  return <div ref={box} aria-hidden onPointerEnter={hover(true)} onPointerLeave={hover(false)} className="size-full text-ink" />
 }
 
 /** The visualizer's colour: the text colour where it is drawn, the theme's accent, or the cover's (text until known). */

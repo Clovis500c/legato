@@ -501,8 +501,12 @@ colours, mirror, reflection.
       (2026-11-02: Settings › Playback › Visualizer weighting or the right-click, `vizWeigh.ts`: As measured (default), +3 dB per octave,
       A-weighting, ITU-R 468, added per band in the worker's scene, both twins alike. Tested against the A and 468
       tables; over the demo the tilt lowers the bass third and lifts the treble third. Not judged by eye on real music.)
-- [ ] `S` Spectrum bars, realistic: 1/3 and 1/12 octave, reflection on a glossy floor, frequency and dB scales on hover. (LED
-      segments with held, falling caps are in, 1/6 octave.)
+- [x] `S` Spectrum bars, realistic: 1/3 and 1/12 octave, reflection on a glossy floor, frequency and dB scales on hover. (LED
+      segments with held, falling caps are in, 1/6 octave.) (2026-11-04: Settings › Playback › Visualizer bands, 1/6
+      octave by default or 1/3 folded from it, 31 bars, `vizBands.ts`; Visualizer reflection, off by default for the
+      owner to judge: LED, bars, peaks and wave on a glossy floor; the pointer over a big visualizer shows 50 Hz to
+      10 kHz along the top and a −20 / −40 / −60 dB grid. Seen over the demo, full screen. 1/12 octave needs finer bands
+      from both twins: the `S-M` line below.)
 - [x] `S` Colours from the theme or the cover (`coverTint.ts`): gradient along frequency, by level, or the cover's palette.
       (2026-11-02: Settings › Playback › Visualizer color or the right-click: the text colour (default), the theme's
       accent, or the playing cover's hue made vivid (`ambient.ts` `vivid`, 3:1 at least on the theme's background; a

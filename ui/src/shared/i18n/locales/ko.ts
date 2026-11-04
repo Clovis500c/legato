@@ -2012,6 +2012,14 @@ const ko: Record<string, string> = {
   'MP3, FLAC, WAV, OGG, M4A in your Music and Download folders. Linked to your YouTube and Spotify tracks and played first, gapless.': 'Music 및 Download 폴더의 MP3, FLAC, WAV, OGG, M4A. YouTube 및 Spotify 곡과 연결되어 먼저 재생되며, 끊김 없이 이어집니다.',
   'Find my songs': '내 노래 찾기',
   'Android keeps Legato away from your music. Allow it in Legato’s app info › Permissions.': 'Android가 Legato의 음악 접근을 막고 있습니다. Legato의 앱 정보 › 권한에서 허용하세요.',
+  'Visualizer bands': '시각화 밴드',
+  'Visualizer reflection': '시각화 반사',
+  '1/6 octave (61 bands)': '1/6 옥타브(61개 밴드)',
+  '1/3 octave (31 bands)': '1/3 옥타브(31개 밴드)',
+  '1/6 octave as measured, or 1/3 octave: fewer, wider bars, like a hi-fi analyzer. Point at a big visualizer for its Hz and dB scales': '측정된 그대로의 1/6 옥타브 또는 1/3 옥타브: 하이파이 분석기처럼 더 적고 넓은 막대. 큰 시각화 위에 포인터를 올리면 Hz와 dB 눈금이 표시됩니다',
+  'The bars stand on a glossy floor that reflects them': '막대가 광택 있는 바닥 위에 서서 바닥에 비칩니다',
+  'octave third sixth analyzer resolution hertz decibel scale': '옥타브 3분의1 6분의1 분석기 해상도 헤르츠 데시벨 눈금',
+  'glossy floor mirror shine': '광택 바닥 거울 반사',
 }
 
 export default ko

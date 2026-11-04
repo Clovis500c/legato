@@ -2012,6 +2012,14 @@ const ru: Record<string, string> = {
   'MP3, FLAC, WAV, OGG, M4A in your Music and Download folders. Linked to your YouTube and Spotify tracks and played first, gapless.': 'MP3, FLAC, WAV, OGG, M4A в твоих папках Music и Download. Связываются с твоими треками YouTube и Spotify и играют первыми, без пауз.',
   'Find my songs': 'Найти мои песни',
   'Android keeps Legato away from your music. Allow it in Legato’s app info › Permissions.': 'Android не даёт Legato доступ к твоей музыке. Разреши его в разделе О приложении Legato › Разрешения.',
+  'Visualizer bands': 'Полосы визуализатора',
+  'Visualizer reflection': 'Отражение визуализатора',
+  '1/6 octave (61 bands)': '1/6 октавы (61 полоса)',
+  '1/3 octave (31 bands)': '1/3 октавы (31 полоса)',
+  '1/6 octave as measured, or 1/3 octave: fewer, wider bars, like a hi-fi analyzer. Point at a big visualizer for its Hz and dB scales': '1/6 октавы как измерено или 1/3 октавы: меньше столбиков, они шире, как у Hi-Fi-анализатора. Наведите указатель на большой визуализатор, чтобы увидеть шкалы Гц и дБ',
+  'The bars stand on a glossy floor that reflects them': 'Столбики стоят на глянцевом полу, который их отражает',
+  'octave third sixth analyzer resolution hertz decibel scale': 'октава треть шестая анализатор разрешение герц децибел шкала',
+  'glossy floor mirror shine': 'глянцевый пол зеркало блеск',
 }
 
 export default ru

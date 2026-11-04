@@ -2012,6 +2012,14 @@ const pl: Record<string, string> = {
   'MP3, FLAC, WAV, OGG, M4A in your Music and Download folders. Linked to your YouTube and Spotify tracks and played first, gapless.': 'MP3, FLAC, WAV, OGG, M4A w twoich folderach Music i Download. Powiązane z twoimi utworami z YouTube i Spotify i odtwarzane najpierw, bez przerw.',
   'Find my songs': 'Znajdź moje utwory',
   'Android keeps Legato away from your music. Allow it in Legato’s app info › Permissions.': 'Android blokuje Legato dostęp do twojej muzyki. Zezwól na niego w Informacje o aplikacji Legato › Uprawnienia.',
+  'Visualizer bands': 'Pasma wizualizera',
+  'Visualizer reflection': 'Odbicie wizualizera',
+  '1/6 octave (61 bands)': '1/6 oktawy (61 pasm)',
+  '1/3 octave (31 bands)': '1/3 oktawy (31 pasm)',
+  '1/6 octave as measured, or 1/3 octave: fewer, wider bars, like a hi-fi analyzer. Point at a big visualizer for its Hz and dB scales': '1/6 oktawy, tak jak zmierzono, lub 1/3 oktawy: mniej, szersze słupki, jak w analizatorze hi-fi. Wskaż duży wizualizer, aby zobaczyć jego skale Hz i dB',
+  'The bars stand on a glossy floor that reflects them': 'Słupki stoją na błyszczącej podłodze, która je odbija',
+  'octave third sixth analyzer resolution hertz decibel scale': 'oktawa tercja szósta analizator rozdzielczość herc decybel skala',
+  'glossy floor mirror shine': 'błyszcząca podłoga lustro połysk',
 }
 
 export default pl

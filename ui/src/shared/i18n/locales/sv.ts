@@ -2012,6 +2012,14 @@ const sv: Record<string, string> = {
   'MP3, FLAC, WAV, OGG, M4A in your Music and Download folders. Linked to your YouTube and Spotify tracks and played first, gapless.': 'MP3, FLAC, WAV, OGG, M4A i dina mappar Music och Download. Länkas till dina låtar från YouTube och Spotify och spelas först, utan pauser.',
   'Find my songs': 'Hitta mina låtar',
   'Android keeps Legato away from your music. Allow it in Legato’s app info › Permissions.': 'Android hindrar Legato från att läsa din musik. Tillåt det i Appinfo för Legato › Behörigheter.',
+  'Visualizer bands': 'Visualiserarens band',
+  'Visualizer reflection': 'Visualiserarens spegling',
+  '1/6 octave (61 bands)': '1/6 oktav (61 band)',
+  '1/3 octave (31 bands)': '1/3 oktav (31 band)',
+  '1/6 octave as measured, or 1/3 octave: fewer, wider bars, like a hi-fi analyzer. Point at a big visualizer for its Hz and dB scales': '1/6 oktav som uppmätt, eller 1/3 oktav: färre, bredare staplar, som en hifi-analysator. Peka på en stor visualiserare för att se dess Hz- och dB-skalor',
+  'The bars stand on a glossy floor that reflects them': 'Staplarna står på ett blankt golv som speglar dem',
+  'octave third sixth analyzer resolution hertz decibel scale': 'oktav tredjedel sjättedel analysator upplösning hertz decibel skala',
+  'glossy floor mirror shine': 'blankt golv spegel glans',
 }
 
 export default sv

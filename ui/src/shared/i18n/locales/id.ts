@@ -2012,6 +2012,14 @@ const id: Record<string, string> = {
   'MP3, FLAC, WAV, OGG, M4A in your Music and Download folders. Linked to your YouTube and Spotify tracks and played first, gapless.': 'MP3, FLAC, WAV, OGG, M4A di folder Music dan Download-mu. Ditautkan ke lagu YouTube dan Spotify-mu dan diputar lebih dulu, tanpa jeda.',
   'Find my songs': 'Temukan laguku',
   'Android keeps Legato away from your music. Allow it in Legato’s app info › Permissions.': 'Android tidak mengizinkan Legato membaca musikmu. Izinkan di Info aplikasi Legato › Izin.',
+  'Visualizer bands': 'Pita visualizer',
+  'Visualizer reflection': 'Pantulan visualizer',
+  '1/6 octave (61 bands)': '1/6 oktaf (61 pita)',
+  '1/3 octave (31 bands)': '1/3 oktaf (31 pita)',
+  '1/6 octave as measured, or 1/3 octave: fewer, wider bars, like a hi-fi analyzer. Point at a big visualizer for its Hz and dB scales': '1/6 oktaf sesuai ukuran, atau 1/3 oktaf: batang lebih sedikit dan lebih lebar, seperti penganalisis hi-fi. Arahkan ke visualizer besar untuk melihat skala Hz dan dB-nya',
+  'The bars stand on a glossy floor that reflects them': 'Batang berdiri di atas lantai mengilap yang memantulkannya',
+  'octave third sixth analyzer resolution hertz decibel scale': 'oktaf pertiga perenam penganalisis resolusi hertz desibel skala',
+  'glossy floor mirror shine': 'mengilap lantai cermin kilau',
 }
 
 export default id

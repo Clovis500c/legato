@@ -1,5 +1,5 @@
 import { msg } from '../../shared/i18n/i18n'
-import { VISUALIZER_STYLES, type VisualizerStyle, type VizColor, type VizGradient, type VizWeighting } from '../../shared/theme/theme'
+import { VISUALIZER_STYLES, type VisualizerStyle, type VizBanding, type VizColor, type VizGradient, type VizWeighting } from '../../shared/theme/theme'
 
 /** The visualizer's looks by name (Settings, the visualizer's right-click menu); show with `tr`. */
 export const VISUALIZER_LABELS: Record<VisualizerStyle, string> = { led: msg('LED'), bars: msg('Bars'), mirror: msg('Mirror'), peaks: msg('Peaks'), wave: msg('Wave'), radial: msg('Radial'), vu: msg('VU needles'), spectrogram: msg('Spectrogram') }
@@ -12,6 +12,9 @@ export const VIZ_COLOR_LABELS: Record<VizColor, string> = { text: msg('Text colo
 
 /** The visualizer's gradients by name (Settings, its right-click); show with `tr`. */
 export const VIZ_GRADIENT_LABELS: Record<VizGradient, string> = { none: msg('No gradient'), level: msg('By level'), frequency: msg('Along frequency') }
+
+/** The visualizer's bands by name (Settings, its right-click); show with `tr`. */
+export const VIZ_BANDING_LABELS: Record<VizBanding, string> = { sixth: msg('1/6 octave (61 bands)'), third: msg('1/3 octave (31 bands)') }
 
 /** The look after this one, round to the first (a click on the visualizer). */
 export const nextLook = (look: VisualizerStyle): VisualizerStyle => VISUALIZER_STYLES[(VISUALIZER_STYLES.indexOf(look) + 1) % VISUALIZER_STYLES.length]

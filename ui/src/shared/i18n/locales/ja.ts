@@ -2012,6 +2012,14 @@ const ja: Record<string, string> = {
   'MP3, FLAC, WAV, OGG, M4A in your Music and Download folders. Linked to your YouTube and Spotify tracks and played first, gapless.': 'Music フォルダと Download フォルダの MP3、FLAC、WAV、OGG、M4A。YouTubeやSpotifyの曲とリンクされ、優先的にギャップレスで再生されます。',
   'Find my songs': '曲を探す',
   'Android keeps Legato away from your music. Allow it in Legato’s app info › Permissions.': 'AndroidがLegatoの音楽へのアクセスをブロックしています。Legatoのアプリ情報 › 権限 で許可してください。',
+  'Visualizer bands': 'ビジュアライザーのバンド',
+  'Visualizer reflection': 'ビジュアライザーの反射',
+  '1/6 octave (61 bands)': '1/6 オクターブ（61 バンド）',
+  '1/3 octave (31 bands)': '1/3 オクターブ（31 バンド）',
+  '1/6 octave as measured, or 1/3 octave: fewer, wider bars, like a hi-fi analyzer. Point at a big visualizer for its Hz and dB scales': '測定どおりの 1/6 オクターブ、または 1/3 オクターブ：Hi-Fi アナライザーのように本数が少なく幅の広いバー。大きなビジュアライザーにポインターを合わせると Hz と dB の目盛りが表示されます',
+  'The bars stand on a glossy floor that reflects them': 'バーが光沢のある床に立ち、床に映り込みます',
+  'octave third sixth analyzer resolution hertz decibel scale': 'オクターブ 3分の1 6分の1 アナライザー 解像度 ヘルツ デシベル 目盛り',
+  'glossy floor mirror shine': '光沢 床 鏡 反射',
 }
 
 export default ja

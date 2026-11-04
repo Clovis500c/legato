@@ -2012,6 +2012,14 @@ const zh: Record<string, string> = {
   'MP3, FLAC, WAV, OGG, M4A in your Music and Download folders. Linked to your YouTube and Spotify tracks and played first, gapless.': '你的 Music 和 Download 文件夹中的 MP3、FLAC、WAV、OGG、M4A。与你的 YouTube 和 Spotify 歌曲关联并优先播放，无缝衔接。',
   'Find my songs': '查找我的歌曲',
   'Android keeps Legato away from your music. Allow it in Legato’s app info › Permissions.': 'Android 阻止 Legato 读取你的音乐。请在 Legato 的应用信息 › 权限 中允许。',
+  'Visualizer bands': '可视化频段',
+  'Visualizer reflection': '可视化倒影',
+  '1/6 octave (61 bands)': '1/6 倍频程（61 个频段）',
+  '1/3 octave (31 bands)': '1/3 倍频程（31 个频段）',
+  '1/6 octave as measured, or 1/3 octave: fewer, wider bars, like a hi-fi analyzer. Point at a big visualizer for its Hz and dB scales': '按测量的 1/6 倍频程，或 1/3 倍频程：像高保真分析仪一样，柱条更少、更宽。将指针移到大的可视化上可显示 Hz 和 dB 刻度',
+  'The bars stand on a glossy floor that reflects them': '柱条立在光亮的地面上，地面映出它们的倒影',
+  'octave third sixth analyzer resolution hertz decibel scale': '倍频程 三分之一 六分之一 分析仪 分辨率 赫兹 分贝 刻度',
+  'glossy floor mirror shine': '光亮 地面 镜面 反光',
 }
 
 export default zh

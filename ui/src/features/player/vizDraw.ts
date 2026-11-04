@@ -5,8 +5,8 @@ import { VIZ_BANDS } from './vizUnpack'
 /** Narrowest column, CSS px: more room = more columns, up to one per band. */
 const MIN_COLUMN = 5
 
-/** Columns for a box `w` CSS px wide. */
-export const columnsFor = (w: number) => Math.min(VIZ_BANDS, Math.max(8, Math.floor(w / MIN_COLUMN)))
+/** Columns for a box `w` CSS px wide, showing `bands` bands (vizBands.ts). */
+export const columnsFor = (w: number, bands = VIZ_BANDS) => Math.min(bands, Math.max(8, Math.floor(w / MIN_COLUMN)))
 
 /** Both sides into one: the mean of their powers, per band, dB. `out` gets the result. */
 export function monoDb(left: ArrayLike<number>, right: ArrayLike<number>, out: Float32Array): Float32Array {

@@ -2012,6 +2012,14 @@ const nl: Record<string, string> = {
   'MP3, FLAC, WAV, OGG, M4A in your Music and Download folders. Linked to your YouTube and Spotify tracks and played first, gapless.': 'MP3, FLAC, WAV, OGG, M4A in je mappen Music en Download. Gekoppeld aan je YouTube- en Spotify-nummers en als eerste afgespeeld, zonder pauzes.',
   'Find my songs': 'Mijn nummers zoeken',
   'Android keeps Legato away from your music. Allow it in Legato’s app info › Permissions.': 'Android houdt Legato weg van je muziek. Sta het toe in App-info van Legato › Rechten.',
+  'Visualizer bands': 'Visualizerbanden',
+  'Visualizer reflection': 'Visualizerweerspiegeling',
+  '1/6 octave (61 bands)': '1/6 octaaf (61 banden)',
+  '1/3 octave (31 bands)': '1/3 octaaf (31 banden)',
+  '1/6 octave as measured, or 1/3 octave: fewer, wider bars, like a hi-fi analyzer. Point at a big visualizer for its Hz and dB scales': '1/6 octaaf zoals gemeten, of 1/3 octaaf: minder, bredere balken, zoals een hifi-analyzer. Wijs een grote visualizer aan voor de Hz- en dB-schalen',
+  'The bars stand on a glossy floor that reflects them': 'De balken staan op een glanzende vloer die ze weerspiegelt',
+  'octave third sixth analyzer resolution hertz decibel scale': 'octaaf terts zesde analyzer resolutie hertz decibel schaal',
+  'glossy floor mirror shine': 'glanzend vloer spiegel glans',
 }
 
 export default nl

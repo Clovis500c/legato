@@ -2012,6 +2012,14 @@ const vi: Record<string, string> = {
   'MP3, FLAC, WAV, OGG, M4A in your Music and Download folders. Linked to your YouTube and Spotify tracks and played first, gapless.': 'MP3, FLAC, WAV, OGG, M4A trong thư mục Music và Download của bạn. Liên kết với các bài trên YouTube và Spotify và được phát trước, không ngắt quãng.',
   'Find my songs': 'Tìm bài hát của tôi',
   'Android keeps Legato away from your music. Allow it in Legato’s app info › Permissions.': 'Android đang chặn Legato đọc nhạc của bạn. Hãy cho phép trong Thông tin ứng dụng của Legato › Quyền.',
+  'Visualizer bands': 'Dải tần của trình hiển thị',
+  'Visualizer reflection': 'Phản chiếu của trình hiển thị',
+  '1/6 octave (61 bands)': '1/6 quãng tám (61 dải)',
+  '1/3 octave (31 bands)': '1/3 quãng tám (31 dải)',
+  '1/6 octave as measured, or 1/3 octave: fewer, wider bars, like a hi-fi analyzer. Point at a big visualizer for its Hz and dB scales': '1/6 quãng tám như đo được, hoặc 1/3 quãng tám: ít thanh hơn và rộng hơn, như máy phân tích hi-fi. Trỏ vào trình hiển thị lớn để xem thang Hz và dB',
+  'The bars stand on a glossy floor that reflects them': 'Các thanh đứng trên một mặt sàn bóng phản chiếu chúng',
+  'octave third sixth analyzer resolution hertz decibel scale': 'quãng tám một phần ba một phần sáu máy phân tích độ phân giải hertz decibel thang',
+  'glossy floor mirror shine': 'bóng sàn gương lấp lánh',
 }
 
 export default vi
