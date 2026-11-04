@@ -26,6 +26,7 @@ import { remoteTrack, usePlayer } from '../player/store'
 import { WaysIn } from '../welcome/WaysIn'
 import { jumpLists, useOpenedLists, type OpenedList } from './recentLists'
 import { weekOf } from './week'
+import { phoneApp } from '../../shared/platform'
 
 const ROW = 12
 
@@ -334,7 +335,7 @@ const sectionLabels: Record<HomeSectionId, string> = {
 const sectionHints: Record<HomeSectionId, string> = {
   quick: msg('Playlists, albums, artists and mixes you opened lately'),
   week: msg('Time heard, top artist and song of the last 7 days'),
-  mixes: msg('Made on this PC from what you play'),
+  mixes: phoneApp ? msg('Made on this phone from what you play') : msg('Made on this PC from what you play'),
   recent: msg('What you played lately'),
   playlists: msg('Your own and imported playlists'),
   youtube: msg('Shelves from YouTube Music, when signed in'),

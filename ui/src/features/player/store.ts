@@ -18,6 +18,7 @@ import { ytPost, type YtUpdate } from './youtube'
 import { tr } from '../../shared/i18n/i18n'
 import { offline } from '../../shared/online'
 import { note, report } from '../../shared/diag'
+import { phoneApp } from '../../shared/platform'
 
 /** via youtube = embed plays it, else Rust engine (local file, or Apple preview held in memory). */
 export interface NowPlaying {
@@ -343,7 +344,7 @@ function waitForNetwork(playId: number) {
   offlineFor = playId
   if (!first) return
   report('warn', 'playback', 'offline: waiting for the network to play again')
-  useStore.getState().notify(tr('No internet connection: the song starts again when your PC is back online.'), { kind: 'error' })
+  useStore.getState().notify((phoneApp ? tr('No internet connection: the song starts again when your phone is back online.') : tr('No internet connection: the song starts again when your PC is back online.')), { kind: 'error' })
   const back = () => {
     window.removeEventListener('online', back)
     note('playback', 'network back: the song starts again')

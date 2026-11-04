@@ -16,6 +16,7 @@ import { commandList } from './commandList'
 import { matchCommands } from './commands'
 import { clearRecent, forgetRecent, useRecent } from './recent'
 import { libraryMatches } from './results'
+import { phoneApp } from '../../shared/platform'
 
 // Pages that filter their own list as you type.
 const FILTERS = ['songs', 'playlist', 'albums', 'artists']
@@ -335,7 +336,7 @@ export function SearchBar({ children }: { children?: ReactNode }) {
           <p className="mt-1 flex flex-wrap items-center gap-x-4 border-t border-line-soft px-4 pt-2 text-[0.6875rem] text-ink-3">
             {!text && rememberSearches && recent.length > 0 ? (
               <span className="flex items-center gap-1.5">
-                <LockSimple size={12} /> {tr('Kept on this PC only. Turn off in Settings › General.')}
+                <LockSimple size={12} /> {(phoneApp ? tr('Kept on this phone only. Turn off in Settings › General.') : tr('Kept on this PC only. Turn off in Settings › General.'))}
               </span>
             ) : (
               <>

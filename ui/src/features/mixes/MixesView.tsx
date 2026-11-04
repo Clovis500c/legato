@@ -20,6 +20,7 @@ import { msg, tr, trn } from '../../shared/i18n/i18n'
 import { useMixes } from './useMixes'
 import { mixReason, mixTitle, monthName, weekdayName } from './words'
 import { ask } from '../../shared/ui/Ask'
+import { phoneApp } from '../../shared/platform'
 
 /** A mix's songs in order: library songs, songs new to you slotted at their place. */
 export function mixSongs(mix: Mix, byId: Map<number, LibraryTrack>): LibraryTrack[] {
@@ -125,7 +126,7 @@ export function MixesView() {
   const { mixes, reload } = useMixes()
   return (
     <>
-      <PageHeader kicker={tr('For you · made on this PC from what you play')} title={tr('Mixes')} actions={<ResetHistory onDone={reload} />} />
+      <PageHeader kicker={phoneApp ? tr('For you · made on this phone from what you play') : tr('For you · made on this PC from what you play')} title={tr('Mixes')} actions={<ResetHistory onDone={reload} />} />
       <div className="-mx-3 min-h-0 flex-1 overflow-y-auto px-3 pb-6">
         {mixes && mixes.length === 0 && (
           <div className="flex flex-col items-center gap-2 py-16 text-center text-ink-2">

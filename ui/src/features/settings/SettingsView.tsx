@@ -543,10 +543,10 @@ function CoverCacheRows() {
   const label = (mb: number) => (mb >= 1000 ? tr('{n} GB', { n: mb / 1000 }) : tr('{n} MB', { n: mb }))
   return (
     <div className="rounded-xl border border-line bg-raised">
-      <Row setting="coverCacheMb" label={msg('Cover cache size')} sub={tr('Covers kept on this PC to show them quickly. Over the limit, the ones not shown for the longest time go first and download again when needed')}>
+      <Row setting="coverCacheMb" label={msg('Cover cache size')} sub={(phoneApp ? tr('Covers kept on this phone to show them quickly. Over the limit, the ones not shown for the longest time go first and download again when needed') : tr('Covers kept on this PC to show them quickly. Over the limit, the ones not shown for the longest time go first and download again when needed'))}>
         <Segmented label={tr('Cover cache size')} value={String(s.coverCacheMb)} onChange={(mb) => update({ coverCacheMb: Number(mb) as Settings['coverCacheMb'] })} options={COVER_CACHE_MB.map((mb) => ({ value: String(mb), label: label(mb) }))} />
       </Row>
-      <Row label={msg('Clear covers')} sub={used === null ? undefined : tr('{size} on this PC now. Playlist pictures and theme backgrounds stay', { size: formatBytes(used) })}>
+      <Row label={msg('Clear covers')} sub={used === null ? undefined : (phoneApp ? tr('{size} on this phone now. Playlist pictures and theme backgrounds stay', { size: formatBytes(used) }) : tr('{size} on this PC now. Playlist pictures and theme backgrounds stay', { size: formatBytes(used) }))}>
         <Button variant="ghost" disabled={busy || used === 0} onClick={() => void clear()}>
           {tr('Clear covers')}
         </Button>
@@ -657,7 +657,7 @@ function GeneralSection() {
       </Group>
       <Group title={msg('Search bar')}>
         <div className="rounded-xl border border-line bg-raised">
-          <Row setting="rememberSearches" label={msg('Remember recent searches')} sub={tr('Listed when you click the search bar. Kept on this PC only, never synced')}>
+          <Row setting="rememberSearches" label={msg('Remember recent searches')} sub={(phoneApp ? tr('Listed when you click the search bar. Kept on this phone only, never synced') : tr('Listed when you click the search bar. Kept on this PC only, never synced'))}>
             <Toggle label={tr('Remember recent searches')} checked={s.rememberSearches} onChange={(rememberSearches) => (update({ rememberSearches }), rememberSearches || clearRecent())} />
           </Row>
           <Row setting="searchSuggestions" label={msg('Search suggestions')} sub={tr('YouTube’s suggestions as you type: what you type goes to Google')}>

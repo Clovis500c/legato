@@ -14,6 +14,7 @@ import { PageHeader } from '../../shared/ui/PageHeader'
 import { trackMenu, tracksMenu } from '../menus'
 import { usePlayer } from '../player/store'
 import { statsOf, type Period } from './stats'
+import { phoneApp } from '../../shared/platform'
 
 /** "12 h 30 min", "45 min". */
 function hours(ms: number) {
@@ -80,7 +81,7 @@ export function StatsView() {
   const header = (
     <PageHeader
       title={tr('Your stats')}
-      sub={tr('From what you played in Legato on this PC')}
+      sub={phoneApp ? tr('From what you played in Legato on this phone') : tr('From what you played in Legato on this PC')}
       actions={<Segmented label={tr('Period')} value={period} onChange={setPeriod} options={[{ value: '4w', label: tr('4 weeks') }, { value: '6m', label: tr('6 months') }, { value: 'year', label: tr('This year') }, { value: 'all', label: tr('All time') }]} />}
     />
   )
