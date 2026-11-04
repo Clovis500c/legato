@@ -1605,7 +1605,7 @@ const ru: Record<string, string> = {
   'VU needles': 'Стрелки VU',
   'Spectrogram': 'Спектрограмма',
   'Radial goes around a big cover; where the cover is small it shows bars': 'Круговой вид окружает большую обложку; если она мала, показываются полосы',
-  'bars mirror peaks wave curve radial circle vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look': 'полосы зеркало пики волна вид круговой круг vu стрелки индикатор спектрограмма водопад кривая осциллограф громкость lufs векторскоп гониометр стерео фаза корреляция',
+  'bars mirror peaks wave curve radial circle particles vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look': 'полосы зеркало пики волна вид круговой круг vu стрелки индикатор спектрограмма водопад кривая осциллограф громкость lufs векторскоп гониометр стерео фаза корреляция частицы',
   // v2 redesign
   'Playing': 'Играет',
   'All your songs': 'Все ваши треки',
@@ -2036,6 +2036,7 @@ const ru: Record<string, string> = {
   'True peak': 'Истинный пик',
   'Oscilloscope': 'Осциллограф',
   'Vectorscope': 'Векторскоп',
+  'Particles': 'Частицы',
 }
 
 export default ru

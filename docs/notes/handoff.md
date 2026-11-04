@@ -184,6 +184,8 @@ Relaunch log (newest last):
 - 2026-11-04: beats (`vizBeat.ts`: spectral flux of the lows and half the mids, tempo by autocorrelation leaning to
   120 BPM); the Radial ring steps out 4 % on a kick. Click tracks tested; the demo's frames counted (19 kicks in 10 s,
   119.9 BPM), the ring not watched moving (the browser pane was hidden); not on real music.
+- 2026-11-05: the Particles look (`vizParticles.ts`: bursts on kicks, at most 3 a second, a drift with the mids; the
+  cover's colours from `coverPalette.ts`; full screen over the blurred cover). Seen over the demo in both themes.
 
 ## Mobile app and devices sync (the owner's ask, 2026-11-02 afternoon; in progress)
 

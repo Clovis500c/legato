@@ -3,7 +3,7 @@ import { useSettings } from '../../app/settings'
 import { trackArt } from '../../shared/art'
 import { tr } from '../../shared/i18n/i18n'
 import type { VisualizerStyle, VizColor } from '../../shared/theme/theme'
-import { averageColor, vivid } from './ambient'
+import { averageColor, coverColors, vivid } from './ambient'
 import { subscribeLoud } from './loudFeed'
 import { useNowTrack, usePlayer } from './store'
 import { viz } from './vizFrames'
@@ -53,6 +53,7 @@ export function VizCanvas({ look, listen = true }: { look: VisualizerStyle; list
   const weighting = useSettings((s) => s.settings.visualizerWeighting)
   const color = useSettings((s) => s.settings.visualizerColor)
   const coverInk = useCoverInk(color === 'cover')
+  const coverDots = useCoverColors(look === 'particles')
   const gradient = useSettings((s) => s.settings.visualizerGradient)
   const bands = useSettings((s) => s.settings.visualizerBands)
   const floor = useSettings((s) => s.settings.visualizerFloor)
@@ -123,6 +124,13 @@ export function VizCanvas({ look, listen = true }: { look: VisualizerStyle; list
     return () => clearTimeout(late)
   }, [ready, look, calm, weighting, color, coverInk, gradient, bands, floor, darkTheme, theme, accent, dark, song, language])
 
+  // Particles: the cover's colours (the ink until they are known, or for a grey cover); light that adds up on a dark theme.
+  useEffect(() => {
+    const w = worker.current
+    if (!w || look !== 'particles') return
+    w.postMessage({ t: 'palette', colors: coverDots ?? [], glow: darkTheme } satisfies ToWorker)
+  }, [ready, look, coverDots, darkTheme])
+
   // Something draws: loop and frames. Nothing does: no loop, no subscription.
   useEffect(() => {
     const w = worker.current
@@ -172,4 +180,22 @@ function useCoverInk(on: boolean): string | null {
     }
   }, [src, dark])
   return src && got?.key === key ? got.ink : null
+}
+
+/** The playing song's cover colours, the most present first, vivid for the theme; null when off or not known yet, none when grey. */
+function useCoverColors(on: boolean): string[] | null {
+  const track = useNowTrack()
+  const src = on && track ? trackArt(track)[0] : undefined
+  const dark = useSettings((s) => s.current().dark)
+  const [got, setGot] = useState<{ key: string; colors: string[] }>()
+  const key = `${src}|${dark}`
+  useEffect(() => {
+    if (!src) return
+    let live = true
+    void coverColors(src).then((rgbs) => live && setGot({ key: `${src}|${dark}`, colors: (rgbs ?? []).flatMap((rgb) => vivid(rgb, dark) ?? []) }))
+    return () => {
+      live = false
+    }
+  }, [src, dark])
+  return src && got?.key === key ? got.colors : null
 }

@@ -37,12 +37,12 @@ export function Visualizer() {
   )
 }
 
-/** Bars in a backdrop or a thin strip for the looks that need room or read as numbers: the ring, the vectorscope, the loudness meter. */
-const roomy = (look: VisualizerStyle): VisualizerStyle => (look === 'radial' || look === 'vectorscope' || look === 'loudness' ? 'bars' : look)
+/** Bars in a backdrop or a thin strip for the looks that need room or read as numbers: the ring, the particles, the vectorscope, the loudness meter. */
+const roomy = (look: VisualizerStyle): VisualizerStyle => (look === 'radial' || look === 'particles' || look === 'vectorscope' || look === 'loudness' ? 'bars' : look)
 
 /**
  * The visualizer big and faint across the bottom of Now Playing, behind the song (Settings › Playback › Visualizer
- * behind Now Playing): the look picked, bars for Radial (its ring stays around the cover) and the loudness meter. No
+ * behind Now Playing): the look picked, bars for those that need room (`roomy`: Radial's ring stays around the cover). No
  * clicks: they go through.
  */
 export function VizBackdrop() {
@@ -56,7 +56,7 @@ export function VizBackdrop() {
   )
 }
 
-/** The mini player's thin visualizer (MiniViz.tsx loads it): bars for Radial and the meter; quiet under Now Playing or a full screen. */
+/** The mini player's thin visualizer (MiniViz.tsx loads it): bars for the looks that need room; quiet under Now Playing or a full screen. */
 export function MiniStrip() {
   const picked = useSettings((s) => s.settings.visualizerStyle)
   const nowPlaying = usePlayer((s) => s.full)

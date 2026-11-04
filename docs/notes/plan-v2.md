@@ -578,7 +578,11 @@ colours, mirror, reflection.
       after the bands, flag 1 in byte 2, in both twins and only when asked: `viz_start(wave)`, the live wish's `wave`.
       Decided alone: half the samples keep a frame at 2.3 KB and a watch-page message under 3300 characters. Tested
       on packed and unpacked blocks; not on real music.)
-- [ ] `M` Particles on the beat (from the cover's colours), with the cover's blur behind (Plexamp-like backdrop).
+- [x] `M` Particles on the beat (from the cover's colours), with the cover's blur behind (Plexamp-like backdrop).
+      (2026-11-05: the Particles look, `vizParticles.ts`: soft dots burst from the middle on kicks, at most 3 bursts a
+      second, drift with the mids, a trickle with the level; the cover's colours from `coverPalette.ts`; full screen
+      over the blurred cover. Decided alone: Canvas 2D sprites rather than GPU particles (900 at most), the counts and
+      sizes, bars in the backdrop and the mini player. Seen over the demo, full screen dark and light; not on real music.)
 - [ ] `M` Song waveform on the progress bar for local files (computed once from the file, cached; not for streams).
 
 **Low**

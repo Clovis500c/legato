@@ -53,6 +53,10 @@ scope.onmessage = (e) => {
       gap = 1000 / m.fps
       wake()
       break
+    case 'palette':
+      painter?.palette(m.colors, m.glow)
+      wake()
+      break
     case 'loud':
       painter?.loud(m.v)
       wake()

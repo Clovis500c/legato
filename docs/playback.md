@@ -435,6 +435,17 @@ never: downloading, extracting, recording or exporting a platform's audio, or to
     reduced motion. The tempo is not shown yet. Tested on click tracks (120, 93 and 128 BPM, in sixths and twelfths,
     frames 8 ms uneven: every click within a frame, the tempo within 2 BPM, nothing in hiss); the demo's frames give 19
     onsets in 10 s, on its beats, and 119.9 BPM. The ring's step not watched moving; not on real music.
+  - **Particles** (a look, 2026-11-05): `vizParticles.ts` (pure, tested): soft dots in the cover's colours burst from
+    the middle on each kick (Beats, above), more and faster for a stronger one, at most 3 bursts a second whatever the
+    tempo; they drift with the mids along a slow swirl, slow down and fade over 1.2 to 3 s. A trickle in proportion to
+    the level keeps a song without kicks moving. At most 900 dots in a full HD box, fewer in a smaller one (by area, 60
+    in the strip), smaller by the root of its size, a burst's a third bigger. Colours: `coverPalette.ts` (pure,
+    tested), the cover's colourful pixels by hue in 12 slices, up to 4, the most present first, each made vivid for
+    the theme (`vivid`); the visualizer's colour for a grey cover. Light that adds up on a dark theme, plain on a light
+    one. Full screen: over the cover blurred (Now Playing's backdrop, at least 40 px of blur and a 45 % veil, drifting
+    unless reduced motion). Reduced motion: no bursts, half the trickle, a slower drift. The backdrop and the mini
+    player show bars. Canvas 2D sprites, not GPU particles: 900 at 30 frames a second is cheap. Seen over the demo,
+    full screen in both themes; the strip drawn by the painter on a fake clock. Not on real music.
   - **Comfort**: `prefers-reduced-motion` or Animations off (`useCalm`): slower attack and release, a cap that sinks
     gently, one flash a second. Always: `flash.ts` limits the mean brightness of the bars to 3 flashes a second (a flash
     = a rise and a fall of at least 10 % of the range; past the budget the brightness may not turn back by 10 % until

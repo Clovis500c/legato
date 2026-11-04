@@ -1605,7 +1605,7 @@ const vi: Record<string, string> = {
   'VU needles': 'Kim VU',
   'Spectrogram': 'Phổ đồ',
   'Radial goes around a big cover; where the cover is small it shows bars': 'Vòng tròn bao quanh bìa lớn; bìa nhỏ thì hiện thanh',
-  'bars mirror peaks wave curve radial circle vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look': 'thanh gương đỉnh sóng giao diện vòng tròn vu kim đồng hồ phổ đồ thác đường cong máy hiện sóng độ lớn lufs máy hiện vectơ goniometer âm thanh nổi pha tương quan',
+  'bars mirror peaks wave curve radial circle particles vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look': 'thanh gương đỉnh sóng giao diện vòng tròn vu kim đồng hồ phổ đồ thác đường cong máy hiện sóng độ lớn lufs máy hiện vectơ goniometer âm thanh nổi pha tương quan hạt particles',
   // v2 redesign
   'Playing': 'Đang phát',
   'All your songs': 'Tất cả bài hát của bạn',
@@ -2036,6 +2036,7 @@ const vi: Record<string, string> = {
   'True peak': 'Đỉnh thực',
   'Oscilloscope': 'Máy hiện sóng',
   'Vectorscope': 'Máy hiện vectơ',
+  'Particles': 'Hạt',
 }
 
 export default vi

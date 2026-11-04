@@ -1,34 +1,48 @@
 import { X } from '@phosphor-icons/react'
 import { useEffect } from 'react'
+import { useShallow } from 'zustand/react/shallow'
 import { useSettings } from '../../app/settings'
 import { artistName } from '../../shared/artistName'
-import { bigTrackArt } from '../../shared/art'
+import { bigTrackArt, trackArt } from '../../shared/art'
 import { tr } from '../../shared/i18n/i18n'
 import { onMenu } from '../../shared/ui/ContextMenu'
 import { RoundButton } from '../../shared/ui/controls'
 import { Cover } from '../../shared/ui/Cover'
 import { vizMenu } from '../menus'
+import { useBackdrop } from './immersive'
+import { Backdrop } from './NowPlaying'
 import { useNowTrack, usePlayer } from './store'
 import { RING_COVER } from './vizDraw'
 import { canVizFull, closeVizFull } from './vizFull'
-import { VizCanvas } from './VizCanvas'
+import { useCalm, VizCanvas } from './VizCanvas'
 import { useNextLookClick } from './vizClick'
+
+/** Particles' backdrop: at least this blur and veil (the cover screen's), whatever Now Playing's are. */
+const MIN_BLUR = 40
+const MIN_DIM = 45
 
 /**
  * The visualizer over the whole window (vizFull.ts): the look picked in Settings, a click for the next, right-click for
- * another, Esc or a double click leaves. Radial puts the round cover in the middle of its ring.
+ * another, Esc or a double click leaves. Radial puts the round cover in the middle of its ring; Particles float over the
+ * cover blurred.
  */
 export function VizScreen() {
   const look = useSettings((s) => s.settings.visualizerStyle)
   const now = usePlayer((s) => s.now)
   const track = useNowTrack()
   const next = useNextLookClick()
+  const calm = useCalm()
+  const { backdropBlur, backdropDim, backdropMotion } = useSettings(
+    useShallow((s) => ({ backdropBlur: s.settings.backdropBlur, backdropDim: s.settings.backdropDim, backdropMotion: s.settings.backdropMotion })),
+  )
+  const backdrop = useBackdrop(look === 'particles' && track ? trackArt(track)[0] : undefined, Math.max(backdropBlur, MIN_BLUR))
   // Spotify plays in its own app, or nothing plays: nothing to draw.
   useEffect(() => {
     if (!canVizFull()) closeVizFull()
   }, [now?.via, now])
   return (
     <div role="dialog" data-viz-screen aria-label={tr('Visualizer')} onContextMenu={onMenu(vizMenu)} onDoubleClick={closeVizFull} className="fade-in fixed inset-0 z-40 isolate flex flex-col overflow-hidden bg-bg text-ink">
+      {backdrop && <Backdrop url={backdrop} dim={Math.max(backdropDim, MIN_DIM)} motion={!calm && backdropMotion} />}
       <RoundButton label={tr('Leave full screen')} kind="plain" size="md" onClick={closeVizFull} className="absolute top-4 right-4 z-10">
         <X size={22} />
       </RoundButton>

@@ -5,6 +5,7 @@ import { createBeat } from './vizBeat'
 import { columnSpans, columnsFor, dialGeometry, ledRows, ringBars, wavePath, type Dial, type LedRows, type Ring } from './vizDraw'
 import { fillFor, type Stops } from './vizFill'
 import { LOUD_MARKS, LOUD_WORDS, loudPos, loudText, type LoudReading, type LoudWords } from './vizLoud'
+import { createParticles, moodOf } from './vizParticles'
 import { createScene } from './vizScene'
 import { monoWave, SPAN, trigger } from './vizScope'
 import { colorMap, fillColumn, rowMix, SCROLL, SCROLL_CALM, scrollBy } from './vizSpectro'
@@ -41,6 +42,9 @@ const VECTOR_BIG_H = 120
 /** Radial: how much the ring steps out on a kick (of its radius), and how fast it settles (s). */
 const KICK_GROW = 0.04
 const KICK_S = 0.12
+/** Particles: a dot's sprite (px), and how fast the drawing follows the frames' mids and level (s). */
+const DOT = 32
+const MOOD_S = 0.15
 
 interface Sprites {
   off: OffscreenCanvas
@@ -105,6 +109,16 @@ export function createPainter(canvas: OffscreenCanvas) {
   const beat = createBeat()
   let both = new Float32Array(0)
   let kick = 0
+  // Particles (vizParticles.ts): their colours (none: the ink) as soft sprites, light that adds up on a dark theme, the
+  // strongest kick not drawn yet, the frames' mood and the drawing's (eased), and a clock for the swirl and the bursts.
+  const parts = createParticles()
+  let partColors: string[] = []
+  let glow = true
+  let dots: OffscreenCanvas[] = []
+  let burstNow = 0
+  let mood = { mids: 0, level: 0 }
+  const moodShown = { mids: 0, level: 0 }
+  let clock = 0
 
   /** A CSS colour as [r, g, b] (the canvas parses it). */
   function rgbOf(color: string): [number, number, number] {
@@ -152,6 +166,7 @@ export function createPainter(canvas: OffscreenCanvas) {
       sprites = makeSprites(Math.max(...spans.w), barH)
     }
     if (look === 'radial') ring = ringBars(Math.min(w, h), n)
+    if (look === 'particles') parts.size(cssW, cssH)
     dialMap = null
     if (look === 'vu') {
       const m = meterBox()
@@ -400,6 +415,48 @@ export function createPainter(canvas: OffscreenCanvas) {
       ctx.lineTo(cx + ring.dx[i] * to, cy + ring.dy[i] * to)
     }
     ctx.stroke()
+  }
+
+  /** A soft dot per colour: nearly full to half its radius, gone at the edge. */
+  function makeDots(): OffscreenCanvas[] {
+    return (partColors.length ? partColors : [ink]).map((color) => {
+      const c = new OffscreenCanvas(DOT, DOT)
+      const g = c.getContext('2d')
+      if (!g) return c
+      const [r, gr, b] = rgbOf(color)
+      const shade = g.createRadialGradient(DOT / 2, DOT / 2, 0, DOT / 2, DOT / 2, DOT / 2)
+      shade.addColorStop(0, `rgba(${r},${gr},${b},0.95)`)
+      shade.addColorStop(0.5, `rgba(${r},${gr},${b},0.7)`)
+      shade.addColorStop(1, `rgba(${r},${gr},${b},0)`)
+      g.fillStyle = shade
+      g.fillRect(0, 0, DOT, DOT)
+      return c
+    })
+  }
+
+  /** Particles: a burst on the last kick (none when calm), the trickle, the drift, then every dot. True = none left. */
+  function particles(W: number, H: number, dt: number): boolean {
+    if (!ctx) return true
+    ctx.clearRect(0, 0, W, H)
+    clock += dt
+    const ease = 1 - Math.exp(-dt / MOOD_S)
+    moodShown.mids += (mood.mids - moodShown.mids) * ease
+    moodShown.level += (mood.level - moodShown.level) * ease
+    if (!dots.length) dots = makeDots()
+    if (burstNow > 0 && !calm) parts.burst(clock, burstNow, dots.length)
+    burstNow = 0
+    // Calm: fewer dots, slower.
+    parts.trickle(dt, moodShown.level * (calm ? 0.5 : 1), dots.length)
+    parts.step(dt, moodShown.mids * (calm ? 0.4 : 1), clock)
+    ctx.globalCompositeOperation = glow ? 'lighter' : 'source-over'
+    parts.each((x, y, size, alpha, color) => {
+      const d = size * dpr
+      ctx.globalAlpha = alpha
+      ctx.drawImage(dots[color] ?? dots[0], x * dpr - d / 2, y * dpr - d / 2, d, d)
+    })
+    ctx.globalCompositeOperation = 'source-over'
+    ctx.globalAlpha = 1
+    return parts.count === 0
   }
 
   /** Two needle meters. True = at rest. */
@@ -702,6 +759,8 @@ export function createPainter(canvas: OffscreenCanvas) {
         corrNow = null
         corrShown = 0
         trail = null
+        parts.clear()
+        burstNow = 0
       }
       look = next
       calm = calmer
@@ -709,6 +768,7 @@ export function createPainter(canvas: OffscreenCanvas) {
         ink = color || '#888'
         inkRgb = rgbOf(ink)
         map = colorMap(inkRgb)
+        dots = []
       }
       warn = alarm || WARN
       if (restart) {
@@ -721,7 +781,12 @@ export function createPainter(canvas: OffscreenCanvas) {
       // A frame without its wave blocks (a stream starting again, the silence after a stop): no trace.
       if (both.length !== l.length) both = new Float32Array(l.length)
       for (let i = 0; i < l.length; i++) both[i] = (l[i] + r[i]) / 2
-      if (beat.push(both, performance.now() / 1000).onset) kick = 1
+      const onset = beat.push(both, performance.now() / 1000)
+      if (onset.onset) {
+        kick = 1
+        burstNow = Math.max(burstNow, onset.strength)
+      }
+      if (look === 'particles') mood = moodOf(both, rms)
       hasWave = w !== undefined
       if (w) {
         waveL.set(w[0])
@@ -739,6 +804,8 @@ export function createPainter(canvas: OffscreenCanvas) {
       // A pause breaks the beat's history: it starts over.
       beat.reset()
       kick = 0
+      burstNow = 0
+      mood = { mids: 0, level: 0 }
       hasWave = false
       scene.silence()
       sceneR?.silence()
@@ -751,6 +818,12 @@ export function createPainter(canvas: OffscreenCanvas) {
     /** The loudness meter's numbers. */
     loud(v: LoudReading) {
       loudNow = v
+    },
+    /** The particles' colours (none: the ink) and whether their light adds up. */
+    palette(colors: string[], adds: boolean) {
+      partColors = colors
+      glow = adds
+      dots = []
     },
     /** Draws a frame, `dt` seconds after the last. True = at rest (the caller may stop its loop). */
     draw(dt: number): boolean {
@@ -779,6 +852,8 @@ export function createPainter(canvas: OffscreenCanvas) {
         waterfall(levels, dt)
         return resting
       }
+      // The dots keep moving through a pause until they fade: at rest when none are left.
+      if (look === 'particles') return particles(W, H, dt)
       // The traces over their afterglow, while the bars fall (no reflection, no scales: no bands).
       if (look === 'scope') {
         scope(W, H, dt, resting)

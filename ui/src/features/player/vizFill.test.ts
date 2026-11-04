@@ -47,8 +47,9 @@ describe('visualizer gradient', () => {
     })
   })
 
-  it('none, the needles, the spectrogram, the scopes and the loudness meter keep one colour', () => {
+  it('none, the particles, the needles, the spectrogram, the scopes and the loudness meter keep their colours', () => {
     expect(fillFor('none', 'bars', 300, 100, two)).toBeNull()
+    expect(fillFor('level', 'particles', 300, 100, two)).toBeNull()
     expect(fillFor('level', 'vu', 300, 100, two)).toBeNull()
     expect(fillFor('frequency', 'spectrogram', 300, 100, two)).toBeNull()
     expect(fillFor('level', 'loudness', 300, 100, two)).toBeNull()

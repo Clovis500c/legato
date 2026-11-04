@@ -1605,7 +1605,7 @@ const id: Record<string, string> = {
   'VU needles': 'Jarum VU',
   'Spectrogram': 'Spektrogram',
   'Radial goes around a big cover; where the cover is small it shows bars': 'Radial melingkari sampul yang besar; jika sampul kecil, tampil batang',
-  'bars mirror peaks wave curve radial circle vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look': 'batang cermin puncak gelombang tampilan radial lingkaran vu jarum meter spektrogram air terjun kurva osiloskop kenyaringan lufs vektorskop goniometer stereo fase korelasi',
+  'bars mirror peaks wave curve radial circle particles vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look': 'batang cermin puncak gelombang tampilan radial lingkaran vu jarum meter spektrogram air terjun kurva osiloskop kenyaringan lufs vektorskop goniometer stereo fase korelasi partikel',
   // v2 redesign
   'Playing': 'Sedang diputar',
   'All your songs': 'Semua lagumu',
@@ -2036,6 +2036,7 @@ const id: Record<string, string> = {
   'True peak': 'Puncak sejati',
   'Oscilloscope': 'Osiloskop',
   'Vectorscope': 'Vektorskop',
+  'Particles': 'Partikel',
 }
 
 export default id

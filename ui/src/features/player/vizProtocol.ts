@@ -12,6 +12,8 @@ export type ToWorker =
   /** `bands`: 1/6 or 1/3 octave (vizBands.ts). `floor`: a glossy floor reflecting the looks that stand on the bottom edge. */
   /** `ink2`: the Curve look's right side (the accent, or the text colour when the visualizer is already the accent). `words`: the loudness meter's. */
   | { t: 'look'; look: VisualizerStyle; calm: boolean; weighting: VizWeighting; ink: string; ink2: string; warn: string; gradient: VizGradient; stops: Stops; bands: VizBanding; floor: boolean; fps: number; words: LoudWords }
+  /** The Particles look's colours (the cover's, made vivid for the theme; none: the ink), and whether they add up as light (a dark theme). */
+  | { t: 'palette'; colors: string[]; glow: boolean }
   /** The loudness meter's numbers (loudFeed.ts), with each update of the levels. */
   | { t: 'loud'; v: LoudReading }
   /** The pointer over the visualizer (its frequency and dB scales shown) or gone. */

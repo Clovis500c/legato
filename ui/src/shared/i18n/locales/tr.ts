@@ -1605,7 +1605,7 @@ const tr: Record<string, string> = {
   'VU needles': 'VU ibreleri',
   'Spectrogram': 'Spektrogram',
   'Radial goes around a big cover; where the cover is small it shows bars': 'Dairesel büyük bir kapağın çevresine çizilir; kapak küçükse çubuk gösterir',
-  'bars mirror peaks wave curve radial circle vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look': 'çubuklar ayna tepeler dalga görünüm dairesel daire vu ibre ölçer spektrogram şelale eğri osiloskop ses yüksekliği lufs vektörskop gonyometre stereo faz korelasyon',
+  'bars mirror peaks wave curve radial circle particles vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look': 'çubuklar ayna tepeler dalga görünüm dairesel daire vu ibre ölçer spektrogram şelale eğri osiloskop ses yüksekliği lufs vektörskop gonyometre stereo faz korelasyon parçacıklar',
   // v2 redesign
   'Playing': 'Çalıyor',
   'All your songs': 'Tüm şarkıların',
@@ -2036,6 +2036,7 @@ const tr: Record<string, string> = {
   'True peak': 'Gerçek tepe',
   'Oscilloscope': 'Osiloskop',
   'Vectorscope': 'Vektörskop',
+  'Particles': 'Parçacıklar',
 }
 
 export default tr

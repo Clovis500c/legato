@@ -2,11 +2,12 @@ import { useEffect, useState } from 'react'
 import { boxOf, sourceRect } from '../../shared/artfit'
 import { contrast, type Theme } from '../../shared/theme/theme'
 import type { Palette } from '../../shared/theme/theme'
+import { paletteOf } from './coverPalette'
 
 export type Rgb = [number, number, number]
 
-/** Average color of an image, colorful pixels weighted up (plain average is mud). Needs CORS: the art scheme sends it. */
-export function averageColor(src: string): Promise<Rgb | null> {
+/** An image's pixels (RGBA) drawn `size` px square; null when it can't be read. Needs CORS: the art scheme sends it. */
+function pixels(src: string, size: number): Promise<Uint8ClampedArray | null> {
   return new Promise((resolve) => {
     const img = new Image()
     img.crossOrigin = 'anonymous'
@@ -14,27 +15,39 @@ export function averageColor(src: string): Promise<Rgb | null> {
     img.onload = () => {
       try {
         const c = document.createElement('canvas')
-        c.width = c.height = 12
+        c.width = c.height = size
         const ctx = c.getContext('2d')!
-        // Video frames: black bars would darken the tint.
-        ctx.drawImage(img, ...sourceRect(img, boxOf(img, src)), 0, 0, 12, 12)
-        const d = ctx.getImageData(0, 0, 12, 12).data
-        const sum = [0, 0, 0, 0]
-        for (let i = 0; i < d.length; i += 4) {
-          const [r, g, b] = [d[i], d[i + 1], d[i + 2]]
-          const w = 0.05 + (Math.max(r, g, b) - Math.min(r, g, b)) / 255
-          sum[0] += r * w
-          sum[1] += g * w
-          sum[2] += b * w
-          sum[3] += w
-        }
-        resolve([sum[0] / sum[3], sum[1] / sum[3], sum[2] / sum[3]])
+        // Video frames: black bars would darken the colours.
+        ctx.drawImage(img, ...sourceRect(img, boxOf(img, src)), 0, 0, size, size)
+        resolve(ctx.getImageData(0, 0, size, size).data)
       } catch {
         resolve(null)
       }
     }
     img.src = src
   })
+}
+
+/** Average color of an image, colorful pixels weighted up (plain average is mud). */
+export async function averageColor(src: string): Promise<Rgb | null> {
+  const d = await pixels(src, 12)
+  if (!d) return null
+  const sum = [0, 0, 0, 0]
+  for (let i = 0; i < d.length; i += 4) {
+    const [r, g, b] = [d[i], d[i + 1], d[i + 2]]
+    const w = 0.05 + (Math.max(r, g, b) - Math.min(r, g, b)) / 255
+    sum[0] += r * w
+    sum[1] += g * w
+    sum[2] += b * w
+    sum[3] += w
+  }
+  return [sum[0] / sum[3], sum[1] / sum[3], sum[2] / sum[3]]
+}
+
+/** An image's colours, the most present first (coverPalette.ts); null when it can't be read, none when it's grey. */
+export async function coverColors(src: string): Promise<Rgb[] | null> {
+  const d = await pixels(src, 24)
+  return d && paletteOf(d)
 }
 
 function hue(rgb: Rgb): [number, number] {

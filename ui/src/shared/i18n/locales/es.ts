@@ -1605,7 +1605,7 @@ const es: Record<string, string> = {
   'VU needles': 'Agujas VU',
   'Spectrogram': 'Espectrograma',
   'Radial goes around a big cover; where the cover is small it shows bars': 'Radial rodea una carátula grande; si es pequeña, muestra barras',
-  'bars mirror peaks wave curve radial circle vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look': 'barras espejo picos onda aspecto radial círculo vu agujas medidor espectrograma cascada curva osciloscopio sonoridad lufs vectorscopio goniómetro estéreo fase correlación',
+  'bars mirror peaks wave curve radial circle particles vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look': 'barras espejo picos onda aspecto radial círculo vu agujas medidor espectrograma cascada curva osciloscopio sonoridad lufs vectorscopio goniómetro estéreo fase correlación partículas',
   // v2 redesign
   'Playing': 'Sonando',
   'All your songs': 'Todas tus canciones',
@@ -2036,6 +2036,7 @@ const es: Record<string, string> = {
   'True peak': 'Pico real',
   'Oscilloscope': 'Osciloscopio',
   'Vectorscope': 'Vectorscopio',
+  'Particles': 'Partículas',
 }
 
 export default es
