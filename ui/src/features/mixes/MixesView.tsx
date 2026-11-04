@@ -141,8 +141,8 @@ export function MixesView() {
             return (
               <section key={kind} className="flex flex-col gap-3">
                 <h2 className="text-[1.375rem] leading-7 font-bold">{tr(title)}</h2>
-                {/* Cards' own padding is the gap (shared/ui/Section MediaCard). */}
-                <ul className="stagger -mx-3 -mt-2 flex flex-wrap">
+                {/* Cards' own padding is the gap (shared/ui/Section MediaCard); the phone scrolls them sideways, as Home does. */}
+                <ul className="stagger -mx-3 -mt-2 flex flex-wrap phone:snap-x phone:flex-nowrap phone:overflow-x-auto">
                   {list.map((m) => (
                     <MixCard key={m.id} mix={m} />
                   ))}
@@ -151,7 +151,7 @@ export function MixesView() {
             )
           })}
         </div>
-        {mixes && mixes.length > 0 && <p className="mt-8 max-w-160 text-xs text-ink-2">{tr('Built from your plays (full listens count more, skips count against), your playlists, your saves on YouTube Music and Spotify, what you play back to back and the time of day. To find new songs, a few of your favorites go to YouTube Music for their radio; your history stays on this computer. On a mix, use “Less like this” or “Never in mixes” to steer it.')}</p>}
+        {mixes && mixes.length > 0 && <p className="mt-8 max-w-160 text-xs text-ink-2">{phoneApp ? tr('Built from your plays (full listens count more, skips count against), your playlists, your saves on YouTube Music and Spotify, what you play back to back and the time of day. To find new songs, a few of your favorites go to YouTube Music for their radio; your history stays on this phone. On a mix, use “Less like this” or “Never in mixes” to steer it.') : tr('Built from your plays (full listens count more, skips count against), your playlists, your saves on YouTube Music and Spotify, what you play back to back and the time of day. To find new songs, a few of your favorites go to YouTube Music for their radio; your history stays on this computer. On a mix, use “Less like this” or “Never in mixes” to steer it.')}</p>}
       </div>
     </>
   )

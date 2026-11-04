@@ -2001,6 +2001,7 @@ const it: Record<string, string> = {
   'Along frequency': 'Lungo la frequenza',
   'rainbow prism spectrum meter red top warm colours': 'arcobaleno prisma spettro misuratore rosso alto caldo colori',
   'Search this list': 'Filtra questo elenco',
+  'Built from your plays (full listens count more, skips count against), your playlists, your saves on YouTube Music and Spotify, what you play back to back and the time of day. To find new songs, a few of your favorites go to YouTube Music for their radio; your history stays on this phone. On a mix, use “Less like this” or “Never in mixes” to steer it.': 'Creati dai tuoi ascolti (quelli completi contano di più, quelli saltati contano contro), dalle tue playlist, da ciò che salvi su YouTube Music e Spotify, da ciò che ascolti di seguito e dall\'ora del giorno. Per trovare brani nuovi, alcuni dei tuoi preferiti vanno a YouTube Music per la loro radio; la tua cronologia resta su questo telefono. In un mix, usa «Meno brani così» o «Mai nei mix» per orientarlo.',
 }
 
 export default it

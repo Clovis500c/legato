@@ -274,10 +274,11 @@ export function SearchBar({ children }: { children?: ReactNode }) {
       <span className={`flex h-full min-w-0 flex-1 items-center gap-2.5 rounded-full border bg-bg pr-1 pl-4 transition ${focused ? 'border-accent-ink ring-1 ring-accent-ink' : 'border-line hover:border-ink-4'}`}>
         <MagnifyingGlass size={17} className="shrink-0 text-ink-3" aria-hidden />
         {scope && (
-          <span className="flex shrink-0 items-center gap-1.5 rounded-full bg-raised py-0.5 pr-0.5 pl-2.5 text-xs font-medium">
-            <span className="text-accent-ink">{scope.icon}</span>
-            {scope.label}
-            <button type="button" aria-label={tr('Search everywhere instead (Backspace)')} title={tr('Search everywhere instead (Backspace)')} onClick={() => (useStore.getState().setScoped(false), input.current?.focus())} className="grid size-5 place-items-center rounded-full text-ink-3 hover:bg-line hover:text-ink">
+          // The phone's field is narrow: a long list name is cut, the field keeps room to type.
+          <span className="flex min-w-0 shrink-0 items-center gap-1.5 rounded-full bg-raised py-0.5 pr-0.5 pl-2.5 text-xs font-medium phone:max-w-[55%] phone:shrink">
+            <span className="shrink-0 text-accent-ink">{scope.icon}</span>
+            <span className="truncate">{scope.label}</span>
+            <button type="button" aria-label={tr('Search everywhere instead (Backspace)')} title={tr('Search everywhere instead (Backspace)')} onClick={() => (useStore.getState().setScoped(false), input.current?.focus())} className="grid size-5 shrink-0 place-items-center rounded-full text-ink-3 hover:bg-line hover:text-ink">
               <X size={10} weight="bold" />
             </button>
           </span>

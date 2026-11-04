@@ -2001,6 +2001,7 @@ const id: Record<string, string> = {
   'Along frequency': 'Sepanjang frekuensi',
   'rainbow prism spectrum meter red top warm colours': 'pelangi prisma spektrum meter merah atas hangat warna',
   'Search this list': 'Cari di daftar ini',
+  'Built from your plays (full listens count more, skips count against), your playlists, your saves on YouTube Music and Spotify, what you play back to back and the time of day. To find new songs, a few of your favorites go to YouTube Music for their radio; your history stays on this phone. On a mix, use “Less like this” or “Never in mixes” to steer it.': 'Dibuat dari pemutaranmu (didengar sampai habis lebih berpengaruh, yang dilewati mengurangi), playlist-mu, yang kamu simpan di YouTube Music dan Spotify, yang kamu putar berurutan, dan waktu dalam sehari. Untuk menemukan lagu baru, beberapa favoritmu dikirim ke YouTube Music untuk mengambil radionya; riwayatmu tetap di ponsel ini. Di sebuah mix, gunakan “Kurangi yang seperti ini” atau “Jangan pernah di mix” untuk mengarahkannya.',
 }
 
 export default id

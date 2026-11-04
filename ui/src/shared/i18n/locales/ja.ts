@@ -2001,6 +2001,7 @@ const ja: Record<string, string> = {
   'Along frequency': '周波数に沿って',
   'rainbow prism spectrum meter red top warm colours': '虹 プリズム スペクトラム メーター 赤 上 暖色 色',
   'Search this list': 'このリストを検索',
+  'Built from your plays (full listens count more, skips count against), your playlists, your saves on YouTube Music and Spotify, what you play back to back and the time of day. To find new songs, a few of your favorites go to YouTube Music for their radio; your history stays on this phone. On a mix, use “Less like this” or “Never in mixes” to steer it.': '再生履歴（最後まで聴くと重視、スキップするとマイナス）、プレイリスト、YouTube MusicとSpotifyで保存した曲、続けて聴く曲、時間帯から作られます。新しい曲を探すため、お気に入りの一部をYouTube Musicに送ってラジオを取得します。再生履歴はこのスマートフォンに残ります。ミックス上で「この曲の頻度を減らす」や「ミックスに入れない」を使って調整できます。',
 }
 
 export default ja

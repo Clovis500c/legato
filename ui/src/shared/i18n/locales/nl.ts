@@ -2001,6 +2001,7 @@ const nl: Record<string, string> = {
   'Along frequency': 'Langs de frequentie',
   'rainbow prism spectrum meter red top warm colours': 'regenboog prisma spectrum meter rood boven warm kleuren',
   'Search this list': 'Filter deze lijst',
+  'Built from your plays (full listens count more, skips count against), your playlists, your saves on YouTube Music and Spotify, what you play back to back and the time of day. To find new songs, a few of your favorites go to YouTube Music for their radio; your history stays on this phone. On a mix, use “Less like this” or “Never in mixes” to steer it.': 'Gemaakt op basis van wat je afspeelt (helemaal beluisterd telt zwaarder, overgeslagen telt tegen), je playlists, wat je opslaat op YouTube Music en Spotify, wat je achter elkaar afspeelt en het tijdstip. Om nieuwe nummers te vinden, gaan een paar van je favorieten naar YouTube Music voor hun radio; je geschiedenis blijft op deze telefoon. Gebruik in een mix ‘Minder van dit’ of ‘Nooit in mixen’ om hem bij te sturen.',
 }
 
 export default nl

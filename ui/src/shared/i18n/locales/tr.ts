@@ -2001,6 +2001,7 @@ const tr: Record<string, string> = {
   'Along frequency': 'Frekans boyunca',
   'rainbow prism spectrum meter red top warm colours': 'gökkuşağı prizma spektrum gösterge kırmızı üst sıcak renkler',
   'Search this list': 'Bu listede ara',
+  'Built from your plays (full listens count more, skips count against), your playlists, your saves on YouTube Music and Spotify, what you play back to back and the time of day. To find new songs, a few of your favorites go to YouTube Music for their radio; your history stays on this phone. On a mix, use “Less like this” or “Never in mixes” to steer it.': 'Dinlemelerinden (tam dinlemeler daha çok sayılır, atlananlar aleyhte sayılır), çalma listelerinden, YouTube Music ve Spotify’da kaydettiklerinden, art arda çaldıklarından ve günün saatinden oluşturulur. Yeni şarkılar bulmak için favorilerinden birkaçı radyoları için YouTube Music’e gönderilir; geçmişin bu telefonda kalır. Bir mix’i yönlendirmek için “Buna benzerlerden daha az” veya “Mix’lerde asla” seçeneklerini kullan.',
 }
 
 export default tr

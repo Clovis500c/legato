@@ -2001,6 +2001,7 @@ const hi: Record<string, string> = {
   'Along frequency': 'आवृत्ति के साथ',
   'rainbow prism spectrum meter red top warm colours': 'इंद्रधनुष प्रिज़्म स्पेक्ट्रम मीटर लाल ऊपर गर्म रंग',
   'Search this list': 'इस सूची में खोजें',
+  'Built from your plays (full listens count more, skips count against), your playlists, your saves on YouTube Music and Spotify, what you play back to back and the time of day. To find new songs, a few of your favorites go to YouTube Music for their radio; your history stays on this phone. On a mix, use “Less like this” or “Never in mixes” to steer it.': 'आपके प्ले (पूरा सुनना ज़्यादा गिना जाता है, स्किप कम), आपकी प्लेलिस्ट, YouTube Music और Spotify पर आपके सेव, आप एक के बाद एक क्या चलाते हैं और दिन के समय से बनाया गया। नए गाने ढूंढने के लिए आपके कुछ पसंदीदा गाने उनके रेडियो के लिए YouTube Music को भेजे जाते हैं; आपका इतिहास इसी फ़ोन पर रहता है। किसी मिक्स पर, उसे दिशा देने के लिए “ऐसे गाने कम दिखाएं” या “मिक्स में कभी नहीं” का इस्तेमाल करें।',
 }
 
 export default hi

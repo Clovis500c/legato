@@ -2001,6 +2001,7 @@ const zh: Record<string, string> = {
   'Along frequency': '沿频率',
   'rainbow prism spectrum meter red top warm colours': '彩虹 棱镜 频谱 电平表 红色 顶部 暖色 颜色',
   'Search this list': '搜索此列表',
+  'Built from your plays (full listens count more, skips count against), your playlists, your saves on YouTube Music and Spotify, what you play back to back and the time of day. To find new songs, a few of your favorites go to YouTube Music for their radio; your history stays on this phone. On a mix, use “Less like this” or “Never in mixes” to steer it.': '根据你的播放记录（完整听完权重更高，跳过会降低权重）、你的歌单、你在 YouTube Music 和 Spotify 上的收藏、你连着播放的歌以及一天中的时间生成。为了寻找新歌，你的几首最爱会发送到 YouTube Music 获取其电台；你的播放记录留在这部手机上。在混音上使用“减少此类推荐”或“永不出现在混音中”来调整。',
 }
 
 export default zh

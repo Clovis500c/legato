@@ -22,7 +22,8 @@ export function PageHeader({ kicker, title, sub, actions, side, art, tint, onCon
         {(actions || side) && (
           <div className="flex flex-wrap items-center gap-3 px-6 py-5">
             {actions}
-            {side && <div className="ml-auto flex items-center gap-2">{side}</div>}
+            {/* A narrow pane wraps it under the actions; the phone starts it from the left. */}
+            {side && <div className="ml-auto flex min-w-0 flex-wrap items-center gap-2 phone:ml-0">{side}</div>}
           </div>
         )}
       </div>

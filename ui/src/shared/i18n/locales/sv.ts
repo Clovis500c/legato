@@ -2001,6 +2001,7 @@ const sv: Record<string, string> = {
   'Along frequency': 'Längs frekvensen',
   'rainbow prism spectrum meter red top warm colours': 'regnbåge prisma spektrum mätare röd topp varm färger',
   'Search this list': 'Sök i den här listan',
+  'Built from your plays (full listens count more, skips count against), your playlists, your saves on YouTube Music and Spotify, what you play back to back and the time of day. To find new songs, a few of your favorites go to YouTube Music for their radio; your history stays on this phone. On a mix, use “Less like this” or “Never in mixes” to steer it.': 'Skapade utifrån dina spelningar (hela lyssningar räknas mer, överhoppade räknas emot), dina spellistor, det du sparat på YouTube Music och Spotify, det du spelar efter varandra och tiden på dygnet. För att hitta nya låtar skickas några av dina favoriter till YouTube Music för deras radio; din historik stannar på den här telefonen. På en mix kan du styra den med ”Mindre sånt här” eller ”Aldrig i mixar”.',
 }
 
 export default sv
