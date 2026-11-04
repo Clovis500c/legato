@@ -2005,6 +2005,9 @@ const zh: Record<string, string> = {
   'Match this phone': '跟随这部手机',
   'This phone ({language})': '这部手机（{language}）',
   'Which account is connected to which service. Nothing goes through a server of ours: everything stays on your phone.': '哪个账号连接到了哪个服务。不经过我们的任何服务器：一切都保存在你的手机上。',
+  'From your PC': '来自你的电脑',
+  'Sign in to YouTube Music, Spotify or Apple Music in Legato on your PC: your playlists come to this phone when your devices sync.': '在电脑上的 Legato 中登录 YouTube Music、Spotify 或 Apple Music，设备同步时你的歌单就会来到这部手机。',
+  'Connect it in Legato on your PC: your playlists come here when your devices sync.': '请在电脑上的 Legato 中连接，设备同步时你的歌单就会来到这里。',
 }
 
 export default zh

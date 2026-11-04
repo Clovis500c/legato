@@ -1,4 +1,4 @@
-import { ArrowRight, ClipboardText, FolderPlus, ListPlus, MagnifyingGlass, QrCode } from '@phosphor-icons/react'
+import { ArrowRight, ClipboardText, Desktop, FolderPlus, ListPlus, MagnifyingGlass, Plus, QrCode } from '@phosphor-icons/react'
 import { open } from '@tauri-apps/plugin-dialog'
 import { useEffect, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
@@ -136,7 +136,7 @@ function ImportList() {
       {shown && (
         <Dialog title={tr('Import a list of songs')} onClose={() => setShown(false)}>
           <p className="text-sm text-ink-2">{tr('From SoundCloud, Deezer or anywhere: copy the titles, one per line like “Artist - Title”, and paste them here. Each song is found on YouTube.')}</p>
-          <p className="text-sm text-ink-3">{tr('In Spotify’s app, Ctrl+A then Ctrl+C in a list copies its songs as links: they work here too, private lists and Liked Songs included.')}</p>
+          {!phoneApp && <p className="text-sm text-ink-3">{tr('In Spotify’s app, Ctrl+A then Ctrl+C in a list copies its songs as links: they work here too, private lists and Liked Songs included.')}</p>}
           <textarea autoFocus value={text} onChange={(e) => setText(e.target.value)} rows={8} placeholder={tr('Daft Punk - Get Lucky')} aria-label={tr('Songs to import')} className="resize-y rounded-md border border-line bg-raised px-3 py-2 text-[0.8125rem] placeholder:text-ink-3" />
           <input value={name} onChange={(e) => setName(e.target.value)} maxLength={100} placeholder={tr('Playlist name')} aria-label={tr('Playlist name')} className={FIELD} />
           <div className="flex justify-end gap-2">
@@ -149,6 +149,22 @@ function ImportList() {
           </div>
         </Dialog>
       )}
+    </Card>
+  )
+}
+
+/**
+ * The phone's way to its services' lists: signed in on the PC, they come by the devices' sync. Google refuses sign-ins
+ * inside phone apps, Spotify's and Apple's pages open in a window the phone shows over the app with no way back, and
+ * Android has no folder picker (docs/notes/ideas/mobile.md: imports stay on the PC).
+ */
+export function FromPc({ onLeave }: { onLeave?: () => void }) {
+  const go = useStore((s) => s.go)
+  return (
+    <Card icon={Desktop} title={tr('From your PC')} sub={tr('Sign in to YouTube Music, Spotify or Apple Music in Legato on your PC: your playlists come to this phone when your devices sync.')}>
+      <Button onClick={() => (onLeave?.(), go({ name: 'settings', section: 'sync' }))} className="mt-auto self-start">
+        <Plus size={14} /> {tr('Add a device')}
+      </Button>
     </Card>
   )
 }
@@ -199,12 +215,13 @@ export function AddView() {
         <SearchHero />
         <div className="stagger grid grid-cols-[repeat(auto-fit,minmax(280px,1fr))] gap-4">
           <Detector onFound={onFound} />
+          {phoneApp && <FromPc />}
           <SpotifyConnect />
-          <AppleConnect />
+          {!phoneApp && <AppleConnect />}
           <ImportList />
           <AppFileImport />
           <ImportCode />
-          <AddFolder />
+          {!phoneApp && <AddFolder />}
         </div>
       </div>
     </>

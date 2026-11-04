@@ -2005,6 +2005,9 @@ const sv: Record<string, string> = {
   'Match this phone': 'Som den här telefonen',
   'This phone ({language})': 'Den här telefonen ({language})',
   'Which account is connected to which service. Nothing goes through a server of ours: everything stays on your phone.': 'Vilket konto som är anslutet till vilken tjänst. Inget går via en server som är vår: allt stannar på din telefon.',
+  'From your PC': 'Från din dator',
+  'Sign in to YouTube Music, Spotify or Apple Music in Legato on your PC: your playlists come to this phone when your devices sync.': 'Logga in på YouTube Music, Spotify eller Apple Music i Legato på din dator: dina spellistor kommer till den här telefonen när dina enheter synkas.',
+  'Connect it in Legato on your PC: your playlists come here when your devices sync.': 'Anslut det i Legato på din dator: dina spellistor kommer hit när dina enheter synkas.',
 }
 
 export default sv

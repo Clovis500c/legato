@@ -2005,6 +2005,9 @@ const vi: Record<string, string> = {
   'Match this phone': 'Theo điện thoại này',
   'This phone ({language})': 'Điện thoại này ({language})',
   'Which account is connected to which service. Nothing goes through a server of ours: everything stays on your phone.': 'Tài khoản nào đang kết nối với dịch vụ nào. Không có gì đi qua máy chủ của chúng tôi: mọi thứ ở lại trên điện thoại của bạn.',
+  'From your PC': 'Từ PC của bạn',
+  'Sign in to YouTube Music, Spotify or Apple Music in Legato on your PC: your playlists come to this phone when your devices sync.': 'Đăng nhập YouTube Music, Spotify hoặc Apple Music trong Legato trên PC: danh sách phát sẽ về điện thoại này khi các thiết bị đồng bộ.',
+  'Connect it in Legato on your PC: your playlists come here when your devices sync.': 'Hãy kết nối trong Legato trên PC: danh sách phát sẽ về đây khi các thiết bị đồng bộ.',
 }
 
 export default vi

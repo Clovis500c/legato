@@ -131,6 +131,12 @@ Relaunch log (newest last):
   preset for 375 × 812, a custom size for a narrow window; reload after a size change, `phoneApp` is read at load).
   Then search results and the album / artist song rows on the phone (two more commits). Next in it: Now Playing's
   panels on the phone, Add music, then the emulator.
+- 2026-11-04: the UI pass on the emulator (a debug APK, screens over DevTools: `adb forward` to the WebView's socket,
+  `adb shell screencap`, `input tap`). Found and fixed: the styled scrollbar stayed on screen (Android's own now), the
+  paste hint cut, and the sign-in windows: Connect Spotify opened Exportify full screen over the app with no way back
+  (`am force-stop` was the only exit), so on the phone Spotify's, Apple's and Google's sign-ins and the folder give way
+  to a From your PC card. Found, next: every file picked or saved on the phone fails (`content://` addresses), and
+  local music needs its own path (plan-v2, two new Android lines).
 
 ## Mobile app and devices sync (the owner's ask, 2026-11-02 afternoon; in progress)
 

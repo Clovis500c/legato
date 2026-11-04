@@ -89,13 +89,14 @@ function ServiceRow({ service }: { service: 'spotify' }) {
   const [dirs, setDir] = useDirections()
   return (
     <div data-setting={sourceLabel[service]} className={`flex flex-col gap-3 border-b border-line-soft px-4 py-3.5 ${selected ? 'bg-bg' : ''}`}>
-      <AccountLine on={connected} icon={<SourceIcon source={service} size={16} />} title={sourceLabel[service]} pitch={tr(guides[service].pitch)} state={connected ? tr('Connected') : tr('Not connected')}>
+      <AccountLine on={connected} icon={<SourceIcon source={service} size={16} />} title={sourceLabel[service]} pitch={phoneApp && !connected ? tr('Connect it in Legato on your PC: your playlists come here when your devices sync.') : tr(guides[service].pitch)} state={connected ? tr('Connected') : tr('Not connected')}>
         {connected ? (
           <Button variant="ghost" disabled={busy} onClick={() => disconnect(service)}>
             {tr('Disconnect')}
           </Button>
         ) : (
-          <Button onClick={() => go({ name: 'settings', section: 'sources', wizard: service })}>{tr('Connect')}</Button>
+          // The wizard's key comes from Spotify's dashboard, its sign-in back through this device's loopback: the PC's.
+          !phoneApp && <Button onClick={() => go({ name: 'settings', section: 'sources', wizard: service })}>{tr('Connect')}</Button>
         )}
       </AccountLine>
       {connected && (
@@ -158,8 +159,9 @@ function AppleWeb() {
   }, [])
   return (
     <div data-setting="Apple Music" className="border-b border-line-soft px-4 py-3.5">
-      <AccountLine on={!!on} icon={<SourceIcon source="apple" size={16} />} title={tr('Apple Music')} pitch={tr('Your playlists are read on Apple Music’s own page, signed in there, and their songs play through YouTube.')} state={on ? tr('Signed in') : tr('Not signed in')}>
-        <AppleImport label={tr('Import my lists')} />
+      {/* Apple's page opens in a window: the phone shows it over the app with no way back. */}
+      <AccountLine on={!!on} icon={<SourceIcon source="apple" size={16} />} title={tr('Apple Music')} pitch={phoneApp ? tr('Connect it in Legato on your PC: your playlists come here when your devices sync.') : tr('Your playlists are read on Apple Music’s own page, signed in there, and their songs play through YouTube.')} state={on ? tr('Signed in') : tr('Not signed in')}>
+        {!phoneApp && <AppleImport label={tr('Import my lists')} />}
       </AccountLine>
     </div>
   )
@@ -451,12 +453,13 @@ export function SourcesView() {
       <p className="text-[0.8125rem] text-ink-2">{phoneApp ? tr('Which account is connected to which service. Nothing goes through a server of ours: everything stays on your phone.') : tr('Which account is connected to which service. Nothing goes through a server of ours: everything stays on your computer.')}</p>
       <div className="rounded-xl border border-line bg-raised">
         <GoogleAccounts />
-        <SpotifyWeb />
+        {/* A player and an import in windows, and folders: none on the phone (FromPc). */}
+        {!phoneApp && <SpotifyWeb />}
         <ServiceRow service="spotify" />
         <AppleWeb />
         <LastfmRow />
         <ListenbrainzRow />
-        <LocalFolders />
+        {!phoneApp && <LocalFolders />}
       </div>
       {/* Google's sign-in is the PC's only (it refuses phone apps). */}
       {!phoneApp && (

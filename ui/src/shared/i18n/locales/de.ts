@@ -2005,6 +2005,9 @@ const de: Record<string, string> = {
   'Match this phone': 'Wie dieses Handy',
   'This phone ({language})': 'Dieses Handy ({language})',
   'Which account is connected to which service. Nothing goes through a server of ours: everything stays on your phone.': 'Welches Konto mit welchem Dienst verbunden ist. Nichts läuft über einen Server von uns: Alles bleibt auf deinem Handy.',
+  'From your PC': 'Von deinem PC',
+  'Sign in to YouTube Music, Spotify or Apple Music in Legato on your PC: your playlists come to this phone when your devices sync.': 'Melde dich in Legato auf deinem PC bei YouTube Music, Spotify oder Apple Music an: Deine Playlists kommen auf dieses Handy, wenn deine Geräte synchronisieren.',
+  'Connect it in Legato on your PC: your playlists come here when your devices sync.': 'Verbinde es in Legato auf deinem PC: Deine Playlists kommen hierher, wenn deine Geräte synchronisieren.',
 }
 
 export default de

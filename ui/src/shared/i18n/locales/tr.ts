@@ -2005,6 +2005,9 @@ const tr: Record<string, string> = {
   'Match this phone': 'Bu telefonla aynı',
   'This phone ({language})': 'Bu telefon ({language})',
   'Which account is connected to which service. Nothing goes through a server of ours: everything stays on your phone.': 'Hangi hesabın hangi hizmete bağlı olduğu. Hiçbir şey bizim bir sunucumuzdan geçmez: her şey telefonunda kalır.',
+  'From your PC': 'Bilgisayarından',
+  'Sign in to YouTube Music, Spotify or Apple Music in Legato on your PC: your playlists come to this phone when your devices sync.': 'Bilgisayarındaki Legato’da YouTube Music, Spotify veya Apple Music’e oturum aç: cihazların eşitlendiğinde çalma listelerin bu telefona gelir.',
+  'Connect it in Legato on your PC: your playlists come here when your devices sync.': 'Bilgisayarındaki Legato’da bağla: cihazların eşitlendiğinde çalma listelerin buraya gelir.',
 }
 
 export default tr

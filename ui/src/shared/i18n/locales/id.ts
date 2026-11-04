@@ -2005,6 +2005,9 @@ const id: Record<string, string> = {
   'Match this phone': 'Ikuti ponsel ini',
   'This phone ({language})': 'Ponsel ini ({language})',
   'Which account is connected to which service. Nothing goes through a server of ours: everything stays on your phone.': 'Akun mana yang terhubung ke layanan mana. Tidak ada yang melewati server kami: semuanya tetap di ponselmu.',
+  'From your PC': 'Dari PC-mu',
+  'Sign in to YouTube Music, Spotify or Apple Music in Legato on your PC: your playlists come to this phone when your devices sync.': 'Masuk ke YouTube Music, Spotify, atau Apple Music di Legato pada PC-mu: playlist-mu akan datang ke ponsel ini saat perangkatmu tersinkron.',
+  'Connect it in Legato on your PC: your playlists come here when your devices sync.': 'Hubungkan di Legato pada PC-mu: playlist-mu akan datang ke sini saat perangkatmu tersinkron.',
 }
 
 export default id

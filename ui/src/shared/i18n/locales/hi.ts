@@ -2005,6 +2005,9 @@ const hi: Record<string, string> = {
   'Match this phone': 'इस फ़ोन के अनुसार',
   'This phone ({language})': 'यह फ़ोन ({language})',
   'Which account is connected to which service. Nothing goes through a server of ours: everything stays on your phone.': 'कौन-सा अकाउंट किस सेवा से कनेक्ट है। हमारे किसी सर्वर से कुछ नहीं गुज़रता: सब कुछ आपके फ़ोन पर रहता है।',
+  'From your PC': 'आपके PC से',
+  'Sign in to YouTube Music, Spotify or Apple Music in Legato on your PC: your playlists come to this phone when your devices sync.': 'अपने PC पर Legato में YouTube Music, Spotify या Apple Music में साइन इन करें: डिवाइस सिंक होने पर आपकी प्लेलिस्ट इस फ़ोन पर आ जाएँगी।',
+  'Connect it in Legato on your PC: your playlists come here when your devices sync.': 'इसे अपने PC पर Legato में कनेक्ट करें: डिवाइस सिंक होने पर आपकी प्लेलिस्ट यहाँ आ जाएँगी।',
 }
 
 export default hi

@@ -2005,6 +2005,9 @@ const nl: Record<string, string> = {
   'Match this phone': 'Zoals deze telefoon',
   'This phone ({language})': 'Deze telefoon ({language})',
   'Which account is connected to which service. Nothing goes through a server of ours: everything stays on your phone.': 'Welk account aan welke dienst gekoppeld is. Niets gaat via een server van ons: alles blijft op je telefoon.',
+  'From your PC': 'Vanaf je pc',
+  'Sign in to YouTube Music, Spotify or Apple Music in Legato on your PC: your playlists come to this phone when your devices sync.': 'Meld je in Legato op je pc aan bij YouTube Music, Spotify of Apple Music: je playlists komen naar deze telefoon zodra je apparaten synchroniseren.',
+  'Connect it in Legato on your PC: your playlists come here when your devices sync.': 'Koppel het in Legato op je pc: je playlists komen hierheen zodra je apparaten synchroniseren.',
 }
 
 export default nl

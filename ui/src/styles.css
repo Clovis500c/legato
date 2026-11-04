@@ -481,22 +481,26 @@ code {
   color: transparent;
 }
 
-::-webkit-scrollbar {
-  width: 10px;
-}
-::-webkit-scrollbar-thumb {
-  @apply rounded-full border-2 border-transparent bg-line bg-clip-padding;
-}
+/* The phone keeps Android's own bars: thin, over the page, shown while it scrolls. A styled bar stays on screen there
+   and takes 10 px of a narrow page. */
+@media (width >= 640px) {
+  ::-webkit-scrollbar {
+    width: 10px;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply rounded-full border-2 border-transparent bg-line bg-clip-padding;
+  }
 
-/* Quiet scroller: thin, thumb only while the pointer is over it. */
-.scroll-quiet::-webkit-scrollbar {
-  width: 6px;
-}
-.scroll-quiet::-webkit-scrollbar-thumb {
-  @apply border-0 bg-transparent;
-}
-.scroll-quiet:hover::-webkit-scrollbar-thumb {
-  @apply bg-line;
+  /* Quiet scroller: thin, thumb only while the pointer is over it. */
+  .scroll-quiet::-webkit-scrollbar {
+    width: 6px;
+  }
+  .scroll-quiet::-webkit-scrollbar-thumb {
+    @apply border-0 bg-transparent;
+  }
+  .scroll-quiet:hover::-webkit-scrollbar-thumb {
+    @apply bg-line;
+  }
 }
 
 /* Pointer drag in progress (shared/ui/drag.ts): no text selection, grabbing hand everywhere. */

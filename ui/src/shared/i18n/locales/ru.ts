@@ -2005,6 +2005,9 @@ const ru: Record<string, string> = {
   'Match this phone': 'Как на этом телефоне',
   'This phone ({language})': 'Этот телефон ({language})',
   'Which account is connected to which service. Nothing goes through a server of ours: everything stays on your phone.': 'Какой аккаунт к какому сервису подключён. Ничего не идёт через наш сервер: всё остаётся на твоём телефоне.',
+  'From your PC': 'С ПК',
+  'Sign in to YouTube Music, Spotify or Apple Music in Legato on your PC: your playlists come to this phone when your devices sync.': 'Войди в YouTube Music, Spotify или Apple Music в Legato на ПК: плейлисты придут на этот телефон, когда устройства синхронизируются.',
+  'Connect it in Legato on your PC: your playlists come here when your devices sync.': 'Подключи его в Legato на ПК: плейлисты придут сюда, когда устройства синхронизируются.',
 }
 
 export default ru

@@ -2005,6 +2005,9 @@ const es: Record<string, string> = {
   'Match this phone': 'Como este teléfono',
   'This phone ({language})': 'Este teléfono ({language})',
   'Which account is connected to which service. Nothing goes through a server of ours: everything stays on your phone.': 'Qué cuenta está conectada a qué servicio. Nada pasa por un servidor nuestro: todo se queda en tu teléfono.',
+  'From your PC': 'Desde tu PC',
+  'Sign in to YouTube Music, Spotify or Apple Music in Legato on your PC: your playlists come to this phone when your devices sync.': 'Inicia sesión en YouTube Music, Spotify o Apple Music en Legato en tu PC: tus playlists llegan a este teléfono cuando tus dispositivos se sincronizan.',
+  'Connect it in Legato on your PC: your playlists come here when your devices sync.': 'Conéctalo en Legato en tu PC: tus playlists llegan aquí cuando tus dispositivos se sincronizan.',
 }
 
 export default es

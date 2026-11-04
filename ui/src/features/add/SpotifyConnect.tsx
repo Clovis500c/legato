@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useStore } from '../../app/store'
 import { api, type ExportTrouble, type SpotifyList, type SpotifyPick } from '../../shared/api'
 import { msg, tr } from '../../shared/i18n/i18n'
+import { phoneApp } from '../../shared/platform'
 import { Button } from '../../shared/ui/Button'
 import { Dialog } from '../../shared/ui/Dialog'
 import { Card } from './Card'
@@ -221,11 +222,12 @@ function SpotifyFile() {
   )
 }
 
+/** The phone keeps the export file only: Exportify's window would cover the app with no way back (FromPc). */
 export function SpotifyConnect() {
   return (
     <Card icon={SpotifyLogo} title={tr('Connect Spotify')} sub={tr('Import your playlists and Liked Songs, private ones too, with any free account.')}>
       <span className="mt-auto flex flex-wrap gap-2">
-        <SpotifyImport label={tr('Connect')} />
+        {!phoneApp && <SpotifyImport label={tr('Connect')} />}
         <SpotifyFile />
       </span>
     </Card>

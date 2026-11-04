@@ -2005,6 +2005,9 @@ const ko: Record<string, string> = {
   'Match this phone': '이 휴대폰과 동일',
   'This phone ({language})': '이 휴대폰 ({language})',
   'Which account is connected to which service. Nothing goes through a server of ours: everything stays on your phone.': '어떤 계정이 어떤 서비스에 연결되어 있는지 보여 줍니다. 저희 서버를 거치는 것은 없으며, 모든 것이 내 휴대폰에 남습니다.',
+  'From your PC': 'PC에서',
+  'Sign in to YouTube Music, Spotify or Apple Music in Legato on your PC: your playlists come to this phone when your devices sync.': 'PC의 Legato에서 YouTube Music, Spotify 또는 Apple Music에 로그인하세요. 기기가 동기화되면 플레이리스트가 이 휴대폰으로 옵니다.',
+  'Connect it in Legato on your PC: your playlists come here when your devices sync.': 'PC의 Legato에서 연결하세요. 기기가 동기화되면 플레이리스트가 여기로 옵니다.',
 }
 
 export default ko

@@ -2005,6 +2005,9 @@ const ja: Record<string, string> = {
   'Match this phone': 'このスマートフォンに合わせる',
   'This phone ({language})': 'このスマートフォン（{language}）',
   'Which account is connected to which service. Nothing goes through a server of ours: everything stays on your phone.': 'どのアカウントがどのサービスに接続されているか。私たちのサーバーを経由するものはなく、すべてお使いのスマートフォンに保存されます。',
+  'From your PC': 'PCから',
+  'Sign in to YouTube Music, Spotify or Apple Music in Legato on your PC: your playlists come to this phone when your devices sync.': 'PCのLegatoでYouTube Music、Spotify、Apple Musicにログインすると、デバイスの同期でプレイリストがこのスマートフォンに届きます。',
+  'Connect it in Legato on your PC: your playlists come here when your devices sync.': 'PCのLegatoで接続すると、デバイスの同期でプレイリストがここに届きます。',
 }
 
 export default ja
