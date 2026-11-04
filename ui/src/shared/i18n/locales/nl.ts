@@ -2027,6 +2027,12 @@ const nl: Record<string, string> = {
   'A thin strip of it under the song in the mini player, wherever it sits': 'Een smalle strook onder het nummer in de minispeler, waar die ook staat',
   'small strip corner panel sidebar': 'klein strook hoek paneel zijbalk',
   'Curve': 'Curve',
+  'Loudness meter': 'Luidheidsmeter',
+  'Momentary': 'Momentaan',
+  'Short-term': 'Korte termijn',
+  'Integrated': 'Geïntegreerd',
+  'Loudness range': 'Luidheidsbereik',
+  'Peak': 'Piek',
 }
 
 export default nl

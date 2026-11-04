@@ -164,6 +164,11 @@ Relaunch log (newest last):
   imports Now Playing's chunk). Seen in the floating mini player over the demo (Appearance › Mini player on).
 - 2026-11-04: the Curve look (left and right as two glowing curves, plan-v2 › Visualizer v2 › Medium). Seen over the
   demo (its fake frames differ left and right).
+- 2026-11-04: the Loudness meter look (momentary, short-term, integrated, loudness range, peak; `vizLoud.ts`,
+  `loudFeed.ts`), fed by the levels, not the frames; the demo answers `player_levels` now. Seen over the demo, full
+  screen and the strip. An edit to `liveSync.ts` hot-reloads the player bar with a "change in the order of Hooks"
+  error: Vite's hot reload, gone after a reload of the page. The OBS overlay's visualizer waits: it needs a frame
+  stream to the overlay page (SSE from `remote.rs`, YouTube's frames forwarded), more than an `S`.
 
 ## Mobile app and devices sync (the owner's ask, 2026-11-02 afternoon; in progress)
 

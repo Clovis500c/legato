@@ -1,5 +1,6 @@
 import { useSettings } from '../../app/settings'
 import { tr } from '../../shared/i18n/i18n'
+import type { VisualizerStyle } from '../../shared/theme/theme'
 import { onMenu } from '../../shared/ui/ContextMenu'
 import { vizMenu } from '../menus'
 import { useLive } from './live'
@@ -36,9 +37,13 @@ export function Visualizer() {
   )
 }
 
+/** Bars in a backdrop or a thin strip for the looks that need room or read as numbers: the ring, the loudness meter. */
+const roomy = (look: VisualizerStyle): VisualizerStyle => (look === 'radial' || look === 'loudness' ? 'bars' : look)
+
 /**
  * The visualizer big and faint across the bottom of Now Playing, behind the song (Settings › Playback › Visualizer
- * behind Now Playing): the look picked, bars for Radial (its ring stays around the cover). No clicks: they go through.
+ * behind Now Playing): the look picked, bars for Radial (its ring stays around the cover) and the loudness meter. No
+ * clicks: they go through.
  */
 export function VizBackdrop() {
   const picked = useSettings((s) => s.settings.visualizerStyle)
@@ -46,18 +51,18 @@ export function VizBackdrop() {
   const covered = useCoverFull((s) => s.open)
   return (
     <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-1/2 opacity-20">
-      <VizCanvas look={picked === 'radial' ? 'bars' : picked} listen={!full && !covered} />
+      <VizCanvas look={roomy(picked)} listen={!full && !covered} />
     </div>
   )
 }
 
-/** The mini player's thin visualizer (MiniViz.tsx loads it): bars for Radial; quiet under Now Playing or a full screen. */
+/** The mini player's thin visualizer (MiniViz.tsx loads it): bars for Radial and the meter; quiet under Now Playing or a full screen. */
 export function MiniStrip() {
   const picked = useSettings((s) => s.settings.visualizerStyle)
   const nowPlaying = usePlayer((s) => s.full)
   const full = useVizFull((s) => s.open)
   const covered = useCoverFull((s) => s.open)
-  return <VizCanvas look={picked === 'radial' ? 'bars' : picked} listen={!nowPlaying && !full && !covered} />
+  return <VizCanvas look={roomy(picked)} listen={!nowPlaying && !full && !covered} />
 }
 
 /** The Radial look behind a big cover (Stage in NowPlaying.tsx): fills its parent, a square; quiet while a full screen is up. */

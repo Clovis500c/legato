@@ -2027,6 +2027,12 @@ const id: Record<string, string> = {
   'A thin strip of it under the song in the mini player, wherever it sits': 'Strip tipis di bawah lagu pada pemutar mini, di mana pun letaknya',
   'small strip corner panel sidebar': 'kecil strip sudut panel bilah samping',
   'Curve': 'Kurva',
+  'Loudness meter': 'Pengukur kenyaringan',
+  'Momentary': 'Sesaat',
+  'Short-term': 'Jangka pendek',
+  'Integrated': 'Terintegrasi',
+  'Loudness range': 'Rentang kenyaringan',
+  'Peak': 'Puncak',
 }
 
 export default id

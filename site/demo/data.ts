@@ -1,5 +1,5 @@
 import type { LibraryPlaylist, LibraryTrack, LyricsAsk, Play, PlayerCommand, PlayerStatus, SearchHit, Source } from '../../ui/src/shared/api'
-import { startFrames, stopFrames, type Frames } from './viz'
+import { levels, startFrames, stopFrames, type Frames } from './viz'
 
 // Everything here is invented: artists, albums, songs. Covers are drawn below, from a palette and a shape.
 
@@ -139,6 +139,7 @@ const ANSWERS: Record<string, (args: Record<string, unknown>) => unknown> = {
   search_catalogs: search,
   lyrics,
   viz_start: ({ frames }) => startFrames(frames as Frames),
+  player_levels: levels,
   viz_stop: stopFrames,
   play_stats: () => Object.fromEntries(PLAYS.map((p) => [p.trackId, [PLAYS.filter((x) => x.trackId === p.trackId).length, p.startedAt]])),
   recent_plays: ({ since }) => PLAYS.filter((p) => p.startedAt >= (since as number)),

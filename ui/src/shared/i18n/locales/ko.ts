@@ -2027,6 +2027,12 @@ const ko: Record<string, string> = {
   'A thin strip of it under the song in the mini player, wherever it sits': '미니 플레이어가 어디에 있든 노래 아래에 얇은 띠로 표시',
   'small strip corner panel sidebar': '작은 띠 모서리 패널 사이드바',
   'Curve': '곡선',
+  'Loudness meter': '라우드니스 미터',
+  'Momentary': '순간',
+  'Short-term': '단기',
+  'Integrated': '통합',
+  'Loudness range': '라우드니스 범위',
+  'Peak': '피크',
 }
 
 export default ko

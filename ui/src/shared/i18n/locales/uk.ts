@@ -2027,6 +2027,12 @@ const uk: Record<string, string> = {
   'A thin strip of it under the song in the mini player, wherever it sits': 'Тонка смужка під піснею в мініплеєрі, де б він не був',
   'small strip corner panel sidebar': 'маленький смужка кут панель бічна',
   'Curve': 'Крива',
+  'Loudness meter': 'Вимірювач гучності',
+  'Momentary': 'Миттєва',
+  'Short-term': 'Короткочасна',
+  'Integrated': 'Інтегральна',
+  'Loudness range': 'Діапазон гучності',
+  'Peak': 'Пік',
 }
 
 export default uk

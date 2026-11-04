@@ -2027,6 +2027,12 @@ const tr: Record<string, string> = {
   'A thin strip of it under the song in the mini player, wherever it sits': 'Mini oynatıcı nerede olursa olsun, şarkının altında ince bir şerit',
   'small strip corner panel sidebar': 'küçük şerit köşe panel kenar çubuğu',
   'Curve': 'Eğri',
+  'Loudness meter': 'Ses yüksekliği ölçer',
+  'Momentary': 'Anlık',
+  'Short-term': 'Kısa süreli',
+  'Integrated': 'Bütünleşik',
+  'Loudness range': 'Ses yüksekliği aralığı',
+  'Peak': 'Tepe',
 }
 
 export default tr

@@ -377,6 +377,18 @@ never: downloading, extracting, recording or exporting a platform's audio, or to
   - **Curve** (a look, 2026-11-04): left and right as two smooth lines (`wavePath`) with a soft glow (`shadowBlur`,
     none with reduced motion) and faint areas, left in the visualizer's colour, right in the accent (the text colour
     when the visualizer is the accent: `ink2`, `secondOf` in `VizCanvas.tsx`); each side its own scene (`sceneR`).
+  - **Loudness meter** (a look, 2026-11-04): EBU R128 numbers of the song as heard, from the levels Adaptive Sound
+    already measures, not the frames: the song's own loudness after the Live Editor, before Adaptive Sound's gain and
+    the volume. `loudFeed.ts` subscribes to `useLive` while a meter is drawn and the song plays (its count asks
+    `liveSync.ts` for the levels: the native poll, or YouTube's frame listening), one count per song whichever view
+    shows it, started over at a new song. `vizLoud.ts` (pure, tested) takes one momentary value per 100 ms of play
+    (paused: shown, not counted; a gap counts 250 ms at most): short-term = the last 3 s of them, integrated = BS.1770's
+    gates (-70 LUFS, then 10 LU under the mean), loudness range = EBU Tech 3342 (short-term values, -70 then 20 LU
+    under, 10th to 95th percentile), histograms of 0.1 LU. The worker draws a picture per update, then rests: in the
+    strip three bars, M S I, with their numbers; 120 px high and more, the words, the peak (now, and a mark at the
+    song's highest), a −48 to 0 scale and the range. Approximations: the engine's momentary is a 400 ms exponential
+    mean (smoother than the standard's window), the peak is the sample peak (no oversampling for true peak yet), and
+    the integrated covers what the meter heard of the song. The backdrop and the mini player show bars instead.
   - **Comfort**: `prefers-reduced-motion` or Animations off (`useCalm`): slower attack and release, a cap that sinks
     gently, one flash a second. Always: `flash.ts` limits the mean brightness of the bars to 3 flashes a second (a flash
     = a rise and a fall of at least 10 % of the range; past the budget the brightness may not turn back by 10 % until
@@ -421,10 +433,10 @@ never: downloading, extracting, recording or exporting a platform's audio, or to
   - **Silent frames are silence**: the twins send one all -120 frame when the sound stops or a window is all zeros
     (a gap, a stalled buffer); `frameMessage` (`vizProtocol.ts`) turns it into the worker's `silence`, so the bars fall and
     the loop stops at rest instead of redrawing a blank canvas. The native levels poll (`live.ts`) runs only for
-    processing or the moving cover (`LiveWish.levels`), not for the visualizer. In the visualizer's full screen, search,
+    processing, the moving cover or the loudness meter (`LiveWish.levels`), not for the other looks. In the visualizer's full screen, search,
     settings and back / forward do nothing, the focus is dropped on open, and Esc leaves even from a field behind it.
   - **Everywhere**: all three obey reduced motion (`useCalm`) and the flash limiter (the spectrogram and the ring read
-    the limited heights; the needles are not brightness). All eight looks are offered in the strip, Settings and the
+    the limited heights; the needles are not brightness). Every look is offered in the strip, Settings and the
     full screen; Radial says where it falls back (the Settings row). The e2e walk draws each, in Now Playing and full
     screen, and reads a screenshot of both (`target/e2e/shots/10-radial.png` and on).
   - **The data path in short**: the engine's tap (after gain and limiter, before the volume knob) is copied only while a

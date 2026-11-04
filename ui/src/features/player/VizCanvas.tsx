@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import { useSettings } from '../../app/settings'
 import { trackArt } from '../../shared/art'
+import { tr } from '../../shared/i18n/i18n'
 import type { VisualizerStyle, VizColor } from '../../shared/theme/theme'
 import { averageColor, vivid } from './ambient'
+import { subscribeLoud } from './loudFeed'
 import { useNowTrack, usePlayer } from './store'
 import { viz } from './vizFrames'
 import { frameMessage, type ToWorker } from './vizProtocol'
@@ -60,6 +62,9 @@ export function VizCanvas({ look, listen = true }: { look: VisualizerStyle; list
   const accent = useSettings((s) => s.settings.accent)
   const dark = useSettings((s) => s.systemDark)
   const song = usePlayer((s) => s.now?.trackId ?? s.now?.youtubeId ?? '')
+  // The loudness meter's words follow the interface's language.
+  const language = useSettings((s) => s.settings.language)
+  const meter = look === 'loudness'
   const drawing = listen && shown && onScreen
   const live = drawing && playing
 
@@ -110,25 +115,28 @@ export function VizCanvas({ look, listen = true }: { look: VisualizerStyle; list
     const send = () => {
       const ink = inkOf(el, color, coverInk)
       const warn = getComputedStyle(el).getPropertyValue('--color-danger').trim() || '#d93a2b'
-      w.postMessage({ t: 'look', look, calm, weighting, ink, ink2: secondOf(el, color), warn, gradient, stops: gradientStops(gradient, ink, warn, darkTheme), bands, floor, fps: FPS } satisfies ToWorker)
+      const words = { momentary: tr('Momentary'), short: tr('Short-term'), integrated: tr('Integrated'), range: tr('Loudness range'), peak: tr('Peak') }
+      w.postMessage({ t: 'look', look, calm, weighting, ink, ink2: secondOf(el, color), warn, gradient, stops: gradientStops(gradient, ink, warn, darkTheme), bands, floor, fps: FPS, words } satisfies ToWorker)
     }
     send()
     const late = setTimeout(send, 700)
     return () => clearTimeout(late)
-  }, [ready, look, calm, weighting, color, coverInk, gradient, bands, floor, darkTheme, theme, accent, dark, song])
+  }, [ready, look, calm, weighting, color, coverInk, gradient, bands, floor, darkTheme, theme, accent, dark, song, language])
 
   // Something draws: loop and frames. Nothing does: no loop, no subscription.
   useEffect(() => {
     const w = worker.current
     if (!w) return
     w.postMessage({ t: 'run', on: drawing } satisfies ToWorker)
+    // The loudness meter: the levels' numbers instead of the frames (loudFeed.ts), its last picture kept while paused.
+    if (meter) return live ? subscribeLoud((v) => w.postMessage({ t: 'loud', v } satisfies ToWorker)) : undefined
     if (!live) {
       if (drawing) w.postMessage({ t: 'silence' } satisfies ToWorker)
       return
     }
     // A silent frame (a gap, a stalled buffer, a stop) is silence: the bars fall, then the loop stops.
     return viz.subscribe((f) => w.postMessage(frameMessage(f)))
-  }, [ready, drawing, live])
+  }, [ready, drawing, live, meter])
 
   // The pointer over it: the worker shows its frequency and dB scales (a big enough box only).
   const hover = (on: boolean) => () => worker.current?.postMessage({ t: 'hover', on } satisfies ToWorker)

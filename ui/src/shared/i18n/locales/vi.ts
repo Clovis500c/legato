@@ -2027,6 +2027,12 @@ const vi: Record<string, string> = {
   'A thin strip of it under the song in the mini player, wherever it sits': 'Một dải mỏng dưới bài hát trong trình phát mini, dù nó ở đâu',
   'small strip corner panel sidebar': 'nhỏ dải góc bảng thanh bên',
   'Curve': 'Đường cong',
+  'Loudness meter': 'Đồng hồ đo độ lớn',
+  'Momentary': 'Tức thời',
+  'Short-term': 'Ngắn hạn',
+  'Integrated': 'Tích hợp',
+  'Loudness range': 'Dải độ lớn',
+  'Peak': 'Đỉnh',
 }
 
 export default vi

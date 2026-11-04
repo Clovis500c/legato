@@ -530,8 +530,15 @@ colours, mirror, reflection.
       The radial ring's pulse is Moving cover's own until then.
 
 **Medium**
-- [ ] `S` Loudness stream (momentary / short-term LUFS, true peak) already measured by Adaptive Sound: exposed for meters.
-- [ ] `S` Loudness meter: LUFS bars (momentary, short-term, integrated), true peak, dynamic range of the song.
+- [x] `S` Loudness stream (momentary / short-term LUFS, true peak) already measured by Adaptive Sound: exposed for meters.
+      (2026-11-04: `loudFeed.ts`, one count per song for every view; while a meter is drawn its listeners ask
+      `liveSync.ts` for the levels: the native poll, or YouTube's frame listening. The peak is the sample peak.)
+- [x] `S` Loudness meter: LUFS bars (momentary, short-term, integrated), true peak, dynamic range of the song.
+      (2026-11-04: the Loudness meter look, `vizLoud.ts`: momentary as measured, short-term over its last 3 s,
+      integrated with BS.1770's gates, the loudness range (EBU Tech 3342) as the song's dynamic range, the peak now and
+      the song's highest; three bars in the strip, words, scale and range from 120 px. The backdrop and the mini player
+      show bars. Seen over the demo, full screen and in the strip; not on real music. True peak: the line below.)
+- [ ] `S` True peak (BS.1770 annex 2: 4x oversampling of the peak) in both twins' meters, for the loudness meter's peak.
 - [x] `S` Smooth spectrum curve (filled area, glow), stereo overlay (left and right in two colours). (2026-11-04: the
       Curve look, left in the visualizer's colour, right in the accent, a glow off with reduced motion; seen over the
       demo.)

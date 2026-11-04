@@ -31,6 +31,15 @@ function frame(t: number) {
   return bytes.buffer
 }
 
+/** The engine's levels (`player_levels`) for the same song: about -11 LUFS, a beat, louder and quieter parts. */
+export function levels() {
+  const t = performance.now() / 1000
+  const kick = Math.exp(-7 * ((t * 2) % 1))
+  const part = 2.5 * Math.sin(t / 5)
+  const momentary = -11.5 + part + 1.5 * kick
+  return { fast: momentary + 3 * kick, momentary, short: -11.5 + part, peak: 0.5 + 0.4 * kick, gain: 0 }
+}
+
 let timer: ReturnType<typeof setInterval> | undefined
 
 export function startFrames(frames: Frames) {

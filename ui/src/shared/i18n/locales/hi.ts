@@ -2027,6 +2027,12 @@ const hi: Record<string, string> = {
   'A thin strip of it under the song in the mini player, wherever it sits': 'मिनी प्लेयर में गाने के नीचे एक पतली पट्टी, वह जहां भी हो',
   'small strip corner panel sidebar': 'छोटा पट्टी कोना पैनल साइडबार',
   'Curve': 'वक्र',
+  'Loudness meter': 'लाउडनेस मीटर',
+  'Momentary': 'क्षणिक',
+  'Short-term': 'अल्पकालिक',
+  'Integrated': 'एकीकृत',
+  'Loudness range': 'लाउडनेस रेंज',
+  'Peak': 'पीक',
 }
 
 export default hi

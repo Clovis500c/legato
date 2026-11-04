@@ -2027,6 +2027,12 @@ const es: Record<string, string> = {
   'A thin strip of it under the song in the mini player, wherever it sits': 'Una franja fina bajo la canción en el minirreproductor, esté donde esté',
   'small strip corner panel sidebar': 'pequeño franja esquina panel barra lateral',
   'Curve': 'Curva',
+  'Loudness meter': 'Medidor de sonoridad',
+  'Momentary': 'Momentánea',
+  'Short-term': 'Corto plazo',
+  'Integrated': 'Integrada',
+  'Loudness range': 'Rango de sonoridad',
+  'Peak': 'Pico',
 }
 
 export default es

@@ -3,6 +3,7 @@ import { capSegment, levelOf, litSegments } from './ledBars'
 import { bandCount, DB_MARKS, FREQ_MARKS, freqAt } from './vizBands'
 import { columnSpans, columnsFor, dialGeometry, ledRows, ringBars, wavePath, type Dial, type LedRows, type Ring } from './vizDraw'
 import { fillFor, type Stops } from './vizFill'
+import { LOUD_MARKS, LOUD_WORDS, loudPos, loudText, type LoudReading, type LoudWords } from './vizLoud'
 import { createScene } from './vizScene'
 import { colorMap, fillColumn, rowMix, SCROLL, SCROLL_CALM, scrollBy } from './vizSpectro'
 import { createVu, vuPos, VU_MARKS } from './vizVu'
@@ -27,6 +28,8 @@ const REFLECTED = new Set<VisualizerStyle>(['led', 'bars', 'peaks', 'wave', 'cur
 const SCALED = new Set<VisualizerStyle>(['led', 'bars', 'peaks', 'mirror', 'wave', 'curve'])
 /** Scales only in a box this tall, CSS px (the strip under the cover has no room). */
 const SCALE_MIN_H = 120
+/** The loudness meter in words, with the peak, its scale and the range, in a box this tall (CSS px); letters and three bars below. */
+const LOUD_BIG_H = 120
 
 interface Sprites {
   off: OffscreenCanvas
@@ -74,6 +77,9 @@ export function createPainter(canvas: OffscreenCanvas) {
   // Curve: the right side's colour and heights (`scene` takes the left then).
   let ink2 = '#888'
   let sceneR: ReturnType<typeof createScene> | null = null
+  // Loudness meter: its words and its latest numbers.
+  let words: LoudWords = LOUD_WORDS
+  let loudNow: LoudReading = { momentary: -120, short: -120, integrated: null, range: null, peak: -120, top: -120 }
 
   /** A CSS colour as [r, g, b] (the canvas parses it). */
   function rgbOf(color: string): [number, number, number] {
@@ -429,6 +435,94 @@ export function createPainter(canvas: OffscreenCanvas) {
     for (let x = W - n; x < W; x++) ctx.putImageData(strip.img, x, 0)
   }
 
+  /**
+   * The loudness meter: momentary, short-term and integrated as bars along one scale, their numbers at the right. A big
+   * box says them in words and adds the peak (a mark at the song's highest), the scale and the loudness range.
+   */
+  function loudness(W: number, H: number) {
+    if (!ctx) return
+    const v = loudNow
+    const big = cssH >= LOUD_BIG_H
+    const rows: { label: string; value: number | null; bar: number | null; unit: string; held?: number }[] = [
+      { label: big ? words.momentary : 'M', value: v.momentary, bar: v.momentary, unit: 'LUFS' },
+      { label: big ? words.short : 'S', value: v.short, bar: v.short, unit: 'LUFS' },
+      { label: big ? words.integrated : 'I', value: v.integrated, bar: v.integrated, unit: 'LUFS' },
+    ]
+    if (big) rows.push({ label: words.peak, value: v.top, bar: v.peak, unit: 'dB', held: v.top })
+    const n = rows.length
+    // Small: the box shared by three rows. Big: rows of a readable size, centred, the scale and the range under them.
+    const gap = big ? 0 : Math.max(1, Math.round(2 * dpr))
+    const rowH = big ? Math.min(Math.round(44 * dpr), Math.floor(H / (n * 1.6 + 2.6))) : Math.floor((H - (n - 1) * gap) / n)
+    const step = big ? Math.round(rowH * 1.6) : rowH + gap
+    const font = Math.round(rowH * (big ? 0.42 : 0.72))
+    const text = font >= 9 * dpr
+    const pad = Math.round(8 * dpr)
+    const width = big ? Math.min(W - 2 * pad, Math.round(960 * dpr)) : W
+    const left = Math.round((W - width) / 2)
+    const right = left + width
+    ctx.font = `${font}px system-ui, sans-serif`
+    // A number with its unit in a big box; a dash alone.
+    const say = (value: number | null, unit: string) => {
+      const t = loudText(value)
+      return big && t !== '—' ? `${t} ${unit}` : t
+    }
+    const labelW = text ? Math.max(...rows.map((r) => ctx.measureText(r.label).width)) + font * 0.8 : 0
+    const valueW = text ? ctx.measureText(big ? '−88.8 LUFS' : '−88.8').width + font * 0.8 : 0
+    const x0 = Math.round(left + labelW)
+    const barW = Math.max(1, Math.round(right - valueW - x0))
+    const top = big ? Math.round((H - (step * (n - 1) + rowH + font * 4.2)) / 2) : 0
+    const r = Math.min(rowH / 2, 3 * dpr)
+    ctx.fillStyle = ink
+    ctx.strokeStyle = ink
+    ctx.textBaseline = 'middle'
+    rows.forEach((row, i) => {
+      const y = top + i * step
+      ctx.globalAlpha = OFF
+      ctx.beginPath()
+      ctx.roundRect(x0, y, barW, rowH, r)
+      ctx.fill()
+      const w = Math.round(loudPos(row.bar) * barW)
+      if (w > 0) {
+        ctx.globalAlpha = BAR
+        ctx.beginPath()
+        ctx.roundRect(x0, y, w, rowH, Math.min(r, w / 2))
+        ctx.fill()
+      }
+      if (row.held !== undefined && row.held > -120) {
+        const lw = Math.max(2, Math.round(2 * dpr))
+        ctx.globalAlpha = 1
+        ctx.fillRect(Math.round(x0 + loudPos(row.held) * (barW - lw)), y, lw, rowH)
+      }
+      if (!text) return
+      ctx.textAlign = 'left'
+      ctx.globalAlpha = 0.7
+      ctx.fillText(row.label, left, y + rowH / 2)
+      ctx.textAlign = 'right'
+      ctx.globalAlpha = 0.95
+      ctx.fillText(say(row.value, row.unit), right, y + rowH / 2)
+    })
+    if (!big) return
+    // The scale under the bars, every 6 dB, numbered every 12; then the range.
+    const y = top + step * (n - 1) + rowH + Math.round(font * 0.6)
+    const tick = Math.round(font * 0.4)
+    const small = Math.round(font * 0.8)
+    ctx.font = `${small}px system-ui, sans-serif`
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'top'
+    for (const mark of LOUD_MARKS) {
+      const x = Math.round(x0 + loudPos(mark) * (barW - 1))
+      ctx.globalAlpha = 0.45
+      ctx.fillRect(x, y, Math.max(1, Math.round(dpr)), tick)
+      if (mark % 12) continue
+      ctx.globalAlpha = 0.6
+      ctx.fillText(mark ? `−${-mark}` : '0', x, y + tick + Math.round(2 * dpr))
+    }
+    ctx.font = `${font}px system-ui, sans-serif`
+    ctx.textAlign = 'left'
+    ctx.globalAlpha = 0.85
+    ctx.fillText(`${words.range}  ${say(v.range, 'LU')}`, left, y + tick + small + Math.round(font * 0.9))
+  }
+
   return {
     size(w: number, h: number, ratio: number) {
       cssW = w
@@ -436,7 +530,8 @@ export function createPainter(canvas: OffscreenCanvas) {
       dpr = ratio
       layout()
     },
-    set(next: VisualizerStyle, calmer: boolean, color: string, alarm = WARN, weigh: VizWeighting = 'flat', grad: VizGradient = 'none', colors: Stops = [], bands: VizBanding = 'sixth', glossy = false, second = '') {
+    set(next: VisualizerStyle, calmer: boolean, color: string, alarm = WARN, weigh: VizWeighting = 'flat', grad: VizGradient = 'none', colors: Stops = [], bands: VizBanding = 'sixth', glossy = false, second = '', said: LoudWords = LOUD_WORDS) {
+      words = said
       gradient = grad
       stops = colors
       floor = glossy
@@ -479,6 +574,10 @@ export function createPainter(canvas: OffscreenCanvas) {
     hover(on: boolean) {
       hover = on
     },
+    /** The loudness meter's numbers. */
+    loud(v: LoudReading) {
+      loudNow = v
+    },
     /** Draws a frame, `dt` seconds after the last. True = at rest (the caller may stop its loop). */
     draw(dt: number): boolean {
       if (!ctx || !cssW || !cssH) return true
@@ -486,6 +585,13 @@ export function createPainter(canvas: OffscreenCanvas) {
         ctx.globalAlpha = 1
         ctx.clearRect(0, 0, canvas.width, canvas.height)
         return needles(dt)
+      }
+      // The meter moves with its numbers only: one picture per update, then at rest.
+      if (look === 'loudness') {
+        ctx.globalAlpha = 1
+        ctx.clearRect(0, 0, canvas.width, canvas.height)
+        loudness(canvas.width, canvas.height)
+        return true
       }
       const { levels, peaks, resting: restingL } = scene.step(dt)
       // Curve: the right side's heights too, at rest only when both are.

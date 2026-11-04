@@ -2027,6 +2027,12 @@ const ru: Record<string, string> = {
   'A thin strip of it under the song in the mini player, wherever it sits': 'Тонкая полоска под песней в мини-плеере, где бы он ни был',
   'small strip corner panel sidebar': 'маленький полоска угол панель боковая',
   'Curve': 'Кривая',
+  'Loudness meter': 'Измеритель громкости',
+  'Momentary': 'Мгновенная',
+  'Short-term': 'Кратковременная',
+  'Integrated': 'Интегральная',
+  'Loudness range': 'Диапазон громкости',
+  'Peak': 'Пик',
 }
 
 export default ru

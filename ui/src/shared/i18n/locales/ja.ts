@@ -2027,6 +2027,12 @@ const ja: Record<string, string> = {
   'A thin strip of it under the song in the mini player, wherever it sits': 'ミニプレーヤーの曲の下に細い帯で表示します（置き場所を問わず）',
   'small strip corner panel sidebar': '小さい 帯 隅 パネル サイドバー',
   'Curve': 'カーブ',
+  'Loudness meter': 'ラウドネスメーター',
+  'Momentary': 'モーメンタリー',
+  'Short-term': 'ショートターム',
+  'Integrated': 'インテグレーテッド',
+  'Loudness range': 'ラウドネスレンジ',
+  'Peak': 'ピーク',
 }
 
 export default ja
