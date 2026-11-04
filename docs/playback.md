@@ -254,6 +254,15 @@ We still pin the policy on the iframe: a meta tag or header added later can't br
   (0.15 s time constant). A gain that comes for the playing song after its first 3 s waits for the next play, unless
   the setting moved in the last 5 s (so a first, untagged play is levelled only if its measure is quick). Unseen: real
   tagged files from foobar2000 or MusicBee, a long file's measure time, how it sits next to YouTube by ear.
+- **Song's shape on the seek bar** (2026-11-05, Settings › Appearance › Progress bar › Song's shape): a local song's
+  loudness along it, measured in the same background decode (`music_player::shape`: the RMS of 50 ms windows, 400
+  points, -36 to 0 dBFS as 0 to 255), cached in SQLite `waveform` by path and modified time (schema 17).
+  `local_waveform` answers from the cache, else decodes the file once (`prepare.rs` `measure`: one decode per file at a
+  time, a second ask waits for it and reads the cache; the decode keeps the silences and the loudness too). The seek
+  bar (`Progress.tsx`, `seekShape.ts` pure and tested) draws 120 bars, the loudest point under each, the played part
+  in ink over the rest in the line's colour; the bar's own line and the wave hidden, the thumb kept. Streams and files
+  not measured yet show the wave (Wavy). Local files only: a stream's audio is never taken for it. Seen over the demo
+  (its fake engine sends a made-up shape); not measured on real files in the app, nor timed on a long one.
 
 ## Live processing (Adaptive Sound, moving cover; 2026-10-21)
 

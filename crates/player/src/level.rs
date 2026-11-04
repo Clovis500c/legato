@@ -3,6 +3,7 @@
 //! its loudness measured once (`music_dsp::loudness`, in the same decode as the silence scan, cached by the shell).
 //! Applied by `live` before the live chain, so its limiter sees the result. A boost stops before the peak passes -1 dBFS.
 
+use crate::shape::{self, Shape};
 use crate::silence::{self, Trim};
 use anyhow::Result;
 use music_dsp::loudness::Integrated;
@@ -65,13 +66,22 @@ impl Gain {
     }
 }
 
-/// One full decode of a local file: where its music is, and how loud it is.
-pub fn analyse(path: &Path) -> Result<(Trim, Loudness)> {
+/// One full decode of a local file: where its music is, how loud it is, and its shape for the seek bar.
+pub fn analyse(path: &Path) -> Result<(Trim, Loudness, Vec<u8>)> {
     let src = Decoder::try_from(File::open(path)?)?;
     let (channels, rate) = (src.channels().get() as usize, src.sample_rate().get());
     let mut meter = Integrated::new(rate, channels);
-    let trim = silence::scan(src.inspect(|&x| meter.push(x)), channels, rate, false);
-    Ok((trim, meter.result()))
+    let mut shape = Shape::new(rate, channels);
+    let trim = silence::scan(
+        src.inspect(|&x| {
+            meter.push(x);
+            shape.push(x);
+        }),
+        channels,
+        rate,
+        false,
+    );
+    Ok((trim, meter.result(), shape.finish(shape::POINTS)))
 }
 
 #[cfg(test)]

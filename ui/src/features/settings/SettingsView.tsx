@@ -220,7 +220,7 @@ function Appearance() {
               ]}
             />
           </Row>
-          <Row setting="progressStyle" label={msg('Progress bar')} sub={tr('The played part of the seek bar: a line, or a wave that moves while the song plays')} preview={<ProgressScene progressStyle={s.progressStyle} />}>
+          <Row setting="progressStyle" label={msg('Progress bar')} sub={tr('The played part of the seek bar: a line, a wave that moves while the song plays, or the song’s own shape (your files; others show the wave)')} preview={<ProgressScene progressStyle={s.progressStyle} />}>
             <Segmented
               label={tr('Progress bar')}
               value={s.progressStyle}
@@ -228,6 +228,7 @@ function Appearance() {
               options={[
                 { value: 'line', label: tr('Straight') },
                 { value: 'wave', label: tr('Wavy') },
+                { value: 'shape', label: tr('Song’s shape') },
               ]}
             />
           </Row>

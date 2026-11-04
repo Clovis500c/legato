@@ -6,6 +6,7 @@ mod live;
 pub mod mic;
 mod output;
 mod queue;
+pub mod shape;
 pub mod silence;
 
 pub use level::{Gain, Level};

@@ -52,7 +52,7 @@ CREATE TABLE IF NOT EXISTS settings (
 ";
 
 /// Schema version this code writes (user_version after migrations).
-pub const SCHEMA_VERSION: i64 = 16;
+pub const SCHEMA_VERSION: i64 = 17;
 
 /// The library was made by a newer version of the app.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -463,6 +463,10 @@ impl Library {
         if lib.db.query_row("PRAGMA user_version", [], |r| r.get::<_, i64>(0))? < 16 {
             // v16: your rating of a song, in half stars (1..=10; 0 = taken off, kept with its time for Sync Mode).
             lib.db.execute_batch("BEGIN; CREATE TABLE IF NOT EXISTS track_ratings (track_id INTEGER PRIMARY KEY REFERENCES tracks(id) ON DELETE CASCADE, stars INTEGER NOT NULL, at INTEGER NOT NULL); PRAGMA user_version = 16; COMMIT;")?;
+        }
+        if lib.db.query_row("PRAGMA user_version", [], |r| r.get::<_, i64>(0))? < 17 {
+            // v17: local files' shapes for the seek bar (`music_player::shape`), by path and modified time (a cache, not synced).
+            lib.db.execute_batch("BEGIN; CREATE TABLE IF NOT EXISTS waveform (path TEXT PRIMARY KEY, modified INTEGER NOT NULL, shape BLOB NOT NULL); PRAGMA user_version = 17; COMMIT;")?;
         }
         lib.db.execute_batch(CHANGE_LOG)?;
         // Statements on logged tables compile their triggers too: kept, not rebuilt per call.
@@ -1204,6 +1208,20 @@ impl Library {
             params![path, modified, lufs.map(f64::from), peak as f64],
         )?;
         self.db.execute("DELETE FROM loudness WHERE rowid <= (SELECT MAX(rowid) FROM loudness) - ?1", [SILENCE_KEEP])?;
+        Ok(())
+    }
+
+    /// A local file's shape for the seek bar, when it was measured with this `modified` time.
+    pub fn cached_waveform(&self, path: &str, modified: i64) -> Result<Option<Vec<u8>>> {
+        Ok(self.db.query_row("SELECT shape FROM waveform WHERE path = ?1 AND modified = ?2", params![path, modified], |r| r.get(0)).optional()?)
+    }
+
+    pub fn save_waveform(&self, path: &str, modified: i64, shape: &[u8]) -> Result<()> {
+        self.db.execute(
+            "INSERT INTO waveform (path, modified, shape) VALUES (?1, ?2, ?3) ON CONFLICT (path) DO UPDATE SET modified = excluded.modified, shape = excluded.shape",
+            params![path, modified, shape],
+        )?;
+        self.db.execute("DELETE FROM waveform WHERE rowid <= (SELECT MAX(rowid) FROM waveform) - ?1", [SILENCE_KEEP])?;
         Ok(())
     }
 
@@ -2108,6 +2126,18 @@ mod tests {
         assert_eq!(lib.cached_silence("a.mp3", 6)?, None);
         lib.save_silence("a.mp3", 6, 0, None, 210_000)?;
         assert_eq!(lib.cached_silence("a.mp3", 6)?, Some((0, None, 210_000)));
+        Ok(())
+    }
+
+    #[test]
+    fn a_waveform_is_kept_until_its_file_changes() -> Result<()> {
+        let lib = Library::in_memory()?;
+        assert_eq!(lib.cached_waveform("a.flac", 5)?, None);
+        lib.save_waveform("a.flac", 5, &[0, 120, 255])?;
+        assert_eq!(lib.cached_waveform("a.flac", 5)?, Some(vec![0, 120, 255]));
+        assert_eq!(lib.cached_waveform("a.flac", 6)?, None);
+        lib.save_waveform("a.flac", 6, &[7])?;
+        assert_eq!(lib.cached_waveform("a.flac", 6)?, Some(vec![7]));
         Ok(())
     }
 

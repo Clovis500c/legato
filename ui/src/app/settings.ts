@@ -90,7 +90,9 @@ function apply(s: Settings) {
     // Storage off: no first-paint cache.
   }
   document.documentElement.classList.toggle('still', !s.motion)
-  document.documentElement.classList.toggle('wave-progress', s.progressStyle === 'wave')
+  // The song's shape: the wave for songs without one (streams, before a file's is measured).
+  document.documentElement.classList.toggle('wave-progress', s.progressStyle !== 'line')
+  document.documentElement.classList.toggle('shape-progress', s.progressStyle === 'shape')
   const lang = resolveLang(s.language, navigator.languages)
   if (wanted !== lang) {
     wanted = lang
@@ -106,7 +108,7 @@ function apply(s: Settings) {
       () => {},
     )
   }
-  usePlayer.setState({ fade: effectiveFade(s), gaplessAlbums: s.gaplessAlbums, smartShuffle: s.smartShuffle, skipLong: s.skipLong, earlyEnds: s.earlyEnds, skipSilence: s.skipSilence, levelling: s.levelling, skipNonMusic: s.skipNonMusic })
+  usePlayer.setState({ fade: effectiveFade(s), gaplessAlbums: s.gaplessAlbums, smartShuffle: s.smartShuffle, skipLong: s.skipLong, earlyEnds: s.earlyEnds, skipSilence: s.skipSilence, levelling: s.levelling, skipNonMusic: s.skipNonMusic, songShape: s.progressStyle === 'shape' })
   useStore.setState({ toastPrefs: { important: s.toastShow === 'important', scale: { short: 0.5, normal: 1, long: 2 }[s.toastTime] } })
   const root = document.documentElement.style
   const theme = resolveTheme(s, systemDark.matches, systemAccent)

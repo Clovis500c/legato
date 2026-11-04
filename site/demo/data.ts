@@ -141,6 +141,8 @@ const ANSWERS: Record<string, (args: Record<string, unknown>) => unknown> = {
   viz_start: ({ frames, fine, wave }) => startFrames(frames as Frames, fine === true, wave === true),
   player_levels: levels,
   viz_stop: stopFrames,
+  // A made-up song's shape for the seek bar: a quiet start, verses and louder choruses, a fade out.
+  local_waveform: () => Array.from({ length: 400 }, (_, i) => Math.round(Math.min(255, 40 + 150 * Math.min(1, i / 30, (400 - i) / 40) * (i % 120 > 60 ? 1.2 : 0.9) + 25 * Math.abs(Math.sin(i * 0.9))))),
   play_stats: () => Object.fromEntries(PLAYS.map((p) => [p.trackId, [PLAYS.filter((x) => x.trackId === p.trackId).length, p.startedAt]])),
   recent_plays: ({ since }) => PLAYS.filter((p) => p.startedAt >= (since as number)),
   play_history: () => PLAYS,

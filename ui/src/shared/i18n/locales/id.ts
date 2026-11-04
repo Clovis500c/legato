@@ -1848,10 +1848,10 @@ const id: Record<string, string> = {
   'auto-dj autodj stars rating favourite weight': 'auto-dj autodj bintang rating favorit bobot',
   'auto-dj autodj artist repeat spread apart': 'auto-dj autodj artis ulang sebar jarak',
   'Progress bar': 'Bilah progres',
-  'The played part of the seek bar: a line, or a wave that moves while the song plays': 'Bagian bilah yang sudah diputar: garis, atau gelombang yang bergerak selama lagu diputar',
+  'The played part of the seek bar: a line, a wave that moves while the song plays, or the song’s own shape (your files; others show the wave)': 'Bagian bilah yang sudah diputar: garis, gelombang yang bergerak selama lagu diputar, atau bentuk lagu itu sendiri (file kamu; yang lain menampilkan gelombang)',
   'Straight': 'Lurus',
   'Wavy': 'Bergelombang',
-  'seek bar squiggly wave line progress style': 'bilah progres gelombang garis gaya squiggly',
+  'seek bar squiggly wave line progress style waveform shape': 'bilah progres gelombang garis gaya squiggly bentuk gelombang bentuk',
   'End of this album': 'Di akhir album ini',
   'End of album': 'Akhir album',
   'Library health': 'Kesehatan pustaka',
@@ -2037,6 +2037,7 @@ const id: Record<string, string> = {
   'Oscilloscope': 'Osiloskop',
   'Vectorscope': 'Vektorskop',
   'Particles': 'Partikel',
+  'Song’s shape': 'Bentuk lagu',
 }
 
 export default id

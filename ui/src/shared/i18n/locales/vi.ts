@@ -1848,10 +1848,10 @@ const vi: Record<string, string> = {
   'auto-dj autodj stars rating favourite weight': 'auto-dj autodj sao đánh giá yêu thích trọng số',
   'auto-dj autodj artist repeat spread apart': 'auto-dj autodj nghệ sĩ lặp lại rải giãn cách',
   'Progress bar': 'Thanh tiến trình',
-  'The played part of the seek bar: a line, or a wave that moves while the song plays': 'Phần đã phát của thanh: một đường thẳng, hoặc một làn sóng chuyển động khi bài hát đang phát',
+  'The played part of the seek bar: a line, a wave that moves while the song plays, or the song’s own shape (your files; others show the wave)': 'Phần đã phát của thanh: một đường thẳng, một làn sóng chuyển động khi bài hát đang phát, hoặc hình dạng của chính bài hát (tệp của bạn; các bài khác hiện làn sóng)',
   'Straight': 'Thẳng',
   'Wavy': 'Gợn sóng',
-  'seek bar squiggly wave line progress style': 'thanh tiến trình sóng gợn đường kẻ kiểu squiggly',
+  'seek bar squiggly wave line progress style waveform shape': 'thanh tiến trình sóng gợn đường kẻ kiểu squiggly dạng sóng hình dạng waveform',
   'End of this album': 'Hết album này',
   'End of album': 'Hết album',
   'Library health': 'Tình trạng thư viện',
@@ -2037,6 +2037,7 @@ const vi: Record<string, string> = {
   'Oscilloscope': 'Máy hiện sóng',
   'Vectorscope': 'Máy hiện vectơ',
   'Particles': 'Hạt',
+  'Song’s shape': 'Hình dạng bài hát',
 }
 
 export default vi

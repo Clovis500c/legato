@@ -1848,10 +1848,10 @@ const uk: Record<string, string> = {
   'auto-dj autodj stars rating favourite weight': 'auto-dj автодиджей зірки оцінка улюблене вага',
   'auto-dj autodj artist repeat spread apart': 'auto-dj автодиджей виконавець повтор розподілити інтервал',
   'Progress bar': 'Смуга прогресу',
-  'The played part of the seek bar: a line, or a wave that moves while the song plays': 'Програна частина смуги: лінія або хвиля, що рухається, поки грає пісня',
+  'The played part of the seek bar: a line, a wave that moves while the song plays, or the song’s own shape (your files; others show the wave)': 'Програна частина смуги: лінія, хвиля, що рухається, поки грає пісня, або форма самої пісні (твої файли; в інших хвиля)',
   'Straight': 'Пряма',
   'Wavy': 'Хвиляста',
-  'seek bar squiggly wave line progress style': 'смуга прогрес хвиля хвиляста лінія стиль squiggly',
+  'seek bar squiggly wave line progress style waveform shape': 'смуга прогрес хвиля хвиляста лінія стиль squiggly форма хвилі форма',
   'End of this album': 'Наприкінці цього альбому',
   'End of album': 'Кінець альбому',
   'Library health': 'Стан медіатеки',
@@ -2037,6 +2037,7 @@ const uk: Record<string, string> = {
   'Oscilloscope': 'Осцилограф',
   'Vectorscope': 'Векторскоп',
   'Particles': 'Частинки',
+  'Song’s shape': 'Форма пісні',
 }
 
 export default uk

@@ -1848,10 +1848,10 @@ const fr: Record<string, string> = {
   'auto-dj autodj stars rating favourite weight': 'auto-dj autodj étoiles note favori poids',
   'auto-dj autodj artist repeat spread apart': 'auto-dj autodj artiste répéter répartir espacer',
   'Progress bar': 'Barre de progression',
-  'The played part of the seek bar: a line, or a wave that moves while the song plays': 'La partie lue de la barre : une ligne, ou une onde qui bouge pendant la lecture du titre',
+  'The played part of the seek bar: a line, a wave that moves while the song plays, or the song’s own shape (your files; others show the wave)': 'La partie lue de la barre : une ligne, une onde qui bouge pendant la lecture du titre, ou la forme du titre lui-même (vos fichiers ; les autres montrent l’onde)',
   'Straight': 'Droite',
   'Wavy': 'Ondulée',
-  'seek bar squiggly wave line progress style': 'barre progression onde ondulée ligne style squiggly',
+  'seek bar squiggly wave line progress style waveform shape': 'barre progression onde ondulée ligne style squiggly forme d’onde forme',
   'End of this album': 'À la fin de cet album',
   'End of album': 'Fin de l’album',
   'Library health': 'Santé de la bibliothèque',
@@ -2037,6 +2037,7 @@ const fr: Record<string, string> = {
   'Oscilloscope': 'Oscilloscope',
   'Vectorscope': 'Vectorscope',
   'Particles': 'Particules',
+  'Song’s shape': 'Forme du titre',
 }
 
 export default fr

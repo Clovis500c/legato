@@ -9,14 +9,16 @@ use music_player::silence::leading;
 use music_player::{Command, Trim};
 use std::collections::HashSet;
 use std::path::{Path, PathBuf};
-use std::sync::Mutex;
-use std::time::UNIX_EPOCH;
-use tauri::{Manager, State};
+use std::sync::{Mutex, PoisonError};
+use std::time::{Duration, UNIX_EPOCH};
+use tauri::{AppHandle, Manager, State};
 
 /// Files looked at per call: the playing one and the next ones of its gapless run.
 const NEAR: usize = 4;
 /// Being decoded in full now (a second call for the same file waits for the first one's answer).
 static BUSY: Mutex<Option<HashSet<PathBuf>>> = Mutex::new(None);
+/// The longest wait for another call's decode of the same file.
+const WAIT: Duration = Duration::from_secs(30);
 
 fn modified(path: &Path) -> Option<i64> {
     Some(std::fs::metadata(path).ok()?.modified().ok()?.duration_since(UNIX_EPOCH).ok()?.as_millis() as i64)
@@ -83,17 +85,8 @@ pub async fn local_prepare(state: State<'_, AppState>, paths: Vec<String>, silen
         let app = state.app.clone();
         tauri::async_runtime::spawn_blocking(move || {
             for f in missed {
-                if !BUSY.lock().unwrap_or_else(std::sync::PoisonError::into_inner).get_or_insert_default().insert(f.path.clone()) {
-                    continue;
-                }
-                if let Ok((t, loud)) = analyse(&f.path) {
+                if let Some((t, loud, _)) = measure(&app, &f.path, f.modified) {
                     let state = app.state::<AppState>();
-                    let key = f.path.to_string_lossy();
-                    {
-                        let lib = state.lib();
-                        let _ = lib.save_silence(&key, f.modified, t.start_ms, t.end_ms, t.total_ms);
-                        let _ = lib.save_loudness(&key, f.modified, loud.lufs, loud.peak);
-                    }
                     if f.trim {
                         state.player.send(Command::Trims { list: vec![(f.path.clone(), t)] });
                     }
@@ -101,9 +94,56 @@ pub async fn local_prepare(state: State<'_, AppState>, paths: Vec<String>, silen
                         state.player.send(Command::Gains { list: vec![(f.path.clone(), g)] });
                     }
                 }
-                BUSY.lock().unwrap_or_else(std::sync::PoisonError::into_inner).get_or_insert_default().remove(&f.path);
             }
         });
     }
     Ok(())
+}
+
+fn busy() -> std::sync::MutexGuard<'static, Option<HashSet<PathBuf>>> {
+    BUSY.lock().unwrap_or_else(PoisonError::into_inner)
+}
+
+/// One full decode of a local file, its answers kept (silences, loudness, shape); the same file being decoded by another
+/// call: that one's answers, once it is done. None when the file can't be read.
+fn measure(app: &AppHandle, path: &Path, modified: i64) -> Option<(Trim, Loudness, Vec<u8>)> {
+    let key = path.to_string_lossy().into_owned();
+    let state = app.state::<AppState>();
+    if !busy().get_or_insert_default().insert(path.to_path_buf()) {
+        let start = std::time::Instant::now();
+        while busy().get_or_insert_default().contains(path) && start.elapsed() < WAIT {
+            std::thread::sleep(Duration::from_millis(100));
+        }
+        let lib = state.lib();
+        let (start_ms, end_ms, total_ms) = lib.cached_silence(&key, modified).ok().flatten()?;
+        let (lufs, peak) = lib.cached_loudness(&key, modified).ok().flatten()?;
+        let shape = lib.cached_waveform(&key, modified).ok().flatten().unwrap_or_default();
+        return Some((Trim { start_ms, end_ms, total_ms }, Loudness { lufs, peak }, shape));
+    }
+    let found = analyse(path).ok();
+    if let Some((t, loud, shape)) = &found {
+        let lib = state.lib();
+        let _ = lib.save_silence(&key, modified, t.start_ms, t.end_ms, t.total_ms);
+        let _ = lib.save_loudness(&key, modified, loud.lufs, loud.peak);
+        if !shape.is_empty() {
+            let _ = lib.save_waveform(&key, modified, shape);
+        }
+    }
+    busy().get_or_insert_default().remove(path);
+    found
+}
+
+/// A local file's shape for the seek bar (Settings › Appearance › Progress bar › Song's shape): the cache, else one full
+/// decode now, which keeps its silences and loudness too. None when it can't be read. Local files only: a stream's
+/// audio is never taken for it.
+#[tauri::command]
+pub async fn local_waveform(state: State<'_, AppState>, path: String) -> Result<Option<Vec<u8>>, String> {
+    let path = PathBuf::from(path);
+    let Some(m) = modified(&path) else { return Ok(None) };
+    if let Some(shape) = state.lib().cached_waveform(&path.to_string_lossy(), m).map_err(|e| e.to_string())? {
+        return Ok(Some(shape));
+    }
+    let app = state.app.clone();
+    let found = tauri::async_runtime::spawn_blocking(move || measure(&app, &path, m)).await.map_err(|e| e.to_string())?;
+    Ok(found.map(|(_, _, shape)| shape).filter(|s| !s.is_empty()))
 }

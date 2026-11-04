@@ -186,6 +186,8 @@ Relaunch log (newest last):
   119.9 BPM), the ring not watched moving (the browser pane was hidden); not on real music.
 - 2026-11-05: the Particles look (`vizParticles.ts`: bursts on kicks, at most 3 a second, a drift with the mids; the
   cover's colours from `coverPalette.ts`; full screen over the blurred cover). Seen over the demo in both themes.
+- 2026-11-05: Song's shape on the seek bar for local files (Progress bar › Song's shape): `music_player::shape` in the
+  levelling's decode, SQLite `waveform` (schema 17), `local_waveform`. Seen over the demo; not on real files in the app.
 
 ## Mobile app and devices sync (the owner's ask, 2026-11-02 afternoon; in progress)
 

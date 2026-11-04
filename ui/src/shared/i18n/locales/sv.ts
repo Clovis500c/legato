@@ -1848,10 +1848,10 @@ const sv: Record<string, string> = {
   'auto-dj autodj stars rating favourite weight': 'auto-dj autodj stjärnor betyg favorit vikt',
   'auto-dj autodj artist repeat spread apart': 'auto-dj autodj artist upprepa sprida avstånd',
   'Progress bar': 'Förloppsindikator',
-  'The played part of the seek bar: a line, or a wave that moves while the song plays': 'Den spelade delen av fältet: en linje, eller en våg som rör sig medan låten spelas',
+  'The played part of the seek bar: a line, a wave that moves while the song plays, or the song’s own shape (your files; others show the wave)': 'Den spelade delen av fältet: en linje, en våg som rör sig medan låten spelas, eller låtens egen form (dina filer; andra visar vågen)',
   'Straight': 'Rak',
   'Wavy': 'Vågig',
-  'seek bar squiggly wave line progress style': 'förlopp fält våg vågig linje stil squiggly',
+  'seek bar squiggly wave line progress style waveform shape': 'förlopp fält våg vågig linje stil squiggly vågform form',
   'End of this album': 'I slutet av det här albumet',
   'End of album': 'Slutet av albumet',
   'Library health': 'Bibliotekets skick',
@@ -2037,6 +2037,7 @@ const sv: Record<string, string> = {
   'Oscilloscope': 'Oskilloskop',
   'Vectorscope': 'Vektorskop',
   'Particles': 'Partiklar',
+  'Song’s shape': 'Låtens form',
 }
 
 export default sv

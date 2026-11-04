@@ -1848,10 +1848,10 @@ const ja: Record<string, string> = {
   'auto-dj autodj stars rating favourite weight': 'auto-dj オートDJ 星 評価 お気に入り 重み',
   'auto-dj autodj artist repeat spread apart': 'auto-dj オートDJ アーティスト 繰り返し 分散 間隔',
   'Progress bar': 'プログレスバー',
-  'The played part of the seek bar: a line, or a wave that moves while the song plays': '再生済みの部分：直線か、曲の再生中に動く波',
+  'The played part of the seek bar: a line, a wave that moves while the song plays, or the song’s own shape (your files; others show the wave)': '再生済みの部分：直線、曲の再生中に動く波、または曲そのものの形（自分のファイル。それ以外は波）',
   'Straight': '直線',
   'Wavy': '波形',
-  'seek bar squiggly wave line progress style': 'プログレスバー 波 直線 スタイル squiggly',
+  'seek bar squiggly wave line progress style waveform shape': 'プログレスバー 波 直線 スタイル squiggly 波形 形 waveform shape',
   'End of this album': 'このアルバムの終わり',
   'End of album': 'アルバムの終わり',
   'Library health': 'ライブラリの状態',
@@ -2037,6 +2037,7 @@ const ja: Record<string, string> = {
   'Oscilloscope': 'オシロスコープ',
   'Vectorscope': 'ベクトルスコープ',
   'Particles': 'パーティクル',
+  'Song’s shape': '曲の形',
 }
 
 export default ja

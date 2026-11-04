@@ -1848,10 +1848,10 @@ const ru: Record<string, string> = {
   'auto-dj autodj stars rating favourite weight': 'auto-dj автодиджей звёзды оценка любимое вес',
   'auto-dj autodj artist repeat spread apart': 'auto-dj автодиджей исполнитель повтор распределить интервал',
   'Progress bar': 'Полоса прогресса',
-  'The played part of the seek bar: a line, or a wave that moves while the song plays': 'Проигранная часть полосы: линия или волна, которая движется, пока играет песня',
+  'The played part of the seek bar: a line, a wave that moves while the song plays, or the song’s own shape (your files; others show the wave)': 'Проигранная часть полосы: линия, волна, которая движется, пока играет песня, или форма самой песни (твои файлы; у остальных волна)',
   'Straight': 'Прямая',
   'Wavy': 'Волнистая',
-  'seek bar squiggly wave line progress style': 'полоса прогресс волна волнистая линия стиль squiggly',
+  'seek bar squiggly wave line progress style waveform shape': 'полоса прогресс волна волнистая линия стиль squiggly форма волны форма',
   'End of this album': 'В конце этого альбома',
   'End of album': 'Конец альбома',
   'Library health': 'Состояние медиатеки',
@@ -2037,6 +2037,7 @@ const ru: Record<string, string> = {
   'Oscilloscope': 'Осциллограф',
   'Vectorscope': 'Векторскоп',
   'Particles': 'Частицы',
+  'Song’s shape': 'Форма песни',
 }
 
 export default ru

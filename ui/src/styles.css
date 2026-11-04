@@ -443,6 +443,20 @@ code {
 .wave-progress .bar.seek {
   background-image: linear-gradient(to right, transparent var(--played), var(--line) var(--played)) !important;
 }
+/* Song's shape (local files, seekShape.ts): the song's loudness as bars, the played part in ink, in place of the wave
+   and the bar's own line; the thumb stays. */
+.song-shape {
+  display: none;
+}
+.shape-progress .has-shape .song-shape {
+  @apply pointer-events-none absolute inset-x-0 top-1/2 block h-4 w-full -translate-y-1/2;
+}
+.shape-progress .has-shape .squiggle {
+  display: none;
+}
+.shape-progress .has-shape .bar.seek {
+  background-image: none !important;
+}
 @media (prefers-reduced-motion: reduce) {
   .squiggle > span {
     animation: none;

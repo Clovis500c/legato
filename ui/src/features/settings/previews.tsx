@@ -4,6 +4,7 @@ import { useStore } from '../../app/store'
 import { trackArt } from '../../shared/art'
 import type { Settings } from '../../shared/theme/theme'
 import { curvePath } from '../player/fade'
+import { shapePath } from '../player/seekShape'
 import { usePlayer } from '../player/store'
 import { tr } from '../../shared/i18n/i18n'
 
@@ -262,8 +263,23 @@ export function MotionScene({ motion }: Pick<Settings, 'motion'>) {
 }
 
 /** The seek bar's played part: a line, or the moving wave (the real bar's CSS). Narrow windows: the choices alone. */
+/** The preview's made-up song: quiet start, louder middle, 48 bars. */
+const SAMPLE_SHAPE = shapePath(
+  Array.from({ length: 48 }, (_, i) => Math.min(1, 0.25 + 0.55 * Math.sin((i / 47) * Math.PI) + 0.2 * Math.abs(Math.sin(i * 1.7)))),
+  16,
+)
+
 export function ProgressScene({ progressStyle }: Pick<Settings, 'progressStyle'>) {
   const wave = progressStyle === 'wave'
+  if (progressStyle === 'shape')
+    return (
+      <Frame label={tr('Progress bar preview')} className="hidden items-center px-3 xl:flex">
+        <svg aria-hidden viewBox="0 0 48 16" preserveAspectRatio="none" className="h-4 w-full">
+          <path d={SAMPLE_SHAPE} className="fill-line" />
+          <path d={SAMPLE_SHAPE} className="fill-ink" style={{ clipPath: 'inset(0 40% 0 0)' }} />
+        </svg>
+      </Frame>
+    )
   return (
     <Frame label={tr('Progress bar preview')} className={`hidden items-center px-3 xl:flex ${wave ? 'wave-progress' : ''}`}>
       <span className="relative flex h-2.5 w-full items-center">

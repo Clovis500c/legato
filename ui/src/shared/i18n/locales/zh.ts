@@ -1848,10 +1848,10 @@ const zh: Record<string, string> = {
   'auto-dj autodj stars rating favourite weight': 'auto-dj 自动 DJ 星级 评分 喜爱 权重',
   'auto-dj autodj artist repeat spread apart': 'auto-dj 自动 DJ 艺人 重复 分散 间隔',
   'Progress bar': '进度条',
-  'The played part of the seek bar: a line, or a wave that moves while the song plays': '已播放部分：一条直线，或随歌曲播放而流动的波浪',
+  'The played part of the seek bar: a line, a wave that moves while the song plays, or the song’s own shape (your files; others show the wave)': '已播放部分：一条直线、随歌曲播放而流动的波浪，或歌曲自身的波形（你的文件；其他显示波浪）',
   'Straight': '直线',
   'Wavy': '波浪',
-  'seek bar squiggly wave line progress style': '进度条 波浪 直线 样式 squiggly',
+  'seek bar squiggly wave line progress style waveform shape': '进度条 波浪 直线 样式 squiggly 波形 形状 waveform',
   'End of this album': '这张专辑结束时',
   'End of album': '专辑结束时',
   'Library health': '音乐库状况',
@@ -2037,6 +2037,7 @@ const zh: Record<string, string> = {
   'Oscilloscope': '示波器',
   'Vectorscope': '矢量示波器',
   'Particles': '粒子',
+  'Song’s shape': '歌曲波形',
 }
 
 export default zh

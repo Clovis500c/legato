@@ -426,7 +426,8 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
 - [x] `S` Squiggly / waveform progress bar as a progress style choice. Settings › Appearance › Player › Progress bar,
       Wavy: the played part is a wave moving while the song plays (a CSS mask, `.wave-progress`; still when paused or with
       Animations off).
-- [ ] `S` Waveform progress bar for local files: their levels, read once by the engine and kept (YouTube gives none).
+- [x] `S` Waveform progress bar for local files: their levels, read once by the engine and kept (YouTube gives none).
+      (2026-11-05: Progress bar › Song’s shape, the line below.)
 - [ ] `S` Focus / workout sessions: a timer, no-lyrics or high-BPM mix, a summary after.
 - [x] `S` Now-playing overlay for streamers (a local page OBS can show, the app's theme). (2026-11-02: Settings › Playback ›
       Streaming overlay, `/overlay` on the phone remote's server, 127.0.0.1 only when alone; OBS's Custom CSS restyles it.)
@@ -583,7 +584,11 @@ colours, mirror, reflection.
       second, drift with the mids, a trickle with the level; the cover's colours from `coverPalette.ts`; full screen
       over the blurred cover. Decided alone: Canvas 2D sprites rather than GPU particles (900 at most), the counts and
       sizes, bars in the backdrop and the mini player. Seen over the demo, full screen dark and light; not on real music.)
-- [ ] `M` Song waveform on the progress bar for local files (computed once from the file, cached; not for streams).
+- [x] `M` Song waveform on the progress bar for local files (computed once from the file, cached; not for streams).
+      (2026-11-05: Settings › Appearance › Progress bar › Song’s shape: 400 points of RMS in the levelling’s decode
+      (`music_player::shape`), cached in SQLite `waveform` (schema 17), 120 bars on the seek bar, played part in ink;
+      streams show the wave. Decided alone: RMS in dB rather than peaks (mastered songs would read flat), the counts.
+      Seen over the demo with a made-up shape; not measured on real files in the app.)
 
 **Low**
 - [ ] `S` VU meters: the PPM option and other skins. (Two needles with VU ballistics, the peak LED, the theme's ink are in.)

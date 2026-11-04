@@ -193,6 +193,8 @@ export const api = {
   sponsorSegments: (video: string) => invoke<SponsorSegment[]>('sponsor_segments', { video }),
   /** Local files about to play: their silences (`silence`) and levelling gains (`level`) go to the engine. */
   localPrepare: (paths: string[], silence: boolean, level: boolean) => invoke<void>('local_prepare', { paths, silence, level }),
+  /** A local file's shape for the seek bar (0 to 255 along the song), measured once and kept; null when unreadable. */
+  localWaveform: (path: string) => invoke<number[] | null>('local_waveform', { path }),
   playerLive: (settings: LiveSettings) => invoke<void>('player_live', { settings }),
   /** Live Editor: a song's saved edits (key from effects.ts songKey), or the presets (null). */
   edits: (song: string | null) => invoke<Edit[]>('edits', { song }),

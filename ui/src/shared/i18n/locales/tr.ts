@@ -1848,10 +1848,10 @@ const tr: Record<string, string> = {
   'auto-dj autodj stars rating favourite weight': 'auto-dj otomatik dj yıldız puan favori ağırlık',
   'auto-dj autodj artist repeat spread apart': 'auto-dj otomatik dj sanatçı tekrar dağıt aralık',
   'Progress bar': 'İlerleme çubuğu',
-  'The played part of the seek bar: a line, or a wave that moves while the song plays': 'Çubuğun çalınan kısmı: düz bir çizgi ya da şarkı çalarken hareket eden bir dalga',
+  'The played part of the seek bar: a line, a wave that moves while the song plays, or the song’s own shape (your files; others show the wave)': 'Çubuğun çalınan kısmı: düz bir çizgi, şarkı çalarken hareket eden bir dalga ya da şarkının kendi şekli (kendi dosyaların; diğerlerinde dalga)',
   'Straight': 'Düz',
   'Wavy': 'Dalgalı',
-  'seek bar squiggly wave line progress style': 'ilerleme çubuk dalga dalgalı çizgi stil squiggly',
+  'seek bar squiggly wave line progress style waveform shape': 'ilerleme çubuk dalga dalgalı çizgi stil squiggly dalga formu şekil',
   'End of this album': 'Bu albümün sonunda',
   'End of album': 'Albümün sonu',
   'Library health': 'Kitaplık sağlığı',
@@ -2037,6 +2037,7 @@ const tr: Record<string, string> = {
   'Oscilloscope': 'Osiloskop',
   'Vectorscope': 'Vektörskop',
   'Particles': 'Parçacıklar',
+  'Song’s shape': 'Şarkının şekli',
 }
 
 export default tr

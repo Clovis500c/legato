@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
+import { api } from '../../shared/api'
 import { formatDuration } from '../../shared/format'
 import { Bar } from '../../shared/ui/controls'
 import { move, press, release, shown, type Drag } from './seekDrag'
+import { SHAPE_BARS, shapeBars, shapePath } from './seekShape'
 import { useSponsor } from './sponsor'
 import { usePlayer } from './store'
 import { tr } from '../../shared/i18n/i18n'
@@ -88,6 +90,29 @@ export function ProgressLine({ className = 'absolute inset-x-0 bottom-0' }: { cl
   )
 }
 
+/** Shapes asked for, by file: one ask per file a session (the engine keeps them across sessions). */
+const shapes = new Map<string, Promise<number[] | null>>()
+
+/** The playing local song's shape as SVG paths (Song's shape on), else null: a stream, a file not measurable. */
+function useSongShape(): string | null {
+  const on = usePlayer((s) => s.songShape)
+  const path = usePlayer((s) => s.now?.path)
+  const [got, setGot] = useState<{ path: string; d: string | null }>()
+  useEffect(() => {
+    if (!on || !path) return
+    let live = true
+    if (!shapes.has(path)) shapes.set(path, api.localWaveform(path).catch(() => null))
+    void shapes.get(path)!.then((points) => {
+      const bars = points ? shapeBars(points) : []
+      if (live) setGot({ path, d: bars.length ? shapePath(bars, 16) : null })
+    })
+    return () => {
+      live = false
+    }
+  }, [on, path])
+  return on && path && got?.path === path ? got.d : null
+}
+
 /**
  * YouTube-like seek bar fed by the smooth position. While a pointer drags it, it shows the pointer and seeks on release;
  * arrow keys seek at once. A drag never outlives its song (`seekDrag.ts`).
@@ -103,12 +128,14 @@ export function SeekBar({ className = '' }: { className?: string }) {
   const live = useRef<Drag>(null)
   const put = (d: Drag) => setDrag((live.current = d))
   const end = useRef(() => {})
+  const shape = useSongShape()
+  const played = durationMs ? Math.min(100, (shown(drag, track, pos) / durationMs) * 100) : 0
 
   useEffect(() => () => end.current(), [])
 
   return (
     <span
-      className={`relative flex ${className}`}
+      className={`relative flex ${shape ? 'has-shape' : ''} ${className}`}
       onPointerDown={(e) => {
         if (e.button !== 0) return
         put(press(String(usePlayer.getState().playId), pos))
@@ -132,9 +159,16 @@ export function SeekBar({ className = '' }: { className?: string }) {
       }}
     >
       {/* Settings › Appearance › Progress bar, Wavy: the played part as a wave (styles.css; hidden otherwise). Under the bar. */}
-      <span aria-hidden className="squiggle" style={{ width: `${durationMs ? Math.min(100, (shown(drag, track, pos) / durationMs) * 100) : 0}%` }}>
+      <span aria-hidden className="squiggle" style={{ width: `${played}%` }}>
         <span data-moving={playing} />
       </span>
+      {/* Song's shape (a local song's, measured once): the unplayed bars in the line's colour, the played ones in ink. */}
+      {shape && (
+        <svg aria-hidden className="song-shape" viewBox={`0 0 ${SHAPE_BARS} 16`} preserveAspectRatio="none">
+          <path d={shape} className="fill-line" />
+          <path d={shape} className="fill-ink" style={{ clipPath: `inset(0 ${100 - played}% 0 0)` }} />
+        </svg>
+      )}
       <Bar
         label={tr('Position')}
         seek

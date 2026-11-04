@@ -1848,10 +1848,10 @@ const nl: Record<string, string> = {
   'auto-dj autodj stars rating favourite weight': 'auto-dj autodj sterren beoordeling favoriet gewicht',
   'auto-dj autodj artist repeat spread apart': 'auto-dj autodj artiest herhalen spreiden afstand',
   'Progress bar': 'Voortgangsbalk',
-  'The played part of the seek bar: a line, or a wave that moves while the song plays': 'Het afgespeelde deel van de balk: een lijn, of een golf die beweegt terwijl het nummer speelt',
+  'The played part of the seek bar: a line, a wave that moves while the song plays, or the song’s own shape (your files; others show the wave)': 'Het afgespeelde deel van de balk: een lijn, een golf die beweegt terwijl het nummer speelt, of de vorm van het nummer zelf (je eigen bestanden; andere tonen de golf)',
   'Straight': 'Recht',
   'Wavy': 'Golvend',
-  'seek bar squiggly wave line progress style': 'voortgang balk golf golvend lijn stijl squiggly',
+  'seek bar squiggly wave line progress style waveform shape': 'voortgang balk golf golvend lijn stijl squiggly golfvorm vorm',
   'End of this album': 'Aan het einde van dit album',
   'End of album': 'Einde van album',
   'Library health': 'Staat van de bibliotheek',
@@ -2037,6 +2037,7 @@ const nl: Record<string, string> = {
   'Oscilloscope': 'Oscilloscoop',
   'Vectorscope': 'Vectorscoop',
   'Particles': 'Deeltjes',
+  'Song’s shape': 'Vorm van het nummer',
 }
 
 export default nl

@@ -1848,10 +1848,10 @@ const hi: Record<string, string> = {
   'auto-dj autodj stars rating favourite weight': 'auto-dj ऑटो-DJ स्टार रेटिंग पसंदीदा वज़न',
   'auto-dj autodj artist repeat spread apart': 'auto-dj ऑटो-DJ कलाकार दोहराना फैलाना दूरी',
   'Progress bar': 'प्रोग्रेस बार',
-  'The played part of the seek bar: a line, or a wave that moves while the song plays': 'बार का चला हुआ हिस्सा: एक सीधी लाइन, या गाना चलते समय हिलती लहर',
+  'The played part of the seek bar: a line, a wave that moves while the song plays, or the song’s own shape (your files; others show the wave)': 'बार का चला हुआ हिस्सा: एक सीधी लाइन, गाना चलते समय हिलती लहर, या गाने का अपना आकार (आपकी फ़ाइलें; बाकी में लहर दिखती है)',
   'Straight': 'सीधी',
   'Wavy': 'लहरदार',
-  'seek bar squiggly wave line progress style': 'प्रोग्रेस बार लहर लाइन स्टाइल squiggly',
+  'seek bar squiggly wave line progress style waveform shape': 'प्रोग्रेस बार लहर लाइन स्टाइल squiggly वेवफ़ॉर्म आकार waveform shape',
   'End of this album': 'इस एल्बम के अंत में',
   'End of album': 'एल्बम के अंत में',
   'Library health': 'लाइब्रेरी की सेहत',
@@ -2037,6 +2037,7 @@ const hi: Record<string, string> = {
   'Oscilloscope': 'ऑसिलोस्कोप',
   'Vectorscope': 'वेक्टरस्कोप',
   'Particles': 'कण',
+  'Song’s shape': 'गाने का आकार',
 }
 
 export default hi

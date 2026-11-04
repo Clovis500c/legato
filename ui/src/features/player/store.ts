@@ -72,6 +72,8 @@ interface PlayerState {
   levelling: Levelling
   /** Settings › Playback › Skip non-music parts: SponsorBlock's marked intros, skits, outros (sponsor.ts). */
   skipNonMusic: boolean
+  /** Settings › Appearance › Progress bar › Song's shape: local songs' shapes asked for (Progress.tsx). */
+  songShape: boolean
   /** Fade in of the current track, s: full after the previous one, short after a skip (if asked), 0 = none. */
   fadeIn: number
   /** Where the current item started (resume), ms. */
@@ -485,6 +487,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
   skipSilence: false,
   levelling: 'off',
   skipNonMusic: false,
+  songShape: false,
   fadeIn: 0,
   startAt: 0,
   fadeFrom: 0,
