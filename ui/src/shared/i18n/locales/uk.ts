@@ -1971,6 +1971,8 @@ const uk: Record<string, string> = {
   'Closes in {time}': 'Закриється через {time}',
   'On {name}: Settings › Sync Mode › Add a device › Show a code.': 'На {name}: Налаштування › Синхронізація › Додати пристрій › Показати код.',
   'Code from the other device': 'Код з іншого пристрою',
+  'Scan a QR code': 'Сканувати QR-код',
+  'Not a Legato pairing code': 'Це не код сполучення Legato',
   'Trust this device': 'Довіряти цьому пристрою',
   'No code next time: the two sync on their own whenever they share a network.': 'Наступного разу без коду: обидва синхронізуються самі, щойно опиняться в одній мережі.',
   'phone mobile android iphone pair qr code wifi network trusted automatic other pc computer laptop': 'телефон смартфон android iphone поєднати qr код wifi мережа довіра автоматично інший пк комп’ютер ноутбук',

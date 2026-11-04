@@ -1971,6 +1971,8 @@ const ko: Record<string, string> = {
   'Closes in {time}': '{time} 후 닫힘',
   'On {name}: Settings › Sync Mode › Add a device › Show a code.': '{name}에서: 설정 › Sync Mode › 기기 추가 › 코드 표시.',
   'Code from the other device': '다른 기기의 코드',
+  'Scan a QR code': 'QR 코드 스캔',
+  'Not a Legato pairing code': 'Legato 페어링 코드가 아닙니다',
   'Trust this device': '이 기기 신뢰',
   'No code next time: the two sync on their own whenever they share a network.': '다음부터 코드 없이: 같은 네트워크에 있으면 두 기기가 알아서 동기화합니다.',
   'phone mobile android iphone pair qr code wifi network trusted automatic other pc computer laptop': '휴대폰 모바일 android iphone 연결 qr 코드 wifi 네트워크 신뢰 자동 다른 pc 컴퓨터 노트북',

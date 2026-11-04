@@ -1971,6 +1971,8 @@ const zh: Record<string, string> = {
   'Closes in {time}': '{time} 后关闭',
   'On {name}: Settings › Sync Mode › Add a device › Show a code.': '在 {name} 上：设置 › Sync Mode › 添加设备 › 显示代码。',
   'Code from the other device': '另一台设备上的代码',
+  'Scan a QR code': '扫描二维码',
+  'Not a Legato pairing code': '不是 Legato 配对码',
   'Trust this device': '信任此设备',
   'No code next time: the two sync on their own whenever they share a network.': '下次无需代码：只要在同一网络上，两台设备会自动同步。',
   'phone mobile android iphone pair qr code wifi network trusted automatic other pc computer laptop': '手机 移动 android iphone 配对 二维码 代码 wifi 网络 信任 自动 其他电脑 电脑 笔记本',

@@ -1971,6 +1971,8 @@ const nl: Record<string, string> = {
   'Closes in {time}': 'Sluit over {time}',
   'On {name}: Settings › Sync Mode › Add a device › Show a code.': 'Op {name}: Instellingen › Synchronisatie › Apparaat toevoegen › Code tonen.',
   'Code from the other device': 'Code van het andere apparaat',
+  'Scan a QR code': 'Een QR-code scannen',
+  'Not a Legato pairing code': 'Geen Legato-koppelcode',
   'Trust this device': 'Dit apparaat vertrouwen',
   'No code next time: the two sync on their own whenever they share a network.': 'Volgende keer geen code: de twee synchroniseren vanzelf zodra ze op hetzelfde netwerk zijn.',
   'phone mobile android iphone pair qr code wifi network trusted automatic other pc computer laptop': 'telefoon mobiel android iphone koppelen qr code wifi netwerk vertrouwen automatisch andere pc computer laptop',

@@ -60,6 +60,10 @@ Log (newest last):
   `player/media.ts`. Back on Android 8 to 11 moves the app to the background. Built and started on the emulator
   (session registered, no crash); buttons and a real playing song not tried. No cover in the notification yet (the
   art scheme is the page's; native fetch would need the cover bytes pushed).
+- 2026-11-04: step 4. QR scanner: `tauri-plugin-barcode-scanner` 2.x (Rust 2.4.5, JS 2.5.3; MIT / Apache-2.0; the 3.0
+  alpha avoided), phones only, capability `mobile.json`; Add a device › Enter a code › Scan a QR code pairs from the
+  other device's `legato://pair?` link. Starts on the emulator (CAMERA declared, not granted); never scanned a real code.
+  Camera permission: asked at the first scan. Privacy rows: the scan stays on the phone, nothing to add.
 
 ## Mobile app and devices sync (the owner's ask, 2026-11-02 afternoon; in progress)
 

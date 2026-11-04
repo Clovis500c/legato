@@ -1971,6 +1971,8 @@ const ja: Record<string, string> = {
   'Closes in {time}': '残り {time}',
   'On {name}: Settings › Sync Mode › Add a device › Show a code.': '{name} で：設定 › Sync Mode › デバイスを追加 › コードを表示。',
   'Code from the other device': 'もう一方のデバイスのコード',
+  'Scan a QR code': 'QRコードをスキャン',
+  'Not a Legato pairing code': 'Legato のペアリングコードではありません',
   'Trust this device': 'このデバイスを信頼する',
   'No code next time: the two sync on their own whenever they share a network.': '次回からコード不要：同じネットワークにいれば2台が自動で同期します。',
   'phone mobile android iphone pair qr code wifi network trusted automatic other pc computer laptop': 'スマートフォン 携帯 android iphone ペアリング qr コード wifi ネットワーク 信頼 自動 他のpc パソコン ノートpc',

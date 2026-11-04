@@ -1971,6 +1971,8 @@ const it: Record<string, string> = {
   'Closes in {time}': 'Scade tra {time}',
   'On {name}: Settings › Sync Mode › Add a device › Show a code.': 'Su {name}: Impostazioni › Sincronizzazione › Aggiungi un dispositivo › Mostra un codice.',
   'Code from the other device': 'Codice dall’altro dispositivo',
+  'Scan a QR code': 'Scansiona un codice QR',
+  'Not a Legato pairing code': 'Non è un codice di associazione Legato',
   'Trust this device': 'Considera attendibile questo dispositivo',
   'No code next time: the two sync on their own whenever they share a network.': 'Nessun codice la prossima volta: i due si sincronizzano da soli quando sono sulla stessa rete.',
   'phone mobile android iphone pair qr code wifi network trusted automatic other pc computer laptop': 'telefono cellulare android iphone abbina qr codice wifi rete attendibile automatico altro pc computer portatile',

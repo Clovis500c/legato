@@ -1971,6 +1971,8 @@ const vi: Record<string, string> = {
   'Closes in {time}': 'Đóng sau {time}',
   'On {name}: Settings › Sync Mode › Add a device › Show a code.': 'Trên {name}: Cài đặt › Sync Mode › Thêm thiết bị › Hiện mã.',
   'Code from the other device': 'Mã từ thiết bị kia',
+  'Scan a QR code': 'Quét mã QR',
+  'Not a Legato pairing code': 'Không phải mã ghép nối Legato',
   'Trust this device': 'Tin cậy thiết bị này',
   'No code next time: the two sync on their own whenever they share a network.': 'Lần sau không cần mã: hai thiết bị tự đồng bộ mỗi khi ở chung mạng.',
   'phone mobile android iphone pair qr code wifi network trusted automatic other pc computer laptop': 'điện thoại di động android iphone ghép đôi qr mã wifi mạng tin cậy tự động pc khác máy tính laptop',

@@ -4,6 +4,7 @@ import { useStore } from '../../app/store'
 import { api, type DeviceOffer, type DevicesStatus, type Merged, type SyncDeviceRow } from '../../shared/api'
 import { timeAgo } from '../../shared/format'
 import { tr } from '../../shared/i18n/i18n'
+import { phoneApp } from '../../shared/platform'
 import { Button } from '../../shared/ui/Button'
 import { onMenu } from '../../shared/ui/ContextMenu'
 import { Toggle } from '../../shared/ui/controls'
@@ -108,18 +109,29 @@ function AddDevice({ mode: first, name, onClose }: { mode: 'show' | 'enter'; nam
     }
   }, [mode, trust])
   const target = typedCode(typed)
-  const pair = async () => {
-    if (!target) return
+  const pair = async (to = target) => {
+    if (!to) return
     setBusy(true)
     setError(undefined)
     try {
-      await api.devicePair(target.code, target.link, trust)
+      await api.devicePair(to.code, to.link, trust)
       useStore.getState().notify(tr('Paired and synced'), { kind: 'ok' })
       close.current()
     } catch (e) {
       setError(String(e))
     } finally {
       setBusy(false)
+    }
+  }
+  // The phone's camera: the other device's QR code carries the whole pairing link.
+  const scan = async () => {
+    try {
+      const text = await api.scanQr()
+      const to = text ? typedCode(text) : null
+      if (to) await pair(to)
+      else if (text) setError(tr('Not a Legato pairing code'))
+    } catch (e) {
+      setError(String(e))
     }
   }
   return (
@@ -164,6 +176,11 @@ function AddDevice({ mode: first, name, onClose }: { mode: 'show' | 'enter'; nam
                     {busy ? tr('Syncing…') : tr('Pair')}
                   </Button>
                 </div>
+                {phoneApp && (
+                  <Button variant="ghost" onClick={() => void scan()} disabled={busy}>
+                    {tr('Scan a QR code')}
+                  </Button>
+                )}
               </form>
             )}
         <div className="flex items-start gap-3 text-xs">

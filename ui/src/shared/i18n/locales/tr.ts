@@ -1971,6 +1971,8 @@ const tr: Record<string, string> = {
   'Closes in {time}': '{time} içinde kapanır',
   'On {name}: Settings › Sync Mode › Add a device › Show a code.': '{name} üzerinde: Ayarlar › Eşitleme Modu › Cihaz ekle › Bir kod göster.',
   'Code from the other device': 'Diğer cihazdaki kod',
+  'Scan a QR code': 'QR kodu tara',
+  'Not a Legato pairing code': 'Bir Legato eşleştirme kodu değil',
   'Trust this device': 'Bu cihaza güven',
   'No code next time: the two sync on their own whenever they share a network.': 'Bir dahaki sefere kod yok: aynı ağda oldukları her an kendiliğinden eşitlenirler.',
   'phone mobile android iphone pair qr code wifi network trusted automatic other pc computer laptop': 'telefon mobil android iphone eşleştir qr kod wifi ağ güven otomatik diğer bilgisayar pc dizüstü',

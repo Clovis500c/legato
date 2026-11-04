@@ -1971,6 +1971,8 @@ const id: Record<string, string> = {
   'Closes in {time}': 'Ditutup dalam {time}',
   'On {name}: Settings › Sync Mode › Add a device › Show a code.': 'Di {name}: Pengaturan › Mode Sinkron › Tambahkan perangkat › Tampilkan kode.',
   'Code from the other device': 'Kode dari perangkat lain',
+  'Scan a QR code': 'Pindai kode QR',
+  'Not a Legato pairing code': 'Bukan kode pemasangan Legato',
   'Trust this device': 'Percayai perangkat ini',
   'No code next time: the two sync on their own whenever they share a network.': 'Tanpa kode lain kali: keduanya sinkron sendiri setiap kali berada di jaringan yang sama.',
   'phone mobile android iphone pair qr code wifi network trusted automatic other pc computer laptop': 'ponsel hp android iphone pasangkan qr kode wifi jaringan percaya otomatis pc lain komputer laptop',

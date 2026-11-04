@@ -1971,6 +1971,8 @@ const sv: Record<string, string> = {
   'Closes in {time}': 'Stängs om {time}',
   'On {name}: Settings › Sync Mode › Add a device › Show a code.': 'På {name}: Inställningar › Synkläge › Lägg till en enhet › Visa en kod.',
   'Code from the other device': 'Kod från den andra enheten',
+  'Scan a QR code': 'Skanna en QR-kod',
+  'Not a Legato pairing code': 'Inte en Legato-parkopplingskod',
   'Trust this device': 'Lita på den här enheten',
   'No code next time: the two sync on their own whenever they share a network.': 'Ingen kod nästa gång: de två synkar av sig själva när de är på samma nätverk.',
   'phone mobile android iphone pair qr code wifi network trusted automatic other pc computer laptop': 'telefon mobil android iphone parkoppla qr kod wifi nätverk lita automatiskt annan dator pc bärbar',

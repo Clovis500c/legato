@@ -219,6 +219,13 @@ export const api = {
   deviceOffer: (trust: boolean) => invoke<DeviceOffer>('device_offer', { trust }),
   deviceOfferStop: (code: string) => invoke<void>('device_offer_stop', { code }),
   /** The code another device shows, or the link of its QR code. */
+  /** The phone's camera reads one QR code (null when cancelled or refused). Lazy: desktop never loads the plugin. */
+  scanQr: async (): Promise<string | null> => {
+    const scanner = await import('@tauri-apps/plugin-barcode-scanner')
+    if ((await scanner.requestPermissions()) !== 'granted') return null
+    const r = await scanner.scan({ formats: [scanner.Format.QRCode], windowed: false })
+    return r.content || null
+  },
   devicePair: (code: string, link: string | null, trust: boolean) => invoke<Merged>('device_pair', { code, link, trust }),
   deviceSync: (id: string) => invoke<Merged>('device_sync', { id }),
   deviceForget: (id: string) => invoke<void>('device_forget', { id }),
