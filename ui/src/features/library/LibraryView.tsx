@@ -112,7 +112,7 @@ function SortButton<T extends string>({ groups, value, onPick }: { groups: { id:
         const r = e.currentTarget.getBoundingClientRect()
         openMenu({ clientX: r.left, clientY: r.bottom + 6, target: e.currentTarget, preventDefault() {}, stopPropagation() {} } as unknown as MouseEvent, items)
       }}
-      className="flex items-center gap-2 rounded-full border border-line px-3 py-1.5 text-[0.8125rem] font-medium hover:bg-raised"
+      className="flex shrink-0 items-center gap-2 rounded-full border border-line px-3 py-1.5 text-[0.8125rem] font-medium whitespace-nowrap hover:bg-raised"
     >
       <SortAscending size={15} className="text-ink-3" /> {tr(groups.flat().find((x) => x.id === value)?.label ?? groups[0][0].label)} <CaretDown size={12} className="text-ink-3" />
     </button>
@@ -227,11 +227,14 @@ function Playability({ tracks }: { tracks: LibraryTrack[] }) {
   if (!tracks.length) return null
   const parts = [trn(full, '{n} song playable in full', '{n} songs playable in full'), preview > 0 && trn(preview, '{n} as 30 s preview', '{n} as 30 s preview'), missing.length > preview && trn(missing.length - preview, '{n} with no playable source', '{n} with no playable source')].filter((x): x is string => !!x)
   return (
-    <span className="relative">
-      <button aria-expanded={open} onClick={() => setOpen(!open)} className="flex items-center gap-2 rounded-full bg-raised px-3 py-1.5 text-xs text-ink-2 hover:text-ink">
-        <Led on={missing.length === 0} /> {parts[0]}
-        {parts.length > 1 && ` · ${parts.length - 1 === 1 ? parts[1] : `+${formatCount(missing.length)}`}`}
-        <Info size={13} />
+    <span className="relative min-w-0">
+      <button aria-expanded={open} onClick={() => setOpen(!open)} className="flex max-w-full items-center gap-2 rounded-full bg-raised px-3 py-1.5 text-xs text-ink-2 hover:text-ink">
+        <Led on={missing.length === 0} />
+        <span className="truncate">
+          {parts[0]}
+          {parts.length > 1 && ` · ${parts.length - 1 === 1 ? parts[1] : `+${formatCount(missing.length)}`}`}
+        </span>
+        <Info size={13} className="shrink-0" />
       </button>
       {open && (
         <>
@@ -281,7 +284,7 @@ export function SongsView() {
           <AutoDjRound tracks={shown} />
           <SourceChips tracks={tracks} value={filter} onChange={setFilter} />
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
           <DuplicatesButton />
           <Playability tracks={shown} />
           <SortMenu />

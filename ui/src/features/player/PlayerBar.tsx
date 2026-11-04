@@ -328,10 +328,11 @@ export function PlayerBar() {
             {now?.title ?? tr('Nothing playing')}
           </button>
           {now ? (
-            // Mockup: artist · where it plays from (setting readout), details in the tooltip.
+            // Mockup: artist · where it plays from (setting readout), details in the tooltip. The phone keeps the artist
+            // whole: Now Playing says the source.
             <span className="flex max-w-full min-w-0 items-center gap-1 text-[0.8125rem] text-ink-2">
               <ArtistLink now={now} className="min-w-0 truncate" />
-              {readout && (
+              {readout && !phone && (
                 <span title={viaTitle(now.via, now.path)} className="flex shrink-0 items-center gap-1">
                   {now.artist && '· '}
                   <SourceIcon source={viaSource[now.via]} size={12} />

@@ -28,6 +28,7 @@ import { pop } from '../../shared/motion'
 import { usePhone } from '../../shared/phone'
 
 const ROW = { compact: 40, comfort: 52, airy: 64 }
+const PHONE_ROW = 60
 const order: Source[] = ['spotify', 'youtube', 'apple', 'local']
 const onControl = (e: React.MouseEvent) => e.target instanceof Element && !!e.target.closest('button, a, input, [role="menu"], [role="slider"]')
 // Title, artist and album share the room 2:1:1, so a narrow window never squeezes the title out.
@@ -73,10 +74,11 @@ export function TrackTable({ tracks, empty, editId, rowActions, sort, onSort, fo
   const sp = useStore((s) => s.status.spotify.connected)
   const stats = useStore((s) => s.stats)
   const rate = useStore((s) => s.rate)
-  const row = ROW[density]
   const liked = useLikedIds()
   // Phone layout: the song, its artist under it and More, no header; one tap plays (no hover, no double click).
   const phone = usePhone()
+  // A finger's row on the phone: two lines with room between songs, whatever the density.
+  const row = phone ? Math.max(ROW[density], PHONE_ROW) : ROW[density]
   const single = clickToPlay === 'single' || phone
   // Compact: artist in its own column (what listeners ask, docs/design.md); taller rows keep it under the title.
   const artistCol = density === 'compact' && !phone
