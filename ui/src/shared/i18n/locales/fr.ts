@@ -2026,6 +2026,7 @@ const fr: Record<string, string> = {
   'Visualizer in the mini player': 'Visualiseur dans le mini-lecteur',
   'A thin strip of it under the song in the mini player, wherever it sits': 'Une fine bande sous le titre dans le mini-lecteur, où qu’il soit',
   'small strip corner panel sidebar': 'petit bande coin panneau barre latérale',
+  'Curve': 'Courbe',
 }
 
 export default fr

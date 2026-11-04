@@ -2026,6 +2026,7 @@ const hi: Record<string, string> = {
   'Visualizer in the mini player': 'मिनी प्लेयर में विज़ुअलाइज़र',
   'A thin strip of it under the song in the mini player, wherever it sits': 'मिनी प्लेयर में गाने के नीचे एक पतली पट्टी, वह जहां भी हो',
   'small strip corner panel sidebar': 'छोटा पट्टी कोना पैनल साइडबार',
+  'Curve': 'वक्र',
 }
 
 export default hi

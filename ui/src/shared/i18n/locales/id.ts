@@ -2026,6 +2026,7 @@ const id: Record<string, string> = {
   'Visualizer in the mini player': 'Visualizer di pemutar mini',
   'A thin strip of it under the song in the mini player, wherever it sits': 'Strip tipis di bawah lagu pada pemutar mini, di mana pun letaknya',
   'small strip corner panel sidebar': 'kecil strip sudut panel bilah samping',
+  'Curve': 'Kurva',
 }
 
 export default id

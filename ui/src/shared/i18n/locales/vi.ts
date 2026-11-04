@@ -2026,6 +2026,7 @@ const vi: Record<string, string> = {
   'Visualizer in the mini player': 'Trình hiển thị trong trình phát mini',
   'A thin strip of it under the song in the mini player, wherever it sits': 'Một dải mỏng dưới bài hát trong trình phát mini, dù nó ở đâu',
   'small strip corner panel sidebar': 'nhỏ dải góc bảng thanh bên',
+  'Curve': 'Đường cong',
 }
 
 export default vi

@@ -374,6 +374,9 @@ never: downloading, extracting, recording or exporting a platform's audio, or to
   - **In the mini player** (Settings › Playback › Visualizer in the mini player, 2026-11-04, off by default): a 24 px
     strip under the song, floating, in the right panel or in the sidebar (`MiniViz.tsx`, a shell file: it loads
     `MiniStrip` from Now Playing's chunk by `lazy` only once shown); no pointer events, quiet under Now Playing.
+  - **Curve** (a look, 2026-11-04): left and right as two smooth lines (`wavePath`) with a soft glow (`shadowBlur`,
+    none with reduced motion) and faint areas, left in the visualizer's colour, right in the accent (the text colour
+    when the visualizer is the accent: `ink2`, `secondOf` in `VizCanvas.tsx`); each side its own scene (`sceneR`).
   - **Comfort**: `prefers-reduced-motion` or Animations off (`useCalm`): slower attack and release, a cap that sinks
     gently, one flash a second. Always: `flash.ts` limits the mean brightness of the bars to 3 flashes a second (a flash
     = a rise and a fall of at least 10 % of the range; past the budget the brightness may not turn back by 10 % until

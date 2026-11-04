@@ -162,6 +162,8 @@ Relaunch log (newest last):
   Playback (turn Visualizer on first), then the mini cover opens Now Playing.
 - 2026-11-04: the visualizer in the mini player (off by default, `MiniViz.tsx` loads it lazily: the shell never
   imports Now Playing's chunk). Seen in the floating mini player over the demo (Appearance › Mini player on).
+- 2026-11-04: the Curve look (left and right as two glowing curves, plan-v2 › Visualizer v2 › Medium). Seen over the
+  demo (its fake frames differ left and right).
 
 ## Mobile app and devices sync (the owner's ask, 2026-11-02 afternoon; in progress)
 

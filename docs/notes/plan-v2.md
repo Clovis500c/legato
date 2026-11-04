@@ -532,7 +532,9 @@ colours, mirror, reflection.
 **Medium**
 - [ ] `S` Loudness stream (momentary / short-term LUFS, true peak) already measured by Adaptive Sound: exposed for meters.
 - [ ] `S` Loudness meter: LUFS bars (momentary, short-term, integrated), true peak, dynamic range of the song.
-- [ ] `S` Smooth spectrum curve (filled area, glow), stereo overlay (left and right in two colours).
+- [x] `S` Smooth spectrum curve (filled area, glow), stereo overlay (left and right in two colours). (2026-11-04: the
+      Curve look, left in the visualizer's colour, right in the accent, a glow off with reduced motion; seen over the
+      demo.)
 - [ ] `S` Oscilloscope: the waveform, triggered on zero crossings so it stands still, phosphor afterglow.
 - [ ] `S` Vectorscope / goniometer (left vs right, Lissajous) with a correlation meter: stereo width at a glance.
 - [ ] `S` Unit tests: a sine lights its 1/12-octave band, a pink noise reads flat with the tilt, a click track gives its BPM.

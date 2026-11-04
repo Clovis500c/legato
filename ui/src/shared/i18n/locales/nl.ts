@@ -2026,6 +2026,7 @@ const nl: Record<string, string> = {
   'Visualizer in the mini player': 'Visualizer in de minispeler',
   'A thin strip of it under the song in the mini player, wherever it sits': 'Een smalle strook onder het nummer in de minispeler, waar die ook staat',
   'small strip corner panel sidebar': 'klein strook hoek paneel zijbalk',
+  'Curve': 'Curve',
 }
 
 export default nl

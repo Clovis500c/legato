@@ -23,8 +23,8 @@ const WARN = '#d93a2b'
 const GROUND = 0.76
 const SHINE = 0.4
 /** Looks standing on the bottom edge: the floor reflects them. Looks along frequency: the scales on hover. */
-const REFLECTED = new Set<VisualizerStyle>(['led', 'bars', 'peaks', 'wave'])
-const SCALED = new Set<VisualizerStyle>(['led', 'bars', 'peaks', 'mirror', 'wave'])
+const REFLECTED = new Set<VisualizerStyle>(['led', 'bars', 'peaks', 'wave', 'curve'])
+const SCALED = new Set<VisualizerStyle>(['led', 'bars', 'peaks', 'mirror', 'wave', 'curve'])
 /** Scales only in a box this tall, CSS px (the strip under the cover has no room). */
 const SCALE_MIN_H = 120
 
@@ -71,6 +71,9 @@ export function createPainter(canvas: OffscreenCanvas) {
   // The bars' height, device px: the whole box, or above the floor.
   let barH = 0
   let fade: CanvasGradient | null = null
+  // Curve: the right side's colour and heights (`scene` takes the left then).
+  let ink2 = '#888'
+  let sceneR: ReturnType<typeof createScene> | null = null
 
   /** A CSS colour as [r, g, b] (the canvas parses it). */
   function rgbOf(color: string): [number, number, number] {
@@ -96,7 +99,11 @@ export function createPainter(canvas: OffscreenCanvas) {
     if (n !== cols) {
       cols = n
       scene = createScene(n, calm, weighs, banding)
+      sceneR = null
     }
+    // Curve: the right side's own heights beside the left's.
+    if (look !== 'curve') sceneR = null
+    else if (!sceneR) sceneR = createScene(n, calm, weighs, banding)
     const gap = Math.max(1, Math.round((w / n) * 0.2))
     spans = columnSpans(w, n, gap)
     const reflects = floor && REFLECTED.has(look)
@@ -314,6 +321,33 @@ export function createPainter(canvas: OffscreenCanvas) {
     ctx.restore()
   }
 
+  /** Left and right as two smooth glowing lines, each area filled faintly: where they part is the stereo. */
+  function curve(left: Float32Array, right: Float32Array, W: number, H: number) {
+    if (!ctx) return
+    const pad = Math.round(2 * dpr)
+    ctx.save()
+    ctx.translate(0, pad)
+    const h = H - 2 * pad
+    ctx.lineWidth = 2 * dpr
+    ctx.lineJoin = 'round'
+    for (const [levels, color] of [
+      [right, ink2],
+      [left, ink],
+    ] as const) {
+      ctx.shadowBlur = 0
+      ctx.fillStyle = color
+      ctx.globalAlpha = 0.12
+      ctx.fill(new Path2D(wavePath(levels, W, h, true)))
+      // The glow: none with reduced motion (a blur a frame is the costly part).
+      ctx.shadowBlur = calm ? 0 : 8 * dpr
+      ctx.shadowColor = color
+      ctx.strokeStyle = color
+      ctx.globalAlpha = 0.95
+      ctx.stroke(new Path2D(wavePath(levels, W, h, false)))
+    }
+    ctx.restore()
+  }
+
   /** The ring around the cover: bars start at the inner radius, mirrored left and right. */
   function radial(levels: Float32Array, W: number, H: number) {
     if (!ctx) return
@@ -402,10 +436,11 @@ export function createPainter(canvas: OffscreenCanvas) {
       dpr = ratio
       layout()
     },
-    set(next: VisualizerStyle, calmer: boolean, color: string, alarm = WARN, weigh: VizWeighting = 'flat', grad: VizGradient = 'none', colors: Stops = [], bands: VizBanding = 'sixth', glossy = false) {
+    set(next: VisualizerStyle, calmer: boolean, color: string, alarm = WARN, weigh: VizWeighting = 'flat', grad: VizGradient = 'none', colors: Stops = [], bands: VizBanding = 'sixth', glossy = false, second = '') {
       gradient = grad
       stops = colors
       floor = glossy
+      ink2 = second || color || '#888'
       // Reduced motion, the weighting or the bands changed: a new scene (and needles).
       const restart = calmer !== calm || weigh !== weighting || bands !== banding
       weighting = weigh
@@ -429,10 +464,15 @@ export function createPainter(canvas: OffscreenCanvas) {
     },
     frame(l: ArrayLike<number>, r: ArrayLike<number>, rms: ArrayLike<number>) {
       if (look === 'vu') vu.frame(rms)
-      else scene.frame(l, r)
+      else if (sceneR) {
+        // Curve: each side on its own.
+        scene.frame(l, l)
+        sceneR.frame(r, r)
+      } else scene.frame(l, r)
     },
     silence() {
       scene.silence()
+      sceneR?.silence()
       vu.silence()
     },
     /** The pointer over the visualizer: its scales shown. */
@@ -447,7 +487,10 @@ export function createPainter(canvas: OffscreenCanvas) {
         ctx.clearRect(0, 0, canvas.width, canvas.height)
         return needles(dt)
       }
-      const { levels, peaks, resting } = scene.step(dt)
+      const { levels, peaks, resting: restingL } = scene.step(dt)
+      // Curve: the right side's heights too, at rest only when both are.
+      const right = sceneR?.step(dt)
+      const resting = restingL && (right?.resting ?? true)
       const W = canvas.width
       const H = canvas.height
       ctx.globalAlpha = 1
@@ -460,6 +503,7 @@ export function createPainter(canvas: OffscreenCanvas) {
       if (look === 'radial') radial(levels, W, H)
       else if (look === 'led') led(levels, peaks, barH)
       else if (look === 'wave') wave(levels, W, barH)
+      else if (look === 'curve' && right) curve(levels, right.levels, W, barH)
       else bars(levels, peaks, barH)
       ctx.globalAlpha = 1
       // The gradient takes the bars' place, their shapes and opacities kept.

@@ -2026,6 +2026,7 @@ const ja: Record<string, string> = {
   'Visualizer in the mini player': 'ミニプレーヤーにビジュアライザー',
   'A thin strip of it under the song in the mini player, wherever it sits': 'ミニプレーヤーの曲の下に細い帯で表示します（置き場所を問わず）',
   'small strip corner panel sidebar': '小さい 帯 隅 パネル サイドバー',
+  'Curve': 'カーブ',
 }
 
 export default ja

@@ -110,7 +110,7 @@ export function VizCanvas({ look, listen = true }: { look: VisualizerStyle; list
     const send = () => {
       const ink = inkOf(el, color, coverInk)
       const warn = getComputedStyle(el).getPropertyValue('--color-danger').trim() || '#d93a2b'
-      w.postMessage({ t: 'look', look, calm, weighting, ink, warn, gradient, stops: gradientStops(gradient, ink, warn, darkTheme), bands, floor, fps: FPS } satisfies ToWorker)
+      w.postMessage({ t: 'look', look, calm, weighting, ink, ink2: secondOf(el, color), warn, gradient, stops: gradientStops(gradient, ink, warn, darkTheme), bands, floor, fps: FPS } satisfies ToWorker)
     }
     send()
     const late = setTimeout(send, 700)
@@ -133,6 +133,12 @@ export function VizCanvas({ look, listen = true }: { look: VisualizerStyle; list
   // The pointer over it: the worker shows its frequency and dB scales (a big enough box only).
   const hover = (on: boolean) => () => worker.current?.postMessage({ t: 'hover', on } satisfies ToWorker)
   return <div ref={box} aria-hidden onPointerEnter={hover(true)} onPointerLeave={hover(false)} className="size-full text-ink" />
+}
+
+/** The Curve look's right side: the accent, or the text colour when the visualizer is already the accent. */
+function secondOf(el: HTMLElement, color: VizColor): string {
+  const css = getComputedStyle(el)
+  return (color !== 'accent' && css.getPropertyValue('--color-accent').trim()) || css.color
 }
 
 /** The visualizer's colour: the text colour where it is drawn, the theme's accent, or the cover's (text until known). */

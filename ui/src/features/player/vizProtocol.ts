@@ -9,7 +9,8 @@ export type ToWorker =
   /** `ink`: any CSS colour (the theme's text colour here); every shade is that colour with an opacity. `warn`: the VU dial's red end and lit LED. */
   /** `gradient` + `stops`: colours over the bars (vizStops.ts), laid out per look by the worker (vizFill.ts). */
   /** `bands`: 1/6 or 1/3 octave (vizBands.ts). `floor`: a glossy floor reflecting the looks that stand on the bottom edge. */
-  | { t: 'look'; look: VisualizerStyle; calm: boolean; weighting: VizWeighting; ink: string; warn: string; gradient: VizGradient; stops: Stops; bands: VizBanding; floor: boolean; fps: number }
+  /** `ink2`: the Curve look's right side (the accent, or the text colour when the visualizer is already the accent). */
+  | { t: 'look'; look: VisualizerStyle; calm: boolean; weighting: VizWeighting; ink: string; ink2: string; warn: string; gradient: VizGradient; stops: Stops; bands: VizBanding; floor: boolean; fps: number }
   /** The pointer over the visualizer (its frequency and dB scales shown) or gone. */
   | { t: 'hover'; on: boolean }
   | { t: 'frame'; l: Float32Array; r: Float32Array; rms: [number, number] }

@@ -2026,6 +2026,7 @@ const zh: Record<string, string> = {
   'Visualizer in the mini player': '迷你播放器中的可视化',
   'A thin strip of it under the song in the mini player, wherever it sits': '在迷你播放器的歌曲下方显示一条细条，无论它在哪里',
   'small strip corner panel sidebar': '小 细条 角落 面板 侧边栏',
+  'Curve': '曲线',
 }
 
 export default zh

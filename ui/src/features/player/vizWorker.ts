@@ -49,7 +49,7 @@ scope.onmessage = (e) => {
       wake()
       break
     case 'look':
-      painter?.set(m.look, m.calm, m.ink, m.warn, m.weighting, m.gradient, m.stops, m.bands, m.floor)
+      painter?.set(m.look, m.calm, m.ink, m.warn, m.weighting, m.gradient, m.stops, m.bands, m.floor, m.ink2)
       gap = 1000 / m.fps
       wake()
       break

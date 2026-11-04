@@ -2026,6 +2026,7 @@ const ru: Record<string, string> = {
   'Visualizer in the mini player': 'Визуализатор в мини-плеере',
   'A thin strip of it under the song in the mini player, wherever it sits': 'Тонкая полоска под песней в мини-плеере, где бы он ни был',
   'small strip corner panel sidebar': 'маленький полоска угол панель боковая',
+  'Curve': 'Кривая',
 }
 
 export default ru

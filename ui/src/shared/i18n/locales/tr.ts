@@ -2026,6 +2026,7 @@ const tr: Record<string, string> = {
   'Visualizer in the mini player': 'Mini oynatıcıda görselleştirici',
   'A thin strip of it under the song in the mini player, wherever it sits': 'Mini oynatıcı nerede olursa olsun, şarkının altında ince bir şerit',
   'small strip corner panel sidebar': 'küçük şerit köşe panel kenar çubuğu',
+  'Curve': 'Eğri',
 }
 
 export default tr
