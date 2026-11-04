@@ -457,6 +457,67 @@ mod tests {
         }
     }
 
+    /// Takes of random-phase noise, n samples each, power ∝ k^slope in bin k (0 white, -1 pink): each bin its level and
+    /// a phase from a seeded generator, turned into sound by the inverse FFT (so each take is whole periods in the window).
+    fn noise_takes(slope: f64, n: usize, takes: usize) -> Vec<Vec<f32>> {
+        let mut seed = 12_345u64;
+        let mut uniform = move || {
+            seed = seed.wrapping_mul(6_364_136_223_846_793_005).wrapping_add(1_442_695_040_888_963_407);
+            ((seed >> 11) as f64 + 0.5) / (1u64 << 53) as f64
+        };
+        let inverse = RealFftPlanner::<f64>::new().plan_fft_inverse(n);
+        let amp: Vec<f64> = (0..n / 2).map(|k| 1e-3 * (k as f64).powf(slope / 2.0)).collect();
+        (0..takes)
+            .map(|_| {
+                let mut spec = inverse.make_input_vec();
+                for (c, &a) in spec.iter_mut().zip(&amp).skip(1) {
+                    *c = Complex::from_polar(a, 2.0 * PI * uniform());
+                }
+                let mut out = inverse.make_output_vec();
+                // DC and Nyquist stay 0: cannot fail.
+                let _ = inverse.process(&mut spec, &mut out);
+                out.into_iter().map(|v| v as f32).collect()
+            })
+            .collect()
+    }
+
+    #[test]
+    fn pink_noise_reads_flat_and_white_noise_rises_3_db_an_octave() {
+        // Bands sum energy, so the same energy in every octave (pink) reads flat as measured and white noise rises
+        // 3 dB an octave (the tilt weighting would make pink noise rise: it is for music, whose highs fall faster).
+        // One take's narrow bands scatter by dB: 256 takes, their power averaged. From 450 Hz up, where bands are wide
+        // enough for the window; below, widened bands read more, never less.
+        const TAKES: usize = 256;
+        for bands in [Bands::Sixth, Bands::Twelfth] {
+            let (n, count) = (bands.fft(), bands.count());
+            let per = count / 10;
+            let from = (0..count).position(|i| bands.centre(i) >= 450.0).unwrap_or(0);
+            let mut a = Analyzer::with(bands);
+            let mut mean = |slope: f64| -> Vec<f32> {
+                let mut sum = vec![0f64; count];
+                // One side is enough (the analyzer reads at 48 kHz from the start).
+                for take in noise_takes(slope, n, TAKES) {
+                    for (s, &v) in sum.iter_mut().zip(&a.read(&take)) {
+                        *s += 10f64.powf(v as f64 / 10.0);
+                    }
+                }
+                sum.into_iter().map(|s| (10.0 * (s / TAKES as f64).log10()) as f32).collect()
+            };
+            let p = mean(-1.0);
+            let (lo, hi) = p[from..].iter().fold((f32::MAX, f32::MIN), |(lo, hi), &v| (lo.min(v), hi.max(v)));
+            assert!(hi - lo < 1.0, "{bands:?}: pink noise spans {lo:.2} to {hi:.2} dB");
+            assert!(p[..from].iter().all(|&v| v > lo - 0.5), "{bands:?}: {:?}", &p[..from]);
+            // White: each octave within 0.5 dB of 3.01 (what is left of the takes' scatter), their mean within 0.1.
+            let w = mean(0.0);
+            let rises: Vec<f32> = (from..count - per).map(|i| w[i + per] - w[i]).collect();
+            for (i, rise) in rises.iter().enumerate() {
+                assert!((rise - 3.01).abs() < 0.5, "{bands:?}: white noise rises {rise:.2} dB over the octave from band {}", from + i);
+            }
+            let slope = rises.iter().sum::<f32>() / rises.len() as f32;
+            assert!((slope - 3.01).abs() < 0.1, "{bands:?}: white noise rises {slope:.2} dB an octave");
+        }
+    }
+
     #[test]
     fn peak_is_the_last_hop_and_rms_the_window() {
         let mut x = vec![0.1f32; FFT];

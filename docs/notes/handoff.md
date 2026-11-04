@@ -179,6 +179,8 @@ Relaunch log (newest last):
   note); not on real music, nor in the watch page (its frames are now up to 3100 characters with the blocks).
 - 2026-11-04: the Vectorscope look (mid and side points, a correlation meter; `vizVector.ts`). Seen over the demo, full
   screen and in the strip under the cover (the meter beside the square there). The settings search finds both scopes.
+- 2026-11-04: noise tests in both twins: pink noise reads flat as measured, white noise rises 3 dB an octave (256
+  random-phase takes averaged; one take scatters by dB in the narrow bands). The click track's BPM waits for beats.
 
 ## Mobile app and devices sync (the owner's ask, 2026-11-02 afternoon; in progress)
 

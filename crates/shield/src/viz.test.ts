@@ -196,6 +196,43 @@ describe('the twins', () => {
     expect(s.fineRight.every((v) => v === -120)).toBe(true)
     expect(read(new Float64Array(N), fixture.rate).every((v) => v === -120)).toBe(true)
   })
+
+  it('read pink noise flat and white noise rising 3 dB an octave, as the Rust twin does', () => {
+    // Takes of random-phase noise (each bin its level, a phase from a seeded generator; the real part of their FFT),
+    // their power averaged: one take's narrow bands scatter by dB. From 450 Hz up, as crates/dsp viz.rs checks it.
+    const TAKES = 256
+    let seed = 12345
+    const uniform = () => (seed = (Math.imul(seed, 1103515245) + 12345) >>> 0) / 2 ** 32
+    const take = (amp: Float64Array) => {
+      const n = amp.length * 2
+      const re = new Float64Array(n)
+      const im = new Float64Array(n)
+      for (let k = 1; k < n / 2; k++) {
+        const turn = 2 * Math.PI * uniform()
+        re[k] = amp[k] * Math.cos(turn)
+        im[k] = amp[k] * Math.sin(turn)
+      }
+      fft(re, im)
+      return re
+    }
+    for (const k of kinds) {
+      const per = k.count === FINE ? 12 : 6
+      let from = 0
+      while (viz.vizCentre(from, k.count) < 450) from++
+      const mean = (slope: number) => {
+        const amp = Float64Array.from({ length: k.n / 2 }, (_, i) => 1e-5 * i ** (slope / 2))
+        const sum = new Float64Array(k.count)
+        for (let t = 0; t < TAKES; t++) read(take(amp), 48000, k).forEach((v, i) => (sum[i] += 10 ** (v / 10)))
+        return Array.from(sum, (s) => 10 * Math.log10(s / TAKES))
+      }
+      const pink = mean(-1).slice(from)
+      expect(Math.max(...pink) - Math.min(...pink), k.name).toBeLessThan(1)
+      const white = mean(0)
+      const rises = white.slice(from, k.count - per).map((v, i) => white[from + i + per] - v)
+      for (const [i, rise] of rises.entries()) expect(Math.abs(rise - 3.01), `${k.name}, octave from band ${from + i}: ${rise}`).toBeLessThan(0.5)
+      expect(Math.abs(rises.reduce((a, b) => a + b, 0) / rises.length - 3.01), k.name).toBeLessThan(0.1)
+    }
+  })
 })
 
 describe('frames', () => {

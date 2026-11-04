@@ -560,8 +560,12 @@ colours, mirror, reflection.
       guides for mid, side, left and right; the correlation over each block eased over 300 ms, red below 0, under the
       square or beside it in the strip. Decided alone: points rather than lines, halved scale (full scale = the
       diamond, no auto gain). Seen over the demo; not on real music.)
-- [ ] `S` Unit tests: a sine lights its 1/12-octave band, a pink noise reads flat with the tilt, a click track gives its BPM.
-      (The 1/6- and 1/12-octave sines, left-only, the twins' shared fixture and the 10 Hz strobe are in.)
+- [x] `S` Unit tests: a sine lights its 1/12-octave band, a pink noise reads flat with the tilt.
+      (The 1/6- and 1/12-octave sines, left-only, the twins' shared fixture and the 10 Hz strobe were in. 2026-11-04:
+      pink noise reads flat as measured in both twins and white noise rises 3 dB an octave, 256 random-phase takes
+      averaged, from 450 Hz up, sixths and twelfths. Bands sum energy, so pink noise is flat without the tilt, which
+      makes it rise. Not seen in the app with a real pink noise.)
+- [ ] `S` A click track gives its BPM: the test of the beat detection above, when it lands.
 - [x] `S-M` Time-domain blocks in the frames (L/R, 1024 samples, as i16) for scope and vectorscope. Left / right bands, rms and
       peak are in. (2026-11-04: the last 1024 samples of each side averaged in pairs, 512 a side at 24 kHz, as i16
       after the bands, flag 1 in byte 2, in both twins and only when asked: `viz_start(wave)`, the live wish's `wave`.

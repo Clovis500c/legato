@@ -297,7 +297,8 @@ never: downloading, extracting, recording or exporting a platform's audio, or to
   octave (base 10, 19.95 Hz to 19.95 kHz), left and right, plus left / right rms and peak, in a packed frame: 8 bytes
   (version 1, band count, flags, 1 reserved, rms L R, peak L R) + 61 bands L + 61 bands R, every dB value one byte, `(dB + 120)
   · 2` (0.5 dB steps, floor -120). A sine of amplitude 1 reads 0 dB in its band; bands are energy sums (Parseval), so
-  the window does not matter for noise. Bands narrower than 3 bins (under ~320 Hz at 48 kHz) widen to 3 bins around
+  the window does not matter for noise: pink noise reads flat as measured, white noise rises 3 dB an octave (both
+  twins' tests, 256 random-phase takes averaged, from 450 Hz up; the tilt weighting makes pink noise rise). Bands narrower than 3 bins (under ~320 Hz at 48 kHz) widen to 3 bins around
   their center: a sine reads right (within 0.5 dB), the neighbours of the lowest bands read nearly as much (the 4096
   FFT cannot split a 2.4 Hz band; a longer window for the lows is the fix if bass detail ever matters), and noise reads
   a few dB high there. Both twins have this mapping: pure `BandMap` in `crates/dsp/src/viz.rs`, `vizMap` between
