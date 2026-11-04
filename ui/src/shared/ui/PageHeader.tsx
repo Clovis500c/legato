@@ -29,7 +29,8 @@ export function PageHeader({ kicker, title, sub, actions, side, art, tint, onCon
       </div>
     )
   return (
-    <header onContextMenu={onContextMenu} className="flex shrink-0 items-end justify-between gap-6 pt-1 pb-4">
+    // The phone puts the actions under the title when both don't fit on a line (Stats' periods).
+    <header onContextMenu={onContextMenu} className="flex shrink-0 items-end justify-between gap-6 pt-1 pb-4 phone:flex-wrap phone:gap-y-3">
       <div className="flex min-w-0 flex-col gap-1">
         {kicker && <p className="kicker">{kicker}</p>}
         <h1 className="truncate pb-1 text-[3.5rem] leading-[1.07] font-black tracking-[-0.015em] phone:line-clamp-2 phone:text-[2.25rem] phone:whitespace-normal">{title}</h1>

@@ -98,7 +98,8 @@ export function StatsView() {
   return (
     <div className="-mx-2 flex min-h-0 flex-1 flex-col gap-9 overflow-y-auto px-2 pb-8">
       {header}
-      <div className="grid grid-cols-[repeat(auto-fill,minmax(170px,1fr))] gap-3">
+      {/* The phone: two by two, the time listened across. */}
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(170px,1fr))] gap-3 phone:grid-cols-2 phone:*:first:col-span-2">
         <Tile label={tr('Time listened')} value={hours(s.ms)} />
         <Tile label={tr('Listens')} value={formatCount(s.listens)} />
         <Tile label={tr('Songs')} value={formatCount(s.songs)} />
