@@ -15,6 +15,9 @@ mod folders;
 mod health;
 mod remote;
 mod hosts;
+#[cfg(target_os = "android")]
+#[path = "mobile/keystore.rs"]
+mod keystore;
 #[cfg_attr(mobile, path = "mobile/hotkeys.rs")]
 mod hotkeys;
 mod identity;

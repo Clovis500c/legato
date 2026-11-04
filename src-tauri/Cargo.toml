@@ -47,6 +47,9 @@ music-plugins = { version = "1.1.0", path = "../crates/plugins" }
 # The phone's name in your devices' list: Android's system properties.
 [target.'cfg(target_os = "android")'.dependencies]
 libc = "0.2.190"
+# Android's Keystore seals the secrets file (src/mobile/keystore.rs).
+jni = "0.21"
+ndk-context = "0.1"
 
 # QR scanner for pairing (phones only; MIT / Apache-2.0).
 [target.'cfg(any(target_os = "android", target_os = "ios"))'.dependencies]

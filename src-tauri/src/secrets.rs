@@ -45,22 +45,53 @@ impl SecretStore for KeyringStore {
     }
 }
 
-/// Android: `keyring` has no store there. One JSON object in the app's private folder: no other app reads it, and Android
-/// encrypts user data at rest. Android's Keystore later (docs/notes/ideas/mobile.md).
+/// Android: `keyring` has no store there. One JSON object in the app's private folder, sealed by a key in Android's
+/// Keystore (`mobile/keystore.rs`): `secrets.bin`. An older `secrets.json` (plain) is sealed and removed at the first
+/// launch; if the Keystore refuses, the plain file stays rather than losing a sign-in.
 #[cfg(target_os = "android")]
 pub struct FileStore {
-    path: std::path::PathBuf,
+    plain: std::path::PathBuf,
+    sealed: std::path::PathBuf,
     lock: std::sync::Mutex<()>,
 }
 
 #[cfg(target_os = "android")]
 impl FileStore {
-    pub fn new(path: std::path::PathBuf) -> Self {
-        Self { path, lock: std::sync::Mutex::new(()) }
+    pub fn new(plain: std::path::PathBuf) -> Self {
+        let sealed = plain.with_extension("bin");
+        let me = Self { plain, sealed, lock: std::sync::Mutex::new(()) };
+        if me.plain.exists() && !me.sealed.exists() {
+            let all = me.read();
+            let _ = me.write(&all);
+        }
+        me
     }
 
     fn read(&self) -> serde_json::Map<String, serde_json::Value> {
-        std::fs::read(&self.path).ok().and_then(|b| serde_json::from_slice(&b).ok()).unwrap_or_default()
+        if let Ok(bytes) = std::fs::read(&self.sealed) {
+            // A key gone (restored backup, reset lock screen): nothing to read, the sign-ins are asked again.
+            return crate::keystore::open(&bytes).ok().flatten().and_then(|b| serde_json::from_slice(&b).ok()).unwrap_or_default();
+        }
+        std::fs::read(&self.plain).ok().and_then(|b| serde_json::from_slice(&b).ok()).unwrap_or_default()
+    }
+
+    fn write(&self, all: &serde_json::Map<String, serde_json::Value>) -> Result<()> {
+        let json = serde_json::to_vec(all)?;
+        // Whole file at once: a crash mid-write keeps the old one.
+        match crate::keystore::seal(&json) {
+            Ok(sealed) => {
+                let tmp = self.sealed.with_extension("tmp");
+                std::fs::write(&tmp, sealed)?;
+                std::fs::rename(&tmp, &self.sealed)?;
+                let _ = std::fs::remove_file(&self.plain);
+            }
+            Err(_) => {
+                let tmp = self.plain.with_extension("tmp");
+                std::fs::write(&tmp, json)?;
+                std::fs::rename(&tmp, &self.plain)?;
+            }
+        }
+        Ok(())
     }
 }
 
@@ -78,10 +109,6 @@ impl SecretStore for FileStore {
             Some(v) => all.insert(key.into(), v),
             None => all.remove(key),
         };
-        // Whole file at once: a crash mid-write keeps the old one.
-        let tmp = self.path.with_extension("tmp");
-        std::fs::write(&tmp, serde_json::to_vec(&all)?)?;
-        std::fs::rename(&tmp, &self.path)?;
-        Ok(())
+        self.write(&all)
     }
 }

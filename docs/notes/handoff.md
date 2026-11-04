@@ -64,6 +64,10 @@ Log (newest last):
   alpha avoided), phones only, capability `mobile.json`; Add a device › Enter a code › Scan a QR code pairs from the
   other device's `legato://pair?` link. Starts on the emulator (CAMERA declared, not granted); never scanned a real code.
   Camera permission: asked at the first scan. Privacy rows: the scan stays on the phone, nothing to add.
+- 2026-11-04: step 5. Secrets sealed by an AES key in Android's Keystore (`KeystoreCrypto.kt`, JNI glue
+  `mobile/keystore.rs`, R8 keep rule): `secrets.bin`, the old plain `secrets.json` sealed and removed at launch (kept if
+  the Keystore refuses). Checked on the emulator: a planted JSON became a 54-byte sealed file, no plain text, stable over
+  a restart. Not tried: a real phone, a restored backup (key gone: sign-ins asked again).
 
 ## Mobile app and devices sync (the owner's ask, 2026-11-02 afternoon; in progress)
 

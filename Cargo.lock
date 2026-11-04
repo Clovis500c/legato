@@ -2800,6 +2800,7 @@ version = "1.1.0"
 dependencies = [
  "anyhow",
  "if-addrs",
+ "jni 0.21.1",
  "keyring",
  "libc",
  "music-connectors",
@@ -2807,6 +2808,7 @@ dependencies = [
  "music-player",
  "music-plugins",
  "music-shield",
+ "ndk-context",
  "notify",
  "percent-encoding",
  "serde",

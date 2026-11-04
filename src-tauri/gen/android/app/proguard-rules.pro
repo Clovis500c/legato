@@ -19,3 +19,5 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+# Called by name from Rust over JNI (src-tauri/src/mobile/keystore.rs).
+-keep class app.legato.mobile.KeystoreCrypto { *; }
