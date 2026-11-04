@@ -6,10 +6,11 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.net.wifi.WifiManager
-import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
+import android.view.View
 import android.webkit.WebView
+import android.widget.FrameLayout
 import androidx.activity.enableEdgeToEdge
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -37,8 +38,12 @@ class MainActivity : TauriActivity() {
     }
   }
 
+  // wry puts its WebView on screen here, after onWebViewCreate: in a frame that keeps its window shown (KeepVisible).
+  override fun setContentView(view: View?) = super.setContentView(if (view is WebView) KeepVisible(this).apply { addView(view) } else view)
+
   // YouTube's player stops when its page is hidden, as the app leaves the screen: in YouTube's frames only, the page
-  // always says visible (the owner's choice, 2026-11-03, against YouTube's terms: background play is Premium's).
+  // always says visible (the owner's choice, 2026-11-03, against YouTube's terms: background play is Premium's), and the
+  // WebView's window stays shown (setContentView), or Chromium pauses the video itself.
   override fun onWebViewCreate(webView: WebView) {
     super.onWebViewCreate(webView)
     web = webView
@@ -82,10 +87,11 @@ class MainActivity : TauriActivity() {
     web?.onResume()
   }
 
-  // Android 8 to 11: Back at the root would close the app and the music; 12 and later already send it to the background.
+  // Back at the root would close the app and the music (from Android 12 on, unless it was opened from the home screen):
+  // it goes behind the other apps instead, as Home does.
   @Suppress("DEPRECATION")
   override fun onBackPressed() {
-    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) moveTaskToBack(true) else super.onBackPressed()
+    if (isTaskRoot) moveTaskToBack(true) else super.onBackPressed()
   }
 
   override fun onDestroy() {
@@ -104,4 +110,10 @@ class MainActivity : TauriActivity() {
   for (const t of ['visibilitychange', 'webkitvisibilitychange']) window.addEventListener(t, (e) => e.stopImmediatePropagation(), true)
 })()"""
   }
+}
+
+// Home, another app or the screen off: Android tells the views their window is gone, and Chromium then pauses the page's
+// videos, the music with them. Below this frame the window always stays shown; a real detach still reaches the WebView.
+private class KeepVisible(context: Context) : FrameLayout(context) {
+  override fun dispatchWindowVisibilityChanged(visibility: Int) = super.dispatchWindowVisibilityChanged(View.VISIBLE)
 }

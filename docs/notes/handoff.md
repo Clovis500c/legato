@@ -117,6 +117,14 @@ Relaunch log (newest last):
   placeholder ("What do you want to pl").
 - 2026-11-04: visualizer gradient (plan-v2 › Visualizer v2), off by default; seen over the demo (`demo` in launch.json,
   `?shot=visualizer&p=0&theme=modern-dark`, right-click › Visualizer gradient).
+- 2026-11-04: the owner on 1.1.621: the music stops behind other apps and screen off. Reproduced on the emulator (the
+  page paused 25 s after Home, the service still up): Chromium pauses a hidden page's videos. Fixed in
+  `MainActivity.kt` (`setContentView` wraps wry's WebView in `KeepVisible`: wry calls `onWebViewCreate` before it puts
+  the WebView on screen, so a reparent there finds no parent), `PlaybackService.kt` (`hold`: wake lock + Wi-Fi lock
+  while playing), `WAKE_LOCK`, and Back (always behind: Android 16 finished the activity when not opened from Home, and
+  the process exits with it). How to check it: the YouTube frame's `<video>` over DevTools (`Page.getFrameTree`, then
+  `Page.createIsolatedWorld` on the frame and `currentTime`, `paused`); `dumpsys deviceidle force-idle` after
+  `dumpsys battery unplug` for Doze (then `unforce`, `battery reset`).
 
 ## Mobile app and devices sync (the owner's ask, 2026-11-02 afternoon; in progress)
 

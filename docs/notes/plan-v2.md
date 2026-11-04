@@ -278,6 +278,12 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
         (2026-11-04). Starts on the emulator; the buttons and a real song not tried. The song's cover there too
         (2026-11-04): the page reads its 256 px thumbnail back through a canvas and posts it after the state; seen on
         the emulator with a title pushed by hand, a real song's path not driven.
+  - [x] Android: the music really plays on behind other apps and with the screen off (2026-11-04, the owner's report on
+        1.1.621: it stopped). Chromium pauses a hidden page's videos itself: the WebView sits in a frame that keeps its
+        window shown (`MainActivity.setContentView`, `KeepVisible`); the CPU and the Wi-Fi stay awake while a song plays
+        (`PlaybackService.hold`); Back always sends the app behind (from Android 12 it closed it unless opened from the
+        home screen, and Tauri quits with it). On the emulator: 60 s behind Home, a song change screen off, 60 s of
+        forced Doze, Back. Swiping the app away from the recent apps still stops the music.
   - [x] Device sync carries every setting (2026-11-04): a PC with one stamped setting never stamped the rest, so they
         travelled as time 0 and no device took them; any unstamped key counts now, and more per-device keys stay local.
         Unit-tested, not tried between two real devices. Desktop-only rows and Shortcuts hidden on the phone.

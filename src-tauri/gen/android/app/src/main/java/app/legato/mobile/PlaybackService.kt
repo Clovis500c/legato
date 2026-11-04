@@ -12,10 +12,12 @@ import android.media.AudioManager
 import android.media.MediaMetadata
 import android.media.session.MediaSession
 import android.media.session.PlaybackState
+import android.net.wifi.WifiManager
 import android.os.Build
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
+import android.os.PowerManager
 
 // Music behind other apps: a media playback foreground service keeps the process alive (not frozen, not killed).
 // MainActivity starts it while on screen; off screen and silent, it stops within a minute. Its notification is a media
@@ -24,10 +26,16 @@ import android.os.Looper
 class PlaybackService : Service() {
   private val tick = Handler(Looper.getMainLooper())
   private var session: MediaSession? = null
+  private var wake: PowerManager.WakeLock? = null
+  private var wifi: WifiManager.WifiLock? = null
   private val check = object : Runnable {
     override fun run() {
       val audio = getSystemService(AudioManager::class.java)
-      if (!MainActivity.onScreen && !audio.isMusicActive) stopSelf() else tick.postDelayed(this, 60_000)
+      if (!MainActivity.onScreen && !audio.isMusicActive) stopSelf()
+      else {
+        hold(MediaState.playing)
+        tick.postDelayed(this, 60_000)
+      }
     }
   }
 
@@ -63,10 +71,23 @@ class PlaybackService : Service() {
   }
 
   private fun refresh() {
+    hold(MediaState.playing)
     try {
       getSystemService(NotificationManager::class.java).notify(1, build())
     } catch (e: Exception) {
     }
+  }
+
+  // Screen off: the CPU and the Wi-Fi stay awake while a song plays, so the page loads the next one in time; both go as
+  // it stops. The time limit is a net, renewed by every change and the minute check.
+  @Suppress("DEPRECATION")
+  private fun hold(playing: Boolean) {
+    if (playing && wake == null) {
+      wake = getSystemService(PowerManager::class.java).newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "legato:playback").apply { setReferenceCounted(false) }
+      wifi = applicationContext.getSystemService(WifiManager::class.java)?.createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, "legato:playback")?.apply { setReferenceCounted(false) }
+    }
+    wake?.let { if (playing) it.acquire(10 * 60_000L) else if (it.isHeld) it.release() }
+    wifi?.let { if (playing && !it.isHeld) it.acquire() else if (!playing && it.isHeld) it.release() }
   }
 
   private fun button(icon: Int, label: String, action: String, code: Int): Notification.Action {
@@ -118,6 +139,7 @@ class PlaybackService : Service() {
 
   override fun onDestroy() {
     tick.removeCallbacks(check)
+    hold(false)
     MediaState.onChange = null
     session?.release()
     session = null
