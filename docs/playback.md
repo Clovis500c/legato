@@ -365,7 +365,8 @@ never: downloading, extracting, recording or exporting a platform's audio, or to
     = a rise and a fall of at least 10 % of the range; past the budget the brightness may not turn back by 10 % until
     older swings are a second old); the test runs a 10 Hz strobe through it and counts.
   - **Full screen** (`vizFull.ts`, `VizScreen.tsx`, lazy): V (rebindable, Settings › Shortcuts) or a double click on the
-    strip; right-click: look, full screen; Esc or a double click leaves (`vizFullKeys.ts`, capture on the window, a
+    strip; a click on the strip or the full screen: the next look (`vizClick.ts`, held 300 ms so a double click stays
+    one); right-click: look, full screen; Esc or a double click leaves (`vizFullKeys.ts`, capture on the window, a
     menu on top keeps its Esc). The window goes full screen through `holdFullscreen` (`app/fullscreen.ts`: gives back only
     what it took, sees F11 / the title bar leaving it, sessionStorage flag for a reload), the same care as karaoke's.
     While it is up Now Playing's F and karaoke's K do nothing; the native watch page (a YouTube video that can't be

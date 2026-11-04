@@ -12,15 +12,17 @@ import { useNowTrack, usePlayer } from './store'
 import { RING_COVER } from './vizDraw'
 import { canVizFull, closeVizFull } from './vizFull'
 import { VizCanvas } from './VizCanvas'
+import { useNextLookClick } from './vizClick'
 
 /**
- * The visualizer over the whole window (vizFull.ts): the look picked in Settings, right-click for another, Esc or a
- * double click leaves. Radial puts the round cover in the middle of its ring.
+ * The visualizer over the whole window (vizFull.ts): the look picked in Settings, a click for the next, right-click for
+ * another, Esc or a double click leaves. Radial puts the round cover in the middle of its ring.
  */
 export function VizScreen() {
   const look = useSettings((s) => s.settings.visualizerStyle)
   const now = usePlayer((s) => s.now)
   const track = useNowTrack()
+  const next = useNextLookClick()
   // Spotify plays in its own app, or nothing plays: nothing to draw.
   useEffect(() => {
     if (!canVizFull()) closeVizFull()
@@ -31,7 +33,7 @@ export function VizScreen() {
         <X size={22} />
       </RoundButton>
       {look === 'radial' ? (
-        <div className="grid min-h-0 flex-1 place-items-center px-[5vw] pt-[9vh] pb-[3vh]" style={{ containerType: 'size' }}>
+        <div onClick={next} className="grid min-h-0 flex-1 cursor-pointer place-items-center px-[5vw] pt-[9vh] pb-[3vh]" style={{ containerType: 'size' }}>
           <div className="relative" style={{ width: 'min(100cqw, 100cqh)', aspectRatio: '1' }}>
             <VizCanvas look={look} />
             <div className="absolute top-1/2 left-1/2 aspect-square -translate-x-1/2 -translate-y-1/2" style={{ width: `${RING_COVER * 100}%` }}>
@@ -40,7 +42,7 @@ export function VizScreen() {
           </div>
         </div>
       ) : (
-        <div className="min-h-0 flex-1 px-[5vw] pt-[9vh] pb-[3vh]">
+        <div onClick={next} className="min-h-0 flex-1 cursor-pointer px-[5vw] pt-[9vh] pb-[3vh]">
           <VizCanvas look={look} />
         </div>
       )}

@@ -515,7 +515,9 @@ colours, mirror, reflection.
       Along frequency = a prism, red lows to violet highs, the ring's from the bottom up both sides. Amber and the prism
       made 3:1 on the background (`vivid`). VU needles and the spectrogram keep their colours. Seen over the demo, both.)
 - [ ] `S` Sizes left: a big backdrop behind Now Playing, the mini player, the OBS overlay page. A click on the visualizer
-      could cycle its look (today right-click picks it, a click does nothing).
+      cycles its look (2026-11-04, `vizClick.ts`: the strip and the full screen, held 300 ms so a double click still
+      takes it full screen or back; seen over the demo, LED to Bars to Mirror, a double click left it as it was; the
+      owner judges it).
 - [ ] `S-M` 1/3 and 1/12 octave bands (31 and 120, ANSI centers) beside today's 1/6 (61 bands).
 - [ ] `M` Beat and onset detection (spectral flux on low and mid bands, tempo estimate): kicks drive pulses, flashes, camera.
       The radial ring's pulse is Moving cover's own until then.

@@ -7,10 +7,12 @@ import { usePlayer } from './store'
 import { useCoverFull } from './coverFull'
 import { openVizFull, useVizFull } from './vizFull'
 import { VizCanvas } from './VizCanvas'
+import { useNextLookClick } from './vizClick'
 
 /**
  * The music under the cover (Settings › Playback › Visualizer), drawn by a worker (VizCanvas.tsx) in the look picked
- * there. A double click or V takes it full screen; right-click picks the look. Quiet while the full screen is up.
+ * there. A click: the next look; a double click or V takes it full screen; right-click picks the look. Quiet while the
+ * full screen is up.
  */
 export function Visualizer() {
   const picked = useSettings((s) => s.settings.visualizerStyle)
@@ -22,10 +24,11 @@ export function Visualizer() {
   const youtube = usePlayer((s) => s.now?.via === 'youtube')
   const liveYoutube = useSettings((s) => s.settings.liveYoutube)
   const error = useLive((l) => l.error)
+  const next = useNextLookClick()
   const why = !youtube ? undefined : !liveYoutube ? tr('YouTube’s sound isn’t listened to: turn on “Process YouTube’s sound” in Settings › Playback') : error && tr('Not on this video: {error}. It plays as usual.', { error })
   return (
     <div className="flex w-full max-w-md flex-col items-center gap-1.5">
-      <div onDoubleClick={openVizFull} onContextMenu={onMenu(vizMenu)} className="h-12 w-full">
+      <div onClick={next} onDoubleClick={openVizFull} onContextMenu={onMenu(vizMenu)} className="h-12 w-full cursor-pointer">
         <VizCanvas look={look} listen={!full && !covered} />
       </div>
       {why && <p className="text-center text-[0.6875rem] text-ink-3">{why}</p>}

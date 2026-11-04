@@ -152,6 +152,9 @@ Relaunch log (newest last):
   `isInitialized`), Back by our own `OnBackPressedCallback`, the field put back for `onDestroy`. After: no event at all.
 - 2026-11-04: APK 1.1.641 (the phone's songs and that fix) signed and sent to the owner; its dex keeps wry's
   `mWebView` (`apkanalyzer dex packages --defined-only`, cmdline-tools). The emulator stopped for the build.
+- 2026-11-04: a click on the visualizer (strip, full screen) goes to the next look (`vizClick.ts`, held 300 ms for a
+  double click). Seen over the demo (the pane shown: a hidden pane runs no `requestAnimationFrame`, so `?shot=` never
+  opens).
 
 ## Mobile app and devices sync (the owner's ask, 2026-11-02 afternoon; in progress)
 
