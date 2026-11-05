@@ -388,12 +388,16 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       Not written into the files' tags (POPM / RATING): a choice for the owner, with the tag editor.
 - [ ] `S-M` Discovery from open sources: new releases of followed artists, community picks (r/listentothis' public JSON),
       shown as cards to play from YouTube.
+      Left by the autopilot (2026-11-05): new hosts and the website's privacy rows, and Reddit's API terms to read
+      first: the owner's call.
 - [x] `S-M` Privacy page in the app: every host Legato talked to today and why (from the Rust gateway's log), matching the
       website's rows. (2026-11-02: Settings › Privacy; `music_core::netlog`, fed by the connectors' resolver `Noted`, the
       WebView2 hook on every window, plugins' gateway, updates and the shield's lists. The updater's redirect to GitHub's
       file host is not seen.)
 - [ ] `S-M` Watch-page player: hide YouTube's own playlist panel (its RDMM "My Mix") and stop its autoplay into a Mix
       (`crates/shield/src/watch.js`).
+      Left by the autopilot (2026-11-05): `watch.js` already hides the column the panel sits in (`#secondary`, `#below`)
+      and pauses at the end; what's left needs a real watch page, behind YouTube's cookie choice in a new profile.
 - [ ] `M` Lyrics translation in the panel (a service sends text: add the website's privacy row first).
       Owner's call (2026-11-01): which service gets the lyrics (the user's own DeepL or Google key, a LibreTranslate
       server); Windows gives apps no offline translator. The panel side is small once that's chosen.
@@ -692,8 +696,11 @@ Most useful first; the tag is the effort.
       plays, likes), search with FTS5, scans in the background with progress.
 - [ ] `S-M` Re-renders: profile the player bar, Up next and lyrics at 60 fps (`Progress.tsx`); Zustand selectors everywhere.
 - [ ] `S-M` YouTube embeds: one player reused instead of one per song where the crossfade allows; unload the hidden one.
-- [ ] `S-M` Performance budget in CI: front-end bundle size and Rust startup time; fail on a large regression. (`pnpm bench`
-      isn't in CI yet.)
+- [x] `S-M` Performance budget in CI: front-end bundle size and Rust startup time; fail on a large regression. (`pnpm bench`
+      isn't in CI yet.) (2026-11-05: `scripts/budget.mjs` + test, CI's check job on Windows after `vite build`: JS at
+      launch (the page's script and the chunks it preloads) 970 kB, 307 kB gzip, fails over 340 kB gzip. Decided alone:
+      gzip as the measure, about 10 % room, startup time left out of CI (a shared runner swings more than the regression;
+      `pnpm bench` keeps that). Tried: the script on today's build, its test. Not tried: a CI run.)
 - [x] `S` Bundle: LyricsPanel, dialogs and NowPlaying are still in the first chunk. Now lazy through `app/pages.ts`
       (Now Playing and the lyrics panel preloaded when idle; the dialogs' openers and hosts in
       `features/library/dialogs.tsx`, `VideoSlot.tsx` apart). JS at launch 904 → 853 kB (281 → 270 kB gzip), in

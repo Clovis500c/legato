@@ -154,6 +154,12 @@ First-load JS (the page's script and its preloaded chunks, `dist/index.html`), b
 editor panel, Welcome and the YouTube shelves load on first visit. What is left is the shell, the library pages, the
 player, Now Playing and the menus.
 
+Budget (2026-11-05, `scripts/budget.mjs`, CI after `vite build` on Windows): JS at launch 970 kB (307 kB gzip) in
+62 files, up from 853 kB after the lazy dialogs with what came since; the check fails over 340 kB gzip. Chunk names
+mislead: Rolldown names a shared chunk after one of its modules (`vizVu-*.js`, 49 kB, is mostly Phosphor icons the
+lazy pages share). Rust startup time stays out of CI: a shared runner's timings swing more than the regression it
+would catch, so `pnpm bench` on a quiet PC keeps that table.
+
 | Date | Version | PC | Window shown, cold / restart | First paint, cold / restart | RAM MB: paused / playing 1 min / tray 10 min | CPU % of the PC: paused / playing / tray | Notes |
 |---|---|---|---|---|---|---|---|
 | 2026-10-30 | 1.0.0 (5d8d3ae) | Ryzen 5 5500, 12 threads, 32 GB, Windows 11 (26300) | 1.05 / 0.67 s | 1.47 / 0.97 s | 153 / 233 / 55 | 0.1 / 2.9 / 0.1 | other apps were running; PC load 43 / 49 / 39 % |

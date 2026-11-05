@@ -65,6 +65,10 @@ jobs:
       - if: runner.os != 'Linux'
         run: pnpm vite build
 
+      # JS at launch under its budget (scripts/budget.mjs): a large regression fails here.
+      - if: runner.os == 'Windows'
+        run: node scripts/budget.mjs
+
       - run: cargo fetch --locked
 
       # No test may reach the network: anything but loopback goes to a dead proxy (mockito servers are on 127.0.0.1).

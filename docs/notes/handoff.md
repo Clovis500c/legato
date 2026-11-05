@@ -214,6 +214,7 @@ Relaunch log (newest last):
   lyrics text and AudD has no humming endpoint (their docs): that plan line's services are out. Seen in the demo.
 - 2026-11-05: the taskbar's Jump List (Shuffle all, Recent playlists; `jumplist.rs`, `features/home/jumpList.ts`).
   Written by the installed app only: unseen until a build is installed (right-click Legato on the taskbar).
+- 2026-11-05: a JS-at-launch budget in CI (`scripts/budget.mjs`, 340 kB gzip; today 307). Not run in CI yet.
 
 ## Mobile app and devices sync (the owner's ask, 2026-11-02 afternoon; in progress)
 
