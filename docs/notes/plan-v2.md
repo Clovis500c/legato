@@ -67,9 +67,35 @@ with the interface on top (U1, U2 below): ours does too much on a phone, and lac
 has (inspiration only, never its code or assets). Never copied: their playback (YouTube's audio taken, their own
 copies, downloads for offline), their accounts, limits and paid plan.
 
-- [ ] U1. `L` The phone's interface, rethought (the owner's ask 2026-11-05): each screen shows less, bigger and in
+- [x] U1. `L` The phone's interface, rethought (the owner's ask 2026-11-05): each screen shows less, bigger and in
       thumb's reach; one main action per screen, the rest in a sheet or a menu; nothing lost, only moved. Every page
-      at 375 px in light and dark, before and after.
+      at 375 px in light and dark, before and after. (2026-11-06, the rules in `docs/design.md` › Phone; seen over the
+      site demo at 375×812, both themes, before and after, the desktop at 800 px unchanged; the Android shell untouched.
+      Per screen:
+      - Menus (every one: long press, ⋯, dropdowns): a sheet from the bottom edge, 48 px rows, a submenu in its place
+        with a Back row. Dialogs: a sheet too. Icon buttons: an invisible ring makes a 44 px tap, drawn size the same.
+      - Shell: the top bar shows the logo or Back (never both), 40-44 px buttons, hidden under Now Playing; 16 px gutters.
+        Mini player: one tap on cover + title opens Now Playing, then heart, play, next (previous in Now Playing).
+        Search tab: opens Search with the field focused. Your library tab: Stats and Add music side by side (Home and
+        Mixes are tabs), 48 px rows.
+      - Now Playing: its own bar (close, "Playing from …", More), title and artist on the left with the heart, the
+        transport centered, Lyrics / Up next / Sound spread under the thumb; Show (Auto / Video / Cover), Less like this,
+        Karaoke and the player menu's rest in More (`playerMenu({ controls: false })`).
+      - Songs, playlist, album, artist: a band's cover 160 px centered, 28 px titles, one tools row (sort, display,
+        playability as icons), source chips one row scrolled sideways: the list starts near 300 px instead of 450.
+      - Home: the chips in one sideways row. Search: the top result one row, chips one row, Hide covers in a ⋯.
+      - Settings: the sections as one row of chips; the rare groups folded under "More settings" at each section's foot
+        (`settings/phoneFold.ts`, a test keeps the ids true), a settings search result opening its fold.
+      - Add music: one card per row, icon beside the title, the sources' LEDs left to Settings › Accounts. Mixes: Reset
+        history at the foot. Karaoke: no keyboard hint.
+      Decided alone (2026-11-06): the fold list (General: Cover cache, Library backup, Search bar, Voice and recognition;
+      Playback: Clicks, Headphones and calls, Screen, Phone remote, Streaming overlay, YouTube videos; Appearance:
+      Interface size, Font, Covers, List density, Immersive player, Hi-Fi extras, Lists and navigation, Mixes, List
+      columns), because they're set once or rarely; the logo or Back in the top bar, because Home is a tab; the mini
+      player without previous, because 3 controls fit a thumb; Reset history at the foot, because it's destructive and
+      rare. Not tried for real: the Android app (long press, Back with a sheet open, safe-area insets, the keyboard over
+      a dialog sheet); no APK built here: Check live. Seen less: the visualizer full screen, toasts, the welcome and
+      import screens.)
 - [ ] U2. `M-L` Glow and simplicity, PC and phone (the owner's ask 2026-11-05, answering Waiting on the user's glow
       line): a soft glow on what plays (play button, playing row, the sung line, Now Playing's cover), a Glow setting
       to turn it down; fewer controls in sight per surface, the rare ones in menus; `docs/design.md` rewritten to say so.
@@ -983,6 +1009,12 @@ Most useful first; the tag is the effort.
 - [ ] Against Liner (2026-11-05 on), checked only by tests and over the demo:
       - Keep the screen on (Settings › Playback › Screen): past Windows' screen timeout while a song plays, asleep as
         usual once paused; on the phone too (does Android's WebView grant the lock?).
+      - The phone's interface (U1) on a real phone, light and dark: a long press and every ⋯ open a sheet, Android's
+        Back closes it (and a dialog sheet) before leaving the page; the sheets and Now Playing clear the gesture bar
+        and the notch (safe-area insets); the keyboard over a dialog sheet (a playlist's name) leaves its buttons
+        reachable; every icon button answers a thumb's tap at its edge; Settings › More settings opens and a settings
+        search opens the right fold; the mini player opens Now Playing on a tap, its heart and play don't. Judge the fold
+        list and the moved controls (Reset history, previous only in Now Playing).
 
 ## Waiting on the user (outside the code)
 

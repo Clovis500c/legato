@@ -39,6 +39,43 @@ Each rule below answers one of these.
 - Now Playing: the same cover tone, flat, with the title in Display XL.
 - Like, play next and add to playlist sit on the row (hover) and in the player, never only in a menu.
 
+## Phone
+
+The layout under 640 px (`phone:` in `styles.css`, `usePhone()` in `shared/phone.ts`): the Android app, a narrow
+window never reaches it. Rewritten on 2026-11-06 (plan-v2 › Against Liner › U1: the owner found it too busy, badly
+arranged for a thumb). Liner's calm is the spirit, never its look. The rules:
+
+- **Less in sight, nothing lost.** Every feature stays reachable; what a screen doesn't need often moves into a sheet,
+  a menu or a More (⋯), never away. Desktop-only rows stay hidden on the phone app (`settings/desktopOnly.ts`).
+- **One main action per screen**, in the accent where it plays (the round play), the rest plain icons.
+- **Thumb's reach.** The bottom tabs (Home, Search, Your library, Mixes), the mini player above them, Now Playing's
+  controls at the foot of the screen. Every tap target is 44 px at least: `RoundButton` adds an invisible 8 px ring on
+  the phone (its drawn size stays), the top bar's buttons are 40 to 44 px, menu rows 48 px.
+- **Menus are sheets.** Every menu (long press, ⋯, a dropdown) opens as a sheet from the bottom edge (`ContextMenu`'s
+  `Sheet`): rows of 48 px, a submenu takes the sheet's place with a Back row on top, a tap outside closes it.
+- **Gutters of 16 px** (24 on the desktop); a band (album, playlist, artist) reaches the screen's edges.
+- **Headers don't eat the screen.** Page titles 28 px, two lines at most; a band's cover 160 px, centered over the
+  title; one line of detail under it. The tools row (play, shuffle, Auto-DJ, then sort, display, playability as icons)
+  is one row; chips are one row scrolled sideways, edge to edge.
+- **Top bar:** the logo or Back, never both (Home is a tab); the search field; Settings. Hidden under Now Playing.
+- **Search tab** opens the Search page with the field focused; the top result is one row (cover, name, play); the
+  filter switch sits in a ⋯ at the chips' end.
+- **Mini player:** cover, title and artist as one tap target opening Now Playing, then the heart, play and next.
+- **Now Playing** is a phone player: its own bar (close, where it plays from, More), the cover as big as the width
+  allows, title and artist on the left with the heart beside them, the seek bar, the transport (shuffle, previous,
+  play, next, repeat), then Lyrics, Up next and Sound spread under the thumb. An open panel takes the cover's place.
+  More holds the rest: Show (Auto, Video, Cover), Less like this, Karaoke, Cover display, share, the Live Editor,
+  sleep timer, playlists, rating, bookmarks, go to album or artist.
+- **Your library tab:** Stats and Add music side by side (Home and Mixes are tabs), then the library list.
+- **Settings:** the sections as one row of chips under the settings search; in each section the common groups first,
+  the rare ones folded under "More settings" at the foot (`settings/phoneFold.ts`), a search result opening its fold.
+- **List rows:** 56 px at least, two lines (title; artist or one detail), the menu's ⋯ at the end, a tap plays.
+- **Dialogs are sheets** too (`shared/ui/Dialog.tsx`): the full width from the bottom edge, rounded on top, their
+  buttons above the system bar.
+- **Add music:** one card per row, the icon beside its title; the sources' LEDs stay in Settings › Accounts.
+- **Mixes:** Reset history at the page's foot, under the explanation, not beside the title.
+- **Full screens** (Karaoke, Cover display, visualizer) show no keyboard hints: a phone has no Esc or arrows.
+
 ## Palette
 
 Names match `PALETTE_KEYS` (`ui/src/shared/theme/theme.ts`).
