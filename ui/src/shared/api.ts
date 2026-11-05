@@ -252,6 +252,10 @@ export const api = {
   exportTheme: (path: string, theme: object) => invoke<void>('export_theme', { path, theme }),
   /** A .theme file read: picture stored, theme JSON back (check it with sanitizeTheme). */
   importTheme: (path: string) => invoke<unknown>('import_theme', { path }),
+  /** A visualizer preset file picked by the user (.milk, .json): its text (vizPresetList.ts reads it). */
+  readPreset: (path: string) => invoke<string>('read_preset', { path }),
+  /** A preset's .json written where the user picked. */
+  writePreset: (path: string, text: string) => invoke<void>('write_preset', { path, text }),
   /** Third-party plugins (src-tauri plugins.rs, crates/plugins). */
   plugins: () => invoke<PluginInfo[]>('plugins_list'),
   /** A folder before installing it: its manifest and the permissions it asks for. */

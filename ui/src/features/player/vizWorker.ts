@@ -65,6 +65,10 @@ scope.onmessage = (e) => {
       painter?.ops(m.ops)
       wake()
       break
+    case 'preset':
+      painter?.preset(m.data, m.own)
+      wake()
+      break
     case 'frame':
       painter?.frame(m.l, m.r, m.rms, m.w, m.peak)
       wake()

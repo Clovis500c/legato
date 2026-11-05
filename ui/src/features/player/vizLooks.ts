@@ -1,11 +1,11 @@
 import { msg } from '../../shared/i18n/i18n'
-import { VISUALIZER_STYLES, type VisualizerStyle, type VizBanding, type VizColor, type VizColormap, type VizFace, type VizGradient, type VizWeighting } from '../../shared/theme/theme'
+import { VISUALIZER_STYLES, type VisualizerStyle, type VizBanding, type VizColor, type VizColormap, type VizFace, type VizGradient, type VizPresetColors, type VizWeighting } from '../../shared/theme/theme'
 
 /** The visualizer's looks by name (Settings, the visualizer's right-click menu); show with `tr`. */
-export const VISUALIZER_LABELS: Record<VisualizerStyle, string> = { led: msg('LED'), bars: msg('Bars'), mirror: msg('Mirror'), peaks: msg('Peaks'), wave: msg('Wave'), curve: msg('Curve'), radial: msg('Radial'), particles: msg('Particles'), vu: msg('VU needles'), ppm: msg('PPM needles'), spectrogram: msg('Spectrogram'), terrain: msg('3D terrain'), scope: msg('Oscilloscope'), vectorscope: msg('Vectorscope'), loudness: msg('Loudness meter'), plugin: msg('Plugin') }
+export const VISUALIZER_LABELS: Record<VisualizerStyle, string> = { led: msg('LED'), bars: msg('Bars'), mirror: msg('Mirror'), peaks: msg('Peaks'), wave: msg('Wave'), curve: msg('Curve'), radial: msg('Radial'), particles: msg('Particles'), vu: msg('VU needles'), ppm: msg('PPM needles'), spectrogram: msg('Spectrogram'), terrain: msg('3D terrain'), preset: msg('Presets'), scope: msg('Oscilloscope'), vectorscope: msg('Vectorscope'), loudness: msg('Loudness meter'), plugin: msg('Plugin') }
 
 /** Looks drawn from the frames' wave blocks: liveSync.ts asks for them only then. */
-export const wantsWave = (look: VisualizerStyle) => look === 'scope' || look === 'vectorscope'
+export const wantsWave = (look: VisualizerStyle) => look === 'scope' || look === 'vectorscope' || look === 'preset'
 
 /** The visualizer's weightings by name (Settings); show with `tr`. */
 export const VIZ_WEIGHTING_LABELS: Record<VizWeighting, string> = { flat: msg('As measured'), tilt: msg('+3 dB per octave'), a: msg('A-weighting'), itu468: msg('ITU-R 468') }
@@ -24,6 +24,9 @@ export const VIZ_FACE_LABELS: Record<VizFace, string> = { theme: msg('Theme colo
 
 /** The spectrogram's colour maps by name (Settings, the strip's menu); show with `tr`. */
 export const VIZ_COLORMAP_LABELS: Record<VizColormap, string> = { theme: msg('Theme colors'), magma: msg('Magma'), viridis: msg('Viridis') }
+
+/** The Presets look's colours by name (Settings, the strip's menu); show with `tr`. */
+export const VIZ_PRESET_COLOR_LABELS: Record<VizPresetColors, string> = { theme: msg('Theme colors'), own: msg('The preset’s own') }
 
 /** The look after this one, round to the first (a click on the visualizer). */
 /** The built-in looks, in order; a plugin's look is offered by its name where looks are listed (pluginViz.ts). */

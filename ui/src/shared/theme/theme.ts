@@ -164,8 +164,8 @@ export const COVER_CACHE_MB = [250, 500, 1000, 2000] as const
 /** Mini player resting spots: corners and edge middles (t = top, b = bottom, l = left, r = right). */
 /** Playlist icon: service logo, first song's cover, grid of the first 4, or a picked image. */
 export const COVER_MODES = ['source', 'first', 'grid', 'image'] as const
-/** Visualizer looks (VizCanvas.tsx): LED segments with held peaks, bars from the bottom, mirrored from the middle, bars with falling peaks, a wave, left and right as two glowing curves; a ring around the cover, particles on the beat (vizParticles.ts), two VU needles, two PPM needles (peaks), a scrolling spectrogram, the last seconds as a 3D terrain (vizTerrain.ts), an oscilloscope's trace (vizScope.ts), a vectorscope with its correlation meter (vizVector.ts), a loudness meter (vizLoud.ts), a plugin's look (features/plugins/pluginViz.ts). */
-export const VISUALIZER_STYLES = ['led', 'bars', 'mirror', 'peaks', 'wave', 'curve', 'radial', 'particles', 'vu', 'ppm', 'spectrogram', 'terrain', 'scope', 'vectorscope', 'loudness', 'plugin'] as const
+/** Visualizer looks (VizCanvas.tsx): LED segments with held peaks, bars from the bottom, mirrored from the middle, bars with falling peaks, a wave, left and right as two glowing curves; a ring around the cover, particles on the beat (vizParticles.ts), two VU needles, two PPM needles (peaks), a scrolling spectrogram, the last seconds as a 3D terrain (vizTerrain.ts), presets' pictures that zoom, turn and flow (vizPreset.ts), an oscilloscope's trace (vizScope.ts), a vectorscope with its correlation meter (vizVector.ts), a loudness meter (vizLoud.ts), a plugin's look (features/plugins/pluginViz.ts). */
+export const VISUALIZER_STYLES = ['led', 'bars', 'mirror', 'peaks', 'wave', 'curve', 'radial', 'particles', 'vu', 'ppm', 'spectrogram', 'terrain', 'preset', 'scope', 'vectorscope', 'loudness', 'plugin'] as const
 export type VisualizerStyle = (typeof VISUALIZER_STYLES)[number]
 /** Visualizer weighting (vizWeigh.ts): the bands as measured, tilted 3 dB per octave toward the highs, or a hearing curve. */
 export const VIZ_WEIGHTINGS = ['flat', 'tilt', 'a', 'itu468'] as const
@@ -185,6 +185,33 @@ export type VizFace = (typeof VIZ_FACES)[number]
 /** The spectrogram's colours (vizSpectro.ts): the theme's ink, or a colour map of sound tools. */
 export const VIZ_COLORMAPS = ['theme', 'magma', 'viridis'] as const
 export type VizColormap = (typeof VIZ_COLORMAPS)[number]
+/** The Presets look's colours (vizPresetGl.ts): the theme's ink, the picture's light as its opacity; or the preset's own. */
+export const VIZ_PRESET_COLORS = ['theme', 'own'] as const
+export type VizPresetColors = (typeof VIZ_PRESET_COLORS)[number]
+/** A visualizer preset imported from a file (features/player/vizPresetList.ts), checked again where it runs (vizPreset.ts). */
+export interface SavedPreset {
+  id: string
+  name: string
+  base: Record<string, number>
+  init: string
+  frame: string
+  vertex: string
+}
+/** Imported presets kept at most, and each one's equations at most (characters, the three together): settings stay small. */
+export const MAX_SAVED_PRESETS = 32
+export const MAX_PRESET_CODE = 16_384
+function savedPreset(v: unknown): SavedPreset | null {
+  if (!v || typeof v !== 'object') return null
+  const r = v as Record<string, unknown>
+  const text = (x: unknown) => (typeof x === 'string' ? x : '')
+  const [init, frame, vertex] = [text(r.init), text(r.frame), text(r.vertex)]
+  if (typeof r.id !== 'string' || !/^u[a-z0-9]{1,30}$/.test(r.id) || typeof r.name !== 'string' || !r.name.trim()) return null
+  if (init.length + frame.length + vertex.length > MAX_PRESET_CODE) return null
+  const base: Record<string, number> = {}
+  if (r.base && typeof r.base === 'object')
+    for (const [k, x] of Object.entries(r.base).slice(0, 100)) if (/^[a-z][a-z_]{0,19}$/.test(k) && typeof x === 'number' && Number.isFinite(x)) base[k] = x
+  return { id: r.id, name: r.name.trim().slice(0, 80), base, init, frame, vertex }
+}
 /** Order the cover songs are taken in: the playlist's own, or a library sort. */
 export const COVER_ORDERS = ['playlist', 'recent', 'title', 'artist', 'album', 'duration'] as const
 /** Auto-DJ's choices (Settings › Playback): days a song heard waits, songs before the same artist again. */
@@ -410,6 +437,12 @@ export interface Settings {
   visualizerColormap: VizColormap
   /** The plugin whose look shows when the style is 'plugin' (its id); bars while it isn't running. */
   visualizerPlugin: string
+  /** The Presets look's preset: a built-in one's id (vizPresets.ts) or an imported one's (`u…`). */
+  visualizerPreset: string
+  /** The Presets look in the theme's ink by default (ink and greys); the preset's own colours are opt-in. */
+  visualizerPresetColors: VizPresetColors
+  /** Presets imported from .milk or .json files (Settings › Playback). */
+  visualizerPresets: SavedPreset[]
   /** The visualizer big and faint behind Now Playing too. Off by default: a look the owner hasn't judged yet (2026-11-04). */
   visualizerBackdrop: boolean
   /** A thin visualizer in the mini player too. Off by default: a look the owner hasn't judged yet (2026-11-04). */
@@ -547,6 +580,10 @@ export const DEFAULTS: Settings = {
   visualizerFace: 'theme',
   visualizerColormap: 'theme',
   visualizerPlugin: '',
+  // vizPresets.ts' FIRST_PRESET (not imported: the presets stay out of the first screen's code).
+  visualizerPreset: 'tunnel',
+  visualizerPresetColors: 'theme',
+  visualizerPresets: [],
   visualizerBackdrop: false,
   visualizerMini: false,
   earlyEnds: true,
@@ -771,6 +808,9 @@ export function sanitize(raw: unknown): Settings {
     visualizerFace: pick(r.visualizerFace, VIZ_FACES, DEFAULTS.visualizerFace),
     visualizerColormap: pick(r.visualizerColormap, VIZ_COLORMAPS, DEFAULTS.visualizerColormap),
     visualizerPlugin: typeof r.visualizerPlugin === 'string' && /^[a-z0-9.-]{0,64}$/.test(r.visualizerPlugin) ? r.visualizerPlugin : DEFAULTS.visualizerPlugin,
+    visualizerPreset: typeof r.visualizerPreset === 'string' && /^[a-z0-9-]{1,40}$/.test(r.visualizerPreset) ? r.visualizerPreset : DEFAULTS.visualizerPreset,
+    visualizerPresetColors: pick(r.visualizerPresetColors, VIZ_PRESET_COLORS, DEFAULTS.visualizerPresetColors),
+    visualizerPresets: (Array.isArray(r.visualizerPresets) ? r.visualizerPresets : []).slice(0, MAX_SAVED_PRESETS).flatMap((p) => savedPreset(p) ?? []),
     visualizerBackdrop: r.visualizerBackdrop === true,
     visualizerMini: r.visualizerMini === true,
     earlyEnds: r.earlyEnds !== false,

@@ -528,6 +528,29 @@ never: downloading, extracting, recording or exporting a platform's audio, or to
     (the overlay's third octaves), the beat, the tempo, level and peak, 30 a second at most; Rust keeps only the latest
     frame for a busy plugin. Its answer is a list of shapes (`drawList.ts` checks them), drawn by the worker in the
     theme's ink or its own colours until the next one. The plugin off or stopped: the bars instead.
+  - **Presets** (2026-11-05; `vizExpr.ts`, `vizPreset.ts`, `vizPresetGl.ts`, `vizMilk.ts`, `vizPresets.ts`): MilkDrop's
+    idea, written from scratch. Each frame the last picture is drawn again through a moving mesh (zoom, turn, warp,
+    shift, stretch) and faded; the music's wave and two borders go on top, so the trails are the old pictures. A
+    preset is starting values and equations in a small language of our own (`vizExpr.ts`: numbers, `+ - * / % ^`,
+    comparisons, `if`, MilkDrop's usual functions, compiled to closures: the CSP has no `eval`; 4000 nodes a program)
+    run once (`init`), every frame (`frame`: zoom, rot, warp, cx, cy, dx, dy, sx, sy, decay, the wave's and borders'
+    colours…) and at every point of the mesh (`vertex`: the same motion bent by x, y, rad, ang). They read time, bass /
+    mid / treb (each range's level over its own last seconds, about 1) and their smoothed `_att`, beat, bpm. The mesh
+    is 32 × 24, fewer points when the point equations are long (40 000 nodes a frame); motion is scaled by the frame's
+    length, so 30 fps moves as 60. Drawn by WebGL2 on the worker's own OffscreenCanvas (1024 px at most), copied onto
+    the look's canvas: two pictures take turns, an 8-bit floor lets trails reach black, then gamma, echo (zoom, flip),
+    invert / brighten / darken / solarize. Wave modes 0 to 7 (circle, scopes, spiral, lines; dots, thick, additive). The
+    picture's mean light (its smallest mipmap, one pixel read back) goes through the flash limiter: dimmed past its
+    budget. Reduced motion: half speed, no beats, the calm budget. At rest 4 s after the last frame, the picture kept.
+    No WebGL2 (asked once, `canDrawPresets`): the bars.
+    **Preset colors** (`visualizerPresetColors`): the theme's ink, the picture's light as its opacity, so it sits on
+    any page, light or dark (default); or the preset's own, black see-through.
+    **Which preset** (`visualizerPreset`, Settings › Playback and the menu, with Next preset): 9 built in, Tunnel first
+    (their ids live in settings: never rename one), and up to 32 imported ones, 16 kB of equations each, kept in the
+    settings like own themes, so Sync Mode carries them. Import: MilkDrop's `.milk` (`vizMilk.ts`: base values,
+    `per_frame_init_N`, `per_frame_N`, `per_pixel_N`; custom waves and shapes, shaders and motion vectors are not
+    drawn, and the app says so when equations can't be read) or our `.json` (`kind: 'legato-preset'`). Export: the
+    preset shown, as `.json`. Files go through `read_preset` / `write_preset` (`themes.rs`, 256 kB at most).
   - **Drawn at 30 fps** (`FPS` in `VizCanvas.tsx`, sent with the look; the worker's loop skips a tick that comes less than a
     period minus 3 ms after the last drawing): at the screen's 60 the bench showed 5 of 16 looks and sizes over the
     3 % budget (up to +4.6 points of the PC), at 30 all four looks run again were +1 to +1.9. The sound's own frames stay at

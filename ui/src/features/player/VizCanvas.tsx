@@ -9,6 +9,7 @@ import { averageColor, coverColors, vivid } from './ambient'
 import { subscribeLoud } from './loudFeed'
 import { useNowTrack, usePlayer } from './store'
 import { viz } from './vizFrames'
+import { presetOf } from './vizPresets'
 import { frameMessage, type ToWorker } from './vizProtocol'
 import { gradientStops } from './vizStops'
 
@@ -26,6 +27,21 @@ export function useCalm() {
     return () => q.removeEventListener('change', on)
   }, [])
   return !motion || reduced
+}
+
+/** WebGL2 on a worker's canvas, asked once: the Presets look draws with it, the bars stand in where it can't. */
+let gl2: boolean | undefined
+function canDrawPresets(): boolean {
+  if (gl2 === undefined) {
+    try {
+      const c = new OffscreenCanvas(1, 1).getContext('webgl2')
+      gl2 = !!c
+      c?.getExtension('WEBGL_lose_context')?.loseContext()
+    } catch {
+      gl2 = false
+    }
+  }
+  return gl2
 }
 
 /** The page is shown (not minimized, not in the tray). */
@@ -48,8 +64,8 @@ function usePageVisible() {
 export function VizCanvas({ look: asked, listen = true }: { look: VisualizerStyle; listen?: boolean }) {
   const pluginId = useSettings((s) => s.settings.visualizerPlugin)
   const pluginOn = usePluginViz((s) => asked === 'plugin' && pluginId in s.looks)
-  // A plugin's look while its plugin runs; bars otherwise (stopped, removed, not started yet).
-  const look: VisualizerStyle = asked === 'plugin' && !pluginOn ? 'bars' : asked
+  // A plugin's look while its plugin runs; bars otherwise (stopped, removed, not started yet). Presets: bars without WebGL2.
+  const look: VisualizerStyle = (asked === 'plugin' && !pluginOn) || (asked === 'preset' && !canDrawPresets()) ? 'bars' : asked
   const plugin = look === 'plugin'
   const box = useRef<HTMLDivElement>(null)
   const worker = useRef<Worker | null>(null)
@@ -74,6 +90,9 @@ export function VizCanvas({ look: asked, listen = true }: { look: VisualizerStyl
   const song = usePlayer((s) => s.now?.trackId ?? s.now?.youtubeId ?? '')
   // The loudness meter's words follow the interface's language.
   const language = useSettings((s) => s.settings.language)
+  const presetId = useSettings((s) => s.settings.visualizerPreset)
+  const presetOwn = useSettings((s) => s.settings.visualizerPresetColors === 'own')
+  const saved = useSettings((s) => s.settings.visualizerPresets)
   const meter = look === 'loudness'
   const drawing = listen && shown && onScreen
   const live = drawing && playing
@@ -139,6 +158,13 @@ export function VizCanvas({ look: asked, listen = true }: { look: VisualizerStyl
     if (!w || look !== 'particles') return
     w.postMessage({ t: 'palette', colors: coverDots ?? [], glow: darkTheme } satisfies ToWorker)
   }, [ready, look, coverDots, darkTheme])
+
+  // The Presets look: its preset (compiled in the worker) and its colours.
+  useEffect(() => {
+    const w = worker.current
+    if (!w || look !== 'preset') return
+    w.postMessage({ t: 'preset', data: presetOf(presetId, saved), own: presetOwn } satisfies ToWorker)
+  }, [ready, look, presetId, presetOwn, saved])
 
   // A plugin's look: its pictures to the worker as they come.
   useEffect(() => {

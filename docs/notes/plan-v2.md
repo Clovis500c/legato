@@ -617,8 +617,18 @@ colours, mirror, reflection.
       latest frame kept for a busy plugin, 30 frames a second, the overlay's 31 bands, the bars while the plugin is off,
       plugin looks out of the click round. Tried: Rust tests run the Rings example in QuickJS; the demo drew an
       injected look full screen, dark. Not tried: a plugin installed in the real app, the strip, the light theme.)
-- [ ] `L` Preset engine, written from scratch: equations per frame / per vertex driven by bands and beat (MilkDrop-style
+- [x] `L` Preset engine, written from scratch: equations per frame / per vertex driven by bands and beat (MilkDrop-style
       ideas), presets as small JSON shared like themes; `.milk` files the user owns loaded if a reader stays simple.
+      (2026-11-05: the Presets look, `docs/playback.md` › Presets. Decided alone: our own equation language compiled to
+      closures (no eval under the CSP), MilkDrop's variable names so .milk equations run; our own warp formula; a 32 × 24
+      mesh shrinking for long point equations; WebGL2 in the worker copied onto the 2D canvas, the bars without it; 9
+      built-in presets of ours, Tunnel the default; the theme's ink by default (the picture's light as opacity), the
+      preset's own colours as a choice; the flash limiter on the picture's mean light; reduced motion = half speed, no
+      beats; imported presets kept in the settings like own themes (32 at most, 16 kB each, synced); .milk read for its
+      base values and equations only (no custom waves / shapes, shaders or motion vectors), our .json for export. Tried:
+      the pure engine's tests (expressions, mesh, wave, music, .milk, files); the demo full screen, dark: Tunnel in the
+      ink, Aurora in its own colours, the menu and Settings rows in French. Not tried: a real .milk file of the owner's,
+      import / export through the real file dialogs, the strip under the cover, the light theme, real music.)
 
 ## Workflow (how we build it)
 

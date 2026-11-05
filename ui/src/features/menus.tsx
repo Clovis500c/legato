@@ -53,6 +53,7 @@ import {
   ShareNetwork,
   Shuffle,
   SlidersHorizontal,
+  Sparkle,
   Star,
   SortAscending,
   SkipBack,
@@ -72,7 +73,7 @@ import { pickFile, saveFile } from '../shared/files'
 import { bigTrackArt } from '../shared/art'
 import { loadFit } from '../shared/artfit'
 import { fileName, starsText } from '../shared/format'
-import { COVER_ORDERS, VIZ_BANDINGS, VIZ_COLORMAPS, VIZ_COLORS, VIZ_FACES, VIZ_GRADIENTS, VIZ_WEIGHTINGS, type PlaylistCover, type PlaylistFolder } from '../shared/theme/theme'
+import { COVER_ORDERS, VIZ_BANDINGS, VIZ_COLORMAPS, VIZ_COLORS, VIZ_FACES, VIZ_GRADIENTS, VIZ_PRESET_COLORS, VIZ_WEIGHTINGS, type PlaylistCover, type PlaylistFolder } from '../shared/theme/theme'
 import type { MenuEntry } from '../shared/ui/ContextMenu'
 import { SourceIcon } from '../shared/ui/SourceIcon'
 import type { Addon } from './addons/registry'
@@ -95,7 +96,8 @@ import { closeKaraoke, nowFix, nudgeLyrics, toggleKaraoke } from './player/karao
 import { canVizFull, toggleVizFull, useVizFull } from './player/vizFull'
 import { closeCoverFull, toggleCoverFull } from './player/coverFull'
 import { openShare } from './share/share'
-import { VIZ_BANDING_LABELS, VIZ_COLOR_LABELS, VIZ_COLORMAP_LABELS, VIZ_FACE_LABELS, VIZ_GRADIENT_LABELS, VIZ_WEIGHTING_LABELS } from './player/vizLooks'
+import { VIZ_BANDING_LABELS, VIZ_COLOR_LABELS, VIZ_COLORMAP_LABELS, VIZ_FACE_LABELS, VIZ_GRADIENT_LABELS, VIZ_PRESET_COLOR_LABELS, VIZ_WEIGHTING_LABELS } from './player/vizLooks'
+import { nextPreset, presetOptions } from './player/vizPresets'
 import { needleLook } from './player/vizVu'
 import { lookOptions, lookSettings, lookValue, usePluginViz } from './plugins/pluginViz'
 import { msg, tr, trn } from '../shared/i18n/i18n'
@@ -737,7 +739,7 @@ export function playerMenu(): MenuEntry[] {
 
 /** The visualizer (the strip under the cover, its full screen): the look (the needles: their dial), full screen. */
 export function vizMenu(): MenuEntry[] {
-  const { visualizerStyle: look, visualizerWeighting: weighting, visualizerColor: color, visualizerGradient: gradient, visualizerBands: bands, visualizerFloor: floor, visualizerFace: face, visualizerColormap: colormap, visualizerPlugin: plugin } = useSettings.getState().settings
+  const { visualizerStyle: look, visualizerWeighting: weighting, visualizerColor: color, visualizerGradient: gradient, visualizerBands: bands, visualizerFloor: floor, visualizerFace: face, visualizerColormap: colormap, visualizerPlugin: plugin, visualizerPreset: preset, visualizerPresetColors: presetColors, visualizerPresets: saved } = useSettings.getState().settings
   const open = useVizFull.getState().open
   return [
     {
@@ -754,6 +756,22 @@ export function vizMenu(): MenuEntry[] {
       label: tr('Spectrogram colors'),
       icon: <Swatches size={16} />,
       items: VIZ_COLORMAPS.map((v) => ({ label: tr(VIZ_COLORMAP_LABELS[v]), checked: colormap === v, onSelect: () => useSettings.getState().update({ visualizerColormap: v }) })),
+    },
+    look === 'preset' && {
+      label: tr('Visualizer preset'),
+      icon: <Sparkle size={16} />,
+      items: [
+        ...presetOptions(saved).map((o) => ({ label: o.label, checked: preset === o.value, onSelect: () => useSettings.getState().update({ visualizerPreset: o.value }) })),
+        '-',
+        { label: tr('Next preset'), icon: <SkipForward size={16} />, onSelect: () => useSettings.getState().update({ visualizerPreset: nextPreset(preset, saved) }) },
+        // The file reading waits for its first use: not in the first screen's code.
+        { label: tr('Import a preset…'), icon: <DownloadSimple size={16} />, onSelect: () => void import('./player/presetFiles').then((m) => m.importPreset()) },
+      ],
+    },
+    look === 'preset' && {
+      label: tr('Preset colors'),
+      icon: <Swatches size={16} />,
+      items: VIZ_PRESET_COLORS.map((v) => ({ label: tr(VIZ_PRESET_COLOR_LABELS[v]), checked: presetColors === v, onSelect: () => useSettings.getState().update({ visualizerPresetColors: v }) })),
     },
     {
       label: tr('Visualizer weighting'),

@@ -92,6 +92,8 @@ export const SETTINGS_INDEX: SettingEntry[] = [
   { section: 'playback', label: msg('Visualizer style'), keywords: msg('bars mirror peaks wave curve radial circle particles vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look ppm programme terrain 3d landscape') },
   { section: 'playback', label: msg('Meter face'), keywords: msg('dial skin vintage retro analog backlit hifi needles') },
   { section: 'playback', label: msg('Spectrogram colors'), keywords: msg('colormap color map magma viridis heat waterfall palette') },
+  { section: 'playback', label: msg('Visualizer preset'), keywords: msg('milkdrop milk presets import export tunnel spiral aurora flow zoom') },
+  { section: 'playback', label: msg('Preset colors'), keywords: msg('milkdrop presets colours own theme ink') },
   { section: 'playback', label: msg('Visualizer weighting'), keywords: msg('tilt slope bass treble highs lows balance hearing curve a-weighting itu 468') },
   { section: 'playback', label: msg('Visualizer color'), keywords: msg('colour tint hue palette accent cover album art') },
   { section: 'playback', label: msg('Visualizer gradient'), keywords: msg('rainbow prism spectrum meter red top warm colours') },

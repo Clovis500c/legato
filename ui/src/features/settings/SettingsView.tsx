@@ -9,7 +9,7 @@ import { pickFile, saveFile } from '../../shared/files'
 import { formatBytes, formatCount, timeAgo } from '../../shared/format'
 import { PRIVACY_PAGE } from '../../shared/links'
 import { byVia, countText, VIA_LABELS, WHY_LABELS } from './privacy'
-import { ACCENTS, ADAPTIVE_LEVELS, COLUMNS, COVER_CACHE_MB, DEFAULTS, DJ_FRESH, DJ_GAPS, VIZ_BANDINGS, VIZ_COLORMAPS, VIZ_COLORS, VIZ_FACES, VIZ_GRADIENTS, VIZ_WEIGHTINGS, type AdaptiveLevel, type Column, type Settings } from '../../shared/theme/theme'
+import { ACCENTS, ADAPTIVE_LEVELS, COLUMNS, COVER_CACHE_MB, DEFAULTS, DJ_FRESH, DJ_GAPS, VIZ_BANDINGS, VIZ_COLORMAPS, VIZ_COLORS, VIZ_FACES, VIZ_GRADIENTS, VIZ_PRESET_COLORS, VIZ_WEIGHTINGS, type AdaptiveLevel, type Column, type Settings } from '../../shared/theme/theme'
 import { Button } from '../../shared/ui/Button'
 import { Led, Segmented, Toggle } from '../../shared/ui/controls'
 import { PageHeader } from '../../shared/ui/PageHeader'
@@ -17,7 +17,9 @@ import { onMenu } from '../../shared/ui/ContextMenu'
 import { curveLabels } from '../player/fade'
 import { usePlayer } from '../player/store'
 import { useLive } from '../player/live'
-import { VIZ_BANDING_LABELS, VIZ_COLOR_LABELS, VIZ_COLORMAP_LABELS, VIZ_FACE_LABELS, VIZ_GRADIENT_LABELS, VIZ_WEIGHTING_LABELS } from '../player/vizLooks'
+import { VIZ_BANDING_LABELS, VIZ_COLOR_LABELS, VIZ_COLORMAP_LABELS, VIZ_FACE_LABELS, VIZ_GRADIENT_LABELS, VIZ_PRESET_COLOR_LABELS, VIZ_WEIGHTING_LABELS } from '../player/vizLooks'
+import { exportPreset, importPreset, removePreset } from '../player/presetFiles'
+import { presetOptions } from '../player/vizPresets'
 import { needleLook } from '../player/vizVu'
 import { lookOptions, lookSettings, lookValue, usePluginViz } from '../plugins/pluginViz'
 import { SourcesView } from '../sources/SourcesView'
@@ -500,6 +502,16 @@ function SoundGroup() {
             <Segmented label={tr('Spectrogram colors')} value={s.visualizerColormap} onChange={(visualizerColormap) => update({ visualizerColormap })} options={VIZ_COLORMAPS.map((v) => ({ value: v, label: tr(VIZ_COLORMAP_LABELS[v]) }))} />
           </Row>
         )}
+        {s.visualizer && s.visualizerStyle === 'preset' && (
+          <Row setting="visualizerPreset" label={msg('Visualizer preset')} sub={tr('Pictures that zoom, turn and flow with the music, MilkDrop’s way. Add your own from .milk or .json files')}>
+            <PresetChoice />
+          </Row>
+        )}
+        {s.visualizer && s.visualizerStyle === 'preset' && (
+          <Row setting="visualizerPresetColors" label={msg('Preset colors')} sub={tr('In the theme’s colors, the picture’s light as its strength; or in the preset’s own')}>
+            <Segmented label={tr('Preset colors')} value={s.visualizerPresetColors} onChange={(visualizerPresetColors) => update({ visualizerPresetColors })} options={VIZ_PRESET_COLORS.map((v) => ({ value: v, label: tr(VIZ_PRESET_COLOR_LABELS[v]) }))} />
+          </Row>
+        )}
         {s.visualizer && (
           <Row setting="visualizerWeighting" label={msg('Visualizer weighting')} sub={tr('Lows against highs: as measured, the highs lifted 3 dB per octave, or as the ear hears them')}>
             <Segmented
@@ -931,4 +943,30 @@ function LookChoice() {
   const update = useSettings((s) => s.update)
   const looks = usePluginViz((s) => s.looks)
   return <Segmented label={tr('Visualizer style')} className="max-w-md flex-wrap rounded-3xl!" value={lookValue(style, plugin)} onChange={(v) => update(lookSettings(v))} options={lookOptions(looks)} />
+}
+
+/** The Presets look's preset: the built-in ones, then the imported ones; import, export, remove. */
+function PresetChoice() {
+  const id = useSettings((s) => s.settings.visualizerPreset)
+  const saved = useSettings((s) => s.settings.visualizerPresets)
+  const update = useSettings((s) => s.update)
+  const own = saved.some((p) => p.id === id)
+  return (
+    <div className="flex max-w-md flex-col items-end gap-2">
+      <Segmented label={tr('Visualizer preset')} className="flex-wrap rounded-3xl!" value={id} onChange={(visualizerPreset) => update({ visualizerPreset })} options={presetOptions(saved)} />
+      <div className="flex gap-2">
+        <Button variant="ghost" onClick={() => void importPreset()}>
+          {tr('Import')}
+        </Button>
+        <Button variant="ghost" onClick={() => void exportPreset()}>
+          {tr('Export')}
+        </Button>
+        {own && (
+          <Button variant="ghost" onClick={() => removePreset(id)}>
+            {tr('Remove')}
+          </Button>
+        )}
+      </div>
+    </div>
+  )
 }

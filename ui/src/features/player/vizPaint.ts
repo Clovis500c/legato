@@ -7,6 +7,8 @@ import { columnSpans, columnsFor, dialGeometry, ledRows, ringBars, wavePath, typ
 import { fillFor, type Stops } from './vizFill'
 import { LOUD_MARKS, LOUD_WORDS, loudPos, loudText, type LoudReading, type LoudWords } from './vizLoud'
 import { createParticles, moodOf } from './vizParticles'
+import { createMusic, createPreset, emptyFrame, WAVE_POINTS, wavePoints, type PresetData, type PresetRun } from './vizPreset'
+import { createPresetRenderer, type PresetRenderer } from './vizPresetGl'
 import { createScene } from './vizScene'
 import { monoWave, SPAN, trigger } from './vizScope'
 import { advance, COLS, createTerrain, depthOf, fadeOf, flat, project, ROW_S, ROWS } from './vizTerrain'
@@ -106,6 +108,19 @@ export function createPainter(canvas: OffscreenCanvas) {
   let words: LoudWords = LOUD_WORDS
   // A plugin's look: its last picture.
   let shapes: DrawOp[] = []
+  // The Presets look: its preset, its renderer (made at its first frame; null where WebGL2 can't), the music's levels.
+  let preset: PresetRun | null = null
+  let presetGl: PresetRenderer | null | undefined
+  let presetGlTried = -Infinity
+  let presetOwn = false
+  const music = createMusic()
+  const presetOut = emptyFrame()
+  const presetWave = new Float32Array(2 * (WAVE_POINTS + 1))
+  const stillWave = new Float32Array(VIZ_WAVE)
+  let presetClock = 0
+  let presetBeat = false
+  let lastFrame = 0
+  let quiet = 0
   let loudNow: LoudReading = { momentary: -120, short: -120, integrated: null, range: null, peak: -120, top: -120 }
   // Oscilloscope, Vectorscope: the newest wave blocks (none while nothing sounds), the scope's one side, the points.
   const waveL = new Float32Array(VIZ_WAVE)
@@ -595,6 +610,44 @@ export function createPainter(canvas: OffscreenCanvas) {
     ctx.globalAlpha = 1
   }
 
+  /**
+   * The Presets look: the preset's frame on the GPU (vizPresetGl.ts), copied in. Half speed and no beats in reduced
+   * motion. At rest after 4 s without frames (paused, silent), the last picture kept.
+   */
+  function presetDraw(dt: number): boolean {
+    if (!ctx) return true
+    const W = canvas.width
+    const H = canvas.height
+    if (presetGl === undefined && performance.now() - presetGlTried > 2000) {
+      presetGlTried = performance.now()
+      presetGl = createPresetRenderer()
+    }
+    if (!preset || !presetGl) {
+      ctx.clearRect(0, 0, W, H)
+      return true
+    }
+    quiet += dt
+    const pace = calm ? 0.5 : 1
+    presetClock += dt * pace
+    preset.step({ time: presetClock, dt: dt * pace, ...music.read(), beat: presetBeat && !calm, bpm: beat.tempo()?.bpm ?? 0, aspect: W / H }, presetOut)
+    presetBeat = false
+    const n = wavePoints(presetOut.wave, hasWave ? waveL : stillWave, hasWave ? waveR : stillWave, W / H, presetWave)
+    const ink = inkRgb ?? [136, 136, 136]
+    const pic = presetGl.draw(presetOut, presetWave, n, W, H, [ink[0] / 255, ink[1] / 255, ink[2] / 255], presetOwn, calm)
+    if (!pic) {
+      // The GPU's context is gone (a driver reset): another in a while.
+      presetGl.dispose()
+      presetGl = undefined
+      ctx.clearRect(0, 0, W, H)
+      return true
+    }
+    ctx.globalAlpha = 1
+    ctx.clearRect(0, 0, W, H)
+    ctx.imageSmoothingEnabled = true
+    ctx.drawImage(pic, 0, 0, W, H)
+    return quiet > 4
+  }
+
   /** The terrain, back to front: each row clears what its hills hide, then a faint body and its line. */
   function terrain(levels: Float32Array, W: number, H: number, dt: number, resting: boolean): boolean {
     if (!ctx) return true
@@ -892,6 +945,11 @@ export function createPainter(canvas: OffscreenCanvas) {
       // Another look: a clean canvas (the waterfall keeps its picture otherwise).
       if (next !== look && ctx) ctx.clearRect(0, 0, canvas.width, canvas.height)
       // Back to the Oscilloscope or the Vectorscope: no stale trace before their frames come.
+      // Off the Presets look: its GPU picture let go.
+      if (next !== look && look === 'preset') {
+        presetGl?.dispose()
+        presetGl = undefined
+      }
       if (next !== look) {
         hasWave = false
         corrNow = null
@@ -926,6 +984,13 @@ export function createPainter(canvas: OffscreenCanvas) {
       if (onset.onset) {
         kick = 1
         burstNow = Math.max(burstNow, onset.strength)
+        presetBeat = true
+      }
+      if (look === 'preset') {
+        const now = performance.now()
+        music.push(l, r, lastFrame ? Math.min(0.1, (now - lastFrame) / 1000) : 1 / 60)
+        lastFrame = now
+        quiet = 0
       }
       if (look === 'particles') mood = moodOf(both, rms)
       hasWave = w !== undefined
@@ -944,6 +1009,8 @@ export function createPainter(canvas: OffscreenCanvas) {
     silence() {
       // A pause breaks the beat's history: it starts over.
       beat.reset()
+      music.silence()
+      lastFrame = 0
       kick = 0
       burstNow = 0
       mood = { mids: 0, level: 0 }
@@ -963,6 +1030,12 @@ export function createPainter(canvas: OffscreenCanvas) {
     /** A plugin's picture, until the next. */
     ops(list: DrawOp[]) {
       shapes = list
+    },
+    /** The Presets look's preset (its equations compiled here) and its colours. */
+    preset(data: PresetData, own: boolean) {
+      preset = createPreset(data)
+      presetOwn = own
+      presetClock = 0
     },
     /** The particles' colours (none: the ink) and whether their light adds up. */
     palette(colors: string[], adds: boolean) {
@@ -986,6 +1059,7 @@ export function createPainter(canvas: OffscreenCanvas) {
         loudness(canvas.width, canvas.height)
         return true
       }
+      if (look === 'preset') return presetDraw(dt)
       // A plugin's look: its picture as each one comes, at rest in between.
       if (look === 'plugin') {
         ctx.globalAlpha = 1

@@ -205,6 +205,11 @@ Relaunch log (newest last):
 - 2026-11-05: Preset engine, first half (pure, tested, not used yet): `vizExpr.ts` (the equations' language, compiled to
   closures), `vizPreset.ts` (mesh motion, wave, bass / mid / treb), `vizPresets.ts` (9 built-in), `vizMilk.ts` (.milk
   reader). Next: the WebGL renderer in the worker, the look, its settings, import of .milk / .json presets.
+- 2026-11-05: the Presets look (second half): `vizPresetGl.ts` (WebGL2 feedback in the worker), `presetDraw` in
+  `vizPaint.ts`, settings `visualizerPreset` / `visualizerPresetColors` / `visualizerPresets`, the menu's Visualizer
+  preset and Preset colors, Settings rows with Import / Export / Remove (`presetFiles.ts`, pure `vizPresetList.ts`,
+  commands `read_preset` / `write_preset`). Seen in the demo full screen, dark; a first try stayed black with the
+  browser pane hidden (the loop off), fine twice after. No real .milk file tried.
 
 ## Mobile app and devices sync (the owner's ask, 2026-11-02 afternoon; in progress)
 
