@@ -120,7 +120,7 @@ A whole app now, not a companion (the owner's ask, 2026-11-02): spec, phases and
 - **Sees**: everything reachable by keyboard with a visible focus ring, screen readers (Narrator, NVDA) read rows,
   buttons, the player state and song changes; contrast AA everywhere; Windows' reduced motion and high contrast
   respected; text scales to 200 % without breaking.
-- **How**: audit with axe-core in a dev build (the `ui/dev` harness), roving tabindex in virtual lists (TrackTable),
+- **How**: audit with axe-core in a dev build (or the site demo, `site/demo`: the real `ui/` over a fake Tauri), roving tabindex in virtual lists (TrackTable),
   `aria-live` for song changes, `forced-colors` CSS for high contrast, focus traps in dialogs.
 - **Rules**: none.
 - **Needs**: E2E harness helps (keyboard flows as tests).

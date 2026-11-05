@@ -97,6 +97,13 @@ anonymously, so releases must be public.
 gh secret set TAURI_SIGNING_PRIVATE_KEY < ~/.tauri/music-app.key
 ```
 
+The APK step signs with the repository secrets `ANDROID_KEYSTORE` (the release keystore, a `.jks` in base64) and
+`ANDROID_KEYSTORE_PASSWORD` (store and key), alias `legato`; without them the Windows Beta still goes out, with no APK.
+A local release APK is signed when `src-tauri/gen/android/keystore.properties` exists (git-ignored: `storeFile`,
+`password`, `keyAlias`). Secrets can't be read back from GitHub, so the files are the only copies: the updater key
+lost, installed PCs can't take a later update; the keystore lost, phones must uninstall to take a later APK. Keep a
+backup of both.
+
 ## Conventions
 
 - **Small commits**, one tested step at a time, with

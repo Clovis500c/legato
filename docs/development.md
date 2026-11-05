@@ -10,6 +10,7 @@ keeps secrets and data. Written 2026-10-17; re-check the Spotify part when Spoti
 | Windows 10 or 11 | [Rust](https://rustup.rs) stable (MSVC), Node.js 22 or later, [pnpm](https://pnpm.io) 10. WebView2 comes with Windows 11. |
 | macOS | Xcode Command Line Tools (`xcode-select --install`), Rust, Node.js 22, pnpm 10. |
 | Linux (Debian, Ubuntu) | Rust, Node.js 22, pnpm 10, and the packages below. |
+| Android (optional, from Windows) | JDK 17, the Android SDK (platform-tools, emulator, an API 36 image), NDK 30.0.16248370, and `rustup target add aarch64-linux-android armv7-linux-androideabi i686-linux-android x86_64-linux-android`. On the owner's PC all of it sits in `C:\dev\android` (outside AppData: Claude's shell sees a virtualized one), nothing on the PATH: dot-source `C:\dev\android\env.ps1` (sets `JAVA_HOME`, `ANDROID_HOME`, `NDK_HOME`, the PATH) before an Android build. Emulator: AVD `legato36`. |
 
 ```bash
 sudo apt install build-essential pkg-config libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev libxdo-dev libssl-dev libasound2-dev libdbus-1-dev
@@ -21,7 +22,9 @@ the media panel, the ad shield's network hook and the system accent are Windows 
 
 **Claude Code.** The recipes that kept coming back are project skills in `.claude/skills/`: `add-setting`,
 `add-connector` and `release-check` (`/release-check` before a push: it reports, never pushes). `.claude/launch.json`
-names the dev servers its preview can start: `ui-vite`, `app` (the whole app) and `site` (the website, port 3100).
+names the dev servers its preview can start: `ui-vite`, `app` (the whole app), `site` (the website, port 3100) and
+`demo` (the website's demo: the real `ui/` over a fake Tauri, invented data, port 5190; the quickest way to see a screen,
+at phone size too).
 
 ## Your dev build has its own data
 

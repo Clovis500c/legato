@@ -61,7 +61,7 @@ into `ui/src/shared/api.ts` (735 lines). `src-tauri/src/lib.rs` 2068 lines, `cra
 
 ## Scripted live checklist
 
-- **How**: a dev-only page (`ui/dev/` harness or a hidden Settings page in dev builds) listing the "Check live" items;
+- **How**: a dev-only page (a hidden Settings page in dev builds) listing the "Check live" items;
   each item has an "Run" that drives the app (play this, fade that) and asks the user Yes / No for what only ears or
   eyes can judge; results saved to `docs/notes/checks-YYYY-MM-DD.md`.
 - **Effort**: M. **Done when**: the current "Check live" list runs in 15 minutes.

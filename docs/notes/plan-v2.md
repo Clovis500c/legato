@@ -953,7 +953,7 @@ Most useful first; the tag is the effort.
 **Housekeeping**
 - [ ] Playlist `trackCount` vs rows mismatch (Workout Mix).
 - [ ] "Music App export test" playlist on YouTube Music: ask before deleting.
-- [ ] Local only: `ui/dev/` preview harness (excluded in `.git/info/exclude`), delete when no longer useful.
+- [x] Local only: `ui/dev/` preview harness, deleted 2026-11-05 (the site demo, `site/demo`, does its job).
 - Dependabot alert #1 (`glib` 0.18, Linux only, through Tauri's GTK3 stack) dismissed: re-check at each Tauri upgrade.
 
 ## Fixed limits
