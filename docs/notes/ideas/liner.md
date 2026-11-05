@@ -53,49 +53,79 @@ everything here is written from scratch. Its numbers move fast: check again befo
   static page (8) or a public relay the owner approves (11).
 - **Their code** (licence) and the shaders they credit (Kawarp): ours are written from scratch.
 
-## What to build
+## What to build, easiest first
 
-Each line is also in [plan-v2.md](../plan-v2.md) › Against Liner. The usual extras (i18n with French, settings search,
-right-click menus, tests, docs and the website) as in [README.md](README.md).
+The owner's ask (2026-11-05): all of them, in this order. Each line is also in [plan-v2.md](../plan-v2.md) › Against
+Liner, with the same number. The usual extras (i18n with French, settings search, right-click menus, tests, docs and
+the website) as in [README.md](README.md).
 
-1. `S` **Windows 11 snap layouts.** Sees: hovering the maximize button shows Windows' layouts flyout, as on a native
-   window. How: the main window's subclass (as `src-tauri/src/thumbbar.rs` does) answers `WM_NCHITTEST` with
-   `HTMAXBUTTON` over the button's rectangle (sent by the UI when it moves), and turns its clicks into the button's
-   own. Done when: the flyout shows on Windows 11, a click still maximizes, the button keeps its hover look.
-2. `S` **Discord, on par.** A status format (song, artist, both), the artist's picture as the small image, a preview in
+Already ours (checked 2026-11-05, so not on the list): the instrumental mark (`LyricsPanel.tsx`, `Karaoke.tsx`), the
+settings search in every language (`msg` labels), an everywhere shortcut for picture in picture (`keys.ts` `pip`),
+brand channels (`ytmusic.rs` page ids), recent searches (`search/recent.ts`), Discord's buttons
+(`connectors/src/discord.rs`), the taskbar's thumbnail buttons (`thumbbar.rs`), issue forms (`.github/ISSUE_TEMPLATE`).
+
+1. `S` **Keep the screen on while music plays.** A setting (off), in Settings › Playback: while a song plays, the
+   screen doesn't sleep (WebView2's wake lock, as `CoverScreen.tsx` takes it); paused or stopped, it lets go. Done
+   when: the lock follows play and pause, tests on the pure rule.
+2. `S` **The artist's bio.** YouTube Music's artist page carries its own "About" text (the header's description): read
+   it in `ytmusic` (`Artist` gets `about`), show it on the artist page, three lines and Read more. Done when: a
+   recorded page in a unit test gives the text, the page shows it.
+3. `S` **Discord, on par.** A status format (song, artist, both), the artist's picture as the small image, a preview in
    Settings › Add-ons. Discord's app name is the owner's step (plan-v2 › Waiting on the user).
-3. `S` **The mini player on minimize.** A setting (off): minimizing opens picture in picture, restoring closes it; the
+4. `S` **The mini player on minimize.** A setting (off): minimizing opens picture in picture, restoring closes it; the
    sung line in it. YouTube's rule: the video at 200 × 200 at least, or Cover mode only.
-4. `S-M` **Check the matches after an import.** The songs matched with a low score, their candidates side by side, pick
+5. `S` **Settings › Storage.** What the app keeps on this PC, with sizes: the library, covers (its limit is already
+   there), lyrics and other caches in SQLite, diagnostics logs, WebView2's own cache; a Clear for what can go (covers,
+   caches, logs), never the library. Liner shows its cache as a chart. Done when: sizes read by an `async fn`, Clear
+   tested on a temp folder.
+6. `S` **A native window on Windows 11.** Sees: hovering the maximize button shows Windows' layouts flyout, and
+   minimize / maximize animate, as on a native window. How: the main window's subclass (as `src-tauri/src/thumbbar.rs`
+   does) answers `WM_NCHITTEST` with `HTMAXBUTTON` over the button's rectangle (sent by the UI when it moves) and
+   turns its clicks into the button's own; the animations need the caption styles kept while the frame stays ours.
+   Done when: the flyout shows on Windows 11, a click still maximizes, the button keeps its hover look.
+7. `S` **A profile card without an account.** Top artists, the recap and a few playlists as a picture (the recap's
+   cards and Share as a picture already draw one), then as a link with 11. Liner's profiles need its server.
+8. `S` **Motion polish, for the owner's eye.** The play / pause icon morphing, a like's pop, pages fading in. None with
+   reduced motion (Windows' setting and ours). `docs/design.md` asks for calm: built behind a setting if the owner
+   isn't sure.
+9. `S-M` **Check the matches after an import.** The songs matched with a low score, their candidates side by side, pick
    one or keep it, approve all. Scores from `music_core` matching. Done when: an import with doubtful matches shows
    the step and the choices stay.
-5. `S-M` **A moving cover background.** Our own WebGL shader: the cover's colours, warped slowly, in Now Playing,
-   Karaoke and the Cover display. Quarter size, 30 fps, stopped when hidden or paused, off with reduced motion. Done
-   when: a setting, and its CPU measured like the visualizer's (under 3 % of the PC).
-6. `S-M` **Fast start on a skip.** Measure the time to sound (the playback log), then cue the next YouTube video in the
-   crossfade's second player during the last seconds, dropped if the user picks something else. Done when: the median
-   time to sound on Next is lower, measured.
-7. `M` **More lyrics sources and a picker.** Sees: "Lyrics: LRCLIB · 98 %" and a menu with the other candidates, the
-   choice kept per song. How: `music_core::lyrics` scores candidates (title, artist, length, synced, words); new
-   connectors only after their terms are read (candidates: NetEase, QQ Music and KuGou for word timings, Megalobiz,
-   Genius for plain text); asked only when the first sources miss or the picker opens; cached in SQLite; a privacy row
-   each (the `add-connector` skill). Done when: four sources or more in the picker, mockito tests.
-8. `S-M` **Share links that open in any browser.** A static page on the website (`/l#…`) reads a playlist from the
-   link's fragment (a browser never sends it to a server): the songs, "Open in Legato" (`musicapp://`), "Listen on
-   YouTube" per song, "Get Legato". GitHub Pages already hosts the site, so no server of ours. Covers there load from
-   YouTube's image hosts in the visitor's browser: the page says so. Done when: Share › Copy link gives that address
-   and the page shows a 500-song playlist.
-9. `M` **Reach.** The website in the app's 18 languages, screenshots in the README, winget and Scoop manifests, GitHub
-   Discussions. Outward steps (a PR to `winget-pkgs`, turning Discussions on, a Discord server) are the owner's word.
-   Takes in plan-v2's Community line.
-10. `M` **SoundCloud sets and likes.** SoundCloud's official widget lists a set's sounds (its Widget API's
+10. `S-M` **Fast start on a skip.** Measure the time to sound (the playback log), then cue the next YouTube video in the
+    crossfade's second player during the last seconds, dropped if the user picks something else. Done when: the
+    median time to sound on Next is lower, measured.
+11. `S-M` **Share links that open in any browser.** A static page on the website (`/l#…`) reads a playlist from the
+    link's fragment (a browser never sends it to a server): the songs, "Open in Legato" (`musicapp://`), "Listen on
+    YouTube" per song, "Get Legato". GitHub Pages already hosts the site, so no server of ours. Covers there load from
+    YouTube's image hosts in the visitor's browser: the page says so. Done when: Share › Copy link gives that address
+    and the page shows a 500-song playlist.
+12. `S-M` **A moving cover background.** Our own WebGL shader: the cover's colours, warped slowly, in Now Playing,
+    Karaoke and the Cover display, and behind Home as an option. Quarter size, 30 fps, stopped when hidden or paused,
+    off with reduced motion. Done when: a setting, and its CPU measured like the visualizer's (under 3 % of the PC).
+13. `M` **Imports in seconds.** Liner says "in seconds"; ours waits 3 s between searches for Google's limits. Without a
+    single extra search: the playlist is there at once with every song, a song not yet found is looked up when it
+    comes up to play (one search per song played, a person's pace), the rest at `searchpace`'s slow pace in the
+    background, and the import screen says how many are left. Rules: never quicker, never around a refusal. Done
+    when: a 1 000-song import shows its playlist in seconds and plays its first song at once.
+14. `M` **More lyrics sources and a picker.** Sees: "Lyrics: LRCLIB · 98 %" and a menu with the other candidates, the
+    choice kept per song. How: `music_core::lyrics` scores candidates (title, artist, length, synced, words); new
+    connectors only after their terms are read (candidates: NetEase, QQ Music and KuGou for word timings, Megalobiz,
+    Genius for plain text); asked only when the first sources miss or the picker opens; cached in SQLite; a privacy
+    row each (the `add-connector` skill). Done when: four sources or more in the picker, mockito tests.
+15. `M` **SoundCloud sets and likes.** SoundCloud's official widget lists a set's sounds (its Widget API's
     `getSounds`): terms read first, then matched on YouTube like a pasted list. Then the SoundCloud lines already in
     plan-v2 (search, playback in the widget: the owner's call).
-11. `L` **Listening rooms with friends, over the internet, without a server of ours.** A room code (sealed like Sync
+16. `M` **Reach.** The website in the app's 18 languages, screenshots in the README, winget and Scoop manifests, GitHub
+    Discussions, "good first issue" labels. Outward steps (a PR to `winget-pkgs`, turning Discussions on, a Discord
+    server) are the owner's word. Takes in plan-v2's Community line.
+17. `L` **Listening rooms with friends, over the internet, without a server of ours.** A room code (sealed like Sync
     Mode's), control messages only (song, position, play / pause, reactions), sealed end to end and carried by a
     public relay (WebRTC, its signaling over public relays), or the local network. Each listener plays from their own
     source. The relay is the owner's call, as for Sharing's wormhole words; a privacy row. Takes in plan-v2's "Listen
     together on the local network".
-12. `L` **macOS and Linux builds** (plan-v2 › Features › High): Liner ships both, so this moves up.
-13. `S` **A profile card without an account.** Top artists, the recap and a few playlists as a picture or a share link
-    (8's page). Liner's profiles need its server.
+18. `L` **A Linux build** (AppImage, deb): WebKitGTK instead of WebView2 (the shield's hook and the window scripts
+    differ), the MPRIS media panel, the tray, global shortcuts (X11; Wayland's portal), PipeWire for the detector's
+    loopback. No signing needed, so before macOS.
+19. `L` **A macOS build**, unsigned first as Liner's (signing and notarizing: the owner's Apple Developer Program):
+    WKWebView, Now Playing and the media keys, the menu bar, ScreenCaptureKit for the detector's loopback. 18 and 19
+    take in plan-v2's macOS and Linux line.
