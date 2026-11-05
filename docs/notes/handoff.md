@@ -202,6 +202,9 @@ Relaunch log (newest last):
   frames in `runtime.rs`, `plugin_frame`; UI `features/plugins/pluginViz.ts`, `drawList.ts`; example
   `examples/plugins/rings`). Rust tests run the example; the demo drew an injected look full screen. Not installed in the
   real app.
+- 2026-11-05: Preset engine, first half (pure, tested, not used yet): `vizExpr.ts` (the equations' language, compiled to
+  closures), `vizPreset.ts` (mesh motion, wave, bass / mid / treb), `vizPresets.ts` (9 built-in), `vizMilk.ts` (.milk
+  reader). Next: the WebGL renderer in the worker, the look, its settings, import of .milk / .json presets.
 
 ## Mobile app and devices sync (the owner's ask, 2026-11-02 afternoon; in progress)
 
