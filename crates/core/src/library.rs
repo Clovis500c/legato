@@ -53,7 +53,7 @@ CREATE TABLE IF NOT EXISTS settings (
 ";
 
 /// Schema version this code writes (user_version after migrations).
-pub const SCHEMA_VERSION: i64 = 18;
+pub const SCHEMA_VERSION: i64 = 19;
 
 /// The library was made by a newer version of the app.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -486,6 +486,11 @@ impl Library {
         if lib.db.query_row("PRAGMA user_version", [], |r| r.get::<_, i64>(0))? < 18 {
             // v18: bookmarks inside a song, a moment (ms) to come back to and an optional note (this PC only, not synced).
             lib.db.execute_batch("BEGIN; CREATE TABLE IF NOT EXISTS bookmarks (id INTEGER PRIMARY KEY, track_id INTEGER NOT NULL REFERENCES tracks(id) ON DELETE CASCADE, ms INTEGER NOT NULL, note TEXT NOT NULL DEFAULT '', created INTEGER NOT NULL); CREATE INDEX IF NOT EXISTS bookmarks_track ON bookmarks (track_id, ms); PRAGMA user_version = 18; COMMIT;")?;
+        }
+        if lib.db.query_row("PRAGMA user_version", [], |r| r.get::<_, i64>(0))? < 19 {
+            // v19, library at scale: a song's playlist rows found without a whole scan (removed, merged, and SQLite's check
+            // of each deleted song), plays read by date.
+            lib.db.execute_batch("BEGIN; CREATE INDEX IF NOT EXISTS playlist_tracks_track ON playlist_tracks (track_id); CREATE INDEX IF NOT EXISTS plays_started ON plays (started_at); PRAGMA user_version = 19; COMMIT;")?;
         }
         lib.db.execute_batch(CHANGE_LOG)?;
         // Statements on logged tables compile their triggers too: kept, not rebuilt per call.
@@ -2439,6 +2444,163 @@ mod tests {
         assert_eq!(lib.take_changes(4)?, None);
         lib.forget_changes()?;
         assert_eq!(lib.take_changes(4)?, Some(Changes::default()));
+        Ok(())
+    }
+
+    #[test]
+    fn every_foreign_key_leads_an_index() -> Result<()> {
+        // Deleting a song checks each table pointing at it: without an index there, one whole scan per deleted row.
+        let lib = Library::in_memory()?;
+        let col = |sql: &str| -> Result<Vec<String>> { Ok(lib.db.prepare(sql)?.query_map([], |r| r.get(0))?.collect::<rusqlite::Result<_>>()?) };
+        for table in col("SELECT name FROM sqlite_schema WHERE type = 'table'")? {
+            let mut led: BTreeSet<String> = col(&format!("SELECT ii.name FROM pragma_index_list('{table}') il, pragma_index_info(il.name) ii WHERE ii.seqno = 0"))?.into_iter().collect();
+            // INTEGER PRIMARY KEY = the row id itself.
+            led.extend(col(&format!("SELECT name FROM pragma_table_info('{table}') WHERE pk = 1 AND upper(type) = 'INTEGER' AND (SELECT count(*) FROM pragma_table_info('{table}') WHERE pk > 0) = 1"))?);
+            for from in col(&format!("SELECT \"from\" FROM pragma_foreign_key_list('{table}')"))? {
+                assert!(led.contains(&from), "{table}.{from} has no index");
+            }
+        }
+        Ok(())
+    }
+
+    const SONGS: i64 = 50_000;
+
+    /// Song `i` of the big library: 2 000 local files, then YouTube videos.
+    fn scale_song(i: i64) -> Track {
+        let ids = if i <= 2_000 { BTreeMap::from([(Source::Local, format!("C:/Music/{i}.flac"))]) } else { BTreeMap::from([(Source::Youtube, format!("yt{i}"))]) };
+        Track { title: format!("Song {i}"), artist: format!("Artist {}", i % 4_000), album: Some(format!("Album {}", i % 6_000)), duration_ms: Some(180_000 + (i * 7_919 % 120_000) as u32), ids, ..Default::default() }
+    }
+
+    /// Playlist `p`'s song at `k` (200 playlists of 250, spread over the library).
+    fn scale_row(p: i64, k: i64) -> i64 {
+        (p * 7_919 + k * 104_729) % SONGS + 1
+    }
+
+    /// 50 000 songs, 200 playlists of 250, 50 000 plays: written straight, quicker than imports.
+    fn big_library(now: i64) -> Result<Library> {
+        let lib = Library::in_memory()?;
+        let tx = lib.db.unchecked_transaction()?;
+        {
+            let mut song = tx.prepare("INSERT INTO tracks (id, title, artist, album, duration_ms, match_key, added, added_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?1, ?7)")?;
+            let mut link = tx.prepare("INSERT INTO track_ids (source, source_id, track_id) VALUES (?1, ?2, ?3)")?;
+            for i in 1..=SONGS {
+                let t = scale_song(i);
+                song.execute(params![i, t.title, t.artist, t.album, t.duration_ms, match_key(&t.title, &t.artist), now])?;
+                for (s, sid) in &t.ids {
+                    link.execute(params![s.as_str(), sid, i])?;
+                }
+            }
+            let mut list = tx.prepare("INSERT INTO playlists (id, source, source_id, name) VALUES (?1, 'youtube', ?2, ?3)")?;
+            let mut row = tx.prepare("INSERT INTO playlist_tracks (playlist_id, position, track_id) VALUES (?1, ?2, ?3)")?;
+            for p in 1..=200 {
+                list.execute(params![p, format!("PL{p}"), format!("Mix {p}")])?;
+                for k in 0..250 {
+                    row.execute(params![p, k, scale_row(p, k)])?;
+                }
+            }
+            let mut play = tx.prepare("INSERT INTO plays (track_id, started_at, listened_ms, completed) VALUES (?1, ?2, 200000, 1)")?;
+            for k in 0..SONGS {
+                play.execute(params![k * 31 % SONGS + 1, now - (SONGS - k) * 600])?;
+            }
+        }
+        tx.commit()?;
+        lib.forget_changes()?;
+        Ok(lib)
+    }
+
+    /// Statements run while traced: their start counts by SQL text, then (SQL, whole-table steps, time).
+    type Run = (HashMap<String, i32>, Vec<(String, i32, std::time::Duration)>);
+    thread_local! {
+        static RUN: std::cell::RefCell<Run> = Default::default();
+    }
+
+    fn traced(e: rusqlite::trace::TraceEvent<'_>) {
+        use rusqlite::{StatementStatus::FullscanStep, trace::TraceEvent};
+        RUN.with_borrow_mut(|(start, done)| match e {
+            // Trigger subprograms report too ("-- TRIGGER …"): only the statement's own start counts.
+            TraceEvent::Stmt(s, text) if !text.starts_with("--") => {
+                start.insert(s.sql().into_owned(), s.get_status(FullscanStep));
+            }
+            // A cached statement's counts add up over its life: this run's share only.
+            TraceEvent::Profile(s, took) => {
+                let sql = s.sql().into_owned();
+                let steps = s.get_status(FullscanStep) - start.remove(&sql).unwrap_or(0);
+                done.push((sql, steps, took));
+            }
+            _ => {}
+        });
+    }
+
+    /// Library at scale: what runs for one song never reads a big table whole, and a whole read goes over it once,
+    /// not once per row. `cargo test -p music-core at_50k -- --nocapture` prints the times.
+    #[test]
+    fn per_song_statements_skip_whole_scans_at_50k_songs() -> Result<()> {
+        use crate::history::Play;
+        use rusqlite::trace::TraceEventCodes;
+        let now = 1_800_000_000;
+        let lib = big_library(now)?;
+        let mut took = Vec::new();
+        macro_rules! op {
+            ($name:literal, $e:expr) => {{
+                let at = std::time::Instant::now();
+                let r = $e;
+                took.push(($name, at.elapsed()));
+                r
+            }};
+        }
+        lib.db.trace_v2(TraceEventCodes::SQLITE_TRACE_STMT | TraceEventCodes::SQLITE_TRACE_PROFILE, Some(traced));
+        // Start: the whole library, playlists, history.
+        op!("tracks", lib.tracks()?);
+        op!("playlists", lib.playlists()?);
+        op!("playlist orders", lib.playlist_orders()?);
+        op!("play stats", lib.play_stats()?);
+        op!("plays, last 30 days", lib.plays_since(now - 30 * 86_400)?);
+        op!("liked", lib.liked_tracks()?);
+        op!("prefs", lib.prefs()?);
+        op!("music words", lib.music_words()?);
+        op!("songs not found", lib.not_found()?);
+        op!("local files", lib.local_files()?);
+        // One song at a time: import, play, rate, edit.
+        op!("find", lib.find(&scale_song(20_000))?);
+        op!("upsert, known", lib.upsert_track(&scale_song(20_001))?);
+        let fresh = Track { title: "Brand New".into(), artist: "Someone".into(), ids: BTreeMap::from([(Source::Youtube, "ytnew".into())]), ..Default::default() };
+        let fresh = op!("upsert, new", lib.upsert_track(&fresh)?);
+        op!("record a play", lib.record_play(&Play { track_id: 20_000, started_at: now, listened_ms: 200_000, completed: true })?);
+        op!("rate", lib.set_rating(20_000, 8)?);
+        op!("bookmark", lib.add_bookmark(20_000, 60_000, "", now)?);
+        op!("bookmarks", lib.bookmarks(20_000)?);
+        op!("one playlist", lib.playlist_tracks(7)?);
+        let mine = op!("new playlist", lib.edit_playlist(PlaylistEdit::Create { name: "Mine".into() })?).expect("new id");
+        op!("add 500", lib.edit_playlist(PlaylistEdit::Add { id: mine, track_ids: (1..=500).map(|i| i * 97).collect() })?);
+        op!("move", lib.edit_playlist(PlaylistEdit::Move { id: mine, from: 0, to: 400 })?);
+        op!("remove one", lib.edit_playlist(PlaylistEdit::Remove { id: mine, position: 10 })?);
+        op!("remove a song from", lib.edit_playlist(PlaylistEdit::RemoveTrack { id: mine, track_id: 970 })?);
+        op!("like", lib.add_likes(&[scale_song(30_000)])?);
+        // Songs leaving: removed, merged, local files gone, a playlist synced again.
+        op!("remove a song", lib.remove_track(scale_row(7, 0))?);
+        op!("merge", lib.merge_tracks(25_000, &[25_001, fresh])?);
+        op!("rescan local files", lib.replace_local(&(51..=2_000).map(scale_song).collect::<Vec<_>>())?);
+        let mut eight: Vec<Track> = (1..250).map(|k| scale_song(scale_row(8, k))).collect();
+        eight.push(scale_song(40_000));
+        op!("sync a playlist", lib.save_playlist(Source::Youtube, "PL8", "Mix 8", &eight)?);
+        op!("songs without a source", lib.sourceless()?);
+        op!("changes", lib.take_changes(10_000)?);
+        op!("delete a playlist", lib.edit_playlist(PlaylistEdit::Delete { id: mine })?);
+        lib.db.trace_v2(TraceEventCodes::empty(), None);
+
+        let done = RUN.with_borrow_mut(|(_, done)| std::mem::take(done));
+        for (name, t) in &took {
+            eprintln!("{name:>24}: {:>7.1} ms", t.as_secs_f64() * 1e3);
+        }
+        // A statement with bound values (one song, one playlist) may read a small table whole, never a big one.
+        let mut over = BTreeMap::new();
+        for (sql, steps, _) in &done {
+            if *steps > if sql.contains('?') { 1_000 } else { 2 * SONGS as i32 } {
+                let e = over.entry(sql.split_whitespace().collect::<Vec<_>>().join(" ")).or_insert(0);
+                *e = (*e).max(*steps);
+            }
+        }
+        assert!(over.is_empty(), "whole scans: {over:#?}");
         Ok(())
     }
 }

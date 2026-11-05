@@ -227,6 +227,8 @@ Relaunch log (newest last):
   Search by voice shortcut with no default key. Real speech not tried. Volume line left (the owner's call).
 - 2026-11-05: the Auto-DJ says why it picked a song (Up next: "Because you liked …", "You gave it 5 stars"); artists
   you liked come up twice as often. Seen in the demo with ratings; a real Liked Music not tried.
+- 2026-11-05: library at scale, its queries: a test runs the app's statements on 50 000 songs and fails on a whole-table
+  read for one song; schema v19 adds two indexes (a song's playlist rows, plays by date). Times in performance.md.
 
 ## Mobile app and devices sync (the owner's ask, 2026-11-02 afternoon; in progress)
 

@@ -147,6 +147,36 @@ they should sit alongside, but that is not measured. Not measured either: the fr
 drawing, YouTube (the bench is local files), a PC on battery. The 30 fps look is what the bars and the needles show
 (their ballistics are time-based, not frame-based); the spectrogram's fixed 90 px/s scrolls 3 pixels a drawn frame.
 
+## Library at scale, 2026-11-05
+
+`per_song_statements_skip_whole_scans_at_50k_songs` (`crates/core/src/library.rs`) builds 50 000 songs (2 000 local
+files, the rest YouTube), 200 playlists of 250 and 50 000 plays, then runs what the app does with them: the start's whole
+reads, a song imported, played, rated and bookmarked, a playlist made and edited, a song removed, two merged, the local
+folders scanned again, a playlist synced. SQLite counts each statement's whole-table steps: one with bound values (one
+song, one playlist) may not read a big table whole, and a whole read may not go over its table more than twice.
+`every_foreign_key_leads_an_index` checks the schema: deleting a song makes SQLite look for rows pointing at it in every
+table, a whole scan per deleted song where no index starts with that column.
+
+It found four whole reads: a song's playlists (removing it), its playlist rows (merging it into another), the plays since
+a date, and the check of every deleted song in `playlist_tracks`. Schema v19 adds `playlist_tracks_track` and
+`plays_started`. Times in the test's in-memory library, Ryzen 5 5500: before and after in the unoptimized test build,
+after in an optimized one (`CARGO_PROFILE_RELEASE_LTO=false cargo test --release -p music-core at_50k -- --nocapture`):
+
+| | Unoptimized, before → after | Optimized |
+|---|---|---|
+| Merge two songs | 20.3 → 0.8 ms | 0.6 ms |
+| Remove a song | 24.5 → 12.2 ms | 6.4 ms |
+| Plays of the last 30 days | 11.4 → 3.7 ms | 1.9 ms |
+| Local folders scanned again (1 950 files, 50 gone) | 344 → 218 ms | 66 ms |
+| Songs without a source | 109 → 31 ms | 19 ms |
+
+What stays at 50 000 songs, optimized: the whole read at start (`tracks()`) 240 to 400 ms (the first call is the slow
+one): its rows 112 ms (86 ms of SQL, 46 of them the artist / title sort) and every song's musicness 96 ms
+(`music_words`: today's rules over each YouTube row). An index in the list's order does not help: SQLite then reads the
+table out of order, 98 to 114 ms against 86 with the sort. Opening a playlist 30 ms (`channel_members` reads every
+song's artist to judge its channels), syncing a 250-song playlist 35 ms, a like 15 ms. Not measured: the same library on
+disk (the installed app's first read of the day) and what the interface does with 50 000 rows.
+
 ## Results
 
 First-load JS (the page's script and its preloaded chunks, `dist/index.html`), before and after lazy pages

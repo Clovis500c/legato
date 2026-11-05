@@ -29,5 +29,7 @@ rand = "0.10.3"
 ts-rs.workspace = true
 
 [dev-dependencies]
+# Tests count each statement's whole-table steps (library at scale).
+rusqlite = { version = "0.40.2", features = ["trace"] }
 tokio = { version = "1.53.3", features = ["macros", "rt"] }
 tempfile = "3.27.0"

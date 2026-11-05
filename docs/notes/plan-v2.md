@@ -729,8 +729,16 @@ Most useful first; the tag is the effort.
 Most useful first; the tag is the effort.
 
 - [ ] `M` Tray mode: measure what's left (WebView2 suspended?), drop it further if the page can be unloaded and restored.
-- [ ] `M` Library at scale: 50 000 songs, check every query with `EXPLAIN QUERY PLAN` (indexes for artist, album,
-      plays, likes), search with FTS5, scans in the background with progress.
+- [x] `S-M` Library at scale, its queries: 50 000 songs, every statement checked (indexes for artist, album, plays, likes).
+      (2026-11-05: `per_song_statements_skip_whole_scans_at_50k_songs` builds 50 000 songs, 200 playlists of 250 and
+      50 000 plays, runs what the app does with them and counts each statement's whole-table steps (SQLite's own
+      counter, not `EXPLAIN QUERY PLAN` text: it sees what ran); `every_foreign_key_leads_an_index` checks the schema.
+      Found: removing and merging a song, plays by date, and the check of every deleted song read a whole table.
+      Schema v19: `playlist_tracks_track`, `plays_started`. No index for artist, album or likes: nothing in SQL looks
+      them up (the interface filters its own copy). Left: opening a playlist reads every song's artist once
+      (`channel_members`, judging its channels' talk), and the whole reads at start; times in `docs/performance.md`.
+      Not tried: the owner's real library.)
+- [ ] `M` Library at scale, the rest: search with FTS5, scans in the background with progress.
 - [x] `S-M` Re-renders: profile the player bar, Up next and lyrics at 60 fps (`Progress.tsx`); Zustand selectors everywhere.
       (2026-11-05, React Profiler around the shell in the demo, dev build, a local song playing: paused = no render;
       playing = 4 commits a second (the engine's reports), the bar ~0.45 ms each; Now Playing with lyrics 9 ms a second.
