@@ -2077,6 +2077,8 @@ const hi: Record<string, string> = {
   'milkdrop presets colours own theme ink': 'milkdrop प्रीसेट presets रंग अपने थीम स्याही',
   'In the lyrics': 'बोल में',
   '“{line}”': '“{line}”',
+  'Shuffle all': 'सब शफ़ल करके चलाएं',
+  'Recent playlists': 'हाल की प्लेलिस्ट',
 }
 
 export default hi

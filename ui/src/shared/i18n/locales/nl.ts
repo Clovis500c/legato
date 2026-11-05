@@ -2077,6 +2077,8 @@ const nl: Record<string, string> = {
   'milkdrop presets colours own theme ink': 'milkdrop presets kleuren eigen thema inkt',
   'In the lyrics': 'In de songteksten',
   '“{line}”': '‘{line}’',
+  'Shuffle all': 'Alles shuffle afspelen',
+  'Recent playlists': 'Recente playlists',
 }
 
 export default nl

@@ -2077,6 +2077,8 @@ const vi: Record<string, string> = {
   'milkdrop presets colours own theme ink': 'milkdrop mẫu thiết lập presets màu riêng chủ đề mực',
   'In the lyrics': 'Trong lời bài hát',
   '“{line}”': '“{line}”',
+  'Shuffle all': 'Phát ngẫu nhiên tất cả',
+  'Recent playlists': 'Danh sách phát gần đây',
 }
 
 export default vi

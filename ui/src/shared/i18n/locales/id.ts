@@ -2077,6 +2077,8 @@ const id: Record<string, string> = {
   'milkdrop presets colours own theme ink': 'milkdrop preset presets warna milik tema tinta',
   'In the lyrics': 'Di lirik',
   '“{line}”': '“{line}”',
+  'Shuffle all': 'Putar acak semua',
+  'Recent playlists': 'Playlist terbaru',
 }
 
 export default id

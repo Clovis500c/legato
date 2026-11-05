@@ -1,7 +1,7 @@
 import { Channel, invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 import type { Box } from './artbox'
-import type { AddReport, AlbumInfo, DeviceOffer, DeviceOfferEvent, DevicesStatus, CacheStats, Contact, Credentials, DetectInput, Detection, Direction, DiscordStatus, Dropped, Edit, EditDraft, Effects, ExportReport, FileList, FileTags, FindReport, Heard, LastfmStatus, LibraryChanges, LibraryData, LibraryHealth, LibraryPlaylist, LibraryTrack, ListImport, LinkImport, Listen, ListenbrainzStatus, ListRef, LiveReport, LiveSettings, LyricHit, Lyrics, LyricsAsk, MediaNow, Merged, Mix, NearbyState, Pickup, Play, PlayerCommand, PlayerLevels, PlayerStatus, PlaylistEdit, PluginCall, PluginInfo, PluginInspect, Pref, Presence, PushFailed, RemoteLink, RemoteSong, Scrobble, SearchResults, ShareCode, SharePreview, ShieldStatus, ShortcutEntry, SongTags, Source, SourceStatus, SpotifyCommand, SpotifyExport, SpotifyImport, SpotifyLibraryImport, SpotifyList, SpotifyPick, SpotifyPlayback, SpotifyProgress, SponsorSegment, SyncProbe, SyncReport, SyncStatus, SystemAccent, TagsSaved, Track, UpdateStatus, WatchCmd, WatchRect, WatchReport, YtmAccount, YtmAccounts, YtmArtist, YtmHome } from './generated'
+import type { AddReport, AlbumInfo, DeviceOffer, DeviceOfferEvent, DevicesStatus, CacheStats, Contact, Credentials, DetectInput, Detection, Direction, DiscordStatus, Dropped, Edit, EditDraft, Effects, ExportReport, FileList, FileTags, FindReport, Heard, JumpPlaylist, LastfmStatus, LibraryChanges, LibraryData, LibraryHealth, LibraryPlaylist, LibraryTrack, ListImport, LinkImport, Listen, ListenbrainzStatus, ListRef, LiveReport, LiveSettings, LyricHit, Lyrics, LyricsAsk, MediaNow, Merged, Mix, NearbyState, Pickup, Play, PlayerCommand, PlayerLevels, PlayerStatus, PlaylistEdit, PluginCall, PluginInfo, PluginInspect, Pref, Presence, PushFailed, RemoteLink, RemoteSong, Scrobble, SearchResults, ShareCode, SharePreview, ShieldStatus, ShortcutEntry, SongTags, Source, SourceStatus, SpotifyCommand, SpotifyExport, SpotifyImport, SpotifyLibraryImport, SpotifyList, SpotifyPick, SpotifyPlayback, SpotifyProgress, SponsorSegment, SyncProbe, SyncReport, SyncStatus, SystemAccent, TagsSaved, Track, UpdateStatus, WatchCmd, WatchRect, WatchReport, YtmAccount, YtmAccounts, YtmArtist, YtmHome } from './generated'
 
 // Every type the commands and events carry is a Rust type: `pnpm types` (ts-rs) writes it into ./generated, never by hand.
 // Re-exported here, so features import them from the api.
@@ -187,6 +187,12 @@ export const api = {
   onLocalChanged: (cb: (count: number) => void) => listen<number>('local-changed', (e) => cb(e.payload)),
   /** A change YouTube Music refused after the fact (push.rs): already undone in the library. */
   onPushFailed: (cb: (f: PushFailed) => void) => listen<PushFailed>('push-failed', (e) => cb(e.payload)),
+  /** A second launch from a taskbar Jump List entry: `jumpPending` has it. */
+  onJump: (cb: () => void) => listen('jump', () => cb()),
+  /** The Jump List entry this launch or a later one was started from, once: 'shuffle' or 'playlist:<id>'. */
+  jumpPending: () => invoke<string | null>('jump_pending'),
+  /** The taskbar's Jump List written again: Shuffle all, then these playlists (installed app on Windows only). */
+  setJumpList: (shuffle: string, recent: string, playlists: JumpPlaylist[]) => invoke<void>('set_jump_list', { shuffle, recent, playlists }),
   player: (cmd: PlayerCommand) => invoke<void>('player', { cmd }),
   playerStatus: () => invoke<PlayerStatus>('player_status'),
   /** Live processing of local files (crates/dsp): applies from the next block, nothing restarts. */

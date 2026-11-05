@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { LibraryPlaylist, LibraryTrack, Play } from '../../shared/api'
-import { byOpened, JUMP, jumpLists, listOf, MAX_LISTS, pushList, type OpenedList } from './recentLists'
+import { byOpened, JUMP, jumpLists, jumpPlaylists, listOf, MAX_LISTS, pushList, type OpenedList } from './recentLists'
 import { weekOf } from './week'
 
 const t = (id: number, title: string, artist: string, album: string | null): LibraryTrack => ({ id, added: id, addedAt: null, title, artist, album, durationMs: 200_000, isrc: null, ids: { youtube: `y${id}` } })
@@ -47,6 +47,17 @@ describe('byOpened', () => {
     const list = [pl(1, 'A', 1, true), pl(2, 'B', 1, true), pl(3, 'C', 1, true), pl(4, 'D', 1, true)]
     const opened: OpenedList[] = [{ kind: 'playlist', id: 3 }, { kind: 'album', album: 'x', artist: 'y' }, { kind: 'playlist', id: 2 }]
     expect(byOpened(list, opened).map((p) => p.id)).toEqual([3, 2, 1, 4])
+  })
+})
+
+describe('jumpPlaylists', () => {
+  it('gives the taskbar the playlists opened lately that still exist, named, a few at most', () => {
+    const list = [pl(1, 'Road trip', 4, true), pl(2, 'Focus', 2, true), ...[3, 4, 5, 6, 7].map((id) => pl(id, `P${id}`, 1, true))]
+    const opened: OpenedList[] = [{ kind: 'playlist', id: 2 }, { kind: 'album', album: 'x', artist: 'y' }, { kind: 'playlist', id: 9 }, { kind: 'playlist', id: 1 }]
+    expect(jumpPlaylists(opened, list)).toEqual([{ id: 2, name: 'Focus' }, { id: 1, name: 'Road trip' }])
+    const many: OpenedList[] = [7, 6, 5, 4, 3, 2, 1].map((id) => ({ kind: 'playlist', id }))
+    expect(jumpPlaylists(many, list).map((p) => p.id)).toEqual([7, 6, 5, 4, 3].slice(0, JUMP))
+    expect(jumpPlaylists([], list)).toEqual([])
   })
 })
 

@@ -2077,6 +2077,8 @@ const ja: Record<string, string> = {
   'milkdrop presets colours own theme ink': 'milkdrop プリセット presets 色 独自 テーマ インク',
   'In the lyrics': '歌詞の中',
   '“{line}”': '「{line}」',
+  'Shuffle all': 'すべてシャッフル再生',
+  'Recent playlists': '最近のプレイリスト',
 }
 
 export default ja

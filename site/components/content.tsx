@@ -22,7 +22,7 @@ export const FEATURES: { icon: IconName; title: string; text: string }[] = [
   { icon: 'FolderSimple', title: 'Your own files', text: 'Gapless playback, as loud as your streamed songs (their ReplayGain tags, or measured), and their tags to edit, a whole album at once: artist, album, genre, year, track numbers, cover. Their own lyrics come first: edit them, or time plain ones by tapping along.' },
   { icon: 'Devices', title: 'Sync Mode', text: 'Your library on all your PCs, through a OneDrive folder or your network.' },
   { icon: 'PuzzlePiece', title: 'Add-ons and plugins', text: 'Plugins by others ask for what they need before they can do anything.' },
-  { icon: 'Translate', title: '18 languages', text: 'Following Windows, with its media keys, a tray icon and full screen. The music pauses when your headphones disconnect, or when a call starts if you want, and your phone can be the remote.' },
+  { icon: 'Translate', title: '18 languages', text: 'Following Windows, with its media keys, a tray icon, a Jump List and full screen. The music pauses when your headphones disconnect, or when a call starts if you want, and your phone can be the remote.' },
 ]
 
 /** Where the window stands: x, y from the stage's middle (share of it), degrees, zoom on the fitted size. */
@@ -106,7 +106,7 @@ export const ROADMAP: [string, string][] = [
   ['Your own music', 'Jellyfin, Navidrome and Subsonic servers, MusicBrainz lookups for your tags.'],
   ['Smarter listening', 'Your songs analysed on your PC (tempo, energy, key) for radios and fades that fit, a path from one artist to another, a yearly recap to share.'],
   ['Around the house', 'Speakers and TVs (DLNA, Chromecast), listening together on the same network, picking up on your other PC where you stopped.'],
-  ['Windows polish', 'A Jump List on the taskbar icon, an alarm that wakes you with a playlist, an overlay for OBS, a picture-in-picture player.'],
+  ['Windows polish', 'An alarm that wakes you with a playlist, a picture-in-picture player.'],
   ['Phones, Mac and Linux', 'A mobile version, Android first, on the same Rust core; builds for macOS and Linux.'],
 ]
 

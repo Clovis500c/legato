@@ -2077,6 +2077,8 @@ const ko: Record<string, string> = {
   'milkdrop presets colours own theme ink': 'milkdrop 프리셋 presets 색상 고유 테마 잉크',
   'In the lyrics': '가사에서',
   '“{line}”': '“{line}”',
+  'Shuffle all': '전체 셔플 재생',
+  'Recent playlists': '최근 플레이리스트',
 }
 
 export default ko

@@ -355,7 +355,15 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       find a song by a line. A source that does (Genius' search with the user's own token, Musixmatch) is a new
       service and a privacy row. Worth trying first by hand: a line typed in the search box, since YouTube Music's own
       search matches lyrics. AudD's humming terms not checked.
-- [ ] `S` Jump List (recent playlists, Shuffle all); thumbnail buttons already there (`thumbbar.rs`).
+- [x] `S` Jump List (recent playlists, Shuffle all); thumbnail buttons already there (`thumbbar.rs`). (2026-11-05:
+      right-click Legato on the taskbar: Shuffle all (a task), then Recent playlists, the 5 playlists opened lately that
+      still exist (`src-tauri/src/jumplist.rs`, ICustomDestinationList; UI `features/home/jumpList.ts`, written again 2 s
+      after the opened lists, a name or the language change). An entry starts legato.exe with `--jump shuffle` or
+      `--jump playlist:<id>`; the ask waits in Rust until the interface takes it, at its start (closed app) or on the
+      single instance's "jump" event (running app). A playlist entry opens its page and plays it from its start. Installed
+      app only (Windows keeps the list outside the app's folders); an entry the user removed stays out. Decided alone:
+      playlists only (no albums, artists or mixes), titles in the interface's language. Tried: Rust tests (arguments,
+      entries), the COM part built. Not tried: an installed build's taskbar, so the list itself is unseen.)
 - [x] `S` Auto-DJ that keeps the queue going from the library with rules (MusicBee). Songs' vinyl button, or Auto-DJ in an
       album, artist, playlist or folder's menu: ten picks, ten more as Up next runs out (`player/autoDj.ts`, pure picks
       `autoDjPick.ts`). Rules in Settings › Playback › Auto-DJ: a song heard lately waits (a week by default), ratings weigh

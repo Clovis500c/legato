@@ -2077,6 +2077,8 @@ const pl: Record<string, string> = {
   'milkdrop presets colours own theme ink': 'milkdrop presety kolory własne motyw tusz',
   'In the lyrics': 'W tekstach',
   '“{line}”': '„{line}”',
+  'Shuffle all': 'Odtwarzaj wszystko losowo',
+  'Recent playlists': 'Ostatnie playlisty',
 }
 
 export default pl

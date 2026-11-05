@@ -145,6 +145,8 @@ const ANSWERS: Record<string, (args: Record<string, unknown>) => unknown> = {
   player_status: status,
   search_catalogs: search,
   search_lyrics: sung,
+  // Not started from the taskbar.
+  jump_pending: () => null,
   lyrics,
   viz_start: ({ frames, fine, wave }) => startFrames(frames as Frames, fine === true, wave === true),
   player_levels: levels,

@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { LibraryPlaylist, LibraryTrack } from '../../shared/api'
+import type { JumpPlaylist, LibraryPlaylist, LibraryTrack } from '../../shared/api'
 import type { View } from '../../app/store'
 import { primaryArtist } from '../library/filter'
 
@@ -50,6 +50,16 @@ export const useOpenedLists = create<{ list: OpenedList[] }>(() => ({ list: load
 export function byOpened<T extends { id: number }>(playlists: T[], opened: OpenedList[]): T[] {
   const rank = new Map(opened.flatMap((l, i) => (l.kind === 'playlist' ? [[l.id, i] as const] : [])))
   return [...playlists].sort((a, b) => (rank.get(a.id) ?? MAX_LISTS) - (rank.get(b.id) ?? MAX_LISTS))
+}
+
+/** The taskbar Jump List's Recent playlists: the playlists opened lately that still exist, newest first, named as shown. */
+export function jumpPlaylists(opened: OpenedList[], playlists: LibraryPlaylist[]): JumpPlaylist[] {
+  const byId = new Map(playlists.map((p) => [p.id, p]))
+  const out = opened.flatMap((l) => {
+    const p = l.kind === 'playlist' ? byId.get(l.id) : undefined
+    return p ? [{ id: p.id, name: p.name }] : []
+  })
+  return out.slice(0, JUMP)
 }
 
 /** A page shown: remembered when it's a list. */

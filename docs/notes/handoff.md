@@ -212,6 +212,8 @@ Relaunch log (newest last):
   browser pane hidden (the loop off), fine twice after. No real .milk file tried.
 - 2026-11-05: "In the lyrics" on the search page (your songs whose cached lyrics hold the text). LRCLIB can't search
   lyrics text and AudD has no humming endpoint (their docs): that plan line's services are out. Seen in the demo.
+- 2026-11-05: the taskbar's Jump List (Shuffle all, Recent playlists; `jumplist.rs`, `features/home/jumpList.ts`).
+  Written by the installed app only: unseen until a build is installed (right-click Legato on the taskbar).
 
 ## Mobile app and devices sync (the owner's ask, 2026-11-02 afternoon; in progress)
 

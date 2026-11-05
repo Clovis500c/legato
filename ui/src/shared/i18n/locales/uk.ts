@@ -2077,6 +2077,8 @@ const uk: Record<string, string> = {
   'milkdrop presets colours own theme ink': 'milkdrop пресети presets кольори власні тема чорнило',
   'In the lyrics': 'У текстах пісень',
   '“{line}”': '«{line}»',
+  'Shuffle all': 'Перемішати все й слухати',
+  'Recent playlists': 'Нещодавні плейлисти',
 }
 
 export default uk

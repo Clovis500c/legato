@@ -2077,6 +2077,8 @@ const zh: Record<string, string> = {
   'milkdrop presets colours own theme ink': 'milkdrop 预设 presets 颜色 自带 主题 墨色',
   'In the lyrics': '歌词中',
   '“{line}”': '“{line}”',
+  'Shuffle all': '随机播放全部',
+  'Recent playlists': '最近的歌单',
 }
 
 export default zh

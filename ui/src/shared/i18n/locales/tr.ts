@@ -2077,6 +2077,8 @@ const tr: Record<string, string> = {
   'milkdrop presets colours own theme ink': 'milkdrop hazır ayarlar presets renkler kendi tema mürekkep',
   'In the lyrics': 'Şarkı sözlerinde',
   '“{line}”': '“{line}”',
+  'Shuffle all': 'Tümünü karışık çal',
+  'Recent playlists': 'Son çalma listeleri',
 }
 
 export default tr

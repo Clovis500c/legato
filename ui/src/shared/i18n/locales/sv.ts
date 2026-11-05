@@ -2077,6 +2077,8 @@ const sv: Record<string, string> = {
   'milkdrop presets colours own theme ink': 'milkdrop förinställningar presets färger egna tema bläck',
   'In the lyrics': 'I låttexterna',
   '“{line}”': '”{line}”',
+  'Shuffle all': 'Blanda allt',
+  'Recent playlists': 'Senaste spellistorna',
 }
 
 export default sv
