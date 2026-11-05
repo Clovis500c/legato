@@ -3,9 +3,15 @@
 Where the work stands, for a session or an account with no history here. Read this, then `CLAUDE.md` (rules, map of the
 code), then [plan-v2.md](plan-v2.md) (open work). Rewrite it when a branch or the next step changes.
 
-Written 2026-11-01, run section 2026-11-02, autopilot 2026-11-03 and 2026-11-04.
+Written 2026-11-01, run section 2026-11-02, autopilot 2026-11-03 to 2026-11-05.
 
-## Autopilot from 2026-11-04 (relaunched by the owner the same morning: read this first)
+## Autopilot from 2026-11-04 (relaunched by the owner the same morning; ended 2026-11-05)
+
+Ended 2026-11-05 afternoon at 87 % of the week (report: `docs/notes/report-2026-11-05.md`, the owner's, untracked). The
+owner then asked for a better search and a Beta: both done, master = `platforms` at 99b0bcf (70 commits since the
+2026-11-02 Beta; the website deployed with it, the Android download link included). Not started: Classic skins, the
+next open line, an `M` that would have passed 90 % (the budget left serves this Beta's fixes). To relaunch with it:
+decide first how a mini layout keeps YouTube's 200 × 200 rule (the video at 200 px beside it, or Cover mode only).
 
 The owner's ask (2026-11-03 evening): carry on with the plan and the Android app, a lot to do, alone from the weekly
 reset (2026-11-04 08:00 Paris), resuming alone after each 5-hour limit; no question can be answered. The desktop app's
@@ -42,7 +48,7 @@ Order (the owner's latest asks first; Mobile below has the details):
 
 Waiting for the owner: background play behind other apps on their phone; the phone and PC sync once step 1 lands; the
 iPhone's signing (Apple Developer Program or an unsigned .ipa); Play Store or not; a backup of `C:\dev\android\signing`;
-the next Beta (a push).
+the Beta of 2026-11-05 tried (plan-v2 › Check live, its last block), then `promote` to Stable.
 
 Log (newest last):
 
@@ -241,6 +247,7 @@ Relaunch log (newest last):
   controls, back as it was on Esc. Sweet fades left (plan line: needs each song's end measured and an ear).
 - 2026-11-05: search, better (the owner's ask): your songs ranked by how well they fit, marks ignored (dont, acdc),
   a typo fixed when nothing matched (`search/match.ts`). Then `platforms` into master: a Beta, on the owner's word.
+- 2026-11-05: the end, at 87 % of the week (Classic skins not started): report-2026-11-05.md, the wake-up deleted.
 
 ## Mobile app and devices sync (the owner's ask, 2026-11-02 afternoon; in progress)
 
@@ -460,11 +467,12 @@ Known facts for whoever tests it:
 
 ## Next
 
-1. The owner tries what waits in [plan-v2.md](plan-v2.md) › Check live in the real app, Connect Apple Music first, and a
-   real import: the `YouTube refused searches` line of `diagnostics.log` (refused and answered counts) judges `Line`. The
-   real `diagnostics.log` is not the one your tools see: [development.md](../development.md) › Two dev libraries.
-2. The open lines of [plan-v2.md](plan-v2.md), in the autonomous run's order above.
-3. When the owner calls the milestone done: `platforms` into master, try the Beta, `promote`, then the site.
+1. The owner tries the Beta of 2026-11-05 (plan-v2 › Check live in the real app, its last block), then what else waits
+   there, Connect Apple Music first, and a real import: the `YouTube refused searches` line of `diagnostics.log`
+   (refused and answered counts) judges `Line`. The real `diagnostics.log` is not the one your tools see:
+   [development.md](../development.md) › Two dev libraries.
+2. Fixes from that Beta first; then the open lines of [plan-v2.md](plan-v2.md), Classic skins next (see Autopilot above).
+3. When the owner calls the milestone done: `promote` (Actions), the Beta becomes Stable.
 
 ## On this PC
 
