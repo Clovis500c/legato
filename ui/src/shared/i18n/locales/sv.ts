@@ -2154,6 +2154,9 @@ const sv: Record<string, string> = {
   'Picture-in-picture on / off': 'Bild-i-bild på / av',
   'Back to the full window (Esc)': 'Tillbaka till hela fönstret (Esc)',
   'In your library: results for “{q}”': 'I ditt bibliotek: resultat för ”{q}”',
+  'Legato {version} is available': 'Legato {version} finns tillgänglig',
+  'Install update': 'Installera uppdateringen',
+  'Couldn’t download the update': 'Det gick inte att ladda ned uppdateringen',
 }
 
 export default sv

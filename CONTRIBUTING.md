@@ -75,6 +75,8 @@ Updates (the `updateChannel` setting, kept per PC, not synced):
   Latest. Stable PCs read `releases/latest/download/latest.json` and GitHub's "latest" skips prereleases, so a push
   never reaches them. **That URL is the one every installed version has always read (`tauri.conf.json`): keep it.**
 - Back from Beta to Stable the app never downgrades: it waits for a Stable newer than the version it runs.
+- **Phones** follow Beta: each Beta's APK is what the Android app offers (Settings › About, a toast), downloaded when
+  the user taps Update and installed by Android's installer. Stable carries no APK yet.
 
 - **Version**: `MAJOR.MINOR` comes from `src-tauri/tauri.conf.json`, the patch number is the number of commits on
   `master` (`scripts/release.mjs`). The files say `1.1.0`; the release says `1.1.` plus that count. For a bigger step,

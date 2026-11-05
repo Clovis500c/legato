@@ -2154,6 +2154,9 @@ const zh: Record<string, string> = {
   'Picture-in-picture on / off': '画中画 开 / 关',
   'Back to the full window (Esc)': '返回完整窗口 (Esc)',
   'In your library: results for “{q}”': '在你的音乐库中：“{q}”的结果',
+  'Legato {version} is available': 'Legato {version} 现已可用',
+  'Install update': '安装更新',
+  'Couldn’t download the update': '无法下载更新',
 }
 
 export default zh

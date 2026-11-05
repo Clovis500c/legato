@@ -56,7 +56,7 @@ mod themes;
 #[cfg_attr(mobile, path = "mobile/tray.rs")]
 mod tray;
 mod unplug;
-#[cfg(desktop)]
+#[cfg_attr(mobile, path = "mobile/update.rs")]
 mod update;
 mod window_bg;
 #[cfg_attr(mobile, path = "mobile/window_place.rs")]
@@ -1644,14 +1644,13 @@ async fn play_stats(state: State<'_, AppState>) -> CmdResult<Response> {
 }
 
 /// Settings › About: version, last update, what the updater is doing.
-#[cfg(desktop)]
 #[tauri::command]
 fn update_status(updater: State<update::Updater>) -> update::Status {
     updater.status()
 }
 
-/// Check now (Settings › About). Runs in the background; progress comes as `update` events.
-#[cfg(desktop)]
+/// Check now (Settings › About). Runs in the background; progress comes as `update` events. The phone checks first and
+/// downloads on the next ask (mobile data).
 #[tauri::command]
 fn update_check(app: tauri::AppHandle) {
     tauri::async_runtime::spawn(async move { app.state::<update::Updater>().check(&app, true).await });
@@ -1662,6 +1661,13 @@ fn update_check(app: tauri::AppHandle) {
 #[tauri::command]
 fn update_install(app: tauri::AppHandle, updater: State<update::Updater>) -> CmdResult<()> {
     updater.install(&app)
+}
+
+/// The phone: the downloaded APK to Android's installer, which asks the user (writes the library first: async).
+#[cfg(mobile)]
+#[tauri::command]
+async fn update_install(app: tauri::AppHandle) -> CmdResult<()> {
+    app.state::<update::Updater>().install(&app)
 }
 
 #[derive(Serialize, ts_rs::TS)]
@@ -2321,7 +2327,6 @@ pub fn run() {
 
             app.manage(AppState { app: app.handle().clone(), lib: Mutex::new(lib), store: secrets::store(&app.config().identifier, &dir), open, player: Player::spawn(), shield, art: music_connectors::art::ArtCache::new(dir.join("art"), 500 << 20), cache: Caches::default(), nearby: Arc::new(Mutex::new(NearbyState::Idle)), nearby_task: Mutex::default(), media, media_last: Mutex::default(), tray, discord: discord::Discord::spawn() });
             // Reads the library's settings: after AppState.
-            #[cfg(desktop)]
             app.manage(update::Updater::new(app.handle()));
             app.manage(syncmode::SyncMode::default());
             app.manage(devices::Devices::default());
@@ -2335,7 +2340,7 @@ pub fn run() {
             deferred::arm(app.handle());
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![deferred::app_ready, sources_status, connect, disconnect, sync_all, library, library_changes, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, search_suggestions, add_track, pick_version, backfill_art, find_versions, play_preview, share_playlist, share_preview, share_read_image, share_import, nearby_send, nearby_status, nearby_stop, nearby_receive, record_play, recent_plays, play_history, mixes, set_track_pref, set_rating, set_music, clear_history, export_youtube, spotify_player, spotify_playback, ytm_sign_in, ytm_sign_out, spotify_web_open, spotify_web_status, import_spotify_link, links::import_link, links::import_link_stop, links::not_found, links::not_found_search, spotify_web::spotify_lists, spotify_web::spotify_import, spotify_web::spotify_web_close, spotify_export::spotify_export_open, spotify_export::spotify_export_close, spotify_export::spotify_export_file, spotify_export::spotify_export_import, spotify_paste::import_spotify_tracks, apple_web::apple_web_open, apple_web::apple_web_status, apple_web::apple_lists, apple_web::apple_import, apple_web::apple_web_close, ytm_accounts, set_ytm_accounts, sync_directions, set_sync_direction, local_folders, set_local_folders, rescan_local, folders::add_dropped, health::library_health, load_settings, save_settings, shield_status, set_shield, net_today, system_accent, restart_app, autostart, set_autostart, hold_page, media_update, remote::remote_start, remote::remote_stop, remote::remote_queue, remote::overlay_start, remote::overlay_stop, remote::overlay_bars, load_session, save_session, add_to_youtube, save_cover, export_cover, save_picture, alternative_videos, embed_refused, play_stats, cache_stats, art_cache_size, set_art_cache_cap, clear_art_cache, open_licenses, #[cfg(desktop)] update_status, #[cfg(desktop)] update_check, #[cfg(desktop)] update_install, ytm_home, ytm_list, ytm_artist, album_info, discord_presence, discord_off, discord_status, remove_from_playlist, remove_from_library, merge_duplicates, resolve_track, set_global_shortcuts, player_live, editor::player_effects, player_levels, viz::viz_start, viz::viz_page, viz::viz_stop, viz::viz_stats, prepare::local_prepare, prepare::local_waveform, sponsor::sponsor_segments, editor::export_edit, editor::export_stop, editor::edits, editor::save_edit, editor::delete_edit, editor::activate_edit, editor::edit_draft, editor::save_edit_draft, voice_listen, voice_stop, open_windows_settings, detector::detector_status, detector::set_detector_token, detector::detect_song, detector::detect_stop, lastfm::lastfm_status, lastfm::lastfm_connect, lastfm::lastfm_disconnect, lastfm::lastfm_now_playing, lastfm::lastfm_scrobble, listenbrainz::listenbrainz_status, listenbrainz::listenbrainz_connect, listenbrainz::listenbrainz_disconnect, listenbrainz::listenbrainz_now_playing, listenbrainz::listenbrainz_submit, lyrics, search_lyrics, alarm::set_alarm, add_bookmark, bookmarks, delete_bookmark, jumplist::jump_pending, jumplist::set_jump_list, set_ui_language, ytwatch_open, ytwatch_place, ytwatch_cmd, ytwatch_close, syncmode::sync_status, syncmode::sync_probe, syncmode::sync_setup, syncmode::sync_stop, syncmode::sync_now, syncmode::sync_dismiss, syncmode::sync_pickup, devices::devices_status, devices::devices_network, devices::devices_auto, devices::device_offer, devices::device_offer_stop, devices::device_pair, devices::device_sync, devices::device_forget, #[cfg(desktop)] plugins::plugins_list, #[cfg(desktop)] plugins::plugin_inspect, #[cfg(desktop)] plugins::plugin_install, #[cfg(desktop)] plugins::plugin_set, #[cfg(desktop)] plugins::plugin_uninstall, #[cfg(desktop)] plugins::plugin_reply, #[cfg(desktop)] plugins::plugin_event, #[cfg(desktop)] plugins::plugin_input, #[cfg(desktop)] plugins::plugin_frame, #[cfg(desktop)] plugins::plugin_log, themes::save_background, themes::forget_background, themes::export_theme, themes::import_theme, themes::read_preset, themes::write_preset, tags::edit_tags, tags::read_tags, tags::write_lyrics, songlist::import_song_list, songlist::export_playlist_file, backup::library_backup, backup::library_restore, libfile::library_file_lists, libfile::library_file_import, picked::picked_in, picked::picked_temp, picked::picked_out, #[cfg(desktop)] pip::pip, diag::diag_log, diag::diag_report])
+        .invoke_handler(tauri::generate_handler![deferred::app_ready, sources_status, connect, disconnect, sync_all, library, library_changes, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, search_suggestions, add_track, pick_version, backfill_art, find_versions, play_preview, share_playlist, share_preview, share_read_image, share_import, nearby_send, nearby_status, nearby_stop, nearby_receive, record_play, recent_plays, play_history, mixes, set_track_pref, set_rating, set_music, clear_history, export_youtube, spotify_player, spotify_playback, ytm_sign_in, ytm_sign_out, spotify_web_open, spotify_web_status, import_spotify_link, links::import_link, links::import_link_stop, links::not_found, links::not_found_search, spotify_web::spotify_lists, spotify_web::spotify_import, spotify_web::spotify_web_close, spotify_export::spotify_export_open, spotify_export::spotify_export_close, spotify_export::spotify_export_file, spotify_export::spotify_export_import, spotify_paste::import_spotify_tracks, apple_web::apple_web_open, apple_web::apple_web_status, apple_web::apple_lists, apple_web::apple_import, apple_web::apple_web_close, ytm_accounts, set_ytm_accounts, sync_directions, set_sync_direction, local_folders, set_local_folders, rescan_local, folders::add_dropped, health::library_health, load_settings, save_settings, shield_status, set_shield, net_today, system_accent, restart_app, autostart, set_autostart, hold_page, media_update, remote::remote_start, remote::remote_stop, remote::remote_queue, remote::overlay_start, remote::overlay_stop, remote::overlay_bars, load_session, save_session, add_to_youtube, save_cover, export_cover, save_picture, alternative_videos, embed_refused, play_stats, cache_stats, art_cache_size, set_art_cache_cap, clear_art_cache, open_licenses, update_status, update_check, update_install, ytm_home, ytm_list, ytm_artist, album_info, discord_presence, discord_off, discord_status, remove_from_playlist, remove_from_library, merge_duplicates, resolve_track, set_global_shortcuts, player_live, editor::player_effects, player_levels, viz::viz_start, viz::viz_page, viz::viz_stop, viz::viz_stats, prepare::local_prepare, prepare::local_waveform, sponsor::sponsor_segments, editor::export_edit, editor::export_stop, editor::edits, editor::save_edit, editor::delete_edit, editor::activate_edit, editor::edit_draft, editor::save_edit_draft, voice_listen, voice_stop, open_windows_settings, detector::detector_status, detector::set_detector_token, detector::detect_song, detector::detect_stop, lastfm::lastfm_status, lastfm::lastfm_connect, lastfm::lastfm_disconnect, lastfm::lastfm_now_playing, lastfm::lastfm_scrobble, listenbrainz::listenbrainz_status, listenbrainz::listenbrainz_connect, listenbrainz::listenbrainz_disconnect, listenbrainz::listenbrainz_now_playing, listenbrainz::listenbrainz_submit, lyrics, search_lyrics, alarm::set_alarm, add_bookmark, bookmarks, delete_bookmark, jumplist::jump_pending, jumplist::set_jump_list, set_ui_language, ytwatch_open, ytwatch_place, ytwatch_cmd, ytwatch_close, syncmode::sync_status, syncmode::sync_probe, syncmode::sync_setup, syncmode::sync_stop, syncmode::sync_now, syncmode::sync_dismiss, syncmode::sync_pickup, devices::devices_status, devices::devices_network, devices::devices_auto, devices::device_offer, devices::device_offer_stop, devices::device_pair, devices::device_sync, devices::device_forget, #[cfg(desktop)] plugins::plugins_list, #[cfg(desktop)] plugins::plugin_inspect, #[cfg(desktop)] plugins::plugin_install, #[cfg(desktop)] plugins::plugin_set, #[cfg(desktop)] plugins::plugin_uninstall, #[cfg(desktop)] plugins::plugin_reply, #[cfg(desktop)] plugins::plugin_event, #[cfg(desktop)] plugins::plugin_input, #[cfg(desktop)] plugins::plugin_frame, #[cfg(desktop)] plugins::plugin_log, themes::save_background, themes::forget_background, themes::export_theme, themes::import_theme, themes::read_preset, themes::write_preset, tags::edit_tags, tags::read_tags, tags::write_lyrics, songlist::import_song_list, songlist::export_playlist_file, backup::library_backup, backup::library_restore, libfile::library_file_lists, libfile::library_file_import, picked::picked_in, picked::picked_temp, picked::picked_out, #[cfg(desktop)] pip::pip, diag::diag_log, diag::diag_report])
         .run(context)
         .expect("error while running tauri application");
 }

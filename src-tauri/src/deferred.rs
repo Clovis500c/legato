@@ -46,7 +46,6 @@ fn start(app: &AppHandle, cause: Cause) {
         return;
     }
     crate::diag::info("startup", cause.words(), "");
-    #[cfg(desktop)]
     crate::update::spawn(app.clone());
     crate::syncmode::spawn(app.clone());
     crate::devices::spawn(app.clone());

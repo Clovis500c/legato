@@ -2154,6 +2154,9 @@ const de: Record<string, string> = {
   'Picture-in-picture on / off': 'Bild-im-Bild ein / aus',
   'Back to the full window (Esc)': 'Zurück zum ganzen Fenster (Esc)',
   'In your library: results for “{q}”': 'In deiner Bibliothek: Ergebnisse für „{q}“',
+  'Legato {version} is available': 'Legato {version} ist verfügbar',
+  'Install update': 'Update installieren',
+  'Couldn’t download the update': 'Das Update konnte nicht heruntergeladen werden',
 }
 
 export default de

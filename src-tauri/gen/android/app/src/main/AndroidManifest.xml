@@ -13,6 +13,9 @@
          Android 13 on asks for audio only; before it, for the shared storage. -->
     <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
+    <!-- Updates: a downloaded APK handed to Android's installer, which asks the user (ApkInstall). Not for the Play
+         Store, which forbids an app updating itself. -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 
     <!-- AndroidTV support -->
     <uses-feature android:name="android.software.leanback" android:required="false" />

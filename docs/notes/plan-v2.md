@@ -346,7 +346,21 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
   - [x] QR scanner for pairing (2026-11-04, `tauri-plugin-barcode-scanner` 2.x): never scanned a real code.
   - [x] Secrets sealed by Android's Keystore (2026-11-04), moved once from `secrets.json`: checked on the emulator.
   - [x] Android download on the website (2026-11-04): hero link and FAQ; a push deploys it (the owner's call).
-  - [ ] Beta with the APK (CI builds and signs it).
+  - [x] Beta with the APK (CI builds and signs it): 1.1.679, 2026-11-05.
+  - [x] Android updates in the app (2026-11-05, the owner's « Oui, ajoute-la »): Beta's `latest.json` checked 5 s after
+        launch and every 6 hours (release builds), a toast « Legato {version} est disponible » with Update, and
+        Settings › About's Download update / Install update. The APK downloads only on a tap, into the cache, then goes to
+        Android's installer, which asks (the first time, Android's "Install unknown apps" page, then the installer as
+        Legato comes back; ready while Legato is off screen, it waits for its return). The new version's first launch
+        resumes as it was (`just_updated`). Decided alone: the phone follows Beta (only Betas carry an APK); never a
+        download unasked (mobile data); `REQUEST_INSTALL_PACKAGES`, which the Play Store forbids (to drop if Legato goes
+        there). Android refuses an APK not signed with the installed app's key. Phones on 1.1.679 or older install the
+        next APK by hand, once. About's header lets its button go under the text on a phone. Seen on the emulator (a
+        debug x86_64 build, API 36): Check now found 1.1.679 and its APK on GitHub, the toast and Download update, the
+        download into the cache, Android's "Install unknown apps" page, then its installer as Legato came back; Cancel
+        left it ready (Install update opens it again); asked behind Home, the installer waited for Legato's return;
+        Android refused the release APK over the debug app (another key), as it should. Not seen: an update really
+        installing and the new version resuming (the next Beta on a phone), a release build's background check.
   - [ ] iPhone: waits for the owner's signing choice (Apple Developer Program, or an unsigned .ipa).
 
 **Medium**
@@ -900,6 +914,8 @@ Most useful first; the tag is the effort.
       - The alarm's real ring (from the tray, the PC awake or asleep); voice commands with real speech.
       - The taskbar's Jump List of an installed build; the recap's real save and copy; real tagged files (genre, year).
       - The accent from real covers; the Presets look with a real .milk file; "In the lyrics" on a real lyrics cache.
+      - The phone's update on a real phone (from the Beta after 1.1.679): the toast, the download on mobile data and
+        Wi-Fi, Android's permission page, its installer, the new version starting where the old one was.
 
 ## Waiting on the user (outside the code)
 

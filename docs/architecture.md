@@ -151,6 +151,16 @@ takes a version newer than the installed one, so Beta → Stable never downgrade
 running at that moment looks again when it ends. `promote.yml` / `scripts/promote.mjs` turn a beta into Stable
 (CONTRIBUTING › Releasing).
 
+The phone (`src-tauri/src/mobile/update.rs`: Android has no Tauri updater) gives the same status and commands. Only
+Betas carry an APK (`release.yml`), so it follows Beta: `music_connectors::apk` reads Beta's `latest.json` 5 s after the
+UI says ready and every 6 hours (release builds), and a version counts once its `Legato_<version>_android-arm64.apk`
+answers. It is only announced (a toast with Update, Settings › About): the APK downloads on the user's tap (mobile
+data) into the cache's `updates/` folder, then goes to Android's installer (`ApkInstall.kt` over JNI, through the
+FileProvider), which asks the user; cancelled there, it stays ready. The first time, Android's "Install unknown apps"
+page comes first and the installer opens as Legato comes back; an APK ready while Legato is off screen waits for its
+return (Android opens nothing for an app in the background). Android refuses an APK not signed with the installed
+app's key. The pending record (setting `update`) makes the new version's first launch resume as it was, like the PC's.
+
 ## Diagnostics
 
 A local log for bug reports, nothing sent: `diagnostics.log` (then `.1` to `.4`, 1 MB each, 5 MB at most) in the app data

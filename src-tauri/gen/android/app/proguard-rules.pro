@@ -25,5 +25,8 @@
 # Called by name from Rust over JNI (src-tauri/src/mobile/picked.rs).
 -keep class app.legato.mobile.PickedFile { *; }
 
+# Called by name from Rust over JNI (src-tauri/src/mobile/update.rs).
+-keep class app.legato.mobile.ApkInstall { *; }
+
 # wry's WebView field, emptied by MainActivity (wry would pause the WebView as the app leaves the screen): found by type.
 -keepclassmembers class app.legato.mobile.WryActivity { app.legato.mobile.RustWebView *; }

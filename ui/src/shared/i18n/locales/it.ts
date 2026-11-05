@@ -2154,6 +2154,9 @@ const it: Record<string, string> = {
   'Picture-in-picture on / off': 'Picture-in-picture attivo / disattivo',
   'Back to the full window (Esc)': 'Torna alla finestra intera (Esc)',
   'In your library: results for “{q}”': 'Nella tua libreria: risultati per «{q}»',
+  'Legato {version} is available': 'Legato {version} è disponibile',
+  'Install update': 'Installa l’aggiornamento',
+  'Couldn’t download the update': 'Impossibile scaricare l’aggiornamento',
 }
 
 export default it

@@ -2154,6 +2154,9 @@ const uk: Record<string, string> = {
   'Picture-in-picture on / off': 'Картинка в картинці увімк. / вимк.',
   'Back to the full window (Esc)': 'Повернутися до повного вікна (Esc)',
   'In your library: results for “{q}”': 'У медіатеці: результати для «{q}»',
+  'Legato {version} is available': 'Доступна версія Legato {version}',
+  'Install update': 'Встановити оновлення',
+  'Couldn’t download the update': 'Не вдалося завантажити оновлення',
 }
 
 export default uk

@@ -29,7 +29,8 @@ companion: replaces "Mobile companion" in [best-overall.md](best-overall.md). An
 - Desktop only, behind `#[cfg(desktop)]` (each has a phone answer or none): tray and background (`background.rs`; a
   foreground service instead), global shortcuts, the Windows media panel (`media.rs`; MediaSession instead), WASAPI
   loopback (Detector: microphone only), `unplug.rs` (audio focus and `ACTION_AUDIO_BECOMING_NOISY` instead), thumbbar,
-  speech (Android's recognizer later), `window_bg.rs`, the updater (APK updates by GitHub or the store), `ytwatch.rs`
+  speech (Android's recognizer later), `window_bg.rs`, the updater (its phone twin `mobile/update.rs`, 2026-11-05: Beta's APK from GitHub on the
+  user's tap, Android's installer through `ApkInstall.kt`), `ytwatch.rs`
   (a video that can't embed is skipped or opened in the YouTube app), Spotify / Apple / Exportify windows (Tauri mobile
   has one WebView: imports stay on the PC).
 - Secrets: `keyring` has no Android backend: `SecretStore` on Android's Keystore (a small Kotlin plugin), same trait.

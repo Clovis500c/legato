@@ -2154,6 +2154,9 @@ const tr: Record<string, string> = {
   'Picture-in-picture on / off': 'Pencere içinde pencere açık / kapalı',
   'Back to the full window (Esc)': 'Tam pencereye dön (Esc)',
   'In your library: results for “{q}”': 'Kitaplığında: “{q}” için sonuçlar',
+  'Legato {version} is available': 'Legato {version} kullanılabilir',
+  'Install update': 'Güncellemeyi yükle',
+  'Couldn’t download the update': 'Güncelleme indirilemedi',
 }
 
 export default tr

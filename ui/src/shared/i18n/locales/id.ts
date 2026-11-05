@@ -2154,6 +2154,9 @@ const id: Record<string, string> = {
   'Picture-in-picture on / off': 'Gambar dalam gambar hidup / mati',
   'Back to the full window (Esc)': 'Kembali ke jendela penuh (Esc)',
   'In your library: results for “{q}”': 'Di koleksimu: hasil untuk “{q}”',
+  'Legato {version} is available': 'Legato {version} tersedia',
+  'Install update': 'Pasang pembaruan',
+  'Couldn’t download the update': 'Pembaruan tidak dapat diunduh',
 }
 
 export default id

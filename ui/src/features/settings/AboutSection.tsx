@@ -11,7 +11,7 @@ import { Button } from '../../shared/ui/Button'
 import { Toggle } from '../../shared/ui/controls'
 import { groupAlbums, groupArtists } from '../library/filter'
 import { ReleaseNotes } from '../update/ReleaseNotes'
-import { installUpdate, useUpdate } from '../update/updates'
+import { downloadUpdate, installUpdate, useUpdate } from '../update/updates'
 import { msg, tr, trn } from '../../shared/i18n/i18n'
 import { phoneApp } from '../../shared/platform'
 import { DESKTOP_ONLY } from './desktopOnly'
@@ -109,14 +109,15 @@ export function AboutSection() {
 
   return (
     <div className="flex max-w-190 flex-col gap-6">
-      <div className="flex items-center gap-5 rounded-xl border border-line bg-raised p-5">
+      {/* A phone: the button goes under the text, kept on one line (12rem). */}
+      <div className="flex flex-wrap items-center gap-5 rounded-xl border border-line bg-raised p-5">
         <span className="grid size-16 shrink-0 place-items-center rounded-2xl bg-accent text-on-accent">
           <Disc size={34} weight="fill" />
         </span>
-        <div className="flex min-w-0 flex-1 flex-col gap-1">
+        <div className="flex min-w-0 flex-1 basis-48 flex-col gap-1">
           <p className="text-xl font-bold tracking-[-0.02em]">Legato</p>
           <p className="font-mono text-xs text-ink-2">
-            {tr('Version {version}', { version: status?.current ?? '…' })} · {s.updateChannel === 'beta' ? tr('Beta') : tr('Stable')}
+            {tr('Version {version}', { version: status?.current ?? '…' })} · {phoneApp || s.updateChannel === 'beta' ? tr('Beta') : tr('Stable')}
           </p>
           <p className="flex items-center gap-2 text-xs">
             <span className={`size-2 rounded-full ${pulse ? 'animate-pulse' : ''}`} style={{ background: color }} />
@@ -125,10 +126,10 @@ export function AboutSection() {
         </div>
         {state === 'ready' ? (
           <Button onClick={() => void installUpdate()}>
-            <DownloadSimple size={14} /> {tr('Restart and update')}
+            <DownloadSimple size={14} /> {phoneApp ? tr('Install update') : tr('Restart and update')}
           </Button>
         ) : (
-          <Button variant="ghost" disabled={busy} onClick={() => void api.updateCheck()}>
+          <Button variant="ghost" disabled={busy} onClick={() => (phoneApp && state === 'available' ? downloadUpdate() : void api.updateCheck())}>
             <ArrowClockwise size={14} className={busy ? 'animate-spin' : ''} /> {state === 'available' ? tr('Download update') : tr('Check now')}
           </Button>
         )}

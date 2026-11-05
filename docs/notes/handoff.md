@@ -248,6 +248,9 @@ Relaunch log (newest last):
 - 2026-11-05: search, better (the owner's ask): your songs ranked by how well they fit, marks ignored (dont, acdc),
   a typo fixed when nothing matched (`search/match.ts`). Then `platforms` into master: a Beta, on the owner's word.
 - 2026-11-05: the end, at 87 % of the week (Classic skins not started): report-2026-11-05.md, the wake-up deleted.
+- 2026-11-05, evening (the owner's « Oui, ajoute-la »): updates on the phone (`mobile/update.rs`,
+  `music_connectors::apk`, `ApkInstall.kt`): Beta's APK offered, downloaded on a tap, Android's installer. Pushed on the
+  owner's word: Beta 1.1.681.
 
 ## Mobile app and devices sync (the owner's ask, 2026-11-02 afternoon; in progress)
 
@@ -433,9 +436,9 @@ on: the open lines of plan-v2 that need no account, by size (`S` first).
 
 | Branch | State | Next |
 |---|---|---|
-| `platforms` | Work goes here. On master since 2026-11-05 (a Beta, on the owner's word). `pnpm check` green. | Carry on when the owner says so; each push to master is a new Beta. |
+| `platforms` | Work goes here. On master since 2026-11-05 evening (Beta 1.1.681, the phone's updates, on the owner's word). `pnpm check` green. | Carry on when the owner says so; each push to master is a new Beta. |
 | `claude/site-scroll-3d-aff654` | The new website home page: merged into `platforms` and master on 2026-11-01, published. Its worktree `.claude/worktrees/laughing-golick-d0fedf` stays (about 10 GB of build output). | `git worktree remove` when the owner wants the space back: the branch is in master. |
-| `master` | `platforms` as of 2026-11-05 (the search commit), a Beta; Stable is still v1.1.479. | The owner tries the Beta, then promotes it. Every push is a Beta, and a change in `site/` deploys the website: only on the owner's word. Stable is `promote`, by hand (`CONTRIBUTING.md` › Releasing). |
+| `master` | `platforms` as of 2026-11-05 evening (the phone's updates), Beta 1.1.681; Stable is still v1.1.479. | The owner tries the Beta, then promotes it. Every push is a Beta, and a change in `site/` deploys the website: only on the owner's word. Stable is `promote`, by hand (`CONTRIBUTING.md` › Releasing). |
 
 The owner keeps `platforms` and the site branch local, so a fresh clone has neither: `git branch -vv` says what is on
 GitHub.
@@ -467,7 +470,7 @@ Known facts for whoever tests it:
 
 ## Next
 
-1. The owner tries the Beta of 2026-11-05 (plan-v2 › Check live in the real app, its last block), then what else waits
+1. The owner installs Beta 1.1.681's APK by hand, the last time (later ones come through the app), then tries the Betas of 2026-11-05 (plan-v2 › Check live in the real app, its last block), then what else waits
    there, Connect Apple Music first, and a real import: the `YouTube refused searches` line of `diagnostics.log`
    (refused and answered counts) judges `Line`. The real `diagnostics.log` is not the one your tools see:
    [development.md](../development.md) › Two dev libraries.

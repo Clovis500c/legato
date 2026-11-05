@@ -2154,6 +2154,9 @@ const pt: Record<string, string> = {
   'Picture-in-picture on / off': 'Picture-in-picture ligado / desligado',
   'Back to the full window (Esc)': 'Voltar à janela inteira (Esc)',
   'In your library: results for “{q}”': 'Na sua biblioteca: resultados para “{q}”',
+  'Legato {version} is available': 'Legato {version} está disponível',
+  'Install update': 'Instalar atualização',
+  'Couldn’t download the update': 'Não foi possível baixar a atualização',
 }
 
 export default pt
