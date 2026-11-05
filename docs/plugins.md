@@ -49,6 +49,7 @@ my-plugin/
 | `ui` | add menu items, show a panel, show notifications (named after the plugin) |
 | `ui:style` | restyle the whole interface with CSS |
 | `editor` | read and change the Live Editor's settings |
+| `visualizer` | offer a look for the visualizer, hear the music's levels while it shows, draw it |
 | `network:<host>` | HTTPS requests to that host only, e.g. `network:api.example.com` |
 
 Without any permission a plugin still has its own storage, timers and log.
@@ -108,6 +109,13 @@ await app.editor.get()          // Live Editor settings (speed, tempo, pitch, ba
                                 // eq: 10 gains in dB, 32 Hz to 16 kHz an octave apart (5 gains = the older bands)
 await app.editor.set({ ...settings, speed: 0.8 })
 
+// visualizer
+await app.visualizer.register({ name: 'Rings' })  // your look among the visualizer's styles (one per plugin)
+app.on('visualizer', (f) => {})  // while your look shows and music plays: 30 a second at most, the latest only
+//   { bands: [31 numbers 0..1, low to high, a third of an octave apart], beat (a beat since the last frame),
+//     bpm (or null), level and peak (the louder side, dBFS) }
+app.visualizer.draw([ …shapes… ])  // the picture until the next one; nothing comes back, 60 a second, 256 kB each
+
 // storage (always allowed, 1 MB per plugin, JSON values)
 await app.storage.set('key', { any: 'json' }); await app.storage.get('key')
 await app.storage.remove('key'); await app.storage.keys()
@@ -141,6 +149,26 @@ levels at most.
 
 Controls show the value you give: after an event, call `setPanel` again with the new state.
 
+### Visualizer shapes
+
+A picture is data too, drawn by the app on the visualizer's canvas, full screen or in the strip. Positions are shares
+of the box: `x` 0 (left) to 1 (right), `y` 0 (top) to 1 (bottom), -1 to 2 to go past the edges. A circle's `r` is a
+share of the box's shorter side; widths and text sizes are CSS pixels. `color`: `'ink'` (the visualizer's own colour,
+the default), `'warn'` (its alarm red) or `#rgb` / `#rrggbb` / `#rrggbbaa`; `alpha` 0..1, 1 by default. Unknown shapes
+are dropped; 1000 shapes and 8000 points at most.
+
+```js
+{ op: 'rect', x, y, w, h }                             // filled
+{ op: 'line', points: [x1, y1, x2, y2, …], width? }    // width 1.5 by default
+{ op: 'shape', points: [x1, y1, x2, y2, x3, y3, …] }   // closed and filled
+{ op: 'circle', x, y, r, width? }                      // a ring that wide; width 0 (the default): a disc
+{ op: 'text', x, y, text, size?, align? }              // y is the text's middle; size 14, align 'left' / 'center' / 'right'
+```
+
+Frames come only while your look is on screen with music playing, so a plugin draws nothing the rest of the time.
+When your plugin is off or stopped, the visualizer shows its bars in your look's place. Example:
+`examples/plugins/rings`.
+
 ## Try it
 
 1. Write the folder anywhere.
@@ -150,7 +178,8 @@ Controls show the value you give: after an event, call `setPanel` again with the
 
 ## Versions of this API
 
-- **1** (Music App, now Legato, 2026-10): everything above.
+- **1** (Music App, now Legato, 2026-10): everything above; `visualizer` (permission, calls, event, shapes) added
+  within API 1 in 2026-11.
 
 New features come as new methods, events or parts within API 1 when nothing existing changes meaning; anything that
 would break a plugin waits for API 2, and API 1 plugins keep working.

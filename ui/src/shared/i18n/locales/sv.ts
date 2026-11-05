@@ -2053,6 +2053,8 @@ const sv: Record<string, string> = {
   'Viridis': 'Viridis',
   'colormap color map magma viridis heat waterfall palette': 'färgskala färg karta magma viridis värme vattenfall palett spektrogram',
   '3D terrain': '3D-landskap',
+  '{name} (plugin)': '{name} (plugin)',
+  'Draw a look for the visualizer from the music’s levels': 'Rita en stil för visualiseringen utifrån musikens nivåer',
 }
 
 export default sv

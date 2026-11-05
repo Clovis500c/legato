@@ -5,7 +5,9 @@ import { tr } from '../../shared/i18n/i18n'
 import { setEffects, useEditor } from '../editor/editor'
 import { cleanEffects } from '../player/effects'
 import { usePlayer } from '../player/store'
+import { cleanLookName, cleanOps } from './drawList'
 import { cleanCommand, cleanCss, cleanTree, type PanelNode, type PluginCommand } from './panel'
+import { usePluginViz } from './pluginViz'
 
 /**
  * Plugins in the interface: installed list, what each running one added (menu items, panel, style), and the calls
@@ -29,6 +31,7 @@ export async function loadPlugins() {
   // Stopped ones leave nothing behind.
   const keep = <T>(r: Record<string, T>) => Object.fromEntries(Object.entries(r).filter(([id]) => live.has(id)))
   usePlugins.setState((s) => ({ list, commands: keep(s.commands), panels: keep(s.panels), styles: keep(s.styles) }))
+  usePluginViz.setState((s) => ({ looks: keep(s.looks), ops: keep(s.ops) }))
 }
 
 export const pluginName = (id: string) => usePlugins.getState().list.find((p) => p.id === id)?.manifest?.name ?? id
@@ -110,6 +113,12 @@ async function answer(c: PluginCall): Promise<unknown> {
     case 'editor.set':
       setEffects(cleanEffects(a.effects))
       return null
+    case 'visualizer.register':
+      usePluginViz.setState((s) => ({ looks: { ...s.looks, [c.plugin]: cleanLookName(a.name, pluginName(c.plugin)) } }))
+      return null
+    case 'visualizer.draw':
+      usePluginViz.setState((s) => ({ ops: { ...s.ops, [c.plugin]: cleanOps(a.list) } }))
+      return null
   }
   throw new Error(`Unknown method: ${c.method}`)
 }
@@ -134,6 +143,11 @@ function syncStyles(styles: Record<string, string>) {
 export function startPlugins(): () => void {
   void loadPlugins()
   const calls = api.onPluginCall((c) => {
+    // A note (id 0, the visualizer's drawings): nothing waits for an answer.
+    if (c.id === 0) {
+      void answer(c).catch(() => {})
+      return
+    }
     answer(c)
       .then((v) => api.pluginReply(c.plugin, c.id, true, v ?? null))
       .catch((e) => api.pluginReply(c.plugin, c.id, false, undefined, e instanceof Error ? e.message : String(e)))
@@ -173,6 +187,8 @@ export function permissionText(p: string): { text: string; risky: boolean } {
       return { text: tr('Restyle the whole interface'), risky: true }
     case 'editor':
       return { text: tr('Read and change the Live Editor’s settings'), risky: false }
+    case 'visualizer':
+      return { text: tr('Draw a look for the visualizer from the music’s levels'), risky: false }
   }
   return { text: p, risky: true }
 }

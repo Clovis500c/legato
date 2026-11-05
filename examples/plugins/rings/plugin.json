@@ -1,0 +1,12 @@
+{
+  "id": "app.legato.example.rings",
+  "name": "Rings",
+  "version": "1.0.0",
+  "author": "Legato",
+  "description": "A look for the visualizer: rings that swell with the low notes and flash on the beat, over bars.",
+  "api": 1,
+  "main": "main.js",
+  "permissions": [
+    "visualizer"
+  ]
+}

@@ -83,7 +83,7 @@
     id: info.id,
     api: info.api,
     appVersion: info.appVersion,
-    /** Events: 'track' (song started or null), 'playing' (bool), 'command' ({id, context}), 'panel' ({id, value}). */
+    /** Events: 'track' (song started or null), 'playing' (bool), 'command' ({id, context}), 'panel' ({id, value}), 'visualizer' (a frame). */
     on(event, fn) {
       if (typeof fn !== 'function') throw new TypeError('app.on needs a function')
       const list = handlers.get(event) ?? []
@@ -128,6 +128,12 @@
     editor: {
       get: () => call('editor.get'),
       set: (effects) => call('editor.set', { effects }),
+    },
+    visualizer: {
+      /** The plugin's look among the visualizer's styles; its frames come as 'visualizer' events while it shows. */
+      register: ({ name } = {}) => call('visualizer.register', { name }),
+      /** The picture, drawn by the app until the next one; nothing waits for an answer. */
+      draw: (list) => call('visualizer.draw', { list }),
     },
     storage: {
       get: (key) => call('storage.get', { key }),

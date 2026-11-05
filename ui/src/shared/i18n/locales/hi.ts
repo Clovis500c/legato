@@ -2053,6 +2053,8 @@ const hi: Record<string, string> = {
   'Viridis': 'Viridis',
   'colormap color map magma viridis heat waterfall palette': 'कलर मैप रंग मैग्मा विरिडिस ताप झरना पैलेट स्पेक्ट्रोग्राम colormap magma viridis',
   '3D terrain': '3D भू-दृश्य',
+  '{name} (plugin)': '{name} (प्लगइन)',
+  'Draw a look for the visualizer from the music’s levels': 'संगीत के स्तरों से विज़ुअलाइज़र के लिए एक शैली बनाना',
 }
 
 export default hi

@@ -1,3 +1,4 @@
+import type { DrawOp } from '../plugins/drawList'
 import type { VisualizerStyle, VizBanding, VizColormap, VizFace, VizGradient, VizWeighting } from '../../shared/theme/theme'
 import type { Stops } from './vizFill'
 import type { LoudReading, LoudWords } from './vizLoud'
@@ -16,6 +17,8 @@ export type ToWorker =
   | { t: 'palette'; colors: string[]; glow: boolean }
   /** The loudness meter's numbers (loudFeed.ts), with each update of the levels. */
   | { t: 'loud'; v: LoudReading }
+  /** A plugin's picture (its look shows), drawn as it comes. */
+  | { t: 'ops'; ops: DrawOp[] }
   /** The pointer over the visualizer (its frequency and dB scales shown) or gone. */
   | { t: 'hover'; on: boolean }
   /** `peak`: each side's highest sample of the hop (the PPM needles). `w`: the wave blocks, when the Oscilloscope asked for them. */

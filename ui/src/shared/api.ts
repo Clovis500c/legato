@@ -265,6 +265,8 @@ export const api = {
   pluginEvent: (name: 'track' | 'playing', payload: unknown) => invoke<void>('plugin_event', { name, payload }),
   /** A plugin's menu item ('command') or panel control ('panel') was used. */
   pluginInput: (plugin: string, name: 'command' | 'panel', payload: unknown) => invoke<void>('plugin_input', { plugin, name, payload }),
+  /** The visualizer's frame for the plugin whose look shows: the latest only, never queued. */
+  pluginFrame: (plugin: string, payload: unknown) => invoke<void>('plugin_frame', { plugin, payload }),
   pluginLog: (id: string) => invoke<string[]>('plugin_log', { id }),
   onPluginCall: (cb: (c: PluginCall) => void) => listen<PluginCall>('plugin-call', (e) => cb(e.payload)),
   onPluginState: (cb: (id: string) => void) => listen<string>('plugin-state', (e) => cb(e.payload)),

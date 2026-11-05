@@ -609,8 +609,14 @@ colours, mirror, reflection.
       perspective with hidden lines cleared. Decided alone: Canvas 2D, not WebGL; the newest row at the front rather
       than at the horizon; no camera orbit or fog, a fade instead. Seen over the demo full screen, dark; the strip and
       the light theme not seen, not on real music.)
-- [ ] `M` Visualizer API for plugins (`crates/plugins`): a plugin gets bands, beat and loudness, draws with a restricted
+- [x] `M` Visualizer API for plugins (`crates/plugins`): a plugin gets bands, beat and loudness, draws with a restricted
       2D canvas command list (no raw access).
+      (2026-11-05: permission `visualizer`, `app.visualizer.register / draw`, the `visualizer` event; shapes rect, line,
+      shape, circle, text; example `examples/plugins/rings`; `docs/plugins.md`. Decided alone: a new permission, one
+      look per plugin, positions as shares of the box, drawings as notes with no answer (60 a second, 256 kB), only the
+      latest frame kept for a busy plugin, 30 frames a second, the overlay's 31 bands, the bars while the plugin is off,
+      plugin looks out of the click round. Tried: Rust tests run the Rings example in QuickJS; the demo drew an
+      injected look full screen, dark. Not tried: a plugin installed in the real app, the strip, the light theme.)
 - [ ] `L` Preset engine, written from scratch: equations per frame / per vertex driven by bands and beat (MilkDrop-style
       ideas), presets as small JSON shared like themes; `.milk` files the user owns loaded if a reader stays simple.
 

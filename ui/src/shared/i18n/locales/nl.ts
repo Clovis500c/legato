@@ -2053,6 +2053,8 @@ const nl: Record<string, string> = {
   'Viridis': 'Viridis',
   'colormap color map magma viridis heat waterfall palette': 'kleurenschaal kleur kaart magma viridis warmte waterval palet spectrogram',
   '3D terrain': '3D-landschap',
+  '{name} (plugin)': '{name} (plugin)',
+  'Draw a look for the visualizer from the music’s levels': 'Een stijl voor de visualisatie tekenen uit de niveaus van de muziek',
 }
 
 export default nl

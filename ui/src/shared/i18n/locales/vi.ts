@@ -2053,6 +2053,8 @@ const vi: Record<string, string> = {
   'Viridis': 'Viridis',
   'colormap color map magma viridis heat waterfall palette': 'bảng màu màu magma viridis nhiệt thác nước phổ đồ',
   '3D terrain': 'Địa hình 3D',
+  '{name} (plugin)': '{name} (plugin)',
+  'Draw a look for the visualizer from the music’s levels': 'Vẽ một kiểu hình ảnh âm thanh từ mức âm lượng của nhạc',
 }
 
 export default vi

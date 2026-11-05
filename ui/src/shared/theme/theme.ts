@@ -164,8 +164,8 @@ export const COVER_CACHE_MB = [250, 500, 1000, 2000] as const
 /** Mini player resting spots: corners and edge middles (t = top, b = bottom, l = left, r = right). */
 /** Playlist icon: service logo, first song's cover, grid of the first 4, or a picked image. */
 export const COVER_MODES = ['source', 'first', 'grid', 'image'] as const
-/** Visualizer looks (VizCanvas.tsx): LED segments with held peaks, bars from the bottom, mirrored from the middle, bars with falling peaks, a wave, left and right as two glowing curves; a ring around the cover, particles on the beat (vizParticles.ts), two VU needles, two PPM needles (peaks), a scrolling spectrogram, the last seconds as a 3D terrain (vizTerrain.ts), an oscilloscope's trace (vizScope.ts), a vectorscope with its correlation meter (vizVector.ts), a loudness meter (vizLoud.ts). */
-export const VISUALIZER_STYLES = ['led', 'bars', 'mirror', 'peaks', 'wave', 'curve', 'radial', 'particles', 'vu', 'ppm', 'spectrogram', 'terrain', 'scope', 'vectorscope', 'loudness'] as const
+/** Visualizer looks (VizCanvas.tsx): LED segments with held peaks, bars from the bottom, mirrored from the middle, bars with falling peaks, a wave, left and right as two glowing curves; a ring around the cover, particles on the beat (vizParticles.ts), two VU needles, two PPM needles (peaks), a scrolling spectrogram, the last seconds as a 3D terrain (vizTerrain.ts), an oscilloscope's trace (vizScope.ts), a vectorscope with its correlation meter (vizVector.ts), a loudness meter (vizLoud.ts), a plugin's look (features/plugins/pluginViz.ts). */
+export const VISUALIZER_STYLES = ['led', 'bars', 'mirror', 'peaks', 'wave', 'curve', 'radial', 'particles', 'vu', 'ppm', 'spectrogram', 'terrain', 'scope', 'vectorscope', 'loudness', 'plugin'] as const
 export type VisualizerStyle = (typeof VISUALIZER_STYLES)[number]
 /** Visualizer weighting (vizWeigh.ts): the bands as measured, tilted 3 dB per octave toward the highs, or a hearing curve. */
 export const VIZ_WEIGHTINGS = ['flat', 'tilt', 'a', 'itu468'] as const
@@ -408,6 +408,8 @@ export interface Settings {
   visualizerFace: VizFace
   /** The spectrogram's colours. The theme's ink by default (ink and greys); Magma and Viridis are opt-in. */
   visualizerColormap: VizColormap
+  /** The plugin whose look shows when the style is 'plugin' (its id); bars while it isn't running. */
+  visualizerPlugin: string
   /** The visualizer big and faint behind Now Playing too. Off by default: a look the owner hasn't judged yet (2026-11-04). */
   visualizerBackdrop: boolean
   /** A thin visualizer in the mini player too. Off by default: a look the owner hasn't judged yet (2026-11-04). */
@@ -544,6 +546,7 @@ export const DEFAULTS: Settings = {
   visualizerFloor: false,
   visualizerFace: 'theme',
   visualizerColormap: 'theme',
+  visualizerPlugin: '',
   visualizerBackdrop: false,
   visualizerMini: false,
   earlyEnds: true,
@@ -767,6 +770,7 @@ export function sanitize(raw: unknown): Settings {
     visualizerFloor: r.visualizerFloor === true,
     visualizerFace: pick(r.visualizerFace, VIZ_FACES, DEFAULTS.visualizerFace),
     visualizerColormap: pick(r.visualizerColormap, VIZ_COLORMAPS, DEFAULTS.visualizerColormap),
+    visualizerPlugin: typeof r.visualizerPlugin === 'string' && /^[a-z0-9.-]{0,64}$/.test(r.visualizerPlugin) ? r.visualizerPlugin : DEFAULTS.visualizerPlugin,
     visualizerBackdrop: r.visualizerBackdrop === true,
     visualizerMini: r.visualizerMini === true,
     earlyEnds: r.earlyEnds !== false,

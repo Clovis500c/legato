@@ -118,7 +118,7 @@ struct Bridge(AppHandle);
 impl Outbox for Bridge {
     fn call(&self, call: Call) {
         let app = self.0.clone();
-        if call.route == Route::Ui {
+        if call.route != Route::Shell {
             let _ = app.emit_to("main", "plugin-call", UiCall { plugin: call.plugin, id: call.id, method: call.method, args: call.args });
             return;
         }
@@ -377,6 +377,14 @@ pub fn plugin_input(plugins: State<Plugins>, plugin: String, name: String, paylo
     }
     if let Some(p) = plugins.running.lock().unwrap().get(&plugin) {
         p.event(&name, payload);
+    }
+}
+
+/// The visualizer's frame for the plugin whose look shows (bands, beat, level): the latest only, never queued.
+#[tauri::command]
+pub fn plugin_frame(plugins: State<Plugins>, plugin: String, payload: Value) {
+    if let Some(p) = plugins.running.lock().unwrap().get(&plugin) {
+        p.frame(payload);
     }
 }
 

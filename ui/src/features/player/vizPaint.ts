@@ -1,3 +1,4 @@
+import type { DrawOp } from '../plugins/drawList'
 import type { VisualizerStyle, VizBanding, VizColormap, VizFace, VizGradient, VizWeighting } from '../../shared/theme/theme'
 import { capSegment, levelOf, litSegments } from './ledBars'
 import { bandCount, DB_MARKS, FREQ_MARKS, framesFor, freqAt } from './vizBands'
@@ -103,6 +104,8 @@ export function createPainter(canvas: OffscreenCanvas) {
   let sceneR: ReturnType<typeof createScene> | null = null
   // Loudness meter: its words and its latest numbers.
   let words: LoudWords = LOUD_WORDS
+  // A plugin's look: its last picture.
+  let shapes: DrawOp[] = []
   let loudNow: LoudReading = { momentary: -120, short: -120, integrated: null, range: null, peak: -120, top: -120 }
   // Oscilloscope, Vectorscope: the newest wave blocks (none while nothing sounds), the scope's one side, the points.
   const waveL = new Float32Array(VIZ_WAVE)
@@ -553,6 +556,45 @@ export function createPainter(canvas: OffscreenCanvas) {
     return resting
   }
 
+  /** A plugin's picture (drawList.ts checked it): positions are the box's shares, a radius its shorter side's, sizes CSS px. */
+  function drawOps(W: number, H: number) {
+    if (!ctx) return
+    const side = Math.min(W, H)
+    ctx.lineJoin = 'round'
+    ctx.lineCap = 'round'
+    ctx.textBaseline = 'middle'
+    for (const o of shapes) {
+      const c = o.color === 'ink' ? ink : o.color === 'warn' ? warn : o.color
+      ctx.globalAlpha = o.alpha
+      ctx.fillStyle = c
+      ctx.strokeStyle = c
+      if (o.op === 'rect') ctx.fillRect(o.x * W, o.y * H, o.w * W, o.h * H)
+      else if (o.op === 'circle') {
+        ctx.beginPath()
+        ctx.arc(o.x * W, o.y * H, o.r * side, 0, Math.PI * 2)
+        if (o.width > 0) {
+          ctx.lineWidth = o.width * dpr
+          ctx.stroke()
+        } else ctx.fill()
+      } else if (o.op === 'text') {
+        ctx.font = `${Math.round(o.size * dpr)}px system-ui, sans-serif`
+        ctx.textAlign = o.align
+        ctx.fillText(o.text, o.x * W, o.y * H)
+      } else {
+        ctx.beginPath()
+        for (let i = 0; i + 1 < o.points.length; i += 2) ctx.lineTo(o.points[i] * W, o.points[i + 1] * H)
+        if (o.op === 'shape') {
+          ctx.closePath()
+          ctx.fill()
+        } else {
+          ctx.lineWidth = o.width * dpr
+          ctx.stroke()
+        }
+      }
+    }
+    ctx.globalAlpha = 1
+  }
+
   /** The terrain, back to front: each row clears what its hills hide, then a faint body and its line. */
   function terrain(levels: Float32Array, W: number, H: number, dt: number, resting: boolean): boolean {
     if (!ctx) return true
@@ -918,6 +960,10 @@ export function createPainter(canvas: OffscreenCanvas) {
     loud(v: LoudReading) {
       loudNow = v
     },
+    /** A plugin's picture, until the next. */
+    ops(list: DrawOp[]) {
+      shapes = list
+    },
     /** The particles' colours (none: the ink) and whether their light adds up. */
     palette(colors: string[], adds: boolean) {
       partColors = colors
@@ -938,6 +984,13 @@ export function createPainter(canvas: OffscreenCanvas) {
         ctx.globalAlpha = 1
         ctx.clearRect(0, 0, canvas.width, canvas.height)
         loudness(canvas.width, canvas.height)
+        return true
+      }
+      // A plugin's look: its picture as each one comes, at rest in between.
+      if (look === 'plugin') {
+        ctx.globalAlpha = 1
+        ctx.clearRect(0, 0, canvas.width, canvas.height)
+        drawOps(canvas.width, canvas.height)
         return true
       }
       const { levels, peaks, resting: restingL } = scene.step(dt)

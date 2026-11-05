@@ -3,6 +3,8 @@ import { useSettings } from '../../app/settings'
 import { trackArt } from '../../shared/art'
 import { tr } from '../../shared/i18n/i18n'
 import type { VisualizerStyle, VizColor } from '../../shared/theme/theme'
+import type { DrawOp } from '../plugins/drawList'
+import { feedPlugin, usePluginViz } from '../plugins/pluginViz'
 import { averageColor, coverColors, vivid } from './ambient'
 import { subscribeLoud } from './loudFeed'
 import { useNowTrack, usePlayer } from './store'
@@ -43,7 +45,12 @@ function usePageVisible() {
  * loop, run only while something is seen: `listen` (the caller shows it), page shown (not hidden in the tray), element
  * on screen, and the music playing; a paused song lets the bars fall to rest, then nothing runs at all.
  */
-export function VizCanvas({ look, listen = true }: { look: VisualizerStyle; listen?: boolean }) {
+export function VizCanvas({ look: asked, listen = true }: { look: VisualizerStyle; listen?: boolean }) {
+  const pluginId = useSettings((s) => s.settings.visualizerPlugin)
+  const pluginOn = usePluginViz((s) => asked === 'plugin' && pluginId in s.looks)
+  // A plugin's look while its plugin runs; bars otherwise (stopped, removed, not started yet).
+  const look: VisualizerStyle = asked === 'plugin' && !pluginOn ? 'bars' : asked
+  const plugin = look === 'plugin'
   const box = useRef<HTMLDivElement>(null)
   const worker = useRef<Worker | null>(null)
   const [ready, setReady] = useState(false)
@@ -133,6 +140,17 @@ export function VizCanvas({ look, listen = true }: { look: VisualizerStyle; list
     w.postMessage({ t: 'palette', colors: coverDots ?? [], glow: darkTheme } satisfies ToWorker)
   }, [ready, look, coverDots, darkTheme])
 
+  // A plugin's look: its pictures to the worker as they come.
+  useEffect(() => {
+    const w = worker.current
+    if (!w || !plugin) return
+    const send = (ops: DrawOp[] | undefined) => w.postMessage({ t: 'ops', ops: ops ?? [] } satisfies ToWorker)
+    send(usePluginViz.getState().ops[pluginId])
+    return usePluginViz.subscribe((s, prev) => {
+      if (s.ops[pluginId] !== prev.ops[pluginId]) send(s.ops[pluginId])
+    })
+  }, [ready, plugin, pluginId])
+
   // Something draws: loop and frames. Nothing does: no loop, no subscription.
   useEffect(() => {
     const w = worker.current
@@ -140,13 +158,15 @@ export function VizCanvas({ look, listen = true }: { look: VisualizerStyle; list
     w.postMessage({ t: 'run', on: drawing } satisfies ToWorker)
     // The loudness meter: the levels' numbers instead of the frames (loudFeed.ts), its last picture kept while paused.
     if (meter) return live ? subscribeLoud((v) => w.postMessage({ t: 'loud', v } satisfies ToWorker)) : undefined
+    // A plugin's look: the frames go to the plugin, its pictures come back (above).
+    if (plugin) return live ? feedPlugin(pluginId) : undefined
     if (!live) {
       if (drawing) w.postMessage({ t: 'silence' } satisfies ToWorker)
       return
     }
     // A silent frame (a gap, a stalled buffer, a stop) is silence: the bars fall, then the loop stops.
     return viz.subscribe((f) => w.postMessage(frameMessage(f)))
-  }, [ready, drawing, live, meter])
+  }, [ready, drawing, live, meter, plugin, pluginId])
 
   // The pointer over it: the worker shows its frequency and dB scales (a big enough box only).
   const hover = (on: boolean) => () => worker.current?.postMessage({ t: 'hover', on } satisfies ToWorker)

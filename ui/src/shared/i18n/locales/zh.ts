@@ -2053,6 +2053,8 @@ const zh: Record<string, string> = {
   'Viridis': 'Viridis',
   'colormap color map magma viridis heat waterfall palette': '色彩映射 颜色 岩浆 magma viridis 热力 瀑布 调色板 频谱图',
   '3D terrain': '3D 地形',
+  '{name} (plugin)': '{name}（插件）',
+  'Draw a look for the visualizer from the music’s levels': '根据音乐的电平绘制可视化样式',
 }
 
 export default zh

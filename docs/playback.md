@@ -522,6 +522,12 @@ never: downloading, extracting, recording or exporting a platform's audio, or to
     hide (`destination-out`), then gets a faint body and its line in the theme's ink, so the page still shows through.
     64 points a row whatever the banding; every other row in a box under 160 px (the strip). At rest once every row
     is flat. Canvas 2D (40 rows of 64 points), not WebGL.
+  - **A plugin's look** (2026-11-05, `features/plugins/pluginViz.ts`, `docs/plugins.md` › Visualizer shapes): a plugin
+    with the `visualizer` permission registers one look, offered as "<name> (plugin)" in Settings and the menu (setting
+    `visualizerPlugin`, not in the click round). While it shows and music plays, one feed per plugin sends it 31 bands
+    (the overlay's third octaves), the beat, the tempo, level and peak, 30 a second at most; Rust keeps only the latest
+    frame for a busy plugin. Its answer is a list of shapes (`drawList.ts` checks them), drawn by the worker in the
+    theme's ink or its own colours until the next one. The plugin off or stopped: the bars instead.
   - **Drawn at 30 fps** (`FPS` in `VizCanvas.tsx`, sent with the look; the worker's loop skips a tick that comes less than a
     period minus 3 ms after the last drawing): at the screen's 60 the bench showed 5 of 16 looks and sizes over the
     3 % budget (up to +4.6 points of the PC), at 30 all four looks run again were +1 to +1.9. The sound's own frames stay at

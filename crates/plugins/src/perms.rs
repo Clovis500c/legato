@@ -22,6 +22,8 @@ pub enum Permission {
     UiStyle,
     /// Read and change the Live Editor's settings.
     Editor,
+    /// A look for the visualizer: the music's levels in, a drawing out.
+    Visualizer,
     /// HTTPS requests to this host only, through the app.
     Network(String),
 }
@@ -46,6 +48,7 @@ impl Permission {
             "ui" => Self::Ui,
             "ui:style" => Self::UiStyle,
             "editor" => Self::Editor,
+            "visualizer" => Self::Visualizer,
             _ => match s.strip_prefix("network:") {
                 Some(h) => {
                     ensure!(host_ok(h), "Not a host name a plugin can ask for: {h}");
@@ -65,6 +68,7 @@ impl Permission {
             Self::Ui => "ui".into(),
             Self::UiStyle => "ui:style".into(),
             Self::Editor => "editor".into(),
+            Self::Visualizer => "visualizer".into(),
             Self::Network(h) => format!("network:{h}"),
         }
     }
@@ -75,6 +79,8 @@ impl Permission {
 pub enum Route {
     Shell,
     Ui,
+    /// The interface takes it and nothing comes back: the visualizer's drawings, many a second.
+    UiNote,
 }
 
 /// Methods a plugin can call, the permission each needs (None = its own things), and where it goes.
@@ -105,11 +111,13 @@ pub const METHODS: &[(&str, Option<&str>, Route)] = &[
     ("ui.setStyle", Some("ui:style"), Route::Ui),
     ("editor.get", Some("editor"), Route::Ui),
     ("editor.set", Some("editor"), Route::Ui),
+    ("visualizer.register", Some("visualizer"), Route::Ui),
+    ("visualizer.draw", Some("visualizer"), Route::UiNote),
     ("net.fetch", Some("network"), Route::Shell),
 ];
 
 /// Events a plugin may receive, and the permission each needs.
-pub const EVENTS: &[(&str, &str)] = &[("track", "player:read"), ("playing", "player:read"), ("command", "ui"), ("panel", "ui")];
+pub const EVENTS: &[(&str, &str)] = &[("track", "player:read"), ("playing", "player:read"), ("command", "ui"), ("panel", "ui"), ("visualizer", "visualizer")];
 
 /// May a plugin with `granted` call `method` with `args`? Where does the call go?
 pub fn check(granted: &[Permission], method: &str, args: &serde_json::Value) -> Result<Route, String> {
@@ -149,7 +157,7 @@ mod tests {
         for bad in ["network:localhost", "network:192.168.1.2", "network:*.example.com", "network:example", "network:printer.local", "network:Example.com", "files"] {
             assert!(Permission::parse(bad).is_err(), "{bad}");
         }
-        for p in ["player:read", "player:control", "library:read", "library:write", "ui", "ui:style", "editor", "network:a.b"] {
+        for p in ["player:read", "player:control", "library:read", "library:write", "ui", "ui:style", "editor", "visualizer", "network:a.b"] {
             assert_eq!(Permission::parse(p).unwrap().as_string(), p);
         }
     }
@@ -166,5 +174,9 @@ mod tests {
         assert!(check(&granted, "secrets.get", &json!({})).is_err());
         assert!(may_receive(&granted, "track"));
         assert!(!may_receive(&granted, "command"));
+        assert!(check(&granted, "visualizer.draw", &json!({})).unwrap_err().contains("visualizer"));
+        assert_eq!(check(&[Permission::Visualizer], "visualizer.draw", &json!({})), Ok(Route::UiNote));
+        assert!(may_receive(&[Permission::Visualizer], "visualizer"));
+        assert!(!may_receive(&granted, "visualizer"));
     }
 }

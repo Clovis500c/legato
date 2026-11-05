@@ -2053,6 +2053,8 @@ const it: Record<string, string> = {
   'Viridis': 'Viridis',
   'colormap color map magma viridis heat waterfall palette': 'mappa di colori colore magma viridis calore cascata tavolozza spettrogramma',
   '3D terrain': 'Rilievo 3D',
+  '{name} (plugin)': '{name} (plugin)',
+  'Draw a look for the visualizer from the music’s levels': 'Disegnare uno stile per il visualizzatore dai livelli della musica',
 }
 
 export default it

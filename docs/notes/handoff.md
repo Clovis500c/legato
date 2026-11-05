@@ -198,6 +198,10 @@ Relaunch log (newest last):
   the demo, full screen dark.
 - 2026-11-05: the 3D terrain look (`vizTerrain.ts`, drawn by `terrain()` in `vizPaint.ts`). Seen over the demo full
   screen, dark; not in the strip.
+- 2026-11-05: the Visualizer API for plugins (permission `visualizer`: frames in, shapes out; `Route::UiNote`, latest-only
+  frames in `runtime.rs`, `plugin_frame`; UI `features/plugins/pluginViz.ts`, `drawList.ts`; example
+  `examples/plugins/rings`). Rust tests run the example; the demo drew an injected look full screen. Not installed in the
+  real app.
 
 ## Mobile app and devices sync (the owner's ask, 2026-11-02 afternoon; in progress)
 

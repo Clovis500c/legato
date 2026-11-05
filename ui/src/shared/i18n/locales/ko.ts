@@ -2053,6 +2053,8 @@ const ko: Record<string, string> = {
   'Viridis': 'Viridis',
   'colormap color map magma viridis heat waterfall palette': '컬러맵 색상 마그마 magma viridis 히트 폭포 팔레트 스펙트로그램',
   '3D terrain': '3D 지형',
+  '{name} (plugin)': '{name} (플러그인)',
+  'Draw a look for the visualizer from the music’s levels': '음악 레벨로 비주얼라이저 스타일 그리기',
 }
 
 export default ko

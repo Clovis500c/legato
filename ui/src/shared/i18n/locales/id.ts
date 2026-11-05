@@ -2053,6 +2053,8 @@ const id: Record<string, string> = {
   'Viridis': 'Viridis',
   'colormap color map magma viridis heat waterfall palette': 'peta warna magma viridis panas air terjun palet spektrogram',
   '3D terrain': 'Lanskap 3D',
+  '{name} (plugin)': '{name} (plugin)',
+  'Draw a look for the visualizer from the music’s levels': 'Menggambar gaya untuk visualisasi dari level musik',
 }
 
 export default id

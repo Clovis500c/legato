@@ -2053,6 +2053,8 @@ const tr: Record<string, string> = {
   'Viridis': 'Viridis',
   'colormap color map magma viridis heat waterfall palette': 'renk haritası renk magma viridis ısı şelale palet spektrogram',
   '3D terrain': '3B arazi',
+  '{name} (plugin)': '{name} (eklenti)',
+  'Draw a look for the visualizer from the music’s levels': 'Müziğin seviyelerinden görselleştirici için bir stil çizmek',
 }
 
 export default tr

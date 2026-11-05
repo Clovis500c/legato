@@ -2053,6 +2053,8 @@ const uk: Record<string, string> = {
   'Viridis': 'Viridis',
   'colormap color map magma viridis heat waterfall palette': 'кольорова карта колір магма magma viridis тепло водоспад палітра спектрограма',
   '3D terrain': '3D-рельєф',
+  '{name} (plugin)': '{name} (плагін)',
+  'Draw a look for the visualizer from the music’s levels': 'Малювати стиль візуалізації за рівнями музики',
 }
 
 export default uk

@@ -9,7 +9,7 @@ use serde_json::{Value, json};
 use std::cell::{Cell, RefCell};
 use std::collections::BTreeMap;
 use std::rc::Rc;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::mpsc::{self, Receiver, RecvTimeoutError, Sender};
 use std::thread::JoinHandle;
@@ -25,6 +25,9 @@ const MAX_OVERRUNS: u32 = 3;
 const MAX_PENDING: usize = 256;
 const MAX_TIMERS: usize = 64;
 const MIN_INTERVAL_MS: u64 = 50;
+/// Notes (calls nothing answers: the visualizer's drawings): this many a second, each this big at most.
+const MAX_NOTES: u32 = 60;
+const MAX_NOTE_BYTES: usize = 256 << 10;
 
 /// A plugin asks the app for something (permission already granted).
 #[derive(Debug, Clone, PartialEq)]
@@ -46,6 +49,8 @@ pub trait Outbox: Send + Sync + 'static {
 enum Msg {
     Event(String, Value),
     Reply(u64, Result<Value, String>),
+    /// The visualizer's latest frame waits in `Running`'s slot.
+    Frame,
     Stop,
 }
 
@@ -55,28 +60,43 @@ pub struct Running {
     granted: Vec<Permission>,
     tx: Sender<Msg>,
     thread: Option<JoinHandle<()>>,
+    /// The visualizer's frame not yet handed to the plugin: one at most, the latest.
+    frame: Arc<Mutex<Option<Value>>>,
 }
 
 impl Running {
     /// Starts `code` with the permissions the user approved (a subset of the manifest's).
     pub fn start(manifest: Manifest, granted: Vec<Permission>, code: String, app_version: &str, out: Arc<dyn Outbox>) -> Self {
         let (tx, rx) = mpsc::channel();
-        let (m, g, v) = (manifest.clone(), granted.clone(), app_version.to_string());
+        let frame = Arc::new(Mutex::new(None));
+        let (m, g, v, slot) = (manifest.clone(), granted.clone(), app_version.to_string(), frame.clone());
         let thread = std::thread::Builder::new()
             .name(format!("plugin {}", manifest.id))
             .spawn(move || {
                 let id = m.id.clone();
-                let error = run(m, g, code, &v, out.clone(), rx).err();
+                let error = run(m, g, code, &v, out.clone(), rx, slot).err();
                 out.stopped(&id, error);
             })
             .ok();
-        Self { manifest, granted, tx, thread }
+        Self { manifest, granted, tx, thread, frame }
     }
 
     /// An app event, if the plugin may hear it.
     pub fn event(&self, name: &str, payload: Value) {
         if perms::may_receive(&self.granted, name) {
             let _ = self.tx.send(Msg::Event(name.into(), payload));
+        }
+    }
+
+    /// The visualizer's frame, if the plugin may hear it. Never queued: the latest waits, alone; a plugin slower than
+    /// the frames skips some.
+    pub fn frame(&self, payload: Value) {
+        if !perms::may_receive(&self.granted, "visualizer") {
+            return;
+        }
+        let was_empty = self.frame.lock().unwrap().replace(payload).is_none();
+        if was_empty {
+            let _ = self.tx.send(Msg::Frame);
         }
     }
 
@@ -151,7 +171,7 @@ fn thrown(ctx: &Ctx, e: rquickjs::Error) -> String {
     }
 }
 
-fn run(m: Manifest, granted: Vec<Permission>, code: String, app_version: &str, out: Arc<dyn Outbox>, rx: Receiver<Msg>) -> Result<(), String> {
+fn run(m: Manifest, granted: Vec<Permission>, code: String, app_version: &str, out: Arc<dyn Outbox>, rx: Receiver<Msg>, frame: Arc<Mutex<Option<Value>>>) -> Result<(), String> {
     let rt = Runtime::new().map_err(|e| e.to_string())?;
     rt.set_memory_limit(MEMORY);
     rt.set_max_stack_size(STACK);
@@ -165,11 +185,13 @@ fn run(m: Manifest, granted: Vec<Permission>, code: String, app_version: &str, o
     let timers = Rc::new(RefCell::new(Timers::default()));
     let pending = Rc::new(Cell::new(0usize));
     let next_call = Rc::new(Cell::new(0u64));
+    let notes = Rc::new(Cell::new((Instant::now(), 0u32)));
 
     // Host function: every call from the plugin. Answers JSON: {ok}, {pending: id} or {err}.
     let host = {
-        let (timers, pending, next_call, out, plugin) = (timers.clone(), pending.clone(), next_call.clone(), out.clone(), m.id.clone());
+        let (timers, pending, next_call, out, plugin, notes) = (timers.clone(), pending.clone(), next_call.clone(), out.clone(), m.id.clone(), notes.clone());
         move |method: String, args: String| -> String {
+            let size = args.len();
             let args: Value = serde_json::from_str(&args).unwrap_or(Value::Null);
             let answer = match method.as_str() {
                 "timer.set" => match timers.borrow_mut().set(args["ms"].as_u64().unwrap_or(0), args["repeat"].as_bool().unwrap_or(false)) {
@@ -186,6 +208,21 @@ fn run(m: Manifest, granted: Vec<Permission>, code: String, app_version: &str, o
                 }
                 _ => match perms::check(&granted, &method, &args) {
                     Err(e) => json!({ "err": e }),
+                    // Nothing answers a note: out at once, counted a second at a time instead.
+                    Ok(Route::UiNote) => {
+                        let (since, n) = notes.get();
+                        let (since, n) = if since.elapsed() >= Duration::from_secs(1) { (Instant::now(), 0) } else { (since, n) };
+                        notes.set((since, n));
+                        if size > MAX_NOTE_BYTES {
+                            json!({ "err": "Too big: 256 kB at most" })
+                        } else if n >= MAX_NOTES {
+                            json!({ "err": "Too many: 60 a second at most" })
+                        } else {
+                            notes.set((since, n + 1));
+                            out.call(Call { plugin: plugin.clone(), id: 0, method, args, route: Route::UiNote });
+                            json!({ "ok": null })
+                        }
+                    }
                     Ok(_) if pending.get() >= MAX_PENDING => json!({ "err": "Too many calls waiting for an answer" }),
                     Ok(route) => {
                         let id = next_call.get() + 1;
@@ -228,6 +265,7 @@ fn run(m: Manifest, granted: Vec<Permission>, code: String, app_version: &str, o
         let entries: Vec<(&str, String)> = match rx.recv_timeout(wait) {
             Ok(Msg::Stop) | Err(RecvTimeoutError::Disconnected) => return Ok(()),
             Ok(Msg::Event(name, payload)) => vec![("event", json!({ "name": name, "payload": payload }).to_string())],
+            Ok(Msg::Frame) => frame.lock().unwrap().take().map(|p| vec![("event", json!({ "name": "visualizer", "payload": p }).to_string())]).unwrap_or_default(),
             Ok(Msg::Reply(id, r)) => {
                 pending.set(pending.get().saturating_sub(1));
                 vec![("reply", match r {
@@ -371,6 +409,46 @@ mod tests {
         wait_for(|| find("ui.setPanel").is_some());
         let tree = find("ui.setPanel").unwrap().args["tree"].clone();
         assert_eq!(tree[2]["value"], 45);
+        assert!(spy.stopped.lock().unwrap().is_none(), "{:?}", spy.logs.lock().unwrap());
+    }
+
+    #[test]
+    fn frames_never_queue_and_drawings_need_no_answer() {
+        let code = "app.on('visualizer', (f) => { console.log('busy'); const t = Date.now(); while (Date.now() - t < 150) {} app.visualizer.draw([{ op: 'rect', n: f.n }]) })";
+        let (p, spy) = start(code, vec![Permission::Visualizer]);
+        p.frame(json!({ "n": 1 }));
+        wait_for(|| spy.logs.lock().unwrap().iter().any(|l| l.contains("busy")));
+        // While the first one draws: the second is replaced by the third.
+        p.frame(json!({ "n": 2 }));
+        p.frame(json!({ "n": 3 }));
+        wait_for(|| spy.calls.lock().unwrap().len() >= 2);
+        std::thread::sleep(Duration::from_millis(200));
+        let calls = spy.calls.lock().unwrap();
+        let ns: Vec<u64> = calls.iter().map(|c| c.args["list"][0]["n"].as_u64().unwrap()).collect();
+        assert_eq!(ns, [1, 3]);
+        assert!(calls.iter().all(|c| c.id == 0 && c.route == Route::UiNote && c.method == "visualizer.draw"));
+    }
+
+    #[test]
+    fn drawings_are_capped_a_second_at_a_time() {
+        let (_p, spy) = start("for (let i = 0; i < 100; i++) app.visualizer.draw([]).catch((e) => i === 99 && console.log(e.message))", vec![Permission::Visualizer]);
+        wait_for(|| spy.logs.lock().unwrap().iter().any(|l| l.contains("60 a second")));
+        assert_eq!(spy.calls.lock().unwrap().len(), 60);
+    }
+
+    #[test]
+    fn the_rings_example_registers_its_look_and_draws_frames() {
+        let m = Manifest::parse(include_str!("../../../examples/plugins/rings/plugin.json")).unwrap();
+        let spy = Arc::new(Spy::default());
+        let granted = m.permissions();
+        let r = Running::start(m, granted, include_str!("../../../examples/plugins/rings/main.js").into(), "1.0.0", spy.clone());
+        let find = |method: &str| spy.calls.lock().unwrap().iter().find(|c| c.method == method).cloned();
+        wait_for(|| find("visualizer.register").is_some());
+        let bands: Vec<f64> = (0..31).map(|i| f64::from(i) / 31.0).collect();
+        r.frame(json!({ "bands": bands, "beat": true, "bpm": 120, "level": -14.0, "peak": -3.0 }));
+        wait_for(|| find("visualizer.draw").is_some());
+        let list = find("visualizer.draw").unwrap().args["list"].clone();
+        assert!(list.as_array().unwrap().len() > 31, "{list}");
         assert!(spy.stopped.lock().unwrap().is_none(), "{:?}", spy.logs.lock().unwrap());
     }
 
