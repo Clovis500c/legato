@@ -3,7 +3,7 @@ import { fold } from '../../shared/format'
 
 export type Filter = 'all' | Source | 'unlinked'
 /** recent = added-new (playlist covers keep the old name). manual = playlist order. */
-export type Sort = 'manual' | 'added-new' | 'added-old' | 'most-played' | 'recently-played' | 'rating' | 'title' | 'title-desc' | 'artist' | 'album' | 'duration' | 'duration-short' | 'random' | 'recent'
+export type Sort = 'manual' | 'added-new' | 'added-old' | 'most-played' | 'recently-played' | 'rating' | 'title' | 'title-desc' | 'artist' | 'album' | 'year' | 'year-new' | 'genre' | 'duration' | 'duration-short' | 'random' | 'recent'
 
 /** Track id → [listens, last start, your rating in half stars] (history), for the play and rating sorts. */
 export type PlayStats = Record<number, [plays: number, last: number, stars?: number]>
@@ -61,6 +61,10 @@ export function sortTracks(
     'title-desc': (a, b) => title(b, a),
     artist: (a, b) => coll.compare(a.artist, b.artist) || title(a, b),
     album: (a, b) => coll.compare(a.album ?? '￿', b.album ?? '￿') || title(a, b),
+    // Local files' tags: songs without one last, a year's songs by album.
+    year: (a, b) => (a.year ?? 1e9) - (b.year ?? 1e9) || coll.compare(a.album ?? '￿', b.album ?? '￿') || title(a, b),
+    'year-new': (a, b) => (b.year ?? -1) - (a.year ?? -1) || coll.compare(a.album ?? '￿', b.album ?? '￿') || title(a, b),
+    genre: (a, b) => coll.compare(a.genre ?? '￿', b.genre ?? '￿') || coll.compare(a.artist, b.artist) || title(a, b),
     duration: (a, b) => (b.durationMs ?? 0) - (a.durationMs ?? 0),
     'duration-short': (a, b) => (a.durationMs ?? Infinity) - (b.durationMs ?? Infinity),
     random: (a, b) => rank(a.id, seed) - rank(b.id, seed),

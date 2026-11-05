@@ -2144,6 +2144,12 @@ const zh: Record<string, string> = {
   'Your listening personality': '你的收听性格',
   'Your recap': '你的回顾',
   'Back to stats': '返回统计',
+  'Genres': '流派',
+  '{n} genre': '{n} 种流派',
+  '{n} genres': '{n} 种流派',
+  'Year (oldest first)': '年份（最早）',
+  'Year (newest first)': '年份（最新）',
+  'Genre (A–Z)': '流派（A–Z）',
 }
 
 export default zh

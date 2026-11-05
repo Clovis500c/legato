@@ -16,6 +16,12 @@ describe('fitColumns', () => {
     expect(fitColumns(ALL, true, 800, 96)).toEqual({ columns: ['album', 'sources', 'duration'], artistCol: true })
   })
 
+  it('drops genre and year before the album', () => {
+    // 32 + 200 + 96 + 100 + 100 + 44 + 72 + 52 + 16 × 7 = 808.
+    expect(fitColumns(['album', 'year', 'genre', 'duration'], true, 807, 96).columns).toEqual(['album', 'year', 'duration'])
+    expect(fitColumns(['album', 'year', 'genre', 'duration'], true, 700, 96).columns).toEqual(['album', 'duration'])
+  })
+
   it('moves the artist under the title before losing the album', () => {
     expect(fitColumns(['album', 'sources', 'duration'], true, 560, 96)).toEqual({ columns: ['album', 'duration'], artistCol: false })
   })

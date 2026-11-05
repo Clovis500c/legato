@@ -49,6 +49,12 @@ const sortGroups: { id: Sort; label: string }[][] = [
     { id: 'artist', label: msg('Artist (A–Z)') },
     { id: 'album', label: msg('Album (A–Z)') },
   ],
+  // Local files' tags: offered once a song has one.
+  [
+    { id: 'year', label: msg('Year (oldest first)') },
+    { id: 'year-new', label: msg('Year (newest first)') },
+    { id: 'genre', label: msg('Genre (A–Z)') },
+  ],
   [
     { id: 'duration', label: msg('Longest first') },
     { id: 'duration-short', label: msg('Shortest first') },
@@ -122,7 +128,9 @@ function SortButton<T extends string>({ groups, value, onPick }: { groups: { id:
 /** Songs sort. playlist = adds Manual. */
 function SortMenu({ playlist = false }: { playlist?: boolean }) {
   const { sort, playlistSort, setSort, setPlaylistSort } = useStore(useShallow(({ sort, playlistSort, setSort, setPlaylistSort }) => ({ sort, playlistSort, setSort, setPlaylistSort })))
-  return <SortButton groups={sortGroups.filter((g) => playlist || g[0].id !== 'manual')} value={playlist ? playlistSort : sort} onPick={playlist ? setPlaylistSort : setSort} />
+  const tracks = useStore((s) => s.tracks)
+  const tagged = useMemo(() => tracks.some((t) => t.year || t.genre), [tracks])
+  return <SortButton groups={sortGroups.filter((g) => (playlist || g[0].id !== 'manual') && (tagged || g[0].id !== 'year'))} value={playlist ? playlistSort : sort} onPick={playlist ? setPlaylistSort : setSort} />
 }
 
 const albumSorts: { id: GroupSort; label: string }[][] = [

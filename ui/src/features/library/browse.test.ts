@@ -8,6 +8,16 @@ const ids = (tracks: LibraryTrack[]) => tracks.map((t) => t.id)
 const library = [song(1, 'Daft Punk', 'Discovery'), song(2, 'Daft Punk feat. Romanthony', 'Discovery'), song(3, 'Daft Punk', 'Homework'), song(4, 'Air', 'Moon Safari'), song(5, 'Daft Punk'), song(6, 'Air', 'Discovery')]
 
 describe('Column browser', () => {
+  it('offers genres only when songs have one, and a genre narrows the artists', () => {
+    expect(browse(library, { artists: [], albums: [] }).genres).toBeNull()
+    const tagged = library.map((t) => (t.artist === 'Air' ? { ...t, genre: 'Electronic' } : t.id === 3 ? { ...t, genre: 'house' } : t))
+    const b = browse(tagged, { artists: [], albums: [] })
+    expect(b.genres?.items.map((g) => [g.genre, g.tracks.length])).toEqual([['Electronic', 2], ['house', 1]])
+    const house = browse(tagged, { genres: ['house'], artists: [], albums: [] })
+    expect([ids(house.songs), house.artists.items.map((g) => g.artist)]).toEqual([[3], ['Daft Punk']])
+    expect(ids(inPicks([{ ...song(7, 'Air'), genre: 'Electronic' }, song(8, 'Air')], browse(tagged, { genres: ['electronic'], artists: [], albums: [] })))).toEqual([7])
+  })
+
   it('lists artists and albums A to Z, every song when nothing is picked', () => {
     const b = browse(library, { artists: [], albums: [] })
     expect(b.artists.items.map((g) => [g.artist, g.tracks.length])).toEqual([['Air', 2], ['Daft Punk', 4]])

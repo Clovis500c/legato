@@ -3,7 +3,7 @@
 //! Playing › Lyrics). Other services' songs aren't files of the user's: not offered.
 
 use crate::{AppState, CmdResult, err};
-use music_core::local::{FileTags, TagEdit, file_tags, read, write_tags};
+use music_core::local::{FileTags, TagEdit, file_tags, read_song, write_tags};
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use tauri::State;
@@ -89,7 +89,7 @@ pub async fn edit_tags(state: State<'_, AppState>, track_ids: Vec<i64>, tags: Ta
             if number {
                 (edit.track, edit.track_total) = (Some(i as u32 + 1), Some(count));
             }
-            let written = write_tags(&file, &edit).map(|()| read(&file));
+            let written = write_tags(&file, &edit).map(|()| read_song(&file));
             done.push((file, written));
         }
         done
@@ -100,8 +100,10 @@ pub async fn edit_tags(state: State<'_, AppState>, track_ids: Vec<i64>, tags: Ta
     let mut out = Saved { saved: 0, failed: Vec::new(), reason: None };
     for (&id, (file, written)) in track_ids.iter().zip(done) {
         match written {
-            Ok(t) => {
+            Ok(s) => {
+                let t = &s.track;
                 lib.set_details(id, &t.title, &t.artist, t.album.as_deref()).map_err(err)?;
+                lib.set_genre_year(id, s.genre.as_deref(), s.year).map_err(err)?;
                 out.saved += 1;
             }
             Err(e) => {

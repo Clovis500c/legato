@@ -17,7 +17,22 @@ type Stamp = (u64, Option<SystemTime>);
 
 /// Tags read before, per file: a rescan reads only new or changed files. A watched folder rescans whole after each
 /// change (one album copied into 5,000 files was 5,000 tag reads).
-static KNOWN: LazyLock<Mutex<HashMap<PathBuf, (Stamp, Track)>>> = LazyLock::new(Mutex::default);
+static KNOWN: LazyLock<Mutex<HashMap<PathBuf, (Stamp, LocalSong)>>> = LazyLock::new(Mutex::default);
+
+/// A local file as the library keeps it: the song, and what only files tell (the Genre and Year columns, the column
+/// browser's panes).
+#[derive(Debug, Clone, Default, PartialEq)]
+pub struct LocalSong {
+    pub track: Track,
+    pub genre: Option<String>,
+    pub year: Option<u32>,
+}
+
+impl From<Track> for LocalSong {
+    fn from(track: Track) -> Self {
+        Self { track, ..Self::default() }
+    }
+}
 
 const AUDIO: [&str; 6] = ["mp3", "flac", "wav", "ogg", "m4a", "aac"];
 
@@ -32,7 +47,7 @@ pub const MAX_LOOSE: usize = 20_000;
 
 /// All audio files under `roots`, recursively; an audio file given as a root, as it is (dropped alone). Each file once.
 /// Symlinked dirs skipped (no loops).
-pub fn scan(roots: &[PathBuf]) -> Vec<Track> {
+pub fn scan(roots: &[PathBuf]) -> Vec<LocalSong> {
     let mut files = Vec::new();
     for r in roots {
         if is_audio(r) && r.is_file() {
@@ -53,9 +68,9 @@ pub fn scan(roots: &[PathBuf]) -> Vec<Track> {
     let out = files
         .into_iter()
         .map(|(path, stamp)| {
-            let track = kept(&path, &stamp).unwrap_or_else(|| fresh.next().expect("one read per new file"));
-            now.insert(path, (stamp, track.clone()));
-            track
+            let song = kept(&path, &stamp).unwrap_or_else(|| fresh.next().expect("one read per new file"));
+            now.insert(path, (stamp, song.clone()));
+            song
         })
         .collect();
     // Files gone since are forgotten.
@@ -101,10 +116,10 @@ pub fn take_drop(dropped: &[PathBuf], folders: &mut Vec<String>, loose: &mut Vec
 }
 
 /// Tags of `paths`, in order, read on a few threads: one file's disk wait overlaps another's parsing.
-fn read_all(paths: &[&Path]) -> Vec<Track> {
+fn read_all(paths: &[&Path]) -> Vec<LocalSong> {
     let next = AtomicUsize::new(0);
     let workers = std::thread::available_parallelism().map_or(1, |n| n.get()).min(8).min(paths.len());
-    let mut got: Vec<(usize, Track)> = std::thread::scope(|s| {
+    let mut got: Vec<(usize, LocalSong)> = std::thread::scope(|s| {
         let handles: Vec<_> = (0..workers)
             .map(|_| {
                 s.spawn(|| {
@@ -112,7 +127,7 @@ fn read_all(paths: &[&Path]) -> Vec<Track> {
                     loop {
                         let i = next.fetch_add(1, Ordering::Relaxed);
                         let Some(p) = paths.get(i) else { return mine };
-                        mine.push((i, read(p)));
+                        mine.push((i, read_song(p)));
                     }
                 })
             })
@@ -185,6 +200,11 @@ pub fn from_name(stem: &str) -> (Option<String>, String) {
 
 /// Tags when present, file name otherwise. Unreadable file still listed (engine reports errors).
 pub fn read(path: &Path) -> Track {
+    read_song(path).track
+}
+
+/// The file's song, genre and year (a library row).
+pub fn read_song(path: &Path) -> LocalSong {
     let file = tagged(path);
     let tag = file.as_ref().and_then(|f| f.primary_tag().or_else(|| f.first_tag()));
     let text = |v: Option<std::borrow::Cow<str>>| v.map(|s| s.trim().to_string()).filter(|s| !s.is_empty());
@@ -192,7 +212,7 @@ pub fn read(path: &Path) -> Track {
     let title = text(tag.and_then(|t| t.title()));
     // The name's artist only where its title is the song's (a title tag saying otherwise: the name is something else).
     let artist = text(tag.and_then(|t| t.artist())).or_else(|| name_artist.filter(|_| title.as_deref().is_none_or(|t| t.eq_ignore_ascii_case(&name_title))));
-    Track {
+    let track = Track {
         title: title.unwrap_or(name_title),
         artist: artist.unwrap_or_else(|| "Unknown artist".into()),
         album: text(tag.and_then(|t| t.album())),
@@ -202,7 +222,9 @@ pub fn read(path: &Path) -> Track {
         art: None,
         // Your own audio files.
         musicness: Some(crate::musicness::Musicness::Music),
-    }
+    };
+    // Read as the song editor reads them (`file_tags`).
+    LocalSong { track, genre: text(tag.and_then(|t| t.genre())), year: tag.and_then(|t| t.get_string(ItemKey::RecordingDate)).and_then(year_of) }
 }
 
 /// Embedded cover (front cover first, else any picture): bytes + MIME type.
@@ -390,6 +412,21 @@ pub(crate) mod tests {
     use super::*;
 
     #[test]
+    fn reads_genre_and_year() {
+        let dir = tempfile::tempdir().unwrap();
+        let p = dir.path().join("a.wav");
+        wav(&p);
+        let s = read_song(&p);
+        assert_eq!((s.genre, s.year), (None, None));
+        let mut tag = lofty::tag::Tag::new(lofty::tag::TagType::Id3v2);
+        tag.set_genre("Jazz".into());
+        tag.insert_text(ItemKey::RecordingDate, "1959-08-17".into());
+        tag.save_to_path(&p, lofty::config::WriteOptions::default()).unwrap();
+        let s = read_song(&p);
+        assert_eq!((s.genre.as_deref(), s.year, s.track.title.as_str()), (Some("Jazz"), Some(1959), "a"));
+    }
+
+    #[test]
     fn audio_by_extension() {
         assert!(is_audio(Path::new("C:/Music/a.MP3")));
         assert!(is_audio(Path::new("b.flac")));
@@ -423,7 +460,7 @@ pub(crate) mod tests {
         std::fs::create_dir(dir.path().join("Album")).unwrap();
         wav(&dir.path().join("Album").join("01 Intro.WAV"));
         std::fs::write(dir.path().join("cover.jpg"), b"x").unwrap();
-        let found = scan(&[dir.path().to_path_buf(), dir.path().join("missing")]);
+        let found: Vec<Track> = scan(&[dir.path().to_path_buf(), dir.path().join("missing")]).into_iter().map(|s| s.track).collect();
         assert_eq!(found.len(), 1);
         let t = &found[0];
         assert_eq!((t.title.as_str(), t.artist.as_str()), ("Intro", "Unknown artist"));
@@ -440,7 +477,7 @@ pub(crate) mod tests {
         wav(&alone);
         std::fs::write(dir.path().join("notes.txt"), b"x").unwrap();
         // The folder, a file on its own, the folder's file again, a text file, a file gone.
-        let found = scan(&[folder.clone(), alone, folder.join("Song.wav"), dir.path().join("notes.txt"), dir.path().join("gone.mp3")]);
+        let found: Vec<Track> = scan(&[folder.clone(), alone, folder.join("Song.wav"), dir.path().join("notes.txt"), dir.path().join("gone.mp3")]).into_iter().map(|s| s.track).collect();
         let mut titles: Vec<&str> = found.iter().map(|t| t.title.as_str()).collect();
         titles.sort_unstable();
         assert_eq!(titles, ["Alone", "Song"]);
@@ -512,7 +549,7 @@ pub(crate) mod tests {
         let mut files = Vec::new();
         walk(dir.path(), &mut files);
         let one_by_one: Vec<String> = files.iter().map(|(p, _)| read(p).title).collect();
-        let titles = |t: &[Track]| t.iter().map(|t| t.title.clone()).collect::<Vec<_>>();
+        let titles = |s: &[LocalSong]| s.iter().map(|s| s.track.title.clone()).collect::<Vec<_>>();
         assert_eq!(titles(&scan(&dirs)), one_by_one);
         // Tagged since (size changes): read again; deleted: gone; the rest as before.
         let p = dir.path().join("05.wav");

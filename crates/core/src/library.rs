@@ -1,3 +1,4 @@
+use crate::local::LocalSong;
 use crate::lyrics::{self, LyricHit, Lyrics};
 use crate::matching::{match_key, same_track};
 use crate::model::{Source, Track};
@@ -53,7 +54,7 @@ CREATE TABLE IF NOT EXISTS settings (
 ";
 
 /// Schema version this code writes (user_version after migrations).
-pub const SCHEMA_VERSION: i64 = 19;
+pub const SCHEMA_VERSION: i64 = 20;
 
 /// The library was made by a newer version of the app.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -89,7 +90,7 @@ pub fn now_ms() -> i64 {
     std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_millis() as i64).unwrap_or(0)
 }
 
-const TRACK_COLS: &str = "t.id, t.title, t.artist, t.album, t.duration_ms, t.isrc, t.art, t.added, t.musicness, t.added_at";
+const TRACK_COLS: &str = "t.id, t.title, t.artist, t.album, t.duration_ms, t.isrc, t.art, t.added, t.musicness, t.added_at, t.genre, t.year";
 
 /// Liked Music: last like on top, always.
 fn liked_music(source: Source, source_id: &str) -> bool {
@@ -188,6 +189,13 @@ pub struct LibraryTrack {
     /// When this PC's library got it (unix s). None = before v11 (2026-10-23): unknown.
     #[serde(rename = "addedAt")]
     pub added_at: Option<i64>,
+    /// A local file's genre and year (its tags, read at each scan). None for streamed songs: their services don't say.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[ts(optional)]
+    pub genre: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[ts(optional)]
+    pub year: Option<u32>,
     #[serde(flatten)]
     pub track: Track,
 }
@@ -227,14 +235,16 @@ pub enum PlaylistEdit {
     SetOrder { id: i64, newest_first: Option<bool> },
 }
 
-/// Row → track. Column 7 = ids JSON object (optional).
+/// Row → track (`TRACK_COLS`, then the ids JSON object, optional).
 fn to_track(r: &Row) -> rusqlite::Result<LibraryTrack> {
-    let ids: Option<String> = r.get(10).ok();
+    let ids: Option<String> = r.get(12).ok();
     let musicness: Option<String> = r.get(8)?;
     Ok(LibraryTrack {
         id: r.get(0)?,
         added: r.get(7)?,
         added_at: r.get(9)?,
+        genre: r.get(10)?,
+        year: r.get(11)?,
         track: Track {
             title: r.get(1)?,
             artist: r.get(2)?,
@@ -259,8 +269,8 @@ const CHANGE_LOG: &str = "
 CREATE TEMP TABLE IF NOT EXISTS changed (kind INTEGER NOT NULL, id INTEGER NOT NULL, artist TEXT NOT NULL, PRIMARY KEY (kind, id, artist)) WITHOUT ROWID;
 CREATE TEMP TRIGGER IF NOT EXISTS song_in AFTER INSERT ON tracks BEGIN INSERT INTO changed VALUES (0, new.id, '') ON CONFLICT DO NOTHING; END;
 CREATE TEMP TRIGGER IF NOT EXISTS song_set AFTER UPDATE ON tracks
-  WHEN (old.title, old.artist, old.album, old.duration_ms, old.isrc, old.art, old.added, old.added_at, old.musicness)
-    IS NOT (new.title, new.artist, new.album, new.duration_ms, new.isrc, new.art, new.added, new.added_at, new.musicness)
+  WHEN (old.title, old.artist, old.album, old.duration_ms, old.isrc, old.art, old.added, old.added_at, old.musicness, old.genre, old.year)
+    IS NOT (new.title, new.artist, new.album, new.duration_ms, new.isrc, new.art, new.added, new.added_at, new.musicness, new.genre, new.year)
   BEGIN
     INSERT INTO changed VALUES (0, new.id, '') ON CONFLICT DO NOTHING;
     INSERT INTO changed SELECT 0, old.id, old.artist WHERE old.artist IS NOT new.artist ON CONFLICT DO NOTHING;
@@ -491,6 +501,10 @@ impl Library {
             // v19, library at scale: a song's playlist rows found without a whole scan (removed, merged, and SQLite's check
             // of each deleted song), plays read by date.
             lib.db.execute_batch("BEGIN; CREATE INDEX IF NOT EXISTS playlist_tracks_track ON playlist_tracks (track_id); CREATE INDEX IF NOT EXISTS plays_started ON plays (started_at); PRAGMA user_version = 19; COMMIT;")?;
+        }
+        if lib.db.query_row("PRAGMA user_version", [], |r| r.get::<_, i64>(0))? < 20 {
+            // v20: local files' genre and year (their tags), filled by the next scan.
+            lib.db.execute_batch("BEGIN; ALTER TABLE tracks ADD COLUMN genre TEXT; ALTER TABLE tracks ADD COLUMN year INTEGER; PRAGMA user_version = 20; COMMIT;")?;
         }
         lib.db.execute_batch(CHANGE_LOG)?;
         // Statements on logged tables compile their triggers too: kept, not rebuilt per call.
@@ -880,6 +894,12 @@ impl Library {
     }
 
     /// A local file's tags rewritten by the user (Edit song info): its row follows (rescans only fill gaps).
+    /// A local file's genre and year, as its tags say now (a scan, Edit song info). Unchanged: nothing written.
+    pub fn set_genre_year(&self, id: i64, genre: Option<&str>, year: Option<u32>) -> Result<()> {
+        self.db.prepare_cached("UPDATE tracks SET genre = ?1, year = ?2 WHERE id = ?3 AND (genre, year) IS NOT (?1, ?2)")?.execute(params![genre, year, id])?;
+        Ok(())
+    }
+
     pub fn set_details(&self, id: i64, title: &str, artist: &str, album: Option<&str>) -> Result<()> {
         let n = self.db.execute("UPDATE tracks SET title = ?1, artist = ?2, album = ?3, match_key = ?4 WHERE id = ?5", params![title, artist, album, match_key(title, artist), id])?;
         anyhow::ensure!(n == 1, "Song not found");
@@ -947,12 +967,13 @@ impl Library {
     }
 
     /// Local files mirror a fresh scan: upsert all (links to known tracks), drop vanished paths and orphan rows.
-    pub fn replace_local(&self, tracks: &[Track]) -> Result<usize> {
+    pub fn replace_local(&self, songs: &[LocalSong]) -> Result<usize> {
         self.tx(|| {
-            let tracks: Vec<&Track> = tracks.iter().filter(|t| !self.is_removed(t).unwrap_or(false)).collect();
-            let keep: BTreeSet<&str> = tracks.iter().filter_map(|t| t.ids.get(&Source::Local).map(String::as_str)).collect();
-            for t in &tracks {
-                self.upsert_track(t)?;
+            let songs: Vec<&LocalSong> = songs.iter().filter(|s| !self.is_removed(&s.track).unwrap_or(false)).collect();
+            let keep: BTreeSet<&str> = songs.iter().filter_map(|s| s.track.ids.get(&Source::Local).map(String::as_str)).collect();
+            for s in &songs {
+                let id = self.upsert_track(&s.track)?;
+                self.set_genre_year(id, s.genre.as_deref(), s.year)?;
             }
             let old: Vec<String> = {
                 let mut stmt = self.db.prepare("SELECT source_id FROM track_ids WHERE source = 'local'")?;
@@ -1773,10 +1794,26 @@ mod tests {
     }
 
     #[test]
+    fn local_files_keep_their_genre_and_year() -> Result<()> {
+        let lib = Library::in_memory()?;
+        let file = |genre: Option<&str>, year| LocalSong { track: Track { ids: [(Source::Local, "C:/Music/1.flac".into())].into(), ..song(1) }, genre: genre.map(Into::into), year };
+        lib.replace_local(&[file(Some("Jazz"), Some(1959))])?;
+        let t = &lib.tracks()?[0];
+        assert_eq!((t.genre.as_deref(), t.year), (Some("Jazz"), Some(1959)));
+        // Tags taken off the file: the next scan takes them off the song, and the interface gets no empty field.
+        lib.replace_local(&[file(None, None)])?;
+        let t = &lib.tracks()?[0];
+        assert_eq!((t.genre.as_deref(), t.year), (None, None));
+        let json = serde_json::to_value(t)?;
+        assert!(json.get("genre").is_none() && json.get("year").is_none() && json.get("title").is_some());
+        Ok(())
+    }
+
+    #[test]
     fn a_vanished_file_held_by_a_playlist_is_sourceless() -> Result<()> {
         let lib = Library::in_memory()?;
         let file = |n: u32| Track { ids: [(Source::Local, format!("C:/Music/{n}.mp3"))].into(), ..song(n) };
-        lib.replace_local(&[file(1), file(2)])?;
+        lib.replace_local(&[file(1).into(), file(2).into()])?;
         let kept = lib.tracks()?.into_iter().find(|t| t.track.title == "Song 1").unwrap().id;
         let id = lib.edit_playlist(PlaylistEdit::Create { name: "Mine".into() })?.unwrap();
         lib.edit_playlist(PlaylistEdit::Add { id, track_ids: vec![kept] })?;
@@ -1928,18 +1965,18 @@ mod tests {
             ..Default::default()
         };
         let lucky = file("C:/m/a.flac", "Get Lucky", Some("USQX91300108"));
-        assert_eq!(lib.replace_local(&[lucky.clone(), file("C:/m/b.flac", "Contact", None)])?, 2);
+        assert_eq!(lib.replace_local(&[lucky.clone().into(), file("C:/m/b.flac", "Contact", None).into()])?, 2);
         let all = lib.tracks()?;
         assert_eq!(all.len(), 2);
         assert!(all.iter().any(|t| t.track.ids.len() == 2), "file linked to Spotify track");
-        lib.replace_local(std::slice::from_ref(&lucky))?;
+        lib.replace_local(&[lucky.clone().into()])?;
         let all = lib.tracks()?;
         assert_eq!(all.len(), 1, "vanished file's orphan row removed");
         assert_eq!(all[0].track.ids.len(), 2);
         // Tags rewritten by the user: the row follows, a later rescan keeps it.
         let id = all[0].id;
         lib.set_details(id, "Get Lucky (Radio Edit)", "Daft Punk feat. Pharrell", None)?;
-        lib.replace_local(std::slice::from_ref(&Track { title: "Get Lucky (Radio Edit)".into(), artist: "Daft Punk feat. Pharrell".into(), ..lucky }))?;
+        lib.replace_local(&[Track { title: "Get Lucky (Radio Edit)".into(), artist: "Daft Punk feat. Pharrell".into(), ..lucky }.into()])?;
         let t = lib.tracks()?.into_iter().find(|t| t.id == id).unwrap().track;
         assert_eq!((t.title.as_str(), t.artist.as_str()), ("Get Lucky (Radio Edit)", "Daft Punk feat. Pharrell"));
         assert!(lib.set_details(9_999, "a", "b", None).is_err());
@@ -2579,7 +2616,7 @@ mod tests {
         // Songs leaving: removed, merged, local files gone, a playlist synced again.
         op!("remove a song", lib.remove_track(scale_row(7, 0))?);
         op!("merge", lib.merge_tracks(25_000, &[25_001, fresh])?);
-        op!("rescan local files", lib.replace_local(&(51..=2_000).map(scale_song).collect::<Vec<_>>())?);
+        op!("rescan local files", lib.replace_local(&(51..=2_000).map(scale_song).map(LocalSong::from).collect::<Vec<_>>())?);
         let mut eight: Vec<Track> = (1..250).map(|k| scale_song(scale_row(8, k))).collect();
         eight.push(scale_song(40_000));
         op!("sync a playlist", lib.save_playlist(Source::Youtube, "PL8", "Mix 8", &eight)?);

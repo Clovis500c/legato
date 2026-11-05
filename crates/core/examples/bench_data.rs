@@ -81,6 +81,7 @@ fn main() -> Result<()> {
         .collect::<Result<Vec<_>>>()?;
 
     let lib = Library::open(&db)?;
+    let tracks: Vec<music_core::local::LocalSong> = tracks.into_iter().map(Into::into).collect();
     ensure!(lib.replace_local(&tracks)? == songs, "the library merged some songs");
     let ids: Vec<i64> = lib.tracks()?.iter().map(|t| t.id).collect();
     for n in 0..PLAYLISTS.min(ids.len()) {

@@ -2144,6 +2144,12 @@ const nl: Record<string, string> = {
   'Your listening personality': 'Je luisterpersoonlijkheid',
   'Your recap': 'Jouw terugblik',
   'Back to stats': 'Terug naar statistieken',
+  'Genres': 'Genres',
+  '{n} genre': '{n} genre',
+  '{n} genres': '{n} genres',
+  'Year (oldest first)': 'Jaar (oudste)',
+  'Year (newest first)': 'Jaar (nieuwste)',
+  'Genre (A–Z)': 'Genre (A–Z)',
 }
 
 export default nl

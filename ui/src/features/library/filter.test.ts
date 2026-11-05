@@ -96,6 +96,14 @@ describe('albums and artists', () => {
     expect(sortTracks(lib, 'title').map((x) => x.title)[0]).toBe('Get Lucky')
   })
 
+  it('sorts by year and genre, untagged songs last', () => {
+    const tagged = lib.map((x) => (x.id === 3 ? { ...x, year: 2009, genre: 'Indie' } : x.id === 1 ? { ...x, year: 2013, genre: 'disco' } : x))
+    const ids = (s: Parameters<typeof sortTracks>[1]) => sortTracks(tagged, s).map((x) => x.id)
+    expect(ids('year')).toEqual([3, 1, 2, 4])
+    expect(ids('year-new')).toEqual([1, 3, 2, 4])
+    expect(ids('genre')).toEqual([1, 3, 4, 2])
+  })
+
   it('YouTube-like sorts: added, plays, alphabet both ways, length, random', () => {
     const ids = (s: Parameters<typeof sortTracks>[1], o?: Parameters<typeof sortTracks>[2]) => sortTracks(lib, s, o).map((x) => x.id)
     expect(ids('added-old')).toEqual([1, 2, 3, 4])

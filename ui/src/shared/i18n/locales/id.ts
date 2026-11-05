@@ -2144,6 +2144,12 @@ const id: Record<string, string> = {
   'Your listening personality': 'Kepribadian mendengarkanmu',
   'Your recap': 'Rekapmu',
   'Back to stats': 'Kembali ke statistik',
+  'Genres': 'Genre',
+  '{n} genre': '{n} genre',
+  '{n} genres': '{n} genre',
+  'Year (oldest first)': 'Tahun (terlama)',
+  'Year (newest first)': 'Tahun (terbaru)',
+  'Genre (A–Z)': 'Genre (A–Z)',
 }
 
 export default id

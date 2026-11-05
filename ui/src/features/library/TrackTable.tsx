@@ -33,8 +33,8 @@ const PHONE_ROW = 60
 const order: Source[] = ['spotify', 'youtube', 'apple', 'local']
 const onControl = (e: React.MouseEvent) => e.target instanceof Element && !!e.target.closest('button, a, input, [role="menu"], [role="slider"]')
 // Title, artist and album share the room 2:1:1, so a narrow window never squeezes the title out.
-const width: Record<Column, string> = { album: 'minmax(0,1fr)', sources: '76px', plays: '52px', rating: '72px', added: '92px', duration: '52px' }
-const head: Record<Column, string> = { album: msg('Album'), sources: msg('Sources'), plays: msg('Plays'), rating: msg('Rating'), added: msg('Date added'), duration: msg('Duration') }
+const width: Record<Column, string> = { album: 'minmax(0,1fr)', year: '44px', genre: 'minmax(0,0.6fr)', sources: '76px', plays: '52px', rating: '72px', added: '92px', duration: '52px' }
+const head: Record<Column, string> = { album: msg('Album'), year: msg('Year'), genre: msg('Genre'), sources: msg('Sources'), plays: msg('Plays'), rating: msg('Rating'), added: msg('Date added'), duration: msg('Duration') }
 /** Header click sorts: first click → first sort, again → the second (reverse). Sources can't sort. */
 /** "23 Oct", "12 Mar 2025"; nothing when unknown (added before the app kept dates). */
 const addedDate = (at?: number | null) => {
@@ -57,7 +57,7 @@ export function columnsMenu(extra: MenuEntry[] = []): MenuEntry[] {
     ...extra,
   ]
 }
-const headSorts: Partial<Record<Column | 'title', [Sort, Sort]>> = { title: ['title', 'title-desc'], album: ['album', 'album'], plays: ['most-played', 'most-played'], rating: ['rating', 'rating'], added: ['added-new', 'added-old'], duration: ['duration', 'duration-short'] }
+const headSorts: Partial<Record<Column | 'title', [Sort, Sort]>> = { title: ['title', 'title-desc'], album: ['album', 'album'], year: ['year', 'year-new'], genre: ['genre', 'genre'], plays: ['most-played', 'most-played'], rating: ['rating', 'rating'], added: ['added-new', 'added-old'], duration: ['duration', 'duration-short'] }
 
 /**
  * Virtualized: only visible rows hit the DOM, so 50k tracks stay smooth. editId = custom playlist shown unfiltered
@@ -148,6 +148,14 @@ export function TrackTable({ tracks, empty, editId, rowActions, sort, onSort, fo
     c === 'album' ? (
       <span key={c} role="gridcell" className="truncate text-sm text-ink-2">
         {t.album}
+      </span>
+    ) : c === 'year' ? (
+      <span key={c} role="gridcell" className="text-right text-xs text-ink-3 tabular-nums">
+        {t.year}
+      </span>
+    ) : c === 'genre' ? (
+      <span key={c} role="gridcell" className="truncate text-sm text-ink-2">
+        {t.genre}
       </span>
     ) : c === 'plays' ? (
       <span key={c} role="gridcell" className="text-right text-xs text-ink-3 tabular-nums">

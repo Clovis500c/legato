@@ -14,7 +14,7 @@ import { pickIn, type Browsed, type How, type Keyed, type Pane as Column, type P
 const ROW = 28
 
 /** What the panes picked, kept while the app runs: another page and back finds it. */
-export const useBrowse = create<Picks>(() => ({ artists: [], albums: [] }))
+export const useBrowse = create<Picks>(() => ({ genres: [], artists: [], albums: [] }))
 
 /** Songs' Display options: the column browser on or off. */
 export function browserEntry(): MenuEntry {
@@ -23,7 +23,7 @@ export function browserEntry(): MenuEntry {
 }
 
 /**
- * Songs' column browser: artists, then their albums; the list below shows what's picked. Like the list: Ctrl / Shift
+ * Songs' column browser: genres when songs have one, artists, then their albums; the list below shows what's picked. Like the list: Ctrl / Shift
  * pick several, ↑ ↓ Home End move, letters jump to a name, Esc back to All, double-click or Enter plays, right-click
  * gives the songs' menu, a drag takes them to a playlist.
  */
@@ -32,7 +32,8 @@ export function ColumnBrowser({ b, play }: { b: Browsed; play: (tracks: LibraryT
   const one = b.artists.on.size === 1
   return (
     // Shorter on a short window: the list keeps some room (600 px tall at the least).
-    <div className="mb-3 grid h-[clamp(6.5rem,20vh,11rem)] shrink-0 grid-cols-2 gap-3">
+    <div className={`mb-3 grid h-[clamp(6.5rem,20vh,11rem)] shrink-0 gap-3 ${b.genres ? 'grid-cols-3' : 'grid-cols-2'}`}>
+      {b.genres && <Pane label={tr('Genres')} all={trn(b.genres.items.length, '{n} genre', '{n} genres')} column={b.genres} name={(g) => g.genre} onPick={(genres) => useBrowse.setState({ genres, artists: [], albums: [] })} play={play} songs={b.songs} />}
       <Pane label={tr('Artists')} all={trn(b.artists.items.length, '{n} artist', '{n} artists')} column={b.artists} name={(g) => artistName(g.artist)} onPick={(artists) => useBrowse.setState({ artists, albums: [] })} play={play} songs={b.songs} />
       <Pane label={tr('Albums')} all={trn(b.albums.items.length, '{n} album', '{n} albums')} column={b.albums} name={(g) => g.album} sub={one ? undefined : (g) => artistName(g.artist)} onPick={(albums) => useBrowse.setState({ albums })} play={play} songs={b.songs} />
     </div>

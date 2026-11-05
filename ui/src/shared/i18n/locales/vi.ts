@@ -2144,6 +2144,12 @@ const vi: Record<string, string> = {
   'Your listening personality': 'Kiểu người nghe của bạn',
   'Your recap': 'Tổng kết của bạn',
   'Back to stats': 'Quay lại thống kê',
+  'Genres': 'Thể loại',
+  '{n} genre': '{n} thể loại',
+  '{n} genres': '{n} thể loại',
+  'Year (oldest first)': 'Năm (cũ nhất)',
+  'Year (newest first)': 'Năm (mới nhất)',
+  'Genre (A–Z)': 'Thể loại (A–Z)',
 }
 
 export default vi

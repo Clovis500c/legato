@@ -2144,6 +2144,12 @@ const ja: Record<string, string> = {
   'Your listening personality': 'あなたのリスナータイプ',
   'Your recap': 'あなたのまとめ',
   'Back to stats': '統計に戻る',
+  'Genres': 'ジャンル',
+  '{n} genre': '{n}ジャンル',
+  '{n} genres': '{n}ジャンル',
+  'Year (oldest first)': '年（古い順）',
+  'Year (newest first)': '年（新しい順）',
+  'Genre (A–Z)': 'ジャンル（A–Z）',
 }
 
 export default ja

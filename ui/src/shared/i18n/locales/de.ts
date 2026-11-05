@@ -2144,6 +2144,12 @@ const de: Record<string, string> = {
   'Your listening personality': 'Deine Hörpersönlichkeit',
   'Your recap': 'Dein Rückblick',
   'Back to stats': 'Zurück zu den Statistiken',
+  'Genres': 'Genres',
+  '{n} genre': '{n} Genre',
+  '{n} genres': '{n} Genres',
+  'Year (oldest first)': 'Jahr (älteste)',
+  'Year (newest first)': 'Jahr (neueste)',
+  'Genre (A–Z)': 'Genre (A–Z)',
 }
 
 export default de

@@ -2144,6 +2144,12 @@ const ru: Record<string, string> = {
   'Your listening personality': 'Твой музыкальный характер',
   'Your recap': 'Твои итоги',
   'Back to stats': 'Назад к статистике',
+  'Genres': 'Жанры',
+  '{n} genre': '{n} жанр',
+  '{n} genres': 'Жанров: {n}',
+  'Year (oldest first)': 'Год (старые)',
+  'Year (newest first)': 'Год (новые)',
+  'Genre (A–Z)': 'Жанр (А–Я)',
 }
 
 export default ru

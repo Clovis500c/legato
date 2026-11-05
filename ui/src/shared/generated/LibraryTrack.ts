@@ -10,7 +10,11 @@ added: number,
 /**
  * When this PC's library got it (unix s). None = before v11 (2026-10-23): unknown.
  */
-addedAt: number | null, title: string, artist: string, album: string | null, durationMs: number | null, isrc: string | null, ids: { [key in Source]?: string }, 
+addedAt: number | null, 
+/**
+ * A local file's genre and year (its tags, read at each scan). None for streamed songs: their services don't say.
+ */
+genre?: string, year?: number, title: string, artist: string, album: string | null, durationMs: number | null, isrc: string | null, ids: { [key in Source]?: string }, 
 /**
  * Cover art URL (https, served to the UI through the app's image cache).
  */

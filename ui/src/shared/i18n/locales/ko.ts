@@ -2144,6 +2144,12 @@ const ko: Record<string, string> = {
   'Your listening personality': '나의 감상 유형',
   'Your recap': '나의 결산',
   'Back to stats': '통계로 돌아가기',
+  'Genres': '장르',
+  '{n} genre': '장르 {n}개',
+  '{n} genres': '장르 {n}개',
+  'Year (oldest first)': '연도 (오래된순)',
+  'Year (newest first)': '연도 (최신순)',
+  'Genre (A–Z)': '장르 (A–Z)',
 }
 
 export default ko

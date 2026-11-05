@@ -235,6 +235,8 @@ Relaunch log (newest last):
 - 2026-11-05: Stats › Your recap: a year or a month as cards (time, top artist, songs, album, a song a month, habits,
   a listening personality), each one a 1080 × 1920 picture to copy or save. Named "Recap", on demand only (decided
   alone). Page headers wrap their actions under the title when they don't fit.
+- 2026-11-05: local files' genre and year, from their tags (schema v20): Year and Genre columns, sorts, a Genres
+  pane in the column browser. Streamed songs have none yet; BPM / key and smart rules stay open.
 
 ## Mobile app and devices sync (the owner's ask, 2026-11-02 afternoon; in progress)
 

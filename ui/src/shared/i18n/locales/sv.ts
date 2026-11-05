@@ -2144,6 +2144,12 @@ const sv: Record<string, string> = {
   'Your listening personality': 'Din lyssnarpersonlighet',
   'Your recap': 'Din sammanfattning',
   'Back to stats': 'Tillbaka till statistiken',
+  'Genres': 'Genrer',
+  '{n} genre': '{n} genre',
+  '{n} genres': '{n} genrer',
+  'Year (oldest first)': 'År (äldsta)',
+  'Year (newest first)': 'År (senaste)',
+  'Genre (A–Z)': 'Genre (A–Ö)',
 }
 
 export default sv

@@ -2144,6 +2144,12 @@ const tr: Record<string, string> = {
   'Your listening personality': 'Dinleme kişiliğin',
   'Your recap': 'Özetin',
   'Back to stats': 'İstatistiklere dön',
+  'Genres': 'Türler',
+  '{n} genre': '{n} tür',
+  '{n} genres': '{n} tür',
+  'Year (oldest first)': 'Yıl (en eski)',
+  'Year (newest first)': 'Yıl (en yeni)',
+  'Genre (A–Z)': 'Tür (A–Z)',
 }
 
 export default tr

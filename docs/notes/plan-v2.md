@@ -424,9 +424,17 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       title was cut to "Your …") and wraps them on a phone; the share card's wrapping keeps no-break spaces. Seen in
       the demo, desktop and phone: the cards, covers, arrows. Unseen: a real save and copy in the app, a real year
       of plays, the APK.)
-- [ ] `M` Genre / year / BPM / key tags stored (mixes, smart playlists, DJ-like transitions by BPM).
-- [ ] `M` Mixes: genre / year tags (not stored yet), Last.fm "Discoveries" (user's key); "Never in mixes" on a discovered
-      song (not in the library: no row to hold the choice).
+- [x] `M` Genre and year stored, local files (2026-11-05): read from their tags at each scan and after the song
+      editor saves (`local::read_song`, as `file_tags` reads them), kept in `tracks` (schema v20) and given on
+      `LibraryTrack` only. Shown as Year and Genre columns (Settings › Library columns; a narrow window drops them
+      before the album), sorts by year both ways and genre (in the sort menu once a song has one), and a Genres pane
+      before Artists in the column browser. Decided alone: kept off `Track` (every service's song), the year as a
+      column and sorts rather than a pane, a song's first genre as written. Seen in the demo (its local songs got
+      tags). Unseen: real tagged files in the app.
+- [ ] `M` BPM / key tags; genre / year of streamed songs (Spotify's export has a release date; iTunes a genre);
+      smart playlist rules on them (mixes, DJ-like transitions by BPM).
+- [ ] `M` Mixes: genre / year tags (stored for local files only), Last.fm "Discoveries" (user's key); "Never in mixes"
+      on a discovered song (not in the library: no row to hold the choice).
 - [ ] `M` Internet radio stations (Radio Browser's open directory).
 - [ ] `M` Release radar: new releases from artists in the library (YouTube Music / MusicBrainz).
 - [ ] `M` Credits and artist pages: who wrote / produced (MusicBrainz), a short bio (Wikipedia), links out.
@@ -439,8 +447,8 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       them, A to Z with their counts. A pick narrows the next pane and the list (the hidden videos' fold too), the
       search and the source chips narrow the panes; Ctrl / Shift pick several, arrows, letters jump to a name (the
       same letter again: the next one), Esc = All, double-click or Enter plays, right-click = the songs' menu, a drag
-      takes them to a playlist (`features/library/browse.ts`, `ColumnBrowser.tsx`). Waits for "Genre / year / BPM /
-      key tags stored": genre and year panes, album groups in the list in track order. Unseen in the real app.
+      takes them to a playlist (`features/library/browse.ts`, `ColumnBrowser.tsx`). A Genres pane first when a song
+      has a genre (local files, 2026-11-05). Left: album groups in the list in track order. Unseen in the real app.
 - [ ] `M` Long YouTube mixes and DJ sets split by their chapters (or timestamps in the description / pinned comment):
       each part a song in Up next, skip within the video; Music Detector names unlabelled parts on request.
 - [x] Local files follow Windows' default output: a new default (picked, or the speakers taking over) gets the song at

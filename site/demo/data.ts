@@ -38,6 +38,9 @@ function drawn({ colors: [bg, ink, soft], shape }: Album) {
 
 const COVERS = ALBUMS.map(drawn)
 
+// Genre and year, per album: only songs with a local file show them, as in the app (local files' tags).
+const TAGS: [string, number][] = [['Folk', 2019], ['Indie rock', 2021], ['Americana', 2017], ['Afropop', 2022], ['Electronic', 2020], ['Folk', 2016], ['Indie pop', 2023], ['Synth-pop', 2018], ['Ambient', 2024], ['Post-rock', 2015], ['Folk', 2014], ['Indie pop', 2012]]
+
 // Each song's sources: a good part on two services, to show one track for both.
 const SOURCES: Source[][] = [['youtube', 'spotify'], ['youtube'], ['spotify'], ['local'], ['apple'], ['youtube', 'apple'], ['youtube']]
 
@@ -52,6 +55,7 @@ export const TRACKS: LibraryTrack[] = ALBUMS.flatMap((a, n) => a.songs.map((titl
   isrc: null,
   ids: Object.fromEntries(SOURCES[i % SOURCES.length].map((s) => [s, `demo-${i + 1}`])),
   art: `demo:${n}`,
+  ...(SOURCES[i % SOURCES.length].includes('local') ? { genre: TAGS[n % TAGS.length][0], year: TAGS[n % TAGS.length][1] } : {}),
 }))
 
 const PLAYLISTS: LibraryPlaylist[] = LISTS.map((name, i) => ({ id: i + 1, source: i % 2 ? 'spotify' : 'youtube', sourceId: `demo-${i + 1}`, name, trackCount: 9 + i, custom: false, newestFirst: false, orderManual: false }))

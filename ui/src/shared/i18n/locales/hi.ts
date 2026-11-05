@@ -2144,6 +2144,12 @@ const hi: Record<string, string> = {
   'Your listening personality': 'आपकी सुनने की पर्सनैलिटी',
   'Your recap': 'आपका रीकैप',
   'Back to stats': 'आंकड़ों पर वापस जाएं',
+  'Genres': 'शैलियाँ',
+  '{n} genre': '{n} शैली',
+  '{n} genres': '{n} शैलियाँ',
+  'Year (oldest first)': 'वर्ष (सबसे पुराने)',
+  'Year (newest first)': 'वर्ष (सबसे नए)',
+  'Genre (A–Z)': 'शैली (A–Z)',
 }
 
 export default hi
