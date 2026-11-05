@@ -2047,6 +2047,11 @@ const it: Record<string, string> = {
   'Theme colors': 'Colori del tema',
   'Vintage': 'Vintage',
   'dial skin vintage retro analog backlit hifi needles': 'quadrante aspetto vintage retrò analogico retroilluminato hifi lancette',
+  'Spectrogram colors': 'Colori dello spettrogramma',
+  'In the theme’s colors, or a color map as in sound tools: dark when quiet, bright when loud': 'Con i colori del tema, o una mappa di colori come negli strumenti audio: scura quando è piano, luminosa quando è forte',
+  'Magma': 'Magma',
+  'Viridis': 'Viridis',
+  'colormap color map magma viridis heat waterfall palette': 'mappa di colori colore magma viridis calore cascata tavolozza spettrogramma',
 }
 
 export default it

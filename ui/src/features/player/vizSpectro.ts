@@ -1,7 +1,9 @@
 /**
- * The spectrogram look's numbers (vizPaint.ts draws them), pure: the colour map, the fixed scroll speed, one column
+ * The spectrogram look's numbers (vizPaint.ts draws them), pure: the colour maps, the fixed scroll speed, one column
  * of pixels from the columns' levels.
  */
+
+import type { VizColormap } from '../../shared/theme/theme'
 
 /** Scroll speed, CSS px a second (half of it in reduced motion). The same at any refresh rate. */
 export const SCROLL = 90
@@ -20,6 +22,32 @@ export function colorMap(rgb: readonly [number, number, number] = [128, 128, 128
     // A little above linear: the quiet end stays visible against the clear.
     const a = Math.round((i / 255) ** 0.8 * 255)
     // Straight colour: putImageData takes it so.
+    out[i] = ((a << 24) | (b << 16) | (g << 8) | r) >>> 0
+  }
+  return out
+}
+
+/**
+ * The maps the spectrogram can take instead of the theme's ink (Settings): matplotlib's Magma and Viridis (CC0), ten
+ * even samples each, mixed in between. Dark for quiet, bright for loud, each step of level a step of lightness.
+ */
+export const COLORMAPS: Record<Exclude<VizColormap, 'theme'>, readonly string[]> = {
+  magma: ['#000004', '#180f3d', '#440f76', '#721f81', '#9e2f7f', '#cd4071', '#f1605d', '#fd9668', '#feca8d', '#fcfdbf'],
+  viridis: ['#440154', '#482878', '#3e4989', '#31688e', '#26828e', '#1f9e89', '#35b779', '#6ece58', '#b5de2b', '#fde725'],
+}
+
+/** Level at which a named map is opaque: under it, fading to clear at silence, so the strip still sits on the page. */
+const FADE_IN = 0.25
+
+/** A named map's 256 steps, packed as `colorMap`'s. */
+export function namedMap(name: Exclude<VizColormap, 'theme'>): Uint32Array {
+  const stops = COLORMAPS[name].map((hex) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16)))
+  const out = new Uint32Array(256)
+  for (let i = 0; i < 256; i++) {
+    const t = (i / 255) * (stops.length - 1)
+    const k = Math.min(stops.length - 2, Math.floor(t))
+    const [r, g, b] = stops[k].map((v, c) => Math.round(v + (stops[k + 1][c] - v) * (t - k)))
+    const a = Math.round(Math.min(1, i / 255 / FADE_IN) * 255)
     out[i] = ((a << 24) | (b << 16) | (g << 8) | r) >>> 0
   }
   return out

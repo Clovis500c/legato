@@ -9,7 +9,7 @@ import { pickFile, saveFile } from '../../shared/files'
 import { formatBytes, formatCount, timeAgo } from '../../shared/format'
 import { PRIVACY_PAGE } from '../../shared/links'
 import { byVia, countText, VIA_LABELS, WHY_LABELS } from './privacy'
-import { ACCENTS, ADAPTIVE_LEVELS, COLUMNS, COVER_CACHE_MB, DEFAULTS, DJ_FRESH, DJ_GAPS, VISUALIZER_STYLES, VIZ_BANDINGS, VIZ_COLORS, VIZ_FACES, VIZ_GRADIENTS, VIZ_WEIGHTINGS, type AdaptiveLevel, type Column, type Settings } from '../../shared/theme/theme'
+import { ACCENTS, ADAPTIVE_LEVELS, COLUMNS, COVER_CACHE_MB, DEFAULTS, DJ_FRESH, DJ_GAPS, VISUALIZER_STYLES, VIZ_BANDINGS, VIZ_COLORMAPS, VIZ_COLORS, VIZ_FACES, VIZ_GRADIENTS, VIZ_WEIGHTINGS, type AdaptiveLevel, type Column, type Settings } from '../../shared/theme/theme'
 import { Button } from '../../shared/ui/Button'
 import { Led, Segmented, Toggle } from '../../shared/ui/controls'
 import { PageHeader } from '../../shared/ui/PageHeader'
@@ -17,7 +17,7 @@ import { onMenu } from '../../shared/ui/ContextMenu'
 import { curveLabels } from '../player/fade'
 import { usePlayer } from '../player/store'
 import { useLive } from '../player/live'
-import { VISUALIZER_LABELS, VIZ_BANDING_LABELS, VIZ_COLOR_LABELS, VIZ_FACE_LABELS, VIZ_GRADIENT_LABELS, VIZ_WEIGHTING_LABELS } from '../player/vizLooks'
+import { VISUALIZER_LABELS, VIZ_BANDING_LABELS, VIZ_COLOR_LABELS, VIZ_COLORMAP_LABELS, VIZ_FACE_LABELS, VIZ_GRADIENT_LABELS, VIZ_WEIGHTING_LABELS } from '../player/vizLooks'
 import { needleLook } from '../player/vizVu'
 import { SourcesView } from '../sources/SourcesView'
 import { SyncSection } from '../syncmode/SyncSection'
@@ -498,6 +498,11 @@ function SoundGroup() {
         {s.visualizer && needleLook(s.visualizerStyle) && (
           <Row setting="visualizerFace" label={msg('Meter face')} sub={tr('The needles’ dial: in the theme’s colors, or a warm backlit face like an old hi-fi')}>
             <Segmented label={tr('Meter face')} value={s.visualizerFace} onChange={(visualizerFace) => update({ visualizerFace })} options={VIZ_FACES.map((v) => ({ value: v, label: tr(VIZ_FACE_LABELS[v]) }))} />
+          </Row>
+        )}
+        {s.visualizer && s.visualizerStyle === 'spectrogram' && (
+          <Row setting="visualizerColormap" label={msg('Spectrogram colors')} sub={tr('In the theme’s colors, or a color map as in sound tools: dark when quiet, bright when loud')}>
+            <Segmented label={tr('Spectrogram colors')} value={s.visualizerColormap} onChange={(visualizerColormap) => update({ visualizerColormap })} options={VIZ_COLORMAPS.map((v) => ({ value: v, label: tr(VIZ_COLORMAP_LABELS[v]) }))} />
           </Row>
         )}
         {s.visualizer && (

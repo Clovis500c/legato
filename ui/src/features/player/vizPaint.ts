@@ -1,4 +1,4 @@
-import type { VisualizerStyle, VizBanding, VizFace, VizGradient, VizWeighting } from '../../shared/theme/theme'
+import type { VisualizerStyle, VizBanding, VizColormap, VizFace, VizGradient, VizWeighting } from '../../shared/theme/theme'
 import { capSegment, levelOf, litSegments } from './ledBars'
 import { bandCount, DB_MARKS, FREQ_MARKS, framesFor, freqAt } from './vizBands'
 import { createBeat } from './vizBeat'
@@ -8,7 +8,7 @@ import { LOUD_MARKS, LOUD_WORDS, loudPos, loudText, type LoudReading, type LoudW
 import { createParticles, moodOf } from './vizParticles'
 import { createScene } from './vizScene'
 import { monoWave, SPAN, trigger } from './vizScope'
-import { colorMap, fillColumn, rowMix, SCROLL, SCROLL_CALM, scrollBy } from './vizSpectro'
+import { colorMap, fillColumn, namedMap, rowMix, SCROLL, SCROLL_CALM, scrollBy } from './vizSpectro'
 import { createVu, needleLook, ppmPos, PPM_MARKS, PPM_RED, vuPos, VU_MARKS } from './vizVu'
 import { VIZ_WAVE } from './vizUnpack'
 import { correlation, easeCorrelation, vectorPoints } from './vizVector'
@@ -79,6 +79,8 @@ export function createPainter(canvas: OffscreenCanvas) {
   let dialMap: OffscreenCanvas | null = null
   let strip: { img: ImageData; px: Uint32Array; mix: ReturnType<typeof rowMix> } | null = null
   let map = colorMap()
+  // Whose map that is: the theme's ink or a named one; null = make it again.
+  let tones: VizColormap | null = null
   const acc = { v: 0 }
   let scene = createScene(columnsFor(0), false)
   let rows: LedRows = { y: [], h: [] }
@@ -788,7 +790,7 @@ export function createPainter(canvas: OffscreenCanvas) {
       dpr = ratio
       layout()
     },
-    set(next: VisualizerStyle, calmer: boolean, color: string, alarm = WARN, weigh: VizWeighting = 'flat', grad: VizGradient = 'none', colors: Stops = [], bands: VizBanding = 'sixth', glossy = false, second = '', said: LoudWords = LOUD_WORDS, dialFace: VizFace = 'theme') {
+    set(next: VisualizerStyle, calmer: boolean, color: string, alarm = WARN, weigh: VizWeighting = 'flat', grad: VizGradient = 'none', colors: Stops = [], bands: VizBanding = 'sixth', glossy = false, second = '', said: LoudWords = LOUD_WORDS, dialFace: VizFace = 'theme', palette: VizColormap = 'theme') {
       words = said
       skin = dialFace
       // VU and PPM needles move by other rules: new ones when the look changes between them.
@@ -818,8 +820,12 @@ export function createPainter(canvas: OffscreenCanvas) {
       if ((color || '#888') !== ink || !inkRgb) {
         ink = color || '#888'
         inkRgb = rgbOf(ink)
-        map = colorMap(inkRgb)
         dots = []
+        tones = null
+      }
+      if (palette !== tones) {
+        tones = palette
+        map = palette === 'theme' ? colorMap(inkRgb) : namedMap(palette)
       }
       warn = alarm || WARN
       if (restart) cols = 0

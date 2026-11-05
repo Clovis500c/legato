@@ -2047,6 +2047,11 @@ const ja: Record<string, string> = {
   'Theme colors': 'テーマの色',
   'Vintage': 'ヴィンテージ',
   'dial skin vintage retro analog backlit hifi needles': '盤面 スキン ヴィンテージ レトロ アナログ dial skin vintage retro analog hifi',
+  'Spectrogram colors': 'スペクトログラムの色',
+  'In the theme’s colors, or a color map as in sound tools: dark when quiet, bright when loud': 'テーマの色か、音響ツールのようなカラーマップ：静かな音は暗く、大きな音は明るく',
+  'Magma': 'Magma',
+  'Viridis': 'Viridis',
+  'colormap color map magma viridis heat waterfall palette': 'カラーマップ 色 マグマ magma viridis ヒート ウォーターフォール パレット スペクトログラム',
 }
 
 export default ja

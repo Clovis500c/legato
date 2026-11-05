@@ -2047,6 +2047,11 @@ const zh: Record<string, string> = {
   'Theme colors': '主题颜色',
   'Vintage': '复古',
   'dial skin vintage retro analog backlit hifi needles': '表盘 皮肤 复古 模拟 背光 dial skin vintage retro analog hifi',
+  'Spectrogram colors': '频谱图颜色',
+  'In the theme’s colors, or a color map as in sound tools: dark when quiet, bright when loud': '使用主题颜色，或像音频工具那样的色彩映射：安静处暗，响亮处亮',
+  'Magma': 'Magma',
+  'Viridis': 'Viridis',
+  'colormap color map magma viridis heat waterfall palette': '色彩映射 颜色 岩浆 magma viridis 热力 瀑布 调色板 频谱图',
 }
 
 export default zh

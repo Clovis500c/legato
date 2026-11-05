@@ -2047,6 +2047,11 @@ const vi: Record<string, string> = {
   'Theme colors': 'Màu chủ đề',
   'Vintage': 'Cổ điển',
   'dial skin vintage retro analog backlit hifi needles': 'mặt đồng hồ giao diện cổ điển retro analog đèn nền hifi kim',
+  'Spectrogram colors': 'Màu phổ đồ',
+  'In the theme’s colors, or a color map as in sound tools: dark when quiet, bright when loud': 'Theo màu giao diện, hoặc bảng màu như trong công cụ âm thanh: tối khi nhỏ, sáng khi lớn',
+  'Magma': 'Magma',
+  'Viridis': 'Viridis',
+  'colormap color map magma viridis heat waterfall palette': 'bảng màu màu magma viridis nhiệt thác nước phổ đồ',
 }
 
 export default vi

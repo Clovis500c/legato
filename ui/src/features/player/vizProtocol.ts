@@ -1,4 +1,4 @@
-import type { VisualizerStyle, VizBanding, VizFace, VizGradient, VizWeighting } from '../../shared/theme/theme'
+import type { VisualizerStyle, VizBanding, VizColormap, VizFace, VizGradient, VizWeighting } from '../../shared/theme/theme'
 import type { Stops } from './vizFill'
 import type { LoudReading, LoudWords } from './vizLoud'
 import { isSilent, type VizFrame } from './vizUnpack'
@@ -10,8 +10,8 @@ export type ToWorker =
   /** `ink`: any CSS colour (the theme's text colour here); every shade is that colour with an opacity. `warn`: the VU dial's red end and lit LED. */
   /** `gradient` + `stops`: colours over the bars (vizStops.ts), laid out per look by the worker (vizFill.ts). */
   /** `bands`: 1/6 or 1/3 octave (vizBands.ts). `floor`: a glossy floor reflecting the looks that stand on the bottom edge. */
-  /** `ink2`: the Curve look's right side (the accent, or the text colour when the visualizer is already the accent). `words`: the loudness meter's. `face`: the needles' dial. */
-  | { t: 'look'; look: VisualizerStyle; calm: boolean; weighting: VizWeighting; ink: string; ink2: string; warn: string; gradient: VizGradient; stops: Stops; bands: VizBanding; floor: boolean; fps: number; words: LoudWords; face: VizFace }
+  /** `ink2`: the Curve look's right side (the accent, or the text colour when the visualizer is already the accent). `words`: the loudness meter's. `face`: the needles' dial. `colormap`: the spectrogram's colours. */
+  | { t: 'look'; look: VisualizerStyle; calm: boolean; weighting: VizWeighting; ink: string; ink2: string; warn: string; gradient: VizGradient; stops: Stops; bands: VizBanding; floor: boolean; fps: number; words: LoudWords; face: VizFace; colormap: VizColormap }
   /** The Particles look's colours (the cover's, made vivid for the theme; none: the ink), and whether they add up as light (a dark theme). */
   | { t: 'palette'; colors: string[]; glow: boolean }
   /** The loudness meter's numbers (loudFeed.ts), with each update of the levels. */

@@ -2047,6 +2047,11 @@ const ko: Record<string, string> = {
   'Theme colors': '테마 색상',
   'Vintage': '빈티지',
   'dial skin vintage retro analog backlit hifi needles': '눈금판 스킨 빈티지 레트로 아날로그 dial skin vintage retro analog hifi',
+  'Spectrogram colors': '스펙트로그램 색상',
+  'In the theme’s colors, or a color map as in sound tools: dark when quiet, bright when loud': '테마 색상 또는 오디오 도구 같은 컬러맵: 조용하면 어둡게, 크면 밝게',
+  'Magma': 'Magma',
+  'Viridis': 'Viridis',
+  'colormap color map magma viridis heat waterfall palette': '컬러맵 색상 마그마 magma viridis 히트 폭포 팔레트 스펙트로그램',
 }
 
 export default ko

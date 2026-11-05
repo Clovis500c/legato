@@ -2047,6 +2047,11 @@ const id: Record<string, string> = {
   'Theme colors': 'Warna tema',
   'Vintage': 'Vintage',
   'dial skin vintage retro analog backlit hifi needles': 'muka tampilan vintage retro analog menyala hifi jarum',
+  'Spectrogram colors': 'Warna spektrogram',
+  'In the theme’s colors, or a color map as in sound tools: dark when quiet, bright when loud': 'Dengan warna tema, atau peta warna seperti di alat audio: gelap saat pelan, terang saat keras',
+  'Magma': 'Magma',
+  'Viridis': 'Viridis',
+  'colormap color map magma viridis heat waterfall palette': 'peta warna magma viridis panas air terjun palet spektrogram',
 }
 
 export default id

@@ -512,6 +512,10 @@ never: downloading, extracting, recording or exporting a platform's audio, or to
     silence, so it sits on any page and takes the theme; no hues of its own). Speed 90 CSS px/s (45 in reduced motion), counted by time, not by frames: the
     test scrolls 2 s at 24 to 240 Hz and 2x density and gets the same distance within a pixel. The picture is kept
     across messages but not across a resize or a look change. Canvas 2D is enough: no WebGL.
+    **Spectrogram colors** (`visualizerColormap`, 2026-11-05; under the style in Settings › Playback and in the menu):
+    Magma or Viridis instead of the ink, matplotlib's maps (CC0) from ten even samples each, mixed in between
+    (`namedMap`), clear at silence and opaque from a quarter of the level up, so the strip still sits on the page. The
+    same 256-step table the ink uses, so no WebGL for this either. A switch leaves the old columns to scroll away.
   - **Drawn at 30 fps** (`FPS` in `VizCanvas.tsx`, sent with the look; the worker's loop skips a tick that comes less than a
     period minus 3 ms after the last drawing): at the screen's 60 the bench showed 5 of 16 looks and sizes over the
     3 % budget (up to +4.6 points of the PC), at 30 all four looks run again were +1 to +1.9. The sound's own frames stay at

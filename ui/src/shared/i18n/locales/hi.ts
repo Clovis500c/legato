@@ -2047,6 +2047,11 @@ const hi: Record<string, string> = {
   'Theme colors': 'थीम के रंग',
   'Vintage': 'विंटेज',
   'dial skin vintage retro analog backlit hifi needles': 'डायल स्किन विंटेज रेट्रो एनालॉग dial skin vintage retro analog hifi',
+  'Spectrogram colors': 'स्पेक्ट्रोग्राम के रंग',
+  'In the theme’s colors, or a color map as in sound tools: dark when quiet, bright when loud': 'थीम के रंगों में, या ऑडियो टूल जैसे कलर मैप में: धीमी आवाज़ गहरी, तेज़ आवाज़ चमकीली',
+  'Magma': 'Magma',
+  'Viridis': 'Viridis',
+  'colormap color map magma viridis heat waterfall palette': 'कलर मैप रंग मैग्मा विरिडिस ताप झरना पैलेट स्पेक्ट्रोग्राम colormap magma viridis',
 }
 
 export default hi

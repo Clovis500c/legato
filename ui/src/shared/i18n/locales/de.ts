@@ -2047,6 +2047,11 @@ const de: Record<string, string> = {
   'Theme colors': 'Farben des Designs',
   'Vintage': 'Vintage',
   'dial skin vintage retro analog backlit hifi needles': 'zifferblatt skin vintage retro analog beleuchtet hifi zeiger',
+  'Spectrogram colors': 'Farben des Spektrogramms',
+  'In the theme’s colors, or a color map as in sound tools: dark when quiet, bright when loud': 'In den Farben des Designs oder mit einer Farbskala wie in Audio-Werkzeugen: dunkel bei leisen, hell bei lauten Stellen',
+  'Magma': 'Magma',
+  'Viridis': 'Viridis',
+  'colormap color map magma viridis heat waterfall palette': 'farbskala farbe karte magma viridis wärme wasserfall palette spektrogramm',
 }
 
 export default de

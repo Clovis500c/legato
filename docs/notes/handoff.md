@@ -194,6 +194,8 @@ Relaunch log (newest last):
 - 2026-11-05: PPM needles (a look: IEC 60268-18 digital ballistics, dBFS scale with knees, `ppmPos` / `stepPpm` in
   `vizVu.ts`) and Meter face (`visualizerFace`: theme colours or Vintage); the full screen's dial centred. Seen over the
   demo, strip and full screen, dark; not on real music.
+- 2026-11-05: Spectrogram colors (`visualizerColormap`: theme, Magma, Viridis; `namedMap` in `vizSpectro.ts`). Seen over
+  the demo, full screen dark.
 
 ## Mobile app and devices sync (the owner's ask, 2026-11-02 afternoon; in progress)
 

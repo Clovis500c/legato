@@ -2047,6 +2047,11 @@ const nl: Record<string, string> = {
   'Theme colors': 'Themakleuren',
   'Vintage': 'Vintage',
   'dial skin vintage retro analog backlit hifi needles': 'wijzerplaat skin vintage retro analoog verlicht hifi naalden',
+  'Spectrogram colors': 'Kleuren van het spectrogram',
+  'In the theme’s colors, or a color map as in sound tools: dark when quiet, bright when loud': 'In de kleuren van het thema, of een kleurenschaal zoals in audiotools: donker bij zacht, helder bij luid',
+  'Magma': 'Magma',
+  'Viridis': 'Viridis',
+  'colormap color map magma viridis heat waterfall palette': 'kleurenschaal kleur kaart magma viridis warmte waterval palet spectrogram',
 }
 
 export default nl

@@ -2047,6 +2047,11 @@ const tr: Record<string, string> = {
   'Theme colors': 'Tema renkleri',
   'Vintage': 'Vintage',
   'dial skin vintage retro analog backlit hifi needles': 'kadran görünüm vintage retro analog aydınlatmalı hifi ibre',
+  'Spectrogram colors': 'Spektrogram renkleri',
+  'In the theme’s colors, or a color map as in sound tools: dark when quiet, bright when loud': 'Temanın renklerinde ya da ses araçlarındaki gibi bir renk haritasıyla: sessizde koyu, yüksek seste parlak',
+  'Magma': 'Magma',
+  'Viridis': 'Viridis',
+  'colormap color map magma viridis heat waterfall palette': 'renk haritası renk magma viridis ısı şelale palet spektrogram',
 }
 
 export default tr

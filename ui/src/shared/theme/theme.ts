@@ -182,6 +182,9 @@ export type VizBanding = (typeof VIZ_BANDINGS)[number]
 /** The needles' dial (vizPaint.ts): in the theme's colours, or a warm backlit face whatever the theme. */
 export const VIZ_FACES = ['theme', 'vintage'] as const
 export type VizFace = (typeof VIZ_FACES)[number]
+/** The spectrogram's colours (vizSpectro.ts): the theme's ink, or a colour map of sound tools. */
+export const VIZ_COLORMAPS = ['theme', 'magma', 'viridis'] as const
+export type VizColormap = (typeof VIZ_COLORMAPS)[number]
 /** Order the cover songs are taken in: the playlist's own, or a library sort. */
 export const COVER_ORDERS = ['playlist', 'recent', 'title', 'artist', 'album', 'duration'] as const
 /** Auto-DJ's choices (Settings › Playback): days a song heard waits, songs before the same artist again. */
@@ -403,6 +406,8 @@ export interface Settings {
   visualizerFloor: boolean
   /** The VU and PPM needles' dial. The theme's colours by default; Vintage = a look the owner hasn't judged yet (2026-11-05). */
   visualizerFace: VizFace
+  /** The spectrogram's colours. The theme's ink by default (ink and greys); Magma and Viridis are opt-in. */
+  visualizerColormap: VizColormap
   /** The visualizer big and faint behind Now Playing too. Off by default: a look the owner hasn't judged yet (2026-11-04). */
   visualizerBackdrop: boolean
   /** A thin visualizer in the mini player too. Off by default: a look the owner hasn't judged yet (2026-11-04). */
@@ -538,6 +543,7 @@ export const DEFAULTS: Settings = {
   visualizerBands: 'sixth',
   visualizerFloor: false,
   visualizerFace: 'theme',
+  visualizerColormap: 'theme',
   visualizerBackdrop: false,
   visualizerMini: false,
   earlyEnds: true,
@@ -760,6 +766,7 @@ export function sanitize(raw: unknown): Settings {
     visualizerBands: pick(r.visualizerBands, VIZ_BANDINGS, DEFAULTS.visualizerBands),
     visualizerFloor: r.visualizerFloor === true,
     visualizerFace: pick(r.visualizerFace, VIZ_FACES, DEFAULTS.visualizerFace),
+    visualizerColormap: pick(r.visualizerColormap, VIZ_COLORMAPS, DEFAULTS.visualizerColormap),
     visualizerBackdrop: r.visualizerBackdrop === true,
     visualizerMini: r.visualizerMini === true,
     earlyEnds: r.earlyEnds !== false,

@@ -599,7 +599,11 @@ colours, mirror, reflection.
       knees; Settings › Playback › Meter face: theme colours or Vintage, a lit cream face. Decided alone: dBFS rather
       than a broadcast scale, the knees, one other skin (Vintage) and its colours; the full screen's dial centred and
       sized by its radius. Seen over the demo, strip and full screen, dark theme; not on real music, not in light.)
-- [ ] `S` Spectrogram colour maps as an opt-in (magma, viridis; today the theme's ink with opacity), WebGL.
+- [x] `S` Spectrogram colour maps as an opt-in (magma, viridis; today the theme's ink with opacity), WebGL.
+      (2026-11-05: Settings › Playback › Spectrogram colors and the strip's menu: Theme colors, Magma, Viridis, from ten
+      samples of matplotlib's maps (CC0), clear at silence, opaque from a quarter of the level. Decided alone: no WebGL
+      (the Canvas 2D path already draws through a 256-step table), two maps, the fade-in. Seen over the demo, full
+      screen dark; not in light, not on real music.)
 - [ ] `M` Spectrum 3D: a terrain of the last seconds flying towards the camera (WebGL).
 - [ ] `M` Visualizer API for plugins (`crates/plugins`): a plugin gets bands, beat and loudness, draws with a restricted
       2D canvas command list (no raw access).

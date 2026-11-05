@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { colorMap, fillColumn, rowMix, SCROLL, scrollBy } from './vizSpectro'
+import { colorMap, COLORMAPS, fillColumn, namedMap, rowMix, SCROLL, scrollBy } from './vizSpectro'
 
 const unpack = (v: number) => ({ r: v & 255, g: (v >>> 8) & 255, b: (v >>> 16) & 255, a: v >>> 24 })
 
@@ -64,5 +64,39 @@ describe('spectrogram column', () => {
     expect(out.every((v) => v === out[0])).toBe(true)
     fillColumn(out, [0, 1], rowMix(10, 2), map)
     expect(unpack(out[0]).a).toBeGreaterThan(unpack(out[9]).a)
+  })
+})
+
+describe('spectrogram colour maps', () => {
+  const rgb = (hex: string) => ({ r: parseInt(hex.slice(1, 3), 16), g: parseInt(hex.slice(3, 5), 16), b: parseInt(hex.slice(5, 7), 16) })
+  const names = ['magma', 'viridis'] as const
+
+  it('runs from its first colour, clear, to its last, opaque', () => {
+    for (const name of names) {
+      const m = namedMap(name)
+      expect(unpack(m[0])).toEqual({ ...rgb(COLORMAPS[name][0]), a: 0 })
+      expect(unpack(m[255])).toEqual({ ...rgb(COLORMAPS[name][9]), a: 255 })
+    }
+  })
+
+  it('fades in over the quietest quarter, opaque above', () => {
+    const m = namedMap('magma')
+    expect(unpack(m[32]).a).toBeGreaterThan(100)
+    expect(unpack(m[32]).a).toBeLessThan(255)
+    expect(unpack(m[64]).a).toBe(255)
+    expect(unpack(m[200]).a).toBe(255)
+  })
+
+  it('gets lighter as the level rises', () => {
+    for (const name of names) {
+      const m = namedMap(name)
+      let last = -1
+      for (let i = 0; i < 256; i += 15) {
+        const { r, g, b } = unpack(m[i])
+        const light = 0.2126 * r + 0.7152 * g + 0.0722 * b
+        expect(light).toBeGreaterThan(last)
+        last = light
+      }
+    }
   })
 })

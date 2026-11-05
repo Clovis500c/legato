@@ -2047,6 +2047,11 @@ const sv: Record<string, string> = {
   'Theme colors': 'Temats färger',
   'Vintage': 'Vintage',
   'dial skin vintage retro analog backlit hifi needles': 'tavla skal vintage retro analog bakbelyst hifi visare',
+  'Spectrogram colors': 'Spektrogrammets färger',
+  'In the theme’s colors, or a color map as in sound tools: dark when quiet, bright when loud': 'I temats färger, eller en färgskala som i ljudverktyg: mörkt när det är tyst, ljust när det är starkt',
+  'Magma': 'Magma',
+  'Viridis': 'Viridis',
+  'colormap color map magma viridis heat waterfall palette': 'färgskala färg karta magma viridis värme vattenfall palett spektrogram',
 }
 
 export default sv

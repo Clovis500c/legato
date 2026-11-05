@@ -2047,6 +2047,11 @@ const ru: Record<string, string> = {
   'Theme colors': 'Цвета темы',
   'Vintage': 'Винтаж',
   'dial skin vintage retro analog backlit hifi needles': 'шкала скин винтаж ретро аналоговый подсветка hifi стрелки',
+  'Spectrogram colors': 'Цвета спектрограммы',
+  'In the theme’s colors, or a color map as in sound tools: dark when quiet, bright when loud': 'В цветах темы или с цветовой картой, как в звуковых программах: тёмное — тихо, яркое — громко',
+  'Magma': 'Magma',
+  'Viridis': 'Viridis',
+  'colormap color map magma viridis heat waterfall palette': 'цветовая карта цвет магма magma viridis тепло водопад палитра спектрограмма',
 }
 
 export default ru

@@ -58,6 +58,7 @@ export function VizCanvas({ look, listen = true }: { look: VisualizerStyle; list
   const bands = useSettings((s) => s.settings.visualizerBands)
   const floor = useSettings((s) => s.settings.visualizerFloor)
   const face = useSettings((s) => s.settings.visualizerFace)
+  const colormap = useSettings((s) => s.settings.visualizerColormap)
   const darkTheme = useSettings((s) => s.current().dark)
   const playing = usePlayer((s) => s.playing)
   const theme = useSettings((s) => s.settings.theme)
@@ -118,12 +119,12 @@ export function VizCanvas({ look, listen = true }: { look: VisualizerStyle; list
       const ink = inkOf(el, color, coverInk)
       const warn = getComputedStyle(el).getPropertyValue('--color-danger').trim() || '#d93a2b'
       const words = { momentary: tr('Momentary'), short: tr('Short-term'), integrated: tr('Integrated'), range: tr('Loudness range'), peak: tr('True peak') }
-      w.postMessage({ t: 'look', look, calm, weighting, ink, ink2: secondOf(el, color), warn, gradient, stops: gradientStops(gradient, ink, warn, darkTheme), bands, floor, fps: FPS, words, face } satisfies ToWorker)
+      w.postMessage({ t: 'look', look, calm, weighting, ink, ink2: secondOf(el, color), warn, gradient, stops: gradientStops(gradient, ink, warn, darkTheme), bands, floor, fps: FPS, words, face, colormap } satisfies ToWorker)
     }
     send()
     const late = setTimeout(send, 700)
     return () => clearTimeout(late)
-  }, [ready, look, calm, weighting, color, coverInk, gradient, bands, floor, face, darkTheme, theme, accent, dark, song, language])
+  }, [ready, look, calm, weighting, color, coverInk, gradient, bands, floor, face, colormap, darkTheme, theme, accent, dark, song, language])
 
   // Particles: the cover's colours (the ink until they are known, or for a grey cover); light that adds up on a dark theme.
   useEffect(() => {

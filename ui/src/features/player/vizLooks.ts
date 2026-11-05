@@ -1,5 +1,5 @@
 import { msg } from '../../shared/i18n/i18n'
-import { VISUALIZER_STYLES, type VisualizerStyle, type VizBanding, type VizColor, type VizFace, type VizGradient, type VizWeighting } from '../../shared/theme/theme'
+import { VISUALIZER_STYLES, type VisualizerStyle, type VizBanding, type VizColor, type VizColormap, type VizFace, type VizGradient, type VizWeighting } from '../../shared/theme/theme'
 
 /** The visualizer's looks by name (Settings, the visualizer's right-click menu); show with `tr`. */
 export const VISUALIZER_LABELS: Record<VisualizerStyle, string> = { led: msg('LED'), bars: msg('Bars'), mirror: msg('Mirror'), peaks: msg('Peaks'), wave: msg('Wave'), curve: msg('Curve'), radial: msg('Radial'), particles: msg('Particles'), vu: msg('VU needles'), ppm: msg('PPM needles'), spectrogram: msg('Spectrogram'), scope: msg('Oscilloscope'), vectorscope: msg('Vectorscope'), loudness: msg('Loudness meter') }
@@ -21,6 +21,9 @@ export const VIZ_BANDING_LABELS: Record<VizBanding, string> = { third: msg('1/3 
 
 /** The needles' dials by name (Settings); show with `tr`. */
 export const VIZ_FACE_LABELS: Record<VizFace, string> = { theme: msg('Theme colors'), vintage: msg('Vintage') }
+
+/** The spectrogram's colour maps by name (Settings, the strip's menu); show with `tr`. */
+export const VIZ_COLORMAP_LABELS: Record<VizColormap, string> = { theme: msg('Theme colors'), magma: msg('Magma'), viridis: msg('Viridis') }
 
 /** The look after this one, round to the first (a click on the visualizer). */
 export const nextLook = (look: VisualizerStyle): VisualizerStyle => VISUALIZER_STYLES[(VISUALIZER_STYLES.indexOf(look) + 1) % VISUALIZER_STYLES.length]

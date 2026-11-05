@@ -91,6 +91,7 @@ export const SETTINGS_INDEX: SettingEntry[] = [
   { section: 'playback', label: msg('Visualizer'), keywords: msg('spectrum bars equalizer analyzer frequencies audio visualiser music moving') },
   { section: 'playback', label: msg('Visualizer style'), keywords: msg('bars mirror peaks wave curve radial circle particles vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look ppm programme') },
   { section: 'playback', label: msg('Meter face'), keywords: msg('dial skin vintage retro analog backlit hifi needles') },
+  { section: 'playback', label: msg('Spectrogram colors'), keywords: msg('colormap color map magma viridis heat waterfall palette') },
   { section: 'playback', label: msg('Visualizer weighting'), keywords: msg('tilt slope bass treble highs lows balance hearing curve a-weighting itu 468') },
   { section: 'playback', label: msg('Visualizer color'), keywords: msg('colour tint hue palette accent cover album art') },
   { section: 'playback', label: msg('Visualizer gradient'), keywords: msg('rainbow prism spectrum meter red top warm colours') },

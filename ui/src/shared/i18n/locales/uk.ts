@@ -2047,6 +2047,11 @@ const uk: Record<string, string> = {
   'Theme colors': 'Кольори теми',
   'Vintage': 'Вінтаж',
   'dial skin vintage retro analog backlit hifi needles': 'шкала скін вінтаж ретро аналоговий підсвітка hifi стрілки',
+  'Spectrogram colors': 'Кольори спектрограми',
+  'In the theme’s colors, or a color map as in sound tools: dark when quiet, bright when loud': 'У кольорах теми або з кольоровою картою, як у звукових програмах: темне — тихо, яскраве — гучно',
+  'Magma': 'Magma',
+  'Viridis': 'Viridis',
+  'colormap color map magma viridis heat waterfall palette': 'кольорова карта колір магма magma viridis тепло водоспад палітра спектрограма',
 }
 
 export default uk
