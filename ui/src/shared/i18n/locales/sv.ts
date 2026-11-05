@@ -2150,6 +2150,9 @@ const sv: Record<string, string> = {
   'Year (oldest first)': 'År (äldsta)',
   'Year (newest first)': 'År (senaste)',
   'Genre (A–Z)': 'Genre (A–Ö)',
+  'Picture-in-picture': 'Bild-i-bild',
+  'Picture-in-picture on / off': 'Bild-i-bild på / av',
+  'Back to the full window (Esc)': 'Tillbaka till hela fönstret (Esc)',
 }
 
 export default sv

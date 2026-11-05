@@ -2150,6 +2150,9 @@ const ja: Record<string, string> = {
   'Year (oldest first)': '年（古い順）',
   'Year (newest first)': '年（新しい順）',
   'Genre (A–Z)': 'ジャンル（A–Z）',
+  'Picture-in-picture': 'ピクチャー イン ピクチャー',
+  'Picture-in-picture on / off': 'ピクチャー イン ピクチャー オン / オフ',
+  'Back to the full window (Esc)': '通常のウィンドウに戻る (Esc)',
 }
 
 export default ja

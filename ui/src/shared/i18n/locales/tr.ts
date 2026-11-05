@@ -2150,6 +2150,9 @@ const tr: Record<string, string> = {
   'Year (oldest first)': 'Yıl (en eski)',
   'Year (newest first)': 'Yıl (en yeni)',
   'Genre (A–Z)': 'Tür (A–Z)',
+  'Picture-in-picture': 'Pencere içinde pencere',
+  'Picture-in-picture on / off': 'Pencere içinde pencere açık / kapalı',
+  'Back to the full window (Esc)': 'Tam pencereye dön (Esc)',
 }
 
 export default tr

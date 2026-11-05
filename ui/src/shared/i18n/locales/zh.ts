@@ -2150,6 +2150,9 @@ const zh: Record<string, string> = {
   'Year (oldest first)': '年份（最早）',
   'Year (newest first)': '年份（最新）',
   'Genre (A–Z)': '流派（A–Z）',
+  'Picture-in-picture': '画中画',
+  'Picture-in-picture on / off': '画中画 开 / 关',
+  'Back to the full window (Esc)': '返回完整窗口 (Esc)',
 }
 
 export default zh

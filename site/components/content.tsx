@@ -22,7 +22,7 @@ export const FEATURES: { icon: IconName; title: string; text: string }[] = [
   { icon: 'FolderSimple', title: 'Your own files', text: 'Gapless playback, as loud as your streamed songs (their ReplayGain tags, or measured), and their tags to edit, a whole album at once: artist, album, genre, year, track numbers, cover. Their own lyrics come first: edit them, or time plain ones by tapping along.' },
   { icon: 'Devices', title: 'Sync Mode', text: 'Your library on all your PCs, through a OneDrive folder or your network.' },
   { icon: 'PuzzlePiece', title: 'Add-ons and plugins', text: 'Plugins by others ask for what they need before they can do anything.' },
-  { icon: 'Translate', title: '18 languages', text: 'Following Windows, with its media keys, a tray icon, a Jump List, an alarm and full screen. The music pauses when your headphones disconnect, or when a call starts if you want, and your phone can be the remote.' },
+  { icon: 'Translate', title: '18 languages', text: 'Following Windows, with its media keys, a tray icon, a Jump List, an alarm, picture-in-picture and full screen. The music pauses when your headphones disconnect, or when a call starts if you want, and your phone can be the remote.' },
 ]
 
 /** Where the window stands: x, y from the stage's middle (share of it), degrees, zoom on the fitted size. */

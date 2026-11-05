@@ -1,4 +1,4 @@
-import { ArrowsOutSimple, Heart, Moon, Queue, Quotes, SpeakerHigh, SpeakerLow, SpeakerSlash } from '@phosphor-icons/react'
+import { ArrowsOutSimple, Heart, Moon, PictureInPicture, Queue, Quotes, SpeakerHigh, SpeakerLow, SpeakerSlash } from '@phosphor-icons/react'
 import { getCurrentWebview } from '@tauri-apps/api/webview'
 import { useEffect, useRef, useState } from 'react'
 import { useSettings } from '../../app/settings'
@@ -33,6 +33,7 @@ import { tr } from '../../shared/i18n/i18n'
 import { phoneApp } from '../../shared/platform'
 import { takeDrop } from './drop'
 import { pickUp, usePickup } from '../syncmode/pickup'
+import { openPip, usePip } from './pipMode'
 
 export const clock = (ms: number | null) => formatDuration(ms) || '0:00'
 export const fileFormat = (path?: string) => path?.split('.').pop()?.toUpperCase()
@@ -63,10 +64,14 @@ function YouTubeFrame({ videoId, tail = false, idle = false }: { videoId: string
   const vizOpen = useVizFull((s) => s.open)
   const coverOpen = useCoverFull((s) => s.open)
   const karaoke = karaokeOpen || vizOpen || coverOpen
+  // Picture-in-picture: the video above its screen, edge to edge.
+  const pip = usePip((s) => s.on)
   // Embed refused this video: YouTube's watch page plays it in a webview over the same place (watch.ts).
   const watch = useWatch((s) => s.video)
   // Bars baked into the video: frame enlarged, only the picture shows.
-  const crop = rect && (box || fill) && !hidden && !watch ? frameAround(rect, box ?? { x: 0, y: 0, w: 1, h: 1 }) : null
+  // Now Playing's picture box (open behind picture-in-picture) is its own.
+  const cut = pip ? null : box
+  const crop = rect && (cut || fill) && !hidden && !watch ? frameAround(rect, cut ?? { x: 0, y: 0, w: 1, h: 1 }, pip ? 0 : 8) : null
   const frame = useRef<HTMLIFrameElement | null>(null)
   const ready = useRef(false)
   // First video and options at mount: changing src later would reload the embed.
@@ -177,7 +182,7 @@ function YouTubeFrame({ videoId, tail = false, idle = false }: { videoId: string
       // Hidden (cover shown instead): YouTube's minimum size, so it streams a low resolution nobody sees.
       style={tail ? undefined : (crop ?? (rect ? { left: rect.left, top: rect.top, width: hidden ? 200 : rect.width, height: hidden ? 200 : rect.height } : undefined))}
       // Bare video: no pointer on it, so YouTube's hover overlay never shows; our controls drive it.
-      className={`fixed z-30 bg-black ${crop ? '' : 'rounded-lg border border-line'} ${src.controls && !hidden && !watch && !tail ? '' : 'pointer-events-none'} ${hidden || watch || tail ? 'opacity-0' : ''} ${rect && !tail ? '' : 'right-6 bottom-[100px] h-50 w-89 shadow-[0_12px_32px_var(--shadow)] phone:right-2 phone:bottom-[136px] phone:w-[calc(100vw-1rem)]'}`}
+      className={`fixed bg-black ${pip ? 'z-[41]' : 'z-30'} ${crop || pip ? '' : 'rounded-lg border border-line'} ${src.controls && !hidden && !watch && !tail ? '' : 'pointer-events-none'} ${hidden || watch || tail ? 'opacity-0' : ''} ${rect && !tail ? '' : 'right-6 bottom-[100px] h-50 w-89 shadow-[0_12px_32px_var(--shadow)] phone:right-2 phone:bottom-[136px] phone:w-[calc(100vw-1rem)]'}`}
     />
   )
 }
@@ -377,6 +382,11 @@ export function PlayerBar() {
             <PanelButton panel="lyrics" label={tr('Lyrics')} icon={Quotes} />
             <PanelButton panel="upNext" label={tr('Up next')} icon={Queue} />
             <VolumeControl />
+            {!phoneApp && (
+              <RoundButton label={tr('Picture-in-picture')} kind="plain" size="sm" disabled={!now} onClick={() => void openPip()}>
+                <PictureInPicture size={18} />
+              </RoundButton>
+            )}
             <RoundButton label={tr('Now playing, full screen')} kind="plain" size="sm" disabled={!now} onClick={() => setFull(true)}>
               <ArrowsOutSimple size={18} />
             </RoundButton>

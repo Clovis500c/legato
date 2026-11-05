@@ -2150,6 +2150,9 @@ const hi: Record<string, string> = {
   'Year (oldest first)': 'वर्ष (सबसे पुराने)',
   'Year (newest first)': 'वर्ष (सबसे नए)',
   'Genre (A–Z)': 'शैली (A–Z)',
+  'Picture-in-picture': 'पिक्चर-इन-पिक्चर',
+  'Picture-in-picture on / off': 'पिक्चर-इन-पिक्चर चालू / बंद',
+  'Back to the full window (Esc)': 'पूरी विंडो पर वापस जाएँ (Esc)',
 }
 
 export default hi

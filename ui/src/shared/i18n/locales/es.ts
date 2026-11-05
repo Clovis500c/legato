@@ -2150,6 +2150,9 @@ const es: Record<string, string> = {
   'Year (oldest first)': 'Año (antiguos)',
   'Year (newest first)': 'Año (recientes)',
   'Genre (A–Z)': 'Género (A–Z)',
+  'Picture-in-picture': 'Imagen en imagen',
+  'Picture-in-picture on / off': 'Imagen en imagen activada / desactivada',
+  'Back to the full window (Esc)': 'Volver a la ventana completa (Esc)',
 }
 
 export default es

@@ -2150,6 +2150,9 @@ const vi: Record<string, string> = {
   'Year (oldest first)': 'Năm (cũ nhất)',
   'Year (newest first)': 'Năm (mới nhất)',
   'Genre (A–Z)': 'Thể loại (A–Z)',
+  'Picture-in-picture': 'Hình trong hình',
+  'Picture-in-picture on / off': 'Bật / tắt hình trong hình',
+  'Back to the full window (Esc)': 'Quay lại cửa sổ đầy đủ (Esc)',
 }
 
 export default vi

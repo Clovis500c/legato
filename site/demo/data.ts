@@ -154,6 +154,8 @@ const shot = new URLSearchParams(location.search)
 const ANSWERS: Record<string, (args: Record<string, unknown>) => unknown> = {
   library: () => ({ tracks: TRACKS, playlists: PLAYLISTS, orders: Object.fromEntries(PLAYLISTS.map((p) => [p.id, inList(p.id).map((t) => t.id)])) }),
   library_changes: () => null,
+  // Picture-in-picture: the page stays as it is, no window to shrink.
+  pip: () => null,
   playlist_tracks: ({ id }) => inList(id as number),
   sources_status: () => [['spotify', { configured: true, connected: true }], ['youtube', { configured: true, connected: true }]],
   // The app's first window, a little less sidebar: titles read whole.

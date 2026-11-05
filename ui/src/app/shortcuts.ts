@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { isRemote, nowTrack, usePlayer } from '../features/player/store'
 import { toggleCoverFull, useCoverFull } from '../features/player/coverFull'
 import { toggleKaraoke, useKaraoke } from '../features/player/karaokeMode'
+import { togglePip, usePip } from '../features/player/pipMode'
 import { toggleVizFull, useVizFull } from '../features/player/vizFull'
 import { nudgeVolume } from '../features/player/volume'
 import { api } from '../shared/api'
@@ -12,8 +13,9 @@ import { toggleFullscreen } from './fullscreen'
 import { useVoiceAsk } from '../features/search/voiceRun'
 
 const player = () => usePlayer.getState()
-// A full screen on top (the visualizer's, the cover display): the other screens' keys wait for Esc.
-const onTop = () => useVizFull.getState().open || useCoverFull.getState().open
+// A full screen on top (the visualizer's, the cover display) or picture-in-picture: the other screens' keys wait for Esc.
+const pipOn = () => usePip.getState().on
+const onTop = () => useVizFull.getState().open || useCoverFull.getState().open || pipOn()
 const seekBy = (ms: number) => {
   const { now, positionMs, durationMs, seek } = player()
   if (now) seek(Math.max(0, Math.min(positionMs + ms, durationMs ?? Infinity)))
@@ -50,10 +52,12 @@ export const RUN: Record<ActionId, () => void> = {
   rate5: () => rateNow(10),
   // Now Playing, karaoke, search and navigation wait under a full screen (karaoke's full screen would clash with it).
   nowPlaying: () => !onTop() && player().now && player().setFull(!player().full),
-  fullscreen: () => void toggleFullscreen(),
+  fullscreen: () => !pipOn() && void toggleFullscreen(),
   karaoke: () => !onTop() && toggleKaraoke(),
-  vizFull: () => !useCoverFull.getState().open && toggleVizFull(),
-  coverFull: () => !useVizFull.getState().open && !useKaraoke.getState().open && toggleCoverFull(),
+  vizFull: () => !useCoverFull.getState().open && !pipOn() && toggleVizFull(),
+  coverFull: () => !useVizFull.getState().open && !useKaraoke.getState().open && !pipOn() && toggleCoverFull(),
+  // Not from a full screen (pipMode.ts).
+  pip: togglePip,
   search: () => !onTop() && document.querySelector<HTMLInputElement>('[data-search]')?.focus(),
   voice: () => !onTop() && useVoiceAsk.setState((s) => ({ n: s.n + 1 })),
   settings: () => !onTop() && useStore.getState().go({ name: 'settings', section: 'shortcuts' }),
@@ -113,7 +117,7 @@ export function startShortcuts(): () => void {
     const combo = comboOf(e)
     const id = combo && map.get(combo)
     if (!id || inText(e.target)) return
-    if (e.repeat && (id === 'playPause' || id === 'karaoke' || id === 'vizFull' || id === 'coverFull')) return
+    if (e.repeat && (id === 'playPause' || id === 'karaoke' || id === 'vizFull' || id === 'coverFull' || id === 'pip')) return
     if (/^(Shift\+)?Arrow/.test(combo) && ownsArrows(e.target)) return
     if (combo === 'Space' && ownsSpace(e.target)) return
     e.preventDefault()

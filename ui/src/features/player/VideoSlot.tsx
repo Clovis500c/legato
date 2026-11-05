@@ -1,18 +1,24 @@
 import { useLayoutEffect, useRef } from 'react'
+import { usePip } from './pipMode'
 import { useVideoSlot } from './store'
 
 // Apart from Now Playing: the side panel, the mini player and the sidebar player hold it too, and Now Playing loads late.
-/** Publishes its rect so the single YouTube iframe sits here. YouTube rules: at least 200×200, nothing on top. */
-export function VideoSlot({ className = '', style, hidden = false, fill = false, live = false, onClick }: { className?: string; style?: React.CSSProperties; hidden?: boolean; fill?: boolean; live?: boolean; onClick?: () => void }) {
+/**
+ * Publishes its rect so the single YouTube iframe sits here. YouTube rules: at least 200×200, nothing on top.
+ * pip: picture-in-picture's own (pipMode.ts); while it shows, the other slots wait.
+ */
+export function VideoSlot({ className = '', style, hidden = false, fill = false, live = false, pip = false, onClick }: { className?: string; style?: React.CSSProperties; hidden?: boolean; fill?: boolean; live?: boolean; pip?: boolean; onClick?: () => void }) {
   const ref = useRef<HTMLDivElement>(null)
   const set = useVideoSlot((s) => s.set)
+  const off = usePip((s) => s.on) !== pip
   useLayoutEffect(() => {
+    if (off) return
     useVideoSlot.setState({ hidden, fill })
     return () => useVideoSlot.setState({ hidden: false, fill: false })
-  }, [hidden, fill])
+  }, [hidden, fill, off])
   // live: slot moves without resizing (mini player drag, snap animation): follow it every frame.
   useLayoutEffect(() => {
-    if (!live) return
+    if (!live || off) return
     let id = 0
     const tick = () => {
       set(ref.current!.getBoundingClientRect())
@@ -20,8 +26,9 @@ export function VideoSlot({ className = '', style, hidden = false, fill = false,
     }
     tick()
     return () => cancelAnimationFrame(id)
-  }, [live, set])
+  }, [live, set, off])
   useLayoutEffect(() => {
+    if (off) return
     const el = ref.current!
     const update = () => set(el.getBoundingClientRect())
     const ro = new ResizeObserver(update)
@@ -42,7 +49,7 @@ export function VideoSlot({ className = '', style, hidden = false, fill = false,
       window.removeEventListener('transitionend', update, true)
       set(null)
     }
-  }, [set])
+  }, [set, off])
   // The iframe takes no pointer: clicks land here (our own play / pause, not YouTube's).
   return <div ref={ref} data-video-slot onClick={onClick} className={`rounded-lg bg-black ${onClick ? 'cursor-pointer' : ''} ${className}`} style={style} />
 }

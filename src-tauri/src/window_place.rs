@@ -60,23 +60,24 @@ fn settle_frame(window: &WebviewWindow) {
 fn settle_frame(_: &WebviewWindow) {}
 
 /// Save now. Restart and update install skip the exit event the plugin saves on. The plugin only sees windows holding a
-/// single webview: the watch-page child goes first (the app is leaving anyway).
+/// single webview: the watch-page child goes first (the app is leaving anyway). Picture-in-picture: its own size back first.
 pub fn save(app: &AppHandle) {
     let _ = crate::ytwatch::close(app);
+    crate::pip::leave_for_exit(app);
     let _ = app.save_window_state(FLAGS);
 }
 
 /// Physical px.
 #[derive(Debug, Clone, Copy, PartialEq)]
-struct Rect {
-    x: i64,
-    y: i64,
-    w: i64,
-    h: i64,
+pub(crate) struct Rect {
+    pub x: i64,
+    pub y: i64,
+    pub w: i64,
+    pub h: i64,
 }
 
 /// None = fine where it is (straddling two screens included). Else shrunk to the work area and centered on it.
-fn fit(win: Rect, area: Rect) -> Option<Rect> {
+pub(crate) fn fit(win: Rect, area: Rect) -> Option<Rect> {
     let seen = |a: i64, al: i64, b: i64, bl: i64| ((a + al).min(b + bl) - a.max(b)).max(0);
     let too_big = win.w > area.w || win.h > area.h;
     let lost = seen(win.x, win.w, area.x, area.w) < MIN_VISIBLE.min(win.w) || seen(win.y, win.h, area.y, area.h) < MIN_VISIBLE.min(win.h);

@@ -2150,6 +2150,9 @@ const id: Record<string, string> = {
   'Year (oldest first)': 'Tahun (terlama)',
   'Year (newest first)': 'Tahun (terbaru)',
   'Genre (A–Z)': 'Genre (A–Z)',
+  'Picture-in-picture': 'Gambar dalam gambar',
+  'Picture-in-picture on / off': 'Gambar dalam gambar hidup / mati',
+  'Back to the full window (Esc)': 'Kembali ke jendela penuh (Esc)',
 }
 
 export default id

@@ -2150,6 +2150,9 @@ const nl: Record<string, string> = {
   'Year (oldest first)': 'Jaar (oudste)',
   'Year (newest first)': 'Jaar (nieuwste)',
   'Genre (A–Z)': 'Genre (A–Z)',
+  'Picture-in-picture': 'Beeld-in-beeld',
+  'Picture-in-picture on / off': 'Beeld-in-beeld aan / uit',
+  'Back to the full window (Esc)': 'Terug naar het volledige venster (Esc)',
 }
 
 export default nl

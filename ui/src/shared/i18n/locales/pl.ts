@@ -2150,6 +2150,9 @@ const pl: Record<string, string> = {
   'Year (oldest first)': 'Rok (najstarsze)',
   'Year (newest first)': 'Rok (najnowsze)',
   'Genre (A–Z)': 'Gatunek (A–Z)',
+  'Picture-in-picture': 'Obraz w obrazie',
+  'Picture-in-picture on / off': 'Obraz w obrazie włącz / wyłącz',
+  'Back to the full window (Esc)': 'Wróć do pełnego okna (Esc)',
 }
 
 export default pl

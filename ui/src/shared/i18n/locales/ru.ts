@@ -2150,6 +2150,9 @@ const ru: Record<string, string> = {
   'Year (oldest first)': 'Год (старые)',
   'Year (newest first)': 'Год (новые)',
   'Genre (A–Z)': 'Жанр (А–Я)',
+  'Picture-in-picture': 'Картинка в картинке',
+  'Picture-in-picture on / off': 'Картинка в картинке вкл. / выкл.',
+  'Back to the full window (Esc)': 'Вернуться к полному окну (Esc)',
 }
 
 export default ru

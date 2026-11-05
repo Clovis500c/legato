@@ -2150,6 +2150,9 @@ const ko: Record<string, string> = {
   'Year (oldest first)': '연도 (오래된순)',
   'Year (newest first)': '연도 (최신순)',
   'Genre (A–Z)': '장르 (A–Z)',
+  'Picture-in-picture': 'PIP 모드',
+  'Picture-in-picture on / off': 'PIP 모드 켜기 / 끄기',
+  'Back to the full window (Esc)': '전체 창으로 돌아가기 (Esc)',
 }
 
 export default ko

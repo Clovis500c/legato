@@ -2150,6 +2150,9 @@ const uk: Record<string, string> = {
   'Year (oldest first)': 'Рік (старі)',
   'Year (newest first)': 'Рік (нові)',
   'Genre (A–Z)': 'Жанр (А–Я)',
+  'Picture-in-picture': 'Картинка в картинці',
+  'Picture-in-picture on / off': 'Картинка в картинці увімк. / вимк.',
+  'Back to the full window (Esc)': 'Повернутися до повного вікна (Esc)',
 }
 
 export default uk

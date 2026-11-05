@@ -66,6 +66,7 @@ import {
   VinylRecord,
   BookmarkSimple,
   Alarm,
+  ArrowsIn,
 } from '@phosphor-icons/react'
 import { openUrl, revealItemInDir } from '@tauri-apps/plugin-opener'
 import { useSettings } from '../app/settings'
@@ -97,6 +98,7 @@ import { deleteFolder, newFolder, renameFolder, setFolder, togglePinned } from '
 import { closeKaraoke, nowFix, nudgeLyrics, toggleKaraoke } from './player/karaokeMode'
 import { canVizFull, toggleVizFull, useVizFull } from './player/vizFull'
 import { closeCoverFull, toggleCoverFull } from './player/coverFull'
+import { closePip, openPip } from './player/pipMode'
 import { openShare } from './share/share'
 import { VIZ_BANDING_LABELS, VIZ_COLOR_LABELS, VIZ_COLORMAP_LABELS, VIZ_FACE_LABELS, VIZ_GRADIENT_LABELS, VIZ_PRESET_COLOR_LABELS, VIZ_WEIGHTING_LABELS } from './player/vizLooks'
 import { nextPreset, presetOptions } from './player/vizPresets'
@@ -719,6 +721,7 @@ export function playerMenu(): MenuEntry[] {
     { label: full ? tr('Leave full screen') : tr('Full screen'), icon: <ArrowsOutSimple size={16} />, onSelect: () => setFull(!full) },
     { label: tr('Karaoke'), icon: <MicrophoneStage size={16} />, onSelect: toggleKaraoke },
     { label: tr('Cover display'), icon: <FrameCorners size={16} />, onSelect: toggleCoverFull },
+    !phoneApp && { label: tr('Picture-in-picture'), icon: <PictureInPicture size={16} />, onSelect: () => void openPip() },
     { label: tr('Share as a picture…'), icon: <ImageSquare size={16} />, onSelect: openShare },
     { label: tr('Live Editor'), icon: <SlidersHorizontal size={16} />, onSelect: () => (useSettings.getState().update({ editor: true }), setFull(true)) },
     { label: tr('Sleep timer'), icon: <Moon size={16} />, items: sleepMenu() },
@@ -856,6 +859,18 @@ export function coverScreenMenu(): MenuEntry[] {
     { label: tr('Clock'), checked: clock, onSelect: () => useSettings.getState().update({ coverClock: !clock }) },
     '-',
     { label: tr('Leave the cover display (Esc)'), icon: <FrameCorners size={16} />, onSelect: closeCoverFull },
+  ]
+}
+
+/** Picture-in-picture's screen (PipScreen.tsx). */
+export function pipMenu(): MenuEntry[] {
+  const { playing, toggle, step } = player()
+  return [
+    { label: playing ? tr('Pause') : tr('Play'), icon: playing ? <Pause size={16} /> : <Play size={16} />, onSelect: toggle },
+    { label: tr('Previous'), icon: <SkipBack size={16} />, onSelect: () => step(-1) },
+    { label: tr('Next'), icon: <SkipForward size={16} />, onSelect: () => step(1) },
+    '-',
+    { label: tr('Back to the full window (Esc)'), icon: <ArrowsIn size={16} />, onSelect: () => void closePip() },
   ]
 }
 

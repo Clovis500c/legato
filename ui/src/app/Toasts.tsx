@@ -1,5 +1,6 @@
 import { CheckCircle, Info, MinusCircle, Warning, X } from '@phosphor-icons/react'
 import { useSettings } from './settings'
+import { usePip } from '../features/player/pipMode'
 import { useStore, type Toast } from './store'
 import { tr } from '../shared/i18n/i18n'
 import type { Settings } from '../shared/theme/theme'
@@ -25,7 +26,9 @@ export function Toasts() {
   const toasts = useStore((s) => s.toasts)
   const dismissToast = useStore((s) => s.dismissToast)
   const place = useSettings((s) => s.settings.toastPlace)
-  if (!toasts.length) return null
+  // Picture-in-picture: nothing over the video (YouTube's rule); they show again with the full window.
+  const pip = usePip((s) => s.on)
+  if (!toasts.length || pip) return null
   return (
     <div aria-live="polite" className={`pointer-events-none fixed z-[60] flex flex-col gap-2 px-4 ${places[place]}`}>
       {toasts.map((t) => {

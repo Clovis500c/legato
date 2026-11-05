@@ -2150,6 +2150,9 @@ const pt: Record<string, string> = {
   'Year (oldest first)': 'Ano (mais antigas)',
   'Year (newest first)': 'Ano (mais recentes)',
   'Genre (A–Z)': 'Gênero (A–Z)',
+  'Picture-in-picture': 'Picture-in-picture',
+  'Picture-in-picture on / off': 'Picture-in-picture ligado / desligado',
+  'Back to the full window (Esc)': 'Voltar à janela inteira (Esc)',
 }
 
 export default pt

@@ -237,6 +237,8 @@ Relaunch log (newest last):
   alone). Page headers wrap their actions under the title when they don't fit.
 - 2026-11-05: local files' genre and year, from their tags (schema v20): Year and Genre columns, sorts, a Genres
   pane in the column browser. Streamed songs have none yet; BPM / key and smart rules stay open.
+- 2026-11-05: picture-in-picture (P): the window small and above the others, the video or the cover and a strip of
+  controls, back as it was on Esc. Sweet fades left (plan line: needs each song's end measured and an ear).
 
 ## Mobile app and devices sync (the owner's ask, 2026-11-02 afternoon; in progress)
 

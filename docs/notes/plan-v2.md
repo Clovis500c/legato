@@ -439,7 +439,23 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
 - [ ] `M` Release radar: new releases from artists in the library (YouTube Music / MusicBrainz).
 - [ ] `M` Credits and artist pages: who wrote / produced (MusicBrainz), a short bio (Wikipedia), links out.
 - [ ] `M` Sweet fades (Plexamp): crossfade length picked per pair from the songs' ends (loudness, silence, tempo).
-- [ ] `M` Picture-in-picture: the video or cover floating above other windows, small controls.
+      (Left by the autopilot (2026-11-05): a song's end is only known measured (local files, Skip silence on) or
+      heard once (a video, `ends.ts`), its tempo not at all; the overlap is the player's most fixed code, and a
+      length picked per pair needs an ear to tune: with the roadmap's Sonic analysis, or with the owner listening.)
+- [x] `M` Picture-in-picture: the video or cover floating above other windows, small controls.
+      (2026-11-05: P, the player bar's button or the player's menu. The same window made small and kept above the
+      others (`src-tauri/src/pip.rs`: no second window, so no second player), 480 × 316 in the screen's bottom right
+      corner the first time, then where it was left (settings `pipPlace`, this PC only, kept while a screen still
+      shows it); back as it was (size, place, maximized, full screen) on Esc, its button or a double click on its
+      strip, and before the app saves its place on quit. `features/player/pipMode.ts` + `PipScreen.tsx` (lazy): the
+      video edge to edge (only its slot holds the embed then), or the cover over its blurred copy as Now Playing's
+      Cover / Auto choose; a progress line and a strip (song, previous / play / next, back) under it, nothing over
+      the video (YouTube's rule: toasts and the volume number wait); the picture and the strip drag the window, a
+      click on the picture plays / pauses; its own right-click menu. Not from the full screens, not on the phone.
+      Decided alone: the key P, the size (the picture stays YouTube's 200 px high at least: 356 × 246 the
+      smallest), no double click on the picture (it already plays / pauses). Seen in the demo: the screen at
+      480 × 316, P both ways, Esc, the menus. Unseen: the real window (small, above the others, dragged, back to a
+      maximized or full screen one), a YouTube video in it, two screens. Left: Android's own picture-in-picture.)
 - [ ] `M` Classic skins: a compact "mini" layout (Winamp-like) with the user's theme.
 - [x] `M` A column view of the library with chosen columns, sorts and groupings (foobar2000, MusicBee). Columns and
       sorts were there (Display options, the headers); Songs › Display options (or Settings › Appearance) › Column
