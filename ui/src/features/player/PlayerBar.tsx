@@ -16,6 +16,7 @@ import { playerMenu } from '../menus'
 import { trackArt } from '../../shared/art'
 import { Cover } from '../../shared/ui/Cover'
 import { ArtistLink } from './ArtistLink'
+import { artistName } from '../../shared/artistName'
 import { bindFrame, tailVolume, useNowTrack, usePlayer, useVideoSlot } from './store'
 import { volumeWheelRef } from './volume'
 import { pop } from '../../shared/motion'
@@ -259,7 +260,7 @@ function LikeButton() {
   const liked = useLiked(track)
   if (!track) return null
   return (
-    <RoundButton label={liked ? tr('Remove from Liked Music') : tr('Add to Liked Music')} aria-pressed={liked} kind="plain" size="sm" className={liked ? 'text-ink!' : ''} onClick={(e) => (void toggleLike(track), pop(e.currentTarget))}>
+    <RoundButton label={liked ? tr('Remove from Liked Music') : tr('Add to Liked Music')} aria-pressed={liked} kind="plain" size="sm" className={liked ? 'text-ink!' : ''} onClick={(e) => (e.stopPropagation(), void toggleLike(track), pop(e.currentTarget))}>
       <Heart size={19} weight={liked ? 'fill' : 'regular'} />
     </RoundButton>
   )
@@ -330,7 +331,8 @@ export function PlayerBar() {
           .map((f) => <YouTubeFrame key={f.key} videoId={f.videoId} tail={f === tail} idle={f === tail && !!tail?.done} />)}
       {phone && now && <ProgressLine className="absolute inset-x-3 top-0" />}
 
-      <div className="flex w-85 min-w-0 items-center gap-3 phone:w-auto phone:flex-1">
+      {/* The phone: the whole song area opens Now Playing (a thumb's target, not two small ones). */}
+      <div onClick={phone && now ? () => setFull(true) : undefined} className="flex w-85 min-w-0 items-center gap-3 phone:w-auto phone:flex-1 phone:self-stretch">
         <button disabled={!now} onClick={() => setFull(true)} title={now ? tr('Open Now Playing') : undefined} className="shrink-0">
           {/* New song: its cover fades in. */}
           <Cover key={now?.trackId ?? now?.title} className="fade-in" title={now?.title ?? ''} art={track && trackArt(track)} size={phone ? 44 : 56} />
@@ -343,7 +345,7 @@ export function PlayerBar() {
             // Mockup: artist · where it plays from (setting readout), details in the tooltip. The phone keeps the artist
             // whole: Now Playing says the source.
             <span className="flex max-w-full min-w-0 items-center gap-1 text-[0.8125rem] text-ink-2">
-              <ArtistLink now={now} className="min-w-0 truncate" />
+              {phone ? <span className="min-w-0 truncate">{artistName(now.artist)}</span> : <ArtistLink now={now} className="min-w-0 truncate" />}
               {readout && !phone && (
                 <span title={viaTitle(now.via, now.path)} className="flex shrink-0 items-center gap-1">
                   {now.artist && '· '}
@@ -365,7 +367,7 @@ export function PlayerBar() {
       </div>
 
       {phone ? (
-        <Transport size="sm" compact />
+        <Transport size="sm" mini />
       ) : (
         <>
           <div className="flex w-140 min-w-0 flex-col items-center gap-1">

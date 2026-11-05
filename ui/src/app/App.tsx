@@ -57,8 +57,8 @@ preloadHome()
 
 const win = getCurrentWindow()
 // Full contrast: grey window buttons were hard to find (user, 2026-10-23).
-const winBtn = 'grid h-9 w-11 place-items-center rounded-md text-ink transition hover:bg-raised'
-const navBtn = 'grid size-8 place-items-center rounded-full bg-raised text-ink-2 transition hover:text-ink disabled:pointer-events-none disabled:opacity-40'
+const winBtn = 'grid h-9 w-11 phone:size-11 place-items-center rounded-md text-ink transition hover:bg-raised'
+const navBtn = 'grid size-8 phone:size-10 place-items-center rounded-full bg-raised text-ink-2 transition hover:text-ink disabled:pointer-events-none disabled:opacity-40'
 
 /**
  * Replaces the OS title bar (decorations: false), full width on the window's background like Spotify's: logo and name
@@ -118,8 +118,9 @@ function TopBar() {
   }, [])
   return (
     // Over Now Playing: a veil from the top keeps logo, Close player and window buttons readable on any cover.
-    <header data-tauri-drag-region className={`relative z-30 flex h-13 shrink-0 items-center gap-3 pr-2 pl-5 phone:gap-1 phone:pr-2 phone:pl-1 ${full ? 'bg-[linear-gradient(to_bottom,color-mix(in_srgb,var(--bg)_80%,transparent),transparent)]' : ''}`}>
-      <button data-brand onClick={() => go({ name: 'home' })} title={tr('Home')} className="flex items-center gap-2.5 rounded-md px-2 py-1">
+    <header data-tauri-drag-region className={`relative z-30 flex h-13 shrink-0 items-center gap-3 pr-2 pl-5 phone:gap-1 phone:pr-2 phone:pl-1 ${full ? 'bg-[linear-gradient(to_bottom,color-mix(in_srgb,var(--bg)_80%,transparent),transparent)] phone:hidden' : ''}`}>
+      {/* The phone: the logo or Back, never both (Home is a tab there). */}
+      <button data-brand onClick={() => go({ name: 'home' })} title={tr('Home')} className={`flex items-center gap-2.5 rounded-md px-2 py-1 ${canBack && !full ? 'phone:hidden' : ''}`}>
         <Logo />
         <span data-brand-name className="text-[0.9375rem] font-bold tracking-tight phone:hidden">Legato</span>
       </button>
@@ -130,7 +131,7 @@ function TopBar() {
       ) : (
         // ← → of the mockups (the mouse's back / forward buttons do the same).
         <span className="flex items-center gap-2">
-          <button className={`${navBtn} nudge-l`} aria-label={tr('Back')} title={tr('Back')} disabled={!canBack} onClick={goBack}>
+          <button className={`${navBtn} nudge-l ${canBack ? '' : 'phone:hidden'}`} aria-label={tr('Back')} title={tr('Back')} disabled={!canBack} onClick={goBack}>
             <CaretLeft size={16} />
           </button>
           <button className={`${navBtn} nudge-r phone:hidden`} aria-label={tr('Forward')} title={tr('Forward')} disabled={!canForward} onClick={goForward}>
@@ -334,7 +335,7 @@ export function App() {
           <Alerts />
           {/* New page: a short rise (styles.css .page-in), not when only its details change. Its padding is what a
               page band undoes to reach the pane's edges (PageHeader). */}
-          <div key={pageKey(view)} className="page-in flex min-h-0 flex-1 flex-col px-6 pt-5">
+          <div key={pageKey(view)} className="page-in flex min-h-0 flex-1 flex-col px-6 pt-5 phone:px-4 phone:pt-3">
             <PageBoundary>
               {view.name === 'home' && <HomeView />}
               {view.name === 'add' && <AddView />}

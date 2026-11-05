@@ -12,8 +12,11 @@ const sizes = {
   lg: { skip: 'lg', play: 'xl', icon: 18, big: 28, mode: 22 },
 } as const
 
-/** Same transport everywhere (bar, Now Playing, mini player), plain icons around the play button. compact = no shuffle / repeat. */
-export function Transport({ size = 'md', compact = false }: { size?: 'sm' | 'md' | 'lg'; compact?: boolean }) {
+/**
+ * Same transport everywhere (bar, Now Playing, mini player), plain icons around the play button. compact = no shuffle /
+ * repeat; mini = play and next only (the phone's mini player: Now Playing has the rest).
+ */
+export function Transport({ size = 'md', compact = false, mini = false }: { size?: 'sm' | 'md' | 'lg'; compact?: boolean; mini?: boolean }) {
   // Only what it draws: no re-render on every position report.
   const { has, queue, playing, toggle, step, shuffle, repeat, toggleShuffle, cycleRepeat } = usePlayer(
     useShallow((p) => ({ has: !!p.now, queue: !!p.now?.trackId, playing: p.playing, toggle: p.toggle, step: p.step, shuffle: p.shuffle, repeat: p.repeat, toggleShuffle: p.toggleShuffle, cycleRepeat: p.cycleRepeat })),
@@ -22,12 +25,12 @@ export function Transport({ size = 'md', compact = false }: { size?: 'sm' | 'md'
   // On: ink with a dot under it (sky blue stays for the play button, docs/design.md).
   const mode = (on: boolean) => (on ? 'relative text-ink! after:absolute after:bottom-0.5 after:size-1 after:rounded-full after:bg-ink' : '')
   const buttons = [
-    !compact && (
+    !compact && !mini && (
       <RoundButton key="shuffle" label={shuffle ? tr('Shuffle: on') : tr('Shuffle: off')} aria-pressed={shuffle} kind="plain" size={s.skip} disabled={!queue} onClick={(e) => (toggleShuffle(), pop(e.currentTarget))} className={mode(shuffle)}>
         <Shuffle size={s.mode} weight={shuffle ? 'bold' : 'regular'} />
       </RoundButton>
     ),
-    <RoundButton key="prev" label={tr('Previous')} kind="plain" size={s.skip} disabled={!has} onClick={() => step(-1)} className="nudge-l">
+    !mini && <RoundButton key="prev" label={tr('Previous')} kind="plain" size={s.skip} disabled={!has} onClick={() => step(-1)} className="nudge-l">
       <SkipBack weight="fill" size={s.icon} className="text-ink" />
     </RoundButton>,
     <RoundButton key="play" label={playing ? tr('Pause') : tr('Play')} kind="primary" size={s.play} disabled={!has} onClick={toggle}>
@@ -36,7 +39,7 @@ export function Transport({ size = 'md', compact = false }: { size?: 'sm' | 'md'
     <RoundButton key="next" label={tr('Next')} kind="plain" size={s.skip} disabled={!has} onClick={() => step(1)} className="nudge-r">
       <SkipForward weight="fill" size={s.icon} className="text-ink" />
     </RoundButton>,
-    !compact && (
+    !compact && !mini && (
       <RoundButton key="repeat" label={tr(repeatLabel[repeat])} aria-pressed={repeat !== 'off'} kind="plain" size={s.skip} disabled={!queue} onClick={(e) => (cycleRepeat(), pop(e.currentTarget))} className={mode(repeat !== 'off')}>
         {repeat === 'one' ? <RepeatOnce size={s.mode} weight="bold" /> : <Repeat size={s.mode} weight={repeat === 'all' ? 'bold' : 'regular'} />}
       </RoundButton>

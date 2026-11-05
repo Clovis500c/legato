@@ -30,7 +30,7 @@ import { saveSmart, smartMenu } from '../smart/actions'
 /** Home, Mixes, Stats, Add music: icon Regular at rest, Fill when on (docs/design.md). */
 function NavItem({ on, icon: Icon, label, onClick, onContextMenu }: { on: boolean; icon: typeof House; label: string; onClick: () => void; onContextMenu?: (e: React.MouseEvent) => void }) {
   return (
-    <button aria-current={on ? 'page' : undefined} onClick={onClick} onContextMenu={onContextMenu} className={`flex h-10 w-full items-center gap-4 rounded-md px-3 text-left text-[0.9375rem] font-medium transition ${on ? 'text-ink' : 'text-ink-2 hover:text-ink'}`}>
+    <button aria-current={on ? 'page' : undefined} onClick={onClick} onContextMenu={onContextMenu} className={`flex h-10 w-full items-center gap-4 rounded-md px-3 text-left phone:h-12 phone:gap-3 text-[0.9375rem] font-medium transition ${on ? 'text-ink' : 'text-ink-2 hover:text-ink'}`}>
       <Icon key={String(on)} size={22} weight={on ? 'fill' : 'regular'} className={on ? 'icon-in' : ''} />
       <span className="min-w-0 flex-1 truncate">{label}</span>
     </button>
@@ -207,9 +207,10 @@ export function Sidebar() {
 
   return (
     <aside className={`relative flex flex-col gap-2 ${wide ? 'min-w-0 flex-1' : 'shrink-0 phone:hidden'}`} style={wide ? undefined : { width }}>
-      <nav className="flex shrink-0 flex-col rounded-lg bg-panel p-2">
-        <NavItem on={is('home')} icon={House} label={tr('Home')} onClick={() => go({ name: 'home' })} onContextMenu={onMenu(() => navMenu({ name: 'home' }))} />
-        <NavItem on={is('mixes') || is('mix')} icon={Disc} label={tr('Mixes')} onClick={() => go({ name: 'mixes' })} onContextMenu={onMenu(() => navMenu({ name: 'mixes' }))} />
+      {/* The phone: Home and Mixes are tabs; Stats and Add music side by side. */}
+      <nav className="flex shrink-0 flex-col rounded-lg bg-panel p-2 phone:grid phone:grid-cols-2 phone:gap-1">
+        {!phone && <NavItem on={is('home')} icon={House} label={tr('Home')} onClick={() => go({ name: 'home' })} onContextMenu={onMenu(() => navMenu({ name: 'home' }))} />}
+        {!phone && <NavItem on={is('mixes') || is('mix')} icon={Disc} label={tr('Mixes')} onClick={() => go({ name: 'mixes' })} onContextMenu={onMenu(() => navMenu({ name: 'mixes' }))} />}
         <NavItem on={is('stats')} icon={ChartBar} label={tr('Stats')} onClick={() => go({ name: 'stats' })} onContextMenu={onMenu(() => navMenu({ name: 'stats' }))} />
         <NavItem on={is('add')} icon={PlusCircle} label={tr('Add music')} onClick={() => go({ name: 'add' })} onContextMenu={onMenu(() => navMenu({ name: 'add' }))} />
       </nav>
@@ -218,7 +219,7 @@ export function Sidebar() {
       <section aria-label={tr('Your library')} className="flex min-h-0 flex-1 flex-col rounded-lg bg-panel">
         <div onContextMenu={onMenu(playlistsMenu)} className="flex shrink-0 items-center gap-1 pt-3 pr-2 pl-4">
           <h2 className="flex-1 text-base font-medium">{tr('Your library')}</h2>
-          <RoundButton label={wide ? tr('Collapse Your library') : tr('Expand Your library')} aria-pressed={wide} kind="plain" size="sm" className={wide ? 'nudge-l' : 'nudge-r'} onClick={() => update({ libraryWide: !wide })}>
+          <RoundButton label={wide ? tr('Collapse Your library') : tr('Expand Your library')} aria-pressed={wide} kind="plain" size="sm" className={`${wide ? 'nudge-l' : 'nudge-r'} phone:hidden`} onClick={() => update({ libraryWide: !wide })}>
             {wide ? <ArrowDownLeft size={18} /> : <ArrowUpRight size={18} />}
           </RoundButton>
           <RoundButton label={tr('Sort playlists')} kind="plain" size="sm" onClick={(e) => openMenu(e, ORDERS.map((o) => ({ label: tr(o.label), checked: order === o.id, onSelect: () => useSettings.getState().update({ playlistOrder: o.id }) })))}>

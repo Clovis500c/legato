@@ -700,7 +700,8 @@ export function navMenu(to: View, tracks?: LibraryTrack[]): MenuEntry[] {
 }
 
 /** Player surfaces: bar, mini player, Now Playing (like YouTube's own player menu). */
-export function playerMenu(): MenuEntry[] {
+/** controls: false = without what Now Playing's own buttons do (play, skip, shuffle, repeat, full screen): its More. */
+export function playerMenu({ controls = true }: { controls?: boolean } = {}): MenuEntry[] {
   const { now, playing, shuffle, repeat, full, positionMs, list, index, toggle, step, toggleShuffle, setFull } = player()
   if (!now) return appMenu()
   const playingNow = nowTrack()
@@ -711,14 +712,14 @@ export function playerMenu(): MenuEntry[] {
   const mini = useSettings.getState().settings.miniPlayer
   const rep = (r: typeof repeat, label: string) => ({ label, checked: repeat === r, onSelect: () => usePlayer.setState({ repeat: r }) })
   return [
-    { label: playing ? tr('Pause') : tr('Play'), icon: playing ? <Pause size={16} /> : <Play size={16} />, onSelect: toggle },
-    { label: tr('Previous'), icon: <SkipBack size={16} />, onSelect: () => step(-1) },
-    { label: tr('Next'), icon: <SkipForward size={16} />, onSelect: () => step(1) },
+    controls && { label: playing ? tr('Pause') : tr('Play'), icon: playing ? <Pause size={16} /> : <Play size={16} />, onSelect: toggle },
+    controls && { label: tr('Previous'), icon: <SkipBack size={16} />, onSelect: () => step(-1) },
+    controls && { label: tr('Next'), icon: <SkipForward size={16} />, onSelect: () => step(1) },
     '-',
-    { label: tr('Shuffle'), checked: shuffle, disabled: !now.trackId, onSelect: toggleShuffle },
-    { label: tr('Repeat'), icon: <Repeat size={16} />, disabled: !now.trackId, items: [rep('off', tr('Off')), rep('all', tr('Whole queue')), rep('one', tr('This track'))] },
+    controls && { label: tr('Shuffle'), checked: shuffle, disabled: !now.trackId, onSelect: toggleShuffle },
+    controls && { label: tr('Repeat'), icon: <Repeat size={16} />, disabled: !now.trackId, items: [rep('off', tr('Off')), rep('all', tr('Whole queue')), rep('one', tr('This track'))] },
     '-',
-    { label: full ? tr('Leave full screen') : tr('Full screen'), icon: <ArrowsOutSimple size={16} />, onSelect: () => setFull(!full) },
+    controls && { label: full ? tr('Leave full screen') : tr('Full screen'), icon: <ArrowsOutSimple size={16} />, onSelect: () => setFull(!full) },
     { label: tr('Karaoke'), icon: <MicrophoneStage size={16} />, onSelect: toggleKaraoke },
     { label: tr('Cover display'), icon: <FrameCorners size={16} />, onSelect: toggleCoverFull },
     !phoneApp && { label: tr('Picture-in-picture'), icon: <PictureInPicture size={16} />, onSelect: () => void openPip() },

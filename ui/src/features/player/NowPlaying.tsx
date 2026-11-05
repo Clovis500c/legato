@@ -1,4 +1,4 @@
-import { ArrowSquareOut, FrameCorners, Heart, MicrophoneStage, Queue, Quotes, SlidersHorizontal, ThumbsDown } from '@phosphor-icons/react'
+import { ArrowSquareOut, CaretDown, DotsThree, FrameCorners, Heart, ImageSquare, MicrophoneStage, Queue, Quotes, SlidersHorizontal, ThumbsDown } from '@phosphor-icons/react'
 import { artistName } from '../../shared/artistName'
 import { STAGE_ID } from '../../app/searchShift'
 import { pop } from '../../shared/motion'
@@ -11,7 +11,8 @@ import { bigTrackArt, trackArt } from '../../shared/art'
 import { clampRatio } from '../../shared/artbox'
 import type { Settings } from '../../shared/theme/theme'
 import { Button } from '../../shared/ui/Button'
-import { onMenu } from '../../shared/ui/ContextMenu'
+import { onMenu, openMenu, type MenuEntry } from '../../shared/ui/ContextMenu'
+import { usePhone } from '../../shared/phone'
 import { RoundButton, Segmented } from '../../shared/ui/controls'
 import { lessLikeThis, toggleLike, useLiked } from './like'
 import { Cover } from '../../shared/ui/Cover'
@@ -261,6 +262,7 @@ export function NowPlaying() {
   // Auto: a still-image upload shows as a cover.
   const still = useStill(now?.via === 'youtube' ? now.youtubeId : undefined)
   const backdrop = useBackdrop(immersive && track ? trackArt(track)[0] : undefined, backdropBlur)
+  const phone = usePhone()
 
   useEffect(() => {
     // A dialog or a menu on top (share card, add to playlist…) takes this Esc: Now Playing stays.
@@ -277,6 +279,20 @@ export function NowPlaying() {
   // A file, a preview: its YouTube version, if it has one, can show the video (Spotify plays in its own app).
   const ytVersion = !video && now.via !== 'spotify' && !!track?.ids.youtube
   const panel: PanelId | null = editor ? 'editor' : lyrics ? 'lyrics' : upNext ? 'upNext' : null
+  // Every song (user's pick 2026-10-23): Video on a file or a preview switches to its YouTube version, same spot.
+  const show = video ? stage : stage === 'cover' ? 'cover' : 'auto'
+  const showOptions = [{ value: 'auto' as const, label: video && stage === 'auto' && still !== undefined ? (still ? tr('Auto · cover') : tr('Auto · video')) : tr('Auto') }, ...(video || ytVersion ? [{ value: 'video' as const, label: tr('Video') }] : []), { value: 'cover' as const, label: tr('Cover') }]
+  const pickShow = (s: typeof stage) => {
+    update({ stage: s })
+    if (s === 'video' && !video && ytVersion) void usePlayer.getState().playAt(usePlayer.getState().index, 'youtube', { from: usePlayer.getState().positionMs })
+  }
+  // The phone's More: what the desktop's buttons and the Show switch do, then the player's own menu.
+  const more = (): MenuEntry[] => [
+    { label: tr('Show'), icon: <ImageSquare size={16} />, items: showOptions.map((o) => ({ label: o.label, checked: o.value === show, onSelect: () => pickShow(o.value) })) },
+    track && !isRemote(track) && { label: tr('Less like this'), icon: <ThumbsDown size={16} />, onSelect: () => lessLikeThis(track) },
+    '-',
+    ...playerMenu({ controls: false }),
+  ]
   const source = (
     <span className="flex items-center gap-2 text-[0.8125rem] text-ink-2">
       <SourceIcon source={viaSource[now.via]} size={15} />
@@ -286,24 +302,28 @@ export function NowPlaying() {
 
   return (
     // Whole window, under the see-through top bar (logo, Close player and window buttons stay on top, z-30).
-    <div role="dialog" aria-label={tr('Now playing')} onContextMenu={onMenu(playerMenu)} className="np-in fixed inset-0 z-20 isolate flex flex-col overflow-hidden bg-bg px-10 pt-17 pb-7 text-ink transition-colors duration-500 phone:px-5 phone:pt-15 phone:pb-[max(1rem,env(safe-area-inset-bottom))]" style={ambient}>
+    <div role="dialog" aria-label={tr('Now playing')} onContextMenu={onMenu(playerMenu)} className="np-in fixed inset-0 z-20 isolate flex flex-col overflow-hidden bg-bg px-10 pt-17 pb-7 text-ink transition-colors duration-500 phone:px-5 phone:pt-[max(0.5rem,env(safe-area-inset-top))] phone:pb-[max(1rem,env(safe-area-inset-bottom))]" style={ambient}>
       {immersive && <Backdrop url={backdrop} dim={backdropDim} motion={backdropMotion} />}
       {visualizer && vizBackdrop && motion && now.via !== 'spotify' && <VizBackdrop />}
+
+      {/* The phone: its own bar in place of the app's (hidden under it): close, where it plays from, More. */}
+      {phone && (
+        <header className="-mx-2 flex shrink-0 items-center gap-2 pb-2">
+          <RoundButton label={tr('Close Now Playing (Esc)')} kind="plain" size="md" onClick={() => setFull(false)}>
+            <CaretDown size={22} />
+          </RoundButton>
+          <p className="kicker min-w-0 flex-1 truncate text-center">{from ? tr('Playing from {list}', { list: from }) : tr('Now playing')}</p>
+          <RoundButton label={tr('More')} kind="plain" size="md" onClick={(e) => openMenu(e, more(), { place: 'below' })}>
+            <DotsThree size={24} weight="bold" />
+          </RoundButton>
+        </header>
+      )}
 
       {/* Phone layout: one column, the cover over the song; an open panel (lyrics, Up next, sound) takes the cover's place. */}
       <div className={`grid min-h-0 flex-1 gap-12 phone:grid-cols-1 phone:gap-4 ${panel ? 'phone:grid-rows-1' : 'phone:grid-rows-[minmax(0,1fr)_auto]'} ${panel === 'editor' ? 'grid-cols-[minmax(0,1fr)_400px]' : panel === 'upNext' ? 'grid-cols-[minmax(0,1fr)_360px]' : 'grid-cols-[minmax(0,1fr)_minmax(0,1fr)]'}`}>
         <section id={STAGE_ID} className={`flex min-h-0 min-w-0 flex-col items-center gap-4 ${panel ? 'phone:hidden' : ''}`}>
-          {/* Every song (user's pick 2026-10-23): Video on a file or a preview switches to its YouTube version, same spot. */}
-          <Segmented
-            className="glass"
-            label={tr('Show')}
-            value={video ? stage : stage === 'cover' ? 'cover' : 'auto'}
-            onChange={(s) => {
-              update({ stage: s })
-              if (s === 'video' && !video && ytVersion) void usePlayer.getState().playAt(usePlayer.getState().index, 'youtube', { from: usePlayer.getState().positionMs })
-            }}
-            options={[{ value: 'auto', label: video && stage === 'auto' && still !== undefined ? (still ? tr('Auto · cover') : tr('Auto · video')) : tr('Auto') }, ...(video || ytVersion ? [{ value: 'video' as const, label: tr('Video') }] : []), { value: 'cover', label: tr('Cover') }]}
-          />
+          {/* The phone: in More (one main thing on screen, the cover). */}
+          {!phone && <Segmented className="glass" label={tr('Show')} value={show} onChange={pickShow} options={showOptions} />}
           <Stage video={video} cover={stage === 'cover' || (stage === 'auto' && still === true)} track={track} title={now.title} youtubeId={now.youtubeId} pulse={coverPulse && motion} wantRing={visualizer && motion && look === 'radial' && now.via !== 'spotify'} onRing={setRing} />
           {visualizer && motion && now.via !== 'spotify' && !ring && <Visualizer />}
           {now.via === 'spotify' && <span className="kicker text-center">{tr('Playing in your Spotify app')}</span>}
@@ -329,23 +349,41 @@ export function NowPlaying() {
           <UpNext onHide={() => update({ upNext: false })} />
         ) : (
           // Display XL (docs/design.md), smaller in a small window; long video titles wrap to two lines.
-          <div className="flex min-w-0 flex-col justify-center gap-4 pb-8 phone:gap-2 phone:pb-0">
-            {from && <p className="kicker truncate">{tr('Playing from {list}', { list: from })}</p>}
-            <h2 className="line-clamp-2 pb-1 text-[clamp(2.5rem,5.5vw,5.5rem)] leading-[1.05] font-black tracking-[-0.02em] break-words phone:text-[1.75rem]">{now.title}</h2>
-            <ArtistLink now={now} className="w-fit max-w-full truncate text-[1.375rem] leading-7 font-bold phone:text-lg" />
-            {track?.album && <p className="truncate text-sm">{track.album}</p>}
-            {readout && source}
-            <hr className="border-line" />
-            <LyricsPeek />
-            <NextLine />
-          </div>
+          phone ? (
+            // The phone: title and artist on the left, the heart beside them; album, lyrics and Up next one tap away.
+            <div className="flex min-w-0 items-center gap-3">
+              <div className="min-w-0 flex-1">
+                <h2 className="line-clamp-2 text-2xl leading-tight font-black tracking-[-0.02em] break-words">{now.title}</h2>
+                <span className="flex min-w-0 items-center gap-1.5 text-base text-ink-2">
+                  <ArtistLink now={now} className="min-w-0 truncate" />
+                  {readout && <SourceIcon source={viaSource[now.via]} size={14} />}
+                </span>
+              </div>
+              {track && (
+                <RoundButton label={liked ? tr('Remove from Liked Music') : tr('Add to Liked Music')} aria-pressed={liked} kind="plain" size="md" onClick={(e) => (void toggleLike(track), pop(e.currentTarget))} className={liked ? 'text-ink!' : ''}>
+                  <Heart size={24} weight={liked ? 'fill' : 'regular'} />
+                </RoundButton>
+              )}
+            </div>
+          ) : (
+            <div className="flex min-w-0 flex-col justify-center gap-4 pb-8">
+              {from && <p className="kicker truncate">{tr('Playing from {list}', { list: from })}</p>}
+              <h2 className="line-clamp-2 pb-1 text-[clamp(2.5rem,5.5vw,5.5rem)] leading-[1.05] font-black tracking-[-0.02em] break-words">{now.title}</h2>
+              <ArtistLink now={now} className="w-fit max-w-full truncate text-[1.375rem] leading-7 font-bold" />
+              {track?.album && <p className="truncate text-sm">{track.album}</p>}
+              {readout && source}
+              <hr className="border-line" />
+              <LyricsPeek />
+              <NextLine />
+            </div>
+          )
         )}
       </div>
 
       <div ref={volumeWheelRef} className="flex shrink-0 flex-col gap-3 pt-6">
         {panel && (
           <div className="min-w-0">
-            <h2 className="truncate text-[2rem] leading-tight font-black tracking-[-0.02em]">{now.title}</h2>
+            <h2 className="truncate text-[2rem] leading-tight font-black tracking-[-0.02em] phone:text-xl">{now.title}</h2>
             <ArtistLink now={now} className="block w-fit max-w-full truncate text-base font-medium" />
           </div>
         )}
@@ -356,8 +394,9 @@ export function NowPlaying() {
         </div>
         {/* Side columns may shrink (small window): the volume bar narrows instead of running into the transport. */}
         {/* Phone layout: the transport on its own row first, the rest under it; no volume (the phone's buttons). */}
-        <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center phone:grid-cols-2 phone:gap-y-2">
-          <span className="flex min-w-0 items-center gap-1">
+        {/* The phone: the transport, then Lyrics, Up next and Sound spread under the thumb; the rest in More. */}
+        <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center phone:grid-cols-1 phone:gap-y-3">
+          <span className="flex min-w-0 items-center gap-1 phone:hidden">
             {track && (
               <RoundButton label={liked ? tr('Remove from Liked Music') : tr('Add to Liked Music')} aria-pressed={liked} kind="plain" size="md" onClick={(e) => (void toggleLike(track), pop(e.currentTarget))} className={liked ? 'text-ink!' : ''}>
                 <Heart size={22} weight={liked ? 'fill' : 'regular'} />
@@ -371,14 +410,14 @@ export function NowPlaying() {
             )}
             {readout && panel && <SourceBadge via={now.via} />}
           </span>
-          <span className="phone:order-first phone:col-span-2 phone:justify-self-center">
+          <span className="phone:justify-self-center">
             <Transport size="lg" />
           </span>
-          <div className="flex min-w-0 items-center justify-end gap-1">
+          <div className="flex min-w-0 items-center justify-end gap-1 phone:justify-around">
             <PanelToggle id="lyrics" label={tr('Lyrics')} icon={Quotes} active={panel} />
             <PanelToggle id="upNext" label={tr('Up next')} icon={Queue} active={panel} />
             <PanelToggle id="editor" label={tr('Sound')} icon={SlidersHorizontal} active={panel} />
-            <RoundButton label={tr('Karaoke')} kind="plain" size="md" onClick={(e) => (toggleKaraoke(), pop(e.currentTarget))}>
+            <RoundButton label={tr('Karaoke')} kind="plain" size="md" className="phone:hidden" onClick={(e) => (toggleKaraoke(), pop(e.currentTarget))}>
               <MicrophoneStage size={22} />
             </RoundButton>
             {/* A second screen's picture: not on a phone. */}

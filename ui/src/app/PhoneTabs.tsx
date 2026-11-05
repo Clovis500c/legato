@@ -3,8 +3,8 @@ import { tr } from '../shared/i18n/i18n'
 import { useSettings } from './settings'
 import { useStore, type View } from './store'
 
-/** Phone layout's bottom tabs (below 640 px, the sidebar hidden): Home, Search, Your library (the sidebar open wide, as
- *  its Expand button does), Mixes. */
+/** Phone layout's bottom tabs (below 640 px, the sidebar hidden): Home, Search (its page, the field focused), Your
+ *  library (the sidebar open wide, as its Expand button does), Mixes. */
 export function PhoneTabs() {
   const view = useStore((s) => s.view)
   const go = useStore((s) => s.go)
@@ -14,7 +14,7 @@ export function PhoneTabs() {
   const page = (v: View) => () => (leave(), go(v))
   const tabs = [
     { label: tr('Home'), icon: House, on: !wide && view.name === 'home', onClick: page({ name: 'home' }) },
-    { label: tr('Search'), icon: MagnifyingGlass, on: !wide && view.name === 'search', onClick: () => (leave(), document.querySelector<HTMLInputElement>('[data-search]')?.focus()) },
+    { label: tr('Search'), icon: MagnifyingGlass, on: !wide && view.name === 'search', onClick: () => (leave(), view.name !== 'search' && go({ name: 'search' }), document.querySelector<HTMLInputElement>('[data-search]')?.focus()) },
     { label: tr('Your library'), icon: Books, on: wide, onClick: () => update({ libraryWide: !wide }) },
     { label: tr('Mixes'), icon: Disc, on: !wide && (view.name === 'mixes' || view.name === 'mix'), onClick: page({ name: 'mixes' }) },
   ]
