@@ -4,7 +4,8 @@ Open work only. Tick a line when it lands; drop ticked lines once a release ship
 (phases 1 to 8, the big update, the redesign, the product pass, roadmap milestones 0 to 2, the user's choices along the
 way) is in git: `git log -p docs/notes/plan-v2.md`, and in the release notes.
 
-Stable: v1.1.479 (2026-10-31). Next: milestone 3, Platforms. Where the work stands: [handoff.md](handoff.md).
+Stable: v1.1.681 (2026-11-05). Next: Against Liner's quick wins, then milestone 3, Platforms. Where the work stands:
+[handoff.md](handoff.md).
 
 Every idea here stays: the user wants them all built in the end, just later (user's choice 2026-10-31). The roadmap sets
 the order; a line leaves only when it ships or the user drops it.
@@ -50,6 +51,30 @@ sight) shipped together as Stable 1.1.
 
 Kept apart (need the user's call or an outside step): Spotify playback paths, Spotify's web session, LLM playlists with a
 user key, SoundCloud playback and search (its terms), concerts (an API's terms), trademark search.
+
+### Against Liner (user's ask 2026-11-05: lead it on every point)
+
+Liner (`tryliner/desktop`): Electron, Windows / macOS / Linux, an account on its server, YouTube's audio taken and
+served from its own copies (never ours: CLAUDE.md). The comparison, row by row, and each line's detail:
+[ideas/liner.md](ideas/liner.md). Already ahead: weight, no account or limits, privacy, the phone, languages in the app,
+the visualizer, the library, the player's tools, updates. The quick wins can go in any release.
+
+- [ ] `S` Windows 11 snap layouts on our maximize button (`WM_NCHITTEST` → `HTMAXBUTTON`, beside `thumbbar.rs`).
+- [ ] `S` Discord on par: a status format (song, artist, both), the artist's picture, a preview.
+- [ ] `S` The mini player on minimize (a setting, off): picture in picture opens, the sung line in it; YouTube's 200 × 200.
+- [ ] `S` A profile card without an account: top artists, recap, playlists, as a picture or a share link.
+- [ ] `S-M` Check the matches after an import: doubtful ones with their candidates, pick or keep, approve all.
+- [ ] `S-M` A moving cover background (our own WebGL shader), Now Playing, Karaoke, Cover display; under 3 % CPU.
+- [ ] `S-M` Fast start on a skip: time to sound measured, then the next YouTube video cued in the crossfade's player.
+- [ ] `S-M` Share links that open in any browser: a static page on the website reads the playlist from the link's
+      fragment, Open in Legato, Listen on YouTube, Get Legato.
+- [ ] `M` More lyrics sources and a picker with a match %, each source's terms read first, a privacy row each.
+- [ ] `M` Reach: the website in the app's 18 languages, README screenshots, winget and Scoop, Discussions (outward
+      steps: the owner's word). Takes in Features › Low's Community line.
+- [ ] `M` SoundCloud sets and likes through its official widget's list (terms first), matched on YouTube.
+- [ ] `L` Listening rooms over the internet, no server of ours: sealed control messages through a public relay (the
+      owner's call), or the LAN. Takes in "Listen together on the local network".
+- [ ] `L` macOS and Linux builds (Features › High) move up: Liner ships both.
 
 ### Platforms (milestone 3, user's ask 2026-10-31)
 

@@ -15,6 +15,7 @@ gone from the plan has shipped: its spec stays here as the record of the ask (wh
 | [last-batch.md](last-batch.md) | Last batch |
 | [workflow.md](workflow.md) | Workflow |
 | [optimisation.md](optimisation.md) | Optimisation |
+| [liner.md](liner.md) | Against Liner (2026-11-05): the comparison and what to build |
 
 Endpoints, quotas, licences and terms named here were written from research and memory on 2026-10-30: check each one
 before building on it (CLAUDE.md: they change).

@@ -27,8 +27,9 @@ be able to take the project over).
    or ask what they want. Their standing rules are in `CLAUDE.md` › Working with the owner; read them before anything
    else: no push without their word, no subagents or workflows unless they ask, real accounts are theirs, a Google
    refusal is never routed around.
-2. If they only say "carry on": fixes from their tries first (plan-v2 › Check live), then plan-v2's open lines that need
-   no account, smallest first:
+2. If they only say "carry on": fixes from their tries first (plan-v2 › Check live), then plan-v2 › Against Liner (the
+   owner's ask 2026-11-05: lead Liner on every point; `ideas/liner.md`), smallest first, then plan-v2's other open
+   lines that need no account, smallest first:
    - Features, sorted › High: same loudness across sources (needs an ear), the accessibility pass, personal servers
      (Jellyfin / Navidrome need the owner's server), macOS and Linux builds.
    - Classic skins, the autopilot's next line, not started: decide first how a mini layout keeps YouTube's 200 × 200
