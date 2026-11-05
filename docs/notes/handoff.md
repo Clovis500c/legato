@@ -21,6 +21,26 @@ be able to take the project over).
 - **Never tried for real** (built and unit-tested, seen in the demo or on the emulator only): plan-v2 › Check live in
   the real app (25 lines). The owner tries them; what they find comes first.
 
+## Autonomous run of 2026-11-05 (running)
+
+The owner's ask (2026-11-05, late evening): the whole Against Liner list (plan-v2), hardest first, with the interface
+on top (U1 the phone's, U2 glow and simplicity). They're away, reachable only through Remote Control on their phone:
+never a question, never a wait. They asked for workflows ("max ultracode"), within CLAUDE.md's rule: one agent at a
+time, effort high.
+
+- One workflow per line, two agents one after the other: a builder (tested steps, a local commit each, the plan line
+  ticked), then a reviewer that tries to break those commits and fixes what it finds. The main loop checks the tree and
+  `get_usage` between lines: no new workflow above 30 % of the 5-hour window (wait for the reset), no new line from
+  90 % of the week, the end by 95 %.
+- Order: U1, U2 (right after U1: same pages), 17 listening rooms (the local network; a public relay is the owner's
+  call), personal servers (Features › High: Jellyfin, Navidrome / Subsonic, Plex), 18 Linux, 19 macOS, 16 reach,
+  14 lyrics sources, 13 imports in seconds, 15 SoundCloud sets and likes (its search needs the site's client id against
+  its terms: the owner's call), the explicit badge and filter (Features' "Hide explicit songs"), 12, 11, 10, 9, 8, 7, 6,
+  5, 4, 3, 2.
+- A cron wake-up (session only, `13,43 * * * *`) resumes after a 5-hour limit; delete it at the end.
+- The end: a report in French (`docs/notes/report-2026-11-06.md`, untracked), this section folded into the rest of
+  this file, the cron deleted, the report sent to the owner (SendUserFile, proactive).
+
 ## How to continue
 
 1. The owner writes in French: answer in French with « tu » (the French interface says « vous »). Take their latest ask,
