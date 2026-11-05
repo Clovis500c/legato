@@ -1605,7 +1605,7 @@ const id: Record<string, string> = {
   'VU needles': 'Jarum VU',
   'Spectrogram': 'Spektrogram',
   'Radial goes around a big cover; where the cover is small it shows bars. VU needles follow the average level, PPM needles the peaks': 'Radial melingkari sampul yang besar; jika sampul kecil, tampil batang. Jarum VU mengikuti level rata-rata, jarum PPM mengikuti puncaknya',
-  'bars mirror peaks wave curve radial circle particles vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look ppm programme': 'batang cermin puncak gelombang tampilan radial lingkaran vu jarum meter spektrogram air terjun kurva osiloskop kenyaringan lufs vektorskop goniometer stereo fase korelasi partikel ppm puncak program',
+  'bars mirror peaks wave curve radial circle particles vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look ppm programme terrain 3d landscape': 'batang cermin puncak gelombang tampilan radial lingkaran vu jarum meter spektrogram air terjun kurva osiloskop kenyaringan lufs vektorskop goniometer stereo fase korelasi partikel ppm puncak program lanskap medan 3d',
   // v2 redesign
   'Playing': 'Sedang diputar',
   'All your songs': 'Semua lagumu',
@@ -2052,6 +2052,7 @@ const id: Record<string, string> = {
   'Magma': 'Magma',
   'Viridis': 'Viridis',
   'colormap color map magma viridis heat waterfall palette': 'peta warna magma viridis panas air terjun palet spektrogram',
+  '3D terrain': 'Lanskap 3D',
 }
 
 export default id

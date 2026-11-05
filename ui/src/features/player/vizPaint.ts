@@ -8,6 +8,7 @@ import { LOUD_MARKS, LOUD_WORDS, loudPos, loudText, type LoudReading, type LoudW
 import { createParticles, moodOf } from './vizParticles'
 import { createScene } from './vizScene'
 import { monoWave, SPAN, trigger } from './vizScope'
+import { advance, COLS, createTerrain, depthOf, fadeOf, flat, project, ROW_S, ROWS } from './vizTerrain'
 import { colorMap, fillColumn, namedMap, rowMix, SCROLL, SCROLL_CALM, scrollBy } from './vizSpectro'
 import { createVu, needleLook, ppmPos, PPM_MARKS, PPM_RED, vuPos, VU_MARKS } from './vizVu'
 import { VIZ_WAVE } from './vizUnpack'
@@ -83,6 +84,7 @@ export function createPainter(canvas: OffscreenCanvas) {
   let tones: VizColormap | null = null
   const acc = { v: 0 }
   let scene = createScene(columnsFor(0), false)
+  let land = createTerrain()
   let rows: LedRows = { y: [], h: [] }
   let sprites: Sprites | null = null
   let spans = columnSpans(1, 1, 0)
@@ -551,6 +553,47 @@ export function createPainter(canvas: OffscreenCanvas) {
     return resting
   }
 
+  /** The terrain, back to front: each row clears what its hills hide, then a faint body and its line. */
+  function terrain(levels: Float32Array, W: number, H: number, dt: number, resting: boolean): boolean {
+    if (!ctx) return true
+    const step = calm ? ROW_S * 2 : ROW_S
+    advance(land, levels, dt, step)
+    ctx.clearRect(0, 0, W, H)
+    const frac = land.since / step
+    // A low box (the strip): every other row, the same ones as they go back, so the lines stay apart.
+    const skip = H < 160 * dpr ? 2 : 1
+    ctx.lineWidth = Math.max(1, 1.2 * dpr)
+    ctx.lineJoin = 'round'
+    ctx.strokeStyle = ink
+    ctx.fillStyle = ink
+    for (let k = ROWS - 1; k >= 0; k--) {
+      const i = (land.head - k + ROWS) % ROWS
+      const row = land.rows[i]
+      const a = fadeOf(depthOf(k, frac))
+      if (i % skip || a <= 0 || row.every((v) => v < 0.002)) continue
+      const { y, half, lift } = project(depthOf(k, frac), W, H)
+      const x0 = W / 2 - half
+      const dx = (2 * half) / (COLS - 1)
+      ctx.beginPath()
+      ctx.moveTo(x0, y)
+      for (let j = 0; j < COLS; j++) ctx.lineTo(x0 + j * dx, y - row[j] * lift)
+      ctx.lineTo(x0 + 2 * half, y)
+      ctx.closePath()
+      ctx.globalCompositeOperation = 'destination-out'
+      ctx.globalAlpha = 1
+      ctx.fill()
+      ctx.globalCompositeOperation = 'source-over'
+      ctx.globalAlpha = 0.08 * a
+      ctx.fill()
+      ctx.beginPath()
+      for (let j = 0; j < COLS; j++) ctx.lineTo(x0 + j * dx, y - row[j] * lift)
+      ctx.globalAlpha = a
+      ctx.stroke()
+    }
+    ctx.globalAlpha = 1
+    return resting && flat(land)
+  }
+
   /** The picture moves left by the pixels due, a new column of colours at the right edge. */
   function waterfall(levels: Float32Array, dt: number) {
     if (!ctx || !strip) return
@@ -814,6 +857,7 @@ export function createPainter(canvas: OffscreenCanvas) {
         trail = null
         parts.clear()
         burstNow = 0
+        land = createTerrain()
       }
       look = next
       calm = calmer
@@ -907,6 +951,7 @@ export function createPainter(canvas: OffscreenCanvas) {
         waterfall(levels, dt)
         return resting
       }
+      if (look === 'terrain') return terrain(levels, W, H, dt, resting)
       // The dots keep moving through a pause until they fade: at rest when none are left.
       if (look === 'particles') return particles(W, H, dt)
       // The traces over their afterglow, while the bars fall (no reflection, no scales: no bands).

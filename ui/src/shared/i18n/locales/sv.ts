@@ -1605,7 +1605,7 @@ const sv: Record<string, string> = {
   'VU needles': 'VU-visare',
   'Spectrogram': 'Spektrogram',
   'Radial goes around a big cover; where the cover is small it shows bars. VU needles follow the average level, PPM needles the peaks': 'Radiell går runt ett stort omslag; är omslaget litet visas staplar. VU-visare följer medelnivån, PPM-visare topparna',
-  'bars mirror peaks wave curve radial circle particles vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look ppm programme': 'staplar spegel toppar våg utseende radiell cirkel vu visare mätare spektrogram vattenfall kurva oskilloskop ljudstyrka lufs vektorskop goniometer stereo fas korrelation partiklar ppm programnivå',
+  'bars mirror peaks wave curve radial circle particles vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look ppm programme terrain 3d landscape': 'staplar spegel toppar våg utseende radiell cirkel vu visare mätare spektrogram vattenfall kurva oskilloskop ljudstyrka lufs vektorskop goniometer stereo fas korrelation partiklar ppm programnivå landskap terräng 3d',
   // v2 redesign
   'Playing': 'Spelas',
   'All your songs': 'Alla dina låtar',
@@ -2052,6 +2052,7 @@ const sv: Record<string, string> = {
   'Magma': 'Magma',
   'Viridis': 'Viridis',
   'colormap color map magma viridis heat waterfall palette': 'färgskala färg karta magma viridis värme vattenfall palett spektrogram',
+  '3D terrain': '3D-landskap',
 }
 
 export default sv

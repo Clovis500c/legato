@@ -1605,7 +1605,7 @@ const ja: Record<string, string> = {
   'VU needles': 'VUメーター',
   'Spectrogram': 'スペクトログラム',
   'Radial goes around a big cover; where the cover is small it shows bars. VU needles follow the average level, PPM needles the peaks': 'ラジアルは大きなジャケットの周りに表示され、小さいときはバーになります。VU 針は平均レベル、PPM 針はピークを示します',
-  'bars mirror peaks wave curve radial circle particles vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look ppm programme': 'バー ミラー ピーク ウェーブ 見た目 bars mirror peaks wave ラジアル 円 vu 針 メーター スペクトログラム radial circle needles meter spectrogram waterfall カーブ オシロスコープ ラウドネス curve oscilloscope scope loudness lufs ベクトルスコープ ゴニオメーター ステレオ 位相 相関 vectorscope goniometer stereo phase correlation パーティクル 粒子 particles ppm ピーク プログラム',
+  'bars mirror peaks wave curve radial circle particles vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look ppm programme terrain 3d landscape': 'バー ミラー ピーク ウェーブ 見た目 bars mirror peaks wave ラジアル 円 vu 針 メーター スペクトログラム radial circle needles meter spectrogram waterfall カーブ オシロスコープ ラウドネス curve oscilloscope scope loudness lufs ベクトルスコープ ゴニオメーター ステレオ 位相 相関 vectorscope goniometer stereo phase correlation パーティクル 粒子 particles ppm ピーク プログラム 地形 3d テレイン',
   // v2 redesign
   'Playing': '再生中',
   'All your songs': 'すべての曲',
@@ -2052,6 +2052,7 @@ const ja: Record<string, string> = {
   'Magma': 'Magma',
   'Viridis': 'Viridis',
   'colormap color map magma viridis heat waterfall palette': 'カラーマップ 色 マグマ magma viridis ヒート ウォーターフォール パレット スペクトログラム',
+  '3D terrain': '3D地形',
 }
 
 export default ja

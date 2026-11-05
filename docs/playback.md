@@ -516,6 +516,12 @@ never: downloading, extracting, recording or exporting a platform's audio, or to
     Magma or Viridis instead of the ink, matplotlib's maps (CC0) from ten even samples each, mixed in between
     (`namedMap`), clear at silence and opaque from a quarter of the level up, so the strip still sits on the page. The
     same 256-step table the ink uses, so no WebGL for this either. A switch leaves the old columns to scroll away.
+  - **3D terrain** (2026-11-05, `vizTerrain.ts`): the last 3.3 s of the spectrum as 40 rows of a landscape, the newest
+    at the front following the sound, a new row every 1/12 s (1/6 in reduced motion) going back in perspective (depth
+    1 to 3.5: higher, narrower, flatter) and fading out at the horizon. Back to front, each row clears what its hills
+    hide (`destination-out`), then gets a faint body and its line in the theme's ink, so the page still shows through.
+    64 points a row whatever the banding; every other row in a box under 160 px (the strip). At rest once every row
+    is flat. Canvas 2D (40 rows of 64 points), not WebGL.
   - **Drawn at 30 fps** (`FPS` in `VizCanvas.tsx`, sent with the look; the worker's loop skips a tick that comes less than a
     period minus 3 ms after the last drawing): at the screen's 60 the bench showed 5 of 16 looks and sizes over the
     3 % budget (up to +4.6 points of the PC), at 30 all four looks run again were +1 to +1.9. The sound's own frames stay at

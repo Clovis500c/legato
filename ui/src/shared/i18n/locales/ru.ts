@@ -1605,7 +1605,7 @@ const ru: Record<string, string> = {
   'VU needles': 'Стрелки VU',
   'Spectrogram': 'Спектрограмма',
   'Radial goes around a big cover; where the cover is small it shows bars. VU needles follow the average level, PPM needles the peaks': 'Круговой вид окружает большую обложку; если она мала, показываются полосы. Стрелки VU следят за средним уровнем, стрелки PPM — за пиками',
-  'bars mirror peaks wave curve radial circle particles vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look ppm programme': 'полосы зеркало пики волна вид круговой круг vu стрелки индикатор спектрограмма водопад кривая осциллограф громкость lufs векторскоп гониометр стерео фаза корреляция частицы ppm пиковый программа',
+  'bars mirror peaks wave curve radial circle particles vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look ppm programme terrain 3d landscape': 'полосы зеркало пики волна вид круговой круг vu стрелки индикатор спектрограмма водопад кривая осциллограф громкость lufs векторскоп гониометр стерео фаза корреляция частицы ppm пиковый программа рельеф ландшафт 3d',
   // v2 redesign
   'Playing': 'Играет',
   'All your songs': 'Все ваши треки',
@@ -2052,6 +2052,7 @@ const ru: Record<string, string> = {
   'Magma': 'Magma',
   'Viridis': 'Viridis',
   'colormap color map magma viridis heat waterfall palette': 'цветовая карта цвет магма magma viridis тепло водопад палитра спектрограмма',
+  '3D terrain': '3D-рельеф',
 }
 
 export default ru

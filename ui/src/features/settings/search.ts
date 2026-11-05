@@ -89,7 +89,7 @@ export const SETTINGS_INDEX: SettingEntry[] = [
   { section: 'playback', label: msg('Volume levelling'), keywords: msg('replaygain replay gain loudness normalize normalization volume level same lufs album track r128') },
   { section: 'playback', label: msg('Moving cover'), keywords: msg('animation pulse beat visualizer artwork react music') },
   { section: 'playback', label: msg('Visualizer'), keywords: msg('spectrum bars equalizer analyzer frequencies audio visualiser music moving') },
-  { section: 'playback', label: msg('Visualizer style'), keywords: msg('bars mirror peaks wave curve radial circle particles vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look ppm programme') },
+  { section: 'playback', label: msg('Visualizer style'), keywords: msg('bars mirror peaks wave curve radial circle particles vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look ppm programme terrain 3d landscape') },
   { section: 'playback', label: msg('Meter face'), keywords: msg('dial skin vintage retro analog backlit hifi needles') },
   { section: 'playback', label: msg('Spectrogram colors'), keywords: msg('colormap color map magma viridis heat waterfall palette') },
   { section: 'playback', label: msg('Visualizer weighting'), keywords: msg('tilt slope bass treble highs lows balance hearing curve a-weighting itu 468') },

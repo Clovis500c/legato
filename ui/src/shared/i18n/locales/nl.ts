@@ -1605,7 +1605,7 @@ const nl: Record<string, string> = {
   'VU needles': 'VU-naalden',
   'Spectrogram': 'Spectrogram',
   'Radial goes around a big cover; where the cover is small it shows bars. VU needles follow the average level, PPM needles the peaks': 'Radiaal gaat rond een grote hoes; bij een kleine hoes toont het balken. VU-naalden volgen het gemiddelde niveau, PPM-naalden de pieken',
-  'bars mirror peaks wave curve radial circle particles vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look ppm programme': 'balken spiegel pieken golf uiterlijk radiaal cirkel vu naalden meter spectrogram waterval curve oscilloscoop luidheid lufs vectorscoop goniometer stereo fase correlatie deeltjes ppm programma',
+  'bars mirror peaks wave curve radial circle particles vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look ppm programme terrain 3d landscape': 'balken spiegel pieken golf uiterlijk radiaal cirkel vu naalden meter spectrogram waterval curve oscilloscoop luidheid lufs vectorscoop goniometer stereo fase correlatie deeltjes ppm programma landschap terrein 3d',
   // v2 redesign
   'Playing': 'Speelt nu',
   'All your songs': 'Al je nummers',
@@ -2052,6 +2052,7 @@ const nl: Record<string, string> = {
   'Magma': 'Magma',
   'Viridis': 'Viridis',
   'colormap color map magma viridis heat waterfall palette': 'kleurenschaal kleur kaart magma viridis warmte waterval palet spectrogram',
+  '3D terrain': '3D-landschap',
 }
 
 export default nl

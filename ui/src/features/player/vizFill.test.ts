@@ -52,6 +52,7 @@ describe('visualizer gradient', () => {
     expect(fillFor('level', 'particles', 300, 100, two)).toBeNull()
     expect(fillFor('level', 'vu', 300, 100, two)).toBeNull()
     expect(fillFor('level', 'ppm', 300, 100, two)).toBeNull()
+    expect(fillFor('level', 'terrain', 300, 100, two)).toBeNull()
     expect(fillFor('frequency', 'spectrogram', 300, 100, two)).toBeNull()
     expect(fillFor('level', 'loudness', 300, 100, two)).toBeNull()
     expect(fillFor('level', 'scope', 300, 100, two)).toBeNull()

@@ -1605,7 +1605,7 @@ const tr: Record<string, string> = {
   'VU needles': 'VU ibreleri',
   'Spectrogram': 'Spektrogram',
   'Radial goes around a big cover; where the cover is small it shows bars. VU needles follow the average level, PPM needles the peaks': 'Dairesel büyük bir kapağın çevresine çizilir; kapak küçükse çubuk gösterir. VU ibreleri ortalama seviyeyi, PPM ibreleri tepeleri izler',
-  'bars mirror peaks wave curve radial circle particles vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look ppm programme': 'çubuklar ayna tepeler dalga görünüm dairesel daire vu ibre ölçer spektrogram şelale eğri osiloskop ses yüksekliği lufs vektörskop gonyometre stereo faz korelasyon parçacıklar ppm program',
+  'bars mirror peaks wave curve radial circle particles vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look ppm programme terrain 3d landscape': 'çubuklar ayna tepeler dalga görünüm dairesel daire vu ibre ölçer spektrogram şelale eğri osiloskop ses yüksekliği lufs vektörskop gonyometre stereo faz korelasyon parçacıklar ppm program arazi manzara 3b 3d',
   // v2 redesign
   'Playing': 'Çalıyor',
   'All your songs': 'Tüm şarkıların',
@@ -2052,6 +2052,7 @@ const tr: Record<string, string> = {
   'Magma': 'Magma',
   'Viridis': 'Viridis',
   'colormap color map magma viridis heat waterfall palette': 'renk haritası renk magma viridis ısı şelale palet spektrogram',
+  '3D terrain': '3B arazi',
 }
 
 export default tr

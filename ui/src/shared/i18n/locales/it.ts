@@ -1605,7 +1605,7 @@ const it: Record<string, string> = {
   'VU needles': 'Lancette VU',
   'Spectrogram': 'Spettrogramma',
   'Radial goes around a big cover; where the cover is small it shows bars. VU needles follow the average level, PPM needles the peaks': 'Radiale circonda una copertina grande; se è piccola mostra barre. Le lancette VU seguono il livello medio, le PPM i picchi',
-  'bars mirror peaks wave curve radial circle particles vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look ppm programme': 'barre specchio picchi onda aspetto radiale cerchio vu lancette misuratore spettrogramma cascata curva oscilloscopio loudness lufs vettorscopio goniometro stereo fase correlazione particelle ppm programma',
+  'bars mirror peaks wave curve radial circle particles vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look ppm programme terrain 3d landscape': 'barre specchio picchi onda aspetto radiale cerchio vu lancette misuratore spettrogramma cascata curva oscilloscopio loudness lufs vettorscopio goniometro stereo fase correlazione particelle ppm programma rilievo terreno 3d paesaggio',
   // v2 redesign
   'Playing': 'In riproduzione',
   'All your songs': 'Tutti i tuoi brani',
@@ -2052,6 +2052,7 @@ const it: Record<string, string> = {
   'Magma': 'Magma',
   'Viridis': 'Viridis',
   'colormap color map magma viridis heat waterfall palette': 'mappa di colori colore magma viridis calore cascata tavolozza spettrogramma',
+  '3D terrain': 'Rilievo 3D',
 }
 
 export default it

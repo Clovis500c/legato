@@ -196,6 +196,8 @@ Relaunch log (newest last):
   demo, strip and full screen, dark; not on real music.
 - 2026-11-05: Spectrogram colors (`visualizerColormap`: theme, Magma, Viridis; `namedMap` in `vizSpectro.ts`). Seen over
   the demo, full screen dark.
+- 2026-11-05: the 3D terrain look (`vizTerrain.ts`, drawn by `terrain()` in `vizPaint.ts`). Seen over the demo full
+  screen, dark; not in the strip.
 
 ## Mobile app and devices sync (the owner's ask, 2026-11-02 afternoon; in progress)
 

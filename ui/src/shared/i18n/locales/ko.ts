@@ -1605,7 +1605,7 @@ const ko: Record<string, string> = {
   'VU needles': 'VU 바늘',
   'Spectrogram': '스펙트로그램',
   'Radial goes around a big cover; where the cover is small it shows bars. VU needles follow the average level, PPM needles the peaks': '방사형은 큰 커버 둘레에 표시되며, 커버가 작으면 막대로 표시됩니다. VU 바늘은 평균 레벨을, PPM 바늘은 피크를 보여 줍니다',
-  'bars mirror peaks wave curve radial circle particles vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look ppm programme': '막대 미러 피크 웨이브 모양 bars mirror peaks wave 방사형 원 vu 바늘 미터 스펙트로그램 radial circle needles meter spectrogram waterfall 곡선 오실로스코프 라우드니스 curve oscilloscope scope loudness lufs 벡터스코프 고니오미터 스테레오 위상 상관 vectorscope goniometer stereo phase correlation 파티클 입자 particles ppm 피크 프로그램',
+  'bars mirror peaks wave curve radial circle particles vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look ppm programme terrain 3d landscape': '막대 미러 피크 웨이브 모양 bars mirror peaks wave 방사형 원 vu 바늘 미터 스펙트로그램 radial circle needles meter spectrogram waterfall 곡선 오실로스코프 라우드니스 curve oscilloscope scope loudness lufs 벡터스코프 고니오미터 스테레오 위상 상관 vectorscope goniometer stereo phase correlation 파티클 입자 particles ppm 피크 프로그램 지형 3d 풍경',
   // v2 redesign
   'Playing': '재생 중',
   'All your songs': '내 모든 노래',
@@ -2052,6 +2052,7 @@ const ko: Record<string, string> = {
   'Magma': 'Magma',
   'Viridis': 'Viridis',
   'colormap color map magma viridis heat waterfall palette': '컬러맵 색상 마그마 magma viridis 히트 폭포 팔레트 스펙트로그램',
+  '3D terrain': '3D 지형',
 }
 
 export default ko

@@ -1605,7 +1605,7 @@ const uk: Record<string, string> = {
   'VU needles': 'Стрілки VU',
   'Spectrogram': 'Спектрограма',
   'Radial goes around a big cover; where the cover is small it shows bars. VU needles follow the average level, PPM needles the peaks': 'Круговий вигляд обрамляє велику обкладинку; якщо вона мала, показуються смуги. Стрілки VU стежать за середнім рівнем, стрілки PPM — за піками',
-  'bars mirror peaks wave curve radial circle particles vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look ppm programme': 'смуги дзеркало піки хвиля вигляд круговий коло vu стрілки індикатор спектрограма водоспад крива осцилограф гучність lufs векторскоп гоніометр стерео фаза кореляція частинки ppm піковий програма',
+  'bars mirror peaks wave curve radial circle particles vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look ppm programme terrain 3d landscape': 'смуги дзеркало піки хвиля вигляд круговий коло vu стрілки індикатор спектрограма водоспад крива осцилограф гучність lufs векторскоп гоніометр стерео фаза кореляція частинки ppm піковий програма рельєф ландшафт 3d',
   // v2 redesign
   'Playing': 'Грає',
   'All your songs': 'Усі ваші треки',
@@ -2052,6 +2052,7 @@ const uk: Record<string, string> = {
   'Magma': 'Magma',
   'Viridis': 'Viridis',
   'colormap color map magma viridis heat waterfall palette': 'кольорова карта колір магма magma viridis тепло водоспад палітра спектрограма',
+  '3D terrain': '3D-рельєф',
 }
 
 export default uk

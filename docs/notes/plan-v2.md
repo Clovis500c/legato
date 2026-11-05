@@ -604,7 +604,11 @@ colours, mirror, reflection.
       samples of matplotlib's maps (CC0), clear at silence, opaque from a quarter of the level. Decided alone: no WebGL
       (the Canvas 2D path already draws through a 256-step table), two maps, the fade-in. Seen over the demo, full
       screen dark; not in light, not on real music.)
-- [ ] `M` Spectrum 3D: a terrain of the last seconds flying towards the camera (WebGL).
+- [x] `M` Spectrum 3D: a terrain of the last seconds flying towards the camera (WebGL).
+      (2026-11-05: the 3D terrain look, `vizTerrain.ts`: 40 rows of 64 points, the newest at the front, going back in
+      perspective with hidden lines cleared. Decided alone: Canvas 2D, not WebGL; the newest row at the front rather
+      than at the horizon; no camera orbit or fog, a fade instead. Seen over the demo full screen, dark; the strip and
+      the light theme not seen, not on real music.)
 - [ ] `M` Visualizer API for plugins (`crates/plugins`): a plugin gets bands, beat and loudness, draws with a restricted
       2D canvas command list (no raw access).
 - [ ] `L` Preset engine, written from scratch: equations per frame / per vertex driven by bands and beat (MilkDrop-style

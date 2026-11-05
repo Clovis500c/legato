@@ -1605,7 +1605,7 @@ const vi: Record<string, string> = {
   'VU needles': 'Kim VU',
   'Spectrogram': 'Phổ đồ',
   'Radial goes around a big cover; where the cover is small it shows bars. VU needles follow the average level, PPM needles the peaks': 'Vòng tròn bao quanh bìa lớn; bìa nhỏ thì hiện thanh. Kim VU theo mức trung bình, kim PPM theo đỉnh',
-  'bars mirror peaks wave curve radial circle particles vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look ppm programme': 'thanh gương đỉnh sóng giao diện vòng tròn vu kim đồng hồ phổ đồ thác đường cong máy hiện sóng độ lớn lufs máy hiện vectơ goniometer âm thanh nổi pha tương quan hạt particles ppm đỉnh chương trình',
+  'bars mirror peaks wave curve radial circle particles vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look ppm programme terrain 3d landscape': 'thanh gương đỉnh sóng giao diện vòng tròn vu kim đồng hồ phổ đồ thác đường cong máy hiện sóng độ lớn lufs máy hiện vectơ goniometer âm thanh nổi pha tương quan hạt particles ppm đỉnh chương trình địa hình phong cảnh 3d',
   // v2 redesign
   'Playing': 'Đang phát',
   'All your songs': 'Tất cả bài hát của bạn',
@@ -2052,6 +2052,7 @@ const vi: Record<string, string> = {
   'Magma': 'Magma',
   'Viridis': 'Viridis',
   'colormap color map magma viridis heat waterfall palette': 'bảng màu màu magma viridis nhiệt thác nước phổ đồ',
+  '3D terrain': 'Địa hình 3D',
 }
 
 export default vi

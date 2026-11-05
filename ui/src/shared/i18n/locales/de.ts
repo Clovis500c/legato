@@ -1605,7 +1605,7 @@ const de: Record<string, string> = {
   'VU needles': 'VU-Zeiger',
   'Spectrogram': 'Spektrogramm',
   'Radial goes around a big cover; where the cover is small it shows bars. VU needles follow the average level, PPM needles the peaks': 'Radial legt sich um ein großes Cover; bei kleinem Cover zeigt es Balken. VU-Zeiger folgen dem mittleren Pegel, PPM-Zeiger den Spitzen',
-  'bars mirror peaks wave curve radial circle particles vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look ppm programme': 'balken spiegel spitzen welle aussehen radial kreis vu zeiger messgerät spektrogramm wasserfall kurve oszilloskop lautheit lufs vektorskop goniometer stereo phase korrelation partikel teilchen ppm spitzenpegel',
+  'bars mirror peaks wave curve radial circle particles vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look ppm programme terrain 3d landscape': 'balken spiegel spitzen welle aussehen radial kreis vu zeiger messgerät spektrogramm wasserfall kurve oszilloskop lautheit lufs vektorskop goniometer stereo phase korrelation partikel teilchen ppm spitzenpegel landschaft gelände 3d',
   // v2 redesign
   'Playing': 'Läuft',
   'All your songs': 'Alle deine Songs',
@@ -2052,6 +2052,7 @@ const de: Record<string, string> = {
   'Magma': 'Magma',
   'Viridis': 'Viridis',
   'colormap color map magma viridis heat waterfall palette': 'farbskala farbe karte magma viridis wärme wasserfall palette spektrogramm',
+  '3D terrain': '3D-Landschaft',
 }
 
 export default de

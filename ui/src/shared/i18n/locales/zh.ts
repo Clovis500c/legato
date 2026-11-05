@@ -1605,7 +1605,7 @@ const zh: Record<string, string> = {
   'VU needles': 'VU 指针',
   'Spectrogram': '频谱图',
   'Radial goes around a big cover; where the cover is small it shows bars. VU needles follow the average level, PPM needles the peaks': '环形围绕较大的封面显示；封面较小时显示条形。VU 指针显示平均电平，PPM 指针显示峰值',
-  'bars mirror peaks wave curve radial circle particles vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look ppm programme': '条形 镜像 峰值 波形 外观 bars mirror peaks wave 环形 圆 vu 指针 表 频谱图 瀑布 radial circle needles meter spectrogram waterfall 曲线 示波器 响度 curve oscilloscope scope loudness lufs 矢量示波器 测角仪 立体声 相位 相关 vectorscope goniometer stereo phase correlation 粒子 particles ppm 峰值 节目',
+  'bars mirror peaks wave curve radial circle particles vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look ppm programme terrain 3d landscape': '条形 镜像 峰值 波形 外观 bars mirror peaks wave 环形 圆 vu 指针 表 频谱图 瀑布 radial circle needles meter spectrogram waterfall 曲线 示波器 响度 curve oscilloscope scope loudness lufs 矢量示波器 测角仪 立体声 相位 相关 vectorscope goniometer stereo phase correlation 粒子 particles ppm 峰值 节目 地形 3d 景观',
   // v2 redesign
   'Playing': '正在播放',
   'All your songs': '你的所有歌曲',
@@ -2052,6 +2052,7 @@ const zh: Record<string, string> = {
   'Magma': 'Magma',
   'Viridis': 'Viridis',
   'colormap color map magma viridis heat waterfall palette': '色彩映射 颜色 岩浆 magma viridis 热力 瀑布 调色板 频谱图',
+  '3D terrain': '3D 地形',
 }
 
 export default zh

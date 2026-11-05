@@ -1605,7 +1605,7 @@ const hi: Record<string, string> = {
   'VU needles': 'VU सुइयाँ',
   'Spectrogram': 'स्पेक्ट्रोग्राम',
   'Radial goes around a big cover; where the cover is small it shows bars. VU needles follow the average level, PPM needles the peaks': 'रेडियल बड़े कवर के चारों ओर बनता है; कवर छोटा हो तो पट्टियाँ दिखती हैं। VU सुइयाँ औसत स्तर दिखाती हैं, PPM सुइयाँ शिखर',
-  'bars mirror peaks wave curve radial circle particles vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look ppm programme': 'पट्टियाँ दर्पण शिखर तरंग रूप bars mirror peaks wave रेडियल गोला vu सुई मीटर स्पेक्ट्रोग्राम झरना radial circle needles meter spectrogram waterfall वक्र ऑसिलोस्कोप लाउडनेस curve oscilloscope scope loudness lufs वेक्टरस्कोप गोनियोमीटर स्टीरियो फ़ेज़ सहसंबंध vectorscope goniometer stereo phase correlation कण particles ppm peak programme शिखर',
+  'bars mirror peaks wave curve radial circle particles vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look ppm programme terrain 3d landscape': 'पट्टियाँ दर्पण शिखर तरंग रूप bars mirror peaks wave रेडियल गोला vu सुई मीटर स्पेक्ट्रोग्राम झरना radial circle needles meter spectrogram waterfall वक्र ऑसिलोस्कोप लाउडनेस curve oscilloscope scope loudness lufs वेक्टरस्कोप गोनियोमीटर स्टीरियो फ़ेज़ सहसंबंध vectorscope goniometer stereo phase correlation कण particles ppm peak programme शिखर भू-दृश्य इलाका 3d terrain',
   // v2 redesign
   'Playing': 'चल रहा है',
   'All your songs': 'आपके सभी गाने',
@@ -2052,6 +2052,7 @@ const hi: Record<string, string> = {
   'Magma': 'Magma',
   'Viridis': 'Viridis',
   'colormap color map magma viridis heat waterfall palette': 'कलर मैप रंग मैग्मा विरिडिस ताप झरना पैलेट स्पेक्ट्रोग्राम colormap magma viridis',
+  '3D terrain': '3D भू-दृश्य',
 }
 
 export default hi
