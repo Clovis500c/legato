@@ -569,3 +569,8 @@ body.dragging * {
     animation: none;
   }
 }
+
+/* Settings on the phone: rare groups folded at a section's foot (SettingsView Group); the first carries "More settings". */
+[data-fold] ~ [data-fold] .fold-head {
+  display: none;
+}

@@ -881,6 +881,7 @@ const tr: Record<string, string> = {
   'YouTube controls on the video': 'Videoda YouTube kontrolleri',
   "YouTube's own title, buttons and hover menu on the video. From the next track.": 'YouTube’un kendi başlığı, düğmeleri ve fareyle üzerine gelince açılan menüsü videoda. Bir sonraki şarkıdan itibaren.',
   'Search settings': 'Ayarlarda ara',
+  'More settings': 'Diğer ayarlar',
   'No setting matches.': 'Eşleşen ayar yok.',
   // Settings search keywords (features/settings/search.ts)
   'language translation translate english french interface': 'dil çeviri çevir ingilizce fransızca türkçe arayüz language',

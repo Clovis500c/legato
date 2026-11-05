@@ -881,6 +881,7 @@ const sv: Record<string, string> = {
   'YouTube controls on the video': 'YouTube-kontroller på videon',
   "YouTube's own title, buttons and hover menu on the video. From the next track.": 'YouTubes egen titel, knappar och hovringsmeny på videon. Från nästa låt.',
   'Search settings': 'Sök i inställningarna',
+  'More settings': 'Fler inställningar',
   'No setting matches.': 'Ingen inställning matchar.',
   // Settings search keywords (features/settings/search.ts)
   'language translation translate english french interface': 'språk översättning översätta engelska franska svenska gränssnitt language',

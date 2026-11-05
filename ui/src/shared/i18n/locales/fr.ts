@@ -889,6 +889,7 @@ const fr: Record<string, string> = {
   'YouTube controls on the video': 'Commandes YouTube sur la vidéo',
   "YouTube's own title, buttons and hover menu on the video. From the next track.": 'Le titre, les boutons et le menu de survol de YouTube sur la vidéo. À partir du titre suivant.',
   'Search settings': 'Rechercher dans les paramètres',
+  'More settings': 'Plus de paramètres',
   'No setting matches.': 'Aucun paramètre ne correspond.',
   // Settings search keywords (features/settings/search.ts)
   'language translation translate english french interface': 'langue traduction traduire anglais français interface',

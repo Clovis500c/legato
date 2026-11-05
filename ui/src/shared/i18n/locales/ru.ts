@@ -881,6 +881,7 @@ const ru: Record<string, string> = {
   'YouTube controls on the video': 'Элементы управления YouTube на видео',
   "YouTube's own title, buttons and hover menu on the video. From the next track.": 'Собственные название, кнопки и меню при наведении YouTube на видео. Со следующего трека.',
   'Search settings': 'Поиск в настройках',
+  'More settings': 'Другие настройки',
   'No setting matches.': 'Нет подходящих настроек.',
   // Settings search keywords (features/settings/search.ts)
   'language translation translate english french interface': 'язык перевод перевести английский французский русский интерфейс language',

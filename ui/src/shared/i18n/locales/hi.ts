@@ -881,6 +881,7 @@ const hi: Record<string, string> = {
   'YouTube controls on the video': 'वीडियो पर YouTube कंट्रोल',
   "YouTube's own title, buttons and hover menu on the video. From the next track.": 'वीडियो पर YouTube का अपना टाइटल, बटन और होवर मेन्यू। अगले ट्रैक से।',
   'Search settings': 'सेटिंग खोजें',
+  'More settings': 'और सेटिंग',
   'No setting matches.': 'कोई सेटिंग मेल नहीं खाती।',
   // Settings search keywords (features/settings/search.ts)
   'language translation translate english french interface': 'भाषा अनुवाद अंग्रेज़ी फ़्रेंच हिंदी इंटरफ़ेस language translation translate english french interface',

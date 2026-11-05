@@ -881,6 +881,7 @@ const zh: Record<string, string> = {
   'YouTube controls on the video': '视频上的 YouTube 控件',
   "YouTube's own title, buttons and hover menu on the video. From the next track.": '视频上 YouTube 自己的标题、按钮和悬停菜单。从下一首开始生效。',
   'Search settings': '搜索设置',
+  'More settings': '更多设置',
   'No setting matches.': '没有匹配的设置。',
   // Settings search keywords (features/settings/search.ts)
   'language translation translate english french interface': '语言 翻译 英语 法语 中文 界面 language translation translate english french interface',

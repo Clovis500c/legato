@@ -36,6 +36,8 @@ import { nextAlarm } from '../player/alarmTime'
 import { phoneApp } from '../../shared/platform'
 import { canKeepAwake } from '../../shared/awake'
 import { DESKTOP_ONLY, DESKTOP_ONLY_SECTIONS } from './desktopOnly'
+import { PHONE_FOLDED } from './phoneFold'
+import { usePhone } from '../../shared/phone'
 import { LanguagePicker } from './LanguagePicker'
 import { ask } from '../../shared/ui/Ask'
 
@@ -53,7 +55,26 @@ const sections: { id: SettingsSection; label: string; icon: ReactNode }[] = [
 
 /** title: English, the setting's id (search, data-setting); shown translated. */
 function Group({ title, count, hint, children }: { title: string; count?: number; hint?: string; children: ReactNode }) {
+  const phone = usePhone()
   if (phoneApp && DESKTOP_ONLY.has(title)) return null
+  // The phone: a rare group (phoneFold.ts) goes to the section's foot, folded; the first carries the heading (styles.css).
+  if (phone && PHONE_FOLDED.has(title))
+    return (
+      <div data-fold className="order-2 flex flex-col gap-2">
+        <h2 className="fold-head pt-2 text-base font-semibold">{tr('More settings')}</h2>
+        <details data-setting={title} className="group/fold border-b border-line-soft">
+          <summary className="flex min-h-12 cursor-pointer list-none items-center gap-3 text-[0.9375rem] font-medium [&::-webkit-details-marker]:hidden">
+            <span className="min-w-0 flex-1 truncate">
+              {tr(title)}
+              {count !== undefined && ` · ${count}`}
+            </span>
+            {hint && <span className="kicker shrink-0">{hint}</span>}
+            <CaretDown size={16} className="shrink-0 text-ink-3 transition-transform group-open/fold:rotate-180" />
+          </summary>
+          <div className="pb-4">{children}</div>
+        </details>
+      </div>
+    )
   return (
     <section data-setting={title} className="flex flex-col gap-2.5 rounded-lg">
       <div className="flex items-center justify-between">
@@ -960,9 +981,8 @@ export function SettingsView({ section }: { section: SettingsSection }) {
     if (!focus) return
     const el = [...(content.current?.querySelectorAll<HTMLElement>('[data-setting]') ?? [])].find((x) => x.dataset.setting === focus)
     if (!el) return
-    // Folded group (Hi-Fi extras): opened first, a closed one has nothing to show.
-    const fold = el.closest('details')
-    if (fold) fold.open = true
+    // Folded groups (Hi-Fi extras, the phone's rare ones, one in the other): opened first, a closed one shows nothing.
+    for (let fold = el.closest('details'); fold; fold = fold.parentElement?.closest('details') ?? null) fold.open = true
     el.scrollIntoView({ block: 'center', behavior: 'smooth' })
     el.classList.remove('flash')
     void el.offsetWidth
@@ -979,12 +999,15 @@ export function SettingsView({ section }: { section: SettingsSection }) {
       <div className="flex min-h-0 flex-1 flex-col gap-4 @2xl:flex-row @2xl:gap-9 phone:-mx-2 phone:overflow-y-auto phone:px-2">
         <nav className="flex shrink-0 flex-wrap gap-px @2xl:w-52 @2xl:flex-col @2xl:flex-nowrap">
           <SettingsSearch onPick={(e) => go({ name: 'settings', section: e.section, focus: e.label })} />
-          {sections.filter((s) => !phoneApp || !DESKTOP_ONLY_SECTIONS.has(s.id)).map((s) => (
-            <button key={s.id} aria-current={s.id === section ? 'page' : undefined} onClick={() => go({ name: 'settings', section: s.id })} className={`flex items-center gap-3 rounded-lg px-3 py-2 text-left ${s.id === section ? 'bg-raised font-semibold' : 'text-ink-2 hover:text-ink'}`}>
-              {s.icon} <span className="flex-1">{tr(s.label)}</span>
-              {s.id === 'sources' && signIn && <span title={tr('A service needs you to sign in again')} className="size-2 rounded-full bg-danger" />}
-            </button>
-          ))}
+          {/* The phone: the sections in one row scrolled sideways, edge to edge (they took four rows). */}
+          <div className="contents phone:no-scrollbar phone:-mx-4 phone:flex phone:w-[calc(100%+2rem)] phone:gap-1.5 phone:overflow-x-auto phone:px-4">
+            {sections.filter((s) => !phoneApp || !DESKTOP_ONLY_SECTIONS.has(s.id)).map((s) => (
+              <button key={s.id} aria-current={s.id === section ? 'page' : undefined} onClick={() => go({ name: 'settings', section: s.id })} className={`flex items-center gap-3 rounded-lg px-3 py-2 text-left phone:min-h-10 phone:shrink-0 phone:gap-2 phone:rounded-full phone:whitespace-nowrap ${s.id === section ? 'bg-raised font-semibold' : 'text-ink-2 hover:text-ink'}`}>
+                {s.icon} <span className="flex-1">{tr(s.label)}</span>
+                {s.id === 'sources' && signIn && <span title={tr('A service needs you to sign in again')} className="size-2 rounded-full bg-danger" />}
+              </button>
+            ))}
+          </div>
         </nav>
         {/* Its own width decides the rows' layout (@max-lg): the phone, a small window or the sections' column beside it. */}
         <div ref={content} className="@container -mx-2 min-h-0 flex-1 overflow-y-auto px-2 pb-8 phone:mx-0 phone:flex-none phone:overflow-visible phone:px-0">

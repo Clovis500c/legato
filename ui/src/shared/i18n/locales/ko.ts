@@ -881,6 +881,7 @@ const ko: Record<string, string> = {
   'YouTube controls on the video': '동영상 위 YouTube 컨트롤',
   "YouTube's own title, buttons and hover menu on the video. From the next track.": '동영상 위의 YouTube 자체 제목, 버튼, 호버 메뉴. 다음 곡부터 적용.',
   'Search settings': '설정 검색',
+  'More settings': '추가 설정',
   'No setting matches.': '일치하는 설정이 없습니다.',
   // Settings search keywords (features/settings/search.ts)
   'language translation translate english french interface': '언어 번역 영어 프랑스어 한국어 인터페이스 language translation translate english french interface',

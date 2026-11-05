@@ -881,6 +881,7 @@ const nl: Record<string, string> = {
   'YouTube controls on the video': 'YouTube-bediening op de video',
   "YouTube's own title, buttons and hover menu on the video. From the next track.": 'De eigen titel, knoppen en hovermenu van YouTube op de video. Vanaf het volgende nummer.',
   'Search settings': 'Instellingen zoeken',
+  'More settings': 'Meer instellingen',
   'No setting matches.': 'Geen instelling gevonden.',
   // Settings search keywords (features/settings/search.ts)
   'language translation translate english french interface': 'taal vertaling vertalen engels frans nederlands interface language translation',

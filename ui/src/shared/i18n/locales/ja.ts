@@ -881,6 +881,7 @@ const ja: Record<string, string> = {
   'YouTube controls on the video': '動画上のYouTubeコントロール',
   "YouTube's own title, buttons and hover menu on the video. From the next track.": '動画上のYouTube自体のタイトル、ボタン、ホバーメニュー。次の曲から反映。',
   'Search settings': '設定を検索',
+  'More settings': 'その他の設定',
   'No setting matches.': '一致する設定はありません。',
   // Settings search keywords (features/settings/search.ts)
   'language translation translate english french interface': '言語 翻訳 英語 フランス語 日本語 インターフェース language translation translate english french interface',

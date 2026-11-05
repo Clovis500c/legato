@@ -881,6 +881,7 @@ const vi: Record<string, string> = {
   'YouTube controls on the video': 'Điều khiển YouTube trên video',
   "YouTube's own title, buttons and hover menu on the video. From the next track.": 'Tiêu đề, nút và menu khi di chuột của chính YouTube trên video. Từ bài tiếp theo.',
   'Search settings': 'Tìm trong cài đặt',
+  'More settings': 'Cài đặt khác',
   'No setting matches.': 'Không có cài đặt nào khớp.',
   // Settings search keywords (features/settings/search.ts)
   'language translation translate english french interface': 'ngôn ngữ dịch tiếng anh tiếng pháp tiếng việt giao diện language translation translate english french interface',

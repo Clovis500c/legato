@@ -881,6 +881,7 @@ const id: Record<string, string> = {
   'YouTube controls on the video': 'Kontrol YouTube di video',
   "YouTube's own title, buttons and hover menu on the video. From the next track.": 'Judul, tombol, dan menu hover milik YouTube di video. Mulai lagu berikutnya.',
   'Search settings': 'Cari pengaturan',
+  'More settings': 'Pengaturan lainnya',
   'No setting matches.': 'Tidak ada pengaturan yang cocok.',
   // Settings search keywords (features/settings/search.ts)
   'language translation translate english french interface': 'bahasa terjemahan terjemahkan inggris prancis indonesia antarmuka language',
