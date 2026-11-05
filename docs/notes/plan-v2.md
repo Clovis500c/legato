@@ -61,8 +61,18 @@ the visualizer, the library, the player's tools, updates. Already ours too (chec
 the settings search in every language, an everywhere shortcut for picture in picture, brand channels, recent searches,
 Discord's buttons, the taskbar's thumbnail buttons, issue forms.
 
-Built in this order, easiest first (the owner's ask 2026-11-05: all of them, by difficulty). Never copied: their
-playback (YouTube's audio taken, their own copies, downloads for offline), their accounts, limits and paid plan.
+Numbered easiest first (the owner's ask 2026-11-05: all of them, by difficulty). Built hardest first: the owner's
+ask for the autonomous run of 2026-11-05 evening (they're away, reachable only through Remote Control on their phone),
+with the interface on top (U1, U2 below): ours does too much on a phone, and lacks the glow and the simplicity Liner
+has (inspiration only, never its code or assets). Never copied: their playback (YouTube's audio taken, their own
+copies, downloads for offline), their accounts, limits and paid plan.
+
+- [ ] U1. `L` The phone's interface, rethought (the owner's ask 2026-11-05): each screen shows less, bigger and in
+      thumb's reach; one main action per screen, the rest in a sheet or a menu; nothing lost, only moved. Every page
+      at 375 px in light and dark, before and after.
+- [ ] U2. `M-L` Glow and simplicity, PC and phone (the owner's ask 2026-11-05, answering Waiting on the user's glow
+      line): a soft glow on what plays (play button, playing row, the sung line, Now Playing's cover), a Glow setting
+      to turn it down; fewer controls in sight per surface, the rare ones in menus; `docs/design.md` rewritten to say so.
 
 - [x] 1. `S` Keep the screen on while music plays (a setting, off): the wake lock the Cover display already takes.
       (2026-11-05: Settings › Playback › Screen, `keepScreenOn`, this PC only; `shared/awake.ts` shared with the Cover
@@ -988,7 +998,7 @@ Most useful first; the tag is the effort.
 - [ ] A playlist file from foobar2000 / VLC / MusicBee, and an `iTunes Music Library.xml`, through Add music.
 - [ ] Quit the installed Legato from the tray and open it again: a session closed its hidden single-instance window by
       mistake on 2026-10-31.
-- [ ] The soft glow on the sung line (`LyricsPanel.tsx`) goes against "no glows" in `docs/design.md`, and `SONG ENDS`,
+- [ ] (2026-11-05: glow wanted, more of it: Against Liner › U2.) The soft glow on the sung line (`LyricsPanel.tsx`) goes against "no glows" in `docs/design.md`, and `SONG ENDS`,
       `NEXT SONG`, `PREVIEW` are still written in capitals: keep or change (the capitals are keys in all 17 languages).
 
 ## Not done yet
