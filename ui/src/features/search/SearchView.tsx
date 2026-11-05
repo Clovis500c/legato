@@ -1,4 +1,4 @@
-import { ArrowLeft, FolderSimple, Play, Plus, Shuffle } from '@phosphor-icons/react'
+import { ArrowLeft, FolderSimple, Play, Plus, Shuffle, SlidersHorizontal } from '@phosphor-icons/react'
 import { artistName } from '../../shared/artistName'
 import { useShallow } from 'zustand/react/shallow'
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
@@ -9,7 +9,8 @@ import { trackArt } from '../../shared/art'
 import { formatCount, formatDuration, region } from '../../shared/format'
 import { msg, tr, trn } from '../../shared/i18n/i18n'
 import { Button } from '../../shared/ui/Button'
-import { onMenu } from '../../shared/ui/ContextMenu'
+import { onMenu, openMenu } from '../../shared/ui/ContextMenu'
+import { usePhone } from '../../shared/phone'
 import { LedChip, RoundButton, Toggle } from '../../shared/ui/controls'
 import { Cover } from '../../shared/ui/Cover'
 import { PageHeader } from '../../shared/ui/PageHeader'
@@ -198,6 +199,7 @@ export function SearchView() {
   const [kind, setKind] = useState<Kind>('all')
   const [only, setOnly] = useState<Origin | null>(null)
   const [hideCovers, setHideCovers] = useState(true)
+  const phone = usePhone()
   const [res, setRes] = useState<{ q: string; r: SearchResults }>()
   const [busy, setBusy] = useState(false)
   // Videos that clearly aren't music: their own fold, folded again on each search.
@@ -349,10 +351,11 @@ export function SearchView() {
   const topArtist = best && 'artist' in best ? best.artist : undefined
   const topSong = best && 'song' in best ? best.song : null
   const topHit = !best ? (songs[0] ?? videos[0] ?? null) : null
-  const display = 'truncate text-left text-[2rem] leading-[2.375rem] font-bold tracking-[-0.01em]'
+  const display = 'truncate text-left text-[2rem] leading-[2.375rem] font-bold tracking-[-0.01em] phone:text-xl phone:leading-7'
   const topCard = (cover: ReactNode, name: ReactNode, line: string, own: boolean, buttons: ReactNode) => (
-    <Section title={tr('Top result')} className="w-[300px] shrink-0">
-      <div className="flex flex-col gap-3.5 rounded-lg bg-raised p-5">
+    <Section title={tr('Top result')} className="w-[300px] shrink-0 phone:w-full">
+      {/* The phone: one row (cover, name, play), not a third of the screen. */}
+      <div className="flex flex-col gap-3.5 rounded-lg bg-raised p-5 phone:grid phone:grid-cols-[auto_minmax(0,1fr)_auto] phone:items-center phone:gap-3 phone:p-3 phone:*:first:size-16!">
         {cover}
         <div className="flex min-w-0 flex-col gap-1">
           {name}
@@ -360,7 +363,7 @@ export function SearchView() {
         </div>
         <div className="flex items-center gap-2">
           {own && (
-            <span className="flex items-center gap-2 text-xs font-medium text-ink-2">
+            <span className="flex items-center gap-2 text-xs font-medium text-ink-2 phone:sr-only">
               <FolderSimple size={16} /> {tr('In your library')}
             </span>
           )}
@@ -496,9 +499,9 @@ export function SearchView() {
   // No page title (mockup): the text is in the search bar; chips pick where to look.
   return (
     <>
-      {/* The phone: the chips in one row scrolled sideways, the switch under them (they took four rows). */}
-      <div className="flex shrink-0 items-center justify-between gap-4 pb-4.5 phone:flex-col phone:items-stretch phone:gap-2.5 phone:pb-3">
-        <div role="tablist" aria-label={tr('Search in')} className="no-scrollbar flex flex-wrap items-center gap-2 phone:flex-nowrap phone:overflow-x-auto">
+      {/* The phone: the chips in one row scrolled sideways, the switch in a menu at its end (they took four rows). */}
+      <div className="flex shrink-0 items-center justify-between gap-4 pb-4.5 phone:gap-1 phone:pb-3">
+        <div role="tablist" aria-label={tr('Search in')} className="no-scrollbar flex flex-wrap items-center gap-2 phone:min-w-0 phone:flex-1 phone:flex-nowrap phone:overflow-x-auto">
           <LedChip on={from === 'all'} label={tr('All')} onClick={() => pickFrom('all')} />
           <LedChip on={from === 'library'} label={tr('Your library')} count={formatCount(lib.songs.length)} onClick={() => pickFrom('library')} />
           {/* Signed out too: YouTube Music's public catalog (search_catalogs). */}
@@ -506,10 +509,15 @@ export function SearchView() {
           {chip('youtube', 'YouTube')}
           {chip('apple', 'Apple Music')}
         </div>
-        {everywhere && (
-          <label className="flex shrink-0 items-center gap-2 text-xs text-ink-2 phone:justify-between">
+        {everywhere && !phone && (
+          <label className="flex shrink-0 items-center gap-2 text-xs text-ink-2">
             {tr('Hide covers and karaoke')} <Toggle label={tr('Hide covers and karaoke')} checked={hideCovers} onChange={setHideCovers} />
           </label>
+        )}
+        {everywhere && phone && (
+          <RoundButton label={tr('Display options')} kind="plain" size="sm" onClick={(e) => openMenu(e, [{ label: tr('Hide covers and karaoke'), checked: hideCovers, onSelect: () => setHideCovers(!hideCovers) }], { place: 'below' })}>
+            <SlidersHorizontal size={18} />
+          </RoundButton>
         )}
       </div>
       {/* Nothing of yours spelled so: the library's closest words (results.ts). */}

@@ -503,8 +503,9 @@ export function HomeView() {
   // No page title (mockup): chips, then the shortcut tiles, then the sections.
   return (
     <>
-      <div className="flex shrink-0 items-start gap-4 pb-4">
-        <div role="tablist" aria-label={tr('Show on Home')} className="flex flex-1 flex-wrap items-center gap-2">
+      <div className="flex shrink-0 items-start gap-4 pb-4 phone:items-center phone:gap-1 phone:pb-3">
+        {/* The phone: one row scrolled sideways. */}
+        <div role="tablist" aria-label={tr('Show on Home')} className="no-scrollbar flex min-w-0 flex-1 flex-wrap items-center gap-2 phone:flex-nowrap phone:overflow-x-auto">
           <LedChip on={!mood && filter === 'all'} label={tr('All')} onClick={() => pick('all')} />
           <LedChip on={!mood && filter === 'library'} label={tr('Your library')} onClick={() => pick('library')} />
           {ytOn && ytSection && <LedChip on={!mood && filter === 'youtube'} label="YouTube Music" onClick={() => pick('youtube')} />}

@@ -9,31 +9,32 @@ export function PageHeader({ kicker, title, sub, actions, side, art, tint, onCon
   if (art)
     return (
       // The page's px-6 / pt-5 undone (main pane's edges); a page that scrolls around it gives it the same room.
-      <div className="-mx-6 -mt-5 flex shrink-0 flex-col">
-        <header onContextMenu={onContextMenu} style={tint} className="flex min-w-0 items-end gap-7 bg-bg px-6 py-5 transition-colors duration-500 phone:flex-col phone:items-start phone:gap-4">
-          {art}
+      <div className="-mx-6 -mt-5 flex shrink-0 flex-col phone:-mx-4 phone:-mt-3">
+        <header onContextMenu={onContextMenu} style={tint} className="flex min-w-0 items-end gap-7 bg-bg px-6 py-5 transition-colors duration-500 phone:flex-col phone:items-stretch phone:gap-3 phone:px-4 phone:pt-4 phone:pb-4">
+          {/* The phone: the cover centered over the title, as phone players do. */}
+          <div className="shrink-0 phone:self-center phone:*:size-40!">{art}</div>
           <div className="flex min-w-0 flex-col gap-2">
             {kicker && <p className="kicker">{kicker}</p>}
-            {/* Display L (docs/design.md): Roboto Black, 56 / 60. Phone layout: 36, two lines, the cover above. */}
-            <h1 className="truncate pb-1 text-[3.5rem] leading-[1.07] font-black tracking-[-0.015em] phone:line-clamp-2 phone:text-[2.25rem] phone:whitespace-normal">{title}</h1>
+            {/* Display L (docs/design.md): Roboto Black, 56 / 60. Phone layout: 28, two lines, the cover above. */}
+            <h1 className="truncate pb-1 text-[3.5rem] leading-[1.07] font-black tracking-[-0.015em] phone:line-clamp-2 phone:text-[1.75rem] phone:whitespace-normal">{title}</h1>
             {sub && <div className="text-[0.8125rem] text-ink-2">{sub}</div>}
           </div>
         </header>
         {(actions || side) && (
-          <div className="flex flex-wrap items-center gap-3 px-6 py-5">
+          <div className="flex flex-wrap items-center gap-3 px-6 py-5 phone:gap-1.5 phone:px-4 phone:py-3">
             {actions}
-            {/* A narrow pane wraps it under the actions; the phone starts it from the left. */}
-            {side && <div className="ml-auto flex min-w-0 flex-wrap items-center gap-2 phone:ml-0">{side}</div>}
+            {/* A narrow pane wraps it under the actions. */}
+            {side && <div className="ml-auto flex min-w-0 flex-wrap items-center gap-2 phone:gap-1">{side}</div>}
           </div>
         )}
       </div>
     )
   return (
     // Actions under the title when both don't fit on a line (Stats' recap and periods in a narrow window, the phone).
-    <header onContextMenu={onContextMenu} className="flex shrink-0 flex-wrap items-end justify-between gap-x-6 gap-y-3 pt-1 pb-4">
+    <header onContextMenu={onContextMenu} className="flex shrink-0 flex-wrap items-end justify-between gap-x-6 gap-y-3 pt-1 pb-4 phone:pb-3">
       <div className="flex min-w-0 flex-col gap-1">
         {kicker && <p className="kicker">{kicker}</p>}
-        <h1 className="truncate pb-1 text-[3.5rem] leading-[1.07] font-black tracking-[-0.015em] phone:line-clamp-2 phone:text-[2.25rem] phone:whitespace-normal">{title}</h1>
+        <h1 className="truncate pb-1 text-[3.5rem] leading-[1.07] font-black tracking-[-0.015em] phone:line-clamp-2 phone:text-[1.75rem] phone:whitespace-normal">{title}</h1>
         {sub && <div className="text-[0.8125rem] text-ink-2">{sub}</div>}
       </div>
       {actions && <div className="flex max-w-full shrink-0 flex-wrap items-center gap-2">{actions}</div>}

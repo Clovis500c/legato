@@ -216,7 +216,7 @@ export function AlbumView({ album, artist }: { album: string; artist: string }) 
   const tint = useCoverTint(firstArt(shown)[0])
   return (
     // From the pane's edges (-mx-6 -mt-5): room for the band (PageHeader).
-    <div className="-mx-6 -mt-5 flex min-h-0 flex-1 flex-col overflow-y-auto px-6 pt-5 pb-8">
+    <div className="-mx-6 -mt-5 flex min-h-0 flex-1 flex-col overflow-y-auto px-6 pt-5 pb-8 phone:-mx-4 phone:-mt-3 phone:px-4 phone:pt-3">
       <PageHeader
         onContextMenu={onMenu(() => tracksMenu(shown, ['-', { label: tr('Go to artist'), icon: <MicrophoneStage size={16} />, onSelect: toArtist }]))}
         art={<Cover title={album} art={firstArt(shown)} size={200} eager className="border-0" />}
@@ -231,8 +231,9 @@ export function AlbumView({ album, artist }: { album: string; artist: string }) 
               </button>
               {info?.year && <>· {info.year}</>} · {missing ? tr('{n} of {total} songs', { n: shown.length, total: shown.length + missing }) : trn(shown.length, '{n} song', '{n} songs')} · {totalTime(shown)}
             </span>
+            {/* The phone: one line of detail; the sources are on each row's menu. */}
             {from.length > 0 && (
-              <span className="flex flex-wrap items-center gap-x-3 gap-y-1">
+              <span className="flex flex-wrap items-center gap-x-3 gap-y-1 phone:hidden">
                 {from.map((s) => (
                   <span key={s} className="flex items-center gap-1.5">
                     <SourceIcon source={s} size={13} /> {tr(sourceLabel[s])}
@@ -373,7 +374,7 @@ export function ArtistView({ artist }: { artist: string }) {
       </>
     )
   return (
-    <div className="-mx-6 -mt-5 flex min-h-0 flex-1 flex-col gap-9 overflow-y-auto px-6 pt-5 pb-8">
+    <div className="-mx-6 -mt-5 flex min-h-0 flex-1 flex-col gap-9 overflow-y-auto px-6 pt-5 pb-8 phone:-mx-4 phone:-mt-3 phone:gap-7 phone:px-4 phone:pt-3">
       {header}
       {top.length > 0 && (
         <Section title={tr('Your most played')} side={shown.length > top.length && <SideLink label={tr('All {n} songs', { n: formatCount(shown.length) })} onClick={() => setAll('mine')} />}>

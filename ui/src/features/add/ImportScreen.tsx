@@ -14,7 +14,7 @@ function Deck({ seen, kind }: { seen: Seen[]; kind: ImportKind }) {
   const newest = seen.at(-1)?.seq ?? 0
   const Icon = kind === 'shared' ? ShareNetwork : kind === 'apple' ? AppleLogo : kind === 'file' ? FileAudio : SpotifyLogo
   return (
-    <div aria-hidden className="relative -mx-6 h-40 overflow-hidden">
+    <div aria-hidden className="relative -mx-6 h-40 phone:-mx-4 overflow-hidden">
       {seen.length === 0 && (
         <span className="absolute top-3 left-1/2 -ml-16 grid size-32 place-items-center rounded-cover border border-line-soft bg-raised text-ink-3">
           <Icon size={40} />

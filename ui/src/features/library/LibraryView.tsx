@@ -118,9 +118,10 @@ function SortButton<T extends string>({ groups, value, onPick }: { groups: { id:
         const r = e.currentTarget.getBoundingClientRect()
         openMenu({ clientX: r.left, clientY: r.bottom + 6, target: e.currentTarget, preventDefault() {}, stopPropagation() {} } as unknown as MouseEvent, items)
       }}
-      className="flex shrink-0 items-center gap-2 rounded-full border border-line px-3 py-1.5 text-[0.8125rem] font-medium whitespace-nowrap hover:bg-raised"
+      // The phone: the icon alone, a finger's size; the menu says which sort is on.
+      className="flex shrink-0 items-center gap-2 rounded-full border border-line px-3 py-1.5 text-[0.8125rem] font-medium whitespace-nowrap hover:bg-raised phone:size-11 phone:justify-center phone:border-0 phone:p-0"
     >
-      <SortAscending size={15} className="text-ink-3" /> {tr(groups.flat().find((x) => x.id === value)?.label ?? groups[0][0].label)} <CaretDown size={12} className="text-ink-3" />
+      <SortAscending size={15} className="text-ink-3 phone:size-5 phone:text-ink-2" /> <span className="phone:sr-only">{tr(groups.flat().find((x) => x.id === value)?.label ?? groups[0][0].label)}</span> <CaretDown size={12} className="text-ink-3 phone:hidden" />
     </button>
   )
 }
@@ -166,7 +167,8 @@ function SourceChips({ tracks, value, onChange, countOf }: { tracks: LibraryTrac
     ...(stats.sources > 1 && stats.unlinked ? [{ id: 'unlinked' as const, label: msg('Unlinked'), count: count('unlinked', stats.unlinked) }] : []),
   ]
   return (
-    <div role="tablist" aria-label={tr('Filter by source')} className="flex flex-wrap gap-2">
+    // The phone: one row scrolled sideways, edge to edge (they took three rows).
+    <div role="tablist" aria-label={tr('Filter by source')} className="no-scrollbar flex flex-wrap gap-2 phone:order-2 phone:-mx-4 phone:w-[calc(100%+2rem)] phone:flex-nowrap phone:overflow-x-auto phone:px-4">
       {chips.map((c) => (
         <LedChip key={c.id} on={value === c.id} label={tr(c.label)} count={formatCount(c.count)} onClick={() => onChange(c.id)} />
       ))}
@@ -236,9 +238,10 @@ function Playability({ tracks }: { tracks: LibraryTrack[] }) {
   const parts = [trn(full, '{n} song playable in full', '{n} songs playable in full'), preview > 0 && trn(preview, '{n} as 30 s preview', '{n} as 30 s preview'), missing.length > preview && trn(missing.length - preview, '{n} with no playable source', '{n} with no playable source')].filter((x): x is string => !!x)
   return (
     <span className="relative min-w-0">
-      <button aria-expanded={open} onClick={() => setOpen(!open)} className="flex max-w-full items-center gap-2 rounded-full bg-raised px-3 py-1.5 text-xs text-ink-2 hover:text-ink">
+      {/* The phone: the LED and the i only, a finger's size; the words in the box it opens. */}
+      <button aria-expanded={open} onClick={() => setOpen(!open)} className="flex max-w-full items-center gap-2 rounded-full bg-raised px-3 py-1.5 text-xs text-ink-2 hover:text-ink phone:h-11 phone:px-3.5">
         <Led on={missing.length === 0} />
-        <span className="truncate">
+        <span className="truncate phone:sr-only">
           {parts[0]}
           {parts.length > 1 && ` · ${parts.length - 1 === 1 ? parts[1] : `+${formatCount(missing.length)}`}`}
         </span>
@@ -247,7 +250,7 @@ function Playability({ tracks }: { tracks: LibraryTrack[] }) {
       {open && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div className="absolute top-[calc(100%+6px)] right-0 z-50 flex w-80 flex-col gap-2 rounded-xl border border-line bg-panel p-3.5 text-xs shadow-[0_12px_32px_var(--shadow)]">
+          <div className="absolute top-[calc(100%+6px)] right-0 z-50 flex w-80 max-w-[calc(100vw-2rem)] flex-col gap-2 rounded-xl border border-line bg-panel p-3.5 text-xs shadow-[0_12px_32px_var(--shadow)]">
             {parts.map((p, i) => (
               <span key={p} className="flex items-center gap-2">
                 <Led on={i === 0} /> {p}
@@ -284,15 +287,15 @@ export function SongsView() {
   return (
     <>
       <PageHeader title={tr('Songs')} sub={`${trn(shown.length, '{n} song', '{n} songs')} · ${totalTime(shown)}${stats.sources > 1 ? ` · ${tr('{pct}% linked', { pct: stats.linkedPct })}` : ''}`} />
-      {/* Mockup: the round play and shuffle first, then the chips. */}
-      <div className="flex shrink-0 flex-wrap items-center justify-between gap-x-4 gap-y-2 pb-3">
-        <div className="flex flex-wrap items-center gap-3">
+      {/* Mockup: the round play and shuffle first, then the chips. The phone: play and the tools on one row, the chips under it. */}
+      <div className="flex shrink-0 flex-wrap items-center justify-between gap-x-4 gap-y-2 pb-3 phone:gap-x-3">
+        <div className="flex flex-wrap items-center gap-3 phone:contents">
           <PlayAll tracks={shown} />
           <ShuffleRound tracks={shown} />
           <AutoDjRound tracks={shown} />
           <SourceChips tracks={tracks} value={filter} onChange={setFilter} />
         </div>
-        <div className="flex min-w-0 flex-wrap items-center gap-2">
+        <div className="flex min-w-0 flex-wrap items-center gap-2 phone:order-1 phone:ml-auto phone:gap-1">
           <DuplicatesButton />
           <Playability tracks={shown} />
           <SortMenu />
