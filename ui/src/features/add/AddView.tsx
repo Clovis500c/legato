@@ -49,7 +49,8 @@ function SearchHero() {
       </form>
       <div className="flex flex-col gap-2 px-5 text-xs text-ink-2">
         <p className="text-[0.8125rem]">{tr('Search for a track: it’s added to your library, with its YouTube version when one exists.')}</p>
-        <ul aria-label={tr('Search sources')} className="flex flex-wrap gap-x-4 gap-y-1.5">
+        {/* The phone: the sources are the results' chips; this list stays on the desktop. */}
+        <ul aria-label={tr('Search sources')} className="flex flex-wrap gap-x-4 gap-y-1.5 phone:hidden">
           {sources.map((s) => (
             <li key={s.code} title={s.note} className="flex items-center gap-1.5">
               <Led on={s.on} /> {s.code}
@@ -266,9 +267,9 @@ export function AddView() {
   return (
     <>
       <PageHeader kicker={tr('Add · YouTube, YouTube Music, Apple Music and your files')} title={tr('Add music')} />
-      <div className="-mx-2 flex min-h-0 flex-1 flex-col gap-8 overflow-y-auto px-2 pb-6">
+      <div className="-mx-2 flex min-h-0 flex-1 flex-col gap-8 overflow-y-auto px-2 pb-6 phone:gap-6">
         <SearchHero />
-        <div className="stagger grid grid-cols-[repeat(auto-fit,minmax(280px,1fr))] gap-4">
+        <div className="stagger grid grid-cols-[repeat(auto-fit,minmax(280px,1fr))] gap-4 phone:grid-cols-1 phone:gap-3">
           <Detector onFound={onFound} />
           {phoneApp && <FromPc />}
           {phoneApp && <PhoneMusic />}

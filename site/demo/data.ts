@@ -190,6 +190,20 @@ const ANSWERS: Record<string, (args: Record<string, unknown>) => unknown> = {
   ytm_accounts: () => ({ signedIn: false, accounts: [], picked: [] }),
   sync_status: () => ({ onedrive: [], folder: null, protected: false, asked: false, deviceName: 'This PC', devices: [], last: null, error: null }),
   sync_directions: () => ({}),
+  // Sync Mode › Your devices: two invented ones, one here (an empty answer broke the page).
+  devices_status: () => ({
+    network: true,
+    auto: true,
+    name: 'This PC',
+    os: 'windows',
+    form: 'tower',
+    rows: [
+      { id: 'demo-laptop', name: 'Study laptop', os: 'windows', form: 'laptop', trusted: true, here: true, offering: false, synced: Date.now() - 12 * 60_000, refused: false },
+      { id: 'demo-phone', name: 'Phone', os: 'android', form: 'phone', trusted: true, here: false, offering: false, synced: Date.now() - 26 * 3_600_000, refused: false },
+    ],
+    offer: null,
+    error: null,
+  }),
   lastfm_status: () => ({ configured: false, user: null, waiting: 0 }),
   discord_status: () => ({ connected: false, error: null }),
   nearby_status: () => ({ state: 'idle' }),

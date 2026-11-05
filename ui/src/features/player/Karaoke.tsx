@@ -190,7 +190,8 @@ export function Karaoke() {
             </div>
             <TimeText part="total" className="w-10 text-right" />
           </div>
-          <p className="text-center text-[0.6875rem] text-ink-3">{tr('← → move the lyrics · Esc leaves')}</p>
+          {/* Keys only: no keyboard on the phone. */}
+          <p className="text-center text-[0.6875rem] text-ink-3 phone:hidden">{tr('← → move the lyrics · Esc leaves')}</p>
         </footer>
       )}
     </div>

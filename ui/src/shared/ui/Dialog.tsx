@@ -7,7 +7,8 @@ const FOCUSABLE = 'input:not([disabled]), select:not([disabled]), textarea:not([
 
 /**
  * Modal panel: Escape or backdrop click closes. Focus goes in (first field, else first action, Close last), Tab stays
- * inside, focus comes back to where it was on close. wide: 720 px instead of 480 (a grid of cards).
+ * inside, focus comes back to where it was on close. wide: 720 px instead of 480 (a grid of cards). The phone: a sheet
+ * from the bottom edge, as its menus (ContextMenu), its buttons in thumb's reach.
  */
 export function Dialog({ title, kicker, onClose, wide = false, children }: { title: string; kicker?: string; onClose: () => void; wide?: boolean; children: ReactNode }) {
   const box = useRef<HTMLDivElement>(null)
@@ -39,8 +40,8 @@ export function Dialog({ title, kicker, onClose, wide = false, children }: { tit
     }
   }, [])
   return (
-    <div className="fade-in fixed inset-0 z-40 grid place-items-center bg-[var(--shadow)] p-6" onClick={onClose}>
-      <div ref={box} role="dialog" data-modal aria-modal aria-label={title} onClick={(e) => e.stopPropagation()} className={`dialog-in flex max-h-full w-full ${wide ? 'max-w-180' : 'max-w-120'} flex-col gap-5 overflow-y-auto rounded-xl border border-line bg-panel p-6 shadow-[0_24px_64px_var(--shadow)]`}>
+    <div className="fade-in fixed inset-0 z-40 grid place-items-center bg-[var(--shadow)] p-6 phone:place-items-end phone:p-0 phone:pt-10" onClick={onClose}>
+      <div ref={box} role="dialog" data-modal aria-modal aria-label={title} onClick={(e) => e.stopPropagation()} className={`dialog-in flex max-h-full w-full ${wide ? 'max-w-180' : 'max-w-120'} flex-col gap-5 overflow-y-auto rounded-xl border border-line bg-panel p-6 shadow-[0_24px_64px_var(--shadow)] phone:max-w-none phone:rounded-b-none phone:rounded-t-2xl phone:border-x-0 phone:border-b-0 phone:px-5 phone:pb-[max(1.5rem,env(safe-area-inset-bottom))]`}>
         <header className="flex items-start justify-between gap-4">
           <div className="flex flex-col gap-1">
             {kicker && <p className="kicker">{kicker}</p>}

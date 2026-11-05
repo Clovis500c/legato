@@ -21,6 +21,7 @@ import { useMixes } from './useMixes'
 import { mixReason, mixTitle, monthName, weekdayName } from './words'
 import { ask } from '../../shared/ui/Ask'
 import { phoneApp } from '../../shared/platform'
+import { usePhone } from '../../shared/phone'
 
 /** A mix's songs in order: library songs, songs new to you slotted at their place. */
 export function mixSongs(mix: Mix, byId: Map<number, LibraryTrack>): LibraryTrack[] {
@@ -124,9 +125,11 @@ function ResetHistory({ onDone }: { onDone: () => void }) {
 
 export function MixesView() {
   const { mixes, reload } = useMixes()
+  // The phone: Reset history at the page's foot, by the words on history (a rare action, not under the title).
+  const phone = usePhone()
   return (
     <>
-      <PageHeader kicker={phoneApp ? tr('For you · made on this phone from what you play') : tr('For you · made on this PC from what you play')} title={tr('Mixes')} actions={<ResetHistory onDone={reload} />} />
+      <PageHeader kicker={phoneApp ? tr('For you · made on this phone from what you play') : tr('For you · made on this PC from what you play')} title={tr('Mixes')} actions={!phone && <ResetHistory onDone={reload} />} />
       <div className="-mx-3 min-h-0 flex-1 overflow-y-auto px-3 pb-6">
         {mixes && mixes.length === 0 && (
           <div className="flex flex-col items-center gap-2 py-16 text-center text-ink-2">
@@ -152,6 +155,11 @@ export function MixesView() {
           })}
         </div>
         {mixes && mixes.length > 0 && <p className="mt-8 max-w-160 text-xs text-ink-2">{phoneApp ? tr('Built from your plays (full listens count more, skips count against), your playlists, your saves on YouTube Music and Spotify, what you play back to back and the time of day. To find new songs, a few of your favorites go to YouTube Music for their radio; your history stays on this phone. On a mix, use “Less like this” or “Never in mixes” to steer it.') : tr('Built from your plays (full listens count more, skips count against), your playlists, your saves on YouTube Music and Spotify, what you play back to back and the time of day. To find new songs, a few of your favorites go to YouTube Music for their radio; your history stays on this computer. On a mix, use “Less like this” or “Never in mixes” to steer it.')}</p>}
+        {phone && (
+          <div className="mt-3">
+            <ResetHistory onDone={reload} />
+          </div>
+        )}
       </div>
     </>
   )
