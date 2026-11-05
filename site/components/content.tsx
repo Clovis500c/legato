@@ -41,7 +41,7 @@ export const CHAPTERS: { scene: string; title: string; text: string; alt: string
 ]
 
 // Latest row of docs/performance.md (`pnpm bench`), copied as it is: change these with each new row.
-export const BENCH = { date: '2026-10-31', version: '1.0.0', os: 'Windows 11', pc: 'Ryzen 5 5500, 32 GB', songs: '10 000', ramPaused: '141', ramTray: '54', windowCold: '0.84', paintCold: '1.26' }
+export const BENCH = { date: '2026-11-05', version: '1.1.681', os: 'Windows 11', pc: 'Ryzen 5 5500, 32 GB', songs: '10 000', ramPaused: '149', ramTray: '57', windowCold: '0.76', paintCold: '1.27' }
 
 export const WHY: { title: string; text: string }[] = [
   { title: 'Legal', text: "Songs play in the official players: YouTube's own, the Spotify app, and your files in Legato's own. No platform's audio is downloaded, recorded or extracted. The Music Detector listens only when you ask, and Apple's previews are Apple's own 30 s clips." },
