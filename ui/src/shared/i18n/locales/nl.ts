@@ -2087,6 +2087,21 @@ const nl: Record<string, string> = {
   'A note for this moment': 'Een notitie bij dit moment',
   'Bookmark': 'Markeren',
   'Remove a bookmark': 'Bladwijzer verwijderen',
+  'Alarm': 'Wekker',
+  'Next: {when}': 'Volgende: {when}',
+  'Wakes you up with music. Legato must be running: closed to the notification area is fine, but a PC asleep doesn’t wake for it': 'Maakt je wakker met muziek. Legato moet draaien: gesloten naar het systeemvak is prima, maar een pc in slaapstand wordt er niet voor wakker',
+  'Alarm time': 'Wektijd',
+  'Alarm days': 'Wekdagen',
+  'No day picked: it won’t ring': 'Geen dag gekozen: hij gaat niet af',
+  'Alarm music': 'Wekmuziek',
+  'A playlist from its first song, or all your songs shuffled': 'Een playlist vanaf het eerste nummer, of al je nummers in willekeurige volgorde',
+  'All your songs, shuffled': 'Al je nummers, willekeurig',
+  'Alarm fade-in': 'Wekker langzaam harder',
+  'From silence to your volume over {n} min': 'Van stilte naar je volume in {n} min',
+  'Off: at your volume at once': 'Uit: meteen op je volume',
+  'alarm clock wake up wakeup morning ring rise sunrise': 'wekker alarm wakker worden wekken ochtend afgaan opstaan zonsopgang',
+  'Alarm: {name}': 'Wekker: {name}',
+  'Alarm…': 'Wekker…',
 }
 
 export default nl

@@ -259,6 +259,13 @@ We still pin the policy on the iframe: a meta tag or header added later can't br
   one off. Small grey ticks above the seek bar (`Progress.tsx` `BookmarkMarks`). SQLite `bookmarks` (schema 18), 50 a
   song, within a second of one = that one; library songs only, this PC only (not in Sync Mode); a merge of duplicates
   keeps them, a song removed takes them along (`player/bookmarks.ts`, `Library::add_bookmark`).
+- **Alarm** (2026-11-05, Settings › Playback › Alarm, or the player's right-click › Alarm…): at its time on its days, a
+  playlist from its first song (or all your songs shuffled), the volume up from silence over 0 to 15 minutes (`wake`,
+  the sleep timer's ramp the other way; Spotify Connect at once, it has no fades). Music already playing: nothing is
+  replaced. The next ring is kept in Rust (`src-tauri/src/alarm.rs`, a thread looking every 10 s), so it rings from the
+  tray: the page is woken first (`background::wake`). A PC asleep at its time doesn't wake for it: over 10 minutes late
+  it is skipped (logged) and the next one set. This PC only (Sync Mode leaves it), desktop only (a phone would need
+  Android's AlarmManager). `features/player/alarm.ts`, pure `alarmTime.ts` (`nextAlarm`).
 - **Song's shape on the seek bar** (2026-11-05, Settings › Appearance › Progress bar › Song's shape): a local song's
   loudness along it, measured in the same background decode (`music_player::shape`: the RMS of 50 ms windows, 400
   points, -36 to 0 dBFS as 0 to 255), cached in SQLite `waveform` by path and modified time (schema 17).

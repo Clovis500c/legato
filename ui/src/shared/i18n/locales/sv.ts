@@ -2087,6 +2087,21 @@ const sv: Record<string, string> = {
   'A note for this moment': 'En anteckning för det här ögonblicket',
   'Bookmark': 'Bokmärk',
   'Remove a bookmark': 'Ta bort ett bokmärke',
+  'Alarm': 'Väckarklocka',
+  'Next: {when}': 'Nästa: {when}',
+  'Wakes you up with music. Legato must be running: closed to the notification area is fine, but a PC asleep doesn’t wake for it': 'Väcker dig med musik. Legato måste vara igång: stängt till meddelandefältet går bra, men en dator i viloläge vaknar inte för den',
+  'Alarm time': 'Väckningstid',
+  'Alarm days': 'Väckningsdagar',
+  'No day picked: it won’t ring': 'Ingen dag vald: den ringer inte',
+  'Alarm music': 'Väckningsmusik',
+  'A playlist from its first song, or all your songs shuffled': 'En spellista från första låten, eller alla dina låtar blandade',
+  'All your songs, shuffled': 'Alla dina låtar, blandade',
+  'Alarm fade-in': 'Väckning som tonar in',
+  'From silence to your volume over {n} min': 'Från tystnad till din volym på {n} min',
+  'Off: at your volume at once': 'Av: din volym direkt',
+  'alarm clock wake up wakeup morning ring rise sunrise': 'väckarklocka alarm vakna väcka morgon ringa stiga upp soluppgång',
+  'Alarm: {name}': 'Väckarklocka: {name}',
+  'Alarm…': 'Väckarklocka…',
 }
 
 export default sv

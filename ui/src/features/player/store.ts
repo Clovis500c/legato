@@ -129,6 +129,8 @@ interface PlayerState {
   pauseNow: () => void
   /** Sleep timer: volume down over `ms`, then pause (volume back for next time). */
   sleep: (ms: number) => void
+  /** Alarm: volume up from silence over `ms` (the songs after keep rising: the ramp outlasts them). */
+  wake: (ms: number) => void
   seek: (ms: number) => void
   /** auto = track ended by itself (repeat one replays it). */
   step: (delta: 1 | -1, auto?: boolean) => void
@@ -732,6 +734,10 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     // Paused at the end by what plays then: a fade of minutes outlasts the song it began on.
     if (now.via === 'spotify') return get().pauseNow()
     ramp((t) => (1 - t) ** 2, ms, () => get().pauseNow())
+  },
+
+  wake(ms) {
+    ramp((t) => t * t, ms)
   },
 
   previewFade() {

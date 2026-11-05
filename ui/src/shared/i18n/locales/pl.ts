@@ -2087,6 +2087,21 @@ const pl: Record<string, string> = {
   'A note for this moment': 'Notatka do tego momentu',
   'Bookmark': 'Zaznacz',
   'Remove a bookmark': 'Usuń zakładkę',
+  'Alarm': 'Budzik',
+  'Next: {when}': 'Następny: {when}',
+  'Wakes you up with music. Legato must be running: closed to the notification area is fine, but a PC asleep doesn’t wake for it': 'Budzi cię muzyką. Legato musi działać: zamknięte do obszaru powiadomień wystarczy, ale uśpiony komputer się dla niego nie obudzi',
+  'Alarm time': 'Godzina budzika',
+  'Alarm days': 'Dni budzika',
+  'No day picked: it won’t ring': 'Nie wybrano dnia: nie zadzwoni',
+  'Alarm music': 'Muzyka budzika',
+  'A playlist from its first song, or all your songs shuffled': 'Playlista od pierwszego utworu albo wszystkie twoje utwory losowo',
+  'All your songs, shuffled': 'Wszystkie twoje utwory, losowo',
+  'Alarm fade-in': 'Narastanie budzika',
+  'From silence to your volume over {n} min': 'Od ciszy do twojej głośności przez {n} min',
+  'Off: at your volume at once': 'Wyłączone: od razu twoja głośność',
+  'alarm clock wake up wakeup morning ring rise sunrise': 'budzik alarm budzenie obudzić rano dzwonić wstawać wschód słońca',
+  'Alarm: {name}': 'Budzik: {name}',
+  'Alarm…': 'Budzik…',
 }
 
 export default pl

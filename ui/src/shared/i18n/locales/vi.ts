@@ -2087,6 +2087,21 @@ const vi: Record<string, string> = {
   'A note for this moment': 'Ghi chú cho khoảnh khắc này',
   'Bookmark': 'Đánh dấu',
   'Remove a bookmark': 'Xóa một dấu trang',
+  'Alarm': 'Báo thức',
+  'Next: {when}': 'Lần tới: {when}',
+  'Wakes you up with music. Legato must be running: closed to the notification area is fine, but a PC asleep doesn’t wake for it': 'Đánh thức bạn bằng âm nhạc. Legato phải đang chạy: đóng xuống vùng thông báo vẫn được, nhưng PC đang ngủ sẽ không thức dậy vì nó',
+  'Alarm time': 'Giờ báo thức',
+  'Alarm days': 'Ngày báo thức',
+  'No day picked: it won’t ring': 'Chưa chọn ngày nào: sẽ không reo',
+  'Alarm music': 'Nhạc báo thức',
+  'A playlist from its first song, or all your songs shuffled': 'Một playlist từ bài đầu tiên, hoặc tất cả bài hát của bạn theo thứ tự ngẫu nhiên',
+  'All your songs, shuffled': 'Tất cả bài hát của bạn, ngẫu nhiên',
+  'Alarm fade-in': 'Báo thức to dần',
+  'From silence to your volume over {n} min': 'Từ im lặng lên âm lượng của bạn trong {n} phút',
+  'Off: at your volume at once': 'Tắt: âm lượng của bạn ngay từ đầu',
+  'alarm clock wake up wakeup morning ring rise sunrise': 'báo thức đồng hồ thức dậy đánh thức buổi sáng reo dậy bình minh',
+  'Alarm: {name}': 'Báo thức: {name}',
+  'Alarm…': 'Báo thức…',
 }
 
 export default vi

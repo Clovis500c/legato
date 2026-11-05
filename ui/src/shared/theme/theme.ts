@@ -189,6 +189,19 @@ export type VizColormap = (typeof VIZ_COLORMAPS)[number]
 export const VIZ_PRESET_COLORS = ['theme', 'own'] as const
 export type VizPresetColors = (typeof VIZ_PRESET_COLORS)[number]
 /** A visualizer preset imported from a file (features/player/vizPresetList.ts), checked again where it runs (vizPreset.ts). */
+/** The alarm (Settings › Playback › Alarm): a playlist at a time on some days, the volume rising from silence. */
+export interface Alarm {
+  on: boolean
+  /** Local time, "07:30". */
+  time: string
+  /** Days it rings, 0 = Sunday. */
+  days: number[]
+  /** Playlist id; null = all your songs, shuffled. */
+  playlist: number | null
+  /** Minutes the volume takes to rise; 0 = at once. */
+  fadeMin: number
+}
+
 export interface SavedPreset {
   id: string
   name: string
@@ -297,6 +310,8 @@ export interface Settings {
   readout: boolean
   /** Moon (sleep timer) next to the volume; the timer stays in the player's menu. */
   sleepButton: boolean
+  /** Off by default; this PC only (both PCs would ring). */
+  alarm: Alarm
   volume: 'knob' | 'bar'
   tuner: boolean
   columns: Column[]
@@ -500,6 +515,7 @@ export const DEFAULTS: Settings = {
   zoom: 100,
   readout: true,
   sleepButton: true,
+  alarm: { on: false, time: '07:30', days: [1, 2, 3, 4, 5], playlist: null, fadeMin: 5 },
   volume: 'bar',
   tuner: false,
   columns: DEFAULT_COLUMNS,
@@ -653,6 +669,17 @@ export const SIDEBAR_MAX = 420
 
 const num = (v: unknown, min: number, max: number, fallback: number) => (typeof v === 'number' && Number.isFinite(v) ? Math.min(max, Math.max(min, Math.round(v))) : fallback)
 const pick = <T,>(v: unknown, allowed: readonly T[], fallback: T): T => (allowed.includes(v as T) ? (v as T) : fallback)
+function alarmOf(v: unknown): Alarm {
+  const o = (v && typeof v === 'object' ? v : {}) as Record<string, unknown>
+  const d = DEFAULTS.alarm
+  return {
+    on: typeof o.on === 'boolean' ? o.on : d.on,
+    time: typeof o.time === 'string' && /^([01]\d|2[0-3]):[0-5]\d$/.test(o.time) ? o.time : d.time,
+    days: Array.isArray(o.days) ? [...new Set(o.days.filter((x): x is number => Number.isInteger(x) && x >= 0 && x <= 6))].sort((a, b) => a - b) : d.days,
+    playlist: typeof o.playlist === 'number' && Number.isInteger(o.playlist) && o.playlist > 0 ? o.playlist : null,
+    fadeMin: num(o.fadeMin, 0, 15, d.fadeMin),
+  }
+}
 
 /** Trust boundary (file import, stored JSON): full palette or nothing. */
 export function sanitizeTheme(raw: unknown): Theme | null {
@@ -729,6 +756,7 @@ export function sanitize(raw: unknown): Settings {
     zoom: typeof r.zoom === 'number' && Number.isFinite(r.zoom) ? Math.min(125, Math.max(90, Math.round(r.zoom / 5) * 5)) : DEFAULTS.zoom,
     readout: typeof r.readout === 'boolean' ? r.readout : DEFAULTS.readout,
     sleepButton: typeof r.sleepButton === 'boolean' ? r.sleepButton : DEFAULTS.sleepButton,
+    alarm: alarmOf(r.alarm),
     volume: pick(r.volume, ['knob', 'bar'] as const, DEFAULTS.volume),
     tuner: typeof r.tuner === 'boolean' ? r.tuner : DEFAULTS.tuner,
     columns,

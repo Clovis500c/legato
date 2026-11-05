@@ -2087,6 +2087,21 @@ const uk: Record<string, string> = {
   'A note for this moment': 'Нотатка до цього моменту',
   'Bookmark': 'Позначити',
   'Remove a bookmark': 'Видалити закладку',
+  'Alarm': 'Будильник',
+  'Next: {when}': 'Наступний: {when}',
+  'Wakes you up with music. Legato must be running: closed to the notification area is fine, but a PC asleep doesn’t wake for it': 'Будить вас музикою. Legato має бути запущений: закритий в область сповіщень підійде, але комп’ютер у режимі сну заради нього не прокинеться',
+  'Alarm time': 'Час будильника',
+  'Alarm days': 'Дні будильника',
+  'No day picked: it won’t ring': 'Не вибрано жодного дня: не задзвонить',
+  'Alarm music': 'Музика будильника',
+  'A playlist from its first song, or all your songs shuffled': 'Плейлист із першого треку або всі ваші треки впереміш',
+  'All your songs, shuffled': 'Усі ваші треки, впереміш',
+  'Alarm fade-in': 'Наростання будильника',
+  'From silence to your volume over {n} min': 'Від тиші до вашої гучності за {n} хв',
+  'Off: at your volume at once': 'Вимк.: одразу ваша гучність',
+  'alarm clock wake up wakeup morning ring rise sunrise': 'будильник будити прокинутися ранок дзвінок вставати світанок',
+  'Alarm: {name}': 'Будильник: {name}',
+  'Alarm…': 'Будильник…',
 }
 
 export default uk

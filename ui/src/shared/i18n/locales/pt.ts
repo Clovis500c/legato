@@ -2087,6 +2087,21 @@ const pt: Record<string, string> = {
   'A note for this moment': 'Uma nota para este momento',
   'Bookmark': 'Marcar',
   'Remove a bookmark': 'Remover um marcador',
+  'Alarm': 'Alarme',
+  'Next: {when}': 'Próximo: {when}',
+  'Wakes you up with music. Legato must be running: closed to the notification area is fine, but a PC asleep doesn’t wake for it': 'Acorda você com música. O Legato precisa estar rodando: fechado na área de notificação tudo bem, mas um PC em suspensão não acorda para ele',
+  'Alarm time': 'Hora do alarme',
+  'Alarm days': 'Dias do alarme',
+  'No day picked: it won’t ring': 'Nenhum dia escolhido: ele não vai tocar',
+  'Alarm music': 'Música do alarme',
+  'A playlist from its first song, or all your songs shuffled': 'Uma playlist desde a primeira música, ou todas as suas músicas no aleatório',
+  'All your songs, shuffled': 'Todas as suas músicas, no aleatório',
+  'Alarm fade-in': 'Subida do alarme',
+  'From silence to your volume over {n} min': 'Do silêncio ao seu volume em {n} min',
+  'Off: at your volume at once': 'Desativado: no seu volume desde o início',
+  'alarm clock wake up wakeup morning ring rise sunrise': 'alarme despertador acordar manhã tocar levantar amanhecer',
+  'Alarm: {name}': 'Alarme: {name}',
+  'Alarm…': 'Alarme…',
 }
 
 export default pt

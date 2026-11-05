@@ -9,7 +9,7 @@ import { pickFile, saveFile } from '../../shared/files'
 import { formatBytes, formatCount, timeAgo } from '../../shared/format'
 import { PRIVACY_PAGE } from '../../shared/links'
 import { byVia, countText, VIA_LABELS, WHY_LABELS } from './privacy'
-import { ACCENTS, ADAPTIVE_LEVELS, COLUMNS, COVER_CACHE_MB, DEFAULTS, DJ_FRESH, DJ_GAPS, VIZ_BANDINGS, VIZ_COLORMAPS, VIZ_COLORS, VIZ_FACES, VIZ_GRADIENTS, VIZ_PRESET_COLORS, VIZ_WEIGHTINGS, type AdaptiveLevel, type Column, type Settings } from '../../shared/theme/theme'
+import { ACCENTS, ADAPTIVE_LEVELS, COLUMNS, COVER_CACHE_MB, DEFAULTS, DJ_FRESH, DJ_GAPS, VIZ_BANDINGS, VIZ_COLORMAPS, VIZ_COLORS, VIZ_FACES, VIZ_GRADIENTS, VIZ_PRESET_COLORS, VIZ_WEIGHTINGS, type AdaptiveLevel, type Alarm, type Column, type Settings } from '../../shared/theme/theme'
 import { Button } from '../../shared/ui/Button'
 import { Led, Segmented, Toggle } from '../../shared/ui/controls'
 import { PageHeader } from '../../shared/ui/PageHeader'
@@ -31,7 +31,8 @@ import { ThemeStudio } from './ThemeStudio'
 import { FadeEditor } from './FadeEditor'
 import { BrowserScene, CountsScene, CoverShapes, DensityScene, FadeScene, ListCoversScene, MiniPlayerScene, MixCoverScene, MotionScene, NowPlayingScene, ProgressScene, SleepButtonScene, SourceIconScene, TunerScene, VolumeScene } from './previews'
 import { searchSettings, type SettingEntry } from './search'
-import { msg, tr } from '../../shared/i18n/i18n'
+import { locale, msg, tr } from '../../shared/i18n/i18n'
+import { nextAlarm } from '../player/alarmTime'
 import { phoneApp } from '../../shared/platform'
 import { DESKTOP_ONLY, DESKTOP_ONLY_SECTIONS } from './desktopOnly'
 import { LanguagePicker } from './LanguagePicker'
@@ -747,6 +748,62 @@ function GeneralSection() {
 const freshLabels: Record<number, string> = { 0: msg('No wait'), 1: msg('A day'), 7: msg('A week'), 30: msg('A month') }
 const gapLabels: Record<number, string> = { 0: msg('Any time'), 3: msg('After 3 songs'), 10: msg('After 10 songs') }
 
+/** Monday first; 0 = Sunday, as Date.getDay(). */
+const WEEK = [1, 2, 3, 4, 5, 6, 0]
+
+function AlarmGroup() {
+  const { settings: s, update } = useSettings()
+  const playlists = useStore((st) => st.playlists)
+  const a = s.alarm
+  const set = (p: Partial<Alarm>) => update({ alarm: { ...a, ...p } })
+  // 1 November 2026 was a Sunday: + d is that weekday.
+  const day = (d: number, weekday: 'short' | 'long') => new Intl.DateTimeFormat(locale(), { weekday }).format(new Date(2026, 10, 1 + d))
+  const next = nextAlarm(Date.now(), a)
+  const when = next === null ? undefined : new Intl.DateTimeFormat(locale(), { weekday: 'long', hour: '2-digit', minute: '2-digit' }).format(next)
+  const field = 'rounded-md border border-line bg-bg px-2 py-1.5 text-[0.8125rem]'
+  return (
+    <Group title={msg('Alarm')} hint={when && tr('Next: {when}', { when })}>
+      <div className="rounded-xl border border-line bg-raised">
+        <Row setting="alarm" label={msg('Alarm')} sub={tr('Wakes you up with music. Legato must be running: closed to the notification area is fine, but a PC asleep doesn’t wake for it')}>
+          <Toggle label={tr('Alarm')} checked={a.on} onChange={(on) => set({ on })} />
+        </Row>
+        {a.on && (
+          <>
+            <Row label={msg('Alarm time')}>
+              <input type="time" aria-label={tr('Alarm time')} value={a.time} onChange={(e) => e.target.value && set({ time: e.target.value })} className={field} />
+            </Row>
+            <Row label={msg('Alarm days')} sub={a.days.length ? undefined : tr('No day picked: it won’t ring')}>
+              <div role="group" aria-label={tr('Alarm days')} className="flex w-fit max-w-full flex-wrap gap-0.5 rounded-full border border-line p-[3px]">
+                {WEEK.map((d) => {
+                  const on = a.days.includes(d)
+                  return (
+                    <button key={d} type="button" aria-pressed={on} title={day(d, 'long')} onClick={() => set({ days: on ? a.days.filter((x) => x !== d) : [...a.days, d].sort((x, y) => x - y) })} className={`rounded-full px-2.5 py-1 text-xs font-medium transition ${on ? 'bg-ink text-bg' : 'text-ink-2 hover:text-ink'}`}>
+                      {day(d, 'short')}
+                    </button>
+                  )
+                })}
+              </div>
+            </Row>
+            <Row label={msg('Alarm music')} sub={tr('A playlist from its first song, or all your songs shuffled')}>
+              <select aria-label={tr('Alarm music')} value={a.playlist ?? ''} onChange={(e) => set({ playlist: e.target.value ? Number(e.target.value) : null })} className={`${field} max-w-56`}>
+                <option value="">{tr('All your songs, shuffled')}</option>
+                {playlists.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}
+                  </option>
+                ))}
+              </select>
+            </Row>
+            <Row label={msg('Alarm fade-in')} sub={a.fadeMin ? tr('From silence to your volume over {n} min', { n: a.fadeMin }) : tr('Off: at your volume at once')}>
+              <input type="range" aria-label={tr('Alarm fade-in')} min={0} max={15} step={1} value={a.fadeMin} onChange={(e) => set({ fadeMin: +e.target.value })} className="bar w-40" style={{ backgroundImage: `linear-gradient(to right, var(--ink) ${(a.fadeMin / 15) * 100}%, var(--line) 0)` }} />
+            </Row>
+          </>
+        )}
+      </div>
+    </Group>
+  )
+}
+
 function PlaybackSection() {
   const { settings: s, update } = useSettings()
   return (
@@ -806,6 +863,7 @@ function PlaybackSection() {
           </Row>
         </div>
       </Group>
+      <AlarmGroup />
       <Group title={msg('Headphones and calls')}>
         <div className="rounded-xl border border-line bg-raised">
           <Row setting="pauseOnUnplug" label={msg('Pause when headphones disconnect')} sub={tr('Headphones unplugged, a Bluetooth headset or speaker turned off: the music pauses instead of going on through the speakers')}>

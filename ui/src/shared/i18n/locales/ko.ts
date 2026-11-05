@@ -2087,6 +2087,21 @@ const ko: Record<string, string> = {
   'A note for this moment': '이 순간에 대한 메모',
   'Bookmark': '북마크하기',
   'Remove a bookmark': '북마크 삭제',
+  'Alarm': '알람',
+  'Next: {when}': '다음 알람: {when}',
+  'Wakes you up with music. Legato must be running: closed to the notification area is fine, but a PC asleep doesn’t wake for it': '음악으로 깨워 줍니다. Legato가 실행 중이어야 합니다. 알림 영역으로 닫아 둔 것은 괜찮지만, 절전 모드인 PC는 알람 때문에 깨어나지 않습니다',
+  'Alarm time': '알람 시간',
+  'Alarm days': '알람 요일',
+  'No day picked: it won’t ring': '선택한 요일 없음: 울리지 않습니다',
+  'Alarm music': '알람 음악',
+  'A playlist from its first song, or all your songs shuffled': '플레이리스트를 첫 곡부터, 또는 내 모든 노래를 셔플로',
+  'All your songs, shuffled': '내 모든 노래, 셔플',
+  'Alarm fade-in': '알람 페이드 인',
+  'From silence to your volume over {n} min': '무음에서 내 볼륨까지 {n}분 동안',
+  'Off: at your volume at once': '끔: 처음부터 내 볼륨으로',
+  'alarm clock wake up wakeup morning ring rise sunrise': '알람 자명종 기상 깨우기 아침 울림 일어나기 일출',
+  'Alarm: {name}': '알람: {name}',
+  'Alarm…': '알람…',
 }
 
 export default ko

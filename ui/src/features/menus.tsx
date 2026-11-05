@@ -65,6 +65,7 @@ import {
   UploadSimple,
   VinylRecord,
   BookmarkSimple,
+  Alarm,
 } from '@phosphor-icons/react'
 import { openUrl, revealItemInDir } from '@tauri-apps/plugin-opener'
 import { useSettings } from '../app/settings'
@@ -103,6 +104,7 @@ import { needleLook } from './player/vizVu'
 import { lookOptions, lookSettings, lookValue, usePluginViz } from './plugins/pluginViz'
 import { msg, tr, trn } from '../shared/i18n/i18n'
 import { ask, askText } from '../shared/ui/Ask'
+import { phoneApp } from '../shared/platform'
 import { addBookmark, bookmarkTime, goToBookmark, momentNow, removeBookmark, useBookmarks } from './player/bookmarks'
 
 const app = () => useStore.getState()
@@ -720,6 +722,7 @@ export function playerMenu(): MenuEntry[] {
     { label: tr('Share as a picture…'), icon: <ImageSquare size={16} />, onSelect: openShare },
     { label: tr('Live Editor'), icon: <SlidersHorizontal size={16} />, onSelect: () => (useSettings.getState().update({ editor: true }), setFull(true)) },
     { label: tr('Sleep timer'), icon: <Moon size={16} />, items: sleepMenu() },
+    !phoneApp && { label: tr('Alarm…'), icon: <Alarm size={16} />, onSelect: () => (setFull(false), app().go({ name: 'settings', section: 'playback', focus: 'Alarm' })) },
     { label: tr('Mini player'), icon: <PictureInPicture size={16} />, checked: mini || !!video, disabled: !!video, onSelect: () => useSettings.getState().update({ miniPlayer: !mini }) },
     '-',
     t && playVia(t, list, index),

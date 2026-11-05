@@ -4,7 +4,7 @@ import { preloadPages } from './pages'
 
 /**
  * What waits for the first screen (Rust side: src-tauri/src/deferred.rs): Discord's presence, Last.fm, ListenBrainz, Sync Mode's
- * messages, plugins, YouTube Music's 15-minute sync, the phone remote, a phone's songs scanned again, the taskbar's Jump List, then the other pages preloaded when idle. Loaded now, not at launch. Their listeners are in before the ready signal, so a plugin that starts
+ * messages, plugins, YouTube Music's 15-minute sync, the phone remote, a phone's songs scanned again, the taskbar's Jump List, the alarm, then the other pages preloaded when idle. Loaded now, not at launch. Their listeners are in before the ready signal, so a plugin that starts
  * right after it misses no call. The signal goes whatever happens here: a broken module must not hold the update rounds
  * (Rust also starts them after a few seconds). Returns cleanup.
  */
@@ -23,6 +23,7 @@ export function startDeferred(): () => void {
     ['Streaming overlay', () => import('../features/remote/remote').then((m) => m.startOverlay())],
     ['Phone songs', () => import('../features/add/phoneMusic').then((m) => m.startPhoneMusic())],
     ['Jump List', () => import('../features/home/jumpList').then((m) => m.startJumpList())],
+    ['Alarm', () => import('../features/player/alarm').then((m) => m.startAlarm())],
   ]
   void Promise.allSettled(
     starts.map(async ([name, start]) => {

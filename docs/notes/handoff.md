@@ -218,6 +218,9 @@ Relaunch log (newest last):
 - 2026-11-05: re-renders profiled in the demo: Up next re-rendered its whole list at each engine report (a new empty
   `upcoming` array 4 times a second); fixed in `player/store.ts` `onLocal`, 52 to 2.9 ms of rendering a second.
 - 2026-11-05: bookmarks inside a song (player menu › Bookmarks, ticks on the seek bar; schema 18). Seen in the demo.
+- 2026-11-05: the alarm (Settings › Playback › Alarm; `alarm.rs` rings from the tray, `features/player/alarm.ts`).
+  A ring sent by hand in the demo; a real one from the tray not tried. Plan notes on Focus / workout, Hide explicit
+  and Spotify previews (left: data, an `M`, the owner's call).
 
 ## Mobile app and devices sync (the owner's ask, 2026-11-02 afternoon; in progress)
 

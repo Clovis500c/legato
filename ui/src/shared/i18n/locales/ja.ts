@@ -2087,6 +2087,21 @@ const ja: Record<string, string> = {
   'A note for this moment': 'この瞬間のメモ',
   'Bookmark': 'ブックマークする',
   'Remove a bookmark': 'ブックマークを削除',
+  'Alarm': 'アラーム',
+  'Next: {when}': '次回: {when}',
+  'Wakes you up with music. Legato must be running: closed to the notification area is fine, but a PC asleep doesn’t wake for it': '音楽で起こします。Legato の起動が必要です。通知領域に閉じた状態なら大丈夫ですが、スリープ中の PC はアラームのために起動しません',
+  'Alarm time': 'アラームの時刻',
+  'Alarm days': 'アラームの曜日',
+  'No day picked: it won’t ring': '曜日が選ばれていません: 鳴りません',
+  'Alarm music': 'アラームの音楽',
+  'A playlist from its first song, or all your songs shuffled': 'プレイリストを最初の曲から、またはすべての曲をシャッフルで',
+  'All your songs, shuffled': 'すべての曲をシャッフルで',
+  'Alarm fade-in': 'アラームのフェードイン',
+  'From silence to your volume over {n} min': '無音から {n} 分かけていつもの音量へ',
+  'Off: at your volume at once': 'オフ: 最初からいつもの音量',
+  'alarm clock wake up wakeup morning ring rise sunrise': 'アラーム 目覚まし 起きる 朝 鳴る 起床 日の出',
+  'Alarm: {name}': 'アラーム: {name}',
+  'Alarm…': 'アラーム…',
 }
 
 export default ja

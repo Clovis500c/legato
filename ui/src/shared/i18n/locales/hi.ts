@@ -2087,6 +2087,21 @@ const hi: Record<string, string> = {
   'A note for this moment': 'इस पल के लिए एक नोट',
   'Bookmark': 'बुकमार्क करें',
   'Remove a bookmark': 'एक बुकमार्क हटाएं',
+  'Alarm': 'अलार्म',
+  'Next: {when}': 'अगला: {when}',
+  'Wakes you up with music. Legato must be running: closed to the notification area is fine, but a PC asleep doesn’t wake for it': 'आपको संगीत से जगाता है। Legato चलता रहना चाहिए: सूचना क्षेत्र में बंद होना ठीक है, पर स्लीप में पड़ा PC इसके लिए नहीं जागता',
+  'Alarm time': 'अलार्म का समय',
+  'Alarm days': 'अलार्म के दिन',
+  'No day picked: it won’t ring': 'कोई दिन नहीं चुना: यह नहीं बजेगा',
+  'Alarm music': 'अलार्म का संगीत',
+  'A playlist from its first song, or all your songs shuffled': 'कोई प्लेलिस्ट उसके पहले गाने से, या आपके सभी गाने शफ़ल करके',
+  'All your songs, shuffled': 'आपके सभी गाने, शफ़ल करके',
+  'Alarm fade-in': 'अलार्म की धीमी शुरुआत',
+  'From silence to your volume over {n} min': 'चुप्पी से आपकी आवाज़ तक {n} मिनट में',
+  'Off: at your volume at once': 'बंद: शुरू से ही आपकी आवाज़ पर',
+  'alarm clock wake up wakeup morning ring rise sunrise': 'अलार्म घड़ी जागना जगाना सुबह बजना उठना सूर्योदय',
+  'Alarm: {name}': 'अलार्म: {name}',
+  'Alarm…': 'अलार्म…',
 }
 
 export default hi

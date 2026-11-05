@@ -189,6 +189,10 @@ export const api = {
   onPushFailed: (cb: (f: PushFailed) => void) => listen<PushFailed>('push-failed', (e) => cb(e.payload)),
   /** A second launch from a taskbar Jump List entry: `jumpPending` has it. */
   onJump: (cb: () => void) => listen('jump', () => cb()),
+  /** The alarm's time came (alarm.rs); `missed`: the PC was asleep then, not rung. */
+  onAlarm: (cb: (missed: boolean) => void) => Promise.all([listen('alarm', () => cb(false)), listen('alarm-missed', () => cb(true))]).then((offs) => () => offs.forEach((f) => f())),
+  /** The alarm's next ring (unix ms), or none: kept in Rust, so it rings from the tray too. */
+  setAlarm: (at: number | null) => invoke<void>('set_alarm', { at }),
   /** The Jump List entry this launch or a later one was started from, once: 'shuffle' or 'playlist:<id>'. */
   jumpPending: () => invoke<string | null>('jump_pending'),
   /** The taskbar's Jump List written again: Shuffle all, then these playlists (installed app on Windows only). */

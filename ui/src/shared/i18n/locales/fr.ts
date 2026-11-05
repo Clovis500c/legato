@@ -2087,6 +2087,21 @@ const fr: Record<string, string> = {
   'A note for this moment': 'Une note pour ce moment',
   'Bookmark': 'Marquer',
   'Remove a bookmark': 'Retirer un signet',
+  'Alarm': 'Réveil',
+  'Next: {when}': 'Prochain : {when}',
+  'Wakes you up with music. Legato must be running: closed to the notification area is fine, but a PC asleep doesn’t wake for it': 'Vous réveille en musique. Legato doit être lancé : fermé dans la zone de notification, c’est bon, mais un PC en veille ne se réveille pas pour lui',
+  'Alarm time': 'Heure du réveil',
+  'Alarm days': 'Jours du réveil',
+  'No day picked: it won’t ring': 'Aucun jour choisi : il ne sonnera pas',
+  'Alarm music': 'Musique du réveil',
+  'A playlist from its first song, or all your songs shuffled': 'Une playlist depuis son premier titre, ou tous vos titres en aléatoire',
+  'All your songs, shuffled': 'Tous vos titres, en aléatoire',
+  'Alarm fade-in': 'Montée du réveil',
+  'From silence to your volume over {n} min': 'Du silence à votre volume en {n} min',
+  'Off: at your volume at once': 'Désactivée : à votre volume tout de suite',
+  'alarm clock wake up wakeup morning ring rise sunrise': 'réveil alarme réveiller matin sonner lever aube',
+  'Alarm: {name}': 'Réveil : {name}',
+  'Alarm…': 'Réveil…',
 }
 
 export default fr

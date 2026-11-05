@@ -448,10 +448,14 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       Animations off).
 - [x] `S` Waveform progress bar for local files: their levels, read once by the engine and kept (YouTube gives none).
       (2026-11-05: Progress bar › Song’s shape, the line below.)
-- [ ] `S` Focus / workout sessions: a timer, no-lyrics or high-BPM mix, a summary after.
+- [ ] `S` Focus / workout sessions: a timer, no-lyrics or high-BPM mix, a summary after. (Left by the autopilot
+      (2026-11-05): no tempo or energy data yet, so no high-BPM mix: the roadmap's "Smarter listening" analysis first;
+      the plain timer is the sleep timer.)
 - [x] `S` Now-playing overlay for streamers (a local page OBS can show, the app's theme). (2026-11-02: Settings › Playback ›
       Streaming overlay, `/overlay` on the phone remote's server, 127.0.0.1 only when alone; OBS's Custom CSS restyles it.)
-- [ ] `S` Hide explicit songs (a filter, YouTube Music's flag when there is one).
+- [ ] `S` Hide explicit songs (a filter, YouTube Music's flag when there is one). (Left by the autopilot (2026-11-05):
+      no explicit flag is stored. The sources give it (YouTube Music's E badge, Exportify's Explicit column, iTunes'
+      `trackExplicitness`): a `Track` field, a schema step and three parsers, an `M`.)
 - [x] `S` Bookmarks inside a song (a moment to come back to, a note), Spicetify's Bookmark. (2026-11-05: right-click the
       player › Bookmarks: Bookmark this moment, or with a note; the song's bookmarks go back there; Remove a bookmark.
       Ticks above the seek bar. SQLite `bookmarks` (schema 18), 50 a song (`player/bookmarks.ts`, `docs/playback.md`).
@@ -475,8 +479,15 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       the player's right-click › Share as a picture…: `features/share/`, a 1080 × 1350 canvas, the cover's colours or the
       theme's, the lyric line playing or another; copied, or saved as PNG / JPEG by `save_picture`. Nothing is sent.
       Checked over the demo with a faked save; a real paste into a chat app not tried.)
-- [ ] `S` Spotify previews.
-- [ ] `S-M` Alarm: wake up with a playlist (fade in), works from the tray.
+- [ ] `S` Spotify previews. (Left by the autopilot (2026-11-05): the Web API stopped giving new apps the 30-second
+      `preview_url` (November 2024); an embed's preview MP3 played outside Spotify's player is the owner's call.)
+- [x] `S-M` Alarm: wake up with a playlist (fade in), works from the tray. (2026-11-05: Settings › Playback › Alarm, or
+      the player's right-click › Alarm…: a time, days, a playlist from its first song or all your songs shuffled, a
+      fade from silence over 0 to 15 min. Rust keeps the next ring (`alarm.rs`) and wakes the page in the tray
+      (`docs/playback.md`). Decided alone: music already playing is left alone; over 10 minutes late (the PC slept) it
+      is skipped, not rung; this PC only; desktop only (a phone needs Android's AlarmManager); the days row starts on
+      Monday. Tried: Rust and Vitest tests, the demo (rows, a ring sent by hand). Not tried: a real ring from the tray
+      on an installed build, a PC waking from sleep.)
 - [ ] `S-M` Cover colours beyond the surfaces: "Whole app in the cover's color" (`appTint`, `ambient.ts`) tints the surfaces
       with one average colour; a small palette for the accent and the selection is left (Theme Studio choice).
 - [ ] `S-M` Volume: a perceptual (dB) curve (it would make every saved volume louder or quieter; local and YouTube stay level

@@ -2087,6 +2087,21 @@ const zh: Record<string, string> = {
   'A note for this moment': '此刻的备注',
   'Bookmark': '添加书签',
   'Remove a bookmark': '删除书签',
+  'Alarm': '闹钟',
+  'Next: {when}': '下次：{when}',
+  'Wakes you up with music. Legato must be running: closed to the notification area is fine, but a PC asleep doesn’t wake for it': '用音乐叫醒你。Legato 必须在运行：关闭到通知区域也可以，但睡眠中的电脑不会为它唤醒',
+  'Alarm time': '闹钟时间',
+  'Alarm days': '闹钟日期',
+  'No day picked: it won’t ring': '未选择任何一天：不会响',
+  'Alarm music': '闹钟音乐',
+  'A playlist from its first song, or all your songs shuffled': '从第一首开始播放一个歌单，或随机播放你的所有歌曲',
+  'All your songs, shuffled': '你的所有歌曲，随机播放',
+  'Alarm fade-in': '闹钟渐强',
+  'From silence to your volume over {n} min': '在 {n} 分钟内从静音升到你的音量',
+  'Off: at your volume at once': '关闭：一开始就是你的音量',
+  'alarm clock wake up wakeup morning ring rise sunrise': '闹钟 闹铃 起床 叫醒 早晨 响铃 日出',
+  'Alarm: {name}': '闹钟：{name}',
+  'Alarm…': '闹钟…',
 }
 
 export default zh

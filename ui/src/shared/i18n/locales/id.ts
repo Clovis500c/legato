@@ -2087,6 +2087,21 @@ const id: Record<string, string> = {
   'A note for this moment': 'Catatan untuk momen ini',
   'Bookmark': 'Tandai',
   'Remove a bookmark': 'Hapus penanda',
+  'Alarm': 'Alarm',
+  'Next: {when}': 'Berikutnya: {when}',
+  'Wakes you up with music. Legato must be running: closed to the notification area is fine, but a PC asleep doesn’t wake for it': 'Membangunkanmu dengan musik. Legato harus berjalan: ditutup ke area notifikasi tidak apa-apa, tapi PC yang sedang tidur tidak bangun untuknya',
+  'Alarm time': 'Waktu alarm',
+  'Alarm days': 'Hari alarm',
+  'No day picked: it won’t ring': 'Tidak ada hari dipilih: alarm tidak akan berbunyi',
+  'Alarm music': 'Musik alarm',
+  'A playlist from its first song, or all your songs shuffled': 'Playlist dari lagu pertamanya, atau semua lagumu diacak',
+  'All your songs, shuffled': 'Semua lagumu, diacak',
+  'Alarm fade-in': 'Naik perlahan alarm',
+  'From silence to your volume over {n} min': 'Dari hening ke volumemu dalam {n} mnt',
+  'Off: at your volume at once': 'Mati: langsung di volumemu',
+  'alarm clock wake up wakeup morning ring rise sunrise': 'alarm jam weker bangun membangunkan pagi berbunyi terbit matahari',
+  'Alarm: {name}': 'Alarm: {name}',
+  'Alarm…': 'Alarm…',
 }
 
 export default id

@@ -2087,6 +2087,21 @@ const tr: Record<string, string> = {
   'A note for this moment': 'Bu an için bir not',
   'Bookmark': 'İşaretle',
   'Remove a bookmark': 'Yer imini kaldır',
+  'Alarm': 'Alarm',
+  'Next: {when}': 'Sonraki: {when}',
+  'Wakes you up with music. Legato must be running: closed to the notification area is fine, but a PC asleep doesn’t wake for it': 'Seni müzikle uyandırır. Legato açık olmalı: bildirim alanına kapatılmış olması yeterli, ama uykudaki bir bilgisayar onun için uyanmaz',
+  'Alarm time': 'Alarm saati',
+  'Alarm days': 'Alarm günleri',
+  'No day picked: it won’t ring': 'Gün seçilmedi: çalmayacak',
+  'Alarm music': 'Alarm müziği',
+  'A playlist from its first song, or all your songs shuffled': 'İlk şarkısından bir çalma listesi ya da tüm şarkıların karışık',
+  'All your songs, shuffled': 'Tüm şarkıların, karışık',
+  'Alarm fade-in': 'Alarmın yavaşça yükselmesi',
+  'From silence to your volume over {n} min': 'Sessizlikten senin ses düzeyine {n} dk içinde',
+  'Off: at your volume at once': 'Kapalı: baştan senin ses düzeyinde',
+  'alarm clock wake up wakeup morning ring rise sunrise': 'alarm çalar saat uyanmak uyandırmak sabah çalmak kalkmak gün doğumu',
+  'Alarm: {name}': 'Alarm: {name}',
+  'Alarm…': 'Alarm…',
 }
 
 export default tr

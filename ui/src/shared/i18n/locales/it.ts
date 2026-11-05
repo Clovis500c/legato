@@ -2087,6 +2087,21 @@ const it: Record<string, string> = {
   'A note for this moment': 'Una nota per questo momento',
   'Bookmark': 'Segna',
   'Remove a bookmark': 'Rimuovi un segnalibro',
+  'Alarm': 'Sveglia',
+  'Next: {when}': 'Prossima: {when}',
+  'Wakes you up with music. Legato must be running: closed to the notification area is fine, but a PC asleep doesn’t wake for it': 'Ti sveglia con la musica. Legato deve essere in esecuzione: chiusa nell’area di notifica va bene, ma un PC in sospensione non si risveglia per lei',
+  'Alarm time': 'Ora della sveglia',
+  'Alarm days': 'Giorni della sveglia',
+  'No day picked: it won’t ring': 'Nessun giorno scelto: non suonerà',
+  'Alarm music': 'Musica della sveglia',
+  'A playlist from its first song, or all your songs shuffled': 'Una playlist dal suo primo brano, o tutti i tuoi brani in ordine casuale',
+  'All your songs, shuffled': 'Tutti i tuoi brani, in ordine casuale',
+  'Alarm fade-in': 'Salita della sveglia',
+  'From silence to your volume over {n} min': 'Dal silenzio al tuo volume in {n} min',
+  'Off: at your volume at once': 'Disattivata: subito al tuo volume',
+  'alarm clock wake up wakeup morning ring rise sunrise': 'sveglia allarme svegliarsi mattina suonare alzarsi alba',
+  'Alarm: {name}': 'Sveglia: {name}',
+  'Alarm…': 'Sveglia…',
 }
 
 export default it
