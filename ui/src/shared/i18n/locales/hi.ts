@@ -2075,6 +2075,8 @@ const hi: Record<string, string> = {
   'Some of its equations can’t be read here: it may look plainer than in MilkDrop.': 'इसके कुछ समीकरण यहाँ नहीं पढ़े जा सकते: यह MilkDrop की तुलना में सादा दिख सकता है।',
   'milkdrop milk presets import export tunnel spiral aurora flow zoom': 'milkdrop milk प्रीसेट presets इंपोर्ट एक्सपोर्ट import export सुरंग सर्पिल अरोरा बहाव ज़ूम tunnel spiral aurora zoom',
   'milkdrop presets colours own theme ink': 'milkdrop प्रीसेट presets रंग अपने थीम स्याही',
+  'In the lyrics': 'बोल में',
+  '“{line}”': '“{line}”',
 }
 
 export default hi

@@ -2075,6 +2075,8 @@ const tr: Record<string, string> = {
   'Some of its equations can’t be read here: it may look plainer than in MilkDrop.': 'Bazı denklemleri burada okunamıyor: MilkDrop’takinden daha sade görünebilir.',
   'milkdrop milk presets import export tunnel spiral aurora flow zoom': 'milkdrop milk hazır ayarlar presets içe aktar dışa aktar tünel sarmal kutup ışığı akış yakınlaştırma zoom',
   'milkdrop presets colours own theme ink': 'milkdrop hazır ayarlar presets renkler kendi tema mürekkep',
+  'In the lyrics': 'Şarkı sözlerinde',
+  '“{line}”': '“{line}”',
 }
 
 export default tr

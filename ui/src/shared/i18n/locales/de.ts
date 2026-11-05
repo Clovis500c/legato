@@ -2075,6 +2075,8 @@ const de: Record<string, string> = {
   'Some of its equations can’t be read here: it may look plainer than in MilkDrop.': 'Einige seiner Gleichungen können hier nicht gelesen werden: Es kann schlichter aussehen als in MilkDrop.',
   'milkdrop milk presets import export tunnel spiral aurora flow zoom': 'milkdrop milk presets voreinstellungen importieren exportieren tunnel spirale polarlicht fließen zoom',
   'milkdrop presets colours own theme ink': 'milkdrop presets farben eigene design tinte',
+  'In the lyrics': 'In den Songtexten',
+  '“{line}”': '„{line}“',
 }
 
 export default de

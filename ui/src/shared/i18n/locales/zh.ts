@@ -2075,6 +2075,8 @@ const zh: Record<string, string> = {
   'Some of its equations can’t be read here: it may look plainer than in MilkDrop.': '它的部分方程在这里无法读取：看起来可能比在 MilkDrop 中更朴素。',
   'milkdrop milk presets import export tunnel spiral aurora flow zoom': 'milkdrop milk 预设 presets 导入 导出 隧道 螺旋 极光 流动 缩放 zoom',
   'milkdrop presets colours own theme ink': 'milkdrop 预设 presets 颜色 自带 主题 墨色',
+  'In the lyrics': '歌词中',
+  '“{line}”': '“{line}”',
 }
 
 export default zh

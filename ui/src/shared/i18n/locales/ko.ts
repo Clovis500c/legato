@@ -2075,6 +2075,8 @@ const ko: Record<string, string> = {
   'Some of its equations can’t be read here: it may look plainer than in MilkDrop.': '일부 수식은 여기서 읽을 수 없습니다. MilkDrop보다 단순해 보일 수 있습니다.',
   'milkdrop milk presets import export tunnel spiral aurora flow zoom': 'milkdrop milk 프리셋 presets 가져오기 내보내기 import export 터널 나선 오로라 흐름 확대 tunnel spiral aurora zoom',
   'milkdrop presets colours own theme ink': 'milkdrop 프리셋 presets 색상 고유 테마 잉크',
+  'In the lyrics': '가사에서',
+  '“{line}”': '“{line}”',
 }
 
 export default ko

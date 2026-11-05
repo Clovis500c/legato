@@ -4,6 +4,7 @@
 //! LRCLIB's Lyricsfile (YAML, https://lrclib.net/lyricsfile).
 
 use serde::{Deserialize, Serialize};
+use unicode_normalization::{UnicodeNormalization, char::is_combining_mark};
 
 /// One synced line. Empty text = instrumental gap.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ts_rs::TS)]
@@ -397,6 +398,53 @@ pub fn key(artist: &str, title: &str, duration_ms: Option<u32>) -> String {
     format!("v5|{}|{}|{}", norm(artist), norm(title), duration_ms.map(|d| d / 1000).unwrap_or(0))
 }
 
+/// The "artist|title" part of a cache key (any version), to find its song again.
+pub fn key_song(key: &str) -> Option<&str> {
+    Some(key.split_once('|')?.1.rsplit_once('|')?.0)
+}
+
+/// A library song whose cached lyrics hold what was typed (the search page's "In the lyrics").
+#[derive(Debug, Clone, PartialEq, Serialize, ts_rs::TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export)]
+pub struct LyricHit {
+    pub track_id: i64,
+    /// The sung line it starts on, as written.
+    pub line: String,
+}
+
+/// Shortest text looked for in lyrics, in characters once folded: a shorter one is in half the songs.
+pub const MIN_PHRASE: usize = 5;
+
+/// Searchable form: lowercase, no accents, words split by one space, punctuation gone.
+pub fn fold(s: &str) -> String {
+    let s: String = s.nfkd().filter(|c| !is_combining_mark(*c)).collect::<String>().to_lowercase();
+    s.split(|c: char| !c.is_alphanumeric()).filter(|w| !w.is_empty()).collect::<Vec<_>>().join(" ")
+}
+
+/// The line (as written) where `phrase` (folded) starts in these lyrics: at a word's start, maybe running on into the
+/// next lines; the last word may be cut short (still typing). Synced lines, else the plain text.
+pub fn line_holding(l: &Lyrics, phrase: &str) -> Option<String> {
+    if phrase.is_empty() {
+        return None;
+    }
+    let synced: Vec<&str> = l.lines.iter().map(|x| x.text.as_str()).collect();
+    let lines: Vec<&str> = if synced.iter().any(|t| !t.trim().is_empty()) { synced } else { l.plain.as_deref().map(|p| p.lines().collect()).unwrap_or_default() };
+    // One text, a space before each line; where each line starts in it.
+    let mut text = String::new();
+    let mut starts = Vec::new();
+    for line in lines {
+        let f = fold(line);
+        if !f.is_empty() {
+            starts.push((text.len(), line));
+            text.push(' ');
+            text.push_str(&f);
+        }
+    }
+    let at = text.find(&format!(" {phrase}"))?;
+    starts.iter().rev().find(|(s, _)| *s <= at).map(|(_, line)| line.trim().to_string())
+}
+
 #[cfg(test)]
 mod tests {
 
@@ -565,5 +613,26 @@ mod tests {
         let plain_only = Record { synced: None, ..rec(200.0, false) };
         assert!(pick(vec![plain_only, rec(201.0, true)], Some(200.0), false).unwrap().0.synced.is_some());
         assert_eq!(key("Daft  Punk", "One More Time", Some(320_500)), "v5|daft punk|one more time|320");
+    }
+
+    #[test]
+    fn a_typed_line_finds_its_place_in_the_lyrics() {
+        let line = |text: &str| Line { ms: 0, text: text.into(), end_ms: None, words: None };
+        let l = Lyrics { lines: vec![line("Été, l’été !"), line(""), line("Under the bridge,"), line("down by the river")], plain: None, instrumental: false, source: String::new(), own: false };
+        assert_eq!(fold("  L’ÉTÉ, déjà! "), "l ete deja");
+        // Accents, case and punctuation aside; across a line break; the last word cut short.
+        assert_eq!(line_holding(&l, &fold("ete l'ete")).as_deref(), Some("Été, l’été !"));
+        assert_eq!(line_holding(&l, &fold("bridge down by")).as_deref(), Some("Under the bridge,"));
+        assert_eq!(line_holding(&l, "down by the riv").as_deref(), Some("down by the river"));
+        // Words start where they start: "own" isn't in "down".
+        assert_eq!(line_holding(&l, "own by"), None);
+        assert_eq!(line_holding(&l, ""), None);
+        // Plain lyrics when nothing is synced.
+        let plain = Lyrics { lines: Vec::new(), plain: Some("First line\nSecond one here".into()), ..l };
+        assert_eq!(line_holding(&plain, "second one").as_deref(), Some("Second one here"));
+        // A cache key's song, whatever its version.
+        assert_eq!(key_song(&key("Daft Punk", "One | More", Some(3_000))), Some("daft punk|one | more"));
+        assert_eq!(key_song("v2|a|b|200"), Some("a|b"));
+        assert_eq!(key_song("nothing"), None);
     }
 }

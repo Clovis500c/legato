@@ -210,6 +210,8 @@ Relaunch log (newest last):
   preset and Preset colors, Settings rows with Import / Export / Remove (`presetFiles.ts`, pure `vizPresetList.ts`,
   commands `read_preset` / `write_preset`). Seen in the demo full screen, dark; a first try stayed black with the
   browser pane hidden (the loop off), fine twice after. No real .milk file tried.
+- 2026-11-05: "In the lyrics" on the search page (your songs whose cached lyrics hold the text). LRCLIB can't search
+  lyrics text and AudD has no humming endpoint (their docs): that plan line's services are out. Seen in the demo.
 
 ## Mobile app and devices sync (the owner's ask, 2026-11-02 afternoon; in progress)
 

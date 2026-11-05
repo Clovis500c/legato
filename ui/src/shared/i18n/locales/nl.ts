@@ -2075,6 +2075,8 @@ const nl: Record<string, string> = {
   'Some of its equations can’t be read here: it may look plainer than in MilkDrop.': 'Sommige vergelijkingen kunnen hier niet worden gelezen: hij kan er eenvoudiger uitzien dan in MilkDrop.',
   'milkdrop milk presets import export tunnel spiral aurora flow zoom': 'milkdrop milk presets importeren exporteren tunnel spiraal noorderlicht stromen zoom',
   'milkdrop presets colours own theme ink': 'milkdrop presets kleuren eigen thema inkt',
+  'In the lyrics': 'In de songteksten',
+  '“{line}”': '‘{line}’',
 }
 
 export default nl

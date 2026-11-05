@@ -2075,6 +2075,8 @@ const id: Record<string, string> = {
   'Some of its equations can’t be read here: it may look plainer than in MilkDrop.': 'Beberapa persamaannya tidak bisa dibaca di sini: tampilannya mungkin lebih polos daripada di MilkDrop.',
   'milkdrop milk presets import export tunnel spiral aurora flow zoom': 'milkdrop milk preset presets impor ekspor terowongan spiral aurora aliran zoom',
   'milkdrop presets colours own theme ink': 'milkdrop preset presets warna milik tema tinta',
+  'In the lyrics': 'Di lirik',
+  '“{line}”': '“{line}”',
 }
 
 export default id

@@ -2075,6 +2075,8 @@ const ja: Record<string, string> = {
   'Some of its equations can’t be read here: it may look plainer than in MilkDrop.': '一部の式はここでは読めません。MilkDrop より地味に見えるかもしれません。',
   'milkdrop milk presets import export tunnel spiral aurora flow zoom': 'milkdrop milk プリセット presets インポート エクスポート import export トンネル スパイラル オーロラ フロー ズーム tunnel spiral aurora flow zoom',
   'milkdrop presets colours own theme ink': 'milkdrop プリセット presets 色 独自 テーマ インク',
+  'In the lyrics': '歌詞の中',
+  '“{line}”': '「{line}」',
 }
 
 export default ja

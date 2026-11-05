@@ -4,7 +4,7 @@ import { useShallow } from 'zustand/react/shallow'
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useSettings } from '../../app/settings'
 import { playlistSongs, useStore, type VersionPick } from '../../app/store'
-import { api, type LibraryTrack, type Origin, type SearchHit, type SearchResults, type Track } from '../../shared/api'
+import { api, type LibraryTrack, type LyricHit, type Origin, type SearchHit, type SearchResults, type Track } from '../../shared/api'
 import { trackArt } from '../../shared/art'
 import { formatCount, formatDuration, region } from '../../shared/format'
 import { msg, tr, trn } from '../../shared/i18n/i18n'
@@ -137,13 +137,13 @@ function HitRow({ hit, onAdded, onPlay, extra, onPick }: { hit: SearchHit; onAdd
   )
 }
 
-/** A library song among the results: plays the matching songs from there. */
-function LibraryRow({ list, i, onPick }: { list: LibraryTrack[]; i: number; onPick?: (t: LibraryTrack) => Promise<void> }) {
+/** A library song among the results: plays the matching songs from there. `sub`: its second line instead of artist · album. */
+function LibraryRow({ list, i, onPick, sub }: { list: LibraryTrack[]; i: number; onPick?: (t: LibraryTrack) => Promise<void>; sub?: string }) {
   const t = list[i]
   return (
     <ResultRow
       title={t.title}
-      sub={[t.artist, t.album].filter(Boolean).join(' · ')}
+      sub={sub ?? [t.artist, t.album].filter(Boolean).join(' · ')}
       art={<Cover title={t.album ?? t.title} art={trackArt(t)} size={40} />}
       sources={order.filter((s) => t.ids[s]).map((s) => (
         <SourceIcon key={s} source={s} size={13} brand />
@@ -248,6 +248,29 @@ export function SearchView() {
 
   const groups = useMemo(() => ({ artists: groupArtists(tracks), albums: groupAlbums(tracks) }), [tracks])
   const lib = useMemo(() => libraryMatches(tracks, playlists, q, groups), [tracks, playlists, q, groups])
+  // Your songs whose lyrics, cached when they were shown, hold the text: "In the lyrics". Local, in both scopes.
+  const [sung, setSung] = useState<{ q: string; hits: LyricHit[] }>()
+  useEffect(() => {
+    if (!q.trim() || isListLink(q)) return
+    let live = true
+    api.searchLyrics(q).then(
+      (hits) => live && setSung({ q, hits }),
+      () => {},
+    )
+    return () => {
+      live = false
+    }
+  }, [q])
+  // Not twice: a song whose name matched stays under "In your library".
+  const inLyrics = useMemo(() => {
+    if (sung?.q !== q) return []
+    const named = new Set(lib.songs.map((t) => t.id))
+    const byId = new Map(tracks.map((t) => [t.id, t]))
+    return sung.hits.flatMap((h) => {
+      const t = byId.get(h.trackId)
+      return t && !named.has(t.id) ? [{ t, line: h.line }] : []
+    })
+  }, [sung, q, lib, tracks])
   const results = res?.q === q ? res.r : undefined
   const kept = (results?.hits ?? []).filter((h) => (!only || h.from.includes(only)) && !(hideCovers && h.ids.youtube && !h.ids.apple && unofficial(videoKind(h.title))))
   const music = kept.filter((h) => h.musicness !== 'notMusic')
@@ -376,6 +399,9 @@ export function SearchView() {
         )
       })()
 
+  const sungMine = only ? [] : inLyrics
+  const sungList = sungMine.map((x) => x.t)
+  const sungRows = (n: number) => sungMine.slice(0, n).map((x, i) => <LibraryRow key={x.t.id} list={sungList} i={i} onPick={pickOwn} sub={`${tr('“{line}”', { line: x.line })} · ${artistName(x.t.artist)}`} />)
   const libSongs = mine.songs.slice(0, everywhere ? 2 : FEW)
   const songsList = (
     <ul className="min-w-0">
@@ -386,7 +412,7 @@ export function SearchView() {
     </ul>
   )
   const anySongs = mine.songs.length > 0 || (everywhere && songs.length > 0)
-  const nothing = !busy && !anySongs && !videos.length && !others.length && !mine.artists.length && !mine.albums.length && !mine.playlists.length && !identified
+  const nothing = !busy && !anySongs && !sungMine.length && !videos.length && !others.length && !mine.artists.length && !mine.albums.length && !mine.playlists.length && !identified
 
   const all = (
     <div className="flex flex-col gap-8">
@@ -406,6 +432,11 @@ export function SearchView() {
             </Section>
           )}
         </div>
+      )}
+      {sungMine.length > 0 && (
+        <Section title={tr('In the lyrics')}>
+          <ul>{sungRows(10)}</ul>
+        </Section>
       )}
       {everywhere && videos.length > 0 && (
         <Section title={tr('Videos')} onAll={() => setKind('videos')}>
@@ -512,6 +543,11 @@ export function SearchView() {
                       <LibraryRow key={t.id} list={mine.songs} i={i} onPick={pickOwn} />
                     ))}
                   </ul>
+                </Section>
+              )}
+              {sungMine.length > 0 && (
+                <Section title={tr('In the lyrics')}>
+                  <ul>{sungRows(sungMine.length)}</ul>
                 </Section>
               )}
               {songs.length > 0 && (

@@ -342,7 +342,15 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
   - [ ] iPhone: waits for the owner's signing choice (Apple Developer Program, or an unsigned .ipa).
 
 **Medium**
-- [ ] `S` Find a song by a line of its lyrics (LRCLIB search), and hum to search if AudD's free tier allows it.
+- [x] `S` Find a song by a line of its lyrics (LRCLIB search), and hum to search if AudD's free tier allows it.
+      (2026-11-05: neither service can. LRCLIB's search, v1 and v2 beta, looks in title, artist and album only (its docs
+      read that day); AudD's docs list file, stream and enterprise recognition, no humming. Built instead, local: the
+      search page's "In the lyrics" finds your songs whose lyrics, cached when they were shown, hold the text (5 letters
+      at least, from a word's start, across line breaks, accents and punctuation aside), with the line it starts on;
+      `music_core::lyrics::line_holding`, `Library::lyrics_search`, command `search_lyrics`. YouTube Music's own search
+      already matches lyric lines when you search everywhere. Decided alone: library songs only (a cached song not in the
+      library has no source to play), 50 at most, lyrics from a song's own file not searched (not cached). Tried: Rust
+      tests, the demo's search page. Not tried: a real library's cache.)
       Owner's call (2026-11-01): LRCLIB's search (`q`) matches titles, artists and albums, not the words, so it can't
       find a song by a line. A source that does (Genius' search with the user's own token, Musixmatch) is a new
       service and a privacy row. Worth trying first by hand: a line typed in the search box, since YouTube Music's own

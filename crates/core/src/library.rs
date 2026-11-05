@@ -1,3 +1,4 @@
+use crate::lyrics::{self, LyricHit, Lyrics};
 use crate::matching::{match_key, same_track};
 use crate::model::{Source, Track};
 use crate::musicness::Musicness;
@@ -1177,6 +1178,39 @@ impl Library {
         Ok(())
     }
 
+    /// Library songs whose lyrics, cached when they were shown, hold `phrase` (`lyrics::fold`ed), with the line it
+    /// starts on; `limit` at most, in the library's order. Lyrics read from a song's own file aren't cached: not here.
+    pub fn lyrics_search(&self, phrase: &str, limit: usize) -> Result<Vec<LyricHit>> {
+        let mut found: HashMap<String, String> = HashMap::new();
+        let mut q = self.db.prepare("SELECT key, body FROM lyrics WHERE body IS NOT NULL")?;
+        for row in q.query_map([], |r| Ok((r.get::<_, String>(0)?, r.get::<_, String>(1)?)))? {
+            let (key, body) = row?;
+            let Some(song) = lyrics::key_song(&key) else { continue };
+            if found.contains_key(song) {
+                continue;
+            }
+            if let Some(line) = serde_json::from_str::<Lyrics>(&body).ok().and_then(|l| lyrics::line_holding(&l, phrase)) {
+                found.insert(song.to_string(), line);
+            }
+        }
+        if found.is_empty() {
+            return Ok(Vec::new());
+        }
+        let mut out = Vec::new();
+        let mut q = self.db.prepare("SELECT id, artist, title FROM tracks ORDER BY id")?;
+        for row in q.query_map([], |r| Ok((r.get::<_, i64>(0)?, r.get::<_, String>(1)?, r.get::<_, String>(2)?)))? {
+            if out.len() >= limit {
+                break;
+            }
+            let (id, artist, title) = row?;
+            let key = lyrics::key(&artist, &title, None);
+            if let Some(line) = lyrics::key_song(&key).and_then(|s| found.get(s)) {
+                out.push(LyricHit { track_id: id, line: line.clone() });
+            }
+        }
+        Ok(out)
+    }
+
     /// Silence measured in a local file: Some((start_ms, end_ms, total_ms)) when it was measured with this `modified`
     /// time (a changed file is measured again). end_ms None = no silence worth cutting at the end.
     pub fn cached_silence(&self, path: &str, modified: i64) -> Result<Option<(u64, Option<u64>, u64)>> {
@@ -2113,6 +2147,22 @@ mod tests {
         assert_eq!(lib.cached_lyrics("a|b|200")?, Some((None, 10)));
         lib.save_lyrics("a|b|200", Some("{}"), 20)?;
         assert_eq!(lib.cached_lyrics("a|b|200")?, Some((Some("{}".into()), 20)));
+        Ok(())
+    }
+
+    #[test]
+    fn a_line_finds_library_songs_by_their_cached_lyrics() -> Result<()> {
+        let lib = Library::in_memory()?;
+        let one = lib.upsert_track(&song(1))?;
+        lib.upsert_track(&song(2))?;
+        let sung = |text: &str| serde_json::json!({ "lines": [], "plain": text, "instrumental": false, "source": "LRCLIB" }).to_string();
+        // Cached under another length and an older version: still the same song.
+        lib.save_lyrics(&lyrics::key("ARTIST 1", "Song 1", Some(200_000)).replace("v5|", "v4|"), Some(&sung("Hello there\nGeneral Kenobi")), 1)?;
+        lib.save_lyrics(&lyrics::key("Artist 2", "Song 2", None), None, 1)?;
+        lib.save_lyrics(&lyrics::key("Someone", "Not mine", None), Some(&sung("General Kenobi again")), 1)?;
+        assert_eq!(lib.lyrics_search("general ken", 10)?, [LyricHit { track_id: one, line: "General Kenobi".into() }]);
+        assert!(lib.lyrics_search("general ken", 0)?.is_empty());
+        assert!(lib.lyrics_search("obi wan", 10)?.is_empty());
         Ok(())
     }
 

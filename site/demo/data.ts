@@ -89,6 +89,13 @@ function lyrics({ ask }: Record<string, unknown>) {
   return { lines, plain: null, instrumental: false, source: 'Written for this demo' }
 }
 
+// Every song here sings VERSES: a line typed finds a few of them, as the search page's "In the lyrics".
+function sung({ q }: Record<string, unknown>) {
+  const text = String(q).toLowerCase().trim()
+  const line = text.length >= 5 ? VERSES.find((v) => v.toLowerCase().includes(text)) : undefined
+  return line ? TRACKS.slice(3, 6).map((t) => ({ trackId: t.id, line })) : []
+}
+
 // Two months of listening, for Home, Stats and Mixes.
 const NOW = Math.floor(Date.now() / 1000)
 const PLAYS: Play[] = Array.from({ length: 480 }, (_, i) => {
@@ -137,6 +144,7 @@ const ANSWERS: Record<string, (args: Record<string, unknown>) => unknown> = {
   player: ({ cmd }) => player(cmd as PlayerCommand),
   player_status: status,
   search_catalogs: search,
+  search_lyrics: sung,
   lyrics,
   viz_start: ({ frames, fine, wave }) => startFrames(frames as Frames, fine === true, wave === true),
   player_levels: levels,

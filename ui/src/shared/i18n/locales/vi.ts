@@ -2075,6 +2075,8 @@ const vi: Record<string, string> = {
   'Some of its equations can’t be read here: it may look plainer than in MilkDrop.': 'Một số phương trình của nó không đọc được ở đây: nó có thể trông đơn giản hơn trong MilkDrop.',
   'milkdrop milk presets import export tunnel spiral aurora flow zoom': 'milkdrop milk mẫu thiết lập presets nhập xuất đường hầm xoắn ốc cực quang dòng chảy phóng to zoom',
   'milkdrop presets colours own theme ink': 'milkdrop mẫu thiết lập presets màu riêng chủ đề mực',
+  'In the lyrics': 'Trong lời bài hát',
+  '“{line}”': '“{line}”',
 }
 
 export default vi

@@ -2075,6 +2075,8 @@ const sv: Record<string, string> = {
   'Some of its equations can’t be read here: it may look plainer than in MilkDrop.': 'Några av dess ekvationer kan inte läsas här: den kan se enklare ut än i MilkDrop.',
   'milkdrop milk presets import export tunnel spiral aurora flow zoom': 'milkdrop milk förinställningar presets importera exportera tunnel spiral norrsken flöde zoom',
   'milkdrop presets colours own theme ink': 'milkdrop förinställningar presets färger egna tema bläck',
+  'In the lyrics': 'I låttexterna',
+  '“{line}”': '”{line}”',
 }
 
 export default sv

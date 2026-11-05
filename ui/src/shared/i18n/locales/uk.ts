@@ -2075,6 +2075,8 @@ const uk: Record<string, string> = {
   'Some of its equations can’t be read here: it may look plainer than in MilkDrop.': 'Деякі його рівняння тут не читаються: він може виглядати простіше, ніж у MilkDrop.',
   'milkdrop milk presets import export tunnel spiral aurora flow zoom': 'milkdrop milk пресети presets імпорт експорт тунель спіраль сяйво потік зум zoom',
   'milkdrop presets colours own theme ink': 'milkdrop пресети presets кольори власні тема чорнило',
+  'In the lyrics': 'У текстах пісень',
+  '“{line}”': '«{line}»',
 }
 
 export default uk
