@@ -76,6 +76,7 @@ export const SETTINGS_INDEX: SettingEntry[] = [
   { section: 'playback', label: msg('Alarm'), keywords: msg('alarm clock wake up wakeup morning ring rise sunrise') },
   { section: 'playback', label: msg('Same artist again'), keywords: msg('auto-dj autodj artist repeat spread apart') },
   { section: 'playback', label: msg('Pause during calls'), keywords: msg('call teams skype meeting communications ducking lower volume pause') },
+  { section: 'playback', label: msg('Keep the screen on'), keywords: msg('screen display awake sleep lock turn off standby dim monitor') },
   { section: 'playback', label: msg('Phone remote'), keywords: msg('phone mobile remote control qr code wifi network lan couch') },
   { section: 'playback', label: msg('Streaming overlay'), keywords: msg('obs stream streaming twitch browser source now playing overlay') },
   { section: 'playback', label: msg('Visualizer on the overlay'), keywords: msg('obs stream bars spectrum equalizer') },

@@ -378,6 +378,8 @@ export interface Settings {
   pauseOnUnplug: boolean
   /** A call starts: pause, play on after (Windows' ducking; off: Windows lowers the music). */
   pauseOnCall: boolean
+  /** While a song plays and the page shows, the screen stays on (`shared/awake.ts`). Off: Windows' own timeout. Per PC. */
+  keepScreenOn: boolean
   /** Shuffle spreads artists, songs heard lately last (player `shuffle.ts`). */
   smartShuffle: boolean
   /** Auto-DJ (player `autoDj.ts`): a song heard in the last this many days waits for the others (0: no wait). */
@@ -558,6 +560,7 @@ export const DEFAULTS: Settings = {
   gaplessAlbums: true,
   pauseOnUnplug: true,
   pauseOnCall: false,
+  keepScreenOn: false,
   smartShuffle: true,
   djFresh: 7,
   djRated: true,
@@ -799,6 +802,7 @@ export function sanitize(raw: unknown): Settings {
     gaplessAlbums: typeof r.gaplessAlbums === 'boolean' ? r.gaplessAlbums : DEFAULTS.gaplessAlbums,
     pauseOnUnplug: typeof r.pauseOnUnplug === 'boolean' ? r.pauseOnUnplug : DEFAULTS.pauseOnUnplug,
     pauseOnCall: typeof r.pauseOnCall === 'boolean' ? r.pauseOnCall : DEFAULTS.pauseOnCall,
+    keepScreenOn: typeof r.keepScreenOn === 'boolean' ? r.keepScreenOn : DEFAULTS.keepScreenOn,
     smartShuffle: typeof r.smartShuffle === 'boolean' ? r.smartShuffle : DEFAULTS.smartShuffle,
     djFresh: typeof r.djFresh === 'number' && DJ_FRESH.includes(r.djFresh) ? r.djFresh : DEFAULTS.djFresh,
     djRated: typeof r.djRated === 'boolean' ? r.djRated : DEFAULTS.djRated,

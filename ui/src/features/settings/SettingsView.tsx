@@ -34,6 +34,7 @@ import { searchSettings, type SettingEntry } from './search'
 import { locale, msg, tr } from '../../shared/i18n/i18n'
 import { nextAlarm } from '../player/alarmTime'
 import { phoneApp } from '../../shared/platform'
+import { canKeepAwake } from '../../shared/awake'
 import { DESKTOP_ONLY, DESKTOP_ONLY_SECTIONS } from './desktopOnly'
 import { LanguagePicker } from './LanguagePicker'
 import { ask } from '../../shared/ui/Ask'
@@ -874,6 +875,15 @@ function PlaybackSection() {
           </Row>
         </div>
       </Group>
+      {canKeepAwake() && (
+        <Group title={msg('Screen')}>
+          <div className="rounded-xl border border-line bg-raised">
+            <Row setting="keepScreenOn" label={msg('Keep the screen on')} sub={tr('While a song plays and Legato is shown, the screen doesn’t turn off or lock on its own')}>
+              <Toggle label={tr('Keep the screen on')} checked={s.keepScreenOn} onChange={(keepScreenOn) => update({ keepScreenOn })} />
+            </Row>
+          </div>
+        </Group>
+      )}
       <Group title={msg('Phone remote')}>
         <div className="rounded-xl border border-line bg-raised">
           <Row setting="phoneRemote" label={msg('Phone remote')} sub={tr('Play, pause, skip and see what’s next from a phone on the same network. The page comes from this PC: nothing goes through the internet. Off by default')}>

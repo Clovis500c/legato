@@ -64,7 +64,10 @@ Discord's buttons, the taskbar's thumbnail buttons, issue forms.
 Built in this order, easiest first (the owner's ask 2026-11-05: all of them, by difficulty). Never copied: their
 playback (YouTube's audio taken, their own copies, downloads for offline), their accounts, limits and paid plan.
 
-- [ ] 1. `S` Keep the screen on while music plays (a setting, off): the wake lock the Cover display already takes.
+- [x] 1. `S` Keep the screen on while music plays (a setting, off): the wake lock the Cover display already takes.
+      (2026-11-05: Settings › Playback › Screen, `keepScreenOn`, this PC only; `shared/awake.ts` shared with the Cover
+      display. In the demo a stand-in lock is taken on Play, let go on Pause, never with the setting off; the browser
+      pane refuses a real one, so WebView2's own grant is unchecked: Check live.)
 - [ ] 2. `S` The artist's bio on the artist page: YouTube Music's own "About" text, Read more.
 - [ ] 3. `S` Discord on par: a status format (song, artist, both), the artist's picture, a preview.
 - [ ] 4. `S` The mini player on minimize (a setting, off): picture in picture opens, restoring closes it, the sung line
@@ -967,6 +970,9 @@ Most useful first; the tag is the effort.
       - The accent from real covers; the Presets look with a real .milk file; "In the lyrics" on a real lyrics cache.
       - The phone's update on a real phone (from the Beta after 1.1.679): the toast, the download on mobile data and
         Wi-Fi, Android's permission page, its installer, the new version starting where the old one was.
+- [ ] Against Liner (2026-11-05 on), checked only by tests and over the demo:
+      - Keep the screen on (Settings › Playback › Screen): past Windows' screen timeout while a song plays, asleep as
+        usual once paused; on the phone too (does Android's WebView grant the lock?).
 
 ## Waiting on the user (outside the code)
 

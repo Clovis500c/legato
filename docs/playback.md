@@ -65,6 +65,10 @@ Status on 2026-10-16. YouTube, local files and Apple Music previews: done and te
   Unchecked: whether Windows still says it with its Communications setting on Do nothing, or for a call on another
   device.
 - Limit: headphones and speakers on one endpoint (Realtek jack retasking) change no endpoint, so no event.
+- Keep the screen on (Settings › Playback › Screen, setting `keepScreenOn`, off, this PC only; 2026-11-05, Liner has
+  it): `features/player/screenAwake.ts` holds the page's screen wake lock while a song plays, through
+  `shared/awake.ts` (the Cover display's too). The browser drops it when the page hides (minimized, tray): taken again
+  when it shows. No Wake Lock API: the row hides.
 
 ## Smart shuffle (2026-11-01)
 

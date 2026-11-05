@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import { useSettings } from '../../app/settings'
 import { artistName } from '../../shared/artistName'
+import { useAwake } from '../../shared/awake'
 import { bigTrackArt, trackArt } from '../../shared/art'
 import { locale, tr } from '../../shared/i18n/i18n'
 import { onMenu } from '../../shared/ui/ContextMenu'
@@ -38,7 +39,8 @@ export function CoverScreen() {
   )
   const backdrop = useBackdrop(track ? trackArt(track)[0] : undefined, Math.max(backdropBlur, MIN_BLUR))
   const idle = useIdle(IDLE_MS)
-  useAwake()
+  // The display stays on while the screen is open (a second screen showing the cover); no API: it sleeps as usual.
+  useAwake(true)
   useEffect(() => {
     if (!now) closeCoverFull()
   }, [now])
@@ -135,32 +137,4 @@ function useIdle(ms: number): boolean {
     }
   }, [ms])
   return idle
-}
-
-/**
- * The display stays on while the screen is open (a second screen showing the cover). Windows drops the lock when the
- * window hides: taken again when it shows. No API or a refusal: the display sleeps as usual.
- */
-function useAwake() {
-  useEffect(() => {
-    let lock: WakeLockSentinel | undefined
-    let gone = false
-    const take = () => {
-      if (gone || document.visibilityState !== 'visible' || !('wakeLock' in navigator)) return
-      navigator.wakeLock.request('screen').then(
-        (l) => {
-          if (gone) void l.release().catch(() => {})
-          else lock = l
-        },
-        () => {},
-      )
-    }
-    take()
-    document.addEventListener('visibilitychange', take)
-    return () => {
-      gone = true
-      document.removeEventListener('visibilitychange', take)
-      void lock?.release().catch(() => {})
-    }
-  }, [])
 }
