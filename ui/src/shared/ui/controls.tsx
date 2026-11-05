@@ -11,9 +11,14 @@ const kinds = {
 }
 const sizes = { xs: 'size-7', sm: 'size-8', md: 'size-10', lg: 'size-13', xl: 'size-[72px]' }
 
+/** The phone: 8 px of invisible touch area around the button (a 28 px one takes a 44 px tap), its drawn size kept. */
+const TOUCH = "phone:before:absolute phone:before:-inset-2 phone:before:content-['']"
+
 /** Icon-only round button. label = tooltip + accessible name. */
 export function RoundButton({ label, kind = 'ghost', size = 'md', className = '', ...props }: ButtonHTMLAttributes<HTMLButtonElement> & { label: string; kind?: keyof typeof kinds; size?: keyof typeof sizes }) {
-  return <button type="button" aria-label={label} title={label} className={`grid shrink-0 place-items-center rounded-full transition disabled:pointer-events-none disabled:opacity-35 ${kinds[kind]} ${sizes[size]} ${className}`} {...props} />
+  // Placed by its caller (absolute, fixed): already holds its touch area.
+  const placed = /\b(absolute|fixed)\b/.test(className)
+  return <button type="button" aria-label={label} title={label} className={`grid shrink-0 place-items-center rounded-full transition disabled:pointer-events-none disabled:opacity-35 ${placed ? '' : 'relative'} ${TOUCH} ${kinds[kind]} ${sizes[size]} ${className}`} {...props} />
 }
 
 export const Led = ({ on }: { on: boolean }) => <span className="led" data-on={on} aria-hidden />
@@ -21,7 +26,7 @@ export const Led = ({ on }: { on: boolean }) => <span className="led" data-on={o
 /** Filter chip: a pill, ink when picked, grey otherwise (YouTube's and Spotify's chips, docs/design.md). */
 export function LedChip({ on, label, count, title, onClick }: { on: boolean; label: string; count?: string; title?: string; onClick: () => void }) {
   return (
-    <button role="tab" aria-selected={on} title={title} onClick={onClick} className={`flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[0.8125rem] font-medium whitespace-nowrap transition ${on ? 'bg-ink text-bg' : 'bg-raised text-ink hover:bg-line'}`}>
+    <button role="tab" aria-selected={on} title={title} onClick={onClick} className={`flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[0.8125rem] font-medium whitespace-nowrap transition phone:py-2 ${on ? 'bg-ink text-bg' : 'bg-raised text-ink hover:bg-line'}`}>
       {label}
       {count !== undefined && <span className={`text-xs tabular-nums ${on ? 'text-ink-4' : 'text-ink-3'}`}>{count}</span>}
     </button>

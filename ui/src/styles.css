@@ -253,6 +253,16 @@ code {
 .fade-in {
   animation: fade-in 0.3s ease-out both;
 }
+/* The phone's menus: a sheet rising from the bottom edge (ContextMenu's Sheet). Backwards only, as .dialog-in. */
+@keyframes sheet-in {
+  from {
+    opacity: 0.6;
+    transform: translateY(40%);
+  }
+}
+.sheet-in {
+  animation: sheet-in 0.22s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+}
 /* Buttons give a little under the click (scale property: keeps their own translate). */
 :where(button, [role='button'], [role='tab']):not(:disabled):active {
   scale: 0.97;
@@ -338,6 +348,7 @@ code {
   .np-in,
   .pop-in,
   .dialog-in,
+  .sheet-in,
   .stagger > *,
   .slide-in,
   .swap-in,
