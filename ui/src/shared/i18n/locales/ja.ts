@@ -2153,6 +2153,7 @@ const ja: Record<string, string> = {
   'Picture-in-picture': 'ピクチャー イン ピクチャー',
   'Picture-in-picture on / off': 'ピクチャー イン ピクチャー オン / オフ',
   'Back to the full window (Esc)': '通常のウィンドウに戻る (Esc)',
+  'In your library: results for “{q}”': 'ライブラリ内の「{q}」の検索結果',
 }
 
 export default ja

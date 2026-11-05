@@ -2153,6 +2153,7 @@ const zh: Record<string, string> = {
   'Picture-in-picture': '画中画',
   'Picture-in-picture on / off': '画中画 开 / 关',
   'Back to the full window (Esc)': '返回完整窗口 (Esc)',
+  'In your library: results for “{q}”': '在你的音乐库中：“{q}”的结果',
 }
 
 export default zh

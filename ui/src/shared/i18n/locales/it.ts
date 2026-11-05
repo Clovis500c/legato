@@ -2153,6 +2153,7 @@ const it: Record<string, string> = {
   'Picture-in-picture': 'Picture-in-picture',
   'Picture-in-picture on / off': 'Picture-in-picture attivo / disattivo',
   'Back to the full window (Esc)': 'Torna alla finestra intera (Esc)',
+  'In your library: results for “{q}”': 'Nella tua libreria: risultati per «{q}»',
 }
 
 export default it

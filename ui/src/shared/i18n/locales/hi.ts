@@ -2153,6 +2153,7 @@ const hi: Record<string, string> = {
   'Picture-in-picture': 'पिक्चर-इन-पिक्चर',
   'Picture-in-picture on / off': 'पिक्चर-इन-पिक्चर चालू / बंद',
   'Back to the full window (Esc)': 'पूरी विंडो पर वापस जाएँ (Esc)',
+  'In your library: results for “{q}”': 'आपकी लाइब्रेरी में: “{q}” के परिणाम',
 }
 
 export default hi

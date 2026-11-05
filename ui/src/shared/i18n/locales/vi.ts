@@ -2153,6 +2153,7 @@ const vi: Record<string, string> = {
   'Picture-in-picture': 'Hình trong hình',
   'Picture-in-picture on / off': 'Bật / tắt hình trong hình',
   'Back to the full window (Esc)': 'Quay lại cửa sổ đầy đủ (Esc)',
+  'In your library: results for “{q}”': 'Trong thư viện của bạn: kết quả cho “{q}”',
 }
 
 export default vi

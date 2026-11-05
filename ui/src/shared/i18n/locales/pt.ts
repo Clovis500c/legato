@@ -2153,6 +2153,7 @@ const pt: Record<string, string> = {
   'Picture-in-picture': 'Picture-in-picture',
   'Picture-in-picture on / off': 'Picture-in-picture ligado / desligado',
   'Back to the full window (Esc)': 'Voltar à janela inteira (Esc)',
+  'In your library: results for “{q}”': 'Na sua biblioteca: resultados para “{q}”',
 }
 
 export default pt

@@ -2153,6 +2153,7 @@ const ko: Record<string, string> = {
   'Picture-in-picture': 'PIP 모드',
   'Picture-in-picture on / off': 'PIP 모드 켜기 / 끄기',
   'Back to the full window (Esc)': '전체 창으로 돌아가기 (Esc)',
+  'In your library: results for “{q}”': '보관함: “{q}” 검색 결과',
 }
 
 export default ko

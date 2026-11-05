@@ -209,6 +209,14 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       (run by `RUN`), every row of the settings index (opened and highlighted). `search/commands.ts` ranks them
       (label start, label words, keywords; English and the interface's language; CJK by substring), `commandList.ts`
       builds them. "sleep 30"-style arguments are not done.
+- [x] `S` Search, better (the owner's ask, 2026-11-05): your songs by how well they fit, no longer in library order
+      (a word in the title counts most, then in the artist, then in the album; the title being the text or starting
+      with it more; a title or artist named only by words typed too, "adele hello"; then the most played). Marks
+      ignored ("dont" finds Don't, "acdc" AC/DC, & and + read "and"). Nothing found as typed: each word found
+      nowhere swapped for the library's closest one, a line says so. The top result is your artist only when its
+      name is the text or starts with it (as much as the best song's title does). `search/match.ts`, also the library
+      pages' filter, each song's names made once (no fold per song per key). Seen in the demo ("harbor": Harbour
+      Master on top). Decided alone: the weights, one letter off (two from 8 letters). Unseen: 50 000 songs typed.
 - [x] `S` Pause when headphones are unplugged or Bluetooth drops: `src-tauri/src/unplug.rs` (Windows' endpoint
       notifications: the default output leaving) → `features/player/unplug.ts` pauses at once (no pause fade), notice
       with Play; Settings › Playback › Headphones and calls, on by default. Unseen: headphones and speakers on one endpoint
@@ -885,6 +893,13 @@ Most useful first; the tag is the effort.
       - Visualizer weighting and colour, by eye on real music (defaults unchanged); the cover's colour on real covers.
       - Library health page on the real library; Exportify's real names on a real export; the phone layout (a window
         under 640 px). Back to {month} shows only with months of history.
+- [ ] The 2026-11-04 and 05 runs (the Beta of 2026-11-05), checked only by tests and over the demo:
+      - Picture-in-picture (P) in the real window: small and above the others, dragged, back to a maximized or full
+        screen one; a YouTube video in it; two screens.
+      - The search on the real library: the order of your songs, a typo fixed, typing at 50 000 songs.
+      - The alarm's real ring (from the tray, the PC awake or asleep); voice commands with real speech.
+      - The taskbar's Jump List of an installed build; the recap's real save and copy; real tagged files (genre, year).
+      - The accent from real covers; the Presets look with a real .milk file; "In the lyrics" on a real lyrics cache.
 
 ## Waiting on the user (outside the code)
 

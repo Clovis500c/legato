@@ -1,9 +1,9 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import type { LibraryPlaylist, LibraryTrack, SearchHit } from '../../shared/api'
-import { groupAlbums, groupArtists } from '../library/filter'
+import { groupAlbums, groupArtists, type PlayStats } from '../library/filter'
 import { MAX_RECENT, remember } from './recent'
-import { countBy, errorOf, isSong, isVideo, libraryMatches } from './results'
+import { countBy, errorOf, isSong, isVideo, libraryMatches, topOf } from './results'
 
 const t = (id: number, title: string, artist: string, album: string | null): LibraryTrack => ({ id, added: id, addedAt: null, title, artist, album, durationMs: null, isrc: null, ids: { youtube: `y${id}` } })
 const tracks = [t(1, 'Get Lucky', 'Daft Punk', 'Random Access Memories'), t(2, 'Instant Crush', 'Daft Punk', 'Random Access Memories'), t(3, 'Punk Rock Song', 'Bad Religion', 'The Gray Race'), t(4, 'Nightcall', 'Kavinsky', 'OutRun')]
@@ -27,6 +27,52 @@ describe('libraryMatches', () => {
   })
   it('gives nothing for blank text', () => {
     expect(libraryMatches(tracks, playlists, '  ', groups)).toEqual({ songs: [], artists: [], albums: [], playlists: [] })
+  })
+  it('ranks songs: the title first, then the artist, then the album', () => {
+    expect(libraryMatches(tracks, playlists, 'punk', groups).songs.map((x) => x.id)).toEqual([3, 1, 2])
+    expect(libraryMatches(tracks, playlists, 'random', groups).songs.map((x) => x.id)).toEqual([1, 2])
+  })
+})
+
+describe('library songs ranked', () => {
+  const lib = [
+    t(1, 'Hello Goodbye', 'The Beatles', 'Magical Mystery Tour'),
+    t(2, 'Say Hello', 'Someone', null),
+    t(3, 'Hello', 'Lionel Richie', "Can't Slow Down"),
+    t(4, 'Hello', 'Adele', '25'),
+    t(5, 'Don’t Stop Me Now', 'Queen', 'Jazz'),
+    t(6, 'Highway to Hell', 'AC/DC', 'Highway to Hell'),
+    t(7, 'The Boxer', 'Simon & Garfunkel', null),
+  ]
+  const g = { artists: groupArtists(lib), albums: groupAlbums(lib) }
+  const ids = (q: string, stats: PlayStats = {}) => libraryMatches(lib, [], q, g, stats).songs.map((x) => x.id)
+  it('puts the song named by the text first, then names starting with it, then names holding it', () => {
+    expect(ids('hello')).toEqual([3, 4, 1, 2])
+    // Most played first among equals.
+    expect(ids('hello', { 4: [12, 0] })).toEqual([4, 3, 1, 2])
+    expect(ids('adele hello')).toEqual([4])
+  })
+  it('ignores marks: dont, acdc, and', () => {
+    expect(ids('dont stop')).toEqual([5])
+    expect(ids('acdc')).toEqual([6])
+    expect(ids('simon and garfunkel')).toEqual([7])
+  })
+  it('fixes a typo only when nothing matched as typed', () => {
+    const m = libraryMatches(lib, [], 'lionell', g)
+    expect([m.songs.map((x) => x.id), m.corrected]).toEqual([[3], 'lionel'])
+    expect(libraryMatches(lib, [], 'hello', g).corrected).toBeUndefined()
+    expect(libraryMatches(lib, [], 'zzzzzz', g)).toEqual({ songs: [], artists: [], albums: [], playlists: [] })
+  })
+  it('tops with the artist named by the text, else the best song', () => {
+    const top = (q: string) => {
+      const r = topOf(libraryMatches(lib, [], q, g), q)
+      return r && ('artist' in r ? r.artist.artist : r.song.id)
+    }
+    expect(top('adele')).toBe('Adele')
+    expect(top('hello')).toBe(3)
+    // Daft Punk only holds "punk": the song named Punk Rock Song wins.
+    expect(topOf(libraryMatches(tracks, playlists, 'punk', groups), 'punk')).toEqual({ song: tracks[2] })
+    expect(top('nothing like it')).toBeNull()
   })
 })
 

@@ -2153,6 +2153,7 @@ const ru: Record<string, string> = {
   'Picture-in-picture': 'Картинка в картинке',
   'Picture-in-picture on / off': 'Картинка в картинке вкл. / выкл.',
   'Back to the full window (Esc)': 'Вернуться к полному окну (Esc)',
+  'In your library: results for “{q}”': 'В медиатеке: результаты для «{q}»',
 }
 
 export default ru

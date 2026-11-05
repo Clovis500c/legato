@@ -239,6 +239,8 @@ Relaunch log (newest last):
   pane in the column browser. Streamed songs have none yet; BPM / key and smart rules stay open.
 - 2026-11-05: picture-in-picture (P): the window small and above the others, the video or the cover and a strip of
   controls, back as it was on Esc. Sweet fades left (plan line: needs each song's end measured and an ear).
+- 2026-11-05: search, better (the owner's ask): your songs ranked by how well they fit, marks ignored (dont, acdc),
+  a typo fixed when nothing matched (`search/match.ts`). Then `platforms` into master: a Beta, on the owner's word.
 
 ## Mobile app and devices sync (the owner's ask, 2026-11-02 afternoon; in progress)
 
@@ -424,9 +426,9 @@ on: the open lines of plan-v2 that need no account, by size (`S` first).
 
 | Branch | State | Next |
 |---|---|---|
-| `platforms` | Work goes here. On master since 2026-11-01 (a Beta). `pnpm check` green. | Carry on when the owner says so; each push to master is a new Beta. |
+| `platforms` | Work goes here. On master since 2026-11-05 (a Beta, on the owner's word). `pnpm check` green. | Carry on when the owner says so; each push to master is a new Beta. |
 | `claude/site-scroll-3d-aff654` | The new website home page: merged into `platforms` and master on 2026-11-01, published. Its worktree `.claude/worktrees/laughing-golick-d0fedf` stays (about 10 GB of build output). | `git worktree remove` when the owner wants the space back: the branch is in master. |
-| `master` | `platforms` as of 2026-11-01, a Beta; Stable is still v1.1.479. | The owner tries the Beta, then promotes it. Every push is a Beta, and a change in `site/` deploys the website: only on the owner's word. Stable is `promote`, by hand (`CONTRIBUTING.md` › Releasing). |
+| `master` | `platforms` as of 2026-11-05 (the search commit), a Beta; Stable is still v1.1.479. | The owner tries the Beta, then promotes it. Every push is a Beta, and a change in `site/` deploys the website: only on the owner's word. Stable is `promote`, by hand (`CONTRIBUTING.md` › Releasing). |
 
 The owner keeps `platforms` and the site branch local, so a fresh clone has neither: `git branch -vv` says what is on
 GitHub.

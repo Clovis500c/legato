@@ -2153,6 +2153,7 @@ const nl: Record<string, string> = {
   'Picture-in-picture': 'Beeld-in-beeld',
   'Picture-in-picture on / off': 'Beeld-in-beeld aan / uit',
   'Back to the full window (Esc)': 'Terug naar het volledige venster (Esc)',
+  'In your library: results for “{q}”': 'In je bibliotheek: resultaten voor ‘{q}’',
 }
 
 export default nl

@@ -1,5 +1,6 @@
 import type { LibraryTrack, Source, Track } from '../../shared/api'
 import { fold } from '../../shared/format'
+import { formOf, hasWords, wordsOf } from '../search/match'
 
 export type Filter = 'all' | Source | 'unlinked'
 /** recent = added-new (playlist covers keep the old name). manual = playlist order. */
@@ -10,14 +11,12 @@ export type PlayStats = Record<number, [plays: number, last: number, stars?: num
 
 const sourceCount = (t: LibraryTrack) => Object.keys(t.ids).length
 
-/** Unlinked = known on one service only. */
+/** Unlinked = known on one service only. Text: every word in the title, artist or album (the search's rules, match.ts). */
 export function filterTracks(tracks: LibraryTrack[], query: string, filter: Filter): LibraryTrack[] {
-  const words = fold(query).split(/\s+/).filter(Boolean)
+  const words = wordsOf(query)
   return tracks.filter((t) => {
     if (filter === 'unlinked' ? sourceCount(t) > 1 : filter !== 'all' && !t.ids[filter]) return false
-    if (!words.length) return true
-    const hay = fold(`${t.title} ${t.artist} ${t.album ?? ''}`)
-    return words.every((w) => hay.includes(w))
+    return !words.length || hasWords(formOf(t), words)
   })
 }
 

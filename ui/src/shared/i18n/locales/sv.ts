@@ -2153,6 +2153,7 @@ const sv: Record<string, string> = {
   'Picture-in-picture': 'Bild-i-bild',
   'Picture-in-picture on / off': 'Bild-i-bild på / av',
   'Back to the full window (Esc)': 'Tillbaka till hela fönstret (Esc)',
+  'In your library: results for “{q}”': 'I ditt bibliotek: resultat för ”{q}”',
 }
 
 export default sv

@@ -64,6 +64,7 @@ export function SearchBar({ children }: { children?: ReactNode }) {
   const view = useStore((s) => s.view)
   const tracks = useStore((s) => s.tracks)
   const playlists = useStore((s) => s.playlists)
+  const stats = useStore((s) => s.stats)
   const { rememberSearches, searchSuggestions, shortcuts } = useSettings((s) => s.settings)
   const recent = useRecent((s) => s.list)
   const [focused, setFocused] = useState(false)
@@ -119,7 +120,7 @@ export function SearchBar({ children }: { children?: ReactNode }) {
   // Artists and albums made once per library, only once the list needs them.
   const wantLibrary = open && !scope && !!text
   const groups = useMemo(() => (wantLibrary ? { artists: groupArtists(tracks), albums: groupAlbums(tracks) } : null), [tracks, wantLibrary])
-  const lib = useMemo(() => (groups ? libraryMatches(tracks, playlists, text, groups) : null), [tracks, playlists, text, groups])
+  const lib = useMemo(() => (groups ? libraryMatches(tracks, playlists, text, groups, stats) : null), [tracks, playlists, text, groups, stats])
   // Pages, actions and settings: made as the list opens (the keys bound and the language then).
   const commands = useMemo(() => (wantLibrary ? commandList() : []), [wantLibrary])
   const doable = useMemo(() => matchCommands(commands, text), [commands, text])

@@ -25,7 +25,7 @@ import { hitMenu, playlistMenu, trackMenu, tracksMenu } from '../menus'
 import { remoteTrack, usePlayer } from '../player/store'
 import { isListLink, linkKind, youtubeLink } from '../welcome/firstRun'
 import { addRecent } from './recent'
-import { countBy, errorOf, isSong, isVideo, libraryMatches, type Kind, type LibraryMatches, type Scope } from './results'
+import { countBy, errorOf, isSong, isVideo, libraryMatches, topOf, type Kind, type LibraryMatches, type Scope } from './results'
 
 const order = ['youtube', 'apple', 'spotify', 'local'] as const
 /** Rows and cards a section shows before its See all. */
@@ -190,7 +190,7 @@ const NONE: LibraryMatches = { songs: [], artists: [], albums: [], playlists: []
  */
 export function SearchView() {
   const request = useStore((s) => s.search)
-  const { tracks, playlists, go } = useStore(useShallow(({ tracks, playlists, go }) => ({ tracks, playlists, go })))
+  const { tracks, playlists, stats, go } = useStore(useShallow(({ tracks, playlists, stats, go }) => ({ tracks, playlists, stats, go })))
   const play = usePlayer((s) => s.playTracks)
   const rememberSearches = useSettings((s) => s.settings.rememberSearches)
   const q = request?.q ?? ''
@@ -247,7 +247,7 @@ export function SearchView() {
   }, [scope])
 
   const groups = useMemo(() => ({ artists: groupArtists(tracks), albums: groupAlbums(tracks) }), [tracks])
-  const lib = useMemo(() => libraryMatches(tracks, playlists, q, groups), [tracks, playlists, q, groups])
+  const lib = useMemo(() => libraryMatches(tracks, playlists, q, groups, stats), [tracks, playlists, q, groups, stats])
   // Your songs whose lyrics, cached when they were shown, hold the text: "In the lyrics". Local, in both scopes.
   const [sung, setSung] = useState<{ q: string; hits: LyricHit[] }>()
   useEffect(() => {
@@ -345,9 +345,10 @@ export function SearchView() {
     )
 
   // Top result (mockup): an artist of yours, else the first song; cover, name in Display M, "In your library", play.
-  const topArtist = mine.artists[0]
-  const topSong = !topArtist ? (mine.songs[0] ?? null) : null
-  const topHit = !topArtist && !topSong ? (songs[0] ?? videos[0] ?? null) : null
+  const best = topOf(mine, q)
+  const topArtist = best && 'artist' in best ? best.artist : undefined
+  const topSong = best && 'song' in best ? best.song : null
+  const topHit = !best ? (songs[0] ?? videos[0] ?? null) : null
   const display = 'truncate text-left text-[2rem] leading-[2.375rem] font-bold tracking-[-0.01em]'
   const topCard = (cover: ReactNode, name: ReactNode, line: string, own: boolean, buttons: ReactNode) => (
     <Section title={tr('Top result')} className="w-[300px] shrink-0">
@@ -511,6 +512,8 @@ export function SearchView() {
           </label>
         )}
       </div>
+      {/* Nothing of yours spelled so: the library's closest words (results.ts). */}
+      {mine.corrected && <p className="mb-3 shrink-0 text-[0.8125rem] text-ink-2">{tr('In your library: results for “{q}”', { q: mine.corrected })}</p>}
       {pick && (
         <div className="mb-4 flex shrink-0 items-center justify-between gap-4 rounded-lg border border-line bg-raised px-4 py-3">
           <p className="min-w-0 text-[0.8125rem] text-ink-2">{tr('Pick the version of “{title}” by {artist}: the playlists that hold it will play it.', { title: pick.title, artist: artistName(pick.artist) })}</p>

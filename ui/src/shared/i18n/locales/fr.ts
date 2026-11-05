@@ -2153,6 +2153,7 @@ const fr: Record<string, string> = {
   'Picture-in-picture': 'Image dans l’image',
   'Picture-in-picture on / off': 'Image dans l’image activée / désactivée',
   'Back to the full window (Esc)': 'Revenir à la fenêtre entière (Échap)',
+  'In your library: results for “{q}”': 'Dans votre bibliothèque : résultats pour « {q} »',
 }
 
 export default fr
