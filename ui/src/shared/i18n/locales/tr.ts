@@ -2103,6 +2103,19 @@ const tr: Record<string, string> = {
   'Alarm: {name}': 'Alarm: {name}',
   'Alarm…': 'Alarm…',
   'from the cover': 'kapaktan',
+  'next|skip|next song|skip this song|skip it': 'sonraki|geç|atla|sonraki şarkı|bu şarkıyı geç',
+  'previous|previous song|go back|last song': 'önceki|önceki şarkı|geri dön|geri',
+  'pause|stop|pause the music|stop the music': 'duraklat|dur|müziği duraklat|müziği durdur',
+  'play|resume|play music|keep playing': 'çal|devam et|müzik çal|çalmaya devam et',
+  'like this|like this song|i like this|i like this song|add to liked music': 'beğen|bunu beğendim|bu şarkıyı beğendim|liked music’e ekle',
+  'louder|volume up|turn it up': 'sesi aç|daha yüksek|sesi yükselt',
+  'quieter|volume down|turn it down': 'sesi kıs|daha alçak|sesi azalt',
+  'play|put on|start': 'çal|aç|başlat',
+  'my|the|playlist|please': 'benim|listemi|çalma listemi|çalma listesi|playlist|lütfen',
+  'Voice: {done}': 'Ses: {done}',
+  'Search instead': 'Bunun yerine ara',
+  'Already liked': 'Zaten Liked Music’te',
+  'Or say “{next}”, “{pause}”, “{louder}”, or “{play}” and a playlist’s name': 'Ya da “{next}”, “{pause}”, “{louder}” ya da bir çalma listesinin adıyla “{play}” de',
 }
 
 export default tr

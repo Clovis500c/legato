@@ -2103,6 +2103,19 @@ const ru: Record<string, string> = {
   'Alarm: {name}': 'Будильник: {name}',
   'Alarm…': 'Будильник…',
   'from the cover': 'из обложки',
+  'next|skip|next song|skip this song|skip it': 'дальше|следующий|следующий трек|пропусти|пропустить',
+  'previous|previous song|go back|last song': 'назад|предыдущий|предыдущий трек|верни',
+  'pause|stop|pause the music|stop the music': 'пауза|стоп|останови|останови музыку',
+  'play|resume|play music|keep playing': 'играй|продолжи|включи музыку|воспроизвести',
+  'like this|like this song|i like this|i like this song|add to liked music': 'нравится|мне нравится|мне нравится этот трек|добавь в liked music',
+  'louder|volume up|turn it up': 'громче|прибавь звук|сделай громче',
+  'quieter|volume down|turn it down': 'тише|убавь звук|сделай тише',
+  'play|put on|start': 'включи|поставь|сыграй|играй',
+  'my|the|playlist|please': 'мой|мою|плейлист|playlist|пожалуйста',
+  'Voice: {done}': 'Голос: {done}',
+  'Search instead': 'Искать вместо этого',
+  'Already liked': 'Уже в Liked Music',
+  'Or say “{next}”, “{pause}”, “{louder}”, or “{play}” and a playlist’s name': 'Или скажите «{next}», «{pause}», «{louder}» или «{play}» и название плейлиста',
 }
 
 export default ru

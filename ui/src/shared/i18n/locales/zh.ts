@@ -2103,6 +2103,19 @@ const zh: Record<string, string> = {
   'Alarm: {name}': '闹钟：{name}',
   'Alarm…': '闹钟…',
   'from the cover': '来自封面',
+  'next|skip|next song|skip this song|skip it': '下一首|跳过|下一曲|切歌|跳过这首',
+  'previous|previous song|go back|last song': '上一首|上一曲|返回',
+  'pause|stop|pause the music|stop the music': '暂停|停止|停|暂停音乐',
+  'play|resume|play music|keep playing': '播放|继续|继续播放|播放音乐',
+  'like this|like this song|i like this|i like this song|add to liked music': '喜欢|我喜欢这首|喜欢这首歌|添加到 liked music',
+  'louder|volume up|turn it up': '大声点|调高音量|音量调大',
+  'quieter|volume down|turn it down': '小声点|调低音量|音量调小',
+  'play|put on|start': '播放|放|来点|听',
+  'my|the|playlist|please': '我的|歌单|播放列表|的|一下|请',
+  'Voice: {done}': '语音：{done}',
+  'Search instead': '改为搜索',
+  'Already liked': '已在 Liked Music 中',
+  'Or say “{next}”, “{pause}”, “{louder}”, or “{play}” and a playlist’s name': '或说“{next}”“{pause}”“{louder}”，或“{play}”加歌单名',
 }
 
 export default zh

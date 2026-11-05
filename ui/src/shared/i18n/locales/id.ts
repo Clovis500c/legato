@@ -2103,6 +2103,19 @@ const id: Record<string, string> = {
   'Alarm: {name}': 'Alarm: {name}',
   'Alarm…': 'Alarm…',
   'from the cover': 'dari sampul',
+  'next|skip|next song|skip this song|skip it': 'berikutnya|lewati|lagu berikutnya|lewati lagu ini|skip',
+  'previous|previous song|go back|last song': 'sebelumnya|lagu sebelumnya|kembali',
+  'pause|stop|pause the music|stop the music': 'jeda|berhenti|stop|jeda musik|hentikan musik',
+  'play|resume|play music|keep playing': 'putar|lanjutkan|putar musik|terus putar',
+  'like this|like this song|i like this|i like this song|add to liked music': 'suka ini|aku suka ini|aku suka lagu ini|tambahkan ke liked music',
+  'louder|volume up|turn it up': 'lebih keras|naikkan volume|besarkan suara',
+  'quieter|volume down|turn it down': 'lebih pelan|turunkan volume|kecilkan suara',
+  'play|put on|start': 'putar|mainkan|setel',
+  'my|the|playlist|please': 'playlist|daftar putar|ku|saya|aku|tolong',
+  'Voice: {done}': 'Suara: {done}',
+  'Search instead': 'Cari saja',
+  'Already liked': 'Sudah ada di Liked Music',
+  'Or say “{next}”, “{pause}”, “{louder}”, or “{play}” and a playlist’s name': 'Atau ucapkan “{next}”, “{pause}”, “{louder}”, atau “{play}” dan nama playlist',
 }
 
 export default id

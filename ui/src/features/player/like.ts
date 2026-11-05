@@ -24,6 +24,9 @@ function holding(t: LibraryTrack) {
   return [youtubeLiked(playlists), ownLiked(playlists)].filter((p): p is LibraryPlaylist => !!p && !!orders[p.id]?.includes(id))
 }
 
+/** The song is in a Liked Music list. */
+export const isLiked = (t: LibraryTrack) => holding(t).length > 0
+
 export function useLiked(t: LibraryTrack | undefined) {
   // Re-run on library or playlist changes.
   useStore((s) => s.raw)

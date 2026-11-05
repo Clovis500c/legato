@@ -2103,6 +2103,19 @@ const it: Record<string, string> = {
   'Alarm: {name}': 'Sveglia: {name}',
   'Alarm…': 'Sveglia…',
   'from the cover': 'dalla copertina',
+  'next|skip|next song|skip this song|skip it': 'avanti|prossima|prossima canzone|salta|salta questa canzone',
+  'previous|previous song|go back|last song': 'indietro|precedente|canzone precedente|torna indietro',
+  'pause|stop|pause the music|stop the music': 'pausa|stop|metti in pausa|ferma la musica',
+  'play|resume|play music|keep playing': 'riproduci|riprendi|fai partire la musica|continua',
+  'like this|like this song|i like this|i like this song|add to liked music': 'mi piace|mi piace questa|mi piace questa canzone|aggiungi a liked music',
+  'louder|volume up|turn it up': 'più forte|alza il volume|alza',
+  'quieter|volume down|turn it down': 'più piano|abbassa il volume|abbassa',
+  'play|put on|start': 'metti|riproduci|fai partire|suona',
+  'my|the|playlist|please': 'la|mia|il|playlist|per favore',
+  'Voice: {done}': 'Voce: {done}',
+  'Search instead': 'Cerca invece',
+  'Already liked': 'Già in Liked Music',
+  'Or say “{next}”, “{pause}”, “{louder}”, or “{play}” and a playlist’s name': 'Oppure di’ «{next}», «{pause}», «{louder}» o «{play}» e il nome di una playlist',
 }
 
 export default it

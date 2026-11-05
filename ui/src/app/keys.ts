@@ -31,6 +31,7 @@ export type ActionId =
   | 'vizFull'
   | 'coverFull'
   | 'search'
+  | 'voice'
   | 'settings'
   | 'goBack'
   | 'goForward'
@@ -74,6 +75,8 @@ export const ACTIONS: ActionInfo[] = [
   { id: 'vizFull', label: msg('Visualizer full screen on / off'), keys: 'KeyV', global: null },
   { id: 'coverFull', label: msg('Cover display on / off'), keys: 'KeyC', global: null },
   { id: 'search', label: msg('Search'), keys: 'Ctrl+KeyK', global: null },
+  // No default: Ctrl+Shift+letters are taken by text fields and other apps. The words it knows: voiceCommand.ts.
+  { id: 'voice', label: msg('Search by voice'), keys: null, global: null },
   { id: 'settings', label: msg('Settings'), keys: 'Ctrl+Comma', global: null },
   { id: 'goBack', label: msg('Back'), keys: 'Alt+ArrowLeft', global: null },
   { id: 'goForward', label: msg('Forward'), keys: 'Alt+ArrowRight', global: null },

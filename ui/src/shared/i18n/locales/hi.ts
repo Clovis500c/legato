@@ -2103,6 +2103,19 @@ const hi: Record<string, string> = {
   'Alarm: {name}': 'अलार्म: {name}',
   'Alarm…': 'अलार्म…',
   'from the cover': 'कवर से',
+  'next|skip|next song|skip this song|skip it': 'अगला|अगला गाना|छोड़ो|यह गाना छोड़ो',
+  'previous|previous song|go back|last song': 'पिछला|पिछला गाना|वापस जाओ',
+  'pause|stop|pause the music|stop the music': 'रोको|रुको|पॉज़|गाना रोको',
+  'play|resume|play music|keep playing': 'चलाओ|फिर से चलाओ|गाना चलाओ|जारी रखो',
+  'like this|like this song|i like this|i like this song|add to liked music': 'यह पसंद है|मुझे यह पसंद है|यह गाना पसंद है|liked music में जोड़ो',
+  'louder|volume up|turn it up': 'आवाज़ बढ़ाओ|तेज़ करो|वॉल्यूम बढ़ाओ',
+  'quieter|volume down|turn it down': 'आवाज़ कम करो|धीमा करो|वॉल्यूम कम करो',
+  'play|put on|start': 'चलाओ|बजाओ|लगाओ',
+  'my|the|playlist|please': 'मेरी|मेरा|प्लेलिस्ट|playlist|कृपया|की|का',
+  'Voice: {done}': 'आवाज़: {done}',
+  'Search instead': 'इसके बजाय खोजें',
+  'Already liked': 'पहले से Liked Music में है',
+  'Or say “{next}”, “{pause}”, “{louder}”, or “{play}” and a playlist’s name': 'या “{next}”, “{pause}”, “{louder}”, या “{play}” और किसी प्लेलिस्ट का नाम बोलें',
 }
 
 export default hi

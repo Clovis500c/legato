@@ -223,6 +223,8 @@ Relaunch log (newest last):
   and Spotify previews (left: data, an `M`, the owner's call).
 - 2026-11-05: Accent color › Cover (the song in the player gives the accent; `useCoverAccent` in `coverTint.ts`).
   Seen in the demo with a colour set by hand; real covers not tried.
+- 2026-11-05: voice commands in voice search (next, pause, louder, "play my … playlist"; `voiceCommand.ts`), and a
+  Search by voice shortcut with no default key. Real speech not tried. Volume line left (the owner's call).
 
 ## Mobile app and devices sync (the owner's ask, 2026-11-02 afternoon; in progress)
 

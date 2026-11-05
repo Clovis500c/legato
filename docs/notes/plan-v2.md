@@ -497,9 +497,17 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       counts. Tried: a unit test, the demo with a coloured cover's accent set by hand (the play button follows, the next
       song's grey cover gives the theme's back; the demo's own SVG covers read as grey). Not tried: real covers.)
 - [ ] `S-M` Volume: a perceptual (dB) curve (it would make every saved volume louder or quieter; local and YouTube stay level
-      because both are linear), and per-source volume memory (needs its own setting and a switch rule).
+      because both are linear), and per-source volume memory (needs its own setting and a switch rule). (Left by the
+      autopilot (2026-11-05): the curve moves every saved volume, and the switch rule is a taste: the owner's call.)
 - [ ] `S-M` Guest DJ-style picks between songs ("because you liked …"), local and explainable, no cloud.
-- [ ] `S-M` Voice control beyond search: "next", "like this", "play my running playlist" (WinRT speech already there).
+- [x] `S-M` Voice control beyond search: "next", "like this", "play my running playlist" (WinRT speech already there).
+      (2026-11-05: in voice search, a command said alone runs instead of searching: next, previous, pause, play, like
+      this, louder, quieter, and a play word with a playlist's name (only filler words around it: "play my running
+      playlist"). English always, plus the interface language's phrases (`|` lists in the locale files; Chinese and
+      Japanese matched without spaces). A toast says what was done, with Search instead. Settings › Shortcuts › Search by
+      voice (no default key) listens at once. `features/search/voiceCommand.ts` (pure, tests on the real French and
+      Japanese tables), `voiceRun.ts`. Decided alone: a voice only likes, never unlikes; nothing new is sent (the same
+      listening). Tried: tests, the demo (the commands run by hand: its voice search is refused). Not tried: real speech.)
 - [ ] `M` Concerts near the user from followed artists (a public API with no account; privacy row).
 - [x] `M` Lyrics saved into local files and editable (Guayadeque, MusicBee): fix a line, timing tapped live.
       Read first (2026-11-01): a local song's own lyrics, the LRC beside it or its tag (USLT, LYRICS, ©lyr), come

@@ -2103,6 +2103,19 @@ const nl: Record<string, string> = {
   'Alarm: {name}': 'Wekker: {name}',
   'Alarm…': 'Wekker…',
   'from the cover': 'van de hoes',
+  'next|skip|next song|skip this song|skip it': 'volgende|overslaan|volgend nummer|sla dit nummer over',
+  'previous|previous song|go back|last song': 'vorige|vorig nummer|ga terug|terug',
+  'pause|stop|pause the music|stop the music': 'pauze|stop|pauzeer de muziek|stop de muziek',
+  'play|resume|play music|keep playing': 'afspelen|hervatten|speel muziek|verder spelen',
+  'like this|like this song|i like this|i like this song|add to liked music': 'vind ik leuk|dit vind ik leuk|ik vind dit nummer leuk|toevoegen aan liked music',
+  'louder|volume up|turn it up': 'harder|volume omhoog|zet harder',
+  'quieter|volume down|turn it down': 'zachter|volume omlaag|zet zachter',
+  'play|put on|start': 'speel|zet op|start',
+  'my|the|playlist|please': 'mijn|de|het|playlist|afspeellijst|alsjeblieft',
+  'Voice: {done}': 'Spraak: {done}',
+  'Search instead': 'Toch zoeken',
+  'Already liked': 'Staat al in Liked Music',
+  'Or say “{next}”, “{pause}”, “{louder}”, or “{play}” and a playlist’s name': 'Of zeg ‘{next}’, ‘{pause}’, ‘{louder}’ of ‘{play}’ en de naam van een playlist',
 }
 
 export default nl

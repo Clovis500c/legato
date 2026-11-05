@@ -2103,6 +2103,19 @@ const ja: Record<string, string> = {
   'Alarm: {name}': 'アラーム: {name}',
   'Alarm…': 'アラーム…',
   'from the cover': 'カバーから',
+  'next|skip|next song|skip this song|skip it': '次|次の曲|スキップ|この曲をスキップ',
+  'previous|previous song|go back|last song': '前|前の曲|戻る|ひとつ前',
+  'pause|stop|pause the music|stop the music': '一時停止|止めて|ストップ|音楽を止めて',
+  'play|resume|play music|keep playing': '再生|再開|音楽を再生|続けて',
+  'like this|like this song|i like this|i like this song|add to liked music': 'いいね|この曲いいね|この曲が好き|liked music に追加',
+  'louder|volume up|turn it up': '音量を上げて|大きく|ボリュームアップ',
+  'quieter|volume down|turn it down': '音量を下げて|小さく|ボリュームダウン',
+  'play|put on|start': '再生|再生して|かけて|流して',
+  'my|the|playlist|please': 'の|を|プレイリスト|お願い|ください|私の',
+  'Voice: {done}': '音声: {done}',
+  'Search instead': '代わりに検索',
+  'Already liked': 'すでに Liked Music にあります',
+  'Or say “{next}”, “{pause}”, “{louder}”, or “{play}” and a playlist’s name': 'または「{next}」「{pause}」「{louder}」、またはプレイリスト名と「{play}」と話してください',
 }
 
 export default ja

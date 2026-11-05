@@ -2103,6 +2103,19 @@ const uk: Record<string, string> = {
   'Alarm: {name}': 'Будильник: {name}',
   'Alarm…': 'Будильник…',
   'from the cover': 'з обкладинки',
+  'next|skip|next song|skip this song|skip it': 'далі|наступний|наступний трек|пропусти|пропустити',
+  'previous|previous song|go back|last song': 'назад|попередній|попередній трек|поверни',
+  'pause|stop|pause the music|stop the music': 'пауза|стоп|зупини|зупини музику',
+  'play|resume|play music|keep playing': 'грай|продовжуй|увімкни музику|відтворити',
+  'like this|like this song|i like this|i like this song|add to liked music': 'подобається|мені подобається|мені подобається цей трек|додай до liked music',
+  'louder|volume up|turn it up': 'гучніше|додай звук|зроби гучніше',
+  'quieter|volume down|turn it down': 'тихіше|зменш звук|зроби тихіше',
+  'play|put on|start': 'увімкни|постав|зіграй|грай',
+  'my|the|playlist|please': 'мій|мою|плейлист|playlist|будь ласка',
+  'Voice: {done}': 'Голос: {done}',
+  'Search instead': 'Шукати натомість',
+  'Already liked': 'Уже в Liked Music',
+  'Or say “{next}”, “{pause}”, “{louder}”, or “{play}” and a playlist’s name': 'Або скажіть «{next}», «{pause}», «{louder}» або «{play}» і назву плейлиста',
 }
 
 export default uk

@@ -2103,6 +2103,19 @@ const pl: Record<string, string> = {
   'Alarm: {name}': 'Budzik: {name}',
   'Alarm…': 'Budzik…',
   'from the cover': 'z okładki',
+  'next|skip|next song|skip this song|skip it': 'dalej|następny|następny utwór|pomiń|pomiń ten utwór',
+  'previous|previous song|go back|last song': 'wstecz|poprzedni|poprzedni utwór|cofnij',
+  'pause|stop|pause the music|stop the music': 'pauza|stop|zatrzymaj|zatrzymaj muzykę',
+  'play|resume|play music|keep playing': 'graj|wznów|odtwarzaj muzykę|graj dalej',
+  'like this|like this song|i like this|i like this song|add to liked music': 'lubię to|lubię ten utwór|podoba mi się|dodaj do liked music',
+  'louder|volume up|turn it up': 'głośniej|podgłośnij|zwiększ głośność',
+  'quieter|volume down|turn it down': 'ciszej|przycisz|zmniejsz głośność',
+  'play|put on|start': 'włącz|puść|zagraj|odtwórz',
+  'my|the|playlist|please': 'moją|moja|playlistę|playlista|listę|proszę',
+  'Voice: {done}': 'Głos: {done}',
+  'Search instead': 'Zamiast tego szukaj',
+  'Already liked': 'Już jest w Liked Music',
+  'Or say “{next}”, “{pause}”, “{louder}”, or “{play}” and a playlist’s name': 'Albo powiedz „{next}”, „{pause}”, „{louder}” lub „{play}” i nazwę playlisty',
 }
 
 export default pl

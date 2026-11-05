@@ -2103,6 +2103,19 @@ const es: Record<string, string> = {
   'Alarm: {name}': 'Alarma: {name}',
   'Alarm…': 'Alarma…',
   'from the cover': 'de la portada',
+  'next|skip|next song|skip this song|skip it': 'siguiente|saltar|siguiente canción|salta esta canción|pasa',
+  'previous|previous song|go back|last song': 'anterior|canción anterior|vuelve|la anterior',
+  'pause|stop|pause the music|stop the music': 'pausa|para|detener|pausa la música|para la música',
+  'play|resume|play music|keep playing': 'reproduce|sigue|reproduce música|continúa',
+  'like this|like this song|i like this|i like this song|add to liked music': 'me gusta|me gusta esta|me gusta esta canción|añadir a liked music',
+  'louder|volume up|turn it up': 'más alto|sube el volumen|súbele',
+  'quieter|volume down|turn it down': 'más bajo|baja el volumen|bájale',
+  'play|put on|start': 'pon|reproduce|toca|empieza',
+  'my|the|playlist|please': 'mi|la|el|playlist|lista|por favor',
+  'Voice: {done}': 'Voz: {done}',
+  'Search instead': 'Buscar en su lugar',
+  'Already liked': 'Ya está en Liked Music',
+  'Or say “{next}”, “{pause}”, “{louder}”, or “{play}” and a playlist’s name': 'O di «{next}», «{pause}», «{louder}» o «{play}» y el nombre de una playlist',
 }
 
 export default es

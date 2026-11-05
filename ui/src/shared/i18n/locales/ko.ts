@@ -2103,6 +2103,19 @@ const ko: Record<string, string> = {
   'Alarm: {name}': '알람: {name}',
   'Alarm…': '알람…',
   'from the cover': '커버에서',
+  'next|skip|next song|skip this song|skip it': '다음|다음 곡|건너뛰기|이 곡 건너뛰어',
+  'previous|previous song|go back|last song': '이전|이전 곡|뒤로',
+  'pause|stop|pause the music|stop the music': '일시정지|멈춰|정지|음악 멈춰',
+  'play|resume|play music|keep playing': '재생|다시 재생|음악 재생|계속 재생',
+  'like this|like this song|i like this|i like this song|add to liked music': '좋아요|이 곡 좋아|이 노래 좋아|liked music에 추가',
+  'louder|volume up|turn it up': '소리 키워|볼륨 올려|더 크게',
+  'quieter|volume down|turn it down': '소리 줄여|볼륨 내려|더 작게',
+  'play|put on|start': '재생|재생해|재생해줘|틀어|틀어줘',
+  'my|the|playlist|please': '내|플레이리스트|playlist|좀|을|를',
+  'Voice: {done}': '음성: {done}',
+  'Search instead': '대신 검색',
+  'Already liked': '이미 Liked Music에 있음',
+  'Or say “{next}”, “{pause}”, “{louder}”, or “{play}” and a playlist’s name': '또는 “{next}”, “{pause}”, “{louder}”, 또는 플레이리스트 이름과 “{play}”라고 말하세요',
 }
 
 export default ko

@@ -2103,6 +2103,19 @@ const sv: Record<string, string> = {
   'Alarm: {name}': 'Väckarklocka: {name}',
   'Alarm…': 'Väckarklocka…',
   'from the cover': 'från omslaget',
+  'next|skip|next song|skip this song|skip it': 'nästa|hoppa över|nästa låt|hoppa över den här låten',
+  'previous|previous song|go back|last song': 'föregående|förra låten|gå tillbaka|tillbaka',
+  'pause|stop|pause the music|stop the music': 'pausa|stopp|pausa musiken|stoppa musiken',
+  'play|resume|play music|keep playing': 'spela|fortsätt|spela musik|fortsätt spela',
+  'like this|like this song|i like this|i like this song|add to liked music': 'gilla|jag gillar den här|jag gillar den här låten|lägg till i liked music',
+  'louder|volume up|turn it up': 'högre|höj volymen|höj',
+  'quieter|volume down|turn it down': 'tystare|sänk volymen|sänk',
+  'play|put on|start': 'spela|sätt på|starta',
+  'my|the|playlist|please': 'min|mina|spellistan|spellista|playlist|tack',
+  'Voice: {done}': 'Röst: {done}',
+  'Search instead': 'Sök i stället',
+  'Already liked': 'Finns redan i Liked Music',
+  'Or say “{next}”, “{pause}”, “{louder}”, or “{play}” and a playlist’s name': 'Eller säg ”{next}”, ”{pause}”, ”{louder}” eller ”{play}” och namnet på en spellista',
 }
 
 export default sv

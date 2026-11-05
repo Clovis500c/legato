@@ -7,6 +7,8 @@ import { api, type VoiceMiss } from '../../shared/api'
 import { Button } from '../../shared/ui/Button'
 import { Dialog } from '../../shared/ui/Dialog'
 import { msg, tr } from '../../shared/i18n/i18n'
+import { PHRASES, PLAY_WORDS, voiceCommand } from './voiceCommand'
+import { runVoice, useVoiceAsk } from './voiceRun'
 
 type Step = { name: 'ask' } | { name: 'listening'; heard: string } | { name: 'miss'; miss: VoiceMiss }
 
@@ -23,8 +25,12 @@ const MISSES: Record<VoiceMiss, string> = {
 }
 const FIX: Partial<Record<VoiceMiss, 'speech' | 'microphone'>> = { speechOff: 'speech', micBlocked: 'microphone' }
 
+// A command's first phrase in the interface language, for the hint.
+const first = (phrases: string) => tr(phrases).split('|')[0]
+
 /**
- * Mic inside the search bar's pill. Two choices: say it and it searches (src-tauri speech.rs, Windows' speech
+ * Mic inside the search bar's pill. Two choices: say it and it searches (or a command said alone runs: next, pause,
+ * "play my running playlist", voiceCommand.ts) (src-tauri speech.rs, Windows' speech
  * recognition; asked once before the first use: the voice goes to Microsoft's service through Windows while the mic
  * listens), or name the song playing around you (Music Detector, Add music).
  */
@@ -44,6 +50,8 @@ export function VoiceSearch() {
       if (run.current !== n) return
       if (r.kind === 'text') {
         setStep(null)
+        const cmd = voiceCommand(r.text, useStore.getState().playlists, tr)
+        if (cmd) return void runVoice(cmd, r.text)
         useStore.getState().setQuery(r.text)
         useStore.getState().searchFor(r.text)
       } else setStep(r.miss === 'canceled' ? null : { name: 'miss', miss: r.miss })
@@ -58,6 +66,15 @@ export function VoiceSearch() {
     setStep(null)
     void api.voiceStop()
   }
+  // The shortcut (Settings › Shortcuts › Search by voice): listens, after the one-time ask.
+  useEffect(
+    () =>
+      useVoiceAsk.subscribe(() => {
+        if (useSettings.getState().settings.voiceSearch) void listen()
+        else setStep({ name: 'ask' })
+      }),
+    [],
+  )
   // Leaving the app's window with the dialog open (Escape is handled by the dialog).
   useEffect(() => () => void api.voiceStop(), [])
   const fix = step?.name === 'miss' ? FIX[step.miss] : undefined
@@ -132,6 +149,9 @@ export function VoiceSearch() {
             <div className="flex flex-col items-center gap-5 py-4">
               <p aria-live="polite" className="min-h-7 text-center text-lg font-semibold">
                 {step.heard || tr('Listening…')}
+              </p>
+              <p className="-mt-3 text-center text-xs text-ink-3">
+                {tr('Or say “{next}”, “{pause}”, “{louder}”, or “{play}” and a playlist’s name', { next: first(PHRASES.next), pause: first(PHRASES.pause), louder: first(PHRASES.louder), play: first(PLAY_WORDS) })}
               </p>
               <span className="relative grid size-18 place-items-center">
                 <span aria-hidden className="absolute inset-0 animate-ping rounded-full bg-accent opacity-30" />

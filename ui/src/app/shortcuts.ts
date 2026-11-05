@@ -9,6 +9,7 @@ import { accelerator, ACTIONS, bindings, comboOf, type ActionId, type Combo } fr
 import { useSettings } from './settings'
 import { useStore } from './store'
 import { toggleFullscreen } from './fullscreen'
+import { useVoiceAsk } from '../features/search/voiceRun'
 
 const player = () => usePlayer.getState()
 // A full screen on top (the visualizer's, the cover display): the other screens' keys wait for Esc.
@@ -54,6 +55,7 @@ export const RUN: Record<ActionId, () => void> = {
   vizFull: () => !useCoverFull.getState().open && toggleVizFull(),
   coverFull: () => !useVizFull.getState().open && !useKaraoke.getState().open && toggleCoverFull(),
   search: () => !onTop() && document.querySelector<HTMLInputElement>('[data-search]')?.focus(),
+  voice: () => !onTop() && useVoiceAsk.setState((s) => ({ n: s.n + 1 })),
   settings: () => !onTop() && useStore.getState().go({ name: 'settings', section: 'shortcuts' }),
   goBack: () => !onTop() && (player().full ? player().setFull(false) : useStore.getState().goBack()),
   goForward: () => !onTop() && useStore.getState().goForward(),

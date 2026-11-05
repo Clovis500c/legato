@@ -2103,6 +2103,19 @@ const vi: Record<string, string> = {
   'Alarm: {name}': 'Báo thức: {name}',
   'Alarm…': 'Báo thức…',
   'from the cover': 'từ ảnh bìa',
+  'next|skip|next song|skip this song|skip it': 'tiếp|bài tiếp theo|bỏ qua|bỏ qua bài này|chuyển bài',
+  'previous|previous song|go back|last song': 'quay lại|bài trước|lùi lại',
+  'pause|stop|pause the music|stop the music': 'tạm dừng|dừng|dừng nhạc|tạm dừng nhạc',
+  'play|resume|play music|keep playing': 'phát|tiếp tục|phát nhạc|phát tiếp',
+  'like this|like this song|i like this|i like this song|add to liked music': 'thích|thích bài này|tôi thích bài này|thêm vào liked music',
+  'louder|volume up|turn it up': 'to lên|tăng âm lượng|vặn to lên',
+  'quieter|volume down|turn it down': 'nhỏ lại|giảm âm lượng|vặn nhỏ lại',
+  'play|put on|start': 'phát|mở|bật',
+  'my|the|playlist|please': 'của tôi|danh sách phát|playlist|làm ơn|giúp tôi',
+  'Voice: {done}': 'Giọng nói: {done}',
+  'Search instead': 'Tìm kiếm thay vào đó',
+  'Already liked': 'Đã có trong Liked Music',
+  'Or say “{next}”, “{pause}”, “{louder}”, or “{play}” and a playlist’s name': 'Hoặc nói “{next}”, “{pause}”, “{louder}”, hoặc “{play}” kèm tên một playlist',
 }
 
 export default vi
