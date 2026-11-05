@@ -2157,6 +2157,7 @@ const zh: Record<string, string> = {
   'Legato {version} is available': 'Legato {version} 现已可用',
   'Install update': '安装更新',
   'Couldn’t download the update': '无法下载更新',
+  'Performance improved': '性能改进',
 }
 
 export default zh

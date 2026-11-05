@@ -1,5 +1,5 @@
-/** A release's notes as `scripts/notes.mjs` writes them: "### New" / "### Fixed" / "### Faster" over "- " lines, then
- *  "And 5 more."; older releases: one flat list, or a sentence. */
+/** A release's notes as `scripts/notes.mjs` writes them: "### Added" / "### Fixed" / "### Performance improved" over "- "
+ *  lines; before 2026-11-05 "### New" / "### Faster" and "And 5 more."; older releases: one flat list, or a sentence. */
 export interface Notes {
   parts: { title: string | null; lines: string[] }[]
   more: number

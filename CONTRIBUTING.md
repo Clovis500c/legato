@@ -65,7 +65,8 @@ Updates (the `updateChannel` setting, kept per PC, not synced):
 
 - **Beta**: every push to `master` that passes the `check` workflow is released on its own
   (`.github/workflows/release.yml`) as a *prerelease*: signed installer, `latest.json`, tag `vX.Y.Z`, and notes made of
-  the `feat`, `fix` and `perf` commit subjects since the previous release (the app's update card shows them). The
+  the `feat`, `fix` and `perf` commit subjects since the previous release, every one of them, under Added, Fixed and
+  Performance improved (`scripts/notes.mjs`; the app's update card shows them). The
   workflow then copies that `latest.json` to the rolling release named `beta` (made on the first run), which Beta PCs
   read: `releases/download/beta/latest.json`.
 - **Stable** (the default): a beta that was tried, promoted by hand. Actions › promote › Run workflow

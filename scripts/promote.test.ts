@@ -65,13 +65,14 @@ describe('promote', () => {
   })
 
   it('words the notes like a release does: feat, fix and perf only, grouped', () => {
-    expect(notesFrom(['feat(player): smoother fades', 'docs: x', 'fix(sync): no loop', 'chore: y', 'perf: faster'])).toBe('### New\n- Smoother fades\n\n### Fixed\n- No loop\n\n### Faster\n- Faster')
+    expect(notesFrom(['feat(player): smoother fades', 'docs: x', 'fix(sync): no loop', 'chore: y', 'perf: faster'])).toBe('### Added\n- Smoother fades\n\n### Fixed\n- No loop\n\n### Performance improved\n- Faster')
     expect(notesFrom(['docs: x', 'ci: y'])).toBe('Small fixes and improvements.')
     // The website isn't in the app.
     expect(notesFrom(['feat(site): a 3D window', 'fix(player): no black video', 'fix(sites): kept'])).toBe('### Fixed\n- No black video\n- Kept')
     expect(notesFrom(['feat(site): a 3D window'])).toBe('Small fixes and improvements.')
-    const many = Array.from({ length: 25 }, (_, i) => `fix: n${i}`)
-    expect(notesFrom(many).split('\n')).toHaveLength(23)
-    expect(notesFrom(many).split('\n').at(-1)).toBe('And 5 more.')
+    // Every line, however many (the owner's rule, 2026-11-05).
+    const many = Array.from({ length: 60 }, (_, i) => `fix: n${i}`)
+    expect(notesFrom(many).split('\n')).toHaveLength(61)
+    expect(notesFrom(many).split('\n').at(-1)).toBe('- N59')
   })
 })

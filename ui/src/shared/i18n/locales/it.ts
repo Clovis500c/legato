@@ -2157,6 +2157,7 @@ const it: Record<string, string> = {
   'Legato {version} is available': 'Legato {version} è disponibile',
   'Install update': 'Installa l’aggiornamento',
   'Couldn’t download the update': 'Impossibile scaricare l’aggiornamento',
+  'Performance improved': 'Prestazioni migliorate',
 }
 
 export default it

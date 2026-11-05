@@ -2157,6 +2157,7 @@ const hi: Record<string, string> = {
   'Legato {version} is available': 'Legato {version} उपलब्ध है',
   'Install update': 'अपडेट इंस्टॉल करें',
   'Couldn’t download the update': 'अपडेट डाउनलोड नहीं हो सका',
+  'Performance improved': 'प्रदर्शन में सुधार',
 }
 
 export default hi

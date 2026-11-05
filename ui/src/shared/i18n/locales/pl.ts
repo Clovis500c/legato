@@ -2157,6 +2157,7 @@ const pl: Record<string, string> = {
   'Legato {version} is available': 'Legato {version} jest dostępne',
   'Install update': 'Zainstaluj aktualizację',
   'Couldn’t download the update': 'Nie udało się pobrać aktualizacji',
+  'Performance improved': 'Poprawiona wydajność',
 }
 
 export default pl

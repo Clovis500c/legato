@@ -2157,6 +2157,7 @@ const ru: Record<string, string> = {
   'Legato {version} is available': 'Доступна версия Legato {version}',
   'Install update': 'Установить обновление',
   'Couldn’t download the update': 'Не удалось загрузить обновление',
+  'Performance improved': 'Улучшена производительность',
 }
 
 export default ru

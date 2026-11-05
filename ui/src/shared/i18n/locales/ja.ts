@@ -2157,6 +2157,7 @@ const ja: Record<string, string> = {
   'Legato {version} is available': 'Legato {version} が利用できます',
   'Install update': 'アップデートをインストール',
   'Couldn’t download the update': 'アップデートをダウンロードできませんでした',
+  'Performance improved': 'パフォーマンスの改善',
 }
 
 export default ja

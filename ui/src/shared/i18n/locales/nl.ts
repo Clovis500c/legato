@@ -2157,6 +2157,7 @@ const nl: Record<string, string> = {
   'Legato {version} is available': 'Legato {version} is beschikbaar',
   'Install update': 'Update installeren',
   'Couldn’t download the update': 'De update kon niet worden gedownload',
+  'Performance improved': 'Prestaties verbeterd',
 }
 
 export default nl

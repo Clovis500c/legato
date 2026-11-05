@@ -1,11 +1,19 @@
 import { msg, tr, trn } from '../../shared/i18n/i18n'
 import { parseNotes } from './notes'
 
-// The release script's headers and sentence, said in the user's language; the lines stay as written (English).
-const SAID: Record<string, string> = { New: msg('New'), Fixed: msg('Fixed'), Faster: msg('Faster'), 'Small fixes and improvements.': msg('Small fixes and improvements.') }
+// The release script's headers and sentence, said in the user's language; the lines stay as written (English). New and
+// Faster: notes written before 2026-11-05.
+const SAID: Record<string, string> = {
+  Added: msg('Added'),
+  Fixed: msg('Fixed'),
+  'Performance improved': msg('Performance improved'),
+  New: msg('New'),
+  Faster: msg('Faster'),
+  'Small fixes and improvements.': msg('Small fixes and improvements.'),
+}
 const say = (s: string) => (SAID[s] ? tr(SAID[s]) : s)
 
-/** "What's new": the notes grouped (New, Fixed, Faster), each line a bullet. */
+/** "What's new": the notes grouped (Added, Fixed, Performance improved), each line a bullet. */
 export function ReleaseNotes({ text }: { text: string }) {
   const { parts, more, other } = parseNotes(text)
   return (

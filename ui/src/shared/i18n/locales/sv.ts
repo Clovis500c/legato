@@ -2157,6 +2157,7 @@ const sv: Record<string, string> = {
   'Legato {version} is available': 'Legato {version} finns tillgänglig',
   'Install update': 'Installera uppdateringen',
   'Couldn’t download the update': 'Det gick inte att ladda ned uppdateringen',
+  'Performance improved': 'Förbättrad prestanda',
 }
 
 export default sv

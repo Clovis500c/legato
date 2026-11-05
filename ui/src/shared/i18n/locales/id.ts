@@ -2157,6 +2157,7 @@ const id: Record<string, string> = {
   'Legato {version} is available': 'Legato {version} tersedia',
   'Install update': 'Pasang pembaruan',
   'Couldn’t download the update': 'Pembaruan tidak dapat diunduh',
+  'Performance improved': 'Performa ditingkatkan',
 }
 
 export default id

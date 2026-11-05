@@ -2157,6 +2157,7 @@ const ko: Record<string, string> = {
   'Legato {version} is available': 'Legato {version} 사용 가능',
   'Install update': '업데이트 설치',
   'Couldn’t download the update': '업데이트를 다운로드하지 못했습니다',
+  'Performance improved': '성능 개선',
 }
 
 export default ko

@@ -2157,6 +2157,7 @@ const tr: Record<string, string> = {
   'Legato {version} is available': 'Legato {version} kullanılabilir',
   'Install update': 'Güncellemeyi yükle',
   'Couldn’t download the update': 'Güncelleme indirilemedi',
+  'Performance improved': 'Performans iyileştirildi',
 }
 
 export default tr

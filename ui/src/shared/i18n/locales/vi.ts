@@ -2157,6 +2157,7 @@ const vi: Record<string, string> = {
   'Legato {version} is available': 'Đã có Legato {version}',
   'Install update': 'Cài đặt bản cập nhật',
   'Couldn’t download the update': 'Không thể tải bản cập nhật',
+  'Performance improved': 'Cải thiện hiệu năng',
 }
 
 export default vi
