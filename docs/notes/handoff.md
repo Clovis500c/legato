@@ -251,6 +251,10 @@ Relaunch log (newest last):
 - 2026-11-05, evening (the owner's « Oui, ajoute-la »): updates on the phone (`mobile/update.rs`,
   `music_connectors::apk`, `ApkInstall.kt`): Beta's APK offered, downloaded on a tap, Android's installer. Pushed on the
   owner's word: Beta 1.1.681.
+- 2026-11-05, late evening (the owner's words: Stable if every check passes, the website's numbers, notes in full):
+  release notes list every line under Added / Fixed / Performance improved (`scripts/notes.mjs`); a bench row (149 MB
+  paused, 57 MB in the tray, cold start 0.76 s: the middle of three runs) on the website and in the README, pushed
+  with `[skip release]`; then 1.1.681 promoted to Stable (133 lines of notes since 1.1.479).
 
 ## Mobile app and devices sync (the owner's ask, 2026-11-02 afternoon; in progress)
 
@@ -438,7 +442,7 @@ on: the open lines of plan-v2 that need no account, by size (`S` first).
 |---|---|---|
 | `platforms` | Work goes here. On master since 2026-11-05 evening (Beta 1.1.681, the phone's updates, on the owner's word). `pnpm check` green. | Carry on when the owner says so; each push to master is a new Beta. |
 | `claude/site-scroll-3d-aff654` | The new website home page: merged into `platforms` and master on 2026-11-01, published. Its worktree `.claude/worktrees/laughing-golick-d0fedf` stays (about 10 GB of build output). | `git worktree remove` when the owner wants the space back: the branch is in master. |
-| `master` | `platforms` as of 2026-11-05 evening (the phone's updates), Beta 1.1.681; Stable is still v1.1.479. | The owner tries the Beta, then promotes it. Every push is a Beta, and a change in `site/` deploys the website: only on the owner's word. Stable is `promote`, by hand (`CONTRIBUTING.md` › Releasing). |
+| `master` | `platforms` as of 2026-11-05 late evening but this handoff (notes in full, the bench numbers, both `[skip release]`), Beta 1.1.681, Stable 1.1.681 (promoted on the owner's word). | Every push is a Beta, and a change in `site/` deploys the website: only on the owner's word. Stable is `promote`, by hand (`CONTRIBUTING.md` › Releasing). |
 
 The owner keeps `platforms` and the site branch local, so a fresh clone has neither: `git branch -vv` says what is on
 GitHub.
@@ -475,7 +479,9 @@ Known facts for whoever tests it:
    (refused and answered counts) judges `Line`. The real `diagnostics.log` is not the one your tools see:
    [development.md](../development.md) › Two dev libraries.
 2. Fixes from that Beta first; then the open lines of [plan-v2.md](plan-v2.md), Classic skins next (see Autopilot above).
-3. When the owner calls the milestone done: `promote` (Actions), the Beta becomes Stable.
+3. 1.1.681 is Stable since 2026-11-05 late evening (the owner's word). The next Stable: `promote` (Actions), when the
+   owner says so.
+4. Dependabot alert #6 (medium, dev only): `minimatch` 10.2.6 under ESLint and typescript-eslint, fixed in 11.0.1.
 
 ## On this PC
 

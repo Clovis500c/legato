@@ -361,6 +361,14 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
         left it ready (Install update opens it again); asked behind Home, the installer waited for Legato's return;
         Android refused the release APK over the debug app (another key), as it should. Not seen: an update really
         installing and the new version resuming (the next Beta on a phone), a release build's background check.
+  - [x] Release notes in full (2026-11-05, the owner's « dans les update logs on mettra tout … added: fixed:
+        performance improved »): every feat / fix / perf line, under Added, Fixed and Performance improved
+        (`scripts/notes.mjs`, betas and promote alike), the headers in the user's language; old notes (New, Faster,
+        "And N more") still read. Versions before it show the new headers in English.
+  - [x] Stable 1.1.681 (2026-11-05, the owner's « push cette version en stable si tout les check passe et update les
+        stats d'optimisation du site »): promoted after its checks and the next push's were green; the website's and
+        the README's numbers from a new bench (`docs/performance.md`, row 2026-11-05: the cold start quoted is the
+        middle of three runs, the full run's was the odd one out).
   - [ ] iPhone: waits for the owner's signing choice (Apple Developer Program, or an unsigned .ipa).
 
 **Medium**
