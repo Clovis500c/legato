@@ -2102,6 +2102,7 @@ const ko: Record<string, string> = {
   'alarm clock wake up wakeup morning ring rise sunrise': '알람 자명종 기상 깨우기 아침 울림 일어나기 일출',
   'Alarm: {name}': '알람: {name}',
   'Alarm…': '알람…',
+  'from the cover': '커버에서',
 }
 
 export default ko

@@ -2102,6 +2102,7 @@ const fr: Record<string, string> = {
   'alarm clock wake up wakeup morning ring rise sunrise': 'réveil alarme réveiller matin sonner lever aube',
   'Alarm: {name}': 'Réveil : {name}',
   'Alarm…': 'Réveil…',
+  'from the cover': 'de la pochette',
 }
 
 export default fr

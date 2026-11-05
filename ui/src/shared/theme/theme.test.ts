@@ -41,6 +41,12 @@ describe('contrast', () => {
 })
 
 describe('resolveTheme', () => {
+  it('takes the cover’s accent while one plays, the theme’s own without', () => {
+    const t = resolveTheme({ ...DEFAULTS, accent: 'cover' }, false, null, '#C2410C')
+    expect([t.accent, t.onAccent]).toEqual(['#C2410C', onAccentFor('#C2410C')])
+    expect(resolveTheme({ ...DEFAULTS, accent: 'cover' }, false).accent).toBe(resolveTheme(DEFAULTS, false).accent)
+    expect(sanitize({ accent: 'cover' }).accent).toBe('cover')
+  })
   it('follows system and accent override', () => {
     expect(resolveTheme({ ...DEFAULTS, theme: 'system' }, true).id).toBe('modern-dark')
     expect(resolveTheme({ ...DEFAULTS, theme: 'system' }, false).id).toBe('modern')

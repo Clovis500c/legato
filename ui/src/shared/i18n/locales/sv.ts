@@ -2102,6 +2102,7 @@ const sv: Record<string, string> = {
   'alarm clock wake up wakeup morning ring rise sunrise': 'väckarklocka alarm vakna väcka morgon ringa stiga upp soluppgång',
   'Alarm: {name}': 'Väckarklocka: {name}',
   'Alarm…': 'Väckarklocka…',
+  'from the cover': 'från omslaget',
 }
 
 export default sv

@@ -64,6 +64,8 @@ Names match `PALETTE_KEYS` (`ui/src/shared/theme/theme.ts`).
   sky blue. Never text on light (2:1 on white); on dark it can be text (9:1). Lighter and more lavender than Windows
   11's own dark-mode accent (#60CDFF), so it does not read as a stock Windows control. Selection stays grey, so
   "selected" and "playing" never look alike.
+- Accent color › Cover (a choice): the song in the player gives the accent, its cover's hue made vivid and 3:1 on the
+  background; the theme's own while none is loaded or the cover is grey. Still playback only; selection stays grey.
 - Primary buttons are ink with bg text. Service colors (Spotify green, YouTube red, Apple pink) stay in their badges.
 - No gradients, glows or glass.
 

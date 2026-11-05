@@ -150,9 +150,9 @@ function Appearance() {
       </div>
       <ThemeStudio />
       {/* Only Windows gives an accent to read: no Windows chip on the phone, and one synced from a PC shows the theme's. */}
-      <Group title={msg('Accent color')} hint={s.accent === 'system' && !phoneApp ? tr('from Windows') : s.accent && s.accent !== 'system' ? s.accent : tr('from theme')}>
+      <Group title={msg('Accent color')} hint={s.accent === 'system' && !phoneApp ? tr('from Windows') : s.accent === 'cover' ? tr('from the cover') : s.accent && s.accent !== 'system' ? s.accent : tr('from theme')}>
         <div className="flex flex-wrap items-center gap-2">
-          {([['system', 'Windows'], [null, msg('Theme')]] as const).filter(([value]) => !phoneApp || value !== 'system').map(([value, label]) => (
+          {([['system', 'Windows'], [null, msg('Theme')], ['cover', msg('Cover')]] as const).filter(([value]) => !phoneApp || value !== 'system').map(([value, label]) => (
             <button key={label} onClick={() => update({ accent: value })} aria-pressed={s.accent === value} className={`rounded-full px-3 py-1.5 text-xs font-medium ${s.accent === value ? 'bg-ink text-bg' : 'border border-line'}`}>
               {tr(label)}
             </button>

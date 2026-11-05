@@ -488,8 +488,14 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       is skipped, not rung; this PC only; desktop only (a phone needs Android's AlarmManager); the days row starts on
       Monday. Tried: Rust and Vitest tests, the demo (rows, a ring sent by hand). Not tried: a real ring from the tray
       on an installed build, a PC waking from sleep.)
-- [ ] `S-M` Cover colours beyond the surfaces: "Whole app in the cover's color" (`appTint`, `ambient.ts`) tints the surfaces
+- [x] `S-M` Cover colours beyond the surfaces: "Whole app in the cover's color" (`appTint`, `ambient.ts`) tints the surfaces
       with one average colour; a small palette for the accent and the selection is left (Theme Studio choice).
+      (2026-11-05: Settings › Appearance › Accent color › Cover: the song in the player gives the accent, its cover's hue
+      made vivid and 3:1 on the background (`vivid`, the visualizer's "Cover's color"); the theme's own while none is
+      loaded or the cover is grey (`useCoverAccent` in `coverTint.ts`, `resolveTheme`'s `cover`). Decided alone: the
+      accent only, the selection stays grey (`docs/design.md`: "selected" and "playing" never alike); a paused song
+      counts. Tried: a unit test, the demo with a coloured cover's accent set by hand (the play button follows, the next
+      song's grey cover gives the theme's back; the demo's own SVG covers read as grey). Not tried: real covers.)
 - [ ] `S-M` Volume: a perceptual (dB) curve (it would make every saved volume louder or quieter; local and YouTube stay level
       because both are linear), and per-source volume memory (needs its own setting and a switch rule).
 - [ ] `S-M` Guest DJ-style picks between songs ("because you liked …"), local and explainable, no cloud.

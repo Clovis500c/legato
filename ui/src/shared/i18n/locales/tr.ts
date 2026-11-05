@@ -2102,6 +2102,7 @@ const tr: Record<string, string> = {
   'alarm clock wake up wakeup morning ring rise sunrise': 'alarm çalar saat uyanmak uyandırmak sabah çalmak kalkmak gün doğumu',
   'Alarm: {name}': 'Alarm: {name}',
   'Alarm…': 'Alarm…',
+  'from the cover': 'kapaktan',
 }
 
 export default tr

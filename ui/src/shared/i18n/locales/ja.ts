@@ -2102,6 +2102,7 @@ const ja: Record<string, string> = {
   'alarm clock wake up wakeup morning ring rise sunrise': 'アラーム 目覚まし 起きる 朝 鳴る 起床 日の出',
   'Alarm: {name}': 'アラーム: {name}',
   'Alarm…': 'アラーム…',
+  'from the cover': 'カバーから',
 }
 
 export default ja

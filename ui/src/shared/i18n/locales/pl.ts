@@ -2102,6 +2102,7 @@ const pl: Record<string, string> = {
   'alarm clock wake up wakeup morning ring rise sunrise': 'budzik alarm budzenie obudzić rano dzwonić wstawać wschód słońca',
   'Alarm: {name}': 'Budzik: {name}',
   'Alarm…': 'Budzik…',
+  'from the cover': 'z okładki',
 }
 
 export default pl

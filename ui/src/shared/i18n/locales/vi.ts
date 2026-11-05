@@ -2102,6 +2102,7 @@ const vi: Record<string, string> = {
   'alarm clock wake up wakeup morning ring rise sunrise': 'báo thức đồng hồ thức dậy đánh thức buổi sáng reo dậy bình minh',
   'Alarm: {name}': 'Báo thức: {name}',
   'Alarm…': 'Báo thức…',
+  'from the cover': 'từ ảnh bìa',
 }
 
 export default vi

@@ -76,6 +76,15 @@ function themeCss(css: string) {
   if (guard.nextElementSibling) document.head.appendChild(guard)
 }
 
+/** Accent 'cover': the playing cover's, applied over the theme (null: the theme's own). */
+let coverAccent: string | null = null
+export function setCoverAccent(hex: string | null) {
+  if (hex === coverAccent) return
+  coverAccent = hex
+  useSettings.setState({ coverAccent: hex })
+  apply(useSettings.getState().settings)
+}
+
 /** Last cover cache cap handed to Rust: it is told again only when it changes. */
 let capSent = 0
 
@@ -111,7 +120,7 @@ function apply(s: Settings) {
   usePlayer.setState({ fade: effectiveFade(s), gaplessAlbums: s.gaplessAlbums, smartShuffle: s.smartShuffle, skipLong: s.skipLong, earlyEnds: s.earlyEnds, skipSilence: s.skipSilence, levelling: s.levelling, skipNonMusic: s.skipNonMusic, songShape: s.progressStyle === 'shape' })
   useStore.setState({ toastPrefs: { important: s.toastShow === 'important', scale: { short: 0.5, normal: 1, long: 2 }[s.toastTime] } })
   const root = document.documentElement.style
-  const theme = resolveTheme(s, systemDark.matches, systemAccent)
+  const theme = resolveTheme(s, systemDark.matches, systemAccent, coverAccent)
   for (const [k, v] of Object.entries(cssVars(theme, s))) root.setProperty(k, v)
   const video = theme.background && isVideo(theme.background.image) ? theme.background : undefined
   root.setProperty('--theme-image', theme.background && !video ? `url("${coverImage(theme.background.image)}")` : 'none')
@@ -132,6 +141,8 @@ interface SettingsState {
   current: (theme?: string) => Theme
   /** Windows in dark mode: selected by what resolves the theme at render (cover tints), so they follow a switch. */
   systemDark: boolean
+  /** Accent 'cover': the playing cover's (coverTint.ts `useCoverAccent`), null when none plays or it's grey. */
+  coverAccent: string | null
 }
 
 let saveTimer: ReturnType<typeof setTimeout> | undefined
@@ -139,6 +150,7 @@ let saveTimer: ReturnType<typeof setTimeout> | undefined
 export const useSettings = create<SettingsState>((set, get) => ({
   settings: DEFAULTS,
   systemDark: systemDark.matches,
+  coverAccent: null,
 
   async load() {
     systemAccent = await api.systemAccent().catch(() => null)
@@ -167,7 +179,7 @@ export const useSettings = create<SettingsState>((set, get) => ({
     saveTimer = setTimeout(() => api.saveSettings(s).catch((e) => useStore.setState({ error: String(e) })), 400)
   },
 
-  current: (theme = get().settings.theme) => resolveTheme({ ...get().settings, theme }, systemDark.matches, systemAccent),
+  current: (theme = get().settings.theme) => resolveTheme({ ...get().settings, theme }, systemDark.matches, systemAccent, get().coverAccent),
 }))
 
 /** Saved sorts onto the list pages. */

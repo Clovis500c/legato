@@ -2102,6 +2102,7 @@ const hi: Record<string, string> = {
   'alarm clock wake up wakeup morning ring rise sunrise': 'अलार्म घड़ी जागना जगाना सुबह बजना उठना सूर्योदय',
   'Alarm: {name}': 'अलार्म: {name}',
   'Alarm…': 'अलार्म…',
+  'from the cover': 'कवर से',
 }
 
 export default hi

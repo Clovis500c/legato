@@ -221,6 +221,8 @@ Relaunch log (newest last):
 - 2026-11-05: the alarm (Settings › Playback › Alarm; `alarm.rs` rings from the tray, `features/player/alarm.ts`).
   A ring sent by hand in the demo; a real one from the tray not tried. Plan notes on Focus / workout, Hide explicit
   and Spotify previews (left: data, an `M`, the owner's call).
+- 2026-11-05: Accent color › Cover (the song in the player gives the accent; `useCoverAccent` in `coverTint.ts`).
+  Seen in the demo with a colour set by hand; real covers not tried.
 
 ## Mobile app and devices sync (the owner's ask, 2026-11-02 afternoon; in progress)
 

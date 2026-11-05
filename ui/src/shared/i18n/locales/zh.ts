@@ -2102,6 +2102,7 @@ const zh: Record<string, string> = {
   'alarm clock wake up wakeup morning ring rise sunrise': '闹钟 闹铃 起床 叫醒 早晨 响铃 日出',
   'Alarm: {name}': '闹钟：{name}',
   'Alarm…': '闹钟…',
+  'from the cover': '来自封面',
 }
 
 export default zh

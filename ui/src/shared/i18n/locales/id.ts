@@ -2102,6 +2102,7 @@ const id: Record<string, string> = {
   'alarm clock wake up wakeup morning ring rise sunrise': 'alarm jam weker bangun membangunkan pagi berbunyi terbit matahari',
   'Alarm: {name}': 'Alarm: {name}',
   'Alarm…': 'Alarm…',
+  'from the cover': 'dari sampul',
 }
 
 export default id

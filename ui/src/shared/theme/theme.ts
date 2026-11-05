@@ -298,7 +298,8 @@ export interface Settings {
   language: string
   /** Preset id, custom theme id, or 'system' (Modern / Modern Dark, following Windows). */
   theme: string
-  /** Hex overrides theme accent; 'system' = Windows accent; null = theme's own (sky blue in v2). */
+  /** Hex overrides theme accent; 'system' = Windows accent; 'cover' = the playing song's cover (the theme's own when none
+   * plays or it's grey); null = theme's own (sky blue in v2). */
   accent: string | null
   customThemes: Theme[]
   covers: 'net' | 'rounded' | 'vinyl'
@@ -748,7 +749,7 @@ export function sanitize(raw: unknown): Settings {
   return {
     language: typeof r.language === 'string' && (r.language === 'system' || LANGUAGES.some((l) => l.code === r.language)) ? r.language : DEFAULTS.language,
     theme: pick(LEGACY_IDS[r.theme as string] ?? r.theme, ids, DEFAULTS.theme),
-    accent: isHex(r.accent) ? r.accent.toUpperCase() : r.accent === null || r.accent === 'system' ? r.accent : DEFAULTS.accent,
+    accent: isHex(r.accent) ? r.accent.toUpperCase() : r.accent === null || r.accent === 'system' || r.accent === 'cover' ? r.accent : DEFAULTS.accent,
     customThemes,
     covers: pick(r.covers, ['net', 'rounded', 'vinyl'] as const, DEFAULTS.covers),
     density: pick(r.density, ['compact', 'comfort', 'airy'] as const, DEFAULTS.density),
@@ -1019,11 +1020,12 @@ export const onAccentFor = (accent: string) => ['#FFFFFF', '#171614'].find((c) =
 /** src-tauri system_accent: Windows accent tuned per theme brightness (written from Rust, shared/generated). */
 export type { SystemAccent }
 
-export function resolveTheme(s: Settings, systemDark: boolean, system: SystemAccent | null = null): Theme {
+/** `cover`: the playing cover's accent (useCoverAccent), for the accent setting 'cover'. */
+export function resolveTheme(s: Settings, systemDark: boolean, system: SystemAccent | null = null, cover: string | null = null): Theme {
   const id = s.theme === 'system' ? (systemDark ? 'modern-dark' : 'modern') : s.theme
   const t = [...PRESETS, ...s.customThemes].find((x) => x.id === id) ?? PRESETS[0]
   const sys = system && [system.light, system.dark].every(isHex) ? (t.dark ? system.dark : system.light).toUpperCase() : null
-  const accent = s.accent === 'system' ? sys : s.accent
+  const accent = s.accent === 'system' ? sys : s.accent === 'cover' ? cover : s.accent
   return accent ? { ...t, accent, onAccent: onAccentFor(accent) } : t
 }
 

@@ -2102,6 +2102,7 @@ const nl: Record<string, string> = {
   'alarm clock wake up wakeup morning ring rise sunrise': 'wekker alarm wakker worden wekken ochtend afgaan opstaan zonsopgang',
   'Alarm: {name}': 'Wekker: {name}',
   'Alarm…': 'Wekker…',
+  'from the cover': 'van de hoes',
 }
 
 export default nl

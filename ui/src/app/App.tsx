@@ -22,6 +22,7 @@ import { useVizFull } from '../features/player/vizFull'
 import { useCoverFull } from '../features/player/coverFull'
 import { useShare } from '../features/share/share'
 import { useAmbient } from '../features/player/ambient'
+import { useCoverAccent } from '../features/player/coverTint'
 import { trackArt } from '../shared/art'
 import { PlayerBar } from '../features/player/PlayerBar'
 import { SidePanel } from '../features/player/SidePanel'
@@ -234,6 +235,8 @@ export function App() {
   useSettings((s) => s.systemDark)
   const nowTrack = useNowTrack()
   const appTint = useAmbient(tintOn && nowTrack ? trackArt(nowTrack)[0] : undefined, useSettings.getState().current())
+  const coverAccentOn = useSettings((s) => s.settings.accent === 'cover')
+  useCoverAccent(coverAccentOn && nowTrack ? trackArt(nowTrack)[0] : undefined)
   // First launch: what the app is, what stays on this PC, where the music comes from (features/welcome).
   const [welcome, setWelcome] = useState(false)
   const [up, setUp] = useState(false)
