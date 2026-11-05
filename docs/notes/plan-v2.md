@@ -694,7 +694,12 @@ Most useful first; the tag is the effort.
 - [ ] `M` Tray mode: measure what's left (WebView2 suspended?), drop it further if the page can be unloaded and restored.
 - [ ] `M` Library at scale: 50 000 songs, check every query with `EXPLAIN QUERY PLAN` (indexes for artist, album,
       plays, likes), search with FTS5, scans in the background with progress.
-- [ ] `S-M` Re-renders: profile the player bar, Up next and lyrics at 60 fps (`Progress.tsx`); Zustand selectors everywhere.
+- [x] `S-M` Re-renders: profile the player bar, Up next and lyrics at 60 fps (`Progress.tsx`); Zustand selectors everywhere.
+      (2026-11-05, React Profiler around the shell in the demo, dev build, a local song playing: paused = no render;
+      playing = 4 commits a second (the engine's reports), the bar ~0.45 ms each; Now Playing with lyrics 9 ms a second.
+      Up next was 52 ms a second: each report gave the queue a new empty array, so its whole list re-rendered. Now the
+      report keeps what didn't change (`upcoming`, a dropped file's song): 2.9 ms a second. The bar itself was already
+      one frame loop, quantized (2026-10-17). Not measured: a production build, YouTube's reports, Karaoke.)
 - [ ] `S-M` YouTube embeds: one player reused instead of one per song where the crossfade allows; unload the hidden one.
 - [x] `S-M` Performance budget in CI: front-end bundle size and Rust startup time; fail on a large regression. (`pnpm bench`
       isn't in CI yet.) (2026-11-05: `scripts/budget.mjs` + test, CI's check job on Windows after `vite build`: JS at

@@ -899,14 +899,17 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     // Skip silence: the engine jumped past the silence while the fade in still runs: the fade in starts there.
     const was = get()
     const jumped = skip && !s.paused && was.fadeIn > 0 && s.path === was.now?.path && s.positionMs - was.positionMs > 300 && was.positionMs - was.fadeFrom < was.fadeIn * 1000
+    // Reports come 4 times a second: what didn't change keeps its object, else Up next and Now Playing re-render each time
+    // (2026-11-05 profile: Up next's whole list on every report).
+    const upcoming = now?.trackId ? [] : s.upcoming
     set({
       playing: !!s.path && !s.paused,
       positionMs: s.positionMs,
       ...(jumped && { fadeFrom: s.positionMs }),
-      upcoming: now?.trackId ? [] : s.upcoming,
+      upcoming: sameList(upcoming, was.upcoming) ? was.upcoming : upcoming,
       ...(songMs && { durationMs: songMs }),
       ...(i > index && { index: i, playId: get().playId + 1, fadeIn: albumGoesOnAt(get(), i) ? 0 : get().fade.in, fadeFrom: skip && s.positionMs > 600 ? s.positionMs : 0, now: { title: list[i].title, artist: list[i].artist, trackId: list[i].id, via: 'local', path: s.path! } }),
-      ...(s.path && !now?.trackId && { now: { title: fileTitle(s.path), artist: tr('Local file'), path: s.path, via: 'local' }, ...(s.path !== now?.path && { playId: get().playId + 1 }) }),
+      ...(s.path && !now?.trackId && s.path !== now?.path && { now: { title: fileTitle(s.path), artist: tr('Local file'), path: s.path, via: 'local' }, playId: get().playId + 1 }),
     })
     if (s.path) get().applyVolume()
     // Past the music's end, silence left: over, as for a video (once per song).
@@ -1021,6 +1024,7 @@ function skipPart(time: number, own = false) {
 
 // The engine's own pause state, from its last status (songOver pauses what plays on; the store's `playing` is already false then).
 let enginePaused = false
+const sameList = (a: readonly string[], b: readonly string[]) => a === b || (a.length === b.length && a.every((x, k) => x === b[k]))
 // Play (playId) whose silent start was skipped: one seek per play, never a loop.
 let skipLeadId = -1
 // Song whose early end was reached (playId): over once.

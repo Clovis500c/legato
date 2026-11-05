@@ -298,6 +298,25 @@ describe('skip non-music parts', () => {
   })
 })
 
+describe('local reports', () => {
+  it('keep the queue and a dropped file as they were when only the position moved', () => {
+    const report = { path: 'C:/music/a.mp3', positionMs: 1000, durationMs: 200_000, paused: false, upcoming: ['C:/music/b.mp3'], error: null, ended: false, trimEndMs: null }
+    usePlayer.setState({ now: undefined, list: [], index: 0, upcoming: [] })
+    usePlayer.getState().onLocal(report)
+    const { now, upcoming, playId } = usePlayer.getState()
+    expect(now).toMatchObject({ path: 'C:/music/a.mp3', via: 'local' })
+    // Regression guard: a new array and a new song object 4 times a second re-rendered Up next and Now Playing (2026-11-05).
+    usePlayer.getState().onLocal({ ...report, positionMs: 1250, upcoming: ['C:/music/b.mp3'] })
+    expect(usePlayer.getState()).toMatchObject({ positionMs: 1250, playId })
+    expect(usePlayer.getState().upcoming).toBe(upcoming)
+    expect(usePlayer.getState().now).toBe(now)
+    usePlayer.getState().onLocal({ ...report, positionMs: 1500, upcoming: [] })
+    expect(usePlayer.getState().upcoming).toEqual([])
+    usePlayer.getState().onLocal({ ...report, path: 'C:/music/b.mp3', positionMs: 0, upcoming: [] })
+    expect(usePlayer.getState()).toMatchObject({ now: { path: 'C:/music/b.mp3' }, playId: playId + 1 })
+  })
+})
+
 describe('a YouTube video that never starts', () => {
   const post = vi.fn()
   // Videos loaded into the embed by the store (the embed's own first load is PlayerBar's, not mounted here).
