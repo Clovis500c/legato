@@ -728,7 +728,12 @@ Most useful first; the tag is the effort.
 
 Most useful first; the tag is the effort.
 
-- [ ] `M` Tray mode: measure what's left (WebView2 suspended?), drop it further if the page can be unloaded and restored.
+- [x] `M` Tray mode: measure what's left (WebView2 suspended?), drop it further if the page can be unloaded and restored.
+      (2026-11-05: `pnpm bench` prints WebView2's part by process kind. Suspended: yes, after 5 min hidden and silent
+      the page keeps 0 to 3 MB of 54 to 55 MB; the rest is WebView2's browser, GPU, network and crash processes (about
+      27 MB, there while a webview exists) and the app (about 25 MB). Decided alone: the page stays loaded, unloading it
+      gains 3 MB at most; closing the webview would cost a cold page at each show and what the page does from the tray.
+      Seen, not looked into: the hidden page grows to about 50 MB before its suspend. Numbers in `docs/performance.md`.)
 - [x] `S-M` Library at scale, its queries: 50 000 songs, every statement checked (indexes for artist, album, plays, likes).
       (2026-11-05: `per_song_statements_skip_whole_scans_at_50k_songs` builds 50 000 songs, 200 playlists of 250 and
       50 000 plays, runs what the app does with them and counts each statement's whole-table steps (SQLite's own
@@ -831,9 +836,11 @@ Most useful first; the tag is the effort.
       import of 1840 searches takes about 1.5 h instead of 30 min). Check on a real import: no `YouTube refused searches`
       line, playback fine meanwhile. Still fast: a pasted song list (6 at a time, `songlist.rs`) and Find versions (150 in
       a row, stops at the first refusal).
-- [ ] `pnpm bench` on a quiet PC: the full run on af27405 was disturbed (someone back at the PC: load 78 %, restart 1.91 s,
+- [x] `pnpm bench` on a quiet PC: the full run on af27405 was disturbed (someone back at the PC: load 78 %, restart 1.91 s,
       tray 135 MB, the page awake again after its suspend), row not kept. The website's numbers come from d853980: confirm the
       54 MB in the tray after Visualizer v2, or find what wakes the page and fix the numbers.
+      (2026-11-05: confirmed, 54 and 55 MB in two full runs on 58679a9, the page suspended both times. Neither PC was
+      quiet (the demo's Vite server, then another app: load 68 to 78 %), rows not kept; a clean row is still to make.)
 - [ ] The 2026-11-02 run (Beta 1.1.588), checked only by tests and over the demo:
       - Phone remote on a real phone (Settings › Playback): the QR code, the page, taps; Windows' firewall asks once.
       - OBS overlay in a real Browser Source; Settings › Privacy's real log of the day.

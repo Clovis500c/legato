@@ -83,16 +83,28 @@ export function noticesReady(html) {
 // Shared with `pnpm e2e` (scripts/guest.mjs); the tests read them from here.
 export { browserArgs, carriesId, isBuildInput }
 
-/** RAM of one sample in MB: private working sets of the WebView2 processes and of the rest of the tree. */
+/** RAM of one sample in MB: private working sets of the WebView2 processes and of the rest of the tree; `kinds`: the
+ *  WebView2 part by process kind (browser, renderer, gpu-process...), what the tray leaves of each. */
 export function memory(sample) {
   let app = 0
   let web = 0
+  const kinds = {}
   for (const p of sample.procs) {
-    if (/^msedgewebview2\.exe$/i.test(p.name)) web += p.wsp ?? 0
-    else app += p.wsp ?? 0
+    if (/^msedgewebview2\.exe$/i.test(p.name)) {
+      web += p.wsp ?? 0
+      const kind = p.kind || 'browser'
+      kinds[kind] = (kinds[kind] ?? 0) + (p.wsp ?? 0) / MB
+    } else app += p.wsp ?? 0
   }
-  return { app: app / MB, web: web / MB, total: (app + web) / MB, processes: sample.procs.length }
+  return { app: app / MB, web: web / MB, total: (app + web) / MB, processes: sample.procs.length, kinds }
 }
+
+/** "renderer 12, browser 9": the WebView2 kinds of `memory`, biggest first. */
+export const kindsText = (kinds) =>
+  Object.entries(kinds)
+    .sort((a, b) => b[1] - a[1])
+    .map(([k, mb]) => `${k} ${Math.round(mb)}`)
+    .join(', ')
 
 /** CPU seconds each process of the tree used between the first and the last sample (100 ns units in). A process born in
  *  between counts from zero; one gone before the last sample counts up to its last sight. */
@@ -691,7 +703,8 @@ function print(r) {
   console.log(hot(r.play))
   console.log(row(`in the tray, paused, at the end`, r.tray))
   console.log(hot(r.tray))
-  for (const x of r.trace) console.log(`  tray after ${x.at} s: ${Math.round(x.ram.total)} MB (WebView2 ${Math.round(x.ram.web)})`)
+  console.log(`${''.padEnd(34)} WebView2, MB: ${kindsText(r.tray.ram.kinds)}`)
+  for (const x of r.trace) console.log(`  tray after ${x.at} s: ${Math.round(x.ram.total)} MB (app ${Math.round(x.ram.app)}; WebView2 ${Math.round(x.ram.web)}: ${kindsText(x.ram.kinds)})`)
   console.log(`\n${r.note}`)
 }
 

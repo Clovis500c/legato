@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
-import { BENCH_ID, benchFolders, browserArgs, carriesId, cpuSeconds, isBuildInput, memory, noticesReady, parseArgs, plan, share, summarize, tableRow, withRow } from './bench.mjs'
+import { BENCH_ID, benchFolders, browserArgs, carriesId, cpuSeconds, isBuildInput, kindsText, memory, noticesReady, parseArgs, plan, share, summarize, tableRow, withRow } from './bench.mjs'
 
 const MB = 1024 * 1024
 const proc = (pid: number, name: string, cpu: number, wsp: number | null) => ({ pid, name, cpu, wsp })
@@ -84,9 +84,11 @@ describe('bench reading', () => {
     expect(() => browserArgs('const OTHER: &str = "x";')).toThrow('BROWSER_ARGS')
   })
 
-  it('counts private working sets, WebView2 apart from the rest', () => {
-    const m = memory(sample(0, [proc(1, 'legato-bench.exe', 0, 100 * MB), proc(2, 'msedgewebview2.exe', 0, 60 * MB), proc(3, 'MSEdgeWebView2.exe', 0, 40 * MB), proc(4, 'msedgewebview2.exe', 0, null)]))
-    expect(m).toEqual({ app: 100, web: 100, total: 200, processes: 4 })
+  it('counts private working sets, WebView2 apart from the rest and by kind', () => {
+    const renderer = { ...proc(3, 'MSEdgeWebView2.exe', 0, 40 * MB), kind: 'renderer' }
+    const m = memory(sample(0, [proc(1, 'legato-bench.exe', 0, 100 * MB), proc(2, 'msedgewebview2.exe', 0, 60 * MB), renderer, proc(4, 'msedgewebview2.exe', 0, null)]))
+    expect(m).toEqual({ app: 100, web: 100, total: 200, processes: 4, kinds: { browser: 60, renderer: 40 } })
+    expect(kindsText(m.kinds)).toBe('browser 60, renderer 40')
   })
 
   it('adds the CPU of processes that stay, are born or die inside the window', () => {

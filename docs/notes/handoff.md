@@ -229,6 +229,9 @@ Relaunch log (newest last):
   you liked come up twice as often. Seen in the demo with ratings; a real Liked Music not tried.
 - 2026-11-05: library at scale, its queries: a test runs the app's statements on 50 000 songs and fails on a whole-table
   read for one song; schema v19 adds two indexes (a song's playlist rows, plays by date). Times in performance.md.
+- 2026-11-05: tray mode measured (the bench prints WebView2 by process): 54 to 55 MB after 10 min, the page suspended
+  (0 to 3 MB); the rest is WebView2's own processes and the app. Page kept loaded (decided alone). No clean bench row:
+  the demo's Vite server, left running since 2026-11-04, kept 4 cores busy (stopped), then another app loaded the PC.
 
 ## Mobile app and devices sync (the owner's ask, 2026-11-02 afternoon; in progress)
 

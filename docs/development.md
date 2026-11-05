@@ -97,6 +97,8 @@ Writing code:
 folder with 10 000 local songs (`crates/core/examples/bench_data.rs`) and reads start time, RAM and CPU: paused, playing,
 and 10 minutes in the tray. `--quick` is a short run. `pnpm bench --visualizer` measures the visualizer instead (below). The numbers, how they are taken and what they leave out are in
 [performance.md](performance.md); a full run appends its row there. Windows only, and about 20 minutes of a PC left alone.
+Look at the PC's load first: the demo's Vite server (launch config `demo`), left running, rebuilt `styles.css` every few
+seconds and kept about 4 cores busy (2026-11-05). Stop it once done with it.
 `scripts/cdp.mjs` is its small DevTools client; the E2E smoke test reuses it.
 
 ## Smoke test: `pnpm e2e`

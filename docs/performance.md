@@ -177,6 +177,28 @@ table out of order, 98 to 114 ms against 86 with the sort. Opening a playlist 30
 song's artist to judge its channels), syncing a 250-song playlist 35 ms, a like 15 ms. Not measured: the same library on
 disk (the installed app's first read of the day) and what the interface does with 50 000 rows.
 
+## Tray mode, 2026-11-05
+
+Where the tray's RAM goes: `pnpm bench` now prints WebView2's part by process kind (`kindsText`). Two full runs on
+58679a9, neither on a quiet PC (the first with the demo's Vite server busy in the background, load 74 to 78 %; the
+second with another app loading the PC from the playing window on, 68 to 78 %), so no row kept; their tray numbers
+agree (MB, private working set):
+
+| In the tray, paused | Total | App | Browser | GPU | Utility (network) | Renderer (the page) | Crashpad |
+|---|---|---|---|---|---|---|---|
+| after 1 min | 60–61 | 24–25 | 10 | 2–3 | 3 | 17–18 | 2 |
+| after 4 min | 99–100 | 24–25 | 13 | 4–5 | 4–5 | 49–51 | 2 |
+| after 6 min (suspended at 5) | 50–53 | 24–25 | 14–15 | 5–6 | 4–5 | 0–1 | 2 |
+| after 10 min | 54–55 | 24–25 | 14–15 | 6 | 5 | 2–3 | 2 |
+
+The page is suspended after 5 minutes hidden and silent (`background.rs`): its renderer keeps 0 to 3 MB, so unloading
+it would gain nothing more. What stays is WebView2's own processes, there as long as a webview exists (about 27 MB),
+and the app (about 25 MB, not broken down). Only closing the webview would free WebView2's part, at the price of a cold
+page (about a second) at every show and of what the page does from the tray (updates between songs, the alarm,
+Discord). Seen, not looked into: before the suspend the hidden page grows from 17 to about 50 MB in 3 minutes (its
+timers keep full speed, `BROWSER_ARGS`). The second run's cold start, on a quiet PC (load 21 %): 0.80 s window shown,
+1.28 s first paint, as in October.
+
 ## Results
 
 First-load JS (the page's script and its preloaded chunks, `dist/index.html`), before and after lazy pages
