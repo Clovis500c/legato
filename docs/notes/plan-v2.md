@@ -499,7 +499,14 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
 - [ ] `S-M` Volume: a perceptual (dB) curve (it would make every saved volume louder or quieter; local and YouTube stay level
       because both are linear), and per-source volume memory (needs its own setting and a switch rule). (Left by the
       autopilot (2026-11-05): the curve moves every saved volume, and the switch rule is a taste: the owner's call.)
-- [ ] `S-M` Guest DJ-style picks between songs ("because you liked …"), local and explainable, no cloud.
+- [x] `S-M` Guest DJ-style picks between songs ("because you liked …"), local and explainable, no cloud.
+      (2026-11-05: the Auto-DJ's picks say why in Up next, after the artist: "Because you liked “…”", "In your Liked
+      Music", "You gave it 5 stars". Artists of a song in your Liked Music (the account's and yours) now come up twice
+      as often, under "Your ratings count" (its text says so). `autoDjPick.ts` `likedArtists` / `djWhy` (only the
+      rules' own boosts are given as reasons, nothing made up), `autoDj.ts` `useDjWhy`. Decided alone: the boost is 2,
+      no new setting, no toast between songs (Up next shows it). Tried: unit tests, the demo (reasons drawn in Up next
+      with 5-star songs; its own `playAt` wrapper replaces the queue, so the demo's Auto-DJ doesn't stay on: set by
+      hand). Not tried: a real library's Liked Music.)
 - [x] `S-M` Voice control beyond search: "next", "like this", "play my running playlist" (WinRT speech already there).
       (2026-11-05: in voice search, a command said alone runs instead of searching: next, previous, pause, play, like
       this, louder, quieter, and a play word with a playlist's name (only filler words around it: "play my running

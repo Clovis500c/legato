@@ -1838,7 +1838,7 @@ const ja: Record<string, string> = {
   'A week': '1週間',
   'A month': '1か月',
   'Your ratings count': '評価を反映',
-  'Five stars come up four times as often as an unrated song, one star a quarter as often': '星5つは未評価の曲の4倍、星1つは4分の1の頻度で流れます',
+  'Five stars come up four times as often as an unrated song, one star a quarter as often; artists in your Liked Music, twice as often': '星5つは未評価の曲の4倍、星1つは4分の1の頻度で流れます。Liked Music にあるアーティストは2倍の頻度で流れます',
   'Same artist again': '同じアーティストをもう一度',
   'An artist waits this many songs before playing again, unless no one else is left': 'アーティストが再び流れるまでに空ける曲数（ほかにいない場合を除く）',
   'Any time': 'いつでも',
@@ -2116,6 +2116,9 @@ const ja: Record<string, string> = {
   'Search instead': '代わりに検索',
   'Already liked': 'すでに Liked Music にあります',
   'Or say “{next}”, “{pause}”, “{louder}”, or “{play}” and a playlist’s name': 'または「{next}」「{pause}」「{louder}」、またはプレイリスト名と「{play}」と話してください',
+  'You gave it {n} stars': 'あなたの評価は星{n}つ',
+  'In your Liked Music': 'Liked Music にある曲',
+  'Because you liked {title}': '{title} を気に入ったから',
 }
 
 export default ja

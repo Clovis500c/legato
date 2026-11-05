@@ -855,7 +855,7 @@ function PlaybackSection() {
           <Row setting="djFresh" label={msg('Songs heard lately')} sub={tr('A song heard within this time waits until the others have played')}>
             <Segmented label={tr('Songs heard lately')} value={String(s.djFresh)} onChange={(v) => update({ djFresh: +v })} options={DJ_FRESH.map((d) => ({ value: String(d), label: tr(freshLabels[d]) }))} />
           </Row>
-          <Row setting="djRated" label={msg('Your ratings count')} sub={tr('Five stars come up four times as often as an unrated song, one star a quarter as often')}>
+          <Row setting="djRated" label={msg('Your ratings count')} sub={tr('Five stars come up four times as often as an unrated song, one star a quarter as often; artists in your Liked Music, twice as often')}>
             <Toggle label={tr('Your ratings count')} checked={s.djRated} onChange={(djRated) => update({ djRated })} />
           </Row>
           <Row setting="djGap" label={msg('Same artist again')} sub={tr('An artist waits this many songs before playing again, unless no one else is left')}>

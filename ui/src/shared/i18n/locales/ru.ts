@@ -1838,7 +1838,7 @@ const ru: Record<string, string> = {
   'A week': 'Неделя',
   'A month': 'Месяц',
   'Your ratings count': 'Твои оценки учитываются',
-  'Five stars come up four times as often as an unrated song, one star a quarter as often': 'Пять звёзд звучат в четыре раза чаще песни без оценки, одна звезда — в четыре раза реже',
+  'Five stars come up four times as often as an unrated song, one star a quarter as often; artists in your Liked Music, twice as often': 'Пять звёзд звучат в четыре раза чаще песни без оценки, одна звезда — в четыре раза реже; исполнители из вашей Liked Music — вдвое чаще',
   'Same artist again': 'Тот же исполнитель снова',
   'An artist waits this many songs before playing again, unless no one else is left': 'Сколько песен исполнитель ждёт, прежде чем зазвучать снова, если остался кто-то ещё',
   'Any time': 'Когда угодно',
@@ -2116,6 +2116,9 @@ const ru: Record<string, string> = {
   'Search instead': 'Искать вместо этого',
   'Already liked': 'Уже в Liked Music',
   'Or say “{next}”, “{pause}”, “{louder}”, or “{play}” and a playlist’s name': 'Или скажите «{next}», «{pause}», «{louder}» или «{play}» и название плейлиста',
+  'You gave it {n} stars': 'Ваша оценка: {n} из 5',
+  'In your Liked Music': 'В вашей Liked Music',
+  'Because you liked {title}': 'Потому что вам понравилось {title}',
 }
 
 export default ru

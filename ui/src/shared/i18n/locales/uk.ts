@@ -1838,7 +1838,7 @@ const uk: Record<string, string> = {
   'A week': 'Тиждень',
   'A month': 'Місяць',
   'Your ratings count': 'Твої оцінки враховуються',
-  'Five stars come up four times as often as an unrated song, one star a quarter as often': 'П’ять зірок звучать учетверо частіше за пісню без оцінки, одна зірка — учетверо рідше',
+  'Five stars come up four times as often as an unrated song, one star a quarter as often; artists in your Liked Music, twice as often': 'П’ять зірок звучать учетверо частіше за пісню без оцінки, одна зірка — учетверо рідше; виконавці з вашої Liked Music — удвічі частіше',
   'Same artist again': 'Той самий виконавець знову',
   'An artist waits this many songs before playing again, unless no one else is left': 'Скільки пісень виконавець чекає, перш ніж зазвучати знову, якщо лишився хтось інший',
   'Any time': 'Будь-коли',
@@ -2116,6 +2116,9 @@ const uk: Record<string, string> = {
   'Search instead': 'Шукати натомість',
   'Already liked': 'Уже в Liked Music',
   'Or say “{next}”, “{pause}”, “{louder}”, or “{play}” and a playlist’s name': 'Або скажіть «{next}», «{pause}», «{louder}» або «{play}» і назву плейлиста',
+  'You gave it {n} stars': 'Ваша оцінка: {n} з 5',
+  'In your Liked Music': 'У вашій Liked Music',
+  'Because you liked {title}': 'Бо вам сподобалося {title}',
 }
 
 export default uk

@@ -1838,7 +1838,7 @@ const nl: Record<string, string> = {
   'A week': 'Een week',
   'A month': 'Een maand',
   'Your ratings count': 'Je beoordelingen tellen mee',
-  'Five stars come up four times as often as an unrated song, one star a quarter as often': 'Vijf sterren komen vier keer zo vaak langs als een nummer zonder beoordeling, één ster een kwart zo vaak',
+  'Five stars come up four times as often as an unrated song, one star a quarter as often; artists in your Liked Music, twice as often': 'Vijf sterren komen vier keer zo vaak langs als een nummer zonder beoordeling, één ster een kwart zo vaak; artiesten uit je Liked Music twee keer zo vaak',
   'Same artist again': 'Zelfde artiest opnieuw',
   'An artist waits this many songs before playing again, unless no one else is left': 'Zoveel nummers wacht een artiest voor die weer speelt, tenzij er niemand anders over is',
   'Any time': 'Altijd',
@@ -2116,6 +2116,9 @@ const nl: Record<string, string> = {
   'Search instead': 'Toch zoeken',
   'Already liked': 'Staat al in Liked Music',
   'Or say “{next}”, “{pause}”, “{louder}”, or “{play}” and a playlist’s name': 'Of zeg ‘{next}’, ‘{pause}’, ‘{louder}’ of ‘{play}’ en de naam van een playlist',
+  'You gave it {n} stars': 'Je gaf het {n} sterren',
+  'In your Liked Music': 'In je Liked Music',
+  'Because you liked {title}': 'Omdat je {title} leuk vond',
 }
 
 export default nl

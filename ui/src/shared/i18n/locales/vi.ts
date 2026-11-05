@@ -1838,7 +1838,7 @@ const vi: Record<string, string> = {
   'A week': 'Một tuần',
   'A month': 'Một tháng',
   'Your ratings count': 'Tính theo đánh giá của bạn',
-  'Five stars come up four times as often as an unrated song, one star a quarter as often': 'Bài năm sao xuất hiện gấp bốn lần bài chưa đánh giá, bài một sao chỉ bằng một phần tư',
+  'Five stars come up four times as often as an unrated song, one star a quarter as often; artists in your Liked Music, twice as often': 'Bài năm sao xuất hiện gấp bốn lần bài chưa đánh giá, bài một sao chỉ bằng một phần tư; nghệ sĩ trong Liked Music của bạn xuất hiện gấp đôi',
   'Same artist again': 'Lại cùng nghệ sĩ',
   'An artist waits this many songs before playing again, unless no one else is left': 'Số bài một nghệ sĩ phải chờ trước khi phát lại, trừ khi không còn ai khác',
   'Any time': 'Bất cứ lúc nào',
@@ -2116,6 +2116,9 @@ const vi: Record<string, string> = {
   'Search instead': 'Tìm kiếm thay vào đó',
   'Already liked': 'Đã có trong Liked Music',
   'Or say “{next}”, “{pause}”, “{louder}”, or “{play}” and a playlist’s name': 'Hoặc nói “{next}”, “{pause}”, “{louder}”, hoặc “{play}” kèm tên một playlist',
+  'You gave it {n} stars': 'Bạn đã chấm {n} sao',
+  'In your Liked Music': 'Có trong Liked Music của bạn',
+  'Because you liked {title}': 'Vì bạn đã thích {title}',
 }
 
 export default vi

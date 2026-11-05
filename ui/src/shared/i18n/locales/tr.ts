@@ -1838,7 +1838,7 @@ const tr: Record<string, string> = {
   'A week': 'Bir hafta',
   'A month': 'Bir ay',
   'Your ratings count': 'Puanların etkiler',
-  'Five stars come up four times as often as an unrated song, one star a quarter as often': 'Beş yıldızlı şarkılar puansız bir şarkıdan dört kat sık, tek yıldızlılar dörtte bir sıklıkla çalar',
+  'Five stars come up four times as often as an unrated song, one star a quarter as often; artists in your Liked Music, twice as often': 'Beş yıldızlı şarkılar puansız bir şarkıdan dört kat sık, tek yıldızlılar dörtte bir sıklıkla çalar; Liked Music’teki sanatçılar iki kat sık',
   'Same artist again': 'Aynı sanatçı yeniden',
   'An artist waits this many songs before playing again, unless no one else is left': 'Bir sanatçının yeniden çalmadan önce beklediği şarkı sayısı; başka kimse kalmadıysa beklemez',
   'Any time': 'Her zaman',
@@ -2116,6 +2116,9 @@ const tr: Record<string, string> = {
   'Search instead': 'Bunun yerine ara',
   'Already liked': 'Zaten Liked Music’te',
   'Or say “{next}”, “{pause}”, “{louder}”, or “{play}” and a playlist’s name': 'Ya da “{next}”, “{pause}”, “{louder}” ya da bir çalma listesinin adıyla “{play}” de',
+  'You gave it {n} stars': 'Ona {n} yıldız verdin',
+  'In your Liked Music': 'Liked Music’inde',
+  'Because you liked {title}': '{title} şarkısını beğendiğin için',
 }
 
 export default tr

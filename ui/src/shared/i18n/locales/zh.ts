@@ -1838,7 +1838,7 @@ const zh: Record<string, string> = {
   'A week': '一周',
   'A month': '一个月',
   'Your ratings count': '参考你的评分',
-  'Five stars come up four times as often as an unrated song, one star a quarter as often': '五星歌曲出现的频率是未评分歌曲的四倍，一星则只有四分之一',
+  'Five stars come up four times as often as an unrated song, one star a quarter as often; artists in your Liked Music, twice as often': '五星歌曲出现的频率是未评分歌曲的四倍，一星则只有四分之一；你的 Liked Music 中的艺人出现频率翻倍',
   'Same artist again': '同一艺人再次出现',
   'An artist waits this many songs before playing again, unless no one else is left': '同一艺人再次出现前要间隔的歌曲数（没有其他艺人时除外）',
   'Any time': '随时',
@@ -2116,6 +2116,9 @@ const zh: Record<string, string> = {
   'Search instead': '改为搜索',
   'Already liked': '已在 Liked Music 中',
   'Or say “{next}”, “{pause}”, “{louder}”, or “{play}” and a playlist’s name': '或说“{next}”“{pause}”“{louder}”，或“{play}”加歌单名',
+  'You gave it {n} stars': '你给了它 {n} 星',
+  'In your Liked Music': '在你的 Liked Music 中',
+  'Because you liked {title}': '因为你喜欢 {title}',
 }
 
 export default zh

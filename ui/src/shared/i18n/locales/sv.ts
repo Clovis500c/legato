@@ -1838,7 +1838,7 @@ const sv: Record<string, string> = {
   'A week': 'En vecka',
   'A month': 'En månad',
   'Your ratings count': 'Dina betyg räknas',
-  'Five stars come up four times as often as an unrated song, one star a quarter as often': 'Fem stjärnor kommer fyra gånger så ofta som en låt utan betyg, en stjärna en fjärdedel så ofta',
+  'Five stars come up four times as often as an unrated song, one star a quarter as often; artists in your Liked Music, twice as often': 'Fem stjärnor kommer fyra gånger så ofta som en låt utan betyg, en stjärna en fjärdedel så ofta; artister i din Liked Music dubbelt så ofta',
   'Same artist again': 'Samma artist igen',
   'An artist waits this many songs before playing again, unless no one else is left': 'Så många låtar väntar en artist innan den spelas igen, om det finns någon annan kvar',
   'Any time': 'När som helst',
@@ -2116,6 +2116,9 @@ const sv: Record<string, string> = {
   'Search instead': 'Sök i stället',
   'Already liked': 'Finns redan i Liked Music',
   'Or say “{next}”, “{pause}”, “{louder}”, or “{play}” and a playlist’s name': 'Eller säg ”{next}”, ”{pause}”, ”{louder}” eller ”{play}” och namnet på en spellista',
+  'You gave it {n} stars': 'Du gav den {n} stjärnor',
+  'In your Liked Music': 'I din Liked Music',
+  'Because you liked {title}': 'För att du gillade {title}',
 }
 
 export default sv

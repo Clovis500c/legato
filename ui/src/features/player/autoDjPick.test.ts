@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { LibraryTrack } from '../../shared/api'
 import type { PlayStats } from '../library/filter'
-import { djPick, weight, type DjRules } from './autoDjPick'
+import { djPick, djWhy, likedArtists, weight, type DjRules } from './autoDjPick'
 
 const song = (id: number, artist: string, extra: Partial<LibraryTrack> = {}): LibraryTrack => ({ id, added: id, addedAt: null, title: `Song ${id}`, artist, album: null, durationMs: 200_000, isrc: null, ids: { youtube: `video${id}` }, ...extra })
 const NOW = 1_800_000_000
@@ -30,6 +30,20 @@ describe('Auto-DJ', () => {
     // A day's wait: 4 is fair game.
     expect(ids(djPick(pool, [pool[0]], stats, { ...rules, fresh: 1 }, 3, NOW, first))).toEqual([2, 4, 5])
     expect(djPick([pool[2]], [], {}, rules, 2, NOW, first)).toEqual([])
+  })
+
+  it('brings up artists you liked twice as often, and says why', () => {
+    const pool = [song(1, 'Air'), song(2, 'Justice'), song(3, 'Air feat. Beck')]
+    const liked = likedArtists(pool, new Set([3]))
+    // Air weighs 2 (song 1) against 1: two draws in three.
+    expect(ids(djPick(pool.slice(0, 2), [], {}, rules, 1, NOW, () => 0.66, liked))).toEqual([1])
+    expect(ids(djPick(pool.slice(0, 2), [], {}, rules, 1, NOW, () => 0.68, liked))).toEqual([2])
+    expect(ids(djPick(pool.slice(0, 2), [], {}, { ...rules, rated: false }, 1, NOW, () => 0.51, liked))).toEqual([2])
+    expect(djWhy(pool[0], {}, rules, liked)).toEqual({ kind: 'liked', title: 'Song 3', self: false })
+    expect(djWhy(pool[2], {}, rules, liked)).toEqual({ kind: 'liked', title: 'Song 3', self: true })
+    expect(djWhy(pool[0], { 1: [0, 0, 9] }, rules, liked)).toEqual({ kind: 'stars', stars: 4.5 })
+    expect(djWhy(pool[1], {}, rules, liked)).toBeUndefined()
+    expect(djWhy(pool[0], {}, { ...rules, rated: false }, liked)).toBeUndefined()
   })
 
   it('keeps an artist apart unless no one else is left', () => {

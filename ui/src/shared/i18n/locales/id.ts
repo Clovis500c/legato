@@ -1838,7 +1838,7 @@ const id: Record<string, string> = {
   'A week': 'Seminggu',
   'A month': 'Sebulan',
   'Your ratings count': 'Rating-mu berpengaruh',
-  'Five stars come up four times as often as an unrated song, one star a quarter as often': 'Lima bintang muncul empat kali lebih sering daripada lagu tanpa rating, satu bintang seperempatnya',
+  'Five stars come up four times as often as an unrated song, one star a quarter as often; artists in your Liked Music, twice as often': 'Lima bintang muncul empat kali lebih sering daripada lagu tanpa rating, satu bintang seperempatnya; artis di Liked Music-mu dua kali lebih sering',
   'Same artist again': 'Artis yang sama lagi',
   'An artist waits this many songs before playing again, unless no one else is left': 'Jumlah lagu yang ditunggu seorang artis sebelum diputar lagi, kecuali tidak ada artis lain',
   'Any time': 'Kapan saja',
@@ -2116,6 +2116,9 @@ const id: Record<string, string> = {
   'Search instead': 'Cari saja',
   'Already liked': 'Sudah ada di Liked Music',
   'Or say “{next}”, “{pause}”, “{louder}”, or “{play}” and a playlist’s name': 'Atau ucapkan “{next}”, “{pause}”, “{louder}”, atau “{play}” dan nama playlist',
+  'You gave it {n} stars': 'Kamu memberinya {n} bintang',
+  'In your Liked Music': 'Ada di Liked Music-mu',
+  'Because you liked {title}': 'Karena kamu menyukai {title}',
 }
 
 export default id

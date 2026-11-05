@@ -11,7 +11,7 @@ import { RoundButton, Toggle } from '../../shared/ui/controls'
 import { Cover } from '../../shared/ui/Cover'
 import { dragSource, useDrag, useDropTarget } from '../../shared/ui/drag'
 import { trackMenu } from '../menus'
-import { stopAutoDj } from './autoDj'
+import { stopAutoDj, useDjWhy, whyText } from './autoDj'
 import { fileFormat } from './PlayerBar'
 import { queueItems, queueRows, repeatsAhead, type QueueRow } from './queue'
 import { vias } from './sources'
@@ -99,6 +99,8 @@ export function UpNext({ onHide, className = CARD, heading }: { onHide: () => vo
   const track = useNowTrack()
   const autoplay = useSettings((s) => s.settings.autoplay)
   const dj = usePlayer((s) => !!s.dj)
+  // Why each Auto-DJ pick came up (its stars, an artist you liked).
+  const why = useDjWhy()
   const added = usePlayer((s) => s.added)
   const from = usePlayer((s) => s.from)
   const items = useMemo(() => queueItems(rows, added), [rows, added])
@@ -230,7 +232,10 @@ export function UpNext({ onHide, className = CARD, heading }: { onHide: () => vo
                   <Cover title={title} art={art} size={44} />
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-sm font-medium">{title}</span>
-                    <span className="block truncate text-xs text-ink-2">{artist}</span>
+                    <span className="block truncate text-xs text-ink-2">
+                      {artist}
+                      {dj && t && why[t.id] && <span className="text-ink-3"> · {whyText(why[t.id])}</span>}
+                    </span>
                   </span>
                   {r.current ? (
                     <span title={tr('Playing')} className="grid size-6 shrink-0 place-items-center rounded-[4px] bg-accent text-on-accent">

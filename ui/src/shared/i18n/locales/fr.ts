@@ -1838,7 +1838,7 @@ const fr: Record<string, string> = {
   'A week': 'Une semaine',
   'A month': 'Un mois',
   'Your ratings count': 'Vos notes comptent',
-  'Five stars come up four times as often as an unrated song, one star a quarter as often': 'Cinq étoiles passent quatre fois plus souvent qu’un titre non noté, une étoile quatre fois moins',
+  'Five stars come up four times as often as an unrated song, one star a quarter as often; artists in your Liked Music, twice as often': 'Cinq étoiles passent quatre fois plus souvent qu’un titre non noté, une étoile quatre fois moins ; les artistes de votre Liked Music, deux fois plus souvent',
   'Same artist again': 'Même artiste à nouveau',
   'An artist waits this many songs before playing again, unless no one else is left': 'Nombre de titres qu’un artiste attend avant de revenir, sauf s’il ne reste personne d’autre',
   'Any time': 'N’importe quand',
@@ -2116,6 +2116,9 @@ const fr: Record<string, string> = {
   'Search instead': 'Chercher plutôt',
   'Already liked': 'Déjà dans Liked Music',
   'Or say “{next}”, “{pause}”, “{louder}”, or “{play}” and a playlist’s name': 'Ou dites « {next} », « {pause} », « {louder} » ou « {play} » et le nom d’une playlist',
+  'You gave it {n} stars': 'Vous lui avez donné {n} étoiles',
+  'In your Liked Music': 'Dans votre Liked Music',
+  'Because you liked {title}': 'Parce que vous avez aimé {title}',
 }
 
 export default fr

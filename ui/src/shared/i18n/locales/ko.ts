@@ -1838,7 +1838,7 @@ const ko: Record<string, string> = {
   'A week': '일주일',
   'A month': '한 달',
   'Your ratings count': '내 평점 반영',
-  'Five stars come up four times as often as an unrated song, one star a quarter as often': '별 5개는 평점 없는 곡보다 4배 자주, 별 1개는 4분의 1만큼 나옵니다',
+  'Five stars come up four times as often as an unrated song, one star a quarter as often; artists in your Liked Music, twice as often': '별 5개는 평점 없는 곡보다 4배 자주, 별 1개는 4분의 1만큼 나옵니다. Liked Music에 있는 아티스트는 2배 자주 나옵니다',
   'Same artist again': '같은 아티스트 다시',
   'An artist waits this many songs before playing again, unless no one else is left': '같은 아티스트가 다시 나오기 전까지 기다리는 곡 수 (다른 아티스트가 없으면 예외)',
   'Any time': '언제든',
@@ -2116,6 +2116,9 @@ const ko: Record<string, string> = {
   'Search instead': '대신 검색',
   'Already liked': '이미 Liked Music에 있음',
   'Or say “{next}”, “{pause}”, “{louder}”, or “{play}” and a playlist’s name': '또는 “{next}”, “{pause}”, “{louder}”, 또는 플레이리스트 이름과 “{play}”라고 말하세요',
+  'You gave it {n} stars': '별 {n}개를 준 곡',
+  'In your Liked Music': '내 Liked Music에 있음',
+  'Because you liked {title}': '{title}을(를) 좋아해서',
 }
 
 export default ko

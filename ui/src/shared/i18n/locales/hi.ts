@@ -1838,7 +1838,7 @@ const hi: Record<string, string> = {
   'A week': 'एक हफ़्ता',
   'A month': 'एक महीना',
   'Your ratings count': 'आपकी रेटिंग मायने रखती है',
-  'Five stars come up four times as often as an unrated song, one star a quarter as often': 'पाँच स्टार वाला गाना बिना रेटिंग वाले से चार गुना ज़्यादा आता है, एक स्टार वाला चौथाई बार',
+  'Five stars come up four times as often as an unrated song, one star a quarter as often; artists in your Liked Music, twice as often': 'पाँच स्टार वाला गाना बिना रेटिंग वाले से चार गुना ज़्यादा आता है, एक स्टार वाला चौथाई बार; आपकी Liked Music के कलाकार दोगुना',
   'Same artist again': 'वही कलाकार दोबारा',
   'An artist waits this many songs before playing again, unless no one else is left': 'कोई कलाकार दोबारा बजने से पहले इतने गानों तक रुकता है, जब तक कोई और बचा हो',
   'Any time': 'कभी भी',
@@ -2116,6 +2116,9 @@ const hi: Record<string, string> = {
   'Search instead': 'इसके बजाय खोजें',
   'Already liked': 'पहले से Liked Music में है',
   'Or say “{next}”, “{pause}”, “{louder}”, or “{play}” and a playlist’s name': 'या “{next}”, “{pause}”, “{louder}”, या “{play}” और किसी प्लेलिस्ट का नाम बोलें',
+  'You gave it {n} stars': 'आपने इसे {n} स्टार दिए',
+  'In your Liked Music': 'आपकी Liked Music में',
+  'Because you liked {title}': 'क्योंकि आपको {title} पसंद आया',
 }
 
 export default hi
