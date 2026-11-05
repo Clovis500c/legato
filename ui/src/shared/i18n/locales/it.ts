@@ -2079,6 +2079,14 @@ const it: Record<string, string> = {
   '“{line}”': '«{line}»',
   'Shuffle all': 'Riproduzione casuale di tutto',
   'Recent playlists': 'Playlist recenti',
+  'No room for more bookmarks in this song: remove one first.': 'Non c’è spazio per altri segnalibri in questo brano: togline uno prima.',
+  'Bookmark added at {time}': 'Segnalibro aggiunto a {time}',
+  'Bookmarks': 'Segnalibri',
+  'Bookmark this moment': 'Segna questo momento',
+  'Bookmark with a note…': 'Segna con una nota…',
+  'A note for this moment': 'Una nota per questo momento',
+  'Bookmark': 'Segna',
+  'Remove a bookmark': 'Rimuovi un segnalibro',
 }
 
 export default it

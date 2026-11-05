@@ -217,6 +217,7 @@ Relaunch log (newest last):
 - 2026-11-05: a JS-at-launch budget in CI (`scripts/budget.mjs`, 340 kB gzip; today 307). Not run in CI yet.
 - 2026-11-05: re-renders profiled in the demo: Up next re-rendered its whole list at each engine report (a new empty
   `upcoming` array 4 times a second); fixed in `player/store.ts` `onLocal`, 52 to 2.9 ms of rendering a second.
+- 2026-11-05: bookmarks inside a song (player menu › Bookmarks, ticks on the seek bar; schema 18). Seen in the demo.
 
 ## Mobile app and devices sync (the owner's ask, 2026-11-02 afternoon; in progress)
 

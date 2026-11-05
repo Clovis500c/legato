@@ -2079,6 +2079,14 @@ const vi: Record<string, string> = {
   '“{line}”': '“{line}”',
   'Shuffle all': 'Phát ngẫu nhiên tất cả',
   'Recent playlists': 'Danh sách phát gần đây',
+  'No room for more bookmarks in this song: remove one first.': 'Bài hát này không còn chỗ cho dấu trang: hãy xóa bớt một cái trước.',
+  'Bookmark added at {time}': 'Đã thêm dấu trang tại {time}',
+  'Bookmarks': 'Dấu trang',
+  'Bookmark this moment': 'Đánh dấu khoảnh khắc này',
+  'Bookmark with a note…': 'Đánh dấu kèm ghi chú…',
+  'A note for this moment': 'Ghi chú cho khoảnh khắc này',
+  'Bookmark': 'Đánh dấu',
+  'Remove a bookmark': 'Xóa một dấu trang',
 }
 
 export default vi

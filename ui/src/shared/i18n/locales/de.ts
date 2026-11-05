@@ -2079,6 +2079,14 @@ const de: Record<string, string> = {
   '“{line}”': '„{line}“',
   'Shuffle all': 'Alles zufällig wiedergeben',
   'Recent playlists': 'Zuletzt geöffnete Playlists',
+  'No room for more bookmarks in this song: remove one first.': 'Kein Platz für weitere Lesezeichen in diesem Song: Entferne zuerst eines.',
+  'Bookmark added at {time}': 'Lesezeichen bei {time} gesetzt',
+  'Bookmarks': 'Lesezeichen',
+  'Bookmark this moment': 'Diesen Moment merken',
+  'Bookmark with a note…': 'Mit Notiz merken…',
+  'A note for this moment': 'Eine Notiz zu diesem Moment',
+  'Bookmark': 'Merken',
+  'Remove a bookmark': 'Lesezeichen entfernen',
 }
 
 export default de

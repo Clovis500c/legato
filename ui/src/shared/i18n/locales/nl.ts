@@ -2079,6 +2079,14 @@ const nl: Record<string, string> = {
   '“{line}”': '‘{line}’',
   'Shuffle all': 'Alles shuffle afspelen',
   'Recent playlists': 'Recente playlists',
+  'No room for more bookmarks in this song: remove one first.': 'Geen ruimte voor meer bladwijzers in dit nummer: verwijder er eerst een.',
+  'Bookmark added at {time}': 'Bladwijzer toegevoegd op {time}',
+  'Bookmarks': 'Bladwijzers',
+  'Bookmark this moment': 'Dit moment markeren',
+  'Bookmark with a note…': 'Markeren met een notitie…',
+  'A note for this moment': 'Een notitie bij dit moment',
+  'Bookmark': 'Markeren',
+  'Remove a bookmark': 'Bladwijzer verwijderen',
 }
 
 export default nl

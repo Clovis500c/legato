@@ -53,7 +53,7 @@ CREATE TABLE IF NOT EXISTS settings (
 ";
 
 /// Schema version this code writes (user_version after migrations).
-pub const SCHEMA_VERSION: i64 = 17;
+pub const SCHEMA_VERSION: i64 = 18;
 
 /// The library was made by a newer version of the app.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -70,6 +70,20 @@ impl std::error::Error for NewerLibrary {}
 /// Wall clock, unix ms (Sync Mode change times).
 /// A song not found is searched again by an import after this long (ms): 30 days.
 const SEARCH_AGAIN: i64 = 30 * 24 * 3_600_000;
+
+/// Bookmarks a song keeps at most.
+pub const MAX_BOOKMARKS: i64 = 50;
+
+/// A moment inside a song to come back to, with an optional note.
+#[derive(Debug, Clone, PartialEq, Serialize, ts_rs::TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export)]
+pub struct Bookmark {
+    pub id: i64,
+    pub track_id: i64,
+    pub ms: i64,
+    pub note: String,
+}
 
 pub fn now_ms() -> i64 {
     std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_millis() as i64).unwrap_or(0)
@@ -469,6 +483,10 @@ impl Library {
             // v17: local files' shapes for the seek bar (`music_player::shape`), by path and modified time (a cache, not synced).
             lib.db.execute_batch("BEGIN; CREATE TABLE IF NOT EXISTS waveform (path TEXT PRIMARY KEY, modified INTEGER NOT NULL, shape BLOB NOT NULL); PRAGMA user_version = 17; COMMIT;")?;
         }
+        if lib.db.query_row("PRAGMA user_version", [], |r| r.get::<_, i64>(0))? < 18 {
+            // v18: bookmarks inside a song, a moment (ms) to come back to and an optional note (this PC only, not synced).
+            lib.db.execute_batch("BEGIN; CREATE TABLE IF NOT EXISTS bookmarks (id INTEGER PRIMARY KEY, track_id INTEGER NOT NULL REFERENCES tracks(id) ON DELETE CASCADE, ms INTEGER NOT NULL, note TEXT NOT NULL DEFAULT '', created INTEGER NOT NULL); CREATE INDEX IF NOT EXISTS bookmarks_track ON bookmarks (track_id, ms); PRAGMA user_version = 18; COMMIT;")?;
+        }
         lib.db.execute_batch(CHANGE_LOG)?;
         // Statements on logged tables compile their triggers too: kept, not rebuilt per call.
         lib.db.set_prepared_statement_cache_capacity(64);
@@ -599,6 +617,7 @@ impl Library {
         self.db.execute("UPDATE OR IGNORE track_prefs SET track_id = ?1 WHERE track_id = ?2", [keep, dupe])?;
         self.db.execute("UPDATE OR IGNORE track_ratings SET track_id = ?1 WHERE track_id = ?2", [keep, dupe])?;
         self.db.execute("UPDATE OR IGNORE not_found SET track_id = ?1 WHERE track_id = ?2", [keep, dupe])?;
+        self.db.execute("UPDATE bookmarks SET track_id = ?1 WHERE track_id = ?2", [keep, dupe])?;
         self.db.execute(
             "UPDATE tracks SET added = min(added, (SELECT added FROM tracks WHERE id = ?2)),
                added_at = coalesce(min(added_at, (SELECT added_at FROM tracks WHERE id = ?2)), added_at, (SELECT added_at FROM tracks WHERE id = ?2))
@@ -1168,6 +1187,38 @@ impl Library {
     /// Lyrics looked up before: Some((body, when)), body None = nothing found then.
     pub fn cached_lyrics(&self, key: &str) -> Result<Option<(Option<String>, i64)>> {
         Ok(self.db.query_row("SELECT body, fetched FROM lyrics WHERE key = ?1", [key], |r| Ok((r.get(0)?, r.get(1)?))).optional()?)
+    }
+
+    /// A moment of a library song kept, its note trimmed (200 characters at most). Within a second of one already there:
+    /// that one, its note replaced when this one has one. False when the song is gone or has MAX_BOOKMARKS.
+    pub fn add_bookmark(&self, track_id: i64, ms: i64, note: &str, now: i64) -> Result<bool> {
+        let note: String = note.trim().chars().take(200).collect();
+        let ms = ms.clamp(0, 24 * 3_600_000);
+        let near: Option<i64> = self.db.query_row("SELECT id FROM bookmarks WHERE track_id = ?1 AND abs(ms - ?2) < 1000 ORDER BY abs(ms - ?2) LIMIT 1", params![track_id, ms], |r| r.get(0)).optional()?;
+        if let Some(id) = near {
+            if !note.is_empty() {
+                self.db.execute("UPDATE bookmarks SET note = ?1 WHERE id = ?2", params![note, id])?;
+            }
+            return Ok(true);
+        }
+        let (exists, count): (bool, i64) = self.db.query_row("SELECT EXISTS (SELECT 1 FROM tracks WHERE id = ?1), (SELECT count(*) FROM bookmarks WHERE track_id = ?1)", [track_id], |r| Ok((r.get(0)?, r.get(1)?)))?;
+        if !exists || count >= MAX_BOOKMARKS {
+            return Ok(false);
+        }
+        self.db.execute("INSERT INTO bookmarks (track_id, ms, note, created) VALUES (?1, ?2, ?3, ?4)", params![track_id, ms, note, now])?;
+        Ok(true)
+    }
+
+    /// A song's bookmarks, in its order.
+    pub fn bookmarks(&self, track_id: i64) -> Result<Vec<Bookmark>> {
+        let mut q = self.db.prepare_cached("SELECT id, ms, note FROM bookmarks WHERE track_id = ?1 ORDER BY ms, id")?;
+        let rows = q.query_map([track_id], |r| Ok(Bookmark { id: r.get(0)?, track_id, ms: r.get(1)?, note: r.get(2)? }))?;
+        Ok(rows.collect::<rusqlite::Result<_>>()?)
+    }
+
+    pub fn delete_bookmark(&self, id: i64) -> Result<()> {
+        self.db.execute("DELETE FROM bookmarks WHERE id = ?1", [id])?;
+        Ok(())
     }
 
     pub fn save_lyrics(&self, key: &str, body: Option<&str>, fetched: i64) -> Result<()> {
@@ -2163,6 +2214,32 @@ mod tests {
         assert_eq!(lib.lyrics_search("general ken", 10)?, [LyricHit { track_id: one, line: "General Kenobi".into() }]);
         assert!(lib.lyrics_search("general ken", 0)?.is_empty());
         assert!(lib.lyrics_search("obi wan", 10)?.is_empty());
+        Ok(())
+    }
+
+    #[test]
+    fn a_song_keeps_its_bookmarks_through_a_merge_not_a_removal() -> Result<()> {
+        let lib = Library::in_memory()?;
+        let (one, two) = (lib.upsert_track(&song(1))?, lib.upsert_track(&song(2))?);
+        assert!(lib.add_bookmark(one, 90_000, "  the solo ", 1)?);
+        assert!(lib.add_bookmark(one, 30_000, "", 2)?);
+        // Twice at the same moment: one bookmark, its note given later.
+        assert!(lib.add_bookmark(one, 30_400, "intro ends", 3)?);
+        assert!(lib.add_bookmark(one, 30_600, "", 4)?);
+        let marks = lib.bookmarks(one)?;
+        assert_eq!(marks.iter().map(|b| (b.ms, b.note.as_str())).collect::<Vec<_>>(), [(30_000, "intro ends"), (90_000, "the solo")]);
+        // Gone songs and full ones keep nothing.
+        assert!(!lib.add_bookmark(999, 1_000, "", 5)?);
+        for k in 0..MAX_BOOKMARKS {
+            lib.add_bookmark(two, k * 2_000, "", 6)?;
+        }
+        assert!(!lib.add_bookmark(two, 3_600_000, "", 7)?);
+        lib.merge_tracks(two, &[one])?;
+        assert_eq!(lib.bookmarks(two)?.len() as i64, MAX_BOOKMARKS + 2);
+        lib.delete_bookmark(lib.bookmarks(two)?[0].id)?;
+        assert_eq!(lib.bookmarks(two)?.len() as i64, MAX_BOOKMARKS + 1);
+        lib.remove_track(two)?;
+        assert!(lib.bookmarks(two)?.is_empty());
         Ok(())
     }
 

@@ -2079,6 +2079,14 @@ const es: Record<string, string> = {
   '“{line}”': '«{line}»',
   'Shuffle all': 'Reproducción aleatoria de todo',
   'Recent playlists': 'Playlists recientes',
+  'No room for more bookmarks in this song: remove one first.': 'No caben más marcadores en esta canción: quita uno primero.',
+  'Bookmark added at {time}': 'Marcador añadido en {time}',
+  'Bookmarks': 'Marcadores',
+  'Bookmark this moment': 'Marcar este momento',
+  'Bookmark with a note…': 'Marcar con una nota…',
+  'A note for this moment': 'Una nota para este momento',
+  'Bookmark': 'Marcar',
+  'Remove a bookmark': 'Quitar un marcador',
 }
 
 export default es

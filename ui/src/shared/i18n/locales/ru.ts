@@ -2079,6 +2079,14 @@ const ru: Record<string, string> = {
   '“{line}”': '«{line}»',
   'Shuffle all': 'Перемешать всё и слушать',
   'Recent playlists': 'Недавние плейлисты',
+  'No room for more bookmarks in this song: remove one first.': 'В этой песне больше нет места для закладок: сначала удали одну.',
+  'Bookmark added at {time}': 'Закладка добавлена на {time}',
+  'Bookmarks': 'Закладки',
+  'Bookmark this moment': 'Отметить этот момент',
+  'Bookmark with a note…': 'Отметить с заметкой…',
+  'A note for this moment': 'Заметка к этому моменту',
+  'Bookmark': 'Отметить',
+  'Remove a bookmark': 'Удалить закладку',
 }
 
 export default ru

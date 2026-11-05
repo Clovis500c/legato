@@ -64,6 +64,7 @@ import {
   Trash,
   UploadSimple,
   VinylRecord,
+  BookmarkSimple,
 } from '@phosphor-icons/react'
 import { openUrl, revealItemInDir } from '@tauri-apps/plugin-opener'
 import { useSettings } from '../app/settings'
@@ -102,6 +103,7 @@ import { needleLook } from './player/vizVu'
 import { lookOptions, lookSettings, lookValue, usePluginViz } from './plugins/pluginViz'
 import { msg, tr, trn } from '../shared/i18n/i18n'
 import { ask, askText } from '../shared/ui/Ask'
+import { addBookmark, bookmarkTime, goToBookmark, momentNow, removeBookmark, useBookmarks } from './player/bookmarks'
 
 const app = () => useStore.getState()
 const player = () => usePlayer.getState()
@@ -723,6 +725,7 @@ export function playerMenu(): MenuEntry[] {
     t && playVia(t, list, index),
     t && addTo(() => [t]),
     t && rateItem(t),
+    t && bookmarkItem(t.id),
     t?.album && { label: tr('Go to album'), icon: <Disc size={16} />, onSelect: () => (setFull(false), app().go({ name: 'album', album: t.album!, artist: primaryArtist(t.artist) })) },
     t && { label: tr('Go to artist'), icon: <MicrophoneStage size={16} />, onSelect: () => (setFull(false), app().go({ name: 'artist', artist: primaryArtist(t.artist) })) },
     lib && saveCoverItem(lib),
@@ -735,6 +738,29 @@ export function playerMenu(): MenuEntry[] {
     now.path && { label: tr('Show in folder'), icon: <FolderOpen size={16} />, onSelect: () => revealItemInDir(now.path!).catch(fail) },
     ...pluginItems('player', { trackId: t?.id ?? null, title: now.title, artist: now.artist }),
   ]
+}
+
+/** The playing song's bookmarks: keep this moment (with a note or not), go back to one, take one off. */
+function bookmarkItem(trackId: number): MenuEntry {
+  const { trackId: of, list } = useBookmarks.getState()
+  const marks = of === trackId ? list : []
+  const name = (b: (typeof marks)[number]) => (b.note ? `${bookmarkTime(b)} · ${b.note.slice(0, 40)}` : bookmarkTime(b))
+  return {
+    label: tr('Bookmarks'),
+    icon: <BookmarkSimple size={16} />,
+    items: [
+      { label: tr('Bookmark this moment'), onSelect: () => void (momentNow() && addBookmark(momentNow()!)) },
+      {
+        label: tr('Bookmark with a note…'),
+        onSelect: async () => {
+          const at = momentNow()
+          const note = at && (await askText({ title: tr('A note for this moment'), ok: tr('Bookmark'), value: '' }))
+          if (at && note) void addBookmark(at, note)
+        },
+      },
+      ...(marks.length ? ['-' as const, ...marks.map((b) => ({ label: name(b), onSelect: () => goToBookmark(b) })), '-' as const, { label: tr('Remove a bookmark'), items: marks.map((b) => ({ label: name(b), onSelect: () => void removeBookmark(b) })) }] : []),
+    ],
+  }
 }
 
 /** The visualizer (the strip under the cover, its full screen): the look (the needles: their dial), full screen. */

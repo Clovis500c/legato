@@ -96,6 +96,21 @@ function sung({ q }: Record<string, unknown>) {
   return line ? TRACKS.slice(3, 6).map((t) => ({ trackId: t.id, line })) : []
 }
 
+// Bookmarks inside a song: kept for the visit.
+const MARKS: { id: number; trackId: number; ms: number; note: string }[] = []
+const marksOf = (trackId: unknown) => MARKS.filter((b) => b.trackId === trackId).sort((a, b) => a.ms - b.ms)
+function addMark({ trackId, ms, note }: Record<string, unknown>) {
+  const near = MARKS.find((b) => b.trackId === trackId && Math.abs(b.ms - Number(ms)) < 1000)
+  if (near) near.note = String(note) || near.note
+  else MARKS.push({ id: MARKS.length + 1, trackId: Number(trackId), ms: Number(ms), note: String(note) })
+  return marksOf(trackId)
+}
+function dropMark({ id, trackId }: Record<string, unknown>) {
+  const at = MARKS.findIndex((b) => b.id === id)
+  if (at >= 0) MARKS.splice(at, 1)
+  return marksOf(trackId)
+}
+
 // Two months of listening, for Home, Stats and Mixes.
 const NOW = Math.floor(Date.now() / 1000)
 const PLAYS: Play[] = Array.from({ length: 480 }, (_, i) => {
@@ -147,6 +162,9 @@ const ANSWERS: Record<string, (args: Record<string, unknown>) => unknown> = {
   search_lyrics: sung,
   // Not started from the taskbar.
   jump_pending: () => null,
+  bookmarks: ({ trackId }) => marksOf(trackId),
+  add_bookmark: addMark,
+  delete_bookmark: dropMark,
   lyrics,
   viz_start: ({ frames, fine, wave }) => startFrames(frames as Frames, fine === true, wave === true),
   player_levels: levels,

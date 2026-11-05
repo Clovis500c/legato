@@ -2079,6 +2079,14 @@ const zh: Record<string, string> = {
   '“{line}”': '“{line}”',
   'Shuffle all': '随机播放全部',
   'Recent playlists': '最近的歌单',
+  'No room for more bookmarks in this song: remove one first.': '这首歌的书签已满：请先删除一个。',
+  'Bookmark added at {time}': '已在 {time} 添加书签',
+  'Bookmarks': '书签',
+  'Bookmark this moment': '为此刻添加书签',
+  'Bookmark with a note…': '添加带备注的书签…',
+  'A note for this moment': '此刻的备注',
+  'Bookmark': '添加书签',
+  'Remove a bookmark': '删除书签',
 }
 
 export default zh

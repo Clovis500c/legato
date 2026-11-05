@@ -2079,6 +2079,14 @@ const tr: Record<string, string> = {
   '“{line}”': '“{line}”',
   'Shuffle all': 'Tümünü karışık çal',
   'Recent playlists': 'Son çalma listeleri',
+  'No room for more bookmarks in this song: remove one first.': 'Bu şarkıda daha fazla yer imine yer yok: önce birini kaldır.',
+  'Bookmark added at {time}': '{time} konumuna yer imi eklendi',
+  'Bookmarks': 'Yer imleri',
+  'Bookmark this moment': 'Bu anı işaretle',
+  'Bookmark with a note…': 'Notla işaretle…',
+  'A note for this moment': 'Bu an için bir not',
+  'Bookmark': 'İşaretle',
+  'Remove a bookmark': 'Yer imini kaldır',
 }
 
 export default tr

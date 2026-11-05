@@ -2079,6 +2079,14 @@ const sv: Record<string, string> = {
   '“{line}”': '”{line}”',
   'Shuffle all': 'Blanda allt',
   'Recent playlists': 'Senaste spellistorna',
+  'No room for more bookmarks in this song: remove one first.': 'Inget utrymme för fler bokmärken i den här låten: ta bort ett först.',
+  'Bookmark added at {time}': 'Bokmärke tillagt vid {time}',
+  'Bookmarks': 'Bokmärken',
+  'Bookmark this moment': 'Bokmärk det här ögonblicket',
+  'Bookmark with a note…': 'Bokmärk med en anteckning…',
+  'A note for this moment': 'En anteckning för det här ögonblicket',
+  'Bookmark': 'Bokmärk',
+  'Remove a bookmark': 'Ta bort ett bokmärke',
 }
 
 export default sv

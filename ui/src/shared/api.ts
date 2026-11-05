@@ -1,7 +1,7 @@
 import { Channel, invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 import type { Box } from './artbox'
-import type { AddReport, AlbumInfo, DeviceOffer, DeviceOfferEvent, DevicesStatus, CacheStats, Contact, Credentials, DetectInput, Detection, Direction, DiscordStatus, Dropped, Edit, EditDraft, Effects, ExportReport, FileList, FileTags, FindReport, Heard, JumpPlaylist, LastfmStatus, LibraryChanges, LibraryData, LibraryHealth, LibraryPlaylist, LibraryTrack, ListImport, LinkImport, Listen, ListenbrainzStatus, ListRef, LiveReport, LiveSettings, LyricHit, Lyrics, LyricsAsk, MediaNow, Merged, Mix, NearbyState, Pickup, Play, PlayerCommand, PlayerLevels, PlayerStatus, PlaylistEdit, PluginCall, PluginInfo, PluginInspect, Pref, Presence, PushFailed, RemoteLink, RemoteSong, Scrobble, SearchResults, ShareCode, SharePreview, ShieldStatus, ShortcutEntry, SongTags, Source, SourceStatus, SpotifyCommand, SpotifyExport, SpotifyImport, SpotifyLibraryImport, SpotifyList, SpotifyPick, SpotifyPlayback, SpotifyProgress, SponsorSegment, SyncProbe, SyncReport, SyncStatus, SystemAccent, TagsSaved, Track, UpdateStatus, WatchCmd, WatchRect, WatchReport, YtmAccount, YtmAccounts, YtmArtist, YtmHome } from './generated'
+import type { AddReport, AlbumInfo, Bookmark, DeviceOffer, DeviceOfferEvent, DevicesStatus, CacheStats, Contact, Credentials, DetectInput, Detection, Direction, DiscordStatus, Dropped, Edit, EditDraft, Effects, ExportReport, FileList, FileTags, FindReport, Heard, JumpPlaylist, LastfmStatus, LibraryChanges, LibraryData, LibraryHealth, LibraryPlaylist, LibraryTrack, ListImport, LinkImport, Listen, ListenbrainzStatus, ListRef, LiveReport, LiveSettings, LyricHit, Lyrics, LyricsAsk, MediaNow, Merged, Mix, NearbyState, Pickup, Play, PlayerCommand, PlayerLevels, PlayerStatus, PlaylistEdit, PluginCall, PluginInfo, PluginInspect, Pref, Presence, PushFailed, RemoteLink, RemoteSong, Scrobble, SearchResults, ShareCode, SharePreview, ShieldStatus, ShortcutEntry, SongTags, Source, SourceStatus, SpotifyCommand, SpotifyExport, SpotifyImport, SpotifyLibraryImport, SpotifyList, SpotifyPick, SpotifyPlayback, SpotifyProgress, SponsorSegment, SyncProbe, SyncReport, SyncStatus, SystemAccent, TagsSaved, Track, UpdateStatus, WatchCmd, WatchRect, WatchReport, YtmAccount, YtmAccounts, YtmArtist, YtmHome } from './generated'
 
 // Every type the commands and events carry is a Rust type: `pnpm types` (ts-rs) writes it into ./generated, never by hand.
 // Re-exported here, so features import them from the api.
@@ -316,6 +316,11 @@ export const api = {
   lyrics: (ask: LyricsAsk) => invoke<Lyrics | null>('lyrics', { ask }),
   /** Library songs whose lyrics, cached when they were shown, hold the text (none under 5 letters), with their line. */
   searchLyrics: (q: string) => invoke<LyricHit[]>('search_lyrics', { q }),
+  /** A moment of a library song kept, with an optional note: its bookmarks after, null when it can't keep more. */
+  addBookmark: (trackId: number, ms: number, note: string) => invoke<Bookmark[] | null>('add_bookmark', { trackId, ms, note }),
+  bookmarks: (trackId: number) => invoke<Bookmark[]>('bookmarks', { trackId }),
+  /** One bookmark gone: its song's bookmarks after. */
+  deleteBookmark: (id: number, trackId: number) => invoke<Bookmark[]>('delete_bookmark', { id, trackId }),
   /** Interface language, for what the shell shows itself (tray menu, taskbar buttons). */
   setUiLanguage: (lang: string) => invoke<void>('set_ui_language', { lang }),
   /** Windows' own settings page that unblocks a feature. */

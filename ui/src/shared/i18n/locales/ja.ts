@@ -2079,6 +2079,14 @@ const ja: Record<string, string> = {
   '“{line}”': '「{line}」',
   'Shuffle all': 'すべてシャッフル再生',
   'Recent playlists': '最近のプレイリスト',
+  'No room for more bookmarks in this song: remove one first.': 'この曲にはこれ以上ブックマークを追加できません。先に1つ削除してください。',
+  'Bookmark added at {time}': '{time} にブックマークを追加しました',
+  'Bookmarks': 'ブックマーク',
+  'Bookmark this moment': 'この瞬間をブックマーク',
+  'Bookmark with a note…': 'メモを付けてブックマーク…',
+  'A note for this moment': 'この瞬間のメモ',
+  'Bookmark': 'ブックマークする',
+  'Remove a bookmark': 'ブックマークを削除',
 }
 
 export default ja

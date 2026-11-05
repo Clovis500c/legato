@@ -2079,6 +2079,14 @@ const hi: Record<string, string> = {
   '“{line}”': '“{line}”',
   'Shuffle all': 'सब शफ़ल करके चलाएं',
   'Recent playlists': 'हाल की प्लेलिस्ट',
+  'No room for more bookmarks in this song: remove one first.': 'इस गाने में और बुकमार्क की जगह नहीं: पहले एक हटाएं।',
+  'Bookmark added at {time}': '{time} पर बुकमार्क जोड़ा गया',
+  'Bookmarks': 'बुकमार्क',
+  'Bookmark this moment': 'यह पल बुकमार्क करें',
+  'Bookmark with a note…': 'नोट के साथ बुकमार्क करें…',
+  'A note for this moment': 'इस पल के लिए एक नोट',
+  'Bookmark': 'बुकमार्क करें',
+  'Remove a bookmark': 'एक बुकमार्क हटाएं',
 }
 
 export default hi

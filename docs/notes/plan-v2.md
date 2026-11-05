@@ -452,7 +452,12 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
 - [x] `S` Now-playing overlay for streamers (a local page OBS can show, the app's theme). (2026-11-02: Settings › Playback ›
       Streaming overlay, `/overlay` on the phone remote's server, 127.0.0.1 only when alone; OBS's Custom CSS restyles it.)
 - [ ] `S` Hide explicit songs (a filter, YouTube Music's flag when there is one).
-- [ ] `S` Bookmarks inside a song (a moment to come back to, a note), Spicetify's Bookmark.
+- [x] `S` Bookmarks inside a song (a moment to come back to, a note), Spicetify's Bookmark. (2026-11-05: right-click the
+      player › Bookmarks: Bookmark this moment, or with a note; the song's bookmarks go back there; Remove a bookmark.
+      Ticks above the seek bar. SQLite `bookmarks` (schema 18), 50 a song (`player/bookmarks.ts`, `docs/playback.md`).
+      Decided alone: library songs only, this PC only (not in Sync Mode), in the player's menu only (not on song rows),
+      the moment = the last report (a quarter of a second behind at most). Tried: Rust test, the demo (added, listed, tick
+      drawn). Not tried: a real library, the dev app.)
 - [x] `S` Full cover display: the cover alone, huge, title and progress over it (Spicetify's Full App Display); a clock
       option, for a second screen. (2026-11-02: C or Now Playing's button; clock from its right-click or Settings ›
       Appearance › Player; keeps the display awake. Checked over the demo in four window shapes; not on a real second
@@ -701,6 +706,7 @@ Most useful first; the tag is the effort.
       report keeps what didn't change (`upcoming`, a dropped file's song): 2.9 ms a second. The bar itself was already
       one frame loop, quantized (2026-10-17). Not measured: a production build, YouTube's reports, Karaoke.)
 - [ ] `S-M` YouTube embeds: one player reused instead of one per song where the crossfade allows; unload the hidden one.
+      Left by the autopilot (2026-11-05): playback-critical, and the demo has no YouTube player to try it on.
 - [x] `S-M` Performance budget in CI: front-end bundle size and Rust startup time; fail on a large regression. (`pnpm bench`
       isn't in CI yet.) (2026-11-05: `scripts/budget.mjs` + test, CI's check job on Windows after `vite build`: JS at
       launch (the page's script and the chunks it preloads) 970 kB, 307 kB gzip, fails over 340 kB gzip. Decided alone:

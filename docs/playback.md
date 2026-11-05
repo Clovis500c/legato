@@ -254,6 +254,11 @@ We still pin the policy on the iframe: a meta tag or header added later can't br
   (0.15 s time constant). A gain that comes for the playing song after its first 3 s waits for the next play, unless
   the setting moved in the last 5 s (so a first, untagged play is levelled only if its measure is quick). Unseen: real
   tagged files from foobar2000 or MusicBee, a long file's measure time, how it sits next to YouTube by ear.
+- **Bookmarks inside a song** (2026-11-05, right-click the player › Bookmarks): Bookmark this moment, or with a note
+  (the moment taken before the dialog opens); the song's bookmarks in that submenu go back there, Remove a bookmark takes
+  one off. Small grey ticks above the seek bar (`Progress.tsx` `BookmarkMarks`). SQLite `bookmarks` (schema 18), 50 a
+  song, within a second of one = that one; library songs only, this PC only (not in Sync Mode); a merge of duplicates
+  keeps them, a song removed takes them along (`player/bookmarks.ts`, `Library::add_bookmark`).
 - **Song's shape on the seek bar** (2026-11-05, Settings › Appearance › Progress bar › Song's shape): a local song's
   loudness along it, measured in the same background decode (`music_player::shape`: the RMS of 50 ms windows, 400
   points, -36 to 0 dBFS as 0 to 255), cached in SQLite `waveform` by path and modified time (schema 17).

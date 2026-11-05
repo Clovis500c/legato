@@ -2079,6 +2079,14 @@ const uk: Record<string, string> = {
   '“{line}”': '«{line}»',
   'Shuffle all': 'Перемішати все й слухати',
   'Recent playlists': 'Нещодавні плейлисти',
+  'No room for more bookmarks in this song: remove one first.': 'У цій пісні більше немає місця для закладок: спершу видали одну.',
+  'Bookmark added at {time}': 'Закладку додано на {time}',
+  'Bookmarks': 'Закладки',
+  'Bookmark this moment': 'Позначити цей момент',
+  'Bookmark with a note…': 'Позначити з нотаткою…',
+  'A note for this moment': 'Нотатка до цього моменту',
+  'Bookmark': 'Позначити',
+  'Remove a bookmark': 'Видалити закладку',
 }
 
 export default uk

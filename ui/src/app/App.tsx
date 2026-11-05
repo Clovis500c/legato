@@ -11,6 +11,7 @@ import { appMenu, navMenu } from '../features/menus'
 import { startUpdates } from '../features/update/updates'
 import { startDeferred } from './deferred'
 import { PageBoundary } from './PageBoundary'
+import { startBookmarks } from '../features/player/bookmarks'
 import { startMedia } from '../features/player/media'
 import { resumeSession, startSessionSaving } from '../features/player/session'
 import { startCallPause, startUnplugPause } from '../features/player/unplug'
@@ -267,6 +268,7 @@ export function App() {
   useEffect(() => startScreenSaving(), [])
   useEffect(() => startClosingPlayerOnNavigate(), [])
   useEffect(() => startMedia(), [])
+  useEffect(() => startBookmarks(), [])
   useEffect(() => startUnplugPause(), [])
   useEffect(() => startCallPause(), [])
   useEffect(() => startShortcuts(), [])

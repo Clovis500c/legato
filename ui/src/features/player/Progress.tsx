@@ -4,6 +4,7 @@ import { formatDuration } from '../../shared/format'
 import { Bar } from '../../shared/ui/controls'
 import { move, press, release, shown, type Drag } from './seekDrag'
 import { SHAPE_BARS, shapeBars, shapePath } from './seekShape'
+import { bookmarkTime, useBookmarks } from './bookmarks'
 import { useSponsor } from './sponsor'
 import { usePlayer } from './store'
 import { tr } from '../../shared/i18n/i18n'
@@ -182,6 +183,7 @@ export function SeekBar({ className = '' }: { className?: string }) {
         className="relative w-full"
       />
       <PartMarks />
+      <BookmarkMarks />
     </span>
   )
 }
@@ -200,6 +202,23 @@ function PartMarks() {
         .filter((s) => s.startS < total)
         .map((s) => (
           <span key={s.startS} title={tr('Non-music part')} className="absolute h-full rounded-full bg-ink-4" style={{ left: `${(s.startS / total) * 100}%`, width: `${((Math.min(s.endS, total) - s.startS) / total) * 100}%` }} />
+        ))}
+    </span>
+  )
+}
+
+/** The playing song's bookmarks as small ticks above the bar. */
+function BookmarkMarks() {
+  const durationMs = usePlayer((s) => s.durationMs)
+  const trackId = usePlayer((s) => s.now?.trackId)
+  const { trackId: of, list } = useBookmarks()
+  if (!durationMs || of !== trackId || !list.length) return null
+  return (
+    <span aria-hidden className="pointer-events-none absolute inset-x-0 top-1/2 -mt-[10px] h-[5px]">
+      {list
+        .filter((b) => b.ms < durationMs)
+        .map((b) => (
+          <span key={b.id} title={b.note || bookmarkTime(b)} className="absolute h-full w-[2px] -translate-x-1/2 rounded-full bg-ink-3" style={{ left: `${(b.ms / durationMs) * 100}%` }} />
         ))}
     </span>
   )

@@ -2079,6 +2079,14 @@ const ko: Record<string, string> = {
   '“{line}”': '“{line}”',
   'Shuffle all': '전체 셔플 재생',
   'Recent playlists': '최근 플레이리스트',
+  'No room for more bookmarks in this song: remove one first.': '이 곡에는 더 이상 북마크를 추가할 수 없습니다. 먼저 하나를 삭제하세요.',
+  'Bookmark added at {time}': '{time}에 북마크를 추가했습니다',
+  'Bookmarks': '북마크',
+  'Bookmark this moment': '이 순간 북마크',
+  'Bookmark with a note…': '메모와 함께 북마크…',
+  'A note for this moment': '이 순간에 대한 메모',
+  'Bookmark': '북마크하기',
+  'Remove a bookmark': '북마크 삭제',
 }
 
 export default ko

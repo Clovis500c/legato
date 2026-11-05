@@ -2079,6 +2079,14 @@ const id: Record<string, string> = {
   '“{line}”': '“{line}”',
   'Shuffle all': 'Putar acak semua',
   'Recent playlists': 'Playlist terbaru',
+  'No room for more bookmarks in this song: remove one first.': 'Tidak ada ruang untuk penanda lagi di lagu ini: hapus satu dulu.',
+  'Bookmark added at {time}': 'Penanda ditambahkan di {time}',
+  'Bookmarks': 'Penanda',
+  'Bookmark this moment': 'Tandai momen ini',
+  'Bookmark with a note…': 'Tandai dengan catatan…',
+  'A note for this moment': 'Catatan untuk momen ini',
+  'Bookmark': 'Tandai',
+  'Remove a bookmark': 'Hapus penanda',
 }
 
 export default id
