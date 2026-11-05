@@ -1604,8 +1604,8 @@ const zh: Record<string, string> = {
   'Radial': '环形',
   'VU needles': 'VU 指针',
   'Spectrogram': '频谱图',
-  'Radial goes around a big cover; where the cover is small it shows bars': '环形围绕较大的封面显示；封面较小时显示条形',
-  'bars mirror peaks wave curve radial circle particles vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look': '条形 镜像 峰值 波形 外观 bars mirror peaks wave 环形 圆 vu 指针 表 频谱图 瀑布 radial circle needles meter spectrogram waterfall 曲线 示波器 响度 curve oscilloscope scope loudness lufs 矢量示波器 测角仪 立体声 相位 相关 vectorscope goniometer stereo phase correlation 粒子 particles',
+  'Radial goes around a big cover; where the cover is small it shows bars. VU needles follow the average level, PPM needles the peaks': '环形围绕较大的封面显示；封面较小时显示条形。VU 指针显示平均电平，PPM 指针显示峰值',
+  'bars mirror peaks wave curve radial circle particles vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look ppm programme': '条形 镜像 峰值 波形 外观 bars mirror peaks wave 环形 圆 vu 指针 表 频谱图 瀑布 radial circle needles meter spectrogram waterfall 曲线 示波器 响度 curve oscilloscope scope loudness lufs 矢量示波器 测角仪 立体声 相位 相关 vectorscope goniometer stereo phase correlation 粒子 particles ppm 峰值 节目',
   // v2 redesign
   'Playing': '正在播放',
   'All your songs': '你的所有歌曲',
@@ -2041,6 +2041,12 @@ const zh: Record<string, string> = {
   'Visualizer on the overlay': '叠加层上的可视化',
   'Bars under the song that move with the music, measured only while OBS shows the page': '歌曲下方随音乐跳动的条形，仅在 OBS 显示该页面时测量',
   'obs stream bars spectrum equalizer': 'obs 直播 条形 频谱 均衡器 stream bars spectrum',
+  'PPM needles': 'PPM 指针',
+  'Meter face': '表盘',
+  'The needles’ dial: in the theme’s colors, or a warm backlit face like an old hi-fi': '指针的表盘：使用主题颜色，或像老式高保真音响那样温暖的背光表盘',
+  'Theme colors': '主题颜色',
+  'Vintage': '复古',
+  'dial skin vintage retro analog backlit hifi needles': '表盘 皮肤 复古 模拟 背光 dial skin vintage retro analog hifi',
 }
 
 export default zh

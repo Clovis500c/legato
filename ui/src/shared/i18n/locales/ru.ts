@@ -1604,8 +1604,8 @@ const ru: Record<string, string> = {
   'Radial': 'Круговой',
   'VU needles': 'Стрелки VU',
   'Spectrogram': 'Спектрограмма',
-  'Radial goes around a big cover; where the cover is small it shows bars': 'Круговой вид окружает большую обложку; если она мала, показываются полосы',
-  'bars mirror peaks wave curve radial circle particles vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look': 'полосы зеркало пики волна вид круговой круг vu стрелки индикатор спектрограмма водопад кривая осциллограф громкость lufs векторскоп гониометр стерео фаза корреляция частицы',
+  'Radial goes around a big cover; where the cover is small it shows bars. VU needles follow the average level, PPM needles the peaks': 'Круговой вид окружает большую обложку; если она мала, показываются полосы. Стрелки VU следят за средним уровнем, стрелки PPM — за пиками',
+  'bars mirror peaks wave curve radial circle particles vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look ppm programme': 'полосы зеркало пики волна вид круговой круг vu стрелки индикатор спектрограмма водопад кривая осциллограф громкость lufs векторскоп гониометр стерео фаза корреляция частицы ppm пиковый программа',
   // v2 redesign
   'Playing': 'Играет',
   'All your songs': 'Все ваши треки',
@@ -2041,6 +2041,12 @@ const ru: Record<string, string> = {
   'Visualizer on the overlay': 'Визуализатор в оверлее',
   'Bars under the song that move with the music, measured only while OBS shows the page': 'Полоски под песней, которые двигаются с музыкой; измеряются, только пока OBS показывает страницу',
   'obs stream bars spectrum equalizer': 'obs стрим полоски спектр эквалайзер stream bars spectrum',
+  'PPM needles': 'Стрелки PPM',
+  'Meter face': 'Шкала индикатора',
+  'The needles’ dial: in the theme’s colors, or a warm backlit face like an old hi-fi': 'Шкала стрелок: в цветах темы или тёплая шкала с подсветкой, как у старого hi-fi',
+  'Theme colors': 'Цвета темы',
+  'Vintage': 'Винтаж',
+  'dial skin vintage retro analog backlit hifi needles': 'шкала скин винтаж ретро аналоговый подсветка hifi стрелки',
 }
 
 export default ru

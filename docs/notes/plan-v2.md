@@ -594,7 +594,11 @@ colours, mirror, reflection.
       Seen over the demo with a made-up shape; not measured on real files in the app.)
 
 **Low**
-- [ ] `S` VU meters: the PPM option and other skins. (Two needles with VU ballistics, the peak LED, the theme's ink are in.)
+- [x] `S` VU meters: the PPM option and other skins. (Two needles with VU ballistics, the peak LED, the theme's ink are in.)
+      (2026-11-05: the PPM needles look, IEC 60268-18 digital ballistics on the frames' sample peaks, a dBFS scale with
+      knees; Settings › Playback › Meter face: theme colours or Vintage, a lit cream face. Decided alone: dBFS rather
+      than a broadcast scale, the knees, one other skin (Vintage) and its colours; the full screen's dial centred and
+      sized by its radius. Seen over the demo, strip and full screen, dark theme; not on real music, not in light.)
 - [ ] `S` Spectrogram colour maps as an opt-in (magma, viridis; today the theme's ink with opacity), WebGL.
 - [ ] `M` Spectrum 3D: a terrain of the last seconds flying towards the camera (WebGL).
 - [ ] `M` Visualizer API for plugins (`crates/plugins`): a plugin gets bands, beat and loudness, draws with a restricted

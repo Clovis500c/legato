@@ -1604,8 +1604,8 @@ const it: Record<string, string> = {
   'Radial': 'Radiale',
   'VU needles': 'Lancette VU',
   'Spectrogram': 'Spettrogramma',
-  'Radial goes around a big cover; where the cover is small it shows bars': 'Radiale circonda una copertina grande; se è piccola mostra barre',
-  'bars mirror peaks wave curve radial circle particles vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look': 'barre specchio picchi onda aspetto radiale cerchio vu lancette misuratore spettrogramma cascata curva oscilloscopio loudness lufs vettorscopio goniometro stereo fase correlazione particelle',
+  'Radial goes around a big cover; where the cover is small it shows bars. VU needles follow the average level, PPM needles the peaks': 'Radiale circonda una copertina grande; se è piccola mostra barre. Le lancette VU seguono il livello medio, le PPM i picchi',
+  'bars mirror peaks wave curve radial circle particles vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look ppm programme': 'barre specchio picchi onda aspetto radiale cerchio vu lancette misuratore spettrogramma cascata curva oscilloscopio loudness lufs vettorscopio goniometro stereo fase correlazione particelle ppm programma',
   // v2 redesign
   'Playing': 'In riproduzione',
   'All your songs': 'Tutti i tuoi brani',
@@ -2041,6 +2041,12 @@ const it: Record<string, string> = {
   'Visualizer on the overlay': 'Visualizzatore nell’overlay',
   'Bars under the song that move with the music, measured only while OBS shows the page': 'Barre sotto il brano che si muovono con la musica, misurate solo mentre OBS mostra la pagina',
   'obs stream bars spectrum equalizer': 'obs stream barre spettro equalizzatore',
+  'PPM needles': 'Lancette PPM',
+  'Meter face': 'Quadrante',
+  'The needles’ dial: in the theme’s colors, or a warm backlit face like an old hi-fi': 'Il quadrante delle lancette: nei colori del tema o un quadrante caldo e retroilluminato come su un vecchio hi-fi',
+  'Theme colors': 'Colori del tema',
+  'Vintage': 'Vintage',
+  'dial skin vintage retro analog backlit hifi needles': 'quadrante aspetto vintage retrò analogico retroilluminato hifi lancette',
 }
 
 export default it

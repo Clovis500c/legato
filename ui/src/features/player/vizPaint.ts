@@ -1,4 +1,4 @@
-import type { VisualizerStyle, VizBanding, VizGradient, VizWeighting } from '../../shared/theme/theme'
+import type { VisualizerStyle, VizBanding, VizFace, VizGradient, VizWeighting } from '../../shared/theme/theme'
 import { capSegment, levelOf, litSegments } from './ledBars'
 import { bandCount, DB_MARKS, FREQ_MARKS, framesFor, freqAt } from './vizBands'
 import { createBeat } from './vizBeat'
@@ -9,7 +9,7 @@ import { createParticles, moodOf } from './vizParticles'
 import { createScene } from './vizScene'
 import { monoWave, SPAN, trigger } from './vizScope'
 import { colorMap, fillColumn, rowMix, SCROLL, SCROLL_CALM, scrollBy } from './vizSpectro'
-import { createVu, vuPos, VU_MARKS } from './vizVu'
+import { createVu, needleLook, ppmPos, PPM_MARKS, PPM_RED, vuPos, VU_MARKS } from './vizVu'
 import { VIZ_WAVE } from './vizUnpack'
 import { correlation, easeCorrelation, vectorPoints } from './vizVector'
 import { weightsOf } from './vizWeigh'
@@ -39,6 +39,10 @@ const LOUD_BIG_H = 120
 const GLOW_S = 0.05
 /** Vectorscope: from this height (CSS px) the meter goes under the square, else beside it. */
 const VECTOR_BIG_H = 120
+/** The vintage dial: a warm cream lit from behind, its rim, black print, an old red. */
+const VINTAGE = { face: '#f3e6c2', edge: '#dcc58e', glow: 'rgba(255, 190, 100, 0.5)', rim: '#2a241c', ink: '#1e1a13', red: '#b3342a' }
+/** The vintage face's rim width, from its box. */
+const rimOf = (w: number, h: number) => Math.max(1, Math.round(Math.min(w, h) * 0.03))
 /** Radial: how much the ring steps out on a kick (of its radius), and how fast it settles (s). */
 const KICK_GROW = 0.04
 const KICK_S = 0.12
@@ -68,6 +72,7 @@ export function createPainter(canvas: OffscreenCanvas) {
   let ink = '#888'
   let inkRgb: [number, number, number] | null = null
   let warn = WARN
+  let skin: VizFace = 'theme'
   let vu = createVu(false)
   let ring: Ring = ringBars(1, 1)
   let dial: Dial = dialGeometry(1, 1)
@@ -168,7 +173,7 @@ export function createPainter(canvas: OffscreenCanvas) {
     if (look === 'radial') ring = ringBars(Math.min(w, h), n)
     if (look === 'particles') parts.size(cssW, cssH)
     dialMap = null
-    if (look === 'vu') {
+    if (needleLook(look)) {
       const m = meterBox()
       dial = dialGeometry(m.w, m.h)
       dialMap = makeDial(m.w, m.h)
@@ -247,41 +252,72 @@ export function createPainter(canvas: OffscreenCanvas) {
     return { w: Math.floor((canvas.width - gap) / 2), h: canvas.height, gap }
   }
 
-  /** The dial's face, drawn once: the scale's arc, its marks and numbers, the red end. Needles and LEDs go over it. */
+  /**
+   * The dial's face, drawn once: the scale's arc, its marks and numbers, the red end (VU from 0 VU, PPM near full scale),
+   * the unit when there is room; the vintage one on its lit cream. Needles and LEDs go over it.
+   */
   function makeDial(w: number, h: number): OffscreenCanvas {
     const face = new OffscreenCanvas(w, h)
     const c = face.getContext('2d')!
     const d = dial
+    const ppm = look === 'ppm'
+    const pos = ppm ? ppmPos : vuPos
+    const vintage = skin === 'vintage'
+    const print = vintage ? VINTAGE.ink : ink
+    if (vintage) {
+      const round = Math.min(w, h) * 0.08
+      const rim = rimOf(w, h)
+      c.fillStyle = VINTAGE.rim
+      c.beginPath()
+      c.roundRect(0, 0, w, h, round)
+      c.fill()
+      const paper = c.createLinearGradient(0, 0, 0, h)
+      paper.addColorStop(0, VINTAGE.face)
+      paper.addColorStop(1, VINTAGE.edge)
+      c.fillStyle = paper
+      c.beginPath()
+      c.roundRect(rim, rim, w - 2 * rim, h - 2 * rim, Math.max(0, round - rim))
+      c.fill()
+      // The lamp behind, low in the middle.
+      const lamp = c.createRadialGradient(w / 2, h * 0.8, 0, w / 2, h * 0.8, Math.max(w, h) * 0.6)
+      lamp.addColorStop(0, VINTAGE.glow)
+      lamp.addColorStop(1, 'rgba(255, 190, 100, 0)')
+      c.fillStyle = lamp
+      c.fillRect(rim, rim, w - 2 * rim, h - 2 * rim)
+    }
     const at = (p: number, r: number) => {
       const a = d.swing * (2 * p - 1)
       return [d.px + r * Math.sin(a), d.py - r * Math.cos(a)] as const
     }
-    const tick = Math.max(3 * dpr, h * 0.07)
+    // Sizes from the dial, not the box: a full screen's box is far taller than its dial.
+    const tick = Math.max(3 * dpr, Math.min(h * 0.07, d.r * 0.09))
     const arc = (from: number, to: number) => {
       c.beginPath()
       c.arc(d.px, d.py, d.r, -Math.PI / 2 + d.swing * (2 * from - 1), -Math.PI / 2 + d.swing * (2 * to - 1))
     }
+    const red = pos(ppm ? PPM_RED : 0)
     c.lineCap = 'butt'
-    c.strokeStyle = ink
-    c.globalAlpha = 0.55
+    c.strokeStyle = print
+    c.globalAlpha = vintage ? 0.85 : 0.55
     c.lineWidth = Math.max(1, dpr)
-    arc(0, vuPos(0))
+    arc(0, red)
     c.stroke()
-    // The red end: from 0 VU to the scale's last mark.
-    c.strokeStyle = warn
+    // The red end: to the scale's last mark.
+    c.strokeStyle = vintage ? VINTAGE.red : warn
     c.globalAlpha = 0.9
     c.lineWidth = Math.max(2 * dpr, tick * 0.6)
-    arc(vuPos(0), 1)
+    arc(red, 1)
     c.stroke()
-    c.strokeStyle = ink
+    c.strokeStyle = print
     c.lineWidth = Math.max(1, dpr)
     const big = h >= 70 * dpr
-    c.fillStyle = ink
-    c.font = `${Math.round(h * 0.065)}px system-ui, sans-serif`
+    c.fillStyle = print
+    c.font = `${Math.round(Math.min(h * 0.065, d.r * 0.11))}px system-ui, sans-serif`
     c.textAlign = 'center'
     c.textBaseline = 'middle'
-    for (const mark of VU_MARKS) {
-      const p = vuPos(mark)
+    // Numbers as on a real dial: VU's without their minus, the red ones with a plus; the PPM's dB under full scale.
+    for (const mark of ppm ? PPM_MARKS : VU_MARKS) {
+      const p = pos(mark)
       const [x0, y0] = at(p, d.r)
       const [x1, y1] = at(p, d.r - tick)
       c.globalAlpha = 0.7
@@ -291,9 +327,16 @@ export function createPainter(canvas: OffscreenCanvas) {
       c.stroke()
       if (big) {
         const [tx, ty] = at(p, d.r - tick * 2.4)
-        c.globalAlpha = 0.6
+        c.globalAlpha = vintage ? 0.85 : 0.6
         c.fillText(mark > 0 ? `+${mark}` : String(-mark), tx, ty)
       }
+    }
+    // The unit between the numbers and the pivot.
+    const unitY = d.py - d.r * 0.42
+    if (big && unitY < h) {
+      c.globalAlpha = vintage ? 0.75 : 0.45
+      c.font = `${Math.round(Math.min(h * 0.08, d.r * 0.13))}px system-ui, sans-serif`
+      c.fillText(ppm ? 'dBFS' : 'VU', d.px, unitY)
     }
     return face
   }
@@ -465,8 +508,12 @@ export function createPainter(canvas: OffscreenCanvas) {
     const { pos, on, resting } = vu.step(dt)
     const m = meterBox()
     const d = dial
-    const lw = Math.max(1.5 * dpr, m.h * 0.012)
-    const led = Math.max(2.5 * dpr, m.h * 0.035)
+    const lw = Math.max(1.5 * dpr, Math.min(m.h * 0.012, d.r * 0.02))
+    const led = Math.max(2.5 * dpr, Math.min(m.h * 0.035, d.r * 0.06))
+    // The LED in the box's corner, inside the vintage rim; by the dial's top when the dial sits in a tall box's middle.
+    const inset = skin === 'vintage' ? rimOf(m.w, m.h) : 0
+    const ledX = m.w - led * 2 - inset
+    const ledY = d.py - d.r > m.h * 0.2 + 1 ? d.py - d.r : led * 2 + inset
     for (let k = 0; k < 2; k++) {
       ctx.save()
       ctx.beginPath()
@@ -476,8 +523,9 @@ export function createPainter(canvas: OffscreenCanvas) {
       ctx.globalAlpha = 1
       ctx.drawImage(dialMap, 0, 0)
       const a = d.swing * (2 * Math.min(1.04, Math.max(0, pos[k])) - 1)
-      ctx.strokeStyle = ink
-      ctx.fillStyle = ink
+      const print = skin === 'vintage' ? VINTAGE.ink : ink
+      ctx.strokeStyle = print
+      ctx.fillStyle = print
       ctx.globalAlpha = 0.95
       ctx.lineWidth = lw
       ctx.lineCap = 'round'
@@ -492,8 +540,8 @@ export function createPainter(canvas: OffscreenCanvas) {
       }
       // Peak LED, top right: the alarm colour when lit, a dim ink when not.
       ctx.beginPath()
-      ctx.arc(m.w - led * 2, led * 2, led, 0, Math.PI * 2)
-      ctx.fillStyle = on[k] ? warn : ink
+      ctx.arc(ledX, ledY, led, 0, Math.PI * 2)
+      ctx.fillStyle = on[k] ? (skin === 'vintage' ? VINTAGE.red : warn) : print
       ctx.globalAlpha = on[k] ? 1 : 0.15
       ctx.fill()
       ctx.restore()
@@ -740,8 +788,11 @@ export function createPainter(canvas: OffscreenCanvas) {
       dpr = ratio
       layout()
     },
-    set(next: VisualizerStyle, calmer: boolean, color: string, alarm = WARN, weigh: VizWeighting = 'flat', grad: VizGradient = 'none', colors: Stops = [], bands: VizBanding = 'sixth', glossy = false, second = '', said: LoudWords = LOUD_WORDS) {
+    set(next: VisualizerStyle, calmer: boolean, color: string, alarm = WARN, weigh: VizWeighting = 'flat', grad: VizGradient = 'none', colors: Stops = [], bands: VizBanding = 'sixth', glossy = false, second = '', said: LoudWords = LOUD_WORDS, dialFace: VizFace = 'theme') {
       words = said
+      skin = dialFace
+      // VU and PPM needles move by other rules: new ones when the look changes between them.
+      const otherNeedles = (next === 'ppm') !== (look === 'ppm')
       gradient = grad
       stops = colors
       floor = glossy
@@ -771,13 +822,11 @@ export function createPainter(canvas: OffscreenCanvas) {
         dots = []
       }
       warn = alarm || WARN
-      if (restart) {
-        cols = 0
-        vu = createVu(calm)
-      }
+      if (restart) cols = 0
+      if (restart || otherNeedles) vu = createVu(calm, look === 'ppm')
       layout()
     },
-    frame(l: ArrayLike<number>, r: ArrayLike<number>, rms: ArrayLike<number>, w?: [ArrayLike<number>, ArrayLike<number>]) {
+    frame(l: ArrayLike<number>, r: ArrayLike<number>, rms: ArrayLike<number>, w?: [ArrayLike<number>, ArrayLike<number>], peak: ArrayLike<number> = rms) {
       // A frame without its wave blocks (a stream starting again, the silence after a stop): no trace.
       if (both.length !== l.length) both = new Float32Array(l.length)
       for (let i = 0; i < l.length; i++) both[i] = (l[i] + r[i]) / 2
@@ -793,7 +842,7 @@ export function createPainter(canvas: OffscreenCanvas) {
         waveR.set(w[1])
         if (look === 'vectorscope') corrNow = correlation(waveL, waveR)
       }
-      if (look === 'vu') vu.frame(rms)
+      if (needleLook(look)) vu.frame(rms, peak)
       else if (sceneR) {
         // Curve: each side on its own.
         scene.frame(l, l)
@@ -829,7 +878,7 @@ export function createPainter(canvas: OffscreenCanvas) {
     draw(dt: number): boolean {
       if (!ctx || !cssW || !cssH) return true
       kick *= Math.exp(-dt / KICK_S)
-      if (look === 'vu') {
+      if (needleLook(look)) {
         ctx.globalAlpha = 1
         ctx.clearRect(0, 0, canvas.width, canvas.height)
         return needles(dt)

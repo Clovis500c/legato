@@ -191,6 +191,9 @@ Relaunch log (newest last):
 - 2026-11-05: the visualizer on the OBS overlay (Settings › Playback › Visualizer on the overlay): `/frames` server-sent
   events while a page reads, `overlay-viz` / `overlay_bars`, `overlayViz.ts`. A socket test, and the page over a stand-in
   server (scratchpad `overlay-mock.cjs`); not in OBS.
+- 2026-11-05: PPM needles (a look: IEC 60268-18 digital ballistics, dBFS scale with knees, `ppmPos` / `stepPpm` in
+  `vizVu.ts`) and Meter face (`visualizerFace`: theme colours or Vintage); the full screen's dial centred. Seen over the
+  demo, strip and full screen, dark; not on real music.
 
 ## Mobile app and devices sync (the owner's ask, 2026-11-02 afternoon; in progress)
 

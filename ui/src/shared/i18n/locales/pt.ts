@@ -1604,8 +1604,8 @@ const pt: Record<string, string> = {
   'Radial': 'Radial',
   'VU needles': 'Ponteiros VU',
   'Spectrogram': 'Espectrograma',
-  'Radial goes around a big cover; where the cover is small it shows bars': 'Radial envolve uma capa grande; se ela for pequena, mostra barras',
-  'bars mirror peaks wave curve radial circle particles vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look': 'barras espelho picos onda aspeto radial círculo vu ponteiros medidor espectrograma cascata curva osciloscópio loudness lufs vetorscópio goniómetro estéreo fase correlação partículas',
+  'Radial goes around a big cover; where the cover is small it shows bars. VU needles follow the average level, PPM needles the peaks': 'Radial envolve uma capa grande; se ela for pequena, mostra barras. Os ponteiros VU seguem o nível médio, os PPM os picos',
+  'bars mirror peaks wave curve radial circle particles vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look ppm programme': 'barras espelho picos onda aspeto radial círculo vu ponteiros medidor espectrograma cascata curva osciloscópio loudness lufs vetorscópio goniómetro estéreo fase correlação partículas ppm programa',
   // v2 redesign
   'Playing': 'Tocando',
   'All your songs': 'Todas as suas músicas',
@@ -2041,6 +2041,12 @@ const pt: Record<string, string> = {
   'Visualizer on the overlay': 'Visualizador na sobreposição',
   'Bars under the song that move with the music, measured only while OBS shows the page': 'Barras sob a música que se movem com ela, medidas só enquanto o OBS mostra a página',
   'obs stream bars spectrum equalizer': 'obs stream barras espectro equalizador',
+  'PPM needles': 'Ponteiros PPM',
+  'Meter face': 'Mostrador',
+  'The needles’ dial: in the theme’s colors, or a warm backlit face like an old hi-fi': 'O mostrador dos ponteiros: nas cores do tema ou um mostrador quente e iluminado como num hi-fi antigo',
+  'Theme colors': 'Cores do tema',
+  'Vintage': 'Vintage',
+  'dial skin vintage retro analog backlit hifi needles': 'mostrador visual vintage retrô analógico iluminado hifi ponteiros',
 }
 
 export default pt

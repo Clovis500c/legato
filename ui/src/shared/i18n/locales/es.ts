@@ -1604,8 +1604,8 @@ const es: Record<string, string> = {
   'Radial': 'Radial',
   'VU needles': 'Agujas VU',
   'Spectrogram': 'Espectrograma',
-  'Radial goes around a big cover; where the cover is small it shows bars': 'Radial rodea una carátula grande; si es pequeña, muestra barras',
-  'bars mirror peaks wave curve radial circle particles vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look': 'barras espejo picos onda aspecto radial círculo vu agujas medidor espectrograma cascada curva osciloscopio sonoridad lufs vectorscopio goniómetro estéreo fase correlación partículas',
+  'Radial goes around a big cover; where the cover is small it shows bars. VU needles follow the average level, PPM needles the peaks': 'Radial rodea una carátula grande; si es pequeña, muestra barras. Las agujas VU siguen el nivel medio y las PPM, los picos',
+  'bars mirror peaks wave curve radial circle particles vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look ppm programme': 'barras espejo picos onda aspecto radial círculo vu agujas medidor espectrograma cascada curva osciloscopio sonoridad lufs vectorscopio goniómetro estéreo fase correlación partículas ppm programa',
   // v2 redesign
   'Playing': 'Sonando',
   'All your songs': 'Todas tus canciones',
@@ -2041,6 +2041,12 @@ const es: Record<string, string> = {
   'Visualizer on the overlay': 'Visualizador en la superposición',
   'Bars under the song that move with the music, measured only while OBS shows the page': 'Barras bajo la canción que se mueven con la música, medidas solo mientras OBS muestra la página',
   'obs stream bars spectrum equalizer': 'obs stream barras espectro ecualizador',
+  'PPM needles': 'Agujas PPM',
+  'Meter face': 'Esfera del medidor',
+  'The needles’ dial: in the theme’s colors, or a warm backlit face like an old hi-fi': 'La esfera de las agujas: con los colores del tema o una esfera cálida e iluminada como la de un equipo hi-fi antiguo',
+  'Theme colors': 'Colores del tema',
+  'Vintage': 'Vintage',
+  'dial skin vintage retro analog backlit hifi needles': 'esfera aspecto vintage retro analógico iluminado hifi agujas',
 }
 
 export default es

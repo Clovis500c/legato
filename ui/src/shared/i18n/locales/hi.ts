@@ -1604,8 +1604,8 @@ const hi: Record<string, string> = {
   'Radial': 'रेडियल',
   'VU needles': 'VU सुइयाँ',
   'Spectrogram': 'स्पेक्ट्रोग्राम',
-  'Radial goes around a big cover; where the cover is small it shows bars': 'रेडियल बड़े कवर के चारों ओर बनता है; कवर छोटा हो तो पट्टियाँ दिखती हैं',
-  'bars mirror peaks wave curve radial circle particles vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look': 'पट्टियाँ दर्पण शिखर तरंग रूप bars mirror peaks wave रेडियल गोला vu सुई मीटर स्पेक्ट्रोग्राम झरना radial circle needles meter spectrogram waterfall वक्र ऑसिलोस्कोप लाउडनेस curve oscilloscope scope loudness lufs वेक्टरस्कोप गोनियोमीटर स्टीरियो फ़ेज़ सहसंबंध vectorscope goniometer stereo phase correlation कण particles',
+  'Radial goes around a big cover; where the cover is small it shows bars. VU needles follow the average level, PPM needles the peaks': 'रेडियल बड़े कवर के चारों ओर बनता है; कवर छोटा हो तो पट्टियाँ दिखती हैं। VU सुइयाँ औसत स्तर दिखाती हैं, PPM सुइयाँ शिखर',
+  'bars mirror peaks wave curve radial circle particles vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look ppm programme': 'पट्टियाँ दर्पण शिखर तरंग रूप bars mirror peaks wave रेडियल गोला vu सुई मीटर स्पेक्ट्रोग्राम झरना radial circle needles meter spectrogram waterfall वक्र ऑसिलोस्कोप लाउडनेस curve oscilloscope scope loudness lufs वेक्टरस्कोप गोनियोमीटर स्टीरियो फ़ेज़ सहसंबंध vectorscope goniometer stereo phase correlation कण particles ppm peak programme शिखर',
   // v2 redesign
   'Playing': 'चल रहा है',
   'All your songs': 'आपके सभी गाने',
@@ -2041,6 +2041,12 @@ const hi: Record<string, string> = {
   'Visualizer on the overlay': 'ओवरले पर विज़ुअलाइज़र',
   'Bars under the song that move with the music, measured only while OBS shows the page': 'गाने के नीचे संगीत के साथ हिलती पट्टियां, सिर्फ़ तब मापी जाती हैं जब OBS पेज दिखा रहा हो',
   'obs stream bars spectrum equalizer': 'obs स्ट्रीम पट्टियां स्पेक्ट्रम इक्वलाइज़र stream bars spectrum',
+  'PPM needles': 'PPM सुइयाँ',
+  'Meter face': 'मीटर का डायल',
+  'The needles’ dial: in the theme’s colors, or a warm backlit face like an old hi-fi': 'सुइयों का डायल: थीम के रंगों में, या पुराने हाई-फ़ाई जैसा गर्म रोशनी वाला डायल',
+  'Theme colors': 'थीम के रंग',
+  'Vintage': 'विंटेज',
+  'dial skin vintage retro analog backlit hifi needles': 'डायल स्किन विंटेज रेट्रो एनालॉग dial skin vintage retro analog hifi',
 }
 
 export default hi

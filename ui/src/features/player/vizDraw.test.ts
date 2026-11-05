@@ -89,4 +89,11 @@ describe('VU dial', () => {
     expect(d.swing).toBeGreaterThan(0.9)
     expect(d.swing).toBeLessThanOrEqual(Math.PI / 3 + 1e-9)
   })
+
+  it('a box much taller than its dial has it in the middle', () => {
+    const d = dialGeometry(370, 690)
+    expect(d.swing).toBeCloseTo(Math.PI / 3, 9)
+    // From the arc's top to the pivot: as much room above as below.
+    expect(d.py - d.r).toBeCloseTo(690 - d.py, 6)
+  })
 })

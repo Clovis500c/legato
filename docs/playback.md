@@ -493,7 +493,19 @@ never: downloading, extracting, recording or exporting a platform's audio, or to
     when tall enough) is drawn once to a bitmap per size and colour; the needles, hub and LEDs go over it each frame.
     `dialGeometry` fits the arc to any box: a shallow arc with the pivot below the box in the strip, up to 60 degrees of
     swing in a tall box. Colours: the theme's ink, and `--color-danger` for the red end and the lit LED. Reduced
-    motion smooths the level (0.45 s) before the spring, so the needles drift. PPM ballistics and skins are not done.
+    motion smooths the level (0.45 s) before the spring, so the needles drift.
+  - **PPM needles** (2026-11-05): the same two dials as a digital peak programme meter (IEC 60268-18's ballistics). The
+    needle jumps to the highest sample peak of the frames since the last drawing (header bytes 6-7), no spring, and
+    falls back 20 dB in 1.7 s (`stepPpm`). The scale is dBFS, -40 to 0, with knees (`ppmPos`: -40 to -20 on the first
+    quarter, -20 to -10 on the next, the top 10 dB on the right half, where today's masters peak; a straight dB scale
+    crowded 6, 3 and 0 together), numbers 40 30 20 10 6 3 0, red from -3, "dBFS" under them when tall. The over LED
+    lights at -0.5 dBFS and holds 1 s. A broadcast scale (BBC 1-7, EBU's) was left out: a mastered song pins it.
+    Reduced motion smooths the reading as for VU. Switching between VU and PPM starts new needles.
+  - **Meter face** (`visualizerFace`, under the style in Settings › Playback and in the strip's menu, both needle
+    looks): the theme's colours, or Vintage, a cream face lit from behind (a warm glow low in the middle), a dark rim,
+    black print and an old red, as on a 1970s hi-fi. It is part of the dial's bitmap: nothing more per frame. In a box
+    much taller than its dial (full screen) the dial sits in the middle (`dialGeometry`), and its ticks, numbers,
+    needle and LED take their sizes from the dial's radius, not the box (they were oversized there).
   - **Spectrogram**: time to the right, the log band axis up (low at the bottom), new column at the right edge. Each
     drawn frame copies the picture left by the whole device pixels due and paints the new column with `putImageData`
     (one pixel column, mixed between neighbouring bands, the theme's ink at an opacity that rises with the level, 256 steps, clear at

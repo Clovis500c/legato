@@ -127,14 +127,15 @@ export interface Dial {
 
 /**
  * A wide, low dial (the strip) is a shallow arc with its pivot far below the box; a tall one is nearer a real VU
- * face. The arc's top sits at a fifth of the height, its ends at about 62 %, the swing at most 60 degrees.
+ * face. The arc's top sits at a fifth of the height, its ends at about 62 %, the swing at most 60 degrees; a box taller
+ * than that dial (full screen) has it in its middle.
  */
 export function dialGeometry(w: number, h: number): Dial {
   const half = Math.max(1, w / 2 - w * 0.08)
-  const top = h * 0.2
   const sag = Math.max(1, h * 0.42)
   const swing = Math.min(Math.PI / 3, 2 * Math.atan(sag / half))
   const r = half / Math.sin(swing)
+  const top = Math.max(h * 0.2, (h - r) / 2)
   return { px: w / 2, py: top + r, r, swing }
 }
 

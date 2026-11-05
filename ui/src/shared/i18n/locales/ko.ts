@@ -1604,8 +1604,8 @@ const ko: Record<string, string> = {
   'Radial': '방사형',
   'VU needles': 'VU 바늘',
   'Spectrogram': '스펙트로그램',
-  'Radial goes around a big cover; where the cover is small it shows bars': '방사형은 큰 커버 둘레에 표시되며, 커버가 작으면 막대로 표시됩니다',
-  'bars mirror peaks wave curve radial circle particles vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look': '막대 미러 피크 웨이브 모양 bars mirror peaks wave 방사형 원 vu 바늘 미터 스펙트로그램 radial circle needles meter spectrogram waterfall 곡선 오실로스코프 라우드니스 curve oscilloscope scope loudness lufs 벡터스코프 고니오미터 스테레오 위상 상관 vectorscope goniometer stereo phase correlation 파티클 입자 particles',
+  'Radial goes around a big cover; where the cover is small it shows bars. VU needles follow the average level, PPM needles the peaks': '방사형은 큰 커버 둘레에 표시되며, 커버가 작으면 막대로 표시됩니다. VU 바늘은 평균 레벨을, PPM 바늘은 피크를 보여 줍니다',
+  'bars mirror peaks wave curve radial circle particles vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look ppm programme': '막대 미러 피크 웨이브 모양 bars mirror peaks wave 방사형 원 vu 바늘 미터 스펙트로그램 radial circle needles meter spectrogram waterfall 곡선 오실로스코프 라우드니스 curve oscilloscope scope loudness lufs 벡터스코프 고니오미터 스테레오 위상 상관 vectorscope goniometer stereo phase correlation 파티클 입자 particles ppm 피크 프로그램',
   // v2 redesign
   'Playing': '재생 중',
   'All your songs': '내 모든 노래',
@@ -2041,6 +2041,12 @@ const ko: Record<string, string> = {
   'Visualizer on the overlay': '오버레이의 시각화',
   'Bars under the song that move with the music, measured only while OBS shows the page': '노래 아래에서 음악에 맞춰 움직이는 막대. OBS가 페이지를 보여 주는 동안에만 측정',
   'obs stream bars spectrum equalizer': 'obs 방송 막대 스펙트럼 이퀄라이저 stream bars spectrum',
+  'PPM needles': 'PPM 바늘',
+  'Meter face': '미터 눈금판',
+  'The needles’ dial: in the theme’s colors, or a warm backlit face like an old hi-fi': '바늘의 눈금판: 테마 색상 또는 오래된 하이파이처럼 따뜻하게 빛나는 눈금판',
+  'Theme colors': '테마 색상',
+  'Vintage': '빈티지',
+  'dial skin vintage retro analog backlit hifi needles': '눈금판 스킨 빈티지 레트로 아날로그 dial skin vintage retro analog hifi',
 }
 
 export default ko

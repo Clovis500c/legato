@@ -1604,8 +1604,8 @@ const fr: Record<string, string> = {
   'Radial': 'Radial',
   'VU needles': 'Aiguilles VU',
   'Spectrogram': 'Spectrogramme',
-  'Radial goes around a big cover; where the cover is small it shows bars': 'Radial entoure une grande pochette ; si elle est petite, il montre des barres',
-  'bars mirror peaks wave curve radial circle particles vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look': 'barres miroir crêtes onde apparence radial cercle vu aiguilles indicateur spectrogramme cascade courbe oscilloscope loudness sonie lufs vectorscope goniomètre stéréo phase corrélation particules',
+  'Radial goes around a big cover; where the cover is small it shows bars. VU needles follow the average level, PPM needles the peaks': 'Radial entoure une grande pochette ; si elle est petite, il montre des barres. Les aiguilles VU suivent le niveau moyen, les aiguilles PPM les crêtes',
+  'bars mirror peaks wave curve radial circle particles vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look ppm programme': 'barres miroir crêtes onde apparence radial cercle vu aiguilles indicateur spectrogramme cascade courbe oscilloscope loudness sonie lufs vectorscope goniomètre stéréo phase corrélation particules ppm crête programme',
   // v2 redesign
   'Playing': 'En lecture',
   'All your songs': 'Tous vos titres',
@@ -2041,6 +2041,12 @@ const fr: Record<string, string> = {
   'Visualizer on the overlay': 'Visualiseur dans l’incrustation',
   'Bars under the song that move with the music, measured only while OBS shows the page': 'Des barres sous le titre qui bougent avec la musique, mesurées seulement pendant qu’OBS affiche la page',
   'obs stream bars spectrum equalizer': 'obs stream barres spectre égaliseur',
+  'PPM needles': 'Aiguilles PPM',
+  'Meter face': 'Cadran des aiguilles',
+  'The needles’ dial: in the theme’s colors, or a warm backlit face like an old hi-fi': 'Le cadran des aiguilles : aux couleurs du thème, ou un cadran chaud et rétroéclairé comme sur une vieille chaîne hi-fi',
+  'Theme colors': 'Couleurs du thème',
+  'Vintage': 'Vintage',
+  'dial skin vintage retro analog backlit hifi needles': 'cadran habillage vintage rétro analogique rétroéclairé hifi aiguilles',
 }
 
 export default fr

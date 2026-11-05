@@ -1604,8 +1604,8 @@ const uk: Record<string, string> = {
   'Radial': 'Круговий',
   'VU needles': 'Стрілки VU',
   'Spectrogram': 'Спектрограма',
-  'Radial goes around a big cover; where the cover is small it shows bars': 'Круговий вигляд обрамляє велику обкладинку; якщо вона мала, показуються смуги',
-  'bars mirror peaks wave curve radial circle particles vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look': 'смуги дзеркало піки хвиля вигляд круговий коло vu стрілки індикатор спектрограма водоспад крива осцилограф гучність lufs векторскоп гоніометр стерео фаза кореляція частинки',
+  'Radial goes around a big cover; where the cover is small it shows bars. VU needles follow the average level, PPM needles the peaks': 'Круговий вигляд обрамляє велику обкладинку; якщо вона мала, показуються смуги. Стрілки VU стежать за середнім рівнем, стрілки PPM — за піками',
+  'bars mirror peaks wave curve radial circle particles vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look ppm programme': 'смуги дзеркало піки хвиля вигляд круговий коло vu стрілки індикатор спектрограма водоспад крива осцилограф гучність lufs векторскоп гоніометр стерео фаза кореляція частинки ppm піковий програма',
   // v2 redesign
   'Playing': 'Грає',
   'All your songs': 'Усі ваші треки',
@@ -2041,6 +2041,12 @@ const uk: Record<string, string> = {
   'Visualizer on the overlay': 'Візуалізатор в оверлеї',
   'Bars under the song that move with the music, measured only while OBS shows the page': 'Смужки під піснею, що рухаються з музикою; вимірюються, лише поки OBS показує сторінку',
   'obs stream bars spectrum equalizer': 'obs стрим смужки спектр еквалайзер stream bars spectrum',
+  'PPM needles': 'Стрілки PPM',
+  'Meter face': 'Шкала індикатора',
+  'The needles’ dial: in the theme’s colors, or a warm backlit face like an old hi-fi': 'Шкала стрілок: у кольорах теми або тепла шкала з підсвіткою, як у старого hi-fi',
+  'Theme colors': 'Кольори теми',
+  'Vintage': 'Вінтаж',
+  'dial skin vintage retro analog backlit hifi needles': 'шкала скін вінтаж ретро аналоговий підсвітка hifi стрілки',
 }
 
 export default uk

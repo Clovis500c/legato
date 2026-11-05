@@ -1604,8 +1604,8 @@ const pl: Record<string, string> = {
   'Radial': 'Radialny',
   'VU needles': 'Wskazówki VU',
   'Spectrogram': 'Spektrogram',
-  'Radial goes around a big cover; where the cover is small it shows bars': 'Radialny otacza dużą okładkę; przy małej pokazuje słupki',
-  'bars mirror peaks wave curve radial circle particles vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look': 'słupki lustro szczyty fala wygląd radialny koło vu wskazówki miernik spektrogram wodospad krzywa oscyloskop głośność lufs wektoroskop goniometr stereo faza korelacja cząsteczki',
+  'Radial goes around a big cover; where the cover is small it shows bars. VU needles follow the average level, PPM needles the peaks': 'Radialny otacza dużą okładkę; przy małej pokazuje słupki. Wskazówki VU pokazują średni poziom, wskazówki PPM szczyty',
+  'bars mirror peaks wave curve radial circle particles vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look ppm programme': 'słupki lustro szczyty fala wygląd radialny koło vu wskazówki miernik spektrogram wodospad krzywa oscyloskop głośność lufs wektoroskop goniometr stereo faza korelacja cząsteczki ppm program',
   // v2 redesign
   'Playing': 'Odtwarzane',
   'All your songs': 'Wszystkie twoje utwory',
@@ -2041,6 +2041,12 @@ const pl: Record<string, string> = {
   'Visualizer on the overlay': 'Wizualizer na nakładce',
   'Bars under the song that move with the music, measured only while OBS shows the page': 'Słupki pod utworem, które poruszają się z muzyką, mierzone tylko wtedy, gdy OBS pokazuje stronę',
   'obs stream bars spectrum equalizer': 'obs stream słupki spektrum korektor equalizer',
+  'PPM needles': 'Wskazówki PPM',
+  'Meter face': 'Tarcza miernika',
+  'The needles’ dial: in the theme’s colors, or a warm backlit face like an old hi-fi': 'Tarcza wskazówek: w kolorach motywu albo ciepła, podświetlana tarcza jak w starym sprzęcie hi-fi',
+  'Theme colors': 'Kolory motywu',
+  'Vintage': 'Vintage',
+  'dial skin vintage retro analog backlit hifi needles': 'tarcza skórka vintage retro analogowy podświetlany hifi wskazówki',
 }
 
 export default pl

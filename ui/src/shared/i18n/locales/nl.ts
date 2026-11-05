@@ -1604,8 +1604,8 @@ const nl: Record<string, string> = {
   'Radial': 'Radiaal',
   'VU needles': 'VU-naalden',
   'Spectrogram': 'Spectrogram',
-  'Radial goes around a big cover; where the cover is small it shows bars': 'Radiaal gaat rond een grote hoes; bij een kleine hoes toont het balken',
-  'bars mirror peaks wave curve radial circle particles vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look': 'balken spiegel pieken golf uiterlijk radiaal cirkel vu naalden meter spectrogram waterval curve oscilloscoop luidheid lufs vectorscoop goniometer stereo fase correlatie deeltjes',
+  'Radial goes around a big cover; where the cover is small it shows bars. VU needles follow the average level, PPM needles the peaks': 'Radiaal gaat rond een grote hoes; bij een kleine hoes toont het balken. VU-naalden volgen het gemiddelde niveau, PPM-naalden de pieken',
+  'bars mirror peaks wave curve radial circle particles vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look ppm programme': 'balken spiegel pieken golf uiterlijk radiaal cirkel vu naalden meter spectrogram waterval curve oscilloscoop luidheid lufs vectorscoop goniometer stereo fase correlatie deeltjes ppm programma',
   // v2 redesign
   'Playing': 'Speelt nu',
   'All your songs': 'Al je nummers',
@@ -2041,6 +2041,12 @@ const nl: Record<string, string> = {
   'Visualizer on the overlay': 'Visualizer op de overlay',
   'Bars under the song that move with the music, measured only while OBS shows the page': 'Balken onder het nummer die met de muziek bewegen, alleen gemeten terwijl OBS de pagina toont',
   'obs stream bars spectrum equalizer': 'obs stream balken spectrum equalizer',
+  'PPM needles': 'PPM-naalden',
+  'Meter face': 'Wijzerplaat',
+  'The needles’ dial: in the theme’s colors, or a warm backlit face like an old hi-fi': 'De wijzerplaat van de naalden: in de kleuren van het thema, of een warme verlichte plaat zoals op een oude hifi',
+  'Theme colors': 'Themakleuren',
+  'Vintage': 'Vintage',
+  'dial skin vintage retro analog backlit hifi needles': 'wijzerplaat skin vintage retro analoog verlicht hifi naalden',
 }
 
 export default nl

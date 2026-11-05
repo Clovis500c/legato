@@ -1604,8 +1604,8 @@ const ja: Record<string, string> = {
   'Radial': 'ラジアル',
   'VU needles': 'VUメーター',
   'Spectrogram': 'スペクトログラム',
-  'Radial goes around a big cover; where the cover is small it shows bars': 'ラジアルは大きなジャケットの周りに表示され、小さいときはバーになります',
-  'bars mirror peaks wave curve radial circle particles vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look': 'バー ミラー ピーク ウェーブ 見た目 bars mirror peaks wave ラジアル 円 vu 針 メーター スペクトログラム radial circle needles meter spectrogram waterfall カーブ オシロスコープ ラウドネス curve oscilloscope scope loudness lufs ベクトルスコープ ゴニオメーター ステレオ 位相 相関 vectorscope goniometer stereo phase correlation パーティクル 粒子 particles',
+  'Radial goes around a big cover; where the cover is small it shows bars. VU needles follow the average level, PPM needles the peaks': 'ラジアルは大きなジャケットの周りに表示され、小さいときはバーになります。VU 針は平均レベル、PPM 針はピークを示します',
+  'bars mirror peaks wave curve radial circle particles vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look ppm programme': 'バー ミラー ピーク ウェーブ 見た目 bars mirror peaks wave ラジアル 円 vu 針 メーター スペクトログラム radial circle needles meter spectrogram waterfall カーブ オシロスコープ ラウドネス curve oscilloscope scope loudness lufs ベクトルスコープ ゴニオメーター ステレオ 位相 相関 vectorscope goniometer stereo phase correlation パーティクル 粒子 particles ppm ピーク プログラム',
   // v2 redesign
   'Playing': '再生中',
   'All your songs': 'すべての曲',
@@ -2041,6 +2041,12 @@ const ja: Record<string, string> = {
   'Visualizer on the overlay': 'オーバーレイにビジュアライザー',
   'Bars under the song that move with the music, measured only while OBS shows the page': '曲の下で音楽に合わせて動くバー。OBS がページを表示している間だけ測定します',
   'obs stream bars spectrum equalizer': 'obs 配信 バー スペクトラム イコライザー stream bars spectrum',
+  'PPM needles': 'PPM 針',
+  'Meter face': 'メーターの盤面',
+  'The needles’ dial: in the theme’s colors, or a warm backlit face like an old hi-fi': '針の盤面：テーマの色、または昔のオーディオのような温かい照明付きの盤面',
+  'Theme colors': 'テーマの色',
+  'Vintage': 'ヴィンテージ',
+  'dial skin vintage retro analog backlit hifi needles': '盤面 スキン ヴィンテージ レトロ アナログ dial skin vintage retro analog hifi',
 }
 
 export default ja

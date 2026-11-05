@@ -1604,8 +1604,8 @@ const vi: Record<string, string> = {
   'Radial': 'Vòng tròn',
   'VU needles': 'Kim VU',
   'Spectrogram': 'Phổ đồ',
-  'Radial goes around a big cover; where the cover is small it shows bars': 'Vòng tròn bao quanh bìa lớn; bìa nhỏ thì hiện thanh',
-  'bars mirror peaks wave curve radial circle particles vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look': 'thanh gương đỉnh sóng giao diện vòng tròn vu kim đồng hồ phổ đồ thác đường cong máy hiện sóng độ lớn lufs máy hiện vectơ goniometer âm thanh nổi pha tương quan hạt particles',
+  'Radial goes around a big cover; where the cover is small it shows bars. VU needles follow the average level, PPM needles the peaks': 'Vòng tròn bao quanh bìa lớn; bìa nhỏ thì hiện thanh. Kim VU theo mức trung bình, kim PPM theo đỉnh',
+  'bars mirror peaks wave curve radial circle particles vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look ppm programme': 'thanh gương đỉnh sóng giao diện vòng tròn vu kim đồng hồ phổ đồ thác đường cong máy hiện sóng độ lớn lufs máy hiện vectơ goniometer âm thanh nổi pha tương quan hạt particles ppm đỉnh chương trình',
   // v2 redesign
   'Playing': 'Đang phát',
   'All your songs': 'Tất cả bài hát của bạn',
@@ -2041,6 +2041,12 @@ const vi: Record<string, string> = {
   'Visualizer on the overlay': 'Trình hiển thị trên lớp phủ',
   'Bars under the song that move with the music, measured only while OBS shows the page': 'Các thanh dưới bài hát chuyển động theo nhạc, chỉ đo khi OBS đang hiện trang',
   'obs stream bars spectrum equalizer': 'obs phát trực tiếp thanh phổ bộ cân bằng stream bars spectrum',
+  'PPM needles': 'Kim PPM',
+  'Meter face': 'Mặt đồng hồ',
+  'The needles’ dial: in the theme’s colors, or a warm backlit face like an old hi-fi': 'Mặt đồng hồ của kim: theo màu của chủ đề, hoặc mặt ấm có đèn nền như dàn hi-fi cũ',
+  'Theme colors': 'Màu chủ đề',
+  'Vintage': 'Cổ điển',
+  'dial skin vintage retro analog backlit hifi needles': 'mặt đồng hồ giao diện cổ điển retro analog đèn nền hifi kim',
 }
 
 export default vi

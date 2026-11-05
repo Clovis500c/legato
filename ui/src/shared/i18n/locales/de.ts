@@ -1604,8 +1604,8 @@ const de: Record<string, string> = {
   'Radial': 'Radial',
   'VU needles': 'VU-Zeiger',
   'Spectrogram': 'Spektrogramm',
-  'Radial goes around a big cover; where the cover is small it shows bars': 'Radial legt sich um ein großes Cover; bei kleinem Cover zeigt es Balken',
-  'bars mirror peaks wave curve radial circle particles vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look': 'balken spiegel spitzen welle aussehen radial kreis vu zeiger messgerät spektrogramm wasserfall kurve oszilloskop lautheit lufs vektorskop goniometer stereo phase korrelation partikel teilchen',
+  'Radial goes around a big cover; where the cover is small it shows bars. VU needles follow the average level, PPM needles the peaks': 'Radial legt sich um ein großes Cover; bei kleinem Cover zeigt es Balken. VU-Zeiger folgen dem mittleren Pegel, PPM-Zeiger den Spitzen',
+  'bars mirror peaks wave curve radial circle particles vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look ppm programme': 'balken spiegel spitzen welle aussehen radial kreis vu zeiger messgerät spektrogramm wasserfall kurve oszilloskop lautheit lufs vektorskop goniometer stereo phase korrelation partikel teilchen ppm spitzenpegel',
   // v2 redesign
   'Playing': 'Läuft',
   'All your songs': 'Alle deine Songs',
@@ -2041,6 +2041,12 @@ const de: Record<string, string> = {
   'Visualizer on the overlay': 'Visualizer im Overlay',
   'Bars under the song that move with the music, measured only while OBS shows the page': 'Balken unter dem Song, die sich mit der Musik bewegen, nur gemessen, während OBS die Seite zeigt',
   'obs stream bars spectrum equalizer': 'obs stream balken spektrum equalizer',
+  'PPM needles': 'PPM-Zeiger',
+  'Meter face': 'Zifferblatt',
+  'The needles’ dial: in the theme’s colors, or a warm backlit face like an old hi-fi': 'Das Zifferblatt der Zeiger: in den Farben des Designs oder ein warm beleuchtetes Blatt wie bei einer alten Hi-Fi-Anlage',
+  'Theme colors': 'Farben des Designs',
+  'Vintage': 'Vintage',
+  'dial skin vintage retro analog backlit hifi needles': 'zifferblatt skin vintage retro analog beleuchtet hifi zeiger',
 }
 
 export default de

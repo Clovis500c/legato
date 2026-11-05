@@ -1604,8 +1604,8 @@ const id: Record<string, string> = {
   'Radial': 'Radial',
   'VU needles': 'Jarum VU',
   'Spectrogram': 'Spektrogram',
-  'Radial goes around a big cover; where the cover is small it shows bars': 'Radial melingkari sampul yang besar; jika sampul kecil, tampil batang',
-  'bars mirror peaks wave curve radial circle particles vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look': 'batang cermin puncak gelombang tampilan radial lingkaran vu jarum meter spektrogram air terjun kurva osiloskop kenyaringan lufs vektorskop goniometer stereo fase korelasi partikel',
+  'Radial goes around a big cover; where the cover is small it shows bars. VU needles follow the average level, PPM needles the peaks': 'Radial melingkari sampul yang besar; jika sampul kecil, tampil batang. Jarum VU mengikuti level rata-rata, jarum PPM mengikuti puncaknya',
+  'bars mirror peaks wave curve radial circle particles vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look ppm programme': 'batang cermin puncak gelombang tampilan radial lingkaran vu jarum meter spektrogram air terjun kurva osiloskop kenyaringan lufs vektorskop goniometer stereo fase korelasi partikel ppm puncak program',
   // v2 redesign
   'Playing': 'Sedang diputar',
   'All your songs': 'Semua lagumu',
@@ -2041,6 +2041,12 @@ const id: Record<string, string> = {
   'Visualizer on the overlay': 'Visualizer di overlay',
   'Bars under the song that move with the music, measured only while OBS shows the page': 'Bilah di bawah lagu yang bergerak mengikuti musik, diukur hanya saat OBS menampilkan halamannya',
   'obs stream bars spectrum equalizer': 'obs stream bilah spektrum equalizer',
+  'PPM needles': 'Jarum PPM',
+  'Meter face': 'Muka meter',
+  'The needles’ dial: in the theme’s colors, or a warm backlit face like an old hi-fi': 'Muka jarum: dengan warna tema, atau muka hangat yang menyala seperti hi-fi lama',
+  'Theme colors': 'Warna tema',
+  'Vintage': 'Vintage',
+  'dial skin vintage retro analog backlit hifi needles': 'muka tampilan vintage retro analog menyala hifi jarum',
 }
 
 export default id

@@ -49,7 +49,7 @@ scope.onmessage = (e) => {
       wake()
       break
     case 'look':
-      painter?.set(m.look, m.calm, m.ink, m.warn, m.weighting, m.gradient, m.stops, m.bands, m.floor, m.ink2, m.words)
+      painter?.set(m.look, m.calm, m.ink, m.warn, m.weighting, m.gradient, m.stops, m.bands, m.floor, m.ink2, m.words, m.face)
       gap = 1000 / m.fps
       wake()
       break
@@ -62,7 +62,7 @@ scope.onmessage = (e) => {
       wake()
       break
     case 'frame':
-      painter?.frame(m.l, m.r, m.rms, m.w)
+      painter?.frame(m.l, m.r, m.rms, m.w, m.peak)
       wake()
       break
     case 'hover':

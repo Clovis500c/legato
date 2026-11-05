@@ -9,7 +9,7 @@ import { pickFile, saveFile } from '../../shared/files'
 import { formatBytes, formatCount, timeAgo } from '../../shared/format'
 import { PRIVACY_PAGE } from '../../shared/links'
 import { byVia, countText, VIA_LABELS, WHY_LABELS } from './privacy'
-import { ACCENTS, ADAPTIVE_LEVELS, COLUMNS, COVER_CACHE_MB, DEFAULTS, DJ_FRESH, DJ_GAPS, VISUALIZER_STYLES, VIZ_BANDINGS, VIZ_COLORS, VIZ_GRADIENTS, VIZ_WEIGHTINGS, type AdaptiveLevel, type Column, type Settings } from '../../shared/theme/theme'
+import { ACCENTS, ADAPTIVE_LEVELS, COLUMNS, COVER_CACHE_MB, DEFAULTS, DJ_FRESH, DJ_GAPS, VISUALIZER_STYLES, VIZ_BANDINGS, VIZ_COLORS, VIZ_FACES, VIZ_GRADIENTS, VIZ_WEIGHTINGS, type AdaptiveLevel, type Column, type Settings } from '../../shared/theme/theme'
 import { Button } from '../../shared/ui/Button'
 import { Led, Segmented, Toggle } from '../../shared/ui/controls'
 import { PageHeader } from '../../shared/ui/PageHeader'
@@ -17,7 +17,8 @@ import { onMenu } from '../../shared/ui/ContextMenu'
 import { curveLabels } from '../player/fade'
 import { usePlayer } from '../player/store'
 import { useLive } from '../player/live'
-import { VISUALIZER_LABELS, VIZ_BANDING_LABELS, VIZ_COLOR_LABELS, VIZ_GRADIENT_LABELS, VIZ_WEIGHTING_LABELS } from '../player/vizLooks'
+import { VISUALIZER_LABELS, VIZ_BANDING_LABELS, VIZ_COLOR_LABELS, VIZ_FACE_LABELS, VIZ_GRADIENT_LABELS, VIZ_WEIGHTING_LABELS } from '../player/vizLooks'
+import { needleLook } from '../player/vizVu'
 import { SourcesView } from '../sources/SourcesView'
 import { SyncSection } from '../syncmode/SyncSection'
 import { OverlayPanel, RemotePanel } from '../remote/RemotePanel'
@@ -484,7 +485,7 @@ function SoundGroup() {
           <Toggle label={tr('Visualizer')} checked={s.visualizer} onChange={(visualizer) => update({ visualizer })} />
         </Row>
         {s.visualizer && (
-          <Row setting="visualizerStyle" label={msg('Visualizer style')} sub={tr('Radial goes around a big cover; where the cover is small it shows bars')}>
+          <Row setting="visualizerStyle" label={msg('Visualizer style')} sub={tr('Radial goes around a big cover; where the cover is small it shows bars. VU needles follow the average level, PPM needles the peaks')}>
             <Segmented
               label={tr('Visualizer style')}
               className="max-w-md flex-wrap rounded-3xl!"
@@ -492,6 +493,11 @@ function SoundGroup() {
               onChange={(visualizerStyle) => update({ visualizerStyle })}
               options={VISUALIZER_STYLES.map((v) => ({ value: v, label: tr(VISUALIZER_LABELS[v]) }))}
             />
+          </Row>
+        )}
+        {s.visualizer && needleLook(s.visualizerStyle) && (
+          <Row setting="visualizerFace" label={msg('Meter face')} sub={tr('The needles’ dial: in the theme’s colors, or a warm backlit face like an old hi-fi')}>
+            <Segmented label={tr('Meter face')} value={s.visualizerFace} onChange={(visualizerFace) => update({ visualizerFace })} options={VIZ_FACES.map((v) => ({ value: v, label: tr(VIZ_FACE_LABELS[v]) }))} />
           </Row>
         )}
         {s.visualizer && (

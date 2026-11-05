@@ -164,8 +164,8 @@ export const COVER_CACHE_MB = [250, 500, 1000, 2000] as const
 /** Mini player resting spots: corners and edge middles (t = top, b = bottom, l = left, r = right). */
 /** Playlist icon: service logo, first song's cover, grid of the first 4, or a picked image. */
 export const COVER_MODES = ['source', 'first', 'grid', 'image'] as const
-/** Visualizer looks (VizCanvas.tsx): LED segments with held peaks, bars from the bottom, mirrored from the middle, bars with falling peaks, a wave, left and right as two glowing curves; a ring around the cover, particles on the beat (vizParticles.ts), two VU needles, a scrolling spectrogram, an oscilloscope's trace (vizScope.ts), a vectorscope with its correlation meter (vizVector.ts), a loudness meter (vizLoud.ts). */
-export const VISUALIZER_STYLES = ['led', 'bars', 'mirror', 'peaks', 'wave', 'curve', 'radial', 'particles', 'vu', 'spectrogram', 'scope', 'vectorscope', 'loudness'] as const
+/** Visualizer looks (VizCanvas.tsx): LED segments with held peaks, bars from the bottom, mirrored from the middle, bars with falling peaks, a wave, left and right as two glowing curves; a ring around the cover, particles on the beat (vizParticles.ts), two VU needles, two PPM needles (peaks), a scrolling spectrogram, an oscilloscope's trace (vizScope.ts), a vectorscope with its correlation meter (vizVector.ts), a loudness meter (vizLoud.ts). */
+export const VISUALIZER_STYLES = ['led', 'bars', 'mirror', 'peaks', 'wave', 'curve', 'radial', 'particles', 'vu', 'ppm', 'spectrogram', 'scope', 'vectorscope', 'loudness'] as const
 export type VisualizerStyle = (typeof VISUALIZER_STYLES)[number]
 /** Visualizer weighting (vizWeigh.ts): the bands as measured, tilted 3 dB per octave toward the highs, or a hearing curve. */
 export const VIZ_WEIGHTINGS = ['flat', 'tilt', 'a', 'itu468'] as const
@@ -179,6 +179,9 @@ export type VizGradient = (typeof VIZ_GRADIENTS)[number]
 /** Visualizer bands (vizBands.ts): folded into 1/3 octave (31), a hi-fi analyser's; 1/6 octave as the frames carry them (61); or 1/12 (121), frames measured over a window twice as long. */
 export const VIZ_BANDINGS = ['third', 'sixth', 'twelfth'] as const
 export type VizBanding = (typeof VIZ_BANDINGS)[number]
+/** The needles' dial (vizPaint.ts): in the theme's colours, or a warm backlit face whatever the theme. */
+export const VIZ_FACES = ['theme', 'vintage'] as const
+export type VizFace = (typeof VIZ_FACES)[number]
 /** Order the cover songs are taken in: the playlist's own, or a library sort. */
 export const COVER_ORDERS = ['playlist', 'recent', 'title', 'artist', 'album', 'duration'] as const
 /** Auto-DJ's choices (Settings › Playback): days a song heard waits, songs before the same artist again. */
@@ -398,6 +401,8 @@ export interface Settings {
   visualizerBands: VizBanding
   /** A glossy floor under the bars, their reflection fading. Off by default: a look the owner hasn't judged yet (2026-11-04). */
   visualizerFloor: boolean
+  /** The VU and PPM needles' dial. The theme's colours by default; Vintage = a look the owner hasn't judged yet (2026-11-05). */
+  visualizerFace: VizFace
   /** The visualizer big and faint behind Now Playing too. Off by default: a look the owner hasn't judged yet (2026-11-04). */
   visualizerBackdrop: boolean
   /** A thin visualizer in the mini player too. Off by default: a look the owner hasn't judged yet (2026-11-04). */
@@ -532,6 +537,7 @@ export const DEFAULTS: Settings = {
   visualizerGradient: 'none',
   visualizerBands: 'sixth',
   visualizerFloor: false,
+  visualizerFace: 'theme',
   visualizerBackdrop: false,
   visualizerMini: false,
   earlyEnds: true,
@@ -753,6 +759,7 @@ export function sanitize(raw: unknown): Settings {
     visualizerGradient: pick(r.visualizerGradient, VIZ_GRADIENTS, DEFAULTS.visualizerGradient),
     visualizerBands: pick(r.visualizerBands, VIZ_BANDINGS, DEFAULTS.visualizerBands),
     visualizerFloor: r.visualizerFloor === true,
+    visualizerFace: pick(r.visualizerFace, VIZ_FACES, DEFAULTS.visualizerFace),
     visualizerBackdrop: r.visualizerBackdrop === true,
     visualizerMini: r.visualizerMini === true,
     earlyEnds: r.earlyEnds !== false,

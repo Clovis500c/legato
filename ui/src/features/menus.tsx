@@ -34,6 +34,7 @@ import {
   Moon,
   Palette,
   Gradient,
+  Gauge,
   Equalizer,
   FlipVertical,
   Pause,
@@ -70,7 +71,7 @@ import { pickFile, saveFile } from '../shared/files'
 import { bigTrackArt } from '../shared/art'
 import { loadFit } from '../shared/artfit'
 import { fileName, starsText } from '../shared/format'
-import { COVER_ORDERS, VISUALIZER_STYLES, VIZ_BANDINGS, VIZ_COLORS, VIZ_GRADIENTS, VIZ_WEIGHTINGS, type PlaylistCover, type PlaylistFolder } from '../shared/theme/theme'
+import { COVER_ORDERS, VISUALIZER_STYLES, VIZ_BANDINGS, VIZ_COLORS, VIZ_FACES, VIZ_GRADIENTS, VIZ_WEIGHTINGS, type PlaylistCover, type PlaylistFolder } from '../shared/theme/theme'
 import type { MenuEntry } from '../shared/ui/ContextMenu'
 import { SourceIcon } from '../shared/ui/SourceIcon'
 import type { Addon } from './addons/registry'
@@ -93,7 +94,8 @@ import { closeKaraoke, nowFix, nudgeLyrics, toggleKaraoke } from './player/karao
 import { canVizFull, toggleVizFull, useVizFull } from './player/vizFull'
 import { closeCoverFull, toggleCoverFull } from './player/coverFull'
 import { openShare } from './share/share'
-import { VISUALIZER_LABELS, VIZ_BANDING_LABELS, VIZ_COLOR_LABELS, VIZ_GRADIENT_LABELS, VIZ_WEIGHTING_LABELS } from './player/vizLooks'
+import { VISUALIZER_LABELS, VIZ_BANDING_LABELS, VIZ_COLOR_LABELS, VIZ_FACE_LABELS, VIZ_GRADIENT_LABELS, VIZ_WEIGHTING_LABELS } from './player/vizLooks'
+import { needleLook } from './player/vizVu'
 import { msg, tr, trn } from '../shared/i18n/i18n'
 import { ask, askText } from '../shared/ui/Ask'
 
@@ -731,15 +733,20 @@ export function playerMenu(): MenuEntry[] {
   ]
 }
 
-/** The visualizer (the strip under the cover, its full screen): the look, full screen. */
+/** The visualizer (the strip under the cover, its full screen): the look (the needles: their dial), full screen. */
 export function vizMenu(): MenuEntry[] {
-  const { visualizerStyle: look, visualizerWeighting: weighting, visualizerColor: color, visualizerGradient: gradient, visualizerBands: bands, visualizerFloor: floor } = useSettings.getState().settings
+  const { visualizerStyle: look, visualizerWeighting: weighting, visualizerColor: color, visualizerGradient: gradient, visualizerBands: bands, visualizerFloor: floor, visualizerFace: face } = useSettings.getState().settings
   const open = useVizFull.getState().open
   return [
     {
       label: tr('Visualizer style'),
       icon: <ChartBar size={16} />,
       items: VISUALIZER_STYLES.map((v) => ({ label: tr(VISUALIZER_LABELS[v]), checked: look === v, onSelect: () => useSettings.getState().update({ visualizerStyle: v }) })),
+    },
+    needleLook(look) && {
+      label: tr('Meter face'),
+      icon: <Gauge size={16} />,
+      items: VIZ_FACES.map((v) => ({ label: tr(VIZ_FACE_LABELS[v]), checked: face === v, onSelect: () => useSettings.getState().update({ visualizerFace: v }) })),
     },
     {
       label: tr('Visualizer weighting'),

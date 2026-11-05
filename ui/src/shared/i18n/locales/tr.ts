@@ -1604,8 +1604,8 @@ const tr: Record<string, string> = {
   'Radial': 'Dairesel',
   'VU needles': 'VU ibreleri',
   'Spectrogram': 'Spektrogram',
-  'Radial goes around a big cover; where the cover is small it shows bars': 'Dairesel büyük bir kapağın çevresine çizilir; kapak küçükse çubuk gösterir',
-  'bars mirror peaks wave curve radial circle particles vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look': 'çubuklar ayna tepeler dalga görünüm dairesel daire vu ibre ölçer spektrogram şelale eğri osiloskop ses yüksekliği lufs vektörskop gonyometre stereo faz korelasyon parçacıklar',
+  'Radial goes around a big cover; where the cover is small it shows bars. VU needles follow the average level, PPM needles the peaks': 'Dairesel büyük bir kapağın çevresine çizilir; kapak küçükse çubuk gösterir. VU ibreleri ortalama seviyeyi, PPM ibreleri tepeleri izler',
+  'bars mirror peaks wave curve radial circle particles vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look ppm programme': 'çubuklar ayna tepeler dalga görünüm dairesel daire vu ibre ölçer spektrogram şelale eğri osiloskop ses yüksekliği lufs vektörskop gonyometre stereo faz korelasyon parçacıklar ppm program',
   // v2 redesign
   'Playing': 'Çalıyor',
   'All your songs': 'Tüm şarkıların',
@@ -2041,6 +2041,12 @@ const tr: Record<string, string> = {
   'Visualizer on the overlay': 'Katmanda görselleştirici',
   'Bars under the song that move with the music, measured only while OBS shows the page': 'Şarkının altında müzikle hareket eden çubuklar, yalnızca OBS sayfayı gösterirken ölçülür',
   'obs stream bars spectrum equalizer': 'obs yayın çubuklar spektrum ekolayzer stream bars spectrum',
+  'PPM needles': 'PPM ibreleri',
+  'Meter face': 'Ölçer kadranı',
+  'The needles’ dial: in the theme’s colors, or a warm backlit face like an old hi-fi': 'İbrelerin kadranı: temanın renklerinde ya da eski bir hi-fi gibi sıcak, arkadan aydınlatmalı bir kadran',
+  'Theme colors': 'Tema renkleri',
+  'Vintage': 'Vintage',
+  'dial skin vintage retro analog backlit hifi needles': 'kadran görünüm vintage retro analog aydınlatmalı hifi ibre',
 }
 
 export default tr

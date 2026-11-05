@@ -1604,8 +1604,8 @@ const sv: Record<string, string> = {
   'Radial': 'Radiell',
   'VU needles': 'VU-visare',
   'Spectrogram': 'Spektrogram',
-  'Radial goes around a big cover; where the cover is small it shows bars': 'Radiell går runt ett stort omslag; är omslaget litet visas staplar',
-  'bars mirror peaks wave curve radial circle particles vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look': 'staplar spegel toppar våg utseende radiell cirkel vu visare mätare spektrogram vattenfall kurva oskilloskop ljudstyrka lufs vektorskop goniometer stereo fas korrelation partiklar',
+  'Radial goes around a big cover; where the cover is small it shows bars. VU needles follow the average level, PPM needles the peaks': 'Radiell går runt ett stort omslag; är omslaget litet visas staplar. VU-visare följer medelnivån, PPM-visare topparna',
+  'bars mirror peaks wave curve radial circle particles vu needles meter spectrogram waterfall oscilloscope scope vectorscope goniometer stereo phase correlation loudness lufs look ppm programme': 'staplar spegel toppar våg utseende radiell cirkel vu visare mätare spektrogram vattenfall kurva oskilloskop ljudstyrka lufs vektorskop goniometer stereo fas korrelation partiklar ppm programnivå',
   // v2 redesign
   'Playing': 'Spelas',
   'All your songs': 'Alla dina låtar',
@@ -2041,6 +2041,12 @@ const sv: Record<string, string> = {
   'Visualizer on the overlay': 'Visualiserare i överlägget',
   'Bars under the song that move with the music, measured only while OBS shows the page': 'Staplar under låten som rör sig med musiken, mäts bara medan OBS visar sidan',
   'obs stream bars spectrum equalizer': 'obs stream staplar spektrum equalizer',
+  'PPM needles': 'PPM-visare',
+  'Meter face': 'Mätartavla',
+  'The needles’ dial: in the theme’s colors, or a warm backlit face like an old hi-fi': 'Visarnas tavla: i temats färger, eller en varm bakbelyst tavla som på en gammal hifi',
+  'Theme colors': 'Temats färger',
+  'Vintage': 'Vintage',
+  'dial skin vintage retro analog backlit hifi needles': 'tavla skal vintage retro analog bakbelyst hifi visare',
 }
 
 export default sv
