@@ -412,7 +412,18 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
 - [ ] `M` MusicBrainz lookup that fills Edit song info (album, year, numbers from a release): a new host, the website's
       privacy row first.
 - [ ] `M` Equalizer presets per output device (headphones vs speakers) and AutoEQ profiles for known headphones.
-- [ ] `M` "Wrapped": a yearly / monthly recap from our stats, shareable as a picture.
+- [x] `M` "Wrapped": a yearly / monthly recap from our stats, shareable as a picture.
+      (2026-11-05: Stats › Your recap, `features/stats/RecapView.tsx`, lazy. A year or a month with an hour of music at
+      least (`recap.ts`, newest first, numbers from `statsOf` like Stats), as up to 7 cards (`recapCards.ts`): time, top
+      artist, top songs, top album, a song for each month (a year), habits (the hour, best streak, new artists), a
+      listening personality, the first rule that fits: on repeat, loyal, explorer, night owl, early bird, else eclectic,
+      with the share behind it. Each card drawn as a 1080 × 1920 picture (`recapDraw.ts`: the cover's hue, the
+      theme's font), copied or saved as PNG / JPEG through the share card's `save_picture`; ← → between cards, Esc
+      back. Decided alone: called "Recap" (Wrapped is Spotify's word), on demand only (no December prompt), the
+      personalities and their thresholds; the page header puts its actions under the title when both don't fit (the
+      title was cut to "Your …") and wraps them on a phone; the share card's wrapping keeps no-break spaces. Seen in
+      the demo, desktop and phone: the cards, covers, arrows. Unseen: a real save and copy in the app, a real year
+      of plays, the APK.)
 - [ ] `M` Genre / year / BPM / key tags stored (mixes, smart playlists, DJ-like transitions by BPM).
 - [ ] `M` Mixes: genre / year tags (not stored yet), Last.fm "Discoveries" (user's key); "Never in mixes" on a discovered
       song (not in the library: no row to hold the choice).

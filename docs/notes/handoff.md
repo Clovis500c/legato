@@ -232,6 +232,9 @@ Relaunch log (newest last):
 - 2026-11-05: tray mode measured (the bench prints WebView2 by process): 54 to 55 MB after 10 min, the page suspended
   (0 to 3 MB); the rest is WebView2's own processes and the app. Page kept loaded (decided alone). No clean bench row:
   the demo's Vite server, left running since 2026-11-04, kept 4 cores busy (stopped), then another app loaded the PC.
+- 2026-11-05: Stats › Your recap: a year or a month as cards (time, top artist, songs, album, a song a month, habits,
+  a listening personality), each one a 1080 × 1920 picture to copy or save. Named "Recap", on demand only (decided
+  alone). Page headers wrap their actions under the title when they don't fit.
 
 ## Mobile app and devices sync (the owner's ask, 2026-11-02 afternoon; in progress)
 

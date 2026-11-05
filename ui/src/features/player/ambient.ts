@@ -50,7 +50,8 @@ export async function coverColors(src: string): Promise<Rgb[] | null> {
   return d && paletteOf(d)
 }
 
-function hue(rgb: Rgb): [number, number] {
+/** Hue (degrees) and saturation (0–1) of a colour. */
+export function hue(rgb: Rgb): [number, number] {
   const [r, g, b] = rgb.map((v) => v / 255)
   const max = Math.max(r, g, b)
   const min = Math.min(r, g, b)

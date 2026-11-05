@@ -1,28 +1,22 @@
-import { Play } from '@phosphor-icons/react'
+import { Play, Sparkle } from '@phosphor-icons/react'
 import { artistName } from '../../shared/artistName'
 import { useShallow } from 'zustand/react/shallow'
-import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useStore } from '../../app/store'
 import { api, type Play as Listen } from '../../shared/api'
 import { trackArt } from '../../shared/art'
 import { formatCount } from '../../shared/format'
 import { tr, trn } from '../../shared/i18n/i18n'
+import { Button } from '../../shared/ui/Button'
 import { onMenu } from '../../shared/ui/ContextMenu'
 import { Segmented } from '../../shared/ui/controls'
 import { Cover } from '../../shared/ui/Cover'
 import { PageHeader } from '../../shared/ui/PageHeader'
 import { trackMenu, tracksMenu } from '../menus'
 import { usePlayer } from '../player/store'
-import { statsOf, type Period } from './stats'
+import { recapSpans } from './recap'
+import { hours, statsOf, type Period } from './stats'
 import { phoneApp } from '../../shared/platform'
-
-/** "12 h 30 min", "45 min". */
-function hours(ms: number) {
-  const min = Math.round(ms / 60_000)
-  if (min < 60) return tr('{n} min', { n: min })
-  const h = Math.floor(min / 60)
-  return min % 60 ? tr('{h} h {m} min', { h: formatCount(h), m: min % 60 }) : tr('{n} h', { n: formatCount(h) })
-}
 
 function Tile({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
@@ -64,12 +58,18 @@ function Bars({ values, labels, tips }: { values: number[]; labels: (string | nu
   )
 }
 
+// Its own chunk: opened from the header.
+const RecapView = lazy(() => import('./RecapView'))
+
 /** Your listening in numbers: time, top songs / artists / albums, when you listen, streaks. All from this PC's history. */
 export function StatsView() {
   const { tracks, go } = useStore(useShallow(({ tracks, go }) => ({ tracks, go })))
   const play = usePlayer((s) => s.playTracks)
   const [period, setPeriod] = useState<Period>('4w')
   const [history, setHistory] = useState<Listen[] | null>(null)
+  const [recap, setRecap] = useState(false)
+  // A year or month with an hour of music.
+  const recaps = useMemo(() => !!history && recapSpans(history).length > 0, [history])
   useEffect(() => {
     api.playHistory(0).then(setHistory, () => setHistory([]))
   }, [])
@@ -78,13 +78,30 @@ export function StatsView() {
   const weekdays = useMemo(() => Array.from({ length: 7 }, (_, i) => new Date(2024, 0, 1 + i).toLocaleDateString(lang, { weekday: 'short' })), [lang])
   const bucket = (t: number) => new Date(t).toLocaleDateString(lang, period === 'year' || period === 'all' ? { month: 'short', year: period === 'all' ? '2-digit' : undefined } : { day: 'numeric', month: 'short' })
 
+  const sub = phoneApp ? tr('From what you played in Legato on this phone') : tr('From what you played in Legato on this PC')
   const header = (
     <PageHeader
       title={tr('Your stats')}
-      sub={phoneApp ? tr('From what you played in Legato on this phone') : tr('From what you played in Legato on this PC')}
-      actions={<Segmented label={tr('Period')} value={period} onChange={setPeriod} options={[{ value: '4w', label: tr('4 weeks') }, { value: '6m', label: tr('6 months') }, { value: 'year', label: tr('This year') }, { value: 'all', label: tr('All time') }]} />}
+      sub={sub}
+      actions={
+        <>
+          {recaps && (
+            <Button variant="ghost" onClick={() => setRecap(true)}>
+              <Sparkle size={14} />
+              {tr('Your recap')}
+            </Button>
+          )}
+          <Segmented label={tr('Period')} value={period} onChange={setPeriod} options={[{ value: '4w', label: tr('4 weeks') }, { value: '6m', label: tr('6 months') }, { value: 'year', label: tr('This year') }, { value: 'all', label: tr('All time') }]} />
+        </>
+      }
     />
   )
+  if (recap && history)
+    return (
+      <Suspense fallback={null}>
+        <RecapView history={history} tracks={tracks} sub={sub} onClose={() => setRecap(false)} />
+      </Suspense>
+    )
   if (!s) return header
   if (!s.ms)
     return (

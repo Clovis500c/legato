@@ -8,8 +8,9 @@ export const CARD = { w: 1080, h: 1350, pad: 96 }
 export function wrapText(text: string, width: number, max: number, measure: (s: string) => number): string[] {
   const lines: string[] = []
   let line = ''
-  // Words keep their space; a word too long for a line goes character by character.
-  const parts = text.trim().split(/(?<=\s)/).flatMap((w) => (measure(w.trimEnd()) > width ? [...w] : [w]))
+  // Words keep their space, never cut at a no-break one ("12 AM", "n° 1"); a word too long for a line goes character
+  // by character.
+  const parts = text.trim().split(/(?<=[^\S\u00a0\u2007\u202f])/).flatMap((w) => (measure(w.trimEnd()) > width ? [...w] : [w]))
   for (let i = 0; i < parts.length; i++) {
     const next = line + parts[i]
     if (!line || measure(next.trimEnd()) <= width) {

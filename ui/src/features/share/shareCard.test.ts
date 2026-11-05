@@ -10,6 +10,11 @@ describe('share card text', () => {
     expect(wrapText('Short', 80, 2, measure)).toEqual(['Short'])
   })
 
+  it('keeps words joined by a no-break space together', () => {
+    expect(wrapText('Mostly around 12\u202fAM', 140, 2, measure)).toEqual(['Mostly around', '12\u202fAM'])
+    expect(wrapText('Votre artiste n°\u00a01', 140, 2, measure)).toEqual(['Votre artiste', 'n°\u00a01'])
+  })
+
   it('ends with an ellipsis when text is left', () => {
     expect(wrapText('one two three four five six', 80, 2, measure)).toEqual(['one two', 'three…'])
   })

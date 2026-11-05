@@ -1,4 +1,6 @@
 import type { LibraryTrack, Play } from '../../shared/api'
+import { formatCount } from '../../shared/format'
+import { tr } from '../../shared/i18n/i18n'
 import { primaryArtist } from '../library/filter'
 
 export type Period = '4w' | '6m' | 'year' | 'all'
@@ -12,6 +14,14 @@ export function periodStart(period: Period, now = new Date()): number {
   else if (period === 'year') d.setMonth(0, 1)
   else return 0
   return d.getTime()
+}
+
+/** "12 h 30 min", "45 min". */
+export function hours(ms: number) {
+  const min = Math.round(ms / 60_000)
+  if (min < 60) return tr('{n} min', { n: min })
+  const h = Math.floor(min / 60)
+  return min % 60 ? tr('{h} h {m} min', { h: formatCount(h), m: min % 60 }) : tr('{n} h', { n: formatCount(h) })
 }
 
 /** A play counts as a listen like the library's play stats: finished, or 30 s heard. */
@@ -66,9 +76,10 @@ function buckets(period: Period, from: number, first: number, now: Date): number
   return starts
 }
 
-/** Listening stats of a period from the whole play history (oldest first) and the library. */
-export function statsOf(history: Play[], tracks: LibraryTrack[], period: Period, now = new Date()): Stats {
-  const from = periodStart(period, now)
+/** Listening stats of a period from the whole play history (oldest first) and the library. `range`: these dates instead
+ *  ([from, to) in ms, a recap's month or year); the period then shapes the timeline only. */
+export function statsOf(history: Play[], tracks: LibraryTrack[], period: Period, now = new Date(), range?: [number, number]): Stats {
+  const [from, to] = range ?? [periodStart(period, now), Infinity]
   const byId = new Map(tracks.map((t) => [t.id, t]))
   const songs = new Map<number, Ranked<LibraryTrack>>()
   const artists = new Map<string, Ranked<{ name: string; cover: LibraryTrack }>>()
@@ -82,6 +93,7 @@ export function statsOf(history: Play[], tracks: LibraryTrack[], period: Period,
   const kept: Play[] = []
   for (const p of history) {
     const at = p.startedAt * 1000
+    if (at >= to) continue
     const t = byId.get(p.trackId)
     if (at < from) {
       if (t) seenBefore.add(primaryArtist(t.artist))
