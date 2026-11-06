@@ -48,7 +48,11 @@ time, effort high.
   docs commit after 71ad058: rules, wire, shell, interface, `docs/rooms.md`; the internet half in plan-v2 › Waiting on
   the user); the review (9906ea9, 563f12a) limited code guesses with a growing wait, ended a gone room's tasks, made a
   listener notice a quiet host, fixed Catch up and the song's end, one search per song. About 389 k agent tokens, about
-  50 % of a window, 7 % of the week. Next: personal servers.
+  50 % of a window, 7 % of the week. Personal servers part 1 (Subsonic-compatible: Navidrome, Airsonic, Gonic, Ampache;
+  native HTTP playback by range requests): 5cf9d21 to 936f195, reviewed in 0ee4a2c to daafc64 (the 5-hour limit cut
+  the first review; resumed from the run's cache): covers of an address as typed, no password in an address, a partial
+  read drops no song, plain sync files carry no server, no worker left after Stop. About 700 k agent tokens, 10 % of
+  the week. Next: part 2 (Jellyfin, then Plex).
 - The end: a report in French (`docs/notes/report-2026-11-06.md`, untracked), this section folded into the rest of
   this file, the cron deleted, the report sent to the owner (SendUserFile, proactive).
 
