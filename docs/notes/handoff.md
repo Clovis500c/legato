@@ -38,6 +38,11 @@ time, effort high.
   its terms: the owner's call), the explicit badge and filter (Features' "Hide explicit songs"), 12, 11, 10, 9, 8, 7, 6,
   5, 4, 3, 2.
 - A cron wake-up (session only, `13,43 * * * *`) resumes after a 5-hour limit; delete it at the end.
+- The script: `~/.claude/projects/C--dev-music-app/8c8ab02b-4287-45ba-a586-6f45a2aaceeb/workflows/scripts/legato-line-wf_3695f954-2fd.js`
+  (args: key, base = HEAD before the line, title, spec, reviewFocus).
+- Progress: U1 done (2e7edc2 to 901b8e6, about 307 k agent tokens, 52 % of a 5-hour window; the review fixed an 8 px
+  sideways scroll). Another session of the owner's ("Logo redimensionné 1280x640", Sonnet) committed README and GitHub
+  files on `platforms` meanwhile (76213de, 2cfc86a): kept; line 16 builds on them.
 - The end: a report in French (`docs/notes/report-2026-11-06.md`, untracked), this section folded into the rest of
   this file, the cron deleted, the report sent to the owner (SendUserFile, proactive).
 
