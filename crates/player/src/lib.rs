@@ -1,6 +1,7 @@
-//! Local file playback. Engine thread owns audio device (cpal stream not Send everywhere).
+//! Local file playback, and server songs over HTTP (`http.rs`). Engine thread owns audio device (cpal stream not Send everywhere).
 
 pub mod export;
+pub mod http;
 pub mod level;
 mod live;
 pub mod mic;
@@ -58,6 +59,10 @@ pub enum Command {
     /// Keep current file, drop the rest (shuffle turned on mid-run). Current plays on, no gap.
     Truncate,
     Stop,
+    /// Rust-side only: who opens server songs (`http::PREFIX` paths), with their auth.
+    #[serde(skip)]
+    #[ts(skip)]
+    Remote { fetch: http::Remote },
     /// Rust-side only: Windows' default output changed. What plays moves to it, same place, paused or not.
     #[serde(skip)]
     Reopen,
@@ -176,6 +181,10 @@ struct Engine {
     gains: HashMap<PathBuf, Gain>,
     /// Levelling multiplier per loaded item (same order as `stops`), read by its source block by block.
     levels: VecDeque<Arc<AtomicU32>>,
+    /// Opens server songs; none until the shell sets it.
+    remote: Option<http::Remote>,
+    /// A server song's failure mid-play (the decoder only sees its end), for the status.
+    remote_failed: Arc<Mutex<Option<String>>>,
 }
 
 impl Engine {
@@ -192,6 +201,7 @@ impl Engine {
                 self.restart()?;
             }
             Command::SkipSilence { on } => self.skip_silence = on,
+            Command::Remote { fetch } => self.remote = Some(fetch),
             Command::Trims { list } => {
                 if self.trims.len() > 500 {
                     self.trims.clear();
@@ -347,8 +357,10 @@ impl Engine {
             let flag = stop.clone();
             let level = Arc::new(AtomicU32::new(self.factor(&path).to_bits()));
             let gain = level.clone();
+            let remote = http::is_remote(&path);
             let added = match &self.memory {
                 Some((label, bytes)) if *label == path => Decoder::try_from(Cursor::new(bytes.clone())).map(|d| append(p, Box::new(d), flag, gain)).map_err(anyhow::Error::from),
+                _ if remote => self.open_remote(&path).map(|d| append(p, d, flag, gain)),
                 _ => File::open(&path).map_err(anyhow::Error::from).and_then(|f| Ok(append(p, Box::new(Decoder::try_from(f)?), flag, gain))),
             };
             self.stops.push_back(stop);
@@ -357,13 +369,32 @@ impl Engine {
                 Ok(ms) => self.durations.push_back(ms),
                 Err(e) => {
                     self.durations.push_back(None);
-                    self.error = Some(format!("{}: {e:#}", path.display()));
+                    // A server's words alone (no key in front): `shared/errors.ts` knows them.
+                    self.error = Some(if remote { format!("{e:#}") } else { format!("{}: {e:#}", path.display()) });
                 }
             }
         }
     }
 
+    /// A server song's decoder: its bytes over HTTP, length and type from the first answer.
+    fn open_remote(&self, path: &std::path::Path) -> Result<Box<dyn Source + Send>> {
+        let Some(http::Remote(fetch)) = &self.remote else { anyhow::bail!("Your music server isn't signed in") };
+        let key = path.to_str().and_then(|p| p.strip_prefix(http::PREFIX)).unwrap_or_default();
+        let (stream, info) = http::Stream::open(fetch.clone(), key, self.remote_failed.clone())?;
+        let mut b = Decoder::builder().with_data(stream).with_seekable(true);
+        if let Some(len) = info.len {
+            b = b.with_byte_len(len);
+        }
+        if let Some(mime) = &info.mime {
+            b = b.with_mime_type(mime);
+        }
+        Ok(Box::new(b.build().map_err(|e| anyhow::anyhow!("Your music server sent a format Legato can't play ({e})"))?))
+    }
+
     fn tick(&mut self) {
+        if let Some(e) = self.remote_failed.lock().unwrap().take() {
+            self.error = Some(e);
+        }
         let Some(p) = &self.player else { return };
         let done = self.queue.sync(p.len());
         self.durations.drain(..done);
@@ -515,6 +546,34 @@ mod tests {
         assert_eq!((now(&e, 0), now(&e, 1)), (1.0, 1.0));
         e.handle(Command::Stop).unwrap();
         let _ = (std::fs::remove_file(a), std::fs::remove_file(b));
+    }
+
+    #[test]
+    fn a_server_song_plays_seeks_and_hands_over_to_the_next_without_a_gap() {
+        let file = wav("http", 0, 6, 0);
+        let srv = http::tests::serve(std::fs::read(&file).unwrap(), true, None);
+        let mut e = Engine { volume: 1.0, ..Default::default() };
+        e.device = Some(Output::Null(Null::open()));
+        // Not signed in yet: a clear error, nothing plays.
+        let (a, b) = (PathBuf::from("server:s1:a"), PathBuf::from("server:s1:b"));
+        e.handle(Command::Play { paths: vec![a.clone()], start: 0 }).unwrap();
+        assert_eq!(e.error.take().as_deref(), Some("Your music server isn't signed in"));
+        e.handle(Command::Remote { fetch: http::Remote(Arc::new(http::tests::Plain(srv.port))) }).unwrap();
+        e.handle(Command::Play { paths: vec![a.clone(), b.clone()], start: 0 }).unwrap();
+        assert!(e.error.is_none(), "{:?}", e.error);
+        assert_eq!(e.durations.front().copied().flatten(), Some(6_000));
+        e.handle(Command::Seek { ms: 4_000 }).unwrap();
+        std::thread::sleep(Duration::from_millis(300));
+        e.tick();
+        let st = e.status();
+        assert!(st.path.as_ref() == Some(&a) && (4_000..5_000).contains(&st.position_ms), "{st:?}");
+        // The next server song was loaded behind it: on at the end, same player (gapless).
+        std::thread::sleep(Duration::from_millis(2_300));
+        e.tick();
+        assert_eq!(e.status().path.as_ref(), Some(&b));
+        assert!(srv.requests.load(std::sync::atomic::Ordering::SeqCst) >= 2);
+        e.handle(Command::Stop).unwrap();
+        let _ = std::fs::remove_file(file);
     }
 
     #[test]
