@@ -7,7 +7,7 @@ use std::collections::HashMap;
 use std::future::Future;
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, RwLock};
 use tokio::sync::{OnceCell, Semaphore};
 use url::Url;
 
@@ -15,9 +15,9 @@ use url::Url;
 const MAX_IMAGE: usize = 5 << 20;
 
 /// Image hosts of YouTube, Google accounts, Apple, Spotify, Deezer and SoundCloud (exact names), and YouTube Music's own art paths (Liked Music's cover on
-/// gstatic, My Mix covers drawn by music.youtube.com): both load without a session.
+/// gstatic, My Mix covers drawn by music.youtube.com): both load without a session. Plus signed-in servers' covers.
 pub fn allowed(url: &str) -> bool {
-    Url::parse(url).is_ok_and(|u| {
+    let service = Url::parse(url).is_ok_and(|u| {
         u.scheme() == "https"
             && u.host_str().is_some_and(|h| {
                 ["i.ytimg.com", "yt3.ggpht.com", "i.scdn.co", "mosaic.scdn.co", "cdn-images.dzcdn.net", "e-cdns-images.dzcdn.net", "i1.sndcdn.com", "i2.sndcdn.com", "i3.sndcdn.com", "i4.sndcdn.com"].contains(&h)
@@ -25,7 +25,32 @@ pub fn allowed(url: &str) -> bool {
                     || (h == "www.gstatic.com" && u.path().starts_with("/youtube/media/ytm/"))
                     || (h == "music.youtube.com" && u.path().starts_with("/image/"))
             })
-    })
+    });
+    service || server_signer(url).is_some()
+}
+
+/// Adds a signed-in server's auth to one of its URLs (None: not that server's).
+pub type Signer = Arc<dyn Fn(&str) -> Option<String> + Send + Sync>;
+
+/// Signed-in personal servers (`subsonic.rs`): their covers are allowed, plain http too (a server on the LAN), and
+/// fetched with the auth Rust adds. The library keeps their URLs without it.
+static SERVERS: RwLock<Vec<(String, Signer)>> = RwLock::new(Vec::new());
+
+/// At sign-in (and launch): `base`'s cover path joins the allowlist.
+pub fn allow_server(base: &str, sign: Signer) {
+    let mut all = SERVERS.write().unwrap();
+    all.retain(|(b, _)| b != base);
+    all.push((base.to_string(), sign));
+}
+
+/// At sign-out.
+pub fn forget_server(base: &str) {
+    SERVERS.write().unwrap().retain(|(b, _)| b != base);
+}
+
+/// The signer of the server whose cover `url` is.
+fn server_signer(url: &str) -> Option<Signer> {
+    SERVERS.read().unwrap().iter().find(|(b, _)| url.strip_prefix(b.as_str()).is_some_and(|rest| rest.starts_with("/rest/getCoverArt.view?"))).map(|(_, s)| s.clone())
 }
 
 /// Image type from magic bytes (cache files carry no headers).
@@ -208,7 +233,12 @@ impl ArtCache {
             music_core::artcache::touch(&path);
             return Ok((bytes.clone(), sniff(&bytes)));
         }
-        let res = self.http.get(url).send().await?.error_for_status()?;
+        // A server's cover: its auth added here, never in the URL kept or shown.
+        let signed = match server_signer(url) {
+            Some(sign) => sign(url).context("Image not available")?,
+            None => url.to_string(),
+        };
+        let res = self.http.get(signed).send().await?.error_for_status()?;
         let image = res.headers().get(reqwest::header::CONTENT_TYPE).and_then(|v| v.to_str().ok()).is_some_and(|t| t.starts_with("image/"));
         ensure!(image, "Not an image");
         ensure!(res.content_length().is_none_or(|n| n <= MAX_IMAGE as u64), "Image too large");
@@ -276,6 +306,7 @@ mod tests {
             s.mock("GET", format!("/{n}.png").as_str()).with_header("content-type", "image/png").with_body(png(n)).expect(1).create_async().await;
         }
         s.mock("GET", "/page").with_header("content-type", "text/html").with_body("<html>").create_async().await;
+        s.mock("GET", "/rest/getCoverArt.view").match_query(mockito::Matcher::AllOf(vec![mockito::Matcher::UrlEncoded("id".into(), "al-1".into()), mockito::Matcher::UrlEncoded("t".into(), "tok".into())])).with_header("content-type", "image/png").with_body(png(4)).expect(1).create_async().await;
         let dir = tempfile::tempdir().unwrap();
         let cache = ArtCache::new(dir.path().to_path_buf(), 25);
         let url = |n: &str| format!("{}/{n}", s.url());
@@ -285,6 +316,15 @@ mod tests {
         assert_eq!(cache.fetch(&url("1.png")).await.unwrap().0, bytes, "second read from disk (mock expects 1 call)");
         assert!(cache.fetch(&url("page")).await.is_err());
         assert!(cache.get(&url("1.png"), None).await.is_err(), "mock host not on allowlist");
+        // A signed-in server's cover: allowed, fetched with the auth added, kept under the URL without it.
+        let cover = format!("{}/rest/getCoverArt.view?id=al-1", s.url());
+        assert!(!allowed(&cover));
+        allow_server(&s.url(), Arc::new(|u: &str| Some(format!("{u}&t=tok"))));
+        assert!(allowed(&cover) && !allowed(&format!("{}/rest/stream.view?id=1", s.url())));
+        assert!(cache.get(&cover, None).await.is_ok());
+        assert!(on_disk("rest/getCoverArt.view?id=al-1").exists());
+        forget_server(&s.url());
+        assert!(!allowed(&cover));
         cache.fetch(&url("2.png")).await.unwrap();
         // 2 is the oldest, 1 was used again (a day or more later: that is when the file is touched).
         age(&on_disk("2.png"), 3);

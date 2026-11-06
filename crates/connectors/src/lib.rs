@@ -17,6 +17,7 @@ pub mod soundcloud;
 pub mod spotify;
 pub mod spotify_embed;
 pub mod spotify_page;
+pub mod subsonic;
 pub mod sponsorblock;
 pub mod youtube;
 pub mod ytmusic;
