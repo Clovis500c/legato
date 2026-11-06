@@ -337,12 +337,19 @@ visualizer and the media panel apply.
   its token, its expiry (30 minutes at most) or Cancel (`src-tauri/src/plex.rs`). Then `plex.tv/api/v2/user` (the
   name) and `api/v2/resources?includeHttps=1&includeRelay=1` (the servers, owned first, each with its own token and
   addresses). One server is picked at once, several show a picker; its addresses are tried in order (on this network,
-  then direct https, then direct http, Plex's relay last) until one answers `/identity` as that machine. The account
-  keeps the server's token, its machine id (the key: addresses change), its direct and relay addresses; the account's
-  own token is dropped. A sync that finds the address gone tries the others and keeps the one that answers. Every
-  request carries `X-Plex-Token` (and the client identifier) in headers. A sync reads each music library
-  (`library/sections`, type artist) by pages (`X-Plex-Container-Start` / `-Size`, 500, the total from
-  `X-Plex-Container-Total-Size` or `totalSize`); a library that fails is counted, nothing dropped. Likes = 5 stars
+  then direct https, then plain http on this network, Plex's relay last; plain http to a public address is left out,
+  the token would cross the internet in clear) until one answers `/identity` as that machine. `/identity` is asked
+  without the token (whatever answers at a LAN address on another network never gets it); a server that refuses it
+  without one gets it over https only. The account keeps the server's token, its machine id (the key: addresses
+  change), its direct and relay addresses; the account's own token is dropped (for an owned server, the server's
+  token can be the account's own: Sign out forgets it here, Plex's Authorized Devices still lists Legato until it's
+  removed there). A sync that finds the address gone tries the others and keeps the one that answers; one on the relay
+  tries the direct addresses first. Every request carries `X-Plex-Token` (and the client identifier) in headers, and
+  the servers' client follows redirects on the same host only (reqwest drops `Authorization` on the way to another
+  host, not `X-Plex-Token`; the art scheme likewise for a server's covers). A sync reads each music library
+  (`library/sections`, type artist) by pages (`X-Plex-Container-Start` / `-Size`, 500, the next start from what came,
+  the total from `X-Plex-Container-Total-Size` or `totalSize`); a library that fails, or one past 500 000 songs, is
+  counted, nothing dropped (Jellyfin's pages the same way). Likes = 5 stars
   (`userRating` 10, Plexamp's loved), Like / unlike = `:/rate` 10 / -1; a counted play = `:/scrobble`. Audio: the
   part's own file (`/library/parts/…`, learnt at the sync, else asked once from `library/metadata/<id>`) with ranges;
   Plex's transcoder isn't asked, so a format the engine can't read says so. Covers: `photo/:/transcode` at 1200 px.

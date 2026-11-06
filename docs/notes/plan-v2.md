@@ -429,6 +429,24 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
         loved; a 4-star song isn't a like); Plex's transcoder not asked (an unusual format says it can't play); Jellyfin
         and Plex keys like Subsonic's (Plex's by its machine id, so a new address keeps the songs); a play's stop sent
         to Jellyfin at every server song's end, its play count only past the rule.
+        Review (2026-11-06), fixed: Plex's `/identity` probe sent the server's token to every address before knowing it
+        was that server (a LAN address on another network got it), and took an answer without a machine id; plain
+        http to a public address was tried (the token in clear); a Plex server once on its relay stayed there; the
+        servers' client and the art scheme followed redirects to other hosts with `X-Plex-Token` (reqwest drops only
+        `Authorization`); Jellyfin's paging stopped at a short page (a proxy's cap dropped the rest from the library);
+        both readers' 100 000-entry cap counted a cut read as whole (songs past it dropped); a base no account uses
+        (a Plex server moved) kept its cover signer; a double click on Sign in with Plex made two PINs. Decided alone
+        (2026-11-06): plain http to Plex only on this network (Plex's own "insecure connections: on the same
+        network"); `/identity` without the token, then with it over https only when the server wants it; a Plex
+        server on its relay tries its direct addresses at each sync; redirects with a server's auth on the same host,
+        never down to http; 500 000 songs read at most, a longer read counted as failed. Easy to undo, each in its
+        own function (`plex::order`, `plex::pick`, `servers::stays`, `art::redirect_ok`).
+      - [ ] `S` Plex's Sign out ends nothing at Plex: the account's token is dropped at the pick, and an owned server's
+        token can be the account's own; Legato stays in plex.tv › Authorized Devices until the user removes it there
+        (the privacy row says so). Revoking it needs the account token kept, or a documented device-removal call.
+      - [ ] `S` Plex's covers keep the address in use at the sync: away from home on its plain http LAN address (when
+        its plex.direct https one didn't answer), a cover asked before the next sync goes with the token to whatever
+        answers at that LAN address. Store covers by machine id (`plex:<id>/…`) and sign them at the address in use.
       - [ ] `S` Plex's JWT sign-in (clients.plex.tv, a device key pair, the token refreshed each week) if Plex retires
         the legacy PIN's long-lived tokens.
       - [ ] `S` Plex's transcoder (`music/:/transcode/universal`) for formats the engine can't read.
@@ -1156,15 +1174,18 @@ Most useful first; the tag is the effort.
         or a web page says it isn't a Jellyfin); Dashboard › Devices shows "Legato on Windows"; songs, albums,
         playlists and favourites come in; a song plays and seeks (a FLAC raw, an opus as the server's MP3); a like is a
         heart in Jellyfin, an unlike removes it; Dashboard › Activity shows the start and the stop; a song played past
-        half adds to its play count (and one skipped early doesn't); Sign out removes the device from Jellyfin's list
-        and the songs from the library.
+        half adds to its play count (and one skipped early doesn't; one played to its end counts once, not twice:
+        Jellyfin's own Stopped may count a play past 90 %, then `UserPlayedItems` adds one); Sign out removes the device
+        from Jellyfin's list and the songs from the library.
       - Plex (personal servers, part 2), with your Plex account and server: Server type Plex › Sign in with Plex
         opens app.plex.tv in your browser with the code shown in the app; after you allow Legato there, the app goes on
         by itself within a few seconds (several servers: a picker; a shared one says "Shared with you"); Cancel stops
         it; a code left alone expires with a message. Songs and playlists come in (how long for your library?), covers
         show, a song plays and seeks; a like is 5 stars in Plex, an unlike clears them; a song played past half shows
         in Plex's history; away from home (phone on mobile data, or the server's port closed) does the row say Plex's
-        relay, and does it play? Settings › Privacy lists plex.tv, the server's plex.direct address, nothing else.
+        relay, and does it play? Back home, the next sync leaves the relay by itself. Does `/identity` answer without a
+        token (the sign-in finds the server)? Settings › Privacy lists plex.tv, the server's plex.direct address,
+        nothing else.
 
 ## Waiting on the user (outside the code)
 
