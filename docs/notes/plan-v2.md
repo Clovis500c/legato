@@ -398,7 +398,11 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
         the server's); stars and plays follow the account's direction (Import only / Off send nothing); a re-sync every
         30 minutes; one server shown at a time (the keychain holds a list); no Volume levelling or Skip silence for
         server songs yet (their whole file isn't on disk to measure); the server's search3 built but not in the app's
-        search yet.
+        search yet. Review (2026-11-06): covers of an address typed in capitals, a user or password in the address
+        refused, a partial read (albums failed) or a failed playlist drops nothing, a sync during Sign out writes
+        nothing, plain Sync Mode files' secrets ignored, covers asked at 1200 px. Decided alone (2026-11-06): Sign out
+        removes the server's songs and playlists (not kept unplayable: Sign in again brings them back, a song also
+        on another source stays without it); an automatic re-sync only rides `sync_all` (no timer of its own).
       - [ ] Part 2: Jellyfin (its own API, `Kind::Jellyfin`), then Plex with its PIN sign-in (plex.tv/link, a token in
         the keychain, never a password typed in the app).
       - [ ] `S` Trust a self-signed server: its certificate's SHA-256 fingerprint shown at sign-in and pinned (rustls's

@@ -990,8 +990,9 @@ impl Library {
 
     /// A server's songs mirror its latest sync (`server.rs`): upsert all in one write (links to the same songs from other
     /// sources), drop this server's ids it no longer has, then rows left with no source and no playlist. Other servers'
-    /// ids stay. Returns the songs kept.
-    pub fn replace_server(&self, key: &str, tracks: &[Track]) -> Result<usize> {
+    /// ids stay. `whole` false (some albums failed to come): upsert only, nothing dropped (a song missing from a partial
+    /// read isn't gone, and its plays, ratings and bookmarks would go with its row). Returns this server's songs here.
+    pub fn replace_server(&self, key: &str, tracks: &[Track], whole: bool) -> Result<usize> {
         let prefix = format!("{key}:");
         self.tx(|| {
             let tracks: Vec<&Track> = tracks.iter().filter(|t| !self.is_removed(t).unwrap_or(false)).collect();
@@ -1003,6 +1004,9 @@ impl Library {
                 let mut stmt = self.db.prepare("SELECT source_id FROM track_ids WHERE source = 'server' AND substr(source_id, 1, ?2) = ?1")?;
                 stmt.query_map(params![prefix, prefix.len() as i64], |r| r.get(0))?.collect::<rusqlite::Result<_>>()?
             };
+            if !whole {
+                return Ok(old.len());
+            }
             for id in old.iter().filter(|id| !keep.contains(id.as_str())) {
                 self.db.execute("DELETE FROM track_ids WHERE source = 'server' AND source_id = ?1", [id])?;
             }
@@ -1547,15 +1551,15 @@ mod tests {
         let mut songs = served("s1", 3);
         // Same song as the Spotify one (ISRC): one row with both sources.
         songs.push(Track { ids: BTreeMap::from([(Source::Server, "s1:lucky".into())]), ..spotify() });
-        assert_eq!(lib.replace_server("s1", &songs)?, 4);
+        assert_eq!(lib.replace_server("s1", &songs, true)?, 4);
         // Another server's songs are its own.
-        lib.replace_server("s2", &served("s2", 2))?;
+        lib.replace_server("s2", &served("s2", 2), true)?;
         let all = lib.tracks()?;
         assert_eq!(all.len(), 6);
         let lucky = all.iter().find(|t| t.track.ids.contains_key(&Source::Spotify)).unwrap();
         assert_eq!(lucky.track.ids.get(&Source::Server).map(String::as_str), Some("s1:lucky"));
         // Next sync: one song gone from the server; the Spotify song stays, without the server.
-        lib.replace_server("s1", &served("s1", 3))?;
+        lib.replace_server("s1", &served("s1", 3), true)?;
         let all = lib.tracks()?;
         assert_eq!(all.len(), 6);
         assert!(all.iter().all(|t| t.track.ids.get(&Source::Server).is_none_or(|id| id != "s1:lucky")));
@@ -1563,7 +1567,7 @@ mod tests {
         lib.save_playlist(Source::Server, "s1:pl-1", "Road", &served("s1", 2))?;
         lib.save_playlist(Source::Server, "s2:pl-1", "Road", &served("s2", 1))?;
         lib.drop_server_playlists("s1", &[])?;
-        lib.replace_server("s1", &[])?;
+        lib.replace_server("s1", &[], true)?;
         assert_eq!(lib.tracks()?.len(), 3);
         assert_eq!(lib.playlists()?.iter().filter(|p| p.source == Source::Server).count(), 1);
         Ok(())
@@ -1574,12 +1578,28 @@ mod tests {
         let lib = Library::in_memory()?;
         let songs = served("s1", 10_000);
         let started = std::time::Instant::now();
-        assert_eq!(lib.replace_server("s1", &songs)?, 10_000);
+        assert_eq!(lib.replace_server("s1", &songs, true)?, 10_000);
         // Again (the next sync): nothing new, quicker.
-        lib.replace_server("s1", &songs)?;
+        lib.replace_server("s1", &songs, true)?;
         assert_eq!(lib.tracks()?.len(), 10_000);
         // Debug build: generous. Async command, so never on the window's thread anyway.
         assert!(started.elapsed() < std::time::Duration::from_secs(60), "{:?}", started.elapsed());
+        Ok(())
+    }
+
+    #[test]
+    fn a_partial_read_of_a_server_drops_nothing() -> Result<()> {
+        let lib = Library::in_memory()?;
+        lib.replace_server("s1", &served("s1", 3), true)?;
+        let played = lib.tracks()?.into_iter().find(|t| t.track.ids.get(&Source::Server).is_some_and(|id| id == "s1:tr-2")).unwrap().id;
+        lib.record_play(&crate::history::Play { track_id: played, started_at: 1, listened_ms: 200_000, completed: true })?;
+        // Albums failed to come: only the first song read. The others stay, with their plays.
+        assert_eq!(lib.replace_server("s1", &served("s1", 1), false)?, 3);
+        assert_eq!(lib.tracks()?.len(), 3);
+        assert_eq!(lib.play_stats()?.get(&played).map(|s| s.0), Some(1));
+        // A whole read without them: they go.
+        assert_eq!(lib.replace_server("s1", &served("s1", 1), true)?, 1);
+        assert_eq!(lib.tracks()?.len(), 1);
         Ok(())
     }
 

@@ -287,10 +287,16 @@ Ampache: `crates/connectors/src/subsonic.rs`, API 1.16.1), Jellyfin and Plex lat
 in the native engine like local files, so gapless, fades, the Live Editor, the visualizer and the media panel apply.
 
 - Library: `Source::Server`, ids `"<server key>:<item id>"`, the key `s` + 8 hex of sha256(kind, address, user)
-  (`music_core::server`). A sync (`src-tauri/src/servers.rs` `server_sync`, and every 30 minutes in `sync_all`) reads
-  `getAlbumList2` by pages of 500, then each album (`getAlbum`, 6 at once), the playlists, the starred songs (likes);
-  `Library::replace_server` mirrors them (matched to the same song from other sources like any import: ISRC from
-  OpenSubsonic's `isrc`, then title + artist + duration), playlists gone from the server leave (`drop_server_playlists`).
+  (`music_core::server`). A sync (`src-tauri/src/servers.rs` `server_sync`: Sign in, Sync now; and in `sync_all` when
+  the last one is 30 minutes old) reads `getAlbumList2` by pages of 500, then each album (`getAlbum`, 6 at once), the
+  playlists, the starred songs (likes); `Library::replace_server` mirrors them (matched to the same song from other
+  sources like any import: ISRC from OpenSubsonic's `isrc`, then title + artist + duration), playlists gone from the
+  server leave (`drop_server_playlists`). A read with albums that failed to come drops nothing (their songs, plays and
+  ratings stay until a whole read); a playlist that failed stays as it was. The window never waits: async commands,
+  the library written in one transaction off the async threads.
+- Sign out: the account leaves the keychain, the server's covers leave the art allowlist, its songs and playlists leave
+  the library (decided 2026-11-06: removed, not kept unplayable; a song also on another source stays, without the
+  server; Sign in again brings them back). A sync still reading at that moment writes nothing.
 - Playing: the interface's source order is local file, server, YouTube, Spotify, preview (`player/sources.ts`); a run of
   native songs (local or server) goes to the engine at once. The engine gets `server:<key>:<item>` paths, never a URL:
   `music_player::http::Fetch` (built in `servers.rs`) makes each request with a fresh token, so no token reaches the
@@ -305,10 +311,12 @@ in the native engine like local files, so gapless, fades, the Live Editor, the v
 - Back to the server, when its direction sends (Both ways, Send only): a like stars the song, an unlike unstars it;
   a song played from the server sends `scrobble?submission=false` at its start and a listen past half of it or 4
   minutes (`features/sources/servers.ts`, Last.fm's rule from `listenbrainzRules.ts`).
-- Covers: `getCoverArt` through the `art` scheme; the server's address is allowed in `connectors::art` at sign-in, the
-  request signed there (`allow_server`), so the URL the interface holds carries no token.
+- Covers: `getCoverArt` (asked at 1200 px at most: a folder's own scan can pass the cache's 5 MB) through the `art`
+  scheme; the server's base (as `Url` writes it) is allowed in `connectors::art` at sign-in and launch, the request
+  signed there (`allow_server`), so the URL the interface holds carries no token; Sign out takes it off the list.
 - Sign-in: `ping` with token auth (md5(password + a fresh salt) per request), the account (address, user, password) in
-  the keychain under `servers`; Sync Mode carries it only inside a sealed snapshot. Plain http:// is allowed; to a public
+  the keychain under `servers`; Sync Mode carries it only inside a sealed snapshot (a plain file's secrets are ignored).
+  No user or password inside the address (`http://me:secret@nas` is refused). Plain http:// is allowed; to a public
   address the row warns (`music_core::server::exposure`). A self-signed certificate fails with a clear error (no way to
   trust one yet: plan-v2).
 - Not yet: Volume levelling and Skip silence (local files only: the server's ReplayGain from OpenSubsonic is a plan

@@ -82,10 +82,12 @@ pub fn take(state: &AppState, from: &[Account]) -> anyhow::Result<()> {
     let mut changed = false;
     for a in from.iter().take(8) {
         let Ok(address) = server::normalize(&a.address) else { continue };
-        if a.user.is_empty() || a.user.len() > 200 || a.password.len() > 500 || list.iter().any(|b| b.key() == a.key()) {
+        let got = Account { kind: a.kind, address, user: a.user.clone(), password: a.password.clone() };
+        // Same server as one here once both are written alike (key of the address as kept).
+        if got.user.is_empty() || got.user.len() > 200 || got.password.is_empty() || got.password.len() > 500 || !Subsonic::usable(&got.address) || list.iter().any(|b| b.key() == got.key()) {
             continue;
         }
-        list.push(Account { kind: a.kind, address, user: a.user.clone(), password: a.password.clone() });
+        list.push(got);
         changed = true;
     }
     if changed { save(state, list) } else { Ok(()) }
@@ -195,7 +197,7 @@ pub async fn server_sign_out(state: State<'_, AppState>, key: String) -> CmdResu
         let state = app.state::<AppState>();
         let lib = state.lib();
         lib.drop_server_playlists(&key, &[])?;
-        lib.replace_server(&key, &[]).map(|_| ())
+        lib.replace_server(&key, &[], true).map(|_| ())
     })
     .await
     .map_err(err)?
@@ -222,7 +224,8 @@ fn direction_key(key: &str) -> String {
 async fn sync_one(state: &AppState, a: &Account) -> anyhow::Result<ServerSync> {
     let key = a.key();
     let sub = Subsonic::from_account(a);
-    let (songs, mut skipped) = sub.library().await?;
+    let (songs, albums_failed) = sub.library().await?;
+    let mut skipped = albums_failed;
     let mut lists: Vec<(String, String, Vec<Track>)> = Vec::new();
     // Every playlist the server lists stays, one that failed to come too (kept as it was, not dropped).
     let mut keep: Vec<String> = Vec::new();
@@ -243,7 +246,8 @@ async fn sync_one(state: &AppState, a: &Account) -> anyhow::Result<ServerSync> {
         let lib = state.lib();
         // Signed out while it read (the sign-out cleans under this same lock, after the keychain): nothing written back.
         anyhow::ensure!(account(&key2).is_some(), "Your music server isn't signed in");
-        let n = lib.replace_server(&key2, &songs)?;
+        // Some albums didn't come: their songs aren't gone, nothing dropped this time.
+        let n = lib.replace_server(&key2, &songs, albums_failed == 0)?;
         for (id, name, tracks) in &lists {
             lib.save_playlist(Source::Server, id, name, tracks)?;
         }

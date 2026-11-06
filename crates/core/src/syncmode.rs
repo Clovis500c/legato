@@ -674,6 +674,7 @@ pub fn encode(s: &Snapshot, key: Option<&Key>) -> Result<Vec<u8>> {
 /// File bytes → snapshot. A sealed file needs the key; a plain one is refused when a key is expected (no downgrade).
 pub fn decode(bytes: &[u8], key: Option<&Key>) -> Result<Snapshot> {
     ensure!(bytes.len() > 7 && &bytes[..6] == MAGIC, "Not a Legato sync file");
+    let sealed = bytes[6] == 1;
     let packed = match (bytes[6], key) {
         (1, Some(k)) => open(k, &bytes[7..])?,
         (1, None) => bail!("This sync file is protected by a password"),
@@ -684,7 +685,12 @@ pub fn decode(bytes: &[u8], key: Option<&Key>) -> Result<Snapshot> {
     let mut json = Vec::new();
     GzDecoder::new(packed.as_slice()).take(MAX_SNAPSHOT + 1).read_to_end(&mut json).context("Damaged sync file")?;
     ensure!(json.len() as u64 <= MAX_SNAPSHOT, "Sync file too big");
-    serde_json::from_slice(&json).context("Damaged sync file")
+    let mut s: Snapshot = serde_json::from_slice(&json).context("Damaged sync file")?;
+    // Secrets travel sealed only (ours never writes them in a plain file): any in one are someone else's, ignored.
+    if !sealed {
+        s.secrets = None;
+    }
+    Ok(s)
 }
 
 /// Raw payload for the network exchange (already end-to-end sealed by the code): gzip'd JSON.
@@ -1032,7 +1038,8 @@ mod tests {
         assert!(decode(&sealed, None).is_err());
         assert!(decode(&sealed, Some(&[7; 32])).is_err());
         let plain = encode(&s, None)?;
-        assert_eq!(decode(&plain, None)?, s);
+        // A plain file's secrets (written by hand, or by anyone with the folder) are dropped.
+        assert_eq!(decode(&plain, None)?, Snapshot { secrets: None, ..s.clone() });
         assert!(decode(&plain, Some(&key)).is_err());
         assert!(decode(b"MASYNC\x00garbage", None).is_err());
         assert_eq!(unpack(&pack(&s)?)?, s);

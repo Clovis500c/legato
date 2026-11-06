@@ -21,6 +21,9 @@ pub const PAGE: usize = 500;
 const AT_ONCE: usize = 6;
 /// Transcoded streams: MP3 at this bit rate (kbps), for formats the native engine can't read.
 pub const MAX_BIT_RATE: u32 = 320;
+/// Covers asked at most this big (px): a folder's own scan can pass the art cache's 5 MB limit and show none; the
+/// server cuts it (and keeps the cut). Twice the largest thumbnail (`artcache::SIZES`), enough for the full-screen cover.
+const COVER_SIZE: &str = "1200";
 /// Lists can be long on a slow NAS.
 const LIST_TIMEOUT: Duration = Duration::from_secs(60);
 
@@ -160,11 +163,16 @@ impl Subsonic {
         &self.base
     }
 
-    /// A method's URL without auth (covers in the library: `sign` adds it when Rust fetches).
-    pub fn public_url(&self, method: &str, params: &[(&str, &str)]) -> String {
-        let mut u = Url::parse(&format!("{}/rest/{method}.view", self.base)).expect("base checked at sign-in");
+    /// An address `server::normalize` let through that URLs can be built on ("http://nas:99999" isn't one).
+    pub fn usable(address: &str) -> bool {
+        Url::parse(&format!("{}/rest/ping.view", address.trim_end_matches('/'))).is_ok_and(|u| matches!(u.scheme(), "http" | "https") && u.host_str().is_some_and(|h| !h.is_empty()))
+    }
+
+    /// A method's URL without auth (covers in the library: `sign` adds it when Rust fetches). None: the base isn't one.
+    pub fn public_url(&self, method: &str, params: &[(&str, &str)]) -> Option<String> {
+        let mut u = Url::parse(&format!("{}/rest/{method}.view", self.base)).ok()?;
         u.query_pairs_mut().extend_pairs(params);
-        u.to_string().trim_end_matches('?').to_string()
+        Some(u.to_string().trim_end_matches('?').to_string())
     }
 
     /// A URL of this server with auth added (fresh salt), or None when it isn't this server's API.
@@ -232,7 +240,7 @@ impl Subsonic {
             duration_ms: v.get("duration").and_then(Value::as_u64).filter(|d| *d > 0).map(|d| (d * 1000).min(u64::from(u32::MAX)) as u32),
             isrc,
             ids: BTreeMap::from([(Source::Server, server::item_id(&self.key, &id))]),
-            art: text(v, "coverArt").map(|c| self.public_url("getCoverArt", &[("id", &c)])),
+            art: text(v, "coverArt").and_then(|c| self.public_url("getCoverArt", &[("id", &c), ("size", COVER_SIZE)])),
             musicness: None,
         })
     }
@@ -363,6 +371,16 @@ mod tests {
     }
 
     #[test]
+    fn an_address_urls_cant_be_built_on_is_refused_not_a_panic() {
+        // Past `normalize` (a host is there), not a URL: Sync Mode's accounts are checked so, songs never panic on it.
+        assert!(server::normalize("http://nas:99999").is_ok() && !Subsonic::usable("http://nas:99999"));
+        assert!(Subsonic::usable("http://nas:4533") && Subsonic::usable("https://music.example.com/navidrome") && Subsonic::usable("HTTP://[fd00::5]:4533"));
+        let sub = Subsonic::new("http://nas:99999", "me", "pw");
+        let t = sub.track(&serde_json::json!({ "id": "1", "title": "T", "coverArt": "al-1" })).unwrap();
+        assert_eq!(t.art, None);
+    }
+
+    #[test]
     fn covers_of_an_address_typed_in_capitals_are_still_this_servers() {
         let a = server::Account { kind: server::Kind::Subsonic, address: "HTTP://NAS:80/Music".into(), user: "me".into(), password: "pw".into() };
         let sub = Subsonic::from_account(&a);
@@ -427,9 +445,9 @@ mod tests {
         assert_eq!(t.ids.get(&Source::Server), Some(&format!("{}:tr-1", sub.key())));
         // The cover's URL carries no auth: Rust signs it when it fetches.
         let art = t.art.clone().unwrap();
-        assert_eq!(art, format!("{}/rest/getCoverArt.view?id=al-1", s.url()));
+        assert_eq!(art, format!("{}/rest/getCoverArt.view?id=al-1&size=1200", s.url()));
         let signed_art = sub.sign(&art).unwrap();
-        assert!(signed_art.contains("id=al-1") && signed_art.contains("&t=") && signed_art.contains("&s="));
+        assert!(signed_art.contains("id=al-1&size=1200") && signed_art.contains("&t=") && signed_art.contains("&s="));
         assert_eq!(sub.sign("https://elsewhere.example/rest/getCoverArt.view?id=1"), None);
     }
 
