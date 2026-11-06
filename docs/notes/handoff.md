@@ -61,8 +61,10 @@ time, effort high.
   read drops no song, plain sync files carry no server, no worker left after Stop. About 700 k agent tokens, 10 % of
   the week. Part 2 (Jellyfin, Plex by PIN, one `Conn` for the three kinds): 505e0fb to 7355c7f, untried on a real
   server; the review kept Plex's token off strange addresses, full reads, no relay for good (about 589 k agent tokens,
-  6 % of the week). The owner's tries on 1.1.681 (2026-11-06, 15:56, their phone): Android's Back fixed inline; next,
-  before 18: plan-v2 › The phone, from the owner's tries (the floating video, the embed's error page).
+  6 % of the week). The owner's tries on 1.1.681 (2026-11-06, 15:56, their phone), fixed inline: Android's Back (fe067d7,
+  its Kotlin compiles), no floating video on the phone (9e3d958), our words over the embed's error page (6c70435).
+  Next (window under about 40 %): the phone-1 workflow (review those, build the APK, try them on the emulator; its args
+  in this session's scratchpad `phone1-args.json`, base = HEAD), then 18.
 - The end: a report in French (`docs/notes/report-2026-11-06.md`, untracked), this section folded into the rest of
   this file, the cron deleted, the report sent to the owner (SendUserFile, proactive).
 
