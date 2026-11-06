@@ -1,7 +1,7 @@
 import { Channel, invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 import type { Box } from './artbox'
-import type { ServerExposure, ServerKind, ServerStatus, ServerSync, AddReport, AlbumInfo, Bookmark, DeviceOffer, DeviceOfferEvent, DevicesStatus, CacheStats, Contact, Credentials, DetectInput, Detection, Direction, DiscordStatus, Dropped, Edit, EditDraft, Effects, ExportReport, FileList, FileTags, FindReport, Heard, JumpPlaylist, LastfmStatus, LibraryChanges, LibraryData, LibraryHealth, LibraryPlaylist, LibraryTrack, ListImport, LinkImport, Listen, ListenbrainzStatus, ListRef, LiveReport, LiveSettings, LyricHit, Lyrics, LyricsAsk, MediaNow, Merged, Mix, NearbyState, Pickup, Play, PlayerCommand, PlayerLevels, PlayerStatus, PlaylistEdit, PluginCall, PluginInfo, PluginInspect, Pref, Presence, PushFailed, RemoteLink, RemoteSong, RoomEvent, RoomFind, RoomHeard, RoomNow, RoomReaction, RoomSong, RoomStatus, Scrobble, SearchResults, ShareCode, SharePreview, ShieldStatus, ShortcutEntry, SongTags, Source, SourceStatus, SpotifyCommand, SpotifyExport, SpotifyImport, SpotifyLibraryImport, SpotifyList, SpotifyPick, SpotifyPlayback, SpotifyProgress, SponsorSegment, SyncProbe, SyncReport, SyncStatus, SystemAccent, TagsSaved, Track, UpdateStatus, WatchCmd, WatchRect, WatchReport, YtmAccount, YtmAccounts, YtmArtist, YtmHome } from './generated'
+import type { PlexPin, PlexServer, ServerExposure, ServerKind, ServerStatus, ServerSync, AddReport, AlbumInfo, Bookmark, DeviceOffer, DeviceOfferEvent, DevicesStatus, CacheStats, Contact, Credentials, DetectInput, Detection, Direction, DiscordStatus, Dropped, Edit, EditDraft, Effects, ExportReport, FileList, FileTags, FindReport, Heard, JumpPlaylist, LastfmStatus, LibraryChanges, LibraryData, LibraryHealth, LibraryPlaylist, LibraryTrack, ListImport, LinkImport, Listen, ListenbrainzStatus, ListRef, LiveReport, LiveSettings, LyricHit, Lyrics, LyricsAsk, MediaNow, Merged, Mix, NearbyState, Pickup, Play, PlayerCommand, PlayerLevels, PlayerStatus, PlaylistEdit, PluginCall, PluginInfo, PluginInspect, Pref, Presence, PushFailed, RemoteLink, RemoteSong, RoomEvent, RoomFind, RoomHeard, RoomNow, RoomReaction, RoomSong, RoomStatus, Scrobble, SearchResults, ShareCode, SharePreview, ShieldStatus, ShortcutEntry, SongTags, Source, SourceStatus, SpotifyCommand, SpotifyExport, SpotifyImport, SpotifyLibraryImport, SpotifyList, SpotifyPick, SpotifyPlayback, SpotifyProgress, SponsorSegment, SyncProbe, SyncReport, SyncStatus, SystemAccent, TagsSaved, Track, UpdateStatus, WatchCmd, WatchRect, WatchReport, YtmAccount, YtmAccounts, YtmArtist, YtmHome } from './generated'
 
 // Every type the commands and events carry is a Rust type: `pnpm types` (ts-rs) writes it into ./generated, never by hand.
 // Re-exported here, so features import them from the api.
@@ -72,14 +72,21 @@ export const api = {
   serverStatus: () => invoke<ServerStatus[]>('server_status'),
   /** How an address as typed would be reached (null = not an address yet): the plain-http warning. */
   serverExposure: (address: string) => invoke<ServerExposure | null>('server_exposure', { address }),
-  /** Checked with the server (`ping`), then kept in the keychain. */
+  /** Checked with the server (Subsonic's `ping`, Jellyfin's token), then kept in the keychain. Plex: `plexSignIn`. */
   serverSignIn: (kind: ServerKind, address: string, user: string, password: string) => invoke<ServerStatus>('server_sign_in', { kind, address, user, password }),
   serverSignOut: (key: string) => invoke<void>('server_sign_out', { key }),
   serverSync: (key: string) => invoke<ServerSync>('server_sync', { key }),
   /** Like = star on the server, unlike = unstar. `id` = the song's server id. */
   serverStar: (id: string, on: boolean) => invoke<void>('server_star', { id, on }),
-  /** A play to the server: now playing (false) or a listen (true). */
-  serverScrobble: (id: string, startedAtMs: number, submission: boolean) => invoke<void>('server_scrobble', { id, startedAtMs, submission }),
+  /** A play to the server: now playing (false, no position) at its start; at its end the position heard and whether it counts. */
+  serverScrobble: (id: string, startedAtMs: number, submission: boolean, positionMs?: number) => invoke<void>('server_scrobble', { id, startedAtMs, submission, positionMs: positionMs ?? null }),
+  /** Sign in with Plex: a PIN, Plex's own page opened in the browser with it. */
+  plexSignIn: () => invoke<PlexPin>('plex_sign_in'),
+  /** Waits for the user on Plex's page (a few minutes at most), then the account's servers. */
+  plexWait: () => invoke<PlexServer[]>('plex_wait'),
+  plexCancel: () => invoke<void>('plex_cancel'),
+  /** The server picked: its best address, its token in the keychain. */
+  plexPick: (id: string) => invoke<ServerStatus>('plex_pick', { id }),
   albumInfo: (artist: string, album: string, trackIds: number[], country: string) => invoke<AlbumInfo | null>('album_info', { artist, album, trackIds, country }),
   /** YouTube versions for tracks with no full source (1 search each, daily budget). */
   findVersions: (ids: number[]) => invoke<FindReport>('find_versions', { ids }),

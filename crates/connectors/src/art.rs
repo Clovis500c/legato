@@ -29,10 +29,17 @@ pub fn allowed(url: &str) -> bool {
     service || server_signer(url).is_some()
 }
 
-/// Adds a signed-in server's auth to one of its URLs (None: not that server's).
-pub type Signer = Arc<dyn Fn(&str) -> Option<String> + Send + Sync>;
+/// One cover request of a signed-in server: its URL (Subsonic's auth in it) and headers (Jellyfin's and Plex's token).
+#[derive(Debug, Clone, PartialEq, Default)]
+pub struct Signed {
+    pub url: String,
+    pub headers: Vec<(&'static str, String)>,
+}
 
-/// Signed-in personal servers (`subsonic.rs`): their covers are allowed, plain http too (a server on the LAN), and
+/// Adds a signed-in server's auth to one of its cover URLs (None: not a cover of that server).
+pub type Signer = Arc<dyn Fn(&str) -> Option<Signed> + Send + Sync>;
+
+/// Signed-in personal servers (`servers.rs`): their covers are allowed, plain http too (a server on the LAN), and
 /// fetched with the auth Rust adds. The library keeps their URLs without it.
 static SERVERS: RwLock<Vec<(String, Signer)>> = RwLock::new(Vec::new());
 
@@ -48,9 +55,10 @@ pub fn forget_server(base: &str) {
     SERVERS.write().unwrap().retain(|(b, _)| b != base);
 }
 
-/// The signer of the server whose cover `url` is.
-fn server_signer(url: &str) -> Option<Signer> {
-    SERVERS.read().unwrap().iter().find(|(b, _)| url.strip_prefix(b.as_str()).is_some_and(|rest| rest.starts_with("/rest/getCoverArt.view?"))).map(|(_, s)| s.clone())
+/// The signed request for `url` when it's a signed-in server's cover (its signer says which paths are).
+fn server_signer(url: &str) -> Option<Signed> {
+    let all = SERVERS.read().unwrap();
+    all.iter().filter(|(b, _)| url.strip_prefix(b.as_str()).is_some_and(|rest| rest.starts_with('/'))).find_map(|(_, sign)| sign(url))
 }
 
 /// Image type from magic bytes (cache files carry no headers).
@@ -234,11 +242,13 @@ impl ArtCache {
             return Ok((bytes.clone(), sniff(&bytes)));
         }
         // A server's cover: its auth added here, never in the URL kept or shown.
-        let signed = match server_signer(url) {
-            Some(sign) => sign(url).context("Image not available")?,
-            None => url.to_string(),
-        };
-        let res = self.http.get(signed).send().await?.error_for_status()?;
+        let signed = server_signer(url).unwrap_or_else(|| Signed { url: url.to_string(), headers: Vec::new() });
+        let mut req = self.http.get(&signed.url);
+        for (k, v) in &signed.headers {
+            req = req.header(*k, v);
+        }
+        // Its URL may hold a server's auth: never in an error.
+        let res = req.send().await.map_err(|e| e.without_url())?.error_for_status().map_err(|e| e.without_url())?;
         let image = res.headers().get(reqwest::header::CONTENT_TYPE).and_then(|v| v.to_str().ok()).is_some_and(|t| t.starts_with("image/"));
         ensure!(image, "Not an image");
         ensure!(res.content_length().is_none_or(|n| n <= MAX_IMAGE as u64), "Image too large");
@@ -308,13 +318,31 @@ mod tests {
         let cache = ArtCache::new(dir.path().to_path_buf(), 1 << 20);
         let cover = format!("{}/rest/getCoverArt.view?id=al-1", s.url());
         assert!(!allowed(&cover));
-        allow_server(&s.url(), Arc::new(|u: &str| Some(format!("{u}&t=tok"))));
+        allow_server(&s.url(), Arc::new(|u: &str| u.contains("/rest/getCoverArt.view?").then(|| Signed { url: format!("{u}&t=tok"), headers: Vec::new() })));
         assert!(allowed(&cover) && !allowed(&format!("{}/rest/stream.view?id=1", s.url())));
         assert!(cache.get(&cover, None).await.is_ok());
         assert!(dir.path().join(key(&cover)).exists(), "kept under the URL without the auth");
         // Signed out: refused, even from the cache.
         forget_server(&s.url());
         assert!(!allowed(&cover) && cache.get(&cover, None).await.is_err());
+    }
+
+    #[tokio::test]
+    async fn a_servers_token_goes_in_a_header_never_in_the_url() {
+        let mut s = Server::new_async().await;
+        let m = s.mock("GET", "/Items/a1/Images/Primary").match_query(mockito::Matcher::UrlEncoded("maxWidth".into(), "1200".into())).match_header("authorization", "MediaBrowser Token=\"tok\"").with_header("content-type", "image/png").with_body(png(5)).expect(1).create_async().await;
+        let dir = tempfile::tempdir().unwrap();
+        let cache = ArtCache::new(dir.path().to_path_buf(), 1 << 20);
+        let base = format!("{}/jf", s.url());
+        let cover = format!("{}/Items/a1/Images/Primary?maxWidth=1200", s.url());
+        // A base that only starts like this one isn't it.
+        allow_server(&base, Arc::new(|u: &str| Some(Signed { url: u.into(), headers: vec![("authorization", "x".into())] })));
+        assert!(!allowed(&cover));
+        allow_server(&s.url(), Arc::new(|u: &str| u.contains("/Images/").then(|| Signed { url: u.into(), headers: vec![("authorization", "MediaBrowser Token=\"tok\"".into())] })));
+        assert!(cache.get(&cover, None).await.is_ok());
+        m.assert_async().await;
+        forget_server(&s.url());
+        forget_server(&base);
     }
 
     #[tokio::test]

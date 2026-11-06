@@ -25,7 +25,9 @@ export async function syncServer(key: string) {
   }
 }
 
-/** Plays back to the server a song came from: now playing at its start, a listen past half of it or 4 minutes. */
+/** Plays back to the server a song came from: now playing at its start; at its end the time heard and whether it
+ * counts (past half of it or 4 minutes). Each kind takes what it knows (Subsonic: the listen; Jellyfin: the stop
+ * too; Plex: the listen). */
 export function startServers() {
   void useServers.getState().refresh()
   const serverId = (trackId: number) => (usePlayer.getState().list.find((t) => t.id === trackId) ?? useStore.getState().tracks.find((t) => t.id === trackId))?.ids.server
@@ -33,8 +35,8 @@ export function startServers() {
   const started = new Map<number, number>()
   const offEnd = onListenEnd((play, durationMs) => {
     const id = serverId(play.trackId)
-    if (!id || !started.has(play.trackId) || !counts(durationMs, play.listenedMs)) return
-    void api.serverScrobble(id, started.get(play.trackId) ?? play.startedAt * 1000, true).catch(() => {})
+    if (!id || !started.has(play.trackId)) return
+    void api.serverScrobble(id, started.get(play.trackId) ?? play.startedAt * 1000, counts(durationMs, play.listenedMs), Math.max(0, Math.round(play.listenedMs))).catch(() => {})
   })
   let last: number | undefined
   const off = usePlayer.subscribe((s) => {

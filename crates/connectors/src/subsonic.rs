@@ -4,6 +4,8 @@
 //! a URL with auth never goes to the interface or a log. Reads the library, playlists, search and stars; sends stars and
 //! plays back. Audio: `stream.view` as the server keeps it (raw), or its transcoding to MP3 at a max bit rate.
 
+pub use crate::servers::{Body, Streamed};
+use crate::servers::{COVER_SIZE, LIST_TIMEOUT, base_of, http, note, reach};
 use anyhow::{Context, Result, anyhow, bail};
 use md5::{Digest, Md5};
 use music_core::model::{PlaylistRef, Source, Track};
@@ -21,17 +23,6 @@ pub const PAGE: usize = 500;
 const AT_ONCE: usize = 6;
 /// Transcoded streams: MP3 at this bit rate (kbps), for formats the native engine can't read.
 pub const MAX_BIT_RATE: u32 = 320;
-/// Covers asked at most this big (px): a folder's own scan can pass the art cache's 5 MB limit and show none; the
-/// server cuts it (and keeps the cut). Twice the largest thumbnail (`artcache::SIZES`), enough for the full-screen cover.
-const COVER_SIZE: &str = "1200";
-/// Lists can be long on a slow NAS.
-const LIST_TIMEOUT: Duration = Duration::from_secs(60);
-
-/// One HTTP client for servers: a short connect timeout (a server that's off answers nothing).
-fn http() -> reqwest::Client {
-    static HTTP: std::sync::LazyLock<reqwest::Client> = std::sync::LazyLock::new(|| crate::builder().connect_timeout(Duration::from_secs(10)).build().unwrap_or_default());
-    HTTP.clone()
-}
 
 /// What `ping` learnt.
 #[derive(Debug, Clone, PartialEq, Default)]
@@ -39,25 +30,6 @@ pub struct Ping {
     pub version: String,
     /// OpenSubsonic's server name ("navidrome", "gonic"…).
     pub server: Option<String>,
-}
-
-/// A song's audio answer: status and headers for the player to judge (`music_player::http`), the body read on.
-pub struct Streamed {
-    pub status: u16,
-    pub content_length: Option<u64>,
-    pub content_range: Option<String>,
-    pub content_type: Option<String>,
-    pub body: Body,
-}
-
-/// A stream's body, chunk by chunk.
-pub struct Body(reqwest::Response);
-
-impl Body {
-    /// Next bytes; None = the end. Errors carry no URL (it holds the auth).
-    pub async fn chunk(&mut self) -> Result<Option<Vec<u8>>> {
-        Ok(self.0.chunk().await.map_err(|e| anyhow!("{}", e.without_url()))?.map(|b| b.to_vec()))
-    }
 }
 
 #[derive(Clone)]
@@ -84,18 +56,6 @@ pub fn token(password: &str, salt: &str) -> String {
 /// A fresh salt: 12 random hex characters.
 fn salt() -> String {
     (0..6).map(|_| format!("{:02x}", rand::random::<u8>())).collect()
-}
-
-/// Network failures in words (English, `shared/errors.ts` maps them).
-fn reach(e: reqwest::Error) -> anyhow::Error {
-    // Its URL carries the auth: never in an error the interface or a log sees.
-    let chain = format!("{:#}", anyhow::Error::from(e.without_url()));
-    let lower = chain.to_lowercase();
-    if lower.contains("certificate") || lower.contains("self signed") || lower.contains("self-signed") || lower.contains("unknownissuer") {
-        anyhow!("Your music server's certificate isn't trusted (a self-signed one?): give the server a certificate from a known authority, or use its http:// address on your network ({chain})")
-    } else {
-        anyhow!("Your music server doesn't answer: check that it's on and its address is right ({chain})")
-    }
 }
 
 /// Subsonic error codes in words.
@@ -142,12 +102,10 @@ fn text(v: &Value, k: &str) -> Option<String> {
 impl Subsonic {
     /// `address` as `server::normalize` left it.
     pub fn new(address: &str, user: &str, password: &str) -> Self {
-        let typed = address.trim_end_matches('/');
-        // Key from the address as kept (`Account::key`); base as `Url` writes it (scheme and host in lowercase, a
-        // default port dropped), so the cover URLs built from it start with it (`sign`, `art::allow_server`).
-        let key = server::key(server::Kind::Subsonic, typed, user);
-        let base = Url::parse(typed).map(|u| u.to_string().trim_end_matches('/').to_string()).unwrap_or_else(|_| typed.to_string());
-        Self { base, user: user.to_string(), password: password.to_string(), key, http: http() }
+        // Key from the address as kept (`Account::key`); base as `Url` writes it, so the cover URLs built from it start
+        // with it (`sign`, `art::allow_server`).
+        let key = server::key(server::Kind::Subsonic, address.trim_end_matches('/'), user);
+        Self { base: base_of(address), user: user.to_string(), password: password.to_string(), key, http: http() }
     }
 
     pub fn from_account(a: &server::Account) -> Self {
@@ -165,7 +123,7 @@ impl Subsonic {
 
     /// An address `server::normalize` let through that URLs can be built on ("http://nas:99999" isn't one).
     pub fn usable(address: &str) -> bool {
-        Url::parse(&format!("{}/rest/ping.view", address.trim_end_matches('/'))).is_ok_and(|u| matches!(u.scheme(), "http" | "https") && u.host_str().is_some_and(|h| !h.is_empty()))
+        crate::servers::usable(address)
     }
 
     /// A method's URL without auth (covers in the library: `sign` adds it when Rust fetches). None: the base isn't one.
@@ -192,10 +150,7 @@ impl Subsonic {
     }
 
     fn url(&self, method: &str, params: &[(&str, &str)]) -> Result<Url> {
-        // An address by number skips the resolver (`Noted`): Settings › Privacy learns it here.
-        if server::host_of(&self.base).is_some_and(|h| h.parse::<std::net::IpAddr>().is_ok()) {
-            music_core::netlog::note_url(&self.base, music_core::netlog::Via::App, false);
-        }
+        note(&self.base);
         let mut u = Url::parse(&format!("{}/rest/{method}.view", self.base)).context("Your music server's address isn't right")?;
         u.query_pairs_mut().extend_pairs(params).extend_pairs(self.auth());
         Ok(u)
@@ -343,8 +298,7 @@ impl Subsonic {
             answer(&body)?;
             bail!("Your music server sent no audio for this song");
         }
-        let header = |h: reqwest::header::HeaderName| res.headers().get(h).and_then(|v| v.to_str().ok()).map(str::to_string);
-        Ok(Streamed { status: res.status().as_u16(), content_length: res.content_length(), content_range: header(reqwest::header::CONTENT_RANGE), content_type: header(reqwest::header::CONTENT_TYPE), body: Body(res) })
+        Ok(Streamed::of(res))
     }
 }
 
@@ -382,7 +336,7 @@ mod tests {
 
     #[test]
     fn covers_of_an_address_typed_in_capitals_are_still_this_servers() {
-        let a = server::Account { kind: server::Kind::Subsonic, address: "HTTP://NAS:80/Music".into(), user: "me".into(), password: "pw".into() };
+        let a = server::Account { kind: server::Kind::Subsonic, address: "HTTP://NAS:80/Music".into(), user: "me".into(), password: "pw".into(), ..Default::default() };
         let sub = Subsonic::from_account(&a);
         // Same key as the account's (library ids), base as URLs write it.
         assert_eq!((sub.key(), sub.base()), (a.key().as_str(), "http://nas/Music"));

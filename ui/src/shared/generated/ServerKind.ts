@@ -3,4 +3,4 @@
 /**
  * Which API the server speaks.
  */
-export type ServerKind = "subsonic";
+export type ServerKind = "subsonic" | "jellyfin" | "plex";

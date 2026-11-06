@@ -1,10 +1,11 @@
-//! Your music server (Settings › Accounts): Subsonic-compatible servers now (`music_connectors::subsonic`), Jellyfin
-//! and Plex later in the same rows. The account (password included) in the keychain only; its songs, playlists and
+//! Your music server (Settings › Accounts): Subsonic-compatible servers, Jellyfin and Plex (`music_connectors::servers`
+//! `Conn`; Plex's sign-in in `plex.rs`). The account (password or token) in the keychain only; its songs, playlists and
 //! likes in the library (`Source::Server`); its covers through the `art` scheme (the server's cover path allowed at
 //! sign-in, auth added by Rust); its songs played by the native engine over HTTP (`music_player::http`): the engine
 //! only knows `server:<key>:<item>`, `Fetch` below builds each request with fresh auth.
 
 use crate::{AppState, CmdResult, err};
+use music_connectors::servers::{self as conns, Conn};
 use music_connectors::subsonic::Subsonic;
 use music_core::model::{Source, Track};
 use music_core::server::{self, Account, Exposure, Kind};
@@ -44,7 +45,7 @@ fn save(state: &AppState, list: Vec<Account>) -> anyhow::Result<()> {
         state.store.save(KEY, &list)?;
     }
     for a in ACCOUNTS.read().unwrap().iter().filter(|a| !list.iter().any(|b| b.key() == a.key())) {
-        music_connectors::art::forget_server(Subsonic::from_account(a).base());
+        music_connectors::art::forget_server(Conn::from_account(a).base());
     }
     for a in &list {
         allow_art(a);
@@ -54,10 +55,10 @@ fn save(state: &AppState, list: Vec<Account>) -> anyhow::Result<()> {
 }
 
 fn allow_art(a: &Account) {
-    let sub = Subsonic::from_account(a);
+    let conn = Conn::from_account(a);
     // Its covers' URLs start with the connector's base (written as `Url` writes it), not the address as typed.
-    let base = sub.base().to_string();
-    music_connectors::art::allow_server(&base, Arc::new(move |url: &str| sub.sign(url)));
+    let base = conn.base().to_string();
+    music_connectors::art::allow_server(&base, Arc::new(move |url: &str| conn.sign_cover(url)));
 }
 
 /// At launch: accounts from the keychain, their covers allowed, the engine given the way to their songs.
@@ -82,9 +83,10 @@ pub fn take(state: &AppState, from: &[Account]) -> anyhow::Result<()> {
     let mut changed = false;
     for a in from.iter().take(8) {
         let Ok(address) = server::normalize(&a.address) else { continue };
-        let got = Account { kind: a.kind, address, user: a.user.clone(), password: a.password.clone() };
+        let plex = |all: &[String]| if a.kind == Kind::Plex { all.iter().filter_map(|c| server::normalize(c).ok()).filter(|c| conns::usable(c)).collect() } else { Vec::new() };
+        let got = Account { address, connections: plex(&a.connections), relays: plex(&a.relays), ..a.clone() };
         // Same server as one here once both are written alike (key of the address as kept).
-        if got.user.is_empty() || got.user.len() > 200 || got.password.is_empty() || got.password.len() > 500 || !Subsonic::usable(&got.address) || list.iter().any(|b| b.key() == got.key()) {
+        if !got.complete() || !conns::usable(&got.address) || list.iter().any(|b| b.key() == got.key()) {
             continue;
         }
         list.push(got);
@@ -128,7 +130,11 @@ pub struct ServerStatus {
     kind: Kind,
     address: String,
     user: String,
+    /// The server's own name (Jellyfin, Plex).
+    name: Option<String>,
     exposure: Exposure,
+    /// Plex: reached through Plex's relay only.
+    relay: bool,
     /// Songs from it in the library at the last sync.
     songs: Option<u32>,
     playlists: Option<u32>,
@@ -143,7 +149,9 @@ fn status_of(a: &Account, s: Option<&Synced>) -> ServerStatus {
         kind: a.kind,
         address: a.address.clone(),
         user: a.user.clone(),
+        name: Some(a.name.clone()).filter(|n| !n.is_empty()),
         exposure: server::exposure(&a.address),
+        relay: a.via_relay(),
         songs: s.map(|s| s.songs as u32),
         playlists: s.map(|s| s.playlists as u32),
         synced_at: s.map(|s| s.at as f64).filter(|t| *t > 0.0),
@@ -163,8 +171,9 @@ pub async fn server_exposure(address: String) -> CmdResult<Option<Exposure>> {
     Ok(server::normalize(&address).ok().map(|b| server::exposure(&b)))
 }
 
-/// Sign in: the server answers and takes the user and password (`ping`), then the account is kept. The first sync is
-/// the interface's next call (it shows its progress).
+/// Sign in: the server answers and takes the user and password (Subsonic: `ping`; Jellyfin: its token back, the
+/// password not kept), then the account is kept. Plex signs in on its own page (`plex.rs`). The first sync is the
+/// interface's next call (it shows its progress).
 #[tauri::command]
 pub async fn server_sign_in(state: State<'_, AppState>, kind: Kind, address: String, user: String, password: String) -> CmdResult<ServerStatus> {
     // Trust boundary: typed text.
@@ -173,14 +182,24 @@ pub async fn server_sign_in(state: State<'_, AppState>, kind: Kind, address: Str
     if user.is_empty() || user.len() > 200 || password.is_empty() || password.len() > 500 {
         return Err("Type your server's user and password".into());
     }
-    let account = Account { kind, address, user, password };
-    match kind {
-        Kind::Subsonic => Subsonic::from_account(&account).ping().await.map_err(err)?,
+    let account = match kind {
+        Kind::Subsonic => {
+            let a = Account { kind, address, user, password, ..Default::default() };
+            Subsonic::from_account(&a).ping().await.map_err(err)?;
+            a
+        }
+        Kind::Jellyfin => music_connectors::jellyfin::sign_in(&address, &user, &password).await.map_err(err)?,
+        Kind::Plex => return Err("Plex signs in on its own page: Sign in with Plex".into()),
     };
+    add(&state, account)
+}
+
+/// A checked account joins the keychain's list (the same server account replaced).
+pub fn add(state: &AppState, account: Account) -> CmdResult<ServerStatus> {
     let mut list = accounts();
     list.retain(|a| a.key() != account.key());
     list.push(account.clone());
-    save(&state, list).map_err(err)?;
+    save(state, list).map_err(err)?;
     Ok(status_of(&account, None))
 }
 
@@ -188,6 +207,10 @@ pub async fn server_sign_in(state: State<'_, AppState>, kind: Kind, address: Str
 /// stay, without it).
 #[tauri::command]
 pub async fn server_sign_out(state: State<'_, AppState>, key: String) -> CmdResult<()> {
+    // Jellyfin's token ended on the server too (a server that's off doesn't hold the sign-out).
+    if let Some(a) = account(&key) {
+        let _ = tokio::time::timeout(Duration::from_secs(10), Conn::from_account(&a).sign_out()).await;
+    }
     let mut list = accounts();
     list.retain(|a| a.key() != key);
     save(&state, list).map_err(err)?;
@@ -222,9 +245,33 @@ fn direction_key(key: &str) -> String {
 
 /// One server read whole: its songs, playlists and likes into the library, in a few writes off the async threads.
 async fn sync_one(state: &AppState, a: &Account) -> anyhow::Result<ServerSync> {
+    match read(state, a).await {
+        // Plex: its address changed (another network, a new port): the others it gave are tried, the one that answers kept.
+        Err(e) if a.kind == Kind::Plex && format!("{e:#}").starts_with("Your music server doesn't answer") => match moved(state, a).await {
+            Some(b) => read(state, &b).await,
+            None => Err(e),
+        },
+        r => r,
+    }
+}
+
+/// A Plex server at another of its addresses: the account saved with it. None: none answers (or signed out meanwhile).
+async fn moved(state: &AppState, a: &Account) -> Option<Account> {
+    let all: Vec<String> = a.connections.iter().chain(&a.relays).filter(|c| **c != a.address).cloned().collect();
+    let address = music_connectors::plex::pick(&all, &a.token, &a.device, &a.server_id).await.ok()?;
+    let b = Account { address, ..a.clone() };
+    let mut list = accounts();
+    let at = list.iter().position(|x| x.key() == a.key())?;
+    list[at] = b.clone();
+    save(state, list).ok()?;
+    Some(b)
+}
+
+async fn read(state: &AppState, a: &Account) -> anyhow::Result<ServerSync> {
     let key = a.key();
-    let sub = Subsonic::from_account(a);
-    let (songs, albums_failed) = sub.library().await?;
+    let sub = Conn::from_account(a);
+    let got = sub.library().await?;
+    let (songs, albums_failed, liked) = (got.songs, got.failed, got.liked);
     let mut skipped = albums_failed;
     let mut lists: Vec<(String, String, Vec<Track>)> = Vec::new();
     // Every playlist the server lists stays, one that failed to come too (kept as it was, not dropped).
@@ -234,11 +281,10 @@ async fn sync_one(state: &AppState, a: &Account) -> anyhow::Result<ServerSync> {
         keep.push(id.clone());
         match sub.playlist(&p.id).await {
             Ok(tracks) => lists.push((id, p.name, tracks)),
-            Err(e) if e.to_string().starts_with("Your music server refused the sign-in") => return Err(e),
+            Err(e) if conns::refused(&e) => return Err(e),
             Err(_) => skipped += 1,
         }
     }
-    let liked = sub.starred().await?;
     let app = state.app.clone();
     let key2 = key.clone();
     let (n, playlists) = tauri::async_runtime::spawn_blocking(move || -> anyhow::Result<(usize, usize)> {
@@ -297,7 +343,7 @@ pub async fn sync_due(state: &AppState) -> (usize, Vec<String>) {
             Ok(s) => playlists += s.playlists as usize,
             // Its own words name it already; a bare network error gets the name in front.
             Err(e) => errors.push(match format!("{e:#}") {
-                t if t.starts_with("Your music server") || t.starts_with("That address") => t,
+                t if t.starts_with("Your music server") || t.starts_with("That address") || t.starts_with("Plex") => t,
                 t => format!("Music server: {t}"),
             }),
         }
@@ -318,18 +364,20 @@ pub async fn server_star(state: State<'_, AppState>, id: String, on: bool) -> Cm
     if !state.direction(&direction_key(&a.key())).pushes() {
         return Ok(());
     }
-    Subsonic::from_account(&a).star(&item, on).await.map_err(err)
+    Conn::from_account(&a).like(&item, on).await.map_err(err)
 }
 
-/// A play back to the server: now playing at the start, a submission past half the song or 4 minutes (the interface
-/// checks Last.fm's rule), when the account takes changes. Failures dropped (a play isn't worth an error box).
+/// A play back to the server: now playing at the start (no position), at the end the position heard and whether it
+/// counts (past half the song or 4 minutes: the interface checks Last.fm's rule), when the account takes changes.
+/// Failures dropped (a play isn't worth an error box).
 #[tauri::command]
-pub async fn server_scrobble(state: State<'_, AppState>, id: String, started_at_ms: f64, submission: bool) -> CmdResult<()> {
+pub async fn server_scrobble(state: State<'_, AppState>, id: String, started_at_ms: f64, submission: bool, position_ms: Option<f64>) -> CmdResult<()> {
     let Ok((a, item)) = item(&id) else { return Ok(()) };
     if !state.direction(&direction_key(&a.key())).pushes() {
         return Ok(());
     }
-    let _ = Subsonic::from_account(&a).scrobble(&item, started_at_ms as i64, submission).await;
+    let at = position_ms.filter(|p| p.is_finite() && *p >= 0.0).map(|p| p as u64);
+    let _ = Conn::from_account(&a).played(&item, started_at_ms as i64, submission, at).await;
     Ok(())
 }
 
@@ -340,7 +388,7 @@ struct Fetch;
 impl PlayerFetch for Fetch {
     fn get(&self, key: &str, from: u64, transcode: bool) -> io::Result<Reply> {
         let (a, item) = item(key).map_err(|e| io::Error::new(io::ErrorKind::PermissionDenied, e))?;
-        let sub = Subsonic::from_account(&a);
+        let sub = Conn::from_account(&a);
         let s = tauri::async_runtime::block_on(async move { tokio::time::timeout(Duration::from_secs(30), sub.stream(&item, from, transcode)).await })
             .map_err(|_| io::Error::new(io::ErrorKind::TimedOut, "Your music server doesn't answer (timed out)"))?
             .map_err(|e| {
@@ -356,9 +404,9 @@ impl PlayerFetch for Fetch {
 fn kind_of(said: &str) -> io::ErrorKind {
     if said.starts_with("Your music server doesn't have this item") || said.starts_with("Your music server sent no audio") {
         io::ErrorKind::NotFound
-    } else if said.starts_with("Your music server refused the sign-in") || said.starts_with("Your music server doesn't take") {
+    } else if said.starts_with("Your music server refused the sign-in") || said.starts_with("Your music server no longer accepts") || said.starts_with("Your music server doesn't take") {
         io::ErrorKind::PermissionDenied
-    } else if said.starts_with("Your music server doesn't answer") || said.starts_with("Your music server's certificate") || said.starts_with("That address isn't a Subsonic server") {
+    } else if said.starts_with("Your music server doesn't answer") || said.starts_with("Your music server's certificate") || said.starts_with("That address isn't a") {
         io::ErrorKind::NotConnected
     } else {
         io::ErrorKind::Other
@@ -367,7 +415,7 @@ fn kind_of(said: &str) -> io::ErrorKind {
 
 /// A response body as a blocking reader (the stream's worker thread, never an async one).
 struct Body {
-    body: music_connectors::subsonic::Body,
+    body: conns::Body,
     left: Vec<u8>,
     at: usize,
 }
@@ -400,6 +448,9 @@ mod tests {
         assert!(down("Your music server doesn't answer: check that it's on and its address is right (tcp connect error)"));
         assert!(down("Your music server refused the sign-in: check the user and the password"));
         assert!(down("Your music server's certificate isn't trusted (a self-signed one?): …"));
+        assert!(down("Your music server no longer accepts this sign-in: sign in again in Settings › Accounts"));
+        assert!(down("That address isn't a Jellyfin server: check it"));
+        assert!(!down("Your music server sent a format Legato can't play"));
         assert!(!down("Your music server doesn't have this item (Song not found)"));
         assert!(!down("Your music server sent no audio for this song"));
         assert!(!down("Your music server said: odd (code 0)"));

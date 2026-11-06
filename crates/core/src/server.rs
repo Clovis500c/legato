@@ -1,5 +1,5 @@
 //! Personal servers (Settings › Accounts › Your music server): the user's own music on the user's own server.
-//! Subsonic-compatible now (Navidrome, Airsonic, Gonic, Ampache); Jellyfin and Plex fit the same account and ids.
+//! Subsonic-compatible (Navidrome, Airsonic, Gonic, Ampache), Jellyfin and Plex, on the same account and ids.
 //! Library ids: `Source::Server` → "<server key>:<item id>", one key per server account.
 
 use serde::{Deserialize, Serialize};
@@ -14,31 +14,77 @@ pub enum Kind {
     /// Subsonic API 1.16.1 and its OpenSubsonic additions.
     #[default]
     Subsonic,
+    /// Jellyfin 10.9 or newer: its own API, an access token.
+    Jellyfin,
+    /// Plex Media Server, signed in by a PIN on plex.tv: the server's own token.
+    Plex,
 }
 
-/// A signed-in server, as kept in the keychain (password beside it there, never in settings, a log or `diag`).
-#[derive(Clone, PartialEq, Serialize, Deserialize)]
+/// A signed-in server, as kept in the keychain (secrets beside it there, never in settings, a log or `diag`).
+#[derive(Clone, PartialEq, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Account {
     #[serde(default)]
     pub kind: Kind,
-    /// Base URL, as `normalize` left it.
+    /// Base URL, as `normalize` left it (Plex: the connection in use, one of `connections`).
     pub address: String,
     pub user: String,
+    /// Subsonic only (its token auth needs it each request). Jellyfin's is used once at sign-in, Plex's never seen.
+    #[serde(default)]
     pub password: String,
+    /// Jellyfin's access token, Plex's server token.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub token: String,
+    /// Jellyfin's user id.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub user_id: String,
+    /// Random id of this sign-in (Jellyfin's DeviceId, Plex's client identifier): never the PC's own.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub device: String,
+    /// Plex's machine identifier (the key: its addresses change).
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub server_id: String,
+    /// The server's own name (Jellyfin, Plex), for its row.
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub name: String,
+    /// Plex: its direct addresses plex.tv gave, best first.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub connections: Vec<String>,
+    /// Plex: its addresses through Plex's relay, tried last. `address` is one of these or of `connections`.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub relays: Vec<String>,
 }
 
 impl std::fmt::Debug for Account {
-    // Never the password.
+    // Never the password or the token.
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("Account").field("kind", &self.kind).field("address", &self.address).field("user", &self.user).finish_non_exhaustive()
     }
 }
 
 impl Account {
-    /// Stable short id of this server account: library ids carry it.
+    /// Stable short id of this server account: library ids carry it. Plex: by its machine id (its addresses change).
     pub fn key(&self) -> String {
-        key(self.kind, &self.address, &self.user)
+        match self.kind {
+            Kind::Plex => key(self.kind, &format!("plex:{}", self.server_id), &self.user),
+            _ => key(self.kind, &self.address, &self.user),
+        }
+    }
+
+    /// Plex: reached through Plex's relay (nothing else answered).
+    pub fn via_relay(&self) -> bool {
+        self.relays.contains(&self.address)
+    }
+
+    /// Everything this kind needs to talk to its server (Sync Mode's accounts are checked so).
+    pub fn complete(&self) -> bool {
+        let short = |s: &str, max: usize| !s.is_empty() && s.len() <= max;
+        short(&self.user, 200)
+            && match self.kind {
+                Kind::Subsonic => short(&self.password, 500),
+                Kind::Jellyfin => short(&self.token, 500) && short(&self.user_id, 200) && short(&self.device, 200),
+                Kind::Plex => short(&self.token, 500) && short(&self.server_id, 200) && short(&self.device, 200) && self.connections.len() + self.relays.len() <= 16 && (self.connections.contains(&self.address) || self.relays.contains(&self.address)),
+            }
     }
 }
 
@@ -162,7 +208,7 @@ mod tests {
 
     #[test]
     fn keys_name_one_server_account_and_ids_split_back() {
-        let a = Account { kind: Kind::Subsonic, address: "http://nas:4533".into(), user: "me".into(), password: "x".into() };
+        let a = Account { kind: Kind::Subsonic, address: "http://nas:4533".into(), user: "me".into(), password: "x".into(), ..Default::default() };
         let b = Account { password: "other".into(), address: "HTTP://NAS:4533".into(), ..a.clone() };
         assert_eq!(a.key(), b.key(), "password and case don't change the key");
         assert_ne!(a.key(), Account { user: "you".into(), ..a.clone() }.key());
@@ -171,5 +217,31 @@ mod tests {
         let id = item_id(&a.key(), "tr-1:2");
         assert_eq!(split_item(&id), Some((a.key().as_str(), "tr-1:2")));
         assert_eq!(split_item("nope"), None);
+    }
+
+    #[test]
+    fn a_plex_key_follows_its_machine_not_its_address() {
+        let at = |a: &str| (a.to_string(), vec![a.to_string()]);
+        let (address, connections) = at("https://10-0-0-2.abc.plex.direct:32400");
+        let a = Account { kind: Kind::Plex, address, connections, user: "me".into(), token: "tok".into(), device: "d".into(), server_id: "m1".into(), ..Default::default() };
+        let (address, connections) = at("https://1-2-3-4.abc.plex.direct:32400");
+        let moved = Account { address, connections, ..a.clone() };
+        assert_eq!(a.key(), moved.key());
+        assert_ne!(a.key(), Account { server_id: "m2".into(), ..a.clone() }.key());
+        assert!(a.complete() && moved.complete());
+        assert!(!Account { connections: vec![], ..a.clone() }.complete(), "its address is one of its connections");
+        assert!(!format!("{a:?}").contains("tok"), "no token in Debug");
+    }
+
+    #[test]
+    fn each_kind_needs_its_own_secrets() {
+        let sub = Account { kind: Kind::Subsonic, address: "http://nas:4533".into(), user: "me".into(), password: "pw".into(), ..Default::default() };
+        assert!(sub.complete() && !Account { password: String::new(), ..sub.clone() }.complete());
+        let jf = Account { kind: Kind::Jellyfin, address: "http://nas:8096".into(), user: "me".into(), token: "t".into(), user_id: "u".into(), device: "d".into(), ..Default::default() };
+        assert!(jf.complete() && !Account { token: String::new(), ..jf.clone() }.complete() && !Account { user_id: String::new(), ..jf.clone() }.complete());
+        // Part 1's keychain entries read as Subsonic with a password.
+        let old: Account = serde_json::from_str(r#"{"kind":"subsonic","address":"http://nas:4533","user":"me","password":"pw"}"#).unwrap();
+        assert_eq!(old, sub);
+        assert!(!serde_json::to_string(&sub).unwrap().contains("token"), "empty fields stay out");
     }
 }

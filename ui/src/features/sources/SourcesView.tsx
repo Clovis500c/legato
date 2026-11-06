@@ -1,4 +1,4 @@
-import { ArrowsClockwise, DeviceMobile, FolderPlus, GoogleLogo, HardDrives, ShieldCheck, SignOut, UserPlus, Warning, X } from '@phosphor-icons/react'
+import { ArrowsClockwise, DeviceMobile, FolderPlus, GoogleLogo, HardDrives, ShieldCheck, SignOut, SpinnerGap, UserPlus, Warning, X } from '@phosphor-icons/react'
 import { useShallow } from 'zustand/react/shallow'
 import { open } from '@tauri-apps/plugin-dialog'
 import { useEffect, useState, type ReactNode } from 'react'
@@ -8,7 +8,7 @@ import { AppleImport } from '../add/AppleConnect'
 import { openAppInfo } from '../add/phoneMic'
 import { MUSIC_REFUSED, phoneFolders, withPhone } from '../add/phoneMusic'
 import { SpotifyImport } from '../add/SpotifyConnect'
-import { accountKey, api, type Direction, type ServerExposure, type ServerStatus, type YtmAccount } from '../../shared/api'
+import { accountKey, api, type Direction, type PlexPin, type PlexServer, type ServerExposure, type ServerKind, type ServerStatus, type YtmAccount } from '../../shared/api'
 import { useGoogleAccounts } from './google'
 import { timeAgo } from '../../shared/format'
 import { Button } from '../../shared/ui/Button'
@@ -432,7 +432,7 @@ function ServerAccount({ s }: { s: ServerStatus }) {
   const state = syncing ? tr('Syncing…') : s.songs === null ? tr('Signed in') : trn(s.songs, '{n} song', '{n} songs')
   return (
     <>
-      <AccountLine on icon={<HardDrives size={16} />} title={tr('Your music server')} pitch={`${s.user} · ${hostOf(s.address)}`} state={state}>
+      <AccountLine on icon={<HardDrives size={16} />} title={tr('Your music server')} pitch={`${s.user} · ${s.name ?? hostOf(s.address)}`} state={state}>
         <Button variant="ghost" disabled={syncing} onClick={() => void sync()}>
           <ArrowsClockwise size={14} /> {tr('Sync now')}
         </Button>
@@ -443,6 +443,11 @@ function ServerAccount({ s }: { s: ServerStatus }) {
       <div className="ml-13 @max-lg:ml-0 flex flex-col gap-2 text-xs text-ink-2">
         {s.syncedAt !== null && <p>{s.playlists ? tr('Last sync {when} · {playlists}', { when: timeAgo(s.syncedAt), playlists: trn(s.playlists, '{n} playlist', '{n} playlists') }) : tr('Last sync {when}', { when: timeAgo(s.syncedAt) })}</p>}
         {s.error && <p className="text-ink">{explain(s.error).text}</p>}
+        {s.relay && (
+          <p className="flex items-start gap-1.5 text-ink">
+            <Warning size={14} className="mt-px shrink-0" /> {tr('Through Plex’s relay: your server didn’t answer directly, so the music may come slower.')}
+          </p>
+        )}
         {s.exposure === 'open' && (
           <p className="flex items-start gap-1.5 text-ink">
             <Warning size={14} className="mt-px shrink-0" /> {tr(OPEN_WARNING)}
@@ -454,11 +459,110 @@ function ServerAccount({ s }: { s: ServerStatus }) {
   )
 }
 
-/** Your music server: Subsonic-compatible ones for now (Navidrome, Airsonic, Gonic, Ampache). The password goes to the
- * keychain, checked with the server first; the first sync follows. */
+/** Server kinds, as their own names say them. */
+const SERVER_KINDS: { value: ServerKind; label: string }[] = [
+  { value: 'subsonic', label: 'Subsonic' },
+  { value: 'jellyfin', label: 'Jellyfin' },
+  { value: 'plex', label: 'Plex' },
+]
+
+/** Sign in with Plex: Plex's own page in the browser (the password never comes here), its code shown while it waits,
+ * then the server picked when the account has several. */
+function PlexSignIn({ onSignedIn }: { onSignedIn: (s: ServerStatus) => Promise<void> }) {
+  const [pin, setPin] = useState<PlexPin | null>(null)
+  const [servers, setServers] = useState<PlexServer[] | null>(null)
+  const [busy, setBusy] = useState<string | null>(null)
+  // Leaving the form (or signing in) stops the wait.
+  useEffect(() => () => void api.plexCancel().catch(() => {}), [])
+  const pick = async (id: string) => {
+    setBusy(tr('Finding your server…'))
+    try {
+      await onSignedIn(await api.plexPick(id))
+    } catch (e) {
+      useStore.setState({ error: String(e) })
+    } finally {
+      setBusy(null)
+    }
+  }
+  const start = async () => {
+    setServers(null)
+    try {
+      setPin(await api.plexSignIn())
+      const found = await api.plexWait()
+      setPin(null)
+      if (found.length === 1) return void (await pick(found[0].id))
+      setServers(found)
+    } catch (e) {
+      setPin(null)
+      if (!/cancelled/.test(String(e))) useStore.setState({ error: String(e) })
+    }
+  }
+  const cancel = () => {
+    void api.plexCancel().catch(() => {})
+    setPin(null)
+    setServers(null)
+  }
+  if (pin)
+    return (
+      <div className="flex flex-col gap-2">
+        <p className="text-ink-2">{tr('Plex’s page is open in your browser: sign in there and allow Legato. It shows this code:')}</p>
+        <p className="font-mono text-sm break-all text-ink">{pin.code}</p>
+        <p className="flex items-center gap-1.5 text-ink-2">
+          <SpinnerGap size={14} className="shrink-0 animate-spin" /> {tr('Waiting for you on Plex’s page…')}
+        </p>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="ghost" onClick={() => void openUrl(pin.authUrl).catch(() => {})}>
+            {tr('Open Plex’s page again')}
+          </Button>
+          <Button variant="ghost" onClick={cancel}>
+            {tr('Cancel')}
+          </Button>
+        </div>
+      </div>
+    )
+  if (servers)
+    return (
+      <div className="flex flex-col gap-2">
+        <p className="text-ink-2">{tr('Which server?')}</p>
+        <div className="flex flex-col gap-1.5">
+          {servers.map((s) => (
+            <button key={s.id} type="button" disabled={!!busy} onClick={() => void pick(s.id)} className="flex min-h-10 items-center gap-2.5 rounded-md border border-line px-3 py-2 text-left hover:bg-hover disabled:opacity-50">
+              <HardDrives size={16} className="shrink-0 text-ink-2" />
+              <span className="min-w-0 flex-1 truncate text-ink">{s.name}</span>
+              {!s.owned && <span className="shrink-0 text-ink-2">{tr('Shared with you')}</span>}
+            </button>
+          ))}
+        </div>
+        {busy ? (
+          <p className="flex items-center gap-1.5 text-ink-2">
+            <SpinnerGap size={14} className="shrink-0 animate-spin" /> {busy}
+          </p>
+        ) : (
+          <Button className="w-fit" variant="ghost" onClick={cancel}>
+            {tr('Cancel')}
+          </Button>
+        )}
+      </div>
+    )
+  return (
+    <div className="flex flex-col gap-2">
+      <p className="flex items-start gap-1.5 text-ink-2">
+        <ShieldCheck size={14} className="mt-px shrink-0" /> {phoneApp ? tr('You sign in on Plex’s own page, in your browser: Legato never sees your password. Your server’s access key stays in this phone’s secure storage.') : tr('You sign in on Plex’s own page, in your browser: Legato never sees your password. Your server’s access key stays in this PC’s keychain.')}
+      </p>
+      <Button className="w-fit" disabled={!!busy} onClick={() => void start()}>
+        {busy ?? tr('Sign in with Plex')}
+      </Button>
+    </div>
+  )
+}
+
+/** Your music server: a Subsonic-compatible one (Navidrome, Airsonic, Gonic, Ampache), Jellyfin or Plex. Subsonic's
+ * password goes to the keychain, Jellyfin's is used once for its token, Plex signs in on its own page; the first sync
+ * follows. */
 function ServerRow() {
   const { list, refresh } = useServers()
   const [form, setForm] = useState(false)
+  const [kind, setKind] = useState<ServerKind>('subsonic')
   const [address, setAddress] = useState('')
   const [user, setUser] = useState('')
   const [password, setPassword] = useState('')
@@ -471,14 +575,13 @@ function ServerRow() {
     return () => clearTimeout(t)
   }, [address])
   const ready = !!address.trim() && !!user.trim() && !!password && !busy
-  const signIn = async () => {
-    setBusy(tr('Checking with your server…'))
+  /** Signed in: the row shows it, then its first sync. */
+  const signedIn = async (s: ServerStatus) => {
+    setForm(false)
+    setPassword('')
+    await refresh()
+    setBusy(tr('Syncing your server…'))
     try {
-      const s = await api.serverSignIn('subsonic', address, user, password)
-      setForm(false)
-      setPassword('')
-      await refresh()
-      setBusy(tr('Syncing your server…'))
       const done = await syncServer(s.key)
       useStore.getState().notify(trn(done.songs, '{n} song from your music server', '{n} songs from your music server'))
     } catch (e) {
@@ -488,6 +591,17 @@ function ServerRow() {
       void refresh()
     }
   }
+  const signIn = async () => {
+    setBusy(tr('Checking with your server…'))
+    try {
+      const s = await api.serverSignIn(kind, address, user, password)
+      setBusy(null)
+      await signedIn(s)
+    } catch (e) {
+      useStore.setState({ error: String(e) })
+      setBusy(null)
+    }
+  }
   const field = 'h-8 w-full rounded-md border border-line bg-bg px-2 text-xs'
   return (
     <div data-setting="Your music server" className="flex flex-col gap-3 border-b border-line-soft px-4 py-3.5">
@@ -495,51 +609,62 @@ function ServerRow() {
         <ServerAccount key={s.key} s={s} />
       ))}
       {!list.length && (
-        <AccountLine on={false} icon={<HardDrives size={16} />} title={tr('Your music server')} pitch={tr('Your own music from Navidrome, Airsonic, Gonic or Ampache, streamed from your server and played here like your files')} state={busy ?? tr('Not connected')}>
+        <AccountLine on={false} icon={<HardDrives size={16} />} title={tr('Your music server')} pitch={tr('Your own music from Jellyfin, Plex, Navidrome or another Subsonic server, streamed from your server and played here like your files')} state={busy ?? tr('Not connected')}>
           <Button onClick={() => setForm((f) => !f)}>{tr('Sign in')}</Button>
         </AccountLine>
       )}
       {form && !list.length && (
-        <form
-          className="ml-13 @max-lg:ml-0 flex flex-col gap-2 rounded-lg border border-line bg-bg p-3 text-xs"
-          onSubmit={(e) => {
-            e.preventDefault()
-            if (ready) void signIn()
-          }}
-        >
-          <label className="flex flex-col gap-1">
+        <div className="ml-13 @max-lg:ml-0 flex flex-col gap-2.5 rounded-lg border border-line bg-bg p-3 text-xs">
+          <div className="flex flex-col gap-1.5">
             <span className="text-ink-2">{tr('Server type')}</span>
-            <select className={field} value="subsonic" onChange={() => {}}>
-              <option value="subsonic">{tr('Subsonic-compatible (Navidrome, Airsonic, Gonic, Ampache)')}</option>
-            </select>
-            <span className="text-ink-2">{tr('Jellyfin and Plex: coming soon')}</span>
-          </label>
-          <label className="flex flex-col gap-1">
-            <span className="text-ink-2">{tr('Address')}</span>
-            <input value={address} onChange={(e) => setAddress(e.target.value)} placeholder="http://192.168.1.10:4533" spellCheck={false} autoComplete="url" inputMode="url" className={`${field} font-mono`} />
-          </label>
-          {exposure === 'open' && (
-            <p className="flex items-start gap-1.5 text-ink">
-              <Warning size={14} className="mt-px shrink-0" /> {tr(OPEN_WARNING)}
-            </p>
-          )}
-          <div className="grid grid-cols-2 gap-2 @max-lg:grid-cols-1">
-            <label className="flex flex-col gap-1">
-              <span className="text-ink-2">{tr('User')}</span>
-              <input value={user} onChange={(e) => setUser(e.target.value)} spellCheck={false} autoComplete="username" className={field} />
-            </label>
-            <label className="flex flex-col gap-1">
-              <span className="text-ink-2">{tr('Password')}</span>
-              <input value={password} onChange={(e) => setPassword(e.target.value)} type="password" autoComplete="current-password" className={field} />
-            </label>
+            <Segmented label={tr('Server type')} value={kind} onChange={setKind} options={SERVER_KINDS} />
+            {kind === 'subsonic' && <span className="text-ink-2">{tr('Navidrome, Airsonic, Gonic, Ampache and other Subsonic-compatible servers')}</span>}
           </div>
-          <p className="flex items-start gap-1.5 text-ink-2">
-            <ShieldCheck size={14} className="mt-px shrink-0" /> {phoneApp ? tr('Your password stays in this phone’s secure storage. Legato talks to your server only, never to a server of ours.') : tr('Your password stays in this PC’s keychain. Legato talks to your server only, never to a server of ours.')}
-          </p>
-          <Button className="w-fit" type="submit" disabled={!ready}>
-            {busy ?? tr('Sign in')}
-          </Button>
-        </form>
+          {kind === 'plex' ? (
+            <PlexSignIn onSignedIn={signedIn} />
+          ) : (
+            <form
+              className="flex flex-col gap-2"
+              onSubmit={(e) => {
+                e.preventDefault()
+                if (ready) void signIn()
+              }}
+            >
+              <label className="flex flex-col gap-1">
+                <span className="text-ink-2">{tr('Address')}</span>
+                <input value={address} onChange={(e) => setAddress(e.target.value)} placeholder={kind === 'jellyfin' ? 'http://192.168.1.10:8096' : 'http://192.168.1.10:4533'} spellCheck={false} autoComplete="url" inputMode="url" className={`${field} font-mono`} />
+              </label>
+              {exposure === 'open' && (
+                <p className="flex items-start gap-1.5 text-ink">
+                  <Warning size={14} className="mt-px shrink-0" /> {tr(OPEN_WARNING)}
+                </p>
+              )}
+              <div className="grid grid-cols-2 gap-2 @max-lg:grid-cols-1">
+                <label className="flex flex-col gap-1">
+                  <span className="text-ink-2">{tr('User')}</span>
+                  <input value={user} onChange={(e) => setUser(e.target.value)} spellCheck={false} autoComplete="username" className={field} />
+                </label>
+                <label className="flex flex-col gap-1">
+                  <span className="text-ink-2">{tr('Password')}</span>
+                  <input value={password} onChange={(e) => setPassword(e.target.value)} type="password" autoComplete="current-password" className={field} />
+                </label>
+              </div>
+              <p className="flex items-start gap-1.5 text-ink-2">
+                <ShieldCheck size={14} className="mt-px shrink-0" />{' '}
+                {kind === 'jellyfin'
+                  ? phoneApp
+                    ? tr('Your password is sent once, to your server only; its access key stays in this phone’s secure storage. Legato talks to your server only, never to a server of ours.')
+                    : tr('Your password is sent once, to your server only; its access key stays in this PC’s keychain. Legato talks to your server only, never to a server of ours.')
+                  : phoneApp
+                    ? tr('Your password stays in this phone’s secure storage. Legato talks to your server only, never to a server of ours.')
+                    : tr('Your password stays in this PC’s keychain. Legato talks to your server only, never to a server of ours.')}
+              </p>
+              <Button className="w-fit" type="submit" disabled={!ready}>
+                {busy ?? tr('Sign in')}
+              </Button>
+            </form>
+          )}
+        </div>
       )}
     </div>
   )

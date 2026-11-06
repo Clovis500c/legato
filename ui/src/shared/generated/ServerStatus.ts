@@ -5,7 +5,15 @@ import type { ServerKind } from "./ServerKind";
 /**
  * One signed-in server, for Settings › Accounts. Never the password.
  */
-export type ServerStatus = { key: string, kind: ServerKind, address: string, user: string, exposure: ServerExposure, 
+export type ServerStatus = { key: string, kind: ServerKind, address: string, user: string, 
+/**
+ * The server's own name (Jellyfin, Plex).
+ */
+name: string | null, exposure: ServerExposure, 
+/**
+ * Plex: reached through Plex's relay only.
+ */
+relay: boolean, 
 /**
  * Songs from it in the library at the last sync.
  */
