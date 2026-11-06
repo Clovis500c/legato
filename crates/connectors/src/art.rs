@@ -61,6 +61,12 @@ fn server_signer(url: &str) -> Option<Signed> {
     all.iter().filter(|(b, _)| url.strip_prefix(b.as_str()).is_some_and(|rest| rest.starts_with('/'))).find_map(|(_, sign)| sign(url))
 }
 
+/// A cover's redirect to `to`: an allowed image, and off a signed-in server's host only when it wasn't one of its own.
+fn redirect_ok(from: Option<&url::Url>, to: &url::Url) -> bool {
+    let server = |u: &url::Url| SERVERS.read().unwrap().iter().any(|(b, _)| u.as_str().strip_prefix(b.as_str()).is_some_and(|rest| rest.starts_with('/')));
+    allowed(to.as_str()) && from.is_none_or(|f| !server(f) || crate::servers::stays(f, to))
+}
+
 /// Image type from magic bytes (cache files carry no headers).
 pub fn sniff(b: &[u8]) -> &'static str {
     match b {
@@ -104,8 +110,8 @@ pub struct ArtCache {
 impl ArtCache {
     pub fn new(dir: PathBuf, cap: u64) -> Self {
         let _ = std::fs::create_dir_all(&dir);
-        // Redirects stay on image hosts too.
-        let http = crate::builder().redirect(reqwest::redirect::Policy::custom(|a| if allowed(a.url().as_str()) { a.follow() } else { a.stop() })).build().unwrap_or_default();
+        // Redirects stay on image hosts too; a server's cover (its token in a header) stays on that server's host.
+        let http = crate::builder().redirect(reqwest::redirect::Policy::custom(|a| if redirect_ok(a.previous().last(), a.url()) { a.follow() } else { a.stop() })).build().unwrap_or_default();
         Self { dir, cap: Arc::new(cap.into()), used: Arc::default(), pruning: Arc::default(), http, hot: Lru::new(HOT_BUDGET), inflight: Mutex::default(), resizers: Semaphore::new(RESIZERS) }
     }
 
@@ -341,6 +347,12 @@ mod tests {
         allow_server(&s.url(), Arc::new(|u: &str| u.contains("/Images/").then(|| Signed { url: u.into(), headers: vec![("authorization", "MediaBrowser Token=\"tok\"".into())] })));
         assert!(cache.get(&cover, None).await.is_ok());
         m.assert_async().await;
+        // Its redirect stays on its host: the token header isn't carried to another allowed one.
+        let to = |u: &str| url::Url::parse(u).unwrap();
+        let from = to(&cover);
+        assert!(redirect_ok(Some(&from), &to(&format!("{}/Items/a1/Images/Primary?maxWidth=600", s.url()))));
+        assert!(!redirect_ok(Some(&from), &to("https://i.scdn.co/image/ab67")));
+        assert!(redirect_ok(Some(&to("https://lh3.googleusercontent.com/x")), &to("https://i.scdn.co/image/ab67")));
         forget_server(&s.url());
         forget_server(&base);
     }

@@ -484,15 +484,22 @@ function PlexSignIn({ onSignedIn }: { onSignedIn: (s: ServerStatus) => Promise<v
       setBusy(null)
     }
   }
+  const [starting, setStarting] = useState(false)
   const start = async () => {
+    // One sign-in at a time: a second click before the code came would make a second one.
+    if (starting) return
     setServers(null)
+    setStarting(true)
     try {
-      setPin(await api.plexSignIn())
+      const made = await api.plexSignIn()
+      setStarting(false)
+      setPin(made)
       const found = await api.plexWait()
       setPin(null)
       if (found.length === 1) return void (await pick(found[0].id))
       setServers(found)
     } catch (e) {
+      setStarting(false)
       setPin(null)
       if (!/cancelled/.test(String(e))) useStore.setState({ error: String(e) })
     }
@@ -549,7 +556,7 @@ function PlexSignIn({ onSignedIn }: { onSignedIn: (s: ServerStatus) => Promise<v
       <p className="flex items-start gap-1.5 text-ink-2">
         <ShieldCheck size={14} className="mt-px shrink-0" /> {phoneApp ? tr('You sign in on Plex’s own page, in your browser: Legato never sees your password. Your server’s access key stays in this phone’s secure storage.') : tr('You sign in on Plex’s own page, in your browser: Legato never sees your password. Your server’s access key stays in this PC’s keychain.')}
       </p>
-      <Button className="w-fit" disabled={!!busy} onClick={() => void start()}>
+      <Button className="w-fit" disabled={!!busy || starting} onClick={() => void start()}>
         {busy ?? tr('Sign in with Plex')}
       </Button>
     </div>

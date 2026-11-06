@@ -44,8 +44,14 @@ fn save(state: &AppState, list: Vec<Account>) -> anyhow::Result<()> {
     } else {
         state.store.save(KEY, &list)?;
     }
-    for a in ACCOUNTS.read().unwrap().iter().filter(|a| !list.iter().any(|b| b.key() == a.key())) {
-        music_connectors::art::forget_server(Conn::from_account(a).base());
+    // A base no account uses any more (signed out, or a Plex server now at another address): its covers no longer
+    // get a token.
+    let kept: Vec<String> = list.iter().map(|a| Conn::from_account(a).base().to_string()).collect();
+    for a in ACCOUNTS.read().unwrap().iter() {
+        let base = Conn::from_account(a).base().to_string();
+        if !kept.contains(&base) {
+            music_connectors::art::forget_server(&base);
+        }
     }
     for a in &list {
         allow_art(a);
@@ -245,6 +251,9 @@ fn direction_key(key: &str) -> String {
 
 /// One server read whole: its songs, playlists and likes into the library, in a few writes off the async threads.
 async fn sync_one(state: &AppState, a: &Account) -> anyhow::Result<ServerSync> {
+    // Plex on its relay (nothing else answered last time): its direct addresses first, back home or port opened.
+    let back = if a.kind == Kind::Plex && a.via_relay() { direct(state, a).await } else { None };
+    let a = back.as_ref().unwrap_or(a);
     match read(state, a).await {
         // Plex: its address changed (another network, a new port): the others it gave are tried, the one that answers kept.
         Err(e) if a.kind == Kind::Plex && format!("{e:#}").starts_with("Your music server doesn't answer") => match moved(state, a).await {
@@ -258,7 +267,16 @@ async fn sync_one(state: &AppState, a: &Account) -> anyhow::Result<ServerSync> {
 /// A Plex server at another of its addresses: the account saved with it. None: none answers (or signed out meanwhile).
 async fn moved(state: &AppState, a: &Account) -> Option<Account> {
     let all: Vec<String> = a.connections.iter().chain(&a.relays).filter(|c| **c != a.address).cloned().collect();
-    let address = music_connectors::plex::pick(&all, &a.token, &a.device, &a.server_id).await.ok()?;
+    moved_to(state, a, &all).await
+}
+
+/// A Plex server on its relay, now answering at a direct address: the account saved with it.
+async fn direct(state: &AppState, a: &Account) -> Option<Account> {
+    moved_to(state, a, &a.connections).await
+}
+
+async fn moved_to(state: &AppState, a: &Account, all: &[String]) -> Option<Account> {
+    let address = music_connectors::plex::pick(all, &a.token, &a.device, &a.server_id).await.ok()?;
     let b = Account { address, ..a.clone() };
     let mut list = accounts();
     let at = list.iter().position(|x| x.key() == a.key())?;

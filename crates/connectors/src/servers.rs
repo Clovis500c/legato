@@ -12,10 +12,23 @@ use music_core::server::{self, Account, Kind};
 use std::time::Duration;
 use url::Url;
 
-/// One HTTP client for servers: a short connect timeout (a server that's off answers nothing).
+/// One HTTP client for servers: a short connect timeout (a server that's off answers nothing), redirects on the same
+/// host only (`X-Plex-Token` isn't a header reqwest drops on the way to another host).
 pub(crate) fn http() -> reqwest::Client {
-    static HTTP: std::sync::LazyLock<reqwest::Client> = std::sync::LazyLock::new(|| crate::builder().connect_timeout(Duration::from_secs(10)).build().unwrap_or_default());
+    static HTTP: std::sync::LazyLock<reqwest::Client> = std::sync::LazyLock::new(|| {
+        let same = reqwest::redirect::Policy::custom(|a| match a.previous().last() {
+            _ if a.previous().len() > 5 => a.error("Your music server redirected too many times"),
+            Some(from) if stays(from, a.url()) => a.follow(),
+            _ => a.stop(),
+        });
+        crate::builder().connect_timeout(Duration::from_secs(10)).redirect(same).build().unwrap_or_default()
+    });
     HTTP.clone()
+}
+
+/// A redirect a server's auth may follow: the same host, never from https down to http.
+pub(crate) fn stays(from: &Url, to: &Url) -> bool {
+    from.host_str() == to.host_str() && !(from.scheme() == "https" && to.scheme() != "https")
 }
 
 /// Lists can be long on a slow NAS.
@@ -252,6 +265,23 @@ mod tests {
     fn ids_from_a_server_stay_inside_their_path() {
         assert!(safe_id("4f1c9e0a2b") && safe_id("12345") && safe_id("tr-1_a"));
         assert!(!safe_id("") && !safe_id("../x") && !safe_id("a/b") && !safe_id("a?b") && !safe_id(&"a".repeat(101)));
+    }
+
+    #[test]
+    fn a_servers_auth_follows_redirects_on_its_own_host_only() {
+        let u = |s: &str| Url::parse(s).unwrap();
+        assert!(stays(&u("http://nas:32400/a"), &u("https://nas:32400/a")));
+        assert!(stays(&u("https://nas/a"), &u("https://nas:8443/b")));
+        assert!(!stays(&u("https://nas/a"), &u("http://nas/a")), "never down to http");
+        assert!(!stays(&u("https://nas/a"), &u("https://elsewhere.example/a")));
+    }
+
+    #[tokio::test]
+    async fn a_redirect_to_another_host_is_not_followed() {
+        let mut s = mockito::Server::new_async().await;
+        s.mock("GET", "/away").with_status(302).with_header("location", "http://127.0.0.2:9/stolen").create_async().await;
+        let res = http().get(format!("{}/away", s.url())).header("X-Plex-Token", "t").send().await.unwrap();
+        assert_eq!(res.status().as_u16(), 302, "stopped, not followed");
     }
 
     #[test]

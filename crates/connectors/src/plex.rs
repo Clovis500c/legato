@@ -27,6 +27,8 @@ pub const AUTH_APP: &str = "https://app.plex.tv/auth";
 pub const PRODUCT: &str = "Legato";
 /// Songs asked per page.
 pub const PAGE: usize = 500;
+/// Pages read at most: 500 000 songs.
+const MAX_PAGES: usize = 1000;
 /// The library's identifier in `:/rate` and `:/scrobble`.
 const LIBRARY: &str = "com.plexapp.plugins.library";
 /// A song's rating that means liked (Plex rates 0 to 10: 5 stars).
@@ -126,8 +128,10 @@ impl std::fmt::Debug for Resource {
 }
 
 /// Addresses in the order they're tried: on this network, then direct https, then direct http, Plex's relay last.
+/// Plain http to a public address is left out: the token would cross the internet in clear (Plex's own "insecure
+/// connections: on the same network").
 pub fn order(all: &[Connection]) -> Vec<Connection> {
-    let mut v: Vec<Connection> = all.iter().filter(|c| crate::servers::usable(&c.uri)).cloned().collect();
+    let mut v: Vec<Connection> = all.iter().filter(|c| crate::servers::usable(&c.uri) && server::exposure(&c.uri) != server::Exposure::Open).cloned().collect();
     v.sort_by_key(|c| (c.relay, !c.local, !c.uri.to_ascii_lowercase().starts_with("https://")));
     v.dedup_by(|a, b| a.uri == b.uri);
     v
@@ -218,15 +222,31 @@ pub fn split(all: &[Connection]) -> (Vec<String>, Vec<String>) {
     (o.iter().filter(|c| !c.relay).map(|c| c.uri.clone()).collect(), o.iter().filter(|c| c.relay).map(|c| c.uri.clone()).collect())
 }
 
-/// The first of `addresses` (in their order) that answers as this server (`/identity`).
+/// The machine at `base`, by `/identity`; None = no answer, or not a Plex server's.
+async fn identity(base: &str, client: &str, token: Option<&str>) -> Option<Result<String, u16>> {
+    let mut req = about(http().get(format!("{base}/identity")), client).timeout(TRY_WAIT);
+    if let Some(t) = token {
+        req = req.header("X-Plex-Token", t);
+    }
+    let res = req.send().await.ok()?;
+    if !res.status().is_success() {
+        return Some(Err(res.status().as_u16()));
+    }
+    res.json::<Value>().await.ok()?.get("MediaContainer").and_then(|m| text(m, "machineIdentifier")).map(Ok)
+}
+
+/// The first of `addresses` (in their order) that answers as this server (`/identity`). Asked without the token
+/// first: whatever answers at a LAN address on another network never gets it. A server that wants it there gets it
+/// over https only (a plex.direct certificate is that server's own).
 pub async fn pick(addresses: &[String], token: &str, client: &str, server_id: &str) -> Result<String> {
     for c in addresses {
         let base = base_of(c);
         note(&base);
-        let Ok(res) = about(http().get(format!("{base}/identity")), client).header("X-Plex-Token", token).timeout(TRY_WAIT).send().await else { continue };
-        let Ok(v) = res.json::<Value>().await else { continue };
-        let id = v.get("MediaContainer").and_then(|m| text(m, "machineIdentifier"));
-        if id.is_none_or(|id| id == server_id) {
+        let id = match identity(&base, client, None).await {
+            Some(Err(401)) if base.starts_with("https://") => identity(&base, client, Some(token)).await,
+            other => other,
+        };
+        if id.is_some_and(|id| id.is_ok_and(|id| id == server_id)) {
             return Ok(c.clone());
         }
     }
@@ -322,19 +342,25 @@ impl Plex {
     }
 
     async fn pages(&self, path: &str, query: &[(&str, &str)]) -> Result<Vec<Value>> {
+        Ok(self.paged(path, query).await?.0)
+    }
+
+    /// Every entry of a list, page by page, and whether it all came (false: past `MAX_PAGES`).
+    async fn paged(&self, path: &str, query: &[(&str, &str)]) -> Result<(Vec<Value>, bool)> {
         let mut all = Vec::new();
-        // 100 000 entries at most: a server that ignores the start can't loop forever.
-        for page in 0..200 {
-            let (c, total) = self.get(path, query, Some(page * PAGE), LIST_TIMEOUT).await?;
+        // A server that ignores the start can't loop forever.
+        for _ in 0..MAX_PAGES {
+            // From what came: a server that pages less than asked skips nothing.
+            let (c, total) = self.get(path, query, Some(all.len()), LIST_TIMEOUT).await?;
             let got = c.get("Metadata").and_then(Value::as_array).cloned().unwrap_or_default();
             let n = got.len();
             all.extend(got);
             // A server may page less than asked: the total decides when it says one.
             if n == 0 || total.map_or(n < PAGE, |t| all.len() as u64 >= t) {
-                break;
+                return Ok((all, true));
             }
         }
-        Ok(all)
+        Ok((all, false))
     }
 
     fn cover(&self, thumb: &str) -> Option<String> {
@@ -393,8 +419,10 @@ impl Plex {
     pub async fn library(&self) -> Result<Read> {
         let mut r = Read::default();
         for k in self.sections().await? {
-            match self.pages(&format!("/library/sections/{k}/all"), &[("type", "10")]).await {
-                Ok(all) => {
+            match self.paged(&format!("/library/sections/{k}/all"), &[("type", "10")]).await {
+                Ok((all, whole)) => {
+                    // Past the last page read: the songs after it aren't gone, nothing dropped.
+                    r.failed += usize::from(!whole);
                     for (t, loved) in all.iter().filter_map(|v| self.track(v)) {
                         if loved {
                             r.liked.push(t.clone());
@@ -488,9 +516,12 @@ mod tests {
         let c = |uri: &str, local, relay| Connection { uri: uri.into(), local, relay };
         let all = [c("https://1-2-3-4.x.plex.direct:8443", false, true), c("http://203.0.113.5:32400", false, false), c("https://203-0-113-5.x.plex.direct:32400", false, false), c("https://192-168-1-10.x.plex.direct:32400", true, false), c("http://nas:99999", true, false)];
         let got: Vec<String> = order(&all).into_iter().map(|c| c.uri).collect();
-        assert_eq!(got, ["https://192-168-1-10.x.plex.direct:32400", "https://203-0-113-5.x.plex.direct:32400", "http://203.0.113.5:32400", "https://1-2-3-4.x.plex.direct:8443"]);
+        // Plain http to a public address: left out (the token in clear).
+        assert_eq!(got, ["https://192-168-1-10.x.plex.direct:32400", "https://203-0-113-5.x.plex.direct:32400", "https://1-2-3-4.x.plex.direct:8443"]);
         let (direct, relays) = split(&all);
-        assert_eq!((direct.len(), relays.as_slice()), (3, ["https://1-2-3-4.x.plex.direct:8443".to_string()].as_slice()));
+        assert_eq!((direct.len(), relays.as_slice()), (2, ["https://1-2-3-4.x.plex.direct:8443".to_string()].as_slice()));
+        let lan = [c("http://192.168.1.10:32400", true, false), c("https://192-168-1-10.x.plex.direct:32400", true, false)];
+        assert_eq!(order(&lan).into_iter().map(|c| c.uri).collect::<Vec<_>>(), ["https://192-168-1-10.x.plex.direct:32400", "http://192.168.1.10:32400"], "plain http kept on the LAN, after https");
     }
 
     #[tokio::test]
@@ -537,11 +568,19 @@ mod tests {
     #[tokio::test]
     async fn the_first_address_that_answers_as_this_server_wins() {
         let mut s = Server::new_async().await;
-        s.mock("GET", "/identity").match_header("x-plex-token", "srv-tok").with_body(container(r#""machineIdentifier":"m1","version":"1.41""#)).create_async().await;
+        // The token never goes to an address before it answers as this server.
+        s.mock("GET", "/identity").match_header("x-plex-token", Matcher::Missing).with_body(container(r#""machineIdentifier":"m1","version":"1.41""#)).create_async().await;
         let mut other = Server::new_async().await;
-        other.mock("GET", "/identity").with_body(container(r#""machineIdentifier":"someone-else""#)).create_async().await;
-        let got = pick(&["http://127.0.0.1:9".into(), other.url(), s.url()], "srv-tok", "cli1", "m1").await.unwrap();
+        let asked = other.mock("GET", "/identity").match_header("x-plex-token", Matcher::Missing).with_body(container(r#""machineIdentifier":"someone-else""#)).create_async().await;
+        let mut blank = Server::new_async().await;
+        blank.mock("GET", "/identity").with_body(r#"{"MediaContainer":{}}"#).create_async().await;
+        let mut shut = Server::new_async().await;
+        let no_token = shut.mock("GET", "/identity").with_status(401).expect(1).create_async().await;
+        let got = pick(&["http://127.0.0.1:9".into(), other.url(), blank.url(), shut.url(), s.url()], "srv-tok", "cli1", "m1").await.unwrap();
         assert_eq!(got, s.url());
+        asked.assert_async().await;
+        // Plain http: a 401 isn't asked again with the token.
+        no_token.assert_async().await;
         assert!(pick(&["http://127.0.0.1:9".into()], "srv-tok", "cli1", "m1").await.unwrap_err().to_string().starts_with("Your music server doesn't answer"));
     }
 

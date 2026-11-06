@@ -21,6 +21,8 @@ use url::Url;
 pub const CLIENT: &str = "Legato";
 /// Songs asked per page.
 pub const PAGE: usize = 500;
+/// Pages read at most: 500 000 songs.
+const MAX_PAGES: usize = 1000;
 /// `/Items?userId=`, `UserFavoriteItems` and `UserPlayedItems` came with 10.9.
 const OLDEST: (u32, u32) = (10, 9);
 /// Transcoded streams: MP3 at this bit rate (bit/s).
@@ -232,23 +234,30 @@ impl Jellyfin {
 
     /// Every entry of a list, page by page.
     async fn pages(&self, path: &str, query: &[(&str, &str)]) -> Result<Vec<Value>> {
+        Ok(self.paged(path, query).await?.0)
+    }
+
+    /// Every entry of a list, page by page, and whether it all came (false: past `MAX_PAGES`).
+    async fn paged(&self, path: &str, query: &[(&str, &str)]) -> Result<(Vec<Value>, bool)> {
         let mut all = Vec::new();
         let limit = PAGE.to_string();
-        // 100 000 entries at most: a server that ignores the start can't loop forever.
-        for page in 0..200 {
-            let start = (page * PAGE).to_string();
+        // A server that ignores the start can't loop forever.
+        for _ in 0..MAX_PAGES {
+            // From what came: a server that pages less than asked skips nothing.
+            let start = all.len().to_string();
             let mut q = query.to_vec();
             q.extend([("startIndex", start.as_str()), ("limit", limit.as_str()), ("enableTotalRecordCount", "true")]);
             let v = self.get(path, &q, LIST_TIMEOUT).await?;
             let got = items(&v);
             let n = got.len();
             all.extend(got);
+            // A server (or a proxy) may page less than asked: the total decides when it says one.
             let total = v.get("TotalRecordCount").and_then(Value::as_u64);
-            if n < PAGE || total.is_some_and(|t| all.len() as u64 >= t) {
-                break;
+            if n == 0 || total.map_or(n < PAGE, |t| all.len() as u64 >= t) {
+                return Ok((all, true));
             }
         }
-        Ok(all)
+        Ok((all, false))
     }
 
     fn songs_query<'a>(&'a self, extra: &[(&'a str, &'a str)]) -> Vec<(&'a str, &'a str)> {
@@ -259,9 +268,10 @@ impl Jellyfin {
 
     /// Every song, page by page; its favourites among them.
     pub async fn library(&self) -> Result<Read> {
-        let all = self.pages("/Items", &self.songs_query(&[("sortBy", "SortName"), ("sortOrder", "Ascending")])).await?;
+        let (all, whole) = self.paged("/Items", &self.songs_query(&[("sortBy", "SortName"), ("sortOrder", "Ascending")])).await?;
         let liked = all.iter().filter(|v| v.get("UserData").and_then(|u| u.get("IsFavorite")).and_then(Value::as_bool) == Some(true)).filter_map(|v| self.track(v)).collect();
-        Ok(Read { songs: all.iter().filter_map(|v| self.track(v)).collect(), liked, failed: 0 })
+        // Past the last page read: the songs after it aren't gone, nothing dropped.
+        Ok(Read { songs: all.iter().filter_map(|v| self.track(v)).collect(), liked, failed: usize::from(!whole) })
     }
 
     /// Favourite songs only.
@@ -417,6 +427,17 @@ mod tests {
         let signed = j.sign(&art).unwrap();
         assert!(signed.url == art && signed.headers[0].1.contains("Token=\"tok123\""));
         assert!(j.sign(&format!("{}/Audio/a1b2/stream", s.url())).is_none() && j.sign("http://elsewhere/Items/1/Images/Primary").is_none());
+    }
+
+    #[tokio::test]
+    async fn a_server_that_pages_less_than_asked_is_read_to_its_total() {
+        let mut s = Server::new_async().await;
+        let song = |id: &str| SONG.replace("a1b2", id);
+        // Two per page (a proxy's cap), three in all: the short first page isn't the end.
+        s.mock("GET", "/Items").match_query(Matcher::UrlEncoded("startIndex".into(), "0".into())).with_body(format!(r#"{{"Items":[{},{}],"TotalRecordCount":3}}"#, song("x1"), song("x2"))).create_async().await;
+        s.mock("GET", "/Items").match_query(Matcher::UrlEncoded("startIndex".into(), "2".into())).with_body(format!(r#"{{"Items":[{}],"TotalRecordCount":3}}"#, song("x3"))).create_async().await;
+        let r = Jellyfin::from_account(&account(&s.url())).library().await.unwrap();
+        assert_eq!((r.songs.len(), r.failed), (3, 0));
     }
 
     #[tokio::test]
