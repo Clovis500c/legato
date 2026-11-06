@@ -152,7 +152,10 @@ copies, downloads for offline), their accounts, limits and paid plan.
       (2026-11-05: Settings › Playback › Screen, `keepScreenOn`, this PC only; `shared/awake.ts` shared with the Cover
       display. In the demo a stand-in lock is taken on Play, let go on Pause, never with the setting off; the browser
       pane refuses a real one, so WebView2's own grant is unchecked: Check live.)
-- [ ] 2. `S` The artist's bio on the artist page: YouTube Music's own "About" text, Read more.
+- [x] 2. `S` The artist's bio on the artist page: YouTube Music's own "About" text, Read more. (2026-11-06, inline:
+  `ytmusic::home::about`, the description shelf then the header's; "About {artist}" after the discography, three
+  lines, Read more, right-click Copy; Wikipedia's credit line kept at the end. Not seen on a real page: the demo has
+  no YouTube artist; Check live.)
 - [ ] 3. `S` Discord on par: a status format (song, artist, both), the artist's picture, a preview.
 - [ ] 4. `S` The mini player on minimize (a setting, off): picture in picture opens, restoring closes it, the sung line
       in it; YouTube's 200 × 200.

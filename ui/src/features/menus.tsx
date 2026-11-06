@@ -120,6 +120,9 @@ function copy(text: string, done: string) {
   navigator.clipboard.writeText(text).then(() => app().notify(done), fail)
 }
 
+/** A text the page shows (an artist's About): copy it. */
+export const textMenu = (text: string): MenuEntry[] => [{ label: tr('Copy'), icon: <Copy size={16} />, onSelect: () => copy(text, tr('Copied')) }]
+
 /** Biggest cover that loads, bars cut like the big cover, to a file the user picks. */
 async function saveCover(t: LibraryTrack) {
   let found: { src: string; box: Awaited<ReturnType<typeof loadFit>>['box'] } | undefined

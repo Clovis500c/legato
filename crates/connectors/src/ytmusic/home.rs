@@ -67,6 +67,8 @@ pub struct Artist {
     pub songs: Vec<Track>,
     pub all_songs: Option<ListRef>,
     pub shelves: Vec<Shelf>,
+    /// The page's "About" text, as YouTube Music shows it (often Wikipedia's, its credit line kept at the end).
+    pub about: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, ts_rs::TS)]
@@ -230,7 +232,17 @@ fn artist_page(page: &Value) -> Option<Artist> {
         .and_then(Value::as_str)
         .map(|id| ListRef::Browse { id: id.into() })
         .filter(ListRef::valid);
-    Some(Artist { name, art: last_thumb(header.get("thumbnail")), songs, all_songs, shelves: shelves(page) })
+    Some(Artist { name, art: last_thumb(header.get("thumbnail")), songs, all_songs, shelves: shelves(page), about: about(page, header) })
+}
+
+/// "About": the description shelf at the page's foot, else the header's own description (older layout).
+fn about(page: &Value, header: &Value) -> Option<String> {
+    all(page, "musicDescriptionShelfRenderer")
+        .into_iter()
+        .find_map(|d| d.get("description").and_then(text))
+        .or_else(|| header.get("description").and_then(text))
+        .map(|t| t.trim().to_string())
+        .filter(|t| !t.is_empty())
 }
 
 impl YouTubeMusic {
@@ -389,6 +401,24 @@ mod tests {
         assert_eq!((a.songs[0].artist.as_str(), a.songs[0].album.as_deref(), a.songs[0].duration_ms), ("Daft Punk, Julian Casablancas", Some("Random Access Memories"), None));
         assert_eq!(a.all_songs, Some(ListRef::Browse { id: "VLOLAK5uy_top".into() }));
         assert_eq!(a.shelves.iter().map(|s| s.title.as_str()).collect::<Vec<_>>(), ["Featured on"], "artists-only shelf dropped");
+        assert_eq!(a.about, None, "no About: none");
+    }
+
+    #[test]
+    fn reads_the_artists_about() {
+        let bio = "Daft Punk were a French electronic music duo.\n\nFrom Wikipedia (https://en.wikipedia.org/wiki/Daft_Punk) under Creative Commons Attribution CC-BY-SA 3.0";
+        let header = |extra: Value| {
+            let mut h = json!({ "title": { "runs": [{ "text": "Daft Punk" }] } });
+            h.as_object_mut().unwrap().extend(extra.as_object().unwrap().clone());
+            json!({ "musicImmersiveHeaderRenderer": h })
+        };
+        let shelf = json!({ "musicDescriptionShelfRenderer": { "header": { "runs": [{ "text": "About" }] }, "subheader": { "runs": [{ "text": "1.2B views" }] }, "description": { "runs": [{ "text": format!("  {bio}\n") }] } } });
+        let page = json!({ "header": header(json!({ "description": { "runs": [{ "text": "Old header text" }] } })), "contents": { "sectionListRenderer": { "contents": [shelf] } } });
+        assert_eq!(artist_page(&page).unwrap().about.as_deref(), Some(bio), "the shelf first, trimmed, its credit kept");
+        let old = json!({ "header": header(json!({ "description": { "runs": [{ "text": "Old " }, { "text": "header text" }] } })), "contents": {} });
+        assert_eq!(artist_page(&old).unwrap().about.as_deref(), Some("Old header text"), "the header's when no shelf");
+        let blank = json!({ "header": header(json!({ "description": { "runs": [{ "text": "  " }] } })), "contents": {} });
+        assert_eq!(artist_page(&blank).unwrap().about, None);
     }
 
     #[test]

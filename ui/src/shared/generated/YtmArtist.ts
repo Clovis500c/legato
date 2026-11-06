@@ -7,4 +7,8 @@ import type { Track } from "./Track";
  * An artist's page: top songs (every song behind `all_songs`, a playlist), then its shelves (albums, singles, videos,
  * playlists it's featured on, its own playlists).
  */
-export type YtmArtist = { name: string, art: string | null, songs: Array<Track>, allSongs: ListRef | null, shelves: Array<Shelf>, };
+export type YtmArtist = { name: string, art: string | null, songs: Array<Track>, allSongs: ListRef | null, shelves: Array<Shelf>, 
+/**
+ * The page's "About" text, as YouTube Music shows it (often Wikipedia's, its credit line kept at the end).
+ */
+about: string | null, };

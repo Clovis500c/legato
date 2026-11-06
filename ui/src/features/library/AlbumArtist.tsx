@@ -25,6 +25,7 @@ import { startRadioFrom } from '../player/radio'
 import { remoteTrack, usePlayer } from '../player/store'
 import { vias } from '../player/sources'
 import { AddToPlaylist } from './AddToPlaylist'
+import { ArtistAbout } from './ArtistAbout'
 import { albumRows } from './albumPage'
 import { discography } from './discography'
 import { groupAlbums, primaryArtist, type AlbumGroup } from './filter'
@@ -420,6 +421,11 @@ export function ArtistView({ artist }: { artist: string }) {
               <AlbumCard key={a.album} a={a} sub={trn(a.tracks.length, '{n} song', '{n} songs')} />
             ))}
           </CardRow>
+        </Section>
+      )}
+      {yt?.about && (
+        <Section title={tr('About {artist}', { artist: artistName(artist) })}>
+          <ArtistAbout text={yt.about} />
         </Section>
       )}
       <PageBoundary fallback={null}>{yt?.shelves.map((s) => <YouTubeShelf key={s.title} shelf={s} />)}</PageBoundary>
