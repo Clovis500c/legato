@@ -52,6 +52,18 @@ sight) shipped together as Stable 1.1.
 Kept apart (need the user's call or an outside step): Spotify playback paths, Spotify's web session, LLM playlists with a
 user key, SoundCloud playback and search (its terms), concerts (an API's terms), trademark search.
 
+### The phone, from the owner's tries (2026-11-06, 1.1.681 on their phone: "naviguer dans les playlists, c'est PAS DU TOUT pratique")
+
+- [x] Android's Back sent the app behind at once (the page keeps no history of its own): it now closes what's on top
+      (a menu, a dialog, a full screen, Now Playing), then goes back a page, the app behind only at the root
+      (`app/androidBack.ts` asked by `MainActivity.kt`, `shared/ui/layers.ts`). Not tried on a phone yet.
+- [x] Your library's tab led with the whole sidebar (Home, Mixes, Stats, Add music): one row since U1 (on `platforms`,
+      not on the phone yet).
+- [ ] `M` A YouTube song's floating video covers a third of the screen, its title and buttons twice (the bar below has
+      them): a compact phone layout within YouTube's 200 × 200 minimum, nothing over the video.
+- [ ] `S` The video showed Android's own error page with the embed's whole address (`net::ERR_NAME_NOT_RESOLVED` on 4G):
+      our own words over it, tried again when the network is back (a lookup failure is not a refusal).
+
 ### Against Liner (user's ask 2026-11-05: lead it on every point)
 
 Liner (`tryliner/desktop`): Electron, Windows / macOS / Linux, an account on its server, YouTube's audio taken and

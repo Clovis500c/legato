@@ -52,8 +52,10 @@ time, effort high.
   native HTTP playback by range requests): 5cf9d21 to 936f195, reviewed in 0ee4a2c to daafc64 (the 5-hour limit cut
   the first review; resumed from the run's cache): covers of an address as typed, no password in an address, a partial
   read drops no song, plain sync files carry no server, no worker left after Stop. About 700 k agent tokens, 10 % of
-  the week. Part 2 (Jellyfin, Plex by PIN, one `Conn` for the three kinds): 505e0fb and the docs commit after it,
-  untried on a real server.
+  the week. Part 2 (Jellyfin, Plex by PIN, one `Conn` for the three kinds): 505e0fb to 7355c7f, untried on a real
+  server; the review kept Plex's token off strange addresses, full reads, no relay for good (about 589 k agent tokens,
+  6 % of the week). The owner's tries on 1.1.681 (2026-11-06, 15:56, their phone): Android's Back fixed inline; next,
+  before 18: plan-v2 › The phone, from the owner's tries (the floating video, the embed's error page).
 - The end: a report in French (`docs/notes/report-2026-11-06.md`, untracked), this section folded into the rest of
   this file, the cron deleted, the report sent to the owner (SendUserFile, proactive).
 
