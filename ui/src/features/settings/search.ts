@@ -62,6 +62,7 @@ export const SETTINGS_INDEX: SettingEntry[] = [
   { section: 'sources', label: msg('Spotify web player'), keywords: msg('sign in') },
   { section: 'sources', label: msg('Apple Music'), keywords: msg('apple itunes import playlists favorite songs sign in') },
   { section: 'sources', label: msg('Local files'), keywords: msg('music folder mp3 flac scan') },
+  { section: 'sources', label: msg('Your music server'), keywords: msg('navidrome subsonic airsonic gonic ampache nas self-hosted stream own server') },
   { section: 'shield', label: msg('Block ads and trackers'), keywords: msg('adblock shield easylist privacy') },
   { section: 'privacy', label: msg('The app'), keywords: msg('privacy network hosts servers connections today') },
   { section: 'privacy', label: msg('App windows'), keywords: msg('privacy network hosts requests blocked pages') },

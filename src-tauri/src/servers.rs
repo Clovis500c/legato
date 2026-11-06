@@ -276,7 +276,11 @@ pub async fn sync_due(state: &AppState) -> (usize, Vec<String>) {
         }
         match sync_one(state, &a).await {
             Ok(s) => playlists += s.playlists as usize,
-            Err(e) => errors.push(format!("Music server: {e:#}")),
+            // Its own words name it already; a bare network error gets the name in front.
+            Err(e) => errors.push(match format!("{e:#}") {
+                t if t.starts_with("Your music server") || t.starts_with("That address") => t,
+                t => format!("Music server: {t}"),
+            }),
         }
     }
     (playlists, errors)

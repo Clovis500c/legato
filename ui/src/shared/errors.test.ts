@@ -23,6 +23,15 @@ describe('explain', () => {
     expect(explain('Couldn’t add “4290 Days”')).toEqual({ text: 'Couldn’t add “4290 Days”' })
   })
 
+  it('says your music server’s failures before the generic network words', () => {
+    expect(explain("Your music server doesn't answer (timed out)").text).toBe('Your music server doesn’t answer: check that it’s on and that its address is right')
+    expect(explain('Your music server refused the sign-in (HTTP 401)').text).toBe('Your music server refused the sign-in: check the user and the password')
+    expect(explain("Your music server's certificate isn't trusted (a self-signed one?): … (invalid peer certificate)").text).toMatch(/^Your music server’s certificate isn’t trusted/)
+    expect(explain('Your music server stopped sending this song (timed out)').text).toBe('Your music server stopped sending this song: check your network, then play it again')
+    expect(explain("Your music server doesn't have this item (Song not found)").text).toBe('Your music server no longer has this song: sync it again in Settings › Accounts')
+    expect(explain('Music server: sync direction is Off (Settings › Accounts)').text).toBe('Sync direction is Off: nothing comes in (Settings › Accounts)')
+  })
+
   it('says what works instead of a private Spotify playlist', () => {
     expect(explain("This Spotify playlist is private or doesn't exist").text).toBe("This Spotify playlist is private or doesn't exist: private playlists and Liked Songs come in with Add music › Connect Spotify")
     expect(explain("This Spotify album is private or doesn't exist").text).toBe("This Spotify album was removed, or isn't available in your country")

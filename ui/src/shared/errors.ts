@@ -9,6 +9,21 @@ export interface Explained {
 // Network failures as Rust (reqwest, Windows sockets) and the webview word them. "Too Many Requests" is HTTP's own
 // casing: the explanation below says it in lowercase, so explaining twice changes nothing.
 const KINDS: [RegExp, string][] = [
+  // Your music server (connectors subsonic.rs, player http.rs, src-tauri servers.rs): before the generic network ones,
+  // their own words say which server and what to do.
+  [/^Your music server refused the sign-in/, msg('Your music server refused the sign-in: check the user and the password')],
+  [/^Your music server doesn['’]t answer/, msg('Your music server doesn’t answer: check that it’s on and that its address is right')],
+  [/^Your music server['’]s certificate isn['’]t trusted/, msg('Your music server’s certificate isn’t trusted (a self-signed one?): use its http:// address on your network, or give it a certificate from a known authority')],
+  [/^Your music server is too old for Legato/, msg('Your music server is too old for Legato: it needs the Subsonic API 1.13 or newer')],
+  [/^That address isn['’]t a Subsonic server/, msg('That address isn’t a Subsonic server: check it (Navidrome’s is like http://192.168.1.10:4533)')],
+  [/^Your music server (cut the connection|stopped sending|sent no audio)/, msg('Your music server stopped sending this song: check your network, then play it again')],
+  [/^Your music server no longer has this song|^Your music server doesn['’]t have this item/, msg('Your music server no longer has this song: sync it again in Settings › Accounts')],
+  [/^Your music server isn['’]t signed in/, msg('Your music server isn’t signed in: sign in again in Settings › Accounts')],
+  [/^Your music server failed/, msg('The service is having trouble right now: try again later.')],
+  [/^Type your server['’]s address/, msg('Type your server’s address, like http://192.168.1.10:4533')],
+  [/^Your server['’]s address starts with/, msg('Your server’s address starts with http:// or https://')],
+  [/^Type your server['’]s user and password/, msg('Type your server’s user and password')],
+  [/^Music server: sync direction is Off/, msg('Sync direction is Off: nothing comes in (Settings › Accounts)')],
   [/dns error|no such host|error trying to connect|tcp connect error|network is unreachable|os error (10050|10051|10065|11001|11004)|failed to fetch/i, msg('No internet connection: check your network, then try again.')],
   [/timed out|deadline has elapsed|os error 10060/i, msg('The service took too long to answer: try again in a moment.')],
   [/\b429\b|Too Many Requests|→ 403 Forbidden[^]*Sorry/, msg('Too many requests for now: wait a few minutes, then try again.')],

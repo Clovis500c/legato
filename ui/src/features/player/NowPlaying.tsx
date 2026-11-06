@@ -61,7 +61,7 @@ function TunerScale({ value, max, onChange }: { value: number; max: number; onCh
   )
 }
 
-const viaSource: Record<Via, Source> = { local: 'local', youtube: 'youtube', spotify: 'spotify', preview: 'apple' }
+const viaSource: Record<Via, Source> = { local: 'local', server: 'server', youtube: 'youtube', spotify: 'spotify', preview: 'apple' }
 
 /** Where the sound comes from: one small icon. Switching source: right-click › Play via. */
 function SourceBadge({ via }: { via: Via }) {

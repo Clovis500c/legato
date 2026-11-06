@@ -41,10 +41,11 @@ export const clock = (ms: number | null) => formatDuration(ms) || '0:00'
 export const fileFormat = (path?: string) => path?.split('.').pop()?.toUpperCase()
 
 // Source of what plays: icon and name after the artist, details in its tooltip. Previews come from Apple Music.
-const viaSource: Record<string, Source> = { local: 'local', youtube: 'youtube', spotify: 'spotify', preview: 'apple' }
+const viaSource: Record<string, Source> = { local: 'local', server: 'server', youtube: 'youtube', spotify: 'spotify', preview: 'apple' }
 function viaTitle(via: string, path?: string) {
   if (via === 'local') return tr('Playing a local file') + (path ? ` · ${fileFormat(path)}` : '')
   if (via === 'preview') return tr('Playing a 30-second Apple Music preview')
+  if (via === 'server') return tr('Playing from your music server')
   return tr('Playing from {source}', { source: via === 'youtube' ? 'YouTube' : 'Spotify' })
 }
 
@@ -281,8 +282,8 @@ export function PlayerBar() {
   const track = useNowTrack()
   const offer = usePickup((s) => s.offer)
   useLiveSync()
-  // Engine plays local files and previews: poll it. Spotify Connect: poll its API, slower (rate limits).
-  const local = now && (now.via === 'local' || now.via === 'preview')
+  // Engine plays local files, server songs and previews: poll it. Spotify Connect: poll its API, slower (rate limits).
+  const local = now && (now.via === 'local' || now.via === 'server' || now.via === 'preview')
   const remote = now?.via === 'spotify'
 
   // Files or folders dropped from Explorer = added (takeDrop). An image alone = read a shared playlist QR code.

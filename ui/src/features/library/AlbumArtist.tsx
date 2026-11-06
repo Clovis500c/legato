@@ -62,7 +62,7 @@ function AlbumCard({ a, sub }: { a: AlbumGroup; sub: string }) {
 // #, title, heart and time (PHONE_GRID: the others left the title no room), a finger's row height, and a tap plays.
 const ALBUM_GRID = { gridTemplateColumns: '32px minmax(0,2fr) minmax(0,1fr) 76px 52px 32px 52px' }
 const PHONE_GRID = 'phone:h-12 phone:gap-2 phone:px-0 phone:grid-cols-[24px_minmax(0,1fr)_32px_44px]!'
-const SOURCES: Source[] = ['spotify', 'youtube', 'apple', 'local']
+const SOURCES: Source[] = ['spotify', 'youtube', 'apple', 'server', 'local']
 
 function AlbumHead() {
   return (

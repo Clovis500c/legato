@@ -8,7 +8,7 @@ import { endListen, progress, startListen } from './listens'
 import { albumGoesOn, demoGain, demoLength, fadeGain, NO_FADE, overlapDue, PICK_IN_S, type Fade } from './fade'
 import { insertAt, keepQueued, moveInOrder, moveToSlot, nextIndex, playOrder, queued, tooLong, type Repeat } from './queue'
 import { RECENT_S, smartOrder } from './shuffle'
-import { vias, type Via } from './sources'
+import { isNative, nativePath, SERVER_PATH, vias, viaOfPath, type Via } from './sources'
 import { formatDuration } from '../../shared/format'
 import { endCut, isUndone, landed, rememberUndone, toSkip, useSponsor } from './sponsor'
 import { offerEnd, rememberEnd, rememberStart, songEnd, songStart } from './ends'
@@ -232,7 +232,7 @@ const spotify = (cmd: SpotifyCommand) => api.spotifyPlayer(cmd).catch((e) => use
 // Library local run in engine: drop files queued after current (dropped files keep theirs).
 const endRun = () => {
   const now = usePlayer.getState().now
-  if (now?.via === 'local' && now.trackId) void send({ type: 'truncate' })
+  if (isNative(now?.via) && now?.trackId) void send({ type: 'truncate' })
 }
 // Knob drags fire many changes: one Spotify call per pause.
 let volumeTimer: ReturnType<typeof setTimeout> | undefined
@@ -336,7 +336,9 @@ const SILENCE_WAIT_MS = 400
 const localPaths = (tracks: LibraryTrack[]) => tracks.flatMap((x) => (x.ids.local ? [x.ids.local] : []))
 
 /** The engine learns what it needs of local files about to play (cached): their silences, their levelling gains. */
-function prepareLocal(paths: string[]): Promise<void> {
+function prepareLocal(all: string[]): Promise<void> {
+  // Server songs: no file to scan (their silences and gains aren't known yet).
+  const paths = all.filter((p) => !p.startsWith(SERVER_PATH))
   const { skipSilence, levelling } = usePlayer.getState()
   if (!paths.length || (!skipSilence && levelling === 'off')) return Promise.resolve()
   return api.localPrepare(paths, skipSilence, levelling !== 'off').catch(() => {})
@@ -638,11 +640,11 @@ export const usePlayer = create<PlayerState>((set, get) => ({
           .catch(() => {})
       return
     }
-    if (how === 'local') {
-      // Consecutive local tracks go to the engine as one run: gapless between them. List order only.
+    if (isNative(how)) {
+      // Consecutive local and server tracks go to the engine as one run: gapless between them. List order only.
       let end = index + 1
-      while (!get().shuffle && get().repeat !== 'one' && end < list.length && vias(list[end])[0] === 'local') end++
-      const paths = list.slice(index, end).map((x) => x.ids.local!)
+      while (!get().shuffle && get().repeat !== 'one' && end < list.length && isNative(vias(list[end])[0])) end++
+      const paths = list.slice(index, end).map((x, i) => nativePath(x, i === 0 ? how : vias(x)[0])!)
       // Skip silence, levelling: the engine learns where the music starts and how loud each file is before the song
       // plays (cached, or tags). An answer not there in time plays the song as it is: the engine seeks past the silence
       // when it comes late, and takes a late gain in the first seconds only.
@@ -654,7 +656,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
       send({ type: 'play', paths, start: 0 })
       if (start) send({ type: 'seek', ms: start })
       if (hold) send({ type: 'toggle' })
-      set({ now: { ...base, path: t.ids.local } })
+      set({ now: { ...base, path: paths[0] } })
       return get().applyVolume(true)
     }
     if (how === 'spotify') {
@@ -909,7 +911,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     }
     const { list, index, now } = get()
     // Gapless run moved on: follow it in the queue.
-    const i = s.path && now?.trackId ? list.findIndex((t, j) => j >= index && t.ids.local === s.path) : -1
+    const i = s.path && now?.trackId ? list.findIndex((t, j) => j >= index && (t.ids.local === s.path || (!!t.ids.server && SERVER_PATH + t.ids.server === s.path))) : -1
     if (i > index) {
       endListen(true)
       startListen(list[i].id, s.durationMs)
@@ -934,7 +936,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
       ...(jumped && { fadeFrom: s.positionMs }),
       upcoming: sameList(upcoming, was.upcoming) ? was.upcoming : upcoming,
       ...(songMs && { durationMs: songMs }),
-      ...(i > index && { index: i, playId: get().playId + 1, fadeIn: albumGoesOnAt(get(), i) ? 0 : get().fade.in, fadeFrom: skip && s.positionMs > 600 ? s.positionMs : 0, now: { title: list[i].title, artist: list[i].artist, trackId: list[i].id, via: 'local', path: s.path! } }),
+      ...(i > index && { index: i, playId: get().playId + 1, fadeIn: albumGoesOnAt(get(), i) ? 0 : get().fade.in, fadeFrom: skip && s.positionMs > 600 ? s.positionMs : 0, now: { title: list[i].title, artist: list[i].artist, trackId: list[i].id, via: viaOfPath(s.path!), path: s.path! } }),
       ...(s.path && !now?.trackId && s.path !== now?.path && { now: { title: fileTitle(s.path), artist: tr('Local file'), path: s.path, via: 'local' }, playId: get().playId + 1 }),
     })
     if (s.path) get().applyVolume()
@@ -1094,7 +1096,7 @@ usePlayer.subscribe((s, prev) => {
 usePlayer.subscribe((s, prev) => {
   if (s.levelling === prev.levelling) return
   send({ type: 'level', mode: s.levelling })
-  if (prev.levelling === 'off' && s.now?.via === 'local') void prepareLocal(localPaths(s.list.slice(s.index, s.index + 4)))
+  if (prev.levelling === 'off' && isNative(s.now?.via)) void prepareLocal(localPaths(s.list.slice(s.index, s.index + 4)))
 })
 
 // Late start heard (live.js: 2 s or more of silence from the start, then music): kept for the next plays of the video,

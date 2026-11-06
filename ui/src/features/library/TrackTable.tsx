@@ -30,7 +30,7 @@ import { fitColumns } from './fitColumns'
 
 const ROW = { compact: 40, comfort: 52, airy: 64 }
 const PHONE_ROW = 60
-const order: Source[] = ['spotify', 'youtube', 'apple', 'local']
+const order: Source[] = ['spotify', 'youtube', 'apple', 'server', 'local']
 const onControl = (e: React.MouseEvent) => e.target instanceof Element && !!e.target.closest('button, a, input, [role="menu"], [role="slider"]')
 // Title, artist and album share the room 2:1:1, so a narrow window never squeezes the title out.
 const width: Record<Column, string> = { album: 'minmax(0,1fr)', year: '44px', genre: 'minmax(0,0.6fr)', sources: '76px', plays: '52px', rating: '72px', added: '92px', duration: '52px' }

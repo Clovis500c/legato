@@ -10,10 +10,10 @@ import { claimViz, useVizListeners, viz as frames } from './vizFrames'
 import { wantsWave } from './vizLooks'
 import { songFade, usePlayer } from './store'
 
-// Who plays now, for levels: the native engine (local files, previews) or YouTube. Spotify: its own app, none.
+// Who plays now, for levels: the native engine (local files, server songs, previews) or YouTube. Spotify: its own app, none.
 const playing = () => {
   const via = usePlayer.getState().now?.via
-  return via === 'local' || via === 'preview' ? 'native' : via === 'youtube' ? 'youtube' : null
+  return via === 'local' || via === 'server' || via === 'preview' ? 'native' : via === 'youtube' ? 'youtube' : null
 }
 
 /** Live processing follows the settings (Settings › Advanced › Sound) and the Live Editor. Mounted once, by the player bar. */

@@ -1,4 +1,4 @@
-import { ArrowsClockwise, DeviceMobile, FolderPlus, GoogleLogo, ShieldCheck, SignOut, UserPlus, X } from '@phosphor-icons/react'
+import { ArrowsClockwise, DeviceMobile, FolderPlus, GoogleLogo, HardDrives, ShieldCheck, SignOut, UserPlus, Warning, X } from '@phosphor-icons/react'
 import { useShallow } from 'zustand/react/shallow'
 import { open } from '@tauri-apps/plugin-dialog'
 import { useEffect, useState, type ReactNode } from 'react'
@@ -8,7 +8,7 @@ import { AppleImport } from '../add/AppleConnect'
 import { openAppInfo } from '../add/phoneMic'
 import { MUSIC_REFUSED, phoneFolders, withPhone } from '../add/phoneMusic'
 import { SpotifyImport } from '../add/SpotifyConnect'
-import { accountKey, api, type Direction, type YtmAccount } from '../../shared/api'
+import { accountKey, api, type Direction, type ServerExposure, type ServerStatus, type YtmAccount } from '../../shared/api'
 import { useGoogleAccounts } from './google'
 import { timeAgo } from '../../shared/format'
 import { Button } from '../../shared/ui/Button'
@@ -23,6 +23,8 @@ import { ask } from '../../shared/ui/Ask'
 import { openUrl } from '@tauri-apps/plugin-opener'
 import { useLastfm } from './lastfm'
 import { useListenbrainz } from './listenbrainz'
+import { syncServer, useServers } from './servers'
+import { explain } from '../../shared/errors'
 
 /** Each account's sync direction (user's request 2026-10-29), kept in Rust (music_core::sync). */
 function useDirections() {
@@ -395,6 +397,146 @@ function GoogleAccounts() {
   )
 }
 
+/** Plain http to a public address: said beside the address, and on the signed-in row. */
+const OPEN_WARNING = msg('Plain http:// over the internet: your sign-in and your music travel unencrypted. Use your server’s https:// address if it has one.')
+
+/** The host of a server's address, for its row. */
+const hostOf = (address: string) => address.replace(/^https?:\/\//i, '')
+
+/** One signed-in server: what came in, Sync now, Sign out, its sync direction. */
+function ServerAccount({ s }: { s: ServerStatus }) {
+  const syncing = useServers((x) => x.syncing === s.key)
+  const [dirs, setDir] = useDirections()
+  const sync = async () => {
+    try {
+      const done = await syncServer(s.key)
+      useStore.getState().notify(trn(done.songs, '{n} song from your music server', '{n} songs from your music server'))
+    } catch (e) {
+      useStore.setState({ error: String(e) })
+    }
+  }
+  const signOut = async () => {
+    if (!(await ask({ title: tr('Sign out of your music server?'), body: phoneApp ? tr('Its songs and playlists leave your library on this phone. Your server keeps everything.') : tr('Its songs and playlists leave your library on this PC. Your server keeps everything.'), ok: tr('Sign out') }))) return
+    await api.serverSignOut(s.key).catch((e) => useStore.setState({ error: String(e) }))
+    await useStore.getState().refresh()
+    void useServers.getState().refresh()
+  }
+  const state = syncing ? tr('Syncing…') : s.songs === null ? tr('Signed in') : trn(s.songs, '{n} song', '{n} songs')
+  return (
+    <>
+      <AccountLine on icon={<HardDrives size={16} />} title={tr('Your music server')} pitch={`${s.user} · ${hostOf(s.address)}`} state={state}>
+        <Button variant="ghost" disabled={syncing} onClick={() => void sync()}>
+          <ArrowsClockwise size={14} /> {tr('Sync now')}
+        </Button>
+        <Button variant="ghost" disabled={syncing} onClick={() => void signOut()}>
+          {tr('Sign out')}
+        </Button>
+      </AccountLine>
+      <div className="ml-13 @max-lg:ml-0 flex flex-col gap-2 text-xs text-ink-2">
+        {s.syncedAt !== null && <p>{s.playlists ? tr('Last sync {when} · {playlists}', { when: timeAgo(s.syncedAt), playlists: trn(s.playlists, '{n} playlist', '{n} playlists') }) : tr('Last sync {when}', { when: timeAgo(s.syncedAt) })}</p>}
+        {s.error && <p className="text-ink">{explain(s.error).text}</p>}
+        {s.exposure === 'open' && (
+          <p className="flex items-start gap-1.5 text-ink">
+            <Warning size={14} className="mt-px shrink-0" /> {tr(OPEN_WARNING)}
+          </p>
+        )}
+        <DirectionPicker service={tr('your music server')} value={dirs[`server:${s.key}`] ?? 'both'} onChange={(d) => setDir(`server:${s.key}`, d)} />
+      </div>
+    </>
+  )
+}
+
+/** Your music server: Subsonic-compatible ones for now (Navidrome, Airsonic, Gonic, Ampache). The password goes to the
+ * keychain, checked with the server first; the first sync follows. */
+function ServerRow() {
+  const { list, refresh } = useServers()
+  const [form, setForm] = useState(false)
+  const [address, setAddress] = useState('')
+  const [user, setUser] = useState('')
+  const [password, setPassword] = useState('')
+  const [busy, setBusy] = useState<string | null>(null)
+  const [exposure, setExposure] = useState<ServerExposure | null>(null)
+  useEffect(() => void refresh(), [refresh])
+  useEffect(() => {
+    if (!address.trim()) return setExposure(null)
+    const t = setTimeout(() => void api.serverExposure(address).then(setExposure, () => setExposure(null)), 250)
+    return () => clearTimeout(t)
+  }, [address])
+  const ready = !!address.trim() && !!user.trim() && !!password && !busy
+  const signIn = async () => {
+    setBusy(tr('Checking with your server…'))
+    try {
+      const s = await api.serverSignIn('subsonic', address, user, password)
+      setForm(false)
+      setPassword('')
+      await refresh()
+      setBusy(tr('Syncing your server…'))
+      const done = await syncServer(s.key)
+      useStore.getState().notify(trn(done.songs, '{n} song from your music server', '{n} songs from your music server'))
+    } catch (e) {
+      useStore.setState({ error: String(e) })
+    } finally {
+      setBusy(null)
+      void refresh()
+    }
+  }
+  const field = 'h-8 w-full rounded-md border border-line bg-bg px-2 text-xs'
+  return (
+    <div data-setting="Your music server" className="flex flex-col gap-3 border-b border-line-soft px-4 py-3.5">
+      {list.map((s) => (
+        <ServerAccount key={s.key} s={s} />
+      ))}
+      {!list.length && (
+        <AccountLine on={false} icon={<HardDrives size={16} />} title={tr('Your music server')} pitch={tr('Your own music from Navidrome, Airsonic, Gonic or Ampache, streamed from your server and played here like your files')} state={busy ?? tr('Not connected')}>
+          <Button onClick={() => setForm((f) => !f)}>{tr('Sign in')}</Button>
+        </AccountLine>
+      )}
+      {form && !list.length && (
+        <form
+          className="ml-13 @max-lg:ml-0 flex flex-col gap-2 rounded-lg border border-line bg-bg p-3 text-xs"
+          onSubmit={(e) => {
+            e.preventDefault()
+            if (ready) void signIn()
+          }}
+        >
+          <label className="flex flex-col gap-1">
+            <span className="text-ink-2">{tr('Server type')}</span>
+            <select className={field} value="subsonic" onChange={() => {}}>
+              <option value="subsonic">{tr('Subsonic-compatible (Navidrome, Airsonic, Gonic, Ampache)')}</option>
+            </select>
+            <span className="text-ink-2">{tr('Jellyfin and Plex: coming soon')}</span>
+          </label>
+          <label className="flex flex-col gap-1">
+            <span className="text-ink-2">{tr('Address')}</span>
+            <input value={address} onChange={(e) => setAddress(e.target.value)} placeholder="http://192.168.1.10:4533" spellCheck={false} autoComplete="url" inputMode="url" className={`${field} font-mono`} />
+          </label>
+          {exposure === 'open' && (
+            <p className="flex items-start gap-1.5 text-ink">
+              <Warning size={14} className="mt-px shrink-0" /> {tr(OPEN_WARNING)}
+            </p>
+          )}
+          <div className="grid grid-cols-2 gap-2 @max-lg:grid-cols-1">
+            <label className="flex flex-col gap-1">
+              <span className="text-ink-2">{tr('User')}</span>
+              <input value={user} onChange={(e) => setUser(e.target.value)} spellCheck={false} autoComplete="username" className={field} />
+            </label>
+            <label className="flex flex-col gap-1">
+              <span className="text-ink-2">{tr('Password')}</span>
+              <input value={password} onChange={(e) => setPassword(e.target.value)} type="password" autoComplete="current-password" className={field} />
+            </label>
+          </div>
+          <p className="flex items-start gap-1.5 text-ink-2">
+            <ShieldCheck size={14} className="mt-px shrink-0" /> {phoneApp ? tr('Your password stays in this phone’s secure storage. Legato talks to your server only, never to a server of ours.') : tr('Your password stays in this PC’s keychain. Legato talks to your server only, never to a server of ours.')}
+          </p>
+          <Button className="w-fit" type="submit" disabled={!ready}>
+            {busy ?? tr('Sign in')}
+          </Button>
+        </form>
+      )}
+    </div>
+  )
+}
+
 /** Music folders: scanned with tags, linked to tracks already known from other services. A phone's: its Music and Download. */
 function LocalFolders() {
   const { refresh, tracks } = useStore(useShallow(({ refresh, tracks }) => ({ refresh, tracks })))
@@ -478,6 +620,7 @@ export function SourcesView() {
         <AppleWeb />
         <LastfmRow />
         <ListenbrainzRow />
+        <ServerRow />
         <LocalFolders />
       </div>
       {/* Google's sign-in is the PC's only (it refuses phone apps). */}

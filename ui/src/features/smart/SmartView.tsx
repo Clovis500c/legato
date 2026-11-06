@@ -27,7 +27,7 @@ const OPS: Record<SmartField, { value: string; label: string }[]> = {
   rating: [{ value: 'atLeast', label: msg('at least') }, { value: 'atMost', label: msg('at most') }, { value: 'none', label: msg('none yet') }],
   added: [{ value: 'last', label: msg('among the newest') }],
 }
-const SOURCES: { value: Source; label: string }[] = [{ value: 'youtube', label: msg('YouTube') }, { value: 'spotify', label: msg('Spotify') }, { value: 'apple', label: msg('Apple Music') }, { value: 'local', label: msg('Local files') }]
+const SOURCES: { value: Source; label: string }[] = [{ value: 'youtube', label: msg('YouTube') }, { value: 'spotify', label: msg('Spotify') }, { value: 'apple', label: msg('Apple Music') }, { value: 'server', label: msg('Music server') }, { value: 'local', label: msg('Local files') }]
 const SORT_LABEL: Record<SmartList['sort'], string> = { plays: msg('Most played'), recent: msg('Recently played'), rating: msg('Highest rated'), added: msg('Recently added'), title: msg('Title'), artist: msg('Artist'), random: msg('Random') }
 const DEFAULT_RULE: Record<SmartField, SmartRule> = {
   artist: { field: 'artist', op: 'has', value: '' },

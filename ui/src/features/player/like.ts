@@ -49,6 +49,12 @@ export function lessLikeThis(t: LibraryTrack) {
   usePlayer.getState().step(1)
 }
 
+/** Your music server's song: liked = starred there too (Settings › Accounts' direction decides, in Rust). */
+function starOnServer(t: LibraryTrack, on: boolean) {
+  const id = t.ids.server ?? app().tracks.find((x) => x.id === t.id)?.ids.server
+  if (id) api.serverStar(id, on).catch((e: unknown) => app().notify(String(e), { kind: 'error' }))
+}
+
 export async function toggleLike(t: LibraryTrack) {
   try {
     const held = holding(t)
@@ -59,6 +65,7 @@ export async function toggleLike(t: LibraryTrack) {
         else await api.removeFromPlaylist(p.id, id)
       }
       await app().refreshChanged()
+      starOnServer(t, false)
       return
     }
     const id = libraryId(t, app().tracks) ?? (await api.addTrack(t))
@@ -78,6 +85,7 @@ export async function toggleLike(t: LibraryTrack) {
       await app().editPlaylist({ type: 'add', id: own, trackIds: [id] })
     }
     await app().refreshChanged()
+    starOnServer(t, true)
     app().notify(tr('Added to {name}: {songs}', { name: NAME, songs: tr('“{title}”', { title: t.title }) }))
     if (refused) app().notify(String(refused), { kind: 'error' })
   } catch (e) {

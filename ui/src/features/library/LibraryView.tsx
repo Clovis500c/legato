@@ -163,7 +163,7 @@ function SourceChips({ tracks, value, onChange, countOf }: { tracks: LibraryTrac
   const count = useMemo(() => (f: Filter, songs: number) => (countOf ? countOf(filterTracks(tracks, '', f)) : songs), [tracks, countOf])
   const chips: { id: Filter; label: string; count: number }[] = [
     { id: 'all', label: msg('All'), count: count('all', stats.total) },
-    ...(['youtube', 'spotify', 'apple', 'local'] as const).filter((s) => stats.perSource[s]).map((s) => ({ id: s, label: sourceLabel[s], count: count(s, stats.perSource[s]) })),
+    ...(['youtube', 'spotify', 'apple', 'server', 'local'] as const).filter((s) => stats.perSource[s]).map((s) => ({ id: s, label: sourceLabel[s], count: count(s, stats.perSource[s]) })),
     ...(stats.sources > 1 && stats.unlinked ? [{ id: 'unlinked' as const, label: msg('Unlinked'), count: count('unlinked', stats.unlinked) }] : []),
   ]
   return (
