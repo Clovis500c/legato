@@ -64,8 +64,11 @@ user key, SoundCloud playback and search (its terms), concerts (an API's terms),
       alone, 2026-11-06, against YouTube's terms as that mode is: the owner's call to keep; `MiniPlayer.tsx`, one line
       to undo). Only the floating place had the card (`miniPlace` float); the side panel's place is hidden on the phone.
       Not tried on a phone (the demo has no YouTube frame).
-- [ ] `S` The video showed Android's own error page with the embed's whole address (`net::ERR_NAME_NOT_RESOLVED` on 4G):
-      our own words over it, tried again when the network is back (a lookup failure is not a refusal).
+- [x] The video showed Android's own error page with the embed's whole address (`net::ERR_NAME_NOT_RESOLVED` on 4G):
+      no word from the frame 10 s after its load = down (`features/player/ytDown.ts`): "Can’t reach YouTube. Check your
+      connection." and Try again over it (never its address, nothing when the video is out of sight), tried again by
+      itself at once when the network comes back, else after 5 s doubled to 2 min. Google's refusal keeps `refused.js`.
+      Not tried for real (no phone, the demo has no YouTube frame).
 
 ### Against Liner (user's ask 2026-11-05: lead it on every point)
 

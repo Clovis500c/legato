@@ -2282,6 +2282,7 @@ const id: Record<string, string> = {
   'Its songs, playlists and stars come in; your likes and plays here go out to your music server.': 'Lagu, playlist, dan bintangnya masuk; suka dan putaranmu di sini dikirim ke server musikmu.',
   'Its songs, playlists and stars come in. Nothing goes back: your likes and plays stay here.': 'Lagu, playlist, dan bintangnya masuk. Tidak ada yang dikirim balik: suka dan putaranmu tetap di sini.',
   'Your likes and plays here go out to your music server. Nothing new comes in from it.': 'Suka dan putaranmu di sini dikirim ke server musikmu. Tidak ada yang baru masuk darinya.',
+  'Can’t reach YouTube. Check your connection.': 'Tidak dapat menjangkau YouTube. Periksa koneksi Anda.',
 }
 
 export default id

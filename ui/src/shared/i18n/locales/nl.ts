@@ -2282,6 +2282,7 @@ const nl: Record<string, string> = {
   'Its songs, playlists and stars come in; your likes and plays here go out to your music server.': 'De nummers, playlists en sterren komen binnen; je likes en afspeelbeurten hier gaan naar je muziekserver.',
   'Its songs, playlists and stars come in. Nothing goes back: your likes and plays stay here.': 'De nummers, playlists en sterren komen binnen. Er gaat niets terug: je likes en afspeelbeurten blijven hier.',
   'Your likes and plays here go out to your music server. Nothing new comes in from it.': 'Je likes en afspeelbeurten hier gaan naar je muziekserver. Er komt niets nieuws van binnen.',
+  'Can’t reach YouTube. Check your connection.': 'YouTube is niet bereikbaar. Controleer je verbinding.',
 }
 
 export default nl

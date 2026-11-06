@@ -2282,6 +2282,7 @@ const vi: Record<string, string> = {
   'Its songs, playlists and stars come in; your likes and plays here go out to your music server.': 'Bài hát, danh sách phát và sao của nó được đưa vào; lượt thích và lượt nghe ở đây được gửi tới máy chủ nhạc của bạn.',
   'Its songs, playlists and stars come in. Nothing goes back: your likes and plays stay here.': 'Bài hát, danh sách phát và sao của nó được đưa vào. Không gửi gì ngược lại: lượt thích và lượt nghe ở lại đây.',
   'Your likes and plays here go out to your music server. Nothing new comes in from it.': 'Lượt thích và lượt nghe ở đây được gửi tới máy chủ nhạc của bạn. Không có gì mới được đưa vào từ nó.',
+  'Can’t reach YouTube. Check your connection.': 'Không thể kết nối YouTube. Hãy kiểm tra kết nối của bạn.',
 }
 
 export default vi

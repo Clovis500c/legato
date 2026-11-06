@@ -2282,6 +2282,7 @@ const sv: Record<string, string> = {
   'Its songs, playlists and stars come in; your likes and plays here go out to your music server.': 'Dess låtar, spellistor och stjärnor kommer in; dina gillningar och spelningar här skickas till din musikserver.',
   'Its songs, playlists and stars come in. Nothing goes back: your likes and plays stay here.': 'Dess låtar, spellistor och stjärnor kommer in. Inget skickas tillbaka: dina gillningar och spelningar stannar här.',
   'Your likes and plays here go out to your music server. Nothing new comes in from it.': 'Dina gillningar och spelningar här skickas till din musikserver. Inget nytt kommer in från den.',
+  'Can’t reach YouTube. Check your connection.': 'Det går inte att nå YouTube. Kontrollera anslutningen.',
 }
 
 export default sv

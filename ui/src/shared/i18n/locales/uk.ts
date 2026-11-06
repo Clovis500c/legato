@@ -2282,6 +2282,7 @@ const uk: Record<string, string> = {
   'Its songs, playlists and stars come in; your likes and plays here go out to your music server.': 'Його пісні, плейлисти й зірки приходять сюди; твої вподобання й прослуховування звідси йдуть на музичний сервер.',
   'Its songs, playlists and stars come in. Nothing goes back: your likes and plays stay here.': 'Його пісні, плейлисти й зірки приходять сюди. Назад нічого не йде: твої вподобання й прослуховування лишаються тут.',
   'Your likes and plays here go out to your music server. Nothing new comes in from it.': 'Твої вподобання й прослуховування звідси йдуть на музичний сервер. Нового з нього нічого не приходить.',
+  'Can’t reach YouTube. Check your connection.': 'Не вдається зв’язатися з YouTube. Перевірте з’єднання.',
 }
 
 export default uk

@@ -2282,6 +2282,7 @@ const ja: Record<string, string> = {
   'Its songs, playlists and stars come in; your likes and plays here go out to your music server.': '曲、プレイリスト、スターが取り込まれ、ここでのいいねと再生は音楽サーバーに送られます。',
   'Its songs, playlists and stars come in. Nothing goes back: your likes and plays stay here.': '曲、プレイリスト、スターが取り込まれます。何も送り返さず、いいねと再生はここに残ります。',
   'Your likes and plays here go out to your music server. Nothing new comes in from it.': 'ここでのいいねと再生は音楽サーバーに送られます。サーバーから新しいものは取り込みません。',
+  'Can’t reach YouTube. Check your connection.': 'YouTube に接続できません。接続を確認してください。',
 }
 
 export default ja

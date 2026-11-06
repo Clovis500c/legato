@@ -2282,6 +2282,7 @@ const hi: Record<string, string> = {
   'Its songs, playlists and stars come in; your likes and plays here go out to your music server.': 'इसके गाने, प्लेलिस्ट और स्टार यहाँ आते हैं; यहाँ की आपकी पसंद और प्ले आपके म्यूज़िक सर्वर पर जाते हैं।',
   'Its songs, playlists and stars come in. Nothing goes back: your likes and plays stay here.': 'इसके गाने, प्लेलिस्ट और स्टार यहाँ आते हैं। कुछ वापस नहीं जाता: आपकी पसंद और प्ले यहीं रहते हैं।',
   'Your likes and plays here go out to your music server. Nothing new comes in from it.': 'यहाँ की आपकी पसंद और प्ले आपके म्यूज़िक सर्वर पर जाते हैं। उससे कुछ नया नहीं आता।',
+  'Can’t reach YouTube. Check your connection.': 'YouTube तक नहीं पहुँच पा रहे। अपना कनेक्शन जाँचें।',
 }
 
 export default hi

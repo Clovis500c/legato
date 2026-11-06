@@ -2282,6 +2282,7 @@ const tr: Record<string, string> = {
   'Its songs, playlists and stars come in; your likes and plays here go out to your music server.': 'Şarkıları, çalma listeleri ve yıldızları gelir; buradaki beğenilerin ve dinlemelerin müzik sunucuna gider.',
   'Its songs, playlists and stars come in. Nothing goes back: your likes and plays stay here.': 'Şarkıları, çalma listeleri ve yıldızları gelir. Hiçbir şey geri gitmez: beğenilerin ve dinlemelerin burada kalır.',
   'Your likes and plays here go out to your music server. Nothing new comes in from it.': 'Buradaki beğenilerin ve dinlemelerin müzik sunucuna gider. Ondan yeni bir şey gelmez.',
+  'Can’t reach YouTube. Check your connection.': 'YouTube’a ulaşılamıyor. Bağlantınızı kontrol edin.',
 }
 
 export default tr

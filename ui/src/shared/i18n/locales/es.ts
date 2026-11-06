@@ -2282,6 +2282,7 @@ const es: Record<string, string> = {
   'Its songs, playlists and stars come in; your likes and plays here go out to your music server.': 'Sus canciones, listas y estrellas llegan; tus me gusta y reproducciones de aquí van a tu servidor de música.',
   'Its songs, playlists and stars come in. Nothing goes back: your likes and plays stay here.': 'Sus canciones, listas y estrellas llegan. Nada vuelve: tus me gusta y reproducciones se quedan aquí.',
   'Your likes and plays here go out to your music server. Nothing new comes in from it.': 'Tus me gusta y reproducciones de aquí van a tu servidor de música. No llega nada nuevo de él.',
+  'Can’t reach YouTube. Check your connection.': 'No se puede conectar con YouTube. Comprueba tu conexión.',
 }
 
 export default es

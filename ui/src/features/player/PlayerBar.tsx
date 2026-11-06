@@ -22,6 +22,7 @@ import { bindFrame, tailVolume, useNowTrack, usePlayer, useVideoSlot } from './s
 import { volumeWheelRef } from './volume'
 import { pop } from '../../shared/motion'
 import { embedUrl, parseYt, ytPost } from './youtube'
+import { DOWN_MS, retryWait } from './ytDown'
 import { useCoverFull } from './coverFull'
 import { useKaraoke } from './karaokeMode'
 import { useVizFull } from './vizFull'
@@ -77,6 +78,26 @@ function YouTubeFrame({ videoId, tail = false, idle = false }: { videoId: string
   const crop = rect && (cut || fill) && !hidden && !watch ? frameAround(rect, cut ?? { x: 0, y: 0, w: 1, h: 1 }, pip ? 0 : 8) : null
   const frame = useRef<HTMLIFrameElement | null>(null)
   const ready = useRef(false)
+  // Embed loaded but silent (a network error page): our words over it, tried again (ytDown.ts).
+  const heard = useRef(false)
+  const stall = useRef<ReturnType<typeof setTimeout>>(undefined)
+  const tries = useRef(0)
+  const downRef = useRef(false)
+  const [down, setDown] = useState(false)
+  const markDown = (on: boolean) => {
+    downRef.current = on
+    setDown(on)
+  }
+  // The same address again reloads it; onLoad then loads the song playing now.
+  const reload = () => {
+    const el = frame.current
+    if (!el) return
+    tries.current++
+    markDown(false)
+    ready.current = false
+    shown.current = ''
+    el.src = el.src
+  }
   // First video and options at mount: changing src later would reload the embed.
   // hold = restored paused (after an update): cued, not playing.
   const [src] = useState(() => ({ first: videoId, controls: useSettings.getState().settings.youtubeControls, start: usePlayer.getState().startAt / 1000, autoplay: !usePlayer.getState().hold }))
@@ -87,7 +108,13 @@ function YouTubeFrame({ videoId, tail = false, idle = false }: { videoId: string
   useEffect(() => {
     const onMessage = (e: MessageEvent) => {
       // Two embeds while songs overlap: each reads its own.
-      const u = e.source === frame.current?.contentWindow ? parseYt(e.origin, e.data) : undefined
+      const mine = e.source === frame.current?.contentWindow
+      if (mine) {
+        heard.current = true
+        tries.current = 0
+        if (downRef.current) markDown(false)
+      }
+      const u = mine ? parseYt(e.origin, e.data) : undefined
       if (!u) return
       if (isTail.current) {
         // Fades out to its song's own end (learned early end), then only silence is left: stopped too.
@@ -148,6 +175,18 @@ function YouTubeFrame({ videoId, tail = false, idle = false }: { videoId: string
     ytPost(frame.current, 'command', 'stopVideo')
     shown.current = ''
   }, [idle])
+  // Down: tried again after a growing wait, at once when the network comes back.
+  useEffect(() => {
+    if (!down) return
+    const t = setTimeout(reload, retryWait(tries.current))
+    window.addEventListener('online', reload)
+    return () => {
+      clearTimeout(t)
+      window.removeEventListener('online', reload)
+    }
+    // reload reads refs only.
+  }, [down])
+  useEffect(() => () => clearTimeout(stall.current), [])
   // Next video: into the running player. Not loaded yet: onLoad sends it. Volume and live settings first: an embed
   // taken back from idle has its last song's.
   useEffect(() => {
@@ -159,7 +198,18 @@ function YouTubeFrame({ videoId, tail = false, idle = false }: { videoId: string
     ytPost(frame.current, 'command', usePlayer.getState().hold ? 'cueVideoById' : 'loadVideoById', [videoId, usePlayer.getState().startAt / 1000])
   }, [videoId, tail])
 
+  // Our words over the browser's error page, never its address; nothing when nobody sees the video.
+  const veil = down && rect && !hidden && !watch && !tail
   return (
+    <>
+    {veil && (
+      <div role="alert" style={{ left: rect.left, top: rect.top, width: rect.width, height: rect.height }} className={`fixed ${pip ? 'z-[42]' : 'z-[31]'} grid place-content-center gap-3 rounded-lg bg-black p-4 text-center text-sm text-white`}>
+        <p>{tr('Can’t reach YouTube. Check your connection.')}</p>
+        <button type="button" onClick={reload} className="mx-auto rounded-full bg-white/15 px-4 py-1.5 font-semibold hover:bg-white/25">
+          {tr('Try again')}
+        </button>
+      </div>
+    )}
     <iframe
       ref={(el) => {
         frame.current = el
@@ -173,6 +223,9 @@ function YouTubeFrame({ videoId, tail = false, idle = false }: { videoId: string
       referrerPolicy="strict-origin-when-cross-origin"
       onLoad={(e) => {
         ready.current = true
+        heard.current = false
+        clearTimeout(stall.current)
+        if (!tail) stall.current = setTimeout(() => !heard.current && markDown(true), DOWN_MS)
         ytPost(e.currentTarget, 'listening')
         // Skipped ahead while the embed loaded: catch up.
         if (shown.current !== videoId) {
@@ -187,6 +240,7 @@ function YouTubeFrame({ videoId, tail = false, idle = false }: { videoId: string
       // Bare video: no pointer on it, so YouTube's hover overlay never shows; our controls drive it.
       className={`fixed bg-black ${pip ? 'z-[41]' : 'z-30'} ${crop || pip ? '' : 'rounded-lg border border-line'} ${src.controls && !hidden && !watch && !tail ? '' : 'pointer-events-none'} ${hidden || watch || tail ? 'opacity-0' : ''} ${rect && !tail ? '' : 'right-6 bottom-[100px] h-50 w-89 shadow-[0_12px_32px_var(--shadow)] phone:right-2 phone:bottom-[136px] phone:w-[calc(100vw-1rem)]'}`}
     />
+    </>
   )
 }
 
