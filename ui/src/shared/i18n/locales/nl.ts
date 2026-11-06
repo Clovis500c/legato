@@ -2254,6 +2254,9 @@ const nl: Record<string, string> = {
   'Type your server’s address, like http://192.168.1.10:4533': 'Typ het adres van je server, zoals http://192.168.1.10:4533',
   'Your server’s address starts with http:// or https://': 'Het adres van je server begint met http:// of https://',
   'Type your server’s user and password': 'Typ de gebruiker en het wachtwoord van je server',
+  'Its songs, playlists and stars come in; your likes and plays here go out to your music server.': 'De nummers, playlists en sterren komen binnen; je likes en afspeelbeurten hier gaan naar je muziekserver.',
+  'Its songs, playlists and stars come in. Nothing goes back: your likes and plays stay here.': 'De nummers, playlists en sterren komen binnen. Er gaat niets terug: je likes en afspeelbeurten blijven hier.',
+  'Your likes and plays here go out to your music server. Nothing new comes in from it.': 'Je likes en afspeelbeurten hier gaan naar je muziekserver. Er komt niets nieuws van binnen.',
 }
 
 export default nl

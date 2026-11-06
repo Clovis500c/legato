@@ -2254,6 +2254,9 @@ const ru: Record<string, string> = {
   'Type your server’s address, like http://192.168.1.10:4533': 'Введи адрес своего сервера, например http://192.168.1.10:4533',
   'Your server’s address starts with http:// or https://': 'Адрес сервера начинается с http:// или https://',
   'Type your server’s user and password': 'Введи пользователя и пароль сервера',
+  'Its songs, playlists and stars come in; your likes and plays here go out to your music server.': 'Его песни, плейлисты и звёзды приходят сюда; твои лайки и прослушивания отсюда уходят на музыкальный сервер.',
+  'Its songs, playlists and stars come in. Nothing goes back: your likes and plays stay here.': 'Его песни, плейлисты и звёзды приходят сюда. Обратно ничего не уходит: твои лайки и прослушивания остаются здесь.',
+  'Your likes and plays here go out to your music server. Nothing new comes in from it.': 'Твои лайки и прослушивания отсюда уходят на музыкальный сервер. Нового с него ничего не приходит.',
 }
 
 export default ru

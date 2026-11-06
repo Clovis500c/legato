@@ -2254,6 +2254,9 @@ const sv: Record<string, string> = {
   'Type your server’s address, like http://192.168.1.10:4533': 'Skriv serverns adress, till exempel http://192.168.1.10:4533',
   'Your server’s address starts with http:// or https://': 'Serverns adress börjar med http:// eller https://',
   'Type your server’s user and password': 'Skriv serverns användare och lösenord',
+  'Its songs, playlists and stars come in; your likes and plays here go out to your music server.': 'Dess låtar, spellistor och stjärnor kommer in; dina gillningar och spelningar här skickas till din musikserver.',
+  'Its songs, playlists and stars come in. Nothing goes back: your likes and plays stay here.': 'Dess låtar, spellistor och stjärnor kommer in. Inget skickas tillbaka: dina gillningar och spelningar stannar här.',
+  'Your likes and plays here go out to your music server. Nothing new comes in from it.': 'Dina gillningar och spelningar här skickas till din musikserver. Inget nytt kommer in från den.',
 }
 
 export default sv

@@ -2254,6 +2254,9 @@ const hi: Record<string, string> = {
   'Type your server’s address, like http://192.168.1.10:4533': 'अपने सर्वर का पता लिखें, जैसे http://192.168.1.10:4533',
   'Your server’s address starts with http:// or https://': 'आपके सर्वर का पता http:// या https:// से शुरू होता है',
   'Type your server’s user and password': 'अपने सर्वर का उपयोगकर्ता और पासवर्ड लिखें',
+  'Its songs, playlists and stars come in; your likes and plays here go out to your music server.': 'इसके गाने, प्लेलिस्ट और स्टार यहाँ आते हैं; यहाँ की आपकी पसंद और प्ले आपके म्यूज़िक सर्वर पर जाते हैं।',
+  'Its songs, playlists and stars come in. Nothing goes back: your likes and plays stay here.': 'इसके गाने, प्लेलिस्ट और स्टार यहाँ आते हैं। कुछ वापस नहीं जाता: आपकी पसंद और प्ले यहीं रहते हैं।',
+  'Your likes and plays here go out to your music server. Nothing new comes in from it.': 'यहाँ की आपकी पसंद और प्ले आपके म्यूज़िक सर्वर पर जाते हैं। उससे कुछ नया नहीं आता।',
 }
 
 export default hi

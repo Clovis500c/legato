@@ -303,10 +303,13 @@ pub async fn server_star(state: State<'_, AppState>, id: String, on: bool) -> Cm
 }
 
 /// A play back to the server: now playing at the start, a submission past half the song or 4 minutes (the interface
-/// checks Last.fm's rule). Failures dropped (a play isn't worth an error box).
+/// checks Last.fm's rule), when the account takes changes. Failures dropped (a play isn't worth an error box).
 #[tauri::command]
-pub async fn server_scrobble(id: String, started_at_ms: f64, submission: bool) -> CmdResult<()> {
+pub async fn server_scrobble(state: State<'_, AppState>, id: String, started_at_ms: f64, submission: bool) -> CmdResult<()> {
     let Ok((a, item)) = item(&id) else { return Ok(()) };
+    if !state.direction(&direction_key(&a.key())).pushes() {
+        return Ok(());
+    }
     let _ = Subsonic::from_account(&a).scrobble(&item, started_at_ms as i64, submission).await;
     Ok(())
 }

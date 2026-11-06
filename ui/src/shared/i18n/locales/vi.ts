@@ -2254,6 +2254,9 @@ const vi: Record<string, string> = {
   'Type your server’s address, like http://192.168.1.10:4533': 'Nhập địa chỉ máy chủ của bạn, ví dụ http://192.168.1.10:4533',
   'Your server’s address starts with http:// or https://': 'Địa chỉ máy chủ bắt đầu bằng http:// hoặc https://',
   'Type your server’s user and password': 'Nhập người dùng và mật khẩu của máy chủ',
+  'Its songs, playlists and stars come in; your likes and plays here go out to your music server.': 'Bài hát, danh sách phát và sao của nó được đưa vào; lượt thích và lượt nghe ở đây được gửi tới máy chủ nhạc của bạn.',
+  'Its songs, playlists and stars come in. Nothing goes back: your likes and plays stay here.': 'Bài hát, danh sách phát và sao của nó được đưa vào. Không gửi gì ngược lại: lượt thích và lượt nghe ở lại đây.',
+  'Your likes and plays here go out to your music server. Nothing new comes in from it.': 'Lượt thích và lượt nghe ở đây được gửi tới máy chủ nhạc của bạn. Không có gì mới được đưa vào từ nó.',
 }
 
 export default vi

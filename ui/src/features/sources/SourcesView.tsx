@@ -45,10 +45,18 @@ const directionHelp: Record<Direction, string> = {
 }
 
 /** Spotify: nothing comes back to it, so its likes go further by YouTube Music's direction only. */
+// Your music server: songs and stars come in, likes and plays go out (playlist edits stay here for now).
+const serverHelp: Record<Direction, string> = {
+  both: msg('Its songs, playlists and stars come in; your likes and plays here go out to your music server.'),
+  pull: msg('Its songs, playlists and stars come in. Nothing goes back: your likes and plays stay here.'),
+  push: msg('Your likes and plays here go out to your music server. Nothing new comes in from it.'),
+  off: directionHelp.off,
+}
+
 const pullOnly = msg('Its playlists and likes come in. Nothing goes back to Spotify; YouTube Music’s own direction decides what reaches it.')
 
 /** Spotify: playlists come in only (sending to Spotify isn't built: no Premium account to test it on). */
-function DirectionPicker({ service, value, onChange, receives = true }: { service: string; value: Direction; onChange: (d: Direction) => void; receives?: boolean }) {
+function DirectionPicker({ service, value, onChange, receives = true, help = directionHelp }: { service: string; value: Direction; onChange: (d: Direction) => void; receives?: boolean; help?: Record<Direction, string> }) {
   const all: { value: Direction; label: string }[] = [
     { value: 'both', label: tr('Both ways') },
     { value: 'pull', label: tr('Import only') },
@@ -60,7 +68,7 @@ function DirectionPicker({ service, value, onChange, receives = true }: { servic
   return (
     <div data-setting="Sync direction" className="flex flex-col gap-1.5">
       <Segmented label={tr('Sync direction')} value={shown} onChange={onChange} options={options} />
-      <p className="text-xs text-ink-2">{tr(!receives && shown === 'pull' ? pullOnly : directionHelp[shown], { service })}</p>
+      <p className="text-xs text-ink-2">{tr(!receives && shown === 'pull' ? pullOnly : help[shown], { service })}</p>
     </div>
   )
 }
@@ -440,7 +448,7 @@ function ServerAccount({ s }: { s: ServerStatus }) {
             <Warning size={14} className="mt-px shrink-0" /> {tr(OPEN_WARNING)}
           </p>
         )}
-        <DirectionPicker service={tr('your music server')} value={dirs[`server:${s.key}`] ?? 'both'} onChange={(d) => setDir(`server:${s.key}`, d)} />
+        <DirectionPicker service={tr('your music server')} help={serverHelp} value={dirs[`server:${s.key}`] ?? 'both'} onChange={(d) => setDir(`server:${s.key}`, d)} />
       </div>
     </>
   )

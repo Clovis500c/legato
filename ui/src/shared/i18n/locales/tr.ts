@@ -2254,6 +2254,9 @@ const tr: Record<string, string> = {
   'Type your server’s address, like http://192.168.1.10:4533': 'Sunucunun adresini yaz, örneğin http://192.168.1.10:4533',
   'Your server’s address starts with http:// or https://': 'Sunucunun adresi http:// veya https:// ile başlar',
   'Type your server’s user and password': 'Sunucunun kullanıcı adını ve parolasını yaz',
+  'Its songs, playlists and stars come in; your likes and plays here go out to your music server.': 'Şarkıları, çalma listeleri ve yıldızları gelir; buradaki beğenilerin ve dinlemelerin müzik sunucuna gider.',
+  'Its songs, playlists and stars come in. Nothing goes back: your likes and plays stay here.': 'Şarkıları, çalma listeleri ve yıldızları gelir. Hiçbir şey geri gitmez: beğenilerin ve dinlemelerin burada kalır.',
+  'Your likes and plays here go out to your music server. Nothing new comes in from it.': 'Buradaki beğenilerin ve dinlemelerin müzik sunucuna gider. Ondan yeni bir şey gelmez.',
 }
 
 export default tr

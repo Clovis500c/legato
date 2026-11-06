@@ -2254,6 +2254,9 @@ const pl: Record<string, string> = {
   'Type your server’s address, like http://192.168.1.10:4533': 'Wpisz adres serwera, np. http://192.168.1.10:4533',
   'Your server’s address starts with http:// or https://': 'Adres serwera zaczyna się od http:// lub https://',
   'Type your server’s user and password': 'Wpisz użytkownika i hasło serwera',
+  'Its songs, playlists and stars come in; your likes and plays here go out to your music server.': 'Jego utwory, playlisty i gwiazdki przychodzą; twoje polubienia i odtworzenia stąd idą na serwer muzyki.',
+  'Its songs, playlists and stars come in. Nothing goes back: your likes and plays stay here.': 'Jego utwory, playlisty i gwiazdki przychodzą. Nic nie wraca: twoje polubienia i odtworzenia zostają tutaj.',
+  'Your likes and plays here go out to your music server. Nothing new comes in from it.': 'Twoje polubienia i odtworzenia stąd idą na serwer muzyki. Nic nowego z niego nie przychodzi.',
 }
 
 export default pl

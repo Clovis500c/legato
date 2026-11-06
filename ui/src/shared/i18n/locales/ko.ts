@@ -2254,6 +2254,9 @@ const ko: Record<string, string> = {
   'Type your server’s address, like http://192.168.1.10:4533': '서버 주소를 입력하세요. 예: http://192.168.1.10:4533',
   'Your server’s address starts with http:// or https://': '서버 주소는 http:// 또는 https://로 시작합니다',
   'Type your server’s user and password': '서버의 사용자와 비밀번호를 입력하세요',
+  'Its songs, playlists and stars come in; your likes and plays here go out to your music server.': '서버의 노래, 재생목록, 별표가 들어오고, 여기서의 좋아요와 재생은 음악 서버로 갑니다.',
+  'Its songs, playlists and stars come in. Nothing goes back: your likes and plays stay here.': '서버의 노래, 재생목록, 별표가 들어옵니다. 아무것도 돌려보내지 않으며 좋아요와 재생은 여기에 남습니다.',
+  'Your likes and plays here go out to your music server. Nothing new comes in from it.': '여기서의 좋아요와 재생은 음악 서버로 갑니다. 서버에서 새로 들어오는 것은 없습니다.',
 }
 
 export default ko

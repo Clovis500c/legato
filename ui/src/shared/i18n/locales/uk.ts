@@ -2254,6 +2254,9 @@ const uk: Record<string, string> = {
   'Type your server’s address, like http://192.168.1.10:4533': 'Введи адресу свого сервера, наприклад http://192.168.1.10:4533',
   'Your server’s address starts with http:// or https://': 'Адреса сервера починається з http:// або https://',
   'Type your server’s user and password': 'Введи користувача й пароль сервера',
+  'Its songs, playlists and stars come in; your likes and plays here go out to your music server.': 'Його пісні, плейлисти й зірки приходять сюди; твої вподобання й прослуховування звідси йдуть на музичний сервер.',
+  'Its songs, playlists and stars come in. Nothing goes back: your likes and plays stay here.': 'Його пісні, плейлисти й зірки приходять сюди. Назад нічого не йде: твої вподобання й прослуховування лишаються тут.',
+  'Your likes and plays here go out to your music server. Nothing new comes in from it.': 'Твої вподобання й прослуховування звідси йдуть на музичний сервер. Нового з нього нічого не приходить.',
 }
 
 export default uk

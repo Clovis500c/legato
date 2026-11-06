@@ -2254,6 +2254,9 @@ const ja: Record<string, string> = {
   'Type your server’s address, like http://192.168.1.10:4533': 'サーバーのアドレスを入力してください（例：http://192.168.1.10:4533）',
   'Your server’s address starts with http:// or https://': 'サーバーのアドレスは http:// または https:// で始まります',
   'Type your server’s user and password': 'サーバーのユーザーとパスワードを入力してください',
+  'Its songs, playlists and stars come in; your likes and plays here go out to your music server.': '曲、プレイリスト、スターが取り込まれ、ここでのいいねと再生は音楽サーバーに送られます。',
+  'Its songs, playlists and stars come in. Nothing goes back: your likes and plays stay here.': '曲、プレイリスト、スターが取り込まれます。何も送り返さず、いいねと再生はここに残ります。',
+  'Your likes and plays here go out to your music server. Nothing new comes in from it.': 'ここでのいいねと再生は音楽サーバーに送られます。サーバーから新しいものは取り込みません。',
 }
 
 export default ja

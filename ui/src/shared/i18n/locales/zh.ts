@@ -2254,6 +2254,9 @@ const zh: Record<string, string> = {
   'Type your server’s address, like http://192.168.1.10:4533': '请输入你的服务器地址，例如 http://192.168.1.10:4533',
   'Your server’s address starts with http:// or https://': '服务器地址以 http:// 或 https:// 开头',
   'Type your server’s user and password': '请输入服务器的用户名和密码',
+  'Its songs, playlists and stars come in; your likes and plays here go out to your music server.': '它的歌曲、播放列表和星标会导入；你在这里的喜欢和播放会发送到你的音乐服务器。',
+  'Its songs, playlists and stars come in. Nothing goes back: your likes and plays stay here.': '它的歌曲、播放列表和星标会导入。不会回传任何内容：你的喜欢和播放留在这里。',
+  'Your likes and plays here go out to your music server. Nothing new comes in from it.': '你在这里的喜欢和播放会发送到你的音乐服务器。不会从它导入新内容。',
 }
 
 export default zh
