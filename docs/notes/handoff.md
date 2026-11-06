@@ -62,7 +62,7 @@ time, effort high.
    owner's ask 2026-11-05: lead Liner on every point; `ideas/liner.md`), smallest first, then plan-v2's other open
    lines that need no account, smallest first:
    - Features, sorted › High: same loudness across sources (needs an ear), the accessibility pass, personal servers
-     (Jellyfin / Navidrome need the owner's server), macOS and Linux builds.
+     part 2 (Subsonic / Navidrome built 2026-11-06, untried on a real server; Jellyfin and Plex left), macOS and Linux builds.
    - Classic skins, the autopilot's next line, not started: decide first how a mini layout keeps YouTube's 200 × 200
      rule (the video at 200 px beside it, or Cover mode only).
    - Platforms: Connect Spotify's untried cases (`S`), public playlist links from more services (`S`).

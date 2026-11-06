@@ -19,7 +19,7 @@ export type IconName = 'Playlist' | 'Sparkle' | 'FolderSimple' | 'Devices' | 'Pu
 export const FEATURES: { icon: IconName; title: string; text: string }[] = [
   { icon: 'Playlist', title: 'Playlists', text: 'Import from a service, a file (M3U, XSPF, CSV) or iTunes and MusicBee; create, pin, sort into folders, save as a file, export to YouTube Music, share by link or QR code. Smart playlists fill themselves from your plays and star ratings.' },
   { icon: 'Sparkle', title: 'Mixes, radios and an Auto-DJ', text: 'Daily mixes, mixes for this time of day and this weekday, endless radios from a song, an album, an artist or a playlist, and an Auto-DJ that keeps your library playing by your rules. All made on your PC, with stats from what you play, a recap of your year or month to share as pictures, and Last.fm or ListenBrainz scrobbling if you want it.' },
-  { icon: 'FolderSimple', title: 'Your own files', text: 'Gapless playback, as loud as your streamed songs (their ReplayGain tags, or measured), and their tags to edit, a whole album at once: artist, album, genre, year, track numbers, cover. Their own lyrics come first: edit them, or time plain ones by tapping along.' },
+  { icon: 'FolderSimple', title: 'Your own files', text: 'Gapless playback, as loud as your streamed songs (their ReplayGain tags, or measured), and their tags to edit, a whole album at once: artist, album, genre, year, track numbers, cover. Their own lyrics come first: edit them, or time plain ones by tapping along. Your own music server (Navidrome, Airsonic, Gonic, Ampache) streams into the same player.' },
   { icon: 'Devices', title: 'Sync Mode and listening rooms', text: 'Your library on all your PCs, through a OneDrive folder or your network. Start a room and friends on the same Wi-Fi follow what plays, each from their own source, with reactions.' },
   { icon: 'PuzzlePiece', title: 'Add-ons and plugins', text: 'Plugins by others ask for what they need before they can do anything.' },
   { icon: 'Translate', title: '18 languages', text: 'Following Windows, with its media keys, a tray icon, a Jump List, an alarm, picture-in-picture and full screen. The music pauses when your headphones disconnect, or when a call starts if you want, and your phone can be the remote.' },
@@ -44,7 +44,7 @@ export const CHAPTERS: { scene: string; title: string; text: string; alt: string
 export const BENCH = { date: '2026-11-05', version: '1.1.681', os: 'Windows 11', pc: 'Ryzen 5 5500, 32 GB', songs: '10 000', ramPaused: '149', ramTray: '57', windowCold: '0.76', paintCold: '1.27' }
 
 export const WHY: { title: string; text: string }[] = [
-  { title: 'Legal', text: "Songs play in the official players: YouTube's own, the Spotify app, and your files in Legato's own. No platform's audio is downloaded, recorded or extracted. The Music Detector listens only when you ask, and Apple's previews are Apple's own 30 s clips." },
+  { title: 'Legal', text: "Songs play in the official players: YouTube's own, the Spotify app, and your files and your own music server's songs in Legato's own. No platform's audio is downloaded, recorded or extracted. The Music Detector listens only when you ask, and Apple's previews are Apple's own 30 s clips." },
   { title: 'Light', text: `${BENCH.ramPaused} MB of RAM with the app open and paused, ${BENCH.ramTray} MB after 10 minutes in the tray, silent. On a cold start the window shows in ${BENCH.windowCold} s and the first screen is painted at ${BENCH.paintCold} s.` },
   { title: 'Your PCs in sync', text: 'Sync Mode keeps your library on every PC through a OneDrive folder or your own network. No account of ours, no server.' },
   { title: 'Your scrobbles', text: 'What you play, from any source, goes to your Last.fm profile with your own free API key, or to ListenBrainz with your token. Off until you connect one.' },
@@ -66,6 +66,7 @@ export const PLAYBACK: [string, string][] = [
   ['Spotify', 'Through the Spotify app (Spotify Connect), with Premium and your own app key. Without either, public playlist links and Connect Spotify bring your lists in, and their songs play from YouTube.'],
   ['Apple Music', 'Catalog search and 30-second previews, no account. The full song plays from YouTube when the app finds it there. Connect Apple Music brings your own playlists in.'],
   ['Your files', "The app's own player: gapless, on your PC."],
+  ['Your music server', "The same player, streamed from your Navidrome, Airsonic, Gonic or Ampache server: gapless, seekable, with the Live Editor's effects. A format the app can't read comes as your server's own MP3."],
 ]
 
 export const PRIVACY: [string, string][] = [
@@ -80,6 +81,7 @@ export const PRIVACY: [string, string][] = [
   ['Lyrics', "When you open them. A file of yours that carries its own lyrics (in its tags, or an .lrc file beside it) sends nothing. Otherwise YouTube Music's timed lyrics first if you're signed in, then the song's title, artist, album and length go to LRCLIB. Answers stay on your PC."],
   ['Skip non-music parts', "Off until you turn it on. For each YouTube video that plays, the first 4 characters of its id's hash (never the id) go to SponsorBlock, sponsor.ajay.app, to learn the community's marked intros, skits and outros. The answer is kept a week on this PC."],
   ['Scrobbling', "Off until you connect it in Settings › Accounts. Then what plays now and each song you listened to (title, artist, album, length, when) go to Last.fm (ws.audioscrobbler.com) or ListenBrainz (api.listenbrainz.org); ListenBrainz also gets the song's ISRC and the YouTube or Spotify page it played from. Your key or token stays in the Windows Credential Manager."],
+  ['Your music server', "Only when you sign in to one in Settings › Accounts. Then the app talks to that server's address only: your sign-in (the user, and a fresh token made from your password for each request, never the password itself), the songs it reads, plays and covers, your likes as stars, and each song you listened to from it, unless its direction is Import only or Off. Nothing goes to us. Your password stays in the Windows Credential Manager, and travels to your other PCs only inside a Sync Mode file sealed with your password. Plain http:// is fine on your own network; to a public address the app warns you that it travels unencrypted."],
   ['Voice search', "Off until you allow it. While it listens, your voice goes to Microsoft through Windows' own speech recognition. The app keeps nothing."],
   ['Music Detector', 'Off until you allow it. 10 seconds of sound, from the microphone or what this PC plays, go once to AudD to name the song. Nothing is saved.'],
   ['Sync Mode', 'Off until you set it up. One file per PC in a folder you pick (OneDrive by default), sealed with your password if you set one. It carries your library, settings and the song you played last with where it stopped, so another PC can pick up from there. Over your network (off until you turn it on), this device tells your others on the same network its name and kind, they pair once with a 6-digit code or a QR code, and every exchange is sealed; nothing goes through the internet.'],
@@ -97,6 +99,7 @@ export const SERVICES: [string, string][] = [
   ['Apple Music', 'Catalog search and 30-second previews, and public playlist or album links, no account. For your own playlists: Add music › Connect Apple Music.'],
   ['Deezer', 'Paste a public playlist or album link: its songs come in and play from YouTube. No account.'],
   ['SoundCloud', "Paste a song's link: it comes in and plays from YouTube. No account; SoundCloud shares a playlist's songs only with registered apps."],
+  ['Your music server', 'Navidrome, Airsonic, Gonic, Ampache or another Subsonic-compatible server: its address, your user and password in Settings › Accounts. Its songs, albums and playlists join your library and play in the app. Jellyfin and Plex: coming.'],
   ['Your files', 'Add your music folders, or drop folders and songs from Explorer onto the window; changes in them show up as they happen.'],
   ['Other apps', "Playlist files (M3U, XSPF, CSV) and iTunes' or MusicBee's library file: songs on your PC come as they are, the others play from YouTube."],
 ]
@@ -104,7 +107,7 @@ export const SERVICES: [string, string][] = [
 // Unlike every other list here, what isn't out yet: docs/notes/plan-v2.md › Roadmap, in its order, minus what shipped.
 export const ROADMAP: [string, string][] = [
   ['Lyrics', 'A translation under each line, and a song found from a line you remember.'],
-  ['Your own music', 'Jellyfin, Navidrome and Subsonic servers, MusicBrainz lookups for your tags.'],
+  ['Your own music', 'Jellyfin and Plex servers, MusicBrainz lookups for your tags.'],
   ['Smarter listening', 'Your songs analysed on your PC (tempo, energy, key) for radios and fades that fit, a path from one artist to another, a yearly recap to share.'],
   ['Around the house', 'Speakers and TVs (DLNA, Chromecast), listening together over the internet, picking up on your other PC where you stopped.'],
   ['Windows polish', 'A picture-in-picture player.'],

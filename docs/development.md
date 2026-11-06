@@ -196,6 +196,23 @@ most) can sign in.
 | "Sign-in timed out" | No redirect within 5 minutes. Start again. |
 | Sign-in works, then 403 errors | The account isn't in User Management, or the owner has no Premium. |
 
+## Your music server (Navidrome, your own)
+
+The Subsonic connector is tested against mock answers and a local HTTP server only. To try it for real, with a
+Navidrome of your own (any Subsonic-compatible server works the same):
+
+1. Run Navidrome on your PC or NAS, for example with Docker:
+   `docker run -d -p 4533:4533 -v <your music folder>:/music:ro -v <a data folder>:/data deluan/navidrome:latest`,
+   then open `http://localhost:4533` and create its first (admin) user.
+2. In `pnpm dev`: Settings › Accounts › Your music server › Sign in, address `http://localhost:4533` (or the NAS's
+   `http://192.168.x.y:4533`), that user and password. The first sync follows; Sync now reads it again.
+3. Check: the songs, albums and playlists in the library (Songs › the server's filter chip), a song plays, seeks, hands
+   over to the next without a gap, the Live Editor changes it; a like shows as a star in Navidrome; a song played past
+   half shows in Navidrome's "recently played"; Sign out takes its songs away.
+
+The password goes to the dev build's own keychain entry. A public `http://` address shows the warning; an `https://`
+one with a self-signed certificate fails with "certificate isn't trusted" (a known limit).
+
 ## Keychain
 
 Secrets go through the `keyring` crate (`src-tauri/src/secrets.rs`): service `app.legato.desktop`, one entry per

@@ -43,7 +43,7 @@ sight) shipped together as Stable 1.1.
 |---|---|---|---|---|
 | 3 | Platforms (1.2) | Spotify private playlists and Liked Songs for free (Connect Spotify, guided copy, data export), SoundCloud links, playlists as files, import from other apps | M | The user's ask; a library that can't move is the first reason not to switch |
 | 4 | Lyrics (1.3) | Word-by-word lyrics, translation, find by a line, lyrics saved into files and tapped live | M | Riff and Cider's most loved screen |
-| 5 | Your own music (1.4) | Jellyfin / Navidrome / Subsonic, ReplayGain, batch tag editor + MusicBrainz, ratings, column view, ListenBrainz, playlist folders | L | MusicBee / foobar / Plexamp users switch for this |
+| 5 | Your own music (1.4) | Jellyfin / Navidrome / Subsonic (Subsonic part done 2026-11-06), ReplayGain, batch tag editor + MusicBrainz, ratings, column view, ListenBrainz, playlist folders | L | MusicBee / foobar / Plexamp users switch for this |
 | 6 | Smart (1.5) | Local sonic analysis, song / artist radio, sweet fades, path between artists, auto-DJ, smart shuffle, Wrapped | L | What no free desktop app does without a server |
 | 7 | Around the house (1.6) | ~~Phone remote~~ (done 2026-11-02), cast (DLNA / Chromecast), ~~listen together on the LAN~~ (done 2026-11-06), pick up on the other PC | L | Turns a player into a home system |
 | 8 | Windows polish (1.7) | Command palette, taskbar buttons + Jump List, headphones / call pause, alarm, OBS overlay, PiP, drag from Explorer | M | Small, many, each a reason to stay |
@@ -379,6 +379,33 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       Duplicates linked. Find this song (pick mode), Edit song info (one or all). Not done: checking every YouTube
       video ahead (a request per video to Google: the owner's call). Unseen in the real app.
 - [ ] `L` Personal servers: Jellyfin, Navidrome / Subsonic, Plex (the user's own music, streamed legally, keychain login).
+      Spec: [ideas/lead.md](ideas/lead.md) › Personal servers; how it plays: [playback.md](../playback.md) › Your music
+      server.
+      - [x] Part 1 (2026-11-06): Subsonic-compatible servers (Navidrome, Airsonic, Gonic, Ampache) and native HTTP
+        playback. `crates/player` `http.rs` (range requests into a 4 MB ahead / 1 MB behind buffer, retries with
+        backoff, a server without ranges plays from the start, 20 s stall timeout; the engine sees `server:` paths,
+        never a URL), `crates/connectors` `subsonic.rs` (API 1.16.1, token auth with a fresh salt, albums by pages,
+        playlists, search3, starred, stream raw or MP3 320, covers, star, scrobble, errors in words; mockito per call),
+        `music_core::server` (`Source::Server` ids `<key>:<item>`, a kind that Jellyfin and Plex will join),
+        `src-tauri/src/servers.rs` (keychain `servers`, sync every 30 min in `sync_all`, Sync Mode sealed only, the art
+        scheme signs covers), Settings › Accounts › Your music server (`features/sources/servers.ts`, likes = stars,
+        plays sent back past half or 4 min), website rows, docs. Seen in the demo at 375 px and on desktop, light and
+        dark. Not tried for real: no Navidrome here, no real stream, seek, gapless hand-over, star or scrobble; the
+        phone (it plays through the same `crates/player`, rustls via `connectors::builder`) not run.
+        Decided alone (2026-11-06): a self-signed certificate gets a clear error, not a trust-fingerprint option
+        (the system TLS can't pin one; line below); raw stream first, the server's MP3 at 320 kbps only when the engine
+        can't decode it; plays go back only when the song played from the server (a YouTube play of the same song isn't
+        the server's); stars and plays follow the account's direction (Import only / Off send nothing); a re-sync every
+        30 minutes; one server shown at a time (the keychain holds a list); no Volume levelling or Skip silence for
+        server songs yet (their whole file isn't on disk to measure); the server's search3 built but not in the app's
+        search yet.
+      - [ ] Part 2: Jellyfin (its own API, `Kind::Jellyfin`), then Plex with its PIN sign-in (plex.tv/link, a token in
+        the keychain, never a password typed in the app).
+      - [ ] `S` Trust a self-signed server: its certificate's SHA-256 fingerprint shown at sign-in and pinned (rustls's
+        own verifier on every platform, so a pinned one is checked, not just accepted).
+      - [ ] `S` Server songs levelled: OpenSubsonic's `replayGain` (track / album) into Volume levelling.
+      - [ ] `S` Your music server in the app's search (`search3`, beside the library's results).
+      - [ ] `S` Playlist edits sent back to the server (`updatePlaylist`, `createPlaylist`) when its direction sends.
 - [ ] `L` macOS and Linux builds (media panel, detector, tray per OS).
 - [ ] `L+` Mobile version, well optimised, the Rust code reused (the owner's ask 2026-11-02): Tauri 2's Android target
       with the same crates and `ui/`, Android first, iPhone after. Spec, seven phases, what stays desktop-only and the
@@ -1079,6 +1106,15 @@ Most useful first; the tag is the effort.
         Leave; the host closing the app ends the room on the listener ("The room's host left"). Windows' firewall asks on
         the first room (TCP 47823): does a refused prompt leave a clear error? Android in the background: does the room
         keep up with the screen off? Settings › Privacy lists nothing new (no host is talked to).
+      - Your music server (personal servers, part 1), with your own Navidrome (`docs/development.md` › Your music
+        server): Sign in with its address, user and password (a wrong password says so; an address that isn't a server
+        says so; a public http:// address shows the warning); the first sync brings its songs, albums and playlists
+        (how long for your library? does the app stay responsive?); a song plays, seeks forward and back, hands over to
+        the next without a gap, the Live Editor and the visualizer work on it; its cover shows; a like stars it in
+        Navidrome and an unlike unstars it; a song played past half shows in Navidrome's recently played (and only
+        then); Wi-Fi cut mid-song: it picks up or says "stopped sending"; an opus or other unusual file plays (the
+        server's MP3); Sign out takes its songs away; Settings › Privacy lists the server's address. On the phone over
+        Wi-Fi: the same song plays and seeks.
 
 ## Waiting on the user (outside the code)
 

@@ -280,6 +280,42 @@ We still pin the policy on the iframe: a meta tag or header added later can't br
   not measured yet show the wave (Wavy). Local files only: a stream's audio is never taken for it. Seen over the demo
   (its fake engine sends a made-up shape); not measured on real files in the app, nor timed on a long one.
 
+## Your music server: songs over HTTP (2026-11-06)
+
+Personal servers (Settings › Accounts › Your music server): Subsonic-compatible ones now (Navidrome, Airsonic, Gonic,
+Ampache: `crates/connectors/src/subsonic.rs`, API 1.16.1), Jellyfin and Plex later on the same pieces. Their songs play
+in the native engine like local files, so gapless, fades, the Live Editor, the visualizer and the media panel apply.
+
+- Library: `Source::Server`, ids `"<server key>:<item id>"`, the key `s` + 8 hex of sha256(kind, address, user)
+  (`music_core::server`). A sync (`src-tauri/src/servers.rs` `server_sync`, and every 30 minutes in `sync_all`) reads
+  `getAlbumList2` by pages of 500, then each album (`getAlbum`, 6 at once), the playlists, the starred songs (likes);
+  `Library::replace_server` mirrors them (matched to the same song from other sources like any import: ISRC from
+  OpenSubsonic's `isrc`, then title + artist + duration), playlists gone from the server leave (`drop_server_playlists`).
+- Playing: the interface's source order is local file, server, YouTube, Spotify, preview (`player/sources.ts`); a run of
+  native songs (local or server) goes to the engine at once. The engine gets `server:<key>:<item>` paths, never a URL:
+  `music_player::http::Fetch` (built in `servers.rs`) makes each request with a fresh token, so no token reaches the
+  interface or a log.
+- `crates/player/src/http.rs` `Stream`: a `Read + Seek` for symphonia. A worker thread reads 64 KB chunks ahead into a
+  buffer of 4 MB ahead and 1 MB behind; a seek inside it is free, a seek within 256 KB ahead waits for the worker,
+  elsewhere a new `Range` request. A cut connection: a new request from where it stopped (backoff 250 ms doubling, 4
+  tries without a byte). The decoder waits 20 s at most for bytes, then the song fails with words (`errors.ts`). A
+  server that answers 200 to a `Range` plays from the start, and a seek reads again from 0 and skips.
+- Raw stream first (`stream?format=raw`); a format the engine can't decode (opus, say) is asked again as the server's
+  own MP3 at 320 kbps (`format=mp3&maxBitRate=320`), seekable by the server's byte ranges when it gives them.
+- Back to the server, when its direction sends (Both ways, Send only): a like stars the song, an unlike unstars it;
+  a song played from the server sends `scrobble?submission=false` at its start and a listen past half of it or 4
+  minutes (`features/sources/servers.ts`, Last.fm's rule from `listenbrainzRules.ts`).
+- Covers: `getCoverArt` through the `art` scheme; the server's address is allowed in `connectors::art` at sign-in, the
+  request signed there (`allow_server`), so the URL the interface holds carries no token.
+- Sign-in: `ping` with token auth (md5(password + a fresh salt) per request), the account (address, user, password) in
+  the keychain under `servers`; Sync Mode carries it only inside a sealed snapshot. Plain http:// is allowed; to a public
+  address the row warns (`music_core::server::exposure`). A self-signed certificate fails with a clear error (no way to
+  trust one yet: plan-v2).
+- Not yet: Volume levelling and Skip silence (local files only: the server's ReplayGain from OpenSubsonic is a plan
+  line), the server's own search in the app's search, playlist edits sent back. Tested with a local HTTP server in the
+  tests (play, seek by range, a server without ranges, a dropped connection, transcoding asked again); never against a
+  real Navidrome.
+
 ## Live processing (Adaptive Sound, moving cover; 2026-10-21)
 
 Rule changed by the user (2026-10-20): the app may process **its own output, live**, for listening features. Still
