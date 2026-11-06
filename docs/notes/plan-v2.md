@@ -124,6 +124,11 @@ copies, downloads for offline), their accounts, limits and paid plan.
       sidebar buttons and search hint, because they're rare and keyboard focus still shows them. Each is one class or
       one default to undo. Not tried for real: WebView2's paint cost of the cover glow and the sung line's filter on a
       real PC (static shadows, no animation), the glow on real covers and on a real phone: Check live.
+      Review (2026-11-06): the glow classes were unlayered and beat Tailwind's shadow utilities: the cards' hover play
+      buttons (Home sections, albums) lost their dark lift, and had no shadow at all with Glow off; now in the
+      components layer (the lift wins there). Glow off now also drops the docked mini player's cover wash and reads no
+      cover; Windows' high contrast drops the sung line's filter. Checked over the demo at 1280×800 and 375×812, light
+      and dark, Off / Soft / Strong (Off: no 0-offset shadow or drop-shadow left on any element).
 
 - [x] 1. `S` Keep the screen on while music plays (a setting, off): the wake lock the Cover display already takes.
       (2026-11-05: Settings › Playback › Screen, `keepScreenOn`, this PC only; `shared/awake.ts` shared with the Cover

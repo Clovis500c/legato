@@ -133,7 +133,8 @@ Names match `PALETTE_KEYS` (`ui/src/shared/theme/theme.ts`).
 The owner's call (2026-11-05, plan-v2 › Against Liner › U2): our interface lacked the glow Liner has; take a little of
 the spirit, never its look. A soft light around **what plays and what matters**, nowhere else:
 
-- In the accent: the play buttons (every `RoundButton kind="primary"`, the accent `Button`), the playing row's mark
+- In the accent: the play buttons (every `RoundButton kind="primary"`, the accent `Button`; the cards' hover play
+  buttons keep their dark lift instead: the classes sit in the components layer, a shadow utility wins), the playing row's mark
   (lists, album and artist pages, Up next), the progress bar's played part (a strip of light under the ink line; the
   phone's thin line too).
 - Ink, dark themes only: what's on (a picked chip, a switch that's on), and the theme's lit LEDs (Theme Studio's LED
@@ -142,7 +143,8 @@ the spirit, never its look. A soft light around **what plays and what matters**,
 - Now Playing's cover: a light of the cover's own most present colour behind it (`useCoverHue`, the vivid hue the
   visualizer uses), none on a grey cover or a video.
 - How much: Settings › Appearance › Player › Glow, **Off / Soft / Strong**, Soft by default. Dark themes get the full
-  amount, light ones about half. Off means none at all (every value is `none`, `glow.test` in `theme.test.ts` says so).
+  amount, light ones about half. Off means none at all (every value is `none`, `glow.test` in `theme.test.ts` says so;
+  the docked mini player's cover wash goes too, and no cover is read for a light). Windows' high contrast drops them.
 - Cheap to draw: static `box-shadow`s and one `drop-shadow` filter on the sung line, values from `glowVars` in
   `theme.ts` as CSS variables (`.glow`, `.glow-mark`, `.glow-bar`, `.glow-on`, `.glow-sung` in `styles.css`). Never
   animated, never a `backdrop-filter` on a large layer (a live blur over the window costs every repaint,

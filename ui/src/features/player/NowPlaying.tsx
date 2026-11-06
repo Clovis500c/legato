@@ -110,7 +110,7 @@ function Stage({ video, cover, track, title, youtubeId, pulse, wantRing, onRing 
   // Glow: a light of the cover's own colour behind it (none when off, on a grey cover or a video).
   const dark = useSettings((s) => s.current().dark)
   const level = useSettings((s) => s.settings.glow)
-  const hue = useCoverHue(!big && track ? trackArt(track)[0] : undefined, dark)
+  const hue = useCoverHue(level !== 'off' && !big && track ? trackArt(track)[0] : undefined, dark)
   const halo = coverGlow(hue, level, dark)
   // Container query units: fit inside both width and height, keep the ratio.
   const fit = { width: ring ? `min(${RING_COVER * 100}cqw, ${RING_COVER * 100}cqh)` : `min(100cqw, 100cqh * ${ratio})`, aspectRatio: String(ring ? 1 : ratio) }

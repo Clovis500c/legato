@@ -18,7 +18,7 @@ import { volumeWheelRef } from './volume'
 /** Art width inside the card: sidebar 252 px, card margins, border and padding. */
 const ART = 214
 
-/** Average color of the art, for the card's soft glow. */
+/** Average color of the art, for the card's soft glow (none, not even read, with Settings › Appearance › Glow off). */
 function useGlow(src: string | undefined): Rgb | null {
   const [glow, setGlow] = useState<{ src: string; rgb: Rgb | null }>()
   useEffect(() => {
@@ -78,7 +78,8 @@ export function SidebarPlayer() {
   const motion = useSettings((s) => s.settings.motion)
   const track = useNowTrack()
   const art = track ? trackArt(track) : undefined
-  const glow = useGlow(art?.[0])
+  const lit = useSettings((s) => s.settings.glow !== 'off')
+  const glow = useGlow(lit ? art?.[0] : undefined)
   const video = now?.via === 'youtube'
   if (!now || full || !docked || !(video || on)) return null
   return (

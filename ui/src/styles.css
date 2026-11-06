@@ -394,21 +394,31 @@ code {
 }
 
 /* Glow (Settings › Appearance › Glow; values from theme.ts glowVars, 'none' when off): what plays (.glow: play buttons;
-   .glow-mark: the playing mark; .glow-bar: the played part) and what's on (.glow-on). Static shadows, no animation. */
-.glow {
-  box-shadow: var(--glow);
+   .glow-mark: the playing mark; .glow-bar: the played part) and what's on (.glow-on). Static shadows, no animation.
+   Components layer: a shadow utility on the element wins (the cards' hover play buttons keep their lift over the
+   cover; unlayered, the glow erased it, and Off left them flat). */
+@layer components {
+  .glow {
+    box-shadow: var(--glow);
+  }
+  .glow-mark {
+    box-shadow: var(--glow-mark);
+  }
+  .glow-bar {
+    box-shadow: var(--glow-bar);
+  }
+  .glow-on {
+    box-shadow: var(--glow-on);
+  }
+  .glow-sung {
+    filter: var(--glow-sung);
+  }
 }
-.glow-mark {
-  box-shadow: var(--glow-mark);
-}
-.glow-bar {
-  box-shadow: var(--glow-bar);
-}
-.glow-on {
-  box-shadow: var(--glow-on);
-}
-.glow-sung {
-  filter: var(--glow-sung);
+/* Windows' high contrast: box-shadows go by themselves, a filter doesn't. */
+@media (forced-colors: active) {
+  .glow-sung {
+    filter: none;
+  }
 }
 /* The played part's light: a strip under the seek bar as wide as what's played (Progress.tsx SeekBar). */
 .seek-glow {
