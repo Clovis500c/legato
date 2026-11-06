@@ -96,6 +96,8 @@ copies, downloads for offline), their accounts, limits and paid plan.
       rare. Not tried for real: the Android app (long press, Back with a sheet open, safe-area insets, the keyboard over
       a dialog sheet); no APK built here: Check live. Seen less: the visualizer full screen, toasts, the welcome and
       import screens.)
+      Review (2026-11-06): the tap ring let song lists and Settings slide 8 px sideways (a box that scrolls down now
+      clips x on the phone), Settings' sections row was wider than its scroller and showed a scrollbar: fixed.
 - [ ] U2. `M-L` Glow and simplicity, PC and phone (the owner's ask 2026-11-05, answering Waiting on the user's glow
       line): a soft glow on what plays (play button, playing row, the sung line, Now Playing's cover), a Glow setting
       to turn it down; fewer controls in sight per surface, the rare ones in menus; `docs/design.md` rewritten to say so.
