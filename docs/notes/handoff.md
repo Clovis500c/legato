@@ -44,8 +44,9 @@ time, effort high.
   sideways scroll). Another session of the owner's ("Logo redimensionné 1280x640", Sonnet) committed README and GitHub
   files on `platforms` meanwhile (76213de, 2cfc86a): kept; line 16 builds on them. U2 done (3e940b6 to 19a8fbc, about
   476 k agent tokens: glow setting, calmer PC surfaces; `docs/design.md` › Glow, › Simplicity on the PC; the review put
-  the glow classes under Tailwind's shadows). Next: 17 listening rooms, base = HEAD, once the 5-hour window is back
-  under 30 %.
+  the glow classes under Tailwind's shadows). 17 listening rooms, the local network half, built (d35c399 to the
+  docs commit after 71ad058: rules, wire, shell, interface, `docs/rooms.md`; the internet half in plan-v2 › Waiting on
+  the user). Next: its review, then personal servers, once the 5-hour window is back under 30 %.
 - The end: a report in French (`docs/notes/report-2026-11-06.md`, untracked), this section folded into the rest of
   this file, the cron deleted, the report sent to the owner (SendUserFile, proactive).
 

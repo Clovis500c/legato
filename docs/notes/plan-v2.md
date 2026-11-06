@@ -45,7 +45,7 @@ sight) shipped together as Stable 1.1.
 | 4 | Lyrics (1.3) | Word-by-word lyrics, translation, find by a line, lyrics saved into files and tapped live | M | Riff and Cider's most loved screen |
 | 5 | Your own music (1.4) | Jellyfin / Navidrome / Subsonic, ReplayGain, batch tag editor + MusicBrainz, ratings, column view, ListenBrainz, playlist folders | L | MusicBee / foobar / Plexamp users switch for this |
 | 6 | Smart (1.5) | Local sonic analysis, song / artist radio, sweet fades, path between artists, auto-DJ, smart shuffle, Wrapped | L | What no free desktop app does without a server |
-| 7 | Around the house (1.6) | ~~Phone remote~~ (done 2026-11-02), cast (DLNA / Chromecast), listen together on the LAN, pick up on the other PC | L | Turns a player into a home system |
+| 7 | Around the house (1.6) | ~~Phone remote~~ (done 2026-11-02), cast (DLNA / Chromecast), ~~listen together on the LAN~~ (done 2026-11-06), pick up on the other PC | L | Turns a player into a home system |
 | 8 | Windows polish (1.7) | Command palette, taskbar buttons + Jump List, headphones / call pause, alarm, OBS overlay, PiP, drag from Explorer | M | Small, many, each a reason to stay |
 | 9 | Everywhere (2.0) | The mobile version (Android, then iPhone: the owner's ask 2026-11-02, [ideas/mobile.md](ideas/mobile.md)), macOS and Linux builds | L | Riff's one platform lead; the owner wants Legato on the phone |
 
@@ -159,6 +159,20 @@ copies, downloads for offline), their accounts, limits and paid plan.
       steps: the owner's word). Takes in Features › Low's Community line.
 - [ ] 17. `L` Listening rooms over the internet, no server of ours: sealed control messages through a public relay (the
       owner's call), or the LAN. Takes in "Listen together on the local network".
+      - [x] The local network half (2026-11-06, docs/rooms.md): one device leads a room, up to 8 follow, each playing
+        the song from their own library, its YouTube id, or one paced search (`searchpace`; a refusal: "Can't find
+        this song here", the room goes on). SPAKE2 on the 6-digit code per listener, then ChaCha20-Poly1305 frames;
+        mDNS `_legatoroom._tcp`, private addresses only, 5 wrong codes and the code changes. Listen together… in the
+        player's More menus and the Share panel; the room's view (code, QR, people, reactions, End room / Leave), a
+        pill in the player, reactions floating over the cover, a listener's own pause and Catch up; skip, seek and
+        queue say they follow the room. Tests: the rules (`music_core::rooms`), the wire over 127.0.0.1
+        (`music_connectors::rooms`), the follow rules (`roomFollow.test.ts`); the interface seen in the site demo.
+        Not tried for real: two devices on a real network (Check live). Decided alone (2026-11-06), each easy to undo:
+        the room is named after the host device (no name to type); the join list picks a room before the code, so a
+        wrong guess only counts against that room; the rooms keep their own `Pace` (one search at a time, a refusal
+        waits 5 minutes) instead of sharing the imports' one; a listener's song that ends waits for the host instead
+        of playing their own Up next; a song not found pauses the listener until the next one.
+      - [ ] The internet half: never built until the owner chooses (Waiting on the user).
 - [ ] 18. `L` A Linux build (AppImage, deb): WebKitGTK, the MPRIS media panel, the tray, PipeWire for the detector.
 - [ ] 19. `L` A macOS build, unsigned first as Liner's (signing: the owner's Apple Developer Program): WKWebView, Now
       Playing, the menu bar. 18 and 19 take in Features › High's macOS and Linux line.
@@ -613,7 +627,8 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       the same place, paused or not (`unplug.rs` watcher → engine `Command::Reopen`). WebView2 follows on its own.
 - [ ] `M` Output devices: switch from the player bar, remember per device (volume, EQ preset).
 - [ ] `M` Right-to-left languages (Arabic, Hebrew: mirrored layout) and community translations (Weblate), more languages.
-- [ ] `M-L` Listen together on the local network: one PC leads, the others follow (Sync Mode's code, no server).
+- [x] `M-L` Listen together on the local network: one PC leads, the others follow (Sync Mode's code, no server).
+      Landed 2026-11-06 as Against Liner › 17's local half (docs/rooms.md).
 - [ ] `L` Cast: DLNA / UPnP speakers and Chromecast for local files and personal servers.
 - [ ] `L` Sonic analysis, ours and local: features (tempo, key, energy, brightness, mood) computed from local files, and
       from what plays live for streams (the meter already listens; measured, not extracted), stored per song. Feeds
@@ -1052,8 +1067,26 @@ Most useful first; the tag is the effort.
         in picture, sleep timer…), Now Playing's More (Karaoke, Cover display, Less like this), the moon back while a
         sleep timer runs, Back / Forward appearing once you've moved, Your library's Expand and Sort under the pointer.
         Judge the calmer look: anything missed is one class to put back.
+      - Listening rooms (17, local half), a PC and the phone on the same Wi-Fi: the room shows in Join a room within
+        3 s on both sides; the code and the QR join (a wrong code says so; 5 of them change the code); the listener
+        starts the song within a few seconds and stays within 1.5 s of the host (pause, seek, next on the host); a
+        song only on the host's disk is found on YouTube on the listener's side, or says "Can't find this song here";
+        own pause and Catch up; skip on the listener says it follows the room; reactions float on both; End room and
+        Leave; the host closing the app ends the room on the listener ("The room's host left"). Windows' firewall asks on
+        the first room (TCP 47823): does a refused prompt leave a clear error? Android in the background: does the room
+        keep up with the screen off? Settings › Privacy lists nothing new (no host is talked to).
 
 ## Waiting on the user (outside the code)
+
+- [ ] Listening rooms over the internet (Against Liner › 17's second half), never built until you choose. It would be
+      WebRTC data channels between the devices, the music still playing from each one's own source. To meet, the two
+      sides need a signalling relay to swap their offers once: public ones exist (a Nostr relay such as relay.damus.io
+      or nos.lol, a public MQTT broker such as broker.hivemq.com, or a public WebTorrent tracker), none of them ours,
+      and a STUN server (stun.l.google.com or stun.cloudflare.com) to learn each side's public address. What they
+      would see: the room's random id, both public IP addresses and the times; the offers sealed with the room code,
+      so not the songs, names or reactions. Two networks behind strict NATs would need a TURN relay, which carries the
+      (sealed) messages and is never free for long: none, so some pairs simply can't meet. Choices: which relay(s),
+      whether Google's or Cloudflare's STUN, and whether a privacy row saying that is enough.
 
 - [ ] Discord shows "Listening to Music App": that's the name of the app on Discord's developer portal (rename it there).
 - [ ] Trademark search for Legato (INPI, EUIPO, USPTO classes 9, 41, 42).

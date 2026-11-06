@@ -20,7 +20,7 @@ export const FEATURES: { icon: IconName; title: string; text: string }[] = [
   { icon: 'Playlist', title: 'Playlists', text: 'Import from a service, a file (M3U, XSPF, CSV) or iTunes and MusicBee; create, pin, sort into folders, save as a file, export to YouTube Music, share by link or QR code. Smart playlists fill themselves from your plays and star ratings.' },
   { icon: 'Sparkle', title: 'Mixes, radios and an Auto-DJ', text: 'Daily mixes, mixes for this time of day and this weekday, endless radios from a song, an album, an artist or a playlist, and an Auto-DJ that keeps your library playing by your rules. All made on your PC, with stats from what you play, a recap of your year or month to share as pictures, and Last.fm or ListenBrainz scrobbling if you want it.' },
   { icon: 'FolderSimple', title: 'Your own files', text: 'Gapless playback, as loud as your streamed songs (their ReplayGain tags, or measured), and their tags to edit, a whole album at once: artist, album, genre, year, track numbers, cover. Their own lyrics come first: edit them, or time plain ones by tapping along.' },
-  { icon: 'Devices', title: 'Sync Mode', text: 'Your library on all your PCs, through a OneDrive folder or your network.' },
+  { icon: 'Devices', title: 'Sync Mode and listening rooms', text: 'Your library on all your PCs, through a OneDrive folder or your network. Start a room and friends on the same Wi-Fi follow what plays, each from their own source, with reactions.' },
   { icon: 'PuzzlePiece', title: 'Add-ons and plugins', text: 'Plugins by others ask for what they need before they can do anything.' },
   { icon: 'Translate', title: '18 languages', text: 'Following Windows, with its media keys, a tray icon, a Jump List, an alarm, picture-in-picture and full screen. The music pauses when your headphones disconnect, or when a call starts if you want, and your phone can be the remote.' },
 ]
@@ -83,6 +83,7 @@ export const PRIVACY: [string, string][] = [
   ['Voice search', "Off until you allow it. While it listens, your voice goes to Microsoft through Windows' own speech recognition. The app keeps nothing."],
   ['Music Detector', 'Off until you allow it. 10 seconds of sound, from the microphone or what this PC plays, go once to AudD to name the song. Nothing is saved.'],
   ['Sync Mode', 'Off until you set it up. One file per PC in a folder you pick (OneDrive by default), sealed with your password if you set one. It carries your library, settings and the song you played last with where it stopped, so another PC can pick up from there. Over your network (off until you turn it on), this device tells your others on the same network its name and kind, they pair once with a 6-digit code or a QR code, and every exchange is sealed; nothing goes through the internet.'],
+  ['Listening rooms', "Only when you start or join one. A room tells the devices on the same network that it exists (its name, the host device's name, how many listen), and only devices with its 6-digit code or QR code get in. Then the song that plays (title, artist, album, length, its ISRC and YouTube or Spotify id, a web cover), where it is, the next three songs, the names of the devices in the room and the reactions go to them, sealed with the code. No sound is sent, nothing goes through the internet, and the room ends when you end it or close the app. A listener plays each song from their own library or source; one not found there may be searched once on YouTube."],
   ['Phone remote', "Off until you turn it on in Settings › Playback. Then this PC answers, on its own network only, the phones that have its link (a secret in its QR code): what plays, its cover and what's next go to them, and their taps come back. Nothing goes through the internet, and a new link ends the old one."],
   ['Streaming overlay', "Off until you turn it on in Settings › Playback. Then a page for OBS on this PC shows what plays and its cover, and the visualizer's bars if you turn them on (measured only while the page is shown); only this PC is answered."],
   ['YouTube embedding check', "When a YouTube song starts, its video id (and the next two) goes to YouTube's oEmbed, to learn whether its owner allows embedding. The answer is kept a day."],
@@ -105,7 +106,7 @@ export const ROADMAP: [string, string][] = [
   ['Lyrics', 'A translation under each line, and a song found from a line you remember.'],
   ['Your own music', 'Jellyfin, Navidrome and Subsonic servers, MusicBrainz lookups for your tags.'],
   ['Smarter listening', 'Your songs analysed on your PC (tempo, energy, key) for radios and fades that fit, a path from one artist to another, a yearly recap to share.'],
-  ['Around the house', 'Speakers and TVs (DLNA, Chromecast), listening together on the same network, picking up on your other PC where you stopped.'],
+  ['Around the house', 'Speakers and TVs (DLNA, Chromecast), listening together over the internet, picking up on your other PC where you stopped.'],
   ['Windows polish', 'A picture-in-picture player.'],
   ['Phones, Mac and Linux', 'A mobile version, Android first, on the same Rust core; builds for macOS and Linux.'],
 ]
