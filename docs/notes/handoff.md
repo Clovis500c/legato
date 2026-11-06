@@ -37,7 +37,14 @@ time, effort high.
   14 lyrics sources, 13 imports in seconds, 15 SoundCloud sets and likes (its search needs the site's client id against
   its terms: the owner's call), the explicit badge and filter (Features' "Hide explicit songs"), 12, 11, 10, 9, 8, 7, 6,
   5, 4, 3, 2.
-- A cron wake-up (session only, `13,43 * * * *`, id `69274c3f`) resumes after a 5-hour limit; delete it at the end.
+- The owner's word (2026-11-06, about 16:10, this session only): when they say « envoie tout », commit everything at
+  once and push to master (a Beta release); and if the 5-hour window passes 95 %, push everything to master yourself:
+  they'll go on from another PC. How: the tree committed (never the untracked reports), `pnpm check` green if there's
+  time, the last commit's first line without `[skip release]` (else no Beta), `git push origin platforms:master` (a
+  fast-forward since f425336 merged the two README commits another session had pushed), then `git push origin
+  platforms`.
+- A cron wake-up (session only, `13,43 * * * *`, id `340feeaa`) resumes after a 5-hour limit and checks the 95 %; delete
+  it at the end.
 - The script: `~/.claude/projects/C--dev-music-app/8c8ab02b-4287-45ba-a586-6f45a2aaceeb/workflows/scripts/legato-line-wf_3695f954-2fd.js`
   (args: key, base = HEAD before the line, title, spec, reviewFocus).
 - Progress: U1 done (2e7edc2 to 901b8e6, about 307 k agent tokens, 52 % of a 5-hour window; the review fixed an 8 px
