@@ -22,7 +22,7 @@ import { VolumeHud } from '../features/player/VolumeHud'
 import { useKaraoke } from '../features/player/karaokeMode'
 import { useVizFull } from '../features/player/vizFull'
 import { useCoverFull } from '../features/player/coverFull'
-import { usePip } from '../features/player/pipMode'
+import { minimizeWindow, usePip, watchMinimize } from '../features/player/pipMode'
 import { useShare } from '../features/share/share'
 import { useRoom } from '../features/rooms/room'
 import { useAmbient } from '../features/player/ambient'
@@ -166,7 +166,7 @@ function TopBar() {
         <button className={winBtn} aria-label={fullscreen ? tr('Exit full screen (F11)') : tr('Full screen (F11)')} title={fullscreen ? tr('Exit full screen (F11)') : tr('Full screen (F11)')} onClick={() => void toggleFullscreen()}>
           {fullscreen ? <ArrowsIn size={15} /> : <ArrowsOut size={15} />}
         </button>
-        <button className={winBtn} aria-label={tr('Minimize')} title={tr('Minimize')} onClick={() => win.minimize()}>
+        <button className={winBtn} aria-label={tr('Minimize')} title={tr('Minimize')} onClick={minimizeWindow}>
           <Minus size={16} />
         </button>
         <button className={winBtn} aria-label={maximized ? tr('Restore') : tr('Maximize')} title={maximized ? tr('Restore') : tr('Maximize')} onClick={() => win.toggleMaximize()}>
@@ -284,6 +284,7 @@ export function App() {
   useEffect(() => startCallPause(), [])
   useEffect(() => startScreenAwake(), [])
   useEffect(() => installBack(), [])
+  useEffect(() => watchMinimize(), [])
   useEffect(() => startShortcuts(), [])
   useEffect(() => startUpdates(), [])
   // Watched local folders changed: the library shows it.

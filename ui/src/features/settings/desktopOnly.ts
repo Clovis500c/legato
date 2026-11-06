@@ -11,6 +11,7 @@ export const DESKTOP_ONLY: ReadonlySet<string> = new Set([
   'Automatic updates',
   'Open at startup',
   'Keep running in the notification area',
+  'Picture-in-picture on minimize',
   'Reopen where you left off',
   'Voice search',
   'Music Detector',

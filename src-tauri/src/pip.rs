@@ -11,8 +11,8 @@ use crate::window_place::{Rect, fit};
 
 /// First size, logical px: a 16:9 picture 480 wide and the controls' strip.
 const SIZE: (f64, f64) = (480.0, 316.0);
-/// Smallest: the picture stays YouTube's 200 px high at least (the strip and its progress line: 46).
-const MIN: (f64, f64) = (356.0, 246.0);
+/// Smallest: the picture stays YouTube's 200 px high at least (the strip, its progress line and the sung line: 70).
+const MIN: (f64, f64) = (356.0, 270.0);
 /// From the work area's edges, logical px.
 const MARGIN: f64 = 24.0;
 
@@ -46,6 +46,10 @@ pub fn leave_for_exit(app: &AppHandle) {
 fn enter(window: &WebviewWindow, place: Option<Place>) -> tauri::Result<()> {
     if BEFORE.lock().unwrap().is_some() {
         return Ok(());
+    }
+    // Instead of a minimize (settings `pipOnMinimize`): back on screen first, or its minimized place would be the one kept.
+    if window.is_minimized()? {
+        window.unminimize()?;
     }
     let (maximized, fullscreen) = (window.is_maximized()?, window.is_fullscreen()?);
     if fullscreen {

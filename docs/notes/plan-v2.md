@@ -191,8 +191,17 @@ copies, downloads for offline), their accounts, limits and paid plan.
       refusal (`searchpace::Sparse`, `discord_artist_art`); other sources take a picture found already. Said in the
       add-on's privacy line. Not tried with the Discord app (none here): does Discord's proxy take the googleusercontent
       square, does the small image show on a friend's screen?)
-- [ ] 4. `S` The mini player on minimize (a setting, off): picture in picture opens, restoring closes it, the sung line
-      in it; YouTube's 200 × 200.
+- [x] 4. `S` The mini player on minimize (a setting, off): picture in picture opens, restoring closes it, the sung line
+      in it; YouTube's 200 × 200. (2026-11-06: Settings › General › Picture-in-picture on minimize, `pipOnMinimize`, off,
+      this PC only. The title bar's minimize opens it at once; Windows' own (Win+Down, the taskbar, Win+M) is caught as
+      the window goes down and `pip.rs` brings it back first, so its own place is the one kept. That small window
+      minimized in turn and restored from the taskbar: the full window again (`pipMinimize.ts`, tested); opened by P,
+      it comes back small as before. The sung line under the picture in every picture in picture (synced lyrics only,
+      the song's own timing fix), never over the video; the smallest window grew 24 px so the picture keeps its 200
+      (seen over the demo at 480 × 316 and 356 × 270: 200 px). Decided alone (2026-11-06), each easy to undo: only
+      while a song plays (paused, a minimize is a minimize); the existing picture in picture is the mini player, not a
+      second window (one webview, one player). Not tried for real: Windows' minimize caught in the installed app (the
+      window shows going down, then comes back small: a flash?), Win+M, two screens.)
 - [ ] 5. `S` Settings › Storage: what the app keeps on disk (library, covers, lyrics, logs, WebView2's cache), the size
       of each, a Clear for what can go.
 - [ ] 6. `S` A native window on Windows 11: snap layouts on our maximize button (`WM_NCHITTEST` → `HTMAXBUTTON`,

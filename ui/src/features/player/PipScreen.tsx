@@ -1,6 +1,6 @@
 import { ArrowsIn, Pause, Play, SkipBack, SkipForward } from '@phosphor-icons/react'
 import { getCurrentWindow } from '@tauri-apps/api/window'
-import { useEffect, type MouseEvent } from 'react'
+import { useEffect, useMemo, type MouseEvent } from 'react'
 import { useSettings } from '../../app/settings'
 import { artistName } from '../../shared/artistName'
 import { bigTrackArt, trackArt } from '../../shared/art'
@@ -11,6 +11,8 @@ import { Cover } from '../../shared/ui/Cover'
 import { pipMenu } from '../menus'
 import { songKey } from './effects'
 import { useBackdrop } from './immersive'
+import { useNowLyrics } from './LyricsPanel'
+import { applyFix, lineAt, NO_FIX } from './lyricsAt'
 import { Backdrop } from './NowPlaying'
 import { closePip } from './pipMode'
 import { usePosition } from './Progress'
@@ -55,6 +57,7 @@ export function PipScreen() {
         {/* Under the cover: the video plays on unseen, at YouTube's minimum size. */}
         {now.via === 'youtube' && (video ? <VideoSlot pip onClick={toggle} className="rounded-none!" style={{ width: 'min(100cqw, 100cqh * 16 / 9)', aspectRatio: '16 / 9' }} /> : <VideoSlot pip hidden className="absolute top-0 left-0 size-0" />)}
       </div>
+      <SungLine />
       <Line />
       <div onMouseDown={moveWindow} onDoubleClick={() => void closePip()} className="flex h-11 shrink-0 items-center gap-0.5 pr-1.5 pl-3">
         <div className="min-w-0 flex-1 leading-tight">
@@ -76,6 +79,22 @@ export function PipScreen() {
       </div>
     </div>
   )
+}
+
+/** The line being sung (synced lyrics only, the song's own timing fix), under the picture: nothing goes over the video.
+ *  Its 24 px are in `pip.rs`' smallest size, so the picture keeps YouTube's 200. */
+function SungLine() {
+  const now = usePlayer((s) => s.now)
+  const { mine } = useNowLyrics()
+  const song = songKey(now)
+  const fix = useSettings((s) => (song && s.settings.lyricsSync[song]) || NO_FIX)
+  const pos = usePosition(250)
+  const lines = mine?.lyrics?.lines
+  const synced = useMemo(() => (lines?.length ? applyFix(lines, fix) : null), [lines, fix])
+  if (!synced) return null
+  // A line shows a moment early, as in the lyrics panel; before the first one, its row waits empty.
+  const i = lineAt(synced, pos + 200)
+  return <p className="h-6 shrink-0 truncate px-3 text-center text-xs/6 font-medium text-ink-2">{i >= 0 ? synced[i].text : ''}</p>
 }
 
 /** The song's progress, a line between the picture and the strip: ~400 steps a song, not 60 fps. */

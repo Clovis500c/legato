@@ -371,6 +371,9 @@ export interface Settings {
   miniWidth: number
   /** Picture-in-picture's last place (pipMode.ts), physical px: x, y, width, height. Null: the screen's bottom right corner. */
   pipPlace: [number, number, number, number] | null
+  /** Minimizing while a song plays opens picture in picture (pipMode.ts `watchMinimize`); restored from the taskbar, the
+   *  full window comes back. Off: Windows' own minimize, as it always was. Per PC. */
+  pipOnMinimize: boolean
   /** Sidebar width, px (dragged by its edge). */
   sidebarWidth: number
   /** Your library open full width in the page's place (its ↗ button). */
@@ -561,6 +564,7 @@ export const DEFAULTS: Settings = {
   progressStyle: 'line',
   miniWidth: 356,
   pipPlace: null,
+  pipOnMinimize: false,
   sidebarWidth: 264,
   libraryWide: false,
   crossfade: 2,
@@ -806,6 +810,7 @@ export function sanitize(raw: unknown): Settings {
     libraryWide: r.libraryWide === true,
     miniWidth: typeof r.miniWidth === 'number' && Number.isFinite(r.miniWidth) ? Math.min(960, Math.max(356, Math.round(r.miniWidth))) : DEFAULTS.miniWidth,
     pipPlace: Array.isArray(r.pipPlace) && r.pipPlace.length === 4 && r.pipPlace.every((v) => typeof v === 'number' && Number.isFinite(v)) && r.pipPlace[2] > 0 && r.pipPlace[3] > 0 ? (r.pipPlace.map(Math.round) as [number, number, number, number]) : null,
+    pipOnMinimize: typeof r.pipOnMinimize === 'boolean' ? r.pipOnMinimize : DEFAULTS.pipOnMinimize,
     crossfade: typeof r.crossfade === 'number' && Number.isFinite(r.crossfade) ? Math.min(12, Math.max(0, Math.round(r.crossfade))) : DEFAULTS.crossfade,
     skipLong: typeof r.skipLong === 'number' && Number.isFinite(r.skipLong) ? Math.min(60, Math.max(0, Math.round(r.skipLong))) : DEFAULTS.skipLong,
     fade: sanitizeFade(r.fade),

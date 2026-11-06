@@ -703,6 +703,9 @@ function GeneralSection() {
           <Row setting="closeToTray" label={msg('Keep running in the notification area')} sub={s.closeToTray ? tr('Closing the window keeps the music going; Quit from the icon’s menu') : tr('Closing the window quits the app')}>
             <Toggle label={tr('Keep running in the notification area')} checked={s.closeToTray} onChange={(closeToTray) => update({ closeToTray })} />
           </Row>
+          <Row setting="pipOnMinimize" label={msg('Picture-in-picture on minimize')} sub={tr('Minimizing while a song plays opens picture in picture, a small player above the other windows; its button brings the full window back')}>
+            <Toggle label={tr('Picture-in-picture on minimize')} checked={s.pipOnMinimize} onChange={(pipOnMinimize) => update({ pipOnMinimize })} />
+          </Row>
           <Row setting="reopen" label={msg('Reopen where you left off')} sub={tr('Same screen as when the app closed, Now Playing open if it was')}>
             <Toggle label={tr('Reopen where you left off')} checked={s.reopen} onChange={(reopen) => update({ reopen })} />
           </Row>

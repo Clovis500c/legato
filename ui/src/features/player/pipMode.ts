@@ -1,3 +1,4 @@
+import { getCurrentWindow } from '@tauri-apps/api/window'
 import { create } from 'zustand'
 import { preloadPip } from '../../app/pages'
 import { useSettings } from '../../app/settings'
@@ -5,6 +6,7 @@ import { api } from '../../shared/api'
 import { phoneApp } from '../../shared/platform'
 import { useCoverFull } from './coverFull'
 import { useKaraoke } from './karaokeMode'
+import { minimizeStep } from './pipMinimize'
 import { usePlayer } from './store'
 import { useVizFull } from './vizFull'
 import { vizFullKeys } from './vizFullKeys'
@@ -20,8 +22,12 @@ export const usePip = create<{ on: boolean }>(() => ({ on: false }))
 let unkey: (() => void) | undefined
 // A change on its way: a second press waits for it.
 let busy = false
+// Opened by a minimize (settings `pipOnMinimize`); `hidden`: minimized in turn, so a restore gives the full window.
+let fromMinimize = false
+let hidden = false
 
-export async function openPip() {
+/** `minimized`: opened instead of a minimize. */
+export async function openPip(minimized = false) {
   if (phoneApp || busy || usePip.getState().on || !usePlayer.getState().now || useKaraoke.getState().open || useVizFull.getState().open || useCoverFull.getState().open) return
   busy = true
   try {
@@ -32,6 +38,7 @@ export async function openPip() {
     if (document.activeElement instanceof HTMLElement) document.activeElement.blur()
     unkey = vizFullKeys(() => void closePip())
     await api.pip(true, useSettings.getState().settings.pipPlace)
+    fromMinimize = minimized
   } catch {
     // Window left as it was: the screen goes too.
     unkey?.()
@@ -55,8 +62,44 @@ export async function closePip() {
     // Back on screen anyway: the app under it shows.
   } finally {
     usePip.setState({ on: false })
+    fromMinimize = hidden = false
     busy = false
   }
 }
 
 export const togglePip = () => void (usePip.getState().on ? closePip() : openPip())
+
+/** Settings › General › Picture-in-picture on minimize: on, and a song playing. */
+const pipOnMinimize = () => !phoneApp && useSettings.getState().settings.pipOnMinimize && usePlayer.getState().playing
+
+/** The title bar's minimize: picture in picture instead when the setting says so (no minimize to undo first). */
+export function minimizeWindow() {
+  const win = getCurrentWindow()
+  if (!pipOnMinimize() || usePip.getState().on) return void win.minimize()
+  // Refused (a full screen open, a change on its way): Windows' minimize after all.
+  void openPip(true).then(() => {
+    if (!usePip.getState().on) void win.minimize()
+  })
+}
+
+/**
+ * Windows' own minimize (Win+Down, the taskbar, Win+M) while a song plays: picture in picture instead (`pip.rs` brings the
+ * window back first). That small window minimized, then restored from the taskbar: the full window again. Picture in
+ * picture opened by P minimizes and comes back as before.
+ */
+export function watchMinimize(): () => void {
+  if (phoneApp) return () => {}
+  const win = getCurrentWindow()
+  let minimized = false
+  const off = win.onResized(async ({ payload }) => {
+    // Minimized, Windows' window is 0 × 0: only then, and on the way back, is the window asked.
+    if (!minimized && (payload.width || payload.height)) return
+    const now = await win.isMinimized().catch(() => false)
+    const step = minimizeStep({ was: minimized, now, pip: usePip.getState().on, fromMinimize, hidden, wanted: pipOnMinimize() })
+    minimized = now
+    hidden = step.hidden
+    if (step.act === 'open') void openPip(true)
+    else if (step.act === 'close') void closePip()
+  })
+  return () => void off.then((f) => f())
+}
