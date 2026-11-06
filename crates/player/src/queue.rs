@@ -53,6 +53,11 @@ impl Queue {
         drop
     }
 
+    /// Nothing after what's loaded now: the run ends there (its server can't be reached).
+    pub fn end_loaded(&mut self) {
+        self.items.truncate(self.pos + self.loaded);
+    }
+
     /// Move by `delta`. False if out of range. Caller resets sink.
     pub fn jump(&mut self, delta: isize) -> bool {
         match self.pos.checked_add_signed(delta) {
@@ -141,6 +146,18 @@ mod tests {
         let mut fresh = super::Queue::new(vec![PathBuf::from("a"), PathBuf::from("b")], 0);
         assert_eq!(fresh.truncate(), 0);
         assert_eq!(names(fresh.to_load()), ["a"]);
+    }
+
+    #[test]
+    fn a_run_ended_where_it_is_loaded_goes_no_further() {
+        let mut q = q(5, 1);
+        assert_eq!(names(q.to_load()), ["1", "2"]);
+        q.end_loaded();
+        assert_eq!(names(q.upcoming().to_vec()), ["2"]);
+        // Both failed (nothing reached the sink): over.
+        assert_eq!(q.sync(0), 2);
+        assert_eq!(q.current(), None);
+        assert!(q.to_load().is_empty());
     }
 
     #[test]

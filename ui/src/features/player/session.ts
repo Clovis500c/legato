@@ -74,7 +74,7 @@ export function restore(raw: unknown, tracks: LibraryTrack[]): { volume: number;
   const order = list.length === ids.length && Array.isArray(r.order) && r.order.every(isInt) ? (r.order as number[]) : []
   // What the user queued plays next only in that order: without it, they're part of the list again.
   const added = order.length && Array.isArray(r.added) ? r.added.filter((i): i is number => isInt(i) && i < list.length) : []
-  const via = (['local', 'youtube', 'spotify', 'preview'] as const).find((v) => v === r.via)
+  const via = (['local', 'server', 'youtube', 'spotify', 'preview'] as const).find((v) => v === r.via)
   return {
     volume,
     queue: { list, index, order, added, shuffle: r.shuffle === true, repeat: r.repeat === 'all' || r.repeat === 'one' ? r.repeat : 'off', positionMs: isInt(r.positionMs) ? r.positionMs : 0, via, paused: r.paused === true },

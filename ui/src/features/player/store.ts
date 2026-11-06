@@ -8,7 +8,7 @@ import { endListen, progress, startListen } from './listens'
 import { albumGoesOn, demoGain, demoLength, fadeGain, NO_FADE, overlapDue, PICK_IN_S, type Fade } from './fade'
 import { insertAt, keepQueued, moveInOrder, moveToSlot, nextIndex, playOrder, queued, tooLong, type Repeat } from './queue'
 import { RECENT_S, smartOrder } from './shuffle'
-import { isNative, nativePath, SERVER_PATH, vias, viaOfPath, type Via } from './sources'
+import { isNative, nativePath, SERVER_PATH, serverDown, vias, viaOfPath, type Via } from './sources'
 import { formatDuration } from '../../shared/format'
 import { endCut, isUndone, landed, rememberUndone, toSkip, useSponsor } from './sponsor'
 import { offerEnd, rememberEnd, rememberStart, songEnd, songStart } from './ends'
@@ -708,6 +708,8 @@ export const usePlayer = create<PlayerState>((set, get) => ({
   toggle() {
     const { now, playing, fade } = get()
     if (!now) return
+    // Stopped on a server that didn't answer: the engine holds nothing, so Play asks the server again.
+    if (!playing && stalledOn === get().playId && now.via === 'server') return void get().playAt(get().index, 'server', { from: get().positionMs })
     set({ hold: false })
     const pause = () => {
       if (now.via === 'youtube') yt(playing ? 'pauseVideo' : 'playVideo')
@@ -896,6 +898,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
 
   onLocal(s) {
     if (s.error) useStore.setState({ error: s.error })
+    if (s.error && serverDown(s.error)) serverDownAt = Date.now()
     const via = get().now?.via
     if (via === 'youtube' || via === 'spotify') return
     enginePaused = s.paused
@@ -907,6 +910,13 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     if (s.ended) {
       expect = []
       endListen(true)
+      // Your music server off or refusing (the engine ended the run on it, said once): stopped here, not each next
+      // song tried in turn. Play tries this one again.
+      if (via === 'server' && Date.now() - serverDownAt < SERVER_DOWN_MS) {
+        serverDownAt = 0
+        stalledOn = get().playId
+        return set({ playing: false })
+      }
       return get().step(1, true)
     }
     const { list, index, now } = get()
@@ -1052,6 +1062,11 @@ function skipPart(time: number, own = false) {
 
 // The engine's own pause state, from its last status (songOver pauses what plays on; the store's `playing` is already false then).
 let enginePaused = false
+// Your music server off or refusing: when the engine said so (its run ends a report or two later), and the play
+// stopped on it (Play asks again).
+let serverDownAt = 0
+let stalledOn = -1
+const SERVER_DOWN_MS = 5_000
 const sameList = (a: readonly string[], b: readonly string[]) => a === b || (a.length === b.length && a.every((x, k) => x === b[k]))
 // Play (playId) whose silent start was skipped: one seek per play, never a loop.
 let skipLeadId = -1

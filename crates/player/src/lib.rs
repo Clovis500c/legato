@@ -352,6 +352,8 @@ impl Engine {
             }));
             ms
         };
+        // A server that can't be reached (or refuses): its words, and no other song of it tried in this batch.
+        let mut down: Option<String> = None;
         for path in self.queue.to_load() {
             let stop = Arc::new(AtomicBool::new(false));
             let flag = stop.clone();
@@ -360,6 +362,7 @@ impl Engine {
             let remote = http::is_remote(&path);
             let added = match &self.memory {
                 Some((label, bytes)) if *label == path => Decoder::try_from(Cursor::new(bytes.clone())).map(|d| append(p, Box::new(d), flag, gain)).map_err(anyhow::Error::from),
+                _ if remote && down.is_some() => Err(anyhow::anyhow!("{}", down.clone().unwrap_or_default())),
                 _ if remote => self.open_remote(&path).map(|d| append(p, d, flag, gain)),
                 _ => File::open(&path).map_err(anyhow::Error::from).and_then(|f| Ok(append(p, Box::new(Decoder::try_from(f)?), flag, gain))),
             };
@@ -369,17 +372,25 @@ impl Engine {
                 Ok(ms) => self.durations.push_back(ms),
                 Err(e) => {
                     self.durations.push_back(None);
+                    if remote && down.is_none() && e.downcast_ref::<std::io::Error>().is_some_and(http::unreachable) {
+                        down = Some(format!("{e:#}"));
+                    }
                     // A server's words alone (no key in front): `shared/errors.ts` knows them.
                     self.error = Some(if remote { format!("{e:#}") } else { format!("{}: {e:#}", path.display()) });
                 }
             }
+        }
+        // Server off or refusing: the songs after would each fail the same way (a connect timeout each, the queue run
+        // through). The run ends here; the interface stops on it, and Play tries again.
+        if down.is_some() {
+            self.queue.end_loaded();
         }
     }
 
     /// A server song's decoder: its bytes over HTTP, length and type from the first answer. A format the engine can't
     /// read (Opus, WMA…): asked again as the server's MP3.
     fn open_remote(&self, path: &std::path::Path) -> Result<Box<dyn Source + Send>> {
-        let Some(http::Remote(fetch)) = &self.remote else { anyhow::bail!("Your music server isn't signed in") };
+        let Some(http::Remote(fetch)) = &self.remote else { return Err(std::io::Error::new(std::io::ErrorKind::PermissionDenied, "Your music server isn't signed in").into()) };
         let key = path.to_str().and_then(|p| p.strip_prefix(http::PREFIX)).unwrap_or_default();
         let open = |transcode: bool| -> Result<Decoder<http::Stream>> {
             let (stream, info) = http::Stream::open(fetch.clone(), key, transcode, self.remote_failed.clone())?;
@@ -582,6 +593,47 @@ mod tests {
         assert!(srv.requests.load(std::sync::atomic::Ordering::SeqCst) >= 2);
         e.handle(Command::Stop).unwrap();
         let _ = std::fs::remove_file(file);
+    }
+
+    #[test]
+    fn a_server_that_doesnt_answer_ends_the_run_at_once() {
+        // Off: every request fails as `servers.rs` words it. Counted.
+        struct Off(std::sync::atomic::AtomicUsize);
+        impl http::Fetch for Off {
+            fn get(&self, _: &str, _: u64, _: bool) -> std::io::Result<http::Reply> {
+                self.0.fetch_add(1, Ordering::SeqCst);
+                Err(std::io::Error::new(std::io::ErrorKind::NotConnected, "Your music server doesn't answer: check that it's on and its address is right"))
+            }
+        }
+        let off = Arc::new(Off(Default::default()));
+        let mut e = Engine { volume: 1.0, ..Default::default() };
+        e.device = Some(Output::Null(Null::open()));
+        e.handle(Command::Remote { fetch: http::Remote(off.clone()) }).unwrap();
+        let paths: Vec<PathBuf> = (0..50).map(|i| PathBuf::from(format!("server:s1:{i}"))).collect();
+        e.handle(Command::Play { paths, start: 0 }).unwrap();
+        assert!(e.error.take().is_some_and(|s| s.starts_with("Your music server doesn't answer")));
+        for _ in 0..5 {
+            e.tick();
+        }
+        // One request, not one per song: the run is over, said once.
+        assert_eq!(off.0.load(Ordering::SeqCst), 1);
+        assert!(e.status().ended);
+        assert!(e.error.is_none());
+        // A song the server lacks is that song's alone: the next one is tried.
+        struct Lacks(std::sync::atomic::AtomicUsize);
+        impl http::Fetch for Lacks {
+            fn get(&self, _: &str, _: u64, _: bool) -> std::io::Result<http::Reply> {
+                self.0.fetch_add(1, Ordering::SeqCst);
+                Err(std::io::Error::new(std::io::ErrorKind::NotFound, "Your music server doesn't have this item"))
+            }
+        }
+        let lacks = Arc::new(Lacks(Default::default()));
+        e.handle(Command::Remote { fetch: http::Remote(lacks.clone()) }).unwrap();
+        e.handle(Command::Play { paths: vec![PathBuf::from("server:s1:a"), PathBuf::from("server:s1:b"), PathBuf::from("server:s1:c")], start: 0 }).unwrap();
+        e.tick();
+        e.tick();
+        assert_eq!(lacks.0.load(Ordering::SeqCst), 3);
+        e.handle(Command::Stop).unwrap();
     }
 
     #[test]

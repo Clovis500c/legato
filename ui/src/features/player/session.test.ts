@@ -19,6 +19,10 @@ describe('session', () => {
     // Older sessions (no added) and junk: nothing queued.
     expect(restore({ ...s, added: undefined }, lib)?.queue?.added).toEqual([])
     expect(restore({ ...s, added: [3, -1, 9, 'x'] }, lib)?.queue?.added).toEqual([3])
+    // A song from your music server comes back from it, not from its next source.
+    const served = JSON.parse(JSON.stringify(snapshot({ ...player, now: { trackId: 3, via: 'server' } })))
+    expect(restore(served, lib)?.queue?.via).toBe('server')
+    expect(restore({ ...served, via: 'elsewhere' }, lib)?.queue?.via).toBeUndefined()
   })
 
   it('remembers a pause (an update relaunch comes back paused)', () => {

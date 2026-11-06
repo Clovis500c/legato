@@ -86,12 +86,20 @@ fn parse_range(v: &str) -> Option<(u64, Option<u64>)> {
     Some((start, total.trim().parse().ok()))
 }
 
+/// The server itself can't be reached or refuses (off, address wrong, sign-in refused, signed out): every song of it
+/// would fail the same way, so the engine stops the run there instead of trying the next ones one by one.
+pub fn unreachable(e: &io::Error) -> bool {
+    use io::ErrorKind::*;
+    matches!(e.kind(), PermissionDenied | NotConnected | TimedOut | ConnectionRefused | ConnectionReset | ConnectionAborted | HostUnreachable | NetworkUnreachable)
+}
+
 /// An answer judged: where its body starts, the total length, ranged or not.
 fn judge(r: &Reply, from: u64) -> io::Result<(u64, Option<u64>, bool)> {
     match r.status {
         206 => {
             let (start, total) = r.content_range.as_deref().and_then(parse_range).ok_or_else(|| io::Error::other("Your music server sent a range without Content-Range"))?;
-            if start != from {
+            // Earlier than asked (a server rounding to a block): the worker skips up to `from`. Later: bytes missing.
+            if start > from {
                 return Err(io::Error::other("Your music server sent the wrong range"));
             }
             Ok((start, total.or(r.content_length.map(|l| l + start)), true))
@@ -244,6 +252,7 @@ fn work(sh: &Shared, mut first: Option<Reply>) {
             let (at, _, _) = judge(&r, from)?;
             Ok((r.body, at))
         });
+        // Range ignored (200) or started early (206): `at` < `from`, the bytes before are skipped below.
         let (mut body, mut at) = match got {
             Ok(b) => b,
             Err(e) => {
@@ -582,6 +591,37 @@ pub(crate) mod tests {
         assert_eq!(all.len(), 1000);
         assert!(e.to_string().contains("connection refused"), "{e}");
         assert!(failed.lock().unwrap().is_some());
+    }
+
+    #[test]
+    fn a_range_that_starts_early_is_skipped_up_to_the_byte_asked() {
+        // Answers from the 4 KB block before what was asked.
+        struct Blocks(Vec<u8>);
+        impl Fetch for Blocks {
+            fn get(&self, _: &str, from: u64, _: bool) -> io::Result<Reply> {
+                let start = from / 4096 * 4096;
+                let total = self.0.len() as u64;
+                let body = self.0[start as usize..].to_vec();
+                Ok(Reply { status: 206, content_length: Some(body.len() as u64), content_range: Some(format!("bytes {start}-{}/{total}", total - 1)), content_type: None, body: Box::new(io::Cursor::new(body)) })
+            }
+        }
+        let data = bytes(8 << 20);
+        let (mut s, info) = Stream::open(Arc::new(Blocks(data.clone())), "k", false, Arc::default()).unwrap();
+        assert!(info.ranged);
+        let at = (6 << 20) + 1234;
+        s.seek(SeekFrom::Start(at)).unwrap();
+        let mut b = vec![0; 100];
+        s.read_exact(&mut b).unwrap();
+        assert_eq!(b, data[at as usize..at as usize + 100]);
+    }
+
+    #[test]
+    fn a_server_that_cant_be_reached_is_told_from_a_song_it_lacks() {
+        for kind in [io::ErrorKind::NotConnected, io::ErrorKind::PermissionDenied, io::ErrorKind::TimedOut, io::ErrorKind::ConnectionRefused] {
+            assert!(unreachable(&io::Error::new(kind, "x")), "{kind:?}");
+        }
+        assert!(!unreachable(&io::Error::new(io::ErrorKind::NotFound, "gone")));
+        assert!(!unreachable(&io::Error::other("Your music server failed (HTTP 500)")));
     }
 
     #[test]

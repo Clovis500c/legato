@@ -22,5 +22,9 @@ export const isNative = (via: Via | undefined) => via === 'local' || via === 'se
 /** What the native engine plays for `via`: the file, or the server song's engine path. */
 export const nativePath = (t: Pick<Track, 'ids'>, via: Via): string | undefined => (via === 'local' ? t.ids.local : via === 'server' && t.ids.server ? SERVER_PATH + t.ids.server : undefined)
 
+/** The engine's words for a server that's off or refusing (`servers.rs`, `http.rs`): the run stopped there, so the
+ * queue stops too (Play tries again) instead of trying each next song. A song the server lacks isn't one. */
+export const serverDown = (error: string) => /^Your music server( doesn['’]t answer| refused the sign-in| isn['’]t signed in| doesn['’]t take|['’]s certificate)|^That address isn['’]t a Subsonic server/.test(error)
+
 /** A status path's way in. */
 export const viaOfPath = (path: string): Via => (path.startsWith(SERVER_PATH) ? 'server' : 'local')

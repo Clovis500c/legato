@@ -324,8 +324,25 @@ impl PlayerFetch for Fetch {
         let sub = Subsonic::from_account(&a);
         let s = tauri::async_runtime::block_on(async move { tokio::time::timeout(Duration::from_secs(30), sub.stream(&item, from, transcode)).await })
             .map_err(|_| io::Error::new(io::ErrorKind::TimedOut, "Your music server doesn't answer (timed out)"))?
-            .map_err(|e| io::Error::other(format!("{e:#}")))?;
+            .map_err(|e| {
+                let said = format!("{e:#}");
+                io::Error::new(kind_of(&said), said)
+            })?;
         Ok(Reply { status: s.status, content_length: s.content_length, content_range: s.content_range, content_type: s.content_type, body: Box::new(Body { body: s.body, left: Vec::new(), at: 0 }) })
+    }
+}
+
+/// The connector's words as the engine's kinds: the server off or refusing (the run stops, `http::unreachable`), or
+/// this song alone (the next one is tried).
+fn kind_of(said: &str) -> io::ErrorKind {
+    if said.starts_with("Your music server doesn't have this item") || said.starts_with("Your music server sent no audio") {
+        io::ErrorKind::NotFound
+    } else if said.starts_with("Your music server refused the sign-in") || said.starts_with("Your music server doesn't take") {
+        io::ErrorKind::PermissionDenied
+    } else if said.starts_with("Your music server doesn't answer") || said.starts_with("Your music server's certificate") || said.starts_with("That address isn't a Subsonic server") {
+        io::ErrorKind::NotConnected
+    } else {
+        io::ErrorKind::Other
     }
 }
 
@@ -351,5 +368,21 @@ impl Read for Body {
         out[..n].copy_from_slice(&self.left[self.at..self.at + n]);
         self.at += n;
         Ok(n)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn the_connectors_words_tell_a_server_down_from_a_song_it_lacks() {
+        let down = |s: &str| music_player::http::unreachable(&io::Error::new(kind_of(s), s));
+        assert!(down("Your music server doesn't answer: check that it's on and its address is right (tcp connect error)"));
+        assert!(down("Your music server refused the sign-in: check the user and the password"));
+        assert!(down("Your music server's certificate isn't trusted (a self-signed one?): …"));
+        assert!(!down("Your music server doesn't have this item (Song not found)"));
+        assert!(!down("Your music server sent no audio for this song"));
+        assert!(!down("Your music server said: odd (code 0)"));
     }
 }
