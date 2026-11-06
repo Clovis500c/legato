@@ -1272,6 +1272,14 @@ Most useful first; the tag is the effort.
         a YouTube song played: Now Playing says "Can't reach YouTube…" with Try again, never the error page; the song
         isn't skipped, and plays by itself once the internet is back. (The internet lost mid-song with the Wi-Fi still
         up is another path, untouched: does it skip?)
+      - Against Liner 3 to 5 and the round covers (2026-11-06 evening, Beta 1.1.750 by the dry run). Discord, Song and
+        artist: "Listening to jinx – lexycat", the album under it; a YouTube song played 10 s shows the artist's small
+        picture on the cover's corner, on a friend's screen too. Settings › General › Picture-in-picture on minimize:
+        the title bar's minimize, Win+Down, a taskbar click and Win+M while a song plays open the small window (does
+        the window show going down first?); that one minimized and restored from the taskbar gives the full window
+        back; the sung line under the picture. Settings › General › Storage: do the sizes look right, does Clear on
+        Lyrics and song analyses and on Diagnostics log free them (how long on your library?), is WebView2's size
+        there? The radial look, and vinyl covers, on a YouTube upload with a 16:9 picture: round, the ring around it.
 
 ## Waiting on the user (outside the code)
 

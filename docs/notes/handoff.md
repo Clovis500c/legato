@@ -14,7 +14,8 @@ be able to take the project over). Updated 2026-11-06, evening, from the owner's
   (`Legato_1.1.681_android-arm64.apk`). Beta: the autonomous run's push of 2026-11-06 (about 17:30, Paris) builds the
   next one, an auto version above 1.1.681, with everything below (U1, U2, rooms, servers, the phone fixes, line 2):
   1.1.742. Then the owner's word on the other PC (2026-11-06, evening, « Pousse une Beta »): the phone-1 review's two
-  fixes (Back, a YouTube song without internet), 1.1.744 by the dry run, for their phone.
+  fixes (Back, a YouTube song without internet): 1.1.745, for their phone. Then, on their word again (« Pousse une
+  Beta »): Against Liner 3 to 5 and the round covers (below), 1.1.750 by the dry run.
 - **master** = **platforms**, both pushed on 2026-11-06 (the owner's word: past 95 % of the 5-hour window, push it all,
   they go on from another PC). The website, https://clovis500c.github.io/legato/, is deployed from master. Nothing
   half done, no stash, no other branch or worktree. On the other PC (2026-11-06, evening): master pulled to `e27c486`,
@@ -75,8 +76,12 @@ time, effort high.
   waited on until it answers. The phone's rules in `docs/design.md` › Phone (the video's place, Back). Left of it:
   the owner's tries of that Beta's APK on their phone (plan-v2 › Check live, its last line: GitHub's build is the
   first to compile the Kotlin line); an emulator run, not possible on the other PC yet (› On the other PC).
-  Next: a normal session follows "How to continue" (smallest first); an autonomous run goes on with 18, and on down
-  the order.
+  Then, the same evening and inline, the owner's asks one by one: Against Liner 3 (Discord: song and artist, the
+  artist's picture, YouTube Music asked sparingly, `searchpace::Sparse`), 4 (picture in picture on minimize, the sung
+  line in it), 5 (Settings › General › Storage), the round covers (the radial look and vinyl covers on any art), and
+  plan-v2 › Website's line for the story on a phone. Each in plan-v2 with what wasn't tried; Check live has them.
+  Next: a normal session follows "How to continue" (smallest first: Against Liner 6, snap layouts); an autonomous
+  run goes on with 18, and on down the order.
 - The end: a report in French (`docs/notes/report-2026-11-06.md`, untracked), this section folded into the rest of
   this file, the cron deleted, the report sent to the owner (SendUserFile, proactive).
 
