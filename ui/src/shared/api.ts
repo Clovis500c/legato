@@ -1,7 +1,7 @@
 import { Channel, invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 import type { Box } from './artbox'
-import type { AddReport, AlbumInfo, Bookmark, DeviceOffer, DeviceOfferEvent, DevicesStatus, CacheStats, Contact, Credentials, DetectInput, Detection, Direction, DiscordStatus, Dropped, Edit, EditDraft, Effects, ExportReport, FileList, FileTags, FindReport, Heard, JumpPlaylist, LastfmStatus, LibraryChanges, LibraryData, LibraryHealth, LibraryPlaylist, LibraryTrack, ListImport, LinkImport, Listen, ListenbrainzStatus, ListRef, LiveReport, LiveSettings, LyricHit, Lyrics, LyricsAsk, MediaNow, Merged, Mix, NearbyState, Pickup, Play, PlayerCommand, PlayerLevels, PlayerStatus, PlaylistEdit, PluginCall, PluginInfo, PluginInspect, Pref, Presence, PushFailed, RemoteLink, RemoteSong, Scrobble, SearchResults, ShareCode, SharePreview, ShieldStatus, ShortcutEntry, SongTags, Source, SourceStatus, SpotifyCommand, SpotifyExport, SpotifyImport, SpotifyLibraryImport, SpotifyList, SpotifyPick, SpotifyPlayback, SpotifyProgress, SponsorSegment, SyncProbe, SyncReport, SyncStatus, SystemAccent, TagsSaved, Track, UpdateStatus, WatchCmd, WatchRect, WatchReport, YtmAccount, YtmAccounts, YtmArtist, YtmHome } from './generated'
+import type { AddReport, AlbumInfo, Bookmark, DeviceOffer, DeviceOfferEvent, DevicesStatus, CacheStats, Contact, Credentials, DetectInput, Detection, Direction, DiscordStatus, Dropped, Edit, EditDraft, Effects, ExportReport, FileList, FileTags, FindReport, Heard, JumpPlaylist, LastfmStatus, LibraryChanges, LibraryData, LibraryHealth, LibraryPlaylist, LibraryTrack, ListImport, LinkImport, Listen, ListenbrainzStatus, ListRef, LiveReport, LiveSettings, LyricHit, Lyrics, LyricsAsk, MediaNow, Merged, Mix, NearbyState, Pickup, Play, PlayerCommand, PlayerLevels, PlayerStatus, PlaylistEdit, PluginCall, PluginInfo, PluginInspect, Pref, Presence, PushFailed, RemoteLink, RemoteSong, RoomEvent, RoomFind, RoomHeard, RoomNow, RoomReaction, RoomSong, RoomStatus, Scrobble, SearchResults, ShareCode, SharePreview, ShieldStatus, ShortcutEntry, SongTags, Source, SourceStatus, SpotifyCommand, SpotifyExport, SpotifyImport, SpotifyLibraryImport, SpotifyList, SpotifyPick, SpotifyPlayback, SpotifyProgress, SponsorSegment, SyncProbe, SyncReport, SyncStatus, SystemAccent, TagsSaved, Track, UpdateStatus, WatchCmd, WatchRect, WatchReport, YtmAccount, YtmAccounts, YtmArtist, YtmHome } from './generated'
 
 // Every type the commands and events carry is a Rust type: `pnpm types` (ts-rs) writes it into ./generated, never by hand.
 // Re-exported here, so features import them from the api.
@@ -254,6 +254,22 @@ export const api = {
   onDevices: (cb: () => void) => listen('devices', () => cb()),
   onDeviceOffer: (cb: (r: DeviceOfferEvent) => void) => listen<DeviceOfferEvent>('device-offer', (e) => cb(e.payload)),
   onSyncPickup: (cb: (p: Pickup) => void) => listen<Pickup>('sync-pickup', (e) => cb(e.payload)),
+  /** Listening rooms on the local network (rooms.rs): lead one, or join one and follow it. */
+  roomStatus: () => invoke<RoomStatus>('room_status'),
+  roomStart: () => invoke<RoomStatus>('room_start'),
+  roomEnd: () => invoke<void>('room_end'),
+  /** The host's player: what plays now (its time is taken in Rust). */
+  roomHostNow: (now: RoomNow) => invoke<void>('room_host_now', { now }),
+  roomHostNext: (songs: RoomSong[]) => invoke<void>('room_host_next', { songs }),
+  roomReact: (reaction: RoomReaction) => invoke<void>('room_react', { reaction }),
+  /** Rooms on this network (3 s of listening). */
+  roomsNearby: () => invoke<RoomHeard[]>('rooms_nearby'),
+  /** A room heard (`id`) or scanned (`link`) with its code. */
+  roomJoin: (id: string | null, link: string | null, code: string) => invoke<RoomStatus>('room_join', { id, link, code }),
+  roomLeave: () => invoke<void>('room_leave'),
+  /** A room's song on this side; `now`: it plays now (a search may wait out the pace), else ahead of time. */
+  roomResolve: (song: RoomSong, now: boolean) => invoke<RoomFind>('room_resolve', { song, now }),
+  onRoom: (cb: (e: RoomEvent) => void) => listen<RoomEvent>('room', (e) => cb(e.payload)),
   /** A picture for a theme's background, copied in by content. Returns its name (shared/art coverImage). */
   saveBackground: (path: string) => invoke<string>('save_background', { path }),
   /** A background no theme uses any more. */

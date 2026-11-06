@@ -147,7 +147,7 @@ fn stamp_of(s: &Snapshot) -> String {
 }
 
 /// This PC's addresses on its networks, the routed one first.
-fn lan_ips() -> Vec<Ipv4Addr> {
+pub(crate) fn lan_ips() -> Vec<Ipv4Addr> {
     let mut out: Vec<Ipv4Addr> = crate::remote::lan_ip()
         .into_iter()
         .filter_map(|ip| match ip {
