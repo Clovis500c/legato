@@ -5,6 +5,6 @@
  */
 export type ServerSync = { songs: number, playlists: number, 
 /**
- * Albums the server failed to give (skipped).
+ * Albums and playlists the server failed to give (skipped; a playlist kept as it was).
  */
 skipped: number, };
