@@ -322,6 +322,9 @@ function playOnWatchPage(video: string, startMs: number) {
 // own "Video unavailable" card. A video asked to play that hasn't started 6 s later (not buffering, not paused, not
 // loaded paused at launch) = refused.
 let ytState: number | undefined
+// Any word from the embed (or the watch page) since the video was asked. None: an error page (4G without DNS, 2026-11-06)
+// or a slow load, which ytDown.ts tries again; the network's fault, not the video's.
+let heard = false
 // New video asked: the embed still reports the old one for a moment (late times, its duration). Ignored until a time
 // near the new start comes, else the fade in jumps to full volume (review 2026-10-23: skips started loud).
 let ytFresh = false
@@ -382,6 +385,7 @@ function waitForNetwork(playId: number) {
 function watchForStuck(playId: number, wait = 6_000) {
   clearTimeout(stuckTimer)
   ytState = undefined
+  heard = false
   let waits = 2
   const check = () => {
     const p = usePlayer.getState()
@@ -394,6 +398,8 @@ function watchForStuck(playId: number, wait = 6_000) {
     if (!watching(id)) {
       // As often a stall as a refusal: skipped away and back, the song played (2026-11-01). Loaded again once first.
       if (reloaded !== playId) return reload(id, playId, 'the video never started', ytState === undefined ? 'no report' : `state ${ytState}`)
+      // Silent embed: never blocked for it (it was, for good, and the queue skipped), watched until it answers.
+      if (!heard) return void (stuckTimer = setTimeout(check, 10_000))
       // Google limits this network: the video isn't to blame, and its watch page is Google's too.
       if (refusedPlay === playId) return tooMany()
       block(id)
@@ -822,6 +828,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
   },
 
   onYoutube(u) {
+    heard = true
     const { now } = get()
     if (u.refused !== undefined) return refused(u.refused)
     // Watch page can't play it either (region, age, removed): another upload of the song, else the next song.

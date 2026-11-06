@@ -353,8 +353,25 @@ describe('a YouTube video that never starts', () => {
     usePlayer.getState().playTracks([song(73), song(74)], 0)
     await vi.advanceTimersByTimeAsync(6_000)
     expect(loads()).toEqual(['video73'])
+    // The embed's own "Video unavailable" card: unstarted.
+    usePlayer.getState().onYoutube({ state: -1 })
     await vi.advanceTimersByTimeAsync(6_000)
     expect(usePlayer.getState().now?.youtubeId).toBe('video74')
+  })
+
+  it('isn’t blocked while the embed says nothing (a network error page): waited on until it answers', async () => {
+    usePlayer.getState().playTracks([song(82), song(83)], 0)
+    await vi.advanceTimersByTimeAsync(6_000)
+    expect(loads()).toEqual(['video82'])
+    // Regression guard: blocked for good and skipped 12 s in, 4G without DNS (2026-11-06).
+    await vi.advanceTimersByTimeAsync(60_000)
+    expect(usePlayer.getState().now?.youtubeId).toBe('video82')
+    // Back (ytDown.ts loaded it again): it plays, nothing more asked.
+    usePlayer.getState().onYoutube({ state: 1, time: 0.3 })
+    usePlayer.getState().onYoutube({ time: 2 })
+    await vi.advanceTimersByTimeAsync(60_000)
+    expect(loads()).toEqual(['video82'])
+    expect(usePlayer.getState().now?.youtubeId).toBe('video82')
   })
 
   it('isn’t hidden by the last song’s “playing”', async () => {
