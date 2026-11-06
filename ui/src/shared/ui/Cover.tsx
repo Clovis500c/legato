@@ -6,9 +6,9 @@ import { fits, measure } from '../artfit'
 /**
  * Artwork with a typographic fallback tile (initials). art = image candidates, best first (shared/art); each failed one falls to the next. eager = big, on screen right away.
  * Video frames: black bars cut off, art centered in the square. fit = big cover: real shape reported instead (the
- * parent sizes the frame to it).
+ * parent sizes the frame to it); `square`: cut square all the same (a round cover, any art).
  */
-export function Cover({ title, art = [], size = 38, className = '', eager = false, fit }: { title: string; art?: string[]; size?: number; className?: string; eager?: boolean; fit?: (ratio: number) => void }) {
+export function Cover({ title, art = [], size = 38, className = '', eager = false, fit, square = false }: { title: string; art?: string[]; size?: number; className?: string; eager?: boolean; fit?: (ratio: number) => void; square?: boolean }) {
   // Failed URLs, not an index: virtualized rows reuse this component for other tracks.
   const [failed, setFailed] = useState<string[]>([])
   const full = art.find((s) => !failed.includes(s))
@@ -46,7 +46,7 @@ export function Cover({ title, art = [], size = 38, className = '', eager = fals
             measure(e.currentTarget, src)
             setMeasured((n) => n + 1)
           }}
-          style={known ? cropStyle(cropTo(known.box, known.width, known.height, fit ? known.ratio : 1)) : undefined}
+          style={known ? cropStyle(cropTo(known.box, known.width, known.height, fit && !square ? known.ratio : 1)) : undefined}
           className={known ? 'absolute' : `absolute inset-0 size-full object-cover ${isLetterboxed(full!) ? 'scale-[1.34]' : ''}`}
         />
       )}

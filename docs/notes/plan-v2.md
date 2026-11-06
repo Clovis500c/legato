@@ -1036,6 +1036,12 @@ colours, mirror, reflection.
       the pure engine's tests (expressions, mesh, wave, music, .milk, files); the demo full screen, dark: Tunnel in the
       ink, Aurora in its own colours, the menu and Settings rows in French. Not tried: a real .milk file of the owner's,
       import / export through the real file dialogs, the strip under the cover, the light theme, real music.)
+- [x] `S` Every cover round in the radial look and with vinyl covers (the owner's try, 2026-11-06: a YouTube upload's
+      16:9 frame stayed a rectangle in Now Playing, the strip under it instead of the ring). The ring no longer asks for
+      square art; any art is cut square (`Cover`'s `square`, centred, its black bars left out) and round, Now Playing's
+      cover the same with vinyl covers (it was a pill) and picture in picture's. The cover display keeps its square:
+      its words sit on the picture. Seen over the demo (square covers only: Vinyl, then the ring); not seen on a real
+      16:9 frame.
 
 ## Workflow (how we build it)
 

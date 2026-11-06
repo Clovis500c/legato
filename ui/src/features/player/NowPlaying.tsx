@@ -93,7 +93,9 @@ function Stage({ video, cover, track, title, youtubeId, pulse, wantRing, onRing 
     useVideoSlot.setState({ box })
     return () => useVideoSlot.setState({ box: null })
   }, [big, box])
-  // Radial look: the cover turns round and the visualizer's ring goes behind it, where the stage is big and the art square.
+  // Radial look: the cover turns round and the visualizer's ring goes behind it, where the stage is big. Any art, cut
+  // square (the owner's ask 2026-11-06: a video's 16:9 frame stayed a rectangle over the strip); vinyl covers the same.
+  const vinyl = useSettings((s) => s.settings.covers === 'vinyl')
   const area = useRef<HTMLDivElement>(null)
   const [side, setSide] = useState(0)
   useEffect(() => {
@@ -103,19 +105,20 @@ function Stage({ video, cover, track, title, youtubeId, pulse, wantRing, onRing 
     ro.observe(el)
     return () => ro.disconnect()
   }, [])
-  const ring = wantRing && !big && Math.abs(art - 1) < 0.06 && side >= RING_MIN
+  const ring = wantRing && !big && side >= RING_MIN
+  const round = ring || vinyl
   useEffect(() => {
     onRing(ring)
     return () => onRing(false)
   }, [ring, onRing])
-  const ratio = big ? (box ? clampRatio((box.w * 16) / (box.h * 9)) : 16 / 9) : art
+  const ratio = big ? (box ? clampRatio((box.w * 16) / (box.h * 9)) : 16 / 9) : round ? 1 : art
   // Glow: a light of the cover's own colour behind it (none when off, on a grey cover or a video).
   const dark = useSettings((s) => s.current().dark)
   const level = useSettings((s) => s.settings.glow)
   const hue = useCoverHue(level !== 'off' && !big && track ? trackArt(track)[0] : undefined, dark)
   const halo = coverGlow(hue, level, dark)
   // Container query units: fit inside both width and height, keep the ratio.
-  const fit = { width: ring ? `min(${RING_COVER * 100}cqw, ${RING_COVER * 100}cqh)` : `min(100cqw, 100cqh * ${ratio})`, aspectRatio: String(ring ? 1 : ratio) }
+  const fit = { width: ring ? `min(${RING_COVER * 100}cqw, ${RING_COVER * 100}cqh)` : `min(100cqw, 100cqh * ${ratio})`, aspectRatio: String(ratio) }
   return (
     // w-full: parent centers its children; without it the box shrinks to nothing and cq units go to 0.
     <div ref={area} className="relative grid min-h-50 w-full flex-1 place-items-center" style={{ containerType: 'size' }}>
@@ -130,7 +133,7 @@ function Stage({ video, cover, track, title, youtubeId, pulse, wantRing, onRing 
       ) : (
         <span ref={coverEl} style={fit} onClick={toggle} title={tr('Play / pause')} className="relative block cursor-pointer">
           {halo && <span aria-hidden className={`absolute inset-0 ${ring ? 'rounded-full' : 'rounded-cover'}`} style={{ boxShadow: halo }} />}
-          <Cover title={track?.album ?? title} art={track && bigTrackArt(track)} size={200} eager fit={setArt} className={`size-full! text-[3.5rem]! shadow-[0_12px_40px_var(--shadow)] ${ring ? 'rounded-full!' : ''}`} />
+          <Cover title={track?.album ?? title} art={track && bigTrackArt(track)} size={200} eager fit={setArt} square={round} className={`size-full! text-[3.5rem]! shadow-[0_12px_40px_var(--shadow)] ${ring ? 'rounded-full!' : ''}`} />
           {video && <VideoSlot hidden className="absolute inset-0 bg-transparent" />}
           <RoomFloats big />
         </span>

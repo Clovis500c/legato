@@ -35,6 +35,8 @@ export function PipScreen() {
   const step = usePlayer((s) => s.step)
   const track = useNowTrack()
   const stage = useSettings((s) => s.settings.stage)
+  // Vinyl covers: round here too (its box is square), else edge to edge.
+  const vinyl = useSettings((s) => s.settings.covers === 'vinyl')
   const still = useStill(now?.via === 'youtube' ? now.youtubeId : undefined)
   const backdrop = useBackdrop(track ? trackArt(track)[0] : undefined, BLUR)
   useEffect(() => {
@@ -50,7 +52,7 @@ export function PipScreen() {
           <>
             {backdrop && <Backdrop url={backdrop} dim={45} motion={false} />}
             <span key={songKey(now) ?? now.title} onClick={toggle} title={tr('Play / pause')} className="relative block max-w-[100cqw] cursor-pointer" style={{ height: '100cqh', aspectRatio: '1' }}>
-              <Cover title={track?.album ?? now.title} art={track && bigTrackArt(track)} size={400} eager className="size-full! rounded-none! border-0!" />
+              <Cover title={track?.album ?? now.title} art={track && bigTrackArt(track)} size={400} eager className={`size-full! border-0! ${vinyl ? '' : 'rounded-none!'}`} />
             </span>
           </>
         )}
