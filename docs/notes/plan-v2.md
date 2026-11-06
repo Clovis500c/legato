@@ -410,6 +410,10 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       - [ ] `S` Server songs levelled: OpenSubsonic's `replayGain` (track / album) into Volume levelling.
       - [ ] `S` Your music server in the app's search (`search3`, beside the library's results).
       - [ ] `S` Playlist edits sent back to the server (`updatePlaylist`, `createPlaylist`) when its direction sends.
+      - [ ] `S` Servers that refuse token auth (Subsonic code 41: LDAP users, some Ampache / Nextcloud Music setups): the
+        password sent hex-encoded (`p=enc:`) after a warning, https only. Today the sign-in says "doesn't take this kind
+        of sign-in" in English (with "sent a format Legato can't play", "newer API", "doesn't let this user": not in
+        `errors.ts` yet, so not translated). Seen in the 2026-11-06 review.
 - [ ] `L` macOS and Linux builds (media panel, detector, tray per OS).
 - [ ] `L+` Mobile version, well optimised, the Rust code reused (the owner's ask 2026-11-02): Tauri 2's Android target
       with the same crates and `ui/`, Android first, iPhone after. Spec, seven phases, what stays desktop-only and the
