@@ -50,7 +50,9 @@ arranged for a thumb). Liner's calm is the spirit, never its look. The rules:
 - **One main action per screen**, in the accent where it plays (the round play), the rest plain icons.
 - **Thumb's reach.** The bottom tabs (Home, Search, Your library, Mixes), the mini player above them, Now Playing's
   controls at the foot of the screen. Every tap target is 44 px at least: `RoundButton` adds an invisible 8 px ring on
-  the phone (its drawn size stays), the top bar's buttons are 40 to 44 px, menu rows 48 px.
+  the phone (its drawn size stays), the top bar's buttons are 40 to 44 px, menu rows 48 px. That ring reaches past a
+  row's edge, so a box that scrolls down never scrolls sideways there (`styles.css`: `overflow-y-auto` clips x on the
+  phone; a box that scrolls both ways says `overflow-x-auto`), and a row wider than its scroller is a bug.
 - **Menus are sheets.** Every menu (long press, ⋯, a dropdown) opens as a sheet from the bottom edge (`ContextMenu`'s
   `Sheet`): rows of 48 px, a submenu takes the sheet's place with a Back row on top, a tap outside closes it.
 - **Gutters of 16 px** (24 on the desktop); a band (album, playlist, artist) reaches the screen's edges.

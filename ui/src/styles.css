@@ -574,3 +574,13 @@ body.dragging * {
 [data-fold] ~ [data-fold] .fold-head {
   display: none;
 }
+
+/* The phone: a scroller of one axis stays on it. The tap ring around icon buttons (controls.tsx TOUCH) reaches 8 px past
+   a row's edge; an overflow-y-auto box made that sideways scroll (song lists, settings slid 8 px under the thumb).
+   Unlayered: beats the utilities; a box that scrolls both ways says overflow-x-auto. */
+@media (width < 640px) {
+  .overflow-y-auto:not(.overflow-x-auto, .phone\:overflow-x-auto),
+  .phone\:overflow-y-auto:not(.overflow-x-auto, .phone\:overflow-x-auto) {
+    overflow-x: hidden;
+  }
+}

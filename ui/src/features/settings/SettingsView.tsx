@@ -999,8 +999,9 @@ export function SettingsView({ section }: { section: SettingsSection }) {
       <div className="flex min-h-0 flex-1 flex-col gap-4 @2xl:flex-row @2xl:gap-9 phone:-mx-2 phone:overflow-y-auto phone:px-2">
         <nav className="flex shrink-0 flex-wrap gap-px @2xl:w-52 @2xl:flex-col @2xl:flex-nowrap">
           <SettingsSearch onPick={(e) => go({ name: 'settings', section: e.section, focus: e.label })} />
-          {/* The phone: the sections in one row scrolled sideways, edge to edge (they took four rows). */}
-          <div className="contents phone:no-scrollbar phone:-mx-4 phone:flex phone:w-[calc(100%+2rem)] phone:gap-1.5 phone:overflow-x-auto phone:px-4">
+          {/* The phone: the sections in one row scrolled sideways, to the scroller's edges (they took four rows). Wider
+              than its scroller (-mx-4) moved the whole page 8 px sideways. no-scrollbar plain: not a utility, no variant. */}
+          <div className="no-scrollbar contents phone:-mx-2 phone:flex phone:w-[calc(100%+1rem)] phone:gap-1.5 phone:overflow-x-auto phone:px-2">
             {sections.filter((s) => !phoneApp || !DESKTOP_ONLY_SECTIONS.has(s.id)).map((s) => (
               <button key={s.id} aria-current={s.id === section ? 'page' : undefined} onClick={() => go({ name: 'settings', section: s.id })} className={`flex items-center gap-3 rounded-lg px-3 py-2 text-left phone:min-h-10 phone:shrink-0 phone:gap-2 phone:rounded-full phone:whitespace-nowrap ${s.id === section ? 'bg-raised font-semibold' : 'text-ink-2 hover:text-ink'}`}>
                 {s.icon} <span className="flex-1">{tr(s.label)}</span>
