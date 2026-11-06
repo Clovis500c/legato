@@ -57,6 +57,10 @@ user key, SoundCloud playback and search (its terms), concerts (an API's terms),
 - [x] Android's Back sent the app behind at once (the page keeps no history of its own): it now closes what's on top
       (a menu, a dialog, a full screen, Now Playing), then goes back a page, the app behind only at the root
       (`app/androidBack.ts` asked by `MainActivity.kt`, `shared/ui/layers.ts`). Not tried on a phone yet.
+      Review (2026-11-06, the other PC): the page was never asked. Tauri's own Back (`AppPlugin`, added after
+      PageBack, so asked first) and Android 15's key call `onBackPressed()` straight, and that sent the app behind:
+      now the callbacks still on go first (`MainActivity.kt`, one line). The playability box (the lists' i) joins the
+      layers. Not compiled or tried: this PC has no Android Rust target, emulator image or Gradle cache (Check live).
 - [x] Your library's tab led with the whole sidebar (Home, Mixes, Stats, Add music): one row since U1 (on `platforms`,
       not on the phone yet).
 - [x] A YouTube song's floating video covered a third of the screen, its title and buttons twice (the bar below has
@@ -64,11 +68,18 @@ user key, SoundCloud playback and search (its terms), concerts (an API's terms),
       alone, 2026-11-06, against YouTube's terms as that mode is: the owner's call to keep; `MiniPlayer.tsx`, one line
       to undo). Only the floating place had the card (`miniPlace` float); the side panel's place is hidden on the phone.
       Not tried on a phone (the demo has no YouTube frame).
+      Review (2026-11-06): kept as it is (out of sight, the frame is a 200 px invisible box that takes no tap; the PC
+      never goes under 640 px). The rule is in `docs/design.md` › Phone.
 - [x] The video showed Android's own error page with the embed's whole address (`net::ERR_NAME_NOT_RESOLVED` on 4G):
       no word from the frame 10 s after its load = down (`features/player/ytDown.ts`): "Can’t reach YouTube. Check your
       connection." and Try again over it (never its address, nothing when the video is out of sight), tried again by
       itself at once when the network comes back, else after 5 s doubled to 2 min. Google's refusal keeps `refused.js`.
       Not tried for real (no phone, the demo has no YouTube frame).
+      Review (2026-11-06): the veil holds (the 10 s start at the frame's load, which waits for YouTube's scripts; a
+      Google refusal still speaks from inside the embed, `refused.js`; tries 5 s doubled to 2 min, reset only by a
+      word). But the player's stuck check took that silent embed for a refused video: blocked for good (the
+      `embedBlocked` list) and the queue skipped 12 s in. A silent embed is now waited on until it answers (`store.ts`
+      `heard`, a test). Videos blocked that way before stay blocked (no way to tell them apart).
 
 ### Against Liner (user's ask 2026-11-05: lead it on every point)
 
@@ -1207,6 +1218,13 @@ Most useful first; the tag is the effort.
         relay, and does it play? Back home, the next sync leaves the relay by itself. Does `/identity` answer without a
         token (the sign-in finds the server)? Settings › Privacy lists plex.tv, the server's plex.direct address,
         nothing else.
+      - The phone's fixes from your tries (2026-11-06, reviewed the same evening): Back from a playlist goes to the
+        page before, at the root the app goes behind and the music goes on; Back closes a sheet, a dialog, the lists' i
+        box, the visualizer, Karaoke and Now Playing first. A YouTube song outside Now Playing: no video over the lists,
+        the sound on, Now Playing shows the video. The app opened on a Wi-Fi with no internet (a hotspot without data),
+        a YouTube song played: Now Playing says "Can't reach YouTube…" with Try again, never the error page; the song
+        isn't skipped, and plays by itself once the internet is back. (The internet lost mid-song with the Wi-Fi still
+        up is another path, untouched: does it skip?)
 
 ## Waiting on the user (outside the code)
 

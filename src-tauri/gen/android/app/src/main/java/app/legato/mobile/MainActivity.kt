@@ -145,10 +145,12 @@ class MainActivity : TauriActivity() {
   }
 
   // Back at the root would close the app and the music (from Android 12 on, unless it was opened from the home screen):
-  // it goes behind the other apps instead, as Home does.
+  // it goes behind the other apps instead, as Home does. Callbacks still on go first (super): Tauri's AppPlugin, added
+  // after PageBack so asked before it, calls this straight, as Android 15 and older's Back key does (review 2026-11-06:
+  // PageBack was never reached).
   @Suppress("DEPRECATION")
   override fun onBackPressed() {
-    if (isTaskRoot) moveTaskToBack(true) else super.onBackPressed()
+    if (isTaskRoot && !onBackPressedDispatcher.hasEnabledCallbacks()) moveTaskToBack(true) else super.onBackPressed()
   }
 
   override fun onDestroy() {

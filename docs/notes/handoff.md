@@ -6,7 +6,7 @@ branch, a release or the next step changes. Its older versions (the run logs of 
 `git log -p -- docs/notes/handoff.md`; each commit message says what it did and what wasn't tried for real.
 
 Written 2026-11-05, late evening, after a clean-up (the owner's ask: another account with none of this context should
-be able to take the project over).
+be able to take the project over). Updated 2026-11-06, evening, from the owner's other PC (› On the other PC).
 
 ## Where things stand
 
@@ -15,7 +15,8 @@ be able to take the project over).
   next one, an auto version above 1.1.681, with everything below (U1, U2, rooms, servers, the phone fixes, line 2).
 - **master** = **platforms**, both pushed on 2026-11-06 (the owner's word: past 95 % of the 5-hour window, push it all,
   they go on from another PC). The website, https://clovis500c.github.io/legato/, is deployed from master. Nothing
-  half done, no stash, no other branch or worktree.
+  half done, no stash, no other branch or worktree. On the other PC (2026-11-06, evening): master pulled to `e27c486`,
+  `platforms` made from it, the phone-1 review committed on it (below), not pushed.
 - **Untracked:** `docs/notes/report-*.md`, the owner's reports in French (what each autonomous run did, what to try).
   Never commit them; read them for context.
 - **Never tried for real** (built and unit-tested, seen in the demo or on the emulator only): plan-v2 › Check live in
@@ -65,12 +66,15 @@ time, effort high.
   its Kotlin compiles), no floating video on the phone (9e3d958), our words over the embed's error page (6c70435).
   Then line 2 inline (the artist's About text). At about 92 % of the 5-hour window, all of it pushed (see Where things
   stand) and the cron deleted: nothing runs on that PC any more.
-  Next, the phone-1 line (a workflow, under about 40 % of a window): review the three phone fixes (no false alarm on a
-  slow network, no retry storm, Google's refusal rules untouched, no address in our message, nothing over a working
-  video; Back's order: a menu, a dialog, a full screen, Now Playing, the page before, the root; the parked video: the
-  sound goes on, Now Playing shows it, every list's last rows reachable; the PC unchanged), build the APK
-  (`--target x86_64`), try them on the emulator `legato36` (the network off too), write the phone's rules in
-  `docs/design.md` (the video's place, Back). Then 18, and on down the order.
+  The phone-1 line (2026-11-06, evening, the other PC, inline: no workflow asked, CLAUDE.md's rule): the three phone
+  fixes reviewed. Back never reached the page (Tauri's `AppPlugin` callback, asked first, and Android 15's key call
+  `onBackPressed()` straight): fixed in `MainActivity.kt`; the lists' i box joins the layers. The parked video kept.
+  The veil kept, but a silent embed was taken for a refused video (blocked for good, the queue skipped 12 s in): now
+  waited on until it answers. The phone's rules in `docs/design.md` › Phone (the video's place, Back). Left of it:
+  the APK (`--target x86_64`) tried on an emulator (Back's order, the parked video, the network off), not possible on
+  the other PC yet (› On the other PC), and the owner's tries (plan-v2 › Check live, its last line).
+  Next: a normal session follows "How to continue" (smallest first); an autonomous run goes on with 18, and on down
+  the order.
 - The end: a report in French (`docs/notes/report-2026-11-06.md`, untracked), this section folded into the rest of
   this file, the cron deleted, the report sent to the owner (SendUserFile, proactive).
 
@@ -154,6 +158,26 @@ GitHub's secrets can't be read back: the files on this PC are the only copies. D
 - `pnpm notices` (cargo-about) once on a new PC: a release build stops without `src-tauri/third-party-licenses.html`.
 - Claude Code's own notes for this folder (`~/.claude/projects/C--dev-music-app/memory/`) hold nothing the repo lacks.
   The desktop app's scheduled task `legato-autopilot` was a one-time run (2026-11-04), now disabled.
+
+## On the other PC
+
+The owner's second PC (2026-11-06, evening), also `C:\dev\music-app` on Windows 11: Node 26, pnpm 11, cargo 1.99, `gh`
+signed in as `Clovis500c`; `pnpm check` green there. What it lacks:
+
+- Android: the SDK is in `%LOCALAPPDATA%\Android\Sdk` (NDK 27.1, platforms 36 and 37.0, build-tools 35 and 36, the
+  emulator), JDK 21 as `JAVA_HOME` (the `java` on PATH is 1.8), no `C:\dev\android\env.ps1`. An APK needs the Rust
+  target (`rustup target add x86_64-linux-android`, `aarch64-linux-android` for a phone) and a first Gradle run (it
+  downloads Gradle and the Android libraries); the emulator needs its image (the AVD `Pixel_9` points at
+  `system-images;android-37.1;google_apis_playstore_ps16k;x86_64`, not installed). Each download: the owner's word.
+- No signing keys (no `~/.tauri/music-app.key`, no Android keystore): releases and signed APKs stay on the first PC
+  (or GitHub's Actions).
+- No graphify (read the code) and none of the owner's `report-*.md`.
+- Untracked at the root: `2026-10-30-001238-this-session-is-being-continued-from-a-previous-c.txt`, an old transcript:
+  never commit it.
+- Old local branches and worktrees from October, left as they were (removing them is the owner's call): `v2`,
+  `claude/mixes-algo` and `claude/mystifying-greider-d4618d` merged; `backup/*` and the translation branches
+  (`claude/cranky-bartik-ed5090`, `claude/gallant-napier-5b5e7f`, `claude/nervous-engelbart-588c97`) look unmerged
+  after the author rewrite, their languages are on master; a stash (`local docs`, already upstream).
 
 ## Traps not written elsewhere
 

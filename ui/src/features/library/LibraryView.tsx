@@ -1,7 +1,7 @@
 import { CaretDown, DotsThree, Info, MagnifyingGlass, MicrophoneStage, Play, Plus, ShareNetwork, Shuffle, SlidersHorizontal, SortAscending, VinylRecord } from '@phosphor-icons/react'
 import { artistName } from '../../shared/artistName'
 import { useShallow } from 'zustand/react/shallow'
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useSettings } from '../../app/settings'
 import { pageQuery, useStore } from '../../app/store'
 import { api, type LibraryTrack } from '../../shared/api'
@@ -13,6 +13,7 @@ import { VirtualList } from '../../shared/ui/VirtualList'
 import { firstArt, trackArt } from '../../shared/art'
 import { useCoverTint } from '../player/coverTint'
 import { onMenu, openMenu, type MenuEntry } from '../../shared/ui/ContextMenu'
+import { holdLayer } from '../../shared/ui/layers'
 import { Cover } from '../../shared/ui/Cover'
 import { playlistMenu, shufflePlay, tracksMenu } from '../menus'
 import { PageHeader } from '../../shared/ui/PageHeader'
@@ -231,6 +232,8 @@ function FindVersions({ tracks }: { tracks: LibraryTrack[] }) {
 function Playability({ tracks }: { tracks: LibraryTrack[] }) {
   const sp = useStore((s) => s.status.spotify.connected)
   const [open, setOpen] = useState(false)
+  // Android's Back closes it first (app/androidBack.ts).
+  useEffect(() => (open ? holdLayer(() => setOpen(false)) : undefined), [open])
   const full = tracks.filter((t) => isFull(t, sp)).length
   const missing = tracks.filter((t) => !isFull(t, sp))
   const preview = missing.filter((t) => vias(t, sp).length > 0).length

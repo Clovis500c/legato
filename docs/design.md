@@ -97,6 +97,15 @@ arranged for a thumb). Liner's calm is the spirit, never its look. The rules:
 - **Add music:** one card per row, the icon beside its title; the sources' LEDs stay in Settings › Accounts.
 - **Mixes:** Reset history at the page's foot, under the explanation, not beside the title.
 - **Full screens** (Karaoke, Cover display, visualizer) show no keyboard hints: a phone has no Esc or arrows.
+- **The video's place:** a YouTube song's video shows in Now Playing only (Show: Auto, Video, Cover); elsewhere the
+  song plays out of sight, as Cover mode does, and the mini player says what plays. No floating card over the lists
+  (the owner's try, 2026-11-06; against YouTube's terms as Cover mode is, one line in `MiniPlayer.tsx`). A video that
+  can't reach YouTube shows our words and Try again over it, never the browser's error page or its address
+  (`player/ytDown.ts`); out of sight, nothing.
+- **Back** (Android's button or gesture) closes what's on top, one press at a time: a menu or sheet, the newest dialog,
+  a full screen (visualizer, Cover display, Karaoke), Now Playing, then the page before. At the root the app goes
+  behind the others and the music goes on (`app/androidBack.ts`, `MainActivity.kt`). A new overlay joins
+  `shared/ui/layers.ts`, as `Dialog` does, or Back walks past it.
 
 ## Palette
 
