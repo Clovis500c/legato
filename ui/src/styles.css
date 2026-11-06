@@ -333,6 +333,42 @@ code {
 .icon-in {
   animation: icon-in 0.16s cubic-bezier(0.3, 0.9, 0.4, 1.3) backwards;
 }
+/* A listening room's reaction: up from the cover's foot, gone in 2.6 s (rooms/RoomPill.tsx). Reduced motion: in and
+   out where it is, no float. */
+@keyframes room-float {
+  0% {
+    opacity: 0;
+    translate: 0 0;
+    scale: 0.6;
+  }
+  15% {
+    opacity: 1;
+    scale: 1;
+  }
+  100% {
+    opacity: 0;
+    translate: 0 -220%;
+    scale: 1.1;
+  }
+}
+@keyframes room-still {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  15%,
+  80% {
+    opacity: 1;
+  }
+}
+.room-float {
+  animation: room-float 2.6s cubic-bezier(0.2, 0.7, 0.3, 1) forwards;
+}
+@media (prefers-reduced-motion: reduce) {
+  .room-float {
+    animation-name: room-still;
+  }
+}
 /* Icons answer the pointer: arrows lean the way they go, the gear turns. */
 :where(.nudge-l, .nudge-r, .turn) svg {
   transition:

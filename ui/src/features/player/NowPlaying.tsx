@@ -42,6 +42,8 @@ import { RING_COVER, RING_MIN } from './vizDraw'
 import { openVizFull } from './vizFull'
 import { RadialRing, VizBackdrop, Visualizer } from './Visualizer'
 import { tr } from '../../shared/i18n/i18n'
+import { RoomFloats, RoomPill } from '../rooms/RoomPill'
+import { inRoom, useRoom } from '../rooms/room'
 
 /** Seek bar drawn like a tuner dial: ticks, major every 5, accent needle. */
 function TunerScale({ value, max, onChange }: { value: number; max: number; onChange: (v: number) => void }) {
@@ -130,6 +132,7 @@ function Stage({ video, cover, track, title, youtubeId, pulse, wantRing, onRing 
           {halo && <span aria-hidden className={`absolute inset-0 ${ring ? 'rounded-full' : 'rounded-cover'}`} style={{ boxShadow: halo }} />}
           <Cover title={track?.album ?? title} art={track && bigTrackArt(track)} size={200} eager fit={setArt} className={`size-full! text-[3.5rem]! shadow-[0_12px_40px_var(--shadow)] ${ring ? 'rounded-full!' : ''}`} />
           {video && <VideoSlot hidden className="absolute inset-0 bg-transparent" />}
+          <RoomFloats big />
         </span>
       )}
     </div>
@@ -249,6 +252,7 @@ export function NowPlaying() {
   const now = usePlayer((s) => s.now)
   // The page the queue was started from (the mockup's "Playing from Late piano").
   const from = usePlayer((s) => s.from)
+  const room = useRoom((s) => inRoom(s.status))
   const setFull = usePlayer((s) => s.setFull)
   const { tuner, tint, immersive, backdropBlur, backdropDim, backdropMotion, stage, upNext, volume: volumeMode, coverPulse, visualizer, motion, lyrics, editor, readout } = useSettings(
     useShallow((s) => ({ ...pick(s.settings), theme: s.settings.theme, accent: s.settings.accent, customThemes: s.settings.customThemes, systemDark: s.systemDark })),
@@ -317,7 +321,13 @@ export function NowPlaying() {
           <RoundButton label={tr('Close Now Playing (Esc)')} kind="plain" size="md" onClick={() => setFull(false)}>
             <CaretDown size={22} />
           </RoundButton>
-          <p className="kicker min-w-0 flex-1 truncate text-center">{from ? tr('Playing from {list}', { list: from }) : tr('Now playing')}</p>
+          {room ? (
+            <span className="flex min-w-0 flex-1 justify-center">
+              <RoomPill />
+            </span>
+          ) : (
+            <p className="kicker min-w-0 flex-1 truncate text-center">{from ? tr('Playing from {list}', { list: from }) : tr('Now playing')}</p>
+          )}
           <RoundButton label={tr('More')} kind="plain" size="md" onClick={(e) => openMenu(e, more(), { place: 'below' })}>
             <DotsThree size={24} weight="bold" />
           </RoundButton>
@@ -414,6 +424,7 @@ export function NowPlaying() {
             <Transport size="lg" />
           </span>
           <div className="flex min-w-0 items-center justify-end gap-1 phone:justify-around">
+            <RoomPill className="mr-1 max-w-40 phone:hidden" />
             <PanelToggle id="lyrics" label={tr('Lyrics')} icon={Quotes} active={panel} />
             <PanelToggle id="upNext" label={tr('Up next')} icon={Queue} active={panel} />
             <PanelToggle id="editor" label={tr('Sound')} icon={SlidersHorizontal} active={panel} />

@@ -10,6 +10,7 @@ import { SourceIcon, sourceLabel } from '../../shared/ui/SourceIcon'
 import { ProgressLine, SeekBar, TimeText } from './Progress'
 import { useNarrow, usePhone } from '../../shared/phone'
 import { Transport } from './Transport'
+import { RoomFloats, RoomPill } from '../rooms/RoomPill'
 import { onMenu, openMenu } from '../../shared/ui/ContextMenu'
 import { sleepLabel, sleepMenu, useSleep } from './sleep'
 import { playerMenu } from '../menus'
@@ -334,9 +335,10 @@ export function PlayerBar() {
 
       {/* The phone: the whole song area opens Now Playing (a thumb's target, not two small ones). */}
       <div onClick={phone && now ? () => setFull(true) : undefined} className="flex w-85 min-w-0 items-center gap-3 phone:w-auto phone:flex-1 phone:self-stretch">
-        <button disabled={!now} onClick={() => setFull(true)} title={now ? tr('Open Now Playing') : undefined} className="shrink-0">
+        <button disabled={!now} onClick={() => setFull(true)} title={now ? tr('Open Now Playing') : undefined} className="relative shrink-0">
           {/* New song: its cover fades in. */}
           <Cover key={now?.trackId ?? now?.title} className="fade-in" title={now?.title ?? ''} art={track && trackArt(track)} size={phone ? 44 : 56} />
+          <RoomFloats />
         </button>
         <span key={now?.trackId ?? now?.title} className="swap-in flex min-w-0 flex-col items-start gap-1">
           <button disabled={!now} onClick={() => setFull(true)} title={now ? tr('Open Now Playing') : undefined} className="max-w-full truncate text-left text-sm font-medium">
@@ -381,6 +383,7 @@ export function PlayerBar() {
           </div>
 
           <div className="flex w-85 items-center justify-end gap-2">
+            <RoomPill compact />
             <SleepButton always={sleepButton} />
             <PanelButton panel="lyrics" label={tr('Lyrics')} icon={Quotes} />
             <PanelButton panel="upNext" label={tr('Up next')} icon={Queue} />

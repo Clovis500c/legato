@@ -1,4 +1,4 @@
-import { Check, Copy, WifiHigh } from '@phosphor-icons/react'
+import { Check, Copy, UsersThree, WifiHigh } from '@phosphor-icons/react'
 import { useEffect, useState } from 'react'
 import { useStore } from '../../app/store'
 import { api, type NearbyState, type ShareCode } from '../../shared/api'
@@ -6,6 +6,36 @@ import { Button } from '../../shared/ui/Button'
 import { Dialog } from '../../shared/ui/Dialog'
 import { qrPath } from './qr'
 import { tr, trn } from '../../shared/i18n/i18n'
+import { usePlayer } from '../player/store'
+import { inRoom, openRoom, useRoom } from '../rooms/room'
+
+/** Listen together: this playlist plays here in a room friends on the network follow. */
+function Together({ id, onClose }: { id: number; onClose: () => void }) {
+  const hosting = useRoom((s) => s.status?.role === 'host')
+  const busy = useRoom((s) => inRoom(s.status) && s.status?.role !== 'host')
+  const go = async () => {
+    try {
+      const tracks = await api.playlistTracks(id)
+      if (tracks.length) usePlayer.getState().playTracks(tracks, 0)
+      if (!hosting) await import('../rooms/rooms').then((m) => m.startRoom())
+      onClose()
+      openRoom()
+    } catch (e) {
+      useStore.setState({ error: String(e) })
+    }
+  }
+  return (
+    <div className="flex flex-col gap-2.5 rounded-lg border border-line px-4 py-3">
+      <p className="flex items-center gap-2 text-xs font-semibold">
+        <UsersThree size={16} className="text-ink-2" /> {tr('Listen together')}
+      </p>
+      <p className="text-xs text-ink-2">{tr('Play it here in a room: friends on the same network follow it, each from their own source.')}</p>
+      <Button variant="ghost" className="w-fit" disabled={busy} onClick={() => void go()}>
+        {hosting ? tr('Play it in your room') : tr('Start a room with it')}
+      </Button>
+    </div>
+  )
+}
 
 /** Same network: 6-digit code to read out ("grandma code"). Offer withdrawn when the panel closes. */
 function Nearby({ id }: { id: number }) {
@@ -95,6 +125,7 @@ export function SharePanel({ id, name, onClose }: { id: number; name: string; on
             </div>
           </div>
           <Nearby id={id} />
+          <Together id={id} onClose={onClose} />
           <p className="text-xs text-ink-2">{tr('The code holds the track list only: YouTube and Apple Music ids, or artist and title. No account, no server.')}</p>
         </>
       )}

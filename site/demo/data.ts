@@ -1,4 +1,5 @@
-import type { LibraryPlaylist, LibraryTrack, LyricsAsk, Play, PlayerCommand, PlayerStatus, SearchHit, Source } from '../../ui/src/shared/api'
+import type { LibraryPlaylist, LibraryTrack, LyricsAsk, Play, PlayerCommand, PlayerStatus, RoomStatus, SearchHit, Source } from '../../ui/src/shared/api'
+import { emit } from './tauri'
 import { levels, startFrames, stopFrames, type Frames } from './viz'
 
 // Everything here is invented: artists, albums, songs. Covers are drawn below, from a palette and a shape.
@@ -152,7 +153,56 @@ const status = (): PlayerStatus => {
 
 const shot = new URLSearchParams(location.search)
 
+// Listen together: an invented room, led here or joined (no network: two invented friends, one invented host).
+const ROOM_OFF: RoomStatus = { role: 'off', room: '', host: '', people: [], code: null, link: null, qr: null, now: null, next: [] }
+let room: RoomStatus = ROOM_OFF
+const FRIENDS = ['Pixel 8', 'Léa’s laptop']
+function roomSet(next: RoomStatus) {
+  room = next
+  emit('room', { kind: 'state' })
+}
+/** A QR's look, not a real one (nothing to scan in the demo): three finder squares, the rest invented. */
+function fakeQr(n = 25): [number, string] {
+  const finder = (x: number, y: number) => {
+    const m = Math.max(Math.abs(x - 3), Math.abs(y - 3))
+    return m <= 3 && m !== 2
+  }
+  let bits = ''
+  for (let y = 0; y < n; y++)
+    for (let x = 0; x < n; x++) {
+      const f = x < 8 && y < 8 ? finder(x, y) : x >= n - 8 && y < 8 ? finder(x - (n - 7), y) : x < 8 && y >= n - 8 ? finder(x, y - (n - 7)) : null
+      bits += (f ?? (x * 7 + y * 13 + x * y) % 5 < 2) ? '1' : '0'
+    }
+  return [n, bits]
+}
+function roomStart(): RoomStatus {
+  roomSet({ ...ROOM_OFF, role: 'host', room: 'This PC', host: 'This PC', people: FRIENDS, code: '042917', qr: fakeQr() })
+  // A friend's reaction, a moment after (the float over the cover).
+  setTimeout(() => room.role === 'host' && emit('room', { kind: 'react', from: FRIENDS[0], reaction: 'fire' }), 1800)
+  return room
+}
+function roomJoin(): RoomStatus {
+  const t = TRACKS[(OPENING + 3) % TRACKS.length]
+  const song = { title: t.title, artist: t.artist, album: t.album, durationMs: t.durationMs, isrc: null, youtube: null, spotify: null, art: null }
+  roomSet({ ...ROOM_OFF, role: 'listener', room: 'Living room', host: 'Living room PC', people: ['This PC', FRIENDS[1]], now: { song, positionMs: 42_000, playing: true, at: Date.now(), seq: 1 } })
+  return room
+}
+
 const ANSWERS: Record<string, (args: Record<string, unknown>) => unknown> = {
+  room_status: () => room,
+  room_start: () => roomStart(),
+  room_end: () => roomSet(ROOM_OFF),
+  room_leave: () => roomSet(ROOM_OFF),
+  room_host_now: () => null,
+  room_host_next: () => null,
+  room_react: () => null,
+  rooms_nearby: () => new Promise((done) => setTimeout(() => done([{ id: '0123456789abcdef', room: 'Living room', host: 'Living room PC', people: 1, full: false }]), 900)),
+  room_join: () => roomJoin(),
+  // The listener's own library has it: the room's song plays from it.
+  room_resolve: ({ song }) => {
+    const t = TRACKS.find((x) => x.title === (song as { title: string }).title)
+    return t ? { kind: 'library', id: t.id } : { kind: 'missing' }
+  },
   library: () => ({ tracks: TRACKS, playlists: PLAYLISTS, orders: Object.fromEntries(PLAYLISTS.map((p) => [p.id, inList(p.id).map((t) => t.id)])) }),
   library_changes: () => null,
   // Picture-in-picture: the page stays as it is, no window to shrink.

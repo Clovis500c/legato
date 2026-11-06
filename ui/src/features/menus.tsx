@@ -1,5 +1,6 @@
 /** Right-click menus, one builder per kind of thing (track, playlist, album, artist, player, app). Built when opened: fresh state. */
 import {
+  UsersThree,
   ArrowCounterClockwise,
   ArrowLeft,
   ArrowRight,
@@ -100,6 +101,7 @@ import { canVizFull, toggleVizFull, useVizFull } from './player/vizFull'
 import { closeCoverFull, toggleCoverFull } from './player/coverFull'
 import { closePip, openPip } from './player/pipMode'
 import { openShare } from './share/share'
+import { inRoom, openRoom, useRoom } from './rooms/room'
 import { VIZ_BANDING_LABELS, VIZ_COLOR_LABELS, VIZ_COLORMAP_LABELS, VIZ_FACE_LABELS, VIZ_GRADIENT_LABELS, VIZ_PRESET_COLOR_LABELS, VIZ_WEIGHTING_LABELS } from './player/vizLooks'
 import { nextPreset, presetOptions } from './player/vizPresets'
 import { needleLook } from './player/vizVu'
@@ -724,6 +726,7 @@ export function playerMenu({ controls = true }: { controls?: boolean } = {}): Me
     { label: tr('Cover display'), icon: <FrameCorners size={16} />, onSelect: toggleCoverFull },
     !phoneApp && { label: tr('Picture-in-picture'), icon: <PictureInPicture size={16} />, onSelect: () => void openPip() },
     { label: tr('Share as a picture…'), icon: <ImageSquare size={16} />, onSelect: openShare },
+    roomItem(),
     { label: tr('Live Editor'), icon: <SlidersHorizontal size={16} />, onSelect: () => (useSettings.getState().update({ editor: true }), setFull(true)) },
     { label: tr('Sleep timer'), icon: <Moon size={16} />, items: sleepMenu() },
     !phoneApp && { label: tr('Alarm…'), icon: <Alarm size={16} />, onSelect: () => (setFull(false), app().go({ name: 'settings', section: 'playback', focus: 'Alarm' })) },
@@ -911,6 +914,11 @@ export function addonMenu(a: Addon, open: () => void): MenuEntry[] {
 }
 
 /** Anywhere without a menu of its own. */
+/** Listen together on this network: the room's view (start, join, or the room you're in). */
+function roomItem(): MenuEntry {
+  return { label: inRoom(useRoom.getState().status) ? tr('Listening room') : tr('Listen together…'), icon: <UsersThree size={16} />, onSelect: openRoom }
+}
+
 export function appMenu(): MenuEntry[] {
   const { back, fwd, goBack, goForward, go, sync, editPlaylist, status } = app()
   return [
@@ -929,6 +937,7 @@ export function appMenu(): MenuEntry[] {
     },
     '-',
     player().now && { label: tr('Now playing'), icon: <ArrowsOutSimple size={16} />, onSelect: () => player().setFull(true) },
+    roomItem(),
     { label: tr('Settings'), icon: <Gear size={16} />, onSelect: () => go({ name: 'settings', section: 'general' }) },
   ]
 }

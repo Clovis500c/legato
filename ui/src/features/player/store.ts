@@ -182,6 +182,20 @@ export const onSongEnd = (f: (() => boolean) | null) => void (beforeNext = f)
 let stopAtEnd: (() => void) | null = null
 export const stopAfterSong = (f: (() => void) | null) => void (stopAtEnd = f)
 
+// Listening room, as a listener (features/rooms): the songs, skips and seeks are the room's; `held` says so. The
+// room's own moves pass through `roomMove`.
+let held: (() => void) | null = null
+export const holdControls = (f: (() => void) | null) => void (held = f)
+export function roomMove<T>(f: () => T): T {
+  const h = held
+  held = null
+  try {
+    return f()
+  } finally {
+    held = h
+  }
+}
+
 // Embed iframe, bound by PlayerBar.
 let frame: HTMLIFrameElement | null = null
 export const bindFrame = (el: HTMLIFrameElement | null) => void (frame = el)
@@ -502,6 +516,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
   setFull: (full) => set({ full }),
 
   playTracks(list, index, via) {
+    if (held) return held()
     const i = list.findIndex((t, j) => j >= index && vias(t, spotifyOn()).length > 0)
     if (i < 0) return
     set({ list, order: shuffleOrder(get(), list, i, get().shuffle), added: [], from: contextName(), radio: false, dj: undefined })
@@ -509,6 +524,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
   },
 
   enqueue(tracks, next, mine = true) {
+    if (held) return held()
     const { list, order, index, now, added } = get()
     if (!now?.trackId) return get().playTracks(tracks, 0)
     const fresh = tracks.map((_, k) => list.length + k)
@@ -529,6 +545,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
   },
 
   enqueueAt(tracks, at) {
+    if (held) return held()
     const { list, order, now } = get()
     if (!now?.trackId) return get().playTracks(tracks, 0)
     endRun()
@@ -746,6 +763,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
   },
 
   seek(ms) {
+    if (held) return held()
     const via = get().now?.via
     if (via === 'youtube') yt('seekTo', ms / 1000, true)
     else if (via === 'spotify') void spotify({ type: 'seek', ms: Math.round(ms) })
@@ -754,6 +772,8 @@ export const usePlayer = create<PlayerState>((set, get) => ({
   },
 
   step(delta, auto = false) {
+    // In a room: its next song comes from the host, not from here.
+    if (held) return auto ? void set({ playing: false }) : held()
     if (auto && delta > 0 && stopAtEnd) {
       const f = stopAtEnd
       stopAtEnd = null

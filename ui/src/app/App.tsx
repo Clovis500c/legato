@@ -2,7 +2,7 @@ import { ArrowsIn, ArrowsOut, CaretDown, CaretLeft, CaretRight, CopySimple, Gear
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { useEffect, useRef, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
-import { AddonsView, AddView, ConnectWizard, CoverScreen, HealthView, PipScreen, HomeView, ImportDialog, ImportScreen, Karaoke, MixesView, MixView, NotFoundView, NowPlaying, preloadHome, SearchView, SettingsView, ShareDialog, SmartView, StatsView, VizScreen, Welcome } from './pages'
+import { AddonsView, AddView, ConnectWizard, CoverScreen, HealthView, PipScreen, HomeView, ImportDialog, ImportScreen, Karaoke, MixesView, MixView, NotFoundView, NowPlaying, preloadHome, RoomDialog, SearchView, SettingsView, ShareDialog, SmartView, StatsView, VizScreen, Welcome } from './pages'
 // Up next running out: similar songs (registers itself with the player).
 import '../features/player/autoplay'
 import { AlbumView, ArtistView } from '../features/library/AlbumArtist'
@@ -23,6 +23,7 @@ import { useVizFull } from '../features/player/vizFull'
 import { useCoverFull } from '../features/player/coverFull'
 import { usePip } from '../features/player/pipMode'
 import { useShare } from '../features/share/share'
+import { useRoom } from '../features/rooms/room'
 import { useAmbient } from '../features/player/ambient'
 import { useCoverAccent } from '../features/player/coverTint'
 import { trackArt } from '../shared/art'
@@ -232,6 +233,7 @@ export function App() {
   const coverFull = useCoverFull((s) => s.open)
   const pip = usePip((s) => s.on)
   const share = useShare((s) => s.open)
+  const room = useRoom((s) => s.open)
   const tintOn = useSettings((s) => s.settings.appTint)
   const libraryWide = useSettings((s) => s.settings.libraryWide)
   // Re-rendered when the theme, accent or Windows' light / dark change (current() below).
@@ -397,6 +399,11 @@ export function App() {
       {share && (
         <PageBoundary fallback={null}>
           <ShareDialog />
+        </PageBoundary>
+      )}
+      {room && (
+        <PageBoundary fallback={null}>
+          <RoomDialog />
         </PageBoundary>
       )}
       {importing && (
