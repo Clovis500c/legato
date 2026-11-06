@@ -9,7 +9,7 @@ import { useSettings } from '../../app/settings'
 import type { LibraryTrack, Source } from '../../shared/api'
 import { bigTrackArt, trackArt } from '../../shared/art'
 import { clampRatio } from '../../shared/artbox'
-import type { Settings } from '../../shared/theme/theme'
+import { coverGlow, type Settings } from '../../shared/theme/theme'
 import { Button } from '../../shared/ui/Button'
 import { onMenu, openMenu, type MenuEntry } from '../../shared/ui/ContextMenu'
 import { usePhone } from '../../shared/phone'
@@ -18,7 +18,7 @@ import { lessLikeThis, toggleLike, useLiked } from './like'
 import { Cover } from '../../shared/ui/Cover'
 import { SourceIcon } from '../../shared/ui/SourceIcon'
 import { playerMenu, vizMenu } from '../menus'
-import { useAmbient } from './ambient'
+import { useAmbient, useCoverHue } from './ambient'
 import { useBackdrop } from './immersive'
 import { openCoverFull } from './coverFull'
 import { toggleKaraoke } from './karaokeMode'
@@ -109,6 +109,11 @@ function Stage({ video, cover, track, title, youtubeId, pulse, wantRing, onRing 
     return () => onRing(false)
   }, [ring, onRing])
   const ratio = big ? (box ? clampRatio((box.w * 16) / (box.h * 9)) : 16 / 9) : art
+  // Glow: a light of the cover's own colour behind it (none when off, on a grey cover or a video).
+  const dark = useSettings((s) => s.current().dark)
+  const level = useSettings((s) => s.settings.glow)
+  const hue = useCoverHue(!big && track ? trackArt(track)[0] : undefined, dark)
+  const halo = coverGlow(hue, level, dark)
   // Container query units: fit inside both width and height, keep the ratio.
   const fit = { width: ring ? `min(${RING_COVER * 100}cqw, ${RING_COVER * 100}cqh)` : `min(100cqw, 100cqh * ${ratio})`, aspectRatio: String(ring ? 1 : ratio) }
   return (
@@ -124,6 +129,7 @@ function Stage({ video, cover, track, title, youtubeId, pulse, wantRing, onRing 
         <VideoSlot className={box ? 'min-h-50 min-w-50 bg-transparent!' : 'min-h-50 min-w-89'} style={fit} onClick={toggle} />
       ) : (
         <span ref={coverEl} style={fit} onClick={toggle} title={tr('Play / pause')} className="relative block cursor-pointer">
+          {halo && <span aria-hidden className={`absolute inset-0 ${ring ? 'rounded-full' : 'rounded-cover'}`} style={{ boxShadow: halo }} />}
           <Cover title={track?.album ?? title} art={track && bigTrackArt(track)} size={200} eager fit={setArt} className={`size-full! text-[3.5rem]! shadow-[0_12px_40px_var(--shadow)] ${ring ? 'rounded-full!' : ''}`} />
           {video && <VideoSlot hidden className="absolute inset-0 bg-transparent" />}
         </span>

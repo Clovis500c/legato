@@ -2163,6 +2163,9 @@ const id: Record<string, string> = {
   'Install update': 'Pasang pembaruan',
   'Couldn’t download the update': 'Pembaruan tidak dapat diunduh',
   'Performance improved': 'Performa ditingkatkan',
+  'Glow': 'Cahaya',
+  'A soft light around what plays: the play button, the playing song, the played part, the sung line and the cover. Strongest in dark themes': 'Cahaya lembut di sekitar yang diputar: tombol putar, lagu yang diputar, bagian yang sudah diputar, baris yang dinyanyikan, dan sampul. Paling terasa di tema gelap',
+  'glow light halo shine neon bloom': 'cahaya sinar halo kilau neon',
 }
 
 export default id

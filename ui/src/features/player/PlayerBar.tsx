@@ -188,9 +188,8 @@ function YouTubeFrame({ videoId, tail = false, idle = false }: { videoId: string
   )
 }
 
-/** Knob, or YouTube-like speaker (click = mute) and bar. */
-/** Sleep timer: a moon; on, it shows the time left (minute steps). */
-function SleepButton() {
+/** Sleep timer: a moon; on, it shows the time left (minute steps). Setting off: only while a timer runs (set from More). */
+function SleepButton({ always }: { always: boolean }) {
   const ends = useSleep((s) => s.ends)
   const [, tick] = useState(0)
   useEffect(() => {
@@ -199,6 +198,7 @@ function SleepButton() {
     return () => clearInterval(id)
   }, [ends])
   const left = sleepLabel(ends)
+  if (!always && !left) return null
   return (
     <button type="button" title={tr('Sleep timer')} aria-label={left ? `${tr('Sleep timer')}: ${left}` : tr('Sleep timer')} onClick={(e) => openMenu(e, sleepMenu(), { place: 'above' })} className={`flex h-8 items-center gap-1.5 rounded-full px-2 text-xs font-semibold transition hover:bg-raised ${left ? 'text-accent-ink' : 'text-ink-3 hover:text-ink'}`}>
       <Moon size={16} weight={left ? 'fill' : 'regular'} />
@@ -207,6 +207,7 @@ function SleepButton() {
   )
 }
 
+/** Knob, or YouTube-like speaker (click = mute) and bar. */
 export function VolumeControl({ big }: { big?: boolean }) {
   const volume = usePlayer((s) => s.volume)
   const setVolume = usePlayer((s) => s.setVolume)
@@ -380,7 +381,7 @@ export function PlayerBar() {
           </div>
 
           <div className="flex w-85 items-center justify-end gap-2">
-            {sleepButton && <SleepButton />}
+            <SleepButton always={sleepButton} />
             <PanelButton panel="lyrics" label={tr('Lyrics')} icon={Quotes} />
             <PanelButton panel="upNext" label={tr('Up next')} icon={Queue} />
             <VolumeControl />

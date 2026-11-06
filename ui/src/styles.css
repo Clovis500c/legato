@@ -56,6 +56,11 @@
   --led-off: #d2d2ce;
   --shadow: #17161424;
   --led-glow: none;
+  --glow: none;
+  --glow-mark: none;
+  --glow-bar: none;
+  --glow-on: none;
+  --glow-sung: none;
   --font-ui: 'Roboto Variable', Roboto, 'Segoe UI', system-ui, sans-serif;
   --cover-radius: 4px;
   --row-h: 40px;
@@ -385,6 +390,30 @@ code {
 /* Ink, not the accent: sky blue only marks playback (docs/design.md). */
 .led[data-on='true'] {
   @apply bg-ink;
+  box-shadow: var(--led-glow);
+}
+
+/* Glow (Settings › Appearance › Glow; values from theme.ts glowVars, 'none' when off): what plays (.glow: play buttons;
+   .glow-mark: the playing mark; .glow-bar: the played part) and what's on (.glow-on). Static shadows, no animation. */
+.glow {
+  box-shadow: var(--glow);
+}
+.glow-mark {
+  box-shadow: var(--glow-mark);
+}
+.glow-bar {
+  box-shadow: var(--glow-bar);
+}
+.glow-on {
+  box-shadow: var(--glow-on);
+}
+.glow-sung {
+  filter: var(--glow-sung);
+}
+/* The played part's light: a strip under the seek bar as wide as what's played (Progress.tsx SeekBar). */
+.seek-glow {
+  @apply pointer-events-none absolute top-1/2 left-0 h-1 -translate-y-1/2 rounded-full;
+  box-shadow: var(--glow-bar);
 }
 
 /* Range bars: track painted inline (see shared/ui/Bar). */

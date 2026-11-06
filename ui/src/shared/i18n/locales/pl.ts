@@ -2163,6 +2163,9 @@ const pl: Record<string, string> = {
   'Install update': 'Zainstaluj aktualizację',
   'Couldn’t download the update': 'Nie udało się pobrać aktualizacji',
   'Performance improved': 'Poprawiona wydajność',
+  'Glow': 'Poświata',
+  'A soft light around what plays: the play button, the playing song, the played part, the sung line and the cover. Strongest in dark themes': 'Delikatne światło wokół tego, co gra: przycisk odtwarzania, grany utwór, odtworzona część, śpiewany wers i okładka. Najsilniejsze w ciemnych motywach',
+  'glow light halo shine neon bloom': 'poświata światło aureola blask neon',
 }
 
 export default pl

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { contrast, contrastReport, cssVars, DEFAULTS, HOME_SECTIONS, lookOf, moveHome, placeHome, onAccentFor, paletteFrom, PRESETS, resolveTheme, sanitize, sanitizeHome, sanitizeTheme } from './theme'
+import { contrast, contrastReport, coverGlow, cssVars, DEFAULTS, glowVars, HOME_SECTIONS, lookOf, moveHome, placeHome, onAccentFor, paletteFrom, PRESETS, resolveTheme, sanitize, sanitizeHome, sanitizeTheme } from './theme'
 
 describe('sanitize', () => {
   it('falls back to defaults on junk', () => {
@@ -106,9 +106,17 @@ describe('resolveTheme', () => {
     expect(sanitize({ visualizerStyle: 'nonsense', defaultsVersion: 9 }).visualizerStyle).toBe('led')
   })
 
+  it('glows softly by default; the moon leaves the player bar once (v10), a later pick stays', () => {
+    expect(sanitize({}).glow).toBe('soft')
+    expect(sanitize({ glow: 'strong' }).glow).toBe('strong')
+    expect(sanitize({ glow: 'neon' }).glow).toBe('soft')
+    expect(sanitize({ sleepButton: true, defaultsVersion: 9 }).sleepButton).toBe(false)
+    expect(sanitize({ sleepButton: true, defaultsVersion: 10 }).sleepButton).toBe(true)
+  })
+
   it('settings saved before v2 get the new defaults once, later choices stay', () => {
     const old = sanitize({ volume: 'knob', tuner: true, clickToPlay: 'double', zoom: 110 })
-    expect(old).toMatchObject({ volume: 'bar', tuner: false, clickToPlay: 'single', stage: 'auto', zoom: 110, startView: 'home', defaultsVersion: 9 })
+    expect(old).toMatchObject({ volume: 'bar', tuner: false, clickToPlay: 'single', stage: 'auto', zoom: 110, startView: 'home', defaultsVersion: 10 })
     // Saved at v2: only v3's change applies.
     expect(sanitize({ volume: 'knob', stage: 'video', defaultsVersion: 2 })).toMatchObject({ volume: 'knob', stage: 'auto' })
     // Home opens first once (v4), then the user's pick stays.
@@ -204,5 +212,28 @@ describe('Home sections', () => {
     expect(placeHome(l, 'quick', 1)).toBe(l)
     expect(placeHome(l, 'quick', l.length).at(-1)?.id).toBe('quick')
     expect(moveHome(l, 'added', 1)).toBe(l)
+  })
+})
+
+describe('glow', () => {
+  const dark = PRESETS.find((t) => t.id === 'modern-dark')!
+  const light = PRESETS[0]
+  const blur = (v: string) => Number(/ (\d+)px/.exec(v)?.[1])
+  it('off means none at all, the cover too', () => {
+    for (const t of [dark, light]) for (const v of Object.values(glowVars(t, 'off'))) expect(v).toBe('none')
+    expect(cssVars(dark, { ...DEFAULTS, glow: 'off' })['--glow']).toBe('none')
+    expect(coverGlow('#336699', 'off', true)).toBeUndefined()
+    expect(coverGlow(null, 'strong', true)).toBeUndefined()
+  })
+  it('strong reaches further than soft, dark themes further than light ones', () => {
+    expect(blur(glowVars(dark, 'strong')['--glow'])).toBeGreaterThan(blur(glowVars(dark, 'soft')['--glow']))
+    expect(blur(glowVars(dark, 'soft')['--glow'])).toBeGreaterThan(blur(glowVars(light, 'soft')['--glow']))
+    expect(glowVars(dark, 'soft')['--glow']).toContain(dark.accent)
+    expect(coverGlow('#336699', 'strong', true)).toMatch(/#336699[0-9A-F]{2}$/)
+  })
+  it('no ink halo on a light theme; a theme without LED glow keeps its LEDs plain', () => {
+    expect(glowVars(light, 'strong')['--glow-on']).toBe('none')
+    expect(glowVars(dark, 'soft')['--glow-on']).not.toBe('none')
+    expect(glowVars({ ...dark, glow: false }, 'soft')['--led-glow']).toBe('none')
   })
 })

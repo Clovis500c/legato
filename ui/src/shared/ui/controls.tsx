@@ -3,7 +3,7 @@ import { formatCount } from '../format'
 import { tr } from '../i18n/i18n'
 
 const kinds = {
-  primary: 'bg-accent text-on-accent hover:brightness-105',
+  primary: 'glow bg-accent text-on-accent hover:brightness-105',
   ink: 'bg-ink text-bg hover:opacity-85',
   ghost: 'border border-line text-ink hover:bg-raised',
   soft: 'border border-line bg-raised text-ink shadow-[0_1px_2px_var(--shadow)] hover:bg-bg',
@@ -26,7 +26,7 @@ export const Led = ({ on }: { on: boolean }) => <span className="led" data-on={o
 /** Filter chip: a pill, ink when picked, grey otherwise (YouTube's and Spotify's chips, docs/design.md). */
 export function LedChip({ on, label, count, title, onClick }: { on: boolean; label: string; count?: string; title?: string; onClick: () => void }) {
   return (
-    <button role="tab" aria-selected={on} title={title} onClick={onClick} className={`flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[0.8125rem] font-medium whitespace-nowrap transition phone:py-2 ${on ? 'bg-ink text-bg' : 'bg-raised text-ink hover:bg-line'}`}>
+    <button role="tab" aria-selected={on} title={title} onClick={onClick} className={`flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[0.8125rem] font-medium whitespace-nowrap transition phone:py-2 ${on ? 'glow-on bg-ink text-bg' : 'bg-raised text-ink hover:bg-line'}`}>
       {label}
       {count !== undefined && <span className={`text-xs tabular-nums ${on ? 'text-ink-4' : 'text-ink-3'}`}>{count}</span>}
     </button>
@@ -35,7 +35,7 @@ export function LedChip({ on, label, count, title, onClick }: { on: boolean; lab
 
 export function Toggle({ checked, onChange, label }: { checked: boolean; onChange: (v: boolean) => void; label: string }) {
   return (
-    <button type="button" role="switch" aria-checked={checked} aria-label={label} onClick={() => onChange(!checked)} className={`flex h-5 w-[34px] shrink-0 items-center rounded-full p-0.5 transition ${checked ? 'bg-ink' : 'bg-line'}`}>
+    <button type="button" role="switch" aria-checked={checked} aria-label={label} onClick={() => onChange(!checked)} className={`flex h-5 w-[34px] shrink-0 items-center rounded-full p-0.5 transition ${checked ? 'glow-on bg-ink' : 'bg-line'}`}>
       <span className={`size-4 rounded-full bg-raised shadow-[0_1px_2px_var(--shadow)] transition-transform duration-200 ${checked ? 'translate-x-3.5' : ''}`} />
     </button>
   )

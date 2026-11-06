@@ -2163,6 +2163,9 @@ const nl: Record<string, string> = {
   'Install update': 'Update installeren',
   'Couldn’t download the update': 'De update kon niet worden gedownload',
   'Performance improved': 'Prestaties verbeterd',
+  'Glow': 'Gloed',
+  'A soft light around what plays: the play button, the playing song, the played part, the sung line and the cover. Strongest in dark themes': "Een zacht licht rond wat er speelt: de afspeelknop, het nummer dat speelt, het gespeelde deel, de gezongen regel en de hoes. Het sterkst in donkere thema's",
+  'glow light halo shine neon bloom': 'gloed licht halo glans neon',
 }
 
 export default nl

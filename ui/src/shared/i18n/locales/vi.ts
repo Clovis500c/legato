@@ -2163,6 +2163,9 @@ const vi: Record<string, string> = {
   'Install update': 'Cài đặt bản cập nhật',
   'Couldn’t download the update': 'Không thể tải bản cập nhật',
   'Performance improved': 'Cải thiện hiệu năng',
+  'Glow': 'Phát sáng',
+  'A soft light around what plays: the play button, the playing song, the played part, the sung line and the cover. Strongest in dark themes': 'Ánh sáng dịu quanh những gì đang phát: nút phát, bài đang phát, phần đã phát, dòng đang hát và ảnh bìa. Rõ nhất ở giao diện tối',
+  'glow light halo shine neon bloom': 'phát sáng ánh sáng hào quang lấp lánh neon',
 }
 
 export default vi

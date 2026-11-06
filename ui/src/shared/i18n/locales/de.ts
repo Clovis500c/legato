@@ -2163,6 +2163,9 @@ const de: Record<string, string> = {
   'Install update': 'Update installieren',
   'Couldn’t download the update': 'Das Update konnte nicht heruntergeladen werden',
   'Performance improved': 'Leistung verbessert',
+  'Glow': 'Leuchten',
+  'A soft light around what plays: the play button, the playing song, the played part, the sung line and the cover. Strongest in dark themes': 'Ein sanftes Licht um das, was läuft: die Wiedergabetaste, der laufende Song, der gespielte Teil, die gesungene Zeile und das Cover. Am stärksten in dunklen Designs',
+  'glow light halo shine neon bloom': 'leuchten licht schein glanz neon glühen',
 }
 
 export default de

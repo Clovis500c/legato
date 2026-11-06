@@ -86,7 +86,7 @@ export function ProgressLine({ className = 'absolute inset-x-0 bottom-0' }: { cl
   const k = durationMs ? Math.min(1, pos / durationMs) : 0
   return (
     <span aria-hidden className={`h-0.5 bg-line-soft ${className}`}>
-      <span className="absolute inset-0 origin-left bg-accent" style={{ transform: `scaleX(${k})` }} />
+      <span className="glow-bar absolute inset-0 origin-left bg-accent" style={{ transform: `scaleX(${k})` }} />
     </span>
   )
 }
@@ -160,6 +160,8 @@ export function SeekBar({ className = '' }: { className?: string }) {
       }}
     >
       {/* Settings › Appearance › Progress bar, Wavy: the played part as a wave (styles.css; hidden otherwise). Under the bar. */}
+      {/* Glow (Settings › Appearance › Glow): the played part's light, under the bar. */}
+      <span aria-hidden className="seek-glow" style={{ width: `${played}%` }} />
       <span aria-hidden className="squiggle" style={{ width: `${played}%` }}>
         <span data-moving={playing} />
       </span>

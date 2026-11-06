@@ -101,6 +101,22 @@ export function tintPalette(rgb: Rgb, theme: Pick<Theme, 'dark' | 'ink3'>): Part
 
 const kebab = (k: string) => k.replace(/[A-Z0-9]/g, (c) => `-${c.toLowerCase()}`)
 
+/** The cover's own colour, vivid (null: grey, unread or none): the light behind Now Playing's cover (theme.ts coverGlow). */
+export function useCoverHue(src: string | undefined, dark: boolean): string | null {
+  const [got, setGot] = useState<{ src: string; rgb: Rgb | null }>()
+  useEffect(() => {
+    if (!src) return
+    let live = true
+    // The most present colour, not the average: a teal and yellow cover would glow green.
+    void coverColors(src).then((all) => live && setGot({ src, rgb: all?.[0] ?? null }))
+    return () => {
+      live = false
+    }
+  }, [src])
+  const rgb = got && got.src === src ? got.rgb : null
+  return rgb && vivid(rgb, dark)
+}
+
 /** CSS variables for a subtree tinted by `src` (null = theme colors). */
 export function useAmbient(src: string | undefined, theme: Pick<Theme, 'dark' | 'ink3'>): Record<string, string> | undefined {
   const [got, setGot] = useState<{ src: string; rgb: Rgb | null }>()

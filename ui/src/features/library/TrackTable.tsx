@@ -275,7 +275,7 @@ export function TrackTable({ tracks, empty, editId, rowActions, sort, onSort, fo
                   <span role="gridcell" className="flex justify-end text-[0.8125rem] text-ink-3 tabular-nums">
                     <span className={playable ? 'group-focus-within:hidden group-hover:hidden' : ''}>
                       {on ? (
-                        <span title={tr('Playing')} className="grid size-6 place-items-center rounded-[4px] bg-accent text-on-accent">
+                        <span title={tr('Playing')} className="grid size-6 place-items-center rounded-[4px] glow-mark bg-accent text-on-accent">
                           <Waveform size={14} weight="bold" />
                         </span>
                       ) : (

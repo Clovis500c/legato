@@ -2163,6 +2163,9 @@ const ko: Record<string, string> = {
   'Install update': '업데이트 설치',
   'Couldn’t download the update': '업데이트를 다운로드하지 못했습니다',
   'Performance improved': '성능 개선',
+  'Glow': '글로우',
+  'A soft light around what plays: the play button, the playing song, the played part, the sung line and the cover. Strongest in dark themes': '재생 중인 것 주위의 부드러운 빛: 재생 버튼, 재생 중인 곡, 재생된 부분, 부르는 가사 줄, 커버. 어두운 테마에서 가장 강합니다',
+  'glow light halo shine neon bloom': '글로우 빛 후광 광채 네온',
 }
 
 export default ko

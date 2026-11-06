@@ -23,6 +23,7 @@ const ALBUMS: Album[] = [
 
 const LISTS = ['Sunday Morning', 'Train to Work', 'Late Drive', 'Kitchen Dancing', 'Focus, Mostly']
 
+// A size of its own: a canvas reads its colours (Now Playing's tint and glow); without one Chrome draws one pixel.
 function drawn({ colors: [bg, ink, soft], shape }: Album) {
   const parts: Record<Shape, string> = {
     sun: `<circle cx="50" cy="44" r="23" fill="${ink}"/><rect y="62" width="100" height="38" fill="${soft}"/><rect y="70" width="100" height="3" fill="${bg}"/><rect y="80" width="100" height="5" fill="${bg}"/>`,
@@ -33,7 +34,7 @@ function drawn({ colors: [bg, ink, soft], shape }: Album) {
     dots: Array.from({ length: 25 }, (_, i) => `<circle cx="${18 + (i % 5) * 16}" cy="${18 + Math.floor(i / 5) * 16}" r="${2 + ((i * 7) % 6)}" fill="${i % 4 ? ink : soft}"/>`).join(''),
     arc: `<path d="M12 88 A38 38 0 0 1 88 88Z" fill="${soft}"/><path d="M26 88 A24 24 0 0 1 74 88Z" fill="${ink}"/><circle cx="74" cy="24" r="5" fill="${ink}"/>`,
   }
-  return `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="${bg}"/>${parts[shape]}</svg>`)}`
+  return `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 100 100"><rect width="100" height="100" fill="${bg}"/>${parts[shape]}</svg>`)}`
 }
 
 const COVERS = ALBUMS.map(drawn)

@@ -95,7 +95,7 @@ function AlbumRow({ list, i, number }: { list: LibraryTrack[]; i: number; number
       <span className="flex justify-end text-[0.8125rem] text-ink-3 tabular-nums">
         <span className={playable ? 'group-hover:hidden' : ''}>
           {on ? (
-            <span title={tr('Playing')} className="grid size-6 place-items-center rounded-[4px] bg-accent text-on-accent">
+            <span title={tr('Playing')} className="grid size-6 place-items-center rounded-[4px] glow-mark bg-accent text-on-accent">
               <Waveform size={14} weight="bold" />
             </span>
           ) : (

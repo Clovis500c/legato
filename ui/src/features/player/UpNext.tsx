@@ -238,7 +238,7 @@ export function UpNext({ onHide, className = CARD, heading }: { onHide: () => vo
                     </span>
                   </span>
                   {r.current ? (
-                    <span title={tr('Playing')} className="grid size-6 shrink-0 place-items-center rounded-[4px] bg-accent text-on-accent">
+                    <span title={tr('Playing')} className="grid size-6 shrink-0 place-items-center rounded-[4px] glow-mark bg-accent text-on-accent">
                       <Waveform size={14} weight="bold" />
                     </span>
                   ) : t && <span className={`shrink-0 text-xs text-ink-3 tabular-nums ${movable ? 'group-hover:invisible' : ''}`}>{formatDuration(t.durationMs)}</span>}

@@ -2163,6 +2163,9 @@ const sv: Record<string, string> = {
   'Install update': 'Installera uppdateringen',
   'Couldn’t download the update': 'Det gick inte att ladda ned uppdateringen',
   'Performance improved': 'Förbättrad prestanda',
+  'Glow': 'Glöd',
+  'A soft light around what plays: the play button, the playing song, the played part, the sung line and the cover. Strongest in dark themes': 'Ett mjukt ljus runt det som spelas: spelaknappen, låten som spelas, den spelade delen, raden som sjungs och omslaget. Starkast i mörka teman',
+  'glow light halo shine neon bloom': 'glöd ljus halo sken neon',
 }
 
 export default sv

@@ -29,7 +29,7 @@ const NUDGE_MS = 500
 const RESYNC_MS = 250
 
 /**
- * The line being sung, filled word by word as the song goes (karaoke), softly glowing; at the source's own word times
+ * The line being sung, filled word by word as the song goes (karaoke), glowing as Settings › Appearance › Glow says; at the source's own word times
  * when it has them (`timed`), else spread over the line. One animation per word on the
  * compositor's clock (smooth every frame); position reports only correct it when it's really off, never every tick
  * (that made it shake).
@@ -57,7 +57,7 @@ export function Sung({ text, start, end, timed }: { text: string; start: number;
     }
   }, [pos, playing, start])
   return (
-    <span ref={box} className="drop-shadow-[0_0_14px_color-mix(in_srgb,var(--ink)_30%,transparent)]">
+    <span ref={box} className="glow-sung">
       {words.map((w, i) => (
         <span key={i} className="sung">
           {w.word}

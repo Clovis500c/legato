@@ -106,7 +106,27 @@ Names match `PALETTE_KEYS` (`ui/src/shared/theme/theme.ts`).
 - Accent color › Cover (a choice): the song in the player gives the accent, its cover's hue made vivid and 3:1 on the
   background; the theme's own while none is loaded or the cover is grey. Still playback only; selection stays grey.
 - Primary buttons are ink with bg text. Service colors (Spotify green, YouTube red, Apple pink) stay in their badges.
-- No gradients, glows or glass.
+- No gradients or glass on surfaces. Glow, yes (the owner's call 2026-11-05, replacing "no glows"): see below.
+
+## Glow
+
+The owner's call (2026-11-05, plan-v2 › Against Liner › U2): our interface lacked the glow Liner has; take a little of
+the spirit, never its look. A soft light around **what plays and what matters**, nowhere else:
+
+- In the accent: the play buttons (every `RoundButton kind="primary"`, the accent `Button`), the playing row's mark
+  (lists, album and artist pages, Up next), the progress bar's played part (a strip of light under the ink line; the
+  phone's thin line too).
+- Ink, dark themes only: what's on (a picked chip, a switch that's on), and the theme's lit LEDs (Theme Studio's LED
+  glow). An ink halo on a light theme would be a dark smudge: none there.
+- The sung line of the lyrics and Karaoke (ink in dark themes, the accent in light ones).
+- Now Playing's cover: a light of the cover's own most present colour behind it (`useCoverHue`, the vivid hue the
+  visualizer uses), none on a grey cover or a video.
+- How much: Settings › Appearance › Player › Glow, **Off / Soft / Strong**, Soft by default. Dark themes get the full
+  amount, light ones about half. Off means none at all (every value is `none`, `glow.test` in `theme.test.ts` says so).
+- Cheap to draw: static `box-shadow`s and one `drop-shadow` filter on the sung line, values from `glowVars` in
+  `theme.ts` as CSS variables (`.glow`, `.glow-mark`, `.glow-bar`, `.glow-on`, `.glow-sung` in `styles.css`). Never
+  animated, never a `backdrop-filter` on a large layer (a live blur over the window costs every repaint,
+  `immersive.ts`). Text stays on flat colour: a glow never lowers a text's contrast.
 
 ## Type
 
@@ -148,7 +168,7 @@ light ink3 is still #6B6B6B; the app uses #606060 (AA on cover tints, `ambient.t
 
 - Radius: 4 covers, 6 rows and tiles, 8 panels and cards, pill for buttons, chips and search (the shapes of YouTube
   and Spotify, which these listeners use daily), round for the play button and artist photos.
-- Flat. One shadow, for menus and dialogs over content.
+- Flat. One shadow, for menus and dialogs over content; the glow above is light, not depth.
 - Icons: Phosphor (already in the app). Regular at rest, Fill when active.
 - Motion: hover and pressed 120 to 150 ms, panels 200 ms, opening Now Playing 240 ms. Icons answer: arrows lean the
   way they go on hover, the Settings gear turns, a heart or a toggle pops when clicked (`shared/motion.ts`), play /

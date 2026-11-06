@@ -2163,6 +2163,9 @@ const tr: Record<string, string> = {
   'Install update': 'Güncellemeyi yükle',
   'Couldn’t download the update': 'Güncelleme indirilemedi',
   'Performance improved': 'Performans iyileştirildi',
+  'Glow': 'Parıltı',
+  'A soft light around what plays: the play button, the playing song, the played part, the sung line and the cover. Strongest in dark themes': 'Çalan şeyin etrafında yumuşak bir ışık: oynat düğmesi, çalan şarkı, çalınan kısım, söylenen satır ve kapak. En belirgin hali koyu temalarda',
+  'glow light halo shine neon bloom': 'parıltı ışık hale parlama neon',
 }
 
 export default tr

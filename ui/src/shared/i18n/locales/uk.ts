@@ -2163,6 +2163,9 @@ const uk: Record<string, string> = {
   'Install update': 'Встановити оновлення',
   'Couldn’t download the update': 'Не вдалося завантажити оновлення',
   'Performance improved': 'Покращено продуктивність',
+  'Glow': 'Сяйво',
+  'A soft light around what plays: the play button, the playing song, the played part, the sung line and the cover. Strongest in dark themes': "М'яке світло довкола того, що грає: кнопка відтворення, поточна пісня, програна частина, рядок, що співається, і обкладинка. Найсильніше в темних темах",
+  'glow light halo shine neon bloom': 'сяйво світло ореол блиск неон',
 }
 
 export default uk

@@ -338,7 +338,7 @@ pub fn recent(dir: &Path, want: impl Fn(&Entry) -> bool, n: usize) -> Vec<Entry>
 /// Settings worth knowing in a bug report: how the app plays, updates and shows itself. Plain values only.
 const SETTINGS: &[&str] = &[
     "language", "shield", "autoUpdate", "updateChannel", "closeToTray", "resume", "reopen", "autoplay", "crossfade", "skipLong", "stage", "youtubeControls", "adaptiveSound", "levelling", "liveYoutube", "earlyEnds",
-    "immersive", "motion", "miniPlace", "sidePanel", "visualizer", "coverPulse", "progressStyle", "voiceSearch", "detector", "zoom", "textSize", "defaultsVersion",
+    "immersive", "motion", "miniPlace", "sidePanel", "visualizer", "coverPulse", "glow", "progressStyle", "voiceSearch", "detector", "zoom", "textSize", "defaultsVersion",
 ];
 
 /// `key=value` for those settings of the interface's settings object (on / off, numbers, short words), then the add-ons that are on.

@@ -2163,6 +2163,9 @@ const zh: Record<string, string> = {
   'Install update': '安装更新',
   'Couldn’t download the update': '无法下载更新',
   'Performance improved': '性能改进',
+  'Glow': '光晕',
+  'A soft light around what plays: the play button, the playing song, the played part, the sung line and the cover. Strongest in dark themes': '正在播放的内容周围有一圈柔和的光：播放按钮、正在播放的歌曲、已播放的部分、正在唱的歌词行和封面。深色主题中最明显',
+  'glow light halo shine neon bloom': '光晕 发光 光 光芒 霓虹',
 }
 
 export default zh

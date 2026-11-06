@@ -261,7 +261,11 @@ export interface DiscordSettings {
 }
 
 /** Bumped when defaults change for everyone (saved settings get the new ones once). */
-const DEFAULTS_VERSION = 9
+const DEFAULTS_VERSION = 10
+
+/** Glow levels (Settings › Appearance › Glow). */
+export const GLOW_LEVELS = ['off', 'soft', 'strong'] as const
+export type GlowLevel = (typeof GLOW_LEVELS)[number]
 
 /** Adaptive Sound targets, LUFS: Quiet, Normal (streaming services' usual level), Loud. */
 export const ADAPTIVE_LEVELS = [-20, -14, -11] as const
@@ -309,8 +313,12 @@ export interface Settings {
   /** Webview zoom, percent. */
   zoom: number
   readout: boolean
-  /** Moon (sleep timer) next to the volume; the timer stays in the player's menu. */
+  /** Moon (sleep timer) next to the volume; the timer stays in the player's menu. Off since v10 (a calmer bar): a
+   * running timer shows its moon anyway. */
   sleepButton: boolean
+  /** Soft light around what plays (play button, playing mark, played part, sung line, Now Playing's cover): glowVars.
+   * Soft by default (the owner's call 2026-11-05); off = none at all. */
+  glow: GlowLevel
   /** Off by default; this PC only (both PCs would ring). */
   alarm: Alarm
   volume: 'knob' | 'bar'
@@ -519,7 +527,8 @@ export const DEFAULTS: Settings = {
   textSize: 'normal',
   zoom: 100,
   readout: true,
-  sleepButton: true,
+  sleepButton: false,
+  glow: 'soft',
   alarm: { on: false, time: '07:30', days: [1, 2, 3, 4, 5], playlist: null, fadeMin: 5 },
   volume: 'bar',
   tuner: false,
@@ -763,6 +772,7 @@ export function sanitize(raw: unknown): Settings {
     zoom: typeof r.zoom === 'number' && Number.isFinite(r.zoom) ? Math.min(125, Math.max(90, Math.round(r.zoom / 5) * 5)) : DEFAULTS.zoom,
     readout: typeof r.readout === 'boolean' ? r.readout : DEFAULTS.readout,
     sleepButton: typeof r.sleepButton === 'boolean' ? r.sleepButton : DEFAULTS.sleepButton,
+    glow: pick(r.glow, GLOW_LEVELS, DEFAULTS.glow),
     alarm: alarmOf(r.alarm),
     volume: pick(r.volume, ['knob', 'bar'] as const, DEFAULTS.volume),
     tuner: typeof r.tuner === 'boolean' ? r.tuner : DEFAULTS.tuner,
@@ -882,6 +892,8 @@ export function sanitize(raw: unknown): Settings {
     ...(saved < 8 ? v8(r) : {}),
     // v9 (visualizer v2, 2026-10-31): the LED look is the new default; the other looks are still there, picks of their own stay.
     ...(saved < 9 && (r.visualizerStyle ?? 'bars') === 'bars' ? { visualizerStyle: 'led' as const } : {}),
+    // v10 (glow and simplicity, 2026-11-06): the moon leaves the player bar (in its More; a running timer still shows).
+    ...(saved < 10 ? { sleepButton: false } : {}),
     ...(saved < 6 ? { homeSections: sanitizeHome(r.homeSections).map((x) => (HOME_OFF.includes(x.id) ? { ...x, on: false } : x)) } : {}),
   }
 }
@@ -1052,6 +1064,43 @@ const RADIUS_SCALE: Record<Radius, [string, string, string, string, string]> = {
   round: ['8px', '12px', '16px', '20px', '28px'],
 }
 
+/** `#RRGGBB` + alpha 0–1 as `#RRGGBBAA`. */
+const alpha = (hex: string, a: number) =>
+  `${hex.slice(0, 7)}${Math.round(Math.min(1, Math.max(0, a)) * 255)
+    .toString(16)
+    .padStart(2, '0')
+    .toUpperCase()}`
+
+/** How much light per level: dark themes show it, light ones keep it discreet (docs/design.md › Glow). */
+const glowK = (level: GlowLevel, dark: boolean) => (level === 'off' ? 0 : (level === 'strong' ? 1.7 : 1) * (dark ? 1 : 0.55))
+
+/**
+ * Glow as CSS values (styles.css `.glow*`): static shadows and one filter, never animated, never a backdrop blur
+ * (immersive.ts: a live blur costs every repaint). Accent around what plays; ink around what's on, dark themes only
+ * (an ink halo on light is a dark smudge). Off = 'none' everywhere.
+ */
+export function glowVars(t: Pick<Theme, 'accent' | 'ink' | 'dark' | 'glow'>, level: GlowLevel): Record<string, string> {
+  const k = glowK(level, t.dark)
+  if (!k) return { '--glow': 'none', '--glow-mark': 'none', '--glow-bar': 'none', '--glow-on': 'none', '--glow-sung': 'none', '--led-glow': 'none' }
+  const px = (base: number, per: number) => `${Math.round(base + per * k)}px`
+  return {
+    '--glow': `0 0 ${px(10, 10)} ${alpha(t.accent, 0.42 * k)}`,
+    '--glow-mark': `0 0 ${px(4, 7)} ${alpha(t.accent, 0.5 * k)}`,
+    '--glow-bar': `0 0 ${px(3, 5)} ${alpha(t.accent, 0.55 * k)}`,
+    '--glow-on': t.dark ? `0 0 ${px(4, 7)} ${alpha(t.ink, 0.2 * k)}` : 'none',
+    '--glow-sung': `drop-shadow(0 0 ${px(8, 6)} ${t.dark ? alpha(t.ink, 0.3 * k) : alpha(t.accent, 0.6 * k)})`,
+    // The theme's own LED glow (Theme Studio): lit LEDs, on top of the level.
+    '--led-glow': t.glow ? `0 0 ${px(3, 3)} ${alpha(t.dark ? t.ink : t.accent, 0.5 * k)}` : 'none',
+  }
+}
+
+/** Now Playing's cover: a light of its own colour behind it (ambient.ts useCoverHue); undefined = none. */
+export function coverGlow(color: string | null, level: GlowLevel, dark: boolean): string | undefined {
+  const k = glowK(level, dark)
+  if (!k || !color) return undefined
+  return `0 0 ${Math.round(50 + 40 * k)}px ${Math.round(2 + 8 * k)}px ${alpha(color, 0.36 * k)}`
+}
+
 /** Theme + layout settings → CSS custom properties (consumed by styles.css). */
 export function cssVars(t: Theme, s: Settings): Record<string, string> {
   const r = RADIUS_SCALE[t.radius ?? 'soft']
@@ -1077,7 +1126,7 @@ export function cssVars(t: Theme, s: Settings): Record<string, string> {
     // Accent as text: darkened toward ink until AA (sky blue on white is 2:1).
     '--accent-ink': readable(t.accent, t.ink, [t.bg, t.panel], 4.5),
     '--shadow': t.dark ? '#00000099' : '#17161424',
-    '--led-glow': t.glow ? `0 0 6px ${t.accent}AA` : 'none',
+    ...glowVars(t, s.glow),
     '--font-ui': FONT_STACKS[s.font === 'theme' ? t.font : s.font],
     '--cover-radius': { net: '4px', rounded: '10px', vinyl: '999px' }[s.covers],
     '--row-h': { compact: '40px', comfort: '52px', airy: '64px' }[s.density],

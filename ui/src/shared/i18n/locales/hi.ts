@@ -2163,6 +2163,9 @@ const hi: Record<string, string> = {
   'Install update': 'अपडेट इंस्टॉल करें',
   'Couldn’t download the update': 'अपडेट डाउनलोड नहीं हो सका',
   'Performance improved': 'प्रदर्शन में सुधार',
+  'Glow': 'चमक',
+  'A soft light around what plays: the play button, the playing song, the played part, the sung line and the cover. Strongest in dark themes': 'जो बज रहा है उसके चारों ओर हल्की रोशनी: प्ले बटन, बजता गाना, बजा हुआ हिस्सा, गाई जा रही पंक्ति और कवर। गहरे थीम में सबसे ज़्यादा',
+  'glow light halo shine neon bloom': 'चमक रोशनी आभा प्रकाश नियॉन',
 }
 
 export default hi
