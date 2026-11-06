@@ -187,7 +187,9 @@ Songs started in the last 24 h (play stats) come after all the others, spread th
   the next one) and an early end was only ever reached through the overlap.
 - CSP: only addition, `frame-src https://www.youtube.com`.
 - YouTube rules: the player stays visible (356×200, minimum 200×200) except in Now Playing's Cover mode (user's
-  choice, against the terms). No audio is extracted.
+  choice, against the terms) and, on the phone, outside Now Playing (decided alone on 2026-11-06 after the owner's
+  try: the floating card covered the lists; the bar below says what plays; one line in `MiniPlayer.tsx` to undo). No
+  audio is extracted.
 
 **Error 153 (no `Referer`): real measurement**
 Debug build (`pnpm tauri build --debug --no-bundle`), origin `http://tauri.localhost`, app CSP, driven through the WebView2 DevTools protocol:

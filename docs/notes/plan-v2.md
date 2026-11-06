@@ -59,8 +59,11 @@ user key, SoundCloud playback and search (its terms), concerts (an API's terms),
       (`app/androidBack.ts` asked by `MainActivity.kt`, `shared/ui/layers.ts`). Not tried on a phone yet.
 - [x] Your library's tab led with the whole sidebar (Home, Mixes, Stats, Add music): one row since U1 (on `platforms`,
       not on the phone yet).
-- [ ] `M` A YouTube song's floating video covers a third of the screen, its title and buttons twice (the bar below has
-      them): a compact phone layout within YouTube's 200 × 200 minimum, nothing over the video.
+- [x] A YouTube song's floating video covered a third of the screen, its title and buttons twice (the bar below has
+      them): on the phone the song now plays out of sight outside Now Playing, as Now Playing's Cover mode does (decided
+      alone, 2026-11-06, against YouTube's terms as that mode is: the owner's call to keep; `MiniPlayer.tsx`, one line
+      to undo). Only the floating place had the card (`miniPlace` float); the side panel's place is hidden on the phone.
+      Not tried on a phone (the demo has no YouTube frame).
 - [ ] `S` The video showed Android's own error page with the embed's whole address (`net::ERR_NAME_NOT_RESOLVED` on 4G):
       our own words over it, tried again when the network is back (a lookup failure is not a refusal).
 

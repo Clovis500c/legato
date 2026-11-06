@@ -1,7 +1,7 @@
 import { ArrowsOutSimple } from '@phosphor-icons/react'
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { useSettings } from '../../app/settings'
-import { useNarrow } from '../../shared/phone'
+import { useNarrow, usePhone } from '../../shared/phone'
 import { trackArt } from '../../shared/art'
 import { RoundButton } from '../../shared/ui/controls'
 import { onMenu } from '../../shared/ui/ContextMenu'
@@ -29,7 +29,7 @@ const viewSize = () => (view.w === window.innerWidth && view.h === window.innerH
 
 /**
  * Floating card above the bar. YouTube: always shown, the video sits in it (min 200 px tall, controls below, never on
- * top). Drag it anywhere: it settles in one of 8 spots (corners, edge middles) with a short animation. The grip on the
+ * top); not on the phone, where the song plays out of sight and Now Playing shows the video. Drag it anywhere: it settles in one of 8 spots (corners, edge middles) with a short animation. The grip on the
  * corner facing the middle resizes it.
  */
 export function MiniPlayer() {
@@ -40,6 +40,7 @@ export function MiniPlayer() {
   const place = useSettings((s) => s.settings.miniPlace)
   // A narrow window has no right panel (SidePanel): its mini player floats here.
   const narrow = useNarrow()
+  const phone = usePhone()
   const docked = place === 'sidebar' || (place === 'panel' && !narrow)
   const spot = useSettings((s) => s.settings.miniSpot)
   const miniWidth = useSettings((s) => s.settings.miniWidth)
@@ -85,6 +86,9 @@ export function MiniPlayer() {
   useEffect(() => settle(), [rest.x, rest.y, settle])
 
   const video = now?.via === 'youtube'
+  // The phone: no card over the lists (the owner's try, 2026-11-06), its bar below already says what plays. A YouTube
+  // song plays out of sight, as Now Playing's cover mode does; Now Playing shows its video.
+  if (phone && video && !full && !docked) return <VideoSlot hidden className="fixed top-0 left-0 size-0" />
   if (!now || full || docked || !(video || on)) return null
 
   const pos = drag ?? rest
