@@ -1,4 +1,4 @@
-import { ArrowSquareOut, CaretDown, DotsThree, FrameCorners, Heart, ImageSquare, MicrophoneStage, Queue, Quotes, SlidersHorizontal, ThumbsDown } from '@phosphor-icons/react'
+import { ArrowSquareOut, CaretDown, DotsThree, Heart, ImageSquare, Queue, Quotes, SlidersHorizontal, ThumbsDown } from '@phosphor-icons/react'
 import { artistName } from '../../shared/artistName'
 import { STAGE_ID } from '../../app/searchShift'
 import { pop } from '../../shared/motion'
@@ -20,8 +20,6 @@ import { SourceIcon } from '../../shared/ui/SourceIcon'
 import { playerMenu, vizMenu } from '../menus'
 import { useAmbient, useCoverHue } from './ambient'
 import { useBackdrop } from './immersive'
-import { openCoverFull } from './coverFull'
-import { toggleKaraoke } from './karaokeMode'
 import { VolumeControl } from './PlayerBar'
 import { SeekBar, TimeText, usePosition } from './Progress'
 import { viaLabel, type Via } from './sources'
@@ -292,7 +290,8 @@ export function NowPlaying() {
     update({ stage: s })
     if (s === 'video' && !video && ytVersion) void usePlayer.getState().playAt(usePlayer.getState().index, 'youtube', { from: usePlayer.getState().positionMs })
   }
-  // The phone's More: what the desktop's buttons and the Show switch do, then the player's own menu.
+  // More (the phone's bar, the PC's controls): the Show switch, Less like this, then the player's own menu (Karaoke,
+  // Cover display, picture in picture, sleep timer…).
   const more = (): MenuEntry[] => [
     { label: tr('Show'), icon: <ImageSquare size={16} />, items: showOptions.map((o) => ({ label: o.label, checked: o.value === show, onSelect: () => pickShow(o.value) })) },
     track && !isRemote(track) && { label: tr('Less like this'), icon: <ThumbsDown size={16} />, onSelect: () => lessLikeThis(track) },
@@ -328,8 +327,9 @@ export function NowPlaying() {
       {/* Phone layout: one column, the cover over the song; an open panel (lyrics, Up next, sound) takes the cover's place. */}
       <div className={`grid min-h-0 flex-1 gap-12 phone:grid-cols-1 phone:gap-4 ${panel ? 'phone:grid-rows-1' : 'phone:grid-rows-[minmax(0,1fr)_auto]'} ${panel === 'editor' ? 'grid-cols-[minmax(0,1fr)_400px]' : panel === 'upNext' ? 'grid-cols-[minmax(0,1fr)_360px]' : 'grid-cols-[minmax(0,1fr)_minmax(0,1fr)]'}`}>
         <section id={STAGE_ID} className={`flex min-h-0 min-w-0 flex-col items-center gap-4 ${panel ? 'phone:hidden' : ''}`}>
-          {/* The phone: in More (one main thing on screen, the cover). */}
-          {!phone && <Segmented className="glass" label={tr('Show')} value={show} onChange={pickShow} options={showOptions} />}
+          {/* The phone: in More (one main thing on screen, the cover). The PC: only with a video to pick (a file with no
+              YouTube version has Auto and Cover alike); always in More too. */}
+          {!phone && (video || ytVersion) && <Segmented className="glass" label={tr('Show')} value={show} onChange={pickShow} options={showOptions} />}
           <Stage video={video} cover={stage === 'cover' || (stage === 'auto' && still === true)} track={track} title={now.title} youtubeId={now.youtubeId} pulse={coverPulse && motion} wantRing={visualizer && motion && look === 'radial' && now.via !== 'spotify'} onRing={setRing} />
           {visualizer && motion && now.via !== 'spotify' && !ring && <Visualizer />}
           {now.via === 'spotify' && <span className="kicker text-center">{tr('Playing in your Spotify app')}</span>}
@@ -378,7 +378,6 @@ export function NowPlaying() {
               <ArtistLink now={now} className="w-fit max-w-full truncate text-[1.375rem] leading-7 font-bold" />
               {track?.album && <p className="truncate text-sm">{track.album}</p>}
               {readout && source}
-              <hr className="border-line" />
               <LyricsPeek />
               <NextLine />
             </div>
@@ -409,11 +408,6 @@ export function NowPlaying() {
               </RoundButton>
             )}
             {track && !isRemote(track) && <AddToPlaylist trackIds={[track.id]} label={tr('Add {title} to a playlist', { title: track.title })} />}
-            {track && !isRemote(track) && (
-              <RoundButton label={tr('Less like this')} kind="plain" size="md" onClick={() => lessLikeThis(track)}>
-                <ThumbsDown size={22} />
-              </RoundButton>
-            )}
             {readout && panel && <SourceBadge via={now.via} />}
           </span>
           <span className="phone:justify-self-center">
@@ -423,12 +417,10 @@ export function NowPlaying() {
             <PanelToggle id="lyrics" label={tr('Lyrics')} icon={Quotes} active={panel} />
             <PanelToggle id="upNext" label={tr('Up next')} icon={Queue} active={panel} />
             <PanelToggle id="editor" label={tr('Sound')} icon={SlidersHorizontal} active={panel} />
-            <RoundButton label={tr('Karaoke')} kind="plain" size="md" className="phone:hidden" onClick={(e) => (toggleKaraoke(), pop(e.currentTarget))}>
-              <MicrophoneStage size={22} />
-            </RoundButton>
-            {/* A second screen's picture: not on a phone. */}
-            <RoundButton label={tr('Cover display')} kind="plain" size="md" className="phone:hidden" onClick={openCoverFull}>
-              <FrameCorners size={22} />
+            {/* Karaoke (K), Cover display (C), Less like this and the rest: one More (a calm player, plan-v2 › U2). The
+                phone has its own in its top bar. */}
+            <RoundButton label={tr('More')} kind="plain" size="md" className="phone:hidden" onClick={(e) => openMenu(e, more(), { place: 'above' })}>
+              <DotsThree size={22} weight="bold" />
             </RoundButton>
             <span className="flex min-w-0 flex-col items-end gap-1 phone:hidden">
               <VolumeControl big />

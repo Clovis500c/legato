@@ -1,4 +1,4 @@
-import { ArrowsOutSimple, Heart, Moon, PictureInPicture, Queue, Quotes, SpeakerHigh, SpeakerLow, SpeakerSlash } from '@phosphor-icons/react'
+import { ArrowsOutSimple, DotsThree, Heart, Moon, Queue, Quotes, SpeakerHigh, SpeakerLow, SpeakerSlash } from '@phosphor-icons/react'
 import { getCurrentWebview } from '@tauri-apps/api/webview'
 import { useEffect, useRef, useState } from 'react'
 import { useSettings } from '../../app/settings'
@@ -34,7 +34,7 @@ import { tr } from '../../shared/i18n/i18n'
 import { phoneApp } from '../../shared/platform'
 import { takeDrop } from './drop'
 import { pickUp, usePickup } from '../syncmode/pickup'
-import { openPip, usePip } from './pipMode'
+import { usePip } from './pipMode'
 
 export const clock = (ms: number | null) => formatDuration(ms) || '0:00'
 export const fileFormat = (path?: string) => path?.split('.').pop()?.toUpperCase()
@@ -385,11 +385,11 @@ export function PlayerBar() {
             <PanelButton panel="lyrics" label={tr('Lyrics')} icon={Quotes} />
             <PanelButton panel="upNext" label={tr('Up next')} icon={Queue} />
             <VolumeControl />
-            {!phoneApp && (
-              <RoundButton label={tr('Picture-in-picture')} kind="plain" size="sm" disabled={!now} onClick={() => void openPip()}>
-                <PictureInPicture size={18} />
-              </RoundButton>
-            )}
+            {/* The rare ones (picture in picture, sleep timer, Karaoke, Cover display, share…): the player's menu, as on a
+                right-click (a calm bar, plan-v2 › U2). */}
+            <RoundButton label={tr('More')} kind="plain" size="sm" disabled={!now} onClick={(e) => openMenu(e, playerMenu({ controls: false }), { place: 'above' })}>
+              <DotsThree size={20} weight="bold" />
+            </RoundButton>
             <RoundButton label={tr('Now playing, full screen')} kind="plain" size="sm" disabled={!now} onClick={() => setFull(true)}>
               <ArrowsOutSimple size={18} />
             </RoundButton>

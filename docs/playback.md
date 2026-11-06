@@ -85,7 +85,7 @@ Songs started in the last 24 h (play stats) come after all the others, spread th
   keeps images in `art/` in the app data folder (500 MB by default, a setting; least recently used out first, on a
   background thread) with 64 / 256 / 600 px thumbnails cut once (`?s=64`, list covers ask for the smallest that fits) and sends
   `Access-Control-Allow-Origin` so the cover tint can read pixels.
-- **Cover display** (2026-11-02, `coverFull.ts`, `CoverScreen.tsx`, lazy): C (rebindable) or the button beside Karaoke in
+- **Cover display** (2026-11-02, `coverFull.ts`, `CoverScreen.tsx`, lazy): C (rebindable) or the player's More (since U2, beside Karaoke) in
   Now Playing. The window full screen (`holdFullscreen`, like the visualizer's), the cover huge (`min(82vh, 70vw)`) over
   its own blurred copy (`Backdrop`, at least 40 px and 45 % veil), title, artist and progress on its lower part, white on
   a dark fade (any cover, any theme). Right-click: the player's basics, the clock (setting `coverClock`, off; the time and

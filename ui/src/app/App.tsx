@@ -129,12 +129,13 @@ function TopBar() {
           <CaretDown size={12} weight="bold" /> {tr('Close player')}
         </button>
       ) : (
-        // ← → of the mockups (the mouse's back / forward buttons do the same).
+        // ← → of the mockups (the mouse's back / forward buttons do the same). Nowhere to go: not drawn, its place kept
+        // (a calm bar, plan-v2 › U2; the search doesn't move).
         <span className="flex items-center gap-2">
-          <button className={`${navBtn} nudge-l ${canBack ? '' : 'phone:hidden'}`} aria-label={tr('Back')} title={tr('Back')} disabled={!canBack} onClick={goBack}>
+          <button className={`${navBtn} nudge-l ${canBack ? '' : 'invisible phone:hidden'}`} aria-label={tr('Back')} title={tr('Back')} disabled={!canBack} onClick={goBack}>
             <CaretLeft size={16} />
           </button>
-          <button className={`${navBtn} nudge-r phone:hidden`} aria-label={tr('Forward')} title={tr('Forward')} disabled={!canForward} onClick={goForward}>
+          <button className={`${navBtn} nudge-r phone:hidden ${canForward ? '' : 'invisible'}`} aria-label={tr('Forward')} title={tr('Forward')} disabled={!canForward} onClick={goForward}>
             <CaretRight size={16} />
           </button>
         </span>

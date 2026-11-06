@@ -39,6 +39,26 @@ Each rule below answers one of these.
 - Now Playing: the same cover tone, flat, with the title in Display XL.
 - Like, play next and add to playlist sit on the row (hover) and in the player, never only in a menu.
 
+## Simplicity on the PC
+
+The owner's ask (2026-11-05, plan-v2 › Against Liner › U2): fewer controls in sight on each surface, calm, generous
+room; nothing removed, every feature one menu away (no fake buttons). The phone's own rules are below.
+
+- **One More (⋯) per surface** holds the rare actions, the same menu as a right-click there. Player bar: Lyrics,
+  Up next, the volume, More, Now Playing; picture in picture, the sleep timer, Karaoke, Cover display, share, the Live
+  Editor are in More (`playerMenu({ controls: false })`). The sleep timer's moon shows in the bar only while a timer
+  runs, or always with Settings › Appearance › Sleep timer button.
+- **Now Playing:** the cover and the song; under them the like and add-to-playlist, the transport, then Lyrics, Up
+  next, Sound, More and the volume. Less like this, Karaoke (K) and Cover display (C) are in More. The Show switch
+  (Auto, Video, Cover) shows only when there's a video to pick; it's in More too.
+- **Page headers:** a page without a band (Songs, Albums, Artists, Stats…) has a 40 px title, not Display L; a band
+  (album, playlist, artist) keeps Display L. The playability pill is its LED and an i, the words in its tooltip and in
+  the box it opens.
+- **Top bar:** Back and Forward are drawn only when they can go somewhere (their place kept, the search doesn't move);
+  the search's shortcut keys show under the pointer only (Settings › Shortcuts lists them).
+- **Sidebar:** Your library's Expand and Sort buttons show under the pointer or on keyboard focus (always when open
+  wide, on a touch screen and on the phone); New playlist (+) stays.
+
 ## Phone
 
 The layout under 640 px (`phone:` in `styles.css`, `usePhone()` in `shared/phone.ts`): the Android app, a narrow

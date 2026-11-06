@@ -272,7 +272,7 @@ export function SearchBar({ children }: { children?: ReactNode }) {
       onSubmit={submit}
       className="relative flex h-10 w-full max-w-[640px] min-w-0"
     >
-      <span className={`flex h-full min-w-0 flex-1 items-center gap-2.5 rounded-full border bg-bg pr-1 pl-4 transition ${focused ? 'border-accent-ink ring-1 ring-accent-ink' : 'border-line hover:border-ink-4'}`}>
+      <span className={`group/search flex h-full min-w-0 flex-1 items-center gap-2.5 rounded-full border bg-bg pr-1 pl-4 transition ${focused ? 'border-accent-ink ring-1 ring-accent-ink' : 'border-line hover:border-ink-4'}`}>
         <MagnifyingGlass size={17} className="shrink-0 text-ink-3" aria-hidden />
         {scope && (
           // The phone's field is narrow: a long list name is cut, the field keeps room to type.
@@ -308,8 +308,9 @@ export function SearchBar({ children }: { children?: ReactNode }) {
             <X size={13} />
           </button>
         )}
+        {/* The shortcut's keys under the pointer only: a calm bar (plan-v2 › U2); Settings › Shortcuts lists it. */}
         {!focused && !query && keys && (
-          <span className="flex shrink-0 gap-1 phone:hidden" aria-hidden>
+          <span className="flex shrink-0 gap-1 opacity-0 transition-opacity group-hover/search:opacity-100 phone:hidden" aria-hidden>
             {keys.map((k) => (
               <kbd key={k} className="rounded border border-line px-1.5 py-px font-sans text-[0.6875rem] font-medium text-ink-3">
                 {k}
@@ -317,7 +318,6 @@ export function SearchBar({ children }: { children?: ReactNode }) {
             ))}
           </span>
         )}
-        <span className="mx-0.5 h-5 w-px shrink-0 bg-line" aria-hidden />
         {children}
       </span>
 

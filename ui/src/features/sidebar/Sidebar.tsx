@@ -88,6 +88,9 @@ function LibItem({ e }: { e: Entry }) {
   )
 }
 
+/** Rare header buttons: drawn under the pointer, on keyboard focus, always where there is no pointer. */
+const calm = 'opacity-0 group-hover/lib:opacity-100 focus-visible:opacity-100 group-focus-within/lib:opacity-100 pointer-coarse:opacity-100 phone:opacity-100'
+
 /** Your library open wide: a card per entry, cover above (opening one brings its page back). */
 function LibCard({ e }: { e: Entry }) {
   return (
@@ -216,13 +219,14 @@ export function Sidebar() {
       </nav>
 
       {/* The mini player stays put at the bottom; only the list scrolls. */}
-      <section aria-label={tr('Your library')} className="flex min-h-0 flex-1 flex-col rounded-lg bg-panel">
+      <section aria-label={tr('Your library')} className="group/lib flex min-h-0 flex-1 flex-col rounded-lg bg-panel">
         <div onContextMenu={onMenu(playlistsMenu)} className="flex shrink-0 items-center gap-1 pt-3 pr-2 pl-4">
           <h2 className="flex-1 text-base font-medium">{tr('Your library')}</h2>
-          <RoundButton label={wide ? tr('Collapse Your library') : tr('Expand Your library')} aria-pressed={wide} kind="plain" size="sm" className={`${wide ? 'nudge-l' : 'nudge-r'} phone:hidden`} onClick={() => update({ libraryWide: !wide })}>
+          {/* Expand and Sort under the pointer or the keyboard (a calm sidebar, plan-v2 › U2); open wide and the phone: shown. */}
+          <RoundButton label={wide ? tr('Collapse Your library') : tr('Expand Your library')} aria-pressed={wide} kind="plain" size="sm" className={`${wide ? 'nudge-l' : 'nudge-r'} ${wide ? '' : calm} phone:hidden`} onClick={() => update({ libraryWide: !wide })}>
             {wide ? <ArrowDownLeft size={18} /> : <ArrowUpRight size={18} />}
           </RoundButton>
-          <RoundButton label={tr('Sort playlists')} kind="plain" size="sm" onClick={(e) => openMenu(e, ORDERS.map((o) => ({ label: tr(o.label), checked: order === o.id, onSelect: () => useSettings.getState().update({ playlistOrder: o.id }) })))}>
+          <RoundButton label={tr('Sort playlists')} kind="plain" size="sm" className={wide ? '' : calm} onClick={(e) => openMenu(e, ORDERS.map((o) => ({ label: tr(o.label), checked: order === o.id, onSelect: () => useSettings.getState().update({ playlistOrder: o.id }) })))}>
             <SortAscending size={18} />
           </RoundButton>
           <RoundButton label={tr('New playlist')} kind="plain" size="sm" onClick={(e) => openMenu(e, [{ label: tr('New playlist'), icon: <Plus size={16} />, onSelect: () => void create() }, { label: tr('New smart playlist'), icon: <Lightning size={16} />, onSelect: createSmart }, { label: tr('New folder'), icon: <FolderSimplePlus size={16} />, onSelect: () => void newFolder() }])}>

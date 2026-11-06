@@ -98,9 +98,32 @@ copies, downloads for offline), their accounts, limits and paid plan.
       import screens.)
       Review (2026-11-06): the tap ring let song lists and Settings slide 8 px sideways (a box that scrolls down now
       clips x on the phone), Settings' sections row was wider than its scroller and showed a scrollbar: fixed.
-- [ ] U2. `M-L` Glow and simplicity, PC and phone (the owner's ask 2026-11-05, answering Waiting on the user's glow
+- [x] U2. `M-L` Glow and simplicity, PC and phone (the owner's ask 2026-11-05, answering Waiting on the user's glow
       line): a soft glow on what plays (play button, playing row, the sung line, Now Playing's cover), a Glow setting
       to turn it down; fewer controls in sight per surface, the rare ones in menus; `docs/design.md` rewritten to say so.
+      (2026-11-06, `docs/design.md` › Glow and › Simplicity on the PC; seen over the site demo at 1280×800 and 375×812,
+      light and dark, before and after: Songs, Home, Now Playing and its More, the Your library tab, Settings ›
+      Appearance and the settings search.)
+      - Glow: Settings › Appearance › Player › Glow, Off / Soft / Strong, Soft for everyone (a new key: no migration);
+        in the settings search (glow, light, halo…). Accent light around the play buttons, the playing mark (lists, Up
+        next, album and artist pages), the seek bar's played part and the phone's thin line; ink light around a picked
+        chip and a switch that's on (dark themes only); the sung line (it glowed already, now by the setting); Now
+        Playing's cover lit by its own most present colour. Light themes get about half. `glowVars` / `coverGlow` in
+        `theme.ts`, tested: Off is 'none' everywhere. The theme's LED glow (Theme Studio) drew nothing since
+        `--led-glow` lost its user: lit LEDs glow with it again. The demo's covers got a size (a canvas read one pixel
+        of them: no tint, no glow there).
+      - Simplicity: the player bar's picture in picture into a new More (the player's menu); the sleep timer's moon off
+        the bar for everyone (defaults v10), back while a timer runs; Now Playing's Karaoke, Cover display and Less like
+        this into a More, its Show switch only when there's a video to pick, no rule under the song; page titles without
+        a band at 40 px; the playability pill an LED and an i (words in its tooltip and box); Back / Forward drawn only
+        when they can go somewhere; the search's Ctrl K hint under the pointer only; Your library's Expand and Sort
+        under the pointer (always when open wide, on touch and on the phone). The phone (U1) unchanged but for the glow.
+      Decided alone (2026-11-06): Soft = about what the sung line had; ink glow on dark themes only, because an ink halo
+      on light is a dark smudge; the cover's most present colour, not its average, because a teal and yellow cover
+      glowed green; the moon off by default, because the timer is in More and a running one still shows; hover-only
+      sidebar buttons and search hint, because they're rare and keyboard focus still shows them. Each is one class or
+      one default to undo. Not tried for real: WebView2's paint cost of the cover glow and the sung line's filter on a
+      real PC (static shadows, no animation), the glow on real covers and on a real phone: Check live.
 
 - [x] 1. `S` Keep the screen on while music plays (a setting, off): the wake lock the Cover display already takes.
       (2026-11-05: Settings › Playback › Screen, `keepScreenOn`, this PC only; `shared/awake.ts` shared with the Cover
@@ -1017,6 +1040,13 @@ Most useful first; the tag is the effort.
         reachable; every icon button answers a thumb's tap at its edge; Settings › More settings opens and a settings
         search opens the right fold; the mini player opens Now Playing on a tap, its heart and play don't. Judge the fold
         list and the moved controls (Reset history, previous only in Now Playing).
+      - Glow and simplicity (U2): Settings › Appearance › Player › Glow at Off, Soft and Strong, in a dark and a light
+        theme: the play button, the playing row's mark, the seek bar's played part, a switch that's on, the sung line,
+        Now Playing's cover on a few real covers (a grey one: no glow); Off leaves nothing. More glow without too much?
+        Does a song change stay smooth with Now Playing open (Task Manager's GPU column)? The player bar's More (picture
+        in picture, sleep timer…), Now Playing's More (Karaoke, Cover display, Less like this), the moon back while a
+        sleep timer runs, Back / Forward appearing once you've moved, Your library's Expand and Sort under the pointer.
+        Judge the calmer look: anything missed is one class to put back.
 
 ## Waiting on the user (outside the code)
 
@@ -1032,7 +1062,7 @@ Most useful first; the tag is the effort.
 - [ ] A playlist file from foobar2000 / VLC / MusicBee, and an `iTunes Music Library.xml`, through Add music.
 - [ ] Quit the installed Legato from the tray and open it again: a session closed its hidden single-instance window by
       mistake on 2026-10-31.
-- [ ] (2026-11-05: glow wanted, more of it: Against Liner › U2.) The soft glow on the sung line (`LyricsPanel.tsx`) goes against "no glows" in `docs/design.md`, and `SONG ENDS`,
+- [ ] (2026-11-06: the glow is done, Against Liner › U2, a Glow setting; only the capitals are left.) The soft glow on the sung line (`LyricsPanel.tsx`) goes against "no glows" in `docs/design.md`, and `SONG ENDS`,
       `NEXT SONG`, `PREVIEW` are still written in capitals: keep or change (the capitals are keys in all 17 languages).
 
 ## Not done yet

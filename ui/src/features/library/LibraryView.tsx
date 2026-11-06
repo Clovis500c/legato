@@ -238,10 +238,11 @@ function Playability({ tracks }: { tracks: LibraryTrack[] }) {
   const parts = [trn(full, '{n} song playable in full', '{n} songs playable in full'), preview > 0 && trn(preview, '{n} as 30 s preview', '{n} as 30 s preview'), missing.length > preview && trn(missing.length - preview, '{n} with no playable source', '{n} with no playable source')].filter((x): x is string => !!x)
   return (
     <span className="relative min-w-0">
-      {/* The phone: the LED and the i only, a finger's size; the words in the box it opens. */}
-      <button aria-expanded={open} onClick={() => setOpen(!open)} className="flex max-w-full items-center gap-2 rounded-full bg-raised px-3 py-1.5 text-xs text-ink-2 hover:text-ink phone:h-11 phone:px-3.5">
+      {/* The LED and the i only (the phone since U1, the PC too since U2: a calmer toolbar); the words in its tooltip and
+          in the box it opens. */}
+      <button aria-expanded={open} title={parts.join(' · ')} onClick={() => setOpen(!open)} className="flex max-w-full items-center gap-2 rounded-full bg-raised px-3 py-1.5 text-xs text-ink-2 hover:text-ink phone:h-11 phone:px-3.5">
         <Led on={missing.length === 0} />
-        <span className="truncate phone:sr-only">
+        <span className="sr-only">
           {parts[0]}
           {parts.length > 1 && ` · ${parts.length - 1 === 1 ? parts[1] : `+${formatCount(missing.length)}`}`}
         </span>

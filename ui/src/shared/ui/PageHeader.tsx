@@ -34,7 +34,8 @@ export function PageHeader({ kicker, title, sub, actions, side, art, tint, onCon
     <header onContextMenu={onContextMenu} className="flex shrink-0 flex-wrap items-end justify-between gap-x-6 gap-y-3 pt-1 pb-4 phone:pb-3">
       <div className="flex min-w-0 flex-col gap-1">
         {kicker && <p className="kicker">{kicker}</p>}
-        <h1 className="truncate pb-1 text-[3.5rem] leading-[1.07] font-black tracking-[-0.015em] phone:line-clamp-2 phone:text-[1.75rem] phone:whitespace-normal">{title}</h1>
+        {/* A page without a band (Songs, Albums, Stats…): 40 px, lighter than a band's Display L; the list starts higher. */}
+        <h1 className="truncate pb-1 text-[2.5rem] leading-[1.1] font-black tracking-[-0.015em] phone:line-clamp-2 phone:text-[1.75rem] phone:whitespace-normal">{title}</h1>
         {sub && <div className="text-[0.8125rem] text-ink-2">{sub}</div>}
       </div>
       {actions && <div className="flex max-w-full shrink-0 flex-wrap items-center gap-2">{actions}</div>}
