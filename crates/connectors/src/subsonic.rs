@@ -38,6 +38,25 @@ pub struct Ping {
     pub server: Option<String>,
 }
 
+/// A song's audio answer: status and headers for the player to judge (`music_player::http`), the body read on.
+pub struct Streamed {
+    pub status: u16,
+    pub content_length: Option<u64>,
+    pub content_range: Option<String>,
+    pub content_type: Option<String>,
+    pub body: Body,
+}
+
+/// A stream's body, chunk by chunk.
+pub struct Body(reqwest::Response);
+
+impl Body {
+    /// Next bytes; None = the end. Errors carry no URL (it holds the auth).
+    pub async fn chunk(&mut self) -> Result<Option<Vec<u8>>> {
+        Ok(self.0.chunk().await.map_err(|e| anyhow!("{}", e.without_url()))?.map(|b| b.to_vec()))
+    }
+}
+
 #[derive(Clone)]
 pub struct Subsonic {
     base: String,
@@ -66,7 +85,8 @@ fn salt() -> String {
 
 /// Network failures in words (English, `shared/errors.ts` maps them).
 fn reach(e: reqwest::Error) -> anyhow::Error {
-    let chain = format!("{:#}", anyhow::Error::from(e));
+    // Its URL carries the auth: never in an error the interface or a log sees.
+    let chain = format!("{:#}", anyhow::Error::from(e.without_url()));
     let lower = chain.to_lowercase();
     if lower.contains("certificate") || lower.contains("self signed") || lower.contains("self-signed") || lower.contains("unknownissuer") {
         anyhow!("Your music server's certificate isn't trusted (a self-signed one?): give the server a certificate from a known authority, or use its http:// address on your network ({chain})")
@@ -161,6 +181,10 @@ impl Subsonic {
     }
 
     fn url(&self, method: &str, params: &[(&str, &str)]) -> Result<Url> {
+        // An address by number skips the resolver (`Noted`): Settings › Privacy learns it here.
+        if server::host_of(&self.base).is_some_and(|h| h.parse::<std::net::IpAddr>().is_ok()) {
+            music_core::netlog::note_url(&self.base, music_core::netlog::Via::App, false);
+        }
         let mut u = Url::parse(&format!("{}/rest/{method}.view", self.base)).context("Your music server's address isn't right")?;
         u.query_pairs_mut().extend_pairs(params).extend_pairs(self.auth());
         Ok(u)
@@ -297,7 +321,7 @@ impl Subsonic {
 
     /// A song's audio from byte `from`: raw, or MP3 at `MAX_BIT_RATE` (`transcode`). The answer's status and headers
     /// are the player's to judge (`music_player::http`).
-    pub async fn stream(&self, item: &str, from: u64, transcode: bool) -> Result<reqwest::Response> {
+    pub async fn stream(&self, item: &str, from: u64, transcode: bool) -> Result<Streamed> {
         let rate = MAX_BIT_RATE.to_string();
         let params: Vec<(&str, &str)> = if transcode { vec![("id", item), ("format", "mp3"), ("maxBitRate", &rate)] } else { vec![("id", item), ("format", "raw")] };
         let res = self.http.get(self.url("stream", &params)?).header(reqwest::header::RANGE, format!("bytes={from}-")).send().await.map_err(reach)?;
@@ -308,7 +332,8 @@ impl Subsonic {
             answer(&body)?;
             bail!("Your music server sent no audio for this song");
         }
-        Ok(res)
+        let header = |h: reqwest::header::HeaderName| res.headers().get(h).and_then(|v| v.to_str().ok()).map(str::to_string);
+        Ok(Streamed { status: res.status().as_u16(), content_length: res.content_length(), content_range: header(reqwest::header::CONTENT_RANGE), content_type: header(reqwest::header::CONTENT_TYPE), body: Body(res) })
     }
 }
 
@@ -366,6 +391,7 @@ mod tests {
         // Nobody there.
         let gone = Subsonic::new("http://127.0.0.1:9", "me", "pw").ping().await.unwrap_err().to_string();
         assert!(gone.starts_with("Your music server doesn't answer"), "{gone}");
+        assert!(!gone.contains("t=") && !gone.contains("s=") && !gone.contains("u=me"), "no auth in words: {gone}");
     }
 
     #[tokio::test]
@@ -434,10 +460,14 @@ mod tests {
         let refused = s.mock("GET", "/rest/stream.view").match_query(Matcher::UrlEncoded("id".into(), "gone".into())).with_header("content-type", "application/json").with_body(r#"{"subsonic-response":{"status":"failed","error":{"code":70,"message":"Song not found"}}}"#).create_async().await;
         let sub = Subsonic::new(&s.url(), "me", "pw");
         let r = sub.stream("tr-1", 100, false).await.unwrap();
-        assert_eq!(r.status(), 206);
-        let r = sub.stream("tr-1", 0, true).await.unwrap();
-        assert_eq!(r.bytes().await.unwrap().len(), 50);
-        assert!(sub.stream("gone", 0, false).await.unwrap_err().to_string().starts_with("Your music server doesn't have this item"));
+        assert_eq!((r.status, r.content_range.as_deref(), r.content_type.as_deref()), (206, Some("bytes 100-199/200"), Some("audio/flac")));
+        let mut r = sub.stream("tr-1", 0, true).await.unwrap();
+        let mut got = 0;
+        while let Some(b) = r.body.chunk().await.unwrap() {
+            got += b.len();
+        }
+        assert_eq!(got, 50);
+        assert!(sub.stream("gone", 0, false).await.err().unwrap().to_string().starts_with("Your music server doesn't have this item"));
         raw.assert_async().await;
         mp3.assert_async().await;
         refused.assert_async().await;

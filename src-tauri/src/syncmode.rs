@@ -208,7 +208,7 @@ fn others(dir: &Path, me: &str) -> Vec<PathBuf> {
 /// Never from a sync command: `ytm::session` needs the main thread free.
 pub(crate) fn snapshot(state: &AppState, device: &str, sealed: bool) -> anyhow::Result<Snapshot> {
     let accounts = Accounts { spotify: state.spotify().is_some_and(|s| s.is_connected()), youtube: ytm::session(&state.app).is_some() };
-    let secrets = sealed.then(|| Secrets { spotify_client_id: state.credentials().spotify_client_id, audd_token: state.store.load(AUDD_TOKEN) });
+    let secrets = sealed.then(|| Secrets { spotify_client_id: state.credentials().spotify_client_id, audd_token: state.store.load(AUDD_TOKEN), servers: crate::servers::sealed() });
     state.lib().snapshot(device, &device_name(), accounts, secrets)
 }
 
@@ -230,6 +230,7 @@ pub(crate) fn take(app: &AppHandle, s: &Snapshot) -> anyhow::Result<Merged> {
         {
             state.store.save(AUDD_TOKEN, t)?;
         }
+        crate::servers::take(&state, &secrets.servers)?;
     }
     let sync = app.state::<SyncMode>();
     sync.inner.lock().unwrap().devices.insert(s.device.clone(), Device { name: s.device_name.chars().take(60).collect(), at: s.at, accounts: s.accounts.clone() });

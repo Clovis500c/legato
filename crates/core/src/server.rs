@@ -17,7 +17,7 @@ pub enum Kind {
 }
 
 /// A signed-in server, as kept in the keychain (password beside it there, never in settings, a log or `diag`).
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Account {
     #[serde(default)]
@@ -26,6 +26,13 @@ pub struct Account {
     pub address: String,
     pub user: String,
     pub password: String,
+}
+
+impl std::fmt::Debug for Account {
+    // Never the password.
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Account").field("kind", &self.kind).field("address", &self.address).field("user", &self.user).finish_non_exhaustive()
+    }
 }
 
 impl Account {
@@ -154,6 +161,7 @@ mod tests {
         assert_eq!(a.key(), b.key(), "password and case don't change the key");
         assert_ne!(a.key(), Account { user: "you".into(), ..a.clone() }.key());
         assert_eq!(a.key().len(), 9);
+        assert!(!format!("{a:?}").contains("\"x\""), "no password in Debug");
         let id = item_id(&a.key(), "tr-1:2");
         assert_eq!(split_item(&id), Some((a.key().as_str(), "tr-1:2")));
         assert_eq!(split_item("nope"), None);

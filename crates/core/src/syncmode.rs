@@ -146,6 +146,9 @@ pub struct Secrets {
     pub spotify_client_id: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub audd_token: Option<String>,
+    /// Your music servers, password included (`server.rs`).
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub servers: Vec<crate::server::Account>,
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]

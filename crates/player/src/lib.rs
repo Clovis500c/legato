@@ -376,19 +376,27 @@ impl Engine {
         }
     }
 
-    /// A server song's decoder: its bytes over HTTP, length and type from the first answer.
+    /// A server song's decoder: its bytes over HTTP, length and type from the first answer. A format the engine can't
+    /// read (Opus, WMA…): asked again as the server's MP3.
     fn open_remote(&self, path: &std::path::Path) -> Result<Box<dyn Source + Send>> {
         let Some(http::Remote(fetch)) = &self.remote else { anyhow::bail!("Your music server isn't signed in") };
         let key = path.to_str().and_then(|p| p.strip_prefix(http::PREFIX)).unwrap_or_default();
-        let (stream, info) = http::Stream::open(fetch.clone(), key, self.remote_failed.clone())?;
-        let mut b = Decoder::builder().with_data(stream).with_seekable(true);
-        if let Some(len) = info.len {
-            b = b.with_byte_len(len);
-        }
-        if let Some(mime) = &info.mime {
-            b = b.with_mime_type(mime);
-        }
-        Ok(Box::new(b.build().map_err(|e| anyhow::anyhow!("Your music server sent a format Legato can't play ({e})"))?))
+        let open = |transcode: bool| -> Result<Decoder<http::Stream>> {
+            let (stream, info) = http::Stream::open(fetch.clone(), key, transcode, self.remote_failed.clone())?;
+            let mut b = Decoder::builder().with_data(stream).with_seekable(true);
+            if let Some(len) = info.len {
+                b = b.with_byte_len(len);
+            }
+            if let Some(mime) = &info.mime {
+                b = b.with_mime_type(mime);
+            }
+            b.build().map_err(|e| anyhow::anyhow!("Your music server sent a format Legato can't play ({e})"))
+        };
+        let decoder = match open(false) {
+            Err(e) if e.to_string().contains("format Legato can't play") => open(true)?,
+            d => d?,
+        };
+        Ok(Box::new(decoder))
     }
 
     fn tick(&mut self) {
@@ -572,6 +580,31 @@ mod tests {
         e.tick();
         assert_eq!(e.status().path.as_ref(), Some(&b));
         assert!(srv.requests.load(std::sync::atomic::Ordering::SeqCst) >= 2);
+        e.handle(Command::Stop).unwrap();
+        let _ = std::fs::remove_file(file);
+    }
+
+    #[test]
+    fn a_format_the_engine_cant_read_is_asked_again_as_the_servers_own_conversion() {
+        struct Two(Vec<u8>, Mutex<Vec<bool>>);
+        impl http::Fetch for Two {
+            fn get(&self, _: &str, from: u64, transcode: bool) -> std::io::Result<http::Reply> {
+                self.1.lock().unwrap().push(transcode);
+                let file = if transcode { self.0.clone() } else { vec![0x42; 4_000] };
+                let total = file.len();
+                let body = file[from as usize..].to_vec();
+                Ok(http::Reply { status: 206, content_length: Some(body.len() as u64), content_range: Some(format!("bytes {from}-{}/{total}", total - 1)), content_type: None, body: Box::new(Cursor::new(body)) })
+            }
+        }
+        let file = wav("transcode", 0, 2, 0);
+        let fetch = Arc::new(Two(std::fs::read(&file).unwrap(), Mutex::default()));
+        let mut e = Engine { volume: 1.0, ..Default::default() };
+        e.device = Some(Output::Null(Null::open()));
+        e.handle(Command::Remote { fetch: http::Remote(fetch.clone()) }).unwrap();
+        e.handle(Command::Play { paths: vec![PathBuf::from("server:s1:odd")], start: 0 }).unwrap();
+        assert!(e.error.is_none(), "{:?}", e.error);
+        assert_eq!(e.durations.front().copied().flatten(), Some(2_000));
+        assert_eq!(fetch.1.lock().unwrap()[..2], [false, true]);
         e.handle(Command::Stop).unwrap();
         let _ = std::fs::remove_file(file);
     }

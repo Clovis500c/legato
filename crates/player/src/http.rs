@@ -44,8 +44,9 @@ pub struct Reply {
 
 /// Opens a song's bytes. The shell's fetcher builds each request (fresh auth per request: tokens never leave Rust)
 /// with the app's client (`music_connectors::Noted`); tests use a local server. Always sends `Range: bytes=<from>-`.
+/// `transcode`: the server's own conversion to a format the engine reads (MP3), when its file isn't one.
 pub trait Fetch: Send + Sync {
-    fn get(&self, key: &str, from: u64) -> io::Result<Reply>;
+    fn get(&self, key: &str, from: u64, transcode: bool) -> io::Result<Reply>;
 }
 
 /// The fetcher, for `Command::Remote`.
@@ -120,6 +121,7 @@ struct Shared {
     moved: Condvar,
     fetch: Arc<dyn Fetch>,
     key: String,
+    transcode: bool,
     len: Option<u64>,
     /// Last failure for the engine's status (the decoder only sees a short read).
     failed: Arc<Mutex<Option<String>>>,
@@ -133,11 +135,11 @@ pub struct Stream {
 
 impl Stream {
     /// First request now (length, type), then the worker reads on. `failed` gets a later failure, in words.
-    pub fn open(fetch: Arc<dyn Fetch>, key: &str, failed: Arc<Mutex<Option<String>>>) -> io::Result<(Self, Info)> {
-        let first = fetch.get(key, 0)?;
+    pub fn open(fetch: Arc<dyn Fetch>, key: &str, transcode: bool, failed: Arc<Mutex<Option<String>>>) -> io::Result<(Self, Info)> {
+        let first = fetch.get(key, 0, transcode)?;
         let (_, len, ranged) = judge(&first, 0)?;
         let mime = first.content_type.as_deref().map(|m| m.split(';').next().unwrap_or(m).trim().to_string()).filter(|m| !m.is_empty());
-        let shared = Arc::new(Shared { state: Mutex::new(State::default()), moved: Condvar::new(), fetch, key: key.to_string(), len, failed });
+        let shared = Arc::new(Shared { state: Mutex::new(State::default()), moved: Condvar::new(), fetch, key: key.to_string(), transcode, len, failed });
         let worker = shared.clone();
         std::thread::Builder::new().name("http-stream".into()).spawn(move || work(&worker, Some(first)))?;
         Ok((Self { shared, pos: 0 }, Info { len, mime, ranged }))
@@ -236,7 +238,7 @@ fn work(sh: &Shared, mut first: Option<Reply>) {
         };
         let opened = match first.take() {
             Some(r) => Ok(r),
-            None => sh.fetch.get(&sh.key, from),
+            None => sh.fetch.get(&sh.key, from, sh.transcode),
         };
         let got = opened.and_then(|r| {
             let (at, _, _) = judge(&r, from)?;
@@ -449,7 +451,7 @@ pub(crate) mod tests {
     pub(crate) struct Plain(pub u16);
 
     impl Fetch for Plain {
-        fn get(&self, _key: &str, from: u64) -> io::Result<Reply> {
+        fn get(&self, _key: &str, from: u64, _: bool) -> io::Result<Reply> {
             let mut s = TcpStream::connect(("127.0.0.1", self.0))?;
             s.set_read_timeout(Some(Duration::from_secs(5)))?;
             write!(s, "GET /song HTTP/1.1\r\nHost: localhost\r\nRange: bytes={from}-\r\nConnection: close\r\n\r\n")?;
@@ -481,7 +483,7 @@ pub(crate) mod tests {
 
     fn open(port: u16) -> (Stream, Info, Arc<Mutex<Option<String>>>) {
         let failed = Arc::new(Mutex::new(None));
-        let (s, info) = Stream::open(Arc::new(Plain(port)), "k", failed.clone()).unwrap();
+        let (s, info) = Stream::open(Arc::new(Plain(port)), "k", false, failed.clone()).unwrap();
         (s, info, failed)
     }
 
@@ -554,11 +556,11 @@ pub(crate) mod tests {
     fn a_refused_sign_in_fails_at_once_in_words() {
         struct No;
         impl Fetch for No {
-            fn get(&self, _: &str, _: u64) -> io::Result<Reply> {
+            fn get(&self, _: &str, _: u64, _: bool) -> io::Result<Reply> {
                 Ok(Reply { status: 401, content_length: None, content_range: None, content_type: None, body: Box::new(io::empty()) })
             }
         }
-        let e = Stream::open(Arc::new(No), "k", Arc::default()).err().unwrap();
+        let e = Stream::open(Arc::new(No), "k", false, Arc::default()).err().unwrap();
         assert!(e.to_string().starts_with("Your music server refused the sign-in"), "{e}");
     }
 
@@ -567,14 +569,14 @@ pub(crate) mod tests {
         // Answers once (cut), then nobody listens.
         struct Once(Mutex<Option<Reply>>);
         impl Fetch for Once {
-            fn get(&self, _: &str, _: u64) -> io::Result<Reply> {
+            fn get(&self, _: &str, _: u64, _: bool) -> io::Result<Reply> {
                 self.0.lock().unwrap().take().ok_or_else(|| io::Error::new(io::ErrorKind::ConnectionRefused, "connection refused"))
             }
         }
         let body: Box<dyn Read + Send> = Box::new(io::Cursor::new(vec![1u8; 1000]));
         let first = Reply { status: 206, content_length: Some(1000), content_range: Some("bytes 0-9999/10000".into()), content_type: None, body };
         let failed = Arc::new(Mutex::new(None));
-        let (mut s, _) = Stream::open(Arc::new(Once(Mutex::new(Some(first)))), "k", failed.clone()).unwrap();
+        let (mut s, _) = Stream::open(Arc::new(Once(Mutex::new(Some(first)))), "k", false, failed.clone()).unwrap();
         let mut all = Vec::new();
         let e = s.read_to_end(&mut all).unwrap_err();
         assert_eq!(all.len(), 1000);
