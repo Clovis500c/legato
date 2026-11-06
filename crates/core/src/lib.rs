@@ -22,4 +22,5 @@ pub mod sync;
 pub mod syncmode;
 pub mod netlog;
 pub mod remote;
+pub mod rooms;
 pub mod themefile;
