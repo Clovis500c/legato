@@ -21,10 +21,13 @@ is the owner's call, not built (`docs/notes/plan-v2.md` › Waiting on the user)
 - Join: the list of rooms heard (3 s of mDNS, private IPv4 addresses only), one picked, then its code; or the QR code
   (`legato://room?c=<code>&h=<address:port>&r=<id>`, private IPv4 only). The QR holds the code: whoever sees it can
   join.
-- At most 8 listeners. 5 wrong codes and the room takes a new code (the host's view shows it). 4 handshakes at a time;
+- At most 8 listeners. 5 wrong codes and the room takes a new code (the host's view shows it), and joins shut 30 s,
+  doubled at each new code up to 15 min (`rooms::shut_ms`: a new code alone left guesses unlimited; a join then hears
+  "wait a few minutes"). 4 handshakes at a time;
   members don't count.
-- A listener silent 15 s (3 ticks) is dropped. The host ending the room, or closing the app, ends it for everyone
-  ("The room ended" / "The room's host left").
+- A listener silent 15 s (3 ticks) is dropped; a host silent 15 s (asleep, off the network) is gone for its
+  listeners. Every connection's task stops with the room. The host ending the room, or closing the app, ends it for
+  everyone ("The room ended" / "The room's host left").
 
 ## The wire
 
@@ -55,12 +58,16 @@ Reactions are a fixed set of six (heart, fire, laugh, clap, party, wow); no free
 - Clock: the median offset of the last 7 ping round trips under 3 s. The listener keeps the room's `Now` on the host's
   clock and turns it into its own when it looks.
 - Once a second `roomFollow.ts` compares the room with the player: a new song → load it at the room's position; off by
-  more than 1.5 s → seek, but not in the 4 s after a load or a seek (buffering); play / pause as the host.
+  more than 1.5 s → seek, but not in the 4 s after a load or a seek (buffering), nor at the room song's end (its
+  place stops at the host's length); play / pause as the host. The host sends its place again when its player slips
+  by more than 1 s (buffering), a seek past 2.5 s.
 - The song: the listener's library first (`Library::find`: source id, then ISRC, then title + artist + duration), then
   its YouTube id, then a version already known, then one search through the room's own `searchpace::Pace` (one at a
   time, a refusal waits 5 minutes; never routed around). Not found: "Can't find this song here", the player pauses and
-  the room goes on; the next song tries again. Up next is looked for ahead, without a search unless the pace allows it.
-- A listener may pause on their own (no seek or play forced while paused); Catch up joins the room again. Skip, seek,
+  the room goes on; the next song tries again. Up next is looked for ahead, without a search unless the pace allows it;
+  a song already being looked for waits for that answer (never two searches for one song).
+- A listener may pause on their own (no seek or play forced while paused); Catch up plays, then seeks to the room as
+  soon as it plays. Skip, seek,
   queue and play-now say "You follow the room: the host picks the songs", with Leave. A song that ends waits for the
   host instead of playing the listener's own Up next.
 
@@ -75,7 +82,9 @@ path, an account, a token or sound. The website's privacy row "Listening rooms" 
 
 - `music_core::rooms`: messages both ways, the checks, the clock, the drift rule, the link, the mDNS words.
 - `music_connectors::rooms`, over 127.0.0.1: two listeners following one song, a wrong code refused and too many
-  changing it, a full room, the end heard, a host gone without a word, another version told before the code, a big
+  changing it and shutting joins, a full room, the end heard, a host gone without a word, a host gone quiet, no task
+  left reading once the room went, another version told before the code, a big
   frame before the code never read.
-- `roomFollow.test.ts`: load, seek, play / pause, the quiet time, an own pause and Catch up, a missing song.
+- `roomFollow.test.ts`: load, seek, play / pause, the quiet time, an own pause and Catch up, a missing song, a song
+  ended here first, no seek back at the end, a host's seek while paused.
 - The interface in the site demo (an invented room to start or join). Two real devices: plan-v2 › Check live.

@@ -5,7 +5,7 @@ import { tr } from '../../shared/i18n/i18n'
 import { holdControls, nowTrack, passOver, remoteTrack, roomMove, usePlayer, type NowPlaying } from '../player/store'
 import { queueRows } from '../player/queue'
 import { useRoom } from './room'
-import { catchUp as caughtUp, follow, positionAt, SETTLE_MS, songKey, START, type Follow, type Mine, type Step } from './roomFollow'
+import { catchUp as caughtUp, DRIFT_MS, follow, positionAt, SETTLE_MS, songKey, START, type Follow, type Mine, type Step } from './roomFollow'
 
 // Listening rooms (docs/rooms.md): the host's player sent as it changes, a listener's player kept on the room's song
 // (roomFollow.ts decides, this file applies), reactions floating a moment. Rust: src-tauri/src/rooms.rs.
@@ -16,6 +16,8 @@ const FLOAT_MS = 2600
 const EVERY = 1000
 /** The host's position jumped by more than this against the clock: a seek, sent at once (ms). */
 const JUMP_MS = 2500
+/** Off by more than this, slowly (buffering): the room's place set again, no seek asked (ms). */
+const SLIP_MS = 1000
 
 let follower: Follow = START
 let room: RoomNow | null = null
@@ -24,6 +26,8 @@ let given: number | null = null
 let loading = false
 /** Each room song's answer here, by key (a song looked for once). */
 const found = new Map<string, RoomFind>()
+/** The answers on their way, by key. */
+const asking = new Map<string, Promise<RoomFind>>()
 let floatId = 0
 
 const notify = (text: string, kind: 'ok' | 'info' | 'error' = 'info') => useStore.getState().notify(text, { kind })
@@ -145,9 +149,10 @@ function hostFeed(): () => void {
     if (s.playId !== p.playId || s.now?.youtubeId !== p.now?.youtubeId || s.now?.title !== p.now?.title) return sendNow(true)
     if (s.playing !== p.playing) return sendNow(false)
     if (s.positionMs !== p.positionMs) {
-      const expected = last.pos + (s.playing ? Date.now() - last.at : 0)
-      if (Math.abs(s.positionMs - expected) > JUMP_MS) sendNow(true)
-      else if (s.playing) last = { pos: s.positionMs, at: Date.now() }
+      // Against the place last sent (Rust ticks from it): a seek, or a slip that would grow song long.
+      const off = Math.abs(s.positionMs - (last.pos + (s.playing ? Date.now() - last.at : 0)))
+      if (off > JUMP_MS) sendNow(true)
+      else if (off > SLIP_MS) sendNow(false)
     }
     if (s.list !== p.list || s.order !== p.order || s.index !== p.index) sendNext()
   })
@@ -160,7 +165,9 @@ function hostFeed(): () => void {
 
 function mine(): Mine {
   const p = usePlayer.getState()
-  return { key: !loading && given !== null && p.now?.trackId === given ? follower.song : null, positionMs: p.positionMs, playing: p.playing }
+  // Held at its end (store `step`): the next song is the host's.
+  const ended = !p.playing && !!p.durationMs && p.positionMs >= p.durationMs - DRIFT_MS
+  return { key: !loading && given !== null && p.now?.trackId === given ? follower.song : null, positionMs: p.positionMs, playing: p.playing, ended }
 }
 
 function run() {
@@ -174,10 +181,22 @@ function run() {
 async function find(song: RoomSong, now: boolean): Promise<RoomFind> {
   const key = songKey(song)!
   const known = found.get(key)
-  if (known && known.kind !== 'later') return known
-  const f = await api.roomResolve(song, now).catch((): RoomFind => ({ kind: 'missing' }))
-  if (f.kind !== 'later') found.set(key, f)
-  return f
+  if (known) return known
+  // Already being looked for (ahead, or the song now): that answer, never a second search.
+  const pending = asking.get(key)
+  if (pending) {
+    const f = await pending
+    if (f.kind !== 'later' || !now) return f
+  }
+  const ask = api.roomResolve(song, now).catch((): RoomFind => ({ kind: 'missing' }))
+  asking.set(key, ask)
+  try {
+    const f = await ask
+    if (f.kind !== 'later') found.set(key, f)
+    return f
+  } finally {
+    if (asking.get(key) === ask) asking.delete(key)
+  }
 }
 
 const trackOf = (f: RoomFind): LibraryTrack | undefined => (f.kind === 'library' ? useStore.getState().tracks.find((t) => t.id === f.id) : f.kind === 'track' ? remoteTrack(f.track) : undefined)

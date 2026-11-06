@@ -162,8 +162,8 @@ copies, downloads for offline), their accounts, limits and paid plan.
       - [x] The local network half (2026-11-06, docs/rooms.md): one device leads a room, up to 8 follow, each playing
         the song from their own library, its YouTube id, or one paced search (`searchpace`; a refusal: "Can't find
         this song here", the room goes on). SPAKE2 on the 6-digit code per listener, then ChaCha20-Poly1305 frames;
-        mDNS `_legatoroom._tcp`, private addresses only, 5 wrong codes and the code changes. Listen together… in the
-        player's More menus and the Share panel; the room's view (code, QR, people, reactions, End room / Leave), a
+        mDNS `_legatoroom._tcp`, private addresses only, 5 wrong codes and the code changes, joins shut 30 s to
+        15 min. Listen together… in the player's More menus and the Share panel; the room's view (code, QR, people, reactions, End room / Leave), a
         pill in the player, reactions floating over the cover, a listener's own pause and Catch up; skip, seek and
         queue say they follow the room. Tests: the rules (`music_core::rooms`), the wire over 127.0.0.1
         (`music_connectors::rooms`), the follow rules (`roomFollow.test.ts`); the interface seen in the site demo.
@@ -172,6 +172,10 @@ copies, downloads for offline), their accounts, limits and paid plan.
         wrong guess only counts against that room; the rooms keep their own `Pace` (one search at a time, a refusal
         waits 5 minutes) instead of sharing the imports' one; a listener's song that ends waits for the host instead
         of playing their own Up next; a song not found pauses the listener until the next one.
+        Reviewed 2026-11-06: guesses limited (joins shut after a new code), a host asleep or off the network noticed
+        in 15 s, no connection task left once the room went, the join's race, a song ended here first no longer
+        taken for an own pause, no seek back at the song's end, Catch up seeking at once, one search per song even
+        when looked for ahead and now, the host's buffering slip sent again.
       - [ ] The internet half: never built until the owner chooses (Waiting on the user).
 - [ ] 18. `L` A Linux build (AppImage, deb): WebKitGTK, the MPRIS media panel, the tray, PipeWire for the detector.
 - [ ] 19. `L` A macOS build, unsigned first as Liner's (signing: the owner's Apple Developer Program): WKWebView, Now

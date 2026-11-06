@@ -41,11 +41,13 @@ export interface Follow {
 
 export const START: Follow = { song: null, seq: -1, quietUntil: 0, own: false, missing: false, asked: null }
 
-/** This device's player. `key`: the room song it plays (null: something else, or still loading). */
+/** This device's player. `key`: the room song it plays (null: something else, or still loading). `ended`: its song
+ *  played to its end here (another version, or a little ahead of the room). */
 export interface Mine {
   key: string | null
   positionMs: number
   playing: boolean
+  ended?: boolean
 }
 
 export type Step = { kind: 'load'; song: RoomSong; atMs: number; play: boolean } | { kind: 'seek'; ms: number } | { kind: 'play' } | { kind: 'pause' }
@@ -64,13 +66,19 @@ export function follow(f: Follow, room: RoomNow, mine: Mine, now: number): [Foll
   // Still loading, or another song playing for now (the load's own answer comes).
   if (mine.key !== key) return [f, null]
   if (room.playing && !mine.playing) {
+    // Its song over here first: the host's next one comes. Not the listener's own pause.
+    if (mine.ended) return [f, null]
     // A pause nobody asked for, once the player had its moment to start: the listener's own.
     if (f.asked === true && now >= f.quietUntil) return [{ ...f, own: true }, null]
-    if (f.asked !== true) return [{ ...f, asked: true, seq: room.seq, quietUntil: now + SETTLE_MS }, { kind: 'play' }]
+    // Seq kept: a seek still due (Catch up, the host's seek meanwhile) comes once it plays.
+    if (f.asked !== true) return [{ ...f, asked: true, quietUntil: now + SETTLE_MS }, { kind: 'play' }]
     return [f, null]
   }
-  if (!room.playing && mine.playing) return [{ ...f, asked: false, seq: room.seq }, { kind: 'pause' }]
+  if (!room.playing && mine.playing) return [{ ...f, asked: false }, { kind: 'pause' }]
   if (room.seq !== f.seq) return [{ ...f, seq: room.seq, quietUntil: now + SETTLE_MS }, { kind: 'seek', ms: at }]
+  // The room's place stops at its song's end (its length as the host knows it): no seek back there.
+  const end = room.song.durationMs
+  if (end != null && at >= end - DRIFT_MS) return [f, null]
   if (room.playing && shouldSeek(at, mine.positionMs, now, f.quietUntil)) return [{ ...f, quietUntil: now + SETTLE_MS }, { kind: 'seek', ms: at }]
   return [f, null]
 }

@@ -80,12 +80,42 @@ describe('roomFollow', () => {
     // A new song loads paused.
     const [, load] = follow(own, room({ song: song('B', 'aaaaaaaaaaa') }), { key: f.song, positionMs: 20_000, playing: false }, t + 9000)
     expect(load).toMatchObject({ kind: 'load', play: false })
-    // Catch up: play, then the room's place.
+    // Catch up: play, then the room's place as soon as it plays (not after the quiet time).
     const back = catchUp(own)
     const [b2, play] = follow(back, r, { key: f.song, positionMs: 20_000, playing: false }, t + 10_000)
     expect(play).toEqual({ kind: 'play' })
-    const [, seek] = follow({ ...b2, quietUntil: 0 }, r, { key: f.song, positionMs: 20_000, playing: true }, t + 10_000)
-    expect(seek).toEqual({ kind: 'seek', ms: positionAt(r, t + 10_000) })
+    const [b3, seek] = follow(b2, r, { key: f.song, positionMs: 20_000, playing: true }, t + 11_000)
+    expect(seek).toEqual({ kind: 'seek', ms: positionAt(r, t + 11_000) })
+    expect(follow(b3, r, { key: f.song, positionMs: 20_000, playing: true }, t + 12_000)[1]).toBeNull()
+  })
+
+  it('waits for the host when its song ends here first', () => {
+    const r = room()
+    const t = 50_000
+    const f = settled(r, t)
+    // Another version, a few seconds shorter: over here, the room still plays.
+    const [f2, step] = follow(f, r, { key: f.song, positionMs: 195_000, playing: false, ended: true }, t + 9000)
+    expect(step).toBeNull()
+    expect(f2.own).toBe(false)
+    const [, load] = follow(f2, room({ song: song('B', 'bbbbbbbbbbb'), seq: 2, positionMs: 0, at: t + 10_000 }), { key: f.song, positionMs: 195_000, playing: false, ended: true }, t + 10_000)
+    expect(load).toMatchObject({ kind: 'load', play: true })
+  })
+
+  it('never seeks back at the room song’s end', () => {
+    const r = room({ positionMs: 199_000, at: 0 })
+    const t = 60_000
+    const f = settled(r, t)
+    // The room's place stopped at 200 s (the host's length); this version plays on.
+    expect(follow(f, r, { key: f.song, positionMs: 205_000, playing: true }, t)[1]).toBeNull()
+  })
+
+  it('lands a host’s seek made while paused', () => {
+    const t = 50_000
+    const f = settled(room(), t)
+    const [f2, pause] = follow(f, room({ playing: false, seq: 2, positionMs: 90_000, at: t }), { key: f.song, positionMs: 50_000, playing: true }, t)
+    expect(pause).toEqual({ kind: 'pause' })
+    const [, seek] = follow(f2, room({ playing: false, seq: 2, positionMs: 90_000, at: t }), { key: f.song, positionMs: 50_000, playing: false }, t + 1000)
+    expect(seek).toEqual({ kind: 'seek', ms: 90_000 })
   })
 
   it('does nothing for a song not found here, until the next one', () => {
