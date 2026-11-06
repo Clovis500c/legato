@@ -30,14 +30,14 @@ time, effort high.
 
 - One workflow per line, two agents one after the other: a builder (tested steps, a local commit each, the plan line
   ticked), then a reviewer that tries to break those commits and fixes what it finds. The main loop checks the tree and
-  `get_usage` between lines: no new workflow above 30 % of the 5-hour window (wait for the reset), no new line from
-  90 % of the week, the end by 95 %.
+  `get_usage` between lines: no new workflow above about 40 % of the 5-hour window (the owner's word on 2026-11-06,
+  « c'est que 40 % », after a 4-hour wait at 36 to 40 %; was 30 %), no new line from 90 % of the week, the end by 95 %.
 - Order: U1, U2 (right after U1: same pages), 17 listening rooms (the local network; a public relay is the owner's
   call), personal servers (Features › High: Jellyfin, Navidrome / Subsonic, Plex), 18 Linux, 19 macOS, 16 reach,
   14 lyrics sources, 13 imports in seconds, 15 SoundCloud sets and likes (its search needs the site's client id against
   its terms: the owner's call), the explicit badge and filter (Features' "Hide explicit songs"), 12, 11, 10, 9, 8, 7, 6,
   5, 4, 3, 2.
-- A cron wake-up (session only, `13,43 * * * *`) resumes after a 5-hour limit; delete it at the end.
+- A cron wake-up (session only, `13,43 * * * *`, id `69274c3f`) resumes after a 5-hour limit; delete it at the end.
 - The script: `~/.claude/projects/C--dev-music-app/8c8ab02b-4287-45ba-a586-6f45a2aaceeb/workflows/scripts/legato-line-wf_3695f954-2fd.js`
   (args: key, base = HEAD before the line, title, spec, reviewFocus).
 - Progress: U1 done (2e7edc2 to 901b8e6, about 307 k agent tokens, 52 % of a 5-hour window; the review fixed an 8 px
@@ -46,7 +46,9 @@ time, effort high.
   476 k agent tokens: glow setting, calmer PC surfaces; `docs/design.md` › Glow, › Simplicity on the PC; the review put
   the glow classes under Tailwind's shadows). 17 listening rooms, the local network half, built (d35c399 to the
   docs commit after 71ad058: rules, wire, shell, interface, `docs/rooms.md`; the internet half in plan-v2 › Waiting on
-  the user). Next: its review, then personal servers, once the 5-hour window is back under 30 %.
+  the user); the review (9906ea9, 563f12a) limited code guesses with a growing wait, ended a gone room's tasks, made a
+  listener notice a quiet host, fixed Catch up and the song's end, one search per song. About 389 k agent tokens, about
+  50 % of a window, 7 % of the week. Next: personal servers.
 - The end: a report in French (`docs/notes/report-2026-11-06.md`, untracked), this section folded into the rest of
   this file, the cron deleted, the report sent to the owner (SendUserFile, proactive).
 
