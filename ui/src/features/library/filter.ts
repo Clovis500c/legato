@@ -179,7 +179,7 @@ export function sortGroups<G extends Grouped>(groups: G[], sort: GroupSort, { si
 }
 
 export function libraryStats(tracks: LibraryTrack[]) {
-  const perSource: Record<Source, number> = { spotify: 0, youtube: 0, local: 0, apple: 0 }
+  const perSource: Record<Source, number> = { spotify: 0, youtube: 0, local: 0, apple: 0, server: 0 }
   let linked = 0
   for (const t of tracks) {
     for (const s of Object.keys(t.ids) as Source[]) perSource[s]++

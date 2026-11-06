@@ -2220,6 +2220,7 @@ const ja: Record<string, string> = {
   'Play it here in a room: friends on the same network follow it, each from their own source.': 'ここでルームを開いて再生：同じネットワークの友だちが、それぞれ自分のソースで一緒に聴きます。',
   'Play it in your room': '自分のルームで再生',
   'Start a room with it': 'これでルームを始める',
+  'Music server': '音楽サーバー',
 }
 
 export default ja

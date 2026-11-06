@@ -2220,6 +2220,7 @@ const pl: Record<string, string> = {
   'Play it here in a room: friends on the same network follow it, each from their own source.': 'Odtwórz ją tutaj w pokoju: znajomi w tej samej sieci słuchają razem, każdy ze swojego źródła.',
   'Play it in your room': 'Odtwórz w swoim pokoju',
   'Start a room with it': 'Utwórz pokój z nią',
+  'Music server': 'Serwer muzyki',
 }
 
 export default pl

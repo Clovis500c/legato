@@ -2220,6 +2220,7 @@ const ko: Record<string, string> = {
   'Play it here in a room: friends on the same network follow it, each from their own source.': '여기서 방을 열어 재생하세요: 같은 네트워크의 친구들이 각자 자기 소스로 따라 들어요.',
   'Play it in your room': '내 방에서 재생',
   'Start a room with it': '이걸로 방 만들기',
+  'Music server': '음악 서버',
 }
 
 export default ko

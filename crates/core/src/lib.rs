@@ -15,6 +15,7 @@ pub mod playfile;
 pub mod model;
 pub mod search;
 pub mod searchpace;
+pub mod server;
 pub mod share;
 pub mod songlist;
 pub mod spotify_export;

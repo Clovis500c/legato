@@ -988,6 +988,47 @@ impl Library {
         })
     }
 
+    /// A server's songs mirror its latest sync (`server.rs`): upsert all in one write (links to the same songs from other
+    /// sources), drop this server's ids it no longer has, then rows left with no source and no playlist. Other servers'
+    /// ids stay. Returns the songs kept.
+    pub fn replace_server(&self, key: &str, tracks: &[Track]) -> Result<usize> {
+        let prefix = format!("{key}:");
+        self.tx(|| {
+            let tracks: Vec<&Track> = tracks.iter().filter(|t| !self.is_removed(t).unwrap_or(false)).collect();
+            let keep: BTreeSet<&str> = tracks.iter().filter_map(|t| t.ids.get(&Source::Server).map(String::as_str)).filter(|id| id.starts_with(&prefix)).collect();
+            for t in &tracks {
+                self.upsert_track(t)?;
+            }
+            let old: Vec<String> = {
+                let mut stmt = self.db.prepare("SELECT source_id FROM track_ids WHERE source = 'server' AND substr(source_id, 1, ?2) = ?1")?;
+                stmt.query_map(params![prefix, prefix.len() as i64], |r| r.get(0))?.collect::<rusqlite::Result<_>>()?
+            };
+            for id in old.iter().filter(|id| !keep.contains(id.as_str())) {
+                self.db.execute("DELETE FROM track_ids WHERE source = 'server' AND source_id = ?1", [id])?;
+            }
+            self.db.execute("DELETE FROM tracks WHERE id NOT IN (SELECT track_id FROM track_ids) AND id NOT IN (SELECT track_id FROM playlist_tracks)", [])?;
+            Ok(keep.len())
+        })
+    }
+
+    /// A server's imported playlists that it no longer has (`keep` = its playlists' library ids now) go, rows left
+    /// without a source with them. Signed out: `keep` empty, every one goes.
+    pub fn drop_server_playlists(&self, key: &str, keep: &[String]) -> Result<()> {
+        let prefix = format!("{key}:");
+        self.tx(|| {
+            let mine: Vec<(i64, String)> = {
+                let mut stmt = self.db.prepare("SELECT id, source_id FROM playlists WHERE source = 'server' AND custom = 0 AND substr(source_id, 1, ?2) = ?1")?;
+                stmt.query_map(params![prefix, prefix.len() as i64], |r| Ok((r.get(0)?, r.get(1)?)))?.collect::<rusqlite::Result<_>>()?
+            };
+            for (id, sid) in mine.iter().filter(|(_, sid)| !keep.contains(sid)) {
+                self.db.execute("DELETE FROM playlists WHERE id = ?1", [id])?;
+                self.gone("playlist", &format!("server:{sid}"))?;
+            }
+            self.db.execute("DELETE FROM tracks WHERE id NOT IN (SELECT track_id FROM track_ids) AND id NOT IN (SELECT track_id FROM playlist_tracks)", [])?;
+            Ok(())
+        })
+    }
+
     /// Apply edit; returns new playlist id for Create / Duplicate.
     pub fn edit_playlist(&self, edit: PlaylistEdit) -> Result<Option<i64>> {
         self.tx(|| {
@@ -1493,6 +1534,64 @@ mod tests {
             ids: BTreeMap::from([(Source::Youtube, "5NV6Rdv1a3I".into())]),
             ..Default::default()
         }
+    }
+
+    fn served(key: &str, n: usize) -> Vec<Track> {
+        (0..n).map(|i| Track { title: format!("Song {i} of {key}"), artist: format!("Artist {}", i % 50), album: Some(format!("Album {}", i / 10)), duration_ms: Some(200_000 + i as u32), ids: BTreeMap::from([(Source::Server, format!("{key}:tr-{i}"))]), ..Default::default() }).collect()
+    }
+
+    #[test]
+    fn a_servers_songs_mirror_its_sync_and_join_the_same_songs_from_elsewhere() -> Result<()> {
+        let lib = Library::in_memory()?;
+        lib.upsert_track(&spotify())?;
+        let mut songs = served("s1", 3);
+        // Same song as the Spotify one (ISRC): one row with both sources.
+        songs.push(Track { ids: BTreeMap::from([(Source::Server, "s1:lucky".into())]), ..spotify() });
+        assert_eq!(lib.replace_server("s1", &songs)?, 4);
+        // Another server's songs are its own.
+        lib.replace_server("s2", &served("s2", 2))?;
+        let all = lib.tracks()?;
+        assert_eq!(all.len(), 6);
+        let lucky = all.iter().find(|t| t.track.ids.contains_key(&Source::Spotify)).unwrap();
+        assert_eq!(lucky.track.ids.get(&Source::Server).map(String::as_str), Some("s1:lucky"));
+        // Next sync: one song gone from the server; the Spotify song stays, without the server.
+        lib.replace_server("s1", &served("s1", 3))?;
+        let all = lib.tracks()?;
+        assert_eq!(all.len(), 6);
+        assert!(all.iter().all(|t| t.track.ids.get(&Source::Server).is_none_or(|id| id != "s1:lucky")));
+        // Signed out: its songs and lists go, the other server's stay.
+        lib.save_playlist(Source::Server, "s1:pl-1", "Road", &served("s1", 2))?;
+        lib.save_playlist(Source::Server, "s2:pl-1", "Road", &served("s2", 1))?;
+        lib.drop_server_playlists("s1", &[])?;
+        lib.replace_server("s1", &[])?;
+        assert_eq!(lib.tracks()?.len(), 3);
+        assert_eq!(lib.playlists()?.iter().filter(|p| p.source == Source::Server).count(), 1);
+        Ok(())
+    }
+
+    #[test]
+    fn ten_thousand_server_songs_land_in_one_write() -> Result<()> {
+        let lib = Library::in_memory()?;
+        let songs = served("s1", 10_000);
+        let started = std::time::Instant::now();
+        assert_eq!(lib.replace_server("s1", &songs)?, 10_000);
+        // Again (the next sync): nothing new, quicker.
+        lib.replace_server("s1", &songs)?;
+        assert_eq!(lib.tracks()?.len(), 10_000);
+        // Debug build: generous. Async command, so never on the window's thread anyway.
+        assert!(started.elapsed() < std::time::Duration::from_secs(60), "{:?}", started.elapsed());
+        Ok(())
+    }
+
+    #[test]
+    fn a_server_playlist_gone_from_it_goes_here() -> Result<()> {
+        let lib = Library::in_memory()?;
+        lib.save_playlist(Source::Server, "s1:a", "A", &served("s1", 2))?;
+        lib.save_playlist(Source::Server, "s1:b", "B", &served("s1", 2))?;
+        lib.drop_server_playlists("s1", &["s1:a".into()])?;
+        let names: Vec<String> = lib.playlists()?.into_iter().map(|p| p.name).collect();
+        assert_eq!(names, ["A"]);
+        Ok(())
     }
 
     #[test]

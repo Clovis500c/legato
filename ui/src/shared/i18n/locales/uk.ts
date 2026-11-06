@@ -2220,6 +2220,7 @@ const uk: Record<string, string> = {
   'Play it here in a room: friends on the same network follow it, each from their own source.': 'Увімкни його тут у кімнаті: друзі в тій самій мережі слухають разом, кожен зі свого джерела.',
   'Play it in your room': 'Увімкнути у своїй кімнаті',
   'Start a room with it': 'Створити кімнату з ним',
+  'Music server': 'Музичний сервер',
 }
 
 export default uk

@@ -2220,6 +2220,7 @@ const tr: Record<string, string> = {
   'Play it here in a room: friends on the same network follow it, each from their own source.': 'Burada bir odada çal: aynı ağdaki arkadaşlar her biri kendi kaynağından takip eder.',
   'Play it in your room': 'Odanda çal',
   'Start a room with it': 'Bununla oda aç',
+  'Music server': 'Müzik sunucusu',
 }
 
 export default tr

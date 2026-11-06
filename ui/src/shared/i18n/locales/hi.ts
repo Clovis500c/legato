@@ -2220,6 +2220,7 @@ const hi: Record<string, string> = {
   'Play it here in a room: friends on the same network follow it, each from their own source.': 'इसे यहाँ एक कमरे में चलाएँ: उसी नेटवर्क पर दोस्त साथ सुनते हैं, हर कोई अपने स्रोत से।',
   'Play it in your room': 'इसे अपने कमरे में चलाएँ',
   'Start a room with it': 'इसके साथ कमरा शुरू करें',
+  'Music server': 'म्यूज़िक सर्वर',
 }
 
 export default hi

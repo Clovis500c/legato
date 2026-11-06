@@ -2220,6 +2220,7 @@ const sv: Record<string, string> = {
   'Play it here in a room: friends on the same network follow it, each from their own source.': 'Spela den här i ett rum: vänner på samma nätverk lyssnar med, var och en från sin egen källa.',
   'Play it in your room': 'Spela i ditt rum',
   'Start a room with it': 'Starta ett rum med den',
+  'Music server': 'Musikserver',
 }
 
 export default sv

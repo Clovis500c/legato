@@ -227,7 +227,7 @@ impl AppState {
     fn connector(&self, source: Source) -> Option<Box<dyn Connector>> {
         match source {
             Source::Spotify => self.spotify().map(|c| Box::new(c) as _),
-            Source::Youtube | Source::Local | Source::Apple => None,
+            Source::Youtube | Source::Local | Source::Apple | Source::Server => None,
         }
     }
 }

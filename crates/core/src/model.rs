@@ -14,6 +14,8 @@ pub enum Source {
     Local,
     /// Apple Music catalog (iTunes id). Metadata only for now.
     Apple,
+    /// The user's own music server (`server.rs`): "<server key>:<item id>", streamed by the native engine.
+    Server,
 }
 
 impl Source {
@@ -23,6 +25,7 @@ impl Source {
             Source::Youtube => "youtube",
             Source::Local => "local",
             Source::Apple => "apple",
+            Source::Server => "server",
         }
     }
 }

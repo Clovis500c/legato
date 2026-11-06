@@ -2220,6 +2220,7 @@ const vi: Record<string, string> = {
   'Play it here in a room: friends on the same network follow it, each from their own source.': 'Phát ở đây trong một phòng: bạn bè cùng mạng nghe theo, mỗi người từ nguồn riêng.',
   'Play it in your room': 'Phát trong phòng của bạn',
   'Start a room with it': 'Mở phòng với danh sách này',
+  'Music server': 'Máy chủ nhạc',
 }
 
 export default vi

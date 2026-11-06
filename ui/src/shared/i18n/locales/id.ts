@@ -2220,6 +2220,7 @@ const id: Record<string, string> = {
   'Play it here in a room: friends on the same network follow it, each from their own source.': 'Putar di sini dalam ruang: teman di jaringan yang sama ikut mendengarkan, masing-masing dari sumbernya sendiri.',
   'Play it in your room': 'Putar di ruangmu',
   'Start a room with it': 'Mulai ruang dengan ini',
+  'Music server': 'Server musik',
 }
 
 export default id

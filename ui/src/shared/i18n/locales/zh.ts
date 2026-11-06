@@ -2220,6 +2220,7 @@ const zh: Record<string, string> = {
   'Play it here in a room: friends on the same network follow it, each from their own source.': '在这里开个房间播放：同一网络的朋友各自用自己的来源一起听。',
   'Play it in your room': '在你的房间播放',
   'Start a room with it': '用它创建房间',
+  'Music server': '音乐服务器',
 }
 
 export default zh
