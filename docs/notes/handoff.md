@@ -12,11 +12,13 @@ be able to take the project over). Updated 2026-11-06, evening, from the owner's
 
 - **Released:** Stable is **1.1.681** (`0c3561a`, 2026-11-05): the Windows installer, `latest.json` and the Android APK
   (`Legato_1.1.681_android-arm64.apk`). Beta: the autonomous run's push of 2026-11-06 (about 17:30, Paris) builds the
-  next one, an auto version above 1.1.681, with everything below (U1, U2, rooms, servers, the phone fixes, line 2).
+  next one, an auto version above 1.1.681, with everything below (U1, U2, rooms, servers, the phone fixes, line 2):
+  1.1.742. Then the owner's word on the other PC (2026-11-06, evening, « Pousse une Beta »): the phone-1 review's two
+  fixes (Back, a YouTube song without internet), 1.1.744 by the dry run, for their phone.
 - **master** = **platforms**, both pushed on 2026-11-06 (the owner's word: past 95 % of the 5-hour window, push it all,
   they go on from another PC). The website, https://clovis500c.github.io/legato/, is deployed from master. Nothing
   half done, no stash, no other branch or worktree. On the other PC (2026-11-06, evening): master pulled to `e27c486`,
-  `platforms` made from it, the phone-1 review committed on it (below), not pushed.
+  `platforms` made from it, the phone-1 review committed on it (below), then both pushed again (master = platforms).
 - **Untracked:** `docs/notes/report-*.md`, the owner's reports in French (what each autonomous run did, what to try).
   Never commit them; read them for context.
 - **Never tried for real** (built and unit-tested, seen in the demo or on the emulator only): plan-v2 › Check live in
@@ -71,8 +73,8 @@ time, effort high.
   `onBackPressed()` straight): fixed in `MainActivity.kt`; the lists' i box joins the layers. The parked video kept.
   The veil kept, but a silent embed was taken for a refused video (blocked for good, the queue skipped 12 s in): now
   waited on until it answers. The phone's rules in `docs/design.md` › Phone (the video's place, Back). Left of it:
-  the APK (`--target x86_64`) tried on an emulator (Back's order, the parked video, the network off), not possible on
-  the other PC yet (› On the other PC), and the owner's tries (plan-v2 › Check live, its last line).
+  the owner's tries of that Beta's APK on their phone (plan-v2 › Check live, its last line: GitHub's build is the
+  first to compile the Kotlin line); an emulator run, not possible on the other PC yet (› On the other PC).
   Next: a normal session follows "How to continue" (smallest first); an autonomous run goes on with 18, and on down
   the order.
 - The end: a report in French (`docs/notes/report-2026-11-06.md`, untracked), this section folded into the rest of
