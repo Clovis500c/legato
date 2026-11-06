@@ -282,9 +282,11 @@ We still pin the policy on the iframe: a meta tag or header added later can't br
 
 ## Your music server: songs over HTTP (2026-11-06)
 
-Personal servers (Settings › Accounts › Your music server): Subsonic-compatible ones now (Navidrome, Airsonic, Gonic,
-Ampache: `crates/connectors/src/subsonic.rs`, API 1.16.1), Jellyfin and Plex later on the same pieces. Their songs play
-in the native engine like local files, so gapless, fades, the Live Editor, the visualizer and the media panel apply.
+Personal servers (Settings › Accounts › Your music server): Subsonic-compatible ones (Navidrome, Airsonic, Gonic,
+Ampache: `crates/connectors/src/subsonic.rs`, API 1.16.1), Jellyfin (`jellyfin.rs`, 10.9 or newer) and Plex
+(`plex.rs`), all three behind one door (`connectors::servers::Conn`: library, playlists, search, like, plays, stream,
+covers, sign-out). Their songs play in the native engine like local files, so gapless, fades, the Live Editor, the
+visualizer and the media panel apply.
 
 - Library: `Source::Server`, ids `"<server key>:<item id>"`, the key `s` + 8 hex of sha256(kind, address, user)
   (`music_core::server`). A sync (`src-tauri/src/servers.rs` `server_sync`: Sign in, Sync now; and in `sync_all` when
@@ -319,10 +321,37 @@ in the native engine like local files, so gapless, fades, the Live Editor, the v
   No user or password inside the address (`http://me:secret@nas` is refused). Plain http:// is allowed; to a public
   address the row warns (`music_core::server::exposure`). A self-signed certificate fails with a clear error (no way to
   trust one yet: plan-v2).
+- Jellyfin (2026-11-06): `System/Info/Public` first (a Jellyfin, 10.9 or newer: `/Items?userId=`, `UserFavoriteItems`,
+  `UserPlayedItems`), then `Users/AuthenticateByName` with `Authorization: MediaBrowser Client="Legato",
+  Device="Legato on Windows", DeviceId=<random, per sign-in>, Version=…`; the password is sent that once, the account
+  keeps the access token and the user id. Every later request carries the token in that header (never a URL). A sync
+  reads every song by pages of 500 (`/Items`, `includeItemTypes=Audio`, their favourites among them = likes), the audio
+  playlists and their items. Like = `UserFavoriteItems` (POST / DELETE). A song from the server: `Sessions/Playing` at
+  its start, `Sessions/Playing/Stopped` with the position at its end, and `UserPlayedItems` when the play counts (past
+  half or 4 minutes). Audio: `/Audio/<id>/stream?static=true` (the file), else MP3 at 320 kbps. Covers:
+  `/Items/<id>/Images/Primary?maxWidth=1200` (the song's, else its album's), the token added as a header by the art
+  scheme's signer (`art::Signed`). Sign out: `Sessions/Logout` (10 s at most), then the account goes.
+- Plex (2026-11-06, developer.plex.tv read): Sign in with Plex makes a strong PIN (`plex.tv/api/v2/pins?strong=true`,
+  a random client identifier per sign-in), opens `app.plex.tv/auth#?clientID=…&code=…` in the user's browser (the app
+  never sees the password or drives that page), shows the code, and reads the PIN every 3 s (30 s after a 429) until
+  its token, its expiry (30 minutes at most) or Cancel (`src-tauri/src/plex.rs`). Then `plex.tv/api/v2/user` (the
+  name) and `api/v2/resources?includeHttps=1&includeRelay=1` (the servers, owned first, each with its own token and
+  addresses). One server is picked at once, several show a picker; its addresses are tried in order (on this network,
+  then direct https, then direct http, Plex's relay last) until one answers `/identity` as that machine. The account
+  keeps the server's token, its machine id (the key: addresses change), its direct and relay addresses; the account's
+  own token is dropped. A sync that finds the address gone tries the others and keeps the one that answers. Every
+  request carries `X-Plex-Token` (and the client identifier) in headers. A sync reads each music library
+  (`library/sections`, type artist) by pages (`X-Plex-Container-Start` / `-Size`, 500, the total from
+  `X-Plex-Container-Total-Size` or `totalSize`); a library that fails is counted, nothing dropped. Likes = 5 stars
+  (`userRating` 10, Plexamp's loved), Like / unlike = `:/rate` 10 / -1; a counted play = `:/scrobble`. Audio: the
+  part's own file (`/library/parts/…`, learnt at the sync, else asked once from `library/metadata/<id>`) with ranges;
+  Plex's transcoder isn't asked, so a format the engine can't read says so. Covers: `photo/:/transcode` at 1200 px.
+  The row says when only the relay answered.
 - Not yet: Volume levelling and Skip silence (local files only: the server's ReplayGain from OpenSubsonic is a plan
-  line), the server's own search in the app's search, playlist edits sent back. Tested with a local HTTP server in the
+  line), the server's own search in the app's search (each connector has it: `Conn::search`), playlist edits sent
+  back, Plex's transcoder for formats the engine can't read. Tested with a local HTTP server in the
   tests (play, seek by range, a server without ranges, a dropped connection, transcoding asked again); never against a
-  real Navidrome.
+  real Navidrome, Jellyfin or Plex.
 
 ## Live processing (Adaptive Sound, moving cover; 2026-10-21)
 

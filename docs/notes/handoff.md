@@ -52,7 +52,8 @@ time, effort high.
   native HTTP playback by range requests): 5cf9d21 to 936f195, reviewed in 0ee4a2c to daafc64 (the 5-hour limit cut
   the first review; resumed from the run's cache): covers of an address as typed, no password in an address, a partial
   read drops no song, plain sync files carry no server, no worker left after Stop. About 700 k agent tokens, 10 % of
-  the week. Next: part 2 (Jellyfin, then Plex).
+  the week. Part 2 (Jellyfin, Plex by PIN, one `Conn` for the three kinds): 505e0fb and the docs commit after it,
+  untried on a real server.
 - The end: a report in French (`docs/notes/report-2026-11-06.md`, untracked), this section folded into the rest of
   this file, the cron deleted, the report sent to the owner (SendUserFile, proactive).
 
@@ -66,7 +67,8 @@ time, effort high.
    owner's ask 2026-11-05: lead Liner on every point; `ideas/liner.md`), smallest first, then plan-v2's other open
    lines that need no account, smallest first:
    - Features, sorted › High: same loudness across sources (needs an ear), the accessibility pass, personal servers
-     part 2 (Subsonic / Navidrome built 2026-11-06, untried on a real server; Jellyfin and Plex left), macOS and Linux builds.
+     (Subsonic, Jellyfin and Plex built 2026-11-06, untried on a real server; their own search, Plex JWT and transcoder
+     as plan lines), macOS and Linux builds.
    - Classic skins, the autopilot's next line, not started: decide first how a mini layout keeps YouTube's 200 × 200
      rule (the video at 200 px beside it, or Cover mode only).
    - Platforms: Connect Spotify's untried cases (`S`), public playlist links from more services (`S`).

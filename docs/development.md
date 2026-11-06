@@ -213,6 +213,24 @@ Navidrome of your own (any Subsonic-compatible server works the same):
 The password goes to the dev build's own keychain entry. A public `http://` address shows the warning; an `https://`
 one with a self-signed certificate fails with "certificate isn't trusted" (a known limit).
 
+### Jellyfin and Plex (the owner's servers)
+
+Both connectors (`jellyfin.rs`, `plex.rs`) are tested against mock answers only. Trying them takes a server of your
+own, and for Plex your own Plex account: that's the owner's to run, never a script's.
+
+- Jellyfin (10.9 or newer): `docker run -d -p 8096:8096 -v <your music folder>:/media/music:ro -v <a data folder>:/config jellyfin/jellyfin:latest`,
+  then its setup wizard at `http://localhost:8096` (a user, a Music library). In `pnpm dev`: Server type Jellyfin,
+  address `http://localhost:8096`, that user and password. The Dashboard › Devices page then lists "Legato on
+  Windows" with its own random id; Sign out removes it there. A like shows as a favourite (the heart); a song played
+  past half counts in its play count; Dashboard › Activity shows playback start and stop.
+- Plex: a Plex Media Server signed in to your Plex account, with a Music library. In `pnpm dev`: Server type Plex ›
+  Sign in with Plex: your browser opens app.plex.tv with the code shown in the app; sign in there and allow Legato.
+  One server is picked at once; several show a picker. The row says when only Plex's relay answered. A like shows as
+  5 stars in Plex, a song played past half in its history. The account's own token is never kept; Sign out forgets the
+  server's.
+
+The keychain's `servers` entry holds Jellyfin's access token and Plex's server token, never their passwords.
+
 ## Keychain
 
 Secrets go through the `keyring` crate (`src-tauri/src/secrets.rs`): service `app.legato.desktop`, one entry per
@@ -223,6 +241,7 @@ key, JSON values.
 | `credentials` | `{"spotifyClientId": "…"}` |
 | `spotify` | Spotify tokens: `accessToken`, `refreshToken`, `expiresAt` (epoch ms). Refreshed by the app. |
 | `lastfm` | The Last.fm session |
+| `servers` | Your music servers: a list of accounts (kind, address, user; a Subsonic password, a Jellyfin access token, a Plex server token, never a Jellyfin or Plex password) |
 | `sync_key` | Sync Mode's key |
 
 To look at or delete them (here for `spotify`):
