@@ -625,6 +625,40 @@ pub(crate) mod tests {
     }
 
     #[test]
+    fn no_worker_is_left_once_the_stream_is_dropped() {
+        // The worker holds the fetcher: back to one holder = it has ended. Waiting with the buffer full, and idle at the end.
+        let srv = serve(bytes(6 << 20), true, None);
+        let fetch: Arc<dyn Fetch> = Arc::new(Plain(srv.port));
+        for read in [1_000usize, 6 << 20] {
+            let (mut s, _) = Stream::open(fetch.clone(), "k", false, Arc::default()).unwrap();
+            let mut b = vec![0; read];
+            s.read_exact(&mut b).unwrap();
+            // Let the worker fill up to its limit (or reach the end) and wait there.
+            std::thread::sleep(Duration::from_millis(300));
+            assert_eq!(Arc::strong_count(&fetch), 2);
+            drop(s);
+            let until = Instant::now() + Duration::from_secs(5);
+            while Arc::strong_count(&fetch) > 1 && Instant::now() < until {
+                std::thread::sleep(Duration::from_millis(10));
+            }
+            assert_eq!(Arc::strong_count(&fetch), 1, "worker still there after Stop ({read} bytes read)");
+        }
+    }
+
+    #[test]
+    fn the_buffer_stays_bounded_however_far_the_song_goes() {
+        let srv = serve(bytes(12 << 20), true, None);
+        let (mut s, _, _) = open(srv.port);
+        let mut b = vec![0; 64 << 10];
+        let mut most = 0;
+        for _ in 0..((12 << 20) / (64 << 10)) {
+            s.read_exact(&mut b).unwrap();
+            most = most.max(s.shared.state.lock().unwrap().buf.len());
+        }
+        assert!(most <= AHEAD + BEHIND + CHUNK, "{most}");
+    }
+
+    #[test]
     fn ranges_are_read_from_their_header() {
         assert_eq!(parse_range("bytes 100-999/1000"), Some((100, Some(1000))));
         assert_eq!(parse_range("bytes 0-9/*"), Some((0, None)));
