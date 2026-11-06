@@ -21,6 +21,7 @@ export type MenuEntry = MenuItem | '-' | false | '' | 0 | null | undefined
 
 const useMenu = create<{ at: { x: number; y: number; up?: boolean } | null; items: MenuEntry[] }>(() => ({ at: null, items: [] }))
 export const closeMenu = () => useMenu.setState({ at: null })
+export const menuOpen = () => useMenu.getState().at !== null
 
 /** place: pinned to the clicked control instead of the pointer. 'above' for buttons at the window's foot (player bar), 'below' for dropdowns. */
 export function openMenu(e: MouseEvent | React.MouseEvent, items: MenuEntry[], { place }: { place?: 'above' | 'below' } = {}) {

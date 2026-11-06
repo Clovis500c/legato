@@ -2,6 +2,7 @@ import { X } from '@phosphor-icons/react'
 import { useEffect, useRef, type ReactNode } from 'react'
 import { RoundButton } from './controls'
 import { tr } from '../i18n/i18n'
+import { holdLayer } from './layers'
 
 const FOCUSABLE = 'input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), [href], [tabindex]:not([tabindex="-1"])'
 
@@ -34,7 +35,10 @@ export function Dialog({ title, kicker, onClose, wide = false, children }: { tit
       els[next].focus()
     }
     window.addEventListener('keydown', onKey)
+    // Android's Back closes the newest one (app/androidBack.ts).
+    const leave = holdLayer(() => close.current())
     return () => {
+      leave()
       window.removeEventListener('keydown', onKey)
       if (back?.isConnected) back.focus()
     }

@@ -125,17 +125,22 @@ class MainActivity : TauriActivity() {
     if (wryWebView == null) web?.onResume()
   }
 
-  // Back: the page's history first, then onBackPressed (wry's own way, with its field emptied).
+  // Back: the app's own first (`window.legatoBack`, ui/src/app/androidBack.ts: a menu, a dialog, a full screen, Now
+  // Playing, then the page before), then the page's history, then onBackPressed (wry's own way, its field emptied).
   private inner class PageBack : OnBackPressedCallback(true) {
-    @Suppress("DEPRECATION")
     override fun handleOnBackPressed() {
-      val view = web
-      if (view != null && view.canGoBack()) view.goBack()
-      else {
-        isEnabled = false
-        onBackPressed()
-        isEnabled = true
+      val view = web ?: return behind()
+      view.evaluateJavascript("(window.legatoBack ? window.legatoBack() : false)") { taken ->
+        if (taken == "true") return@evaluateJavascript
+        if (view.canGoBack()) view.goBack() else behind()
       }
+    }
+
+    @Suppress("DEPRECATION")
+    private fun behind() {
+      isEnabled = false
+      onBackPressed()
+      isEnabled = true
     }
   }
 

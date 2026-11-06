@@ -16,6 +16,7 @@ import { startMedia } from '../features/player/media'
 import { resumeSession, startSessionSaving } from '../features/player/session'
 import { startCallPause, startUnplugPause } from '../features/player/unplug'
 import { startScreenAwake } from '../features/player/screenAwake'
+import { installBack } from './androidBack'
 import { MiniPlayer } from '../features/player/MiniPlayer'
 import { VolumeHud } from '../features/player/VolumeHud'
 import { useKaraoke } from '../features/player/karaokeMode'
@@ -282,6 +283,7 @@ export function App() {
   useEffect(() => startUnplugPause(), [])
   useEffect(() => startCallPause(), [])
   useEffect(() => startScreenAwake(), [])
+  useEffect(() => installBack(), [])
   useEffect(() => startShortcuts(), [])
   useEffect(() => startUpdates(), [])
   // Watched local folders changed: the library shows it.

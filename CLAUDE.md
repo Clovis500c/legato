@@ -35,7 +35,8 @@ Design direction (v2): `docs/design.md`; mockups in the Figma file "Untitled" (t
   through `ApkInstall.kt`), tray mode (`background.rs`: close = hide, low-resource webview, suspend; Quit is the only exit), global shortcuts (`hotkeys.rs`), voice search (`speech.rs`: WinRT `SpeechRecognizer`, needs Windows' online speech recognition; WebView2 has no Web Speech), Sync Mode shell (`syncmode.rs`: folder, keychain key, minute timer, network; snapshots read WebView2 cookies, so async commands only), phone remote (`remote.rs` + `remote.html`, and `overlay.html` for OBS on this PC: a page on the LAN from a QR code, its secret in the keychain, private addresses only, taps sent as media keys; pure part `crates/core/src/remote.rs`, UI `features/remote/`), local diagnostics log (`diag.rs`: writer thread, panic hook, `diag_log` / `diag_report`; pure part `crates/core/src/diag.rs`; interface `shared/diag.ts`, `app/diagnostics.ts`, `app/ErrorBoundary.tsx`; a log line = our own English words + an optional detail, never a title or name in the words; see `docs/architecture.md`). All logic goes in `crates/`.
 - Android (2026-11-02): `src-tauri/gen/android` (Tauri's project; `MainActivity.kt`: multicast lock, system bars, background play: YouTube's frames
   kept visible, the WebView never paused (wry's own field for it emptied: its pause cut the music) and its window
-  always shown, Back sends the app behind; `PlaybackService.kt`:
+  always shown, Back asks the page first (`window.legatoBack`, `app/androidBack.ts`: a menu, a dialog, a full screen,
+  Now Playing, the page before) and sends the app behind only at the root; `PlaybackService.kt`:
   media foreground service while music plays, CPU and Wi-Fi awake during a song),
   `src-tauri/tauri.android.conf.json` (identifier `app.legato.mobile`, Android 8+). Desktop-only shell parts behind
   `#[cfg(desktop)]`, phone twins in `src-tauri/src/mobile/`; reqwest on rustls there (`tls()`); third-party plugins desktop
