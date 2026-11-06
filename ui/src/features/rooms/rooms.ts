@@ -45,6 +45,8 @@ export function roomError(e: unknown): string {
     'Not a Legato room code': tr('Not a Legato room code'),
     'Already in a room': tr('Already in a room'),
     'This room runs another version of Legato': tr('This room runs another version of Legato'),
+    // Joins shut a while after too many wrong codes (Rust's `rooms::shut_ms`).
+    'Too many wrong codes': tr('Too many requests for now: wait a few minutes, then try again.'),
   }
   return known[text] ?? text
 }

@@ -21,7 +21,7 @@ use std::time::Duration;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::tcp::{OwnedReadHalf, OwnedWriteHalf};
 use tokio::net::{TcpListener, TcpStream};
-use tokio::sync::{Semaphore, mpsc};
+use tokio::sync::{Semaphore, mpsc, watch};
 use tokio::task::JoinHandle;
 use tokio::time::timeout;
 
@@ -35,7 +35,7 @@ const TAG: u32 = 16;
 const STEP: Duration = Duration::from_secs(10);
 /// Handshakes answered at once (members don't count).
 const AT_ONCE: usize = 4;
-/// A listener silent this long (it pings every tick) is gone.
+/// A listener silent this long (it pings every tick) is gone; a host too (it ticks).
 const SILENT: Duration = Duration::from_millis(3 * rm::TICK_MS as u64);
 /// One reaction per listener this often at most (ms): no flood.
 const REACT_GAP: i64 = 400;
@@ -43,6 +43,7 @@ const REACT_GAP: i64 = 400;
 const GO: u8 = 1;
 const FULL: u8 = 3;
 const OLD: u8 = 4;
+const SHUT: u8 = 5;
 
 #[derive(Serialize, Deserialize)]
 struct Opening {
@@ -56,6 +57,18 @@ pub struct WrongCode;
 /// 8 listeners already.
 #[derive(Debug)]
 pub struct Full;
+
+/// Too many wrong codes lately: joins shut a while (`rooms::shut_ms`).
+#[derive(Debug)]
+pub struct Shut;
+
+impl fmt::Display for Shut {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.write_str("Too many wrong codes")
+    }
+}
+
+impl std::error::Error for Shut {}
 
 impl fmt::Display for WrongCode {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -150,6 +163,9 @@ struct Room {
     host: String,
     code: String,
     tries: u8,
+    /// New codes so far, and joins shut until then (unix ms): guesses limited, not only the code changed.
+    changed: u32,
+    shut_until: i64,
     members: Vec<Member>,
     now: Now,
     next: Vec<RoomSong>,
@@ -175,6 +191,8 @@ impl Room {
         if self.tries >= rm::MAX_TRIES {
             self.tries = 0;
             self.code = rm::new_code();
+            self.shut_until = now_ms() + rm::shut_ms(self.changed);
+            self.changed = self.changed.saturating_add(1);
             let _ = self.events.send(HostEvent::NewCode(self.code.clone()));
         }
     }
@@ -191,12 +209,15 @@ impl Room {
 pub struct Host {
     room: Arc<Mutex<Room>>,
     tasks: Vec<JoinHandle<()>>,
+    /// Dropped with the host: every connection's task stops (handshakes too), whatever its listener still sends.
+    _open: watch::Sender<()>,
 }
 
 impl Host {
     /// Leads a room on `listener` under `code`; what happens comes on `events`.
     pub fn start(listener: TcpListener, room: String, host: String, code: String, events: mpsc::UnboundedSender<HostEvent>) -> Host {
-        let r = Arc::new(Mutex::new(Room { room, host, code, tries: 0, members: Vec::new(), now: Now { at: now_ms(), ..Now::default() }, next: Vec::new(), ids: 0, events }));
+        let r = Arc::new(Mutex::new(Room { room, host, code, tries: 0, changed: 0, shut_until: 0, members: Vec::new(), now: Now { at: now_ms(), ..Now::default() }, next: Vec::new(), ids: 0, events }));
+        let (open, closed) = watch::channel(());
         let shared = r.clone();
         let accept = tokio::spawn(async move {
             let gate = Arc::new(Semaphore::new(AT_ONCE));
@@ -211,7 +232,13 @@ impl Host {
                 }
                 let Ok(permit) = gate.clone().try_acquire_owned() else { continue };
                 let shared = shared.clone();
-                tokio::spawn(async move { serve(shared, s, permit).await });
+                let mut gone = closed.clone();
+                tokio::spawn(async move {
+                    tokio::select! {
+                        () = serve(shared, s, permit) => {}
+                        _ = gone.changed() => {}
+                    }
+                });
             }
         });
         let shared = r.clone();
@@ -226,7 +253,7 @@ impl Host {
                 room.broadcast(&ToListener::Tick { position_ms: n.position_at(t), playing: n.playing, at: t, seq: n.seq }, None);
             }
         });
-        Host { room: r, tasks: vec![accept, tick] }
+        Host { room: r, tasks: vec![accept, tick], _open: open }
     }
 
     pub fn code(&self) -> String {
@@ -289,12 +316,16 @@ async fn serve(room: Arc<Mutex<Room>>, mut s: TcpStream, permit: tokio::sync::Ow
         let _ = s.write_u8(OLD).await;
         return;
     }
-    let (full, code) = {
+    let (full, shut, code) = {
         let r = room.lock().unwrap();
-        (r.members.len() >= rm::LISTENERS_MAX, r.code.clone())
+        (r.members.len() >= rm::LISTENERS_MAX, now_ms() < r.shut_until, r.code.clone())
     };
     if full {
         let _ = s.write_u8(FULL).await;
+        return;
+    }
+    if shut {
+        let _ = s.write_u8(SHUT).await;
         return;
     }
     let Ok(()) = s.write_u8(GO).await else { return };
@@ -405,13 +436,15 @@ impl Drop for Link {
     }
 }
 
-async fn join_at(addr: SocketAddr, code: &str, name: &str) -> Result<Joined> {
+/// `silent`: the host heard of (ticks every 5 s) at least this often, else gone (asleep, off the network).
+async fn join_at(addr: SocketAddr, code: &str, name: &str, silent: Duration) -> Result<Joined> {
     let mut s = timeout(STEP, TcpStream::connect(addr)).await.map_err(|_| anyhow!("Unreachable"))??;
     write_frame(&mut s, &serde_json::to_vec(&Opening { v: rm::VERSION })?).await?;
     match timeout(STEP, s.read_u8()).await.map_err(|_| anyhow!("No answer"))?? {
         GO => {}
         FULL => return Err(Full.into()),
         OLD => bail!("This room runs another version of Legato"),
+        SHUT => return Err(Shut.into()),
         _ => bail!("Not a room"),
     }
     let key = timeout(STEP, spake(&mut s, code)).await.map_err(|_| anyhow!("No answer"))??;
@@ -433,7 +466,7 @@ async fn join_at(addr: SocketAddr, code: &str, name: &str) -> Result<Joined> {
     });
     let (into, messages) = mpsc::unbounded_channel();
     let reader = tokio::spawn(async move {
-        while let Ok(raw) = opener.recv().await {
+        while let Ok(Ok(raw)) = timeout(silent, opener.recv()).await {
             let Some(m) = ToListener::read(&raw, crate::art::allowed) else { continue };
             let end = m == ToListener::End;
             if into.send(m).is_err() || end {
@@ -444,14 +477,14 @@ async fn join_at(addr: SocketAddr, code: &str, name: &str) -> Result<Joined> {
     Ok(Joined { welcome: Welcome { room, host, people, now, next }, link: Link { tx, tasks: vec![writer, reader] }, messages })
 }
 
-/// Joins the room at `addrs` (one room's, in turn) with `code`. Stops at a wrong code or a full room: another address
+/// Joins the room at `addrs` (one room's, in turn) with `code`. Stops at a wrong code, a full or shut room: another address
 /// of the same host would only spend another try.
 pub async fn join(addrs: &[SocketAddr], code: &str, name: &str) -> Result<Joined> {
     let mut last = anyhow!("No room on this network");
     for addr in addrs {
-        match join_at(*addr, code, name).await {
+        match join_at(*addr, code, name, SILENT).await {
             Ok(j) => return Ok(j),
-            Err(e) if e.is::<WrongCode>() || e.is::<Full>() => return Err(e),
+            Err(e) if e.is::<WrongCode>() || e.is::<Full>() || e.is::<Shut>() => return Err(e),
             Err(e) => last = e,
         }
     }
@@ -596,8 +629,18 @@ mod tests {
         let HostEvent::NewCode(code) = event(&mut ev).await else { panic!() };
         assert_ne!(code, CODE);
         assert_eq!(host.code(), code);
+        // Shut a while, the right code too: a new code alone would leave guesses unlimited.
+        assert!(join(&[addr], &code, "Phone").await.err().unwrap().is::<Shut>(), "shut");
+        let until = host.room.lock().unwrap().shut_until;
+        assert!(until - now_ms() > rm::shut_ms(0) - 5_000, "the first wait");
+        host.room.lock().unwrap().shut_until = 0;
         assert!(join(&[addr], CODE, "Late").await.err().unwrap().is::<WrongCode>(), "the old code no longer works");
         assert_eq!(join(&[addr], &code, "Phone").await.unwrap().welcome.people, vec!["Phone".to_string()]);
+        // The next new code shuts longer.
+        for _ in 0..rm::MAX_TRIES {
+            let _ = join(&[addr], "111111", "Guess").await;
+        }
+        assert!(host.room.lock().unwrap().shut_until - now_ms() > rm::shut_ms(1) - 5_000);
     }
 
     #[tokio::test]
@@ -629,6 +672,31 @@ mod tests {
         let mut a = join(&[addr], CODE, "Phone").await.unwrap();
         drop(host);
         assert!(timeout(Duration::from_secs(5), a.messages.recv()).await.unwrap().is_none(), "no end said, the connection closed");
+    }
+
+    #[tokio::test]
+    async fn a_room_gone_leaves_no_task_reading() {
+        let (host, addr, _ev) = host().await;
+        let mut a = join(&[addr], CODE, "Phone").await.unwrap();
+        drop(host);
+        assert!(timeout(Duration::from_secs(5), a.messages.recv()).await.unwrap().is_none());
+        // Still pinging: the host's side closed all the same, so the writes fail.
+        for _ in 0..50 {
+            a.link.send(ToHost::Ping { sent: now_ms() });
+            if a.link.tasks[0].is_finished() {
+                return;
+            }
+            tokio::time::sleep(Duration::from_millis(100)).await;
+        }
+        panic!("the room gone still reads its listener");
+    }
+
+    #[tokio::test]
+    async fn a_host_gone_quiet_closes_the_messages() {
+        let (_host, addr, _ev) = host().await;
+        // Its first tick in 5 s: watched every 300 ms, it went (asleep, off the network).
+        let mut a = join_at(addr, CODE, "Phone", Duration::from_millis(300)).await.unwrap();
+        assert!(timeout(Duration::from_secs(3), a.messages.recv()).await.unwrap().is_none());
     }
 
     #[tokio::test]

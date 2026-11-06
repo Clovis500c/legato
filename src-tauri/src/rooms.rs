@@ -5,7 +5,7 @@
 
 use crate::{AppState, CmdResult, err};
 use music_connectors::art::allowed;
-use music_connectors::rooms::{self as wire, Advert, Full, Host, HostEvent, Joined, Link, WrongCode};
+use music_connectors::rooms::{self as wire, Advert, Full, Host, HostEvent, Joined, Link, Shut, WrongCode};
 use music_core::library::now_ms;
 use music_core::model::{Source, Track};
 use music_core::rooms::{self as rm, Clock, Heard, Now, Reaction, RoomLink, RoomSong, ToHost, ToListener};
@@ -13,7 +13,7 @@ use music_core::searchpace::Pace;
 use serde::Serialize;
 use std::collections::HashMap;
 use std::net::{Ipv4Addr, SocketAddr, SocketAddrV4};
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, Weak};
 use std::time::{Duration, Instant};
 use tauri::async_runtime::JoinHandle;
 use tauri::{AppHandle, Emitter, Manager, State};
@@ -302,11 +302,18 @@ pub async fn room_join(app: AppHandle, rooms: State<'_, Rooms>, id: Option<Strin
             "Wrong code".to_string()
         } else if e.is::<Full>() {
             "This room is full".to_string()
+        } else if e.is::<Shut>() {
+            "Too many wrong codes".to_string()
         } else {
             err(e)
         }
     })?;
     let link = Arc::new(link);
+    // Held while the tasks start: their first message finds the room set, and a start or join meanwhile stays.
+    let mut mode = rooms.mode.lock().unwrap();
+    if !matches!(*mode, Mode::Off) {
+        return Err("Already in a room".into());
+    }
     let a = app.clone();
     let reader = tauri::async_runtime::spawn(async move {
         let gone = loop {
@@ -325,23 +332,27 @@ pub async fn room_join(app: AppHandle, rooms: State<'_, Rooms>, id: Option<Strin
         emit(&a, Event::End { gone });
         emit(&a, Event::State);
     });
-    let pinger = link.clone();
+    // Weak: Leave's goodbye needs the link alone (`room_leave`).
+    let pinger: Weak<Link> = Arc::downgrade(&link);
     let ping = tauri::async_runtime::spawn(async move {
+        let send = || pinger.upgrade().map(|l| l.send(ToHost::Ping { sent: now_ms() })).is_some();
         // Three quick round trips first: the offset known at once.
         for _ in 0..3 {
-            pinger.send(ToHost::Ping { sent: now_ms() });
+            if !send() {
+                return;
+            }
             tokio::time::sleep(Duration::from_millis(300)).await;
         }
         loop {
             tokio::time::sleep(Duration::from_millis(rm::TICK_MS as u64)).await;
-            pinger.send(ToHost::Ping { sent: now_ms() });
+            if !send() {
+                return;
+            }
         }
     });
-    let status = {
-        let mut mode = rooms.mode.lock().unwrap();
-        *mode = Mode::Listen(Box::new(Listening { link, room: welcome.room, host: welcome.host, people: welcome.people, now: welcome.now, next: welcome.next, clock: Clock::default(), tasks: vec![reader, ping] }));
-        status_of(&mode)
-    };
+    *mode = Mode::Listen(Box::new(Listening { link, room: welcome.room, host: welcome.host, people: welcome.people, now: welcome.now, next: welcome.next, clock: Clock::default(), tasks: vec![reader, ping] }));
+    let status = status_of(&mode);
+    drop(mode);
     emit(&app, Event::State);
     Ok(status)
 }

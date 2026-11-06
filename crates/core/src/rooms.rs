@@ -16,8 +16,11 @@ pub const VERSION: u32 = 1;
 pub const FRAME_MAX: u32 = 16 * 1024;
 /// Listeners in a room, the host left out.
 pub const LISTENERS_MAX: usize = 8;
-/// Wrong codes allowed per code (as Nearby share's): then a new code.
+/// Wrong codes allowed per code (as Nearby share's): then a new code, and joins shut a while (`shut_ms`).
 pub const MAX_TRIES: u8 = 5;
+/// Joins shut after a new code (ms), doubled at each one, up to `SHUT_MAX`: 5 guesses a quarter hour at most.
+const SHUT_FIRST: i64 = 30_000;
+const SHUT_MAX: i64 = 15 * 60_000;
 /// Songs of Up next sent ahead: listeners find them before they play.
 pub const UP_NEXT: usize = 3;
 /// Host's tick, and listener's ping (ms).
@@ -285,6 +288,11 @@ pub fn should_seek(expected_ms: i64, actual_ms: i64, now: i64, quiet_until: i64)
     now >= quiet_until && (expected_ms - actual_ms).abs() > DRIFT_MS
 }
 
+/// Joins shut this long (ms) after the `n`th new code (from 0): a new code alone leaves guesses unlimited.
+pub fn shut_ms(n: u32) -> i64 {
+    (SHUT_FIRST << n.min(6)).min(SHUT_MAX)
+}
+
 /// A new room code: 6 digits, as Nearby share's.
 pub fn new_code() -> String {
     format!("{:06}", rand::random_range(0..1_000_000u32))
@@ -463,6 +471,15 @@ mod tests {
         assert!(should_seek(8_000, 10_000, 0, 0), "ahead too");
         assert!(!should_seek(10_000, 0, 100, 100 + SETTLE_MS), "settling after a seek");
         assert!(should_seek(10_000, 0, 100 + SETTLE_MS, 100 + SETTLE_MS));
+    }
+
+    #[test]
+    fn joins_shut_longer_at_each_new_code() {
+        assert_eq!(shut_ms(0), 30_000);
+        assert_eq!(shut_ms(1), 60_000);
+        assert_eq!(shut_ms(4), 480_000);
+        assert_eq!(shut_ms(5), SHUT_MAX);
+        assert_eq!(shut_ms(u32::MAX), SHUT_MAX, "no overflow");
     }
 
     #[test]
