@@ -139,8 +139,11 @@ fn text(v: &Value, k: &str) -> Option<String> {
 impl Subsonic {
     /// `address` as `server::normalize` left it.
     pub fn new(address: &str, user: &str, password: &str) -> Self {
-        let base = address.trim_end_matches('/').to_string();
-        let key = server::key(server::Kind::Subsonic, &base, user);
+        let typed = address.trim_end_matches('/');
+        // Key from the address as kept (`Account::key`); base as `Url` writes it (scheme and host in lowercase, a
+        // default port dropped), so the cover URLs built from it start with it (`sign`, `art::allow_server`).
+        let key = server::key(server::Kind::Subsonic, typed, user);
+        let base = Url::parse(typed).map(|u| u.to_string().trim_end_matches('/').to_string()).unwrap_or_else(|_| typed.to_string());
         Self { base, user: user.to_string(), password: password.to_string(), key, http: http() }
     }
 
@@ -357,6 +360,18 @@ mod tests {
         // Subsonic's own example: password "sesame", salt "c19b2d".
         assert_eq!(token("sesame", "c19b2d"), "26719a1196d2a940705a59634eb18eab");
         assert_ne!(salt(), salt());
+    }
+
+    #[test]
+    fn covers_of_an_address_typed_in_capitals_are_still_this_servers() {
+        let a = server::Account { kind: server::Kind::Subsonic, address: "HTTP://NAS:80/Music".into(), user: "me".into(), password: "pw".into() };
+        let sub = Subsonic::from_account(&a);
+        // Same key as the account's (library ids), base as URLs write it.
+        assert_eq!((sub.key(), sub.base()), (a.key().as_str(), "http://nas/Music"));
+        let t = sub.track(&serde_json::json!({ "id": "1", "title": "T", "coverArt": "al-1" })).unwrap();
+        let art = t.art.unwrap();
+        assert!(art.starts_with(sub.base()), "{art}");
+        assert!(sub.sign(&art).is_some_and(|s| s.contains("&t=")));
     }
 
     #[tokio::test]

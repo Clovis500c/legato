@@ -300,13 +300,30 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn a_signed_in_servers_cover_is_fetched_with_its_auth_and_kept_without() {
+        // Own cache with room: under the prune test's 25-byte cap, this picture raced its background prune.
+        let mut s = Server::new_async().await;
+        s.mock("GET", "/rest/getCoverArt.view").match_query(mockito::Matcher::AllOf(vec![mockito::Matcher::UrlEncoded("id".into(), "al-1".into()), mockito::Matcher::UrlEncoded("t".into(), "tok".into())])).with_header("content-type", "image/png").with_body(png(4)).expect(1).create_async().await;
+        let dir = tempfile::tempdir().unwrap();
+        let cache = ArtCache::new(dir.path().to_path_buf(), 1 << 20);
+        let cover = format!("{}/rest/getCoverArt.view?id=al-1", s.url());
+        assert!(!allowed(&cover));
+        allow_server(&s.url(), Arc::new(|u: &str| Some(format!("{u}&t=tok"))));
+        assert!(allowed(&cover) && !allowed(&format!("{}/rest/stream.view?id=1", s.url())));
+        assert!(cache.get(&cover, None).await.is_ok());
+        assert!(dir.path().join(key(&cover)).exists(), "kept under the URL without the auth");
+        // Signed out: refused, even from the cache.
+        forget_server(&s.url());
+        assert!(!allowed(&cover) && cache.get(&cover, None).await.is_err());
+    }
+
+    #[tokio::test]
     async fn caches_on_disk_and_prunes_oldest() {
         let mut s = Server::new_async().await;
         for n in 1..=3 {
             s.mock("GET", format!("/{n}.png").as_str()).with_header("content-type", "image/png").with_body(png(n)).expect(1).create_async().await;
         }
         s.mock("GET", "/page").with_header("content-type", "text/html").with_body("<html>").create_async().await;
-        s.mock("GET", "/rest/getCoverArt.view").match_query(mockito::Matcher::AllOf(vec![mockito::Matcher::UrlEncoded("id".into(), "al-1".into()), mockito::Matcher::UrlEncoded("t".into(), "tok".into())])).with_header("content-type", "image/png").with_body(png(4)).expect(1).create_async().await;
         let dir = tempfile::tempdir().unwrap();
         let cache = ArtCache::new(dir.path().to_path_buf(), 25);
         let url = |n: &str| format!("{}/{n}", s.url());
@@ -316,15 +333,6 @@ mod tests {
         assert_eq!(cache.fetch(&url("1.png")).await.unwrap().0, bytes, "second read from disk (mock expects 1 call)");
         assert!(cache.fetch(&url("page")).await.is_err());
         assert!(cache.get(&url("1.png"), None).await.is_err(), "mock host not on allowlist");
-        // A signed-in server's cover: allowed, fetched with the auth added, kept under the URL without it.
-        let cover = format!("{}/rest/getCoverArt.view?id=al-1", s.url());
-        assert!(!allowed(&cover));
-        allow_server(&s.url(), Arc::new(|u: &str| Some(format!("{u}&t=tok"))));
-        assert!(allowed(&cover) && !allowed(&format!("{}/rest/stream.view?id=1", s.url())));
-        assert!(cache.get(&cover, None).await.is_ok());
-        assert!(on_disk("rest/getCoverArt.view?id=al-1").exists());
-        forget_server(&s.url());
-        assert!(!allowed(&cover));
         cache.fetch(&url("2.png")).await.unwrap();
         // 2 is the oldest, 1 was used again (a day or more later: that is when the file is touched).
         age(&on_disk("2.png"), 3);

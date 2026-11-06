@@ -79,7 +79,10 @@ pub fn normalize(typed: &str) -> Result<String, &'static str> {
         _ => cut,
     };
     let base = cut.trim_end_matches('/').to_string();
-    if host_of(&base).is_none_or(|h| h.is_empty()) {
+    // "http://me:secret@nas": a password in the address would be shown, kept and logged as one. The user and the
+    // password have their own fields.
+    let userinfo = base.split_once("://").is_some_and(|(_, rest)| rest.split('/').next().is_some_and(|a| a.contains('@')));
+    if userinfo || host_of(&base).is_none_or(|h| h.is_empty()) {
         return Err("Type your server's address, like http://192.168.1.10:4533");
     }
     Ok(base)
@@ -140,6 +143,9 @@ mod tests {
         assert_eq!(normalize("http://10.0.0.2:4533/rest/ping.view?u=me&t=x"), Ok("http://10.0.0.2:4533".into()));
         assert_eq!(normalize("HTTP://[fd00::5]:4533"), Ok("HTTP://[fd00::5]:4533".into()));
         assert!(normalize("").is_err() && normalize("ftp://x").is_err() && normalize("a b").is_err() && normalize("http://").is_err());
+        // No user or password inside the address (they'd show in Settings and travel in every URL).
+        assert!(normalize("http://me:secret@nas:4533").is_err() && normalize("me@nas:4533").is_err());
+        assert_eq!(normalize("https://music.example.com/@me"), Ok("https://music.example.com/@me".into()));
     }
 
     #[test]

@@ -44,7 +44,7 @@ fn save(state: &AppState, list: Vec<Account>) -> anyhow::Result<()> {
         state.store.save(KEY, &list)?;
     }
     for a in ACCOUNTS.read().unwrap().iter().filter(|a| !list.iter().any(|b| b.key() == a.key())) {
-        music_connectors::art::forget_server(&a.address);
+        music_connectors::art::forget_server(Subsonic::from_account(a).base());
     }
     for a in &list {
         allow_art(a);
@@ -55,7 +55,9 @@ fn save(state: &AppState, list: Vec<Account>) -> anyhow::Result<()> {
 
 fn allow_art(a: &Account) {
     let sub = Subsonic::from_account(a);
-    music_connectors::art::allow_server(&a.address, Arc::new(move |url: &str| sub.sign(url)));
+    // Its covers' URLs start with the connector's base (written as `Url` writes it), not the address as typed.
+    let base = sub.base().to_string();
+    music_connectors::art::allow_server(&base, Arc::new(move |url: &str| sub.sign(url)));
 }
 
 /// At launch: accounts from the keychain, their covers allowed, the engine given the way to their songs.
@@ -207,7 +209,7 @@ pub async fn server_sign_out(state: State<'_, AppState>, key: String) -> CmdResu
 pub struct ServerSync {
     songs: u32,
     playlists: u32,
-    /// Albums the server failed to give (skipped).
+    /// Albums and playlists the server failed to give (skipped; a playlist kept as it was).
     skipped: u32,
 }
 
@@ -220,29 +222,41 @@ fn direction_key(key: &str) -> String {
 async fn sync_one(state: &AppState, a: &Account) -> anyhow::Result<ServerSync> {
     let key = a.key();
     let sub = Subsonic::from_account(a);
-    let (songs, skipped) = sub.library().await?;
+    let (songs, mut skipped) = sub.library().await?;
     let mut lists: Vec<(String, String, Vec<Track>)> = Vec::new();
+    // Every playlist the server lists stays, one that failed to come too (kept as it was, not dropped).
+    let mut keep: Vec<String> = Vec::new();
     for p in sub.playlists().await? {
-        lists.push((server::item_id(&key, &p.id), p.name, sub.playlist(&p.id).await?));
+        let id = server::item_id(&key, &p.id);
+        keep.push(id.clone());
+        match sub.playlist(&p.id).await {
+            Ok(tracks) => lists.push((id, p.name, tracks)),
+            Err(e) if e.to_string().starts_with("Your music server refused the sign-in") => return Err(e),
+            Err(_) => skipped += 1,
+        }
     }
     let liked = sub.starred().await?;
     let app = state.app.clone();
     let key2 = key.clone();
     let (n, playlists) = tauri::async_runtime::spawn_blocking(move || -> anyhow::Result<(usize, usize)> {
         let state = app.state::<AppState>();
-        let n = state.lib().replace_server(&key2, &songs)?;
-        let keep: Vec<String> = lists.iter().map(|(id, _, _)| id.clone()).collect();
+        let lib = state.lib();
+        // Signed out while it read (the sign-out cleans under this same lock, after the keychain): nothing written back.
+        anyhow::ensure!(account(&key2).is_some(), "Your music server isn't signed in");
+        let n = lib.replace_server(&key2, &songs)?;
         for (id, name, tracks) in &lists {
-            state.lib().save_playlist(Source::Server, id, name, tracks)?;
+            lib.save_playlist(Source::Server, id, name, tracks)?;
         }
-        state.lib().drop_server_playlists(&key2, &keep)?;
+        lib.drop_server_playlists(&key2, &keep)?;
         if !liked.is_empty() {
-            state.lib().add_likes(&liked)?;
+            lib.add_likes(&liked)?;
         }
-        Ok((n, lists.len()))
+        Ok((n, keep.len()))
     })
     .await??;
-    set_synced(state, &key, Some(Synced { songs: n, playlists, at: music_core::library::now_ms(), error: None }));
+    if account(&key).is_some() {
+        set_synced(state, &key, Some(Synced { songs: n, playlists, at: music_core::library::now_ms(), error: None }));
+    }
     Ok(ServerSync { songs: n as u32, playlists: playlists as u32, skipped: skipped as u32 })
 }
 
@@ -255,6 +269,7 @@ pub async fn server_sync(state: State<'_, AppState>, key: String) -> CmdResult<S
     }
     match sync_one(&state, &a).await {
         Ok(s) => Ok(s),
+        Err(e) if account(&key).is_none() => Err(err(e)),
         Err(e) => {
             let mut s = syncs(&state).remove(&key).unwrap_or_default();
             s.error = Some(format!("{e:#}"));
