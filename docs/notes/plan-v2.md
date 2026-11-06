@@ -15,6 +15,21 @@ the order; a line leaves only when it ships or the user drops it.
 - [x] `M` Home page as a scroll story (user's choice 2026-10-31): the real interface in a 3D window (`site/demo`), eight
       chapters, the visitor takes it at the end; audit of the page's slop (`docs/design.md` › Website). Local, not
       published.
+- [ ] `M` The story on a phone (the owner's ask 2026-11-06): a preview of the phone app, in 3D. Under 1000 px the
+      home page shows pictures today (`Story.tsx`: `PINNED`, `Still`); instead, the same scroll story with the real
+      interface in its phone layout:
+      - The demo's frame at a phone's size (375 × 812), so `ui/` takes its own phone layout (`usePhone`, under 640 px:
+        the bottom tabs, the mini player, Now Playing as the phone player, sheets); a phone's outline around it,
+        tilted in 3D and pinned as the window is on the PC, with poses of its own (less tilt, the text above or below).
+      - Each chapter's scene (`site/demo/scenes.ts`) played in that layout: a scene that opens a PC-only place (the
+        side panel, a wide table) gets its phone twin (Now Playing, a sheet).
+      - The page scrolls, not the demo, until the end (`inert`); then the visitor takes it, with a way out (Leave), as
+        a live frame takes the touches. The end's button: the APK on Android, the Windows app on an iPhone (no iPhone
+        app yet, FAQ).
+      - The pictures stay for animations off, a failed demo, Save-Data and a phone too weak for it (a frame budget
+        measured as it starts); taken in the phone layout too. The PC's story unchanged.
+      Done when: seen on a real Android phone and an iPhone, light and dark, the scroll without long frames, the
+      demo started only after the first screen, the page's mobile Lighthouse no worse than today.
 - [x] `S` Publish it with the next Stable (user's choice 2026-10-31). Done earlier, on the owner's word (2026-11-01): Beta
       1.1.557 out, Stable still 1.1.479, so the site shows a few things Stable hasn't yet (Connect Spotify, the import
       screen). Branch `claude/site-scroll-3d-aff654` merged into `platforms` with `[skip release]`, then master; its cards
