@@ -4,7 +4,7 @@ import { openUrl } from '@tauri-apps/plugin-opener'
 import { useEffect, useState, type ReactNode } from 'react'
 import { useSettings } from '../../app/settings'
 import { api } from '../../shared/api'
-import { trackArt } from '../../shared/art'
+import { remoteArt, trackArt } from '../../shared/art'
 import { formatDuration } from '../../shared/format'
 import { DISCORD_APP, type DiscordSettings } from '../../shared/theme/theme'
 import { onMenu, openMenu, type MenuEntry } from '../../shared/ui/ContextMenu'
@@ -14,6 +14,7 @@ import { Dialog } from '../../shared/ui/Dialog'
 import { PageHeader } from '../../shared/ui/PageHeader'
 import { addonMenu } from '../menus'
 import { useNowTrack, usePlayer } from '../player/store'
+import { artistPicture } from './discord'
 import { presenceFor } from './presence'
 import { ADDONS, allTags, DISCORD, filterAddons, type Addon, type Author, type Show } from './registry'
 import { setAddon } from './state'
@@ -83,8 +84,9 @@ function Card({ a, on, onOpen }: { a: Addon; on: boolean; onOpen: () => void }) 
 
 function Row({ label, sub, children }: { label: string; sub?: ReactNode; children?: ReactNode }) {
   return (
-    <div className="flex items-center gap-4 border-b border-line-soft px-4 py-3 last:border-0">
-      <div className="flex-1">
+    // A control too wide beside the words (the status's four choices) goes under them.
+    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-line-soft px-4 py-3 last:border-0">
+      <div className="min-w-40 flex-1">
         <p className="text-[0.8125rem] font-medium">{label}</p>
         {sub && <div className="text-xs text-ink-2">{sub}</div>}
       </div>
@@ -144,19 +146,26 @@ function StatusPill({ live, label }: { live: Live; label: string }) {
 function Preview({ d }: { d: DiscordSettings }) {
   const { now, playing, positionMs, durationMs } = usePlayer(useShallow(({ now, playing, positionMs, durationMs }) => ({ now, playing, positionMs, durationMs })))
   const track = useNowTrack()
-  const p = presenceFor(now, track, playing, positionMs, durationMs, d)
+  const p = presenceFor(now, track, playing, positionMs, durationMs, d, now ? artistPicture(now.artist) : null)
   const shell = 'flex flex-col gap-2.5 rounded-xl bg-[#232428] p-3.5 text-[#DBDEE1] shadow-[0_8px_24px_rgba(0,0,0,.25)]'
   if (!p) return <div className={`${shell} items-center py-6 text-xs text-[#949BA4]`}>{now ? tr('Paused: nothing shows on Discord') : tr('Play a song to see the preview')}</div>
   const pct = p.playing && p.durationMs ? Math.min(100, (p.positionMs / p.durationMs) * 100) : 0
+  // As `discord::activity` words it: both = the song and its artist on the first line, the album under it.
+  const both = `${p.title} – ${p.artist}`
+  const [first, second, third] = d.status === 'both' ? [both, p.album, null] : [p.title, p.artist, p.album]
   return (
     <div aria-label={tr('Discord preview')} className={shell}>
-      <p className="truncate text-[0.6875rem] font-bold tracking-wide text-[#B5BAC1] uppercase">{tr('Listening to {name}', { name: d.status === 'song' ? p.title : d.status === 'artist' ? p.artist : 'Legato' })}</p>
+      <p className="truncate text-[0.6875rem] font-bold tracking-wide text-[#B5BAC1] uppercase">{tr('Listening to {name}', { name: d.status === 'song' ? p.title : d.status === 'artist' ? p.artist : d.status === 'both' ? both : 'Legato' })}</p>
       <div className="flex items-center gap-3">
-        <Cover title={p.title} art={track ? trackArt(track) : []} size={64} className="rounded-lg! border-0!" />
+        <span className="relative shrink-0">
+          <Cover title={p.title} art={track ? trackArt(track) : []} size={64} className="rounded-lg! border-0!" />
+          {/* Discord draws the artist's picture only over a cover it can fetch. */}
+          {p.art && p.artistArt && <img src={remoteArt(p.artistArt)} alt="" className="absolute -right-1.5 -bottom-1.5 size-6 rounded-full border-2 border-[#232428] object-cover" />}
+        </span>
         <div className="flex min-w-0 flex-1 flex-col gap-0.5 text-[0.8125rem]">
-          <p className="truncate font-semibold text-white">{p.title}</p>
-          <p className="truncate text-[#B5BAC1]">{p.artist}</p>
-          {p.album && <p className="truncate text-xs text-[#949BA4]">{p.album}</p>}
+          <p className="truncate font-semibold text-white">{first}</p>
+          {second && <p className="truncate text-[#B5BAC1]">{second}</p>}
+          {third && <p className="truncate text-xs text-[#949BA4]">{third}</p>}
         </div>
       </div>
       {p.playing && p.durationMs ? (
@@ -199,7 +208,7 @@ function DiscordPanel() {
       <Preview d={d} />
       <div className={`rounded-xl border border-line bg-raised transition-opacity ${live === 'off' ? 'opacity-60' : ''}`}>
         <Row label={tr('After “Listening to”')} sub={tr('In the member list. Your profile shows everything.')}>
-          <Segmented label={tr('Status shows')} value={d.status} onChange={(status) => set({ status })} options={[{ value: 'name', label: tr('App name') }, { value: 'artist', label: tr('Artist') }, { value: 'song', label: tr('Song') }]} />
+          <Segmented label={tr('Status shows')} value={d.status} onChange={(status) => set({ status })} options={[{ value: 'name', label: tr('App name') }, { value: 'artist', label: tr('Artist') }, { value: 'song', label: tr('Song') }, { value: 'both', label: tr('Song and artist') }]} />
         </Row>
         <Row label={tr('Button to the song')} sub={tr('Listen on YouTube, Spotify or Apple Music')}>
           <Toggle label={tr('Button to the song')} checked={d.buttons} onChange={(buttons) => set({ buttons })} />
@@ -240,7 +249,7 @@ function DiscordPanel() {
           />
         </div>
       </div>
-      <p className="text-[0.6875rem] text-ink-3">{tr('Talks to the Discord app on this PC only. Song, artist, cover link and song link go to Discord while this is on. Discord hides your own buttons from you; friends see them.')}</p>
+      <p className="text-[0.6875rem] text-ink-3">{tr('Talks to the Discord app on this PC only. Song, artist, cover link and song link go to Discord while this is on. Discord hides your own buttons from you; friends see them.')} {tr('For a song from YouTube, the artist’s picture is looked up on YouTube Music, once a minute at most; its link goes to Discord too.')}</p>
     </div>
   )
 }

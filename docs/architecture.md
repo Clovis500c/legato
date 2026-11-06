@@ -196,7 +196,8 @@ the tray menu is the only exit. Measured: WebView2 working set 867 MB shown → 
 
 Optional built-in features, listed in `ui/src/features/addons/registry.ts` with their author and a verified mark, and
 turned on in settings. Discord Rich Presence talks to the local Discord app over its IPC pipe
-(`crates/connectors/src/discord.rs`), from a dedicated thread in `src-tauri/src/discord.rs`.
+(`crates/connectors/src/discord.rs`), from a dedicated thread in `src-tauri/src/discord.rs`. The artist's picture (its
+small image) is the artist page's, asked of YouTube Music sparingly (`discord_artist_art`, `searchpace::Sparse`).
 
 Third-party plugins are apart: local folders the user installs after approving their permissions, each in its own
 QuickJS runtime (`crates/plugins`, `src-tauri/src/plugins.rs`, `features/plugins/`, [plugins.md](plugins.md)).

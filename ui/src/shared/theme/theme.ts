@@ -250,8 +250,8 @@ export const DISCORD_APP = '1560758371064221839'
 /** Discord Rich Presence add-on. appId = the app's Discord application, or the user's own. */
 export interface DiscordSettings {
   appId: string
-  /** After "Listening to" in the member list: the application's name, the artist or the song. */
-  status: 'name' | 'artist' | 'song'
+  /** After "Listening to" in the member list: the application's name, the artist, the song, or the song and its artist. */
+  status: 'name' | 'artist' | 'song' | 'both'
   /** Button to the song's page (YouTube, Spotify, Apple Music). */
   buttons: boolean
   /** Keep the song up while paused (no progress bar). */
@@ -921,7 +921,7 @@ function sanitizeDiscord(raw: unknown): DiscordSettings {
   const def = DEFAULTS.discord
   return {
     appId: typeof d.appId === 'string' && /^\d{1,32}$/.test(d.appId) ? d.appId : def.appId,
-    status: pick(d.status, ['name', 'artist', 'song'] as const, def.status),
+    status: pick(d.status, ['name', 'artist', 'song', 'both'] as const, def.status),
     buttons: typeof d.buttons === 'boolean' ? d.buttons : def.buttons,
     paused: typeof d.paused === 'boolean' ? d.paused : def.paused,
     github: typeof d.github === 'boolean' ? d.github : def.github,

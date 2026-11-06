@@ -182,7 +182,15 @@ copies, downloads for offline), their accounts, limits and paid plan.
   `ytmusic::home::about`, the description shelf then the header's; "About {artist}" after the discography, three
   lines, Read more, right-click Copy; Wikipedia's credit line kept at the end. Not seen on a real page: the demo has
   no YouTube artist; Check live.)
-- [ ] 3. `S` Discord on par: a status format (song, artist, both), the artist's picture, a preview.
+- [x] 3. `S` Discord on par: a status format (song, artist, both), the artist's picture, a preview. (2026-11-06: the
+      format and the live preview were there already (app name, artist, song); added Song and artist (the line the
+      member list reads says both, the album under it, `discord::activity`) and the artist's picture as the small
+      image on the cover's corner, in the preview too. The picture is the artist page's own (`ytm_artist`'s cache),
+      asked as a 240 px square: the owner's choice (2026-11-06) of YouTube Music, sparingly: for a song YouTube plays
+      only, once it has played 10 s, once a minute at most, never during an import, none for 15 minutes after a
+      refusal (`searchpace::Sparse`, `discord_artist_art`); other sources take a picture found already. Said in the
+      add-on's privacy line. Not tried with the Discord app (none here): does Discord's proxy take the googleusercontent
+      square, does the small image show on a friend's screen?)
 - [ ] 4. `S` The mini player on minimize (a setting, off): picture in picture opens, restoring closes it, the sung line
       in it; YouTube's 200 × 200.
 - [ ] 5. `S` Settings › Storage: what the app keeps on disk (library, covers, lyrics, logs, WebView2's cache), the size

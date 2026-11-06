@@ -11,7 +11,7 @@ const CLOSE: u32 = 2;
 const PING: u32 = 3;
 const PONG: u32 = 4;
 
-/// What the member list shows after "Listening to": the Discord app's name, the artist or the song.
+/// What the member list shows after "Listening to": the Discord app's name, the artist, the song, or both.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize, ts_rs::TS)]
 #[serde(rename_all = "lowercase")]
 #[ts(export, rename = "PresenceStatus")]
@@ -19,6 +19,7 @@ pub enum StatusShows {
     Name,
     Artist,
     Song,
+    Both,
 }
 
 /// Current track, from the player.
@@ -31,6 +32,8 @@ pub struct Presence {
     pub album: Option<String>,
     /// https cover (Discord fetches it itself).
     pub art: Option<String>,
+    /// https picture of the artist: the small image, on the cover's corner.
+    pub artist_art: Option<String>,
     /// Buttons (label, https url): the song's page, the app's. Discord takes 2.
     #[serde(default)]
     pub buttons: Vec<(String, String)>,
@@ -50,14 +53,34 @@ fn field(s: &str) -> String {
     out
 }
 
+/// An image Discord fetches itself.
+fn https(u: &&str) -> bool {
+    u.starts_with("https://") && u.len() <= 256
+}
+
+/// The artist's picture for the round small image: Google's (a wide banner, most often) asked as a 240 px square, its
+/// own crop keeping the face (`-p`). Other hosts as they are.
+pub fn square(url: &str) -> String {
+    let google = url.strip_prefix("https://").and_then(|r| r.split('/').next()).is_some_and(|h| h.ends_with(".googleusercontent.com") || h.ends_with(".ggpht.com"));
+    match url.rfind('=') {
+        Some(i) if google && !url[i..].contains('/') => format!("{}=w240-h240-p", &url[..i]),
+        _ => url.to_string(),
+    }
+}
+
 /// Activity JSON (type Listening). Playing: start/end times, Discord draws the progress bar. now_ms = Unix time.
 pub fn activity(p: &Presence, now_ms: u64) -> Value {
+    // Both: the song and its artist in the line the member list shows, the album (if any) under it.
+    let both = p.status == StatusShows::Both;
     let mut a = json!({
         "type": 2,
-        "details": field(&p.title),
-        "state": field(&p.artist),
-        "status_display_type": match p.status { StatusShows::Name => 0, StatusShows::Artist => 1, StatusShows::Song => 2 },
+        "details": field(&if both { format!("{} – {}", p.title.trim(), p.artist.trim()) } else { p.title.clone() }),
+        "status_display_type": match p.status { StatusShows::Name => 0, StatusShows::Artist => 1, StatusShows::Song | StatusShows::Both => 2 },
     });
+    let state = if both { p.album.as_deref().filter(|al| !al.trim().is_empty()) } else { Some(p.artist.as_str()) };
+    if let Some(s) = state {
+        a["state"] = json!(field(s));
+    }
     if p.playing {
         let start = now_ms.saturating_sub(p.position_ms) / 1000;
         a["timestamps"] = match p.duration_ms {
@@ -65,8 +88,13 @@ pub fn activity(p: &Presence, now_ms: u64) -> Value {
             _ => json!({ "start": start }),
         };
     }
-    if let Some(art) = p.art.as_deref().filter(|u| u.starts_with("https://") && u.len() <= 256) {
+    if let Some(art) = p.art.as_deref().filter(https) {
         a["assets"] = json!({ "large_image": art, "large_text": field(p.album.as_deref().unwrap_or(&p.title)) });
+        // Discord draws a small image only on a large one.
+        if let Some(face) = p.artist_art.as_deref().filter(https) {
+            a["assets"]["small_image"] = json!(face);
+            a["assets"]["small_text"] = json!(field(&p.artist));
+        }
     }
     let buttons: Vec<Value> = p
         .buttons
@@ -219,6 +247,7 @@ mod tests {
             artist: "lexycat".into(),
             album: None,
             art: Some("https://i.ytimg.com/vi/abc/hqdefault.jpg".into()),
+            artist_art: None,
             buttons: vec![
                 ("Listen on YouTube".into(), "https://www.youtube.com/watch?v=abc".into()),
                 ("Get App On GitHub".into(), "https://github.com/Clovis500c/legato".into()),
@@ -278,5 +307,35 @@ mod tests {
         assert_eq!(a["details"].as_str().unwrap().chars().count(), 2);
         assert_eq!(a["state"].as_str().unwrap().chars().count(), 128);
         assert_eq!(a["status_display_type"], 1);
+    }
+
+    #[test]
+    fn both_puts_the_song_and_its_artist_where_the_member_list_reads() {
+        let a = activity(&Presence { status: StatusShows::Both, ..song() }, 1_000_000);
+        assert_eq!(a["details"], "jinx – lexycat");
+        assert_eq!(a["status_display_type"], 2);
+        assert!(a.get("state").is_none(), "the artist isn't said twice");
+        let a = activity(&Presence { status: StatusShows::Both, album: Some("Pink".into()), ..song() }, 1_000_000);
+        assert_eq!(a["state"], "Pink");
+        assert_eq!(activity(&song(), 1_000_000)["state"], "lexycat");
+    }
+
+    #[test]
+    fn the_artists_picture_is_the_small_image_on_the_cover() {
+        let face = "https://lh3.googleusercontent.com/face=w240-h240-p";
+        let a = activity(&Presence { artist_art: Some(face.into()), ..song() }, 1_000_000);
+        assert_eq!(a["assets"]["small_image"], face);
+        assert_eq!(a["assets"]["small_text"], "lexycat");
+        assert!(activity(&Presence { artist_art: Some(face.into()), art: None, ..song() }, 1_000_000).get("assets").is_none());
+        assert!(activity(&Presence { artist_art: Some("http://x/y.jpg".into()), ..song() }, 1_000_000)["assets"].get("small_image").is_none());
+    }
+
+    #[test]
+    fn google_pictures_asked_small_and_square_others_as_they_are() {
+        assert_eq!(square("https://lh3.googleusercontent.com/abc=w2880-h1200-p-l90-rj"), "https://lh3.googleusercontent.com/abc=w240-h240-p");
+        assert_eq!(square("https://yt3.ggpht.com/xyz=s88-c-k-c0x00ffffff-no-rj"), "https://yt3.ggpht.com/xyz=w240-h240-p");
+        for same in ["https://lh3.googleusercontent.com/abc", "https://i.ytimg.com/vi/abc/hqdefault.jpg", "https://googleusercontent.com.evil.example/a=w1", "https://evil.example/x?u=lh3.googleusercontent.com/a=w1"] {
+            assert_eq!(square(same), same);
+        }
     }
 }

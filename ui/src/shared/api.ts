@@ -423,6 +423,8 @@ export const api = {
   discordPresence: (clientId: string, presence: Presence | null) => invoke<void>('discord_presence', { clientId, presence }),
   discordOff: () => invoke<void>('discord_off'),
   discordStatus: () => invoke<DiscordStatus>('discord_status'),
+  /** The artist's picture for Discord (https, square). `ask`: YouTube Music may be asked (paced in Rust); null: not now. */
+  discordArtistArt: (name: string, ask: boolean) => invoke<string | null>('discord_artist_art', { name, ask }),
   /** Imported YouTube Music playlist: added on YouTube (Liked Music = like), then locally. */
   addToYoutube: (id: number, trackIds: number[]) => invoke<AddReport>('add_to_youtube', { id, trackIds }),
   /** Raw JSON; validated by features/player/session. */

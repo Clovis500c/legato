@@ -10,6 +10,10 @@ export type Presence = { title: string, artist: string, album: string | null,
  */
 art: string | null, 
 /**
+ * https picture of the artist: the small image, on the cover's corner.
+ */
+artistArt: string | null, 
+/**
  * Buttons (label, https url): the song's page, the app's. Discord takes 2.
  */
 buttons: Array<[string, string]>, playing: boolean, positionMs: number, durationMs: number | null, status: PresenceStatus, };

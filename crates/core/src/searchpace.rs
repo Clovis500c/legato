@@ -89,6 +89,37 @@ impl Pace {
     }
 }
 
+/// Between two lookups nobody waits for.
+const SPARSE_GAP: Duration = Duration::from_secs(60);
+/// After a refusal: three times a real block (5 min, 2026-10-31).
+const SPARSE_REFUSED: Duration = Duration::from_secs(15 * 60);
+
+/// Lookups nobody waits for (Discord's artist picture, the owner's choice 2026-11-06): one a minute at most, none for
+/// 15 minutes after a refusal. One not taken just isn't asked.
+#[derive(Default)]
+pub struct Sparse {
+    next: Option<Instant>,
+}
+
+impl Sparse {
+    pub const fn new() -> Self {
+        Sparse { next: None }
+    }
+
+    /// May one start now; if so, the next waits a minute.
+    pub fn take(&mut self, now: Instant) -> bool {
+        if self.next.is_some_and(|at| now < at) {
+            return false;
+        }
+        self.next = Some(now + SPARSE_GAP);
+        true
+    }
+
+    pub fn refused(&mut self, now: Instant) {
+        self.next = Some(now + SPARSE_REFUSED);
+    }
+}
+
 /// Songs waiting for a search, by place in the list being searched. One search brings back around twenty songs: those
 /// settle the songs in line with no search of their own. Artists with the most songs first, so that happens early.
 pub struct Line {
@@ -165,6 +196,18 @@ mod tests {
     }
 
     const SECOND: Duration = Duration::from_secs(1);
+
+    #[test]
+    fn sparse_lookups_one_a_minute_none_for_a_quarter_hour_after_a_refusal() {
+        let t = Instant::now();
+        let mut s = Sparse::new();
+        assert!(s.take(t));
+        assert!(!s.take(t + 59 * SECOND));
+        assert!(s.take(t + 60 * SECOND));
+        s.refused(t + 61 * SECOND);
+        assert!(!s.take(t + 61 * SECOND + 14 * 60 * SECOND));
+        assert!(s.take(t + 61 * SECOND + 15 * 60 * SECOND));
+    }
 
     fn song(title: &str, artist: &str) -> Track {
         Track { title: title.into(), artist: artist.into(), ids: [(Source::Spotify, format!("s-{title}"))].into(), ..Default::default() }

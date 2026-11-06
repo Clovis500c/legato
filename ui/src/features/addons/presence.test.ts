@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import type { LibraryTrack } from '../../shared/api'
 import type { DiscordSettings } from '../../shared/theme/theme'
 import type { NowPlaying } from '../player/store'
-import { presenceFor, samePresence } from './presence'
+import { asksPicture, presenceFor, samePresence } from './presence'
 import { ADDONS, allTags, DISCORD, filterAddons } from './registry'
 
 const opts: DiscordSettings = { appId: '1', status: 'song', buttons: true, paused: false, github: false }
@@ -11,7 +11,7 @@ const track = { id: 1, added: 1, title: 'jinx', artist: 'lexycat', album: 'Pink'
 
 describe('presenceFor', () => {
   it('song, cover, button to where it plays', () => {
-    expect(presenceFor(now, track, true, 30_000.4, 197_000, opts)).toEqual({ title: 'jinx', artist: 'lexycat', album: 'Pink', art: track.art, buttons: [['Listen on YouTube', 'https://www.youtube.com/watch?v=abc']], playing: true, positionMs: 30_000, durationMs: 197_000, status: 'song' })
+    expect(presenceFor(now, track, true, 30_000.4, 197_000, opts)).toEqual({ title: 'jinx', artist: 'lexycat', album: 'Pink', art: track.art, artistArt: null, buttons: [['Listen on YouTube', 'https://www.youtube.com/watch?v=abc']], playing: true, positionMs: 30_000, durationMs: 197_000, status: 'song' })
     const sp = presenceFor({ ...now, via: 'spotify', youtubeId: undefined, spotifyId: 'xyz' }, undefined, true, 0, null, opts)
     expect(sp?.buttons).toEqual([['Listen on Spotify', 'https://open.spotify.com/track/xyz']])
     expect(presenceFor(now, track, true, 0, null, { ...opts, github: true })?.buttons[1]).toEqual(['Get App On GitHub', 'https://github.com/Clovis500c/legato'])
@@ -26,6 +26,22 @@ describe('presenceFor', () => {
     const local = presenceFor({ ...now, via: 'local', youtubeId: undefined }, { ...track, art: null }, true, 0, null, opts)
     expect(local?.art).toBeNull()
     expect(local?.buttons).toEqual([])
+  })
+
+  it('the song and its artist, the artist’s picture as found', () => {
+    const face = 'https://lh3.googleusercontent.com/face=w240-h240-p'
+    expect(presenceFor(now, track, true, 0, null, { ...opts, status: 'both' }, face)).toMatchObject({ status: 'both', artistArt: face })
+  })
+})
+
+describe('asksPicture', () => {
+  it('a song playing 10 s in, a real artist', () => {
+    expect(asksPicture(now, true, 10_000)).toBe(true)
+    // Skipped through, paused, stopped, untagged: nothing asked.
+    expect(asksPicture(now, true, 9_999)).toBe(false)
+    expect(asksPicture(now, false, 60_000)).toBe(false)
+    expect(asksPicture(undefined, true, 60_000)).toBe(false)
+    expect(asksPicture({ ...now, artist: 'Unknown artist' }, true, 60_000)).toBe(false)
   })
 })
 

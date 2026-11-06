@@ -61,6 +61,11 @@ pub async fn song_link(state: &AppState, url: &str) -> CmdResult<Option<Track>> 
 static BUSY: AtomicBool = AtomicBool::new(false);
 static STOP: AtomicBool = AtomicBool::new(false);
 
+/// An import is searching: nothing else asks YouTube Music meanwhile (Discord's artist pictures).
+pub fn importing() -> bool {
+    BUSY.load(Ordering::Acquire)
+}
+
 /// Frees `BUSY` on every way out of the import, errors included.
 pub struct Running;
 

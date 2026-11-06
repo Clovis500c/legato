@@ -1,10 +1,15 @@
 import type { LibraryTrack, Presence } from '../../shared/api'
+import { UNKNOWN_ARTIST } from '../../shared/artistName'
 import { REPO } from '../../shared/links'
 import type { DiscordSettings } from '../../shared/theme/theme'
 import type { NowPlaying } from '../player/store'
 
-/** What Discord should show now. null = nothing (stopped, or paused when the add-on hides pauses). */
-export function presenceFor(now: NowPlaying | undefined, track: LibraryTrack | undefined, playing: boolean, positionMs: number, durationMs: number | null, opts: DiscordSettings): Presence | null {
+/** The artist's picture is asked for once a song has played 10 s (skips ask nothing), never for an untagged one. */
+export const asksPicture = (now: NowPlaying | undefined, playing: boolean, positionMs: number) => !!now && playing && positionMs >= 10_000 && now.artist !== UNKNOWN_ARTIST
+
+/** What Discord should show now. null = nothing (stopped, or paused when the add-on hides pauses). `artistArt`: the
+ *  artist's picture, https (discord.ts finds it). */
+export function presenceFor(now: NowPlaying | undefined, track: LibraryTrack | undefined, playing: boolean, positionMs: number, durationMs: number | null, opts: DiscordSettings, artistArt: string | null = null): Presence | null {
   if (!now || (!playing && !opts.paused)) return null
   const song: [string, string] | null = !opts.buttons
     ? null
@@ -22,6 +27,7 @@ export function presenceFor(now: NowPlaying | undefined, track: LibraryTrack | u
     artist: now.artist,
     album: track?.album ?? null,
     art,
+    artistArt,
     buttons: [song, opts.github ? (['Get App On GitHub', REPO] as [string, string]) : null].filter((b): b is [string, string] => !!b),
     playing,
     positionMs: Math.max(0, Math.round(positionMs)),
