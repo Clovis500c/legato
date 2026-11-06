@@ -9,7 +9,7 @@ use mdns_sd::{ServiceDaemon, ServiceEvent, ServiceInfo};
 use spake2::{Ed25519Group, Identity, Password, Spake2};
 use std::net::SocketAddr;
 use std::time::Duration;
-use tokio::io::{AsyncReadExt, AsyncWriteExt};
+use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt};
 use tokio::net::{TcpListener, TcpStream};
 use tokio::time::timeout;
 
@@ -30,7 +30,7 @@ pub fn new_code() -> String {
     format!("{:06}", rand::random_range(0..1_000_000u32))
 }
 
-pub(crate) async fn write_frame(s: &mut TcpStream, data: &[u8]) -> Result<()> {
+pub(crate) async fn write_frame<S: AsyncWrite + Unpin>(s: &mut S, data: &[u8]) -> Result<()> {
     s.write_all(&(data.len() as u32).to_be_bytes()).await?;
     s.write_all(data).await?;
     Ok(())
@@ -40,7 +40,8 @@ async fn read_frame(s: &mut TcpStream) -> Result<Vec<u8>> {
     read_frame_max(s, MAX_FRAME).await
 }
 
-pub(crate) async fn read_frame_max(s: &mut TcpStream, max: u32) -> Result<Vec<u8>> {
+/// Its length checked before anything is read.
+pub(crate) async fn read_frame_max<S: AsyncRead + Unpin>(s: &mut S, max: u32) -> Result<Vec<u8>> {
     let len = s.read_u32().await?;
     ensure!(len <= max, "Frame too big");
     let mut buf = vec![0; len as usize];

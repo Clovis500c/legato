@@ -12,6 +12,7 @@ pub mod listenbrainz;
 pub mod lrclib;
 pub mod nearby;
 pub mod oauth;
+pub mod rooms;
 pub mod soundcloud;
 pub mod spotify;
 pub mod spotify_embed;
