@@ -1,7 +1,7 @@
 import { Channel, invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 import type { Box } from './artbox'
-import type { PlexPin, PlexServer, ServerExposure, ServerKind, ServerStatus, ServerSync, AddReport, AlbumInfo, Bookmark, DeviceOffer, DeviceOfferEvent, DevicesStatus, CacheStats, Contact, Credentials, DetectInput, Detection, Direction, DiscordStatus, Dropped, Edit, EditDraft, Effects, ExportReport, FileList, FileTags, FindReport, Heard, JumpPlaylist, LastfmStatus, LibraryChanges, LibraryData, LibraryHealth, LibraryPlaylist, LibraryTrack, ListImport, LinkImport, Listen, ListenbrainzStatus, ListRef, LiveReport, LiveSettings, LyricHit, Lyrics, LyricsAsk, MediaNow, Merged, Mix, NearbyState, Pickup, Play, PlayerCommand, PlayerLevels, PlayerStatus, PlaylistEdit, PluginCall, PluginInfo, PluginInspect, Pref, Presence, PushFailed, RemoteLink, RemoteSong, RoomEvent, RoomFind, RoomHeard, RoomNow, RoomReaction, RoomSong, RoomStatus, Scrobble, SearchResults, ShareCode, SharePreview, ShieldStatus, ShortcutEntry, SongTags, Source, SourceStatus, SpotifyCommand, SpotifyExport, SpotifyImport, SpotifyLibraryImport, SpotifyList, SpotifyPick, SpotifyPlayback, SpotifyProgress, SponsorSegment, SyncProbe, SyncReport, SyncStatus, SystemAccent, TagsSaved, Track, UpdateStatus, WatchCmd, WatchRect, WatchReport, YtmAccount, YtmAccounts, YtmArtist, YtmHome } from './generated'
+import type { PlexPin, PlexServer, ServerExposure, ServerKind, ServerStatus, ServerSync, AddReport, AlbumInfo, Bookmark, DeviceOffer, DeviceOfferEvent, DevicesStatus, CacheStats, Contact, Credentials, DetectInput, Detection, Direction, DiscordStatus, Dropped, Edit, EditDraft, Effects, ExportReport, FileList, FileTags, FindReport, Heard, JumpPlaylist, LastfmStatus, LibraryChanges, LibraryData, LibraryHealth, LibraryPlaylist, LibraryTrack, ListImport, LinkImport, Listen, ListenbrainzStatus, ListRef, LiveReport, LiveSettings, LyricHit, Lyrics, LyricsAsk, MediaNow, Merged, Mix, NearbyState, Pickup, Play, PlayerCommand, PlayerLevels, PlayerStatus, PlaylistEdit, PluginCall, PluginInfo, PluginInspect, Pref, Presence, PushFailed, RemoteLink, RemoteSong, RoomEvent, RoomFind, RoomHeard, RoomNow, RoomReaction, RoomSong, RoomStatus, Scrobble, SearchResults, ShareCode, SharePreview, ShieldStatus, ShortcutEntry, SongTags, Source, SourceStatus, SpotifyCommand, SpotifyExport, SpotifyImport, SpotifyLibraryImport, SpotifyList, SpotifyPick, SpotifyPlayback, SpotifyProgress, SponsorSegment, Storage, SyncProbe, SyncReport, SyncStatus, SystemAccent, TagsSaved, Track, UpdateStatus, WatchCmd, WatchRect, WatchReport, YtmAccount, YtmAccounts, YtmArtist, YtmHome } from './generated'
 
 // Every type the commands and events carry is a Rust type: `pnpm types` (ts-rs) writes it into ./generated, never by hand.
 // Re-exported here, so features import them from the api.
@@ -392,6 +392,10 @@ export const api = {
   setArtCacheCap: (mb: number) => invoke<void>('set_art_cache_cap', { mb }),
   /** Empties the cover cache: covers download again when shown. Bytes freed. */
   clearArtCache: () => invoke<number>('clear_art_cache'),
+  /** Settings › General › Storage: bytes by kind (webview: WebView2's folder, a PC's only). */
+  storage: () => invoke<Storage>('storage'),
+  /** Lyrics found and songs measured, or the diagnostics log; never the library. Bytes freed. */
+  clearStorage: (what: 'caches' | 'log') => invoke<number>('clear_storage', { what }),
   /** Third-party notices shipped with the app, in the default browser. */
   openLicenses: () => invoke<void>('open_licenses'),
   /** The UI is up: plugins, update and Sync Mode rounds may start (Rust also starts them after a few seconds). */

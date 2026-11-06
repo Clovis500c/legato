@@ -6,6 +6,7 @@
 export const PHONE_FOLDED: ReadonlySet<string> = new Set([
   // General
   'Cover cache',
+  'Storage',
   'Library backup',
   'Search bar',
   'Voice and recognition',

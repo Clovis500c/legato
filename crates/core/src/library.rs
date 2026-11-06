@@ -367,6 +367,9 @@ const NOT_A_BACKUP: &str = "Not a Legato library backup";
 /// Silence and loudness rows kept (caches by path), and how long a SponsorBlock answer stays in its table, s.
 const SILENCE_KEEP: i64 = 20_000;
 const SPONSOR_KEEP_S: i64 = 30 * 86_400;
+/// Tables the app fills again by itself: lyrics found, SponsorBlock's parts, local files measured (silences, loudness,
+/// waveforms). Searching by a lyric line reads `lyrics`: cleared, it finds a song again once its lyrics come back.
+const CACHES: [&str; 5] = ["lyrics", "sponsor", "silence", "loudness", "waveform"];
 
 impl Library {
     /// Before migrating an existing library, keeps it as it was (`library-before-v<N>.db` next to it, the first one
@@ -1394,6 +1397,21 @@ impl Library {
         // Answers are used for a week: older than a month are never read again.
         self.db.execute("DELETE FROM sponsor WHERE fetched < ?1", [fetched - SPONSOR_KEEP_S])?;
         Ok(())
+    }
+
+    /// Bytes the caches hold in the file, their indexes too (SQLite's `dbstat`): Settings › General › Storage.
+    pub fn caches_bytes(&self) -> Result<u64> {
+        let tables = CACHES.map(|t| format!("'{t}'")).join(", ");
+        let sql = format!("SELECT COALESCE(SUM(payload), 0) FROM dbstat WHERE name IN (SELECT name FROM sqlite_master WHERE tbl_name IN ({tables}))");
+        Ok(self.db.query_row(&sql, [], |r| r.get::<_, i64>(0))?.max(0) as u64)
+    }
+
+    /// Empties the caches, the file given back their room (VACUUM). The bytes they held.
+    pub fn clear_caches(&self) -> Result<u64> {
+        let held = self.caches_bytes()?;
+        let deletes: String = CACHES.iter().map(|t| format!("DELETE FROM {t}; ")).collect();
+        self.db.execute_batch(&format!("BEGIN; {deletes}COMMIT; VACUUM;"))?;
+        Ok(held)
     }
 
     /// A song's edits (`song` key) or the presets (None), oldest first (a stable list: playing one doesn't move it).
@@ -2757,6 +2775,23 @@ mod tests {
             }
         }
         assert!(over.is_empty(), "whole scans: {over:#?}");
+        Ok(())
+    }
+
+    #[test]
+    fn the_caches_clear_alone_and_say_what_they_held() -> Result<()> {
+        let lib = Library::in_memory()?;
+        lib.upsert_track(&spotify())?;
+        lib.save_lyrics("lexycat|jinx|197", Some(&"la la ".repeat(2000)), 1)?;
+        lib.save_waveform("C:/music/a.mp3", 1, &[7; 3000])?;
+        lib.save_sponsor("abc", "[]", 1)?;
+        let held = lib.caches_bytes()?;
+        assert!(held > 15_000, "{held}");
+        assert_eq!(lib.clear_caches()?, held);
+        assert_eq!(lib.caches_bytes()?, 0);
+        assert!(lib.cached_lyrics("lexycat|jinx|197")?.is_none());
+        assert!(lib.cached_sponsor("abc")?.is_none());
+        assert_eq!(lib.tracks()?.len(), 1, "the library stays");
         Ok(())
     }
 }

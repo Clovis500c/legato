@@ -19,6 +19,7 @@ pub mod server;
 pub mod share;
 pub mod songlist;
 pub mod spotify_export;
+pub mod storage;
 pub mod sync;
 pub mod syncmode;
 pub mod netlog;

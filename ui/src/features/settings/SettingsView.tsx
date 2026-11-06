@@ -4,7 +4,7 @@ import { openUrl } from '@tauri-apps/plugin-opener'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { useSettings } from '../../app/settings'
 import { useStore, type SettingsSection } from '../../app/store'
-import { api, type Contact } from '../../shared/api'
+import { api, type Contact, type Storage } from '../../shared/api'
 import { pickFile, saveFile } from '../../shared/files'
 import { formatBytes, formatCount, timeAgo } from '../../shared/format'
 import { PRIVACY_PAGE } from '../../shared/links'
@@ -642,6 +642,48 @@ function CoverCacheRows() {
     </div>
   )
 }
+/** What the app keeps on disk, by kind (covers: the group above), and a Clear for what comes back by itself. */
+function StorageRows() {
+  const [s, setS] = useState<Storage | null>(null)
+  const [busy, setBusy] = useState(false)
+  const read = () => void api.storage().then(setS, () => setS(null))
+  useEffect(read, [])
+  const clear = async (what: 'caches' | 'log') => {
+    setBusy(true)
+    await api.clearStorage(what).catch(() => 0)
+    setBusy(false)
+    read()
+  }
+  const size = (n: number | null | undefined, what?: 'caches' | 'log') => (
+    <span className="flex shrink-0 items-center gap-3">
+      <span className="text-xs text-ink-2 tabular-nums">{n == null ? '…' : formatBytes(n)}</span>
+      {what && (
+        <Button variant="ghost" disabled={busy || !n} onClick={() => void clear(what)}>
+          {tr('Clear')}
+        </Button>
+      )}
+    </span>
+  )
+  return (
+    <div className="rounded-xl border border-line bg-raised">
+      <Row label={msg('Your library')} sub={tr('Songs, playlists, history and settings, with the copies kept before each update and each day. Never cleared here')}>
+        {size(s?.library)}
+      </Row>
+      <Row label={msg('Lyrics and song analyses')} sub={tr('Lyrics found, SponsorBlock’s parts, your files’ silences, loudness and waveforms: found or measured again as songs play')}>
+        {size(s?.caches, 'caches')}
+      </Row>
+      <Row label={msg('Diagnostics log')} sub={tr('What Copy diagnostics reads, in Settings › About: 5 MB at most, the oldest lines go first')}>
+        {size(s?.log, 'log')}
+      </Row>
+      {s?.webview != null && (
+        <Row label={msg('WebView2')} sub={tr('Windows’ browser engine inside Legato: your sign-ins and the pages’ caches. Windows trims it itself; not cleared here, so you stay signed in')}>
+          {size(s.webview)}
+        </Row>
+      )}
+    </div>
+  )
+}
+
 /** The whole library in one file, and back: the app restarts on a restored one. */
 function BackupRows() {
   const [busy, setBusy] = useState(false)
@@ -729,6 +771,9 @@ function GeneralSection() {
       )}
       <Group title={msg('Cover cache')}>
         <CoverCacheRows />
+      </Group>
+      <Group title={msg('Storage')}>
+        <StorageRows />
       </Group>
       <Group title={msg('Library backup')}>
         <BackupRows />

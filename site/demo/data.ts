@@ -288,12 +288,13 @@ const ANSWERS: Record<string, (args: Record<string, unknown>) => unknown> = {
   nearby_status: () => ({ state: 'idle' }),
   cache_stats: () => Object.fromEntries(['library', 'playlists', 'mixes', 'stats', 'images'].map((k) => [k, { hits: 0, misses: 0, entries: 0, bytes: 0 }])),
   art_cache_size: () => 0,
+  storage: () => ({ library: 0, covers: 0, caches: 0, log: 0, webview: null }),
   detector_status: () => false,
   spotify_web_status: () => false,
 }
 
 // What needs an account, the network or the PC: said plainly, never faked.
-const REFUSED = new Set(['add_link', 'add_to_youtube', 'add_track', 'album_info', 'alternative_videos', 'clear_art_cache', 'clear_history', 'connect', 'detect_song', 'disconnect', 'edit_tags', 'export_cover', 'export_edit', 'export_theme', 'export_youtube', 'find_versions', 'import_link', 'import_song_list', 'import_spotify_link', 'import_theme', 'lastfm_connect', 'merge_duplicates', 'nearby_receive', 'nearby_send', 'open_licenses', 'open_windows_settings', 'play_preview', 'plex_pick', 'plugin_install', 'rescan_local', 'resolve_track', 'restart_app', 'save_background', 'save_cover', 'server_scrobble', 'server_sign_in', 'server_sign_out', 'server_star', 'server_sync', 'set_local_folders', 'share_import', 'share_playlist', 'share_preview', 'share_read_image', 'spotify_export_open', 'spotify_import', 'spotify_web_open', 'sync_all', 'sync_join', 'sync_now', 'sync_offer', 'sync_setup', 'update_check', 'update_install', 'voice_listen', 'ytm_artist', 'ytm_list', 'ytm_sign_in', 'ytm_sign_out', 'ytwatch_open'])
+const REFUSED = new Set(['add_link', 'add_to_youtube', 'add_track', 'album_info', 'alternative_videos', 'clear_art_cache', 'clear_history', 'clear_storage', 'connect', 'detect_song', 'disconnect', 'edit_tags', 'export_cover', 'export_edit', 'export_theme', 'export_youtube', 'find_versions', 'import_link', 'import_song_list', 'import_spotify_link', 'import_theme', 'lastfm_connect', 'merge_duplicates', 'nearby_receive', 'nearby_send', 'open_licenses', 'open_windows_settings', 'play_preview', 'plex_pick', 'plugin_install', 'rescan_local', 'resolve_track', 'restart_app', 'save_background', 'save_cover', 'server_scrobble', 'server_sign_in', 'server_sign_out', 'server_star', 'server_sync', 'set_local_folders', 'share_import', 'share_playlist', 'share_preview', 'share_read_image', 'spotify_export_open', 'spotify_import', 'spotify_web_open', 'sync_all', 'sync_join', 'sync_now', 'sync_offer', 'sync_setup', 'update_check', 'update_install', 'voice_listen', 'ytm_artist', 'ytm_list', 'ytm_sign_in', 'ytm_sign_out', 'ytwatch_open'])
 
 /** What Rust would say; a list, for all the commands no screen here reads. */
 export function answer(cmd: string, args: Record<string, unknown>) {

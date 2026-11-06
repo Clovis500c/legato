@@ -202,8 +202,17 @@ copies, downloads for offline), their accounts, limits and paid plan.
       while a song plays (paused, a minimize is a minimize); the existing picture in picture is the mini player, not a
       second window (one webview, one player). Not tried for real: Windows' minimize caught in the installed app (the
       window shows going down, then comes back small: a flash?), Win+M, two screens.)
-- [ ] 5. `S` Settings › Storage: what the app keeps on disk (library, covers, lyrics, logs, WebView2's cache), the size
-      of each, a Clear for what can go.
+- [x] 5. `S` Settings › Storage: what the app keeps on disk (library, covers, lyrics, logs, WebView2's cache), the size
+      of each, a Clear for what can go. (2026-11-06: Settings › General › Storage, under Cover cache (its size, limit
+      and Clear were there): Your library (the file and its copies before updates and each day, the caches taken out:
+      never cleared), Lyrics and song analyses (lyrics found, SponsorBlock's parts, local files' silences, loudness
+      and waveforms: SQLite's `dbstat`, Clear then VACUUM, `Library::clear_caches`), Diagnostics log (Clear through its
+      writer, which holds the open file: `diag::Log::clear`), WebView2 (its folder, size only: Clear would sign out of
+      YouTube). Sizes by an async command (`storage`); tests on a temp folder (`music_core::storage`, the log) and a
+      library in memory. Decided alone (2026-11-06): rows with sizes, not a chart; WebView2 not cleared, because its
+      cookies are the sign-ins. Seen over the demo (zeros there, its data is never faked). Not tried for real: the
+      sizes on a real PC, WebView2's folder where Tauri puts it (`app_local_data_dir/EBWebView`), how long VACUUM takes
+      on a big library.)
 - [ ] 6. `S` A native window on Windows 11: snap layouts on our maximize button (`WM_NCHITTEST` → `HTMAXBUTTON`,
       beside `thumbbar.rs`), Windows' minimize and maximize animations.
 - [ ] 7. `S` A profile card without an account: top artists, the recap, a few playlists, as a picture (a link with 11).

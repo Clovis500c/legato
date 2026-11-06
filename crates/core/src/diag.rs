@@ -313,6 +313,18 @@ impl Log {
         }
         self.size().map(|_| ())
     }
+
+    /// Every file gone (Settings › General › Storage); the next line starts a new one. Bytes freed.
+    pub fn clear(&mut self) -> u64 {
+        // Closed first: Windows keeps the name of a file still open.
+        self.open = None;
+        (0..self.files).map(|n| file_path(&self.dir, n)).filter_map(|p| fs::metadata(&p).ok().map(|m| m.len()).filter(|_| fs::remove_file(&p).is_ok())).sum()
+    }
+}
+
+/// Bytes the log's files take in `dir`.
+pub fn bytes(dir: &Path) -> u64 {
+    (0..FILES).map(|n| fs::metadata(file_path(dir, n)).map_or(0, |m| m.len())).sum()
 }
 
 /// The newest `n` entries that `want` accepts, oldest first. Files are read newest first, so a long log costs what was asked.
@@ -443,6 +455,22 @@ mod tests {
         assert!(numbers.windows(2).all(|w| w[1] == w[0] + 1), "oldest to newest, no gap: {numbers:?}");
         assert!(!all.contains("line 000"));
         assert!(!file_path(dir.path(), 3).exists());
+    }
+
+    #[test]
+    fn clearing_removes_every_file_even_the_open_one_and_writing_goes_on() {
+        let dir = tempfile::tempdir().unwrap();
+        let mut log = Log::with_limits(dir.path(), 200, 3);
+        for i in 0..20 {
+            log.append(&format!("line {i:03} with enough padding to fill a file fast")).unwrap();
+        }
+        let held = bytes(dir.path());
+        assert!(held > 200, "{held}");
+        assert_eq!(log.clear(), held);
+        assert_eq!(bytes(dir.path()), 0);
+        assert!(!file_path(dir.path(), 0).exists());
+        log.append("after").unwrap();
+        assert_eq!(fs::read_to_string(file_path(dir.path(), 0)).unwrap(), "after\n");
     }
 
     #[test]

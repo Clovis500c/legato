@@ -17,6 +17,8 @@ enum Job {
     Line(String),
     /// Answered once every line queued before it is written.
     Flush(Sender<()>),
+    /// Every file gone (it holds the open one); answered with the bytes freed.
+    Clear(Sender<u64>),
 }
 
 static QUEUE: OnceLock<Sender<Job>> = OnceLock::new();
@@ -36,6 +38,9 @@ pub fn init(dir: &Path, version: &str) {
                 }
                 Job::Flush(done) => {
                     let _ = done.send(());
+                }
+                Job::Clear(done) => {
+                    let _ = done.send(file.clear());
                 }
             }
         }
@@ -97,6 +102,16 @@ pub fn flush() {
     if queue.send(Job::Flush(done)).is_ok() {
         let _ = wait.recv_timeout(Duration::from_millis(1500));
     }
+}
+
+/// Settings › General › Storage: the log emptied by its writer, lines queued before it written first. Bytes freed.
+pub fn clear() -> u64 {
+    let Some(queue) = QUEUE.get() else { return 0 };
+    let (done, wait) = channel();
+    if queue.send(Job::Clear(done)).is_err() {
+        return 0;
+    }
+    wait.recv_timeout(Duration::from_secs(5)).unwrap_or(0)
 }
 
 /// The interface's errors and playback switches (shared/diag.ts). Level: info, warn or error (anything else = info).
