@@ -10,18 +10,18 @@ be able to take the project over).
 
 ## Where things stand
 
-- **Released:** Stable and Beta are both **1.1.681** (`0c3561a`, 2026-11-05): the Windows installer, `latest.json` and
-  the Android APK (`Legato_1.1.681_android-arm64.apk`). Stable was 1.1.479 before; its notes list the 133 changes since.
-- **master** = `f10e9dc`: two `[skip release]` commits after 1.1.681 (release notes in full, the bench's numbers on the
-  website). The website, https://clovis500c.github.io/legato/, is deployed from it.
-- **platforms**, the work branch (local only) = master plus this clean-up's commits. Nothing half done, no stash, no
-  other branch or worktree.
+- **Released:** Stable is **1.1.681** (`0c3561a`, 2026-11-05): the Windows installer, `latest.json` and the Android APK
+  (`Legato_1.1.681_android-arm64.apk`). Beta: the autonomous run's push of 2026-11-06 (about 17:30, Paris) builds the
+  next one, an auto version above 1.1.681, with everything below (U1, U2, rooms, servers, the phone fixes, line 2).
+- **master** = **platforms**, both pushed on 2026-11-06 (the owner's word: past 95 % of the 5-hour window, push it all,
+  they go on from another PC). The website, https://clovis500c.github.io/legato/, is deployed from master. Nothing
+  half done, no stash, no other branch or worktree.
 - **Untracked:** `docs/notes/report-*.md`, the owner's reports in French (what each autonomous run did, what to try).
   Never commit them; read them for context.
 - **Never tried for real** (built and unit-tested, seen in the demo or on the emulator only): plan-v2 › Check live in
   the real app (25 lines). The owner tries them; what they find comes first.
 
-## Autonomous run of 2026-11-05 (running)
+## Autonomous run of 2026-11-05 (stopped 2026-11-06 at the push)
 
 The owner's ask (2026-11-05, late evening): the whole Against Liner list (plan-v2), hardest first, with the interface
 on top (U1 the phone's, U2 glow and simplicity). They're away, reachable only through Remote Control on their phone:
@@ -43,9 +43,9 @@ time, effort high.
   time, the last commit's first line without `[skip release]` (else no Beta), `git push origin platforms:master` (a
   fast-forward since f425336 merged the two README commits another session had pushed), then `git push origin
   platforms`.
-- A cron wake-up (session only, `13,43 * * * *`, id `340feeaa`) resumes after a 5-hour limit and checks the 95 %; delete
-  it at the end.
-- The script: `~/.claude/projects/C--dev-music-app/8c8ab02b-4287-45ba-a586-6f45a2aaceeb/workflows/scripts/legato-line-wf_3695f954-2fd.js`
+- A cron wake-up (session only, `13,43 * * * *`, id `340feeaa`) resumed after a 5-hour limit and checked the 95 %;
+  deleted at the push. A new run starts its own.
+- The script (on that PC only; another writes its own of the same shape): `~/.claude/projects/C--dev-music-app/8c8ab02b-4287-45ba-a586-6f45a2aaceeb/workflows/scripts/legato-line-wf_3695f954-2fd.js`
   (args: key, base = HEAD before the line, title, spec, reviewFocus).
 - Progress: U1 done (2e7edc2 to 901b8e6, about 307 k agent tokens, 52 % of a 5-hour window; the review fixed an 8 px
   sideways scroll). Another session of the owner's ("Logo redimensionné 1280x640", Sonnet) committed README and GitHub
@@ -63,8 +63,14 @@ time, effort high.
   server; the review kept Plex's token off strange addresses, full reads, no relay for good (about 589 k agent tokens,
   6 % of the week). The owner's tries on 1.1.681 (2026-11-06, 15:56, their phone), fixed inline: Android's Back (fe067d7,
   its Kotlin compiles), no floating video on the phone (9e3d958), our words over the embed's error page (6c70435).
-  Next (window under about 40 %): the phone-1 workflow (review those, build the APK, try them on the emulator; its args
-  in this session's scratchpad `phone1-args.json`, base = HEAD), then 18.
+  Then line 2 inline (the artist's About text). At about 92 % of the 5-hour window, all of it pushed (see Where things
+  stand) and the cron deleted: nothing runs on that PC any more.
+  Next, the phone-1 line (a workflow, under about 40 % of a window): review the three phone fixes (no false alarm on a
+  slow network, no retry storm, Google's refusal rules untouched, no address in our message, nothing over a working
+  video; Back's order: a menu, a dialog, a full screen, Now Playing, the page before, the root; the parked video: the
+  sound goes on, Now Playing shows it, every list's last rows reachable; the PC unchanged), build the APK
+  (`--target x86_64`), try them on the emulator `legato36` (the network off too), write the phone's rules in
+  `docs/design.md` (the video's place, Back). Then 18, and on down the order.
 - The end: a report in French (`docs/notes/report-2026-11-06.md`, untracked), this section folded into the rest of
   this file, the cron deleted, the report sent to the owner (SendUserFile, proactive).
 
