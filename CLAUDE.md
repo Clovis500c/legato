@@ -1,107 +1,121 @@
 # Legato
 
-Formerly Music App (renamed 2026-10-29). Identifier `app.legato.desktop` (was `dev.musicapp.desktop`: `src-tauri/src/rename.rs`
-moves its folders and keychain entries at first launch), exe `legato.exe`, Run entry and new sync folders "Legato".
-Kept for compatibility between versions and PCs: `_musicapp._tcp`, `MA1`, `.musicsync` files and an existing
-`Music App Sync` folder, reading `musicapp://` links. Never rename those. The repo is `Clovis500c/legato` (renamed by the
-user 2026-10-30; website https://clovis500c.github.io/legato/): GitHub redirects the old `music-app` URLs, and installed
-versions look for updates there, so never create a repo named `music-app` again.
+Desktop music player (Tauri 2 + Rust + React/TS, an Android build too) that unifies Spotify, YouTube, Apple Music,
+personal servers and local files. Formerly Music App (renamed 2026-10-29).
 
-Desktop app (Tauri 2 + Rust + React/TS) that unifies Spotify / YouTube / Apple Music / local libraries. Overview: `docs/architecture.md`; where the work stands: `docs/notes/handoff.md` (read it first); open work: `docs/notes/plan-v2.md` (history in git).
-Repo docs: `README.md` (short, points to the website), `CONTRIBUTING.md`, `docs/` (for developers). What users read (features,
-playback, privacy, FAQ) is the website: `site/` (Next.js static export, GitHub Pages, copy in `site/components/content.tsx`).
-Keep its privacy rows true when the app starts sending something new. Its home page is a scroll story around the real `ui/`, run by `site/demo` over a fake Tauri (invented data, no sound, no network; see CONTRIBUTING).
-Design direction (v2): `docs/design.md`; mockups in the Figma file "Untitled" (to be renamed "Legato · Design"), every page in light and dark.
+Read first: `docs/notes/handoff.md` (where the work stands), then only the sections of `docs/notes/plan-v2.md` you need
+(open work; history in git). Overview `docs/architecture.md`, design `docs/design.md` (Figma file "Untitled", to be
+renamed "Legato · Design", every page light and dark), playback `docs/playback.md`, dev traps `docs/development.md`.
+What users read is the website, `site/` (Next.js static export on GitHub Pages, copy in `site/components/content.tsx`);
+its home page runs the real `ui/` over a fake Tauri (`site/demo`: invented data, no sound, no network).
+
+## The code map: graphify first
+`graphify-out/` is the code graph (local AST, no LLM). For any question about the code, before grep or opening files:
+`graphify query "<question>"`, `graphify explain "<concept>"`, `graphify path "<A>" "<B>"`. They return a scoped
+subgraph, far smaller than grep output or whole files; then read only the lines they point to. `GRAPH_REPORT.md` only
+for a broad architecture review. After changing code: `graphify update .`. Command not found: `py -m graphify …`.
+No graph (new clone): `graphify extract . --code-only --cargo`, an empty `graphify-out/.graphify_labels.json` (`{}`),
+then `graphify cluster-only .`. `docs/` isn't in it: read those directly.
+
+## Names kept for compatibility
+Identifier `app.legato.desktop` (was `dev.musicapp.desktop`: `src-tauri/src/rename.rs` moves its folders and keychain
+entries at first launch), exe `legato.exe`, Run entry and new sync folders "Legato". Never rename `_musicapp._tcp`,
+`MA1`, `.musicsync` files, an existing `Music App Sync` folder, the reading of `musicapp://` links. The repo is
+`Clovis500c/legato` (website https://clovis500c.github.io/legato/): GitHub redirects the old `music-app` URLs and
+installed versions look for updates there, so never create a repo named `music-app`.
 
 ## Non-negotiable rules
-- Serverless: no backend of ours. Secrets in the OS keychain (`keyring` crate), local SQLite library. Sync between the user's PCs (user's choice, 2026-10-21): a OneDrive (or any shared) folder, one file per PC, or the local network with a 6-digit code; secrets travel only sealed (password or code), otherwise sign in again. See `docs/sync-mode.md`.
-- Legal audio playback only (Spotify Connect / official SDK, embedded YouTube player, local files, personal servers). No audio extraction: never download, record or export a platform's audio, never touch DRM. Live processing of what plays is allowed (user's choice 2026-10-20): native chain in `crates/dsp`, YouTube in its player (`crates/shield` `live.js`), see `docs/playback.md`.
-- Never copy code from Liner (non-commercial licence, reuse forbidden). Everything is written from scratch.
-- No keys for YouTube: Google sign-in in an app window (Google's own page), session kept in WebView2's cookie store, YouTube Music's and YouTube's own web APIs (InnerTube, unofficial: user's choices 2026-10-16 and 2026-10-20, may break). Search covers normal YouTube and YouTube Music (signed out: anonymous, YouTube Music's public catalog), clear non-music hidden until asked (`music_core::musicness`). Spotify: user's own client ID (dev mode = Premium owner, 5 users max). Without it, Connect Spotify (user's choice 2026-10-31): first Exportify's page in a window, driven by `crates/shield/src/exportify.js`, official API with its key (a new app can't get one for everybody; never take it out of its page), `spotify_export.rs` in `crates/core` and `src-tauri`; then, on the user's demand and with a warning (against Spotify's User Guidelines), the rows Spotify's own page shows; never its token, never the TOTP hidden in its player. Apple Music the same way (user's choice 2026-10-31, against Apple's terms, said first): Connect Apple Music reads the playlists music.apple.com shows (`crates/shield/src/apple.js`, `connectors::apple_page`, `src-tauri/src/apple_web.rs`); never its developer or user token.
-- English for code, comments, docs and commit messages. The interface speaks the user's language (user's choice 2026-10-20): English source and fallback, 17 other languages in `shared/i18n/locales`, Windows' language by default or picked in Settings › General › Language. Every UI text goes through `shared/i18n` (`tr`, `trn` for counts, `msg` in tables); each locale file holds its language keyed by the English text; `i18n.test.ts` fails on a text missing from one, or no longer used. Setting ids (`data-setting`, search index labels) stay English.
+- Serverless: no backend of ours. Secrets in the OS keychain (`keyring`), local SQLite library. Sync between the user's
+  PCs: a shared folder (OneDrive or any), one file per PC, or the local network with a 6-digit code; secrets travel only
+  sealed, otherwise sign in again (`docs/sync-mode.md`).
+- Legal playback only (Spotify Connect / official SDK, embedded YouTube player, local files, personal servers). Never
+  download, record or export a platform's audio, never touch DRM. Live processing of what plays is allowed: native chain
+  `crates/dsp`, YouTube in its player (`crates/shield` `live.js`, the formulas kept alike).
+- Never copy code from Liner (non-commercial licence). Everything is written from scratch.
+- YouTube without keys: Google sign-in in an app window (Google's own page), the session in WebView2's cookies, YouTube
+  Music's and YouTube's own web APIs (InnerTube: unofficial, may break). Signed out: YouTube Music's public catalog.
+  Clear non-music hidden until asked (`music_core::musicness`).
+- Spotify: the user's own client ID (dev mode: Premium owner, 5 users). Without it, Connect Spotify: Exportify's page in
+  a window (`crates/shield/src/exportify.js`; its key never taken out of its page), then, on the user's demand and with a
+  warning (against Spotify's guidelines), the rows Spotify's own page shows; never its token, never the TOTP in its
+  player. Apple Music the same way (against Apple's terms, said first): the playlists music.apple.com shows
+  (`crates/shield/src/apple.js`), never its developer or user token.
+- Every HTTP client the app builds takes `music_connectors::Noted` as its resolver, every window the shield hook or
+  `shield::watch` (hosts talked to: Settings › Privacy). The website's privacy rows (`PRIVACY`, `SERVICES` in
+  `content.tsx`) stay true when the app reaches or sends something new.
+- English for code, comments, docs and commits. Every interface text goes through `shared/i18n` (`tr`, `trn` for
+  counts, `msg` in tables): English source and fallback, 17 locales in `shared/i18n/locales` keyed by the English text;
+  `i18n.test.ts` fails on a text missing from one or no longer used. Setting ids (`data-setting`, search labels) stay
+  English.
+- Nothing confidential in tracked files: the repo is public. No secrets, keys, passwords, personal data (emails,
+  addresses, names, device names), nor the owner's accounts, library, machines or usage. Those stay out of git (the
+  keychain, git-ignored files, Claude Code's private memory).
 
-## Structure
-- `crates/core` (`music-core`): pure Rust, no Tauri. `Track`, `Connector` trait, `SecretStore`, matching (ISRC, then title+artist+duration), `Library` (rusqlite), `sync` (services), `syncmode` (between PCs: snapshot, merge, sealing; change times and `sync_gone` in the library), local file scan, `spotify_export` (Exportify's files), `searchpace` (how hard an import searches YouTube: `Pace` backs off from a refusal, `Line` lets one search settle other songs).
-  `artcache` (cover cache rules: thumbnail sizes, eviction by last use; the files are `connectors/src/art.rs`), `storage`
-  (Settings › General › Storage: sizes on disk by kind; the clearing is each owner's), `netlog`
-  (hosts talked to today, Settings › Privacy: every HTTP client the app builds takes `music_connectors::Noted` as its
-  resolver, every window the shield hook or `shield::watch`; a new client or window gets them too).
-- `crates/connectors` (`music-connectors`): shared OAuth PKCE loopback (Spotify) + one module per service: 'youtube' (links, oEmbed), 'ytmusic' (web session), 'ytweb' (normal YouTube search, search suggestions), 'spotify', 'spotify_embed' (public playlist and album links, no key), 'spotify_page' (Connect Spotify: the page's messages, checked), 'itunes' (also Apple Music album / playlist links), 'deezer' (playlist / album links by the public API; both give a `linklist` and feed `src-tauri/src/links.rs` `import_link`), 'nearby' (playlist share, and Sync Mode's one-off two-way swap), 'devices' (your devices on the same network: pairing with a code or QR, trusted sync, mDNS presence; rules in `music_core::devices`, shell `src-tauri/src/devices.rs`, UI `features/syncmode/Devices.tsx`), 'rooms' (listening rooms on the local network: a 6-digit code per listener, sealed control messages only, mDNS `_legatoroom._tcp`; rules `music_core::rooms`, shell `src-tauri/src/rooms.rs`, UI `features/rooms/`, `docs/rooms.md`), 'discord' (Rich Presence over the Discord app's local IPC), 'audd' (Music Detector: AudD's few free requests a day, or the user's own token in the keychain), 'lastfm' (scrobbling with the user's own free API key + shared secret, web auth through the loopback, session key in the keychain; `src-tauri/src/lastfm.rs`, UI `features/sources/lastfm.ts`), 'listenbrainz' (scrobbling with the user's own token, keychain, a listen refused waits for the next one; `src-tauri/src/listenbrainz.rs`, UI `features/sources/listenbrainz.ts`), 'sponsorblock' (non-music parts of YouTube videos by hash prefix, opt-in, cached in SQLite), 'lrclib' (lyrics, word timings from its Lyricsfile when it has them; `music_core::lyrics` cleans titles, picks, stretches timings for slowed versions; cached in SQLite), 'apk' (the phone's updates: Beta's latest.json, its APK), 'subsonic' (your music server: Navidrome, Airsonic, Gonic, Ampache; token auth, library, stream, star, scrobble), 'jellyfin' (its token once signed in, playback reports), 'plex' (PIN sign-in on plex.tv, servers and addresses, ratings), all three behind 'servers' `Conn` (`music_core::server` keys and ids, shell `src-tauri/src/servers.rs` + `plex.rs` for Plex's PIN, UI `features/sources/servers.ts`). Injectable URLs (`with_urls`) for mockito tests.
-- `crates/player` (`music-player`): native local playback (rodio/symphonia), engine thread, gapless queue, `http.rs` (server songs over range requests, `server:` paths, the request built by the shell's `Fetch`), Music Detector clips from the microphone or the PC's output (`mic.rs`: WASAPI loopback, user's choice 2026-10-22; memory only, the app's own playback paused first so its streams are never taken). Playback choices (YouTube, local, Spotify plan): `docs/playback.md`.
-- `crates/dsp` (`music-dsp`): live audio processing, pure Rust (meter, Adaptive Sound, limiter, the Live Editor's effects `chain.rs` and speed / tempo / pitch `stretch.rs`, visualizer FFT bands `viz.rs` fed by the lock-free copy `tap.rs`, integrated loudness for Volume levelling `loudness.rs`). Its JS twin for YouTube: `crates/shield/src/live.js` (keep the formulas alike).
-- `crates/shield` (`music-shield`): ad/tracker blocker (Brave's adblock-rust) + YouTube player script + `refused.js` (tells the app when Google's "Sorry…" page refuses an embed's player request) + `spotify.js` (Connect Spotify, Spotify's window only).
-- `crates/plugins` (`music-plugins`): third-party plugin runtime (QuickJS per plugin, memory and time limits), manifest and permissions, network gateway. Plugin API version: `manifest::API`; additions only within a version.
-- `src-tauri`: thin shell. IPC commands (`lib.rs`; feature ones in `detector.rs` Music Detector, `editor.rs` Live Editor + export, `themes.rs` theme pictures and files, `folders.rs` watched local folders, `viz.rs` visualizer frames), keychain (`secrets.rs`), WebView2 hook (`shield.rs`), Google sign-in window (`ytm.rs`), watch-page player for videos that can't be embedded (`ytwatch.rs`), Spotify's window and Connect Spotify (`spotify_web.rs`, `spotify_export.rs`, UI `features/add/SpotifyConnect.tsx`, import screen `ImportScreen.tsx` + pure `importRun.ts`), pasted links and the YouTube search of imports (`links.rs`: `import_link`, `find_on_youtube`, songs not found, page `features/library/NotFoundView.tsx`), Windows media panel / media keys (`media.rs`), taskbar Jump List (`jumplist.rs`: `--jump` launches through the single instance, written by the installed app only), window background before first paint (`window_bg.rs`), picture-in-picture (`pip.rs`: the main window small and above the others, back as it was; UI `features/player/pipMode.ts` + `PipScreen.tsx`; on minimize by a setting, `pipMinimize.ts`), background updates (`update.rs`, checked at every launch, installed between two songs or at a quiet moment by `ui/src/features/update/updates.ts`; channel = UI setting `updateChannel`, per PC; Beta = every green push to master, a prerelease with an auto version; Stable = `promote.yml` by hand, and installed versions read Stable's `releases/latest/download/latest.json`: keep that URL; see CONTRIBUTING; the phone's
-  twin `mobile/update.rs`: Beta's APK, `music_connectors::apk`, downloaded on the user's tap, then Android's installer
-  through `ApkInstall.kt`), tray mode (`background.rs`: close = hide, low-resource webview, suspend; Quit is the only exit), global shortcuts (`hotkeys.rs`), voice search (`speech.rs`: WinRT `SpeechRecognizer`, needs Windows' online speech recognition; WebView2 has no Web Speech), Sync Mode shell (`syncmode.rs`: folder, keychain key, minute timer, network; snapshots read WebView2 cookies, so async commands only), phone remote (`remote.rs` + `remote.html`, and `overlay.html` for OBS on this PC: a page on the LAN from a QR code, its secret in the keychain, private addresses only, taps sent as media keys; pure part `crates/core/src/remote.rs`, UI `features/remote/`), local diagnostics log (`diag.rs`: writer thread, panic hook, `diag_log` / `diag_report`; pure part `crates/core/src/diag.rs`; interface `shared/diag.ts`, `app/diagnostics.ts`, `app/ErrorBoundary.tsx`; a log line = our own English words + an optional detail, never a title or name in the words; see `docs/architecture.md`). All logic goes in `crates/`.
-- Android (2026-11-02): `src-tauri/gen/android` (Tauri's project; `MainActivity.kt`: multicast lock, system bars, background play: YouTube's frames
-  kept visible, the WebView never paused (wry's own field for it emptied: its pause cut the music) and its window
-  always shown, Back asks the page first (`window.legatoBack`, `app/androidBack.ts`: a menu, a dialog, a full screen,
-  Now Playing, the page before) and sends the app behind only at the root; `PlaybackService.kt`:
-  media foreground service while music plays, CPU and Wi-Fi awake during a song),
-  `src-tauri/tauri.android.conf.json` (identifier `app.legato.mobile`, Android 8+). Desktop-only shell parts behind
-  `#[cfg(desktop)]`, phone twins in `src-tauri/src/mobile/`; reqwest on rustls there (`tls()`); third-party plugins desktop
-  only. A file picked or saved goes through `shared/files.ts` (`pickFile`, `saveFile`), never the dialog plugin's
-  `open` / `save` for files: Android gives `content://` addresses, copied through the cache (`src-tauri/src/picked.rs`,
-  `PickedFile.kt`). The phone's own songs: no folder picker, Android's permission asked by `LegatoMusic` in
-  `MainActivity.kt`, then its Music and Download folders watched (`features/add/phoneMusic.ts`). Tools in
-  `C:\dev\android` (dot-source its `env.ps1`). Plan: `docs/notes/ideas/mobile.md`.
-- Add-ons: `features/addons/registry.ts` (list, author + verified), on/off in settings `addons`; each add-on's code in its own file there (`discord.ts` follows the player). Third-party plugins (user's choice, 2026-10-21): local folders installed from Add-ons after the user approves their permissions, each in its own QuickJS runtime (`crates/plugins`: manifest, permissions checked in Rust, network gateway to approved hosts only; shell `src-tauri/src/plugins.rs`; interface side `features/plugins/`: answers player / menu / panel / style calls, panel = data drawn by the app). Never secrets, files or raw IPC. Author docs: `docs/plugins.md`, example `examples/plugins/sleep-timer`.
-- Keyboard shortcuts: one table of actions with default keys in `ui/src/app/keys.ts` (pure: labels, combos from physical keys, conflicts), their handlers in `ui/src/app/shortcuts.ts`; user bindings in settings `shortcuts`, edited in Settings › Shortcuts. "Everywhere" bindings are OS hotkeys registered by Rust (`src-tauri/src/hotkeys.rs`, work in the background / tray); media keys are never registered (SMTC owns them). Settings search index: `features/settings/search.ts` (labels = `data-setting` on rows).
-- Live Editor: `features/editor/` (`editor.ts` store: settings playing now, per-song versions and presets in SQLite `edits`; `EditorPanel.tsx` beside the cover), pure helpers in `player/effects.ts` (neutral values, built-in presets, song keys). Export of a modified copy: local files only (`crates/player` `export.rs`, WAV).
-- Player modules: `store.ts` (queue, fades, resume), `session.ts` (saved playback), `autoDj.ts` (Auto-DJ: picks by the rules as Up next runs out, pure `autoDjPick.ts`), `app/screen.ts` (last screen), `media.ts` (Windows panel), `still.ts` (Auto video/cover), `live.ts` + `liveSync.ts` (live processing settings out, levels in), `pulse.ts` (moving cover), `immersive.ts` (pre-blurred backdrop), `snap.ts` (floating mini player spots), `Karaoke.tsx` (lazy full screen lyrics, K; state, window full screen and its Esc / arrow keys in `karaokeMode.ts` + `karaokeKeys.ts`, pure line logic `karaokeLines.ts`; the arrows set the lyrics panel's own saved fix), `CoverScreen.tsx` (lazy cover display, C: the cover huge, a clock option; state and Esc in `coverFull.ts`, clock text `coverClock.ts`), `SidePanel.tsx` (right panel: Up next or lyrics, the mini player on top, the default place), `SidebarPlayer.tsx` (mini player docked in the sidebar, a choice), `Progress.tsx` (60 fps bar), the visualizer (`Visualizer.tsx` strip and `VizScreen.tsx` full screen on V, both drawn by `VizCanvas.tsx` into a worker, `vizWorker.ts` + `vizPaint.ts`; pure parts `ledBars.ts`, `flash.ts`, `vizDraw.ts`, `vizScene.ts`; the Presets look: engine `vizPreset.ts` + `vizExpr.ts`, WebGL2 `vizPresetGl.ts`; frames from `vizFrames.ts`; state and Esc in `vizFull.ts` + `vizFullKeys.ts`; `docs/playback.md`).
-- Pages are lazy (`ui/src/app/pages.ts`: add a page there, not a static import; a shell file must not import a page, move the shared part out as `smart/actions.tsx` and `mixes/useMixes.ts` were). What waits for the first screen: `src-tauri/src/deferred.rs` (`app_ready`, 8 s timer, once) and `ui/src/app/deferred.ts`. The shield's lists stay early on purpose.
-- Settings schema changes for everyone: bump `DEFAULTS_VERSION` in `theme.ts` with the changed defaults (applied once to saved settings).
-- Modules imported by tests must not import `app/settings` (touches `window` at load): keep pure helpers in their own file.
-- `ui/`: React 19 + Zustand + Tailwind v4, split by feature:
-  - `app/` (shell, store, navigation, settings), `features/<name>/` (library, sources, sidebar, player, add, settings…), `shared/` (typed api, format, theme, `ui/` components).
-  - `shared/api.ts` = the only place that calls `invoke`. Its types are written from Rust (ts-rs: `#[derive(ts_rs::TS)]` + `#[ts(export)]`, `pnpm types` → `shared/generated/`, committed, CI diff check): never by hand.
-- Design tokens: `ui/src/styles.css` (`@theme`) fed by CSS variables from `shared/theme/theme.ts`. Themes (Settings › Appearance, `features/settings/ThemeStudio.tsx`): palette, font, corners (Tailwind radius vars), glow, background picture (covers folder `bg-<hash>`, served by the `art` scheme, surfaces see-through over it), a look (appearance settings applied on pick), own CSS (`shared/css.ts` cleaned; `BRAND_GUARD` keeps elements marked `data-brand`: Legato's name, logo, legal notices). `.theme` files carry the picture (`music_core::themefile`).
+## Layout (the details: graphify)
+- `crates/core` (`music-core`): pure Rust, no Tauri. Models, matching (ISRC, then title + artist + duration), the
+  library (rusqlite; bump `library::SCHEMA_VERSION` with each migration), sync, the pure half of each shell feature.
+- `crates/connectors`: one module per service or site, the shared OAuth PKCE loopback; injectable URLs (`with_urls`) for
+  mockito tests. `crates/player`: rodio/symphonia, gapless queue, server streams, Music Detector clips (memory only, the
+  app's own playback paused first). `crates/dsp`: live processing, loudness, visualizer bands. `crates/shield`: ad
+  blocker and page scripts. `crates/plugins`: third-party plugins, one QuickJS runtime each, installed from a local
+  folder once the user approves their permissions (checked in Rust, network to approved hosts only); never secrets,
+  files or raw IPC; API version `manifest::API`, additions only within a version (`docs/plugins.md`).
+- `src-tauri`: thin shell, the IPC commands. All logic goes in `crates/`.
+- `ui/`: React 19 + Zustand + Tailwind v4: `app/` (shell), `features/<name>/`, `shared/` (api, theme, i18n, ui).
+- Android: `src-tauri/gen/android` (`MainActivity.kt`, `PlaybackService.kt`), identifier `app.legato.mobile`.
+  Desktop-only shell parts behind `#[cfg(desktop)]`, phone twins in `src-tauri/src/mobile/`, reqwest on rustls there,
+  plugins desktop only. Files picked or saved through `shared/files.ts`, never the dialog plugin's `open` / `save`.
+
+## Code rules
+- `shared/api.ts` is the only place that calls `invoke`; its types come from Rust (ts-rs, `pnpm types` →
+  `shared/generated/`, committed), never written by hand.
+- No network from the front end, images included: `shared/art.ts` → the `art` scheme (host allowlist, disk cache).
+- Tauri commands that lock the library, read files or compute: `async fn` (a sync one runs on the window's thread and
+  freezes the app).
+- Only the installed app (identifier exactly `app.legato.desktop`: `identity::installed()`) updates, edits the Run entry
+  or migrates folders and keychain entries; any new side effect of a release build outside the app's folders goes
+  behind it. The e2e cargo feature stays off in normal builds: only there may an env var move the network (`hosts.rs`).
+- Updates: Stable's `releases/latest/download/latest.json` is the URL every installed version reads: keep it. Beta =
+  every green push to master (`CONTRIBUTING.md` › Releasing).
+- The phone remote and the OBS overlay answer private addresses only, their secret in the keychain.
+- Pages are lazy (`ui/src/app/pages.ts`); a shell file never imports a page. What waits for the first screen:
+  `src-tauri/src/deferred.rs`, `ui/src/app/deferred.ts`.
+- A default changed for everyone: bump `DEFAULTS_VERSION` in `theme.ts`. Modules imported by tests never import
+  `app/settings` (it touches `window`): pure helpers in their own file.
+- Shortcuts: one table in `ui/src/app/keys.ts`; media keys are never registered (Windows' media panel owns them).
+- A diagnostics log line: our own English words + an optional detail, never a title or a name in the words.
+- Themes: `BRAND_GUARD` keeps elements marked `data-brand` (Legato's name, logo, legal notices) through the user's CSS.
+  Default look (`docs/design.md`): Modern / Modern Dark following Windows, the sky-blue accent for playback only.
+- Long lists virtualized (`@tanstack/react-virtual`). Every surface gets a right-click menu (`features/menus.tsx`), text
+  fields keep the native one. No fake buttons: an unwired feature is absent or marked "Coming soon".
 
 ## Commands
-- `pnpm dev`: run the app (Vite + Tauri), with its own data folder (`tauri.dev.conf.json` identifier): never the installed app's library. Bump `library::SCHEMA_VERSION` with each migration.
-- `pnpm check`: types (Rust → TS) + typecheck + lint + Vitest + clippy + cargo test (everything must pass before a commit)
-- `pnpm test` / `cargo test --workspace` separately
-- `pnpm e2e`: smoke test of the built app (Windows; `e2e/`, `docs/development.md`). Its cargo feature `e2e` stays off in every normal build: only there may an env var move the network (`src-tauri/src/hosts.rs`)
-- `pnpm build`: installer
-- Android: `. C:\dev\android\env.ps1; pnpm tauri android build --debug --target x86_64 --apk` (emulator AVD `legato36`);
-  a phone's APK: `--target aarch64 --apk`, signed when `src-tauri/gen/android/keystore.properties` exists (never in git).
-- `pnpm bench`: start time, RAM and CPU of the release build on 10 000 songs, under its own identifier `app.legato.desktop.bench`
-  and data (`--quick` for a short run; a full run adds its row to `docs/performance.md`). Details: `docs/performance.md`.
+- `pnpm dev`: the app with its own data (`app.legato.desktop.devbuild`), never the installed app's library.
+- `pnpm check`: types (Rust → TS) + typecheck + lint + Vitest + clippy + cargo test, green before every commit.
+- `pnpm test`, `cargo test --workspace`; `pnpm e2e`: smoke test of the built app; `pnpm build`: installer; `pnpm bench`:
+  start time, RAM and CPU on 10 000 songs (`app.legato.desktop.bench`, `docs/performance.md`).
+- Android: `. C:\dev\android\env.ps1; pnpm tauri android build --debug --target x86_64 --apk` (emulator AVD
+  `legato36`); a phone: `--target aarch64 --apk`, signed when `src-tauri/gen/android/keystore.properties` exists (never
+  in git).
 
 ## Conventions
-- Code comments: English, caveman style (short fragments, no articles or filler). E.g. `// Feb 2026: own playlists only.`
-- Rust tests in the module (`#[cfg(test)]`), front-end tests next to the code (`*.test.ts`). Never real network in tests.
-- No fake buttons: an unwired feature is absent or marked "Coming soon".
-- Long lists: virtualized (`@tanstack/react-virtual`). No network access from the front end: everything goes through Rust.
-  Images too: `shared/art.ts` → `art` URI scheme (`src-tauri/src/art.rs`, host allowlist + disk cache). CSP img-src has no https.
-- Right-click: every surface gets a menu from `features/menus.tsx` (`onMenu(() => …)`); text fields keep the native one.
-- Default look (v2, `docs/design.md`): theme `system` = Modern / Modern Dark (Roboto, layered panels) following Windows light/dark, accent = the theme's sky blue, for playback only (play button, playing mark); everything else ink and greys.
-- Running to-do of the user's requests: `docs/notes/plan-v2.md` (tick lines as they land, so a new session can resume). Rewrite `docs/notes/handoff.md` when a branch or the next step changes.
-- Tauri commands that lock the library, read files or compute: `async fn` (a sync command runs on the window's thread; a
-  wait there freezes the whole app: Windows' AppHang on v0.1.217, 2026-10-23).
-- Only the installed app (identifier exactly `app.legato.desktop`) updates, edits the HKCU Run entry or migrates folders and
-  keychain entries: `identity::installed()` (`src-tauri/src/identity.rs`). A dev or bench build is a guest. Any new side
-  effect of a release build on the PC outside the app's own folders goes behind it.
-- Small commits, one tested step at a time.
-- Check API quotas and endpoints before freezing them (they change; Spotify renamed `/tracks` to `/items` in February 2026).
+- Comments in English, caveman style: `// Feb 2026: own playlists only.`
+- Rust tests in the module (`#[cfg(test)]`), front-end tests next to the code (`*.test.ts`). Never real network.
+- Small commits, one tested step each, Conventional Commits. Commits and pull requests never say Claude made them: no
+  `Co-Authored-By: Claude` line, no "Generated with Claude Code" (the owner's word, 2026-11-07).
+- `docs/notes/plan-v2.md`: tick a line when it lands; a clean-up drops ticked lines (history in git). Rewrite
+  `docs/notes/handoff.md` when a branch, a release or the next step changes. Keep both short: every start reads them.
+- Check API quotas and endpoints before freezing them (they change).
 
 ## Working with the owner
-- The owner writes in French: answer in French, informally (`tu`). The French interface says `vous`.
-- Nothing leaves this PC unless the owner says so in the session: no `git push`, pull request or merge into master (standing word since 2026-10-31). A push to master is a Beta release and can deploy the website.
-- No workflows or subagents unless the owner asks for one themself: they drain the plan's limits (about 1.5 M agent tokens fill a 5-hour window, a batch costs about 11 % of the week). When asked: one agent at a time, `effort: 'high'`, the price first, never started above about 30 % of the window.
-- Real accounts stay the owner's: never type a password, never accept a consent page, never drive Spotify's or Google's sign-in. An import, or anything that writes in bulk to a real account, is run by the owner, not by you.
-- A refusal from Google ("Sorry…" page, 429) is never routed around: no other endpoint, no CAPTCHA, no quicker retry (`searchpace`). No bulk real searches from a script: they count against the owner's address.
-- Never touch the installed app or stop a command the owner started. Editing `src-tauri` or `crates/` restarts their `pnpm dev` and cuts what runs in it. More traps: `docs/development.md` › Running and checking the app.
-
-## graphify
-
-This project has a knowledge graph at graphify-out/ with god nodes, community structure, and cross-file relationships.
-
-Rules:
-- For codebase questions, first run `graphify query "<question>"` when graphify-out/graph.json exists. Use `graphify path "<A>" "<B>"` for relationships and `graphify explain "<concept>"` for focused concepts. These return a scoped subgraph, usually much smaller than GRAPH_REPORT.md or raw grep output.
-- Read graphify-out/GRAPH_REPORT.md only for broad architecture review or when query/path/explain do not surface enough context.
-- After modifying code, run `graphify update .` to keep the graph current (AST-only, no API cost).
-- Code only (local AST: no LLM, no subagents), so `docs/` isn't in it: read those directly. No graph yet (new clone):
-  `graphify extract . --code-only --cargo`, an empty `graphify-out/.graphify_labels.json` (`{}`: communities named
-  after their hub, no LLM), then `graphify cluster-only .`.
+- They write in French: answer in French, informally (`tu`). The French interface says `vous`.
+- Nothing leaves this PC without their word in the session: no `git push`, pull request or merge into master. A push to
+  master is a Beta release and can deploy the website.
+- No workflows or subagents unless they ask for one themself (they drain the plan's limits). When asked: one agent at a
+  time, `effort: 'high'`, the price first.
+- Real accounts are theirs: never type a password, accept a consent page, or drive Spotify's or Google's sign-in; an
+  import or anything that writes in bulk to a real account is run by them.
+- A refusal from Google ("Sorry…" page, 429) is never routed around: no other endpoint, no CAPTCHA, no quicker retry
+  (`searchpace`). No bulk real searches from a script: they count against the owner's address.
+- Never touch the installed app or stop a command they started. Editing `src-tauri` or `crates/` restarts their
+  `pnpm dev` and cuts what runs in it. More traps: `docs/development.md` › Running and checking the app.

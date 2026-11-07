@@ -38,7 +38,6 @@ record or export a platform's audio), no keys of ours, a refusal (429, "Sorry…
 7. **Privacy and docs**:
    - The website's rows (`site/components/content.tsx` › `PRIVACY`, `SERVICES`): which host, when, what is sent, what
      needs an account. A row that is no longer true is a bug.
-   - `CLAUDE.md` › Structure lists every connector module: add it there, one clause.
    - `docs/architecture.md` if it changes how things flow; plan-v2's line ticked, with what wasn't tried for real.
 8. `pnpm check` (and `pnpm e2e` if the smoke test's path changed), then one commit. Trying it against the real service
    is the owner's call: no bulk real requests from a script, no real account driven by Claude.

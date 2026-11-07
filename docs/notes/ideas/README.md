@@ -23,7 +23,7 @@ before building on it (CLAUDE.md: they change).
 ## Each idea
 
 - **Sees**: what the listener gets, in their words.
-- **How**: the approach and the modules it touches (paths from CLAUDE.md › Structure).
+- **How**: the approach and the modules it touches (paths: `graphify query`).
 - **Rules**: what CLAUDE.md's non-negotiable rules ask of it (legal playback, no server of ours, privacy rows on the
   website, keychain, i18n, `async fn` for commands that lock or read).
 - **Needs**: ideas or groundwork that must land first.
