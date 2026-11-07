@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { useStore } from '../../app/store'
-import type { LibraryTrack } from '../../shared/api'
+import { api, type LibraryTrack } from '../../shared/api'
 import { rememberEnd } from './ends'
 import { NO_FADE } from './fade'
 import { useSponsor } from './sponsor'
@@ -347,6 +347,18 @@ describe('a YouTube video that never starts', () => {
     await vi.advanceTimersByTimeAsync(60_000)
     expect(loads()).toEqual(['video71'])
     expect(usePlayer.getState().now?.youtubeId).toBe('video71')
+  })
+
+  it('logs its time to sound once, from the ask to its first "playing"', async () => {
+    const log = vi.spyOn(api, 'diagLog').mockResolvedValue(undefined)
+    usePlayer.getState().playTracks([song(84)], 0)
+    await vi.advanceTimersByTimeAsync(1_200)
+    usePlayer.getState().onYoutube({ state: 1, time: 0.3 })
+    usePlayer.getState().onYoutube({ state: 1, time: 0.6 })
+    const timed = log.mock.calls.filter(([, , m]) => String(m).startsWith('youtube: time to sound'))
+    expect(timed.map(([, , m]) => m)).toEqual(['youtube: time to sound, asked'])
+    expect(Number(String(timed[0][3]).split(' ')[0])).toBeGreaterThanOrEqual(1_200)
+    log.mockRestore()
   })
 
   it('stuck again once loaded again: refused, then the next song when nothing else can play it', async () => {

@@ -242,6 +242,11 @@ copies, downloads for offline), their accounts, limits and paid plan.
       first keeps it, another is picked for good (`pick_version`), Approve all. Lists imports only (Spotify, Apple,
       files, shared, Search again); a pasted link's import has no screen: not covered. Not tried with a real import.)
 - [ ] 10. `S-M` Fast start on a skip: time to sound measured, then the next YouTube video cued in the crossfade's player.
+      - [x] The measure (2026-11-07): each YouTube play's time from its ask to its first "playing" goes to the
+        diagnostics log ("youtube: time to sound, asked" or "after a song", its ms; `store.ts` `soundFrom`, a test).
+        Next: the owner plays a while on a Beta with it, Copy diagnostics gives the times; then the cue, and the same
+        measure again (done when the median on Next is lower).
+      - [ ] The next video cued early in the second embed during the song's last seconds, dropped on another pick.
 - [ ] 11. `S-M` Share links that open in any browser: a static page on the website reads the playlist from the link's
       fragment, Open in Legato, Listen on YouTube, Get Legato.
 - [ ] 12. `S-M` A moving cover background (our own WebGL shader): Now Playing, Karaoke, the Cover display, behind Home

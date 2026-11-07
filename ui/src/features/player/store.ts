@@ -348,6 +348,9 @@ function prepareLocal(all: string[]): Promise<void> {
 }
 // Current song came by the queue moving on (song ended): Skip long songs applies once its length is known.
 let reachedAuto = false
+// A YouTube play asked, till its first "playing": its time to sound in the diagnostics log (Against Liner 10, measured
+// before the next video is cued early). `auto`: the queue moved on by itself.
+let soundFrom: { playId: number; at: number; auto: boolean } | null = null
 // Length of the playing video, ms (0 = not known yet). YouTube sends it once, as the video loads: kept for the song.
 let videoMs = 0
 let stuckTimer: ReturnType<typeof setTimeout> | undefined
@@ -383,6 +386,8 @@ function waitForNetwork(playId: number) {
 }
 
 function watchForStuck(playId: number, wait = 6_000) {
+  // Once a play: a reload (stuck, refused) keeps the first ask.
+  if (soundFrom?.playId !== playId) soundFrom = { playId, at: performance.now(), auto: reachedAuto }
   clearTimeout(stuckTimer)
   ytState = undefined
   heard = false
@@ -866,6 +871,10 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     if (u.state === 1 && !get().playing && (get().hold || Date.now() - pausedAt < PAUSE_HOLD_MS)) {
       yt('pauseVideo')
       u = { ...u, state: undefined }
+    }
+    if (u.state === 1 && soundFrom?.playId === get().playId) {
+      report('info', 'playback', `youtube: time to sound, ${soundFrom.auto ? 'after a song' : 'asked'}`, `${Math.round(performance.now() - soundFrom.at)} ms`)
+      soundFrom = null
     }
     // The song's own end (learned early end) is the length everywhere: fades, overlap, times shown.
     if (u.duration) videoMs = u.duration * 1000
