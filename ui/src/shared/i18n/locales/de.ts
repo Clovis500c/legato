@@ -2313,6 +2313,12 @@ const de: Record<string, string> = {
   '{n} song left to look up': 'Noch {n} Song zu suchen',
   '{n} songs left to look up': 'Noch {n} Songs zu suchen',
   'Your lists are already in your library: play them now, a song not found yet is looked up when its turn comes.': 'Ihre Listen sind schon in Ihrer Mediathek: Hören Sie sie jetzt, ein noch nicht gefundener Song wird gesucht, sobald er an der Reihe ist.',
+  'Other lyrics': 'Andere Songtexte',
+  'Looking for other lyrics…': 'Suche andere Songtexte…',
+  'No other lyrics found for this song.': 'Keine anderen Songtexte für diesen Titel gefunden.',
+  'The song’s own file': 'Eigene Datei des Titels',
+  '{n} match': '{n} Übereinstimmung',
+  'Let Legato choose': 'Legato wählen lassen',
 }
 
 export default de

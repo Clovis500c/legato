@@ -3,7 +3,8 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { useSettings } from '../../app/settings'
 import { useStore } from '../../app/store'
-import { api, type Lyrics } from '../../shared/api'
+import { api, type Lyrics, type LyricsAsk } from '../../shared/api'
+import { openMenuAt } from '../../shared/ui/ContextMenu'
 import { Button } from '../../shared/ui/Button'
 import { RoundButton } from '../../shared/ui/controls'
 import { Dialog } from '../../shared/ui/Dialog'
@@ -13,7 +14,7 @@ import { toggleKaraoke } from './karaokeMode'
 import { positionNow, usePosition } from './Progress'
 import { useNowTrack, usePlayer } from './store'
 import { CARD } from './UpNext'
-import { tr } from '../../shared/i18n/i18n'
+import { locale, tr } from '../../shared/i18n/i18n'
 
 /** Lines light up this much early: a line shows as it's sung, not after. */
 const LEAD_MS = 200
@@ -141,6 +142,9 @@ function Plain({ text, durationMs }: { text: string; durationMs: number | null }
   )
 }
 
+/** The same lyrics (the picker's check mark): same source, same lines. */
+const sameLyrics = (a: Lyrics, b: Lyrics) => a.own === b.own && a.source === b.source && a.lines.length === b.lines.length && a.plain === b.plain
+
 /** Lyrics of what plays (lrclib, cached by the app): asked once per song, again once its length is known (slowed
  * versions need it to fit the timings). mine.lyrics undefined = still looking. */
 export function useNowLyrics() {
@@ -163,12 +167,15 @@ export function useNowLyrics() {
     return () => clearTimeout(id)
   }, [key])
   const ready = !!title && (durationMs !== null || waited)
+  // Its file or its music server's copy playing: the song's own lyrics first.
+  const own = (now?.via === 'local' || now?.via === 'server') && track ? track.id : null
+  const ask: LyricsAsk = { title, artist, album: track?.album ?? null, durationMs, youtube: now?.youtubeId ?? track?.ids.youtube ?? null, trackId: own }
   useEffect(() => {
     if (!ready) return
     let live = true
     setGot({ for: key })
     api
-      .lyrics({ title, artist, album: track?.album ?? null, durationMs, youtube: now?.youtubeId ?? track?.ids.youtube ?? null, trackId: now?.via === 'local' && track ? track.id : null })
+      .lyrics(ask)
       .then((lyrics) => live && setGot({ for: key, lyrics }))
       .catch((e) => live && setGot({ for: key, error: String(e) }))
     return () => {
@@ -176,7 +183,7 @@ export function useNowLyrics() {
     }
   }, [key, ready, retry]) // once per song (and per retry)
   const mine = got?.for === key ? got : undefined
-  return { mine, key, durationMs, retry: () => setRetry((n) => n + 1) }
+  return { mine, key, durationMs, ask, retry: () => setRetry((n) => n + 1) }
 }
 
 /** Plain lyrics timed by tapping Now as each line starts, the song playing (a local song): saved into its file as LRC. */
@@ -259,7 +266,36 @@ function LyricsEditor({ text: first, onSave, onClose }: { text: string; onSave: 
 export function LyricsPanel({ onHide, onUpNext, className = CARD, heading }: { onHide: () => void; onUpNext: () => void; className?: string; heading?: ReactNode }) {
   const now = usePlayer((s) => s.now)
   const signedIn = useStore((s) => s.status.youtube.connected)
-  const { mine, key, durationMs, retry } = useNowLyrics()
+  const { mine, key, durationMs, ask, retry } = useNowLyrics()
+  // Source picker: every lyrics found, asked on the click (Against Liner 14).
+  const [looking, setLooking] = useState(false)
+  const pickSource = async (el: Element, l: Lyrics) => {
+    const notify = useStore.getState().notify
+    setLooking(true)
+    try {
+      const choices = await api.lyricsChoices(ask)
+      if (!choices.length) return notify(tr('No other lyrics found for this song.'))
+      const pct = new Intl.NumberFormat(locale(), { style: 'percent', maximumFractionDigits: 0 })
+      const keep = (picked: Lyrics | null) => void api.lyricsPick(ask, picked).then(retry, (e) => notify(String(e), { kind: 'error' }))
+      openMenuAt(
+        el,
+        [
+          ...choices.map((c) => ({
+            label: [c.lyrics.own ? tr('The song’s own file') : c.lyrics.source, tr('{n} match', { n: pct.format(c.score / 100) }), !c.lyrics.lines.length && tr('Not synced')].filter(Boolean).join(' · '),
+            checked: sameLyrics(c.lyrics, l),
+            onSelect: () => keep(c.lyrics),
+          })),
+          '-',
+          { label: tr('Let Legato choose'), onSelect: () => keep(null) },
+        ],
+        'above',
+      )
+    } catch (e) {
+      notify(String(e), { kind: 'error' })
+    } finally {
+      setLooking(false)
+    }
+  }
   // Its local file playing: lyrics edited and saved into it. The song is kept with the editor: it may end meanwhile.
   const track = useNowTrack()
   const fileId = now?.via === 'local' && track ? track.id : null
@@ -414,7 +450,15 @@ export function LyricsPanel({ onHide, onUpNext, className = CARD, heading }: { o
       )}
       {l && (
         <p className="flex items-center gap-2 px-1 text-[0.6875rem] text-ink-3">
-          {l.own ? tr('Lyrics from the song’s own file') : tr('Lyrics: {source}', { source: l.source })}
+          <button
+            title={tr('Other lyrics')}
+            aria-haspopup="menu"
+            disabled={looking}
+            onClick={(e) => void pickSource(e.currentTarget, l)}
+            className="min-w-0 truncate rounded text-left hover:text-ink hover:underline disabled:cursor-wait"
+          >
+            {looking ? tr('Looking for other lyrics…') : l.own ? tr('Lyrics from the song’s own file') : tr('Lyrics: {source}', { source: l.source })}
+          </button>
           {!l.lines.length && l.plain && (
             <span title={tr('No timings for this song: the text follows the song roughly.')} className="rounded-full border border-line px-1.5 py-px">
               {tr('Not synced')}

@@ -2313,6 +2313,12 @@ const ja: Record<string, string> = {
   '{n} song left to look up': '残り {n} 曲を検索',
   '{n} songs left to look up': '残り {n} 曲を検索',
   'Your lists are already in your library: play them now, a song not found yet is looked up when its turn comes.': 'リストはすでにライブラリにあります。今すぐ再生できます。まだ見つかっていない曲は、順番が来たときに検索されます。',
+  'Other lyrics': '他の歌詞',
+  'Looking for other lyrics…': '他の歌詞を検索中…',
+  'No other lyrics found for this song.': 'この曲の他の歌詞は見つかりませんでした。',
+  'The song’s own file': '曲のファイル',
+  '{n} match': '一致度 {n}',
+  'Let Legato choose': 'Legato に任せる',
 }
 
 export default ja

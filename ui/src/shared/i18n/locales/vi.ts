@@ -2313,6 +2313,12 @@ const vi: Record<string, string> = {
   '{n} song left to look up': 'Còn {n} bài cần tìm',
   '{n} songs left to look up': 'Còn {n} bài cần tìm',
   'Your lists are already in your library: play them now, a song not found yet is looked up when its turn comes.': 'Danh sách của bạn đã có trong thư viện: phát ngay bây giờ, bài chưa tìm thấy sẽ được tìm khi đến lượt.',
+  'Other lyrics': 'Lời bài hát khác',
+  'Looking for other lyrics…': 'Đang tìm lời bài hát khác…',
+  'No other lyrics found for this song.': 'Không tìm thấy lời bài hát khác cho bài này.',
+  'The song’s own file': 'Tệp của chính bài hát',
+  '{n} match': 'Khớp {n}',
+  'Let Legato choose': 'Để Legato chọn',
 }
 
 export default vi

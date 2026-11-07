@@ -2313,6 +2313,12 @@ const ko: Record<string, string> = {
   '{n} song left to look up': '찾을 곡 {n}개 남음',
   '{n} songs left to look up': '찾을 곡 {n}개 남음',
   'Your lists are already in your library: play them now, a song not found yet is looked up when its turn comes.': '목록이 이미 보관함에 있습니다. 지금 바로 재생하세요. 아직 찾지 못한 곡은 차례가 오면 검색됩니다.',
+  'Other lyrics': '다른 가사',
+  'Looking for other lyrics…': '다른 가사를 찾는 중…',
+  'No other lyrics found for this song.': '이 곡의 다른 가사를 찾지 못했습니다.',
+  'The song’s own file': '곡 자체 파일',
+  '{n} match': '{n} 일치',
+  'Let Legato choose': 'Legato가 고르기',
 }
 
 export default ko

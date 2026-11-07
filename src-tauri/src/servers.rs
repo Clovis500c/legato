@@ -165,6 +165,20 @@ fn status_of(a: &Account, s: Option<&Synced>) -> ServerStatus {
     }
 }
 
+/// A server song's own lyrics (OpenSubsonic's timed ones, else plain; Jellyfin's) and the name shown under them. None
+/// when it has none, or the server is out of reach (4 s): the online sources come next.
+pub async fn lyrics(id: &str, artist: &str, title: &str) -> Option<(music_core::lyrics::Record, String)> {
+    let (a, item) = item(id).ok()?;
+    let found = tokio::time::timeout(Duration::from_secs(4), Conn::from_account(&a).lyrics(&item, artist, title)).await.ok()?.ok()??;
+    let name = match &a.kind {
+        _ if !a.name.is_empty() => a.name.clone(),
+        Kind::Subsonic => "Subsonic".into(),
+        Kind::Jellyfin => "Jellyfin".into(),
+        Kind::Plex => "Plex".into(),
+    };
+    Some((found, name))
+}
+
 #[tauri::command]
 pub async fn server_status(state: State<'_, AppState>) -> CmdResult<Vec<ServerStatus>> {
     let all = syncs(&state);

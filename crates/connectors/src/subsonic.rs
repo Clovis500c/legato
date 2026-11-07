@@ -8,6 +8,7 @@ pub use crate::servers::{Body, Streamed};
 use crate::servers::{COVER_SIZE, LIST_TIMEOUT, base_of, http, note, reach};
 use anyhow::{Context, Result, anyhow, bail};
 use md5::{Digest, Md5};
+use music_core::lyrics::{self, Record};
 use music_core::model::{PlaylistRef, Source, Track};
 use music_core::server;
 use serde_json::Value;
@@ -89,6 +90,20 @@ fn list(v: Option<&Value>) -> Vec<&Value> {
         Some(o @ Value::Object(_)) => vec![o],
         _ => Vec::new(),
     }
+}
+
+/// OpenSubsonic's structured lyrics → a record: timed lines as LRC (`offset` > 0 shows them sooner), else plain.
+fn structured(l: &Value) -> Option<Record> {
+    let offset = l.get("offset").and_then(Value::as_i64).unwrap_or(0);
+    let lines: Vec<(Option<i64>, String)> = list(l.get("line")).iter().map(|x| (x.get("start").and_then(Value::as_i64), text(x, "value").unwrap_or_default())).collect();
+    if lines.iter().all(|(_, t)| t.trim().is_empty()) {
+        return None;
+    }
+    if l.get("synced").and_then(Value::as_bool) == Some(true) {
+        let timed = lines.into_iter().filter_map(|(at, t)| Some(((at? - offset).max(0) as u64, t)));
+        return Some(Record { synced: Some(lyrics::to_lrc(timed)), ..Default::default() });
+    }
+    Some(Record { plain: Some(lines.into_iter().map(|(_, t)| t).collect::<Vec<_>>().join("\n")), ..Default::default() })
 }
 
 fn text(v: &Value, k: &str) -> Option<String> {
@@ -278,6 +293,20 @@ impl Subsonic {
         self.call(if on { "star" } else { "unstar" }, &[("id", item)], crate::linklist::REQUEST_TIMEOUT).await.map(|_| ())
     }
 
+    /// A song's lyrics (Against Liner 14): OpenSubsonic's `getLyricsBySongId` (timed ones first), else the classic
+    /// `getLyrics` by artist and title (plain). None: the server has none.
+    pub async fn lyrics(&self, item: &str, artist: &str, title: &str) -> Result<Option<Record>> {
+        if let Ok(r) = self.call("getLyricsBySongId", &[("id", item)], crate::linklist::REQUEST_TIMEOUT).await {
+            let all = list(r.get("lyricsList").and_then(|l| l.get("structuredLyrics")));
+            let timed = all.iter().find(|l| l.get("synced").and_then(Value::as_bool) == Some(true));
+            if let Some(found) = timed.or(all.first()).and_then(|l| structured(l)) {
+                return Ok(Some(found));
+            }
+        }
+        let r = self.call("getLyrics", &[("artist", artist), ("title", title)], crate::linklist::REQUEST_TIMEOUT).await?;
+        Ok(r.get("lyrics").and_then(|l| text(l, "value")).filter(|t| !t.trim().is_empty()).map(|plain| Record { plain: Some(plain), ..Default::default() }))
+    }
+
     /// A play: `submission` false = now playing (at the start), true = a listen (past half the song or 4 minutes,
     /// `lastfm::Scrobble::counts`). `at` = when it started, unix ms.
     pub async fn scrobble(&self, item: &str, at_ms: i64, submission: bool) -> Result<()> {
@@ -458,5 +487,20 @@ mod tests {
         raw.assert_async().await;
         mp3.assert_async().await;
         refused.assert_async().await;
+    }
+
+    #[tokio::test]
+    async fn lyrics_come_timed_from_opensubsonic_else_plain_by_name() {
+        let mut s = Server::new_async().await;
+        let timed = r#","lyricsList":{"structuredLyrics":[{"lang":"eng","synced":false,"line":[{"value":"Plain one"}]},{"lang":"eng","synced":true,"offset":500,"line":[{"start":2000,"value":"Giving you a call"},{"start":65500,"value":"How I feel"}]}]}"#;
+        s.mock("GET", "/rest/getLyricsBySongId.view").match_query(Matcher::UrlEncoded("id".into(), "tr-1".into())).with_body(ok(timed)).create_async().await;
+        let none = r#"{"subsonic-response":{"status":"failed","version":"1.16.1","error":{"code":70,"message":"Lyrics not found"}}}"#;
+        s.mock("GET", "/rest/getLyricsBySongId.view").match_query(Matcher::UrlEncoded("id".into(), "tr-2".into())).with_body(none).create_async().await;
+        s.mock("GET", "/rest/getLyrics.view").match_query(Matcher::UrlEncoded("title".into(), "Odd Look".into())).with_body(ok(r#","lyrics":{"artist":"Kavinsky","title":"Odd Look","value":"Line one\nLine two"}"#)).create_async().await;
+        let sub = Subsonic::new(&s.url(), "me", "pw");
+        let r = sub.lyrics("tr-1", "Kavinsky", "Nightcall").await.unwrap().unwrap();
+        assert_eq!(r.synced.as_deref(), Some("[00:01.50]Giving you a call\n[01:05.00]How I feel"), "timed first, the offset applied");
+        let r = sub.lyrics("tr-2", "Kavinsky", "Odd Look").await.unwrap().unwrap();
+        assert_eq!(r.plain.as_deref(), Some("Line one\nLine two"));
     }
 }

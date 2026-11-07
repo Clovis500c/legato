@@ -204,6 +204,15 @@ impl Conn {
         }
     }
 
+    /// A song's lyrics as its server keeps them (Against Liner 14). Plex: lyrics are a Plex Pass extra, not asked.
+    pub async fn lyrics(&self, item: &str, artist: &str, title: &str) -> Result<Option<music_core::lyrics::Record>> {
+        match self {
+            Self::Subsonic(s) => s.lyrics(item, artist, title).await,
+            Self::Jellyfin(j) => j.lyrics(item).await,
+            Self::Plex(_) => Ok(None),
+        }
+    }
+
     /// Songs matching `query` on the server itself.
     pub async fn search(&self, query: &str, count: usize) -> Result<Vec<Track>> {
         match self {

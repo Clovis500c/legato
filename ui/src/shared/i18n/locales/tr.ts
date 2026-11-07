@@ -2313,6 +2313,12 @@ const tr: Record<string, string> = {
   '{n} song left to look up': 'Aranacak {n} şarkı kaldı',
   '{n} songs left to look up': 'Aranacak {n} şarkı kaldı',
   'Your lists are already in your library: play them now, a song not found yet is looked up when its turn comes.': 'Listeleriniz zaten kitaplığınızda: hemen dinleyin, henüz bulunamayan bir şarkı sırası geldiğinde aranır.',
+  'Other lyrics': 'Diğer şarkı sözleri',
+  'Looking for other lyrics…': 'Diğer şarkı sözleri aranıyor…',
+  'No other lyrics found for this song.': 'Bu şarkı için başka söz bulunamadı.',
+  'The song’s own file': 'Şarkının kendi dosyası',
+  '{n} match': '{n} eşleşme',
+  'Let Legato choose': 'Legato seçsin',
 }
 
 export default tr

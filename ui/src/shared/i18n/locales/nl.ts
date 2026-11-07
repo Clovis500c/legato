@@ -2313,6 +2313,12 @@ const nl: Record<string, string> = {
   '{n} song left to look up': 'Nog {n} nummer te zoeken',
   '{n} songs left to look up': 'Nog {n} nummers te zoeken',
   'Your lists are already in your library: play them now, a song not found yet is looked up when its turn comes.': 'Je lijsten staan al in je bibliotheek: speel ze nu af, een nummer dat nog niet gevonden is wordt gezocht als het aan de beurt is.',
+  'Other lyrics': 'Andere songteksten',
+  'Looking for other lyrics…': 'Andere songteksten zoeken…',
+  'No other lyrics found for this song.': 'Geen andere songteksten gevonden voor dit nummer.',
+  'The song’s own file': 'Eigen bestand van het nummer',
+  '{n} match': '{n} overeenkomst',
+  'Let Legato choose': 'Laat Legato kiezen',
 }
 
 export default nl

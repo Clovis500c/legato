@@ -2313,6 +2313,12 @@ const uk: Record<string, string> = {
   '{n} song left to look up': 'Залишилося знайти: {n}',
   '{n} songs left to look up': 'Залишилося знайти: {n}',
   'Your lists are already in your library: play them now, a song not found yet is looked up when its turn comes.': 'Ваші списки вже в медіатеці: слухайте їх зараз, пісню, яку ще не знайдено, шукають, коли настає її черга.',
+  'Other lyrics': 'Інші тексти',
+  'Looking for other lyrics…': 'Пошук інших текстів…',
+  'No other lyrics found for this song.': 'Інших текстів для цієї пісні не знайдено.',
+  'The song’s own file': 'Власний файл пісні',
+  '{n} match': 'Збіг {n}',
+  'Let Legato choose': 'Нехай обере Legato',
 }
 
 export default uk

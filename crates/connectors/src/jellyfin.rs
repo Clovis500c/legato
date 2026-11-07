@@ -9,6 +9,7 @@ use crate::art::Signed;
 use crate::linklist::REQUEST_TIMEOUT;
 use crate::servers::{COVER_SIZE, LIST_TIMEOUT, Read, Streamed, base_of, http, note, random_id, reach, refusal, safe_id};
 use anyhow::{Result, anyhow, bail};
+use music_core::lyrics::{self, Record};
 use music_core::model::{PlaylistRef, Source, Track};
 use music_core::server::{self, Account, Kind};
 use reqwest::Method;
@@ -300,6 +301,21 @@ impl Jellyfin {
         Ok(items(&v).iter().filter_map(|v| self.track(v)).collect())
     }
 
+    /// A song's lyrics (Against Liner 14; Jellyfin 10.9+, `/Audio/{id}/Lyrics`): timed when its lines have starts (in
+    /// ticks of 100 ns), else plain. None: it has none.
+    pub async fn lyrics(&self, item: &str) -> Result<Option<Record>> {
+        let v = self.get(&format!("/Audio/{}/Lyrics", Self::item(item)?), &[], REQUEST_TIMEOUT).await?;
+        let lines: Vec<(Option<i64>, String)> = v.get("Lyrics").and_then(Value::as_array).into_iter().flatten().map(|l| (l.get("Start").and_then(Value::as_i64), l.get("Text").and_then(Value::as_str).unwrap_or_default().to_string())).collect();
+        if lines.iter().all(|(_, t)| t.trim().is_empty()) {
+            return Ok(None);
+        }
+        if lines.iter().all(|(at, _)| at.is_some()) {
+            let timed = lines.into_iter().filter_map(|(at, t)| Some((at?.max(0) as u64 / TICKS_PER_MS, t)));
+            return Ok(Some(Record { synced: Some(lyrics::to_lrc(timed)), ..Default::default() }));
+        }
+        Ok(Some(Record { plain: Some(lines.into_iter().map(|(_, t)| t).collect::<Vec<_>>().join("\n")), ..Default::default() }))
+    }
+
     fn item(item: &str) -> Result<&str> {
         if safe_id(item) { Ok(item) } else { bail!("Your music server doesn't have this item") }
     }
@@ -503,5 +519,16 @@ mod tests {
         assert!(j.stream("../../x", 0, false).await.is_err());
         raw.assert_async().await;
         mp3.assert_async().await;
+    }
+
+    #[tokio::test]
+    async fn lyrics_come_timed_when_their_lines_have_starts() {
+        let mut s = Server::new_async().await;
+        s.mock("GET", "/Audio/a1b2/Lyrics").match_header("authorization", signed()).with_body(r#"{"Metadata":{},"Lyrics":[{"Text":"Giving you a call","Start":15000000},{"Text":"How I feel","Start":655000000}]}"#).create_async().await;
+        s.mock("GET", "/Audio/c3d4/Lyrics").with_body(r#"{"Metadata":{},"Lyrics":[{"Text":"Line one"},{"Text":"Line two"}]}"#).create_async().await;
+        let j = Jellyfin::from_account(&account(&s.url()));
+        assert_eq!(j.lyrics("a1b2").await.unwrap().unwrap().synced.as_deref(), Some("[00:01.50]Giving you a call\n[01:05.50]How I feel"));
+        assert_eq!(j.lyrics("c3d4").await.unwrap().unwrap().plain.as_deref(), Some("Line one\nLine two"));
+        assert!(j.lyrics("../x").await.is_err(), "not one of its ids");
     }
 }

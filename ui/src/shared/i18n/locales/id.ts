@@ -2313,6 +2313,12 @@ const id: Record<string, string> = {
   '{n} song left to look up': '{n} lagu lagi untuk dicari',
   '{n} songs left to look up': '{n} lagu lagi untuk dicari',
   'Your lists are already in your library: play them now, a song not found yet is looked up when its turn comes.': 'Daftar Anda sudah ada di pustaka Anda: putar sekarang, lagu yang belum ditemukan dicari saat gilirannya tiba.',
+  'Other lyrics': 'Lirik lain',
+  'Looking for other lyrics…': 'Mencari lirik lain…',
+  'No other lyrics found for this song.': 'Tidak ada lirik lain untuk lagu ini.',
+  'The song’s own file': 'File lagu itu sendiri',
+  '{n} match': 'Cocok {n}',
+  'Let Legato choose': 'Biarkan Legato memilih',
 }
 
 export default id

@@ -2313,6 +2313,12 @@ const hi: Record<string, string> = {
   '{n} song left to look up': 'खोजने के लिए {n} गाना बाकी',
   '{n} songs left to look up': 'खोजने के लिए {n} गाने बाकी',
   'Your lists are already in your library: play them now, a song not found yet is looked up when its turn comes.': 'आपकी सूचियाँ पहले से आपकी लाइब्रेरी में हैं: इन्हें अभी सुनें, जो गाना अभी नहीं मिला वह अपनी बारी आने पर खोजा जाता है।',
+  'Other lyrics': 'अन्य बोल',
+  'Looking for other lyrics…': 'अन्य बोल खोजे जा रहे हैं…',
+  'No other lyrics found for this song.': 'इस गाने के लिए कोई अन्य बोल नहीं मिले।',
+  'The song’s own file': 'गाने की अपनी फ़ाइल',
+  '{n} match': '{n} मेल',
+  'Let Legato choose': 'Legato को चुनने दें',
 }
 
 export default hi

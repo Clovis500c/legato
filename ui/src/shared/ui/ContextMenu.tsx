@@ -19,7 +19,8 @@ export interface MenuItem {
 /** '-' = separator. Falsy entries are dropped (conditional items inline). */
 export type MenuEntry = MenuItem | '-' | false | '' | 0 | null | undefined
 
-const useMenu = create<{ at: { x: number; y: number; up?: boolean } | null; items: MenuEntry[] }>(() => ({ at: null, items: [] }))
+/** anchor: what the menu was opened on; a scroll that doesn't move it (synced lyrics going on) leaves the menu open. */
+const useMenu = create<{ at: { x: number; y: number; up?: boolean } | null; items: MenuEntry[]; anchor?: Element }>(() => ({ at: null, items: [] }))
 export const closeMenu = () => useMenu.setState({ at: null })
 export const menuOpen = () => useMenu.getState().at !== null
 
@@ -27,17 +28,20 @@ export const menuOpen = () => useMenu.getState().at !== null
 export function openMenu(e: MouseEvent | React.MouseEvent, items: MenuEntry[], { place }: { place?: 'above' | 'below' } = {}) {
   e.preventDefault()
   e.stopPropagation()
-  if (place && e.currentTarget instanceof Element) {
-    const r = e.currentTarget.getBoundingClientRect()
-    return useMenu.setState({ at: place === 'above' ? { x: r.left, y: r.top - 6, up: true } : { x: r.left, y: r.bottom + 6 }, items })
-  }
+  if (place && e.currentTarget instanceof Element) return openMenuAt(e.currentTarget, items, place)
   let [x, y] = [e.clientX, e.clientY]
   // Menu key / Shift+F10: no pointer position, open under the focused element.
   if (!x && !y && e.target instanceof Element) {
     const r = e.target.getBoundingClientRect()
     ;[x, y] = [r.left + 8, r.bottom]
   }
-  useMenu.setState({ at: { x, y }, items })
+  useMenu.setState({ at: { x, y }, items, anchor: e.target instanceof Element ? e.target : undefined })
+}
+
+/** Pinned to a control, e.g. once items asked on its click have come. */
+export function openMenuAt(el: Element, items: MenuEntry[], place: 'above' | 'below') {
+  const r = el.getBoundingClientRect()
+  useMenu.setState({ at: place === 'above' ? { x: r.left, y: r.top - 6, up: true } : { x: r.left, y: r.bottom + 6 }, items, anchor: el })
 }
 
 /** onContextMenu handler; items built when the menu opens (fresh state). */
@@ -239,14 +243,18 @@ export function ContextMenuHost({ fallback }: { fallback: () => MenuEntry[] }) {
     if (!at) return
     const outside = (e: Event) => !(e.target instanceof Element && e.target.closest('[data-menu]')) && closeMenu()
     const key = (e: KeyboardEvent) => e.key === 'Escape' && closeMenu()
+    const scrolled = (e: Event) => {
+      const anchor = useMenu.getState().anchor
+      if (!anchor || !(e.target instanceof Node) || e.target.contains(anchor)) outside(e)
+    }
     window.addEventListener('pointerdown', outside, true)
-    window.addEventListener('scroll', outside, true)
+    window.addEventListener('scroll', scrolled, true)
     window.addEventListener('keydown', key)
     window.addEventListener('blur', closeMenu)
     window.addEventListener('resize', closeMenu)
     return () => {
       window.removeEventListener('pointerdown', outside, true)
-      window.removeEventListener('scroll', outside, true)
+      window.removeEventListener('scroll', scrolled, true)
       window.removeEventListener('keydown', key)
       window.removeEventListener('blur', closeMenu)
       window.removeEventListener('resize', closeMenu)

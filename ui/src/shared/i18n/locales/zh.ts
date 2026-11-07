@@ -2313,6 +2313,12 @@ const zh: Record<string, string> = {
   '{n} song left to look up': '还有 {n} 首待查找',
   '{n} songs left to look up': '还有 {n} 首待查找',
   'Your lists are already in your library: play them now, a song not found yet is looked up when its turn comes.': '你的列表已经在资料库中：现在就可以播放，尚未找到的歌曲会在轮到它时查找。',
+  'Other lyrics': '其他歌词',
+  'Looking for other lyrics…': '正在查找其他歌词…',
+  'No other lyrics found for this song.': '没有找到这首歌的其他歌词。',
+  'The song’s own file': '歌曲自身的文件',
+  '{n} match': '匹配度 {n}',
+  'Let Legato choose': '让 Legato 选择',
 }
 
 export default zh

@@ -2313,6 +2313,12 @@ const ru: Record<string, string> = {
   '{n} song left to look up': 'Осталось найти: {n}',
   '{n} songs left to look up': 'Осталось найти: {n}',
   'Your lists are already in your library: play them now, a song not found yet is looked up when its turn comes.': 'Ваши списки уже в медиатеке: слушайте их сейчас, песню, которую ещё не нашли, ищут, когда до неё доходит очередь.',
+  'Other lyrics': 'Другие тексты',
+  'Looking for other lyrics…': 'Поиск других текстов…',
+  'No other lyrics found for this song.': 'Другие тексты для этой песни не найдены.',
+  'The song’s own file': 'Собственный файл песни',
+  '{n} match': 'Совпадение {n}',
+  'Let Legato choose': 'Пусть выберет Legato',
 }
 
 export default ru

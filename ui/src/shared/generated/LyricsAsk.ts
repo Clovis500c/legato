@@ -9,6 +9,6 @@ export type LyricsAsk = { title: string, artist: string, album: string | null, d
  */
 youtube: string | null, 
 /**
- * Its library row when its local file plays: the file's own lyrics first.
+ * Its library row when its local file or its music server's copy plays: the song's own lyrics first.
  */
 trackId: number | null, };

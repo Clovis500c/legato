@@ -343,6 +343,47 @@ pub fn pick(records: Vec<Record>, playing_s: Option<f32>, speed: bool) -> Option
     Some((best, fit))
 }
 
+/// How well a record matches the song, 0 to 100 (Now Playing's source picker, Against Liner 14): title 50, lead
+/// artist 25, duration 25 (closer than 3 s; a looser fit or a speed change 15; unknown 10).
+pub fn score(r: &Record, title: &str, artist: &str, playing_s: Option<f32>, speed: bool) -> u8 {
+    let norm = |s: &str| clean_title(s).to_lowercase().chars().filter(|c| c.is_alphanumeric()).collect::<String>();
+    let (rt, wt) = (norm(&r.title), norm(title));
+    let title_pts = if !rt.is_empty() && rt == wt { 50 } else if same_title(&r.title, title) { 30 } else { 0 };
+    let who = |s: &str| main_artist(s).to_lowercase().chars().filter(|c| c.is_alphanumeric()).collect::<String>();
+    let (ra, wa) = (who(&r.artist), who(artist));
+    let artist_pts = if !ra.is_empty() && ra == wa { 25 } else if !ra.is_empty() && !wa.is_empty() && (ra.contains(&wa) || wa.contains(&ra)) { 15 } else { 0 };
+    let time_pts = match (r.duration_s, playing_s) {
+        (Some(a), Some(b)) if (a - b).abs() <= SAME_S => 25,
+        (Some(_), Some(_)) if stretch(r.duration_s, playing_s, speed).is_some() => 15,
+        (Some(_), Some(_)) => 0,
+        _ => 10,
+    };
+    title_pts + artist_pts + time_pts
+}
+
+/// One of the lyrics a song could show, and how well it matches (`score`; the song's own file or server: 100).
+#[derive(Debug, Clone, PartialEq, Serialize, ts_rs::TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, rename = "LyricsChoice")]
+pub struct Choice {
+    pub lyrics: Lyrics,
+    pub score: u8,
+}
+
+/// Cache key of the lyrics picked by hand for this song (any version of `key`): asked before anything else, kept when
+/// the caches are cleared.
+pub fn pick_key(key: &str) -> String {
+    format!("{PICK}{}", key.split_once('|').map_or(key, |(_, rest)| rest))
+}
+
+/// Start of a pick's key.
+pub const PICK: &str = "pick|";
+
+/// Timed lines (start in ms, text) → LRC text, for a record: music servers give times, records keep LRC.
+pub fn to_lrc(lines: impl IntoIterator<Item = (u64, String)>) -> String {
+    lines.into_iter().map(|(ms, text)| format!("[{:02}:{:02}.{:02}]{text}", ms / 60_000, ms / 1000 % 60, ms / 10 % 100)).collect::<Vec<_>>().join("\n")
+}
+
 /// Record → what Now Playing shows. A Lyricsfile's word timings before the LRC's lines.
 pub fn build(record: Record, fit: Option<f32>, source: &str) -> Lyrics {
     let lines = match fit {
@@ -469,6 +510,25 @@ mod tests {
 [00:04.00]d".into()), ..Default::default() }, Some(1.0), "LRCLIB");
         assert!(!too_thin(&real, Some(214.0)));
         assert!(!too_thin(&Lyrics { lines: vec![], plain: None, instrumental: true, source: String::new(), own: false }, Some(200.0)));
+    }
+
+    #[test]
+    fn a_record_scores_by_title_artist_and_duration() {
+        let r = |title: &str, artist: &str, d: Option<f32>| Record { title: title.into(), artist: artist.into(), duration_s: d, ..Default::default() };
+        assert_eq!(score(&r("Jinx", "Lexycat", Some(197.0)), "Jinx", "Lexycat", Some(198.5), false), 100);
+        assert_eq!(score(&r("Jinx (Remastered)", "Lexycat, Someone", Some(197.0)), "jinx", "LEXYCAT", Some(197.0), false), 100);
+        assert_eq!(score(&r("Jinx", "Lexycat", None), "Jinx", "Lexycat", Some(197.0), false), 85);
+        assert_eq!(score(&r("Jinx", "Lexycat", Some(205.0)), "Jinx", "Lexycat", Some(197.0), false), 90);
+        assert_eq!(score(&r("Jinx", "Lexycat", Some(197.0)), "Jinx (slowed)", "Lexycat", Some(260.0), true), 90);
+        assert_eq!(score(&r("Jinx Reprise", "The Lexycats", Some(120.0)), "Jinx", "Lexycat", Some(197.0), false), 45);
+        assert_eq!(score(&r("Other", "Nobody", Some(120.0)), "Jinx", "Lexycat", Some(197.0), false), 0);
+    }
+
+    #[test]
+    fn a_pick_is_kept_for_the_song_whatever_the_key_version() {
+        assert_eq!(pick_key(&key("Lexycat", "Jinx", Some(197_000))), "pick|lexycat|jinx|197");
+        assert_eq!(pick_key("v4|lexycat|jinx|197"), "pick|lexycat|jinx|197");
+        assert_eq!(key_song(&pick_key("v5|lexycat|jinx|197")), Some("lexycat|jinx"));
     }
 
     #[test]

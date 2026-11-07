@@ -2313,6 +2313,12 @@ const sv: Record<string, string> = {
   '{n} song left to look up': '{n} låt kvar att söka',
   '{n} songs left to look up': '{n} låtar kvar att söka',
   'Your lists are already in your library: play them now, a song not found yet is looked up when its turn comes.': 'Dina listor finns redan i ditt bibliotek: spela dem nu, en låt som inte hittats än söks när det blir dess tur.',
+  'Other lyrics': 'Andra låttexter',
+  'Looking for other lyrics…': 'Söker andra låttexter…',
+  'No other lyrics found for this song.': 'Inga andra låttexter hittades för den här låten.',
+  'The song’s own file': 'Låtens egen fil',
+  '{n} match': '{n} matchning',
+  'Let Legato choose': 'Låt Legato välja',
 }
 
 export default sv

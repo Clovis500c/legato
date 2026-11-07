@@ -1414,7 +1414,8 @@ impl Library {
     /// Empties the caches, the file given back their room (VACUUM). The bytes they held.
     pub fn clear_caches(&self) -> Result<u64> {
         let held = self.caches_bytes()?;
-        let deletes: String = CACHES.iter().map(|t| format!("DELETE FROM {t}; ")).collect();
+        // Lyrics picked by hand are the user's choice, not a cache.
+        let deletes: String = CACHES.iter().map(|t| if *t == "lyrics" { format!("DELETE FROM lyrics WHERE key NOT LIKE '{}%'; ", lyrics::PICK) } else { format!("DELETE FROM {t}; ") }).collect();
         self.db.execute_batch(&format!("BEGIN; {deletes}COMMIT; VACUUM;"))?;
         Ok(held)
     }
@@ -2796,6 +2797,9 @@ mod tests {
         assert_eq!(lib.caches_bytes()?, 0);
         assert!(lib.cached_lyrics("lexycat|jinx|197")?.is_none());
         assert!(lib.cached_sponsor("abc")?.is_none());
+        lib.save_lyrics("pick|lexycat|jinx|197", Some("{}"), 1)?;
+        lib.clear_caches()?;
+        assert!(lib.cached_lyrics("pick|lexycat|jinx|197")?.is_some(), "a pick stays");
         assert_eq!(lib.tracks()?.len(), 1, "the library stays");
         Ok(())
     }

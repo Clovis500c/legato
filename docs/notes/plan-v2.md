@@ -284,7 +284,19 @@ copies, downloads for offline), their accounts, limits and paid plan.
       alone (each easy to undo): the player's lookups share the rooms' pace outside imports; a toast while a song is
       looked up at its turn. Not done: pasted Deezer / Apple Music links, library files and shared lists still save
       after their searches. Not tried: a real 1 000-song import (the owner's account, YouTube's limits).)
-- [ ] 14. `M` More lyrics sources and a picker with a match %, each source's terms read first, a privacy row each.
+- [x] 14. `M` More lyrics sources and a picker with a match %, each source's terms read first, a privacy row each.
+      (2026-11-07: a song from the owner's music server asks that server first: OpenSubsonic's timed lyrics
+      (`getLyricsBySongId`, its offset applied), else Subsonic's plain `getLyrics`; Jellyfin's `/Audio/{id}/Lyrics`
+      (timed when every line has a start); not cached, like a file's own. The lyrics' source line opens the picker:
+      every lyrics found, best match first (the song's own and YouTube Music's, the video's own, count 100 %;
+      LRCLIB's records by title 50, lead artist 25, duration 25: `lyrics::score`), the one showing checked, "Not
+      synced" marked. A pick is kept for the song (`pick|` keys in the lyrics cache, kept when the caches are
+      cleared; this PC only) and comes before anything else; Let Legato choose drops it. A menu now stays open while
+      something else scrolls (synced lyrics moving on). Privacy rows on the website: lyrics, music server. Terms read,
+      decided alone (2026-11-07): Genius left out (its terms forbid scraping, its API gives no lyrics); Megalobiz (no
+      terms found) and NetEase, QQ Music, KuGou (agreements not readable from here) not added; Plex not asked (lyrics
+      are a Plex Pass extra). Tests: the score, the pick key, a pick kept on clearing, both servers' answers (mockito);
+      the picker seen in the site demo with made-up choices. Not tried: a real Navidrome or Jellyfin with lyrics.)
 - [ ] 15. `M` SoundCloud sets and likes through its official widget's list (terms first), matched on YouTube.
 - [ ] 16. `M` Reach: the website in the app's 18 languages, README screenshots, winget and Scoop, Discussions (outward
       steps: the owner's word). Takes in Features › Low's Community line.

@@ -1734,34 +1734,71 @@ struct LyricsAsk {
     duration_ms: Option<u32>,
     /// Its YouTube video: YouTube Music's own lyrics when LRCLIB has none.
     youtube: Option<String>,
-    /// Its library row when its local file plays: the file's own lyrics first.
+    /// Its library row when its local file or its music server's copy plays: the song's own lyrics first.
     track_id: Option<i64>,
 }
 
-/// Nothing found: asked again after a week (LRCLIB fills gaps over time).
-const LYRICS_RETRY_S: i64 = 7 * 86_400;
-
-/// Now Playing › Lyrics: a local file's own (its tag, or the LRC beside it), then the cache, then YouTube Music's timed
-/// lyrics when signed in, then LRCLIB (exact match, then search, timings fitted to slowed / sped up versions), then
-/// YouTube Music's plain text. Network failures are not cached.
-#[tauri::command]
-async fn lyrics(state: State<'_, AppState>, ask: LyricsAsk) -> CmdResult<Option<Lyrics>> {
-    // Trust boundary: text from the UI.
-    if ask.title.trim().is_empty() || ask.title.len() > 400 || ask.artist.len() > 400 {
-        return Ok(None);
+impl LyricsAsk {
+    /// Trust boundary: text from the UI.
+    fn fair(&self) -> bool {
+        !self.title.trim().is_empty() && self.title.len() <= 400 && self.artist.len() <= 400
     }
-    // The file's own: nothing asked online. Not cached, the file may change.
-    let file = match ask.track_id {
-        Some(id) => state.lib().local_path(id).map_err(err)?,
-        None => None,
-    };
+}
+
+/// The video's id when it looks like one.
+fn youtube_of(ask: &LyricsAsk) -> Option<&str> {
+    ask.youtube.as_deref().filter(|v| v.len() == 11 && v.chars().all(|c| c.is_ascii_alphanumeric() || c == '-' || c == '_'))
+}
+
+/// YouTube Music's lyrics → what Now Playing shows. Another speed: plain only (its timings are the original's).
+fn from_ytm(l: YtLyrics, speed: bool) -> Lyrics {
+    let source = |s: String| if s.is_empty() { "YouTube Music".to_string() } else { format!("YouTube Music · {s}") };
+    match l {
+        YtLyrics::Timed(lines, s) => {
+            let plain = lines.iter().map(|l| l.text.as_str()).filter(|t| !t.is_empty()).collect::<Vec<_>>().join("\n");
+            Lyrics { lines: if speed { Vec::new() } else { lines }, plain: Some(plain), instrumental: false, source: source(s), own: false }
+        }
+        YtLyrics::Plain(text, s) => Lyrics { lines: Vec::new(), plain: Some(text), instrumental: false, source: source(s), own: false },
+    }
+}
+
+/// The song's own lyrics: its local file's (its tag, or the LRC beside it), else its music server's (OpenSubsonic,
+/// Jellyfin). Not cached: they may change. A server out of reach: None, the other sources come.
+async fn own_lyrics(state: &AppState, ask: &LyricsAsk) -> CmdResult<Option<Lyrics>> {
+    let Some(id) = ask.track_id else { return Ok(None) };
+    let file = state.lib().local_path(id).map_err(err)?;
     if let Some(path) = file {
         let own = tauri::async_runtime::spawn_blocking(move || music_core::local::lyrics(std::path::Path::new(&path))).await.map_err(err)?;
         if let Some(l) = own.as_deref().and_then(lyrics::from_file) {
             return Ok(Some(l));
         }
     }
+    let server = state.lib().track(id).map_err(err)?.and_then(|t| t.track.ids.get(&Source::Server).cloned());
+    let Some(sid) = server else { return Ok(None) };
+    Ok(servers::lyrics(&sid, &ask.artist, &ask.title).await.map(|(r, name)| lyrics::build(r, Some(1.0), &name)))
+}
+
+/// Nothing found: asked again after a week (LRCLIB fills gaps over time).
+const LYRICS_RETRY_S: i64 = 7 * 86_400;
+
+/// Now Playing › Lyrics: the ones picked by hand for the song, then the song's own (its local file, its music server),
+/// then the cache, then YouTube Music's timed lyrics when signed in, then LRCLIB (exact match, then search, timings
+/// fitted to slowed / sped up versions), then YouTube Music's plain text. Network failures are not cached.
+#[tauri::command]
+async fn lyrics(state: State<'_, AppState>, ask: LyricsAsk) -> CmdResult<Option<Lyrics>> {
+    if !ask.fair() {
+        return Ok(None);
+    }
     let key = lyrics::key(&ask.artist, &ask.title, ask.duration_ms);
+    let picked = state.lib().cached_lyrics(&lyrics::pick_key(&key)).map_err(err)?;
+    if let Some((Some(body), _)) = picked
+        && let Ok(l) = serde_json::from_str::<Lyrics>(&body)
+    {
+        return Ok(Some(l));
+    }
+    if let Some(l) = own_lyrics(&state, &ask).await? {
+        return Ok(Some(l));
+    }
     let now = unix_now();
     let cached = state.lib().cached_lyrics(&key).map_err(err)?;
     // Plain text older than a day: asked again, shown still if nothing better comes.
@@ -1781,18 +1818,15 @@ async fn lyrics(state: State<'_, AppState>, ask: LyricsAsk) -> CmdResult<Option<
     let mut failed = None;
     // Signed in: YouTube Music's own first. Its timed lines (start and end) win; plain text waits behind LRCLIB.
     // A speed-changed version keeps LRCLIB's stretch (YouTube's timings are the original's).
-    let youtube = ask.youtube.filter(|v| v.len() == 11 && v.chars().all(|c| c.is_ascii_alphanumeric() || c == '-' || c == '_'));
     let mut yt_plain = None;
-    if let Some(id) = &youtube
+    if let Some(id) = youtube_of(&ask)
         && let Some(yt) = state.ytm()
     {
-        let source = |s: String| if s.is_empty() { "YouTube Music".to_string() } else { format!("YouTube Music · {s}") };
         match yt.lyrics(id).await {
-            Ok(Some(YtLyrics::Timed(lines, s))) if !speed => found = Some(Lyrics { plain: Some(lines.iter().map(|l| l.text.as_str()).filter(|t| !t.is_empty()).collect::<Vec<_>>().join("
-")), lines, instrumental: false, source: source(s), own: false }),
-            Ok(Some(YtLyrics::Timed(lines, s))) => yt_plain = Some(Lyrics { lines: Vec::new(), plain: Some(lines.iter().map(|l| l.text.as_str()).filter(|t| !t.is_empty()).collect::<Vec<_>>().join("
-")), instrumental: false, source: source(s), own: false }),
-            Ok(Some(YtLyrics::Plain(text, s))) => yt_plain = Some(Lyrics { lines: Vec::new(), plain: Some(text), instrumental: false, source: source(s), own: false }),
+            Ok(Some(l)) => {
+                let l = from_ytm(l, speed);
+                if l.lines.is_empty() { yt_plain = Some(l) } else { found = Some(l) }
+            }
             Ok(None) => {}
             Err(e) => failed = Some(e),
         }
@@ -1854,6 +1888,81 @@ async fn lyrics(state: State<'_, AppState>, ask: LyricsAsk) -> CmdResult<Option<
             Ok(None)
         }
     }
+}
+
+/// Now Playing's source picker: every lyrics found for the song, best match first (Against Liner 14). The song's own
+/// and YouTube Music's (the video's own) count 100; LRCLIB's records (exact, then each search) by `lyrics::score`.
+/// Asked on the user's click only; nothing cached.
+#[tauri::command]
+async fn lyrics_choices(state: State<'_, AppState>, ask: LyricsAsk) -> CmdResult<Vec<lyrics::Choice>> {
+    if !ask.fair() {
+        return Ok(Vec::new());
+    }
+    let mut out = Vec::new();
+    if let Some(l) = own_lyrics(&state, &ask).await? {
+        out.push(lyrics::Choice { lyrics: l, score: 100 });
+    }
+    let speed = lyrics::speed_changed(&ask.title);
+    let playing_s = ask.duration_ms.map(|d| d as f32 / 1000.0);
+    let mut failed = None;
+    if let Some(id) = youtube_of(&ask)
+        && let Some(yt) = state.ytm()
+    {
+        match yt.lyrics(id).await {
+            Ok(Some(l)) => out.push(lyrics::Choice { lyrics: from_ytm(l, speed), score: 100 }),
+            Ok(None) => {}
+            Err(e) => failed = Some(e),
+        }
+    }
+    let lrclib = Lrclib::with_urls(hosts::get().lrclib);
+    let queries = lyrics::queries(&ask.artist, &ask.title);
+    let mut records = Vec::new();
+    for (artist, title) in &queries {
+        if !speed && records.is_empty() {
+            match lrclib.get(title, artist, ask.album.as_deref(), ask.duration_ms.map(|d| (d + 500) / 1000)).await {
+                Ok(r) => records.extend(r),
+                Err(e) => failed = Some(e),
+            }
+        }
+        match lrclib.search(title, artist).await {
+            Ok(found) => records.extend(found.into_iter().filter(|r| lyrics::same_title(&r.title, title))),
+            Err(e) => failed = Some(e),
+        }
+    }
+    for r in records {
+        let score = queries.iter().map(|(a, t)| lyrics::score(&r, t, a, playing_s, speed)).max().unwrap_or(0);
+        let fit = lyrics::stretch(r.duration_s, playing_s, speed);
+        let l = lyrics::build(r, fit, "LRCLIB");
+        if !lyrics::too_thin(&l, playing_s) && !out.iter().any(|c: &lyrics::Choice| c.lyrics == l) {
+            out.push(lyrics::Choice { lyrics: l, score });
+        }
+    }
+    if let (true, Some(e)) = (out.is_empty(), failed) {
+        return Err(err(e));
+    }
+    // Best match first; at equal match, synced lines first.
+    out.sort_by_key(|c| (std::cmp::Reverse(c.score), c.lyrics.lines.is_empty()));
+    out.truncate(12);
+    Ok(out)
+}
+
+/// A pick's text at most (a long song's Lyricsfile with its words is ~100 KB).
+const PICK_MAX: usize = 512 * 1024;
+
+/// Lyrics picked in the source picker: kept for this song (this PC) and shown before any other. None, or the song's
+/// own, goes back to the usual order.
+#[tauri::command]
+async fn lyrics_pick(state: State<'_, AppState>, ask: LyricsAsk, picked: Option<Lyrics>) -> CmdResult<()> {
+    if !ask.fair() {
+        return Err("Not a song".into());
+    }
+    let body = picked.filter(|l| !l.own).map(|l| serde_json::to_string(&l)).transpose().map_err(err)?;
+    // Trust boundary: lyrics from the UI.
+    if body.as_ref().is_some_and(|b| b.len() > PICK_MAX) {
+        return Err("These lyrics are too long".into());
+    }
+    let key = lyrics::pick_key(&lyrics::key(&ask.artist, &ask.title, ask.duration_ms));
+    state.lib().save_lyrics(&key, body.as_deref(), unix_now()).map_err(err)
 }
 
 /// Library songs whose lyrics hold a typed line (the search page's "In the lyrics"): the lyrics cached when they were
@@ -2435,7 +2544,7 @@ pub fn run() {
             deferred::arm(app.handle());
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![deferred::app_ready, sources_status, connect, disconnect, sync_all, library, library_changes, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, search_suggestions, add_track, pick_version, backfill_art, find_versions, play_preview, share_playlist, share_preview, share_read_image, share_import, nearby_send, nearby_status, nearby_stop, nearby_receive, record_play, recent_plays, play_history, mixes, set_track_pref, set_rating, set_music, clear_history, export_youtube, spotify_player, spotify_playback, ytm_sign_in, ytm_sign_out, spotify_web_open, spotify_web_status, import_spotify_link, links::import_link, links::import_link_stop, links::not_found, links::not_found_search, links::find_now, spotify_web::spotify_lists, spotify_web::spotify_import, spotify_web::spotify_web_close, spotify_export::spotify_export_open, spotify_export::spotify_export_close, spotify_export::spotify_export_file, spotify_export::spotify_export_import, spotify_paste::import_spotify_tracks, apple_web::apple_web_open, apple_web::apple_web_status, apple_web::apple_lists, apple_web::apple_import, apple_web::apple_web_close, ytm_accounts, set_ytm_accounts, sync_directions, set_sync_direction, local_folders, set_local_folders, rescan_local, folders::add_dropped, health::library_health, load_settings, save_settings, shield_status, set_shield, net_today, system_accent, restart_app, autostart, set_autostart, hold_page, media_update, remote::remote_start, remote::remote_stop, remote::remote_queue, remote::overlay_start, remote::overlay_stop, remote::overlay_bars, load_session, save_session, add_to_youtube, save_cover, export_cover, save_picture, alternative_videos, embed_refused, play_stats, cache_stats, art_cache_size, set_art_cache_cap, clear_art_cache, storage, clear_storage, open_licenses, update_status, update_check, update_install, ytm_home, ytm_list, ytm_artist, album_info, discord_presence, discord_off, discord_status, discord_artist_art, remove_from_playlist, remove_from_library, merge_duplicates, resolve_track, set_global_shortcuts, player_live, editor::player_effects, player_levels, viz::viz_start, viz::viz_page, viz::viz_stop, viz::viz_stats, prepare::local_prepare, prepare::local_waveform, sponsor::sponsor_segments, editor::export_edit, editor::export_stop, editor::edits, editor::save_edit, editor::delete_edit, editor::activate_edit, editor::edit_draft, editor::save_edit_draft, voice_listen, voice_stop, open_windows_settings, detector::detector_status, detector::set_detector_token, detector::detect_song, detector::detect_stop, lastfm::lastfm_status, lastfm::lastfm_connect, lastfm::lastfm_disconnect, lastfm::lastfm_now_playing, lastfm::lastfm_scrobble, listenbrainz::listenbrainz_status, listenbrainz::listenbrainz_connect, listenbrainz::listenbrainz_disconnect, listenbrainz::listenbrainz_now_playing, listenbrainz::listenbrainz_submit, servers::server_status, servers::server_exposure, servers::server_sign_in, servers::server_sign_out, servers::server_sync, servers::server_star, servers::server_scrobble, plex::plex_sign_in, plex::plex_wait, plex::plex_cancel, plex::plex_pick, lyrics, search_lyrics, alarm::set_alarm, add_bookmark, bookmarks, delete_bookmark, jumplist::jump_pending, jumplist::set_jump_list, set_ui_language, ytwatch_open, ytwatch_place, ytwatch_cmd, ytwatch_close, syncmode::sync_status, syncmode::sync_probe, syncmode::sync_setup, syncmode::sync_stop, syncmode::sync_now, syncmode::sync_dismiss, syncmode::sync_pickup, devices::devices_status, devices::devices_network, devices::devices_auto, devices::device_offer, devices::device_offer_stop, devices::device_pair, devices::device_sync, devices::device_forget, rooms::room_status, rooms::room_start, rooms::room_end, rooms::room_host_now, rooms::room_host_next, rooms::room_react, rooms::rooms_nearby, rooms::room_join, rooms::room_leave, rooms::room_resolve, #[cfg(desktop)] plugins::plugins_list, #[cfg(desktop)] plugins::plugin_inspect, #[cfg(desktop)] plugins::plugin_install, #[cfg(desktop)] plugins::plugin_set, #[cfg(desktop)] plugins::plugin_uninstall, #[cfg(desktop)] plugins::plugin_reply, #[cfg(desktop)] plugins::plugin_event, #[cfg(desktop)] plugins::plugin_input, #[cfg(desktop)] plugins::plugin_frame, #[cfg(desktop)] plugins::plugin_log, themes::save_background, themes::forget_background, themes::export_theme, themes::import_theme, themes::read_preset, themes::write_preset, tags::edit_tags, tags::read_tags, tags::write_lyrics, songlist::import_song_list, songlist::export_playlist_file, backup::library_backup, backup::library_restore, libfile::library_file_lists, libfile::library_file_import, picked::picked_in, picked::picked_temp, picked::picked_out, #[cfg(desktop)] pip::pip, diag::diag_log, diag::diag_report])
+        .invoke_handler(tauri::generate_handler![deferred::app_ready, sources_status, connect, disconnect, sync_all, library, library_changes, playlist_tracks, player, player_status, edit_playlist, add_link, search_catalogs, search_suggestions, add_track, pick_version, backfill_art, find_versions, play_preview, share_playlist, share_preview, share_read_image, share_import, nearby_send, nearby_status, nearby_stop, nearby_receive, record_play, recent_plays, play_history, mixes, set_track_pref, set_rating, set_music, clear_history, export_youtube, spotify_player, spotify_playback, ytm_sign_in, ytm_sign_out, spotify_web_open, spotify_web_status, import_spotify_link, links::import_link, links::import_link_stop, links::not_found, links::not_found_search, links::find_now, spotify_web::spotify_lists, spotify_web::spotify_import, spotify_web::spotify_web_close, spotify_export::spotify_export_open, spotify_export::spotify_export_close, spotify_export::spotify_export_file, spotify_export::spotify_export_import, spotify_paste::import_spotify_tracks, apple_web::apple_web_open, apple_web::apple_web_status, apple_web::apple_lists, apple_web::apple_import, apple_web::apple_web_close, ytm_accounts, set_ytm_accounts, sync_directions, set_sync_direction, local_folders, set_local_folders, rescan_local, folders::add_dropped, health::library_health, load_settings, save_settings, shield_status, set_shield, net_today, system_accent, restart_app, autostart, set_autostart, hold_page, media_update, remote::remote_start, remote::remote_stop, remote::remote_queue, remote::overlay_start, remote::overlay_stop, remote::overlay_bars, load_session, save_session, add_to_youtube, save_cover, export_cover, save_picture, alternative_videos, embed_refused, play_stats, cache_stats, art_cache_size, set_art_cache_cap, clear_art_cache, storage, clear_storage, open_licenses, update_status, update_check, update_install, ytm_home, ytm_list, ytm_artist, album_info, discord_presence, discord_off, discord_status, discord_artist_art, remove_from_playlist, remove_from_library, merge_duplicates, resolve_track, set_global_shortcuts, player_live, editor::player_effects, player_levels, viz::viz_start, viz::viz_page, viz::viz_stop, viz::viz_stats, prepare::local_prepare, prepare::local_waveform, sponsor::sponsor_segments, editor::export_edit, editor::export_stop, editor::edits, editor::save_edit, editor::delete_edit, editor::activate_edit, editor::edit_draft, editor::save_edit_draft, voice_listen, voice_stop, open_windows_settings, detector::detector_status, detector::set_detector_token, detector::detect_song, detector::detect_stop, lastfm::lastfm_status, lastfm::lastfm_connect, lastfm::lastfm_disconnect, lastfm::lastfm_now_playing, lastfm::lastfm_scrobble, listenbrainz::listenbrainz_status, listenbrainz::listenbrainz_connect, listenbrainz::listenbrainz_disconnect, listenbrainz::listenbrainz_now_playing, listenbrainz::listenbrainz_submit, servers::server_status, servers::server_exposure, servers::server_sign_in, servers::server_sign_out, servers::server_sync, servers::server_star, servers::server_scrobble, plex::plex_sign_in, plex::plex_wait, plex::plex_cancel, plex::plex_pick, lyrics, lyrics_choices, lyrics_pick, search_lyrics, alarm::set_alarm, add_bookmark, bookmarks, delete_bookmark, jumplist::jump_pending, jumplist::set_jump_list, set_ui_language, ytwatch_open, ytwatch_place, ytwatch_cmd, ytwatch_close, syncmode::sync_status, syncmode::sync_probe, syncmode::sync_setup, syncmode::sync_stop, syncmode::sync_now, syncmode::sync_dismiss, syncmode::sync_pickup, devices::devices_status, devices::devices_network, devices::devices_auto, devices::device_offer, devices::device_offer_stop, devices::device_pair, devices::device_sync, devices::device_forget, rooms::room_status, rooms::room_start, rooms::room_end, rooms::room_host_now, rooms::room_host_next, rooms::room_react, rooms::rooms_nearby, rooms::room_join, rooms::room_leave, rooms::room_resolve, #[cfg(desktop)] plugins::plugins_list, #[cfg(desktop)] plugins::plugin_inspect, #[cfg(desktop)] plugins::plugin_install, #[cfg(desktop)] plugins::plugin_set, #[cfg(desktop)] plugins::plugin_uninstall, #[cfg(desktop)] plugins::plugin_reply, #[cfg(desktop)] plugins::plugin_event, #[cfg(desktop)] plugins::plugin_input, #[cfg(desktop)] plugins::plugin_frame, #[cfg(desktop)] plugins::plugin_log, themes::save_background, themes::forget_background, themes::export_theme, themes::import_theme, themes::read_preset, themes::write_preset, tags::edit_tags, tags::read_tags, tags::write_lyrics, songlist::import_song_list, songlist::export_playlist_file, backup::library_backup, backup::library_restore, libfile::library_file_lists, libfile::library_file_import, picked::picked_in, picked::picked_temp, picked::picked_out, #[cfg(desktop)] pip::pip, diag::diag_log, diag::diag_report])
         .run(context)
         .expect("error while running tauri application");
 }
