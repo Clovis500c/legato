@@ -6,8 +6,10 @@ import { it } from './i18n/it'
 import { nl } from './i18n/nl'
 import { pl } from './i18n/pl'
 import { pt } from './i18n/pt'
+import { ru } from './i18n/ru'
 import { sv } from './i18n/sv'
 import { tr } from './i18n/tr'
+import { uk } from './i18n/uk'
 
 /** Every language's page text (build time only: a page takes its own). */
-export const COPIES: Record<string, Copy> = { en, fr, es, de, it, pt, nl, pl, sv, tr }
+export const COPIES: Record<string, Copy> = { en, fr, es, de, it, pt, nl, pl, sv, tr, ru, uk }

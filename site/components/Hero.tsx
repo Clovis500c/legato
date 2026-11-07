@@ -16,11 +16,17 @@ const Brand = ({ path }: { path: string }) => (
 )
 
 
-/** A letter's width in Roboto Black, roughly, an "n" being 1 (measured within 3 %; a CJK glyph is a full em). */
-const glyph = (ch: string) => (" .,:;!|’'ilIjtfr".includes(ch) ? 0.55 : 'mwMW'.includes(ch) ? 1.5 : ch.codePointAt(0)! >= 0x2e80 ? 2 : ch !== ch.toLowerCase() ? 1.2 : 1)
+/** A letter's width in Roboto Black, roughly, an "n" being 1 (measured within 4 % for Latin and Cyrillic lines; a CJK glyph is a full em). */
+const glyph = (ch: string) =>
+  " .,:;!|’'ilIjtfr".includes(ch) ? 0.55
+  : 'mwMWШЩМЫЖЮФ'.includes(ch) ? 1.5
+  : 'шщмыжюф'.includes(ch) ? 1.35
+  : ch.codePointAt(0)! >= 0x2e80 ? 2
+  : ch !== ch.toLowerCase() ? 1.2
+  : 1
 
-/** The headline's size: English's, smaller when a language's longest line is wider than 13.6 "n"s (English's widest is 14, wherever it fits). */
-const fit = (lines: string[]) => Math.min(1, 13.6 / Math.max(...lines.map((l) => [...l].reduce((n, ch) => n + glyph(ch), 0))))
+/** The headline's size: English's, smaller when a language's longest line is wider than 13.3 "n"s (English's widest is 14, wherever it fits). */
+const fit = (lines: string[]) => Math.min(1, 13.3 / Math.max(...lines.map((l) => [...l].reduce((n, ch) => n + glyph(ch), 0))))
 
 /** The mockup's hero: the headline is the picture, line by line. */
 export function Hero() {
