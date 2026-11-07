@@ -22,8 +22,9 @@ be able to take the project over). Updated 2026-11-06, evening, from the owner's
   late morning, on the owner's word "Release en beta"): the autonomous run's commits (› Autonomous run of 2026-11-07),
   `pnpm check` and `pnpm e2e` green before the push; then **1.1.785** (12:43, their word): the APK built in its own job
   beside Windows (`release.yml`), the website opening in the visitor's language. 1.1.784 was a test, cancelled
-  before it published anything.
-- **GitHub's master** = 1.1.785 (`14d6a71`); **platforms** adds this file's update (docs, not pushed). The local
+  before it published anything. Then **1.1.795** (15:46, their word): Dependabot's four PRs merged and fitted, the
+  minimatch alert fixed (plan-v2 › Workflow › The security bots); GitHub closed the PRs and the alert.
+- **GitHub's master** = 1.1.795 (`1119dcd`); **platforms** adds this file's update (docs, not pushed). The local
   `master` ref lags (pushes go `platforms:master`): `git log origin/master..platforms` shows what isn't on GitHub. The
   website, https://clovis500c.github.io/legato/, is deployed from master: the phone story, 18 languages, the visitor's
   own language (checked online). No stash, no other branch or worktree on this PC.
@@ -192,7 +193,7 @@ signed in as `Clovis500c`; `pnpm check` green there. What it lacks:
 
 | Branch | State |
 |---|---|
-| `platforms` | Work goes here: GitHub's master (Beta 1.1.785) plus docs. |
+| `platforms` | Work goes here: GitHub's master (Beta 1.1.795) plus docs. |
 | `master` | Every push is a Beta (and a website deploy when `site/` changed): only on the owner's word. |
 
 The website branch (`claude/site-scroll-3d-aff654`) and its 10 GB worktree were removed on 2026-11-05: merged and
