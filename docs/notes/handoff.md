@@ -7,7 +7,8 @@ branch, a release or the next step changes. Its older versions (the run logs of 
 
 Written 2026-11-05, late evening, after a clean-up (the owner's ask: another account with none of this context should
 be able to take the project over). Updated 2026-11-06, evening, from the owner's other PC (› On the other PC), and
-2026-11-07, morning: an autonomous run, paused at the 5-hour limit (› Autonomous run of 2026-11-07).
+2026-11-07, about 11:00 (Paris): the end of an autonomous run, stopped near the week's limit (› Autonomous run of
+2026-11-07).
 
 ## Where things stand
 
@@ -18,17 +19,17 @@ be able to take the project over). Updated 2026-11-06, evening, from the owner's
   removed by the next update, the list's click and sideways scrollbar), then (2026-11-07, night) Against Liner 7 (the
   recap's profile card), 8 (there already), 9 (doubtful matches checked at an import's end), 10 (Next starts faster:
   857 to 709 ms median, measured in pnpm dev) and Now Playing's lyrics on the backdrop.
-- **GitHub's master** = that last Beta (`c4f5236`). **platforms** is ahead of it by the 2026-11-07 run's local commits
-  (`2aa7c26` to the docs commit after `2301a4a`), never pushed: only on the owner's word. The local `master` ref lags
+- **GitHub's master** = that last Beta (`c4f5236`). **platforms** is ahead of it by the 2026-11-07 run's 18 local
+  commits (`2aa7c26` to this file's last commit), never pushed: only on the owner's word. The local `master` ref lags
   (pushes go `platforms:master`): `git log origin/master..platforms` shows what isn't on GitHub. The website,
-  https://clovis500c.github.io/legato/, is deployed from master: the phone story and the French page aren't on it yet.
-  No stash, no other branch or worktree on this PC.
+  https://clovis500c.github.io/legato/, is deployed from master: the phone story and the 17 other languages aren't on
+  it yet. No stash, no other branch or worktree on this PC.
 - **Untracked:** `docs/notes/report-*.md`, the owner's reports in French (what each autonomous run did, what to try),
   and the old transcript `2026-10-30-001238-…txt` at the root. Never commit them; read the reports for context.
 - **Never tried for real** (built and unit-tested, seen in the demo or on the emulator only): plan-v2 › Check live in
   the real app. The owner tries them; what they find comes first.
 
-## Autonomous run of 2026-11-07 (paused at the 5-hour limit)
+## Autonomous run of 2026-11-07 (ended at 86 % of the week)
 
 The owner's ask (2026-11-07, about 05:05): go on through plan-v2's open lines alone, hardest first, managing the
 limits; they can't answer, so no question: a choice that's the project's is "Decided alone (date)" in its plan line,
@@ -46,16 +47,18 @@ never pushed.
   noted on their lines). The website's story on a phone (`2aa7c26`). 13: playlists there at once, each song looked up
   as it comes up to play (`031352e`). 14: a music server's own lyrics, the lyrics picker with a match % (`1f4ebf9`).
   15 set aside: SoundCloud's API terms cover its widget's list (`ec9ff17`; its line says what's possible instead).
-  16: the website in the app's languages, the structure and French (`2301a4a`).
-- Next, in this order: 16's other languages (es, de, it, pt-BR, nl, pl, sv, tr, ru, uk, hi, id, vi, ja, ko, zh-Hans:
-  each a `Copy` in `site/components/i18n/<code>.ts` like `fr.ts`, added to `copies.ts`; the app's own words for its
-  settings from `ui/src/shared/i18n/locales`; the header's links fit from `xl`, the headline's `fit()` checked;
-  `npx next build` in `site/`), then CONTRIBUTING (a copy line changed in English changes in each language), the winget
-  and Scoop manifests (prepared, not submitted), the README's screenshots (the site demo's `?shot=`); then 12, 11, 6
-  and the rest.
-- Usage at the pause (2026-11-07, about 07:50, Paris): the 5-hour window 88 %, the week 81 %: about one more window
-  before 90 % of the week.
-- Not tried for real: plan-v2 › Check live, its last item (the 2026-11-07 work).
+  16: the website in all 18 of the app's languages (`2301a4a` the structure and French, then `5d06236` to `bc6f0f3`,
+  each checked from 375 to 1440 px; CONTRIBUTING says how to keep them alike), winget manifests for Stable 1.1.681
+  (`packaging/`, validated, not submitted; no Scoop manifest, decided alone, its README says why), three more README
+  screens. 16's last part, Discussions, is outward: the owner's.
+- Stopped at 11:00 with the week at 86 %: 12, 11 and 6 each need more than the 4 % left before 90 %, and half a feature
+  is worse than none. No wake-up scheduled; the week resets 2026-11-12, 16:00 (Paris).
+- Next, in the given order: 12 (a moving cover background, our own WebGL shader, under 3 % CPU), 11 (share links: a
+  static page on the website reads the playlist from the link's fragment; the code is `music_core::share`'s, zlib +
+  base64url, `DecompressionStream('deflate')` reads it in a browser), 6 (snap layouts), then the rest of the plan
+  (milestone 3 Platforms, Features › High, then Medium), hardest first.
+- Not tried for real: plan-v2 › Check live, its last item (the 2026-11-07 work); the 17 languages never read by a
+  native speaker; the README's screens and the new pages never seen on GitHub (nothing pushed).
 
 ## How to continue
 
@@ -65,8 +68,8 @@ never pushed.
    refusal is never routed around.
 2. If they only say "carry on": fixes from their tries first (plan-v2 › Check live), then the 2026-11-07 run's next
    steps (above), then plan-v2's other open lines that need no account, smallest first:
-   - Against Liner: 6 (snap layouts), 11 (share links), 12 (a moving cover background), 16's other parts; 15 set aside,
-     18 and 19 need a Linux machine and a Mac (or CI).
+   - Against Liner: 12 (a moving cover background), 11 (share links), 6 (snap layouts); 15 set aside, 16's last part
+     (Discussions) outward, 18 and 19 need a Linux machine and a Mac (or CI).
    - Features, sorted › High: same loudness across sources (needs an ear), the accessibility pass, personal servers
      (Subsonic, Jellyfin and Plex built 2026-11-06, untried on a real server; their own search, Plex JWT and transcoder
      as plan lines), macOS and Linux builds.
@@ -104,7 +107,8 @@ They did five (2026-10-31, 11-02, 11-03 to 11-05, 11-05 to 11-06, 11-07; their r
 ## Waiting on the owner
 
 - Their tries of the Betas: plan-v2 › Check live in the real app, its last items first.
-- Their word to push the 2026-11-07 run's commits (a Beta, and the website with its phone story and French page).
+- Their word to push the 2026-11-07 run's commits (a Beta, and the website with its phone story and 18 languages).
+- The winget submission (`packaging/README.md`: a pull request to `microsoft/winget-pkgs` from their GitHub account).
 - 18 and 19: a Linux machine or their word for WSL on this PC; a Mac or CI for macOS.
 - The phone: 1.1.681's APK installed by hand once (older APKs have no updater); later APKs come through the app
   (Settings › About). Background play behind other apps, the notification's controls and the phone ↔ PC sync were only
@@ -207,4 +211,5 @@ published since 2026-11-01. A fresh clone has `master` only; `git branch -vv` sa
 - 2026-11-05 to 11-06: autonomous run with workflows (U1 the phone's interface, U2 glow and simplicity, listening rooms
   on the local network, personal servers), pushed at 92 % of the window; then, on the other PC, the phone-1 review,
   Against Liner 3 to 5, the round covers; Betas 1.1.742 to 1.1.751.
-- 2026-11-07: Against Liner 7 to 10 and the lyrics' look, a Beta (night); an autonomous run (morning, › above).
+- 2026-11-07: Against Liner 7 to 10 and the lyrics' look, a Beta (night); an autonomous run (morning: the website's
+  phone story and 18 languages, imports in seconds, server lyrics and the picker's %, winget; › above).
