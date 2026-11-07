@@ -18,12 +18,13 @@ be able to take the project over). Updated 2026-11-06, evening, from the owner's
   1.1.751 (Against Liner 3 to 5, the round covers), then their PC tries' fixes (the animated playing mark, Music App
   removed by the next update, the list's click and sideways scrollbar), then (2026-11-07, night) Against Liner 7 (the
   recap's profile card), 8 (there already), 9 (doubtful matches checked at an import's end), 10 (Next starts faster:
-  857 to 709 ms median, measured in pnpm dev) and Now Playing's lyrics on the backdrop.
-- **GitHub's master** = that last Beta (`c4f5236`). **platforms** is ahead of it by the 2026-11-07 run's 18 local
-  commits (`2aa7c26` to this file's last commit), never pushed: only on the owner's word. The local `master` ref lags
-  (pushes go `platforms:master`): `git log origin/master..platforms` shows what isn't on GitHub. The website,
-  https://clovis500c.github.io/legato/, is deployed from master: the phone story and the 17 other languages aren't on
-  it yet. No stash, no other branch or worktree on this PC.
+  857 to 709 ms median, measured in pnpm dev) and Now Playing's lyrics on the backdrop; then **1.1.783** (2026-11-07,
+  late morning, on the owner's word "Release en beta"): the autonomous run's commits (› Autonomous run of 2026-11-07),
+  `pnpm check` and `pnpm e2e` green before the push.
+- **GitHub's master** = **platforms** = that last Beta (this file's commit). The local `master` ref lags (pushes go
+  `platforms:master`): `git log origin/master..platforms` shows what isn't on GitHub. The website,
+  https://clovis500c.github.io/legato/, is deployed from master: the phone story and the 17 other languages went with
+  1.1.783. No stash, no other branch or worktree on this PC.
 - **Untracked:** `docs/notes/report-*.md`, the owner's reports in French (what each autonomous run did, what to try),
   and the old transcript `2026-10-30-001238-…txt` at the root. Never commit them; read the reports for context.
 - **Never tried for real** (built and unit-tested, seen in the demo or on the emulator only): plan-v2 › Check live in
@@ -58,7 +59,8 @@ never pushed.
   base64url, `DecompressionStream('deflate')` reads it in a browser), 6 (snap layouts), then the rest of the plan
   (milestone 3 Platforms, Features › High, then Medium), hardest first.
 - Not tried for real: plan-v2 › Check live, its last item (the 2026-11-07 work); the 17 languages never read by a
-  native speaker; the README's screens and the new pages never seen on GitHub (nothing pushed).
+  native speaker; the README's screens and the new pages not looked at on GitHub after the push.
+- Pushed afterwards on the owner's word: Beta 1.1.783.
 
 ## How to continue
 
@@ -107,7 +109,6 @@ They did five (2026-10-31, 11-02, 11-03 to 11-05, 11-05 to 11-06, 11-07; their r
 ## Waiting on the owner
 
 - Their tries of the Betas: plan-v2 › Check live in the real app, its last items first.
-- Their word to push the 2026-11-07 run's commits (a Beta, and the website with its phone story and 18 languages).
 - The winget submission (`packaging/README.md`: a pull request to `microsoft/winget-pkgs` from their GitHub account).
 - 18 and 19: a Linux machine or their word for WSL on this PC; a Mac or CI for macOS.
 - The phone: 1.1.681's APK installed by hand once (older APKs have no updater); later APKs come through the app
@@ -191,7 +192,7 @@ signed in as `Clovis500c`; `pnpm check` green there. What it lacks:
 
 | Branch | State |
 |---|---|
-| `platforms` | Work goes here: GitHub's master plus the 2026-11-07 run's local commits. |
+| `platforms` | Work goes here: equal to GitHub's master since Beta 1.1.783. |
 | `master` | Every push is a Beta (and a website deploy when `site/` changed): only on the owner's word. |
 
 The website branch (`claude/site-scroll-3d-aff654`) and its 10 GB worktree were removed on 2026-11-05: merged and
@@ -212,4 +213,4 @@ published since 2026-11-01. A fresh clone has `master` only; `git branch -vv` sa
   on the local network, personal servers), pushed at 92 % of the window; then, on the other PC, the phone-1 review,
   Against Liner 3 to 5, the round covers; Betas 1.1.742 to 1.1.751.
 - 2026-11-07: Against Liner 7 to 10 and the lyrics' look, a Beta (night); an autonomous run (morning: the website's
-  phone story and 18 languages, imports in seconds, server lyrics and the picker's %, winget; › above).
+  phone story and 18 languages, imports in seconds, server lyrics and the picker's %, winget; › above), Beta 1.1.783.
