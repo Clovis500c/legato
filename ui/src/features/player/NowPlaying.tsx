@@ -1,6 +1,5 @@
 import { ArrowSquareOut, CaretDown, DotsThree, Heart, ImageSquare, Queue, Quotes, SlidersHorizontal, ThumbsDown } from '@phosphor-icons/react'
 import { artistName } from '../../shared/artistName'
-import { STAGE_ID } from '../../app/searchShift'
 import { pop } from '../../shared/motion'
 import { openUrl } from '@tauri-apps/plugin-opener'
 import { useEffect, useMemo, useRef, useState } from 'react'
@@ -339,7 +338,7 @@ export function NowPlaying() {
 
       {/* Phone layout: one column, the cover over the song; an open panel (lyrics, Up next, sound) takes the cover's place. */}
       <div className={`grid min-h-0 flex-1 gap-12 phone:grid-cols-1 phone:gap-4 ${panel ? 'phone:grid-rows-1' : 'phone:grid-rows-[minmax(0,1fr)_auto]'} ${panel === 'editor' ? 'grid-cols-[minmax(0,1fr)_400px]' : panel === 'upNext' ? 'grid-cols-[minmax(0,1fr)_360px]' : 'grid-cols-[minmax(0,1fr)_minmax(0,1fr)]'}`}>
-        <section id={STAGE_ID} className={`flex min-h-0 min-w-0 flex-col items-center gap-4 ${panel ? 'phone:hidden' : ''}`}>
+        <section className={`flex min-h-0 min-w-0 flex-col items-center gap-4 ${panel ? 'phone:hidden' : ''}`}>
           {/* The phone: in More (one main thing on screen, the cover). The PC: only with a video to pick (a file with no
               YouTube version has Auto and Cover alike); always in More too. */}
           {!phone && (video || ytVersion) && <Segmented className="glass" label={tr('Show')} value={show} onChange={pickShow} options={showOptions} />}

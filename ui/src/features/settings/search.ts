@@ -122,7 +122,6 @@ export const SETTINGS_INDEX: SettingEntry[] = [
   { section: 'general', label: msg('Which notifications'), keywords: msg('toast popup messages fewer quiet annoying errors only important') },
   { section: 'general', label: msg('How long notifications stay'), keywords: msg('toast popup message time seconds duration short long') },
   { section: 'general', label: msg('Remember recent searches'), keywords: msg('history recent forget clear privacy search bar') },
-  { section: 'general', label: msg('Over the cover in Now Playing'), keywords: msg('search bar center middle player cover video align') },
   { section: 'general', label: msg('Search suggestions'), keywords: msg('autocomplete suggest typing google youtube privacy search bar') },
   { section: 'general', label: msg('Voice search'), keywords: msg('mic microphone speech speak dictation privacy') },
   { section: 'general', label: msg('Music Detector'), keywords: msg('identify recognize song shazam microphone audd listen what song') },
