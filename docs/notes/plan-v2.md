@@ -13,7 +13,10 @@ the order; a line leaves only when it ships or the user drops it.
 ## The owner's asks of 2026-11-07, evening
 
 - [ ] `S` Android: scanning a sync QR code crashes the app right after the camera permission is accepted (Beta
-      1.1.785 on their phone; the diagnostics show three restarts in a minute and no error line: a native crash).
+      1.1.785 on their phone; the diagnostics show three restarts in a minute and no error line: a native crash). 2026-11-07: the plugin's Kotlin (tauri-plugin-barcode-scanner
+      2.5.3) shows no sure cause; a Java crash now lands in the diagnostics (`MainActivity.kt` `keepCrashes`, never built
+      here: no Android toolchain on this PC), so the next Beta's Copy diagnostics names it. Faster: the phone on USB with
+      debugging on, `adb logcat -b crash -d` on a PC with the SDK.
 - [ ] `S-M` Settings › Visualizer style: a dropdown instead of the 16 pills, each style shown with a preview of its look.
 - [ ] `M` The big title screen (the song's huge title over the backdrop, the artists under it): each artist's round
       profile picture right of their name, good-looking, several artists handled.

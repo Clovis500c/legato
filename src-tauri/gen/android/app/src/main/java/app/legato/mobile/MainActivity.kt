@@ -19,7 +19,12 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.webkit.WebViewCompat
 import androidx.webkit.WebViewFeature
+import java.io.File
 import java.lang.reflect.Field
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import java.util.TimeZone
 import org.json.JSONArray
 
 class MainActivity : TauriActivity() {
@@ -37,6 +42,7 @@ class MainActivity : TauriActivity() {
     get() = wryWebView == null
 
   override fun onCreate(savedInstanceState: Bundle?) {
+    keepCrashes()
     enableEdgeToEdge()
     super.onCreate(savedInstanceState)
     // Edge to edge (forced from Android 15): the page keeps clear of the bars, the cutout and the keyboard.
@@ -49,6 +55,30 @@ class MainActivity : TauriActivity() {
     multicast = wifi.createMulticastLock("legato-devices").apply {
       setReferenceCounted(false)
       acquire()
+    }
+  }
+
+  // A Java crash (a plugin's or ours) never reaches the Rust log: its first frames go into the diagnostics file first,
+  // in the line format music_core::diag::parse_line reads, so Copy diagnostics shows them after the restart.
+  private fun keepCrashes() {
+    val previous = Thread.getDefaultUncaughtExceptionHandler()
+    val log = File(applicationInfo.dataDir, "diagnostics.log")
+    Thread.setDefaultUncaughtExceptionHandler { thread, error ->
+      try {
+        val time = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.ROOT)
+        time.timeZone = TimeZone.getTimeZone("UTC")
+        val lines = ArrayList<String>()
+        var cause: Throwable? = error
+        while (cause != null && lines.size < 30) {
+          lines.add(cause.toString())
+          for (frame in cause.stackTrace.take(8)) lines.add("at " + frame)
+          cause = cause.cause
+        }
+        val detail = lines.joinToString(" / ").replace('\n', ' ').replace('\r', ' ').take(1600)
+        log.appendText(time.format(Date()) + " ERROR android app crashed | " + detail + "\n")
+      } catch (e: Throwable) {
+      }
+      previous?.uncaughtException(thread, error)
     }
   }
 
