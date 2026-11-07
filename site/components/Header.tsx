@@ -60,7 +60,7 @@ export function Header() {
               ))}
             </ul>
           </details>
-          <a href={href} className="rounded-full bg-ink px-[18px] py-[9px] text-sm leading-5 font-medium text-on-ink">
+          <a href={href} className="rounded-full bg-ink px-[18px] py-[9px] text-sm leading-5 font-medium whitespace-nowrap text-on-ink">
             {c.nav.download}
           </a>
         </nav>
