@@ -247,6 +247,12 @@ copies, downloads for offline), their accounts, limits and paid plan.
         Next: the owner plays a while on a Beta with it, Copy diagnostics gives the times; then the cue, and the same
         measure again (done when the median on Next is lower).
       - [ ] The next video cued early in the second embed during the song's last seconds, dropped on another pick.
+        Plan (2026-11-07, not built blind: only real YouTube shows it): a store `cue` (the next song's YouTube id,
+        set once the song has played ~5 s); the idle embed (`tail.done`, PlayerBar) cues it, or one made idle for it
+        with autoplay off (a fresh embed autoplays: the next song would be heard); on Next to that song, the overlap's
+        swap without a fade (`bindFrame(null)`, playAt, `tail` = this embed done, `frameKey` = the idle one's) and
+        the new main loads it (its `shown` must be '' or it won't play; `stopVideo` on idle may drop the cue: check).
+        Try it in `pnpm dev` with a YouTube queue, the times before and after in the log.
 - [ ] 11. `S-M` Share links that open in any browser: a static page on the website reads the playlist from the link's
       fragment, Open in Legato, Listen on YouTube, Get Legato.
 - [ ] 12. `S-M` A moving cover background (our own WebGL shader): Now Playing, Karaoke, the Cover display, behind Home
