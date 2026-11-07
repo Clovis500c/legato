@@ -310,10 +310,13 @@ copies, downloads for offline), their accounts, limits and paid plan.
       - [ ] The website's languages (2026-11-07, under way): English at the root, each other language its own root
         layout at /<code>/ (html lang, hreflang alternates), its text a `Copy` in `site/components/i18n/<code>.ts`
         added to `copies.ts`; the header lists the languages that have a page; the demo speaks the page's language
-        (`?lang=`); the headline fits its longest line. Decided alone: the privacy table stays English in every
-        language, the one reference for what leaves the PC (a note says so). Done: French. Left: es, de, it, pt, nl,
-        pl, sv, tr, ru, uk, hi, id, vi, ja, ko, zh (the app's own words for its settings: `ui/src/shared/i18n/locales`),
-        then CONTRIBUTING (a copy line changed in English changes in each language).
+        (`?lang=`); the headline's size from its longest line's letter widths in Roboto Black (`Hero.tsx` `glyph`,
+        measured with a canvas: Latin and Cyrillic within 4 %). Decided alone: the privacy table stays English in
+        every language, the one reference for what leaves the PC (a note says so). Done: fr, es, de, it, pt-BR, nl,
+        pl, sv, tr, ru, uk (the app's own words for its settings, `ui/src/shared/i18n/locales`, and its form of
+        address), each checked at 375 to 1440 px: the headline on three lines, the header on one, no sideways
+        scroll. Left: hi, id, vi, ja, ko, zh, then CONTRIBUTING (a copy line changed in English changes in each
+        language). Not done: a native speaker's read of any of them.
       - [ ] winget and Scoop manifests prepared, not submitted; README screenshots. Not started.
 - [ ] 17. `L` Listening rooms over the internet, no server of ours: sealed control messages through a public relay (the
       owner's call), or the LAN. Takes in "Listen together on the local network".
