@@ -80,9 +80,12 @@ export function TrackTable({ tracks, empty, editId, rowActions, sort, onSort, fo
   // Phone layout: the song, its artist under it and More, no header; one tap plays (no hover, no double click).
   const phone = usePhone()
   const single = clickToPlay === 'single' || phone
-  // The list's own width: a narrow one (small window, a pane beside it) drops the least needed columns (fitColumns).
+  // The rows' width, the scroller's (its vertical scrollbar off: the whole grid's kept a column that didn't fit, a
+  // sideways scrollbar, the owner's report 2026-11-06). A narrow one (small window, a pane beside it) drops the least
+  // needed columns (fitColumns).
   const [listWidth, setListWidth] = useState(0)
   const measure = useCallback((el: HTMLDivElement | null) => {
+    scroller.current = el
     if (!el) return
     const seen = new ResizeObserver(([e]) => setListWidth(Math.round(e.contentRect.width)))
     seen.observe(el)
@@ -184,7 +187,7 @@ export function TrackTable({ tracks, empty, editId, rowActions, sort, onSort, fo
     )
 
   return (
-    <div ref={measure} role="grid" aria-rowcount={tracks.length} aria-multiselectable className="flex min-h-0 flex-1 flex-col">
+    <div role="grid" aria-rowcount={tracks.length} aria-multiselectable className="flex min-h-0 flex-1 flex-col">
       {chosen.length > 0 && (
         <div className="mb-2 flex shrink-0 flex-wrap items-center gap-1.5 rounded-xl border border-line bg-raised px-3 py-1.5">
           <span className="mr-auto text-[0.8125rem] font-semibold">{trn(chosen.length, '{n} song selected', '{n} songs selected')}</span>
@@ -227,12 +230,14 @@ export function TrackTable({ tracks, empty, editId, rowActions, sort, onSort, fo
         </div>
       ) : (
         <div
-          ref={scroller}
+          ref={measure}
           tabIndex={0}
           aria-label={tr('Songs')}
           aria-activedescendant={sel.cursor !== null ? `row-${sel.cursor}` : undefined}
           onKeyDown={onKey}
-          onFocus={() => sel.cursor === null && tracks.length && choose({ ...NONE, cursor: 0 })}
+          // Tabbed into: the cursor on the first row in sight. Not on a click (it picks its own row): a cursor put at row 0
+          // here scrolled to the top first, and the click missed its song (the owner's report, 2026-11-06).
+          onFocus={(e) => sel.cursor === null && tracks.length && e.currentTarget.matches(':focus-visible') && choose({ ...NONE, cursor: virtual.range?.startIndex ?? 0 })}
           data-list
           data-drop={dropId}
           className="min-h-0 flex-1 overflow-y-auto outline-none"
