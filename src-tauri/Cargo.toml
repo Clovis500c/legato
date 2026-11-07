@@ -28,7 +28,7 @@ serde_json = "1.0.154"
 # unstable: child webviews (YouTube watch page over the video slot, ytwatch.rs).
 tauri = { version = "2.12.4", features = ["tray-icon", "unstable"] }
 tauri-plugin-opener = "2.7.2"
-tauri-plugin-dialog = "=2.8.0"
+tauri-plugin-dialog = "=2.8.4"
 tokio = { version = "1.53.3", features = ["time", "macros", "rt"] }
 notify = "8"
 ts-rs.workspace = true
@@ -48,7 +48,7 @@ music-plugins = { version = "1.1.0", path = "../crates/plugins" }
 [target.'cfg(target_os = "android")'.dependencies]
 libc = "0.2.190"
 # Android's Keystore seals the secrets file (src/mobile/keystore.rs).
-jni = "0.21"
+jni = "0.22"
 ndk-context = "0.1"
 
 # QR scanner for pairing (phones only; MIT / Apache-2.0).
@@ -58,8 +58,8 @@ tauri-plugin-barcode-scanner = "2"
 [target.'cfg(windows)'.dependencies]
 webview2-com = "0.39.1"
 windows = { version = "0.62.2", features = ["UI_ViewManagement", "Media", "Media_SpeechRecognition", "Storage_Streams", "Win32_Foundation", "Win32_System_WinRT", "Win32_UI_WindowsAndMessaging", "Foundation", "Win32_UI_Shell", "Win32_System_Com", "Win32_Graphics_Gdi", "Win32_UI_HiDpi", "Win32_Media_Audio", "Win32_System_Diagnostics_ToolHelp", "Win32_Security_Credentials", "Win32_System_Power", "Win32_UI_Shell_Common", "Win32_UI_Shell_PropertiesSystem", "Win32_Storage_EnhancedStorage", "Win32_System_Com_StructuredStorage", "Win32_System_Variant"] }
-windows-core = "0.62.2"
-windows-registry = "0.6.1"
+windows-core = "0.100.0"
+windows-registry = "0.100.0"
 
 [build-dependencies]
 tauri-build = { version = "2.7.3", features = [] }
