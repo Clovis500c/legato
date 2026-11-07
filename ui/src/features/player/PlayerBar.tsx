@@ -56,7 +56,7 @@ function viaTitle(via: string, path?: string) {
  * songs follow each other without the embed's loading time. Overlapping songs: tail = the old embed, unseen, fading out
  * on its own until its video ends; idle = stopped there, waiting to take the next overlap's song.
  */
-function YouTubeFrame({ videoId, tail = false, idle = false }: { videoId: string; tail?: boolean; idle?: boolean }) {
+function YouTubeFrame({ videoId, tail = false, idle = false, cue = false }: { videoId: string; tail?: boolean; idle?: boolean; cue?: boolean }) {
   const onYoutube = usePlayer((s) => s.onYoutube)
   const rect = useVideoSlot((s) => s.rect)
   const hidden = useVideoSlot((s) => s.hidden)
@@ -100,7 +100,7 @@ function YouTubeFrame({ videoId, tail = false, idle = false }: { videoId: string
   }
   // First video and options at mount: changing src later would reload the embed.
   // hold = restored paused (after an update): cued, not playing.
-  const [src] = useState(() => ({ first: videoId, controls: useSettings.getState().settings.youtubeControls, start: usePlayer.getState().startAt / 1000, autoplay: !usePlayer.getState().hold }))
+  const [src] = useState(() => ({ first: videoId, controls: useSettings.getState().settings.youtubeControls, start: usePlayer.getState().startAt / 1000, autoplay: !tail && !usePlayer.getState().hold }))
   const shown = useRef(videoId)
   const captionsOff = useRef<string | null>(null)
   const isTail = useRef(tail)
@@ -187,6 +187,10 @@ function YouTubeFrame({ videoId, tail = false, idle = false }: { videoId: string
     // reload reads refs only.
   }, [down])
   useEffect(() => () => clearTimeout(stall.current), [])
+  // Stopped, the next song cued in it (store cueNext): loaded ahead. Made for it: its own address cues it, autoplay off.
+  useEffect(() => {
+    if (idle && cue && ready.current) ytPost(frame.current, 'command', 'cueVideoById', [videoId, 0])
+  }, [idle, cue, videoId])
   // Next video: into the running player. Not loaded yet: onLoad sends it. Volume and live settings first: an embed
   // taken back from idle has its last song's.
   useEffect(() => {
@@ -227,8 +231,8 @@ function YouTubeFrame({ videoId, tail = false, idle = false }: { videoId: string
         clearTimeout(stall.current)
         if (!tail) stall.current = setTimeout(() => !heard.current && markDown(true), DOWN_MS)
         ytPost(e.currentTarget, 'listening')
-        // Skipped ahead while the embed loaded: catch up.
-        if (shown.current !== videoId) {
+        // Skipped ahead while the embed loaded: catch up. An embed made to cue the next song waits.
+        if (!tail && shown.current !== videoId) {
           shown.current = videoId
           ytPost(e.currentTarget, 'command', 'loadVideoById', [videoId, usePlayer.getState().startAt / 1000])
         }
@@ -385,7 +389,7 @@ export function PlayerBar() {
       {now?.youtubeId &&
         [...(tail ? [tail] : []), { key: frameKey, videoId: now.youtubeId }]
           .sort((a, b) => a.key - b.key)
-          .map((f) => <YouTubeFrame key={f.key} videoId={f.videoId} tail={f === tail} idle={f === tail && !!tail?.done} />)}
+          .map((f) => <YouTubeFrame key={f.key} videoId={f.videoId} tail={f === tail} idle={f === tail && !!tail?.done} cue={f === tail && !!tail?.cue} />)}
       {phone && now && <ProgressLine className="absolute inset-x-3 top-0" />}
 
       {/* The phone: the whole song area opens Now Playing (a thumb's target, not two small ones). */}

@@ -90,7 +90,8 @@ interface PlayerState {
    * gone after the fade (Chromium, 2026-10-28). key = its frame's; end = its song's end (ms), where the overlap was
    * timed and its fade out reaches silence.
    */
-  tail: { key: number; videoId: string; end: number; done: boolean } | null
+  /** `cue`: stopped with the next song loaded in it (cueNext), for Next to start it at once. */
+  tail: { key: number; videoId: string; end: number; done: boolean; cue?: boolean } | null
   /** Key of the playing embed; the two embeds swap roles at each overlap. */
   frameKey: number
   toggleShuffle: () => void
@@ -351,6 +352,21 @@ let reachedAuto = false
 // A YouTube play asked, till its first "playing": its time to sound in the diagnostics log (Against Liner 10, measured
 // before the next video is cued early). `auto`: the queue moved on by itself.
 let soundFrom: { playId: number; at: number; auto: boolean } | null = null
+// Play whose next song was cued (Against Liner 10): once a play.
+let cuedFor = -1
+
+/** 5 s into a YouTube song: the next one (Next's) loaded in the other embed, stopped (the one kept from the last
+ *  overlap, or one made for it); Next then swaps to it (step), an overlap takes it as usual. Not during a fade out. */
+function cueNext() {
+  const p = usePlayer.getState()
+  if (cuedFor === p.playId || !p.now?.youtubeId || (p.tail && !p.tail.done)) return
+  cuedFor = p.playId
+  const i = nextIndex(p.order, p.index, 1, p.repeat, false, (j) => passOver(p.list[j], p.skipLong))
+  const next = i === null ? undefined : p.list[i]
+  const id = next && vias(next, spotifyOn())[0] === 'youtube' ? next.ids.youtube : undefined
+  if (!id || id === p.now.youtubeId) return
+  usePlayer.setState({ tail: { key: p.tail?.key ?? p.frameKey + 1, videoId: id, end: 0, done: true, cue: true } })
+}
 // Length of the playing video, ms (0 = not known yet). YouTube sends it once, as the video loads: kept for the song.
 let videoMs = 0
 let stuckTimer: ReturnType<typeof setTimeout> | undefined
@@ -799,6 +815,14 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     const { now, list, index, order, repeat } = get()
     if (now && !now.trackId) return void send({ type: delta > 0 ? 'next' : 'prev' })
     const i = nextIndex(order, index, delta, repeat, auto, (j) => passOver(list[j], get().skipLong))
+    const { tail, frameKey } = get()
+    // Next to the song cued in the other embed (cueNext): that one takes over, its video loaded; this one waits.
+    if (i !== null && !auto && now?.youtubeId && tail?.done && tail.cue && list[i].ids.youtube === tail.videoId) {
+      bindFrame(null)
+      bindLiveFrame(null)
+      void get().playAt(i, undefined, { auto })
+      return void set({ tail: { key: frameKey, videoId: now.youtubeId, end: 0, done: true }, frameKey: tail.key })
+    }
     if (i !== null) return void get().playAt(i, undefined, { auto })
     if (delta <= 0) return
     // Up next ran out: similar songs when the setting says so (autoplay.ts), else stop.
@@ -872,6 +896,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
       yt('pauseVideo')
       u = { ...u, state: undefined }
     }
+    if (u.time !== undefined && u.time >= 5) cueNext()
     if (u.state === 1 && soundFrom?.playId === get().playId) {
       report('info', 'playback', `youtube: time to sound, ${soundFrom.auto ? 'after a song' : 'asked'}`, `${Math.round(performance.now() - soundFrom.at)} ms`)
       soundFrom = null

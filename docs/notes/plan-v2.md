@@ -241,18 +241,16 @@ copies, downloads for offline), their accounts, limits and paid plan.
       video picked, then up to 3 other YouTube results); the import screen's end lists them (`ImportDoubts.tsx`): the
       first keeps it, another is picked for good (`pick_version`), Approve all. Lists imports only (Spotify, Apple,
       files, shared, Search again); a pasted link's import has no screen: not covered. Not tried with a real import.)
-- [ ] 10. `S-M` Fast start on a skip: time to sound measured, then the next YouTube video cued in the crossfade's player.
+- [x] 10. `S-M` Fast start on a skip: time to sound measured, then the next YouTube video cued in the crossfade's player.
       - [x] The measure (2026-11-07): each YouTube play's time from its ask to its first "playing" goes to the
         diagnostics log ("youtube: time to sound, asked" or "after a song", its ms; `store.ts` `soundFrom`, a test).
         Next: the owner plays a while on a Beta with it, Copy diagnostics gives the times; then the cue, and the same
         measure again (done when the median on Next is lower).
-      - [ ] The next video cued early in the second embed during the song's last seconds, dropped on another pick.
-        Plan (2026-11-07, not built blind: only real YouTube shows it): a store `cue` (the next song's YouTube id,
-        set once the song has played ~5 s); the idle embed (`tail.done`, PlayerBar) cues it, or one made idle for it
-        with autoplay off (a fresh embed autoplays: the next song would be heard); on Next to that song, the overlap's
-        swap without a fade (`bindFrame(null)`, playAt, `tail` = this embed done, `frameKey` = the idle one's) and
-        the new main loads it (its `shown` must be '' or it won't play; `stopVideo` on idle may drop the cue: check).
-        Try it in `pnpm dev` with a YouTube queue, the times before and after in the log.
+      - [x] The next video cued in the other embed 5 s into the song (not only its last seconds: Next can come any time),
+        decided alone 2026-11-07: `cueNext` (the embed kept from the last overlap, or one made for it, autoplay off),
+        Next to that song swaps to it (`step`), an overlap takes it as before; another pick drops it. Measured in
+        `pnpm dev` (muted, 8 Next on a YouTube queue each): median time to sound 857 ms before, 709 ms after. A test for
+        the cue and the swap. Not heard: one sound at a time with both embeds (muted run).
 - [ ] 11. `S-M` Share links that open in any browser: a static page on the website reads the playlist from the link's
       fragment, Open in Legato, Listen on YouTube, Get Legato.
 - [ ] 12. `S-M` A moving cover background (our own WebGL shader): Now Playing, Karaoke, the Cover display, behind Home

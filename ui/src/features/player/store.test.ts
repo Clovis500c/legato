@@ -361,6 +361,18 @@ describe('a YouTube video that never starts', () => {
     log.mockRestore()
   })
 
+  it('cues the next song in the other embed 5 s in, and Next swaps to it', () => {
+    usePlayer.getState().playTracks([song(86), song(87)], 0)
+    usePlayer.getState().onYoutube({ state: 1, time: 0.3 })
+    usePlayer.getState().onYoutube({ time: 6 })
+    const { tail, frameKey } = usePlayer.getState()
+    expect(tail).toMatchObject({ videoId: 'video87', done: true, cue: true })
+    usePlayer.getState().step(1)
+    expect(usePlayer.getState()).toMatchObject({ frameKey: tail!.key, tail: { key: frameKey, videoId: 'video86', done: true } })
+    expect(usePlayer.getState().now?.youtubeId).toBe('video87')
+    usePlayer.setState({ tail: null })
+  })
+
   it('stuck again once loaded again: refused, then the next song when nothing else can play it', async () => {
     usePlayer.getState().playTracks([song(73), song(74)], 0)
     await vi.advanceTimersByTimeAsync(6_000)
@@ -389,10 +401,11 @@ describe('a YouTube video that never starts', () => {
   it('isn’t hidden by the last song’s “playing”', async () => {
     usePlayer.getState().playTracks([song(75), song(76)], 0)
     usePlayer.getState().onYoutube({ state: 1, time: 1 })
-    usePlayer.getState().onYoutube({ time: 100 })
+    // Under 5 s: nothing cued yet, Next loads into the same embed (the swap has its own test).
+    usePlayer.getState().onYoutube({ time: 4 })
     usePlayer.getState().step(1)
     // The old video's report, sent before the embed took the new one.
-    usePlayer.getState().onYoutube({ state: 1, time: 100.25 })
+    usePlayer.getState().onYoutube({ state: 1, time: 4.25 })
     await vi.advanceTimersByTimeAsync(6_000)
     expect(loads()).toEqual(['video76'])
   })
