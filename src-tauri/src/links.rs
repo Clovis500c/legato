@@ -91,6 +91,15 @@ pub fn stopped() -> bool {
 /// Checks for Cancel while YouTube makes the import wait.
 const WAITING: Duration = Duration::from_millis(250);
 
+/// A match an import made that its length doesn't back (`matching::doubtful`): the song with the video picked, and the
+/// choice (that video first, then other YouTube results). Event `import-doubt`.
+#[derive(Clone, Serialize, ts_rs::TS)]
+#[ts(export)]
+pub struct ImportDoubt {
+    pub song: Track,
+    pub candidates: Vec<Track>,
+}
+
 /// One step of a search.
 pub struct Searched<'a> {
     pub done: usize,
@@ -177,6 +186,10 @@ async fn search(app: &tauri::AppHandle, mut out: Vec<Track>, todo: Vec<usize>, p
             continue;
         };
         pace.answered(Instant::now());
+        // A doubtful match: the import screen offers it to check (Against Liner 9), the song as the import has it.
+        if !answer.doubt.is_empty() {
+            let _ = app.emit("import-doubt", ImportDoubt { song: answer.song.clone(), candidates: answer.doubt });
+        }
         let own = line.settle(i).then_some((i, answer.song));
         let others = line.also_found(&out, &answer.seen);
         for (at, song) in own.into_iter().chain(others) {

@@ -1,3 +1,4 @@
+import { ImportDoubts } from './ImportDoubts'
 import { AppleLogo, CheckCircle, FileAudio, ShareNetwork, SpotifyLogo } from '@phosphor-icons/react'
 import { useEffect, useState } from 'react'
 import { useStore } from '../../app/store'
@@ -77,6 +78,7 @@ export function ImportScreen() {
             {summary(result)}
           </p>
           {result.failed.length > 0 && <p className="text-sm text-ink-2">{tr('Not read: {lists}', { lists: result.failed.slice(0, 3).join(', ') + (result.failed.length > 3 ? '…' : '') })}</p>}
+          {run.doubts.length > 0 && <ImportDoubts doubts={run.doubts} />}
           <div className="flex justify-end gap-2">
             <Button variant="ghost" onClick={endImport}>
               {tr('Close')}

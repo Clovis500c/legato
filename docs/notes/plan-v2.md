@@ -235,7 +235,12 @@ copies, downloads for offline), their accounts, limits and paid plan.
 - [x] 8. `S` Motion polish, for the owner's eye: play / pause morphing, a like's pop, pages fading in; none with reduced
       motion. (2026-11-07: there already, checked: `Transport.tsx`'s icon-in swap, `shared/motion.ts` pop on every like,
       `page-in` on pages, all off with reduced motion or Animations off. The owner's eye still to come.)
-- [ ] 9. `S-M` Check the matches after an import: doubtful ones with their candidates, pick or keep, approve all.
+- [x] 9. `S-M` Check the matches after an import: doubtful ones with their candidates, pick or keep, approve all.
+      (2026-11-07: a match is doubtful with no id or ISRC in common and its length unknown or more than 3 s off
+      (`matching::doubtful`, tested; same_track lets 10 s through). The search sends each one as `import-doubt` (the
+      video picked, then up to 3 other YouTube results); the import screen's end lists them (`ImportDoubts.tsx`): the
+      first keeps it, another is picked for good (`pick_version`), Approve all. Lists imports only (Spotify, Apple,
+      files, shared, Search again); a pasted link's import has no screen: not covered. Not tried with a real import.)
 - [ ] 10. `S-M` Fast start on a skip: time to sound measured, then the next YouTube video cued in the crossfade's player.
 - [ ] 11. `S-M` Share links that open in any browser: a static page on the website reads the playlist from the link's
       fragment, Open in Legato, Listen on YouTube, Get Legato.

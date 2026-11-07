@@ -615,12 +615,23 @@ async fn with_youtube(state: &AppState, track: Track) -> Track {
 struct Answer {
     song: Track,
     seen: Vec<Track>,
+    /// A doubtful match (Against Liner 9): the video picked, then up to 3 other YouTube results. Empty: sure, or none.
+    doubt: Vec<Track>,
+}
+
+/// `hit`, and what else could be the song, when the match is doubtful (`matching::doubtful`).
+fn doubts(track: &Track, hit: &Track, found: &[Track]) -> Vec<Track> {
+    if !music_core::matching::doubtful(track, hit) {
+        return Vec::new();
+    }
+    let others = found.iter().filter(|t| !std::ptr::eq(*t, hit) && t.ids.contains_key(&Source::Youtube)).take(3);
+    std::iter::once(hit).chain(others).cloned().collect()
 }
 
 /// None: YouTube refused the search, nothing learned.
 async fn youtube_version(state: &AppState, track: &Track) -> Option<Answer> {
     if track.ids.contains_key(&Source::Youtube) {
-        return Some(Answer { song: track.clone(), seen: Vec::new() });
+        return Some(Answer { song: track.clone(), seen: Vec::new(), doubt: Vec::new() });
     }
     let mut seen = Vec::new();
     let query = format!("{} {}", track.artist, track.title);
@@ -628,7 +639,8 @@ async fn youtube_version(state: &AppState, track: &Track) -> Option<Answer> {
     match yt_search(state, &query).await {
         Ok(found) => {
             if let Some(hit) = music_core::matching::best_match(track, &found) {
-                return Some(Answer { song: merge_tracks(track, hit), seen: found });
+                let doubt = doubts(track, hit, &found);
+                return Some(Answer { song: merge_tracks(track, hit), seen: found, doubt });
             }
             seen = found;
         }
@@ -638,16 +650,17 @@ async fn youtube_version(state: &AppState, track: &Track) -> Option<Answer> {
     match video_search(state, &query).await {
         Ok(found) => {
             let videos: Vec<Track> = found.into_iter().filter(|(_, m)| *m != Musicness::NotMusic).map(|(t, _)| t).collect();
-            let song = music_core::matching::best_match(track, &videos).map(|hit| merge_tracks(track, hit));
+            let hit = music_core::matching::best_match(track, &videos);
+            let (song, doubt) = (hit.map(|hit| merge_tracks(track, hit)), hit.map_or_else(Vec::new, |hit| doubts(track, hit, &videos)));
             seen.extend(videos);
             if let Some(song) = song {
-                return Some(Answer { song, seen });
+                return Some(Answer { song, seen, doubt });
             }
         }
         Err(e) if music_connectors::refused(&e) => return None,
         Err(_) => {}
     }
-    Some(Answer { song: track.clone(), seen })
+    Some(Answer { song: track.clone(), seen, doubt: Vec::new() })
 }
 
 /// Trust boundary: a search hit from the UI. Catalog ids only (none yet: a song the Music Detector named without a

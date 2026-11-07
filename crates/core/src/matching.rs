@@ -75,6 +75,14 @@ pub fn same_song_upload(a: &Track, b: &Track) -> bool {
     normalize(&a.title) == normalize(&b.title) && a.duration_ms.zip(b.duration_ms).is_none_or(|(x, y)| x.abs_diff(y) <= DURATION_TOLERANCE_MS)
 }
 
+/// A match to check by eye after an import (Against Liner 9): no id or ISRC in common, its length unknown on one side
+/// or more than 3 s off (same_track lets 10 s through).
+pub fn doubtful(track: &Track, hit: &Track) -> bool {
+    let ids = track.ids.iter().any(|(s, id)| hit.ids.get(s) == Some(id));
+    let isrc = track.isrc.as_ref().zip(hit.isrc.as_ref()).is_some_and(|(x, y)| x.eq_ignore_ascii_case(y));
+    !ids && !isrc && track.duration_ms.zip(hit.duration_ms).is_none_or(|(x, y)| x.abs_diff(y) > 3_000)
+}
+
 /// Best candidate: exact ISRC first, then fuzzy.
 pub fn best_match<'a>(track: &Track, candidates: &'a [Track]) -> Option<&'a Track> {
     track
@@ -136,6 +144,17 @@ mod tests {
 
     fn t(title: &str, artist: &str) -> Track {
         Track { title: title.into(), artist: artist.into(), ..Default::default() }
+    }
+
+    #[test]
+    fn doubtful_when_the_length_says_nothing_or_is_off_never_on_an_isrc() {
+        let song = Track { duration_ms: Some(200_000), ..t("Nightcall", "Kavinsky") };
+        let video = |ms: Option<u32>| Track { duration_ms: ms, ids: [(Source::Youtube, "v".into())].into(), ..t("Nightcall", "Kavinsky") };
+        assert!(!doubtful(&song, &video(Some(201_500))));
+        assert!(doubtful(&song, &video(Some(207_000))), "within same_track's 10 s, still off");
+        assert!(doubtful(&song, &video(None)));
+        let isrc = |t: Track| Track { isrc: Some("FR6V81200001".into()), ..t };
+        assert!(!doubtful(&isrc(song.clone()), &isrc(video(None))));
     }
 
     #[test]

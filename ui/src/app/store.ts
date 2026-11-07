@@ -397,6 +397,10 @@ export const useStore = create<State>((set, get) => {
         if (run.hidden) get().notify(importText(latest, run.kind), { sticky: true, id: importToast })
       }
       let listsShown = false
+      const offDoubt = api.onImportDoubt((d) => {
+        const run = get().importRun
+        if (run) set({ importRun: { ...run, doubts: [...run.doubts, d] } })
+      })
       const off = api.onSpotifyImport((p) => {
         latest = p
         timer ??= setTimeout(beat, BEAT)
@@ -418,6 +422,7 @@ export const useStore = create<State>((set, get) => {
         }
       }).catch(() => !!r)
       void off.then((f) => f())
+      void offDoubt.then((f) => f())
       clearTimeout(timer)
       const seen = get().importRun
       get().dismissToast(importToast)

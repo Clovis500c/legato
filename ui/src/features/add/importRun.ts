@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react'
-import type { SpotifyLibraryImport, SpotifyProgress, SpotifySong } from '../../shared/api'
+import type { ImportDoubt, SpotifyLibraryImport, SpotifyProgress, SpotifySong } from '../../shared/api'
 import { tr, trn } from '../../shared/i18n/i18n'
 
 /** A song on the import screen's deck; `seq` keeps its card across updates. */
@@ -26,6 +26,8 @@ export interface ImportRun {
   hidden: boolean
   /** What runs: Spotify's or Apple Music's lists, the songs not found searched again (no list involved), a list shared with Legato, or an app's library file. */
   kind: ImportKind
+  /** Matches to check at the end (ImportDoubts.tsx). */
+  doubts: ImportDoubt[]
   /** The end, for the screen to say. */
   result?: SpotifyLibraryImport
 }
@@ -42,7 +44,7 @@ const PACE_SPAN = 90_000
 const FEWEST_SEARCHES = 6
 const SHORTEST_SPAN = 4_000
 
-export const newRun = (kind: ImportKind = 'spotify'): ImportRun => ({ marks: [], seen: [], next: 0, hidden: false, kind })
+export const newRun = (kind: ImportKind = 'spotify'): ImportRun => ({ marks: [], seen: [], next: 0, hidden: false, kind, doubts: [] })
 
 function marked(run: ImportRun, { searched, toSearch }: SpotifyProgress, at: number): Mark[] {
   if (!toSearch || searched === run.marks.at(-1)?.searched) return run.marks
