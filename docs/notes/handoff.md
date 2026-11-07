@@ -18,6 +18,9 @@ be able to take the project over). Updated 2026-11-06, evening, from the owner's
   Beta »): Against Liner 3 to 5 and the round covers (below): 1.1.751. Then their PC tries' fixes (plan-v2 › From the
   owner's tries on the PC): the animated playing mark, Music App removed by the next update (its key was under
   `Software\musicapp`), the list's click and sideways scrollbar; pushed as a Beta on their word.
+  Then, on their word again (2026-11-07, night): Against Liner 7 (the recap's profile card), 8 (there already), 9
+  (doubtful matches checked at an import's end), 10 (Next starts faster: 857 to 709 ms median, measured in pnpm dev),
+  and Now Playing's lyrics on the backdrop, lit by their distance from the sung line; pushed as a Beta.
 - **master** = **platforms**, both pushed on 2026-11-06 (the owner's word: past 95 % of the 5-hour window, push it all,
   they go on from another PC). The website, https://clovis500c.github.io/legato/, is deployed from master. Nothing
   half done, no stash, no other branch or worktree. On the other PC (2026-11-06, evening): master pulled to `e27c486`,
