@@ -96,6 +96,19 @@ user key, SoundCloud playback and search (its terms), concerts (an API's terms),
       `embedBlocked` list) and the queue skipped 12 s in. A silent embed is now waited on until it answers (`store.ts`
       `heard`, a test). Videos blocked that way before stay blocked (no way to tell them apart).
 
+### From the owner's tries on the PC (2026-11-06, night, Legato 1.1.751)
+
+- [x] The playing mark (the blue square: Up next, song lists, album and artist pages) held a still waveform: its bars
+      move while the song plays, held when paused, still with animations off (`player/PlayingMark.tsx`).
+- [x] Still "Music App" on Windows after the updates: the installer hook looked for the old install under legato's
+      key, it's under `Software\musicapp\Music App`; never found, never uninstalled. Fixed (`windows/hooks.nsh`), and
+      the startup entry on music-app.exe follows Legato's exe (`autostart.rs`). Its test: the next update on the
+      owner's PC (Music App gone from Apps and the Start menu, a Legato shortcut, Task Manager's entry on legato.exe).
+- [x] A click on a song sometimes jumped the list to the top instead of playing (an old one): the list's focus put the
+      cursor on row 0 first. Only a keyboard focus does now, on the first row in sight (`TrackTable.tsx`).
+- [x] The song list sometimes scrolled sideways: its columns were fitted to the grid's width, scrollbar included; now
+      to the scroller's. Not replayed on a real list (the demo had no overflow at its width).
+
 ### Against Liner (user's ask 2026-11-05: lead it on every point)
 
 Liner (`tryliner/desktop`): Electron, Windows / macOS / Linux, an account on its server, YouTube's audio taken and
