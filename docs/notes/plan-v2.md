@@ -17,7 +17,9 @@ the order; a line leaves only when it ships or the user drops it.
       2.5.3) shows no sure cause; a Java crash now lands in the diagnostics (`MainActivity.kt` `keepCrashes`, never built
       here: no Android toolchain on this PC), so the next Beta's Copy diagnostics names it. Faster: the phone on USB with
       debugging on, `adb logcat -b crash -d` on a PC with the SDK.
-- [ ] `S-M` Settings › Visualizer style: a dropdown instead of the 16 pills, each style shown with a preview of its look.
+- [x] `S-M` Settings › Visualizer style: a dropdown instead of the 16 pills, each style shown with a preview of its look.
+      2026-11-08: `LookPicker.tsx`, still previews by the visualizer's own painter (`VizThumb.tsx`, an invented sound).
+      Checked in the site demo only (1400 px dark, 375 px light): not in the installed app, WebView2 or on a phone.
 - [ ] `M` The big title screen (the song's huge title over the backdrop, the artists under it): each artist's round
       profile picture right of their name, good-looking, several artists handled.
 - [ ] `M` Up next: a better-looking list, redone the way the lyrics were (on the backdrop, Against Liner U2's glow and

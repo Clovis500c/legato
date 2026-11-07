@@ -21,7 +21,7 @@ import { VIZ_BANDING_LABELS, VIZ_COLOR_LABELS, VIZ_COLORMAP_LABELS, VIZ_FACE_LAB
 import { exportPreset, importPreset, removePreset } from '../player/presetFiles'
 import { presetOptions } from '../player/vizPresets'
 import { needleLook } from '../player/vizVu'
-import { lookOptions, lookSettings, lookValue, usePluginViz } from '../plugins/pluginViz'
+import { LookPicker } from './LookPicker'
 import { SourcesView } from '../sources/SourcesView'
 import { SyncSection } from '../syncmode/SyncSection'
 import { OverlayPanel, RemotePanel } from '../remote/RemotePanel'
@@ -515,7 +515,7 @@ function SoundGroup() {
         </Row>
         {s.visualizer && (
           <Row setting="visualizerStyle" label={msg('Visualizer style')} sub={tr('Radial goes around a big cover; where the cover is small it shows bars. VU needles follow the average level, PPM needles the peaks')}>
-            <LookChoice />
+            <LookPicker />
           </Row>
         )}
         {s.visualizer && needleLook(s.visualizerStyle) && (
@@ -1074,15 +1074,6 @@ export function SettingsView({ section }: { section: SettingsSection }) {
       </div>
     </>
   )
-}
-
-/** The visualizer's look: the built-in ones, then those running plugins offer. */
-function LookChoice() {
-  const style = useSettings((s) => s.settings.visualizerStyle)
-  const plugin = useSettings((s) => s.settings.visualizerPlugin)
-  const update = useSettings((s) => s.update)
-  const looks = usePluginViz((s) => s.looks)
-  return <Segmented label={tr('Visualizer style')} className="max-w-md flex-wrap rounded-3xl!" value={lookValue(style, plugin)} onChange={(v) => update(lookSettings(v))} options={lookOptions(looks)} />
 }
 
 /** The Presets look's preset: the built-in ones, then the imported ones; import, export, remove. */

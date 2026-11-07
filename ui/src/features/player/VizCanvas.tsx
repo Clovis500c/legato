@@ -31,7 +31,7 @@ export function useCalm() {
 
 /** WebGL2 on a worker's canvas, asked once: the Presets look draws with it, the bars stand in where it can't. */
 let gl2: boolean | undefined
-function canDrawPresets(): boolean {
+export function canDrawPresets(): boolean {
   if (gl2 === undefined) {
     try {
       const c = new OffscreenCanvas(1, 1).getContext('webgl2')
@@ -206,7 +206,7 @@ function secondOf(el: HTMLElement, color: VizColor): string {
 }
 
 /** The visualizer's colour: the text colour where it is drawn, the theme's accent, or the cover's (text until known). */
-function inkOf(el: HTMLElement, color: VizColor, cover: string | null): string {
+export function inkOf(el: HTMLElement, color: VizColor, cover: string | null): string {
   const css = getComputedStyle(el)
   if (color === 'accent') return css.getPropertyValue('--color-accent').trim() || css.color
   return (color === 'cover' && cover) || css.color
