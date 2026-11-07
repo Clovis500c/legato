@@ -1,4 +1,5 @@
-import { CaretRight, ClipboardText, DotsSixVertical, DotsThreeVertical, FloppyDisk, MinusCircle, Waveform, X } from '@phosphor-icons/react'
+import { CaretRight, ClipboardText, DotsSixVertical, DotsThreeVertical, FloppyDisk, MinusCircle, X } from '@phosphor-icons/react'
+import { PlayingMark } from './PlayingMark'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { useCallback, useEffect, useMemo, useRef, type ReactNode } from 'react'
 import { useSettings } from '../../app/settings'
@@ -238,9 +239,7 @@ export function UpNext({ onHide, className = CARD, heading }: { onHide: () => vo
                     </span>
                   </span>
                   {r.current ? (
-                    <span title={tr('Playing')} className="grid size-6 shrink-0 place-items-center rounded-[4px] glow-mark bg-accent text-on-accent">
-                      <Waveform size={14} weight="bold" />
-                    </span>
+                    <PlayingMark />
                   ) : t && <span className={`shrink-0 text-xs text-ink-3 tabular-nums ${movable ? 'group-hover:invisible' : ''}`}>{formatDuration(t.durationMs)}</span>}
                 </button>
                 {movable && !r.current && (

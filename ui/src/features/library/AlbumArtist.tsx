@@ -1,4 +1,5 @@
-import { CaretLeft, Clock, DotsThree, Heart, MicrophoneStage, Play, Plus, Radio, SpinnerGap, Waveform } from '@phosphor-icons/react'
+import { CaretLeft, Clock, DotsThree, Heart, MicrophoneStage, Play, Plus, Radio, SpinnerGap } from '@phosphor-icons/react'
+import { PlayingBars, PlayingMark } from '../player/PlayingMark'
 import { artistName } from '../../shared/artistName'
 import { useShallow } from 'zustand/react/shallow'
 import { Fragment, useEffect, useMemo, useState, type ReactNode } from 'react'
@@ -96,9 +97,7 @@ function AlbumRow({ list, i, number }: { list: LibraryTrack[]; i: number; number
       <span className="flex justify-end text-[0.8125rem] text-ink-3 tabular-nums">
         <span className={playable ? 'group-hover:hidden' : ''}>
           {on ? (
-            <span title={tr('Playing')} className="grid size-6 place-items-center rounded-[4px] glow-mark bg-accent text-on-accent">
-              <Waveform size={14} weight="bold" />
-            </span>
+            <PlayingMark />
           ) : (
             (number ?? i + 1)
           )}
@@ -137,7 +136,7 @@ function SongRow({ list, i, cover, extra, sub, number }: { list: LibraryTrack[];
   return (
     <li onContextMenu={onMenu(() => trackMenu(t, { list, index: i }))} onClick={() => phone && playable && play(list, i)} onDoubleClick={() => playable && play(list, i)} className="group flex h-13 items-center gap-4 rounded-md px-3 hover:bg-raised phone:gap-3 phone:px-0">
       <span className="flex w-6 shrink-0 justify-end text-xs text-ink-3 tabular-nums">
-        <span className={playable ? 'group-hover:hidden' : ''}>{on ? <Waveform size={14} className="text-accent-ink" /> : (number ?? i + 1)}</span>
+        <span className={playable ? 'group-hover:hidden' : ''}>{on ? <PlayingBars className="text-accent-ink" /> : (number ?? i + 1)}</span>
         {playable && (
           <button aria-label={tr('Play {title}', { title: t.title })} onClick={() => play(list, i)} className="hidden text-ink group-hover:block">
             <Play size={13} weight="fill" />

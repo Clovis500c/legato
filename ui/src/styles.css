@@ -456,6 +456,43 @@ code {
     filter: none;
   }
 }
+/* The playing mark's bars (player/PlayingMark.tsx): out of step while the song plays, held where they are when it's
+   paused; animations off or reduced: still at their own heights. A transform only, so the page isn't restyled. */
+.playing-bars {
+  @apply flex h-3 items-end gap-0.5;
+}
+.playing-bars > i {
+  @apply block h-full w-[3px] origin-bottom rounded-full bg-current;
+  transform: scaleY(0.55);
+  animation: playing-bar 0.8s ease-in-out infinite alternate;
+}
+.playing-bars > i:nth-child(2) {
+  transform: scaleY(1);
+  animation-duration: 0.55s;
+  animation-delay: -0.3s;
+}
+.playing-bars > i:nth-child(3) {
+  transform: scaleY(0.4);
+  animation-duration: 1s;
+  animation-delay: -0.65s;
+}
+.playing-bars[data-moving='false'] > i {
+  animation-play-state: paused;
+}
+@keyframes playing-bar {
+  from {
+    transform: scaleY(0.25);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .playing-bars > i {
+    animation: none;
+  }
+}
+
 /* The played part's light: a strip under the seek bar as wide as what's played (Progress.tsx SeekBar). */
 .seek-glow {
   @apply pointer-events-none absolute top-1/2 left-0 h-1 -translate-y-1/2 rounded-full;
