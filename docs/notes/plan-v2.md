@@ -20,6 +20,8 @@ the order; a line leaves only when it ships or the user drops it.
 - [ ] `S-M` Settings › Visualizer style: a dropdown instead of the 16 pills, each style shown with a preview of its look.
 - [ ] `M` The big title screen (the song's huge title over the backdrop, the artists under it): each artist's round
       profile picture right of their name, good-looking, several artists handled.
+- [ ] `M` Up next: a better-looking list, redone the way the lyrics were (on the backdrop, Against Liner U2's glow and
+      simplicity).
 
 ## Best in class (user's ask 2026-10-30)
 
