@@ -171,12 +171,12 @@ const SCOPES = {
   transport: "([...document.querySelectorAll('button')].find((b) => b.getAttribute('aria-label') === 'Previous' && b.getBoundingClientRect().width)?.parentElement ?? document.createElement('div'))",
 }
 
-/** The first button, link, tab or switch that carries this text (or aria-label), in a scope above. `free` = nothing
+/** The first button, link, tab, switch or option that carries this text (or aria-label), in a scope above. `free` = nothing
  *  stands over its middle (a toast would eat the click). */
 const where = (label, scope = 'dialog') => `(() => {
   const want = ${JSON.stringify(label)}
   const root = ${SCOPES[scope]}
-  const el = [...root.querySelectorAll('button, a, [role=button], [role=tab], [role=switch]')].find((e) => (e.getAttribute('aria-label') || e.innerText || '').trim().split('\\n')[0].trim() === want)
+  const el = [...root.querySelectorAll('button, a, [role=button], [role=tab], [role=switch], [role=option]')].find((e) => (e.getAttribute('aria-label') || e.innerText || '').trim().split('\\n')[0].trim() === want)
   if (!el) return null
   el.scrollIntoView({ block: 'center' })
   const r = el.getBoundingClientRect()
@@ -538,10 +538,14 @@ async function walk(o, dataDirs) {
       await sleep(800)
       await key('KeyF')
       await app.cdp.waitFor(`!document.querySelector('[role=dialog][aria-label="Now playing"]')`, { timeout: 5000 })
-      // The other looks, picked in Settings: Now Playing's own canvas (the strip, or Radial's ring around the cover where it
-      // fits), then the full screen. Held long enough for the spectrogram to draw a line of the tone across.
-      const show = async (label, ms) => {
+      // The other looks, picked in Settings' dropdown: Now Playing's own canvas (the strip, or Radial's ring around the
+      // cover where it fits), then the full screen. Held long enough for the spectrogram to draw a line of the tone across.
+      const pickLook = async (label) => {
+        await page.press('Visualizer style', { scope: 'page' })
         await page.press(label, { scope: 'page' })
+      }
+      const show = async (label, ms) => {
+        await pickLook(label)
         await key('KeyF')
         await app.cdp.waitFor(canvas('[role=dialog][aria-label="Now playing"]'), { timeout: 10000 }).catch(() => {
           throw new Error(`${label}: Now Playing shows no visualizer canvas`)
@@ -587,7 +591,7 @@ async function walk(o, dataDirs) {
       await sleep(700)
       if ((await frames()) !== closed || (await workers()) !== 0) throw new Error(`the stream kept going after the visualizer closed: ${closed} to ${await frames()} frames, ${await workers()} workers`)
       // Put the default look back, so the next steps meet the app as it was.
-      await page.press('LED', { scope: 'page' })
+      await pickLook('LED')
       // Settings opens on the section it was left on: back to General, where the quit step looks.
       await page.press('General', { scope: 'page' })
     })
