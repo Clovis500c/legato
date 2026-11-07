@@ -10,6 +10,14 @@ answers: Waiting on the user), then milestone 3, Platforms. Where the work stand
 Every idea here stays: the user wants them all built in the end, just later (user's choice 2026-10-31). The roadmap sets
 the order; a line leaves only when it ships or the user drops it.
 
+## The owner's asks of 2026-11-07, evening
+
+- [ ] `S` Android: scanning a sync QR code crashes the app right after the camera permission is accepted (Beta
+      1.1.785 on their phone; the diagnostics show three restarts in a minute and no error line: a native crash).
+- [ ] `S-M` Settings › Visualizer style: a dropdown instead of the 16 pills, each style shown with a preview of its look.
+- [ ] `M` The big title screen (the song's huge title over the backdrop, the artists under it): each artist's round
+      profile picture right of their name, good-looking, several artists handled.
+
 ## Best in class (user's ask 2026-10-30)
 
 What a listener would get, against Riff (rootscripts/riff: Electron, yt-dlp downloads, YouTube / SoundCloud, imports

@@ -18,7 +18,8 @@ lines out of plan-v2, private details out of the repo).
   `2026-10-30-001238-…txt` at the root.
 
 ## Next
-1. Fixes from the owner's tries (plan-v2 › Check live).
+1. The owner's asks of 2026-11-07, evening (plan-v2, top): the QR-scan crash on Android, the visualizer style dropdown
+   with previews, the artists' round pictures on the big title. Then fixes from their tries (plan-v2 › Check live).
 2. Against Liner 12 (a moving cover background, our own WebGL shader, under 3 % CPU), 11 (share links: a static page on
    the website reads the playlist from the link's fragment; `music_core::share`'s zlib + base64url, read in a browser by
    `DecompressionStream('deflate')`), 6 (snap layouts).
