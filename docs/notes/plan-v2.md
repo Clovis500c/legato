@@ -307,6 +307,14 @@ copies, downloads for offline), their accounts, limits and paid plan.
       name", "Artist name"); no official SoundCloud export of likes or playlists found.)
 - [ ] 16. `M` Reach: the website in the app's 18 languages, README screenshots, winget and Scoop, Discussions (outward
       steps: the owner's word). Takes in Features › Low's Community line.
+      - [ ] The website's languages (2026-11-07, under way): English at the root, each other language its own root
+        layout at /<code>/ (html lang, hreflang alternates), its text a `Copy` in `site/components/i18n/<code>.ts`
+        added to `copies.ts`; the header lists the languages that have a page; the demo speaks the page's language
+        (`?lang=`); the headline fits its longest line. Decided alone: the privacy table stays English in every
+        language, the one reference for what leaves the PC (a note says so). Done: French. Left: es, de, it, pt, nl,
+        pl, sv, tr, ru, uk, hi, id, vi, ja, ko, zh (the app's own words for its settings: `ui/src/shared/i18n/locales`),
+        then CONTRIBUTING (a copy line changed in English changes in each language).
+      - [ ] winget and Scoop manifests prepared, not submitted; README screenshots. Not started.
 - [ ] 17. `L` Listening rooms over the internet, no server of ours: sealed control messages through a public relay (the
       owner's call), or the LAN. Takes in "Listen together on the local network".
       - [x] The local network half (2026-11-06, docs/rooms.md): one device leads a room, up to 8 follow, each playing
@@ -1359,6 +1367,17 @@ Most useful first; the tag is the effort.
         back; the sung line under the picture. Settings › General › Storage: do the sizes look right, does Clear on
         Lyrics and song analyses and on Diagnostics log free them (how long on your library?), is WebView2's size
         there? The radial look, and vinyl covers, on a YouTube upload with a 16:9 picture: round, the ring around it.
+      - The 2026-11-07 work (the night's Beta: Against Liner 7, 9, 10 and the lyrics on the backdrop; then the
+        autonomous run's local commits, not pushed yet: 13, 14, the website). Stats › Recap's last card, "My music
+        profile": its numbers, top artists and playlists right, the saved picture. An import with doubtful matches: its
+        end lists them, the videos side by side; a pick sticks, Approve all keeps the rest. Next 10 s into a YouTube
+        song: quicker than before? (Copy diagnostics: the "time to sound" lines.) Now Playing's lyrics readable on a
+        light cover? A big playlist's import (yours to run): the lists there at once, a song not looked up yet found as
+        it comes up to play, the import screen's count going down; does YouTube refuse sooner than before? A song from
+        your Navidrome or Jellyfin that has lyrics: the server's own first; the lyrics' source line › Other lyrics: the
+        choices with their %, a pick kept after a restart and after the caches are cleared, Let Legato choose. The
+        website once deployed: the story on your phone in the phone's layout; /legato/fr/ in French, the header's
+        language picker.
 
 ## Waiting on the user (outside the code)
 

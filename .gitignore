@@ -8,6 +8,7 @@ dist
 /src-tauri/third-party-licenses.html
 /site/.next
 /site/next-env.d.ts
+/site/tsconfig.tsbuildinfo
 /site/public/third-party-licenses.txt
 /site/public/demo
 /graphify-out

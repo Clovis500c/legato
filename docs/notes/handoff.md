@@ -2,96 +2,60 @@
 
 Where the work stands, for a session or an account with no history here. Read this first, then `CLAUDE.md` (rules, map
 of the code), then only the parts of [plan-v2.md](plan-v2.md) you need (open work, by section). Rewrite this file when a
-branch, a release or the next step changes. Its older versions (the run logs of 2026-10-31 to 2026-11-05) are in git:
+branch, a release or the next step changes. Its older versions (the run logs of 2026-10-31 to 2026-11-06) are in git:
 `git log -p -- docs/notes/handoff.md`; each commit message says what it did and what wasn't tried for real.
 
 Written 2026-11-05, late evening, after a clean-up (the owner's ask: another account with none of this context should
-be able to take the project over). Updated 2026-11-06, evening, from the owner's other PC (› On the other PC).
+be able to take the project over). Updated 2026-11-06, evening, from the owner's other PC (› On the other PC), and
+2026-11-07, morning: an autonomous run, paused at the 5-hour limit (› Autonomous run of 2026-11-07).
 
 ## Where things stand
 
 - **Released:** Stable is **1.1.681** (`0c3561a`, 2026-11-05): the Windows installer, `latest.json` and the Android APK
-  (`Legato_1.1.681_android-arm64.apk`). Beta: the autonomous run's push of 2026-11-06 (about 17:30, Paris) builds the
-  next one, an auto version above 1.1.681, with everything below (U1, U2, rooms, servers, the phone fixes, line 2):
-  1.1.742. Then the owner's word on the other PC (2026-11-06, evening, « Pousse une Beta »): the phone-1 review's two
-  fixes (Back, a YouTube song without internet): 1.1.745, for their phone. Then, on their word again (« Pousse une
-  Beta »): Against Liner 3 to 5 and the round covers (below): 1.1.751. Then their PC tries' fixes (plan-v2 › From the
-  owner's tries on the PC): the animated playing mark, Music App removed by the next update (its key was under
-  `Software\musicapp`), the list's click and sideways scrollbar; pushed as a Beta on their word.
-  Then, on their word again (2026-11-07, night): Against Liner 7 (the recap's profile card), 8 (there already), 9
-  (doubtful matches checked at an import's end), 10 (Next starts faster: 857 to 709 ms median, measured in pnpm dev),
-  and Now Playing's lyrics on the backdrop, lit by their distance from the sung line; pushed as a Beta.
-- **master** = **platforms**, both pushed on 2026-11-06 (the owner's word: past 95 % of the 5-hour window, push it all,
-  they go on from another PC). The website, https://clovis500c.github.io/legato/, is deployed from master. Nothing
-  half done, no stash, no other branch or worktree. On the other PC (2026-11-06, evening): master pulled to `e27c486`,
-  `platforms` made from it, the phone-1 review committed on it (below), then both pushed again (master = platforms).
-- **Untracked:** `docs/notes/report-*.md`, the owner's reports in French (what each autonomous run did, what to try).
-  Never commit them; read them for context.
+  (`Legato_1.1.681_android-arm64.apk`). Betas since, each on the owner's word: 1.1.742 (the 2026-11-06 run: U1, U2,
+  rooms, servers, the phone fixes, line 2), 1.1.745 (the phone-1 review: Back, a YouTube song without internet),
+  1.1.751 (Against Liner 3 to 5, the round covers), then their PC tries' fixes (the animated playing mark, Music App
+  removed by the next update, the list's click and sideways scrollbar), then (2026-11-07, night) Against Liner 7 (the
+  recap's profile card), 8 (there already), 9 (doubtful matches checked at an import's end), 10 (Next starts faster:
+  857 to 709 ms median, measured in pnpm dev) and Now Playing's lyrics on the backdrop.
+- **GitHub's master** = that last Beta (`c4f5236`). **platforms** is ahead of it by the 2026-11-07 run's local commits
+  (`2aa7c26` to the docs commit after `2301a4a`), never pushed: only on the owner's word. The local `master` ref lags
+  (pushes go `platforms:master`): `git log origin/master..platforms` shows what isn't on GitHub. The website,
+  https://clovis500c.github.io/legato/, is deployed from master: the phone story and the French page aren't on it yet.
+  No stash, no other branch or worktree on this PC.
+- **Untracked:** `docs/notes/report-*.md`, the owner's reports in French (what each autonomous run did, what to try),
+  and the old transcript `2026-10-30-001238-…txt` at the root. Never commit them; read the reports for context.
 - **Never tried for real** (built and unit-tested, seen in the demo or on the emulator only): plan-v2 › Check live in
-  the real app (25 lines). The owner tries them; what they find comes first.
+  the real app. The owner tries them; what they find comes first.
 
-## Autonomous run of 2026-11-05 (stopped 2026-11-06 at the push)
+## Autonomous run of 2026-11-07 (paused at the 5-hour limit)
 
-The owner's ask (2026-11-05, late evening): the whole Against Liner list (plan-v2), hardest first, with the interface
-on top (U1 the phone's, U2 glow and simplicity). They're away, reachable only through Remote Control on their phone:
-never a question, never a wait. They asked for workflows ("max ultracode"), within CLAUDE.md's rule: one agent at a
-time, effort high.
+The owner's ask (2026-11-07, about 05:05): go on through plan-v2's open lines alone, hardest first, managing the
+limits; they can't answer, so no question: a choice that's the project's is "Decided alone (date)" in its plan line,
+easy to undo. Inline (no workflow or subagent: `CLAUDE.md`'s rule), one tested local commit per step on `platforms`,
+never pushed.
 
-- One workflow per line, two agents one after the other: a builder (tested steps, a local commit each, the plan line
-  ticked), then a reviewer that tries to break those commits and fixes what it finds. The main loop checks the tree and
-  `get_usage` between lines: no new workflow above about 40 % of the 5-hour window (the owner's word on 2026-11-06,
-  « c'est que 40 % », after a 4-hour wait at 36 to 40 %; was 30 %), no new line from 90 % of the week, the end by 95 %.
-- Order: U1, U2 (right after U1: same pages), 17 listening rooms (the local network; a public relay is the owner's
-  call), personal servers (Features › High: Jellyfin, Navidrome / Subsonic, Plex), 18 Linux, 19 macOS, 16 reach,
-  14 lyrics sources, 13 imports in seconds, 15 SoundCloud sets and likes (its search needs the site's client id against
-  its terms: the owner's call), the explicit badge and filter (Features' "Hide explicit songs"), 12, 11, 10, 9, 8, 7, 6,
-  5, 4, 3, 2.
-- The owner's word (2026-11-06, about 16:10, this session only): when they say « envoie tout », commit everything at
-  once and push to master (a Beta release); and if the 5-hour window passes 95 %, push everything to master yourself:
-  they'll go on from another PC. How: the tree committed (never the untracked reports), `pnpm check` green if there's
-  time, the last commit's first line without `[skip release]` (else no Beta), `git push origin platforms:master` (a
-  fast-forward since f425336 merged the two README commits another session had pushed), then `git push origin
-  platforms`.
-- A cron wake-up (session only, `13,43 * * * *`, id `340feeaa`) resumed after a 5-hour limit and checked the 95 %;
-  deleted at the push. A new run starts its own.
-- The script (on that PC only; another writes its own of the same shape): `~/.claude/projects/C--dev-music-app/8c8ab02b-4287-45ba-a586-6f45a2aaceeb/workflows/scripts/legato-line-wf_3695f954-2fd.js`
-  (args: key, base = HEAD before the line, title, spec, reviewFocus).
-- Progress: U1 done (2e7edc2 to 901b8e6, about 307 k agent tokens, 52 % of a 5-hour window; the review fixed an 8 px
-  sideways scroll). Another session of the owner's ("Logo redimensionné 1280x640", Sonnet) committed README and GitHub
-  files on `platforms` meanwhile (76213de, 2cfc86a): kept; line 16 builds on them. U2 done (3e940b6 to 19a8fbc, about
-  476 k agent tokens: glow setting, calmer PC surfaces; `docs/design.md` › Glow, › Simplicity on the PC; the review put
-  the glow classes under Tailwind's shadows). 17 listening rooms, the local network half, built (d35c399 to the
-  docs commit after 71ad058: rules, wire, shell, interface, `docs/rooms.md`; the internet half in plan-v2 › Waiting on
-  the user); the review (9906ea9, 563f12a) limited code guesses with a growing wait, ended a gone room's tasks, made a
-  listener notice a quiet host, fixed Catch up and the song's end, one search per song. About 389 k agent tokens, about
-  50 % of a window, 7 % of the week. Personal servers part 1 (Subsonic-compatible: Navidrome, Airsonic, Gonic, Ampache;
-  native HTTP playback by range requests): 5cf9d21 to 936f195, reviewed in 0ee4a2c to daafc64 (the 5-hour limit cut
-  the first review; resumed from the run's cache): covers of an address as typed, no password in an address, a partial
-  read drops no song, plain sync files carry no server, no worker left after Stop. About 700 k agent tokens, 10 % of
-  the week. Part 2 (Jellyfin, Plex by PIN, one `Conn` for the three kinds): 505e0fb to 7355c7f, untried on a real
-  server; the review kept Plex's token off strange addresses, full reads, no relay for good (about 589 k agent tokens,
-  6 % of the week). The owner's tries on 1.1.681 (2026-11-06, 15:56, their phone), fixed inline: Android's Back (fe067d7,
-  its Kotlin compiles), no floating video on the phone (9e3d958), our words over the embed's error page (6c70435).
-  Then line 2 inline (the artist's About text). At about 92 % of the 5-hour window, all of it pushed (see Where things
-  stand) and the cron deleted: nothing runs on that PC any more.
-  The phone-1 line (2026-11-06, evening, the other PC, inline: no workflow asked, CLAUDE.md's rule): the three phone
-  fixes reviewed. Back never reached the page (Tauri's `AppPlugin` callback, asked first, and Android 15's key call
-  `onBackPressed()` straight): fixed in `MainActivity.kt`; the lists' i box joins the layers. The parked video kept.
-  The veil kept, but a silent embed was taken for a refused video (blocked for good, the queue skipped 12 s in): now
-  waited on until it answers. The phone's rules in `docs/design.md` › Phone (the video's place, Back). Left of it:
-  the owner's tries of that Beta's APK on their phone (plan-v2 › Check live, its last line: GitHub's build is the
-  first to compile the Kotlin line); an emulator run, not possible on the other PC yet (› On the other PC).
-  Then, the same evening and inline, the owner's asks one by one: Against Liner 3 (Discord: song and artist, the
-  artist's picture, YouTube Music asked sparingly, `searchpace::Sparse`), 4 (picture in picture on minimize, the sung
-  line in it), 5 (Settings › General › Storage), the round covers (the radial look and vinyl covers on any art), and
-  plan-v2 › Website's line for the story on a phone. Each in plan-v2 with what wasn't tried; Check live has them.
-  Next: a normal session follows "How to continue" (smallest first: Against Liner 6, snap layouts); an autonomous
-  run goes on with 18, and on down the order. A one-shot CronCreate (session only, id `74088f2b`, 2026-11-07 06:07)
-  resumes line 6 after the 5-hour reset, as the owner asked. Also seen on the owner's PC, outside Legato: a startup
-  entry "Display Calibration" running `javaw -jar` on a .DLL in `AppData\Local\Microsoft\GameDVR` (looks like malware,
-  told them; untouched).
-- The end: a report in French (`docs/notes/report-2026-11-06.md`, untracked), this section folded into the rest of
-  this file, the cron deleted, the report sent to the owner (SendUserFile, proactive).
+- Pacing: limits first at each resume (the 5-hour window at 80 % or more: wait for its reset; the week at 90 %: the run
+  ends, about 10 % kept for the owner). After each commit, from 85 % of the window: stop cleanly (nothing red
+  committed, plan-v2 ticked, this file), then a one-shot CronCreate (session only) at the reset + 7 min with the same
+  prompt (in this session's transcript; another session writes its own of the same shape).
+- The order given: 18 Linux (only if it builds here), 19 macOS, the website's phone story, Against Liner 13, 14, 15,
+  16's local parts, 12, 11, 6, then the rest of the plan (milestone 3 Platforms, Features › High, then Medium), hardest
+  first.
+- Done: 18 and 19 not here (no WSL on this PC, installing it is a system change, the owner's; macOS needs a Mac or CI;
+  noted on their lines). The website's story on a phone (`2aa7c26`). 13: playlists there at once, each song looked up
+  as it comes up to play (`031352e`). 14: a music server's own lyrics, the lyrics picker with a match % (`1f4ebf9`).
+  15 set aside: SoundCloud's API terms cover its widget's list (`ec9ff17`; its line says what's possible instead).
+  16: the website in the app's languages, the structure and French (`2301a4a`).
+- Next, in this order: 16's other languages (es, de, it, pt-BR, nl, pl, sv, tr, ru, uk, hi, id, vi, ja, ko, zh-Hans:
+  each a `Copy` in `site/components/i18n/<code>.ts` like `fr.ts`, added to `copies.ts`; the app's own words for its
+  settings from `ui/src/shared/i18n/locales`; the header's links fit from `xl`, the headline's `fit()` checked;
+  `npx next build` in `site/`), then CONTRIBUTING (a copy line changed in English changes in each language), the winget
+  and Scoop manifests (prepared, not submitted), the README's screenshots (the site demo's `?shot=`); then 12, 11, 6
+  and the rest.
+- Usage at the pause (2026-11-07, about 07:50, Paris): the 5-hour window 88 %, the week 81 %: about one more window
+  before 90 % of the week.
+- Not tried for real: plan-v2 › Check live, its last item (the 2026-11-07 work).
 
 ## How to continue
 
@@ -99,9 +63,10 @@ time, effort high.
    or ask what they want. Their standing rules are in `CLAUDE.md` › Working with the owner; read them before anything
    else: no push without their word, no subagents or workflows unless they ask, real accounts are theirs, a Google
    refusal is never routed around.
-2. If they only say "carry on": fixes from their tries first (plan-v2 › Check live), then plan-v2 › Against Liner (the
-   owner's ask 2026-11-05: lead Liner on every point; `ideas/liner.md`), smallest first, then plan-v2's other open
-   lines that need no account, smallest first:
+2. If they only say "carry on": fixes from their tries first (plan-v2 › Check live), then the 2026-11-07 run's next
+   steps (above), then plan-v2's other open lines that need no account, smallest first:
+   - Against Liner: 6 (snap layouts), 11 (share links), 12 (a moving cover background), 16's other parts; 15 set aside,
+     18 and 19 need a Linux machine and a Mac (or CI).
    - Features, sorted › High: same loudness across sources (needs an ear), the accessibility pass, personal servers
      (Subsonic, Jellyfin and Plex built 2026-11-06, untried on a real server; their own search, Plex JWT and transcoder
      as plan lines), macOS and Linux builds.
@@ -121,22 +86,26 @@ time, effort high.
 
 ## If the owner asks for an autonomous run
 
-They did three (2026-10-31, 11-02, 11-03 to 11-05; their reports are the untracked `report-*.md`). The rules that
-worked, on top of `CLAUDE.md`:
+They did five (2026-10-31, 11-02, 11-03 to 11-05, 11-05 to 11-06, 11-07; their reports are the untracked
+`report-*.md`). The rules that worked, on top of `CLAUDE.md`:
 
 - Never a question, never a wait. A choice that's the project's: the option easiest to undo, written in its plan line
   ("decided alone (date): what, why"). What only the owner can do goes to plan-v2 › Waiting on the user; then the next
   step. A line that needs their eye or taste: built behind a setting that's off, so they judge it later.
 - Each step as in "How to continue" above; no push, PR, merge, release or website deploy.
 - Usage: `get_usage` after each step. From 90 % of the week no new step: finish the one in hand, then the end (95 % at
-  the latest). After a 5-hour limit, resume (a CronCreate wake-up every 20 minutes; it ends with the session).
+  the latest). After a 5-hour limit, resume: a one-shot CronCreate at the reset + 7 min (it ends with the session).
+- With workflows (only when they ask, as on 2026-11-05): one per plan line, a builder then a reviewer that tries to
+  break its commits; no new one above about 40 % of the 5-hour window (their word, 2026-11-06). The script's shape is
+  in this file's version of 2026-11-06 (`git log -p -- docs/notes/handoff.md`).
 - The end: a report in French (`docs/notes/report-<date>.md`, untracked: done, to try, waiting for the owner), this file
   rewritten, the wake-up deleted, the report sent to the owner.
 
 ## Waiting on the owner
 
-- Their tries of the Betas: plan-v2 › Check live in the real app, its last block first (2026-11-05: search, picture in
-  picture, recap, genres, bookmarks, alarm, the phone's updates…).
+- Their tries of the Betas: plan-v2 › Check live in the real app, its last items first.
+- Their word to push the 2026-11-07 run's commits (a Beta, and the website with its phone story and French page).
+- 18 and 19: a Linux machine or their word for WSL on this PC; a Mac or CI for macOS.
 - The phone: 1.1.681's APK installed by hand once (older APKs have no updater); later APKs come through the app
   (Settings › About). Background play behind other apps, the notification's controls and the phone ↔ PC sync were only
   tried on the emulator.
@@ -145,8 +114,10 @@ worked, on top of `CLAUDE.md`:
 - A backup of the signing keys (below).
 - Dependabot alert #6 (medium, dev only): `minimatch` 10.2.6 under ESLint and typescript-eslint, fixed in 11.0.1. The
   owner said later (2026-11-05).
-- plan-v2 › Waiting on the user (9 lines: Discord's app name, a trademark search, Figma, SponsorBlock's default…) and
-  › Not done yet.
+- Outside Legato, seen on the owner's PC (2026-11-06): a startup entry "Display Calibration" running `javaw -jar` on a
+  .DLL in `AppData\Local\Microsoft\GameDVR`. Looks like malware; told them, untouched.
+- plan-v2 › Waiting on the user (Discord's app name, a trademark search, Figma, SponsorBlock's default…) and › Not done
+  yet.
 
 ## Keys, accounts and secrets (never in git)
 
@@ -169,7 +140,8 @@ GitHub's secrets can't be read back: the files on this PC are the only copies. D
 - Android tools in `C:\dev\android` (dot-source `env.ps1`; `docs/development.md` › Tools), emulator AVD `legato36`,
   headless: `emulator -avd legato36 -no-window -gpu swiftshader_indirect -no-snapshot -no-audio -no-boot-anim`. Stop it
   after a test; its microphone stays off. Never answer Windows' firewall or any system prompt.
-- `graphify` in `~/.local/bin` (the code graph, `CLAUDE.md` › graphify). Without it, read the code.
+- `graphify` in `~/.local/bin` (the code graph, `CLAUDE.md` › graphify; `py -m graphify update .` when the command
+  isn't found). Without it, read the code. No WSL, no `python3` (`py`).
 - `pnpm notices` (cargo-about) once on a new PC: a release build stops without `src-tauri/third-party-licenses.html`.
 - Claude Code's own notes for this folder (`~/.claude/projects/C--dev-music-app/memory/`) hold nothing the repo lacks.
   The desktop app's scheduled task `legato-autopilot` was a one-time run (2026-11-04), now disabled.
@@ -187,8 +159,6 @@ signed in as `Clovis500c`; `pnpm check` green there. What it lacks:
 - No signing keys (no `~/.tauri/music-app.key`, no Android keystore): releases and signed APKs stay on the first PC
   (or GitHub's Actions).
 - No graphify (read the code) and none of the owner's `report-*.md`.
-- Untracked at the root: `2026-10-30-001238-this-session-is-being-continued-from-a-previous-c.txt`, an old transcript:
-  never commit it.
 - Old local branches and worktrees from October, left as they were (removing them is the owner's call): `v2`,
   `claude/mixes-algo` and `claude/mystifying-greider-d4618d` merged; `backup/*` and the translation branches
   (`claude/cranky-bartik-ed5090`, `claude/gallant-napier-5b5e7f`, `claude/nervous-engelbart-588c97`) look unmerged
@@ -209,12 +179,15 @@ signed in as `Clovis500c`; `pnpm check` green there. What it lacks:
   Android (CSP): covers go through an `<img>` and a canvas (`phoneCover`).
 - Google limits this PC after about 40 anonymous searches (a 5-minute block, then one every 15 s): expect it in any
   search test, and never route around it.
+- The website: `app/[lang]`'s static export needs at least one language besides English in `COPIES`; `npx tsc -p site`
+  shows stale `.next/types` errors until `npx next build` rewrites them. Its dev server can keep a stale error after
+  routes move: restart it.
 
 ## Branches
 
 | Branch | State |
 |---|---|
-| `platforms` | Work goes here, local only: master plus this clean-up. |
+| `platforms` | Work goes here: GitHub's master plus the 2026-11-07 run's local commits. |
 | `master` | Every push is a Beta (and a website deploy when `site/` changed): only on the owner's word. |
 
 The website branch (`claude/site-scroll-3d-aff654`) and its 10 GB worktree were removed on 2026-11-05: merged and
@@ -231,3 +204,7 @@ published since 2026-11-01. A fresh clone has `master` only; `git branch -vv` sa
   songs, background play; the visualizer's v2 looks; recap, genres, bookmarks, alarm, picture in picture, search).
 - 2026-11-05 evening: the phone's updates in the app; release notes in full (Added / Fixed / Performance improved); a
   new bench on the website; Stable 1.1.681; this clean-up.
+- 2026-11-05 to 11-06: autonomous run with workflows (U1 the phone's interface, U2 glow and simplicity, listening rooms
+  on the local network, personal servers), pushed at 92 % of the window; then, on the other PC, the phone-1 review,
+  Against Liner 3 to 5, the round covers; Betas 1.1.742 to 1.1.751.
+- 2026-11-07: Against Liner 7 to 10 and the lyrics' look, a Beta (night); an autonomous run (morning, › above).
