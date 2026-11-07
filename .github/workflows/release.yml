@@ -1,12 +1,12 @@
 name: release
 
-# Every push to master that passes `check` is released as a BETA: signed Windows installer + latest.json, then the signed
-# Android APK (last step), on a GitHub prerelease. Version = MAJOR.MINOR from tauri.conf.json + patch = commits on master
-# (scripts/release.mjs): 1.1.0 in the file, 1.1.<commits> released. "[skip release]" in the commit's first line: no
-# release for that push. Run by hand: Actions › release › Run workflow.
+# Every push to master that passes `check` is released as a BETA: signed Windows installer + latest.json, and beside it
+# the signed Android APK (its own job, attached to the same prerelease once both are done). Version = MAJOR.MINOR from
+# tauri.conf.json + patch = commits on master (scripts/release.mjs): 1.1.0 in the file, 1.1.<commits> released.
+# "[skip release]" in the commit's first line: no release for that push. Run by hand: Actions › release › Run workflow.
 # Two channels (Settings › General › Updates), two files (src-tauri/src/update.rs):
 # - Beta reads releases/download/beta/latest.json: the rolling `beta` release, whose latest.json is copied here from
-#   each new release (last step).
+#   each new release (the Windows job's last step).
 # - Stable reads releases/latest/download/latest.json (src-tauri/tauri.conf.json › plugins.updater, the URL every installed
 #   version has always read). GitHub's "latest" skips prereleases, so it moves only when the `promote` workflow turns a
 #   beta into a normal release. Nothing here may touch it.
@@ -50,8 +50,10 @@ jobs:
     needs: gate
     if: needs.gate.outputs.go == 'true'
     runs-on: windows-latest
-    # Windows installer, then the APK.
-    timeout-minutes: 90
+    # Windows installer and Beta's pointer; the APK builds at the same time (`android`).
+    timeout-minutes: 60
+    outputs:
+      version: ${{ steps.release.outputs.version }}
     env:
       # The commit `check` passed on (not master's tip if another push landed since).
       SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
@@ -83,9 +85,6 @@ jobs:
           cache: pnpm
 
       - uses: dtolnay/rust-toolchain@stable
-        with:
-          # The APK's (last step).
-          targets: aarch64-linux-android
 
       - uses: Swatinem/rust-cache@v2
 
@@ -149,15 +148,51 @@ jobs:
           fi
           gh release upload beta "$dir/latest.json" --clobber
 
-      # Android: the signed APK, one more file on the versioned release. After the Beta pointer, so a failure here never
-      # holds the Windows Beta back. Keystore: repository secrets ANDROID_KEYSTORE (the .jks in base64) and
-      # ANDROID_KEYSTORE_PASSWORD (store and key), alias `legato`. SDK and NDK: the runner's own.
+  # Android: the signed APK, built while the Windows job runs (it used to wait 14 min for it), kept as an artifact until
+  # the versioned release exists (`apk`). A failure here never holds the Windows Beta back. Same commit, same version
+  # (scripts/release.mjs on the same history). Keystore: repository secrets ANDROID_KEYSTORE (the .jks in base64) and
+  # ANDROID_KEYSTORE_PASSWORD (store and key), alias `legato`. SDK and NDK: the runner's own.
+  android:
+    needs: gate
+    if: needs.gate.outputs.go == 'true'
+    runs-on: windows-latest
+    timeout-minutes: 60
+    env:
+      SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.SHA }}
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-linux-android
+
+      # Its own cache (rust-cache keys by job): Android's target and crates.
+      - uses: Swatinem/rust-cache@v2
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Version
+        id: release
+        run: node scripts/release.mjs
+
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 17
 
-      # The APK's own notices (next step): installed again when the Windows ones came from the cache.
+      # The APK's own notices (next step).
       - uses: taiki-e/install-action@v2
         with:
           tool: cargo-about@0.9.2
@@ -165,8 +200,6 @@ jobs:
       - name: Android APK
         shell: bash
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GH_REPO: ${{ github.repository }}
           VERSION: ${{ steps.release.outputs.version }}
           KEYSTORE: ${{ secrets.ANDROID_KEYSTORE }}
           KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
@@ -184,9 +217,32 @@ jobs:
           tmp="${RUNNER_TEMP//\\//}"
           printf '%s' "$KEYSTORE" | base64 -d > "$tmp/legato-release.jks"
           printf 'storeFile=%s\npassword=%s\nkeyAlias=legato\n' "$tmp/legato-release.jks" "$KEYSTORE_PASSWORD" > src-tauri/gen/android/keystore.properties
-          # Android's crates (rustls, ring, Mozilla's roots) instead of Windows': the installer above already has its own.
+          # Android's crates (rustls, ring, Mozilla's roots) instead of Windows': the installer has its own.
           node scripts/notices.mjs aarch64-linux-android
           pnpm tauri android build --target aarch64 --apk
-          apk="$tmp/Legato_${VERSION}_android-arm64.apk"
-          cp src-tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release.apk "$apk"
-          gh release upload "v$VERSION" "$apk" --clobber
+          mkdir -p "$tmp/apk"
+          cp src-tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release.apk "$tmp/apk/Legato_${VERSION}_android-arm64.apk"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: apk
+          path: ${{ runner.temp }}/apk
+          if-no-files-found: error
+          retention-days: 3
+
+  # The APK onto the versioned release, once the Windows job has made it.
+  apk:
+    needs: [release, android]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: apk
+          path: apk
+
+      - name: Attach the APK
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          VERSION: ${{ needs.release.outputs.version }}
+        run: gh release upload "v$VERSION" apk/*.apk --clobber

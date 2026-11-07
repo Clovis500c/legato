@@ -1160,6 +1160,11 @@ Most useful first; the tag is the effort.
       result), so a pass takes minutes, not a session.
 - [ ] `S` Faster CI: run the macOS job only on pushes that touch Rust or `src-tauri`, `cargo nextest`, `sccache`; Linux
       job stays crates only.
+- [x] `S` Faster Betas (2026-11-07, the owner's yes): the APK builds in its own job (`release.yml` › `android`) beside
+      the Windows installer instead of after it (13.5 min, then 17: 32 min for 1.1.764), kept as an artifact, attached
+      by a small job (`apk`) once both are done; a failed APK still never holds the Windows Beta back. Not tried: runs
+      at the next push; the Android job's first run starts with an empty Rust cache (rust-cache keys by job). The file
+      checked by reading only (no YAML parser on this PC).
 - [ ] `S` Trim CLAUDE.md to rules + pointers (structure details move to `docs/architecture.md`): cheaper sessions.
 - [x] `S` Project skills for Claude Code: "release check", "add a setting" (schema, DEFAULTS_VERSION, search index, i18n),
       "add a connector" (module, mockito tests, privacy row): the repeated recipes written once.
