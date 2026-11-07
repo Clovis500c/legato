@@ -319,7 +319,13 @@ copies, downloads for offline), their accounts, limits and paid plan.
         sideways scroll (the download button kept on one line: Japanese broke it at 375 px). CONTRIBUTING says how
         to keep them alike. Not done: a native speaker's read of any of them; the pages seen only in the dev
         server, not on GitHub Pages (nothing pushed).
-      - [ ] winget and Scoop manifests prepared, not submitted; README screenshots. Not started.
+      - [x] winget manifests prepared, not submitted (2026-11-07): `packaging/winget/Clovis500c.Legato/1.1.681`,
+        Stable's NSIS installer with the SHA-256 GitHub gives its asset, `winget validate` passes; `packaging/README.md`
+        says how to submit and update them (the owner's step). Not tried: `winget install --manifest` (would install
+        over the app on this PC). Decided alone: no Scoop manifest, Legato installs and updates itself through its
+        NSIS installer and a Scoop copy would leave a second install behind (back with a portable build, updater off).
+      - [x] README screenshots (2026-11-07): search, Now Playing and Karaoke under "What you get", light and dark, from
+        the site's stills. Not seen on GitHub (nothing pushed).
 - [ ] 17. `L` Listening rooms over the internet, no server of ours: sealed control messages through a public relay (the
       owner's call), or the LAN. Takes in "Listen together on the local network".
       - [x] The local network half (2026-11-06, docs/rooms.md): one device leads a room, up to 8 follow, each playing

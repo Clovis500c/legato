@@ -41,6 +41,21 @@ Run anyway**. Updates are signed and checked by the app before it installs them.
 - **Sync Mode**: your library on all your PCs through a OneDrive folder or your network, no server.
 - **Light on the PC**, with themes, 18 languages, a tray mode, picture-in-picture and a phone remote.
 
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="site/public/shots/search-dark.webp">
+    <img width="32%" alt="Search results for one word: a top result, songs and videos, each with where it comes from" src="site/public/shots/search-light.webp">
+  </picture>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="site/public/shots/player-dark.webp">
+    <img width="32%" alt="Now Playing: a big cover, the song, its lyrics and the one that plays next" src="site/public/shots/player-light.webp">
+  </picture>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="site/public/shots/karaoke-dark.webp">
+    <img width="32%" alt="Karaoke mode: big lyrics on a blurred cover, the line playing filling up word by word" src="site/public/shots/karaoke-light.webp">
+  </picture>
+</p>
+
 What it does in full, how each service plays, what leaves your PC and the FAQ: on the
 [website](https://clovis500c.github.io/legato/) (its source is `site/`).
 
