@@ -16,8 +16,11 @@ const Brand = ({ path }: { path: string }) => (
 )
 
 
-/** The headline's size for its longest line (English's are ~17 letters, a CJK one about twice as wide): longer shrinks it a bit more than in proportion, the letters' widths varying. */
-const fit = (lines: string[]) => Math.min(1, (17 / Math.max(...lines.map((l) => [...l].reduce((n, ch) => n + (ch.codePointAt(0)! >= 0x2e80 ? 1.8 : 1), 0)))) ** 1.5)
+/** A letter's width in Roboto Black, roughly, an "n" being 1 (measured within 3 %; a CJK glyph is a full em). */
+const glyph = (ch: string) => (" .,:;!|’'ilIjtfr".includes(ch) ? 0.55 : 'mwMW'.includes(ch) ? 1.5 : ch.codePointAt(0)! >= 0x2e80 ? 2 : ch !== ch.toLowerCase() ? 1.2 : 1)
+
+/** The headline's size: English's, smaller when a language's longest line is wider than 13.6 "n"s (English's widest is 14, wherever it fits). */
+const fit = (lines: string[]) => Math.min(1, 13.6 / Math.max(...lines.map((l) => [...l].reduce((n, ch) => n + glyph(ch), 0))))
 
 /** The mockup's hero: the headline is the picture, line by line. */
 export function Hero() {
