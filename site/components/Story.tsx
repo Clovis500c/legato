@@ -3,7 +3,9 @@
 import { AndroidLogo, ArrowRight, SpeakerHigh, WindowsLogo } from '@phosphor-icons/react'
 import { animate, motion, useMotionValue, useMotionValueEvent, useScroll, useSpring, useTransform, type MotionValue } from 'motion/react'
 import { useEffect, useRef, useState, type ReactNode, type RefObject } from 'react'
-import { CHAPTERS, type Pose } from './content'
+import { CHAPTER_SCENES, linked, type Pose } from './content'
+import { useCopy } from './copy'
+import { rootOf } from './langs'
 import { Hero } from './Hero'
 import { useAndroid, useLatest } from './latest'
 import { EASE } from './motion'
@@ -23,12 +25,12 @@ const POCKET = '(width < 1000px) and (prefers-reduced-motion: no-preference)'
 const STACKED = 'mx-(--pad) block h-auto w-[calc(100%-2*var(--pad))] max-w-[880px] rounded-lg outline outline-line story:hidden max-[1000px]:mx-auto max-[1000px]:w-[min(300px,72vw)] max-[1000px]:rounded-[28px]'
 
 const HERO_POSE: Pose = { x: 0.3, y: 0.14, rx: 7, ry: -24, zoom: 0.92 }
-const STAGES: { scene: string; pose: Pose }[] = [{ scene: 'library', pose: HERO_POSE }, ...CHAPTERS]
+const STAGES: { scene: string; pose: Pose }[] = [{ scene: 'library', pose: HERO_POSE }, ...CHAPTER_SCENES]
 // The phone's poses: less tilt than the window's, always under the text ([rotateX, rotateY]). Its hero: tipped back, its top
 // under the headline.
 const TILT: Record<string, [number, number]> = { library: [5, -8], import: [3, 7], search: [4, -6], player: [2, 8], karaoke: [0, -4], visualizer: [0, 0], editor: [3, 6], themes: [0, -3] }
-const PHONE_POSES: Pose[] = [{ x: 0.03, y: 0, rx: 24, ry: -12, zoom: 1.1 }, ...CHAPTERS.map(({ scene }) => ({ x: 0, y: 0, rx: TILT[scene]?.[0] ?? 0, ry: TILT[scene]?.[1] ?? 0, zoom: 1 }))]
-const LAST = CHAPTERS.length
+const PHONE_POSES: Pose[] = [{ x: 0.03, y: 0, rx: 24, ry: -12, zoom: 1.1 }, ...CHAPTER_SCENES.map(({ scene }) => ({ x: 0, y: 0, rx: TILT[scene]?.[0] ?? 0, ry: TILT[scene]?.[1] ?? 0, zoom: 1 }))]
+const LAST = CHAPTER_SCENES.length
 // The last stage has no next one to scroll into: room for its screen to finish.
 const TAIL = 0.25
 const BLACK = STAGES.findIndex((s) => 'black' in s)
@@ -97,23 +99,25 @@ const fps = (ms: number) =>
 
 /** A chapter's picture in the window or the phone: before the demo, and instead of it when it fails. */
 function Still({ name, alt, phone, className = '' }: { name: string; alt: string; phone?: boolean; className?: string }) {
+  const root = rootOf(useCopy().lang)
   const [file, w, h] = phone ? [`${name}-phone`, PHONE.w, PHONE.h] : [name, APP.w, APP.h]
   return (
     <picture>
-      <source srcSet={`shots/${file}-dark.webp`} media="(prefers-color-scheme: dark)" />
-      <img src={`shots/${file}-light.webp`} width={w} height={h} alt={alt} className={className} />
+      <source srcSet={`${root}shots/${file}-dark.webp`} media="(prefers-color-scheme: dark)" />
+      <img src={`${root}shots/${file}-light.webp`} width={w} height={h} alt={alt} className={className} />
     </picture>
   )
 }
 
 /** A chapter's picture where chapters stack (animations off): the phone's screen under 1000 px, the window above. */
 function Stacked({ name, alt, lazy }: { name: string; alt: string; lazy?: boolean }) {
+  const root = rootOf(useCopy().lang)
   return (
     <picture>
-      <source media="(width < 1000px) and (prefers-color-scheme: dark)" srcSet={`shots/${name}-phone-dark.webp`} width={PHONE.w} height={PHONE.h} />
-      <source media="(width < 1000px)" srcSet={`shots/${name}-phone-light.webp`} width={PHONE.w} height={PHONE.h} />
-      <source media="(prefers-color-scheme: dark)" srcSet={`shots/${name}-dark.webp`} />
-      <img src={`shots/${name}-light.webp`} width={APP.w} height={APP.h} alt={alt} loading={lazy ? 'lazy' : undefined} className={STACKED} />
+      <source media="(width < 1000px) and (prefers-color-scheme: dark)" srcSet={`${root}shots/${name}-phone-dark.webp`} width={PHONE.w} height={PHONE.h} />
+      <source media="(width < 1000px)" srcSet={`${root}shots/${name}-phone-light.webp`} width={PHONE.w} height={PHONE.h} />
+      <source media="(prefers-color-scheme: dark)" srcSet={`${root}shots/${name}-dark.webp`} />
+      <img src={`${root}shots/${name}-light.webp`} width={APP.w} height={APP.h} alt={alt} loading={lazy ? 'lazy' : undefined} className={STACKED} />
     </picture>
   )
 }
@@ -124,6 +128,7 @@ function Stacked({ name, alt, lazy }: { name: string; alt: string; lazy?: boolea
  * runs under 20 frames a second once it has settled.
  */
 function Demo({ at, ready, live, phone, onReady, onLeave, onFail }: { at: MotionValue<number>; ready: boolean; live: boolean; phone?: boolean; onReady: () => void; onLeave: () => void; onFail?: () => void }) {
+  const c = useCopy()
   const frame = useRef<HTMLIFrameElement>(null)
   const [wanted, setWanted] = useState(false)
   const last = useRef('')
@@ -191,7 +196,7 @@ function Demo({ at, ready, live, phone, onReady, onLeave, onFail }: { at: Motion
   }, [live])
 
   if (!wanted) return null
-  return <iframe ref={frame} src="demo/index.html" title="Legato's interface" tabIndex={live ? 0 : -1} inert={!live} className={`absolute inset-0 size-full border-0 transition-opacity duration-300 ${live ? '' : 'pointer-events-none'} ${ready ? 'opacity-100' : 'opacity-0'}`} />
+  return <iframe ref={frame} src={`${rootOf(c.lang)}demo/index.html${c.lang === 'en' ? '' : `?lang=${c.lang.split('-')[0]}`}`} title={c.story.frame} tabIndex={live ? 0 : -1} inert={!live} className={`absolute inset-0 size-full border-0 transition-opacity duration-300 ${live ? '' : 'pointer-events-none'} ${ready ? 'opacity-100' : 'opacity-0'}`} />
 }
 
 /** The stage's size, read as it changes. */
@@ -316,17 +321,18 @@ function Segment({ i, at }: { i: number; at: MotionValue<number> }) {
 
 /** The page's own player bar: what's playing is the chapter, Up next the next one, the scrubber jumps between them. The phone's: the scrubber. */
 function ChapterBar({ at, taken, onBack }: { at: MotionValue<number>; taken: boolean; onBack: () => void }) {
+  const c = useCopy()
   const [now, setNow] = useState(1)
   useMotionValueEvent(at, 'change', (a) => setNow(Math.max(1, Math.round(Math.min(a, LAST)))))
   const opacity = useTransform(at, [0.3, 0.5], [0, 1])
-  const next = CHAPTERS[now]
+  const next = c.chapters[now]
   return (
     <motion.div style={{ opacity }} className="absolute inset-x-0 bottom-0 flex h-14 items-center gap-6 border-t border-line bg-bg px-(--pad) text-[13px] transition-colors duration-200 focus-within:opacity-100! pocket:h-11 pocket:gap-3">
       {taken ? (
         <>
-          <p className="min-w-0 flex-1 truncate text-ink-2 pocket:hidden">Legato's real interface, with invented songs and no sound.</p>
+          <p className="min-w-0 flex-1 truncate text-ink-2 pocket:hidden">{c.story.real}</p>
           <button onClick={onBack} className="inline-flex shrink-0 cursor-pointer items-center gap-2 rounded-full bg-ink px-4 py-2 font-medium text-on-ink pocket:mx-auto pocket:py-1.5">
-            Back to the page <kbd className="font-sans opacity-70 pocket:hidden">Esc</kbd>
+            {c.story.back} <kbd className="font-sans opacity-70 pocket:hidden">Esc</kbd>
           </button>
         </>
       ) : (
@@ -335,16 +341,16 @@ function ChapterBar({ at, taken, onBack }: { at: MotionValue<number>; taken: boo
             <span aria-hidden className="grid size-6 shrink-0 place-items-center rounded-md bg-accent text-on-accent">
               <SpeakerHigh size={14} weight="fill" />
             </span>
-            <span className="truncate">{CHAPTERS[now - 1].title}</span>
+            <span className="truncate">{c.chapters[now - 1].title}</span>
           </p>
-          <nav aria-label="Chapters" className="flex w-[min(34vw,460px)] gap-1 pocket:w-full">
-            {CHAPTERS.map(({ scene, title }, n) => (
+          <nav aria-label={c.story.chapters} className="flex w-[min(34vw,460px)] gap-1 pocket:w-full">
+            {CHAPTER_SCENES.map(({ scene }, n) => ({ scene, title: c.chapters[n].title, n })).map(({ scene, title, n }) => (
               <a key={scene} href={`#chapter-${scene}`} aria-label={title} title={title} aria-current={now === n + 1 ? 'step' : undefined} className="flex h-8 flex-1 items-center">
                 <Segment i={n + 1} at={at} />
               </a>
             ))}
           </nav>
-          <p className="min-w-0 flex-1 truncate text-right text-ink-2 pocket:hidden">{next && <>Up next: {next.title}</>}</p>
+          <p className="min-w-0 flex-1 truncate text-right text-ink-2 pocket:hidden">{next && c.story.upNext.replace('{title}', next.title)}</p>
         </>
       )}
     </motion.div>
@@ -366,34 +372,31 @@ function Actions({ ready, phone, onTake, button }: { ready: boolean; phone: bool
   const { href } = useLatest()
   const android = useAndroid()
   const device = useDevice()
+  const c = useCopy()
   const pill = 'inline-flex items-center gap-2 rounded-full px-6 py-3 text-[15px] font-medium'
   const get = ready ? 'inline-flex items-center gap-2 text-[15px] font-medium' : `${pill} bg-ink text-on-ink`
   return (
     <>
-      {ready && <p className="mt-4 text-[clamp(16px,1.3vw,18px)] leading-[1.45] text-ink-2 pocket:mt-2 pocket:text-[15px]">That {phone ? 'phone' : 'window'} is the real interface, with invented songs and no sound.</p>}
+      {ready && <p className="mt-4 text-[clamp(16px,1.3vw,18px)] leading-[1.45] text-ink-2 pocket:mt-2 pocket:text-[15px]">{phone ? c.story.phone : c.story.window}</p>}
       <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-3 pocket:mt-4">
         {ready && (
           <button ref={button} onClick={onTake} className={`${pill} cursor-pointer bg-ink text-on-ink pocket:px-5 pocket:py-2.5`}>
-            Try it here <ArrowRight size={16} />
+            {c.story.tryIt} <ArrowRight size={16} />
           </button>
         )}
         {device === 'android' ? (
           <a href={android.href} className={get}>
-            <AndroidLogo size={18} weight="fill" /> Get the Android app
+            <AndroidLogo size={18} weight="fill" /> {c.story.android}
           </a>
         ) : (
           <a href={href} className={get}>
-            <WindowsLogo size={18} weight="fill" /> Download for Windows
+            <WindowsLogo size={18} weight="fill" /> {c.hero.download}
           </a>
         )}
       </div>
       {device === 'iphone' && (
         <p className="mt-3 text-[13px] text-ink-3">
-          No iPhone app yet:{' '}
-          <a href="#faq" className="underline decoration-line underline-offset-4">
-            the FAQ says more
-          </a>
-          .
+          {linked(c.story.iphone, '#faq', 'underline decoration-line underline-offset-4')}
         </p>
       )}
     </>
@@ -402,6 +405,7 @@ function Actions({ ready, phone, onTake, button }: { ready: boolean; phone: bool
 
 /** The scroll story: the window stays on screen, each chapter turns it and shows a real screen. Native scroll, sticky stage. Under 1000 px, a phone. */
 export function Story() {
+  const c = useCopy()
   const section = useRef<HTMLElement>(null)
   const tryIt = useRef<HTMLButtonElement>(null)
   const mode = useMode()
@@ -450,7 +454,7 @@ export function Story() {
   const windowProps = { at, take, ready, live: taken, onReady: () => setReady(true), onLeave: back }
   return (
     <section ref={section} style={{ ['--stages' as string]: LAST + TAIL }} className="story:relative story:-mt-[78px] story:h-[calc(100svh+var(--stages)*130svh)]">
-      {mode && CHAPTERS.map(({ scene }, n) => <span key={scene} id={`chapter-${scene}`} style={{ top: `${(n + 1) * 130}svh` }} className="absolute" />)}
+      {mode && CHAPTER_SCENES.map(({ scene }, n) => <span key={scene} id={`chapter-${scene}`} style={{ top: `${(n + 1) * 130}svh` }} className="absolute" />)}
       <motion.div data-black={black || undefined} style={mode ? { perspective: mode === 'phone' ? 900 : 1800, zIndex } : undefined} className="text-ink story:sticky story:top-0 story:h-svh story:overflow-hidden">
         {mode && <motion.div aria-hidden style={{ opacity: night }} className="absolute inset-0 bg-[#131313]" />}
         {mode === 'pc' && <AppWindow {...windowProps} />}
@@ -467,9 +471,9 @@ export function Story() {
         )}
         <Panel i={0} at={at} take={take} mode={mode} tops={tops}>
           <Hero />
-          <Stacked name="library" alt={CHAPTERS[0].alt} />
+          <Stacked name="library" alt={c.chapters[0].alt} />
         </Panel>
-        {CHAPTERS.map(({ scene, title, text, alt, pose }, n) => (
+        {CHAPTER_SCENES.map(({ scene, pose }, n) => ({ scene, pose, ...c.chapters[n] })).map(({ scene, title, text, alt, pose }, n) => (
           <Panel key={scene} i={n + 1} at={at} take={take} mode={mode} tops={tops} right={pose.x < 0}>
             <div className="px-(--pad) py-10 pinned:p-0 pocket:pt-5 pocket:pb-0">
               <h2 className="text-[clamp(32px,3.9vw,56px)] leading-[1.07] font-black tracking-[-0.015em] pocket:text-[clamp(26px,7vw,40px)]">{title}</h2>

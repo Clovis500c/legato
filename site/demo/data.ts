@@ -213,7 +213,8 @@ const ANSWERS: Record<string, (args: Record<string, unknown>) => unknown> = {
   playlist_tracks: ({ id }) => inList(id as number),
   sources_status: () => [['spotify', { configured: true, connected: true }], ['youtube', { configured: true, connected: true }]],
   // The app's first window, a little less sidebar: titles read whole.
-  load_settings: () => ({ defaultsVersion: 9, welcomed: true, language: 'en', reopen: false, startView: 'songs', songSort: 'added-old', columns: ['album', 'sources', 'duration'], sidebarWidth: 240, theme: shot.get('theme') ?? 'system' }),
+  // The page's language (?lang=, from the site's other languages): the interface speaks it too.
+  load_settings: () => ({ defaultsVersion: 9, welcomed: true, language: shot.get('lang') ?? 'en', reopen: false, startView: 'songs', songSort: 'added-old', columns: ['album', 'sources', 'duration'], sidebarWidth: 240, theme: shot.get('theme') ?? 'system' }),
   load_session: () => ({ ids: TRACKS.map((t) => t.id), remote: [], index: OPENING, order: ORDER, added: ADDED, shuffle: false, repeat: 'off', positionMs: 84_000, via: 'local', volume: 0.8, paused: true }),
   update_status: () => ({ current: 'demo', lastCheck: null, lastUpdate: null, justUpdated: true, state: 'idle' }),
   player: ({ cmd }) => player(cmd as PlayerCommand),
