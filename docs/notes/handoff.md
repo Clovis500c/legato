@@ -2,13 +2,15 @@
 
 Where the work stands, for a session with no history here. Read this first, then only the parts of
 [plan-v2.md](plan-v2.md) you need. Rewrite it, short, when a branch, a release or the next step changes; its older
-versions are in git (`git log -p -- docs/notes/handoff.md`). Updated 2026-11-07, evening: the notes compacted (done
-lines out of plan-v2, private details out of the repo).
+versions are in git (`git log -p -- docs/notes/handoff.md`). Updated 2026-11-08: Beta 1.1.801 out, three of the
+owner's asks done on `platforms`, not pushed.
 
 ## Where things stand
-- **Stable** 1.1.681 (2026-11-05): Windows installer, `latest.json`, the Android APK. **Beta** 1.1.795 (2026-11-07):
-  the security bots' PRs merged and fitted. GitHub's master = `1119dcd`.
-- **platforms** = master + local docs commits (these notes, winget's schema): `git log origin/master..platforms`.
+- **Stable** 1.1.681 (2026-11-05): Windows installer, `latest.json`, the Android APK. **Beta** 1.1.801 (2026-11-07):
+  an Android Java crash now lands in Copy diagnostics (for the QR-scan crash). GitHub's master = `8e9fb3f`.
+- **platforms** = master + local commits for the next Beta (`git log origin/master..platforms`): the search bar
+  always in the window's middle, Settings' visualizer style as a dropdown with previews, Now Playing's video or cover
+  switch as icons.
   Pushes go `platforms:master`, only on the owner's word; docs only: `[skip release]` in the last commit's first line.
 - **winget**: microsoft/winget-pkgs#474341 (Stable 1.1.681): CLA signed, Microsoft's validation passed, waiting for a
   moderator. Each new Stable needs a new manifest (`packaging/README.md`).
@@ -18,8 +20,9 @@ lines out of plan-v2, private details out of the repo).
   `2026-10-30-001238-…txt` at the root.
 
 ## Next
-1. The owner's asks of 2026-11-07, evening (plan-v2, top): the QR-scan crash on Android, the visualizer style dropdown
-   with previews, the artists' round pictures on the big title. Then fixes from their tries (plan-v2 › Check live).
+1. The owner's asks of 2026-11-07, evening (plan-v2, top): the QR-scan crash on Android (waiting for their Copy
+   diagnostics from Beta 1.1.801 after a scan), the artists' round pictures on the big title, Up next's new look.
+   Then fixes from their tries (plan-v2 › Check live).
 2. Against Liner 12 (a moving cover background, our own WebGL shader, under 3 % CPU), 11 (share links: a static page on
    the website reads the playlist from the link's fragment; `music_core::share`'s zlib + base64url, read in a browser by
    `DecompressionStream('deflate')`), 6 (snap layouts).
