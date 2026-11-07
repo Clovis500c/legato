@@ -2166,6 +2166,7 @@ const tr: Record<string, string> = {
   'Mostly around {hour}': 'Çoğunlukla {hour} civarı',
   'New artists': 'Yeni sanatçılar',
   'Your listening personality': 'Dinleme kişiliğin',
+  'My music profile': 'Müzik profilim',
   'Your recap': 'Özetin',
   'Back to stats': 'İstatistiklere dön',
   'Genres': 'Türler',

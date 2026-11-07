@@ -2166,6 +2166,7 @@ const sv: Record<string, string> = {
   'Mostly around {hour}': 'Mest runt {hour}',
   'New artists': 'Nya artister',
   'Your listening personality': 'Din lyssnarpersonlighet',
+  'My music profile': 'Min musikprofil',
   'Your recap': 'Din sammanfattning',
   'Back to stats': 'Tillbaka till statistiken',
   'Genres': 'Genrer',

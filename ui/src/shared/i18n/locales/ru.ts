@@ -2166,6 +2166,7 @@ const ru: Record<string, string> = {
   'Mostly around {hour}': 'Чаще всего около {hour}',
   'New artists': 'Новые исполнители',
   'Your listening personality': 'Твой музыкальный характер',
+  'My music profile': 'Мой музыкальный профиль',
   'Your recap': 'Твои итоги',
   'Back to stats': 'Назад к статистике',
   'Genres': 'Жанры',

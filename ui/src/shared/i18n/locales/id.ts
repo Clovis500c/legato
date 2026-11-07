@@ -2166,6 +2166,7 @@ const id: Record<string, string> = {
   'Mostly around {hour}': 'Paling sering sekitar {hour}',
   'New artists': 'Artis baru',
   'Your listening personality': 'Kepribadian mendengarkanmu',
+  'My music profile': 'Profil musikku',
   'Your recap': 'Rekapmu',
   'Back to stats': 'Kembali ke statistik',
   'Genres': 'Genre',

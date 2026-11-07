@@ -2166,6 +2166,7 @@ const ko: Record<string, string> = {
   'Mostly around {hour}': '주로 {hour}쯤',
   'New artists': '새 아티스트',
   'Your listening personality': '나의 감상 유형',
+  'My music profile': '나의 음악 프로필',
   'Your recap': '나의 결산',
   'Back to stats': '통계로 돌아가기',
   'Genres': '장르',

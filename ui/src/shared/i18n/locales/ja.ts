@@ -2166,6 +2166,7 @@ const ja: Record<string, string> = {
   'Mostly around {hour}': '{hour}ごろが中心',
   'New artists': '新しいアーティスト',
   'Your listening personality': 'あなたのリスナータイプ',
+  'My music profile': 'わたしの音楽プロフィール',
   'Your recap': 'あなたのまとめ',
   'Back to stats': '統計に戻る',
   'Genres': 'ジャンル',

@@ -228,9 +228,13 @@ copies, downloads for offline), their accounts, limits and paid plan.
       on a big library.)
 - [ ] 6. `S` A native window on Windows 11: snap layouts on our maximize button (`WM_NCHITTEST` → `HTMAXBUTTON`,
       beside `thumbbar.rs`), Windows' minimize and maximize animations.
-- [ ] 7. `S` A profile card without an account: top artists, the recap, a few playlists, as a picture (a link with 11).
-- [ ] 8. `S` Motion polish, for the owner's eye: play / pause morphing, a like's pop, pages fading in; none with reduced
-      motion.
+- [x] 7. `S` A profile card without an account: top artists, the recap, a few playlists, as a picture (a link with 11).
+      (2026-11-07: the recap's last card, "My music profile": its time and counts, the top 3 artists, the 3 biggest
+      playlists; saved as a 1080 × 1920 picture as the other cards are (`recapCards.ts`, a test). The link waits for
+      11. Not seen drawn: the demo's recap not opened.)
+- [x] 8. `S` Motion polish, for the owner's eye: play / pause morphing, a like's pop, pages fading in; none with reduced
+      motion. (2026-11-07: there already, checked: `Transport.tsx`'s icon-in swap, `shared/motion.ts` pop on every like,
+      `page-in` on pages, all off with reduced motion or Animations off. The owner's eye still to come.)
 - [ ] 9. `S-M` Check the matches after an import: doubtful ones with their candidates, pick or keep, approve all.
 - [ ] 10. `S-M` Fast start on a skip: time to sound measured, then the next YouTube video cued in the crossfade's player.
 - [ ] 11. `S-M` Share links that open in any browser: a static page on the website reads the playlist from the link's

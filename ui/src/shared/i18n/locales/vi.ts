@@ -2166,6 +2166,7 @@ const vi: Record<string, string> = {
   'Mostly around {hour}': 'Chủ yếu vào khoảng {hour}',
   'New artists': 'Nghệ sĩ mới',
   'Your listening personality': 'Kiểu người nghe của bạn',
+  'My music profile': 'Hồ sơ âm nhạc của tôi',
   'Your recap': 'Tổng kết của bạn',
   'Back to stats': 'Quay lại thống kê',
   'Genres': 'Thể loại',

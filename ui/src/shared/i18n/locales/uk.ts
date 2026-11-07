@@ -2166,6 +2166,7 @@ const uk: Record<string, string> = {
   'Mostly around {hour}': 'Найчастіше близько {hour}',
   'New artists': 'Нові виконавці',
   'Your listening personality': 'Твій музичний характер',
+  'My music profile': 'Мій музичний профіль',
   'Your recap': 'Твої підсумки',
   'Back to stats': 'Назад до статистики',
   'Genres': 'Жанри',

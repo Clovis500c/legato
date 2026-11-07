@@ -30,7 +30,9 @@ export default function RecapView({ history, tracks, sub, onClose }: { history: 
   const spans = useMemo(() => recapSpans(history), [history])
   const [span, setSpan] = useState(spans[0])
   const recap = useMemo(() => recapOf(history, tracks, span), [history, tracks, span])
-  const cards = useMemo(() => recapCards(recap), [recap])
+  // The profile card's few playlists: the biggest.
+  const playlists = useStore((s) => s.playlists)
+  const cards = useMemo(() => recapCards(recap, [...playlists].sort((a, b) => b.trackCount - a.trackCount).map((p) => ({ name: p.name, songs: p.trackCount }))), [recap, playlists])
   const [at, setAt] = useState(0)
   const card = cards[Math.min(at, cards.length - 1)]
   // Cards without a cover take the top song's colours.

@@ -2166,6 +2166,7 @@ const pt: Record<string, string> = {
   'Mostly around {hour}': 'Principalmente por volta das {hour}',
   'New artists': 'Novos artistas',
   'Your listening personality': 'Sua personalidade musical',
+  'My music profile': 'Meu perfil musical',
   'Your recap': 'Seu resumo',
   'Back to stats': 'Voltar às estatísticas',
   'Genres': 'Gêneros',

@@ -31,8 +31,9 @@ const PERSONALITY: Record<Personality, [string, string]> = {
   eclectic: [msg('Eclectic'), msg('{n} artists, none above {share} of your time')],
 }
 
-/** A recap's cards, in their order: time, top artist, top songs, top album, a song a month (a year), habits, personality. */
-export function recapCards(r: Recap): RecapCard[] {
+/** A recap's cards, in their order: time, top artist, top songs, top album, a song a month (a year), habits, personality,
+ *  then the profile: all of it as one picture to share, no account (Against Liner 7: top artists, the time, `playlists`). */
+export function recapCards(r: Recap, playlists: { name: string; songs: number }[] = []): RecapCard[] {
   const s = r.stats
   const pct = (x: number) => new Intl.NumberFormat(locale(), { style: 'percent', maximumFractionDigits: 0 }).format(x)
   const [artist, ...artists] = s.topArtists
@@ -70,5 +71,10 @@ export function recapCards(r: Recap): RecapCard[] {
   const [name, why] = PERSONALITY[r.personality]
   const vars = { share: pct(r.share), title: song ? tr('“{title}”', { title: song.item.title }) : '', artist: artist ? artistName(artist.item.name) : '', n: formatCount(s.artists) }
   cards.push({ id: 'personality', kicker: tr('Your listening personality'), title: tr(name), sub: tr(why, vars) })
+  if (artist) {
+    const tops = s.topArtists.slice(0, 3).map((a, i) => ({ track: a.item.cover, title: `${i + 1}. ${artistName(a.item.name)}`, sub: hours(a.ms) }))
+    const lists = playlists.slice(0, 3).map((p) => ({ title: p.name, sub: trn(p.songs, '{n} song', '{n} songs') }))
+    cards.push({ id: 'profile', kicker: tr('My music profile'), title: cards[0].title, sub: cards[0].sub, rows: [...tops, ...lists] })
+  }
   return cards
 }

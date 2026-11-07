@@ -2166,6 +2166,7 @@ const hi: Record<string, string> = {
   'Mostly around {hour}': 'ज़्यादातर {hour} के आसपास',
   'New artists': 'नए कलाकार',
   'Your listening personality': 'आपकी सुनने की पर्सनैलिटी',
+  'My music profile': 'मेरी संगीत प्रोफ़ाइल',
   'Your recap': 'आपका रीकैप',
   'Back to stats': 'आंकड़ों पर वापस जाएं',
   'Genres': 'शैलियाँ',

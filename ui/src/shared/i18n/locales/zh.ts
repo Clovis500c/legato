@@ -2166,6 +2166,7 @@ const zh: Record<string, string> = {
   'Mostly around {hour}': '多在 {hour} 前后',
   'New artists': '新艺人',
   'Your listening personality': '你的收听性格',
+  'My music profile': '我的音乐档案',
   'Your recap': '你的回顾',
   'Back to stats': '返回统计',
   'Genres': '流派',

@@ -2166,6 +2166,7 @@ const nl: Record<string, string> = {
   'Mostly around {hour}': 'Vooral rond {hour}',
   'New artists': 'Nieuwe artiesten',
   'Your listening personality': 'Je luisterpersoonlijkheid',
+  'My music profile': 'Mijn muziekprofiel',
   'Your recap': 'Jouw terugblik',
   'Back to stats': 'Terug naar statistieken',
   'Genres': 'Genres',

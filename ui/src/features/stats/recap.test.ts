@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { LibraryTrack, Play } from '../../shared/api'
 import { personalityOf, recapOf, recapSpans, spanRange } from './recap'
+import { recapCards } from './recapCards'
 import { statsOf } from './stats'
 
 const t = (id: number, title: string, artist: string, album: string | null = null): LibraryTrack => ({ id, added: id, addedAt: null, title, artist, album, durationMs: 200_000, isrc: null, ids: { youtube: `y${id}` } })
@@ -48,5 +49,17 @@ describe('recap', () => {
     expect(personalityOf({ ...none, ms: 100, byHour: at(7) }).personality).toBe('earlyBird')
     expect(personalityOf({ ...none, ms: 100, byHour: at(15) }).personality).toBe('eclectic')
     expect(personalityOf(none)).toEqual({ personality: 'eclectic', share: 0 })
+  })
+
+  it('ends on the profile card: the time, the top artists, the biggest playlists', () => {
+    const recap = recapOf([play(1, 8, 1), play(1, 8, 2), play(2, 8, 3)], tracks, { year: 2026, month: null })
+    const cards = recapCards(recap, [{ name: 'Road trip', songs: 42 }])
+    const profile = cards.at(-1)!
+    expect(profile.id).toBe('profile')
+    expect(profile.title).toBe(cards[0].title)
+    expect(profile.rows?.map((r) => r.title)).toEqual(['1. Daft Punk', '2. Kavinsky', 'Road trip'])
+    expect(profile.rows?.at(-1)?.sub).toBe('42 songs')
+    // Nothing heard: no profile.
+    expect(recapCards(recapOf([], tracks, { year: 2026, month: null })).some((c) => c.id === 'profile')).toBe(false)
   })
 })
