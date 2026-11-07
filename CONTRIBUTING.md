@@ -48,7 +48,9 @@ root and in `site/`, then, in `site/`, `pnpm dev` (http://localhost:3000) or `pn
 sending something new.
 
 The site speaks the app's 18 languages: English at the root, every other one at `/<code>/` from its own
-`site/components/i18n/<code>.ts` (a `Copy`, listed in `copies.ts`). A line changed or added in English changes in each
+`site/components/i18n/<code>.ts` (a `Copy`, listed in `copies.ts`). The root sends a visitor to their browser's
+language before the first paint, unless they picked one in the header (`site/components/pick.ts`, kept in that browser);
+a page under `/<code>/` never moves. A line changed or added in English changes in each
 of them, with the app's own words for its settings and pages (`ui/src/shared/i18n/locales`); the `PRIVACY` table (what
 leaves the PC, where to) stays English everywhere, the one reference. The headline's size comes from its longest line (`Hero.tsx` `fit`): look at a new headline from
 375 to 1440 px, three lines each, the header on one line.

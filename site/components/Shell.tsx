@@ -5,6 +5,7 @@ import og from '@/assets/og.jpg'
 import { Motion } from './motion'
 import { COPIES } from './copies'
 import { LANGS } from './langs'
+import { pick, SAVED } from './pick'
 import '../app/globals.css'
 
 // Served from here (OFL, public/roboto-LICENSE.txt): no font host sees the visitors.
@@ -36,12 +37,19 @@ export const VIEWPORT: Viewport = {
   ],
 }
 
+/** The English root sends a visitor to their own language's page before the first paint (`pick`; nothing leaves the browser). */
+const toTheirs = (codes: string[]) =>
+  `(function(){var s=null;try{s=localStorage.getItem(${JSON.stringify(SAVED)})}catch(e){}` +
+  `var t=(${pick.toString()})(s,navigator.languages||[navigator.language],${JSON.stringify(codes)});` +
+  `if(t!=='en')location.replace(t+'/'+location.search+location.hash)})()`
+
 /** html and body of a language's page (each language is its own root layout: its own html lang). */
 export function Shell({ code, children }: { code: string; children: ReactNode }) {
   const c = COPIES[code]
   return (
     <html lang={c.lang} className={roboto.variable}>
       <body>
+        {code === 'en' && <script dangerouslySetInnerHTML={{ __html: toTheirs(Object.keys(COPIES)) }} />}
         <a href="#main" className="fixed -top-12 left-4 z-30 rounded-full bg-ink px-3.5 py-2 text-on-ink focus:top-4">
           {c.skip}
         </a>

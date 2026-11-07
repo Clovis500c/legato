@@ -319,6 +319,13 @@ copies, downloads for offline), their accounts, limits and paid plan.
         sideways scroll (the download button kept on one line: Japanese broke it at 375 px). CONTRIBUTING says how
         to keep them alike. Not done: a native speaker's read of any of them; the pages seen only in the dev
         server, not on GitHub Pages (nothing pushed).
+      - [x] The visitor's own language (2026-11-07, the owner's ask: "via son ip ou ses infos matériel"): the root
+        sends a visitor to their browser's language (`navigator.languages`, the device's settings) before the first
+        paint, unless they picked one in the header (kept in that browser); Traditional Chinese isn't sent to the
+        Simplified page; a page under /<code>/ never moves. Decided alone: no IP lookup, the site is static (no server
+        to see it) and a geolocation service would see every visitor, against the privacy rows; a country isn't a
+        language either. `site/components/pick.ts` and its test; seen in the dev server (fr → /fr/ with the hash
+        kept, a saved choice first, English kept once picked). Not pushed (the owner's word: later).
       - [x] winget manifests prepared, not submitted (2026-11-07): `packaging/winget/Clovis500c.Legato/1.1.681`,
         Stable's NSIS installer with the SHA-256 GitHub gives its asset, `winget validate` passes; `packaging/README.md`
         says how to submit and update them (the owner's step). Not tried: `winget install --manifest` (would install

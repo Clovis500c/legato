@@ -8,9 +8,19 @@ import { useCopy, useLangs } from './copy'
 import { LANGS, pageOf } from './langs'
 import { useLatest } from './latest'
 import { Logo } from './Logo'
+import { SAVED } from './pick'
 
 /** The page's code among LANGS ('pt' for pt-BR, 'zh' for zh-Hans). */
 const codeOf = (lang: string) => lang.split('-')[0]
+
+/** A language picked here wins over the browser's at the next visit of the root (`pick`). */
+const save = (code: string) => {
+  try {
+    localStorage.setItem(SAVED, code)
+  } catch {
+    // Storage blocked: the browser's languages decide.
+  }
+}
 
 /** On the page at first; a solid bar once the page scrolls under it. */
 export function Header() {
@@ -53,7 +63,7 @@ export function Header() {
             <ul className="absolute right-0 mt-3 max-h-[70vh] w-56 overflow-y-auto rounded-xl border border-line bg-bg p-1.5 shadow-lg">
               {LANGS.filter((l) => langs.includes(l.code)).map((l) => (
                 <li key={l.code}>
-                  <a href={pageOf(here, l.code)} hrefLang={l.code} lang={l.code} aria-current={l.code === here ? 'page' : undefined} className="block rounded-lg px-3 py-1.5 text-sm text-ink-2 hover:bg-panel hover:text-ink aria-[current=page]:font-medium aria-[current=page]:text-ink">
+                  <a href={pageOf(here, l.code)} onClick={() => save(l.code)} hrefLang={l.code} lang={l.code} aria-current={l.code === here ? 'page' : undefined} className="block rounded-lg px-3 py-1.5 text-sm text-ink-2 hover:bg-panel hover:text-ink aria-[current=page]:font-medium aria-[current=page]:text-ink">
                     {l.name}
                   </a>
                 </li>
