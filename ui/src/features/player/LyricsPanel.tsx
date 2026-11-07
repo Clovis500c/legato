@@ -87,7 +87,7 @@ function Synced({ lines: sung, durationMs, fix, onTap }: { lines: Lyrics['lines'
   }, [at])
   const touched = () => void (hand.current = performance.now())
   return (
-    <div ref={box} onWheel={touched} onPointerDown={touched} onKeyDown={touched} className="no-scrollbar relative min-h-0 flex-1 overflow-x-hidden overflow-y-auto px-2 pt-2 pb-6">
+    <div ref={box} onWheel={touched} onPointerDown={touched} onKeyDown={touched} className="no-scrollbar relative min-h-0 flex-1 overflow-x-hidden overflow-y-auto px-2 pt-6 pb-12 [mask-image:linear-gradient(to_bottom,transparent,#000_1.5rem,#000_calc(100%-3rem),transparent)]">
       {lines.map((l, i) => (
         <button
           key={i}
@@ -130,7 +130,7 @@ function Plain({ text, durationMs }: { text: string; durationMs: number | null }
   }, [pos, durationMs])
   const touched = () => void (hand.current = performance.now())
   return (
-    <div ref={box} onWheel={touched} onPointerDown={touched} onKeyDown={touched} className="scroll-quiet min-h-0 flex-1 overflow-y-auto px-2 py-4">
+    <div ref={box} onWheel={touched} onPointerDown={touched} onKeyDown={touched} className="scroll-quiet min-h-0 flex-1 overflow-y-auto px-2 pt-6 pb-12 [mask-image:linear-gradient(to_bottom,transparent,#000_1.5rem,#000_calc(100%-3rem),transparent)]">
       <p className="text-[1.25rem] leading-relaxed font-semibold whitespace-pre-line text-ink-2">{text}</p>
     </div>
   )

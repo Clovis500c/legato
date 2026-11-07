@@ -363,7 +363,8 @@ export function NowPlaying() {
             <EditorPanel onHide={() => update({ editor: false })} />
           </PageBoundary>
         ) : panel === 'lyrics' ? (
-          <LyricsPanel onHide={() => update({ lyrics: false })} onUpNext={() => update({ lyrics: false, upNext: true })} />
+          // No card here: the lines on the backdrop, as the title is (the owner's ask 2026-11-07: a box read as a menu).
+          <LyricsPanel className="py-1" onHide={() => update({ lyrics: false })} onUpNext={() => update({ lyrics: false, upNext: true })} />
         ) : panel === 'upNext' ? (
           <UpNext onHide={() => update({ upNext: false })} />
         ) : (
