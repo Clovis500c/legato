@@ -46,8 +46,16 @@
   --on-ink: #0f0f0f;
 }
 
-/* The scroll story's stage, wide screens with animations on (components/Story.tsx); elsewhere chapters stack. */
+/* The scroll story's stage with animations on (components/Story.tsx): `pinned` the PC's window from 1000 px, `pocket`
+   the phone below; `story` either. Animations off, chapters stack. */
+@custom-variant story (@media (prefers-reduced-motion: no-preference));
 @custom-variant pinned (@media (min-width: 1000px) and (prefers-reduced-motion: no-preference));
+@custom-variant pocket (@media (width < 1000px) and (prefers-reduced-motion: no-preference));
+
+/* The phone's story: the header steps aside while a chapter holds the screen. */
+html[data-story='phone'] #site-header {
+  transform: translateY(-100%);
+}
 
 @theme inline {
   --color-bg: var(--bg);

@@ -7,6 +7,7 @@ import { closeKaraoke, openKaraoke, useKaraoke } from '../../ui/src/features/pla
 import { usePlayer } from '../../ui/src/features/player/store'
 import { closeVizFull, openVizFull, useVizFull } from '../../ui/src/features/player/vizFull'
 import type { LibraryTrack } from '../../ui/src/shared/api'
+import { isPhone } from '../../ui/src/shared/phone'
 import { TRACKS } from './data'
 import './demo.css'
 
@@ -77,10 +78,15 @@ const SCENES: Record<string, Scene> = {
     },
   },
   player: {
+    // The phone has no side panel: Now Playing, Up next open.
     enter() {
       songs()
       play(true)
+      if (!isPhone()) return
+      set({ upNext: true, lyrics: false, editor: false })
+      usePlayer.getState().setFull(true)
     },
+    leave: () => isPhone() && usePlayer.getState().setFull(false),
   },
   karaoke: {
     enter() {

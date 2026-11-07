@@ -53,9 +53,13 @@ so `pnpm dev` shows the pictures until a build has run; `demo` in `.claude/launc
 (port 5190: the phone layout is checked there at 375 × 812). A screen that needs a new command at load may need an answer in
 `data.ts`; what needs an account, the network or the PC goes in its refused list. `pnpm typecheck` at the root covers it.
 
-`site/public/shots` holds those pictures: phones, reduced motion, and the window before the demo is up. Taken from the
-built demo, `demo/index.html?shot=<scene>&p=<0 to 1>&theme=modern` or `modern-dark` (add `&full` for Now Playing), at
-1024×648 so a phone can read them, `library` at 1360×860 to match the window.
+`site/public/shots` holds those pictures: reduced motion, and the window or the phone before the demo is up (or instead
+of it: Save-Data, a failed demo, a phone under 20 frames a second). Taken from the built demo,
+`demo/index.html?shot=<scene>&p=<0 to 1>&theme=modern` or `modern-dark` (add `&full` for Now Playing), at 1024×648 so a
+phone can read them, `library` at 1360×860 to match the window. The phone's (`<scene>-phone-light` / `-dark`, under
+1000 px) at 375×812, saved 600 px wide: `?theme=…` alone, then the scene posted as the page would
+(`postMessage({ legato: 'scene', name, p })`), so it plays in the phone layout (the player's opens Now Playing on Up
+next). Visualizer and themes pick their own theme: one picture for both.
 
 ## Releasing
 

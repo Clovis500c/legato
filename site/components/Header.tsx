@@ -23,7 +23,7 @@ export function Header() {
   useMotionValueEvent(scrollY, 'change', (y) => setSolid(y > 16))
   const { href } = useLatest()
   return (
-    <header className={`sticky top-0 z-20 border-b transition-[background-color,border-color] duration-200 ${solid ? 'border-line-soft bg-bg' : 'border-transparent'}`}>
+    <header id="site-header" className={`sticky top-0 z-20 border-b transition-[background-color,border-color,transform] duration-200 ${solid ? 'border-line-soft bg-bg' : 'border-transparent'}`}>
       <div className="mx-auto flex h-[78px] max-w-[1440px] items-center justify-between gap-6 px-(--pad)">
         <a href="#top" aria-label="Legato, top of the page" className="flex items-center gap-2.5 text-[28px] leading-none font-black tracking-[-0.02em]">
           <Logo className="size-8" />

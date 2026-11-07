@@ -227,6 +227,11 @@ Rules:
   a spring with no overshoot, so a wheel's notches move it in one glide; the window is its own layer only while it moves
   (sharp again at rest, where its zoom can pass 1).
 - One exception to "Flat": a neutral shadow under the window, which follows its tilt. No glow, glass or gradient.
-- Wide screens with animations on get the stage. Phones and reduced motion get the chapters one after another, each
-  with a picture.
+- Wide screens with animations on get the stage. Under 1000 px, a phone instead of the window (the owner's ask
+  2026-11-06): its screen 375×812, so the interface takes its phone layout (a chapter that shows a PC-only place plays
+  its phone twin: Now Playing on Up next for the queue), less tilt, always under the chapter's text, the site's header
+  out of the way while a chapter holds. Its demo starts on the visitor's first scroll, never with Save-Data, and steps
+  back to the pictures under 20 frames a second. Taken, it fades into the interface at the stage's own size (a real
+  phone's taps), Back to the page under it; Android's way out is the APK, an iPhone's the Windows app and a word.
+- Reduced motion gets the chapters one after another, each with a picture (the phone's under 1000 px).
 - In the demo, artists, songs and covers are invented; it makes no sound and reaches no network.

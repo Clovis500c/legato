@@ -15,7 +15,7 @@ the order; a line leaves only when it ships or the user drops it.
 - [x] `M` Home page as a scroll story (user's choice 2026-10-31): the real interface in a 3D window (`site/demo`), eight
       chapters, the visitor takes it at the end; audit of the page's slop (`docs/design.md` › Website). Local, not
       published.
-- [ ] `M` The story on a phone (the owner's ask 2026-11-06): a preview of the phone app, in 3D. Under 1000 px the
+- [x] `M` The story on a phone (the owner's ask 2026-11-06): a preview of the phone app, in 3D. Under 1000 px the
       home page shows pictures today (`Story.tsx`: `PINNED`, `Still`); instead, the same scroll story with the real
       interface in its phone layout:
       - The demo's frame at a phone's size (375 × 812), so `ui/` takes its own phone layout (`usePhone`, under 640 px:
@@ -30,6 +30,21 @@ the order; a line leaves only when it ships or the user drops it.
         measured as it starts); taken in the phone layout too. The PC's story unchanged.
       Done when: seen on a real Android phone and an iPhone, light and dark, the scroll without long frames, the
       demo started only after the first screen, the page's mobile Lighthouse no worse than today.
+      (2026-11-07, autonomous run: `Story.tsx` `PhoneWindow`, the `pocket` / `story` variants in `globals.css`. The phone
+      stands under each chapter's text, as big as the room left (each text's bottom measured), tilted 3° to 8°, the
+      hero's phone tipped back with its top under the headline; the header steps aside while a chapter holds
+      (`data-story`), the chapter bar is the scrubber alone. The player's chapter opens Now Playing on Up next in the
+      phone layout (`scenes.ts`); the others play as they are. Try it here fades the phone into the interface at the
+      stage's size, Back to the page under it; the way out is Get the Android app on Android, Download for Windows and
+      "No iPhone app yet" (the FAQ) on an iPhone. The demo starts on the first scroll (Lighthouse doesn't scroll), never
+      with Save-Data, and is dropped for the pictures when the page runs at 3 to 20 frames a second two seconds after
+      it's up (under 3: not painted, out of sight). Sixteen phone pictures (`shots/<scene>-phone-*.webp`, 600 px wide,
+      517 KB in all), also the stacked chapters' under 1000 px with animations off. Seen in the browser pane at 375×812
+      light and dark, 768×1024, and 1280×800 (the PC's story unchanged). Decided alone (2026-11-07): the text always
+      above the phone (the room a phone needs is its height), the header aside during the chapters, the demo on the
+      first scroll rather than at load. Not done: a real Android phone or iPhone, the scroll's frame times (the pane
+      was hidden, its frames throttled to 1 a second), Lighthouse; the editor's light picture is a 1x capture scaled
+      up (the pane drew it in tiles).)
 - [x] `S` Publish it with the next Stable (user's choice 2026-10-31). Done earlier, on the owner's word (2026-11-01): Beta
       1.1.557 out, Stable still 1.1.479, so the site shows a few things Stable hasn't yet (Connect Spotify, the import
       screen). Branch `claude/site-scroll-3d-aff654` merged into `platforms` with `[skip release]`, then master; its cards
@@ -282,6 +297,8 @@ copies, downloads for offline), their accounts, limits and paid plan.
         when looked for ahead and now, the host's buffering slip sent again.
       - [ ] The internet half: never built until the owner chooses (Waiting on the user).
 - [ ] 18. `L` A Linux build (AppImage, deb): WebKitGTK, the MPRIS media panel, the tray, PipeWire for the detector.
+      Not here (2026-11-07): this PC has no WSL (installing it is a system change, the owner's) and CI runs only on a
+      push; needs a Linux machine or the owner's word for WSL. 19 needs a Mac or CI too.
 - [ ] 19. `L` A macOS build, unsigned first as Liner's (signing: the owner's Apple Developer Program): WKWebView, Now
       Playing, the menu bar. 18 and 19 take in Features › High's macOS and Linux line.
 
