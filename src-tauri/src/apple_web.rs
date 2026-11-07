@@ -172,15 +172,9 @@ pub async fn apple_import(app: AppHandle, state: State<'_, AppState>, picks: Vec
             }
         };
         let total = read.len();
-        let Some(links::Found { tracks, unsearched }) = links::find_on_youtube(&app, &read, |step| tell(true, step.done, total, before + step.found, step.wait_secs, step.song)).await? else { break };
-        let id = state.lib().save_playlist(Source::Apple, &pick.id, pick.name.trim(), &tracks).map_err(err)?;
+        let save = |known: &[Track]| state.lib().save_playlist(Source::Apple, &pick.id, pick.name.trim(), known);
+        let Some((id, links::Found { tracks, unsearched })) = links::save_then_find(&app, &read, save, |step| tell(true, step.done, total, before + step.found, step.wait_secs, step.song)).await? else { break };
         report.unsearched += unsearched;
-        // Saved only now, so remembered only now. YouTube's refusals left some unsearched: can't tell which.
-        if unsearched == 0 {
-            for song in tracks.iter().filter(|t| !links::has_version(t) && !state.lib().not_found_lately(t).unwrap_or(true)) {
-                links::note_search(&state, song);
-            }
-        }
         report.playlist_id.get_or_insert(id);
         report.lists += 1;
         report.songs += total;

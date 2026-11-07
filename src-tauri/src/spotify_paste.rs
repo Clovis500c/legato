@@ -61,25 +61,19 @@ pub async fn import_spotify_tracks(app: AppHandle, state: State<'_, AppState>, n
     if read.is_empty() {
         return Err("Spotify's pages didn't answer: try again later".into());
     }
-    let Some(links::Found { tracks, unsearched }) = links::find_on_youtube(&app, &read, |step| tell(true, step.done, step.found, step.wait_secs, step.song)).await? else { return Err("canceled".into()) };
-    let id = {
+    let save = |known: &[Track]| -> anyhow::Result<i64> {
         let lib = state.lib();
-        let id = lib.edit_playlist(PlaylistEdit::Create { name: name.clone() }).map_err(err)?.ok_or("Playlist not created")?;
-        let mut ids = Vec::with_capacity(tracks.len());
-        for t in &tracks {
+        let id = lib.edit_playlist(PlaylistEdit::Create { name: name.clone() })?.ok_or_else(|| anyhow::anyhow!("Playlist not created"))?;
+        let mut ids = Vec::with_capacity(known.len());
+        for t in known {
             // Asked for by hand: a song removed earlier comes back.
-            lib.unremove(t).map_err(err)?;
-            ids.push(lib.upsert_track(t).map_err(err)?);
+            lib.unremove(t)?;
+            ids.push(lib.upsert_track(t)?);
         }
-        lib.edit_playlist(PlaylistEdit::Add { id, track_ids: ids }).map_err(err)?;
-        id
+        lib.edit_playlist(PlaylistEdit::Add { id, track_ids: ids })?;
+        Ok(id)
     };
-    // Saved only now, so remembered only now. YouTube's refusals left some unsearched: can't tell which.
-    if unsearched == 0 {
-        for song in tracks.iter().filter(|t| !links::has_version(t) && !state.lib().not_found_lately(t).unwrap_or(true)) {
-            links::note_search(&state, song);
-        }
-    }
+    let Some((id, links::Found { tracks, unsearched })) = links::save_then_find(&app, &read, save, |step| tell(true, step.done, step.found, step.wait_secs, step.song)).await? else { return Err("canceled".into()) };
     let playable = tracks.iter().filter(|t| links::has_version(t)).count();
     Ok(SpotifyLibraryImport { playlist_id: Some(id), lists: 1, songs: total, playable, failed: Vec::new(), unsearched })
 }

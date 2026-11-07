@@ -2308,6 +2308,11 @@ const vi: Record<string, string> = {
   'Its songs, playlists and stars come in. Nothing goes back: your likes and plays stay here.': 'Bài hát, danh sách phát và sao của nó được đưa vào. Không gửi gì ngược lại: lượt thích và lượt nghe ở lại đây.',
   'Your likes and plays here go out to your music server. Nothing new comes in from it.': 'Lượt thích và lượt nghe ở đây được gửi tới máy chủ nhạc của bạn. Không có gì mới được đưa vào từ nó.',
   'Can’t reach YouTube. Check your connection.': 'Không thể kết nối YouTube. Hãy kiểm tra kết nối của bạn.',
+  'Looking for “{title}” on YouTube…': 'Đang tìm “{title}” trên YouTube…',
+  '“{title}” wasn’t found on YouTube: skipped': 'Không tìm thấy “{title}” trên YouTube: đã bỏ qua',
+  '{n} song left to look up': 'Còn {n} bài cần tìm',
+  '{n} songs left to look up': 'Còn {n} bài cần tìm',
+  'Your lists are already in your library: play them now, a song not found yet is looked up when its turn comes.': 'Danh sách của bạn đã có trong thư viện: phát ngay bây giờ, bài chưa tìm thấy sẽ được tìm khi đến lượt.',
 }
 
 export default vi

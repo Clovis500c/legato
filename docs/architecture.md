@@ -127,7 +127,9 @@ Playlists and likes come in from links (`src-tauri/src/links.rs`), song lists (`
 Connect Apple Music (`apple_web.rs`) and the official APIs. Whatever the source, a song has nothing to play until it has a version, and `find_on_youtube` looks for
 one. Google sets the speed of those unofficial searches: the library is asked first, the lists are saved before any
 search, `music_core::searchpace` paces the rest, and a song truly missing goes in `not_found` instead of being searched
-at every import. Details: [playback.md](playback.md).
+at every import. A song still waiting plays all the same: the player asks for it (`links::find_now`), the running
+import searches it next at the same pace (else one search at the rooms' pace), and the song after the one playing is
+asked 5 s in. Not found: skipped. Details: [playback.md](playback.md).
 
 ## Updates
 

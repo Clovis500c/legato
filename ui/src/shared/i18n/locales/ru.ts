@@ -2308,6 +2308,11 @@ const ru: Record<string, string> = {
   'Its songs, playlists and stars come in. Nothing goes back: your likes and plays stay here.': 'Его песни, плейлисты и звёзды приходят сюда. Обратно ничего не уходит: твои лайки и прослушивания остаются здесь.',
   'Your likes and plays here go out to your music server. Nothing new comes in from it.': 'Твои лайки и прослушивания отсюда уходят на музыкальный сервер. Нового с него ничего не приходит.',
   'Can’t reach YouTube. Check your connection.': 'Не удаётся связаться с YouTube. Проверьте подключение.',
+  'Looking for “{title}” on YouTube…': 'Ищем «{title}» на YouTube…',
+  '“{title}” wasn’t found on YouTube: skipped': '«{title}» не найдена на YouTube: пропущена',
+  '{n} song left to look up': 'Осталось найти: {n}',
+  '{n} songs left to look up': 'Осталось найти: {n}',
+  'Your lists are already in your library: play them now, a song not found yet is looked up when its turn comes.': 'Ваши списки уже в медиатеке: слушайте их сейчас, песню, которую ещё не нашли, ищут, когда до неё доходит очередь.',
 }
 
 export default ru

@@ -2308,6 +2308,11 @@ const id: Record<string, string> = {
   'Its songs, playlists and stars come in. Nothing goes back: your likes and plays stay here.': 'Lagu, playlist, dan bintangnya masuk. Tidak ada yang dikirim balik: suka dan putaranmu tetap di sini.',
   'Your likes and plays here go out to your music server. Nothing new comes in from it.': 'Suka dan putaranmu di sini dikirim ke server musikmu. Tidak ada yang baru masuk darinya.',
   'Can’t reach YouTube. Check your connection.': 'Tidak dapat menjangkau YouTube. Periksa koneksi Anda.',
+  'Looking for “{title}” on YouTube…': 'Mencari “{title}” di YouTube…',
+  '“{title}” wasn’t found on YouTube: skipped': '“{title}” tidak ditemukan di YouTube: dilewati',
+  '{n} song left to look up': '{n} lagu lagi untuk dicari',
+  '{n} songs left to look up': '{n} lagu lagi untuk dicari',
+  'Your lists are already in your library: play them now, a song not found yet is looked up when its turn comes.': 'Daftar Anda sudah ada di pustaka Anda: putar sekarang, lagu yang belum ditemukan dicari saat gilirannya tiba.',
 }
 
 export default id

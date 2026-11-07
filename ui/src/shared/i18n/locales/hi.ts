@@ -2308,6 +2308,11 @@ const hi: Record<string, string> = {
   'Its songs, playlists and stars come in. Nothing goes back: your likes and plays stay here.': 'इसके गाने, प्लेलिस्ट और स्टार यहाँ आते हैं। कुछ वापस नहीं जाता: आपकी पसंद और प्ले यहीं रहते हैं।',
   'Your likes and plays here go out to your music server. Nothing new comes in from it.': 'यहाँ की आपकी पसंद और प्ले आपके म्यूज़िक सर्वर पर जाते हैं। उससे कुछ नया नहीं आता।',
   'Can’t reach YouTube. Check your connection.': 'YouTube तक नहीं पहुँच पा रहे। अपना कनेक्शन जाँचें।',
+  'Looking for “{title}” on YouTube…': 'YouTube पर “{title}” खोजा जा रहा है…',
+  '“{title}” wasn’t found on YouTube: skipped': '“{title}” YouTube पर नहीं मिला: छोड़ दिया गया',
+  '{n} song left to look up': 'खोजने के लिए {n} गाना बाकी',
+  '{n} songs left to look up': 'खोजने के लिए {n} गाने बाकी',
+  'Your lists are already in your library: play them now, a song not found yet is looked up when its turn comes.': 'आपकी सूचियाँ पहले से आपकी लाइब्रेरी में हैं: इन्हें अभी सुनें, जो गाना अभी नहीं मिला वह अपनी बारी आने पर खोजा जाता है।',
 }
 
 export default hi

@@ -15,8 +15,7 @@ import { trackMenu } from '../menus'
 import { stopAutoDj, useDjWhy, whyText } from './autoDj'
 import { fileFormat } from './PlayerBar'
 import { queueItems, queueRows, repeatsAhead, type QueueRow } from './queue'
-import { vias } from './sources'
-import { fileTitle, isRemote, useNowTrack, usePlayer } from './store'
+import { canPlay, fileTitle, isRemote, useNowTrack, usePlayer } from './store'
 import { tr, trn } from '../../shared/i18n/i18n'
 import { api } from '../../shared/api'
 import { askText } from '../../shared/ui/Ask'
@@ -37,7 +36,7 @@ function useRows(): QueueRow[] {
   const path = usePlayer((s) => s.now?.path)
   const sp = useStore((s) => s.status.spotify.connected)
   return useMemo(() => {
-    if (trackId !== undefined) return queueRows(order, index, (i) => !!list[i] && vias(list[i], sp).length > 0)
+    if (trackId !== undefined) return queueRows(order, index, (i) => !!list[i] && canPlay(list[i], sp))
     return [...(path ? [path] : []), ...upcoming].map((p, k) => ({ key: p, i: -1, played: false, current: k === 0 && !!path, path: p }))
   }, [trackId, list, order, index, sp, upcoming, path])
 }

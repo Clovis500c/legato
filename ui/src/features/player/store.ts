@@ -8,7 +8,7 @@ import { endListen, progress, startListen } from './listens'
 import { albumGoesOn, demoGain, demoLength, fadeGain, NO_FADE, overlapDue, PICK_IN_S, type Fade } from './fade'
 import { insertAt, keepQueued, moveInOrder, moveToSlot, nextIndex, playOrder, queued, tooLong, type Repeat } from './queue'
 import { RECENT_S, smartOrder } from './shuffle'
-import { isNative, nativePath, SERVER_PATH, serverDown, vias, viaOfPath, type Via } from './sources'
+import { isNative, nativePath, SERVER_PATH, serverDown, toFind, vias, viaOfPath, type Via } from './sources'
 import { formatDuration } from '../../shared/format'
 import { endCut, isUndone, landed, rememberUndone, toSkip, useSponsor } from './sponsor'
 import { offerEnd, rememberEnd, rememberStart, songEnd, songStart } from './ends'
@@ -202,8 +202,22 @@ let frame: HTMLIFrameElement | null = null
 export const bindFrame = (el: HTMLIFrameElement | null) => void (frame = el)
 // Other embed stopped, kept for the next overlap.
 const stopTail = (t: PlayerState['tail']) => t && { ...t, done: true }
+// Songs not found are left alone; lookups stop a while once YouTube refuses one (never around it).
+let nfOf: number[] | undefined
+let nfSet: ReadonlySet<number> = new Set()
+let findOff = 0
+const REFUSED_MS = 5 * 60_000
+const findable = (t: LibraryTrack, spotify: boolean) => {
+  const { notFound } = useStore.getState()
+  if (notFound !== nfOf) [nfOf, nfSet] = [notFound, new Set(notFound)]
+  return Date.now() >= findOff && toFind(t, nfSet, spotify)
+}
+/** Plays here, or will once its YouTube version is looked up (Against Liner 13). */
+export const canPlay = (t: LibraryTrack, spotify = spotifyOn()) => vias(t, spotify).length > 0 || findable(t, spotify)
 // The queue passes over it: nothing to play it with, or longer than Skip long songs (known lengths only).
-export const passOver = (t: LibraryTrack, longMin: number) => !vias(t, spotifyOn()).length || tooLong(t.durationMs, longMin)
+export const passOver = (t: LibraryTrack, longMin: number) => !canPlay(t) || tooLong(t.durationMs, longMin)
+// The library's row now: the queue's copy may predate a version found.
+const fresh = (t: LibraryTrack) => useStore.getState().tracks.find((x) => x.id === t.id) ?? t
 // List index i, next after the current song, carries on its album: no fades between them. The sleep timer's last song
 // still fades out.
 const albumGoesOnAt = (p: PlayerState, i: number | null) => p.gaplessAlbums && !stopAtEnd && i === p.index + 1 && albumGoesOn(p.list[p.index], p.list[i])
@@ -362,10 +376,47 @@ function cueNext() {
   if (cuedFor === p.playId || !p.now?.youtubeId || (p.tail && !p.tail.done)) return
   cuedFor = p.playId
   const i = nextIndex(p.order, p.index, 1, p.repeat, false, (j) => passOver(p.list[j], p.skipLong))
-  const next = i === null ? undefined : p.list[i]
+  const next = i === null ? undefined : fresh(p.list[i])
+  // No way to play it yet: looked up now, quietly, then cued (one search per song played, Against Liner 13).
+  if (next && !vias(next, spotifyOn()).length) return void findAhead(next, p.playId)
   const id = next && vias(next, spotifyOn())[0] === 'youtube' ? next.ids.youtube : undefined
   if (!id || id === p.now.youtubeId) return
   usePlayer.setState({ tail: { key: p.tail?.key ?? p.frameKey + 1, videoId: id, end: 0, done: true, cue: true } })
+}
+/** Asks Rust for a song's YouTube version (the imports' pace). True: found; false: not found; undefined: refused or
+ *  failed (a refusal stops lookups a while). The library is read again either way. */
+async function findNow(t: LibraryTrack): Promise<boolean | undefined> {
+  const found = await api.findNow(t.id).catch((e) => {
+    if (/Too Many Requests/.test(String(e))) findOff = Date.now() + REFUSED_MS
+    report('warn', 'playback', 'youtube: a song not found yet could not be looked up', String(e))
+    return undefined
+  })
+  await useStore.getState().refresh().catch(() => undefined)
+  return found
+}
+
+async function findAhead(t: LibraryTrack, playId: number) {
+  if (!(await findNow(t)) || usePlayer.getState().playId !== playId) return
+  cuedFor = -1
+  cueNext()
+}
+
+/** A song with no way to play yet comes up (Against Liner 13): its YouTube version looked up now, then it plays; not
+ *  found or refused, the queue moves on. A later choice meanwhile wins. */
+async function lookUp(index: number, t: LibraryTrack, opts: { auto?: boolean; from?: number; hold?: boolean }) {
+  const mine = ++seq
+  // The queue's place: what comes after it if it isn't found.
+  usePlayer.setState({ index })
+  const { notify, dismissToast } = useStore.getState()
+  const toast = notify(tr('Looking for “{title}” on YouTube…', { title: t.title }), { sticky: true, kind: 'info' })
+  const found = await findNow(t)
+  dismissToast(toast)
+  if (mine !== seq) return
+  const p = usePlayer.getState()
+  if (found) return void p.playAt(index, 'youtube', opts)
+  if (found === false) notify(tr('“{title}” wasn’t found on YouTube: skipped', { title: t.title }), { kind: 'info' })
+  else if (Date.now() < findOff) notify(`YouTube: ${tr('Too many requests for now: wait a few minutes, then try again.')}`, { kind: 'error' })
+  p.step(1)
 }
 // Length of the playing video, ms (0 = not known yet). YouTube sends it once, as the video loads: kept for the song.
 let videoMs = 0
@@ -546,7 +597,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
 
   playTracks(list, index, via) {
     if (held) return held()
-    const i = list.findIndex((t, j) => j >= index && vias(t, spotifyOn()).length > 0)
+    const i = list.findIndex((t, j) => j >= index && canPlay(t))
     if (i < 0) return
     set({ list, order: shuffleOrder(get(), list, i, get().shuffle), added: [], from: contextName(), radio: false, dj: undefined })
     void get().playAt(i, i === index ? via : undefined)
@@ -613,6 +664,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     // Fresh row: sources may have changed since the queue was built (Find versions).
     const t = useStore.getState().tracks.find((x) => x.id === list[index]?.id) ?? list[index]
     const how = via ?? (t && vias(t, spotifyOn())[0])
+    if (t && !how && findable(t, spotifyOn())) return lookUp(index, t, { auto, from, hold })
     if (!t || !how || !vias(t, spotifyOn()).includes(how)) return
     const mine = ++seq
     reachedAuto = auto
@@ -817,7 +869,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     const i = nextIndex(order, index, delta, repeat, auto, (j) => passOver(list[j], get().skipLong))
     const { tail, frameKey } = get()
     // Next to the song cued in the other embed (cueNext): that one takes over, its video loaded; this one waits.
-    if (i !== null && !auto && now?.youtubeId && tail?.done && tail.cue && list[i].ids.youtube === tail.videoId) {
+    if (i !== null && !auto && now?.youtubeId && tail?.done && tail.cue && fresh(list[i]).ids.youtube === tail.videoId) {
       bindFrame(null)
       bindLiveFrame(null)
       void get().playAt(i, undefined, { auto })

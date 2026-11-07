@@ -167,6 +167,19 @@ impl Line {
         !std::mem::replace(&mut self.settled[i], true)
     }
 
+    /// Answered, by its own search or another's.
+    pub fn is_settled(&self, i: usize) -> bool {
+        self.settled[i]
+    }
+
+    /// Wanted now (the player, Against Liner 13): out next, before the others. False: not waiting in line.
+    pub fn first(&mut self, i: usize) -> bool {
+        let Some(at) = self.todo.iter().position(|&j| j == i && !self.settled[j]) else { return false };
+        self.todo.remove(at);
+        self.todo.push_front(i);
+        true
+    }
+
     /// Songs in line that an answer brought back, each with its version, by the rules of a search of its own.
     pub fn also_found(&mut self, songs: &[Track], seen: &[Track]) -> Vec<(usize, Track)> {
         let mut out = Vec::new();
@@ -266,6 +279,21 @@ mod tests {
         assert!(line.settle(a));
         assert_eq!(line.also_found(&songs, &[video("Two", "Band")]).len(), 1);
         assert!(!line.settle(b));
+    }
+
+    #[test]
+    fn a_song_wanted_now_goes_first_once() {
+        let songs = [song("One", "Band"), song("Two", "Band"), song("Three", "Band")];
+        let mut line = Line::new(&songs, vec![0, 1, 2]);
+        assert!(line.first(2));
+        assert_eq!(line.left(), 3, "counted once");
+        assert_eq!(line.pop(), Some(2));
+        assert!(!line.first(2), "out of line while it's searched");
+        assert!(line.settle(2));
+        assert!(line.is_settled(2));
+        assert_eq!(line.pop(), Some(0));
+        assert_eq!(line.pop(), Some(1));
+        assert_eq!(line.pop(), None);
     }
 
     #[test]

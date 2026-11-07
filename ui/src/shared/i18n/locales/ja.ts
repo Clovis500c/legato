@@ -2308,6 +2308,11 @@ const ja: Record<string, string> = {
   'Its songs, playlists and stars come in. Nothing goes back: your likes and plays stay here.': '曲、プレイリスト、スターが取り込まれます。何も送り返さず、いいねと再生はここに残ります。',
   'Your likes and plays here go out to your music server. Nothing new comes in from it.': 'ここでのいいねと再生は音楽サーバーに送られます。サーバーから新しいものは取り込みません。',
   'Can’t reach YouTube. Check your connection.': 'YouTube に接続できません。接続を確認してください。',
+  'Looking for “{title}” on YouTube…': 'YouTube で「{title}」を探しています…',
+  '“{title}” wasn’t found on YouTube: skipped': '「{title}」は YouTube で見つかりませんでした：スキップしました',
+  '{n} song left to look up': '残り {n} 曲を検索',
+  '{n} songs left to look up': '残り {n} 曲を検索',
+  'Your lists are already in your library: play them now, a song not found yet is looked up when its turn comes.': 'リストはすでにライブラリにあります。今すぐ再生できます。まだ見つかっていない曲は、順番が来たときに検索されます。',
 }
 
 export default ja

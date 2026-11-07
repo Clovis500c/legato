@@ -91,7 +91,7 @@ import { primaryArtist } from './library/filter'
 import { isFull, viaLabel, vias } from './player/sources'
 import { bypass, deletePreset, deleteVersion, playVersion, reset, useEditor } from './editor/editor'
 import { loadPlugins, pluginCommands, runCommand } from './plugins/host'
-import { isRemote, nowTrack, remoteTrack, usePlayer } from './player/store'
+import { canPlay, isRemote, nowTrack, remoteTrack, usePlayer } from './player/store'
 import { startAutoDj } from './player/autoDj'
 import { startRadio, startRadioFrom } from './player/radio'
 import { sleepMenu } from './player/sleep'
@@ -433,7 +433,7 @@ export function trackMenu(t: LibraryTrack, ctx: { list?: LibraryTrack[]; index?:
   // Added since: library actions (playlists) from now on.
   t = ownOf(t)
   if (isRemote(t)) return remoteMenu(t, list, index)
-  const playable = vias(t, sp()).length > 0
+  const playable = canPlay(t, sp())
   const go = app().go
   return [
     { label: tr('Play'), icon: <Play size={16} />, disabled: !playable, onSelect: () => player().playTracks(list, index) },
@@ -441,7 +441,7 @@ export function trackMenu(t: LibraryTrack, ctx: { list?: LibraryTrack[]; index?:
     { label: tr('Add to queue'), icon: <ListPlus size={16} />, disabled: !playable, onSelect: () => player().enqueue([t], false) },
     ctx.queueIndex !== undefined && { label: tr('Remove from queue'), icon: <MinusCircle size={16} />, onSelect: () => player().dequeue(ctx.queueIndex!) },
     playVia(t, list, index),
-    playable && { label: tr('Start radio'), icon: <Radio size={16} />, onSelect: () => void startRadio(t) },
+    vias(t, sp()).length > 0 && { label: tr('Start radio'), icon: <Radio size={16} />, onSelect: () => void startRadio(t) },
     '-',
     addTo(() => [t]),
     ctx.playlistId !== undefined && { label: tr('Remove from this playlist'), icon: <MinusCircle size={16} />, onSelect: () => void removeFromPlaylist(ctx.playlistId!, ctx.position!) },
@@ -550,7 +550,7 @@ function editAll(tracks: LibraryTrack[]): MenuEntry {
 }
 
 export function tracksMenu(tracks: LibraryTrack[], extra: MenuEntry[] = []): MenuEntry[] {
-  const playable = tracks.some((t) => vias(t, sp()).length > 0)
+  const playable = tracks.some((t) => canPlay(t, sp()))
   return [
     { label: tr('Play'), icon: <Play size={16} />, disabled: !playable, onSelect: () => player().playTracks(tracks, 0) },
     { label: tr('Shuffle play'), icon: <Shuffle size={16} />, disabled: !playable, onSelect: () => shufflePlay(tracks) },

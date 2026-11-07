@@ -396,7 +396,8 @@ export const useStore = create<State>((set, get) => {
         set({ importRun: advance(run, latest) })
         if (run.hidden) get().notify(importText(latest, run.kind), { sticky: true, id: importToast })
       }
-      let listsShown = false
+      // The last list read again: each is saved before its searches (Against Liner 13).
+      let listShown = 0
       const offDoubt = api.onImportDoubt((d) => {
         const run = get().importRun
         if (run) set({ importRun: { ...run, doubts: [...run.doubts, d] } })
@@ -404,9 +405,9 @@ export const useStore = create<State>((set, get) => {
       const off = api.onSpotifyImport((p) => {
         latest = p
         timer ??= setTimeout(beat, BEAT)
-        // Every list saved: the library has them while the searches go on.
-        if (!listsShown && p.matching && p.toSearch) {
-          listsShown = true
+        // A list saved: the library has it while the searches go on.
+        if (p.matching && p.list !== listShown) {
+          listShown = p.list
           get().refresh().catch(() => undefined)
         }
       })

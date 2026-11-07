@@ -2308,6 +2308,11 @@ const nl: Record<string, string> = {
   'Its songs, playlists and stars come in. Nothing goes back: your likes and plays stay here.': 'De nummers, playlists en sterren komen binnen. Er gaat niets terug: je likes en afspeelbeurten blijven hier.',
   'Your likes and plays here go out to your music server. Nothing new comes in from it.': 'Je likes en afspeelbeurten hier gaan naar je muziekserver. Er komt niets nieuws van binnen.',
   'Can’t reach YouTube. Check your connection.': 'YouTube is niet bereikbaar. Controleer je verbinding.',
+  'Looking for “{title}” on YouTube…': '“{title}” zoeken op YouTube…',
+  '“{title}” wasn’t found on YouTube: skipped': '“{title}” niet gevonden op YouTube: overgeslagen',
+  '{n} song left to look up': 'Nog {n} nummer te zoeken',
+  '{n} songs left to look up': 'Nog {n} nummers te zoeken',
+  'Your lists are already in your library: play them now, a song not found yet is looked up when its turn comes.': 'Je lijsten staan al in je bibliotheek: speel ze nu af, een nummer dat nog niet gevonden is wordt gezocht als het aan de beurt is.',
 }
 
 export default nl

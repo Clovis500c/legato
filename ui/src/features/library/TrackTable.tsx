@@ -17,8 +17,8 @@ import { Cover } from '../../shared/ui/Cover'
 import { SourceIcon } from '../../shared/ui/SourceIcon'
 import { Stars } from '../../shared/ui/Stars'
 import { useStore } from '../../app/store'
-import { isFull, vias } from '../player/sources'
-import { usePlayer } from '../player/store'
+import { isFull } from '../player/sources'
+import { canPlay, usePlayer } from '../player/store'
 import { toggleLike, useLikedIds } from '../player/like'
 import { AddToPlaylist } from './AddToPlaylist'
 import { removeFromPlaylist, removePositions } from './edits'
@@ -140,7 +140,7 @@ export function TrackTable({ tracks, empty, editId, rowActions, sort, onSort, fo
       return choose(all(tracks))
     }
     if (e.key === 'Escape' && sel.ids.size) return choose({ ...NONE, cursor: sel.cursor })
-    if (e.key === 'Enter' && sel.cursor !== null && vias(tracks[sel.cursor], sp).length) return play(tracks, sel.cursor)
+    if (e.key === 'Enter' && sel.cursor !== null && canPlay(tracks[sel.cursor], sp)) return play(tracks, sel.cursor)
     if (e.key === 'Delete' && editId !== undefined && sel.ids.size) removeChosen()
   }
   // Mockup order: the hover actions and the heart sit right before the time (last column).
@@ -246,7 +246,7 @@ export function TrackTable({ tracks, empty, editId, rowActions, sort, onSort, fo
             {virtual.getVirtualItems().map((v) => {
               const t = tracks[v.index]
               const on = t.id === playingId
-              const playable = vias(t, sp).length > 0
+              const playable = canPlay(t, sp)
               const isPicked = sel.ids.has(t.id)
               return (
                 <div

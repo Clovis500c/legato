@@ -270,8 +270,20 @@ copies, downloads for offline), their accounts, limits and paid plan.
       fragment, Open in Legato, Listen on YouTube, Get Legato.
 - [ ] 12. `S-M` A moving cover background (our own WebGL shader): Now Playing, Karaoke, the Cover display, behind Home
       as an option; under 3 % CPU.
-- [ ] 13. `M` Imports in seconds: the playlist there at once, each song looked up as it comes up to play, the rest at the
+- [x] 13. `M` Imports in seconds: the playlist there at once, each song looked up as it comes up to play, the rest at the
       slow pace (never more searches, never quicker: `searchpace`).
+      (2026-11-07, autonomous run: Connect Spotify's export already saved its lists first; the Spotify page's rows,
+      Connect Apple Music and pasted Spotify songs now do too (`links::save_then_find`: saved with the versions the
+      library knows, each answer written as it comes), and the screen reads the library again as each list lands. A
+      song with no way to play yet (`toFind`: no source, not found before) stays in the lists, Up next and the menus;
+      when it comes up the player asks Rust (`find_now`): the running import puts it first in its `Line` (same `Pace`,
+      no second search later; a refusal answers at once), else one search at the rooms' pace; found, it plays; not
+      found, skipped and on Songs not found; refused, lookups rest 5 minutes and the queue plays what it can. The song
+      after the one playing is asked 5 s in, quietly, then cued (one search per song played). The import screen says
+      how many are left to look up, and that the lists can be played now. Tests: `Line::first`, `toFind`. Decided
+      alone (each easy to undo): the player's lookups share the rooms' pace outside imports; a toast while a song is
+      looked up at its turn. Not done: pasted Deezer / Apple Music links, library files and shared lists still save
+      after their searches. Not tried: a real 1 000-song import (the owner's account, YouTube's limits).)
 - [ ] 14. `M` More lyrics sources and a picker with a match %, each source's terms read first, a privacy row each.
 - [ ] 15. `M` SoundCloud sets and likes through its official widget's list (terms first), matched on YouTube.
 - [ ] 16. `M` Reach: the website in the app's 18 languages, README screenshots, winget and Scoop, Discussions (outward

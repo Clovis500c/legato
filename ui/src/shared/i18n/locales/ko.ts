@@ -2308,6 +2308,11 @@ const ko: Record<string, string> = {
   'Its songs, playlists and stars come in. Nothing goes back: your likes and plays stay here.': '서버의 노래, 재생목록, 별표가 들어옵니다. 아무것도 돌려보내지 않으며 좋아요와 재생은 여기에 남습니다.',
   'Your likes and plays here go out to your music server. Nothing new comes in from it.': '여기서의 좋아요와 재생은 음악 서버로 갑니다. 서버에서 새로 들어오는 것은 없습니다.',
   'Can’t reach YouTube. Check your connection.': 'YouTube에 연결할 수 없습니다. 연결을 확인하세요.',
+  'Looking for “{title}” on YouTube…': 'YouTube에서 “{title}” 찾는 중…',
+  '“{title}” wasn’t found on YouTube: skipped': '“{title}”을(를) YouTube에서 찾지 못했습니다: 건너뜀',
+  '{n} song left to look up': '찾을 곡 {n}개 남음',
+  '{n} songs left to look up': '찾을 곡 {n}개 남음',
+  'Your lists are already in your library: play them now, a song not found yet is looked up when its turn comes.': '목록이 이미 보관함에 있습니다. 지금 바로 재생하세요. 아직 찾지 못한 곡은 차례가 오면 검색됩니다.',
 }
 
 export default ko

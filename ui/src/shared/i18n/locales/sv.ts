@@ -2308,6 +2308,11 @@ const sv: Record<string, string> = {
   'Its songs, playlists and stars come in. Nothing goes back: your likes and plays stay here.': 'Dess låtar, spellistor och stjärnor kommer in. Inget skickas tillbaka: dina gillningar och spelningar stannar här.',
   'Your likes and plays here go out to your music server. Nothing new comes in from it.': 'Dina gillningar och spelningar här skickas till din musikserver. Inget nytt kommer in från den.',
   'Can’t reach YouTube. Check your connection.': 'Det går inte att nå YouTube. Kontrollera anslutningen.',
+  'Looking for “{title}” on YouTube…': 'Söker efter ”{title}” på YouTube…',
+  '“{title}” wasn’t found on YouTube: skipped': '”{title}” hittades inte på YouTube: hoppades över',
+  '{n} song left to look up': '{n} låt kvar att söka',
+  '{n} songs left to look up': '{n} låtar kvar att söka',
+  'Your lists are already in your library: play them now, a song not found yet is looked up when its turn comes.': 'Dina listor finns redan i ditt bibliotek: spela dem nu, en låt som inte hittats än söks när det blir dess tur.',
 }
 
 export default sv

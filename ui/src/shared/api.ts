@@ -187,6 +187,8 @@ export const api = {
   /** The ticked ones through the import screen ("spotify-import" events), each a playlist of yours. */
   libraryFileImport: (path: string, picks: SpotifyPick[]) => invoke<SpotifyLibraryImport>('library_file_import', { path, picks }),
   notFound: () => invoke<number[]>('not_found'),
+  /** A song with no way to play yet, looked up on YouTube now at the imports' pace (Against Liner 13). True: found. */
+  findNow: (trackId: number) => invoke<boolean>('find_now', { trackId }),
   libraryHealth: () => invoke<LibraryHealth>('library_health'),
   notFoundSearch: () => invoke<SpotifyLibraryImport>('not_found_search'),
   onSpotifyExport: (cb: (r: SpotifyExport) => void) => listen<SpotifyExport>('spotify-export', (e) => cb(e.payload)),

@@ -28,8 +28,8 @@ pub struct Rooms {
     mode: Mutex<Mode>,
     /// The rooms last heard, their addresses by id.
     heard: Mutex<HashMap<String, Vec<SocketAddr>>>,
-    /// The listener's searches, one at a time and spaced (`searchpace`).
-    pace: tokio::sync::Mutex<Pace>,
+    /// The listener's searches, one at a time and spaced (`searchpace`); the player's own too (`links::find_now`).
+    pub(crate) pace: tokio::sync::Mutex<Pace>,
 }
 
 #[derive(Default)]

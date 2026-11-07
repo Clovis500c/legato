@@ -2308,6 +2308,11 @@ const pt: Record<string, string> = {
   'Its songs, playlists and stars come in. Nothing goes back: your likes and plays stay here.': 'As músicas, playlists e estrelas dele chegam. Nada volta: suas curtidas e reproduções ficam aqui.',
   'Your likes and plays here go out to your music server. Nothing new comes in from it.': 'Suas curtidas e reproduções daqui vão para seu servidor de música. Nada novo chega dele.',
   'Can’t reach YouTube. Check your connection.': 'Não foi possível acessar o YouTube. Verifique sua conexão.',
+  'Looking for “{title}” on YouTube…': 'Procurando “{title}” no YouTube…',
+  '“{title}” wasn’t found on YouTube: skipped': '“{title}” não foi encontrada no YouTube: pulada',
+  '{n} song left to look up': 'Falta {n} música para procurar',
+  '{n} songs left to look up': 'Faltam {n} músicas para procurar',
+  'Your lists are already in your library: play them now, a song not found yet is looked up when its turn comes.': 'Suas listas já estão na sua biblioteca: ouça agora, uma música ainda não encontrada é procurada quando chega a vez dela.',
 }
 
 export default pt

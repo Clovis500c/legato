@@ -10,6 +10,10 @@ export const viaLabel: Record<Via, string> = { local: msg('Local file'), server:
 /** Ways this track can play, best first: local file, your server, YouTube (in app), Spotify (when connected), then preview. */
 export const vias = (t: Pick<Track, 'ids'>, spotify = false): Via[] => [t.ids.local && 'local', t.ids.server && 'server', t.ids.youtube && 'youtube', spotify && t.ids.spotify && 'spotify', t.ids.apple && 'preview'].filter((v): v is Via => !!v)
 
+/** No way to play yet, but YouTube may have it (Against Liner 13): a library song with an artist, not found before. The
+ * player looks it up as it comes up to play. */
+export const toFind = (t: Pick<Track, 'ids' | 'artist'> & { id: number }, notFound: ReadonlySet<number>, spotify = false) => t.id > 0 && !vias(t, spotify).length && !!t.artist.trim() && !notFound.has(t.id)
+
 /** Plays in full (not just a preview). */
 export const isFull = (t: Pick<Track, 'ids'>, spotify = false) => !!(t.ids.local || t.ids.server || t.ids.youtube || (spotify && t.ids.spotify))
 

@@ -105,7 +105,9 @@ export function ImportScreen() {
               <span className="min-w-0 truncate">{searching ? trn(p.toSearch, 'Searching YouTube for {n} song', 'Searching YouTube for {n} songs') : p && kind === 'shared' ? p.name : p ? tr('List {list} of {lists}: {name}', { list: p.list, lists: p.lists, name: p.name }) : tr('Importing…')}</span>
               {!!total && <span className="shrink-0 tabular-nums">{tr('{done} of {total} songs', { done: done ?? 0, total })}</span>}
             </div>
-            <p className="min-h-4 text-xs text-ink-3 tabular-nums">{!!p?.playable && trn(p.playable, '{n} song playable', '{n} songs playable')}</p>
+            <p className="min-h-4 text-xs text-ink-3 tabular-nums">{[p?.playable ? trn(p.playable, '{n} song playable', '{n} songs playable') : '', searching ? trn(p.toSearch - p.searched, '{n} song left to look up', '{n} songs left to look up') : ''].filter(Boolean).join(' · ')}</p>
+            {/* Lists saved before their searches (Against Liner 13): the player looks a song up as it comes up. */}
+            {p?.matching && (kind === 'spotify' || kind === 'apple') && <p className="text-xs text-ink-2">{tr('Your lists are already in your library: play them now, a song not found yet is looked up when its turn comes.')}</p>}
             <Timing run={run} />
           </div>
           <div className="flex justify-end gap-2">

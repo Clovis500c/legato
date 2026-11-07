@@ -6,13 +6,16 @@ use crate::spotify_web::{SpotifyLibraryImport, SpotifyProgress, SpotifySong};
 use crate::{AppState, CmdResult, err, hosts, youtube_version};
 use music_connectors::{deezer, itunes, linklist::LinkList, soundcloud};
 use music_core::library::PlaylistEdit;
+use music_core::matching::same_track;
 use music_core::model::{Source, Track};
 use music_core::searchpace::{Line, Pace};
 use serde::Serialize;
-use std::collections::BTreeSet;
+use std::collections::{BTreeSet, VecDeque};
+use std::sync::Mutex;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::{Duration, Instant};
 use tauri::{Emitter, Manager, State};
+use tokio::sync::{mpsc, oneshot};
 
 #[derive(Serialize, ts_rs::TS)]
 #[serde(rename_all = "camelCase")]
@@ -146,7 +149,39 @@ pub async fn find_on_youtube(app: &tauri::AppHandle, tracks: &[Track], progress:
     search(app, out, todo, progress).await
 }
 
-/// `out[todo]` searched, whatever was said of them before.
+/// Where the answer to a song the player wants goes: the song as searched, None when YouTube refused.
+type Reply = oneshot::Sender<Option<Track>>;
+
+/// The running search's door for the songs the player wants now (`find_now`). None: no import is searching.
+static WANTED: Mutex<Option<mpsc::UnboundedSender<(Track, Reply)>>> = Mutex::new(None);
+
+/// Shuts that door on every way out of a search.
+struct Door;
+
+impl Drop for Door {
+    fn drop(&mut self) {
+        *WANTED.lock().unwrap() = None;
+    }
+}
+
+/// A list of an import there at once (Against Liner 13): saved with the versions the library knows, then its unknown
+/// songs searched, each answer written to the library as it comes. None: stopped (the list stays).
+pub async fn save_then_find(app: &tauri::AppHandle, read: &[Track], save: impl FnOnce(&[Track]) -> anyhow::Result<i64>, progress: impl Fn(Searched)) -> Result<Option<(i64, Found)>, String> {
+    let state = app.state::<AppState>();
+    let mut known = read.to_vec();
+    fill_known(&state, &mut known);
+    let id = save(&known).map_err(err)?;
+    let step = |step: Searched| {
+        if let Some(song) = step.song {
+            note_search(&state, song);
+        }
+        progress(step);
+    };
+    Ok(find_on_youtube(app, &known, step).await?.map(|found| (id, found)))
+}
+
+/// `out[todo]` searched, whatever was said of them before. A song the player wants meanwhile goes first (Against Liner
+/// 13): the same pace, so no quicker, and no second search of it later.
 async fn search(app: &tauri::AppHandle, mut out: Vec<Track>, todo: Vec<usize>, progress: impl Fn(Searched)) -> Result<Option<Found>, String> {
     let mut done = out.len() - todo.len();
     let mut found = out.iter().filter(|t| has_version(t)).count();
@@ -154,6 +189,14 @@ async fn search(app: &tauri::AppHandle, mut out: Vec<Track>, todo: Vec<usize>, p
     let mut line = Line::new(&out, todo);
     let mut pace = Pace::default();
     let mut running = tokio::task::JoinSet::new();
+    let (door, mut wanted) = mpsc::unbounded_channel();
+    *WANTED.lock().unwrap() = Some(door);
+    let _door = Door;
+    // The player's asks: songs of this line by place, others (one search each, before the line) in order.
+    let mut owed: Vec<(usize, Reply)> = Vec::new();
+    let mut asked: VecDeque<(Track, Reply)> = VecDeque::new();
+    let mut asking: Option<Reply> = None;
+    let mut searching = None;
     loop {
         if stopped() {
             return Ok(None);
@@ -162,47 +205,129 @@ async fn search(app: &tauri::AppHandle, mut out: Vec<Track>, todo: Vec<usize>, p
         if pace.gave_up(now) {
             break;
         }
-        if running.is_empty()
-            && pace.ready(now)
-            && let Some(i) = line.pop()
-        {
-            pace.started(now);
-            let (app, song) = (app.clone(), out[i].clone());
-            running.spawn(async move { (i, youtube_version(&app.state::<AppState>(), &song).await) });
+        while let Ok((song, reply)) = wanted.try_recv() {
+            let said = match out.iter().position(|t| same_track(t, &song)) {
+                Some(i) if line.is_settled(i) => Some(out[i].clone()),
+                // Never around a refusal: not now.
+                _ if !pace.wait_left(now).is_zero() => None,
+                Some(i) if searching == Some(i) || line.first(i) => {
+                    owed.push((i, reply));
+                    continue;
+                }
+                _ => {
+                    asked.push_back((song, reply));
+                    continue;
+                }
+            };
+            let _ = reply.send(said);
+        }
+        if running.is_empty() && pace.ready(now) {
+            let next = match asked.pop_front() {
+                Some((song, reply)) => Some((None, song, Some(reply))),
+                None => line.pop().map(|i| (Some(i), out[i].clone(), None)),
+            };
+            if let Some((i, song, reply)) = next {
+                pace.started(now);
+                (searching, asking) = (i, reply);
+                let app = app.clone();
+                running.spawn(async move { (i, youtube_version(&app.state::<AppState>(), &song).await) });
+            }
         }
         let Some(ended) = running.join_next().await else {
-            if line.left() == 0 {
+            if line.left() == 0 && asked.is_empty() {
                 break;
             }
             tokio::time::sleep(WAITING).await;
             continue;
         };
+        searching = None;
         let (i, answer) = ended.map_err(err)?;
         let wait_secs = |pace: &Pace| pace.wait_left(Instant::now()).as_secs_f32().ceil() as u32;
         let Some(answer) = answer else {
             pace.refused(Instant::now());
-            line.again(i);
+            if let Some(i) = i {
+                line.again(i);
+            }
+            // The player waits for none of them: the import goes on after the wait.
+            for reply in asking.take().into_iter().chain(owed.drain(..).map(|(_, r)| r)).chain(asked.drain(..).map(|(_, r)| r)) {
+                let _ = reply.send(None);
+            }
             progress(Searched { done, found, song: None, wait_secs: wait_secs(&pace) });
             continue;
         };
         pace.answered(Instant::now());
         // A doubtful match: the import screen offers it to check (Against Liner 9), the song as the import has it.
-        if !answer.doubt.is_empty() {
+        if i.is_some() && !answer.doubt.is_empty() {
             let _ = app.emit("import-doubt", ImportDoubt { song: answer.song.clone(), candidates: answer.doubt });
         }
-        let own = line.settle(i).then_some((i, answer.song));
+        if let Some(reply) = asking.take() {
+            let _ = reply.send(Some(answer.song.clone()));
+        }
+        let own = i.filter(|&i| line.settle(i)).map(|i| (i, answer.song));
         let others = line.also_found(&out, &answer.seen);
         for (at, song) in own.into_iter().chain(others) {
             out[at] = song;
             done += 1;
             found += usize::from(has_version(&out[at]));
+            for (_, reply) in owed.extract_if(.., |(j, _)| *j == at) {
+                let _ = reply.send(Some(out[at].clone()));
+            }
             progress(Searched { done, found, song: Some(&out[at]), wait_secs: wait_secs(&pace) });
         }
     }
     if pace.refusals > 0 {
         crate::diag::warn("import", "YouTube refused searches", &format!("{} refused, {done} answered", pace.refusals));
     }
+    // Gave up on YouTube's refusals: so does the player.
+    for reply in owed.into_iter().map(|(_, r)| r).chain(asked.into_iter().map(|(_, r)| r)) {
+        let _ = reply.send(None);
+    }
     Ok((!stopped()).then_some(Found { tracks: out, unsearched: line.left() + running.len() }))
+}
+
+/// A song of the library with no way to play yet, wanted now by the player (Against Liner 13): its YouTube version looked
+/// up first, at the imports' pace. The running import searches it next; else one search of its own (the rooms' pace).
+/// Never around a refusal. True: found, the library has it; false: not found, marked so.
+#[tauri::command]
+pub async fn find_now(app: tauri::AppHandle, state: State<'_, AppState>, track_id: i64) -> CmdResult<bool> {
+    let Some(mut song) = state.lib().track(track_id).map_err(err)?.map(|t| t.track) else { return Ok(false) };
+    if has_version(&song) {
+        return Ok(true);
+    }
+    if state.lib().not_found_lately(&song).unwrap_or(false) {
+        return Ok(false);
+    }
+    let (tx, rx) = oneshot::channel();
+    let sent = WANTED.lock().unwrap().as_ref().is_some_and(|door| door.send((song.clone(), tx)).is_ok());
+    let answer = match if sent { rx.await.ok() } else { None } {
+        Some(answer) => answer,
+        // No import searching, or it ended meanwhile (done, or canceled): a search of its own.
+        None => alone(&app, &song).await,
+    };
+    let answer = answer.ok_or("YouTube: Too Many Requests")?;
+    // On this song's own row: the import's copy may carry other ids.
+    if let Some(video) = answer.ids.get(&Source::Youtube) {
+        song.ids.insert(Source::Youtube, video.clone());
+    }
+    note_search(&state, &song);
+    Ok(has_version(&song))
+}
+
+/// One search outside an import, paced with the rooms' (one at a time, spaced). None: refused, or YouTube's wait under
+/// way.
+async fn alone(app: &tauri::AppHandle, song: &Track) -> Option<Track> {
+    let rooms = app.state::<crate::rooms::Rooms>();
+    let mut pace = rooms.pace.lock().await;
+    while !pace.ready(Instant::now()) {
+        if !pace.wait_left(Instant::now()).is_zero() {
+            return None;
+        }
+        tokio::time::sleep(WAITING).await;
+    }
+    pace.started(Instant::now());
+    let answer = youtube_version(&app.state::<AppState>(), song).await;
+    if answer.is_some() { pace.answered(Instant::now()) } else { pace.refused(Instant::now()) }
+    answer.map(|a| a.song)
 }
 
 /// The songs not found, to look at.

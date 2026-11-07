@@ -765,6 +765,11 @@ impl Library {
         self.judged(rows, None)
     }
 
+    /// One song's row, its ids. None: gone.
+    pub fn track(&self, id: i64) -> Result<Option<LibraryTrack>> {
+        Ok(self.track_rows(Some(&ids_json([id])))?.into_iter().next())
+    }
+
     /// Library list rows (songs with a source) in its order, all or `only` these ids (JSON array).
     fn track_rows(&self, only: Option<&str>) -> Result<Vec<LibraryTrack>> {
         let filter = if only.is_some() { "WHERE t.id IN (SELECT value FROM json_each(?1))" } else { "" };

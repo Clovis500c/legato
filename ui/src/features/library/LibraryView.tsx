@@ -20,7 +20,7 @@ import { PageHeader } from '../../shared/ui/PageHeader'
 import { sourceLabel } from '../../shared/ui/SourceIcon'
 import { startAutoDj } from '../player/autoDj'
 import { isFull, vias } from '../player/sources'
-import { usePlayer } from '../player/store'
+import { canPlay, usePlayer } from '../player/store'
 import { SharePanel } from '../share/SharePanel'
 import { FIT_FIELD, SongsThatFit } from './SongsThatFit'
 import { PlaylistCover } from './PlaylistCover'
@@ -101,7 +101,7 @@ function ColumnsButton({ extra }: { extra?: () => MenuEntry[] }) {
 export function PlayAll({ tracks }: { tracks: LibraryTrack[] }) {
   const play = usePlayer((s) => s.playTracks)
   const sp = useStore((s) => s.status.spotify.connected)
-  const first = tracks.findIndex((t) => vias(t, sp).length > 0)
+  const first = tracks.findIndex((t) => canPlay(t, sp))
   if (first < 0) return null
   return (
     <RoundButton label={tr('Play all')} kind="primary" size="lg" onClick={() => play(tracks, first)}>

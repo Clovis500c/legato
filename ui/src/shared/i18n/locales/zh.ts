@@ -2308,6 +2308,11 @@ const zh: Record<string, string> = {
   'Its songs, playlists and stars come in. Nothing goes back: your likes and plays stay here.': '它的歌曲、播放列表和星标会导入。不会回传任何内容：你的喜欢和播放留在这里。',
   'Your likes and plays here go out to your music server. Nothing new comes in from it.': '你在这里的喜欢和播放会发送到你的音乐服务器。不会从它导入新内容。',
   'Can’t reach YouTube. Check your connection.': '无法连接 YouTube。请检查网络连接。',
+  'Looking for “{title}” on YouTube…': '正在 YouTube 上查找“{title}”…',
+  '“{title}” wasn’t found on YouTube: skipped': '在 YouTube 上没有找到“{title}”：已跳过',
+  '{n} song left to look up': '还有 {n} 首待查找',
+  '{n} songs left to look up': '还有 {n} 首待查找',
+  'Your lists are already in your library: play them now, a song not found yet is looked up when its turn comes.': '你的列表已经在资料库中：现在就可以播放，尚未找到的歌曲会在轮到它时查找。',
 }
 
 export default zh

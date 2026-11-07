@@ -2308,6 +2308,11 @@ const tr: Record<string, string> = {
   'Its songs, playlists and stars come in. Nothing goes back: your likes and plays stay here.': 'Şarkıları, çalma listeleri ve yıldızları gelir. Hiçbir şey geri gitmez: beğenilerin ve dinlemelerin burada kalır.',
   'Your likes and plays here go out to your music server. Nothing new comes in from it.': 'Buradaki beğenilerin ve dinlemelerin müzik sunucuna gider. Ondan yeni bir şey gelmez.',
   'Can’t reach YouTube. Check your connection.': 'YouTube’a ulaşılamıyor. Bağlantınızı kontrol edin.',
+  'Looking for “{title}” on YouTube…': 'YouTube’da “{title}” aranıyor…',
+  '“{title}” wasn’t found on YouTube: skipped': '“{title}” YouTube’da bulunamadı: atlandı',
+  '{n} song left to look up': 'Aranacak {n} şarkı kaldı',
+  '{n} songs left to look up': 'Aranacak {n} şarkı kaldı',
+  'Your lists are already in your library: play them now, a song not found yet is looked up when its turn comes.': 'Listeleriniz zaten kitaplığınızda: hemen dinleyin, henüz bulunamayan bir şarkı sırası geldiğinde aranır.',
 }
 
 export default tr

@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest'
-import { isFull, nativePath, serverDown, vias, viaOfPath } from './sources'
+import { isFull, nativePath, serverDown, toFind, vias, viaOfPath } from './sources'
 
 it('orders sources: local, YouTube, then preview', () => {
   expect(vias({ ids: { apple: '1', youtube: 'y', local: 'C:/a.flac' } })).toEqual(['local', 'youtube', 'preview'])
@@ -29,4 +29,14 @@ it('tells a server that is off or refusing from a song it lacks', () => {
   expect(serverDown("Your music server doesn't have this item (Song not found)")).toBe(false)
   expect(serverDown('Your music server stopped sending this song (timed out)')).toBe(false)
   expect(serverDown('C:/a.flac: file not found')).toBe(false)
+})
+
+it('looks up a library song with no way to play yet, unless it was not found before', () => {
+  const notFound = new Set([2])
+  expect(toFind({ id: 1, artist: 'A', ids: { spotify: 's' } }, notFound)).toBe(true)
+  expect(toFind({ id: 2, artist: 'A', ids: { spotify: 's' } }, notFound)).toBe(false)
+  expect(toFind({ id: -1, artist: 'A', ids: { spotify: 's' } }, notFound)).toBe(false)
+  expect(toFind({ id: 3, artist: 'A', ids: { apple: '1' } }, notFound)).toBe(false)
+  expect(toFind({ id: 4, artist: 'A', ids: { spotify: 's' } }, notFound, true)).toBe(false)
+  expect(toFind({ id: 5, artist: ' ', ids: {} }, notFound)).toBe(false)
 })
