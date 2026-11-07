@@ -92,13 +92,15 @@ function Synced({ lines: sung, durationMs, fix, onTap }: { lines: Lyrics['lines'
         <button
           key={i}
           data-line={i}
+          // The sung line full, the others fainter the further they are (Apple Music's way, our own words).
+          style={{ opacity: far(Math.abs(i - Math.max(at, 0))) }}
           onClick={() => {
             // ♪ breaks (added here) have no lyric time: nothing to tap.
             const lyricMs = (l as { lyricMs?: number }).lyricMs
             if (!onTap) seek(l.ms)
             else if (l.text && lyricMs !== undefined) onTap(lyricMs)
           }}
-          className={`block w-full origin-left py-1.5 text-left text-[1.625rem] leading-snug font-bold tracking-[-0.01em] transition-[color,transform,opacity] duration-300 ${i === at ? 'scale-[1.03] text-ink' : i < at ? 'text-ink-2 opacity-70 hover:opacity-100' : 'text-ink-3 hover:text-ink-2'}`}
+          className={`block w-full origin-left py-2 text-left text-[1.625rem] leading-tight font-bold tracking-[-0.01em] text-ink transition-[transform,opacity] duration-500 hover:opacity-90! ${i === at ? 'scale-[1.04]' : ''}`}
         >
           {!l.text ? (
             <MusicNotesSimple size={26} weight="bold" aria-label={tr('Instrumental')} className={i === at ? 'animate-pulse' : ''} />
@@ -112,6 +114,9 @@ function Synced({ lines: sung, durationMs, fix, onTap }: { lines: Lyrics['lines'
     </div>
   )
 }
+
+/** A line's light by its distance from the sung one: 1, then 0.62 down to 0.26. */
+const far = (d: number) => (d === 0 ? 1 : Math.max(0.26, 0.62 - (d - 1) * 0.12))
 
 /**
  * Lyrics without timings: they glide along with the song (where it is in the song ≈ where it is in the text), a hand
