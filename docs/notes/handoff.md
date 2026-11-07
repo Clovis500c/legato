@@ -15,7 +15,9 @@ be able to take the project over). Updated 2026-11-06, evening, from the owner's
   next one, an auto version above 1.1.681, with everything below (U1, U2, rooms, servers, the phone fixes, line 2):
   1.1.742. Then the owner's word on the other PC (2026-11-06, evening, « Pousse une Beta »): the phone-1 review's two
   fixes (Back, a YouTube song without internet): 1.1.745, for their phone. Then, on their word again (« Pousse une
-  Beta »): Against Liner 3 to 5 and the round covers (below), 1.1.750 by the dry run.
+  Beta »): Against Liner 3 to 5 and the round covers (below): 1.1.751. Then their PC tries' fixes (plan-v2 › From the
+  owner's tries on the PC): the animated playing mark, Music App removed by the next update (its key was under
+  `Software\musicapp`), the list's click and sideways scrollbar; pushed as a Beta on their word.
 - **master** = **platforms**, both pushed on 2026-11-06 (the owner's word: past 95 % of the 5-hour window, push it all,
   they go on from another PC). The website, https://clovis500c.github.io/legato/, is deployed from master. Nothing
   half done, no stash, no other branch or worktree. On the other PC (2026-11-06, evening): master pulled to `e27c486`,
@@ -81,7 +83,10 @@ time, effort high.
   line in it), 5 (Settings › General › Storage), the round covers (the radial look and vinyl covers on any art), and
   plan-v2 › Website's line for the story on a phone. Each in plan-v2 with what wasn't tried; Check live has them.
   Next: a normal session follows "How to continue" (smallest first: Against Liner 6, snap layouts); an autonomous
-  run goes on with 18, and on down the order.
+  run goes on with 18, and on down the order. A one-shot CronCreate (session only, id `74088f2b`, 2026-11-07 06:07)
+  resumes line 6 after the 5-hour reset, as the owner asked. Also seen on the owner's PC, outside Legato: a startup
+  entry "Display Calibration" running `javaw -jar` on a .DLL in `AppData\Local\Microsoft\GameDVR` (looks like malware,
+  told them; untouched).
 - The end: a report in French (`docs/notes/report-2026-11-06.md`, untracked), this section folded into the rest of
   this file, the cron deleted, the report sent to the owner (SendUserFile, proactive).
 
