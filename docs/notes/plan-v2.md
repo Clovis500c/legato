@@ -298,6 +298,13 @@ copies, downloads for offline), their accounts, limits and paid plan.
       are a Plex Pass extra). Tests: the score, the pick key, a pick kept on clearing, both servers' answers (mockito);
       the picker seen in the site demo with made-up choices. Not tried: a real Navidrome or Jellyfin with lyrics.)
 - [ ] 15. `M` SoundCloud sets and likes through its official widget's list (terms first), matched on YouTube.
+      (Terms read 2026-11-07, not built: its Widget API is documented with the API, under the same
+      [API terms](https://developers.soundcloud.com/docs/api/terms-of-use): §01 a registered app and its client ID for
+      every call; §03 no copying of User Content, no playback experience mixing it with other services' (YouTube
+      named); §10.4 no scraping "or similar techniques" to copy or repurpose content. A hidden widget read to rebuild a
+      set on YouTube is that. Waits for the owner: a registered app of theirs, or their word against the terms. Today's
+      way, untried: Tune My Music exports SoundCloud playlists as CSV, which Add music › song list reads ("Track
+      name", "Artist name"); no official SoundCloud export of likes or playlists found.)
 - [ ] 16. `M` Reach: the website in the app's 18 languages, README screenshots, winget and Scoop, Discussions (outward
       steps: the owner's word). Takes in Features › Low's Community line.
 - [ ] 17. `L` Listening rooms over the internet, no server of ours: sealed control messages through a public relay (the
