@@ -425,7 +425,7 @@ impl Library {
         if db.query_row("PRAGMA user_version", [], |r| r.get::<_, i64>(0))? < 4 {
             migrate_v4(&db)?;
         }
-        let lib = Self { db, versions: std::sync::Arc::new(crate::cache::Versions::default()), history_read: Default::default() };
+        let mut lib = Self { db, versions: std::sync::Arc::new(crate::cache::Versions::default()), history_read: Default::default() };
         if lib.db.query_row("PRAGMA user_version", [], |r| r.get::<_, i64>(0))? < 5 {
             migrate_v5(&lib)?;
         }
@@ -2718,7 +2718,7 @@ mod tests {
         use crate::history::Play;
         use rusqlite::trace::TraceEventCodes;
         let now = 1_800_000_000;
-        let lib = big_library(now)?;
+        let mut lib = big_library(now)?;
         let mut took = Vec::new();
         macro_rules! op {
             ($name:literal, $e:expr) => {{
@@ -2728,7 +2728,7 @@ mod tests {
                 r
             }};
         }
-        lib.db.trace_v2(TraceEventCodes::SQLITE_TRACE_STMT | TraceEventCodes::SQLITE_TRACE_PROFILE, Some(traced));
+        lib.db.trace_v2(TraceEventCodes::SQLITE_TRACE_STMT | TraceEventCodes::SQLITE_TRACE_PROFILE, Some(traced))?;
         // Start: the whole library, playlists, history.
         op!("tracks", lib.tracks()?);
         op!("playlists", lib.playlists()?);
@@ -2766,7 +2766,7 @@ mod tests {
         op!("songs without a source", lib.sourceless()?);
         op!("changes", lib.take_changes(10_000)?);
         op!("delete a playlist", lib.edit_playlist(PlaylistEdit::Delete { id: mine })?);
-        lib.db.trace_v2(TraceEventCodes::empty(), None);
+        lib.db.trace_v2(TraceEventCodes::empty(), None::<fn(rusqlite::trace::TraceEvent<'_>)>)?;
 
         let done = RUN.with_borrow_mut(|(_, done)| std::mem::take(done));
         for (name, t) in &took {

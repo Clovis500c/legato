@@ -119,8 +119,6 @@ They did five (2026-10-31, 11-02, 11-03 to 11-05, 11-05 to 11-06, 11-07; their r
 - The iPhone build: their signing choice (Apple Developer Program, or an unsigned .ipa). The Play Store or not (the
   APK's `REQUEST_INSTALL_PACKAGES` would have to go).
 - A backup of the signing keys (below).
-- Dependabot alert #6 (medium, dev only): `minimatch` 10.2.6 under ESLint and typescript-eslint, fixed in 11.0.1. The
-  owner said later (2026-11-05).
 - Outside Legato, seen on the owner's PC (2026-11-06): a startup entry "Display Calibration" running `javaw -jar` on a
   .DLL in `AppData\Local\Microsoft\GameDVR`. Looks like malware; told them, untouched.
 - plan-v2 › Waiting on the user (Discord's app name, a trademark search, Figma, SponsorBlock's default…) and › Not done

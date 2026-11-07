@@ -12,6 +12,17 @@ updates:
         patterns: ["*"]
     commit-message:
       prefix: "chore(deps)"
+    ignore:
+      # windows-core and windows-registry follow the windows crate (0.62); their 0.100 line alone puts two windows-core
+      # versions in one build (src-tauri unplug.rs stops compiling). Moved by hand with windows.
+      - dependency-name: windows-core
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]
+      - dependency-name: windows-registry
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]
+      # jni: the version Tauri uses (0.21); 0.22 rewrote the calls src-tauri/src/mobile makes. Moved with Tauri, after
+      # an Android build.
+      - dependency-name: jni
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]
 
   - package-ecosystem: npm
     directory: /
@@ -23,6 +34,10 @@ updates:
         patterns: ["*"]
     commit-message:
       prefix: "chore(deps)"
+    ignore:
+      # typescript-eslint does not run on TypeScript 7 yet (typescript-eslint issue 10940): 6.x until it does.
+      - dependency-name: typescript
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: npm
     directory: /site
@@ -34,6 +49,10 @@ updates:
         patterns: ["*"]
     commit-message:
       prefix: "chore(site)"
+    ignore:
+      # typescript-eslint does not run on TypeScript 7 yet (typescript-eslint issue 10940): 6.x until it does.
+      - dependency-name: typescript
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: github-actions
     directory: /

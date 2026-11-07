@@ -1173,6 +1173,16 @@ Most useful first; the tag is the effort.
       by a small job (`apk`) once both are done; a failed APK still never holds the Windows Beta back. Tried with
       1.1.785: the release in 24.7 min (was 32), Windows 11.8 min, the APK 24.5 min on its first run with an empty Rust
       cache (rust-cache keys by job); with a warm one it should come near Windows' time. Not measured yet: a warm run.
+- [x] `S` The security bots (2026-11-07, the owner's ask): Dependabot's four PRs merged on `platforms` (#15 site, #17
+      app, #18 Rust, #20 Actions), so GitHub closes them at the push; alert #6 (minimatch, dev only, no fixed 10.x)
+      closed by an override to 11.0.1 in `pnpm-workspace.yaml` (pnpm 11 no longer reads `package.json`'s `pnpm` field;
+      `site/` has its own `pnpm-workspace.yaml` so it stays its own project). Held back, with a Dependabot ignore each:
+      TypeScript 7 (typescript-eslint stops on it), windows-core and windows-registry 0.100 (the windows crate stays at
+      0.62: two windows-core in one build), jni 0.22 (Tauri's is 0.21; its new API needs our Android calls rewritten
+      and an Android build, no Android Rust target on this PC). rusqlite 0.41: `update_hook` takes `&mut`, `trace_v2`
+      returns a Result. Code scanning isn't on; secret scanning not read (`gh` lacks the scope). Not tried: the new
+      Actions majors (checkout 7, setup-node 7, pnpm/action-setup 6, tauri-action 1…) run only on a push; their
+      inputs checked against each action.yml.
 - [ ] `S` Trim CLAUDE.md to rules + pointers (structure details move to `docs/architecture.md`): cheaper sessions.
 - [x] `S` Project skills for Claude Code: "release check", "add a setting" (schema, DEFAULTS_VERSION, search index, i18n),
       "add a connector" (module, mockito tests, privacy row): the repeated recipes written once.

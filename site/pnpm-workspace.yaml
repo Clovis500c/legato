@@ -1,0 +1,1 @@
+# Its own pnpm project, not part of the root's (whose pnpm-workspace.yaml holds the app's overrides).
