@@ -1,4 +1,4 @@
-import { useRef, type ButtonHTMLAttributes } from 'react'
+import { useRef, type ButtonHTMLAttributes, type ReactNode } from 'react'
 import { formatCount } from '../format'
 import { tr } from '../i18n/i18n'
 
@@ -41,12 +41,14 @@ export function Toggle({ checked, onChange, label }: { checked: boolean; onChang
   )
 }
 
-export function Segmented<T extends string>({ value, options, onChange, label, className = '' }: { value: T; options: { value: T; label: string }[]; onChange: (v: T) => void; label: string; className?: string }) {
+/** An option with an icon shows only it, its label as hover text and name (RoundButton's way). quiet: over a picture,
+ *  it blends in (no border, the pick see-through). */
+export function Segmented<T extends string>({ value, options, onChange, label, quiet = false, className = '' }: { value: T; options: { value: T; label: string; icon?: ReactNode }[]; onChange: (v: T) => void; label: string; quiet?: boolean; className?: string }) {
   return (
-    <div role="radiogroup" aria-label={label} className={`no-scrollbar flex w-fit max-w-full gap-0.5 overflow-x-auto rounded-full border border-line p-[3px] ${className}`}>
+    <div role="radiogroup" aria-label={label} className={`no-scrollbar flex w-fit max-w-full gap-0.5 overflow-x-auto rounded-full p-[3px] ${quiet ? '' : 'border border-line'} ${className}`}>
       {options.map((o) => (
-        <button key={o.value} role="radio" aria-checked={o.value === value} onClick={() => onChange(o.value)} className={`shrink-0 rounded-full px-3 py-1 text-xs font-medium whitespace-nowrap transition phone:px-2.5 ${o.value === value ? 'bg-ink text-bg' : 'text-ink-2 hover:text-ink'}`}>
-          {o.label}
+        <button key={o.value} role="radio" aria-checked={o.value === value} aria-label={o.icon ? o.label : undefined} title={o.icon ? o.label : undefined} onClick={() => onChange(o.value)} className={`shrink-0 rounded-full text-xs font-medium whitespace-nowrap transition ${o.icon ? 'grid size-7 place-items-center' : 'px-3 py-1 phone:px-2.5'} ${o.value === value ? (quiet ? 'bg-ink/15 text-ink' : 'bg-ink text-bg') : quiet ? 'text-ink-3 hover:text-ink' : 'text-ink-2 hover:text-ink'}`}>
+          {o.icon ?? o.label}
         </button>
       ))}
     </div>

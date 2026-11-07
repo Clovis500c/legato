@@ -1,4 +1,4 @@
-import { ArrowSquareOut, CaretDown, DotsThree, Heart, ImageSquare, Queue, Quotes, SlidersHorizontal, ThumbsDown } from '@phosphor-icons/react'
+import { ArrowSquareOut, CaretDown, DotsThree, Heart, ImageSquare, MagicWand, MonitorPlay, Queue, Quotes, SlidersHorizontal, ThumbsDown } from '@phosphor-icons/react'
 import { artistName } from '../../shared/artistName'
 import { pop } from '../../shared/motion'
 import { openUrl } from '@tauri-apps/plugin-opener'
@@ -291,7 +291,11 @@ export function NowPlaying() {
   const panel: PanelId | null = editor ? 'editor' : lyrics ? 'lyrics' : upNext ? 'upNext' : null
   // Every song (user's pick 2026-10-23): Video on a file or a preview switches to its YouTube version, same spot.
   const show = video ? stage : stage === 'cover' ? 'cover' : 'auto'
-  const showOptions = [{ value: 'auto' as const, label: video && stage === 'auto' && still !== undefined ? (still ? tr('Auto · cover') : tr('Auto · video')) : tr('Auto') }, ...(video || ytVersion ? [{ value: 'video' as const, label: tr('Video') }] : []), { value: 'cover' as const, label: tr('Cover') }]
+  const showOptions = [
+    { value: 'auto' as const, label: video && stage === 'auto' && still !== undefined ? (still ? tr('Auto · cover') : tr('Auto · video')) : tr('Auto'), icon: <MagicWand size={15} /> },
+    ...(video || ytVersion ? [{ value: 'video' as const, label: tr('Video'), icon: <MonitorPlay size={15} /> }] : []),
+    { value: 'cover' as const, label: tr('Cover'), icon: <ImageSquare size={15} /> },
+  ]
   const pickShow = (s: typeof stage) => {
     update({ stage: s })
     if (s === 'video' && !video && ytVersion) void usePlayer.getState().playAt(usePlayer.getState().index, 'youtube', { from: usePlayer.getState().positionMs })
@@ -341,7 +345,7 @@ export function NowPlaying() {
         <section className={`flex min-h-0 min-w-0 flex-col items-center gap-4 ${panel ? 'phone:hidden' : ''}`}>
           {/* The phone: in More (one main thing on screen, the cover). The PC: only with a video to pick (a file with no
               YouTube version has Auto and Cover alike); always in More too. */}
-          {!phone && (video || ytVersion) && <Segmented className="glass" label={tr('Show')} value={show} onChange={pickShow} options={showOptions} />}
+          {!phone && (video || ytVersion) && <Segmented quiet className="glass" label={tr('Show')} value={show} onChange={pickShow} options={showOptions} />}
           <Stage video={video} cover={stage === 'cover' || (stage === 'auto' && still === true)} track={track} title={now.title} youtubeId={now.youtubeId} pulse={coverPulse && motion} wantRing={visualizer && motion && look === 'radial' && now.via !== 'spotify'} onRing={setRing} />
           {visualizer && motion && now.via !== 'spotify' && !ring && <Visualizer />}
           {now.via === 'spotify' && <span className="kicker text-center">{tr('Playing in your Spotify app')}</span>}
