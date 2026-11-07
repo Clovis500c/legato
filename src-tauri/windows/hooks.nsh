@@ -5,6 +5,9 @@
 ; entry go; a silent uninstall keeps app data, which both names share by identifier). An update makes no shortcuts:
 ; the ones the old install had come back under the new name, and a taskbar pin is pointed at the new exe. Nothing to
 ; do once the old install is gone. SetLnkAppUserModelId uses $0 to $5: every register touched here is put back.
+; Its key is the old manufacturer's (from the old identifier dev.musicapp.desktop), not ${MANUKEY} (legato's): looked for
+; there, it was never found (2026-11-06, the owner's PC: Music App 0.1.324 stayed, its shortcut and startup entry too).
+!define LEGATO_OLD_KEY "Software\musicapp\Music App"
 !macro NSIS_HOOK_POSTINSTALL
   Push $0
   Push $1
@@ -15,7 +18,7 @@
   Push $R0
   Push $R1
   Push $R2
-  ReadRegStr $R0 SHCTX "${MANUKEY}\Music App" ""
+  ReadRegStr $R0 SHCTX "${LEGATO_OLD_KEY}" ""
   ${If} $R0 != ""
   ${AndIf} $R0 != $INSTDIR
   ${AndIf} ${FileExists} "$R0\uninstall.exe"
@@ -40,7 +43,11 @@
       !insertmacro SetLnkAppUserModelId $R1
     ${EndIf}
   ${EndIf}
-  DeleteRegKey SHCTX "${MANUKEY}\Music App"
+  ; Its uninstaller takes its own key; one still there with its uninstaller means it failed (the old app running?): kept,
+  ; so the next update tries again.
+  ${IfNot} ${FileExists} "$R0\uninstall.exe"
+    DeleteRegKey SHCTX "${LEGATO_OLD_KEY}"
+  ${EndIf}
   Pop $R2
   Pop $R1
   Pop $R0

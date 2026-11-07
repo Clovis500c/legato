@@ -51,6 +51,14 @@ fn command(exe: &std::path::Path) -> String {
     format!("\"{}\"", exe.display())
 }
 
+/// A Run command to point at `exe`: another exe's, and that one gone or Music App's (its install outlived the rename on
+/// the owner's PC, 2026-11-06: the entry kept starting music-app.exe).
+#[cfg(any(windows, test))]
+fn stale(run: &str, exe: &std::path::Path) -> bool {
+    let named = std::path::Path::new(run.trim_matches('"'));
+    !run.eq_ignore_ascii_case(&command(exe)) && (!named.exists() || named.file_name().is_some_and(|n| n.eq_ignore_ascii_case("music-app.exe")))
+}
+
 /// StartupApproved value: odd first byte = turned off in Task Manager. No value = on.
 #[cfg(any(windows, test))]
 fn approved(value: Option<&[u8]>) -> bool {
@@ -86,10 +94,10 @@ mod win {
         set(old, Path::new(""), false)
     }
 
-    /// Entry naming an exe that no longer exists: now `exe`. Ours already, another exe that exists, or none: left alone.
+    /// Entry naming an exe that no longer exists, or Music App's: now `exe`. Ours already, another exe, or none: left alone.
     pub fn follow(name: &str, exe: &Path) -> Result<()> {
         let Ok(old) = CURRENT_USER.open(RUN).and_then(|k| k.get_string(name)) else { return Ok(()) };
-        if !old.eq_ignore_ascii_case(&super::command(exe)) && !Path::new(old.trim_matches('"')).exists() {
+        if super::stale(&old, exe) {
             CURRENT_USER.create(RUN)?.set_string(name, super::command(exe))?;
         }
         Ok(())
@@ -158,6 +166,19 @@ mod tests {
     #[test]
     fn command_is_quoted() {
         assert_eq!(command(std::path::Path::new(r"C:\Users\a\AppData\Local\Music App\music-app.exe")), r#""C:\Users\a\AppData\Local\Music App\music-app.exe""#);
+    }
+
+    #[test]
+    fn an_entry_on_a_gone_exe_or_music_apps_follows_this_one() {
+        let here = std::env::current_exe().unwrap();
+        let old = std::env::temp_dir().join(format!("legato-stale-{}", std::process::id())).join("music-app.exe");
+        std::fs::create_dir_all(old.parent().unwrap()).unwrap();
+        std::fs::write(&old, b"").unwrap();
+        assert!(stale(&command(&old), &here), "Music App's, still there");
+        assert!(stale(r#""C:\Nowhere\Legato\legato.exe""#, &here), "gone");
+        assert!(!stale(&command(&here), &here), "ours");
+        assert!(!stale(&command(&here), std::path::Path::new(r"C:\Other\legato.exe")), "another exe that exists");
+        std::fs::remove_dir_all(old.parent().unwrap()).unwrap();
     }
 
     #[test]
