@@ -325,7 +325,8 @@ copies, downloads for offline), their accounts, limits and paid plan.
         Simplified page; a page under /<code>/ never moves. Decided alone: no IP lookup, the site is static (no server
         to see it) and a geolocation service would see every visitor, against the privacy rows; a country isn't a
         language either. `site/components/pick.ts` and its test; seen in the dev server (fr → /fr/ with the hash
-        kept, a saved choice first, English kept once picked). Not pushed (the owner's word: later).
+        kept, a saved choice first, English kept once picked), then online with 1.1.785 (/legato/#privacy →
+        /legato/fr/#privacy in a French browser, English kept once picked, 18 languages in the menu).
       - [x] winget manifests prepared, not submitted (2026-11-07): `packaging/winget/Clovis500c.Legato/1.1.681`,
         Stable's NSIS installer with the SHA-256 GitHub gives its asset, `winget validate` passes; `packaging/README.md`
         says how to submit and update them (the owner's step). Not tried: `winget install --manifest` (would install
@@ -1169,9 +1170,9 @@ Most useful first; the tag is the effort.
       job stays crates only.
 - [x] `S` Faster Betas (2026-11-07, the owner's yes): the APK builds in its own job (`release.yml` › `android`) beside
       the Windows installer instead of after it (13.5 min, then 17: 32 min for 1.1.764), kept as an artifact, attached
-      by a small job (`apk`) once both are done; a failed APK still never holds the Windows Beta back. Not tried: runs
-      at the next push; the Android job's first run starts with an empty Rust cache (rust-cache keys by job). The file
-      checked by reading only (no YAML parser on this PC).
+      by a small job (`apk`) once both are done; a failed APK still never holds the Windows Beta back. Tried with
+      1.1.785: the release in 24.7 min (was 32), Windows 11.8 min, the APK 24.5 min on its first run with an empty Rust
+      cache (rust-cache keys by job); with a warm one it should come near Windows' time. Not measured yet: a warm run.
 - [ ] `S` Trim CLAUDE.md to rules + pointers (structure details move to `docs/architecture.md`): cheaper sessions.
 - [x] `S` Project skills for Claude Code: "release check", "add a setting" (schema, DEFAULTS_VERSION, search index, i18n),
       "add a connector" (module, mockito tests, privacy row): the repeated recipes written once.

@@ -20,11 +20,13 @@ be able to take the project over). Updated 2026-11-06, evening, from the owner's
   recap's profile card), 8 (there already), 9 (doubtful matches checked at an import's end), 10 (Next starts faster:
   857 to 709 ms median, measured in pnpm dev) and Now Playing's lyrics on the backdrop; then **1.1.783** (2026-11-07,
   late morning, on the owner's word "Release en beta"): the autonomous run's commits (› Autonomous run of 2026-11-07),
-  `pnpm check` and `pnpm e2e` green before the push.
-- **GitHub's master** = **platforms** = that last Beta (this file's commit). The local `master` ref lags (pushes go
-  `platforms:master`): `git log origin/master..platforms` shows what isn't on GitHub. The website,
-  https://clovis500c.github.io/legato/, is deployed from master: the phone story and the 17 other languages went with
-  1.1.783. No stash, no other branch or worktree on this PC.
+  `pnpm check` and `pnpm e2e` green before the push; then **1.1.785** (12:43, their word): the APK built in its own job
+  beside Windows (`release.yml`), the website opening in the visitor's language. 1.1.784 was a test, cancelled
+  before it published anything.
+- **GitHub's master** = 1.1.785 (`14d6a71`); **platforms** adds this file's update (docs, not pushed). The local
+  `master` ref lags (pushes go `platforms:master`): `git log origin/master..platforms` shows what isn't on GitHub. The
+  website, https://clovis500c.github.io/legato/, is deployed from master: the phone story, 18 languages, the visitor's
+  own language (checked online). No stash, no other branch or worktree on this PC.
 - **Untracked:** `docs/notes/report-*.md`, the owner's reports in French (what each autonomous run did, what to try),
   and the old transcript `2026-10-30-001238-…txt` at the root. Never commit them; read the reports for context.
 - **Never tried for real** (built and unit-tested, seen in the demo or on the emulator only): plan-v2 › Check live in
@@ -192,7 +194,7 @@ signed in as `Clovis500c`; `pnpm check` green there. What it lacks:
 
 | Branch | State |
 |---|---|
-| `platforms` | Work goes here: equal to GitHub's master since Beta 1.1.783. |
+| `platforms` | Work goes here: GitHub's master (Beta 1.1.785) plus docs. |
 | `master` | Every push is a Beta (and a website deploy when `site/` changed): only on the owner's word. |
 
 The website branch (`claude/site-scroll-3d-aff654`) and its 10 GB worktree were removed on 2026-11-05: merged and
@@ -213,4 +215,5 @@ published since 2026-11-01. A fresh clone has `master` only; `git branch -vv` sa
   on the local network, personal servers), pushed at 92 % of the window; then, on the other PC, the phone-1 review,
   Against Liner 3 to 5, the round covers; Betas 1.1.742 to 1.1.751.
 - 2026-11-07: Against Liner 7 to 10 and the lyrics' look, a Beta (night); an autonomous run (morning: the website's
-  phone story and 18 languages, imports in seconds, server lyrics and the picker's %, winget; › above), Beta 1.1.783.
+  phone story and 18 languages, imports in seconds, server lyrics and the picker's %, winget; › above), Beta 1.1.783;
+  the APK beside Windows and the site in the visitor's language, Beta 1.1.785.
