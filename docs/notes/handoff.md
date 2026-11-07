@@ -112,8 +112,11 @@ They did five (2026-10-31, 11-02, 11-03 to 11-05, 11-05 to 11-06, 11-07; their r
 ## Waiting on the owner
 
 - Their tries of the Betas: plan-v2 › Check live in the real app, its last items first.
-- The winget submission (`packaging/README.md`: a pull request to `microsoft/winget-pkgs` from their GitHub account).
-- 18 and 19: a Linux machine or their word for WSL on this PC; a Mac or CI for macOS.
+- winget: microsoft/winget-pkgs#474341, opened from their account on their word (2026-11-07). Microsoft's CLA bot
+  asks them for a one-line reply there (agreeing is theirs), then its checks and a moderator; a new Stable needs a new
+  manifest (`packaging/README.md`).
+- 18 and 19: built by GitHub's Actions (their word, 2026-11-07); local Linux tries once they set up WSL or a VM
+  themself (a system change).
 - The phone: 1.1.681's APK installed by hand once (older APKs have no updater); later APKs come through the app
   (Settings › About). Background play behind other apps, the notification's controls and the phone ↔ PC sync were only
   tried on the emulator.

@@ -327,9 +327,10 @@ copies, downloads for offline), their accounts, limits and paid plan.
         language either. `site/components/pick.ts` and its test; seen in the dev server (fr → /fr/ with the hash
         kept, a saved choice first, English kept once picked), then online with 1.1.785 (/legato/#privacy →
         /legato/fr/#privacy in a French browser, English kept once picked, 18 languages in the menu).
-      - [x] winget manifests prepared, not submitted (2026-11-07): `packaging/winget/Clovis500c.Legato/1.1.681`,
-        Stable's NSIS installer with the SHA-256 GitHub gives its asset, `winget validate` passes; `packaging/README.md`
-        says how to submit and update them (the owner's step). Not tried: `winget install --manifest` (would install
+      - [x] winget manifests (2026-11-07): `packaging/winget/Clovis500c.Legato/1.1.681` (schema 1.28.0, the one
+        winget-pkgs asks for), Stable's NSIS installer with the SHA-256 GitHub gives its asset, `winget validate`
+        passes; `packaging/README.md` says how to submit and update them. Submitted on the owner's word:
+        microsoft/winget-pkgs#474341 (their reply to the CLA bot there, then Microsoft's checks). Not tried: `winget install --manifest` (would install
         over the app on this PC). Decided alone: no Scoop manifest, Legato installs and updates itself through its
         NSIS installer and a Scoop copy would leave a second install behind (back with a portable build, updater off).
       - [x] README screenshots (2026-11-07): search, Now Playing and Karaoke under "What you get", light and dark, from
@@ -1414,6 +1415,20 @@ Most useful first; the tag is the effort.
         language picker.
 
 ## Waiting on the user (outside the code)
+
+The owner's answers (2026-11-07, a multiple-choice quiz over these lines and the open ones elsewhere):
+- Kept as they are: on the phone a YouTube song plays out of sight outside Now Playing; SponsorBlock off by default;
+  the volume curve; star ratings in the library only (not in the files' tags); imports at one search per 3 s; no
+  checking of every YouTube video ahead; SoundCloud sets and likes set aside (15); no Spotify previews; Android as the
+  APK with its own updates (no Play Store); no iPhone build for now.
+- To build: the lyrics' `SONG ENDS`, `NEXT SONG`, `PREVIEW` in normal case; classic skins' mini layout with the video
+  at 200 px beside it; discovery from MusicBrainz only (new releases of your artists, no Reddit); listening rooms over
+  the internet through public Nostr relays and Cloudflare's STUN (17's second half, a privacy row with it).
+- Linux and macOS: built by GitHub's Actions; local tests in a Linux VM allowed (the owner's word), set up by the
+  owner (WSL or a VM is a system change).
+- Theirs: reading Plex's terms and trying it with their account.
+- Done on their word: GitHub Discussions turned on; the winget manifest submitted (16): microsoft/winget-pkgs#474341,
+  waiting on their CLA reply and Microsoft's checks.
 
 - [ ] Plex's Terms of Service (plex.tv › About › Privacy & Legal): the page refused an automated read (2026-11-06), so
       nothing in them was checked. Sign in with Plex follows the PIN flow developer.plex.tv documents for apps, on the
