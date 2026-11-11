@@ -27,6 +27,7 @@ the order; a line leaves only when it ships or the user drops it.
       YouTube Music asked for a song YouTube plays, 10 s in, one a minute), so a featured artist's picture can come a
       song later; no setting. Never seen on a screen (the preview server was declined in the unattended run): tests
       and types only. To judge: the size, the gap, a name cut by `allArtists` at a comma ("Tyler, The Creator").
+      The owner's choice 2026-11-11: one search per artist, cached, refreshed when the song changes (open line below).
 - [x] `M` Up next: a better-looking list, redone the way the lyrics were (on the backdrop, Against Liner U2's glow and
       simplicity).
       2026-11-11: Now Playing's panel only (`UpNext`'s `bare`; the main window's side panel keeps its card): no card,
@@ -34,6 +35,22 @@ the order; a line leaves only when it ships or the user drops it.
       instead of a grey box. Decided alone (2026-11-11): a light pass, rows and their size kept (drag, the virtual
       list), easy to push further once seen. Never seen on a screen: types, lint and Vitest only (no Rust touched,
       so no cargo run for this commit).
+
+## The owner's answers of 2026-11-11 (still to build)
+Also settled: no push yet (they try with `pnpm dev` first); the flowing background, the new-releases section and the
+classic mini player stay off by default; the web share link stays the default; permissions ahead for the next runs: yes.
+- [ ] `M` Artist pictures: one lookup per artist (not one a minute), kept in a cache, refreshed when the song changes
+      (the owner's choice 2026-11-11). Replaces the Discord rule used by the big title's round pictures.
+- [ ] `S` Flowing background behind Home, as a setting, off by default (the owner's choice 2026-11-11).
+- [ ] `S` `legato://` registered with Windows from the installed app only (`identity::installed()`), for a real
+      "Open in Legato" button on the share page, AND the page's "Copy the link for Legato" kept (the owner's choice
+      2026-11-11; the web link stays the default).
+- [ ] `S` Cover Art Archive covers for "New from your artists", as an option off by default, with its website privacy
+      row (one more host; the owner's choice 2026-11-11).
+- [ ] `S` The classic mini player keeps its place after a restart (a setting; `pipMode.ts` keeps it for the run only,
+      checked in the code: `classicPlace` is a module variable, `f5528ba` does not save it).
+- [ ] `S-M` Explicit songs hidden everywhere (own playlists, album, artist and search pages), only hidden: a way for
+      the user to bring one back when the flag is wrong (the owner's choice 2026-11-11).
 
 ## Best in class (user's ask 2026-10-30)
 
@@ -82,6 +99,7 @@ copies, downloads for offline), their accounts, limits and paid plan.
 
 - [ ] 6. `S` A native window on Windows 11: snap layouts on our maximize button (`WM_NCHITTEST` → `HTMAXBUTTON`,
       beside `thumbbar.rs`), Windows' minimize and maximize animations.
+      The owner's choice 2026-11-11: together, with the owner at the PC (not built blind).
       Left by the autonomous run (2026-11-11): WebView2's own child windows cover the title bar, so the hit test has
       to be answered there and the button's hover and click redone by hand; a mistake breaks the window's buttons for
       everyone, and it can't be tried without a screen. With the owner at the PC.
@@ -202,6 +220,8 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
         parameter set (`directStream=0`, `.mp3` suffix) is from memory of Plex's clients, not checked on a transcoder.
       - [ ] `S` Trust a self-signed server: its certificate's SHA-256 fingerprint shown at sign-in and pinned (rustls's
         own verifier on every platform, so a pinned one is checked, not just accepted).
+        The owner's choice 2026-11-11: yes, built by Opus with tests (a wrong fingerprint refused, an expired certificate
+        refused), as its own branch.
         Skipped 2026-11-11 (far bigger than `S`, not provable here): desktop clients use native-tls (SChannel), so "rustls's
         own verifier" means a second TLS stack for servers; a pin must reach every client that talks to a server (the shared
         `servers::http()`, Plex, the player's streams, the art cache), per account instead of one `LazyLock`; and a pinned
@@ -255,7 +275,8 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       (Decided alone: it sends artists' names to a new host). The ten artists listened to most, one request each a
       second apart, once a day, the last 60 days, kept in this PC's library (`connectors/musicbrainz.rs`,
       `core/discover.rs`, `src-tauri/discover.rs`); a card opens the app's search on "artist title". The privacy row
-      is on the website. Not done: covers (Cover Art Archive is one more host), a purpose of its own in Settings >
+      The owner's choice 2026-11-11: stays off by default; covers from Cover Art Archive as an option (open line below).
+      Is on the website. Not done: covers (Cover Art Archive is one more host), a purpose of its own in Settings >
       Privacy (musicbrainz.org shows under Other), artists told apart by id (same names: the credit's name must
       match, no more). Never tried against the real service: the answer's shape and the date range in the query come
       from their docs (mock tests only).
@@ -295,7 +316,7 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       http / https only, no `Icy-MetaData`) behind the shell's fetcher. Nothing in the interface starts one yet (step 3);
       untried on a real station (mock and local-server tests only). Decided alone: a station is not forced to MP3 / OGG
       here (the decoder's error says so for AAC, step 4); the station's address is not checked against private ranges. (3) `M` a `radio` source and a Radio page (search, play, keep a station), Up next and history skip it;
-      (4) `S` AAC streams (symphonia's AAC + ADTS, `cargo deny`).
+      (4) `S` AAC streams (symphonia's AAC + ADTS, `cargo deny`). The owner's choice 2026-11-11: AAC too.
 - [ ] `M` Release radar: new releases from artists in the library (YouTube Music / MusicBrainz).
 - [ ] `M` Credits and artist pages: who wrote / produced (MusicBrainz), a short bio (Wikipedia), links out.
 - [ ] `M` Sweet fades (Plexamp): crossfade length picked per pair from the songs' ends (loudness, silence, tempo).
@@ -337,6 +358,8 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       non-music fold); album, artist and search pages not filtered yet; Apple Music's playlist pages and Spotify's own
       page rows give no flag. Songs already in the library are marked at their next sync. Untried on real answers: the
       badge's name and the column are from memory of their formats, mock tests only.
+      The owner's choice 2026-11-11: filtered everywhere, but only hidden, with a way back for the user if the flag is
+      wrong: see the open line under "The owner's answers of 2026-11-11".
 - [ ] `S-M` Volume: per-source volume memory (its own setting and a switch rule, a taste: the owner's call). The
       curve stays as it is (the owner's word, 2026-11-07).
 - [ ] `M` Concerts near the user from followed artists (a public API with no account; privacy row).
