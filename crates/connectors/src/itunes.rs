@@ -21,6 +21,8 @@ struct Hit {
     collection_name: Option<String>,
     track_time_millis: Option<u32>,
     artwork_url100: Option<String>,
+    /// "explicit", "cleaned" or "notExplicit".
+    track_explicitness: Option<String>,
 }
 
 #[derive(Deserialize)]
@@ -126,6 +128,7 @@ struct AlbumHit {
     track_number: Option<u16>,
     disc_number: Option<u8>,
     artwork_url100: Option<String>,
+    track_explicitness: Option<String>,
 }
 
 #[derive(Deserialize)]
@@ -182,6 +185,7 @@ fn album_of(results: Vec<AlbumHit>) -> Option<Album> {
                     ids: BTreeMap::from([(Source::Apple, h.track_id?.to_string())]),
                     art: art.clone(),
                     musicness: Some(Musicness::Music),
+                    explicit: h.track_explicitness.as_deref() == Some("explicit"),
                 },
             })
         })
@@ -261,6 +265,7 @@ fn song(h: Hit) -> Option<Track> {
         art: h.artwork_url100.filter(|u| apple_url(u)).map(|u| u.replace("100x100bb", "600x600bb")),
         // Music catalog.
         musicness: Some(Musicness::Music),
+        explicit: h.track_explicitness.as_deref() == Some("explicit"),
     })
 }
 
@@ -320,6 +325,7 @@ pub fn playlist_page(html: &str) -> Result<LinkList> {
                 ids: t.pointer("/contentDescriptor/identifiers/storeAdamID").and_then(|i| i.as_str()).filter(|i| i.bytes().all(|b| b.is_ascii_digit())).map(|i| BTreeMap::from([(Source::Apple, i.to_string())])).unwrap_or_default(),
                 art: t.get("artwork").and_then(art_of),
                 musicness: Some(Musicness::Music),
+                explicit: false,
             })
         })
         .take(MAX_TRACKS)
@@ -342,11 +348,12 @@ mod tests {
         let mut s = Server::new_async().await;
         s.mock("GET", "/search")
             .match_query(Matcher::AllOf(vec![Matcher::UrlEncoded("term".into(), "get lucky".into()), Matcher::UrlEncoded("country".into(), "FR".into())]))
-            .with_body(r#"{"resultCount":2,"results":[{"trackId":617154366,"trackName":"Get Lucky","artistName":"Daft Punk","collectionName":"Random Access Memories","trackTimeMillis":369629,"artworkUrl100":"https://is1-ssl.mzstatic.com/image/thumb/a/100x100bb.jpg"},{"trackName":"No id"}]}"#)
+            .with_body(r#"{"resultCount":2,"results":[{"trackId":617154366,"trackName":"Get Lucky","artistName":"Daft Punk","collectionName":"Random Access Memories","trackTimeMillis":369629,"artworkUrl100":"https://is1-ssl.mzstatic.com/image/thumb/a/100x100bb.jpg","trackExplicitness":"notExplicit"},{"trackId":2,"trackName":"Rap","artistName":"Someone","trackExplicitness":"explicit"},{"trackName":"No id"}]}"#)
             .create_async()
             .await;
         let found = search(&format!("{}/search", s.url()), "get lucky", "FR").await.unwrap();
-        assert_eq!(found.len(), 1);
+        assert_eq!(found.len(), 2);
+        assert!(!found[0].explicit && found[1].explicit);
         let t = &found[0];
         assert_eq!((t.title.as_str(), t.artist.as_str(), t.duration_ms), ("Get Lucky", "Daft Punk", Some(369_629)));
         assert_eq!(t.ids[&Source::Apple], "617154366");

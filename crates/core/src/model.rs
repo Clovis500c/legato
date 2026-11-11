@@ -48,6 +48,10 @@ pub struct Track {
     /// Music or not (YouTube videos: talks, reactions, games come along with songs). None = not looked at.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub musicness: Option<crate::musicness::Musicness>,
+    /// Marked explicit by its source (YouTube Music's E badge, Spotify's export, iTunes). False: not marked, or unknown.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    #[ts(as = "Option<bool>", optional)]
+    pub explicit: bool,
 }
 
 /// YouTube video frame: last resort art, any real cover wins over it.

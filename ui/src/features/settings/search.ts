@@ -42,6 +42,7 @@ export const SETTINGS_INDEX: SettingEntry[] = [
   { section: 'appearance', label: msg('Covers in lists'), keywords: msg('thumbnails artwork rows') },
   { section: 'appearance', label: msg('Clock on the cover display'), keywords: msg('clock time hour day second screen monitor full screen big cover display') },
   { section: 'appearance', label: msg('Column browser'), keywords: msg('artists albums panes filter') },
+  { section: 'appearance', label: msg('Hide explicit songs'), keywords: msg('explicit lyrics parental clean children kids family') },
   { section: 'appearance', label: msg('Whole app in the cover’s color'), keywords: msg('tint ambient background color theme cover everywhere') },
   { section: 'playback', label: msg('Play with'), keywords: msg('single double click row') },
   { section: 'appearance', label: msg('Counts in the sidebar'), keywords: msg('numbers songs') },

@@ -2343,6 +2343,9 @@ const id: Record<string, string> = {
   'Your music server only takes the password sent as it is: use its https:// address, then confirm': 'Server musik Anda hanya menerima kata sandi yang dikirim apa adanya: pakai alamat https://-nya, lalu konfirmasi',
   'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': 'Server Anda hanya menerima kata sandi yang dikirim apa adanya (dikodekan heksadesimal, bukan enkripsi). Lewat https hanya server Anda yang bisa membacanya. Kirim dengan cara ini?',
   'Send my password as it is': 'Kirim kata sandi saya apa adanya',
+  'Hide explicit songs': 'Sembunyikan lagu eksplisit',
+  'Songs marked explicit by YouTube Music, a Spotify export or an Apple Music album leave Songs, imported playlists and mixes. Songs already in your library are marked at their next sync': 'Lagu yang ditandai eksplisit oleh YouTube Music, ekspor Spotify, atau album Apple Music hilang dari Lagu, playlist impor, dan mix. Lagu yang sudah ada di koleksimu ditandai saat sinkronisasi berikutnya',
+  'explicit lyrics parental clean children kids family': 'explicit eksplisit lirik kontrol orang tua anak keluarga clean',
 }
 
 export default id

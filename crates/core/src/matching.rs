@@ -105,6 +105,7 @@ pub fn merge_tracks(a: &Track, b: &Track) -> Track {
         ids,
         art: crate::model::pick_art(a.art.clone(), b.art.clone()),
         musicness: crate::musicness::Musicness::merge(b.musicness, a.musicness),
+        explicit: false,
     }
 }
 
@@ -133,7 +134,7 @@ pub fn album_slots(catalog: &[Track], mine: &[Track]) -> Vec<Option<usize>> {
 mod tests {
     #[test]
     fn album_slots_take_each_song_once() {
-        let t = |title: &str, ms: u32| Track { title: title.into(), artist: "Daft Punk".into(), album: Some("Discovery".into()), duration_ms: Some(ms), isrc: None, ids: Default::default(), art: None, musicness: None };
+        let t = |title: &str, ms: u32| Track { title: title.into(), artist: "Daft Punk".into(), album: Some("Discovery".into()), duration_ms: Some(ms), isrc: None, ids: Default::default(), art: None, musicness: None, explicit: false };
         let catalog = [t("One More Time", 320_000), t("Aerodynamic", 212_000), t("Digital Love", 301_000)];
         let mine = [t("Digital Love (Official Video)", 340_000), t("One More Time", 321_000), t("Bonus", 100_000)];
         assert_eq!(album_slots(&catalog, &mine), [Some(1), None, Some(0)]);

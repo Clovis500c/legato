@@ -59,7 +59,7 @@ pub struct TrackRef {
 impl TrackRef {
     /// As a song (no musicness: the receiving PC's own rules decide).
     pub fn track(&self) -> Track {
-        Track { title: self.title.clone(), artist: self.artist.clone(), album: self.album.clone(), duration_ms: self.duration_ms, isrc: self.isrc.clone(), ids: self.ids.clone(), art: self.art.clone(), musicness: None }
+        Track { title: self.title.clone(), artist: self.artist.clone(), album: self.album.clone(), duration_ms: self.duration_ms, isrc: self.isrc.clone(), ids: self.ids.clone(), art: self.art.clone(), musicness: None, explicit: false }
     }
 }
 
@@ -813,7 +813,7 @@ mod tests {
     use crate::library::PlaylistEdit;
 
     fn song(title: &str, yt: &str) -> Track {
-        Track { title: title.into(), artist: "Artist".into(), album: None, duration_ms: Some(200_000), isrc: None, ids: BTreeMap::from([(Source::Youtube, yt.into())]), art: None, musicness: None }
+        Track { title: title.into(), artist: "Artist".into(), album: None, duration_ms: Some(200_000), isrc: None, ids: BTreeMap::from([(Source::Youtube, yt.into())]), art: None, musicness: None, explicit: false }
     }
 
     fn snap(lib: &Library) -> Snapshot {

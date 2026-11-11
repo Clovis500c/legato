@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { LibraryTrack } from '../../shared/api'
 import { formatDuration, timeAgo } from '../../shared/format'
-import { allArtists, filterTracks, groupAlbums, groupArtists, libraryStats, musicOnly, primaryArtist, sortGroups, sortTracks } from './filter'
+import { allArtists, filterTracks, groupAlbums, groupArtists, libraryStats, musicOnly, primaryArtist, withoutExplicit, sortGroups, sortTracks } from './filter'
 
 const t = (id: number, title: string, artist: string, ids: LibraryTrack['ids']): LibraryTrack => ({
   id,
@@ -156,6 +156,14 @@ describe('albums and artists', () => {
     const artists = groupArtists(lib).map((g) => ({ ...g, name: g.artist }))
     expect(sortGroups(artists, 'albums').map((g) => g.name)).toEqual(['Daft Punk', 'The xx'])
     expect(sortGroups(artists, 'random', { seed: 3 }).map((g) => g.name)).toEqual(sortGroups(artists, 'random', { seed: 3 }).map((g) => g.name))
+  })
+})
+
+describe('withoutExplicit', () => {
+  it('leaves out marked songs only when asked', () => {
+    const list = [{ id: 1, explicit: true }, { id: 2 }, { id: 3, explicit: false }]
+    expect(withoutExplicit(list, true)).toEqual([{ id: 2 }, { id: 3, explicit: false }])
+    expect(withoutExplicit(list, false)).toBe(list)
   })
 })
 

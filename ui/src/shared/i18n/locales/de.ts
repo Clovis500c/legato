@@ -2343,6 +2343,9 @@ const de: Record<string, string> = {
   'Your music server only takes the password sent as it is: use its https:// address, then confirm': 'Ihr Musikserver akzeptiert nur das unverändert gesendete Passwort: Nutzen Sie seine https://-Adresse und bestätigen Sie dann',
   'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': 'Ihr Server akzeptiert nur das unverändert gesendete Passwort (hexadezimal kodiert, das ist keine Verschlüsselung). Über https kann nur Ihr Server es lesen. So senden?',
   'Send my password as it is': 'Mein Passwort unverändert senden',
+  'Hide explicit songs': 'Explizite Songs ausblenden',
+  'Songs marked explicit by YouTube Music, a Spotify export or an Apple Music album leave Songs, imported playlists and mixes. Songs already in your library are marked at their next sync': 'Songs, die YouTube Music, ein Spotify-Export oder ein Apple-Music-Album als explizit markiert, verschwinden aus Songs, importierten Playlists und Mixes. Songs, die schon in deiner Mediathek sind, werden bei ihrer nächsten Synchronisierung markiert',
+  'explicit lyrics parental clean children kids family': 'explicit explizit songtexte jugendschutz eltern kinder familie clean',
 }
 
 export default de

@@ -19,4 +19,8 @@ art?: string | null,
 /**
  * Music or not (YouTube videos: talks, reactions, games come along with songs). None = not looked at.
  */
-musicness?: Musicness | null, };
+musicness?: Musicness | null, 
+/**
+ * Marked explicit by its source (YouTube Music's E badge, Spotify's export, iTunes). False: not marked, or unknown.
+ */
+explicit?: boolean, };

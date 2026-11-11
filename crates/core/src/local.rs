@@ -222,6 +222,7 @@ pub fn read_song(path: &Path) -> LocalSong {
         art: None,
         // Your own audio files.
         musicness: Some(crate::musicness::Musicness::Music),
+        explicit: false,
     };
     // Read as the song editor reads them (`file_tags`).
     LocalSong { track, genre: text(tag.and_then(|t| t.genre())), year: tag.and_then(|t| t.get_string(ItemKey::RecordingDate)).and_then(year_of) }

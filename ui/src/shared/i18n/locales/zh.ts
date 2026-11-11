@@ -2343,6 +2343,9 @@ const zh: Record<string, string> = {
   'Your music server only takes the password sent as it is: use its https:// address, then confirm': '你的音乐服务器只接受原样发送的密码：请使用它的 https:// 地址，然后确认',
   'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': '你的服务器只接受原样发送的密码（十六进制编码，并非加密）。通过 https 只有你的服务器能读到。要这样发送吗？',
   'Send my password as it is': '原样发送我的密码',
+  'Hide explicit songs': '隐藏含露骨内容的歌曲',
+  'Songs marked explicit by YouTube Music, a Spotify export or an Apple Music album leave Songs, imported playlists and mixes. Songs already in your library are marked at their next sync': 'YouTube Music、Spotify 导出或 Apple Music 专辑标为 Explicit 的歌曲将从歌曲、导入的播放列表和混音中移除。已在资料库中的歌曲会在下次同步时标记',
+  'explicit lyrics parental clean children kids family': 'explicit 露骨 歌词 家长控制 儿童 家庭 clean',
 }
 
 export default zh

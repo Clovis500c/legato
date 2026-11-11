@@ -62,6 +62,7 @@ impl SpotifyTrack {
             isrc: self.external_ids.and_then(|mut e| e.remove("isrc")).map(|s| s.to_uppercase()),
             ids: BTreeMap::from([(Source::Spotify, id)]),
             musicness: Some(music_core::musicness::Musicness::Music),
+            explicit: false,
         })
     }
 }

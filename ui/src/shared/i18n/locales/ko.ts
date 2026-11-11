@@ -2343,6 +2343,9 @@ const ko: Record<string, string> = {
   'Your music server only takes the password sent as it is: use its https:// address, then confirm': '음악 서버가 비밀번호를 그대로 보내는 방식만 받습니다: https:// 주소를 사용한 뒤 확인하세요',
   'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': '서버가 비밀번호를 그대로 보내는 방식만 받습니다(16진수로 인코딩될 뿐 암호화는 아닙니다). https에서는 서버만 읽을 수 있습니다. 이렇게 보낼까요?',
   'Send my password as it is': '내 비밀번호를 그대로 보내기',
+  'Hide explicit songs': '선정적인 곡 숨기기',
+  'Songs marked explicit by YouTube Music, a Spotify export or an Apple Music album leave Songs, imported playlists and mixes. Songs already in your library are marked at their next sync': 'YouTube Music, Spotify 내보내기, Apple Music 앨범이 Explicit으로 표시한 곡을 노래, 가져온 재생목록, 믹스에서 뺍니다. 이미 보관함에 있는 곡은 다음 동기화 때 표시됩니다',
+  'explicit lyrics parental clean children kids family': 'explicit 선정적 가사 자녀 보호 어린이 가족 clean',
 }
 
 export default ko

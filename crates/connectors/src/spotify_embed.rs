@@ -70,6 +70,7 @@ fn parse_page(html: &str, kind: &str, id: &str) -> Result<SpotifyList> {
                 ids: BTreeMap::from([(Source::Spotify, id)]),
                 art: album_art.clone(),
                 musicness: Some(music_core::musicness::Musicness::Music),
+                explicit: false,
             })
         })
         .collect();

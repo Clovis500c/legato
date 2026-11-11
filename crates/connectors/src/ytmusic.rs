@@ -135,6 +135,11 @@ fn find<'a>(v: &'a Value, key: &str, out: &mut Vec<&'a Value>) {
     }
 }
 
+/// YouTube Music's E badge somewhere in a row or card (`musicInlineBadgeRenderer`'s icon).
+pub(crate) fn explicit_badge(v: &Value) -> bool {
+    all(v, "iconType").iter().any(|i| i.as_str() == Some("MUSIC_EXPLICIT_BADGE"))
+}
+
 pub(crate) fn all<'a>(v: &'a Value, key: &str) -> Vec<&'a Value> {
     let mut out = Vec::new();
     find(v, key, &mut out);
@@ -242,7 +247,7 @@ fn row_track_with(row: &Value, fallback: Option<&str>) -> Option<Track> {
     // YouTube Music says what the video is (song, official video, anyone's upload, podcast): the classifier decides.
     let video_type = all(row, "musicVideoType").into_iter().find_map(|v| VideoType::from_innertube(v.as_str()?));
     let musicness = Some(classify(&Clues { title: &title, channel: &artist, duration_ms, artist_badge: false, video_type, live: false }));
-    Some(Track { title, artist, album, duration_ms, isrc: None, ids: BTreeMap::from([(Source::Youtube, video_id)]), art, musicness })
+    Some(Track { title, artist, album, duration_ms, isrc: None, ids: BTreeMap::from([(Source::Youtube, video_id)]), art, musicness, explicit: explicit_badge(row) })
 }
 
 /// googleusercontent thumbs are sized in the URL ("=w60-h60-l90-rj"): ask for 544 px.
@@ -617,8 +622,11 @@ mod tests {
 
     #[test]
     fn parses_rows_from_any_layout() {
+        // The E badge as YouTube Music draws it beside the title.
+        let mut marked = with_thumb(row("v1", "Get Lucky", vec![run("Song", None), run(" • ", None), run("Daft Punk", Some(("MUSIC_PAGE_TYPE_ARTIST", "UC1"))), run(", ", None), run("Pharrell Williams", Some(("MUSIC_PAGE_TYPE_ARTIST", "UC2"))), run(" • ", None), run("Random Access Memories", Some(("MUSIC_PAGE_TYPE_ALBUM", "MPRE1"))), run(" • ", None), run("6:09", None)], None));
+        marked["musicResponsiveListItemRenderer"]["badges"] = json!([{ "musicInlineBadgeRenderer": { "icon": { "iconType": "MUSIC_EXPLICIT_BADGE" } } }]);
         let page = json!({ "contents": { "deep": [
-            with_thumb(row("v1", "Get Lucky", vec![run("Song", None), run(" • ", None), run("Daft Punk", Some(("MUSIC_PAGE_TYPE_ARTIST", "UC1"))), run(", ", None), run("Pharrell Williams", Some(("MUSIC_PAGE_TYPE_ARTIST", "UC2"))), run(" • ", None), run("Random Access Memories", Some(("MUSIC_PAGE_TYPE_ALBUM", "MPRE1"))), run(" • ", None), run("6:09", None)], None)),
+            marked,
             row("v2", "Some upload", vec![run("Video", None), run(" • ", None), run("A Channel", None)], Some("1:02:03")),
             { "musicResponsiveListItemRenderer": { "flexColumns": [] } }
         ] } });
@@ -628,6 +636,7 @@ mod tests {
         assert_eq!(t[1].art, None);
         assert_eq!((t[0].title.as_str(), t[0].artist.as_str(), t[0].album.as_deref(), t[0].duration_ms), ("Get Lucky", "Daft Punk, Pharrell Williams", Some("Random Access Memories"), Some(369_000)));
         assert_eq!((t[1].artist.as_str(), t[1].duration_ms, t[1].ids[&Source::Youtube].as_str()), ("A Channel", Some(3_723_000), "v2"));
+        assert!(t[0].explicit && !t[1].explicit);
     }
 
     /// The smoke test's mock (e2e/mock.mjs) answers with this file: it has to read the way the client expects.

@@ -166,6 +166,7 @@ fn parse(reply: Reply) -> Result<Option<Track>> {
         // Apple's artwork template: {w}x{h} filled in.
         art: apple.and_then(|a| a.artwork.as_ref()).map(|w| w.url.replace("{w}", "600").replace("{h}", "600")),
         musicness: None,
+        explicit: false,
     }))
 }
 

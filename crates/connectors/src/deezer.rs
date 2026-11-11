@@ -211,6 +211,7 @@ fn track(t: &Value, album: Option<&str>, cover: Option<&str>) -> Option<Track> {
         ids: BTreeMap::new(),
         art: cover.or_else(|| text("/album/cover_big")).map(String::from),
         musicness: Some(Musicness::Music),
+        explicit: false,
     })
 }
 

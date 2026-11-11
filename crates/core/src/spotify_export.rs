@@ -174,7 +174,7 @@ fn unform(part: &str) -> String {
     String::from_utf8_lossy(&out).into_owned()
 }
 
-/// Columns: 0 uri, 1 name, 3 artists, 5 album, 9 cover, 12 duration, 16 ISRC. Episodes: no song to find. A file of the
+/// Columns: 0 uri, 1 name, 3 artists, 5 album, 9 cover, 12 duration, 14 explicit, 16 ISRC. Episodes: no song to find. A file of the
 /// user's own (`spotify:local:artist:album:title:secs`): no Spotify id, its names searched like a pasted song.
 fn track(line: &str) -> Option<Track> {
     let row = cells(line, ',');
@@ -202,6 +202,7 @@ fn track(line: &str) -> Option<Track> {
         ids: [(Source::Spotify, id.to_string())].into(),
         art: cell(9).filter(|u| u.starts_with("https://i.scdn.co/image/")),
         musicness: None,
+        explicit: cell(14).is_some_and(|e| e.eq_ignore_ascii_case("true")),
     })
 }
 
@@ -553,6 +554,11 @@ mod tests {
         assert_eq!((t.title.as_str(), t.artist.as_str(), t.album.as_deref()), ("Get Lucky (feat. A, B)", "Daft Punk, Pharrell Williams", Some("Random Access Memories")));
         assert_eq!((t.duration_ms, t.isrc.as_deref(), t.ids[&Source::Spotify].as_str()), (Some(248_000), Some("USQX91300808"), ID));
         assert_eq!(l.cover(), Some("https://i.scdn.co/image/ab67"));
+        assert!(!t.explicit);
+        let marked = list("a.csv", &format!("{HEAD}
+{}
+", row(ID, "A").replace("\"false\"", "\"true\""))).unwrap();
+        assert!(marked.tracks[0].explicit);
     }
 
     #[test]

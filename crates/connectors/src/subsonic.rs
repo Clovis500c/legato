@@ -234,6 +234,7 @@ impl Subsonic {
             ids: BTreeMap::from([(Source::Server, server::item_id(&self.key, &id))]),
             art: text(v, "coverArt").and_then(|c| self.public_url("getCoverArt", &[("id", &c), ("size", COVER_SIZE)])),
             musicness: None,
+            explicit: false,
         })
     }
 

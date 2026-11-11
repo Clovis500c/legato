@@ -2343,6 +2343,9 @@ const vi: Record<string, string> = {
   'Your music server only takes the password sent as it is: use its https:// address, then confirm': 'Máy chủ nhạc của bạn chỉ nhận mật khẩu gửi nguyên văn: hãy dùng địa chỉ https:// của nó rồi xác nhận',
   'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': 'Máy chủ của bạn chỉ nhận mật khẩu gửi nguyên văn (mã hóa thập lục phân, không phải mã hóa bảo mật). Qua https chỉ máy chủ của bạn đọc được. Gửi theo cách này?',
   'Send my password as it is': 'Gửi mật khẩu của tôi nguyên văn',
+  'Hide explicit songs': 'Ẩn bài hát có nội dung nhạy cảm',
+  'Songs marked explicit by YouTube Music, a Spotify export or an Apple Music album leave Songs, imported playlists and mixes. Songs already in your library are marked at their next sync': 'Bài hát được YouTube Music, bản xuất Spotify hoặc một album Apple Music đánh dấu explicit sẽ rời khỏi Bài hát, danh sách phát đã nhập và các mix. Bài đã có trong thư viện được đánh dấu ở lần đồng bộ tiếp theo',
+  'explicit lyrics parental clean children kids family': 'explicit nhạy cảm lời bài hát kiểm soát của phụ huynh trẻ em gia đình clean',
 }
 
 export default vi

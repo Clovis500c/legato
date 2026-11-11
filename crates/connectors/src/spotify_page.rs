@@ -97,6 +97,7 @@ fn song(r: RawSong) -> Option<Track> {
         ids: BTreeMap::from([(Source::Spotify, r.id)]),
         art: clean_art(r.art),
         musicness: Some(Musicness::Music),
+        explicit: false,
     })
 }
 

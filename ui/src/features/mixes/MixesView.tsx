@@ -11,7 +11,7 @@ import { CoverGrid } from '../../shared/ui/CoverGrid'
 import { PageHeader } from '../../shared/ui/PageHeader'
 import { MediaCard } from '../../shared/ui/Section'
 import { coverTracks } from '../library/covers'
-import { musicOnly } from '../library/filter'
+import { musicOnly, withoutExplicit } from '../library/filter'
 import { HiddenVideos } from '../library/HiddenVideos'
 import { TrackTable } from '../library/TrackTable'
 import { tracksMenu } from '../menus'
@@ -170,7 +170,8 @@ export function MixView({ id }: { id: string }) {
   const mix = mixes?.find((m) => m.id === id)
   // Mixes are built from music (crates/core mixes); one marked "not music" since waits in the fold.
   const all = useMixTracks(mix)
-  const { kept: tracks, hidden } = useMemo(() => musicOnly(all), [all])
+  const hideExplicit = useSettings((s) => s.settings.hideExplicit)
+  const { kept: tracks, hidden } = useMemo(() => musicOnly(withoutExplicit(all, hideExplicit)), [all, hideExplicit])
   const play = usePlayer((s) => s.playTracks)
   const steer = (t: LibraryTrack, pref: 'less' | 'never') =>
     api

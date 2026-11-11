@@ -327,9 +327,16 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
 - [ ] `S` Focus / workout sessions: a timer, no-lyrics or high-BPM mix, a summary after. (Left by the autopilot
       (2026-11-05): no tempo or energy data yet, so no high-BPM mix: the roadmap's "Smarter listening" analysis first;
       the plain timer is the sleep timer.)
-- [ ] `S` Hide explicit songs (a filter, YouTube Music's flag when there is one). (Left by the autopilot (2026-11-05):
+- [x] `S` Hide explicit songs (a filter, YouTube Music's flag when there is one). (Left by the autopilot (2026-11-05):
       no explicit flag is stored. The sources give it (YouTube Music's E badge, Exportify's Explicit column, iTunes'
       `trackExplicitness`): a `Track` field, a schema step and three parsers, an `M`.)
+      2026-11-11: `Track::explicit` (schema v21, kept once any source says so), read from YouTube Music's
+      `MUSIC_EXPLICIT_BADGE` (rows, Home cards, radio queues), Exportify's column 14, iTunes' `trackExplicitness`;
+      Settings › Appearance › Hide explicit songs (`hideExplicit`, off) leaves them out of Songs, imported playlists and
+      mixes. Decided alone (2026-11-11): your own playlists keep them (their rows are edited by position, like the
+      non-music fold); album, artist and search pages not filtered yet; Apple Music's playlist pages and Spotify's own
+      page rows give no flag. Songs already in the library are marked at their next sync. Untried on real answers: the
+      badge's name and the column are from memory of their formats, mock tests only.
 - [ ] `S-M` Volume: per-source volume memory (its own setting and a switch rule, a taste: the owner's call). The
       curve stays as it is (the owner's word, 2026-11-07).
 - [ ] `M` Concerts near the user from followed artists (a public API with no account; privacy row).

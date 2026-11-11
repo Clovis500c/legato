@@ -230,6 +230,7 @@ impl Jellyfin {
             ids: BTreeMap::from([(Source::Server, server::item_id(&self.key, &id))]),
             art,
             musicness: None,
+            explicit: false,
         })
     }
 

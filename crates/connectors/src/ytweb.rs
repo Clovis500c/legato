@@ -66,6 +66,7 @@ pub fn parse_search(v: &Value) -> Vec<WebVideo> {
                 ids: BTreeMap::from([(Source::Youtube, id.to_string())]),
                 art: Some(format!("https://i.ytimg.com/vi/{id}/hqdefault.jpg")),
                 musicness: None,
+                explicit: false,
             },
             raw_title: raw,
             artist_badge: badge(&owner, "BADGE_STYLE_TYPE_VERIFIED_ARTIST"),

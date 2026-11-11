@@ -2343,6 +2343,9 @@ const sv: Record<string, string> = {
   'Your music server only takes the password sent as it is: use its https:// address, then confirm': 'Din musikserver tar bara emot lösenordet skickat som det är: använd dess https://-adress och bekräfta sedan',
   'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': 'Din server tar bara emot lösenordet skickat som det är (hexkodat, vilket inte är kryptering). Över https kan bara din server läsa det. Skicka det så här?',
   'Send my password as it is': 'Skicka mitt lösenord som det är',
+  'Hide explicit songs': 'Dölj explicita låtar',
+  'Songs marked explicit by YouTube Music, a Spotify export or an Apple Music album leave Songs, imported playlists and mixes. Songs already in your library are marked at their next sync': 'Låtar som YouTube Music, en Spotify-export eller ett Apple Music-album märker som explicita försvinner från Låtar, importerade spellistor och mixar. Låtar som redan finns i ditt bibliotek märks vid nästa synkning',
+  'explicit lyrics parental clean children kids family': 'explicit explicita låttexter föräldrakontroll barn familj clean',
 }
 
 export default sv

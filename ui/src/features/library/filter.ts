@@ -207,6 +207,9 @@ export function libraryStats(tracks: LibraryTrack[]) {
  * Imported videos that clearly aren't music (talks, reactions, games: YouTube imports bring them along) set aside in
  * their own fold (HiddenVideos); a doubt stays. Nothing is deleted.
  */
+/** Settings › Hide explicit songs: the songs a source marked explicit left out (the same list when off or none). */
+export const withoutExplicit = <T extends Pick<Track, 'explicit'>>(tracks: T[], hide: boolean): T[] => (hide && tracks.some((t) => t.explicit) ? tracks.filter((t) => !t.explicit) : tracks)
+
 export function musicOnly<T extends Pick<Track, 'musicness'>>(tracks: T[]): { kept: T[]; hidden: T[] } {
   const hidden = tracks.filter((t) => t.musicness === 'notMusic')
   return { kept: hidden.length ? tracks.filter((t) => t.musicness !== 'notMusic') : tracks, hidden }

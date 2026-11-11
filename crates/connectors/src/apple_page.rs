@@ -71,6 +71,7 @@ fn song(r: RawSong) -> Option<Track> {
         ids: r.id.filter(|id| valid_song(id)).map(|id| BTreeMap::from([(Source::Apple, id)])).unwrap_or_default(),
         art: clean_art(r.art),
         musicness: Some(Musicness::Music),
+        explicit: false,
     })
 }
 

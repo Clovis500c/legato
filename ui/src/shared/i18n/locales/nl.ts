@@ -2343,6 +2343,9 @@ const nl: Record<string, string> = {
   'Your music server only takes the password sent as it is: use its https:// address, then confirm': 'Je muziekserver accepteert alleen het wachtwoord zoals het is: gebruik het https://-adres en bevestig dan',
   'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': 'Je server accepteert alleen het wachtwoord zoals het is (hexadecimaal gecodeerd, dat is geen versleuteling). Via https kan alleen je server het lezen. Zo versturen?',
   'Send my password as it is': 'Mijn wachtwoord verzenden zoals het is',
+  'Hide explicit songs': 'Expliciete nummers verbergen',
+  'Songs marked explicit by YouTube Music, a Spotify export or an Apple Music album leave Songs, imported playlists and mixes. Songs already in your library are marked at their next sync': 'Nummers die YouTube Music, een Spotify-export of een Apple Music-album als expliciet markeert, verdwijnen uit Nummers, geïmporteerde playlists en mixen. Nummers die al in je bibliotheek staan, worden bij hun volgende synchronisatie gemarkeerd',
+  'explicit lyrics parental clean children kids family': 'explicit expliciet songteksten ouderlijk toezicht kinderen gezin clean',
 }
 
 export default nl

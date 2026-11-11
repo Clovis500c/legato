@@ -2343,6 +2343,9 @@ const ja: Record<string, string> = {
   'Your music server only takes the password sent as it is: use its https:// address, then confirm': 'お使いの音楽サーバーは、パスワードをそのまま送る方式しか受け付けません。https:// のアドレスを使い、確認してください',
   'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': 'お使いのサーバーは、パスワードをそのまま送る方式しか受け付けません（16進数に変換されるだけで、暗号化ではありません）。https なら読めるのはサーバーだけです。この方法で送りますか？',
   'Send my password as it is': 'パスワードをそのまま送る',
+  'Hide explicit songs': '露骨な表現を含む曲を隠す',
+  'Songs marked explicit by YouTube Music, a Spotify export or an Apple Music album leave Songs, imported playlists and mixes. Songs already in your library are marked at their next sync': 'YouTube Music、Spotify のエクスポート、Apple Music のアルバムで Explicit とされた曲を、曲、取り込んだプレイリスト、ミックスから外します。ライブラリにある曲は次の同期で印が付きます',
+  'explicit lyrics parental clean children kids family': 'explicit 露骨 歌詞 ペアレンタル 子ども 家族 clean',
 }
 
 export default ja

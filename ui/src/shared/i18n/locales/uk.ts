@@ -2343,6 +2343,9 @@ const uk: Record<string, string> = {
   'Your music server only takes the password sent as it is: use its https:// address, then confirm': 'Ваш музичний сервер приймає лише пароль, надісланий як є: скористайтеся його адресою https://, потім підтвердьте',
   'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': 'Ваш сервер приймає лише пароль, надісланий як є (у шістнадцятковому записі, це не шифрування). Через https його прочитає лише ваш сервер. Надіслати так?',
   'Send my password as it is': 'Надіслати пароль як є',
+  'Hide explicit songs': 'Приховувати пісні з відвертим змістом',
+  'Songs marked explicit by YouTube Music, a Spotify export or an Apple Music album leave Songs, imported playlists and mixes. Songs already in your library are marked at their next sync': 'Пісні, які YouTube Music, експорт Spotify або альбом Apple Music позначають як explicit, зникають із Пісень, імпортованих плейлистів і міксів. Пісні, що вже є в медіатеці, позначаються під час наступної синхронізації',
+  'explicit lyrics parental clean children kids family': 'explicit відвертий зміст тексти батьківський контроль діти сімʼя clean',
 }
 
 export default uk

@@ -2343,6 +2343,9 @@ const ru: Record<string, string> = {
   'Your music server only takes the password sent as it is: use its https:// address, then confirm': 'Ваш музыкальный сервер принимает только пароль, отправленный как есть: используйте его адрес https://, затем подтвердите',
   'Your server only takes the password sent as it is (hex-encoded, which is not encryption). Over https only your server can read it. Send it this way?': 'Ваш сервер принимает только пароль, отправленный как есть (в шестнадцатеричной записи, это не шифрование). По https его прочитает только ваш сервер. Отправить так?',
   'Send my password as it is': 'Отправить пароль как есть',
+  'Hide explicit songs': 'Скрывать песни с ненормативной лексикой',
+  'Songs marked explicit by YouTube Music, a Spotify export or an Apple Music album leave Songs, imported playlists and mixes. Songs already in your library are marked at their next sync': 'Песни, которые YouTube Music, экспорт Spotify или альбом Apple Music отмечают как explicit, уходят из Песен, импортированных плейлистов и миксов. Песни, уже лежащие в медиатеке, отмечаются при следующей синхронизации',
+  'explicit lyrics parental clean children kids family': 'explicit ненормативная лексика тексты родительский контроль дети семья clean',
 }
 
 export default ru

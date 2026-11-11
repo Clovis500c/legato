@@ -54,7 +54,7 @@ CREATE TABLE IF NOT EXISTS settings (
 ";
 
 /// Schema version this code writes (user_version after migrations).
-pub const SCHEMA_VERSION: i64 = 20;
+pub const SCHEMA_VERSION: i64 = 21;
 
 /// The library was made by a newer version of the app.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -90,7 +90,7 @@ pub fn now_ms() -> i64 {
     std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_millis() as i64).unwrap_or(0)
 }
 
-const TRACK_COLS: &str = "t.id, t.title, t.artist, t.album, t.duration_ms, t.isrc, t.art, t.added, t.musicness, t.added_at, t.genre, t.year";
+const TRACK_COLS: &str = "t.id, t.title, t.artist, t.album, t.duration_ms, t.isrc, t.art, t.added, t.musicness, t.added_at, t.genre, t.year, t.explicit";
 
 /// Liked Music: last like on top, always.
 fn liked_music(source: Source, source_id: &str) -> bool {
@@ -237,7 +237,7 @@ pub enum PlaylistEdit {
 
 /// Row → track (`TRACK_COLS`, then the ids JSON object, optional).
 fn to_track(r: &Row) -> rusqlite::Result<LibraryTrack> {
-    let ids: Option<String> = r.get(12).ok();
+    let ids: Option<String> = r.get(13).ok();
     let musicness: Option<String> = r.get(8)?;
     Ok(LibraryTrack {
         id: r.get(0)?,
@@ -254,6 +254,7 @@ fn to_track(r: &Row) -> rusqlite::Result<LibraryTrack> {
             ids: ids.and_then(|j| serde_json::from_str::<BTreeMap<Source, String>>(&j).ok()).unwrap_or_default(),
             art: r.get(6)?,
             musicness: musicness.as_deref().map(|m| m.strip_prefix(USER).unwrap_or(m)).and_then(Musicness::parse),
+            explicit: r.get(12)?,
         },
     })
 }
@@ -269,8 +270,8 @@ const CHANGE_LOG: &str = "
 CREATE TEMP TABLE IF NOT EXISTS changed (kind INTEGER NOT NULL, id INTEGER NOT NULL, artist TEXT NOT NULL, PRIMARY KEY (kind, id, artist)) WITHOUT ROWID;
 CREATE TEMP TRIGGER IF NOT EXISTS song_in AFTER INSERT ON tracks BEGIN INSERT INTO changed VALUES (0, new.id, '') ON CONFLICT DO NOTHING; END;
 CREATE TEMP TRIGGER IF NOT EXISTS song_set AFTER UPDATE ON tracks
-  WHEN (old.title, old.artist, old.album, old.duration_ms, old.isrc, old.art, old.added, old.added_at, old.musicness, old.genre, old.year)
-    IS NOT (new.title, new.artist, new.album, new.duration_ms, new.isrc, new.art, new.added, new.added_at, new.musicness, new.genre, new.year)
+  WHEN (old.title, old.artist, old.album, old.duration_ms, old.isrc, old.art, old.added, old.added_at, old.musicness, old.genre, old.year, old.explicit)
+    IS NOT (new.title, new.artist, new.album, new.duration_ms, new.isrc, new.art, new.added, new.added_at, new.musicness, new.genre, new.year, new.explicit)
   BEGIN
     INSERT INTO changed VALUES (0, new.id, '') ON CONFLICT DO NOTHING;
     INSERT INTO changed SELECT 0, old.id, old.artist WHERE old.artist IS NOT new.artist ON CONFLICT DO NOTHING;
@@ -509,6 +510,10 @@ impl Library {
             // v20: local files' genre and year (their tags), filled by the next scan.
             lib.db.execute_batch("BEGIN; ALTER TABLE tracks ADD COLUMN genre TEXT; ALTER TABLE tracks ADD COLUMN year INTEGER; PRAGMA user_version = 20; COMMIT;")?;
         }
+        if lib.db.query_row("PRAGMA user_version", [], |r| r.get::<_, i64>(0))? < 21 {
+            // v21: a song marked explicit by a source (Settings › Hide explicit songs).
+            lib.db.execute_batch("BEGIN; ALTER TABLE tracks ADD COLUMN explicit INTEGER NOT NULL DEFAULT 0; PRAGMA user_version = 21; COMMIT;")?;
+        }
         lib.db.execute_batch(CHANGE_LOG)?;
         // Statements on logged tables compile their triggers too: kept, not rebuilt per call.
         lib.db.set_prepared_statement_cache_capacity(64);
@@ -598,10 +603,10 @@ impl Library {
             let id = match found.pop_first() {
                 None => {
                     self.db.prepare_cached(
-                        "INSERT INTO tracks (title, artist, album, duration_ms, isrc, match_key, art, musicness, added, added_at)
-                         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, (SELECT coalesce(max(added), 0) + 1 FROM tracks), CAST(strftime('%s', 'now') AS INTEGER))",
+                        "INSERT INTO tracks (title, artist, album, duration_ms, isrc, match_key, art, musicness, explicit, added, added_at)
+                         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, (SELECT coalesce(max(added), 0) + 1 FROM tracks), CAST(strftime('%s', 'now') AS INTEGER))",
                     )?
-                    .execute(params![t.title, t.artist, t.album, t.duration_ms, isrc, match_key(&t.title, &t.artist), t.art, t.musicness.map(Musicness::as_str)])?;
+                    .execute(params![t.title, t.artist, t.album, t.duration_ms, isrc, match_key(&t.title, &t.artist), t.art, t.musicness.map(Musicness::as_str), t.explicit])?;
                     self.db.last_insert_rowid()
                 }
                 Some(keep) => {
@@ -610,6 +615,9 @@ impl Library {
                         self.absorb(keep, dupe)?;
                     }
                     self.fill(keep, t.album.clone(), t.duration_ms, isrc, t.art.clone(), t.musicness)?;
+                    if t.explicit {
+                        self.mark_explicit(keep)?;
+                    }
                     keep
                 }
             };
@@ -628,10 +636,10 @@ impl Library {
 
     /// `dupe` folded into `keep`: its ids, playlist spots, plays and preference move over, its details fill gaps.
     fn absorb(&self, keep: i64, dupe: i64) -> Result<()> {
-        let (album, dur, dupe_isrc, art, music) = self.db.query_row(
-            "SELECT album, duration_ms, isrc, art, musicness FROM tracks WHERE id = ?1",
+        let (album, dur, dupe_isrc, art, music, explicit) = self.db.query_row(
+            "SELECT album, duration_ms, isrc, art, musicness, explicit FROM tracks WHERE id = ?1",
             [dupe],
-            |r| Ok((r.get::<_, Option<String>>(0)?, r.get::<_, Option<u32>>(1)?, r.get::<_, Option<String>>(2)?, r.get::<_, Option<String>>(3)?, r.get::<_, Option<String>>(4)?)),
+            |r| Ok((r.get::<_, Option<String>>(0)?, r.get::<_, Option<u32>>(1)?, r.get::<_, Option<String>>(2)?, r.get::<_, Option<String>>(3)?, r.get::<_, Option<String>>(4)?, r.get::<_, bool>(5)?)),
         )?;
         self.db.execute("UPDATE track_ids SET track_id = ?1 WHERE track_id = ?2", [keep, dupe])?;
         self.db.execute("UPDATE playlist_tracks SET track_id = ?1 WHERE track_id = ?2", [keep, dupe])?;
@@ -647,6 +655,9 @@ impl Library {
             [keep, dupe],
         )?;
         self.db.execute("DELETE FROM tracks WHERE id = ?1", [dupe])?;
+        if explicit {
+            self.mark_explicit(keep)?;
+        }
         self.fill(keep, album, dur, dupe_isrc, art, music.as_deref().and_then(Musicness::parse))
     }
 
@@ -1493,6 +1504,12 @@ impl Library {
         Ok(())
     }
 
+    /// A source said explicit: it stays so (another source's silence doesn't clear it).
+    fn mark_explicit(&self, id: i64) -> Result<()> {
+        self.db.prepare_cached("UPDATE tracks SET explicit = 1 WHERE id = ?1 AND explicit = 0")?.execute([id])?;
+        Ok(())
+    }
+
     /// File path of a track's local source (cover served from its tags).
     pub fn local_path(&self, track_id: i64) -> Result<Option<String>> {
         Ok(self.db.query_row("SELECT source_id FROM track_ids WHERE source = 'local' AND track_id = ?1", [track_id], |r| r.get(0)).optional()?)
@@ -1551,6 +1568,7 @@ mod tests {
             ids: BTreeMap::from([(Source::Spotify, "2Foc5Q5nqNiosCNqttzHof".into())]),
             art: Some("https://i.scdn.co/image/ram".into()),
             musicness: None,
+            explicit: false,
         }
     }
 
@@ -1641,7 +1659,7 @@ mod tests {
     #[test]
     fn merging_duplicates_keeps_everything_on_one_song() -> Result<()> {
         let lib = Library::in_memory()?;
-        let mut video = Track { title: "Nightcall (Official Video)".into(), artist: "Kavinsky".into(), album: None, duration_ms: Some(300_000), isrc: None, ids: BTreeMap::from([(Source::Youtube, "v1".into())]), art: None, musicness: None };
+        let mut video = Track { title: "Nightcall (Official Video)".into(), artist: "Kavinsky".into(), album: None, duration_ms: Some(300_000), isrc: None, ids: BTreeMap::from([(Source::Youtube, "v1".into())]), art: None, musicness: None, explicit: false };
         let a = lib.upsert_track(&video)?;
         video.title = "Nightcall".into();
         video.duration_ms = Some(258_000);
@@ -1985,6 +2003,25 @@ mod tests {
         lib.remove_from_imported(pid, a)?;
         assert_eq!(lib.playlist_orders()?[&pid], vec![b]);
         assert_eq!(lib.source_ids(a, Source::Youtube)?, ["vid1"]);
+        Ok(())
+    }
+
+    #[test]
+    fn explicit_once_a_source_says_so() -> Result<()> {
+        let lib = Library::in_memory()?;
+        let get = |id| lib.tracks().unwrap().into_iter().find(|t| t.id == id).unwrap().track.explicit;
+        let id = lib.upsert_track(&song(1))?;
+        assert!(!get(id));
+        lib.upsert_track(&Track { explicit: true, ..song(1) })?;
+        assert!(get(id));
+        // Seen again unmarked (another source): kept.
+        lib.upsert_track(&song(1))?;
+        assert!(get(id));
+        // Merged from a duplicate row: carried over.
+        let a = lib.upsert_track(&song(2))?;
+        let b = lib.upsert_track(&Track { explicit: true, ..song(3) })?;
+        lib.merge_tracks(a, &[b])?;
+        assert!(get(a));
         Ok(())
     }
 
