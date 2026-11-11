@@ -366,7 +366,7 @@ Most useful first; the tag is the effort.
       result), so a pass takes minutes, not a session.
 - [ ] `S` Faster CI: run the macOS job only on pushes that touch Rust or `src-tauri`, `cargo nextest`, `sccache`; Linux
       job stays crates only.
-- [ ] `S` Trim CLAUDE.md to rules + pointers (structure details move to `docs/architecture.md`): cheaper sessions.
+- [x] `S` Trim CLAUDE.md to rules + pointers (structure details move to `docs/architecture.md`): cheaper sessions. 2026-11-11: only the Layout section had descriptive text; its crate one-liners moved to `docs/architecture.md` › Layout details, every rule line unchanged (the diff removes lines of Layout only). A small saving (about 10 lines): the other sections are rules. Decided alone (2026-11-11): the per-crate rules (SCHEMA_VERSION, plugins' limits, Android's) stay in CLAUDE.md rather than becoming pointers.
 - [ ] `M` Split `src-tauri/src/lib.rs` by feature (library, player, accounts, sources) like `detector.rs` / `editor.rs`;
       same for `crates/core/src/library.rs` (queries per table).
 - [ ] `M` Typed `invoke` wrappers: the types are generated, the wrappers in `api.ts` stay by hand (no `tauri-specta`), so a

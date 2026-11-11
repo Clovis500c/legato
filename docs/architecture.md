@@ -44,6 +44,16 @@ src-tauri/              thin shell: commands, keychain, WebView2 hook, media pan
   everyone bumps `DEFAULTS_VERSION`.
 - **Database schema.** Migrations keyed on SQLite `user_version` (`crates/core/src/library.rs`).
 
+## Layout details (moved from CLAUDE.md, 2026-11-11)
+
+- `crates/core`: models, matching (ISRC, then title + artist + duration), the library (rusqlite), sync.
+- `crates/connectors`: one module per service or site, the shared OAuth PKCE loopback.
+- `crates/player`: rodio/symphonia, gapless queue, server streams, Music Detector clips.
+- `crates/dsp`: live processing, loudness, visualizer bands. `crates/shield`: ad blocker and page scripts.
+- `crates/plugins`: one QuickJS runtime each.
+- `ui/`: React 19 + Zustand + Tailwind v4.
+- Android: `src-tauri/gen/android` (`MainActivity.kt`, `PlaybackService.kt`).
+
 ## IPC types
 
 Every type a command, an event or a plugin call carries is a Rust type (struct or enum) that derives `ts_rs::TS` and

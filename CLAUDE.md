@@ -51,20 +51,19 @@ installed versions look for updates there, so never create a repo named `music-a
   addresses, names, device names), nor the owner's accounts, library, machines or usage. Those stay out of git (the
   keychain, git-ignored files, Claude Code's private memory).
 
-## Layout (the details: graphify)
-- `crates/core` (`music-core`): pure Rust, no Tauri. Models, matching (ISRC, then title + artist + duration), the
-  library (rusqlite; bump `library::SCHEMA_VERSION` with each migration), sync, the pure half of each shell feature.
-- `crates/connectors`: one module per service or site, the shared OAuth PKCE loopback; injectable URLs (`with_urls`) for
-  mockito tests. `crates/player`: rodio/symphonia, gapless queue, server streams, Music Detector clips (memory only, the
-  app's own playback paused first). `crates/dsp`: live processing, loudness, visualizer bands. `crates/shield`: ad
-  blocker and page scripts. `crates/plugins`: third-party plugins, one QuickJS runtime each, installed from a local
-  folder once the user approves their permissions (checked in Rust, network to approved hosts only); never secrets,
-  files or raw IPC; API version `manifest::API`, additions only within a version (`docs/plugins.md`).
+## Layout (crate by crate: `docs/architecture.md`; the code itself: graphify)
+- `crates/core` (`music-core`): pure Rust, no Tauri. The library (rusqlite; bump `library::SCHEMA_VERSION` with each
+  migration), the pure half of each shell feature.
+- `crates/connectors`: injectable URLs (`with_urls`) for mockito tests. `crates/player`: Music Detector clips (memory
+  only, the app's own playback paused first). `crates/dsp`, `crates/shield`: see architecture.
+- `crates/plugins`: third-party plugins installed from a local folder once the user approves their permissions (checked
+  in Rust, network to approved hosts only); never secrets, files or raw IPC; API version `manifest::API`, additions
+  only within a version (`docs/plugins.md`).
 - `src-tauri`: thin shell, the IPC commands. All logic goes in `crates/`.
 - `ui/`: React 19 + Zustand + Tailwind v4: `app/` (shell), `features/<name>/`, `shared/` (api, theme, i18n, ui).
-- Android: `src-tauri/gen/android` (`MainActivity.kt`, `PlaybackService.kt`), identifier `app.legato.mobile`.
-  Desktop-only shell parts behind `#[cfg(desktop)]`, phone twins in `src-tauri/src/mobile/`, reqwest on rustls there,
-  plugins desktop only. Files picked or saved through `shared/files.ts`, never the dialog plugin's `open` / `save`.
+- Android (identifier `app.legato.mobile`): desktop-only shell parts behind `#[cfg(desktop)]`, phone twins in
+  `src-tauri/src/mobile/`, reqwest on rustls there, plugins desktop only. Files picked or saved through
+  `shared/files.ts`, never the dialog plugin's `open` / `save`.
 
 ## Code rules
 - `shared/api.ts` is the only place that calls `invoke`; its types come from Rust (ts-rs, `pnpm types` →
