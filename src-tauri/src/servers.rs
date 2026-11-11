@@ -532,6 +532,14 @@ struct Fetch;
 
 impl PlayerFetch for Fetch {
     fn get(&self, key: &str, from: u64, transcode: bool) -> io::Result<Reply> {
+        // A radio station (`radio:<stream address>`): no account, no Range, an endless body.
+        if let Some(stream) = key.strip_prefix(music_player::http::RADIO) {
+            let stream = stream.to_string();
+            let s = tauri::async_runtime::block_on(async move { tokio::time::timeout(Duration::from_secs(30), music_connectors::radio_browser::open(&stream)).await })
+                .map_err(|_| io::Error::new(io::ErrorKind::TimedOut, "This radio station doesn't answer (timed out)"))?
+                .map_err(|e| io::Error::new(io::ErrorKind::NotConnected, format!("{e:#}")))?;
+            return Ok(Reply { status: s.status, content_length: s.content_length, content_range: s.content_range, content_type: s.content_type, body: Box::new(Body { body: s.body, left: Vec::new(), at: 0 }) });
+        }
         let (a, item) = item(key).map_err(|e| io::Error::new(io::ErrorKind::PermissionDenied, e))?;
         let sub = Conn::from_account(&a);
         let s = tauri::async_runtime::block_on(async move { tokio::time::timeout(Duration::from_secs(30), sub.stream(&item, from, transcode)).await })

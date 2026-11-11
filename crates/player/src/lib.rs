@@ -392,6 +392,15 @@ impl Engine {
     fn open_remote(&self, path: &std::path::Path) -> Result<Box<dyn Source + Send>> {
         let Some(http::Remote(fetch)) = &self.remote else { return Err(std::io::Error::new(std::io::ErrorKind::PermissionDenied, "Your music server isn't signed in").into()) };
         let key = path.to_str().and_then(|p| p.strip_prefix(http::PREFIX)).unwrap_or_default();
+        // A radio station: endless, so no length and no seeking, and no second try as the server's MP3.
+        if key.starts_with(http::RADIO) {
+            let (stream, info) = http::Stream::open_live(fetch.clone(), key, self.remote_failed.clone())?;
+            let mut b = Decoder::builder().with_data(stream);
+            if let Some(mime) = &info.mime {
+                b = b.with_mime_type(mime);
+            }
+            return Ok(Box::new(b.build().map_err(|e| anyhow::anyhow!("This radio station sends a format Legato can't play ({e})"))?));
+        }
         let open = |transcode: bool| -> Result<Decoder<http::Stream>> {
             let (stream, info) = http::Stream::open(fetch.clone(), key, transcode, self.remote_failed.clone())?;
             let mut b = Decoder::builder().with_data(stream).with_seekable(true);
@@ -657,6 +666,30 @@ mod tests {
         assert!(e.error.is_none(), "{:?}", e.error);
         assert_eq!(e.durations.front().copied().flatten(), Some(2_000));
         assert_eq!(fetch.1.lock().unwrap()[..2], [false, true]);
+        e.handle(Command::Stop).unwrap();
+        let _ = std::fs::remove_file(file);
+    }
+
+    #[test]
+    fn a_radio_station_plays_as_an_endless_stream_without_a_second_try() {
+        struct Station(Vec<u8>, Mutex<Vec<(String, u64, bool)>>);
+        impl http::Fetch for Station {
+            fn get(&self, key: &str, from: u64, transcode: bool) -> std::io::Result<http::Reply> {
+                self.1.lock().unwrap().push((key.into(), from, transcode));
+                Ok(http::Reply { status: 200, content_length: None, content_range: None, content_type: Some("audio/wav".into()), body: Box::new(Cursor::new(self.0.clone())) })
+            }
+        }
+        let file = wav("radio", 0, 2, 0);
+        let fetch = Arc::new(Station(std::fs::read(&file).unwrap(), Mutex::default()));
+        let mut e = Engine { volume: 1.0, ..Default::default() };
+        e.device = Some(Output::Null(Null::open()));
+        e.handle(Command::Remote { fetch: http::Remote(fetch.clone()) }).unwrap();
+        e.handle(Command::Play { paths: vec![PathBuf::from("server:radio:https://radio.example/live")], start: 0 }).unwrap();
+        assert!(e.error.is_none(), "{:?}", e.error);
+        let asked = fetch.1.lock().unwrap();
+        assert_eq!(asked[0], ("radio:https://radio.example/live".to_string(), 0, false));
+        assert!(asked.iter().all(|a| !a.2), "never asked as the server's MP3");
+        drop(asked);
         e.handle(Command::Stop).unwrap();
         let _ = std::fs::remove_file(file);
     }

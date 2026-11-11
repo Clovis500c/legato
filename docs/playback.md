@@ -310,6 +310,11 @@ visualizer and the media panel apply.
   elsewhere a new `Range` request. A cut connection: a new request from where it stopped (backoff 250 ms doubling, 4
   tries without a byte). The decoder waits 20 s at most for bytes, then the song fails with words (`errors.ts`). A
   server that answers 200 to a `Range` plays from the start, and a seek reads again from 0 and skips.
+- Radio stations (2026-11-11, engine side only; no page yet): a path `server:radio:<stream address>` is an endless stream, not a
+  song: `http::Stream::open_live` (plain GET through `music_connectors::radio_browser::open`, no Range, no `Icy-MetaData`, so
+  no metadata inside the audio), no length, no seek (a seek outside the buffer is refused); a cut or ended connection
+  reconnects (same backoff and tries) and carries on with what comes next. No second try as a server MP3. AAC stations
+  fail in words until symphonia's AAC is added.
 - Raw stream first (`stream?format=raw`); a format the engine can't decode (opus, say) is asked again as the server's
   own MP3 at 320 kbps (`format=mp3&maxBitRate=320`), seekable by the server's byte ranges when it gives them.
 - Back to the server, when its direction sends (Both ways, Send only): a like stars the song, an unlike unstars it;

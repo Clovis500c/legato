@@ -13,6 +13,8 @@ use std::time::{Duration, Instant};
 
 /// Engine paths of server songs start so (`server:<server>:<item>`); the rest is the fetcher's key.
 pub const PREFIX: &str = "server:";
+/// A radio station is a server song whose key starts so (`server:radio:<stream address>`): endless, no seek.
+pub const RADIO: &str = "radio:";
 
 /// Read ahead of the decoder, at most.
 const AHEAD: usize = 4 << 20;
@@ -78,6 +80,15 @@ fn refused(status: u16) -> io::Error {
     }
 }
 
+/// A radio station's first answer: a plain 200 (a station has no ranges), else in words.
+fn live_judge(r: &Reply) -> io::Result<(u64, Option<u64>, bool)> {
+    match r.status {
+        200 => Ok((0, None, false)),
+        404 | 410 => Err(io::Error::new(io::ErrorKind::NotFound, format!("This radio station is gone (HTTP {})", r.status))),
+        s => Err(io::Error::other(format!("This radio station answered HTTP {s}"))),
+    }
+}
+
 /// "bytes 100-999/1000" → (100, Some(1000)); "*" total = unknown.
 fn parse_range(v: &str) -> Option<(u64, Option<u64>)> {
     let rest = v.trim().strip_prefix("bytes")?.trim();
@@ -130,6 +141,8 @@ struct Shared {
     fetch: Arc<dyn Fetch>,
     key: String,
     transcode: bool,
+    /// A radio station: endless, no length, no seek, no Range; a cut connection carries on with whatever comes next.
+    live: bool,
     len: Option<u64>,
     /// Last failure for the engine's status (the decoder only sees a short read).
     failed: Arc<Mutex<Option<String>>>,
@@ -144,10 +157,19 @@ pub struct Stream {
 impl Stream {
     /// First request now (length, type), then the worker reads on. `failed` gets a later failure, in words.
     pub fn open(fetch: Arc<dyn Fetch>, key: &str, transcode: bool, failed: Arc<Mutex<Option<String>>>) -> io::Result<(Self, Info)> {
+        Self::start(fetch, key, transcode, false, failed)
+    }
+
+    /// An endless stream (a radio station): the first answer must be a plain 200, no length is known.
+    pub fn open_live(fetch: Arc<dyn Fetch>, key: &str, failed: Arc<Mutex<Option<String>>>) -> io::Result<(Self, Info)> {
+        Self::start(fetch, key, false, true, failed)
+    }
+
+    fn start(fetch: Arc<dyn Fetch>, key: &str, transcode: bool, live: bool, failed: Arc<Mutex<Option<String>>>) -> io::Result<(Self, Info)> {
         let first = fetch.get(key, 0, transcode)?;
-        let (_, len, ranged) = judge(&first, 0)?;
+        let (_, len, ranged) = if live { live_judge(&first)? } else { judge(&first, 0)? };
         let mime = first.content_type.as_deref().map(|m| m.split(';').next().unwrap_or(m).trim().to_string()).filter(|m| !m.is_empty());
-        let shared = Arc::new(Shared { state: Mutex::new(State::default()), moved: Condvar::new(), fetch, key: key.to_string(), transcode, len, failed });
+        let shared = Arc::new(Shared { state: Mutex::new(State::default()), moved: Condvar::new(), fetch, key: key.to_string(), transcode, live, len, failed });
         let worker = shared.clone();
         std::thread::Builder::new().name("http-stream".into()).spawn(move || work(&worker, Some(first)))?;
         Ok((Self { shared, pos: 0 }, Info { len, mime, ranged }))
@@ -216,6 +238,9 @@ impl Seek for Stream {
         let target = u64::try_from(target).map_err(|_| io::Error::new(io::ErrorKind::InvalidInput, "seek before start"))?;
         let mut st = self.shared.state.lock().unwrap();
         let end = st.start + st.buf.len() as u64;
+        if self.shared.live && !(st.start..=end).contains(&target) {
+            return Err(io::Error::new(io::ErrorKind::Unsupported, "a live stream can't seek"));
+        }
         // Inside what's kept, or just ahead of it (the worker gets there): no new request.
         let near = target >= st.start && (target <= end || (target - end <= NEAR && !st.eof && st.error.is_none()));
         let past_end = self.shared.len.is_some_and(|l| target >= l);
@@ -249,7 +274,8 @@ fn work(sh: &Shared, mut first: Option<Reply>) {
             None => sh.fetch.get(&sh.key, from, sh.transcode),
         };
         let got = opened.and_then(|r| {
-            let (at, _, _) = judge(&r, from)?;
+            // A live stream has no past: whatever comes now is the next bytes.
+            let at = if sh.live { live_judge(&r)?;  from } else { judge(&r, from)?.0 };
             Ok((r.body, at))
         });
         // Range ignored (200) or started early (206): `at` < `from`, the bytes before are skipped below.
@@ -307,8 +333,8 @@ fn work(sh: &Shared, mut first: Option<Reply>) {
                         break;
                     }
                     let end = st.start + st.buf.len() as u64;
-                    // Short of the length the server gave: the connection dropped.
-                    if sh.len.is_some_and(|l| end < l) {
+                    // Short of the length the server gave, or a live stream that ended: the connection dropped.
+                    if sh.live || sh.len.is_some_and(|l| end < l) {
                         drop(st);
                         fails += 1;
                         if !retry(sh, generation, &mut fails, io::Error::new(io::ErrorKind::UnexpectedEof, "Your music server cut the connection")) {
@@ -663,5 +689,37 @@ pub(crate) mod tests {
         assert_eq!(parse_range("bytes 100-999/1000"), Some((100, Some(1000))));
         assert_eq!(parse_range("bytes 0-9/*"), Some((0, None)));
         assert_eq!(parse_range("junk"), None);
+    }
+
+    #[test]
+    fn a_live_stream_carries_on_after_a_cut_and_refuses_to_seek_away() {
+        struct Live(AtomicUsize);
+        impl Fetch for Live {
+            fn get(&self, _: &str, from: u64, _: bool) -> io::Result<Reply> {
+                let n = self.0.fetch_add(1, Ordering::SeqCst);
+                assert_eq!(from, if n == 0 { 0 } else { 6 }, "the buffer's end, never a Range the station would ignore");
+                let body: &[u8] = if n == 0 { b"abcdef" } else { b"ghijkl" };
+                Ok(Reply { status: 200, content_length: None, content_range: None, content_type: Some("audio/mpeg".into()), body: Box::new(io::Cursor::new(body.to_vec())) })
+            }
+        }
+        let (mut s, info) = Stream::open_live(Arc::new(Live(AtomicUsize::new(0))), "radio:x", Arc::default()).unwrap();
+        assert_eq!((info.len, info.ranged, info.mime.as_deref()), (None, false, Some("audio/mpeg")));
+        let mut got = vec![0u8; 12];
+        io::Read::read_exact(&mut s, &mut got).unwrap();
+        assert_eq!(got, b"abcdefghijkl", "the second answer follows the first, nothing skipped");
+        assert_eq!(s.seek(SeekFrom::Start(10_000)).unwrap_err().kind(), io::ErrorKind::Unsupported);
+        assert_eq!(s.seek(SeekFrom::End(0)).unwrap_err().kind(), io::ErrorKind::Unsupported);
+    }
+
+    #[test]
+    fn a_live_stream_needs_a_plain_200() {
+        struct Gone(u16);
+        impl Fetch for Gone {
+            fn get(&self, _: &str, _: u64, _: bool) -> io::Result<Reply> {
+                Ok(Reply { status: self.0, content_length: None, content_range: None, content_type: None, body: Box::new(io::empty()) })
+            }
+        }
+        assert_eq!(Stream::open_live(Arc::new(Gone(404)), "radio:x", Arc::default()).err().unwrap().kind(), io::ErrorKind::NotFound);
+        assert!(Stream::open_live(Arc::new(Gone(206)), "radio:x", Arc::default()).is_err());
     }
 }

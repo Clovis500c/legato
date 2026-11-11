@@ -101,6 +101,14 @@ impl RadioBrowser {
     }
 }
 
+/// A station's stream, opened for the engine: a plain GET (no Range, and no `Icy-MetaData`, so no metadata is mixed
+/// into the audio), http or https only. The caller bounds the wait for the answer; the body then runs on, endless.
+pub async fn open(stream: &str) -> Result<crate::servers::Streamed> {
+    let url = url::Url::parse(stream).ok().filter(|u| matches!(u.scheme(), "http" | "https")).ok_or_else(|| anyhow::anyhow!("This radio station's address isn't right"))?;
+    let res = crate::http().get(url).header(reqwest::header::USER_AGENT, AGENT).send().await.map_err(|_| anyhow::anyhow!("This radio station doesn't answer"))?;
+    Ok(crate::servers::Streamed::of(res))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -148,5 +156,17 @@ mod tests {
         assert!(r.search("busy", 5).await.unwrap_err().to_string().contains("busy"));
         assert!(r.search("bad", 5).await.unwrap_err().to_string().contains("refused"));
         assert!(RadioBrowser::with_urls("http://127.0.0.1:9").search("x", 5).await.unwrap_err().to_string().contains("doesn't answer"));
+    }
+
+    #[tokio::test]
+    async fn a_station_is_opened_with_a_plain_get() {
+        let mut s = mockito::Server::new_async().await;
+        let m = s.mock("GET", "/live").match_header("range", Matcher::Missing).match_header("icy-metadata", Matcher::Missing).match_header("user-agent", Matcher::Regex("^Legato v".into())).with_header("content-type", "audio/mpeg").with_body(vec![7u8; 30]).create_async().await;
+        let mut r = open(&format!("{}/live", s.url())).await.unwrap();
+        assert_eq!((r.status, r.content_type.as_deref()), (200, Some("audio/mpeg")));
+        assert_eq!(r.body.chunk().await.unwrap().map(|b| b.len()), Some(30));
+        m.assert_async().await;
+        assert!(open("file:///etc/passwd").await.is_err() && open("nonsense").await.is_err());
+        assert!(open("http://127.0.0.1:9/x").await.err().unwrap().to_string().contains("doesn't answer"));
     }
 }

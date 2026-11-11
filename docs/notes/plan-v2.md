@@ -281,8 +281,15 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       rodio is built without ADTS AAC (`crates/player/Cargo.toml`: many stations stream AAC, an added decoder and
       licence check). Split into: (1) `S` connector `radio_browser.rs` (`all.api.radio-browser.info`
       `/json/stations/search`, `hidebroken`, codec MP3 / OGG first; a User-Agent naming the app) with the website's
-      privacy row; (2) `S` the engine's endless stream (a plain GET fetcher, no ICY metadata asked, no seek, no
-      length); (3) `M` a `radio` source and a Radio page (search, play, keep a station), Up next and history skip it;
+      privacy row; [x] 2026-11-11: `radio_browser.rs` (`RadioBrowser::search`, `Station`; HLS, dead and non-http streams dropped, MP3 / OGG
+      first) and the website's "Internet radio" row; nothing calls it yet (the row is written for step 3), its error words
+      aren't in `errors.ts` yet. Untried on the real directory: mock tests only. Decided alone: `all.api` name (the
+      directory's round-robin) rather than its DNS server list; (2) `S` the engine's endless stream (a plain GET fetcher, no ICY metadata asked, no seek, no
+      length); [x] 2026-11-11: `server:radio:<address>` paths (`http::RADIO`), `Stream::open_live` (a plain 200, no length, a
+      cut or an ended stream reconnects and carries on, a seek outside the buffer refused), `radio_browser::open` (plain GET,
+      http / https only, no `Icy-MetaData`) behind the shell's fetcher. Nothing in the interface starts one yet (step 3);
+      untried on a real station (mock and local-server tests only). Decided alone: a station is not forced to MP3 / OGG
+      here (the decoder's error says so for AAC, step 4); the station's address is not checked against private ranges. (3) `M` a `radio` source and a Radio page (search, play, keep a station), Up next and history skip it;
       (4) `S` AAC streams (symphonia's AAC + ADTS, `cargo deny`).
 - [ ] `M` Release radar: new releases from artists in the library (YouTube Music / MusicBrainz).
 - [ ] `M` Credits and artist pages: who wrote / produced (MusicBrainz), a short bio (Wikipedia), links out.
