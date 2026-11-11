@@ -57,20 +57,25 @@ classic mini player stay off by default; the web share link stays the default; p
 Noted from their message, nothing built or checked yet. After the answers above, or later, by the plan's priorities.
 Where a line says "reading", the owner hasn't confirmed it.
 
-- [ ] `M` The share page (`/l`, since `867cc53`) as a real preview of a playlist without the app, from the compact
-      links. Reading: beyond today's list of songs, play them on the page in YouTube's own embedded player (visible,
-      its rules), nothing through a server of ours.
-- [ ] `M` Remixes shared outside the app: a small file of ours (`.legatomix` or a better name, the owner's call) and
-      its compact link. It holds the YouTube link and the Live Editor's settings (EQ, tempo, pitch, reverb, space,
-      fades), never the audio (no mp3: Fixed limits). Opened in Legato, the video plays with those settings; on the
-      website, the page says what it is and opens it in the app.
+- [ ] `S-M` The share page (`/l`, since `867cc53`) as a good-looking preview of a playlist without the app, from the
+      compact links: a preview only, no player on the web (the owner's word).
+- [ ] `M` Remixes shared outside the app: a small file of ours, `.lmix` (or close, the owner's call), and its compact
+      link. It holds the song's YouTube link and the mix's Live Editor presets, never the audio (no mp3: Fixed
+      limits, no download). Dropped on Legato, the song plays with the Live Editor open on those presets.
+- [ ] `M` Optional sign-in with Discord, for a profile (the owner will make a Discord bot anyway). Never required.
+      First use: the share page shows who shared a playlist, their profile carried in the link so it can't be faked
+      (the owner's word: encrypted in the link). Open before building: encryption alone doesn't stop a fake, a
+      signature does, and a signing key shipped in the app can be taken out of it; a signature by the owner's bot
+      is a server of ours (CLAUDE.md: serverless). The owner's call between an unverified profile, or their bot
+      signing as an exception to that rule. Discord's OAuth for a desktop app without a secret: to check; a new
+      host, so a privacy row.
 - [ ] `M` Drag and drop of every file type that is Legato's own into the app: the remix file, and the others (list
       them first: shared playlists, backups, themes, playlist files; a plugin folder never installs without its
       permission review). Today a drop takes folders, songs and a QR picture.
 - [ ] `M` Share as a picture, dropped on the app, brings its music back: from the picture's metadata first, and from
       the picture itself when the metadata is gone (Discord strips it): a code the app can read in the pixels (the QR
       path exists: check what the card carries today).
-- [ ] `M-L` Security, the drop first: every dropped or opened file is untrusted (size limits, strict parsers, no path
+- [ ] `M-L` Security, the drop first, before the remix file and the picture lines above (agreed 2026-11-11): every dropped or opened file is untrusted (size limits, strict parsers, no path
       taken from a file, nothing run, fuzz or property tests on each parser). Then a security pass of the whole app
       (IPC commands, deep links, the `art` scheme, the CSP, plugins, the phone remote and the overlay), findings fixed
       with tests.
