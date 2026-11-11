@@ -117,6 +117,7 @@ export const SETTINGS_INDEX: SettingEntry[] = [
   { section: 'general', label: msg('Open at startup'), keywords: msg('launch boot login sign in windows task manager autostart start automatically') },
   { section: 'general', label: msg('Keep running in the notification area'), keywords: msg('tray background close minimize system tray quit discord') },
   { section: 'general', label: msg('Picture-in-picture on minimize'), keywords: msg('minimize pip small window above on top floating corner player') },
+  { section: 'general', label: msg('Classic mini player'), keywords: msg('winamp skin retro compact strip pip scroller old school') },
   { section: 'general', label: msg('Reopen where you left off'), keywords: msg('restore state screen last session launch') },
   { section: 'general', label: msg('Resume playback on launch'), keywords: msg('restore continue reopen last track start') },
   { section: 'general', label: msg('Notification position'), keywords: msg('toast popup message where place corner bottom top right') },

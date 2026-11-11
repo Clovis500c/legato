@@ -239,8 +239,13 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       (Left by the autopilot (2026-11-05): a song's end is only known measured (local files, Skip silence on) or
       heard once (a video, `ends.ts`), its tempo not at all; the overlap is the player's most fixed code, and a
       length picked per pair needs an ear to tune: with the roadmap's Sonic analysis, or with the owner listening.)
-- [ ] `M` Classic skins: a compact "mini" layout (Winamp-like) with the user's theme; a YouTube song keeps its video at
+- [x] `M` Classic skins: a compact "mini" layout (Winamp-like) with the user's theme; a YouTube song keeps its video at
       200 px beside it (the owner's choice 2026-11-07: YouTube's 200 × 200 rule).
+      2026-11-11: Settings › General › Classic mini player (off) turns picture in picture (P) into a 656 × 200 strip:
+      the video (or the cover) at 356 × 200 on the left, then the time, a scrolling "artist – title" (still with
+      Animations off or reduced motion), the seek bar, the whole transport, the mini visualizer. Decided alone
+      (2026-11-11): built on picture in picture (same window, above the others) rather than a third layout; the strip's
+      place kept for the run only. Never seen on a screen: the strip's fit at 200 px, the marquee's speed.
 - [x] `S` Lyrics: `SONG ENDS`, `NEXT SONG`, `PREVIEW` in normal case (the owner's choice 2026-11-07; keys in all 17
       languages).
       2026-11-11: they are the fade editor's two marks and the song lists' 30-second badge, not the lyrics. "Song

@@ -448,8 +448,8 @@ export const api = {
   saveSession: (session: object) => invoke<void>('save_session', { session }),
   /** A new player is about to start: the hidden window's page stays `visible` until the music moves. */
   holdPage: () => invoke<void>('hold_page'),
-  /** Picture-in-picture (pipMode.ts, desktop): the window small and above the others, at `place` (its last: physical x, y, width, height) when still on a screen; off: back as it was, giving the small one's place. */
-  pip: (on: boolean, place: [number, number, number, number] | null) => invoke<[number, number, number, number] | null>('pip', { on, place }),
+  /** Picture-in-picture (pipMode.ts, desktop): the window small and above the others (`classic`: the strip's size), at `place` (its last: physical x, y, width, height) when still on a screen; off: back as it was, giving the small one's place. */
+  pip: (on: boolean, place: [number, number, number, number] | null, classic = false) => invoke<[number, number, number, number] | null>('pip', { on, place, classic }),
   /** Windows media panel; null = nothing playing. Cover: local file's (trackId), else `art` URL. */
   mediaUpdate: (now: MediaNow | null, trackId: number | null, art: string | null) => invoke<void>('media_update', { now, trackId, art }),
   /** Phone remote: `labels` = the page's words in the interface's language, keyed by the English text. */

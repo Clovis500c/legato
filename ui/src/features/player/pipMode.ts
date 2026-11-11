@@ -17,7 +17,10 @@ import { vizFullKeys } from './vizFullKeys'
  * to the window as it was; its place is kept (settings `pipPlace`, this PC only). Not from the full screens (their keys
  * wait for Esc) nor on the phone.
  */
-export const usePip = create<{ on: boolean }>(() => ({ on: false }))
+export const usePip = create<{ on: boolean; classic: boolean }>(() => ({ on: false, classic: false }))
+
+// shortcut: the classic strip's place is kept for this run only (pipPlace holds the picture's size); a setting if missed.
+let classicPlace: [number, number, number, number] | null = null
 
 let unkey: (() => void) | undefined
 // A change on its way: a second press waits for it.
@@ -33,11 +36,12 @@ export async function openPip(minimized = false) {
   try {
     // Drawn before the window shrinks: the picture shrinks with it, the app never shows at that size.
     await preloadPip().catch(() => {})
-    usePip.setState({ on: true })
+    const { pipPlace, pipClassic: classic } = useSettings.getState().settings
+    usePip.setState({ on: true, classic })
     // A field behind it (the search box) must not keep the keyboard.
     if (document.activeElement instanceof HTMLElement) document.activeElement.blur()
     unkey = vizFullKeys(() => void closePip())
-    await api.pip(true, useSettings.getState().settings.pipPlace)
+    await api.pip(true, classic ? classicPlace : pipPlace, classic)
     fromMinimize = minimized
   } catch {
     // Window left as it was: the screen goes too.
@@ -57,7 +61,8 @@ export async function closePip() {
   try {
     // The window grows back first, the picture with it; then the app.
     const place = await api.pip(false, null)
-    if (place) useSettings.getState().update({ pipPlace: place })
+    if (place && usePip.getState().classic) classicPlace = place
+    else if (place) useSettings.getState().update({ pipPlace: place })
   } catch {
     // Back on screen anyway: the app under it shows.
   } finally {

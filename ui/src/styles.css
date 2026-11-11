@@ -696,3 +696,18 @@ body.dragging * {
     overflow-x: hidden;
   }
 }
+
+/* Classic mini player (PipScreen): the title runs left, its copy right behind it. */
+@keyframes marquee {
+  to {
+    transform: translateX(-100%);
+  }
+}
+.marquee-run {
+  animation: marquee 14s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .marquee-run {
+    animation: none;
+  }
+}

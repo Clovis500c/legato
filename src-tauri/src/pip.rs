@@ -13,6 +13,8 @@ use crate::window_place::{Rect, fit};
 const SIZE: (f64, f64) = (480.0, 316.0);
 /// Smallest: the picture stays YouTube's 200 px high at least (the strip, its progress line and the sung line: 70).
 const MIN: (f64, f64) = (356.0, 270.0);
+/// Classic strip (settings `pipClassic`): YouTube's 356 × 200 picture beside a 300 px strip; its first size is its smallest.
+const CLASSIC: (f64, f64) = (656.0, 200.0);
 /// From the work area's edges, logical px.
 const MARGIN: f64 = 24.0;
 
@@ -29,11 +31,12 @@ struct Before {
 
 static BEFORE: Mutex<Option<Before>> = Mutex::new(None);
 
-/// on: small and above the others, at `place` when it is still on a screen. Off: back as it was; gives the small
-/// window's place to keep. Twice the same way: nothing.
+/// on: small and above the others, at `place` when it is still on a screen; `classic`: the strip's size. Off: back as it
+/// was; gives the small window's place to keep. Twice the same way: nothing.
 #[tauri::command]
-pub async fn pip(window: WebviewWindow, on: bool, place: Option<Place>) -> Result<Option<Place>, String> {
-    if on { enter(&window, place).map(|()| None) } else { leave(&window) }.map_err(|e| e.to_string())
+pub async fn pip(window: WebviewWindow, on: bool, place: Option<Place>, classic: bool) -> Result<Option<Place>, String> {
+    let (size, min) = if classic { (CLASSIC, CLASSIC) } else { (SIZE, MIN) };
+    if on { enter(&window, place, size, min).map(|()| None) } else { leave(&window) }.map_err(|e| e.to_string())
 }
 
 /// Before the app saves the window's place (quit, restart, update): its own size, not the small one.
@@ -43,7 +46,7 @@ pub fn leave_for_exit(app: &AppHandle) {
     }
 }
 
-fn enter(window: &WebviewWindow, place: Option<Place>) -> tauri::Result<()> {
+fn enter(window: &WebviewWindow, place: Option<Place>, first: (f64, f64), min: (f64, f64)) -> tauri::Result<()> {
     if BEFORE.lock().unwrap().is_some() {
         return Ok(());
     }
@@ -70,10 +73,10 @@ fn enter(window: &WebviewWindow, place: Option<Place>) -> tauri::Result<()> {
     let px = |v: f64| (v * scale).round() as i64;
     let saved = place.map(|(x, y, w, h)| Rect { x: x.into(), y: y.into(), w: w.into(), h: h.into() });
     let r = match here {
-        Some(m) => spot(saved, &screens, area(&m), (px(SIZE.0), px(SIZE.1)), px(MARGIN)),
-        None => saved.unwrap_or(Rect { x: 0, y: 0, w: px(SIZE.0), h: px(SIZE.1) }),
+        Some(m) => spot(saved, &screens, area(&m), (px(first.0), px(first.1)), px(MARGIN)),
+        None => saved.unwrap_or(Rect { x: 0, y: 0, w: px(first.0), h: px(first.1) }),
     };
-    window.set_min_size(Some(Size::Logical(LogicalSize::new(MIN.0, MIN.1))))?;
+    window.set_min_size(Some(Size::Logical(LogicalSize::new(min.0, min.1))))?;
     window.set_size(PhysicalSize::new(r.w as u32, r.h as u32))?;
     window.set_position(PhysicalPosition::new(r.x as i32, r.y as i32))?;
     window.set_always_on_top(true)

@@ -14,10 +14,12 @@ import { useBackdrop } from './immersive'
 import { useNowLyrics } from './LyricsPanel'
 import { applyFix, lineAt, NO_FIX } from './lyricsAt'
 import { Backdrop } from './NowPlaying'
-import { closePip } from './pipMode'
-import { usePosition } from './Progress'
+import { closePip, usePip } from './pipMode'
+import { MiniViz } from './MiniViz'
+import { SeekBar, TimeText, usePosition } from './Progress'
 import { useStill } from './still'
 import { useNowTrack, usePlayer } from './store'
+import { Transport } from './Transport'
 import { VideoSlot } from './VideoSlot'
 
 /** Blur of the cover's copy around it (screen px): the window is small, the copy only gives a colour. */
@@ -39,15 +41,15 @@ export function PipScreen() {
   const vinyl = useSettings((s) => s.settings.covers === 'vinyl')
   const still = useStill(now?.via === 'youtube' ? now.youtubeId : undefined)
   const backdrop = useBackdrop(track ? trackArt(track)[0] : undefined, BLUR)
+  const classic = usePip((s) => s.classic)
   useEffect(() => {
     if (!now) void closePip()
   }, [now])
   if (!now) return null
   // As Now Playing: Cover, or Auto on a still-image upload, shows the cover.
   const video = now.via === 'youtube' && stage !== 'cover' && !(stage === 'auto' && still === true)
-  return (
-    <div role="dialog" aria-label={tr('Picture-in-picture')} onContextMenu={onMenu(pipMenu)} className="fixed inset-0 z-40 isolate flex flex-col overflow-hidden bg-bg text-ink">
-      <div onMouseDown={moveWindow} className="relative grid min-h-0 flex-1 place-items-center overflow-hidden bg-black" style={{ containerType: 'size' }}>
+  const picture = (
+    <div onMouseDown={moveWindow} className={`relative grid place-items-center overflow-hidden bg-black ${classic ? 'aspect-video h-full shrink-0' : 'min-h-0 flex-1'}`} style={{ containerType: 'size' }}>
         {!video && (
           <>
             {backdrop && <Backdrop url={backdrop} dim={45} motion={false} />}
@@ -58,7 +60,32 @@ export function PipScreen() {
         )}
         {/* Under the cover: the video plays on unseen, at YouTube's minimum size. */}
         {now.via === 'youtube' && (video ? <VideoSlot pip onClick={toggle} className="rounded-none!" style={{ width: 'min(100cqw, 100cqh * 16 / 9)', aspectRatio: '16 / 9' }} /> : <VideoSlot pip hidden className="absolute top-0 left-0 size-0" />)}
+    </div>
+  )
+  // Settings › General › Classic mini player: the picture at YouTube's 200 px on the left, a Winamp-like strip beside.
+  if (classic)
+    return (
+      <div role="dialog" aria-label={tr('Picture-in-picture')} onContextMenu={onMenu(pipMenu)} className="fixed inset-0 z-40 isolate flex overflow-hidden bg-bg text-ink">
+        {picture}
+        <div className="flex min-w-0 flex-1 flex-col justify-center gap-1.5 px-3 py-2">
+          <div onMouseDown={moveWindow} onDoubleClick={() => void closePip()} className="flex items-center gap-2">
+            <TimeText part="elapsed" className="flex-1 font-mono text-2xl/8 font-semibold" />
+            <RoundButton label={tr('Back to the full window (Esc)')} kind="plain" size="sm" onClick={() => void closePip()}>
+              <ArrowsIn size={16} />
+            </RoundButton>
+          </div>
+          <Marquee text={`${artistName(now.artist)} – ${now.title}`} />
+          <SeekBar />
+          <div className="flex justify-center">
+            <Transport size="sm" />
+          </div>
+          <MiniViz />
+        </div>
       </div>
+    )
+  return (
+    <div role="dialog" aria-label={tr('Picture-in-picture')} onContextMenu={onMenu(pipMenu)} className="fixed inset-0 z-40 isolate flex flex-col overflow-hidden bg-bg text-ink">
+      {picture}
       <SungLine />
       <Line />
       <div onMouseDown={moveWindow} onDoubleClick={() => void closePip()} className="flex h-11 shrink-0 items-center gap-0.5 pr-1.5 pl-3">
@@ -79,6 +106,18 @@ export function PipScreen() {
           <ArrowsIn size={16} />
         </RoundButton>
       </div>
+    </div>
+  )
+}
+
+/** The classic strip's title, scrolling on a loop (still with Animations off or the system's reduced motion). */
+function Marquee({ text }: { text: string }) {
+  return (
+    <div onMouseDown={moveWindow} title={text} className="overflow-hidden text-[0.8125rem]/5 font-medium whitespace-nowrap">
+      <span className="marquee-run inline-block pr-8">{text}</span>
+      <span aria-hidden className="marquee-run inline-block pr-8">
+        {text}
+      </span>
     </div>
   )
 }
