@@ -181,6 +181,11 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       - [ ] `S` Plex's Sign out ends nothing at Plex: the account's token is dropped at the pick, and an owned server's
         token can be the account's own; Legato stays in plex.tv › Authorized Devices until the user removes it there
         (the privacy row says so). Revoking it needs the account token kept, or a documented device-removal call.
+        Skipped 2026-11-11 (decided alone): the repo knows no documented removal call (developer.plex.tv's API reference has
+        none for a device; the one clients use, `DELETE plex.tv/devices/<id>.xml`, is the legacy undocumented one), and
+        it needs the account token, which is dropped at the pick on purpose (only the server's own token is kept). Keeping
+        the account token longer widens what a keychain leak gives: not for a call we can't check. The privacy row already
+        tells the user to remove the device at plex.tv.
       - [x] `S` Plex's covers keep the address in use at the sync: away from home on its plain http LAN address (when
         its plex.direct https one didn't answer), a cover asked before the next sync goes with the token to whatever
         answers at that LAN address. Store covers by machine id (`plex:<id>/…`) and sign them at the address in use.
