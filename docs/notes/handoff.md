@@ -2,18 +2,21 @@
 
 Where the work stands, for a session with no history here. Read this first, then only the parts of
 [plan-v2.md](plan-v2.md) you need. Rewrite it, short, when a branch, a release or the next step changes; its older
-versions are in git (`git log -p -- docs/notes/handoff.md`). Updated 2026-11-11: the autonomous run's commits wait
-on `platforms`, not pushed.
+versions are in git (`git log -p -- docs/notes/handoff.md`). Updated 2026-11-11 (evening): the autonomous run's commits
+wait on `platforms`, not pushed.
 
 ## Where things stand
 - **Stable** 1.1.681 (2026-11-05): Windows installer, `latest.json`, the Android APK. **Beta** 1.1.801 (2026-11-07):
   an Android Java crash now lands in Copy diagnostics (for the QR-scan crash). GitHub's master = `8e9fb3f`.
-- **platforms** = master (`80310d3`, pushed) + the autonomous run of 2026-11-11, local only
-  (`git log origin/master..platforms`): the artists' round pictures on the big title, Up next on Now Playing's
-  backdrop, the flowing background (a setting, off), share links that open in a browser (the website's `/l` page:
-  links copied by this build 404 until the website is deployed), the fade editor's marks in normal case, Home's
-  "New from your artists" from MusicBrainz (a section, off). None of it was seen on a screen: the run's
-  report, `docs/notes/report-2026-11-11.md` (untracked), lists what to try and the questions for the owner.
+- **platforms** = master (`80310d3`, pushed) + 27 local commits (`git log origin/master..platforms`), none seen on a
+  screen: the round artist pictures, Up next on Now Playing's backdrop, the flowing background (off), web share links
+  (the website's `/l` page: links copied by this build 404 until the website is deployed), "New from your artists"
+  (off), the classic mini player (off), YouTube volume levelling, MusicBrainz lookup in Edit song info, a11y fixes,
+  Subsonic ReplayGain / playlist edits / code 41, Plex covers by account key and its MP3 transcoder, hide explicit
+  songs (`6bef82c`, schema v21), and internet radio steps 1 and 2 (the Radio Browser connector, the engine's endless
+  stream; no page starts a station yet). Skipped with reasons in plan-v2: FTS5 search (`88353da`, 7 ms a keystroke),
+  self-signed pinning, the server's search, Plex's sign-out removal. The report `docs/notes/report-2026-11-11.md`
+  (untracked, French) lists what to try and the owner's questions.
   Pushes go `platforms:master`, only on the owner's word; docs only: `[skip release]` in the last commit's first line.
 - **winget**: microsoft/winget-pkgs#474341 (Stable 1.1.681): CLA signed, Microsoft's validation passed, waiting for a
   moderator. Each new Stable needs a new manifest (`packaging/README.md`).
@@ -23,13 +26,11 @@ on `platforms`, not pushed.
   `2026-10-30-001238-…txt` at the root.
 
 ## Next
-1. The QR-scan crash on Android (waiting for the owner's Copy diagnostics from Beta 1.1.801 after a scan); fixes
-   from their tries of the run's four commits (plan-v2 › The owner's asks, Against Liner 11 and 12).
-2. Against Liner 6 (snap layouts) with the owner at the PC: plan-v2 says why it wasn't built blind.
-3. The owner's choices of 2026-11-07: the lyrics' capitals in normal case, classic skins' mini layout (the video at
-   200 px beside it), discovery from MusicBrainz, 17's internet half (Nostr relays, Cloudflare's STUN, a privacy row),
-   Linux and macOS builds on GitHub's Actions.
-4. Then plan-v2's other open lines: milestone 3 Platforms, Features › High, then Medium.
+1. Internet radio step 3 (a `radio` source and a Radio page: search, play, keep a station; Up next and history skip
+   it; the connector's error words into `errors.ts`), then step 4 (AAC), then Features › Medium's other open `M` lines.
+2. From the owner: the QR-scan crash on Android (their Copy diagnostics from Beta 1.1.801 after a scan), fixes from
+   their tries of the run, snap layouts (Against Liner 6) at the PC.
+3. Left untouched: the `L` lines (17's internet half, Linux and macOS builds).
 
 One step = `graphify query` first, code and tests, `pnpm check` green, one local commit on `platforms`, its plan-v2
 line ticked with what wasn't tried for real, `graphify update .`.
