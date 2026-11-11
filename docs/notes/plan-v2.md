@@ -4,8 +4,8 @@ Open work only. Tick a line when it lands; drop ticked lines once a release ship
 (phases 1 to 8, the big update, the redesign, the product pass, roadmap milestones 0 to 2, the user's choices along the
 way) is in git: `git log -p docs/notes/plan-v2.md`, and in the release notes.
 
-Stable: v1.1.681 (2026-11-05). Next: Against Liner 12, 11, 6, then the lines the owner chose on 2026-11-07 (their
-answers: Waiting on the user), then milestone 3, Platforms. Where the work stands: [handoff.md](handoff.md).
+Stable: v1.1.681 (2026-11-05). Next: the lines the owner chose on 2026-11-07 (their answers: Waiting on the user),
+then milestone 3, Platforms; Against Liner 6 with the owner at the PC. Where the work stands: [handoff.md](handoff.md).
 
 Every idea here stays: the user wants them all built in the end, just later (user's choice 2026-10-31). The roadmap sets
 the order; a line leaves only when it ships or the user drops it.
@@ -82,6 +82,9 @@ copies, downloads for offline), their accounts, limits and paid plan.
 
 - [ ] 6. `S` A native window on Windows 11: snap layouts on our maximize button (`WM_NCHITTEST` → `HTMAXBUTTON`,
       beside `thumbbar.rs`), Windows' minimize and maximize animations.
+      Left by the autonomous run (2026-11-11): WebView2's own child windows cover the title bar, so the hit test has
+      to be answered there and the button's hover and click redone by hand; a mistake breaks the window's buttons for
+      everyone, and it can't be tried without a screen. With the owner at the PC.
 - [x] 11. `S-M` Share links that open in any browser: a static page on the website reads the playlist from the link's
       fragment, Open in Legato, Listen on YouTube, Get Legato.
       2026-11-11: Share's Copy gives `https://clovis500c.github.io/legato/l/#<code>` (`share::WEB_LINK`), read back
