@@ -370,7 +370,7 @@ export function NowPlaying() {
           // No card here: the lines on the backdrop, as the title is (the owner's ask 2026-11-07: a box read as a menu).
           <LyricsPanel className="py-1" onHide={() => update({ lyrics: false })} onUpNext={() => update({ lyrics: false, upNext: true })} />
         ) : panel === 'upNext' ? (
-          <UpNext onHide={() => update({ upNext: false })} />
+          <UpNext bare onHide={() => update({ upNext: false })} />
         ) : (
           // Display XL (docs/design.md), smaller in a small window; long video titles wrap to two lines.
           phone ? (

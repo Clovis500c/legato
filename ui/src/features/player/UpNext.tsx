@@ -85,11 +85,12 @@ function queueMenu(onHide: () => void): MenuEntry[] {
  * (docs/design.md): Now playing, Next added by you (always first), Then from the list. Opens on Now playing;
  * virtualized (queues reach thousands). Any song, played ones and the current one too (user's request 2026-10-29), can
  * be dragged into another order (or Alt+↑ / Alt+↓ on a song): above the current song = history, below = still to play.
- * What's next, or only what you added, can be cleared. className: the panel's own look (default: a card over Now
- * Playing).
+ * What's next, or only what you added, can be cleared. className: the panel's own look (default: a card).
+ * bare (Now Playing, the owner's ask 2026-11-07): on the backdrop as the lyrics are, no card, the list's edges fading,
+ * the playing song marked by its bigger title and its mark's glow instead of a grey box.
  */
 /** heading = what heads the panel instead of "Up next" (the main window's tabs). */
-export function UpNext({ onHide, className = CARD, heading }: { onHide: () => void; className?: string; heading?: ReactNode }) {
+export function UpNext({ onHide, className = CARD, heading, bare = false }: { onHide: () => void; className?: string; heading?: ReactNode; bare?: boolean }) {
   const rows = useRows()
   const list = usePlayer((s) => s.list)
   const playAt = usePlayer((s) => s.playAt)
@@ -148,9 +149,9 @@ export function UpNext({ onHide, className = CARD, heading }: { onHide: () => vo
   }, [nowAt, v])
 
   return (
-    <aside onContextMenu={onMenu(() => queueMenu(onHide))} className={`flex min-h-0 flex-col gap-2 ${className}`}>
+    <aside onContextMenu={onMenu(() => queueMenu(onHide))} className={`flex min-h-0 flex-col gap-2 ${bare ? 'py-1' : className}`}>
       <div className="flex items-center gap-2 px-1">
-        <span className="flex min-w-0 flex-1 items-center text-[0.8125rem] font-semibold">{heading ?? tr('Up next')}</span>
+        <span className={`flex min-w-0 flex-1 items-center font-semibold ${bare ? 'text-lg' : 'text-[0.8125rem]'}`}>{heading ?? tr('Up next')}</span>
         {/* Save, shuffle, clear what's next, copy: the panel's menu, as on a right-click (room for the tabs). */}
         <RoundButton label={tr('More')} kind="plain" size="sm" onClick={(e) => openMenu(e, queueMenu(onHide))}>
           <DotsThreeVertical size={14} weight="bold" />
@@ -173,7 +174,7 @@ export function UpNext({ onHide, className = CARD, heading }: { onHide: () => vo
           </div>
         </div>
       )}
-      <ol ref={scroller} data-list data-drop={queue ? 'queue' : undefined} className="scroll-quiet relative min-h-0 flex-1 overflow-y-auto">
+      <ol ref={scroller} data-list data-drop={queue ? 'queue' : undefined} className={`scroll-quiet relative min-h-0 flex-1 overflow-y-auto ${bare ? '[mask-image:linear-gradient(to_bottom,transparent,#000_1rem,#000_calc(100%-2.5rem),transparent)]' : ''}`}>
         <div style={{ height: v.getTotalSize() }} className="relative">
           {v.getVirtualItems().map((item) => {
             const it = items[item.index]
@@ -226,12 +227,12 @@ export function UpNext({ onHide, className = CARD, heading }: { onHide: () => vo
                     move(r.i, n)
                   }}
                   title={movable ? tr('Drag to change the order (Alt+↑ / Alt+↓)') : undefined}
-                  className={`flex h-full w-full items-center gap-3 rounded-lg px-2 text-left ${r.current ? 'bg-raised' : 'enabled:hover:bg-raised'} ${r.played ? 'opacity-55 hover:opacity-100' : ''} ${movable ? 'cursor-grab active:cursor-grabbing' : ''}`}
+                  className={`flex h-full w-full items-center gap-3 rounded-lg px-2 text-left ${r.current && !bare ? 'bg-raised' : 'enabled:hover:bg-raised'} ${r.played ? 'opacity-55 hover:opacity-100' : ''} ${movable ? 'cursor-grab active:cursor-grabbing' : ''}`}
                 >
                   {movable && <DotsSixVertical size={12} className="-mr-2 -ml-1.5 shrink-0 text-ink-3 opacity-0 group-hover:opacity-100" />}
-                  <Cover title={title} art={art} size={44} />
+                  <Cover title={title} art={art} size={44} className={bare ? 'border-0! shadow-[0_4px_14px_var(--shadow)]' : ''} />
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-sm font-medium">{title}</span>
+                    <span className={`block truncate ${bare && r.current ? 'text-base font-bold' : 'text-sm font-medium'}`}>{title}</span>
                     <span className="block truncate text-xs text-ink-2">
                       {artist}
                       {dj && t && why[t.id] && <span className="text-ink-3"> · {whyText(why[t.id])}</span>}

@@ -27,8 +27,13 @@ the order; a line leaves only when it ships or the user drops it.
       YouTube Music asked for a song YouTube plays, 10 s in, one a minute), so a featured artist's picture can come a
       song later; no setting. Never seen on a screen (the preview server was declined in the unattended run): tests
       and types only. To judge: the size, the gap, a name cut by `allArtists` at a comma ("Tyler, The Creator").
-- [ ] `M` Up next: a better-looking list, redone the way the lyrics were (on the backdrop, Against Liner U2's glow and
+- [x] `M` Up next: a better-looking list, redone the way the lyrics were (on the backdrop, Against Liner U2's glow and
       simplicity).
+      2026-11-11: Now Playing's panel only (`UpNext`'s `bare`; the main window's side panel keeps its card): no card,
+      the list's edges fading, covers lifted by a shadow, the playing song by its bigger title and its mark's glow
+      instead of a grey box. Decided alone (2026-11-11): a light pass, rows and their size kept (drag, the virtual
+      list), easy to push further once seen. Never seen on a screen: types, lint and Vitest only (no Rust touched,
+      so no cargo run for this commit).
 
 ## Best in class (user's ask 2026-10-30)
 
