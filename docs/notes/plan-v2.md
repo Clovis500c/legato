@@ -395,6 +395,11 @@ Most useful first; the tag is the effort.
 Most useful first; the tag is the effort.
 
 - [ ] `M` Library at scale, the rest: search with FTS5, scans in the background with progress.
+      Skipped 2026-11-11 (measured, not needed): the library's search runs in the interface over the songs it already
+      holds (`search/match.ts`, each song's folded names made once): 50 000 songs answer in about 7 ms a keystroke
+      (Vitest, this PC), 240 ms once to build the forms. FTS5 would add an IPC round trip and can't keep its rules
+      (inside a word, "acdc" for AC/DC: substrings, not tokens). Scans already run off the window's thread
+      (`rescan`, `spawn_blocking`); left: their progress, a small `M` with its own Channel, not started.
 - [ ] `S-M` YouTube embeds: one player reused instead of one per song where the crossfade allows; unload the hidden one.
       Left by the autopilot (2026-11-05): playback-critical, and the demo has no YouTube player to try it on.
 
