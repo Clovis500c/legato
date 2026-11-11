@@ -376,6 +376,8 @@ export interface Settings {
   miniWidth: number
   /** Picture-in-picture's last place (pipMode.ts), physical px: x, y, width, height. Null: the screen's bottom right corner. */
   pipPlace: [number, number, number, number] | null
+  /** The classic strip's last place, the same way (its size differs from the picture's). Per PC. */
+  pipClassicPlace: [number, number, number, number] | null
   /** Minimizing while a song plays opens picture in picture (pipMode.ts `watchMinimize`); restored from the taskbar, the
    *  full window comes back. Off: Windows' own minimize, as it always was. Per PC. */
   pipOnMinimize: boolean
@@ -572,6 +574,7 @@ export const DEFAULTS: Settings = {
   progressStyle: 'line',
   miniWidth: 356,
   pipPlace: null,
+  pipClassicPlace: null,
   pipOnMinimize: false,
   pipClassic: false,
   sidebarWidth: 264,
@@ -820,6 +823,7 @@ export function sanitize(raw: unknown): Settings {
     libraryWide: r.libraryWide === true,
     miniWidth: typeof r.miniWidth === 'number' && Number.isFinite(r.miniWidth) ? Math.min(960, Math.max(356, Math.round(r.miniWidth))) : DEFAULTS.miniWidth,
     pipPlace: Array.isArray(r.pipPlace) && r.pipPlace.length === 4 && r.pipPlace.every((v) => typeof v === 'number' && Number.isFinite(v)) && r.pipPlace[2] > 0 && r.pipPlace[3] > 0 ? (r.pipPlace.map(Math.round) as [number, number, number, number]) : null,
+    pipClassicPlace: Array.isArray(r.pipClassicPlace) && r.pipClassicPlace.length === 4 && r.pipClassicPlace.every((v) => typeof v === 'number' && Number.isFinite(v)) && r.pipClassicPlace[2] > 0 && r.pipClassicPlace[3] > 0 ? (r.pipClassicPlace.map(Math.round) as [number, number, number, number]) : null,
     pipOnMinimize: typeof r.pipOnMinimize === 'boolean' ? r.pipOnMinimize : DEFAULTS.pipOnMinimize,
     pipClassic: typeof r.pipClassic === 'boolean' ? r.pipClassic : DEFAULTS.pipClassic,
     crossfade: typeof r.crossfade === 'number' && Number.isFinite(r.crossfade) ? Math.min(12, Math.max(0, Math.round(r.crossfade))) : DEFAULTS.crossfade,

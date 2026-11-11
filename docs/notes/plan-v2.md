@@ -47,8 +47,10 @@ classic mini player stay off by default; the web share link stays the default; p
       2026-11-11; the web link stays the default).
 - [ ] `S` Cover Art Archive covers for "New from your artists", as an option off by default, with its website privacy
       row (one more host; the owner's choice 2026-11-11).
-- [ ] `S` The classic mini player keeps its place after a restart (a setting; `pipMode.ts` keeps it for the run only,
+- [x] `S` The classic mini player keeps its place after a restart (a setting; `pipMode.ts` keeps it for the run only,
       checked in the code: `classicPlace` is a module variable, `f5528ba` does not save it).
+      2026-11-11: `f5528ba` kept it for the run only; now settings `pipClassicPlace` (per PC, in `LOCAL_SETTINGS`, saved on
+      close like `pipPlace`, refit to a screen by `pip.rs`). Never seen on a screen: Vitest on the sanitizer only.
 - [ ] `S-M` Explicit songs hidden everywhere (own playlists, album, artist and search pages), only hidden: a way for
       the user to bring one back when the flag is wrong (the owner's choice 2026-11-11).
 
