@@ -244,6 +244,15 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
 - [ ] `M` Mixes: genre / year tags (stored for local files only), Last.fm "Discoveries" (user's key); "Never in mixes"
       on a discovered song (not in the library: no row to hold the choice).
 - [ ] `M` Internet radio stations (Radio Browser's open directory).
+      Skipped by the autonomous run (2026-11-11): bigger than `M` once looked at. The engine plays HTTP only as a
+      server song (`server:` paths through the shell's server fetcher, `crates/player/src/http.rs`), and a live stream
+      has no length; a station would be a new `Source` (14 interface files and 25 Rust sites branch on `server`), and
+      rodio is built without ADTS AAC (`crates/player/Cargo.toml`: many stations stream AAC, an added decoder and
+      licence check). Split into: (1) `S` connector `radio_browser.rs` (`all.api.radio-browser.info`
+      `/json/stations/search`, `hidebroken`, codec MP3 / OGG first; a User-Agent naming the app) with the website's
+      privacy row; (2) `S` the engine's endless stream (a plain GET fetcher, no ICY metadata asked, no seek, no
+      length); (3) `M` a `radio` source and a Radio page (search, play, keep a station), Up next and history skip it;
+      (4) `S` AAC streams (symphonia's AAC + ADTS, `cargo deny`).
 - [ ] `M` Release radar: new releases from artists in the library (YouTube Music / MusicBrainz).
 - [ ] `M` Credits and artist pages: who wrote / produced (MusicBrainz), a short bio (Wikipedia), links out.
 - [ ] `M` Sweet fades (Plexamp): crossfade length picked per pair from the songs' ends (loudness, silence, tempo).
