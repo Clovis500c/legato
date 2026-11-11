@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { LibraryTrack } from '../../shared/api'
 import { formatDuration, timeAgo } from '../../shared/format'
-import { filterTracks, groupAlbums, groupArtists, libraryStats, musicOnly, primaryArtist, sortGroups, sortTracks } from './filter'
+import { allArtists, filterTracks, groupAlbums, groupArtists, libraryStats, musicOnly, primaryArtist, sortGroups, sortTracks } from './filter'
 
 const t = (id: number, title: string, artist: string, ids: LibraryTrack['ids']): LibraryTrack => ({
   id,
@@ -74,6 +74,14 @@ describe('albums and artists', () => {
     expect(primaryArtist('Kuuls x BGX Reverb')).toBe('Kuuls')
     expect(primaryArtist('Xavier')).toBe('Xavier')
     expect(primaryArtist('VEVO')).toBe('VEVO')
+  })
+
+  it('allArtists names each one once, the primary first', () => {
+    expect(allArtists('Daft Punk, Pharrell Williams feat. Nile Rodgers')).toEqual(['Daft Punk', 'Pharrell Williams', 'Nile Rodgers'])
+    expect(allArtists('Polo & Pan')).toEqual(['Polo & Pan'])
+    expect(allArtists('Kuuls x BGX Reverb, kuuls')).toEqual(['Kuuls', 'BGX Reverb'])
+    expect(allArtists('Kenshi Yonezu - Topic')).toEqual(['Kenshi Yonezu'])
+    expect(allArtists('Unknown artist')).toEqual(['Unknown artist'])
   })
 
   it('groups by album + primary artist, skips tracks without album', () => {

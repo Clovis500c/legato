@@ -20,8 +20,13 @@ the order; a line leaves only when it ships or the user drops it.
 - [x] `S-M` Settings › Visualizer style: a dropdown instead of the 16 pills, each style shown with a preview of its look.
       2026-11-08: `LookPicker.tsx`, still previews by the visualizer's own painter (`VizThumb.tsx`, an invented sound).
       Checked in the site demo only (1400 px dark, 375 px light): not in the installed app, WebView2 or on a phone.
-- [ ] `M` The big title screen (the song's huge title over the backdrop, the artists under it): each artist's round
+- [x] `M` The big title screen (the song's huge title over the backdrop, the artists under it): each artist's round
       profile picture right of their name, good-looking, several artists handled.
+      2026-11-11: `ArtistLine.tsx`, each artist its own link to their page, the picture (32 px) once known. Decided
+      alone (2026-11-11): no new lookup rule, Discord's (`discord_artist_art`: the artist page's kept picture, else
+      YouTube Music asked for a song YouTube plays, 10 s in, one a minute), so a featured artist's picture can come a
+      song later; no setting. Never seen on a screen (the preview server was declined in the unattended run): tests
+      and types only. To judge: the size, the gap, a name cut by `allArtists` at a comma ("Tyler, The Creator").
 - [ ] `M` Up next: a better-looking list, redone the way the lyrics were (on the backdrop, Against Liner U2's glow and
       simplicity).
 

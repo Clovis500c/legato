@@ -23,6 +23,7 @@ import { VolumeControl } from './PlayerBar'
 import { SeekBar, TimeText, usePosition } from './Progress'
 import { viaLabel, type Via } from './sources'
 import { useStill } from './still'
+import { ArtistLine } from './ArtistLine'
 import { ArtistLink } from './ArtistLink'
 import { isRemote, useNowTrack, usePlayer, useVideoSlot } from './store'
 import { volumeWheelRef } from './volume'
@@ -392,7 +393,7 @@ export function NowPlaying() {
             <div className="flex min-w-0 flex-col justify-center gap-4 pb-8">
               {from && <p className="kicker truncate">{tr('Playing from {list}', { list: from })}</p>}
               <h2 className="line-clamp-2 pb-1 text-[clamp(2.5rem,5.5vw,5.5rem)] leading-[1.05] font-black tracking-[-0.02em] break-words">{now.title}</h2>
-              <ArtistLink now={now} className="w-fit max-w-full truncate text-[1.375rem] leading-7 font-bold" />
+              <ArtistLine now={now} className="text-[1.375rem] leading-7 font-bold" />
               {track?.album && <p className="truncate text-sm">{track.album}</p>}
               {readout && source}
               <LyricsPeek />

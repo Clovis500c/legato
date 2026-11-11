@@ -76,9 +76,18 @@ export function sortTracks(
  * First credited artist, as Albums and Artists group them: "A, B", "A feat. B", "A ft. B", "A x B" → A. YouTube's
  * channel names lose what isn't the artist's name: "A - Topic" (auto-generated channels), "AVEVO".
  */
-export const primaryArtist = (artist: string) => {
-  const first = artist.split(/\s*(?:,|\bfeat\.?|\bft\.?|\bfeaturing)\s+|\s+x\s+/i)[0].trim() || artist
-  return first.replace(/\s+-\s+Topic$/i, '').replace(/(?<=\S)VEVO$/, '').trim() || first
+const ARTIST_SPLIT = /\s*(?:,|\bfeat\.?|\bft\.?|\bfeaturing)\s+|\s+x\s+/i
+const channelless = (name: string) => name.replace(/\s+-\s+Topic$/i, '').replace(/(?<=\S)VEVO$/, '').trim() || name
+export const primaryArtist = (artist: string) => channelless(artist.split(ARTIST_SPLIT)[0].trim() || artist)
+
+/** Every artist of a song, the primary one first, cut where `primaryArtist` cuts; no name twice. */
+export const allArtists = (artist: string) => {
+  const seen = new Set<string>()
+  const names = artist
+    .split(ARTIST_SPLIT)
+    .map((n) => channelless(n.replace(/[()]/g, '').trim()))
+    .filter((n) => n && !seen.has(n.toLowerCase()) && seen.add(n.toLowerCase()))
+  return names.length ? names : [artist]
 }
 
 export interface AlbumGroup {
