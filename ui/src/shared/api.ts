@@ -439,6 +439,8 @@ export const api = {
   discordStatus: () => invoke<DiscordStatus>('discord_status'),
   /** The artist's picture for Discord (https, square). `ask`: YouTube Music may be asked (paced in Rust); null: not now. */
   discordArtistArt: (name: string, ask: boolean) => invoke<string | null>('discord_artist_art', { name, ask }),
+  /** The big title's artist picture: kept, else asked once (`ask`), one artist at a time. */
+  artistPicture: (name: string, ask: boolean) => invoke<string | null>('artist_picture', { name, ask }),
   /** Home's New from your artists: asks MusicBrainz once a day (the section is off until turned on). */
   newReleases: () => invoke<NewRelease[]>('new_releases'),
   /** Imported YouTube Music playlist: added on YouTube (Liked Music = like), then locally. */

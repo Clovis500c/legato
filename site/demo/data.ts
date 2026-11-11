@@ -291,6 +291,10 @@ const ANSWERS: Record<string, (args: Record<string, unknown>) => unknown> = {
     const n = ALBUMS.findIndex((a) => a.artist === name)
     return n < 0 ? null : `demo:${n}`
   },
+  artist_picture: ({ name }) => {
+    const n = ALBUMS.findIndex((a) => a.artist === name)
+    return n < 0 ? null : `demo:${n}`
+  },
   nearby_status: () => ({ state: 'idle' }),
   cache_stats: () => Object.fromEntries(['library', 'playlists', 'mixes', 'stats', 'images'].map((k) => [k, { hits: 0, misses: 0, entries: 0, bytes: 0 }])),
   art_cache_size: () => 0,

@@ -39,8 +39,13 @@ the order; a line leaves only when it ships or the user drops it.
 ## The owner's answers of 2026-11-11 (still to build)
 Also settled: no push yet (they try with `pnpm dev` first); the flowing background, the new-releases section and the
 classic mini player stay off by default; the web share link stays the default; permissions ahead for the next runs: yes.
-- [ ] `M` Artist pictures: one lookup per artist (not one a minute), kept in a cache, refreshed when the song changes
+- [x] `M` Artist pictures: one lookup per artist (not one a minute), kept in a cache, refreshed when the song changes
       (the owner's choice 2026-11-11). Replaces the Discord rule used by the big title's round pictures.
+      2026-11-11: `artist_picture` (replaces `discord_artist_art` for the big title; Discord's keeps its one-a-minute rule):
+      the kept artist page's picture, else YouTube Music asked once per artist, one at a time (an async mutex), none during an
+      import or 15 minutes after a refusal, a miss not asked again for 6 hours (`searchpace::Looked`); still only for a song
+      YouTube plays, 10 s in (a local file's artist is not sent). "Refreshed when the song changes" = the next song's new
+      artists are asked at once; a kept page follows the cache's own expiry. Untried against the real YouTube Music.
 - [ ] `S` Flowing background behind Home, as a setting, off by default (the owner's choice 2026-11-11).
 - [ ] `S` `legato://` registered with Windows from the installed app only (`identity::installed()`), for a real
       "Open in Legato" button on the share page, AND the page's "Copy the link for Legato" kept (the owner's choice

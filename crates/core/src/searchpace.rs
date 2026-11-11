@@ -120,6 +120,34 @@ impl Sparse {
     }
 }
 
+/// Artist pictures for the big title (the owner's choice 2026-11-11): each name asked once, then kept by the caller's
+/// cache; a name that gave nothing waits 6 hours before another try, a refusal stops every lookup for 15 minutes. The
+/// caller runs them one at a time.
+#[derive(Default)]
+pub struct Looked {
+    missed: HashMap<String, Instant>,
+    quiet_until: Option<Instant>,
+}
+
+const LOOKED_MISS: Duration = Duration::from_secs(6 * 3600);
+
+impl Looked {
+    pub fn may_ask(&self, name: &str, now: Instant) -> bool {
+        !self.quiet_until.is_some_and(|at| now < at) && !self.missed.get(name).is_some_and(|at| now < *at + LOOKED_MISS)
+    }
+
+    pub fn missed(&mut self, name: &str, now: Instant) {
+        if self.missed.len() > 2000 {
+            self.missed.clear();
+        }
+        self.missed.insert(name.to_string(), now);
+    }
+
+    pub fn refused(&mut self, now: Instant) {
+        self.quiet_until = Some(now + SPARSE_REFUSED);
+    }
+}
+
 /// Songs waiting for a search, by place in the list being searched. One search brings back around twenty songs: those
 /// settle the songs in line with no search of their own. Artists with the most songs first, so that happens early.
 pub struct Line {
@@ -209,6 +237,17 @@ mod tests {
     }
 
     const SECOND: Duration = Duration::from_secs(1);
+
+    #[test]
+    fn artist_lookups_skip_a_recent_miss_and_stop_after_a_refusal() {
+        let (t0, mut l) = (Instant::now(), Looked::default());
+        assert!(l.may_ask("abba", t0));
+        l.missed("abba", t0);
+        assert!(!l.may_ask("abba", t0 + Duration::from_secs(3600)) && l.may_ask("queen", t0));
+        assert!(l.may_ask("abba", t0 + Duration::from_secs(7 * 3600)));
+        l.refused(t0);
+        assert!(!l.may_ask("queen", t0 + Duration::from_secs(600)) && l.may_ask("queen", t0 + Duration::from_secs(16 * 60)));
+    }
 
     #[test]
     fn sparse_lookups_one_a_minute_none_for_a_quarter_hour_after_a_refusal() {

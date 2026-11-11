@@ -17,8 +17,8 @@ const usePictures = create<Record<string, string>>(() => ({}))
 /**
  * The big title's artists (the owner's ask 2026-11-07): each name, its round picture on its right once known; a click
  * opens their page. Pictures: the artist page's own, already kept (Rust's cache); YouTube Music is asked only for a
- * song YouTube plays, 10 s in, at Discord's pace (`discord_artist_art`: one a minute), so a second artist's picture
- * may come on a later song. None known: the name alone.
+ * song YouTube plays, 10 s in, each artist once and one at a time (`artist_picture`; a miss waits 6 hours), then it
+ * is kept. None known: the name alone.
  */
 export function ArtistLine({ now, className = '' }: { now: NowPlaying; className?: string }) {
   const names = useMemo(() => allArtists(now.artist), [now.artist])
@@ -28,7 +28,7 @@ export function ArtistLine({ now, className = '' }: { now: NowPlaying; className
     for (const name of names) {
       const key = name.toLowerCase()
       if (usePictures.getState()[key]) continue
-      void api.discordArtistArt(name, ripe).then(
+      void api.artistPicture(name, ripe).then(
         (url) => url && usePictures.setState({ [key]: remoteArt(url) }),
         () => {},
       )
