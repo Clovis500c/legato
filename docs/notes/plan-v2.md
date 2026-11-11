@@ -57,6 +57,12 @@ classic mini player stay off by default; the web share link stays the default; p
 Noted from their message, nothing built or checked yet. After the answers above, or later, by the plan's priorities.
 Where a line says "reading", the owner hasn't confirmed it.
 
+- [ ] `S` FIRST (the owner's word): a song can't be removed from a playlist from the player. Seen in Now Playing's
+      right-click menu while playing from a playlist ("Lecture depuis Music"): Add to a playlist lists the
+      playlists, nothing removes. Reading of the fix: "Remove from {playlist}" for the playlist it plays from, and a
+      check on each playlist that already holds the song, a click on it removing it; the same in every menu of a
+      playing song (player bar, Up next, mini player). Find the cause first: other lists have Remove from playlist.
+
 - [ ] `S-M` The share page (`/l`, since `867cc53`) as a good-looking preview of a playlist without the app, from the
       compact links: a preview only, no player on the web (the owner's word).
 - [ ] `M` Remixes shared outside the app: a small file of ours, `.lmix` (or close, the owner's call), and its compact
