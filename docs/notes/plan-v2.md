@@ -165,7 +165,15 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       (2026-11-11): boosts only, since YouTube's normalisation turns loud videos down after our measure; the first play
       of a video as it is. Spotify plays in its own app: out of reach. Untried for real (the ±1 LU of a mixed queue
       not measured; whether the embed's element volume carries YouTube's normalisation is from memory).
-- [ ] `M` Accessibility pass: full keyboard, screen reader labels, contrast AA everywhere, reduced motion.
+- [x] `M` Accessibility pass: full keyboard, screen reader labels, contrast AA everywhere, reduced motion.
+      2026-11-11, what the sources prove: `ui/src/app/a11y.test.ts` fails on a `<button>` without a name (its text,
+      `aria-label` or `title`: none was missing) and on a control shown on hover only (`hidden group-hover:grid` is
+      out of Tab's reach: the album and artist pages' Play buttons were, now `sr-only` and shown on keyboard focus
+      too). Contrast AA was already tested on every theme and every accent's palette (`theme.test.ts`); dialogs already
+      kept and gave back the focus. Windows' "Animation effects" off now stops every CSS animation and transition, as
+      Settings › Animations does. Untried: a screen reader (Narrator, NVDA) on the real app, Tab through every page,
+      the JS-driven motion (Now Playing's drift, the flowing background, the visualizers) under Windows' setting (they
+      follow Settings › Animations only), the user's own themes' contrast (the theme editor warns, nothing enforces).
 - [x] `L` Personal servers: Jellyfin, Navidrome / Subsonic, Plex (the user's own music, streamed legally, keychain login).
       The three kinds in (2026-11-06), untried on a real server of any kind.
       Spec: [ideas/lead.md](ideas/lead.md) › Personal servers; how it plays: [playback.md](../playback.md) › Your music

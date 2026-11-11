@@ -94,7 +94,7 @@ function AlbumRow({ list, i, number }: { list: LibraryTrack[]; i: number; number
   return (
     <li onContextMenu={onMenu(() => trackMenu(t, { list, index: i }))} onClick={() => phone && playable && play(list, i)} onDoubleClick={() => playable && play(list, i)} className={`group grid h-10 items-center gap-4 rounded-md px-2 hover:bg-raised ${PHONE_GRID}`} style={ALBUM_GRID}>
       <span className="flex justify-end text-[0.8125rem] text-ink-3 tabular-nums">
-        <span className={playable ? 'group-hover:hidden' : ''}>
+        <span className={playable ? 'group-hover:hidden group-focus-within:hidden' : ''}>
           {on ? (
             <PlayingMark />
           ) : (
@@ -102,7 +102,7 @@ function AlbumRow({ list, i, number }: { list: LibraryTrack[]; i: number; number
           )}
         </span>
         {playable && (
-          <RoundButton label={tr('Play {title}', { title: t.title })} kind="plain" size="xs" className="-my-1 -mr-1.5 hidden text-ink! group-hover:grid" onClick={() => play(list, i)}>
+          <RoundButton label={tr('Play {title}', { title: t.title })} kind="plain" size="xs" className="-my-1 -mr-1.5 sr-only text-ink! group-hover:not-sr-only group-hover:grid group-focus-within:not-sr-only group-focus-within:grid" onClick={() => play(list, i)}>
             <Play weight="fill" size={12} />
           </RoundButton>
         )}
@@ -135,9 +135,9 @@ function SongRow({ list, i, cover, extra, sub, number }: { list: LibraryTrack[];
   return (
     <li onContextMenu={onMenu(() => trackMenu(t, { list, index: i }))} onClick={() => phone && playable && play(list, i)} onDoubleClick={() => playable && play(list, i)} className="group flex h-13 items-center gap-4 rounded-md px-3 hover:bg-raised phone:gap-3 phone:px-0">
       <span className="flex w-6 shrink-0 justify-end text-xs text-ink-3 tabular-nums">
-        <span className={playable ? 'group-hover:hidden' : ''}>{on ? <PlayingBars className="text-accent-ink" /> : (number ?? i + 1)}</span>
+        <span className={playable ? 'group-hover:hidden group-focus-within:hidden' : ''}>{on ? <PlayingBars className="text-accent-ink" /> : (number ?? i + 1)}</span>
         {playable && (
-          <button aria-label={tr('Play {title}', { title: t.title })} onClick={() => play(list, i)} className="hidden text-ink group-hover:block">
+          <button aria-label={tr('Play {title}', { title: t.title })} onClick={() => play(list, i)} className="sr-only text-ink group-hover:not-sr-only group-focus-within:not-sr-only">
             <Play size={13} weight="fill" />
           </button>
         )}
@@ -172,8 +172,8 @@ function MissingRow({ track, number }: { track: Track; number: number }) {
   return (
     <li onClick={() => phone && void play()} onDoubleClick={() => void play()} className={`group grid h-10 items-center gap-4 rounded-md px-2 text-ink-3 hover:bg-raised ${PHONE_GRID}`} style={ALBUM_GRID}>
       <span className="flex justify-end text-[0.8125rem] tabular-nums">
-        <span className="group-hover:hidden">{number}</span>
-        <RoundButton label={tr('Play {title}', { title: track.title })} kind="plain" size="xs" className="-my-1 -mr-1.5 hidden text-ink! group-hover:grid" onClick={() => void play()}>
+        <span className="group-hover:hidden group-focus-within:hidden">{number}</span>
+        <RoundButton label={tr('Play {title}', { title: track.title })} kind="plain" size="xs" className="-my-1 -mr-1.5 sr-only text-ink! group-hover:not-sr-only group-hover:grid group-focus-within:not-sr-only group-focus-within:grid" onClick={() => void play()}>
           <Play weight="fill" size={12} />
         </RoundButton>
       </span>

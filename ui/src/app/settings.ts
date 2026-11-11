@@ -11,6 +11,8 @@ import { useStore } from './store'
 import { loadLang, resolveLang, useLang, type Lang } from '../shared/i18n/i18n'
 
 const systemDark = window.matchMedia('(prefers-color-scheme: dark)')
+// Windows' Animation effects off: every CSS animation and transition stops too, whatever Settings › Animations says.
+const systemStill = window.matchMedia('(prefers-reduced-motion: reduce)')
 let systemAccent: SystemAccent | null = null
 
 const quiet = () => document.hidden || matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -98,7 +100,7 @@ function apply(s: Settings) {
   } catch {
     // Storage off: no first-paint cache.
   }
-  document.documentElement.classList.toggle('still', !s.motion)
+  document.documentElement.classList.toggle('still', !s.motion || systemStill.matches)
   // The song's shape: the wave for songs without one (streams, before a file's is measured).
   document.documentElement.classList.toggle('wave-progress', s.progressStyle !== 'line')
   document.documentElement.classList.toggle('shape-progress', s.progressStyle === 'shape')
@@ -195,6 +197,8 @@ useStore.subscribe((st, prev) => {
   const next = { songSort: st.sort, playlistSort: st.playlistSort, albumSort: st.albumView.sort, artistSort: st.artistView.sort }
   if (Object.entries(next).some(([k, v]) => s[k as keyof typeof next] !== v)) useSettings.getState().update(next)
 })
+
+systemStill.addEventListener('change', () => apply(useSettings.getState().settings))
 
 systemDark.addEventListener('change', () => {
   useSettings.setState({ systemDark: systemDark.matches })
