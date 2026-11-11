@@ -190,7 +190,11 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
         on a real Plex server: mock tests only.
       - [ ] `S` Plex's JWT sign-in (clients.plex.tv, a device key pair, the token refreshed each week) if Plex retires
         the legacy PIN's long-lived tokens.
-      - [ ] `S` Plex's transcoder (`music/:/transcode/universal`) for formats the engine can't read.
+      - [x] `S` Plex's transcoder (`music/:/transcode/universal`) for formats the engine can't read.
+        2026-11-11: the player's second try (transcode) asks `music/:/transcode/universal/start.mp3` (`protocol=http`,
+        `directPlay=0`, `musicBitrate=320`), no Range (a seek reads again from 0 and skips). Decided alone (2026-11-11):
+        MP3 at 320 like the other two kinds, not Plex's HLS. Untried on a real Plex server: mock tests only, so the
+        parameter set (`directStream=0`, `.mp3` suffix) is from memory of Plex's clients, not checked on a transcoder.
       - [ ] `S` Trust a self-signed server: its certificate's SHA-256 fingerprint shown at sign-in and pinned (rustls's
         own verifier on every platform, so a pinned one is checked, not just accepted).
         Skipped 2026-11-11 (far bigger than `S`, not provable here): desktop clients use native-tls (SChannel), so "rustls's
@@ -207,6 +211,9 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       - [ ] `S` Your music server in the app's search (`Conn::search` built for the three kinds, not wired). Decided alone
         (2026-11-06): left for later; the library mirrors the whole server at each sync, so its songs already come
         up in the library's own search; the server's search would only add what came since the last sync.
+        Skipped 2026-11-11 (decided alone): nothing a user would see beyond that gap (songs added in the last 30 minutes),
+        while wiring costs a server request per search on every account and a "not in your library" result kind that
+        plays without being in the library. Revisit if a sync gets slower than 30 minutes.
       - [ ] `S` Playlist edits sent back to the server (`updatePlaylist`, `createPlaylist`) when its direction sends.
         2026-11-11: a Subsonic server's playlists take songs (Add to playlist, a drop on the sidebar) and lose them
         (Remove from) from here, sent with `updatePlaylist` in the background and undone here when refused; a

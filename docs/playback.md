@@ -357,7 +357,8 @@ visualizer and the media panel apply.
   counted, nothing dropped (Jellyfin's pages the same way). Likes = 5 stars
   (`userRating` 10, Plexamp's loved), Like / unlike = `:/rate` 10 / -1; a counted play = `:/scrobble`. Audio: the
   part's own file (`/library/parts/…`, learnt at the sync, else asked once from `library/metadata/<id>`) with ranges;
-  Plex's transcoder isn't asked, so a format the engine can't read says so. Covers: `photo/:/transcode` at 1200 px.
+  a format the engine can't read is asked again as the server's MP3 (`music/:/transcode/universal/start.mp3`, 320 kbit/s,
+  not ranged: a seek reads again from 0 and skips). Covers: `photo/:/transcode` at 1200 px.
   The row says when only the relay answered.
 - Volume levelling (2026-11-11): a Subsonic server's own ReplayGain (OpenSubsonic's `replayGain` on `getSong`, the
   tags its scanner read), asked once per song as it is about to play (`servers::gains`, with `local_prepare`) and
@@ -371,7 +372,7 @@ visualizer and the media panel apply.
   "Process YouTube's sound"); Adaptive Sound, when on, levels instead (`level` ignored). Spotify: out of reach.
 - Not yet: Skip silence (local files only), the server's own search in the app's search (each connector has it: `Conn::search`), playlist edits sent
   back to Jellyfin and Plex (a Subsonic server takes adds and removals since 2026-11-11: `server_playlist_add`,
-  `server_playlist_remove`, `updatePlaylist` in the background like YouTube Music's, undone here when refused), Plex's transcoder for formats the engine can't read. Tested with a local HTTP server in the
+  `server_playlist_remove`, `updatePlaylist` in the background like YouTube Music's, undone here when refused). Tested with a local HTTP server in the
   tests (play, seek by range, a server without ranges, a dropped connection, transcoding asked again); never against a
   real Navidrome, Jellyfin or Plex.
 

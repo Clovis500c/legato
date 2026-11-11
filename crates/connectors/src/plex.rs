@@ -35,6 +35,8 @@ const LIBRARY: &str = "com.plexapp.plugins.library";
 const LOVED: f64 = 10.0;
 /// One address tried this long before the next.
 const TRY_WAIT: Duration = Duration::from_secs(6);
+/// The transcoder's ceiling, kbit/s (like the other two kinds).
+const MAX_BIT_RATE: &str = "320";
 
 /// A sign-in's own client identifier: random, 32 hex characters, never the PC's.
 pub fn device_id() -> String {
@@ -490,15 +492,19 @@ impl Plex {
         Ok(p)
     }
 
-    /// A song's audio from byte `from`: the part's file as kept. Plex's transcoder isn't asked (part 2): a format the
-    /// engine can't read says so.
+    /// A song's audio from byte `from`: the part's file as kept, or (`transcode`, a format the engine can't read) the
+    /// server's own MP3 from its universal transcoder. That answer isn't ranged (Plex streams it from `offset`), so the
+    /// player's Range seek reads again from 0 and skips, as it does for a server answering 200.
     pub async fn stream(&self, item: &str, from: u64, transcode: bool) -> Result<Streamed> {
         let item = Self::item(item)?;
-        if transcode {
-            bail!("Your music server sent a format Legato can't play");
-        }
-        let part = self.part(item).await?;
-        let res = self.request(Method::GET, self.url(&part, &[])?).header(RANGE, format!("bytes={from}-")).send().await.map_err(reach)?;
+        let res = if transcode {
+            let path = format!("/library/metadata/{item}");
+            let query = [("path", path.as_str()), ("mediaIndex", "0"), ("partIndex", "0"), ("protocol", "http"), ("directPlay", "0"), ("directStream", "0"), ("musicBitrate", MAX_BIT_RATE), ("offset", "0")];
+            self.request(Method::GET, self.url("/music/:/transcode/universal/start.mp3", &query)?).send().await.map_err(reach)?
+        } else {
+            let part = self.part(item).await?;
+            self.request(Method::GET, self.url(&part, &[])?).header(RANGE, format!("bytes={from}-")).send().await.map_err(reach)?
+        };
         Ok(Streamed::of(res))
     }
 }
@@ -660,7 +666,15 @@ mod tests {
         // The part is learnt once.
         p.stream("202", 10, false).await.unwrap();
         file.assert_async().await;
-        assert!(p.stream("202", 0, true).await.err().unwrap().to_string().contains("format Legato can't play"));
+        let mp3 = s.mock("GET", "/music/:/transcode/universal/start.mp3").match_header("x-plex-token", "srv-tok").match_query(Matcher::AllOf(vec![Matcher::UrlEncoded("path".into(), "/library/metadata/202".into()), Matcher::UrlEncoded("protocol".into(), "http".into()), Matcher::UrlEncoded("musicBitrate".into(), "320".into())])).with_header("content-type", "audio/mpeg").with_body(vec![2u8; 50]).expect(1).create_async().await;
+        let mut r = p.stream("202", 0, true).await.unwrap();
+        let mut got = 0;
+        while let Some(b) = r.body.chunk().await.unwrap() {
+            got += b.len();
+        }
+        assert_eq!(got, 50);
+        mp3.assert_async().await;
+        assert!(p.stream("../x", 0, true).await.is_err());
         s.mock("GET", "/library/metadata/303").with_status(401).create_async().await;
         assert!(crate::servers::refused(&p.stream("303", 0, false).await.err().unwrap()));
     }
