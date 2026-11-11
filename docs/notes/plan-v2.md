@@ -223,8 +223,11 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       length picked per pair needs an ear to tune: with the roadmap's Sonic analysis, or with the owner listening.)
 - [ ] `M` Classic skins: a compact "mini" layout (Winamp-like) with the user's theme; a YouTube song keeps its video at
       200 px beside it (the owner's choice 2026-11-07: YouTube's 200 × 200 rule).
-- [ ] `S` Lyrics: `SONG ENDS`, `NEXT SONG`, `PREVIEW` in normal case (the owner's choice 2026-11-07; keys in all 17
+- [x] `S` Lyrics: `SONG ENDS`, `NEXT SONG`, `PREVIEW` in normal case (the owner's choice 2026-11-07; keys in all 17
       languages).
+      2026-11-11: they are the fade editor's two marks and the song lists' 30-second badge, not the lyrics. "Song
+      ends", "Next song"; the badge says "Sample" (Decided alone: "Preview" is already the key of the settings'
+      visual preview, with other translations). Not seen on a screen.
 - [ ] `M` Long YouTube mixes and DJ sets split by their chapters (or timestamps in the description / pinned comment):
       each part a song in Up next, skip within the video; Music Detector names unlabelled parts on request.
 - [ ] `M` Output devices: switch from the player bar, remember per device (volume, EQ preset).

@@ -299,7 +299,7 @@ export function TrackTable({ tracks, empty, editId, rowActions, sort, onSort, fo
                         <span className="truncate">{t.title}</span>
                         {playable && !isFull(t, sp) && (
                           <span title={tr('30-second preview')} className="shrink-0 rounded-[3px] border border-line px-1 text-[0.625rem] font-normal text-ink-3">
-                            {tr('PREVIEW')}
+                            {tr('Sample')}
                           </span>
                         )}
                       </span>

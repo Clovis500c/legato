@@ -116,10 +116,10 @@ export function FadeGraph({ fade, onChange, playhead }: { fade: Fade; onChange: 
         </text>
       ))}
       <text x={L0} y={12} className="fill-ink-3 text-[0.625rem]">
-        {tr('SONG ENDS')}
+        {tr('Song ends')}
       </text>
       <text x={W - 16} y={12} textAnchor="end" className="fill-ink-3 text-[0.625rem]">
-        {tr('NEXT SONG')}
+        {tr('Next song')}
       </text>
       {/* End of the song. */}
       <line x1={x(0)} x2={x(0)} y1={TOP} y2={BASE} className="stroke-ink-3" strokeDasharray="2 3" />
