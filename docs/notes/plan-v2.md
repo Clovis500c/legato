@@ -52,6 +52,32 @@ classic mini player stay off by default; the web share link stays the default; p
 - [ ] `S-M` Explicit songs hidden everywhere (own playlists, album, artist and search pages), only hidden: a way for
       the user to bring one back when the flag is wrong (the owner's choice 2026-11-11).
 
+## The owner's asks of 2026-11-11, night
+
+Noted from their message, nothing built or checked yet. After the answers above, or later, by the plan's priorities.
+Where a line says "reading", the owner hasn't confirmed it.
+
+- [ ] `M` The share page (`/l`, since `867cc53`) as a real preview of a playlist without the app, from the compact
+      links. Reading: beyond today's list of songs, play them on the page in YouTube's own embedded player (visible,
+      its rules), nothing through a server of ours.
+- [ ] `M` Remixes shared outside the app: a small file of ours (`.legatomix` or a better name, the owner's call) and
+      its compact link. It holds the YouTube link and the Live Editor's settings (EQ, tempo, pitch, reverb, space,
+      fades), never the audio (no mp3: Fixed limits). Opened in Legato, the video plays with those settings; on the
+      website, the page says what it is and opens it in the app.
+- [ ] `M` Drag and drop of every file type that is Legato's own into the app: the remix file, and the others (list
+      them first: shared playlists, backups, themes, playlist files; a plugin folder never installs without its
+      permission review). Today a drop takes folders, songs and a QR picture.
+- [ ] `M` Share as a picture, dropped on the app, brings its music back: from the picture's metadata first, and from
+      the picture itself when the metadata is gone (Discord strips it): a code the app can read in the pixels (the QR
+      path exists: check what the card carries today).
+- [ ] `M-L` Security, the drop first: every dropped or opened file is untrusted (size limits, strict parsers, no path
+      taken from a file, nothing run, fuzz or property tests on each parser). Then a security pass of the whole app
+      (IPC commands, deep links, the `art` scheme, the CSP, plugins, the phone remote and the overlay), findings fixed
+      with tests.
+- [ ] `L` The website made beautiful (the owner: too basic today) and given documentation sections for developers
+      (plugins' API, themes, the link and file formats, contributing). The design is a piece Fable may do itself (the
+      owner's word).
+
 ## Best in class (user's ask 2026-10-30)
 
 What a listener would get, against Riff (rootscripts/riff: Electron, yt-dlp downloads, YouTube / SoundCloud, imports
