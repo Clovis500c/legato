@@ -193,6 +193,13 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       - [ ] `S` Plex's transcoder (`music/:/transcode/universal`) for formats the engine can't read.
       - [ ] `S` Trust a self-signed server: its certificate's SHA-256 fingerprint shown at sign-in and pinned (rustls's
         own verifier on every platform, so a pinned one is checked, not just accepted).
+        Skipped 2026-11-11 (far bigger than `S`, not provable here): desktop clients use native-tls (SChannel), so "rustls's
+        own verifier" means a second TLS stack for servers; a pin must reach every client that talks to a server (the shared
+        `servers::http()`, Plex, the player's streams, the art cache), per account instead of one `LazyLock`; and a pinned
+        self-signed leaf with CA:TRUE (openssl's default) fails rustls's end-entity check, so the verifier needs its own
+        pin-then-validate rules. Tests need a TLS test server and generated certs (no `rcgen` / `tokio-rustls` dev
+        dependency yet) to show a wrong fingerprint, an expired and a mismatched certificate refused. Do it as its own
+        branch with the owner.
       - [x] `S` Server songs levelled: OpenSubsonic's `replayGain` (track / album) into Volume levelling.
         2026-11-11: asked with `getSong` as a song is about to play (once per song and run of the app), used like a
         file's ReplayGain tags. Not done: Jellyfin's `NormalizationGain` and Plex's loudness (other scales), a gain
