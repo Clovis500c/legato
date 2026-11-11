@@ -82,6 +82,7 @@ import type { MenuEntry } from '../shared/ui/ContextMenu'
 import { SourceIcon } from '../shared/ui/SourceIcon'
 import type { Addon } from './addons/registry'
 import { isOn, setAddon } from './addons/state'
+import { takesEdits } from './sources/servers'
 import { addToPlaylist, markMusic, removeFromPlaylist, removePositions, removeTrackFromPlaylist, songs } from './library/edits'
 import { ownLiked, youtubeLiked } from './library/likedMusic'
 import { editInfo, findDuplicates } from './library/dialogs'
@@ -202,18 +203,20 @@ const setHidden = (key: string, hide: boolean) => {
   useSettings.getState().update({ hiddenPlaylists: hide ? [...keys, key] : keys })
 }
 
-/** Adds songs to one of your YouTube Music playlists (there too), with a toast saying what went in. */
+/** Adds songs to one of your YouTube Music playlists or your Subsonic server's (there too), with a toast saying what went in. */
 async function addToYoutubePlaylist(p: LibraryPlaylist, ids: number[]) {
   if (!ids.length) return
   try {
-    const r = await api.addToYoutube(p.id, ids)
+    const server = p.source === 'server'
+    const r = await (server ? api.serverPlaylistAdd(p.id, ids) : api.addToYoutube(p.id, ids))
     await app().refreshChanged()
-    const also = [r.already > 0 && trn(r.already, '{n} already there', '{n} already there'), r.noYoutube > 0 && trn(r.noYoutube, '{n} with no YouTube version', '{n} with no YouTube version')].filter(Boolean).join(' · ')
+    const also = [r.already > 0 && trn(r.already, '{n} already there', '{n} already there'), r.noYoutube > 0 && (server ? trn(r.noYoutube, '{n} not on that server', '{n} not on that server') : trn(r.noYoutube, '{n} with no YouTube version', '{n} with no YouTube version'))].filter(Boolean).join(' · ')
     const open = { label: tr('Open'), run: () => app().go({ name: 'playlist', id: p.id }) }
-    const added = tr('Added to {name} on YouTube Music: {songs}', { name: p.name, songs: r.added === ids.length ? songs(ids) : trn(r.added, '{n} song', '{n} songs') })
+    const what = { name: p.name, songs: r.added === ids.length ? songs(ids) : trn(r.added, '{n} song', '{n} songs') }
+    const added = server ? tr('Added to {name} on your music server: {songs}', what) : tr('Added to {name} on YouTube Music: {songs}', what)
     if (r.added) app().notify(added + (also ? ` · ${also}` : ''), { action: open })
     else if (r.already) app().notify(ids.length === 1 ? tr('Already in {name}', { name: p.name }) : tr('All already in {name}', { name: p.name }), { kind: 'info', action: open })
-    else app().notify(tr('Nothing added to {name}: no YouTube version', { name: p.name }), { kind: 'info' })
+    else app().notify(server ? tr('Nothing added to {name}: not on that server', { name: p.name }) : tr('Nothing added to {name}: no YouTube version', { name: p.name }), { kind: 'info' })
   } catch (e) {
     fail(e)
   }
@@ -221,7 +224,7 @@ async function addToYoutubePlaylist(p: LibraryPlaylist, ids: number[]) {
 
 /** Songs dropped on a playlist (sidebar): yours, or a YouTube Music one of yours when signed in. False = can't take them. */
 export function canDropOn(p: LibraryPlaylist): boolean {
-  return p.custom || (p.source === 'youtube' && app().status.youtube.connected)
+  return p.custom || (p.source === 'youtube' && app().status.youtube.connected) || takesEdits(p)
 }
 export function dropOn(p: LibraryPlaylist, ids: number[]) {
   if (p.custom) return void addToPlaylist(p.id, ids)
@@ -237,7 +240,7 @@ export function addToItems(ids: () => number[] | Promise<number[]>): MenuEntry[]
   const addYoutube = async (p: LibraryPlaylist) => addToYoutubePlaylist(p, await ids())
   const off = hidden()
   const shown = app().playlists.filter((p) => !off.has(playlistKey(p)))
-  const youtube = app().status.youtube.connected ? shown.filter((p) => p.source === 'youtube' && !p.custom) : []
+  const youtube = shown.filter((p) => (p.source === 'youtube' && !p.custom && app().status.youtube.connected) || takesEdits(p))
   return [
       {
         label: tr('New playlist…'),
@@ -383,6 +386,16 @@ function removeFrom(t: LibraryTrack): MenuEntry {
       fail(e)
     }
   }
+  const fromServer = async (p: LibraryPlaylist) => {
+    try {
+      await api.serverPlaylistRemove(p.id, t.id)
+      await app().refreshChanged()
+      const undo = () => void api.serverPlaylistAdd(p.id, [t.id]).then(() => app().refreshChanged()).catch(fail)
+      app().notify(tr('Removed from {name} on your music server: {songs}', { name: p.name, songs: songs([t.id]) }), { kind: 'removed', action: { label: tr('Undo'), run: undo } })
+    } catch (e) {
+      fail(e)
+    }
+  }
   const fromLibrary = async () => {
     const ok = await ask({ title: tr('Remove “{title}” from your library?', { title: t.title }), body: tr('It also leaves every playlist in Legato. Your YouTube Music and Spotify playlists keep it, and syncs won’t bring it back here. Files on disk stay where they are.'), ok: tr('Remove') })
     if (!ok) return
@@ -398,8 +411,9 @@ function removeFrom(t: LibraryTrack): MenuEntry {
     label: tr('Remove from'),
     icon: <MinusCircle size={16} />,
     items: [
-      ...holding.map((p) => {
+      ...holding.map((p): MenuEntry => {
         const youtube = !p.custom && p.source === 'youtube'
+        if (takesEdits(p)) return { label: p.name, icon: <PlaylistIcon p={p} size={16} />, onSelect: () => void fromServer(p) }
         return {
           label: p.custom || youtube ? p.name : tr('{name} (read-only)', { name: p.name }),
           icon: <PlaylistIcon p={p} size={16} />,

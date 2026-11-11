@@ -222,6 +222,22 @@ impl Conn {
         }
     }
 
+    /// Songs added at the end of one of the server's playlists. Subsonic only for now.
+    pub async fn playlist_add(&self, id: &str, items: &[String]) -> Result<()> {
+        match self {
+            Self::Subsonic(s) => s.playlist_add(id, items).await,
+            _ => Err(anyhow::anyhow!(READ_ONLY)),
+        }
+    }
+
+    /// A song out of one of the server's playlists, every occurrence. Subsonic only for now.
+    pub async fn playlist_remove(&self, id: &str, item: &str) -> Result<()> {
+        match self {
+            Self::Subsonic(s) => s.playlist_remove(id, item).await,
+            _ => Err(anyhow::anyhow!(READ_ONLY)),
+        }
+    }
+
     /// Songs matching `query` on the server itself.
     pub async fn search(&self, query: &str, count: usize) -> Result<Vec<Track>> {
         match self {
@@ -274,6 +290,9 @@ impl Conn {
         }
     }
 }
+
+/// Said when a playlist of a Jellyfin or Plex server is edited here.
+pub const READ_ONLY: &str = "Playlists of a Jellyfin or Plex server can't be changed from Legato yet: change them on the server";
 
 #[cfg(test)]
 mod tests {

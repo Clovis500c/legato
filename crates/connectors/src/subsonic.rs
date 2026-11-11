@@ -283,6 +283,29 @@ impl Subsonic {
         Ok(self.tracks(list(r.get("playlist").and_then(|p| p.get("entry")))))
     }
 
+    /// Songs added at a playlist's end (`updatePlaylist`), a hundred per request (they travel in the URL).
+    pub async fn playlist_add(&self, id: &str, items: &[String]) -> Result<()> {
+        for chunk in items.chunks(100) {
+            let mut params = vec![("playlistId", id)];
+            params.extend(chunk.iter().map(|i| ("songIdToAdd", i.as_str())));
+            self.call("updatePlaylist", &params, LIST_TIMEOUT).await?;
+        }
+        Ok(())
+    }
+
+    /// A song out of a playlist, every occurrence. `updatePlaylist` removes by position: the playlist is read again
+    /// first, so a mirror gone stale never takes another song out.
+    pub async fn playlist_remove(&self, id: &str, item: &str) -> Result<()> {
+        let r = self.call("getPlaylist", &[("id", id)], LIST_TIMEOUT).await?;
+        let at: Vec<String> = list(r.get("playlist").and_then(|p| p.get("entry"))).iter().enumerate().filter(|(_, e)| text(e, "id").as_deref() == Some(item)).map(|(i, _)| i.to_string()).collect();
+        if at.is_empty() {
+            return Ok(());
+        }
+        let mut params = vec![("playlistId", id)];
+        params.extend(at.iter().map(|i| ("songIndexToRemove", i.as_str())));
+        self.call("updatePlaylist", &params, LIST_TIMEOUT).await.map(|_| ())
+    }
+
     /// Songs matching `query` (`search3`).
     pub async fn search(&self, query: &str, count: usize) -> Result<Vec<Track>> {
         let n = count.clamp(1, 100).to_string();
@@ -423,6 +446,23 @@ mod tests {
         for id in ["peaks", "odd", "none"] {
             assert_eq!(sub.replay_gain(id).await.unwrap(), None, "{id}");
         }
+    }
+
+    #[tokio::test]
+    async fn playlist_edits_add_by_id_and_remove_by_the_servers_own_positions() {
+        let mut s = Server::new_async().await;
+        let q = |pairs: &[(&str, &str)]| Matcher::AllOf(pairs.iter().map(|(k, v)| Matcher::UrlEncoded((*k).into(), (*v).into())).chain([signed("me")]).collect());
+        let add = s.mock("GET", "/rest/updatePlaylist.view").match_query(Matcher::AllOf(vec![q(&[("playlistId", "pl-1")]), Matcher::Regex("songIdToAdd=tr-8&songIdToAdd=tr-9".into())])).with_body(ok("")).create_async().await;
+        // The server's list: the song twice, a video between that the library never shows.
+        s.mock("GET", "/rest/getPlaylist.view").match_query(q(&[("id", "pl-1")])).with_body(ok(r#","playlist":{"id":"pl-1","entry":[{"id":"tr-1","title":"A"},{"id":"v-1","title":"V","isVideo":true},{"id":"tr-2","title":"B"},{"id":"tr-1","title":"A"}]}"#)).create_async().await;
+        let remove = s.mock("GET", "/rest/updatePlaylist.view").match_query(Matcher::AllOf(vec![q(&[("playlistId", "pl-1")]), Matcher::Regex("songIndexToRemove=0&songIndexToRemove=3".into())])).with_body(ok("")).create_async().await;
+        let sub = Subsonic::new(&s.url(), "me", "pw");
+        sub.playlist_add("pl-1", &["tr-8".into(), "tr-9".into()]).await.unwrap();
+        sub.playlist_remove("pl-1", "tr-1").await.unwrap();
+        // Gone from the server already: nothing asked.
+        sub.playlist_remove("pl-1", "tr-7").await.unwrap();
+        add.assert_async().await;
+        remove.assert_async().await;
     }
 
     #[tokio::test]

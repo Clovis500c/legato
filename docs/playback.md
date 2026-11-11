@@ -361,7 +361,8 @@ visualizer and the media panel apply.
   used like a file's tags. A server or a song without it plays as it is; Jellyfin's and Plex's loudness measures
   aren't read. Untried on a real server.
 - Not yet: Skip silence (local files only), the server's own search in the app's search (each connector has it: `Conn::search`), playlist edits sent
-  back, Plex's transcoder for formats the engine can't read. Tested with a local HTTP server in the
+  back to Jellyfin and Plex (a Subsonic server takes adds and removals since 2026-11-11: `server_playlist_add`,
+  `server_playlist_remove`, `updatePlaylist` in the background like YouTube Music's, undone here when refused), Plex's transcoder for formats the engine can't read. Tested with a local HTTP server in the
   tests (play, seek by range, a server without ranges, a dropped connection, transcoding asked again); never against a
   real Navidrome, Jellyfin or Plex.
 

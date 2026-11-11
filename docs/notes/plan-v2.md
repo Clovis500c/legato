@@ -184,6 +184,11 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
         (2026-11-06): left for later; the library mirrors the whole server at each sync, so its songs already come
         up in the library's own search; the server's search would only add what came since the last sync.
       - [ ] `S` Playlist edits sent back to the server (`updatePlaylist`, `createPlaylist`) when its direction sends.
+        2026-11-11: a Subsonic server's playlists take songs (Add to playlist, a drop on the sidebar) and lose them
+        (Remove from) from here, sent with `updatePlaylist` in the background and undone here when refused; a
+        removal reads the server's list first (it removes by position). Left: `createPlaylist` (a playlist made
+        here stays here), renames and order, Jellyfin and Plex (read-only, said in words). Untried on a real
+        server: mock tests only.
       - [ ] `S` Servers that refuse token auth (Subsonic code 41: LDAP users, some Ampache / Nextcloud Music setups): the
         password sent hex-encoded (`p=enc:`) after a warning, https only. Today the sign-in says "doesn't take this kind
         of sign-in" (translated since part 2, with the three other messages the 2026-11-06 review found in English).

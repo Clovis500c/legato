@@ -40,6 +40,9 @@ pub enum Kind {
     LikeLost,
     Remove,
     Unlike,
+    /// A music server's playlist (`servers.rs`).
+    ServerAdd,
+    ServerRemove,
 }
 
 /// What the interface says when a change didn't reach the service.
@@ -55,7 +58,8 @@ pub struct Failed {
 
 pub fn failed(app: &tauri::AppHandle, f: Failed) {
     // The kind and the reason (a refusal's words); the playlist's name stays out.
-    crate::diag::warn("push", &format!("YouTube Music refused a change ({:?})", f.kind), &f.reason);
+    let who = if matches!(f.kind, Kind::ServerAdd | Kind::ServerRemove) { "A music server" } else { "YouTube Music" };
+    crate::diag::warn("push", &format!("{who} refused a change ({:?})", f.kind), &f.reason);
     let _ = app.emit("push-failed", f);
 }
 

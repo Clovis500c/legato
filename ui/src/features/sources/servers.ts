@@ -12,6 +12,9 @@ export const useServers = create<{ list: ServerStatus[]; syncing: string | null;
   refresh: async () => set({ list: await api.serverStatus().catch(() => []) }),
 }))
 
+/** A server's playlist that takes adds and removals from here: a signed-in Subsonic kind's (Jellyfin, Plex: not yet). */
+export const takesEdits = (p: { custom: boolean; source: string; sourceId: string }) => !p.custom && p.source === 'server' && useServers.getState().list.some((s) => s.kind === 'subsonic' && p.sourceId.startsWith(`${s.key}:`))
+
 /** One server read whole into the library, then the library and the row refreshed. Returns the songs, or throws. */
 export async function syncServer(key: string) {
   useServers.setState({ syncing: key })

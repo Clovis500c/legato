@@ -4,15 +4,16 @@
 //! sign-in, auth added by Rust); its songs played by the native engine over HTTP (`music_player::http`): the engine
 //! only knows `server:<key>:<item>`, `Fetch` below builds each request with fresh auth.
 
-use crate::{AppState, CmdResult, err};
+use crate::{AddReport, AppState, CmdResult, err, push};
 use music_connectors::servers::{self as conns, Conn};
 use music_connectors::subsonic::Subsonic;
+use music_core::library::LibraryPlaylist;
 use music_core::model::{Source, Track};
 use music_core::server::{self, Account, Exposure, Kind};
 use music_player::http::{Fetch as PlayerFetch, PREFIX, Remote, Reply};
 use music_player::{Command, Gain};
 use serde::{Deserialize, Serialize};
-use std::collections::{BTreeMap, HashMap};
+use std::collections::{BTreeMap, HashMap, HashSet};
 use std::io::{self, Read};
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex, PoisonError, RwLock};
@@ -412,6 +413,83 @@ pub async fn server_scrobble(state: State<'_, AppState>, id: String, started_at_
     }
     let at = position_ms.filter(|p| p.is_finite() && *p >= 0.0).map(|p| p as u64);
     let _ = Conn::from_account(&a).played(&item, started_at_ms as i64, submission, at).await;
+    Ok(())
+}
+
+const NOT_SENT: &str = "Changes made here aren't sent to this music server (Settings › Accounts › Sync)";
+
+/// A playlist of a signed-in server that takes edits (Subsonic kinds, direction sending): its row, its account, its
+/// id there. Err in words before anything changes.
+fn sent_playlist(state: &AppState, id: i64) -> CmdResult<(LibraryPlaylist, Account, String)> {
+    let p = state.lib().playlists().map_err(err)?.into_iter().find(|p| p.id == id && p.source == Source::Server && !p.custom).ok_or("Not a music server's playlist")?;
+    let (a, remote) = item(&p.source_id)?;
+    if a.kind != Kind::Subsonic {
+        return Err(conns::READ_ONLY.into());
+    }
+    if !state.direction(&direction_key(&a.key())).pushes() {
+        return Err(NOT_SENT.into());
+    }
+    Ok((p, a, remote))
+}
+
+/// A song's id on the server `key`, when it is one of its songs.
+fn on_server(lib: &music_core::library::Library, track_id: i64, key: &str) -> Option<String> {
+    lib.source_ids(track_id, Source::Server).ok()?.iter().find_map(|s| server::split_item(s).filter(|(k, _)| *k == key).map(|(_, i)| i.to_string()))
+}
+
+/// Add to a playlist of your Subsonic server: here at once, then on the server in the background (`push.rs`), taken
+/// back out here if it refuses. That server's songs only; one already in the playlist isn't added twice.
+#[tauri::command]
+pub async fn server_playlist_add(state: State<'_, AppState>, id: i64, track_ids: Vec<i64>) -> CmdResult<AddReport> {
+    let (p, a, remote) = sent_playlist(&state, id)?;
+    let key = a.key();
+    let (found, there) = {
+        let lib = state.lib();
+        let found: Vec<(i64, String)> = track_ids.iter().filter_map(|t| Some((*t, on_server(&lib, *t, &key)?))).collect();
+        let there: HashSet<i64> = lib.playlist_tracks(id).map_err(err)?.into_iter().map(|t| t.id).collect();
+        (found, there)
+    };
+    let no_youtube = track_ids.len() - found.len();
+    let mut seen = HashSet::new();
+    let (new, dup): (Vec<_>, Vec<_>) = found.into_iter().filter(|(t, _)| seen.insert(*t)).partition(|(t, _)| !there.contains(t));
+    let report = AddReport { added: new.len(), already: dup.len(), no_youtube };
+    if new.is_empty() {
+        return Ok(report);
+    }
+    let (added, items): (Vec<i64>, Vec<String>) = new.into_iter().unzip();
+    state.lib().append_to_imported(id, &added).map_err(err)?;
+    let app = state.app.clone();
+    push::later(async move {
+        if let Err(e) = Conn::from_account(&a).playlist_add(&remote, &items).await {
+            {
+                let st = app.state::<AppState>();
+                let lib = st.lib();
+                for t in &added {
+                    let _ = lib.remove_from_imported(id, *t);
+                }
+            }
+            push::failed(&app, push::Failed { kind: push::Kind::ServerAdd, playlist: p.name, songs: added.len(), reason: err(e) });
+        }
+    });
+    Ok(report)
+}
+
+/// Remove from a playlist of your Subsonic server, every occurrence: here at once, then on the server in the
+/// background, put back here if it refuses.
+#[tauri::command]
+pub async fn server_playlist_remove(state: State<'_, AppState>, id: i64, track_id: i64) -> CmdResult<()> {
+    let (p, a, remote) = sent_playlist(&state, id)?;
+    let item = on_server(&state.lib(), track_id, &a.key());
+    state.lib().remove_from_imported(id, track_id).map_err(err)?;
+    let app = state.app.clone();
+    push::later(async move {
+        // Not that server's song (matched from elsewhere): nothing to take out there.
+        let Some(item) = item else { return };
+        if let Err(e) = Conn::from_account(&a).playlist_remove(&remote, &item).await {
+            let _ = app.state::<AppState>().lib().append_to_imported(id, &[track_id]);
+            push::failed(&app, push::Failed { kind: push::Kind::ServerRemove, playlist: p.name, songs: 1, reason: err(e) });
+        }
+    });
     Ok(())
 }
 

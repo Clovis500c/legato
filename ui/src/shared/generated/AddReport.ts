@@ -6,6 +6,6 @@ export type AddReport = { added: number,
  */
 already: number, 
 /**
- * No YouTube version: can't go into a YouTube playlist.
+ * No YouTube version: can't go into a YouTube playlist. A server's playlist: not a song of that server.
  */
 noYoutube: number, };
