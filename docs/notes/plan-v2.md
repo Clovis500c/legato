@@ -62,6 +62,12 @@ Where a line says "reading", the owner hasn't confirmed it.
 - [ ] `M` Remixes shared outside the app: a small file of ours, `.lmix` (or close, the owner's call), and its compact
       link. It holds the song's YouTube link and the mix's Live Editor presets, never the audio (no mp3: Fixed
       limits, no download). Dropped on Legato, the song plays with the Live Editor open on those presets.
+      A mix of a local file is the one case where the file carries audio (the owner's word, 2026-11-11): the mp3
+      itself, or a version encoded for the `.lmix`. Only for the user's own local files, never a platform's audio
+      (YouTube, Spotify, Apple Music: the link only). File only, too big for a compact link. To settle before
+      building: a note at export that sharing a song is the user's responsibility (their own music or rights), a
+      size limit, whether a personal server's song counts as local, and the embedded audio treated as untrusted
+      when opened (the Security line).
 - [ ] `M` Optional sign-in with Discord, for a profile (the owner will make a Discord bot anyway). Never required.
       First use: the share page shows who shared a playlist, their profile carried in the link so it can't be faked
       (the owner's word: encrypted in the link). Open before building: encryption alone doesn't stop a fake, a
