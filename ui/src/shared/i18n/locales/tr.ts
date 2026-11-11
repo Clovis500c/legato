@@ -304,6 +304,7 @@ const tr: Record<string, string> = {
   'Library…': 'Kitaplık…',
   'Remove from queue': 'Sıradan kaldır',
   'Remove from this playlist': 'Bu çalma listesinden kaldır',
+  'Remove from {name}': '{name} listesinden kaldır',
   'Go to album': 'Albüme git',
   'Go to artist': 'Sanatçıya git',
   'Find full version': 'Tam sürümü bul',

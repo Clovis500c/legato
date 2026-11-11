@@ -304,6 +304,7 @@ const id: Record<string, string> = {
   'Library…': 'Koleksi…',
   'Remove from queue': 'Hapus dari antrean',
   'Remove from this playlist': 'Hapus dari playlist ini',
+  'Remove from {name}': 'Hapus dari {name}',
   'Go to album': 'Buka album',
   'Go to artist': 'Buka artis',
   'Find full version': 'Cari versi lengkap',

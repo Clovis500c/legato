@@ -304,6 +304,7 @@ const fr: Record<string, string> = {
   'Library…': 'Bibliothèque…',
   'Remove from queue': 'Retirer de la file',
   'Remove from this playlist': 'Retirer de cette playlist',
+  'Remove from {name}': 'Retirer de {name}',
   'Go to album': 'Aller à l’album',
   'Go to artist': 'Aller à l’artiste',
   'Find full version': 'Trouver la version complète',

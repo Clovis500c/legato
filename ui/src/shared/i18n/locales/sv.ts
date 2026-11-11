@@ -304,6 +304,7 @@ const sv: Record<string, string> = {
   'Library…': 'Bibliotek…',
   'Remove from queue': 'Ta bort från kön',
   'Remove from this playlist': 'Ta bort från den här spellistan',
+  'Remove from {name}': 'Ta bort från {name}',
   'Go to album': 'Gå till albumet',
   'Go to artist': 'Gå till artisten',
   'Find full version': 'Hitta fullständig version',

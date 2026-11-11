@@ -304,6 +304,7 @@ const hi: Record<string, string> = {
   'Library…': 'लाइब्रेरी…',
   'Remove from queue': 'कतार से हटाएं',
   'Remove from this playlist': 'इस प्लेलिस्ट से हटाएं',
+  'Remove from {name}': '{name} से हटाएँ',
   'Go to album': 'एल्बम पर जाएं',
   'Go to artist': 'कलाकार पर जाएं',
   'Find full version': 'पूरा वर्शन ढूंढें',

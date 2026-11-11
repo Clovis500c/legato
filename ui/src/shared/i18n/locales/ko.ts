@@ -304,6 +304,7 @@ const ko: Record<string, string> = {
   'Library…': '보관함…',
   'Remove from queue': '대기열에서 삭제',
   'Remove from this playlist': '이 플레이리스트에서 삭제',
+  'Remove from {name}': '{name}에서 제거',
   'Go to album': '앨범으로 이동',
   'Go to artist': '아티스트로 이동',
   'Find full version': '전체 버전 찾기',

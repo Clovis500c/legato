@@ -83,6 +83,7 @@ import { SourceIcon } from '../shared/ui/SourceIcon'
 import type { Addon } from './addons/registry'
 import { isOn, setAddon } from './addons/state'
 import { takesEdits } from './sources/servers'
+import { holds, playingFrom } from './library/holding'
 import { addToPlaylist, markMusic, removeFromPlaylist, removePositions, removeTrackFromPlaylist, songs } from './library/edits'
 import { ownLiked, youtubeLiked } from './library/likedMusic'
 import { editInfo, findDuplicates } from './library/dialogs'
@@ -235,7 +236,7 @@ export function dropOn(p: LibraryPlaylist, ids: number[]) {
  * Add to playlist choices: a new one, your playlists, then your YouTube Music ones (added there too), each with its
  * sidebar icon. Hidden ones left out. A submenu of the song menus; the row and Now Playing buttons open it alone.
  */
-export function addToItems(ids: () => number[] | Promise<number[]>): MenuEntry[] {
+export function addToItems(ids: () => number[] | Promise<number[]>, only?: LibraryTrack): MenuEntry[] {
   const add = async (id: number) => addToPlaylist(id, await ids())
   const addYoutube = async (p: LibraryPlaylist) => addToYoutubePlaylist(p, await ids())
   const off = hidden()
@@ -253,15 +254,19 @@ export function addToItems(ids: () => number[] | Promise<number[]>): MenuEntry[]
         },
       },
       '-',
-      ...shown.filter((p) => p.custom).map((p) => ({ label: p.name, icon: <PlaylistIcon p={p} size={16} />, onSelect: () => void add(p.id) })),
+      // One song: a playlist already holding it is checked, and a click takes it out.
+      ...shown.filter((p) => p.custom).map((p) => {
+        const held = !!only && holds(app().orders, p.id, only.id)
+        return { label: p.name, icon: <PlaylistIcon p={p} size={16} />, checked: held, onSelect: () => void (held ? removeTrackFromPlaylist(p.id, only!.id) : add(p.id)) }
+      }),
       youtube.length > 0 && '-',
       ...youtube.map((p) => ({ label: p.name, icon: <PlaylistIcon p={p} size={16} />, onSelect: () => void addYoutube(p) })),
   ]
 }
 
 /** "Add to playlist ›". */
-function addTo(tracks: () => LibraryTrack[] | Promise<LibraryTrack[]>): MenuEntry {
-  return { label: tr('Add to playlist'), icon: <ListPlus size={16} />, items: addToItems(async () => (await tracks()).map((t) => t.id)) }
+function addTo(tracks: () => LibraryTrack[] | Promise<LibraryTrack[]>, only?: LibraryTrack): MenuEntry {
+  return { label: tr('Add to playlist'), icon: <ListPlus size={16} />, items: addToItems(async () => (await tracks()).map((t) => t.id), only) }
 }
 
 const orderLabels: Record<PlaylistCover['order'], string> = { playlist: msg('Playlist order'), recent: msg('Recently added'), title: msg('Title'), artist: msg('Artist'), album: msg('Album'), duration: msg('Longest first') }
@@ -457,7 +462,7 @@ export function trackMenu(t: LibraryTrack, ctx: { list?: LibraryTrack[]; index?:
     playVia(t, list, index),
     vias(t, sp()).length > 0 && { label: tr('Start radio'), icon: <Radio size={16} />, onSelect: () => void startRadio(t) },
     '-',
-    addTo(() => [t]),
+    addTo(() => [t], t),
     ctx.playlistId !== undefined && { label: tr('Remove from this playlist'), icon: <MinusCircle size={16} />, onSelect: () => void removeFromPlaylist(ctx.playlistId!, ctx.position!) },
     removeFrom(t),
     '-',
@@ -750,7 +755,8 @@ export function playerMenu({ controls = true }: { controls?: boolean } = {}): Me
     { label: tr('Mini player'), icon: <PictureInPicture size={16} />, checked: mini || !!video, disabled: !!video, onSelect: () => useSettings.getState().update({ miniPlayer: !mini }) },
     '-',
     t && playVia(t, list, index),
-    t && addTo(() => [t]),
+    t && addTo(() => [t], t),
+    t && removeFromPlayingList(t),
     t && rateItem(t),
     t && bookmarkItem(t.id),
     t?.album && { label: tr('Go to album'), icon: <Disc size={16} />, onSelect: () => (setFull(false), app().go({ name: 'album', album: t.album!, artist: primaryArtist(t.artist) })) },
@@ -765,6 +771,13 @@ export function playerMenu({ controls = true }: { controls?: boolean } = {}): Me
     now.path && { label: tr('Show in folder'), icon: <FolderOpen size={16} />, onSelect: () => revealItemInDir(now.path!).catch(fail) },
     ...pluginItems('player', { trackId: t?.id ?? null, title: now.title, artist: now.artist }),
   ]
+}
+
+/** "Remove from {playlist}" for the own playlist the queue plays from (matched by the name the queue keeps). */
+export function removeFromPlayingList(t: LibraryTrack): MenuEntry {
+  const from = player().from
+  const p = playingFrom(app().playlists, app().orders, from, t.id)
+  return !!p && { label: tr('Remove from {name}', { name: p.name }), icon: <MinusCircle size={16} />, onSelect: () => void removeTrackFromPlaylist(p.id, t.id) }
 }
 
 /** The playing song's bookmarks: keep this moment (with a note or not), go back to one, take one off. */

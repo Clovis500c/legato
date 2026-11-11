@@ -304,6 +304,7 @@ const vi: Record<string, string> = {
   'Library…': 'Thư viện…',
   'Remove from queue': 'Xóa khỏi hàng đợi',
   'Remove from this playlist': 'Xóa khỏi danh sách phát này',
+  'Remove from {name}': 'Xóa khỏi {name}',
   'Go to album': 'Đi tới album',
   'Go to artist': 'Đi tới nghệ sĩ',
   'Find full version': 'Tìm bản đầy đủ',

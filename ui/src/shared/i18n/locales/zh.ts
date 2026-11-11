@@ -304,6 +304,7 @@ const zh: Record<string, string> = {
   'Library…': '音乐库…',
   'Remove from queue': '从队列中移除',
   'Remove from this playlist': '从此歌单中移除',
+  'Remove from {name}': '从 {name} 移除',
   'Go to album': '前往专辑',
   'Go to artist': '前往艺人',
   'Find full version': '查找完整版',

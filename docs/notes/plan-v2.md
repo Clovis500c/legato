@@ -57,11 +57,17 @@ classic mini player stay off by default; the web share link stays the default; p
 Noted from their message, nothing built or checked yet. After the answers above, or later, by the plan's priorities.
 Where a line says "reading", the owner hasn't confirmed it.
 
-- [ ] `S` FIRST (the owner's word): a song can't be removed from a playlist from the player. Seen in Now Playing's
+- [x] `S` FIRST (the owner's word): a song can't be removed from a playlist from the player. Seen in Now Playing's
       right-click menu while playing from a playlist ("Lecture depuis Music"): Add to a playlist lists the
       playlists, nothing removes. Reading of the fix: "Remove from {playlist}" for the playlist it plays from, and a
       check on each playlist that already holds the song, a click on it removing it; the same in every menu of a
       playing song (player bar, Up next, mini player). Find the cause first: other lists have Remove from playlist.
+      2026-11-11: cause: `playerMenu` (Now Playing, player bar, mini player, side panel) offered `addTo` but never
+      `removeFrom`, and "Add to playlist" didn't know which playlists held the song. Now one song's "Add to playlist"
+      checks the own playlists holding it (a click removes, with Undo), in `trackMenu` too (Up next, rows), and the player's
+      menu has "Remove from {playlist}" for the playlist the queue plays from (`library/holding.ts`, matched by the name the
+      queue keeps). Not done: YouTube Music / server playlists in that check (they stay in "Remove from ›"). Never seen on a
+      screen: Vitest on the helpers only (`menus.tsx` can't be imported by a test: it touches `window`).
 
 - [ ] `S-M` The share page (`/l`, since `867cc53`) as a good-looking preview of a playlist without the app, from the
       compact links: a preview only, no player on the web (the owner's word).

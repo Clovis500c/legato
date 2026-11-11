@@ -304,6 +304,7 @@ const ja: Record<string, string> = {
   'Library…': 'ライブラリ…',
   'Remove from queue': 'キューから削除',
   'Remove from this playlist': 'このプレイリストから削除',
+  'Remove from {name}': '{name} から削除',
   'Go to album': 'アルバムへ移動',
   'Go to artist': 'アーティストへ移動',
   'Find full version': 'フルバージョンを探す',

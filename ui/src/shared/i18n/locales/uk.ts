@@ -304,6 +304,7 @@ const uk: Record<string, string> = {
   'Library…': 'Медіатека…',
   'Remove from queue': 'Видалити з черги',
   'Remove from this playlist': 'Видалити з цього плейлиста',
+  'Remove from {name}': 'Видалити з {name}',
   'Go to album': 'Перейти до альбому',
   'Go to artist': 'Перейти до виконавця',
   'Find full version': 'Знайти повну версію',

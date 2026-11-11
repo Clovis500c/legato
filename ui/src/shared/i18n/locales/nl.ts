@@ -304,6 +304,7 @@ const nl: Record<string, string> = {
   'Library…': 'Bibliotheek…',
   'Remove from queue': 'Verwijderen uit wachtrij',
   'Remove from this playlist': 'Verwijderen uit deze playlist',
+  'Remove from {name}': 'Verwijderen uit {name}',
   'Go to album': 'Naar album',
   'Go to artist': 'Naar artiest',
   'Find full version': 'Volledige versie zoeken',
