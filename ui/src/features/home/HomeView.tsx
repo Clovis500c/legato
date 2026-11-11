@@ -23,7 +23,9 @@ import { playlistMenu, trackMenu, tracksMenu } from '../menus'
 import { MixCard, mixSongs } from '../mixes/MixesView'
 import { useMixes } from '../mixes/useMixes'
 import { mixTitle } from '../mixes/words'
-import { remoteTrack, usePlayer } from '../player/store'
+import { Backdrop } from '../player/Backdrop'
+import { useBackdrop } from '../player/immersive'
+import { remoteTrack, useNowTrack, usePlayer } from '../player/store'
 import { WaysIn } from '../welcome/WaysIn'
 import { jumpLists, useOpenedLists, type OpenedList } from './recentLists'
 import { weekOf } from './week'
@@ -308,6 +310,14 @@ function useYtmHome(on: boolean, mood: string | null) {
   return { home: homes[key], moods: homes['']?.moods ?? [], error }
 }
 
+/** The flowing background (Backdrop's shader, paused with the song and the window) behind Home, from the playing cover. Dimmed enough to read the cards. */
+function HomeFlow() {
+  const track = useNowTrack()
+  const blur = useSettings((s) => s.settings.backdropBlur)
+  const url = useBackdrop(track ? trackArt(track)[0] : undefined, Math.max(blur, 40))
+  return <Backdrop url={url} dim={72} motion flowing />
+}
+
 /** New from your artists: MusicBrainz asked once a day by Rust (`new_releases`), only while the section is on. */
 function useNewReleases(on: boolean) {
   const [list, setList] = useState<NewRelease[]>()
@@ -446,6 +456,7 @@ export function HomeView() {
   const yt = useYtmHome(ytOn && ytSection, mood)
   const releases = useNewReleases(sections.some((x) => x.id === 'releases' && x.on))
   const releaseCovers = useSettings((s) => s.settings.releaseCovers)
+  const homeFlow = useSettings((s) => s.settings.homeFlow && s.settings.motion)
   const coverOf = (id: string) => {
     const url = releaseCovers ? releaseCover(id) : null
     return url ? [remoteArt(url)] : []
@@ -541,7 +552,8 @@ export function HomeView() {
 
   // No page title (mockup): chips, then the shortcut tiles, then the sections.
   return (
-    <>
+    <div className="relative isolate flex min-h-0 flex-1 flex-col">
+      {homeFlow && <HomeFlow />}
       <div className="flex shrink-0 items-start gap-4 pb-4 phone:items-center phone:gap-1 phone:pb-3">
         {/* The phone: one row scrolled sideways. */}
         <div role="tablist" aria-label={tr('Show on Home')} className="no-scrollbar flex min-w-0 flex-1 flex-wrap items-center gap-2 phone:flex-nowrap phone:overflow-x-auto">
@@ -589,6 +601,6 @@ export function HomeView() {
         )}
       </div>
       {customizing && <CustomizeHome onClose={() => setCustomizing(false)} />}
-    </>
+    </div>
   )
 }

@@ -14,7 +14,7 @@ import { clockText, toNextMinute } from './coverClock'
 import { closeCoverFull } from './coverFull'
 import { songKey } from './effects'
 import { useBackdrop } from './immersive'
-import { Backdrop } from './NowPlaying'
+import { Backdrop } from './Backdrop'
 import { TimeText, usePosition } from './Progress'
 import { useNowTrack, usePlayer } from './store'
 

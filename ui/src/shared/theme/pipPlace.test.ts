@@ -8,3 +8,12 @@ describe('the classic strip keeps its place', () => {
     expect(sanitize({ pipClassicPlace: [10, 20, 0, 200] }).pipClassicPlace).toBeNull()
   })
 })
+
+describe('the flowing background behind Home', () => {
+  it('is off by default and only a real true turns it on', () => {
+    expect(DEFAULTS.homeFlow).toBe(false)
+    expect(sanitize({}).homeFlow).toBe(false)
+    expect(sanitize({ homeFlow: 'yes' }).homeFlow).toBe(false)
+    expect(sanitize({ homeFlow: true }).homeFlow).toBe(true)
+  })
+})

@@ -15,7 +15,7 @@ import { closeKaraoke } from './karaokeMode'
 import { centerShift, plainShift, seatOf, type Seat } from './karaokeLines'
 import { applyFix, fixLabel, lineAt, lineEnd, NO_FIX, withBreaks, type LyricsFix, type Timed, type TimedWord } from './lyricsAt'
 import { Sung, useNowLyrics } from './LyricsPanel'
-import { Backdrop } from './NowPlaying'
+import { Backdrop } from './Backdrop'
 import { SeekBar, TimeText, usePosition } from './Progress'
 import { useNowTrack, usePlayer } from './store'
 

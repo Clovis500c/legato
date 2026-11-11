@@ -289,6 +289,9 @@ function Appearance() {
           <Row setting="backdropFlow" label={msg('Flowing background')} sub={tr('The cover’s colours flow slowly behind the player while a song plays')}>
             <Toggle label={tr('Flowing background')} checked={s.backdropFlow} onChange={(backdropFlow) => update({ backdropFlow })} />
           </Row>
+          <Row setting="homeFlow" label={msg('Flowing background behind Home')} sub={tr('The same flowing colours from the playing song’s cover, behind Home. Off by default; it needs Animations on')}>
+            <Toggle label={tr('Flowing background behind Home')} checked={s.homeFlow} onChange={(homeFlow) => update({ homeFlow })} />
+          </Row>
         </div>
       </Group>
       {/* Folded away like the hi-fi's own extras; a search result inside opens it (SettingsView). */}

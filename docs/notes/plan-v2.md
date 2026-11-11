@@ -46,7 +46,11 @@ classic mini player stay off by default; the web share link stays the default; p
       import or 15 minutes after a refusal, a miss not asked again for 6 hours (`searchpace::Looked`); still only for a song
       YouTube plays, 10 s in (a local file's artist is not sent). "Refreshed when the song changes" = the next song's new
       artists are asked at once; a kept page follows the cache's own expiry. Untried against the real YouTube Music.
-- [ ] `S` Flowing background behind Home, as a setting, off by default (the owner's choice 2026-11-11).
+- [x] `S` Flowing background behind Home, as a setting, off by default (the owner's choice 2026-11-11).
+      2026-11-11: Settings › Appearance › Flowing background behind Home (`homeFlow`, off; needs Animations): `HomeFlow` in
+      `HomeView` draws `Backdrop` (moved to `player/Backdrop.tsx`, a `flowing` prop) with `bc90071`'s shader, which pauses with
+      the song and a hidden window; dimmed at 72 % to read the cards. Never seen on a screen: the dim and the stacking
+      (`isolate` wrapper around Home) are unjudged.
 - [ ] `S` `legato://` registered with Windows from the installed app only (`identity::installed()`), for a real
       "Open in Legato" button on the share page, AND the page's "Copy the link for Legato" kept (the owner's choice
       2026-11-11; the web link stays the default).

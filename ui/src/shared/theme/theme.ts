@@ -346,6 +346,8 @@ export interface Settings {
   backdropMotion: boolean
   /** The backdrop warped slowly by our WebGL shader while a song plays (off: to be judged by eye first). */
   backdropFlow: boolean
+  /** The same flowing background behind Home, from the playing song's cover. Off by default (a second shader running on the page everyone lands on). */
+  homeFlow: boolean
   /** Cover display (C): the time and the day in a corner, for a second screen. Off: the cover alone. */
   coverClock: boolean
   /** 'theme' = the theme's own font. */
@@ -559,6 +561,7 @@ export const DEFAULTS: Settings = {
   backdropDim: 40,
   backdropMotion: true,
   backdropFlow: false,
+  homeFlow: false,
   coverClock: false,
   font: 'theme',
   motion: true,
@@ -808,6 +811,7 @@ export function sanitize(raw: unknown): Settings {
     backdropDim: num(r.backdropDim, 0, 80, DEFAULTS.backdropDim),
     backdropMotion: typeof r.backdropMotion === 'boolean' ? r.backdropMotion : DEFAULTS.backdropMotion,
     backdropFlow: typeof r.backdropFlow === 'boolean' ? r.backdropFlow : DEFAULTS.backdropFlow,
+    homeFlow: r.homeFlow === true,
     coverClock: r.coverClock === true,
     font: pick(r.font, ['theme', ...FONTS] as const, DEFAULTS.font),
     motion: typeof r.motion === 'boolean' ? r.motion : DEFAULTS.motion,
