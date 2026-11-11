@@ -181,9 +181,13 @@ Importance is a first estimate (2026-10-31), the user moves lines as they like.
       - [ ] `S` Plex's Sign out ends nothing at Plex: the account's token is dropped at the pick, and an owned server's
         token can be the account's own; Legato stays in plex.tv › Authorized Devices until the user removes it there
         (the privacy row says so). Revoking it needs the account token kept, or a documented device-removal call.
-      - [ ] `S` Plex's covers keep the address in use at the sync: away from home on its plain http LAN address (when
+      - [x] `S` Plex's covers keep the address in use at the sync: away from home on its plain http LAN address (when
         its plex.direct https one didn't answer), a cover asked before the next sync goes with the token to whatever
         answers at that LAN address. Store covers by machine id (`plex:<id>/…`) and sign them at the address in use.
+        2026-11-11: covers kept as `plex:<account key>/photo/…` and signed at the address in use (`Plex::sign`, `Conn::cover_base`);
+        rows synced before keep their old http cover until the next sync rewrites them. Decided alone (2026-11-11): the
+        account's key (machine id + user) rather than the bare machine id (two users of one server have two tokens). Untried
+        on a real Plex server: mock tests only.
       - [ ] `S` Plex's JWT sign-in (clients.plex.tv, a device key pair, the token refreshed each week) if Plex retires
         the legacy PIN's long-lived tokens.
       - [ ] `S` Plex's transcoder (`music/:/transcode/universal`) for formats the engine can't read.

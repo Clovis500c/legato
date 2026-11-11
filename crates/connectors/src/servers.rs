@@ -168,6 +168,14 @@ impl Conn {
         }
     }
 
+    /// What its cover URLs start with: its base (Plex: its key, the address in use changes).
+    pub fn cover_base(&self) -> String {
+        match self {
+            Self::Plex(p) => p.cover_base(),
+            _ => self.base().to_string(),
+        }
+    }
+
     /// One of its cover URLs (as the library keeps them, no auth) with the auth added; None = not one of its covers.
     pub fn sign_cover(&self, url: &str) -> Option<Signed> {
         match self {

@@ -17,7 +17,12 @@ const MAX_IMAGE: usize = 5 << 20;
 /// Image hosts of YouTube, Google accounts, Apple, Spotify, Deezer and SoundCloud (exact names), and YouTube Music's own art paths (Liked Music's cover on
 /// gstatic, My Mix covers drawn by music.youtube.com): both load without a session. Plus signed-in servers' covers.
 pub fn allowed(url: &str) -> bool {
-    let service = Url::parse(url).is_ok_and(|u| {
+    service(url) || server_signer(url).is_some()
+}
+
+/// A service's image host (not a personal server's cover).
+fn service(url: &str) -> bool {
+    Url::parse(url).is_ok_and(|u| {
         u.scheme() == "https"
             && u.host_str().is_some_and(|h| {
                 ["i.ytimg.com", "yt3.ggpht.com", "i.scdn.co", "mosaic.scdn.co", "cdn-images.dzcdn.net", "e-cdns-images.dzcdn.net", "i1.sndcdn.com", "i2.sndcdn.com", "i3.sndcdn.com", "i4.sndcdn.com"].contains(&h)
@@ -25,8 +30,7 @@ pub fn allowed(url: &str) -> bool {
                     || (h == "www.gstatic.com" && u.path().starts_with("/youtube/media/ytm/"))
                     || (h == "music.youtube.com" && u.path().starts_with("/image/"))
             })
-    });
-    service || server_signer(url).is_some()
+    })
 }
 
 /// One cover request of a signed-in server: its URL (Subsonic's auth in it) and headers (Jellyfin's and Plex's token).
@@ -63,8 +67,8 @@ fn server_signer(url: &str) -> Option<Signed> {
 
 /// A cover's redirect to `to`: an allowed image, and off a signed-in server's host only when it wasn't one of its own.
 fn redirect_ok(from: Option<&url::Url>, to: &url::Url) -> bool {
-    let server = |u: &url::Url| SERVERS.read().unwrap().iter().any(|(b, _)| u.as_str().strip_prefix(b.as_str()).is_some_and(|rest| rest.starts_with('/')));
-    allowed(to.as_str()) && from.is_none_or(|f| !server(f) || crate::servers::stays(f, to))
+    // A signed Plex cover is asked at the address in use, which isn't a registered base: anything not a service's host is a server's.
+    allowed(to.as_str()) && from.is_none_or(|f| service(f.as_str()) || crate::servers::stays(f, to))
 }
 
 /// Image type from magic bytes (cache files carry no headers).
@@ -331,6 +335,23 @@ mod tests {
         // Signed out: refused, even from the cache.
         forget_server(&s.url());
         assert!(!allowed(&cover) && cache.get(&cover, None).await.is_err());
+    }
+
+    #[tokio::test]
+    async fn a_plex_cover_kept_by_key_is_fetched_at_the_address_in_use() {
+        let mut s = Server::new_async().await;
+        let m = s.mock("GET", "/photo/:/transcode").match_query(mockito::Matcher::Any).match_header("x-plex-token", "tok").with_header("content-type", "image/png").with_body(png(6)).expect(1).create_async().await;
+        let dir = tempfile::tempdir().unwrap();
+        let cache = ArtCache::new(dir.path().to_path_buf(), 1 << 20);
+        let cover = "plex:sab12/photo/:/transcode?width=1200&url=%2Flibrary%2Fmetadata%2F1%2Fthumb";
+        assert!(!allowed(cover));
+        let at = s.url();
+        allow_server("plex:sab12", Arc::new(move |u: &str| u.strip_prefix("plex:sab12").map(|rest| Signed { url: format!("{at}{rest}"), headers: vec![("X-Plex-Token", "tok".into())] })));
+        assert!(allowed(cover) && !allowed(&format!("{}/photo/:/transcode?width=1", s.url())));
+        assert!(cache.get(cover, None).await.is_ok());
+        m.assert_async().await;
+        forget_server("plex:sab12");
+        assert!(!allowed(cover));
     }
 
     #[tokio::test]

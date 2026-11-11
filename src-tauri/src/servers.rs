@@ -47,11 +47,11 @@ fn save(state: &AppState, list: Vec<Account>) -> anyhow::Result<()> {
     } else {
         state.store.save(KEY, &list)?;
     }
-    // A base no account uses any more (signed out, or a Plex server now at another address): its covers no longer
+    // A base no account uses any more (signed out): its covers no longer
     // get a token.
-    let kept: Vec<String> = list.iter().map(|a| Conn::from_account(a).base().to_string()).collect();
+    let kept: Vec<String> = list.iter().map(|a| Conn::from_account(a).cover_base()).collect();
     for a in ACCOUNTS.read().unwrap().iter() {
-        let base = Conn::from_account(a).base().to_string();
+        let base = Conn::from_account(a).cover_base();
         if !kept.contains(&base) {
             music_connectors::art::forget_server(&base);
         }
@@ -66,7 +66,7 @@ fn save(state: &AppState, list: Vec<Account>) -> anyhow::Result<()> {
 fn allow_art(a: &Account) {
     let conn = Conn::from_account(a);
     // Its covers' URLs start with the connector's base (written as `Url` writes it), not the address as typed.
-    let base = conn.base().to_string();
+    let base = conn.cover_base();
     music_connectors::art::allow_server(&base, Arc::new(move |url: &str| conn.sign_cover(url)));
 }
 

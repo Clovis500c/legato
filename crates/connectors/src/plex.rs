@@ -306,6 +306,11 @@ impl Plex {
         &self.base
     }
 
+    /// What its cover URLs start with: its account's key, not the address (that one changes, the covers kept don't).
+    pub fn cover_base(&self) -> String {
+        format!("plex:{}", self.key)
+    }
+
     fn url(&self, path: &str, query: &[(&str, &str)]) -> Result<Url> {
         note(&self.base);
         let mut u = Url::parse(&format!("{}{path}", self.base)).map_err(|_| anyhow!("Your music server's address isn't right"))?;
@@ -369,12 +374,14 @@ impl Plex {
         }
         let mut u = Url::parse(&format!("{}/photo/:/transcode", self.base)).ok()?;
         u.query_pairs_mut().append_pair("width", COVER_SIZE).append_pair("height", COVER_SIZE).append_pair("minSize", "1").append_pair("upscale", "0").append_pair("url", thumb);
-        Some(u.to_string())
+        // `plex:<key>/photo/…`: the address in use goes in at `sign`.
+        Some(u.as_str().replacen(&self.base, &self.cover_base(), 1))
     }
 
-    /// One of its cover URLs with the token header; None = not one of its covers.
+    /// One of its cover URLs at the address in use, with the token header; None = not one of its covers.
     pub fn sign(&self, url: &str) -> Option<Signed> {
-        url.strip_prefix(&self.base)?.starts_with("/photo/:/transcode?").then(|| Signed { url: url.to_string(), headers: vec![("X-Plex-Token", self.token.clone())] })
+        let rest = url.strip_prefix(&self.cover_base())?;
+        rest.starts_with("/photo/:/transcode?").then(|| Signed { url: format!("{}{rest}", self.base), headers: vec![("X-Plex-Token", self.token.clone())] })
     }
 
     /// A track (`Metadata` of type track) as a library track, and whether it's loved. Its file's path is learnt.
@@ -607,10 +614,15 @@ mod tests {
         assert_eq!((t.title.as_str(), t.artist.as_str(), t.album.as_deref(), t.duration_ms), ("Nightcall", "Kavinsky & Lovefoxxx", Some("OutRun"), Some(258_000)));
         assert_eq!(t.ids.get(&Source::Server), Some(&format!("{}:101", p.key())));
         let art = t.art.clone().unwrap();
-        assert!(art.starts_with(&format!("{}/photo/:/transcode?width=1200&height=1200", s.url())) && !art.contains("tok"), "{art}");
+        assert!(art.starts_with(&format!("{}/photo/:/transcode?width=1200&height=1200", p.cover_base())) && !art.contains("tok") && !art.contains(&s.url()), "{art}");
         let signed = p.sign(&art).unwrap();
         assert_eq!(signed.headers, vec![("X-Plex-Token", "srv-tok".to_string())]);
-        assert!(p.sign(&format!("{}/library/parts/7/file.flac", s.url())).is_none());
+        assert!(signed.url.starts_with(&format!("{}/photo/:/transcode?width=1200", s.url())));
+        assert!(p.sign(&format!("{}/library/parts/7/file.flac", p.cover_base())).is_none());
+        // The same cover, the server now at another address: signed there, with this account's token only.
+        let moved = Plex::from_account(&Account { address: "http://192.168.1.50:32400".into(), ..account(&s.url()) });
+        assert_eq!(moved.sign(&art).unwrap().url.split("/photo").next(), Some("http://192.168.1.50:32400"));
+        assert!(moved.sign(&art.replace("plex:", "plex:x")).is_none());
     }
 
     #[tokio::test]
